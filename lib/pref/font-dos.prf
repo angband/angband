@@ -1,0 +1,8 @@
+# File: font-dos.prf
+
+#
+# This file is used by Angband (when it was compiled using "main-dos.c")
+# to specify simple attr/char remappings using a standard font, allowing
+# the use of special pseudo-graphic pictures for walls and such.
+#
+

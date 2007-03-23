@@ -1,0 +1,264 @@
+# This is a makefile for the Cygwin tools which may
+# be downloaded by following the links from the URL:
+# http://sources.redhat.com/cygwin/
+
+#
+# Standard defines
+#
+
+CC = gcc
+WRES = windres
+LIBS = -s -mno-cygwin -mwindows -e _mainCRTStartup -lwinmm
+CFLAGS = -Wall -W -pedantic -mno-cygwin -O2 -fno-strength-reduce -DWINDOWS
+
+EXOBJS = \
+	angband.res \
+	birth.o \
+	cave.o \
+	cmd1.o \
+	cmd2.o \
+	cmd3.o \
+	cmd4.o \
+	cmd5.o \
+	cmd6.o \
+	dungeon.o \
+	files.o \
+	generate.o \
+	init1.o \
+	init2.o \
+	load.o \
+	main-win.o \
+	melee1.o \
+	melee2.o \
+	monster1.o \
+	monster2.o \
+	obj-info.o \
+	object1.o \
+	object2.o \
+	randart.o \
+	readdib.o \
+	save.o \
+	spells1.o \
+	spells2.o \
+	store.o \
+	squelch.o \
+	tables.o \
+	util.o \
+	variable.o \
+	wizard1.o \
+	wizard2.o \
+	xtra1.o \
+	xtra2.o \
+	z-form.o \
+	z-rand.o \
+	z-term.o \
+	z-util.o \
+	z-virt.o \
+	script.o \
+	use-obj.o \
+	x-spell.o
+
+HDRS = \
+	h-basic.h \
+	h-define.h h-type.h \
+	h-system.h h-config.h
+
+
+INCS = \
+	angband.h \
+	config.h defines.h \
+	types.h externs.h \
+	z-term.h z-rand.h \
+	z-util.h z-virt.h \
+	z-form.h $(HDRS)
+
+
+#
+# Targets
+#
+
+
+default: angband
+
+install: angband movebin cleanobjs
+
+movebin:
+	mv -f angband.exe ../angband.exe
+
+cleanobjs:
+	rm -f $(EXOBJS)
+
+cleanbin:
+	rm -f angband.exe
+
+clean:	cleanobjs cleanbin
+
+#
+# Dependency rules
+#
+
+angband: $(EXOBJS)
+	$(CC) -o angband $(EXOBJS) $(INCDIRS) $(LIBDIRS) $(LIBS)
+
+
+#
+# Compiling angband.rc
+#
+# Note: this format seems to work but the alternative actually used
+# is the one recommended by Cygnus
+#
+# angband.res : angband.rc
+#	$(WRES) angband.rc angband.res
+#
+
+angband.res : angband.rc
+	$(WRES) $< -O coff -o $@
+
+
+#
+# Compiling objects
+#
+
+birth.o: birth.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+cave.o: cave.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+cmd1.o: cmd1.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+cmd2.o: cmd2.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+cmd3.o: cmd3.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+cmd4.o: cmd4.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+cmd5.o: cmd5.c $(INCS) script.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+cmd6.o: cmd6.c $(INCS) script.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+dungeon.o: dungeon.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+files.o: files.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+generate.o: generate.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+init1.o: init1.c $(INCS) init.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+init2.o: init2.c $(INCS) init.h script.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+load.o: load.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+main.o: main.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+melee1.o: melee1.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+main-win.o: main-win.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+melee2.o: melee2.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+monster1.o: monster1.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+monster2.o: monster2.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+obj-info.o: obj-info.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+object1.o: object1.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+object2.o: object2.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+randart.o: randart.c $(INCS) init.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+#
+# Note the additional -DNEAR= flag to cope with the 'NEAR'
+# keyword used in readdib.c
+#
+
+readdib.o: readdib.c readdib.h
+	$(CC) $(CFLAGS) -DNEAR= $(INCDIRS) -c -o $@ $<
+
+save.o: save.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+script.o: script.c $(INCS) script.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+spells1.o: spells1.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+spells2.o: spells2.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+store.o: store.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+squelch.o: squelch.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+tables.o: tables.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+use-obj.o: use-obj.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+util.o: util.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+variable.o: variable.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+wizard1.o: wizard1.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+wizard2.o: wizard2.c $(INCS) script.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+x-spell.o: x-spell.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+xtra1.o: xtra1.c $(INCS) script.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+xtra2.o: xtra2.c $(INCS)
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+z-form.o: z-form.c $(HDRS) z-form.h z-util.h z-virt.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+z-rand.o: z-rand.c $(HDRS) z-rand.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+z-term.o: z-term.c $(HDRS) z-term.h z-virt.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+z-util.o: z-util.c $(HDRS) z-util.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+z-virt.o: z-virt.c $(HDRS) z-virt.h z-util.h
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+
+.c.o:
+	$(CC) $(CFLAGS) $(INCDIRS) -c -o $@ $<
+

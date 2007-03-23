@@ -1,0 +1,68 @@
+# Project: Angband 3.0.0
+#
+# To use this makefile, the current working directory must be where
+# this makefile is (if this makefile is at "raFS::Temp.$.ang.src.makefile",
+# the CWD must be "raFS::Temp.$.ang.src").
+#
+# This makefile is for Acorn C rel. 5 (edit the CCFLAGS for rel.4).
+
+# Libraries:
+LIBS = C:o.Stubs DeskLib:o.DeskLib
+
+# Tools:
+CC = cc
+LD = link
+SQ = squeeze
+RM = remove
+
+# Flags:
+CCFLAGS = -Wall -depend !Depend -throwback
+LDFLAGS = -aif
+
+# The standard object files:
+OBJS = z-util.o z-virt.o z-form.o z-rand.o z-term.o \
+  variable.o util.o cave.o \
+  object1.o object2.o monster1.o monster2.o \
+  xtra1.o xtra2.o spells1.o spells2.o \
+  melee1.o melee2.o files.o \
+  cmd1.o cmd2.o cmd3.o cmd4.o cmd5.o cmd6.o \
+  squelch.o store.o birth.o save.o load.o \
+  wizard1.o wizard2.o obj-info.o \
+  generate.o dungeon.o init1.o init2.o randart.o \
+  main-ros.o main.o \
+  script.o tables.o x-spell.o use-obj.o
+
+# Borg object files:
+BOBJS = borg1.o borg2.o borg3.o borg4.o borg5.o borg6.o borg7.o \
+	borg8.o borg9.o
+
+# A standard compile
+compile: ^.!RunImage
+
+# The normal !RunImage:
+^.!RunImage:	$(OBJS) $(LIBS)
+		$(LD) $(LDFLAGS) -o !RunImage $(OBJS) $(LIBS)
+		$(SQ) $(SQFLAGS) !RunImage ^.!RunImage
+		$(RM) !RunImage
+
+# The Borg RunImage
+^.!RunImageB:	$(OBJS) $(BOBJS) $(LIBS)
+		$(LD) $(LDFLAGS) -o !RunImage $(BOBJS) $(LIBS)
+		$(SQ) $(SQFLAGS) !RunImageB ^.!RunImageB
+		$(RM) !RunImageB
+
+# Suffix rules
+.SUFFIXES: .o .c
+
+# Hack to remove compiler crashes
+object2.o:
+	$(CC) -Ospace $(CCFLAGS) -c -o object2.o object2.c
+
+monster2.o:
+	$(CC) -Ospace $(CCFLAGS) -c -o monster2.o monster2.c
+
+# A basic rule
+.c.o:;	$(CC) -Otime $(CCFLAGS) -c -o $@ $<
+
+# Dynamic dependencies:
+

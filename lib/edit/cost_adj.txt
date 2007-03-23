@@ -1,0 +1,46 @@
+# File: cost_adj.txt
+
+
+# This file is used to initialize the "lib/data/cost_adj.raw" file, which is
+# used to initialize the "racial price adjustment" information for the
+# Angband game.
+
+# Do not modify this file unless you know exactly what you are doing,
+# unless you wish to risk possible system crashes and broken savefiles.
+# After modifying this file, delete the "lib/data/cost_adj.raw" file.
+
+
+# Format:
+# A:store adjustments
+
+
+# Version stamp (required)
+
+V:3.0.6
+
+
+# Hum,HfE,Elf,Hal,Gno,Dwa,HfO,HfT,Dun,HiE,Kob
+
+# Human
+A:100:105:105:110:113:115:120:125:100:105:120
+# Half-Elf
+A:110:100:100:105:110:120:125:130:110:100:115
+# Elf
+A:110:105:100:105:110:120:125:130:110:100:115
+# Halfling
+A:115:110:105: 95:100:110:120:125:115:105:115
+# Gnome
+A:115:115:110:100: 95:105:120:120:115:110:125
+# Dwarf
+A:115:120:120:110:105: 95:125:130:110:120:115
+# Half-Orc
+A:115:120:125:115:115:130: 95:105:115:130:110
+# Half-Troll
+A:110:115:120:110:110:130:105: 95:110:125:110
+# Dunadan
+A:100:105:105:110:113:115:120:125:100:105:120
+# High-Elf
+A:110:105:100:105:110:120:135:130:110:100:125
+# Kobold
+A:110:115:120:110:105:110:110:120:110:125: 90
+

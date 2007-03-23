@@ -1,0 +1,387 @@
+# File: terrain.txt
+
+
+# This file is used to initialize the "lib/data/terrain.raw" file, which is
+# used to initialize the "terrain feature" information for the Angband game.
+
+# Do not modify this file unless you know exactly what you are doing,
+# unless you wish to risk possible system crashes and broken savefiles.
+# After modifying this file, delete the "lib/data/terrain.raw" file.
+
+# Note that the terrain feature are grouped into very regular groups,
+# such that each of the bits in the feature type conveys information.
+
+# Note that terrain feature zero contains the "darkness" picture.
+
+# === Understanding terrain.txt ===
+
+# N : serial number : terrain name
+# G : symbol : color
+# M : feature to mimic
+
+# N' indicates the beginning of an entry. The serial number must
+# increase for each new item.
+
+# 'G' is for graphics - symbol and color. There are 16 colors, as
+# follows:
+
+# D - Dark Gray    w - White          s - Gray          o - Orange
+# r - Red          g - Green          b - Blue          u - Brown
+# d - Black        W - Light Gray     v - Violet        y - Yellow
+# R - Light Red    G - Light Green    B - Light Blue    U - Light Brown
+
+# 'M' is the index of a feature to mimic.
+
+
+# Version stamp (required)
+
+V:3.0.6
+
+
+# 0x00 --> <darkness>
+
+N:0:<darkness>
+G: :w
+
+
+# 0x01 --> open floor
+
+N:1:open floor
+G:.:w
+
+# 0x02 --> invisible trap (drawn as open floor)
+
+N:2:invisible trap
+G:.:w
+M:1
+
+# 0x03 --> glyph of warding
+
+N:3:glyph of warding
+G:;:y
+
+# 0x04 --> open door
+
+N:4:open door
+G:':U
+
+# 0x05 --> broken door
+
+N:5:broken door
+G:':u
+
+# 0x06 --> up stairs (perm)
+
+N:6:up staircase
+G:<:w
+
+# 0x07 --> down stairs (perm)
+
+N:7:down staircase
+G:>:w
+
+# 0x08 --> shop -- general store (perm)
+
+N:8:General Store
+G:1:U
+
+# 0x09 --> shop -- armoury (perm)
+
+N:9:Armoury
+G:2:s
+
+# 0x0A --> shop -- weapon shop (perm)
+
+N:10:Weapon Smiths
+G:3:w
+
+# 0x0B --> shop -- temple (perm)
+
+N:11:Temple
+G:4:g
+
+# 0x0C --> shop -- alchemist (perm)
+
+N:12:Alchemy Shop
+G:5:b
+
+# 0x0D --> shop -- magic shop (perm)
+
+N:13:Magic Shop
+G:6:r
+
+# 0x0E --> shop -- black market (perm)
+
+N:14:Black Market
+G:7:D
+
+# 0x0F --> shop -- home (perm)
+
+N:15:Home
+G:8:y
+
+# 0x10 --> visible trap -- trap door
+
+N:16:trap door
+G:^:w
+
+# 0x11 --> visible trap -- open pit
+
+N:17:pit
+G:^:s
+
+# 0x12 --> visible trap -- spiked pit
+
+N:18:pit
+G:^:s
+
+# 0x13 --> visible trap -- poison pit
+
+N:19:pit
+G:^:s
+
+# 0x14 --> visible trap -- rune -- summon
+
+N:20:strange rune
+G:^:o
+
+# 0x15 --> visible trap -- rune -- teleport
+
+N:21:strange rune
+G:^:o
+
+# 0x16 --> visible trap -- spot -- fire
+
+N:22:discolored spot
+G:^:u
+
+# 0x17 --> visible trap -- spot -- acid
+
+N:23:discolored spot
+G:^:u
+
+# 0x18 --> visible trap -- dart -- slow
+
+N:24:dart trap
+G:^:r
+
+# 0x19 --> visible trap -- dart -- lose str
+
+N:25:dart trap
+G:^:r
+
+# 0x1A --> visible trap -- dart -- lose dex
+
+N:26:dart trap
+G:^:r
+
+# 0x1B --> visible trap -- dart -- lose con
+
+N:27:dart trap
+G:^:r
+
+# 0x1C --> visible trap -- gas -- blind
+
+N:28:gas trap
+G:^:g
+
+# 0x1D --> visible trap -- gas -- confuse
+
+N:29:gas trap
+G:^:g
+
+# 0x1E --> visible trap -- gas -- poison
+
+N:30:gas trap
+G:^:g
+
+# 0x1F --> visible trap -- gas -- sleep
+
+N:31:gas trap
+G:^:g
+
+# 0x2x --> locked door (power 0)
+
+N:32:door
+G:+:U
+M:32
+
+# 0x2x --> locked door (power 1)
+
+N:33:locked door
+G:+:U
+M:32
+
+# 0x2x --> locked door (power 2)
+
+N:34:locked door
+G:+:U
+M:32
+
+# 0x2x --> locked door (power 3)
+
+N:35:locked door
+G:+:U
+M:32
+
+# 0x2x --> locked door (power 4)
+
+N:36:locked door
+G:+:U
+M:32
+
+# 0x2x --> locked door (power 5)
+
+N:37:locked door
+G:+:U
+M:32
+
+# 0x2x --> locked door (power 6)
+
+N:38:locked door
+G:+:U
+M:32
+
+# 0x2x --> locked door (power 7)
+
+N:39:locked door
+G:+:U
+M:32
+
+# 0x2x --> jammed door (power 0)
+
+N:40:jammed door
+G:+:U
+M:32
+
+# 0x2x --> jammed door (power 1)
+
+N:41:jammed door
+G:+:U
+M:32
+
+# 0x2x --> jammed door (power 2)
+
+N:42:jammed door
+G:+:U
+M:32
+
+# 0x2x --> jammed door (power 3)
+
+N:43:jammed door
+G:+:U
+M:32
+
+# 0x2x --> jammed door (power 4)
+
+N:44:jammed door
+G:+:U
+M:32
+
+# 0x2x --> jammed door (power 5)
+
+N:45:jammed door
+G:+:U
+M:32
+
+# 0x2x --> jammed door (power 6)
+
+N:46:jammed door
+G:+:U
+M:32
+
+# 0x2x --> jammed door (power 7)
+
+N:47:jammed door
+G:+:U
+M:32
+
+# 0x30 --> secret door
+
+N:48:secret door
+G:#:w
+M:56
+
+# 0x31 --> pile of rubble
+
+N:49:pile of rubble
+G:::w
+
+# 0x32 --> magma vein
+
+N:50:magma vein
+G:%:s
+
+# 0x33 --> quartz vein
+
+N:51:quartz vein
+G:%:w
+
+# 0x34 --> magma vein + treasure
+
+N:52:magma vein
+G:%:s
+M:50
+
+# 0x35 --> quartz vein + treasure
+
+N:53:quartz vein
+G:%:w
+M:51
+
+# 0x36 --> magma vein + known treasure
+
+N:54:magma vein with treasure
+G:*:o
+
+# 0x37 --> quartz vein + known treasure
+
+N:55:quartz vein with treasure
+G:*:o
+
+# 0x38 --> granite wall -- basic
+
+N:56:granite wall
+G:#:w
+
+# 0x39 --> granite wall -- inner
+
+N:57:granite wall
+G:#:w
+M:56
+
+# 0x3A --> granite wall -- outer
+
+N:58:granite wall
+G:#:w
+M:56
+
+# 0x3B --> granite wall -- solid
+
+N:59:granite wall
+G:#:w
+M:56
+
+# 0x3C --> permanent wall -- basic (perm)
+
+N:60:permanent wall
+G:#:w
+
+# 0x3D --> permanent wall -- inner (perm)
+
+N:61:permanent wall
+G:#:w
+M:60
+
+# 0x3E --> permanent wall -- outer (perm)
+
+N:62:permanent wall
+G:#:w
+M:60
+
+# 0x3F --> permanent wall -- solid (perm)
+
+N:63:permanent wall
+G:#:w
+M:60
+

@@ -1,0 +1,66 @@
+# File: font-ibm.prf
+
+#
+# This file is used by Angband (when it was compiled using "main-ibm.c")
+# to specify simple attr/char remappings using a standard font, allowing
+# the use of the IBM's built in pseudo-graphic pictures for walls and such.
+#
+
+
+
+### Terrain Features ###
+
+
+#
+# Floors (white / centered dot)
+#
+
+F:1:1/-7
+
+#
+# Invis traps (white / centered dot)
+#
+
+F:2:1/-7
+
+
+#
+# Magma (slate / special solid block)
+#
+
+F:50:2/-80
+F:52:2/-80
+
+
+#
+# Quartz (light slate / special solid block)
+#
+
+F:51:9/-80
+F:53:9/-80
+
+
+#
+# Secret door (white / solid block)
+#
+
+F:48:1/-79
+
+#
+# Granite walls (white / solid block)
+#
+
+F:56:1/-79
+F:57:1/-79
+F:58:1/-79
+F:59:1/-79
+
+#
+# Permanent rock (white / solid block)
+#
+
+F:60:1/-79
+F:61:1/-79
+F:62:1/-79
+F:63:1/-79
+

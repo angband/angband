@@ -1,0 +1,1008 @@
+Angband 3.0.7s, beta 3
+Suggestions and (more) patches welcomed.
+
+Another, probably mildly annoying, release of Angband "3.0.7s".  This is really
+almost entirely other people's work; thanks go to Hugo Kornelis, Pete Mack,
+Marco K and Frank Palazzolo.  The main gameplay difference is that wands and
+staves now have sensible starting charges again.
+
+Changes:
+- Browsing books now displays information about the spells therein, if
+  requested.  As part of this, move spell names/descriptions/locations
+  out into a new file, spell.txt.  (Hugo Kornelis)
+- If a stack of rods is recharging, you'll get a message when the first 
+  rod is recharged and another message when they are all recharged.
+  There is no message when the second, third, etc., rod is recharged.
+  (Hugo Kornelis)
+- The recharge notification will now disturb you if you have set the 
+  option to be disturbed when boring things happen (disturb_minor) to 
+  yes.  (Hugo Kornelis)
+- Add console mode patch for Windows (Frank Palazzolo).  This is 
+  basically playing the game in an old-school terminal window for
+  those who like uncluttered gameplay.
+- Get "./configure" working properly again (Marco K).
+- Renew Mac support; now works on OS X 10.3 onwards, but the old 
+  main-mac has been removed, as has the MPW makefile.  (Pete Mack)
+- Added support for improved pluralization of object names.  Allow
+  custom plurals for words which need them (e.g. "Kni|fe|ves" and
+  "M|ous|ic|e").  Unused at present.  (Hugo Kornelis)
+- Bugfix: Monsters that resist one or more of acid, lightning, fire, 
+  cold, poison and water *and* resist one or more of nether, plasma, 
+  nexus and disenchantment had two "it resists ..." sentences in the 
+  monster info.  (Hugo Kornelis)
+- Bugfix: Sustain CON was reported before Sustain DEX in self knowledge.
+  Since DEX is reported before CON in all other situations, this is now
+  reversed.  (Hugo Kornelis)
+- Removed Lua.
+- Arrow keys are now distinct from the numeric movement keys, and because
+  of this you can now edit text at prompts in game properly.  Supported
+  on Windows, Mac (untested), and main-gcu.c.  If you get it working for
+  anything else, please tell me so I can update the patch.
+- Charges for wands/staves are customisable in the lib/edit/ files.
+- Autosquelch support.  (Taken originally from NPP, but heavily
+  cleaned up.)
+- Considerably simplify and speed up main-gcu.c.  (Thanks to Christer
+  Nyfalt.)
+- Various code cleanups (including removing VMS support, cleaning up
+  file handling, and fixing memory leaks).
+- main-x11 now reads window placement from x11-settings.prf.
+- Fixed Windows bug where you can't move one of the font files after
+  having played a game this reboot.  (Thanks to Leon Marrick.)
+- Resizing the game window automatically updates its contents, on
+  platforms which support this.
+- 'next_xp' option to show experience needed for the next level,
+  rather than how much you have now (fixed in s2).
+- Inscribing an item with '!t' will now confirm if you try to take it
+  off.
+- Set wrapping width to 72 for character dumps' item information, to
+  avoid well-behaved newsreaders messing them up.
+- Add platform-specific ifdefs to readdib.c and main-ami.c.
+- Add the recharging fix from V CVS -- things can now explode when you
+  recharge them once more.
+
+
+Changes Angband 3.0.6:
+- Wands and staves are no longer destroyed when a recharge attempt
+  backfires.  Instead all the charges are drained.
+- Renamed the artifact short sword 'Gilettar' to 'Dagmor' since that
+  name is mentioned for the sword of Beren in Tolkien's notes.
+  (suggested by Tyler Witter)
+- Added a new type of subwindow for displaying the dungeon area around
+  the player.
+- Added a new subwindow type "Display player (compact)" that displays
+  the left-hand-side of the main term (player stats, hitpoints, gold,
+  ...) in a separate window.
+- Added a new window type that displays the info from the status line.
+- Turned the "scroll map while targetting" option permanently on.
+- Added a display of the temporary resists to the status line.  The
+  resists are only displayed if there is enough room after the dungeon
+  level (when using a main or status term with at least 85 cols).
+  The verbosity of the output (between "Acid Elec Fire Cold Pois" and
+  "AEFCP") depends on the term width.
+- Display the player's speed in the character dump and on the info page.
+- Identified scrolls can now look different from unidentified ones.
+  This allows the use of the individual scroll tiles created by David
+  Gervais.
+- Allow the ammo-branding activation of 'Cubragol' to be aborted without
+  using up the charge. (Diego Gonzalez and Jeff Greene)
+- Use actual monster and object symbols instead of a list of hardcoded
+  symbols when hallucinating.
+- Added Craig Oliver's Sound FX Patch version 1.1 that adds about 120
+  new sound events to the game.
+  (see also http://www.chambrook.org/angband/soundfx.php)
+- Scroll the map when the player is 1/4th of the visible grids away from
+  the edge of the map display.
+- Allow the OS X version to be started from a read-only medium, for
+  example from a disk image or a central installation under
+  'Applications'.  All user-specific files like savefiles, scores,
+  char-dumps, and saved preferences are stored in
+  'Library/Preferences/Angband/' and its subfolders inside the user's
+  home directory.
+- The Mac OS X application bundle now includes all the necessary files
+  from the lib folder.  The separate lib folder in the distribution is
+  no longer necessary.  This means that the OS X version can now be
+  installed by simply dragging the application icon to the target
+  directory.
+- The OS X version would crash when changing the sound or graphics
+  options before a character was created or loaded. (reported by Patrick
+  Hughes)
+- Don't save the Mac OS X preferences on exit if the game hasn't been
+  initialized properly to prevent corruption of the preference file in
+  case of an error at startup.  Skip loading the preference file if it
+  is broken. (problem reported by Matt Stone)
+- Include the basic Angband sound files per default in the OS X version.
+- Made the tile size independent of the font size in the X11 version.
+  Store various window settings like the window size between sessions.
+- Don't add a hardcoded 'games' subdirectory to the installation path on
+  multi-user machines.
+- Allow all user created files to be saved in subdirectories under
+  ~/.angband/Angband/ when PRIVATE_USER_PATH is defined.
+- Allow the use of the 'vcs' display module on systems with devfs-style
+  '/dev/vc/*' terminals.
+- The virtual console (vcs) front-end does now implement cursor
+  visibility and bigscreen support.  (Alexander Ulyanov)
+- Enable cursor visibility in the "gcu" front-end on Linux systems.
+  (Alexander Ulyanov)
+- Fixed a bug in the Xaw frontend, which made Angband crash if the main
+  window geometry was specified as an X resource. (Alexander Ulyanov)
+- Make X11 frontends show floors as centered dots, walls as blocks, and
+  treasures as diamonds. (Alexander Ulyanov)
+- Removed the restriction of bigtile mode to the main window in the X11
+  version.
+- Added Alexander Ulyanov's Linux framebuffer display module from:
+  http://posband.earthsea.org/misc/angband-lfb-20050220.tar.gz
+- Added compile instructions for MinGW/MSYS on Windows. (Tuomas
+  Härkönen)
+- Added compile instructions for gcc on Mac OS X.
+- Fixed a stupid bug that could cause the game to hang or crash when
+  killing quest monsters near the edge of the dungeon. (Ivan Tuckwell
+  and Dr. Andrew White)
+- Added missing tiles and tile assignments for the 32x32 tiles. (Ivan
+  Jekic and David Gervais)
+- The charges of rods of perception weren't handled correctly when
+  compiling with scripting turned off. (reported by "Twilight" and Jeff
+  Greene)
+- Cursed speed rings should not increase the level feeling. (Anssi
+  Ramela and Jeff Greene)
+- Refresh the list of visible monsters after (Mass) Banishment,
+  Earthquake, and Destruction spells, when using the 'delete nearby
+  monsters' function in debug mode, as well as when pressing Ctrl-R.
+  ("Twilight")
+- Don't try to write zero-length blocks when saving the lib/data/*.raw
+  files. (suggested by Juha Niemimaki)
+- Corrected the item description for scrolls of recharging. (reported by
+  Hugo Kornelis)
+- Fixed a Angband 3.0.6 alpha 1 specific crash with the Mac OS X 10.4
+  (Tiger) caused by releasing a reference that should not be released.
+  (reported by Harry Erwin)
+- The experience loss as a result of one of the One Ring's activations
+  is now 1/4 of both max and current experience instead of the
+  unintended reduction of max exp by 3/16 of the current experience.
+  (Hugo Kornelis)
+- Cleaned up the handling of experience draining when the player has
+  Hold Life. The fixed part of the exp drain by nether breaths is now
+  also reduced by Hold Life. (Hugo Kornelis)
+- The 'star ball' activation fired one ball more when scripting was
+  enabled.  (Hugo Kornelis)
+- The object description for the 'cure wounds' activation reads
+  "activates for cure wounds (4d7)", but it actually cures 4d8 points of
+  damage.  The description has been fixed. (Hugo Kornelis)
+- The "recharge item" artifact activation can now be canceled at the
+  "Recharge which item" prompt without draining the artifact's charge.
+  (Hugo Kornelis)
+- The symbol for the Shield of Deflection was a light blue [ instead of
+  a ) like all other shields. (Hugo Kornelis)
+- Reduced the price for "Raal's Tome of Destruction". (Hugo Kornelis and
+  Timo Pietila)
+
+Changes in Angband 3.0.5:
+- Summoned creatures appear near the caster now instead of near the
+  player.
+- Made rods of detection invulnerable to electric attacks.
+- Restored the old behavior of the Glyph of Warding to protect against
+  direct melee attacks when standing on it.
+- Rods can no longer be drained by monsters.
+- The minor vault "Interlock" had switched height and width definitions,
+  causing it to be created in a chaotic state. (Werner Baer)
+- Spells that prompt the user for an item (identify, enchantment,
+  recharging) or an monster letter (banishment) no longer use mana if
+  canceled.
+- The order of mage spells in the books in the non-Lua version is now
+  the same as in the Lua version.
+- Give energy to monsters and the player at the end of the game turn
+  instead of at the start.  This prevents various odd effects when
+  loading a saved game. (reported by Phil)
+- The activation descriptions for rings were missing with Lua scripting
+  turned off. (Jeff Greene)
+- The SHATTER (earthquake) attack of monsters can cause the player to be
+  pushed into another position.  Processing of the remaining blows of
+  the monster should stop in that case. Otherwise the player could get
+  hit "through a wall" that was created by the earthquake. (Jeff Greene)
+- Removed the autoroller delay.
+- Cleaned up the paragraph handling in the object descriptions.
+  (Hallvard B Furuseth)
+- "It cannot be harmed by acid and fire" should be "... acid *or* fire".
+  (Hallvard B Furuseth)
+- Piles of wands, staves, and rods can be used from the ground without
+  picking them up first.
+- Fixed a problem in the Unix/Linux makefiles.  The POSIX standard
+  doesn't allow a dot instead of a colon as separator for the chown
+  parameters.
+- Removed an accidental use of floating point code that prevented
+  Angband from running on old machines without an FPU.
+- Removed unnecessary event handlers that negativly affected performance.
+- The "pseudo graphics" used by the (n)curses version didn't support
+  terrain lightning correctly.
+- The window resize control was sometimes overwritten with a black tile
+  in the OS X version.
+- Removed the warning message about missing preferences from the OS X
+  version.  The first thing a new player sees after starting Angband
+  shouldn't be a "scary" message.
+- Added a Windows helpfile created by Jordan Hobbs.
+- Added project files for building Angband with MS Visual C++ 7.1.
+  (Tasha Jessup)
+
+Changes in Angband 3.0.4:
+- Made the water vortex immune to water-based attacks.
+- Chaos resistance protects against confusion by chaos based attacks.
+- Smoothed out the tables for extra mana-points per level, hitpoint
+  bonus from constitution, "spells per level" vs. "spell stat", and
+  INT/WIS dependent failure rate adjustment.  The old steps have been
+  replaced by a steady increase, so small stat improvements are more
+  useful.  Please note that this will also affect characters imported
+  from older versions, so these might gain or lose some spells, mana,
+  and hitpoints when imported into Angband 3.0.4.
+- Gave the 'thanc daggers a 2d4 damage dice instead of 1d4 and made them
+  more common. (Jonathan Ellis)
+- Gave each of the Paur* gauntlets a single minor power (slow-digestion,
+  regeneration, permanent light, feather fall) and made them more
+  common. (Jonathan Ellis)
+- Rods, wands, and staves with different charges can now be stacked.
+  (based on the NPPAngband version that in turn is based on
+  Leon Marrick's rod/wand stacking in OAngband.
+- Rods can't be recharged anymore, but can be vulnerable to electricity.
+- Rods of Recall, Perception, Curing, Healing, Restoration, and Speed
+  will not be destroyed by electricity.
+- Made Raal's Tome of Destruction more, and Kelek's Grimoire of Power
+  less common. (Timo Pietilä)
+- Heavy crossbows no longer can get the 'of the Haradrim' suffix and
+  'light crossbows of the Haradrim' get a smaller damage bonus. (Timo
+  Pietilä)
+- Removed fire brand from ammo 'of Holy Might'. (Timo Pietilä)
+- Give the short range teleport effect from gravity attacks on monsters
+  an additional 1 in 3 chance to teleport the monster away.  This should
+  make abusing the Rift spell a bit harder.
+- Added a level dependent chance to resist the teleportation effect of
+  gravity attacks for monsters and the player. (suggested by Jonathan
+  Ellis)
+- Junk items like broken sticks, empty bottles, and rodent skeletons are
+  no longer generated in the dungeon.
+- Removed the old haggling code.  The auto-haggling code is now
+  permanently active and will give the normal price of items without the
+  10% "sales tax".
+- Replaced the old screendump code with HTML screendump code that
+  handles graphics, bigscreen, bigtile, and other display oddities much
+  better. (based on the htmldump-patch by Darkgod).
+- Added support for artifact and ego-item descriptions. (with help from
+  Hallvard B Furuseth)
+- Added artifact descriptions.  The texts are mainly taken from OAngband
+  and other variants. (Jonathan Ellis)
+- Added object descriptions assembled by Hallvard B Furuseth.  The
+  descriptions are mostly copied from obj-long.spo version 3.0.2 by Hugo
+  Kornelis, Stephen S. Lee, Leonard Dickens and Craig Lewis.
+- Added ego item descriptions for some ego types. (Hallvard B Furuseth)
+- "Easy open" ignores broken doors now when trying to close doors.
+- Added the equipment flag matrix to the character dump.
+- Added new 8x8 tiles and tile definitions provided by "Dawnmist".
+- Added the player's maximum depth in the dungeon to the character
+  display and the dump.
+- Removed several broken tile definitions for the 32x32 tiles.
+- Use the proper monster flags instead of workarounds for various
+  resists and immunities.  This also allows the reporting of these flags
+  in the monster recall and the spoilers. (pointed out by Leon Marrick)
+- You can now use either 'm' or 'p' to cast spells or pray.
+- Allow direct melee attacks on visible monsters in walls.  You still
+  have to tunnel into the wall if you are trying to attack an invisible
+  monster. (suggested by Greg Stark)
+- Show infos like "It cannot be harmed by the elements." when
+  'Inspecting' books, just as for other item types.
+- Changed the behavior of the 'auto_more' option, so that it
+  automatically skips '-more-' prompts instead of not displaying
+  messages on the top line. (Tom Houser)
+- Changed the "Do you really want to quit?" prompt to "Do you really
+  want to commit suicide?".
+- Added a 'show scores' command to the knowledge menu.
+- Changed the wording for the scores display a bit.
+- Added the kill count of non-unique monsters to the knowledge menu.
+- Added a modified version of Mogami's macro trigger patch. This patch
+  modifies how macro trigger keys are displayed on screen and written in
+  .prf files.  The trigger keys are no longer displayed in ugly key code
+  style, such like ^__FFBE\r or ^_O_FF53\r, but in more smart style,
+  such like \[F1] or \[alt-Right].
+- Added a better character selection screen with support for using the
+  cursor keys, display of info about the various race and class choices,
+  and context sensitive help.  The code is based on the EyAngband's
+  birth screen that again is probably based on ZAngband's birth screen.
+- Select the sex, race, and class choices from a dead character as
+  defaults for a new character.
+- Added a stripped down version of Takeshi Mogami's "auto_dump" feature
+  from Hengband.  Automatic pref file dumps from the game are now
+  marked, so that they can be replaced when dumping to the same
+  pref-file again.
+- Allow the banishment spell to be aborted at the "Choose a monster race
+  to banish" prompt without using up a scroll or charge.
+- Added John Rauser's monster list patch that allows the user to display
+  a list of the visible monsters in a window.
+- Improved the navigation in the help files.
+- Recharging wands or staves that have been fully *identified* before
+  will now automatically reveal the new number of charges in the device.
+  This fixes a bug where an already *ID'ed* wand or staff couldn't be
+  *ID'ed* again after recharging (but plain ID works), despite the
+  number of charges being unknown. (bug reported by Eddie Grove)
+- text_to_ascii() didn't check that the characters used in \xAB
+  sequences represent real hex characters.  Invalid hex sequences are
+  now converted to the '?' character. (reported by Kieron Dunbar)
+- Improved the handling of incomplete '\x' sequences in macros.  The old
+  code could skip the final NUL-byte of the string if it ended with
+  '\x', leading to a potential buffer overflow.
+- Fixed a typo in the description of the "wild cat". (Jay McAbee)
+- Monster groups ignored their fear when the smart_packs option was
+  turned on. (reported by Eddie Grove)
+- Rods and staves of probing are no longer automatically identified when
+  used without a monster nearby. (reported by "someog")
+- Prevent the player from being hit multiple times by area effect spells
+  and breaths that can blink the player (nexus, gravity).
+- The player can now get a level feeling when entering level 1 without
+  spending 1000 game turns in town first. (Tom Houser)
+- Branding ammo or weapons will now automatically try to combine and
+  reorder the resulting objects, even if the enchantment of to-hit and
+  to-dam fails. (reported by John D. Goulden)
+- Try to output minor warning messages (such as "illegal option choice"
+  when selecting a non existing item for a command) as soon as possible.
+  (reported by "Mogami")
+- Show all minor error messages immediately in the message window.
+- The effects of light spells are only obvious if you aren't blind.
+- Wands and rods of light don't give a message and aren't automatically
+  identified when using them while blind. (reported by Steve Kroon)
+- Refilling a latern from a stack of laterns will now only use the oil
+  from one latern, not from the whole stack. (reported by Jay McAbee)
+- Prevent earthquake/destruction spells from working in town.  This
+  prevents inappropriate messages (like "The cave ceiling collapses!").
+- Automatically try to load the "Kobold.prf" file at startup if the
+  player is a Kobold.
+- Improved the output of item and monster descriptions in spoilers and
+  character dumps.  In some cases punctuation and spaces were wrapped to
+  the next line.
+- The basic object spoilers only reported the prices for unidentified
+  items.  (reported by Hugo Kornelis)
+- Only print the "You feel (less) resistant to ..." messages when not
+  immune to the specific element. (reported by Jeff Greene)
+- The cursor keys in the X11 ports behave the same way now, no matter if
+  num-lock is on or off.
+- Change colors in main-gcu.c. This is Dominik Grzelak's patch to change
+  bright white from blue back to bright white. (Ed Cogburn)
+- Added a workaround for a bug in the curses version with USE_GETCH.
+  The news.txt screen was erased by the first call to the getch()
+  function. (Frank Palazzolo)
+- Angband consumed 100% of the cpu while waiting for a keypress in the
+  GTK port. (Sheldon Simms)
+- Allow text to be copied from the game window in the X11 port.
+  (modified version of the code in Kieron Dunbar's sCthangband 1.0.10)
+- Added transparency support to the 32x32 tiles in the Windows port.
+  This requires a modified tiles bitmap and a new transparency mask
+  originally created by Andrew Doull:
+  ftp://clockwork.dementia.org/angband/Extra/graf-32x32-304.zip
+- Removed the hackish 'Show scores' menu entry from the Windows version.
+  Use the new knowledge menu entry instead.
+- Applied lots of Mac specific patches by "pelpel".
+- Allow initialization of the game to continue, even if the
+  lib/data/*.raw files can't be written.  In that case the data parsed
+  from the lib/edit/*.txt files stays in memory and is used instead of
+  the *.raw data.  This currently wastes some memory, since the text
+  arrays are not resized to the minimum required length.
+- Added a performance tweak for the Angband Borg.
+- Increased the data-type of the shopkeeper purse limit from signed
+  16 bit to signed 32 bit.  This will allow shopkeepers with a higher
+  limit than 32768 gold to be added.
+- Added a compile time option to store the savefiles and scores in the
+  player's home directory (under ~/.angband/Angband/) on multi-user
+  machines.
+- Use a different delay function in the DOS version that works around
+  the restricted 55ms resolution on Windows 2000 and XP.
+
+Changes in Angband 3.0.3:
+- Reduced the size of the 32x32 tiles bitmap.  The smaller bitmap should
+  fix the problem on older Windows versions (Windows 95 and 98) with
+  restrictions of the maximal bitmap size .
+  The tiles are available as a separate download from:
+  ftp://clockwork.dementia.org/angband/Extra/graf-32x32-302.zip
+- Fixed a bug in the text-output routines used for character dumps that
+  sometimes introduced bogus output. (reported by Pasi Vartiainen)
+- Fixed a wrong entry in the template for the X11 startup shell script.
+  ("Mynstral")
+- Fixed the display of *slays* in character dumps. (Matthias Kurzke)
+- The "It might have hidden powers." message will now displayed in the
+  character dumps.  This makes it easier to see if an artifact or ego-item
+  with random abilities has already been *identified*.
+- Curses on unidentified items are no longer revealed in character dumps or
+  in the output of the 'Inspect' command.
+- Fixed a typo - "intellegence". (Greg Stark)
+- Updated the DOS version to compile with the latest version of the Allegro
+  library.
+
+Changes in Angband 3.0.2:
+- Limited the maximum size of floor stacks to 23, so that get_item() can
+  always display a list containing all objects.
+- Renamed 'genocide' to 'banishment' and 'mass genocide' to 'mass
+  banishment' since that name fits much better to the effect.  The priest's
+  'banishment' spell has been renamed to 'banish evil' to avoid confusion
+  and since that is what it actually does.
+- Replaced silver arrows and bolts with mithril ammo since slay evil was
+  too powerful.
+- Changed the color of seeker bolts to green since there are so many 'light
+  blue' ammo objects now.
+- 'Golden staves' had the wrong color. (John I'anson-Holton)
+- Improved indentation of the object descriptions in the character dump.
+  (Andrew Sidwell)
+- Destruction/Earthquake spells didn't properly destroy stacks of objects.
+  After saving and loading the game, parts of the stacks were restored.
+  (reported by Matthias Kurzke)
+- Zapping a stack of recharging rods would instantly recharge all but one
+  of them. (Tormod Haugen)
+- Fixed an error in the LCC Makefile.
+- Fixed an off-by-one error that prevented savefiles with the maximum
+  number of monsters or objects from loading correctly. (Takeshi Mogami)
+- Fixed an abuse that allowed the player to kill a monster with a ball
+  spell by staying out of sight and detection range of the monster while
+  the monster just patiently waited without ever getting a turn (reported
+  by Tormod Haugen).  Wounded monsters will now always get their turn, even
+  when out of range.
+- The Elfstone 'Elessar' and the Jewel 'Evenstar' have the INSTA_ART flag
+  now to make the APW-Borg happy.
+- Amulets of resistance are now fully known after identifying one for the
+  first time. (Dr. Andrew White)
+- The option for flushing of pending input when failing to cast a spell
+  didn't work.
+- Fixed several bugs in the scorefile handling that could lead to
+  duplicated entries for a single character. (reported by Hallvard Furuseth
+  and Mauro Scarpa)
+- Unified the code for object infos and artifact spoilers. (Andrew Sidwell)
+- Added event-handler code to call Lua functions when things happen	in the
+  game.
+- Allow multiple Lua event handlers per event.
+- Moved the generation of the player's fixed starting equipment (food and
+  torches) to a Lua event handler.
+- Which objects a store will buy and sell is now determined by a Lua
+  script.
+- Added various improvments to make finding errors in Lua code easier.
+- The lib/edit/*.txt files can now optionally contain the names of the
+  default object, monster, terrain, and flavor colors instead of just a
+  character specifying the Angband color code.
+- Changed the format of the flavor.txt file to make parsing easier.
+- Allow the use of the Angband version number in conditional statements of
+  the *.prf file format.
+- Added Takeshi Mogami's bigtile patch that allows tile-graphics to have
+  doubled width.
+- Added support for David Gervais' 32x32 tileset to the Windows, X11, and
+  XAW ports.  The tiles are available as a separate download from:
+  ftp://clockwork.dementia.org/angband/Extra/32x32.zip
+  (Takeshi Mogami)
+- Improved the error message when a font can't be loaded in the X11 and
+  XPJ frontends.
+- Fixed a memory leak when switching between the various tilesets in the
+  Windows version.
+
+Changes in Angband 3.0.1:
+- Added support for creating ego-item light-sources in ego_item.txt.
+- Added bigscreen support to main-gcu.c. (pelpel)
+- Check the panel-bounds more carefully to prevent problems when using
+  a huge main window (heigher or wider than the dungeon).
+- Added the missing error message for a vault that is too big.
+- Applied the bugfixes from the new Lua 4.0.1 release. (Lua devteam)
+- Added a boundary check to the macro adding code to prevent crashes
+  when defining more than the maximum number of macros. (Eytan Zweig)
+- Fixed various potential buffer overflows.
+- Updated the Makefile for the lcc-win32 compiler and added compile
+  instructions to compile.txt.
+- Added x-spell.o and use-obj.o to various Makefiles and fixed some
+  missing dependencies. (Hallvard B. Furuseth)
+- my_strnicmp() in main-ros.c was quite buggy. (Hallvard B. Furuseth)
+- The islower(), isupper(), ... and the tolower() and toupper()
+  functions take an 'int' as the argument but actually expect it to be
+  an 'unsigned char' or EOF.  We now cast the argument to 'unsigned
+  char' to prevent breakage with 8-bit character data on hosts where
+  'char' is signed.  (based on the patch by Hallvard B. Furuseth)
+- Fixed an off-by-one error when checking if playing Angband is allowed
+  at this time of day. (Hallvard B. Furuseth)
+- Fixed the activation of 'The Shield of Deflection of Gil-galad'.
+- Show the 'cursed' flag of artifacts in the spoilers. (KUSUNOSE Toru)
+- Fixed a bug that allowed changes to the 'birth_no_stacking' birth-
+  option to affect the current game. (KUSUNOSE Toru)
+
+Changes in Angband 3.0:
+- Added Jonathan Ellis' JLE patch that adds a new player race
+  ("Kobold"), many new artifacts, vaults, monsters, objects, and
+  ego-items; rebalances the gameplay; and adds a new color scheme for
+  monsters.
+- Added some new object flags ("kill demon", "kill undead"),
+  activations, monster attacks ("cause halluzination") and monster
+  spells/abilities (summon animal, throw boulder) for the JLE patch.
+- Replaced the Mage, Rogue, and Ranger spell-lists with the spell-list
+  from Greg Wooledge's GWAngband. This gives magic-users a much broader
+  range of attack-spells to choose from including chaos, nether, sound,
+  shards, and gravity effects.  Other big changes are the removal of
+  the 'Globe of Invulnerability' and the addition of 'Rune of
+  Protection'.
+- ***** WARNING *****: All spells known by magic-users are discarded
+  when importing an old savefile, so that the player can choose freely
+  from the new spell-list.  Don't forget to relearn your spells before
+  trying to use them.  Macros/keymaps with old spells probably won't
+  work anymore - change them if necessary.
+- Standing on a glyph no longer protects the player from melee
+  attacks.
+- Increased the range of infravision granted by potions of
+  infravision to +5.
+- Increased the damage of many wands and rods.
+- The player can now reset the recall depth when recalling from a
+  level above the deepest reached level.
+- Adjusted the damage caps for various breath attacks. (JLE)
+- Made the light radius cumulative.
+- Added the Lua scripting language < http://www.lua.org/ > for easier
+  customization.  Currently the scripts handle the effects of using
+  objects such as staves, wands, rods, potions, scrolls, food, and
+  activatable objects.  The player-spells are also defined in a script.
+- Added support for object descriptions that are displayed when
+  examining objects.
+- Moved the item flavors into an external file and added *.prf files
+  for the flavors.
+- Added message compression ("You tunnel into the granite wall. <5x>").
+- Added a display of the player's current equipment aka "equippy chars"
+  to the main screen.
+- Various prompts at player birth use 'Enter' instead of 'ESC' now.
+- Added a no-item-stacking-on-floor birth-option.
+- Improved the layout of the store prompts a bit.
+- Added basic support for a bigger main window (bigscreen). Note that
+  the town will be regenerated when loading an old savefile, so don't
+  leave any objects on the floor when you upgrade your savefile!
+- Added support for a hitpoint-warning sound effect.
+- You can now browse books in the stores.
+- Reorganized and cleaned up the list of options.
+- The known uniques list is now separated into two columns to make it
+  easier to read. One column for the names and one for the
+  "is dead/alive" text.
+- Allowed examining multiple items without having to return to the
+  tombstone screen.
+- Added an option to review messages to the tombstone.
+- Changed the keys to view high scores from 't' to 'v' and allowed
+  upper case for each of the options in the tombstone screen.
+- Added color to the monster recall.
+- Allowed using the roguelike keyset to navigate in the options screen.
+- Savefiles from pre-2.9.0 versions are no longer accepted.
+- Replaced the old (Acorn) RISC OS code with a newer version.
+- Added new VisualC++ 6.0 project files provided by Peter Rowe.
+- The default number of windows for the GTK port is now 1 instead of 8.
+- Fixed a crash-bug on WinXP machines when reading the filenames of
+  sounds. (Werner Baer)
+- Executables build with configure under Cygwin no longer require the
+  Cygwin DLL.
+- Added the latest Amiga code (Bablos).
+- Fixed a possible crash when searching disarmed chests for traps.
+- Monsters draining large stacks of wands or staffs could get negative
+  hitpoints due to the overflow of a signed 16 bit variable.
+- Fixed the problems with the 'repeat command' command.
+- Bounds-checking for detection spells and some wizard mode commands
+  was missing.  That could cause crashs when resizing the Terms.
+- 'Interact with visuals' could display negative char numbers.
+- Don't partially repair blasted equipment when loading the savefile.
+- Fixed a bug that caused an infinite loop in the RNG when the u32b
+  type has more than 32 bits.
+- The confirmation for wizard mode was required every time wizard mode
+  was switched on.
+- Vaults could sometimes have up to 9 times the requested number of
+  monsters.
+  Improvements by Hallvard B Furuseth:
+- Running 'angband --help' will now display basic usage info.
+- Problems with the lib/ folder were not correctly reported when using
+  the (n)curses interface.
+- Fixed a minor problem with curses on machines with signed-chars.
+- Fixed a possible integer overflow in the gamma correction code on
+  16 bit machines.
+- Various bugfixes and improvements in the SLang, XAW, VME, VCS, GCU,
+  XPJ, Acorn, and GTK frontends.
+- Several changes to the autoconf support like better handling of
+  "--with-libpath=<path>", better detection of the Athena Widget set,
+  compiling GTK versions with "--enable-gtk", and the result of the
+  usleep() detection is now actually used.
+- Fixed a compatibility problem with 64 bit machines.
+- Corrected two wrong option names in the help files.
+
+Changes in Angband 2.9.3:
+- Rogrog the Black Troll resists acid instead of cold.
+- Algroths resist poison.
+- Moved the player-class info to an external lib/edit/p_class.txt file.
+- Unified parts of the *_info.txt parsers.
+- Improved the error-messages when parsing *_info.txt files.
+- Examining an item that ignores all elements now shows "It cannot be
+  harmed by the elements." instead of one line for each element.
+- Updated the documentation for the lib/edit/*.txt file formats.
+- The randart info is now stored in the savefile.
+- Various command-line options like wizard- and fiddle-mode are now
+  available from the *.ini file of the Windows version.
+- Improved the GTK, X11, and XAW ports.
+- The cursor in the X11 and XAW modules is a rectangle, instead of a
+  filled box.
+- Made the windows of the XAW module resizable.
+- Added Steven Fuerst's X11 projected view (start with -mXPJ where
+  available).
+- Potions of life will now restore stats before healing to provide full
+  health even if CON was drained.
+- Added the Linux vcsa display driver written by Alexander Malmberg.
+- Gave the *_info.txt files more meaningful names.
+- The EASY_KNOW flag is no longer hardcoded for various item types.
+- Added a workaround for a bug in the Borland compiler for Windows.  The
+  game crashed when parsing an lib/edit/*.txt file containing 11 player
+  races.
+- Fixed a bug that could cause the random artifacts to be different
+  depending on the used compiler and optimizations.
+- Replaced several magic numbers with the proper constants.
+- The lesser vault "Planet X" was labeled as greater vault.
+- If a custom player race has both an elemental immunity and resistance
+  then only the resistance was shown in the character display grid.
+- Fixed a typo in the "bless" spell.
+- Ego-items generated in vaults should now be of the proper level.
+- Used staircases are now always marked as known when the connected_stairs
+  option is turned on.
+- Added a new macro action that stops macro execution when the game is at
+  a prompt, and is ignored otherwise.
+- One type of cross shaped rooms was never been generated.
+- The error checking when parsing artifact.txt, ego_item.txt, monster.txt,
+  and p_race.txt didn't warn about duplicated entries.
+- It's now possible to create junk items in wizard mode.
+- The easy_open option no longer counts doors under the player when
+  determining which door to close.
+- The cheat_know option marked monsters as known even after it was turned
+  off.
+- The experience gained from killing monsters was sometimes incorrect
+  after tweaking the maximum experience in wizard mode.
+- The spell-info for the mage's fire-bolt spell was used for the stone to
+  mud spell.
+- Examining an item in the home displayed the item as if it was
+  identified, even if it wasn't.
+- The Windows version didn't exit correctly when starting with a savefile
+  from the command-line.
+- Pref files for player races were not loaded automatically.
+- Fixed a compile problem in the Windows version when USE_GRAPHICS is
+  turned off.
+- The random selection of sound samples in the Windows and DOS version got
+  non-random after a while.
+- The message when dropping a known artifact is now something like "You no
+  longer have the Golden Crown of Gondor" instead of "You have no more
+  Golden Crowns of Gondor".
+- Finding out that a wand or staff has no charges left didn't update the
+  inventory window.
+- Attacks that didn't do any damage could sometimes scare wounded monsters.
+- Monsters at 1% of max hps got frightened less often than monsters with
+  10% hps left.
+- The item flag descriptions when tweaking items in wizard mode are now
+  correct.
+- Removed the special handling for weapons of Morgul and ammo of backbiting.
+- Moved the "Lesser vault" and "Greater vault" strings into the source.
+- The get_string() and askfor_aux() functions now use the 'len' argument
+  as the buffer size instead of the maximum length of the input string.
+- Corrected the message when encountering an error while parsing a
+  lib/edit/*.txt file.
+- The path_temp() function is no longer compiled if mkstemp() is
+  available.
+- Removed a hack for the curses module of some BSD versions.
+- Fixed some problems on BSD machines with the ACS macros for the special
+  curses font symbols.
+- The *_info.txt parsing routines can now be turned off with the
+  ALLOW_TEMPLATES #define.
+- The *.prf file loading code checks for invalid message colors.
+- Fixed the inversed logic for handling tabs in files.
+- Changed the title of the 'Known artifacts' list to the more truthful
+  'Known (or lost) artifacts'.
+- Changed the message when looking at un-*id*'ed artifacts/ego-items to
+  "It might have hidden powers.".
+- Changed the monster memory info when you have avenged your ancestor to a
+  gender-neutral form.
+- The error message "Couldn't allocate bitmap color" in the X11 version
+  displayed an uninitialized colour name.
+- Corrected the names of some options in the documentation.
+- Fixed some errors in the lsl module, but it's still buggy.
+- Improved the autoconf support. The Cygwin compiler is now supported,
+  detection routines for the X11, XAW, and GCU modules have been improved,
+  DESTDIR is now supported, and a workaround for a bug in some versions of
+  the GCC compiler is turned on.
+- Cleaned up the source code and some of the Makefiles.
+
+Changes in Angband 2.9.2:
+- Fixed several security problems (buffer overflows, tempfile-races,
+  reading files that the player has no permission to read, and incorrect or
+  missing bounds-checking).
+- Splitted the lib/user/ folder into lib/pref/ for the default "pref files"
+  that are distributed with the game, and lib/user/ (or ~/.angband/Angband/
+  on multi-user systems) for files created by the user.
+- Added extra status information (stunned, asleep, ...) when looking at
+  monsters.
+- Added context sensitive help to the options screen (press '?' to get info
+  about an option).
+- Made the "hitpoint warning" message orange by default, so that it's
+  easier to spot.
+- Updated the helpfiles a bit.
+- The names of the generated vaults are now displayed when the cheat_room
+  option is turned on.
+- Added support for poison branded ego weapons (but no poison branded
+  weapons exist yet).
+- The helpfile display now supports links to specific sections of a
+  helpfile.
+- The helpfile display, knowlegde screen, and message history can now
+  use screens bigger than the default 80x24.
+- The dungeon coordinates are now displayed when targetting in wizard mode.
+- Improved error-checking for savefile loading and *_info.txt parsing.
+- Intrinsic immunities of the player are now displayed in the character
+  sheet.
+- The "known uniques" list displays the number of killed uniques.
+- Fixed a bug that messed up the description of the "genocide" artifact
+  activation.
+- The activation of Avavir works correctly now.
+- The Bubbles vault no longer has inaccessible areas.
+- Changed the description for experience drain attacks of monsters.
+- The random character generation restricts the class to the "legal"
+  choices for the player's race.
+- The "word of recall" artifact activation didn't check the ironman option.
+- Exiting Angband explicitly frees all allocated memory now.
+- Artifacts are now inscribed {indestructible} when the player tries to
+  destroy them and pseudo-id can improve this to {special} or {terrible}
+  later.
+- Killing Morgoth will now create a down staircase.
+- Increased the variable size for the weight carried by the player to
+  prevent problems with carrying huge amounts of stuff.
+- The debug mode command to change the number of items does now properly
+  adjust the weight carried by the player.
+- The game is now saved before printing the tombstone, not after.  That
+  makes cheating by killing the process a little bit harder.
+- The input is now flushed before verifying casting prayers or spells
+  without enough mana to prevent accidential "overcasting".
+- Fixed a bug that prevented redefining the keymaps of the number keys from
+  working correctly if the keymap contained another number.
+- Fixed a bug that allowed the player to see the flavor of an item in a
+  store when examining it.
+- Fixed a bug that sometimes didn't update the maximum player level
+  correctly.
+- Made the 'Crown' vault a "Greater vault".
+- Marked the 'randomize artifacts' options as "beta".
+- Corrected the displayed duration for "essence of speed" and "globe of
+  invulnerability".
+- Fixed a bug that could cause the initial offer required when haggling
+  to be wrong.
+- Fixed a rare bug that could cause the game to lockup when resting in town
+  for a long time.
+- Fixed the formatting of the object spoilers.
+- Completely changed the window resizing behaviour in the Windows version.
+- Added support to use Angband+APWBorg as a screensaver in Windows.
+- Added support for the new version of the Cygwin compiler for Windows.
+- Menu entries in the Windows version are now disabled in situations where
+  they don't make sense.
+- Fixed a bug in the DOS version that caused midi-file playing to stop
+  after the first song.
+- Updated the Amiga files.
+- Fixed a compile problem in the Mac version.
+- The loading of bitmap files in the X11 version is no longer dependent on
+  the byte-order of the machine.
+- Improved the speed of the gamma-correction code in the X11 version.
+- Added autoconf support (beta) for Unix/Linux.
+- Added a compile time option to prevent users from changing the path to
+  the Angband files.
+- Added very basic support for GTK+.
+- Exiting the curses version properly cleans up the term now.
+- The X11/XAW version starts with only one window by default.
+
+Changes in Angband 2.9.1v2:
+-Fixed a bug that allowed the player to gain info about unidentified
+ items.
+-Changed the default color definition of "light red" so that it doesn't
+ look so similiar to "red".
+-The gamma-correction code in the Windows version now works correctly.
+
+Changes in Angband 2.9.1:
+-Added color coded messages and more sound events.
+-Allowed the modification of the various *_info.txt limits without
+ recompiling.
+-The lib/data/*_info.raw files will be automatically rebuild when the
+ lib/edit/*_info.txt files are changed.
+-The monster spoilers and the list of known uniques sort the monsters now.
+-Made player races, player history, shop owners, and race-dependent price
+ adjustments customizable (Prfnoff).
+-Moved the monster recall information out of the monster race array making
+ room for a lot more monsters (Prfnoff).
+-Random item abilities of *identified* items are now displayed in
+ character dumps (Prfnoff).
+-Identify and *identify* spells only affect unidentified items now.
+-Added a "create artifact" wizard command.
+-Added optional, case-insensitive searches (can be toggled with the '!'
+ key).
+-Added an "examine/look at item" command to the stores.
+-The "examine item" command now shows all known properties of an item,
+ even if it is not *identified*.
+-Made artifact activations configurable in a_info.txt (Arcum Dagsson).
+-The last 15 messages are now added to the character dump (Prfnoff).
+-Reduced the number of option settings printed in character dumps.
+-Empty slots in the players inventory or home are no longer printed
+ in character dumps.
+-Added a character death menu (Prfnoff and Ed Cogburn).
+-Added the ego-item generation patch (Matthias Kurzke).
+-The date in the high-scores is now saved with four digit years.
+-The "brand bolts" activation of "Cubragol" now allows the user to select
+ which bolts to brand.
+-Added 21 new vaults (Chris Weisinger).
+-The Resistance spell sets the duration for all temporary resistances to
+ the same value now.
+-Fixed a bug that generated wrong item indices for the home in char-dumps.
+-The temple will now buy identified blessed blades.
+-Fixed a bug that allowed monsters to sometimes get double moves, even
+ if the player is faster.
+-Object and message recall are now correctly refreshed.
+-Fixed the wizard mode flag display.
+-The alter command ('+' and easy_open option) no longer tries to bash down
+ doors.
+-Fixed a bug that caused the effect of aggravate monsters scrolls to skip
+ one monster.
+-Fixed a bug in the easy-floor option that sometimes displayed wrong
+ labels.
+-Prices for identified armor with hit, damage, or armor penalities were
+ wrong.
+-Fixed a bug that allowed the player to recall into rubble.
+-Screen-dumps are now correctly loaded.
+-Fixed a bug in the random artifact generation that sometimes caused random
+ artifacts to change.
+-Fixed a bug that erased pseudo-id in shops even if the item was not sold.
+-Fixed a wrong message when the player gets killed by poisonous food.
+-Random artifact diggers are now in the spoilers.
+-Fixed a bug that messed up objects on the floor when modifying them in
+ debug mode.
+-The score-penalities are now correctly reset when starting a new
+ character.
+-Moved some sound-events so that they are played before the associated
+ message is printed.
+-Opening doors is now properly repeated when the easy_alter option is on.
+-Modified the monster AI for fleeing monsters a bit.
+-Fixed a bug that could cause crashes with very long object descriptions.
+-One highscore entry was sometimes not displayed when the current character
+ was part of the highscore list.
+-Dumping the options appends to the file now instead of overwriting it.
+-Modified the spell-tiles assignments for the 8x8 graphics.
+-The 16x16 tile for the Monadic Deva is now correctly displayed.
+-The 8x8 tiles for hobbit players are no longer displayed as human
+ warriors.
+-Fixed some bugs in the lighting code for 16x16 tiles.
+-Saving a character dump prints now a success (or failure) message.
+-Trying to destroy an already identified artifact no longer adds the
+ {special} inscription.
+-Small modification to the docs.
+-Added documentation for the *_info.txt file format.
+-Class and race specific *.prf files are now loaded automatically.
+-Added Ben's code-cleanups and his rewrite of the "panel" and "overhead
+ map" code.
+-Added a workaround for a bug in the optimizer of the GCC compiler.
+-Removed several compiler warnings.
+-Replaced the makefile.emx with the correct version.
+-Added a makefile for cygwin.
+-Fixed some problems when compiling Angband without the MONSTER_FLOW and/or
+ MONSTER_AI options.
+-Removed a bug that caused a wrong error message to be displayed when the
+ mask.bmp file in the Windows version was missing.
+-Added the IBM pseudo-graphics font.
+-Updated the pref files for Acorn and Mac.
+-Added Mark Howson's main-ami.c and Musus Umbra's main-acn.c with several
+ other Acorn support files.
+-Added newer main-mac.c and graf-mac.prf files that support 16x16 tiles
+ with transparency.
+-Closing the main-window of the Win32 version while it's minimized now
+ works correctly.
+-The Windows version now supports multiple samples per sound event.
+-Added a graphical map to the Windows version.
+-Added the newest X11 modules by Ben Harrison and Steven Fuerst.
+-The Windows version now lists the current character in the score display.
+-Turned on the compile time option that allows players to put an
+ .angband.prf file in their home directory.
+-Added gamma correction to the Windows version.
+
+Changes in Angband 2.9.0:
+- Chaos resistance no longer automatically grants confusion resistance.
+  All normal items and standard artifacts with chaos resistance now
+  provide confusion resistance as well.
+- Two-handed swords appear earlier now.
+- Added an optional point-based character generator.
+- Added randomized character generation.
+- Moved the questions about the autoroller, maximize, and preserve mode
+  to a new option screen.
+- Added an option to display piles of items with a special symbol
+- Allowed secret doors to be looked or stuck
+- Items with an '=g' inscription will be automatically picked up
+- Added options to automatically select the direction when opening
+  doors/chests and disarming traps.
+- Added an option to display piles of items on the floor as lists.
+- Arrows break less often now.
+- Refilling a latern from another latern leaves an empty latern now.
+  Empty laterns are no longer displayed as choice for refilling.
+- Added random artifacts.  Note that importing characters created with
+  older versions of the random artifacts generator is not supported.
+- Scrolling while targetting.
+- Improved monster AI.
+- Increased the maximum number of vaults to 64.
+- Very high or low speed modifiers no longer cause problems.
+- Entry into debug, wizard, or borg mode is only confirmed once per
+  character, not once per session.
+- The debug command 'e' now allows current and maximum experience to be
+  altered.
+- Boldor, Gabriel, Khamul, Murazor, Tselukas, Draebor, Hoarmurath,
+  Thuringwethil, Omarax, Qlzqqlzuup, and Feagwath can now summon similar
+  monsters.
+- Master quylthulg, Emperor Quylthulg, Qlzqqlzuup, Murazor, Pazuzu,
+  Lungorthin, Gothmog, Sauron, and Morgoth can now summon greater demons.
+- Ancalagon the Black can now breath fire.
+- Objects carried by monsters are now loaded properly.
+- A command to repeat the last command has been added ('n' in original,
+  ''' in roguelike keyset).
+- At character creation, some extra difficulty options are
+  available (no artifacts, no stores, no up stairs/recall).
+- The "special" inscriptions ("cursed", "worthless", "good", ...) are
+  now handled outside the normal inscription system, and so neither
+  overwrite, nor are overwritten by, normal inscriptions.
+- Made destroyed levels rarer.
+- The quest monsters (Sauron and Morgoth) are now always generated on
+  levels 99 and 100.
+- Fixed a bug in the "know complete monster info" cheat option.
+- The spell-list now uses color.
+- The disarm traps spell will now work on the locks of doors, revealing
+  secret doors and unlocking locked doors.
+- The 'detect doors' spell can now detect locked and jammed doors.
+- Monsters crushed by an earthquake spell are now killed.
+- Fixed a bug that could cause problems when entering illegal values
+  while haggling with a shopkeeper.
+- Support for Adam Bolt's tiles.
+- Support for transparency and lighting effects.
+- Added class and race dependent player graphics.
+- Cleaned up the new code introduced in the 2.8.5 beta version.
+- Fixed the bug with opening a door you are standing on with the easy_open
+  patch.
+- Random artifacts with chaos resist can now get confusion resist too.
+- Fixed a bug that added a discount to a cursed item when wielding it.
+- The fear resistance of level 30+ warriors is now correctly displayed.
+
+Compilation changes:
+- Added a compile.txt file with compile guides for various systems and
+  compilers.
+- Added a makefile for the free Borland C++ 5.5 compiler.
+- Removed lots of compiler warnings.
+- Fixed a problem when compiling Angband on newer (glibc-based) Linux
+  systems.
+- Added a compile-time option to allow players to put an .angband.prf
+  file in their home directory and have it read on systems where
+  Angband is running set-[ug]id.  Default is off.
+- Added support for compiling a Linux SVGALIB version with graphics.
+- Added support for the use of the 8x8 and 16x16 tiles in the X11
+  version.
+
+Windows specific changes:
+- You can select between the "old" tiles, the new tiles, and ASCII mode.
+- The Windows version no longer requires changes to angband.ini when
+  installing.  The angband.ini file will be created when you first start
+  the program, so it doesn't need to be present in the binary archive.
+  That also allows easy updates to newer versions, since the settings
+  in the angband.ini are not overwritten when installing a new version
+  over an old one.
+- The windows can be resized and the (graphical) tiles will adjust
+  automatically to the new size.
+- Added the "Show scores" command to the menu.
+- Fixed a bug that created all files as "read-only" (causing the game to
+  fail when saving the game).
+- Fixed a bug that caused all numbers to be registered twice by the game,
+  leading to "double-steps".
+- Fixed a bug that didn't free the used bitmaps correctly when closing
+  the game.
+
+DOS-specific changes:
+- Graphics, sounds, and music options
+  You can switch the graphics/music/sound options from the user menu
+  (press ! to get there).  The volume of the sound and the music can be
+  adjusted from 0 (min) to 255 (max).  All changes to the screen-resolution
+  and the selection between the old and the new graphical tiles will be
+  active after you restart Angband.
+- Terminal windows
+  The windows can be activated from the "Angband options screen"
+  (press the '=' key to get there) in the "Window flags" menu.
+  Just toggle the display you want for "Term-1" and "Term-2".
+- Added a stone-background to the terminals.
+- Midi jukebox
+  DOS-Angband automatically plays midi-files from the "lib/xtra/music"
+  folder in your Angband-directory.
+- Sound Events
+  DOS-Angband will play samples from the "lib/xtra/sound" folder to the
+  corresponding Angband-event. You can configure the available samples in
+  the "lib/xtra/sound/sound.cfg" file.  Multiple sounds per event are
+  supported.
+- "Classic mode": If you want the old display, just start Angband with the
+  '-mibm' option ('Angband.exe -mibm').
+

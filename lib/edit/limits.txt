@@ -1,0 +1,70 @@
+# File: limits.txt
+
+
+# This file is used to initialize the "lib/data/limits.raw" file, which is
+# used to initialize the "array sizes" information for the Angband game.
+
+# Do not modify this file unless you know exactly what you are doing,
+# unless you wish to risk possible system crashes and broken savefiles.
+# After modifying this file, delete the "lib/data/limits.raw" file.
+
+
+# Version stamp (required)
+
+V:3.0.6
+
+
+# Maximum number of feature types
+M:F:64
+
+# Maximum number of object kinds
+M:K:515
+
+# Maximum number of artifacts
+M:A:137
+
+# Maximum number of ego-item types
+M:E:128
+
+# Maximum number of monster races
+M:R:618
+
+# Maximum number of vaults
+M:V:51
+
+# Maximum number of player races
+M:P:11
+
+# Maximum number of player classes
+M:C:6
+
+# Maximum number of player history lines
+M:H:165
+
+# Maximum number of owners per store
+M:B:4
+
+# Maximum number of flavors
+M:L:303
+
+# Maximum number of spells
+M:S:122
+
+# Maximum number of objects on the level
+M:O:512
+
+# Maximum number of monsters on the level
+M:M:1024
+
+#
+# Array sizes (in bytes) for some initialization stuff
+#
+
+# Size of the "fake" array for reading in names of monsters, objects,
+# artifacts, store-owners, player-races, ...
+M:N:20480
+
+# Size of the "fake" array for reading in the descriptions of monsters,
+# vaults, and the player-histories
+M:T:61440
+

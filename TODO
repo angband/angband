@@ -1,0 +1,57 @@
+- Fix remaining X11 memory leaks (reported by Christer Nyfalt).
+- Add support for gamma correction to the DOS version.
+- Move various information to external files.
+- Add player ghosts.
+- Equipment slots should be configurable for every player race.
+- Gender selection should be done after selecting the player race (for
+  races with non-standard genders).
+- Add a random name generator for player names.
+- Add support for automatically numbering characters ("Rocky IV").
+- Finish the GTK+ port, maybe write a qt version.
+- Open the file handles for score and savefiles at startup and then drop
+  all permissions.
+- Improve the scorefile format.
+- Add color support to the show_file() function.
+- Allow multiple pvals per object.
+- Split long lines in the message recall.
+- The ANSI-C standard reserves some prefixes for external names like "str".
+  Make sure that Angband doesn't use them.
+- Rewrite the debug-mode object flag display so that it doesn't require
+  manual changes for every new flag.
+- Fix the "vinfo_type" hack in cave.c.
+- Unify line of sight and projection paths.
+- Make sure that signed integers aren't bit-shifted.
+- Use enumerations instead of #defines when possible.
+- Add optional support for the metric system.
+- Add a main-net.c modules that sends/receives term-updates via TCP/IP.
+  This allows slim clients on machines where Angband isn't available.
+  The clients could be written in almost any programming language and
+  have minimal hardware requirements.
+- Adjust the Unix/Linux installation for full compliance with the
+  Filesystem Hierarchy Standard.
+- Make the filenames in src/ more meaningful.
+- Add reference counting for the "quarks" (inscriptions).
+- Add a compile-time option that prevents the player from saving pref-files,
+  character dumps, and screenshots.
+- "Panic saves" shouldn't overwrite normal savefiles.
+- Replace the maximize mode option with a "half-maximized" mode.
+- Add a command to display the 'time of day'.
+- Mimics should be true objects until the player steps next to them.
+- Throwing potions should cause the potions effect on the target.
+- Add race-specific starting equipment.
+- Extend the use of scripts for customization.
+- Improve the script-debugger.
+- Allow a restricted amount of functions to be used by the player
+  for macros and add a better macro recorder.
+- Improve the savefile handling of the monster recall.
+- Assign graphical tiles to the new monsters and objects.
+- Add new room types.
+- Allow monsters to recover from stunning/confusion/fear even if the player
+  is not in detection range or LOS.
+- Slowing and hasting monsters should only have a temporary effect.
+- Allow each Angband term to have its own tileset.  This would allow cool
+  features such as an overhead view that displays each dungeon grid in a
+  small scale (down to a single pixel - red for monsters, orange for uniques,
+  blue for treasure).
+- The distance to the screen border at which the panel changes should be
+  configurable for the main view and each map window.

@@ -1,0 +1,22 @@
+
+
+              **************************************************
+              **  Angband 3.0.7s3  **   The Pits of Angband   **
+              **************************************************
+
+           Based on Moria:   Copyright (c) 1985 Robert Alan Koeneke
+               and Umoria:   Copyright (c) 1989 James E. Wilson
+
+        Angband 2.0 - 2.6.2 by: Alex Cutler, Andy Astrand, Sean Marsh,
+                 Geoff Hill, Charles Teague, Charles Swiger
+
+                   Angband 2.7.0 - 2.8.5 by Ben Harrison
+                 Angband 2.9.0 - 3.0.x by Robert Ruehlmann
+
+                Angband 3.0.6s by Andrew Sidwell and others
+
+        Send comments, bug reports, and patches, to "@entai.co.uk"
+         Visit the Angband Home Page at "http://www.thangorodrim.net/"
+      Browse the Angband newsgroup at "news:rec.games.roguelike.angband"
+    Read the online help files, especially "general.txt" and "version.txt"
+   Angband is available for Unix, X11, DOS, Windows, Macintosh, Amiga, etc.

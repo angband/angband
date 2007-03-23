@@ -1,0 +1,286 @@
+Compiling Angband
+=================
+
+Last updated on 13th March 2005 by Robert Ruehlmann
+
+
+----------------------------------------------------------------------
+Quick and dirty compilation instructions
+----------------------------------------------------------------------
+
+For many platforms (including Windows and DOS), a "pre-compiled" archive
+is available, which contains everything you need to install and play
+Angband.  For other platforms, including most UNIX systems, you must
+compile the source code yourself.  Try the following non-trivial steps:
+
+Step 1: Acquire.   Ftp to "ftp.thangorodrim.net/pub/angband/Source"
+                   Try "bin" and "mget angband*.tar.gz" and "y"
+Step 2: Extract.   Try "gunzip *.gz" then "tar -xvf *.tar"
+Step 3: Prepare.   Try "cd angband*/".
+Step 4: Configure. Try "./configure". Edit "src/config.h" if you wish.
+Step 5: Compile.   Try "make".
+Step 6: Install.   Try "make install".
+Step 7: Play...    Try "./angband".
+                   Read the "online help" via the "?" command.
+
+Of course, if you have a compiler, you can compile a (possibly customized)
+executable on almost any system.  You will need the "source archive" (as
+above), which contains the standard "src" and "lib" directories, and for
+some platforms (including Macintosh and Windows), you will also need an
+appropriate "extra archive", which contains some extra platform specific
+files, and instructions about how to use them.  Some "extra archives" may
+be found at the ftp site (including "/angband/Macintosh/ext-mac.sit.bin"
+and "/angband/Windows/ext-win-305.zip"), but be sure that you get a version
+of the "extra archive" designed for your Angband version.
+
+About configure:
+    ./configure --help
+shows which options to use.  Other settings can be tuned like this:
+    env CC='cc' CPPFLAGS='-DUSE_HARDCODE' ./configure
+You can set CC (compiler), CPPFLAGS (preprocessor flags),
+CFLAGS (compiler flags), LDFLAGS (linker flags), and LIBS (libraries).
+Configure may modify all but CC.
+
+An alternative to configure is to edit src/h-config.h and a makefile,
+probably src/Makefile.std, and run "cd src; make -f Makefile.std".
+
+
+----------------------------------------------------------------------
+DOS + DJGPP
+----------------------------------------------------------------------
+(written by Robert Ruehlmann < rr9@thangorodrim.net >)
+
+- Install DJGPP:
+	You can get the freely available DJGPP C Compiler from
+	< http://www.delorie.com/djgpp/ >.  On the DJGPP-page go to the
+	Zip-Picker < http://www.delorie.com/djgpp/zip-picker.html >.
+	This page helps you decide which ZIP files you need to download
+	and will even try to find a ftp-site near you.
+	If you want to have graphics and sound then you also need the
+	Allegro-library < http://www.talula.demon.co.uk/allegro/ >.
+	Get all files and follow the installation instructions.
+- Install the Angband source:
+	Get the source code archive and the untgz tool from:
+	< ftp://ftp.thangorodrim.net/pub/angband/Tool/untgz.exe >.
+	Then extract the source with untgz.
+- Install other required files:
+	Get the "extra archive" from
+	< ftp://ftp.thangorodrim.net/pub/angband/DOS-386/ext-dos-305.zip >.
+	Go to the angband directory and unzip the ext-dos archive into it.
+	Then get the graphics archive from
+	< ftp://ftp.thangorodrim.net/pub/angband/Extra/angband-graf.zip >
+	and unzip it into the lib/xtra/graf/ folder.
+- Select the makefile:
+	Go to the src-directory and rename 'Makefile.dos' (or 'Makefile.ibm'
+	if you don't want graphics and sound and didn't download the Allegro
+	library) to 'Makefile'.
+- Compile Angband:
+	Run "make install".  Angband should now be compiled and installed
+	into the Angband folder.
+- Run Angband:
+	Go back to the Angband folder and run Angband.exe.
+
+- Possible problems:
+	- Make exits with a 'Fatal: Command arguments too long' error message:
+	Such problems are usually caused by using the make.exe of another
+	compiler (like Borland C++ or cygwin).  DJGPP uses some clever tricks
+	to get around the limitations of the MS-DOS "126 characters are enough
+	for anybody" commandline that require a specific make tool.  So make
+	sure that DJGPP's make.exe is the first (or only) make.exe in your
+	path.  See also the DJGPP FAQ entries 16.4, 16.5, and 16.6 for further
+	details.
+
+
+----------------------------------------------------------------------
+Windows 95/98/NT/2000 + MS Visual C++ 5.0/6.0
+----------------------------------------------------------------------
+(written by Robert Ruehlmann < rr9@thangorodrim.net >)
+
+- Install the Angband source:
+	Get the source code and the untgz tool from:
+	< ftp://ftp.thangorodrim.net/pub/angband/Tool/untgz32.exe >.
+	Then extract the source with "untgz32 angband-3.0.5.tar.gz".
+- Install other required files:
+	Get the "extra archive" from
+	< ftp://ftp.thangorodrim.net/pub/angband/Windows/ext-win-305.zip >.
+	Go to the angband directory and unzip the ext-win archive into it.
+	Again make sure the directory structure is preserved (use the -d
+	option in pkunzip).
+	Then get the graphics archive from
+	< ftp://ftp.thangorodrim.net/pub/angband/Extra/angband-graf.zip >
+	and unzip it into the lib/xtra/graf/ folder.
+- Open the project-file:
+	Go to the Angband-folder and open the file "Angband.dsw".  That starts
+	Visual C++ already properly configured for compiling Angband.
+- Compile Angband:
+	Select "Build Angband.exe" in the Build menu.  Angband should now
+	be compiled and the Angband.exe will be placed into the Angband
+	folder.
+- Run Angband:
+	Go back to the Angband-folder and run the Angband.exe.
+
+
+----------------------------------------------------------------------
+Windows 95/98/NT/2000 + Borland C++ 5.5 commandline tools
+----------------------------------------------------------------------
+(written by Robert Ruehlmann < rr9@thangorodrim.net >)
+
+- Getting the free commandline tools:
+	Download the Borland commandline tools from
+	http://www.borland.com/bcppbuilder/freecompiler/
+	and follow the installation instructions.
+- Install the Angband source:
+	Get the source code and  the untgz tool from:
+	< ftp://ftp.thangorodrim.net/pub/angband/Tool/untgz32.exe >.
+	Then extract the source with "untgz32 angband-3.0.5.tar.gz".
+- Install other required files:
+	Get the "extra archive" from
+	< ftp://ftp.thangorodrim.net/pub/angband/Windows/ext-win-305.zip >.
+	Go to the angband directory and unzip the ext-win archive into it.
+	Again make sure the directory structure is preserved (use the -d
+	option in pkunzip).
+	Then get the graphics archive from
+	< ftp://ftp.thangorodrim.net/pub/angband/Extra/angband-graf.zip >
+	and unzip it into the lib/xtra/graf/ folder.
+- Compile Angband:
+	Open a commandline window and go to the src-directory.  Run
+	"make -f makefile.bcc install".  Angband should now be compiled
+	and installed into the Angband folder.
+- Run Angband:
+	Go back to the Angband-folder and run the Angband.exe.
+
+- Possible problems:
+	- Make exits with a "Command line too long" error message:
+	Try to add the -l option to the make command.  The make util
+	should have the "use long command lines" option enabled by
+	default, but some people reported that this is not always
+	the case.
+
+
+----------------------------------------------------------------------
+Windows 95/98/NT/2000 + Cygwin
+----------------------------------------------------------------------
+(written by Robert Ruehlmann < rr9@thangorodrim.net >)
+
+- Getting the free Cygwin compiler:
+	You can find the free Cygwin compiler at:
+	< http://sources.redhat.com/cygwin/ >.  It provides a shell
+	interface very similiar to a normal Unix/Linux shell with many
+	useful tools. Install it and start the shell.
+- Install the Angband source code
+	Extract the source code with "tar -xvzf angband-3.0.5.tar.gz".
+- Install other required files:
+	Get the "extra archive" from
+	< ftp://ftp.thangorodrim.net/pub/angband/Windows/ext-win-305.zip >.
+	Go to the angband directory and unzip the ext-win archive into
+	it.  Then get the graphics archive from
+	< ftp://ftp.thangorodrim.net/pub/angband/Extra/angband-graf.zip >
+	and unzip it into the lib/xtra/graf/ folder.
+- Compile Angband:
+	Go to the src-directory.  Run "make -f makefile.cyg install".
+	Angband should now be compiled and installed into the Angband folder.
+- Run Angband:
+	Go back to the Angband-folder and run the Angband.exe.
+
+
+----------------------------------------------------------------------
+Windows + MinGW/MSYS
+----------------------------------------------------------------------
+(written by Tuomas Härkönen < tharkonen@gmail.com >)
+
+1) Install MinGW and MSYS (both freely available at
+   http://www.mingw.org/ )
+2) Enter the MSYS shell/environment
+3) Follow the instructions for compiling with Cygwin verbatim
+   (bar installing Cygwin)
+4) Play
+
+
+----------------------------------------------------------------------
+Windows 95/98/NT/2000 + LCC-win32
+----------------------------------------------------------------------
+(written by Robert Ruehlmann < rr9@thangorodrim.net >)
+
+- Getting the free lcc-win32 compiler:
+	Download the compiler from < http://www.cs.virginia.edu/~lcc-win32/ >
+	and install it.
+- Install the Angband source code
+	Extract the source code with "tar -xvzf angband-3.0.5.tar.gz".
+- Install other required files:
+	Get the "extra archive" from
+	< ftp://ftp.thangorodrim.net/pub/angband/Windows/ext-win-305.zip >.
+	Go to the angband directory and unzip the ext-win archive into
+	it.  Then get the graphics archive from
+	< ftp://ftp.thangorodrim.net/pub/angband/Extra/angband-graf.zip >
+	and unzip it into the lib/xtra/graf/ folder.
+- Adjust the LCC-win32 makefile:
+	Go to the Angband src-directory and open "Makefile.lcc" with a
+	text editor.  Change the values of 'ANGBAND_PATH' and 'LCC_PATH'
+	to the path of your Angband and LCC directories and save the
+	Makefile.
+- Compile Angband:
+	Run "make -f makefile.lcc" in the Angband src-folder.  The game
+	should now be compiled and installed into the Angband folder.
+- Run Angband:
+	Go back to the Angband-folder and run the Angband.exe.
+
+
+----------------------------------------------------------------------
+GNU/Linux or Unix + GCC
+----------------------------------------------------------------------
+(written by Robert Ruehlmann < rr9@thangorodrim.net >)
+
+- Install the Angband source:
+	Extract the source code with "tar -xvzf angband-3.0.5.tar.gz".
+- Install the graphics files:
+	If you want to use graphics under X11 then get the archive from
+	< ftp://ftp.thangorodrim.net/pub/angband/Extra/angband-graf.zip >
+	and unzip it into the lib/xtra/graf/ folder.
+- Compile Angband:
+	Run "./configure", "make", and "make install" in the Angband
+	directory.
+- Run Angband:
+	Start Angband with "./angband".
+- Alternative for installing Angband system wide:
+	For a system wide installation you can use the following three
+	./configure options:
+	--with-setgid=games
+	--with-libpath=/usr/games/lib/angband
+	--bindir=/usr/games
+	Then build the game with 'make' and install it as root with
+	'make install'.  Angband can then be started with 'angband'.
+
+
+----------------------------------------------------------------------
+Mac OS X + GCC
+----------------------------------------------------------------------
+(written by "Pelpel" and Robert Ruehlmann < rr9@thangorodrim.net >)
+
+- Install the Apple Developer CD if you haven't already done so. 
+- Get the Angband source code archive and extract it to your home
+	directory.
+- Get the extra files archive for Mac OS X from
+	< ftp://ftp.thangorodrim.net/pub/angband/Macintosh/ext-mac-306.zip >
+	and extract it to the 'angband/src/' folder.
+- Compile Angband:
+	In Terminal.app type 'cd angband/src' to get to the Angband
+	source directory.  Then type 'make -f Makefile.osx'.
+- Install the graphics files:
+	If you want to use graphics then get the archive from
+	< ftp://ftp.thangorodrim.net/pub/angband/Macintosh/ext-graf-mac-306.zip >
+	and extract it to the 'angband/src/' folder.
+	In Terminal.app type 'make -f Makefile.osx install-tiles'.
+- Install the sound files:
+	If you want to use sounds then get the archive from
+	< ftp://ftp.thangorodrim.net/pub/angband/Macintosh/ext-sound-mac-306.zip >
+	and extract it to the 'angband/src/' folder.
+	In Terminal.app type 'make -f Makefile.osx install-sound'.
+- Run Angband:
+	If everything compiled, then you should have an 'Angband'
+	application bundle in your 'angband' directory.
+- Package Angband for distribution:
+	If you want to distribute a modified version to other players
+	then you can use the 'dist' Makefile target to repackage the game. 
+	In Terminal.app type 'make -f Makefile.osx dist' to create
+	a *.dmg disk-image.  You'll need both sound and graphics to
+	create the distribution.

@@ -1,0 +1,53 @@
+# File: graf-gcu.prf
+
+#
+# This file is used by Angband (when it was compiled using "main-gcu.c")
+# to specify simple attr/char remappings using the special Curses "ACS"
+# characters.
+#
+
+#
+# Secret doors
+#
+
+F:48:1/0xA3
+
+#
+# Magma
+#
+
+F:50:2/0xA5
+F:52:2/0xA5
+
+#
+# Quartz
+#
+
+F:51:9/0xA5
+F:53:9/0xA5
+
+#
+# Treasure veins
+#
+
+#F:54:3/0xA3
+#F:55:3/0xA3
+
+#
+# Granite walls
+#
+
+F:56:1/0xA3
+F:57:1/0xA3
+F:58:1/0xA3
+F:59:1/0xA3
+
+#
+# Permanent walls
+#
+
+F:60:1/0xA3
+F:61:1/0xA3
+F:62:1/0xA3
+F:63:1/0xA3
+

@@ -1,0 +1,129 @@
+/* File: angband.rc */
+
+ANGBAND MENU
+{
+	POPUP "&File"
+	{
+		MENUITEM "&New", 100
+		MENUITEM "&Open...", 101
+		MENUITEM SEPARATOR
+		MENUITEM "&Save", 110
+		MENUITEM SEPARATOR
+		MENUITEM "E&xit", 130
+	}
+
+	POPUP "&Window"
+	{
+		POPUP "&Visibility"
+		{
+			MENUITEM "Term-0 window", 200
+			MENUITEM "Term-1 window", 201
+			MENUITEM "Term-2 window", 202
+			MENUITEM "Term-3 window", 203
+			MENUITEM "Term-4 window", 204
+			MENUITEM "Term-5 window", 205
+			MENUITEM "Term-6 window", 206
+			MENUITEM "Term-7 window", 207
+		}
+
+		POPUP "&Font"
+		{
+			MENUITEM "Term-0 window", 210
+			MENUITEM "Term-1 window", 211
+			MENUITEM "Term-2 window", 212
+			MENUITEM "Term-3 window", 213
+			MENUITEM "Term-4 window", 214
+			MENUITEM "Term-5 window", 215
+			MENUITEM "Term-6 window", 216
+			MENUITEM "Term-7 window", 217
+		}
+
+		MENUITEM SEPARATOR
+
+		POPUP "Bizarre Display"
+		{
+			MENUITEM "Term-0 window", 230
+			MENUITEM "Term-1 window", 231
+			MENUITEM "Term-2 window", 232
+			MENUITEM "Term-3 window", 233
+			MENUITEM "Term-4 window", 234
+			MENUITEM "Term-5 window", 235
+			MENUITEM "Term-6 window", 236
+			MENUITEM "Term-7 window", 237
+		}
+
+		POPUP "Increase Tile Width"
+		{
+			MENUITEM "Term-0 window", 240
+			MENUITEM "Term-1 window", 241
+			MENUITEM "Term-2 window", 242
+			MENUITEM "Term-3 window", 243
+			MENUITEM "Term-4 window", 244
+			MENUITEM "Term-5 window", 245
+			MENUITEM "Term-6 window", 246
+			MENUITEM "Term-7 window", 247
+		}
+
+		POPUP "Decrease Tile Width"
+		{
+			MENUITEM "Term-0 window", 250
+			MENUITEM "Term-1 window", 251
+			MENUITEM "Term-2 window", 252
+			MENUITEM "Term-3 window", 253
+			MENUITEM "Term-4 window", 254
+			MENUITEM "Term-5 window", 255
+			MENUITEM "Term-6 window", 256
+			MENUITEM "Term-7 window", 257
+		}
+
+		POPUP "Increase Tile Height"
+		{
+			MENUITEM "Term-0 window", 260
+			MENUITEM "Term-1 window", 261
+			MENUITEM "Term-2 window", 262
+			MENUITEM "Term-3 window", 263
+			MENUITEM "Term-4 window", 264
+			MENUITEM "Term-5 window", 265
+			MENUITEM "Term-6 window", 266
+			MENUITEM "Term-7 window", 267
+		}
+
+		POPUP "Decrease Tile Height"
+		{
+			MENUITEM "Term-0 window", 270
+			MENUITEM "Term-1 window", 271
+			MENUITEM "Term-2 window", 272
+			MENUITEM "Term-3 window", 273
+			MENUITEM "Term-4 window", 274
+			MENUITEM "Term-5 window", 275
+			MENUITEM "Term-6 window", 276
+			MENUITEM "Term-7 window", 277
+		}
+	}
+
+	POPUP "&Options"
+	{
+		POPUP "&Graphics"
+		{
+			MENUITEM "&None", 400
+			MENUITEM "&Old tiles", 401
+			MENUITEM "&Adam Bolt's tiles", 402
+			MENUITEM "&David Gervais' tiles", 403
+			MENUITEM "&Bigtile mode", 409
+		}
+
+		MENUITEM "&Sound", 410
+		MENUITEM SEPARATOR
+		MENUITEM "Low Priority", 420
+		MENUITEM "Activate Screensaver", 430
+		MENUITEM "&Map", 440
+	}
+
+	POPUP "&Help"
+	{
+		MENUITEM "&Contents", 901
+	}
+}
+
+ANGBAND ICON "angband.ico"
+

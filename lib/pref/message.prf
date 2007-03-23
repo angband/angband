@@ -1,0 +1,123 @@
+# File: message.prf
+
+#
+# This file defines the default message colors.
+#
+# This file includes, if appropriate, various "sub-files".
+#
+# See "lib/help/command.txt" and "src/files.c" for more information.
+#
+# Format:
+# M:<message-type>:<color>
+#
+# Possible colors:
+# d = Black
+# w = White
+# s = Gray
+# o = Orange
+# r = Red
+# g = Green
+# b = Blue
+# u = Brown
+# D = Dark Gray
+# W = Light Gray
+# v = Violet
+# y = Yellow
+# R = Light Red
+# G = Light Green
+# B = Light Blue
+# U = Light Brown
+
+
+# MSG_GENERIC
+M:0:w
+
+# MSG_HIT
+M:1:w
+
+# MSG_MISS
+M:2:w
+
+# MSG_FLEE
+M:3:w
+
+# MSG_DROP
+M:4:w
+
+# MSG_KILL
+M:5:w
+
+# MSG_LEVEL
+M:6:w
+
+# MSG_DEATH
+M:7:w
+
+# MSG_STUDY
+M:8:w
+
+# MSG_TELEPORT
+M:9:w
+
+# MSG_SHOOT
+M:10:w
+
+# MSG_QUAFF
+M:11:w
+
+# MSG_ZAP
+M:12:w
+
+# MSG_WALK
+M:13:w
+
+# MSG_TPOTHER
+M:14:w
+
+# MSG_HITWALL
+M:15:w
+
+# MSG_EAT
+M:16:w
+
+# MSG_STORE1
+M:17:w
+
+# MSG_STORE2
+M:18:w
+
+# MSG_STORE3
+M:19:w
+
+# MSG_STORE4
+M:20:w
+
+# MSG_DIG
+M:21:w
+
+# MSG_OPENDOOR
+M:22:w
+
+# MSG_SHUTDOOR
+M:23:w
+
+# MSG_TPLEVEL
+M:24:w
+
+# MSG_BELL
+M:25:o
+
+# MSG_NOTHING_TO_OPEN
+M:26:w
+
+# MSG_LOCKPICK_FAIL
+M:27:w
+
+# MSG_STAIRS
+M:28:w
+
+# MSG_HITPOINT_WARN
+M:29:o
+
+?:1
+
