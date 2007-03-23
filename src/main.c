@@ -27,10 +27,6 @@
  */
 static const struct module modules[] =
 {
-#ifdef USE_LFB
-    	{ "lfb", help_lfb, init_lfb },
-#endif /* USE_LFB */
-
 #ifdef USE_GTK
 	{ "gtk", help_gtk, init_gtk },
 #endif /* USE_GTK */
@@ -82,6 +78,10 @@ static const struct module modules[] =
 #ifdef USE_VCS
 	{ "vcs", help_vcs, init_vcs },
 #endif /* USE_VCS */
+
+#ifdef USE_LFB
+	{ "lfb", help_lfb, init_lfb },
+#endif /* USE_LFB */
 };
 
 
