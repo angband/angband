@@ -1896,6 +1896,14 @@ errr Term_keypress(int k)
 	return (1);
 }
 
+/*
+ * Not supported this variant.
+ */
+errr Term_mousepress(int x, int y, int button) 
+{
+	return (0);
+}
+
 
 /*
  * Add a keypress to the FRONT of the "queue"

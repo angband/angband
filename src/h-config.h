@@ -226,8 +226,6 @@
 # define FILE_TYPE_SAVE 'SAVE'
 # define FILE_TYPE(X) (_ftype = (X))
 
-extern u32b _fcreator;
-extern u32b _ftype;
 
 /* Mac OS X has usleep(). */
 # define HAVE_USLEEP

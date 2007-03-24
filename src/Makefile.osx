@@ -22,10 +22,9 @@ OPT = -O2
 endif
 
 # Name of the game
-PROJNAME = Angband
-APPNAME = $(PROJNAME).app
-EXE =angband
 NAME =Angband
+APPNAME =$(NAME).app
+EXE =angband
 COPYRIGHT =1995-2006 Contributors
 # version number - displayed
 VERSION =3.0.7
@@ -34,32 +33,43 @@ VERSION =3.0.7
 TOOLDIR = /Developer/Tools
 SETFILE = $(TOOLDIR)/SetFile
 
-#
-# The "source" and "object" files.
-#
-
-OBJEXT=.o
-include Makefile.inc
-
-OBJS = $(BASEOBJS) main-crb.o
-
 CFLAGS = \
 	-Wall -std=gnu99 $(OPT) -DMACH_O_CARBON \
 	-DPRIVATE_USER_PATH=\"~/Library/Preferences\" -DUSE_PRIVATE_PATHS
 LIBS = -framework CoreFoundation -framework QuickTime -framework Carbon
+
+
+# Object definitions are in common file.
+
+
+# Borg.  To build the borg, type:
+# $ make -f Makefile.osx clean borg all
+BOBJS = borg1.o borg2.o borg3.o borg4.o borg5.o borg6.o borg7.o \
+			borg8.o borg9.o
+
+OBJS = $(BASEOBJS) main-crb.o
 
 #
 # Default target.
 #
 all: install
 
+OBJEXT = .o
+include Makefile.inc
+
+
+
+
 #
 # Build the "Angband" program
 #
 
-$(EXE): $(OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS)
 
+$(EXE): $(OBJS) 
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS) 
+
+borg: $(OBJS) $(BOBJS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(BOBJS) $(LIBS) 
 
 #
 # Clean up old junk
@@ -68,29 +78,19 @@ $(EXE): $(OBJS)
 clean:
 	-rm -f *.o $(EXE)
 
+
 #
-# Hack -- some file dependencies
+# Basic build rules and dependencies
 #
 
-HDRS = \
-  h-basic.h \
-  h-define.h h-type.h h-system.h h-config.h
 
-INCS = \
-  angband.h \
-  config.h defines.h types.h externs.h \
-  z-term.h z-rand.h z-util.h z-virt.h z-form.h $(HDRS)
 
-%.o: %.c $(INCS)
+
+%.o : %.c
+	CC $(CFLAGS) -c -o $@ $<
+
 
 main-crb.o: osx/osx_tables.h
-
-z-form.o: z-form.c $(HDRS) z-form.h z-util.h z-virt.h
-z-rand.o: z-rand.c $(HDRS) z-rand.h
-z-term.o: z-term.c $(HDRS) z-term.h z-virt.h
-z-util.o: z-util.c $(HDRS) z-util.h
-z-virt.o: z-virt.c $(HDRS) z-virt.h z-util.h
-
 
 
 #
@@ -115,15 +115,14 @@ APPRES = $(APPCONT)/Resources
 # it isn't generally safe just to convert GIF or BMP files to PNG, because
 # the Mac OS takes dpi values stored in various images quite seriously.
 # Almost all tilesets for *band requires adjustment, with the sole exception
-# of 8x8.bmp for Vanilla.  Make sure setting dpi to 72, *not* preserving
-# the actual size of image.  When you have them ready, put them in the src
-# directory and "make install-tiles".
+# of 8x8.png for Vanilla.  Make sure setting dpi to 72, *not* preserving
+# the actual size of image.  When you have them ready, put them in
+# the lib/xtra/graf directory and rebuild.
 ICONFILES = osx/Angband.icns osx/Save.icns osx/Edit.icns osx/Data.icns
 PLIST = osx/Angband.xml
 
-RFLAGS = -i /Developer/Headers/FlatCarbon -d MACH_O_CARBON
 GRAPHSRC=../lib/xtra/graf/
-TILES = $(GRAPHSRC)8x8.bmp $(GRAPHSRC)16x16.bmp $(GRAPHSRC)32x32.bmp
+TILES = $(GRAPHSRC)8x8.png $(GRAPHSRC)16x16.png $(GRAPHSRC)32x32.png
 
 LIBFILES = \
   ../lib/edit/*.txt \
@@ -155,7 +154,7 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	@cp ../lib/pref/*.prf $(APPRES)/lib/pref
 
 	# 'optionally' install sound and graphics tiles, if present
-	-cp ../lib/xtra/graf/*.png $(APPRES)/lib/xtra/graf
+	-cp $(TILES) $(APPRES)/lib/xtra/graf
 	-cp ../lib/xtra/sound/*.wav $(APPRES)/lib/xtra/sound
 
 	install -m 755 $(EXE) $(APPBIN)
@@ -170,7 +169,7 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 
 
 
-PACKAGE_NAME = $(PROJNAME)-$(VERSION)
+PACKAGE_NAME = $(NAME)-$(VERSION)
 
 # In the unlikely event that tar+zip isn't enough...
 
