@@ -206,6 +206,7 @@ static struct {
 	{ &arg_fiddle, kSpecialMenu, kFiddle, 	false},
 	{ &use_sound,  kSpecialMenu, kSound,	false},
 	{ &use_bigtile, kStyleMenu,  kBigTile,	true},
-	{ &interpolate, kStyleMenu,  kInterpolate, true}
+	{ &interpolate, kStyleMenu,  kInterpolate, true},
+	{ &antialias,	kStyleMenu,	kAntialias,	true}
 };
 

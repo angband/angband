@@ -289,6 +289,7 @@ struct GlyphInfo
 
 static GlyphInfo glyph_data[MAX_TERM_DATA+1];
 
+static WindowRef aboutDialog;
 
 
 static bool CheckEvents(int wait);
@@ -428,7 +429,7 @@ static OSErr path_to_spec(const char *path, FSSpec *spec)
 	FSRef ref;
 
 	/* Convert pathname to FSRef ... */
-	err = FSPathMakeRef(path, &ref, NULL);
+	err = FSPathMakeRef((byte*) path, &ref, NULL);
 	if (err != noErr) return (err);
 
 	/* ... then FSRef to FSSpec */
@@ -453,7 +454,7 @@ static OSErr spec_to_path(const FSSpec *spec, char *buf, size_t size)
 	if (err != noErr) return (err);
 
 	/* ... then FSRef to pathname */
-	err = FSRefMakePath(&ref, buf, size);
+	err = FSRefMakePath(&ref, (byte*)buf, size);
 
 	/* Inform caller of success or failure */
 	return (err);
@@ -705,11 +706,16 @@ static GlyphInfo *get_glyph_info(ATSUFontID fid, float size)
 	ATSUSetTextPointerLocation(info->layout, text, 0, 1, 1);
 	ATSUSetRunStyle(info->layout, info->style, 0, 1);
 
-	ByteCount oCount;
+	ByteCount oCount = 0;
 	FontNameCode oCode;
-	ATSUGetIndFontName(fid, 6, sizeof(info->psname), info->psname,
+	err = ATSUGetIndFontName(fid, 6, sizeof(info->psname), info->psname,
 													&oCount, &oCode, 0, 0, 0);
 
+	require_noerr(err, CantInitialize);
+	if(oCount == 0 || strlen(info->psname) == 0)
+		goto CantInitialize;
+
+	info->psname[oCount] = 0;
 	// Is font mono-space?
 	err = ATSUCreateTextLayout(&info->layout);
 	require_noerr(err, CantInitialize);
@@ -752,7 +758,6 @@ static GlyphInfo *get_glyph_info(ATSUFontID fid, float size)
 	info->font_wid = (info->font_wid)/(1<<16);
 
 	info->refcount++;
-
 	return info;
 
 CantInitialize:
@@ -792,10 +797,10 @@ static void release_glyph_info(GlyphInfo *info)
 static void term_data_check_font(term_data *td)
 {
 	GlyphInfo *info = get_glyph_info(td->font_id, td->font_size);
-	if(info) {
-		release_glyph_info(td->ginfo);
-		td->ginfo = info;
-	}
+	if(!info) return;
+
+	release_glyph_info(td->ginfo);
+	td->ginfo = info;
 
 	td->font_wid = (info->font_wid +.999);
 	td->font_hgt = info->ascent + info->descent;
@@ -884,20 +889,20 @@ static void term_data_check_size(term_data *td)
 	td->bounds = (CGRect) {{0, 0},
 		{td->cols * td->tile_wid, td->rows * td->tile_hgt}};
 
-	/* Assume no graphics */
+	/* Assume no graphics, monospace */
 	td->t->higher_pict = FALSE;
 	td->t->always_pict = FALSE;
 
 	
 	/* Handle graphics */
-	if (td->ginfo->monospace) td->t->higher_pict = TRUE;
+	if (!td->ginfo->monospace) {
+		/* Draw every character */
+		td->t->always_pict = TRUE;
+	}
 	else if (use_graphics && (td == &data[0]))
 	{
 		/* Use higher pict whenever possible */
-		if (td->ginfo->monospace) td->t->higher_pict = TRUE;
-
-		/* Use always_pict only when necessary */
-		else td->t->always_pict = TRUE;
+		td->t->higher_pict = TRUE;
 	}
 
 }
@@ -2033,7 +2038,7 @@ static char *locate_lib(char *buf, size_t size)
 	if (!main_url) return (NULL);
 
 	/* Get the URL in the file system's native string representation */
-	success = CFURLGetFileSystemRepresentation(main_url, TRUE, buf, size);
+	success = CFURLGetFileSystemRepresentation(main_url, TRUE, (byte*)buf, size);
 
 	/* Free the url */
 	CFRelease(main_url);
@@ -2519,6 +2524,8 @@ static void init_menubar(void)
 	if((err = SetMenuBarFromNib(nib, CFSTR("MenuBar"))))
 		quit("Cannot prepare menu bar!");
 
+	(void) CreateWindowFromNib(nib, CFSTR("DLOG:about"), &aboutDialog);
+
 	DisposeNibReference(nib);
 
 	MenuRef m = MyGetMenuHandle(kStyleMenu);
@@ -2536,7 +2543,7 @@ static void init_menubar(void)
 			char buf[15];
 			/* Tile size */
 			strnfmt((char*)buf, 15, "%d", i);
-			CFStringRef cfstr = CFStringCreateWithBytes ( NULL, buf,
+			CFStringRef cfstr = CFStringCreateWithBytes ( NULL, (byte*) buf,
 									strlen(buf), kCFStringEncodingASCII, false);
 			AppendMenuItemTextWithCFString(m, cfstr, 0, j, NULL);
 			SetMenuItemRefCon(m, i-MIN_FONT+1, i);
@@ -2660,6 +2667,8 @@ static OSStatus AngbandGame(EventHandlerCallRef inCallRef,
 	/* Prompt the user - You may have to change this for some variants */
 	prt("[Choose 'New', 'Open' or 'Import' from the 'File' menu]", 23, 11);
 
+	SetFontInfoForSelection(kFontSelectionATSUIType, 0, 0, 0);
+
 	for(int i = kNew; i <= kImport; i++)
 		EnableMenuItem(MyGetMenuHandle(kFileMenu), i);
 
@@ -2668,7 +2677,7 @@ static OSStatus AngbandGame(EventHandlerCallRef inCallRef,
 		if(data[i].mapped)
 			RevalidateGraphics(&data[i], 0);
 	}
-	
+
 	/* Flush the prompt */
 	Term_fresh();
 	Term_flush();
@@ -3024,16 +3033,13 @@ static OSStatus RevalidateGraphics(term_data *td, EventRef inEvent)
 	HICommand command;
 	command.commandID = 0;
 	command.menu.menuRef = 0;
-	int menuID = 0;
 	if(inEvent) {
 		GetEventParameter( inEvent, kEventParamDirectObject, typeHICommand,
 							NULL, sizeof(command), NULL, &command);
 	}
 
 	// Only rescale graphics when absolutely necessary.
-	if(command.commandID == 'graf')
-		menuID = GetMenuID(command.menu.menuRef);
-	if((menuID != kTileWidMenu ||  menuID != kTileHgtMenu))
+	if(command.commandID != kTileWidMenu && command.commandID != kTileHgtMenu)
 	{
 		// Reset tilesize to default when graphics change.
 		td->tile_wid = td->tile_hgt = 0;
@@ -3162,6 +3168,7 @@ static OSStatus FontCommand(EventHandlerCallRef inHandlerCallRef, EventRef inEve
 		(void) GetEventParameter (inEvent, kEventParamATSUFontID,
 							typeATSUFontID, NULL, sizeof(fid), NULL, &fid);
 
+		if(size > 32*(1<<16)) size = 32*(1<<16);
 		float fsize = 1.0*size/(1<<16);
 		FontChanged(fid, fsize);
 		return noErr;
@@ -3179,8 +3186,8 @@ static OSStatus FontCommand(EventHandlerCallRef inHandlerCallRef, EventRef inEve
 		if(w) fontInfo.focus = w; 
 		return noErr;
 	}
-	else if(type == 'font' && type == kEventFontPanelClosed) {
-		SetMenuItemTextWithCFString(GetMenuHandle(102), 3, CFSTR("Show Fonts"));
+	else if(class == 'font' && type == kEventFontPanelClosed) {
+		SetMenuItemTextWithCFString(GetMenuHandle(kStyleMenu), kFonts, CFSTR("Show Fonts"));
 		return noErr;
 	}
 
@@ -3221,7 +3228,6 @@ static OSStatus MouseCommand ( EventHandlerCallRef inCallRef,
 	// Y coordinate relative to top of window content region.
 	// HACK: assumes title width of 21 pixels.
 	p.y -= (td->r.top + 21);
-
 
 	Term_mousepress(p.x/td->tile_wid, p.y/td->tile_hgt, button);
 
@@ -3312,6 +3318,7 @@ static OSStatus PrintCommand(EventHandlerCallRef inCallRef, EventRef inEvent,
 	return noErr;
 }
 
+/* About angband... */
 static OSStatus AboutCommand(EventHandlerCallRef inCallRef, EventRef inEvent,
     void *inUserData )
 {
@@ -3323,27 +3330,36 @@ static OSStatus AboutCommand(EventHandlerCallRef inCallRef, EventRef inEvent,
 	if(command.commandID != 'abou')
 		return eventNotHandledErr;
 
-	/* About angband... */
-	DialogPtr dialog;
-	short item_hit;
-
-	/* Get the about dialogue */
-	dialog = GetNewDialog(128, 0, (WindowRef)-1);
-
 	/* Move it to the middle of the screen */
-	RepositionWindow( GetDialogWindow(dialog), NULL, kWindowCenterOnMainScreen);
+	RepositionWindow(aboutDialog,  NULL, kWindowCenterOnMainScreen);
 
 	/* Show the dialog */
-	TransitionWindow(GetDialogWindow(dialog),
+	TransitionWindow(aboutDialog,
 		kWindowZoomTransitionEffect,
 		kWindowShowTransitionAction,
 		NULL);
 
-	/* wait for user to click on it */
-	ModalDialog(0, &item_hit);
+	/* wait for user input */
+	for(;;) {
+		EventTargetRef target = GetEventDispatcherTarget();
+		EventRef event;
+		OSStatus err = ReceiveNextEvent(0, 0, kEventDurationForever, true, &event);
+		EventClass evc = GetEventClass(event);
+		EventType evt = GetEventKind(event);
+		if(err == noErr) {
+			SendEventToEventTarget (event, target);
+			ReleaseEvent(event);
+		}
+		if(evc == 'keyb' || (evc == 'mous' && evt == kEventMouseDown))
+			break;
+	}
 
-	/* Free the dialogue */
-	DisposeDialog(dialog);
+	/* Hide the dialogue */
+	TransitionWindow(aboutDialog,
+		kWindowZoomTransitionEffect,
+		kWindowHideTransitionAction,
+		NULL);
+
 	return noErr;
 }
 
