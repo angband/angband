@@ -33,7 +33,6 @@ BASEOBJS= \
   obj-info$(OBJEXT) \
   randart$(OBJEXT) \
   save$(OBJEXT) \
-  script$(OBJEXT) \
   spells1$(OBJEXT) \
   spells2$(OBJEXT) \
   squelch$(OBJEXT) \

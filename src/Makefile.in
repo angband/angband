@@ -201,7 +201,7 @@ angband_SOURCES = \
   h-config.h h-define.h h-system.h h-type.h init.h \
   types.h z-form.h z-rand.h z-term.h z-util.h \
   z-virt.h main.h \
-  script.c script.h
+  script.h
 
 EXTRA_angband_SOURCES = \
   main-ros.c main-ami.c main-dos.c main-emx.c \

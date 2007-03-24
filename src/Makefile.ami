@@ -25,7 +25,7 @@ OBJS2 = \
   squelch.o store.o birth.o load.o \
   wizard1.o wizard2.o obj-info.o \
   generate.o dungeon.o init1.o init2.o randart.o \
-  script.o use-obj.o x-spell.o l-misc.o l-monst.o l-object.o \
+  use-obj.o x-spell.o l-misc.o l-monst.o l-object.o \
   l-player.o l-random.o l-spell.o l-ui.o \
   sound-ami.o main-ami.o main.o
 

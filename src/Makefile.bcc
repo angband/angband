@@ -58,7 +58,6 @@ OBJ = \
   variable.obj wizard1.obj wizard2.obj xtra1.obj \
   xtra2.obj z-form.obj z-rand.obj z-term.obj \
   z-util.obj z-virt.obj \
-  script.obj \
   use-obj.obj x-spell.obj \
   obj-info.obj
 
