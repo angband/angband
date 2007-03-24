@@ -13,7 +13,7 @@
 
 # Objects
 OBJEXT=.o
-include Makefile.ibm
+include Makefile.inc
 OBJS = $(BASEOBJS) main.o main-ibm.o
 
 # Compiler
