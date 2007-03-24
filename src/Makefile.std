@@ -11,31 +11,35 @@
 # You can also place your alterations to a file in the src/ directory called 
 # "config", in which case that file will override what is specified here.
 #
-# If you used to use Makefile.gtk or Makefile.lsl, then just change the below
-# SYS_gtk or SYS_lsl option to "true", and set the others to "false".
+# If you used to use Makefile.gtk or Makefile.lsl, uncomment the appropriate
+# lines below.
 #
 
 #### Things you should, or could, change ####
 
+
 # What systems to try.
 #
 # By default, this tries to compile both the X11 and "curses" terminal mode
-# ports in the same executable.
+# ports in the same executable.  On Linux only, it also builds the lfb 'console' 
+# module.
 
-SYS_x11 = true
-SYS_gcu = true
-SYS_xaw = false
-SYS_gtk = false
-SYS_cap = false
-SYS_lsl = false
-SYS_sla = false
-SYS_vcs = false  # Linux only, AFAIK
-SYS_lfb = false  # Linux only
-SYS_xpj = false  # Still experimental, and requires X11/Xaw/GTK to be enabled
+# IMPORTANT: leave space between '= -D'
+SYS_x11 = -DUSE_X11
+SYS_gcu = -DUSE_GCU -DUSE_NCURSES
+#SYS_xaw = -DUSE_XAW # alternate X11 library
+#SYS_gtk = $(shell gtk-config --cflags) -DUSE_GTK
+#SYS_sla = -DUSE_SLA -I/usr/include/slang 
+#SYS_lsl = -DUSE_LSL # Linux only
+#SYS_vcs = -DUSE_VCS # Linux only
+SYS_lfb = -DUSE_LFB # Linux only (see below)
+#SYS_xpj = -DUSE_XPJ # Experimental. requires X11/Xaw/GTK to be enabled
+
 
 # Basic compiler stuff
 CC = gcc
-CFLAGS = -Wall -O2 -g -fno-strength-reduce
+CFLAGS = -Wall -O2 -fno-strength-reduce
+EXE = angband  # Executable name
 
 
 #### Things you probably shouldn't change, unless there is a problem ####
@@ -43,38 +47,18 @@ CFLAGS = -Wall -O2 -g -fno-strength-reduce
 # Import user prefs
 -include config
 
-# Eventually we'll have a mini-config tester here, but until then...
+# Enable what needs enabling
+CFLAGS += $(SYS_x11)$(SYS_gcu)$(SYS_xaw)$(SYS_gtk)$(SYS_cap)$(SYS_sla)$(SYS_xpj)
 
-## Disable X11 if necessary
-#ifneq ($(shell $(CC) -lX11 2&>/dev/null && echo -n "c"),c)
-#  SYS_x11 = false
-#endif
-#
-## Disable GCU if necessary
-#ifneq ($(shell $(CC) -lncurses 2&>/dev/null && echo -n "c"),c)
-#  SYS_gcu = false
-#endif
-#
 
+# Check for OS
 uname = $(shell uname)
 
-# Disable non-Linux ports on non-Linux
-ifneq ($(uname),Linux)
-  SYS_lfb = false
-
-# Enable mkstemp() also
-else
-  CFLAGS += -DHAVE_MKSTEMP
+# Enable linux-specific modules, if requested.
+ifeq ($(uname),Linux)
+  CFLAGS += -DHAVE_MKSTEMP $(SYS_lsl)$(SYS_lfb)$(SYS_vcs)
 endif
 
-# Disable XPJ without X11/Xaw/GTK
-ifeq ($(SYS_x11),false)
-  ifeq ($(SYS_gtk),false)
-    ifeq ($(SYS_xaw),false)
-      SYS_xpj = false
-    endif
-  endif
-endif
 
 
 #### System definitions ####
@@ -86,8 +70,7 @@ endif
 # "CFLAGS", if your machine places files in a weird location, for example
 # " -I/usr/X11R6/include", or "-L/usr/X11R6/lib" to LIBS.
 #
-ifeq ($(SYS_x11),true)
-  CFLAGS += -DUSE_X11
+ifneq ($(SYS_x11),)
   LIBS += -lX11
 endif
 
@@ -96,7 +79,7 @@ endif
 # Support main-gcu.c
 #
 # If this fails, try replacing "-lncurses" with "-lcurses -ltermcap",
-# and removing "-DUSE_NCURSES".
+# and removing "-DUSE_NCURSES"
 #
 # See "main-gcu.c" and "config.h" for some optional "curses" defines,
 # including "USE_GETCH" and "USE_CURS_SET".  Note that "config.h" will
@@ -104,8 +87,7 @@ endif
 # 
 # You may have to add " -I/usr/include/ncurses" to CFLAGS.
 #
-ifeq ($(SYS_gcu),true) 
-  CFLAGS += -DUSE_GCU -DUSE_NCURSES
+ifneq ($(SYS_gcu),) 
   LIBS += -lncurses
 endif
 
@@ -113,8 +95,7 @@ endif
 #
 # Support main-xaw.c
 #
-ifeq ($(SYS_xaw),true)
-  CFLAGS += -DUSE_XAW
+ifneq ($(SYS_xaw),)
   LIBS += -lXaw -lXext -lSM -lICE -lXmu -lXt -lX11
 endif
 
@@ -124,64 +105,24 @@ endif
 #
 # Note: gtk-config adds GTK and X11 includes and libraries as appropriate.
 #
-ifeq ($(SYS_gtk),true)
-  CFLAGS += `gtk-config --cflags` -DUSE_GTK
+ifneq ($(SYS_gtk),)
   LIBS += `gtk-config --libs`
 endif
-
-
-#
-# Support main-cap.c
-#
-# If you want this to work on simple vt100 terminals, add " -DUSE_HARDCODE"
-# to CFLAGS.
-#
-ifeq ($(SYS_cap),true)
-  CFLAGS += -DUSE_CAP
-  LIBS += -ltermcap
-endif
-
 
 #
 # Support main-lsl.c
 #
-ifeq ($(SYS_lsl),true)
-  CFLAGS += -DUSE_LSL
+ifneq ($(SYS_lsl),)
   LIBS += -lz -lvgagl -lvga
 endif
-
-
-#
-# Support main-vcs.c
-#
-ifeq ($(SYS_vcs),true)
-  CFLAGS += -DUSE_VCS
-endif
-
 
 #
 # Support main-sla.c
 #
-ifeq ($(SYS_sla),true)
-  CFLAGS += -DUSE_SLA -I/usr/include/slang
+ifneq ($(SYS_sla),)
   LIBS += -lslang
 endif
 
-
-#
-# Support main-lfb.c
-#
-ifeq ($(SYS_lfb),true)
-  CFLAGS += -DUSE_LFB
-endif
-
-
-#
-# Support main-xpj.c
-#
-ifeq ($(SYS_xpj),true)
-  CFLAGS += -DUSE_XPJ
-endif
 
 
 #### Old definitions, unchanged since at least 2000 ####
@@ -227,43 +168,29 @@ endif
 #LIBS = -lX11 -lcurses -lnsl_s -linet -lcposix
 
 
-##
-## Variation -- Support fat binaries under NEXTSTEP
-##
-#CFLAGS = -D"USE_GCU" -arch m68k -arch i386
-#LIBS = -lcurses -ltermcap
-
-
 
 #### Targets and objects #####
 
-# Set a target here
 default: angband
 
-# Makefile.inc contains an up-to-date set of object files to compile, so
-# we include it
+# Include the set of object files, and add platform files
 OBJEXT=.o
 include Makefile.inc
-
 OBJS = $(BASEOBJS) \
   main-cap.o main-gcu.o main-x11.o main-xaw.o main.o \
   main-gtk.o main-lsl.o main-sla.o main-vcs.o main-xpj.o \
   main-lfb.o maid-x11.o
 
 
-#
-# Targets
-#
-
-# Build the "Angband" program
+# Build Angband
 angband: $(OBJS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o angband $(OBJS) $(LIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS)
 
 # Install the game.
-install: ../angband
+install: ../$(EXE)
 
-../angband: angband
-	cp angband ..
+../$(EXE): $(EXE)
+	cp $(EXE) ../
 
 # Clean up old junk
 clean:
