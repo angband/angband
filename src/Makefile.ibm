@@ -12,51 +12,9 @@
 #
 
 # Objects
-OBJS = \
-  main.o \
-  main-ibm.o \
-  birth.o \
-  cave.o \
-  cmd1.o \
-  cmd2.o \
-  cmd3.o \
-  cmd4.o \
-  cmd5.o \
-  cmd6.o \
-  dungeon.o \
-  files.o \
-  generate.o \
-  init1.o \
-  init2.o \
-  load.o \
-  melee1.o \
-  melee2.o \
-  monster1.o \
-  monster2.o \
-  obj-info.o \
-  object1.o \
-  object2.o \
-  randart.o \
-  save.o \
-  spells1.o \
-  spells2.o \
-  squelch.o \
-  store.o \
-  tables.o \
-  util.o \
-  variable.o \
-  wizard1.o \
-  wizard2.o \
-  xtra1.o \
-  xtra2.o \
-  z-term.o \
-  z-rand.o \
-  z-form.o \
-  z-virt.o \
-  z-util.o \
-  script.o \
-  use-obj.o \
-  x-spell.o
+OBJEXT=.o
+include Makefile.ibm
+OBJS = $(BASEOBJS) main.o main-ibm.o
 
 # Compiler
 CC = gcc
