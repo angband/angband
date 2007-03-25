@@ -46,6 +46,12 @@ LIBS = -framework CoreFoundation -framework QuickTime -framework Carbon
 # $ make -f Makefile.osx clean borg all
 BOBJS = borg1.o borg2.o borg3.o borg4.o borg5.o borg6.o borg7.o \
 			borg8.o borg9.o
+ 
+# -DALLOW_BORG is required for all .o files in a borg build 
+ifneq (,$(findstring borg, $(MAKECMDGOALS)))
+CFLAGS += -DALLOW_BORG
+endif
+
 
 OBJS = $(BASEOBJS) main-crb.o
 
