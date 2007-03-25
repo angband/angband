@@ -232,7 +232,7 @@ void flavor_init(void)
 				if (strlen(buf) + 1 + strlen(tmp) > 15) break;
 
 				/* Add a space */
-				strcat(buf, " ");
+				my_strcat(buf, " ", sizeof(buf));
 
 				/* Add the word */
 				my_strcat(buf, tmp, sizeof(buf));
@@ -3031,13 +3031,13 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 			}
 
 			/* Indicate ability to "view" */
-			if (!p_ptr->command_see) strcat(out_val, " * to see,");
+			if (!p_ptr->command_see) my_strcat(out_val, " * to see,", sizeof(out_val));
 
 			/* Indicate legality of "toggle" */
-			if (use_equip) strcat(out_val, " / for Equip,");
+			if (use_equip) my_strcat(out_val, " / for Equip,", sizeof(out_val));
 
 			/* Indicate legality of the "floor" */
-			if (allow_floor) strcat(out_val, " - for floor,");
+			if (allow_floor) my_strcat(out_val, " - for floor,", sizeof(out_val));
 		}
 
 		/* Viewing equipment */
@@ -3061,13 +3061,13 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 			}
 
 			/* Indicate ability to "view" */
-			if (!p_ptr->command_see) strcat(out_val, " * to see,");
+			if (!p_ptr->command_see) my_strcat(out_val, " * to see,", sizeof(out_val));
 
 			/* Indicate legality of "toggle" */
-			if (use_inven) strcat(out_val, " / for Inven,");
+			if (use_inven) my_strcat(out_val, " / for Inven,", sizeof(out_val));
 
 			/* Indicate legality of the "floor" */
-			if (allow_floor) strcat(out_val, " - for floor,");
+			if (allow_floor) my_strcat(out_val, " - for floor,", sizeof(out_val));
 		}
 
 		/* Viewing floor */
@@ -3090,17 +3090,17 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 			}
 
 			/* Indicate ability to "view" */
-			if (!p_ptr->command_see) strcat(out_val, " * to see,");
+			if (!p_ptr->command_see) my_strcat(out_val, " * to see,", sizeof(out_val));
 
 			/* Append */
-			if (use_inven) strcat(out_val, " / for Inven,");
+			if (use_inven) my_strcat(out_val, " / for Inven,", sizeof(out_val));
 
 			/* Append */
-			else if (use_equip) strcat(out_val, " / for Equip,");
+			else if (use_equip) my_strcat(out_val, " / for Equip,", sizeof(out_val));
 		}
 
 		/* Finish the prompt */
-		strcat(out_val, " ESC");
+		my_strcat(out_val, " ESC", sizeof(out_val));
 
 		/* Build the prompt */
 		strnfmt(tmp_val, sizeof(tmp_val), "(%s) %s", out_val, pmt);

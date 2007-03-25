@@ -536,7 +536,7 @@ static int alloc_pen(ULONG r, ULONG g, ULONG b);
 void load_palette ( void );
 static int read_enhanced_palette ( void );
 static int read_normal_palette(void);
-static char *handle_font(struct term_data *td, char *fontname);
+static char *handle_font(struct term_data *td, char *fontname, size_t fontname_size);
 ULONG trans ( byte g );
 int create_menus ( void );
 void update_menus ( void );
@@ -908,8 +908,8 @@ errr init_ami(int argc, char **argv)
 		while (fsize < our_max)
 		{
 			/* Make sure the font name ends with .font */
-			if ( !strstr( ts->fontname, ".font" ))
-				strcat( ts->fontname, ".font" );
+			if (!strstr(ts->fontname, ".font"))
+				my_strcat(ts->fontname, ".font", sizeof(ts->fontname));
 
 			/* Set font attributes */
 			attr.ta_Name  = ts->fontname;
@@ -2203,7 +2203,7 @@ int read_prefs( void )
 			else
 				strcpy(fontname,param);
 
-			s = handle_font(td, fontname);
+			s = handle_font(td, fontname, sizeof(fontname));
 			if (s)
 				puts(s);
 		}
@@ -2227,7 +2227,7 @@ int read_prefs( void )
 	fclose( file );
 }
 
-static char *handle_font(struct term_data *td, char *fontname)
+static char *handle_font(struct term_data *td, char *fontname, size_t fontname_size)
 {
 	static char error[128];
 	struct TextAttr attr;
@@ -2257,7 +2257,7 @@ static char *handle_font(struct term_data *td, char *fontname)
 
 		return NULL;
 	}
-		else
+	else
 	{
 		/* Find font name/size delimiter */
 		if (( s = strchr( fontname, '/' )) == NULL )
@@ -2280,8 +2280,8 @@ static char *handle_font(struct term_data *td, char *fontname)
 			fsize = atoi( s );
 
 		/* Make sure the font name ends with .font */
-		if ( !strstr( fontname, ".font" ))
-			strcat( fontname, ".font" );
+		if (!strstr(fontname, ".font"))
+			my_strcat(fontname, ".font", fontname_size);
 
 		/* Set font attributes */
 		attr.ta_Name  = fontname;
@@ -3199,7 +3199,7 @@ void handle_menupick( int mnum, int term )
 					}
 
 					request_font(fontname);
-					handle_font(td, fontname);
+					handle_font(td, fontname, sizeof(fontname));
 
 					SetFont(td->rp, td->font);
 					Term_activate( angband_term[ term ] );
@@ -4928,7 +4928,7 @@ void amiga_makepath( char *name )
 
 		c = temp2[strlen(temp2) - 1];
 		if (c != '/' && c != ':')
-			strcat(temp2,"/");
+			my_strcat(temp2, "/", sizeof(temp2));
 		strcpy(name, temp2);
 		return;
 	}
@@ -5098,7 +5098,7 @@ void amiga_hs_to_ascii(void)
 				    h.how);
 
 	/* Append a "maximum level" */
-	if (mdun > cdun) strcat(temp, format(" (Max %d)", mdun));
+	if (mdun > cdun) my_strcat(temp, format(" (Max %d)", mdun), sizeof(temp));
 
 	/* Dump the info */
 	fprintf(d, "%s\n",temp);

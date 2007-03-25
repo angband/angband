@@ -1679,7 +1679,7 @@ bool save_player(void)
 
 	/* New savefile */
 	my_strcpy(safe, savefile, sizeof(safe));
-	strcat(safe, ".new");
+	my_strcat(safe, ".new", sizeof(safe));
 
 	/* Grab permissions */
 	safe_setuid_grab();
@@ -1697,7 +1697,7 @@ bool save_player(void)
 
 		/* Old savefile */
 		my_strcpy(temp, savefile, sizeof(temp));
-		strcat(temp, ".old");
+		my_strcat(temp, ".old", sizeof(temp));
 
 		/* Grab permissions */
 		safe_setuid_grab();
@@ -1724,7 +1724,7 @@ bool save_player(void)
 
 		/* Lock on savefile */
 		my_strcpy(temp, savefile, sizeof(temp));
-		strcat(temp, ".lok");
+		my_strcat(temp, ".lok", sizeof(temp));
 
 		/* Grab permissions */
 		safe_setuid_grab();

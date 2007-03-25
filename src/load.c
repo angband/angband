@@ -2118,7 +2118,7 @@ bool load_player(void)
 
 		/* Extract name of lock file */
 		my_strcpy(temp, savefile, sizeof(temp));
-		strcat(temp, ".lok");
+		my_strcat(temp, ".lok", sizeof(temp));
 
 		/* Grab permissions */
 		safe_setuid_grab();
@@ -2332,7 +2332,7 @@ bool load_player(void)
 
 		/* Extract name of lock file */
 		my_strcpy(temp, savefile, sizeof(temp));
-		strcat(temp, ".lok");
+		my_strcat(temp, ".lok", sizeof(temp));
 
 		/* Grab permissions */
 		safe_setuid_grab();

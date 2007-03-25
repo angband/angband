@@ -921,7 +921,7 @@ static errr Term_user_lfb(int n)
 				if (!get_string("Font: ", buf, sizeof(buf))) return (0);
 
 				path_build(path, sizeof(path), ANGBAND_DIR_XTRA_FONT, buf);
-				strcat(path, ".bmp");
+				my_strcat(path, ".bmp", sizeof(path));
 
 				/*
 				 * Try to read the font specified.  If this fails, reload
@@ -930,7 +930,7 @@ static errr Term_user_lfb(int n)
 				if (fb_read_font(path, FALSE))
 				{
 					path_build(path, sizeof(path), ANGBAND_DIR_XTRA_FONT, fb_font);
-					strcat(path, ".bmp");
+					my_strcat(path, ".bmp", sizeof(path));
 
 					if (fb_read_font(path, FALSE)) exit_game_panic();
 
@@ -942,7 +942,7 @@ static errr Term_user_lfb(int n)
 					if (fb_vinfo.xres / fontw < 80 || fb_vinfo.yres / fonth < 24)
 					{
 						path_build(path, sizeof(path), ANGBAND_DIR_XTRA_FONT, fb_font);
-						strcat(path, ".bmp");
+						my_strcat(path, ".bmp", sizeof(path));
 
 						if (fb_read_font(path, FALSE)) exit_game_panic();
 
@@ -1533,7 +1533,7 @@ errr init_lfb(int argc, char **argv)
 
 	/* Load the font */
 	path_build(path, sizeof(path), ANGBAND_DIR_XTRA_FONT, fb_font);
-	strcat(path, ".bmp");
+	my_strcat(path, ".bmp", sizeof(path));
 	fb_read_font(path, TRUE);
 
 	/* Preserve the cell dimensions */
