@@ -24,89 +24,66 @@
 # module.
 
 
+# Recent, known-to-work ports
 
-# support X11 (main-x11.c)
+# Support X11 (main-x11.c)
 # You may have to add various X11 include/library directories to the
 # "CFLAGS", if your machine places files in a weird location, for example
 # " -I/usr/X11R6/include", or "-L/usr/X11R6/lib" to LIBS.
 SYS_x11 = -DUSE_X11 -lX11
 
-
-# support curses console mode (main-gcu.c)
+# Support curses console mode (main-gcu.c)
 # If this fails, try the alternate below
 SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncurses
 #SYS_gcu = -DUSE_GCU -lcurses -ltermcap
 
-# support Xaw motif (main-xaw.c)
+# Support Xaw motif (main-xaw.c)
 #SYS_xaw = -DUSE_XAW -lXaw -lXext -lSM -lICE -lXmu -lXt -lX11
 
-# Support gtk alternative x11 (main-gtk.c)
+# Support the GTK graphical tookit (main-gtk.c)
 #SYS_gtk = $(shell gtk-config --cflags) -DUSE_GTK $(shell gtk-config --libs)
 
-
-
-# Linux specific flags (appended conditionally below)
-
-# support raw console  (main-lfb.c)
-SYS_lfb = -DUSE_LFB
-#
-# support linux in VGA mode (main-lsl.c)
-#SYS_lsl = -DUSE_LSL -lz -lvgagl -lvga
-
-
-# Experimental. requires X11/Xaw/GTK to be enabled (main-xpj.c)
+# Support "projected mode". Experimental, requires X11/Xaw/GTK to be enabled (main-xpj.c)
 #SYS_xpj = -DUSE_xpj
+
+# Support raw console access (main-lfb.c) -- Linux only
+SYS_lfb = -DUSE_LFB
+
+# Support linux in VGA mode (main-lsl.c) -- Linux only
+#SYS_lsl = -DUSE_LSL -lz -lvgagl -lvga
 
 
 
 # Old raw tty protocols that may not work
 # With curses support, all are effectively superceded by USE_GCU
 
-# use direct termio on 8bit color-depth screen (main-vcs.c)
+# Support direct termio on 8bit color-depth screen (main-vcs.c)
 #SYS_vcs = -DUSE_VCS
 
-# Unix 'slang' (Also available on OS/2) (main-sla.c)
+# Support Unix 'slang', also available on OS/2 (main-sla.c)
 #SYS_sla = -DUSE_SLA -I/usr/include/slang -lslang
 
-# primitive termcap emulation of a vt100 (slow and unreliable) (main-cap.c)
+# Support primitive termcap emulation of a vt100 (slow and unreliable) (main-cap.c)
 # -DUSE_HARDCODE in the unlikely event you are using a VT100 without curses
 #SYS_cap = -DUSE_CAP -ltermcap
 
 
-# linux-specific modules are appended below
-
-MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_xaw) $(SYS_gtk) $(SYS_xpj) $(SYS_sla) $(SYS_cap)
-
-MCFLAGS = $(patsubst -l%,,$(MODULES))
-MLFLAGS = $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
-
-
-
 # Basic compiler stuff
+CC = gcc
+CFLAGS = -Wall -O2 -fno-strength-reduce
+
 
 # Add additional search directives here
 # Example: -I/usr/X11R6/include -I/usr/include/ncurses
 INCLUDES =
-# Example: -L/usr/X11R6/lib
-LFLAGS =
+# Example: -L/usr/X11R6/lib 
+LIBS =
 
-CC = gcc
-CFLAGS = -Wall $(OPT) -fno-strength-reduce $(MCFLAGS) $(INCLUDES)
-LIBS = $(LFLAGS) $(MLFLAGS)
-
-X11OBJS = maid-x11.o main-x11.o main-xaw.o main-gtk.o main-xpj.o
-MAINOBJS = main.o main-cap.o main-gcu.o main-gtk.o main-sla.o $(X11OBJS) $(LINUXOBJ)
-OBJS = $(BASEOBJS) $(MAINOBJS)
-
-
-ifeq ($(OPT),)
-OPT = -O2
-endif
 
 # Version info
-VERSION = 3_0_7s3
-# Name of the game
 EXE = angband
+VERSION = 3.0.8
+
 
 
 #### Things you probably shouldn't change, unless there is a problem ####
@@ -117,7 +94,14 @@ EXE = angband
 -include config
 
 
-uname = $(shell uname)
+# Extract CFLAGS and LIBS from the system definitions
+MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_xaw) $(SYS_gtk) $(SYS_xpj) $(SYS_sla) $(SYS_cap)
+CFLAGS += $(patsubst -l%,,$(MODULES)) $(INCLUDES)
+LIBS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
+
+
+# Extract system we're running on
+uname = $(shell uname -s)
 
 # Enable linux-specific modules, if requested.
 ifeq ($(uname),Linux)
@@ -126,49 +110,19 @@ ifeq ($(uname),Linux)
   CFLAGS += -DHAVE_MKSTEMP
 endif
 
+# Add Solaris bits -- untested
+ifeq ($(uname),SunOS)
+  LIBS += -lsocket
+  CFLAGS += -DSOLARIS
+endif
 
 
-#### Old definitions, unchanged since at least 2000 ####
-
-##
-## Variation -- this might work better than the suggestion above
-##
-#CFLAGS = -I/usr/include/ncurses \
-#         -Wall -O2 -fno-strength-reduce -fomit-frame-pointer \
-#         -D"USE_X11" -D"USE_GCU" \
-#         -D"USE_TPOSIX" -D"USE_CURS_SET"
-#LIBS = -lX11 -lncurses
-#LDFLAGS = -s
+# Object definitions
+X11OBJS = maid-x11.o main-x11.o main-xaw.o main-gtk.o main-xpj.o
+MAINOBJS = main.o main-cap.o main-gcu.o main-gtk.o main-sla.o $(X11OBJS) $(LINUXOBJ)
+OBJS = $(BASEOBJS) $(MAINOBJS)
 
 
-##
-## Variation -- compile for Solaris
-##
-#CFLAGS = -D"USE_X11" -D"USE_GCU" -D"SOLARIS"
-#LIBS = -lX11 -lsocket -lcurses
-
-
-##
-## Variation -- compile for SGI Indigo runnig Irix
-##
-#CFLAGS = -D"USE_X11" -D"USE_GCU" -D"SGI"
-#LIBS = -lX11 -lcurses -ltermcap -lsun
-
-
-##
-## Variation -- compile for Dec ALPHA OSF/1 v2.0
-##
-#CC     = cc
-##CFLAGS = -std -O -g3 -Olimit 4000 -D"USE_X11" -D"USE_GCU"
-#CFLAGS = -std -g -D"USE_X11" -D"USE_GCU"
-#LIBS   = -lX11 -lcurses -ltermcap -lrpcsvc
-
-
-##
-## Variation -- compile for Interactive Unix (ISC) systems
-##
-#CFLAGS = -D"USE_X11" -D"USE_GCU" -D"ISC"
-#LIBS = -lX11 -lcurses -lnsl_s -linet -lcposix
 
 
 #### Targets and objects #####
@@ -203,9 +157,9 @@ clean:
 
 # make a distribution
 DIRS = lib/apex lib/bone lib/data lib/edit lib/file lib/help lib/info \
-		lib/pref lib/save lib/user lib/xtra/sound lib/xtra/graf lib/xtra/font
+       lib/pref lib/save lib/user lib/xtra/sound lib/xtra/graf lib/xtra/font
 
-TMPDIR = ./$(EXE)$(VERSION)
+TMPDIR = ./$(EXE)-$(VERSION)
 dist:
 	@-rm -rf $(TMPDIR)
 	@echo making directories...
@@ -220,7 +174,7 @@ dist:
 	@-cp ../lib/xtra/sound/*.wav $(TMPDIR)/lib/xtra/sound
 	@-cp ../lib/xtra/graf/*.bmp $(TMPDIR)/lib/xtra/graf
 	@cp $(EXE) $(TMPDIR)
-	tar czf ../$(EXE)$(VERSION).tgz $(TMPDIR)
+	tar czf ../$(EXE)-$(VERSION).tar.gz $(TMPDIR)
 	rm -rf $(TMPDIR)
 
 
