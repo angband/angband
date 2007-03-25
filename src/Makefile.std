@@ -95,7 +95,7 @@ CFLAGS = -Wall $(OPT) -fno-strength-reduce $(MCFLAGS) $(INCLUDES)
 LIBS = $(LFLAGS) $(MLFLAGS)
 
 X11OBJS = maid-x11.o main-x11.o main-xaw.o main-gtk.o main-xpj.o
-MAINOBJS = $(X11OBJS) main-cap.o main-gcu.o main-gtk.o main-sla.o $(LINUXOBJ)
+MAINOBJS = main.o main-cap.o main-gcu.o main-gtk.o main-sla.o $(X11OBJS) $(LINUXOBJ)
 OBJS = $(BASEOBJS) $(MAINOBJS)
 
 
