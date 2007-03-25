@@ -11,10 +11,6 @@
 # Basic definitions
 #
 
-# Objects
-OBJEXT=.o
-include Makefile.inc
-OBJS = $(BASEOBJS) main.o main-dos.o main-ibm.o
 
 # Compiler
 CC = gcc
@@ -26,19 +22,21 @@ CFLAGS = -Wall -O2 -fno-strength-reduce -s -DUSE_DOS -DUSE_IBM \
 # Libraries
 LIBS = -lpc -lalleg
 
+OBJS = $(BASEOBJS) main.o main-dos.o main-ibm.o
 
 #
 # Targets
 #
-
-default: angband.exe
-
-install: angband.exe
-	copy angband.exe ..
-
 all: angband.exe
 	@echo All done.  Use 'make install' to install.
 
+# Objects
+OBJEXT=.o
+include Makefile.inc
+
+
+install: angband.exe
+	copy angband.exe ..
 
 #
 # Link executables

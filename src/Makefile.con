@@ -10,15 +10,16 @@
 PDCURSES_INCLUDE_DIR = ../../pdcurses/include
 PDCURSES_LIB = ../../pdcurses/lib/pdcurses.a
 
-OBJEXT=.o
-include Makefile.inc
 OBJS = $(BASEOBJS) main-gcu.o main.o
 
 CC = gcc
 CFLAGS = -Wall -W -pedantic -O2 -D"USE_GCU" -DWIN32_CONSOLE_MODE -I$(PDCURSES_INCLUDE_DIR)
 LIBS = $(PDCURSES_LIB)
 
+all: angband
 
+OBJEXT=.o
+include Makefile.inc
 
 # 
 # Build the "Angband" program 

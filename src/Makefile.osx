@@ -64,8 +64,6 @@ OBJEXT = .o
 include Makefile.inc
 
 
-
-
 #
 # Build the "Angband" program
 #

@@ -1,4 +1,3 @@
-#
 # File: Makefile.std
 # Standard makefile for Angband.
 #
@@ -24,103 +23,107 @@
 # ports in the same executable.  On Linux only, it also builds the lfb 'console' 
 # module.
 
-# IMPORTANT: leave space between '= -D'
-SYS_x11 = -DUSE_X11
-SYS_gcu = -DUSE_GCU -DUSE_NCURSES
-#SYS_xaw = -DUSE_XAW # alternate X11 library
-#SYS_gtk = $(shell gtk-config --cflags) -DUSE_GTK
-#SYS_sla = -DUSE_SLA -I/usr/include/slang 
-#SYS_lsl = -DUSE_LSL # Linux only
-#SYS_vcs = -DUSE_VCS # Linux only
-SYS_lfb = -DUSE_LFB # Linux only (see below)
-#SYS_xpj = -DUSE_XPJ # Experimental. requires X11/Xaw/GTK to be enabled
+
+
+# support X11 (main-x11.c)
+# You may have to add various X11 include/library directories to the
+# "CFLAGS", if your machine places files in a weird location, for example
+# " -I/usr/X11R6/include", or "-L/usr/X11R6/lib" to LIBS.
+SYS_x11 = -DUSE_X11 -lX11
+
+
+# support curses console mode (main-gcu.c)
+# If this fails, try the alternate below
+SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncurses
+#SYS_gcu = -DUSE_GCU -lcurses -ltermcap
+
+# support Xaw motif (main-xaw.c)
+#SYS_xaw = -DUSE_XAW -lXaw -lXext -lSM -lICE -lXmu -lXt -lX11
+
+# Support gtk alternative x11 (main-gtk.c)
+#SYS_gtk = $(shell gtk-config --cflags) -DUSE_GTK $(shell gtk-config --libs)
+
+
+
+# Linux specific flags (appended conditionally below)
+
+# support raw console  (main-lfb.c)
+SYS_lfb = -DUSE_LFB
+#
+# support linux in VGA mode (main-lsl.c)
+#SYS_lsl = -DUSE_LSL -lz -lvgagl -lvga
+
+
+# Experimental. requires X11/Xaw/GTK to be enabled (main-xpj.c)
+#SYS_xpj = -DUSE_xpj
+
+
+
+# Old raw tty protocols that may not work
+# With curses support, all are effectively superceded by USE_GCU
+
+# use direct termio on 8bit color-depth screen (main-vcs.c)
+#SYS_vcs = -DUSE_VCS
+
+# Unix 'slang' (Also available on OS/2) (main-sla.c)
+#SYS_sla = -DUSE_SLA -I/usr/include/slang -lslang
+
+# primitive termcap emulation of a vt100 (slow and unreliable) (main-cap.c)
+# -DUSE_HARDCODE in the unlikely event you are using a VT100 without curses
+#SYS_cap = -DUSE_CAP -ltermcap
+
+
+# linux-specific modules are appended below
+
+MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_xaw) $(SYS_gtk) $(SYS_xpj) $(SYS_sla) $(SYS_cap)
+
+MCFLAGS = $(patsubst -l%,,$(MODULES))
+MLFLAGS = $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
+
 
 
 # Basic compiler stuff
+
+# Add additional search directives here
+# Example: -I/usr/X11R6/include -I/usr/include/ncurses
+INCLUDES =
+# Example: -L/usr/X11R6/lib
+LFLAGS =
+
 CC = gcc
-CFLAGS = -Wall -O2 -fno-strength-reduce
-EXE = angband  # Executable name
+CFLAGS = -Wall $(OPT) -fno-strength-reduce $(MCFLAGS) $(INCLUDES)
+LIBS = $(LFLAGS) $(MLFLAGS)
+
+X11OBJS = maid-x11.o main-x11.o main-xaw.o main-gtk.o main-xpj.o
+MAINOBJS = $(X11OBJS) main-cap.o main-gcu.o main-gtk.o main-sla.o $(LINUXOBJ)
+OBJS = $(BASEOBJS) $(MAINOBJS)
+
+
+ifeq ($(OPT),)
+OPT = -O2
+endif
+
+# Version info
+VERSION = 3_0_7s3
+# Name of the game
+EXE = angband
 
 
 #### Things you probably shouldn't change, unless there is a problem ####
 
 # Import user prefs
+# If you don't want to edit this file, put your module redefinitions
+# and build flags in "./config"
 -include config
 
-# Enable what needs enabling
-CFLAGS += $(SYS_x11)$(SYS_gcu)$(SYS_xaw)$(SYS_gtk)$(SYS_cap)$(SYS_sla)$(SYS_xpj)
 
-
-# Check for OS
 uname = $(shell uname)
 
 # Enable linux-specific modules, if requested.
 ifeq ($(uname),Linux)
-  CFLAGS += -DHAVE_MKSTEMP $(SYS_lsl)$(SYS_lfb)$(SYS_vcs)
-endif
-
-
-
-#### System definitions ####
-
-#
-# Support main-x11.c
-#
-# You may have to add various X11 include/library directories to the
-# "CFLAGS", if your machine places files in a weird location, for example
-# " -I/usr/X11R6/include", or "-L/usr/X11R6/lib" to LIBS.
-#
-ifneq ($(SYS_x11),)
-  LIBS += -lX11
-endif
-
-
-#
-# Support main-gcu.c
-#
-# If this fails, try replacing "-lncurses" with "-lcurses -ltermcap",
-# and removing "-DUSE_NCURSES"
-#
-# See "main-gcu.c" and "config.h" for some optional "curses" defines,
-# including "USE_GETCH" and "USE_CURS_SET".  Note that "config.h" will
-# attempt to "guess" at many of these flags based on your system.
-# 
-# You may have to add " -I/usr/include/ncurses" to CFLAGS.
-#
-ifneq ($(SYS_gcu),) 
-  LIBS += -lncurses
-endif
-
-
-#
-# Support main-xaw.c
-#
-ifneq ($(SYS_xaw),)
-  LIBS += -lXaw -lXext -lSM -lICE -lXmu -lXt -lX11
-endif
-
-
-#
-# Support main-gtk.c
-#
-# Note: gtk-config adds GTK and X11 includes and libraries as appropriate.
-#
-ifneq ($(SYS_gtk),)
-  LIBS += `gtk-config --libs`
-endif
-
-#
-# Support main-lsl.c
-#
-ifneq ($(SYS_lsl),)
-  LIBS += -lz -lvgagl -lvga
-endif
-
-#
-# Support main-sla.c
-#
-ifneq ($(SYS_sla),)
-  LIBS += -lslang
+  MODULES += $(SYS_lsl) $(SYS_lfb) $(SYS_vcs)
+  LINUXOBJS = main-lsl.o main-vcs.o main-lfb.o
+  CFLAGS += -DHAVE_MKSTEMP
 endif
 
 
@@ -168,33 +171,64 @@ endif
 #LIBS = -lX11 -lcurses -lnsl_s -linet -lcposix
 
 
-
 #### Targets and objects #####
 
-default: angband
+# Set a target here
+default: $(EXE)
 
-# Include the set of object files, and add platform files
+# Makefile.inc contains an up-to-date set of object files to compile, so
+# we include it
 OBJEXT=.o
 include Makefile.inc
-OBJS = $(BASEOBJS) \
-  main-cap.o main-gcu.o main-x11.o main-xaw.o main.o \
-  main-gtk.o main-lsl.o main-sla.o main-vcs.o main-xpj.o \
-  main-lfb.o maid-x11.o
 
 
-# Build Angband
-angband: $(OBJS)
+#
+# Targets
+#
+
+# Build the "Angband" program
+$(EXE): $(OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS)
 
 # Install the game.
 install: ../$(EXE)
 
+
 ../$(EXE): $(EXE)
-	cp $(EXE) ../
+	cp $(EXE) ..
 
 # Clean up old junk
 clean:
-	-rm -f *.o angband
+	-rm -f *.o $(EXE)
+
+# make a distribution
+DIRS = lib/apex lib/bone lib/data lib/edit lib/file lib/help lib/info \
+		lib/pref lib/save lib/user lib/xtra/sound lib/xtra/graf lib/xtra/font
+
+TMPDIR = ./$(EXE)$(VERSION)
+dist:
+	@-rm -rf $(TMPDIR)
+	@echo making directories...
+	@for i in $(DIRS) ; do mkdir -p $(TMPDIR)/$$i ; done
+	@echo copying files...
+	@cp ../lib/edit/*.txt $(TMPDIR)/lib/edit
+	@cp ../lib/file/*.txt $(TMPDIR)/lib/file
+	@cp ../lib/help/*.txt ../lib/help/*.hlp $(TMPDIR)/lib/help
+	@cp ../lib/pref/*.prf $(TMPDIR)/lib/pref
+	@cp ../lib/xtra/font/*.txt $(TMPDIR)/lib/xtra/font
+	@echo attempting to install sound and graphics
+	@-cp ../lib/xtra/sound/*.wav $(TMPDIR)/lib/xtra/sound
+	@-cp ../lib/xtra/graf/*.bmp $(TMPDIR)/lib/xtra/graf
+	@cp $(EXE) $(TMPDIR)
+	tar czf ../$(EXE)$(VERSION).tgz $(TMPDIR)
+	rm -rf $(TMPDIR)
+
+
+#  Verify module arguments
+args:
+	@echo CFLAGS = $(CFLAGS)
+	@echo LIBS = $(LIBS)
+
 
 # Generate dependencies automatically
 depend:
@@ -202,18 +236,12 @@ depend:
 
 
 # Some file dependencies
-%.o: %.c $(INCS)
+%.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-maid-x11.o: maid-x11.c $(INCS) maid-x11.h
-main-cap.o: main-cap.c $(INCS) main.h
-main-gcu.o: main-gcu.c $(INCS) main.h
-main-gtk.o: main-gtk.c $(INCS) main.h maid-x11.h
-main-lsl.o: main-lsl.c $(INCS) main.h
-main-sla.o: main-sla.c $(INCS) main.h
-main-vcs.o: main-vcs.c $(INCS) main.h
-main-x11.o: main-x11.c $(INCS) main.h maid-x11.h
-main-xaw.o: main-xaw.c $(INCS) main.h maid-x11.h
-main-xpj.o: main-xpj.c $(INCS) main.h maid-x11.h
-main-lfb.o: main-lfb.c $(INCS) main.h
-main.o: main.c $(INCS) main.h
+# X11 dependencies
+$(X11OBJS) : $(INCS) maid-x11.h main.h
+
+# Basic dependencies for main-xxx.c, main.c
+$(MAINOBJS) : main.h $(INCS)
+
