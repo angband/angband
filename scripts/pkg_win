@@ -1,0 +1,61 @@
+#!/bin/sh
+#
+# Simple packaging file for the Windows port.  Only really useful when
+# cross-compiling, or using Cygwin.  Originally by Robert Ruehlmann.
+#
+# Requires you have UPX (http://upx.sf.net/) installed.
+#
+# Use in the root directory of the game, like so:
+#   scripts/pkg_win <name of of release, e.g. angband-3.4.6>
+#
+mkdir $1
+cd $1
+
+mkdir lib
+mkdir lib/apex
+mkdir lib/bone
+mkdir lib/data
+mkdir lib/edit
+mkdir lib/file
+mkdir lib/help
+mkdir lib/info
+mkdir lib/pref
+mkdir lib/save
+mkdir lib/script
+mkdir lib/user
+mkdir lib/xtra
+mkdir lib/xtra/font
+mkdir lib/xtra/graf
+mkdir lib/xtra/sound
+
+touch lib/apex/delete.me lib/bone/delete.me lib/data/delete.me \
+      lib/info/delete.me lib/save/delete.me lib/user/delete.me \
+      lib/data/delete.me lib/save/delete.me lib/bone/delete.me
+
+cp ../*.exe .
+cp ../changes.txt ../AUTHORS ../THANKS ../TODO ../COPYING ../readme.txt .
+
+cp ../lib/edit/*.txt lib/edit
+cp ../lib/file/*.txt lib/file
+
+cp ../lib/help/*.txt lib/help
+
+cp ../lib/pref/*.prf lib/pref
+
+cp ../lib/xtra/font/*.fon lib/xtra/font
+
+cp ../lib/xtra/graf/8x8.bmp lib/xtra/graf
+cp ../lib/xtra/graf/16x16.bmp lib/xtra/graf
+cp ../lib/xtra/graf/mask.bmp lib/xtra/graf
+cp ../lib/xtra/graf/readme.txt lib/xtra/graf
+
+cp ../lib/xtra/sound/sound.cfg lib/xtra/sound
+cp ../lib/xtra/sound/*.wav lib/xtra/sound
+
+upx -9 angband.exe
+
+cd ..
+
+zip -9 -r $1.zip $1
+
+rm -rf $1

@@ -1,7 +1,12 @@
 Compiling Angband
 =================
 
-Last updated on 13th March 2005 by Robert Ruehlmann
+Last updated on 23rd March 2007 by Andrew Sidwell
+
+If you are able to construct "main-xxx.c" and/or "Makefile.xxx" files for
+a currently unsupported system, please write to the Angband newsgroup
+(rec.games.roguelike.angband) with details, and it will probably be included
+in a future version.
 
 
 ----------------------------------------------------------------------

@@ -27,7 +27,7 @@ angband_SOURCES = \
   angband.h config.h defines.h externs.h h-basic.h \
   h-config.h h-define.h h-system.h h-type.h init.h \
   types.h z-form.h z-rand.h z-term.h z-util.h \
-  z-virt.h main.h \
+  z-virt.h z-file.h main.h \
   script.h
 
 EXTRA_angband_SOURCES = \

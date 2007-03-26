@@ -64,10 +64,10 @@ am_angband_OBJECTS = z-util.$(OBJEXT) z-virt.$(OBJEXT) \
 	wizard2.$(OBJEXT) main-cap.$(OBJEXT) main-gcu.$(OBJEXT) \
 	main-x11.$(OBJEXT) main-xaw.$(OBJEXT) main.$(OBJEXT) \
 	main-win.$(OBJEXT) main-xpj.$(OBJEXT) main-vcs.$(OBJEXT) \
-	main-gtk.$(OBJEXT) generate.$(OBJEXT) dungeon.$(OBJEXT) \
-	init1.$(OBJEXT) init2.$(OBJEXT) randart.$(OBJEXT) \
-	use-obj.$(OBJEXT) x-spell.$(OBJEXT) obj-info.$(OBJEXT) \
-	squelch.$(OBJEXT) script.$(OBJEXT)
+	main-gtk.$(OBJEXT) main-lfb.$(OBJEXT) generate.$(OBJEXT) \
+	dungeon.$(OBJEXT) init1.$(OBJEXT) init2.$(OBJEXT) \
+	randart.$(OBJEXT) use-obj.$(OBJEXT) x-spell.$(OBJEXT) \
+	obj-info.$(OBJEXT) squelch.$(OBJEXT)
 angband_OBJECTS = $(am_angband_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -194,13 +194,13 @@ angband_SOURCES = \
   store.c birth.c load.c \
   wizard1.c wizard2.c \
   main-cap.c main-gcu.c main-x11.c main-xaw.c main.c \
-  main-win.c main-xpj.c main-vcs.c main-gtk.c \
+  main-win.c main-xpj.c main-vcs.c main-gtk.c main-lfb.c \
   generate.c dungeon.c init1.c init2.c randart.c \
   use-obj.c x-spell.c obj-info.c squelch.c \
   angband.h config.h defines.h externs.h h-basic.h \
   h-config.h h-define.h h-system.h h-type.h init.h \
   types.h z-form.h z-rand.h z-term.h z-util.h \
-  z-virt.h main.h \
+  z-virt.h z-file.h main.h \
   script.h
 
 EXTRA_angband_SOURCES = \
@@ -321,6 +321,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main-gcu.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main-gtk.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main-ibm.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main-lfb.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main-lsl.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main-mac.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main-ros.Po@am__quote@
@@ -342,7 +343,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/randart.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/readdib.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/save.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/script.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spells1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spells2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/squelch.Po@am__quote@

@@ -9,50 +9,45 @@ HDRS = h-basic.h h-define.h h-type.h h-system.h h-config.h
 INCS = angband.h config.h defines.h types.h externs.h \
        z-term.h z-rand.h z-util.h z-virt.h z-form.h $(HDRS)
 
-BASEOBJS= \
-  birth$(OBJEXT) \
-  cave$(OBJEXT) \
-  cmd1$(OBJEXT) \
-  cmd2$(OBJEXT) \
-  cmd3$(OBJEXT) \
-  cmd4$(OBJEXT) \
-  cmd5$(OBJEXT) \
-  cmd6$(OBJEXT) \
-  dungeon$(OBJEXT) \
-  files$(OBJEXT) \
-  generate$(OBJEXT) \
-  init1$(OBJEXT) \
-  init2$(OBJEXT) \
-  load$(OBJEXT) \
-  melee1$(OBJEXT) \
-  melee2$(OBJEXT) \
-  monster1$(OBJEXT) \
-  monster2$(OBJEXT) \
-  object1$(OBJEXT) \
-  object2$(OBJEXT) \
-  obj-info$(OBJEXT) \
-  randart$(OBJEXT) \
-  save$(OBJEXT) \
-  spells1$(OBJEXT) \
-  spells2$(OBJEXT) \
-  squelch$(OBJEXT) \
-  store$(OBJEXT) \
-  tables$(OBJEXT) \
-  use-obj$(OBJEXT) \
-  util$(OBJEXT) \
-  variable$(OBJEXT) \
-  wizard1$(OBJEXT) \
-  wizard2$(OBJEXT) \
-  x-spell$(OBJEXT) \
-  xtra1$(OBJEXT) \
-  xtra2$(OBJEXT)
+BASEOBJS := $(addsuffix $(OBJEXT),\
+  birth \
+  cave \
+  cmd1 \
+  cmd2 \
+  cmd3 \
+  cmd4 \
+  cmd5 \
+  cmd6 \
+  dungeon \
+  files \
+  generate \
+  init1 \
+  init2 \
+  load \
+  melee1 \
+  melee2 \
+  monster1 \
+  monster2 \
+  object1 \
+  object2 \
+  obj-info \
+  randart \
+  save \
+  spells1 \
+  spells2 \
+  squelch \
+  store \
+  tables \
+  use-obj \
+  util \
+  variable \
+  wizard1 \
+  wizard2 \
+  x-spell \
+  xtra1 \
+  xtra2)
 
-ZOBJS= \
-  z-form$(OBJEXT) \
-  z-rand$(OBJEXT) \
-  z-term$(OBJEXT) \
-  z-util$(OBJEXT) \
-  z-virt$(OBJEXT)
+ZOBJS := $(addsuffix $(OBJEXT), z-file z-form z-rand z-term z-util z-virt)
 
 # Just print out a list of object files
 inc-print:
@@ -68,12 +63,9 @@ z-rand$(OBJEXT): z-rand.h
 z-term$(OBJEXT): z-term.h z-virt.h
 z-util$(OBJEXT): z-util.h
 z-virt$(OBJEXT): z-virt.h z-util.h
+z-file$(OBJEXT): z-file.h
 
-# Depend on script.h
-SCRIPTOBJS = cmd5$(OBJEXT) cmd6$(OBJEXT) init2$(OBJEXT) \
-             script$(OBJEXT) wizard2$(OBJEXT) xtra1$(OBJEXT)
-$(SCRIPTOBJS): script.h
-
-# Depend on init.h
-INITOBJS = init1$(OBJEXT) init2$(OBJEXT) randart$(OBJEXT)
-$(INITOBJS): init.h
+# Various files depend on various headers
+$(addsuffix $(OBJEXT), cmd5 cmd6 init2 script wizard2 xtra1): script.h
+$(addsuffix $(OBJEXT), init1 init2 randart): init.h
+$(addsuffix $(OBJEXT), cmd4 files init1 init2 util squelch save load wizard1): z-file.h

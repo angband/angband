@@ -9,6 +9,7 @@
  * distributed under the GPL licence.
  */
 #include "angband.h"
+#include "z-file.h"
 
 /* Structure to describe tval/description pairings. */
 typedef struct

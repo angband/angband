@@ -6708,7 +6708,6 @@ fi
 
 
 
-
 for ac_header in fcntl.h limits.h strings.h sys/file.h sys/ioctl.h \
 sys/time.h termio.h unistd.h
 do
