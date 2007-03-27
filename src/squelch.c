@@ -651,7 +651,7 @@ static void dump_squelch_info(void)
 	strnfmt(fname, sizeof(fname), "%s.squ", op_ptr->base_name);
 
 	/* Get a filename */
-	if (askfor_aux(fname, sizeof(fname)))
+	if (askfor_aux(fname, sizeof fname))
 	{
 		/* Build the filename */
 		path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
@@ -725,7 +725,7 @@ static int dump_autoins_info(void)
 	strcpy(fname, op_ptr->base_name);
 
 	/* Get a filename */
-	if (askfor_aux(fname, 80))
+	if (askfor_aux(fname, sizeof fname))
 	{
 		/* Build the filename */
 		path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
@@ -780,7 +780,7 @@ static void load_squelch_info(void)
 	strnfmt(fname, sizeof(fname), "%s.squ", op_ptr->base_name);
 
  	/* Ask for a file (or cancel) */
- 	if (askfor_aux(fname, 80))
+ 	if (askfor_aux(fname, sizeof fname))
 	{
 		/* Process the given filename, note success or failure */
 		if (process_pref_file(fname))

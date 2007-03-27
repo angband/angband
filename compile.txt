@@ -8,6 +8,9 @@ a currently unsupported system, please write to the Angband newsgroup
 (rec.games.roguelike.angband) with details, and it will probably be included
 in a future version.
 
+See compile.txt, the Makefiles, h-config.h, and config.h for details on
+compiling.
+
 
 ----------------------------------------------------------------------
 Quick and dirty compilation instructions
