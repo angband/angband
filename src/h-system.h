@@ -61,23 +61,6 @@
 # include <io.h>
 #endif
 
-
-#ifdef SET_UID
-
-# ifndef HAVE_USLEEP
-
-/*
- * struct timeval in usleep requires sys/time.h
- *
- * System test removed since Unix systems that neither have usleep nor
- * sys/time.h are screwed anyway, since they have no way of delaying.
- */
-#  include <sys/time.h>
-
-# endif /* HAVE_USLEEP */
-
-#endif /* SET_UID */
-
 #endif /* INCLUDED_H_SYSTEM_H */
 
 

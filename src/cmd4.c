@@ -2100,7 +2100,7 @@ static void do_cmd_options_aux(void *vpage, cptr info)
 	for(;;)
 	{
 		key_event cx;
-		cx = menu_select(&menu, opt, n, &cursor_pos, SCREEN);
+		cx = menu_select(&menu, opt, n, &cursor_pos, SCREEN_REGION);
 		if (ESCAPE == cx.key) break;
 		if(cx.type == EVT_MOVE) cursor_pos = cx.index;
 		else if(cx.key != '\xff') {
@@ -3369,7 +3369,7 @@ void do_cmd_visuals(void)
 		key_event key;
 		int evt = -1;
 		Term_clear();
-		key = menu_select(&visual_menu, 0, visual_menu.count, &cursor, SCREEN);
+		key = menu_select(&visual_menu, 0, visual_menu.count, &cursor, SCREEN_REGION);
 		if(key.key == ESCAPE) 
 			break;
 
@@ -3550,7 +3550,7 @@ void do_cmd_colors(void)
 		key_event key;
 		int evt;
 		Term_clear();
-		key = menu_select(&color_menu, 0, color_menu.count, &cursor, SCREEN);
+		key = menu_select(&color_menu, 0, color_menu.count, &cursor, SCREEN_REGION);
 
 		/* Done */
 		if (key.key == ESCAPE) break;
@@ -4204,7 +4204,7 @@ void do_cmd_options()
 	for(;;) {
 		key_event c;
 		Term_clear();
-		c = menu_select(&option_menu, 0, option_menu.count, &cursor, SCREEN);
+		c = menu_select(&option_menu, 0, option_menu.count, &cursor, SCREEN_REGION);
 		if(ESCAPE == c.key) break;
 	}
 
@@ -4234,7 +4234,7 @@ void do_cmd_knowledge()
 	for(;;) {
 		key_event c;
 		Term_clear();
-		c = menu_select(&knowledge_menu, 0, knowledge_menu.count, &cursor, SCREEN);
+		c = menu_select(&knowledge_menu, 0, knowledge_menu.count, &cursor, SCREEN_REGION);
 		if(ESCAPE == c.key) break;
 	}
 

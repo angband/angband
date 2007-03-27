@@ -264,8 +264,8 @@ bool menu_init(menu_type *menu);
 
 
 /* This is probably a bad idea */
-static const region SCREEN = {0, 0, 0, 0};
+static const region SCREEN_REGION = {0, 0, 0, 0};
 
 
-#endif UI_H
+#endif /* UI_H */
 

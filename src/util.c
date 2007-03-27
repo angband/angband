@@ -13,7 +13,16 @@
 
 
 #ifdef SET_UID
+
 # ifndef HAVE_USLEEP
+
+/*
+ * struct timeval (used below) requires sys/time.h.
+ *
+ * Unix systems that neither have usleep nor sys/time.h are screwed, since
+ * they have no way of delaying.
+ */
+#include <sys/time.h>
 
 /*
  * For those systems that don't have "usleep()" but need it.
