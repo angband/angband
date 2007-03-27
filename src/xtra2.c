@@ -2490,8 +2490,8 @@ void verify_panel(void)
 			wy = py - panel_hgt;
 		}
 
-		/* Scroll screen vertically when 1/4 screen_hgt grids from top/bottom edge */
-		else if ((py < wy + screen_hgt / 4) || (py >= wy + (3 * screen_hgt) / 4))
+		/* Scroll screen vertically when 3 grids from top/bottom edge */
+		else if ((py < wy + 3) || (py >= wy + screen_hgt - 3))
 		{
 			wy = py - panel_hgt;
 		}
@@ -2504,8 +2504,8 @@ void verify_panel(void)
 			wx = px - panel_wid;
 		}
 
-		/* Scroll screen horizontally when 1/4 screen_wid grids from left/right edge */
-		else if ((px < wx + screen_wid / 4) || (px >= wx + (3 * screen_wid) / 4))
+		/* Scroll screen horizontally when 3 grids from left/right edge */
+		else if ((px < wx + 3) || (px >= wx + screen_wid - 3))
 		{
 			wx = px - panel_wid;
 		}
