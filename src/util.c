@@ -1355,7 +1355,17 @@ char inkey(void)
 	return (ch);
 }
 
-
+/*
+ * TODO: This is a temporary HACK.
+ */
+key_event inkey_ex(void)
+{
+	key_event ke;
+	ke.type = EVT_KBRD;
+	ke.index = ke.mousex = ke.mousey = 0;
+	ke.key = inkey();
+	return ke;
+}
 
 
 /*

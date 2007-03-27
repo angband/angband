@@ -69,6 +69,7 @@ extern cptr option_desc[OPT_MAX];
 extern const bool option_norm[OPT_MAX];
 extern const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 extern cptr inscrip_text[MAX_INSCRIP];
+extern const grouper object_text_order[];
 
 /* variable.c */
 extern cptr copyright;
@@ -263,7 +264,6 @@ extern bool no_lite(void);
 extern bool cave_valid_bold(int y, int x);
 extern bool feat_supports_lighting(int feat);
 extern void map_info(int y, int x, byte *ap, char *cp, byte *tap, char *tcp);
-extern void map_info_default(int y, int x, byte *ap, char *cp);
 extern void move_cursor_relative(int y, int x);
 extern void print_rel(char c, byte a, int y, int x);
 extern void note_spot(int y, int x);
@@ -343,7 +343,6 @@ extern bool ang_sort_comp_hook(const void *u, const void *v, int a, int b);
 extern void ang_sort_swap_hook(void *u, void *v, int a, int b);
 
 /* cmd4.c */
-extern void resize_map(void);
 extern void do_cmd_redraw(void);
 extern void do_cmd_change_name(void);
 extern void do_cmd_message_one(void);
@@ -681,6 +680,7 @@ extern errr macro_trigger_free(void);
 extern void flush(void);
 extern void flush_fail(void);
 extern char inkey(void);
+extern key_event inkey_ex(void);
 extern void bell(cptr reason);
 extern void sound(int val);
 extern s16b quark_add(cptr str);
@@ -845,11 +845,10 @@ extern void do_cmd_borg(void);
 #endif /* ALLOW_BORG */
 
 
-#ifdef ALLOW_SPOILERS
-
 /* wizard1.c */
+#ifdef ALLOW_SPOILERS
 extern void do_cmd_spoilers(void);
-
 #endif /* ALLOW_SPOILERS */
 
+bool make_fake_artifact(object_type *o_ptr, byte name1);
 extern void strip_name(char *buf, int k_idx);

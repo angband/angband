@@ -80,9 +80,6 @@ FILE *my_fopen_temp(char *buf, size_t max)
 	/* Copy to buffer */
 	my_strcpy(buf, s, max);
 
-	/* Generate a temporary filename */
-	if (path_temp(buf, max)) return (NULL);
-
 	/* Open the file */
 	return (my_fopen(buf, "w"));
 }

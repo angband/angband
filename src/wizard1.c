@@ -9,7 +9,6 @@
  */
 
 #include "angband.h"
-#include "z-file.h"
 
 
 #ifdef ALLOW_SPOILERS
@@ -47,16 +46,6 @@ static void spoiler_underline(cptr str, char c)
 	spoiler_out_n_chars(strlen(str), c);
 	text_out("\n");
 }
-
-
-/*
- * A tval grouper
- */
-typedef struct
-{
-	byte tval;
-	cptr name;
-} grouper;
 
 
 
@@ -387,7 +376,7 @@ static const grouper group_artifact[] =
 /*
  * Hack -- Create a "forged" artifact
  */
-static bool make_fake_artifact(object_type *o_ptr, byte name1)
+bool make_fake_artifact(object_type *o_ptr, byte name1)
 {
 	int i;
 

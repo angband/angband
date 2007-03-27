@@ -423,6 +423,11 @@ void strip_name(char *buf, int k_idx)
 
 	cptr str = (k_name + k_ptr->name);
 
+    /* If not aware, use flavor */
+    if (!cheat_know && !k_ptr->aware && k_ptr->flavor)
+			str = flavor_text + flavor_info[k_ptr->flavor].text;
+
+
 
 	/* Skip past leading characters */
 	while ((*str == ' ') || (*str == '&')) str++;

@@ -173,6 +173,7 @@ dist:
 	@echo attempting to install sound and graphics
 	@-cp ../lib/xtra/sound/*.wav $(TMPDIR)/lib/xtra/sound
 	@-cp ../lib/xtra/graf/*.bmp $(TMPDIR)/lib/xtra/graf
+	@cp ../changes.txt ../readme.txt $(TMPDIR)
 	@cp $(EXE) $(TMPDIR)
 	tar czf ../$(EXE)-$(VERSION).tar.gz $(TMPDIR)
 	rm -rf $(TMPDIR)

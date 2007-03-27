@@ -1720,6 +1720,9 @@
 #define PW_BORG_2           0x00008000L /* Display borg status */
 
 
+#define PW_MAX_FLAGS		16
+
+
 /*** Cave flags ***/
 
 

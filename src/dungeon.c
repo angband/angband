@@ -2729,7 +2729,7 @@ void play_game(bool new_game)
 	(void)Term_set_cursor(FALSE);
 
 	/* Set screen resize hook */
-	Term_set_resize_hook(resize_map);
+	Term_set_resize_hook(do_cmd_redraw);
 
 	/* Attempt to load */
 	if (!load_player())

@@ -10,7 +10,6 @@
  */
 
 #include "angband.h"
-#include "z-file.h"
 
 #include "init.h"
 #include "script.h"

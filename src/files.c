@@ -9,7 +9,6 @@
  */
 
 #include "angband.h"
-#include "z-file.h"
 
 
 
@@ -4873,8 +4872,8 @@ static void get_default_tile(int row, int col, byte *a_def, char *c_def)
 		/* Convert dungeon map into default attr/chars */
 		if (in_bounds(y, x))
 		{
-			/* Retrieve default attr/char */
-			map_info_default(y, x, &a, &c);
+			/* Retrieve attr/char.  Precondition: reset graphics, no prefs. */
+			map_info(y, x, &a, &c, 0, 0);
 		}
 		else
 		{

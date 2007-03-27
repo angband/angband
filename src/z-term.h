@@ -232,6 +232,33 @@ struct term
 };
 
 
+/*
+ * Event record for general input
+ * Note that there are currently no event subtypes.
+ */
+
+typedef enum 
+{
+	EVT_ESCAPE		= 'escp', /* Synonym for 'kbrd' + key = ESCAPE */
+	EVT_MOUSE		= 'mous',  /* mousepress */
+	EVT_KBRD		= 'kbrd',	/* keypress */
+	EVT_BACK		= 'back',	/* Up one level in heirarchical menus. */
+	EVT_MOVE		= 'move',  /* menu movement */
+	EVT_SELECT		= 'slct',  /* Menu selection */
+	EVT_BUTTON		= 'bttn'
+} event_class;
+
+
+typedef struct key_event key_event;
+
+struct key_event
+{
+	event_class type;
+    int mousex, mousey;
+	char key; 
+    char index;
+};
+
 
 
 

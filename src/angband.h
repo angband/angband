@@ -19,9 +19,10 @@
 /*
  * Include the mid-level includes.
  */
+#include "z-file.h"
+#include "z-form.h"
 #include "z-util.h"
 #include "z-virt.h"
-#include "z-form.h"
 #include "z-rand.h"
 #include "z-term.h"
 
@@ -31,6 +32,7 @@
 #include "config.h"
 #include "defines.h"
 #include "types.h"
+#include "ui.h"
 #include "externs.h"
 
 

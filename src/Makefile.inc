@@ -38,6 +38,7 @@ BASEOBJS := $(addsuffix $(OBJEXT),\
   squelch \
   store \
   tables \
+  ui \
   use-obj \
   util \
   variable \
