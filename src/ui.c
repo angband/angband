@@ -61,9 +61,9 @@ static bool handle_menu_item_event(char cmd, void *db, int oid)
 	event_action *evt = &((event_action*)db)[oid];
 	if(cmd == '\xff' && evt->action) {
 		evt->action(evt->data, evt->name);
-		return TRUE;
 	}
-	return FALSE;
+	else if(cmd == '\xff')
+		return TRUE;
 }
 
 static bool valid_menu_event(menu_type *menu, int oid)
@@ -298,7 +298,7 @@ static bool handle_menu_key(char cmd, menu_type *menu, int oid)
 
 	if(menu->handler)
 		return menu->handler(cmd, menu->menu_data, oid);
-	return TRUE;
+	return FALSE;
 }
 
 
@@ -480,6 +480,9 @@ key_event menu_select(menu_type *menu, const int object_list[], int n,
 		if(menu->prompt) prt(menu->prompt, loc.row+loc.page_rows-1, loc.col);
 		
 		menu->skin->display_list(menu, object_list, n, *cursor, &top, &active);
+		/* if(menu->flags & MN_DISPLAY_ONLY)
+			return;
+		*/
 		if(menu->browse_hook) {
 			menu->browse_hook(oid, &loc);
 		}
@@ -494,11 +497,14 @@ key_event menu_select(menu_type *menu, const int object_list[], int n,
 	
 			case EVT_MOVE:
 				continue;
+			case EVT_SELECT:
+				if(oid != *cursor) /* refresh */
+					menu->skin->display_list(menu, object_list, n, *cursor, &top, &active);
 		}
 		if(menu->flags & MN_NO_ACT)
 			return ke;
 
-		if(!handle_menu_key(ke.key, menu, *cursor))
+		if(handle_menu_key(ke.key, menu, *cursor))
 			return ke;
 	}
 }
@@ -521,6 +527,14 @@ menu_class const *menu_class_reg[15] =
 	0
 };
 
+void menu_set_class(menu_type *menu, const menu_class *def)
+{
+	menu->flags |= def->flag;
+	menu->get_tag = def->get_tag;
+	menu->valid_row = def->valid_row;
+	menu->handler = def->handler;
+	menu->display_label = def->display_row;
+}
 
 bool menu_init(menu_type *menu)
 {
@@ -538,10 +552,7 @@ bool menu_init(menu_type *menu)
 	for(i = 0; menu_class_reg[i]; i++)
 	{
 		if(menu_class_reg[i]->flag == classID) {
-			menu->handler = menu_class_reg[i]->handler;
-			menu->display_label = menu_class_reg[i]->display_row;
-			menu->valid_row = menu_class_reg[i]->valid_row;
-			menu->get_tag = menu_class_reg[i]->get_tag;
+			menu_set_class(menu, menu_class_reg[i]);
 		}
 	}
 	if((menu->selections && !(menu->flags & MN_PVT_TAGS))
@@ -552,3 +563,4 @@ bool menu_init(menu_type *menu)
 	/* TODO:  Check for collisions in selections & command keys here */
 	return TRUE;
 }
+

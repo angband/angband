@@ -203,7 +203,7 @@ struct menu_type
 	/* command action.  Should handle 0xff for selection */
 	bool (*handler)(char cmd, void *db, int oid);
 
-	int (*browse_hook)(int oid, region *loc);  /* auxiliary browser help function */
+	void (*browse_hook)(int oid, const region *loc);  /* auxiliary browser help function */
 
 	/* These are "protected" - not visible for canned menu classes, */
 
@@ -260,6 +260,7 @@ void menu_action(menu_type *menu, const int object_list[], int *cursor);
 
 /* Set up structures for canned menu actions */
 bool menu_init(menu_type *menu);
+void menu_set_class(menu_type *menu, const menu_class *class_def);
 
 
 

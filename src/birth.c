@@ -613,20 +613,6 @@ static void player_outfit(void)
 #define CLASS_COL       29
 #define CLASS_AUX_COL   50
 
-
-typedef struct birth_menu birth_menu;
-
-
-/*
- * A structure to hold the menus
- */
-struct birth_menu
-{
-	bool grayed;
-	cptr name;
-};
-
-
 /*
  * Clear the previous question
  */
@@ -640,222 +626,17 @@ static void clear_question(void)
 		Term_erase(0, i, 255);
 	}
 }
+/* =================================================== */
 
-
-/*
- * Generic "get choice from menu" function
- */
-static int get_player_choice(birth_menu *choices, int num, int def,
-                             int col, int wid, byte *select,
-                             cptr helpfile, void (*hook)(birth_menu))
-{
-	int top = 0, cur = def;
-	int i, dir;
-	char c;
-	char buf[80];
-	bool done = FALSE;
-	int hgt;
-	byte attr;
-
-	/* Autoselect if able */
-	if (num == 1) done = TRUE;
-
-	/* Clear */
-	for (i = TABLE_ROW; i < Term->hgt; i++)
-	{
-		/* Clear */
-		Term_erase(col, i, Term->wid - wid);
-	}
-
-	/* Choose */
-	while (TRUE)
-	{
-		hgt = Term->hgt - TABLE_ROW - 1;
-
-		/* Redraw the list */
-		for (i = 0; ((i + top < num) && (i <= hgt)); i++)
-		{
-			if (i + top < 26)
-			{
-				strnfmt(buf, sizeof(buf), "%c) %s", I2A(i + top),
-				        choices[i + top].name);
-			}
-			else
-			{
-				/* ToDo: Fix the ASCII dependency */
-				strnfmt(buf, sizeof(buf), "%c) %s", 'A' + (i + top - 26),
-				        choices[i + top].name);
-			}
-
-			/* Clear */
-			Term_erase(col, i + TABLE_ROW, wid);
-
-			/* Display */
-			if (i == (cur - top))
-			{
-				/* Highlight the current selection */
-				if (choices[i + top].grayed) attr = TERM_BLUE;
-				else attr = TERM_L_BLUE;
-			}
-			else
-			{
-				if (choices[i + top].grayed) attr = TERM_SLATE;
-				else attr = TERM_WHITE;
-			}
-
-			Term_putstr(col, i + TABLE_ROW, wid, attr, buf);
-		}
-
-		if (done)
-		{
-			/* Set the value */
-			*select = cur;
-
-			/* Success */
-			return BIRTH_SUCCESS;
-		}
-
-		/* Display auxiliary information if any is available. */
-		if (hook) hook(choices[cur]);
-
-		/* Move the cursor */
-		put_str("", TABLE_ROW + cur - top, col);
-
-		c = inkey();
-
-		/* Exit the game */
-		if (c == KTRL('X')) quit(NULL);
-
-		/* Make a choice */
-		if ((c == '\n') || (c == '\r'))
-		{
-			/* Set the value */
-			*select = cur;
-
-			/* Success */
-			return BIRTH_SUCCESS;
-		}
-
-		/* Random choice */
-		if (c == '*')
-		{
-			/* Ensure legal choice */
-			do { cur = rand_int(num); } while (choices[cur].grayed);
-
-			/* Done */
-			done = TRUE;
-		}
-
-		/* Alphabetic choice */
-		else if (isalpha((unsigned char)c))
-		{
-			int choice;
-
-			if (islower((unsigned char)c)) choice = A2I(c);
-			else choice = c - 'A' + 26;
-
-			/* Validate input */
-			if ((choice > -1) && (choice < num))
-			{
-				cur = choice;
-
-				/* Done */
-				done = TRUE;
-			}
-			else
-			{
-				bell("Illegal response to question!");
-			}
-		}
-
-		/* Move */
-		else if (isdigit((unsigned char)c) || isarrow(c))
-		{
-			/* Get a direction from the key */
-			dir = target_dir(c);
-
-			/* Going up? */
-			if (dir == 8)
-			{
-				/* Move selection */
-				if (cur != 0) cur--;
-
-				/* Scroll up */
-				if ((top > 0) && ((cur - top) < 4)) top--;
-			}
-
-			/* Going down? */
-			else if (dir == 2)
-			{
-				/* Move selection */
-				if (cur != (num - 1)) cur++;
-
-				/* Scroll down */
-				if ((top + hgt < (num - 1)) && ((top + hgt - cur) < 4)) top++;
-			}
-
-			/* Going back? */
-			else if (dir == 4)
-			{
-				/* Save the current value (for later) */
-				*select = cur;
-
-				/* Return */
-				return BIRTH_BACK;
-			}
-
-			/* Going forward acts as pressing enter */
-			else if (dir == 6)
-			{
-				/* Set the value */
-				*select = cur;
-
-				/* Success */
-				return BIRTH_SUCCESS;
-			}
-		}
-
-		/* Hack - go back */
-		else if (c == ESCAPE) return BIRTH_RESTART;
-
-		/* Help */
-		else if (c == '?')
-		{
-			strnfmt(buf, sizeof(buf), "%s#%s", helpfile, choices[cur].name);
-
-			screen_save();
-			(void)show_file(buf, NULL, 0, 0);
-			screen_load();
-		}
-
-		/* Options */
-		else if (c == '=')
-		{
-			do_cmd_options();
-		}
-
-		/* Invalid input */
-		else bell("Illegal response to question!");
-
-		/* If choice is off screen, move it to the top */
-		if ((cur < top) || (cur > top + hgt)) top = cur;
-	}
-}
-
+/* gender/race/classs menu selector */
 
 /*
  * Display additional information about each race during the selection.
  */
-static void race_aux_hook(birth_menu r_str)
+static void race_aux_hook(int race, const region *reg)
 {
-	int race, i;
+	int i;
 	char s[50];
-
-	/* Extract the proper race index from the string. */
-	for (race = 0; race < z_info->p_max; race++)
-	{
-		if (!strcmp(r_str.name, p_name + p_info[race].name)) break;
-	}
 
 	if (race == z_info->p_max) return;
 
@@ -877,57 +658,12 @@ static void race_aux_hook(birth_menu r_str)
 
 
 /*
- * Player race
- */
-static bool get_player_race(void)
-{
-	int i, res;
-	birth_menu *races;
-
-	C_MAKE(races, z_info->p_max, birth_menu);
-
-	/* Extra info */
-	Term_putstr(QUESTION_COL, QUESTION_ROW, -1, TERM_YELLOW,
-	            "Your 'race' determines various intrinsic factors and bonuses.");
-
-	/* Tabulate races */
-	for (i = 0; i < z_info->p_max; i++)
-	{
-		races[i].name = p_name + p_info[i].name;
-		races[i].grayed = FALSE;
-	}
-
-	res = get_player_choice(races, z_info->p_max, p_ptr->prace,
-	                                 RACE_COL, 15, &p_ptr->prace,
-	                                 "birth.txt", race_aux_hook);
-
-	/* Free memory */
-	FREE(races);
-
-	/* No selection? */
-	if (res < 0) return (res);
-
-	/* Save the race pointer */
-	rp_ptr = &p_info[p_ptr->prace];
-
-	/* Success */
-	return (TRUE);
-}
-
-
-/*
  * Display additional information about each class during the selection.
  */
-static void class_aux_hook(birth_menu c_str)
+static void class_aux_hook(int class_idx, const region *loc)
 {
-	int class_idx, i;
+	int i;
 	char s[128];
-
-	/* Extract the proper class index from the string. */
-	for (class_idx = 0; class_idx < z_info->c_max; class_idx++)
-	{
-		if (!strcmp(c_str.name, c_name + c_info[class_idx].name)) break;
-	}
 
 	if (class_idx == z_info->c_max) return;
 
@@ -946,81 +682,147 @@ static void class_aux_hook(birth_menu c_str)
 }
 
 
-/*
- * Player class
- */
-static bool get_player_class(void)
+static region gender_region = {SEX_COL, TABLE_ROW, 15, -2};
+static region race_region = {RACE_COL, TABLE_ROW, 15, -2};
+static region class_region = {CLASS_COL, TABLE_ROW, 15, -2};
+
+static void show_help(cptr helpfile, cptr topic) {
+	char buf[80];
+	strnfmt(buf, sizeof(buf), "%s#%s", helpfile, topic);
+	screen_save();
+	show_file(buf, NULL, 0, 0);
+	screen_load();
+}
+
+/* GENDER */
+/* Could make a general purpose display, but see no point. */
+static void display_gender(menu_type *menu, int oid, bool cursor,
+							int row, int col, int width)
 {
-	int i, res;
-	birth_menu *classes;
+	byte attr = curs_attrs[CURS_KNOWN][0 != cursor];
+	c_prt(attr, sex_info[oid].title, row, col);
+}
 
-	C_MAKE(classes, z_info->c_max, birth_menu);
-
-	/* Extra info */
-	Term_putstr(QUESTION_COL, QUESTION_ROW, -1, TERM_YELLOW,
-	            "Your 'class' determines various intrinsic abilities and bonuses.");
-	Term_putstr(QUESTION_COL, QUESTION_ROW + 1, -1, TERM_YELLOW,
-	            "Any greyed-out entries should only be used by advanced players.");
-
-	/* Tabulate classes */
-	for (i = 0; i < z_info->c_max; i++)
-	{
-		/* Analyze */
-		if (!(rp_ptr->choice & (1L << i))) classes[i].grayed = TRUE;
-		else classes[i].grayed = FALSE;
-
-		/* Save the string */
-		classes[i].name = c_name + c_info[i].name;
+/* Not worth writing a general purpose handler */
+static bool gender_handler(char cmd, void *db, int oid)
+{
+	if(cmd == '\xff') {
+		p_ptr->psex = oid;
+		sp_ptr = &sex_info[p_ptr->psex];
 	}
+	else if(cmd == '*') {
+		p_ptr->prace = rand_int(SEX_MALE);
+		sp_ptr = &sex_info[p_ptr->psex];
+	}
+	else if(cmd == KTRL('X')) quit(NULL);
+	else if(cmd == '?')  show_help("birth.txt", sex_info[oid].title);
+	else return FALSE;
+	return TRUE;
+}
 
-	res = get_player_choice(classes, z_info->c_max, p_ptr->pclass,
-	                                  CLASS_COL, 20, &p_ptr->pclass,
-	                                  "birth.txt", class_aux_hook);
+/* RACE */
+static void display_race(menu_type *menu, int oid, bool cursor,
+						int row, int col, int width)
+{
+	byte attr = curs_attrs[CURS_KNOWN][0 != cursor];
+	c_prt(attr, p_name + p_info[oid].name, row, col);
+}
 
-	/* Free memory */
-	FREE(classes);
-
-	/* No selection? */
-	if (res < 0) return (res);
-
-	/* Set class */
-	cp_ptr = &c_info[p_ptr->pclass];
-	mp_ptr = &cp_ptr->spells;
-
-	return (TRUE);
+static bool race_handler(char cmd, void *db, int oid)
+{
+	if(cmd == '\xff') {
+		p_ptr->prace = oid;
+		rp_ptr = &p_info[p_ptr->prace];
+	}
+	else if(cmd == '*') {
+		p_ptr->prace = rand_int(z_info->p_max);
+		rp_ptr = &p_info[p_ptr->prace];
+	}
+	else if(cmd == KTRL('X')) quit(NULL);
+	else if(cmd == '?')  show_help("birth.txt", p_name+p_info[oid].name);
+	else return FALSE;
+	return TRUE;
 }
 
 
-/*
- * Player sex
- */
-static bool get_player_sex(void)
+/* CLASS */
+static void display_class(menu_type *menu, int oid, bool cursor,
+							int row, int col, int width)
 {
-	int i, res;
-	birth_menu genders[MAX_SEXES];
+	byte attr = curs_attrs[0 != (rp_ptr->choice & (1L << oid))][0 != cursor];
+	c_prt(attr, c_name + c_info[oid].name, row, col);
+}
 
-	/* Extra info */
-	Term_putstr(QUESTION_COL, QUESTION_ROW, -1, TERM_YELLOW,
-	            "Your 'sex' does not have any significant gameplay effects.");
+static bool class_handler(char cmd, void *db, int oid)
+{
+	if(cmd == '\xff') {
+		p_ptr->pclass = oid;
+		cp_ptr = &c_info[p_ptr->pclass];
+		mp_ptr = &cp_ptr->spells;
+	}
+	else if(cmd == '*') {
+		for(;;) {
+			p_ptr->pclass = rand_int(z_info->c_max);
+			cp_ptr = &c_info[p_ptr->pclass];
+			mp_ptr = &cp_ptr->spells;
+			if((rp_ptr->choice & (1L << oid)))
+				break;
+		}
+	}
+	else if(cmd == KTRL('X')) quit(NULL);
+	else if(cmd == '?') show_help("birth.txt", c_name+c_info[oid].name);
+	else return FALSE;
+	return TRUE;
+}
 
-	/* Tabulate genders */
-	for (i = 0; i < MAX_SEXES; i++)
+
+static const menu_class menu_defs[] = {
+	{0, 0, 0, display_gender, gender_handler },
+	{0, 0, 0, display_race, race_handler },
+	{0, 0, 0, display_class, class_handler },
+};
+
+/* Menu display and selector */
+
+static void choose_character()
+{
+	int i;
+
+	const region *regions [] = {&gender_region, &race_region, &class_region};
+	byte *values [] = {&p_ptr->psex, &p_ptr->prace, &p_ptr->pclass};
+	int limits [] = {SEX_MALE+1, z_info->p_max, z_info->c_max};
+	const char *hints [] = {
+		"Your 'sex' does not have any significant gameplay effects.",
+		"Your 'race' determines various intrinsic factors and bonuses.",
+		"Your 'class' determines various intrinsic abilities and bonuses" };
+	
+	typedef void (*browse_f) (int oid, const region *loc);
+	browse_f browse [] = {NULL, race_aux_hook, class_aux_hook };
+	menu_type menu;
+	WIPE(&menu, menu);
+	menu.cmd_keys = "?*";
+
+	for(i = 0; i < N_ELEMENTS(menu_defs); i++)
 	{
-		genders[i].name = sex_info[i].title;
-		genders[i].grayed = FALSE;
+		key_event cx;
+		int cursor = *values[i];
+		clear_question();
+    	Term_putstr(QUESTION_COL, QUESTION_ROW, -1, TERM_YELLOW, hints[i]);
+		menu.count = limits[i];
+		menu.flags = MN_NO_TAGS | MN_DBL_TAP;
+		menu_init(&menu);
+		menu_set_class(&menu, &menu_defs[i]);
+		menu.browse_hook = browse[i];
+
+		cx = menu_select(&menu, 0, menu.count, &cursor, *regions[i]);
+		if(cx.key == ESCAPE) {
+			i = 0; /* restart */
+		}
+		else if(cx.type == EVT_BACK) {
+			i--;
+		}
 	}
 
-	res = get_player_choice(genders, MAX_SEXES, p_ptr->psex,
-	                                SEX_COL, 15, &p_ptr->psex,
-	                                "birth.txt", NULL);
-
-	/* No selection? */
-	if (res < 0) return (res);
-
-	/* Save the sex pointer */
-	sp_ptr = &sex_info[p_ptr->psex];
-
-	return (TRUE);
 }
 
 
@@ -1032,7 +834,7 @@ static bool get_player_sex(void)
  */
 static bool player_birth_aux_1(void)
 {
-	int i, res, cur;
+	int i;
 
 	/*** Instructions ***/
 
@@ -1068,31 +870,8 @@ static bool player_birth_aux_1(void)
 	/* Reset text_out() indentation */
 	text_out_indent = 0;
 
-	/* Prepare for user selection */
-	cur = 0;
-	res = 0;
+	choose_character();
 
-	/* Get user choices */
-	while (cur < 3)
-	{
-		/* Get the player's choice */
-		switch (cur)
-		{
-			case 0: res = get_player_sex(); break;
-			case 1: res = get_player_race(); break;
-			case 2: res = get_player_class(); break;
-		}
-
-		/* Clean up */
-		clear_question();
-
-		/* Act on the result */
-		if (res == BIRTH_RESTART) return (FALSE);
-
-		/* Work out where we are on the menu system now */
-		if ((res == BIRTH_BACK) && (cur > 0)) cur--;
-		else cur++;
-	}
 
 	/* Set adult options from birth options */
 	for (i = OPT_BIRTH; i < OPT_CHEAT; i++)
@@ -1126,6 +905,7 @@ static bool player_birth_aux_1(void)
 	return (TRUE);
 }
 
+/* =================================================== */
 
 /*
  * Initial stat costs (initial stats always range from 10 to 18 inclusive).
