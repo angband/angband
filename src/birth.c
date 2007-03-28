@@ -711,7 +711,7 @@ static bool gender_handler(char cmd, void *db, int oid)
 		sp_ptr = &sex_info[p_ptr->psex];
 	}
 	else if(cmd == '*') {
-		p_ptr->prace = rand_int(SEX_MALE);
+		p_ptr->psex = rand_int(SEX_MALE);
 		sp_ptr = &sex_info[p_ptr->psex];
 	}
 	else if(cmd == KTRL('X')) quit(NULL);
