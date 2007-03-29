@@ -472,7 +472,7 @@ static void special_lighting_floor(byte *a, char *c, int info)
 	}
 
 	/* Handle "dark" grids and "blindness" */
-	else if ((p_ptr->blind) || (!(info & CAVE_GLOW)))
+	else if ((p_ptr->timed[TMD_BLIND]) || (!(info & CAVE_GLOW)))
 	{
 		/* Use a dark tile */
 		switch (use_graphics)
@@ -517,7 +517,7 @@ static void special_lighting_wall(byte *a, char *c, int feat, int info)
 	}
 
 	/* Handle "blind" */
-	else if (p_ptr->blind)
+	else if (p_ptr->timed[TMD_BLIND])
 	{
 		switch (use_graphics)
 		{
@@ -747,7 +747,7 @@ void map_info(int y, int x, byte *ap, char *cp, byte *tap, char *tcp)
 
 	s16b m_idx;
 
-	s16b image = p_ptr->image;
+	s16b image = p_ptr->timed[TMD_IMAGE];
 
 	int floor_num = 0;
 
@@ -3094,7 +3094,7 @@ void update_view(void)
 	/*** Step 3 -- Complete the algorithm ***/
 
 	/* Handle blindness */
-	if (p_ptr->blind)
+	if (p_ptr->timed[TMD_BLIND])
 	{
 		/* Process "new" grids */
 		for (i = 0; i < fast_view_n; i++)

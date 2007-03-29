@@ -1095,44 +1095,66 @@ static errr rd_extra(void)
 	strip_bytes(2);
 
 	/* Read the flags */
-	strip_bytes(2);	/* Old "rest" */
-	rd_s16b(&p_ptr->blind);
-	rd_s16b(&p_ptr->paralyzed);
-	rd_s16b(&p_ptr->confused);
-	rd_s16b(&p_ptr->food);
-	strip_bytes(4);	/* Old "food_digested" / "protection" */
-	rd_s16b(&p_ptr->energy);
-	rd_s16b(&p_ptr->fast);
-	rd_s16b(&p_ptr->slow);
-	rd_s16b(&p_ptr->afraid);
-	rd_s16b(&p_ptr->cut);
-	rd_s16b(&p_ptr->stun);
-	rd_s16b(&p_ptr->poisoned);
-	rd_s16b(&p_ptr->image);
-	rd_s16b(&p_ptr->protevil);
-	rd_s16b(&p_ptr->invuln);
-	rd_s16b(&p_ptr->hero);
-	rd_s16b(&p_ptr->shero);
-	rd_s16b(&p_ptr->shield);
-	rd_s16b(&p_ptr->blessed);
-	rd_s16b(&p_ptr->tim_invis);
-	rd_s16b(&p_ptr->word_recall);
-	rd_s16b(&p_ptr->see_infra);
-	rd_s16b(&p_ptr->tim_infra);
-	rd_s16b(&p_ptr->oppose_fire);
-	rd_s16b(&p_ptr->oppose_cold);
-	rd_s16b(&p_ptr->oppose_acid);
-	rd_s16b(&p_ptr->oppose_elec);
-	rd_s16b(&p_ptr->oppose_pois);
+	if (older_than(3, 0, 7))
+	{
+		strip_bytes(2);	/* Old "rest" */
+		rd_s16b(&p_ptr->timed[TMD_BLIND]);
+		rd_s16b(&p_ptr->timed[TMD_PARALYZED]);
+		rd_s16b(&p_ptr->timed[TMD_CONFUSED]);
+		rd_s16b(&p_ptr->food);
+		strip_bytes(4);	/* Old "food_digested" / "protection" */
+		rd_s16b(&p_ptr->energy);
+		rd_s16b(&p_ptr->timed[TMD_FAST]);
+		rd_s16b(&p_ptr->timed[TMD_SLOW]);
+		rd_s16b(&p_ptr->timed[TMD_AFRAID]);
+		rd_s16b(&p_ptr->timed[TMD_CUT]);
+		rd_s16b(&p_ptr->timed[TMD_STUN]);
+		rd_s16b(&p_ptr->timed[TMD_POISONED]);
+		rd_s16b(&p_ptr->timed[TMD_IMAGE]);
+		rd_s16b(&p_ptr->timed[TMD_PROTEVIL]);
+		rd_s16b(&p_ptr->timed[TMD_INVULN]);
+		rd_s16b(&p_ptr->timed[TMD_HERO]);
+		rd_s16b(&p_ptr->timed[TMD_SHERO]);
+		rd_s16b(&p_ptr->timed[TMD_SHIELD]);
+		rd_s16b(&p_ptr->timed[TMD_BLESSED]);
+		rd_s16b(&p_ptr->timed[TMD_SINVIS]);
+		rd_s16b(&p_ptr->word_recall);
+		rd_s16b(&p_ptr->see_infra);
+		rd_s16b(&p_ptr->timed[TMD_SINFRA]);
+		rd_s16b(&p_ptr->timed[TMD_OPP_FIRE]);
+		rd_s16b(&p_ptr->timed[TMD_OPP_COLD]);
+		rd_s16b(&p_ptr->timed[TMD_OPP_ACID]);
+		rd_s16b(&p_ptr->timed[TMD_OPP_ELEC]);
+		rd_s16b(&p_ptr->timed[TMD_OPP_POIS]);
 
-	rd_byte(&p_ptr->confusing);
-	rd_byte(&tmp8u);	/* oops */
-	rd_byte(&tmp8u);	/* oops */
-	rd_byte(&tmp8u);	/* oops */
-	rd_byte(&p_ptr->searching);
-	rd_byte(&tmp8u);	/* oops */
-	rd_byte(&tmp8u);	/* oops */
-	rd_byte(&tmp8u);	/* oops */
+		rd_byte(&p_ptr->confusing);
+		rd_byte(&tmp8u);	/* oops */
+		rd_byte(&tmp8u);	/* oops */
+		rd_byte(&tmp8u);	/* oops */
+		rd_byte(&p_ptr->searching);
+		rd_byte(&tmp8u);	/* oops */
+		rd_byte(&tmp8u);	/* oops */
+		rd_byte(&tmp8u);	/* oops */
+	}
+	else
+	{
+		byte num;
+		int i;
+
+		rd_s16b(&p_ptr->food);
+		rd_s16b(&p_ptr->energy);
+		rd_s16b(&p_ptr->word_recall);
+		rd_s16b(&p_ptr->see_infra);
+		rd_byte(&p_ptr->confusing);
+		rd_byte(&p_ptr->searching);
+
+		/* Find the number of timed effects */
+		rd_byte(&num);
+
+		/* Read all the effects, in a loop */
+		for (i = 0; i < num; i++)
+			rd_s16b(&p_ptr->timed[i]);
+	}
 
 	/* Future use */
 	strip_bytes(40);

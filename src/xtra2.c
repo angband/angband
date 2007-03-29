@@ -10,29 +10,82 @@
 
 #include "angband.h"
 
-
+/*** Timed effects ***/
 
 /*
- * Set "p_ptr->blind", notice observable changes
- *
- * Note the use of "PU_FORGET_VIEW" and "PU_UPDATE_VIEW", which are needed
- * because "p_ptr->blind" affects the "CAVE_SEEN" flag, and "PU_MONSTERS",
- * because "p_ptr->blind" affects monster visibility, and "PU_MAP", because
- * "p_ptr->blind" affects the way in which many cave grids are displayed.
+ * This code replace a lot of virtually identical functions and (ostensibly)
+ * is a lot cleaner.  Note that the various "oppose" functions and the "stun"
+ * and "cut" statuses need to be handled by special functions of their own,
+ * as they are more complex than the ones handled by the generic code.  -AS-
  */
-bool set_blind(int v)
+static bool set_oppose_acid(int v);
+static bool set_oppose_elec(int v);
+static bool set_oppose_fire(int v);
+static bool set_oppose_cold(int v);
+static bool set_stun(int v);
+static bool set_cut(int v);
+
+
+typedef struct
+{
+  const char *on_begin, *on_end;
+  u32b flag_redraw, flag_window, flag_update;
+  int msg;
+} timed_effect;
+
+static timed_effect effects[] =
+{
+	{ "You feel yourself moving faster!", "You feel yourself slow down.", 0, 0, PU_BONUS, MSG_SPEED },
+	{ "You feel yourself moving slower!", "You feel yourself speed up.", 0, 0, PU_BONUS, MSG_SLOW },
+	{ "You are blind.", "You can see again.", (PR_MAP | PR_BLIND),
+	  (PW_OVERHEAD | PW_MAP), (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS), MSG_BLIND },
+	{ "You are paralyzed!", "You can move again.", PR_STATE, 0, 0, MSG_PARALYZED },
+	{ "You are confused!", "You feel less confused now.", PR_CONFUSED, 0, 0, MSG_CONFUSED },
+	{ "You are terrified!", "You feel bolder now.", PR_AFRAID, 0, 0, MSG_AFRAID },
+	{ "You feel drugged!", "You can see clearly again.", PR_MAP, (PW_OVERHEAD | PW_MAP), 0, MSG_DRUGGED },
+	{ "You are poisoned!", "You are no longer poisoned.", PR_POISONED, 0, 0, MSG_POISONED },
+	{ "", "", 0, 0, 0, 0 },  /* TMD_CUT -- handled seperately */
+	{ "", "", 0, 0, 0, 0 },  /* TMD_STUN -- handled seperately */
+	{ "You feel safe from evil!", "You no longer feel safe from evil.", 0, 0, 0, MSG_PROT_EVIL },
+	{ "You feel invulnerable!", "You feel vulnerable once more.", 0, 0, PU_BONUS, MSG_INVULN },
+	{ "You feel like a hero!", "The heroism wears off.", 0, 0, PU_BONUS, MSG_HERO },
+	{ "You feel like a killing machine!", "You feel less Berserk.", 0, 0, PU_BONUS, MSG_BERSERK },
+	{ "A mystic shield forms around your body!", "Your mystic shield crumbles away.", 0, 0, PU_BONUS, MSG_SHIELD },
+	{ "You feel righteous!", "The prayer has expired.", 0, 0, PU_BONUS, MSG_BLESSED },
+	{ "Your eyes feel very sensitive!", "Your eyes feel less sensitive.", 0, 0, (PU_BONUS | PU_MONSTERS), MSG_SEE_INVIS },
+	{ "Your eyes begin to tingle!", "Your eyes stop tingling.", 0, 0, (PU_BONUS | PU_MONSTERS), MSG_INFRARED },
+	{ "You feel resistant to poison!", "You feel less resistant to poison", PR_OPPOSE_ELEMENTS, 0, 0, MSG_RES_POIS },
+};
+
+/*
+ * Set a timed event (except timed resists, cutting and stunning).
+ */
+bool set_timed(int idx, int v)
 {
 	bool notice = FALSE;
+	timed_effect *effect;
 
 	/* Hack -- Force good values */
 	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
+	if ((idx < 0) || (idx > TMD_MAX)) return FALSE;
+
+	/* Hack -- call other functions */
+	if (idx == TMD_STUN) return set_stun(v);
+	else if (idx == TMD_CUT) return set_cut(v);
+	else if (idx == TMD_OPP_ACID) return set_oppose_acid(v);
+	else if (idx == TMD_OPP_ELEC) return set_oppose_elec(v);
+	else if (idx == TMD_OPP_FIRE) return set_oppose_fire(v);
+	else if (idx == TMD_OPP_COLD) return set_oppose_cold(v);
+
+	/* Find the effect */
+	effect = &effects[idx];
 
 	/* Open */
 	if (v)
 	{
-		if (!p_ptr->blind)
+		if (!p_ptr->timed[idx])
 		{
-			message(MSG_BLIND, 0, "You are blind!");
+			message(effect->msg, 0, effect->on_begin);
 			notice = TRUE;
 		}
 	}
@@ -40,46 +93,66 @@ bool set_blind(int v)
 	/* Shut */
 	else
 	{
-		if (p_ptr->blind)
+		if (p_ptr->timed[idx])
 		{
-			message(MSG_RECOVER, 0, "You can see again.");
+			message(MSG_RECOVER, 0, effect->on_end);
 			notice = TRUE;
 		}
 	}
 
 	/* Use the value */
-	p_ptr->blind = v;
+	p_ptr->timed[idx] = v;
 
 	/* Nothing to notice */
-	if (!notice) return (FALSE);
+	if (!notice) return FALSE;
 
 	/* Disturb */
 	if (disturb_state) disturb(0, 0);
 
-	/* Fully update the visuals */
-	p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
-
-	/* Redraw map */
-	p_ptr->redraw |= (PR_MAP);
-
-	/* Redraw the "blind" */
-	p_ptr->redraw |= (PR_BLIND);
-
-	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD | PW_MAP);
+	/* Update the visuals, as appropriate. */
+	p_ptr->update |= effect->flag_update;
+	p_ptr->redraw |= effect->flag_redraw;
+	p_ptr->window |= effect->flag_window;
 
 	/* Handle stuff */
 	handle_stuff();
 
 	/* Result */
-	return (TRUE);
+	return TRUE;
+}
+
+bool inc_timed(int idx, int v)
+{
+	/* Check we have a valid effect */
+	if ((idx < 0) || (idx > TMD_MAX)) return FALSE;
+
+	/* Set v */
+	v = v + p_ptr->timed[idx];
+
+	return set_timed(idx, v);
+}
+
+bool dec_timed(int idx, int v)
+{
+	/* Check we have a valid effect */
+	if ((idx < 0) || (idx > TMD_MAX)) return FALSE;
+
+	/* Set v */
+	v = p_ptr->timed[idx] - v;
+
+	return set_timed(idx, v);
+}
+
+bool clear_timed(int idx)
+{
+	return set_timed(idx, 0);
 }
 
 
 /*
- * Set "p_ptr->confused", notice observable changes
+ * Set "p_ptr->timed[TMD_OPP_ACID]", notice observable changes
  */
-bool set_confused(int v)
+static bool set_oppose_acid(int v)
 {
 	bool notice = FALSE;
 
@@ -89,773 +162,7 @@ bool set_confused(int v)
 	/* Open */
 	if (v)
 	{
-		if (!p_ptr->confused)
-		{
-			message(MSG_CONFUSED, 0, "You are confused!");
-			notice = TRUE;
-		}
-	}
-
-	/* Shut */
-	else
-	{
-		if (p_ptr->confused)
-		{
-			message(MSG_RECOVER, 0, "You feel less confused now.");
-			notice = TRUE;
-		}
-	}
-
-	/* Use the value */
-	p_ptr->confused = v;
-
-	/* Nothing to notice */
-	if (!notice) return (FALSE);
-
-	/* Disturb */
-	if (disturb_state) disturb(0, 0);
-
-	/* Redraw the "confused" */
-	p_ptr->redraw |= (PR_CONFUSED);
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Result */
-	return (TRUE);
-}
-
-
-/*
- * Set "p_ptr->poisoned", notice observable changes
- */
-bool set_poisoned(int v)
-{
-	bool notice = FALSE;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Open */
-	if (v)
-	{
-		if (!p_ptr->poisoned)
-		{
-			message(MSG_POISONED, 0, "You are poisoned!");
-			notice = TRUE;
-		}
-	}
-
-	/* Shut */
-	else
-	{
-		if (p_ptr->poisoned)
-		{
-			message(MSG_RECOVER, 0, "You are no longer poisoned.");
-			notice = TRUE;
-		}
-	}
-
-	/* Use the value */
-	p_ptr->poisoned = v;
-
-	/* Nothing to notice */
-	if (!notice) return (FALSE);
-
-	/* Disturb */
-	if (disturb_state) disturb(0, 0);
-
-	/* Redraw the "poisoned" */
-	p_ptr->redraw |= (PR_POISONED);
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Result */
-	return (TRUE);
-}
-
-
-/*
- * Set "p_ptr->afraid", notice observable changes
- */
-bool set_afraid(int v)
-{
-	bool notice = FALSE;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Open */
-	if (v)
-	{
-		if (!p_ptr->afraid)
-		{
-			message(MSG_AFRAID, 0, "You are terrified!");
-			notice = TRUE;
-		}
-	}
-
-	/* Shut */
-	else
-	{
-		if (p_ptr->afraid)
-		{
-			message(MSG_RECOVER, 0, "You feel bolder now.");
-			notice = TRUE;
-		}
-	}
-
-	/* Use the value */
-	p_ptr->afraid = v;
-
-	/* Nothing to notice */
-	if (!notice) return (FALSE);
-
-	/* Disturb */
-	if (disturb_state) disturb(0, 0);
-
-	/* Redraw the "afraid" */
-	p_ptr->redraw |= (PR_AFRAID);
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Result */
-	return (TRUE);
-}
-
-
-/*
- * Set "p_ptr->paralyzed", notice observable changes
- */
-bool set_paralyzed(int v)
-{
-	bool notice = FALSE;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Open */
-	if (v)
-	{
-		if (!p_ptr->paralyzed)
-		{
-			message(MSG_PARALYZED, 0, "You are paralyzed!");
-			notice = TRUE;
-		}
-	}
-
-	/* Shut */
-	else
-	{
-		if (p_ptr->paralyzed)
-		{
-			message(MSG_RECOVER, 0, "You can move again.");
-			notice = TRUE;
-		}
-	}
-
-	/* Use the value */
-	p_ptr->paralyzed = v;
-
-	/* Nothing to notice */
-	if (!notice) return (FALSE);
-
-	/* Disturb */
-	if (disturb_state) disturb(0, 0);
-
-	/* Redraw the state */
-	p_ptr->redraw |= (PR_STATE);
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Result */
-	return (TRUE);
-}
-
-
-/*
- * Set "p_ptr->image", notice observable changes
- *
- * Note the use of "PR_MAP", which is needed because "p_ptr->image" affects
- * the way in which monsters, objects, and some normal grids, are displayed.
- */
-bool set_image(int v)
-{
-	bool notice = FALSE;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Open */
-	if (v)
-	{
-		if (!p_ptr->image)
-		{
-			message(MSG_DRUGGED, 0, "You feel drugged!");
-			notice = TRUE;
-		}
-	}
-
-	/* Shut */
-	else
-	{
-		if (p_ptr->image)
-		{
-			message(MSG_RECOVER, 0, "You can see clearly again.");
-			notice = TRUE;
-		}
-	}
-
-	/* Use the value */
-	p_ptr->image = v;
-
-	/* Nothing to notice */
-	if (!notice) return (FALSE);
-
-	/* Disturb */
-	if (disturb_state) disturb(0, 0);
-
-	/* Redraw map */
-	p_ptr->redraw |= (PR_MAP);
-
-	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD | PW_MAP);
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Result */
-	return (TRUE);
-}
-
-
-/*
- * Set "p_ptr->fast", notice observable changes
- */
-bool set_fast(int v)
-{
-	bool notice = FALSE;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Open */
-	if (v)
-	{
-		if (!p_ptr->fast)
-		{
-			message(MSG_SPEED, 0, "You feel yourself moving faster!");
-			notice = TRUE;
-		}
-	}
-
-	/* Shut */
-	else
-	{
-		if (p_ptr->fast)
-		{
-			message(MSG_RECOVER, 0, "You feel yourself slow down.");
-			notice = TRUE;
-		}
-	}
-
-	/* Use the value */
-	p_ptr->fast = v;
-
-	/* Nothing to notice */
-	if (!notice) return (FALSE);
-
-	/* Disturb */
-	if (disturb_state) disturb(0, 0);
-
-	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Result */
-	return (TRUE);
-}
-
-
-/*
- * Set "p_ptr->slow", notice observable changes
- */
-bool set_slow(int v)
-{
-	bool notice = FALSE;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Open */
-	if (v)
-	{
-		if (!p_ptr->slow)
-		{
-			message(MSG_SLOW, 0, "You feel yourself moving slower!");
-			notice = TRUE;
-		}
-	}
-
-	/* Shut */
-	else
-	{
-		if (p_ptr->slow)
-		{
-			message(MSG_RECOVER, 0, "You feel yourself speed up.");
-			notice = TRUE;
-		}
-	}
-
-	/* Use the value */
-	p_ptr->slow = v;
-
-	/* Nothing to notice */
-	if (!notice) return (FALSE);
-
-	/* Disturb */
-	if (disturb_state) disturb(0, 0);
-
-	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Result */
-	return (TRUE);
-}
-
-
-/*
- * Set "p_ptr->shield", notice observable changes
- */
-bool set_shield(int v)
-{
-	bool notice = FALSE;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Open */
-	if (v)
-	{
-		if (!p_ptr->shield)
-		{
-			message(MSG_SHIELD, 0, "A mystic shield forms around your body!");
-			notice = TRUE;
-		}
-	}
-
-	/* Shut */
-	else
-	{
-		if (p_ptr->shield)
-		{
-			message(MSG_RECOVER, 0, "Your mystic shield crumbles away.");
-			notice = TRUE;
-		}
-	}
-
-	/* Use the value */
-	p_ptr->shield = v;
-
-	/* Nothing to notice */
-	if (!notice) return (FALSE);
-
-	/* Disturb */
-	if (disturb_state) disturb(0, 0);
-
-	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Result */
-	return (TRUE);
-}
-
-
-
-/*
- * Set "p_ptr->blessed", notice observable changes
- */
-bool set_blessed(int v)
-{
-	bool notice = FALSE;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Open */
-	if (v)
-	{
-		if (!p_ptr->blessed)
-		{
-			message(MSG_BLESSED, 0, "You feel righteous!");
-			notice = TRUE;
-		}
-	}
-
-	/* Shut */
-	else
-	{
-		if (p_ptr->blessed)
-		{
-			message(MSG_RECOVER, 0, "The prayer has expired.");
-			notice = TRUE;
-		}
-	}
-
-	/* Use the value */
-	p_ptr->blessed = v;
-
-	/* Nothing to notice */
-	if (!notice) return (FALSE);
-
-	/* Disturb */
-	if (disturb_state) disturb(0, 0);
-
-	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Result */
-	return (TRUE);
-}
-
-
-/*
- * Set "p_ptr->hero", notice observable changes
- */
-bool set_hero(int v)
-{
-	bool notice = FALSE;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Open */
-	if (v)
-	{
-		if (!p_ptr->hero)
-		{
-			message(MSG_HERO, 0, "You feel like a hero!");
-			notice = TRUE;
-		}
-	}
-
-	/* Shut */
-	else
-	{
-		if (p_ptr->hero)
-		{
-			message(MSG_RECOVER, 0, "The heroism wears off.");
-			notice = TRUE;
-		}
-	}
-
-	/* Use the value */
-	p_ptr->hero = v;
-
-	/* Nothing to notice */
-	if (!notice) return (FALSE);
-
-	/* Disturb */
-	if (disturb_state) disturb(0, 0);
-
-	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Result */
-	return (TRUE);
-}
-
-
-/*
- * Set "p_ptr->shero", notice observable changes
- */
-bool set_shero(int v)
-{
-	bool notice = FALSE;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Open */
-	if (v)
-	{
-		if (!p_ptr->shero)
-		{
-			message(MSG_BERSERK, 0, "You feel like a killing machine!");
-			notice = TRUE;
-		}
-	}
-
-	/* Shut */
-	else
-	{
-		if (p_ptr->shero)
-		{
-			message(MSG_RECOVER, 0, "You feel less Berserk.");
-			notice = TRUE;
-		}
-	}
-
-	/* Use the value */
-	p_ptr->shero = v;
-
-	/* Nothing to notice */
-	if (!notice) return (FALSE);
-
-	/* Disturb */
-	if (disturb_state) disturb(0, 0);
-
-	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Result */
-	return (TRUE);
-}
-
-
-/*
- * Set "p_ptr->protevil", notice observable changes
- */
-bool set_protevil(int v)
-{
-	bool notice = FALSE;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Open */
-	if (v)
-	{
-		if (!p_ptr->protevil)
-		{
-			message(MSG_PROT_EVIL, 0, "You feel safe from evil!");
-			notice = TRUE;
-		}
-	}
-
-	/* Shut */
-	else
-	{
-		if (p_ptr->protevil)
-		{
-			message(MSG_RECOVER, 0, "You no longer feel safe from evil.");
-			notice = TRUE;
-		}
-	}
-
-	/* Use the value */
-	p_ptr->protevil = v;
-
-	/* Nothing to notice */
-	if (!notice) return (FALSE);
-
-	/* Disturb */
-	if (disturb_state) disturb(0, 0);
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Result */
-	return (TRUE);
-}
-
-
-/*
- * Set "p_ptr->invuln", notice observable changes
- */
-bool set_invuln(int v)
-{
-	bool notice = FALSE;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Open */
-	if (v)
-	{
-		if (!p_ptr->invuln)
-		{
-			message(MSG_INVULN, 0, "You feel invulnerable!");
-			notice = TRUE;
-		}
-	}
-
-	/* Shut */
-	else
-	{
-		if (p_ptr->invuln)
-		{
-			message(MSG_RECOVER, 0, "You feel vulnerable once more.");
-			notice = TRUE;
-		}
-	}
-
-	/* Use the value */
-	p_ptr->invuln = v;
-
-	/* Nothing to notice */
-	if (!notice) return (FALSE);
-
-	/* Disturb */
-	if (disturb_state) disturb(0, 0);
-
-	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Result */
-	return (TRUE);
-}
-
-
-/*
- * Set "p_ptr->tim_invis", notice observable changes
- *
- * Note the use of "PU_MONSTERS", which is needed because
- * "p_ptr->tim_image" affects monster visibility.
- */
-bool set_tim_invis(int v)
-{
-	bool notice = FALSE;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Open */
-	if (v)
-	{
-		if (!p_ptr->tim_invis)
-		{
-			message(MSG_SEE_INVIS, 0, "Your eyes feel very sensitive!");
-			notice = TRUE;
-		}
-	}
-
-	/* Shut */
-	else
-	{
-		if (p_ptr->tim_invis)
-		{
-			message(MSG_RECOVER, 0, "Your eyes feel less sensitive.");
-			notice = TRUE;
-		}
-	}
-
-	/* Use the value */
-	p_ptr->tim_invis = v;
-
-	/* Nothing to notice */
-	if (!notice) return (FALSE);
-
-	/* Disturb */
-	if (disturb_state) disturb(0, 0);
-
-	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
-
-	/* Update the monsters XXX */
-	p_ptr->update |= (PU_MONSTERS);
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Result */
-	return (TRUE);
-}
-
-
-/*
- * Set "p_ptr->tim_infra", notice observable changes
- *
- * Note the use of "PU_MONSTERS", which is needed because because
- * "p_ptr->tim_infra" affects monster visibility.
- */
-bool set_tim_infra(int v)
-{
-	bool notice = FALSE;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Open */
-	if (v)
-	{
-		if (!p_ptr->tim_infra)
-		{
-			message(MSG_INFRARED, 0, "Your eyes begin to tingle!");
-			notice = TRUE;
-		}
-	}
-
-	/* Shut */
-	else
-	{
-		if (p_ptr->tim_infra)
-		{
-			message(MSG_RECOVER, 0, "Your eyes stop tingling.");
-			notice = TRUE;
-		}
-	}
-
-	/* Use the value */
-	p_ptr->tim_infra = v;
-
-	/* Nothing to notice */
-	if (!notice) return (FALSE);
-
-	/* Disturb */
-	if (disturb_state) disturb(0, 0);
-
-	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
-
-	/* Update the monsters XXX */
-	p_ptr->update |= (PU_MONSTERS);
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Result */
-	return (TRUE);
-}
-
-
-/*
- * Set "p_ptr->oppose_acid", notice observable changes
- */
-bool set_oppose_acid(int v)
-{
-	bool notice = FALSE;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Open */
-	if (v)
-	{
-		if (!p_ptr->oppose_acid && !p_ptr->immune_acid)
+		if (!p_ptr->timed[TMD_OPP_ACID] && !p_ptr->immune_acid)
 		{
 			message(MSG_RES_ACID, 0, "You feel resistant to acid!");
 			notice = TRUE;
@@ -865,7 +172,7 @@ bool set_oppose_acid(int v)
 	/* Shut */
 	else
 	{
-		if (p_ptr->oppose_acid && !p_ptr->immune_acid)
+		if (p_ptr->timed[TMD_OPP_ACID] && !p_ptr->immune_acid)
 		{
 			message(MSG_RECOVER, 0, "You feel less resistant to acid.");
 			notice = TRUE;
@@ -873,7 +180,7 @@ bool set_oppose_acid(int v)
 	}
 
 	/* Use the value */
-	p_ptr->oppose_acid = v;
+	p_ptr->timed[TMD_OPP_ACID] = v;
 
 	/* Nothing to notice */
 	if (!notice) return (FALSE);
@@ -893,9 +200,9 @@ bool set_oppose_acid(int v)
 
 
 /*
- * Set "p_ptr->oppose_elec", notice observable changes
+ * Set "p_ptr->timed[TMD_OPP_ELEC]", notice observable changes
  */
-bool set_oppose_elec(int v)
+static bool set_oppose_elec(int v)
 {
 	bool notice = FALSE;
 
@@ -905,7 +212,7 @@ bool set_oppose_elec(int v)
 	/* Open */
 	if (v)
 	{
-		if (!p_ptr->oppose_elec && !p_ptr->immune_elec)
+		if (!p_ptr->timed[TMD_OPP_ELEC] && !p_ptr->immune_elec)
 		{
 			message(MSG_RES_ELEC, 0, "You feel resistant to electricity!");
 			notice = TRUE;
@@ -915,7 +222,7 @@ bool set_oppose_elec(int v)
 	/* Shut */
 	else
 	{
-		if (p_ptr->oppose_elec && !p_ptr->immune_elec)
+		if (p_ptr->timed[TMD_OPP_ELEC] && !p_ptr->immune_elec)
 		{
 			message(MSG_RECOVER, 0, "You feel less resistant to electricity.");
 			notice = TRUE;
@@ -923,7 +230,7 @@ bool set_oppose_elec(int v)
 	}
 
 	/* Use the value */
-	p_ptr->oppose_elec = v;
+	p_ptr->timed[TMD_OPP_ELEC] = v;
 
 	/* Nothing to notice */
 	if (!notice) return (FALSE);
@@ -943,9 +250,9 @@ bool set_oppose_elec(int v)
 
 
 /*
- * Set "p_ptr->oppose_fire", notice observable changes
+ * Set "p_ptr->timed[TMD_OPP_FIRE]", notice observable changes
  */
-bool set_oppose_fire(int v)
+static bool set_oppose_fire(int v)
 {
 	bool notice = FALSE;
 
@@ -955,7 +262,7 @@ bool set_oppose_fire(int v)
 	/* Open */
 	if (v)
 	{
-		if (!p_ptr->oppose_fire && !p_ptr->immune_fire)
+		if (!p_ptr->timed[TMD_OPP_FIRE] && !p_ptr->immune_fire)
 		{
 			message(MSG_RES_FIRE, 0, "You feel resistant to fire!");
 			notice = TRUE;
@@ -965,7 +272,7 @@ bool set_oppose_fire(int v)
 	/* Shut */
 	else
 	{
-		if (p_ptr->oppose_fire && !p_ptr->immune_fire)
+		if (p_ptr->timed[TMD_OPP_FIRE] && !p_ptr->immune_fire)
 		{
 			message(MSG_RECOVER, 0, "You feel less resistant to fire.");
 			notice = TRUE;
@@ -973,7 +280,7 @@ bool set_oppose_fire(int v)
 	}
 
 	/* Use the value */
-	p_ptr->oppose_fire = v;
+	p_ptr->timed[TMD_OPP_FIRE] = v;
 
 	/* Nothing to notice */
 	if (!notice) return (FALSE);
@@ -993,9 +300,9 @@ bool set_oppose_fire(int v)
 
 
 /*
- * Set "p_ptr->oppose_cold", notice observable changes
+ * Set "p_ptr->timed[TMD_OPP_COLD]", notice observable changes
  */
-bool set_oppose_cold(int v)
+static bool set_oppose_cold(int v)
 {
 	bool notice = FALSE;
 
@@ -1005,7 +312,7 @@ bool set_oppose_cold(int v)
 	/* Open */
 	if (v)
 	{
-		if (!p_ptr->oppose_cold && !p_ptr->immune_cold)
+		if (!p_ptr->timed[TMD_OPP_COLD] && !p_ptr->immune_cold)
 		{
 			message(MSG_RES_COLD, 0, "You feel resistant to cold!");
 			notice = TRUE;
@@ -1015,7 +322,7 @@ bool set_oppose_cold(int v)
 	/* Shut */
 	else
 	{
-		if (p_ptr->oppose_cold && !p_ptr->immune_cold)
+		if (p_ptr->timed[TMD_OPP_COLD] && !p_ptr->immune_cold)
 		{
 			message(MSG_RECOVER, 0, "You feel less resistant to cold.");
 			notice = TRUE;
@@ -1023,7 +330,7 @@ bool set_oppose_cold(int v)
 	}
 
 	/* Use the value */
-	p_ptr->oppose_cold = v;
+	p_ptr->timed[TMD_OPP_COLD] = v;
 
 	/* Nothing to notice */
 	if (!notice) return (FALSE);
@@ -1042,62 +349,13 @@ bool set_oppose_cold(int v)
 }
 
 
-/*
- * Set "p_ptr->oppose_pois", notice observable changes
- */
-bool set_oppose_pois(int v)
-{
-	bool notice = FALSE;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Open */
-	if (v)
-	{
-		if (!p_ptr->oppose_pois)
-		{
-			message(MSG_RES_POIS, 0, "You feel resistant to poison!");
-			notice = TRUE;
-		}
-	}
-
-	/* Shut */
-	else
-	{
-		if (p_ptr->oppose_pois)
-		{
-			message(MSG_RECOVER, 0, "You feel less resistant to poison.");
-			notice = TRUE;
-		}
-	}
-
-	/* Use the value */
-	p_ptr->oppose_pois = v;
-
-	/* Nothing to notice */
-	if (!notice) return (FALSE);
-
-	/* Disturb */
-	if (disturb_state) disturb(0, 0);
-
-	/* Redraw */
-	p_ptr->redraw |= PR_OPPOSE_ELEMENTS;
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Result */
-	return (TRUE);
-}
-
 
 /*
- * Set "p_ptr->stun", notice observable changes
+ * Set "p_ptr->timed[TMD_STUN]", notice observable changes
  *
  * Note the special code to only notice "range" changes.
  */
-bool set_stun(int v)
+static bool set_stun(int v)
 {
 	int old_aux, new_aux;
 
@@ -1107,19 +365,19 @@ bool set_stun(int v)
 	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
 
 	/* Knocked out */
-	if (p_ptr->stun > 100)
+	if (p_ptr->timed[TMD_STUN] > 100)
 	{
 		old_aux = 3;
 	}
 
 	/* Heavy stun */
-	else if (p_ptr->stun > 50)
+	else if (p_ptr->timed[TMD_STUN] > 50)
 	{
 		old_aux = 2;
 	}
 
 	/* Stun */
-	else if (p_ptr->stun > 0)
+	else if (p_ptr->timed[TMD_STUN] > 0)
 	{
 		old_aux = 1;
 	}
@@ -1206,7 +464,7 @@ bool set_stun(int v)
 	}
 
 	/* Use the value */
-	p_ptr->stun = v;
+	p_ptr->timed[TMD_STUN] = v;
 
 	/* No change */
 	if (!notice) return (FALSE);
@@ -1229,11 +487,11 @@ bool set_stun(int v)
 
 
 /*
- * Set "p_ptr->cut", notice observable changes
+ * Set "p_ptr->timed[TMD_CUT]", notice observable changes
  *
  * Note the special code to only notice "range" changes.
  */
-bool set_cut(int v)
+static bool set_cut(int v)
 {
 	int old_aux, new_aux;
 
@@ -1243,43 +501,43 @@ bool set_cut(int v)
 	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
 
 	/* Mortal wound */
-	if (p_ptr->cut > 1000)
+	if (p_ptr->timed[TMD_CUT] > 1000)
 	{
 		old_aux = 7;
 	}
 
 	/* Deep gash */
-	else if (p_ptr->cut > 200)
+	else if (p_ptr->timed[TMD_CUT] > 200)
 	{
 		old_aux = 6;
 	}
 
 	/* Severe cut */
-	else if (p_ptr->cut > 100)
+	else if (p_ptr->timed[TMD_CUT] > 100)
 	{
 		old_aux = 5;
 	}
 
 	/* Nasty cut */
-	else if (p_ptr->cut > 50)
+	else if (p_ptr->timed[TMD_CUT] > 50)
 	{
 		old_aux = 4;
 	}
 
 	/* Bad cut */
-	else if (p_ptr->cut > 25)
+	else if (p_ptr->timed[TMD_CUT] > 25)
 	{
 		old_aux = 3;
 	}
 
 	/* Light cut */
-	else if (p_ptr->cut > 10)
+	else if (p_ptr->timed[TMD_CUT] > 10)
 	{
 		old_aux = 2;
 	}
 
 	/* Graze */
-	else if (p_ptr->cut > 0)
+	else if (p_ptr->timed[TMD_CUT] > 0)
 	{
 		old_aux = 1;
 	}
@@ -1418,7 +676,7 @@ bool set_cut(int v)
 	}
 
 	/* Use the value */
-	p_ptr->cut = v;
+	p_ptr->timed[TMD_CUT] = v;
 
 	/* No change */
 	if (!notice) return (FALSE);
@@ -2766,7 +2024,7 @@ bool target_able(int m_idx)
 	if (!projectable(py, px, m_ptr->fy, m_ptr->fx)) return (FALSE);
 
 	/* Hack -- no targeting hallucinations */
-	if (p_ptr->image) return (FALSE);
+	if (p_ptr->timed[TMD_IMAGE]) return (FALSE);
 
 	/* Hack -- Never target trappers XXX XXX XXX */
 	/* if (CLEAR_ATTR && (CLEAR_CHAR)) return (FALSE); */
@@ -2997,7 +2255,7 @@ static bool target_set_interactive_accept(int y, int x)
 
 
 	/* Handle hallucination */
-	if (p_ptr->image) return (FALSE);
+	if (p_ptr->timed[TMD_IMAGE]) return (FALSE);
 
 
 	/* Visible monsters */
@@ -3172,7 +2430,7 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 
 
 		/* Hack -- hallucination */
-		if (p_ptr->image)
+		if (p_ptr->timed[TMD_IMAGE])
 		{
 			cptr name = "something strange";
 
@@ -4054,7 +3312,7 @@ bool get_aim_dir(int *dp)
 	p_ptr->command_dir = dir;
 
 	/* Check for confusion */
-	if (p_ptr->confused)
+	if (p_ptr->timed[TMD_CONFUSED])
 	{
 		/* Random direction */
 		dir = ddd[rand_int(8)];
@@ -4169,7 +3427,7 @@ bool confuse_dir(int *dp)
 	dir = (*dp);
 
 	/* Apply "confusion" */
-	if (p_ptr->confused)
+	if (p_ptr->timed[TMD_CONFUSED])
 	{
 		/* Apply confusion XXX XXX XXX */
 		if ((dir == 5) || (rand_int(100) < 75))
@@ -4195,3 +3453,4 @@ bool confuse_dir(int *dp)
 	/* Not confused */
 	return (FALSE);
 }
+

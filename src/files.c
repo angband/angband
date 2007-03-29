@@ -1408,8 +1408,8 @@ static void display_player_xtra_info(void)
 	/* Speed (without temporary effects) */
 	Term_putstr(col, 17, -1, TERM_WHITE, "Speed");
 	tmp = p_ptr->pspeed;
-	if (p_ptr->fast) tmp -= 10;
-	if (p_ptr->slow) tmp += 10;
+	if (p_ptr->timed[TMD_FAST]) tmp -= 10;
+	if (p_ptr->timed[TMD_SLOW]) tmp += 10;
 	if (p_ptr->searching) tmp += 10;
 	if (tmp != 110)
 	{

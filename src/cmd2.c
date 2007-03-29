@@ -289,9 +289,9 @@ static void chest_trap(int y, int x, s16b o_idx)
 	if (trap & (CHEST_POISON))
 	{
 		msg_print("A puff of green gas surrounds you!");
-		if (!(p_ptr->resist_pois || p_ptr->oppose_pois))
+		if (!(p_ptr->resist_pois || p_ptr->timed[TMD_OPP_POIS]))
 		{
-			(void)set_poisoned(p_ptr->poisoned + 10 + randint(20));
+			(void)inc_timed(TMD_POISONED, 10 + randint(20));
 		}
 	}
 
@@ -301,7 +301,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 		msg_print("A puff of yellow gas surrounds you!");
 		if (!p_ptr->free_act)
 		{
-			(void)set_paralyzed(p_ptr->paralyzed + 10 + randint(20));
+			(void)inc_timed(TMD_PARALYZED, 10 + randint(20));
 		}
 	}
 
@@ -356,8 +356,8 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		i = p_ptr->skill_dis;
 
 		/* Penalize some conditions */
-		if (p_ptr->blind || no_lite()) i = i / 10;
-		if (p_ptr->confused || p_ptr->image) i = i / 10;
+		if (p_ptr->timed[TMD_BLIND] || no_lite()) i = i / 10;
+		if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) i = i / 10;
 
 		/* Extract the difficulty */
 		j = i - o_ptr->pval;
@@ -425,8 +425,8 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	i = p_ptr->skill_dis;
 
 	/* Penalize some conditions */
-	if (p_ptr->blind || no_lite()) i = i / 10;
-	if (p_ptr->confused || p_ptr->image) i = i / 10;
+	if (p_ptr->timed[TMD_BLIND] || no_lite()) i = i / 10;
+	if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) i = i / 10;
 
 	/* Extract the difficulty */
 	j = i - o_ptr->pval;
@@ -675,8 +675,8 @@ static bool do_cmd_open_aux(int y, int x)
 		i = p_ptr->skill_dis;
 
 		/* Penalize some conditions */
-		if (p_ptr->blind || no_lite()) i = i / 10;
-		if (p_ptr->confused || p_ptr->image) i = i / 10;
+		if (p_ptr->timed[TMD_BLIND] || no_lite()) i = i / 10;
+		if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) i = i / 10;
 
 		/* Extract the lock power */
 		j = cave_feat[y][x] - FEAT_DOOR_HEAD;
@@ -1376,8 +1376,8 @@ static bool do_cmd_disarm_aux(int y, int x)
 	i = p_ptr->skill_dis;
 
 	/* Penalize some conditions */
-	if (p_ptr->blind || no_lite()) i = i / 10;
-	if (p_ptr->confused || p_ptr->image) i = i / 10;
+	if (p_ptr->timed[TMD_BLIND] || no_lite()) i = i / 10;
+	if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) i = i / 10;
 
 	/* XXX XXX XXX Variable power? */
 
@@ -1642,7 +1642,7 @@ static bool do_cmd_bash_aux(int y, int x)
 		msg_print("You are off-balance.");
 
 		/* Hack -- Lose balance ala paralysis */
-		(void)set_paralyzed(p_ptr->paralyzed + 2 + rand_int(2));
+		(void)inc_timed(TMD_PARALYZED, 2 + rand_int(2));
 	}
 
 	/* Result */
@@ -2132,7 +2132,7 @@ void do_cmd_run(void)
 
 
 	/* Hack XXX XXX XXX */
-	if (p_ptr->confused)
+	if (p_ptr->timed[TMD_CONFUSED])
 	{
 		msg_print("You are too confused!");
 		return;

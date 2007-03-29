@@ -437,31 +437,31 @@ void self_knowledge(void)
 	}
 
 
-	if (p_ptr->blind)
+	if (p_ptr->timed[TMD_BLIND])
 	{
 		info[i++] = "You cannot see.";
 	}
-	if (p_ptr->confused)
+	if (p_ptr->timed[TMD_CONFUSED])
 	{
 		info[i++] = "You are confused.";
 	}
-	if (p_ptr->afraid)
+	if (p_ptr->timed[TMD_AFRAID])
 	{
 		info[i++] = "You are terrified.";
 	}
-	if (p_ptr->cut)
+	if (p_ptr->timed[TMD_CUT])
 	{
 		info[i++] = "You are bleeding.";
 	}
-	if (p_ptr->stun)
+	if (p_ptr->timed[TMD_STUN])
 	{
 		info[i++] = "You are stunned.";
 	}
-	if (p_ptr->poisoned)
+	if (p_ptr->timed[TMD_POISONED])
 	{
 		info[i++] = "You are poisoned.";
 	}
-	if (p_ptr->image)
+	if (p_ptr->timed[TMD_IMAGE])
 	{
 		info[i++] = "You are hallucinating.";
 	}
@@ -475,27 +475,27 @@ void self_knowledge(void)
 		info[i++] = "Your position is very uncertain.";
 	}
 
-	if (p_ptr->blessed)
+	if (p_ptr->timed[TMD_BLESSED])
 	{
 		info[i++] = "You feel righteous.";
 	}
-	if (p_ptr->hero)
+	if (p_ptr->timed[TMD_HERO])
 	{
 		info[i++] = "You feel heroic.";
 	}
-	if (p_ptr->shero)
+	if (p_ptr->timed[TMD_SHERO])
 	{
 		info[i++] = "You are in a battle rage.";
 	}
-	if (p_ptr->protevil)
+	if (p_ptr->timed[TMD_PROTEVIL])
 	{
 		info[i++] = "You are protected from evil.";
 	}
-	if (p_ptr->shield)
+	if (p_ptr->timed[TMD_SHIELD])
 	{
 		info[i++] = "You are protected by a mystic shield.";
 	}
-	if (p_ptr->invuln)
+	if (p_ptr->timed[TMD_INVULN])
 	{
 		info[i++] = "You are temporarily invulnerable.";
 	}
@@ -557,11 +557,11 @@ void self_knowledge(void)
 	{
 		info[i++] = "You are completely immune to acid.";
 	}
-	else if ((p_ptr->resist_acid) && (p_ptr->oppose_acid))
+	else if ((p_ptr->resist_acid) && (p_ptr->timed[TMD_OPP_ACID]))
 	{
 		info[i++] = "You resist acid exceptionally well.";
 	}
-	else if ((p_ptr->resist_acid) || (p_ptr->oppose_acid))
+	else if ((p_ptr->resist_acid) || (p_ptr->timed[TMD_OPP_ACID]))
 	{
 		info[i++] = "You are resistant to acid.";
 	}
@@ -570,11 +570,11 @@ void self_knowledge(void)
 	{
 		info[i++] = "You are completely immune to lightning.";
 	}
-	else if ((p_ptr->resist_elec) && (p_ptr->oppose_elec))
+	else if ((p_ptr->resist_elec) && (p_ptr->timed[TMD_OPP_ELEC]))
 	{
 		info[i++] = "You resist lightning exceptionally well.";
 	}
-	else if ((p_ptr->resist_elec) || (p_ptr->oppose_elec))
+	else if ((p_ptr->resist_elec) || (p_ptr->timed[TMD_OPP_ELEC]))
 	{
 		info[i++] = "You are resistant to lightning.";
 	}
@@ -583,11 +583,11 @@ void self_knowledge(void)
 	{
 		info[i++] = "You are completely immune to fire.";
 	}
-	else if ((p_ptr->resist_fire) && (p_ptr->oppose_fire))
+	else if ((p_ptr->resist_fire) && (p_ptr->timed[TMD_OPP_FIRE]))
 	{
 		info[i++] = "You resist fire exceptionally well.";
 	}
-	else if ((p_ptr->resist_fire) || (p_ptr->oppose_fire))
+	else if ((p_ptr->resist_fire) || (p_ptr->timed[TMD_OPP_FIRE]))
 	{
 		info[i++] = "You are resistant to fire.";
 	}
@@ -596,20 +596,20 @@ void self_knowledge(void)
 	{
 		info[i++] = "You are completely immune to cold.";
 	}
-	else if ((p_ptr->resist_cold) && (p_ptr->oppose_cold))
+	else if ((p_ptr->resist_cold) && (p_ptr->timed[TMD_OPP_COLD]))
 	{
 		info[i++] = "You resist cold exceptionally well.";
 	}
-	else if ((p_ptr->resist_cold) || (p_ptr->oppose_cold))
+	else if ((p_ptr->resist_cold) || (p_ptr->timed[TMD_OPP_COLD]))
 	{
 		info[i++] = "You are resistant to cold.";
 	}
 
-	if ((p_ptr->resist_pois) && (p_ptr->oppose_pois))
+	if ((p_ptr->resist_pois) && (p_ptr->timed[TMD_OPP_POIS]))
 	{
 		info[i++] = "You resist poison exceptionally well.";
 	}
-	else if ((p_ptr->resist_pois) || (p_ptr->oppose_pois))
+	else if ((p_ptr->resist_pois) || (p_ptr->timed[TMD_OPP_POIS]))
 	{
 		info[i++] = "You are resistant to poison.";
 	}
@@ -2546,7 +2546,7 @@ void destroy_area(int y1, int x1, int r, bool full)
 		if (!p_ptr->resist_blind && !p_ptr->resist_lite)
 		{
 			/* Become blind */
-			(void)set_blind(p_ptr->blind + 10 + randint(10));
+			(void)inc_timed(TMD_BLIND, 10 + randint(10));
 		}
 	}
 
@@ -2717,14 +2717,14 @@ void earthquake(int cy, int cx, int r)
 				{
 					msg_print("You are bashed by rubble!");
 					damage = damroll(10, 4);
-					(void)set_stun(p_ptr->stun + randint(50));
+					(void)inc_timed(TMD_STUN, randint(50));
 					break;
 				}
 				case 3:
 				{
 					msg_print("You are crushed between the floor and ceiling!");
 					damage = damroll(10, 4);
-					(void)set_stun(p_ptr->stun + randint(50));
+					(void)inc_timed(TMD_STUN, randint(50));
 					break;
 				}
 			}
@@ -3172,7 +3172,7 @@ bool lite_area(int dam, int rad)
 	int flg = PROJECT_GRID | PROJECT_KILL;
 
 	/* Hack -- Message */
-	if (!p_ptr->blind)
+	if (!p_ptr->timed[TMD_BLIND])
 	{
 		msg_print("You are surrounded by a white light.");
 	}
@@ -3200,7 +3200,7 @@ bool unlite_area(int dam, int rad)
 	int flg = PROJECT_GRID | PROJECT_KILL;
 
 	/* Hack -- Message */
-	if (!p_ptr->blind)
+	if (!p_ptr->timed[TMD_BLIND])
 	{
 		msg_print("Darkness surrounds you.");
 	}

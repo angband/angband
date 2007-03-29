@@ -507,45 +507,19 @@ static void wr_extra(void)
 	wr_s16b(p_ptr->sc);
 	wr_s16b(0);	/* oops */
 
-	wr_s16b(0);		/* old "rest" */
-	wr_s16b(p_ptr->blind);
-	wr_s16b(p_ptr->paralyzed);
-	wr_s16b(p_ptr->confused);
 	wr_s16b(p_ptr->food);
-	wr_s16b(0);	/* old "food_digested" */
-	wr_s16b(0);	/* old "protection" */
 	wr_s16b(p_ptr->energy);
-	wr_s16b(p_ptr->fast);
-	wr_s16b(p_ptr->slow);
-	wr_s16b(p_ptr->afraid);
-	wr_s16b(p_ptr->cut);
-	wr_s16b(p_ptr->stun);
-	wr_s16b(p_ptr->poisoned);
-	wr_s16b(p_ptr->image);
-	wr_s16b(p_ptr->protevil);
-	wr_s16b(p_ptr->invuln);
-	wr_s16b(p_ptr->hero);
-	wr_s16b(p_ptr->shero);
-	wr_s16b(p_ptr->shield);
-	wr_s16b(p_ptr->blessed);
-	wr_s16b(p_ptr->tim_invis);
 	wr_s16b(p_ptr->word_recall);
 	wr_s16b(p_ptr->see_infra);
-	wr_s16b(p_ptr->tim_infra);
-	wr_s16b(p_ptr->oppose_fire);
-	wr_s16b(p_ptr->oppose_cold);
-	wr_s16b(p_ptr->oppose_acid);
-	wr_s16b(p_ptr->oppose_elec);
-	wr_s16b(p_ptr->oppose_pois);
-
 	wr_byte(p_ptr->confusing);
-	wr_byte(0);	/* oops */
-	wr_byte(0);	/* oops */
-	wr_byte(0);	/* oops */
 	wr_byte(p_ptr->searching);
-	wr_byte(0);	/* oops */
-	wr_byte(0);	/* oops */
-	wr_byte(0);
+
+	/* Find the number of timed effects */
+	wr_byte(TMD_MAX);
+
+	/* Read all the effects, in a loop */
+	for (i = 0; i < TMD_MAX; i++)
+		wr_s16b(p_ptr->timed[i]);
 
 	/* Future use */
 	for (i = 0; i < 10; i++) wr_u32b(0L);

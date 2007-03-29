@@ -875,31 +875,7 @@ struct player_type
 	s16b stat_max[A_MAX];	/* Current "maximal" stat values */
 	s16b stat_cur[A_MAX];	/* Current "natural" stat values */
 
-	s16b fast;			/* Timed -- Fast */
-	s16b slow;			/* Timed -- Slow */
-	s16b blind;			/* Timed -- Blindness */
-	s16b paralyzed;		/* Timed -- Paralysis */
-	s16b confused;		/* Timed -- Confusion */
-	s16b afraid;		/* Timed -- Fear */
-	s16b image;			/* Timed -- Hallucination */
-	s16b poisoned;		/* Timed -- Poisoned */
-	s16b cut;			/* Timed -- Cut */
-	s16b stun;			/* Timed -- Stun */
-
-	s16b protevil;		/* Timed -- Protection */
-	s16b invuln;		/* Timed -- Invulnerable */
-	s16b hero;			/* Timed -- Heroism */
-	s16b shero;			/* Timed -- Super Heroism */
-	s16b shield;		/* Timed -- Shield Spell */
-	s16b blessed;		/* Timed -- Blessed */
-	s16b tim_invis;		/* Timed -- See Invisible */
-	s16b tim_infra;		/* Timed -- Infra Vision */
-
-	s16b oppose_acid;	/* Timed -- oppose acid */
-	s16b oppose_elec;	/* Timed -- oppose lightning */
-	s16b oppose_fire;	/* Timed -- oppose heat */
-	s16b oppose_cold;	/* Timed -- oppose cold */
-	s16b oppose_pois;	/* Timed -- oppose poison */
+	s16b timed[TMD_MAX];	/* Timed effects */
 
 	s16b word_recall;	/* Word of recall counter */
 

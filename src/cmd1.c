@@ -421,8 +421,8 @@ void search(void)
 	chance = p_ptr->skill_srh;
 
 	/* Penalize various conditions */
-	if (p_ptr->blind || no_lite()) chance = chance / 10;
-	if (p_ptr->confused || p_ptr->image) chance = chance / 10;
+	if (p_ptr->timed[TMD_BLIND] || no_lite()) chance = chance / 10;
+	if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) chance = chance / 10;
 
 	/* Search the nearby grids, which are always in bounds */
 	for (y = (py - 1); y <= (py + 1); y++)
@@ -898,7 +898,7 @@ void hit_trap(int y, int x)
 					msg_print("You are impaled!");
 
 					dam = dam * 2;
-					(void)set_cut(p_ptr->cut + randint(dam));
+					(void)inc_timed(TMD_CUT, randint(dam));
 				}
 
 				/* Take the damage */
@@ -928,16 +928,16 @@ void hit_trap(int y, int x)
 					msg_print("You are impaled on poisonous spikes!");
 
 					dam = dam * 2;
-					(void)set_cut(p_ptr->cut + randint(dam));
+					(void)inc_timed(TMD_CUT, randint(dam));
 
-					if (p_ptr->resist_pois || p_ptr->oppose_pois)
+					if (p_ptr->resist_pois || p_ptr->timed[TMD_OPP_POIS])
 					{
 						msg_print("The poison does not affect you!");
 					}
 					else
 					{
 						dam = dam * 2;
-						(void)set_poisoned(p_ptr->poisoned + randint(dam));
+						(void)inc_timed(TMD_POISONED, randint(dam));
 					}
 				}
 
@@ -992,7 +992,7 @@ void hit_trap(int y, int x)
 				msg_print("A small dart hits you!");
 				dam = damroll(1, 4);
 				take_hit(dam, name);
-				(void)set_slow(p_ptr->slow + rand_int(20) + 20);
+				(void)inc_timed(TMD_SLOW, rand_int(20) + 20);
 			}
 			else
 			{
@@ -1054,7 +1054,7 @@ void hit_trap(int y, int x)
 			msg_print("You are surrounded by a black gas!");
 			if (!p_ptr->resist_blind)
 			{
-				(void)set_blind(p_ptr->blind + rand_int(50) + 25);
+				(void)inc_timed(TMD_BLIND, rand_int(50) + 25);
 			}
 			break;
 		}
@@ -1064,7 +1064,7 @@ void hit_trap(int y, int x)
 			msg_print("You are surrounded by a gas of scintillating colors!");
 			if (!p_ptr->resist_confu)
 			{
-				(void)set_confused(p_ptr->confused + rand_int(20) + 10);
+				(void)inc_timed(TMD_CONFUSED, rand_int(20) + 10);
 			}
 			break;
 		}
@@ -1072,9 +1072,9 @@ void hit_trap(int y, int x)
 		case FEAT_TRAP_HEAD + 0x0E:
 		{
 			msg_print("You are surrounded by a pungent green gas!");
-			if (!p_ptr->resist_pois && !p_ptr->oppose_pois)
+			if (!p_ptr->resist_pois && !p_ptr->timed[TMD_OPP_POIS])
 			{
-				(void)set_poisoned(p_ptr->poisoned + rand_int(20) + 10);
+				(void)inc_timed(TMD_POISONED, rand_int(20) + 10);
 			}
 			break;
 		}
@@ -1084,7 +1084,7 @@ void hit_trap(int y, int x)
 			msg_print("You are surrounded by a strange white mist!");
 			if (!p_ptr->free_act)
 			{
-				(void)set_paralyzed(p_ptr->paralyzed + rand_int(10) + 5);
+				(void)inc_timed(TMD_PARALYZED, rand_int(10) + 5);
 			}
 			break;
 		}
@@ -1141,7 +1141,7 @@ void py_attack(int y, int x)
 
 
 	/* Handle player fear */
-	if (p_ptr->afraid)
+	if (p_ptr->timed[TMD_AFRAID])
 	{
 		/* Message */
 		msg_format("You are too afraid to attack %s!", m_name);

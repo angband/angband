@@ -1055,7 +1055,7 @@ void update_mon(int m_idx, bool full)
 		}
 
 		/* Normal line of sight, and not blind */
-		if (player_has_los_bold(fy, fx) && !p_ptr->blind)
+		if (player_has_los_bold(fy, fx) && !p_ptr->timed[TMD_BLIND])
 		{
 			bool do_invisible = FALSE;
 			bool do_cold_blood = FALSE;
@@ -2393,7 +2393,7 @@ void update_smart_learn(int m_idx, int what)
 		case DRS_RES_ACID:
 		{
 			if (p_ptr->resist_acid) m_ptr->smart |= (SM_RES_ACID);
-			if (p_ptr->oppose_acid) m_ptr->smart |= (SM_OPP_ACID);
+			if (p_ptr->timed[TMD_OPP_ACID]) m_ptr->smart |= (SM_OPP_ACID);
 			if (p_ptr->immune_acid) m_ptr->smart |= (SM_IMM_ACID);
 			break;
 		}
@@ -2401,7 +2401,7 @@ void update_smart_learn(int m_idx, int what)
 		case DRS_RES_ELEC:
 		{
 			if (p_ptr->resist_elec) m_ptr->smart |= (SM_RES_ELEC);
-			if (p_ptr->oppose_elec) m_ptr->smart |= (SM_OPP_ELEC);
+			if (p_ptr->timed[TMD_OPP_ELEC]) m_ptr->smart |= (SM_OPP_ELEC);
 			if (p_ptr->immune_elec) m_ptr->smart |= (SM_IMM_ELEC);
 			break;
 		}
@@ -2409,7 +2409,7 @@ void update_smart_learn(int m_idx, int what)
 		case DRS_RES_FIRE:
 		{
 			if (p_ptr->resist_fire) m_ptr->smart |= (SM_RES_FIRE);
-			if (p_ptr->oppose_fire) m_ptr->smart |= (SM_OPP_FIRE);
+			if (p_ptr->timed[TMD_OPP_FIRE]) m_ptr->smart |= (SM_OPP_FIRE);
 			if (p_ptr->immune_fire) m_ptr->smart |= (SM_IMM_FIRE);
 			break;
 		}
@@ -2417,7 +2417,7 @@ void update_smart_learn(int m_idx, int what)
 		case DRS_RES_COLD:
 		{
 			if (p_ptr->resist_cold) m_ptr->smart |= (SM_RES_COLD);
-			if (p_ptr->oppose_cold) m_ptr->smart |= (SM_OPP_COLD);
+			if (p_ptr->timed[TMD_OPP_COLD]) m_ptr->smart |= (SM_OPP_COLD);
 			if (p_ptr->immune_cold) m_ptr->smart |= (SM_IMM_COLD);
 			break;
 		}
@@ -2425,7 +2425,7 @@ void update_smart_learn(int m_idx, int what)
 		case DRS_RES_POIS:
 		{
 			if (p_ptr->resist_pois) m_ptr->smart |= (SM_RES_POIS);
-			if (p_ptr->oppose_pois) m_ptr->smart |= (SM_OPP_POIS);
+			if (p_ptr->timed[TMD_OPP_POIS]) m_ptr->smart |= (SM_OPP_POIS);
 			break;
 		}
 

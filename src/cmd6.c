@@ -245,7 +245,7 @@ void do_cmd_read_scroll(void)
 
 
 	/* Check some conditions */
-	if (p_ptr->blind)
+	if (p_ptr->timed[TMD_BLIND])
 	{
 		msg_print("You can't see anything.");
 		return;
@@ -255,7 +255,7 @@ void do_cmd_read_scroll(void)
 		msg_print("You have no light to read by.");
 		return;
 	}
-	if (p_ptr->confused)
+	if (p_ptr->timed[TMD_CONFUSED])
 	{
 		msg_print("You are too confused!");
 		return;
@@ -392,7 +392,7 @@ void do_cmd_use_staff(void)
 	chance = p_ptr->skill_dev;
 
 	/* Confusion hurts skill */
-	if (p_ptr->confused) chance = chance / 2;
+	if (p_ptr->timed[TMD_CONFUSED]) chance = chance / 2;
 
 	/* High level objects are harder */
 	chance = chance - ((lev > 50) ? 50 : lev);
@@ -697,7 +697,7 @@ void do_cmd_activate(void)
 	chance = p_ptr->skill_dev;
 
 	/* Confusion hurts skill */
-	if (p_ptr->confused) chance = chance / 2;
+	if (p_ptr->timed[TMD_CONFUSED]) chance = chance / 2;
 
 	/* High level objects are harder */
 	chance = chance - ((lev > 50) ? 50 : lev);

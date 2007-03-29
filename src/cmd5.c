@@ -63,8 +63,8 @@ s16b spell_chance(int spell)
 	if (chance < minfail) chance = minfail;
 
 	/* Stunning makes spells harder (after minfail) */
-	if (p_ptr->stun > 50) chance += 25;
-	else if (p_ptr->stun) chance += 15;
+	if (p_ptr->timed[TMD_STUN] > 50) chance += 25;
+	else if (p_ptr->timed[TMD_STUN]) chance += 15;
 
 	/* Always a 5 percent chance of working */
 	if (chance > 95) chance = 95;
@@ -608,14 +608,14 @@ void do_cmd_browse(void)
 #if 0
 
 	/* No lite */
-	if (p_ptr->blind || no_lite())
+	if (p_ptr->timed[TMD_BLIND] || no_lite())
 	{
 		msg_print("You cannot see!");
 		return;
 	}
 
 	/* Confused */
-	if (p_ptr->confused)
+	if (p_ptr->timed[TMD_CONFUSED])
 	{
 		msg_print("You are too confused!");
 		return;
@@ -672,13 +672,13 @@ void do_cmd_study(void)
 		return;
 	}
 
-	if (p_ptr->blind || no_lite())
+	if (p_ptr->timed[TMD_BLIND] || no_lite())
 	{
 		msg_print("You cannot see!");
 		return;
 	}
 
-	if (p_ptr->confused)
+	if (p_ptr->timed[TMD_CONFUSED])
 	{
 		msg_print("You are too confused!");
 		return;
@@ -831,14 +831,14 @@ void do_cmd_cast(void)
 	}
 
 	/* Require lite */
-	if (p_ptr->blind || no_lite())
+	if (p_ptr->timed[TMD_BLIND] || no_lite())
 	{
 		msg_print("You cannot see!");
 		return;
 	}
 
 	/* Not when confused */
-	if (p_ptr->confused)
+	if (p_ptr->timed[TMD_CONFUSED])
 	{
 		msg_print("You are too confused!");
 		return;
@@ -957,7 +957,7 @@ void do_cmd_cast(void)
 		msg_print("You faint from the effort!");
 
 		/* Hack -- Bypass free action */
-		(void)set_paralyzed(p_ptr->paralyzed + randint(5 * oops + 1));
+		(void)inc_timed(TMD_PARALYZED, randint(5 * oops + 1));
 
 		/* Damage CON (possibly permanently) */
 		if (rand_int(100) < 50)
@@ -1002,14 +1002,14 @@ void do_cmd_pray(void)
 	}
 
 	/* Must have lite */
-	if (p_ptr->blind || no_lite())
+	if (p_ptr->timed[TMD_BLIND] || no_lite())
 	{
 		msg_print("You cannot see!");
 		return;
 	}
 
 	/* Must not be confused */
-	if (p_ptr->confused)
+	if (p_ptr->timed[TMD_CONFUSED])
 	{
 		msg_print("You are too confused!");
 		return;
@@ -1127,7 +1127,7 @@ void do_cmd_pray(void)
 		msg_print("You faint from the effort!");
 
 		/* Hack -- Bypass free action */
-		(void)set_paralyzed(p_ptr->paralyzed + randint(5 * oops + 1));
+		(void)inc_timed(TMD_PARALYZED, randint(5 * oops + 1));
 
 		/* Damage CON (possibly permanently) */
 		if (rand_int(100) < 50)

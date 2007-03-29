@@ -47,7 +47,7 @@
 /*
  * Current version string
  */
-#define VERSION_STRING	"3.0.7s"
+#define VERSION_STRING	"3.0.8"
 
 
 /*
@@ -55,8 +55,8 @@
  */
 #define VERSION_MAJOR	3
 #define VERSION_MINOR	0
-#define VERSION_PATCH	6
-#define VERSION_EXTRA	4
+#define VERSION_PATCH	7
+#define VERSION_EXTRA	0
 
 
 /*
@@ -447,6 +447,21 @@
  * display 23 objects + 1 header line.
  */
 #define MAX_FLOOR_STACK			23
+
+
+/*
+ * Timed effects
+ */
+enum
+{
+	TMD_FAST = 0, TMD_SLOW, TMD_BLIND, TMD_PARALYZED, TMD_CONFUSED,
+	TMD_AFRAID, TMD_IMAGE, TMD_POISONED, TMD_CUT, TMD_STUN, TMD_PROTEVIL,
+	TMD_INVULN, TMD_HERO, TMD_SHERO, TMD_SHIELD, TMD_BLESSED, TMD_SINVIS,
+	TMD_SINFRA, TMD_OPP_ACID, TMD_OPP_ELEC, TMD_OPP_FIRE, TMD_OPP_COLD,
+	TMD_OPP_POIS,
+
+	TMD_MAX
+};
 
 
 /*

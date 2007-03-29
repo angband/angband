@@ -1154,15 +1154,15 @@ static void do_cmd_wiz_cure_all(void)
 	p_ptr->csp_frac = 0;
 
 	/* Cure stuff */
-	(void)set_blind(0);
-	(void)set_confused(0);
-	(void)set_poisoned(0);
-	(void)set_afraid(0);
-	(void)set_paralyzed(0);
-	(void)set_image(0);
-	(void)set_stun(0);
-	(void)set_cut(0);
-	(void)set_slow(0);
+	(void)clear_timed(TMD_BLIND);
+	(void)clear_timed(TMD_CONFUSED);
+	(void)clear_timed(TMD_POISONED);
+	(void)clear_timed(TMD_AFRAID);
+	(void)clear_timed(TMD_PARALYZED);
+	(void)clear_timed(TMD_IMAGE);
+	(void)clear_timed(TMD_STUN);
+	(void)clear_timed(TMD_CUT);
+	(void)clear_timed(TMD_SLOW);
 
 	/* No longer hungry */
 	(void)set_food(PY_FOOD_MAX - 1);

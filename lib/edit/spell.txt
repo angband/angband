@@ -37,7 +37,7 @@
 
 # Version stamp (required)
 
-V:3.0.6
+V:3.0.7
 
 
 # Mage spells 0 through 63

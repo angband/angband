@@ -465,7 +465,7 @@ static void prt_hunger(int row, int col)
  */
 static void prt_blind(int row, int col)
 {
-	if (p_ptr->blind)
+	if (p_ptr->timed[TMD_BLIND])
 	{
 		c_put_str(TERM_ORANGE, "Blind", row, col);
 	}
@@ -481,7 +481,7 @@ static void prt_blind(int row, int col)
  */
 static void prt_confused(int row, int col)
 {
-	if (p_ptr->confused)
+	if (p_ptr->timed[TMD_CONFUSED])
 	{
 		c_put_str(TERM_ORANGE, "Confused", row, col);
 	}
@@ -497,7 +497,7 @@ static void prt_confused(int row, int col)
  */
 static void prt_afraid(int row, int col)
 {
-	if (p_ptr->afraid)
+	if (p_ptr->timed[TMD_AFRAID])
 	{
 		c_put_str(TERM_ORANGE, "Afraid", row, col);
 	}
@@ -513,7 +513,7 @@ static void prt_afraid(int row, int col)
  */
 static void prt_poisoned(int row, int col)
 {
-	if (p_ptr->poisoned)
+	if (p_ptr->timed[TMD_POISONED])
 	{
 		c_put_str(TERM_ORANGE, "Poisoned", row, col);
 	}
@@ -539,7 +539,7 @@ static void prt_state(int row, int col)
 
 
 	/* Paralysis */
-	if (p_ptr->paralyzed)
+	if (p_ptr->timed[TMD_PARALYZED])
 	{
 		attr = TERM_RED;
 
@@ -688,7 +688,7 @@ static void prt_study(int row, int col)
 
 static void prt_cut(int row, int col)
 {
-	int c = p_ptr->cut;
+	int c = p_ptr->timed[TMD_CUT];
 
 	if (c > 1000)
 	{
@@ -728,7 +728,7 @@ static void prt_cut(int row, int col)
 
 static void prt_stun(int row, int col)
 {
-	int s = p_ptr->stun;
+	int s = p_ptr->timed[TMD_STUN];
 
 	if (s > 100)
 	{
@@ -764,35 +764,35 @@ static void prt_oppose_elements(int row, int col, int wid)
 	if (n <= 0) return;
 
 
-	if (p_ptr->oppose_acid)
+	if (p_ptr->timed[TMD_OPP_ACID])
 		Term_putstr(col, row, n, TERM_SLATE, "Acid ");
 	else
 		Term_putstr(col, row, n, TERM_SLATE, "     ");
 
 	col += n;
 
-	if (p_ptr->oppose_elec)
+	if (p_ptr->timed[TMD_OPP_ELEC])
 		Term_putstr(col, row, n, TERM_BLUE, "Elec ");
 	else
 		Term_putstr(col, row, n, TERM_BLUE, "     ");
 
 	col += n;
 
-	if (p_ptr->oppose_fire)
+	if (p_ptr->timed[TMD_OPP_FIRE])
 		Term_putstr(col, row, n, TERM_RED, "Fire ");
 	else
 		Term_putstr(col, row, n, TERM_RED, "     ");
 
 	col += n;
 
-	if (p_ptr->oppose_cold)
+	if (p_ptr->timed[TMD_OPP_COLD])
 		Term_putstr(col, row, n, TERM_WHITE, "Cold ");
 	else
 		Term_putstr(col, row, n, TERM_WHITE, "     ");
 
 	col += n;
 
-	if (p_ptr->oppose_pois)
+	if (p_ptr->timed[TMD_OPP_POIS])
 		Term_putstr(col, row, n, TERM_GREEN, "Pois ");
 	else
 		Term_putstr(col, row, n, TERM_GREEN, "     ");
@@ -829,7 +829,7 @@ static void health_redraw(int row, int col)
 	}
 
 	/* Tracking a hallucinatory monster */
-	else if (p_ptr->image)
+	else if (p_ptr->timed[TMD_IMAGE])
 	{
 		/* Indicate that the monster health is "unknown" */
 		Term_putstr(col, row, 12, TERM_WHITE, "[----------]");
@@ -2309,14 +2309,14 @@ static void calc_bonuses(void)
 	/*** Temporary flags ***/
 
 	/* Apply temporary "stun" */
-	if (p_ptr->stun > 50)
+	if (p_ptr->timed[TMD_STUN] > 50)
 	{
 		p_ptr->to_h -= 20;
 		p_ptr->dis_to_h -= 20;
 		p_ptr->to_d -= 20;
 		p_ptr->dis_to_d -= 20;
 	}
-	else if (p_ptr->stun)
+	else if (p_ptr->timed[TMD_STUN])
 	{
 		p_ptr->to_h -= 5;
 		p_ptr->dis_to_h -= 5;
@@ -2325,14 +2325,14 @@ static void calc_bonuses(void)
 	}
 
 	/* Invulnerability */
-	if (p_ptr->invuln)
+	if (p_ptr->timed[TMD_INVULN])
 	{
 		p_ptr->to_a += 100;
 		p_ptr->dis_to_a += 100;
 	}
 
 	/* Temporary blessing */
-	if (p_ptr->blessed)
+	if (p_ptr->timed[TMD_BLESSED])
 	{
 		p_ptr->to_a += 5;
 		p_ptr->dis_to_a += 5;
@@ -2341,21 +2341,21 @@ static void calc_bonuses(void)
 	}
 
 	/* Temporary shield */
-	if (p_ptr->shield)
+	if (p_ptr->timed[TMD_SHIELD])
 	{
 		p_ptr->to_a += 50;
 		p_ptr->dis_to_a += 50;
 	}
 
 	/* Temporary "Hero" */
-	if (p_ptr->hero)
+	if (p_ptr->timed[TMD_HERO])
 	{
 		p_ptr->to_h += 12;
 		p_ptr->dis_to_h += 12;
 	}
 
 	/* Temporary "Berserk" */
-	if (p_ptr->shero)
+	if (p_ptr->timed[TMD_SHERO])
 	{
 		p_ptr->to_h += 24;
 		p_ptr->dis_to_h += 24;
@@ -2364,25 +2364,25 @@ static void calc_bonuses(void)
 	}
 
 	/* Temporary "fast" */
-	if (p_ptr->fast)
+	if (p_ptr->timed[TMD_FAST])
 	{
 		p_ptr->pspeed += 10;
 	}
 
 	/* Temporary "slow" */
-	if (p_ptr->slow)
+	if (p_ptr->timed[TMD_SLOW])
 	{
 		p_ptr->pspeed -= 10;
 	}
 
 	/* Temporary see invisible */
-	if (p_ptr->tim_invis)
+	if (p_ptr->timed[TMD_SINVIS])
 	{
 		p_ptr->see_inv = TRUE;
 	}
 
 	/* Temporary infravision boost */
-	if (p_ptr->tim_infra)
+	if (p_ptr->timed[TMD_SINFRA])
 	{
 		p_ptr->see_infra += 5;
 	}
@@ -2391,7 +2391,7 @@ static void calc_bonuses(void)
 	/*** Special flags ***/
 
 	/* Hack -- Hero/Shero -> Res fear */
-	if (p_ptr->hero || p_ptr->shero)
+	if (p_ptr->timed[TMD_HERO] || p_ptr->timed[TMD_SHERO])
 	{
 		p_ptr->resist_fear = TRUE;
 	}

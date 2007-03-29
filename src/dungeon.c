@@ -105,7 +105,7 @@ static void sense_inventory(void)
 	/*** Check for "sensing" ***/
 
 	/* No sensing when confused */
-	if (p_ptr->confused) return;
+	if (p_ptr->timed[TMD_CONFUSED]) return;
 
 	if (cp_ptr->flags & CF_PSEUDO_ID_IMPROV)
 	{
@@ -752,23 +752,23 @@ static void process_world(void)
 	/*** Damage over Time ***/
 
 	/* Take damage from poison */
-	if (p_ptr->poisoned)
+	if (p_ptr->timed[TMD_POISONED])
 	{
 		/* Take damage */
 		take_hit(1, "poison");
 	}
 
 	/* Take damage from cuts */
-	if (p_ptr->cut)
+	if (p_ptr->timed[TMD_CUT])
 	{
 		/* Mortal wound or Deep Gash */
-		if (p_ptr->cut > 200)
+		if (p_ptr->timed[TMD_CUT] > 200)
 		{
 			i = 3;
 		}
 
 		/* Severe cut */
-		else if (p_ptr->cut > 100)
+		else if (p_ptr->timed[TMD_CUT] > 100)
 		{
 			i = 2;
 		}
@@ -850,14 +850,14 @@ static void process_world(void)
 		if (p_ptr->food < PY_FOOD_FAINT)
 		{
 			/* Faint occasionally */
-			if (!p_ptr->paralyzed && (rand_int(100) < 10))
+			if (!p_ptr->timed[TMD_PARALYZED] && (rand_int(100) < 10))
 			{
 				/* Message */
 				msg_print("You faint from the lack of food.");
 				disturb(1, 0);
 
 				/* Hack -- faint (bypass free action) */
-				(void)set_paralyzed(p_ptr->paralyzed + 1 + rand_int(5));
+				(void)inc_timed(TMD_PARALYZED, 1 + rand_int(5));
 			}
 		}
 	}
@@ -881,10 +881,10 @@ static void process_world(void)
 	}
 
 	/* Various things interfere with healing */
-	if (p_ptr->paralyzed) regen_amount = 0;
-	if (p_ptr->poisoned) regen_amount = 0;
-	if (p_ptr->stun) regen_amount = 0;
-	if (p_ptr->cut) regen_amount = 0;
+	if (p_ptr->timed[TMD_PARALYZED]) regen_amount = 0;
+	if (p_ptr->timed[TMD_POISONED]) regen_amount = 0;
+	if (p_ptr->timed[TMD_STUN]) regen_amount = 0;
+	if (p_ptr->timed[TMD_CUT]) regen_amount = 0;
 
 	/* Regenerate Hit Points if needed */
 	if (p_ptr->chp < p_ptr->mhp)
@@ -896,156 +896,156 @@ static void process_world(void)
 	/*** Timeout Various Things ***/
 
 	/* Hack -- Hallucinating */
-	if (p_ptr->image)
+	if (p_ptr->timed[TMD_IMAGE])
 	{
-		(void)set_image(p_ptr->image - 1);
+		(void)dec_timed(TMD_IMAGE, 1);
 	}
 
 	/* Blindness */
-	if (p_ptr->blind)
+	if (p_ptr->timed[TMD_BLIND])
 	{
-		(void)set_blind(p_ptr->blind - 1);
+		(void)dec_timed(TMD_BLIND, 1);
 	}
 
 	/* Times see-invisible */
-	if (p_ptr->tim_invis)
+	if (p_ptr->timed[TMD_SINVIS])
 	{
-		(void)set_tim_invis(p_ptr->tim_invis - 1);
+		(void)dec_timed(TMD_SINVIS, 1);
 	}
 
 	/* Timed infra-vision */
-	if (p_ptr->tim_infra)
+	if (p_ptr->timed[TMD_SINFRA])
 	{
-		(void)set_tim_infra(p_ptr->tim_infra - 1);
+		(void)dec_timed(TMD_SINFRA, 1);
 	}
 
 	/* Paralysis */
-	if (p_ptr->paralyzed)
+	if (p_ptr->timed[TMD_PARALYZED])
 	{
-		(void)set_paralyzed(p_ptr->paralyzed - 1);
+		(void)dec_timed(TMD_PARALYZED, 1);
 	}
 
 	/* Confusion */
-	if (p_ptr->confused)
+	if (p_ptr->timed[TMD_CONFUSED])
 	{
-		(void)set_confused(p_ptr->confused - 1);
+		(void)dec_timed(TMD_CONFUSED, 1);
 	}
 
 	/* Afraid */
-	if (p_ptr->afraid)
+	if (p_ptr->timed[TMD_AFRAID])
 	{
-		(void)set_afraid(p_ptr->afraid - 1);
+		(void)dec_timed(TMD_AFRAID, 1);
 	}
 
 	/* Fast */
-	if (p_ptr->fast)
+	if (p_ptr->timed[TMD_FAST])
 	{
-		(void)set_fast(p_ptr->fast - 1);
+		(void)dec_timed(TMD_FAST, 1);
 	}
 
 	/* Slow */
-	if (p_ptr->slow)
+	if (p_ptr->timed[TMD_SLOW])
 	{
-		(void)set_slow(p_ptr->slow - 1);
+		(void)dec_timed(TMD_SLOW, 1);
 	}
 
 	/* Protection from evil */
-	if (p_ptr->protevil)
+	if (p_ptr->timed[TMD_PROTEVIL])
 	{
-		(void)set_protevil(p_ptr->protevil - 1);
+		(void)dec_timed(TMD_PROTEVIL, 1);
 	}
 
 	/* Invulnerability */
-	if (p_ptr->invuln)
+	if (p_ptr->timed[TMD_INVULN])
 	{
-		(void)set_invuln(p_ptr->invuln - 1);
+		(void)dec_timed(TMD_INVULN, 1);
 	}
 
 	/* Heroism */
-	if (p_ptr->hero)
+	if (p_ptr->timed[TMD_HERO])
 	{
-		(void)set_hero(p_ptr->hero - 1);
+		(void)dec_timed(TMD_HERO, 1);
 	}
 
 	/* Super Heroism */
-	if (p_ptr->shero)
+	if (p_ptr->timed[TMD_SHERO])
 	{
-		(void)set_shero(p_ptr->shero - 1);
+		(void)dec_timed(TMD_SHERO, 1);
 	}
 
 	/* Blessed */
-	if (p_ptr->blessed)
+	if (p_ptr->timed[TMD_BLESSED])
 	{
-		(void)set_blessed(p_ptr->blessed - 1);
+		(void)dec_timed(TMD_BLESSED, 1);
 	}
 
 	/* Shield */
-	if (p_ptr->shield)
+	if (p_ptr->timed[TMD_SHIELD])
 	{
-		(void)set_shield(p_ptr->shield - 1);
+		(void)dec_timed(TMD_SHIELD, 1);
 	}
 
 	/* Oppose Acid */
-	if (p_ptr->oppose_acid)
+	if (p_ptr->timed[TMD_OPP_ACID])
 	{
-		(void)set_oppose_acid(p_ptr->oppose_acid - 1);
+		(void)dec_timed(TMD_OPP_ACID, 1);
 	}
 
 	/* Oppose Lightning */
-	if (p_ptr->oppose_elec)
+	if (p_ptr->timed[TMD_OPP_ELEC])
 	{
-		(void)set_oppose_elec(p_ptr->oppose_elec - 1);
+		(void)dec_timed(TMD_OPP_ELEC, 1);
 	}
 
 	/* Oppose Fire */
-	if (p_ptr->oppose_fire)
+	if (p_ptr->timed[TMD_OPP_FIRE])
 	{
-		(void)set_oppose_fire(p_ptr->oppose_fire - 1);
+		(void)dec_timed(TMD_OPP_FIRE, 1);
 	}
 
 	/* Oppose Cold */
-	if (p_ptr->oppose_cold)
+	if (p_ptr->timed[TMD_OPP_COLD])
 	{
-		(void)set_oppose_cold(p_ptr->oppose_cold - 1);
+		(void)dec_timed(TMD_OPP_COLD, 1);
 	}
 
 	/* Oppose Poison */
-	if (p_ptr->oppose_pois)
+	if (p_ptr->timed[TMD_OPP_POIS])
 	{
-		(void)set_oppose_pois(p_ptr->oppose_pois - 1);
+		(void)dec_timed(TMD_OPP_POIS, 1);
 	}
 
 
 	/*** Poison and Stun and Cut ***/
 
 	/* Poison */
-	if (p_ptr->poisoned)
+	if (p_ptr->timed[TMD_POISONED])
 	{
 		int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] + 1);
 
 		/* Apply some healing */
-		(void)set_poisoned(p_ptr->poisoned - adjust);
+		(void)dec_timed(TMD_POISONED, adjust);
 	}
 
 	/* Stun */
-	if (p_ptr->stun)
+	if (p_ptr->timed[TMD_STUN])
 	{
 		int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] + 1);
 
 		/* Apply some healing */
-		(void)set_stun(p_ptr->stun - adjust);
+		(void)dec_timed(TMD_STUN, adjust);
 	}
 
 	/* Cut */
-	if (p_ptr->cut)
+	if (p_ptr->timed[TMD_CUT])
 	{
 		int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] + 1);
 
 		/* Hack -- Truly "mortal" wound */
-		if (p_ptr->cut > 1000) adjust = 0;
+		if (p_ptr->timed[TMD_CUT] > 1000) adjust = 0;
 
 		/* Apply some healing */
-		(void)set_cut(p_ptr->cut - adjust);
+		(void)dec_timed(TMD_CUT, adjust);
 	}
 
 
@@ -1072,7 +1072,7 @@ static void process_world(void)
 			}
 
 			/* Hack -- Special treatment when blind */
-			if (p_ptr->blind)
+			if (p_ptr->timed[TMD_BLIND])
 			{
 				/* Hack -- save some light for later */
 				if (o_ptr->pval == 0) o_ptr->pval++;
@@ -2002,11 +2002,11 @@ static void process_player(void)
 			/* Stop resting */
 			if ((p_ptr->chp == p_ptr->mhp) &&
 			    (p_ptr->csp == p_ptr->msp) &&
-			    !p_ptr->blind && !p_ptr->confused &&
-			    !p_ptr->poisoned && !p_ptr->afraid &&
-			    !p_ptr->stun && !p_ptr->cut &&
-			    !p_ptr->slow && !p_ptr->paralyzed &&
-			    !p_ptr->image && !p_ptr->word_recall)
+			    !p_ptr->timed[TMD_BLIND] && !p_ptr->timed[TMD_CONFUSED] &&
+			    !p_ptr->timed[TMD_POISONED] && !p_ptr->timed[TMD_AFRAID] &&
+			    !p_ptr->timed[TMD_STUN] && !p_ptr->timed[TMD_CUT] &&
+			    !p_ptr->timed[TMD_SLOW] && !p_ptr->timed[TMD_PARALYZED] &&
+			    !p_ptr->timed[TMD_IMAGE] && !p_ptr->word_recall)
 			{
 				disturb(0, 0);
 			}
@@ -2120,7 +2120,7 @@ static void process_player(void)
 
 
 		/* Paralyzed or Knocked Out */
-		if ((p_ptr->paralyzed) || (p_ptr->stun >= 100))
+		if ((p_ptr->timed[TMD_PARALYZED]) || (p_ptr->timed[TMD_STUN] >= 100))
 		{
 			/* Take a turn */
 			p_ptr->energy_use = 100;
@@ -2200,7 +2200,7 @@ static void process_player(void)
 
 
 			/* Hack -- constant hallucination */
-			if (p_ptr->image)
+			if (p_ptr->timed[TMD_IMAGE])
 			{
 				p_ptr->redraw |= (PR_MAP);
 				p_ptr->window |= (PW_MAP);
@@ -2968,14 +2968,14 @@ void play_game(bool new_game)
 				p_ptr->csp_frac = 0;
 
 				/* Hack -- Healing */
-				(void)set_blind(0);
-				(void)set_confused(0);
-				(void)set_poisoned(0);
-				(void)set_afraid(0);
-				(void)set_paralyzed(0);
-				(void)set_image(0);
-				(void)set_stun(0);
-				(void)set_cut(0);
+				(void)clear_timed(TMD_BLIND);
+				(void)clear_timed(TMD_CONFUSED);
+				(void)clear_timed(TMD_POISONED);
+				(void)clear_timed(TMD_AFRAID);
+				(void)clear_timed(TMD_PARALYZED);
+				(void)clear_timed(TMD_IMAGE);
+				(void)clear_timed(TMD_STUN);
+				(void)clear_timed(TMD_CUT);
 
 				/* Hack -- Prevent starvation */
 				(void)set_food(PY_FOOD_MAX - 1);

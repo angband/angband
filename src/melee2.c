@@ -110,11 +110,11 @@ static void remove_bad_spells(int m_idx, u32b *f4p, u32b *f5p, u32b *f6p)
 		if (p_ptr->immune_cold) smart |= (SM_IMM_COLD);
 
 		/* Know oppositions */
-		if (p_ptr->oppose_acid) smart |= (SM_OPP_ACID);
-		if (p_ptr->oppose_elec) smart |= (SM_OPP_ELEC);
-		if (p_ptr->oppose_fire) smart |= (SM_OPP_FIRE);
-		if (p_ptr->oppose_cold) smart |= (SM_OPP_COLD);
-		if (p_ptr->oppose_pois) smart |= (SM_OPP_POIS);
+		if (p_ptr->timed[TMD_OPP_ACID]) smart |= (SM_OPP_ACID);
+		if (p_ptr->timed[TMD_OPP_ELEC]) smart |= (SM_OPP_ELEC);
+		if (p_ptr->timed[TMD_OPP_FIRE]) smart |= (SM_OPP_FIRE);
+		if (p_ptr->timed[TMD_OPP_COLD]) smart |= (SM_OPP_COLD);
+		if (p_ptr->timed[TMD_OPP_POIS]) smart |= (SM_OPP_POIS);
 
 		/* Know resistances */
 		if (p_ptr->resist_acid) smart |= (SM_RES_ACID);
@@ -702,7 +702,7 @@ bool make_attack_spell(int m_idx)
 
 
 	/* Extract the blind-ness */
-	bool blind = (p_ptr->blind ? TRUE : FALSE);
+	bool blind = (p_ptr->timed[TMD_BLIND] ? TRUE : FALSE);
 
 	/* Extract the "see-able-ness" */
 	bool seen = (!blind && m_ptr->ml);
@@ -1416,7 +1416,7 @@ bool make_attack_spell(int m_idx)
 				msg_print("Your mind is blasted by psionic energy.");
 				if (!p_ptr->resist_confu)
 				{
-					(void)set_confused(p_ptr->confused + rand_int(4) + 4);
+					(void)inc_timed(TMD_CONFUSED, rand_int(4) + 4);
 				}
 				take_hit(damroll(8, 8), ddesc);
 			}
@@ -1446,17 +1446,17 @@ bool make_attack_spell(int m_idx)
 				take_hit(damroll(12, 15), ddesc);
 				if (!p_ptr->resist_blind)
 				{
-					(void)set_blind(p_ptr->blind + 8 + rand_int(8));
+					(void)inc_timed(TMD_BLIND, 8 + rand_int(8));
 				}
 				if (!p_ptr->resist_confu)
 				{
-					(void)set_confused(p_ptr->confused + rand_int(4) + 4);
+					(void)inc_timed(TMD_CONFUSED, rand_int(4) + 4);
 				}
 				if (!p_ptr->free_act)
 				{
-					(void)set_paralyzed(p_ptr->paralyzed + rand_int(4) + 4);
+					(void)inc_timed(TMD_PARALYZED, rand_int(4) + 4);
 				}
-				(void)set_slow(p_ptr->slow + rand_int(4) + 4);
+				(void)inc_timed(TMD_SLOW, rand_int(4) + 4);
 			}
 			break;
 		}
@@ -1529,7 +1529,7 @@ bool make_attack_spell(int m_idx)
 			else
 			{
 				take_hit(damroll(15, 15), ddesc);
-				(void)set_cut(p_ptr->cut + damroll(10, 10));
+				(void)inc_timed(TMD_CUT, damroll(10, 10));
 			}
 			break;
 		}
@@ -1675,7 +1675,7 @@ bool make_attack_spell(int m_idx)
 			}
 			else
 			{
-				(void)set_afraid(p_ptr->afraid + rand_int(4) + 4);
+				(void)inc_timed(TMD_AFRAID, rand_int(4) + 4);
 			}
 			update_smart_learn(m_idx, DRS_RES_FEAR);
 			break;
@@ -1698,7 +1698,7 @@ bool make_attack_spell(int m_idx)
 			}
 			else
 			{
-				(void)set_blind(12 + rand_int(4));
+				(void)set_timed(TMD_BLIND, 12 + rand_int(4));
 			}
 			update_smart_learn(m_idx, DRS_RES_BLIND);
 			break;
@@ -1721,7 +1721,7 @@ bool make_attack_spell(int m_idx)
 			}
 			else
 			{
-				(void)set_confused(p_ptr->confused + rand_int(4) + 4);
+				(void)inc_timed(TMD_CONFUSED, rand_int(4) + 4);
 			}
 			update_smart_learn(m_idx, DRS_RES_CONFU);
 			break;
@@ -1743,7 +1743,7 @@ bool make_attack_spell(int m_idx)
 			}
 			else
 			{
-				(void)set_slow(p_ptr->slow + rand_int(4) + 4);
+				(void)inc_timed(TMD_SLOW, rand_int(4) + 4);
 			}
 			update_smart_learn(m_idx, DRS_FREE);
 			break;
@@ -1766,7 +1766,7 @@ bool make_attack_spell(int m_idx)
 			}
 			else
 			{
-				(void)set_paralyzed(p_ptr->paralyzed + rand_int(4) + 4);
+				(void)inc_timed(TMD_PARALYZED, rand_int(4) + 4);
 			}
 			update_smart_learn(m_idx, DRS_FREE);
 			break;
