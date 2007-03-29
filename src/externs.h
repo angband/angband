@@ -851,4 +851,4 @@ extern void do_cmd_spoilers(void);
 #endif /* ALLOW_SPOILERS */
 
 bool make_fake_artifact(object_type *o_ptr, byte name1);
-extern void strip_name(char *buf, int k_idx);
+extern void strip_name(char *buf, int k_idx, bool easy_know);

@@ -134,7 +134,7 @@ struct menu_class {
 	char (*get_tag)(menu_type *menu, int oid);
 	bool (*valid_row)(menu_type *menu, int oid);
 	display_row_f display_row;
-	bool (*handler)(char cmd, void *db, int oid);
+	bool (*handler)(char cmd, const void *db, int oid);
 };
 
 
@@ -197,11 +197,11 @@ struct menu_type
 	int count;
 
 
-	void *menu_data; /* the data used to access rows. */
+	const void *menu_data; /* the data used to access rows. */
 
 
 	/* command action.  Should handle 0xff for selection */
-	bool (*handler)(char cmd, void *db, int oid);
+	bool (*handler)(char cmd, const void *db, int oid);
 
 	void (*browse_hook)(int oid, const region *loc);  /* auxiliary browser help function */
 
@@ -266,6 +266,9 @@ void menu_set_class(menu_type *menu, const menu_class *class_def);
 
 /* This is probably a bad idea */
 static const region SCREEN_REGION = {0, 0, 0, 0};
+
+/* Move to Term_ ? */
+void region_erase(const region *loc);
 
 
 #endif /* UI_H */

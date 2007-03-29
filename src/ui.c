@@ -20,6 +20,21 @@ const char lower_case[] = "abcdefghijklmnopqrstuvwxyz";
 int jumpscroll = 0;
 int menu_width = 23;
 
+void region_erase(const region *loc)
+{
+	int i = 0;
+	int w = loc->width;
+	int h = loc->page_rows;
+	if(loc->width <= 0 || loc->page_rows <= 0) {
+		Term_get_size(&w, &h);
+		if(loc->width <= 0) w -= loc->width;
+		if(loc->page_rows <= 0) h -= loc->page_rows;
+	}
+	for(i = 0; i < h; i++) {
+		Term_erase(loc->col, loc->row+i, w);
+	}
+}
+
 static void display_menu_row(menu_type *menu, const int object_list[], int pos,
 								int top, bool cursor, int row, int col, int width);
 
@@ -35,12 +50,12 @@ static void display_event_aux(event_action *event, int menuID, byte color,
 		Term_putstr(col, row, wid - 1, color, event->name);
 }
 
-static bool inside(region *loc, key_event *key) {
-	if(loc->col < key->mousex) return FALSE;
-	if(loc->col + loc->width <= key->mousex) return FALSE;
-	if(loc->row < key->mousey) return FALSE;
-	if(loc->row + loc->page_rows <= key->mousey) return FALSE;
-
+static bool inside(const region *loc, const key_event *key)
+{
+	if((loc->col > key->mousex) || (loc->col + loc->width <= key->mousex))
+		return FALSE;
+	if((loc->row > key->mousey) || (loc->row + loc->page_rows <= key->mousey))
+		return FALSE;
 	return TRUE;
 }
 
@@ -56,14 +71,16 @@ static void display_event(menu_type *menu, int oid, bool cursor,
 
 /* act on selection only */
 /* Return: true if handled. */
-static bool handle_menu_item_event(char cmd, void *db, int oid)
+static bool handle_menu_item_event(char cmd, const void *db, int oid)
 {
 	event_action *evt = &((event_action*)db)[oid];
 	if(cmd == '\xff' && evt->action) {
 		evt->action(evt->data, evt->name);
+		return TRUE;
 	}
 	else if(cmd == '\xff')
 		return TRUE;
+	return FALSE;
 }
 
 static bool valid_menu_event(menu_type *menu, int oid)
@@ -100,7 +117,7 @@ static void display_menu_item(menu_type *menu, int oid, bool cursor,
 }
 
 /* act on selection only */
-static bool handle_menu_item(char cmd, void *db, int oid)
+static bool handle_menu_item(char cmd, const void *db, int oid)
 {
 	if(cmd == '\xff')
 	{
@@ -140,7 +157,7 @@ static menu_class class_menu_item = {
 static int scrolling_get_cursor(int row, int col, int n,
 									int top, region *loc)
 {
-	int cursor = col - loc->col + top;
+	int cursor = row - loc->row + top;
 	if(cursor < top) cursor = top-1;
 	else if(cursor > loc->page_rows) cursor = loc->page_rows;
 	if(cursor < 0) cursor = 0;
@@ -169,6 +186,9 @@ void display_scrolling (menu_type *menu, const int object_list[], int n,
 	{
 		bool is_curs = (cursor == i - *top);
 		display_menu_row(menu, object_list, i, *top, is_curs, row+i, col, loc->width);
+	}
+	if(cursor >= 0) {
+		Term_gotoxy(col, row + cursor-*top);
 	}
 }
 
@@ -211,7 +231,8 @@ void display_columns (menu_type *menu, const int object_list[], int n,
 		for(r = 0; r < rows_per_page; r++) {
 			int pos = c*rows_per_page + r;
 			bool is_cursor = (pos == cursor);
-			display_menu_row(menu, object_list, pos, 0, is_cursor, row+r, col+c, colw);
+			display_menu_row(menu, object_list, pos, 0, is_cursor,
+								row+r, col+c*colw, colw);
 		}
 	}
 }
@@ -327,8 +348,8 @@ static void display_menu_row(menu_type *menu, const int object_list[], int pos,
 }
 
 
-key_event get_menu_choice(menu_type *menu, const int object_list[], int n, int *cursor,
-							int top, region *loc)
+key_event get_menu_choice(menu_type *menu, const int object_list[], int n,
+							int *cursor, int top, region *loc)
 {
 	key_event ke;
 
@@ -347,20 +368,21 @@ retry:
 				/* Not handled -- used for heirarchical menus */
 			if(ke.mousex < loc->col) {
 				ke.type = EVT_BACK;
-				return ke;
+				break;
 			}
 
 			m_curs = menu->skin->get_cursor(ke.mousey,ke.mousex, n, top, loc);
 			if(!is_valid_row(menu, object_list, m_curs))
 				goto retry;
 
+			ke.index = m_curs;
+			*cursor = m_curs;
 			if(*cursor == m_curs || !(menu->flags & MN_DBL_TAP))
 			{
 				/* menu selection event*/
 				ke.type = EVT_SELECT;
-				return ke;
+				break;
 			}
-			*cursor = m_curs;
 			/* menu movement event */
 			ke.type = EVT_MOVE;
 			break;
@@ -371,7 +393,7 @@ retry:
 		{
 			int dir;
 			if(menu->cmd_keys && strchr(menu->cmd_keys, ke.key))
-				return ke;
+				break;
 			if(!(menu->flags & MN_NO_TAGS)) {
 				int c = get_cursor_key(menu, object_list, n, top, ke.key);
 				if(c > 0 && !is_valid_row(menu, object_list, c))
@@ -379,6 +401,7 @@ retry:
 				else if(c >= 0) {
 					*cursor = c;
 					ke.type = EVT_SELECT;
+					ke.index = c;
 					ke.key = '\xff';
 					break;
 				}
@@ -487,7 +510,12 @@ key_event menu_select(menu_type *menu, const int object_list[], int n,
 			menu->browse_hook(oid, &loc);
 		}
 
-		ke = get_menu_choice(menu, object_list, menu->count, cursor, top, &loc);
+		ke = get_menu_choice(menu, object_list, menu->count, cursor, top, &active);
+		if(*cursor != oid && ke.type == EVT_SELECT || menu->flags == MN_ONCE)
+		{
+			/* refresh prior to return */
+			menu->skin->display_list(menu, object_list, n, *cursor, &top, &active);
+		}
 		if(ke.key == ESCAPE) return ke;
 		if(menu->flags & MN_ONCE) return ke;
 		switch(ke.type)

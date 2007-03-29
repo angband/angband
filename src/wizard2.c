@@ -415,7 +415,7 @@ static const tval_desc tvals[] =
 /*
  * Strip an "object name" into a buffer
  */
-void strip_name(char *buf, int k_idx)
+void strip_name(char *buf, int k_idx, bool easy_know)
 {
 	char *t;
 
@@ -531,7 +531,7 @@ static int wiz_create_itemtype(void)
 			ch  = choice_name[num];
 
 			/* Get the "name" of object "i" */
-			strip_name(buf, i);
+			strip_name(buf, i, TRUE);
 
 			/* Print it */
 			prt(format("[%c] %s", ch, buf), row, col);

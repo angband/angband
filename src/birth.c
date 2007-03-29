@@ -684,7 +684,7 @@ static void class_aux_hook(int class_idx, const region *loc)
 
 static region gender_region = {SEX_COL, TABLE_ROW, 15, -2};
 static region race_region = {RACE_COL, TABLE_ROW, 15, -2};
-static region class_region = {CLASS_COL, TABLE_ROW, 15, -2};
+static region class_region = {CLASS_COL, TABLE_ROW, 19, -2};
 
 static void show_help(cptr helpfile, cptr topic) {
 	char buf[80];
@@ -704,16 +704,17 @@ static void display_gender(menu_type *menu, int oid, bool cursor,
 }
 
 /* Not worth writing a general purpose handler */
-static bool gender_handler(char cmd, void *db, int oid)
+static bool gender_handler(char cmd, const void *db, int oid)
 {
-	if(cmd == '\xff') {
+	if(cmd == '\xff' || cmd == '\r') {
 		p_ptr->psex = oid;
 		sp_ptr = &sex_info[p_ptr->psex];
 	}
 	else if(cmd == '*') {
-		p_ptr->psex = rand_int(SEX_MALE);
+		p_ptr->psex = rand_int(SEX_MALE+1);
 		sp_ptr = &sex_info[p_ptr->psex];
 	}
+	else if(cmd == '=') do_cmd_options();
 	else if(cmd == KTRL('X')) quit(NULL);
 	else if(cmd == '?')  show_help("birth.txt", sex_info[oid].title);
 	else return FALSE;
@@ -728,9 +729,9 @@ static void display_race(menu_type *menu, int oid, bool cursor,
 	c_prt(attr, p_name + p_info[oid].name, row, col);
 }
 
-static bool race_handler(char cmd, void *db, int oid)
+static bool race_handler(char cmd, const void *db, int oid)
 {
-	if(cmd == '\xff') {
+	if(cmd == '\xff' || cmd == '\r') {
 		p_ptr->prace = oid;
 		rp_ptr = &p_info[p_ptr->prace];
 	}
@@ -738,6 +739,7 @@ static bool race_handler(char cmd, void *db, int oid)
 		p_ptr->prace = rand_int(z_info->p_max);
 		rp_ptr = &p_info[p_ptr->prace];
 	}
+	else if(cmd == '=') do_cmd_options();
 	else if(cmd == KTRL('X')) quit(NULL);
 	else if(cmd == '?')  show_help("birth.txt", p_name+p_info[oid].name);
 	else return FALSE;
@@ -753,22 +755,24 @@ static void display_class(menu_type *menu, int oid, bool cursor,
 	c_prt(attr, c_name + c_info[oid].name, row, col);
 }
 
-static bool class_handler(char cmd, void *db, int oid)
+static bool class_handler(char cmd, const void *db, int oid)
 {
-	if(cmd == '\xff') {
+	if(cmd == '\xff' || cmd == '\r') {
 		p_ptr->pclass = oid;
 		cp_ptr = &c_info[p_ptr->pclass];
 		mp_ptr = &cp_ptr->spells;
 	}
 	else if(cmd == '*') {
 		for(;;) {
-			p_ptr->pclass = rand_int(z_info->c_max);
+			oid = rand_int(z_info->c_max);
+			p_ptr->pclass = oid;
 			cp_ptr = &c_info[p_ptr->pclass];
 			mp_ptr = &cp_ptr->spells;
 			if((rp_ptr->choice & (1L << oid)))
 				break;
 		}
 	}
+	else if(cmd == '=') do_cmd_options();
 	else if(cmd == KTRL('X')) quit(NULL);
 	else if(cmd == '?') show_help("birth.txt", c_name+c_info[oid].name);
 	else return FALSE;
@@ -784,7 +788,7 @@ static const menu_class menu_defs[] = {
 
 /* Menu display and selector */
 
-static void choose_character()
+static bool choose_character()
 {
 	int i;
 
@@ -800,28 +804,37 @@ static void choose_character()
 	browse_f browse [] = {NULL, race_aux_hook, class_aux_hook };
 	menu_type menu;
 	WIPE(&menu, menu);
-	menu.cmd_keys = "?*";
+	menu.cmd_keys = "?*\r\x18";		 /* ?, *, \n, <ctl-X> */
 
-	for(i = 0; i < N_ELEMENTS(menu_defs); i++)
+	i = 0;
+	while(i < N_ELEMENTS(menu_defs))
 	{
+		menu.flags = MN_NO_TAGS | MN_DBL_TAP;
+		menu_init(&menu);
 		key_event cx;
 		int cursor = *values[i];
 		clear_question();
-    	Term_putstr(QUESTION_COL, QUESTION_ROW, -1, TERM_YELLOW, hints[i]);
+		Term_putstr(QUESTION_COL, QUESTION_ROW, -1, TERM_YELLOW, hints[i]);
 		menu.count = limits[i];
-		menu.flags = MN_NO_TAGS | MN_DBL_TAP;
-		menu_init(&menu);
 		menu_set_class(&menu, &menu_defs[i]);
 		menu.browse_hook = browse[i];
 
 		cx = menu_select(&menu, 0, menu.count, &cursor, *regions[i]);
 		if(cx.key == ESCAPE) {
-			i = 0; /* restart */
+			return FALSE; /* restart */
 		}
 		else if(cx.type == EVT_BACK) {
+			region_erase(regions[i]);
 			i--;
 		}
+		else if(cx.key == '*') {
+			/* Force refresh */
+			Term_key_push('6');
+			continue;
+		}
+		else i++;
 	}
+	return TRUE;
 
 }
 
@@ -870,7 +883,7 @@ static bool player_birth_aux_1(void)
 	/* Reset text_out() indentation */
 	text_out_indent = 0;
 
-	choose_character();
+	if(!choose_character()) return FALSE;
 
 
 	/* Set adult options from birth options */
@@ -1054,26 +1067,28 @@ static bool player_birth_aux_2(void)
 		/* Done */
 		if ((ch == '\r') || (ch == '\n')) break;
 
+		ch = target_dir(ch);
+
 		/* Prev stat */
-		if (ch == '8')
+		if (ch == 8)
 		{
 			stat = (stat + A_MAX - 1) % A_MAX;
 		}
 
 		/* Next stat */
-		if (ch == '2')
+		if (ch == 2)
 		{
 			stat = (stat + 1) % A_MAX;
 		}
 
 		/* Decrease stat */
-		if ((ch == '4') && (stats[stat] > 10))
+		if ((ch == 4) && (stats[stat] > 10))
 		{
 			stats[stat]--;
 		}
 
 		/* Increase stat */
-		if ((ch == '6') && (stats[stat] < 18))
+		if ((ch == 6) && (stats[stat] < 18))
 		{
 			stats[stat]++;
 		}

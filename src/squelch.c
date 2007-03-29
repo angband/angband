@@ -1518,7 +1518,7 @@ static int do_cmd_squelch_type(int index_into_typevals)
 #endif
 
 			/* Acquire the "name" of object "i" */
-			strip_name(buf, choice[i]);
+			strip_name(buf, choice[i], TRUE);
 
 			/* Deal with the active selection */
 			if (i == active)

@@ -1345,7 +1345,7 @@ static void display_object(int col, int row, bool cursor, int oid)
 	}
 
 	/* Tidy name */
-	strip_name(o_name,k_idx);
+	strip_name(o_name, k_idx, FALSE);
 
 	/* Display the name */
 	c_prt(attr, o_name, row, col);
@@ -2031,7 +2031,7 @@ static void display_option(menu_type *menu, int oid, bool cursor,
 			row, col);
 }
 
-static bool update_option(char key, void *pgdb, int oid)
+static bool update_option(char key, const void *pgdb, int oid)
 {
 	switch(toupper(key))
 	{
@@ -4147,6 +4147,7 @@ static menu_item option_actions [] =
 	{{0, "Cheat Options", do_cmd_options_aux, (void*)6}, '7'},
 	{{0, 0, 0, 0}}, /* Load and append */
 	{{0, "Window Flags", (action_f) do_cmd_options_win, 0}, 'W'},
+	{{0, "Item Squelch and Autoinscribe Menus", (action_f) do_cmd_squelch_autoinsc, 0}, 'S'},
 	{{0, "Load a user pref file", (action_f) do_cmd_pref_file_hack, (void*)20}, 'L'},
 	{{0, "Dump Options", (action_f) dump_pref_file, option_dump}, 'A'},
 	{{0, 0, 0,}, 0}, /* Special choices */
