@@ -1345,7 +1345,7 @@ static void display_object(int col, int row, bool cursor, int oid)
 	}
 
 	/* Tidy name */
-	strip_name(o_name, k_idx, FALSE);
+	strip_name(o_name, k_idx, cheat_know);
 
 	/* Display the name */
 	c_prt(attr, o_name, row, col);

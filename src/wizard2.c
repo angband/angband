@@ -424,7 +424,7 @@ void strip_name(char *buf, int k_idx, bool easy_know)
 	cptr str = (k_name + k_ptr->name);
 
     /* If not aware, use flavor */
-    if (!cheat_know && !k_ptr->aware && k_ptr->flavor)
+    if (!easy_know && !k_ptr->aware && k_ptr->flavor)
 			str = flavor_text + flavor_info[k_ptr->flavor].text;
 
 
