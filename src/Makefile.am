@@ -31,12 +31,10 @@ angband_SOURCES = \
   script.h
 
 EXTRA_angband_SOURCES = \
-  main-ros.c main-ami.c main-dos.c main-emx.c \
-  main-ibm.c main-lsl.c main-mac.c main-sla.c \
-  main-xxx.c main-crb.c \
-  Makefile.ami Makefile.bcc Makefile.cyg \
-  Makefile.dos Makefile.emx Makefile.ibm \
-  Makefile.lcc Makefile.std Makefile.wat \
+  main-ros.c main-dos.c main-ibm.c main-lsl.c \
+  main-mac.c main-sla.c main-xxx.c main-crb.c \
+  Makefile.bcc Makefile.cyg Makefile.dos Makefile.ibm \
+  Makefile.inc Makefile.lcc Makefile.std Makefile.wat \
   Makefile.win Makefile.mpw Makefile.osx \
   angband.rc angband.ico readdib.c readdib.h \
   maid-x11.c maid-x11.h
