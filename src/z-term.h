@@ -58,6 +58,40 @@ struct term_win
 };
 
 
+/*
+ * Event record for general input
+ * Note that there are currently no event subtypes.
+ */
+
+typedef enum 
+{
+	EVT_ESCAPE		= 0x0001,		/* Synonym for KBRD + key = ESCAPE */
+	EVT_KBRD		= 0x0002,		/* keypress */
+	EVT_MOUSE		= 0x0004,		/* mousepress */
+	EVT_BACK		= 0x0008,		/* Up one level in heirarchical menus. */
+	EVT_MOVE		= 0x0010,		/* menu movement */
+	EVT_SELECT		= 0x0020,		/* Menu selection */
+	EVT_BUTTON		= 0x0040,		/* button press */
+	EVT_CMD			= 0x0080,		/* Command key execute */
+	EVT_OK			= 0x0100,		/* Callback successful */
+									/* For example, a command key action. */
+	EVT_REFRESH		= 0x0200,		/* Display refresh */
+	EVT_RESIZE		= 0x0400,		/* Display refresh */
+
+	EVT_AGAIN		= 0x40000000,	/* Retry notification */
+	EVT_STOP		= 0x80000000,	/* Loop stopped (never handled) */
+} event_class;
+
+
+typedef struct key_event key_event;
+
+struct key_event
+{
+	event_class type;
+    int mousex, mousey;
+	char key; 
+    char index;
+};
 
 /*
  * An actual "term" structure
@@ -187,7 +221,7 @@ struct term
 	byte attr_blank;
 	char char_blank;
 
-	char *key_queue;
+	key_event *key_queue;
 
 	u16b key_head;
 	u16b key_tail;
@@ -230,35 +264,6 @@ struct term
 
 	errr (*pict_hook)(int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp);
 };
-
-
-/*
- * Event record for general input
- * Note that there are currently no event subtypes.
- */
-
-typedef enum 
-{
-	EVT_ESCAPE		= 'escp', /* Synonym for 'kbrd' + key = ESCAPE */
-	EVT_MOUSE		= 'mous',  /* mousepress */
-	EVT_KBRD		= 'kbrd',	/* keypress */
-	EVT_BACK		= 'back',	/* Up one level in heirarchical menus. */
-	EVT_MOVE		= 'move',  /* menu movement */
-	EVT_SELECT		= 'slct',  /* Menu selection */
-	EVT_BUTTON		= 'bttn'
-} event_class;
-
-
-typedef struct key_event key_event;
-
-struct key_event
-{
-	event_class type;
-    int mousex, mousey;
-	char key; 
-    char index;
-};
-
 
 
 
@@ -331,9 +336,11 @@ extern errr Term_locate(int *x, int *y);
 extern errr Term_what(int x, int y, byte *a, char *c);
 
 extern errr Term_flush(void);
+extern errr Term_mousepress(int x, int y, char button);
 extern errr Term_keypress(int k);
 extern errr Term_key_push(int k);
-extern errr Term_inkey(char *ch, bool wait, bool take);
+extern errr Term_event_push(const key_event *ke);
+extern errr Term_inkey(key_event *ch, bool wait, bool take);
 
 extern errr Term_set_resize_hook(void (*hook)(void));
 extern errr Term_save(void);

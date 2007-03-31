@@ -127,8 +127,9 @@ OBJS = $(BASEOBJS) $(MAINOBJS)
 
 #### Targets and objects #####
 
-# Set a target here
-default: $(EXE)
+# By default, copy the executable to ../ so that you don't find
+# yourself debugging a stale copy.
+default: install
 
 # Makefile.inc contains an up-to-date set of object files to compile, so
 # we include it

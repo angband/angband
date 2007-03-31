@@ -1627,6 +1627,11 @@ void do_cmd_redraw(void)
 	}
 }
 
+void do_cmd_resize() {
+	/* Escape to main screen on resize */
+	Term_key_push(ESCAPE);
+	do_cmd_redraw();
+}
 
 
 /*
@@ -2020,8 +2025,8 @@ static void do_cmd_pref_file_hack(long row)
 }
 
 
-static void display_option(menu_type *menu, int oid, bool cursor,
-							int row, int col, int width)
+static void display_option(menu_type *menu, int oid,
+							bool cursor, int row, int col, int width)
 {
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
 	c_prt(attr, format("%-48s: %s  (%s)", 
@@ -2041,7 +2046,7 @@ static bool update_option(char key, const void *pgdb, int oid)
 	case 'N': case '4':
 		op_ptr->opt[oid] = FALSE;
 		break;
-	case 'T': case '5':
+	case 'T': case '5': case '\xff':
 		op_ptr->opt[oid] = !op_ptr->opt[oid];
 		break;
 	case 0xff:
@@ -2054,6 +2059,16 @@ static bool update_option(char key, const void *pgdb, int oid)
 	return TRUE;
 }
 
+static const menu_iter options_iter = {
+	0,
+	NULL,
+	NULL,
+	display_option,		/* label */
+	update_option		/* updater */
+};
+
+static menu_type option_toggle_menu;
+
 
 /*
  * Interact with some options
@@ -2065,26 +2080,10 @@ static void do_cmd_options_aux(void *vpage, cptr info)
 	int i, n = 0;
 	int cursor_pos = 0;
 
-	/* TODO: make an initializer that takes a few common args */
-	/* Title, prompt, cmd, choices, and flags -- everything else is ignored */
-	/* for MN_ONCE  */
-	menu_type menu = {
-		0, 					/* menu_id */
-		info,				/* title */
-		"Set option (y/n/t) '?' for information", /* prompt */
-		"?5YyNnTt",			/* cmd_keys */
-		default_choice,		/* selections */
-		MN_REL_TAGS|MN_SCROLL|MN_NO_ACT|MN_ONCE,	/* flags */
-		0,					/* count */
+	menu_type *menu = &option_toggle_menu;
+	menu->title = info;
+	menu_layout(menu, &SCREEN_REGION);
 
-		vpage,				/* menu data */
-		update_option,		/* updater */
-		NULL,				/* browse */
-		display_option,		/* label */
-		0,					/* tagger */
-		0,					/* skin */
-	};
-	
 	screen_save();
 	Term_clear();
 
@@ -2096,17 +2095,19 @@ static void do_cmd_options_aux(void *vpage, cptr info)
 			opt[n++] = option_page[page][i];
 		}
 	}
-	menu.count = n;
+	menu_set_filter(menu, opt, n);
+	menu->menu_data = vpage;
+
+	menu_layout(menu, &SCREEN_REGION);
+
 	for(;;)
 	{
 		key_event cx;
-		cx = menu_select(&menu, opt, n, &cursor_pos, SCREEN_REGION);
-		if (ESCAPE == cx.key) break;
+		cx = menu_select(menu, &cursor_pos, EVT_MOVE);
+		if (cx.type == EVT_BACK || ESCAPE == cx.key) break;
 		if(cx.type == EVT_MOVE) cursor_pos = cx.index;
-		else if(cx.key != '\xff') {
-			update_option(cx.key, vpage, opt[cursor_pos]);
-			if(strchr("YNyn", cx.key)) cursor_pos++;
-		}
+		if(cx.type == EVT_SELECT && strchr("YN", toupper(cx.key)))
+			cursor_pos++;
 		cursor_pos = (cursor_pos+n)%n;
 	}
 
@@ -2827,18 +2828,7 @@ static event_action macro_actions[] =
 #endif /* ALLOW_MACROS */
 };
 
-static menu_type macro_menu = {
-	'mcro',
-	0,
-	0,
-	0,
-	default_choice,
-
-	MN_EVT,
-	N_ELEMENTS(macro_actions),
-	macro_actions
-	/* ,0,0,0,0*/
-};
+static menu_type macro_menu;
 
 
 void do_cmd_macros(void)
@@ -2867,12 +2857,15 @@ void do_cmd_macros(void)
 	/* File type is "TEXT" */
 	FILE_TYPE(FILE_TYPE_TEXT);
 
+
 	screen_save();
+
+	region loc = {0, 1, 0, 11};
+	menu_layout(&macro_menu, &loc);
 
 	/* Process requests until done */
 	while (1)
 	{
-		region loc = {0, 1, 0, 11};
 		key_event c;
 		int evt;
 		/* Clear screen */
@@ -2886,7 +2879,7 @@ void do_cmd_macros(void)
 		ascii_to_text(tmp, sizeof(tmp), macro_buffer);
 		/* Display the current action */
 		prt(tmp, 13, 0);
-		c = menu_select(&macro_menu, 0, macro_menu.count, &cursor, loc);
+		c = menu_select(&macro_menu, &cursor, EVT_CMD);
 
 		if(ESCAPE == c.key) 
 			break;
@@ -3339,17 +3332,7 @@ event_action visual_menu_items [] =
 	{'vrst', "Reset visuals", 0, 0},
 };
 
-static menu_type visual_menu = {
-	'visu',
-	"Interact with visuals",
-	"",
-	"Command: ",
-	default_choice,
-	MN_EVT,
-	N_ELEMENTS(visual_menu_items),
-	visual_menu_items
-	/* ,0,0,0,0 */
-};
+static menu_type visual_menu;
 
 
 /*
@@ -3362,6 +3345,7 @@ void do_cmd_visuals(void)
 	/* Save screen */
 	screen_save();
 
+	menu_layout(&visual_menu, &SCREEN_REGION);
 
 	/* Interact until done */
 	while (1)
@@ -3369,7 +3353,7 @@ void do_cmd_visuals(void)
 		key_event key;
 		int evt = -1;
 		Term_clear();
-		key = menu_select(&visual_menu, 0, visual_menu.count, &cursor, SCREEN_REGION);
+		key = menu_select(&visual_menu, &cursor, EVT_CMD);
 		if(key.key == ESCAPE) 
 			break;
 
@@ -3515,18 +3499,7 @@ static event_action color_events [] =
 #endif
 };
 
-static menu_type color_menu = {
-	'colr',
-	"Interact with colors",
-	"Command: ",
-	0,
-	default_choice,
-	MN_EVT,
-	N_ELEMENTS(color_events),
-	color_events
-	/* 0,0,0,0 */
-};
-
+static menu_type color_menu;
 
 
 /*
@@ -3544,13 +3517,14 @@ void do_cmd_colors(void)
 	/* Save screen */
 	screen_save();
 
+	menu_layout(&color_menu, &SCREEN_REGION);
 	/* Interact until done */
 	while (1)
 	{
 		key_event key;
 		int evt;
 		Term_clear();
-		key = menu_select(&color_menu, 0, color_menu.count, &cursor, SCREEN_REGION);
+		key = menu_select(&color_menu, &cursor, EVT_CMD);
 
 		/* Done */
 		if (key.key == ESCAPE) break;
@@ -4155,17 +4129,7 @@ static menu_item option_actions [] =
 	{{0, "Hitpoint Warning", (action_f) do_cmd_hp_warn, 0}, 'H'}
 };
 
-static menu_type option_menu = {
-	'opti',
-	"Display Options",
-	"Prompt: ",
-	0,
-	0,
-	MN_ACT,
-	N_ELEMENTS(option_actions),
-	option_actions
-	/* ,0,0,0,0 */
-}; 
+static menu_type option_menu;
 
 static menu_item knowledge_actions[] =
 {
@@ -4180,16 +4144,8 @@ static menu_item knowledge_actions[] =
 	{{0, "Interact with visuals", (action_f) do_cmd_visuals, 0}, 'V'},
 };
 
-static menu_type knowledge_menu = {
-	'know',
-	"Display current options",
-	"Prompt: ",
-	0,
-	0,
-	MN_ACT,
-	N_ELEMENTS(knowledge_actions),
-	knowledge_actions
-}; 
+static menu_type knowledge_menu;
+
 
 /* Keep macro counts happy. */
 static void cleanup_cmds () {
@@ -4202,10 +4158,11 @@ void do_cmd_options()
 
 	screen_save();
 
+	menu_layout(&option_menu, &SCREEN_REGION);
 	for(;;) {
 		key_event c;
 		Term_clear();
-		c = menu_select(&option_menu, 0, option_menu.count, &cursor, SCREEN_REGION);
+		c = menu_select(&option_menu, &cursor, 0);
 		if(ESCAPE == c.key) break;
 	}
 
@@ -4216,7 +4173,74 @@ void do_cmd_knowledge()
 {
 	int cursor = -1;
 
-	/* initialize static variables */
+	screen_save();
+
+	menu_layout(&knowledge_menu, &SCREEN_REGION);
+	for(;;) {
+		key_event c;
+		Term_clear();
+		c = menu_select(&knowledge_menu, &cursor, 0);
+		if(ESCAPE == c.key) break;
+	}
+
+	screen_load();
+}
+
+
+void init_cmd4_c(void)
+{
+	/* Initialize the menus */
+	menu_type *menu;
+
+	/* Initialize the options toggle menu */
+	menu = &option_toggle_menu;
+	WIPE(menu, menu_type);
+	menu->prompt = "Set option (y/n/t), '?' for information";
+	menu->cmd_keys = "?YyNnTt";
+	menu->selections = default_choice;
+	menu->count = OPT_PAGE_PER;
+	menu->flags = MN_DBL_TAP;
+	menu_init2(menu, find_menu_skin(MN_SCROLL), &options_iter, &SCREEN_REGION);
+
+	/* options screen selection menu */
+	menu = &option_menu;
+	WIPE(menu, menu_type);
+	menu_set_id(menu, 'opti');
+	menu->title = "Options Menu";
+	menu->count = N_ELEMENTS(option_actions);
+	menu->menu_data = option_actions;
+	menu_init(menu, MN_SCROLL, MN_ACT, &SCREEN_REGION);
+
+	/* knowledge menu */
+	menu = &knowledge_menu;
+	WIPE(menu, menu_type);
+	menu_set_id(menu, 'know');
+	menu->title = "Display current knowledge";
+	menu->count = N_ELEMENTS(knowledge_actions),
+	menu->menu_data = knowledge_actions;
+	menu_init(menu, MN_SCROLL, MN_ACT, &SCREEN_REGION);
+	
+	/* visuals menu */
+	menu = &visual_menu;
+	WIPE(menu, menu_type);
+	menu_set_id(menu, 'visu');
+	menu->title = "Interact with visuals";
+	menu->selections = default_choice;
+	menu->count = N_ELEMENTS(visual_menu_items);
+	menu->menu_data = visual_menu_items; 
+	menu_init(menu, MN_SCROLL, MN_EVT, &SCREEN_REGION);
+
+	/* colors menu */
+	menu = &color_menu;
+	WIPE(menu, menu_type);
+	menu_set_id(menu, 'colr');
+	menu->title = "Interact with colors";
+	menu->selections = default_choice;
+	menu->count = N_ELEMENTS(color_events),
+	menu->menu_data = color_events;
+	menu_init(menu, MN_SCROLL, MN_EVT, &SCREEN_REGION);
+
+	/* initialize other static variables */
 	if(!obj_group_order) {
 		int i;
 		int gid = -1;
@@ -4229,15 +4253,4 @@ void do_cmd_knowledge()
 			obj_group_order[object_text_order[i].tval] = gid;
 		}
 	}
-
-	screen_save();
-
-	for(;;) {
-		key_event c;
-		Term_clear();
-		c = menu_select(&knowledge_menu, 0, knowledge_menu.count, &cursor, SCREEN_REGION);
-		if(ESCAPE == c.key) break;
-	}
-
-	screen_load();
 }

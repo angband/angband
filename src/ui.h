@@ -9,6 +9,7 @@
  */
 
 
+
 #ifndef UI_H
 #define UI_H
 
@@ -40,47 +41,109 @@ typedef struct
 	cptr name;
 } grouper;
 
+/* ================== GEOMETRY ====================== */
 
-/* =================== Events =================== */
+typedef struct region region;
+
+struct region {
+	int col;			/* x-coordinate of upper right corner */
+	int row;			/* y-coord of upper right coordinate */
+	int width;			/* width of display area. 1 - use system default. */
+						/* non-positive - rel to right of screen */
+	int page_rows;	/* non-positive value is relative to the bottom of the screen */
+};
+
+/* Region that defines the full screen */
+static const region SCREEN_REGION = {0, 0, 0, 0};
+
+/* Erase the contents of a region */
+void region_erase(const region *loc);
+/* Check whether a (mouse) event is inside a region */
+bool region_inside(const region *loc, const key_event *key);
+
+
+
+/* =================== EVENTS =================== */
+
+
+typedef struct event_target event_target;
+typedef struct event_listener event_listener;
+typedef struct event_set event_set;
+typedef struct listener_list listener_list; /* Opaque */
+
+typedef bool (*handler_f)(void *object, const key_event *in);
+typedef void (*release_f)(void *object);
+
+struct event_set {
+	int evt_flags;
+	/* anything else? */
+};
+
+struct event_listener
+{
+	int object_id;
+	handler_f handler;
+	release_f release;
+	void *object;
+
+	/* properly, this belongs in the listener_list */
+	event_set events;
+};
+
+
+struct event_target {
+	/* Allow a target to be a listener as well */
+	event_listener self;
+	bool is_modal;
+	listener_list *observers;
+};
+
+void add_listener (event_target *parent, event_listener *child);
+void add_target(event_target *parent, event_target *child);
+
+void remove_listener (event_target *parent, event_listener *child);
+key_event run_event_loop(event_target *parent, bool forever, const key_event *start);
+
+
+/* ================= PANEL ============ */
+typedef struct panel_type panel_type;
+
+/* An event target bound to a particular screen area */
+struct panel_type {
+	event_target target;
+	void (*refresh)();
+	region boundary;
+};
+
+/* ================== MENUS ================= */
 
 typedef struct event_action event_action;
 typedef struct menu_item menu_item;
 typedef struct menu_type menu_type;
-typedef struct region region;
 typedef struct menu_skin menu_skin;
-typedef struct menu_class menu_class;
+typedef struct menu_iter menu_iter;
+typedef enum skin_id skin_id;
+typedef enum menu_iter_id menu_iter_id;
 
 /*
  * Performs an action on object with an optional environment label 
+ * Member function of "menu_iter" VTAB
  */
 typedef void (*action_f)(void *object, const char *name);
 
 /* 
  * Displays a single row in a menu
- * Driver function for populating menu rows on the fly
+ * Driver function for populating a single menu row.
+ * Member function for "menu_iter" VTAB
  */
-typedef void (*display_row_f) (menu_type *menu, int oid,
+typedef void (*display_row_f) (menu_type *menu, int pos,
 							bool cursor, int row, int col, int width);
 
-/*
- * Driver function for displaying (part of) a menu
- * Mostly internal, except for exotic single-screen menus like spellbooks
- * Arguments:
- *   db - internal data for display_row_f above.
- *   menuID - the global identifier for this menu. (For binding events pref files)
- *   object_list - an optional object reordering or subset.
- *   n - total number of elements in the menu.
- *   top - the current top of the displayed list.
- *   selections - optional list of characters to bind to the menu selections.
- *   cursor - the current cursor position.
- *   top - current menu top (for scrollable menus)
- *   row, col - screen location to root the list
- *   display_func - function for displaying a (short) label for menu item
+/* 
+ * Driver function for displaying a page of rows.
+ * Member function of "menu_skin" VTAB
  */
-typedef void (*display_list_f) (
-					menu_type *menu, const int object_list[], int n,
-					int cursor, int *top,
-					region *loc);
+typedef void (*display_list_f)(menu_type *menu, int cursor, int *top, region *);
 
 
 struct event_action
@@ -105,7 +168,7 @@ struct menu_item
   Together, these classes define the constant properties of
   the various menu classes.
   A menu consists of:
-   - menu_class, which describes the basic
+   - menu_iter, which describes the basic
      class on which the menu is operating
       current classes are:
 		MN_EVT- event_action array,
@@ -122,30 +185,7 @@ struct menu_item
 
  */
 
- 
-struct menu_skin {
-	int flag;
-	int (*get_cursor)(int row, int col, int n, int top, region *loc);
-	display_list_f display_list;
-};
-
-struct menu_class {
-	int flag;
-	char (*get_tag)(menu_type *menu, int oid);
-	bool (*valid_row)(menu_type *menu, int oid);
-	display_row_f display_row;
-	bool (*handler)(char cmd, const void *db, int oid);
-};
-
-
 typedef enum {
-	/* Skins */
-	/* TODO: skins are not flags. */
-	MN_SCROLL	= 0x0000, /* Assumed -- scrollable list */
-	MN_PAGE		= 0x0001, /* page view */
-	MN_COLUMNS	= 0x0002, /* multicolumn view */
-	MN_NATIVE	= 0x0003, /* Not implemented -- OS menu */
-	MN_USER		= 0x0004, /* User-defined menu display -- browse spellbook, etc */
 	MN_KEY_ONLY	= 0x0008, /* Fake "menu" for keyboard input */
 
 	MN_MAX_SKIN = 0x00FF, /* Max number of skins */
@@ -157,23 +197,48 @@ typedef enum {
 
 	MN_DBL_TAP	= 0x1000, /* double tap for selection; single tap is cursor movement */
 	MN_NO_ACT	= 0x2000, /* Do not invoke the specified action; menu selection only */
-	MN_ONCE		= 0x4000, /* Only once through loop - detects motion */
 	MN_NO_CURSOR = 0x8000, /* No cursor movement */
-
-	/* Canned class implementations */
-	/* TODO: this should be a separate enumeration */
-	MN_ACT		= 0x10000, /* selectable menu with per-row flags (see below) */
-	MN_EVT		= 0x20000, /* simple event action list */
-	
-	MN_CLASS    = 0xF0000 , /* Class filter */
-
 
 	/* Reserved for rows in action_menu structure. */
 	MN_DISABLED		= 0x0100000,
 	MN_GRAYED		= 0x0200000,
 	MN_SELECTED		= 0x0400000,
 	MN_SELECTABLE	= 0x0800000
+
 } menu_flags;
+
+enum skin_id {
+	/* Skins */
+	/* TODO: skins are not flags. */
+	MN_SCROLL	= 0x0000, /* Assumed -- scrollable list */
+	MN_PAGE		= 0x0001, /* page view */
+	MN_COLUMNS	= 0x0002, /* multicolumn view */
+	MN_NATIVE	= 0x0003, /* Not implemented -- OS menu */
+	MN_USER		= 0x0004, /* Anonymous, user defined. */
+
+};
+
+struct menu_skin {
+	skin_id id;
+	int (*get_cursor)(int row, int col, int n, int top, region *loc);
+	display_list_f display_list;
+	char (*get_tag)(menu_type *menu, int pos);
+};
+
+
+/* Identifiers for canned row iter implementations */
+enum menu_iter_id {
+	MN_ACT		= 0x1, /* selectable menu with per-row flags (see below) */
+	MN_EVT		= 0x2, /* simple event action list */
+};
+
+struct menu_iter {
+	menu_iter_id id;
+	char (*get_tag)(menu_type *menu, int oid);
+	bool (*valid_row)(menu_type *menu, int oid);
+	display_row_f display_row;
+	bool (*row_handler)(char cmd, const void *db, int oid);
+};
 
 
 /* A menu defines either an action
@@ -181,12 +246,19 @@ typedef enum {
  */
 struct menu_type
 {
-	int menuID;
-	const char *title;
-	const char *prompt;
+	/* menu inherits from panel */
+	event_target target;
+	void (*refresh)();
+	region boundary;
 
 	/* set of commands that may be performed on a menu item */
 	const char *cmd_keys;
+
+
+	/* Public variables */
+	const char *title;
+	const char *prompt;
+
 
 	/* Keyboard shortcuts for menu selection */
 	/* IMPORTANT: this cannot intersect with cmd_keys */
@@ -194,40 +266,29 @@ struct menu_type
 
 	/* Flags specifying the behavior of this menu. See enum MENU_FLAGS */
 	int flags;
-	int count;
+	int filter_count;		/* number of rows in current view */
+	const int *object_list;	/* optional filter (view) of menu objects */
+	int count;				/* number of rows in underlying data set */
+	const void *menu_data;	/* the data used to access rows. */
 
+  	/* auxiliary browser help function */
+	void (*browse_hook)(int oid, const region *loc);
 
-	const void *menu_data; /* the data used to access rows. */
-
-
-	/* command action.  Should handle 0xff for selection */
-	bool (*handler)(char cmd, const void *db, int oid);
-
-	void (*browse_hook)(int oid, const region *loc);  /* auxiliary browser help function */
 
 	/* These are "protected" - not visible for canned menu classes, */
+	/* The per-row functions  */
+	const menu_iter *row_funcs;
 
-	/* but required for rolling your own */
-	/* Print a row */
-	display_row_f display_label;
 
-	/* optional tagger for this current class */
-    char (*get_tag)(menu_type *menu, int oid);
-	bool (*valid_row)(menu_type *menu, int cursor);
+	/* State variables for the menu */
+	int cursor;				/* Currently selected row */
+	int top;				/* Position in list for partial display */
+	region active;			/* Subregion actually active for selection */
 
 	/* helper functions for layout information. */
 	const menu_skin *skin;  /* Defines menu appearance */
 };
 
-
-
-struct region {
-	int col;			/* x-coordinate of upper right corner */
-	int row;			/* y-coord of upper right coordinate */
-	int width;			/* width of display area. 1 - use system default. */
-						/* non-positive - rel to right of screen */
-	int page_rows;	/* non-positive value is relative to the bottom of the screen */
-};
 
 /* 
  * Select a row from a menu.
@@ -240,35 +301,34 @@ struct region {
  * (This is a stand-in for a menu event)
  * reserved commands are 0xff for selection and ESCAPE for escape.
  */
-key_event menu_select(menu_type *menu, const int object_list[], int n,
-							int *cursor, region loc);
+key_event menu_select(menu_type *menu, int *cursor, int no_handle);
 
+/* TODO: This belongs in the VTAB */
+bool menu_layout(menu_type *menu, const region *loc);
 
-/* Helper function - display a menu, no interaction */
-void menu_display(menu_type *menu, const int object_list[], int n, const int *cursor,
-					region *loc);
-
-
-/* Helper function - select an item from previously displayed menu */
-void menu_choose(menu_type *menu, const int object_list[], int n, int *cursor,
-					region *loc);
-
-
-/* Helper function - perform menu action on currently selected item */
-void menu_action(menu_type *menu, const int object_list[], int *cursor);
-
+/* accessor & utility functions */
+void menu_set_filter(menu_type *menu, const int object_list[], int n);
+void menu_release_filter(menu_type *menu);
+void menu_set_id(menu_type *menu, int id);
 
 /* Set up structures for canned menu actions */
-bool menu_init(menu_type *menu);
-void menu_set_class(menu_type *menu, const menu_class *class_def);
+/* Bind the vtab for a menu */
+bool menu_init(menu_type *menu, skin_id skin, menu_iter_id iter,
+				const region *loc);
 
+/* Initialize a menu given (anonymous) menu iter */
+bool menu_init2(menu_type *menu, const menu_skin *skin,
+				const menu_iter *iter, const region *loc);
 
+void menu_destroy(menu_type *menu);
 
-/* This is probably a bad idea */
-static const region SCREEN_REGION = {0, 0, 0, 0};
+/* Menu VTAB registry */
+const menu_iter *find_menu_iter(menu_iter_id iter_id);
+const menu_skin *find_menu_skin(skin_id skin_id);
 
-/* Move to Term_ ? */
-void region_erase(const region *loc);
+void add_menu_skin(const menu_skin *skin, skin_id id);
+void add_menu_iter(const menu_iter *skin, menu_iter_id id);
+
 
 
 #endif /* UI_H */

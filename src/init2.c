@@ -2009,7 +2009,11 @@ void init_angband(void)
 	fd_close(fd);
 
 
+	/* initialize the menus. This must occur before preference files are read */
+	init_cmd4_c();
+	
 	/*** Initialize some arrays ***/
+
 
 	/* Initialize size info */
 	note("[Initializing array sizes...]");

@@ -344,6 +344,7 @@ extern void ang_sort_swap_hook(void *u, void *v, int a, int b);
 
 /* cmd4.c */
 extern void do_cmd_redraw(void);
+extern void do_cmd_resize(void);
 extern void do_cmd_change_name(void);
 extern void do_cmd_message_one(void);
 extern void do_cmd_messages(void);
@@ -358,6 +359,7 @@ extern void do_cmd_feeling(void);
 extern void do_cmd_load_screen(void);
 extern void do_cmd_save_screen(void);
 extern void do_cmd_knowledge(void);
+extern void init_cmd4_c(void);
 
 /* cmd5.c */
 extern void do_cmd_browse_aux(const object_type *o_ptr);

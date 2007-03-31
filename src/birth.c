@@ -686,16 +686,40 @@ static region gender_region = {SEX_COL, TABLE_ROW, 15, -2};
 static region race_region = {RACE_COL, TABLE_ROW, 15, -2};
 static region class_region = {CLASS_COL, TABLE_ROW, 19, -2};
 
-static void show_help(cptr helpfile, cptr topic) {
-	char buf[80];
-	strnfmt(buf, sizeof(buf), "%s#%s", helpfile, topic);
-	screen_save();
-	show_file(buf, NULL, 0, 0);
-	screen_load();
+
+/* Event handler implementation */
+static bool handler_aux(char cmd, int oid, byte *val, int max, int mask, cptr topic)
+{
+	if(cmd == '\xff' || cmd == '\r') {
+		*val = oid;
+	}
+	else if(cmd == '*') {
+		for(;;) {
+			oid = rand_int(max);
+			*val = oid;
+			if(mask & (1L << oid)) break;
+		}
+	}
+	else if(cmd == '=') do_cmd_options();
+	else if(cmd == KTRL('X')) quit(NULL);
+	else if(cmd == '?') {
+		char buf[80];
+		strnfmt(buf, sizeof(buf), "%s#%s", "birth.txt", topic);
+		screen_save();
+		show_file(buf, NULL, 0, 0);
+		screen_load();
+	}
+	else return FALSE;
+
+	sp_ptr = &sex_info[p_ptr->psex];
+	rp_ptr = &p_info[p_ptr->prace];
+	cp_ptr = &c_info[p_ptr->pclass];
+	mp_ptr = &cp_ptr->spells;
+	return TRUE;
 }
 
 /* GENDER */
-/* Could make a general purpose display, but see no point. */
+/* Display a gender */
 static void display_gender(menu_type *menu, int oid, bool cursor,
 							int row, int col, int width)
 {
@@ -703,22 +727,10 @@ static void display_gender(menu_type *menu, int oid, bool cursor,
 	c_prt(attr, sex_info[oid].title, row, col);
 }
 
-/* Not worth writing a general purpose handler */
 static bool gender_handler(char cmd, const void *db, int oid)
 {
-	if(cmd == '\xff' || cmd == '\r') {
-		p_ptr->psex = oid;
-		sp_ptr = &sex_info[p_ptr->psex];
-	}
-	else if(cmd == '*') {
-		p_ptr->psex = rand_int(SEX_MALE+1);
-		sp_ptr = &sex_info[p_ptr->psex];
-	}
-	else if(cmd == '=') do_cmd_options();
-	else if(cmd == KTRL('X')) quit(NULL);
-	else if(cmd == '?')  show_help("birth.txt", sex_info[oid].title);
-	else return FALSE;
-	return TRUE;
+	return handler_aux(cmd, oid, &p_ptr->psex, SEX_MALE+1,
+							0xffffffff, sex_info[oid].title);
 }
 
 /* RACE */
@@ -731,21 +743,9 @@ static void display_race(menu_type *menu, int oid, bool cursor,
 
 static bool race_handler(char cmd, const void *db, int oid)
 {
-	if(cmd == '\xff' || cmd == '\r') {
-		p_ptr->prace = oid;
-		rp_ptr = &p_info[p_ptr->prace];
-	}
-	else if(cmd == '*') {
-		p_ptr->prace = rand_int(z_info->p_max);
-		rp_ptr = &p_info[p_ptr->prace];
-	}
-	else if(cmd == '=') do_cmd_options();
-	else if(cmd == KTRL('X')) quit(NULL);
-	else if(cmd == '?')  show_help("birth.txt", p_name+p_info[oid].name);
-	else return FALSE;
-	return TRUE;
+	return handler_aux(cmd, oid, &p_ptr->prace, z_info->p_max,
+							0xffffffff, p_name+p_info[oid].name);
 }
-
 
 /* CLASS */
 static void display_class(menu_type *menu, int oid, bool cursor,
@@ -757,30 +757,12 @@ static void display_class(menu_type *menu, int oid, bool cursor,
 
 static bool class_handler(char cmd, const void *db, int oid)
 {
-	if(cmd == '\xff' || cmd == '\r') {
-		p_ptr->pclass = oid;
-		cp_ptr = &c_info[p_ptr->pclass];
-		mp_ptr = &cp_ptr->spells;
-	}
-	else if(cmd == '*') {
-		for(;;) {
-			oid = rand_int(z_info->c_max);
-			p_ptr->pclass = oid;
-			cp_ptr = &c_info[p_ptr->pclass];
-			mp_ptr = &cp_ptr->spells;
-			if((rp_ptr->choice & (1L << oid)))
-				break;
-		}
-	}
-	else if(cmd == '=') do_cmd_options();
-	else if(cmd == KTRL('X')) quit(NULL);
-	else if(cmd == '?') show_help("birth.txt", c_name+c_info[oid].name);
-	else return FALSE;
-	return TRUE;
+	return handler_aux(cmd, oid, &p_ptr->pclass, z_info->c_max,
+							(rp_ptr->choice),  c_name+c_info[oid].name);
 }
 
 
-static const menu_class menu_defs[] = {
+static const menu_iter menu_defs[] = {
 	{0, 0, 0, display_gender, gender_handler },
 	{0, 0, 0, display_race, race_handler },
 	{0, 0, 0, display_class, class_handler },
@@ -804,26 +786,26 @@ static bool choose_character()
 	browse_f browse [] = {NULL, race_aux_hook, class_aux_hook };
 	menu_type menu;
 	WIPE(&menu, menu);
-	menu.cmd_keys = "?*\r\x18";		 /* ?, *, \n, <ctl-X> */
+	menu.cmd_keys = "?=*\r\n\x18";		 /* ?, ,= *, \n, <ctl-X> */
 
 	i = 0;
 	while(i < N_ELEMENTS(menu_defs))
 	{
-		menu.flags = MN_NO_TAGS | MN_DBL_TAP;
-		menu_init(&menu);
 		key_event cx;
 		int cursor = *values[i];
-		clear_question();
-		Term_putstr(QUESTION_COL, QUESTION_ROW, -1, TERM_YELLOW, hints[i]);
+		menu.flags = MN_NO_TAGS | MN_DBL_TAP;
 		menu.count = limits[i];
-		menu_set_class(&menu, &menu_defs[i]);
 		menu.browse_hook = browse[i];
+		menu_init2(&menu, find_menu_skin(MN_SCROLL), &menu_defs[i], regions[i]);
+		clear_question();
 
-		cx = menu_select(&menu, 0, menu.count, &cursor, *regions[i]);
+		Term_putstr(QUESTION_COL, QUESTION_ROW, -1, TERM_YELLOW, hints[i]);
+		cx = menu_select(&menu, &cursor, 0);
 		if(cx.key == ESCAPE) {
 			return FALSE; /* restart */
 		}
 		else if(cx.type == EVT_BACK) {
+			*values[i] = cursor;
 			region_erase(regions[i]);
 			i--;
 		}
@@ -835,7 +817,6 @@ static bool choose_character()
 		else i++;
 	}
 	return TRUE;
-
 }
 
 
