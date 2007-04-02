@@ -727,7 +727,7 @@ static void display_gender(menu_type *menu, int oid, bool cursor,
 	c_prt(attr, sex_info[oid].title, row, col);
 }
 
-static bool gender_handler(char cmd, const void *db, int oid)
+static bool gender_handler(char cmd, void *db, int oid)
 {
 	return handler_aux(cmd, oid, &p_ptr->psex, SEX_MALE+1,
 							0xffffffff, sex_info[oid].title);
@@ -741,7 +741,7 @@ static void display_race(menu_type *menu, int oid, bool cursor,
 	c_prt(attr, p_name + p_info[oid].name, row, col);
 }
 
-static bool race_handler(char cmd, const void *db, int oid)
+static bool race_handler(char cmd, void *db, int oid)
 {
 	return handler_aux(cmd, oid, &p_ptr->prace, z_info->p_max,
 							0xffffffff, p_name+p_info[oid].name);
@@ -755,7 +755,7 @@ static void display_class(menu_type *menu, int oid, bool cursor,
 	c_prt(attr, c_name + c_info[oid].name, row, col);
 }
 
-static bool class_handler(char cmd, const void *db, int oid)
+static bool class_handler(char cmd, void *db, int oid)
 {
 	return handler_aux(cmd, oid, &p_ptr->pclass, z_info->c_max,
 							(rp_ptr->choice),  c_name+c_info[oid].name);

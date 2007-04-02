@@ -592,6 +592,7 @@ static int macro_find_check(cptr pat)
 }
 
 
+
 /*
  * Find the first macro (if any) which contains the given pattern and more
  */
@@ -868,151 +869,151 @@ static bool parse_under = FALSE;
  */
 static key_event inkey_aux(void)
 {
-  int k = 0, n, p = 0, w = 0;
-  
-  key_event ke, ke0;
-  char ch;
-  
-  cptr pat, act;
-  
-  char buf[1024];
-  
-  /* Initialize the no return */
-  ke0.type = EVT_KBRD;
-  ke0.key = 0;
-  ke0.index = 0; /* To fix GCC warnings on X11 */
-  ke0.mousey = 0;
-  ke0.mousex = 0;
+	int k = 0, n, p = 0, w = 0;
+	
+	key_event ke, ke0;
+	char ch;
+	
+	cptr pat, act;
+	
+	char buf[1024];
+	
+	/* Initialize the no return */
+	ke0.type = EVT_KBRD;
+	ke0.key = 0;
+	ke0.index = 0; /* To fix GCC warnings on X11 */
+	ke0.mousey = 0;
+	ke0.mousex = 0;
  
-  /* Wait for a keypress */
-  (void)(Term_inkey(&ke, TRUE, TRUE));
-  ch = ke.key;
-  
-  /* End "macro action" */
-  if ((ch == 30) || (ch == '\xff'))
-    {
-      parse_macro = FALSE;
-      return (ke);
-    }
-  
-  /* Inside "macro action" */
-  if (parse_macro) return (ke);
-  
-  /* Inside "macro trigger" */
-  if (parse_under) return (ke);
-  
+	/* Wait for a keypress */
+	(void)(Term_inkey(&ke, TRUE, TRUE));
+	ch = ke.key;
+	
+	/* End "macro action" */
+	if ((ch == 30) || (ch == '\xff'))
+	{
+		parse_macro = FALSE;
+		return (ke);
+	}
+	
+	/* Inside "macro action" */
+	if (parse_macro) return (ke);
+	
+	/* Inside "macro trigger" */
+	if (parse_under) return (ke);
+	
 
-  /* Save the first key, advance */
-  buf[p++] = ch;
-  buf[p] = '\0';
-  
-  
-  /* Check for possible macro */
-  k = macro_find_check(buf);
-  
-  /* No macro pending */
-  if (k < 0) return (ke);
-  
-  
-  /* Wait for a macro, or a timeout */
-  while (TRUE)
-    {
-      /* Check for pending macro */
-      k = macro_find_maybe(buf);
-      
-      /* No macro pending */
-      if (k < 0) break;
-      
-      /* Check for (and remove) a pending key */
-      if (0 == Term_inkey(&ke, FALSE, TRUE))
+	/* Save the first key, advance */
+	buf[p++] = ch;
+	buf[p] = '\0';
+	
+	
+	/* Check for possible macro */
+	k = macro_find_check(buf);
+	
+	/* No macro pending */
+	if (k < 0) return (ke);
+	
+	
+	/* Wait for a macro, or a timeout */
+	while (TRUE)
 	{
-	  /* Append the key */
-	  buf[p++] = ke.key;
-	  buf[p] = '\0';
-	  
-	  /* Restart wait */
-	  w = 0;
+		/* Check for pending macro */
+		k = macro_find_maybe(buf);
+		
+		/* No macro pending */
+		if (k < 0) break;
+		
+		/* Check for (and remove) a pending key */
+		if (0 == Term_inkey(&ke, FALSE, TRUE))
+		{
+			/* Append the key */
+			buf[p++] = ke.key;
+			buf[p] = '\0';
+		
+			/* Restart wait */
+			w = 0;
+		}
+		
+		/* No key ready */
+		else
+		{
+			/* Increase "wait" */
+			w += 10;
+		
+			/* Excessive delay */
+			if (w >= 100) break;
+		
+			/* Delay */
+			Term_xtra(TERM_XTRA_DELAY, w);
+		}
 	}
-      
-      /* No key ready */
-      else
-	{
-	  /* Increase "wait" */
-	  w += 10;
-	  
-	  /* Excessive delay */
-	  if (w >= 100) break;
-	  
-	  /* Delay */
-	  Term_xtra(TERM_XTRA_DELAY, w);
-	}
-    }
-  
-  
-  /* Check for available macro */
-  k = macro_find_ready(buf);
+	
+	
+	/* Check for available macro */
+	k = macro_find_ready(buf);
 
-  /* No macro available */
-  if (k < 0)
-    {
-      /* Push all the "keys" back on the queue */
-	  /* The most recent event may not be a keypress. */
-	  if(p)
+	/* No macro available */
+	if (k < 0)
 	{
-	   if(Term_event_push(&ke)) return (ke0);
-		p--;
+		/* Push all the "keys" back on the queue */
+		/* The most recent event may not be a keypress. */
+		if(p)
+		{
+			if(Term_event_push(&ke)) return (ke0);
+			p--;
+		}
+		while (p > 0)
+		{
+			/* Push the key, notice over-flow */
+			if (Term_key_push(buf[--p])) return (ke0);
+		}
+		
+		/* Wait for (and remove) a pending key */
+		(void)Term_inkey(&ke, TRUE, TRUE);
+		
+		/* Return the key */
+		return (ke);
 	}
-      while (p > 0)
+	
+	
+	/* Get the pattern */
+	pat = macro__pat[k];
+	
+	/* Get the length of the pattern */
+	n = strlen(pat);
+	
+	/* Push the "extra" keys back on the queue */
+	while (p > n)
 	{
-	  /* Push the key, notice over-flow */
-	  if (Term_key_push(buf[--p])) return (ke0);
+		/* Push the key, notice over-flow */
+		if (Term_key_push(buf[--p])) return (ke0);
 	}
-      
-      /* Wait for (and remove) a pending key */
-      (void)Term_inkey(&ke, TRUE, TRUE);
-      
-      /* Return the key */
-      return (ke);
-    }
-  
-  
-  /* Get the pattern */
-  pat = macro__pat[k];
-  
-  /* Get the length of the pattern */
-  n = strlen(pat);
-  
-  /* Push the "extra" keys back on the queue */
-  while (p > n)
-    {
-      /* Push the key, notice over-flow */
-      if (Term_key_push(buf[--p])) return (ke0);
-    }
-  
-  
-  /* Begin "macro action" */
-  parse_macro = TRUE;
-  
-  /* Push the "end of macro action" key */
-  if (Term_key_push(30)) return (ke0);
-  
-  
-  /* Access the macro action */
-  act = macro__act[k];
-  
-  /* Get the length of the action */
-  n = strlen(act);
-  
-  /* Push the macro "action" onto the key queue */
-  while (n > 0)
-    {
-      /* Push the key, notice over-flow */
-      if (Term_key_push(act[--n])) return (ke0);
-    }
-  
-  
-  /* Hack -- Force "inkey()" to call us again */
-  return (ke0);
+	
+	
+	/* Begin "macro action" */
+	parse_macro = TRUE;
+	
+	/* Push the "end of macro action" key */
+	if (Term_key_push(30)) return (ke0);
+	
+	
+	/* Access the macro action */
+	act = macro__act[k];
+	
+	/* Get the length of the action */
+	n = strlen(act);
+	
+	/* Push the macro "action" onto the key queue */
+	while (n > 0)
+	{
+		/* Push the key, notice over-flow */
+		if (Term_key_push(act[--n])) return (ke0);
+	}
+	
+	
+	/* Hack -- Force "inkey()" to call us again */
+	return (ke0);
 }
 
 
@@ -1105,236 +1106,234 @@ char (*inkey_hack)(int flush_first) = NULL;
  */
 key_event inkey_ex(void)
 {
-  bool cursor_state;
-  
-  key_event kk;
-  
-  key_event ke;
-  
-  bool done = FALSE;
-  
-  term *old = Term;
-  
-  
-  /* Initialise keypress */
-  ke.key = 0;
-  ke.type = EVT_KBRD;
-  
-  /* Hack -- Use the "inkey_next" pointer */
-  if (inkey_next && *inkey_next && !inkey_xtra)
-    {
-      /* Get next character, and advance */
-      ke.key = *inkey_next++;
-      
-      /* Cancel the various "global parameters" */
-      inkey_base = inkey_xtra = inkey_flag = inkey_scan = FALSE;
-      
-      /* Accept result */
-      return (ke);
-    }
-  
-  /* Forget pointer */
-  inkey_next = NULL;
-  
-  
+	bool cursor_state;
+	key_event kk;
+	key_event ke;
+	
+	bool done = FALSE;
+	
+	term *old = Term;
+	
+	
+	/* Initialise keypress */
+	ke.key = 0;
+	ke.type = EVT_KBRD;
+	
+	/* Hack -- Use the "inkey_next" pointer */
+	if (inkey_next && *inkey_next && !inkey_xtra)
+	{
+		/* Get next character, and advance */
+		ke.key = *inkey_next++;
+		
+		/* Cancel the various "global parameters" */
+		inkey_base = inkey_xtra = inkey_flag = inkey_scan = FALSE;
+		
+		/* Accept result */
+		return (ke);
+	}
+	
+	/* Forget pointer */
+	inkey_next = NULL;
+	
+	
 #ifdef ALLOW_BORG
-  
-  /* Mega-Hack -- Use the special hook */
-  if (inkey_hack && ((ch = (*inkey_hack)(inkey_xtra)) != 0))
-    {
-      /* Cancel the various "global parameters" */
-      inkey_base = inkey_xtra = inkey_flag = inkey_scan = FALSE;
-	  ke.type = EVT_KBRD;
-      
-      /* Accept result */
-      return (ke);
-    }
-  
+	
+	/* Mega-Hack -- Use the special hook */
+	if (inkey_hack && ((ch = (*inkey_hack)(inkey_xtra)) != 0))
+	{
+		/* Cancel the various "global parameters" */
+		inkey_base = inkey_xtra = inkey_flag = inkey_scan = FALSE;
+		ke.type = EVT_KBRD;
+		
+		/* Accept result */
+		return (ke);
+	}
+	
 #endif /* ALLOW_BORG */
-  
-  
-  /* Hack -- handle delayed "flush()" */
-  if (inkey_xtra)
-    {
-      /* End "macro action" */
-      parse_macro = FALSE;
-	  ke.type = EVT_KBRD;
-      
-      /* End "macro trigger" */
-      parse_under = FALSE;
-      
-      /* Forget old keypresses */
-      Term_flush();
-    }
-  
-  
-  /* Get the cursor state */
-  (void)Term_get_cursor(&cursor_state);
-  
-  /* Show the cursor if waiting, except sometimes in "command" mode */
-  if (!inkey_scan && (!inkey_flag || hilite_player || character_icky))
-    {
-      /* Show the cursor */
-      (void)Term_set_cursor(TRUE);
-    }
-  
-  
-  /* Hack -- Activate main screen */
-  Term_activate(term_screen);
-  
-  
-  /* Get a key */
-  while (!ke.key)
-    {
-      /* Hack -- Handle "inkey_scan" */
-      if (!inkey_base && inkey_scan &&
-	  (0 != Term_inkey(&kk, FALSE, FALSE)))
+	
+	
+	/* Hack -- handle delayed "flush()" */
+	if (inkey_xtra)
 	{
-	  break;
+		/* End "macro action" */
+		parse_macro = FALSE;
+		ke.type = EVT_KBRD;
+		
+		/* End "macro trigger" */
+		parse_under = FALSE;
+		
+		/* Forget old keypresses */
+		Term_flush();
 	}
-      
-      
-      /* Hack -- Flush output once when no key ready */
-      if (!done && (0 != Term_inkey(&kk, FALSE, FALSE)))
+	
+	
+	/* Get the cursor state */
+	(void)Term_get_cursor(&cursor_state);
+	
+	/* Show the cursor if waiting, except sometimes in "command" mode */
+	if (!inkey_scan && (!inkey_flag || hilite_player || character_icky))
 	{
-	  /* Hack -- activate proper term */
-	  Term_activate(old);
-	  
-	  /* Flush output */
-	  Term_fresh();
-	  
-	  /* Hack -- activate main screen */
-	  Term_activate(term_screen);
-	  
-	  /* Mega-Hack -- reset saved flag */
-	  character_saved = FALSE;
-	  
-	  /* Mega-Hack -- reset signal counter */
-	  signal_count = 0;
-	  
-	  /* Only once */
-	  done = TRUE;
+		/* Show the cursor */
+		(void)Term_set_cursor(TRUE);
 	}
-      
-      
-      /* Hack -- Handle "inkey_base" */
-      if (inkey_base)
+	
+	
+	/* Hack -- Activate main screen */
+	Term_activate(term_screen);
+	
+	
+	/* Get a key */
+	while (!ke.key)
 	{
-	  int w = 0;
-	  
-	  /* Wait forever */
-	  if (!inkey_scan)
-	    {
-	      /* Wait for (and remove) a pending key */
-	      if (0 == Term_inkey(&ke, TRUE, TRUE))
+		/* Hack -- Handle "inkey_scan" */
+		if (!inkey_base && inkey_scan &&
+		   (0 != Term_inkey(&kk, FALSE, FALSE)))
 		{
+			break;
+		}
+		
+
+		/* Hack -- Flush output once when no key ready */
+		if (!done && (0 != Term_inkey(&kk, FALSE, FALSE)))
+		{
+
+			/* Hack -- activate proper term */
+			Term_activate(old);
+
+			/* Flush output */
+			Term_fresh();
+
+			/* Hack -- activate main screen */
+			Term_activate(term_screen);
+
+			/* Mega-Hack -- reset saved flag */
+			character_saved = FALSE;
+		
+			/* Mega-Hack -- reset signal counter */
+			signal_count = 0;
+		
+			/* Only once */
+			done = TRUE;
+		}
+		
+		
+		/* Hack -- Handle "inkey_base" */
+		if (inkey_base)
+		{
+		  int w = 0;
+
+		  /* Wait forever */
+		  if (!inkey_scan)
+		  {
+			/* Wait for (and remove) a pending key */
+			if (0 == Term_inkey(&ke, TRUE, TRUE))
+			{
+				/* Done */
+				break;
+			}
+
+			/* Oops */
+			break;
+		  }
+
+		  /* Wait */
+		  while (TRUE)
+		  {
+			/* Check for (and remove) a pending key */
+			if (0 == Term_inkey(&ke, FALSE, TRUE))
+			{
+				/* Done */
+				break;
+			}
+
+			/* No key ready */
+			else
+			{
+				/* Increase "wait" */
+				w += 10;
+			
+				/* Excessive delay */
+				if (w >= 100) break;
+			
+				/* Delay */
+				Term_xtra(TERM_XTRA_DELAY, w);
+				}
+		  }
+
 		  /* Done */
 		  break;
 		}
-	      
-	      /* Oops */
-	      break;
-	    }
-	  
-	  /* Wait */
-	  while (TRUE)
-	    {
-	      /* Check for (and remove) a pending key */
-	      if (0 == Term_inkey(&ke, FALSE, TRUE))
+		
+		
+			/* Get a key (see above) */
+			ke = inkey_aux();
+		
+		
+		/* Handle "control-right-bracket" */
+		if (ke.key == 29)
 		{
-		  /* Done */
-		  break;
+			/* Strip this key */
+			ke.key = 0;
+		
+			/* Continue */
+			continue;
 		}
-	      
-	      /* No key ready */
-	      else
+		
+		
+		/* Treat back-quote as escape */
+		if (ke.key == '`') ke.key = ESCAPE;
+		
+		
+		/* End "macro trigger" */
+		if (parse_under && (ke.key <= 32))
 		{
-		  /* Increase "wait" */
-		  w += 10;
-		  
-		  /* Excessive delay */
-		  if (w >= 100) break;
-		  
-		  /* Delay */
-		  Term_xtra(TERM_XTRA_DELAY, w);
+			/* Strip this key */
+			ke.key = 0;
+		
+			/* End "macro trigger" */
+			parse_under = FALSE;
 		}
-	    }
-	  
-	  /* Done */
-	  break;
+
+		/* Handle "control-caret" */
+		if (ke.key == 30)
+		{
+			/* Strip this key */
+			ke.key = 0;
+		}
+
+		/* Handle "control-underscore" */
+		else if (ke.key == 31)
+		{
+			/* Strip this key */
+			ke.key = 0;
+
+			/* Begin "macro trigger" */
+			parse_under = TRUE;
+		}
+
+		/* Inside "macro trigger" */
+    	else if (parse_under)
+		{
+			/* Strip this key */
+			ke.key = 0;
+		}
 	}
-      
-      
-      /* Get a key (see above) */
-      ke = inkey_aux();
-      
-      
-      /* Handle "control-right-bracket" */
-      if (ke.key == 29)
-	{
-	  /* Strip this key */
-	  ke.key = 0;
-	  
-	  /* Continue */
-	  continue;
-	}
-      
-      
-      /* Treat back-quote as escape */
-      if (ke.key == '`') ke.key = ESCAPE;
-      
-      
-      /* End "macro trigger" */
-      if (parse_under && (ke.key <= 32))
-	{
-	  /* Strip this key */
-	  ke.key = 0;
-	  
-	  /* End "macro trigger" */
-	  parse_under = FALSE;
-	}
-      
-      
-      /* Handle "control-caret" */
-      if (ke.key == 30)
-	{
-	  /* Strip this key */
-	  ke.key = 0;
-	}
-      
-      /* Handle "control-underscore" */
-      else if (ke.key == 31)
-	{
-	  /* Strip this key */
-	  ke.key = 0;
-	  
-	  /* Begin "macro trigger" */
-	  parse_under = TRUE;
-	}
-      
-      /* Inside "macro trigger" */
-      else if (parse_under)
-	{
-	  /* Strip this key */
-	  ke.key = 0;
-	}
-    }
-  
-  
-  /* Hack -- restore the term */
-  Term_activate(old);
-  
-  
-  /* Restore the cursor */
-  Term_set_cursor(cursor_state);
-  
-  
-  /* Cancel the various "global parameters" */
-  inkey_base = inkey_xtra = inkey_flag = inkey_scan = FALSE;
-  
-  
-  /* Return the keypress */
-  return (ke);
+	
+	
+	/* Hack -- restore the term */
+	Term_activate(old);
+	
+	
+	/* Restore the cursor */
+	Term_set_cursor(cursor_state);
+	
+	
+	/* Cancel the various "global parameters" */
+	inkey_base = inkey_xtra = inkey_flag = inkey_scan = FALSE;
+	
+	
+	/* Return the keypress */
+	return (ke);
 }
 
 

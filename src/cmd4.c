@@ -1425,13 +1425,13 @@ static byte *o_xattr(int oid) {
 	if(!k_ptr->flavor || k_ptr->aware) return &k_ptr->x_attr;
 	else return &flavor_info[k_ptr->flavor].x_attr;
 }
-#if 0
+
 static u16b *o_note(int oid) {
 	object_kind *k_ptr = &k_info[oid];
-	if(!k_ptr->flavor || k_ptr->aware) return &k_ptr->note;
+	int ind = get_autoinscription_index(oid);
+	if(!k_ptr->flavor || k_ptr->aware) return (s16b*) &inscriptions[ind].inscription_idx;
 	else return 0;
 }
-#endif
 
 /*
  * Display known objects
@@ -1441,7 +1441,7 @@ static void do_cmd_knowledge_objects(void)
 	group_funcs kind_f =
 		{TV_GOLD, FALSE, kind_name, o_cmp_tval, obj2gid, 0};
 	member_funcs obj_f =
-		{display_object, desc_obj_fake, o_xchar, o_xattr, 0 /*o_note*/};
+		{display_object, desc_obj_fake, o_xchar, o_xattr, o_note};
 
 	int *objects;
 	int o_count = 0;
@@ -2036,7 +2036,7 @@ static void display_option(menu_type *menu, int oid,
 			row, col);
 }
 
-static bool update_option(char key, const void *pgdb, int oid)
+static bool update_option(char key, void *pgdb, int oid)
 {
 	switch(toupper(key))
 	{

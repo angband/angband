@@ -65,6 +65,7 @@ struct term_win
 
 typedef enum 
 {
+	EVT_NONE		= 0x0,
 	EVT_ESCAPE		= 0x0001,		/* Synonym for KBRD + key = ESCAPE */
 	EVT_KBRD		= 0x0002,		/* keypress */
 	EVT_MOUSE		= 0x0004,		/* mousepress */
@@ -88,9 +89,9 @@ typedef struct key_event key_event;
 struct key_event
 {
 	event_class type;
-    int mousex, mousey;
+    byte mousex, mousey;
 	char key; 
-    char index;
+    short index;
 };
 
 /*

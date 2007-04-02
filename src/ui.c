@@ -116,7 +116,9 @@ key_event run_event_loop(event_target *target, bool forever, const key_event *st
 		if(ke.type == EVT_STOP)
 			break;
 
-		handled = target->self.handler(target->self.object, &ke);
+		if(ke.type & target->self.events.evt_flags) 
+			handled = target->self.handler(target->self.object, &ke);
+
 		if(target->is_modal)
 			continue;
 
@@ -169,8 +171,9 @@ static void display_event_aux(event_action *event, int menuID, byte color,
 	/* TODO: add preference support */
 	/* TODO: wizard mode should show more data */
 	Term_erase(col, row, wid);
-	if(event->name)
-		Term_putstr(col, row, wid - 1, color, event->name);
+	if(event->name) {
+		Term_putstr(col, row, wid, color, event->name);
+	}
 }
 
 static void display_event(menu_type *menu, int oid, bool cursor, 
@@ -183,7 +186,7 @@ static void display_event(menu_type *menu, int oid, bool cursor,
 
 /* act on selection only */
 /* Return: true if handled. */
-static bool handle_menu_item_event(char cmd, const void *db, int oid)
+static bool handle_menu_item_event(char cmd, void *db, int oid)
 {
 	event_action *evt = &((event_action*)db)[oid];
 	if(cmd == '\xff' && evt->action) {
@@ -195,7 +198,7 @@ static bool handle_menu_item_event(char cmd, const void *db, int oid)
 	return FALSE;
 }
 
-static bool valid_menu_event(menu_type *menu, int oid)
+static int valid_menu_event(menu_type *menu, int oid)
 {
 	event_action *evts = (event_action *) menu->menu_data;
 	return (NULL != evts[oid].name);
@@ -224,12 +227,12 @@ static void display_menu_item(menu_type *menu, int oid, bool cursor,
 	menu_item *items = (menu_item *) menu->menu_data;
 
 	byte color =
-		curs_attrs[!(items[oid].flags & (MN_GRAYED|MN_DISABLED))][0 != cursor];
+		curs_attrs[!(items[oid].flags & (MN_GRAYED))][0 != cursor];
 	display_event_aux(&items[oid].evt, menu->target.self.object_id, color, row, col, width);
 }
 
 /* act on selection only */
-static bool handle_menu_item(char cmd, const void *db, int oid)
+static bool handle_menu_item(char cmd, void *db, int oid)
 {
 	if(cmd == '\xff')
 	{
@@ -245,9 +248,10 @@ static bool handle_menu_item(char cmd, const void *db, int oid)
 	return FALSE;
 }
 
-static bool valid_menu_item(menu_type *menu, int oid)
+static int valid_menu_item(menu_type *menu, int oid)
 {
 	menu_item *items = (menu_item *) menu->menu_data;
+	if(items[oid].flags & MN_HIDDEN) return 2;
 	return (NULL != items[oid].evt.name);
 }
 
@@ -259,6 +263,7 @@ static const menu_iter menu_iter_item = {
 	display_menu_item,
 	handle_menu_item
 };
+
 
 
 /* ================== SKINS ============== */
@@ -444,7 +449,7 @@ static bool handle_menu_key(char cmd, menu_type *menu, int cursor)
 			return FALSE;
 
 	if(menu->row_funcs->row_handler &&
-						menu->row_funcs->row_handler(cmd, menu->menu_data, oid)) {
+						menu->row_funcs->row_handler(cmd, (void*) menu->menu_data, oid)) {
 		key_event ke;
 		ke.type = EVT_SELECT;
 		ke.key = cmd;
@@ -463,6 +468,8 @@ static void display_menu_row(menu_type *menu, int pos, int top,
 	char sel = 0;
 	int oid = pos;
 	if(menu->object_list) oid = menu->object_list[oid];
+	if(menu->row_funcs->valid_row && menu->row_funcs->valid_row(menu, oid) == 2)
+		return;
 	if(!(flags & MN_NO_TAGS)) {
 		if(flags & MN_REL_TAGS) {
 			sel = menu->skin->get_tag(menu, pos);
@@ -477,13 +484,33 @@ static void display_menu_row(menu_type *menu, int pos, int top,
 	if(sel) {
 		/* TODO: CHECK FOR VALID */
 		byte color = curs_attrs[CURS_KNOWN][0 != (cursor)];
-		c_prt(color, format("%c) ", sel), row, col);
+		Term_putstr(col, row, 3, color, format("%c) ", sel));
 		col += 3;
 		width -= 3;
 	}
 	menu->row_funcs->display_row(menu, oid, cursor, row, col, width);
 }
 
+static void menu_refresh(menu_type *menu)
+{
+	region *loc = &menu->boundary;
+	int oid = menu->cursor;
+	if(menu->object_list && menu->cursor >= 0)
+		oid = menu->object_list[oid];
+
+
+	region_erase(&menu->boundary);
+
+	if(menu->title)
+		Term_putstr(loc->col, loc->row, loc->width, TERM_WHITE, menu->title);
+	if(menu->prompt) 
+		Term_putstr(loc->col, loc->row+loc->page_rows-1, loc->width, TERM_WHITE, menu->prompt);
+
+	menu->skin->display_list(menu, menu->cursor, &menu->top, &menu->active);
+	if(menu->browse_hook && oid >= 0) {
+		menu->browse_hook(oid, loc);
+	}
+}
 
 /* The menu event loop */
 static bool menu_handle_event(menu_type *menu, const key_event *in)
@@ -497,7 +524,11 @@ static bool menu_handle_event(menu_type *menu, const key_event *in)
 		event_target t = {{0, 0, 0, 0}, FALSE, menu->target.observers};
 		out = run_event_loop(&t, FALSE, in);
 		if(out.type != EVT_AGAIN) {
-			Term_event_push(&out);
+			if(out.type == EVT_SELECT) {
+				/* HACK: can't return selection event from submenu (no ID) */
+				out.type = EVT_REFRESH;
+				Term_event_push(&out);
+			}
 			return TRUE;
 		}
 	}
@@ -528,9 +559,12 @@ static bool menu_handle_event(menu_type *menu, const key_event *in)
 				return TRUE;
 
 			out.index = m_curs;
-			if(*cursor == m_curs || !(menu->flags & MN_DBL_TAP))
+			if(*cursor == m_curs || !(menu->flags & MN_DBL_TAP)) {
 				out.type = EVT_SELECT;
-			else out.type = EVT_MOVE;
+			}
+			else {
+				out.type = EVT_MOVE;
+			}
 			*cursor = m_curs;
 			break;
 		}
@@ -569,7 +603,7 @@ static bool menu_handle_event(menu_type *menu, const key_event *in)
 			if(dir == 2 ) {
 				int ind;
 				out.type = EVT_MOVE;
-				for(ind = *cursor+1; ind < n && !is_valid_row(menu, ind); ind++)
+				for(ind = *cursor+1; ind < n && (TRUE != is_valid_row(menu, ind)); ind++)
 					;
 				out.index = ind;
 				if(ind < n) *cursor = ind;
@@ -578,7 +612,7 @@ static bool menu_handle_event(menu_type *menu, const key_event *in)
 				int ind;
 				out.type = EVT_MOVE;
 				out.key = '\xff';
-				for(ind = *cursor-1; ind >=0 && !is_valid_row(menu, ind); ind--)
+				for(ind = *cursor-1; ind >=0 && (TRUE != is_valid_row(menu, ind)); ind--)
 					;
 				out.index = ind;
 				if(ind >= 0) *cursor = ind;
@@ -596,6 +630,11 @@ static bool menu_handle_event(menu_type *menu, const key_event *in)
 			else return FALSE;
 			break;
 		}
+
+		case EVT_REFRESH: {
+			menu_refresh(menu);
+			return FALSE;
+		}
 		default:
 			return FALSE;
 	}
@@ -603,28 +642,12 @@ static bool menu_handle_event(menu_type *menu, const key_event *in)
 	if(out.type == EVT_SELECT && handle_menu_key('\xff', menu, *cursor))
 		return TRUE;
 
+	if(out.type == EVT_MOVE) menu_refresh(menu);
+
 	Term_event_push(&out);
 	return TRUE;
 }
 
-static void menu_refresh(menu_type *menu)
-{
-	region *loc = &menu->boundary;
-	int oid = menu->cursor;
-	if(menu->object_list && menu->cursor >= 0)
-		oid = menu->object_list[oid];
-	
-	region_erase(&menu->boundary);
-	if(menu->title) prt(menu->title, loc->row, loc->col);
-	if(menu->prompt) prt(menu->prompt, loc->row+loc->page_rows-1, loc->col);
-
-	/* TODO: validate kids here. */
-
-	menu->skin->display_list(menu, menu->cursor, &menu->top, &menu->active);
-	if(menu->browse_hook && oid >= 0) {
-		menu->browse_hook(oid, loc);
-	}
-}
 
 /* VTAB for menus */
 static const panel_type menu_target = {
@@ -667,26 +690,26 @@ key_event menu_select(menu_type *menu, int *cursor, int no_handle)
 	menu->cursor = *cursor;
 	/* Menu shall not handle these */
 	no_handle |= (EVT_SELECT|EVT_BACK|EVT_ESCAPE|EVT_STOP);
-	/* Menu shall handle this */
-	no_handle &= ~(EVT_MOUSE);
-
-	key_event ke;
-	ke.type = 0;
+	no_handle &= ~(EVT_REFRESH);
 
 	if(!menu->object_list)
 		menu->filter_count = menu->count;
 
-	menu->refresh(menu);
+	key_event ke;
+	ke.type = EVT_REFRESH;
+	(void) run_event_loop(&menu->target, FALSE, &ke);
+
 	/* Stop on first unhandled event. */
 	while(!(ke.type & no_handle))
 	{
-		ke = run_event_loop(&menu->target, FALSE, NULL);
+		ke = run_event_loop(&menu->target, FALSE, 0);
 		switch(ke.type)
 		{
 			/* menu always returns these */
 			case EVT_SELECT:
 				if(*cursor != ke.index) {
 					*cursor = ke.index;
+					/* One last time */
 					menu->refresh(menu);
 					break;
 				}
@@ -696,7 +719,6 @@ key_event menu_select(menu_type *menu, int *cursor, int no_handle)
 				/* EVT_MOVE uses -1, n to allow modular cursor */
 				if(ke.index < menu->filter_count && ke.index >= 0)
 					*cursor = menu->cursor;
-				menu->refresh(menu);
 			case EVT_KBRD:
 				if(ke.key == ESCAPE) {
 					/* Just in case */
@@ -861,6 +883,9 @@ bool menu_init2(menu_type *menu, const menu_skin *skin,
 	menu->target.is_modal = TRUE;
 	menu->row_funcs = iter;
 	menu->skin = skin;
+	menu->target.self.events.evt_flags = (EVT_MOUSE | EVT_REFRESH | EVT_KBRD);
+
+	if(menu->count && !menu->object_list) menu->filter_count = menu->count;
 
 	if(!loc) loc = &SCREEN_REGION;
 

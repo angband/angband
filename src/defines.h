@@ -28,12 +28,6 @@
  * be defined in this file, but which may be related to definitions here.
  * This is of course bad programming practice, but nobody is perfect...
  *
- * For example, there are MANY things that depend on the screen being
- * 80x24, with the top line used for messages, the bottom line being
- * used for status, and exactly 22 lines used to show the dungeon.
- * Just because your screen can hold 46 lines does not mean that the
- * game will work if you try to use 44 lines to show the dungeon.
- *
  * You have been warned.
  */
 

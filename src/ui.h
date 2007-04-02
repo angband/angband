@@ -1,4 +1,3 @@
-/* File: ui.h */
 
 /*
  * Copyright (c) 2007 Pete Mack and others
@@ -186,9 +185,6 @@ struct menu_item
  */
 
 typedef enum {
-	MN_KEY_ONLY	= 0x0008, /* Fake "menu" for keyboard input */
-
-	MN_MAX_SKIN = 0x00FF, /* Max number of skins */
 
 	/* Appearance & behavior */
 	MN_REL_TAGS	= 0x0100, /* Tags are associated with the view, not the element */
@@ -203,7 +199,8 @@ typedef enum {
 	MN_DISABLED		= 0x0100000,
 	MN_GRAYED		= 0x0200000,
 	MN_SELECTED		= 0x0400000,
-	MN_SELECTABLE	= 0x0800000
+	MN_SELECTABLE	= 0x0800000,
+	MN_HIDDEN		= 0x1000000
 
 } menu_flags;
 
@@ -214,7 +211,8 @@ enum skin_id {
 	MN_PAGE		= 0x0001, /* page view */
 	MN_COLUMNS	= 0x0002, /* multicolumn view */
 	MN_NATIVE	= 0x0003, /* Not implemented -- OS menu */
-	MN_USER		= 0x0004, /* Anonymous, user defined. */
+	MN_KEY_ONLY = 0x0004, /* No display */
+	MN_USER		= 0x0005, /* Anonymous, user defined. */
 
 };
 
@@ -223,6 +221,7 @@ struct menu_skin {
 	int (*get_cursor)(int row, int col, int n, int top, region *loc);
 	display_list_f display_list;
 	char (*get_tag)(menu_type *menu, int pos);
+	const menu_skin *super;
 };
 
 
@@ -235,9 +234,9 @@ enum menu_iter_id {
 struct menu_iter {
 	menu_iter_id id;
 	char (*get_tag)(menu_type *menu, int oid);
-	bool (*valid_row)(menu_type *menu, int oid);
+	int (*valid_row)(menu_type *menu, int oid);  /* 0 = no  1 = yes 2 = hide */
 	display_row_f display_row;
-	bool (*row_handler)(char cmd, const void *db, int oid);
+	bool (*row_handler)(char cmd, void *db, int oid);
 };
 
 
