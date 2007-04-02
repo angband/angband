@@ -42,8 +42,7 @@ typedef struct {
 
 typedef struct {
 
-		/* Display object label (possibly with cursor) at given screen location. */
-		void (*display_label)(int col, int row, bool cursor, int oid);
+		void (*display_member)(int col, int row, bool cursor, int oid); 
 
 		void (*lore)(int oid); /* Dump known lore to screen*/
 
@@ -55,6 +54,10 @@ typedef struct {
 		/* Required only for manipulable (ordinary) objects */
 		/* Address of inscription.  Unknown 'flavors' return null  */
 		u16b *(*note)(int oid);
+
+		/* extra context for display of members */
+		bool is_visual;
+
 
 } member_funcs;
 
@@ -140,16 +143,16 @@ static struct {
  */
 const char *feature_group_text[] = 
 {
-		"Floors",
-		"Traps",
-		"Doors",
-		"Stairs",
-		"Walls",
-		"Streamers",
-		"Obstructions",
-		"Stores",
-		"Other",
-		NULL
+	"Floors",
+	"Traps",
+	"Doors",
+	"Stairs",
+	"Walls",
+	"Streamers",
+	"Obstructions",
+	"Stores",
+	"Other",
+	NULL
 };
 
 
@@ -157,13 +160,6 @@ const char *feature_group_text[] =
 /* Useful method declarations */
 static void display_visual_list(int col, int row, int height, int width,
 				byte attr_top, char char_left);
-
-static void browser_mouse(key_event ke, int *column, int *grp_cur, int grp_cnt, 
-				int *list_cur, int list_cnt, int col0, int row0,
-				int grp0, int list0, int *delay);
-
-static void browser_cursor(char ch, int *column, int *grp_cur, int grp_cnt, 
-				int *list_cur, int list_cnt);
 
 static bool visual_mode_command(key_event ke, bool *visual_list_ptr, 
 				int height, int width, 
@@ -187,19 +183,19 @@ static byte char_idx = 0;
  */
 int feat_order(int feat)
 {
-		feature_type *f_ptr = &f_info[feat];
-		switch(f_ptr->d_char) {
-				case '.': 				return 0;
-				case '^': 				return 1;
-				case '\'': case '+': 	return 2;
-				case '<': case '>':		return 3;
-				case '#':				return 4;
-				case '*': case '%' :	return 5;
-				case ';': case ':' :	return 6;
-				default:
-					if(isdigit(f_ptr->d_char)) return 7;
-					return 8;
-		}
+	feature_type *f_ptr = &f_info[feat];
+	switch(f_ptr->d_char) {
+		case '.': 				return 0;
+		case '^': 				return 1;
+		case '\'': case '+': 	return 2;
+		case '<': case '>':		return 3;
+		case '#':				return 4;
+		case '*': case '%' :	return 5;
+		case ';': case ':' :	return 6;
+		default:
+		if(isdigit(f_ptr->d_char)) return 7;
+		return 8;
+	}
 };
 
 
@@ -210,44 +206,44 @@ static const int use_trptile = 0;
 /* Emit a 'graphical' symbol and a padding character if appropriate */
 static void big_pad(int col, int row, byte a, byte c)
 {
-		Term_putch(col, row, a, c);
-		if(!use_bigtile) return;
-		if (a &0x80) Term_putch(col+1, row, 255, -1);
-		else Term_putch(col+1, row, 1, ' ');
+	Term_putch(col, row, a, c);
+	if(!use_bigtile) return;
+	if (a &0x80) Term_putch(col+1, row, 255, -1);
+	else Term_putch(col+1, row, 1, ' ');
 }
 
 static int actual_width(int width) {
-		if (use_trptile) width = width * 3;
-		else if(use_dbltile) width *= 2;
-		if(use_bigtile) width *= 2;
+	if (use_trptile) width = width * 3;
+	else if(use_dbltile) width *= 2;
+	if(use_bigtile) width *= 2;
 		return width;
 }
 static int actual_height(int height) {
-		if(use_bigtile) height *= 2;
-		if (use_trptile) height = height * 3 / 2;
-		else if(use_dbltile) height *= 2;
-		return height;
+	if(use_bigtile) height *= 2;
+	if (use_trptile) height = height * 3 / 2;
+	else if(use_dbltile) height *= 2;
+	return height;
 }
 
 static int logical_width(int width)
 {
-		int div = 1;
-		if(use_trptile) div = 3;
-		else if(use_dbltile) div *= 2;
-		if(use_bigtile) div *= 2;
-		return width / div;
+	int div = 1;
+	if(use_trptile) div = 3;
+	else if(use_dbltile) div *= 2;
+	if(use_bigtile) div *= 2;
+	return width / div;
 }
 
 static int logical_height(int height)
 {
-		int div = 1;
-		if(use_trptile) {
-				height *= 2;
-				div = 3;
-		}
-		else if(use_dbltile) div = 2;
-		if(use_bigtile) div *= 2;
-		return height / div;
+	int div = 1;
+	if(use_trptile) {
+		height *= 2;
+		div = 3;
+	}
+	else if(use_dbltile) div = 2;
+	if(use_bigtile) div *= 2;
+	return height / div;
 }
 
 /*
@@ -258,54 +254,54 @@ static int logical_height(int height)
  */
 static int auto_note_modify(int note, char ch)
 {
-		char tmp[80];
+	char tmp[80];
 
-		cptr s;
+	cptr s;
 
-		/* Paranoia */
-		if (!ch) return(note);
+	/* Paranoia */
+	if (!ch) return(note);
 
-		/* Null length string to start */
-		tmp[0] = '\0';
+	/* Null length string to start */
+	tmp[0] = '\0';
 
-		/* Inscription */
-		if (note)
+	/* Inscription */
+	if (note)
+	{
+
+		/* Get the inscription */
+		s = quark_str(note);
+
+		/* Temporary copy */
+		my_strcpy(tmp,s,80);
+
+		/* Process inscription */
+		while (s)
 		{
 
-				/* Get the inscription */
-				s = quark_str(note);
+			/* Auto-pickup on "=g" */
+			if (s[1] == ch)
+			{
 
-				/* Temporary copy */
-				my_strcpy(tmp,s,80);
+				/* Truncate string */
+				tmp[strlen(tmp)-strlen(s)] = '\0';
 
-				/* Process inscription */
-				while (s)
-				{
+				/* Overwrite shorter string */
+				my_strcat(tmp,s+2,80);
 
-						/* Auto-pickup on "=g" */
-						if (s[1] == ch)
-						{
+				/* Create quark */
+				return(quark_add(tmp));
+			}
 
-								/* Truncate string */
-								tmp[strlen(tmp)-strlen(s)] = '\0';
-
-								/* Overwrite shorter string */
-								my_strcat(tmp,s+2,80);
-
-								/* Create quark */
-								return(quark_add(tmp));
-						}
-
-						/* Find another '=' */
-						s = strchr(s + 1, '=');
-				}
+			/* Find another '=' */
+			s = strchr(s + 1, '=');
 		}
+	}
 
-		/* Append note */
-		my_strcat(tmp,format("=%c",ch),80);
+	/* Append note */
+	my_strcat(tmp,format("=%c",ch),80);
 
-		/* Create quark */
-		return(quark_add(tmp));
+	/* Create quark */
+	return(quark_add(tmp));
 }
 
 /*
@@ -314,66 +310,49 @@ static int auto_note_modify(int note, char ch)
 static void display_group_list(int col, int row, int wid, int per_page,
 				int start, int max, int cursor, const cptr group_text[])
 {
-		int i, pos;
+	int i, pos;
 
-		/* Display lines until done */
-		for (i = 0, pos = start; i < per_page && pos < max; i++, pos++)
-		{
-				char buffer[21];
-				byte attr = curs_attrs[CURS_KNOWN][cursor == pos];
+	/* Display lines until done */
+	for (i = 0, pos = start; i < per_page && pos < max; i++, pos++)
+	{
+		char buffer[21];
+		byte attr = curs_attrs[CURS_KNOWN][cursor == pos];
 
-				/* Erase the line */
-				Term_erase(col, row + i, wid);
+		/* Erase the line */
+		Term_erase(col, row + i, wid);
 
-				/* Display it (width should not exceed 20) */
-				strncpy(buffer, group_text[pos], 20);
-				buffer[20] = 0;
-				c_put_str(attr, buffer, row + i, col);
-		}
-		/* Wipe the rest? */
+		/* Display it (width should not exceed 20) */
+		strncpy(buffer, group_text[pos], 20);
+		buffer[20] = 0;
+		c_put_str(attr, buffer, row + i, col);
+	}
+	/* Wipe the rest? */
 }
 
-/*
- * Display the members of a list.
- * Aware of inscriptions, wizard information, and string-formatted visual data.
- * label function must display actual visuals, to handle illumination, etc
- */
-static void display_member_list(int col, int row, int wid, int per_page,
-				int start, int o_count, int cursor, int object_idx [],
-				member_funcs o_funcs)
+static void display_group_member(menu_type *menu, int oid,
+						bool cursor, int row, int col, int wid)
 {
-		int i, pos;
+	member_funcs *o_funcs = (member_funcs*) menu->menu_data;
+	byte attr = curs_attrs[CURS_KNOWN][cursor == oid];
 
-		for(i = 0, pos = start; i < per_page && pos < o_count; i++, pos++) {
-				int oid = object_idx[pos];
-				byte attr = curs_attrs[CURS_KNOWN][cursor == oid];
+	/* Show inscription, if applicable, aware and existing */
+	if(o_funcs->note && o_funcs->note(oid) && *o_funcs->note(oid)) {
+		c_put_str(TERM_YELLOW,quark_str(*o_funcs->note(oid)), row, 65);
+	}
+	o_funcs->display_member(col, row, cursor, oid);
 
-				/* Print basic label */
-				o_funcs.display_label(col, row + i, pos == cursor, oid);
+	if (p_ptr->wizard) c_put_str(attr, format("%d", oid), row, 60);
 
-				/* Show inscription, if applicable, aware and existing */
-				if(o_funcs.note && o_funcs.note(oid) && *o_funcs.note(oid)) {
-						c_put_str(TERM_YELLOW,quark_str(*o_funcs.note(oid)), row+i, 65);
-				}
-
-				if (p_ptr->wizard)
-						c_put_str(attr, format("%d", oid), row, 60);
-
-				/* Do visual mode */
-				if(per_page == 1 && o_funcs.xattr) {
-						char c = *o_funcs.xchar(oid);
-						byte a = *o_funcs.xattr(oid);
-						c_put_str(attr, format((c & 0x80) ? "%02x/%02x" : "%02x/%d", a, c), row + i, 60);
-				}
-		}
-
-		/* Clear remaining lines */
-		for (; i < per_page; i++)
-		{
-				Term_erase(col, row + i, 255);
-		}
+	/* Do visual mode */
+	if(o_funcs->is_visual && o_funcs->xattr) {
+		char c = *o_funcs->xchar(oid);
+		byte a = *o_funcs->xattr(oid);
+		c_put_str(attr, format((c & 0x80) ? "%02x/%02x" : "%02x/%d", a, c), row, 60);
+	}
 }
 
+
+#define swap(a, b) (swapspace = (void*)(a)), ((a) = (b)), ((b) = swapspace)
 
 /*
  * Interactive group by. 
@@ -395,11 +374,10 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 	int grp_cnt = 0; /* total number groups */
 
-	int g_cur = 0, grp_old = -1, grp_top = 0; /* group list positions */
-	int o_cur = 0, object_top = 0; /* object list positions */
-	int g_o_count = 0; /* object count for group */
-	int o_first = 0, g_o_max = 0; /* group limits in object list */
-	int oid = -1, old_oid = -1;  /* object identifiers */
+	int g_cur = 0, grp_old = -1; /* group list positions */
+	int o_cur = 0;					/* object list positions */
+	int g_o_count = 0;				 /* object count for group */
+	int oid = -1;  				/* object identifiers */
 
 	/* display state variables */
 	bool visual_list = FALSE;
@@ -408,7 +386,17 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	int note_idx = 0;
 
 	int delay = 0;
-	int column = 0;
+
+	menu_type group_menu;
+	menu_type object_menu;
+	menu_iter object_iter;
+
+	/* Panel state */
+	int *active_cursor = &g_cur, *inactive_cursor = &o_cur;
+	menu_type *active_menu = &group_menu, *inactive_menu = &object_menu;
+	int panel = 0;
+	void *swapspace;
+	bool do_swap = FALSE;
 
 	bool flag = FALSE;
 	bool redraw = TRUE;
@@ -441,6 +429,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	g_list[grp_cnt] = -1;
 
 
+
 	/* The compact set of group names, in display order */
 	C_MAKE(g_names, grp_cnt, const char **);
 	for (i = 0; i < grp_cnt; i++) {
@@ -451,15 +440,38 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	}
 	if(g_name_len >= 20) g_name_len = 20;
 
-	while ((!flag) && (grp_cnt))
-	{
-		key_event ke;
+	/* Disable the roguelike commands for the duration */
+	int omode = rogue_like_commands;
+	rogue_like_commands = FALSE;
 
-		if (redraw)
-		{
-			clear_from(0);
-			/* Hack: This could be cleaner */
-			prt( format("Knowledge - %s", title), 2, 0);
+	region title_area = {0, 0, 0, 4};
+	region group_region = {0, 6, g_name_len, -1};
+	region object_region = {g_name_len+3, 6, 0, -2};
+
+	WIPE(&group_menu, menu_type);
+	group_menu.count = grp_cnt;
+	group_menu.cmd_keys = "\n\r6\x8C";  /* Don't treat this as motion */
+	group_menu.menu_data = g_names;
+
+	WIPE(&object_menu, menu_type);
+	object_menu.menu_data = &o_funcs;
+	WIPE(&object_iter, object_iter);
+	object_iter.display_row = display_group_member;
+
+	o_funcs.is_visual = FALSE;
+
+	menu_init(&group_menu, MN_SCROLL, MN_STRING, &group_region);
+	menu_init2(&object_menu, find_menu_skin(MN_SCROLL), &object_iter, &object_region);
+
+
+	/* This is the event loop for a multi-region panel */
+	/* Panels are -- text panels, two menus, and visual browser */
+	/* with "pop-up menu" for lore */
+	while((!flag) && (grp_cnt)) {
+		key_event ke, ke0;
+		if(redraw) {
+			region_erase(&title_area);
+			prt(format("Knowledge - %s", title), 2, 0);
 			prt( "Group", 4, 0);
 			prt("Name", 4, g_name_len + 3);
 			move_cursor(4, 65);
@@ -467,67 +479,36 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 				Term_addstr(-1, TERM_WHITE, "Inscribed ");
 			if(otherfields)
 				Term_addstr(-1, TERM_WHITE, otherfields);
-
 			for (i = 0; i < 78; i++)
-			{
 				Term_putch(i, 5, TERM_WHITE, '=');
-			}
-
 			for (i = 0; i < browser_rows; i++)
-			{
 				Term_putch(g_name_len + 1, 6 + i, TERM_WHITE, '|');
-			}
 
 			redraw = FALSE;
 		}
 
-		/* Scroll group list */
-		if (g_cur < grp_top) grp_top = g_cur;
-		if (g_cur >= grp_top + browser_rows) grp_top = g_cur - browser_rows + 1;
-		if (grp_top + browser_rows >= grp_cnt) grp_top = grp_cnt - browser_rows;
-		if(grp_top < 0) grp_top = 0;
-
 		if(g_cur != grp_old) {
-			o_first = o_cur = g_offset[g_cur];
-			object_top = o_first;
-			g_o_count = g_offset[g_cur+1] - g_offset[g_cur];
-			g_o_max = g_offset[g_cur+1];
 			grp_old = g_cur;
-			old_oid = -1;
+			o_cur = 0;
+			g_o_count = g_offset[g_cur+1] - g_offset[g_cur];
+			menu_set_filter(&object_menu, obj_list + g_offset[g_cur], g_o_count);
+			group_menu.cursor = g_cur;
+			object_menu.cursor = 0;
 		}
-
-		/* Display a scrollable list of groups */
-		display_group_list(0, 6, g_name_len, browser_rows,
-											grp_top, grp_cnt, g_cur, g_names);
-
-		/* Scroll object list */
-		if(o_cur >= g_o_max) o_cur = g_o_max-1;
-		if(o_cur < o_first) o_cur = o_first;
-		if (o_cur < object_top) object_top = o_cur;
-		if (o_cur >= object_top + browser_rows)
-			object_top = o_cur - browser_rows + 1;
-		if (object_top + browser_rows >= g_o_max)
-			object_top = g_o_max - browser_rows;
-		if(object_top < o_first) object_top = o_first;
-
-		oid = obj_list[o_cur];
-
+		/* HACK ... */
 		if(!visual_list) {
-			/* Display a list of objects in the current group */
-			display_member_list(g_name_len + 3, 6, g_name_len, browser_rows, 
-										object_top, g_o_max, o_cur, obj_list, o_funcs);
+			/* ... The object menu may be browsing the entire group... */
+			o_funcs.is_visual = FALSE;
+			menu_set_filter(&object_menu, obj_list + g_offset[g_cur], g_o_count);
+			object_menu.cursor = o_cur;
 		}
-		else
-		{
-			/* Edit 1 group member */
-			object_top = o_cur;
-			/* Display a single-row list */
-			display_member_list(g_name_len + 3, 6, g_name_len, 1, 
-								o_cur, g_o_max, o_cur, obj_list, o_funcs);
-			/* Display visual list below first object */
-			display_visual_list(g_name_len + 3, 7, browser_rows-1,
-										wid - (g_name_len + 3), attr_top, char_left);
+		else {
+			/* ... or just a single element in the group. */
+			o_funcs.is_visual = TRUE;
+			menu_set_filter(&object_menu, obj_list + o_cur, 1);
+			object_menu.cursor = 0;
 		}
+		oid = obj_list[g_offset[g_cur]+o_cur];
 		/* Prompt */
 		{
 			const char *pedit = (!o_funcs.xattr) ? "" :
@@ -547,21 +528,21 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 				prt(format("<dir>, 'r' to recall%s ESC%s%s%s",
 										pvs, pedit, pnote, pnote1), hgt-1, 0);
 		}
+		if(do_swap) {
+			do_swap = FALSE;
+			swap(active_menu, inactive_menu);
+			swap(active_cursor, inactive_cursor);
+			panel = 1-panel;
+		}
 
+		menu_refresh(inactive_menu);
+		menu_refresh(active_menu);
 		handle_stuff();
 
 		if (visual_list)
 		{
 			place_visual_list_cursor(g_name_len + 3, 7, *o_funcs.xattr(oid), 
 										*o_funcs.xchar(oid), attr_top, char_left);
-		}
-		else if (!column)
-		{
-			Term_gotoxy(0, 6 + (g_cur - grp_top));
-		}
-		else
-		{
-			Term_gotoxy(g_name_len + 3, 6 + (o_cur - object_top));
 		}
 
 		if (delay)
@@ -587,6 +568,36 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			continue;
 		}
 
+		if(ke.type == EVT_MOUSE) {
+			/* Change active panels */
+			if(region_inside(&inactive_menu->boundary, &ke)) {
+				swap(active_menu, inactive_menu);
+				swap(active_cursor, inactive_cursor);
+				panel = 1-panel;
+			}
+		}
+		ke0 = run_event_loop(&active_menu->target, 0, &ke);
+		if(ke0.type != EVT_AGAIN) ke = ke0;
+		switch(ke.type) {
+			case EVT_KBRD:
+				break;
+			case ESCAPE:
+				flag = TRUE;
+				continue;
+			case EVT_SELECT:
+				if(panel == 1 && oid >= 0 && o_cur == active_menu->cursor) {
+					o_funcs.lore(oid);
+					redraw = TRUE;
+				}
+			case EVT_MOVE:
+				*active_cursor = active_menu->cursor;
+				continue;
+			case EVT_BACK:
+				if(panel == 1)
+					do_swap = TRUE;
+			default:
+				continue;
+		}
 		switch (ke.key)
 		{
 
@@ -596,23 +607,13 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 				break;
 			}
 
-			case '\xff':
-			{
-				/* Move the cursor */
-				browser_mouse(ke, &column, &g_cur, grp_cnt,
-								&o_cur, g_o_max, g_name_len + 3, 6,
-								grp_top, object_top, &delay);
-				if (!ke.index) break;
-				if(oid != obj_list[o_cur])
-						break;
-			}
-
 			case 'R':
 			case 'r':
 			{
 				/* Recall on screen */
 				if(oid >= 0)
 					o_funcs.lore(oid);
+				redraw = TRUE;
 
 				redraw = TRUE;
 				break;
@@ -680,22 +681,31 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 			default:
 			{
-				/* Move the cursor; disable roguelike keyset. */
-				int omode = rogue_like_commands;
-				rogue_like_commands = FALSE;
-				if(target_dir(ke.key)) {
-					browser_cursor(ke.key, &column, &g_cur, grp_cnt,
-									&o_cur, g_o_max);
+				int d = target_dir(ke.key);
+				/* Handle key-driven motion between panels */
+				if((ddx[d] < 0) && panel == 1) {
+					/* Silly hack -- diagonal arithmetic */
+					g_cur += -(ddy[d] < 0) + (ddy[d] > 0);
+					if(g_cur < 0) g_cur = 0;
+					if(g_cur >= grp_cnt) g_cur = grp_cnt -1;
+					do_swap = TRUE;
+				}
+				else if((ddx[d] > 0) == (panel == 0)) {
+					o_cur += -(ddy[d] < 0) + (ddy[d] > 0);
+					if(o_cur < 0) o_cur = 0;
+					if(o_cur >= g_o_count) o_cur = g_o_count-1;
+					do_swap = TRUE;
 				}
 				else if(o_funcs.note && o_funcs.note(oid)) {
 					note_idx = auto_note_modify(*o_funcs.note(oid), ke.key);
 					*o_funcs.note(oid) = note_idx;
 				}
-				rogue_like_commands = omode;
 				break;
 			}
 		}
 	}
+
+	rogue_like_commands = omode;
 
 	/* Prompt */
 	if (!grp_cnt)
@@ -1024,7 +1034,8 @@ static void do_cmd_knowledge_monsters(void)
 		group_funcs r_funcs = {N_ELEMENTS(monster_group), FALSE, race_name,
 							m_cmp_race, default_group, 0};
 
-	member_funcs m_funcs = {display_monster, mon_lore, m_xchar, m_xattr, 0};
+	member_funcs m_funcs = {display_monster, mon_lore, m_xchar, m_xattr, 0, 0};
+
 	
 	int *monsters;
 	int m_count = 0;
@@ -1438,10 +1449,8 @@ static u16b *o_note(int oid) {
  */
 static void do_cmd_knowledge_objects(void)
 {
-	group_funcs kind_f =
-		{TV_GOLD, FALSE, kind_name, o_cmp_tval, obj2gid, 0};
-	member_funcs obj_f =
-		{display_object, desc_obj_fake, o_xchar, o_xattr, o_note};
+	group_funcs kind_f = {TV_GOLD, FALSE, kind_name, o_cmp_tval, obj2gid, 0};
+	member_funcs obj_f = {display_object, desc_obj_fake, o_xchar, o_xattr,0 /* o_note*/};
 
 	int *objects;
 	int o_count = 0;
@@ -3955,155 +3964,6 @@ void do_cmd_save_screen_html(void)
 
 	msg_print("Html screen dump saved.");
 	message_flush();
-}
-
-
-/*
- * Move the cursor using the mouse in a browser window
- */
-static void browser_mouse(key_event ke, int *column, int *grp_cur,
-							int grp_cnt, int *list_cur, int list_cnt,
-							int col0, int row0, int grp0, int list0,
-							int *delay)
-{
-	int my = ke.mousey - row0;
-	int mx = ke.mousex;
-	int wid;
-	int hgt;
-
-	int grp = *grp_cur;
-	int list = *list_cur;
-
-	/* Get size */
-	Term_get_size(&wid, &hgt);
-
-	if (mx < col0)
-	{
-		int old_grp = grp;
-
-		*column = 0;
-		if ((my >= 0) && (my < grp_cnt - grp0) && (my < hgt - row0 - 2)) grp = my + grp0;
-		else if (my < 0) { grp--; *delay = 100; }
-		else if (my >= hgt - row0 - 2) { grp++; *delay = 50; }
-
-		/* Verify */
-		if (grp >= grp_cnt)	grp = grp_cnt - 1;
-		if (grp < 0) grp = 0;
-		if (grp != old_grp)	list = 0;
-
-	}
-	else
-	{
-		*column = 1;
-		if ((my >= 0) && (my < list_cnt - list0) && (my < hgt - row0 - 2)) list = my + list0;
-		else if (my < 0) { list--; *delay = 100; }
-		else if (my >= hgt - row0 - 2) { list++; *delay = 50; }
-
-		/* Verify */
-		if (list >= list_cnt) list = list_cnt - 1;
-		if (list < 0) list = 0;
-	}
-
-	(*grp_cur) = grp;
-	(*list_cur) = list;
-} 
-
-/* 
- * Move the cursor in a browser window 
- */
-static void browser_cursor(char ch, int *column, int *grp_cur, int grp_cnt, 
-						   int *list_cur, int list_cnt)
-{
-	int d;
-	int col = *column;
-	int grp = *grp_cur;
-	int list = *list_cur;
-
-	/* Extract direction */
-	d = target_dir(ch);
-
-	if (!d) return;
-
-	/* Diagonals - hack */
-	if ((ddx[d] > 0) && ddy[d])
-	{
-		int browser_rows;
-		int wid, hgt;
-
-		/* Get size */
-		Term_get_size(&wid, &hgt);
-
-		browser_rows = hgt - 8;
-
-		/* Browse group list */
-		if (!col)
-		{
-			int old_grp = grp;
-
-			/* Move up or down */
-			grp += ddy[d] * browser_rows;
-
-			/* Verify */
-			if (grp >= grp_cnt)	grp = grp_cnt - 1;
-			if (grp < 0) grp = 0;
-			if (grp != old_grp)	list = 0;
-		}
-
-		/* Browse sub-list list */
-		else
-		{
-			/* Move up or down */
-			list += ddy[d] * browser_rows;
-
-			/* Verify */
-			if (list >= list_cnt) list = list_cnt - 1;
-			if (list < 0) list = 0;
-		}
-
-		(*grp_cur) = grp;
-		(*list_cur) = list;
-
-		return;
-	}
-
-	if (ddx[d])
-	{
-		col += ddx[d];
-		if (col < 0) col = 0;
-		if (col > 1) col = 1;
-
-		(*column) = col;
-
-		return;
-	}
-
-	/* Browse group list */
-	if (!col)
-	{
-		int old_grp = grp;
-
-		/* Move up or down */
-		grp += ddy[d];
-
-		/* Verify */
-		if (grp < 0) grp = 0;
-		if (grp >= grp_cnt)	grp = grp_cnt - 1;
-		if (grp != old_grp)	list = 0;
-	}
-
-	/* Browse sub-list list */
-	else
-	{
-		/* Move up or down */
-		list += ddy[d];
-
-		/* Verify */
-		if (list >= list_cnt) list = list_cnt - 1;
-		if (list < 0) list = 0;
-	}
-
-	(*grp_cur) = grp;
-	(*list_cur) = list;
 }
 
 

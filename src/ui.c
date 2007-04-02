@@ -119,14 +119,13 @@ key_event run_event_loop(event_target *target, bool forever, const key_event *st
 		if(ke.type & target->self.events.evt_flags) 
 			handled = target->self.handler(target->self.object, &ke);
 
-		if(target->is_modal)
-			continue;
-
-		while(list && !handled) {
-			if(ke.type & list->listener->events.evt_flags) {
-				handled = list->listener->handler(list->listener->object, &ke);
+		if(!target->is_modal) {
+			while(list && !handled) {
+				if(ke.type & list->listener->events.evt_flags) {
+					handled = list->listener->handler(list->listener->object, &ke);
+				}
+				list = list->next;
 			}
-			list = list->next;
 		}
 		if(handled) start = NULL;
 	}
@@ -213,6 +212,7 @@ static const menu_iter menu_iter_event = {
 	handle_menu_item_event
 };
 
+
 /*======================= MN_ACT HELPER FUNCTIONS ====================== */
 
 static char tag_menu_item(menu_type *menu, int oid)
@@ -264,6 +264,20 @@ static const menu_iter menu_iter_item = {
 	handle_menu_item
 };
 
+/* Simple strings */
+
+static void display_string(menu_type *menu, int oid, bool cursor,
+								int row, int col, int width)
+{
+	const char **items = (const char **) menu->menu_data;
+	byte color = curs_attrs[CURS_KNOWN][0 != cursor];
+	Term_putstr(col, row, width, color, items[oid]);
+}
+
+/* Virtual function table for displaying arrays of strings */
+static const menu_iter menu_iter_string = { MN_STRING, 0, 0, display_string, 0 };
+
+
 
 
 /* ================== SKINS ============== */
@@ -301,8 +315,8 @@ static void display_scrolling (menu_type *menu, int cursor, int *top, region *lo
 
 	for(i = 0; i < rows_per_page && i < n; i++)
 	{
-		bool is_curs = (cursor == i - *top);
-		display_menu_row(menu, i, *top, is_curs, row+i, col, loc->width);
+		bool is_curs = (i == cursor - *top);
+		display_menu_row(menu, i+*top, *top, is_curs, row+i, col, loc->width);
 	}
 	if(cursor >= 0) {
 		Term_gotoxy(col, row + cursor-*top);
@@ -491,7 +505,7 @@ static void display_menu_row(menu_type *menu, int pos, int top,
 	menu->row_funcs->display_row(menu, oid, cursor, row, col, width);
 }
 
-static void menu_refresh(menu_type *menu)
+void menu_refresh(menu_type *menu)
 {
 	region *loc = &menu->boundary;
 	int oid = menu->cursor;
@@ -640,7 +654,9 @@ static bool menu_handle_event(menu_type *menu, const key_event *in)
 	}
 
 	if(out.type == EVT_SELECT && handle_menu_key('\xff', menu, *cursor))
+	{
 		return TRUE;
+	}
 
 	if(out.type == EVT_MOVE) menu_refresh(menu);
 
@@ -756,6 +772,7 @@ static menu_iter const *menu_iter_reg[20] =
 {
 	&menu_iter_event,
 	&menu_iter_item,
+	&menu_iter_string,
 	0
 };
 

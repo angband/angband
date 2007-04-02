@@ -229,6 +229,7 @@ struct menu_skin {
 enum menu_iter_id {
 	MN_ACT		= 0x1, /* selectable menu with per-row flags (see below) */
 	MN_EVT		= 0x2, /* simple event action list */
+	MN_STRING	= 0x3, /* display an array of strings for selection */
 };
 
 struct menu_iter {
@@ -319,6 +320,7 @@ bool menu_init(menu_type *menu, skin_id skin, menu_iter_id iter,
 bool menu_init2(menu_type *menu, const menu_skin *skin,
 				const menu_iter *iter, const region *loc);
 
+void menu_refresh(menu_type *menu);
 void menu_destroy(menu_type *menu);
 
 /* Menu VTAB registry */
