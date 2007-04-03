@@ -2538,7 +2538,7 @@ enum
 #define OPT_auto_more				71
 #define OPT_smart_monsters			72
 #define OPT_smart_packs				73
-/* xxx */
+#define OPT_hp_changes_color		74
 /* xxx */
 /* xxx */
 /* xxx */
@@ -2658,7 +2658,7 @@ enum
 #define auto_more				op_ptr->opt[OPT_auto_more]
 #define smart_monsters			op_ptr->opt[OPT_smart_monsters]
 #define smart_packs				op_ptr->opt[OPT_smart_packs]
-/* xxx */
+#define hp_changes_color		op_ptr->opt[OPT_hp_changes_color]
 /* xxx */
 /* xxx */
 /* xxx */

@@ -288,10 +288,7 @@ static const menu_iter menu_iter_string = { MN_STRING, 0, 0, display_string, 0 }
 static int scrolling_get_cursor(int row, int col, int n, int top, region *loc)
 {
 	int cursor = row - loc->row + top;
-	if(cursor < top) cursor = top-1;
-	else if(cursor > loc->page_rows) cursor = loc->page_rows;
-	if(cursor < 0) cursor = 0;
-	else if(cursor >= n) cursor = n-1;
+	if(cursor >= n) cursor = n-1;
 
 	return cursor;
 }
@@ -522,7 +519,7 @@ void menu_refresh(menu_type *menu)
 
 	menu->skin->display_list(menu, menu->cursor, &menu->top, &menu->active);
 	if(menu->browse_hook && oid >= 0) {
-		menu->browse_hook(oid, loc);
+		menu->browse_hook(oid, menu->menu_data, loc);
 	}
 }
 
@@ -614,32 +611,20 @@ static bool menu_handle_event(menu_type *menu, const key_event *in)
 	
 			/* cursor movement */
 			dir = target_dir(in->key);
-			if(dir == 2 ) {
-				int ind;
-				out.type = EVT_MOVE;
-				for(ind = *cursor+1; ind < n && (TRUE != is_valid_row(menu, ind)); ind++)
-					;
-				out.index = ind;
-				if(ind < n) *cursor = ind;
-			}
-			else if(dir == 8) {
-				int ind;
-				out.type = EVT_MOVE;
-				out.key = '\xff';
-				for(ind = *cursor-1; ind >=0 && (TRUE != is_valid_row(menu, ind)); ind--)
-					;
-				out.index = ind;
-				if(ind >= 0) *cursor = ind;
-			}
-			else if(dir == 4) {
-				out.type = EVT_BACK;
+			if(ddx[dir] && ddy[dir]) return FALSE;		/* Reject diagonals */
+			else if(ddx[dir]) {
+				out.type = ddx[dir] < 0 ? EVT_BACK : EVT_SELECT;
 				out.key = '\xff';
 				out.index = *cursor;
 			}
-			else if(dir == 6) {		/* Selection event */
-				out.type = EVT_SELECT;
-				out.key = '\xff';
-				out.index = *cursor;
+			else if(ddy[dir]) {	/* Move up or down to the next valid & visible row */
+				int ind;
+				int dy = ddy[dir];
+				out.type = EVT_MOVE;
+				for(ind = *cursor + dy; ind < n && ind >= 0
+							&& (TRUE != is_valid_row(menu, ind)); ind += dy) ;
+				out.index = ind;
+				if(ind < n && ind >= 0) *cursor = ind;
 			}
 			else return FALSE;
 			break;

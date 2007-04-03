@@ -593,7 +593,7 @@ void object_info_screen(const object_type *o_ptr)
 	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
 
 	/* Wait for input */
-	(void)inkey();
+	(void)anykey();
 
 	/* Load the screen */
 	screen_load();

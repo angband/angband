@@ -1470,7 +1470,7 @@ cptr option_text[OPT_MAX] =
 	"auto_more",				/* OPT_auto_more */
 	"smart_monsters",			/* OPT_smart_monsters */
 	"smart_packs",				/* OPT_smart_packs */
-	NULL,						/* xxx */
+	"hp_changes_color",			/* OPT_hp_changes_color */
 	NULL,						/* xxx */
 	NULL,						/* xxx */
 	NULL,						/* xxx */
@@ -1734,7 +1734,7 @@ cptr option_desc[OPT_MAX] =
 	"Automatically clear '-more-' prompts",		/* OPT_auto_more */
 	"Monsters behave more intelligently",		/* OPT_smart_monsters */
 	"Monsters act smarter in groups (v.slow)",	/* OPT_smart_packs */
-	NULL,										/* xxx */
+	"Player color indicates low hit points",	/* OPT_hp_changes_color */
 	NULL,										/* xxx */
 	NULL,										/* xxx */
 	NULL,										/* xxx */
@@ -1940,11 +1940,11 @@ const bool option_norm[OPT_MAX] =
 	TRUE,		/* OPT_show_details */
 	TRUE,		/* OPT_ring_bell */
 	TRUE,		/* OPT_show_flavors */
-	TRUE,		/* OPT_run_ignore_stairs */
-	TRUE,		/* OPT_run_ignore_doors */
+	FALSE,		/* OPT_run_ignore_stairs */
+	FALSE,		/* OPT_run_ignore_doors */
 	TRUE,		/* OPT_run_cut_corners */
 	TRUE,		/* OPT_run_use_corners */
-	TRUE,		/* OPT_disturb_move */
+	FALSE,		/* OPT_disturb_move */
 	TRUE,		/* OPT_disturb_near */
 	TRUE,		/* OPT_disturb_panel */
 	TRUE,		/* OPT_disturb_state */
@@ -1963,11 +1963,11 @@ const bool option_norm[OPT_MAX] =
 	TRUE,		/* OPT_expand_look */
 	TRUE,		/* OPT_expand_list */
 	TRUE,		/* OPT_view_perma_grids */
-	FALSE,		/* OPT_view_torch_grids */
+	TRUE,		/* OPT_view_torch_grids */
 	TRUE,		/* OPT_dungeon_align */
 	TRUE,		/* OPT_dungeon_stair */
-	FALSE,		/* OPT_flow_by_sound */
-	FALSE,		/* OPT_flow_by_smell */
+	TRUE,		/* OPT_flow_by_sound */
+	TRUE,		/* OPT_flow_by_smell */
 	FALSE,		/* xxx track_follow */
 	FALSE,		/* xxx track_target */
 	FALSE,		/* OPT_smart_learn */
@@ -1998,7 +1998,7 @@ const bool option_norm[OPT_MAX] =
 	FALSE,		/* OPT_auto_more */
 	FALSE,		/* OPT_smart_monsters */
 	FALSE,		/* OPT_smart_packs */
-	FALSE,		/* xxx */
+	FALSE,		/* OPT_hp_changes_color */
 	FALSE,		/* xxx */
 	FALSE,		/* xxx */
 	FALSE,		/* xxx */
@@ -2305,7 +2305,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
  		OPT_center_player,
  		OPT_run_avoid_center,
 		OPT_show_piles,
-		OPT_NONE,
+		OPT_hp_changes_color,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,

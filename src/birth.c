@@ -633,7 +633,7 @@ static void clear_question(void)
 /*
  * Display additional information about each race during the selection.
  */
-static void race_aux_hook(int race, const region *reg)
+static void race_aux_hook(int race, void *db, const region *reg)
 {
 	int i;
 	char s[50];
@@ -660,7 +660,7 @@ static void race_aux_hook(int race, const region *reg)
 /*
  * Display additional information about each class during the selection.
  */
-static void class_aux_hook(int class_idx, const region *loc)
+static void class_aux_hook(int class_idx, void *db, const region *loc)
 {
 	int i;
 	char s[128];
@@ -782,7 +782,7 @@ static bool choose_character()
 		"Your 'race' determines various intrinsic factors and bonuses.",
 		"Your 'class' determines various intrinsic abilities and bonuses" };
 	
-	typedef void (*browse_f) (int oid, const region *loc);
+	typedef void (*browse_f) (int oid, void *, const region *loc);
 	browse_f browse [] = {NULL, race_aux_hook, class_aux_hook };
 	menu_type menu;
 	WIPE(&menu, menu);

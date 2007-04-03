@@ -272,7 +272,7 @@ struct menu_type
 	const void *menu_data;	/* the data used to access rows. */
 
   	/* auxiliary browser help function */
-	void (*browse_hook)(int oid, const region *loc);
+	void (*browse_hook)(int oid, void *db, const region *loc);
 
 
 	/* These are "protected" - not visible for canned menu classes, */

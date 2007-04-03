@@ -990,6 +990,24 @@ void map_info(int y, int x, byte *ap, char *cp, byte *tap, char *tcp)
 
 		/* Get the "player" attr */
 		a = r_ptr->x_attr;
+		if ((hp_changes_color) && (arg_graphics == GRAPHICS_NONE))
+		{
+			switch(p_ptr->chp * 10 / p_ptr->mhp)
+				{
+				case 10:
+				case  9:	a = TERM_WHITE  ;	break;
+				case  8:
+				case  7:	a = TERM_YELLOW ;	break;
+				case  6:
+				case  5:	a = TERM_ORANGE ;	break;
+				case  4:
+				case  3:	a = TERM_L_RED  ;	break;
+				case  2:
+				case  1:
+				case  0:	a = TERM_RED    ;	break;
+				default:	a = TERM_WHITE  ;	break;
+				}
+		}
 
 		/* Get the "player" char */
 		c = r_ptr->x_char;

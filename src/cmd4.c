@@ -38,13 +38,20 @@ typedef struct {
 		int (*group)(int oid); /* Group ID for of an oid */
 		bool (*aware)(object_type *obj); /* Object is known sufficiently for group */
 
+		/* summary function for the "object" information. */
+		void (*summary)(int gid, const int *object_list, int n, int top, int row, int col);
 } group_funcs;
 
 typedef struct {
 
+		/* Print a tabular-formatted description for an oid */
+		/* This includes things like kill-count, the current graphic, */
+		/* any tile illumination info. Item id for Wizard mode and */
+		/* autoinscription are handled by the caller */
 		void (*display_member)(int col, int row, bool cursor, int oid); 
 
 		void (*lore)(int oid); /* Dump known lore to screen*/
+
 
 		/* Required only for objects with modifiable display attributes */
 		/* Unknown 'flavors' return flavor attributes */
@@ -114,12 +121,12 @@ static struct {
 	{ "K",		"Killer Beetles" },
 	{ "k",		"Kobolds" },
 	{ "L",		"Lichs" },
+	{ "tp",		"Men" },
 	{ "$?!_",	"Mimics" },
 	{ "m",		"Molds" },
 	{ ",",		"Mushroom Patches" },
 	{ "n",		"Nagas" },
 	{ "o",		"Orcs" },
-	{ "tp",		"Humans" },
 	{ "q",		"Quadrupeds" },
 	{ "Q",		"Quylthulgs" },
 	{ "R",		"Reptiles/Amphibians" },
@@ -304,30 +311,6 @@ static int auto_note_modify(int note, char ch)
 	return(quark_add(tmp));
 }
 
-/*
- * Display a list with a cursor
- */
-static void display_group_list(int col, int row, int wid, int per_page,
-				int start, int max, int cursor, const cptr group_text[])
-{
-	int i, pos;
-
-	/* Display lines until done */
-	for (i = 0, pos = start; i < per_page && pos < max; i++, pos++)
-	{
-		char buffer[21];
-		byte attr = curs_attrs[CURS_KNOWN][cursor == pos];
-
-		/* Erase the line */
-		Term_erase(col, row + i, wid);
-
-		/* Display it (width should not exceed 20) */
-		strncpy(buffer, group_text[pos], 20);
-		buffer[20] = 0;
-		c_put_str(attr, buffer, row + i, col);
-	}
-	/* Wipe the rest? */
-}
 
 static void display_group_member(menu_type *menu, int oid,
 						bool cursor, int row, int col, int wid)
@@ -339,6 +322,7 @@ static void display_group_member(menu_type *menu, int oid,
 	if(o_funcs->note && o_funcs->note(oid) && *o_funcs->note(oid)) {
 		c_put_str(TERM_YELLOW,quark_str(*o_funcs->note(oid)), row, 65);
 	}
+	/* Print the interesting part */
 	o_funcs->display_member(col, row, cursor, oid);
 
 	if (p_ptr->wizard) c_put_str(attr, format("%d", oid), row, 60);
@@ -392,9 +376,12 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	menu_iter object_iter;
 
 	/* Panel state */
+	/* These are swapped in parallel whenever the actively browsing " */
+	/* changes */
 	int *active_cursor = &g_cur, *inactive_cursor = &o_cur;
 	menu_type *active_menu = &group_menu, *inactive_menu = &object_menu;
 	int panel = 0;
+
 	void *swapspace;
 	bool do_swap = FALSE;
 
@@ -445,12 +432,15 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	rogue_like_commands = FALSE;
 
 	region title_area = {0, 0, 0, 4};
-	region group_region = {0, 6, g_name_len, -1};
+	region group_region = {0, 6, g_name_len, -2};
 	region object_region = {g_name_len+3, 6, 0, -2};
+
+	/* Leave room for the group summary information */
+	if(g_funcs.summary) object_region.page_rows = -3;
 
 	WIPE(&group_menu, menu_type);
 	group_menu.count = grp_cnt;
-	group_menu.cmd_keys = "\n\r6\x8C";  /* Don't treat this as motion */
+	group_menu.cmd_keys = "\n\r6\x8C";  /* Ignore these as menu commands */
 	group_menu.menu_data = g_names;
 
 	WIPE(&object_menu, menu_type);
@@ -505,7 +495,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		else {
 			/* ... or just a single element in the group. */
 			o_funcs.is_visual = TRUE;
-			menu_set_filter(&object_menu, obj_list + o_cur, 1);
+			menu_set_filter(&object_menu, obj_list + o_cur +g_offset[g_cur], 1);
 			object_menu.cursor = 0;
 		}
 		oid = obj_list[g_offset[g_cur]+o_cur];
@@ -535,12 +525,18 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			panel = 1-panel;
 		}
 
+		if(g_funcs.summary && !visual_list)
+			g_funcs.summary(g_cur, obj_list, g_o_count, g_offset[g_cur],
+			object_menu.boundary.row + object_menu.boundary.page_rows, object_region.col);
 		menu_refresh(inactive_menu);
 		menu_refresh(active_menu);
 		handle_stuff();
 
 		if (visual_list)
 		{
+	
+			display_visual_list(g_name_len + 3, 7, browser_rows-1,
+                                   wid - (g_name_len + 3), attr_top, char_left);
 			place_visual_list_cursor(g_name_len + 3, 7, *o_funcs.xattr(oid), 
 										*o_funcs.xchar(oid), attr_top, char_left);
 		}
@@ -683,17 +679,12 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			{
 				int d = target_dir(ke.key);
 				/* Handle key-driven motion between panels */
-				if((ddx[d] < 0) && panel == 1) {
+				if(ddx[d] && ((ddx[d] < 0) == (panel == 1))) {
 					/* Silly hack -- diagonal arithmetic */
-					g_cur += -(ddy[d] < 0) + (ddy[d] > 0);
-					if(g_cur < 0) g_cur = 0;
-					if(g_cur >= grp_cnt) g_cur = grp_cnt -1;
-					do_swap = TRUE;
-				}
-				else if((ddx[d] > 0) == (panel == 0)) {
-					o_cur += -(ddy[d] < 0) + (ddy[d] > 0);
-					if(o_cur < 0) o_cur = 0;
-					if(o_cur >= g_o_count) o_cur = g_o_count-1;
+					*inactive_cursor += ddy[d];
+					if(*inactive_cursor < 0) *inactive_cursor = 0;
+					else if(g_cur >= grp_cnt) g_cur = grp_cnt -1;
+					else if(o_cur >= g_o_count) o_cur = g_o_count-1;
 					do_swap = TRUE;
 				}
 				else if(o_funcs.note && o_funcs.note(oid)) {
@@ -1026,13 +1017,34 @@ static byte *m_xattr(int oid)
 static const char *race_name(int gid) { return monster_group[gid].name; }
 static void mon_lore(int oid) { screen_roff(default_join[oid].oid); inkey_ex(); }
 
+static void mon_summary(int gid, const int *object_list, int n, int top, int row, int col)
+{
+	int i;
+	int kills = 0;
+
+	for(i = 0; i < n; i++) {
+		int oid = default_join[object_list[i+top]].oid;
+		kills += l_list[oid].pkills;
+	}
+	if(gid == 0) {
+		c_prt(TERM_L_BLUE, format("Known Uniques: %d, Slain Uniques: %d.", n, kills),
+					row, col);
+	}
+	else  {
+		int tkills = 0;
+		for(i = 0; i < z_info->r_max; i++) 
+			tkills += l_list[i].pkills;
+		c_prt(TERM_L_BLUE, format("Creatures Slain: %d/%d (in group/in total)", kills, tkills), row, col);
+	}
+}
+
 /*
  * Display known monsters.
  */
 static void do_cmd_knowledge_monsters(void)
 {
-		group_funcs r_funcs = {N_ELEMENTS(monster_group), FALSE, race_name,
-							m_cmp_race, default_group, 0};
+	group_funcs r_funcs = {N_ELEMENTS(monster_group), FALSE, race_name,
+							m_cmp_race, default_group, 0, mon_summary};
 
 	member_funcs m_funcs = {display_monster, mon_lore, m_xchar, m_xattr, 0, 0};
 
@@ -1171,8 +1183,8 @@ static int art2tval(int oid) { return a_info[oid].tval; }
 static void do_cmd_knowledge_artifacts(void)
 {
 	/* HACK -- should be TV_MAX */
-	group_funcs obj_f = {TV_GOLD, FALSE, kind_name, a_cmp_tval, art2tval, 0};
-	member_funcs art_f = {display_artifact, desc_art_fake, 0, 0, 0};
+	group_funcs obj_f = {TV_GOLD, FALSE, kind_name, a_cmp_tval, art2tval, 0, 0};
+	member_funcs art_f = {display_artifact, desc_art_fake, 0, 0, 0, 0};
 
 
 	int *artifacts;
@@ -1293,9 +1305,9 @@ static int e_cmp_tval(const void *a, const void *b)
 static void do_cmd_knowledge_ego_items(void)
 {
 	group_funcs obj_f =
-		{TV_GOLD, FALSE, ego_grp_name, e_cmp_tval, default_group, 0};
+		{TV_GOLD, FALSE, ego_grp_name, e_cmp_tval, default_group, 0, 0};
 
-	member_funcs ego_f = {display_ego_item, desc_ego_fake, 0, 0, 0/*e_note */ };
+	member_funcs ego_f = {display_ego_item, desc_ego_fake, 0, 0, 0, 0/*e_note */ };
 
 	int *egoitems;
 	int e_count = 0;
@@ -1449,7 +1461,7 @@ static u16b *o_note(int oid) {
  */
 static void do_cmd_knowledge_objects(void)
 {
-	group_funcs kind_f = {TV_GOLD, FALSE, kind_name, o_cmp_tval, obj2gid, 0};
+	group_funcs kind_f = {TV_GOLD, FALSE, kind_name, o_cmp_tval, obj2gid, 0, 0};
 	member_funcs obj_f = {display_object, desc_obj_fake, o_xchar, o_xattr,0 /* o_note*/};
 
 	int *objects;
@@ -1520,7 +1532,7 @@ static void feat_lore(int oid) { /* noop */ }
 static void do_cmd_knowledge_features(void)
 {
 	group_funcs fkind_f = {N_ELEMENTS(feature_group_text), FALSE,
-							fkind_name, f_cmp_fkind, feat_order, 0};
+							fkind_name, f_cmp_fkind, feat_order, 0, 0};
 
 	member_funcs feat_f = {display_feature, feat_lore, f_xchar, f_xattr, 0};
 

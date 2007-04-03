@@ -124,6 +124,7 @@ typedef struct CommandDef CommandDef;
 #define CLICK kEventWindowHandleContentClick
 #define WNUPD kEventWindowUpdate
 #define WNRSZ kEventWindowResizeCompleted
+#define WNDRG kEventWindowDragCompleted
 
 #define HANDLERDEF(func) \
 		static OSStatus func(EventHandlerCallRef inHandlerCallRef, \
@@ -179,6 +180,7 @@ const CommandDef event_defs [] =
 	{ 'wind', WNUPD, 	UpdateCommand,	 kWINDOW, NULL },
 
 	{ 'wind', WNRSZ,	ResizeCommand,	 kWINDOW, NULL }, // Change window size
+	{ 'wind', WNDRG,	ResizeCommand,	 kWINDOW, NULL }, // Change window size
 	{ 'appl', kEventAppActivated,
 						ResumeCommand,	 0,		NULL },
 	{ 'Play', 'Band',	AngbandGame,	 0,		NULL }, // Start event dispatch

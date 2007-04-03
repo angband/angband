@@ -853,29 +853,24 @@ static void term_data_check_size(term_data *td)
 	td->size_hgt = td->rows * td->tile_hgt + BORDER_WID;
 
 
-	/* Get current screen */
-	hibernate();
 	BitMap tScreen;
+	/* Get current screen */
 	(void)GetQDGlobalsScreenBits(&tScreen);
-	
 	/* Verify the bottom */
 	if (td->r.top > tScreen.bounds.bottom - td->size_hgt)
 	{
 		td->r.top = tScreen.bounds.bottom - td->size_hgt;
 	}
-
 	/* Verify the top */
-	if (td->r.top < tScreen.bounds.top + GetMBarHeight())
+	if (td->r.top < tScreen.bounds.top + 2*GetMBarHeight())
 	{
-		td->r.top = tScreen.bounds.top + GetMBarHeight();
+		td->r.top = tScreen.bounds.top + 2*GetMBarHeight();
 	}
-
 	/* Verify the right */
 	if (td->r.left > tScreen.bounds.right - td->size_wid)
 	{
 		td->r.left = tScreen.bounds.right - td->size_wid;
 	}
-
 	/* Verify the left */
 	if (td->r.left < tScreen.bounds.left)
 	{
@@ -2822,22 +2817,29 @@ static OSStatus ResizeCommand(EventHandlerCallRef inCallRef,
 {
 	int x, y;
 	WindowRef w = 0;
+	unsigned flags;
 
 	term_data *td;
 	term *old = Term;
+	int err ;
 
 	GetEventParameter(inEvent, kEventParamDirectObject,
 							typeWindowRef, NULL, sizeof(w), NULL, &w);
+	err = GetEventParameter(inEvent, kEventParamAttributes,
+							typeUInt32, NULL, sizeof(flags), NULL, &flags);
 
 	td = (term_data*) GetWRefCon(w);
 
 	/* Oops */
 	if (!td) return noErr;
 
+
 	/* Obtain geometry of resized window */
-	
+
 	Rect tmpR;
 	GetWindowBounds((WindowRef)td->w, kWindowContentRgn, &tmpR);
+	td->r = tmpR;
+	if(td->r.top < 40) td->r.top = 40;
 
 	/* Extract the new ClipRect size in pixels */
 	y = tmpR.bottom - tmpR.top - BORDER_WID;
@@ -2846,6 +2848,7 @@ static OSStatus ResizeCommand(EventHandlerCallRef inCallRef,
 	/* Extract a "close" approximation */
 	td->rows = y / td->tile_hgt;
 	td->cols = x / td->tile_wid;
+
 
 	/* Apply and Verify */
 	term_data_check_size(td);
@@ -3226,8 +3229,7 @@ static OSStatus MouseCommand ( EventHandlerCallRef inCallRef,
 	// X coordinate relative to left side of window exclusive of border.
 	p.x -= (BORDER_WID+td->r.left);
 	// Y coordinate relative to top of window content region.
-	// HACK: assumes title width of 21 pixels.
-	p.y -= (td->r.top + 21);
+	p.y -= td->r.top;
 
 	Term_mousepress(p.x/td->tile_wid, p.y/td->tile_hgt, button);
 
