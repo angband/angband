@@ -1928,14 +1928,14 @@ errr Term_mousepress(int x, int y, char button)
 errr Term_key_push(int k)
 {
 	if (!k) return (-1);
-	key_event ke;
+	event_type ke;
 	ke.type = EVT_KBRD;
 	ke.index = 0;
 	ke.key = k;
 	return Term_event_push(&ke);
 }
 
-errr Term_event_push(const key_event *ke)
+errr Term_event_push(const event_type *ke)
 {
 	/* Hack -- Refuse to enqueue non-keys */
 	if (!ke) return (-1);
@@ -1973,7 +1973,7 @@ errr Term_event_push(const key_event *ke)
  *
  * Remove the keypress if "take" is true.
  */
-errr Term_inkey(key_event *ch, bool wait, bool take)
+errr Term_inkey(event_type *ch, bool wait, bool take)
 {
 	/* Assume no key */
 	ch->type = ch->key = 0;
@@ -2430,7 +2430,7 @@ errr term_init(term *t, int w, int h, int k)
 	t->key_size = k;
 
 	/* Allocate the input queue */
-	C_MAKE(t->key_queue, t->key_size, key_event);
+	C_MAKE(t->key_queue, t->key_size, event_type);
 
 
 	/* Save the size */

@@ -791,7 +791,7 @@ static bool choose_character()
 	i = 0;
 	while(i < N_ELEMENTS(menu_defs))
 	{
-		key_event cx;
+		event_type cx;
 		int cursor = *values[i];
 		menu.flags = MN_NO_TAGS | MN_DBL_TAP;
 		menu.count = limits[i];

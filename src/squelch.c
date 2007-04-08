@@ -771,7 +771,7 @@ static void handle_q_squelch(void *arg, const char *xxx)
 {
 	int sqlev = (int) arg;
 	int i;
-	key_event ke = {EVT_REFRESH, 0, 0, 0};
+	event_type ke = {EVT_REFRESH, 0, 0, 0};
 	for (i = 0; i < SQUELCH_BYTES; i++) {
 		if(tvals[i].squelch_bits & ( 1 << sqlev))
 			squelch_level[i] = sqlev;
@@ -784,7 +784,7 @@ static void handle_q_squelch(void *arg, const char *xxx)
 static void handle_q_squelch_one(void *arg, const char *xxx)
 {
 	int sqlev = (int) arg;
-	key_event ke = {EVT_REFRESH, 0, 0, 0};
+	event_type ke = {EVT_REFRESH, 0, 0, 0};
 	bool refresh = FALSE;
 	if((squelch_level[q_rendez.item_pos] != sqlev) &&
 			(tvals[q_rendez.item_pos].squelch_bits & ( 1 << sqlev)))
@@ -865,7 +865,7 @@ static void do_qual_squelch(void)
 {
 	region item_region = {0, 0, 20, 0};
 	region command_region = {25, 0, 0, 0};
-	key_event ke = {EVT_NONE};
+	event_type ke = {EVT_NONE};
 	menu_layout(&squelch_q_items, &item_region);
 	menu_layout(&squelch_q_menu, &command_region);
 	Term_save();

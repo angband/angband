@@ -683,7 +683,7 @@ extern void flush(void);
 extern void flush_fail(void);
 extern char anykey(void);
 extern char inkey(void);
-extern key_event inkey_ex(void);
+extern event_type inkey_ex(void);
 extern void bell(cptr reason);
 extern void sound(int val);
 extern s16b quark_add(cptr str);

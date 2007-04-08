@@ -12,7 +12,7 @@
 Description:
 Implementation of Extremely Basic Event Model.
   Limits:
-    all events are of the concrete type key_event (see z-util.h), 
+    all events are of the concrete type event_type (see z-util.h), 
     which are supposed to model simple UI actions:
 	- < escape >
 	- keystroke
@@ -22,7 +22,7 @@ Implementation of Extremely Basic Event Model.
 	- back to parent (hierarchical menu escape)
 
 There are 3 basic event-related classes:
-The key_event.
+The event_type.
 Concrete event, with at most 32 distinct types.
 
 The event_listener observer for key events
@@ -68,7 +68,7 @@ void region_erase(const region *loc)
 		Term_erase(loc->col, loc->row + i, w);
 }
 
-bool region_inside(const region *loc, const key_event *key)
+bool region_inside(const region *loc, const event_type *key)
 {
 	if ((loc->col > key->mousex) || (loc->col + loc->width <= key->mousex))
 		return FALSE;
@@ -91,7 +91,7 @@ struct listener_list
 
 void stop_event_loop()
 {
-	key_event stop = { EVT_STOP };
+	event_type stop = { EVT_STOP };
 
 	/* Stop right away! */
 	Term_event_push(&stop);
@@ -109,9 +109,9 @@ void stop_event_loop()
  *    EVT_AGAIN - start was not handled, and forever is false
  *    The first unhandled event - forever is false.
  */
-key_event run_event_loop(event_target * target, bool forever, const key_event *start)
+event_type run_event_loop(event_target * target, bool forever, const event_type *start)
 {
-	key_event ke;
+	event_type ke;
 	bool handled = TRUE;
 
 	while (forever || handled)
@@ -296,8 +296,7 @@ static const menu_iter menu_iter_item =
 	handle_menu_item
 };
 
-/* Simple strings */
-
+/* Simple strings - display and selection only */
 static void display_string(menu_type *menu, int oid, bool cursor,
                int row, int col, int width)
 {
@@ -530,7 +529,7 @@ static bool handle_menu_key(char cmd, menu_type *menu, int cursor)
 	if (menu->row_funcs->row_handler &&
 		menu->row_funcs->row_handler(cmd, (void *)menu->menu_data, oid))
 	{
-		key_event ke;
+		event_type ke;
 		ke.type = EVT_SELECT;
 		ke.key = cmd;
 		ke.index = cursor;
@@ -600,11 +599,11 @@ void menu_refresh(menu_type *menu)
 }
 
 /* The menu event loop */
-static bool menu_handle_event(menu_type *menu, const key_event *in)
+static bool menu_handle_event(menu_type *menu, const event_type *in)
 {
 	int n = menu->filter_count;
 	int *cursor = &menu->cursor;
-	key_event out;
+	event_type out;
 
 	out.key = '\xff';
 
@@ -801,7 +800,7 @@ static const panel_type menu_target =
  *     EVT_CMD  - return values also include command IDs to process.
  * Returns: an event, possibly requiring further handling.
  * Return values:
- *  EVT_SELECT - success. key_event::index is set to the cursor position.
+ *  EVT_SELECT - success. event_type::index is set to the cursor position.
  *      *cursor is also set to the cursor position.
  *  EVT_OK  - success. A command event was handled.
  *     *cursor is also set to the associated row.
@@ -809,9 +808,9 @@ static const panel_type menu_target =
  *  EVT_ESCAPE - Abandon modal interaction
  *  EVT_KBRD - An unhandled keyboard event
  */
-key_event menu_select(menu_type *menu, int *cursor, int no_handle)
+event_type menu_select(menu_type *menu, int *cursor, int no_handle)
 {
-	key_event ke;
+	event_type ke;
 
 	menu->cursor = *cursor;
 

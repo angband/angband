@@ -84,9 +84,9 @@ typedef enum
 } event_class;
 
 
-typedef struct key_event key_event;
+typedef struct event_type event_type;
 
-struct key_event
+struct event_type
 {
 	event_class type;
     byte mousex, mousey;
@@ -222,7 +222,7 @@ struct term
 	byte attr_blank;
 	char char_blank;
 
-	key_event *key_queue;
+	event_type *key_queue;
 
 	u16b key_head;
 	u16b key_tail;
@@ -340,8 +340,8 @@ extern errr Term_flush(void);
 extern errr Term_mousepress(int x, int y, char button);
 extern errr Term_keypress(int k);
 extern errr Term_key_push(int k);
-extern errr Term_event_push(const key_event *ke);
-extern errr Term_inkey(key_event *ch, bool wait, bool take);
+extern errr Term_event_push(const event_type *ke);
+extern errr Term_inkey(event_type *ch, bool wait, bool take);
 
 extern errr Term_set_resize_hook(void (*hook)(void));
 extern errr Term_save(void);

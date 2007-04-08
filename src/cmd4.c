@@ -169,7 +169,7 @@ const char *feature_group_text[] =
 static void display_visual_list(int col, int row, int height, int width,
 				byte attr_top, char char_left);
 
-static bool visual_mode_command(key_event ke, bool *visual_list_ptr, 
+static bool visual_mode_command(event_type ke, bool *visual_list_ptr, 
 				int height, int width, 
 				byte *attr_top_ptr, char *char_left_ptr, 
 				byte *cur_attr_ptr, char *cur_char_ptr,
@@ -459,7 +459,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	/* Panels are -- text panels, two menus, and visual browser */
 	/* with "pop-up menu" for lore */
 	while((!flag) && (grp_cnt)) {
-		key_event ke, ke0;
+		event_type ke, ke0;
 		if(redraw) {
 			region_erase(&title_area);
 			prt(format("Knowledge - %s", title), 2, 0);
@@ -767,7 +767,7 @@ static void place_visual_list_cursor(int col, int row, byte a, byte c, byte attr
 /*
  *  Do visual mode command -- Change symbols
  */
-static bool visual_mode_command(key_event ke, bool *visual_list_ptr, 
+static bool visual_mode_command(event_type ke, bool *visual_list_ptr, 
 				int height, int width, 
 				byte *attr_top_ptr, char *char_left_ptr, 
 				byte *cur_attr_ptr, char *cur_char_ptr,
@@ -1661,7 +1661,7 @@ void do_cmd_resize() {
  */
 void do_cmd_change_name(void)
 {
-	key_event ke;
+	event_type ke;
 
 	int mode = 0;
 
@@ -1772,7 +1772,7 @@ void do_cmd_message_one(void)
  */
 void do_cmd_messages(void)
 {
-	key_event ke;
+	event_type ke;
 
 	int i, j, n, q;
 	int wid, hgt;
@@ -2124,7 +2124,7 @@ static void do_cmd_options_aux(void *vpage, cptr info)
 
 	for(;;)
 	{
-		key_event cx;
+		event_type cx;
 		cx = menu_select(menu, &cursor_pos, EVT_MOVE);
 		if (cx.type == EVT_BACK || ESCAPE == cx.key) break;
 		if(cx.type == EVT_MOVE) cursor_pos = cx.index;
@@ -2157,7 +2157,7 @@ static void do_cmd_options_win(void)
 	int y = 0;
 	int x = 0;
 
-	key_event ke;
+	event_type ke;
 
 	u32b old_flag[ANGBAND_TERM_MAX];
 
@@ -2888,7 +2888,7 @@ void do_cmd_macros(void)
 	/* Process requests until done */
 	while (1)
 	{
-		key_event c;
+		event_type c;
 		int evt;
 		/* Clear screen */
 		Term_clear();
@@ -3372,7 +3372,7 @@ void do_cmd_visuals(void)
 	/* Interact until done */
 	while (1)
 	{
-		key_event key;
+		event_type key;
 		int evt = -1;
 		Term_clear();
 		key = menu_select(&visual_menu, &cursor, EVT_CMD);
@@ -3543,7 +3543,7 @@ void do_cmd_colors(void)
 	/* Interact until done */
 	while (1)
 	{
-		key_event key;
+		event_type key;
 		int evt;
 		Term_clear();
 		key = menu_select(&color_menu, &cursor, EVT_CMD);
@@ -4033,7 +4033,7 @@ void do_cmd_options()
 
 	menu_layout(&option_menu, &SCREEN_REGION);
 	for(;;) {
-		key_event c;
+		event_type c;
 		Term_clear();
 		c = menu_select(&option_menu, &cursor, 0);
 		if(ESCAPE == c.key) break;
@@ -4050,7 +4050,7 @@ void do_cmd_knowledge()
 
 	menu_layout(&knowledge_menu, &SCREEN_REGION);
 	for(;;) {
-		key_event c;
+		event_type c;
 		Term_clear();
 		c = menu_select(&knowledge_menu, &cursor, 0);
 		if(ESCAPE == c.key) break;

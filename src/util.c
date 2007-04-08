@@ -867,11 +867,11 @@ static bool parse_under = FALSE;
  * macro trigger, 500 milliseconds must pass before the key sequence is
  * known not to be that macro trigger.  XXX XXX XXX
  */
-static key_event inkey_aux(void)
+static event_type inkey_aux(void)
 {
 	int k = 0, n, p = 0, w = 0;
 	
-	key_event ke, ke0;
+	event_type ke, ke0;
 	char ch;
 	
 	cptr pat, act;
@@ -1104,11 +1104,11 @@ char (*inkey_hack)(int flush_first) = NULL;
  * Mega-Hack -- Note the use of "inkey_hack" to allow the "Borg" to steal
  * control of the keyboard from the user.
  */
-key_event inkey_ex(void)
+event_type inkey_ex(void)
 {
 	bool cursor_state;
-	key_event kk;
-	key_event ke;
+	event_type kk;
+	event_type ke;
 	
 	bool done = FALSE;
 	
@@ -1342,7 +1342,7 @@ key_event inkey_ex(void)
  */
 char anykey(void)
 {
-  key_event ke;
+  event_type ke;
   
   /* Only accept a keypress or mouse click*/
   do
@@ -1358,7 +1358,7 @@ char anykey(void)
  */
 char inkey(void)
 {
-	key_event ke;
+	event_type ke;
 
 	/* Only accept a keypress */
 	do
