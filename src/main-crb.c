@@ -853,6 +853,7 @@ static void term_data_check_size(term_data *td)
 	td->size_hgt = td->rows * td->tile_hgt + BORDER_WID;
 
 
+	hibernate(); 
 	BitMap tScreen;
 	/* Get current screen */
 	(void)GetQDGlobalsScreenBits(&tScreen);
@@ -2844,6 +2845,10 @@ static OSStatus ResizeCommand(EventHandlerCallRef inCallRef,
 	/* Extract the new ClipRect size in pixels */
 	y = tmpR.bottom - tmpR.top - BORDER_WID;
 	x = tmpR.right - tmpR.left - BORDER_WID * 2;
+
+	/* Ignore drag effects, other than for moving the mouse origin */
+	if(td->rows == y/ td->tile_hgt && td->cols ==x/td->tile_wid)
+		return noErr;
 
 	/* Extract a "close" approximation */
 	td->rows = y / td->tile_hgt;

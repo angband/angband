@@ -681,6 +681,7 @@ extern errr macro_free(void);
 extern errr macro_trigger_free(void);
 extern void flush(void);
 extern void flush_fail(void);
+extern char anykey(void);
 extern char inkey(void);
 extern key_event inkey_ex(void);
 extern void bell(cptr reason);

@@ -870,7 +870,7 @@ static void do_qual_squelch(void)
 	menu_layout(&squelch_q_menu, &command_region);
 	Term_save();
 	Term_clear();
-	q_rendez.item_pos = -1;
+	q_rendez.item_pos = 0;
 	q_rendez.quality = -1;
 	while(ke.key != ESCAPE)
 	{

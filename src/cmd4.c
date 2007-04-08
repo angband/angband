@@ -25,6 +25,7 @@
 #include "ui.h"
 
 
+#define INFO_SCREENS 2 /* Number of screens in character info mode */
 
 typedef struct {
 		int maxnum; /* Maximum possible item count for this class */
@@ -1452,7 +1453,7 @@ static byte *o_xattr(int oid) {
 static u16b *o_note(int oid) {
 	object_kind *k_ptr = &k_info[oid];
 	int ind = get_autoinscription_index(oid);
-	if(!k_ptr->flavor || k_ptr->aware) return (s16b*) &inscriptions[ind].inscription_idx;
+	if(!k_ptr->flavor || k_ptr->aware) return (u16b*) &inscriptions[ind].inscription_idx;
 	else return 0;
 }
 
@@ -1719,13 +1720,13 @@ void do_cmd_change_name(void)
 		/* Toggle mode */
 		else if ((ke.key == 'h') || (ke.key == '\xff') || ke.key == '4')
 		{
-			mode = (mode + 1) % 6;
+			mode = (mode + 1) % INFO_SCREENS;
 		}
 
 		/* Toggle mode */
 		else if ((ke.key == 'l') || ke.key == '6')
 		{
-			mode = (mode + 6 - 1) % 6;
+			mode = (mode + 6 - 1) % INFO_SCREENS;
 		}
 
 

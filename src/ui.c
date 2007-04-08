@@ -81,7 +81,7 @@ bool region_inside(const region *loc, const key_event *key)
 
 /* ======================= EVENTS ======================== */
 
-/* Helper class for event_target */
+/* List of event listeners--Helper class for event_target and the event loop */
 struct listener_list
 {
 	event_listener *listener;
@@ -184,7 +184,7 @@ void remove_listener(event_target * target, event_listener * observer)
 /* ======================= MN_EVT HELPER FUNCTIONS ====================== */
 
 /* Display an event, with possible preference overrides */
-static void display_event_aux(event_action *event, int menuID, byte color, int row, int col, int wid)
+static void display_event_aux(event_action *event, int menu_id, byte color, int row, int col, int wid)
 {
 	/* TODO: add preference support */
 	/* TODO: wizard mode should show more data */
@@ -359,7 +359,9 @@ display_scrolling(menu_type *menu, int cursor, int *top, region *loc)
 
 static char scroll_get_tag(menu_type *menu, int pos)
 {
-	return pos - menu->top;
+	if(menu->selections)
+		return menu->selections[pos - menu->top];
+	return 0;
 }
 
 /* Virtual function table for scrollable menu skin */
@@ -416,7 +418,9 @@ void display_columns(menu_type *menu, int cursor, int *top, region *loc)
 
 static char column_get_tag(menu_type *menu, int pos)
 {
-	return pos;
+	if(menu->selections)
+		return menu->selections[pos];
+	return 0;
 }
 
 /* Virtual function table for multi-column menu skin */
@@ -592,7 +596,7 @@ void menu_refresh(menu_type *menu)
 	menu->skin->display_list(menu, menu->cursor, &menu->top, &menu->active);
 
 	if (menu->browse_hook && oid >= 0)
-		menu->browse_hook(oid, menu->menu_data, loc);
+		menu->browse_hook(oid, (void*) menu->menu_data, loc);
 }
 
 /* The menu event loop */
@@ -702,6 +706,16 @@ static bool menu_handle_event(menu_type *menu, const key_event *in)
 			if (menu->flags & MN_NO_CURSOR)
 				return FALSE;
 
+			if (isspace(in->key) && (menu->flags & MN_PAGE))
+			{
+				/* Go to start of next page */
+				*cursor += menu->active.page_rows - (*cursor % menu->active.page_rows);
+				if(*cursor >= menu->filter_count) 
+					*cursor = 0;
+				out.type = EVT_MOVE;
+				out.index = *cursor;
+			}
+
 			/* cursor movement */
 			dir = target_dir(in->key);
 
@@ -713,7 +727,6 @@ static bool menu_handle_event(menu_type *menu, const key_event *in)
 			else if (ddx[dir])
 			{
 				out.type = ddx[dir] < 0 ? EVT_BACK : EVT_SELECT;
-				out.key = '\xff';
 				out.index = *cursor;
 			}
 			/* Move up or down to the next valid & visible row */
@@ -764,16 +777,16 @@ static bool menu_handle_event(menu_type *menu, const key_event *in)
 static const panel_type menu_target =
 {
 	{
-	 {0,						/* listener.object_id */
+	 {0,								/* listener.object_id */
 	  (handler_f) menu_handle_event,	/* listener.handler */
-	  (release_f) menu_destroy,	/* listener.release */
-	  0,						/* listener.object */
+	  (release_f) menu_destroy,			/* listener.release */
+	  0,								/* listener.object */
 	  {EVT_KBRD | EVT_MOUSE | EVT_REFRESH}	/* listener.events */
-	  },
-	 TRUE,						/* target.is_modal */
 	 },
-	menu_refresh,				/* refresh() */
-	{0, 0, 0, 0}				/* boundary */
+	 TRUE,								/* target.is_modal */
+	},
+	menu_refresh,						/* refresh() */
+	{0, 0, 0, 0}						/* boundary */
 };
 
 /* 

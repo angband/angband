@@ -17,8 +17,8 @@
 
 /* Colors for interactive menus */
 enum {
-	CURS_UNKNOWN = 0,
-	CURS_KNOWN = 1
+	CURS_UNKNOWN = 0,			/* Use gray; dark blue for cursor */
+	CURS_KNOWN = 1				/* Use white; light blue for cursor */
 };
 static const byte curs_attrs[2][2] =
 {
@@ -42,6 +42,7 @@ typedef struct
 
 /* ================== GEOMETRY ====================== */
 
+/* Defines a rectangle on the screen that is bound to a Panel or subpanel */
 typedef struct region region;
 
 struct region {
@@ -70,26 +71,33 @@ typedef struct event_listener event_listener;
 typedef struct event_set event_set;
 typedef struct listener_list listener_list; /* Opaque */
 
+/* An event handler member function */
 typedef bool (*handler_f)(void *object, const key_event *in);
+
+/* Frees the resources for an owned event listener */
 typedef void (*release_f)(void *object);
 
+/* Set of event types to which a particular listener has subscribed */
 struct event_set {
-	int evt_flags;
+	int evt_flags;		/* OR'ed together set of events */
 	/* anything else? */
 };
 
+/* Base class for event listener */
 struct event_listener
 {
-	int object_id;
-	handler_f handler;
-	release_f release;
-	void *object;
+	int object_id;			/* Identifier used for macros, etc */
+	handler_f handler;		/* The handler function to call */
+	release_f release;		/* Frees any owned resources */
+	void *object;			/* Self-pointer */
 
 	/* properly, this belongs in the listener_list */
-	event_set events;
+	event_set events;		/* Set of events to which this listener has subscribed */
 };
 
 
+/* Event target -- the owner for a list of event listeners */
+/* Examples include Windows, Panels (menus), application */
 struct event_target {
 	/* Allow a target to be a listener as well */
 	event_listener self;
@@ -107,7 +115,17 @@ key_event run_event_loop(event_target *parent, bool forever, const key_event *st
 /* ================= PANEL ============ */
 typedef struct panel_type panel_type;
 
-/* An event target bound to a particular screen area */
+/*
+ * An event target bound to a particular screen area.
+ * A Panel is a (rectangular) (sub)region, possibly containing a set of event
+ * listeners, and responsible for maintaining its own internal layout and
+ * dispatching.  A Panel has ownership of a Region, is a Container for Event Listeners,
+ * and an Event Target for mouse events).
+ * Potential examples include: 
+ *  - menu
+ *  - window
+ *  - map
+ */
 struct panel_type {
 	event_target target;
 	void (*refresh)();
@@ -145,20 +163,23 @@ typedef void (*display_row_f) (menu_type *menu, int pos,
 typedef void (*display_list_f)(menu_type *menu, int cursor, int *top, region *);
 
 
+/* Primitive menu item with bound action */
 struct event_action
 {
-	int id;
-	const char *name;
-	action_f action;
-	void *data;
+	int id;				/* Object id used to define macros &c */
+	const char *name;	/* Name of the action */
+	action_f action;	/* Action to perform, if any */
+	void *data;			/* Local environment for the action, if required */
 };
 
 
+/* Decorated menu item with bound action */
 struct menu_item
 {
-	event_action evt;
-	char sel;
-	int flags;
+	event_action evt;	/* Base type */
+	char sel;			/* Character used for selection, if special-purpose bindings */
+						/* are desired. */
+	int flags;			/* State of the menu item.  See enum menu_flags below */
 };
 
 
@@ -196,47 +217,57 @@ typedef enum {
 	MN_NO_CURSOR = 0x8000, /* No cursor movement */
 
 	/* Reserved for rows in action_menu structure. */
-	MN_DISABLED		= 0x0100000,
-	MN_GRAYED		= 0x0200000,
-	MN_SELECTED		= 0x0400000,
-	MN_SELECTABLE	= 0x0800000,
-	MN_HIDDEN		= 0x1000000
-
+	MN_DISABLED		= 0x0100000,	/* Neither action nor selection is permitted */
+	MN_GRAYED		= 0x0200000,	/* Row is displayed with CURS_UNKNOWN colors */
+	MN_SELECTED		= 0x0400000,	/* Row is currently selected */
+	MN_SELECTABLE	= 0x0800000,	/* Row is permitted to be selected */
+	MN_HIDDEN		= 0x1000000		/* Row is hidden, but may be selected via */
+									/* key-binding. (Useful for lower case alternante) */
 } menu_flags;
 
+/* Identifier for the type of menu layout to use */
 enum skin_id {
 	/* Skins */
-	/* TODO: skins are not flags. */
-	MN_SCROLL	= 0x0000, /* Assumed -- scrollable list */
-	MN_PAGE		= 0x0001, /* page view */
+	MN_SCROLL	= 0x0000, /* Ordinary scrollable single-column list */
+	MN_PAGE		= 0x0001, /* Use full-page scrolling rather than small increment */
 	MN_COLUMNS	= 0x0002, /* multicolumn view */
 	MN_NATIVE	= 0x0003, /* Not implemented -- OS menu */
 	MN_KEY_ONLY = 0x0004, /* No display */
 	MN_USER		= 0x0005, /* Anonymous, user defined. */
-
 };
 
+/* Class functions for menu layout */
 struct menu_skin {
-	skin_id id;
+	skin_id id;					/* Identifier from the above list */
+	/* Determines the cursor index given a (mouse) location */
 	int (*get_cursor)(int row, int col, int n, int top, region *loc);
+	/* Displays the current list of visible menu items */
 	display_list_f display_list;
+	/* Specifies the relative menu item given the state of the menu */
 	char (*get_tag)(menu_type *menu, int pos);
+	/* Superclass pointer. Not currently used */
 	const menu_skin *super;
 };
 
 
-/* Identifiers for canned row iter implementations */
+/* Identifiers for canned row iterator implementations */
 enum menu_iter_id {
 	MN_ACT		= 0x1, /* selectable menu with per-row flags (see below) */
 	MN_EVT		= 0x2, /* simple event action list */
 	MN_STRING	= 0x3, /* display an array of strings for selection */
 };
 
+/* Class functions for menu row-level accessor functions */
 struct menu_iter {
-	menu_iter_id id;
+	menu_iter_id id;					/* Type identifier from above set */
+	/* Optional selection tag function */
 	char (*get_tag)(menu_type *menu, int oid);
-	int (*valid_row)(menu_type *menu, int oid);  /* 0 = no  1 = yes 2 = hide */
+	/* Optional validity checker.  All rows are assumed valid if not present. */
+ 	/* To support "hidden" items, it uses 3-level logic: 0 = no  1 = yes 2 = hide */
+	int (*valid_row)(menu_type *menu, int oid);
+	/* Displays a menu row at specified location */
 	display_row_f display_row;
+	/* Handler function called for selection or command key events */
 	bool (*row_handler)(char cmd, void *db, int oid);
 };
 
