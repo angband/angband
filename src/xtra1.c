@@ -297,99 +297,58 @@ static void prt_ac(int row, int col)
 /*
  * Prints Cur hit points
  */
-static void prt_cur_hp(int row, int col)
+static void prt_hp(int row, int col)
 {
-	char tmp[32];
-
+	char cur_hp[32], max_hp[32];
 	byte color;
 
+	put_str("HP ", row, col);
 
-	put_str("Cur HP ", row, col);
-
-	sprintf(tmp, "%5d", p_ptr->chp);
+	sprintf(max_hp, "%4d", p_ptr->mhp);
+	sprintf(cur_hp, "%4d", p_ptr->chp);
 
 	if (p_ptr->chp >= p_ptr->mhp)
-	{
 		color = TERM_L_GREEN;
-	}
 	else if (p_ptr->chp > (p_ptr->mhp * op_ptr->hitpoint_warn) / 10)
-	{
 		color = TERM_YELLOW;
-	}
 	else
-	{
 		color = TERM_RED;
-	}
 
-	c_put_str(color, tmp, row, col + 7);
-}
-
-
-/*
- * Prints Max hit points
- */
-static void prt_max_hp(int row, int col)
-{
-	char tmp[32];
-
-	put_str("Max HP ", row, col);
-
-	sprintf(tmp, "%5d", p_ptr->mhp);
-
-	c_put_str(TERM_L_GREEN, tmp, row, col + 7);
+	c_put_str(color, cur_hp, row, col + 3);
+	c_put_str(TERM_WHITE, "/", row, col + 7);
+	c_put_str(TERM_L_GREEN, max_hp, row, col + 8);
 }
 
 
 /*
  * Prints players max/cur spell points
  */
-static void prt_cur_sp(int row, int col)
+static void prt_sp(int row, int col)
 {
-	char tmp[32];
+	char cur_sp[32], max_sp[32];
 	byte color;
 
-
 	/* Do not show mana unless it matters */
 	if (!cp_ptr->spell_book) return;
 
-	put_str("Cur SP ", row, col);
+	put_str("SP ", row, col);
 
-	sprintf(tmp, "%5d", p_ptr->csp);
+	sprintf(max_sp, "%4d", p_ptr->msp);
+	sprintf(cur_sp, "%4d", p_ptr->csp);
 
 	if (p_ptr->csp >= p_ptr->msp)
-	{
 		color = TERM_L_GREEN;
-	}
 	else if (p_ptr->csp > (p_ptr->msp * op_ptr->hitpoint_warn) / 10)
-	{
 		color = TERM_YELLOW;
-	}
 	else
-	{
 		color = TERM_RED;
-	}
 
 	/* Show mana */
-	c_put_str(color, tmp, row, col + 7);
+	c_put_str(color, cur_sp, row, col + 3);
+	c_put_str(TERM_WHITE, "/", row, col + 7);
+	c_put_str(TERM_L_GREEN, max_sp, row, col + 8);
 }
 
-
-/*
- * Prints players max/cur spell points
- */
-static void prt_max_sp(int row, int col)
-{
-	char tmp[32];
-
-	/* Do not show mana unless it matters */
-	if (!cp_ptr->spell_book) return;
-
-	put_str("Max SP ", row, col);
-
-	sprintf(tmp, "%5d", p_ptr->msp);
-
-	c_put_str(TERM_L_GREEN, tmp, row, col + 7);
-}
 
 
 /*
@@ -1095,12 +1054,10 @@ static void prt_frame_compact(void)
 	prt_ac(row++, col);
 
 	/* Hitpoints */
-	prt_max_hp(row++, col);
-	prt_cur_hp(row++, col);
+	prt_hp(row++, col);
 
 	/* Spellpoints */
-	prt_max_sp(row++, col);
-	prt_cur_sp(row++, col);
+	prt_sp(row++, col);
 
 	/* Special */
 	health_redraw(row++, col);
@@ -2938,6 +2895,100 @@ void update_stuff(void)
 }
 
 
+/* Some simple wrapper functions, done somewhat lazily */
+#define PRT_STAT(N, n) \
+	void N(int row, int col) { prt_stat(n, row, col); }
+
+PRT_STAT(prt_str, A_STR)
+PRT_STAT(prt_dex, A_DEX)
+PRT_STAT(prt_wis, A_WIS)
+PRT_STAT(prt_int, A_INT)
+PRT_STAT(prt_con, A_CON)
+PRT_STAT(prt_chr, A_CHR)
+
+void prt_race(int row, int col) { prt_field(p_name + rp_ptr->name, row, col); }
+void prt_class(int row, int col) { prt_field(c_name + cp_ptr->name, row, col); }
+
+
+/*
+ * This prints the sidebar, using a clever method which means that it will only
+ * print as much as can be displayed on <24-line screens.
+ *
+ * Each row is given a priority; the least important higher numbers and the most
+ * important lower numbers.  As the screen gets smaller, the rows start to
+ * disappear in the order of lowest to highest importance.
+ */
+void prt_side(void)
+{
+	struct sidebar_entry
+	{
+		void (*hook)(int, int);		/* int row, int col */
+		int priority;				/* 1 is most important (always displayed) */
+		u32b flag;					/* PR_* flag this corresponds to */
+	} display_list[] =
+	{
+		{ prt_race,      20, PR_MISC },
+		{ prt_class,     19, PR_MISC },
+		{ prt_title,     18, PR_TITLE },
+		{ prt_level,     10, PR_LEV },
+		{ prt_exp,       15, PR_EXP },
+		{ prt_gold,      11, PR_GOLD },
+		{ prt_equippy,   17, PR_EQUIPPY },
+		{ prt_str,        6, PR_STATS },
+		{ prt_int,        5, PR_STATS },
+		{ prt_wis,        4, PR_STATS },
+		{ prt_dex,        3, PR_STATS },
+		{ prt_con,        2, PR_STATS },
+		{ prt_chr,        1, PR_STATS },
+		{ NULL,          14, 0 },
+		{ prt_ac,         7, PR_ARMOR },
+		{ prt_hp,         8, PR_HP },
+		{ prt_sp,         9, PR_MANA },
+		{ NULL,          22, 0 },
+		{ health_redraw, 12, PR_HEALTH },
+		{ NULL,          21, 0 },
+		{ prt_cut,       13, PR_CUT },
+		{ prt_stun,      16, PR_STUN }
+	};
+
+	int x, y;
+	int max_priority;
+	int i, row;
+	u32b to_clear = 0;
+
+	/* We have from row 1 to row Term->hgt-1 to display in */
+	Term_get_size(&x, &y);
+	max_priority = y - 2;
+
+	/* Display list entries */
+	for (i = 0, row = 1; i < (int)N_ELEMENTS(display_list); i++)
+	{
+		struct sidebar_entry *q = &display_list[i];
+
+		/* If this is high enough priority, display it */
+		if (q->priority <= max_priority)
+		{
+			/* If the redraw flag it set, and there is a hook */
+			if ((p_ptr->redraw & q->flag) && q->hook)
+			{
+				/* Mark flag for removal */
+				to_clear |= q->flag;
+
+				/* Display at the current row */
+				q->hook(row, 0);
+			}
+
+			/* Increment for next time */
+			row++;
+		}
+	}
+
+	/* Clear flags */
+	p_ptr->redraw &= ~(to_clear);
+}
+
+
+
 /*
  * Handle "p_ptr->redraw"
  */
@@ -2978,53 +3029,8 @@ void redraw_stuff(void)
 		prt_map();
 	}
 
-	if (p_ptr->redraw & (PR_MISC))
-	{
-		p_ptr->redraw &= ~(PR_MISC);
-		prt_field(p_name + rp_ptr->name, ROW_RACE, COL_RACE);
-		prt_field(c_name + cp_ptr->name, ROW_CLASS, COL_CLASS);
-	}
-
-	if (p_ptr->redraw & (PR_TITLE))
-	{
-		p_ptr->redraw &= ~(PR_TITLE);
-		prt_title(ROW_TITLE, COL_TITLE);
-	}
-
-	if (p_ptr->redraw & (PR_LEV))
-	{
-		p_ptr->redraw &= ~(PR_LEV);
-		prt_level(ROW_LEVEL, COL_LEVEL);
-	}
-
-	if (p_ptr->redraw & (PR_EXP))
-	{
-		p_ptr->redraw &= ~(PR_EXP);
-		prt_exp(ROW_EXP, COL_EXP);
-	}
-
-	if (p_ptr->redraw & (PR_STATS))
-	{
-		int i;
-
-		for (i = 0; i < A_MAX; i++)
-			prt_stat(i, ROW_STAT + i, COL_STAT);
-
-		p_ptr->redraw &= ~(PR_STATS);
-	}
-
-	if (p_ptr->redraw & (PR_ARMOR))
-	{
-		p_ptr->redraw &= ~(PR_ARMOR);
-		prt_ac(ROW_AC, COL_AC);
-	}
-
 	if (p_ptr->redraw & (PR_HP))
 	{
-		p_ptr->redraw &= ~(PR_HP);
-		prt_cur_hp(ROW_CURHP, COL_CURHP);
-		prt_max_hp(ROW_MAXHP, COL_MAXHP);
-
 		/*
 		 * hack:  redraw player, since the player's color
 		 * now indicates approximate health.  Note that
@@ -3035,27 +3041,11 @@ void redraw_stuff(void)
 		{
 			lite_spot(p_ptr->py, p_ptr->px);
 		}
-
 	}
 
-	if (p_ptr->redraw & (PR_MANA))
-	{
-		p_ptr->redraw &= ~(PR_MANA);
-		prt_cur_sp(ROW_CURSP, COL_CURSP);
-		prt_max_sp(ROW_MAXSP, COL_MAXSP);
-	}
+	/* Redraw the sidebar */
+	prt_side();
 
-	if (p_ptr->redraw & (PR_GOLD))
-	{
-		p_ptr->redraw &= ~(PR_GOLD);
-		prt_gold(ROW_GOLD, COL_GOLD);
-	}
-
-	if (p_ptr->redraw & (PR_EQUIPPY))
-	{
-		p_ptr->redraw &= ~(PR_EQUIPPY);
-		prt_equippy(ROW_EQUIPPY, COL_EQUIPPY);
-	}
 
 	if (p_ptr->redraw & (PR_DEPTH))
 	{
@@ -3069,24 +3059,6 @@ void redraw_stuff(void)
 		prt_oppose_elements(ROW_OPPOSE_ELEMENTS, COL_OPPOSE_ELEMENTS,
 		                    Term->wid - COL_OPPOSE_ELEMENTS);
 		p_ptr->window |= PW_STATUS;
-	}
-
-	if (p_ptr->redraw & (PR_HEALTH))
-	{
-		p_ptr->redraw &= ~(PR_HEALTH);
-		health_redraw(ROW_INFO, COL_INFO);
-	}
-
-	if (p_ptr->redraw & (PR_CUT))
-	{
-		p_ptr->redraw &= ~(PR_CUT);
-		prt_cut(ROW_CUT, COL_CUT);
-	}
-
-	if (p_ptr->redraw & (PR_STUN))
-	{
-		p_ptr->redraw &= ~(PR_STUN);
-		prt_stun(ROW_STUN, COL_STUN);
 	}
 
 	if (p_ptr->redraw & (PR_HUNGER))
