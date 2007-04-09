@@ -78,30 +78,6 @@
 
 
 /*
- * OPTION: Forbid the use of "fiddled" savefiles.  As far as I can tell,
- * a fiddled savefile is one with an internal timestamp different from
- * the actual timestamp.  Thus, turning this option on forbids one from
- * copying a savefile to a different name.  Combined with disabling the
- * ability to save the game without quitting, and with some method of
- * stopping the user from killing the process at the tombstone screen,
- * this should prevent the use of backup savefiles.  It may also stop
- * the use of savefiles from other platforms, so be careful.
- */
-/* #define VERIFY_TIMESTAMP */
-
-
-/*
- * OPTION: Forbid the "savefile over-write" cheat, in which you simply
- * run another copy of the game, loading a previously saved savefile,
- * and let that copy over-write the "dead" savefile later.  This option
- * either locks the savefile, or creates a fake "xxx.lok" file to prevent
- * the use of the savefile until the file is deleted.  Not ready yet.
- */
-/* #define VERIFY_SAVEFILE */
-
-
-
-/*
  * OPTION: Hack -- Compile in support for "Borg mode"
  */
 /* #define ALLOW_BORG */
@@ -388,7 +364,7 @@
 /*
  * OPTION: Person to bother if something goes wrong.
  */
-#define MAINTAINER	"rr9@thangorodrim.net"
+#define MAINTAINER	"angbandmaint@gmail.com"
 
 
 /*
@@ -454,22 +430,6 @@
 # undef MONSTER_AI
 #endif
 
-
-
-/*
- * OPTION: Attempt to prevent all "cheating"
- */
-/* #define VERIFY_HONOR */
-
-
-/*
- * React to the "VERIFY_HONOR" flag
- */
-#ifdef VERIFY_HONOR
-# define VERIFY_SAVEFILE
-# define VERIFY_CHECKSUMS
-# define VERIFY_TIMESTAMP
-#endif
 
 
 /*

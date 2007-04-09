@@ -1098,23 +1098,6 @@ bool save_player(void)
 		/* Hack -- Pretend the character was loaded */
 		character_loaded = TRUE;
 
-#ifdef VERIFY_SAVEFILE
-
-		/* Lock on savefile */
-		my_strcpy(temp, savefile, sizeof(temp));
-		my_strcat(temp, ".lok", sizeof(temp));
-
-		/* Grab permissions */
-		safe_setuid_grab();
-
-		/* Remove lock file */
-		fd_kill(temp);
-
-		/* Drop permissions */
-		safe_setuid_drop();
-
-#endif /* VERIFY_SAVEFILE */
-
 		/* Success */
 		result = TRUE;
 	}
