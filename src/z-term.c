@@ -1927,11 +1927,14 @@ errr Term_mousepress(int x, int y, char button)
  */
 errr Term_key_push(int k)
 {
-	if (!k) return (-1);
 	event_type ke;
+
+	if (!k) return (-1);
+
 	ke.type = EVT_KBRD;
 	ke.index = 0;
 	ke.key = k;
+
 	return Term_event_push(&ke);
 }
 

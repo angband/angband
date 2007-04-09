@@ -192,7 +192,8 @@ static byte char_idx = 0;
 int feat_order(int feat)
 {
 	feature_type *f_ptr = &f_info[feat];
-	switch(f_ptr->d_char) {
+	switch(f_ptr->d_char)
+	{
 		case '.': 				return 0;
 		case '^': 				return 1;
 		case '\'': case '+': 	return 2;
@@ -200,11 +201,12 @@ int feat_order(int feat)
 		case '#':				return 4;
 		case '*': case '%' :	return 5;
 		case ';': case ':' :	return 6;
+
 		default:
-		if(isdigit(f_ptr->d_char)) return 7;
-		return 8;
+			if (isdigit(f_ptr->d_char)) return 7;
+			return 8;
 	}
-};
+}
 
 
 /* HACK */
@@ -226,6 +228,7 @@ static int actual_width(int width) {
 	if(use_bigtile) width *= 2;
 		return width;
 }
+
 static int actual_height(int height) {
 	if(use_bigtile) height *= 2;
 	if (use_trptile) height = height * 3 / 2;
@@ -364,6 +367,10 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	int g_o_count = 0;				 /* object count for group */
 	int oid = -1;  				/* object identifiers */
 
+	region title_area = {0, 0, 0, 4};
+	region group_region = {0, 6, g_name_len, -2};
+	region object_region = {g_name_len+3, 6, 0, -2};
+
 	/* display state variables */
 	bool visual_list = FALSE;
 	byte attr_top = 0;
@@ -393,6 +400,8 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	int wid, hgt;
 	int i;
 	int prev_g = -1;
+
+	int omode = rogue_like_commands;
 
 	/* Get size */
 	Term_get_size(&wid, &hgt);
@@ -429,12 +438,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	if(g_name_len >= 20) g_name_len = 20;
 
 	/* Disable the roguelike commands for the duration */
-	int omode = rogue_like_commands;
 	rogue_like_commands = FALSE;
-
-	region title_area = {0, 0, 0, 4};
-	region group_region = {0, 6, g_name_len, -2};
-	region object_region = {g_name_len+3, 6, 0, -2};
 
 	/* Leave room for the group summary information */
 	if(g_funcs.summary) object_region.page_rows = -3;
@@ -3938,13 +3942,12 @@ void do_cmd_save_screen_html(void)
 	char file_name[1024];
 	char tmp_val[256];
 
-	typedef void (*dump_func)(FILE*);
+	typedef void (*dump_func)(FILE *);
 	dump_func dump_visuals [] = 
-		{dump_monsters, dump_features, dump_objects, dump_flavors, dump_colors};
+		{ dump_monsters, dump_features, dump_objects, dump_flavors, dump_colors };
 
 	/* File type is "TEXT" */
 	FILE_TYPE(FILE_TYPE_TEXT);
-
 
 	/* Ask for a file */
 	my_strcpy(tmp_val, "dump.html", sizeof(tmp_val));
@@ -3954,15 +3957,19 @@ void do_cmd_save_screen_html(void)
 	path_build(file_name, 1024, ANGBAND_DIR_USER, "dump.prf");
 	fff = my_fopen(file_name, "w");
 
-	if (!fff) {
+	/* Check for failure */
+	if (!fff)
+	{
 		msg_print("Screen dump failed.");
 		message_flush();
 		return;
 	}
-	for(i = 0; i < N_ELEMENTS(dump_visuals); i++)
-		dump_visuals[i](fff);
-	my_fclose(fff);
 
+	/* Dump all the visuals */
+	for (i = 0; i < N_ELEMENTS(dump_visuals); i++)
+		dump_visuals[i](fff);
+
+	my_fclose(fff);
 
 	/* Dump the screen with raw character attributes */
 	reset_visuals(FALSE);
@@ -3975,7 +3982,7 @@ void do_cmd_save_screen_html(void)
 	fd_kill(file_name);
 	do_cmd_redraw();
 
-	msg_print("Html screen dump saved.");
+	msg_print("HTML screen dump saved.");
 	message_flush();
 }
 
@@ -4028,15 +4035,15 @@ static void cleanup_cmds () {
 void do_cmd_options()
 {
 	int cursor = -1;
+	event_type c;
 
 	screen_save();
-
 	menu_layout(&option_menu, &SCREEN_REGION);
-	for(;;) {
-		event_type c;
+
+	while (c.key != ESCAPE)
+	{
 		Term_clear();
 		c = menu_select(&option_menu, &cursor, 0);
-		if(ESCAPE == c.key) break;
 	}
 
 	screen_load();
@@ -4045,15 +4052,15 @@ void do_cmd_options()
 void do_cmd_knowledge()
 {
 	int cursor = -1;
+	event_type c;
 
 	screen_save();
-
 	menu_layout(&knowledge_menu, &SCREEN_REGION);
-	for(;;) {
-		event_type c;
+
+	while (c.key != ESCAPE)
+	{
 		Term_clear();
 		c = menu_select(&knowledge_menu, &cursor, 0);
-		if(ESCAPE == c.key) break;
 	}
 
 	screen_load();
@@ -4114,14 +4121,20 @@ void init_cmd4_c(void)
 	menu_init(menu, MN_SCROLL, MN_EVT, &SCREEN_REGION);
 
 	/* initialize other static variables */
-	if(!obj_group_order) {
+	if (!obj_group_order)
+	{
 		int i;
 		int gid = -1;
+
 		C_MAKE(obj_group_order, TV_GOLD+1, int);
 		atexit(cleanup_cmds);
-		for(i = 0; i <= TV_GOLD; i++) /* allow for missing values */
+
+		/* Sllow for missing values */
+		for (i = 0; i <= TV_GOLD; i++)
 			obj_group_order[i] = -1;
-		for(i = 0; 0 != object_text_order[i].tval; i++) {
+
+		for (i = 0; 0 != object_text_order[i].tval; i++)
+		{
 			if(object_text_order[i].name) gid = i;
 			obj_group_order[object_text_order[i].tval] = gid;
 		}

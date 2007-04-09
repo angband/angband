@@ -77,10 +77,10 @@ typedef enum
 	EVT_OK			= 0x0100,		/* Callback successful */
 									/* For example, a command key action. */
 	EVT_REFRESH		= 0x0200,		/* Display refresh */
-	EVT_RESIZE		= 0x0400,		/* Display refresh */
+	EVT_RESIZE		= 0x0400,		/* Display resize */
 
-	EVT_AGAIN		= 0x40000000,	/* Retry notification */
-	EVT_STOP		= 0x80000000,	/* Loop stopped (never handled) */
+	EVT_AGAIN		= 0x4000000,	/* Retry notification */
+	EVT_STOP		= 0x8000000		/* Loop stopped (never handled) */
 } event_class;
 
 
