@@ -251,14 +251,22 @@
 
 /*
  * Store constants
+ *
+ * Special note about STORE_MAX_KEEP; not only must it be below
+ * STORE_INVEN_MAX, it must actually be below (STORE_INVEN_MAX - maximum
+ * staple items across all stores); i.e. if the General Store has three
+ * staple items (and no other store has more than three staple items),
+ * then STORE_MAX_KEEP > (STORE_INVEN_MAX - 3), or > 21 (in this case).
  */
 #define STORE_INVEN_MAX	24		/* Max number of discrete objs in inven */
 #define STORE_OBJ_LEVEL	5		/* Magic Level for normal stores */
 #define STORE_TURNOVER	9		/* Normal shop turnover, per day */
-#define STORE_MIN_KEEP	6		/* Min slots to "always" keep full */
+#define STORE_MIN_KEEP	6		/* Min slots to "always" keep full -
+                        		   must be above 0 */
 #define STORE_MAX_KEEP	18		/* Max slots to "always" keep full */
 #define STORE_SHUFFLE	25		/* 1/Chance (per day) of an owner changing */
 #define STORE_TURNS		1000	/* Number of turns between turnovers */
+#define STORE_CHOICES	32		/* Number of choices in the store selection table */
 
 
 /*

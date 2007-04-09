@@ -70,6 +70,7 @@ extern const bool option_norm[OPT_MAX];
 extern const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 extern cptr inscrip_text[MAX_INSCRIP];
 extern const grouper object_text_order[];
+extern const byte store_choices[MAX_STORES-2][STORE_CHOICES][2];
 
 /* variable.c */
 extern cptr copyright;
@@ -669,7 +670,7 @@ void do_cmd_squelch_autoinsc(void);
 extern void do_cmd_store(void);
 extern void store_shuffle(int which);
 extern void store_maint(int which);
-extern void store_init(int which);
+extern void store_init(void);
 
 /* util.c */
 extern void text_to_ascii(char *buf, size_t len, cptr str);
@@ -681,9 +682,9 @@ extern errr macro_free(void);
 extern errr macro_trigger_free(void);
 extern void flush(void);
 extern void flush_fail(void);
-extern char anykey(void);
 extern char inkey(void);
 extern event_type inkey_ex(void);
+extern char anykey(void);
 extern void bell(cptr reason);
 extern void sound(int val);
 extern s16b quark_add(cptr str);

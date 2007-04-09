@@ -744,7 +744,7 @@ static void display_race(menu_type *menu, int oid, bool cursor,
 static bool race_handler(char cmd, void *db, int oid)
 {
 	return handler_aux(cmd, oid, &p_ptr->prace, z_info->p_max,
-							0xffffffff, p_name+p_info[oid].name);
+							0xffffffff, p_name + p_info[oid].name);
 }
 
 /* CLASS */
@@ -758,64 +758,79 @@ static void display_class(menu_type *menu, int oid, bool cursor,
 static bool class_handler(char cmd, void *db, int oid)
 {
 	return handler_aux(cmd, oid, &p_ptr->pclass, z_info->c_max,
-							(rp_ptr->choice),  c_name+c_info[oid].name);
+							(rp_ptr->choice), c_name + c_info[oid].name);
 }
 
 
 static const menu_iter menu_defs[] = {
-	{0, 0, 0, display_gender, gender_handler },
-	{0, 0, 0, display_race, race_handler },
-	{0, 0, 0, display_class, class_handler },
+	{ 0, 0, 0, display_gender, gender_handler },
+	{ 0, 0, 0, display_race, race_handler },
+	{ 0, 0, 0, display_class, class_handler },
 };
 
 /* Menu display and selector */
 
 static bool choose_character()
 {
-	int i;
+	int i = 0;
 
-	const region *regions [] = {&gender_region, &race_region, &class_region};
-	byte *values [] = {&p_ptr->psex, &p_ptr->prace, &p_ptr->pclass};
-	int limits [] = {SEX_MALE+1, z_info->p_max, z_info->c_max};
-	const char *hints [] = {
+	const region *regions[] = { &gender_region, &race_region, &class_region };
+	byte *values[] = { &p_ptr->psex, &p_ptr->prace, &p_ptr->pclass };
+	int limits[] = { SEX_MALE + 1, z_info->p_max, z_info->c_max };
+
+	menu_type menu;
+
+	const char *hints[] =
+	{
 		"Your 'sex' does not have any significant gameplay effects.",
 		"Your 'race' determines various intrinsic factors and bonuses.",
-		"Your 'class' determines various intrinsic abilities and bonuses" };
+		"Your 'class' determines various intrinsic abilities and bonuses"
+	};
 	
 	typedef void (*browse_f) (int oid, void *, const region *loc);
-	browse_f browse [] = {NULL, race_aux_hook, class_aux_hook };
-	menu_type menu;
+	browse_f browse[] = {NULL, race_aux_hook, class_aux_hook };
+
+
 	WIPE(&menu, menu);
 	menu.cmd_keys = "?=*\r\n\x18";		 /* ?, ,= *, \n, <ctl-X> */
 
-	i = 0;
-	while(i < N_ELEMENTS(menu_defs))
+	while (i < (int)N_ELEMENTS(menu_defs))
 	{
 		event_type cx;
 		int cursor = *values[i];
+
 		menu.flags = MN_NO_TAGS | MN_DBL_TAP;
 		menu.count = limits[i];
 		menu.browse_hook = browse[i];
 		menu_init2(&menu, find_menu_skin(MN_SCROLL), &menu_defs[i], regions[i]);
-		clear_question();
 
+		clear_question();
 		Term_putstr(QUESTION_COL, QUESTION_ROW, -1, TERM_YELLOW, hints[i]);
+
 		cx = menu_select(&menu, &cursor, 0);
-		if(cx.key == ESCAPE) {
-			return FALSE; /* restart */
+
+		if (cx.key == ESCAPE)
+		{
+			/* Restart */
+			return FALSE;
 		}
-		else if(cx.type == EVT_BACK) {
+		else if (cx.type == EVT_BACK)
+		{
+			/* Move back one menu */
 			*values[i] = cursor;
 			region_erase(regions[i]);
 			i--;
 		}
-		else if(cx.key == '*') {
+		else if (cx.key == '*')
+		{
 			/* Force refresh */
 			Term_key_push('6');
 			continue;
 		}
+
 		else i++;
 	}
+
 	return TRUE;
 }
 
@@ -1499,9 +1514,6 @@ static bool player_birth_aux(void)
  */
 void player_birth(void)
 {
-	int i, n;
-
-
 	/* Create a new character */
 	while (1)
 	{
@@ -1525,16 +1537,6 @@ void player_birth(void)
 	player_outfit();
 
 
-	/* Shops */
-	for (n = 0; n < MAX_STORES; n++)
-	{
-		/* Initialize */
-		store_init(n);
-
-		/* Ignore home */
-		if (n == STORE_HOME) continue;
-
-		/* Maintain the shop (ten times) */
-		for (i = 0; i < 10; i++) store_maint(n);
-	}
+	/* Initialise the stores */
+	store_init();
 }
