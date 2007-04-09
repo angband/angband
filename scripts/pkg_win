@@ -33,7 +33,7 @@ touch lib/apex/delete.me lib/bone/delete.me lib/data/delete.me \
       lib/data/delete.me lib/save/delete.me lib/bone/delete.me
 
 cp ../*.exe .
-cp ../changes.txt ../AUTHORS ../THANKS ../TODO ../COPYING ../readme.txt .
+cp ../changes.txt ../AUTHORS ../THANKS ../COPYING ../readme.txt .
 
 cp ../lib/edit/*.txt lib/edit
 cp ../lib/file/*.txt lib/file

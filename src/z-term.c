@@ -2298,7 +2298,15 @@ errr Term_resize(int w, int h)
 
 	/* Call the resize hook */
 	if (Term->scr->resize_hook)
+	{
 		Term->scr->resize_hook();
+	}
+	else
+	{
+		/* Push a resize event onto the stack */
+		event_type evt = { EVT_RESIZE, 0, 0, 0, 0 };
+		Term_event_push(&evt);
+	}
 
 	/* Success */
 	return (0);
