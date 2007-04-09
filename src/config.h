@@ -366,12 +366,6 @@
 
 
 /*
- * OPTION: Check the "time" against "lib/file/hours.txt"
- */
-/* #define CHECK_TIME */
-
-
-/*
  * OPTION: Prevent usage of the "ANGBAND_PATH" environment variable and
  * the '-d<what>=<path>' command line option (except for '-du=<path>').
  *

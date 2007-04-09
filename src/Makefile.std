@@ -70,7 +70,7 @@ SYS_lfb = -DUSE_LFB
 
 # Basic compiler stuff
 CC = gcc
-CFLAGS = -Wall -O2 -fno-strength-reduce
+CFLAGS = -Wall -O2 -Wno-unused-parameter
 
 
 # Add additional search directives here

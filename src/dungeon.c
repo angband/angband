@@ -617,40 +617,6 @@ static void process_world(void)
 
 	/*** Check the Time and Load ***/
 
-	if (!(turn % 1000))
-	{
-		/* Check time and load */
-		if (0 != check_time())
-		{
-			/* Warning */
-			if (closing_flag <= 2)
-			{
-				/* Disturb */
-				disturb(0, 0);
-
-				/* Count warnings */
-				closing_flag++;
-
-				/* Message */
-				msg_print("The gates to ANGBAND are closing...");
-				msg_print("Please finish up and/or save your game.");
-			}
-
-			/* Slam the gate */
-			else
-			{
-				/* Message */
-				msg_print("The gates to ANGBAND are now closed.");
-
-				/* Stop playing */
-				p_ptr->playing = FALSE;
-
-				/* Leaving */
-				p_ptr->leaving = TRUE;
-			}
-		}
-	}
-
 	/* Play an ambient sound at regular intervals. */
 	if (!(turn % ((10L * TOWN_DAWN) / 4)))
 	{

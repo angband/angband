@@ -176,9 +176,9 @@ static void prt_welcome(const owner_type *ot_ptr)
 
 
 		/* Get a title for the character */
-		if (i == 4)           player_name = c_text + cp_ptr->title[(p_ptr->lev - 1) / 5];
-		else if (rand_int(2)) player_name = op_ptr->full_name;
-		else                  player_name = "sir";
+		if ((i % 2) && rand_int(2)) player_name = c_text + cp_ptr->title[(p_ptr->lev - 1) / 5];
+		else if (rand_int(2))       player_name = op_ptr->full_name;
+		else                        player_name = "sir";
 
 		/* Balthazar says "Welcome" */
 		prt(format(comment_welcome[i], short_name, player_name), 0, 0);
@@ -1504,7 +1504,7 @@ static void store_display_recalc(void)
 	Term_get_size(&wid, &hgt);
 
 	/* Clip the width at a maximum of 104 (enough room for an 80-char item name) */
-	if (wid > 104) wid = 100;
+	if (wid > 104) wid = 104;
 
 	/* Clip the text_out function at two smaller than the screen width */
 	text_out_wrap = wid - 2;
