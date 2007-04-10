@@ -639,7 +639,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 					/* Default note */
 					if (old_note)
-						sprintf(note_text, "%s", quark_str(old_note));
+						strnfmt(note_text, sizeof note_text, "%s", quark_str(old_note));
 
 					/* Get a filename */
 					if (!askfor_aux(note_text, sizeof note_text)) continue;
@@ -1703,7 +1703,7 @@ void do_cmd_change_name(void)
 		{
 			char ftmp[80];
 
-			sprintf(ftmp, "%s.txt", op_ptr->base_name);
+			strnfmt(ftmp, sizeof ftmp, "%s.txt", op_ptr->base_name);
 
 			if (get_string("File name: ", ftmp, 80))
 			{
@@ -2031,7 +2031,7 @@ static void do_cmd_pref_file_hack(long row)
 	prt("File: ", row + 2, 0);
 
 	/* Default filename */
-	sprintf(ftmp, "%s.prf", op_ptr->base_name);
+	strnfmt(ftmp, sizeof ftmp, "%s.prf", op_ptr->base_name);
 
 	/* Ask for a file (or cancel) */
 	if (!askfor_aux(ftmp, sizeof ftmp)) return;
@@ -2497,7 +2497,7 @@ static void dump_pref_file(void (*dump)(FILE*), const char *title)
 	prt("File: ", row + 2, 0);
 
 	/* Default filename */
-	sprintf(ftmp, "%s.prf", op_ptr->base_name);
+	strnfmt(ftmp, sizeof ftmp, "%s.prf", op_ptr->base_name);
 
 	/* Get a filename */
 	if (!askfor_aux(ftmp, sizeof ftmp)) return;

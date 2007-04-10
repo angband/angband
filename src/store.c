@@ -1618,7 +1618,7 @@ static void inven_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 	{
 		int wgt = o_ptr->weight;
 
-		sprintf(out_val, "%3d.%d lb", wgt / 10, wgt % 10);
+		strnfmt(out_val, sizeof out_val, "%3d.%d lb", wgt / 10, wgt % 10);
 		put_str(out_val, row, scr_places_x[LOC_WEIGHT]);
 	}
 
@@ -1634,9 +1634,9 @@ static void inven_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 		/* Actually draw the price */
 		if (((o_ptr->tval == TV_WAND) || (o_ptr->tval == TV_STAFF)) &&
 		    (o_ptr->number > 1))
-			sprintf(out_val, "%9ld avg", (long)x);
+			strnfmt(out_val, sizeof out_val, "%9ld avg", (long)x);
 		else
-			sprintf(out_val, "%9ld    ", (long)x);
+			strnfmt(out_val, sizeof out_val, "%9ld    ", (long)x);
 
 		c_put_str(TERM_WHITE, out_val, row, scr_places_x[LOC_PRICE]);
 	}
@@ -1677,7 +1677,7 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 	{
 		int wgt = o_ptr->weight;
 
-		sprintf(out_val, "%3d.%d lb", wgt / 10, wgt % 10);
+		strnfmt(out_val, sizeof out_val, "%3d.%d lb", wgt / 10, wgt % 10);
 		put_str(out_val, row, scr_places_x[LOC_WEIGHT]);
 	}
 
@@ -1696,9 +1696,9 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 		/* Actually draw the price */
 		if (((o_ptr->tval == TV_WAND) || (o_ptr->tval == TV_STAFF)) &&
 		    (o_ptr->number > 1))
-			sprintf(out_val, "%9ld avg", (long)x);
+			strnfmt(out_val, sizeof out_val, "%9ld avg", (long)x);
 		else
-			sprintf(out_val, "%9ld    ", (long)x);
+			strnfmt(out_val, sizeof out_val, "%9ld    ", (long)x);
 
 		c_put_str(colour, out_val, row, scr_places_x[LOC_PRICE]);
 	}
@@ -2813,7 +2813,7 @@ void do_cmd_store(void)
 
 	menu_type menu;
 	event_type evt;
-	int cursor;
+	int cursor = 0;
 
 	store_type *st_ptr = &store[store_current];
 
