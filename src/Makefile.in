@@ -60,7 +60,7 @@ am_angband_OBJECTS = z-util.$(OBJEXT) z-virt.$(OBJEXT) \
 	spells2.$(OBJEXT) melee1.$(OBJEXT) melee2.$(OBJEXT) \
 	save.$(OBJEXT) files.$(OBJEXT) cmd1.$(OBJEXT) cmd2.$(OBJEXT) \
 	cmd3.$(OBJEXT) cmd4.$(OBJEXT) cmd5.$(OBJEXT) cmd6.$(OBJEXT) \
-	store.$(OBJEXT) birth.$(OBJEXT) load.$(OBJEXT) \
+	store.$(OBJEXT) birth.$(OBJEXT) load.$(OBJEXT) ui.$(OBJEXT) \
 	wizard1.$(OBJEXT) wizard2.$(OBJEXT) main-cap.$(OBJEXT) \
 	main-gcu.$(OBJEXT) main-x11.$(OBJEXT) main-xaw.$(OBJEXT) \
 	main.$(OBJEXT) main-win.$(OBJEXT) main-xpj.$(OBJEXT) \
@@ -192,7 +192,7 @@ angband_SOURCES = \
   xtra1.c xtra2.c spells1.c spells2.c \
   melee1.c melee2.c save.c files.c \
   cmd1.c cmd2.c cmd3.c cmd4.c cmd5.c cmd6.c \
-  store.c birth.c load.c \
+  store.c birth.c load.c ui.c \
   wizard1.c wizard2.c \
   main-cap.c main-gcu.c main-x11.c main-xaw.c main.c \
   main-win.c main-xpj.c main-vcs.c main-gtk.c main-lfb.c \
@@ -346,6 +346,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/squelch.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/store.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tables.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ui.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/use-obj.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/util.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/variable.Po@am__quote@

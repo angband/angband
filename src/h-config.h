@@ -6,7 +6,7 @@
 /*
  * Choose the hardware, operating system, and compiler.
  * Also, choose various "system level" compilation options.
- * A lot of these definitions take effect in "h-system.h"
+ * A lot of these definitions take effect in "h-basic.h"
  *
  * Note that most of these "options" are defined by the compiler,
  * the "Makefile", the "project file", or something similar, and
@@ -14,27 +14,6 @@
  */
 
 #include <limits.h>
-
-/*
- * OPTION: Compile on a Windows machine
- */
-#ifndef WINDOWS
-/* #define WINDOWS */
-#endif
-
-/*
- * OPTION: Compile on an MSDOS machine
- */
-#ifndef MSDOS
-/* #define MSDOS */
-#endif
-
-/*
- * OPTION: Compile on a HPUX version of UNIX
- */
-#ifndef HPUX
-/* #define HPUX */
-#endif
 
 
 /*
@@ -139,15 +118,12 @@
 
 /*
  * OPTION: Define "HAVE_USLEEP" only if "usleep()" exists.
- *
  * Note that this is only relevant for "SET_UID" machines.
  *
  * (Set in autoconf.h when HAVE_CONFIG_H -- i.e. when configure is used.)
  */
 #if defined(SET_UID) && !defined(HAVE_CONFIG_H)
-# if !defined(HPUX) && !defined(ISC)
-#  define HAVE_USLEEP
-# endif
+# define HAVE_USLEEP
 #endif
 
 
