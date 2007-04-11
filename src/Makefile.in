@@ -53,21 +53,22 @@ binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 am_angband_OBJECTS = z-util.$(OBJEXT) z-virt.$(OBJEXT) \
 	z-form.$(OBJEXT) z-rand.$(OBJEXT) z-term.$(OBJEXT) \
-	variable.$(OBJEXT) tables.$(OBJEXT) util.$(OBJEXT) \
-	cave.$(OBJEXT) object1.$(OBJEXT) object2.$(OBJEXT) \
-	monster1.$(OBJEXT) monster2.$(OBJEXT) xtra1.$(OBJEXT) \
-	xtra2.$(OBJEXT) spells1.$(OBJEXT) spells2.$(OBJEXT) \
-	melee1.$(OBJEXT) melee2.$(OBJEXT) save.$(OBJEXT) \
-	files.$(OBJEXT) cmd1.$(OBJEXT) cmd2.$(OBJEXT) cmd3.$(OBJEXT) \
-	cmd4.$(OBJEXT) cmd5.$(OBJEXT) cmd6.$(OBJEXT) store.$(OBJEXT) \
-	birth.$(OBJEXT) load.$(OBJEXT) wizard1.$(OBJEXT) \
-	wizard2.$(OBJEXT) main-cap.$(OBJEXT) main-gcu.$(OBJEXT) \
-	main-x11.$(OBJEXT) main-xaw.$(OBJEXT) main.$(OBJEXT) \
-	main-win.$(OBJEXT) main-xpj.$(OBJEXT) main-vcs.$(OBJEXT) \
-	main-gtk.$(OBJEXT) main-lfb.$(OBJEXT) generate.$(OBJEXT) \
-	dungeon.$(OBJEXT) init1.$(OBJEXT) init2.$(OBJEXT) \
-	randart.$(OBJEXT) use-obj.$(OBJEXT) x-spell.$(OBJEXT) \
-	obj-info.$(OBJEXT) squelch.$(OBJEXT)
+	z-file.$(OBJEXT) variable.$(OBJEXT) tables.$(OBJEXT) \
+	util.$(OBJEXT) cave.$(OBJEXT) object1.$(OBJEXT) \
+	object2.$(OBJEXT) monster1.$(OBJEXT) monster2.$(OBJEXT) \
+	xtra1.$(OBJEXT) xtra2.$(OBJEXT) spells1.$(OBJEXT) \
+	spells2.$(OBJEXT) melee1.$(OBJEXT) melee2.$(OBJEXT) \
+	save.$(OBJEXT) files.$(OBJEXT) cmd1.$(OBJEXT) cmd2.$(OBJEXT) \
+	cmd3.$(OBJEXT) cmd4.$(OBJEXT) cmd5.$(OBJEXT) cmd6.$(OBJEXT) \
+	store.$(OBJEXT) birth.$(OBJEXT) load.$(OBJEXT) \
+	wizard1.$(OBJEXT) wizard2.$(OBJEXT) main-cap.$(OBJEXT) \
+	main-gcu.$(OBJEXT) main-x11.$(OBJEXT) main-xaw.$(OBJEXT) \
+	main.$(OBJEXT) main-win.$(OBJEXT) main-xpj.$(OBJEXT) \
+	main-vcs.$(OBJEXT) main-gtk.$(OBJEXT) main-lfb.$(OBJEXT) \
+	generate.$(OBJEXT) dungeon.$(OBJEXT) init1.$(OBJEXT) \
+	init2.$(OBJEXT) randart.$(OBJEXT) randname.$(OBJEXT) \
+	use-obj.$(OBJEXT) x-spell.$(OBJEXT) obj-info.$(OBJEXT) \
+	squelch.$(OBJEXT)
 angband_OBJECTS = $(am_angband_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I.
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -185,7 +186,7 @@ SUFFIXES = .rc
 angband_LDADD = @ANGBAND_OBJS@
 angband_DEPENDENCIES = @ANGBAND_OBJS@
 angband_SOURCES = \
-  z-util.c z-virt.c z-form.c z-rand.c z-term.c \
+  z-util.c z-virt.c z-form.c z-rand.c z-term.c z-file.c \
   variable.c tables.c util.c cave.c \
   object1.c object2.c monster1.c monster2.c \
   xtra1.c xtra2.c spells1.c spells2.c \
@@ -195,7 +196,7 @@ angband_SOURCES = \
   wizard1.c wizard2.c \
   main-cap.c main-gcu.c main-x11.c main-xaw.c main.c \
   main-win.c main-xpj.c main-vcs.c main-gtk.c main-lfb.c \
-  generate.c dungeon.c init1.c init2.c randart.c \
+  generate.c dungeon.c init1.c init2.c randart.c randname.c \
   use-obj.c x-spell.c obj-info.c squelch.c \
   angband.h config.h defines.h externs.h h-basic.h \
   h-config.h h-define.h h-system.h h-type.h init.h \
@@ -337,6 +338,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/object1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/object2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/randart.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/randname.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/readdib.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/save.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spells1.Po@am__quote@
@@ -352,6 +354,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/x-spell.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xtra1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xtra2.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/z-file.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/z-form.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/z-rand.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/z-term.Po@am__quote@

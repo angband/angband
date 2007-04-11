@@ -12,7 +12,7 @@ angband_LDADD = @ANGBAND_OBJS@
 angband_DEPENDENCIES = @ANGBAND_OBJS@
 
 angband_SOURCES = \
-  z-util.c z-virt.c z-form.c z-rand.c z-term.c \
+  z-util.c z-virt.c z-form.c z-rand.c z-term.c z-file.c \
   variable.c tables.c util.c cave.c \
   object1.c object2.c monster1.c monster2.c \
   xtra1.c xtra2.c spells1.c spells2.c \
@@ -22,7 +22,7 @@ angband_SOURCES = \
   wizard1.c wizard2.c \
   main-cap.c main-gcu.c main-x11.c main-xaw.c main.c \
   main-win.c main-xpj.c main-vcs.c main-gtk.c main-lfb.c \
-  generate.c dungeon.c init1.c init2.c randart.c \
+  generate.c dungeon.c init1.c init2.c randart.c randname.c \
   use-obj.c x-spell.c obj-info.c squelch.c \
   angband.h config.h defines.h externs.h h-basic.h \
   h-config.h h-define.h h-system.h h-type.h init.h \
