@@ -30,83 +30,12 @@
 #endif
 
 /*
- * OPTION: Compile on a SYS III version of UNIX
- */
-#ifndef SYS_III
-/* #define SYS_III */
-#endif
-
-/*
- * OPTION: Compile on a SYS V version of UNIX
- */
-#ifndef SYS_V
-/* #define SYS_V */
-#endif
-
-/*
  * OPTION: Compile on a HPUX version of UNIX
  */
 #ifndef HPUX
 /* #define HPUX */
 #endif
 
-/*
- * OPTION: Compile on an SGI running IRIX
- */
-#ifndef SGI
-/* #define SGI */
-#endif
-
-/*
- * OPTION: Compile on a SunOS machine
- */
-#ifndef SUNOS
-/* #define SUNOS */
-#endif
-
-/*
- * OPTION: Compile on a Solaris machine
- */
-#ifndef SOLARIS
-/* #define SOLARIS */
-#endif
-
-/*
- * OPTION: Compile on an ultrix/4.2BSD/Dynix/etc. version of UNIX,
- * Do not define this if you are on any kind of SunOS.
- */
-#ifndef ULTRIX
-/* #define ULTRIX */
-#endif
-
-
-
-/*
- * Extract the "SUNOS" flag from the compiler
- */
-#if defined(sun)
-# ifndef SUNOS
-#   define SUNOS
-# endif
-#endif
-
-/*
- * Extract the "ULTRIX" flag from the compiler
- */
-#if defined(ultrix) || defined(Pyramid)
-# ifndef ULTRIX
-#  define ULTRIX
-# endif
-#endif
-
-/*
- * Extract the "ATARI" flag from the compiler [cjh]
- */
-#if defined(__atarist) || defined(__atarist__)
-# ifndef ATARI
-#  define ATARI
-# endif
-#endif
 
 /*
  * Extract the "RISCOS" flag from the compiler
@@ -114,15 +43,6 @@
 #ifdef __riscos
 # ifndef RISCOS
 #  define RISCOS
-# endif
-#endif
-
-/*
- * Extract the "SGI" flag from the compiler
- */
-#ifdef sgi
-# ifndef SGI
-#  define SGI
 # endif
 #endif
 
@@ -155,25 +75,6 @@
 # endif
 #endif
 
-/*
- * OPTION: Define "L64" if a "long" is 64-bits.  See "h-types.h".
- * The only such platform that angband is ported to is currently
- * DEC Alpha AXP running OSF/1 (OpenVMS uses 32-bit longs).
- *
- * Try to use __WORDSIZE to test for 64-bit platforms.
- * I don't know how portable this is.
- * -CJN-
- */
-#ifdef __WORDSIZE
-# if __WORDSIZE == 64
-#  define L64
-# endif
-#endif
-
-#if defined(__alpha) && defined(__osf__) && !defined(L64)
-# define L64
-#endif
-
 
 
 /*
@@ -189,7 +90,7 @@
  */
 #if !defined(MACH_O_CARBON) && !defined(WINDOWS) && \
     !defined(MSDOS) && !defined(USE_EMX) && \
-    !defined(AMIGA) && !defined(RISCOS)
+    !defined(AMIGA) && !defined(RISCOS) && !defined(GAMEBOY)
 # define SET_UID
 #endif
 
@@ -244,7 +145,7 @@
  * (Set in autoconf.h when HAVE_CONFIG_H -- i.e. when configure is used.)
  */
 #if defined(SET_UID) && !defined(HAVE_CONFIG_H)
-# if !defined(HPUX) && !defined(ULTRIX) && !defined(ISC)
+# if !defined(HPUX) && !defined(ISC)
 #  define HAVE_USLEEP
 # endif
 #endif

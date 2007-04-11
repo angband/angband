@@ -2027,8 +2027,6 @@ errr file_character(cptr name, bool full)
 	byte a;
 	char c;
 
-	int fd;
-
 	FILE *fff = NULL;
 
 	store_type *st_ptr = &store[STORE_HOME];
@@ -2047,27 +2045,22 @@ errr file_character(cptr name, bool full)
 	/* File type is "TEXT" */
 	FILE_TYPE(FILE_TYPE_TEXT);
 
-	/* Check for existing file */
-	fd = fd_open(buf, O_RDONLY);
-
-	/* Existing file */
-	if (fd >= 0)
+	/* Check if the file currently exists */
+	if (my_fexists(buf))
 	{
 		char out_val[160];
-
-		/* Close the file */
-		fd_close(fd);
 
 		/* Build query */
 		strnfmt(out_val, sizeof(out_val), "Replace existing file %s? ", buf);
 
 		/* Ask */
-		if (get_check(out_val)) fd = -1;
+		if (get_check(out_val))
+			return -1;
 	}
 
-	/* Open the non-existing file */
-	if (fd < 0) fff = my_fopen(buf, "w");
 
+	/* Open the file for writing */
+	fff = my_fopen(buf, "w");
 
 	/* Invalid file */
 	if (!fff) return (-1);

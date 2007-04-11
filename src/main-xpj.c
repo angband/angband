@@ -33,6 +33,7 @@
 
 
 #include "angband.h"
+#define uint unsigned int
 
 
 #ifdef USE_XPJ

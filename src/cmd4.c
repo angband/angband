@@ -2075,9 +2075,6 @@ static bool update_option(char key, void *pgdb, int oid)
 	case 'T': case '5': case '\xff':
 		op_ptr->opt[oid] = !op_ptr->opt[oid];
 		break;
-	case 0xff:
-		op_ptr->opt[oid] = !op_ptr->opt[oid];
-		break;
 	case '?':
 		show_file(format("option.txt#%s", option_text[oid]), NULL, 0, 0);
 		break;

@@ -10,26 +10,25 @@
 
 
 /*
- * This file helps Angband run on Unix/Curses machines.
+ * This file provides support for Angband using the Curses library.  To use
+ * it, define USE_GCU in your makefile, and if you are using the ncurses
+ * library, also add USE_NCURSES.
  *
  *
- * To use this file, you must define "USE_GCU" in the Makefile.
+ * Note that this file is not *intended* to support non-Unix machines, nor is
+ * it intended to support VMS or other bizarre setups.  It should, however,
+ * work with most versions of "curses" or "ncurses".
  *
+ * This package assumes that the underlying "curses" handles both the "nonl()"
+ * and "cbreak()" commands correctly, see the "OPTION" below.
  *
- * Note that this file is not "intended" to support non-Unix machines,
- * nor is it intended to support VMS or other bizarre setups.
- *
- * Also, this package assumes that the underlying "curses" handles both
- * the "nonl()" and "cbreak()" commands correctly, see the "OPTION" below.
- *
- * This code should work with most versions of "curses" or "ncurses",
- * and the "main-ncu.c" file (and USE_NCU define) are no longer used.
  *
  * See also "USE_CAP" and "main-cap.c" for code that bypasses "curses"
  * and uses the "termcap" information directly, or even bypasses the
  * "termcap" information and sends direct vt100 escape sequences.
  *
- * This file provides up to 4 term windows.
+ * This file provides up to 4 term windows, or alternatively, bigscreen
+ * support.
  *
  * This file will attempt to redefine the screen colors to conform to
  * standard Angband colors.  It will only do so if the terminal type

@@ -221,6 +221,26 @@ errr my_fputs(FILE *fff, cptr buf, size_t n)
 }
 
 
+/*
+ * Check to see if a file exists, by opening it read-only.
+ *
+ * Return TRUE if it does, FALSE if it does not.
+ */
+bool my_fexists(const char *fname)
+{
+	int fd;
+
+	/* Try to open it */
+	fd = fd_open(fname, O_RDONLY);
+
+	/* It worked */
+	if (fd >= 0)
+		fd_close(fd);
+
+	return (fd == 0) ? FALSE : TRUE;
+}
+
+
 
 /* The file routines for RISC OS are in main-ros.c. */
 #ifndef RISCOS

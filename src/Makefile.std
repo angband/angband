@@ -110,12 +110,6 @@ ifeq ($(uname),Linux)
   CFLAGS += -DHAVE_MKSTEMP
 endif
 
-# Add Solaris bits -- untested
-ifeq ($(uname),SunOS)
-  LIBS += -lsocket
-  CFLAGS += -DSOLARIS
-endif
-
 
 # Object definitions
 X11OBJS = maid-x11.o main-x11.o main-xaw.o main-gtk.o main-xpj.o

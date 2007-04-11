@@ -62,10 +62,6 @@
  * by the user) will NOT end in the "PATH_SEP" string, see the special
  * "path_build()" function in "util.c" for more information.
  *
- * Mega-Hack -- support fat raw files under NEXTSTEP, using special
- * "suffixed" directories for the "ANGBAND_DIR_DATA" directory, but
- * requiring the directories to be created by hand by the user.
- *
  * Hack -- first we free all the strings, since this is known
  * to succeed even if the strings have not been allocated yet,
  * as long as the variables start out as "NULL".  This allows
@@ -203,45 +199,6 @@ void init_file_paths(char *path)
 	/* Build a path name */
 	strcpy(tail, "script");
 	ANGBAND_DIR_SCRIPT = string_make(path);
-
-
-#ifdef NeXT
-
-	/* Allow "fat binary" usage with NeXT */
-	if (TRUE)
-	{
-		cptr next = NULL;
-
-# if defined(m68k)
-		next = "m68k";
-# endif
-
-# if defined(i386)
-		next = "i386";
-# endif
-
-# if defined(sparc)
-		next = "sparc";
-# endif
-
-# if defined(hppa)
-		next = "hppa";
-# endif
-
-		/* Use special directory */
-		if (next)
-		{
-			/* Forget the old path name */
-			string_free(ANGBAND_DIR_DATA);
-
-			/* Build a new path name */
-			sprintf(tail, "data-%s", next);
-			ANGBAND_DIR_DATA = string_make(path);
-		}
-	}
-
-#endif /* NeXT */
-
 }
 
 

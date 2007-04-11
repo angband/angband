@@ -968,8 +968,6 @@ static bool wr_savefile_new(void)
 
 /*
  * Medium level player saver
- *
- * XXX XXX XXX Angband 2.8.0 will use "fd" instead of "fff" if possible
  */
 static bool save_player_aux(cptr name)
 {

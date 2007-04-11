@@ -72,7 +72,7 @@
  */
 
 #include "angband.h"
-
+#define uint unsigned int
 
 #ifdef WINDOWS
 
@@ -2610,7 +2610,7 @@ static void windows_map_aux(void)
 static void windows_map(void)
 {
 	term_data *td = &data[0];
-	char ch;
+	event_type ch;
 
 	/* Only in graphics mode since the fonts can't be scaled */
 	if (!use_graphics) return;

@@ -30,20 +30,9 @@
  * Unix X11 plus the Athena Widget set), and "USE_CAP" (allow use with
  * the "termcap" library, or with hard-coded vt100 terminals).
  *
- * The old "USE_NCU" option has been replaced with "USE_GCU".
- *
  * Several other such options are available for non-unix machines,
  * such as "MACINTOSH", "WINDOWS", "USE_IBM", "USE_EMX".
- *
- * You may also need to specify the "system", using defines such as
- * "SOLARIS" (for Solaris), etc, see "h-config.h" for more info.
  */
-
-
-/*
- * OPTION: Include "ncurses.h" instead of "curses.h" in "main-gcu.c"
- */
-/* #define USE_NCURSES */
 
 
 /*
@@ -63,15 +52,6 @@
  */
 #ifdef _POSIX_SAVED_IDS
 # define SAFE_SETUID_POSIX
-#endif
-
-
-/*
- * Prevent problems on (non-Solaris) Suns using "SAFE_SETUID".
- * The SAFE_SETUID code is weird, use it at your own risk...
- */
-#if defined(SUNOS) && !defined(SOLARIS)
-# undef SAFE_SETUID_POSIX
 #endif
 
 
@@ -326,18 +306,6 @@
  */
 #ifdef SET_UID
 # define SAVEFILE_USE_UID
-#endif /* SET_UID */
-
-
-/*
- * Allow the user to execute his own scripts in debug mode.
- *
- * The user-script code has not been checked for security issues yet,
- * so the user shouldn't be allowed to execute his own scripts from
- * a setgid executable.
- */
-#ifndef SET_UID
-# define ALLOW_USER_SCRIPTS
 #endif /* SET_UID */
 
 
