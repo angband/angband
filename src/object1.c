@@ -9,6 +9,7 @@
  */
 
 #include "angband.h"
+#include "randname.h"
 
 
 /*
@@ -16,35 +17,6 @@
  */
 #define MAX_TITLES     50       /* Used with scrolls (min 48) */
 #define MAX_SYLLABLES 158       /* Used with scrolls (see below) */
-
-
-/*
- * Syllables for scrolls (must be 1-4 letters each).
- */
-
-static cptr syllables[MAX_SYLLABLES] =
-{
-	"a", "ab", "ag", "aks", "ala", "an", "ankh", "app",
-	"arg", "arze", "ash", "aus", "ban", "bar", "bat", "bek",
-	"bie", "bin", "bit", "bjor", "blu", "bot", "bu",
-	"byt", "comp", "con", "cos", "cre", "dalf", "dan",
-	"den", "der", "doe", "dok", "eep", "el", "eng", "er", "ere", "erk",
-	"esh", "evs", "fa", "fid", "flit", "for", "fri", "fu", "gan",
-	"gar", "glen", "gop", "gre", "ha", "he", "hyd", "i",
-	"ing", "ion", "ip", "ish", "it", "ite", "iv", "jo",
-	"kho", "kli", "klis", "la", "lech", "man", "mar",
-	"me", "mi", "mic", "mik", "mon", "mung", "mur", "nag", "nej",
-	"nelg", "nep", "ner", "nes", "nis", "nih", "nin", "o",
-	"od", "ood", "org", "orn", "ox", "oxy", "pay", "pet",
-	"ple", "plu", "po", "pot", "prok", "re", "rea", "rhov",
-	"ri", "ro", "rog", "rok", "rol", "sa", "san", "sat",
-	"see", "sef", "seh", "shu", "ski", "sna", "sne", "snik",
-	"sno", "so", "sol", "sri", "sta", "sun", "ta", "tab",
-	"tem", "ther", "ti", "tox", "trol", "tue", "turs", "u",
-	"ulk", "um", "un", "uni", "ur", "val", "viv", "vly",
-	"vom", "wah", "wed", "werg", "wex", "whon", "wun", "x",
-	"yerg", "yp", "zun", "tri", "blaa"
-};
 
 
 /*
@@ -157,15 +129,10 @@ static void flavor_assign_random(byte tval)
  *
  * Scroll titles are always between 6 and 14 letters long.  This is
  * ensured because every title is composed of whole words, where every
- * word is from 1 to 8 letters long (one or two syllables of 1 to 4
- * letters each), and that no scroll is finished until it attempts to
- * grow beyond 15 letters.  The first time this can happen is when the
- * current title has 6 letters and the new word has 8 letters, which
- * would result in a 6 letter scroll title.
- *
- * Duplicate titles are avoided by requiring that no two scrolls share
- * the same first four letters (not the most efficient method, and not
- * the least efficient method, but it will always work).
+ * word is from 2 to 8 letters long, and that no scroll is finished
+ * until it attempts to grow beyond 15 letters.  The first time this
+ * can happen is when the current title has 6 letters and the new word
+ * has 8 letters, which would result in a 6 letter scroll title.
  *
  * Hack -- make sure everything stays the same for each saved game
  * This is accomplished by the use of a saved "random seed", as in
@@ -176,13 +143,11 @@ void flavor_init(void)
 {
 	int i, j;
 
-
 	/* Hack -- Use the "simple" RNG */
 	Rand_quick = TRUE;
 
 	/* Hack -- Induce consistant flavors */
 	Rand_value = seed_flavor;
-
 
 	flavor_assign_fixed();
 
@@ -198,76 +163,42 @@ void flavor_init(void)
 	/* Scrolls (random titles, always white) */
 	for (i = 0; i < MAX_TITLES; i++)
 	{
-		/* Get a new title */
-		while (TRUE)
+		char buf[24];
+		char *end = buf;
+		int titlelen = 0;
+		int wordlen;
+		bool okay = TRUE;
+
+		wordlen = make_word(RANDNAME_SCROLL, 2, 8, end, 24);
+		while (titlelen + wordlen < 15)
 		{
-			char buf[80];
-
-			bool okay;
-
-			/* Start a new title */
-			buf[0] = '\0';
-
-			/* Collect words until done */
-			while (1)
+			end[wordlen] = ' ';
+			titlelen += wordlen + 1;
+			end += wordlen + 1;
+			wordlen = make_word(RANDNAME_SCROLL, 2, 8, end, 24 - titlelen);
+		}
+		buf[titlelen - 1] = '\0';
+          
+		/* Check the scroll name hasn't already been generated */
+		for (j = 0; j < i; j++)
+		{
+			if (streq(buf, scroll_adj[j]))
 			{
-				int q, s;
-
-				char tmp[80];
-
-				/* Start a new word */
-				tmp[0] = '\0';
-
-				/* Choose one or two syllables */
-				s = ((rand_int(100) < 30) ? 1 : 2);
-
-				/* Add a one or two syllable word */
-				for (q = 0; q < s; q++)
-				{
-					/* Add the syllable */
-					my_strcat(tmp, syllables[rand_int(MAX_SYLLABLES)], sizeof(tmp));
-				}
-
-				/* Stop before getting too long */
-				if (strlen(buf) + 1 + strlen(tmp) > 15) break;
-
-				/* Add a space */
-				my_strcat(buf, " ", sizeof(buf));
-
-				/* Add the word */
-				my_strcat(buf, tmp, sizeof(buf));
-			}
-
-			/* Save the title */
-			my_strcpy(scroll_adj[i], buf+1, sizeof(scroll_adj[0]));
-
-			/* Assume okay */
-			okay = TRUE;
-
-			/* Check for "duplicate" scroll titles */
-			for (j = 0; j < i; j++)
-			{
-				cptr hack1 = scroll_adj[j];
-				cptr hack2 = scroll_adj[i];
-
-				/* Compare first four characters */
-				if (*hack1++ != *hack2++) continue;
-				if (*hack1++ != *hack2++) continue;
-				if (*hack1++ != *hack2++) continue;
-				if (*hack1++ != *hack2++) continue;
-
-				/* Not okay */
 				okay = FALSE;
-
-				/* Stop looking */
 				break;
 			}
-
-			/* Break when done */
-			if (okay) break;
+		}
+          
+		if (okay)
+		{
+			my_strcpy(scroll_adj[i], buf, sizeof(scroll_adj[0]));
+		}
+		else
+		{
+			/* Have another go at making a name */
+			i--;
 		}
 	}
-
 
 	/* Hack -- Use the "complex" RNG */
 	Rand_quick = FALSE;

@@ -32,6 +32,7 @@ BASEOBJS := $(addsuffix $(OBJEXT),\
   object2 \
   obj-info \
   randart \
+  randname \
   save \
   spells1 \
   spells2 \
