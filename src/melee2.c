@@ -695,8 +695,6 @@ bool make_attack_spell(int m_idx)
 
 	char ddesc[80];
 
-	bool no_innate = FALSE;
-
 	/* Summon count */
 	int count = 0;
 
@@ -727,29 +725,9 @@ bool make_attack_spell(int m_idx)
 	/* Not allowed to cast spells */
 	if (!chance) return (FALSE);
 
-#ifdef MONSTER_AI
-
-	if (!smart_monsters)
-	{
-		/* Only do spells occasionally */
-		if (rand_int(100) >= chance) return (FALSE);
-	}
-	else
-	{
-		/* Do spells more often, because they can fail */
-		if (rand_int(100) >= 2 * chance) return (FALSE);
-
-		/* Sometimes forbid innate attacks (breaths) */
-		if (rand_int(100) >= chance) no_innate = TRUE;
-	}
-
-#else /* MONSTER_AI */
 
 	/* Only do spells occasionally */
 	if (rand_int(100) >= chance) return (FALSE);
-
-#endif /* MONSTER_AI */
-
 
 
 	/* Hack -- require projectable player */
@@ -773,17 +751,6 @@ bool make_attack_spell(int m_idx)
 	f6 = r_ptr->flags6;
 
 
-#ifdef MONSTER_AI
-
-	/* Forbid innate attacks sometimes */
-	if (no_innate)
-	{
-		f4 &= ~(RF4_INNATE_MASK);
-		f5 &= ~(RF5_INNATE_MASK);
-		f6 &= ~(RF6_INNATE_MASK);
-	}
-
-#endif /* MONSTER_AI */
 
 	/* Hack -- allow "desperate" spells */
 	if ((r_ptr->flags2 & (RF2_SMART)) &&
