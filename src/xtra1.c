@@ -198,34 +198,27 @@ static void prt_level(int row, int col)
 static void prt_exp(int row, int col)
 {
 	char out_val[32];
-	cptr text = "EXP ";
+	bool lev50 = (p_ptr->lev == 50);
 
-	if (next_xp)
-	{
-		long xp = (long)(player_exp[p_ptr->lev - 1] * p_ptr->expfact / 100L) - p_ptr->exp;
+	long xp = (long)p_ptr->exp;
 
-		/* Level 50 is a special case */
-		if (p_ptr->lev == 50)
-			sprintf(out_val, "********");
-		else
-			sprintf(out_val, "%8ld", xp);
 
-		/* Change text */
-		text = "NXT ";
-	}
-	else
-	{
-		sprintf(out_val, "%8ld", (long)p_ptr->exp);
-	}
+	/* Calculate XP for next level */
+	if (!lev50)
+		xp = (long)(player_exp[p_ptr->lev - 1] * p_ptr->expfact / 100L) - p_ptr->exp;
+
+	/* Format XP */
+	sprintf(out_val, "%8ld", (long)xp);
+
 
 	if (p_ptr->exp >= p_ptr->max_exp)
 	{
-		put_str(text, row, col);
+		put_str((lev50 ? "EXP" : "NXT"), row, col);
 		c_put_str(TERM_L_GREEN, out_val, row, col + 4);
 	}
 	else
 	{
-		put_str("Exp ", row, col);
+		put_str((lev50 ? "Exp" : "Nxt"), row, col);
 		c_put_str(TERM_YELLOW, out_val, row, col + 4);
 	}
 }

@@ -2446,17 +2446,17 @@ enum
 #define OPT_disturb_panel			22
 #define OPT_disturb_state			23
 #define OPT_disturb_minor			24
-#define OPT_next_xp					25
-/* xxx OPT_alert_hitpoint */
-/* xxx OPT_alert_failure */
+/* xxx OPT_next_xp 25 */
+/* xxx OPT_alert_hitpoint 26 */
+/* xxx OPT_alert_failure 27 */
 #define OPT_verify_destroy			28
 #define OPT_verify_special			29
 #define OPT_allow_quantity			30
-/* xxx */
-/* xxx OPT_auto_haggle */
+/* xxx 31 */
+/* xxx OPT_auto_haggle 32 */
 #define OPT_auto_scum				33
-/* xxx testing_stack */
-/* xxx testing_carry */
+/* xxx testing_stack 33 */
+/* xxx testing_carry 34 */
 #define OPT_expand_look				36
 #define OPT_expand_list				37
 #define OPT_view_perma_grids		38
@@ -2566,7 +2566,7 @@ enum
 #define disturb_panel			op_ptr->opt[OPT_disturb_panel]
 #define disturb_state			op_ptr->opt[OPT_disturb_state]
 #define disturb_minor			op_ptr->opt[OPT_disturb_minor]
-#define next_xp					op_ptr->opt[OPT_next_xp]
+/* xxx next_xp */
 /* xxx */
 /* xxx alert_failure */
 #define verify_destroy			op_ptr->opt[OPT_verify_destroy]

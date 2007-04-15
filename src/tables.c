@@ -1421,7 +1421,7 @@ cptr option_text[OPT_MAX] =
 	"disturb_panel",			/* OPT_disturb_panel */
 	"disturb_state",			/* OPT_disturb_state */
 	"disturb_minor",			/* OPT_disturb_minor */
-	"next_xp",					/* OPT_next_xp */
+	NULL,					/* xxx next_xp */
 	NULL,						/* xxx alert_hitpoint */
 	NULL,						/* xxx alert_failure */
 	"verify_destroy",			/* OPT_verify_destroy */
@@ -1685,7 +1685,7 @@ cptr option_desc[OPT_MAX] =
 	"Disturb whenever map panel changes",		/* OPT_disturb_panel */
 	"Disturb whenever player state changes",	/* OPT_disturb_state */
 	"Disturb whenever boring things happen",	/* OPT_disturb_minor */
-	"Display XP to next level on main panel",			/* OPT_next_xp */
+	NULL,						/* xxx next_xp */
 	NULL,										/* xxx alert_hitpoint */
 	NULL,										/* xxx alert_failure */
 	"Verify destruction of objects",			/* OPT_verify_destroy */
@@ -1949,7 +1949,7 @@ const bool option_norm[OPT_MAX] =
 	TRUE,		/* OPT_disturb_panel */
 	TRUE,		/* OPT_disturb_state */
 	TRUE,		/* OPT_disturb_minor */
-	TRUE,		/* OPT_next_xp */
+	FALSE,		/* xxx next_xp */
 	FALSE,		/* xxx alert_hitpoint */
 	FALSE,		/* xxx alert_failure */
 	TRUE,		/* OPT_verify_destroy */
@@ -2204,7 +2204,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_easy_open,
 		OPT_easy_alter,
 		OPT_easy_floor,
-		OPT_next_xp,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
