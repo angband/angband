@@ -113,7 +113,7 @@ endif
 
 # Object definitions
 X11OBJS = maid-x11.o main-x11.o main-xaw.o main-gtk.o main-xpj.o
-MAINOBJS = main.o main-cap.o main-gcu.o main-gtk.o main-sla.o $(X11OBJS) $(LINUXOBJ)
+MAINOBJS = main.o main-cap.o main-gcu.o main-gtk.o main-sla.o $(X11OBJS) $(LINUXOBJS)
 OBJS = $(BASEOBJS) $(MAINOBJS)
 
 
