@@ -438,7 +438,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	if(g_name_len >= 20) g_name_len = 20;
 
 	object_region.col = g_name_len+3;
-	group_region.width = g_nam_len;
+	group_region.width = g_name_len;
 
 	/* Disable the roguelike commands for the duration */
 	rogue_like_commands = FALSE;

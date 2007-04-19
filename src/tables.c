@@ -1649,6 +1649,8 @@ cptr option_text[OPT_MAX] =
 	NULL,						/* xxx */
 	NULL,						/* xxx */
 	NULL,						/* xxx */
+	NULL,						/* xxx */
+	NULL,						/* xxx */
 	NULL						/* xxx */
 };
 
@@ -1964,12 +1966,12 @@ const bool option_norm[OPT_MAX] =
 	TRUE,		/* OPT_view_torch_grids */
 	TRUE,		/* OPT_dungeon_align */
 	TRUE,		/* OPT_dungeon_stair */
-	TRUE,		/* OPT_adult_ai_sound */
-	TRUE,		/* OPT_adult_ai_smell */
+	FALSE,		/* xxx adult_ai_sound */
+	FALSE,		/* xxx adult_ai_smell */
 	FALSE,		/* xxx track_follow */
 	FALSE,		/* xxx track_target */
-	FALSE,		/* OPT_smart_learn */
-	FALSE,		/* OPT_smart_cheat */
+	FALSE,		/* xxx smart_learn */
+	FALSE,		/* xxx smart_cheat */
 	FALSE,		/* xxx view_reduce_lite */
 	FALSE,		/* xxx hidden_player */
 	FALSE,		/* xxx avoid_abort */
