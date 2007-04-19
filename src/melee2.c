@@ -82,11 +82,11 @@ static void remove_bad_spells(int m_idx, u32b *f4p, u32b *f5p, u32b *f6p)
 
 
 	/* Must be cheating or learning */
-	if (!smart_cheat && !smart_learn) return;
+	if (!adult_ai_cheat && !adult_ai_learn) return;
 
 
 	/* Update acquired knowledge */
-	if (smart_learn)
+	if (adult_ai_learn)
 	{
 		/* Hack -- Occasionally forget player status */
 		if (m_ptr->smart && (rand_int(100) < 1)) m_ptr->smart = 0L;
@@ -97,7 +97,7 @@ static void remove_bad_spells(int m_idx, u32b *f4p, u32b *f5p, u32b *f6p)
 
 
 	/* Cheat if requested */
-	if (smart_cheat)
+	if (adult_ai_cheat)
 	{
 		/* Know weirdness */
 		if (p_ptr->free_act) smart |= (SM_IMM_FREE);
@@ -479,7 +479,7 @@ static int choose_attack_spell(int m_idx, u32b f4, u32b f5, u32b f6)
 
 
 	/* Smart monsters restrict their spell choices. */
-	if (smart_monsters && !(r_ptr->flags2 & (RF2_STUPID)))
+	if (adult_ai_smart && !(r_ptr->flags2 & (RF2_STUPID)))
 	{
 		/* What have we got? */
 		has_escape = ((f4 & (RF4_ESCAPE_MASK)) ||
@@ -780,7 +780,7 @@ bool make_attack_spell(int m_idx)
 #ifdef MONSTER_AI
 
 	/* Check whether summons and bolts are worth it. */
-	if (smart_monsters && !(r_ptr->flags2 & (RF2_STUPID)))
+	if (adult_ai_smart && !(r_ptr->flags2 & (RF2_STUPID)))
 	{
 		/* Check for a clean bolt shot */
 		if ((f4 & (RF4_BOLT_MASK) ||
@@ -833,7 +833,7 @@ bool make_attack_spell(int m_idx)
 	failrate = 25 - (rlev + 3) / 4;
 
 	/* Hack -- Stupid monsters will never fail (for jellies and such) */
-	if (!smart_monsters || r_ptr->flags2 & (RF2_STUPID)) failrate = 0;
+	if (!adult_ai_smart || r_ptr->flags2 & (RF2_STUPID)) failrate = 0;
 
 	/* Check for spell failure (innate attacks never fail) */
 	if ((thrown_spell >= RF5_OFFSET) && (rand_int(100) < failrate))
@@ -2427,7 +2427,7 @@ static bool get_moves_aux(int m_idx, int *yp, int *xp)
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	/* Monster flowing disabled */
-	if (!flow_by_sound) return (FALSE);
+	if (!adult_ai_sound) return (FALSE);
 
 	/* Monster can go through rocks */
 	if (r_ptr->flags2 & (RF2_PASS_WALL)) return (FALSE);
@@ -2444,7 +2444,7 @@ static bool get_moves_aux(int m_idx, int *yp, int *xp)
 		if (cave_when[y1][x1] == 0) return (FALSE);
 
 		/* The monster is not allowed to track the player */
-		if (!flow_by_smell) return (FALSE);
+		if (!adult_ai_smell) return (FALSE);
 	}
 
 	/* Monster is too far away to notice the player */
@@ -2505,7 +2505,7 @@ static bool get_fear_moves_aux(int m_idx, int *yp, int *xp)
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	/* Monster flowing disabled */
-	if (!flow_by_sound) return (FALSE);
+	if (!adult_ai_sound) return (FALSE);
 
 	/* Player location */
 	py = p_ptr->py;
@@ -2776,7 +2776,7 @@ static bool find_safety(int m_idx, int *yp, int *xp)
 			if (!cave_floor_bold(y, x)) continue;
 
 			/* Check for "availability" (if monsters can flow) */
-			if (flow_by_sound)
+			if (adult_ai_sound)
 			{
 				/* Ignore grids very far from the player */
 				if (cave_when[y][x] < cave_when[py][px]) continue;
@@ -2930,7 +2930,7 @@ static bool get_moves(int m_idx, int mm[5])
 #ifdef MONSTER_FLOW
 
 	/* Flow towards the player */
-	if (flow_by_sound)
+	if (adult_ai_sound)
 	{
 		/* Flow towards the player */
 		(void)get_moves_aux(m_idx, &y2, &x2);
@@ -2946,7 +2946,7 @@ static bool get_moves(int m_idx, int mm[5])
 #ifdef MONSTER_AI
 
 	/* Normal animal packs try to get the player out of corridors. */
-	if (smart_packs &&
+	if (adult_ai_packs &&
 	    (r_ptr->flags1 & RF1_FRIENDS) && (r_ptr->flags3 & RF3_ANIMAL) &&
 	    !((r_ptr->flags2 & (RF2_PASS_WALL)) || (r_ptr->flags2 & (RF2_KILL_WALL))))
 	{
@@ -2977,7 +2977,7 @@ static bool get_moves(int m_idx, int mm[5])
 	if (!done && mon_will_run(m_idx))
 	{
 		/* Try to find safe place */
-		if (!(smart_monsters && find_safety(m_idx, &y, &x)))
+		if (!(adult_ai_smart && find_safety(m_idx, &y, &x)))
 		{
 			/* This is not a very "smart" method XXX XXX */
 			y = (-y);
@@ -2990,7 +2990,7 @@ static bool get_moves(int m_idx, int mm[5])
 		else
 		{
 			/* Attempt to avoid the player */
-			if (flow_by_sound)
+			if (adult_ai_sound)
 			{
 				/* Adjust movement */
 				get_fear_moves_aux(m_idx, &y, &x);
@@ -3007,7 +3007,7 @@ static bool get_moves(int m_idx, int mm[5])
 #ifdef MONSTER_AI
 
 	/* Monster groups try to surround the player */
-	if (!done && smart_packs && (r_ptr->flags1 & RF1_FRIENDS))
+	if (!done && adult_ai_packs && (r_ptr->flags1 & RF1_FRIENDS))
 	{
 		int i;
 
@@ -4055,7 +4055,7 @@ static void process_monster(int m_idx)
 
 
 	/* If we haven't done anything, try casting a spell again */
-	if (smart_monsters && !do_turn && !do_move)
+	if (adult_ai_smart && !do_turn && !do_move)
 	{
 		/* Cast spell */
 		if (make_attack_spell(m_idx)) return;
@@ -4129,7 +4129,7 @@ static void process_monster(int m_idx)
 static bool monster_can_flow(int m_idx)
 {
 	/* Hack -- Monsters can "smell" the player from far away */
-	if (flow_by_sound)
+	if (adult_ai_sound)
 	{
 		monster_type *m_ptr = &mon_list[m_idx];
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];

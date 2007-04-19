@@ -1589,20 +1589,14 @@ void do_cmd_query_symbol(void)
 		if (query == '-')
 		{
 			if (++i == n)
-			{
 				i = 0;
-				if (!expand_list) break;
-			}
 		}
 
 		/* Move to "next" monster */
 		else
 		{
 			if (i-- == 0)
-			{
 				i = n - 1;
-				if (!expand_list) break;
-			}
 		}
 	}
 

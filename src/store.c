@@ -455,22 +455,23 @@ static s32b price_item(const object_type *o_ptr, bool flip)
 /*
  * Special "mass production" computation.
  */
-static int mass_roll(int num, int max)
+static int mass_roll(int times, int max)
 {
 	int i, t = 0;
 
-	for (i = 0; i < num; i++)
-		t += ((max > 1) ? rand_int(max) : 1);
+	assert(max > 1);
+
+	for (i = 0; i < max; i++)
+		t += rand_int(max);
 
 	return (t);
 }
 
 
 /*
- * Certain "cheap" objects should be created in "piles".
+ * Some cheap objects should be created in piles.
  *
  * Some objects can be sold at a "discount" (in smaller piles).
- *
  * Standard percentage discounts include 10, 25, 50, 75, and 90.
  */
 static void mass_produce(object_type *o_ptr)
@@ -536,9 +537,15 @@ static void mass_produce(object_type *o_ptr)
 		case TV_ARROW:
 		case TV_BOLT:
 		{
-			if (cost <= 5L) size += mass_roll(5, 5);
-			if (cost <= 50L) size += mass_roll(5, 5);
-			if (cost <= 500L) size += mass_roll(5, 5);
+			if (cost <= 5L)
+				size = rand_die(3) * 20;         /* 20-60 in 20s */
+			else if (cost > 5L && cost <= 50L)
+				size = rand_die(4) * 10;         /* 10-40 in 10s */
+			else if (cost > 50 && cost <= 500L)
+				size = rand_die(4) * 5;          /* 5-20 in 5s */
+			else
+				size = 1;
+
 			break;
 		}
 	}
@@ -989,19 +996,56 @@ static void store_delete_item(int st)
 	/* Deal with stacks */
 	if (num > 1)
 	{
-		/* Sometimes destroy a single object */
-		if (rand_int(100) < 50) num = 1;
-
-		/* Sometimes destroy half the objects */
-		else if (rand_int(100) < 50) num = (num + 1) / 2;
-
-		/* Hack -- decrement the maximum timeouts and total charges of rods and wands. */
-		if ((o_ptr->tval == TV_ROD) ||
-		    (o_ptr->tval == TV_STAFF) ||
-		    (o_ptr->tval == TV_WAND))
+		/* Special behaviour for arrows, bolts &tc. */
+		switch (o_ptr->tval)
 		{
-			o_ptr->pval -= num * o_ptr->pval / o_ptr->number;
+			case TV_SPIKE:
+			case TV_SHOT:
+			case TV_ARROW:
+			case TV_BOLT:
+			{
+				int cur_num;
+
+				/* Sometimes take things to the nearest increment of 5 */
+				if (rand_int(100) < 50) break;
+
+				/* Keep things to increments of 5 */
+				/* `num` is number of items to remove */
+				cur_num -= (cur_num % 5);
+				num = (num - cur_num);
+
+				/* No change */
+				if (num == 0)
+				{
+					/* Maybe decrement some more */
+					if (rand_int(100) < 75) break;
+
+					/* Decrement by a random factor of 5 */
+					num = rand_die(cur_num) * 5;
+				}
+
+				break;
+			}
+
+			default:
+			{
+				/* Sometimes destroy a single object */
+				if (rand_int(100) < 50) num = 1;
+
+				/* Sometimes destroy half the objects */
+				else if (rand_int(100) < 50) num = (num + 1) / 2;
+
+
+				/* Hack -- decrement the maximum timeouts and total charges of rods and wands. */
+				if ((o_ptr->tval == TV_ROD) ||
+				    (o_ptr->tval == TV_STAFF) ||
+				    (o_ptr->tval == TV_WAND))
+				{
+					o_ptr->pval -= num * o_ptr->pval / o_ptr->number;
+				}
+			}
 		}
+
 	}
 
 	/* Delete the item */
@@ -1384,12 +1428,9 @@ void store_maint(int which)
 	if (stock > STORE_MAX_KEEP) stock = STORE_MAX_KEEP;
 	if (stock < STORE_MIN_KEEP) stock = STORE_MIN_KEEP;
 
-	/* Now we create 1/3 new stock from previously bought items */
-	/* stock -= store_create_previous(which, (stock - st_ptr->stock_num) / 3); */
-
 	/* For the rest, we just choose items randomlyish */
 	while (st_ptr->stock_num < stock) store_create_random(which);
-	
+
 
 
 	/* Hack -- Restore the rating */
@@ -1614,13 +1655,8 @@ static void inven_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 	c_put_str(tval_to_attr[o_ptr->tval & 0x7F], o_name, row, col);
 
 	/* Show weights */
-	if (show_weights)
-	{
-		int wgt = o_ptr->weight;
-
-		strnfmt(out_val, sizeof out_val, "%3d.%d lb", wgt / 10, wgt % 10);
-		put_str(out_val, row, scr_places_x[LOC_WEIGHT]);
-	}
+	strnfmt(out_val, sizeof out_val, "%3d.%d lb", o_ptr->weight / 10, o_ptr->weight % 10);
+	put_str(out_val, row, scr_places_x[LOC_WEIGHT]);
 
 	/* Describe an object (fully) in a store */
 	if (store_current != STORE_HOME)
@@ -1673,13 +1709,8 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 	c_put_str(tval_to_attr[o_ptr->tval & 0x7F], o_name, row, col);
 
 	/* Show weights */
-	if (show_weights)
-	{
-		int wgt = o_ptr->weight;
-
-		strnfmt(out_val, sizeof out_val, "%3d.%d lb", wgt / 10, wgt % 10);
-		put_str(out_val, row, scr_places_x[LOC_WEIGHT]);
-	}
+	strnfmt(out_val, sizeof out_val, "%3d.%d lb", o_ptr->weight / 10, o_ptr->weight % 10);
+	put_str(out_val, row, scr_places_x[LOC_WEIGHT]);
 
 	/* Describe an object (fully) in a store */
 	if (store_current != STORE_HOME)
@@ -1729,9 +1760,8 @@ static void store_display_frame(void)
 		else
 			put_str("Home Inventory", scr_places_y[LOC_HEADER], 1);
 
-		/* If showing weights, show label */
-		if (show_weights)
-			put_str("Weight", 5, scr_places_x[LOC_WEIGHT] + 2);
+		/* Show weight header */
+		put_str("Weight", 5, scr_places_x[LOC_WEIGHT] + 2);
 	}
 
 	/* Normal stores */
@@ -1755,9 +1785,8 @@ static void store_display_frame(void)
 		else
 			put_str("Store Inventory", scr_places_y[LOC_HEADER], 1);
 
-		/* If showing weights, show label */
-		if (show_weights)
-			put_str("Weight", scr_places_y[LOC_HEADER], scr_places_x[LOC_WEIGHT] + 2);
+		/* Showing weight label */
+		put_str("Weight", scr_places_y[LOC_HEADER], scr_places_x[LOC_WEIGHT] + 2);
 
 		/* Label the asking price (in stores) */
 		put_str("Price", scr_places_y[LOC_HEADER], scr_places_x[LOC_PRICE] + 4);

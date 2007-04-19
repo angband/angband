@@ -2900,7 +2900,7 @@ s16b get_quantity(cptr prompt, int max)
 #ifdef ALLOW_REPEAT
 
 	/* Get the item index */
-	else if ((max != 1) && allow_quantity && repeat_pull(&amt))
+	else if ((max != 1) && repeat_pull(&amt))
 	{
 		/* nothing */
 	}
@@ -2908,7 +2908,7 @@ s16b get_quantity(cptr prompt, int max)
 #endif /* ALLOW_REPEAT */
 
 	/* Prompt if needed */
-	else if ((max != 1) && allow_quantity)
+	else if ((max != 1))
 	{
 		char tmp[80];
 

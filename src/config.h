@@ -144,7 +144,7 @@
 
 
 /*
- * OPTION: Allow use of the "flow_by_smell" and "flow_by_sound"
+ * OPTION: Allow use of the "adult_ai_smell" and "adult_ai_sound"
  * software options, which enable "monster flowing".
  */
 #define MONSTER_FLOW
@@ -157,19 +157,13 @@
 
 
 /*
- * OPTION: Allow use of the "smart_monsters" and "smart_packs"
+ * OPTION: Allow use of the "adult_ai_smart" and "adult_ai_packs"
  * software options, which attempt to make monsters smarter.
  *
  * AI code by Keldon Jones (keldon@umr.edu), modified by Julian
  * Lighton (jl8e@fragment.com).
  */
 #define MONSTER_AI
-
-
-/*
- * OPTION: Support multiple "player" grids in "map_info()"
- */
-/* #define MAP_INFO_MULTIPLE_PLAYERS */
 
 
 /*
@@ -191,16 +185,14 @@
 
 
 /*
- * OPTION: Enable the "smart_learn" and "smart_cheat" options.
- * They let monsters make more "intelligent" choices about attacks
- * (including spell attacks) based on their observations of the
- * player's reactions to previous attacks.  The "smart_cheat" option
- * lets the monster know how the player would react to an attack
- * without actually needing to make the attack.  The "smart_learn"
- * option requires that a monster make a "failed" attack before
- * learning that the player is not harmed by that attack.
+ * OPTION: Enable the "adult_ai_learn" and "adult_ai_cheat" options.
  *
- * This adds about 3K to the memory and about 5K to the executable.
+ * They let monsters make more "intelligent" choices about attacks (including
+ * spell attacks) based on their observations of the player's reactions to
+ * previous attacks.  The "cheat" option lets the monster know how the player
+ * would react to an attack without actually needing to make the attack.  The
+ * "learn" option requires that a monster make a "failed" attack before
+ * learning that the player is not harmed by that attack.
  */
 #define DRS_SMART_OPTIONS
 

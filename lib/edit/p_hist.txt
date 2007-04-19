@@ -29,7 +29,7 @@
 
 # Version stamp (required)
 
-V:3.0.7
+V:3.0.8
 
 
 N:1:2:10:25

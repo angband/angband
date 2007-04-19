@@ -1873,17 +1873,6 @@ static bool run_test(void)
 					/* Done */
 					break;
 				}
-
-				/* Stairs */
-				case FEAT_LESS:
-				case FEAT_MORE:
-				{
-					/* Option -- ignore */
-					if (run_ignore_stairs) notice = FALSE;
-
-					/* Done */
-					break;
-				}
 			}
 
 			/* Interesting feature */

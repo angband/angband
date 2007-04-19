@@ -538,7 +538,7 @@ struct monster_type
 
 #ifdef DRS_SMART_OPTIONS
 
-	u32b smart;			/* Field for "smart_learn" */
+	u32b smart;			/* Field for "adult_ai_learn" */
 
 #endif /* DRS_SMART_OPTIONS */
 

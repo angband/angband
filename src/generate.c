@@ -2875,6 +2875,7 @@ static void cave_gen(void)
 		by = rand_int(dun->row_rooms);
 		bx = rand_int(dun->col_rooms);
 
+#if 0
 		/* Align dungeon rooms */
 		if (dungeon_align)
 		{
@@ -2884,6 +2885,7 @@ static void cave_gen(void)
 			/* Slide some rooms left */
 			if ((bx % 3) == 2) bx--;
 		}
+#endif
 
 		/* Destroyed levels are boring */
 		if (destroyed)
@@ -3450,8 +3452,10 @@ void generate_cave(void)
 		else if (rating > 0) feeling = 9;
 		else feeling = 10;
 
+#if 0
 		/* Hack -- Have a special feeling sometimes */
-		if (good_item_flag && !adult_preserve) feeling = 1;
+		if (good_item_flag && adult_no_preserve) feeling = 1;
+#endif
 
 		/* It takes 1000 game turns for "feelings" to recharge */
 		if (((turn - old_turn) < 1000) && (old_turn > 1)) feeling = 0;
@@ -3481,7 +3485,7 @@ void generate_cave(void)
 		}
 
 		/* Mega-Hack -- "auto-scum" */
-		if (auto_scum && (num < 100))
+		if (adult_autoscum && (num < 100))
 		{
 			/* Require "goodness" */
 			if ((feeling > 9) ||

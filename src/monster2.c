@@ -2364,7 +2364,7 @@ void update_smart_learn(int m_idx, int what)
 
 
 	/* Not allowed to learn */
-	if (!smart_learn) return;
+	if (!adult_ai_learn) return;
 
 	/* Too stupid to learn anything */
 	if (r_ptr->flags2 & (RF2_STUPID)) return;

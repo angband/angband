@@ -532,7 +532,7 @@ static bool screen_out_head(const object_type *o_ptr)
 	FREE(o_name);
 
 	/* Display the known artifact description */
-	if (!adult_rand_artifacts && o_ptr->name1 &&
+	if (!adult_randarts && o_ptr->name1 &&
 	    object_known_p(o_ptr) && a_info[o_ptr->name1].text)
 	{
 		p_text_out("\n\n   ");

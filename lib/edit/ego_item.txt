@@ -51,7 +51,7 @@
 
 # Version stamp (required)
 
-V:3.0.7
+V:3.0.8
 
 # 1 (unused)
 

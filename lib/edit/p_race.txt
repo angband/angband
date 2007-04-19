@@ -50,7 +50,7 @@
 
 # Version stamp (required)
 
-V:3.0.7
+V:3.0.8
 
 
 N:0:Human

@@ -438,15 +438,12 @@ void wipe_o_list(void)
 		/* Skip dead objects */
 		if (!o_ptr->k_idx) continue;
 
-		/* Mega-Hack -- preserve artifacts */
-		if (!character_dungeon || adult_preserve)
+		/* Preserve artifacts */
+		if (!character_dungeon || !adult_no_preserve)
 		{
-			/* Hack -- Preserve unknown artifacts */
+			/* Preserve only unknown artifacts */
 			if (artifact_p(o_ptr) && !object_known_p(o_ptr))
-			{
-				/* Mega-Hack -- Preserve the artifact */
 				a_info[o_ptr->name1].cur_num = 0;
-			}
 		}
 
 		/* Monster */

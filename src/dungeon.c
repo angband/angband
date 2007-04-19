@@ -1975,29 +1975,25 @@ static void process_player(void)
 		}
 	}
 
-	/* Handle "abort" */
-	if (!avoid_abort)
+	/* Check for "player abort" */
+	if (p_ptr->running ||
+	    p_ptr->command_rep ||
+	    (p_ptr->resting && !(turn & 0x7F)))
 	{
-		/* Check for "player abort" */
-		if (p_ptr->running ||
-		    p_ptr->command_rep ||
-		    (p_ptr->resting && !(turn & 0x7F)))
+		/* Do not wait */
+		inkey_scan = TRUE;
+
+		/* Check for a key */
+		if (inkey())
 		{
-			/* Do not wait */
-			inkey_scan = TRUE;
+			/* Flush input */
+			flush();
 
-			/* Check for a key */
-			if (inkey())
-			{
-				/* Flush input */
-				flush();
+			/* Disturb */
+			disturb(0, 0);
 
-				/* Disturb */
-				disturb(0, 0);
-
-				/* Hack -- Show a Message */
-				msg_print("Cancelled.");
-			}
+			/* Hack -- Show a Message */
+			msg_print("Cancelled.");
 		}
 	}
 
@@ -2169,7 +2165,7 @@ static void process_player(void)
 			}
 
 			/* Shimmer monsters if needed */
-			if (!avoid_other && shimmer_monsters)
+			if (shimmer_monsters)
 			{
 				/* Clear the flag */
 				shimmer_monsters = FALSE;
@@ -2363,7 +2359,7 @@ static void dungeon(void)
 	}
 
 	/* No stairs from town or if not allowed */
-	if (!p_ptr->depth || !dungeon_stair)
+	if (!p_ptr->depth || adult_no_stairs)
 	{
 		p_ptr->create_down_stair = p_ptr->create_up_stair = FALSE;
 	}
@@ -2766,7 +2762,7 @@ void play_game(bool new_game)
 #ifdef GJW_RANDART
 
 		/* Randomize the artifacts */
-		if (adult_rand_artifacts)
+		if (adult_randarts)
 		{
 			do_randart(seed_randart, TRUE);
 		}
@@ -2774,7 +2770,7 @@ void play_game(bool new_game)
 #else /* GJW_RANDART */
 
 		/* Make sure random artifacts are turned off if not available */
-		adult_rand_artifacts = FALSE;
+		adult_randarts = FALSE;
 
 #endif /* GJW_RANDART */
 

@@ -1101,7 +1101,7 @@ static bool player_birth_aux_2(void)
  *
  * This function handles "auto-rolling" and "random-rolling".
  */
-static bool player_birth_aux_3(void)
+static bool player_birth_aux_3(bool autoroll)
 {
 	int i, j, m, v;
 
@@ -1130,7 +1130,7 @@ static bool player_birth_aux_3(void)
 	/*** Autoroll ***/
 
 	/* Initialize */
-	if (adult_auto_roller)
+	if (autoroll)
 	{
 		int mval[A_MAX];
 
@@ -1241,7 +1241,7 @@ static bool player_birth_aux_3(void)
 #ifdef ALLOW_AUTOROLLER
 
 		/* Feedback */
-		if (adult_auto_roller)
+		if (autoroll)
 		{
 			Term_clear();
 
@@ -1466,11 +1466,46 @@ static bool player_birth_aux(void)
 	char ch;
 	cptr prompt = "['Q' to suicide, 'S' to start over, or any other key to continue]";
 
+	bool point_based = FALSE, autoroll = FALSE;
+	bool done = FALSE;
+
 	/* Ask questions */
 	if (!player_birth_aux_1()) return (FALSE);
 
+	/* XXX Ask for autoroll preference */
+	/* Turn into a real menu later */
+	Term_clear();
+	while (!done)
+	{
+		prt("To create a character, would you like to:", 1, 1);
+		prt(" a) Use the point-based system", 2, 1);
+		prt(" b) Use the autoroller", 3, 1);
+		prt(" a) Use the basic roller", 4, 1);
+
+		prt("", 6, 1);
+		ch = inkey();
+
+		switch (ch)
+		{
+			case 'a':
+			case 'A':
+				done = point_based = TRUE;
+				break;
+
+			case 'b':
+			case 'B':
+				done = autoroll = TRUE;
+				break;
+
+			case 'c':
+			case 'C':
+				done = TRUE;
+				break;
+		}
+	}
+
 	/* Point-based */
-	if (adult_point_based)
+	if (point_based)
 	{
 		/* Point based */
 		if (!player_birth_aux_2()) return (FALSE);
@@ -1480,7 +1515,7 @@ static bool player_birth_aux(void)
 	else
 	{
 		/* Auto-roll */
-		if (!player_birth_aux_3()) return (FALSE);
+		if (!player_birth_aux_3(autoroll)) return (FALSE);
 	}
 
 	/* Get a name, prepare savefile */

@@ -1206,10 +1206,6 @@ static void display_player_xtra_info(void)
 	Term_putstr(col, 7, -1, TERM_WHITE, "Maximize");
 	Term_putstr(col+12, 7, -1, TERM_L_BLUE, adult_maximize ? "Y" : "N");
 
-	/* Preserve */
-	Term_putstr(col, 8, -1, TERM_WHITE, "Preserve");
-	Term_putstr(col+12, 8, -1, TERM_L_BLUE, adult_preserve ? "Y" : "N");
-
 
 	/* Left */
 	col = 1;

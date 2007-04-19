@@ -3992,21 +3992,20 @@ void do_cmd_save_screen_html(void)
 
 static menu_item option_actions [] =
 {
-	{{0, "User Interface Options", do_cmd_options_aux, (void*)0}, '1'},
-	{{0, "Disturbance Options", do_cmd_options_aux, (void*)1}, '2'},
-	{{0, "Game-Play Options", do_cmd_options_aux, (void*)2}, '3'},
-	{{0, "Efficiency Options", do_cmd_options_aux, (void*)3}, '4'},
-	{{0, "Display Options", do_cmd_options_aux, (void*)4}, '5'},
-	{{0, "Birth Options", do_cmd_options_aux, (void*)5}, '6'},
-	{{0, "Cheat Options", do_cmd_options_aux, (void*)6}, '7'},
+	{{0, "User Interface options", do_cmd_options_aux, (void*)0}, '1'},
+	{{0, "Pickup and Item options", do_cmd_options_aux, (void*)1}, '2'},
+	{{0, "Disturbance and Warning options", do_cmd_options_aux, (void*)2}, '3'},
+	{{0, "Efficiency options", do_cmd_options_aux, (void*)3}, '4'},
+	{{0, "Birth (Difficulty) options", do_cmd_options_aux, (void*)4}, '5'},
+	{{0, "Cheat options", do_cmd_options_aux, (void*)5}, '6'},
 	{{0, 0, 0, 0}}, /* Load and append */
-	{{0, "Window Flags", (action_f) do_cmd_options_win, 0}, 'W'},
-	{{0, "Item Squelch and Autoinscribe Menus", (action_f) do_cmd_squelch_autoinsc, 0}, 'S'},
+	{{0, "Window flags", (action_f) do_cmd_options_win, 0}, 'W'},
+	{{0, "Item squelch and Autoinscribe settings", (action_f) do_cmd_squelch_autoinsc, 0}, 'S'},
 	{{0, "Load a user pref file", (action_f) do_cmd_pref_file_hack, (void*)20}, 'L'},
-	{{0, "Dump Options", (action_f) dump_pref_file, option_dump}, 'A'},
+	{{0, "Dump options", (action_f) dump_pref_file, option_dump}, 'A'},
 	{{0, 0, 0,}, 0}, /* Special choices */
-	{{0, "Base Delay Factor", (action_f) do_cmd_delay, 0}, 'D'},
-	{{0, "Hitpoint Warning", (action_f) do_cmd_hp_warn, 0}, 'H'}
+	{{0, "Set base delay factor", (action_f) do_cmd_delay, 0}, 'D'},
+	{{0, "Set hitpoint warning", (action_f) do_cmd_hp_warn, 0}, 'H'}
 };
 
 static menu_type option_menu;

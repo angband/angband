@@ -2333,9 +2333,6 @@ static void target_set_interactive_prepare(int mode)
 			/* Check bounds */
 			if (!in_bounds_fully(y, x)) continue;
 
-			/* Require line of sight, unless "look" is "expanded" */
-			if (!expand_look && !player_has_los_bold(y, x)) continue;
-
 			/* Require "interesting" contents */
 			if (!target_set_interactive_accept(y, x)) continue;
 
@@ -2944,20 +2941,16 @@ bool target_set_interactive(int mode)
 				case '+':
 				{
 					if (++m == temp_n)
-					{
 						m = 0;
-						if (!expand_list) done = TRUE;
-					}
+
 					break;
 				}
 
 				case '-':
 				{
 					if (m-- == 0)
-					{
 						m = temp_n - 1;
-						if (!expand_list) done = TRUE;
-					}
+
 					break;
 				}
 

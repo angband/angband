@@ -3,6 +3,10 @@ Compiling Angband
 
 Last updated on 23rd March 2007 by Andrew Sidwell
 
+You only want to read this file if you want to compile the game.  It is
+probably unnecessary todo so, since most platforms have pre-compiled versions
+available.
+
 If you are able to construct "main-xxx.c" and/or "Makefile.xxx" files for
 a currently unsupported system, please write to the Angband newsgroup
 (rec.games.roguelike.angband) with details, and it will probably be included
@@ -13,28 +17,24 @@ compiling.
 
 
 ----------------------------------------------------------------------
-Quick and dirty compilation instructions
+Quick and dirty compilation instructions for Unix
 ----------------------------------------------------------------------
 
-For many platforms (including Windows and DOS), a "pre-compiled" archive
-is available, which contains everything you need to install and play
-Angband.  For other platforms, including most UNIX systems, you must
-compile the source code yourself.  Try the following non-trivial steps:
+I assume you already have the source.  Open a commandline terminal.
 
-Step 1: Acquire.   Ftp to "ftp.thangorodrim.net/pub/angband/Source"
-                   Try "bin" and "mget angband*.tar.gz" and "y"
-Step 2: Extract.   Try "gunzip *.gz" then "tar -xvf *.tar"
-Step 3: Prepare.   Try "cd angband*/".
-Step 4: Configure. Try "./configure". Edit "src/config.h" if you wish.
-Step 5: Compile.   Try "make".
-Step 6: Install.   Try "make install".
-Step 7: Play...    Try "./angband".
-                   Read the "online help" via the "?" command.
+If you have never compiled anything at all, you will want to get the relevant
+development packages for your system.  If you run a debian-like Linux 
+system, then "sudo apt-get install gcc libncurses-dev libx11-dev" should
+do the trick.
 
-Of course, if you have a compiler, you can compile a (possibly customized)
-executable on almost any system.  You will need the "source archive" (as
-above), which contains the standard "src" and "lib" directories, and for
-some platforms (including Macintosh and Windows), you will also need an
+Now:
+ 1. extract:   `tar zxvf angband*.tar.gz`
+ 2. prepare:   `cd angband*`
+ 3. configure: `./configure --prefix=$HOME`
+ 4. compile:   `make install`
+ 5. play:      `./angband`
+
+For some platforms (including Macintosh and Windows), you will also need an
 appropriate "extra archive", which contains some extra platform specific
 files, and instructions about how to use them.  Some "extra archives" may
 be found at the ftp site (including "/angband/Macintosh/ext-mac.sit.bin"
@@ -49,8 +49,8 @@ You can set CC (compiler), CPPFLAGS (preprocessor flags),
 CFLAGS (compiler flags), LDFLAGS (linker flags), and LIBS (libraries).
 Configure may modify all but CC.
 
-An alternative to configure is to edit src/h-config.h and a makefile,
-probably src/Makefile.std, and run "cd src; make -f Makefile.std".
+An alternative to configure is to edit src/h-config.h and src/Makefile.std,
+then run "cd src; make -f Makefile.std".
 
 
 ----------------------------------------------------------------------

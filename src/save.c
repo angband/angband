@@ -831,7 +831,7 @@ static bool wr_savefile_new(void)
 
 	/* Dump the number of "messages" */
 	tmp16u = message_num();
-	if (compress_savefile && (tmp16u > 40)) tmp16u = 40;
+	if (tmp16u > 80) tmp16u = 80;
 	wr_u16b(tmp16u);
 
 	/* Dump the messages (oldest first!) */
@@ -907,7 +907,7 @@ static bool wr_savefile_new(void)
 
 
 	/* Write randart information */
-	if (adult_rand_artifacts)
+	if (adult_randarts)
 	{
 		wr_randarts();
 	}

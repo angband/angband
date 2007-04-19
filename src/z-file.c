@@ -235,9 +235,14 @@ bool my_fexists(const char *fname)
 
 	/* It worked */
 	if (fd >= 0)
+	{
 		fd_close(fd);
-
-	return (fd == 0) ? FALSE : TRUE;
+		return TRUE;
+	}
+	else
+	{
+		return FALSE;
+	}
 }
 
 

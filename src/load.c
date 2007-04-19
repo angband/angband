@@ -740,29 +740,75 @@ static void rd_options(void)
 		int os = i / 32;
 		int ob = i % 32;
 
-		/* Process real entries */
-		if (option_text[i])
+		/* Process saved entries */
+		if (mask[os] & (1L << ob))
 		{
-			/* Process saved entries */
-			if (mask[os] & (1L << ob))
-			{
-				/* Set flag */
-				if (flag[os] & (1L << ob))
-				{
-					/* Set */
-					op_ptr->opt[i] = TRUE;
-				}
+			/* Set flag */
+			if (flag[os] & (1L << ob))
+				op_ptr->opt[i] = TRUE;
 
-				/* Clear flag */
-				else
-				{
-					/* Set */
-					op_ptr->opt[i] = FALSE;
-				}
-			}
+			/* Clear flag */
+			else
+				op_ptr->opt[i] = FALSE;
 		}
 	}
 
+	/* Load savefiles pre-reorganisation */
+	if (older_than(3, 0, 7))
+	{
+		/* 
+		 * Slot	Old layout:	New layout:
+		 * 0	xxx			maximise
+		 * 1	xxx			randarts
+		 * 2	maximise	autoscum
+		 * 3	preserve	ironman
+		 * 4	ironman		no_stores
+		 * 5	no_stores	no_artifacts
+		 * 6	no_artifats	no_stacking
+		 * 7	randarts	no_preserve
+		 * 8	no_stacking	no_stairs
+		 */
+
+		/* We #define this so it's obvious what we're doing */
+		#define OLD_OPT(n)	op_ptr->opt[n]
+
+		bool old_birth[9];
+		for (i = 0; i <= 8; i++)
+			old_birth[i] = OLD_OPT(OPT_BIRTH + i);
+
+		if (arg_fiddle) note("Loading pre-3.0.7 options...");
+
+		birth_maximize = adult_maximize = old_birth[2];
+		birth_no_preserve = adult_no_preserve = !old_birth[3];
+		birth_ironman = adult_ironman = old_birth[4];
+		birth_no_stores = adult_no_stores = old_birth[5];
+		birth_no_artifacts = adult_no_artifacts = old_birth[6];
+		birth_randarts = adult_randarts = old_birth[7];
+		birth_no_stacking = adult_no_stacking = old_birth[8];
+
+		birth_no_stairs = adult_no_stairs = !OLD_OPT(41);
+		birth_autoscum = adult_autoscum = OLD_OPT(33);
+		birth_ai_sound = adult_ai_sound = OLD_OPT(42);
+		birth_ai_smell = adult_ai_smell = OLD_OPT(43);
+		birth_ai_packs = adult_ai_packs = OLD_OPT(73);
+		birth_ai_learn = adult_ai_learn = OLD_OPT(46);
+		birth_ai_cheat = adult_ai_cheat = OLD_OPT(47);
+		birth_ai_smart = adult_ai_smart = OLD_OPT(72);
+
+		#undef OLD_OPT
+
+		if (arg_fiddle)
+		{
+			FILE *ffff = fopen("options.txt", "wb");
+			int i;
+
+			for (i = 0; i < OPT_SCORE; i++)
+				fprintf(ffff, "%3d %s: %s\n",
+					i,
+					(op_ptr->opt[i] ? "on " : "off"),
+					(option_text[i] ? option_text[i] : "NULL"));
+		}
+	}
 
 	/*** Window Options ***/
 
@@ -1887,9 +1933,9 @@ static errr rd_savefile_new_aux(void)
 
 		rd_byte(&tmp8u);
 
-		k_ptr->aware = (tmp8u & 0x01) ? TRUE: FALSE;
-		k_ptr->tried = (tmp8u & 0x02) ? TRUE: FALSE;
-		k_ptr->everseen = (tmp8u & 0x08) ? TRUE: FALSE;
+		k_ptr->aware = (tmp8u & 0x01) ? TRUE : FALSE;
+		k_ptr->tried = (tmp8u & 0x02) ? TRUE : FALSE;
+		k_ptr->everseen = (tmp8u & 0x08) ? TRUE : FALSE;
 
 		if (!older_than(3, 0, 6))
 			rd_byte(&k_ptr->squelch);
@@ -1947,7 +1993,7 @@ static errr rd_savefile_new_aux(void)
 
 
 	/* Read random artifacts */
-	if (adult_rand_artifacts)
+	if (adult_randarts)
 	{
 		if (rd_randarts()) return (-1);
 		if (arg_fiddle) note("Loaded Random Artifacts");
