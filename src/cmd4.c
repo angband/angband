@@ -3535,7 +3535,7 @@ void do_cmd_colors(void)
 {
 	int i;
 	int cx;
-	int cursor = -1;
+	int cursor = 0;
 
 	/* File type is "TEXT" */
 	FILE_TYPE(FILE_TYPE_TEXT);
@@ -3999,13 +3999,16 @@ static menu_item option_actions [] =
 	{{0, "Birth (Difficulty) options", do_cmd_options_aux, (void*)4}, '5'},
 	{{0, "Cheat options", do_cmd_options_aux, (void*)5}, '6'},
 	{{0, 0, 0, 0}}, /* Load and append */
-	{{0, "Window flags", (action_f) do_cmd_options_win, 0}, 'W'},
+	{{0, "Subwindow display settings", (action_f) do_cmd_options_win, 0}, 'W'},
 	{{0, "Item squelch and Autoinscribe settings", (action_f) do_cmd_squelch_autoinsc, 0}, 'S'},
+	{{0, "Set base delay factor", (action_f) do_cmd_delay, 0}, 'D'},
+	{{0, "Set hitpoint warning", (action_f) do_cmd_hp_warn, 0}, 'H'},
+	{{0, 0, 0,}, 0}, /* Special choices */
 	{{0, "Load a user pref file", (action_f) do_cmd_pref_file_hack, (void*)20}, 'L'},
 	{{0, "Dump options", (action_f) dump_pref_file, option_dump}, 'A'},
-	{{0, 0, 0,}, 0}, /* Special choices */
-	{{0, "Set base delay factor", (action_f) do_cmd_delay, 0}, 'D'},
-	{{0, "Set hitpoint warning", (action_f) do_cmd_hp_warn, 0}, 'H'}
+	{{0, 0, 0,}, 0}, /* Interact with */	
+	{{0, "Interact with visuals (advanced)", (action_f) do_cmd_visuals, 0}, 'V'},
+	{{0, "Interact with colours (advanced)", (action_f) do_cmd_colors, 0}, 'C'},
 };
 
 static menu_type option_menu;
@@ -4033,7 +4036,7 @@ static void cleanup_cmds () {
 
 void do_cmd_options()
 {
-	int cursor = -1;
+	int cursor = 0;
 	event_type c;
 
 	screen_save();
@@ -4050,7 +4053,7 @@ void do_cmd_options()
 
 void do_cmd_knowledge()
 {
-	int cursor = -1;
+	int cursor = 0;
 	event_type c;
 
 	screen_save();
