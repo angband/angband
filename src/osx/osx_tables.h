@@ -82,10 +82,6 @@ enum {
 	kWINDOW = -1
 };
 
-void fsetfileinfo(cptr pathname, u32b fcreator, u32b ftype);
-
-extern u32b _ftype;
-extern u32b _fcreator;
 
 /* Opcodes for various events (OS X specific) */
 

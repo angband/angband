@@ -228,8 +228,8 @@ static int graf_width = 0;
  * Creator signature and file type - Didn't I say that I abhor file name
  * extentions?  Names and metadata are entirely different set of notions.
  */
-OSType _fcreator;
-OSType _ftype;
+u32b _fcreator;
+u32b _ftype;
 
 typedef struct GlyphInfo GlyphInfo;
 
@@ -466,7 +466,7 @@ static OSErr spec_to_path(const FSSpec *spec, char *buf, size_t size)
  * Set creator and filetype of a file specified by POSIX-style pathname.
  * Returns 0 on success, -1 in case of errors.
  */
-void fsetfileinfo(cptr pathname, OSType fcreator, OSType ftype)
+void fsetfileinfo(cptr pathname, u32b fcreator, u32b ftype)
 {
 	OSErr err;
 	FSSpec spec;
