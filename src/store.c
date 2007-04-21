@@ -1752,7 +1752,7 @@ static void store_display_frame(void)
 	if (store_current == STORE_HOME)
 	{
 		/* Put the owner name */
-		put_str("Your Home", scr_places_y[LOC_OWNER], 2);
+		put_str("Your Home", scr_places_y[LOC_OWNER], 1);
 
 		/* Label the object descriptions */
 		if (store_flags & STORE_INVEN)
@@ -1773,7 +1773,7 @@ static void store_display_frame(void)
 
 		/* Put the owner name and race */
 		strnfmt(buf, sizeof(buf), "%s (%s)", owner_name, race_name);
-		put_str(buf, scr_places_y[LOC_OWNER], 2);
+		put_str(buf, scr_places_y[LOC_OWNER], 1);
 
 		/* Show the max price in the store (above prices) */
 		strnfmt(buf, sizeof(buf), "%s (%ld)", store_name, (long)(ot_ptr->max_cost));

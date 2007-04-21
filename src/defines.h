@@ -3163,14 +3163,3 @@ enum
 #define ACT_BERSERKER           49
 
 #define ACT_MAX                 50
-
-/*
- * HACK - define if the source contains the cleanup_angband() function.
- */
-#define HAS_CLEANUP
-
-
-/*
- * Given an array, determine how many elements are in the array.
- */
-#define N_ELEMENTS(a) (sizeof(a) / sizeof((a)[0]))

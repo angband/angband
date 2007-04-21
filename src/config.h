@@ -391,6 +391,12 @@
 #endif
 
 
+/*
+ * HACK - define if the source contains the cleanup_angband() function.
+ */
+#define HAS_CLEANUP
+
+
 
 /*
  * Allow the Borg to use graphics.

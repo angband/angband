@@ -154,6 +154,13 @@ typedef char bool;
 #define SGN(a)		(((a) < 0)   ? (-1) : ((a) != 0))
 
 
+/*** Useful array length macro ***/
+
+/*
+ * Given an array, determine how many elements are in the array.
+ */
+#define N_ELEMENTS(a) (sizeof(a) / sizeof((a)[0]))
+
 
 /*** Some hackish character manipulation ***/
 

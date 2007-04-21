@@ -2058,7 +2058,7 @@ static void display_option(menu_type *menu, int oid,
 							bool cursor, int row, int col, int width)
 {
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
-	c_prt(attr, format("%-48s: %s  (%s)", 
+	c_prt(attr, format("%-45s: %s  (%s)", 
 						option_desc[oid],
 						op_ptr->opt[oid] ? "yes" : "no ",
 						option_text[oid]),
@@ -2116,7 +2116,7 @@ static void do_cmd_options_aux(void *vpage, cptr info)
 	/* Filter the options for this page */
 	for (i = 0; i < OPT_PAGE_PER; i++)
 	{
-		if (option_page[page][i] != 255)
+		if (option_page[page][i] != OPT_NONE)
 		{
 			opt[n++] = option_page[page][i];
 		}
