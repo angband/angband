@@ -338,6 +338,9 @@ static void new_event_handler(GtkButton *was_clicked, gpointer user_data)
 }
 
 
+
+/*** Callbacks: font selector */
+
 static void load_font(term_data *td, cptr fontname)
 {
 	td->font = gdk_font_load(fontname);
@@ -346,7 +349,6 @@ static void load_font(term_data *td, cptr fontname)
 	td->font_wid = gdk_char_width(td->font, '@');
 	td->font_hgt = td->font->ascent + td->font->descent;
 }
-
 
 static void font_ok_callback(GtkWidget *widget, GtkWidget *font_selector)
 {
@@ -373,10 +375,12 @@ static void change_font_event_handler(GtkWidget *widget, gpointer user_data)
 
 	gtk_object_set_data(GTK_OBJECT(font_selector), "term_data", user_data);
 
+#if 0
 	/* Filter to show only fixed-width fonts */
 	gtk_font_selection_dialog_set_filter(GTK_FONT_SELECTION_DIALOG(font_selector),
 	                                     GTK_FONT_FILTER_BASE, GTK_FONT_ALL,
 	                                     NULL, NULL, NULL, NULL, spacings, NULL);
+#endif
 
 	gtk_signal_connect(GTK_OBJECT(GTK_FONT_SELECTION_DIALOG(font_selector)->ok_button),
 	                   "clicked", font_ok_callback, (gpointer)font_selector);
@@ -394,54 +398,93 @@ static void change_font_event_handler(GtkWidget *widget, gpointer user_data)
 }
 
 
-static void file_ok_callback(GtkWidget *widget, GtkWidget *file_selector)
+/*** Callbacks: savefile opening ***/
+
+
+/* Filter function for the savefile list */
+static gboolean file_open_filter(const GtkFileFilterInfo *filter_info, gpointer data)
 {
-	char *f = gtk_file_selection_get_filename(GTK_FILE_SELECTION(file_selector));
+	const char *name = filter_info->display_name;
 
-	my_strcpy(savefile, f, sizeof(savefile));
+	(void)data;
 
-	gtk_widget_destroy(file_selector);
+	/* Count out known non-savefiles */
+	if (strcmp(name, "Makefile.am") == 0 ||
+	    strcmp(name, "Makefile.in") == 0 ||
+	    strcmp(name, "delete.me") == 0)
+	{
+		return FALSE;
+	}
 
-	game_in_progress = TRUE;
-	Term_flush();
-	play_game(FALSE);
-	cleanup_angband();
-	quit(NULL);
+	/* Let it pass */
+	return TRUE;
 }
+
 
 
 static void open_event_handler(GtkButton *was_clicked, gpointer user_data)
 {
-	GtkWidget *file_selector;
-	char buf[1024];
+	GtkWidget *selector_wid;
+	GtkFileChooser *selector;
 
+	char buf[1024];
+	const char *filename;
+
+	/* Forget it if the game is in progress */
+	/* XXX Should disable the menu entry */
 	if (game_in_progress)
 	{
 		plog("You can't open a new game while you're still playing!");
+		return;
 	}
-	else
+
+	/* Create a new file selector dialogue box, with no parent */
+	selector_wid = gtk_file_chooser_dialog_new("Select a savefile", NULL,
+	                                       GTK_FILE_CHOOSER_ACTION_OPEN,
+	                                       GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+	                                       GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+	                                       NULL);
+
+	/* For convenience */
+	selector = GTK_FILE_CHOOSER(selector_wid);
+
+	/* Get the current directory (so we can find lib/save/) */
+	filename = gtk_file_chooser_get_current_folder(selector);
+	path_build(buf, sizeof buf, filename, ANGBAND_DIR_SAVE);
+	gtk_file_chooser_set_current_folder(selector, buf);
+	plog(buf);
+
+	/* Restrict the showing of pointless files */
+	GtkFileFilter *filter;
+	filter = gtk_file_filter_new();
+	gtk_file_filter_add_custom(filter, GTK_FILE_FILTER_DISPLAY_NAME, file_open_filter, NULL, NULL);
+	gtk_file_chooser_set_filter(selector, filter);
+
+	/* Run the dialogue */
+	if (gtk_dialog_run(GTK_DIALOG(selector_wid)) == GTK_RESPONSE_ACCEPT)
 	{
-		/* Prepare the savefile path */
-		path_build(buf, sizeof(buf), ANGBAND_DIR_SAVE, "*");
+		/* Get the filename, copy it into the savefile name */
+		filename = gtk_file_chooser_get_filename(selector);
+		my_strcpy(savefile, filename, sizeof(savefile));
 
-		file_selector = gtk_file_selection_new("Select a savefile");
-		gtk_file_selection_set_filename(GTK_FILE_SELECTION(file_selector), buf);
-		gtk_signal_connect(GTK_OBJECT(GTK_FILE_SELECTION(file_selector)->ok_button),
-		                   "clicked", file_ok_callback, (gpointer)file_selector);
-
-		/* Ensure that the dialog box is destroyed when the user clicks a button. */
-		gtk_signal_connect_object(GTK_OBJECT(GTK_FILE_SELECTION(file_selector)->ok_button),
-		                          "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy),
-		                          (gpointer)file_selector);
-
-		gtk_signal_connect_object(GTK_OBJECT(GTK_FILE_SELECTION(file_selector)->cancel_button),
-		                          "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy),
-		                          (gpointer)file_selector);
-
-		gtk_window_set_modal(GTK_WINDOW(file_selector), TRUE);
-		gtk_widget_show(GTK_WIDGET(file_selector));
+		/* Start playing the game */
+		game_in_progress = TRUE;
+		Term_flush();
+		play_game(FALSE);
+		cleanup_angband();
+		quit(NULL);
 	}
+
+	/* Destroy it now we're done */
+	gtk_widget_destroy(selector);
+
+	/* Done */
+	return;
 }
+
+
+
+
 
 
 static gboolean delete_event_handler(GtkWidget *widget, GdkEvent *event, gpointer user_data)
@@ -677,10 +720,10 @@ static void init_gtk_window(term_data *td, int i)
 		options_font_item = gtk_menu_item_new_with_label("Font");
 
 		/* Register callbacks */
-		gtk_signal_connect(GTK_OBJECT(file_exit_item), "activate", quit_event_handler, NULL);
-		gtk_signal_connect(GTK_OBJECT(file_new_item), "activate", new_event_handler, NULL);
-		gtk_signal_connect(GTK_OBJECT(file_open_item), "activate", open_event_handler, NULL);
-		gtk_signal_connect(GTK_OBJECT(options_font_item), "activate", change_font_event_handler, td);
+		g_signal_connect(GTK_OBJECT(file_exit_item), "activate", G_CALLBACK(quit_event_handler), NULL);
+		g_signal_connect(GTK_OBJECT(file_new_item), "activate", G_CALLBACK(new_event_handler), NULL);
+		g_signal_connect(GTK_OBJECT(file_open_item), "activate", G_CALLBACK(open_event_handler), NULL);
+		g_signal_connect(GTK_OBJECT(options_font_item), "activate", G_CALLBACK(change_font_event_handler), td);
 
 		/* Build the menu bar */
 		gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), file_item);

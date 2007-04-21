@@ -40,8 +40,8 @@ SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncurses
 # Support Xaw motif (main-xaw.c)
 #SYS_xaw = -DUSE_XAW -lXaw -lXext -lSM -lICE -lXmu -lXt -lX11
 
-# Support the GTK graphical tookit (main-gtk.c)
-#SYS_gtk = $(shell gtk-config --cflags) -DUSE_GTK $(shell gtk-config --libs)
+# Support the GTK2 graphical tookit (main-gtk.c)
+SYS_gtk = -DUSE_GTK $(shell pkg-config gtk+-2.0 --libs --cflags)
 
 # Support "projected mode". Experimental, requires X11/Xaw/GTK to be enabled (main-xpj.c)
 #SYS_xpj = -DUSE_xpj
@@ -51,6 +51,10 @@ SYS_lfb = -DUSE_LFB
 
 # Support linux in VGA mode (main-lsl.c) -- Linux only
 #SYS_lsl = -DUSE_LSL -lz -lvgagl -lvga
+
+# Support SDL frontend
+#SYS_sdl = -DUSE_SDL $(shell sdl-config --cflags) $(shell sdl-config --libs) -lSDL_ttf
+
 
 
 
@@ -95,7 +99,7 @@ VERSION = 3.0.8
 
 
 # Extract CFLAGS and LIBS from the system definitions
-MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_xaw) $(SYS_gtk) $(SYS_xpj) $(SYS_sla) $(SYS_cap)
+MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_xaw) $(SYS_gtk) $(SYS_xpj) $(SYS_sla) $(SYS_cap) $(SYS_sdl)
 CFLAGS += $(patsubst -l%,,$(MODULES)) $(INCLUDES)
 LIBS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
 
@@ -113,7 +117,7 @@ endif
 
 # Object definitions
 X11OBJS = maid-x11.o main-x11.o main-xaw.o main-gtk.o main-xpj.o
-MAINOBJS = main.o main-cap.o main-gcu.o main-gtk.o main-sla.o $(X11OBJS) $(LINUXOBJS)
+MAINOBJS = main.o main-cap.o main-gcu.o main-sla.o $(X11OBJS) $(LINUXOBJS) # main-sdl.o not yet
 OBJS = $(BASEOBJS) $(MAINOBJS)
 
 
