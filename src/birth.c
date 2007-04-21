@@ -1480,7 +1480,7 @@ static bool player_birth_aux(void)
 		prt("To create a character, would you like to:", 1, 1);
 		prt(" a) Use the point-based system", 2, 1);
 		prt(" b) Use the autoroller", 3, 1);
-		prt(" a) Use the basic roller", 4, 1);
+		prt(" c) Use the basic roller", 4, 1);
 
 		prt("", 6, 1);
 		ch = inkey();
