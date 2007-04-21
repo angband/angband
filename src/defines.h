@@ -1656,7 +1656,7 @@ enum
 #define PR_BASIC \
 	(PR_MISC | PR_TITLE | PR_STATS | PR_LEV |\
 	 PR_EXP | PR_GOLD | PR_ARMOR | PR_HP |\
-	 PR_MANA | PR_DEPTH | PR_HEALTH)
+	 PR_MANA | PR_DEPTH | PR_HEALTH | PR_EQUIPPY)
 
 /* Display Extra Info */
 #define PR_EXTRA \

@@ -2,11 +2,11 @@
  * File: squelch.c
  * Purpose: Automatic item destruction ("squelching")
  * Authors: David T. Blackston, Iain McFall, DarkGod, Jeff Greene, David Vestal,
- *          Pete Mack Andrew Sidwell.
+ *          Pete Mack, Andrew Sidwell.
  * Licence: Angband licence, GPL in parts
  *
- * This file, with the (current) exception of David Blackston's code, can be 
- * distributed under the GPL licence.
+ * Please read the "COPYING" file in the Angband distribution for licence
+ * terms.  If you do not, you have no right to use this file.
  */
 #include "angband.h"
 

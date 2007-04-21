@@ -754,7 +754,7 @@ static void rd_options(void)
 	}
 
 	/* Load savefiles pre-reorganisation */
-	if (older_than(3, 0, 7))
+	if (older_than(3, 0, 8))
 	{
 		/* 
 		 * Slot	Old layout:	New layout:
