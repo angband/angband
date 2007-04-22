@@ -272,7 +272,7 @@
  * Include the support for loading bitmaps
  */
 #ifdef USE_GRAPHICS
-# include "readdib.h"
+# include "win/readdib.h"
 #endif /* USE_GRAPHICS */
 
 /*

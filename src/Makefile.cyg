@@ -11,7 +11,7 @@ WRES = windres
 LIBS = -s -mno-cygwin -mwindows -e _mainCRTStartup -lwinmm
 CFLAGS = -Wall -W -pedantic -mno-cygwin -O2 -fno-strength-reduce -DWINDOWS
 
-EXOBJS = $(BASEOBJS) angband.res main-win.o readdib.o
+EXOBJS = $(BASEOBJS) win/angband.res main-win.o win/readdib.o
 
 #
 # Targets
@@ -55,7 +55,7 @@ angband: $(EXOBJS)
 #	$(WRES) angband.rc angband.res
 #
 
-angband.res : angband.rc
+win/angband.res : win/angband.rc
 	$(WRES) $< -O coff -o $@
 
 
@@ -68,5 +68,5 @@ angband.res : angband.rc
 
 # Note the additional -DNEAR= flag to cope with the 'NEAR'
 # keyword used in readdib.c
-readdib.o: readdib.c readdib.h
+win/readdib.o: win/readdib.c readdib.h
 	$(CC) $(CFLAGS) -DNEAR= $(INCDIRS) -c -o $@ $<

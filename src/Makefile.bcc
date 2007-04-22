@@ -47,7 +47,7 @@ CCFLAGS= $(CCOPTS) $(DBGOPT)
 ######################## Targets ##################################
 
 OBJ = \
-  main-win.obj readdib.obj \
+  main-win.obj win/readdib.obj \
   birth.obj cave.obj cmd1.obj cmd2.obj \
   cmd3.obj cmd4.obj cmd5.obj cmd6.obj \
   dungeon.obj files.obj generate.obj init1.obj \
@@ -79,11 +79,11 @@ install: $(EXE_FILE)
 
 
 ########################### Explicit Rules ########################
-$(EXE_FILE): $(OBJ) angband.res
-	$(LINKER) -aa -x $(OBJ) c0w32.obj, $(EXE_FILE),, cw32.lib import32.lib,, angband.res
+$(EXE_FILE): $(OBJ) win/angband.res
+	$(LINKER) -aa -x $(OBJ) c0w32.obj, $(EXE_FILE),, cw32.lib import32.lib,, win/angband.res
 
-angband.res: angband.rc
-	$(RC) -r angband.rc
+win/angband.res: win/angband.rc
+	$(RC) -r win/angband.rc
 
 
 ########################### Implicit Rules ########################
