@@ -624,7 +624,8 @@ static bool store_object_similar(const object_type *o_ptr, const object_type *j_
 	if (o_ptr->xtra1 || j_ptr->xtra1) return (0);
 
 	/* Hack -- Never stack recharging items */
-	if (o_ptr->timeout || j_ptr->timeout) return (0);
+	if ((o_ptr->timeout || j_ptr->timeout) && o_ptr->tval != TV_LITE)
+		return (0);
 
 	/* Require many identical values */
 	if (o_ptr->ac != j_ptr->ac) return (0);
