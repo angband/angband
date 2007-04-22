@@ -22,6 +22,7 @@
 # P: base armor class : base damage : plus to-hit : plus to-dam : plus to-ac
 # F: flag | flag | etc
 # A: activation : recharge time : recharge time dice
+# D: description
 
 # 'N' indicates the beginning of an entry. The serial number must
 # increase for each new item.
@@ -46,6 +47,11 @@
 # plus a random value between 1 and the recharge time dice (if not 0).
 # If an activation is given then the artifact must also have the
 # ACTIVATE flag.
+
+# 'D' is for the artifact description.  These appear when the item is 
+# identified.  Special thanks to J.R.R Tolkien, without whom the words would
+# be unwritten, the images unconceived, the deed undone. -LM-
+# Contributers: Jeff Butler, Neal Hackler, Ethan Sicotte, Pat Tracy, Yuanli Zhou 
 
 ### IMPORTANT NOTES ###
 # (1.) Any changes or additions to the file will have influence on randarts
