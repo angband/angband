@@ -455,7 +455,7 @@ static void recharge_objects(void)
 		if (!o_ptr->k_idx) continue;
 
 		/* Recharge activatable objects */
-		if (o_ptr->timeout > 0)
+		if (o_ptr->timeout > 0 && !(o_ptr->tval == TV_LITE && !artifact_p(o_ptr)))
 		{
 			/* Recharge */
 			o_ptr->timeout--;
@@ -1025,13 +1025,13 @@ static void process_world(void)
 	if (o_ptr->tval == TV_LITE)
 	{
 		/* Hack -- Use some fuel (except on artifacts) */
-		if (!artifact_p(o_ptr) && (o_ptr->pval > 0))
+		if (!artifact_p(o_ptr) && (o_ptr->timeout > 0))
 		{
 			/* Decrease life-span */
-			o_ptr->pval--;
+			o_ptr->timeout--;
 
 			/* Hack -- notice interesting fuel steps */
-			if ((o_ptr->pval < 100) || (!(o_ptr->pval % 100)))
+			if ((o_ptr->timeout < 100) || (!(o_ptr->timeout % 100)))
 			{
 				/* Window stuff */
 				p_ptr->window |= (PW_EQUIP);
@@ -1041,18 +1041,18 @@ static void process_world(void)
 			if (p_ptr->timed[TMD_BLIND])
 			{
 				/* Hack -- save some light for later */
-				if (o_ptr->pval == 0) o_ptr->pval++;
+				if (o_ptr->timeout == 0) o_ptr->timeout++;
 			}
 
 			/* The light is now out */
-			else if (o_ptr->pval == 0)
+			else if (o_ptr->timeout == 0)
 			{
 				disturb(0, 0);
 				msg_print("Your light has gone out!");
 			}
 
 			/* The light is getting dim */
-			else if ((o_ptr->pval < 100) && (!(o_ptr->pval % 10)))
+			else if ((o_ptr->timeout < 100) && (!(o_ptr->timeout % 10)))
 			{
 				if (disturb_minor) disturb(0, 0);
 				msg_print("Your light is growing faint.");

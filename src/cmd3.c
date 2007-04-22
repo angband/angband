@@ -785,7 +785,7 @@ static bool item_tester_refill_lantern(const object_type *o_ptr)
 	/* Non-empty lanterns are okay */
 	if ((o_ptr->tval == TV_LITE) &&
 	    (o_ptr->sval == SV_LITE_LANTERN) &&
-	    (o_ptr->pval > 0))
+	    (o_ptr->timeout > 0))
 	{
 		return (TRUE);
 	}
@@ -836,19 +836,19 @@ static void do_cmd_refill_lamp(void)
 	j_ptr = &inventory[INVEN_LITE];
 
 	/* Refuel */
-	j_ptr->pval += o_ptr->pval;
+	j_ptr->timeout += o_ptr->timeout ? o_ptr->timeout : o_ptr->pval;
 
 	/* Message */
 	msg_print("You fuel your lamp.");
 
 	/* Comment */
-	if (j_ptr->pval >= FUEL_LAMP)
+	if (j_ptr->timeout >= FUEL_LAMP)
 	{
-		j_ptr->pval = FUEL_LAMP;
+		j_ptr->timeout = FUEL_LAMP;
 		msg_print("Your lamp is full.");
 	}
 
-	/* Refilled from a latern */
+	/* Refilled from a lantern */
 	if (o_ptr->sval == SV_LITE_LANTERN)
 	{
 		/* Unstack if necessary */
@@ -867,7 +867,7 @@ static void do_cmd_refill_lamp(void)
 			i_ptr->number = 1;
 
 			/* Remove fuel */
-			i_ptr->pval = 0;
+			i_ptr->timeout = 0;
 
 			/* Unstack the used item */
 			o_ptr->number--;
@@ -880,11 +880,11 @@ static void do_cmd_refill_lamp(void)
 				drop_near(i_ptr, 0, p_ptr->py, p_ptr->px);
 		}
 
-		/* Empty a single latern */
+		/* Empty a single lantern */
 		else
 		{
 			/* No more fuel */
-			o_ptr->pval = 0;
+			o_ptr->timeout = 0;
 		}
 
 		/* Combine / Reorder the pack (later) */
@@ -978,15 +978,15 @@ static void do_cmd_refill_torch(void)
 	j_ptr = &inventory[INVEN_LITE];
 
 	/* Refuel */
-	j_ptr->pval += o_ptr->pval + 5;
+	j_ptr->timeout += o_ptr->timeout + 5;
 
 	/* Message */
 	msg_print("You combine the torches.");
 
 	/* Over-fuel message */
-	if (j_ptr->pval >= FUEL_TORCH)
+	if (j_ptr->timeout >= FUEL_TORCH)
 	{
-		j_ptr->pval = FUEL_TORCH;
+		j_ptr->timeout = FUEL_TORCH;
 		msg_print("Your torch is fully fueled.");
 	}
 

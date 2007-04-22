@@ -41,6 +41,7 @@ const char default_choice[] =
 	"1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 const char lower_case[] = "abcdefghijklmnopqrstuvwxyz";
+const char upper_case[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 int jumpscroll = 0;
 int menu_width = 23;

@@ -1792,14 +1792,14 @@ static void calc_torch(void)
 			}
 			
 			/* Lanterns (with fuel) provide more lite */
-			if ((o_ptr->sval == SV_LITE_LANTERN) && (o_ptr->pval > 0))
+			if ((o_ptr->sval == SV_LITE_LANTERN) && (o_ptr->timeout > 0))
 			{
 				p_ptr->cur_lite += 2;
 				continue;
 			}
 			
 			/* Torches (with fuel) provide some lite */
-			if ((o_ptr->sval == SV_LITE_TORCH) && (o_ptr->pval > 0))
+			if ((o_ptr->sval == SV_LITE_TORCH) && (o_ptr->timeout > 0))
 			{
 				p_ptr->cur_lite += 1;
 				continue;

@@ -478,6 +478,13 @@ static errr rd_item(object_type *o_ptr)
 		}
 	}
 
+	if(older_than(3, 0, 9) && o_ptr->tval == TV_LITE && !artifact_p(o_ptr) && !ego_item_p(o_ptr) && o_ptr->pval)
+	{
+		o_ptr->timeout = o_ptr->pval;
+		o_ptr->pval = 0;
+	}
+
+
 	/* Success */
 	return (0);
 }

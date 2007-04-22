@@ -1168,8 +1168,8 @@ static int store_create_item(int st, int tval, int sval)
 	/* Charge lights */
 	if (object.tval == TV_LITE)
 	{
-		if (object.sval == SV_LITE_TORCH)        object.pval = FUEL_TORCH / 2;
-		else if (object.sval == SV_LITE_LANTERN) object.pval = FUEL_LAMP / 2;
+		if (object.sval == SV_LITE_TORCH)        object.timeout = FUEL_TORCH / 2;
+		else if (object.sval == SV_LITE_LANTERN) object.timeout = FUEL_LAMP / 2;
 	}
 
 	/* Mass produce and/or apply discount */
@@ -1301,8 +1301,8 @@ static bool store_create_random(int st)
 		/* Charge lights XXX */
 		if (i_ptr->tval == TV_LITE)
 		{
-			if (i_ptr->sval == SV_LITE_TORCH) i_ptr->pval = FUEL_TORCH / 2;
-			if (i_ptr->sval == SV_LITE_LANTERN) i_ptr->pval = FUEL_LAMP / 2;
+			if (i_ptr->sval == SV_LITE_TORCH) i_ptr->timeout = FUEL_TORCH / 2;
+			if (i_ptr->sval == SV_LITE_LANTERN) i_ptr->timeout = FUEL_LAMP / 2;
 		}
 
 		/* Mass produce and/or apply discount */
@@ -2632,7 +2632,6 @@ static bool inven_process_command(char cmd, void *db, int oid)
 		case 'd':
 		{
 			store_sell(oid);
-
 			break;
 		}
 
@@ -2872,7 +2871,7 @@ void do_cmd_store(void)
 			menu.count = st_ptr->stock_num;
 
 			/* These two can't intersect! */
-			menu.cmd_keys = "\n\r\t?=CeEiIls";
+			menu.cmd_keys = "\n\p\r\t?=CdeEiIls";
 			menu.selections = "abcfghjkmnopqrtuvxyz";
 		}
 		else
@@ -2881,8 +2880,8 @@ void do_cmd_store(void)
 			menu.count = sellable_total;
 
 			/* These two can't intersect! */
-			menu.cmd_keys = "\t\n\r{}Idepw";
-			menu.selections = "abcfghijklmnoqrstuvxyz1234567890";
+			menu.cmd_keys = "\t\n\p\r{}gIepw";
+			menu.selections = "abcfhijklmnoqrstuvxyz1234567890";
 		}
 		if(cursor >= menu.count) cursor = menu.count -1;
 

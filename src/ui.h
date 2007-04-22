@@ -29,6 +29,7 @@ static const byte curs_attrs[2][2] =
 /* Standard menu orderings */
 extern const char default_choice[];		/* 1234567890A-Za-z */
 extern const char lower_case[];			/* abc..z */
+extern const char upper_case[];			/* ABC..Z */
 
 
 
