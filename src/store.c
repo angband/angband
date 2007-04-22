@@ -1168,8 +1168,8 @@ static int store_create_item(int st, int tval, int sval)
 	/* Charge lights */
 	if (object.tval == TV_LITE)
 	{
-		if (object.sval == SV_LITE_TORCH)        object.pval = FUEL_TORCH / 2;
-		else if (object.sval == SV_LITE_LANTERN) object.pval = FUEL_LAMP / 2;
+		if (object.sval == SV_LITE_TORCH)        object.timeout = FUEL_TORCH / 2;
+		else if (object.sval == SV_LITE_LANTERN) object.timeout = FUEL_LAMP / 2;
 	}
 
 	/* Mass produce and/or apply discount */
@@ -1301,8 +1301,8 @@ static bool store_create_random(int st)
 		/* Charge lights XXX */
 		if (i_ptr->tval == TV_LITE)
 		{
-			if (i_ptr->sval == SV_LITE_TORCH) i_ptr->pval = FUEL_TORCH / 2;
-			if (i_ptr->sval == SV_LITE_LANTERN) i_ptr->pval = FUEL_LAMP / 2;
+			if (i_ptr->sval == SV_LITE_TORCH) i_ptr->timeout = FUEL_TORCH / 2;
+			if (i_ptr->sval == SV_LITE_LANTERN) i_ptr->timeout = FUEL_LAMP / 2;
 		}
 
 		/* Mass produce and/or apply discount */
@@ -1938,6 +1938,7 @@ static bool store_purchase(int item)
 
 	/* Get the actual object */
 	o_ptr = &st_ptr->stock[item];
+	if(item < 0) return FALSE;
 
 	/* Clear all current messages */
 	msg_flag = FALSE;
@@ -2143,6 +2144,8 @@ static void store_sell(int item)
 
 	char o_name[120];
 
+	if(item < 0 || item >= sellable_total) return;
+
 	o_ptr = sellable[item].o_ptr;
 	item = sellable[item].index;
 
@@ -2342,6 +2345,8 @@ static void store_examine(int item)
 {
 	store_type *st_ptr = &store[store_current];
 	object_type *o_ptr;
+
+	if(item < 0) return;
 
 	/* Get the actual object */
 	o_ptr = &st_ptr->stock[item];
@@ -2865,14 +2870,21 @@ void do_cmd_store(void)
 		if (cur_menu == &store_menu)
 		{
 			menu.count = st_ptr->stock_num;
-			menu.cmd_keys = "l\n\r?=C\ts";
+
+			/* These two can't intersect! */
+			menu.cmd_keys = "\n\r\t?=CeEiIls";
+			menu.selections = "abcfghjkmnopqrtuvxyz";
 		}
 		else
 		{
 			inven_compile_list();
 			menu.count = sellable_total;
-			menu.cmd_keys = "{}wIx\tp\n\r";
+
+			/* These two can't intersect! */
+			menu.cmd_keys = "\t\n\r{}Idepw";
+			menu.selections = "abcfghijklmnoqrstuvxyz1234567890";
 		}
+		if(cursor >= menu.count) cursor = menu.count -1;
 
 		items_region.page_rows = scr_places_y[LOC_ITEMS_END] - scr_places_y[LOC_ITEMS_START] + 1;
 		menu_init2(&menu, find_menu_skin(MN_SCROLL), cur_menu, &items_region);
