@@ -1985,9 +1985,9 @@ const bool option_norm[OPT_MAX] =
 	FALSE,		/* xxx compress_savefile */
 	FALSE,		/* OPT_hilite_player */
 	FALSE,		/* OPT_view_yellow_lite */
-	FALSE,		/* OPT_view_bright_lite */
+	TRUE,		/* OPT_view_bright_lite */
 	FALSE,		/* OPT_view_granite_lite */
-	FALSE,		/* OPT_view_special_lite */
+	TRUE,		/* OPT_view_special_lite */
 	FALSE,		/* OPT_easy_open */
 	FALSE,		/* OPT_easy_alter */
 	FALSE,		/* OPT_easy_floor */
