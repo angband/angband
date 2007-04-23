@@ -431,7 +431,8 @@ int squelch_item_ok(object_type *o_ptr, byte feel, bool fullid)
 			if ((feel == INSCRIP_BROKEN) || (feel == INSCRIP_TERRIBLE) ||
 		 	    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED) ||
 			    (feel == INSCRIP_AVERAGE) ||
-			    ((feel == INSCRIP_GOOD) && (cp_ptr->flags & CF_PSEUDO_ID_HEAVY)))
+			    ((feel == INSCRIP_GOOD) &&
+					((fullid) || (cp_ptr->flags & CF_PSEUDO_ID_HEAVY))))
 			{
 				result = SQUELCH_YES;
 			}
