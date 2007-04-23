@@ -4065,19 +4065,22 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 			}
 			break;
 #else
+
+			/* Get the text grid */
 			xPos = GET_X_LPARAM(lParam);
 			yPos = GET_Y_LPARAM(lParam);
-			xPos = (xPos - 13 * td->font_wid) / td->tile_wid;
-			if (use_bigtile)
-				xPos /= 2;
-			yPos = yPos / td->tile_hgt - 1;
+			xPos /= td->tile_wid;
+			yPos /= td->tile_hgt;
+
 			if (uMsg == WM_LBUTTONDOWN)
 				button = 1;
 			else if (uMsg == WM_RBUTTONDOWN)
 				button = 2;
 			else
 				button = 3;
+
 			Term_mousepress(xPos,yPos,button);
+
 			break;
 #endif /* USE_SAVER */
 		}

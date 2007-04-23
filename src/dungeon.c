@@ -1237,8 +1237,6 @@ static bool verify_borg_mode(void)
  */
 static void process_command(void)
 {
-	int x, y;
-	
 #ifdef ALLOW_REPEAT
 
 	/* Handle repeating the last command */
@@ -1817,9 +1815,18 @@ static void process_command(void)
 		/* Mouse click */
 		case '\xff':
 		{
-			x = p_ptr->command_cmd_ex.mousex + Term->offset_x;
-			y = p_ptr->command_cmd_ex.mousey + Term->offset_y;
+			int x, y;
+	
+			x = p_ptr->command_cmd_ex.mousex - COL_MAP;
+			if (use_bigtile) x /= 2;
+			x += Term->offset_x;
+			y = p_ptr->command_cmd_ex.mousey - ROW_MAP + Term->offset_y;
+
+			if (x < 0 || y < 0)
+				break;
+
 			do_cmd_pathfind(y, x);
+
 			break;
 		}
 

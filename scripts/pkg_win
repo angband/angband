@@ -29,8 +29,7 @@ mkdir lib/xtra/graf
 mkdir lib/xtra/sound
 
 touch lib/apex/delete.me lib/bone/delete.me lib/data/delete.me \
-      lib/info/delete.me lib/save/delete.me lib/user/delete.me \
-      lib/data/delete.me lib/save/delete.me lib/bone/delete.me
+      lib/info/delete.me lib/user/delete.me lib/save/delete.me
 
 cp ../*.exe .
 cp ../changes.txt ../AUTHORS ../THANKS ../COPYING ../readme.txt .
@@ -39,6 +38,7 @@ cp ../lib/edit/*.txt lib/edit
 cp ../lib/file/*.txt lib/file
 
 cp ../lib/help/*.txt lib/help
+cp ../lib/help/*.hlp lib/help
 
 cp ../lib/pref/*.prf lib/pref
 
