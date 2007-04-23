@@ -793,13 +793,14 @@ static bool choose_character()
 
 	WIPE(&menu, menu);
 	menu.cmd_keys = "?=*\r\n\x18";		 /* ?, ,= *, \n, <ctl-X> */
+	menu.selections = lower_case;
 
 	while (i < (int)N_ELEMENTS(menu_defs))
 	{
 		event_type cx;
 		int cursor = *values[i];
 
-		menu.flags = MN_NO_TAGS | MN_DBL_TAP;
+		menu.flags = MN_DBL_TAP;
 		menu.count = limits[i];
 		menu.browse_hook = browse[i];
 		menu_init2(&menu, find_menu_skin(MN_SCROLL), &menu_defs[i], regions[i]);
