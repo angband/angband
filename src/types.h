@@ -934,6 +934,7 @@ struct player_type
 
 	s16b resting;			/* Resting counter */
 	s16b running;			/* Running counter */
+	bool running_withpathfind;      /* Are we using the pathfinder ? */
 
 	s16b run_cur_dir;		/* Direction we are running */
 	s16b run_old_dir;		/* Direction we came from */
@@ -946,6 +947,7 @@ struct player_type
 	s16b command_arg;		/* Gives argument of current command */
 	s16b command_rep;		/* Gives repetition of current command */
 	s16b command_dir;		/* Gives direction of current command */
+	event_type command_cmd_ex; /* Gives additional information of current command */
 
 	s16b command_see;		/* See "cmd1.c" */
 	s16b command_wrk;		/* See "cmd1.c" */

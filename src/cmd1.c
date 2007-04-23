@@ -2110,6 +2110,8 @@ static bool run_test(void)
  */
 void run_step(int dir)
 {
+	int x, y;
+
 	/* Start run */
 	if (dir)
 	{
@@ -2126,14 +2128,30 @@ void run_step(int dir)
 	/* Continue run */
 	else
 	{
-		/* Update run */
-		if (run_test())
+		if (!p_ptr->running_withpathfind)
 		{
-			/* Disturb */
-			disturb(0, 0);
-
-			/* Done */
-			return;
+			/* Update run */
+			if (run_test())
+			{
+				/* Disturb */
+				disturb(0, 0);
+	
+				/* Done */
+				return;
+			}
+		}
+		else
+		{
+			if (pf_result_index < 0)
+			{
+				disturb(0, 0);
+				p_ptr->running_withpathfind = 0;
+				return;
+			}
+			p_ptr->run_cur_dir = pf_result[pf_result_index--] - '0';
+			x = p_ptr->px + ddx[p_ptr->run_cur_dir];
+			y = p_ptr->py + ddy[p_ptr->run_cur_dir];
+			if (!do_cmd_walk_test(y, x)) return;
 		}
 	}
 

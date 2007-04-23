@@ -2383,7 +2383,7 @@ static void target_set_interactive_prepare(int mode)
  *
  * This function must handle blindness/hallucination.
  */
-static int target_set_interactive_aux(int y, int x, int mode, cptr info)
+static event_type target_set_interactive_aux(int y, int x, int mode, cptr info)
 {
 	s16b this_o_idx, next_o_idx = 0;
 
@@ -2395,7 +2395,7 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 
 	int feat;
 
-	int query;
+	event_type query;
 
 	char out_val[256];
 
@@ -2404,7 +2404,7 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 	while (1)
 	{
 		/* Paranoia */
-		query = ' ';
+		query.key = ' ';
 
 		/* Assume boring */
 		boring = TRUE;
@@ -2445,10 +2445,10 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 
 			prt(out_val, 0, 0);
 			move_cursor_relative(y, x);
-			query = inkey();
+			query = inkey_ex();
 
 			/* Stop on everything but "return" */
-			if ((query != '\n') && (query != '\r')) break;
+			if ((query.key != '\n') && (query.key != '\r')) break;
 
 			/* Repeat forever */
 			continue;
@@ -2499,7 +2499,7 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 						Term_addstr(-1, TERM_WHITE, format("  [r,%s]", info));
 
 						/* Command */
-						query = inkey();
+						query = inkey_ex();
 
 						/* Load screen */
 						screen_load();
@@ -2533,21 +2533,21 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 						move_cursor_relative(y, x);
 
 						/* Command */
-						query = inkey();
+						query = inkey_ex();
 					}
 
 					/* Normal commands */
-					if (query != 'r') break;
+					if (query.key != 'r') break;
 
 					/* Toggle recall */
 					recall = !recall;
 				}
 
 				/* Stop on everything but "return"/"space" */
-				if ((query != '\n') && (query != '\r') && (query != ' ')) break;
+				if ((query.key != '\n') && (query.key != '\r') && (query.key != ' ')) break;
 
 				/* Sometimes stop at "space" key */
-				if ((query == ' ') && !(mode & (TARGET_LOOK))) break;
+				if ((query.key == ' ') && !(mode & (TARGET_LOOK))) break;
 
 				/* Change the intro */
 				s1 = "It is ";
@@ -2590,13 +2590,13 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 
 					prt(out_val, 0, 0);
 					move_cursor_relative(y, x);
-					query = inkey();
+					query = inkey_ex();
 
 					/* Stop on everything but "return"/"space" */
-					if ((query != '\n') && (query != '\r') && (query != ' ')) break;
+					if ((query.key != '\n') && (query.key != '\r') && (query.key != ' ')) break;
 
 					/* Sometimes stop at "space" key */
-					if ((query == ' ') && !(mode & (TARGET_LOOK))) break;
+					if ((query.key == ' ') && !(mode & (TARGET_LOOK))) break;
 
 					/* Change the intro */
 					s2 = "also carrying ";
@@ -2651,10 +2651,10 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 
 					prt(out_val, 0, 0);
 					move_cursor_relative(y, x);
-					query = inkey();
+					query = inkey_ex();
 
 					/* Display objects */
-					if (query == 'r')
+					if (query.key == 'r')
 					{
 						/* Save screen */
 						screen_save();
@@ -2664,13 +2664,13 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 
 						/* Describe the pile */
 						prt(out_val, 0, 0);
-						query = inkey();
+						query = inkey_ex();
 
 						/* Load screen */
 						screen_load();
 
 						/* Continue on 'r' only */
-						if (query == 'r') continue;
+						if (query.key == 'r') continue;
 					}
 
 					/* Done */
@@ -2678,10 +2678,10 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 				}
 
 				/* Stop on everything but "return"/"space" */
-				if ((query != '\n') && (query != '\r') && (query != ' ')) break;
+				if ((query.key != '\n') && (query.key != '\r') && (query.key != ' ')) break;
 
 				/* Sometimes stop at "space" key */
-				if ((query == ' ') && !(mode & (TARGET_LOOK))) break;
+				if ((query.key == ' ') && !(mode & (TARGET_LOOK))) break;
 
 				/* Change the intro */
 				s1 = "It is ";
@@ -2731,13 +2731,13 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 
 				prt(out_val, 0, 0);
 				move_cursor_relative(y, x);
-				query = inkey();
+				query = inkey_ex();
 
 				/* Stop on everything but "return"/"space" */
-				if ((query != '\n') && (query != '\r') && (query != ' ')) break;
+				if ((query.key != '\n') && (query.key != '\r') && (query.key != ' ')) break;
 
 				/* Sometimes stop at "space" key */
-				if ((query == ' ') && !(mode & (TARGET_LOOK))) break;
+				if ((query.key == ' ') && !(mode & (TARGET_LOOK))) break;
 
 				/* Change the intro */
 				s1 = "It is ";
@@ -2798,14 +2798,14 @@ static int target_set_interactive_aux(int y, int x, int mode, cptr info)
 
 			prt(out_val, 0, 0);
 			move_cursor_relative(y, x);
-			query = inkey();
+			query = inkey_ex();
 
 			/* Stop on everything but "return"/"space" */
-			if ((query != '\n') && (query != '\r') && (query != ' ')) break;
+			if ((query.key != '\n') && (query.key != '\r') && (query.key != ' ')) break;
 		}
 
 		/* Stop on everything but "return" */
-		if ((query != '\n') && (query != '\r')) break;
+		if ((query.key != '\n') && (query.key != '\r')) break;
 	}
 
 	/* Keep going */
@@ -2870,7 +2870,7 @@ bool target_set_interactive(int mode)
 
 	bool flag = TRUE;
 
-	char query;
+	event_type query;
 
 	char info[80];
 
@@ -2927,7 +2927,7 @@ bool target_set_interactive(int mode)
 			d = 0;
 
 			/* Analyze */
-			switch (query)
+			switch (query.key)
 			{
 				case ESCAPE:
 				case 'q':
@@ -2977,6 +2977,14 @@ bool target_set_interactive(int mode)
 					break;
 				}
 
+				case '\xff':
+				{
+					x = query.mousex + Term->offset_x;
+					y = query.mousey + Term->offset_y;
+					target_set_location(y, x);
+					done = TRUE;
+					break;
+				}
 				case 't':
 				case '5':
 				case '0':
@@ -2997,10 +3005,17 @@ bool target_set_interactive(int mode)
 					break;
 				}
 
+				case 'g':
+				{
+					do_cmd_pathfind(y,x);
+					done = TRUE;
+					break;
+				}
+
 				default:
 				{
 					/* Extract direction */
-					d = target_dir(query);
+					d = target_dir(query.key);
 
 					/* Oops */
 					if (!d) bell("Illegal command for target mode!");
@@ -3066,7 +3081,7 @@ bool target_set_interactive(int mode)
 			d = 0;
 
 			/* Analyze the keypress */
-			switch (query)
+			switch (query.key)
 			{
 				case ESCAPE:
 				case 'q':
@@ -3126,6 +3141,11 @@ bool target_set_interactive(int mode)
 					break;
 				}
 
+				case '\xff':
+				{
+					x = query.mousex + Term->offset_x;
+					y = query.mousey + Term->offset_y;
+				}
 				case 't':
 				case '5':
 				case '0':
@@ -3136,10 +3156,17 @@ bool target_set_interactive(int mode)
 					break;
 				}
 
+				case 'g':
+				{
+					do_cmd_pathfind(y,x);
+					done = TRUE;
+					break;
+				}
+
 				default:
 				{
 					/* Extract a direction */
-					d = target_dir(query);
+					d = target_dir(query.key);
 
 					/* Oops */
 					if (!d) bell("Illegal command for target mode!");
@@ -3219,7 +3246,7 @@ bool get_aim_dir(int *dp)
 {
 	int dir;
 
-	char ch;
+	event_type ke;
 
 	cptr p;
 
@@ -3264,11 +3291,19 @@ bool get_aim_dir(int *dp)
 		}
 
 		/* Get a command (or Cancel) */
-		if (!get_com(p, &ch)) break;
+		if (!get_com_ex(p, &ke)) break;
 
 		/* Analyze */
-		switch (ch)
+		switch (ke.key)
 		{
+			/* Mouse aiming */
+			case '\xff':
+			{
+				target_set_location(ke.mousey + Term->offset_y, ke.mousex + Term->offset_x);
+				dir = 5;
+				break;
+			}
+			
 			/* Set new target, use target if legal */
 			case '*':
 			{
@@ -3289,7 +3324,7 @@ bool get_aim_dir(int *dp)
 			/* Possible direction */
 			default:
 			{
-				dir = target_dir(ch);
+				dir = target_dir(ke.key);
 				break;
 			}
 		}

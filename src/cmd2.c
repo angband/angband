@@ -2000,7 +2000,7 @@ void do_cmd_spike(void)
 /*
  * Determine if a given grid may be "walked"
  */
-static bool do_cmd_walk_test(int y, int x)
+bool do_cmd_walk_test(int y, int x)
 {
 	/* Hack -- walking obtains knowledge XXX XXX */
 	if (!(cave_info[y][x] & (CAVE_MARK))) return (TRUE);
@@ -2153,6 +2153,30 @@ void do_cmd_run(void)
 
 	/* Start run */
 	run_step(dir);
+}
+
+/*
+ * Start running with pathfinder.
+ *
+ * Note that running while confused is not allowed.
+ */
+void do_cmd_pathfind(int y, int x)
+{
+	/* Hack XXX XXX XXX */
+	if (p_ptr->timed[TMD_CONFUSED])
+	{
+		msg_print("You are too confused!");
+		return;
+	}
+
+	if (findpath(y, x))
+	{
+		p_ptr->running = 1000;
+		/* Calculate torch radius */
+		p_ptr->update |= (PU_TORCH);
+		p_ptr->running_withpathfind = TRUE;
+		run_step(0);
+	}
 }
 
 

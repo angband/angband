@@ -245,6 +245,7 @@
  * Include the "windows" support file
  */
 #include <windows.h>
+#include <windowsx.h>
 
 #ifdef USE_SOUND
 
@@ -3935,6 +3936,8 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 	term_data *td;
 	int i;
 
+	int xPos, yPos, button;
+
 #ifdef USE_SAVER
 	static int iMouse = 0;
 	static WORD xMouse = 0;
@@ -4050,21 +4053,36 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 			return 0;
 		}
 
-#ifdef USE_SAVER
-
 		case WM_MBUTTONDOWN:
 		case WM_RBUTTONDOWN:
 		case WM_LBUTTONDOWN:
 		{
+#ifdef USE_SAVER
 			if (screensaver_active)
 			{
 				stop_screensaver();
 				return 0;
 			}
-
 			break;
+#else
+			xPos = GET_X_LPARAM(lParam);
+			yPos = GET_Y_LPARAM(lParam);
+			xPos = (xPos - 13 * td->font_wid) / td->tile_wid;
+			if (use_bigtile)
+				xPos /= 2;
+			yPos = yPos / td->tile_hgt - 1;
+			if (uMsg == WM_LBUTTONDOWN)
+				button = 1;
+			else if (uMsg == WM_RBUTTONDOWN)
+				button = 2;
+			else
+				button = 3;
+			Term_mousepress(xPos,yPos,button);
+			break;
+#endif /* USE_SAVER */
 		}
 
+#ifdef USE_SAVER
 		case WM_MOUSEMOVE:
 		{
 			if (!screensaver_active) break;
@@ -4446,8 +4464,8 @@ static LRESULT FAR PASCAL AngbandListProc(HWND hWnd, UINT uMsg,
 			return 0;
 		}
 
-#ifdef USE_SAVER
 
+#ifdef USE_SAVER
 		case WM_MBUTTONDOWN:
 		case WM_RBUTTONDOWN:
 		case WM_LBUTTONDOWN:
@@ -4457,7 +4475,6 @@ static LRESULT FAR PASCAL AngbandListProc(HWND hWnd, UINT uMsg,
 				stop_screensaver();
 				return 0;
 			}
-
 			break;
 		}
 

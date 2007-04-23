@@ -1671,8 +1671,8 @@ static void pixel_to_square(int * const x, int * const y,
 {
 	term_data *td = (term_data*)(Term->data);
 
-	(*x) = (ox - Infowin->ox) / td->tile_wid;
-	(*y) = (oy - Infowin->oy) / td->tile_hgt;
+	(*x) = (ox - Infowin->ox - 13 * Infofnt->wid) / td->tile_wid;
+	(*y) = (oy - Infowin->oy) / td->tile_hgt - 1;
 }
 
 /*
@@ -1942,8 +1942,12 @@ static void handle_button(Time time, int x, int y, int button, bool press)
 	/* The co-ordinates are only used in Angband format. */
 	pixel_to_square(&x, &y, x, y);
 
+#if 0
 	if (press && button == 1) copy_x11_start(x, y);
 	if (!press && button == 1) copy_x11_end(time);
+#endif
+	
+	if (press) Term_mousepress(x,y,button);
 }
 
 
@@ -2045,9 +2049,11 @@ static errr CheckEvent(bool wait)
 			/* Convert to co-ordinates Angband understands. */
 			pixel_to_square(&x, &y, x, y);
 
+#if 0
 			/* Alter the selection if appropriate. */
 			copy_x11_cont(x, y, z);
-
+#endif
+			
 			break;
 		}
 

@@ -26,6 +26,10 @@ extern cptr macro_modifier_name[MAX_MACRO_MOD];
 extern cptr macro_trigger_name[MAX_MACRO_TRIGGER];
 extern cptr macro_trigger_keycode[2][MAX_MACRO_TRIGGER];
 
+/* pathfind.c */
+extern char pf_result[];
+extern int pf_result_index;
+
 /* tables.c */
 extern const s16b ddd[9];
 extern const s16b ddx[10];
@@ -303,6 +307,7 @@ extern void hit_trap(int y, int x);
 extern void py_attack(int y, int x);
 extern void move_player(int dir, int jumping);
 extern void run_step(int dir);
+bool do_cmd_walk_test(int y, int x);
 
 /* cmd2.c */
 extern void do_cmd_go_up(void);
@@ -319,6 +324,7 @@ extern void do_cmd_spike(void);
 extern void do_cmd_walk(void);
 extern void do_cmd_jump(void);
 extern void do_cmd_run(void);
+extern void do_cmd_pathfind(int y, int x);
 extern void do_cmd_hold(void);
 extern void do_cmd_stay(void);
 extern void do_cmd_rest(void);
@@ -547,6 +553,9 @@ extern bool spell_okay(int spell, bool known, bool browse);
 extern void print_spells(const byte *spells, int num, int y, int x);
 extern void display_koff(int k_idx);
 
+/* pathfind.c */
+extern bool findpath(int y, int x);
+
 /* save.c */
 extern bool save_player(void);
 
@@ -720,6 +729,7 @@ extern s16b get_quantity(cptr prompt, int max);
 extern int get_check_other(cptr prompt, char other);
 extern bool get_check(cptr prompt);
 extern bool get_com(cptr prompt, char *command);
+extern bool get_com_ex(cptr prompt, event_type *command);
 extern void pause_line(int row);
 extern void request_command(bool shopping);
 extern int damroll(int num, int sides);

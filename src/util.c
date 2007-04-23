@@ -3067,7 +3067,18 @@ bool get_check(cptr prompt)
  */
 bool get_com(cptr prompt, char *command)
 {
-	char ch;
+	event_type ke;
+	bool result;
+
+	result = get_com_ex(prompt, &ke);
+	*command = ke.key;
+
+	return result;
+}
+
+bool get_com_ex(cptr prompt, event_type *command)
+{
+	event_type ke;
 
 	/* Paranoia XXX XXX XXX */
 	message_flush();
@@ -3076,16 +3087,16 @@ bool get_com(cptr prompt, char *command)
 	prt(prompt, 0, 0);
 
 	/* Get a key */
-	ch = inkey();
+	ke = inkey_ex();
 
 	/* Clear the prompt */
 	prt("", 0, 0);
 
 	/* Save the command */
-	*command = ch;
+	*command = ke;
 
 	/* Done */
-	return (ch != ESCAPE);
+	return (ke.key != ESCAPE);
 }
 
 
@@ -3134,7 +3145,7 @@ void request_command(bool shopping)
 {
 	int i;
 
-	char ch;
+	event_type ke;
 
 	int mode;
 
@@ -3174,7 +3185,7 @@ void request_command(bool shopping)
 			message_flush();
 
 			/* Use auto-command */
-			ch = (char)p_ptr->command_new;
+			ke.key = (char)p_ptr->command_new;
 
 			/* Forget it */
 			p_ptr->command_new = 0;
@@ -3190,7 +3201,7 @@ void request_command(bool shopping)
 			inkey_flag = TRUE;
 
 			/* Get a command */
-			ch = inkey();
+			ke = inkey_ex();
 		}
 
 		/* Clear top line */
@@ -3198,7 +3209,7 @@ void request_command(bool shopping)
 
 
 		/* Command Count */
-		if (ch == '0')
+		if (ke.key == '0')
 		{
 			int old_arg = p_ptr->command_arg;
 
@@ -3212,10 +3223,10 @@ void request_command(bool shopping)
 			while (1)
 			{
 				/* Get a new keypress */
-				ch = inkey();
+				ke.key = inkey();
 
 				/* Simple editing (delete or backspace) */
-				if ((ch == 0x7F) || (ch == KTRL('H')))
+				if ((ke.key == 0x7F) || (ke.key == KTRL('H')))
 				{
 					/* Delete a digit */
 					p_ptr->command_arg = p_ptr->command_arg / 10;
@@ -3225,7 +3236,7 @@ void request_command(bool shopping)
 				}
 
 				/* Actual numeric data */
-				else if (isdigit((unsigned char)ch))
+				else if (isdigit((unsigned char)ke.key))
 				{
 					/* Stop count at 9999 */
 					if (p_ptr->command_arg >= 1000)
@@ -3241,7 +3252,7 @@ void request_command(bool shopping)
 					else
 					{
 						/* Incorporate that digit */
-						p_ptr->command_arg = p_ptr->command_arg * 10 + D2I(ch);
+						p_ptr->command_arg = p_ptr->command_arg * 10 + D2I(ke.key);
 					}
 
 					/* Show current count */
@@ -3276,10 +3287,10 @@ void request_command(bool shopping)
 			}
 
 			/* Hack -- white-space means "enter command now" */
-			if ((ch == ' ') || (ch == '\n') || (ch == '\r'))
+			if ((ke.key == ' ') || (ke.key == '\n') || (ke.key == '\r'))
 			{
 				/* Get a real command */
-				if (!get_com("Command: ", &ch))
+				if (!get_com("Command: ", &ke.key))
 				{
 					/* Clear count */
 					p_ptr->command_arg = 0;
@@ -3292,23 +3303,23 @@ void request_command(bool shopping)
 
 
 		/* Special case for the arrow keys */
-		if (isarrow(ch))
+		if (isarrow(ke.key))
 		{
-			switch (ch)
+			switch (ke.key)
 			{
-				case ARROW_DOWN:    ch = '2'; break;
-				case ARROW_LEFT:    ch = '4'; break;
-				case ARROW_RIGHT:   ch = '6'; break;
-				case ARROW_UP:      ch = '8'; break;
+				case ARROW_DOWN:    ke.key = '2'; break;
+				case ARROW_LEFT:    ke.key = '4'; break;
+				case ARROW_RIGHT:   ke.key = '6'; break;
+				case ARROW_UP:      ke.key = '8'; break;
 			}
 		}
 
 
 		/* Allow "keymaps" to be bypassed */
-		if (ch == '\\')
+		if (ke.key == '\\')
 		{
 			/* Get a real command */
-			(void)get_com("Command: ", &ch);
+			(void)get_com("Command: ", &ke.key);
 
 			/* Hack -- bypass keymaps */
 			if (!inkey_next) inkey_next = "";
@@ -3316,15 +3327,15 @@ void request_command(bool shopping)
 
 
 		/* Allow "control chars" to be entered */
-		if (ch == '^')
+		if (ke.key == '^')
 		{
 			/* Get a new command and controlify it */
-			if (get_com("Control: ", &ch)) ch = KTRL(ch);
+			if (get_com("Control: ", &ke.key)) ke.key = KTRL(ke.key);
 		}
 
 
 		/* Look up applicable keymap */
-		act = keymap_act[mode][(byte)(ch)];
+		act = keymap_act[mode][(byte)(ke.key)];
 
 		/* Apply keymap if not inside a keymap already */
 		if (act && !inkey_next)
@@ -3342,11 +3353,12 @@ void request_command(bool shopping)
 
 
 		/* Paranoia */
-		if (ch == '\0') continue;
+		if (ke.key == '\0') continue;
 
 
 		/* Use command */
-		p_ptr->command_cmd = ch;
+		p_ptr->command_cmd = ke.key;
+		p_ptr->command_cmd_ex = ke;
 
 		/* Done */
 		break;
@@ -3420,6 +3432,9 @@ void request_command(bool shopping)
 
 	/* Hack -- erase the message line. */
 	prt("", 0, 0);
+
+	/* Hack again -- apply the modified key command */
+	p_ptr->command_cmd_ex.key = p_ptr->command_cmd;
 }
 
 

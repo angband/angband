@@ -1237,7 +1237,8 @@ static bool verify_borg_mode(void)
  */
 static void process_command(void)
 {
-
+	int x, y;
+	
 #ifdef ALLOW_REPEAT
 
 	/* Handle repeating the last command */
@@ -1810,6 +1811,15 @@ static void process_command(void)
 		case ')':
 		{
 			do_cmd_save_screen();
+			break;
+		}
+
+		/* Mouse click */
+		case '\xff':
+		{
+			x = p_ptr->command_cmd_ex.mousex + Term->offset_x;
+			y = p_ptr->command_cmd_ex.mousey + Term->offset_y;
+			do_cmd_pathfind(y, x);
 			break;
 		}
 

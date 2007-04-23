@@ -31,6 +31,7 @@ BASEOBJS := $(addsuffix $(OBJEXT),\
   object1 \
   object2 \
   obj-info \
+  pathfind \
   randart \
   randname \
   save \
