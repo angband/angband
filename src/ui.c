@@ -337,10 +337,18 @@ display_scrolling(menu_type *menu, int cursor, int *top, region *loc)
 	int n = menu->filter_count;
 	int i;
 
-	if ((cursor <= *top) && (*top > 0))
-		*top = cursor - jumpscroll - 1;
-	if (cursor >= *top + (rows_per_page - 1))
-		*top = cursor - (rows_per_page - 1) + 1 + jumpscroll;
+	if ((cursor <= *top) && (*top > 0)) {
+		if(menu->flags & MN_PAGE) *top = cursor;
+		else *top = cursor - jumpscroll - 1;
+	}
+	if (cursor >= *top + (rows_per_page - 1)) {
+		if(menu->flags & MN_PAGE && cursor + rows_per_page < n)
+			*top = cursor;
+		else if(menu->flags & MN_PAGE) 
+			*top = n - rows_per_page;
+		else 
+			*top = cursor - (rows_per_page - 1) + 1 + jumpscroll;
+	}
 	if (*top > n - rows_per_page)
 		*top = n - rows_per_page;
 	if (*top < 0)
@@ -714,6 +722,7 @@ static bool menu_handle_event(menu_type *menu, const event_type *in)
 					*cursor = 0;
 				out.type = EVT_MOVE;
 				out.index = *cursor;
+				break;
 			}
 
 			/* cursor movement */

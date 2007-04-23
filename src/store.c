@@ -2872,7 +2872,7 @@ void do_cmd_store(void)
 			menu.count = st_ptr->stock_num;
 
 			/* These two can't intersect! */
-			menu.cmd_keys = "\n\p\r\t?=CdeEiIls";
+			menu.cmd_keys = "\n\x10\r\t?=CdeEiIls"; /* \x10 = ^p */
 			menu.selections = "abcfghjkmnopqrtuvxyz";
 		}
 		else
@@ -2881,9 +2881,10 @@ void do_cmd_store(void)
 			menu.count = sellable_total;
 
 			/* These two can't intersect! */
-			menu.cmd_keys = "\t\n\p\r{}gIepw";
+			menu.cmd_keys = "\t\n\x10\r{}gIepw";
 			menu.selections = "abcfhijklmnoqrstuvxyz1234567890";
 		}
+		menu.flags |= MN_PAGE;
 		if(cursor >= menu.count) cursor = menu.count -1;
 
 		items_region.page_rows = scr_places_y[LOC_ITEMS_END] - scr_places_y[LOC_ITEMS_START] + 1;
