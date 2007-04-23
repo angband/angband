@@ -2883,7 +2883,7 @@ void update_stuff(void)
 
 /* Some simple wrapper functions, done somewhat lazily */
 #define PRT_STAT(N, n) \
-	void N(int row, int col) { prt_stat(n, row, col); }
+	static void N(int row, int col) { prt_stat(n, row, col); }
 
 PRT_STAT(prt_str, A_STR)
 PRT_STAT(prt_dex, A_DEX)
@@ -2892,8 +2892,8 @@ PRT_STAT(prt_int, A_INT)
 PRT_STAT(prt_con, A_CON)
 PRT_STAT(prt_chr, A_CHR)
 
-void prt_race(int row, int col) { prt_field(p_name + rp_ptr->name, row, col); }
-void prt_class(int row, int col) { prt_field(c_name + cp_ptr->name, row, col); }
+static void prt_race(int row, int col) { prt_field(p_name + rp_ptr->name, row, col); }
+static void prt_class(int row, int col) { prt_field(c_name + cp_ptr->name, row, col); }
 
 
 /*
@@ -2904,7 +2904,7 @@ void prt_class(int row, int col) { prt_field(c_name + cp_ptr->name, row, col); }
  * important lower numbers.  As the screen gets smaller, the rows start to
  * disappear in the order of lowest to highest importance.
  */
-void prt_side(void)
+static void prt_side(void)
 {
 	struct sidebar_entry
 	{

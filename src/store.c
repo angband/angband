@@ -1819,7 +1819,10 @@ static void store_display_help(void)
 	else
 		text_out("the store's");
 
-	text_out(" inventory, '");
+	text_out(" inventory, or '");
+	text_out_c(TERM_L_GREEN, "space");
+	text_out("' to advance to the next page;");
+	
 
 	if (rogue_like_commands)
 		text_out_c(TERM_L_GREEN, "x");
@@ -2882,13 +2885,17 @@ void do_cmd_store(void)
 
 			/* These two can't intersect! */
 			menu.cmd_keys = "\t\n\x10\r{}gIepw";
-			menu.selections = "abcfhijklmnoqrstuvxyz1234567890";
+			menu.selections = "abcfhijklmnoqrstuvxyz1234567890ABCDEFGHIJKL";
 		}
 		menu.flags |= MN_PAGE;
 		if(cursor >= menu.count) cursor = menu.count -1;
 
 		items_region.page_rows = scr_places_y[LOC_ITEMS_END] - scr_places_y[LOC_ITEMS_START] + 1;
 		menu_init2(&menu, find_menu_skin(MN_SCROLL), cur_menu, &items_region);
+		if(menu.count >= menu.active.page_rows) {
+			menu.prompt = "--more--";
+			menu_layout(&menu, &menu.boundary);
+		}
 
 		/* Get a selection/action */
 		evt = menu_select(&menu, &cursor, 0);
