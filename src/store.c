@@ -1821,7 +1821,7 @@ static void store_display_help(void)
 
 	text_out(" inventory, or '");
 	text_out_c(TERM_L_GREEN, "space");
-	text_out("' to advance to the next page;");
+	text_out("' to advance to the next page; '");
 	
 
 	if (rogue_like_commands)
@@ -2875,7 +2875,7 @@ void do_cmd_store(void)
 			menu.count = st_ptr->stock_num;
 
 			/* These two can't intersect! */
-			menu.cmd_keys = "\n\x10\r\t?=CdeEiIls"; /* \x10 = ^p */
+			menu.cmd_keys = "\n\x010\r\t?=CdeEiIls"; /* \x10 = ^p */
 			menu.selections = "abcfghjkmnopqrtuvxyz";
 		}
 		else
@@ -2884,7 +2884,7 @@ void do_cmd_store(void)
 			menu.count = sellable_total;
 
 			/* These two can't intersect! */
-			menu.cmd_keys = "\t\n\x10\r{}gIepw";
+			menu.cmd_keys = "\t\n\x010\r{}gIepw";
 			menu.selections = "abcfhijklmnoqrstuvxyz1234567890ABCDEFGHIJKL";
 		}
 		menu.flags |= MN_PAGE;

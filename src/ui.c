@@ -529,8 +529,6 @@ static bool handle_menu_key(char cmd, menu_type *menu, int cursor)
 	if (menu->object_list) oid = menu->object_list[cursor];
 	if (flags & MN_NO_ACT) return FALSE;
 
-	if (isspace(cmd) && (flags & MN_PAGE)) return FALSE;
-
 	if (cmd == ESCAPE) return FALSE;
 	if (!cmd == '\xff' && (!menu->cmd_keys || !strchr(menu->cmd_keys, cmd)))
 		return FALSE;
