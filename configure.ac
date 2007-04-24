@@ -101,22 +101,21 @@ if test "$enable_curses" = "yes"; then
 				AC_DEFINE(USE_NCURSES, 0, [Define to 1 if NCurses is found.])
 				AC_DEFINE(USE_CURSES, 1, [Define to 1 if Curses or PDCurses is found, but NCurses is not.])
 				AC_DEFINE(USE_GCU, 1, [Define to 1 if using the Curses frontend.])
-				CFFLAGS+=" -I/usr/include/curses"
-				LDFLAGS+=" -lcurses"
+				LDFLAGS="${LDFLAGS} -lcurses"
 				with_curses=yes
 			fi
 		else
 			AC_DEFINE(USE_NCURSES, 0, [Define to 1 if NCurses is found.])
 			AC_DEFINE(USE_CURSES, 1, [Define to 1 if Curses or PDCurses is found, but NCurses is not.])
 			AC_DEFINE(USE_GCU, 1, [Define to 1 if using the Curses frontend.])
-			LDFLAGS+=" -lpdcurses"
+			LDFLAGS="${LDFLAGS} -lpdcurses"
 			with_curses=yes
 		fi
 	else
 		AC_DEFINE(USE_CURSES, 0, [Define to 1 if Curses or PDCurses is found, but NCurses is not.])
 		AC_DEFINE(USE_NCURSES, 1, [Define to 1 if NCurses is found.])
 		AC_DEFINE(USE_GCU, 1, [Define to 1 if using the Curses frontend.])
-		LDFLAGS+=" -lncurses"
+		LDFLAGS="${LDFLAGS} -lncurses"
 		with_curses=yes
 	fi
 fi
@@ -143,8 +142,8 @@ if test "$enable_sdl" = "yes"; then
 		AC_DEFINE(USE_SDL, 0, [Define to 1 if using the SDL interface and SDL & SDL_ttf are found.])
 	else
 		AC_DEFINE(USE_SDL, 1, [Define to 1 if using the SDL interface and SDL & SDL_ttf are found.])
-		CFLAGS+=" $SDL_CFLAGS"
-		LDFLAGS+=" $SDL_LIBS"
+		CFLAGS="${CFLAGS} $SDL_CFLAGS"
+		LDFLAGS="${LDFLAGS} $SDL_LIBS"
 		with_sdl=yes
 	fi
 fi
@@ -161,8 +160,8 @@ if test "$enable_gtk" = "yes"; then
 	)
 	if test "$with_gtk" = "yes"; then
 		AC_DEFINE(USE_GTK, 1, [Define to 1 if using the GTK+ 2.x interface and GTK+ 2.x is found.])
-		CFLAGS+=" $GTK_CFLAGS"
-		LDFLAGS+=" $GTK_LIBS"
+		CFLAGS="${CFLAGS} $GTK_CFLAGS"
+		LDFLAGS="${LDFLAGS} $GTK_LIBS"
 	else
 		AC_DEFINE(USE_GTK, 0, [Define to 1 if using the GTK+ 2.x interface and GTK+ 2.x is found.])
 	fi
@@ -190,7 +189,7 @@ AC_CHECK_FUNCS([memmove memset strrchr mkdir strtol usleep mkstemp setegid can_c
 
 dnl XXX: Work around some autoconf bugs.
 if test "$prefix" = "NONE"; then
-        prefix="${ac_default_prefix}"
+	prefix="${ac_default_prefix}"
 fi
 if test -z "$datadir"; then
 	datadir="${prefix}/share"

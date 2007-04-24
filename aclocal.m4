@@ -1,7 +1,7 @@
-# generated automatically by aclocal 1.9.6 -*- Autoconf -*-
+# generated automatically by aclocal 1.10 -*- Autoconf -*-
 
 # Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-# 2005  Free Software Foundation, Inc.
+# 2005, 2006  Free Software Foundation, Inc.
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -14,3 +14,4 @@
 m4_include([m4/acinclude.m4])
 m4_include([m4/pkg.m4])
 m4_include([m4/sdl.m4])
+m4_include([m4/stdint_h.m4])
