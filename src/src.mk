@@ -53,6 +53,7 @@ SOURCES = \
 	object2.c  \
 	randart.c  \
 	randname.c \
+	pathfind.c \
 	save.c     \
 	spells1.c  \
 	spells2.c  \
