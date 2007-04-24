@@ -2876,7 +2876,7 @@ void do_cmd_store(void)
 
 			/* These two can't intersect! */
 			menu.cmd_keys = "\n\x010\r\t?=CdeEiIls"; /* \x10 = ^p */
-			menu.selections = "abcfghjkmnopqrtuvxyz";
+			menu.selections = "abcfghjkmnopqrtuvxyz1234567890";
 		}
 		else
 		{

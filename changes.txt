@@ -1,3 +1,40 @@
+Angband 3.0.8
+- "knowledge menu" browser imported from Un/NPP.
+  "~" command now shows "lore" about monsters, objects, etc.
+- True menu support added; (almost) all menus now use a generic API rather
+  than ad hoc event loops (aka spaghetti).  Commonly used menu layouts are scrolling
+  or multi-column, (other layouts aka "skins" are easy to add). All menu actions
+  (print, handle event, etc) are defined as "virtual functions" (callbacks) so you can
+  write your own row-function provider, rather than depend on fitting data into a
+  common data structure.  (About 1/2 the menus fit this one-off model best; the other
+  half are built using a handful of common data structures, like arrays of strings.)
+- Event handler added. (Menus can listen to each other, etc.)
+- pref files and macro files are generated with an "API" (a simple callback wrapper.)
+- Mouse support added.  Menu browsing & selection can be done with either keystrokes
+  or the mouse.
+- [TBD] Pathfind.
+- Makefiles are cleaned up. Where appropriate, they include the list of object files
+  as a common include. Makefile.std now uses primitive "modules" to add/remove support
+  of various terminal interfaces. (No more uncommenting compile lines.)
+- IBM/emx & Amiga/ami support removed. (If somebody would verify them, they will be
+  added back, with pleasure.)
+- Timed player modifiers (blind, confused, etc) now are kept in an array, not separate
+  elements.  This makes it possible to iterate over them, or find them "unconditionally"
+  by table access.
+- "HP changes color" option for ASCII graphics imported from NPP.
+- Some options set to new defaults
+  (HP Changes color, flow-by-smell, flow-by-sound -- true by default)
+  (run-ignore-doors, run-ignore-stairs, disturb-motion -- false by default)
+- Some options eliminated
+- Menu API added.
+- Event API added.
+- Added echo to macro trigger entry.
+
+
+Bug fixes.
+- OSX font selection problem fixed.
+
+
 Angband 3.0.7s3
 Suggestions and (more) patches welcomed.
 
@@ -21,7 +58,7 @@ Changes:
   basically playing the game in an old-school terminal window for
   those who like uncluttered gameplay.
 - Get "./configure" working properly again (Marco K).
-- Renew Mac support; now works on OS X 10.3 onwards, but the old 
+- Modernize Mac support; now works on OS X 10.3 onwards, but the old 
   main-mac has been removed, as has the MPW makefile.  (Pete Mack)
 - Added support for improved pluralization of object names.  Allow
   custom plurals for words which need them (e.g. "Kni|fe|ves" and

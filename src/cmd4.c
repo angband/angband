@@ -2703,17 +2703,27 @@ static void do_cmd_macro_aux(char *buf)
 	/* Flush */
 	flush();
 
+
 	/* Do not process macros */
 	inkey_base = TRUE;
 
 	/* First key */
 	ch = inkey();
 
+	text_out_hook = text_out_to_screen;
+
 	/* Read the pattern */
-	while (ch != '\0')
+	while (ch != ESCAPE && ch != '\xff')
 	{
 		/* Save the key */
 		buf[n++] = ch;
+		buf[n] = 0;
+
+		/* echo */
+		ascii_to_text(tmp, sizeof(tmp), buf+n-1);
+		text_out(tmp);
+		flush();
+
 
 		/* Do not process macros */
 		inkey_base = TRUE;
@@ -2725,18 +2735,8 @@ static void do_cmd_macro_aux(char *buf)
 		ch = inkey();
 	}
 
-	/* Terminate */
-	buf[n] = '\0';
-
-	/* Flush */
-	flush();
-
-
 	/* Convert the trigger */
 	ascii_to_text(tmp, sizeof(tmp), buf);
-
-	/* Hack -- display the trigger */
-	Term_addstr(-1, TERM_WHITE, tmp);
 }
 
 
@@ -4092,6 +4092,15 @@ void init_cmd4_c(void)
 	menu->count = N_ELEMENTS(option_actions);
 	menu->menu_data = option_actions;
 	menu_init(menu, MN_SCROLL, MN_ACT, &SCREEN_REGION);
+
+	/* macro menu */
+	menu = &macro_menu;
+	WIPE(menu, menu_type);
+	menu_set_id(menu, 'macr');
+	menu->count = N_ELEMENTS(macro_actions);
+	menu->menu_data = macro_actions;
+	menu->selections = lower_case;
+	menu_init(menu, MN_SCROLL, MN_EVT, &SCREEN_REGION);
 
 	/* knowledge menu */
 	menu = &knowledge_menu;
