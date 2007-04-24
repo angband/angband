@@ -1204,9 +1204,26 @@ static errr rd_extra(void)
 		/* Find the number of timed effects */
 		rd_byte(&num);
 
-		/* Read all the effects, in a loop */
-		for (i = 0; i < num; i++)
-			rd_s16b(&p_ptr->timed[i]);
+		if (num <= TMD_MAX)
+		{
+			/* Read all the effects */
+			for (i = 0; i < num; i++)
+				rd_s16b(&p_ptr->timed[i]);
+
+			/* Initialize any entries not read */
+			if (num < TMD_MAX)
+				C_WIPE(p_ptr->timed + num, TMD_MAX - num, s16b);
+		}
+		else
+		{
+			/* Probably in trouble anyway */
+			for (i = 0; i < TMD_MAX; i++)
+				rd_s16b(&p_ptr->timed[i]);
+
+			/* Discard unused entries */
+			strip_bytes(2 * (num - TMD_MAX));
+			note("Discarded unsupported timed effects");
+		}
 	}
 
 	/* Future use */

@@ -235,7 +235,7 @@ enum skin_id {
 	MN_COLUMNS	= 0x0002, /* multicolumn view */
 	MN_NATIVE	= 0x0003, /* Not implemented -- OS menu */
 	MN_KEY_ONLY = 0x0004, /* No display */
-	MN_USER		= 0x0005, /* Anonymous, user defined. */
+	MN_USER		= 0x0005  /* Anonymous, user defined. */
 };
 
 /* Class functions for menu layout */
@@ -256,7 +256,7 @@ struct menu_skin {
 enum menu_iter_id {
 	MN_ACT		= 0x1, /* selectable menu with per-row flags (see below) */
 	MN_EVT		= 0x2, /* simple event action list */
-	MN_STRING	= 0x3, /* display an array of strings for selection */
+	MN_STRING	= 0x3  /* display an array of strings for selection */
 };
 
 /* Class functions for menu row-level accessor functions */

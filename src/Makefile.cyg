@@ -68,5 +68,5 @@ win/angband.res : win/angband.rc
 
 # Note the additional -DNEAR= flag to cope with the 'NEAR'
 # keyword used in readdib.c
-win/readdib.o: win/readdib.c readdib.h
+win/readdib.o: win/readdib.c win/readdib.h
 	$(CC) $(CFLAGS) -DNEAR= $(INCDIRS) -c -o $@ $<
