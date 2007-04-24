@@ -1,60 +1,14 @@
 #
 # File: Makefile.inc
 #
-# A makefile which includes the current object files, hopefully includable
-# across a range of different makefiles, to cut down on maintenance.
+# Includes Makefile.src and contains dependency info
 #
 
-HDRS = h-basic.h h-config.h
-INCS = angband.h config.h defines.h types.h externs.h \
-       z-term.h z-rand.h z-util.h z-virt.h z-form.h $(HDRS)
+include Makefile.src
 
-BASEOBJS := $(addsuffix $(OBJEXT),\
-  birth \
-  cave \
-  cmd1 \
-  cmd2 \
-  cmd3 \
-  cmd4 \
-  cmd5 \
-  cmd6 \
-  dungeon \
-  files \
-  generate \
-  init1 \
-  init2 \
-  load \
-  melee1 \
-  melee2 \
-  monster1 \
-  monster2 \
-  object1 \
-  object2 \
-  obj-info \
-  pathfind \
-  randart \
-  randname \
-  save \
-  spells1 \
-  spells2 \
-  squelch \
-  store \
-  tables \
-  ui \
-  use-obj \
-  util \
-  variable \
-  wizard1 \
-  wizard2 \
-  x-spell \
-  xtra1 \
-  xtra2)
+BASEOJS := $(addsuffix $(OBJEXT), $(ANGFILES))
+ZOBJS := $(addsuffix $(OBJEXT), $(ZFILES))
 
-ZOBJS := $(addsuffix $(OBJEXT), z-file z-form z-rand z-term z-util z-virt)
-
-# Just print out a list of object files
-inc-print:
-	@echo $(BASEOBJS)
 
 # Note dependencies
 $(BASEOBJS): $(INCS)

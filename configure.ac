@@ -28,7 +28,6 @@ dnl Checks for various programs
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_PROG_GCC_TRADITIONAL
 
 AC_PATH_PROG(RM, rm)
 AC_PATH_PROG(MV, mv)
@@ -170,17 +169,12 @@ if test "$enable_gtk" = "yes"; then
 fi
 
 dnl Check for headers.
-AC_HEADER_STDBOOL
+dnl AC_HEADER_STDBOOL -- not yet
 AC_HEADER_TIME
-AC_CHECK_HEADERS([unistd.h fcntl.h sys/ioctl.h fnmatch.h limits.h wchar.h fts.h stdint.h sys/time.h termios.h])
-
-dnl Check for supported keywords.
-AC_C_CONST
-AC_C_INLINE
+AC_CHECK_HEADERS([unistd.h fcntl.h limits.h stdint.h sys/time.h termios.h])
 
 dnl Check for types.
 AC_TYPE_SIGNAL
-AC_TYPE_SIZE_T
 AC_TYPE_INT16_T
 AC_TYPE_INT32_T
 AC_TYPE_UINT16_T
@@ -190,15 +184,9 @@ dnl Check for structs.
 AC_STRUCT_TM
 
 dnl Check for functions.
-AC_FUNC_MMAP
-AC_FUNC_MEMCMP
-AC_FUNC_STRFTIME
-AC_FUNC_VPRINTF
 AC_FUNC_STAT
 AC_FUNC_SELECT_ARGTYPES
-AC_FUNC_MALLOC
-AC_FUNC_REALLOC
-AC_CHECK_FUNCS([atexit floor memmove memset modf pow strchr strdup strrchr gethostname mkdir select strstr strtol usleep mkstemp setegid can_change_color munmap])
+AC_CHECK_FUNCS([memmove memset strrchr mkdir strtol usleep mkstemp setegid can_change_color])
 
 dnl XXX: Work around some autoconf bugs.
 if test "$prefix" = "NONE"; then
