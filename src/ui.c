@@ -666,8 +666,13 @@ static bool menu_handle_event(menu_type *menu, const event_type *in)
 
 			out.index = m_curs;
 
-			if (*cursor == m_curs || !(menu->flags & MN_DBL_TAP))
+			if (*cursor == m_curs || !(menu->flags & MN_DBL_TAP)) {
+				if(*cursor != m_curs) {
+					*cursor = m_curs;
+					menu_refresh(menu);
+				}
 				out.type = EVT_SELECT;
+			}
 			else
 				out.type = EVT_MOVE;
 
@@ -701,7 +706,10 @@ static bool menu_handle_event(menu_type *menu, const event_type *in)
 				}
 				else if (c >= 0)
 				{
-					menu->cursor = c;
+					if(menu->cursor != c) {
+						menu->cursor = c;
+						menu_refresh(menu);
+					}
 					out.type = EVT_SELECT;
 					out.index = c;
 					break;

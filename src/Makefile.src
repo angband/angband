@@ -12,7 +12,7 @@ INCS = angband.h config.h defines.h types.h externs.h \
 HEADERS = $(HDRS) $(INCS)
 
 ZFILES = z-file z-form z-rand z-term z-util z-virt
-MAINFILES = maid-x11 \
+MAINFILES = main maid-x11 \
 	$(addprefix main-,cap crb dos gcu gtk ibm lsl ros sla vcs win x11 xaw xpj)
 
 ANGFILES = \
@@ -30,7 +30,6 @@ ANGFILES = \
 	init1 \
 	init2 \
 	load \
-	main \
 	melee1 \
 	melee2 \
 	monster1 \

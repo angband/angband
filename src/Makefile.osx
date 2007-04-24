@@ -171,6 +171,11 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	$(SETFILE) -a B $(APPBNDL)
 
 
+vars:
+	@echo LDFLAGS = $(LDFLAGS)
+	@echo CFLAGS = $(CFLAGS)
+	@echo BASEOBJS = $(BASEOBJS)
+
 
 
 PACKAGE_NAME = $(NAME)-$(VERSION)

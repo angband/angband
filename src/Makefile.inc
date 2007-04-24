@@ -6,7 +6,7 @@
 
 include Makefile.src
 
-BASEOJS := $(addsuffix $(OBJEXT), $(ANGFILES))
+BASEOBJS := $(addsuffix $(OBJEXT), $(ANGFILES))
 ZOBJS := $(addsuffix $(OBJEXT), $(ZFILES))
 
 
@@ -26,3 +26,4 @@ z-file$(OBJEXT): z-file.h
 $(addsuffix $(OBJEXT), cmd5 cmd6 init2 script wizard2 xtra1): script.h
 $(addsuffix $(OBJEXT), init1 init2 randart): init.h
 $(addsuffix $(OBJEXT), cmd4 files init1 init2 util squelch save load wizard1): z-file.h
+
