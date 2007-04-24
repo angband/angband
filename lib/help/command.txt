@@ -569,8 +569,9 @@ Interact with options (=)
         pref commands.  The "window" options allow you to specify what
         should be drawn in any of the special sub-windows (not available
         on all platforms). See the help file "options.txt" for more info.
+        You can also interact with macros and keymaps under this menu.
 
-Interact with macros (@)
+Interact with macros - option submenu
         Allow you to interact with macros.  You may load or save macros
         from user pref files, create macros of various types, or define
         keymaps.  You must define a "current action", shown at the bottom
@@ -578,15 +579,19 @@ Interact with macros (@)
         commands, which use that "current action" as their action.  This
         is a horrible interface, and will be fixed eventually.
 
-Interact with visuals (%)
+Interact with visuals - option submenu.
         Allow you to interact with visuals.  You may load or save visuals
         from user pref files, or modify the attr/char mappings for the
         monsters, objects, and terrain features.  You must use the "redraw"
         command (^R) to redraw the map after changing attr/char mappings.
+		NOTE: It is generally easier to modify visuals via the "knowledge"
+        menus.
 
-Interact with colors (&)
+Interact with colors - option submenu.
         Allow the user to interact with colors.  This command only
         works on some systems.
+        NOTE: It is commonly used to brighten the 'Light Dark' color
+        (eg. Cave Spiders) on displays with bad alpha settings.
  
 --- Help ---
 
