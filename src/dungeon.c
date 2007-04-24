@@ -1704,13 +1704,6 @@ static void process_command(void)
 			break;
 		}
 
-		/* Interact with macros */
-		case '@':
-		{
-			do_cmd_macros();
-			break;
-		}
-
 		/* Interact with options */
 		case '=':
 		{

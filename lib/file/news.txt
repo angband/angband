@@ -6,10 +6,11 @@
                  /_/   \_\_| |_|\__, |_.__/ \__,_|_| |_|\__,_|
                                 |___/
 
-                 Version 3.0.8 by Andrew Sidwell and Pete Mack
+               Version 3.0.8pre by Andrew Sidwell and Pete Mack
 
-           Send comments, bug reports and patches to the newsgroup:
-      <news:rec.games.roguelike.angband> or at <http://angband.oook.cz/>.
+                   Comments and patches to angband-dev:
+             http://angband.oook.cz/mailman/listinfo/angband-dev
+        Bug reports to: http://angband.rogueforge.net/trac/newticket
 
            Based on Moria:   Copyright (c) 1985 Robert Alan Koeneke
                and Umoria:   Copyright (c) 1989 James E. Wilson

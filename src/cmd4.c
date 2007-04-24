@@ -4007,6 +4007,7 @@ static menu_item option_actions [] =
 	{{0, "Load a user pref file", (action_f) do_cmd_pref_file_hack, (void*)20}, 'L'},
 	{{0, "Dump options", (action_f) dump_pref_file, option_dump}, 'A'},
 	{{0, 0, 0,}, 0}, /* Interact with */	
+	{{0, "Interact with macros (advanced)", (action_f) do_cmd_macros, 0}, 'M'},
 	{{0, "Interact with visuals (advanced)", (action_f) do_cmd_visuals, 0}, 'V'},
 	{{0, "Interact with colours (advanced)", (action_f) do_cmd_colors, 0}, 'C'},
 };
@@ -4021,9 +4022,6 @@ static menu_item knowledge_actions[] =
 	{{0, "Display object knowledge", (action_f)do_cmd_knowledge_objects, 0}, '4'},
 	{{0, "Display feature knowledge", (action_f)do_cmd_knowledge_features, 0}, '5'},
 	{{0, "Display self-knowledge", (action_f)self_knowledge, 0}, '6'},
-	{{0, 0, 0}, 0, 0}, /* other stuff */
-	{{0, "Load a user pref file", (action_f) do_cmd_pref_file_hack, (void*) 20}, 'L'},
-	{{0, "Interact with visuals", (action_f) do_cmd_visuals, 0}, 'V'},
 };
 
 static menu_type knowledge_menu;
