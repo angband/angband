@@ -1,0 +1,42 @@
+include ../../mk/rules.mk
+include ../../mk/init.mk
+include ../../mk/objective.mk
+
+OBJECTIVE_DATA =	\
+	flvr-dvg.prf:${DATA_PATH}/pref \
+	flvr-new.prf:${DATA_PATH}/pref \
+	flvr-xxx.prf:${DATA_PATH}/pref \
+	font.prf:${DATA_PATH}/pref     \
+	font-ami.prf:${DATA_PATH}/pref \
+	font-dos.prf:${DATA_PATH}/pref \
+	font-ibm.prf:${DATA_PATH}/pref \
+	font-mac.prf:${DATA_PATH}/pref \
+	font-win.prf:${DATA_PATH}/pref \
+	font-x11.prf:${DATA_PATH}/pref \
+	font-xxx.prf:${DATA_PATH}/pref \
+	graf.prf:${DATA_PATH}/pref     \
+	graf-ami.prf:${DATA_PATH}/pref \
+	graf-dvg.prf:${DATA_PATH}/pref \
+	graf-ibm.prf:${DATA_PATH}/pref \
+	graf-gcu.prf:${DATA_PATH}/pref \
+	graf-lsl.prf:${DATA_PATH}/pref \
+	graf-mac.prf:${DATA_PATH}/pref \
+	graf-new.prf:${DATA_PATH}/pref \
+	graf-win.prf:${DATA_PATH}/pref \
+	graf-x11.prf:${DATA_PATH}/pref \
+	graf-xxx.prf:${DATA_PATH}/pref \
+	message.prf:${DATA_PATH}/pref  \
+	pref.prf:${DATA_PATH}/pref     \
+	pref-acn.prf:${DATA_PATH}/pref \
+	pref-ami.prf:${DATA_PATH}/pref \
+	pref-dos.prf:${DATA_PATH}/pref \
+	pref-emx.prf:${DATA_PATH}/pref \
+	pref-gcu.prf:${DATA_PATH}/pref \
+	pref-mac.prf:${DATA_PATH}/pref \
+	pref-x11.prf:${DATA_PATH}/pref \
+	user.prf:${DATA_PATH}/pref     \
+	user-mac.prf:${DATA_PATH}/pref \
+	xtra-dvg.prf:${DATA_PATH}/pref \
+	xtra-new.prf:${DATA_PATH}/pref \
+	xtra-xxx.prf:${DATA_PATH}/pref \
+
