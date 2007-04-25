@@ -6,7 +6,7 @@ include ../mk/objective.mk
 include Makefile.src
 HEADERS = $(HDRS) $(INCS)
 SOURCES = $(addsuffix .c,$(ANGFILES) $(MAINFILES) $(ZFILES))
-OBJECTS = $(addsuffix .o,$(ANGFILES) $(MAINFILES) $(ZFILES) main)
+OBJECTS = $(addsuffix .o,$(ANGFILES) $(MAINFILES) $(ZFILES) )
 
 
 # These are for OS-specific ports; ignore 'em until we use autoconf everywhere.
