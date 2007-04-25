@@ -26,6 +26,7 @@
 
 #include <ctype.h>
 #include <errno.h>
+#include <limits.h>
 #include <assert.h>
 
 #include <stdarg.h>
@@ -105,14 +106,8 @@ typedef char bool;
   typedef signed short s16b;
   typedef unsigned short u16b;
 
-  /* Try to detect 64-bit longs -- this will probably not work without stdint.h on GCC */
-  #ifdef __WORDSIZE
-    #if __WORDSIZE == 64
-      #define L64
-    #endif
-  #endif
-
-  #ifdef L64
+  /* Detect >32-bit longs */
+  #if (UINT_MAX == 0xFFFFFFFFUL) && (ULONG_MAX > 0xFFFFFFFFUL)
     typedef signed int s32b;
     typedef unsigned int u32b;
   #else

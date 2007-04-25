@@ -1295,7 +1295,7 @@ const byte chest_traps[64] =
 /*
  * Hack -- the "basic" color names (see "TERM_xxx")
  */
-cptr color_names[16] =
+cptr color_names[BASIC_COLORS] =
 {
 	"Dark",
 	"White",

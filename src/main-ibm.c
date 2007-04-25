@@ -234,7 +234,7 @@ static byte use_color_complex = FALSE;
 /*
  * The "complex" color set
  */
-static long ibm_color_complex[16];
+static long ibm_color_complex[BASIC_COLORS];
 
 
 /*
@@ -252,7 +252,7 @@ static long ibm_color_complex[16];
  *
  * Note that many of the choices below suck, but so do crappy monitors.
  */
-static byte ibm_color_simple[16] =
+static byte ibm_color_simple[BASIC_COLORS] =
 {
 	VID_BLACK,			/* Dark */
 	VID_WHITE,			/* White */
@@ -312,7 +312,7 @@ static void activate_color_complex(void)
 	inportb(0x3da);
 
 	/* Edit the colors */
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < BASIC_COLORS; i++)
 	{
 		/* Set color "i" */
 		outportb(0x3c0, i);
@@ -328,7 +328,7 @@ static void activate_color_complex(void)
 	outportb(0x3c8, 0);
 
 	/* Send the colors */
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < BASIC_COLORS; i++)
 	{
 		/* Send the red, green, blue components */
 		outportb(0x3c9, ((ibm_color_complex[i]) & 0xFF));
@@ -339,7 +339,7 @@ static void activate_color_complex(void)
 #else /* 1 */
 
 	/* Set the colors */
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < BASIC_COLORS; i++)
 	{
 		union REGS r;
 
@@ -398,7 +398,7 @@ static int Term_xtra_ibm_react(void)
 		bool change = FALSE;
 
 		/* Save the default colors */
-		for (i = 0; i < 16; i++)
+		for (i = 0; i < BASIC_COLORS; i++)
 		{
 			/* Extract desired values */
 			rv = angband_color_table[i][1] >> 2;
@@ -427,7 +427,7 @@ static int Term_xtra_ibm_react(void)
 	else
 	{
 		/* Save the default colors */
-		for (i = 0; i < 16; i++)
+		for (i = 0; i < BASIC_COLORS; i++)
 		{
 			/* Simply accept the desired colors */
 			ibm_color_simple[i] = angband_color_table[i][0];
@@ -826,14 +826,14 @@ static errr Term_text_ibm(int x, int y, int n, byte a, const char *cp)
 	if (use_color_complex)
 	{
 		/* Extract a color index */
-		attr = (a & 0x0F);
+		attr = (a & (BASIC_COLORS-1));
 	}
 
 	/* Handle "simple" color */
 	else
 	{
 		/* Extract a color value */
-		attr = ibm_color_simple[a & 0x0F];
+		attr = ibm_color_simple[a & (BASIC_COLORS-1)];
 	}
 
 #ifdef USE_CONIO
@@ -895,14 +895,14 @@ static errr Term_pict_ibm(int x, int y, int n, const byte *ap, const char *cp,
 		if (use_color_complex)
 		{
 			/* Extract a color index */
-			attr = (ap[i] & 0x0F);
+			attr = (ap[i] & (BASIC_COLORS-1));
 		}
 
 		/* Handle "simple" color */
 		else
 		{
 			/* Extract a color value */
-			attr = ibm_color_simple[ap[i] & 0x0F];
+			attr = ibm_color_simple[ap[i] & (BASIC_COLORS-1)];
 		}
 
 		/* Set the attribute */
@@ -924,14 +924,14 @@ static errr Term_pict_ibm(int x, int y, int n, const byte *ap, const char *cp,
 		if (use_color_complex)
 		{
 			/* Extract a color index */
-			attr = (ap[i] & 0x0F);
+			attr = (ap[i] & (BASIC_COLORS-1));
 		}
 
 		/* Handle "simple" color */
 		else
 		{
 			/* Extract a color value */
-			attr = ibm_color_simple[ap[i] & 0x0F];
+			attr = ibm_color_simple[ap[i] & (BASIC_COLORS-1)];
 		}
 
 		/* Apply */
@@ -1226,7 +1226,7 @@ errr init_ibm(int argc, char **argv)
 	};
 
 	/* Initialize "color_table" */
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < BASIC_COLORS; i++)
 	{
 		long rv, gv, bv;
 

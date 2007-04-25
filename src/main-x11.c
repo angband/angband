@@ -471,7 +471,7 @@ static infofnt *Infofnt = (infofnt*)(NULL);
 /*
  * Actual color table
  */
-static infoclr *clr[256];
+static infoclr *clr[MAX_COLORS];
 
 
 
@@ -1493,7 +1493,7 @@ static infoclr *xor;
 /*
  * Color info (unused, red, green, blue).
  */
-static byte color_table[256][4];
+static byte color_table[MAX_COLORS][4];
 
 
 /*
@@ -2209,7 +2209,7 @@ static errr Term_xtra_x11_react(void)
 	if (Metadpy->color)
 	{
 		/* Check the colors */
-		for (i = 0; i < 256; i++)
+		for (i = 0; i < MAX_COLORS; i++)
 		{
 			if ((color_table[i][0] != angband_color_table[i][0]) ||
 			    (color_table[i][1] != angband_color_table[i][1]) ||
@@ -2943,7 +2943,7 @@ static void hook_quit(cptr str)
 	(void)Infoclr_nuke();
 	KILL(xor);
 
-	for (i = 0; i < 256; ++i)
+	for (i = 0; i < MAX_COLORS; ++i)
 	{
 		Infoclr_set(clr[i]);
 		(void)Infoclr_nuke();

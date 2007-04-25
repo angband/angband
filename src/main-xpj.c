@@ -600,12 +600,12 @@ static infoclr *xor;
 /*
  * Actual color table
  */
-static infoclr *clr[256];
+static infoclr *clr[MAX_COLORS];
 
 /*
  * Color info (unused, red, green, blue).
  */
-static byte color_table[256][4];
+static byte color_table[MAX_COLORS][4];
 
 /*
  * The "blank" pixel - used for transparency
@@ -1740,7 +1740,7 @@ static errr Term_xtra_xpj_react(void)
 	if (Metadpy->color)
 	{
 		/* Check the colors */
-		for (i = 0; i < 256; i++)
+		for (i = 0; i < MAX_COLORS; i++)
 		{
 			if ((color_table[i][0] != angband_color_table[i][0]) ||
 			    (color_table[i][1] != angband_color_table[i][1]) ||
@@ -3258,7 +3258,7 @@ errr init_xpj(int argc, char **argv)
 
 
 	/* Prepare normal colors */
-	for (i = 0; i < 256; ++i)
+	for (i = 0; i < MAX_COLORS; ++i)
 	{
 		Pixell pixel;
 

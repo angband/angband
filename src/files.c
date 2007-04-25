@@ -517,7 +517,7 @@ errr process_pref_file_command(char *buf)
 		if (tokenize(buf+2, 5, zz) == 5)
 		{
 			i = strtol(zz[0], NULL, 0);
-			if ((i < 0) || (i >= 256)) return (1);
+			if ((i < 0) || (i >= MAX_COLORS)) return (1);
 			angband_color_table[i][0] = (byte)strtol(zz[1], NULL, 0);
 			angband_color_table[i][1] = (byte)strtol(zz[2], NULL, 0);
 			angband_color_table[i][2] = (byte)strtol(zz[3], NULL, 0);
@@ -672,7 +672,7 @@ errr process_pref_file_command(char *buf)
 			if ((win <= 0) || (win >= ANGBAND_TERM_MAX)) return (1);
 
 			/* Ignore illegal flags */
-			if ((flag < 0) || (flag >= 32)) return (1);
+			if ((flag < 0) || (flag >= (int)N_ELEMENTS(window_flag_desc))) return (1);
 
 			/* Require a real flag */
 			if (window_flag_desc[flag])

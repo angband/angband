@@ -16,7 +16,6 @@
  * Max sizes of the following arrays.
  */
 #define MAX_TITLES     50       /* Used with scrolls (min 48) */
-#define MAX_SYLLABLES 158       /* Used with scrolls (see below) */
 
 
 /*
@@ -170,7 +169,7 @@ void flavor_init(void)
 		bool okay = TRUE;
 
 		wordlen = make_word(RANDNAME_SCROLL, 2, 8, end, 24);
-		while (titlelen + wordlen < 15)
+		while (titlelen + wordlen < (sizeof(scroll_adj[0]) - 1))
 		{
 			end[wordlen] = ' ';
 			titlelen += wordlen + 1;
@@ -286,7 +285,7 @@ void reset_visuals(bool unused)
 	}
 
 	/* Extract attr/chars for inventory objects (by tval) */
-	for (i = 0; i < 128; i++)
+	for (i = 0; i < (int)N_ELEMENTS(tval_to_attr); i++)
 	{
 		/* Default to white */
 		tval_to_attr[i] = TERM_WHITE;

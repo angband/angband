@@ -107,10 +107,7 @@ the other colors are unused.
 #define XtNinternalBorder   "internalBorder"
 #define XtNredrawCallback   "redrawCallback"
 
-/*
- * Total normal colors
- */
-#define NUM_COLORS 256
+
 
 /*
  * Special "XOR" color
@@ -198,10 +195,10 @@ struct AngbandPart
 	Dimension fontascent;
 
 	/* Color info for GC's */
-	byte color[NUM_COLORS][4];
+	byte color[MAX_COLORS][4];
 
 	/* GC's (including "xor") */
-	GC gc[NUM_COLORS+1];
+	GC gc[MAX_COLORS+1];
 };
 
 
@@ -576,7 +573,7 @@ static void Initialize(AngbandWidget request, AngbandWidget wnew)
 	gcv.graphics_exposures = FALSE;
 	gcv.background = bg;
 
-	for (i = 0; i < NUM_COLORS; i++)
+	for (i = 0; i < MAX_COLORS; i++)
 	{
 		unsigned long pixel;
 
@@ -650,7 +647,7 @@ static void Destroy(AngbandWidget widget)
 	int n;
 
 	/* Free all GC's */
-	for (n = 0; n < NUM_COLORS + 1; n++)
+	for (n = 0; n < MAX_COLORS + 1; n++)
 	{
 		XtReleaseGC((Widget)widget, widget->angband.gc[n]);
 	}
@@ -837,7 +834,7 @@ static Boolean SetValues(AngbandWidget current, AngbandWidget request,
 	if (font_changed)
 	{
 		/* Update all GC's */
-		for (i = 0; i < NUM_COLORS; i++)
+		for (i = 0; i < MAX_COLORS; i++)
 		{
 			/* Steal the old GC */
 			wnew->angband.gc[i] = current->angband.gc[i];
@@ -847,8 +844,8 @@ static Boolean SetValues(AngbandWidget current, AngbandWidget request,
 			XSetFont(dpy, wnew->angband.gc[i], wnew->angband.fnt->fid);
 
 			/* Steal the old GC */
-			wnew->angband.gc[NUM_COLORS] = current->angband.gc[NUM_COLORS];
-			current->angband.gc[NUM_COLORS] = NULL;
+			wnew->angband.gc[MAX_COLORS] = current->angband.gc[MAX_COLORS];
+			current->angband.gc[MAX_COLORS] = NULL;
 		}
 	}
 
@@ -1267,7 +1264,7 @@ static void Term_xtra_xaw_react_aux(term_data *td)
 	int i;
 
 	/* See if any colors need to be changed */
-	for (i = 0; i < NUM_COLORS; i++)
+	for (i = 0; i < MAX_COLORS; i++)
 	{
 		if (depth > 1)
 		{
@@ -1609,7 +1606,7 @@ static errr term_data_init(term_data *td, Widget topLevel,
 
 			td->widget->angband.fontascent = fnt->ascent;
 
-			for (i = 0; i < NUM_COLORS; i++)
+			for (i = 0; i < MAX_COLORS; i++)
 			{
 				/* Be sure the correct font is ready */
 				XSetFont(XtDisplay((Widget)td->widget),

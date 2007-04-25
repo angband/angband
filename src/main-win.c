@@ -553,7 +553,7 @@ static cptr ANGBAND_DIR_XTRA_HELP;
 /*
  * The "complex" color values
  */
-static COLORREF win_clr[256];
+static COLORREF win_clr[MAX_COLORS];
 
 
 /*
@@ -565,7 +565,7 @@ static COLORREF win_clr[256];
  *
  * Note that many of the choices below suck, but so do crappy monitors.
  */
-static byte win_pal[256] =
+static byte win_pal[MAX_COLORS] =
 {
 	VID_BLACK,					/* Dark */
 	VID_WHITE,					/* White */
@@ -1291,7 +1291,7 @@ static int new_palette(void)
 	}
 
 	/* Save the normal data */
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < BASIC_COLORS; i++)
 	{
 		LPPALETTEENTRY p;
 
@@ -1774,7 +1774,7 @@ static errr Term_xtra_win_react(void)
 	if (colors16)
 	{
 		/* Save the default colors */
-		for (i = 0; i < 256; i++)
+		for (i = 0; i < MAX_COLORS; i++)
 		{
 			/* Simply accept the desired colors */
 			win_pal[i] = angband_color_table[i][0];
@@ -1791,7 +1791,7 @@ static errr Term_xtra_win_react(void)
 		bool change = FALSE;
 
 		/* Save the default colors */
-		for (i = 0; i < 256; i++)
+		for (i = 0; i < MAX_COLORS; i++)
 		{
 			/* Extract desired values */
 			rv = angband_color_table[i][1];
@@ -2309,7 +2309,7 @@ static errr Term_text_win(int x, int y, int n, byte a, cptr s)
 	}
 	else if (paletted)
 	{
-		SetTextColor(hdc, win_clr[a&0x0F]);
+		SetTextColor(hdc, win_clr[a & (BASIC_COLORS-1)]);
 	}
 	else
 	{
@@ -5057,7 +5057,7 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	ReleaseDC(NULL, hdc);
 
 	/* Initialize the colors */
-	for (i = 0; i < 256; i++)
+	for (i = 0; i < MAX_COLORS; i++)
 	{
 		byte rv, gv, bv;
 

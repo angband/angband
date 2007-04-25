@@ -123,7 +123,7 @@ static term_data data[MAX_XXX_TERM];
  * Often, the "Term_xtra(TERM_XTRA_REACT, 0)" hook is used to initialize
  * "color_data" from "angband_color_table".  XXX XXX XXX
  */
-static local_color_data_type color_data[256];
+static local_color_data_type color_data[MAX_COLORS];
 
 #endif
 
@@ -358,7 +358,7 @@ static errr Term_xtra_xxx(int n, int v)
 			 * React to global changes XXX XXX XXX
 			 *
 			 * For example, this action can be used to react to
-			 * changes in the global "angband_color_table[256][4]" array.
+			 * changes in the global "angband_color_table[MAX_COLORS][4]" array.
 			 *
 			 * This action is optional, but can be very useful for
 			 * handling "color changes" and the "arg_sound" and/or
@@ -490,7 +490,7 @@ static errr Term_wipe_xxx(int x, int y, int n)
  * you must first call "Term_wipe_xxx()" to clear the area.
  *
  * In color environments, you should activate the color contained
- * in "color_data[a & 0x0F]", if needed, before drawing anything.
+ * in "color_data[a & BASIC_COLORS]", if needed, before drawing anything.
  *
  * You may ignore the "attribute" if you are only supporting a
  * monochrome environment, since this routine is normally never

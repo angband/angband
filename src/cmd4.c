@@ -617,7 +617,6 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 				/* Recall on screen */
 				if(oid >= 0)
 					o_funcs.lore(oid);
-				redraw = TRUE;
 
 				redraw = TRUE;
 				break;
@@ -1397,6 +1396,7 @@ static void desc_obj_fake(int k_idx)
 {
 	object_type object_type_body;
 	object_type *o_ptr = &object_type_body;
+
 	/* Wipe the object */
 	object_wipe(o_ptr);
 
@@ -1415,14 +1415,12 @@ static void desc_obj_fake(int k_idx)
 	/* Save the screen */
 	screen_save();
 
-	Term_gotoxy(0,0);
 	/* Describe */
+	Term_gotoxy(0,0);
 	object_info_screen(o_ptr);
 
 	/* Load the screen */
 	screen_load();
-
-	(void)inkey_ex();
 }
 
 static int o_cmp_tval(const void *a, const void *b)
@@ -2580,7 +2578,7 @@ static void option_dump(FILE *fff)
 		if (!angband_term[i]) continue;
 
 		/* Check each flag */
-		for (j = 0; j < 32; j++)
+		for (j = 0; j < (int)N_ELEMENTS(window_flag_desc); j++)
 		{
 			/* Require a real flag */
 			if (!window_flag_desc[j]) continue;
@@ -3236,11 +3234,11 @@ static void dump_flavors(FILE *fff)
 	}
 }
 
-	/* Dump colors */
+/* Dump colors */
 static void dump_colors(FILE *fff)
 {
 	int i;
-	for (i = 0; i < 256; i++)
+	for (i = 0; i < MAX_COLORS; i++)
 	{
 		int kv = angband_color_table[i][0];
 		int rv = angband_color_table[i][1];
@@ -3253,7 +3251,7 @@ static void dump_colors(FILE *fff)
 		if (!kv && !rv && !gv && !bv) continue;
 
 		/* Extract the color name */
-		if (i < 16) name = color_names[i];
+		if (i < BASIC_COLORS) name = color_names[i];
 
 		/* Dump a comment */
 		fprintf(fff, "# Color '%s'\n", name);
@@ -3596,7 +3594,7 @@ void do_cmd_colors(void)
 				clear_from(10);
 
 				/* Exhibit the normal colors */
-				for (i = 0; i < 16; i++)
+				for (i = 0; i < BASIC_COLORS; i++)
 				{
 					/* Exhibit this color */
 					Term_putstr(i*4, 20, -1, a, "###");
@@ -3606,7 +3604,7 @@ void do_cmd_colors(void)
 				}
 
 				/* Describe the color */
-				name = ((a < 16) ? color_names[a] : "undefined");
+				name = ((a < BASIC_COLORS) ? color_names[a] : "undefined");
 
 				/* Describe the color */
 				Term_putstr(5, 10, -1, TERM_WHITE,
@@ -3700,7 +3698,7 @@ void do_cmd_version(void)
 /*
  * Array of feeling strings
  */
-static cptr do_cmd_feeling_text[11] =
+static const char *feeling_text[] =
 {
 	"Looks like any other level.",
 	"You feel there is something special about this level.",
@@ -3723,7 +3721,8 @@ static cptr do_cmd_feeling_text[11] =
 void do_cmd_feeling(void)
 {
 	/* Verify the feeling */
-	if (feeling > 10) feeling = 10;
+	if (feeling >= N_ELEMENTS(feeling_text))
+		feeling = N_ELEMENTS(feeling_text) - 1;
 
 	/* No useful feeling in town */
 	if (!p_ptr->depth)
@@ -3733,13 +3732,13 @@ void do_cmd_feeling(void)
 	}
 
 	/* Display the feeling */
-	msg_print(do_cmd_feeling_text[feeling]);
+	msg_print(feeling_text[feeling]);
 }
 
 /*
  * Encode the screen colors
  */
-static const char hack[17] = "dwsorgbuDWvyRGBU";
+static const char hack[BASIC_COLORS+1] = "dwsorgbuDWvyRGBU";
 
 
 /*
@@ -3813,7 +3812,7 @@ void do_cmd_load_screen(void)
 			(void)(Term_what(x, y, &a, &c));
 
 			/* Look up the attr */
-			for (i = 0; i < 16; i++)
+			for (i = 0; i < BASIC_COLORS; i++)
 			{
 				/* Use attr matches */
 				if (hack[i] == buf[x]) a = i;

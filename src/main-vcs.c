@@ -499,6 +499,9 @@ errr init_vcs(int argc, char** argv)
 	 */
 	game_termios.c_lflag &= ~(ICANON | ECHO | TOSTOP);
 
+	/* Turn off flow control (allow ^S) */
+	game_termios.c_iflag &= ~IXON;
+
 	term_data_link(0, 0, 0, s_width, s_height);
 
 	/* Success */

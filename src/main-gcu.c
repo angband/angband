@@ -221,7 +221,7 @@ static int can_fix_color = FALSE;
 /*
  * Simple Angband to Curses color conversion table
  */
-static int colortable[16];
+static int colortable[BASIC_COLORS];
 
 #endif
 
@@ -304,6 +304,9 @@ static void keymap_game_prepare(void)
 	/* Normally, block until a character is read */
 	game_termios.c_cc[VMIN] = 1;
 	game_termios.c_cc[VTIME] = 0;
+
+	/* Turn off flow control (enable ^S) */
+	game_termios.c_iflag &= ~IXON;
 
 #endif
 
@@ -571,13 +574,12 @@ static errr Term_xtra_gcu_react(void)
 	if (!can_fix_color) return (0);
 
 	/* Set the colors */
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < BASIC_COLORS; i++)
 	{
 		/* Set one color (note scaling) */
-		init_color(i,
-                           angband_color_table[i][1] * 1000 / 255,
-		           angband_color_table[i][2] * 1000 / 255,
-		           angband_color_table[i][3] * 1000 / 255);
+		init_color(i, angband_color_table[i][1] * 1000 / 255,
+		              angband_color_table[i][2] * 1000 / 255,
+		              angband_color_table[i][3] * 1000 / 255);
 	}
 
 #endif
@@ -710,7 +712,7 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 
 #ifdef A_COLOR
 	/* Set the color */
-	if (can_use_color) wattrset(td->win, colortable[a & 0x0F]);
+	if (can_use_color) wattrset(td->win, colortable[a & (BASIC_COLORS-1)]);
 #endif
 
 	/* Move the cursor */
@@ -859,17 +861,17 @@ errr init_gcu(int argc, char **argv)
 	if (can_fix_color)
 	{
 		/* Prepare the color pairs */
-		for (i = 1; i <= 8; i++)
+		for (i = 0; i < (BASIC_COLORS / 2); i++)
 		{
 			/* Reset the color */
-			if (init_pair(i, i - 1, 0) == ERR)
+			if (init_pair(i + 1, i, 0) == ERR)
 			{
 				quit("Color pair init failed");
 			}
 
 			/* Set up the colormap */
-			colortable[i - 1] = (COLOR_PAIR(i) | A_NORMAL);
-			colortable[i + 7] = (COLOR_PAIR(i) | A_BRIGHT);
+			colortable[i] = (COLOR_PAIR(i - 1) | A_NORMAL);
+			colortable[i + (BASIC_COLORS / 2)] = (COLOR_PAIR(i - 1) | A_BRIGHT);
 		}
 
 		/* Take account of "gamma correction" XXX XXX XXX */

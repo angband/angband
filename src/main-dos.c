@@ -92,7 +92,7 @@
  * All colors below this index are defined by
  * the palette of the tiles-bitmap.
  */
-#define COLOR_OFFSET 240
+#define COLOR_OFFSET (256 - BASIC_COLORS)
 
 
 /*
@@ -478,7 +478,7 @@ static void Term_xtra_dos_react(void)
 	/*
 	 * Set the Angband colors
 	 */
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < BASIC_COLORS; i++)
 	{
 		RGB color;
 
@@ -1159,7 +1159,7 @@ static errr Term_text_dos(int x, int y, int n, byte a, const char *cp)
 
 		/* Dump the text */
 		textout(screen, td->font, text, x1, y1,
-		       	COLOR_OFFSET + (a & 0x0F));
+		       	COLOR_OFFSET + (a & BASIC_COLORS));
 	}
 	/* Stretch needed */
 	else
@@ -1175,7 +1175,7 @@ static errr Term_text_dos(int x, int y, int n, byte a, const char *cp)
 
 			/* Dump some text */
 			textout(screen, td->font, text, x1, y1,
-		        	COLOR_OFFSET + (a & 0x0F));
+		        	COLOR_OFFSET + (a & BASIC_COLORS));
 
 			/* Advance */
 			x1 += td->tile_wid;

@@ -197,7 +197,7 @@ cptr macro_trigger_keycode[2][MAX_MACRO_TRIGGER];
 /*
  * Global table of color definitions (mostly zeros)
  */
-byte angband_color_table[256][4] =
+byte angband_color_table[MAX_COLORS][4] =
 {
 	{0x00, 0x00, 0x00, 0x00},	/* TERM_DARK */
 	{0x00, 0xFF, 0xFF, 0xFF},	/* TERM_WHITE */
