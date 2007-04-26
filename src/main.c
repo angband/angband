@@ -82,6 +82,10 @@ static const struct module modules[] =
 #ifdef USE_LFB
 	{ "lfb", help_lfb, init_lfb },
 #endif /* USE_LFB */
+	
+#ifdef USE_SDL
+	{ "sdl", help_sdl, init_sdl },
+#endif /* USE_SDL */
 };
 
 
@@ -128,6 +132,12 @@ extern unsigned _stklen = 32768U;
 extern unsigned _ovrbuffer = 0x1500;
 #endif /* USE_286 */
 
+/*
+ * SDL needs a look-in
+ */
+#ifdef USE_SDL
+# include "SDL.h"
+#endif
 
 
 /*

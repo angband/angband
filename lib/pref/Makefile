@@ -33,6 +33,7 @@ OBJECTIVE_DATA =	\
 	pref-emx.prf:${DATA_PATH}/pref \
 	pref-gcu.prf:${DATA_PATH}/pref \
 	pref-mac.prf:${DATA_PATH}/pref \
+	pref-sdl.prf:${DATA_PATH}/pref \
 	pref-x11.prf:${DATA_PATH}/pref \
 	user.prf:${DATA_PATH}/pref     \
 	user-mac.prf:${DATA_PATH}/pref \
