@@ -137,6 +137,7 @@ fi
 dnl SDL checking
 if test "$enable_sdl" = "yes"; then
 	AM_PATH_SDL(1.2.0,,)
+	AC_CHECK_HEADERS([SDL/SDL_ttf.h])
 	if test "$SDL_CONFIG" = "no"; then
 		with_sdl=no
 		AC_DEFINE(USE_SDL, 0, [Define to 1 if using the SDL interface and SDL & SDL_ttf are found.])
