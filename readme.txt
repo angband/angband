@@ -23,11 +23,13 @@ Angband is a graphical dungeon adventure game that uses textual characters
 to represent the walls and floors of a dungeon and the inhabitants therein, 
 in the vein of games like NetHack and Rogue.
 
-The current main website is http://entai.co.uk/angband/, which contains
+The current main website is http://angband.rogueforge.net/, which contains
 various help files, changelists, and development information.  There also
 are various files included here which give valuable information, like
-compile.txt, changes.txt, and the help files in lib/help/, which can be
-viewed in-game.
+changes.txt and the help files in lib/help/, which can be viewed in-game.
+
+If you want compile the game, please check:
+  <http://ajps.mine.nu/angband/wiki/BuildSystem>
 
 
 For information on variants, patches, and other assorted things, you're best
@@ -35,8 +37,10 @@ off looking at both the main website and http://angband.oook.cz/, a fansite
 which provides access to the Angband newsgroups, a place to upload character
 dumps, and various spoilers.
 
-XXX mention FTP site?  gmail address for bugs?  (see julian)
-angbandmaint@gmail.com
+Bug reports should go to <http://angband.rogueforge.net/trac/newticket>.
+Please include your email address (even with a NOSPAM in there) so we can ask
+for more details if necessary.
+
 
 
 === Getting a working copy ===
