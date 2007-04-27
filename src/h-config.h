@@ -106,7 +106,9 @@
 
 
 /* Mac OS X has usleep(). */
+#ifndef HAVE_USLEEP
 # define HAVE_USLEEP
+#endif
 
 #else
 

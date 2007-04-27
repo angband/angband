@@ -39,6 +39,8 @@ LIBS = -framework CoreFoundation -framework QuickTime -framework Carbon
 # Object definitions are in common file.
 
 
+
+
 # Borg.  To build the borg, type:
 # $ make -f Makefile.osx clean borg all
 BOBJS = borg1.o borg2.o borg3.o borg4.o borg5.o borg6.o borg7.o \
@@ -49,6 +51,11 @@ ifneq (,$(findstring borg, $(MAKECMDGOALS)))
 CFLAGS += -DALLOW_BORG
 endif
 
+# Check for autoconfig.h; warn on nonexistence
+autoconf= $(shell ls autoconf.h)
+ifneq ($(autoconf),)
+CFLAGS += -DHAVE_CONFIG_H
+endif
 
 OBJS = $(BASEOBJS) main-crb.o
 
@@ -83,9 +90,6 @@ clean:
 #
 # Basic build rules and dependencies
 #
-
-
-
 
 %.o : %.c
 	CC $(CFLAGS) -c -o $@ $<
