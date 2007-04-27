@@ -611,29 +611,27 @@ static void decrease_timeouts(void)
 	for (i = 0; i < TMD_MAX; i++)
 	{
 		int decr = 1;
+		if (!p_ptr->timed[i])
+			continue;
 
-		if (p_ptr->timed[i])
+		switch (i)
 		{
-			switch (i)
+			case TMD_CUT:
 			{
-				case TMD_CUT:
-				{
-					/* Hack -- Truly "mortal" wound */
-					if (p_ptr->timed[TMD_CUT] > 1000) 
-						adjust = 0;
-				}
-
-				case TMD_POISONED:
-				case TMD_STUN:
-				{
-					decr = adjust;
-					break;
-				}
+				/* Hack -- check for truly "mortal" wound */
+				decr = (p_ptr->timed[i] > 1000) ? 0 : adjust;
+				break;
 			}
 
-			/* Decrement the effect */
-			dec_timed(i, decr);
+			case TMD_POISONED:
+			case TMD_STUN:
+			{
+				decr = adjust;
+				break;
+			}
 		}
+		/* Decrement the effect */
+		dec_timed(i, decr);
 	}
 
 	return;
