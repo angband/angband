@@ -1007,7 +1007,7 @@ static s32b object_value_real(const object_type *o_ptr)
 			break;
 		}
 
-		/* Rings/Amulets */
+		/* Rings/Amulets, Lites */
 		case TV_RING:
 		case TV_AMULET:
 		{
@@ -1221,8 +1221,6 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 			break;
 		}
 
-		/* Missiles */
-
 		/* Weapons and Armor */
 		case TV_BOW:
 		case TV_DIGGING:
@@ -1245,12 +1243,15 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 		/* Rings, Amulets, Lites */
 		case TV_RING:
 		case TV_AMULET:
+		case TV_LITE:
 		{
 			/* Require both items to be known */
 			if (!object_known_p(o_ptr) || !object_known_p(j_ptr)) return (0);
 
 			/* Fall through */
 		}
+
+		/* Missiles */
 		case TV_BOLT:
 		case TV_ARROW:
 		case TV_SHOT:
@@ -1275,9 +1276,13 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 			/* Hack -- Never stack "powerful" items */
 			if (o_ptr->xtra1 || j_ptr->xtra1) return (FALSE);
 
-			/* Hack -- Never stack recharging items */
-			if ((o_ptr->timeout || j_ptr->timeout) && o_ptr->tval != TV_LITE)
-				return (FALSE);
+			/* Hack - Never stack recharging items */
+			if ((o_ptr->timeout || j_ptr->timeout) && o_ptr->tval != TV_LITE) 
+				return FALSE;
+
+			/* Lites must have same amount of fuel */
+			else if(o_ptr->timeout != j_ptr->timeout && o_ptr->tval == TV_LITE)
+				return FALSE;
 
 			/* Require identical "values" */
 			if (o_ptr->ac != j_ptr->ac) return (FALSE);

@@ -4034,7 +4034,7 @@ static void cleanup_cmds () {
 void do_cmd_options()
 {
 	int cursor = 0;
-	event_type c;
+	event_type c = { EVT_NONE };
 
 	screen_save();
 	menu_layout(&option_menu, &SCREEN_REGION);
@@ -4051,7 +4051,7 @@ void do_cmd_options()
 void do_cmd_knowledge()
 {
 	int cursor = 0;
-	event_type c;
+	event_type c = { EVT_NONE };
 
 	screen_save();
 	menu_layout(&knowledge_menu, &SCREEN_REGION);

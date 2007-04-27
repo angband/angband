@@ -16,10 +16,7 @@
 # set of Mac OS programming documentation (HTML and PDF)
 
 CC = gcc
-
-ifeq ($(OPT),)
-OPT = -O2
-endif
+OPT ?= -O2
 
 # Name of the game
 NAME =Angband
