@@ -599,6 +599,66 @@ static void play_ambient_sound(void)
 	}
 }
 
+/*
+ * Helper for process_world -- decrement p_ptr->timed[] fields.
+ */
+static void decrease_timeouts(void)
+{
+	int i;
+	int timed_list[] =
+	{
+		TMD_IMAGE, TMD_BLIND, TMD_SINVIS, TMD_SINFRA, TMD_PARALYZED,
+		TMD_CONFUSED, TMD_AFRAID, TMD_FAST, TMD_SLOW, TMD_PROTEVIL,
+		TMD_INVULN, TMD_HERO, TMD_SHERO, TMD_BLESSED, TMD_SHIELD,
+		TMD_OPP_ACID, TMD_OPP_ELEC, TMD_OPP_FIRE, TMD_OPP_COLD, TMD_OPP_POIS
+	};
+
+	/* Decrement all effects that can be done simply */
+	for (i = 0; i < (int)N_ELEMENTS(timed_list); i++)
+	{
+		int effect = timed_list[i];
+
+		/* Decrement the effect */
+		if (p_ptr->timed[effect])
+			dec_timed(effect, 1);
+	}
+
+
+	/*** Deal with the rest ***/
+
+	/* Poison */
+	if (p_ptr->timed[TMD_POISONED])
+	{
+		int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] + 1);
+
+		/* Apply some healing */
+		dec_timed(TMD_POISONED, adjust);
+	}
+
+	/* Stun */
+	if (p_ptr->timed[TMD_STUN])
+	{
+		int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] + 1);
+
+		/* Apply some healing */
+		dec_timed(TMD_STUN, adjust);
+	}
+
+	/* Cut */
+	if (p_ptr->timed[TMD_CUT])
+	{
+		int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] + 1);
+
+		/* Hack -- Truly "mortal" wound */
+		if (p_ptr->timed[TMD_CUT] > 1000) adjust = 0;
+
+		/* Apply some healing */
+		dec_timed(TMD_CUT, adjust);
+	}
+
+	return;
+}
+
 
 /*
  * Handle certain things once every 10 game turns
@@ -638,17 +698,11 @@ static void process_world(void)
 
 			/* Day breaks */
 			if (dawn)
-			{
-				/* Message */
 				msg_print("The sun has risen.");
-			}
 
 			/* Night falls */
 			else
-			{
-				/* Message */
 				msg_print("The sun has fallen.");
-			}
 
 			/* Illuminate */
 			town_illuminate(dawn);
@@ -729,21 +783,15 @@ static void process_world(void)
 	{
 		/* Mortal wound or Deep Gash */
 		if (p_ptr->timed[TMD_CUT] > 200)
-		{
 			i = 3;
-		}
 
 		/* Severe cut */
 		else if (p_ptr->timed[TMD_CUT] > 100)
-		{
 			i = 2;
-		}
 
 		/* Other cuts */
 		else
-		{
 			i = 1;
-		}
 
 		/* Take damage */
 		take_hit(i, "a fatal wound");
@@ -861,158 +909,7 @@ static void process_world(void)
 
 	/*** Timeout Various Things ***/
 
-	/* Hack -- Hallucinating */
-	if (p_ptr->timed[TMD_IMAGE])
-	{
-		(void)dec_timed(TMD_IMAGE, 1);
-	}
-
-	/* Blindness */
-	if (p_ptr->timed[TMD_BLIND])
-	{
-		(void)dec_timed(TMD_BLIND, 1);
-	}
-
-	/* Times see-invisible */
-	if (p_ptr->timed[TMD_SINVIS])
-	{
-		(void)dec_timed(TMD_SINVIS, 1);
-	}
-
-	/* Timed infra-vision */
-	if (p_ptr->timed[TMD_SINFRA])
-	{
-		(void)dec_timed(TMD_SINFRA, 1);
-	}
-
-	/* Paralysis */
-	if (p_ptr->timed[TMD_PARALYZED])
-	{
-		(void)dec_timed(TMD_PARALYZED, 1);
-	}
-
-	/* Confusion */
-	if (p_ptr->timed[TMD_CONFUSED])
-	{
-		(void)dec_timed(TMD_CONFUSED, 1);
-	}
-
-	/* Afraid */
-	if (p_ptr->timed[TMD_AFRAID])
-	{
-		(void)dec_timed(TMD_AFRAID, 1);
-	}
-
-	/* Fast */
-	if (p_ptr->timed[TMD_FAST])
-	{
-		(void)dec_timed(TMD_FAST, 1);
-	}
-
-	/* Slow */
-	if (p_ptr->timed[TMD_SLOW])
-	{
-		(void)dec_timed(TMD_SLOW, 1);
-	}
-
-	/* Protection from evil */
-	if (p_ptr->timed[TMD_PROTEVIL])
-	{
-		(void)dec_timed(TMD_PROTEVIL, 1);
-	}
-
-	/* Invulnerability */
-	if (p_ptr->timed[TMD_INVULN])
-	{
-		(void)dec_timed(TMD_INVULN, 1);
-	}
-
-	/* Heroism */
-	if (p_ptr->timed[TMD_HERO])
-	{
-		(void)dec_timed(TMD_HERO, 1);
-	}
-
-	/* Super Heroism */
-	if (p_ptr->timed[TMD_SHERO])
-	{
-		(void)dec_timed(TMD_SHERO, 1);
-	}
-
-	/* Blessed */
-	if (p_ptr->timed[TMD_BLESSED])
-	{
-		(void)dec_timed(TMD_BLESSED, 1);
-	}
-
-	/* Shield */
-	if (p_ptr->timed[TMD_SHIELD])
-	{
-		(void)dec_timed(TMD_SHIELD, 1);
-	}
-
-	/* Oppose Acid */
-	if (p_ptr->timed[TMD_OPP_ACID])
-	{
-		(void)dec_timed(TMD_OPP_ACID, 1);
-	}
-
-	/* Oppose Lightning */
-	if (p_ptr->timed[TMD_OPP_ELEC])
-	{
-		(void)dec_timed(TMD_OPP_ELEC, 1);
-	}
-
-	/* Oppose Fire */
-	if (p_ptr->timed[TMD_OPP_FIRE])
-	{
-		(void)dec_timed(TMD_OPP_FIRE, 1);
-	}
-
-	/* Oppose Cold */
-	if (p_ptr->timed[TMD_OPP_COLD])
-	{
-		(void)dec_timed(TMD_OPP_COLD, 1);
-	}
-
-	/* Oppose Poison */
-	if (p_ptr->timed[TMD_OPP_POIS])
-	{
-		(void)dec_timed(TMD_OPP_POIS, 1);
-	}
-
-
-	/*** Poison and Stun and Cut ***/
-
-	/* Poison */
-	if (p_ptr->timed[TMD_POISONED])
-	{
-		int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] + 1);
-
-		/* Apply some healing */
-		(void)dec_timed(TMD_POISONED, adjust);
-	}
-
-	/* Stun */
-	if (p_ptr->timed[TMD_STUN])
-	{
-		int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] + 1);
-
-		/* Apply some healing */
-		(void)dec_timed(TMD_STUN, adjust);
-	}
-
-	/* Cut */
-	if (p_ptr->timed[TMD_CUT])
-	{
-		int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] + 1);
-
-		/* Hack -- Truly "mortal" wound */
-		if (p_ptr->timed[TMD_CUT] > 1000) adjust = 0;
-
-		/* Apply some healing */
-		(void)dec_timed(TMD_CUT, adjust);
-	}
+	decrease_timeouts();
 
 
 

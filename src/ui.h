@@ -140,8 +140,7 @@ typedef struct menu_item menu_item;
 typedef struct menu_type menu_type;
 typedef struct menu_skin menu_skin;
 typedef struct menu_iter menu_iter;
-typedef enum skin_id skin_id;
-typedef enum menu_iter_id menu_iter_id;
+
 
 /*
  * Performs an action on object with an optional environment label 
@@ -229,14 +228,15 @@ typedef enum {
 } menu_flags;
 
 /* Identifier for the type of menu layout to use */
-enum skin_id {
+typedef enum
+{
 	/* Skins */
 	MN_SCROLL	= 0x0000, /* Ordinary scrollable single-column list */
 	MN_COLUMNS	= 0x0002, /* multicolumn view */
 	MN_NATIVE	= 0x0003, /* Not implemented -- OS menu */
 	MN_KEY_ONLY = 0x0004, /* No display */
 	MN_USER		= 0x0005  /* Anonymous, user defined. */
-};
+} skin_id;
 
 /* Class functions for menu layout */
 struct menu_skin {
@@ -253,11 +253,13 @@ struct menu_skin {
 
 
 /* Identifiers for canned row iterator implementations */
-enum menu_iter_id {
+typedef enum
+{
 	MN_ACT		= 0x1, /* selectable menu with per-row flags (see below) */
 	MN_EVT		= 0x2, /* simple event action list */
 	MN_STRING	= 0x3  /* display an array of strings for selection */
-};
+} menu_iter_id;
+
 
 /* Class functions for menu row-level accessor functions */
 struct menu_iter {

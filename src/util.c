@@ -380,7 +380,7 @@ static size_t trigger_ascii_to_text(char *buf, size_t max, cptr *strptr)
 			break;
 		case '#':
 			/* Read key code */
-			for (j = 0; *str && (*str != '\r') && (j < sizeof(key_code) - 1); j++)
+			for (j = 0; *str && (*str != '\r') && (j < (int)sizeof(key_code) - 1); j++)
 				key_code[j] = *str++;
 			key_code[j] = '\0';
 			break;

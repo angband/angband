@@ -169,7 +169,7 @@ void flavor_init(void)
 		bool okay = TRUE;
 
 		wordlen = make_word(RANDNAME_SCROLL, 2, 8, end, 24);
-		while (titlelen + wordlen < (sizeof(scroll_adj[0]) - 1))
+		while (titlelen + wordlen < (int)(sizeof(scroll_adj[0]) - 1))
 		{
 			end[wordlen] = ' ';
 			titlelen += wordlen + 1;

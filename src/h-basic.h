@@ -84,8 +84,26 @@
 
 typedef const char *cptr;
 typedef int errr;
-typedef unsigned char byte;
-typedef char bool;
+
+
+#if defined(HAVE_STDBOOL_H)
+
+  #include <stdbool.h>
+
+  #define TRUE  true
+  #define FALSE false
+
+#else
+
+  typedef char bool;
+
+  #undef TRUE
+  #undef FALSE
+
+  #define TRUE   1
+  #define FALSE  0
+
+#endif
 
 
 /* C99/stdint.h provide guaranteed-size ints */
@@ -93,6 +111,8 @@ typedef char bool;
 
   /* Use guaranteed-size types */
   #include <stdint.h>
+
+  typedef uint8_t byte;
 
   typedef uint16_t u16b;
   typedef int16_t s16b;
@@ -103,6 +123,7 @@ typedef char bool;
 #else /* __STDC__ */
 
   /* Try hacks instead (not guaranteed to work) */
+  typedef unsigned char byte;
   typedef signed short s16b;
   typedef unsigned short u16b;
 
@@ -125,14 +146,6 @@ typedef char bool;
 #ifndef NULL
 # define NULL ((void*)0)
 #endif
-
-
-/* Define "TRUE" and "FALSE" */
-#undef TRUE
-#undef FALSE
-
-#define TRUE	1
-#define FALSE	0
 
 
 

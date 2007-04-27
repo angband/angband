@@ -11,7 +11,7 @@ ZOBJS := $(addsuffix $(OBJEXT), $(ZFILES))
 
 
 # Note dependencies
-$(BASEOBJS): $(INCS)
+$(BASEOBJS): $(HEADERS)
 $(ZOBJS): $(HDRS)
 BASEOBJS += $(ZOBJS)
 

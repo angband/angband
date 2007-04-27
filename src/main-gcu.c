@@ -57,6 +57,10 @@
  * Include the proper "header" file
  */
 #ifdef USE_NCURSES
+# if defined(HAVE_STDBOOL_H)
+#  define NCURSES_ENABLE_STDBOOL_H 0
+# endif
+
 # include <ncurses.h>
 #else
 # include <curses.h>

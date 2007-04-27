@@ -13,8 +13,6 @@
  * should not be defined by the user.
  */
 
-#include <limits.h>
-
 
 /*
  * Extract the "RISCOS" flag from the compiler
