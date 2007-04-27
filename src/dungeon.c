@@ -604,6 +604,8 @@ static void play_ambient_sound(void)
  */
 static void decrease_timeouts(void)
 {
+	int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] + 1);
+
 	int i;
 	int timed_list[] =
 	{
@@ -614,46 +616,32 @@ static void decrease_timeouts(void)
 	};
 
 	/* Decrement all effects that can be done simply */
-	for (i = 0; i < (int)N_ELEMENTS(timed_list); i++)
+	for (i = 0; i < TMD_MAX; i++)
 	{
-		int effect = timed_list[i];
+		int decr = 1;
 
-		/* Decrement the effect */
 		if (p_ptr->timed[effect])
-			dec_timed(effect, 1);
-	}
+		{
+			switch (i)
+			{
+				case TMD_CUT:
+				{
+					/* Hack -- Truly "mortal" wound */
+					if (p_ptr->timed[TMD_CUT] > 1000) 
+						adjust = 0;
+				}
 
+				case TMD_POISONED:
+				case TMD_STUN:
+				{
+					decr = adjust;
+					break;
+				}
+			}
 
-	/*** Deal with the rest ***/
-
-	/* Poison */
-	if (p_ptr->timed[TMD_POISONED])
-	{
-		int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] + 1);
-
-		/* Apply some healing */
-		dec_timed(TMD_POISONED, adjust);
-	}
-
-	/* Stun */
-	if (p_ptr->timed[TMD_STUN])
-	{
-		int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] + 1);
-
-		/* Apply some healing */
-		dec_timed(TMD_STUN, adjust);
-	}
-
-	/* Cut */
-	if (p_ptr->timed[TMD_CUT])
-	{
-		int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] + 1);
-
-		/* Hack -- Truly "mortal" wound */
-		if (p_ptr->timed[TMD_CUT] > 1000) adjust = 0;
-
-		/* Apply some healing */
-		dec_timed(TMD_CUT, adjust);
+			/* Decrement the effect */
+			dec_timed(effect, decr);
+		}
 	}
 
 	return;
