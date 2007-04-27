@@ -605,22 +605,14 @@ static void play_ambient_sound(void)
 static void decrease_timeouts(void)
 {
 	int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] + 1);
-
 	int i;
-	int timed_list[] =
-	{
-		TMD_IMAGE, TMD_BLIND, TMD_SINVIS, TMD_SINFRA, TMD_PARALYZED,
-		TMD_CONFUSED, TMD_AFRAID, TMD_FAST, TMD_SLOW, TMD_PROTEVIL,
-		TMD_INVULN, TMD_HERO, TMD_SHERO, TMD_BLESSED, TMD_SHIELD,
-		TMD_OPP_ACID, TMD_OPP_ELEC, TMD_OPP_FIRE, TMD_OPP_COLD, TMD_OPP_POIS
-	};
 
 	/* Decrement all effects that can be done simply */
 	for (i = 0; i < TMD_MAX; i++)
 	{
 		int decr = 1;
 
-		if (p_ptr->timed[effect])
+		if (p_ptr->timed[i])
 		{
 			switch (i)
 			{
@@ -640,7 +632,7 @@ static void decrease_timeouts(void)
 			}
 
 			/* Decrement the effect */
-			dec_timed(effect, decr);
+			dec_timed(i, decr);
 		}
 	}
 
