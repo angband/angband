@@ -774,7 +774,7 @@ static void Term_fresh_row_both(int y, int x1, int x2)
 		if ((na & 0x80) && (nc & 0x80))
 		{
 			/* 2nd byte of bigtile */
-			if ((na == 255) && (nc == -1)) continue;
+			if ((na == 255) && (nc == (char) -1)) continue;
 
 			/* Flush */
 			if (fn)
@@ -1608,7 +1608,7 @@ errr Term_erase(int x, int y, int n)
 	scr_taa = Term->scr->ta[y];
 	scr_tcc = Term->scr->tc[y];
 
-	if ((n > 0) && (scr_cc[x] == -1) && (scr_aa[x] == 255))
+	if ((n > 0) && (scr_cc[x] == (char) -1) && (scr_aa[x] == 255))
 	{
 		x--;
 		n++;

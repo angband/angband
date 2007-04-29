@@ -762,7 +762,7 @@ static menu_type squelch_q_menu;
 static menu_type squelch_q_items;
 
 static struct {
-	char quality;
+	signed char quality;
 	int item_pos;
 } q_rendez;
 
@@ -920,7 +920,7 @@ static int do_cmd_squelch_egos(void)
 	ego_desc *choice;
 	const char *name;
 
-	int selected_y;
+	int selected_y = 0;
 
  	/* Allocate the array of ego item choices */
  	C_MAKE(choice, alloc_ego_size, ego_desc);
@@ -996,7 +996,7 @@ static int do_cmd_squelch_egos(void)
 		{
 			const char *tval_name = NULL;
 			byte attr;
-			int tval, y, typeval;
+			int tval = 0, y, typeval;
 
 			/* Only redraw those things which need redrawing */
 			if (!display_all && (i != active) && (i != old_active))

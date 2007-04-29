@@ -1993,6 +1993,7 @@ static menu_ptr make_zfont_menu(const char *dir)
 
 					break;
 				}
+
 			}
 			temp = ((char *) item_info) + 20;
 			while (*temp++);
@@ -2437,7 +2438,7 @@ static void set_up_zrb(term_data *t)
  */
 static void RO_redraw_window(window_redrawblock * rb, BOOL *more, term_data *t)
 {
-	int cx, cy, cw, ch;
+	int cx = 0, cy = 0, cw = 0, ch = 0;
 
 	/* set GCOL for cursor colour */
 	if (t->cursor.visible)

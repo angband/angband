@@ -4502,7 +4502,7 @@ static void get_default_tile(int row, int col, byte *a_def, char *c_def)
 	c = Term->scr->c[row][col];
 
 	/* Skip bigtile placeholders */
-	if (use_bigtile && (a == 255) && (c == -1))
+	if (use_bigtile && (a == 255) && (c == (char) -1))
 	{
 		/* Replace with "white space" */
 		a = TERM_WHITE;
