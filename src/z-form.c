@@ -11,7 +11,7 @@
 /* Purpose: Low level text formatting -BEN- */
 
 #include "z-form.h"
-#include "typeutils.h"
+#include "z-type.h"
 
 #include "z-util.h"
 #include "z-virt.h"

@@ -33,7 +33,7 @@
 #include "defines.h"
 #include "types.h"
 #include "ui.h"
-#include "typeutils.h"
+#include "z-type.h"
 #include "externs.h"
 
 

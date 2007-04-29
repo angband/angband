@@ -2,7 +2,7 @@
 #include "z-form.h"
 #include "z-term.h"
 #include "ui.h"
-#include "typeutils.h"
+#include "z-type.h"
 
 #define TYPE_FUN(v2u, tv, T, v)	\
 type_union v2u(T v) { 		\
