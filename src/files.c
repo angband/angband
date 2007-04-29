@@ -1630,8 +1630,8 @@ int get_panel(int oid, data_panel *panel, size_t size)
 		{ TERM_L_GREEN, "Adv Exp",	"%y",		{ s2u(show_adv_exp())  }},
 		{ TERM_L_GREEN,	"MaxDepth",	"%y",		{ s2u(show_depth())  }},
 		{ TERM_L_GREEN, "Gold",		"%y",		{ i2u(p_ptr->au)  }},
-		{ TERM_L_GREEN, "Burden",	"%.1y lbs", { f2u(p_ptr->total_weight/10.0)  }},
-		{ TERM_L_GREEN, "Speed",	"%y", 		{ s2u(show_speed())  }}
+		{ TERM_L_GREEN, "Burden",	"%.1y lbs",	{ f2u(p_ptr->total_weight/10.0)  }},
+		{ TERM_L_GREEN, "Speed",	"%y",		{ s2u(show_speed())  }}
 	};
 	assert(N_ELEMENTS(panel2) == boundaries[2].page_rows);
 	if (ret > N_ELEMENTS(panel2)) ret = N_ELEMENTS(panel2);
@@ -1644,12 +1644,12 @@ int get_panel(int oid, data_panel *panel, size_t size)
 	{
 		{ TERM_L_BLUE, "Armor", "[%y,%+y]",		{ i2u(p_ptr->dis_ac), i2u(p_ptr->dis_to_a)  }},
 		{ TERM_L_BLUE, "Fight", "(%+y,%+y)",	{ i2u(p_ptr->dis_to_h), i2u(p_ptr->dis_to_d)  }},
-		{ TERM_L_BLUE, "Melee", "%y", 			{ s2u(show_weapon(&inventory[INVEN_WIELD]))  }},
-		{ TERM_L_BLUE, "Shoot", "%y", 			{ s2u(show_weapon(&inventory[INVEN_BOW]))  }},
-		{ TERM_L_BLUE, "Blows", "%y", 			{ i2u(p_ptr->num_blow)  }},
-		{ TERM_L_BLUE, "Shots", "%y", 			{ i2u(p_ptr->num_fire)  }},
+		{ TERM_L_BLUE, "Melee", "%y",			{ s2u(show_weapon(&inventory[INVEN_WIELD]))  }},
+		{ TERM_L_BLUE, "Shoot", "%y",			{ s2u(show_weapon(&inventory[INVEN_BOW]))  }},
+		{ TERM_L_BLUE, "Blows", "%y/turn",		{ i2u(p_ptr->num_blow)  }},
+		{ TERM_L_BLUE, "Shots", "%y/turn",		{ i2u(p_ptr->num_fire)  }},
 		{ 0, 0, 0, {END} },
-		{ TERM_L_BLUE, "Infra", "%y ft", 		{ i2u(p_ptr->see_infra * 10)  }}
+		{ TERM_L_BLUE, "Infra", "%y ft",		{ i2u(p_ptr->see_infra * 10)  }}
 	};
 	assert(N_ELEMENTS(panel3) == boundaries[3].page_rows);
 	if (ret > N_ELEMENTS(panel3)) ret = N_ELEMENTS(panel3);
@@ -1711,14 +1711,31 @@ static void display_player_xtra_info(void)
 	int panels [] = { 1, 2, 3, 4, 5};
 	bool left_adj [] = { 1, 0, 0, 0, 0 };
 	data_panel data[MAX_PANEL];
-	for (i = 0; i < N_ELEMENTS(panels); i++)
+
+	for (i = 0; i < (int)N_ELEMENTS(panels); i++)
 	{
 		int oid = panels[i];
 		int rows = get_panel(oid, data, N_ELEMENTS(data));
+
 		/* Hack:  Don't show 'Level' in the name, class ...  panel */
 		if (oid == 1) rows -= 1;
+
 		display_panel(data, rows, left_adj[i], &boundaries[oid]);
 	}
+
+	/* Indent output by 1 character, and wrap at column 72 */
+	text_out_wrap = 72;
+	text_out_indent = 1;
+
+	/* History */
+	Term_gotoxy(text_out_indent, 19);
+	text_out_to_screen(TERM_WHITE, p_ptr->history);
+
+	/* Reset text_out() vars */
+	text_out_wrap = 0;
+	text_out_indent = 0;
+
+	return;
 }
 
 /*

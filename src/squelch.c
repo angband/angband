@@ -69,27 +69,26 @@ static int tv_to_type[100];
 /* Categories for squelch-on-creation. */
 static tval_desc typevals[] =
 {
-	{ TYPE_AMMO,    "Missiles" },
-	{ TYPE_BOW,     "Missile Launchers" },
-	{ TYPE_WEAPON1, "Weapons (Swords)" },
-	{ TYPE_WEAPON2, "Weapons (Non Swords)" },
-	{ TYPE_BODY,    "Body Armor" },
-	{ TYPE_CLOAK,   "Cloaks" },
-	{ TYPE_SHIELD,  "Shields" },
-	{ TYPE_HELM,    "Helmets" },
-	{ TYPE_GLOVES,  "Gloves" },
-	{ TYPE_BOOTS,   "Boots" },
-	{ TYPE_AMULET,  "Amulets" },
-	{ TYPE_RING,    "Rings" },
-	{ TYPE_STAFF,   "Staves" },
-	{ TYPE_WAND,    "Wands" },
-	{ TYPE_ROD,     "Rods" },
-	{ TYPE_SCROLL,  "Scrolls" },
-	{ TYPE_POTION,  "Potions" },
-	{ TYPE_BOOK,    "Magic Books" },
-	{ TYPE_FOOD,    "Food Items" },
-	{ TYPE_MISC,    "Miscellaneous" },
-	{ 0,            NULL }
+	{ TYPE_AMMO,    "Missiles", 0 },
+	{ TYPE_BOW,     "Missile Launchers", 0 },
+	{ TYPE_WEAPON1, "Weapons (Swords)", 0 },
+	{ TYPE_WEAPON2, "Weapons (Non Swords)", 0 },
+	{ TYPE_BODY,    "Body Armor", 0 },
+	{ TYPE_CLOAK,   "Cloaks", 0 },
+	{ TYPE_SHIELD,  "Shields", 0 },
+	{ TYPE_HELM,    "Helmets", 0 },
+	{ TYPE_GLOVES,  "Gloves", 0 },
+	{ TYPE_BOOTS,   "Boots", 0 },
+	{ TYPE_AMULET,  "Amulets", 0 },
+	{ TYPE_RING,    "Rings", 0 },
+	{ TYPE_STAFF,   "Staves", 0 },
+	{ TYPE_WAND,    "Wands", 0 },
+	{ TYPE_ROD,     "Rods", 0 },
+	{ TYPE_SCROLL,  "Scrolls", 0 },
+	{ TYPE_POTION,  "Potions", 0 },
+	{ TYPE_BOOK,    "Magic Books", 0 },
+	{ TYPE_FOOD,    "Food Items", 0 },
+	{ TYPE_MISC,    "Miscellaneous", 0 }
 };
 
 #define NONE_BITS (1 << SQUELCH_NONE)
@@ -101,26 +100,26 @@ static tval_desc typevals[] =
 /* Display categories for different kinds of ego-item */
 static tval_desc typevals_to_ego[] =
 {
-	{ TYPE_AMMO,    "Ammo" },
-	{ TYPE_BOW,     "Launchers" },
-	{ TYPE_WEAPON1, "Weapons" },
-	{ TYPE_WEAPON2, "Weapons" },
-	{ TYPE_BODY,    "Body Armor" },
-	{ TYPE_CLOAK,   "Cloaks" },
-	{ TYPE_SHIELD,  "Shields" },
-	{ TYPE_HELM,    "Helmets" },
-	{ TYPE_GLOVES,  "Gloves" },
-	{ TYPE_BOOTS,   "Boots" },
-	{ TYPE_AMULET,  "Amulets" },
-	{ TYPE_RING,    "Rings" },
-	{ TYPE_STAFF,   "Staves" },
-	{ TYPE_WAND,    "Wands" },
-	{ TYPE_ROD,     "Rods" },
-	{ TYPE_SCROLL,  "Scrolls" },
-	{ TYPE_POTION,  "Potions" },
-	{ TYPE_BOOK,    "Magic Books" },
-	{ TYPE_FOOD,    "Food Items" },
-	{ TYPE_MISC,    "Miscellaneous" },
+	{ TYPE_AMMO,    "Ammo", 0 },
+	{ TYPE_BOW,     "Launchers", 0 },
+	{ TYPE_WEAPON1, "Weapons", 0 },
+	{ TYPE_WEAPON2, "Weapons", 0 },
+	{ TYPE_BODY,    "Body Armor", 0 },
+	{ TYPE_CLOAK,   "Cloaks", 0 },
+	{ TYPE_SHIELD,  "Shields", 0 },
+	{ TYPE_HELM,    "Helmets", 0 },
+	{ TYPE_GLOVES,  "Gloves", 0 },
+	{ TYPE_BOOTS,   "Boots", 0 },
+	{ TYPE_AMULET,  "Amulets", 0 },
+	{ TYPE_RING,    "Rings", 0 },
+	{ TYPE_STAFF,   "Staves", 0 },
+	{ TYPE_WAND,    "Wands", 0 },
+	{ TYPE_ROD,     "Rods", 0 },
+	{ TYPE_SCROLL,  "Scrolls", 0 },
+	{ TYPE_POTION,  "Potions", 0 },
+	{ TYPE_BOOK,    "Magic Books", 0 },
+	{ TYPE_FOOD,    "Food Items", 0 },
+	{ TYPE_MISC,    "Miscellaneous", 0 }
 };
 
 
@@ -148,12 +147,10 @@ static tval_desc tvals[] =
 	{ TV_AMULET,     "Amulets",			JEWELRY_BITS },
 	{ TV_CHEST,      "Open Chests",		CHEST_BITS  },
 	{ TV_LITE,       "Lite Sources",	ART_ONLY_BITS },
-	{ 0,            NULL , 				0}
+	{ 0,            NULL , 				0 }
 };
 
 
-#define NUM_TYPEVALS       (sizeof(typevals) / sizeof(typevals[0]))
-#define NUM_TYPEVAL_TO_EGO (int) (sizeof(typevals_to_ego) / sizeof(typevals_to_ego[0]))
 #define LINES_PER_COLUMN   19
 
 #define SQUELCH_HEAD   0
@@ -336,6 +333,7 @@ void autoinscribe_pack(void)
  *  - Simplify do_qual_squelch().
  *  - Add find-as-you-type for the various menus, a la Firefox (nice UI touch)
  */
+
 /*
  * Utility function used for sorting an array of ego-item indices by
  * ego-item name.
@@ -376,7 +374,7 @@ int squelch_item_ok(object_type *o_ptr, byte feel, bool fullid)
 	/* Check to see if the object is eligible for squelch-on-ID */
 
 	/* Find the appropriate squelch group */
-	for (i = 0; tvals[i].tval; i++)
+	for (i = 0; i < (int)N_ELEMENTS(tvals); i++)
 	{
 		if (tvals[i].tval == o_ptr->tval)
 			num = i;
@@ -388,10 +386,10 @@ int squelch_item_ok(object_type *o_ptr, byte feel, bool fullid)
 	/* If the object is being identified get the feeling returned by a heavy pseudoid. */
 	if (fullid) feel = value_check_aux1(o_ptr);
 
-  /* Get result based on the feeling and the squelch_level */
-  switch (squelch_level[num])
-  {
-   	case SQUELCH_CURSED:
+	/* Get result based on the feeling and the squelch_level */
+	switch (squelch_level[num])
+	{
+		case SQUELCH_CURSED:
 		{
 			if ((feel == INSCRIP_BROKEN) || (feel == INSCRIP_TERRIBLE) ||
 	 	      (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED))
@@ -402,7 +400,7 @@ int squelch_item_ok(object_type *o_ptr, byte feel, bool fullid)
       		break;
 		}
 
-   	case SQUELCH_AVERAGE:
+		case SQUELCH_AVERAGE:
 		{
 			if ((feel == INSCRIP_BROKEN) || (feel == INSCRIP_TERRIBLE) ||
 		 	    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED) ||
@@ -426,7 +424,7 @@ int squelch_item_ok(object_type *o_ptr, byte feel, bool fullid)
 			break;
 		}
 
-    case SQUELCH_GOOD_STRONG:
+		case SQUELCH_GOOD_STRONG:
 		{
 			if ((feel == INSCRIP_BROKEN) || (feel == INSCRIP_TERRIBLE) ||
 		 	    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED) ||
@@ -772,12 +770,16 @@ static void handle_q_squelch(void *arg, const char *xxx)
 {
 	int sqlev = (int) arg;
 	int i;
-	event_type ke = {EVT_REFRESH, 0, 0, 0};
-	for (i = 0; i < SQUELCH_BYTES; i++) {
-		if(tvals[i].squelch_bits & ( 1 << sqlev))
+	event_type ke = {EVT_REFRESH, 0, 0, 0, 0};
+
+	for (i = 0; i < SQUELCH_BYTES; i++)
+	{
+		if (tvals[i].squelch_bits & (1 << sqlev))
 			squelch_level[i] = sqlev;
 	}
+
 	Term_event_push(&ke);
+
 	/* Invalidate q_rendez */
 	q_rendez.quality = sqlev;
 }
@@ -785,58 +787,66 @@ static void handle_q_squelch(void *arg, const char *xxx)
 static void handle_q_squelch_one(void *arg, const char *xxx)
 {
 	int sqlev = (int) arg;
-	event_type ke = {EVT_REFRESH, 0, 0, 0};
+	event_type ke = {EVT_REFRESH, 0, 0, 0, 0};
 	bool refresh = FALSE;
-	if((squelch_level[q_rendez.item_pos] != sqlev) &&
-			(tvals[q_rendez.item_pos].squelch_bits & ( 1 << sqlev)))
+
+	if ((squelch_level[q_rendez.item_pos] != sqlev) &&
+	   (tvals[q_rendez.item_pos].squelch_bits & (1 << sqlev)))
 	{
 		refresh = TRUE;
 		squelch_level[q_rendez.item_pos] = sqlev;
 	}
-	if(refresh) Term_event_push(&ke);
+
+	if (refresh) Term_event_push(&ke);
+
 	q_rendez.quality = sqlev;
 }
 
 static menu_item squelch_q_kinds [] =
 {
-	{{ 0, "Affect all groups", handle_q_squelch}, 0, MN_DISABLED},
-	{{ 0, "Squelch Nothing", handle_q_squelch, (void*)SQUELCH_NONE}, 'N', 0}, 
-	{{ 0, "Squelch Cursed Items", handle_q_squelch, (void*)SQUELCH_CURSED}, 'C', 0}, 
-	{{ 0, "Squelch Average and Below", handle_q_squelch, (void*)SQUELCH_AVERAGE}, 'V', 0}, 
-	{{ 0, "Squelch Good (Strong Pseudo-ID and Identify)", handle_q_squelch, (void*)SQUELCH_GOOD_STRONG}, 'G', 0}, 
-	{{ 0, "Squelch Good (Weak Pseudo-ID)", handle_q_squelch, (void*)SQUELCH_GOOD_WEAK}, 'W', 0}, 
-	{{ 0, "Squelch All but Artifacts", handle_q_squelch, (void*)SQUELCH_ALL}, 'A', 0}, 
-	{{ 0, "Squelch Chests after Opening", handle_q_squelch, (void*)SQUELCH_OPENED_CHESTS}, 'O', 0}, 
-	{{ 0, "Affect selected group", 0}, 0, MN_DISABLED},
-	{{ 0, "Squelch Nothing", handle_q_squelch_one, (void*)SQUELCH_NONE}, 'n', 0}, 
-	{{ 0, "Squelch Cursed Items", handle_q_squelch_one, (void*)SQUELCH_CURSED}, 'c', 0}, 
-	{{ 0, "Squelch Average and Below", handle_q_squelch_one, (void*)SQUELCH_AVERAGE}, 'v', 0}, 
-	{{ 0, "Squelch Good (Strong Pseudo-ID and Identify)", handle_q_squelch_one, (void*)SQUELCH_GOOD_STRONG}, 'g', 0}, 
-	{{ 0, "Squelch Good (Weak Pseudo-ID)", handle_q_squelch_one, (void*)SQUELCH_GOOD_WEAK}, 'w', 0}, 
-	{{ 0, "Squelch All but Artifacts", handle_q_squelch_one, (void*)SQUELCH_ALL}, 'a', 0}, 
+	{{ 0, "Affect all groups", handle_q_squelch, 0 }, 0, MN_DISABLED },
+	{{ 0, "Squelch Nothing", handle_q_squelch, (void *)SQUELCH_NONE }, 'N', 0 },
+	{{ 0, "Squelch Cursed Items", handle_q_squelch, (void *)SQUELCH_CURSED }, 'C', 0 },
+	{{ 0, "Squelch Average and Below", handle_q_squelch, (void *)SQUELCH_AVERAGE }, 'V', 0 },
+	{{ 0, "Squelch Good (Strong Pseudo-ID and Identify)", handle_q_squelch, (void *)SQUELCH_GOOD_STRONG }, 'G', 0 },
+	{{ 0, "Squelch Good (Weak Pseudo-ID)", handle_q_squelch, (void *)SQUELCH_GOOD_WEAK }, 'W', 0 },
+	{{ 0, "Squelch All but Artifacts", handle_q_squelch, (void *)SQUELCH_ALL }, 'A', 0 },
+	{{ 0, "Squelch Chests after Opening", handle_q_squelch, (void *)SQUELCH_OPENED_CHESTS }, 'O', 0 },
+	{{ 0, "Affect selected group", 0, 0 }, 0, MN_DISABLED },
+	{{ 0, "Squelch Nothing", handle_q_squelch_one, (void *)SQUELCH_NONE }, 'n', 0 },
+	{{ 0, "Squelch Cursed Items", handle_q_squelch_one, (void *)SQUELCH_CURSED }, 'c', 0 },
+	{{ 0, "Squelch Average and Below", handle_q_squelch_one, (void *)SQUELCH_AVERAGE }, 'v', 0 },
+	{{ 0, "Squelch Good (Strong Pseudo-ID and Identify)", handle_q_squelch_one, (void *)SQUELCH_GOOD_STRONG }, 'g', 0 },
+	{{ 0, "Squelch Good (Weak Pseudo-ID)", handle_q_squelch_one, (void *)SQUELCH_GOOD_WEAK }, 'w', 0 },
+	{{ 0, "Squelch All but Artifacts", handle_q_squelch_one, (void *)SQUELCH_ALL }, 'a', 0 },
 	/* Invisible entry */
-	{{ 0, 0, handle_q_squelch, (void*)SQUELCH_OPENED_CHESTS}, 'o', MN_HIDDEN}, 
+	{{ 0, 0, handle_q_squelch, (void *)SQUELCH_OPENED_CHESTS}, 'o', MN_HIDDEN }, 
 };
 
 
 static bool handle_squelch_item(char cmd, void *db, int oid)
 {
-	if(oid < 0) return FALSE;
-	if(q_rendez.item_pos == oid) {
-		int i = (squelch_level[oid]+1)%(SQUELCH_OPENED_CHESTS+1);
-		while(!(tvals[oid].squelch_bits & ( 1 << i))) {
+	if (oid < 0) return FALSE;
+	if (q_rendez.item_pos == oid)
+	{
+		int i = (squelch_level[oid] + 1) % (SQUELCH_OPENED_CHESTS + 1);
+
+		while (!(tvals[oid].squelch_bits & (1 << i)))
 			i = (i+1) % (SQUELCH_OPENED_CHESTS+1);
-		}
+
 		squelch_level[oid] = i;
+
 		return TRUE;
 	}
 		
 	q_rendez.item_pos = oid;
-	if((q_rendez.quality >= 0 && oid >= 0) &&
-				(tvals[oid].squelch_bits & ( 1 << q_rendez.quality)))
+
+	if ((q_rendez.quality >= 0 && oid >= 0) &&
+	    (tvals[oid].squelch_bits & (1 << q_rendez.quality)))
 	{
 		squelch_level[oid] = q_rendez.quality;
 	}
+
 	return TRUE;
 }
 
@@ -847,8 +857,7 @@ static void display_tval(menu_type *menu, int oid,
 	const byte squelch_attr[] = {TERM_WHITE, TERM_L_GREEN, TERM_YELLOW, TERM_YELLOW, TERM_ORANGE, TERM_ORANGE, TERM_L_GREEN};
 
 	byte attr = curs_attrs[CURS_KNOWN][0 != cursor];
-	c_put_str(attr, format("[%c] %s", squelch_str[squelch_level[oid]], tvals[oid].desc),
-				row, col);
+	c_put_str(attr, format("[%c] %s", squelch_str[squelch_level[oid]], tvals[oid].desc), row, col);
 	Term_putch(col+1, row, squelch_attr[squelch_level[oid]], squelch_str[squelch_level[oid]]);
 }
 
@@ -864,20 +873,24 @@ static const menu_iter tval_iter = {
  */
 static void do_qual_squelch(void)
 {
-	region item_region = {0, 0, 20, 0};
-	region command_region = {25, 0, 0, 0};
-	event_type ke = {EVT_NONE};
+	region item_region = { 0, 0, 20, 0 };
+	region command_region = { 25, 0, 0, 0 };
+	event_type ke = { EVT_NONE, 0, 0, 0, 0 };
+
 	menu_layout(&squelch_q_items, &item_region);
 	menu_layout(&squelch_q_menu, &command_region);
+
 	Term_save();
 	Term_clear();
+
 	q_rendez.item_pos = 0;
 	q_rendez.quality = -1;
-	while(ke.key != ESCAPE)
-	{
+
+	while (ke.key != ESCAPE)
 		ke = menu_select(&squelch_q_items, &q_rendez.item_pos, 0);
-	}
+
 	Term_load();
+
 	return;
 }
 
@@ -1016,7 +1029,7 @@ static int do_cmd_squelch_egos(void)
 			 * that ego-items can only be of one kind of item.
 			 */
 			typeval = tv_to_type[tval];
-			for (j = 0; j < NUM_TYPEVAL_TO_EGO; j++)
+			for (j = 0; j < (int)N_ELEMENTS(typevals_to_ego); j++)
 			{
 				if (typevals_to_ego[j].tval == typeval)
 					tval_name = typevals_to_ego[j].desc;
@@ -1484,7 +1497,7 @@ static int do_cmd_squelch_aux(void)
 	Term_clear();
 
 	/* Print all typevals and their descriptions */
-	for (num = 0; (num < 60) && ((unsigned)num < NUM_TYPEVALS); num++)
+	for (num = 0; (num < 60) && (num < (int)N_ELEMENTS(typevals)); num++)
 	{
 		row = 3 + (num % 20);
 		col = 30 * (num / 20);
@@ -1544,7 +1557,7 @@ static int do_cmd_squelch_aux(void)
 		num = A2I(ch);
 
 		/* Bail out if choice is illegal */
-		if ((num < 0) || ((unsigned)num >= NUM_TYPEVALS)) return (0);
+		if ((num < 0) || (num >= (int)N_ELEMENTS(typevals))) return (0);
 		else
 		{
 			if (do_cmd_squelch_type(num) == -1)
@@ -1635,9 +1648,9 @@ void squelch_init(void)
 	menu_set_id(&squelch_q_menu, 'qsql');
 	menu_init(&squelch_q_menu, MN_SCROLL, MN_ACT, NULL);
 
-
 	squelch_q_items.title = "Secondary Squelching Menu";
-	squelch_q_items.count = N_ELEMENTS(tvals) -1;
+	squelch_q_items.count = N_ELEMENTS(tvals) - 1;
+
 	/* squelch_q_items.menu_data = tvals; -- not used */
 	menu_init2(&squelch_q_items, find_menu_skin(MN_SCROLL), &tval_iter, NULL);
 

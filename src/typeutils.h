@@ -8,7 +8,7 @@ typedef enum type_val {
 	T_INT,
 	T_FLOAT,
 	T_CHAR,
-	T_STRING,
+	T_STRING
 } type_val;
 
 struct type_union
@@ -27,7 +27,7 @@ extern type_union f2u(float f);
 extern type_union c2u(char c);
 extern type_union s2u(const char *s);
 
-static const type_union END = { T_END };
+static const type_union END = { T_END, { 0 } };
 
 /* 
  * Helper classes for the display of typed data

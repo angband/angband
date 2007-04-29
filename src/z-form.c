@@ -225,7 +225,8 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 	/* Scan the format string */
 	while (TRUE)
 	{
-		type_union tval = { T_END };
+		type_union tval = END;
+
 		/* All done */
 		if (!*s) break;
 
