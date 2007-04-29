@@ -135,6 +135,12 @@ struct panel_type {
 
 /* ================== MENUS ================= */
 
+/* RISC OS already has a menu_item and menu_flags in system library */
+#ifdef RISCOS
+#define menu_item ang_menu_item
+#define menu_flags ang_menu_flags
+#endif
+
 typedef struct event_action event_action;
 typedef struct menu_item menu_item;
 typedef struct menu_type menu_type;

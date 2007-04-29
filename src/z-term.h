@@ -83,6 +83,9 @@ typedef enum
 	EVT_STOP		= 0x8000000		/* Loop stopped (never handled) */
 } event_class;
 
+#ifdef RISCOS
+#define event_type ang_event_type
+#endif
 
 typedef struct event_type event_type;
 

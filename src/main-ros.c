@@ -289,6 +289,10 @@
 extern void core(cptr str);
 #endif
 
+/* V, post3.0.7, has conflicting types for these we have to #define around */
+#undef event_type
+#undef menu_flags
+#undef menu_item
 
 /* Constants, etc. ---------------------------------------------------------*/
 
@@ -3164,7 +3168,37 @@ static void set_up_term_menu(term_data *t)
  */
 static BOOL Hnd_Click(event_pollblock * pb, void *ref)
 {
-	if (pb->data.mouse.button.data.dragselect ||
+
+  if (pb->data.mouse.window == data[0].w)
+  {
+    if (pb->data.mouse.button.data.select)
+    {
+	int fw, fh;
+        int xpos, ypos;
+        wimp_point clickpoint = pb->data.mouse.pos;
+        convert_block convert;
+
+	set_up_zrb(&data[0]);
+
+	fw = zrb.r_charw << screen_eig.x;
+	fh = zrb.r_charh << screen_eig.y;
+	if (zrb.r_flags.bits.double_height)
+	{
+		fh *= 2;
+	}
+
+        /* SO fw & fh are in OS units here */
+        Window_GetCoords(data[0].w, &convert);
+        Coord_PointToWorkArea(&clickpoint, &convert);
+
+        xpos = clickpoint.x / fw;
+        ypos = -clickpoint.y / fh;
+
+        Term_mousepress(xpos, ypos, 1);
+        key_pressed = 1;
+    }
+  }
+  else if (pb->data.mouse.button.data.dragselect ||
 		pb->data.mouse.button.data.dragadjust)
 	{
 		drag_block b;
