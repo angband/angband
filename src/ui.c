@@ -1081,3 +1081,5 @@ void menu_destroy(menu_type *menu)
 {
 	if (menu->object_list) FREE((void *)menu->object_list);
 }
+
+

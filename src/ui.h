@@ -366,6 +366,5 @@ void add_menu_skin(const menu_skin *skin, skin_id id);
 void add_menu_iter(const menu_iter *skin, menu_iter_id id);
 
 
-
 #endif /* UI_H */
 

@@ -11,6 +11,7 @@
 /* Purpose: Low level text formatting -BEN- */
 
 #include "z-form.h"
+#include "typeutils.h"
 
 #include "z-util.h"
 #include "z-virt.h"
@@ -105,6 +106,11 @@
  *   Do not use the "+" or "0" flags.
  *   Note that a "NULL" value of "s" is converted to the empty string.
  *
+ * Format("%y", type_union *y). Use any of the above patterns; 
+ * z is interpreted as one of c, d, f, or s in the patterns above,
+ * as appropriate for the type of the corresponding argument.
+ * (There is currently no way to render a typeunion in octal or hex.)
+ * 
  * For examples below, assume "int n = 0; int m = 100; char buf[100];",
  * plus "char *s = NULL;", and unknown values "char *txt; int i;".
  *
@@ -127,8 +133,6 @@
  * the first "i" characters of "txt", left justified, with the first non-space
  * character capitilized, if reasonable.
  */
-
-
 
 
 /*
@@ -221,6 +225,7 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 	/* Scan the format string */
 	while (TRUE)
 	{
+		type_union tval = { T_END };
 		/* All done */
 		if (!*s) break;
 
@@ -391,7 +396,28 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 		/* Clear "tmp" */
 		tmp[0] = '\0';
 
-		/* Process the "format" char */
+		/* Parse a type_union */
+		if (aux[q-1]== 'y')
+		{
+			tval = va_arg(vp, type_union);
+			if(do_long) {
+				/* Error -- illegal type_union argument */
+				buf[0] = '\0';
+				/* Return "error" */
+				return (0);
+			}
+			/* replace aux terminator with proper printf char */
+			if(tval.t == T_CHAR) aux[q-1] = 'c';
+			else if(tval.t == T_INT) aux[q-1] = 'd';
+			else if(tval.t == T_FLOAT) aux[q-1] = 'f';
+			else if(tval.t == T_STRING) aux[q-1] = 's';
+			else
+			{ 
+				buf[0] = '\0';
+				return (0);
+			}
+		}
+		/* Process the "format" symbol */
 		switch (aux[q-1])
 		{
 			/* Simple Character -- standard format */
@@ -400,7 +426,7 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 				int arg;
 
 				/* Get the next argument */
-				arg = va_arg(vp, int);
+				arg = tval.t == T_END ? va_arg(vp, int) : tval.u.c;
 
 				/* Format the argument */
 				sprintf(tmp, aux, arg);
@@ -427,7 +453,7 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 					int arg;
 
 					/* Get the next argument */
-					arg = va_arg(vp, int);
+					arg = tval.t == T_END ? va_arg(vp, int) : tval.u.i;
 
 					/* Format the argument */
 					sprintf(tmp, aux, arg);
@@ -473,7 +499,7 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 				double arg;
 
 				/* Get the next argument */
-				arg = va_arg(vp, double);
+				arg = tval.t == T_END ? va_arg(vp, double) : tval.u.f;
 
 				/* Format the argument */
 				sprintf(tmp, aux, arg);
@@ -504,7 +530,7 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 				char arg2[1024];
 
 				/* Get the next argument */
-				arg = va_arg(vp, cptr);
+				arg = tval.t == T_END ? va_arg(vp, cptr) : tval.u.s;
 
 				/* Hack -- convert NULL to EMPTY */
 				if (!arg) arg = "";
@@ -654,7 +680,7 @@ size_t strnfmt(char *buf, size_t max, cptr fmt, ...)
 	/* Begin the Varargs Stuff */
 	va_start(vp, fmt);
 
-	/* Do a virtual fprintf to stderr */
+	/* Do the va_arg fmt to the buffer */
 	len = vstrnfmt(buf, max, fmt, vp);
 
 	/* End the Varargs Stuff */

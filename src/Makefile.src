@@ -6,7 +6,7 @@
 #
 
 HDRS = h-basic.h h-config.h
-INCS = angband.h config.h defines.h types.h externs.h \
+INCS = angband.h config.h defines.h externs.h types.h typeutils.h \
        z-term.h z-rand.h z-util.h z-virt.h z-form.h
 
 HEADERS = $(HDRS) $(INCS)
@@ -46,6 +46,7 @@ ANGFILES = \
 	squelch \
 	store \
 	tables \
+	typeutils \
 	ui \
 	use-obj  \
 	util  \

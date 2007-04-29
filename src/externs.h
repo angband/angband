@@ -679,6 +679,10 @@ extern void store_shuffle(int which);
 extern void store_maint(int which);
 extern void store_init(void);
 
+/* typeutils.c */
+void display_panel(const data_panel *panel, int count,
+					bool left_adj, const region *bounds);
+
 /* util.c */
 extern void text_to_ascii(char *buf, size_t len, cptr str);
 extern void ascii_to_text(char *buf, size_t len, cptr str);
