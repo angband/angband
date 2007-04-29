@@ -39,7 +39,6 @@ static unsigned int scr_places_y[LOC_MAX];
 /* State flags */
 #define STORE_GOLD_CHANGE      0x01
 #define STORE_FRAME_CHANGE     0x02
-#define STORE_INVEN            0x10
 
 /* Compound flag for the initial display of a store */
 #define STORE_INIT_CHANGE		(STORE_FRAME_CHANGE | STORE_GOLD_CHANGE)
@@ -1008,18 +1007,18 @@ static void store_delete_item(int st)
 			case TV_ARROW:
 			case TV_BOLT:
 			{
-				int cur_num;
+				int cur_num = num;
 
 				/* Sometimes take things to the nearest increment of 5 */
 				if (rand_int(100) < 50) break;
 
 				/* Keep things to increments of 5 */
-				/* `num` is number of items to remove */
-				cur_num -= (cur_num % 5);
-				num = (num - cur_num);
-
-				/* No change */
-				if (num == 0)
+				if (num % 5)
+				{
+					/* `num` is number of items to remove */
+					num = num % 5;
+				}
+				else
 				{
 					/* Maybe decrement some more */
 					if (rand_int(100) < 75) break;
@@ -1587,103 +1586,6 @@ static s16b store_to_label(int i)
 }
 
 
-static struct sell_objs
-{
-	object_type *o_ptr;
-	int index;
-} sellable[INVEN_TOTAL];
-
-static int sellable_total;
-
-void inven_compile_list(void)
-{
-	object_type *o_ptr;
-	int i, sell_idx = 0;
-
-	/* Wipe the sellable array */
-	C_WIPE(&sellable, INVEN_TOTAL, struct sell_objs);
-
-	/* Go over all the inventory items */
-	for (i = 0; i < INVEN_TOTAL; i++)
-	{
-		/* Get a copy of the item */
-		o_ptr = &inventory[i];
-
-		/* Forget (nothing)s */
-		if (!o_ptr->k_idx)
-			continue;
-
-		/* Make sure the store will buy this kind of object */
-		if (!store_will_buy(store_current, o_ptr))
-			continue;
-
-		/* Check it's not cursed */
-		if ((i >= INVEN_WIELD) && cursed_p(o_ptr))
-			continue;
-
-		/* Add to list */
-		sellable[sell_idx].o_ptr = o_ptr;
-		sellable[sell_idx].index = i;
-		sell_idx++;
-	}
-
-	/* Keep track of the total */
-	sellable_total = sell_idx;
-
-	return;
-}
-
-/*
- * Display a single invenory entry
- */
-static void inven_display_entry(menu_type *menu, int oid, bool cursor, int row, int col, int width)
-{
-	object_type *o_ptr;
-	s32b x;
-
-	char o_name[80];
-	char out_val[160];
-	int max_cost = store_owner(store_current)->max_cost;
-
-	(void)menu;
-	(void)cursor;
-	(void)width;
-
-	/* Get the object */
-	o_ptr = sellable[oid].o_ptr;
-
-	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
-
-	/* Display the object */
-	c_put_str(tval_to_attr[o_ptr->tval & 0x7F], o_name, row, col);
-
-	/* Show weights */
-	strnfmt(out_val, sizeof out_val, "%3d.%d lb", o_ptr->weight / 10, o_ptr->weight % 10);
-	put_str(out_val, row, scr_places_x[LOC_WEIGHT]);
-
-	/* Describe an object (fully) in a store */
-	if (store_current != STORE_HOME)
-	{
-		/* Extract the "minimum" price */
-		x = price_item(o_ptr, TRUE);
-
-		/* Cap at store limit */
-		if (x > max_cost) x = max_cost;
-
-		/* Actually draw the price */
-		if (((o_ptr->tval == TV_WAND) || (o_ptr->tval == TV_STAFF)) &&
-		    (o_ptr->number > 1))
-			strnfmt(out_val, sizeof out_val, "%9ld avg", (long)x);
-		else
-			strnfmt(out_val, sizeof out_val, "%9ld    ", (long)x);
-
-		c_put_str(TERM_WHITE, out_val, row, scr_places_x[LOC_PRICE]);
-	}
-}
-
-
-
 
 /*
  * Redisplay a single store entry
@@ -1759,10 +1661,7 @@ static void store_display_frame(void)
 		put_str("Your Home", scr_places_y[LOC_OWNER], 1);
 
 		/* Label the object descriptions */
-		if (store_flags & STORE_INVEN)
-			put_str("Your Inventory", scr_places_y[LOC_HEADER], 1);
-		else
-			put_str("Home Inventory", scr_places_y[LOC_HEADER], 1);
+		put_str("Home Inventory", scr_places_y[LOC_HEADER], 1);
 
 		/* Show weight header */
 		put_str("Weight", 5, scr_places_x[LOC_WEIGHT] + 2);
@@ -1784,10 +1683,7 @@ static void store_display_frame(void)
 		prt(buf, scr_places_y[LOC_OWNER], scr_places_x[LOC_OWNER] - strlen(buf));
 
 		/* Label the object descriptions */
-		if (store_flags & STORE_INVEN)
-			put_str("Your Inventory", scr_places_y[LOC_HEADER], 1);
-		else
-			put_str("Store Inventory", scr_places_y[LOC_HEADER], 1);
+		put_str("Store Inventory", scr_places_y[LOC_HEADER], 1);
 
 		/* Showing weight label */
 		put_str("Weight", scr_places_y[LOC_HEADER], scr_places_x[LOC_WEIGHT] + 2);
@@ -1799,7 +1695,7 @@ static void store_display_frame(void)
 
 
 /*
- * Display help (or not).
+ * Display help.
  */
 static void store_display_help(void)
 {
@@ -1815,62 +1711,22 @@ static void store_display_help(void)
 
 	text_out("Use the ");
 	text_out_c(TERM_L_GREEN, "movement keys");
-	text_out(" to navigate ");
-
-	if (store_flags & STORE_INVEN)
-		text_out("your");
-	else
-		text_out("the store's");
-
-	text_out(" inventory, or '");
-	text_out_c(TERM_L_GREEN, "space");
-	text_out("' to advance to the next page; '");
-	
+	text_out(" to navigate, or ");
+	text_out_c(TERM_L_GREEN, "Space");
+	text_out(" to advance to the next page. '");
 
 	if (rogue_like_commands)
 		text_out_c(TERM_L_GREEN, "x");
 	else
-	{
-		if (store_flags & STORE_INVEN)
-			text_out_c(TERM_L_GREEN, "I");
-		else
-			text_out_c(TERM_L_GREEN, "l");
-	}
+		text_out_c(TERM_L_GREEN, "l");
 
-	text_out("' to examine an item, or '");
-
+	text_out("' examines and ");
 	text_out_c(TERM_L_GREEN, "Enter");
-	text_out("' to ");
 
-	if (store_flags & STORE_INVEN)
-		text_out("sell");
-	else
-		text_out("obtain");
+	if (store_current == STORE_HOME) text_out(" picks up");
+	else text_out(" purchases");
 
-	text_out(" an item.  If you want to ");
-
-	if (store_flags & STORE_INVEN)
-	{
-		if (store_current == STORE_HOME) text_out("pick up");
-		else text_out("purchase");
-	}
-	else
-	{
-		if (store_current == STORE_HOME) text_out("deposit");
-		else text_out("sell");
-	}
-
-	text_out(" items, press '");
-
-	text_out_c(TERM_L_GREEN, "TAB");
-	text_out("' or '");
-
-	if (store_flags & STORE_INVEN)
-		text_out_c(TERM_L_GREEN, "p");
-	else
-		text_out_c(TERM_L_GREEN, "s");
-
-	text_out("'.  ");
+	text_out(" the selected item.  ");
 
 	text_out_c(TERM_L_GREEN, "ESC");
 	text_out(" exits the building.");
@@ -2138,12 +1994,23 @@ static bool store_purchase(int item)
 }
 
 
+
+/*
+ * Determine if the current store will purchase the given object
+ */
+static bool store_will_buy_tester(const object_type *o_ptr)
+{
+	return store_will_buy(store_current, o_ptr);
+}
+
+
 /*
  * Sell an object, or drop if it we're in the home.
  */
-static void store_sell(int item)
+static void store_sell(void)
 {
 	int amt;
+	int item;
 
 	object_type *o_ptr;
 	object_type *i_ptr;
@@ -2151,27 +2018,40 @@ static void store_sell(int item)
 
 	char o_name[120];
 
-	if(item < 0 || item >= sellable_total) return;
 
-	o_ptr = sellable[item].o_ptr;
-	item = sellable[item].index;
+	const char *reject = "You have nothing that I want ";
+	const char *prompt = "Sell which item? ";
 
-	/* Clear all current messages */
-	msg_flag = FALSE;
-	prt("", 0, 0);
+	if (store_current == STORE_HOME)
+		prompt = "Drop which item? ";
+	else
+		item_tester_hook = store_will_buy_tester;
+
+	/* Get an item */
+	if (!get_item(&item, prompt, reject, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return;
+
+	/* Get the item (in the pack) */
+	if (item >= 0)
+		o_ptr = &inventory[item];
+ 	else
+		o_ptr = &o_list[0 - item];
+
+	/* Hack -- Cannot remove cursed objects */
+	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
+	{
+		/* Oops */
+		msg_print("Hmmm, it seems to be cursed.");
+
+		/* Nope */
+		return;
+	}
 
 	/* Get a quantity */
-	if (store_current == STORE_HOME)
-	{
-		amt = 1;
-	}
-	else
-	{
-		amt = get_quantity(NULL, o_ptr->number);
+	amt = get_quantity(NULL, o_ptr->number);
 
-		/* Allow user abort */
-		if (amt <= 0) return;
-	}
+	/* Allow user abort */
+	if (amt <= 0) return;
+
 
 	/* Get local object */
 	i_ptr = &object_type_body;
@@ -2449,6 +2329,13 @@ static bool store_process_command(char cmd, void *db, int oid)
 			break;
 		}
 
+		/* Sell */
+		case 's':
+		{
+			store_sell();
+			return TRUE;
+		}
+
 		/* Buy */
 		case '\xff':
 		case '\n':
@@ -2610,182 +2497,6 @@ static bool store_process_command(char cmd, void *db, int oid)
 }
 
 
-/*
- * Process a command in a store
- *
- * Note that we must allow the use of a few "special" commands in the stores
- * which are not allowed in the dungeon, and we must disable some commands
- * which are allowed in the dungeon but not in the stores, to prevent chaos.
- */
-static bool inven_process_command(char cmd, void *db, int oid)
-{
-	(void)db;
-
-	/* Parse the command */
-	switch (cmd)
-	{
-		/* Leave */
-		case ESCAPE:
-		{
-			return TRUE;
-			break;
-		}
-
-		/* Sell */
-		case '\xff':
-		case '\n':
-		case '\r':
-		case 's':
-		case 'd':
-		{
-			store_sell(oid);
-			break;
-		}
-
-		/* Examine */
-		case 'l':
-		case 'I':
-		{
-			do_cmd_observe();
-			break;
-		}
-
-
-		/* Redraw */
-		case KTRL('R'):
-		{
-			Term_clear();
-			store_flags |= (STORE_FRAME_CHANGE | STORE_GOLD_CHANGE);
-			return TRUE;
-
-			break;
-		}
-
-
-
-		/*** Inventory Commands ***/
-
-		/* Wear/wield equipment */
-		case 'w':
-		{
-			do_cmd_wield();
-			break;
-		}
-
-		/* Take off equipment */
-		case 't':
-		{
-			do_cmd_takeoff();
-			break;
-		}
-
-		/* Destroy an item */
-		case 'k':
-		{
-			do_cmd_destroy();
-			break;
-		}
-
-		/* Equipment list */
-		case 'e':
-		{
-			do_cmd_equip();
-			break;
-		}
-
-		/* Inventory list */
-		case 'i':
-		{
-			do_cmd_inven();
-			break;
-		}
-
-
-		/*** Various commands ***/
-
-
-		/* Hack -- toggle windows */
-		case KTRL('E'):
-		{
-			toggle_inven_equip();
-			break;
-		}
-
-
-
-		/*** Use various objects ***/
-
-		/* Browse a book */
-		case 'b':
-		{
-			do_cmd_browse();
-			break;
-		}
-
-		/* Inscribe an object */
-		case '{':
-		{
-			do_cmd_inscribe();
-			break;
-		}
-
-		/* Uninscribe an object */
-		case '}':
-		{
-			do_cmd_uninscribe();
-			break;
-		}
-
-
-		/*** Help and Such ***/
-
-		/* Character description */
-		case 'C':
-		{
-			do_cmd_change_name();
-			break;
-		}
-
-
-		/*** System Commands ***/
-
-		/* Interact with options */
-		case '=':
-		{
-			do_cmd_options();
-			break;
-		}
-
-
-		/*** Misc Commands ***/
-
-		/* Show previous messages */
-		case KTRL('P'):
-		{
-			do_cmd_messages();
-			break;
-		}
-
-		/* Check knowledge */
-		case '~':
-		case '|':
-		{
-			do_cmd_knowledge();
-			break;
-		}
-
-		/* Save "screen dump" */
-		case ')':
-		{
-			do_cmd_save_screen();
-			break;
-		}
-	}
-
-	return TRUE;
-}
-
-
 
 /*
  * Enter a store, and interact with it.
@@ -2847,8 +2558,6 @@ void do_cmd_store(void)
 
 	static region items_region = { 1, 4, -1, -1 };
 	static const menu_iter store_menu = { 0, 0, 0, store_display_entry, store_process_command };
-	static const menu_iter inven_menu = { 0, 0, 0, inven_display_entry, inven_process_command };
-
 	const menu_iter *cur_menu = &store_menu;
 
 	menu_type menu;
@@ -2859,7 +2568,7 @@ void do_cmd_store(void)
 
 	/* Wipe the menu and set it up */
 	WIPE(&menu, menu);
-	menu.flags = MN_DBL_TAP;
+	menu.flags = MN_DBL_TAP | MN_PAGE;
 
 	/* Calculate the positions of things and redraw */
 	store_display_recalc();
@@ -2872,31 +2581,27 @@ void do_cmd_store(void)
 	/* Loop */
 	while (!leave)
 	{
-		/* Set various counts */
-		if (cur_menu == &store_menu)
-		{
-			menu.count = st_ptr->stock_num;
-
-			/* These two can't intersect! */
-			menu.cmd_keys = "\n\x010\r\t?=CdeEiIls"; /* \x10 = ^p */
-			menu.selections = "abcfghjkmnopqrtuvxyz1234567890";
-		}
-		else
-		{
-			inven_compile_list();
-			menu.count = sellable_total;
-
-			/* These two can't intersect! */
-			menu.cmd_keys = "\t\n\x010\r{}gIepw";
-			menu.selections = "abcfhijklmnoqrstuvxyz1234567890ABCDEFGHIJKL";
-		}
-		menu.flags |= MN_PAGE;
-		if(cursor >= menu.count) cursor = menu.count -1;
-
+		/* Keep track of stock and number of rows */
+		menu.count = st_ptr->stock_num;
 		items_region.page_rows = scr_places_y[LOC_ITEMS_END] - scr_places_y[LOC_ITEMS_START] + 1;
+
+		/* These two can't intersect! */
+		menu.cmd_keys = "\n\x010\r?=CdeEiIls"; /* \x10 = ^p */
+		menu.selections = "abcfghjkmnopqrtuvxyz1234567890";
+
+		/* Keep the cursor in range of the stock */
+		if (cursor >= menu.count)
+			cursor = menu.count - 1;
+
+		if (menu.count >= menu.active.page_rows)
+			items_region.page_rows += 1;
+
+		/* Init the menu structure */
 		menu_init2(&menu, find_menu_skin(MN_SCROLL), cur_menu, &items_region);
-		if(menu.count >= menu.active.page_rows) {
-			menu.prompt = "--more--";
+
+		if (menu.count >= menu.active.page_rows)
+		{
+			menu.prompt = "  -more-";
 			menu_layout(&menu, &menu.boundary);
 		}
 
@@ -2915,24 +2620,6 @@ void do_cmd_store(void)
 		}
 		else
 		{
-			if (evt.key == '\t' || evt.key == 's' || evt.key == 'p')
-			{
-				if (cur_menu == &store_menu)
-				{
-					cur_menu = &inven_menu;
-					store_flags |= (STORE_INVEN);
-				}
-				else
-				{
-					cur_menu = &store_menu;
-					store_flags &= ~(STORE_INVEN);
-				}
-
-				store_flags |= (STORE_FRAME_CHANGE);
-
-				cursor = 0;
-			}
-
 			/* Display the store */
 			store_redraw();
 
