@@ -1237,7 +1237,7 @@ static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 	{ "Chaos",	2, TR2_RES_CHAOS,	0 },
 	{ "Disen",	2, TR2_RES_DISEN,	0 },
 
-	{ "S.Dig",	3, TR3_SLOW_DIGEST, 0 },
+	{ "S.Dig",	3, TR3_SLOW_DIGEST,	0 },
 	{ "Feath",	3, TR3_FEATHER, 	0 },
 	{ "PLite",	3, TR3_LITE, 		0 },
 	{ "Regen",	3, TR3_REGEN, 		0 },
@@ -1606,14 +1606,14 @@ int get_panel(int oid, data_panel *panel, size_t size)
   {
 	data_panel panel1[] =
 	{
-		{ TERM_L_BLUE, "Name",	"%y",	 { s2u(op_ptr->full_name)  }},
-		{ TERM_L_BLUE, "Sex",	"%y",	 { s2u(sp_ptr->title)  }},
-		{ TERM_L_BLUE, "Race",	"%y",	 { s2u(p_name + rp_ptr->name)  }},
-		{ TERM_L_BLUE, "Class",	"%y",	 { s2u(c_name + cp_ptr->name)  }},
-		{ TERM_L_BLUE, "Title",	"%y",	 { s2u(show_title())  }},
+		{ TERM_L_BLUE, "Name",	"%y",	 { s2u(op_ptr->full_name) , END  }},
+		{ TERM_L_BLUE, "Sex",	"%y",	 { s2u(sp_ptr->title) , END  }},
+		{ TERM_L_BLUE, "Race",	"%y",	 { s2u(p_name + rp_ptr->name), END  }},
+		{ TERM_L_BLUE, "Class",	"%y",	 { s2u(c_name + cp_ptr->name), END  }},
+		{ TERM_L_BLUE, "Title",	"%y",	 { s2u(show_title()), END  }},
 		{ TERM_L_BLUE, "HP",	"%y/%y", { i2u(p_ptr->mhp), i2u(p_ptr->chp)  }},
 		{ TERM_L_BLUE, "SP",	"%y/%y", { i2u(p_ptr->msp), i2u(p_ptr->csp)  }},
-		{ TERM_L_BLUE, "Level",	"%y",	 { i2u(p_ptr->lev)  }}
+		{ TERM_L_BLUE, "Level",	"%y",	 { i2u(p_ptr->lev), END  }}
 	};
 	assert(N_ELEMENTS(panel1) == boundaries[1].page_rows);
 	if (ret > N_ELEMENTS(panel1)) ret = N_ELEMENTS(panel1);
@@ -1624,14 +1624,14 @@ int get_panel(int oid, data_panel *panel, size_t size)
   {
 	data_panel panel2[] =
 	{
-		{ max_color(p_ptr->lev, p_ptr->max_lev), "Level", "%y",   { i2u(p_ptr->lev)  }},
-		{ max_color(p_ptr->exp, p_ptr->max_exp), "Cur Exp", "%y", { i2u(p_ptr->exp)  }},
-		{ TERM_L_GREEN, "Max Exp",	"%y",		{ i2u(p_ptr->max_exp)  }},
-		{ TERM_L_GREEN, "Adv Exp",	"%y",		{ s2u(show_adv_exp())  }},
-		{ TERM_L_GREEN,	"MaxDepth",	"%y",		{ s2u(show_depth())  }},
-		{ TERM_L_GREEN, "Gold",		"%y",		{ i2u(p_ptr->au)  }},
-		{ TERM_L_GREEN, "Burden",	"%.1y lbs",	{ f2u(p_ptr->total_weight/10.0)  }},
-		{ TERM_L_GREEN, "Speed",	"%y",		{ s2u(show_speed())  }}
+		{ max_color(p_ptr->lev, p_ptr->max_lev), "Level", "%y",   { i2u(p_ptr->lev), END  }},
+		{ max_color(p_ptr->exp, p_ptr->max_exp), "Cur Exp", "%y", { i2u(p_ptr->exp), END  }},
+		{ TERM_L_GREEN, "Max Exp",	"%y",		{ i2u(p_ptr->max_exp), END  }},
+		{ TERM_L_GREEN, "Adv Exp",	"%y",		{ s2u(show_adv_exp()), END  }},
+		{ TERM_L_GREEN,	"MaxDepth",	"%y",		{ s2u(show_depth()), END  }},
+		{ TERM_L_GREEN, "Gold",		"%y",		{ i2u(p_ptr->au), END  }},
+		{ TERM_L_GREEN, "Burden",	"%.1y lbs",	{ f2u(p_ptr->total_weight/10.0), END  }},
+		{ TERM_L_GREEN, "Speed",	"%y",		{ s2u(show_speed()), END  }}
 	};
 	assert(N_ELEMENTS(panel2) == boundaries[2].page_rows);
 	if (ret > N_ELEMENTS(panel2)) ret = N_ELEMENTS(panel2);
@@ -1644,12 +1644,12 @@ int get_panel(int oid, data_panel *panel, size_t size)
 	{
 		{ TERM_L_BLUE, "Armor", "[%y,%+y]",		{ i2u(p_ptr->dis_ac), i2u(p_ptr->dis_to_a)  }},
 		{ TERM_L_BLUE, "Fight", "(%+y,%+y)",	{ i2u(p_ptr->dis_to_h), i2u(p_ptr->dis_to_d)  }},
-		{ TERM_L_BLUE, "Melee", "%y",			{ s2u(show_weapon(&inventory[INVEN_WIELD]))  }},
-		{ TERM_L_BLUE, "Shoot", "%y",			{ s2u(show_weapon(&inventory[INVEN_BOW]))  }},
-		{ TERM_L_BLUE, "Blows", "%y/turn",		{ i2u(p_ptr->num_blow)  }},
-		{ TERM_L_BLUE, "Shots", "%y/turn",		{ i2u(p_ptr->num_fire)  }},
+		{ TERM_L_BLUE, "Melee", "%y",			{ s2u(show_weapon(&inventory[INVEN_WIELD])), END  }},
+		{ TERM_L_BLUE, "Shoot", "%y",			{ s2u(show_weapon(&inventory[INVEN_BOW])), END  }},
+		{ TERM_L_BLUE, "Blows", "%y/turn",		{ i2u(p_ptr->num_blow), END  }},
+		{ TERM_L_BLUE, "Shots", "%y/turn",		{ i2u(p_ptr->num_fire), END  }},
 		{ 0, 0, 0, {END} },
-		{ TERM_L_BLUE, "Infra", "%y ft",		{ i2u(p_ptr->see_infra * 10)  }}
+		{ TERM_L_BLUE, "Infra", "%y ft",		{ i2u(p_ptr->see_infra * 10), END  }}
 	};
 	assert(N_ELEMENTS(panel3) == boundaries[3].page_rows);
 	if (ret > N_ELEMENTS(panel3)) ret = N_ELEMENTS(panel3);
@@ -1689,11 +1689,11 @@ int get_panel(int oid, data_panel *panel, size_t size)
   {
 	data_panel panel5[] =
 	{
-		{TERM_L_BLUE, "Age",		"%y",	{ i2u(p_ptr->age)  }},
-		{TERM_L_BLUE, "Height",		"%y",	{ i2u(p_ptr->ht)  }},
-		{TERM_L_BLUE, "Weight",		"%y",	{ i2u(p_ptr->wt)  }},
-		{TERM_L_BLUE, "Status",		"%y",	{ i2u(p_ptr->sc)  }},
-		{TERM_L_BLUE, "Maximize",	"%y",	{ c2u(adult_maximize ? 'Y' : 'N')  }}
+		{TERM_L_BLUE, "Age",		"%y",	{ i2u(p_ptr->age), END  }},
+		{TERM_L_BLUE, "Height",		"%y",	{ i2u(p_ptr->ht), END  }},
+		{TERM_L_BLUE, "Weight",		"%y",	{ i2u(p_ptr->wt), END  }},
+		{TERM_L_BLUE, "Status",		"%y",	{ i2u(p_ptr->sc), END  }},
+		{TERM_L_BLUE, "Maximize",	"%y",	{ c2u(adult_maximize ? 'Y' : 'N'), END  }}
 	};
 	assert(N_ELEMENTS(panel5) == boundaries[5].page_rows);
 	if (ret > N_ELEMENTS(panel5)) ret = N_ELEMENTS(panel5);
