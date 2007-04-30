@@ -1256,13 +1256,13 @@ static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 	{ "Might",	1, TR1_MIGHT,		0 },
 };
 
-#define RES_COLS (5 + 1 + INVEN_TOTAL - INVEN_WIELD)
+#define RES_COLS (5 + 2 + INVEN_TOTAL - INVEN_WIELD)
 static const region resist_region[] =
 {
-	{ 2 + 0*(RES_COLS+1), 11, RES_COLS, RES_ROWS+2 },
-	{ 2 + 1*(RES_COLS+1), 11, RES_COLS, RES_ROWS+2 },
-	{ 2 + 2*(RES_COLS+1), 11, RES_COLS, RES_ROWS+2 },
-	{ 2 + 3*(RES_COLS+1), 11, RES_COLS, RES_ROWS+2 },
+	{  0*(RES_COLS+1), 11, RES_COLS, RES_ROWS+2 },
+	{  1*(RES_COLS+1), 11, RES_COLS, RES_ROWS+2 },
+	{  2*(RES_COLS+1), 11, RES_COLS, RES_ROWS+2 },
+	{  3*(RES_COLS+1), 11, RES_COLS, RES_ROWS+2 },
 };
 
 static void display_resistance_panel(const struct player_flag_record *resists,
@@ -1271,27 +1271,34 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 	int i, j;
 	int col = bounds->col;
 	int row = bounds->row;
-	Term_putstr(col, row++, RES_COLS, TERM_WHITE, "     abcdefghijkl@");
+	Term_putstr(col, row++, RES_COLS, TERM_WHITE, "      abcdefghijkl@");
 	for (i = 0; i < size-3; i++, row++)
 	{
-		Term_putstr(col, row, 6, TERM_WHITE, format("%5s:", resists[i].name));
-
+		byte name_attr = TERM_WHITE;
+		Term_gotoxy(col+6, row);
 		/* repeated extraction of flags is inefficient but more natural */
-		for (j = INVEN_WIELD; j < INVEN_TOTAL; j++)
+		for (j = INVEN_WIELD; j <= INVEN_TOTAL; j++)
 		{
 			object_type *o_ptr = &inventory[j];
 			byte attr = TERM_WHITE | (j % 2) * 8; /* alternating columns */
 			u32b f[4] = {0, 0, 0, 0};
 			bool res, imm;
 			char sym;
-			object_flags_known(o_ptr, &f[1], &f[2], &f[3]);
+			if(j < INVEN_TOTAL)
+				object_flags_known(o_ptr, &f[1], &f[2], &f[3]);
+			else
+				player_flags(&f[1], &f[2], &f[3]);
+
 			res = (0 != (f[resists[i].set] & resists[i].res_flag));
 			imm = (0 != (f[resists[i].set] & resists[i].im_flag));
+			if(imm) name_attr = TERM_GREEN;
+			else if(res && name_attr == TERM_WHITE) name_attr = TERM_L_BLUE;
 			sym = imm ? '*' : ( res ? '+' : '.' );
 			Term_addch(attr, sym);
 		}
+		Term_putstr(col, row, 6, name_attr, format("%5s:", resists[i].name));
 	}
-	Term_putstr(col, row++, RES_COLS, TERM_WHITE, "     abcdefghijkl@");
+	Term_putstr(col, row++, RES_COLS, TERM_WHITE, "      abcdefghijkl@");
 	/* Equippy */
 	display_player_equippy(row++, col+6);
 }
