@@ -4589,7 +4589,7 @@ void html_screenshot(cptr name, int mode)
 
 	if(mode == 0) {
 		/* Close the last <font> tag if necessary */
-		if (a != TERM_WHITE) fprintf(htm, "</font>");
+		if (oa != TERM_WHITE) fprintf(htm, "</font>");
 
 		fprintf(htm, "</tt></pre>\n");
 		fprintf(htm, "</body>\n");
@@ -4597,7 +4597,7 @@ void html_screenshot(cptr name, int mode)
 	}
 	else 
 	{
-		if (a != TERM_WHITE) fprintf(htm, "[/COLOR]");
+		if (oa != TERM_WHITE) fprintf(htm, "[/COLOR]");
 		fprintf(htm, "[/COLOR][/BC][/TT][/CODE]\n");
 	}
 
