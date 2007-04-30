@@ -4483,88 +4483,23 @@ static void write_html_escape_char(FILE *htm, char c)
 }
 
 
-/*
- * Get the default (ASCII) tile for a given screen location
- */
-static void get_default_tile(int row, int col, byte *a_def, char *c_def)
-{
-	byte a;
-	char c;
-
-	int wid, hgt;
-	int screen_wid, screen_hgt;
-
-	int x;
-	int y = row - ROW_MAP + Term->offset_y;
-
-	/* Retrieve current screen size */
-	Term_get_size(&wid, &hgt);
-
-	/* Calculate the size of dungeon map area (ignoring bigscreen) */
-	screen_wid = wid - (COL_MAP + 1);
-	screen_hgt = hgt - (ROW_MAP + 1);
-
-	/* Get the tile from the screen */
-	a = Term->scr->a[row][col];
-	c = Term->scr->c[row][col];
-
-	/* Skip bigtile placeholders */
-	if (use_bigtile && (a == 255) && (c == (char) -1))
-	{
-		/* Replace with "white space" */
-		a = TERM_WHITE;
-		c = ' ';
-	}
-	/* Convert the map display to the default characters */
-	else if (!character_icky &&
-	    ((col - COL_MAP) >= 0) && ((col - COL_MAP) < screen_wid) &&
-	    ((row - ROW_MAP) >= 0) && ((row - ROW_MAP) < screen_hgt))
-	{
-		/* Bigtile uses double-width tiles */
-		if (use_bigtile)
-			x = (col - COL_MAP) / 2 + Term->offset_x;
-		else
-			x = col - COL_MAP + Term->offset_x;
-
-		/* Convert dungeon map into default attr/chars */
-		if (in_bounds(y, x))
-		{
-			/* Retrieve attr/char.  Precondition: reset graphics, no prefs. */
-			map_info(y, x, &a, &c, 0, 0);
-		}
-		else
-		{
-			/* "Out of bounds" is empty */
-			a = TERM_WHITE;
-			c = ' ';
-		}
-
-		if (c == '\0') c = ' ';
-	}
-
-	/* Filter out remaining graphics */
-	if (a & 0xf0)
-	{
-		/* Replace with "white space" */
-		a = TERM_WHITE;
-		c = ' ';
-	}
-
-	/* Return the default tile */
-	*a_def = a;
-	*c_def = c;
-}
-
-
 /* Take an html screenshot */
-void html_screenshot(cptr name)
+void html_screenshot(cptr name, int mode)
 {
 	int y, x;
 	int wid, hgt;
 
-	byte a = 0;
+	byte a = TERM_WHITE;
 	byte oa = TERM_WHITE;
 	char c = ' ';
+
+	const char *new_color_fmt = (mode == 0) ?
+					"<font color=\"#%02X%02X%02X\">"
+				 	: "[color=\"#%02X%02X%02X\"]";
+	const char *change_color_fmt = (mode == 0) ?
+					"</font><font color=\"#%02X%02X%02X\">"
+					: "[/color][color=\"#%02X%02X%02X\"]";
+	const char *close_color_fmt = mode ==  0 ? "</font>" : "[/color]";
 
 	FILE *htm;
 
@@ -4589,31 +4524,38 @@ void html_screenshot(cptr name)
 	/* Retrieve current screen size */
 	Term_get_size(&wid, &hgt);
 
-	fprintf(htm, "<!DOCTYPE html>");
-	fprintf(htm, "<html\n");
-	fprintf(htm, "<head>\n");
-	fprintf(htm, "  <meta=\"generator\" content=\"%s %d.%d.%d\">\n",
-	             VERSION_NAME, VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
-	fprintf(htm, "  <title>%s</title>\n", name);
-	fprintf(htm, "</head>\n\n");
-	fprintf(htm, "<body text=\"#FFFFFF\" bgcolor=\"#000000\">\n");
-	fprintf(htm, "<pre><tt>\n");
+	if(mode == 0)
+	{
+		fprintf(htm, "<!DOCTYPE html>");
+		fprintf(htm, "<html\n");
+		fprintf(htm, "<head>\n");
+		fprintf(htm, "  <meta=\"generator\" content=\"%s %d.%d.%d\">\n",
+	            	VERSION_NAME, VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+		fprintf(htm, "  <title>%s</title>\n", name);
+		fprintf(htm, "</head>\n\n");
+		fprintf(htm, "<body text=\"#FFFFFF\" bgcolor=\"#000000\">\n");
+		fprintf(htm, "<pre><tt>\n");
+	}
+	else 
+	{
+		fprintf(htm, "[CODE][TT][BC=black][COLOR=white]\n");
+	}
 
 	/* Dump the screen */
 	for (y = 0; y < hgt; y++)
 	{
 		for (x = 0; x < wid; x++)
 		{
-			/* Get the ASCII tile */
-			get_default_tile(y, x, &a, &c);
+			/* Get the attr/char */
+			(void)(Term_what(x, y, &a, &c));
 
 			/* Color change */
-			if (oa != a)
+			if (oa != a && c != ' ')
 			{
 				/* From the default white to another color */
 				if (oa == TERM_WHITE)
 				{
-					fprintf(htm, "<font color=\"#%02X%02X%02X\">",
+					fprintf(htm, new_color_fmt,
 					        angband_color_table[a][1],
 					        angband_color_table[a][2],
 					        angband_color_table[a][3]);
@@ -4621,12 +4563,12 @@ void html_screenshot(cptr name)
 				/* From another color to the default white */
 				else if (a == TERM_WHITE)
 				{
-					fprintf(htm, "</font>");
+					fprintf(htm, close_color_fmt);
 				}
 				/* Change colors */
 				else
 				{
-					fprintf(htm, "</font><font color=\"#%02X%02X%02X\">",
+					fprintf(htm, change_color_fmt,
 					        angband_color_table[a][1],
 					        angband_color_table[a][2],
 					        angband_color_table[a][3]);
@@ -4637,21 +4579,28 @@ void html_screenshot(cptr name)
 			}
 
 			/* Write the character and escape special HTML characters */
-			write_html_escape_char(htm, c);
+			if(mode == 0) write_html_escape_char(htm, c);
+			else fprintf(htm, "%c", c);
 		}
 
 		/* End the row */
 		fprintf(htm, "\n");
 	}
 
-	/* Close the last <font> tag if necessary */
-	if (a != TERM_WHITE) fprintf(htm, "</font>");
+	if(mode == 0) {
+		/* Close the last <font> tag if necessary */
+		if (a != TERM_WHITE) fprintf(htm, "</font>");
 
-	fprintf(htm, "</tt></pre>\n");
+		fprintf(htm, "</tt></pre>\n");
+		fprintf(htm, "</body>\n");
+		fprintf(htm, "</html>\n");
+	}
+	else 
+	{
+		if (a != TERM_WHITE) fprintf(htm, "[/COLOR]");
+		fprintf(htm, "[/COLOR][/BC][/TT][/CODE]\n");
+	}
 
-	fprintf(htm, "</body>\n");
-	fprintf(htm, "</html>\n");
-
-	/* Close it */
-	my_fclose(htm);
+		/* Close it */
+		my_fclose(htm);
 }

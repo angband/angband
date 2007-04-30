@@ -3837,11 +3837,7 @@ void do_cmd_load_screen(void)
 	screen_load();
 }
 
-
-/*
- * Hack -- save a screen dump to a file
- */
-void do_cmd_save_screen(void)
+void do_cmd_save_screen_text(void)
 {
 	int y, x;
 
@@ -3933,7 +3929,7 @@ void do_cmd_save_screen(void)
 /*
  * Hack -- save a screen dump to a file in html format
  */
-void do_cmd_save_screen_html(void)
+void do_cmd_save_screen_html(int mode)
 {
 	int i;
 
@@ -3949,7 +3945,8 @@ void do_cmd_save_screen_html(void)
 	FILE_TYPE(FILE_TYPE_TEXT);
 
 	/* Ask for a file */
-	my_strcpy(tmp_val, "dump.html", sizeof(tmp_val));
+	if(mode == 0) my_strcpy(tmp_val, "dump.html", sizeof(tmp_val));
+	else my_strcpy(tmp_val, "dump.txt", sizeof(tmp_val));
 	if (!get_string("File: ", tmp_val, sizeof(tmp_val))) return;
 
 	/* Save current preferences */
@@ -3973,7 +3970,7 @@ void do_cmd_save_screen_html(void)
 	/* Dump the screen with raw character attributes */
 	reset_visuals(FALSE);
 	do_cmd_redraw();
-	html_screenshot(tmp_val);
+	html_screenshot(tmp_val, mode);
 
 	/* Recover current graphics settings */
 	reset_visuals(TRUE);
@@ -3983,6 +3980,26 @@ void do_cmd_save_screen_html(void)
 
 	msg_print("HTML screen dump saved.");
 	message_flush();
+}
+/*
+ * Hack -- save a screen dump to a file
+ */
+void do_cmd_save_screen(void)
+{
+	msg_print("Dump type [(t)ext; (h)tml; (f)orum embedded html]:");
+	for(;;) {
+		int c = inkey();
+		switch(c) {
+		case ESCAPE:
+			return;
+		case 't': do_cmd_save_screen_text();
+			return;
+		case 'h': do_cmd_save_screen_html(0);
+			return;
+		case 'f': do_cmd_save_screen_html(1);
+			return;
+		}
+	}
 }
 
 

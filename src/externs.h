@@ -389,7 +389,7 @@ extern void play_game(bool new_game);
 extern int value_check_aux1(const object_type *o_ptr);
 
 /* files.c */
-extern void html_screenshot(cptr name);
+extern void html_screenshot(cptr name, int mode);
 extern void safe_setuid_drop(void);
 extern void safe_setuid_grab(void);
 extern s16b tokenize(char *buf, s16b num, char **tokens);
