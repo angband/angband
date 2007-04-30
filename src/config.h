@@ -115,6 +115,26 @@
 
 
 /*
+ * OPTION: Allow processing of template files once parsed.
+ * This 'evaluates' the contents of the files. It is is currently
+ * used for balancing the monster list (monster.txt).
+ */
+
+/* #define ALLOW_TEMPLATES_PROCESS */
+
+
+/*
+ * OPTION: Allow output of 'parsable' ascii template files.
+ * This can be used to help change the ascii template format, and to
+ * make changes to the data in the parsed files within Angband itself.
+ *
+ * Files are output to lib\user with the same file names as lib\edit.
+ */
+
+/* #define ALLOW_TEMPLATES_OUTPUT */
+
+
+/*
  * OPTION: Allow repeating of last command.
  */
 #define ALLOW_REPEAT

@@ -342,7 +342,13 @@ struct monster_race
 
 	s32b mexp;				/* Exp value for kill */
 
-	s16b extra;				/* Unused (for now) */
+	s16b power;				/* Monster power */
+	
+#ifdef ALLOW_TEMPLATES_PROCESS
+
+	s16b highest_threat;	/* Monster highest threat */
+
+#endif /* ALLOW_TEMPLATES_PROCESS */
 
 	byte freq_innate;		/* Innate spell frequency */
 	byte freq_spell;		/* Other spell frequency */
@@ -367,6 +373,7 @@ struct monster_race
 
 	byte max_num;			/* Maximum population allowed per level */
 	byte cur_num;			/* Monster population on current level */
+
 };
 
 

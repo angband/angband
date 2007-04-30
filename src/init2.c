@@ -394,6 +394,13 @@ static void init_header(header *head, int num, int len)
 	/* Save the size of "*_head" and "*_info" */
 	head->head_size = sizeof(header);
 	head->info_size = head->info_num * head->info_len;
+
+	/* Clear post-parsing evaluation function */
+	head->eval_info_power = NULL;
+	
+	/* Clear the template emission functions */
+	head->emit_info_txt_index = NULL;
+	head->emit_info_txt_always = NULL;
 }
 
 
@@ -435,6 +442,10 @@ static errr init_info(cptr filename, header *head)
 	errr err = 1;
 
 	FILE *fp;
+
+#ifdef ALLOW_TEMPLATES_OUTPUT
+	FILE *fpout;
+#endif /* ALLOW_TEMPLATES_OUTPUT */
 
 	/* General buffer */
 	char buf[1024];
@@ -502,6 +513,42 @@ static errr init_info(cptr filename, header *head)
 
 		/* Errors */
 		if (err) display_parse_error(filename, err, buf);
+
+		/* Post processing the data */
+		if (head->eval_info_power) eval_info(head->eval_info_power, head);
+
+#ifdef ALLOW_TEMPLATES_OUTPUT
+
+		/*** Output a 'parsable' ascii template file ***/
+		if ((head->emit_info_txt_index) || (head->emit_info_txt_always))
+		{
+			/* Build the filename */
+			path_build(buf, 1024, ANGBAND_DIR_EDIT, format("%s.txt", filename));
+
+			/* Open the file */
+			fp = my_fopen(buf, "r");
+
+			/* Parse it */
+			if (!fp) quit(format("Cannot open '%s.txt' file for re-parsing.", filename));
+
+			/* Build the filename */
+			path_build(buf, 1024, ANGBAND_DIR_USER, format("%s.txt", filename));
+
+			/* Open the file */
+			fpout = my_fopen(buf, "w");
+
+			/* Parse it */
+			if (!fpout) quit(format("Cannot open '%s.txt' file for output.", filename));
+
+			/* Parse and output the files */
+			err = emit_info_txt(fpout, fp, buf, head, head->emit_info_txt_index, head->emit_info_txt_always);
+
+			/* Close both files */
+			my_fclose(fpout);
+			my_fclose(fp);
+		}
+
+#endif
 
 
 		/*** Dump the binary image file ***/
@@ -805,6 +852,17 @@ static errr init_r_info(void)
 
 	/* Save a pointer to the parsing function */
 	r_head.parse_info_txt = parse_r_info;
+
+#ifdef ALLOW_TEMPLATES_PROCESS
+	/* Save a pointer to the evaluate power function*/
+	r_head.eval_info_power = eval_r_power;
+#endif
+
+#ifdef ALLOW_TEMPLATES_OUTPUT
+
+	/* Save a pointer to the evaluate power function*/
+	r_head.emit_info_txt_index = emit_r_info_index;
+#endif /* ALLOW_TEMPLATES_OUTPUT */
 
 #endif /* ALLOW_TEMPLATES */
 
