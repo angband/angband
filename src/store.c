@@ -1807,15 +1807,14 @@ static bool store_purchase(int item)
 	msg_flag = FALSE;
 	prt("", 0, 0);
 
+
+
 	if (store_current == STORE_HOME)
 	{
-		/* Stores always take one */
-		amt = 1;
+		amt = o_ptr->number;
 	}
 	else
 	{
-		int n;
-
 		/* Price of one */
 		price = price_item(o_ptr, FALSE);
 
@@ -1830,12 +1829,12 @@ static bool store_purchase(int item)
 		}
 
 		/* Work out how many the player can afford */
-		n = p_ptr->au / price;
-		if (n > o_ptr->number) n = o_ptr->number;
-
-		/* Get a quantity */
-		amt = get_quantity(NULL, n);
+		amt = p_ptr->au / price;
+		if (amt > o_ptr->number) amt = o_ptr->number;
 	}
+
+	/* Get a quantity */
+	amt = get_quantity(NULL, amt);
 
 	/* Allow user abort */
 	if (amt <= 0) return FALSE;
@@ -2019,7 +2018,7 @@ static void store_sell(void)
 	char o_name[120];
 
 
-	const char *reject = "You have nothing that I want ";
+	const char *reject = "You have nothing that I want. ";
 	const char *prompt = "Sell which item? ";
 
 	if (store_current == STORE_HOME)
@@ -2586,8 +2585,8 @@ void do_cmd_store(void)
 		items_region.page_rows = scr_places_y[LOC_ITEMS_END] - scr_places_y[LOC_ITEMS_START] + 1;
 
 		/* These two can't intersect! */
-		menu.cmd_keys = "\n\x010\r?=CdeEiIls"; /* \x10 = ^p */
-		menu.selections = "abcfghjkmnopqrtuvxyz1234567890";
+		menu.cmd_keys = "\n\x010\r?=CdeEwkiIlstx"; /* \x10 = ^p */
+		menu.selections = "abcfghjmnopqruvyz1234567890";
 
 		/* Keep the cursor in range of the stock */
 		if (cursor >= menu.count)
