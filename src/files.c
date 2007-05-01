@@ -1606,7 +1606,7 @@ static byte max_color(int val, int max)
 
 int get_panel(int oid, data_panel *panel, size_t size)
 {
-  int ret = size;
+  size_t ret = size;
   switch(oid)
  {
   case 1:
@@ -1680,7 +1680,8 @@ int get_panel(int oid, data_panel *panel, size_t size)
 		{ "Perception", p_ptr->skill_fos, 6 },
 		{ "Searching", p_ptr->skill_srh, 6 }
 	};
-	int i;
+	size_t i;
+	assert(N_ELEMENTS(skills) == boundaries[4].page_rows);
 	ret = N_ELEMENTS(skills);
 	if (ret > size) ret = size;
 	for (i = 0; i < ret; i++)
@@ -4495,11 +4496,11 @@ void html_screenshot(cptr name, int mode)
 
 	const char *new_color_fmt = (mode == 0) ?
 					"<font color=\"#%02X%02X%02X\">"
-				 	: "[color=\"#%02X%02X%02X\"]";
+				 	: "[COLOR=\"#%02X%02X%02X\"]";
 	const char *change_color_fmt = (mode == 0) ?
 					"</font><font color=\"#%02X%02X%02X\">"
-					: "[/color][color=\"#%02X%02X%02X\"]";
-	const char *close_color_fmt = mode ==  0 ? "</font>" : "[/color]";
+					: "[/COLOR][COLOR=\"#%02X%02X%02X\"]";
+	const char *close_color_fmt = mode ==  0 ? "</font>" : "[/COLOR]";
 
 	FILE *htm;
 
@@ -4587,17 +4588,15 @@ void html_screenshot(cptr name, int mode)
 		fprintf(htm, "\n");
 	}
 
+	/* Close the last font-color tag if necessary */
+	if (oa != TERM_WHITE) fprintf(htm, close_color_fmt);
 	if(mode == 0) {
-		/* Close the last <font> tag if necessary */
-		if (oa != TERM_WHITE) fprintf(htm, "</font>");
-
 		fprintf(htm, "</tt></pre>\n");
 		fprintf(htm, "</body>\n");
 		fprintf(htm, "</html>\n");
 	}
 	else 
 	{
-		if (oa != TERM_WHITE) fprintf(htm, "[/COLOR]");
 		fprintf(htm, "[/COLOR][/BC][/TT][/CODE]\n");
 	}
 

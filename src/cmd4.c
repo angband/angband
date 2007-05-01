@@ -2478,7 +2478,6 @@ static void pref_footer(FILE *fff, cptr mark)
  * - Title must have the form "Dump <pref-type>"
  * - dump(FILE*) needs to emit only the raw data for the dump.
  *   Comments are generated automatically
- * - row is where on the screen to place the prompt
  */
 static void dump_pref_file(void (*dump)(FILE*), const char *title)
 {
