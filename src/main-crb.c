@@ -159,6 +159,7 @@
 #include "osx/osx_tables.h"
 
 
+
  /*
  * #define ANGBAND_CREATOR four letter code for your variant, if any.
  * or use the default one. (This is used to specify the standard program
@@ -256,6 +257,7 @@ struct term_data
 	s16b rows;		// rows in picture
 	s16b cols;		// columns in picture.
 
+	char font_name[200]; // Name of font for storage.
 	ATSUFontID font_id;
 	float font_size;	// Scaled ATSU font size.
 
@@ -683,7 +685,7 @@ static GlyphInfo *get_glyph_info(ATSUFontID fid, float size)
 	info->layout = 0;
 
 	/* ICK */
-			
+
 	info->font_size = size;
 	info->font_id = fid;
 
@@ -804,6 +806,7 @@ static void term_data_check_font(term_data *td)
 
 	td->font_wid = (info->font_wid +.999);
 	td->font_hgt = info->ascent + info->descent;
+	strncpy(td->font_name, info->psname, sizeof(td->font_name));
 
 	/* Set default tile size */
 	if (td->tile_wid == 0) td->tile_wid = td->font_wid;
@@ -2068,16 +2071,23 @@ static char *locate_lib(char *buf, size_t size)
  * Store "value" as the value for preferences item name
  * pointed by key
  */
-static void save_pref_short(const char *key, short value)
+static void save_preference(const char *key, type_union value)
 {
 	CFStringRef cf_key;
-	CFNumberRef cf_value;
+	CFPropertyListRef cf_value;
 
 	/* allocate and initialise the key */
 	cf_key = CFStringCreateWithCString(NULL, key, kTextEncodingUS_ASCII);
 
 	/* allocate and initialise the value */
-	cf_value = CFNumberCreate(NULL, kCFNumberShortType, &value);
+	if(value.t == T_INT)
+		cf_value = CFNumberCreate(NULL, kCFNumberIntType, &value.u.i);
+
+	else if(value.t == T_STRING)
+		cf_value = CFStringCreateWithCString(NULL, value.u.s, kTextEncodingUS_ASCII);
+
+	else quit(format("Unrecognized save type %d\n", value.t));
+
 
 	if ((cf_key != NULL) && (cf_value != NULL))
 	{
@@ -2101,10 +2111,10 @@ static void save_pref_short(const char *key, short value)
  * Load preference value for key, returns TRUE if it succeeds with
  * vptr updated appropriately, FALSE otherwise.
  */
-static bool query_load_pref_short(const char *key, short *vptr)
+static bool load_preference(const char *key, type_union *vptr, size_t maxlen )
 {
 	CFStringRef cf_key;
-	CFNumberRef cf_value;
+	CFPropertyListRef cf_value;
 
 	/* allocate and initialise the key */
 	cf_key = CFStringCreateWithCString(NULL, key, kTextEncodingUS_ASCII);
@@ -2124,11 +2134,13 @@ static bool query_load_pref_short(const char *key, short *vptr)
 		return (FALSE);
 	}
 
-	/* Convert the value to short */
-	CFNumberGetValue(
-		cf_value,
-		kCFNumberShortType,
-		vptr);
+	/* Convert the value to appropriate type */
+	if(vptr->t == T_INT)
+		CFNumberGetValue( cf_value, kCFNumberIntType, &vptr->u.i);
+	else if(vptr->t == T_STRING) {
+		CFRange range = { 0, 200};
+		(void) CFStringGetBytes (cf_value, range, kCGEncodingMacRoman, 0, 0, (UInt8*)vptr->u.s, maxlen, 0);
+	}
 
 	/* Free CF data */
 	CFRelease(cf_value);
@@ -2138,18 +2150,20 @@ static bool query_load_pref_short(const char *key, short *vptr)
 	return (TRUE);
 }
 
-
-/*
- * Update short data pointed by vptr only if preferences
- * value for key is located.
- */
-static void load_pref_short(const char *key, short *vptr)
+/* Convenience wrappers for commonly used type short */
+static void save_pref_short(const char *key, short value)
 {
-	short tmp;
-
-	if (query_load_pref_short(key, &tmp)) *vptr = tmp;
+	type_union u = i2u(value);
+	save_preference(key, u);
 }
-
+static bool load_pref_short(const char *key, short *vptr)
+{
+	bool ret;
+	type_union u = { T_INT };
+	ret = load_preference(key, &u, 0);
+	if( ret == TRUE ) *vptr = u.u.i;
+	return ret;
+}
 
 /*
  * Save preferences to preferences file for current host+current user+
@@ -2164,8 +2178,15 @@ static void cf_save_prefs()
 	save_pref_short("version.extra", VERSION_EXTRA);
 
 	/* Gfx settings */
+	/* sound */
 	save_pref_short("arg.arg_sound", arg_sound);
-/* Tile dimensions of the current graphics mode */
+
+	/* double-width tiles */
+	save_pref_short("arg.use_bigtile", use_bigtile);
+
+	/* graphics mode */
+	save_pref_short("graf_mode", graf_mode);
+
 
 	/* Windows */
 	for (int i = 0; i < MAX_TERM_DATA; i++)
@@ -2181,6 +2202,10 @@ static void cf_save_prefs()
 		save_pref_short(format("term%d.rows", i), td->rows);
 		save_pref_short(format("term%d.left", i), td->r.left);
 		save_pref_short(format("term%d.top", i), td->r.top);
+
+		/* Integer font sizes only */
+		save_preference(format("term%d.font_size", i), i2u((int)td->font_size));
+		save_preference(format("term%d.font_name", i), s2u(td->font_name));
 	}
 
 	/*
@@ -2203,10 +2228,10 @@ static void cf_load_prefs()
 	bool ok = TRUE;
 
 	/* Load version information */
-	ok &= query_load_pref_short("version.major", &pref_major);
-	ok &= query_load_pref_short("version.minor", &pref_minor);
-	ok &= query_load_pref_short("version.patch", &pref_patch);
-	ok &= query_load_pref_short("version.extra", &pref_extra);
+	ok &= load_pref_short("version.major", &pref_major);
+	ok &= load_pref_short("version.minor", &pref_minor);
+	ok &= load_pref_short("version.patch", &pref_patch);
+	ok &= load_pref_short("version.extra", &pref_extra);
 
 	/* Any of the above failed */
 	if (!ok)
@@ -2255,14 +2280,15 @@ static void cf_load_prefs()
 	short pref_tmp;
 
 	/* sound */
-	if (query_load_pref_short("arg.arg_sound", &pref_tmp))
+	if (load_pref_short("arg.arg_sound", &pref_tmp))
 		arg_sound = pref_tmp;
 
 	/* double-width tiles */
-	if (query_load_pref_short("arg.big_tile", &pref_tmp))
-	{
+	if (load_pref_short("arg.use_bigtile", &pref_tmp))
 		use_bigtile = pref_tmp;
-	}
+
+	if(load_pref_short("graf_mode", &pref_tmp))
+		graf_mode = pref_tmp;
 
 
 	/* Windows */
@@ -2279,6 +2305,20 @@ static void cf_load_prefs()
 		load_pref_short(format("term%d.rows", i), &td->rows);
 		load_pref_short(format("term%d.left", i), &td->r.left);
 		load_pref_short(format("term%d.top", i), &td->r.top);
+
+		type_union u = {T_INT};
+		if(load_preference(format("term%d.font_size", i), &u, sizeof(int)))
+			td->font_size = (float) u.u.i;
+		u = s2u(td->font_name);
+		if(load_preference(format("term%d.font_name", i), &u, sizeof(td->font_name))) {
+			ATSUFontID fid = 0;
+			ATSUFindFontFromName(td->font_name, strlen(td->font_name),
+								kFontPostscriptName, kFontMacintoshPlatform,
+								kFontNoScriptCode, kFontNoLanguageCode, &fid);
+			if(fid) td->font_id = fid;
+			/* Use the default */
+			else strncpy(td->font_name, "Monaco", sizeof(td->font_name));
+		}
 	}
 }
 
@@ -2290,9 +2330,11 @@ static void term_data_hack(term_data *td)
 {
 	/* Default to Monaco font */
 	ATSUFontID fid = 0;
+
 	ATSUFindFontFromName("Monaco", strlen("Monaco"), kFontPostscriptName,
 							kFontMacintoshPlatform, kFontNoScriptCode,
 							kFontNoLanguageCode, &fid);
+
 
 	if(!fid)
 		quit("Failed to find font 'Monaco'");
@@ -2305,6 +2347,7 @@ static void term_data_hack(term_data *td)
 
 	/* Default font */
 	td->font_id = fid;
+	strncpy(td->font_name, "Monaco", sizeof(td->font_name));
 
 	/* Default font size - was 12 */
 	td->font_size = 14;
@@ -2766,6 +2809,14 @@ static OSStatus CommandCommand(EventHandlerCallRef inCallRef,
 		break;
 	case 'font':
 	  {
+		if(!FPIsFontPanelVisible()) {
+			WindowRef w = FrontWindow();
+			if (w) {
+				term_data *td = (term_data*) GetWRefCon(w);
+				SetFontInfoForSelection(kFontSelectionATSUIType, 1,
+										&td->ginfo->style, NULL);
+			}
+		}
 		CFStringRef tags[] = {CFSTR("Show Fonts"), CFSTR("Hide Fonts")};
         FPShowHideFontPanel(); 
 		SetMenuItemTextWithCFString(command.menu.menuRef, kFonts,
@@ -3836,6 +3887,8 @@ int main(void)
 	initialized = TRUE;
 
 	validate_menus();
+
+	if(graf_mode) graphics_aux(graf_mode);
 
 	/* Start playing! */
 	EventRef newGameEvent = nil;
