@@ -245,7 +245,8 @@ struct term_data
 	WindowRef w;
 	GlyphInfo *ginfo;
 	
-	Rect r;			// Absolute bounds of window.
+	Rect wr;		// Absolute bounds of window (for save/restore)
+	Rect r;			// Canvas bounds of window (for mouse addressing &c) 
 	CGRect bounds;  // Relative bounds of border-clipped canvas.
 
 	int spacing;  	// Text padding (in pixels) for tiling wider than text
@@ -924,6 +925,9 @@ static void term_data_resize(term_data *td)
 	 */
 	
 	SizeWindow(td->w, td->size_wid, td->size_hgt, 0);
+	/* Get absolute bounds of window */
+	GetWindowBounds((WindowRef)td->w, kWindowGlobalPortRgn, &td->wr);
+
 	// Cheat a little -- can't use the active view to redraw its own border.
 	CGContextRef tmpCtx;
 	QDBeginCGContext(GetWindowPort(td->w), &tmpCtx);
@@ -2074,7 +2078,7 @@ static char *locate_lib(char *buf, size_t size)
 static void save_preference(const char *key, type_union value)
 {
 	CFStringRef cf_key;
-	CFPropertyListRef cf_value;
+	CFPropertyListRef cf_value = 0;
 
 	/* allocate and initialise the key */
 	cf_key = CFStringCreateWithCString(NULL, key, kTextEncodingUS_ASCII);
@@ -2200,8 +2204,8 @@ static void cf_save_prefs()
 
 		save_pref_short(format("term%d.cols", i), td->cols);
 		save_pref_short(format("term%d.rows", i), td->rows);
-		save_pref_short(format("term%d.left", i), td->r.left);
-		save_pref_short(format("term%d.top", i), td->r.top);
+		save_pref_short(format("term%d.left", i), td->wr.left);
+		save_pref_short(format("term%d.top", i), td->wr.top);
 
 		/* Integer font sizes only */
 		save_preference(format("term%d.font_size", i), i2u((int)td->font_size));
@@ -2245,7 +2249,6 @@ static void cf_load_prefs()
 		return;
 	}
 
-#if 0
 
 	/* Check version */
 	if ((pref_major != VERSION_MAJOR) ||
@@ -2253,6 +2256,7 @@ static void cf_load_prefs()
 		(pref_patch != VERSION_PATCH) ||
 		(pref_extra != VERSION_EXTRA))
 	{
+#if 1 // For 3.0.8 : pref file change!
 		/* Message */
 		mac_warning(
 			format("Ignoring %d.%d.%d.%d preferences.",
@@ -2260,9 +2264,11 @@ static void cf_load_prefs()
 
 		/* Ignore */
 		return;
+#else
+		mac_warning(format("Preference file has changed.  If you have display problems, delete %s and restart", ));
+#endif
 	}
 
-#endif
 
 	/* HACK - Check for broken preferences */
 	load_pref_short("term0.mapped", &valid);
@@ -2890,6 +2896,7 @@ static OSStatus ResizeCommand(EventHandlerCallRef inCallRef,
 
 	Rect tmpR;
 	GetWindowBounds((WindowRef)td->w, kWindowContentRgn, &tmpR);
+	GetWindowBounds((WindowRef)td->w, kWindowGlobalPortRgn, &td->wr);
 	td->r = tmpR;
 	if(td->r.top < 40) td->r.top = 40;
 
