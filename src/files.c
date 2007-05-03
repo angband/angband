@@ -1526,7 +1526,7 @@ static const region boundaries [] =
 	{ 1,	10,		18,		8 }, /* Cur Exp, Max Exp, ... */
 	{ 26,	10,		17,		8 }, /* AC, melee, ... */
 	{ 48, 	10,		24,		8 }, /* skills */
-	{ 26,	2,		13,		5 }, /* Age, ht, wt, ... */
+	{ 26,	3,		13,		5 }, /* Age, ht, wt, ... */
 
 };
 
@@ -1558,14 +1558,14 @@ static const char *show_adv_exp(void)
 static const char *show_depth(void)
 {
 	static char buffer[10];
-	if (p_ptr->depth == 0) return "Town";
+	if (p_ptr->max_depth == 0) return "Town";
 	else if (depth_in_feet)
 	{
-		strnfmt(buffer, sizeof(buffer), "%d ft", p_ptr->depth * 50);
+		strnfmt(buffer, sizeof(buffer), "%d ft", p_ptr->max_depth * 50);
 		return buffer;
 	}
 	else {
-		strnfmt(buffer, sizeof(buffer), "Lev %d", p_ptr->depth);
+		strnfmt(buffer, sizeof(buffer), "Lev %d", p_ptr->max_depth);
 		return buffer;
 	}
 }
@@ -1702,6 +1702,11 @@ int get_panel(int oid, data_panel *panel, size_t size)
 		{TERM_L_BLUE, "Weight",		"%y",	{ i2u(p_ptr->wt), END  }},
 		{TERM_L_BLUE, "Status",		"%y",	{ i2u(p_ptr->sc), END  }},
 		{TERM_L_BLUE, "Maximize",	"%y",	{ c2u(adult_maximize ? 'Y' : 'N'), END  }}
+#if 0
+	/* Preserve mode deleted */
+		{TERM_L_BLUE, "Preserve",	"%y",	{ c2u(adult_preserve ? 'Y' : 'N'), END  }}
+#endif
+
 	};
 	assert(N_ELEMENTS(panel5) == boundaries[5].page_rows);
 	if (ret > N_ELEMENTS(panel5)) ret = N_ELEMENTS(panel5);
