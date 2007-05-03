@@ -1,4 +1,3 @@
-/* File: main-crb.c */
 
 /*
  * Copyright (c) 1997-2006 Ben Harrison, Keith Randall, Peter Ammon,
@@ -925,8 +924,6 @@ static void term_data_resize(term_data *td)
 	 */
 	
 	SizeWindow(td->w, td->size_wid, td->size_hgt, 0);
-	/* Get absolute bounds of window */
-	GetWindowBounds((WindowRef)td->w, kWindowGlobalPortRgn, &td->wr);
 
 	// Cheat a little -- can't use the active view to redraw its own border.
 	CGContextRef tmpCtx;
@@ -1623,6 +1620,12 @@ static void Term_init_mac(term *t)
 			&td->r,
 			&td->w);
 
+	Rect tmpR;
+	GetWindowBounds((WindowRef)td->w, kWindowTitleBarRgn, &tmpR);
+	int trueTop = td->r.top - (tmpR.bottom-tmpR.top);
+	MoveWindow((WindowRef)td->w, td->r.left, trueTop, FALSE);
+	
+
 	install_handlers(td->w);
 
 
@@ -2204,8 +2207,8 @@ static void cf_save_prefs()
 
 		save_pref_short(format("term%d.cols", i), td->cols);
 		save_pref_short(format("term%d.rows", i), td->rows);
-		save_pref_short(format("term%d.left", i), td->wr.left);
-		save_pref_short(format("term%d.top", i), td->wr.top);
+		save_pref_short(format("term%d.left", i), td->r.left);
+		save_pref_short(format("term%d.top", i), td->r.top);
 
 		/* Integer font sizes only */
 		save_preference(format("term%d.font_size", i), i2u((int)td->font_size));
@@ -2787,9 +2790,9 @@ static OSStatus AppleCommand(EventHandlerCallRef inCallRef,
 static OSStatus QuitCommand(EventHandlerCallRef inCallRef,
 							EventRef inEvent, void *inUserData )
 {
-	if(!game_in_progress && !character_generated)
+	if (!game_in_progress && !character_generated)
 		quit(0);	
-	else Term_key_push('\030');
+	else Term_key_push(KTRL('x'));
 	return noErr;
 }
 
@@ -2896,7 +2899,6 @@ static OSStatus ResizeCommand(EventHandlerCallRef inCallRef,
 
 	Rect tmpR;
 	GetWindowBounds((WindowRef)td->w, kWindowContentRgn, &tmpR);
-	GetWindowBounds((WindowRef)td->w, kWindowGlobalPortRgn, &td->wr);
 	td->r = tmpR;
 	if(td->r.top < 40) td->r.top = 40;
 

@@ -4033,11 +4033,13 @@ void close_game(void)
 		/* Save the game */
 		do_cmd_save_game();
 
-		/* Prompt for scores XXX XXX XXX */
-		prt("Press Return (or Escape).", 0, 40);
+		if(Term->mapped_flag) {
+			/* Prompt for scores XXX XXX XXX */
+			prt("Press Return (or Escape).", 0, 40);
 
-		/* Predict score (or ESCAPE) */
-		if (inkey() != ESCAPE) predict_score();
+			/* Predict score (or ESCAPE) */
+			if (inkey() != ESCAPE) predict_score();
+		}
 	}
 
 
