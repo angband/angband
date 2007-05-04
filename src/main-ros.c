@@ -2161,11 +2161,20 @@ static BOOL SaveHnd_FileSave(char *filename, void *ref)
 	/* Try a save (if sensible) */
 	if (game_in_progress && character_generated)
 	{
-		if (!save_player(SAVE_PLAYER_PARAM))
+		if (inkey_flag)
 		{
-			Msgs_Report(0, "err.save", filename);
+			if (!save_player(SAVE_PLAYER_PARAM))
+			{
+				Msgs_Report(0, "err.save", filename);
+				strcpy(savefile, old_savefile);
+				return FALSE;		/* => failure */
+			}
+		}
+		else
+		{
+			Msgs_Report(0, "err.nosave");
 			strcpy(savefile, old_savefile);
-			return FALSE;		/* => failure */
+			return TRUE; /* Failed really, but not unexpectedly */
 		}
 	}
 
@@ -4626,8 +4635,17 @@ static BOOL Hnd_IbarMenu(event_pollblock * pb, void *ref)
 			break;
 		case IBAR_MENU_QUIT:	/* Quit */
 			if (game_in_progress && character_generated)
-				save_player(SAVE_PLAYER_PARAM);
-			quit(NULL);
+			{
+				if (inkey_flag)
+				{
+					save_player(SAVE_PLAYER_PARAM);
+					quit(NULL);
+				}
+				else
+				{
+					Msgs_Report(0, "err.nosave");
+				}
+			}
 			break;
 	}
 
@@ -4779,7 +4797,17 @@ static BOOL Hnd_PreQuit(event_pollblock * b, void *ref)
 			return TRUE;		/* no! Pleeeeeease don't kill leeeeddle ol' me! */
 
 		if (ok == 3)
-			save_player(SAVE_PLAYER_PARAM);		/* Save & Quit */
+		{
+			if (inkey_flag)
+			{
+				save_player(SAVE_PLAYER_PARAM);		/* Save & Quit */
+			}
+			else
+			{
+				Msgs_Report(0, "err.nosave");
+				return FALSE;
+			}
+		}
 	}
 
 
