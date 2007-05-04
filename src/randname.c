@@ -280,7 +280,7 @@ size_t make_word(randname_type name_type, size_t min, size_t max, char *word_buf
 
 	assert(name_type > 0 && name_type < RANDNAME_NUM_TYPES);
 
-        /* To allow for a terminating character */
+	/* To allow for a terminating character */
 	assert(buflen > max);
 
 	/* We cache one set of probabilities, only regenerate when

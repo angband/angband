@@ -19,6 +19,7 @@
 # P: base armor class : base damage : plus to-hit : plus to-dam : plus to-ac
 # A: depth/rarity : depth/rarity : etc
 # C: charges
+# M: chance of being generated in a pile : dice for number of items
 # F: flag | flag | etc
 # D: description
 
@@ -763,6 +764,7 @@ N:78:& Arrow~
 G:{:U
 I:17:1:0
 W:3:0:2:1
+M:100:6d7
 A:3/1:15/1:50/1
 P:0:1d4:0:0:0
 F:SHOW_MODS
@@ -773,6 +775,7 @@ G:{:G
 I:17:2:0
 W:55:0:2:20
 A:55/2:80/2
+M:100:6d7
 P:0:4d4:0:0:0
 F:SHOW_MODS
 D:It can be shot with a bow.
@@ -781,6 +784,7 @@ N:80:& Bolt~
 G:{:s
 I:18:1:0
 W:3:0:3:2
+M:100:6d7
 A:3/1:25/1:60/1
 P:0:1d5:0:0:0
 F:SHOW_MODS
@@ -790,6 +794,7 @@ N:81:& Seeker Bolt~
 G:{:g
 I:18:2:0
 W:65:0:3:25
+M:100:6d7
 A:65/2:90/2
 P:0:4d5:0:0:0
 F:SHOW_MODS
@@ -799,6 +804,7 @@ N:82:& Rounded Pebble~
 G:{:s
 I:16:0:0
 W:0:0:4:1
+M:100:6d7
 A:0/1:10/2
 P:0:1d2:0:0:0
 F:SHOW_MODS
@@ -808,6 +814,7 @@ N:83:& Iron Shot~
 G:{:s
 I:16:1:0
 W:3:0:5:2
+M:100:6d7
 A:3/1:40/2
 P:0:1d4:0:0:0
 F:SHOW_MODS
@@ -3106,6 +3113,7 @@ N:345:& Iron Spike~
 G:~:W
 I:5:0:0
 W:1:0:10:1
+M:100:6d7
 A:1/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
@@ -3913,6 +3921,7 @@ N:437:& Mithril Shot~
 G:{:B
 I:16:2:0
 W:40:0:4:20
+M:100:6d7
 A:40/4:65/1
 P:0:2d4:5:5:0
 F:SHOW_MODS | IGNORE_ACID
@@ -3922,6 +3931,7 @@ N:438:& Mithril Arrow~
 G:{:B
 I:17:3:0
 W:55:0:2:25
+M:100:6d7
 A:50/4:90/3
 P:0:3d4:0:0:0
 F:SHOW_MODS | IGNORE_ACID | IGNORE_FIRE
@@ -3931,6 +3941,7 @@ N:439:& Mithril Bolt~
 G:{:B
 I:18:3:0
 W:50:0:2:30
+M:100:6d7
 A:60/4:95/3
 P:0:3d5:0:0:0
 F:SHOW_MODS | IGNORE_ACID | IGNORE_FIRE

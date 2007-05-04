@@ -1654,7 +1654,8 @@ void do_cmd_redraw(void)
 	}
 }
 
-void do_cmd_resize() {
+void do_cmd_resize()
+{
 	/* Escape to main screen on resize */
 	Term_key_push(ESCAPE);
 	do_cmd_redraw();
@@ -1711,35 +1712,32 @@ void do_cmd_change_name(void)
 				if (ftmp[0] && (ftmp[0] != ' '))
 				{
 					if (file_character(ftmp, FALSE))
-					{
 						msg_print("Character dump failed!");
-					}
 					else
-					{
 						msg_print("Character dump successful.");
-					}
 				}
 			}
 		}
 
 		/* Toggle mode */
-		else if ((ke.key == 'h') || (ke.key == '\xff') || ke.key == '4')
+		else if ((ke.key == 'h') || (ke.key == '\xff') ||
+		         (ke.key == ARROW_LEFT) || (ke.key == ' '))
 		{
 			mode = (mode + 1) % INFO_SCREENS;
 		}
 
 		/* Toggle mode */
-		else if ((ke.key == 'l') || ke.key == '6')
+		else if ((ke.key == 'l') || ke.key == ARROW_RIGHT)
 		{
-			mode = (mode + 6 - 1) % INFO_SCREENS;
+			mode = (mode - 1) % INFO_SCREENS;
 		}
 
 
 		/* Oops */
 		else
-		  {
-		    bell(NULL);
-		  }
+		{
+			bell(NULL);
+		}
 
 		/* Flush messages */
 		message_flush();

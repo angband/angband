@@ -1413,6 +1413,27 @@ errr parse_k_info(char *buf, header *head)
 		}
 	}
 
+	/* Process 'M' for "Multiple quantity" (one line only) */
+	else if (buf[0] == 'M')
+	{
+		int prob, dice, side;
+
+		/* There better be a current k_ptr */
+		if (!k_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
+
+		/* Scan for the values */
+		if (3 != sscanf(buf+2, "%d:%dd%d", &prob, &dice, &side))
+			return (PARSE_ERROR_GENERIC);
+
+		/* Sanity check */
+		if (!(dice * side)) prob = dice = side = 0;
+
+		/* Save the values */
+		k_ptr->gen_mult_prob = prob;
+		k_ptr->gen_dice = dice;
+		k_ptr->gen_side = side;
+	}
+
 	/* Hack -- Process 'F' for flags */
 	else if (buf[0] == 'F')
 	{

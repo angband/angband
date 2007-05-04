@@ -192,6 +192,10 @@ struct object_kind
 	byte charge_base;	/* Charge base */
 	byte charge_dd, charge_ds;	/* Charge dice/sides */
 
+	byte gen_mult_prob;     /* Probability of generating more than one */
+	byte gen_dice;          /* Average number to generate - dice rolled */
+	byte gen_side;          /* Average number to generate - dice sides */
+
 
 	u16b flavor;		/* Special object flavor (or zero) */
 
@@ -201,9 +205,7 @@ struct object_kind
 	bool tried;			/* The player has "tried" one of the items */
 
 	byte squelch;		/* Squelch setting for the particular item */
-
 	bool everseen;		/* Used to despoilify squelch menus */
-
 };
 
 

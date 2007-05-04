@@ -44,6 +44,15 @@ static unsigned int scr_places_y[LOC_MAX];
 #define STORE_INIT_CHANGE		(STORE_FRAME_CHANGE | STORE_GOLD_CHANGE)
 
 
+
+/* Some local constants */
+#define STORE_TURNOVER  9       /* Normal shop turnover, per day */
+#define STORE_OBJ_LEVEL 5       /* Magic Level for normal stores */
+#define STORE_MIN_KEEP  6       /* Min slots to "always" keep full (>0) */
+#define STORE_MAX_KEEP  18      /* Max slots to "always" keep full */
+
+
+
 /** Variables to maintain state XXX ***/
 
 /* Current store number */
@@ -388,7 +397,7 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
  * to adjust (by 200) to extract a usable multiplier.  Note that the
  * "greed" value is always something (?).
  */
-static s32b price_item(const object_type *o_ptr, bool flip)
+static s32b price_item(const object_type *o_ptr, bool store_buying)
 {
 	int factor;
 	int adjust;
@@ -415,7 +424,7 @@ static s32b price_item(const object_type *o_ptr, bool flip)
 
 
 	/* Shop is buying */
-	if (flip)
+	if (store_buying)
 	{
 		/* Adjust for greed */
 		adjust = 100 + (300 - (greed + factor));
@@ -425,6 +434,9 @@ static s32b price_item(const object_type *o_ptr, bool flip)
 
 		/* Mega-Hack -- Black market sucks */
 		if (store_current == STORE_B_MARKET) price = price / 2;
+
+		/* Now limit the price to the purse limit */
+		if (price > ot_ptr->max_cost) price = ot_ptr->max_cost;
 	}
 
 	/* Shop is selling */
@@ -1138,51 +1150,6 @@ static int store_find(int num, int tval, int sval)
 
 
 /*
- * Helper function: create an item with the given tval,sval pair, add it to the
- * store st.  Return the slot in the inventory.
- */
-static int store_create_item(int st, int tval, int sval)
-{
-	object_type object;
-	int k_idx;
-
-	/* Resolve tval,sval pair into an index */
-	k_idx = lookup_kind(tval, sval);
-
-	/* Validation - do something more substantial here? XXX */
-	if (!k_idx)
-	{
-		msg_print("No object in store_create_item().");
-		return -1;
-	}
-
-	/* Wipe this object */
-	object_wipe(&object);
-
-	/* Create a new object of the chosen kind */
-	object_prep(&object, k_idx);
-
-	/* The object is "known" */
-	object_known(&object);
-
-	/* Item belongs to a store */
-	object.ident |= IDENT_STORE;
-
-	/* Charge lights */
-	if (object.tval == TV_LITE)
-	{
-		if (object.sval == SV_LITE_TORCH)        object.timeout = FUEL_TORCH / 2;
-		else if (object.sval == SV_LITE_LANTERN) object.timeout = FUEL_LAMP / 2;
-	}
-
-	/* Mass produce and/or apply discount */
-	mass_produce(&object);
-
-	/* Attempt to carry the object */
-	return store_carry(st, &object);
-}
-
-/*
  * Find tval, sval from k_idx.
  * XXX Should be in object2.c; is here for low impact.
  */
@@ -1321,49 +1288,116 @@ static bool store_create_random(int st)
 	return FALSE;
 }
 
+/*
+ * Staple definitions.
+ */
+typedef enum { MAKE_SINGLE, MAKE_NORMAL, MAKE_MAX } create_mode;
 
-static struct
+static struct staple_type
 {
-	int store;
-	int tval;
-	int sval;
-	int likelihood;
+	int tval, sval;
+	create_mode mode;
 } staples[] =
 {
-	{ STORE_GENERAL, TV_FOOD,  SV_FOOD_RATION, 100 },
-	{ STORE_GENERAL, TV_LITE,  SV_LITE_TORCH,  100 },
-	{ STORE_ALCHEMY, TV_SCROLL, SV_SCROLL_WORD_OF_RECALL, 100 },
+	{ TV_FOOD, SV_FOOD_RATION, MAKE_NORMAL },
+	{ TV_LITE, SV_LITE_TORCH, MAKE_NORMAL },
+	{ TV_SCROLL, SV_SCROLL_WORD_OF_RECALL, MAKE_NORMAL },
+	{ TV_FOOD, SV_FOOD_BISCUIT, MAKE_NORMAL },
+	{ TV_FOOD, SV_FOOD_JERKY, MAKE_NORMAL },
+	{ TV_FOOD, SV_FOOD_PINT_OF_WINE, MAKE_NORMAL },
+	{ TV_LITE, SV_LITE_TORCH, MAKE_NORMAL },
+	{ TV_LITE, SV_LITE_LANTERN, MAKE_NORMAL },
+	{ TV_FLASK, 0, MAKE_NORMAL },
+	{ TV_SPIKE, 0, MAKE_NORMAL },
+	{ TV_SHOT, SV_AMMO_NORMAL, MAKE_MAX },
+	{ TV_ARROW, SV_AMMO_NORMAL, MAKE_MAX },
+	{ TV_BOLT, SV_AMMO_NORMAL, MAKE_MAX },
+	{ TV_DIGGING, SV_SHOVEL, MAKE_SINGLE },
+	{ TV_DIGGING, SV_PICK, MAKE_SINGLE },
+	{ TV_CLOAK, SV_CLOAK, MAKE_SINGLE }
 };
+
+
+/*
+ * Helper function: create an item with the given tval,sval pair, add it to the
+ * store st.  Return the slot in the inventory.
+ */
+static int store_create_item(int st, int tval, int sval, create_mode mode)
+{
+	object_type object;
+	int k_idx;
+
+	/* Resolve tval,sval pair into an index */
+	k_idx = lookup_kind(tval, sval);
+
+	/* Validation - do something more substantial here? XXX */
+	if (!k_idx)
+	{
+		msg_print("No object in store_create_item().");
+		return -1;
+	}
+
+	/* Wipe this object */
+	object_wipe(&object);
+
+	/* Create a new object of the chosen kind */
+	object_prep(&object, k_idx);
+
+	/* The object is "known" */
+	object_known(&object);
+
+	/* Item belongs to a store */
+	object.ident |= IDENT_STORE;
+
+	/* Charge lights */
+	if (object.tval == TV_LITE)
+	{
+		if (object.sval == SV_LITE_TORCH)        object.timeout = FUEL_TORCH / 2;
+		else if (object.sval == SV_LITE_LANTERN) object.timeout = FUEL_LAMP / 2;
+	}
+
+	/* Make according to mode */
+	switch (mode)
+	{
+		case MAKE_SINGLE:
+			break;
+
+		case MAKE_NORMAL:
+			mass_produce(&object);
+			break;
+
+		case MAKE_MAX:
+			object.number = 99;
+			break;
+	}
+
+	/* Attempt to carry the object */
+	return store_carry(st, &object);
+}
+
+
 
 /*
  * Create all staple items.
+ *
+ * XXX should ensure that entries marked as "max" stay in stock
  */
-static void store_create_staples(int st)
+static void store_create_staples(void)
 {
-	int i, which, prob;
+	unsigned i;
 
 	/* Iterate through staples */
-	for (i = 0; (unsigned int) i < N_ELEMENTS(staples); i++)
+	for (i = 0; i < N_ELEMENTS(staples); i++)
 	{
-		/* Ignore this one */
-		if (staples[i].store != st) continue;
+		struct staple_type *s = &staples[i];
 
-		/* Find this staple */
-		which = store_find(st, staples[i].tval, staples[i].sval);
-
-		/* Not found */
-		if (which == -1)
-		{
-			prob = rand_int(100);
-
-			/* Create the item */
-			if (prob <= staples[i].likelihood)
-				store_create_item(st, staples[i].tval, staples[i].sval);
-		}
-
-		/* In future, do something like ensuring the size of the stack of staples is high enough - take note of mass_roll */
+		/* Look for the item, and if it isn't there, create it */
+		if (store_find(STORE_GENERAL, s->tval, s->sval) == -1)
+			store_create_item(STORE_GENERAL, s->tval, s->sval, s->mode);
 	}
 }
+
+
 
 /*
  * Maintain the inventory at the stores.
@@ -1380,6 +1414,13 @@ void store_maint(int which)
 
 	/* Ignore home */
 	if (which == STORE_HOME) return;
+
+	/* General Store gets special treatment */
+	if (which == STORE_GENERAL)
+	{
+		store_create_staples();
+		return;
+	}
 
 
 	/* Activate that store */
@@ -1419,9 +1460,6 @@ void store_maint(int which)
 
 
 	/*** "Buy in" various items */
-
-	/* Ensure all staple items are present */
-	store_create_staples(which);
 
 	/* Buy a few items */
 	stock = st_ptr->stock_num;
@@ -1615,8 +1653,9 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 	c_put_str(tval_to_attr[o_ptr->tval & 0x7F], o_name, row, col);
 
 	/* Show weights */
+	colour = curs_attrs[CURS_KNOWN][(int)cursor];
 	strnfmt(out_val, sizeof out_val, "%3d.%d lb", o_ptr->weight / 10, o_ptr->weight % 10);
-	put_str(out_val, row, scr_places_x[LOC_WEIGHT]);
+	c_put_str(colour, out_val, row, scr_places_x[LOC_WEIGHT]);
 
 	/* Describe an object (fully) in a store */
 	if (store_current != STORE_HOME)
@@ -1625,10 +1664,8 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 		x = price_item(o_ptr, FALSE);
 
 		/* Make sure the player can afford it */
-		if ((unsigned int) p_ptr->au < (unsigned int) x)
-			colour = TERM_SLATE;
-		else
-			colour = TERM_WHITE;
+		if ((int) p_ptr->au < (int) x)
+			colour = curs_attrs[CURS_UNKNOWN][(int)cursor];
 
 		/* Actually draw the price */
 		if (((o_ptr->tval == TV_WAND) || (o_ptr->tval == TV_STAFF)) &&
@@ -2238,6 +2275,8 @@ static void store_examine(int item)
 	o_ptr = &st_ptr->stock[item];
 
 	/* Describe it fully */
+	Term_erase(0, 0, 255);
+	Term_gotoxy(0, 0);
 	object_info_screen(o_ptr);
 }
 
@@ -2316,7 +2355,7 @@ bool store_overflow(void)
  */
 static bool store_process_command(char cmd, void *db, int oid)
 {
-	(void)db;
+	bool equip_toggle = FALSE;
 
 	/* Parse the command */
 	switch (cmd)
@@ -2330,6 +2369,7 @@ static bool store_process_command(char cmd, void *db, int oid)
 
 		/* Sell */
 		case 's':
+		case 'd':
 		{
 			store_sell();
 			return TRUE;
@@ -2349,6 +2389,7 @@ static bool store_process_command(char cmd, void *db, int oid)
 
 		/* Examine */
 		case 'l':
+		case 'x':
 		{
 			store_examine(oid);
 			break;
@@ -2393,14 +2434,28 @@ static bool store_process_command(char cmd, void *db, int oid)
 		/* Equipment list */
 		case 'e':
 		{
-			do_cmd_equip();
-			break;
+			equip_toggle = TRUE;
 		}
 
 		/* Inventory list */
 		case 'i':
 		{
-			do_cmd_inven();
+			/* Display the right thing until the user escapes */
+			do
+			{
+				if (equip_toggle) do_cmd_equip();
+				else do_cmd_inven();
+
+				/* Toggle the toggle */
+				equip_toggle = !equip_toggle;
+
+			} while (p_ptr->command_new == '/' || p_ptr->command_new == 'e' ||
+			         p_ptr->command_new == 'i');
+
+			/* Legal inventory commands are drop, inspect */
+			if (!strchr("dsI", p_ptr->command_new))
+				p_ptr->command_new = 0;
+
 			break;
 		}
 
@@ -2585,7 +2640,7 @@ void do_cmd_store(void)
 		items_region.page_rows = scr_places_y[LOC_ITEMS_END] - scr_places_y[LOC_ITEMS_START] + 1;
 
 		/* These two can't intersect! */
-		menu.cmd_keys = "\n\x010\r?=CdeEwkiIlstx"; /* \x10 = ^p */
+		menu.cmd_keys = "\n\x010\r?=CdeEiIklstwx\x8B\x8C"; /* \x10 = ^p */
 		menu.selections = "abcfghjmnopqruvyz1234567890";
 
 		/* Keep the cursor in range of the stock */

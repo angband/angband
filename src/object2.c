@@ -2903,6 +2903,7 @@ static bool kind_is_good(int k_idx)
 bool make_object(object_type *j_ptr, bool good, bool great)
 {
 	int prob, base;
+	object_kind *k_ptr;
 
 
 	/* Chance of "special object" */
@@ -2950,17 +2951,18 @@ bool make_object(object_type *j_ptr, bool good, bool great)
 	/* Apply magic (allow artifacts) */
 	apply_magic(j_ptr, object_level, TRUE, good, great);
 
-	/* Hack -- generate multiple spikes/missiles */
-	switch (j_ptr->tval)
+
+	/* Generate multiple items */
+	/* Imported from Steamband and Sangband */
+	/* XXX Will probably not work so well for stacks of potions (yet) */
+	k_ptr = &k_info[j_ptr->k_idx];
+
+	if (k_ptr->gen_mult_prob >= 100 ||
+	    k_ptr->gen_mult_prob >= randint(100))
 	{
-		case TV_SPIKE:
-		case TV_SHOT:
-		case TV_ARROW:
-		case TV_BOLT:
-		{
-			j_ptr->number = damroll(6, 7);
-		}
+		j_ptr->number = damroll(k_ptr->gen_dice, k_ptr->gen_side);
 	}
+
 
 	/* Notice "okay" out-of-depth objects */
 	if (!cursed_p(j_ptr) && !broken_p(j_ptr) &&

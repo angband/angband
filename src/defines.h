@@ -252,20 +252,12 @@
 /*
  * Store constants
  *
- * Special note about STORE_MAX_KEEP; not only must it be below
- * STORE_INVEN_MAX, it must actually be below (STORE_INVEN_MAX - maximum
- * staple items across all stores); i.e. if the General Store has three
- * staple items (and no other store has more than three staple items),
- * then STORE_MAX_KEEP > (STORE_INVEN_MAX - 3), or > 21 (in this case).
+ * STORE_MAX_KEEP must be < STORE_INVEN_MAX.
+ *
  */
 #define STORE_INVEN_MAX	24		/* Max number of discrete objs in inven */
-#define STORE_OBJ_LEVEL	5		/* Magic Level for normal stores */
-#define STORE_TURNOVER	9		/* Normal shop turnover, per day */
-#define STORE_MIN_KEEP	6		/* Min slots to "always" keep full -
-                        		   must be above 0 */
-#define STORE_MAX_KEEP	18		/* Max slots to "always" keep full */
-#define STORE_SHUFFLE	25		/* 1/Chance (per day) of an owner changing */
 #define STORE_TURNS		1000	/* Number of turns between turnovers */
+#define STORE_SHUFFLE	25		/* 1/Chance (per day) of an owner changing */
 #define STORE_CHOICES	32		/* Number of choices in the store selection table */
 
 
@@ -488,41 +480,6 @@ enum
 #define SEX_FEMALE		0
 #define SEX_MALE		1
 
-
-/*** Screen Locations ***/
-
-/*
- * Some screen locations for various display routines
- */
-#define ROW_HUNGRY		(Term->hgt - 1)
-#define COL_HUNGRY		0	/* "Weak" / "Hungry" / "Full" / "Gorged" */
-
-#define ROW_BLIND		(Term->hgt - 1)
-#define COL_BLIND		7	/* "Blind" */
-
-#define ROW_CONFUSED	(Term->hgt - 1)
-#define COL_CONFUSED	13	/* "Confused" */
-
-#define ROW_AFRAID		(Term->hgt - 1)
-#define COL_AFRAID		22	/* "Afraid" */
-
-#define ROW_POISONED	(Term->hgt - 1)
-#define COL_POISONED	29	/* "Poisoned" */
-
-#define ROW_STATE		(Term->hgt - 1)
-#define COL_STATE		38	/* <state> */
-
-#define ROW_SPEED		(Term->hgt - 1)
-#define COL_SPEED		49	/* "Slow (-NN)" or "Fast (+NN)" */
-
-#define ROW_STUDY		(Term->hgt - 1)
-#define COL_STUDY		64	/* "Study" */
-
-#define ROW_DEPTH		(Term->hgt - 1)
-#define COL_DEPTH		70	/* "Lev NNN" / "NNNN ft" */
-
-#define ROW_OPPOSE_ELEMENTS	(Term->hgt - 1)
-#define COL_OPPOSE_ELEMENTS	80	/* "Acid Elec Fire Cold Pois" */
 
 
 /*** General index values ***/
@@ -1666,7 +1623,7 @@ enum
 
 
 /*
- * Bit flags for the "p_ptr->window" variable (etc)
+ * Bit flags for the "p_ptr->window" variable.
  */
 #define PW_INVEN            0x00000001L /* Display inven/equip */
 #define PW_EQUIP            0x00000002L /* Display equip/inven */
@@ -1680,8 +1637,7 @@ enum
 #define PW_OBJECT           0x00000200L /* Display object recall */
 #define PW_MONLIST          0x00000400L /* Display monster list */
 #define PW_STATUS           0x00000800L /* Display status */
-#define PW_SCRIPT_VARS      0x00001000L /* Display script variables */
-#define PW_SCRIPT_SOURCE    0x00002000L /* Display script source */
+/* xxx */
 #define PW_BORG_1           0x00004000L /* Display borg messages */
 #define PW_BORG_2           0x00008000L /* Display borg status */
 

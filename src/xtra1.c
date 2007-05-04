@@ -9,7 +9,6 @@
  */
 
 #include "angband.h"
-
 #include "script.h"
 
 
@@ -93,6 +92,9 @@ s16b modify_stat_value(int value, int amount)
 
 
 
+
+/*** Sidebar display functions ***/
+
 /*
  * Print character info at given row, column in a 13 char field
  */
@@ -104,8 +106,6 @@ static void prt_field(cptr info, int row, int col)
 	/* Dump the info itself */
 	c_put_str(TERM_L_BLUE, info, row, col);
 }
-
-
 
 
 /*
@@ -137,8 +137,6 @@ static void prt_stat(int stat, int row, int col)
 		put_str("!", row, col + 3);
 	}
 }
-
-
 
 
 /*
@@ -343,6 +341,263 @@ static void prt_sp(int row, int col)
 }
 
 
+/*
+ * Redraw the "monster health bar"
+ *
+ * The "monster health bar" provides visual feedback on the "health"
+ * of the monster currently being "tracked".  There are several ways
+ * to "track" a monster, including targetting it, attacking it, and
+ * affecting it (and nobody else) with a ranged attack.  When nothing
+ * is being tracked, we clear the health bar.  If the monster being
+ * tracked is not currently visible, a special health bar is shown.
+ */
+static void prt_health(int row, int col)
+{
+	/* Not tracking */
+	if (!p_ptr->health_who)
+	{
+		/* Erase the health bar */
+		Term_erase(col, row, 12);
+	}
+
+	/* Tracking an unseen monster */
+	else if (!mon_list[p_ptr->health_who].ml)
+	{
+		/* Indicate that the monster health is "unknown" */
+		Term_putstr(col, row, 12, TERM_WHITE, "[----------]");
+	}
+
+	/* Tracking a hallucinatory monster */
+	else if (p_ptr->timed[TMD_IMAGE])
+	{
+		/* Indicate that the monster health is "unknown" */
+		Term_putstr(col, row, 12, TERM_WHITE, "[----------]");
+	}
+
+	/* Tracking a dead monster (?) */
+	else if (!mon_list[p_ptr->health_who].hp < 0)
+	{
+		/* Indicate that the monster health is "unknown" */
+		Term_putstr(col, row, 12, TERM_WHITE, "[----------]");
+	}
+
+	/* Tracking a visible monster */
+	else
+	{
+		int pct, len;
+
+		monster_type *m_ptr = &mon_list[p_ptr->health_who];
+
+		/* Default to almost dead */
+		byte attr = TERM_RED;
+
+		/* Extract the "percent" of health */
+		pct = 100L * m_ptr->hp / m_ptr->maxhp;
+
+		/* Badly wounded */
+		if (pct >= 10) attr = TERM_L_RED;
+
+		/* Wounded */
+		if (pct >= 25) attr = TERM_ORANGE;
+
+		/* Somewhat Wounded */
+		if (pct >= 60) attr = TERM_YELLOW;
+
+		/* Healthy */
+		if (pct >= 100) attr = TERM_L_GREEN;
+
+		/* Afraid */
+		if (m_ptr->monfear) attr = TERM_VIOLET;
+
+		/* Confused */
+		if (m_ptr->confused) attr = TERM_UMBER;
+
+		/* Stunned */
+		if (m_ptr->stunned) attr = TERM_L_BLUE;
+
+		/* Asleep */
+		if (m_ptr->csleep) attr = TERM_BLUE;
+
+		/* Convert percent into "health" */
+		len = (pct < 10) ? 1 : (pct < 90) ? (pct / 10 + 1) : 10;
+
+		/* Default to "unknown" */
+		Term_putstr(col, row, 12, TERM_WHITE, "[----------]");
+
+		/* Dump the current "health" (use '*' symbols) */
+		Term_putstr(col + 1, row, len, attr, "**********");
+	}
+}
+
+
+/*
+ * Print cut indicator.
+ */
+static void prt_cut(int row, int col)
+{
+	int c = p_ptr->timed[TMD_CUT];
+
+	if (c > 1000)
+	{
+		c_put_str(TERM_L_RED, "Mortal wound", row, col);
+	}
+	else if (c > 200)
+	{
+		c_put_str(TERM_RED, "Deep gash   ", row, col);
+	}
+	else if (c > 100)
+	{
+		c_put_str(TERM_RED, "Severe cut  ", row, col);
+	}
+	else if (c > 50)
+	{
+		c_put_str(TERM_ORANGE, "Nasty cut   ", row, col);
+	}
+	else if (c > 25)
+	{
+		c_put_str(TERM_ORANGE, "Bad cut     ", row, col);
+	}
+	else if (c > 10)
+	{
+		c_put_str(TERM_YELLOW, "Light cut   ", row, col);
+	}
+	else if (c)
+	{
+		c_put_str(TERM_YELLOW, "Graze       ", row, col);
+	}
+	else
+	{
+		put_str("            ", row, col);
+	}
+}
+
+
+/*
+ * Print stun indicator.
+ */
+static void prt_stun(int row, int col)
+{
+	int s = p_ptr->timed[TMD_STUN];
+
+	if (s > 100)
+	{
+		c_put_str(TERM_RED, "Knocked out ", row, col);
+	}
+	else if (s > 50)
+	{
+		c_put_str(TERM_ORANGE, "Heavy stun  ", row, col);
+	}
+	else if (s)
+	{
+		c_put_str(TERM_ORANGE, "Stun        ", row, col);
+	}
+	else
+	{
+		put_str("            ", row, col);
+	}
+}
+
+
+
+
+/* Some simple wrapper functions */
+static void prt_str(int row, int col) { prt_stat(A_STR, row, col); }
+static void prt_dex(int row, int col) { prt_stat(A_DEX, row, col); }
+static void prt_wis(int row, int col) { prt_stat(A_WIS, row, col); }
+static void prt_int(int row, int col) { prt_stat(A_INT, row, col); }
+static void prt_con(int row, int col) { prt_stat(A_CON, row, col); }
+static void prt_chr(int row, int col) { prt_stat(A_CHR, row, col); }
+static void prt_race(int row, int col) { prt_field(p_name + rp_ptr->name, row, col); }
+static void prt_class(int row, int col) { prt_field(c_name + cp_ptr->name, row, col); }
+
+
+/*
+ * Struct of sidebar handlers.
+ */
+static const struct side_handler_t
+{
+	void (*hook)(int, int);		/* int row, int col */
+	int priority;				/* 1 is most important (always displayed) */
+	u32b flag;					/* PR_* flag this corresponds to */
+} side_handlers[] =
+{
+	{ prt_race,      20, PR_MISC },
+	{ prt_class,     19, PR_MISC },
+	{ prt_title,     18, PR_TITLE },
+	{ prt_level,     10, PR_LEV },
+	{ prt_exp,       15, PR_EXP },
+	{ prt_gold,      11, PR_GOLD },
+	{ prt_equippy,   17, PR_EQUIPPY },
+	{ prt_str,        6, PR_STATS },
+	{ prt_int,        5, PR_STATS },
+	{ prt_wis,        4, PR_STATS },
+	{ prt_dex,        3, PR_STATS },
+	{ prt_con,        2, PR_STATS },
+	{ prt_chr,        1, PR_STATS },
+	{ NULL,          14, 0 },
+	{ prt_ac,         7, PR_ARMOR },
+	{ prt_hp,         8, PR_HP },
+	{ prt_sp,         9, PR_MANA },
+	{ NULL,          22, 0 },
+	{ prt_health,    12, PR_HEALTH },
+	{ NULL,          21, 0 },
+	{ prt_cut,       13, PR_CUT },
+	{ prt_stun,      16, PR_STUN }
+};
+
+
+/*
+ * This prints the sidebar, using a clever method which means that it will only
+ * print as much as can be displayed on <24-line screens.
+ *
+ * Each row is given a priority; the least important higher numbers and the most
+ * important lower numbers.  As the screen gets smaller, the rows start to
+ * disappear in the order of lowest to highest importance.
+ */
+static void display_sidebar(void)
+{
+	int x, y, row;
+	int max_priority;
+	size_t i;
+	u32b to_clear = 0;
+
+
+	Term_get_size(&x, &y);
+
+	/* Keep the top and bottom lines clear. */
+	max_priority = y - 2;
+
+	/* Display list entries */
+	for (i = 0, row = 1; i < N_ELEMENTS(side_handlers); i++)
+	{
+		const struct side_handler_t *hnd = &side_handlers[i];
+
+		/* If this is high enough priority, display it */
+		if (hnd->priority <= max_priority)
+		{
+			/* If the redraw flag it set, and there is a hook */
+			if ((p_ptr->redraw & hnd->flag) && hnd->hook)
+			{
+				/* Mark flag for removal */
+				to_clear |= hnd->flag;
+
+				/* Display at the current row */
+				hnd->hook(row, 0);
+			}
+
+			/* Increment for next time */
+			row++;
+		}
+	}
+
+	/* Clear flags */
+	p_ptr->redraw &= ~(to_clear);
+}
+
+
+
+
+/*** Status line display functions ***/
 
 /*
  * Prints depth in stat area
@@ -625,6 +880,9 @@ static void prt_speed(int row, int col)
 }
 
 
+/*
+ * Print whether a character is studying or not.
+ */
 static void prt_study(int row, int col)
 {
 	if (p_ptr->new_spells)
@@ -638,79 +896,20 @@ static void prt_study(int row, int col)
 }
 
 
-static void prt_cut(int row, int col)
+static void prt_elements(int row, int col)
 {
-	int c = p_ptr->timed[TMD_CUT];
+	int wid, n;
 
-	if (c > 1000)
-	{
-		c_put_str(TERM_L_RED, "Mortal wound", row, col);
-	}
-	else if (c > 200)
-	{
-		c_put_str(TERM_RED, "Deep gash   ", row, col);
-	}
-	else if (c > 100)
-	{
-		c_put_str(TERM_RED, "Severe cut  ", row, col);
-	}
-	else if (c > 50)
-	{
-		c_put_str(TERM_ORANGE, "Nasty cut   ", row, col);
-	}
-	else if (c > 25)
-	{
-		c_put_str(TERM_ORANGE, "Bad cut     ", row, col);
-	}
-	else if (c > 10)
-	{
-		c_put_str(TERM_YELLOW, "Light cut   ", row, col);
-	}
-	else if (c)
-	{
-		c_put_str(TERM_YELLOW, "Graze       ", row, col);
-	}
-	else
-	{
-		put_str("            ", row, col);
-	}
-}
-
-
-
-static void prt_stun(int row, int col)
-{
-	int s = p_ptr->timed[TMD_STUN];
-
-	if (s > 100)
-	{
-		c_put_str(TERM_RED, "Knocked out ", row, col);
-	}
-	else if (s > 50)
-	{
-		c_put_str(TERM_ORANGE, "Heavy stun  ", row, col);
-	}
-	else if (s)
-	{
-		c_put_str(TERM_ORANGE, "Stun        ", row, col);
-	}
-	else
-	{
-		put_str("            ", row, col);
-	}
-}
-
-
-/*
- * Display temp. resists
- */
-static void prt_oppose_elements(int row, int col, int wid)
-{
 	/* Number of resists to display */
 	int count = 5;
 
+	/* XXX Ignore column setting */
+	col = 80;
+	wid = Term->wid - col;
+
 	/* Print up to 5 letters of the resist */
-	int n = MIN(wid / count, 5);
+	n = MIN(wid / count, 5);
+
 
 	/* Check space */
 	if (n <= 0) return;
@@ -748,234 +947,70 @@ static void prt_oppose_elements(int row, int col, int wid)
 		Term_putstr(col, row, n, TERM_GREEN, "Pois ");
 	else
 		Term_putstr(col, row, n, TERM_GREEN, "     ");
-
-	col += n; /* Unused */
 }
+
 
 
 
 /*
- * Redraw the "monster health bar"
- *
- * The "monster health bar" provides visual feedback on the "health"
- * of the monster currently being "tracked".  There are several ways
- * to "track" a monster, including targetting it, attacking it, and
- * affecting it (and nobody else) with a ranged attack.  When nothing
- * is being tracked, we clear the health bar.  If the monster being
- * tracked is not currently visible, a special health bar is shown.
+ * Struct of status line indicators.
  */
-static void health_redraw(int row, int col)
+static const struct status_handler_t
 {
-	/* Not tracking */
-	if (!p_ptr->health_who)
-	{
-		/* Erase the health bar */
-		Term_erase(col, row, 12);
-	}
-
-	/* Tracking an unseen monster */
-	else if (!mon_list[p_ptr->health_who].ml)
-	{
-		/* Indicate that the monster health is "unknown" */
-		Term_putstr(col, row, 12, TERM_WHITE, "[----------]");
-	}
-
-	/* Tracking a hallucinatory monster */
-	else if (p_ptr->timed[TMD_IMAGE])
-	{
-		/* Indicate that the monster health is "unknown" */
-		Term_putstr(col, row, 12, TERM_WHITE, "[----------]");
-	}
-
-	/* Tracking a dead monster (?) */
-	else if (!mon_list[p_ptr->health_who].hp < 0)
-	{
-		/* Indicate that the monster health is "unknown" */
-		Term_putstr(col, row, 12, TERM_WHITE, "[----------]");
-	}
-
-	/* Tracking a visible monster */
-	else
-	{
-		int pct, len;
-
-		monster_type *m_ptr = &mon_list[p_ptr->health_who];
-
-		/* Default to almost dead */
-		byte attr = TERM_RED;
-
-		/* Extract the "percent" of health */
-		pct = 100L * m_ptr->hp / m_ptr->maxhp;
-
-		/* Badly wounded */
-		if (pct >= 10) attr = TERM_L_RED;
-
-		/* Wounded */
-		if (pct >= 25) attr = TERM_ORANGE;
-
-		/* Somewhat Wounded */
-		if (pct >= 60) attr = TERM_YELLOW;
-
-		/* Healthy */
-		if (pct >= 100) attr = TERM_L_GREEN;
-
-		/* Afraid */
-		if (m_ptr->monfear) attr = TERM_VIOLET;
-
-		/* Confused */
-		if (m_ptr->confused) attr = TERM_UMBER;
-
-		/* Stunned */
-		if (m_ptr->stunned) attr = TERM_L_BLUE;
-
-		/* Asleep */
-		if (m_ptr->csleep) attr = TERM_BLUE;
-
-		/* Convert percent into "health" */
-		len = (pct < 10) ? 1 : (pct < 90) ? (pct / 10 + 1) : 10;
-
-		/* Default to "unknown" */
-		Term_putstr(col, row, 12, TERM_WHITE, "[----------]");
-
-		/* Dump the current "health" (use '*' symbols) */
-		Term_putstr(col + 1, row, len, attr, "**********");
-	}
-}
+	u32b flag;							/* p_ptr->redraw flag this entry is for */
+	int column;							/* Column to display at */
+	void (*hook)(int row, int col);		/* Display function */
+} status_handlers[] =
+{
+	{ PR_HUNGER,    0, prt_hunger },   /* "Weak" / "Hungry" / "Full" / "Gorged" */
+	{ PR_BLIND,     7, prt_blind },    /* "Blind" */
+	{ PR_CONFUSED, 13, prt_confused }, /* "Confused" */
+	{ PR_AFRAID,   22, prt_afraid },   /* "Afraid" */
+	{ PR_POISONED, 29, prt_poisoned }, /* "Poisoned" */
+	{ PR_STATE,    38, prt_state },    /* <state> */
+	{ PR_SPEED,    49, prt_speed },    /* "Slow (-NN)" or "Fast (+NN)" */
+	{ PR_STUDY,    64, prt_study },    /* "Study" */
+	{ PR_DEPTH,    70, prt_depth },    /* "Lev NNN" / "NNNN ft" */
+	{ PR_OPPOSE_ELEMENTS, 80, prt_elements }, /* Acid Elec Fire Cold Pois */
+};
 
 
 /*
- * Hack -- display inventory in sub-windows
+ * Print the status line.
  */
-static void fix_inven(void)
+static void display_statusline(void)
 {
-	int j;
+	int row = Term->hgt - 1;
+	size_t i;
 
-	/* Scan windows */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
+	/* Display those which need redrawing */
+	for (i = 0; i < N_ELEMENTS(status_handlers); i++)
 	{
-		term *old = Term;
+		const struct status_handler_t *hnd = &status_handlers[i];
 
-		/* No window */
-		if (!angband_term[j]) continue;
-
-		/* No relevant flags */
-		if (!(op_ptr->window_flag[j] & (PW_INVEN))) continue;
-
-		/* Activate */
-		Term_activate(angband_term[j]);
-
-		/* Display inventory */
-		display_inven();
-
-		/* Fresh */
-		Term_fresh();
-
-		/* Restore */
-		Term_activate(old);
+		if (p_ptr->redraw & hnd->flag)
+		{
+			p_ptr->redraw &= ~(hnd->flag);
+			hnd->hook(row, hnd->column);
+		}
 	}
+
+	return;
 }
 
 
 
-/*
- * Hack -- display monsters in sub-windows
- */
-static void fix_monlist(void)
-{
-	int j;
 
-	/* Scan windows */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
-	{
-		term *old = Term;
-
-		/* No window */
-		if (!angband_term[j]) continue;
-
-		/* No relevant flags */
-		if (!(op_ptr->window_flag[j] & (PW_MONLIST))) continue;
-
-		/* Activate */
-		Term_activate(angband_term[j]);
-
-		/* Display visible monsters */
-		display_monlist();
-
-		/* Fresh */
-		Term_fresh();
-
-		/* Restore */
-		Term_activate(old);
-	}
-}
-
-
-
-/*
- * Hack -- display equipment in sub-windows
- */
-static void fix_equip(void)
-{
-	int j;
-
-	/* Scan windows */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
-	{
-		term *old = Term;
-
-		/* No window */
-		if (!angband_term[j]) continue;
-
-		/* No relevant flags */
-		if (!(op_ptr->window_flag[j] & (PW_EQUIP))) continue;
-
-		/* Activate */
-		Term_activate(angband_term[j]);
-
-		/* Display equipment */
-		display_equip();
-
-		/* Fresh */
-		Term_fresh();
-
-		/* Restore */
-		Term_activate(old);
-	}
-}
-
+/*** Subwindow display functions ***/
 
 /*
  * Hack -- display player in sub-windows (mode 0)
  */
 static void fix_player_0(void)
 {
-	int j;
-
-	/* Scan windows */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
-	{
-		term *old = Term;
-
-		/* No window */
-		if (!angband_term[j]) continue;
-
-		/* No relevant flags */
-		if (!(op_ptr->window_flag[j] & (PW_PLAYER_0))) continue;
-
-		/* Activate */
-		Term_activate(angband_term[j]);
-
-		/* Display player */
-		display_player(0);
-
-		/* Fresh */
-		Term_fresh();
-
-		/* Restore */
-		Term_activate(old);
-	}
+	/* Display player */
+	display_player(0);
 }
-
 
 
 /*
@@ -983,38 +1018,15 @@ static void fix_player_0(void)
  */
 static void fix_player_1(void)
 {
-	int j;
-
-	/* Scan windows */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
-	{
-		term *old = Term;
-
-		/* No window */
-		if (!angband_term[j]) continue;
-
-		/* No relevant flags */
-		if (!(op_ptr->window_flag[j] & (PW_PLAYER_1))) continue;
-
-		/* Activate */
-		Term_activate(angband_term[j]);
-
-		/* Display flags */
-		display_player(1);
-
-		/* Fresh */
-		Term_fresh();
-
-		/* Restore */
-		Term_activate(old);
-	}
+	/* Display flags */
+	display_player(1);
 }
 
 
 /*
  * Hack - Display the left-hand-side of the main term in a separate window
  */
-static void prt_frame_compact(void)
+static void fix_frame_compact(void)
 {
 	int row = 0;
 	int col = 0;
@@ -1052,8 +1064,8 @@ static void prt_frame_compact(void)
 	/* Spellpoints */
 	prt_sp(row++, col);
 
-	/* Special */
-	health_redraw(row++, col);
+	/* Monster health */
+	prt_health(row++, col);
 
 	/* Cut */
 	prt_cut(row++, col);
@@ -1064,194 +1076,34 @@ static void prt_frame_compact(void)
 
 
 /*
- * Hack -- display player in sub-windows (compact)
- */
-static void fix_player_compact(void)
-{
-	int j;
-
-	/* Scan windows */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
-	{
-		term *old = Term;
-
-		/* No window */
-		if (!angband_term[j]) continue;
-
-		/* No relevant flags */
-		if (!(op_ptr->window_flag[j] & (PW_PLAYER_2))) continue;
-
-		/* Activate */
-		Term_activate(angband_term[j]);
-
-		/* Display player */
-		prt_frame_compact();
-
-		/* Fresh */
-		Term_fresh();
-
-		/* Restore */
-		Term_activate(old);
-	}
-}
-
-
-/*
- * Hack - Display the status line in a separate window
- */
-static void prt_status_line(void)
-{
-	int row = 0;
-
-	/* Hungry */
-	prt_hunger(row, COL_HUNGRY);
-
-	/* Blind */
-	prt_blind(row, COL_BLIND);
-
-	/* Confused */
-	prt_confused(row, COL_CONFUSED);
-
-	/* Afraid */
-	prt_afraid(row, COL_AFRAID);
-
-	/* Poisoned */
-	prt_poisoned(row, COL_POISONED);
-
-	/* State */
-	prt_state(row, COL_STATE);
-
-	/* Speed */
-	prt_speed(row, COL_SPEED);
-
-	/* Study */
-	prt_study(row, COL_STUDY);
-
-	/* Depth */
-	prt_depth(row, COL_DEPTH);
-
-	/* Temp. resists */
-	prt_oppose_elements(row, COL_OPPOSE_ELEMENTS,
-	                    Term->wid - COL_OPPOSE_ELEMENTS);
-}
-
-
-/*
- * Hack -- display status in sub-windows
- */
-static void fix_status(void)
-{
-	int j;
-
-	/* Scan windows */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
-	{
-		term *old = Term;
-
-		/* No window */
-		if (!angband_term[j]) continue;
-
-		/* No relevant flags */
-		if (!(op_ptr->window_flag[j] & (PW_STATUS))) continue;
-
-		/* Activate */
-		Term_activate(angband_term[j]);
-
-		/* Display status line */
-		prt_status_line();
-
-		/* Fresh */
-		Term_fresh();
-
-		/* Restore */
-		Term_activate(old);
-	}
-}
-
-
-/*
- * Hack -- display dungeon map view in sub-windows.
- */
-static void fix_map(void)
-{
-	int j;
-
-	/* Scan windows */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
-	{
-		term *old = Term;
-
-		/* No window */
-		if (!angband_term[j]) continue;
-
-		/* No relevant flags */
-		if (!(op_ptr->window_flag[j] & (PW_MAP))) continue;
-
-		/* Activate */
-		Term_activate(angband_term[j]);
-
-		/*** The maps are always up-to-date ***/
-
-		/* Fresh */
-		Term_fresh();
-
-		/* Restore */
-		Term_activate(old);
-	}
-}
-
-
-/*
  * Hack -- display recent messages in sub-windows
  *
  * Adjust for width and split messages.  XXX XXX XXX
  */
 static void fix_message(void)
 {
-	int j, i;
+	int i;
 	int w, h;
 	int x, y;
 
-	/* Scan windows */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
+	/* Get size */
+	Term_get_size(&w, &h);
+
+	/* Dump messages */
+	for (i = 0; i < h; i++)
 	{
-		term *old = Term;
+		byte color = message_color((s16b)i);
 
-		/* No window */
-		if (!angband_term[j]) continue;
+		/* Dump the message on the appropriate line */
+		Term_putstr(0, (h - 1) - i, -1, color, message_str((s16b)i));
 
-		/* No relevant flags */
-		if (!(op_ptr->window_flag[j] & (PW_MESSAGE))) continue;
+		/* Cursor */
+		Term_locate(&x, &y);
 
-		/* Activate */
-		Term_activate(angband_term[j]);
-
-		/* Get size */
-		Term_get_size(&w, &h);
-
-		/* Dump messages */
-		for (i = 0; i < h; i++)
-		{
-			byte color = message_color((s16b)i);
-
-			/* Dump the message on the appropriate line */
-			Term_putstr(0, (h - 1) - i, -1, color, message_str((s16b)i));
-
-			/* Cursor */
-			Term_locate(&x, &y);
-
-			/* Clear to end of line */
-			Term_erase(x, y, 255);
-		}
-
-		/* Fresh */
-		Term_fresh();
-
-		/* Restore */
-		Term_activate(old);
+		/* Clear to end of line */
+		Term_erase(x, y, 255);
 	}
 }
-
 
 
 /*
@@ -1266,31 +1118,8 @@ static void fix_message(void)
  */
 static void fix_overhead(void)
 {
-	int j;
-
-	/* Scan windows */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
-	{
-		term *old = Term;
-
-		/* No window */
-		if (!angband_term[j]) continue;
-
-		/* No relevant flags */
-		if (!(op_ptr->window_flag[j] & (PW_OVERHEAD))) continue;
-
-		/* Activate */
-		Term_activate(angband_term[j]);
-
-		/* Redraw map */
-		display_map(NULL, NULL);
-
-		/* Fresh */
-		Term_fresh();
-
-		/* Restore */
-		Term_activate(old);
-	}
+	/* Redraw map */
+	display_map(NULL, NULL);
 }
 
 
@@ -1299,31 +1128,9 @@ static void fix_overhead(void)
  */
 static void fix_monster(void)
 {
-	int j;
-
-	/* Scan windows */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
-	{
-		term *old = Term;
-
-		/* No window */
-		if (!angband_term[j]) continue;
-
-		/* No relevant flags */
-		if (!(op_ptr->window_flag[j] & (PW_MONSTER))) continue;
-
-		/* Activate */
-		Term_activate(angband_term[j]);
-
-		/* Display monster race info */
-		if (p_ptr->monster_race_idx) display_roff(p_ptr->monster_race_idx);
-
-		/* Fresh */
-		Term_fresh();
-
-		/* Restore */
-		Term_activate(old);
-	}
+	/* Display monster race info */
+	if (p_ptr->monster_race_idx)
+		display_roff(p_ptr->monster_race_idx);
 }
 
 
@@ -1332,33 +1139,120 @@ static void fix_monster(void)
  */
 static void fix_object(void)
 {
-	int j;
+	/* Display object type info */
+	if (p_ptr->object_kind_idx)
+		display_koff(p_ptr->object_kind_idx);
+}
 
-	/* Scan windows */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
+
+/*
+ * Print the status display subwindow
+ */
+static void fix_status(void)
+{
+	int row = 0;
+	size_t i;
+
+	for (i = 0; i < N_ELEMENTS(status_handlers) - 1; i++)
 	{
-		term *old = Term;
-
-		/* No window */
-		if (!angband_term[j]) continue;
-
-		/* No relevant flags */
-		if (!(op_ptr->window_flag[j] & (PW_OBJECT))) continue;
-
-		/* Activate */
-		Term_activate(angband_term[j]);
-
-		/* Display monster race info */
-		if (p_ptr->object_kind_idx) display_koff(p_ptr->object_kind_idx);
-
-		/* Fresh */
-		Term_fresh();
-
-		/* Restore */
-		Term_activate(old);
+		status_handlers[i].hook(row, 0);
+		row++;
 	}
 }
 
+
+
+
+/*
+ * Struct of subwindow display handlers.
+ */
+static const struct win_handler_t
+{
+	u32b flag;
+	void (*hook)(void);
+} win_handlers[] =
+{
+	{ PW_INVEN, display_inven },		/* Display inventory */
+	{ PW_EQUIP, display_equip },		/* Display equipment */
+	{ PW_PLAYER_0, fix_player_0 },
+	{ PW_PLAYER_1, fix_player_1 },
+	{ PW_PLAYER_2, fix_frame_compact },
+#if 0
+	{ PW_MAP, fix_map },				/* The maps are always up-to-date */
+#endif
+	{ PW_MESSAGE, fix_message },
+	{ PW_OVERHEAD, fix_overhead },
+	{ PW_MONSTER, fix_monster },
+	{ PW_OBJECT, fix_object },
+	{ PW_MONLIST, display_monlist },	/* Display visible monsters */
+	{ PW_STATUS, fix_status }		/* Display status lines */
+};
+
+
+/*
+ * Handle "p_ptr->window"
+ */
+void window_stuff(void)
+{
+	size_t i, j;
+	u32b mask = 0L;
+	term *old = Term;
+
+	/* Nothing to do */
+	if (!p_ptr->window) return;
+
+	/* Scan windows */
+	for (i = 0; i < ANGBAND_TERM_MAX; i++)
+	{
+		/* Ignore non-windows */
+		if (!angband_term[i]) break;
+
+		/* Save usable flags */
+		mask |= op_ptr->window_flag[i];
+	}
+
+	/* Apply usable flags */
+	p_ptr->window &= (mask);
+
+	/* Nothing to do */
+	if (!p_ptr->window) return;
+
+
+	/* Walk through all the handlers */
+	for (i = 0; i < N_ELEMENTS(win_handlers); i++)
+	{
+		const struct win_handler_t *hnd = &win_handlers[i];
+
+		/* Don't bother if it has no flags set */
+		if (!(p_ptr->window & hnd->flag)) continue;
+
+		/* Iterate over all the terms */
+		for (j = 0; j < ANGBAND_TERM_MAX; j++)
+		{
+			/* No window */
+			if (!angband_term[j]) continue;
+
+			/* No relevant flags */
+			if (!(op_ptr->window_flag[j] & hnd->flag)) continue;
+
+			/* Call the hook */
+			Term_activate(angband_term[j]);
+			hnd->hook();
+			Term_fresh();
+		}
+
+		/* Forget the flag */
+		p_ptr->window &= ~(hnd->flag);
+	}
+
+	/* Restore old terminal */
+	Term_activate(old);
+}
+
+
+
+
+/*** Update flag handler functions ***/
 
 /*
  * Calculate number of spells player should have, and forget,
@@ -1715,7 +1609,6 @@ static void calc_mana(void)
 }
 
 
-
 /*
  * Calculate the players (maximal) hit points
  *
@@ -1755,7 +1648,6 @@ static void calc_hitpoints(void)
 		p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 	}
 }
-
 
 
 /*
@@ -2752,6 +2644,9 @@ static void calc_bonuses(void)
 
 
 
+
+/*** Generic "deal with" functions ***/
+
 /*
  * Handle "p_ptr->notice"
  */
@@ -2783,7 +2678,6 @@ void notice_stuff(void)
 		autoinscribe_ground();
 	}
 }
-
 
 /*
  * Handle "p_ptr->update"
@@ -2881,100 +2775,6 @@ void update_stuff(void)
 }
 
 
-/* Some simple wrapper functions, done somewhat lazily */
-#define PRT_STAT(N, n) \
-	static void N(int row, int col) { prt_stat(n, row, col); }
-
-PRT_STAT(prt_str, A_STR)
-PRT_STAT(prt_dex, A_DEX)
-PRT_STAT(prt_wis, A_WIS)
-PRT_STAT(prt_int, A_INT)
-PRT_STAT(prt_con, A_CON)
-PRT_STAT(prt_chr, A_CHR)
-
-static void prt_race(int row, int col) { prt_field(p_name + rp_ptr->name, row, col); }
-static void prt_class(int row, int col) { prt_field(c_name + cp_ptr->name, row, col); }
-
-
-/*
- * This prints the sidebar, using a clever method which means that it will only
- * print as much as can be displayed on <24-line screens.
- *
- * Each row is given a priority; the least important higher numbers and the most
- * important lower numbers.  As the screen gets smaller, the rows start to
- * disappear in the order of lowest to highest importance.
- */
-static void prt_side(void)
-{
-	struct sidebar_entry
-	{
-		void (*hook)(int, int);		/* int row, int col */
-		int priority;				/* 1 is most important (always displayed) */
-		u32b flag;					/* PR_* flag this corresponds to */
-	} display_list[] =
-	{
-		{ prt_race,      20, PR_MISC },
-		{ prt_class,     19, PR_MISC },
-		{ prt_title,     18, PR_TITLE },
-		{ prt_level,     10, PR_LEV },
-		{ prt_exp,       15, PR_EXP },
-		{ prt_gold,      11, PR_GOLD },
-		{ prt_equippy,   17, PR_EQUIPPY },
-		{ prt_str,        6, PR_STATS },
-		{ prt_int,        5, PR_STATS },
-		{ prt_wis,        4, PR_STATS },
-		{ prt_dex,        3, PR_STATS },
-		{ prt_con,        2, PR_STATS },
-		{ prt_chr,        1, PR_STATS },
-		{ NULL,          14, 0 },
-		{ prt_ac,         7, PR_ARMOR },
-		{ prt_hp,         8, PR_HP },
-		{ prt_sp,         9, PR_MANA },
-		{ NULL,          22, 0 },
-		{ health_redraw, 12, PR_HEALTH },
-		{ NULL,          21, 0 },
-		{ prt_cut,       13, PR_CUT },
-		{ prt_stun,      16, PR_STUN }
-	};
-
-	int x, y;
-	int max_priority;
-	int i, row;
-	u32b to_clear = 0;
-
-	/* We have from row 1 to row Term->hgt-1 to display in */
-	Term_get_size(&x, &y);
-	max_priority = y - 2;
-
-	/* Display list entries */
-	for (i = 0, row = 1; i < (int)N_ELEMENTS(display_list); i++)
-	{
-		struct sidebar_entry *q = &display_list[i];
-
-		/* If this is high enough priority, display it */
-		if (q->priority <= max_priority)
-		{
-			/* If the redraw flag it set, and there is a hook */
-			if ((p_ptr->redraw & q->flag) && q->hook)
-			{
-				/* Mark flag for removal */
-				to_clear |= q->flag;
-
-				/* Display at the current row */
-				q->hook(row, 0);
-			}
-
-			/* Increment for next time */
-			row++;
-		}
-	}
-
-	/* Clear flags */
-	p_ptr->redraw &= ~(to_clear);
-}
-
-
-
 /*
  * Handle "p_ptr->redraw"
  */
@@ -3030,187 +2830,12 @@ void redraw_stuff(void)
 	}
 
 	/* Redraw the sidebar */
-	prt_side();
+	display_sidebar();
 
+	/* Redraw the status line */
+	display_statusline();
 
-	if (p_ptr->redraw & (PR_DEPTH))
-	{
-		p_ptr->redraw &= ~(PR_DEPTH);
-		prt_depth(ROW_DEPTH, COL_DEPTH);
-	}
-
-	if (p_ptr->redraw & PR_OPPOSE_ELEMENTS)
-	{
-		p_ptr->redraw &= ~PR_OPPOSE_ELEMENTS;
-		prt_oppose_elements(ROW_OPPOSE_ELEMENTS, COL_OPPOSE_ELEMENTS,
-		                    Term->wid - COL_OPPOSE_ELEMENTS);
-		p_ptr->window |= PW_STATUS;
-	}
-
-	if (p_ptr->redraw & (PR_HUNGER))
-	{
-		p_ptr->redraw &= ~(PR_HUNGER);
-		prt_hunger(ROW_HUNGRY, COL_HUNGRY);
-	}
-
-	if (p_ptr->redraw & (PR_BLIND))
-	{
-		p_ptr->redraw &= ~(PR_BLIND);
-		prt_blind(ROW_BLIND, COL_BLIND);
-	}
-
-	if (p_ptr->redraw & (PR_CONFUSED))
-	{
-		p_ptr->redraw &= ~(PR_CONFUSED);
-		prt_confused(ROW_CONFUSED, COL_CONFUSED);
-	}
-
-	if (p_ptr->redraw & (PR_AFRAID))
-	{
-		p_ptr->redraw &= ~(PR_AFRAID);
-		prt_afraid(ROW_AFRAID, COL_AFRAID);
-	}
-
-	if (p_ptr->redraw & (PR_POISONED))
-	{
-		p_ptr->redraw &= ~(PR_POISONED);
-		prt_poisoned(ROW_POISONED, COL_POISONED);
-	}
-
-	if (p_ptr->redraw & (PR_STATE))
-	{
-		p_ptr->redraw &= ~(PR_STATE);
-		prt_state(ROW_STATE, COL_STATE);
-	}
-
-	if (p_ptr->redraw & (PR_SPEED))
-	{
-		p_ptr->redraw &= ~(PR_SPEED);
-		prt_speed(ROW_SPEED, COL_SPEED);
-	}
-
-	if (p_ptr->redraw & (PR_STUDY))
-	{
-		p_ptr->redraw &= ~(PR_STUDY);
-		prt_study(ROW_STUDY, COL_STUDY);
-	}
-}
-
-
-/*
- * Handle "p_ptr->window"
- */
-void window_stuff(void)
-{
-	int j;
-
-	u32b mask = 0L;
-
-
-	/* Nothing to do */
-	if (!p_ptr->window) return;
-
-	/* Scan windows */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
-	{
-		/* Save usable flags */
-		if (angband_term[j])
-		{
-			/* Build the mask */
-			mask |= op_ptr->window_flag[j];
-		}
-	}
-
-	/* Apply usable flags */
-	p_ptr->window &= (mask);
-
-	/* Nothing to do */
-	if (!p_ptr->window) return;
-
-
-	/* Display inventory */
-	if (p_ptr->window & (PW_INVEN))
-	{
-		p_ptr->window &= ~(PW_INVEN);
-		fix_inven();
-	}
-
-	/* Display monster list */
-	if (p_ptr->window & (PW_MONLIST))
-	{
-		p_ptr->window &= ~(PW_MONLIST);
-		fix_monlist();
-	}
-
-	/* Display status */
-	if (p_ptr->window & (PW_STATUS))
-	{
-		p_ptr->window &= ~(PW_STATUS);
-		fix_status();
-	}
-
-	/* Display equipment */
-	if (p_ptr->window & (PW_EQUIP))
-	{
-		p_ptr->window &= ~(PW_EQUIP);
-		fix_equip();
-	}
-
-	/* Display player (mode 0) */
-	if (p_ptr->window & (PW_PLAYER_0))
-	{
-		p_ptr->window &= ~(PW_PLAYER_0);
-		fix_player_0();
-	}
-
-	/* Display player (mode 1) */
-	if (p_ptr->window & (PW_PLAYER_1))
-	{
-		p_ptr->window &= ~(PW_PLAYER_1);
-		fix_player_1();
-	}
-
-	/* Display player (compact) */
-	if (p_ptr->window & (PW_PLAYER_2))
-	{
-		p_ptr->window &= ~(PW_PLAYER_2);
-		fix_player_compact();
-	}
-
-	/* Display map view */
-	if (p_ptr->window & (PW_MAP))
-	{
-		p_ptr->window &= ~(PW_MAP);
-		fix_map();
-	}
-
-	/* Display message recall */
-	if (p_ptr->window & (PW_MESSAGE))
-	{
-		p_ptr->window &= ~(PW_MESSAGE);
-		fix_message();
-	}
-
-	/* Display overhead view */
-	if (p_ptr->window & (PW_OVERHEAD))
-	{
-		p_ptr->window &= ~(PW_OVERHEAD);
-		fix_overhead();
-	}
-
-	/* Display monster recall */
-	if (p_ptr->window & (PW_MONSTER))
-	{
-		p_ptr->window &= ~(PW_MONSTER);
-		fix_monster();
-	}
-
-	/* Display object recall */
-	if (p_ptr->window & (PW_OBJECT))
-	{
-		p_ptr->window &= ~(PW_OBJECT);
-		fix_object();
-	}
+	return;
 }
 
 
@@ -3228,3 +2853,4 @@ void handle_stuff(void)
 	/* Window stuff */
 	if (p_ptr->window) window_stuff();
 }
+

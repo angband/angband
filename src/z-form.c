@@ -47,7 +47,7 @@
  * removed from the "format sequence", and replaced by the textual form
  * of the next argument in the argument list.  See examples below.
  *
- * Legal format characters: %,n,p,c,s,d,i,o,u,X,x,E,e,F,f,G,g,r,v.
+ * Legal format characters: %,b,n,p,c,s,d,i,o,u,X,x,E,e,F,f,G,g,r,v.
  *
  * Format("%%")
  *   Append the literal "%".
@@ -60,6 +60,11 @@
  * Format("%p", void *v)
  *   Append the pointer "v" (implementation varies).
  *   No legal modifiers.
+ *
+ * format("%b", int b)
+ *   Append the integer formatted as binary.
+ *   If a modifier of 1, 2, 3 or 4 is provided, then only append 2**n bits, not
+ *   all 32.
  *
  * Format("%E", double r)
  * Format("%F", double r)
@@ -398,26 +403,31 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 		tmp[0] = '\0';
 
 		/* Parse a type_union */
-		if (aux[q-1]== 'y')
+		if (aux[q-1] == 'y')
 		{
 			tval = va_arg(vp, type_union);
-			if(do_long) {
+
+			if (do_long)
+			{
 				/* Error -- illegal type_union argument */
 				buf[0] = '\0';
+
 				/* Return "error" */
 				return (0);
 			}
-			/* replace aux terminator with proper printf char */
-			if(tval.t == T_CHAR) aux[q-1] = 'c';
-			else if(tval.t == T_INT) aux[q-1] = 'd';
-			else if(tval.t == T_FLOAT) aux[q-1] = 'f';
-			else if(tval.t == T_STRING) aux[q-1] = 's';
+
+			/* Replace aux terminator with proper printf char */
+			if (tval.t == T_CHAR) aux[q-1] = 'c';
+			else if (tval.t == T_INT) aux[q-1] = 'd';
+			else if (tval.t == T_FLOAT) aux[q-1] = 'f';
+			else if (tval.t == T_STRING) aux[q-1] = 's';
 			else
 			{ 
 				buf[0] = '\0';
 				return (0);
 			}
 		}
+
 		/* Process the "format" symbol */
 		switch (aux[q-1])
 		{
@@ -541,6 +551,46 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 
 				/* Format the argument */
 				sprintf(tmp, aux, arg2);
+
+				/* Done */
+				break;
+			}
+
+			/* Binary */
+			case 'b':
+			{
+				int arg;
+				size_t i, max = 32;
+				u32b bitmask;
+				char out[32 + 1];
+
+				/* Get the next argument */
+				arg = va_arg(vp, int);
+
+#if 0 /* Later */
+				/* Check our aux string */
+				switch (aux[0])
+				{
+					case '1': max = 2;  break;
+					case '2': max = 4;  break;
+					case '3': max = 8;  break;
+					case '4': max = 16; break;
+					default: 
+					case '5': max = 32; break;
+				}
+#endif
+				/* Format specially */
+				for (i = 1; i <= max; i++, bitmask *= 2)
+				{
+					if (arg & bitmask) out[max - i] = '1';
+					else out[max - i] = '0';
+				}
+
+				/* Terminate */
+				out[max] = '\0';
+
+				/* Append the argument */
+				my_strcpy(tmp, out, sizeof tmp);
 
 				/* Done */
 				break;

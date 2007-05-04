@@ -840,6 +840,13 @@ event_type menu_select(menu_type *menu, int *cursor, int no_handle)
 	ke.type = EVT_REFRESH;
 	(void)run_event_loop(&menu->target, FALSE, &ke);
 
+	/* Check for command flag */
+	if (p_ptr->command_new)
+	{
+		Term_key_push(p_ptr->command_new);
+		p_ptr->command_new = 0;
+	}
+
 	/* Stop on first unhandled event. */
 	while (!(ke.type & no_handle))
 	{
