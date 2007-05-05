@@ -4,14 +4,6 @@
 /*** Various system-specific fixes ***/
 
 /*
- * Several systems have no "O_BINARY" flag
- */
-#ifndef O_BINARY
-# define O_BINARY 0
-#endif /* O_BINARY */
-
-
-/*
  * Use POSIX file control where we can, otherwise help out RISC OS
  */
 #ifndef RISCOS
@@ -21,6 +13,15 @@
 # define O_WRONLY   1
 # define O_RDWR     2
 #endif
+
+
+/*
+ * Several systems have no "O_BINARY" flag
+ */
+#ifndef O_BINARY
+# define O_BINARY 0
+#endif /* O_BINARY */
+
 
 /*
  * Hack -- force definitions -- see fd_seek()
