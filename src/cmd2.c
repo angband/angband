@@ -353,7 +353,7 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		flag = FALSE;
 
 		/* Get the "disarm" factor */
-		i = p_ptr->skill_dis;
+		i = p_ptr->skills[SKILL_DIS];
 
 		/* Penalize some conditions */
 		if (p_ptr->timed[TMD_BLIND] || no_lite()) i = i / 10;
@@ -422,7 +422,7 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 
 
 	/* Get the "disarm" factor */
-	i = p_ptr->skill_dis;
+	i = p_ptr->skills[SKILL_DIS];
 
 	/* Penalize some conditions */
 	if (p_ptr->timed[TMD_BLIND] || no_lite()) i = i / 10;
@@ -672,7 +672,7 @@ static bool do_cmd_open_aux(int y, int x)
 	else if (cave_feat[y][x] >= FEAT_DOOR_HEAD + 0x01)
 	{
 		/* Disarm factor */
-		i = p_ptr->skill_dis;
+		i = p_ptr->skills[SKILL_DIS];
 
 		/* Penalize some conditions */
 		if (p_ptr->timed[TMD_BLIND] || no_lite()) i = i / 10;
@@ -1088,7 +1088,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	else if (cave_feat[y][x] >= FEAT_WALL_EXTRA)
 	{
 		/* Tunnel */
-		if ((p_ptr->skill_dig > 40 + rand_int(1600)) && twall(y, x))
+		if ((p_ptr->skills[SKILL_DIG] > 40 + rand_int(1600)) && twall(y, x))
 		{
 			msg_print("You have finished the tunnel.");
 		}
@@ -1124,13 +1124,13 @@ static bool do_cmd_tunnel_aux(int y, int x)
 		/* Quartz */
 		if (hard)
 		{
-			okay = (p_ptr->skill_dig > 20 + rand_int(800));
+			okay = (p_ptr->skills[SKILL_DIG] > 20 + rand_int(800));
 		}
 
 		/* Magma */
 		else
 		{
-			okay = (p_ptr->skill_dig > 10 + rand_int(400));
+			okay = (p_ptr->skills[SKILL_DIG] > 10 + rand_int(400));
 		}
 
 		/* Success */
@@ -1175,7 +1175,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	else if (cave_feat[y][x] == FEAT_RUBBLE)
 	{
 		/* Remove the rubble */
-		if ((p_ptr->skill_dig > rand_int(200)) && twall(y, x))
+		if ((p_ptr->skills[SKILL_DIG] > rand_int(200)) && twall(y, x))
 		{
 			/* Message */
 			msg_print("You have removed the rubble.");
@@ -1206,7 +1206,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	else if (cave_feat[y][x] >= FEAT_SECRET)
 	{
 		/* Tunnel */
-		if ((p_ptr->skill_dig > 30 + rand_int(1200)) && twall(y, x))
+		if ((p_ptr->skills[SKILL_DIG] > 30 + rand_int(1200)) && twall(y, x))
 		{
 			msg_print("You have finished the tunnel.");
 		}
@@ -1227,7 +1227,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	else
 	{
 		/* Tunnel */
-		if ((p_ptr->skill_dig > 30 + rand_int(1200)) && twall(y, x))
+		if ((p_ptr->skills[SKILL_DIG] > 30 + rand_int(1200)) && twall(y, x))
 		{
 			msg_print("You have finished the tunnel.");
 		}
@@ -1373,7 +1373,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 	name = (f_name + f_info[cave_feat[y][x]].name);
 
 	/* Get the "disarm" factor */
-	i = p_ptr->skill_dis;
+	i = p_ptr->skills[SKILL_DIS];
 
 	/* Penalize some conditions */
 	if (p_ptr->timed[TMD_BLIND] || no_lite()) i = i / 10;
@@ -2204,7 +2204,7 @@ static void do_cmd_hold_or_stay(int pickup)
 	p_ptr->energy_use = 100;
 
 	/* Spontaneous Searching */
-	if ((p_ptr->skill_fos >= 50) || (0 == rand_int(50 - p_ptr->skill_fos)))
+	if ((p_ptr->skills[SKILL_FOS] >= 50) || (0 == rand_int(50 - p_ptr->skills[SKILL_FOS])))
 	{
 		search();
 	}
@@ -2511,7 +2511,7 @@ void do_cmd_fire(void)
 
 	/* Actually "fire" the object */
 	bonus = (p_ptr->to_h + i_ptr->to_h + j_ptr->to_h);
-	chance = (p_ptr->skill_thb + (bonus * BTH_PLUS_ADJ));
+	chance = (p_ptr->skills[SKILL_THB] + (bonus * BTH_PLUS_ADJ));
 
 	/* Assume a base multiplier */
 	tmul = p_ptr->ammo_mult;
@@ -2810,7 +2810,7 @@ void do_cmd_throw(void)
 	tdam = damroll(i_ptr->dd, i_ptr->ds) + i_ptr->to_d;
 
 	/* Chance of hitting */
-	chance = (p_ptr->skill_tht + (p_ptr->to_h * BTH_PLUS_ADJ));
+	chance = (p_ptr->skills[SKILL_THT] + (p_ptr->to_h * BTH_PLUS_ADJ));
 
 
 	/* Take a turn */

@@ -489,7 +489,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			prt(format("Knowledge - %s", title), 2, 0);
 			prt( "Group", 4, 0);
 			prt("Name", 4, g_name_len + 3);
-			move_cursor(4, 65);
+			Term_gotoxy(65, 4);
 			if(o_funcs.note)
 				Term_addstr(-1, TERM_WHITE, "Inscribed ");
 			if(otherfields)

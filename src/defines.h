@@ -443,6 +443,8 @@
 #define MAX_FLOOR_STACK			23
 
 
+/*** Constants for accessing the player struct ***/
+
 /*
  * Timed effects
  */
@@ -455,6 +457,25 @@ enum
 	TMD_OPP_POIS,
 
 	TMD_MAX
+};
+
+/*
+ * Skill indexes
+ */
+enum
+{
+	SKILL_DIS,	/* Skill: Disarming */
+	SKILL_DEV,	/* Skill: Magic Devices */
+	SKILL_SAV,	/* Skill: Saving throw */
+	SKILL_STL,	/* Skill: Stealth factor */
+	SKILL_SRH,	/* Skill: Searching ability */
+	SKILL_FOS,	/* Skill: Searching frequency */
+	SKILL_THN,	/* Skill: To hit (normal) */
+	SKILL_THB,	/* Skill: To hit (shooting) */
+	SKILL_THT,	/* Skill: To hit (throwing) */
+	SKILL_DIG,	/* Skill: Digging */
+
+	SKILL_MAX
 };
 
 

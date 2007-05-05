@@ -418,7 +418,7 @@ void search(void)
 
 
 	/* Start with base search ability */
-	chance = p_ptr->skill_srh;
+	chance = p_ptr->skills[SKILL_SRH];
 
 	/* Penalize various conditions */
 	if (p_ptr->timed[TMD_BLIND] || no_lite()) chance = chance / 10;
@@ -1156,7 +1156,7 @@ void py_attack(int y, int x)
 
 	/* Calculate the "attack quality" */
 	bonus = p_ptr->to_h + o_ptr->to_h;
-	chance = (p_ptr->skill_thn + (bonus * BTH_PLUS_ADJ));
+	chance = (p_ptr->skills[SKILL_THN] + (bonus * BTH_PLUS_ADJ));
 
 
 	/* Attack once for each legal blow */
@@ -1376,8 +1376,8 @@ void move_player(int dir, int jumping)
 
 
 		/* Spontaneous Searching */
-		if ((p_ptr->skill_fos >= 50) ||
-		    (0 == rand_int(50 - p_ptr->skill_fos)))
+		if ((p_ptr->skills[SKILL_FOS] >= 50) ||
+		    (0 == rand_int(50 - p_ptr->skills[SKILL_FOS])))
 		{
 			search();
 		}

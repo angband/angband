@@ -1664,22 +1664,20 @@ int get_panel(int oid, data_panel *panel, size_t size)
   }
   case 4:
   {
-	#define OFFSET(field) ((char*)(&dummy.field) - (char*)&dummy)
-	static const player_type dummy;
 	static struct {
 		const char *name;
-		size_t skill_offset;
+		int skill;
 		int div;
 	} skills[] =
 	{
-		{ "Saving Throw", OFFSET(skill_sav), 6 },
-		{ "Stealth", OFFSET(skill_stl), 1 },
-		{ "Fighting", OFFSET(skill_thn), 12 },
-		{ "Shooting", OFFSET(skill_thb), 12 },
-		{ "Disarming", OFFSET(skill_dis), 8 },
-		{ "Magic Device", OFFSET(skill_dev), 6 },
-		{ "Perception", OFFSET(skill_fos), 6 },
-		{ "Searching", OFFSET(skill_srh), 6 }
+		{ "Saving Throw", SKILL_SAV, 6 },
+		{ "Stealth", SKILL_STL, 1 },
+		{ "Fighting", SKILL_THN, 12 },
+		{ "Shooting", SKILL_THB, 12 },
+		{ "Disarming", SKILL_DIS, 8 },
+		{ "Magic Device", SKILL_DEV, 6 },
+		{ "Perception", SKILL_FOS, 6 },
+		{ "Searching", SKILL_SRH, 6 }
 	};
 	size_t i;
 	assert(N_ELEMENTS(skills) == boundaries[4].page_rows);
@@ -1687,7 +1685,7 @@ int get_panel(int oid, data_panel *panel, size_t size)
 	if (ret > size) ret = size;
 	for (i = 0; i < ret; i++)
 	{
-		s16b skill = *(s16b*)(((char*)p_ptr)+skills[i].skill_offset);
+		s16b skill = p_ptr->skills[skills[i].skill];
 		panel[i].color = TERM_L_BLUE;
 		panel[i].label = skills[i].name;
 		panel[i].fmt = "%y";

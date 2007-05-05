@@ -389,7 +389,7 @@ void do_cmd_use_staff(void)
 	lev = k_info[o_ptr->k_idx].level;
 
 	/* Base chance of success */
-	chance = p_ptr->skill_dev;
+	chance = p_ptr->skills[SKILL_DEV];
 
 	/* Confusion hurts skill */
 	if (p_ptr->timed[TMD_CONFUSED]) chance = chance / 2;
@@ -694,7 +694,7 @@ void do_cmd_activate(void)
 	if (artifact_p(o_ptr)) lev = a_info[o_ptr->name1].level;
 
 	/* Base chance of success */
-	chance = p_ptr->skill_dev;
+	chance = p_ptr->skills[SKILL_DEV];
 
 	/* Confusion hurts skill */
 	if (p_ptr->timed[TMD_CONFUSED]) chance = chance / 2;

@@ -2029,14 +2029,6 @@ void messages_free(void)
  */
 
 
-/*
- * Move the cursor
- */
-void move_cursor(int row, int col)
-{
-	Term_gotoxy(col, row);
-}
-
 
 
 /*

@@ -1105,6 +1105,234 @@ static bool verify_borg_mode(void)
 #endif /* ALLOW_BORG */
 
 
+/*
+ * Toggle wizard mode
+ */
+static void do_cmd_toggle_wizard(void)
+{
+	if (p_ptr->wizard)
+	{
+		p_ptr->wizard = FALSE;
+		msg_print("Wizard mode off.");
+	}
+	else if (enter_wizard_mode())
+	{
+		p_ptr->wizard = TRUE;
+		msg_print("Wizard mode on.");
+	}
+
+	/* Update monsters */
+	p_ptr->update |= (PU_MONSTERS);
+
+	/* Redraw "title" */
+	p_ptr->redraw |= (PR_TITLE);
+}
+
+#ifdef ALLOW_DEBUG
+
+static void do_cmd_do_debug(void)
+{
+	if (verify_debug_mode()) do_cmd_debug();
+}
+
+#endif
+
+#ifdef ALLOW_BORG
+
+static void do_cmd_do_borg(void)
+{
+	if (verify_borg_mode()) do_cmd_borg();
+}
+
+#endif
+
+static void do_cmd_cast_or_pray(void)
+{
+	if (cp_ptr->spell_book == TV_PRAYER_BOOK)
+		do_cmd_pray();
+	else
+		do_cmd_cast();
+}
+
+static void do_cmd_quit(void)
+{
+	/* Stop playing */
+	p_ptr->playing = FALSE;
+
+	/* Leaving */
+	p_ptr->leaving = TRUE;
+}
+
+static void do_cmd_mouseclick(void)
+{
+	int x, y;
+
+	x = p_ptr->command_cmd_ex.mousex - COL_MAP;
+	if (use_bigtile) x /= 2;
+	x += Term->offset_x;
+	y = p_ptr->command_cmd_ex.mousey - ROW_MAP + Term->offset_y;
+
+	if (x < 0 || y < 0)
+		return;
+
+	do_cmd_pathfind(y, x);
+}
+
+static void do_cmd_port(void)
+{
+	(void)Term_user(0);
+}
+
+static void do_cmd_xxx_options(void)
+{
+	do_cmd_options();
+	do_cmd_redraw();
+}
+
+/*
+ * Useful typedef.
+ */
+typedef void do_cmd_type(void);
+
+/*
+ * List of all commands and their descriptions.
+ */
+static const struct
+{
+	const char *desc;
+	unsigned char key;
+	do_cmd_type *hook;
+} commands[] =
+{
+
+	/*** Cheating commands ***/
+
+	{ "Toggle wizard mode",  KTRL('W'), do_cmd_toggle_wizard },
+
+#ifdef ALLOW_DEBUG
+	{ "Debug mode commands", KTRL('A'), do_cmd_do_debug },
+#endif
+#ifdef ALLOW_BORG
+	{ "Borg commands",       KTRL('Z'), do_cmd_do_borg },
+#endif
+
+
+	/*** Inventory commands ***/
+
+	{ "Display equipment listing", 'e', do_cmd_equip },
+	{ "Display inventory listing", 'i', do_cmd_inven },
+	{ "Toggle windows",      KTRL('E'), toggle_inven_equip }, /* XXX */
+
+
+	/*** Movement commands ***/
+
+	{ "Alter a grid",  '+', do_cmd_alter },
+	{ "Dig a tunnel",  'T', do_cmd_tunnel },
+	{ "Walk",          ';', do_cmd_walk },
+	{ "Jump",          '-', do_cmd_jump },
+
+
+	/*** Running, Resting, Searching, Staying */
+
+	{ "Start running",          '.', do_cmd_run },
+	{ "Hold still for a turn",  ',', do_cmd_hold },
+	{ "Stay still for a turn",  'g', do_cmd_stay },
+	{ "Rest for a while",       'R', do_cmd_rest },
+	{ "Search for traps/doors", 's', do_cmd_search },
+	{ "Toggle search mode",     'S', do_cmd_toggle_search },
+
+
+	/*** Stairs and Doors and Chests and Traps ***/
+
+	{ "Enter a store",          '_', do_cmd_store },
+	{ "Go up staircase",        '<', do_cmd_go_up },
+	{ "Go down staircase",      '>', do_cmd_go_down },
+	{ "Open a door or a chest", 'o', do_cmd_open },
+	{ "Close a door",           'c', do_cmd_close },
+	{ "Jam a door shut",        'j', do_cmd_spike },
+	{ "Bash a door open",       'B', do_cmd_bash },
+	{ "Disarm a trap or chest", 'D', do_cmd_disarm },
+
+
+	/*** Magic and Prayers ***/
+
+	{ "Gain new spells or prayers", 'G', do_cmd_study },
+	{ "Browse a book",              'b', do_cmd_browse },
+	{ "Cast a spell",               'm', do_cmd_cast_or_pray },
+	{ "Pray a prayer",              'p', do_cmd_cast_or_pray },
+
+
+	/*** Use various objects ***/
+
+	{ "Wear/wield an item",       'w', do_cmd_wield },
+	{ "Take/unwield off an item", 't', do_cmd_takeoff },
+	{ "Drop an item",             'd', do_cmd_drop },
+	{ "Destroy an item",          'k', do_cmd_destroy },
+	{ "Examine an item",          'I', do_cmd_observe },
+	{ "Inscribe an object",       '{', do_cmd_inscribe },
+	{ "Uninscribe an object",     '}', do_cmd_uninscribe },
+	{ "Activate an object",       'A', do_cmd_activate },
+	{ "Eat some food",            'E', do_cmd_eat_food },
+	{ "Fuel your light source",   'F', do_cmd_refill },
+	{ "Fire your missile weapon", 'f', do_cmd_fire },
+	{ "Throw an item",            'v', do_cmd_throw },
+	{ "Aim a wand",               'a', do_cmd_aim_wand },
+	{ "Zap a rod",                'z', do_cmd_zap_rod },
+	{ "Quaff a potion",           'q', do_cmd_quaff_potion },
+	{ "Read a scroll",            'r', do_cmd_read_scroll },
+	{ "Use a staff",              'u', do_cmd_use_staff },
+
+
+	/*** Looking at Things (nearby or on map) ***/
+
+	{ "Full dungeon map",           'M', do_cmd_view_map },
+	{ "Locate player on map",       'L', do_cmd_locate },
+	{ "Look around",                'l', do_cmd_look },
+	{ "Target monster or location", '*', do_cmd_target },
+
+
+	/*** Help and Such ***/
+
+	{ "Help",                  '?', do_cmd_help },
+	{ "Identify symbol",       '/', do_cmd_query_symbol },
+	{ "Character description", 'C', do_cmd_change_name },
+
+
+	/*** System Commands ***/
+
+	{ "Load a single pref line",   '"', do_cmd_pref },
+	{ "Interact with options",     '=', do_cmd_xxx_options },
+	{ "Port-specific preferences", '!', do_cmd_port },
+	{ "Check knowledge",           '~', do_cmd_knowledge },
+	{ "Check knowledge",           '|', do_cmd_knowledge },
+
+
+	/*** Misc Commands ***/
+
+	{ "Take notes",                   ':', do_cmd_note },
+	{ "Version info",                 'V', do_cmd_version },
+	{ "Repeat level feeling",   KTRL('F'), do_cmd_feeling },
+	{ "Show previous message",  KTRL('O'), do_cmd_message_one },
+	{ "Show previous messages", KTRL('P'), do_cmd_messages },
+	{ "Redraw the screen",      KTRL('R'), do_cmd_redraw },
+	{ "Save and don't quit",    KTRL('S'), do_cmd_save_game },
+	{ "Save and quit",          KTRL('X'), do_cmd_quit },
+	{ "Quit (commit suicide)",        'Q', do_cmd_suicide },
+
+	{ "Load \"screen dump\"", '(', do_cmd_load_screen },
+	{ "Save \"screen dump\"", ')', do_cmd_save_screen },
+	{ "Mouse click",       '\xff', do_cmd_mouseclick }
+};
+
+
+/* List indexed by char */
+do_cmd_type *converted_list[UCHAR_MAX];
+
+
+static void do_cmd_unknown(void)
+{
+	prt("Type '?' for help.", 0, 0);
+}
 
 /*
  * Parse and execute the current command
@@ -1112,6 +1340,8 @@ static bool verify_borg_mode(void)
  */
 static void process_command(void)
 {
+	static bool first = TRUE;
+
 #ifdef ALLOW_REPEAT
 
 	/* Handle repeating the last command */
@@ -1119,592 +1349,47 @@ static void process_command(void)
 
 #endif /* ALLOW_REPEAT */
 
-	/* Parse the command */
-	switch (p_ptr->command_cmd)
+	if (first)
 	{
-		/* Ignore */
-		case ESCAPE:
-		case ' ':
-		case '\n':
-		case '\r':
-		case '\a':
+		size_t i;
+
+		/* Fill everything in at first */
+		for (i = 0; i < N_ELEMENTS(commands); i++)
 		{
-			break;
+			unsigned char key = commands[i].key;
+			converted_list[key] = commands[i].hook;
 		}
 
-
-		/*** Cheating Commands ***/
-
-		/* Toggle Wizard Mode */
-		case KTRL('W'):
+		/* Fill in the rest */
+		for (i = 0; i < N_ELEMENTS(converted_list); i++)
 		{
-			if (p_ptr->wizard)
+			switch (i)
 			{
-				p_ptr->wizard = FALSE;
-				msg_print("Wizard mode off.");
-			}
-			else if (enter_wizard_mode())
-			{
-				p_ptr->wizard = TRUE;
-				msg_print("Wizard mode on.");
-			}
-
-			/* Update monsters */
-			p_ptr->update |= (PU_MONSTERS);
-
-			/* Redraw "title" */
-			p_ptr->redraw |= (PR_TITLE);
-
-			break;
-		}
-
-
-#ifdef ALLOW_DEBUG
-
-		/* Special "debug" commands */
-		case KTRL('A'):
-		{
-			if (verify_debug_mode()) do_cmd_debug();
-			break;
-		}
-
-#endif
-
-
-#ifdef ALLOW_BORG
-
-		/* Special "borg" commands */
-		case KTRL('Z'):
-		{
-			if (verify_borg_mode()) do_cmd_borg();
-			break;
-		}
-
-#endif
-
-
-
-		/*** Inventory Commands ***/
-
-		/* Wear/wield equipment */
-		case 'w':
-		{
-			do_cmd_wield();
-			break;
-		}
-
-		/* Take off equipment */
-		case 't':
-		{
-			do_cmd_takeoff();
-			break;
-		}
-
-		/* Drop an item */
-		case 'd':
-		{
-			do_cmd_drop();
-			break;
-		}
-
-		/* Destroy an item */
-		case 'k':
-		{
-			do_cmd_destroy();
-			break;
-		}
-
-		/* Equipment list */
-		case 'e':
-		{
-			do_cmd_equip();
-			break;
-		}
-
-		/* Inventory list */
-		case 'i':
-		{
-			do_cmd_inven();
-			break;
-		}
-
-
-		/*** Various commands ***/
-
-		/* Identify an object */
-		case 'I':
-		{
-			do_cmd_observe();
-			break;
-		}
-
-		/* Hack -- toggle windows */
-		case KTRL('E'):
-		{
-			toggle_inven_equip();
-			break;
-		}
-
-
-		/*** Standard "Movement" Commands ***/
-
-		/* Alter a grid */
-		case '+':
-		{
-			do_cmd_alter();
-			break;
-		}
-
-		/* Dig a tunnel */
-		case 'T':
-		{
-			do_cmd_tunnel();
-			break;
-		}
-
-		/* Walk */
-		case ';':
-		{
-			do_cmd_walk();
-			break;
-		}
-
-		/* Jump */
-		case '-':
-		{
-			do_cmd_jump();
-			break;
-		}
-
-
-		/*** Running, Resting, Searching, Staying */
-
-		/* Begin Running -- Arg is Max Distance */
-		case '.':
-		{
-			do_cmd_run();
-			break;
-		}
-
-		/* Hold still */
-		case ',':
-		{
-			do_cmd_hold();
-			break;
-		}
-
-		/* Stay still */
-		case 'g':
-		{
-			do_cmd_stay();
-			break;
-		}
-
-		/* Rest -- Arg is time */
-		case 'R':
-		{
-			do_cmd_rest();
-			break;
-		}
-
-		/* Search for traps/doors */
-		case 's':
-		{
-			do_cmd_search();
-			break;
-		}
-
-		/* Toggle search mode */
-		case 'S':
-		{
-			do_cmd_toggle_search();
-			break;
-		}
-
-
-		/*** Stairs and Doors and Chests and Traps ***/
-
-		/* Enter store */
-		case '_':
-		{
-			do_cmd_store();
-			break;
-		}
-
-		/* Go up staircase */
-		case '<':
-		{
-			do_cmd_go_up();
-			break;
-		}
-
-		/* Go down staircase */
-		case '>':
-		{
-			do_cmd_go_down();
-			break;
-		}
-
-		/* Open a door or chest */
-		case 'o':
-		{
-			do_cmd_open();
-			break;
-		}
-
-		/* Close a door */
-		case 'c':
-		{
-			do_cmd_close();
-			break;
-		}
-
-		/* Jam a door with spikes */
-		case 'j':
-		{
-			do_cmd_spike();
-			break;
-		}
-
-		/* Bash a door */
-		case 'B':
-		{
-			do_cmd_bash();
-			break;
-		}
-
-		/* Disarm a trap or chest */
-		case 'D':
-		{
-			do_cmd_disarm();
-			break;
-		}
-
-
-		/*** Magic and Prayers ***/
-
-		/* Gain new spells/prayers */
-		case 'G':
-		{
-			do_cmd_study();
-			break;
-		}
-
-		/* Browse a book */
-		case 'b':
-		{
-			do_cmd_browse();
-			break;
-		}
-
-		/* Cast a spell */
-		case 'm':
-		{
-			if (cp_ptr->spell_book == TV_PRAYER_BOOK)
-				do_cmd_pray();
-			else
-				do_cmd_cast();
-
-			break;
-		}
-
-		/* Pray a prayer */
-		case 'p':
-		{
-			if (cp_ptr->spell_book == TV_MAGIC_BOOK)
-				do_cmd_cast();
-			else
-				do_cmd_pray();
-
-			break;
-		}
-
-
-		/*** Use various objects ***/
-
-		/* Inscribe an object */
-		case '{':
-		{
-			do_cmd_inscribe();
-			break;
-		}
-
-		/* Uninscribe an object */
-		case '}':
-		{
-			do_cmd_uninscribe();
-			break;
-		}
-
-		/* Activate an artifact */
-		case 'A':
-		{
-			do_cmd_activate();
-			break;
-		}
-
-		/* Eat some food */
-		case 'E':
-		{
-			do_cmd_eat_food();
-			break;
-		}
-
-		/* Fuel your lantern/torch */
-		case 'F':
-		{
-			do_cmd_refill();
-			break;
-		}
-
-		/* Fire an item */
-		case 'f':
-		{
-			do_cmd_fire();
-			break;
-		}
-
-		/* Throw an item */
-		case 'v':
-		{
-			do_cmd_throw();
-			break;
-		}
-
-		/* Aim a wand */
-		case 'a':
-		{
-			do_cmd_aim_wand();
-			break;
-		}
-
-		/* Zap a rod */
-		case 'z':
-		{
-			do_cmd_zap_rod();
-			break;
-		}
-
-		/* Quaff a potion */
-		case 'q':
-		{
-			do_cmd_quaff_potion();
-			break;
-		}
-
-		/* Read a scroll */
-		case 'r':
-		{
-			do_cmd_read_scroll();
-			break;
-		}
-
-		/* Use a staff */
-		case 'u':
-		{
-			do_cmd_use_staff();
-			break;
-		}
-
-
-		/*** Looking at Things (nearby or on map) ***/
-
-		/* Full dungeon map */
-		case 'M':
-		{
-			do_cmd_view_map();
-			break;
-		}
-
-		/* Locate player on map */
-		case 'L':
-		{
-			do_cmd_locate();
-			break;
-		}
-
-		/* Look around */
-		case 'l':
-		{
-			do_cmd_look();
-			break;
-		}
-
-		/* Target monster or location */
-		case '*':
-		{
-			do_cmd_target();
-			break;
-		}
-
-
-
-		/*** Help and Such ***/
-
-		/* Help */
-		case '?':
-		{
-			do_cmd_help();
-			break;
-		}
-
-		/* Identify symbol */
-		case '/':
-		{
-			do_cmd_query_symbol();
-			break;
-		}
-
-		/* Character description */
-		case 'C':
-		{
-			do_cmd_change_name();
-			break;
-		}
-
-
-		/*** System Commands ***/
-
-		/* Hack -- User interface */
-		case '!':
-		{
-			(void)Term_user(0);
-			break;
-		}
-
-		/* Single line from a pref file */
-		case '"':
-		{
-			do_cmd_pref();
-			break;
-		}
-
-		/* Interact with options */
-		case '=':
-		{
-			do_cmd_options();
-			do_cmd_redraw();
-			break;
-		}
-
-
-		/*** Misc Commands ***/
-
-		/* Take notes */
-		case ':':
-		{
-			do_cmd_note();
-			break;
-		}
-
-		/* Version info */
-		case 'V':
-		{
-			do_cmd_version();
-			break;
-		}
-
-		/* Repeat level feeling */
-		case KTRL('F'):
-		{
-			do_cmd_feeling();
-			break;
-		}
-
-		/* Show previous message */
-		case KTRL('O'):
-		{
-			do_cmd_message_one();
-			break;
-		}
-
-		/* Show previous messages */
-		case KTRL('P'):
-		{
-			do_cmd_messages();
-			break;
-		}
-
-		/* Redraw the screen */
-		case KTRL('R'):
-		{
-			do_cmd_redraw();
-			break;
-		}
-
-		/* Hack -- Save and don't quit */
-		case KTRL('S'):
-		{
-			do_cmd_save_game();
-			break;
-		}
-
-		/* Save and quit */
-		case KTRL('X'):
-		{
-			/* Stop playing */
-			p_ptr->playing = FALSE;
-
-			/* Leaving */
-			p_ptr->leaving = TRUE;
-
-			break;
-		}
-
-		/* Quit (commit suicide) */
-		case 'Q':
-		{
-			do_cmd_suicide();
-			break;
-		}
-
-		/* Check knowledge */
-		case '~':
-		case '|':
-		{
-			do_cmd_knowledge();
-			break;
-		}
-
-		/* Load "screen dump" */
-		case '(':
-		{
-			do_cmd_load_screen();
-			break;
-		}
-
-		/* Save "screen dump" */
-		case ')':
-		{
-			do_cmd_save_screen();
-			break;
-		}
-
-		/* Mouse click */
-		case '\xff':
-		{
-			int x, y;
-	
-			x = p_ptr->command_cmd_ex.mousex - COL_MAP;
-			if (use_bigtile) x /= 2;
-			x += Term->offset_x;
-			y = p_ptr->command_cmd_ex.mousey - ROW_MAP + Term->offset_y;
-
-			if (x < 0 || y < 0)
-				break;
-
-			do_cmd_pathfind(y, x);
-
-			break;
-		}
-
-		/* Hack -- Unknown command */
-		default:
-		{
-			prt("Type '?' for help.", 0, 0);
-			break;
+				/* Ignore */
+				case ESCAPE:
+				case ' ':
+				case '\n':
+				case '\r':
+				case '\a':
+				{
+					break;
+				}
+
+				default:
+				{
+					if (!converted_list[i])
+						converted_list[i] = do_cmd_unknown;
+				}
+			}		
 		}
 	}
+
+	/* Within these boundaries, the cast to unsigned char will have the desired effect */
+	assert(p_ptr->command_cmd >= CHAR_MIN && p_ptr->command_cmd <= CHAR_MAX);
+
+	/* Execute the command */
+	if (converted_list[(unsigned char) p_ptr->command_cmd])
+		converted_list[(unsigned char) p_ptr->command_cmd]();
 }
 
 

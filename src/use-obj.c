@@ -1297,7 +1297,7 @@ static bool aim_wand(object_type *o_ptr, bool *ident)
 	lev = k_info[o_ptr->k_idx].level;
 
 	/* Base chance of success */
-	chance = p_ptr->skill_dev;
+	chance = p_ptr->skills[SKILL_DEV];
 
 	/* Confusion hurts skill */
 	if (p_ptr->timed[TMD_CONFUSED]) chance = chance / 2;
@@ -1596,7 +1596,7 @@ static bool zap_rod(object_type *o_ptr, bool *ident)
 	lev = k_info[o_ptr->k_idx].level;
 
 	/* Base chance of success */
-	chance = p_ptr->skill_dev;
+	chance = p_ptr->skills[SKILL_DEV];
 
 	/* Confusion hurts skill */
 	if (p_ptr->timed[TMD_CONFUSED]) chance = chance / 2;
