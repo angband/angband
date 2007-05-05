@@ -102,7 +102,7 @@
  *   skill and vast amounts of effort.  Speed - the lack thereof - is this
  *   port's biggest problem.  More comments below.
  * - SDL is not a complete game development library (although the add-ons help
-													 *   tremendously).  Much-needed functionality - text output, blit stretching,
+ *   tremendously).  Much-needed functionality - text output, blit stretching,
  *   and video refresh synching being three examples - were either missing
  *   altogether or covered by functions that proved too slow or delicate for
  *   production use.  I ended up having to spend at least as much time, and

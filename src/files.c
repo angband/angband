@@ -1522,7 +1522,7 @@ static void display_player_sust_info(void)
 static const region boundaries [] =
 {
 	{ 0,	0,		0,		0 },
-	{ 1,	2,		30,		8 }, /* Name, Class, ... */
+	{ 1,	2,		40,		8 }, /* Name, Class, ... */
 	{ 1,	10,		18,		8 }, /* Cur Exp, Max Exp, ... */
 	{ 26,	10,		17,		8 }, /* AC, melee, ... */
 	{ 48, 	10,		24,		8 }, /* skills */
@@ -1603,6 +1603,11 @@ static byte max_color(int val, int max)
 	return val < max ? TERM_YELLOW : TERM_L_GREEN;
 }
 
+/* data_panel array element initializer, for ansi compliance */
+#define P_I(col, lab, format, val1, val2) \
+	{ panel[i].color = col; panel[i].label = lab; panel[i].fmt = format; \
+	 panel[i].value[0] = val1; panel[i].value[1] = val2; \
+	 i++; }
 
 int get_panel(int oid, data_panel *panel, size_t size)
 {
@@ -1611,74 +1616,70 @@ int get_panel(int oid, data_panel *panel, size_t size)
  {
   case 1:
   {
-	data_panel panel1[] =
-	{
-		{ TERM_L_BLUE, "Name",	"%y",	 { s2u(op_ptr->full_name) , END  }},
-		{ TERM_L_BLUE, "Sex",	"%y",	 { s2u(sp_ptr->title) , END  }},
-		{ TERM_L_BLUE, "Race",	"%y",	 { s2u(p_name + rp_ptr->name), END  }},
-		{ TERM_L_BLUE, "Class",	"%y",	 { s2u(c_name + cp_ptr->name), END  }},
-		{ TERM_L_BLUE, "Title",	"%y",	 { s2u(show_title()), END  }},
-		{ TERM_L_BLUE, "HP",	"%y/%y", { i2u(p_ptr->mhp), i2u(p_ptr->chp)  }},
-		{ TERM_L_BLUE, "SP",	"%y/%y", { i2u(p_ptr->msp), i2u(p_ptr->csp)  }},
-		{ TERM_L_BLUE, "Level",	"%y",	 { i2u(p_ptr->lev), END  }}
-	};
-	assert(N_ELEMENTS(panel1) == boundaries[1].page_rows);
-	if (ret > N_ELEMENTS(panel1)) ret = N_ELEMENTS(panel1);
-	C_COPY(panel, &panel1, ret, data_panel);
+	int i = 0;
+	assert(size >= boundaries[1].page_rows);
+	ret = boundaries[1].page_rows;
+	P_I(TERM_L_BLUE, "Name",	"%y",	s2u(op_ptr->full_name), END  );
+	P_I(TERM_L_BLUE, "Sex",		"%y",	s2u(sp_ptr->title), END  );
+	P_I(TERM_L_BLUE, "Race",	"%y",	s2u(p_name + rp_ptr->name), END  );
+	P_I(TERM_L_BLUE, "Class",	"%y",	s2u(c_name + cp_ptr->name), END  );
+	P_I(TERM_L_BLUE, "Title",	"%y",	s2u(show_title()), END  );
+	P_I(TERM_L_BLUE, "HP",	"%y/%y",	i2u(p_ptr->mhp), i2u(p_ptr->chp)  );
+	P_I(TERM_L_BLUE, "SP",	"%y/%y",	i2u(p_ptr->msp), i2u(p_ptr->csp)  );
+	P_I(TERM_L_BLUE, "Level",	"%y",	i2u(p_ptr->lev), END  );
+	assert(i == boundaries[1].page_rows);
 	return ret;
   }
   case 2:
   {
-	data_panel panel2[] =
-	{
-		{ max_color(p_ptr->lev, p_ptr->max_lev), "Level", "%y",   { i2u(p_ptr->lev), END  }},
-		{ max_color(p_ptr->exp, p_ptr->max_exp), "Cur Exp", "%y", { i2u(p_ptr->exp), END  }},
-		{ TERM_L_GREEN, "Max Exp",	"%y",		{ i2u(p_ptr->max_exp), END  }},
-		{ TERM_L_GREEN, "Adv Exp",	"%y",		{ s2u(show_adv_exp()), END  }},
-		{ TERM_L_GREEN,	"MaxDepth",	"%y",		{ s2u(show_depth()), END  }},
-		{ TERM_L_GREEN, "Gold",		"%y",		{ i2u(p_ptr->au), END  }},
-		{ TERM_L_GREEN, "Burden",	"%.1y lbs",	{ f2u(p_ptr->total_weight/10.0), END  }},
-		{ TERM_L_GREEN, "Speed",	"%y",		{ s2u(show_speed()), END  }}
-	};
-	assert(N_ELEMENTS(panel2) == boundaries[2].page_rows);
-	if (ret > N_ELEMENTS(panel2)) ret = N_ELEMENTS(panel2);
-	C_COPY(panel, &panel2, ret, data_panel);
+	int i = 0;
+	assert(ret >= boundaries[2].page_rows);
+	ret = boundaries[2].page_rows;
+	P_I(max_color(p_ptr->lev, p_ptr->max_lev), "Level", "%y", i2u(p_ptr->lev), END  );
+	P_I(max_color(p_ptr->exp, p_ptr->max_exp), "Cur Exp", "%y", i2u(p_ptr->exp), END  );
+	P_I(TERM_L_GREEN, "Max Exp",	"%y",	i2u(p_ptr->max_exp), END  );
+	P_I(TERM_L_GREEN, "Adv Exp",	"%y",	s2u(show_adv_exp()), END  );
+	P_I(TERM_L_GREEN, "MaxDepth",	"%y",	s2u(show_depth()), END  );
+	P_I(TERM_L_GREEN, "Turns",		"%y",	i2u(turn), END  );
+	P_I(TERM_L_GREEN, "Gold",		"%y",	i2u(p_ptr->au), END  );
+	P_I(TERM_L_GREEN, "Burden",	"%.1y lbs",	f2u(p_ptr->total_weight/10.0), END  );
+	assert(i == boundaries[2].page_rows);
 	return ret;
   }
   case 3:
   {
-	data_panel panel3[] =
-	{
-		{ TERM_L_BLUE, "Armor", "[%y,%+y]",		{ i2u(p_ptr->dis_ac), i2u(p_ptr->dis_to_a)  }},
-		{ TERM_L_BLUE, "Fight", "(%+y,%+y)",	{ i2u(p_ptr->dis_to_h), i2u(p_ptr->dis_to_d)  }},
-		{ TERM_L_BLUE, "Melee", "%y",			{ s2u(show_weapon(&inventory[INVEN_WIELD])), END  }},
-		{ TERM_L_BLUE, "Shoot", "%y",			{ s2u(show_weapon(&inventory[INVEN_BOW])), END  }},
-		{ TERM_L_BLUE, "Blows", "%y/turn",		{ i2u(p_ptr->num_blow), END  }},
-		{ TERM_L_BLUE, "Shots", "%y/turn",		{ i2u(p_ptr->num_fire), END  }},
-		{ 0, 0, 0, {END} },
-		{ TERM_L_BLUE, "Infra", "%y ft",		{ i2u(p_ptr->see_infra * 10), END  }}
-	};
-	assert(N_ELEMENTS(panel3) == boundaries[3].page_rows);
-	if (ret > N_ELEMENTS(panel3)) ret = N_ELEMENTS(panel3);
-	C_COPY(panel, &panel3, ret, data_panel);
+	int i = 0;
+	assert(ret >= boundaries[3].page_rows);
+	ret = boundaries[3].page_rows;
+	P_I(TERM_L_BLUE, "Armor", "[%y,%+y]",	i2u(p_ptr->dis_ac), i2u(p_ptr->dis_to_a)  );
+	P_I(TERM_L_BLUE, "Fight", "(%+y,%+y)",	i2u(p_ptr->dis_to_h), i2u(p_ptr->dis_to_d)  );
+	P_I(TERM_L_BLUE, "Melee", "%y",			s2u(show_weapon(&inventory[INVEN_WIELD])), END  );
+	P_I(TERM_L_BLUE, "Shoot", "%y",			s2u(show_weapon(&inventory[INVEN_BOW])), END  );
+	P_I(TERM_L_BLUE, "Blows", "%y/turn",	i2u(p_ptr->num_blow), END  );
+	P_I(TERM_L_BLUE, "Shots", "%y/turn",	i2u(p_ptr->num_fire), END  );
+	P_I(TERM_L_BLUE, "Infra", "%y ft",		i2u(p_ptr->see_infra * 10), END  );
+	P_I(TERM_L_BLUE, "Speed", "%y",			s2u(show_speed()), END );
+	assert(i == boundaries[3].page_rows);
 	return ret;
   }
   case 4:
   {
-	struct {
+	#define OFFSET(field) ((char*)(&dummy.field) - (char*)&dummy)
+	static const player_type dummy;
+	static struct {
 		const char *name;
-		int skill;
+		size_t skill_offset;
 		int div;
 	} skills[] =
 	{
-		{ "Saving Throw", p_ptr->skill_sav, 6 },
-		{ "Stealth", p_ptr->skill_stl, 1 },
-		{ "Fighting", p_ptr->skill_thn, 12 },
-		{ "Shooting", p_ptr->skill_thb, 12 },
-		{ "Disarming", p_ptr->skill_dis, 8 },
-		{ "Magic Device", p_ptr->skill_dev, 6 },
-		{ "Perception", p_ptr->skill_fos, 6 },
-		{ "Searching", p_ptr->skill_srh, 6 }
+		{ "Saving Throw", OFFSET(skill_sav), 6 },
+		{ "Stealth", OFFSET(skill_stl), 1 },
+		{ "Fighting", OFFSET(skill_thn), 12 },
+		{ "Shooting", OFFSET(skill_thb), 12 },
+		{ "Disarming", OFFSET(skill_dis), 8 },
+		{ "Magic Device", OFFSET(skill_dev), 6 },
+		{ "Perception", OFFSET(skill_fos), 6 },
+		{ "Searching", OFFSET(skill_srh), 6 }
 	};
 	size_t i;
 	assert(N_ELEMENTS(skills) == boundaries[4].page_rows);
@@ -1686,31 +1687,29 @@ int get_panel(int oid, data_panel *panel, size_t size)
 	if (ret > size) ret = size;
 	for (i = 0; i < ret; i++)
 	{
+		s16b skill = *(s16b*)(((char*)p_ptr)+skills[i].skill_offset);
 		panel[i].color = TERM_L_BLUE;
 		panel[i].label = skills[i].name;
 		panel[i].fmt = "%y";
-		panel[i].value[0] = s2u(likert(skills[i].skill, skills[i].div, &panel[i].color));
+		panel[i].value[0] = s2u(likert(skill, skills[i].div, &panel[i].color));
 	}
 	return ret;
   }
   case 5:
   {
-	data_panel panel5[] =
-	{
-		{TERM_L_BLUE, "Age",		"%y",	{ i2u(p_ptr->age), END  }},
-		{TERM_L_BLUE, "Height",		"%y",	{ i2u(p_ptr->ht), END  }},
-		{TERM_L_BLUE, "Weight",		"%y",	{ i2u(p_ptr->wt), END  }},
-		{TERM_L_BLUE, "Status",		"%y",	{ i2u(p_ptr->sc), END  }},
-		{TERM_L_BLUE, "Maximize",	"%y",	{ c2u(adult_maximize ? 'Y' : 'N'), END  }}
+	int i = 0;
+	assert(ret >= boundaries[5].page_rows);
+	ret = boundaries[5].page_rows;
+	P_I(TERM_L_BLUE, "Age",			"%y",	i2u(p_ptr->age), END );
+	P_I(TERM_L_BLUE, "Height",		"%y",	i2u(p_ptr->ht), END  );
+	P_I(TERM_L_BLUE, "Weight",		"%y",	i2u(p_ptr->wt), END  );
+	P_I(TERM_L_BLUE, "Status",		"%y",	i2u(p_ptr->sc), END  );
+	P_I(TERM_L_BLUE, "Maximize",	"%y",	c2u(adult_maximize ? 'Y' : 'N'), END);
 #if 0
 	/* Preserve mode deleted */
-		{TERM_L_BLUE, "Preserve",	"%y",	{ c2u(adult_preserve ? 'Y' : 'N'), END  }}
+	P_I(TERM_L_BLUE, "Preserve",	"%y",	c2u(adult_preserve ? 'Y' : 'N'), END);
 #endif
-
-	};
-	assert(N_ELEMENTS(panel5) == boundaries[5].page_rows);
-	if (ret > N_ELEMENTS(panel5)) ret = N_ELEMENTS(panel5);
-	C_COPY(panel, &panel5, ret, data_panel);
+	assert(i == boundaries[5].page_rows);
 	return ret;
   }
  }

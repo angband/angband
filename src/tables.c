@@ -2234,8 +2234,6 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE,
 		OPT_NONE
 	},
 

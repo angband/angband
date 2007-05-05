@@ -25,7 +25,24 @@
 #include "ui.h"
 
 
+/* Flag value for missing array entry */
+#define MISSING -17
+
+#define LOAD_PREF	100
+#define APP_MACRO	101
+#define ASK_MACRO	103
+#define DEL_MACRO	104
+#define NEW_MACRO	105
+#define APP_KEYMAP	106
+#define ASK_KEYMAP	107
+#define DEL_KEYMAP	108
+#define NEW_KEYMAP	109
+#define ENTER_ACT	110
+
+
 #define INFO_SCREENS 2 /* Number of screens in character info mode */
+
+
 
 typedef struct {
 		int maxnum; /* Maximum possible item count for this class */
@@ -368,8 +385,8 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	int oid = -1;  				/* object identifiers */
 
 	region title_area = {0, 0, 0, 4};
-	region group_region = {0, 6, g_name_len, -2};
-	region object_region = {g_name_len+3, 6, 0, -2};
+	region group_region = {0, 6, MISSING, -2};
+	region object_region = {MISSING, 6, 0, -2};
 
 	/* display state variables */
 	bool visual_list = FALSE;
@@ -1245,12 +1262,13 @@ static void desc_ego_fake(int oid)
 	/* Hack: dereference the join */
 	const char *cursed [] = {"permanently cursed", "heavily cursed", "cursed"};
 	const char *xtra [] = {"sustain", "higher resistance", "ability"};
-	object_type dummy;
-	WIPE(&dummy, dummy);
-
 	int f3, i;
+
 	int e_idx = default_join[oid].oid;
 	ego_item_type *e_ptr = &e_info[e_idx];
+
+	object_type dummy;
+	WIPE(&dummy, dummy);
 
 	/* Save screen */
 	screen_save();
@@ -2835,17 +2853,17 @@ static void keymap_dump(FILE *fff)
 
 static event_action macro_actions[] =
 {
-	{'lupf', "Load a user pref file", 0},
+	{LOAD_PREF, "Load a user pref file", 0},
 #ifdef ALLOW_MACROS
-	{'amac', "Append macros to a file", 0},
-	{'qmac', "Query a macro", 0},
-	{'cmac', "Create a macro", 0},
-	{'jmac', "Remove a macro", 0},
-	{'akm', "Append keymaps to a file", 0},
-	{'qkm', "Query a keymap", 0},
-	{'ckm', "Create a keymap", 0},
-	{'rkm', "Remove a keymap", 0},
-	{'emac', "Enter a new action", 0}
+	{APP_MACRO, "Append macros to a file", 0},
+	{ASK_MACRO, "Query a macro", 0},
+	{NEW_MACRO, "Create a macro", 0},
+	{DEL_MACRO, "Remove a macro", 0},
+	{APP_KEYMAP, "Append keymaps to a file", 0},
+	{ASK_KEYMAP, "Query a keymap", 0},
+	{NEW_KEYMAP, "Create a keymap", 0},
+	{DEL_KEYMAP, "Remove a keymap", 0},
+	{ENTER_ACT, "Enter a new action", 0}
 #endif /* ALLOW_MACROS */
 };
 
@@ -2861,6 +2879,8 @@ void do_cmd_macros(void)
 
 	int mode;
 	int cursor = 0;
+
+	region loc = {0, 1, 0, 11};
 
 	/* Roguelike */
 	if (rogue_like_commands)
@@ -2881,7 +2901,6 @@ void do_cmd_macros(void)
 
 	screen_save();
 
-	region loc = {0, 1, 0, 11};
 	menu_layout(&macro_menu, &loc);
 
 	/* Process requests until done */
@@ -2907,12 +2926,12 @@ void do_cmd_macros(void)
 		evt = macro_actions[cursor].id;
 
 		switch(evt) {
-		case 'lupf':
+		case LOAD_PREF:
 			do_cmd_pref_file_hack(16);
 			break;
 
 #ifdef ALLOW_MACROS
-		case 'amac':
+		case APP_MACRO:
 		{
 			/* Dump the macros */
 			(void)dump_pref_file(macro_dump, "Dump Macros");
@@ -2920,7 +2939,7 @@ void do_cmd_macros(void)
 			break;
 		}
 
-		case 'qmac':
+		case ASK_MACRO:
 		{
 			int k;
 
@@ -2961,7 +2980,7 @@ void do_cmd_macros(void)
 			break;
 		}
 
-		case 'cmac':
+		case NEW_MACRO:
 		{
 			/* Prompt */
 			prt("Command: Create a macro", 16, 0);
@@ -2995,7 +3014,7 @@ void do_cmd_macros(void)
 			}
 			break;
 		}
-		case 'dmac':
+		case DEL_MACRO:
 		{
 			/* Prompt */
 			prt("Command: Remove a macro", 16, 0);
@@ -3013,13 +3032,13 @@ void do_cmd_macros(void)
 			msg_print("Removed a macro.");
 			break;
 		}
-		case 'akm':
+		case APP_KEYMAP:
 		{
 			/* Dump the keymaps */
 			(void)dump_pref_file(keymap_dump, "Dump Keymaps");
 			break;
 		}
-		case 'qkm':
+		case ASK_KEYMAP:
 		{
 			cptr act;
 
@@ -3059,7 +3078,7 @@ void do_cmd_macros(void)
 			}
 			break;
 		}
-		case 'ckm':
+		case NEW_KEYMAP:
 		{
 			/* Prompt */
 			prt("Command: Create a keymap", 16, 0);
@@ -3096,7 +3115,7 @@ void do_cmd_macros(void)
 			}
 			break;
 		}
-		case 'dkm':
+		case DEL_KEYMAP:
 		{
 			/* Prompt */
 			prt("Command: Remove a keymap", 16, 0);
@@ -3117,7 +3136,7 @@ void do_cmd_macros(void)
 			msg_print("Removed a keymap.");
 			break;
 		}
-		case 'emac': /* Enter a new action */
+		case ENTER_ACT: /* Enter a new action */
 		{
 			/* Prompt */
 			prt("Command: Enter a new action", 16, 0);
@@ -3265,6 +3284,11 @@ int modify_attribute(const char *clazz, int oid, const char *name,
 	const char *empty_symbol2 = "\0";
 	const char *empty_symbol3 = "\0";
 
+	byte ca = (byte)*pca;
+	byte cc = (byte)*pcc;
+
+	int linec = (use_trptile ? 22: (use_dbltile ? 21 : 20));
+
 	if (use_trptile && use_bigtile)
 	{
 		empty_symbol = "// ?????? \\\\";
@@ -3288,11 +3312,6 @@ int modify_attribute(const char *clazz, int oid, const char *name,
 		empty_symbol2 = "\\\\ ?? //";
 	}
 	else if (use_bigtile) empty_symbol = "<< ?? >>";
-
-	byte ca = (byte)*pca;
-	byte cc = (byte)*pcc;
-
-	int linec = (use_trptile ? 22: (use_dbltile ? 21 : 20));
 
 	/* Prompt */
 	prt(format("Command: Change %s attr/chars", clazz), 15, 0);
@@ -3999,6 +4018,11 @@ void do_cmd_save_screen(void)
 	}
 }
 
+/* ISO C wrapper */
+static void do_dump_options(void *not_a_function_pointer, const char *title)
+{
+	dump_pref_file(option_dump, title);
+}
 
 /* ========================= MENU DEFINITIONS ========================== */
 
@@ -4018,7 +4042,7 @@ static menu_item option_actions [] =
 	{{0, "Set hitpoint warning", (action_f) do_cmd_hp_warn, 0}, 'H'},
 	{{0, 0, 0,}, 0}, /* Special choices */
 	{{0, "Load a user pref file", (action_f) do_cmd_pref_file_hack, (void*)20}, 'L'},
-	{{0, "Dump options", (action_f) dump_pref_file, option_dump}, 'A'},
+	{{0, "Dump options", do_dump_options, 0}, 'A'},
 	{{0, 0, 0,}, 0}, /* Interact with */	
 	{{0, "Interact with macros (advanced)", (action_f) do_cmd_macros, 0}, 'M'},
 	{{0, "Interact with visuals (advanced)", (action_f) do_cmd_visuals, 0}, 'V'},

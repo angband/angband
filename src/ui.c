@@ -617,7 +617,8 @@ static bool menu_handle_event(menu_type *menu, const event_type *in)
 	if (menu->target.observers)
 	{
 		/* TODO: need a panel dispatcher here, not a generic target */
-		event_target t = { { 0, 0, 0, 0 }, FALSE, menu->target.observers };
+		event_target t = { { 0, 0, 0, 0 }, FALSE, 0 /* menu->target.observers */};
+		t.observers = menu->target.observers;
 		out = run_event_loop(&t, FALSE, in);
 
 		if (out.type != EVT_AGAIN)

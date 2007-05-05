@@ -13,6 +13,7 @@
 #include "script.h"
 
 
+
 /*
  * Forward declare
  */
@@ -770,13 +771,18 @@ static const menu_iter menu_defs[] = {
 
 /* Menu display and selector */
 
+#define ASEX 0
+#define ARACE 1
+#define ACLASS 2
+
+
 static bool choose_character()
 {
 	int i = 0;
 
 	const region *regions[] = { &gender_region, &race_region, &class_region };
-	byte *values[] = { &p_ptr->psex, &p_ptr->prace, &p_ptr->pclass };
-	int limits[] = { SEX_MALE + 1, z_info->p_max, z_info->c_max };
+	byte *values[3]; /* { &p_ptr->psex, &p_ptr->prace, &p_ptr->pclass }; */
+	int limits[3]; /* { SEX_MALE +1, z_info->p_max, z_info->c_max }; */
 
 	menu_type menu;
 
@@ -790,6 +796,13 @@ static bool choose_character()
 	typedef void (*browse_f) (int oid, void *, const region *loc);
 	browse_f browse[] = {NULL, race_aux_hook, class_aux_hook };
 
+	/* Stupid ISO C array initialization. */
+	values[ASEX] = &p_ptr->psex;
+	values[ARACE] = &p_ptr->prace;
+	values[ACLASS] = &p_ptr->pclass;
+	limits[ASEX] = SEX_MALE + 1;
+	limits[ARACE] = z_info->p_max;
+	limits[ACLASS] = z_info->c_max;
 
 	WIPE(&menu, menu);
 	menu.cmd_keys = "?=*\r\n\x18";		 /* ?, ,= *, \n, <ctl-X> */
