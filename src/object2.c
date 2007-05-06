@@ -764,7 +764,7 @@ s16b get_obj_num(int level)
 void object_known(object_type *o_ptr)
 {
 	/* Remove special inscription, if any */
-	if (o_ptr->discount >= INSCRIP_NULL) o_ptr->discount = 0;
+	if (o_ptr->pseudo) o_ptr->pseudo = 0;
 
 	/* The object is not "sensed" */
 	o_ptr->ident &= ~(IDENT_SENSE);
@@ -1142,13 +1142,6 @@ s32b object_value(const object_type *o_ptr)
 	}
 
 
-	/* Apply discount (if any) */
-	if (o_ptr->discount > 0 && o_ptr->discount < INSCRIP_NULL)
-	{
-		value -= (value * o_ptr->discount / 100L);
-	}
-
-
 	/* Return the final value */
 	return (value);
 }
@@ -1324,35 +1317,9 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 	}
 
 
-	/* Hack -- Require compatible "discount" fields */
-	if (o_ptr->discount != j_ptr->discount)
-	{
-		/* Both are (different) special inscriptions */
-		if ((o_ptr->discount >= INSCRIP_NULL) &&
-		    (j_ptr->discount >= INSCRIP_NULL))
-		{
-			/* Normally require matching inscriptions */
-			return (0);
-		}
-
-		/* One is a special inscription, one is a discount or nothing */
-		else if ((o_ptr->discount >= INSCRIP_NULL) ||
-		         (j_ptr->discount >= INSCRIP_NULL))
-		{
-			/* Normally require matching inscriptions */
-			if (!stack_force_notes) return (0);
-
-			/* Hack -- Never merge a special inscription with a discount */
-			if ((o_ptr->discount > 0) && (j_ptr->discount > 0)) return (0);
-		}
-
-		/* One is a discount, one is a (different) discount or nothing */
-		else
-		{
-			/* Normally require matching discounts */
-			if (!stack_force_costs) return (0);
-		}
-	}
+	/* Different pseudo-ID statuses preclude combination */
+	if (o_ptr->pseudo != j_ptr->pseudo)
+		return (0);
 
 
 	/* Maximal "stacking" limit */
@@ -1402,7 +1369,7 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 	if (j_ptr->note != 0) o_ptr->note = j_ptr->note;
 
 	/* Mega-Hack -- Blend "discounts" */
-	if (o_ptr->discount < j_ptr->discount) o_ptr->discount = j_ptr->discount;
+	o_ptr->pseudo = j_ptr->pseudo;
 
 	/*
 	 * Hack -- if rods are stacking, re-calculate the

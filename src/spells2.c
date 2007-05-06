@@ -284,11 +284,8 @@ static void uncurse_object(object_type *o_ptr)
 	/* Uncurse it */
 	o_ptr->ident &= ~(IDENT_CURSED);
 
-	/* Remove special inscription, if any */
-	if (o_ptr->discount >= INSCRIP_NULL) o_ptr->discount = 0;
-
-	/* Take note if allowed */
-	if (o_ptr->discount == 0) o_ptr->discount = INSCRIP_UNCURSED;
+	/* Mark as uncursed */
+	o_ptr->pseudo = INSCRIP_UNCURSED;
 
 	/* The object has been "sensed" */
 	o_ptr->ident |= (IDENT_SENSE);
@@ -901,7 +898,7 @@ bool lose_all_info(void)
 		if (o_ptr->ident & (IDENT_MENTAL)) continue;
 
 		/* Remove special inscription, if any */
-		if (o_ptr->discount >= INSCRIP_NULL) o_ptr->discount = 0;
+		if (o_ptr->pseudo) o_ptr->pseudo = 0;
 
 		/* Hack -- Clear the "felt" flag */
 		o_ptr->ident &= ~(IDENT_SENSE);

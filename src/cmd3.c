@@ -288,11 +288,8 @@ void do_cmd_wield(void)
 		sound(MSG_CURSED);
 		msg_print("Oops! It feels deathly cold!");
 
-		/* Remove special inscription, if any */
-		if (o_ptr->discount >= INSCRIP_NULL) o_ptr->discount = 0;
-
-		/* Sense the object if allowed */
-		if (o_ptr->discount == 0) o_ptr->discount = INSCRIP_CURSED;
+		/* Sense the object */
+		o_ptr->pseudo = INSCRIP_CURSED;
 
 		/* The object has been "sensed" */
 		o_ptr->ident |= (IDENT_SENSE);
@@ -576,14 +573,14 @@ void do_cmd_destroy(void)
 		{
 			/* Already sensed objects always get improved feelings */
 			if (cursed_p(o_ptr) || broken_p(o_ptr))
-				o_ptr->discount = INSCRIP_TERRIBLE;
+				o_ptr->pseudo = INSCRIP_TERRIBLE;
 			else
-				o_ptr->discount = INSCRIP_SPECIAL;
+				o_ptr->pseudo = INSCRIP_SPECIAL;
 		}
 		else
 		{
 			/* Mark the object as indestructible */
-			o_ptr->discount = INSCRIP_INDESTRUCTIBLE;
+			o_ptr->pseudo = INSCRIP_INDESTRUCTIBLE;
 		}
 
 		/* Combine the pack */

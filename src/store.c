@@ -481,18 +481,11 @@ static int mass_roll(int times, int max)
 
 /*
  * Some cheap objects should be created in piles.
- *
- * Some objects can be sold at a "discount" (in smaller piles).
- * Standard percentage discounts include 10, 25, 50, 75, and 90.
  */
 static void mass_produce(object_type *o_ptr)
 {
 	int size = 1;
-
-	int discount = 0;
-
 	s32b cost = object_value(o_ptr);
-
 
 	/* Analyze the type */
 	switch (o_ptr->tval)
@@ -562,31 +555,8 @@ static void mass_produce(object_type *o_ptr)
 	}
 
 
-	/* Pick a discount */
-	if (cost < 5)
-		discount = 0;
-
-	else if (rand_int(25) == 0)
-		discount = 10;
-
-	else if (rand_int(50) == 0)
-		discount = 25;
-
-	else if (rand_int(150) == 0)
-		discount = 50;
-
-	else if (rand_int(300) == 0)
-		discount = 75;
-
-	else if (rand_int(500) == 0)
-		discount = 90;
-
-
-	/* Save the discount */
-	o_ptr->discount = discount;
-
 	/* Save the total pile size */
-	o_ptr->number = size - (size * discount / 100);
+	o_ptr->number = size;
 
 	/* Hack -- rods need to increase PVAL if stacked */
 	if (o_ptr->tval == TV_ROD)
@@ -637,6 +607,7 @@ static bool store_object_similar(const object_type *o_ptr, const object_type *j_
 	/* Hack -- Never stack recharging items */
 	if ((o_ptr->timeout || j_ptr->timeout) && o_ptr->tval != TV_LITE)
 		return (0);
+
 	/* Never stack items with different fuel */
 	else if ((o_ptr->timeout != j_ptr->timeout) && o_ptr->tval == TV_LITE)
 		return (0);
@@ -648,9 +619,6 @@ static bool store_object_similar(const object_type *o_ptr, const object_type *j_
 
 	/* Hack -- Never stack chests */
 	if (o_ptr->tval == TV_CHEST) return (0);
-
-	/* Require matching "discount" fields */
-	if (o_ptr->discount != j_ptr->discount) return (0);
 
 	/* They match, so they must be similar */
 	return (TRUE);
@@ -856,12 +824,9 @@ static int store_carry(int st, object_type *o_ptr)
 	/* Cursed/Worthless items "disappear" when sold */
 	if (value <= 0) return (-1);
 
-	/* Erase the inscription */
+	/* Erase the inscription & pseudo-ID bit */
 	o_ptr->note = 0;
-
-	/* Remove special inscription, if any */
-	if (o_ptr->discount >= INSCRIP_NULL) o_ptr->discount = 0;
-
+	o_ptr->pseudo = 0;
 
 	/* Check each existing object (try to combine) */
 	for (slot = 0; slot < st_ptr->stock_num; slot++)
@@ -1522,7 +1487,7 @@ void store_init(void)
  */
 void store_shuffle(int which)
 {
-	int i, j;
+	int i;
 
 	store_type *st_ptr = &store[which];
 
@@ -1531,23 +1496,12 @@ void store_shuffle(int which)
 
 
 	/* Pick a new owner */
-	for (j = st_ptr->owner; j == st_ptr->owner; )
-	{
-		st_ptr->owner = (byte)rand_int(z_info->b_max);
-	}
+	i = st_ptr->owner;
 
+	while (i == st_ptr->owner)
+	    i = rand_int(z_info->b_max);
 
-	/* Discount all the items */
-	for (i = 0; i < st_ptr->stock_num; i++)
-	{
-		object_type *o_ptr;
-
-		/* Get the object */
-		o_ptr = &st_ptr->stock[i];
-
-		/* Discount non-discounted items by 40 percent */
-		if (o_ptr->discount == 0) o_ptr->discount = 40;
-	}
+	st_ptr->owner = i;
 }
 
 
@@ -1947,9 +1901,6 @@ static bool store_purchase(int item)
 		/* Erase the inscription */
 		i_ptr->note = 0;
 
-		/* Remove special inscription, if any */
-		if (o_ptr->discount >= INSCRIP_NULL) o_ptr->discount = 0;
-
 		/* Give it to the player */
 		item_new = inven_carry(i_ptr);
 
@@ -2156,12 +2107,6 @@ static void store_sell(void)
 
 		/* Update the display */
 		store_flags |= STORE_GOLD_CHANGE;
-
-		/* Erase the inscription */
-		i_ptr->note = 0;
-
-		/* Remove special inscription, if any */
-		if (o_ptr->discount >= INSCRIP_NULL) o_ptr->discount = 0;
 
 		/* Identify original object */
 		object_aware(o_ptr);

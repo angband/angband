@@ -1713,17 +1713,17 @@ enum
 /*
  * The special inscriptions.
  */
-#define INSCRIP_NULL            100
-#define INSCRIP_TERRIBLE        100+1
-#define INSCRIP_WORTHLESS       100+2
-#define INSCRIP_CURSED          100+3
-#define INSCRIP_BROKEN          100+4
-#define INSCRIP_AVERAGE         100+5
-#define INSCRIP_GOOD            100+6
-#define INSCRIP_EXCELLENT       100+7
-#define INSCRIP_SPECIAL         100+8
-#define INSCRIP_UNCURSED        100+9
-#define INSCRIP_INDESTRUCTIBLE  100+10
+#define INSCRIP_NULL            0
+#define INSCRIP_TERRIBLE        1
+#define INSCRIP_WORTHLESS       2
+#define INSCRIP_CURSED          3
+#define INSCRIP_BROKEN          4
+#define INSCRIP_AVERAGE         5
+#define INSCRIP_GOOD            6
+#define INSCRIP_EXCELLENT       7
+#define INSCRIP_SPECIAL         8
+#define INSCRIP_UNCURSED        9
+#define INSCRIP_INDESTRUCTIBLE  10
 
 /*
  * Number of special inscriptions, plus one.

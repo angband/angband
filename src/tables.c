@@ -1669,7 +1669,7 @@ cptr option_desc[OPT_MAX] =
 	"Repeat obvious commands",					/* OPT_always_repeat */
 	"Show dungeon level in feet",				/* OPT_depth_in_feet */
 	"Merge inscriptions when stacking",			/* OPT_stack_force_notes */
-	"Merge discounts when stacking",			/* OPT_stack_force_costs */
+	NULL,										/* xxx stack_force_costs */
 	"Show labels in equipment listings",		/* OPT_show_labels */
 	NULL,										/* xxx show_weights */
 	NULL,										/* xxx show_choices */
@@ -1933,7 +1933,7 @@ const bool option_norm[OPT_MAX] =
 	FALSE,		/* OPT_always_repeat */
 	FALSE,		/* OPT_depth_in_feet */
 	FALSE,		/* OPT_stack_force_notes */
-	FALSE,		/* OPT_stack_force_costs */
+	FALSE,		/* xxx stack_force_costs */
 	TRUE,		/* OPT_show_labels */
 	FALSE,		/* xxx show_weights */
 	FALSE,		/* xxx show_choices */
@@ -2220,11 +2220,11 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_carry_query_flag,
 		OPT_always_pickup,
 		OPT_stack_force_notes,
-		OPT_stack_force_costs,
 		OPT_show_piles,
 		OPT_show_flavors,
 		OPT_verify_destroy,
 		OPT_verify_special,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,

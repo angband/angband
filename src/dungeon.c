@@ -161,9 +161,9 @@ static void sense_inventory(void)
 		/* Skip non-sense machines */
 		if (!okay) continue;
 
-		/* It already has a discount or special inscription */
-		if ((o_ptr->discount > 0) &&
-		    (o_ptr->discount != INSCRIP_INDESTRUCTIBLE)) continue;
+		/* It's already been pseudo-ID'd */
+		if (o_ptr->pseudo &&
+		    o_ptr->pseudo != INSCRIP_INDESTRUCTIBLE) continue;
 
 		/* It has already been sensed, do not sense it again */
 		if (o_ptr->ident & (IDENT_SENSE)) continue;
@@ -175,7 +175,7 @@ static void sense_inventory(void)
 		if ((i < INVEN_WIELD) && (0 != rand_int(5))) continue;
 
 		/* Indestructible objects are either excellent or terrible */
-		if (o_ptr->discount == INSCRIP_INDESTRUCTIBLE)
+		if (o_ptr->pseudo == INSCRIP_INDESTRUCTIBLE)
 			heavy = TRUE;
 
 		/* Check for a feeling */
@@ -216,7 +216,7 @@ static void sense_inventory(void)
 		}
 
 		/* Sense the object */
-		o_ptr->discount = feel;
+		o_ptr->pseudo = feel;
 
 		/* The object has been "sensed" */
 		o_ptr->ident |= (IDENT_SENSE);

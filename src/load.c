@@ -270,7 +270,13 @@ static errr rd_item(object_type *o_ptr)
 	rd_s16b(&o_ptr->pval);
 
 
-	rd_byte(&o_ptr->discount);
+	rd_byte(&o_ptr->pseudo);
+
+	/* Fix the field */
+	if (o_ptr->pseudo > 99)
+	    o_ptr->pseudo -= 100;
+	else
+	    o_ptr->pseudo = 0;
 
 	rd_byte(&o_ptr->number);
 	rd_s16b(&o_ptr->weight);

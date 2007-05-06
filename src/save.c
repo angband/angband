@@ -101,7 +101,7 @@ static void wr_item(const object_type *o_ptr)
 	wr_byte(o_ptr->sval);
 	wr_s16b(o_ptr->pval);
 
-	wr_byte(o_ptr->discount);
+	wr_byte(o_ptr->pseudo);
 
 	wr_byte(o_ptr->number);
 	wr_s16b(o_ptr->weight);

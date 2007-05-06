@@ -1490,9 +1490,9 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 
 
 	/* Use special inscription, if any */
-	if (o_ptr->discount >= INSCRIP_NULL)
+	if (o_ptr->pseudo)
 	{
-		v = inscrip_text[o_ptr->discount - INSCRIP_NULL];
+		v = inscrip_text[o_ptr->pseudo];
 	}
 
 	/* Use "cursed" if the item is known to be cursed */
@@ -1511,16 +1511,6 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 	else if (!aware && object_tried_p(o_ptr))
 	{
 		v = "tried";
-	}
-
-	/* Use the discount, if any */
-	else if (o_ptr->discount > 0)
-	{
-		char *q = discount_buf;
-		object_desc_num_macro(q, o_ptr->discount);
-		object_desc_str_macro(q, "% off");
-		*q = '\0';
-		v = discount_buf;
 	}
 
 	/* Nothing */

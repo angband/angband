@@ -475,7 +475,7 @@ struct object_type
 
 	s16b pval;			/* Item extra-parameter */
 
-	byte discount;		/* Discount (if any) */
+	byte pseudo;		/* Pseudo-ID marker */
 
 	byte number;		/* Number of items */
 
