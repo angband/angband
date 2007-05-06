@@ -1229,7 +1229,7 @@ static const struct
 	{ "Alter a grid",  '+', do_cmd_alter },
 	{ "Dig a tunnel",  'T', do_cmd_tunnel },
 	{ "Walk",          ';', do_cmd_walk },
-	{ "Jump",          '-', do_cmd_jump },
+	{ "Jump (into a trap)", '-', do_cmd_jump },
 
 
 	/*** Running, Resting, Searching, Staying */

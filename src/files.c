@@ -1268,7 +1268,7 @@ static const region resist_region[] =
 static void display_resistance_panel(const struct player_flag_record *resists,
 									size_t size, const region *bounds) 
 {
-	int i, j;
+	size_t i, j;
 	int col = bounds->col;
 	int row = bounds->row;
 	Term_putstr(col, row++, RES_COLS, TERM_WHITE, "      abcdefghijkl@");
@@ -1611,13 +1611,13 @@ static byte max_color(int val, int max)
 
 int get_panel(int oid, data_panel *panel, size_t size)
 {
-  size_t ret = size;
+  int ret = (s32b) size;
   switch(oid)
  {
   case 1:
   {
 	int i = 0;
-	assert(size >= boundaries[1].page_rows);
+	assert( size >= (u32b) boundaries[1].page_rows);
 	ret = boundaries[1].page_rows;
 	P_I(TERM_L_BLUE, "Name",	"%y",	s2u(op_ptr->full_name), END  );
 	P_I(TERM_L_BLUE, "Sex",		"%y",	s2u(sp_ptr->title), END  );
@@ -1633,7 +1633,7 @@ int get_panel(int oid, data_panel *panel, size_t size)
   case 2:
   {
 	int i = 0;
-	assert(ret >= boundaries[2].page_rows);
+	assert( ret >= boundaries[2].page_rows);
 	ret = boundaries[2].page_rows;
 	P_I(max_color(p_ptr->lev, p_ptr->max_lev), "Level", "%y", i2u(p_ptr->lev), END  );
 	P_I(max_color(p_ptr->exp, p_ptr->max_exp), "Cur Exp", "%y", i2u(p_ptr->exp), END  );
@@ -1679,10 +1679,10 @@ int get_panel(int oid, data_panel *panel, size_t size)
 		{ "Perception", SKILL_FOS, 6 },
 		{ "Searching", SKILL_SRH, 6 }
 	};
-	size_t i;
+	int i;
 	assert(N_ELEMENTS(skills) == boundaries[4].page_rows);
 	ret = N_ELEMENTS(skills);
-	if (ret > size) ret = size;
+	if ((u32b) ret > size) ret = size;
 	for (i = 0; i < ret; i++)
 	{
 		s16b skill = p_ptr->skills[skills[i].skill];

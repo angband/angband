@@ -3947,7 +3947,7 @@ void do_cmd_save_screen_text(void)
  */
 void do_cmd_save_screen_html(int mode)
 {
-	int i;
+	size_t i;
 
 	FILE *fff;
 	char file_name[1024];

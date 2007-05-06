@@ -925,7 +925,7 @@ static menu_iter const *menu_iter_reg[20] =
 
 const menu_iter *find_menu_iter(menu_iter_id id)
 {
-	int i;
+	size_t i;
 	for (i = 0; i < N_ELEMENTS(menu_iter_reg) && menu_iter_reg[i]; i++)
 	{
 		if (menu_iter_reg[i]->id == id)
@@ -936,7 +936,7 @@ const menu_iter *find_menu_iter(menu_iter_id id)
 
 const menu_skin *find_menu_skin(skin_id id)
 {
-	int i;
+	size_t i;
 	for (i = 0; i < N_ELEMENTS(menu_skin_reg) && menu_skin_reg[i]; i++)
 	{
 		if (menu_skin_reg[i]->id == id)
@@ -947,7 +947,7 @@ const menu_skin *find_menu_skin(skin_id id)
 
 void add_menu_skin(const menu_skin *skin, skin_id id)
 {
-	int i;
+	size_t i;
 
 	assert(skin->id == id);
 	for (i = 0; i < N_ELEMENTS(menu_skin_reg) && menu_skin_reg[i]; i++)
@@ -961,7 +961,7 @@ void add_menu_skin(const menu_skin *skin, skin_id id)
 
 void add_menu_iter(const menu_iter * iter, menu_iter_id id)
 {
-	int i;
+	size_t i;
 
 	assert(iter->id == id);
 	for (i = 0; i < N_ELEMENTS(menu_iter_reg) && menu_iter_reg[i]; i++)
