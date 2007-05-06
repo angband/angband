@@ -56,7 +56,7 @@
 %:font-acn.prf
 
 ?:[EQU $SYS sdl]
-%:font-win.prf
+%:font-sdl.prf
 
 ?:1
 

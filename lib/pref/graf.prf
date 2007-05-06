@@ -46,5 +46,8 @@
 ?:[EQU $SYS acn]
 %:graf-acn.prf
 
+?:[EQU $SYS sdl]
+%:graf-sdl.prf
+
 ?:1
 
