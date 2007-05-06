@@ -1326,7 +1326,7 @@ static const struct
 
 
 /* List indexed by char */
-do_cmd_type *converted_list[UCHAR_MAX];
+do_cmd_type *converted_list[UCHAR_MAX+1];
 
 
 static void do_cmd_unknown(void)
@@ -1351,12 +1351,14 @@ static void process_command(void)
 
 	if (first)
 	{
+		first = 0;
 		size_t i;
 
 		/* Fill everything in at first */
 		for (i = 0; i < N_ELEMENTS(commands); i++)
 		{
 			unsigned char key = commands[i].key;
+			assert(key < N_ELEMENTS(converted_list));
 			converted_list[key] = commands[i].hook;
 		}
 
