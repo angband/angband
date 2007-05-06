@@ -74,7 +74,7 @@
 #include "angband.h"
 #define uint unsigned int
 
-#ifdef WINDOWS
+#if (defined(WINDOWS) && !defined(USE_SDL))
 
 
 /*

@@ -17,7 +17,9 @@
  */
 
 
-#if defined(WIN32_CONSOLE_MODE) || (!defined(MACINTOSH) && !defined(WINDOWS) && !defined(RISCOS))
+#if defined(WIN32_CONSOLE_MODE) \
+    || (!defined(MACINTOSH) && !defined(WINDOWS) && !defined(RISCOS)) \
+    || defined(USE_SDL)
 
 #include "main.h"
 
@@ -27,6 +29,10 @@
  */
 static const struct module modules[] =
 {
+#ifdef USE_SDL
+	{ "sdl", help_sdl, init_sdl },
+#endif /* USE_SDL */
+
 #ifdef USE_GTK
 	{ "gtk", help_gtk, init_gtk },
 #endif /* USE_GTK */
@@ -82,10 +88,6 @@ static const struct module modules[] =
 #ifdef USE_LFB
 	{ "lfb", help_lfb, init_lfb },
 #endif /* USE_LFB */
-	
-#ifdef USE_SDL
-	{ "sdl", help_sdl, init_sdl },
-#endif /* USE_SDL */
 };
 
 
@@ -314,12 +316,11 @@ int main(int argc, char *argv[])
 	int i;
 
 	bool done = FALSE;
-
 	bool new_game = FALSE;
 
 	int show_score = 0;
 
-	cptr mstr = NULL;
+	const char *mstr = NULL;
 
 	bool args = TRUE;
 
