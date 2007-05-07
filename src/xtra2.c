@@ -2615,7 +2615,6 @@ static event_type target_set_interactive_aux(int y, int x, int mode, cptr info)
 		floored = FALSE;
 
 		/* Scan all objects in the grid */
-		if (easy_floor)
 		{
 			int floor_list[MAX_FLOOR_STACK];
 			int floor_num;
@@ -2627,12 +2626,11 @@ static event_type target_set_interactive_aux(int y, int x, int mode, cptr info)
 				/* Not boring */
 				boring = FALSE;
 
-				/* Floored */
-				floored = TRUE;
-
-				/* Describe */
-				while (1)
+				/* If there is more than one item... */
+				if (floor_num > 1) while (1)
 				{
+					floored = TRUE;
+
 					/* Describe the pile */
 					if (p_ptr->wizard)
 					{

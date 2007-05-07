@@ -2713,8 +2713,6 @@ static int get_tag(int *cp, char tag)
  * We always erase the prompt when we are done, leaving a blank line,
  * or a warning message, if appropriate, if no items are available.
  *
- * Note that the "easy_floor" option affects this function in several ways.
- *
  * Note that only "acceptable" floor objects get indexes, so between two
  * commands, the indexes of floor objects may change.  XXX XXX XXX
  */
@@ -2875,7 +2873,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 		}
 
 		/* Use floor if allowed */
-		else if (easy_floor)
+		else if (use_floor)
 		{
 			p_ptr->command_wrk = (USE_FLOOR);
 		}
@@ -3114,31 +3112,28 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 					break;
 				}
 
-				if (easy_floor)
+				/* There is only one item */
+				if (floor_num == 1)
 				{
-					/* There is only one item */
-					if (floor_num == 1)
+					/* Auto-select */
+					if (p_ptr->command_wrk == (USE_FLOOR))
 					{
-						/* Hack -- Auto-Select */
-						if (p_ptr->command_wrk == (USE_FLOOR))
+						/* Special index */
+						k = 0 - floor_list[0];
+
+						/* Allow player to "refuse" certain actions */
+						if (!get_item_allow(k))
 						{
-							/* Special index */
-							k = 0 - floor_list[0];
-
-							/* Allow player to "refuse" certain actions */
-							if (!get_item_allow(k))
-							{
-								done = TRUE;
-								break;
-							}
-
-							/* Accept that choice */
-							(*cp) = k;
-							item = TRUE;
 							done = TRUE;
-
 							break;
 						}
+
+						/* Accept that choice */
+						(*cp) = k;
+						item = TRUE;
+						done = TRUE;
+
+						break;
 					}
 
 					/* Hack -- Fix screen */

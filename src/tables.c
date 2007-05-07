@@ -1462,7 +1462,7 @@ cptr option_text[OPT_MAX] =
 	"view_special_lite",		/* OPT_view_special_lite */
 	"easy_open",				/* OPT_easy_open */
 	"easy_alter",				/* OPT_easy_alter */
-	"easy_floor",				/* OPT_easy_floor */
+	NULL,						/* xxx easy_floor */
 	"show_piles",				/* OPT_show_piles */
 	"center_player",			/* OPT_center_player */
 	"run_avoid_center",			/* OPT_run_avoid_center */
@@ -1726,7 +1726,7 @@ cptr option_desc[OPT_MAX] =
 	"Use special colors for floor grids",		/* OPT_view_special_lite */
 	"Open/Disarm/Close without direction",		/* OPT_easy_open */
 	"Open/Disarm doors/traps on movement",		/* OPT_easy_alter */
-	"Display floor stacks in a list",   		/* OPT_easy_floor */
+	NULL,										/* xxx easy_floor */
 	"Show stacks using special attr/char",		/* OPT_show_piles */
 	"Center map continuously (very slow)",		/* OPT_center_player */
 	"Avoid centering while running",			/* OPT_run_avoid_center */
@@ -1990,7 +1990,7 @@ const bool option_norm[OPT_MAX] =
 	TRUE,		/* OPT_view_special_lite */
 	FALSE,		/* OPT_easy_open */
 	FALSE,		/* OPT_easy_alter */
-	FALSE,		/* OPT_easy_floor */
+	FALSE,		/* xxx easy_floor */
 	FALSE,		/* OPT_show_piles */
 	FALSE,		/* OPT_center_player */
 	FALSE,		/* OPT_run_avoid_center */
@@ -2215,7 +2215,6 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 
 	/*** Pickup/Item ***/
 	{
-		OPT_easy_floor,
 		OPT_always_pickup,
 		OPT_query_floor,
 		OPT_stack_force_notes,
@@ -2223,6 +2222,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_show_flavors,
 		OPT_verify_destroy,
 		OPT_verify_special,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,

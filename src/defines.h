@@ -2440,7 +2440,6 @@ enum
 #define OPT_view_special_lite		63
 #define OPT_easy_open 				64
 #define OPT_easy_alter 				65
-#define OPT_easy_floor 				66
 #define OPT_show_piles				67
 #define OPT_center_player			68
 #define OPT_run_avoid_center		69
@@ -2536,7 +2535,6 @@ enum
 #define view_special_lite		op_ptr->opt[OPT_view_special_lite]
 #define easy_open				op_ptr->opt[OPT_easy_open]
 #define easy_alter				op_ptr->opt[OPT_easy_alter]
-#define easy_floor				op_ptr->opt[OPT_easy_floor]
 #define show_piles				op_ptr->opt[OPT_show_piles]
 #define center_player			op_ptr->opt[OPT_center_player]
 #define run_avoid_center		op_ptr->opt[OPT_run_avoid_center]
