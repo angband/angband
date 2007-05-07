@@ -1387,12 +1387,20 @@ static void process_command(void)
 		}
 	}
 
-	/* Within these boundaries, the cast to unsigned char will have the desired effect */
-	assert(p_ptr->command_cmd >= CHAR_MIN && p_ptr->command_cmd <= CHAR_MAX);
+	/* Handle resize events XXX */
+	if (p_ptr->command_cmd_ex.type == EVT_RESIZE)
+	{
+		do_cmd_redraw();
+	}
+	else
+	{
+		/* Within these boundaries, the cast to unsigned char will have the desired effect */
+		assert(p_ptr->command_cmd >= CHAR_MIN && p_ptr->command_cmd <= CHAR_MAX);
 
-	/* Execute the command */
-	if (converted_list[(unsigned char) p_ptr->command_cmd])
-		converted_list[(unsigned char) p_ptr->command_cmd]();
+		/* Execute the command */
+		if (converted_list[(unsigned char) p_ptr->command_cmd])
+			converted_list[(unsigned char) p_ptr->command_cmd]();
+	}
 }
 
 
@@ -1699,10 +1707,8 @@ static void process_player(void)
 			/* Place the cursor on the player */
 			move_cursor_relative(p_ptr->py, p_ptr->px);
 
-			/* Get a command (normal) */
-			request_command(FALSE);
-
-			/* Process the command */
+			/* Get and process a command */
+			request_command();
 			process_command();
 		}
 
@@ -2244,9 +2250,6 @@ void play_game(bool new_game)
 
 	/* Hack -- Turn off the cursor */
 	(void)Term_set_cursor(FALSE);
-
-	/* Set screen resize hook */
-	Term_set_resize_hook(do_cmd_resize);
 
 	/* Attempt to load */
 	if (!load_player())

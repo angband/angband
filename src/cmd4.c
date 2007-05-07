@@ -661,7 +661,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 						strnfmt(note_text, sizeof note_text, "%s", quark_str(old_note));
 
 					/* Get a filename */
-					if (!askfor_aux(note_text, sizeof note_text)) continue;
+					if (!askfor_aux(note_text, sizeof note_text, NULL)) continue;
 
 						/* Set the inscription */
 						*note = quark_add(note_text);
@@ -1612,7 +1612,7 @@ void do_cmd_redraw(void)
 	/* Reset "inkey()" */
 	flush();
 	
-    if(0 != character_dungeon)
+	if (0 != character_dungeon)
 		verify_panel();
 
 
@@ -1648,7 +1648,7 @@ void do_cmd_redraw(void)
 	handle_stuff();
 
 	/* Place the cursor on the player */
-	if(0 != character_dungeon)
+	if (0 != character_dungeon)
 		move_cursor_relative(p_ptr->px, p_ptr->py);
 
 
@@ -1670,13 +1670,6 @@ void do_cmd_redraw(void)
 		/* Restore */
 		Term_activate(old);
 	}
-}
-
-void do_cmd_resize()
-{
-	/* Escape to main screen on resize */
-	Term_key_push(ESCAPE);
-	do_cmd_redraw();
 }
 
 
@@ -1904,7 +1897,7 @@ void do_cmd_messages(void)
 			prt("Show: ", hgt - 1, 0);
 
 			/* Get a "shower" string, or continue */
-			if (!askfor_aux(shower, sizeof shower)) continue;
+			if (!askfor_aux(shower, sizeof shower, NULL)) continue;
 
 			/* Okay */
 			continue;
@@ -1919,7 +1912,7 @@ void do_cmd_messages(void)
 			prt("Find: ", hgt - 1, 0);
 
 			/* Get a "finder" string, or continue */
-			if (!askfor_aux(finder, sizeof finder)) continue;
+			if (!askfor_aux(finder, sizeof finder, NULL)) continue;
 
 			/* Show it */
 			my_strcpy(shower, finder, sizeof(shower));
@@ -2051,7 +2044,7 @@ static void do_cmd_pref_file_hack(long row)
 	strnfmt(ftmp, sizeof ftmp, "%s.prf", op_ptr->base_name);
 
 	/* Ask for a file (or cancel) */
-	if (!askfor_aux(ftmp, sizeof ftmp)) return;
+	if (!askfor_aux(ftmp, sizeof ftmp, NULL)) return;
 
 	/* Process the given filename */
 	if (process_pref_file(ftmp))
@@ -2513,7 +2506,7 @@ static void dump_pref_file(void (*dump)(FILE*), const char *title)
 	strnfmt(ftmp, sizeof ftmp, "%s.prf", op_ptr->base_name);
 
 	/* Get a filename */
-	if (!askfor_aux(ftmp, sizeof ftmp)) return;
+	if (!askfor_aux(ftmp, sizeof ftmp, NULL)) return;
 
 	/* Build the filename */
 	path_build(buf, 1024, ANGBAND_DIR_USER, ftmp);
@@ -3001,7 +2994,7 @@ void do_cmd_macros(void)
 			ascii_to_text(tmp, sizeof(tmp), macro_buffer);
 
 			/* Get an encoded action */
-			if (askfor_aux(tmp, sizeof tmp))
+			if (askfor_aux(tmp, sizeof tmp, NULL))
 			{
 				/* Convert to ascii */
 				text_to_ascii(macro_buffer, sizeof(macro_buffer), tmp);
@@ -3099,7 +3092,7 @@ void do_cmd_macros(void)
 			ascii_to_text(tmp, sizeof(tmp), macro_buffer);
 
 			/* Get an encoded action */
-			if (askfor_aux(tmp, sizeof tmp))
+			if (askfor_aux(tmp, sizeof tmp, NULL))
 			{
 				/* Convert to ascii */
 				text_to_ascii(macro_buffer, sizeof(macro_buffer), tmp);
@@ -3148,7 +3141,7 @@ void do_cmd_macros(void)
 			ascii_to_text(tmp, sizeof(tmp), macro_buffer);
 
 			/* Get an encoded action */
-			if (askfor_aux(tmp, sizeof tmp))
+			if (askfor_aux(tmp, sizeof tmp, NULL))
 			{
 				/* Extract an action */
 				text_to_ascii(macro_buffer, sizeof(macro_buffer), tmp);

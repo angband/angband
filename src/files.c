@@ -2403,7 +2403,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 		{
 			/* Get "shower" */
 			prt("Show: ", hgt - 1, 0);
-			(void)askfor_aux(shower, sizeof(shower));
+			(void)askfor_aux(shower, sizeof(shower), NULL);
 
 			/* Make the "shower" lowercase */
 			if (!case_sensitive) string_lower(shower);
@@ -2414,7 +2414,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 		{
 			/* Get "finder" */
 			prt("Find: ", hgt - 1, 0);
-			if (askfor_aux(finder, sizeof(finder)))
+			if (askfor_aux(finder, sizeof(finder), NULL))
 			{
 				/* Find it */
 				find = finder;
@@ -2435,7 +2435,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 			char tmp[80];
 			prt("Goto Line: ", hgt - 1, 0);
 			strcpy(tmp, "0");
-			if (askfor_aux(tmp, sizeof(tmp)))
+			if (askfor_aux(tmp, sizeof(tmp), NULL))
 			{
 				line = atoi(tmp);
 			}
@@ -2447,7 +2447,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 			char ftmp[80];
 			prt("Goto File: ", hgt - 1, 0);
 			strcpy(ftmp, "help.hlp");
-			if (askfor_aux(ftmp, sizeof(ftmp)))
+			if (askfor_aux(ftmp, sizeof(ftmp), NULL))
 			{
 				if (!show_file(ftmp, NULL, 0, mode)) ch = ESCAPE;
 			}
@@ -2611,34 +2611,6 @@ void process_player_name(bool sf)
 		path_build(savefile, sizeof(savefile), ANGBAND_DIR_SAVE, temp);
 	}
 }
-
-
-/*
- * Gets a name for the character, reacting to name changes.
- *
- * Perhaps we should NOT ask for a name (at "birth()") on
- * Unix machines?  XXX XXX XXX
- *
- * What a horrible name for a global function.  XXX XXX XXX
- */
-void get_name(void)
-{
-	char tmp[32];
-
-	/* Save the player name */
-	my_strcpy(tmp, op_ptr->full_name, sizeof(tmp));
-
-	/* Prompt for a new name */
-	if (get_string("Enter a name for your character: ", tmp, sizeof(tmp)))
-	{
-		/* Use the name */
-		my_strcpy(op_ptr->full_name, tmp, sizeof(op_ptr->full_name));
-
-		/* Process the player name */
-		process_player_name(FALSE);
-	}
-}
-
 
 
 /*

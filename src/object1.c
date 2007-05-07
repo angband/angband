@@ -650,8 +650,6 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 	char b1 = '[', b2 = ']';
 	char c1 = '{', c2 = '}';
 
-	char discount_buf[80];
-
 	char tmp_buf[128];
 
 	u32b f1, f2, f3;

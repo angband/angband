@@ -54,7 +54,6 @@ struct term_win
 	char *vtc;
 
 	term_win *next;
-	void (*resize_hook)(void);
 };
 
 
@@ -92,9 +91,9 @@ typedef struct event_type event_type;
 struct event_type
 {
 	event_class type;
-    byte mousex, mousey;
+	byte mousex, mousey;
 	char key; 
-    short index;
+	short index;
 };
 
 /*
@@ -377,7 +376,6 @@ extern errr Term_key_push(int k);
 extern errr Term_event_push(const event_type *ke);
 extern errr Term_inkey(event_type *ch, bool wait, bool take);
 
-extern errr Term_set_resize_hook(void (*hook)(void));
 extern errr Term_save(void);
 extern errr Term_load(void);
 

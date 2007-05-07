@@ -2499,13 +2499,6 @@ static bool store_process_command(char cmd, void *db, int oid)
 
 /*
  * Enter a store, and interact with it.
- *
- * Note that we use the standard "request_command()" function
- * to get a command, allowing us to use "p_ptr->command_arg" and all
- * command macros and other nifty stuff, but we use the special
- * "shopping" argument, to force certain commands to be converted
- * into other commands, normally, we convert "p" (pray) and "m"
- * (cast magic) into "g" (get), and "s" (search) into "d" (drop).
  */
 void do_cmd_store(void)
 {

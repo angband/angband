@@ -1218,7 +1218,7 @@ static bool player_birth_aux_3(bool autoroll)
 				strcpy(inp, "");
 
 				/* Get a response (or escape) */
-				if (!askfor_aux(inp, 9)) inp[0] = '\0';
+				if (!askfor_aux(inp, 9, NULL)) inp[0] = '\0';
 
 				/* Hack -- add a fake slash */
 				my_strcat(inp, "/", sizeof(inp));
@@ -1496,7 +1496,7 @@ static bool player_birth_aux(void)
 		prt("To create a character, would you like to:", 1, 1);
 		prt(" a) Use the point-based system", 2, 1);
 		prt(" b) Use the autoroller", 3, 1);
-		prt(" c) Use the basic roller", 4, 1);
+		prt(" c/*) Use the basic roller", 4, 1);
 
 		prt("", 6, 1);
 		ch = inkey();
@@ -1515,6 +1515,7 @@ static bool player_birth_aux(void)
 
 			case 'c':
 			case 'C':
+			case '*':
 				done = TRUE;
 				break;
 		}

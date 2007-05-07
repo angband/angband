@@ -385,9 +385,6 @@ static errr term_win_copy(term_win *s, term_win *f, int w, int h)
 	s->cu = f->cu;
 	s->cv = f->cv;
 
-	/* Copy resize hook */
-	s->resize_hook = f->resize_hook;
-
 	/* Success */
 	return (0);
 }
@@ -2028,21 +2025,6 @@ errr Term_inkey(event_type *ch, bool wait, bool take)
 /*** Extra routines ***/
 
 /*
- * Set the resize hook for the current term.
- */
-errr Term_set_resize_hook(void (*hook)(void))
-{
-	/* Ensure hook */
-	if (!hook) return (-1);
-
-	/* Set hook */
-	Term->scr->resize_hook = hook;
-
-	/* Success */
-	return (0);
-}
-
-/*
  * Save the "requested" screen into the "memorized" screen
  *
  * Every "Term_save()" should match exactly one "Term_load()"
@@ -2066,9 +2048,6 @@ errr Term_save(void)
 	/* Front of the queue */
 	mem->next = Term->mem;
 	Term->mem = mem;
-
-	/* Nuke the resize hook (safety) */
-	Term->scr->resize_hook = NULL;
 
 	/* Success */
 	return (0);
@@ -2117,10 +2096,6 @@ errr Term_load(void)
 	Term->y1 = 0;
 	Term->y2 = h - 1;
 
-	/* Call the resize hook */
-	if (Term->scr->resize_hook && (w != Term->wid) && (h != Term->hgt))
-		Term->scr->resize_hook();
-
 	/* Success */
 	return (0);
 }
@@ -2143,6 +2118,8 @@ errr Term_resize(int w, int h)
 	term_win *hold_scr;
 	term_win *hold_mem;
 	term_win *hold_tmp;
+
+	event_type evt = { EVT_RESIZE, 0, 0, 0, 0 };
 
 
 	/* Resizing is forbidden */
@@ -2296,17 +2273,8 @@ errr Term_resize(int w, int h)
 	Term->y1 = 0;
 	Term->y2 = h - 1;
 
-	/* Call the resize hook */
-	if (Term->scr->resize_hook)
-	{
-		Term->scr->resize_hook();
-	}
-	else
-	{
-		/* Push a resize event onto the stack */
-		event_type evt = { EVT_RESIZE, 0, 0, 0, 0 };
-		Term_event_push(&evt);
-	}
+	/* Push a resize event onto the stack */
+	Term_event_push(&evt);
 
 	/* Success */
 	return (0);

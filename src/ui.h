@@ -129,7 +129,7 @@ typedef struct panel_type panel_type;
  */
 struct panel_type {
 	event_target target;
-	void (*refresh)();
+	void (*refresh)(void);
 	region boundary;
 };
 

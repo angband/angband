@@ -9,7 +9,7 @@
  */
 
 #include "angband.h"
-
+#include "randname.h"
 
 
 #ifdef SET_UID
@@ -2657,8 +2657,124 @@ void clear_from(int row)
 	}
 }
 
+/*
+ * The default "keypress handling function" for askfor_aux, this takes the
+ * given keypress, input buffer, length, etc, and does the appropriate action
+ * for each keypress, such as moving the cursor left or inserting a character.
+ *
+ * It should return TRUE when editing of the buffer is "complete" (e.g. on
+ * the press of RETURN).
+ */
+bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, char keypress, bool firsttime)
+{
+	switch (keypress)
+	{
+		case ESCAPE:
+		{
+			*curs = 0;
+			return TRUE;
+			break;
+		}
+		
+		case '\n':
+		case '\r':
+		{
+			*curs = *len;
+			return TRUE;
+			break;
+		}
+		
+		case ARROW_LEFT:
+		{
+			if (firsttime) *curs = 0;
+			if (*curs > 0) (*curs)--;
+			break;
+		}
+		
+		case ARROW_RIGHT:
+		{
+			if (firsttime) *curs = *len - 1;
+			if (*curs < *len) (*curs)++;
+			break;
+		}
+		
+		case 0x7F:
+		case '\010':
+		{
+			/* If this is the first time round, backspace means "delete all" */
+			if (firsttime)
+			{
+				buf[0] = '\0';
+				*curs = 0;
+				*len = 0;
+
+				break;
+			}
+
+			/* Refuse to backspace into oblivion */
+			if (*curs == 0) break;
+
+			/* Move the string from k to nul along to the left by 1 */
+			memmove(&buf[*curs - 1], &buf[*curs], *len - *curs);
+
+			/* Decrement */
+			(*curs)--;
+			(*len)--;
+
+			/* Terminate */
+			buf[*len] = '\0';
+
+			break;
+		}
+		
+		default:
+		{
+			bool atnull = (buf[*curs] == 0);
 
 
+			if (!isprint((unsigned char)keypress))
+			{
+				bell("Illegal edit key!");
+				break;
+			}
+
+			/* Clear the buffer if this is the first time round */
+			if (firsttime)
+			{
+				buf[0] = '\0';
+				*curs = 0;
+				*len = 0;
+				atnull = 1;
+			}
+
+			if (atnull)
+			{
+				/* Make sure we have enough room for a new character */
+				if ((*curs + 1) >= buflen) break;
+			}
+			else
+			{
+				/* Make sure we have enough room to add a new character */
+				if ((*len + 1) >= buflen) break;
+
+				/* Move the rest of the buffer along to make room */
+				memmove(&buf[*curs+1], &buf[*curs], *len - *curs);
+			}
+
+			/* Insert the character */
+			buf[(*curs)++] = keypress;
+			(*len)++;
+
+			/* Terminate */
+			buf[*len] = '\0';
+
+			break;
+		}
+	}
+
+	/* By default, we aren't done. */
+	return FALSE;
+}
 
 /*
  * Get some input at the cursor location.
@@ -2676,9 +2792,15 @@ void clear_from(int row)
  *
  * Note that 'len' refers to the size of the buffer.  The maximum length
  * of the input is 'len-1'.
+ *
+ * 'keypress_h' is a pointer to a function to handle keypresses, altering
+ * the input buffer, cursor position and suchlike as required.  See
+ * 'askfor_aux_keypress' (the default handler if you supply NULL for
+ * 'keypress_h') for an example.
  */
-bool askfor_aux(char *buf, size_t len)
+bool askfor_aux(char *buf, size_t len, bool keypress_h(char *, size_t, size_t *, size_t *, char, bool))
 {
+
 	int y, x;
 
 	size_t k = 0;		/* Cursor position */
@@ -2689,6 +2811,10 @@ bool askfor_aux(char *buf, size_t len)
 	bool done = FALSE;
 	bool firsttime = TRUE;
 
+	if (keypress_h == NULL)
+	{
+		keypress_h = askfor_aux_keypress;
+	}
 
 	/* Locate the cursor */
 	Term_locate(&x, &y);
@@ -2720,111 +2846,8 @@ bool askfor_aux(char *buf, size_t len)
 		/* Get a key */
 		ch = inkey();
 
-		/* Analyze the key */
-		switch (ch)
-		{
-			case ESCAPE:
-			{
-				k = 0;
-				done = TRUE;
-				break;
-			}
-
-			case '\n':
-			case '\r':
-			{
-				k = strlen(buf);
-				done = TRUE;
-				break;
-			}
-
-			case ARROW_LEFT:
-			{
-				if (firsttime) k = 0;
-				if (k > 0) k--;
-				break;
-			}
-
-			case ARROW_RIGHT:
-			{
-				if (firsttime) k = nul - 1;
-				if (k < nul) k++;
-				break;
-			}
-
-			case 0x7F:
-			case '\010':
-			{
-				/* If this is the first time round, backspace means "delete all" */
-				if (firsttime)
-				{
-					buf[0] = '\0';
-					k = 0;
-					nul = 0;
-
-					break;
-				}
-
-				/* Refuse to backspace into oblivion */
-				if (k == 0) break;
-
-				/* Move the string from k to nul along to the left by 1 */
-				memmove(&buf[k-1], &buf[k], nul - k);
-
-				/* Decrement */
-				k--;
-				nul--;
-
-				/* Terminate */
-				buf[nul] = '\0';
-
-				break;
-			}
-
-			default:
-			{
-				bool atnull = (buf[k] == 0);
-
-
-				if (!isprint((unsigned char)ch))
-				{
-					bell("Illegal edit key!");
-					break;
-				}
-
-				/* Clear the buffer if this is the first time round */
-				if (firsttime)
-				{
-					buf[0] = '\0';
-					k = 0;
-					nul = 0;
-					atnull = 1;
-				}
-
-				if (atnull)
-				{
-					/* Make sure we have enough room for a new character */
-					if ((k + 1) >= len) break;
-				}
-				else
-				{
-					/* Make sure we have enough room to add a new character */
-					if ((nul + 1) >= len) break;
-
-					/* Move the rest of the buffer along to make room */
-					memmove(&buf[k+1], &buf[k], nul - k);
-				}
-
-				/* Insert the character */
-				buf[k++] = ch;
-				nul++;
-
-				/* Terminate */
-				buf[nul] = '\0';
-
-				break;
-			}
-		}
+		/* Let the keypress handler deal with the keypress */
+		done = keypress_h(buf, len, &k, &nul, ch, firsttime);
 
 		/* Update the entry */
 		Term_erase(x, y, (int)len);
@@ -2837,6 +2860,74 @@ bool askfor_aux(char *buf, size_t len)
 	/* Done */
 	return (ch != ESCAPE);
 }
+
+/*
+ * A "keypress" handling function for askfor_aux, that handles the special
+ * case of '*' for a new random "name" and passes any other "keypress"
+ * through to the default "editing" handler.
+ */
+bool get_name_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, char keypress, bool firsttime)
+{
+	bool result;
+
+	switch (keypress)
+	{
+		case '*':
+		{
+			*len = make_word(RANDNAME_TOLKIEN, 4, 8, buf, buflen);
+			buf[0] = toupper((unsigned char) buf[0]);
+			*curs = 0;
+			result = FALSE;
+			break;
+		}
+		
+		
+		default:
+		{
+			result = askfor_aux_keypress(buf, buflen, curs, len, keypress, firsttime);
+			break;
+		}
+	}
+
+	return result;
+}
+
+
+/*
+ * Gets a name for the character, reacting to name changes.
+ *
+ * What a horrible name for a global function.  XXX XXX XXX
+ */
+void get_name(void)
+{
+	bool res;
+	char tmp[32];
+
+	/* Paranoia XXX XXX XXX */
+	message_flush();
+
+	/* Display prompt */
+	prt("Enter a name for your character (* for a random name): ", 0, 0);
+
+	/* Save the player name */
+	my_strcpy(tmp, op_ptr->full_name, sizeof(tmp));
+
+	/* Ask the user for a string */
+	res = askfor_aux(tmp, sizeof(tmp), get_name_keypress);
+
+	/* Clear prompt */
+	prt("", 0, 0);
+
+	if (res)
+	{
+		/* Use the name */
+		my_strcpy(op_ptr->full_name, tmp, sizeof(op_ptr->full_name));
+
+		/* Process the player name */
+		process_player_name(FALSE);
+	}
+}
+
 
 
 /*
@@ -2858,7 +2949,7 @@ bool get_string(cptr prompt, char *buf, size_t len)
 	prt(prompt, 0, 0);
 
 	/* Ask the user for a string */
-	res = askfor_aux(buf, len);
+	res = askfor_aux(buf, len, NULL);
 
 	/* Clear prompt */
 	prt("", 0, 0);
@@ -3133,7 +3224,7 @@ static char request_command_buffer[256];
  *
  * Note that "p_ptr->command_new" may not work any more.  XXX XXX XXX
  */
-void request_command(bool shopping)
+void request_command(void)
 {
 	int i;
 
@@ -3198,6 +3289,14 @@ void request_command(bool shopping)
 
 		/* Clear top line */
 		prt("", 0, 0);
+
+
+		/* Resize events XXX XXX */
+		if (ke.type == EVT_RESIZE)
+		{
+			p_ptr->command_cmd_ex = ke;
+			p_ptr->command_new = ' ';
+		}
 
 
 		/* Command Count */
@@ -3364,24 +3463,6 @@ void request_command(bool shopping)
 		{
 			/* Repeat 99 times */
 			p_ptr->command_arg = 99;
-		}
-	}
-
-
-	/* Shopping */
-	if (shopping)
-	{
-		/* Hack -- Convert a few special keys */
-		switch (p_ptr->command_cmd)
-		{
-			/* Command "p" -> "purchase" (get) */
-			case 'p': p_ptr->command_cmd = 'g'; break;
-
-			/* Command "m" -> "purchase" (get) */
-			case 'm': p_ptr->command_cmd = 'g'; break;
-
-			/* Command "s" -> "sell" (drop) */
-			case 's': p_ptr->command_cmd = 'd'; break;
 		}
 	}
 
