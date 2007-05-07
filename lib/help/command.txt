@@ -131,13 +131,11 @@ Stay still (with pickup) (,) or Stay still (with pickup) (.)
         on.  You may also use the "5" key (both keysets).  This command
         may take a count, and takes some energy.
 
-Stay still (flip pickup) (g)
-        Stays in the same square for one move.  If you normally pick up
-        objects you encounter, you will not pick up whatever you are
-        standing on.  If you normally do not pick up objects, you will
-        pick up what you are standing on.  This command is normally only
-        used when the "always_pickup" option is false.  This command may
-        take a count, and takes some energy.
+Get objects (g)
+        Pick up objects and gold on the floor beneath you.  Picking up
+        gold takes no time, and objects take 1/10th of a normal turn each
+        (maximum time cost is a full turn).  You may pick up objects until
+        the floor is empty or your backpack is full.
 
 Rest (R)
         Resting is better for you than repeatedly staying still, and can

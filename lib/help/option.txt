@@ -29,16 +29,6 @@ Activate quick messages    [quick_messages]
     (useful for monster farming).  Allows most keys to mean "no" to any
     "[y/n]" prompt.
 
-***** <floor_query_flag>
-Prompt for floor item selection    [floor_query_flag]
-    Allows the user to select objects from the center of stacks.  Without
-    this option, the uppermost appropriate object will always be selected.
-
-***** <carry_query_flag>
-Prompt before picking things up    [carry_query_flag]
-    Forces the game to ask your permission before allowing you to pick up
-    any object.
-
 ***** <use_old_target>
 Use old target by default    [use_old_target]
     Forces all commands which normally ask for a "direction" to use the
@@ -46,11 +36,22 @@ Use old target by default    [use_old_target]
     if you target locations on the ground, unless you clear them when done.
 
 ***** <always_pickup>
-Pick things up by default    [always_pickup]
-    Tells the game that walking onto an item should attempt to pick it up.
-    Picking up objects in the manner takes no additional energy.  Note the
-    "g" and "-" commands, which can be used to "reverse" this option for a
-    single turn.
+***** <query_floor>
+Pick things up by default                     [always_pickup]
+Display things before picking them up         [query_floor]
+     When "always_pickup" is on, the game assumes you want to pick up
+     any object you encounter.  If "query_floor" is off, you pick up objects
+     automatically.  Otherwise, you are shown a list and prompted to pick up.
+
+     When "always_pickup" is off, the game assumes you want to pick
+     things up selectively.  If "query_floor" is off, you get a one-line
+     description of the object or pile.  If "query_floor" is on, you see a
+     full list, including weights.  In either case, you can start picking
+     things up by typing "g".
+
+     When standing still, you are never charged extra time for picking
+     up objects.  When walking, you always take a second partial turn to
+     pick up objects; each object picked up takes 1/10th of a turn.
 
 ***** <always_repeat>
 Repeat obvious commands    [always_repeat]

@@ -2620,11 +2620,9 @@ static event_type target_set_interactive_aux(int y, int x, int mode, cptr info)
 			int floor_list[MAX_FLOOR_STACK];
 			int floor_num;
 
-			/* Scan for floor objects */
-			floor_num = scan_floor(floor_list, MAX_FLOOR_STACK, y, x, 0x02);
-
-			/* Actual pile */
-			if (floor_num > 1)
+			/* Scan all marked objects in the grid */
+			if ((scan_floor(floor_list, &floor_num, y, x, 0x02)) &&
+				(!(p_ptr->timed[TMD_BLIND]) || (y == p_ptr->py && x == p_ptr->px)))
 			{
 				/* Not boring */
 				boring = FALSE;
@@ -2660,7 +2658,7 @@ static event_type target_set_interactive_aux(int y, int x, int mode, cptr info)
 						screen_save();
 
 						/* Display */
-						show_floor(floor_list, floor_num);
+						show_floor(floor_list, floor_num, TRUE);
 
 						/* Describe the pile */
 						prt(out_val, 0, 0);
@@ -3481,4 +3479,5 @@ bool confuse_dir(int *dp)
 	/* Not confused */
 	return (FALSE);
 }
+
 

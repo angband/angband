@@ -492,7 +492,7 @@ void search(void)
 /*
  * Determine if the object can be picked up, and has "=g" in its inscription.
  */
-static bool auto_pickup_okay(const object_type *o_ptr)
+static bool auto_pickup_okay(const object_type *o_ptr, bool check_pack)
 {
 	cptr s;
 
@@ -507,20 +507,58 @@ static bool auto_pickup_okay(const object_type *o_ptr)
 	if ((k_info[o_ptr->k_idx].squelch == NO_SQUELCH_ALWAYS_PICKUP) &&
 		object_aware_p(o_ptr)) return (TRUE);
 
-	/* No inscription */
-	if (!o_ptr->note) return (FALSE);
+	/* Option to vacuum up things on the floor (not recommended) */
+	if ((always_pickup) && (!query_floor)) return (TRUE);
 
-	/* Find a '=' */
-	s = strchr(quark_str(o_ptr->note), '=');
-
-	/* Process inscription */
-	while (s)
+	/* Check inscription */
+	if (o_ptr->note)
 	{
-		/* Auto-pickup on "=g" */
-		if (s[1] == 'g') return (TRUE);
+		/* Find a '=' */
+		s = strchr(quark_str(o_ptr->note), '=');
 
-		/* Find another '=' */
-		s = strchr(s + 1, '=');
+		/* Process permissions */
+		while (s)
+		{
+			/* =g ('g'et) means auto pickup */
+			if (s[1] == 'g') return (TRUE);
+
+			/* Find another '=' */
+			s = strchr(s + 1, '=');
+		}
+	}
+
+	/* Optionally, check the backpack */
+	if (check_pack)
+	{
+		int j;
+
+		/* Look for similar and inscribed */
+		for (j = 0; j < INVEN_PACK; j++)
+		{
+			object_type *j_ptr = &inventory[j];
+
+			/* Skip non-objects */
+			if (!j_ptr->k_idx) continue;
+
+			/* The two items must be able to combine */
+			if (!object_similar(j_ptr, o_ptr)) continue;
+
+			/* The backpack item must be inscribed */
+			if (!j_ptr->note) continue;
+
+			/* Find a '=' */
+			s = strchr(quark_str(j_ptr->note), '=');
+
+			/* Process permissions */
+			while (s)
+			{
+				/* =g ('g'et) means auto pickup */
+				if (s[1] == 'g') return (TRUE);
+
+				/* Find another '=' */
+				s = strchr(s + 1, '=');
+			}
+		}
 	}
 
 	/* Don't auto pickup */
@@ -529,32 +567,33 @@ static bool auto_pickup_okay(const object_type *o_ptr)
 
 
 /*
- * Helper routine for py_pickup() and py_pickup_floor().
- *
- * Add the given dungeon object to the character's inventory.
- *
- * Delete the object afterwards.
+ * Carry an object and delete it.
  */
-static void py_pickup_aux(int o_idx)
+static void py_pickup_aux(int o_idx, bool msg)
 {
 	int slot;
 
 	char o_name[80];
-	object_type *o_ptr;
-
-	o_ptr = &o_list[o_idx];
+	object_type *o_ptr = &o_list[o_idx];
 
 	/* Carry the object */
 	slot = inven_carry(o_ptr);
 
-	/* Get the object again */
+	/* Handle errors (paranoia) */
+	if (slot < 0) return;
+
+	/* Get the new object */
 	o_ptr = &inventory[slot];
 
-	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
+	/* Optionally, display a message */
+	if (msg)
+	{
+		/* Describe the object */
+		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
-	/* Message */
-	msg_format("You have %s (%c).", o_name, index_to_label(slot));
+		/* Message */
+		msg_format("You have %s (%c).", o_name, index_to_label(slot));
+	}
 
 	/* Delete the object */
 	delete_object_idx(o_idx);
@@ -562,63 +601,97 @@ static void py_pickup_aux(int o_idx)
 
 
 /*
- * Make the player carry everything in a grid.
+ * Pick up objects and treasure on the floor.  -LM-
  *
- * If "pickup" is FALSE then only gold will be picked up.
+ * Called with pickup:
+ * 0 to grab gold and describe non-gold objects.
+ * 1 to pick up objects either with or without displaying a menu.
+ * 2 to pick up objects, allowing cancel and quick pickup of single objects.
+ * 3 to pick up objects, forcing a menu for any number of objects.
+ *
+ * Use the "p_ptr->auto_pickup_okay" variable to allow or dis-allow
+ * automatically picking things up that take time.  (NOT INCLUDED)
+ *
+ * Scan the list of objects in that floor grid.   Pick up gold automatically.
+ * Pick up objects automatically until pile or backpack space is full if
+ * auto-pickup option is on, carry_query_floor option is not, and menus are
+ * not forced (which the "get" command does). Otherwise, store objects on
+ * floor in an array, and tally both how many there are and can be picked up.
+ *
+ * If not picking up anything, indicate objects on the floor.  Show more
+ * details if the "query_floor" option is set.  Do the same thing if we
+ * don't have room for anything.
+ *
+ * If we are picking up objects automatically, and have room for at least
+ * one, allow the "query_floor" option to display information about objects
+ * and prompt the player.  Otherwise, automatically pick up a single object
+ * or use a menu for more than one (this "blind" autopickup option is
+ * deprecated).
+ *
+ * Pick up multiple objects using Tim Baker's menu system.   Recursively
+ * call this function (forcing menus for any number of objects) until
+ * objects are gone, backpack is full, or player is satisfied.
+ *
+ * We keep track of number of objects picked up to calculate time spent.
+ * This tally is incremented even for automatic pickup, so we are careful
+ * (in "dungeon.c" and elsewhere) to handle pickup as either a separate
+ * automated move or a no-cost part of the stay still or 'g'et command.
+ *
+ * Note the lack of chance for the character to be disturbed by unmarked
+ * objects.  They are truly "unknown".
  */
-void py_pickup(int pickup)
+byte py_pickup(int pickup)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
+
+	char o_name[80];
+	char ch;
 
 	s16b this_o_idx, next_o_idx = 0;
 
 	object_type *o_ptr;
 
-	char o_name[80];
+	/* Objects picked up.  Used to determine time cost of command. */
+	byte objs_picked_up = 0;
 
-	int sound_msg;
-	int last_o_idx = 0;
+	int floor_num = 0, floor_list[MAX_FLOOR_STACK + 1], floor_o_idx = 0;
 
 	int can_pickup = 0;
-	int not_pickup = 0;
+	bool call_function_again = FALSE;
+	int sound_msg;
+
+	bool blind = ((p_ptr->timed[TMD_BLIND]) || (no_lite()));
+
+	bool force_display_list = FALSE;
+	bool msg = TRUE;
+
+
+	/* Nothing to pick up -- return */
+	if (!cave_o_idx[py][px]) return (0);
 
 	/* Automatically destroy squelched items in pile if necessary */
 	squelch_pile(py, px);
 
-	/* Scan the pile of objects */
+
+	/* Scan the objects */
 	for (this_o_idx = cave_o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
 	{
-		bool do_not_pickup = FALSE;
-
 		/* Get the object */
 		o_ptr = &o_list[this_o_idx];
-
-		/* Describe the object */
-		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
 
+		/* Ignore all hidden objects */
+		if (!o_ptr->marked) continue;
+
+		/* Paranoia -- ignore all dead objects  XXX */
+		if (!o_ptr->k_idx) continue;
+
 		/* Hack -- disturb */
 		disturb(0, 0);
 
-#if 0
-		/*
-		 * I'm pretty sure this chunk of code is pointless, because
-		 * squelch_pile() should already have removed anything that is both
-		 * known and SQUELCH_ALWAYS.  OTOH, I didn't write it, so I leave it
-		 * here just in case.  -AS-
-		 */
-
-		/* End loop if squelched stuff reached */
-		if ((k_info[o_ptr->k_idx].squelch == SQUELCH_ALWAYS) &&
-			(k_info[o_ptr->k_idx].aware))
-		{
-			next_o_idx = 0;
-			continue;
-		}
-#endif
 
 		/* Pick up gold */
 		if (o_ptr->tval == TV_GOLD)
@@ -629,8 +702,8 @@ void py_pickup(int pickup)
 			else sound_msg = MSG_MONEY3;
 
 			/* Message */
-			message_format(sound_msg, 0, "You have found %ld gold pieces worth of %s.",
-			               (long)o_ptr->pval, o_name);
+			message_format(sound_msg, 0, "You have found %s worth %ld gold pieces.",
+				o_name, (long)o_ptr->pval);
 
 			/* Collect the gold */
 			p_ptr->au += o_ptr->pval;
@@ -648,169 +721,290 @@ void py_pickup(int pickup)
 			continue;
 		}
 
-		/*some items are marked to never pickup*/
-		if ((k_info[o_ptr->k_idx].squelch == NO_SQUELCH_NEVER_PICKUP)
-			&& object_aware_p(o_ptr))
+		/* Automatically pick up items into the backpack */
+		if ((pickup) && (auto_pickup_okay(o_ptr, TRUE)))
 		{
-			do_not_pickup = TRUE;
-		}
+			/* Pick up the object (with a message) */
+			py_pickup_aux(this_o_idx, TRUE);
 
-
-		/* Test for auto-pickup */
-		if (auto_pickup_okay(o_ptr))
-		{
-			/* Pick up the object */
-			py_pickup_aux(this_o_idx);
-
-			/* Check the next object */
+			/* Take a small amount of time */
+			objs_picked_up++;
 			continue;
 		}
 
-		/* Easy Floor */
-		if (easy_floor && !do_not_pickup)
+		/* Tally objects and store them in an array. */
+
+		/* Remember this object index */
+		floor_list[floor_num] = this_o_idx;
+
+		/* Count non-gold objects that remain on the floor. */
+		floor_num++;
+
+		/* Remember this index */
+		floor_o_idx = this_o_idx;
+
+		/* Tally objects that can be picked up.*/
+		if (inven_carry_okay(o_ptr))
 		{
-			/* Pickup if possible */
-			if (pickup && inven_carry_okay(o_ptr))
-			{
-				/* Pick up if allowed */
-				if (!carry_query_flag)
-				{
-					/* Pick up the object */
-					py_pickup_aux(this_o_idx);
-				}
-
-				/* Else count */
-				else
-				{
-					/* Remember */
-					last_o_idx = this_o_idx;
-
-					/* Count */
-					++can_pickup;
-				}
-			}
-
-			/* Else count */
-			else
-			{
-				/* Remember */
-				last_o_idx = this_o_idx;
-
-				/* Count */
-				++not_pickup;
-			}
-
-			/* Check the next object */
-			continue;
+			can_pickup++;
 		}
 
-		/* Describe the object */
-		if (!pickup || do_not_pickup)
-		{
-			msg_format("You see %s.", o_name);
-
-			/* Check the next object */
-			continue;
-		}
-
-		/* Note that the pack is too full */
-		if (!inven_carry_okay(o_ptr))
-		{
-			msg_format("You have no room for %s.", o_name);
-
-			/* Check the next object */
-			continue;
-		}
-
-		/* Query before picking up */
-		if (carry_query_flag)
-		{
-			char out_val[160];
-			strnfmt(out_val, sizeof(out_val), "Pick up %s? ", o_name);
-			if (!get_check(out_val)) continue;
-		}
-
-		/* Pick up the object */
-		py_pickup_aux(this_o_idx);
+		/* XXX Hack -- Enforce limit */
+		if (floor_num == MAX_FLOOR_STACK) break;
 	}
 
-	/* Easy floor, objects left */
-	if (easy_floor && (can_pickup + not_pickup > 0))
+	/* There are no objects left */
+	if (!floor_num) return (objs_picked_up);
+
+
+	/* Mention the objects if player is not picking them up. */
+	if (!pickup)
 	{
-		/* Not picking up */
-		if (!pickup)
+		/* Optionally, display more information about floor items */
+		if (query_floor)
 		{
-			/* One object */
-			if (not_pickup == 1)
-			{
-				/* Get the object */
-				o_ptr = &o_list[last_o_idx];
+			/* Scan all marked objects in the grid */
+			(void)scan_floor(floor_list, &floor_num, py, px, 0x03);
 
-				/* Describe the object */
-				object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
+			/* Save screen */
+			screen_save();
 
-				/* Message */
-				msg_format("You see %s.", o_name);
-			}
+			/* Display objects on the floor */
+			show_floor(floor_list, floor_num, FALSE);
 
-			/* Multiple objects */
-			else
-			{
-				/* Message */
-				msg_format("You see a pile of %d objects.", not_pickup);
-			}
+			/* Display prompt */
+			prt(format("You %s: ",
+			    (blind ? "feel something on the floor" : "see")), 0, 0);
 
-			/* Done */
-			return;
+			/* Move cursor back to character, if needed */
+			if (hilite_player) move_cursor_relative(p_ptr->py, p_ptr->px);
+
+			/* Wait for it.  Use key as next command. */
+			p_ptr->command_new = inkey();
+
+			/* Restore screen */
+			screen_load();
 		}
 
-		/* No room */
-		if (!can_pickup)
+		/* Display compact information */
+		else
 		{
 			/* One object */
-			if (not_pickup == 1)
+			if (floor_num == 1)
 			{
 				/* Get the object */
-				o_ptr = &o_list[last_o_idx];
+				o_ptr = &o_list[floor_o_idx];
 
-				/* Describe the object */
-				object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
+				/* Describe the object.  Less detail if blind. */
+				if (blind) object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 0);
+				else       object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
+
+				message_flush();
 
 				/* Message */
-				msg_format("You have no room for %s.", o_name);
+				msg_format("You %s %s.", (blind ? "feel" : "see"),
+					o_name);
 			}
 
-			/* Multiple objects */
+			/* Several objects */
 			else
 			{
-				/* Message */
-				msg_print("You have no room for any of the objects on the floor.");
-			}
+				message_flush();
 
-			/* Done */
-			return;
+				/* Message */
+				msg_format("You %s a pile of %d items.",
+					(blind ? "feel" : "see"), floor_num);
+			}
 		}
 
-		/* Pick up objects */
-		while (1)
+		/* Done */
+		return (objs_picked_up);
+	}
+
+
+	/* The player has no room for anything on the floor. */
+	if (!can_pickup)
+	{
+		/*
+		 * One object -- Always display compact information.  This
+		 * should change if more information would actually be helpful.
+		 */
+		if (floor_num == 1)
 		{
-			cptr q, s;
+			/* Get the object */
+			o_ptr = &o_list[floor_o_idx];
 
-			int item;
+			/* Describe the object.  Less detail if blind. */
+			if (blind) object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 0);
+			else       object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
-			/* Restrict the choices */
-			item_tester_hook = inven_carry_okay;
+			/* Message */
+			message_flush();
+			msg_format("You have no room for %s.", o_name);
+		}
 
-			/* Get an object*/
-			q = "Get which item? ";
-			s = NULL;
-			if (!get_item(&item, q, s, (USE_FLOOR))) break;
+		/* Several items */
+		else
+		{
+			/* Optionally, display more information about floor items */
+			if ((query_floor) || (force_display_list))
+			{
+				/* Scan all marked objects in the grid */
+				(void)scan_floor(floor_list, &floor_num, py, px, 0x03);
 
-			/* Pick up the object */
-			py_pickup_aux(0 - item);
+				/* Save screen */
+				screen_save();
+
+				/* Display objects on the floor */
+				show_floor(floor_list, floor_num, FALSE);
+
+				/* Display prompt */
+				prt("You have no room for the following objects: ", 0, 0);
+
+				/* Move cursor back to character, if needed */
+				if (hilite_player) move_cursor_relative(p_ptr->py, p_ptr->px);
+
+				/* Wait for it.  Use key as next command. */
+				p_ptr->command_new = inkey();
+
+				/* Restore screen */
+				screen_load();
+			}
+
+			/* Display compact information */
+			else
+			{
+				/* Message -- not very informative */
+				message_flush();
+				msg_print("You have no room for any of the items on the floor.");
+			}
+		}
+
+		/* Done */
+		return (objs_picked_up);
+	}
+
+
+	/* We can pick up objects.  Menus are not requested (yet). */
+	if (pickup != 3)
+	{
+		/* Scan all marked objects in the grid (again) */
+		(void)scan_floor(floor_list, &floor_num, py, px, 0x03);
+
+		/*
+		 * If not deliberately picking up objects, and if requested or
+		 * potentially unsafe, ask the player to confirm all pickups.
+		 */
+		if ((query_floor) && (pickup <= 1))
+		{
+			/* Save screen */
+			screen_save();
+
+			/* Display objects on the floor */
+			show_floor(floor_list, floor_num, FALSE);
+
+			/* Display prompt */
+			if (floor_num == 1)
+			{
+				prt("Press Return to pick up this object: ", 0, 0);
+			}
+			else
+			{
+				prt("Press Return to pick up any of the following objects: ",
+					0, 0);
+			}
+
+			/* Move cursor back to character, if needed */
+			if (hilite_player) move_cursor_relative(p_ptr->py, p_ptr->px);
+
+			/* Get response */
+			ch = inkey();
+
+			/* Restore screen */
+			screen_load();
+
+			/* We don't want to pick up this item */
+			if ((ch != '\r') && (ch != '\n') && (ch != 'g'))
+			{
+				/* Attempt to turn this command into a direction */
+				int dir = target_dir(ch);
+
+				/* We used a movement command */
+				if (dir)
+				{
+					/* Save as a new command; move later */
+					p_ptr->command_new = ch;
+				}
+
+				/* Done */
+				return (objs_picked_up);
+			}
+		}
+
+		/* Use a menu interface for multiple objects */
+		if (floor_num > 1)
+		{
+			pickup = 3;
+		}
+
+		/* Automatically pick up a single object */
+		else
+		{
+			/* Remember the object to pick up */
+			this_o_idx = floor_o_idx;
 		}
 	}
+
+	/* Display a list if requested. */
+	if (pickup == 3)
+	{
+		cptr q, s;
+
+		int item;
+
+		/* Restrict the choices */
+		item_tester_hook = inven_carry_okay;
+
+		/* Request a list */
+		p_ptr->command_see = TRUE;
+
+		/* Get an object or exit. */
+		q = "Get which item?";
+		s = "You see nothing there.";
+		if (get_item(&item, q, s, (USE_FLOOR)))
+		{
+			this_o_idx = 0 - item;
+			call_function_again = TRUE;
+		}
+		else
+		{
+			return (objs_picked_up);
+		}
+
+		/* With a list, we do not need explicit pickup messages */
+		msg = FALSE;
+	}
+
+	/* Pick up object, if legal */
+	if (this_o_idx)
+	{
+		/* Pick up the object */
+		py_pickup_aux(this_o_idx, msg);
+
+		/* Indicate an object picked up. */
+		objs_picked_up = 1;
+	}
+
+	/*
+	 * If requested, call this function recursively.  Count objects picked
+	 * up.  Force the display of a menu in all cases.
+	 */
+	if (call_function_again) objs_picked_up += py_pickup(3);
+
+	/* Indicate how many objects have been picked up. */
+	return (objs_picked_up);
 }
+
 
 
 /*
@@ -1260,7 +1454,7 @@ void py_attack(int y, int x)
  * Note that this routine handles monsters in the destination grid,
  * and also handles attempting to move into walls/doors/rubble/etc.
  */
-void move_player(int dir, int jumping)
+void move_player(int dir, int do_pickup)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -1280,12 +1474,17 @@ void move_player(int dir, int jumping)
 		py_attack(y, x);
 	}
 
-	/* Optionally alter known traps/doors on (non-jumping) movement */
-	else if (easy_alter && !jumping &&
+	/* Optionally alter known traps/doors on movement */
+	else if (easy_alter &&
 	         (cave_info[y][x] & (CAVE_MARK)) &&
 	         (cave_feat[y][x] >= FEAT_TRAP_HEAD) &&
 	         (cave_feat[y][x] <= FEAT_DOOR_TAIL))
 	{
+		/*
+		 * There should always be an explicit confirmation made before fiddling
+		 * with traps.  XXX XXX
+		 */
+
 		/* Not already repeating */
 		if (!p_ptr->command_rep)
 		{
@@ -1388,8 +1587,15 @@ void move_player(int dir, int jumping)
 			search();
 		}
 
-		/* Handle "objects" */
-		py_pickup(jumping != always_pickup);
+		/* Handle objects now.  XXX XXX XXX */
+		p_ptr->energy_use += py_pickup(do_pickup) * 10;
+
+		/*
+		 * The correct thing to do is to pick up objects *after* the map
+		 * display updates post-move.  This involves about 30 lines of code
+		 * and will be done on request.  -LM-
+		 */
+
 
 		/* Handle "store doors" */
 		if ((cave_feat[y][x] >= FEAT_SHOP_HEAD) &&
@@ -2161,7 +2367,8 @@ void run_step(int dir)
 	/* Take time */
 	p_ptr->energy_use = 100;
 
-	/* Move the player */
+	/* Move the player.  Never pick up objects */
 	move_player(p_ptr->run_cur_dir, FALSE);
 }
+
 

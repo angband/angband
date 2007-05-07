@@ -1886,26 +1886,25 @@ bool item_tester_okay(const object_type *o_ptr)
 
 
 /*
- * Get the indexes of objects at a given floor location.
+ * Get the indexes of objects at a given floor location. -TNB-
  *
  * Return the number of object indexes acquired.
  *
- * Never acquire more than "size" object indexes, and never return a
- * number bigger than "size", even if more floor objects exist.
- *
  * Valid flags are any combination of the bits:
- *
  *   0x01 -- Verify item tester
  *   0x02 -- Marked items only
+ *   0x04 -- Only the top item
  */
-int scan_floor(int *items, int size, int y, int x, int mode)
+bool scan_floor(int *items, int *item_num, int y, int x, int mode)
 {
 	int this_o_idx, next_o_idx;
 
 	int num = 0;
 
+	(*item_num) = 0;
+
 	/* Sanity */
-	if (!in_bounds(y, x)) return (0);
+	if (!in_bounds(y, x)) return (FALSE);
 
 	/* Scan all objects in the grid */
 	for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
@@ -1918,21 +1917,27 @@ int scan_floor(int *items, int size, int y, int x, int mode)
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
 
-		/* Verify item tester */
+		/* Item tester */
 		if ((mode & 0x01) && !item_tester_okay(o_ptr)) continue;
 
-		/* Marked items only */
+		/* Marked */
 		if ((mode & 0x02) && !o_ptr->marked) continue;
 
 		/* Accept this item */
 		items[num++] = this_o_idx;
 
-		/* Enforce size limit */
-		if (num >= size) break;
+		/* Only one */
+		if (mode & 0x04) break;
+
+		/* XXX Hack -- Enforce limit */
+		if (num == MAX_FLOOR_STACK) break;
 	}
 
+	/* Number of items */
+	(*item_num) = num;
+
 	/* Result */
-	return (num);
+	return (num != 0);
 }
 
 
@@ -2336,9 +2341,9 @@ void show_equip(void)
 
 
 /*
- * Display a list of the items on the floor at the given location.
+ * Display a list of the items on the floor at the given location.  -TNB-
  */
-void show_floor(const int *floor_list, int floor_num)
+void show_floor(const int *floor_list, int floor_num, bool gold)
 {
 	int i, j, k, l;
 	int col, len, lim;
@@ -2363,13 +2368,20 @@ void show_floor(const int *floor_list, int floor_num)
 	/* Require space for weight */
 	lim -= 9;
 
-	/* Display the inventory */
+	/* Limit displayed floor items to 23 (screen limits) */
+	if (floor_num > MAX_FLOOR_STACK) floor_num = MAX_FLOOR_STACK;
+
+	/* Display the floor */
 	for (k = 0, i = 0; i < floor_num; i++)
 	{
 		o_ptr = &o_list[floor_list[i]];
 
-		/* Is this item acceptable? */
-		if (!item_tester_okay(o_ptr)) continue;
+		/* Optionally, show gold */
+		if ((o_ptr->tval != TV_GOLD) || (!gold))
+		{
+			/* Is this item acceptable?  (always rejects gold) */
+			if (!item_tester_okay(o_ptr)) continue;
+		}
 
 		/* Describe the object */
 		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
@@ -2434,6 +2446,7 @@ void show_floor(const int *floor_list, int floor_num)
 	/* Make a "shadow" below the list (only if needed) */
 	if (j && (j < 23)) prt("", j + 1, col ? col - 2 : col);
 }
+
 
 
 /*
@@ -2809,8 +2822,8 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	if (e1 <= e2) allow_equip = TRUE;
 
 
-	/* Scan all objects in the grid */
-	floor_num = scan_floor(floor_list, MAX_FLOOR_STACK, py, px, 0x00);
+	/* Scan all marked non-gold objects in the grid */
+	(void)scan_floor(floor_list, &floor_num, py, px, 0x03);
 
 	/* Full floor */
 	f1 = 0;
@@ -2985,7 +2998,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 		else
 		{
 			/* Redraw if needed */
-			if (p_ptr->command_see) show_floor(floor_list, floor_num);
+			if (p_ptr->command_see) show_floor(floor_list, floor_num, FALSE);
 
 			/* Begin the prompt */
 			sprintf(out_val, "Floor:");
@@ -3109,8 +3122,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 					if (floor_num == 1)
 					{
 						/* Hack -- Auto-Select */
-						if ((p_ptr->command_wrk == (USE_FLOOR)) ||
-						    (!floor_query_flag))
+						if (p_ptr->command_wrk == (USE_FLOOR))
 						{
 							/* Special index */
 							k = 0 - floor_list[0];
@@ -3154,9 +3166,6 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 					/* Skip non-okay objects */
 					if (!get_item_okay(k)) continue;
-
-					/* Verify the item (if required) */
-					if (floor_query_flag && !verify_item("Try", k)) continue;
 
 					/* Allow player to "refuse" certain actions */
 					if (!get_item_allow(k)) continue;

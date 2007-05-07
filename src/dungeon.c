@@ -1236,7 +1236,7 @@ static const struct
 
 	{ "Start running",          '.', do_cmd_run },
 	{ "Hold still for a turn",  ',', do_cmd_hold },
-	{ "Stay still for a turn",  'g', do_cmd_stay },
+	{ "Pick up objects",        'g', do_cmd_pickup },
 	{ "Rest for a while",       'R', do_cmd_rest },
 	{ "Search for traps/doors", 's', do_cmd_search },
 	{ "Toggle search mode",     'S', do_cmd_toggle_search },
@@ -1351,8 +1351,9 @@ static void process_command(void)
 
 	if (first)
 	{
-		first = 0;
 		size_t i;
+
+		first = FALSE;
 
 		/* Fill everything in at first */
 		for (i = 0; i < N_ELEMENTS(commands); i++)

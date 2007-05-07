@@ -1398,8 +1398,8 @@ cptr option_text[OPT_MAX] =
 {
 	"rogue_like_commands",		/* OPT_rogue_like_commands */
 	"quick_messages",			/* OPT_quick_messages */
-	"floor_query_flag",			/* OPT_floor_query_flag */
-	"carry_query_flag",			/* OPT_carry_query_flag */
+	NULL,						/* xxx floor_query_flag */
+	"query_floor",				/* OPT_query_floor */
 	"use_old_target",			/* OPT_use_old_target */
 	"always_pickup",			/* OPT_always_pickup */
 	"always_repeat",			/* OPT_always_repeat */
@@ -1662,8 +1662,8 @@ cptr option_desc[OPT_MAX] =
 {
 	"Rogue-like commands",						/* OPT_rogue_like_commands */
 	"Activate quick messages",					/* OPT_quick_messages */
-	"Prompt for floor item selection",			/* OPT_floor_query_flag */
-	"Prompt before picking things up",			/* OPT_carry_query_flag */
+	NULL,										/* xxx floor_query_flag */
+	"Display things before picking them up",	/* OPT_query_floor */
 	"Use old target by default",				/* OPT_use_old_target */
 	"Pick things up by default",				/* OPT_always_pickup */
 	"Repeat obvious commands",					/* OPT_always_repeat */
@@ -1926,10 +1926,10 @@ const bool option_norm[OPT_MAX] =
 {
 	FALSE,		/* OPT_rogue_like_commands */
 	TRUE,		/* OPT_quick_messages */
-	FALSE,		/* OPT_floor_query_flag */
-	TRUE,		/* OPT_carry_query_flag */
+	FALSE,		/* xxx floor_query_flag */
+	TRUE,		/* OPT_query_floor */
 	FALSE,		/* OPT_use_old_target */
-	TRUE,		/* OPT_always_pickup */
+	FALSE,		/* OPT_always_pickup */
 	FALSE,		/* OPT_always_repeat */
 	FALSE,		/* OPT_depth_in_feet */
 	FALSE,		/* OPT_stack_force_notes */
@@ -2216,14 +2216,14 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 	/*** Pickup/Item ***/
 	{
 		OPT_easy_floor,
-		OPT_floor_query_flag,
-		OPT_carry_query_flag,
 		OPT_always_pickup,
+		OPT_query_floor,
 		OPT_stack_force_notes,
 		OPT_show_piles,
 		OPT_show_flavors,
 		OPT_verify_destroy,
 		OPT_verify_special,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
@@ -2604,5 +2604,6 @@ const byte store_choices[MAX_STORES-2][STORE_CHOICES][2] =
 		{ TV_MAGIC_BOOK, 3 }
 	}
 };
+
 
 

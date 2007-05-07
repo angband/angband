@@ -2050,7 +2050,7 @@ bool do_cmd_walk_test(int y, int x)
 /*
  * Helper function for the "walk" and "jump" commands.
  */
-static void do_cmd_walk_or_jump(int jumping)
+static void do_cmd_walk_or_jump(int do_pickup)
 {
 	int y, x, dir;
 
@@ -2097,27 +2097,27 @@ static void do_cmd_walk_or_jump(int jumping)
 	}
 
 	/* Move the player */
-	move_player(dir, jumping);
+	move_player(dir, do_pickup);
 }
 
 
 /*
- * Walk into a grid.
+ * Walk into a grid (pick up objects as set by the auto-pickup option)
  */
 void do_cmd_walk(void)
 {
-	/* Move (normal) */
-	do_cmd_walk_or_jump(FALSE);
+	/* Move (usually pickup) */
+	do_cmd_walk_or_jump(always_pickup);
 }
 
 
 /*
- * Jump into a grid.
+ * Jump into a grid (flip pickup mode)
  */
 void do_cmd_jump(void)
 {
-	/* Move (jump) */
-	do_cmd_walk_or_jump(TRUE);
+	/* Move (usually do not pickup) */
+	do_cmd_walk_or_jump(!always_pickup);
 }
 
 
@@ -2215,8 +2215,8 @@ static void do_cmd_hold_or_stay(int pickup)
 		search();
 	}
 
-	/* Handle "objects" */
-	py_pickup(pickup);
+	/* Handle objects now.  XXX XXX XXX */
+	p_ptr->energy_use += py_pickup(pickup) * 10;
 
 	/* Hack -- enter a store if we are on one */
 	if ((cave_feat[p_ptr->py][p_ptr->px] >= FEAT_SHOP_HEAD) &&
@@ -2244,14 +2244,24 @@ void do_cmd_hold(void)
 }
 
 
+
 /*
- * Stay still (usually do not pickup)
+ * Pick up objects on the floor beneath you.  -LM-
  */
-void do_cmd_stay(void)
+void do_cmd_pickup(void)
 {
-	/* Stay still (usually do not pickup) */
-	do_cmd_hold_or_stay(!always_pickup);
+	int energy_cost;
+
+	/* Pick up floor objects, forcing a menu for multiple objects. */
+	energy_cost = py_pickup(2) * 10;
+
+	/* Maximum time expenditure is a full turn. */
+	if (energy_cost > 100) energy_cost = 100;
+
+	/* Charge this amount of energy. */
+	p_ptr->energy_use = energy_cost;
 }
+
 
 
 /*
