@@ -8,7 +8,9 @@
  *
  * Comments and suggestions are welcome. The UI probably needs some
  * adjustment, and I need comments from you.
- *
+ *perhaps also something like "Angband 3.0.8 by Andrew Sidwell and others;
+ SDL port by Iain McFall an others, please see the accompanying documentation
+ for credits" or something
  */
 
 
@@ -106,6 +108,7 @@
 #include "main.h"
 #include "SDL.h"
 #include "SDL_ttf.h"
+#include "SDL_image.h"
 
 /* SDL flags used for the main window surface */
 static Uint32 vflags = SDL_ANYFORMAT;
@@ -126,6 +129,10 @@ static bool fullscreen = FALSE;
  */
 static cptr ANGBAND_DIR_XTRA_FONT;
 static cptr ANGBAND_DIR_XTRA_GRAF;
+
+/* XXXXXXXXX */
+static cptr ANGBAND_DIR_USER_SDL;
+
 /* Later...
 static cptr ANGBAND_DIR_XTRA_SOUND;
 */
@@ -175,7 +182,9 @@ struct term_window
 	term term_data;
 	
 	SDL_Surface *surface;	/* The surface for this window */
-	
+#ifdef USE_GRAPHICS
+	SDL_Surface *tiles;		/* The appropriately sized tiles for this window */
+#endif	
 	byte Term_idx;			/* Index of term that relates to this */
 	
 	int top;				/* Window Coordinates on the main screen */
@@ -332,6 +341,7 @@ static int ignore_key_list[] =
  (k == SDLK_KP4) || (k == SDLK_KP5) || (k == SDLK_KP6) || \
  (k == SDLK_KP7) || (k == SDLK_KP8) || (k == SDLK_KP9) || (k == SDLK_KP_ENTER))
 
+static int SnapRange = 5;	/* Window snap range (pixels) */
 static int StatusHeight;	/* The height in pixels of the status bar */
 static int SelectedTerm;	/* Current selected Term */
 
@@ -345,6 +355,8 @@ static int QuitSelect;		/* Quit button */
 /* Buttons on the 'More' panel */
 static int MoreOK;			/* Accept changes */
 static int MoreFullscreen;	/* Fullscreen toggle button */
+static int MoreSnapPlus;	/* Increase snap range */
+static int MoreSnapMinus;	/* Decrease snap range */
 
 static bool Moving;				/* Moving a window */
 static bool Sizing;				/* Sizing a window */
@@ -358,10 +370,11 @@ struct GfxInfo
 {
 	cptr name;				/* Name to show on button */
 	cptr gfxfile;			/* The file with tiles */
-	cptr maskfile;			/* The mask file (if any) */
 	int width;				/* Width of a tile */
 	int height;				/* Height of a tile */
 	cptr pref;				/* Preference file to use */
+	int x;					/* Yuk - Pixel location of colour key */
+	int y;					/* ditto */
 	bool avail;				/* Are the appropriate files available? */
 };
 
@@ -371,13 +384,13 @@ static SDL_Surface *GfxSurface = NULL;	/* A surface for the graphics */
 static GfxInfo GfxDesc[GfxModes] =
 {
 	/* No gfx (GRAPHICS_NONE) */
-	{"None", NULL, NULL, -1, -1, NULL, TRUE},
+	{"None", NULL, -1, -1, NULL, 0, 0, TRUE},
 	/* 8x8 tiles (GRAPHICS_ORIGINAL) */
-	{"8x8", "8x8.bmp", NULL, 8, 8, "old", TRUE},
+	{"8x8", "8x8.png", 8, 8, "old", 0, 0, TRUE},
 	/* 16x16 tiles (GRAPHICS_ADAM_BOLT) */
-	{"16x16", "16x16.bmp", "mask.bmp", 16, 16, "new", TRUE},
+	{"16x16", "16x16.png", 16, 16, "new", 0, 65, TRUE},
 	/* XXX (GRAPHICS_DAVID_GERVAIS) */
-	{"32x32", "32x32.bmp", "mask32.bmp", 32, 32, "david", TRUE},
+	{"32x32", "32x32.png", 32, 32, "david", 0, 0, TRUE},
 	
 	/* XXX (GRAPHICS_PSEUDO ???) */
 	/*{NULL, NULL, NULL, -1, -1},	*/						
@@ -391,7 +404,7 @@ static int SelectedGfx;				/* Current selected gfx */
 /*
  * The basic angband text colours in an sdl friendly form
  */
-static u32b text_colours[16];
+static u32b text_colours[MAX_COLORS];
 
 u32b back_colour;		/* Background colour */
 
@@ -1043,17 +1056,33 @@ static void sdl_WindowUpdate(sdl_Window* window)
 
 static void term_windowFree(term_window* win)
 {
-	if (win->surface) SDL_FreeSurface(win->surface);
-	win->surface = NULL;
+	if (win->surface)
+	{
+		SDL_FreeSurface(win->surface);
+		win->surface = NULL;
+#ifdef USE_GRAPHICS
+		/* Invalidate the gfx surface */
+		if (win->tiles)
+		{
+			SDL_FreeSurface(win->tiles);
+			win->tiles = NULL;
+		}
+#endif
+		term_nuke(&win->term_data);
+	}
 	
 	sdl_FontFree(&win->font);
 }
 
+static errr save_prefs(void);
 static void hook_quit(cptr str)
 {
 	int i;
 	
-		
+	save_prefs();
+	
+	string_free(ANGBAND_DIR_USER_SDL);
+	
 	/* Free the surfaces of the windows */
 	for (i = 0; i < ANGBAND_TERM_MAX; i++)
 	{
@@ -1394,7 +1423,6 @@ static void VisibleActivate(sdl_Button *sender)
 	if (window->visible)
 	{
 		window->visible = FALSE;
-		term_nuke(&window->term_data);
 		term_windowFree(window);
 		angband_term[SelectedTerm] = NULL;
 		
@@ -1421,6 +1449,14 @@ static void SelectFont(sdl_Button *sender)
 	window->req_font = string_make(sender->caption);
 	
 	sdl_CheckFont(window->req_font, &w, &h);
+#ifdef USE_GRAPHICS	
+	/* Invalidate the gfx surface */
+	if (window->tiles)
+	{
+		SDL_FreeSurface(window->tiles);
+		window->tiles = NULL;
+	}
+#endif
 	
 	ResizeWin(window, (w * window->cols) + (2 * window->border),
 			  (h * window->rows) + window->border + window->title_height);
@@ -1506,6 +1542,20 @@ static void AcceptChanges(sdl_Button *sender)
 		}
 	}
 	
+	/* Invalidate all the gfx surfaces */
+	if (do_update)
+	{
+		int i;
+		for (i = 0; i < ANGBAND_TERM_MAX; i++)
+		{
+			term_window *win = &windows[i];
+			if (win->tiles)
+			{
+				SDL_FreeSurface(win->tiles);
+				win->tiles = NULL;
+			}
+		}
+	}	
 	
 #endif
 	
@@ -1555,6 +1605,14 @@ static void FlipTag(sdl_Button *sender)
 		sender->tag = 1;
 		sdl_ButtonCaption(sender, "On");
 	}
+}
+
+static void SnapChange(sdl_Button *sender)
+{
+	SnapRange += sender->tag;
+	if (SnapRange < 0) SnapRange = 0;
+	if (SnapRange > 20) SnapRange = 20;
+	PopUp.need_update = TRUE;
 }
 
 static void MoreDraw(sdl_Window *win)
@@ -1612,6 +1670,14 @@ static void MoreDraw(sdl_Window *win)
 	sdl_WindowText(win, colour, 20, y, "Fullscreen is:");
 	
 	sdl_ButtonMove(button, 200, y);
+	y+= 20;
+	
+	sdl_WindowText(win, colour, 20, y, format("Snap range is %d.", SnapRange));
+	button = sdl_ButtonBankGet(&win->buttons, MoreSnapMinus);
+	sdl_ButtonMove(button, 200, y);
+	
+	button = sdl_ButtonBankGet(&win->buttons, MoreSnapPlus);
+	sdl_ButtonMove(button, 230, y);
 }
 
 static void MoreActivate(sdl_Button *sender)
@@ -1671,6 +1737,28 @@ static void MoreActivate(sdl_Button *sender)
 	sdl_ButtonCaption(button, fullscreen ? "On" : "Off");
 	button->tag = fullscreen;
 	button->activate = FlipTag;
+	
+	MoreSnapPlus = sdl_ButtonBankNew(&PopUp.buttons);
+	button = sdl_ButtonBankGet(&PopUp.buttons, MoreSnapPlus);
+	
+	button->unsel_colour = ucolour;
+	button->sel_colour = scolour;
+	sdl_ButtonSize(button, 20, PopUp.font.height + 2);
+	sdl_ButtonCaption(button, "+");
+	button->tag = 1;
+	sdl_ButtonVisible(button, TRUE);
+	button->activate = SnapChange;
+	
+	MoreSnapMinus = sdl_ButtonBankNew(&PopUp.buttons);
+	button = sdl_ButtonBankGet(&PopUp.buttons, MoreSnapMinus);
+	
+	button->unsel_colour = ucolour;
+	button->sel_colour = scolour;
+	sdl_ButtonSize(button, 20, PopUp.font.height + 2);
+	sdl_ButtonCaption(button, "-");
+	button->tag = -1;
+	sdl_ButtonVisible(button, TRUE);
+	button->activate = SnapChange;
 	
 	MoreOK = sdl_ButtonBankNew(&PopUp.buttons);
 	button = sdl_ButtonBankGet(&PopUp.buttons, MoreOK);
@@ -1797,7 +1885,7 @@ static void ResizeWin(term_window* win, int w, int h)
 	
 	StatusBar.need_update = TRUE;
 	
-	/* Hmmmm... */
+	/* HACK - Redraw all windows */
 	if (character_dungeon) do_cmd_redraw();
 }
 
@@ -1844,6 +1932,9 @@ static errr load_prefs(void)
 	
 	/* Build the path */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER , "sdlinit.txt");
+	
+	/* XXXXX */
+	ANGBAND_DIR_USER_SDL = string_make(buf);
 	
 	/* Open the file */
 	fff = my_fopen(buf, "r");
@@ -1928,15 +2019,11 @@ static errr load_prefs(void)
 
 static errr save_prefs()
 {
-	char buf[1024];
 	FILE *fff;
 	int i;
 	
-	/* Build the path */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_USER , "sdlinit.txt");
-	
 	/* Open the file */
-	fff = my_fopen(buf, "w");
+	fff = my_fopen(ANGBAND_DIR_USER_SDL, "w");
 	
 	/* Check it */
 	if (!fff) return (1);
@@ -1978,6 +2065,14 @@ static void DrawSizeWidget(void)
 
 static int Movingx;
 static int Movingy;
+
+/*
+ * Is What within Range units of Origin
+ */
+
+#define closeto(Origin, What, Range) \
+	((ABS((Origin) - (What))) < (Range))
+
 /*
  * This function keeps the 'mouse' info up to date,
  * and reacts to mouse buttons appropriately.
@@ -1998,6 +2093,8 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 			/* We are moving a window */
 			if (Moving)
 			{
+				int i;
+				
 				/* Move the window */
 				win->left = (mouse.x - Movingx);
 				win->top = (mouse.y - Movingy);
@@ -2030,6 +2127,52 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 					Movingy = mouse.y - win->top;
 				}
 				
+				for (i = 0; i < ANGBAND_TERM_MAX; i++)
+				{
+					term_window *snapper = &windows[i];
+					
+					/* Can't snap to self... */
+					if (i == SelectedTerm) continue;
+					
+					/* Can't snap to the invisible */
+					if (!snapper->visible) continue;
+					
+					/* Check the windows are across from each other */
+					if ((snapper->top < win->top + win->height) && (win->top < snapper->top + snapper->height))
+					{
+						/* Lets try to the left... */
+						if (closeto(win->left, snapper->left + snapper->width, SnapRange))
+						{
+							win->left = snapper->left + snapper->width;
+							Movingx = mouse.x - win->left;
+						}
+						/* Maybe to the right */
+						if (closeto(win->left + win->width, snapper->left, SnapRange))
+						{
+							win->left = snapper->left - win->width;
+							Movingx = mouse.x - win->left;
+						}
+					}
+					
+					/* Check the windows are above/below each other */
+					if ((snapper->left < win->left + win->width) && (win->left < snapper->left + snapper->width))
+					{
+						/* Lets try to the top... */
+						if (closeto(win->top, snapper->top + snapper->height, SnapRange))
+						{
+							win->top = snapper->top + snapper->height;
+							Movingy = mouse.y - win->top;
+						}
+						/* Maybe to the bottom */
+						if (closeto(win->top + win->height, snapper->top, SnapRange))
+						{
+							win->top = snapper->top - win->height;
+							Movingy = mouse.y - win->top;
+						}
+					}
+					
+				}
+				
 				/* Show on the screen */
 				sdl_BlitAll();
 			}
@@ -2055,7 +2198,7 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 				/* Show on the screen */				
 				sdl_BlitAll();
 			}
-			else
+			else if (!popped)
 			{
 				/* Have a look for the corner stuff */
 				if (point_in(&SizingSpot, mouse.x, mouse.y))
@@ -2364,8 +2507,8 @@ static errr sdl_HandleEvent(SDL_Event *event)
 		/* XXX - check for stuck inside menu etc... */
 		case SDL_QUIT:
 		{
-			/* We are playing a game with an active character, and are not using the infinite lives cheat */
-			if ((character_generated) && (inkey_flag))
+			/* We are playing a game with an active character */
+			if (character_generated && inkey_flag)
 			{
 				/* Hack -- Forget messages */
 				msg_flag = FALSE;
@@ -2554,6 +2697,31 @@ static errr Term_xtra_sdl_delay(int v)
 	return (0);
 }
 
+static errr Term_bigcurs_sdl(int col, int row)
+{
+	term_window *win = (term_window*)(Term->data);
+	
+	Uint32 colour = text_colours[TERM_YELLOW];
+	
+	SDL_Rect rc;
+	
+	/* Make a rectangle */
+	RECT(col * win->tile_wid, row * win->tile_hgt, win->tile_wid * 2, win->tile_hgt, &rc);
+	
+	/* Translate it */
+	rc.x += win->border;
+	rc.y += win->title_height;
+	
+	/* Draw it */
+	sdl_DrawBox(win->surface, &rc, colour, 1);
+	
+	/* Update area */
+	set_update_rect(win, &rc);
+	
+	/* Success */
+	return (0);
+}
+
 static errr Term_curs_sdl(int col, int row)
 {
 	term_window *win = (term_window*)(Term->data);
@@ -2625,6 +2793,17 @@ static errr Term_xtra_sdl(int n, int v)
 		{
 			return (Term_xtra_sdl_delay(v));
 		}
+		case TERM_XTRA_REACT:
+		{
+			int i;
+			/* Re-initialize the colours */
+			for (i = 0; i < MAX_COLORS; i++)
+			{
+				text_colours[i] = SDL_MapRGB(AppWin->format, angband_color_table[i][1],
+											 angband_color_table[i][2],
+											 angband_color_table[i][3]);
+			}
+		}
 	}
 	
 	return (1);
@@ -2686,14 +2865,13 @@ static errr Term_text_sdl(int col, int row, int n, byte a, cptr s)
 /*
  * Do a 'stretched blit'
  * SDL has no support for stretching... What a bastard!
- * XXX - The 'source' surface has alpha properties, so we assume it's 32-bit!
+ * 
  */
 static void sdl_StretchBlit(SDL_Surface *src, SDL_Rect *srcRect, SDL_Surface *dest, SDL_Rect *destRect)
 {
 	int x, y;
 	int sx, sy, dx, dy;
 	Uint8 *ps, *pd;
-	Uint32 *ps1;
 	
 	for (y = 0; y < destRect->h; y++)
 	{
@@ -2705,11 +2883,31 @@ static void sdl_StretchBlit(SDL_Surface *src, SDL_Rect *srcRect, SDL_Surface *de
 			
 			/* Find a source pixel */
 			ps = (Uint8 *)src->pixels + (sx * src->format->BytesPerPixel) + (sy * src->pitch);
-			ps1 = (Uint32*) ps;
-			
+#if 0
 			/* Do we need to draw it? */
-			if (!(*ps1 & src->format->Amask)) continue;
-			
+			switch (src->format->BytesPerPixel)
+			{
+				case 1:
+				{
+					if (*ps == src->format->colorkey) continue;
+					break;
+				}
+				case 2:
+				{
+					Uint16 *ps16 = (Uint16*) ps;
+					if (*ps16 == src->format->colorkey) continue;
+					break;
+				}
+				case 3:
+				case 4:
+				{
+					Uint32 *ps32 = (Uint32*) ps;
+					if (*ps32 == src->format->colorkey) continue;
+					break;
+				}
+			}
+#endif
+					
 			/* Actual destination pixel coords */
 			dx = x + destRect->x;
 			dy = y + destRect->y;
@@ -2721,30 +2919,82 @@ static void sdl_StretchBlit(SDL_Surface *src, SDL_Rect *srcRect, SDL_Surface *de
 			{
 				case 1:
 				{
-					Uint8 r, g, b;
-					SDL_GetRGB(*ps1, src->format, &r, &g, &b);
-					*pd = SDL_MapRGB(dest->format, r, g, b);
+					*pd = *ps;
 					break;
 				}
 				case 2:
 				{
-					Uint8 r, g, b;
-					Uint16 *pd1 = (Uint16*)pd;
-					SDL_GetRGB(*ps1, src->format, &r, &g, &b);
-					*pd1 = SDL_MapRGB(dest->format, r, g, b);
+					Uint16 *ps16 = (Uint16*) ps;
+					Uint16 *pd16 = (Uint16*) pd;
+					*pd16 = *ps16;
 					break;
 				}
 				case 3:
 				case 4:
 				{
-					Uint32 *pd1 = (Uint32*)pd;
-					*pd1 = (*ps1 & ~(src->format->Amask));
+					Uint32 *ps32 = (Uint32*) ps;
+					Uint32 *pd32 = (Uint32*) pd;
+					*pd32 = *ps32;
 				}
 			}
 			
 		}
 	}
 	
+}
+
+/*
+ * Make the 'pre-stretched' tiles for this window
+ * Assumes the tiles surface was freed elsewhere
+ */
+static errr sdl_BuildTileset(term_window *win)
+{
+	int x, y;
+	int ta, td;
+	int xx, yy;
+	GfxInfo *info = &GfxDesc[use_graphics];
+	
+	/* Calculate the number of tiles across & down*/
+	ta = GfxSurface->w / info->width;
+	td = GfxSurface->h / info->height;
+	
+	/* Calculate the size of the new surface */
+	x = ta * win->tile_wid;
+	if (use_bigtile) x *= 2;
+	y = td * win->tile_hgt;
+	
+	/* Make it */
+	win->tiles = SDL_CreateRGBSurface(SDL_SWSURFACE, x, y,
+									  GfxSurface->format->BitsPerPixel,
+									  GfxSurface->format->Rmask, GfxSurface->format->Gmask,
+									  GfxSurface->format->Bmask, GfxSurface->format->Amask);
+	
+	/* Bugger */
+	if (!win->tiles) return (1);
+	
+	/* For every tile... */
+	for (xx = 0; xx < ta; xx++)
+	{
+		for (yy = 0; yy < td; yy++)
+		{
+			SDL_Rect src, dest;
+			int dwid = (use_bigtile ? win->tile_wid * 2 : win->tile_wid);
+			
+			/* Source rectangle (on GfxSurface) */
+			RECT(xx * info->width, yy * info->height, info->width, info->height, &src);
+			
+			/* Destination rectangle (win->tiles) */
+			RECT(xx * dwid, yy * win->tile_hgt, dwid, win->tile_hgt, &dest);
+			
+			/* Do the stretch thing */
+			sdl_StretchBlit(GfxSurface, &src, win->tiles, &dest);
+		}
+	}
+	
+	/* Copy across the colour key */
+	SDL_SetColorKey(win->tiles, SDL_SRCCOLORKEY, GfxSurface->format->colorkey);
+					
+	return (0);
 }
 #endif
 
@@ -2764,6 +3014,13 @@ static errr Term_pict_sdl(int col, int row, int n, const byte *ap, const char *c
 	SDL_Rect rc, src;
 	int i;
 	
+	/* First time a pict is requested we load the tileset in */
+	if (!win->tiles)
+	{
+		sdl_BuildTileset(win);
+		if (!win->tiles) return (1);
+	}
+	
 	/* Make the destination rectangle */
 	RECT(col * win->tile_wid, row * win->tile_hgt, win->tile_wid, win->tile_hgt, &rc);
 	
@@ -2775,8 +3032,8 @@ static errr Term_pict_sdl(int col, int row, int n, const byte *ap, const char *c
 	if (use_bigtile) rc.w *= 2;
 	
 	/* Get the dimensions of the graphic surface */
-	src.w = GfxDesc[use_graphics].width;
-	src.h = GfxDesc[use_graphics].height;
+	src.w = rc.w;
+	src.h = rc.h;
 	
 	/* Clear the way */
 	Term_wipe_sdl(col, row, use_bigtile ? n + 1 : n);
@@ -2788,8 +3045,7 @@ static errr Term_pict_sdl(int col, int row, int n, const byte *ap, const char *c
 		src.x = (tcp[i] & 0x7F) * src.w;
 		src.y = (tap[i] & 0x7F) * src.h;
 		
-		sdl_StretchBlit(GfxSurface, &src, win->surface, &rc);
-		//SDL_BlitSurface(GfxSurface, &src, win->surface, &rc);
+		SDL_BlitSurface(win->tiles, &src, win->surface, &rc);
 		
 		/* If foreground is the same as background, we're done */
 		if ((tap[i] == ap[i]) && (tcp[i] == cp[i])) continue;
@@ -2798,8 +3054,7 @@ static errr Term_pict_sdl(int col, int row, int n, const byte *ap, const char *c
 		src.x = (cp[i] & 0x7F) * src.w;
 		src.y = (ap[i] & 0x7F) * src.h;
 		
-		sdl_StretchBlit(GfxSurface, &src, win->surface, &rc);
-		//SDL_BlitSurface(GfxSurface, &src, win->surface, &rc);
+		SDL_BlitSurface(win->tiles, &src, win->surface, &rc);
 	}
 	
 	/* Update area */
@@ -2836,6 +3091,7 @@ static void term_data_link_sdl(term_window *win)
 	/* Prepare the template hooks */
 	t->xtra_hook = Term_xtra_sdl;
 	t->curs_hook = Term_curs_sdl;
+	t->bigcurs_hook = Term_bigcurs_sdl;
 	t->wipe_hook = Term_wipe_sdl;
 	t->text_hook = Term_text_sdl;
 	t->pict_hook = Term_pict_sdl;
@@ -2939,27 +3195,19 @@ static void init_morewindows(void)
 #ifdef USE_GRAPHICS
 
 /*
- * Hmmm.. This function is somewhat scrappy, but it gets the job done
- *
- * Things to note:
- *  If no maskfile is defined it will default to using the pixel at (0,0)
- *   as a colour key for blits. This seems to work fine with the 8x8.bmp
- *   default file.
- *
- *  The surface eventually generated by this function uses the built-in
- *   alpha channel support that SDL provides.
- *   XXX - This may result in an efficiency loss at screen bit-depths of
- *         less than 32 bits, since the adding of an alpha channel to a surface
- *         seems to immediately bump up the bits-per-pixel to 32...
- *
- * This function just does things in a simple step-by-step fashion, and seems
- *  to use far too many intermediatory surfaces. Oh well..
+ * The new streamlined graphics loader.
+ * Only uses colour keys.
+ * Much more tolerant of different bit-planes
  */
 static errr load_gfx(void)
 {
 	char buf[1024];
 	cptr filename = GfxDesc[use_graphics].gfxfile;
-	SDL_Surface *temp, *temp2;
+	SDL_Surface *temp;
+	Uint8 r, g, b;
+	Uint32 key;
+	Uint32 Pixel;
+	int x = GfxDesc[use_graphics].x, y = GfxDesc[use_graphics].y;
 	
 	/* This may be called when GRAPHICS_NONE is set */
 	if (!filename) return (0);
@@ -2969,129 +3217,46 @@ static errr load_gfx(void)
 	
 	/* Find and load the file into a temporary surface */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, filename);
-	temp = SDL_LoadBMP(buf);
+	temp = IMG_Load(buf);
 	
 	/* Oops */
 	if (!temp) return (1);
 	
 	/* Change the surface type to the current video surface format */
-	temp2 = SDL_DisplayFormat(temp);
+	GfxSurface = SDL_DisplayFormat(temp);
 	
-	/* There is no maskfile - Use a colour key */
-	if (!GfxDesc[use_graphics].maskfile)
+	/* Use a colour key */
+	/* Get a pixel value depending on bit-depth */
+	switch (GfxSurface->format->BytesPerPixel)
 	{
-		Uint8 r, g, b;
-		Uint32 key;
-		Uint32 Pixel;
-		
-		/* Get a pixel value depending on bit-depth */
-		switch (temp2->format->BytesPerPixel)
+		case 1:
 		{
-			case 1:
-			{
-				Uint8 *p = (Uint8*)temp2->pixels;
-				Pixel = *p;
-			}
-			case 2:
-			{
-				Uint16 *p = (Uint16*)temp2->pixels;
-				Pixel = *p;
-			}
-			case 3:
-			case 4:
-			{
-				Uint32 *p = (Uint32*)temp2->pixels;
-				Pixel = *p;
-			}
+			Uint8 *p = (Uint8*)GfxSurface->pixels + x + (y * GfxSurface->pitch);
+			Pixel = *p;
 		}
-		
-		/* Get the colour values */
-		SDL_GetRGB(Pixel, temp2->format, &r, &g, &b);
-		
-		/* Create a key */
-		key = SDL_MapRGB(temp2->format, r, g, b);
-		
-		/* Set the colour key */
-		SDL_SetColorKey(temp2, SDL_SRCCOLORKEY, key);
-		
-		/* SDL will now create an alpha-enabled surface with the appropriate
-			alpha values for each pixel */
-		GfxSurface = SDL_DisplayFormatAlpha(temp2);
-	}
-	else
-	{
-		SDL_Surface *mask, *cmask;
-		int i;
-		int size;
-		
-		/* Load the mask */
-		path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, GfxDesc[use_graphics].maskfile);
-		mask = SDL_LoadBMP(buf);
-		
-		/* Convert to current display format */
-		cmask = SDL_DisplayFormat(mask);
-		
-		/* Create an alpha enabled surface */
-		GfxSurface = SDL_DisplayFormatAlpha(temp2);
-		
-		/* How many pixels? */
-		size = cmask->w * cmask->h;
-		
-		/* Check _every pixel */
-		for (i = 0; i < size; i++)
+		case 2:
 		{
-			/* Get the pixel (mask) */
-			Uint8 *mp = (Uint8*)cmask->pixels + i * cmask->format->BytesPerPixel;
-			
-			/* Get the pixel (graphic) */
-			Uint8 *tp = (Uint8*)GfxSurface->pixels + i * GfxSurface->format->BytesPerPixel; 
-			
-			/* XXX - Surfaces with alpha properties seem to all be 32-bit */
-			switch (GfxSurface->format->BytesPerPixel)
-			{
-				case 1:
-				{
-					break;
-				}
-				case 2:
-				{
-					
-					break;
-				}
-				case 3:
-				{
-					break;
-				}
-				case 4:
-				{
-					Uint32 *mp1 = (Uint32*)mp;
-					Uint32 *tp1 = (Uint32*)tp;
-					
-					/* Is this mask pixel black? */
-					if (!*mp1)
-					{
-						/* Set the alpha value to maximum */
-						*tp1 |= GfxSurface->format->Amask;
-					}
-					else
-					{
-						/* Set the alpha value to zero */
-						*tp1 &= ~(GfxSurface->format->Amask);
-					}
-					break;
-				}
-						
-			}
+			Uint16 *p = (Uint16*)GfxSurface->pixels + (x * 2) + (y * GfxSurface->pitch);
+			Pixel = *p;
 		}
-		
-		/* Lose the mask surfaces */
-		SDL_FreeSurface(mask);
-		SDL_FreeSurface(cmask);
+		case 3:
+		case 4:
+		{
+			Uint32 *p = (Uint32*)GfxSurface->pixels + (x * GfxSurface->format->BytesPerPixel) + (y * GfxSurface->pitch);
+			Pixel = *p;
+		}
 	}
-		
 	
-	/* Lose the temporary surfaces */
-	SDL_FreeSurface(temp2);
+	/* Get the colour values */
+	SDL_GetRGB(Pixel, GfxSurface->format, &r, &g, &b);
+	
+	/* Create a key */
+	key = SDL_MapRGB(GfxSurface->format, r, g, b);
+	
+	/* Set the colour key */
+	SDL_SetColorKey(GfxSurface, SDL_SRCCOLORKEY, key);
+	
+	/* Lose the temporary surface */
 	SDL_FreeSurface(temp);
 	
 	/* Make sure we know what pref file to use */
@@ -3121,7 +3286,7 @@ static void init_gfx(void)
 	use_graphics = GRAPHICS_NONE;
 	use_bigtile = FALSE;
 #else
-	const GfxInfo *info = &GfxDesc[use_graphics];
+	GfxInfo *info = &GfxDesc[use_graphics];
 	int i;
 	
 	/* Check for existence of required files */
@@ -3134,20 +3299,6 @@ static void init_gfx(void)
 		if (GfxDesc[i].gfxfile)
 		{
 			path_build(path, sizeof(path), ANGBAND_DIR_XTRA_GRAF, GfxDesc[i].gfxfile);
-			fd = fd_open(path, O_WRONLY);
-			
-			if (fd >= 0) fd_close(fd);
-			else
-			{
-				plog_fmt("Can't find file %s - graphics mode '%s' will be disabled.", path, GfxDesc[i].name);
-				GfxDesc[i].avail = FALSE;
-			}
-		}
-		
-		/* Check the mask file */
-		if (GfxDesc[i].maskfile)
-		{
-			path_build(path, sizeof(path), ANGBAND_DIR_XTRA_GRAF, GfxDesc[i].maskfile);
 			fd = fd_open(path, O_WRONLY);
 			
 			if (fd >= 0) fd_close(fd);
@@ -3189,7 +3340,14 @@ static void init_windows(void)
 		{
 			/* Don't crowd out the status bar... */
 			if (win->top < StatusHeight) win->top = StatusHeight;
-			
+#ifdef USE_GRAPHICS			
+			/* Invalidate the gfx surface */
+			if (win->tiles)
+			{
+				SDL_FreeSurface(win->tiles);
+				win->tiles = NULL;
+			}
+#endif
 			/* This will set up the window correctly */
 			ResizeWin(win, win->width, win->height);
 		}
@@ -3266,7 +3424,7 @@ static void init_sdl_local(void)
 	
 	
 	/* Initialize the colours */
-	for (i = 0; i < 16; i++)
+	for (i = 0; i < MAX_COLORS; i++)
 	{
 		text_colours[i] = SDL_MapRGB(AppWin->format, angband_color_table[i][1],
 									 angband_color_table[i][2],
