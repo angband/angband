@@ -700,6 +700,9 @@ byte py_pickup(int pickup)
 			if ((long)o_ptr->pval < 200) sound_msg = MSG_MONEY1;
 			else if ((long)o_ptr->pval < 600) sound_msg = MSG_MONEY2;
 			else sound_msg = MSG_MONEY3;
+			
+			/* Describe the object */
+			object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 
 			/* Message */
 			message_format(sound_msg, 0, "You have found %s worth %ld gold pieces.",
