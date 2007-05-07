@@ -809,18 +809,6 @@ static void rd_options(void)
 		birth_ai_smart = adult_ai_smart = OLD_OPT(72);
 
 		#undef OLD_OPT
-
-		if (arg_fiddle)
-		{
-			FILE *ffff = fopen("options.txt", "wb");
-			int i;
-
-			for (i = 0; i < OPT_SCORE; i++)
-				fprintf(ffff, "%3d %s: %s\n",
-					i,
-					(op_ptr->opt[i] ? "on " : "off"),
-					(option_text[i] ? option_text[i] : "NULL"));
-		}
 	}
 
 	/*** Window Options ***/

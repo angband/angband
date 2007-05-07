@@ -43,14 +43,8 @@ SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncurses
 # Support the GTK2 graphical tookit (main-gtk.c)
 SYS_gtk = -DUSE_GTK $(shell pkg-config gtk+-2.0 --libs --cflags)
 
-# Support "projected mode". Experimental, requires X11/Xaw/GTK to be enabled (main-xpj.c)
-#SYS_xpj = -DUSE_xpj
-
 # Support raw console access (main-lfb.c) -- Linux only
 SYS_lfb = -DUSE_LFB
-
-# Support linux in VGA mode (main-lsl.c) -- Linux only
-#SYS_lsl = -DUSE_LSL -lz -lvgagl -lvga
 
 # Support SDL frontend
 #SYS_sdl = -DUSE_SDL $(shell sdl-config --cflags) $(shell sdl-config --libs) -lSDL_ttf
@@ -64,12 +58,6 @@ SYS_lfb = -DUSE_LFB
 # Support direct termio on 8bit color-depth screen (main-vcs.c)
 #SYS_vcs = -DUSE_VCS
 
-# Support Unix 'slang', also available on OS/2 (main-sla.c)
-#SYS_sla = -DUSE_SLA -I/usr/include/slang -lslang
-
-# Support primitive termcap emulation of a vt100 (slow and unreliable) (main-cap.c)
-# -DUSE_HARDCODE in the unlikely event you are using a VT100 without curses
-#SYS_cap = -DUSE_CAP -ltermcap
 
 
 # Basic compiler stuff
@@ -99,7 +87,7 @@ VERSION = 3.0.8
 
 
 # Extract CFLAGS and LIBS from the system definitions
-MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_xaw) $(SYS_gtk) $(SYS_xpj) $(SYS_sla) $(SYS_cap) $(SYS_sdl)
+MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_xaw) $(SYS_gtk) $(SYS_sdl)
 CFLAGS += $(patsubst -l%,,$(MODULES)) $(INCLUDES)
 LIBS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
 
@@ -109,15 +97,15 @@ uname = $(shell uname -s)
 
 # Enable linux-specific modules, if requested.
 ifeq ($(uname),Linux)
-  MODULES += $(SYS_lsl) $(SYS_lfb) $(SYS_vcs)
-  LINUXOBJS = main-lsl.o main-vcs.o main-lfb.o
+  MODULES += $(SYS_lfb) $(SYS_vcs)
+  LINUXOBJS = main-vcs.o main-lfb.o
   CFLAGS += -DHAVE_MKSTEMP
 endif
 
 
 # Object definitions
-X11OBJS = maid-x11.o main-x11.o main-xaw.o main-gtk.o main-xpj.o
-MAINOBJS = main.o main-cap.o main-gcu.o main-sla.o $(X11OBJS) $(LINUXOBJS) # main-sdl.o not yet
+X11OBJS = maid-x11.o main-x11.o main-xaw.o main-gtk.o
+MAINOBJS = main.o main-gcu.o main-sdl.o $(X11OBJS) $(LINUXOBJS)
 OBJS = $(BASEOBJS) $(MAINOBJS)
 
 
