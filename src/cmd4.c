@@ -28,7 +28,6 @@
 /* Flag value for missing array entry */
 #define MISSING -17
 
-#define LOAD_PREF	100
 #define APP_MACRO	101
 #define ASK_MACRO	103
 #define DEL_MACRO	104
@@ -38,13 +37,32 @@
 #define DEL_KEYMAP	108
 #define NEW_KEYMAP	109
 #define ENTER_ACT	110
+#define LOAD_PREF	111
+#define DUMP_MON	112
+#define DUMP_OBJ	113
+#define DUMP_FEAT	114
+#define DUMP_FLAV	115
+#define MOD_MON		116
+#define	MOD_OBJ		117
+#define MOD_FEAT	118
+#define MOD_FLAV	119
+#define DUMP_COL	120
+#define MOD_COL		121
+#define RESET_VIS	122
+
+#define OPTION_MENU 140
+#define VISUAL_MENU 141
+#define COLOR_MENU	142
+#define KNOWLEDGE_MENU 143
+#define MACRO_MENU	144
 
 
 #define INFO_SCREENS 2 /* Number of screens in character info mode */
 
 
 
-typedef struct {
+typedef struct
+{
 		int maxnum; /* Maximum possible item count for this class */
 		bool easy_know; /* Items don't need to be IDed to recognize membership */
 
@@ -60,7 +78,8 @@ typedef struct {
 		void (*summary)(int gid, const int *object_list, int n, int top, int row, int col);
 } group_funcs;
 
-typedef struct {
+typedef struct
+{
 
 		/* Print a tabular-formatted description for an oid */
 		/* This includes things like kill-count, the current graphic, */
@@ -88,7 +107,8 @@ typedef struct {
 
 
 /* Helper class for generating joins */
-typedef struct join {
+typedef struct join
+{
 		int oid;
 		int gid;
 } join_t;
@@ -110,7 +130,8 @@ static int *obj_group_order;
 /*
  * Description of each monster group.
  */
-static struct {
+static struct
+{
 		cptr chars;
 		cptr name;
 } monster_group[] =
@@ -234,43 +255,44 @@ static const int use_trptile = 0;
 static void big_pad(int col, int row, byte a, byte c)
 {
 	Term_putch(col, row, a, c);
-	if(!use_bigtile) return;
+	if (!use_bigtile) return;
 	if (a &0x80) Term_putch(col+1, row, 255, -1);
 	else Term_putch(col+1, row, 1, ' ');
 }
 
 static int actual_width(int width) {
 	if (use_trptile) width = width * 3;
-	else if(use_dbltile) width *= 2;
-	if(use_bigtile) width *= 2;
+	else if (use_dbltile) width *= 2;
+	if (use_bigtile) width *= 2;
 		return width;
 }
 
 static int actual_height(int height) {
-	if(use_bigtile) height *= 2;
+	if (use_bigtile) height *= 2;
 	if (use_trptile) height = height * 3 / 2;
-	else if(use_dbltile) height *= 2;
+	else if (use_dbltile) height *= 2;
 	return height;
 }
 
 static int logical_width(int width)
 {
 	int div = 1;
-	if(use_trptile) div = 3;
-	else if(use_dbltile) div *= 2;
-	if(use_bigtile) div *= 2;
+	if (use_trptile) div = 3;
+	else if (use_dbltile) div *= 2;
+	if (use_bigtile) div *= 2;
 	return width / div;
 }
 
 static int logical_height(int height)
 {
 	int div = 1;
-	if(use_trptile) {
+	if (use_trptile)
+	{
 		height *= 2;
 		div = 3;
 	}
-	else if(use_dbltile) div = 2;
-	if(use_bigtile) div *= 2;
+	else if (use_dbltile) div = 2;
+	if (use_bigtile) div *= 2;
 	return height / div;
 }
 
@@ -340,7 +362,8 @@ static void display_group_member(menu_type *menu, int oid,
 	byte attr = curs_attrs[CURS_KNOWN][cursor == oid];
 
 	/* Show inscription, if applicable, aware and existing */
-	if(o_funcs->note && o_funcs->note(oid) && *o_funcs->note(oid)) {
+	if (o_funcs->note && o_funcs->note(oid) && *o_funcs->note(oid))
+	{
 		c_put_str(TERM_YELLOW,quark_str(*o_funcs->note(oid)), row, 65);
 	}
 	/* Print the interesting part */
@@ -349,7 +372,8 @@ static void display_group_member(menu_type *menu, int oid,
 	if (p_ptr->wizard) c_put_str(attr, format("%d", oid), row, 60);
 
 	/* Do visual mode */
-	if(o_funcs->is_visual && o_funcs->xattr) {
+	if (o_funcs->is_visual && o_funcs->xattr)
+	{
 		char c = *o_funcs->xchar(oid);
 		byte a = *o_funcs->xattr(oid);
 		c_put_str(attr, format((c & 0x80) ? "%02x/%02x" : "%02x/%d", a, c), row, 60);
@@ -384,9 +408,9 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	int g_o_count = 0;				 /* object count for group */
 	int oid = -1;  				/* object identifiers */
 
-	region title_area = {0, 0, 0, 4};
-	region group_region = {0, 6, MISSING, -2};
-	region object_region = {MISSING, 6, 0, -2};
+	region title_area = { 0, 0, 0, 4 };
+	region group_region = { 0, 6, MISSING, -2 };
+	region object_region = { MISSING, 6, 0, -2 };
 
 	/* display state variables */
 	bool visual_list = FALSE;
@@ -426,14 +450,16 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 	/* Do the group by. ang_sort only works on (void **) */
 	/* Maybe should make this a precondition? */
-	if(g_funcs.gcomp)
+	if (g_funcs.gcomp)
 			qsort(obj_list, o_count, sizeof(*obj_list), g_funcs.gcomp);
 
 	C_MAKE(g_list, max_group+1, int);
 	C_MAKE(g_offset, max_group+1, int);
 
-	for(i = 0; i < o_count; i++) {
-		if(prev_g != g_funcs.group(obj_list[i])) {
+	for (i = 0; i < o_count; i++)
+	{
+		if (prev_g != g_funcs.group(obj_list[i]))
+		{
 			prev_g = g_funcs.group(obj_list[i]);
 			g_offset[grp_cnt] = i;
 			g_list[grp_cnt++] = prev_g;
@@ -442,17 +468,17 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	g_offset[grp_cnt] = o_count;
 	g_list[grp_cnt] = -1;
 
-
-
 	/* The compact set of group names, in display order */
 	C_MAKE(g_names, grp_cnt, const char **);
-	for (i = 0; i < grp_cnt; i++) {
+	for (i = 0; i < grp_cnt; i++)
+	{
 		int len;
 		g_names[i] = g_funcs.name(g_list[i]);
 		len = strlen(g_names[i]);
-		if(len > g_name_len) g_name_len = len;
+		if (len > g_name_len) g_name_len = len;
 	}
-	if(g_name_len >= 20) g_name_len = 20;
+	/* Reasonable max group name len */
+	if (g_name_len >= 20) g_name_len = 20;
 
 	object_region.col = g_name_len+3;
 	group_region.width = g_name_len;
@@ -461,7 +487,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	rogue_like_commands = FALSE;
 
 	/* Leave room for the group summary information */
-	if(g_funcs.summary) object_region.page_rows = -3;
+	if (g_funcs.summary) object_region.page_rows = -3;
 
 	WIPE(&group_menu, menu_type);
 	group_menu.count = grp_cnt;
@@ -482,17 +508,19 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	/* This is the event loop for a multi-region panel */
 	/* Panels are -- text panels, two menus, and visual browser */
 	/* with "pop-up menu" for lore */
-	while((!flag) && (grp_cnt)) {
+	while ((!flag) && (grp_cnt))
+	{
 		event_type ke, ke0;
-		if(redraw) {
+		if (redraw)
+		{
 			region_erase(&title_area);
 			prt(format("Knowledge - %s", title), 2, 0);
 			prt( "Group", 4, 0);
 			prt("Name", 4, g_name_len + 3);
 			Term_gotoxy(65, 4);
-			if(o_funcs.note)
+			if (o_funcs.note)
 				Term_addstr(-1, TERM_WHITE, "Inscribed ");
-			if(otherfields)
+			if (otherfields)
 				Term_addstr(-1, TERM_WHITE, otherfields);
 			for (i = 0; i < 78; i++)
 				Term_putch(i, 5, TERM_WHITE, '=');
@@ -502,7 +530,8 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			redraw = FALSE;
 		}
 
-		if(g_cur != grp_old) {
+		if (g_cur != grp_old)
+		{
 			grp_old = g_cur;
 			o_cur = 0;
 			g_o_count = g_offset[g_cur+1] - g_offset[g_cur];
@@ -511,13 +540,15 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			object_menu.cursor = 0;
 		}
 		/* HACK ... */
-		if(!visual_list) {
+		if (!visual_list)
+		{
 			/* ... The object menu may be browsing the entire group... */
 			o_funcs.is_visual = FALSE;
 			menu_set_filter(&object_menu, obj_list + g_offset[g_cur], g_o_count);
 			object_menu.cursor = o_cur;
 		}
-		else {
+		else
+		{
 			/* ... or just a single element in the group. */
 			o_funcs.is_visual = TRUE;
 			menu_set_filter(&object_menu, obj_list + o_cur +g_offset[g_cur], 1);
@@ -537,20 +568,21 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 			const char *pvs = (!o_funcs.xattr) ? "" : ", 'v' for visuals";
 
-			if(visual_list)
+			if (visual_list)
 				prt(format("<dir>, 'r' to recall, ENTER to accept%s, ESC", pedit), hgt-1, 0);
 			else 
 				prt(format("<dir>, 'r' to recall%s ESC%s%s%s",
 										pvs, pedit, pnote, pnote1), hgt-1, 0);
 		}
-		if(do_swap) {
+		if (do_swap)
+		{
 			do_swap = FALSE;
 			swap(active_menu, inactive_menu);
 			swap(active_cursor, inactive_cursor);
 			panel = 1-panel;
 		}
 
-		if(g_funcs.summary && !visual_list)
+		if (g_funcs.summary && !visual_list)
 			g_funcs.summary(g_cur, obj_list, g_o_count, g_offset[g_cur],
 			object_menu.boundary.row + object_menu.boundary.page_rows, object_region.col);
 		menu_refresh(inactive_menu);
@@ -589,16 +621,18 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			continue;
 		}
 
-		if(ke.type == EVT_MOUSE) {
+		if (ke.type == EVT_MOUSE)
+		{
 			/* Change active panels */
-			if(region_inside(&inactive_menu->boundary, &ke)) {
+			if (region_inside(&inactive_menu->boundary, &ke))
+			{
 				swap(active_menu, inactive_menu);
 				swap(active_cursor, inactive_cursor);
 				panel = 1-panel;
 			}
 		}
 		ke0 = run_event_loop(&active_menu->target, 0, &ke);
-		if(ke0.type != EVT_AGAIN) ke = ke0;
+		if (ke0.type != EVT_AGAIN) ke = ke0;
 		switch(ke.type) {
 			case EVT_KBRD:
 				break;
@@ -606,7 +640,8 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 				flag = TRUE;
 				continue;
 			case EVT_SELECT:
-				if(panel == 1 && oid >= 0 && o_cur == active_menu->cursor) {
+				if (panel == 1 && oid >= 0 && o_cur == active_menu->cursor)
+				{
 					o_funcs.lore(oid);
 					redraw = TRUE;
 				}
@@ -614,7 +649,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 				*active_cursor = active_menu->cursor;
 				continue;
 			case EVT_BACK:
-				if(panel == 1)
+				if (panel == 1)
 					do_swap = TRUE;
 			default:
 				continue;
@@ -632,7 +667,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			case 'r':
 			{
 				/* Recall on screen */
-				if(oid >= 0)
+				if (oid >= 0)
 					o_funcs.lore(oid);
 
 				redraw = TRUE;
@@ -693,7 +728,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 					/* Auto-inscribe */
 					if (g_funcs.aware(i_ptr) || cheat_peek)
-					i_ptr->note = note_idx;
+						i_ptr->note = note_idx;
 				}
 
 				break;
@@ -703,15 +738,17 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			{
 				int d = target_dir(ke.key);
 				/* Handle key-driven motion between panels */
-				if(ddx[d] && ((ddx[d] < 0) == (panel == 1))) {
+				if (ddx[d] && ((ddx[d] < 0) == (panel == 1)))
+				{
 					/* Silly hack -- diagonal arithmetic */
 					*inactive_cursor += ddy[d];
-					if(*inactive_cursor < 0) *inactive_cursor = 0;
-					else if(g_cur >= grp_cnt) g_cur = grp_cnt -1;
-					else if(o_cur >= g_o_count) o_cur = g_o_count-1;
+					if (*inactive_cursor < 0) *inactive_cursor = 0;
+					else if (g_cur >= grp_cnt) g_cur = grp_cnt -1;
+					else if (o_cur >= g_o_count) o_cur = g_o_count-1;
 					do_swap = TRUE;
 				}
-				else if(o_funcs.note && o_funcs.note(oid)) {
+				else if (o_funcs.note && o_funcs.note(oid))
+				{
 					note_idx = auto_note_modify(*o_funcs.note(oid), ke.key);
 					*o_funcs.note(oid) = note_idx;
 				}
@@ -1020,24 +1057,23 @@ static int m_cmp_race(const void *a, const void *b) {
 	int gid = default_join[*(int*)a].gid;
 	/* group by */
 	int c = gid - default_join[*(int*)b].gid;
-	if(c) return c;
+	if (c) return c;
 	/* order results */
 	c = r_a->d_char - r_b->d_char;
-	if(c && gid != 0) {
+	if (c && gid != 0)
+	{
 		/* UNIQUE group is ordered by level & name only */
 		/* Others by order they appear in the group symbols */
 		return strchr(monster_group[gid].chars, r_a->d_char)
 			- strchr(monster_group[gid].chars, r_b->d_char);
 	}
 	c = r_a->level - r_b->level;
-	if(c) return c;
+	if (c) return c;
 	return strcmp(r_name + r_a->name, r_name + r_b->name);
 }
 
-static char *m_xchar(int oid) 
-{ return &r_info[default_join[oid].oid].x_char; }
-static byte *m_xattr(int oid)
-{ return &r_info[default_join[oid].oid].x_attr; }
+static char *m_xchar(int oid) { return &r_info[default_join[oid].oid].x_char; }
+static byte *m_xattr(int oid) { return &r_info[default_join[oid].oid].x_attr; }
 static const char *race_name(int gid) { return monster_group[gid].name; }
 static void mon_lore(int oid) { screen_roff(default_join[oid].oid); inkey_ex(); }
 
@@ -1046,17 +1082,20 @@ static void mon_summary(int gid, const int *object_list, int n, int top, int row
 	int i;
 	int kills = 0;
 
-	for(i = 0; i < n; i++) {
+	for (i = 0; i < n; i++)
+	{
 		int oid = default_join[object_list[i+top]].oid;
 		kills += l_list[oid].pkills;
 	}
-	if(gid == 0) {
+	if (gid == 0)
+	{
 		c_prt(TERM_L_BLUE, format("Known Uniques: %d, Slain Uniques: %d.", n, kills),
 					row, col);
 	}
-	else  {
+	else
+	{
 		int tkills = 0;
-		for(i = 0; i < z_info->r_max; i++) 
+		for (i = 0; i < z_info->r_max; i++) 
 			tkills += l_list[i].pkills;
 		c_prt(TERM_L_BLUE, format("Creatures Slain: %d/%d (in group/in total)", kills, tkills), row, col);
 	}
@@ -1078,15 +1117,17 @@ static void do_cmd_knowledge_monsters(void)
 	int i;
 	size_t j;
 
-	for(i = 0; i < z_info->r_max; i++) {
+	for (i = 0; i < z_info->r_max; i++)
+	{
 		monster_race *r_ptr = &r_info[i];
-		if(!cheat_know && !l_list[i].sights) continue;
-		if(!r_ptr->name) continue;
+		if (!cheat_know && !l_list[i].sights) continue;
+		if (!r_ptr->name) continue;
 
-		if(r_ptr->flags1 & RF1_UNIQUE) m_count++;
-		for(j = 1; j < N_ELEMENTS(monster_group)-1; j++) {
+		if (r_ptr->flags1 & RF1_UNIQUE) m_count++;
+		for (j = 1; j < N_ELEMENTS(monster_group)-1; j++)
+		{
 			const char *pat = monster_group[j].chars;
-			if(strchr(pat, r_ptr->d_char)) m_count++;
+			if (strchr(pat, r_ptr->d_char)) m_count++;
 		}
 	}
 
@@ -1094,16 +1135,18 @@ static void do_cmd_knowledge_monsters(void)
 	C_MAKE(monsters, m_count, int);
 
 	m_count = 0;
-	for(i = 0; i < z_info->r_max; i++) {
+	for (i = 0; i < z_info->r_max; i++)
+	{
 		monster_race *r_ptr = &r_info[i];
-		if(!cheat_know && !l_list[i].sights) continue;
-		if(!r_ptr->name) continue;
+		if (!cheat_know && !l_list[i].sights) continue;
+		if (!r_ptr->name) continue;
 	
-		for(j = 0; j < N_ELEMENTS(monster_group)-1; j++) {
+		for (j = 0; j < N_ELEMENTS(monster_group)-1; j++)
+		{
 			const char *pat = monster_group[j].chars;
-			if(j == 0 && !(r_ptr->flags1 & RF1_UNIQUE)) 
+			if (j == 0 && !(r_ptr->flags1 & RF1_UNIQUE)) 
 				continue;
-			else if(j > 0 && !strchr(pat, r_ptr->d_char))
+			else if (j > 0 && !strchr(pat, r_ptr->d_char))
 				continue;
 
 			monsters[m_count] = m_count;
@@ -1167,7 +1210,7 @@ static void desc_art_fake(int a_idx)
 	/* Make fake artifact */
 	make_fake_artifact(o_ptr, a_idx);
 	o_ptr->ident |= IDENT_STORE | IDENT_KNOWN;
-	if(cheat_xtra) o_ptr->ident |= IDENT_MENTAL;
+	if (cheat_xtra) o_ptr->ident |= IDENT_MENTAL;
 
 	/* Hack -- Handle stuff */
 	handle_stuff();
@@ -1189,11 +1232,11 @@ static int a_cmp_tval(const void *a, const void *b)
 	int ta = obj_group_order[a_a->tval];
 	int tb = obj_group_order[a_b->tval];
 	int c = ta - tb;
-	if(c) return c;
+	if (c) return c;
 
 	/* order by */
 	c = a_a->sval - a_b->sval;
-	if(c) return c;
+	if (c) return c;
 	return strcmp(a_name+a_a->name, a_name+a_b->name);
 }
 
@@ -1218,16 +1261,19 @@ static void do_cmd_knowledge_artifacts(void)
 	C_MAKE(artifacts, z_info->a_max, int);
 	
 	/* Collect valid artifacts */
-	for(i = 0; i < z_info->a_max; i++) {
-		if((cheat_xtra || a_info[i].cur_num) && a_info[i].name)
+	for (i = 0; i < z_info->a_max; i++)
+	{
+		if ((cheat_xtra || a_info[i].cur_num) && a_info[i].name)
 			artifacts[a_count++] = i;
 	}
-	for(i = 0; !cheat_xtra && i < z_info->o_max; i++) {
+	for (i = 0; !cheat_xtra && i < z_info->o_max; i++)
+	{
 		int a = o_list[i].name1;
-		if(a && !object_known_p(&o_list[i])) {
-			for(j = 0; j < a_count && a != artifacts[j]; j++);
+		if (a && !object_known_p(&o_list[i]))
+		{
+			for (j = 0; j < a_count && a != artifacts[j]; j++);
 			a_count -= 1;
-			for(; j < a_count; j++) 
+			for (; j < a_count; j++) 
 				artifacts[j] = artifacts[j+1];
 		}
 	}
@@ -1282,7 +1328,8 @@ static void desc_ego_fake(int oid)
 
 	/* Begin recall */
 	Term_gotoxy(0, 1);
-	if(e_ptr->text) {
+	if (e_ptr->text)
+	{
 		int x, y;
 		text_out(e_text + e_ptr->text);
 		Term_locate(&x, &y);
@@ -1294,12 +1341,15 @@ static void desc_ego_fake(int oid)
 	object_info_out_flags = object_flags;
 	object_info_out(&dummy);
 
-	if(e_ptr->xtra) {
+	if (e_ptr->xtra)
+	{
 		text_out(format("It provides one random %s.", xtra[e_ptr->xtra - 1]));
 	}
 
-	for(i = 0, f3 = TR3_PERMA_CURSE; i < 3 ; f3 >>= 1, i++) {
-		if(e_ptr->flags3 & f3) {
+	for (i = 0, f3 = TR3_PERMA_CURSE; i < 3 ; f3 >>= 1, i++)
+	{
+		if (e_ptr->flags3 & f3)
+		{
 			text_out_c(TERM_RED, format("It is %s.", cursed[i]));
 			break;
 		}
@@ -1319,7 +1369,7 @@ static int e_cmp_tval(const void *a, const void *b)
 	ego_item_type *eb = &e_info[default_join[*(int*)b].oid];
 	/*group by */
 	int c = default_join[*(int*)a].gid - default_join[*(int*)b].gid;
-	if(c) return c;
+	if (c) return c;
 	/* order by */
 	return strcmp(e_name + ea->name, e_name + eb->name);
 }
@@ -1341,13 +1391,15 @@ static void do_cmd_knowledge_ego_items(void)
 	/* HACK: currently no more than 3 tvals for one ego type */
 	C_MAKE(egoitems, z_info->e_max*EGO_TVALS_MAX, int);
 	C_MAKE(default_join, z_info->e_max*EGO_TVALS_MAX, join_t);
-	for(i = 0; i < z_info->e_max; i++) {
-		if(e_info[i].everseen || cheat_xtra) {
-			for(j = 0; j < EGO_TVALS_MAX && e_info[i].tval[j]; j++)
+	for (i = 0; i < z_info->e_max; i++)
+	{
+		if (e_info[i].everseen || cheat_xtra)
+		{
+			for (j = 0; j < EGO_TVALS_MAX && e_info[i].tval[j]; j++)
 			{
 				int gid = obj_group_order[e_info[i].tval[j]];
 				/* Ignore duplicate gids */
-				if(j > 0 && gid == default_join[e_count-1].gid)
+				if (j > 0 && gid == default_join[e_count-1].gid)
 					continue;
 				egoitems[e_count] = e_count;
 				default_join[e_count].oid = i;
@@ -1449,34 +1501,35 @@ static int o_cmp_tval(const void *a, const void *b)
 	int ta = obj_group_order[k_a->tval];
 	int tb = obj_group_order[k_b->tval];
 	int c = ta - tb;
-	if(c) return c;
+	if (c) return c;
 	/* order by */
 	c = k_a->aware - k_b->aware;
-	if(c) return -c; /* aware has low sort weight */
-	if(!k_a->aware) {
+	if (c) return -c; /* aware has low sort weight */
+	if (!k_a->aware)
+	{
 		return strcmp(flavor_text + flavor_info[k_a->flavor].text,
 									flavor_text +flavor_info[k_b->flavor].text);
 	}
 	c = k_a->cost - k_b->cost;
-	if(c) return c;
+	if (c) return c;
 	return strcmp(k_name + k_a->name, k_name + k_b->name);
 }
 static int obj2gid(int oid) { return obj_group_order[k_info[oid].tval]; }
 static char *o_xchar(int oid) {
 	object_kind *k_ptr = &k_info[oid];
-	if(!k_ptr->flavor || k_ptr->aware) return &k_ptr->x_char;
+	if (!k_ptr->flavor || k_ptr->aware) return &k_ptr->x_char;
 	else return &flavor_info[k_ptr->flavor].x_char;
 }
 static byte *o_xattr(int oid) {
 	object_kind *k_ptr = &k_info[oid];
-	if(!k_ptr->flavor || k_ptr->aware) return &k_ptr->x_attr;
+	if (!k_ptr->flavor || k_ptr->aware) return &k_ptr->x_attr;
 	else return &flavor_info[k_ptr->flavor].x_attr;
 }
 
 static u16b *o_note(int oid) {
 	object_kind *k_ptr = &k_info[oid];
 	int ind = get_autoinscription_index(oid);
-	if(!k_ptr->flavor || k_ptr->aware) return (u16b*) &inscriptions[ind].inscription_idx;
+	if (!k_ptr->flavor || k_ptr->aware) return (u16b*) &inscriptions[ind].inscription_idx;
 	else return 0;
 }
 
@@ -1494,10 +1547,12 @@ static void do_cmd_knowledge_objects(void)
 
 	C_MAKE(objects, z_info->k_max, int);
 
-	for(i = 0; i < z_info->k_max; i++) {
-		if(k_info[i].everseen || k_info[i].flavor || cheat_xtra) {
+	for (i = 0; i < z_info->k_max; i++)
+	{
+		if (k_info[i].everseen || k_info[i].flavor || cheat_xtra)
+		{
 			int c = obj_group_order[k_info[i].tval];
-			if(c >= 0) objects[o_count++] = i;
+			if (c >= 0) objects[o_count++] = i;
 		}
 	}
 	display_knowledge("known objects", objects, o_count, kind_f, obj_f, "         Sym");
@@ -1540,7 +1595,7 @@ static int f_cmp_fkind(const void *a, const void *b) {
 	feature_type *fb = &f_info[*(int*)b];
 	/* group by */
 	int c = feat_order(*(int*)a) - feat_order(*(int*)b);
-	if(c) return c;
+	if (c) return c;
 	/* order by feature name */
 	return strcmp(f_name + fa->name, f_name + fb->name);
 }
@@ -1565,8 +1620,9 @@ static void do_cmd_knowledge_features(void)
 	int i;
 	C_MAKE(features, z_info->f_max, int);
 
-	for(i = 0; i < z_info->f_max; i++) {
-		if(f_info[i].name == 0) continue;
+	for (i = 0; i < z_info->f_max; i++)
+	{
+		if (f_info[i].name == 0) continue;
 		features[f_count++] = i; /* Currently no filter for features */
 	}
 
@@ -2133,13 +2189,13 @@ static void do_cmd_options_aux(void *vpage, cptr info)
 
 	menu_layout(menu, &SCREEN_REGION);
 
-	for(;;)
+	for (;;)
 	{
 		event_type cx;
 		cx = menu_select(menu, &cursor_pos, EVT_MOVE);
 		if (cx.type == EVT_BACK || ESCAPE == cx.key) break;
-		if(cx.type == EVT_MOVE) cursor_pos = cx.index;
-		if(cx.type == EVT_SELECT && strchr("YN", toupper(cx.key)))
+		if (cx.type == EVT_MOVE) cursor_pos = cx.index;
+		if (cx.type == EVT_SELECT && strchr("YN", toupper(cx.key)))
 			cursor_pos++;
 		cursor_pos = (cursor_pos+n)%n;
 	}
@@ -2520,7 +2576,8 @@ static void dump_pref_file(void (*dump)(FILE*), const char *title)
 	fff = my_fopen(buf, "a");
 
 	/* Failure */
-	if (!fff) {
+	if (!fff)
+	{
 		msg_print("Failed");
 		return;
 	}
@@ -2914,7 +2971,7 @@ void do_cmd_macros(void)
 		prt(tmp, 13, 0);
 		c = menu_select(&macro_menu, &cursor, EVT_CMD);
 
-		if(ESCAPE == c.key) 
+		if (ESCAPE == c.key) 
 			break;
 		evt = macro_actions[cursor].id;
 
@@ -3353,16 +3410,16 @@ int modify_attribute(const char *clazz, int oid, const char *name,
 
 event_action visual_menu_items [] =
 {
-	{'lupf', "Load a user pref file", 0, 0},
-	{'vdmx',  "Dump monster attr/chars", 0, 0},
-	{'vdox',  "Dump object attr/chars", 0, 0},
-	{'vdfx',  "Dump feature attr/chars", 0, 0},
-	{'vdxx',  "Dump flavor attr/chars", 0, 0},
-	{'vemx',  "Change monster attr/chars", 0, 0},
-	{'veox',  "Change object attr/chars", 0, 0},
-	{'vefx',  "Change feature attr/chars", 0, 0},
-	{'vexx',  "Change flavor attr/chars", 0, 0},
-	{'vrst', "Reset visuals", 0, 0},
+	{LOAD_PREF, "Load a user pref file", 0, 0},
+	{DUMP_MON,  "Dump monster attr/chars", 0, 0},
+	{DUMP_OBJ,  "Dump object attr/chars", 0, 0},
+	{DUMP_FEAT,  "Dump feature attr/chars", 0, 0},
+	{DUMP_FLAV,  "Dump flavor attr/chars", 0, 0},
+	{MOD_MON,  "Change monster attr/chars", 0, 0},
+	{MOD_OBJ,  "Change object attr/chars", 0, 0},
+	{MOD_FEAT,  "Change feature attr/chars", 0, 0},
+	{MOD_FLAV,  "Change flavor attr/chars", 0, 0},
+	{RESET_VIS, "Reset visuals", 0, 0},
 };
 
 static menu_type visual_menu;
@@ -3387,14 +3444,14 @@ void do_cmd_visuals(void)
 		int evt = -1;
 		Term_clear();
 		key = menu_select(&visual_menu, &cursor, EVT_CMD);
-		if(key.key == ESCAPE) 
+		if (key.key == ESCAPE) 
 			break;
 
 		assert(cursor >= 0 && cursor < visual_menu.count);
 
 		evt = visual_menu_items[cursor].id;
 
-		if (evt == 'lupf')
+		if (evt == LOAD_PREF)
 		{
 			/* Ask for and load a user pref file */
 			do_cmd_pref_file_hack(15);
@@ -3402,29 +3459,29 @@ void do_cmd_visuals(void)
 
 #ifdef ALLOW_VISUALS
 
-		else if (evt == 'vdmx')
+		else if (evt == DUMP_MON)
 		{
 			dump_pref_file(dump_monsters, "Dump Monster attr/chars");
 		}
 
-		else if (evt == 'vdox')
+		else if (evt == DUMP_OBJ)
 		{
 			dump_pref_file(dump_objects, "Dump Object attr/chars");
 		}
 
-		else if (evt == 'vdfx')
+		else if (evt == DUMP_FEAT)
 		{
 			dump_pref_file(dump_features, "Dump Feature attr/chars");
 		}
 
 		/* Dump flavor attr/chars */
-		else if (evt == 'vdxx')
+		else if (evt == DUMP_FLAV) 
 		{
 			dump_pref_file(dump_flavors, "Dump Flavor attr/chars");
 		}
 
 		/* Modify monster attr/chars */
-		else if (evt == 'vemx')
+		else if (evt == MOD_MON)
 		{
 			static int r = 0;
 
@@ -3449,7 +3506,7 @@ void do_cmd_visuals(void)
 		}
 
 		/* Modify object attr/chars */
-		else if (evt == 'veox')
+		else if (evt == MOD_OBJ)
 		{
 			static int k = 0;
 
@@ -3469,7 +3526,7 @@ void do_cmd_visuals(void)
 		}
 
 		/* Modify feature attr/chars */
-		else if (evt == 'vefx')
+		else if (evt == MOD_FEAT)
 		{
 			static int f = 0;
 
@@ -3487,7 +3544,7 @@ void do_cmd_visuals(void)
 			}
 		}
 		/* Modify flavor attr/chars */
-		else if (evt == 'vexx')
+		else if (evt == MOD_FLAV)
 		{
 			static int f = 0;
 
@@ -3508,7 +3565,7 @@ void do_cmd_visuals(void)
 #endif /* ALLOW_VISUALS */
 
 		/* Reset visuals */
-		else if (evt == 'vrst')
+		else if (evt == RESET_VIS)
 		{
 			/* Reset */
 			reset_visuals(TRUE);
@@ -3525,10 +3582,10 @@ void do_cmd_visuals(void)
 
 static event_action color_events [] =
 {
-	{'lupf', "Load a user pref file", 0, 0},
+	{LOAD_PREF, "Load a user pref file", 0, 0},
 #ifdef ALLOW_COLORS
-	{'vdco', "Dump colors", 0, 0},
-	{'veco', "Modify colors", 0, 0}
+	{DUMP_COL, "Dump colors", 0, 0},
+	{MOD_COL, "Modify colors", 0, 0}
 #endif
 };
 
@@ -3564,7 +3621,7 @@ void do_cmd_colors(void)
 		evt = color_events[cursor].id;
 
 		/* Load a user pref file */
-		if (evt == 'lupf')
+		if (evt == LOAD_PREF)
 		{
 			/* Ask for and load a user pref file */
 			do_cmd_pref_file_hack(8);
@@ -3581,13 +3638,13 @@ void do_cmd_colors(void)
 #ifdef ALLOW_COLORS
 
 		/* Dump colors */
-		else if (evt == 'vdco')
+		else if (evt == DUMP_COL)
 		{
 			dump_pref_file(dump_colors, "Dump Colors");
 		}
 
 		/* Edit colors */
-		else if (evt == 'veco')
+		else if (evt == MOD_COL)
 		{
 			static byte a = 0;
 
@@ -3954,7 +4011,7 @@ void do_cmd_save_screen_html(int mode)
 	FILE_TYPE(FILE_TYPE_TEXT);
 
 	/* Ask for a file */
-	if(mode == 0) my_strcpy(tmp_val, "dump.html", sizeof(tmp_val));
+	if (mode == 0) my_strcpy(tmp_val, "dump.html", sizeof(tmp_val));
 	else my_strcpy(tmp_val, "dump.txt", sizeof(tmp_val));
 	if (!get_string("File: ", tmp_val, sizeof(tmp_val))) return;
 
@@ -3996,7 +4053,8 @@ void do_cmd_save_screen_html(int mode)
 void do_cmd_save_screen(void)
 {
 	msg_print("Dump type [(t)ext; (h)tml; (f)orum embedded html]:");
-	for(;;) {
+	for (;;)
+	{
 		int c = inkey();
 		switch(c) {
 		case ESCAPE:
@@ -4115,7 +4173,7 @@ void init_cmd4_c(void)
 	/* options screen selection menu */
 	menu = &option_menu;
 	WIPE(menu, menu_type);
-	menu_set_id(menu, 'opti');
+	menu_set_id(menu, OPTION_MENU);
 	menu->title = "Options Menu";
 	menu->count = N_ELEMENTS(option_actions);
 	menu->menu_data = option_actions;
@@ -4124,7 +4182,7 @@ void init_cmd4_c(void)
 	/* macro menu */
 	menu = &macro_menu;
 	WIPE(menu, menu_type);
-	menu_set_id(menu, 'macr');
+	menu_set_id(menu, MACRO_MENU);
 	menu->count = N_ELEMENTS(macro_actions);
 	menu->menu_data = macro_actions;
 	menu->selections = lower_case;
@@ -4133,7 +4191,7 @@ void init_cmd4_c(void)
 	/* knowledge menu */
 	menu = &knowledge_menu;
 	WIPE(menu, menu_type);
-	menu_set_id(menu, 'know');
+	menu_set_id(menu, KNOWLEDGE_MENU);
 	menu->title = "Display current knowledge";
 	menu->count = N_ELEMENTS(knowledge_actions),
 	menu->menu_data = knowledge_actions;
@@ -4142,7 +4200,7 @@ void init_cmd4_c(void)
 	/* visuals menu */
 	menu = &visual_menu;
 	WIPE(menu, menu_type);
-	menu_set_id(menu, 'visu');
+	menu_set_id(menu, VISUAL_MENU);
 	menu->title = "Interact with visuals";
 	menu->selections = default_choice;
 	menu->count = N_ELEMENTS(visual_menu_items);
@@ -4152,7 +4210,7 @@ void init_cmd4_c(void)
 	/* colors menu */
 	menu = &color_menu;
 	WIPE(menu, menu_type);
-	menu_set_id(menu, 'colr');
+	menu_set_id(menu, COLOR_MENU);
 	menu->title = "Interact with colors";
 	menu->selections = default_choice;
 	menu->count = N_ELEMENTS(color_events),
@@ -4174,7 +4232,7 @@ void init_cmd4_c(void)
 
 		for (i = 0; 0 != object_text_order[i].tval; i++)
 		{
-			if(object_text_order[i].name) gid = i;
+			if (object_text_order[i].name) gid = i;
 			obj_group_order[object_text_order[i].tval] = gid;
 		}
 	}
