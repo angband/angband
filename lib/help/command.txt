@@ -647,5 +647,11 @@ Load screen dump (left-paren)
 
 Save screen dump (right-paren)
         This command dumps a "snap-shot" of the current screen to the file
-        "dump.txt", including encoded color information.
+        "dump.txt", including encoded color information.  The command has
+		three variants:
+		- text, a simple ascii dump of the screen concatenated with a dump of
+		the color attributes.  It may be viewed in color with the '(' command.
+		- html, suitable for viewing in a web browser.
+		- forum embedded html for vBulletin, suitable for pasting in
+		web forums like http://angband.oook.cz/forums.
 
