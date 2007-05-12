@@ -553,9 +553,9 @@ s16b get_mon_num(int level)
  */
 void display_monlist(void)
 {
-	int i, n;
+	int i, max;
 	int line = 1, x = 0;
-	unsigned total_count = 0;
+	unsigned total_count = 0, disp_count = 0;
 
 	byte attr;
 
@@ -570,9 +570,15 @@ void display_monlist(void)
 
 	/* Clear the term if in a subwindow, set x otherwise */
 	if (Term != angband_term[0])
+	{
 		clear_from(0);
+		max = Term->hgt - 1;
+	}
 	else
+	{
 	    x = 13;
+	    max = Term->hgt - 2;
+	}
 
 	/* Allocate the array */
 	C_MAKE(race_count, z_info->r_max, u16b);
@@ -606,10 +612,13 @@ void display_monlist(void)
 	}
 
 	/* Go over */
-	for (i = 1; i < z_info->r_max; i++)
+	for (i = 1; (i < z_info->r_max) && (line < max); i++)
 	{
 		/* No monsters of this race are visible */
 		if (!race_count[i]) continue;
+
+		/* Note that these have been displayed */
+		disp_count += race_count[i];
 
 		/* Get monster race and name */
 		r_ptr = &r_info[i];
@@ -636,8 +645,18 @@ void display_monlist(void)
 		line++;
 	}
 
-	/* Clear a line for main-term display */
-	prt("", line, x);
+	/* Print "and others" message if we've run out of space */
+	if (disp_count != total_count)
+	{
+		strnfmt(buf, sizeof buf, "  ...and %d others.", total_count - disp_count);
+	    c_prt(TERM_WHITE, buf, line, x);
+	}
+
+	/* Otherwise clear a line at the end, for main-term display */
+	else
+	{
+		prt("", line, x);
+	}
 
 	/* Message */
 	prt(format("You can see %d monster%s:",
