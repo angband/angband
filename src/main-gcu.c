@@ -84,12 +84,6 @@
  */
 #define USE_TPOSIX
 
-/*
- * Hack -- Amiga uses "fake curses" and cannot do any of this stuff
- */
-#if defined(AMIGA)
-# undef USE_TPOSIX
-#endif
 
 /*
  * Hack -- Windows Console mode uses PDCURSES and cannot do any terminal stuff

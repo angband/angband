@@ -797,6 +797,14 @@ void my_dclose(ang_dir *dir);
 
 
 
+/*
+ * Assume UNIX-style directory handling.
+ */
+#if !defined(HAVE_CONFIG_H) && !defined(WINDOWS) && !defined(RISCOS)
+#define HAVE_DIRENT_H
+#endif
+
+
 #ifdef WINDOWS
 
 /* Paranoia */

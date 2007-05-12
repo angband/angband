@@ -12,11 +12,83 @@
 #endif /* HAVE_CONFIG_H */
 
 
+/*** Autodetect platform ***/
+
 /*
- * h-config sets various system-specific defines, relied on later in this file
- * and throughout the game.
+ * Extract the "RISCOS" flag from the compiler
  */
-#include "h-config.h"
+#ifdef __riscos
+# ifndef RISCOS
+#  define RISCOS
+# endif
+#endif
+
+
+/*
+ * Extract the "WINDOWS" flag from the compiler
+ */
+#if defined(_Windows) || defined(__WINDOWS__) || \
+    defined(__WIN32__) || defined(WIN32) || \
+    defined(__WINNT__) || defined(__NT__)
+# ifndef WINDOWS
+#  define WINDOWS
+# endif
+#endif
+
+
+/*
+ * OPTION: set "SET_UID" if the machine is a "multi-user" machine.
+ *
+ * This option is used to verify the use of "uids" and "gids" for
+ * various "Unix" calls, and of "pids" for getting a random seed,
+ * and of the "umask()" call for various reasons, and to guess if
+ * the "kill()" function is available, and for permission to use
+ * functions to extract user names and expand "tildes" in filenames.
+ * It is also used for "locking" and "unlocking" the score file.
+ * Basically, SET_UID should *only* be set for "Unix" machines.
+ */
+#if !defined(MACH_O_CARBON) && !defined(WINDOWS) && \
+    !defined(RISCOS) && !defined(GAMEBOY)
+# define SET_UID
+#endif
+
+
+/*
+ * Every system seems to use its own symbol as a path separator.
+ *
+ * Default to the standard Unix slash, but attempt to change this
+ * for various other systems.  Note that any system that uses the
+ * "period" as a separator (i.e. RISCOS) will have to pretend that
+ * it uses the slash, and do its own mapping of period <-> slash.
+ *
+ * It is most definitely wrong to have such things here.  Platform-specific
+ * code should handle shifting Angband filenames to platform ones. XXX
+ */
+#undef PATH_SEP
+#define PATH_SEP "/"
+
+#ifdef WINDOWS
+# undef PATH_SEP
+# define PATH_SEP "\\"
+#endif
+
+
+/*
+ * Mac support
+ */
+#ifdef MACH_O_CARBON
+
+/* OS X uses filetypes when creating files. */
+# define FILE_TYPE_TEXT 'TEXT'
+# define FILE_TYPE_DATA 'DATA'
+# define FILE_TYPE_SAVE 'SAVE'
+# define FILE_TYPE(X) (_ftype = (X))
+
+#else
+
+# define FILE_TYPE(X) ((void)0)
+
+#endif
 
 
 

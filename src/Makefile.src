@@ -5,7 +5,7 @@
 # across a range of different makefiles, to cut down on maintenance.
 #
 
-HDRS = h-basic.h h-config.h
+HDRS = h-basic.h
 INCS = angband.h config.h defines.h externs.h types.h \
        z-term.h z-rand.h z-type.h z-util.h z-virt.h z-form.h
 
@@ -13,7 +13,7 @@ HEADERS = $(HDRS) $(INCS)
 
 ZFILES = z-file z-form z-rand z-term z-type z-util z-virt
 MAINFILES = main maid-x11 \
-	$(addprefix main-,crb dos gcu gtk ibm ros sdl vcs win x11 xaw)
+	$(addprefix main-,crb gcu gtk ros sdl win x11 xaw)
 
 ANGFILES = \
 	birth \

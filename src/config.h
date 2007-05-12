@@ -376,14 +376,6 @@
 # endif
 #endif
 
-/*
- * Hack -- Special "ancient machine" versions
- */
-#if defined(USE_286) || defined(ANGBAND_LITE_MAC)
-# ifndef ANGBAND_LITE
-#  define ANGBAND_LITE
-# endif
-#endif
 
 /*
  * OPTION: Attempt to minimize the size of the game

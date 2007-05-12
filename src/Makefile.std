@@ -3,15 +3,11 @@
 #
 # This makefile probably requires GNU make.
 #
-# This makefile is intended for use with Unix machines running X11, gtk,
-# (n)curses, termcap, or VT100, Slang, Linux VCS or SVGA library.  You can
-# choose what systems below.
+# This makefile is intended for use with Unix machines running X11, gtk or 
+# (n)curses.  You can choose which you want to compile for below.
 #
 # You can also place your alterations to a file in the src/ directory called 
 # "config", in which case that file will override what is specified here.
-#
-# If you used to use Makefile.gtk or Makefile.lsl, uncomment the appropriate
-# lines below.
 #
 
 #### Things you should, or could, change ####
@@ -43,20 +39,9 @@ SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncurses
 # Support the GTK2 graphical tookit (main-gtk.c)
 SYS_gtk = -DUSE_GTK $(shell pkg-config gtk+-2.0 --libs --cflags)
 
-# Support raw console access (main-lfb.c) -- Linux only
-SYS_lfb = -DUSE_LFB
-
 # Support SDL frontend
 #SYS_sdl = -DUSE_SDL $(shell sdl-config --cflags) $(shell sdl-config --libs) -lSDL_ttf
 
-
-
-
-# Old raw tty protocols that may not work
-# With curses support, all are effectively superceded by USE_GCU
-
-# Support direct termio on 8bit color-depth screen (main-vcs.c)
-#SYS_vcs = -DUSE_VCS
 
 
 
@@ -97,15 +82,13 @@ uname = $(shell uname -s)
 
 # Enable linux-specific modules, if requested.
 ifeq ($(uname),Linux)
-  MODULES += $(SYS_lfb) $(SYS_vcs)
-  LINUXOBJS = main-vcs.o main-lfb.o
   CFLAGS += -DHAVE_MKSTEMP
 endif
 
 
 # Object definitions
 X11OBJS = maid-x11.o main-x11.o main-xaw.o main-gtk.o
-MAINOBJS = main.o main-gcu.o main-sdl.o $(X11OBJS) $(LINUXOBJS)
+MAINOBJS = main.o main-gcu.o main-sdl.o $(X11OBJS)
 OBJS = $(BASEOBJS) $(MAINOBJS)
 
 
