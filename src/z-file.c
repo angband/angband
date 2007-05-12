@@ -759,3 +759,199 @@ errr check_modification_date(int fd, cptr template_file)
 
 #endif /* RISCOS */
 
+/*** Directory scanning code ***/
+
+/*
+ * This code was originally written for the SDL port so it could scan for fonts
+ * without needing a fontlist text file.
+ */
+
+
+/*
+ * Opens a directory handle.
+ * 
+ * `dirname` must be a system-specific pathname to the directory
+ * you want scanned.
+ *
+ * Returns a valid directory handle on success, NULL otherwise.
+ */
+ang_dir *my_dopen(const char *dirname);
+
+
+/*
+ * Reads a directory entry.
+ *
+ * `dir` must point to a directory handle previously returned by my_dopen().
+ * `fname` must be a pointer to a writeable chunk of memory `len` long.
+ *
+ * Returns TRUE on successful reading, FALSE otherwise.
+ * (FALSE generally indicates that there are no more files to be read.)
+ */
+bool my_dread(ang_dir *dir, char *fname, size_t len);
+
+
+/*
+ * Close a directory handle.
+ */
+void my_dclose(ang_dir *dir);
+
+
+
+#ifdef WINDOWS
+
+/* Paranoia */
+# ifdef HAVE_DIRENT_H
+#  undef HAVE_DIRENT_H
+# endif
+
+/* Include Windows header */
+#include <windows.h>
+
+/* System-specific struct */
+struct ang_dir
+{
+	HANDLE h;
+	const char *first_file;
+};
+
+/* Specified above */
+ang_dir *my_dopen(const char *dirname)
+{
+	WIN32_FIND_DATA fd;
+   	ang_dir *dir;
+
+	dir = ralloc(sizeof dir);
+	if (!dir) return NULL;
+
+	/* Try to open it */
+	dir->h = FindFirstFile(format("%s\\*", dirname), &fd);
+
+	/* Abort */
+	if (dir->h == INVALID_HANDLE_VALUE)
+	{
+		FREE(dir);
+		return NULL;
+	}
+
+	/* Remember this one */
+	dir->first_file = string_make(fd.cFileName);
+
+	/* Success */
+	return dir;
+}
+
+/* Specified above */
+bool my_dread(ang_dir *dir, char *fname, size_t len)
+{
+	WIN32_FIND_DATA fd;
+	BOOL ok;
+	bool next = TRUE;
+
+	/* Try the first file */
+	if (dir->first_file)
+	{
+		/* Copy the string across, then free it */
+		my_strcpy(fname, dir->first_file, len);
+		string_free(dir->first_file);
+		dir->first_file = NULL;
+
+		/* Wild success */
+		return TRUE;
+	}
+
+	/* Try the next file */
+	while (next)
+	{
+		ok = FindNextFile(dir->h, &fd);
+		if (!ok) return FALSE;
+
+		/* Skip directories */
+		if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ||
+		    strcmp(fd.cFileName, ".") == 0 ||
+		    strcmp(fd.cFileName, "..") == 0)
+			continue;
+
+		/* Take this one */
+		my_strcpy(fname, fd.cFileName, len);
+		next = FALSE;
+	}
+
+	return TRUE;
+}
+
+void my_dclose(ang_dir *dir)
+{
+	/* Close directory */
+	if (dir->h)
+		FindClose(dir->h);
+
+	/* Free memory */
+	FREE(dir);
+}
+
+#endif /* WINDOWS */
+
+
+#ifdef HAVE_DIRENT_H
+
+/* Include relevant types */
+#include <sys/types.h>
+#include <dirent.h>
+
+/* Define our ang_dir type */
+struct ang_dir
+{
+	DIR *d;
+};
+
+/* Specified above */
+ang_dir *my_dopen(const char *dirname)
+{
+   	ang_dir *dir;
+
+	dir = ralloc(sizeof dir);
+	if (!dir) return NULL;
+
+	/* Try to open the directory */
+	dir->d = opendir(dirname);
+	if (!dir->d)
+	{
+		FREE(dir);
+		return NULL;
+	}
+
+	/* Success */
+	return dir;
+}
+
+/* Specified above */
+bool my_dread(ang_dir *dir, char *fname, size_t len)
+{
+	struct dirent *entry;
+	struct stat filedata;
+
+	assert(dir != NULL);
+
+	/* Try reading another entry */
+	entry = readdir(dir->d);
+	if (!entry) return FALSE;
+
+	/* Copy the filename */
+	/* XXX ignore overflow */
+	my_strcpy(fname, entry->d_name, len);
+
+	return TRUE;
+}
+
+void my_dclose(ang_dir *dir)
+{
+	/* Close directory */
+	if (dir->d)
+		closedir(dir->d);
+
+	/* Free memory */
+	FREE(dir);
+}
+
+#endif /* HAVE_DIRENT_H */
+

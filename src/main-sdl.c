@@ -3445,6 +3445,7 @@ static void init_paths(void)
 	char path[1024];
 	char buf[1024];
 	FILE *fff;
+	ang_dir *dir;
 	
 	/* Build the gfx path */
 	path_build(path, sizeof(path), ANGBAND_DIR_XTRA, "graf");
@@ -3452,8 +3453,6 @@ static void init_paths(void)
 	
 	/* Build the "font" path */
 	path_build(path, sizeof(path), ANGBAND_DIR_XTRA, "font");
-	
-	/* Allocate the path */
 	ANGBAND_DIR_XTRA_FONT = string_make(path);
 	
 	/* Build the filename */
@@ -3463,30 +3462,32 @@ static void init_paths(void)
 	validate_file(path);
 	
 	for (i = 0; i < MAX_FONTS; i++)
-	{
 		FontList[i] = NULL;
-	}
-	
-	/* Load the fonts */
-	path_build(path, sizeof(path), ANGBAND_DIR_XTRA_FONT, "fontlist.txt");
-	validate_file(path);
-	
-	/* Open the file */
-	fff = my_fopen(path, "r");
-	
-	/* Process the file */
-	while (0 == my_fgets(fff, buf, sizeof(buf)))
+
+
+	/** Scan for fonts **/
+
+	/* Open the directory */
+	dir = my_dopen(ANGBAND_DIR_XTRA_FONT);
+	if (!dir) return;
+
+	/* Read every font to the limit */
+	while (my_dread(dir, buf, sizeof buf))
 	{
-		if (!buf[0]) continue;
-		
-		if (buf[0] == '#') continue;
-		
-		FontList[num_fonts++] = string_make(buf);
-		
+		/* Check for at least an extension */
+		signed extension_pos = strlen(buf) - 4;
+		if (extension_pos <= 0) continue;
+
+		/* Check for file extension */
+		if (strcmp((buf + extension_pos), ".fon") == 0)
+			FontList[num_fonts++] = string_make(buf);
+
+		/* Don't grow to long */
 		if (num_fonts == MAX_FONTS) break;
 	}
-	
-	my_fclose(fff);
+
+	/* Done */
+	my_dclose(dir);
 }
 
 

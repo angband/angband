@@ -9,6 +9,7 @@
  */
 
 #include "angband.h"
+#include "z-file.h"
 
 
 #ifdef ALLOW_SPOILERS

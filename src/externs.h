@@ -790,10 +790,6 @@ extern bool confuse_dir(int *dp);
  */
 
 #ifdef SET_UID
-# ifndef HAVE_USLEEP
-/* util.c */
-extern int usleep(unsigned long usecs);
-# endif /* HAVE_USLEEP */
 extern void user_name(char *buf, size_t len, int id);
 #endif /* SET_UID */
 

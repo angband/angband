@@ -66,8 +66,7 @@
  * or for the "Atari" platform which is Unix-like, apparently
  */
 #if !defined(MACH_O_CARBON) && !defined(WINDOWS) && \
-    !defined(MSDOS) && !defined(USE_EMX) && \
-    !defined(AMIGA) && !defined(RISCOS) && !defined(GAMEBOY)
+    !defined(MSDOS) && !defined(RISCOS) && !defined(GAMEBOY)
 # define SET_UID
 #endif
 
@@ -104,30 +103,22 @@
 # define FILE_TYPE_SAVE 'SAVE'
 # define FILE_TYPE(X) (_ftype = (X))
 
-
-/* Mac OS X has usleep(). */
-#ifndef HAVE_USLEEP
-# define HAVE_USLEEP
-#endif
-
 #else
 
 # define FILE_TYPE(X) ((void)0)
 
 #endif
 
+
 /*
- * OPTION: Define "HAVE_USLEEP" only if "usleep()" exists.
- * Note that this is only relevant for "SET_UID" machines.
- *
- * (Set in autoconf.h when HAVE_CONFIG_H -- i.e. when configure is used.)
+ * Assume UNIX-style directory handling.
  */
-#if defined(SET_UID) && !defined(HAVE_CONFIG_H)
-# define HAVE_USLEEP
+#if !defined(HAVE_CONFIG_H) && !defined(WINDOWS) && !defined(RISCOS)
+#define HAVE_DIRENT_H
 #endif
 
 
-
 #endif /* INCLUDED_H_CONFIG_H */
+
 
 

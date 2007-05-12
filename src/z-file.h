@@ -72,4 +72,11 @@ extern errr fd_close(int fd);
 extern errr check_modification_date(int fd, cptr template_file);
 
 
+typedef struct ang_dir ang_dir;
+
+ang_dir *my_dopen(const char *dirname);
+bool my_dread(ang_dir *dir, char *fname, size_t len);
+void my_dclose(ang_dir *dir);
+
+
 #endif

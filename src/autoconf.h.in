@@ -6,6 +6,9 @@
 /* Define to 1 if you have the `can_change_color' function. */
 #undef HAVE_CAN_CHANGE_COLOR
 
+/* Define to 1 if you have the <dirent.h> header file. */
+#undef HAVE_DIRENT_H
+
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 

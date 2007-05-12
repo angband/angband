@@ -12,50 +12,6 @@
 #include "randname.h"
 
 
-#ifdef SET_UID
-
-# ifndef HAVE_USLEEP
-
-/*
- * struct timeval (used below) requires sys/time.h.
- *
- * Unix systems that neither have usleep nor sys/time.h are screwed, since
- * they have no way of delaying.
- */
-#include <sys/time.h>
-
-/*
- * For those systems that don't have "usleep()" but need it.
- *
- * Fake "usleep()" function grabbed from the inl netrek server -cba
- */
-int usleep(unsigned long usecs)
-{
-	struct timeval      Timer;
-
-	/* Paranoia -- No excessive sleeping */
-	if (usecs > 4000000L) quit("Illegal usleep() call");
-
-	/* Wait for it */
-	Timer.tv_sec = (usecs / 1000000L);
-	Timer.tv_usec = (usecs % 1000000L);
-
-	/* Wait for it */
-	if (select(0, NULL, NULL, NULL, &Timer) < 0)
-	{
-		/* Hack -- ignore interrupts */
-		if (errno != EINTR) return -1;
-	}
-
-	/* Success */
-	return 0;
-}
-
-# endif /* HAVE_USLEEP */
-#endif /* SET_UID */
-
-
-
 
 /*
  * Convert a decimal to a single digit hex number

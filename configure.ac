@@ -171,7 +171,7 @@ fi
 dnl Check for headers.
 dnl AC_HEADER_STDBOOL -- not yet
 AC_HEADER_TIME
-AC_CHECK_HEADERS([unistd.h fcntl.h limits.h stdint.h sys/time.h termios.h])
+AC_CHECK_HEADERS([unistd.h fcntl.h dirent.h limits.h stdint.h sys/time.h termios.h])
 
 dnl Check for types.
 AC_TYPE_SIGNAL
@@ -186,7 +186,7 @@ AC_STRUCT_TM
 dnl Check for functions.
 AC_FUNC_STAT
 AC_FUNC_SELECT_ARGTYPES
-AC_CHECK_FUNCS([memmove memset strrchr mkdir strtol usleep mkstemp setegid can_change_color])
+AC_CHECK_FUNCS([memmove memset strrchr mkdir strtol mkstemp setegid can_change_color])
 
 dnl XXX: Work around some autoconf bugs.
 if test "$prefix" = "NONE"; then
