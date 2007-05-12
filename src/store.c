@@ -40,6 +40,12 @@ static unsigned int scr_places_y[LOC_MAX];
 #define STORE_GOLD_CHANGE      0x01
 #define STORE_FRAME_CHANGE     0x02
 
+#define STORE_SHOW_HELP        0x04
+
+
+
+
+
 /* Compound flag for the initial display of a store */
 #define STORE_INIT_CHANGE		(STORE_FRAME_CHANGE | STORE_GOLD_CHANGE)
 
@@ -1561,11 +1567,24 @@ static void store_display_recalc(void)
 	scr_places_y[LOC_HEADER] = 3;
 	scr_places_y[LOC_ITEMS_START] = 4;
 
-	scr_places_y[LOC_ITEMS_END] = hgt - 7;
-	scr_places_y[LOC_MORE] = hgt - 6;
-	scr_places_y[LOC_HELP_CLEAR] = hgt - 5;
-	scr_places_y[LOC_HELP_PROMPT] = hgt - 3;
-	scr_places_y[LOC_AU] = hgt - 5;
+	/* If we are displaying help, make the height smaller */
+	if (store_flags & (STORE_SHOW_HELP))
+		hgt -= 3;
+
+	scr_places_y[LOC_ITEMS_END] = hgt - 4;
+	scr_places_y[LOC_MORE] = hgt - 3;
+	scr_places_y[LOC_AU] = hgt - 2;
+
+
+
+	/* If we're displaying the help, then put it with a line of padding */
+	if (!(store_flags & (STORE_SHOW_HELP)))
+	{
+		hgt -= 2;
+	}
+
+	scr_places_y[LOC_HELP_CLEAR] = hgt - 1;
+	scr_places_y[LOC_HELP_PROMPT] = hgt;
 }
 
 /*
@@ -1734,7 +1753,12 @@ static void store_redraw(void)
 	if (store_flags & (STORE_FRAME_CHANGE))
 	{
 		store_display_frame();
-		store_display_help();
+
+		if (store_flags & STORE_SHOW_HELP)
+			store_display_help();
+		else
+			prt("Press '?' for help.", scr_places_y[LOC_HELP_PROMPT], 1);
+
 		store_flags &= ~(STORE_FRAME_CHANGE);
 	}
 
@@ -2456,6 +2480,19 @@ static bool store_process_command(char cmd, void *db, int oid)
 			break;
 		}
 
+		case '?':
+		{
+			/* Toggle help */
+			if (store_flags & STORE_SHOW_HELP)
+				store_flags &= ~(STORE_SHOW_HELP);
+			else
+				store_flags |= STORE_SHOW_HELP;
+
+			/* Redisplay */
+			store_flags |= STORE_INIT_CHANGE;
+
+			return TRUE;
+		}
 
 		/*** System Commands ***/
 
@@ -2613,6 +2650,7 @@ void do_cmd_store(void)
 		else
 		{
 			/* Display the store */
+			store_display_recalc();
 			store_redraw();
 
 			/* Notice and handle stuff */
