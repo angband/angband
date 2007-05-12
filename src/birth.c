@@ -686,6 +686,7 @@ static void class_aux_hook(int class_idx, void *db, const region *loc)
 static region gender_region = {SEX_COL, TABLE_ROW, 15, -2};
 static region race_region = {RACE_COL, TABLE_ROW, 15, -2};
 static region class_region = {CLASS_COL, TABLE_ROW, 19, -2};
+static region roller_region = {44, TABLE_ROW, 20, -2};
 
 
 /* Event handler implementation */
@@ -762,11 +763,51 @@ static bool class_handler(char cmd, void *db, int oid)
 							(rp_ptr->choice), c_name + c_info[oid].name);
 }
 
+/* ROLLER */
+static void display_roller(menu_type *menu, int oid, bool cursor,
+							int row, int col, int width)
+{
+	byte attr = curs_attrs[CURS_KNOWN][0 != cursor];
+	const char *str;
+
+	if (oid == 0)
+	    str = "Point-based";
+	else if (oid == 1)
+	    str = "Autoroller";
+	else if (oid == 2)
+	    str = "Standard roller";
+
+	c_prt(attr, str, row, col);
+}
+
+
+static byte roller_type = 0;
+#define ROLLER_POINT    0
+#define ROLLER_AUTO     1
+#define ROLLER_STD      2
+
+static bool roller_handler(char cmd, void *db, int oid)
+{
+	if (cmd == '\xff' || cmd == '\r')
+		roller_type = oid;
+	else if (cmd == '*')
+		roller_type = 3;
+	else if(cmd == '=')
+		do_cmd_options();
+	else if(cmd == KTRL('X'))
+		quit(NULL);
+	else
+		return FALSE;
+
+	return TRUE;
+}
+
 
 static const menu_iter menu_defs[] = {
 	{ 0, 0, 0, display_gender, gender_handler },
 	{ 0, 0, 0, display_race, race_handler },
 	{ 0, 0, 0, display_class, class_handler },
+	{ 0, 0, 0, display_roller, roller_handler },
 };
 
 /* Menu display and selector */
@@ -774,15 +815,17 @@ static const menu_iter menu_defs[] = {
 #define ASEX 0
 #define ARACE 1
 #define ACLASS 2
+#define AROLL 3
+
 
 
 static bool choose_character()
 {
 	int i = 0;
 
-	const region *regions[] = { &gender_region, &race_region, &class_region };
-	byte *values[3]; /* { &p_ptr->psex, &p_ptr->prace, &p_ptr->pclass }; */
-	int limits[3]; /* { SEX_MALE +1, z_info->p_max, z_info->c_max }; */
+	const region *regions[] = { &gender_region, &race_region, &class_region, &roller_region };
+	byte *values[4]; /* { &p_ptr->psex, &p_ptr->prace, &p_ptr->pclass }; */
+	int limits[4]; /* { SEX_MALE +1, z_info->p_max, z_info->c_max }; */
 
 	menu_type menu;
 
@@ -790,19 +833,22 @@ static bool choose_character()
 	{
 		"Your 'sex' does not have any significant gameplay effects.",
 		"Your 'race' determines various intrinsic factors and bonuses.",
-		"Your 'class' determines various intrinsic abilities and bonuses"
+		"Your 'class' determines various intrinsic abilities and bonuses",
+		"Your choice of character generation.  Point-based is recommended."
 	};
 	
 	typedef void (*browse_f) (int oid, void *, const region *loc);
-	browse_f browse[] = {NULL, race_aux_hook, class_aux_hook };
+	browse_f browse[] = {NULL, race_aux_hook, class_aux_hook, NULL };
 
 	/* Stupid ISO C array initialization. */
 	values[ASEX] = &p_ptr->psex;
 	values[ARACE] = &p_ptr->prace;
 	values[ACLASS] = &p_ptr->pclass;
+	values[AROLL] = &roller_type;
 	limits[ASEX] = SEX_MALE + 1;
 	limits[ARACE] = z_info->p_max;
 	limits[ACLASS] = z_info->c_max;
+	limits[AROLL] = 3;
 
 	WIPE(&menu, menu);
 	menu.cmd_keys = "?=*\r\n\x18";		 /* ?, ,= *, \n, <ctl-X> */
@@ -895,7 +941,7 @@ static bool player_birth_aux_1(void)
 	/* Reset text_out() indentation */
 	text_out_indent = 0;
 
-	if(!choose_character()) return FALSE;
+	if (!choose_character()) return FALSE;
 
 
 	/* Set adult options from birth options */
@@ -1482,47 +1528,13 @@ static bool player_birth_aux(void)
 	char ch;
 	cptr prompt = "['Q' to suicide, 'S' to start over, or any other key to continue]";
 
-	bool point_based = FALSE, autoroll = FALSE;
 	bool done = FALSE;
 
 	/* Ask questions */
 	if (!player_birth_aux_1()) return (FALSE);
 
-	/* XXX Ask for autoroll preference */
-	/* Turn into a real menu later */
-	Term_clear();
-	while (!done)
-	{
-		prt("To create a character, would you like to:", 1, 1);
-		prt(" a) Use the point-based system", 2, 1);
-		prt(" b) Use the autoroller", 3, 1);
-		prt(" c/*) Use the basic roller", 4, 1);
-
-		prt("", 6, 1);
-		ch = inkey();
-
-		switch (ch)
-		{
-			case 'a':
-			case 'A':
-				done = point_based = TRUE;
-				break;
-
-			case 'b':
-			case 'B':
-				done = autoroll = TRUE;
-				break;
-
-			case 'c':
-			case 'C':
-			case '*':
-				done = TRUE;
-				break;
-		}
-	}
-
 	/* Point-based */
-	if (point_based)
+	if (roller_type == ROLLER_POINT)
 	{
 		/* Point based */
 		if (!player_birth_aux_2()) return (FALSE);
@@ -1532,7 +1544,7 @@ static bool player_birth_aux(void)
 	else
 	{
 		/* Auto-roll */
-		if (!player_birth_aux_3(autoroll)) return (FALSE);
+		if (!player_birth_aux_3(roller_type == ROLLER_AUTO)) return (FALSE);
 	}
 
 	/* Get a name, prepare savefile */
