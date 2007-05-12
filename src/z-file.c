@@ -826,22 +826,22 @@ struct ang_dir
 ang_dir *my_dopen(const char *dirname)
 {
 	WIN32_FIND_DATA fd;
+	HANDLE h;
    	ang_dir *dir;
+	
+	/* Try to open it */
+	h = FindFirstFile(format("%s\\*", dirname), &fd);
 
+	/* Abort */
+	if (h == INVALID_HANDLE_VALUE)
+		return NULL;
+
+	/* Allocate for the handle */
 	dir = ralloc(sizeof dir);
 	if (!dir) return NULL;
 
-	/* Try to open it */
-	dir->h = FindFirstFile(format("%s\\*", dirname), &fd);
-
-	/* Abort */
-	if (dir->h == INVALID_HANDLE_VALUE)
-	{
-		FREE(dir);
-		return NULL;
-	}
-
-	/* Remember this one */
+	/* Remember details */
+	dir->h = h;
 	dir->first_file = string_make(fd.cFileName);
 
 	/* Success */
@@ -916,17 +916,18 @@ struct ang_dir
 ang_dir *my_dopen(const char *dirname)
 {
    	ang_dir *dir;
+	DIR d;
 
+	/* Try to open the directory */
+	d = opendir(dirname);
+	if (!dir->d) return NULL;
+
+	/* Allocate memory for the handle */
 	dir = ralloc(sizeof dir);
 	if (!dir) return NULL;
 
-	/* Try to open the directory */
-	dir->d = opendir(dirname);
-	if (!dir->d)
-	{
-		FREE(dir);
-		return NULL;
-	}
+	/* Set up the handle */
+	dir->d = d;
 
 	/* Success */
 	return dir;

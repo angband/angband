@@ -553,8 +553,11 @@ s16b get_mon_num(int level)
  */
 void display_monlist(void)
 {
-	int idx, n;
-	int line = 0;
+	int i, n;
+	int line = 1, x = 0;
+	unsigned total_count = 0;
+
+	byte attr;
 
 	char *m_name;
 	char buf[80];
@@ -562,98 +565,88 @@ void display_monlist(void)
 	monster_type *m_ptr;
 	monster_race *r_ptr;
 
-	u16b *race_counts;
+	u16b *race_count;
 
+
+	/* Clear the term if in a subwindow, set x otherwise */
+	if (Term != angband_term[0])
+		clear_from(0);
+	else
+	    x = 13;
 
 	/* Allocate the array */
-	C_MAKE(race_counts, z_info->r_max, u16b);
+	C_MAKE(race_count, z_info->r_max, u16b);
 
-	/* Iterate over mon_list */
-	for (idx = 1; idx < mon_max; idx++)
+	/* Scan the monster list */
+	for (i = 1; i < mon_max; i++)
 	{
-		m_ptr = &mon_list[idx];
+		m_ptr = &mon_list[i];
 
 		/* Only visible monsters */
 		if (!m_ptr->ml) continue;
 
-		/* Bump the count for this race */
-		race_counts[m_ptr->r_idx]++;
+		/* Bump the count for this race, and the total count */
+		race_count[m_ptr->r_idx]++;
+		total_count++;
 	}
 
-
-	/* Iterate over mon_list ( again :-/ ) */
-	for (idx = 1; idx < mon_max; idx++)
+	/* Note no visible monsters */
+	if (!total_count)
 	{
-		m_ptr = &mon_list[idx];
+		/* Clear display and print note */
+		c_prt(TERM_SLATE, "You see no monsters.", 0, 0);
+		if (Term == angband_term[0])
+		    Term_addstr(-1, TERM_WHITE, "  (Press any key to continue.)");
 
-		/* Only visible monsters */
-		if (!m_ptr->ml) continue;
+		/* Free up memory */
+		FREE(race_count);
 
-		/* Do each race only once */
-		if (!race_counts[m_ptr->r_idx]) continue;
+		/* Done */
+		return;
+	}
 
-		/* Get monster race */
-		r_ptr = &r_info[m_ptr->r_idx];
+	/* Go over */
+	for (i = 1; i < z_info->r_max; i++)
+	{
+		/* No monsters of this race are visible */
+		if (!race_count[i]) continue;
 
-		/* Get the monster name */
+		/* Get monster race and name */
+		r_ptr = &r_info[i];
 		m_name = r_name + r_ptr->name;
 
-		/* Obtain the length of the description */
-		n = strlen(m_name);
+		/* Display uniques in a special colour */
+		if (r_ptr->flags1 & RF1_UNIQUE)
+			attr = TERM_VIOLET;
+		else
+			attr = TERM_WHITE;
 
-		/* Display the entry itself */
-		Term_putstr(0, line, n, TERM_WHITE, m_name);
+		/* Build the monster name */
+		if (race_count[i] == 1)
+			my_strcpy(buf, m_name, sizeof(buf));
+		else
+			strnfmt(buf, sizeof(buf), "%s (x%d) ", m_name, race_count[i]);
 
-		/* Append the "standard" attr/char info */
-		Term_addstr(-1, TERM_WHITE, " ('");
-		Term_addch(r_ptr->d_attr, r_ptr->d_char);
-		Term_addstr(-1, TERM_WHITE, "')");
-		n += 6;
+		/* Display the pict */
+		Term_putch(x, line, r_ptr->x_attr, r_ptr->x_char);
+		Term_putch(x + 1, line, TERM_WHITE, ' ');
 
-		/* Append the "optional" attr/char info */
-		Term_addstr(-1, TERM_WHITE, "/('");
-
-		Term_addch(r_ptr->x_attr, r_ptr->x_char);
-
-		if (use_bigtile)
-		{
-			if (r_ptr->x_attr & 0x80)
-				Term_addch(255, -1);
-			else
-				Term_addch(0, ' ');
-
-			n++;
-		}
-
-		Term_addstr(-1, TERM_WHITE, "'):");
-		n += 7;
-
-		/* Add race count */
-		sprintf(buf, "%d", race_counts[m_ptr->r_idx]);
-		Term_addch(TERM_WHITE, '[');
-		Term_addstr(strlen(buf), TERM_WHITE, buf);
-		Term_addch(TERM_WHITE, ']');
-		n += strlen(buf) + 2;
-
-		/* Don't do this race again */
-		race_counts[m_ptr->r_idx] = 0;
-
-		/* Erase the rest of the line */
-		Term_erase(n, line, 255);
-
-		/* Bump line counter */
+		/* Print and bump line counter */
+		c_prt(attr, buf, line, x + 2);
 		line++;
 	}
 
-	/* Free the race counters */
-	FREE(race_counts);
+	/* Clear a line for main-term display */
+	prt("", line, x);
 
-	/* Erase the rest of the window */
-	for (idx = line; idx < Term->hgt; idx++)
-	{
-		/* Erase the line */
-		Term_erase(0, idx, 255);
-	}
+	/* Message */
+	prt(format("You can see %d monster%s:",
+		total_count, (total_count > 1 ? "s" : "")), 0, 0);
+	if (Term == angband_term[0])
+	    Term_addstr(-1, TERM_WHITE, "  (Press any key to continue.)");
+
+	/* Free the race counters */
+	FREE(race_count);
 }
 
 

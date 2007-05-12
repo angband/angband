@@ -1189,6 +1189,19 @@ static void do_cmd_xxx_options(void)
 	do_cmd_redraw();
 }
 
+static void do_cmd_monlist(void)
+{
+	/* Save the screen and display the list */
+	screen_save();
+	display_monlist();
+
+	/* Wait */
+	inkey();
+
+	/* Return */
+	screen_load();
+}
+
 /*
  * Useful typedef.
  */
@@ -1296,6 +1309,7 @@ static const struct
 	{ "Help",                  '?', do_cmd_help },
 	{ "Identify symbol",       '/', do_cmd_query_symbol },
 	{ "Character description", 'C', do_cmd_change_name },
+	{ "Display monster list",  '[', do_cmd_monlist },
 
 
 	/*** System Commands ***/
