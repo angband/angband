@@ -45,6 +45,8 @@
 
 #ifdef HAVE_MKSTEMP
 
+#include <unistd.h>
+
 FILE *my_fopen_temp(char *buf, size_t max)
 {
 	int fd;
@@ -853,7 +855,6 @@ bool my_dread(ang_dir *dir, char *fname, size_t len)
 {
 	WIN32_FIND_DATA fd;
 	BOOL ok;
-	bool next = TRUE;
 
 	/* Try the first file */
 	if (dir->first_file)
@@ -868,7 +869,7 @@ bool my_dread(ang_dir *dir, char *fname, size_t len)
 	}
 
 	/* Try the next file */
-	while (next)
+	while (1)
 	{
 		ok = FindNextFile(dir->h, &fd);
 		if (!ok) return FALSE;
@@ -880,9 +881,11 @@ bool my_dread(ang_dir *dir, char *fname, size_t len)
 			continue;
 
 		/* Take this one */
-		my_strcpy(fname, fd.cFileName, len);
-		next = FALSE;
+		break;
 	}
+
+	/* Copy name */
+	my_strcpy(fname, fd.cFileName, len);
 
 	return TRUE;
 }
@@ -916,7 +919,7 @@ struct ang_dir
 ang_dir *my_dopen(const char *dirname)
 {
    	ang_dir *dir;
-	DIR d;
+	DIR *d;
 
 	/* Try to open the directory */
 	d = opendir(dirname);
@@ -942,11 +945,24 @@ bool my_dread(ang_dir *dir, char *fname, size_t len)
 	assert(dir != NULL);
 
 	/* Try reading another entry */
-	entry = readdir(dir->d);
-	if (!entry) return FALSE;
+	while (1)
+	{
+		entry = readdir(dir->d);
+		if (!entry) return FALSE;
+
+		/* Check to see if it exists */
+		if (stat(entry->d_name, &filedata) != 0)
+			continue;
+
+		/* Check to see if it's a directory */
+		if (S_ISDIR(filedata.st_mode))
+			continue;
+
+		/* We've found something worth returning */
+		break;
+	}
 
 	/* Copy the filename */
-	/* XXX ignore overflow */
 	my_strcpy(fname, entry->d_name, len);
 
 	return TRUE;

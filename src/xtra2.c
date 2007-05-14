@@ -9,6 +9,8 @@
  */
 
 #include "angband.h"
+#include "cmds.h"
+
 
 /*** Timed effects ***/
 
@@ -3003,7 +3005,7 @@ bool target_set_interactive(int mode)
 
 				case 'g':
 				{
-					do_cmd_pathfind(y,x);
+					do_cmd_pathfind(y, x);
 					done = TRUE;
 					break;
 				}

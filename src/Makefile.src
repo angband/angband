@@ -18,6 +18,7 @@ MAINFILES = main maid-x11 \
 ANGFILES = \
 	birth \
 	cave \
+	cmd0 \
 	cmd1 \
 	cmd2 \
 	cmd3 \

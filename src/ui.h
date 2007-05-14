@@ -372,5 +372,16 @@ void add_menu_skin(const menu_skin *skin, skin_id id);
 void add_menu_iter(const menu_iter *skin, menu_iter_id id);
 
 
+
+
+
+/*** Misc ***/
+
+void window_make(int origin_x, int origin_y, int end_x, int end_y);
+
+
 #endif /* UI_H */
+
+
+
 

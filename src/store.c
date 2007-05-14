@@ -11,6 +11,7 @@
 
 #include "angband.h"
 #include "script.h"
+#include "cmds.h"
 
 /*** Constants and definitions ***/
 

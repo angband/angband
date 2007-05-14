@@ -13,6 +13,7 @@
 
 #include "init.h"
 #include "script.h"
+#include "cmds.h"
 
 /*
  * This file is used to initialize various variables and arrays for the
@@ -1773,7 +1774,8 @@ void init_angband(void)
 	fd_close(fd);
 
 
-	/* initialize the menus. This must occur before preference files are read */
+	/* Initialize the menus */
+	/* This must occur before preference files are read */
 	init_cmd4_c();
 	
 	/*** Initialize some arrays ***/
@@ -1857,6 +1859,9 @@ void init_angband(void)
 
 	/* Done */
 	note("[Initialization complete]");
+
+	/* Sneakily init command list */
+	cmd_init();
 }
 
 

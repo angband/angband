@@ -2287,6 +2287,9 @@ bool load_player(void)
 				/* A character was loaded */
 				character_loaded = TRUE;
 
+				/* Mark the savefile */
+				p_ptr->noscore |= 0x0002;
+
 				/* Done */
 				return (TRUE);
 			}

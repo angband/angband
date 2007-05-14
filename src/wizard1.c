@@ -10,7 +10,7 @@
 
 #include "angband.h"
 #include "z-file.h"
-
+#include "cmds.h"
 
 #ifdef ALLOW_SPOILERS
 

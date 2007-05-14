@@ -9,7 +9,7 @@
  */
 
 #include "angband.h"
-
+#include "cmds.h"
 #include "script.h"
 
 
