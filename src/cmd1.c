@@ -758,14 +758,14 @@ byte py_pickup(int pickup)
 			count++;
 
 			/* Add a comma if necessary */
-			if ((total > 2) && (count < total)) strcat(buf, ",");
+			if ((total > 2) && (count < total)) my_strcat(buf, ",", sizeof(buf));
 
 			/* Add an "and" if necessary */
-			if ((total >= 2) && (count == total-1)) strcat(buf, " and");
+			if ((total >= 2) && (count == total-1)) my_strcat(buf, " and", sizeof(buf));
 
 			/* Add a space or period if necessary */
-			if (count < total) strcat(buf, " ");
-			else               strcat(buf, ".");
+			if (count < total) my_strcat(buf, " ", sizeof(buf));
+			else               my_strcat(buf, ".", sizeof(buf));
 		}
 
 		/* Determine which sound to play */
@@ -774,7 +774,7 @@ byte py_pickup(int pickup)
 		else                       sound_msg = MSG_MONEY3;
 
 		/* Display the message */
-		message_format(sound_msg, 0, "%s", buf);
+		message(sound_msg, 0, buf);
 
 		/* Add gold to purse */
 		p_ptr->au += total_gold;

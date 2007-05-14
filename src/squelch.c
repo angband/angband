@@ -1,12 +1,20 @@
 /*
  * File: squelch.c
- * Purpose: Automatic item destruction ("squelching")
- * Authors: David T. Blackston, Iain McFall, DarkGod, Jeff Greene, David Vestal,
- *          Pete Mack, Andrew Sidwell.
- * Licence: Angband licence, GPL in parts
+ * Purpose: Automatic item destruction
  *
- * Please read the "COPYING" file in the Angband distribution for licence
- * terms.  If you do not, you have no right to use this file.
+ * Copyright (c) 2007 David T. Blackston, Iain McFall, DarkGod, Jeff Greene,
+ * David Vestal, Pete Mack, Andrew Sidwell.
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
 
@@ -325,9 +333,7 @@ void autoinscribe_pack(void)
  * for doing things over SSH).
  *
  * The following should be considered:
- *  - use the same menu implementation for all the different menus, rather
- *    then reimplmenting it three(?) times -- perhaps steal Zangband code
- *  - making sure we only use "safe" string functions, from z-form.c
+ *  - use the new menu interface
  *  - Make dump_autoins_info() and dump_squelch_info() more similar for
  *    consistency.
  *  - Simplify do_qual_squelch().
