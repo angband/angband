@@ -51,6 +51,23 @@ static const struct module modules[] =
 };
 
 
+#ifdef USE_SOUND
+
+/*
+ * List of sound modules in the order they should be tried.
+ */
+static const struct module sound_modules[] =
+{
+#ifdef SOUND_SDL
+	{ "sdl", "SDL_mixer sound module", init_sound_sdl },
+#endif /* SOUND_SDL */
+
+	{ "dummy", "Dummy module", NULL },
+};
+
+#endif
+
+
 /*
  * A hook for "quit()".
  *
@@ -436,8 +453,8 @@ int main(int argc, char *argv[])
 				/* Dump usage information */
 				puts("Usage: angband [options] [-- subopts]");
 				puts("  -n       Start a new character");
+				puts("  -w       Resurrect dead character");
 				puts("  -f       Request fiddle (verbose) mode");
-				puts("  -w       Request wizard mode");
 				puts("  -v       Request sound mode");
 				puts("  -g       Request graphics mode");
 				puts("  -o       Request original keyset (default)");
@@ -493,6 +510,19 @@ int main(int argc, char *argv[])
 
 	/* Make sure we have a display! */
 	if (!done) quit("Unable to prepare any 'display module'!");
+
+
+#ifdef USE_SOUND
+
+	/* Try the modules in the order specified by sound_modules[] */
+	for (i = 0; i < (int)N_ELEMENTS(sound_modules) - 1; i++)
+	{
+		if (0 == sound_modules[i].init(argc, argv))
+			break;
+	}
+
+#endif
+
 
 	/* Catch nasty signals */
 	signals_init();

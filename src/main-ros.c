@@ -3512,14 +3512,6 @@ static errr Term_xtra_acn(int n, int v)
 			return 0;
 		}
 
-		/* Play a sound :) */
-		case TERM_XTRA_SOUND:
-		{
-			if (enable_sound) play_sound(v);
-
-			return 0;
-		}
-
 /*
  * This is used by ToME2, and presumably will never be picked up by other
  * variants, so it should be safe to #ifdef out like so:
@@ -7077,13 +7069,16 @@ static void check_playit(void)
 
 
 
-
 static void initialise_sound(void)
 {
 	/* Load the configuration file */
 	Hourglass_On();
 	read_sound_config();
 	check_playit();
+
+	/* Set the sound hook */
+	sound_hook = play_sound;
+
 	Hourglass_Off();
 }
 
@@ -7110,10 +7105,8 @@ static void play_sample(char *leafname)
 static void play_sound(int event)
 {
 	/* Paranoia */
-	if (!sound_initd)
-	{
+	if (!sound_initd || !enable_sound)
 		return;
-	}
 
 	/* Paranoia */
 	if (event < 0 || event >= SOUND_MAX)
@@ -8823,5 +8816,6 @@ static void show_debug_info(void)
 #endif /* FE_DEBUG_INFO */
 
 #endif /* __riscos */
+
 
 

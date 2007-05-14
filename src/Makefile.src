@@ -12,8 +12,8 @@ INCS = angband.h config.h defines.h externs.h types.h \
 HEADERS = $(HDRS) $(INCS)
 
 ZFILES = z-file z-form z-rand z-term z-type z-util z-virt
-MAINFILES = main maid-x11 \
-	$(addprefix main-,crb gcu gtk ros sdl win x11 xaw)
+MAINFILES = main maid-x11 main-crb main-gcu main-gtk main-ros main-sdl \
+            main-win main-x11 main-xaw snd-sdl
 
 ANGFILES = \
 	birth \
@@ -56,4 +56,5 @@ ANGFILES = \
 	x-spell \
 	xtra1 \
 	xtra2
+
 

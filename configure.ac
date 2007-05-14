@@ -86,6 +86,13 @@ AC_ARG_ENABLE(sdl,
 	[enable_sdl=$enableval],
 	[enable_sdl=no])
 
+dnl Sound modules
+AC_ARG_ENABLE(sdl_mixer,
+	[  --disable-sdl-mixer                  Disables SDL mixer sound support],
+	[disable_sdl_mixer=$disable_sdl_mixer],
+	[disable_sdl_mixer=no])
+
+
 dnl curses checking
 if test "$enable_curses" = "yes"; then
 	AC_CHECK_LIB(curses  , initscr, found_curses=yes,found_curses=no)
@@ -167,6 +174,20 @@ if test "$enable_gtk" = "yes"; then
 		AC_DEFINE(USE_GTK, 0, [Define to 1 if using the GTK+ 2.x interface and GTK+ 2.x is found.])
 	fi
 fi
+
+dnl SDL mixer checking
+
+if test "$disable_sdl_mixer" != "yes"; then
+	AC_CHECK_LIB(SDL_mixer, Mix_OpenAudio, found_sdl_mixer=yes, found_sdl_mixer=no)
+
+	if test "$found_sdl_mixer" = "yes"; then
+		AC_DEFINE(SDL_SOUND, 1, [Enabled SDL_mixer sound support])
+		LDFLAGS="${LDFLAGS} -lSDL_mixer"
+	else
+		AC_DEFINE(SDL_SOUND, 0, [Disabled SDL_mixer sound support])
+	fi
+fi
+
 
 dnl Check for headers.
 dnl AC_HEADER_STDBOOL -- not yet

@@ -2111,12 +2111,6 @@ static errr Term_xtra_win(int n, int v)
 			return (Term_xtra_win_noise());
 		}
 
-		/* Make a special sound */
-		case TERM_XTRA_SOUND:
-		{
-			return (Term_xtra_win_sound(v));
-		}
-
 		/* Process random events */
 		case TERM_XTRA_BORED:
 		{
@@ -5099,6 +5093,13 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 		quit(NULL);
 	}
 #endif /* USE_SAVER */
+
+#if USE_SOUND
+
+	/* Set the sound hook */
+	sound_hook = Term_xtra_win_sound(v);
+
+#endif /* USE_SOUND */
 
 	/* Did the user double click on a save file? */
 	check_for_save_file(lpCmdLine);

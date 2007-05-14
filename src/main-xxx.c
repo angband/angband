@@ -326,21 +326,6 @@ static errr Term_xtra_xxx(int n, int v)
 			return (0);
 		}
 
-		case TERM_XTRA_SOUND:
-		{
-			/*
-			 * Make a sound XXX XXX XXX
-			 *
-			 * This action should produce sound number "v", where the
-			 * "name" of that sound is "sound_names[v]".  This method
-			 * is still under construction.
-			 *
-			 * This action is optional, and not very important.
-			 */
-
-			return (0);
-		}
-
 		case TERM_XTRA_BORED:
 		{
 			/*
@@ -708,6 +693,21 @@ static bool CheckEvents(bool wait)
 }
 
 
+
+/*
+ * Make a sound.
+ *
+ * This action should produce sound number "v", where the
+ * "name" of that sound is "sound_names[v]".
+ *
+ * This action is optional, and not very important.
+ */
+static void xxx_sound(int v)
+{
+	return;
+}
+
+
 /*
  * Init some stuff
  *
@@ -725,6 +725,14 @@ static void init_stuff(void)
 
 	/* Prepare the filepaths */
 	init_file_paths(path);
+
+
+#ifdef USE_SOUND
+
+	/* Set up sound hook */
+	sound_hook = xxx_sound;
+
+#endif /* USE_SOUND */
 }
 
 

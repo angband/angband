@@ -2425,7 +2425,7 @@ enum
  */
 #define OPT_rogue_like_commands		0
 #define OPT_quick_messages			1
-
+#define OPT_use_sound               2
 #define OPT_query_floor				3
 #define OPT_use_old_target			4
 #define OPT_always_pickup			5
@@ -2527,6 +2527,7 @@ enum
  */
 #define rogue_like_commands		op_ptr->opt[OPT_rogue_like_commands]
 #define quick_messages			op_ptr->opt[OPT_quick_messages]
+#define use_sound				op_ptr->opt[OPT_use_sound]
 #define query_floor				op_ptr->opt[OPT_query_floor]
 #define use_old_target			op_ptr->opt[OPT_use_old_target]
 #define always_pickup			op_ptr->opt[OPT_always_pickup]

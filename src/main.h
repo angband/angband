@@ -13,6 +13,9 @@
 
 #include "angband.h"
 
+extern errr init_sound_sdl(int argc, char **argv);
+
+
 extern errr init_lfb(int argc, char **argv);
 extern errr init_gtk(int argc, char **argv);
 extern errr init_xaw(int argc, char **argv);

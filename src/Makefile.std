@@ -45,6 +45,11 @@ SYS_gtk = -DUSE_GTK $(shell pkg-config gtk+-2.0 --libs --cflags)
 
 
 
+## Support SDL_mixer for sound
+#SOUND_sdl = -DSOUND_SDL $(shell sdl-config --cflags) $(shell sdl-config --libs) -lSDL_mixer
+
+
+
 # Basic compiler stuff
 CC = gcc
 CFLAGS = -Wall -O2 -Wno-unused-parameter
@@ -72,7 +77,7 @@ VERSION = 3.0.8
 
 
 # Extract CFLAGS and LIBS from the system definitions
-MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_xaw) $(SYS_gtk) $(SYS_sdl)
+MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_xaw) $(SYS_gtk) $(SYS_sdl) $(SOUND_sdl)
 CFLAGS += $(patsubst -l%,,$(MODULES)) $(INCLUDES)
 LIBS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
 
@@ -88,7 +93,7 @@ endif
 
 # Object definitions
 X11OBJS = maid-x11.o main-x11.o main-xaw.o main-gtk.o
-MAINOBJS = main.o main-gcu.o main-sdl.o $(X11OBJS)
+MAINOBJS = main.o main-gcu.o main-sdl.o snd-sdl.o $(X11OBJS)
 OBJS = $(BASEOBJS) $(MAINOBJS)
 
 
@@ -169,4 +174,5 @@ $(X11OBJS) : $(INCS) maid-x11.h main.h
 
 # Basic dependencies for main-xxx.c, main.c
 $(MAINOBJS) : main.h $(INCS)
+
 

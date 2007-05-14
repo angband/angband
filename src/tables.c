@@ -1398,7 +1398,7 @@ cptr option_text[OPT_MAX] =
 {
 	"rogue_like_commands",		/* OPT_rogue_like_commands */
 	"quick_messages",			/* OPT_quick_messages */
-	NULL,						/* xxx floor_query_flag */
+	"use_sound",				/* OPT_use_sound */
 	"query_floor",				/* OPT_query_floor */
 	"use_old_target",			/* OPT_use_old_target */
 	"always_pickup",			/* OPT_always_pickup */
@@ -1662,7 +1662,7 @@ cptr option_desc[OPT_MAX] =
 {
 	"Rogue-like commands",						/* OPT_rogue_like_commands */
 	"Activate quick messages",					/* OPT_quick_messages */
-	NULL,										/* xxx floor_query_flag */
+	"Use sound",								/* OPT_use_sound */
 	"Display things before picking them up",	/* OPT_query_floor */
 	"Use old target by default",				/* OPT_use_old_target */
 	"Pick things up by default",				/* OPT_always_pickup */
@@ -1926,7 +1926,7 @@ const bool option_norm[OPT_MAX] =
 {
 	FALSE,		/* OPT_rogue_like_commands */
 	TRUE,		/* OPT_quick_messages */
-	FALSE,		/* xxx floor_query_flag */
+	FALSE,		/* OPT_use_sound */
 	TRUE,		/* OPT_query_floor */
 	FALSE,		/* OPT_use_old_target */
 	FALSE,		/* OPT_always_pickup */
@@ -2191,6 +2191,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 	/*** User Interface ***/
 
 	{
+		OPT_use_sound,
 		OPT_rogue_like_commands,
 		OPT_easy_alter,
 		OPT_depth_in_feet,
@@ -2208,7 +2209,6 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_view_torch_grids,
 		OPT_quick_messages,
 		OPT_hilite_player,
-		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE
 	},

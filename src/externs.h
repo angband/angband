@@ -110,7 +110,6 @@ extern s16b monster_level;
 extern char summon_kin_type;
 extern s32b turn;
 extern s32b old_turn;
-extern bool use_sound;
 extern int use_graphics;
 extern bool use_bigtile;
 extern s16b signal_count;
@@ -247,6 +246,7 @@ extern void (*text_out_hook)(byte a, cptr str);
 extern int text_out_wrap;
 extern int text_out_indent;
 extern bool use_transparency;
+extern void (*sound_hook)(int);
 extern autoinscription *inscriptions;
 extern u16b inscriptions_count;
 

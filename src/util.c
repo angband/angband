@@ -1357,6 +1357,7 @@ void bell(cptr reason)
 }
 
 
+
 /*
  * Hack -- Make a (relevant?) sound
  */
@@ -1365,8 +1366,9 @@ void sound(int val)
 	/* No sound */
 	if (!use_sound) return;
 
-	/* Make a sound (if allowed) */
-	Term_xtra(TERM_XTRA_SOUND, val);
+	/* Make a noise */
+	if (sound_hook)
+		sound_hook(val);
 }
 
 

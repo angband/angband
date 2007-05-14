@@ -82,7 +82,7 @@ s32b turn;				/* Current game turn */
 
 s32b old_turn;			/* Hack -- Level feeling counter */
 
-bool use_sound;			/* The "sound" mode is enabled */
+
 int use_graphics;		/* The "graphics" mode is enabled */
 bool use_bigtile = FALSE;
 
@@ -845,6 +845,12 @@ int text_out_indent = 0;
  * Use transparent tiles
  */
 bool use_transparency = FALSE;
+
+
+/*
+ * Sound hook (for playing FX).
+ */
+void (*sound_hook)(int sound);
 
 
 /*

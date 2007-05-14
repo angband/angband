@@ -285,7 +285,6 @@ struct term
  * The "TERM_XTRA_EVENT" action uses "v" to "wait" for an event
  * The "TERM_XTRA_SHAPE" action uses "v" to "show" the cursor
  * The "TERM_XTRA_FROSH" action uses "v" for the index of the row
- * The "TERM_XTRA_SOUND" action uses "v" for the index of a sound
  * The "TERM_XTRA_ALIVE" action uses "v" to "activate" (or "close")
  * The "TERM_XTRA_LEVEL" action uses "v" to "resume" (or "suspend")
  * The "TERM_XTRA_DELAY" action uses "v" as a "millisecond" value
@@ -299,7 +298,6 @@ struct term
 #define TERM_XTRA_FROSH 5	/* Flush one row (optional) */
 #define TERM_XTRA_FRESH 6	/* Flush all rows (optional) */
 #define TERM_XTRA_NOISE 7	/* Make a noise (optional) */
-#define TERM_XTRA_SOUND 8	/* Make a sound (optional) */
 #define TERM_XTRA_BORED 9	/* Handle stuff when bored (optional) */
 #define TERM_XTRA_REACT 10	/* React to global changes (optional) */
 #define TERM_XTRA_ALIVE 11	/* Change the "hard" level (optional) */
@@ -388,5 +386,6 @@ extern errr term_init(term *t, int w, int h, int k);
 
 
 #endif
+
 
 

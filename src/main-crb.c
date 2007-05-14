@@ -1301,6 +1301,8 @@ static SInt16 sample_refs[MSG_MAX];
  */
 static SInt16 sound_volume = SOUND_VOLUME_MAX;
 
+
+
 /*
  * QuickTime sound, by Ron Anderson
  *
@@ -1408,6 +1410,9 @@ close_file: CloseMovieFile(file_id);
 
 	/* Stop QuickTime */
 	ExitMovies();
+
+	/* Register the sound hook */
+	sound_hook = play_sound;
 }
 
 /*
@@ -1489,11 +1494,11 @@ static void cleanup_sound(void)
  * time code) and provides a sort of cache for sound data.
  *
  * Globals referenced: channel_initialised, channels[], samples[],
- *   sample_refs[].
+ *   sample_refs[], sound_volume.
  * Globals updated: channel_initialised, channels[], sample_refs[].
  */
 
-static void play_sound(int num, SInt16 vol)
+static void play_sound(int num)
 {
 	OSErr err;
 	int prev_num;
@@ -1504,6 +1509,8 @@ static void play_sound(int num, SInt16 vol)
 	static int next_chan;
 	static SInt16 channel_occupants[MAX_CHANNELS];
 	static SndCommand volume_cmd, quiet_cmd;
+
+	SInt16 vol = sound_volume;
 
 	/* Initialise sound channels */
 	if (!channel_initialised)
@@ -1593,6 +1600,8 @@ static void play_sound(int num, SInt16 vol)
 	next_chan++;
 	if (next_chan >= MAX_CHANNELS) next_chan = 0;
 }
+
+
 
 /*** Support for the "z-term.c" package ***/
 
@@ -1710,16 +1719,6 @@ static errr Term_xtra_mac(int n, int v)
 		{
 			/* Make a noise */
 			SysBeep(1);
-
-			/* Success */
-			return (0);
-		}
-
-		/* Make a sound */
-		case TERM_XTRA_SOUND:
-		{
-			/* Play sound */
-			play_sound(v, sound_volume);
 
 			/* Success */
 			return (0);
