@@ -118,6 +118,14 @@ void init_file_paths(const char *path)
 	path_build(buf, sizeof(buf), dirpath, VERSION_NAME);
 	ANGBAND_DIR_USER = string_make(buf);
 
+#else /* PRIVATE_USER_PATH */
+
+        ANGBAND_DIR_USER = string_make(format("%suser", path));
+
+#endif /* PRIVATE_USER_PATH */
+
+
+#ifdef USE_PRIVATE_PATHS
 
 	/* Build the path to the user specific sub-directory */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "scores");
@@ -138,7 +146,6 @@ void init_file_paths(const char *path)
 #else /* USE_PRIVATE_PATHS */
 
 	/* Build pathnames */
-	ANGBAND_DIR_USER = string_make(format("%suser", path));
 	ANGBAND_DIR_APEX = string_make(format("%sapex", path));
 	ANGBAND_DIR_BONE = string_make(format("%sbone", path));
 	ANGBAND_DIR_DATA = string_make(format("%sdata", path));
