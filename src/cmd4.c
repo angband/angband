@@ -1764,7 +1764,7 @@ void do_cmd_change_name(void)
 		/* Change name */
 		if ((ke.key == 'c') || ((ke.key == '\xff') && (ke.mousey == 2) && (ke.mousex < 26)))
 		{
-			get_name();
+			get_name(FALSE);
 		}
 
 		/* File dump */

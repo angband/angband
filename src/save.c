@@ -1093,9 +1093,6 @@ bool save_player(void)
 		/* Drop permissions */
 		safe_setuid_drop();
 
-		/* Hack -- Pretend the character was loaded */
-		character_loaded = TRUE;
-
 		/* Success */
 		result = TRUE;
 	}

@@ -1528,8 +1528,6 @@ static bool player_birth_aux(void)
 	char ch;
 	cptr prompt = "['Q' to suicide, 'S' to start over, or any other key to continue]";
 
-	bool done = FALSE;
-
 	/* Ask questions */
 	if (!player_birth_aux_1()) return (FALSE);
 
@@ -1548,7 +1546,7 @@ static bool player_birth_aux(void)
 	}
 
 	/* Get a name, prepare savefile */
-	get_name();
+	get_name(FALSE);
 
 	/* Display the player */
 	display_player(0);

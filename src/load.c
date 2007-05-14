@@ -2138,13 +2138,13 @@ static errr rd_savefile(void)
  * the player loads a savefile belonging to someone else, and then is not
  * allowed to save his game when he quits.
  *
- * We return "TRUE" if the savefile was usable, and we set the global
+ * We return "TRUE" if the savefile was usable, and we set the
  * flag "character_loaded" if a real, living, character was loaded.
  *
  * Note that we always try to load the "current" savefile, even if
  * there is no such file, so we must check for "empty" savefile names.
  */
-bool load_player(void)
+bool load_player(bool *character_loaded, bool *reusing_savefile)
 {
 	int fd = -1;
 
@@ -2157,10 +2157,10 @@ bool load_player(void)
 
 	/* Paranoia */
 	turn = 0;
-
-	/* Paranoia */
 	p_ptr->is_dead = FALSE;
-
+        
+	*character_loaded = FALSE;
+	*reusing_savefile = FALSE;
 
 	/* Allow empty savefile name */
 	if (!savefile[0]) return (TRUE);
@@ -2285,7 +2285,7 @@ bool load_player(void)
 			if (arg_wizard)
 			{
 				/* A character was loaded */
-				character_loaded = TRUE;
+				*character_loaded = TRUE;
 
 				/* Mark the savefile */
 				p_ptr->noscore |= 0x0002;
@@ -2308,7 +2308,7 @@ bool load_player(void)
 		}
 
 		/* A character was loaded */
-		character_loaded = TRUE;
+		*character_loaded = TRUE;
 
 		/* Still alive */
 		if (p_ptr->chp >= 0)
@@ -2316,6 +2316,8 @@ bool load_player(void)
 			/* Reset cause of death */
 			strcpy(p_ptr->died_from, "(alive and well)");
 		}
+
+		*reusing_savefile = TRUE;
 
 		/* Success */
 		return (TRUE);

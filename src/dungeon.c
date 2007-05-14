@@ -1,3 +1,4 @@
+
 /* File: dungeon.c */
 
 /*
@@ -9,6 +10,7 @@
  */
 
 #include "angband.h"
+#include "z-file.h"
 
 #include "script.h"
 
@@ -1836,6 +1838,9 @@ static void process_some_user_pref_files(void)
  */
 void play_game(bool new_game)
 {
+	bool character_loaded;
+	bool reusing_savefile;
+
 	/* Hack -- Increase "icky" depth */
 	character_icky++;
 
@@ -1859,7 +1864,7 @@ void play_game(bool new_game)
 	(void)Term_set_cursor(FALSE);
 
 	/* Attempt to load */
-	if (!load_player())
+	if (!load_player(&character_loaded, &reusing_savefile))
 	{
 		/* Oops */
 		quit("broken savefile");
@@ -1873,6 +1878,9 @@ void play_game(bool new_game)
 
 		/* The dungeon is not ready */
 		character_dungeon = FALSE;
+
+		/* XXX This is the place to add automatic character
+		   numbering (i.e. Rocky IV, V, etc.) Probably. */
 	}
 
 	/* Hack -- Default base_name */
@@ -1958,6 +1966,22 @@ void play_game(bool new_game)
 	{
 		process_player_name(TRUE);
 	}
+        
+	/* Check if we're overwriting a savefile */
+	while (!reusing_savefile && my_fexists(savefile))
+	{
+		/* Ask for confirmation */
+		bool newname = get_check("A savefile using that name already exists.  Choose a new name? ");
+         
+		if (newname)
+		{
+			get_name(TRUE);
+		}                        
+		else
+		{
+			break;
+		}                        
+	}
 
 	/* Flash a message */
 	prt("Please wait...", 0, 0);
@@ -1975,11 +1999,7 @@ void play_game(bool new_game)
 
 	/* Window stuff */
 	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
-
-	/* Window stuff */
 	p_ptr->window |= (PW_MONSTER | PW_MESSAGE);
-
-	/* Window stuff */
 	window_stuff();
 
 

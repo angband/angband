@@ -98,7 +98,6 @@ extern bool arg_force_original;
 extern bool arg_force_roguelike;
 extern bool character_generated;
 extern bool character_dungeon;
-extern bool character_loaded;
 extern bool character_saved;
 extern s16b character_icky;
 extern s16b character_xtra;
@@ -326,7 +325,7 @@ extern errr file_character(cptr name, bool full);
 extern bool show_file(cptr name, cptr what, int line, int mode);
 extern void do_cmd_help(void);
 extern void process_player_name(bool sf);
-extern void get_name(void);
+extern void get_name(bool sf);
 extern void do_cmd_suicide(void);
 extern void do_cmd_save_game(void);
 extern long total_points(void);
@@ -351,7 +350,7 @@ extern void init_angband(void);
 extern void cleanup_angband(void);
 
 /* load.c */
-extern bool load_player(void);
+extern bool load_player(bool *character_loaded, bool *reusing_savefile);
 
 /* melee1.c */
 extern bool make_attack_normal(int m_idx);

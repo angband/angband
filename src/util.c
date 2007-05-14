@@ -2852,9 +2852,11 @@ bool get_name_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, char
 /*
  * Gets a name for the character, reacting to name changes.
  *
+ * If sf is TRUE, we change the savefile name depending on the character name.
+ *
  * What a horrible name for a global function.  XXX XXX XXX
  */
-void get_name(void)
+void get_name(bool sf)
 {
 	bool res;
 	char tmp[32];
@@ -2880,7 +2882,7 @@ void get_name(void)
 		my_strcpy(op_ptr->full_name, tmp, sizeof(op_ptr->full_name));
 
 		/* Process the player name */
-		process_player_name(FALSE);
+		process_player_name(sf);
 	}
 }
 

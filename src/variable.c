@@ -62,7 +62,6 @@ bool arg_force_roguelike;	/* Command arg -- Request roguelike keyset */
 
 bool character_generated;	/* The character exists */
 bool character_dungeon;		/* The character has a dungeon */
-bool character_loaded;		/* The character was loaded from a savefile */
 bool character_saved;		/* The character was just saved to a savefile */
 
 s16b character_icky;		/* Depth of the game in special mode */
