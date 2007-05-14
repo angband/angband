@@ -746,7 +746,7 @@ void do_cmd_inscribe(void)
 	message_flush();
 
 	/* Start with nothing */
-	strcpy(tmp, "");
+	tmp[0] = '\0';
 
 	/* Use old inscription */
 	if (o_ptr->note)
@@ -1423,17 +1423,17 @@ void do_cmd_query_symbol(void)
 	if (sym == KTRL('A'))
 	{
 		all = TRUE;
-		strcpy(buf, "Full monster list.");
+		my_strcpy(buf, "Full monster list.", sizeof(buf));
 	}
 	else if (sym == KTRL('U'))
 	{
 		all = uniq = TRUE;
-		strcpy(buf, "Unique monster list.");
+		my_strcpy(buf, "Unique monster list.", sizeof(buf));
 	}
 	else if (sym == KTRL('N'))
 	{
 		all = norm = TRUE;
-		strcpy(buf, "Non-unique monster list.");
+		my_strcpy(buf, "Non-unique monster list.", sizeof(buf));
 	}
 	else if (ident_info[i])
 	{

@@ -2899,13 +2899,13 @@ bool target_set_interactive(int mode)
 			/* Allow target */
 			if ((cave_m_idx[y][x] > 0) && target_able(cave_m_idx[y][x]))
 			{
-				strcpy(info, "q,t,p,o,+,-,<dir>");
+				my_strcpy(info, "q,t,p,o,+,-,<dir>", sizeof(info));
 			}
 
 			/* Dis-allow target */
 			else
 			{
-				strcpy(info, "q,p,o,+,-,<dir>");
+				my_strcpy(info, "q,p,o,+,-,<dir>", sizeof(info));
 			}
 
 			/* Adjust panel if needed */
@@ -3067,7 +3067,7 @@ bool target_set_interactive(int mode)
 		else
 		{
 			/* Default prompt */
-			strcpy(info, "q,t,p,m,+,-,<dir>");
+			my_strcpy(info, "q,t,p,m,+,-,<dir>", sizeof(info));
 
 			/* Describe and Prompt (enable "TARGET_LOOK") */
 			query = target_set_interactive_aux(y, x, mode | TARGET_LOOK, info);

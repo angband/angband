@@ -1361,7 +1361,7 @@ static void display_player_stat_info(void)
 		}
 
 		/* Internal "natural" maximum value */
-		cnv_stat(p_ptr->stat_max[i], buf);
+		cnv_stat(p_ptr->stat_max[i], buf, sizeof(buf));
 		c_put_str(TERM_L_GREEN, buf, row+i, col+5);
 
 		/* Race Bonus */
@@ -1377,13 +1377,13 @@ static void display_player_stat_info(void)
 		c_put_str(TERM_L_BLUE, buf, row+i, col+20);
 
 		/* Resulting "modified" maximum value */
-		cnv_stat(p_ptr->stat_top[i], buf);
+		cnv_stat(p_ptr->stat_top[i], buf, sizeof(buf));
 		c_put_str(TERM_L_GREEN, buf, row+i, col+24);
 
 		/* Only display stat_use if not maximal */
 		if (p_ptr->stat_use[i] < p_ptr->stat_top[i])
 		{
-			cnv_stat(p_ptr->stat_use[i], buf);
+			cnv_stat(p_ptr->stat_use[i], buf, sizeof(buf));
 			c_put_str(TERM_YELLOW, buf, row+i, col+31);
 		}
 	}
@@ -2088,16 +2088,16 @@ bool show_file(cptr name, cptr what, int line, int mode)
 	cptr tag = NULL;
 
 	/* Hold a string to find */
-	char finder[80];
+	char finder[80] = "";
 
 	/* Hold a string to show */
-	char shower[80];
+	char shower[80] = "";
 
 	/* Filename */
 	char filename[1024];
 
 	/* Describe this thing */
-	char caption[128];
+	char caption[128] = "";
 
 	/* Path buffer */
 	char path[1024];
@@ -2114,14 +2114,6 @@ bool show_file(cptr name, cptr what, int line, int mode)
 	int wid, hgt;
 
 
-	/* Wipe finder */
-	strcpy(finder, "");
-
-	/* Wipe shower */
-	strcpy(shower, "");
-
-	/* Wipe caption */
-	strcpy(caption, "");
 
 	/* Wipe the hooks */
 	for (i = 0; i < 26; i++) hook[i][0] = '\0';
@@ -2432,24 +2424,23 @@ bool show_file(cptr name, cptr what, int line, int mode)
 		/* Go to a specific line */
 		if (ch == '#')
 		{
-			char tmp[80];
+			char tmp[80] = "0";
+
 			prt("Goto Line: ", hgt - 1, 0);
-			strcpy(tmp, "0");
 			if (askfor_aux(tmp, sizeof(tmp), NULL))
-			{
 				line = atoi(tmp);
-			}
 		}
 
 		/* Go to a specific file */
 		if (ch == '%')
 		{
-			char ftmp[80];
+			char ftmp[80] = "help.hlp";
+
 			prt("Goto File: ", hgt - 1, 0);
-			strcpy(ftmp, "help.hlp");
 			if (askfor_aux(ftmp, sizeof(ftmp), NULL))
 			{
-				if (!show_file(ftmp, NULL, 0, mode)) ch = ESCAPE;
+				if (!show_file(ftmp, NULL, 0, mode))
+					ch = ESCAPE;
 			}
 		}
 
@@ -2590,7 +2581,7 @@ void process_player_name(bool sf)
 	/* Require a "base" name */
 	if (!op_ptr->base_name[0])
 	{
-		strcpy(op_ptr->base_name, "PLAYER");
+		my_strcpy(op_ptr->base_name, "PLAYER", sizeof(op_ptr->base_name));
 	}
 
 
@@ -2654,7 +2645,7 @@ void do_cmd_suicide(void)
 	p_ptr->leaving = TRUE;
 
 	/* Cause of death */
-	strcpy(p_ptr->died_from, "Quitting");
+	my_strcpy(p_ptr->died_from, "Quitting", sizeof(p_ptr->died_from));
 }
 
 
@@ -2680,7 +2671,7 @@ void do_cmd_save_game(void)
 	Term_fresh();
 
 	/* The player is not dead */
-	strcpy(p_ptr->died_from, "(saved)");
+	my_strcpy(p_ptr->died_from, "(saved)", sizeof(p_ptr->died_from));
 
 	/* Forbid suspend */
 	signals_ignore_tstp();
@@ -2704,7 +2695,7 @@ void do_cmd_save_game(void)
 	Term_fresh();
 
 	/* Note that the player is not dead */
-	strcpy(p_ptr->died_from, "(alive and well)");
+	my_strcpy(p_ptr->died_from, "(alive and well)", sizeof(p_ptr->died_from));
 }
 
 
@@ -2752,7 +2743,7 @@ static void make_bones(void)
 {
 	FILE *fp;
 
-	char str[1024];
+‰	char str[1024];
 
 
 	/* Ignore wizards and borgs */
@@ -2764,7 +2755,7 @@ static void make_bones(void)
 			char tmp[128];
 
 			/* XXX XXX XXX "Bones" name */
-			sprintf(tmp, "bone.%03d", p_ptr->depth);
+			strnfmt(tmp, sizeof(tmp), "bone.%03d", p_ptr->depth);
 
 			/* Build the filename */
 			path_build(str, sizeof(str), ANGBAND_DIR_BONE, tmp);
@@ -3626,34 +3617,34 @@ static errr predict_score(void)
 	strnfmt(the_score.what, sizeof(the_score.what), "%s", VERSION_STRING);
 
 	/* Calculate and save the points */
-	sprintf(the_score.pts, "%9lu", (long)total_points());
+	strnfmt(the_score.pts, sizeof(the_score.pts), "%9lu", (long)total_points());
 
 	/* Save the current gold */
-	sprintf(the_score.gold, "%9lu", (long)p_ptr->au);
+	strnfmt(the_score.gold, sizeof(the_score.gold), "%9lu", (long)p_ptr->au);
 
 	/* Save the current turn */
-	sprintf(the_score.turns, "%9lu", (long)turn);
+	strnfmt(the_score.turns, sizeof(the_score.turns), "%9lu", (long)turn);
 
 	/* Hack -- no time needed */
-	strcpy(the_score.day, "TODAY");
+	my_strcpy(the_score.day, "TODAY", sizeof(the_score.day));
 
 	/* Save the player name (15 chars) */
-	sprintf(the_score.who, "%-.15s", op_ptr->full_name);
+	strnfmt(the_score.who, sizeof(the_score.who), "%-.15s", op_ptr->full_name);
 
 	/* Save the player info XXX XXX XXX */
-	sprintf(the_score.uid, "%7u", player_uid);
-	sprintf(the_score.sex, "%c", (p_ptr->psex ? 'm' : 'f'));
-	sprintf(the_score.p_r, "%2d", p_ptr->prace);
-	sprintf(the_score.p_c, "%2d", p_ptr->pclass);
+	strnfmt(the_score.uid, sizeof(the_score.uid), "%7u", player_uid);
+	strnfmt(the_score.sex, sizeof(the_score.sex), "%c", (p_ptr->psex ? 'm' : 'f'));
+	strnfmt(the_score.p_r, sizeof(the_score.p_r), "%2d", p_ptr->prace);
+	strnfmt(the_score.p_c, sizeof(the_score.p_c), "%2d", p_ptr->pclass);
 
 	/* Save the level and such */
-	sprintf(the_score.cur_lev, "%3d", p_ptr->lev);
-	sprintf(the_score.cur_dun, "%3d", p_ptr->depth);
-	sprintf(the_score.max_lev, "%3d", p_ptr->max_lev);
-	sprintf(the_score.max_dun, "%3d", p_ptr->max_depth);
+	strnfmt(the_score.cur_lev, sizeof(the_score.cur_lev), "%3d", p_ptr->lev);
+	strnfmt(the_score.cur_dun, sizeof(the_score.cur_dun), "%3d", p_ptr->depth);
+	strnfmt(the_score.max_lev, sizeof(the_score.max_lev), "%3d", p_ptr->max_lev);
+	strnfmt(the_score.max_dun, sizeof(the_score.max_dun), "%3d", p_ptr->max_depth);
 
-	/* Hack -- no cause of death */
-	strcpy(the_score.how, "nobody (yet!)");
+	/* No cause of death */
+	my_strcpy(the_score.how, "nobody (yet!)", sizeof(the_score.how));
 
 
 	/* See where the entry would be placed */
@@ -3735,7 +3726,7 @@ static void kingly(void)
 	p_ptr->depth = 0;
 
 	/* Fake death */
-	strcpy(p_ptr->died_from, "Ripe Old Age");
+	my_strcpy(p_ptr->died_from, "Ripe Old Age", sizeof(p_ptr->died_from));
 
 	/* Restore the experience */
 	p_ptr->exp = p_ptr->max_exp;
@@ -4066,7 +4057,7 @@ void exit_game_panic(void)
 	signals_ignore_tstp();
 
 	/* Indicate panic save */
-	strcpy(p_ptr->died_from, "(panic save)");
+	my_strcpy(p_ptr->died_from, "(panic save)", sizeof(p_ptr->died_from));
 
 	/* Panic save, or get worried */
 	if (!save_player()) quit("panic save failed!");
@@ -4176,7 +4167,7 @@ static void handle_signal_simple(int sig)
 	if (p_ptr->is_dead)
 	{
 		/* Mark the savefile */
-		strcpy(p_ptr->died_from, "Abortion");
+		my_strcpy(p_ptr->died_from, "Abortion", sizeof(p_ptr->died_from));
 
 		/* HACK - Skip the tombscreen if it is already displayed */
 		if (score_idx == -1)
@@ -4193,7 +4184,7 @@ static void handle_signal_simple(int sig)
 	else if (signal_count >= 5)
 	{
 		/* Cause of "death" */
-		strcpy(p_ptr->died_from, "Interrupting");
+		my_strcpy(p_ptr->died_from, "Interrupting", sizeof(p_ptr->died_from));
 
 		/* Commit suicide */
 		p_ptr->is_dead = TRUE;
@@ -4272,7 +4263,7 @@ static void handle_signal_abort(int sig)
 	p_ptr->panic_save = 1;
 
 	/* Panic save */
-	strcpy(p_ptr->died_from, "(panic save)");
+	my_strcpy(p_ptr->died_from, "(panic save)", sizeof(p_ptr->died_from));
 
 	/* Forbid suspend */
 	signals_ignore_tstp();

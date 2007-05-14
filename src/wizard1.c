@@ -115,7 +115,10 @@ static const grouper group_item[] =
 /*
  * Describe the kind
  */
-static void kind_info(char *buf, char *dam, char *wgt, int *lev, s32b *val, int k)
+static void kind_info(char *buf, size_t buf_len,
+                      char *dam, size_t dam_len,
+                      char *wgt, size_t wgt_len,
+                      int *lev, s32b *val, int k)
 {
 	object_kind *k_ptr;
 
@@ -149,16 +152,21 @@ static void kind_info(char *buf, char *dam, char *wgt, int *lev, s32b *val, int 
 	(*val) = object_value(i_ptr);
 
 
-	/* Hack */
-	if (!buf || !dam || !wgt) return;
-
 
 	/* Description (too brief) */
-	object_desc_spoil(buf, 80, i_ptr, FALSE, 0);
+	if (buf)
+		object_desc_spoil(buf, buf_len, i_ptr, FALSE, 0);
 
+	/* Weight */
+	if (wgt)
+		strnfmt(wgt, wgt_len, "%3d.%d", i_ptr->weight / 10, i_ptr->weight % 10);
+
+	/* Hack */
+	if (!dam)
+		return;
 
 	/* Misc info */
-	strcpy(dam, "");
+	dam[0] = '\0';
 
 	/* Damage */
 	switch (i_ptr->tval)
@@ -174,7 +182,7 @@ static void kind_info(char *buf, char *dam, char *wgt, int *lev, s32b *val, int 
 		case TV_BOLT:
 		case TV_ARROW:
 		{
-			sprintf(dam, "%dd%d", i_ptr->dd, i_ptr->ds);
+			strnfmt(dam, dam_len, "%dd%d", i_ptr->dd, i_ptr->ds);
 			break;
 		}
 
@@ -184,7 +192,7 @@ static void kind_info(char *buf, char *dam, char *wgt, int *lev, s32b *val, int 
 		case TV_SWORD:
 		case TV_DIGGING:
 		{
-			sprintf(dam, "%dd%d", i_ptr->dd, i_ptr->ds);
+			strnfmt(dam, dam_len, "%dd%d", i_ptr->dd, i_ptr->ds);
 			break;
 		}
 
@@ -199,14 +207,10 @@ static void kind_info(char *buf, char *dam, char *wgt, int *lev, s32b *val, int 
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
 		{
-			sprintf(dam, "%d", i_ptr->ac);
+			strnfmt(dam, dam_len, "%d", i_ptr->ac);
 			break;
 		}
 	}
-
-
-	/* Weight */
-	sprintf(wgt, "%3d.%d", i_ptr->weight / 10, i_ptr->weight % 10);
 }
 
 
@@ -271,8 +275,8 @@ static void spoil_obj_desc(cptr fname)
 					s32b t1;
 					s32b t2;
 
-					kind_info(NULL, NULL, NULL, &e1, &t1, who[i1]);
-					kind_info(NULL, NULL, NULL, &e2, &t2, who[i2]);
+					kind_info(NULL, 0, NULL, 0, NULL, 0, &e1, &t1, who[i1]);
+					kind_info(NULL, 0, NULL, 0, NULL, 0, &e2, &t2, who[i2]);
 
 					if ((t1 > t2) || ((t1 == t2) && (e1 > e2)))
 					{
@@ -290,7 +294,7 @@ static void spoil_obj_desc(cptr fname)
 				s32b v;
 
 				/* Describe the kind */
-				kind_info(buf, dam, wgt, &e, &v, who[s]);
+				kind_info(buf, sizeof(buf), dam, sizeof(dam), wgt, sizeof(wgt), &e, &v, who[s]);
 
 				/* Dump it */
 				fprintf(fff, "  %-51s%7s%6s%4d%9ld\n",
@@ -613,37 +617,29 @@ static void spoil_mon_desc(cptr fname)
 
 
 		/* Level */
-		sprintf(lev, "%d", r_ptr->level);
+		strnfmt(lev, sizeof(lev), "%d", r_ptr->level);
 
 		/* Rarity */
-		sprintf(rar, "%d", r_ptr->rarity);
+		strnfmt(rar, sizeof(rar), "%d", r_ptr->rarity);
 
 		/* Speed */
 		if (r_ptr->speed >= 110)
-		{
-			sprintf(spd, "+%d", (r_ptr->speed - 110));
-		}
+			strnfmt(spd, sizeof(spd), "+%d", (r_ptr->speed - 110));
 		else
-		{
-			sprintf(spd, "-%d", (110 - r_ptr->speed));
-		}
+			strnfmt(spd, sizeof(spd), "-%d", (110 - r_ptr->speed));
 
 		/* Armor Class */
-		sprintf(ac, "%d", r_ptr->ac);
+		strnfmt(ac, sizeof(ac), "%d", r_ptr->ac);
 
 		/* Hitpoints */
 		if ((r_ptr->flags1 & (RF1_FORCE_MAXHP)) || (r_ptr->hside == 1))
-		{
-			sprintf(hp, "%d", r_ptr->hdice * r_ptr->hside);
-		}
+			strnfmt(hp, sizeof(hp), "%d", r_ptr->hdice * r_ptr->hside);
 		else
-		{
-			sprintf(hp, "%dd%d", r_ptr->hdice, r_ptr->hside);
-		}
+			strnfmt(hp, sizeof(hp), "%dd%d", r_ptr->hdice, r_ptr->hside);
 
 
 		/* Experience */
-		sprintf(exp, "%ld", (long)(r_ptr->mexp));
+		strnfmt(exp, sizeof(exp), "%ld", (long)(r_ptr->mexp));
 
 		/* Hack -- use visual instead */
 		strnfmt(exp, sizeof(exp), "%s '%c'", attr_to_text(r_ptr->d_attr), r_ptr->d_char);
@@ -766,54 +762,53 @@ static void spoil_mon_info(cptr fname)
 		text_out(attr_to_text(r_ptr->d_attr));
 
 		/* Symbol --(-- */
-		sprintf(buf, " '%c')\n", r_ptr->d_char);
+		strnfmt(buf, sizeof(buf), " '%c')\n", r_ptr->d_char);
 		text_out(buf);
 
 
 		/* Indent */
-		sprintf(buf, "=== ");
-		text_out(buf);
+		text_out("=== ");
 
 		/* Number */
-		sprintf(buf, "Num:%d  ", r_idx);
+		strnfmt(buf, sizeof(buf), "Num:%d  ", r_idx);
 		text_out(buf);
 
 		/* Level */
-		sprintf(buf, "Lev:%d  ", r_ptr->level);
+		strnfmt(buf, sizeof(buf), "Lev:%d  ", r_ptr->level);
 		text_out(buf);
 
 		/* Rarity */
-		sprintf(buf, "Rar:%d  ", r_ptr->rarity);
+		strnfmt(buf, sizeof(buf), "Rar:%d  ", r_ptr->rarity);
 		text_out(buf);
 
 		/* Speed */
 		if (r_ptr->speed >= 110)
 		{
-			sprintf(buf, "Spd:+%d  ", (r_ptr->speed - 110));
+			strnfmt(buf, sizeof(buf), "Spd:+%d  ", (r_ptr->speed - 110));
 		}
 		else
 		{
-			sprintf(buf, "Spd:-%d  ", (110 - r_ptr->speed));
+			strnfmt(buf, sizeof(buf), "Spd:-%d  ", (110 - r_ptr->speed));
 		}
 		text_out(buf);
 
 		/* Hitpoints */
 		if ((r_ptr->flags1 & RF1_FORCE_MAXHP) || (r_ptr->hside == 1))
 		{
-			sprintf(buf, "Hp:%d  ", r_ptr->hdice * r_ptr->hside);
+			strnfmt(buf, sizeof(buf), "Hp:%d  ", r_ptr->hdice * r_ptr->hside);
 		}
 		else
 		{
-			sprintf(buf, "Hp:%dd%d  ", r_ptr->hdice, r_ptr->hside);
+			strnfmt(buf, sizeof(buf), "Hp:%dd%d  ", r_ptr->hdice, r_ptr->hside);
 		}
 		text_out(buf);
 
 		/* Armor Class */
-		sprintf(buf, "Ac:%d  ", r_ptr->ac);
+		strnfmt(buf, sizeof(buf), "Ac:%d  ", r_ptr->ac);
 		text_out(buf);
 
 		/* Experience */
-		sprintf(buf, "Exp:%ld\n", (long)(r_ptr->mexp));
+		strnfmt(buf, sizeof(buf), "Exp:%ld\n", (long)(r_ptr->mexp));
 		text_out(buf);
 
 		/* Describe */

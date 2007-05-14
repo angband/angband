@@ -876,9 +876,11 @@ static void debug(const char *fmt, ...)
 {
 	va_list ap;
 	char buffer[260];
+
 	va_start(ap, fmt);
-	vsprintf(buffer, fmt, ap);
+	vstrnfmt(buffer, sizeof(buffer), fmt, ap);
 	va_end(ap);
+
 	plog(buffer);
 }
 
@@ -959,7 +961,7 @@ static void f2printf(FILE *a, FILE *b, const char *fmt, ...)
 	va_list ap;
 	char buffer[2048];
 	va_start(ap, fmt);
-	vsprintf(buffer, fmt, ap);
+	vstrnfmt(buffer, sizeof(buffer), fmt, ap);
 	va_end(ap);
 
 	if (a) fprintf(a, buffer);
@@ -993,7 +995,7 @@ static void final_acn(void)
 	if (flush_scrap && *scrap_path)
 	{
 		char tmp[512];
-		strcpy(tmp, scrap_path);
+		my_strcpy(tmp, scrap_path, sizeof(tmp));
 		tmp[strlen(tmp) - 1] = 0;	/* Remove trailing dot */
 
 		/* ie. "*Wipe <scrapdir> r~c~v~f" */
@@ -1213,7 +1215,7 @@ errr fd_kill(cptr file)
 errr fd_move(cptr old, cptr new)
 {
 	char new_[260];
-	strcpy(new_, riscosify_name(new));
+	my_strcpy(new_, riscosify_name(new), sizeof(new_));
 	return rename(riscosify_name(old), new_) ? 1 : 0;
 }
 
@@ -1659,10 +1661,10 @@ static ZapFont *load_font(char *name, ZapFont *f)
 	/* Get the path setting */
 	font_path = getenv(path);
 	if (!font_path || !*font_path)
-		strcpy(path, "null:$.");
+		my_strcpy(path, "null:$.", sizeof(path));
 	else
 	{
-		strcpy(path, font_path);
+		my_strcpy(path, font_path, sizeof(path));
 		for (t = path; *t > ' '; t++)
 			;
 		if (t[-1] != '.' && t[-1] != ':')
@@ -2153,10 +2155,10 @@ static BOOL SaveHnd_FileSave(char *filename, void *ref)
 	}
 
 	/* Preserve the old path, in case something goes wrong... */
-	strcpy(old_savefile, savefile);
+	my_strcpy(old_savefile, savefile, sizeof(old_savefile));
 
 	/* Set the new path */
-	strcpy(savefile, unixify_name(filename));
+	my_strcpy(savefile, unixify_name(filename), sizeof(savefile));
 
 	/* Try a save (if sensible) */
 	if (game_in_progress && character_generated)
@@ -2166,14 +2168,14 @@ static BOOL SaveHnd_FileSave(char *filename, void *ref)
 			if (!save_player(SAVE_PLAYER_PARAM))
 			{
 				Msgs_Report(0, "err.save", filename);
-				strcpy(savefile, old_savefile);
+				my_strcpy(savefile, old_savefile, sizeof(savefile));
 				return FALSE;		/* => failure */
 			}
 		}
 		else
 		{
 			Msgs_Report(0, "err.nosave");
-			strcpy(savefile, old_savefile);
+			my_strcpy(savefile, old_savefile, sizeof(savefile));
 			return TRUE; /* Failed really, but not unexpectedly */
 		}
 	}
@@ -2768,7 +2770,7 @@ static void make_font_menu(void)
 		t = "";
 	}
 
-	strcpy(buffer, t);
+	my_strcpy(buffer, t, sizeof(buffer));
 
 	/*
 	   | Count how many paths there are, build an array of pointers to them
@@ -2849,7 +2851,7 @@ static void make_font_menu(void)
 		}
 
 		/* Fudge so that the fontpath can be a path, not just a dir. */
-		strcpy(menu_buffer, t);
+		my_strcpy(menu_buffer, t, sizeof(menu_buffer));
 		for (t = menu_buffer; *t > ' '; t++)
 			;
 		if (t[-1] == '.')
@@ -3082,7 +3084,8 @@ static void set_font_menu_ticks(menu_ptr fm, char *fn, const char *prefix)
 	int pl;	/* prefix string length */
 	menu_item *mi = (menu_item *) (fm + 1);
 
-	strcpy(buffer, prefix);
+	my_strcpy(buffer, prefix, sizeof(buffer));
+
 	pl = strlen(buffer);
 	b_leaf = buffer + pl;
 
@@ -3100,7 +3103,7 @@ static void set_font_menu_ticks(menu_ptr fm, char *fn, const char *prefix)
 		else
 		{
 			/* Yes - must be a partial match (with a dot on :) */
-			strcat(b_leaf, ".");
+			my_strcat(b_leaf, ".", sizeof(buffer) - pl);
 			mi->menuflags.data.ticked =
 				!strncmp(buffer, fn, pl + strlen(b_leaf));
 			if (mi->menuflags.data.ticked)
@@ -7157,7 +7160,7 @@ static void display_line(int x, int y, int c, const char *fmt, ...)
 	char buffer[260];
 
 	va_start(ap, fmt);
-	vsprintf(buffer, fmt, ap);
+	vstrnfmt(buffer, sizeof(buffer), fmt, ap);
 	Term_putstr(x, y, -1, c, buffer);
 	va_end(ap);
 }
@@ -8630,7 +8633,7 @@ static void debug_printf(char *fmt, ...)
 	char *p = buffer;
 
 	va_start(ap, fmt);
-	vsprintf(buffer, fmt, ap);
+	vstrnfmt(buffer, sizeof(buffer), fmt, ap);
 	va_end(ap);
 
 	/* Now split the string into display lines */

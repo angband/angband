@@ -2274,10 +2274,7 @@ void do_cmd_rest(void)
 	{
 		cptr p = "Rest (0-9999, '*' for HP/SP, '&' as needed): ";
 
-		char out_val[5];
-
-		/* Default */
-		strcpy(out_val, "&");
+		char out_val[5] = "& ";
 
 		/* Ask for duration */
 		if (!get_string(p, out_val, sizeof(out_val))) return;

@@ -806,7 +806,7 @@ static void term_data_check_font(term_data *td)
 
 	td->font_wid = (info->font_wid +.999);
 	td->font_hgt = info->ascent + info->descent;
-	strncpy(td->font_name, info->psname, sizeof(td->font_name));
+	my_strcpy(td->font_name, info->psname, sizeof(td->font_name));
 
 	/* Set default tile size */
 	if (td->tile_wid == 0) td->tile_wid = td->font_wid;
@@ -2326,7 +2326,7 @@ static void cf_load_prefs()
 								kFontNoScriptCode, kFontNoLanguageCode, &fid);
 			if(fid) td->font_id = fid;
 			/* Use the default */
-			else strncpy(td->font_name, "Monaco", sizeof(td->font_name));
+			else my_strcpy(td->font_name, "Monaco", sizeof(td->font_name));
 		}
 	}
 }
@@ -2356,7 +2356,7 @@ static void term_data_hack(term_data *td)
 
 	/* Default font */
 	td->font_id = fid;
-	strncpy(td->font_name, "Monaco", sizeof(td->font_name));
+	my_strcpy(td->font_name, "Monaco", sizeof(td->font_name));
 
 	/* Default font size - was 12 */
 	td->font_size = 14;

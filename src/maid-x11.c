@@ -103,7 +103,7 @@ cptr get_default_font(int term_num)
 	char buf[80];
 
 	/* Window specific font name */
-	sprintf(buf, "ANGBAND_X11_FONT_%d", term_num);
+	strnfmt(buf, sizeof(buf), "ANGBAND_X11_FONT_%d", term_num);
 
 	/* Check environment for that font */
 	font = getenv(buf);

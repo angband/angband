@@ -763,12 +763,6 @@ cptr ANGBAND_DIR_USER;
  */
 cptr ANGBAND_DIR_XTRA;
 
-/*
- * Script files
- * These files are portable between platforms
- */
-cptr ANGBAND_DIR_SCRIPT;
-
 
 /*
  * Total Hack -- allow all items to be listed (even empty ones)

@@ -3,7 +3,7 @@
 
 /* cmd.c */
 extern void cmd_init(void);
-extern void process_commands(bool no_request);
+extern void process_command(bool no_request);
 
 /* cmd2.c */
 extern void do_cmd_go_up(void);

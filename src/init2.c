@@ -69,10 +69,8 @@
  * this function to be called multiple times, for example, to
  * try several base "path" values until a good one is found.
  */
-void init_file_paths(char *path)
+void init_file_paths(const char *path)
 {
-	char *tail;
-
 #ifdef PRIVATE_USER_PATH
 	char buf[1024];
 	char dirpath[1024];
@@ -95,111 +93,58 @@ void init_file_paths(char *path)
 	string_free(ANGBAND_DIR_PREF);
 	string_free(ANGBAND_DIR_USER);
 	string_free(ANGBAND_DIR_XTRA);
-	string_free(ANGBAND_DIR_SCRIPT);
 
 
-	/*** Prepare the "path" ***/
+	/*** Prepare the paths ***/
 
-	/* Hack -- save the main directory */
+	/* Save the main directory */
 	ANGBAND_DIR = string_make(path);
 
-	/* Prepare to append to the Base Path */
-	tail = path + strlen(path);
+	/* Build path names */
+	ANGBAND_DIR_EDIT = string_make(format("%sedit", path));
+	ANGBAND_DIR_FILE = string_make(format("%sfile", path));
+	ANGBAND_DIR_HELP = string_make(format("%shelp", path));
+	ANGBAND_DIR_INFO = string_make(format("%sinfo", path));
+	ANGBAND_DIR_PREF = string_make(format("%spref", path));
+	ANGBAND_DIR_XTRA = string_make(format("%sxtra", path));
 
-
-	/*** Build the sub-directory names ***/
-
-	/* Build a path name */
-	strcpy(tail, "edit");
-	ANGBAND_DIR_EDIT = string_make(path);
-
-	/* Build a path name */
-	strcpy(tail, "file");
-	ANGBAND_DIR_FILE = string_make(path);
-
-	/* Build a path name */
-	strcpy(tail, "help");
-	ANGBAND_DIR_HELP = string_make(path);
-
-	/* Build a path name */
-	strcpy(tail, "info");
-	ANGBAND_DIR_INFO = string_make(path);
-
-	/* Build a path name */
-	strcpy(tail, "pref");
-	ANGBAND_DIR_PREF = string_make(path);
 
 #ifdef PRIVATE_USER_PATH
 
-	/* Get an absolute path from the filename */
+	/* Get an absolute path from the filename, */
 	path_parse(dirpath, sizeof(dirpath), PRIVATE_USER_PATH);
+
 	/* Build the path to the user specific directory */
 	path_build(buf, sizeof(buf), dirpath, VERSION_NAME);
-
-	/* Build a relative path name */
 	ANGBAND_DIR_USER = string_make(buf);
 
-#else /* PRIVATE_USER_PATH */
-
-	/* Build a path name */
-	strcpy(tail, "user");
-	ANGBAND_DIR_USER = string_make(path);
-
-#endif /* PRIVATE_USER_PATH */
-
-#ifdef USE_PRIVATE_PATHS
 
 	/* Build the path to the user specific sub-directory */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "scores");
-
-	/* Build a relative path name */
 	ANGBAND_DIR_APEX = string_make(buf);
 
 	/* Build the path to the user specific sub-directory */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "bone");
-
-	/* Build a relative path name */
 	ANGBAND_DIR_BONE = string_make(buf);
 
 	/* Build the path to the user specific sub-directory */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "data");
-
-	/* Build a relative path name */
 	ANGBAND_DIR_DATA = string_make(buf);
 
 	/* Build the path to the user specific sub-directory */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "save");
-
-	/* Build a relative path name */
 	ANGBAND_DIR_SAVE = string_make(buf);
 
 #else /* USE_PRIVATE_PATHS */
 
-	/* Build a path name */
-	strcpy(tail, "apex");
-	ANGBAND_DIR_APEX = string_make(path);
-
-	/* Build a path name */
-	strcpy(tail, "bone");
-	ANGBAND_DIR_BONE = string_make(path);
-
-	/* Build a path name */
-	strcpy(tail, "data");
-	ANGBAND_DIR_DATA = string_make(path);
-
-	/* Build a path name */
-	strcpy(tail, "save");
-	ANGBAND_DIR_SAVE = string_make(path);
+	/* Build pathnames */
+	ANGBAND_DIR_USER = string_make(format("%suser", path));
+	ANGBAND_DIR_APEX = string_make(format("%sapex", path));
+	ANGBAND_DIR_BONE = string_make(format("%sbone", path));
+	ANGBAND_DIR_DATA = string_make(format("%sdata", path));
+	ANGBAND_DIR_SAVE = string_make(format("%ssave", path));
 
 #endif /* USE_PRIVATE_PATHS */
-
-	/* Build a path name */
-	strcpy(tail, "xtra");
-	ANGBAND_DIR_XTRA = string_make(path);
-
-	/* Build a path name */
-	strcpy(tail, "script");
-	ANGBAND_DIR_SCRIPT = string_make(path);
 }
 
 
@@ -1966,5 +1911,4 @@ void cleanup_angband(void)
 	string_free(ANGBAND_DIR_PREF);
 	string_free(ANGBAND_DIR_USER);
 	string_free(ANGBAND_DIR_XTRA);
-	string_free(ANGBAND_DIR_SCRIPT);
 }

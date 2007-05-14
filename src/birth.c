@@ -774,7 +774,7 @@ static void display_roller(menu_type *menu, int oid, bool cursor,
 	    str = "Point-based";
 	else if (oid == 1)
 	    str = "Autoroller";
-	else if (oid == 2)
+	else
 	    str = "Standard roller";
 
 	c_prt(attr, str, row, col);
@@ -1228,7 +1228,7 @@ static bool player_birth_aux_3(bool autoroll)
 			mval[i] = m;
 
 			/* Extract a textual format */
-			/* cnv_stat(m, inp); */
+			/* cnv_stat(m, inp, sizeof(buf); */
 
 			/* Above 18 */
 			if (m > 18)
@@ -1261,7 +1261,7 @@ static bool player_birth_aux_3(bool autoroll)
 				put_str("", 16 + i, 30);
 
 				/* Default */
-				strcpy(inp, "");
+				inp[0] = '\0';
 
 				/* Get a response (or escape) */
 				if (!askfor_aux(inp, 9, NULL)) inp[0] = '\0';
@@ -1323,7 +1323,7 @@ static bool player_birth_aux_3(bool autoroll)
 				put_str(stat_names[i], 3+i, col);
 
 				/* Put the stat */
-				cnv_stat(stat_limit[i], buf);
+				cnv_stat(stat_limit[i], buf, sizeof(buf));
 				c_put_str(TERM_L_BLUE, buf, 3+i, col+5);
 			}
 
@@ -1379,7 +1379,7 @@ static bool player_birth_aux_3(bool autoroll)
 					for (i = 0; i < A_MAX; i++)
 					{
 						/* Put the stat */
-						cnv_stat(stat_use[i], buf);
+						cnv_stat(stat_use[i], buf, sizeof(buf));
 						c_put_str(TERM_L_GREEN, buf, 3+i, col+24);
 
 						/* Put the percent */

@@ -721,7 +721,7 @@ static void init_stuff(void)
 	/* This must in some way prepare the "path" variable */
 	/* so that it points at the "lib" directory.  Every */
 	/* machine handles this in a different way... */
-	strcpy(path, "XXX XXX XXX");
+	my_strcpy(path, "XXX XXX XXX", sizeof(path));
 
 	/* Prepare the filepaths */
 	init_file_paths(path);

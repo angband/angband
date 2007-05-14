@@ -11,7 +11,7 @@
 
 #include "angband.h"
 #include "z-file.h"
-
+#include "cmds.h"
 #include "script.h"
 
 
@@ -1886,7 +1886,7 @@ void play_game(bool new_game)
 	/* Hack -- Default base_name */
 	if (!op_ptr->base_name[0])
 	{
-		strcpy(op_ptr->base_name, "PLAYER");
+		my_strcpy(op_ptr->base_name, "PLAYER", sizeof(op_ptr->base_name));
 	}
 
 	/* Init RNG */
@@ -2135,7 +2135,7 @@ void play_game(bool new_game)
 				}
 
 				/* Note cause of death XXX XXX XXX */
-				strcpy(p_ptr->died_from, "Cheating death");
+				my_strcpy(p_ptr->died_from, "Cheating death", sizeof(p_ptr->died_from));
 
 				/* New depth */
 				p_ptr->depth = 0;

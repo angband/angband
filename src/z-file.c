@@ -923,7 +923,7 @@ ang_dir *my_dopen(const char *dirname)
 
 	/* Try to open the directory */
 	d = opendir(dirname);
-	if (!dir->d) return NULL;
+	if (!d) return NULL;
 
 	/* Allocate memory for the handle */
 	dir = ralloc(sizeof dir);

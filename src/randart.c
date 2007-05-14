@@ -92,7 +92,7 @@ static errr init_names(void)
 
 	for (i = 1; i < z_info->a_max; i++)
 	{
-		strcpy(a_next, names[i-1]);
+		my_strcpy(a_next, names[i-1], name_size - 1);
 		if (a_info[i].tval > 0)		/* skip unused! */
 			a_info[i].name = a_next - a_base;
 		a_next += strlen(names[i-1]) + 1;
@@ -107,7 +107,7 @@ static errr init_names(void)
 	}
 
 	/* Free the "names" array */
-	FREE((void*)names);
+	FREE(names);
 
 	/* Store the names */
 	a_name = a_base;

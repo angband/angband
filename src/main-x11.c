@@ -2810,7 +2810,7 @@ static errr term_data_init(term_data *td, int i)
 	res_name[0] = tolower((unsigned char)res_name[0]);
 	ch->res_name = res_name;
 
-	strcpy(res_class, "Angband");
+	my_strcpy(res_class, "Angband", sizeof(res_class));
 	ch->res_class = res_class;
 
 	XSetClassHint(Metadpy->dpy, Infowin->win, ch);

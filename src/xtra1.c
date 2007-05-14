@@ -16,7 +16,7 @@
 /*
  * Converts stat num into a six-char (right justified) string
  */
-void cnv_stat(int val, char *out_val)
+void cnv_stat(int val, char *out_val, size_t out_len)
 {
 	/* Above 18 */
 	if (val > 18)
@@ -24,19 +24,15 @@ void cnv_stat(int val, char *out_val)
 		int bonus = (val - 18);
 
 		if (bonus >= 100)
-		{
-			sprintf(out_val, "18/%03d", bonus);
-		}
+			strnfmt(out_val, out_len, "18/%03d", bonus);
 		else
-		{
-			sprintf(out_val, " 18/%02d", bonus);
-		}
+			strnfmt(out_val, out_len, " 18/%02d", bonus);
 	}
 
 	/* From 3 to 18 */
 	else
 	{
-		sprintf(out_val, "    %2d", val);
+		strnfmt(out_val, out_len, "    %2d", val);
 	}
 }
 
@@ -119,7 +115,7 @@ static void prt_stat(int stat, int row, int col)
 	if (p_ptr->stat_cur[stat] < p_ptr->stat_max[stat])
 	{
 		put_str(stat_names_reduced[stat], row, col);
-		cnv_stat(p_ptr->stat_use[stat], tmp);
+		cnv_stat(p_ptr->stat_use[stat], tmp, sizeof(tmp));
 		c_put_str(TERM_YELLOW, tmp, row, col + 6);
 	}
 
@@ -127,7 +123,7 @@ static void prt_stat(int stat, int row, int col)
 	else
 	{
 		put_str(stat_names[stat], row, col);
-		cnv_stat(p_ptr->stat_use[stat], tmp);
+		cnv_stat(p_ptr->stat_use[stat], tmp, sizeof(tmp));
 		c_put_str(TERM_L_GREEN, tmp, row, col + 6);
 	}
 
@@ -175,7 +171,7 @@ static void prt_level(int row, int col)
 {
 	char tmp[32];
 
-	sprintf(tmp, "%6d", p_ptr->lev);
+	strnfmt(tmp, sizeof(tmp), "%6d", p_ptr->lev);
 
 	if (p_ptr->lev >= p_ptr->max_lev)
 	{
@@ -206,7 +202,7 @@ static void prt_exp(int row, int col)
 		xp = (long)(player_exp[p_ptr->lev - 1] * p_ptr->expfact / 100L) - p_ptr->exp;
 
 	/* Format XP */
-	sprintf(out_val, "%8ld", (long)xp);
+	strnfmt(out_val, sizeof(out_val), "%8ld", (long)xp);
 
 
 	if (p_ptr->exp >= p_ptr->max_exp)
@@ -230,7 +226,7 @@ static void prt_gold(int row, int col)
 	char tmp[32];
 
 	put_str("AU ", row, col);
-	sprintf(tmp, "%9ld", (long)p_ptr->au);
+	strnfmt(tmp, sizeof(tmp), "%9ld", (long)p_ptr->au);
 	c_put_str(TERM_L_GREEN, tmp, row, col + 3);
 }
 
@@ -280,7 +276,7 @@ static void prt_ac(int row, int col)
 	char tmp[32];
 
 	put_str("Cur AC ", row, col);
-	sprintf(tmp, "%5d", p_ptr->dis_ac + p_ptr->dis_to_a);
+	strnfmt(tmp, sizeof(tmp), "%5d", p_ptr->dis_ac + p_ptr->dis_to_a);
 	c_put_str(TERM_L_GREEN, tmp, row, col + 7);
 }
 
@@ -295,8 +291,8 @@ static void prt_hp(int row, int col)
 
 	put_str("HP ", row, col);
 
-	sprintf(max_hp, "%4d", p_ptr->mhp);
-	sprintf(cur_hp, "%4d", p_ptr->chp);
+	strnfmt(max_hp, sizeof(max_hp), "%4d", p_ptr->mhp);
+	strnfmt(cur_hp, sizeof(cur_hp), "%4d", p_ptr->chp);
 
 	if (p_ptr->chp >= p_ptr->mhp)
 		color = TERM_L_GREEN;
@@ -324,8 +320,8 @@ static void prt_sp(int row, int col)
 
 	put_str("SP ", row, col);
 
-	sprintf(max_sp, "%4d", p_ptr->msp);
-	sprintf(cur_sp, "%4d", p_ptr->csp);
+	strnfmt(max_sp, sizeof(max_sp), "%4d", p_ptr->msp);
+	strnfmt(cur_sp, sizeof(cur_sp), "%4d", p_ptr->csp);
 
 	if (p_ptr->csp >= p_ptr->msp)
 		color = TERM_L_GREEN;
@@ -608,15 +604,15 @@ static void prt_depth(int row, int col)
 
 	if (!p_ptr->depth)
 	{
-		strcpy(depths, "Town");
+		my_strcpy(depths, "Town", sizeof(depths));
 	}
 	else if (depth_in_feet)
 	{
-		sprintf(depths, "%d ft", p_ptr->depth * 50);
+		strnfmt(depths, sizeof(depths), "%d ft", p_ptr->depth * 50);
 	}
 	else
 	{
-		sprintf(depths, "Lev %d", p_ptr->depth);
+		strnfmt(depths, sizeof(depths), "Lev %d", p_ptr->depth);
 	}
 
 	/* Right-Adjust the "depth", and clear old values */
@@ -750,7 +746,7 @@ static void prt_state(int row, int col)
 	{
 		attr = TERM_RED;
 
-		strcpy(text, "Paralyzed!");
+		my_strcpy(text, "Paralyzed!", sizeof(text));
 	}
 
 	/* Resting */
@@ -760,7 +756,7 @@ static void prt_state(int row, int col)
 		int n = p_ptr->resting;
 
 		/* Start with "Rest" */
-		strcpy(text, "Rest      ");
+		my_strcpy(text, "Rest      ", sizeof(text));
 
 		/* Extensive (timed) rest */
 		if (n >= 1000)
@@ -822,25 +818,21 @@ static void prt_state(int row, int col)
 	else if (p_ptr->command_rep)
 	{
 		if (p_ptr->command_rep > 999)
-		{
-			sprintf(text, "Rep. %3d00", p_ptr->command_rep / 100);
-		}
+			strnfmt(text, sizeof(text), "Rep. %3d00", p_ptr->command_rep / 100);
 		else
-		{
-			sprintf(text, "Repeat %3d", p_ptr->command_rep);
-		}
+			strnfmt(text, sizeof(text), "Repeat %3d", p_ptr->command_rep);
 	}
 
 	/* Searching */
 	else if (p_ptr->searching)
 	{
-		strcpy(text, "Searching ");
+		my_strcpy(text, "Searching ", sizeof(text));
 	}
 
 	/* Nothing interesting */
 	else
 	{
-		strcpy(text, "          ");
+		my_strcpy(text, "          ", sizeof(text));
 	}
 
 	/* Display the info (or blanks) */
@@ -865,14 +857,14 @@ static void prt_speed(int row, int col)
 	if (i > 110)
 	{
 		attr = TERM_L_GREEN;
-		sprintf(buf, "Fast (+%d)", (i - 110));
+		strnfmt(buf, sizeof(buf), "Fast (+%d)", (i - 110));
 	}
 
 	/* Slow */
 	else if (i < 110)
 	{
 		attr = TERM_L_UMBER;
-		sprintf(buf, "Slow (-%d)", (110 - i));
+		strnfmt(buf, sizeof(buf), "Slow (-%d)", (110 - i));
 	}
 
 	/* Display the speed */

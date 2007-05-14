@@ -684,7 +684,7 @@ static int dump_autoins_info(void)
 	prt("File: ", 17, 30);
 
 	/* Default filename */
-	strcpy(fname, op_ptr->base_name);
+	my_strcpy(fname, op_ptr->base_name, sizeof(fname));
 
 	/* Get a filename */
 	if (askfor_aux(fname, sizeof fname, NULL))

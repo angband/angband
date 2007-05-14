@@ -234,7 +234,6 @@ extern cptr ANGBAND_DIR_SAVE;
 extern cptr ANGBAND_DIR_PREF;
 extern cptr ANGBAND_DIR_USER;
 extern cptr ANGBAND_DIR_XTRA;
-extern cptr ANGBAND_DIR_SCRIPT;
 extern bool item_tester_full;
 extern byte item_tester_tval;
 extern bool (*item_tester_hook)(const object_type*);
@@ -344,7 +343,7 @@ extern void signals_init(void);
 extern void generate_cave(void);
 
 /* init2.c */
-extern void init_file_paths(char *path);
+extern void init_file_paths(const char *path);
 extern void create_user_dirs(void);
 extern void init_angband(void);
 extern void cleanup_angband(void);
@@ -672,7 +671,7 @@ extern byte gamma_table[256];
 #endif /* SUPPORT_GAMMA */
 
 /* xtra1.c */
-extern void cnv_stat(int val, char *out_val);
+extern void cnv_stat(int val, char *out_val, size_t len);
 extern s16b modify_stat_value(int value, int amount);
 extern void notice_stuff(void);
 extern void update_stuff(void);

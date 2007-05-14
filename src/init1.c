@@ -663,22 +663,24 @@ errr init_info_txt(FILE *fp, char *buf, header *head,
  */
 static bool add_text(u32b *offset, header *head, cptr buf)
 {
+	size_t len = strlen(buf);
+
 	/* Hack -- Verify space */
-	if (head->text_size + strlen(buf) + 8 > z_info->fake_text_size)
+	if (head->text_size + len + 8 > z_info->fake_text_size)
 		return (FALSE);
 
 	/* New text? */
 	if (*offset == 0)
 	{
 		/* Advance and save the text index */
-		*offset = ++head->text_size;	
+		*offset = ++head->text_size;
 	}
 
 	/* Append chars to the text */
-	strcpy(head->text_ptr + head->text_size, buf);
+	my_strcpy(head->text_ptr + head->text_size, buf, len + 1);
 
 	/* Advance the index */
-	head->text_size += strlen(buf);
+	head->text_size += len;
 
 	/* Success */
 	return (TRUE);
@@ -694,19 +696,20 @@ static bool add_text(u32b *offset, header *head, cptr buf)
 static u32b add_name(header *head, cptr buf)
 {
 	u32b index;
+	size_t len = strlen(buf);
 
 	/* Hack -- Verify space */
-	if (head->name_size + strlen(buf) + 8 > z_info->fake_name_size)
+	if (head->name_size + len + 8 > z_info->fake_name_size)
 		return (0);
 
 	/* Advance and save the name index */
 	index = ++head->name_size;
 
 	/* Append chars to the names */
-	strcpy(head->name_ptr + head->name_size, buf);
+	my_strcpy(head->name_ptr + head->name_size, buf, len + 1);
 
 	/* Advance the index */
-	head->name_size += strlen(buf);
+	head->name_size += len;
 	
 	/* Return the name index */
 	return (index);
@@ -2266,19 +2269,11 @@ errr parse_r_info(char *buf, header *head)
 	/* XXX XXX XXX The ghost is unused */
 
 	/* Mega-Hack -- acquire "ghost" */
-	r_ptr = &r_info[z_info->r_max-1];
-
-	/* Get the next index */
-	r_ptr->name = head->name_size;
-	r_ptr->text = head->text_size;
-
-	/* Save some space for the ghost info */
-	head->name_size += 64;
-	head->text_size += 64;
+	r_ptr = &r_info[z_info->r_max - 1];
 
 	/* Hack -- Default name/text for the ghost */
-	strcpy(r_name + r_ptr->name, "Nobody, the Undefined Ghost");
-	strcpy(r_text + r_ptr->text, "It seems strangely familiar...");
+	r_ptr->name = add_name(head, "Nobody, the Undefined Ghost");
+	add_text(&r_ptr->text, head, "It seems strangely familiar...");
 
 	/* Hack -- set the attr/char info */
 	r_ptr->d_attr = r_ptr->x_attr = TERM_WHITE;

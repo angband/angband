@@ -3147,8 +3147,7 @@ static void check_for_save_file(LPSTR cmd_line)
 	if (p) *p = '\0';
 
 	/* Extract filename */
-	*savefile = '\0';
-	strncat(savefile, s, sizeof(savefile) - 1);
+	my_strcpy(savefile, s, sizeof(savefile));
 
 	/* Validate the file */
 	validate_file(savefile);

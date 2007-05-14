@@ -122,9 +122,10 @@ void print_spells(const byte *spells, int num, int y, int x)
 
 	const magic_type *s_ptr;
 
-	cptr comment;
-
+	char help[20];
 	char out_val[160];
+
+	const char *comment = help;
 
 	byte line_attr;
 
@@ -151,7 +152,7 @@ void print_spells(const byte *spells, int num, int y, int x)
 		}
 
 		/* Get extra info */
-		comment = get_spell_info(cp_ptr->spell_book, spell);
+		get_spell_info(cp_ptr->spell_book, spell, help, sizeof(help));
 
 		/* Assume spell is known and tried */
 		line_attr = TERM_WHITE;
@@ -478,9 +479,10 @@ static void browse_spell(int spell)
 {
 	const magic_type *s_ptr;
 
-	cptr comment;
-
 	char out_val[160];
+	char help[20];
+
+	const char *comment = help;
 
 	byte line_attr;
 
@@ -495,7 +497,7 @@ static void browse_spell(int spell)
 	s_ptr = &mp_ptr->info[spell];
 
 	/* Get extra info */
-	comment = get_spell_info(cp_ptr->spell_book, spell);
+	get_spell_info(cp_ptr->spell_book, spell, help, sizeof(help));
 
 	/* Assume spell is known and tried */
 	line_attr = TERM_WHITE;

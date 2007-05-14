@@ -2314,7 +2314,7 @@ bool load_player(bool *character_loaded, bool *reusing_savefile)
 		if (p_ptr->chp >= 0)
 		{
 			/* Reset cause of death */
-			strcpy(p_ptr->died_from, "(alive and well)");
+			my_strcpy(p_ptr->died_from, "(alive and well)", sizeof(p_ptr->died_from));
 		}
 
 		*reusing_savefile = TRUE;

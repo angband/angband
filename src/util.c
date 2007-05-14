@@ -2959,14 +2959,14 @@ s16b get_quantity(cptr prompt, int max)
 		if (!prompt)
 		{
 			/* Build a prompt */
-			sprintf(tmp, "Quantity (0-%d): ", max);
+			strnfmt(tmp, sizeof(tmp), "Quantity (0-%d): ", max);
 
 			/* Use that prompt */
 			prompt = tmp;
 		}
 
 		/* Build the default */
-		sprintf(buf, "%d", amt);
+		strnfmt(buf, sizeof(buf), "%d", amt);
 
 		/* Ask for a quantity */
 		if (!get_string(prompt, buf, 7)) return (0);
