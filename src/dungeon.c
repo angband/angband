@@ -1261,6 +1261,22 @@ static void process_player(void)
 			p_ptr->energy_use = 100;
 		}
 
+		/* Picking up objects */
+		else if (p_ptr->notice & (PN_PICKUP1))
+		{
+			/* Recursively call the pickup function, use energy */
+			p_ptr->energy_use = py_pickup(1) * 10;
+			p_ptr->notice &= ~(PN_PICKUP0 | PN_PICKUP1);
+		}
+
+		/* Noticing objects (allow pickup) */
+		else if (p_ptr->notice & (PN_PICKUP0))
+		{
+			/* Recursively call the pickup function, use energy */
+			p_ptr->energy_use = py_pickup(0) * 10;
+			p_ptr->notice &= ~(PN_PICKUP0 | PN_PICKUP1);
+		}
+
 		/* Resting */
 		else if (p_ptr->resting)
 		{
@@ -1454,7 +1470,12 @@ static void process_player(void)
 			}
 		}
 	}
+
 	while (!p_ptr->energy_use && !p_ptr->leaving);
+
+
+	/* Allowed to automatically pick up things again */
+	p_ptr->auto_pickup_okay = TRUE;
 }
 
 

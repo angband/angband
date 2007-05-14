@@ -666,6 +666,9 @@ byte py_pickup(int pickup)
 	bool force_display_list = FALSE;
 	bool msg = TRUE;
 
+	s32b total_gold = 0L;
+	byte *treasure;
+
 
 	/* Nothing to pick up -- return */
 	if (!cave_o_idx[py][px]) return (0);
@@ -674,7 +677,120 @@ byte py_pickup(int pickup)
 	squelch_pile(py, px);
 
 
-	/* Scan the objects */
+	/* Allocate and wipe an array of ordinary gold objects */
+	C_MAKE(treasure, SV_GOLD_MAX, byte);
+	(void)C_WIPE(treasure, SV_GOLD_MAX, byte);
+
+	/* Pick up all the ordinary gold objects */
+	for (this_o_idx = cave_o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
+	{
+		int gold_type;
+
+		/* Get the object */
+		o_ptr = &o_list[this_o_idx];
+
+		/* Get the next object */
+		next_o_idx = o_ptr->next_o_idx;
+
+		/* Ignore all hidden objects */
+		if (!o_ptr->marked) continue;
+
+		/* Ignore if not legal treasure */
+		if ((o_ptr->tval != TV_GOLD) ||
+		    (o_ptr->sval >= SV_GOLD_MAX)) continue;
+
+		/* Hack -- adjust treasure type (to avoid picking up "gold, gold, and gold") */
+		gold_type = o_ptr->sval;
+		if ((gold_type == SV_COPPER2) || (gold_type == SV_COPPER3))
+			gold_type = SV_COPPER1;
+		if ((gold_type == SV_SILVER2) || (gold_type == SV_SILVER3))
+			gold_type = SV_SILVER1;
+		if ((gold_type == SV_GOLD2)   || (gold_type == SV_GOLD3))
+			gold_type = SV_GOLD1;
+		if (gold_type == SV_GARNETS2)
+			gold_type = SV_GARNETS1;
+
+		/* Note that we have this kind of treasure */
+		treasure[gold_type]++;
+
+		/* Increment total value */
+		total_gold += (s32b)o_ptr->pval;
+
+		/* Delete the gold */
+		delete_object_idx(this_o_idx);
+	}
+
+	/* Pick up the gold, if present */
+	if (total_gold)
+	{
+		char buf[1024];
+		char tmp[80];
+		int i, count, total, k_idx;
+
+		/* Build a message */
+		(void)strnfmt(buf, sizeof(buf), "You have found %ld gold pieces worth of ",  total_gold);
+
+		/* Count the types of treasure present */
+		for (total = 0, i = 0; i < SV_GOLD_MAX; i++)
+		{
+			if (treasure[i]) total++;
+		}
+
+		/* List the treasure types */
+		for (count = 0, i = 0; i < SV_GOLD_MAX; i++)
+		{
+			/* Skip if no treasure of this type */
+			if (!treasure[i]) continue;
+
+			/* Get this object index */
+			k_idx = lookup_kind(TV_GOLD, i);
+
+			/* Skip past errors  XXX */
+			if (k_idx <= 0) continue;
+
+			/* Get the object name */
+			strip_name(tmp, k_idx, TRUE);
+
+			/* Build up the pickup string */
+			my_strcat(buf, tmp, sizeof(buf));
+
+			/* Added another kind of treasure */
+			count++;
+
+			/* Add a comma if necessary */
+			if ((total > 2) && (count < total)) strcat(buf, ",");
+
+			/* Add an "and" if necessary */
+			if ((total >= 2) && (count == total-1)) strcat(buf, " and");
+
+			/* Add a space or period if necessary */
+			if (count < total) strcat(buf, " ");
+			else               strcat(buf, ".");
+		}
+
+		/* Determine which sound to play */
+		if      (total_gold < 200) sound_msg = MSG_MONEY1;
+		else if (total_gold < 600) sound_msg = MSG_MONEY2;
+		else                       sound_msg = MSG_MONEY3;
+
+		/* Display the message */
+		message_format(sound_msg, 0, "%s", buf);
+
+		/* Add gold to purse */
+		p_ptr->au += total_gold;
+
+		/* Redraw gold */
+		p_ptr->redraw |= (PR_GOLD);
+
+		/* Window stuff */
+		p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
+	}
+
+	/* Free the gold array */
+	FREE(treasure);
+
+
+	/* Scan the remaining objects */
 	for (this_o_idx = cave_o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
 	{
 		/* Get the object */
@@ -693,39 +809,8 @@ byte py_pickup(int pickup)
 		disturb(0, 0);
 
 
-		/* Pick up gold */
-		if (o_ptr->tval == TV_GOLD)
-		{
-			/* Determine which sound to play */
-			if ((long)o_ptr->pval < 200) sound_msg = MSG_MONEY1;
-			else if ((long)o_ptr->pval < 600) sound_msg = MSG_MONEY2;
-			else sound_msg = MSG_MONEY3;
-			
-			/* Describe the object */
-			object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
-
-			/* Message */
-			message_format(sound_msg, 0, "You have found %s worth %ld gold pieces.",
-				o_name, (long)o_ptr->pval);
-
-			/* Collect the gold */
-			p_ptr->au += o_ptr->pval;
-
-			/* Redraw gold */
-			p_ptr->redraw |= (PR_GOLD);
-
-			/* Window stuff */
-			p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
-
-			/* Delete the gold */
-			delete_object_idx(this_o_idx);
-
-			/* Check the next object */
-			continue;
-		}
-
 		/* Automatically pick up items into the backpack */
-		if ((pickup) && (auto_pickup_okay(o_ptr, TRUE)))
+		if ((p_ptr->auto_pickup_okay) && (pickup) && (auto_pickup_okay(o_ptr, TRUE)))
 		{
 			/* Pick up the object (with a message) */
 			py_pickup_aux(this_o_idx, TRUE);
@@ -764,7 +849,7 @@ byte py_pickup(int pickup)
 	if (!pickup)
 	{
 		/* Optionally, display more information about floor items */
-		if (query_floor)
+		if ((query_floor) && (floor_num > 1))
 		{
 			/* Scan all marked objects in the grid */
 			(void)scan_floor(floor_list, &floor_num, py, px, 0x03);
@@ -898,7 +983,7 @@ byte py_pickup(int pickup)
 		 * If not deliberately picking up objects, and if requested or
 		 * potentially unsafe, ask the player to confirm all pickups.
 		 */
-		if ((query_floor) && (pickup <= 1))
+		if (((query_floor) || (!p_ptr->auto_pickup_okay)) && (pickup <= 1))
 		{
 			/* Save screen */
 			screen_save();
@@ -1590,15 +1675,6 @@ void move_player(int dir, int do_pickup)
 			search();
 		}
 
-		/* Handle objects now.  XXX XXX XXX */
-		p_ptr->energy_use += py_pickup(do_pickup) * 10;
-
-		/*
-		 * The correct thing to do is to pick up objects *after* the map
-		 * display updates post-move.  This involves about 30 lines of code
-		 * and will be done on request.  -LM-
-		 */
-
 
 		/* Handle "store doors" */
 		if ((cave_feat[y][x] >= FEAT_SHOP_HEAD) &&
@@ -1612,10 +1688,22 @@ void move_player(int dir, int do_pickup)
 
 			/* Free turn XXX XXX XXX */
 			p_ptr->energy_use = 0;
+
+			/* Handle objects now.  XXX */
+			p_ptr->energy_use += py_pickup(do_pickup) * 10;
 		}
 
+		/* All other grids (including traps) */
+		else
+		{
+			/* Handle objects (later) */
+			if (do_pickup) p_ptr->notice |= (PN_PICKUP1);
+			else           p_ptr->notice |= (PN_PICKUP0);
+		}
+
+
 		/* Discover invisible traps */
-		else if (cave_feat[y][x] == FEAT_INVIS)
+		if (cave_feat[y][x] == FEAT_INVIS)
 		{
 			/* Disturb */
 			disturb(0, 0);

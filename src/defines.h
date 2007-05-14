@@ -1362,6 +1362,29 @@ enum
 #define SV_FOOD_PINT_OF_ALE		38
 #define SV_FOOD_PINT_OF_WINE	39
 
+/* The "sval" codes for TV_GOLD */
+#define SV_COPPER1                        1
+#define SV_COPPER2                        2
+#define SV_COPPER3                        3
+#define SV_SILVER1                        4
+#define SV_SILVER2                        5
+#define SV_SILVER3                        6
+#define SV_GARNETS1                       7
+#define SV_GARNETS2                       8
+#define SV_GOLD1                          9
+#define SV_GOLD2                         10
+#define SV_GOLD3                         11
+#define SV_OPALS                         12
+#define SV_SAPPHIRES                     13
+#define SV_RUBIES                        14
+#define SV_DIAMONDS                      15
+#define SV_EMERALDS                      16
+#define SV_MITHRIL                       17
+#define SV_ADAMANTITE                    18
+
+#define SV_GOLD_MAX                      19
+
+
 
 /*
  * Special "sval" limit -- first "normal" food
@@ -1399,7 +1422,7 @@ enum
  * Squelch modes for k_info->squelch
  */
 #define SQUELCH_NEVER               0 /* Allow pickup, defer to OPT_always_pickup */
-#define NO_SQUELCH_NEVER_PICKUP     1 /* Never pickup, override OPT_always_pickup */ 
+#define NO_SQUELCH_NEVER_PICKUP     1 /* Never pickup, override OPT_always_pickup */
 #define NO_SQUELCH_ALWAYS_PICKUP    2 /* Always pickup, override all other options */
 #define SQUELCH_ALWAYS              3 /* Destroy when player walks over */
 
@@ -1575,6 +1598,8 @@ enum
 #define PN_COMBINE		0x00000001L	/* Combine the pack */
 #define PN_REORDER		0x00000002L	/* Reorder the pack */
 #define PN_AUTOINSCRIBE	0x00000004L	/* Autoinscribe items */
+#define PN_PICKUP0      0x00000008L	/* Notice stuff (allow pickup) */
+#define PN_PICKUP1      0x00000010L	/* Pick up stuff */
 /* xxx (many) */
 
 
