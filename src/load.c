@@ -2267,6 +2267,8 @@ bool load_player(bool *character_loaded, bool *reusing_savefile)
 	/* Okay */
 	if (!err)
 	{
+		*reusing_savefile = TRUE;
+
 		/* Give a conversion warning */
 		if ((version_major != sf_major) ||
 		    (version_minor != sf_minor) ||
@@ -2302,7 +2304,7 @@ bool load_player(bool *character_loaded, bool *reusing_savefile)
 
 			/* Forget turns */
 			turn = old_turn = 0;
-
+                        
 			/* Done */
 			return (TRUE);
 		}
@@ -2316,8 +2318,6 @@ bool load_player(bool *character_loaded, bool *reusing_savefile)
 			/* Reset cause of death */
 			my_strcpy(p_ptr->died_from, "(alive and well)", sizeof(p_ptr->died_from));
 		}
-
-		*reusing_savefile = TRUE;
 
 		/* Success */
 		return (TRUE);

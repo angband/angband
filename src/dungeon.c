@@ -1992,15 +1992,15 @@ void play_game(bool new_game)
 	while (!reusing_savefile && my_fexists(savefile))
 	{
 		/* Ask for confirmation */
-		bool newname = get_check("A savefile using that name already exists.  Choose a new name? ");
+		bool overwrite = get_check("Continuing will overwrite an existing savefile.  Overwrite? ");
          
-		if (newname)
+		if (overwrite)
 		{
-			get_name(TRUE);
+			break;
 		}                        
 		else
 		{
-			break;
+			get_name(TRUE);
 		}                        
 	}
 
