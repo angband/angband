@@ -149,6 +149,8 @@ static command_type cmd_hidden[] =
 	{ "Toggle windows",     KTRL('E'), toggle_inven_equip }, /* XXX */
 	{ "Alter a grid",             '+', do_cmd_alter },
 	{ "Walk",                     ';', do_cmd_walk },
+	{ "Start running",            '.', do_cmd_run },
+	{ "Stand still",              ',', do_cmd_hold },
 	{ "Jump (into a trap)",       '-', do_cmd_jump },
 	{ "Check knowledge",          '|', do_cmd_knowledge },
 	{ "Display menu of actions", '\n', do_cmd_menu },
