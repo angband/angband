@@ -428,26 +428,21 @@ static void cmd_sub_entry(menu_type *menu, int oid, bool cursor, int row, int co
 /* Handle user input from a command menu */
 static bool cmd_sub_action(char cmd, void *db, int oid)
 {
-	const command_type *commands = db;
-
-	/* Forward/back don't do anything */
-	if (cmd == ARROW_LEFT || cmd == ARROW_RIGHT)
-		return FALSE;
-
-	/* Clear up */
-	screen_load();
-
 	/* Only handle enter */
 	if (cmd == '\n' || cmd == '\r')
-		commands[oid].hook();
-
-	return TRUE;
+	{
+		return TRUE;
+	}
+	else
+	{
+		return FALSE;
+	}
 }
 
 /*
  * Display a list of commands.
  */
-static void cmd_menu(command_list *list)
+static bool cmd_menu(command_list *list, void *selection_p)
 {
 	menu_type menu;
 	menu_iter commands_menu = { 0, 0, 0, cmd_sub_entry, cmd_sub_action };
@@ -455,7 +450,7 @@ static void cmd_menu(command_list *list)
 
 	event_type evt;
 	int cursor = 0;
-
+	command_type *selection = selection_p;
 
 	/* Set up the menu */
 	WIPE(&menu, menu);
@@ -473,14 +468,34 @@ static void cmd_menu(command_list *list)
 
 	/* Load de screen */
 	screen_load();
+
+	if (evt.type == EVT_SELECT)
+	{
+		*selection = list->list[evt.index];
+	}
+
+	if (evt.type == EVT_ESCAPE)
+	{
+		return FALSE;
+	}
+	else
+	{
+		return TRUE;
+	}
 }
 
 
 
 static bool cmd_list_action(char cmd, void *db, int oid)
 {
-	cmd_menu(&cmds_all[oid]);
-	return TRUE;
+	if (cmd == '\n' || cmd == '\r' || cmd == '\xff')
+	{
+		return cmd_menu(&cmds_all[oid], db);
+	}
+	else
+	{
+		return FALSE;
+	}
 }
 
 static void cmd_list_entry(menu_type *menu, int oid, bool cursor, int row, int col, int width)
@@ -500,12 +515,13 @@ static void do_cmd_menu(void)
 
 	event_type evt;
 	int cursor = 0;
-
+	command_type chosen_command = { NULL, 0, NULL };
 
 	/* Set up the menu */
 	WIPE(&menu, menu);
-	menu.cmd_keys = "\n\r\xff";
+	menu.cmd_keys = "\x8B\x8C\n\r";
 	menu.count = N_ELEMENTS(cmds_all) - 1;
+	menu.menu_data = &chosen_command;
 	menu_init2(&menu, find_menu_skin(MN_SCROLL), &commands_menu, &area);
 
 	/* Set up the screen */
@@ -517,6 +533,12 @@ static void do_cmd_menu(void)
 
 	/* Load de screen */
 	screen_load();
+
+	/* If a command was chosen, do it. */
+	if (chosen_command.hook)
+	{
+		chosen_command.hook();
+	}
 }
 
 
