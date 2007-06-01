@@ -14,10 +14,8 @@ conversion of the old DOS fonts to the .fon format.
 Font        Copyright holder                                  Licence
 ----------- ------------------------------------------------- ------------
    5x8      (c) 1989 Cognition Corp                           [1]
-   6x9      (c) 1989 Massachusetts Institute of Technology    NO LICENCE
    6x10     Public Domain
    6x12     Public Domain
-   6x12b    (c) 1989 Dale Schumacher                          [4]
    6x13     Public Domain
    6x13b    Public Domain
    7x13     Public Domain
@@ -25,7 +23,6 @@ Font        Copyright holder                                  Licence
    8x13     Public Domain
    8x13b    Public Domain
    8x13c    (c) 1989 Dale Schumacher                          [4]
-   8x13cb   (c) 1989 Dale Schumacher                          [4]
    8x16     (c) 1989 Dale Schumacher                          [4]
    8x16b    (c) 1989 Dale Schumacher                          [4]
    9x15     Public Domain
