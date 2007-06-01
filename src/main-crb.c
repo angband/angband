@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 1997-2006 Ben Harrison, Keith Randall, Peter Ammon,
  * Ron Anderson, and others
@@ -30,6 +29,32 @@
  * Most Apple Event code provided by Steve Linberg (slinberg@crocker.com).
  * Carbon code adapted from works by Peter Ammon and Ron Anderson.
  * Much modernization and graphics/sound improvement done by pelpel.
+ *
+ *
+ * Graphics code originally adapted from an extremely minimal subset of
+ * "Sprite World II" <http://www.spriteworld.org/>, which is under the
+ * following licence:
+ *
+ *    This software is provided 'as-is', without any express or implied
+ *    warranty. In no event will the authors be held liable for any damages
+ *    arising from the use of this software.
+ *
+ *    Permission is granted to anyone to use this software for any purpose,
+ *    including commercial applications, and to alter it and redistribute it
+ *    freely, subject to the following restrictions:
+ *
+ *       1. The origin of this software must not be misrepresented; you must not
+ *       claim that you wrote the original software. If you use this software
+ *       in a product, an acknowledgment in the product documentation would be
+ *       appreciated but is not required.
+ *
+ *       2. Altered source versions must be plainly marked as such, and must not be
+ *       misrepresented as being the original software.
+ *
+ *       3. This notice may not be removed or altered from any source
+ *       distribution.
+ * (end of licence)
+ *
  *
  * Notes:
  *

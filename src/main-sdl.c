@@ -1,26 +1,30 @@
-/* File: main-sdl.c */
+/*
+ * File: main-sdl.c
+ * Purpose: Angband SDL port 
+ *
+ * Copyright (c) 2007 Ben Harrison, Gregory Velichansky, Eric Stevens,
+ * Leon Marrick, Iain McFall, and others
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
+#include "angband.h"
 
 /*
- * Angband SDL port (c) 2007 Iain McFall (mcfall.iain@googlemail.com)
- * 
- * Based on the sangband SDL port, by Leon Marrick & others.
- *
- *
  * Comments and suggestions are welcome. The UI probably needs some
  * adjustment, and I need comments from you.
  *perhaps also something like "Angband 3.0.8 by Andrew Sidwell and others;
  SDL port by Iain McFall an others, please see the accompanying documentation
  for credits" or something
  */
-
-
-/*
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License.  Parts may also be
- * available under the terms of the Moria license.  For more details, see
- * "/docs/copying.txt".
- */
-
 
 /*
  * This file helps Angband work with at least some computers capable of running
@@ -101,7 +105,6 @@
  *   nology.  Development progresses, but obsolescence looms, especially on
  *   Windows machines.
  */
-#include "angband.h"
 
 #ifdef USE_SDL
 

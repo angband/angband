@@ -1,42 +1,46 @@
-/* File ui.c */
-
 /*
- * Copyright (c) 2007 Pete Mack and others
- * This code released under the Gnu Public License. See www.fsf.org
- * for current GPL license details. Addition permission granted to
- * incorporate modifications in all Angband variants as defined in the
- * Angband variants FAQ. See rec.games.roguelike.angband for FAQ.
+ * File: ui.c
+ * Purpose: Generic menu interaction functions
+ *
+ * Copyright (c) 2007 Pete Mack and others.
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
  */
-
-/*
-Description:
-Implementation of Extremely Basic Event Model.
-  Limits:
-    all events are of the concrete type event_type (see z-util.h), 
-    which are supposed to model simple UI actions:
-	- < escape >
-	- keystroke
-	- mousepress
-	- select menu element
-	- move menu cursor
-	- back to parent (hierarchical menu escape)
-
-There are 3 basic event-related classes:
-The event_type.
-Concrete event, with at most 32 distinct types.
-
-The event_listener observer for key events
-
-The event_target   The registrar for event_listeners.
-For convenience, the event target is also an event_listener.
-
-
-*/
-
 #include "angband.h"
 
-/* Some useful constants */
 
+/*
+ * Implementation of Extremely Basic Event Model.
+ * Limits:
+ *   all events are of the concrete type event_type (see z-util.h), 
+ *   which are supposed to model simple UI actions:
+ *	- < escape >
+ *	- keystroke
+ *	- mousepress
+ *	- select menu element
+ *	- move menu cursor
+ *	- back to parent (hierarchical menu escape)
+ *
+ * There are 3 basic event-related classes:
+ * The event_type.
+ * Concrete event, with at most 32 distinct types.
+ *
+ * The event_listener observer for key events
+ *
+ * The event_target   The registrar for event_listeners.
+ * For convenience, the event target is also an event_listener.
+ */
+
+/* Some useful constants */
 const char default_choice[] =
 	"1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 

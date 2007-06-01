@@ -1,9 +1,25 @@
 /*
  * File: z-file.c
- * Purpose: General purpose file handling.
+ * Purpose: Low-level file (and directory) handling
  *
+ * Copyright (c) 1997-2007 Ben Harrison, pelpel, Andrew Sidwell
  *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
  *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
+#include "angband.h"
+#include "z-file.h"
+
+
+/*
  * The concept of the file routines is that all file handling should be done
  * using as few routines as possible, since every machine is slightly
  * different, but these routines always have the same semantics.
@@ -29,8 +45,6 @@
  * defaults to a file in the current working directory, which may or may
  * not be defined.
  */
-#include "angband.h"
-#include "z-file.h"
 
 #ifndef RISCOS
 # ifdef MACINTOSH

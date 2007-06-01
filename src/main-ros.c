@@ -1,15 +1,20 @@
 /*
  * File: main-ros.c
+ * Purpose: Support for RISC OS versions of Angband
  *
- * Abstract: Support for RISC OS versions of Angband, including support
- * for multitasking and dynamic areas.
+ * Copyright (c) 2000-2007  Musus Umbra, Antony Sidwell, Thomas Harris,
+ * Andrew Sidwell, Ben Harrison.
  *
- * Authors: Musus Umbra, Antony Sidwell, Thomas Harris, Andrew Sidwell,
- *          Ben Harrison, and others.
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
  *
- * Licences: Angband licence, GNU GPL version 2	
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
  *
- * Current maintainer: Antony Sidwell <antony@isparp.co.uk>  (ajps)
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
  */
 
 #ifdef __riscos
@@ -18,6 +23,7 @@
 
 /*
  * Purpose: Support for RISC OS Angband 2.9.x onwards (and variants)
+ * Current maintainer: Antony Sidwell <antony@isparp.co.uk>  (ajps)
  *
  * NB: This code is still under continuous development - if you want to use
  * it for your own compilation/variant, please contact me so that I can
@@ -629,7 +635,7 @@ static ZapFont fonts[MAX_TERM_DATA + 1];	/* The +1 is for the system font */
 /* The system font is always font 0 */
 #define SYSTEM_FONT (&(fonts[0]))
 
-                                                                                                                                 /* Term system variables */
+/* Term system variables */
 static term_data data[MAX_TERM_DATA];	/* One per term */
 
 #ifndef FULLSCREEN_ONLY

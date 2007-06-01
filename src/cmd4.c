@@ -1,28 +1,32 @@
 /*
- * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
+ * File: cmd4.c
+ * Purpose: Various kinds of browsing functions.
  *
- * This software may be copied and distributed for educational, research,
- * and not for profit purposes provided that this copyright and statement
- * are included in all such copies.  Other copyrights may also apply.
+ * Copyright (c) 1997-2007 Robert A. Koeneke, James E. Wilson, Ben Harrison,
+ * Eytan Zweig, Andrew Doull, Pete Mack.
  *
- * UnAngband (c) 2001-6 Andrew Doull. Modifications to the Angband 2.9.1
- * source code are released under the Gnu Public License. See www.fsf.org
- * for current GPL license details. Addition permission granted to
- * incorporate modifications in all Angband variants as defined in the
- * Angband variants FAQ. See rec.games.roguelike.angband for FAQ.
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
  *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
  */
+#include "angband.h"
+#include "ui.h"
+
 
 /*
- * Code cleanup -- Pete Mack 02/2007 (No copyright) 
+ * Code cleanup -- Pete Mack 02/2007
  * Use proper function tables and database methodology.
  * Tables are now tables, not multiline conditionals.
  * Joins are now relational, not ad hoc.
  * Function tables are used for iteration where reasonable. (C-style class model)
  */
-
-#include "angband.h"
-#include "ui.h"
 
 
 /* Flag value for missing array entry */
@@ -4047,6 +4051,7 @@ void do_cmd_save_screen_html(int mode)
 	msg_print("HTML screen dump saved.");
 	message_flush();
 }
+
 /*
  * Hack -- save a screen dump to a file
  */
