@@ -1,33 +1,43 @@
-The game is currently moving to a dual-licence of the traditional Angband
-licence and the GPL, version 2.  All new code will only be accepted under both
-licences, but some code is still only under the Angband licence.
+Angband is free software; you can redistribute it and/or modify it under the 
+terms of either the GNU General Public License as published by the Free Software 
+Foundation, version 2, or the "Angband licence", shown below, with some 
+exceptions:
 
-At the time of release, almost all of the code is covered by both licences.
-The remaining people who have not yet been contacted include:
 
- * Torbjorn Lindgren
- * George W Harris
- * John Rauser, monster list patch
- * "Prfnoff"
- * Ed Cogburn
- * Peter Berger
- * Roland Jay Roberts
- * Ross E Becker
- * Randy Hutson
- * Brent Ross
- * Kusunose Toru
- * Takeshi Mogami
- * Chris Ang
- * Heiko Herold
- * Jon Taylor
- * Ron Anderson
- * Alexander Wilkins
- * David Grabiner
+ * At the time of release, code written by the following individuals is only
+   available under the Angband licence; the brackets after their name indicate
+   the code which is not clean as a result:
 
-Any information on the contact details for these people, whether online or
-otherwise, would be much appreciated.
+   - Prfnoff (character death menu, customizable player races, player history,
+              and shop owners)
+   - Chris Ang (various 2.5.x bits of code which I believe the game is
+                still derivative of)
+   - Randy Hutson (RNG)
 
-For more information, see <http://entai.co.uk/angband/opensource>.
+   - Ron Anderson (Mac port)
+   - Ross E Becker (Windows port)
+   - Kieron Dunbar (X11 copy and paste support)
+   - Torbjorn Lindgren (XAW port)
+   - Denis Eropkin (X11+XAW support code)
+
+   Any information on the contact details for these people, whether online or
+   otherwise, would be much appreciated.  Note that as a result of these
+   remaining restrictions, the game itself is not quite GPL-clean.
+
+ * Adam Bolt's (16x16) graphics may be redistributed and used for any purpose, 
+   with or without modification.
+
+ * David Gervais' (32x32) graphics may be redistributed and used but only
+   not-for-profit, and may only be distributed over the Internet.
+ * the sounds are freeware, whatever that means.
+
+ * the font files are under the licences noted in lib/xtra/font/copying.txt.
+
+
+It is considered good practice to retain this statement for derivatives, rather
+than (e.g.) redistributing Adam Bolt's tiles under the GPL, or choosing to make
+a variant which is only under one of the Angband or GPL licences.  This allows
+easier sharing of changes between variants.
 
 
 ------------------------------------------------------------------------------
