@@ -87,7 +87,7 @@ static cptr desc_insult[MAX_DESC_INSULT] =
 };
 
 
-#define MAX_DESC_MOAN 4
+#define MAX_DESC_MOAN 8
 
 
 /*
@@ -95,9 +95,13 @@ static cptr desc_insult[MAX_DESC_INSULT] =
  */
 static cptr desc_moan[MAX_DESC_MOAN] =
 {
+	"wants his mushrooms back.",
+	"tells you to get off his land.",
+	"looks for his dogs. ",
+	"says 'Did you kill my Fang?' ",
+	"asks 'Do you want to buy any mushrooms?' ",
 	"seems sad about something.",
 	"asks if you have seen his dogs.",
-	"tells you to get off his land.",
 	"mumbles something about mushrooms."
 };
 
