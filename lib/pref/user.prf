@@ -24,17 +24,11 @@
 ?:[EQU $SYS gcu]
 %:user-gcu.prf
 
-?:[EQU $SYS ami]
-%:user-ami.prf
-
 ?:[EQU $SYS mac]
 %:user-mac.prf
 
 ?:[IOR [EQU $SYS win] [EQU $SYS dos] [EQU $SYS ibm]]
 %:user-win.prf
-
-?:[EQU $SYS emx]
-%:user-emx.prf
 
 ?:[EQU $SYS acn]
 %:user-acn.prf
