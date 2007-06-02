@@ -2148,9 +2148,6 @@ static void msg_print_aux(u16b type, cptr msg)
 
 	/* Remember the position */
 	message_column += n + 1;
-
-	/* Optional refresh */
-	if (fresh_after) Term_fresh();
 }
 
 
@@ -3416,7 +3413,7 @@ void request_command(void)
 	}
 
 	/* Hack -- Auto-repeat certain commands */
-	if (always_repeat && (p_ptr->command_arg <= 0))
+	if (p_ptr->command_arg <= 0)
 	{
 		/* Hack -- auto repeat certain commands */
 		if (strchr(AUTO_REPEAT_COMMANDS, p_ptr->command_cmd))

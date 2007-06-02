@@ -4085,12 +4085,11 @@ static void do_dump_options(void *not_a_function_pointer, const char *title)
 
 static menu_item option_actions [] =
 {
-	{{0, "User Interface options", do_cmd_options_aux, (void*)0}, '1'},
-	{{0, "Pickup and Item options", do_cmd_options_aux, (void*)1}, '2'},
-	{{0, "Disturbance and Warning options", do_cmd_options_aux, (void*)2}, '3'},
-	{{0, "Efficiency options", do_cmd_options_aux, (void*)3}, '4'},
-	{{0, "Birth (Difficulty) options", do_cmd_options_aux, (void*)4}, '5'},
-	{{0, "Cheat options", do_cmd_options_aux, (void*)5}, '6'},
+	{{0, "Interface options", do_cmd_options_aux, (void*)0}, '1'},
+	{{0, "Display options", do_cmd_options_aux, (void*)1}, '2'},
+	{{0, "Warning options", do_cmd_options_aux, (void*)2}, '3'},
+	{{0, "Birth (Difficulty) options", do_cmd_options_aux, (void*)3}, '4'},
+	{{0, "Cheat options", do_cmd_options_aux, (void*)4}, '5'},
 	{{0, 0, 0, 0}}, /* Load and append */
 	{{0, "Subwindow display settings", (action_f) do_cmd_options_win, 0}, 'W'},
 	{{0, "Item squelch and Autoinscribe settings", (action_f) do_cmd_squelch_autoinsc, 0}, 'S'},

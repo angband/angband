@@ -1197,7 +1197,7 @@ static void process_player(void)
 		move_cursor_relative(p_ptr->py, p_ptr->px);
 
 		/* Refresh (optional) */
-		if (fresh_before) Term_fresh();
+		Term_fresh();
 
 
 		/* Hack -- Pack Overflow */
@@ -1729,9 +1729,6 @@ static void dungeon(void)
 		/* Hack -- Hilite the player */
 		move_cursor_relative(p_ptr->py, p_ptr->px);
 
-		/* Optional fresh */
-		if (fresh_after) Term_fresh();
-
 		/* Handle "leaving" */
 		if (p_ptr->leaving) break;
 
@@ -1754,9 +1751,6 @@ static void dungeon(void)
 		/* Hack -- Hilite the player */
 		move_cursor_relative(p_ptr->py, p_ptr->px);
 
-		/* Optional fresh */
-		if (fresh_after) Term_fresh();
-
 		/* Handle "leaving" */
 		if (p_ptr->leaving) break;
 
@@ -1778,9 +1772,6 @@ static void dungeon(void)
 
 		/* Hack -- Hilite the player */
 		move_cursor_relative(p_ptr->py, p_ptr->px);
-
-		/* Optional fresh */
-		if (fresh_after) Term_fresh();
 
 		/* Handle "leaving" */
 		if (p_ptr->leaving) break;

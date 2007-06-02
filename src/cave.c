@@ -4121,7 +4121,7 @@ void disturb(int stop_search, int unused_flag)
 		p_ptr->running = 0;
 
  		/* Check for new panel if appropriate */
- 		if (center_player && run_avoid_center) verify_panel();
+ 		if (center_player) verify_panel();
 
 		/* Calculate torch radius */
 		p_ptr->update |= (PU_TORCH);

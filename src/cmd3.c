@@ -478,83 +478,81 @@ void do_cmd_destroy(void)
 	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, 3);
 
 	/* Verify destruction */
-	if (verify_destroy)
+	strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", o_name);
+
+	/* Check for known ego-items */
+	if (ego_item_p(o_ptr) && object_known_p(o_ptr))
 	{
-		strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", o_name);
+		/* XXX Hook for context help here to explain 'E' */
+ 
+		/* Prompt */
+		result = get_check_other(out_val, 'E');
 
-		/* Check for known ego-items */
-		if (ego_item_p(o_ptr) && object_known_p(o_ptr))
+		/* No */
+		if (result == 0)
+			return;
+ 
+		/* Squelch */
+		else if (result == 2)
 		{
-			/* XXX Hook for context help here to explain 'E' */
+			/* Get the ego item type */
+			ego_item_type *e_ptr = &e_info[o_ptr->name2];
  
-			/* Prompt */
-			result = get_check_other(out_val, 'E');
-
-			/* No */
-			if (result == 0)
-				return;
+			/* Set to squelch */
+			e_ptr->squelch = TRUE;
  
-			/* Squelch */
-			else if (result == 2)
-			{
-				/* Get the ego item type */
-				ego_item_type *e_ptr = &e_info[o_ptr->name2];
- 
-				/* Set to squelch */
-				e_ptr->squelch = TRUE;
- 
-				/* Tell user */
-				msg_format("Ego-item type '%s' will always be squelched.", e_name + e_ptr->name);
-			}
-		}
-
-		/* Check for aware objects */
-		else if (object_aware_p(o_ptr) && !(k_info[o_ptr->k_idx].flags3 & (TR3_INSTA_ART)))
-		{
-			result = get_check_other(out_val, 'S');
-
-			/* returned "no" */
-			if (!result) return;
-
-			/* Return of 2 sets item to squelch */
-			else if (result == 2)
-			{
-				object_kind *k_ptr = &k_info[o_ptr->k_idx];
-				char o_name2[80];
-
-				/* Make a fake object so we can give a proper message */
-				object_type object_type_body;
-				object_type *i_ptr = &object_type_body;
-
-				/* Wipe the object */
-				object_wipe(i_ptr);
-
-				/* Create the object */
-				object_prep(i_ptr, o_ptr->k_idx);
-
-				/* Make it plural */
-				i_ptr->number = 2;
-
-				/* Now describe with correct amount */
-				object_desc(o_name2, sizeof(o_name2), i_ptr, FALSE, 0);
-
-				/* Set to squelch */
-				k_ptr->squelch = SQUELCH_ALWAYS;
-
-				/* Message - no good routine for extracting the plain name*/
-				msg_format("All %^s will always be squelched.", o_name2);
-
-				/*Mark the view to be updated*/
-				p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW);;
-			}
-		}
-
-		/* Everything else */
-		else
-		{
-			if (!get_check(out_val)) return;
+			/* Tell user */
+			msg_format("Ego-item type '%s' will always be squelched.", e_name + e_ptr->name);
 		}
 	}
+
+	/* Check for aware objects */
+	else if (object_aware_p(o_ptr) && !(k_info[o_ptr->k_idx].flags3 & (TR3_INSTA_ART)))
+	{
+		result = get_check_other(out_val, 'S');
+
+		/* returned "no" */
+		if (!result) return;
+
+		/* Return of 2 sets item to squelch */
+		else if (result == 2)
+		{
+			object_kind *k_ptr = &k_info[o_ptr->k_idx];
+			char o_name2[80];
+
+			/* Make a fake object so we can give a proper message */
+			object_type object_type_body;
+			object_type *i_ptr = &object_type_body;
+
+			/* Wipe the object */
+			object_wipe(i_ptr);
+
+			/* Create the object */
+			object_prep(i_ptr, o_ptr->k_idx);
+
+			/* Make it plural */
+			i_ptr->number = 2;
+
+			/* Now describe with correct amount */
+			object_desc(o_name2, sizeof(o_name2), i_ptr, FALSE, 0);
+
+			/* Set to squelch */
+			k_ptr->squelch = SQUELCH_ALWAYS;
+
+			/* Message - no good routine for extracting the plain name*/
+			msg_format("All %^s will always be squelched.", o_name2);
+
+			/*Mark the view to be updated*/
+			p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW);;
+		}
+	}
+
+	/* Everything else */
+	else
+	{
+		if (!get_check(out_val)) return;
+	}
+
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;

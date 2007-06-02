@@ -1743,32 +1743,24 @@ void verify_panel(void)
 		panel_wid = screen_wid / 2;
 		panel_hgt = screen_hgt / 2;
 
+
 		/* Scroll screen vertically when off-center */
-		if (center_player && (!p_ptr->running || !run_avoid_center) &&
-		    (py != wy + panel_hgt))
-		{
+		if (center_player && !p_ptr->running && (py != wy + panel_hgt))
 			wy = py - panel_hgt;
-		}
 
 		/* Scroll screen vertically when 3 grids from top/bottom edge */
 		else if ((py < wy + 3) || (py >= wy + screen_hgt - 3))
-		{
 			wy = py - panel_hgt;
-		}
 
 
 		/* Scroll screen horizontally when off-center */
-		if (center_player && (!p_ptr->running || !run_avoid_center) &&
-		    (px != wx + panel_wid))
-		{
+		if (center_player && !p_ptr->running && (px != wx + panel_wid))
 			wx = px - panel_wid;
-		}
 
 		/* Scroll screen horizontally when 3 grids from left/right edge */
 		else if ((px < wx + 3) || (px >= wx + screen_wid - 3))
-		{
 			wx = px - panel_wid;
-		}
+
 
 		/* Scroll if needed */
 		modify_panel(t, wy, wx);

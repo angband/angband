@@ -2326,7 +2326,7 @@ void do_cmd_rest(void)
 	handle_stuff();
 
 	/* Refresh XXX XXX XXX */
-	if (fresh_before) Term_fresh();
+	Term_fresh();
 }
 
 
@@ -2575,19 +2575,15 @@ void do_cmd_fire(void)
 			/* Visual effects */
 			print_rel(missile_char, missile_attr, y, x);
 			move_cursor_relative(y, x);
-			if (fresh_before)
-			{
-				Term_fresh();
-				if (p_ptr->window) window_stuff();
-			}
+
+			Term_fresh();
+			if (p_ptr->window) window_stuff();
 
 			Term_xtra(TERM_XTRA_DELAY, msec);
 			lite_spot(y, x);
-			if (fresh_before)
-			{
-				Term_fresh();
-				if (p_ptr->window) window_stuff();
-			}
+
+			Term_fresh();
+			if (p_ptr->window) window_stuff();
 		}
 
 		/* Delay anyway for consistency */
@@ -2865,18 +2861,15 @@ void do_cmd_throw(void)
 			/* Visual effects */
 			print_rel(missile_char, missile_attr, y, x);
 			move_cursor_relative(y, x);
-			if (fresh_before)
-			{
-				Term_fresh();
-				if (p_ptr->window) window_stuff();
-			}
+
+			Term_fresh();
+			if (p_ptr->window) window_stuff();
+
 			Term_xtra(TERM_XTRA_DELAY, msec);
 			lite_spot(y, x);
-			if (fresh_before)
-			{
-				Term_fresh();
-				if (p_ptr->window) window_stuff();
-			}
+
+			Term_fresh();
+			if (p_ptr->window) window_stuff();
 		}
 
 		/* Delay anyway for consistency */

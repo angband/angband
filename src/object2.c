@@ -1309,9 +1309,6 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 	/* Hack -- Require compatible inscriptions */
 	if (o_ptr->note != j_ptr->note)
 	{
-		/* Normally require matching inscriptions */
-		if (!stack_force_notes) return (0);
-
 		/* Never combine different inscriptions */
 		if (o_ptr->note && j_ptr->note) return (0);
 	}

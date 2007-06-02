@@ -2429,17 +2429,14 @@ enum
 #define OPT_query_floor				3
 #define OPT_use_old_target			4
 #define OPT_always_pickup			5
-#define OPT_always_repeat			6
+
 #define OPT_depth_in_feet			7
-#define OPT_stack_force_notes		8
-#define OPT_stack_force_costs		9
+
 #define OPT_show_labels				10
 
 #define OPT_ring_bell				14
 #define OPT_show_flavors			15
-#define OPT_run_ignore_doors		17
-#define OPT_run_cut_corners			18
-#define OPT_run_use_corners			19
+
 #define OPT_disturb_move			20
 #define OPT_disturb_near			21
 #define OPT_disturb_panel			22
@@ -2455,9 +2452,6 @@ enum
 #define OPT_flush_failure			52
 #define OPT_flush_disturb			53
 
-#define OPT_fresh_before			55
-#define OPT_fresh_after				56
-
 #define OPT_hilite_player			59
 #define OPT_view_yellow_lite		60
 #define OPT_view_bright_lite		61
@@ -2467,7 +2461,6 @@ enum
 #define OPT_easy_alter 				65
 #define OPT_show_piles				67
 #define OPT_center_player			68
-#define OPT_run_avoid_center		69
 
 #define OPT_auto_more				71
 #define OPT_hp_changes_color		74
@@ -2531,29 +2524,21 @@ enum
 #define query_floor				op_ptr->opt[OPT_query_floor]
 #define use_old_target			op_ptr->opt[OPT_use_old_target]
 #define always_pickup			op_ptr->opt[OPT_always_pickup]
-#define always_repeat			op_ptr->opt[OPT_always_repeat]
 #define depth_in_feet			op_ptr->opt[OPT_depth_in_feet]
-#define stack_force_notes		op_ptr->opt[OPT_stack_force_notes]
-#define stack_force_costs		op_ptr->opt[OPT_stack_force_costs]
 #define show_labels				op_ptr->opt[OPT_show_labels]
 #define ring_bell				op_ptr->opt[OPT_ring_bell]
 #define show_flavors			op_ptr->opt[OPT_show_flavors]
 #define run_ignore_doors		op_ptr->opt[OPT_run_ignore_doors]
-#define run_cut_corners			op_ptr->opt[OPT_run_cut_corners]
-#define run_use_corners			op_ptr->opt[OPT_run_use_corners]
 #define disturb_move			op_ptr->opt[OPT_disturb_move]
 #define disturb_near			op_ptr->opt[OPT_disturb_near]
 #define disturb_panel			op_ptr->opt[OPT_disturb_panel]
 #define disturb_state			op_ptr->opt[OPT_disturb_state]
 #define disturb_minor			op_ptr->opt[OPT_disturb_minor]
-#define verify_destroy			op_ptr->opt[OPT_verify_destroy]
 #define verify_special			op_ptr->opt[OPT_verify_special]
 #define view_perma_grids		op_ptr->opt[OPT_view_perma_grids]
 #define view_torch_grids		op_ptr->opt[OPT_view_torch_grids]
 #define flush_failure			op_ptr->opt[OPT_flush_failure]
 #define flush_disturb			op_ptr->opt[OPT_flush_disturb]
-#define fresh_before			op_ptr->opt[OPT_fresh_before]
-#define fresh_after				op_ptr->opt[OPT_fresh_after]
 #define hilite_player			op_ptr->opt[OPT_hilite_player]
 #define view_yellow_lite		op_ptr->opt[OPT_view_yellow_lite]
 #define view_bright_lite		op_ptr->opt[OPT_view_bright_lite]
@@ -2563,7 +2548,6 @@ enum
 #define easy_alter				op_ptr->opt[OPT_easy_alter]
 #define show_piles				op_ptr->opt[OPT_show_piles]
 #define center_player			op_ptr->opt[OPT_center_player]
-#define run_avoid_center		op_ptr->opt[OPT_run_avoid_center]
 #define auto_more				op_ptr->opt[OPT_auto_more]
 #define hp_changes_color		op_ptr->opt[OPT_hp_changes_color]
 
@@ -2617,8 +2601,8 @@ enum
 /*
  * Information for "do_cmd_options()".
  */
-#define OPT_PAGE_MAX				6
-#define OPT_PAGE_PER				20
+#define OPT_PAGE_MAX				5
+#define OPT_PAGE_PER				15
 
 
 

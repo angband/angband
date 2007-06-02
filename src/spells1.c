@@ -4033,21 +4033,16 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 				/* Visual effects */
 				print_rel(c, a, y, x);
 				move_cursor_relative(y, x);
-				if (fresh_before)
-				{
-					Term_fresh();
-					if (p_ptr->window) window_stuff();
-				}
+
+				Term_fresh();
+				if (p_ptr->window) window_stuff();
 
 				Term_xtra(TERM_XTRA_DELAY, msec);
 
 				lite_spot(y, x);
 
-				if (fresh_before)
-				{
-					Term_fresh();
-					if (p_ptr->window) window_stuff();
-				}
+				Term_fresh();
+				if (p_ptr->window) window_stuff();
 
 				/* Display "beam" grids */
 				if (flg & (PROJECT_BEAM))
@@ -4166,7 +4161,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 			move_cursor_relative(y2, x2);
 
 			/* Flush each "radius" separately */
-			if (fresh_before) Term_fresh();
+			Term_fresh();
 
 			/* Flush */
 			if (p_ptr->window) window_stuff();
@@ -4199,7 +4194,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 			move_cursor_relative(y2, x2);
 
 			/* Flush the explosion */
-			if (fresh_before) Term_fresh();
+			Term_fresh();
 
 			/* Flush */
 			if (p_ptr->window) window_stuff();

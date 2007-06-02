@@ -1573,18 +1573,14 @@ void move_player(int dir, int do_pickup)
 		 * with traps.  XXX XXX
 		 */
 
-		/* Not already repeating */
-		if (!p_ptr->command_rep)
+		/* Auto-repeat if not already repeating */
+		if (!p_ptr->command_rep && (p_ptr->command_arg <= 0))
 		{
-			/* Hack -- Optional auto-repeat */
-			if (always_repeat && (p_ptr->command_arg <= 0))
-			{
-				/* Repeat 99 times */
-				p_ptr->command_rep = 99;
+			/* Repeat 99 times */
+			p_ptr->command_rep = 99;
 
-				/* Reset the command count */
-				p_ptr->command_arg = 0;
-			}
+			/* Reset the command count */
+			p_ptr->command_arg = 0;
 		}
 
 		/* Alter */
@@ -1753,27 +1749,6 @@ static int see_wall(int dir, int y, int x)
 	/* Default */
 	return (TRUE);
 }
-
-
-/*
- * Hack -- Check for an "unknown corner" (see below)
- */
-static int see_nothing(int dir, int y, int x)
-{
-	/* Get the new location */
-	y += ddy[dir];
-	x += ddx[dir];
-
-	/* Illegal grids are unknown XXX XXX XXX */
-	if (!in_bounds(y, x)) return (TRUE);
-
-	/* Memorized grids are always known */
-	if (cave_info[y][x] & (CAVE_MARK)) return (FALSE);
-
-	/* Default */
-	return (TRUE);
-}
-
 
 
 
@@ -2159,17 +2134,6 @@ static bool run_test(void)
 					/* Done */
 					break;
 				}
-
-				/* Open doors */
-				case FEAT_OPEN:
-				case FEAT_BROKEN:
-				{
-					/* Option -- ignore */
-					if (run_ignore_doors) notice = FALSE;
-
-					/* Done */
-					break;
-				}
 			}
 
 			/* Interesting feature */
@@ -2330,58 +2294,13 @@ static bool run_test(void)
 		}
 
 		/* Two options, examining corners */
-		else if (run_use_corners && !run_cut_corners)
+		else
 		{
 			/* Primary option */
 			p_ptr->run_cur_dir = option;
 
 			/* Hack -- allow curving */
 			p_ptr->run_old_dir = option2;
-		}
-
-		/* Two options, pick one */
-		else
-		{
-			/* Get next location */
-			row = py + ddy[option];
-			col = px + ddx[option];
-
-			/* Don't see that it is closed off. */
-			/* This could be a potential corner or an intersection. */
-			if (!see_wall(option, row, col) ||
-			    !see_wall(check_dir, row, col))
-			{
-				/* Can not see anything ahead and in the direction we */
-				/* are turning, assume that it is a potential corner. */
-				if (run_use_corners &&
-				    see_nothing(option, row, col) &&
-				    see_nothing(option2, row, col))
-				{
-					p_ptr->run_cur_dir = option;
-					p_ptr->run_old_dir = option2;
-				}
-
-				/* STOP: we are next to an intersection or a room */
-				else
-				{
-					return (TRUE);
-				}
-			}
-
-			/* This corner is seen to be enclosed; we cut the corner. */
-			else if (run_cut_corners)
-			{
-				p_ptr->run_cur_dir = option2;
-				p_ptr->run_old_dir = option2;
-			}
-
-			/* This corner is seen to be enclosed, and we */
-			/* deliberately go the long way. */
-			else
-			{
-				p_ptr->run_cur_dir = option;
-				p_ptr->run_old_dir = option2;
-			}
 		}
 	}
 
