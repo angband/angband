@@ -30,7 +30,6 @@ extern cptr argv0;
 /* Aux functions */
 extern void (*plog_aux)(cptr);
 extern void (*quit_aux)(cptr);
-extern void (*core_aux)(cptr);
 
 
 /**** Available Functions ****/
@@ -50,6 +49,8 @@ extern bool streq(cptr s, cptr t);
 extern bool prefix(cptr s, cptr t);
 extern bool suffix(cptr s, cptr t);
 
+#define streq(s, t)		(!strcmp(s, t))
+
 
 /* Print an error message */
 extern void plog(cptr str);
@@ -57,11 +58,6 @@ extern void plog(cptr str);
 /* Exit, with optional message */
 extern void quit(cptr str);
 
-/* Dump core, with optional message */
-extern void core(cptr str);
 
 
-
-#endif
-
-
+#endif /* INCLUDED_Z_UTIL_H */

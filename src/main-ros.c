@@ -169,7 +169,7 @@
  *   to clean up the code but just making work for people with no
  *   ultimate benefit.
  */
-/* #define HASNOCORE */
+#define HASNOCORE
 
 /*
  * USE_DA

@@ -499,7 +499,7 @@ static bool auto_pickup_okay(const object_type *o_ptr, bool check_pack)
 	/* It can't be carried */
 	if (!inven_carry_okay(o_ptr)) return (FALSE);
 
-	/* Object is marked to not pickup */
+	/* Object is marked to pickup */
 	if ((k_info[o_ptr->k_idx].squelch == NO_SQUELCH_NEVER_PICKUP) &&
 		object_aware_p(o_ptr)) return (FALSE);
 

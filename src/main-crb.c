@@ -3778,24 +3778,6 @@ static void hook_quit(cptr str)
 }
 
 
-/*
- * Hook to tell the user something, and then crash
- */
-static void hook_core(cptr str)
-{
-	/* XXX Use the debugger */
-	/* DebugStr(str); */
-
-	/* Warning */
-	if (str) mac_warning(str);
-	if(!save_player())
-		mac_warning("Fatal error -- save failed!");
-	else 
-		mac_warning("Fatal error -- game saved successfully");
-
-	/* Quit */
-	quit(NULL);
-}
 
 /*** Main program ***/
 
@@ -3859,7 +3841,6 @@ int main(void)
 	/* Hooks in some "z-util.c" hooks */
 	plog_aux = hook_plog;
 	quit_aux = hook_quit;
-	core_aux = hook_core;
 
 	/* Initialize colors */
 	update_color_info();

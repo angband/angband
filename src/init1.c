@@ -874,7 +874,7 @@ errr parse_z_info(char *buf, header *head)
 		/* Save the value */
 		z_info->s_max = max;
 	}
-	
+
 	/* Process 'O' for "Maximum o_list[] index" */
 	else if (buf[2] == 'O')
 	{

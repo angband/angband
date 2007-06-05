@@ -1077,7 +1077,7 @@ static void init_books(void)
 		}
 	}
 
-	/* Place each spell in it's own book */
+	/* Place each spell in its own book */
 	for (spell = 0; spell < z_info->s_max; spell++)
 	{
 		/* Get the spell */

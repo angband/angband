@@ -36,7 +36,7 @@ void* rpanic(size_t len)
 	/* Hopefully, we have a real "panic" function */
 	if (rpanic_aux) return ((*rpanic_aux)(len));
 
-	/* Attempt to crash before icky things happen */
+	/* Attempt to quit before icky things happen */
 	quit("Out of Memory!");
 
 	/* Paranoia */

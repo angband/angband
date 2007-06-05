@@ -190,7 +190,7 @@ void do_cmd_wield(void)
 		s = strchr(quark_str(equip_o_ptr->note), '!');
 
 		/* Process preventions */
-		/* XXX Perhaps this should be factored out to a seperate function? */
+		/* XXX Perhaps this should be factored out to a separate function? */
 		while (s)
 		{
 			/* Check the "restriction" */
@@ -543,7 +543,7 @@ void do_cmd_destroy(void)
 			msg_format("All %^s will always be squelched.", o_name2);
 
 			/*Mark the view to be updated*/
-			p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW);;
+			p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW);
 		}
 	}
 

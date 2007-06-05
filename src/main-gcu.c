@@ -717,7 +717,7 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 	wmove(td->win, y, x);
 
 	/* Format to appropriate size */
-	strnfmt(buf, sizeof buf, "%.*s", n, s);
+	strnfmt(buf, sizeof(buf), "%.*s", n, s);
 
 	/* Write to screen */
 	waddstr(td->win, buf);
@@ -830,7 +830,6 @@ errr init_gcu(int argc, char **argv)
 
 	/* Activate hooks */
 	quit_aux = hook_quit;
-	core_aux = hook_quit;
 
 	/* Require standard size screen */
 	if ((LINES < 24) || (COLS < 80))

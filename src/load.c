@@ -1012,12 +1012,12 @@ static int rd_squelch(void)
 	/* Write the autoinscriptions array*/
 	for (i = 0; i < inscriptions_count; i++)
 	{
-		 char tmp[80];
+		char tmp[80];
 
-		 rd_s16b(&inscriptions[i].kind_idx);
-		 rd_string(tmp, 80);
+		rd_s16b(&inscriptions[i].kind_idx);
+		rd_string(tmp, sizeof(tmp));
 
-		 inscriptions[i].inscription_idx = quark_add(tmp);
+		inscriptions[i].inscription_idx = quark_add(tmp);
 	}
 
 	return 0;

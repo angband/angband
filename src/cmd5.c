@@ -576,7 +576,7 @@ void do_cmd_browse_aux(const object_type *o_ptr)
 		/* Ask for a spell */
 		spell = get_spell(o_ptr, "browse", TRUE, TRUE);
 		if (spell < 0) break;
-	
+
 		/* Browse the spell */
 		browse_spell(spell);
 	}

@@ -817,26 +817,3 @@ void quit_fmt(cptr fmt, ...)
 	/* Call quit() */
 	quit(res);
 }
-
-
-
-/*
- * Vararg interface to core()
- */
-void core_fmt(cptr fmt, ...)
-{
-	char *res;
-	va_list vp;
-
-	/* Begin the Varargs Stuff */
-	va_start(vp, fmt);
-
-	/* If requested, Do a virtual fprintf to stderr */
-	res = vformat(fmt, vp);
-
-	/* End the Varargs Stuff */
-	va_end(vp);
-
-	/* Call core() */
-	core(res);
-}

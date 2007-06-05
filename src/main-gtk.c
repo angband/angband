@@ -818,7 +818,6 @@ errr init_gtk(int argc, char **argv)
 
 	/* Activate hooks */
 	quit_aux = hook_quit;
-	core_aux = hook_quit;
 
 	/* Set the system suffix */
 	ANGBAND_SYS = "gtk";

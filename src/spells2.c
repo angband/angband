@@ -246,9 +246,9 @@ void identify_pack(void)
 		squelch = do_ident_item(i, o_ptr);
 
 		/*
-		* If the object was squelched, keep analyzing
-		* the same slot (the inventory was displaced). -DG-
-		*/
+		 * If the object was squelched, keep analyzing
+		 * the same slot (the inventory was displaced). -DG-
+		 */
 		if (squelch != SQUELCH_YES || i < INVEN_WIELD) continue;
 
 		/* Now squelch the object */
@@ -3935,10 +3935,9 @@ int do_ident_item(int item, object_type *o_ptr)
 	}
 	else
 	{
-		 msg_format("On the ground: %s.  %s", o_name,
+		msg_format("On the ground: %s.  %s", o_name,
 			  squelch_to_label(squelch));
 	}
 
 	return (squelch);
 }
-

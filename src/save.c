@@ -411,7 +411,7 @@ static void wr_ghost(void)
 /*
  * Write autoinscribe & squelch item-quality submenu to the savefile
  */
-static void wr_squelch()
+static void wr_squelch(void)
 {
 	int i;
 

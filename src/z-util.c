@@ -144,6 +144,7 @@ size_t my_strcat(char *buf, const char *src, size_t bufsize)
 /*
  * Determine if string "a" is equal to string "b"
  */
+#undef streq
 bool streq(cptr a, cptr b)
 {
 	return (!strcmp(a, b));
@@ -228,35 +229,3 @@ void quit(cptr str)
 	/* Failure */
 	(void)(exit(EXIT_FAILURE));
 }
-
-
-
-/*
- * Redefinable "core" action
- */
-void (*core_aux)(cptr) = NULL;
-
-/*
- * Dump a core file, after printing a warning message
- * As with "quit()", try to use the "core_aux()" hook first.
- */
-void core(cptr str)
-{
-	char *crash = NULL;
-
-	/* Use the aux function */
-	if (core_aux) (*core_aux)(str);
-
-	/* Dump the warning string */
-	if (str) plog(str);
-
-	/* Attempt to Crash */
-	(*crash) = (*crash);
-
-	/* Be sure we exited */
-	quit("core() failed");
-}
-
-
-
-

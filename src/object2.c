@@ -371,7 +371,7 @@ void compact_objects(int size)
 
 			/* Nearby objects start out "immune" */
 			if ((cur_dis > 0) && (distance(py, px, y, x) < cur_dis) &&
-										(k_ptr->squelch != SQUELCH_ALWAYS))
+			    (k_ptr->squelch != SQUELCH_ALWAYS))
 				continue;
 
 			/* Saving throw */
@@ -787,7 +787,7 @@ void object_aware(object_type *o_ptr)
 {
 	/* Fully aware of the effects */
 	k_info[o_ptr->k_idx].aware = TRUE;
-	
+
 	/* Scrolls can change the graphics when becoming aware */
 	if (o_ptr->tval == TV_SCROLL)
 	{

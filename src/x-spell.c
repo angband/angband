@@ -15,11 +15,10 @@
 
 /*
  * The defines below must match the spell numbers in spell.txt
- * if they don't, "interessting" things will probably happen.
+ * if they don't, "interesting" things will probably happen.
  *
- * It would be nice if we could get rid of this dependancy
+ * It would be nice if we could get rid of this dependency.
  */
-
 #define SPELL_MAGIC_MISSILE             0
 #define SPELL_DETECT_MONSTERS           1
 #define SPELL_PHASE_DOOR                2

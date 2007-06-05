@@ -4494,15 +4494,13 @@ void html_screenshot(cptr name, int mode)
 
 	if(mode == 0)
 	{
-		fprintf(htm, "<!DOCTYPE html>");
-		fprintf(htm, "<html\n");
-		fprintf(htm, "<head>\n");
-		fprintf(htm, "  <meta=\"generator\" content=\"%s %d.%d.%d\">\n",
+		fprintf(htm, "<!DOCTYPE html><html><head>\n");
+		fprintf(htm, "  <meta='generator' content='%s %d.%d.%d'>\n",
 	            	VERSION_NAME, VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 		fprintf(htm, "  <title>%s</title>\n", name);
 		fprintf(htm, "</head>\n\n");
-		fprintf(htm, "<body text=\"#FFFFFF\" bgcolor=\"#000000\">\n");
-		fprintf(htm, "<pre><tt>\n");
+		fprintf(htm, "<body style='color: #fff; background: #000;'>\n");
+		fprintf(htm, "<pre>\n");
 	}
 	else 
 	{
@@ -4547,7 +4545,7 @@ void html_screenshot(cptr name, int mode)
 			}
 
 			/* Write the character and escape special HTML characters */
-			if(mode == 0) write_html_escape_char(htm, c);
+			if (mode == 0) write_html_escape_char(htm, c);
 			else fprintf(htm, "%c", c);
 		}
 
@@ -4557,8 +4555,10 @@ void html_screenshot(cptr name, int mode)
 
 	/* Close the last font-color tag if necessary */
 	if (oa != TERM_WHITE) fprintf(htm, close_color_fmt);
-	if(mode == 0) {
-		fprintf(htm, "</tt></pre>\n");
+
+	if (mode == 0)
+	{
+		fprintf(htm, "</pre>\n");
 		fprintf(htm, "</body>\n");
 		fprintf(htm, "</html>\n");
 	}
@@ -4567,6 +4567,6 @@ void html_screenshot(cptr name, int mode)
 		fprintf(htm, "[/COLOR][/BC][/TT][/CODE]\n");
 	}
 
-		/* Close it */
-		my_fclose(htm);
+	/* Close it */
+	my_fclose(htm);
 }
