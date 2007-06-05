@@ -239,17 +239,6 @@
 
 
 /*
- * Maximum value storable in a "byte" (hard-coded)
- */
-#define MAX_UCHAR       255
-
-/*
- * Maximum value storable in a "s16b" (hard-coded)
- */
-#define MAX_SHORT       32767
-
-
-/*
  * Store constants
  *
  * STORE_MAX_KEEP must be < STORE_INVEN_MAX.
@@ -482,17 +471,17 @@ enum
 /*
  * Indexes of the various "stats" (hard-coded by savefiles, etc).
  */
-#define A_STR	0
-#define A_INT	1
-#define A_WIS	2
-#define A_DEX	3
-#define A_CON	4
-#define A_CHR	5
+enum
+{
+	A_STR = 0,
+	A_INT,
+	A_WIS,
+	A_DEX,
+	A_CON,
+	A_CHR,
 
-/*
- * Total number of stats.
- */
-#define A_MAX	6
+	A_MAX
+};
 
 
 /*
@@ -617,19 +606,16 @@ enum
 
 
 /*
- * Number of keymap modes
+ * Keymap modes.
  */
-#define KEYMAP_MODES	2
+enum
+{
+	KEYMAP_MODE_ORIG = 0,
+	KEYMAP_MODE_ROGUE,
 
-/*
- * Mode for original keyset commands
- */
-#define KEYMAP_MODE_ORIG	0
+	KEYMAP_MODES		/* Total */
+};
 
-/*
- * Mode for roguelike keyset commands
- */
-#define KEYMAP_MODE_ROGUE	1
 
 
 /*** Feature Indexes (see "lib/edit/feature.txt") ***/
@@ -2443,9 +2429,6 @@ enum
 #define OPT_disturb_state			23
 #define OPT_disturb_minor			24
 
-#define OPT_verify_destroy			28
-#define OPT_verify_special			29
-
 #define OPT_view_perma_grids		38
 #define OPT_view_torch_grids		39
 
@@ -2534,7 +2517,6 @@ enum
 #define disturb_panel			op_ptr->opt[OPT_disturb_panel]
 #define disturb_state			op_ptr->opt[OPT_disturb_state]
 #define disturb_minor			op_ptr->opt[OPT_disturb_minor]
-#define verify_special			op_ptr->opt[OPT_verify_special]
 #define view_perma_grids		op_ptr->opt[OPT_view_perma_grids]
 #define view_torch_grids		op_ptr->opt[OPT_view_torch_grids]
 #define flush_failure			op_ptr->opt[OPT_flush_failure]
@@ -3122,3 +3104,11 @@ enum
 #define ACT_BERSERKER           49
 
 #define ACT_MAX                 50
+
+
+
+/* player_type.noscore flags */
+#define NOSCORE_RESURRECT	0x0001
+#define NOSCORE_WIZARD		0x0002
+#define NOSCORE_DEBUG		0x0008
+#define NOSCORE_BORG		0x0010

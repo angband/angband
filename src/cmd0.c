@@ -199,7 +199,7 @@ static command_list cmds_all[] =
 static void do_cmd_wizard(void)
 {
 	/* Verify first time */
-	if (verify_special && !(p_ptr->noscore & 0x0002))
+	if (!(p_ptr->noscore & NOSCORE_WIZARD))
 	{
 		/* Mention effects */
 		msg_print("You are about to enter 'wizard' mode for the very first time!");
@@ -211,7 +211,7 @@ static void do_cmd_wizard(void)
 			return;
 
 		/* Mark savefile */
-		p_ptr->noscore |= 0x0002;
+		p_ptr->noscore |= NOSCORE_WIZARD;
 	}
 
 	/* Toggle mode */
@@ -244,7 +244,7 @@ static void do_cmd_wizard(void)
 static void do_cmd_try_debug(void)
 {
 	/* Ask first time */
-	if (verify_special && !(p_ptr->noscore & 0x0008))
+	if (!(p_ptr->noscore & NOSCORE_DEBUG))
 	{
 		/* Mention effects */
 		msg_print("You are about to use the dangerous, unsupported, debug commands!");
@@ -256,7 +256,7 @@ static void do_cmd_try_debug(void)
 			return;
 
 		/* Mark savefile */
-		p_ptr->noscore |= 0x0008;
+		p_ptr->noscore |= NOSCORE_DEBUG;
 	}
 
 	/* Okay */
@@ -275,7 +275,7 @@ static void do_cmd_try_debug(void)
 static bool do_cmd_try_borg(void)
 {
 	/* Ask first time */
-	if (verify_special && !(p_ptr->noscore & 0x0010))
+	if (!(p_ptr->noscore & NOSCORE_BORG))
 	{
 		/* Mention effects */
 		msg_print("You are about to use the dangerous, unsupported, borg commands!");
@@ -287,7 +287,7 @@ static bool do_cmd_try_borg(void)
 			return;
 
 		/* Mark savefile */
-		p_ptr->noscore |= 0x0010;
+		p_ptr->noscore |= NOSCORE_BORG;
 	}
 
 	/* Okay */

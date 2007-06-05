@@ -1,4 +1,3 @@
-
 /* File: dungeon.c */
 
 /*
@@ -2105,7 +2104,7 @@ void play_game(bool new_game)
 				p_ptr->age++;
 
 				/* Mark savefile */
-				p_ptr->noscore |= 0x0001;
+				p_ptr->noscore |= NOSCORE_RESSURECT;
 
 				/* Message */
 				msg_print("You invoke wizard mode and cheat death.");

@@ -1425,7 +1425,7 @@ cptr option_text[OPT_MAX] =
 	NULL,						/* xxx alert_hitpoint */
 	NULL,						/* xxx alert_failure */
 	NULL,						/* xxx verify_destroy */
-	"verify_special",			/* OPT_verify_special */
+	NULL,						/* xxx verify_special */
 	NULL,						/* xxx allow_quantity */
 	NULL,						/* xxx */
 	NULL,						/* xxx auto_haggle */
@@ -1689,7 +1689,7 @@ cptr option_desc[OPT_MAX] =
 	NULL,										/* xxx alert_hitpoint */
 	NULL,										/* xxx alert_failure */
 	NULL,										/* xxx verify_destroy */
-	"Verify use of special commands",			/* OPT_verify_special */
+	NULL,										/* xxx verify_special */
 	NULL,										/* xxx allow_quantity */
 	NULL,										/* xxx */
 	NULL,										/* xxx auto_haggle */
@@ -1953,7 +1953,7 @@ const bool option_norm[OPT_MAX] =
 	FALSE,		/* xxx alert_hitpoint */
 	FALSE,		/* xxx alert_failure */
 	FALSE,		/* xxx verify_destroy */
-	TRUE,		/* OPT_verify_special */
+	FALSE,		/* xxx verify_special */
 	FALSE,		/* xxx allow_quantity */
 	FALSE,		/* xxx */
 	FALSE,		/* xxx auto_haggle */
@@ -2197,7 +2197,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_query_floor,
 		OPT_easy_alter,
 		OPT_easy_open,
-		OPT_verify_special,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,

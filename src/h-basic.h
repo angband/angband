@@ -192,12 +192,18 @@ typedef int errr;
   typedef uint32_t u32b;
   typedef int32_t s32b;
 
+#define MAX_UCHAR		INT8_MAX
+#define MAX_SHORT		SINT16_MAX
+
 #else /* __STDC__ */
 
   /* Try hacks instead (not guaranteed to work) */
   typedef unsigned char byte;
   typedef signed short s16b;
   typedef unsigned short u16b;
+
+#define MAX_UCHAR		UCHAR_MAX
+#define MAX_SHORT		32767
 
   /* Detect >32-bit longs */
   #if (UINT_MAX == 0xFFFFFFFFUL) && (ULONG_MAX > 0xFFFFFFFFUL)

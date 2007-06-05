@@ -3267,24 +3267,16 @@ static void start_screensaver(void)
 	/*
 	 * Make sure the "verify_special" options is off, so that we can
 	 * get into Borg mode without confirmation.
+	 * 
+	 * Try just marking the savefile correctly.
 	 */
-
-	screensaver_inkey_hack_buffer[j++] = '='; /* Enter options screen */
-	screensaver_inkey_hack_buffer[j++] = '2'; /* Disturbance options */
-
-	/* Cursor down to "verify_special" */
-	for (i = 0; i < 10; i++)
-		screensaver_inkey_hack_buffer[j++] = '2';
-
-	screensaver_inkey_hack_buffer[j++] = 'n'; /* Switch off "verify_special" */
-	screensaver_inkey_hack_buffer[j++] = ESCAPE; /* Leave disturbance options */
+	p_ptr->noscore |= (NOSCORE_BORG);
 
 	/*
 	 * Make sure the "cheat_live" option is set, so that the Borg can
 	 * automatically restart.
 	 */
-
-	screensaver_inkey_hack_buffer[j++] = '7'; /* Cheat options */
+	screensaver_inkey_hack_buffer[j++] = '5'; /* Cheat options */
 
 	/* Cursor down to "cheat live" */
 	for (i = 0; i < OPT_cheat_live - OPT_CHEAT; i++)

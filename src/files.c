@@ -2747,7 +2747,7 @@ static void make_bones(void)
 
 
 	/* Ignore wizards and borgs */
-	if (!(p_ptr->noscore & 0x00FF))
+	if (!(p_ptr->noscore & (NOSCORE_WIZARD | NOSCORE_BORG)))
 	{
 		/* Ignore people who die in town */
 		if (p_ptr->depth)
@@ -3427,7 +3427,7 @@ static errr enter_score(void)
 #ifndef SCORE_WIZARDS
 
 	/* Wizard-mode pre-empts scoring */
-	if (p_ptr->noscore & 0x000F)
+	if (p_ptr->noscore & NOSCORE_WIZARD)
 	{
 		msg_print("Score not registered for wizards.");
 		message_flush();
@@ -3440,7 +3440,7 @@ static errr enter_score(void)
 #ifndef SCORE_BORGS
 
 	/* Borg-mode pre-empts scoring */
-	if (p_ptr->noscore & 0x00F0)
+	if (p_ptr->noscore & NOSCORE_BORG)
 	{
 		msg_print("Score not registered for borgs.");
 		message_flush();
