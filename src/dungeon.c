@@ -2104,7 +2104,7 @@ void play_game(bool new_game)
 				p_ptr->age++;
 
 				/* Mark savefile */
-				p_ptr->noscore |= NOSCORE_RESSURECT;
+				p_ptr->noscore |= NOSCORE_WIZARD;
 
 				/* Message */
 				msg_print("You invoke wizard mode and cheat death.");

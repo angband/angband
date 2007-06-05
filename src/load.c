@@ -2290,7 +2290,7 @@ bool load_player(bool *character_loaded, bool *reusing_savefile)
 				*character_loaded = TRUE;
 
 				/* Mark the savefile */
-				p_ptr->noscore |= NOSCORE_RESURRECT;
+				p_ptr->noscore |= NOSCORE_WIZARD;
 
 				/* Done */
 				return (TRUE);
