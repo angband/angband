@@ -6,18 +6,17 @@
                  /_/   \_\_| |_|\__, |_.__/ \__,_|_| |_|\__,_|
                                 |___/
 
-               Version 3.0.8pre by Andrew Sidwell and Pete Mack
+                 Version 3.0.8 by Andrew Sidwell and Pete Mack
+                       Bug reports to <bugs@rephial.org>
 
-                   Comments and patches to angband-dev:
-             http://angband.oook.cz/mailman/listinfo/angband-dev
-        Bug reports to: http://angband.rogueforge.net/trac/newticket
+   For resources and links to places you can talk about the game, please see:
+                  http://rephial.org/ -- the home of Angband
 
            Based on Moria:   Copyright (c) 1985 Robert Alan Koeneke
                and Umoria:   Copyright (c) 1989 James E. Wilson
-    Angband 2.4fk - 2.6.2:   Alex Cutler, Andy Astrand, Sean Marsh,
+            Angband 2.6.2:   Alex Cutler, Andy Astrand, Sean Marsh,
                              Geoff Hill, Charles Teague, Charles Swiger
             2.7.0 - 2.8.5:   Ben Harrison
             2.9.0 - 3.0.6:   Robert Ruehlmann
 
-    Read the online help files, especially "general.txt" and "version.txt".
-
+   Please read the summary of changes available in the "308.txt" help file!

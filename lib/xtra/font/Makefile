@@ -2,48 +2,29 @@ include ../../../mk/rules.mk
 include ../../../mk/init.mk
 
 OBJECTIVE_DATA = \
-	10x17.dat:${DATA_PATH}/xtra/font    \
-	10x17b.dat:${DATA_PATH}/xtra/font   \
-	10x20.fon:${DATA_PATH}/xtra/font    \
-	12x20.dat:${DATA_PATH}/xtra/font    \
-	12x20b.dat:${DATA_PATH}/xtra/font   \
-	12x24.fon:${DATA_PATH}/xtra/font    \
-	16x16.txt:${DATA_PATH}/xtra/font    \
-	16x25.dat:${DATA_PATH}/xtra/font    \
-	16x25b.dat:${DATA_PATH}/xtra/font   \
-	4x6.dat:${DATA_PATH}/xtra/font      \
-	5x8.dat:${DATA_PATH}/xtra/font      \
+	copying.txt:${DATA_PATH}/xtra/font  \
 	5x8.fon:${DATA_PATH}/xtra/font      \
 	6x10.fon:${DATA_PATH}/xtra/font     \
-	6x12.dat:${DATA_PATH}/xtra/font     \
 	6x12.fon:${DATA_PATH}/xtra/font     \
-	6x12b.dat:${DATA_PATH}/xtra/font    \
-	6x13.fon:${DATA_PATH}/xtra/font     \
 	6x13b.fon:${DATA_PATH}/xtra/font    \
-	6x9.fon:${DATA_PATH}/xtra/font      \
-	7x13.fon:${DATA_PATH}/xtra/font     \
+	6x13.fon:${DATA_PATH}/xtra/font     \
 	7x13b.fon:${DATA_PATH}/xtra/font    \
-	8x13.dat:${DATA_PATH}/xtra/font     \
-	8x13.fon:${DATA_PATH}/xtra/font     \
-	8x13b.dat:${DATA_PATH}/xtra/font    \
+	7x13.fon:${DATA_PATH}/xtra/font     \
 	8x13b.fon:${DATA_PATH}/xtra/font    \
-	8x16.dat:${DATA_PATH}/xtra/font     \
-	8x16b.dat:${DATA_PATH}/xtra/font    \
-	9x15.fon:${DATA_PATH}/xtra/font     \
+	8x13c.fon:${DATA_PATH}/xtra/font    \
+	8x13.fon:${DATA_PATH}/xtra/font     \
+	8x16b.fon:${DATA_PATH}/xtra/font    \
+	8x16.fon:${DATA_PATH}/xtra/font     \
 	9x15b.fon:${DATA_PATH}/xtra/font    \
-	xm10x17.fnt:${DATA_PATH}/xtra/font  \
-	xm10x17b.fnt:${DATA_PATH}/xtra/font \
-	xm12x20.fnt:${DATA_PATH}/xtra/font  \
-	xm12x20b.fnt:${DATA_PATH}/xtra/font \
-	xm16x25.fnt:${DATA_PATH}/xtra/font  \
-	xm16x25b.fnt:${DATA_PATH}/xtra/font \
-	xm4x6.fnt:${DATA_PATH}/xtra/font    \
-	xm5x8.fnt:${DATA_PATH}/xtra/font    \
-	xm6x12.fnt:${DATA_PATH}/xtra/font   \
-	xm6x12b.fnt:${DATA_PATH}/xtra/font  \
-	xm8x13.fnt:${DATA_PATH}/xtra/font   \
-	xm8x13b.fnt:${DATA_PATH}/xtra/font  \
-	xm8x16.fnt:${DATA_PATH}/xtra/font   \
-	xm8x16b.fnt:${DATA_PATH}/xtra/font
+	9x15.fon:${DATA_PATH}/xtra/font     \
+	10x17b.fon:${DATA_PATH}/xtra/font   \
+	10x17.fon:${DATA_PATH}/xtra/font    \
+	10x20.fon:${DATA_PATH}/xtra/font    \
+	12x20b.fon:${DATA_PATH}/xtra/font   \
+	12x20.fon:${DATA_PATH}/xtra/font    \
+	12x24.fon:${DATA_PATH}/xtra/font    \
+	16x25b.fon:${DATA_PATH}/xtra/font   \
+	16x25.fon:${DATA_PATH}/xtra/font    \
+
 
 include ../../../mk/objective.mk
