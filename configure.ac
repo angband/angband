@@ -196,10 +196,6 @@ AC_CHECK_HEADERS([unistd.h fcntl.h dirent.h limits.h stdint.h sys/time.h termios
 
 dnl Check for types.
 AC_TYPE_SIGNAL
-AC_TYPE_INT16_T
-AC_TYPE_INT32_T
-AC_TYPE_UINT16_T
-AC_TYPE_UINT32_T
 
 dnl Check for structs.
 AC_STRUCT_TM
