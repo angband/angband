@@ -1,52 +1,94 @@
 Angband 3.0.8
-- "knowledge menu" browser imported from Un/NPP.
-  "~" command now shows "lore" about monsters, objects, etc.
-- True menu support added; (almost) all menus now use a generic API rather
-  than ad hoc event loops (aka spaghetti).  Commonly used menu layouts are scrolling
-  or multi-column, (other layouts aka "skins" are easy to add). All menu actions
-  (print, handle event, etc) are defined as "virtual functions" (callbacks) so you can
-  write your own row-function provider, rather than depend on fitting data into a
-  common data structure.  (About 1/2 the menus fit this one-off model best; the other
-  half are built using a handful of common data structures, like arrays of strings.)
-- Event handler added. (Menus can listen to each other, etc.)
-- pref files and macro files are generated with an "API" (a simple callback wrapper.)
-- Mouse support added.  Menu browsing & selection can be done with either keystrokes
-  or the mouse.
-- [TBD] Pathfind.
-- Makefiles are cleaned up. Where appropriate, they include the list of object files
-  as a common include. Makefile.std now uses primitive "modules" to add/remove support
-  of various terminal interfaces. (No more uncommenting compile lines.)
-- IBM/emx & Amiga/ami support removed. (If somebody would verify them, they will be
-  added back, with pleasure.)
-- Timed player modifiers (blind, confused, etc) now are kept in an array, not separate
-  elements.  This makes it possible to iterate over them, or find them "unconditionally"
-  by table access.
-- "HP changes color" option for ASCII graphics imported from NPP.
-- Some options set to new defaults
-  (HP Changes color, flow-by-smell, flow-by-sound -- true by default)
-  (run-ignore-doors, run-ignore-stairs, disturb-motion -- false by default)
-- Some options eliminated
-- Menu API added.
-- Event API added.
+=============
+
+This is Angband 3.0.8, the "final" release of the Angband 3.0.7s series.
+Quite a number of people have been involved in this version, and thanks
+must be given to Hugo Kornelis, Pete Mack, Marco K and Frank Palazzolo,
+Christer Nyfalt, Leon Marrick, Antony Sidwell, Andrew Doull, Kenneth
+Boyd, Iain McFall, Kiyoshi Aman, and Brendon Oliver.
+
+Changes from 3.0.6 are now sectioned, because some people will care about
+low-level changes, and others won't.
+
+All gameplay options are now only alterable at birth.  Be careful when
+importing savefiles to make sure that the AI and scumming options are as
+you want them for the entire game!
+
+
+
+Major visible changes
+---------------------
+
+- New splash screen.
+
+- Steam Mecha class added (may be a bit hard to play right now).
+
+- The Ey/Un-style knowledge browser has been imported.
+
+- Mouse support a la FAangband added, but nowhere near as advanced or
+  useful.  Most of the menus you encounter can be selected using the
+  mouse now, as well as using keypresses.  Clicking somewhere on the
+  map will now "walk" there, within certain constraints.  It's a tad
+  bizarre in the town, but seems to work OK otherwise.
+
+- Massive options clearout/reorganisation/redefaulting:
+  - many options have been removed (20 or so, I think)
+  - a large number have new default settings
+  - new option: remaining HP changes the colour of the '@' sign.
+  - new option: always pick up things matching an item in the inventory
+  - experience to next level always displayed until clev50
+  - macros/visuals/colours are now accessible from the options menu.
+
+- Sangband-style object handling added, which makes it much easier to
+  sift through things in the dungeon.
+
+- Item squelching support, EyAngband-style.  Instead of being
+  automatically destroyed, items are instead marked with the inscription
+  "squelch" (if there is no already existing inscription), and all items
+  in your inventory and on the floor inscribed with this will be
+  destroyed if you press '!' at the "destroy" command.
+
+  You can set individual squelch settings for only those items which do
+  not get pseudo-ID'd.  For those that do, you can choose to mark things
+  as "squelch" depending on the feeling you get when you first ID them
+  in that way.  These categories are much broader than those found in
+  other variants; if you want a less coarse selection, give me a shout
+  and I'll see what I can do.
+
+  Worthless items and emptied chests are automatically inscribed with
+  "squelch", saving some micromanagement.
+
+- Ego-lanterns now exist, despite existence not being a predicate.
+  There are four brands, and you'll know when you find one; there's
+  no ID required to figure out if your lantern is special or not.
+
+- Lights now don't use fuel in the daylight in the town.
+
+- Amnesia (the monster attack) is now a timed effect (a la confusion),
+  and has a real gameplay effect, that lasts 25 turns:
+  - casting/praying and zapping rods has a 1 in 3 success rate
+  - reading scrolls, using staves and aiming wands has a 1 in 4 success
+    rate
+
+  Potions of Healing, *Healing* and Life are the only three things which
+  will get rid of amnesia early.  In the future, maybe eating mushrooms
+  of hallucination will cure it...
+
+
+Minor visible changes
+---------------------
 - Added echo to macro trigger entry.
-
-
-Bug fixes.
-- OSX font selection problem fixed.
-
-
-Angband 3.0.7s3
-Suggestions and (more) patches welcomed.
-
-Another, probably mildly annoying, release of Angband "3.0.7s".  This is really
-almost entirely other people's work; thanks go to Hugo Kornelis, Pete Mack,
-Marco K and Frank Palazzolo.  The main gameplay difference is that wands and
-staves now have sensible starting charges again.
-
-Changes:
 - Browsing books now displays information about the spells therein, if
   requested.  As part of this, move spell names/descriptions/locations
   out into a new file, spell.txt.  (Hugo Kornelis)
+- Arrow keys are now distinct from the numeric movement keys, and because
+  of this you can now edit text at prompts in game properly.  Supported
+  on Windows, Mac (untested), and curses.  If you get it working for
+  anything else, please send the patch!
+- Resizing the game window automatically updates its contents, on
+  platforms which support this.
+- Inscribing an item with '!t' will now confirm if you try to take it
+  off.
 - If a stack of rods is recharging, you'll get a message when the first 
   rod is recharged and another message when they are all recharged.
   There is no message when the second, third, etc., rod is recharged.
@@ -54,12 +96,8 @@ Changes:
 - The recharge notification will now disturb you if you have set the 
   option to be disturbed when boring things happen (disturb_minor) to 
   yes.  (Hugo Kornelis)
-- Add console mode patch for Windows (Frank Palazzolo).  This is 
-  basically playing the game in an old-school terminal window for
-  those who like uncluttered gameplay.
-- Get "./configure" working properly again (Marco K).
-- Modernize Mac support; now works on OS X 10.3 onwards, but the old 
-  main-mac has been removed, as has the MPW makefile.  (Pete Mack)
+- Add the recharging fix from V CVS -- things can now explode when you
+  recharge them once more.
 - Added support for improved pluralization of object names.  Allow
   custom plurals for words which need them (e.g. "Kni|fe|ves" and
   "M|ous|ic|e").  Unused at present.  (Hugo Kornelis)
@@ -70,29 +108,99 @@ Changes:
 - Bugfix: Sustain CON was reported before Sustain DEX in self knowledge.
   Since DEX is reported before CON in all other situations, this is now
   reversed.  (Hugo Kornelis)
+- Set wrapping width to 72 for character dumps' item information, to
+  avoid well-behaved newsreaders messing them up.
+- Move back to pre-3.0.6 panel changing behaviour.
+- Semi-rewrite of the store code; now uses a scrolling menu with a
+  slightly more streamlined interface.  Bigscreen support in stores.
+  Ammo is treated in more aesthetically pleasing quantities.
+  General Store always stocks what it stocks now.
+- Remove double-rate spellcasting with the smart_monsters option.
+  (imported from V CVS; Julian Lighton).
+- '[' command displays a monster list in the main terminal window.
+- "Enter" key brings up a little window in the middle of the screen,
+  from which you can select what command you would like to use.  This
+  is inspired by (but not derived from) Hengband.
+- Prompt for overwriting savefiles.
+- Restore some pre-Ben flavour text.
+
+
+Major code cleanup
+------------------
+
+Most of the cleanup has been related to removing ancient or
+non-functional cruft.
+
+- A powerful generic menu interface has been added and used throughout
+  the code.  It reduces code duplication and makes it much much easier
+  to create menus in various styles; e.g. scrolling or multicolumn.
+  See ui.c.
+- Event handler added. (Menus can listen to each other, etc.)
+- Lots and lots of code duplication removed:
+  - pref file dumping now has much less boilerplate
+  - the status line, sidebar, and term window update code is much more
+    streamlined.
+- Nuked a lot of old ports: cap, lsl, sla, xpj, ibm, dos, vcs, lfb, ami,
+  emx, vme.
+- Added a new SDL port by Iain McFall, based on the ToME and Sang ports.
+- As a result of the above, makefiles considerably simplified.  As many
+  makefiles as possible use a common list of source files in
+  "Makefile.src", which simplifies maintainance.  Makefile.std has also
+  been rewritten and contains much less cruft.
+- Timed player modifiers (blind, confused, etc.) are now kept in an
+  array, rather than being seperate variables in p_ptr.  This simplifies
+  a *lot* of code, and makes it trivial to add new effects.  The majority
+  of the work was done using sed scripts.
+- Use a new autoconf/automake system, called OMK.
 - Removed Lua.
-- Arrow keys are now distinct from the numeric movement keys, and because
-  of this you can now edit text at prompts in game properly.  Supported
-  on Windows, Mac (untested), and main-gcu.c.  If you get it working for
-  anything else, please tell me so I can update the patch.
 - Charges for wands/staves are customisable in the lib/edit/ files.
-- Autosquelch support.  (Taken originally from NPP, but heavily
-  cleaned up.)
 - Considerably simplify and speed up main-gcu.c.  (Thanks to Christer
   Nyfalt.)
-- Various code cleanups (including removing VMS support, cleaning up
-  file handling, and fixing memory leaks).
+- Removed trivial-to-hack-around or non-functional compile-time options
+  (VERIFY_SAVEFILE, _TIMESTAMP, and _HONOR, CHECK_TIME).
+- Combine the various h-*.h files into a single header file; remove a
+  lot of cruft, use C99 types when available, 
+- Clean up file locking, move file handling functions into z-file.c,
+  remove usleep() function, add a "portable" directory scanning interface
+  (works on Windows and Unixes at the moment), and my_fexists().
+- Use the safer string handling functions much more; the only use of
+  the "unsafe" built-ins are in the various main-* files.
+- Split random name code from randart code into its own file with a bit
+  of a rewrite.  Use this code for scroll names.
+- Move lots of things out of defines.h to more appropriate places, like
+  h-basic.h and config.h.
+- Replace various magic numbers with constants or N_ELEMENTS().
+  (Hallvard Furuseth)
+- Use C99 types where appropriate (for bools and ints).
+- Import Sangband's/Steamband's code to put chance of generating piles
+  of items in object.txt.
+- Use tables of commands instead of a big switch, to allow doing thing
+  like the new command menu easily without duplication.  (See cmd0.c.)
+- Switch to new model for producing sound: instead of a TERM_XTRA_SOUND
+  hook, we now have a simple "sound_hook" which should be set to the
+  appropriate function to play a sound.  Introduce a new modular system
+  for sound modules for ports that use main.c (for the future, in case
+  we want to use e.g. gstreamer).  Allow sound to be toggled as an
+  in-game option.
+- Remove hardcoded values for p_ptr->noscore.
+
+
+Platform
+--------
+- Modernize Mac support; now works on OS X 10.3 onwards, but the old 
+  main-mac has been removed, as has the MPW makefile.  (Pete Mack)
+- OSX font selection problem fixed.
+- Add console mode patch for Windows (Frank Palazzolo).  This is 
+  basically playing the game in an old-school terminal window for
+  those who like uncluttered gameplay.
 - main-x11 now reads window placement from x11-settings.prf.
 - Fixed Windows bug where you can't move one of the font files after
   having played a game this reboot.  (Thanks to Leon Marrick.)
-- Resizing the game window automatically updates its contents, on
-  platforms which support this.
-- 'next_xp' option to show experience needed for the next level,
-  rather than how much you have now (fixed in s2).
-- Inscribing an item with '!t' will now confirm if you try to take it
-  off.
-- Set wrapping width to 72 for character dumps' item information, to
-  avoid well-behaved newsreaders messing them up.
 - Add platform-specific ifdefs to readdib.c and main-ami.c.
-- Add the recharging fix from V CVS -- things can now explode when you
-  recharge them once more.
+- Allow ^S without freezing the game on the console.  (Hallvard Furuseth)
+- Mouse support on RISC OS.
+- Sort out licences for the various fonts distributed with the game.
+- Import the old DOS/IBM fonts for use in the Windows port.
+- Include SDL_mixer sound module, useable on any port that uses the
+  main.c mechanism.  Thanks to Brendon Oliver for the initial code
+  for this.
