@@ -1017,7 +1017,6 @@ struct player_type
 
 	bool slow_digest;	/* Slower digestion */
 	bool ffall;			/* Feather falling */
-	bool lite;			/* Permanent light */
 	bool regenerate;	/* Regeneration */
 	bool telepathy;		/* Telepathy */
 	bool see_inv;		/* See invisible */

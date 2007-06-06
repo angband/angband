@@ -371,7 +371,7 @@ const cptr angband_sound_name[MSG_MAX] =
 	"kill_unique",
 	"kill_king",
 	"drain_stat",
-	"multiply",
+	"multiply"
 };
 
 

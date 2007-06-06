@@ -895,8 +895,22 @@ static void process_world(void)
 	/* Burn some fuel in the current lite */
 	if (o_ptr->tval == TV_LITE)
 	{
-		/* Hack -- Use some fuel (except on artifacts) */
-		if (!artifact_p(o_ptr) && (o_ptr->timeout > 0))
+		u32b f1, f2, f3;
+		bool burn_fuel = TRUE;
+
+		/* Get the object flags */
+		object_flags(o_ptr, &f1, &f2, &f3);
+
+		/* Turn off the wanton burning of light during the day in the town */
+		if (!p_ptr->depth && ((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2)))
+			burn_fuel = FALSE;
+
+		/* If the light has the NO_FUEL flag, well... */
+		if (f3 & TR3_NO_FUEL)
+		    burn_fuel = FALSE;
+
+		/* Use some fuel (except on artifacts, or during the day) */
+		if (burn_fuel && o_ptr->timeout > 0)
 		{
 			/* Decrease life-span */
 			o_ptr->timeout--;

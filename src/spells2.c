@@ -515,10 +515,6 @@ void self_knowledge(void)
 	{
 		info[i++] = "You land gently.";
 	}
-	if (p_ptr->lite)
-	{
-		info[i++] = "You are glowing with light.";
-	}
 	if (p_ptr->regenerate)
 	{
 		info[i++] = "You regenerate quickly.";

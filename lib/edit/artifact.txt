@@ -83,7 +83,7 @@ N:1:of Galadriel
 I:39:4:0
 W:5:5:10:10000
 P:0:1d1:0:0:0
-F:ACTIVATE | 
+F:ACTIVATE | NO_FUEL |
 F:INSTA_ART
 A:ILLUMINATION:10:10
 D:A small crystal phial, with the light of Earendil's Star contained inside.  
@@ -96,7 +96,7 @@ N:2:of Elendil
 I:39:5:0
 W:30:25:5:30000
 P:0:1d1:0:0:0
-F:ACTIVATE | SEE_INVIS | 
+F:ACTIVATE | SEE_INVIS | NO_FUEL |
 F:INSTA_ART
 A:MAGIC_MAP:50:50
 D:The shining Star of the West, a treasured heirloom of Elendil's house.
@@ -107,7 +107,7 @@ N:3:of Thrain
 I:39:6:0
 W:50:50:5:50000
 P:0:1d1:0:0:0
-F:ACTIVATE | SEE_INVIS | HOLD_LIFE | RES_LITE | RES_DARK | 
+F:ACTIVATE | SEE_INVIS | HOLD_LIFE | RES_LITE | RES_DARK | NO_FUEL |
 F:INSTA_ART
 A:DETECT:30:30
 D:A great globe seemingly filled with moonlight, the famed Heart of the 
@@ -162,7 +162,7 @@ I:39:7:2
 W:75:60:200:100000
 P:0:10d10:0:0:0
 # F:DRAIN_MANA | 
-F:ACTIVATE | 
+F:ACTIVATE | NO_FUEL |
 F:INT | WIS | SEARCH | INFRA | SEE_INVIS | TELEPATHY | 
 F:RES_CHAOS | RES_BLIND | AGGRAVATE | DRAIN_EXP | 
 F:INSTA_ART | HIDE_TYPE

@@ -754,13 +754,39 @@ T:22:0:99
 T:23:0:99
 F:CON | KILL_DRAGON | RES_FEAR
 
-# 96 (unused)
 
-# 97 (unused)
+### Lanterns/torches
 
-# 98 (unused)
+# Not for now -- need to figure out how ID applies
+#N:96:of Shadows
+#X:10:0
+#W:5:4:0:1000 (imported from NPP)
+#C:0:0:0:2
+#T:39:0:1
+#F:STEALTH | HIDE_TYPE | RES_LITE
 
-# 99 (unused)
+N:97:of Brightness
+X:10:0
+W:0:2:0:2000
+C:0:0:0:0
+T:39:0:1
+F:LITE
+
+N:98:(Everburning)
+X:10:0
+W:0:3:0:2500
+C:0:0:0:0
+T:39:1:1 (lanterns only)
+F:NO_FUEL
+
+#N:99:of True Sight
+#X:10:0
+#W:depth:rarity:extra weight:cost
+#W:20:8:0:6000 (imported from S)
+#C:0:0:0:0
+#T:39:0:1
+#F:RES_BLIND | SEE_INVIS
+
 
 ### Digging Tools
 

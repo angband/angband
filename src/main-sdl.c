@@ -3477,12 +3477,8 @@ static void init_paths(void)
 	/* Read every font to the limit */
 	while (my_dread(dir, buf, sizeof buf))
 	{
-		/* Check for at least an extension */
-		signed extension_pos = strlen(buf) - 4;
-		if (extension_pos <= 0) continue;
-
 		/* Check for file extension */
-		if (strcmp((buf + extension_pos), ".fon") == 0)
+		if (suffix(buf, ".fon"))
 			FontList[num_fonts++] = string_make(buf);
 
 		/* Don't grow to long */

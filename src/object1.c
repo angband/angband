@@ -1309,13 +1309,13 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 	/* No more details wanted */
 	if (mode < 2) goto object_desc_done;
 
-	/* Hack -- Process Lanterns/Torches */
-	if ((o_ptr->tval == TV_LITE) && (!artifact_p(o_ptr)))
+	/* Fuelled light sources get number of remaining turns appended */
+	if ((o_ptr->tval == TV_LITE) && !(f3 & TR3_NO_FUEL))
 	{
-		/* Hack -- Turns of light for normal lites */
-		object_desc_str_macro(t, " (with ");
+		/* Turns of light for normal lites */
+		object_desc_str_macro(t, " (");
 		object_desc_num_macro(t, o_ptr->timeout);
-		object_desc_str_macro(t, " turns of light)");
+		object_desc_str_macro(t, " turns)");
 	}
 
 

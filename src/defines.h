@@ -287,7 +287,7 @@
 /*
  * Refueling constants
  */
-#define FUEL_TORCH	5000	/* Maximum amount of fuel in a torch */
+#define FUEL_TORCH	6000	/* Maximum amount of fuel in a torch */
 #define FUEL_LAMP	15000   /* Maximum amount of fuel in a lantern */
 
 
@@ -1849,7 +1849,7 @@ enum
 #define TR3_SEE_INVIS       0x00000020L /* See Invis */
 #define TR3_FREE_ACT        0x00000040L /* Free action */
 #define TR3_HOLD_LIFE       0x00000080L /* Hold life */
-#define TR3_XXX1            0x00000100L
+#define TR3_NO_FUEL         0x00000100L /* Light source uses no fuel */
 #define TR3_XXX2            0x00000200L
 #define TR3_XXX3            0x00000400L
 #define TR3_XXX4            0x00000800L

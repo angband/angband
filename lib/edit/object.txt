@@ -3133,7 +3133,7 @@ D:It is equippable as a light source with a radius of 1 square.
 D:  It may also be used to fuel another torch, up to a maximum of 5000
 D: turns of light.
 
-N:347:& Brass Lantern~
+N:347:& Lantern~
 G:~:U
 I:39:1:0
 W:3:0:50:35
@@ -3150,7 +3150,7 @@ W:1:0:10:3
 A:1/1
 P:0:2d6:0:0:0
 F:EASY_KNOW
-D:It can be used to fuel a brass lantern with 7500 turns of light, up to
+D:It can be used to fuel a lantern with 7500 turns of light, up to
 D: a maximum of 15000 turns of light.
 D:  When thrown, it is considered lit, so it does more than nominal
 D: damage (which occurs even against creatures resistant to fire).

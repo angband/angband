@@ -250,18 +250,20 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 			/* Analyze the type */
 			switch (o_ptr->tval)
 			{
-				case TV_FOOD:
-				case TV_LITE:
-				case TV_FLASK:
 				case TV_SPIKE:
 				case TV_SHOT:
 				case TV_ARROW:
 				case TV_BOLT:
 				case TV_DIGGING:
 				case TV_CLOAK:
-				break;
+					break;
+
+				case TV_LITE:
+					if (artifact_p(o_ptr) || ego_item_p(o_ptr))
+						break;
+
 				default:
-				return (FALSE);
+					return (FALSE);
 			}
 			break;
 		}
@@ -281,9 +283,10 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 				case TV_SOFT_ARMOR:
 				case TV_HARD_ARMOR:
 				case TV_DRAG_ARMOR:
-				break;
+					break;
+
 				default:
-				return (FALSE);
+					return (FALSE);
 			}
 			break;
 		}
@@ -302,9 +305,10 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 				case TV_HAFTED:
 				case TV_POLEARM:
 				case TV_SWORD:
-				break;
+					break;
+
 				default:
-				return (FALSE);
+					return (FALSE);
 			}
 			break;
 		}
@@ -319,15 +323,17 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 				case TV_SCROLL:
 				case TV_POTION:
 				case TV_HAFTED:
-				break;
+					break;
+
 				case TV_POLEARM:
 				case TV_SWORD:
 				{
 					/* Known blessed blades are accepted too */
 					if (is_blessed(o_ptr) && object_known_p(o_ptr)) break;
 				}
+
 				default:
-				return (FALSE);
+					return (FALSE);
 			}
 			break;
 		}
@@ -340,9 +346,10 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 			{
 				case TV_SCROLL:
 				case TV_POTION:
-				break;
+					break;
+
 				default:
-				return (FALSE);
+					return (FALSE);
 			}
 			break;
 		}
@@ -361,9 +368,10 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 				case TV_ROD:
 				case TV_SCROLL:
 				case TV_POTION:
-				break;
+					break;
+				
 				default:
-				return (FALSE);
+					return (FALSE);
 			}
 			break;
 		}
@@ -1047,17 +1055,13 @@ static void store_delete_item(int st)
  * stores have, unless it is an ego-item or has various bonuses.
  *
  * Based on a suggestion by Lee Vogt <lvogt@cig.mcel.mot.com>.
- *
- * If the stores ever become truly externalised, i.e. if Lua becomes more
- * integrated, then there should be some way to get this out of the compiled
- * code, as it is a little hacky.  XXX
  */
 static bool black_market_ok(const object_type *o_ptr)
 {
 	int i, j;
 
 	/* Ego items are always fine */
-	if (o_ptr->name2) return (TRUE);
+	if (ego_item_p(o_ptr)) return (TRUE);
 
 	/* Good items are normally fine */
 	if (o_ptr->to_a > 2) return (TRUE);
@@ -1278,7 +1282,6 @@ static struct staple_type
 	{ TV_FOOD, SV_FOOD_JERKY, MAKE_NORMAL },
 	{ TV_FOOD, SV_FOOD_PINT_OF_WINE, MAKE_NORMAL },
 	{ TV_LITE, SV_LITE_TORCH, MAKE_NORMAL },
-	{ TV_LITE, SV_LITE_LANTERN, MAKE_NORMAL },
 	{ TV_FLASK, 0, MAKE_NORMAL },
 	{ TV_SPIKE, 0, MAKE_NORMAL },
 	{ TV_SHOT, SV_AMMO_NORMAL, MAKE_MAX },

@@ -846,13 +846,14 @@ static void prt_state(int row, int col)
 
 
 /*
- * Prints the speed of a character.			-CJS-
+ * Prints the speed of a character.
  */
 static void prt_speed(int row, int col)
 {
 	int i = p_ptr->pspeed;
 
 	byte attr = TERM_WHITE;
+	const char *type = NULL;
 	char buf[32] = "";
 
 	/* Hack -- Visually "undo" the Search Mode Slowdown */
@@ -862,15 +863,18 @@ static void prt_speed(int row, int col)
 	if (i > 110)
 	{
 		attr = TERM_L_GREEN;
-		strnfmt(buf, sizeof(buf), "Fast (+%d)", (i - 110));
+		type = "Fast";
 	}
 
 	/* Slow */
 	else if (i < 110)
 	{
 		attr = TERM_L_UMBER;
-		strnfmt(buf, sizeof(buf), "Slow (-%d)", (110 - i));
+		type = "Slow";
 	}
+
+	if (type)
+		strnfmt(buf, sizeof(buf), "%s (%+d)", type, (i - 110));
 
 	/* Display the speed */
 	c_put_str(attr, format("%-14s", buf), row, col);
@@ -1648,71 +1652,86 @@ static void calc_hitpoints(void)
 
 
 /*
- * Extract and set the current "lite radius"
+ * Calculate and set the current light radius.
+ *
+ * The brightest wielded object counts as the light source; radii do not add
+ * up anymore.
+ *
+ * Note that a cursed light source no longer emits light.
  */
 static void calc_torch(void)
 {
 	int i;
-	object_type *o_ptr;
-	u32b f1, f2, f3;
 
 	s16b old_lite = p_ptr->cur_lite;
+	s16b new_lite = 0;
+	bool burn_light = TRUE;
 
 
-	/* Assume no light */
-	p_ptr->cur_lite = 0;
+	/* Ascertain lightness if in the town */
+	if (!p_ptr->depth && ((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2)))
+		burn_light = FALSE;
 
-	/* Loop through all wielded items */
+
+	/* Examine all wielded objects, use the brightest */
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
-		o_ptr = &inventory[i];
+		u32b f1, f2, f3;
+
+		int amt = 0;
+		object_type *o_ptr = &inventory[i];
 
 		/* Skip empty slots */
 		if (!o_ptr->k_idx) continue;
 
-		/* Examine actual lites */
-		if (o_ptr->tval == TV_LITE)
-		{
-			/* Artifact Lites provide permanent, bright, lite */
-			if (artifact_p(o_ptr))
-			{
-				p_ptr->cur_lite += 3;
-				continue;
-			}
-			
-			/* Lanterns (with fuel) provide more lite */
-			if ((o_ptr->sval == SV_LITE_LANTERN) && (o_ptr->timeout > 0))
-			{
-				p_ptr->cur_lite += 2;
-				continue;
-			}
-			
-			/* Torches (with fuel) provide some lite */
-			if ((o_ptr->sval == SV_LITE_TORCH) && (o_ptr->timeout > 0))
-			{
-				p_ptr->cur_lite += 1;
-				continue;
-			}
-		}
-		else
-		{
-			/* Extract the flags */
-			object_flags(o_ptr, &f1, &f2, &f3);
+		/* Extract the flags */
+		object_flags(o_ptr, &f1, &f2, &f3);
 
-			/* does this item glow? */
-			if (f3 & TR3_LITE) p_ptr->cur_lite++;
+		/* LITE flag on an object always increases radius */
+		if (f3 & TR3_LITE) amt++;
+
+		/* Cursed objects emit no light */
+		if (o_ptr->ident & IDENT_CURSED)
+		{
+			amt = 0;
 		}
+
+		/* Examine actual lites */
+		else if (o_ptr->tval == TV_LITE)
+		{
+			/* Artifact Lites provide permanent bright light */
+			if (artifact_p(o_ptr))
+				amt += 3;
+
+			/* Non-artifact lights and those without fuel provide no light */
+			else if (!burn_light || o_ptr->timeout == 0)
+			    amt = 0;
+
+			/* All lit lights provide at least radius 2 light */
+			else
+			{
+				amt += 2;
+
+				/* Torches below half fuel provide less light */
+				if (o_ptr->sval == SV_LITE_TORCH && o_ptr->timeout < (FUEL_TORCH / 4))
+				    amt--;
+			}
+		}
+
+		/* Alter p_ptr->cur_lite if reasonable */
+		if (new_lite < amt)
+		    new_lite = amt;
 	}
 
-
-	/* Player is glowing */
-	if (p_ptr->lite) p_ptr->cur_lite++;
-
+	/* Limit light radius (paranoia) */
+	new_lite = MIN(new_lite, 4);
+	new_lite = MAX(new_lite, 0);
 
 	/* Notice changes in the "lite radius" */
-	if (old_lite != p_ptr->cur_lite)
+	if (old_lite != new_lite)
 	{
 		/* Update the visuals */
+		p_ptr->cur_lite = new_lite;
 		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 	}
 }
@@ -1848,7 +1867,6 @@ static void calc_bonuses(void)
 	p_ptr->ffall = FALSE;
 	p_ptr->hold_life = FALSE;
 	p_ptr->telepathy = FALSE;
-	p_ptr->lite = FALSE;
 	p_ptr->sustain_str = FALSE;
 	p_ptr->sustain_int = FALSE;
 	p_ptr->sustain_wis = FALSE;
@@ -1920,7 +1938,6 @@ static void calc_bonuses(void)
 	/* Good flags */
 	if (f3 & (TR3_SLOW_DIGEST)) p_ptr->slow_digest = TRUE;
 	if (f3 & (TR3_FEATHER)) p_ptr->ffall = TRUE;
-	if (f3 & (TR3_LITE)) p_ptr->lite = TRUE;
 	if (f3 & (TR3_REGEN)) p_ptr->regenerate = TRUE;
 	if (f3 & (TR3_TELEPATHY)) p_ptr->telepathy = TRUE;
 	if (f3 & (TR3_SEE_INVIS)) p_ptr->see_inv = TRUE;
