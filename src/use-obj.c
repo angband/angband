@@ -502,6 +502,7 @@ static bool quaff_potion(object_type *o_ptr, bool *ident)
 			if (clear_timed(TMD_POISONED)) *ident = TRUE;
 			if (clear_timed(TMD_STUN)) *ident = TRUE;
 			if (clear_timed(TMD_CUT)) *ident = TRUE;
+			if (clear_timed(TMD_AMNESIA)) *ident = TRUE;
 			break;
 		}
 
@@ -513,6 +514,7 @@ static bool quaff_potion(object_type *o_ptr, bool *ident)
 			if (clear_timed(TMD_POISONED)) *ident = TRUE;
 			if (clear_timed(TMD_STUN)) *ident = TRUE;
 			if (clear_timed(TMD_CUT)) *ident = TRUE;
+			if (clear_timed(TMD_AMNESIA)) *ident = TRUE;
 			break;
 		}
 
@@ -526,6 +528,7 @@ static bool quaff_potion(object_type *o_ptr, bool *ident)
 			(void)clear_timed(TMD_IMAGE);
 			(void)clear_timed(TMD_STUN);
 			(void)clear_timed(TMD_CUT);
+			(void)clear_timed(TMD_AMNESIA);
 			(void)do_res_stat(A_STR);
 			(void)do_res_stat(A_CON);
 			(void)do_res_stat(A_DEX);

@@ -913,6 +913,14 @@ void do_cmd_cast(void)
 		msg_print("You failed to get the spell off!");
 	}
 
+	/* Check for amnesia */
+	else if (rand_int(3) != 0 && p_ptr->timed[TMD_AMNESIA])
+	{
+		/* Can't remember how */
+		if (flush_failure) flush();
+		msg_print("The words are meaningless; you cannot remember how to read.");
+	}
+
 	/* Process spell */
 	else
 	{
@@ -1081,6 +1089,14 @@ void do_cmd_pray(void)
 	{
 		if (flush_failure) flush();
 		msg_print("You failed to concentrate hard enough!");
+	}
+
+	/* Check for amnesia */
+	else if (rand_int(3) != 0 && p_ptr->timed[TMD_AMNESIA])
+	{
+		/* Can't remember how */
+		if (flush_failure) flush();
+		msg_print("The words are meaningless; you cannot remember how to read.");
 	}
 
 	/* Success */

@@ -684,14 +684,19 @@ static void prt_blind(int row, int col)
  */
 static void prt_confused(int row, int col)
 {
-	if (p_ptr->timed[TMD_CONFUSED])
-	{
-		c_put_str(TERM_ORANGE, "Confused", row, col);
-	}
-	else
-	{
-		put_str("        ", row, col);
-	}
+	bool confused = p_ptr->timed[TMD_CONFUSED] ? TRUE : FALSE;
+	bool forget   = p_ptr->timed[TMD_AMNESIA]  ? TRUE : FALSE;
+
+	const char *text = "        ";
+
+	if (confused && !forget)
+		text = "Confused";
+	else if (confused && forget)
+		text = "Conf Amn";
+	else if (!confused && forget)
+		text = "Amnesiac";
+
+	c_put_str(TERM_ORANGE, text, row, col);
 }
 
 

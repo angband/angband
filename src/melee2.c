@@ -1958,13 +1958,10 @@ bool make_attack_spell(int m_idx)
 			msg_format("%^s tries to blank your mind.", m_name);
 
 			if (rand_int(100) < p_ptr->skills[SKILL_SAV])
-			{
 				msg_print("You resist the effects!");
-			}
-			else if (lose_all_info())
-			{
-				msg_print("Your memories fade away.");
-			}
+			else
+				inc_timed(TMD_AMNESIA, 25);
+
 			break;
 		}
 

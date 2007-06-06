@@ -257,12 +257,12 @@ void do_cmd_read_scroll(void)
 		msg_print("You have no light to read by.");
 		return;
 	}
+
 	if (p_ptr->timed[TMD_CONFUSED])
 	{
 		msg_print("You are too confused!");
 		return;
 	}
-
 
 	/* Restrict choices to scrolls */
 	item_tester_tval = TV_SCROLL;
@@ -287,6 +287,14 @@ void do_cmd_read_scroll(void)
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
+
+	/* Check for amnesia */
+	if (rand_int(4) != 0 && p_ptr->timed[TMD_AMNESIA])
+	{
+		/* Can't remember how */
+		msg_print("You can't remember how to read!");
+		return;
+	}
 
 	/* Not identified yet */
 	ident = FALSE;
@@ -384,6 +392,14 @@ void do_cmd_use_staff(void)
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
+
+	/* Check for amnesia */
+	if (rand_int(4) != 0 && p_ptr->timed[TMD_AMNESIA])
+	{
+		/* Can't remember how */
+		msg_print("You can't remember how to use the staff!");
+		return;
+	}
 
 	/* Not identified yet */
 	ident = FALSE;
@@ -524,6 +540,16 @@ void do_cmd_aim_wand(void)
 		o_ptr = &o_list[0 - item];
 	}
 
+	/* Check for amnesia */
+	if (rand_int(4) != 0 && p_ptr->timed[TMD_AMNESIA])
+	{
+		/* Can't remember how */
+		p_ptr->energy_use = 100;
+		msg_print("You can't remember how to activate the wand!");
+		return;
+	}
+
+
 	/* Aim the wand */
 	if (!use_object(o_ptr, &ident)) return;
 
@@ -570,7 +596,7 @@ void do_cmd_aim_wand(void)
 
 
 /*
- * Activate (zap) a Rod
+ * Zap a Rod
  *
  * Unstack fully charged rods as needed.
  *
@@ -693,6 +719,15 @@ void do_cmd_activate(void)
 	/* Take a turn */
 	p_ptr->energy_use = 100;
 
+	/* Check for amnesia */
+	if (rand_int(3) && p_ptr->timed[TMD_AMNESIA])
+	{
+		/* Can't remember how */
+		if (flush_failure) flush();
+		msg_print("You can't remember how to activate that.");
+		return;
+	}
+
 	/* Extract the item level */
 	lev = k_info[o_ptr->k_idx].level;
 
@@ -707,6 +742,7 @@ void do_cmd_activate(void)
 
 	/* High level objects are harder */
 	chance = chance - ((lev > 50) ? 50 : lev);
+
 
 	/* Give everyone a (slight) chance */
 	if ((chance < USE_DEVICE) && (rand_int(USE_DEVICE - chance + 1) == 0))
