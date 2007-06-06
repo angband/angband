@@ -1097,6 +1097,8 @@ static void autoinscribe_init(void)
  
 	inscriptions = 0;
 	inscriptions_count = 0;
+
+	C_MAKE(inscriptions, AUTOINSCRIPTIONS_MAX, autoinscription);
 }
 
 
@@ -1117,9 +1119,7 @@ static errr init_other(void)
 	(void)quarks_init();
 
 	/* Initialize squelch things */
-	squelch_init();
 	autoinscribe_init();
-	C_MAKE(inscriptions, AUTOINSCRIPTIONS_MAX, autoinscription);
 
 	/* Initialize the "message" package */
 	(void)messages_init();

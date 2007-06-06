@@ -341,7 +341,7 @@ void compact_objects(int size)
 			if (!o_ptr->k_idx) continue;
 
 			/* Hack -- High level objects start out "immune" */
-			if (k_ptr->level > cur_lev && (k_ptr->squelch != SQUELCH_ALWAYS))
+			if (k_ptr->level > cur_lev && !k_ptr->squelch)
 				continue;
 
 			/* Monster */
@@ -357,7 +357,7 @@ void compact_objects(int size)
 				x = m_ptr->fx;
 
 				/* Monsters protect their objects */
-				if ((rand_int(100) < 90) && (k_ptr->squelch != SQUELCH_ALWAYS))
+				if ((rand_int(100) < 90) && !k_ptr->squelch)
 					continue;
 			}
 
@@ -370,15 +370,14 @@ void compact_objects(int size)
 			}
 
 			/* Nearby objects start out "immune" */
-			if ((cur_dis > 0) && (distance(py, px, y, x) < cur_dis) &&
-			    (k_ptr->squelch != SQUELCH_ALWAYS))
+			if ((cur_dis > 0) && (distance(py, px, y, x) < cur_dis) && !k_ptr->squelch)
 				continue;
 
 			/* Saving throw */
 			chance = 90;
 
 			/* Squelched items get compacted */
-			if ((k_ptr->aware) && (k_ptr->squelch == SQUELCH_ALWAYS)) chance = 0;
+			if (k_ptr->aware && k_ptr->squelch) chance = 0;
 
 
 			/* Hack -- only compact artifacts in emergencies */
@@ -3755,10 +3754,22 @@ void floor_item_optimize(int item)
  */
 bool inven_carry_okay(const object_type *o_ptr)
 {
-	int j;
-
 	/* Empty slot? */
-	if (p_ptr->inven_cnt < INVEN_PACK) return (TRUE);
+	if (p_ptr->inven_cnt < INVEN_PACK) return TRUE;
+
+	/* Check if it can stack */
+	if (inven_stack_okay(o_ptr)) return TRUE;
+
+	/* Nope */
+	return FALSE;
+}
+
+/*
+ * Check to see if an item is stackable in the inventory
+ */
+bool inven_stack_okay(const object_type *o_ptr)
+{
+	int j;
 
 	/* Similar slot? */
 	for (j = 0; j < INVEN_PACK; j++)

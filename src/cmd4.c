@@ -2178,7 +2178,7 @@ static void do_cmd_options_aux(void *vpage, cptr info)
 	menu_layout(menu, &SCREEN_REGION);
 
 	screen_save();
-	Term_clear();
+	clear_from(0);
 
 	/* Filter the options for this page */
 	for (i = 0; i < OPT_PAGE_PER; i++)
@@ -2241,7 +2241,7 @@ static void do_cmd_options_win(void)
 
 
 	/* Clear screen */
-	Term_clear();
+	clear_from(0);
 
 	/* Interact */
 	while (1)
@@ -2962,8 +2962,9 @@ void do_cmd_macros(void)
 	{
 		event_type c;
 		int evt;
+
 		/* Clear screen */
-		Term_clear();
+		clear_from(0);
 
 		/* No title -- this is a complex menu. */
 		prt("Interact with macros", 0, 0);
@@ -3446,7 +3447,7 @@ void do_cmd_visuals(void)
 	{
 		event_type key;
 		int evt = -1;
-		Term_clear();
+		clear_from(0);
 		key = menu_select(&visual_menu, &cursor, EVT_CMD);
 		if (key.key == ESCAPE) 
 			break;
@@ -3617,7 +3618,7 @@ void do_cmd_colors(void)
 	{
 		event_type key;
 		int evt;
-		Term_clear();
+		clear_from(0);
 		key = menu_select(&color_menu, &cursor, EVT_CMD);
 
 		/* Done */
@@ -3721,7 +3722,7 @@ void do_cmd_colors(void)
 #endif /* ALLOW_COLORS */
 
 		/* Clear screen */
-		Term_clear();
+		clear_from(0);
 	}
 
 
@@ -4092,7 +4093,7 @@ static menu_item option_actions [] =
 	{{0, "Cheat options", do_cmd_options_aux, (void*)4}, '5'},
 	{{0, 0, 0, 0}}, /* Load and append */
 	{{0, "Subwindow display settings", (action_f) do_cmd_options_win, 0}, 'W'},
-	{{0, "Item squelch and Autoinscribe settings", (action_f) do_cmd_squelch_autoinsc, 0}, 'S'},
+	{{0, "Item squelch and Autoinscribe settings", (action_f) do_cmd_options_item, 0}, 'S'},
 	{{0, "Set base delay factor", (action_f) do_cmd_delay, 0}, 'D'},
 	{{0, "Set hitpoint warning", (action_f) do_cmd_hp_warn, 0}, 'H'},
 	{{0, 0, 0,}, 0}, /* Special choices */
@@ -4134,7 +4135,7 @@ void do_cmd_options()
 
 	while (c.key != ESCAPE)
 	{
-		Term_clear();
+		clear_from(0);
 		c = menu_select(&option_menu, &cursor, 0);
 	}
 
@@ -4151,7 +4152,7 @@ void do_cmd_knowledge()
 
 	while (c.key != ESCAPE)
 	{
-		Term_clear();
+		clear_from(0);
 		c = menu_select(&knowledge_menu, &cursor, 0);
 	}
 

@@ -119,6 +119,7 @@ void do_cmd_eat_food(void)
 	{
 		object_aware(o_ptr);
 		gain_exp((lev + (p_ptr->lev / 2)) / p_ptr->lev);
+		squelch_set(o_ptr);
 	}
 
 	/* Window stuff */
@@ -204,6 +205,7 @@ void do_cmd_quaff_potion(void)
 	{
 		object_aware(o_ptr);
 		gain_exp((lev + (p_ptr->lev / 2)) / p_ptr->lev);
+		squelch_set(o_ptr);
 	}
 
 	/* Window stuff */
@@ -306,6 +308,7 @@ void do_cmd_read_scroll(void)
 	{
 		object_aware(o_ptr);
 		gain_exp((lev + (p_ptr->lev / 2)) / p_ptr->lev);
+		squelch_set(o_ptr);
 	}
 
 	/* Window stuff */
@@ -442,6 +445,7 @@ void do_cmd_use_staff(void)
 	{
 		object_aware(o_ptr);
 		gain_exp((lev + (p_ptr->lev / 2)) / p_ptr->lev);
+		squelch_set(o_ptr);
 	}
 
 	/* Window stuff */
@@ -538,6 +542,7 @@ void do_cmd_aim_wand(void)
 	{
 		object_aware(o_ptr);
 		gain_exp((lev + (p_ptr->lev / 2)) / p_ptr->lev);
+		squelch_set(o_ptr);
 	}
 
 	/* Window stuff */
@@ -617,6 +622,7 @@ void do_cmd_zap_rod(void)
 
 		object_aware(o_ptr);
 		gain_exp((lev + (p_ptr->lev / 2)) / p_ptr->lev);
+		squelch_set(o_ptr);
 	}
 
 	/* Window stuff */

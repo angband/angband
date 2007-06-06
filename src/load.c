@@ -484,7 +484,11 @@ static errr rd_item(object_type *o_ptr)
 		}
 	}
 
-	if(older_than(3, 0, 9) && o_ptr->tval == TV_LITE && !artifact_p(o_ptr) && !ego_item_p(o_ptr) && o_ptr->pval)
+	if (older_than(3, 0, 9) &&
+	    o_ptr->tval == TV_LITE &&
+	    !artifact_p(o_ptr) &&
+	    !ego_item_p(o_ptr) &&
+	    o_ptr->pval)
 	{
 		o_ptr->timeout = o_ptr->pval;
 		o_ptr->pval = 0;
@@ -969,41 +973,36 @@ static errr rd_player_spells(void)
 static int rd_squelch(void)
 {
 	int i;
-	byte tmp8u;
-	u16b file_e_max;
+	byte tmp8u = 24;
 
 	/* Handle old versions, and Pete Mack's patch */
 	if (older_than(3, 0, 6))
 		return 0;
 
-	/* Read item-quality squelch sub-menu */
-	for (i = 0; i < SQUELCH_BYTES; i++)
-		rd_byte(&squelch_level[i]);
 
-	/* Read the number of saved ego-item types */
-	rd_u16b(&file_e_max);
+	/* Read how many squelch bytes we have */
+	if (!older_than(3, 0, 9))
+		rd_byte(&tmp8u);
 
-	/* Read ego-item squelch settings */
-	for (i = 0; i < z_info->e_max; i++)
+	/* Check against current number */
+	if (tmp8u != SQUELCH_BYTES)
 	{
-		ego_item_type *e_ptr = &e_info[i];
-		tmp8u = 0;
-
-		if (i < file_e_max)
-			rd_byte(&tmp8u);
-
-		e_ptr->squelch |= (tmp8u & 0x01);
-		e_ptr->everseen |= (tmp8u & 0x02);
-
-		/* Hack - Repair the savefile */
-		if (!e_ptr->everseen) e_ptr->squelch = FALSE;
+		strip_bytes(tmp8u);
+	}
+	else
+	{
+		for (i = 0; i < SQUELCH_BYTES; i++)
+			rd_byte(&squelch_level[i]);
 	}
 
-	/* Read possible extra elements */
-	while (i < file_e_max)
+	/* Handle pre-cleanup squelch */
+	if (older_than(3, 0, 9))
 	{
-		rd_byte(&tmp8u);
-		i++;
+		u16b tmp16u;
+
+		/* Read the number of saved ego-item types and ignore them all */
+		rd_u16b(&tmp16u);
+		strip_bytes(tmp16u);
 	}
 
 	/* Read the current number of auto-inscriptions */
@@ -1946,18 +1945,27 @@ static errr rd_savefile_new_aux(void)
 	for (i = 0; i < tmp16u; i++)
 	{
 		byte tmp8u;
-
 		object_kind *k_ptr = &k_info[i];
 
 		rd_byte(&tmp8u);
 
 		k_ptr->aware = (tmp8u & 0x01) ? TRUE : FALSE;
 		k_ptr->tried = (tmp8u & 0x02) ? TRUE : FALSE;
+		k_ptr->squelch = (tmp8u & 0x04) ? TRUE : FALSE;
 		k_ptr->everseen = (tmp8u & 0x08) ? TRUE : FALSE;
 
-		if (!older_than(3, 0, 6))
-			rd_byte(&k_ptr->squelch);
+		/* Read the (old) squelch bit */
+		if (older_than(3, 0, 9) && !older_than(3, 0, 6))
+		{
+			rd_byte(&tmp8u);
+
+			if (tmp8u == 3)
+				k_ptr->squelch = TRUE;
+			else
+				k_ptr->squelch = FALSE;
+		}
 	}
+
 	if (arg_fiddle) note("Loaded Object Memory");
 
 

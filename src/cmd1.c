@@ -494,21 +494,26 @@ void search(void)
  */
 static bool auto_pickup_okay(const object_type *o_ptr, bool check_pack)
 {
-	cptr s;
+	const char *inscrip = (o_ptr->note ? quark_str(o_ptr->note) : NULL);
+	const char *s;
+
+	/*** Negative checks ***/
 
 	/* It can't be carried */
 	if (!inven_carry_okay(o_ptr)) return (FALSE);
 
-	/* Object is marked to pickup */
-	if ((k_info[o_ptr->k_idx].squelch == NO_SQUELCH_NEVER_PICKUP) &&
-		object_aware_p(o_ptr)) return (FALSE);
+	/* Ignore squelched items */
+	if (inscrip && streq(inscrip, "squelch")) return (FALSE);
 
-	/* Object is marked to not pickup */
-	if ((k_info[o_ptr->k_idx].squelch == NO_SQUELCH_ALWAYS_PICKUP) &&
-		object_aware_p(o_ptr)) return (TRUE);
+
+
+	/*** Positive checks ***/
+
+	/* Pickup if it matches the inventory */
+	if (pickup_inven && inven_stack_okay(o_ptr)) return (TRUE);
 
 	/* Option to vacuum up things on the floor (not recommended) */
-	if ((always_pickup) && (!query_floor)) return (TRUE);
+	if (always_pickup && !query_floor) return (TRUE);
 
 	/* Check inscription */
 	if (o_ptr->note)
@@ -584,6 +589,9 @@ static void py_pickup_aux(int o_idx, bool msg)
 
 	/* Get the new object */
 	o_ptr = &inventory[slot];
+
+	/* Set squelch status */
+	squelch_set(o_ptr);
 
 	/* Optionally, display a message */
 	if (msg)
@@ -672,9 +680,6 @@ byte py_pickup(int pickup)
 
 	/* Nothing to pick up -- return */
 	if (!cave_o_idx[py][px]) return (0);
-
-	/* Automatically destroy squelched items in pile if necessary */
-	squelch_pile(py, px);
 
 
 	/* Allocate and wipe an array of ordinary gold objects */

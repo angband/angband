@@ -232,11 +232,10 @@ static void wr_xtra(int k_idx)
 
 	if (k_ptr->aware) tmp8u |= 0x01;
 	if (k_ptr->tried) tmp8u |= 0x02;
+	if (k_ptr->squelch) tmp8u |= 0x04;
 	if (k_ptr->everseen) tmp8u |= 0x08;
 
 	wr_byte(tmp8u);
-
-	wr_byte(k_ptr->squelch);
 }
 
 
@@ -415,23 +414,10 @@ static void wr_squelch(void)
 {
 	int i;
 
+	/* Write number of squelch bytes */
+	wr_byte(SQUELCH_BYTES);
 	for (i = 0; i < SQUELCH_BYTES; i++)
 		wr_byte(squelch_level[i]);
-
-	/* Save the current number of ego-item types */
-	wr_u16b(z_info->e_max);
-
-	/* Save ego-item squelch settings */
-	for (i = 0; i < z_info->e_max; i++)
-	{
-		ego_item_type *e_ptr = &e_info[i];
-		byte tmp8u = 0;
-
-		if (e_ptr->squelch) tmp8u |= 0x01;
-		if (e_ptr->everseen) tmp8u |= 0x02;
-
-		wr_byte(tmp8u);
-	}
 
 	/* Write the current number of auto-inscriptions */
 	wr_u16b(inscriptions_count);

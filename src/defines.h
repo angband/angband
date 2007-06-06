@@ -49,7 +49,7 @@
  */
 #define VERSION_MAJOR	3
 #define VERSION_MINOR	0
-#define VERSION_PATCH	8
+#define VERSION_PATCH	9
 #define VERSION_EXTRA	0
 
 
@@ -414,7 +414,13 @@
 /*
  * Total number of inventory slots (hard-coded).
  */
-#define INVEN_TOTAL	36
+#define INVEN_TOTAL		36
+
+
+/*
+ * Special return code corresponding to squelched items.
+ */
+#define ALL_SQUELCHED	101
 
 
 /*
@@ -1402,40 +1408,9 @@ enum
 
 /*** Squelch stuff ***/
 
-/* XXX Too many things beginning with SQUELCH_ */
-
-/*
- * Squelch modes for k_info->squelch
- */
-#define SQUELCH_NEVER               0 /* Allow pickup, defer to OPT_always_pickup */
-#define NO_SQUELCH_NEVER_PICKUP     1 /* Never pickup, override OPT_always_pickup */
-#define NO_SQUELCH_ALWAYS_PICKUP    2 /* Always pickup, override all other options */
-#define SQUELCH_ALWAYS              3 /* Destroy when player walks over */
-
-/*
- * These are the return values of squelch_item_ok().
- */
-#define SQUELCH_FAILED -1
-#define SQUELCH_NO      0
-#define SQUELCH_YES     1
-
-/*
- * Possible levels of quality squelching
- */
-#define SQUELCH_NONE            0 /* No squelch */
-#define SQUELCH_CURSED          1 /* Squelch only cursed items */
-#define SQUELCH_AVERAGE         2 /* Squelch average and worse items */
-#define SQUELCH_GOOD_STRONG     3 /* Squelch good and worse items */
-#define SQUELCH_GOOD_WEAK       4 /* Squelch good and worse items (weak pseudo-id) */
-#define SQUELCH_ALL             5 /* Squelch everything save artifacts */
-
-#define SQUELCH_OPENED_CHESTS   6 /* Squelch open chests */
-
-/* XXX Others defined at beginning of squelch.c */
-#define CHEST_INDEX     19
-
 /* Number of bytes used in squelch sub-quality array */
-#define SQUELCH_BYTES    24
+#define SQUELCH_BYTES    6
+
 
 
 /*** Monster blow constants ***/
@@ -1572,7 +1547,7 @@ enum
 #define USE_EQUIP		0x01	/* Allow equip items */
 #define USE_INVEN		0x02	/* Allow inven items */
 #define USE_FLOOR		0x04	/* Allow floor items */
-
+#define CAN_SQUELCH		0x08	/* Allow selection of all squelched items */
 
 
 /*** Player flags ***/
@@ -1712,7 +1687,7 @@ enum
  * Special object flags
  */
 #define IDENT_SENSE     0x01	/* Item has been "sensed" */
-/* XXX */
+/* ... */
 #define IDENT_EMPTY     0x04	/* Item charges are known */
 #define IDENT_KNOWN     0x08	/* Item abilities are known */
 #define IDENT_STORE     0x10	/* Item is in the inventory of a store */
@@ -1735,6 +1710,7 @@ enum
 #define INSCRIP_SPECIAL         8
 #define INSCRIP_UNCURSED        9
 #define INSCRIP_INDESTRUCTIBLE  10
+#define INSCRIP_SQUELCH			11
 
 /*
  * Number of special inscriptions, plus one.
@@ -2415,7 +2391,7 @@ enum
 #define OPT_query_floor				3
 #define OPT_use_old_target			4
 #define OPT_always_pickup			5
-
+#define OPT_pickup_inven			6
 #define OPT_depth_in_feet			7
 
 #define OPT_show_labels				10
@@ -2507,6 +2483,7 @@ enum
 #define query_floor				op_ptr->opt[OPT_query_floor]
 #define use_old_target			op_ptr->opt[OPT_use_old_target]
 #define always_pickup			op_ptr->opt[OPT_always_pickup]
+#define pickup_inven			op_ptr->opt[OPT_pickup_inven]
 #define depth_in_feet			op_ptr->opt[OPT_depth_in_feet]
 #define show_labels				op_ptr->opt[OPT_show_labels]
 #define ring_bell				op_ptr->opt[OPT_ring_bell]

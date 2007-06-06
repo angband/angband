@@ -253,6 +253,7 @@ extern u16b inscriptions_count;
 /* squelch.c */
 extern byte squelch_level[SQUELCH_BYTES];
 
+
 /*
  * Automatically generated "function declarations"
  */
@@ -465,6 +466,7 @@ extern void floor_item_charges(int item);
 extern void floor_item_describe(int item);
 extern void floor_item_increase(int item, int num);
 extern void floor_item_optimize(int item);
+extern bool inven_stack_okay(const object_type *o_ptr);
 extern bool inven_carry_okay(const object_type *o_ptr);
 extern s16b inven_carry(object_type *o_ptr);
 extern s16b inven_takeoff(int item, int amt);
@@ -526,7 +528,7 @@ extern bool detect_all(void);
 extern void stair_creation(void);
 extern bool enchant(object_type *o_ptr, int n, int eflag);
 extern bool enchant_spell(int num_hit, int num_dam, int num_ac);
-extern int do_ident_item(int item, object_type *o_ptr);
+extern void do_ident_item(int item, object_type *o_ptr);
 extern bool ident_spell(void);
 extern bool identify_fully(void);
 extern bool recharge(int num);
@@ -589,12 +591,9 @@ int add_autoinscription(s16b kind, cptr inscription);
 void autoinscribe_ground(void);
 void autoinscribe_pack(void);
 
-void squelch_init(void);
-int squelch_item_ok(object_type *o_ptr, byte feel, bool fullid);
-int squelch_item(int squelch, int item, object_type *o_ptr);
-void squelch_pile(int y, int x);
-const char *squelch_to_label(int squelch);
-void do_cmd_squelch_autoinsc(void);
+void squelch_set(object_type *o_ptr);
+void squelch_items(void);
+void do_cmd_options_item(void);
 
 /* store.c */
 extern void do_cmd_store(void);

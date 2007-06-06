@@ -1487,6 +1487,7 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 	}
 
 
+
 	/* Use special inscription, if any */
 	if (o_ptr->pseudo)
 	{
@@ -2733,9 +2734,10 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 	bool oops = FALSE;
 
-	bool use_inven = ((mode & (USE_INVEN)) ? TRUE : FALSE);
-	bool use_equip = ((mode & (USE_EQUIP)) ? TRUE : FALSE);
-	bool use_floor = ((mode & (USE_FLOOR)) ? TRUE : FALSE);
+	bool use_inven = ((mode & USE_INVEN) ? TRUE : FALSE);
+	bool use_equip = ((mode & USE_EQUIP) ? TRUE : FALSE);
+	bool use_floor = ((mode & USE_FLOOR) ? TRUE : FALSE);
+	bool can_squelch = ((mode & CAN_SQUELCH) ? TRUE : FALSE);
 
 	bool allow_inven = FALSE;
 	bool allow_equip = FALSE;
@@ -2958,6 +2960,9 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 			/* Indicate legality of the "floor" */
 			if (allow_floor) my_strcat(out_val, " - for floor,", sizeof(out_val));
+
+			/* Indicate that squelched items can be selected */
+			if (can_squelch) my_strcat(out_val, " ! for squelched,", sizeof(out_val));
 		}
 
 		/* Viewing equipment */
@@ -3017,6 +3022,9 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 			/* Append */
 			else if (use_equip) my_strcat(out_val, " / for Equip,", sizeof(out_val));
+
+			/* Indicate that squelched items can be selected */
+			if (can_squelch) my_strcat(out_val, " ! for squelched,", sizeof(out_val));
 		}
 
 		/* Finish the prompt */
@@ -3271,6 +3279,20 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 				item = TRUE;
 				done = TRUE;
 				break;
+			}
+
+			case '!':
+			{
+				/* Try squelched items */
+				if (can_squelch)
+				{
+					(*cp) = ALL_SQUELCHED;
+					item = TRUE;
+					done = TRUE;
+					break;
+				}
+
+				/* Just fall through */
 			}
 
 			default:

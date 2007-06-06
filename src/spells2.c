@@ -233,26 +233,16 @@ void identify_pack(void)
 	/* Simply identify and know every item */
 	for (i = 0; i < INVEN_TOTAL; i++)
 	{
-		int squelch;
 		object_type *o_ptr = &inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
 
 		/* Aware and Known */
-		if(object_known_p(o_ptr)) continue;
+		if (object_known_p(o_ptr)) continue;
 
-		/* Identify it and get the squelch setting */
-		squelch = do_ident_item(i, o_ptr);
-
-		/*
-		 * If the object was squelched, keep analyzing
-		 * the same slot (the inventory was displaced). -DG-
-		 */
-		if (squelch != SQUELCH_YES || i < INVEN_WIELD) continue;
-
-		/* Now squelch the object */
-		squelch_item(squelch, i, o_ptr);
+		/* Identify it */
+		do_ident_item(i, o_ptr);
 
 		/* repeat with same slot */
 		i--;
@@ -1889,8 +1879,6 @@ bool ident_spell(void)
 {
 	int item;
 
-	int squelch;
-
 	object_type *o_ptr;
 
 	cptr q, s;
@@ -1916,11 +1904,8 @@ bool ident_spell(void)
 	}
 
 
-	/* Identify the object and get squelch setting */
-	squelch = do_ident_item(item, o_ptr);
-
-	/* Squelch it (if needed) */
-	squelch_item(squelch, item, o_ptr);
+	/* Identify the object */
+	do_ident_item(item, o_ptr);
 
 
 	/* Something happened */
@@ -1937,7 +1922,6 @@ bool ident_spell(void)
 bool identify_fully(void)
 {
 	int item;
-	int squelch;
 
 	object_type *o_ptr;
 
@@ -1964,8 +1948,8 @@ bool identify_fully(void)
 		o_ptr = &o_list[0 - item];
 	}
 
-	/* Identify the object and get the squelch setting */
-	squelch = do_ident_item(item, o_ptr);
+	/* Identify the object */
+	do_ident_item(item, o_ptr);
 
 	/* Mark the item as fully known */
 	o_ptr->ident |= (IDENT_MENTAL);
@@ -1973,17 +1957,8 @@ bool identify_fully(void)
 	/* Handle stuff */
 	handle_stuff();
 
-	/* Now squelch it if needed */
-	if (squelch == SQUELCH_YES)
-	{
-		squelch_item(squelch, item, o_ptr);
-	}
-
-	else
-	{
-		/* Describe it fully */
-		object_info_screen(o_ptr);
-	}
+	/* Describe it fully */
+	object_info_screen(o_ptr);
 
 
 	/* Success */
@@ -3873,13 +3848,10 @@ void ring_of_power(int dir)
  * `item` is used to print the slot occupied by an object in equip/inven.
  * Any negative value assigned to "item" can be used for specifying an object
  * on the floor.
- *
- * Returns squelch_item_ok(o_ptr).
  */
-int do_ident_item(int item, object_type *o_ptr)
+void do_ident_item(int item, object_type *o_ptr)
 {
 	char o_name[80];
-	int squelch = SQUELCH_NO;
 
 	/* Identify it */
 	object_aware(o_ptr);
@@ -3888,9 +3860,8 @@ int do_ident_item(int item, object_type *o_ptr)
 	/* Apply an autoinscription, if necessary */
 	apply_autoinscription(o_ptr);
 
-	/* Squelch it? */
-	if (item < INVEN_WIELD)
-		squelch = squelch_item_ok(o_ptr, 0, TRUE);
+	/* Set squelch flag */
+	squelch_set(o_ptr);
 
 	/* Recalculate bonuses */
 	p_ptr->update |= (PU_BONUS);
@@ -3929,15 +3900,11 @@ int do_ident_item(int item, object_type *o_ptr)
 	}
 	else if (item >= 0)
 	{
-		msg_format("In your pack: %s (%c).  %s",
-			  o_name, index_to_label(item),
-			  squelch_to_label(squelch));
+		msg_format("In your pack: %s (%c).",
+			  o_name, index_to_label(item));
 	}
 	else
 	{
-		msg_format("On the ground: %s.  %s", o_name,
-			  squelch_to_label(squelch));
+		msg_format("On the ground: %s.", o_name);
 	}
-
-	return (squelch);
 }

@@ -946,27 +946,19 @@ static bool player_birth_aux_1(void)
 
 	/* Set adult options from birth options */
 	for (i = OPT_BIRTH; i < OPT_CHEAT; i++)
-	{
 		op_ptr->opt[OPT_ADULT + (i - OPT_BIRTH)] = op_ptr->opt[i];
-	}
 
 	/* Reset score options from cheat options */
 	for (i = OPT_CHEAT; i < OPT_ADULT; i++)
-	{
 		op_ptr->opt[OPT_SCORE + (i - OPT_CHEAT)] = op_ptr->opt[i];
-	}
 
 	/* Reset squelch bits */
 	for (i = 0; i < z_info->k_max; i++)
-		k_info[i].squelch = SQUELCH_NEVER;
+		k_info[i].squelch = FALSE;
 
 	/* Clear the squelch bytes */
 	for (i = 0; i < SQUELCH_BYTES; i++)
-		squelch_level[i] = SQUELCH_NONE;
-
-	/* Clear the ego-item flags */
-	for (i = 0; i < z_info->e_max; i++)
-		e_info[i].squelch = FALSE;
+		squelch_level[i] = 0;
 
 
 	/* Clear */

@@ -201,10 +201,9 @@ struct object_kind
 
 
 	bool aware;			/* The player is "aware" of the item's effects */
-
 	bool tried;			/* The player has "tried" one of the items */
 
-	byte squelch;		/* Squelch setting for the particular item */
+	bool squelch;		/* Squelch this item? */
 	bool everseen;		/* Used to despoilify squelch menus */
 };
 
@@ -285,8 +284,6 @@ struct ego_item_type
 	byte xtra;			/* Extra sustain/resist/power */
 
 	bool everseen;		/* Do not spoil squelch menus */
-	bool squelch;		/* Squelch this ego-item */
-
 };
 
 

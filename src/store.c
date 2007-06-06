@@ -2108,7 +2108,6 @@ static void store_sell(void)
 	if (store_current != STORE_HOME)
 	{
 		u32b price, dummy, value;
-		int squelch = SQUELCH_NO;
 
 		/* Extract the value of the items */
 		price = price_item(i_ptr, TRUE) * amt;
@@ -2159,11 +2158,6 @@ static void store_sell(void)
 		/* Modify quantity */
 		i_ptr->number = amt;
 
-		/* Squelch it only if there will be items left over */
-		if (amt < o_ptr->number)
-			squelch = squelch_item_ok(o_ptr, 0, TRUE);
-
-
 		/*
 		 * Hack -- Allocate charges between those wands, staves, or rods
 		 * sold and retained, unless all are being sold.
@@ -2183,24 +2177,12 @@ static void store_sell(void)
 		/* Analyze the prices (and comment verbally) */
 		purchase_analyze(price, value, dummy);
 
-		/*
-		 * Check to see if anything left in the pack should be squelched.
-		 * We must make sure to do this before the item is sold
-		 */
-		if (squelch == SQUELCH_YES)
-		{
-			msg_format("In your pack: %s (%c).  %s",
-						o_name, index_to_label(item),
-						squelch_to_label(squelch));
+		/* Set squelch flag */
+		squelch_set(o_ptr);
 
-			squelch_item(squelch, item, o_ptr);
-		}
-		else 
-		{
-			/* Take the object from the player */
-			inven_item_increase(item, -amt);
-			inven_item_optimize(item);
-		}
+		/* Take the object from the player */
+		inven_item_increase(item, -amt);
+		inven_item_optimize(item);
 
 		/* Handle stuff */
 		handle_stuff();

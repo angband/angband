@@ -4495,8 +4495,8 @@ void html_screenshot(cptr name, int mode)
 	if(mode == 0)
 	{
 		fprintf(htm, "<!DOCTYPE html><html><head>\n");
-		fprintf(htm, "  <meta='generator' content='%s %d.%d.%d'>\n",
-	            	VERSION_NAME, VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+		fprintf(htm, "  <meta='generator' content='%s %s'>\n",
+	            	VERSION_NAME, VERSION_STRING);
 		fprintf(htm, "  <title>%s</title>\n", name);
 		fprintf(htm, "</head>\n\n");
 		fprintf(htm, "<body style='color: #fff; background: #000;'>\n");

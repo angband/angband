@@ -1402,7 +1402,7 @@ cptr option_text[OPT_MAX] =
 	"query_floor",				/* OPT_query_floor */
 	"use_old_target",			/* OPT_use_old_target */
 	"always_pickup",			/* OPT_always_pickup */
-	NULL,						/* xxx always_repeat */
+	"pickup_inven",				/* OPT_pickup_inven */
 	"depth_in_feet",			/* OPT_depth_in_feet */
 	NULL,						/* xxx stack_force_notes */
 	NULL,						/* xxx stack_force_costs */
@@ -1666,7 +1666,7 @@ cptr option_desc[OPT_MAX] =
 	"Display things before picking them up",	/* OPT_query_floor */
 	"Use old target by default",				/* OPT_use_old_target */
 	"Pick things up by default",				/* OPT_always_pickup */
-	NULL,										/* xxx always_repeat */
+	"Always pickup items matching inventory",	/* OPT_pickup_inven */
 	"Show dungeon level in feet",				/* OPT_depth_in_feet */
 	NULL,										/* xxx stack_force_notes */
 	NULL,										/* xxx stack_force_costs */
@@ -1930,7 +1930,7 @@ const bool option_norm[OPT_MAX] =
 	TRUE,		/* OPT_query_floor */
 	FALSE,		/* OPT_use_old_target */
 	FALSE,		/* OPT_always_pickup */
-	FALSE,		/* xxx always_repeat */
+	TRUE,		/* OPT_pickup_inven */
 	FALSE,		/* OPT_depth_in_feet */
 	FALSE,		/* OPT_stack_force_notes */
 	FALSE,		/* xxx stack_force_costs */
@@ -2195,9 +2195,9 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_use_old_target,
 		OPT_always_pickup,
 		OPT_query_floor,
+		OPT_pickup_inven,
 		OPT_easy_alter,
 		OPT_easy_open,
-		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,

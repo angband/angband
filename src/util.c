@@ -1481,7 +1481,7 @@ errr quarks_free(void)
 	}
 
 	/* Free the list of "quarks" */
-	FREE((void*)quark__str);
+	FREE(quark__str);
 
 	/* Success */
 	return (0);
