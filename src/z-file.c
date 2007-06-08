@@ -622,10 +622,11 @@ errr fd_lock(int fd, int what)
 	/* Unused parameter */
 	(void)what;
 
-#endif /* SET_UID */
-
 	/* Success */
 	return (0);
+
+#endif /* SET_UID */
+
 }
 
 

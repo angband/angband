@@ -797,16 +797,16 @@ static bool menu_handle_event(menu_type *menu, const event_type *in)
 static const panel_type menu_target =
 {
 	{
-	 {0,								/* listener.object_id */
-	  (handler_f) menu_handle_event,	/* listener.handler */
-	  (release_f) menu_destroy,			/* listener.release */
-	  0,								/* listener.object */
-	  {EVT_KBRD | EVT_MOUSE | EVT_REFRESH}	/* listener.events */
+	 {0,                                    /* listener.object_id */
+	  (handler_f) menu_handle_event,        /* listener.handler */
+	  (release_f) menu_destroy,             /* listener.release */
+	  0,                                    /* listener.object */
+	  {EVT_KBRD | EVT_MOUSE | EVT_REFRESH}  /* listener.events */
 	 },
-	 TRUE,								/* target.is_modal */
+	 TRUE,                                  /* target.is_modal */
 	},
-	menu_refresh,						/* refresh() */
-	{0, 0, 0, 0}						/* boundary */
+	menu_refresh,                           /* refresh() */
+	{0, 0, 0, 0}                            /* boundary */
 };
 
 /* 

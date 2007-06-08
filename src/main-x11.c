@@ -1883,7 +1883,7 @@ static void paste_x11_send(XSelectionRequestEvent *rq)
 	else if (rq->target == XA_STRING)
 	{
 		/* Reply to a known target received recently with data */
-		char buf[1024];
+		unsigned char buf[1024];
 		co_ord max, min;
 		int x, y, i;
 		byte a;

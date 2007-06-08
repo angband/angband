@@ -112,6 +112,19 @@ void add_target(event_target *parent, event_target *child);
 void remove_listener (event_target *parent, event_listener *child);
 event_type run_event_loop(event_target *parent, bool forever, const event_type *start);
 
+/* Forward declare */
+/* RISC OS already has a menu_item and menu_flags in system library */
+#ifdef RISCOS
+#define menu_item ang_menu_item
+#define menu_flags ang_menu_flags
+#endif
+
+typedef struct event_action event_action;
+typedef struct menu_item menu_item;
+typedef struct menu_type menu_type;
+typedef struct menu_skin menu_skin;
+typedef struct menu_iter menu_iter;
+
 
 /* ================= PANEL ============ */
 typedef struct panel_type panel_type;
@@ -127,25 +140,14 @@ typedef struct panel_type panel_type;
  *  - window
  *  - map
  */
-struct panel_type {
+struct panel_type
+{
 	event_target target;
-	void (*refresh)(void);
+	void (*refresh)(menu_type *);
 	region boundary;
 };
 
 /* ================== MENUS ================= */
-
-/* RISC OS already has a menu_item and menu_flags in system library */
-#ifdef RISCOS
-#define menu_item ang_menu_item
-#define menu_flags ang_menu_flags
-#endif
-
-typedef struct event_action event_action;
-typedef struct menu_item menu_item;
-typedef struct menu_type menu_type;
-typedef struct menu_skin menu_skin;
-typedef struct menu_iter menu_iter;
 
 
 /*
