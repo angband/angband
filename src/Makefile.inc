@@ -6,8 +6,8 @@
 
 include Makefile.src
 
-BASEOBJS := $(addsuffix $(OBJEXT), $(ANGFILES))
-ZOBJS := $(addsuffix $(OBJEXT), $(ZFILES))
+BASEOBJS := ${ANGFILES:.o=$(OBJEXT)}
+ZOBJS := ${ZFILES:.o=$(OBJEXT)}
 
 
 # Note dependencies

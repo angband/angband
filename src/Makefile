@@ -5,8 +5,8 @@ include ../mk/objective.mk
 # import source list
 include Makefile.src
 HEADERS = $(HDRS) $(INCS)
-SOURCES = $(addsuffix .c,$(ANGFILES) $(MAINFILES) $(ZFILES))
-OBJECTS = $(addsuffix .o,$(ANGFILES) $(MAINFILES) $(ZFILES))
+OBJECTS = $(ANGFILES) $(MAINFILES) $(ZFILES)
+SOURCES = ${FILES:.o=.c}
 
 # These are for OS-specific ports; ignore 'em until we use autoconf everywhere.
 # SUBDIRS = osx win

@@ -11,50 +11,50 @@ INCS = angband.h config.h defines.h externs.h types.h \
 
 HEADERS = $(HDRS) $(INCS)
 
-ZFILES = z-file z-form z-rand z-term z-type z-util z-virt
-MAINFILES = main maid-x11 main-crb main-gcu main-gtk main-ros main-sdl \
-            main-win main-x11 main-xaw snd-sdl
+ZFILES = z-file.o z-form.o z-rand.o z-term.o z-type.o z-util.o z-virt.o
+MAINFILES = main.o maid-x11.o main-crb.o main-gcu.o main-gtk.o \
+	main-ros.o main-sdl.o main-win.o main-x11.o main-xaw.o snd-sdl.o
 
 ANGFILES = \
-	birth \
-	cave \
-	cmd0 \
-	cmd1 \
-	cmd2 \
-	cmd3 \
-	cmd4 \
-	cmd5 \
-	cmd6 \
-	dungeon \
-	files \
-	generate \
-	init1 \
-	init2 \
-	load \
-	melee1 \
-	melee2 \
-	monster1 \
-	monster2 \
-	obj-info \
-	object1 \
-	object2 \
-	randart \
-	randname \
-	pathfind \
-	save \
-	spells1 \
-	spells2 \
-	squelch \
-	store \
-	tables \
-	ui \
-	use-obj  \
-	util  \
-	variable \
-	wizard1 \
-	wizard2 \
-	x-spell \
-	xtra1 \
-	xtra2
+	birth.o \
+	cave.o \
+	cmd0.o \
+	cmd1.o \
+	cmd2.o \
+	cmd3.o \
+	cmd4.o \
+	cmd5.o \
+	cmd6.o \
+	dungeon.o \
+	files.o \
+	generate.o \
+	init1.o \
+	init2.o \
+	load.o \
+	melee1.o \
+	melee2.o \
+	monster1.o \
+	monster2.o \
+	obj-info.o \
+	object1.o \
+	object2.o \
+	randart.o \
+	randname.o \
+	pathfind.o \
+	save.o \
+	spells1.o \
+	spells2.o \
+	squelch.o \
+	store.o \
+	tables.o \
+	ui.o \
+	use-obj.o  \
+	util.o  \
+	variable.o \
+	wizard1.o \
+	wizard2.o \
+	x-spell.o \
+	xtra1.o \
+	xtra2.o
 
 

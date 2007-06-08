@@ -192,8 +192,8 @@ typedef int errr;
   typedef uint32_t u32b;
   typedef int32_t s32b;
 
-#define MAX_UCHAR		INT8_MAX
-#define MAX_SHORT		SINT16_MAX
+#define MAX_UCHAR		UINT8_MAX
+#define MAX_SHORT		INT16_MAX
 
 #else /* __STDC__ */
 
