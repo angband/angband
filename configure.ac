@@ -74,17 +74,17 @@ AC_ARG_ENABLE(gtk,
 	[enable_gtk=$enableval],
 	[enable_gtk=no])
 AC_ARG_ENABLE(curses,
-	[  --enable-curses                      Enables Curses frontend (default: enabled)],
+	[  --enable-curses                      Enables Curses frontend],
 	[enable_curses=$enableval],
 	[enable_curses=yes])
 AC_ARG_ENABLE(x11,
-	[  --enable-x11                         Enables X11 frontend (default: disabled)],
+	[  --enable-x11                         Enables X11 frontend],
 	[enable_x11=$enableval],
-	[enable_x11=no])
+	[enable_x11=yes])
 AC_ARG_ENABLE(sdl,
-	[  --enable-sdl                         Enables SDL frontend (default: disabled)],
+	[  --enable-sdl                         Enables SDL frontend],
 	[enable_sdl=$enableval],
-	[enable_sdl=no])
+	[enable_sdl=yes])
 
 dnl Sound modules
 AC_ARG_ENABLE(sdl_mixer,
@@ -129,14 +129,15 @@ fi
 
 dnl X11 checking
 if test "$enable_x11" = "yes"; then
-	AC_PATH_X
-	if test "$x_libraries" = "no"; then
+	AC_PATH_XTRA
+
+	if test "$X_DISPLAY_MISSING" != ""; then
 		AC_DEFINE(USE_X11, 0, [Define to 1 if using the X11 frontend and X11 libraries are found.])
 		with_x11=no
 	else
 		AC_DEFINE(USE_X11, 1, [Define to 1 if using the X11 frontend and X11 libraries are found.])
-		CFLAGS+=" -I/usr/X11R6/include -I/usr/include"
-		LDFLAGS+=" $x_libraries"
+		CFLAGS="$CFLAGS $X_CFLAGS"
+		LDFLAGS="$LDFLAGS $X_PRE_LIBS -lX11 $X_EXTRA_LIBS"
 		with_x11=yes
 	fi
 fi
@@ -144,15 +145,21 @@ fi
 dnl SDL checking
 if test "$enable_sdl" = "yes"; then
 	AM_PATH_SDL(1.2.0,,)
-	AC_CHECK_HEADERS([SDL/SDL_ttf.h])
+
 	if test "$SDL_CONFIG" = "no"; then
 		with_sdl=no
 		AC_DEFINE(USE_SDL, 0, [Define to 1 if using the SDL interface and SDL & SDL_ttf are found.])
 	else
-		AC_DEFINE(USE_SDL, 1, [Define to 1 if using the SDL interface and SDL & SDL_ttf are found.])
-		CFLAGS="${CFLAGS} $SDL_CFLAGS"
-		LDFLAGS="${LDFLAGS} $SDL_LIBS"
-		with_sdl=yes
+		AC_CHECK_LIB(SDL_image, IMG_LoadPNG_RW, sdl_image=yes, sdl_image=no)
+		AC_CHECK_LIB(SDL_ttf, TTF_Init, sdl_ttf=yes, sdl_ttf=no)
+
+		if test "$sdl_image" = "yes"; then
+		if test "$sdl_ttf" = "yes"; then
+			AC_DEFINE(USE_SDL, 1, [Define to 1 if using the SDL interface and SDL is found.])
+			CFLAGS="${CFLAGS} ${SDL_CFLAGS}"
+			LDFLAGS="${LDFLAGS} ${SDL_LIBS} -lSDL_image -lSDL_ttf"
+			with_sdl=yes
+		fi; fi
 	fi
 fi
 
@@ -202,8 +209,7 @@ AC_STRUCT_TM
 
 dnl Check for functions.
 AC_FUNC_STAT
-AC_FUNC_SELECT_ARGTYPES
-AC_CHECK_FUNCS([memmove memset strrchr mkdir strtol mkstemp setegid can_change_color])
+AC_CHECK_FUNCS([memmove memset mkdir strtol mkstemp setegid can_change_color])
 
 dnl XXX: Work around some autoconf bugs.
 if test "$prefix" = "NONE"; then

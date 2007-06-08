@@ -33,9 +33,6 @@
 /* Define to 1 if you have the `mkstemp' function. */
 #undef HAVE_MKSTEMP
 
-/* Define to 1 if you have the <SDL/SDL_ttf.h> header file. */
-#undef HAVE_SDL_SDL_TTF_H
-
 /* Define to 1 if you have the `setegid' function. */
 #undef HAVE_SETEGID
 
@@ -55,17 +52,8 @@
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
 
-/* Define to 1 if you have the `strrchr' function. */
-#undef HAVE_STRRCHR
-
 /* Define to 1 if you have the `strtol' function. */
 #undef HAVE_STRTOL
-
-/* Define to 1 if you have the <sys/select.h> header file. */
-#undef HAVE_SYS_SELECT_H
-
-/* Define to 1 if you have the <sys/socket.h> header file. */
-#undef HAVE_SYS_SOCKET_H
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
@@ -110,15 +98,6 @@
 /* Disabled SDL_mixer sound support */
 #undef SDL_SOUND
 
-/* Define to the type of arg 1 for `select'. */
-#undef SELECT_TYPE_ARG1
-
-/* Define to the type of args 2, 3 and 4 for `select'. */
-#undef SELECT_TYPE_ARG234
-
-/* Define to the type of arg 5 for `select'. */
-#undef SELECT_TYPE_ARG5
-
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS
 
@@ -140,7 +119,7 @@
 /* Define to 1 if NCurses is found. */
 #undef USE_NCURSES
 
-/* Define to 1 if using the SDL interface and SDL & SDL_ttf are found. */
+/* Define to 1 if using the SDL interface and SDL is found. */
 #undef USE_SDL
 
 /* Define to 1 if using the X11 frontend and X11 libraries are found. */
@@ -152,3 +131,6 @@
 /* Define to 1 if your processor stores words with the most significant byte
    first (like Motorola and SPARC, unlike Intel and VAX). */
 #undef WORDS_BIGENDIAN
+
+/* Define to 1 if the X Window System is missing or not being used. */
+#undef X_DISPLAY_MISSING
