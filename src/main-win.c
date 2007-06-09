@@ -2012,18 +2012,15 @@ static errr Term_xtra_win_noise(void)
 /*
  * Hack -- make a sound
  */
-static errr Term_xtra_win_sound(int v)
+static void Term_xtra_win_sound(int v)
 {
 #ifdef USE_SOUND
 	int i;
 	char buf[1024];
 #endif /* USE_SOUND */
 
-	/* Sound disabled */
-	if (!use_sound) return (1);
-
 	/* Illegal sound */
-	if ((v < 0) || (v >= MSG_MAX)) return (1);
+	if ((v < 0) || (v >= MSG_MAX)) return;
 
 #ifdef USE_SOUND
 
@@ -2035,7 +2032,7 @@ static errr Term_xtra_win_sound(int v)
 	}
 
 	/* No sample */
-	if (i == 0) return (1);
+	if (i == 0) return;
 
 	/* Build the path */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_SOUND, sound_file[v][Rand_simple(i)]);
@@ -2055,7 +2052,7 @@ static errr Term_xtra_win_sound(int v)
 #else /* USE_SOUND */
 
 	/* Oops */
-	return (1);
+	return;
 
 #endif /* USE_SOUND */
 }
@@ -5087,7 +5084,7 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 #ifdef USE_SOUND
 
 	/* Set the sound hook */
-	sound_hook = Term_xtra_win_sound(v);
+	sound_hook = Term_xtra_win_sound;
 
 #endif /* USE_SOUND */
 
