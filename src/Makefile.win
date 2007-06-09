@@ -2,40 +2,43 @@
 # Makefile for Windows systems using gmake
 #
 #
-# Try "make" to do a default build, using mingw.
+# Try "make" to do a default build, using cygwin.
 #
 # Try "make CONSOLE=yes" to use PDCurses, as long as you set
 # PDCURSES_INCLUDE_DIR and PDCURSES_LIB.
 #
 # Other options:
 #   OBJ_DIR=x will place .o files into directory 'x'
-#   CYGWIN=yes will use the cygwin compiler
+#   MINGW=yes will use the mingw compiler
 #
 
 # Executable name and default target
 EXE = angband.exe
 default: ../$(EXE)
 
+ifndef MINGW
+  CYGWIN=yes
+endif
 
 # Include list of object files and add system-specific ones
 include Makefile.inc
 
-ifdef $(CONSOLE)
-  CFLAGS = -DUSE_GCU -DWIN32_CONSOLE_MODE -I$(PDCURSES_INCLUDE_DIR)
+ifdef CONSOLE
+  CFLAGS = -DUSE_GCU -DWIN32_CONSOLE_MODE -I$(PDCURSES_INC)
   IOBJS = $(BASEOBJS) main-gcu.o main.o
 
-  #PDCURSES_INCLUDE_DIR = ../../pdcurses/include
+  #PDCURSES_INC = ../../pdcurses/include
   #PDCURSES_LIB = ../../pdcurses/lib/pdcurses.a
 else
   CFLAGS = -DWINDOWS
   IOBJS = $(BASEOBJS) win/angband.res main-win.o win/readdib.o
 endif
 
+CC = $(CROSS)gcc
+WRES = $(CROSS)windres
 CFLAGS += -Wall -W -std=iso9899:199409 -pedantic -O2
 
-ifdef $(CYGWIN)
-  CC = gcc
-  WRES = windres
+ifdef CYGWIN
 
   LIBS = -s -mno-cygwin -mwindows -lwinmm -e _mainCRTStartup
 
@@ -47,11 +50,9 @@ ifdef $(CYGWIN)
 endif
 
 
-ifdef $(MINGW)
-  CC = $(CROSS)gcc
-  WRES = $(CROSS)windres
+ifdef MINGW
 
-  ifdef $(CONSOLE)
+  ifdef CONSOLE
     LIBS = -s $(PDCURSES_LIB)
   else
     LIBS = -s -mwindows -lwinmm
@@ -60,18 +61,18 @@ ifdef $(MINGW)
 endif
 
 # Handle cross compiles
-ifdef $(CROSS)
-  CFLAGS += -DCROSS=$(CROSS)
+ifdef CROSS
+  CFLAGS += -DCROSS_COMPILE
 endif
 
 # Handle object output in a different directory
-ifdef $(OBJDIR)
+ifdef OBJDIR
 #  OBJDIR = mingw32/
   OBJS = $(patsubst %.o, $(OBJDIR)%.o, $(IOBJS))
-  $(EXE): mkdirs
   mkdirs:; -mkdir -p $(OBJDIR) $(OBJDIR)win
+  $(EXE): mkdirs
 else
-  OBJS = $(OBJS)
+  OBJS = $(IOBJS)
 endif
 
 
