@@ -2611,6 +2611,63 @@ static void dump_pref_file(void (*dump)(FILE*), const char *title)
 }
 
 /*
+ * Save autoinscription data to a pref file.
+ */
+static void autoinsc_dump(FILE *fff)
+{
+	int i;
+
+	if (!inscriptions)
+		return;
+
+	/* Start dumping */
+	fprintf(fff, "# Autoinscription settings");
+	fprintf(fff, "# B:item kind:inscription\n\n");
+
+	for (i = 0; i < inscriptions_count; i++)
+	{
+		object_kind *k_ptr = &k_info[inscriptions[i].kind_idx];
+
+		/* Describe and write */
+		fprintf(fff, "# Autoinscription for %s\n", k_name + k_ptr->name);
+		fprintf(fff, "B:%d:%s\n\n", inscriptions[i].kind_idx,
+		        quark_str(inscriptions[i].inscription_idx));
+	}
+
+	/* All done */
+	fprintf(fff, "\n");
+}
+
+/*
+ * Save squelch data to a pref file.
+ */
+static void squelch_dump(FILE *fff)
+{
+	int i;
+	int tval, sval;
+	bool squelch;
+
+	/* Start dumping */
+	fprintf(fff, "\n\n");
+	fprintf(fff, "# Squelch bits\n\n");
+
+	/* Dump squelch bits */
+	for (i = 1; i < z_info->k_max; i++)
+	{
+		tval = k_info[i].tval;
+		sval = k_info[i].sval;
+		squelch = k_info[i].squelch;
+
+		/* Dump the squelch info */
+		if (tval || sval)
+			fprintf(fff, "Q:%d:%d:%d:%d\n", i, tval, sval, squelch);
+	}
+
+	/* All done */
+	fprintf(fff, "\n");
+}
+
+/*
  * Write all current options to a user preference file.
  */
 static void option_dump(FILE *fff)
@@ -2670,7 +2727,13 @@ static void option_dump(FILE *fff)
 			fprintf(fff, "\n");
 		}
 	}
+
+	autoinsc_dump(fff);
+	squelch_dump(fff);
 }
+
+
+
 
 /* Hack -- Base Delay Factor */
 void do_cmd_delay(void)
@@ -3616,6 +3679,7 @@ void do_cmd_colors(void)
 	screen_save();
 
 	menu_layout(&color_menu, &SCREEN_REGION);
+
 	/* Interact until done */
 	while (1)
 	{
@@ -4065,15 +4129,22 @@ void do_cmd_save_screen(void)
 	for (;;)
 	{
 		int c = inkey();
-		switch(c) {
-		case ESCAPE:
-			return;
-		case 't': do_cmd_save_screen_text();
-			return;
-		case 'h': do_cmd_save_screen_html(0);
-			return;
-		case 'f': do_cmd_save_screen_html(1);
-			return;
+		switch(c)
+		{
+			case ESCAPE:
+				return;
+
+			case 't':
+				do_cmd_save_screen_text();
+				return;
+
+			case 'h':
+				do_cmd_save_screen_html(0);
+				return;
+
+			case 'f':
+				do_cmd_save_screen_html(1);
+				return;
 		}
 	}
 }

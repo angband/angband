@@ -342,12 +342,6 @@
 
 
 /*
- * OPTION: Person to bother if something goes wrong.
- */
-#define MAINTAINER	"angbandmaint@gmail.com"
-
-
-/*
  * OPTION: Default font (when using X11).
  */
 #define DEFAULT_X11_FONT		"9x15"

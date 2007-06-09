@@ -530,182 +530,6 @@ void squelch_items(void)
 
 
 
-/*** File stuff ***/
-
-/*
- * Save squelch data to a pref file.
- */
-static void dump_squelch_info(void)
-{
-	int i, tval, sval, squelch;
-	FILE *fff;
-	char buf[1024];
-	char fname[80];
-
-	screen_save();
-
-	/* Prompt */
-	prt("Command: Dump Squelch Info", 17, 30);
-	prt("File: ", 18, 30);
-
-	/* Default filename */
-	strnfmt(fname, sizeof(fname), "%s.squ", op_ptr->base_name);
-
-	/* Get a filename */
-	if (askfor_aux(fname, sizeof fname, NULL))
-	{
-		/* Build the filename */
-		path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
-
-		/* Append to the file */
-		safe_setuid_drop();
-		fff = my_fopen(buf, "a");
-		safe_setuid_grab();
-
-      	/* Test for success */
-		if (!fff) return;
-
-		/* Start dumping */
-		fprintf(fff, "\n\n");
-		fprintf(fff, "# Squelch bits\n\n");
-
-		/* Dump squelch bits */
-		for (i = 1; i < z_info->k_max; i++)
-		{
-			tval = k_info[i].tval;
-			sval = k_info[i].sval;
-			squelch = k_info[i].squelch;
-
-			/* Dump the squelch info */
-			if (tval || sval)
-				fprintf(fff, "Q:%d:%d:%d:%d\n", i, tval, sval, squelch);
-		}
-
-		fprintf(fff, "\n\n# squelch_level array\n\n");
-
-		for (i = 0; i < SQUELCH_BYTES; i++)
-			fprintf(fff, "Q:%d:%d\n", i, squelch_level[i]);
-
-		/* All done */
-		fprintf(fff, "\n\n\n\n");
-
-		/* Close */
-		my_fclose(fff);
-
-		/* Ending message */
-		prt("Squelch file saved successfully.  Hit any key to continue.", 17, 30);
-		inkey();
-	}
-
-	screen_load();
-	return;
-}
-
-
-/*
- * Save autoinscription data to a pref file.
- */
-static int dump_autoins_info(void)
-{
-	int i;
-	FILE *fff;
-	char buf[1024];
-	char fname[80];
-
-	screen_save();
-
-	/* Forget it now if there are no inscriptions. */
-	if (!inscriptions)
-	{
-		prt("No inscriptions to save.  Press any key to continue.", 16, 30);
-		inkey();
-		screen_load();
-		return 0;
-	}
-
-	/* Prompt */
-	prt("Command: Dump Autoinscribe Info", 16, 30);
-	prt("File: ", 17, 30);
-
-	/* Default filename */
-	my_strcpy(fname, op_ptr->base_name, sizeof(fname));
-
-	/* Get a filename */
-	if (askfor_aux(fname, sizeof fname, NULL))
-	{
-		/* Build the filename */
-		path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
-
-		/* Overwrite the file */
-		safe_setuid_drop();
-		fff = my_fopen(buf, "w");
-		safe_setuid_grab();
-
-		/* Test for success */
-		if (!fff) return 0;
-
-		/* Start dumping */
-		fprintf(fff, "# Format: B:[Item Kind]:[Inscription]\n\n");
-
-		for (i = 0; i < inscriptions_count; i++)
-		{
-			object_kind *k_ptr = &k_info[inscriptions[i].kind_idx];
-
-			/* Write a comment for the autoinscription*/
-			fprintf(fff, "# Autoinscription for %s\n", k_name + k_ptr->name);
-
-			/* Dump the autoinscribe info */
-			fprintf(fff, "B:%d:%s\n\n", inscriptions[i].kind_idx,
-			        quark_str(inscriptions[i].inscription_idx));
-		}
-
-		/* Close */
-		my_fclose(fff);
-
-		/* Ending message */
-		prt("Autoinscribe file saved successfully.  (Hit a key.)", 16, 30);
-		inkey();
-	}
-
-	screen_load();
-	return 1;
-}
-
-
-/*
- * Load squelch info from a pref file.
- */
-static void load_squelch_info(void)
-{
-	char fname[80];
-
-	screen_save();
-
- 	/* Prompt */
- 	prt("Command: Load squelch info from file", 16, 30);
- 	prt("File: ", 17, 30);
-
-	/* Default filename */
-	strnfmt(fname, sizeof(fname), "%s.squ", op_ptr->base_name);
-
- 	/* Ask for a file (or cancel) */
- 	if (askfor_aux(fname, sizeof fname, NULL))
-	{
-		/* Process the given filename, note success or failure */
-		if (process_pref_file(fname))
-			prt("Failed to load squelch data!  (Hit a key.)", 17, 30);
-		else
-			prt("Squelch squelch squelch!  (Hit a key.)", 17, 30);
-
-		inkey();
-	}
-
-	screen_load();
-
-	return;
-}
-
-
 
 /*** UI stuff ***/
 
@@ -1015,13 +839,8 @@ void do_cmd_options_item(void)
 	for (i = 0; i < N_ELEMENTS(sval_dependent); i++)
 		prt(format("%c) %s", I2A(i), sval_dependent[i].desc), i + 3, 1);
 
-
-	prt("Commands:", 3, 30);
-	prt(" a-t) Go to squelching settings for this type", 5, 30);
-	prt("   Q) Quality squelching options", 6, 30);
-	prt(" ESC) Back to options menu.", 12, 30);
-	prt("   S) Save squelch values to pref file", 8, 30);
-	prt("   B) Save autoinscriptions to pref file", 9, 30);
+	prt("Q) Quality squelching options", i + 4, 1);
+	prt("ESC) Back to options menu.", i + 6, 1);
 
 	while (!done)
 	{
@@ -1041,10 +860,7 @@ void do_cmd_options_item(void)
 		ch = inkey();
 
 		/* Choose! */
-		if (ch == 'S') dump_squelch_info();         /* Dump squelch info */
-		else if (ch == 'B') dump_autoins_info();    /* Dump autoinscribe info */
-		else if (ch == 'L') load_squelch_info();    /* Load squelch info */
-		else if (ch == 'Q') quality_menu();         /* Switch to secondary squelching menu */
+		if (ch == 'Q') quality_menu();         /* Switch to secondary squelching menu */
 		else if (ch == ESCAPE) done = TRUE;         /* Finished */
 
 		else

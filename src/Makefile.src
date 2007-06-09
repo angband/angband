@@ -5,6 +5,8 @@
 # across a range of different makefiles, to cut down on maintenance.
 #
 
+VERSION = 3.0.8
+
 HDRS = h-basic.h
 INCS = angband.h config.h defines.h externs.h types.h \
        z-term.h z-rand.h z-type.h z-util.h z-virt.h z-form.h
@@ -56,5 +58,3 @@ ANGFILES = \
 	x-spell.o \
 	xtra1.o \
 	xtra2.o
-
-

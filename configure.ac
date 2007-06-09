@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([angband], [3.0.8], [http://angband.rogueforge.net/trac])
+AC_INIT([angband], [3.0.8], [bugs@rephial.org])
 AC_PREREQ([2.50])
 
 AC_CANONICAL_HOST

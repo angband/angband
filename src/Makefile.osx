@@ -23,8 +23,6 @@ NAME =Angband
 APPNAME =$(NAME).app
 EXE =angband
 COPYRIGHT =1995-2006 Contributors
-# version number - displayed
-VERSION =3.0.7
 
 # Some Developer CD tools we need - the standard installation location
 TOOLDIR = /Developer/Tools

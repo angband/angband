@@ -64,7 +64,6 @@ LIBS =
 
 # Version info
 EXE = angband
-VERSION = 3.0.8
 
 
 

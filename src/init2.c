@@ -1265,7 +1265,7 @@ static errr init_other(void)
 	/*** Pre-allocate space for the "format()" buffer ***/
 
 	/* Hack -- Just call the "format()" function */
-	(void)format("%s", MAINTAINER);
+	(void)format("I wish you could swim, like dolphins can swim...");
 
 
 	/* Success */

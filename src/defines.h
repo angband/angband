@@ -33,25 +33,19 @@
 
 
 /*
- * Name of the version/variant
+ * Name of the version/variant and its version string
  */
-#define VERSION_NAME "Angband"
+#define VERSION_NAME   "Angband"
+#define VERSION_STRING "3.0.8"
 
 
 /*
- * Current version string
- */
-#define VERSION_STRING	"3.0.8"
-
-
-/*
- * Current version numbers
+ * Current savefile version
  */
 #define VERSION_MAJOR	3
 #define VERSION_MINOR	0
 #define VERSION_PATCH	9
 #define VERSION_EXTRA	0
-
 
 /*
  * Oldest version number that can still be imported
