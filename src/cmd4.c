@@ -2934,7 +2934,7 @@ void do_cmd_macros(void)
 	int mode;
 	int cursor = 0;
 
-	region loc = {0, 1, 0, 11};
+	region loc = {0, 0, 0, 12};
 
 	/* Roguelike */
 	if (rogue_like_commands)
@@ -2952,7 +2952,6 @@ void do_cmd_macros(void)
 	/* File type is "TEXT" */
 	FILE_TYPE(FILE_TYPE_TEXT);
 
-
 	screen_save();
 
 	menu_layout(&macro_menu, &loc);
@@ -2966,24 +2965,27 @@ void do_cmd_macros(void)
 		/* Clear screen */
 		clear_from(0);
 
-		/* No title -- this is a complex menu. */
-		prt("Interact with macros", 0, 0);
 		/* Describe current action */
-		prt("Current action (if any) shown below:", 12, 0);
+		prt("Current action (if any) shown below:", 13, 0);
+
 		/* Analyze the current action */
 		ascii_to_text(tmp, sizeof(tmp), macro_buffer);
+
 		/* Display the current action */
-		prt(tmp, 13, 0);
+		prt(tmp, 14, 0);
 		c = menu_select(&macro_menu, &cursor, EVT_CMD);
 
-		if (ESCAPE == c.key) 
-			break;
+
+		if (ESCAPE == c.key) break;
 		evt = macro_actions[cursor].id;
 
-		switch(evt) {
+		switch(evt)
+		{
 		case LOAD_PREF:
+		{
 			do_cmd_pref_file_hack(16);
 			break;
+		}
 
 #ifdef ALLOW_MACROS
 		case APP_MACRO:
@@ -3069,6 +3071,7 @@ void do_cmd_macros(void)
 			}
 			break;
 		}
+
 		case DEL_MACRO:
 		{
 			/* Prompt */
@@ -4165,51 +4168,43 @@ void init_cmd4_c(void)
 	/* Initialize the menus */
 	menu_type *menu;
 
-	/* Initialize the options toggle menu */
-	menu = &option_toggle_menu;
-	WIPE(menu, menu_type);
-	menu->prompt = "Set option (y/n/t), '?' for information";
-	menu->cmd_keys = "?YyNnTt";
-	menu->selections = default_choice;
-	menu->count = OPT_PAGE_PER;
-	menu->flags = MN_DBL_TAP;
-	menu_init2(menu, find_menu_skin(MN_SCROLL), &options_iter, &SCREEN_REGION);
-
 	/* options screen selection menu */
 	menu = &option_menu;
 	WIPE(menu, menu_type);
 	menu_set_id(menu, OPTION_MENU);
 	menu->title = "Options Menu";
-	menu->count = N_ELEMENTS(option_actions);
 	menu->menu_data = option_actions;
+	menu->count = N_ELEMENTS(option_actions);
 	menu_init(menu, MN_SCROLL, MN_ACT, &SCREEN_REGION);
+
+	/* Initialize the options toggle menu */
+	menu = &option_toggle_menu;
+	WIPE(menu, menu_type);
+	menu->prompt = "Set option (y/n/t), '?' for information";
+	menu->cmd_keys = "?YyNnTt";
+	menu->selections = "abcdefghijklmopqrsuvwxz";
+	menu->count = OPT_PAGE_PER;
+	menu->flags = MN_DBL_TAP;
+	menu_init2(menu, find_menu_skin(MN_SCROLL), &options_iter, &SCREEN_REGION);
 
 	/* macro menu */
 	menu = &macro_menu;
 	WIPE(menu, menu_type);
 	menu_set_id(menu, MACRO_MENU);
-	menu->count = N_ELEMENTS(macro_actions);
+	menu->title = "Interact with macros";
+	menu->selections = default_choice;
 	menu->menu_data = macro_actions;
-	menu->selections = lower_case;
+	menu->count = N_ELEMENTS(macro_actions);
 	menu_init(menu, MN_SCROLL, MN_EVT, &SCREEN_REGION);
 
-	/* knowledge menu */
-	menu = &knowledge_menu;
-	WIPE(menu, menu_type);
-	menu_set_id(menu, KNOWLEDGE_MENU);
-	menu->title = "Display current knowledge";
-	menu->count = N_ELEMENTS(knowledge_actions),
-	menu->menu_data = knowledge_actions;
-	menu_init(menu, MN_SCROLL, MN_ACT, &SCREEN_REGION);
-	
 	/* visuals menu */
 	menu = &visual_menu;
 	WIPE(menu, menu_type);
 	menu_set_id(menu, VISUAL_MENU);
 	menu->title = "Interact with visuals";
 	menu->selections = default_choice;
+	menu->menu_data = visual_menu_items;
 	menu->count = N_ELEMENTS(visual_menu_items);
-	menu->menu_data = visual_menu_items; 
 	menu_init(menu, MN_SCROLL, MN_EVT, &SCREEN_REGION);
 
 	/* colors menu */
@@ -4218,9 +4213,18 @@ void init_cmd4_c(void)
 	menu_set_id(menu, COLOR_MENU);
 	menu->title = "Interact with colors";
 	menu->selections = default_choice;
-	menu->count = N_ELEMENTS(color_events),
 	menu->menu_data = color_events;
+	menu->count = N_ELEMENTS(color_events);
 	menu_init(menu, MN_SCROLL, MN_EVT, &SCREEN_REGION);
+
+	/* knowledge menu */
+	menu = &knowledge_menu;
+	WIPE(menu, menu_type);
+	menu_set_id(menu, KNOWLEDGE_MENU);
+	menu->title = "Display current knowledge";
+	menu->menu_data = knowledge_actions;
+	menu->count = N_ELEMENTS(knowledge_actions),
+	menu_init(menu, MN_SCROLL, MN_ACT, &SCREEN_REGION);
 
 	/* initialize other static variables */
 	if (!obj_group_order)

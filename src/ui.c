@@ -17,7 +17,6 @@
  */
 #include "angband.h"
 
-
 /*
  * Implementation of Extremely Basic Event Model.
  * Limits:
@@ -332,8 +331,7 @@ static int scrolling_get_cursor(int row, int col, int n, int top, region *loc)
 
 
 /* Display current view of a skin */
-static void
-display_scrolling(menu_type *menu, int cursor, int *top, region *loc)
+static void display_scrolling(menu_type *menu, int cursor, int *top, region *loc)
 {
 	int col = loc->col;
 	int row = loc->row;
@@ -341,18 +339,22 @@ display_scrolling(menu_type *menu, int cursor, int *top, region *loc)
 	int n = menu->filter_count;
 	int i;
 
-	if ((cursor <= *top) && (*top > 0)) {
+	if ((cursor <= *top) && (*top > 0))
+	{
 		if(menu->flags & MN_PAGE) *top = cursor;
 		else *top = cursor - jumpscroll - 1;
 	}
-	if (cursor >= *top + (rows_per_page - 1)) {
-		if(menu->flags & MN_PAGE && cursor + rows_per_page < n)
+
+	if (cursor >= *top + (rows_per_page - 1))
+	{
+		if (menu->flags & MN_PAGE && cursor + rows_per_page < n)
 			*top = cursor;
-		else if(menu->flags & MN_PAGE) 
+		else if (menu->flags & MN_PAGE)
 			*top = n - rows_per_page;
 		else 
 			*top = cursor - (rows_per_page - 1) + 1 + jumpscroll;
 	}
+
 	if (*top > n - rows_per_page)
 		*top = n - rows_per_page;
 	if (*top < 0)
@@ -365,7 +367,7 @@ display_scrolling(menu_type *menu, int cursor, int *top, region *loc)
 						 loc->width);
 	}
 
-	if (cursor >= 0)
+	if (menu->cursor >= 0)
 		Term_gotoxy(col, row + cursor - *top);
 }
 
@@ -552,9 +554,8 @@ static bool handle_menu_key(char cmd, menu_type *menu, int cursor)
 }
 
 /* Modal display of menu */
-static void
-display_menu_row(menu_type *menu, int pos, int top,
-                 bool cursor, int row, int col, int width)
+static void display_menu_row(menu_type *menu, int pos, int top,
+                             bool cursor, int row, int col, int width)
 {
 	int flags = menu->flags;
 	char sel = 0;
@@ -603,10 +604,10 @@ void menu_refresh(menu_type *menu)
 		Term_putstr(loc->col, loc->row + loc->page_rows - 1, loc->width,
 					TERM_WHITE, menu->prompt);
 
-	menu->skin->display_list(menu, menu->cursor, &menu->top, &menu->active);
-
 	if (menu->browse_hook && oid >= 0)
 		menu->browse_hook(oid, (void*) menu->menu_data, loc);
+
+	menu->skin->display_list(menu, menu->cursor, &menu->top, &menu->active);
 }
 
 /* The menu event loop */
