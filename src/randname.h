@@ -31,6 +31,6 @@ typedef enum
 } randname_type;
 
 
-extern size_t make_word(randname_type name_type, size_t min, size_t max, char *word_buf, size_t buflen);
+extern size_t randname_make(randname_type name_type, size_t min, size_t max, char *word_buf, size_t buflen);
 
 #endif /* INCLUDED_RANDNAME_H */

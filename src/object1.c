@@ -168,13 +168,13 @@ void flavor_init(void)
 		int wordlen;
 		bool okay = TRUE;
 
-		wordlen = make_word(RANDNAME_SCROLL, 2, 8, end, 24);
+		wordlen = randname_make(RANDNAME_SCROLL, 2, 8, end, 24);
 		while (titlelen + wordlen < (int)(sizeof(scroll_adj[0]) - 1))
 		{
 			end[wordlen] = ' ';
 			titlelen += wordlen + 1;
 			end += wordlen + 1;
-			wordlen = make_word(RANDNAME_SCROLL, 2, 8, end, 24 - titlelen);
+			wordlen = randname_make(RANDNAME_SCROLL, 2, 8, end, 24 - titlelen);
 		}
 		buf[titlelen - 1] = '\0';
           

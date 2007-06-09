@@ -59,7 +59,7 @@ static errr init_names(void)
 	for (i = 0; i < z_info->a_max; i++)
 	{
 		char word[MAX_NAME_LEN + 1];
-		make_word(RANDNAME_TOLKIEN, MIN_NAME_LEN, MAX_NAME_LEN, word, sizeof word);
+		randname_make(RANDNAME_TOLKIEN, MIN_NAME_LEN, MAX_NAME_LEN, word, sizeof word);
 		word[0] = toupper((unsigned char) word[0]);
 
 		if (rand_int(3) == 0)
