@@ -58,6 +58,11 @@ ifdef MINGW
     LIBS = -s -mwindows -lwinmm
   endif
 
+  ifdef CROSS
+    # This is an issue on mingw32 on linux
+    CFLAGS += -D_stdcall=
+  endif
+
 endif
 
 # Handle cross compiles
