@@ -1,0 +1,101 @@
+#
+# Makefile for Windows systems using gmake
+#
+#
+# Try "make" to do a default build, using mingw.
+#
+# Try "make CONSOLE=yes" to use PDCurses, as long as you set
+# PDCURSES_INCLUDE_DIR and PDCURSES_LIB.
+#
+# Other options:
+#   OBJ_DIR=x will place .o files into directory 'x'
+#   CYGWIN=yes will use the cygwin compiler
+#
+
+# Executable name and default target
+EXE = angband.exe
+default: ../$(EXE)
+
+
+# Include list of object files and add system-specific ones
+include Makefile.inc
+
+ifdef $(CONSOLE)
+  CFLAGS = -DUSE_GCU -DWIN32_CONSOLE_MODE -I$(PDCURSES_INCLUDE_DIR)
+  IOBJS = $(BASEOBJS) main-gcu.o main.o
+
+  #PDCURSES_INCLUDE_DIR = ../../pdcurses/include
+  #PDCURSES_LIB = ../../pdcurses/lib/pdcurses.a
+else
+  CFLAGS = -DWINDOWS
+  IOBJS = $(BASEOBJS) win/angband.res main-win.o win/readdib.o
+endif
+
+CFLAGS += -Wall -W -std=iso9899:199409 -pedantic -O2
+
+ifdef $(CYGWIN)
+  CC = gcc
+  WRES = windres
+
+  LIBS = -s -mno-cygwin -mwindows -lwinmm -e _mainCRTStartup
+
+  # Note the additional -DNEAR= flag to cope with the 'NEAR'
+  # keyword used in readdib.c
+  win/readdib.o:
+	$(CC) $(CFLAGS) -DNEAR= $(INCDIRS) -c -o $@ $<
+
+endif
+
+
+ifdef $(MINGW)
+  CC = $(CROSS)gcc
+  WRES = $(CROSS)windres
+
+  ifdef $(CONSOLE)
+    LIBS = -s $(PDCURSES_LIB)
+  else
+    LIBS = -s -mwindows -lwinmm
+  endif
+
+.endif
+
+# Handle cross compiles
+ifdef $(CROSS)
+  CFLAGS += -DCROSS=$(CROSS)
+endif
+
+# Handle object output in a different directory
+ifdef $(OBJDIR)
+#  OBJDIR = mingw32/
+  OBJS = $(patsubst %.o, $(OBJDIR)%.o, $(IOBJS))
+  $(EXE): mkdirs
+  mkdirs:; -mkdir -p $(OBJDIR) $(OBJDIR)win
+else
+  OBJS = $(OBJS)
+endif
+
+
+
+#
+# Targets
+#
+
+../$(EXE): $(EXE)
+	-cp $(EXE) ..
+
+$(EXE): $(OBJS)
+	$(CC) -o $(EXE) $(OBJS) $(LIBS)
+
+clean:
+	-rm -f $(EXE) $(OBJS)
+
+
+#
+# Rules
+#
+
+win/angband.res: win/angband.rc
+	$(WRES) $< -O coff -o $@
+
+$(OBJDIR)%.o: %.c $(INCS)
+	$(CC) $(CFLAGS) -c -o $@ $<

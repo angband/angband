@@ -106,7 +106,6 @@ default: install
 
 # Makefile.inc contains an up-to-date set of object files to compile, so
 # we include it
-OBJEXT=.o
 include Makefile.inc
 
 

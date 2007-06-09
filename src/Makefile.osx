@@ -62,7 +62,6 @@ OBJS = $(BASEOBJS) main-crb.o
 #
 all: install
 
-OBJEXT = .o
 include Makefile.inc
 
 
