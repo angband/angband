@@ -5084,7 +5084,7 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	}
 #endif /* USE_SAVER */
 
-#if USE_SOUND
+#ifdef USE_SOUND
 
 	/* Set the sound hook */
 	sound_hook = Term_xtra_win_sound(v);
