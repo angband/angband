@@ -57,7 +57,7 @@ ifdef $(MINGW)
     LIBS = -s -mwindows -lwinmm
   endif
 
-.endif
+endif
 
 # Handle cross compiles
 ifdef $(CROSS)
