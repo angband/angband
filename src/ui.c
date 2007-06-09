@@ -373,8 +373,9 @@ static void display_scrolling(menu_type *menu, int cursor, int *top, region *loc
 
 static char scroll_get_tag(menu_type *menu, int pos)
 {
-	if(menu->selections)
+	if (menu->selections)
 		return menu->selections[pos - menu->top];
+
 	return 0;
 }
 
@@ -432,8 +433,9 @@ void display_columns(menu_type *menu, int cursor, int *top, region *loc)
 
 static char column_get_tag(menu_type *menu, int pos)
 {
-	if(menu->selections)
+	if (menu->selections)
 		return menu->selections[pos];
+
 	return 0;
 }
 
@@ -593,6 +595,7 @@ void menu_refresh(menu_type *menu)
 {
 	region *loc = &menu->boundary;
 	int oid = menu->cursor;
+
 	if (menu->object_list && menu->cursor >= 0)
 		oid = menu->object_list[oid];
 
@@ -600,6 +603,7 @@ void menu_refresh(menu_type *menu)
 
 	if (menu->title)
 		Term_putstr(loc->col, loc->row, loc->width, TERM_WHITE, menu->title);
+
 	if (menu->prompt)
 		Term_putstr(loc->col, loc->row + loc->page_rows - 1, loc->width,
 					TERM_WHITE, menu->prompt);
@@ -672,15 +676,19 @@ static bool menu_handle_event(menu_type *menu, const event_type *in)
 
 			out.index = m_curs;
 
-			if (*cursor == m_curs || !(menu->flags & MN_DBL_TAP)) {
-				if(*cursor != m_curs) {
+			if (*cursor == m_curs || !(menu->flags & MN_DBL_TAP))
+			{
+				if (*cursor != m_curs)
+				{
 					*cursor = m_curs;
 					menu_refresh(menu);
 				}
 				out.type = EVT_SELECT;
 			}
 			else
+			{
 				out.type = EVT_MOVE;
+			}
 
 			*cursor = m_curs;
 
@@ -712,12 +720,15 @@ static bool menu_handle_event(menu_type *menu, const event_type *in)
 				}
 				else if (c >= 0)
 				{
-					if(menu->cursor != c) {
+					if (menu->cursor != c)
+					{
 						menu->cursor = c;
 						menu_refresh(menu);
 					}
+
 					out.type = EVT_SELECT;
 					out.index = c;
+
 					break;
 				}
 			}
@@ -726,25 +737,35 @@ static bool menu_handle_event(menu_type *menu, const event_type *in)
 			if (menu->flags & MN_NO_CURSOR)
 				return FALSE;
 
-			if (isspace(in->key) && (menu->flags & MN_PAGE))
+			if (in->key == ' ' && (menu->flags & MN_PAGE))
 			{
 				/* Go to start of next page */
 				*cursor += menu->active.page_rows - (*cursor % menu->active.page_rows);
-				if(*cursor >= menu->filter_count) 
+
+				if (*cursor >= menu->filter_count)
 					*cursor = 0;
+
 				out.type = EVT_MOVE;
 				out.index = *cursor;
+
 				break;
 			}
 
-			/* cursor movement */
+			/* Cursor movement */
 			dir = target_dir(in->key);
 
+			/* Handle Enter */
+			if (in->key == '\n' || in->key == '\r')
+			{
+				out.type = EVT_SELECT;
+				out.index = *cursor;
+			}
 			/* Reject diagonals */
-			if (ddx[dir] && ddy[dir])
+			else if (ddx[dir] && ddy[dir])
 			{
 				return FALSE;
 			}
+			/* Forward/back */
 			else if (ddx[dir])
 			{
 				out.type = ddx[dir] < 0 ? EVT_BACK : EVT_SELECT;
@@ -1081,18 +1102,20 @@ bool menu_init(menu_type *menu, skin_id skin_id,
 {
 	const menu_skin *skin = find_menu_skin(skin_id);
 	const menu_iter *iter = find_menu_iter(iter_id);
+
 	if (!iter || !skin)
 	{
-		msg_print(format
-				  ("could not find menu VTAB (%d, %d)!", skin_id, iter_id));
+		msg_format("could not find menu VTAB (%d, %d)!", skin_id, iter_id);
 		return FALSE;
 	}
+
 	return menu_init2(menu, skin, iter, loc);
 }
 
 void menu_destroy(menu_type *menu)
 {
-	if (menu->object_list) FREE((void *)menu->object_list);
+	if (menu->object_list)
+		FREE(menu->object_list);
 }
 
 
