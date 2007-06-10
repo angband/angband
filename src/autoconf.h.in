@@ -36,10 +36,6 @@
 /* Define to 1 if you have the `setegid' function. */
 #undef HAVE_SETEGID
 
-/* Define to 1 if `stat' has the bug that it succeeds when given the
-   zero-length file name argument. */
-#undef HAVE_STAT_EMPTY_STRING_BUG
-
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
@@ -70,10 +66,6 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
-/* Define to 1 if `lstat' dereferences a symlink specified with a trailing
-   slash. */
-#undef LSTAT_FOLLOWS_SLASHED_SYMLINK
-
 /* Name of package */
 #undef PACKAGE
 
@@ -95,7 +87,7 @@
 /* Define as the return type of signal handlers (`int' or `void'). */
 #undef RETSIGTYPE
 
-/* Disabled SDL_mixer sound support */
+/* Define to 1 if using SDL_mixer sound support and it's found. */
 #undef SDL_SOUND
 
 /* Define to 1 if you have the ANSI C header files. */

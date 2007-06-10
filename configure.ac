@@ -16,7 +16,6 @@ AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])
 
 dnl Check for C compiler
 AC_PROG_CC
-AC_PROG_CXX
 AC_ISC_POSIX
 AC_C_BIGENDIAN
 
@@ -74,23 +73,23 @@ AC_ARG_ENABLE(gtk,
 	[enable_gtk=$enableval],
 	[enable_gtk=no])
 AC_ARG_ENABLE(curses,
-	[  --enable-curses                      Enables Curses frontend],
+	[  --enable-curses                      Enables Curses frontend (default: enabled)],
 	[enable_curses=$enableval],
 	[enable_curses=yes])
 AC_ARG_ENABLE(x11,
-	[  --enable-x11                         Enables X11 frontend],
+	[  --enable-x11                         Enables X11 frontend (default: enabled)],
 	[enable_x11=$enableval],
 	[enable_x11=yes])
 AC_ARG_ENABLE(sdl,
-	[  --enable-sdl                         Enables SDL frontend],
+	[  --enable-sdl                         Enables SDL frontend (default: enabled)],
 	[enable_sdl=$enableval],
 	[enable_sdl=yes])
 
 dnl Sound modules
 AC_ARG_ENABLE(sdl_mixer,
-	[  --disable-sdl-mixer                  Disables SDL mixer sound support],
-	[disable_sdl_mixer=$disable_sdl_mixer],
-	[disable_sdl_mixer=no])
+	[  --enable-sdl-mixer                   Enables SDL mixer sound support (default: enabled)],
+	[enable_sdl_mixer=$enable_sdl_mixer],
+	[enable_sdl_mixer=yes])
 
 
 dnl curses checking
@@ -131,8 +130,7 @@ dnl X11 checking
 if test "$enable_x11" = "yes"; then
 	AC_PATH_XTRA
 
-	if test "$X_DISPLAY_MISSING" != ""; then
-		AC_DEFINE(USE_X11, 0, [Define to 1 if using the X11 frontend and X11 libraries are found.])
+	if test "x$have_x" != "xyes"; then
 		with_x11=no
 	else
 		AC_DEFINE(USE_X11, 1, [Define to 1 if using the X11 frontend and X11 libraries are found.])
@@ -148,18 +146,15 @@ if test "$enable_sdl" = "yes"; then
 
 	if test "$SDL_CONFIG" = "no"; then
 		with_sdl=no
-		AC_DEFINE(USE_SDL, 0, [Define to 1 if using the SDL interface and SDL & SDL_ttf are found.])
 	else
-		AC_CHECK_LIB(SDL_image, IMG_LoadPNG_RW, sdl_image=yes, sdl_image=no)
-		AC_CHECK_LIB(SDL_ttf, TTF_Init, sdl_ttf=yes, sdl_ttf=no)
+		AC_CHECK_LIB(SDL_image, IMG_LoadPNG_RW, with_sdl=yes, with_sdl=no)
+		AC_CHECK_LIB(SDL_ttf, TTF_Init, with_sdlx=yes, with_sdl=no)
 
-		if test "$sdl_image" = "yes"; then
-		if test "$sdl_ttf" = "yes"; then
+		if test "$with_sdl" = "yes"; then
 			AC_DEFINE(USE_SDL, 1, [Define to 1 if using the SDL interface and SDL is found.])
 			CFLAGS="${CFLAGS} ${SDL_CFLAGS}"
 			LDFLAGS="${LDFLAGS} ${SDL_LIBS} -lSDL_image -lSDL_ttf"
-			with_sdl=yes
-		fi; fi
+		fi
 	fi
 fi
 
@@ -170,28 +165,25 @@ if test "$enable_gtk" = "yes"; then
 		[with_gtk=no]
 	)
 	PKG_CHECK_MODULES(GLIB, [glib-2.0 >= 2.6.0],
-		[with_get=yes],
+		[with_gtkx=yes],
 		[with_gtk=no]
 	)
+
 	if test "$with_gtk" = "yes"; then
 		AC_DEFINE(USE_GTK, 1, [Define to 1 if using the GTK+ 2.x interface and GTK+ 2.x is found.])
 		CFLAGS="${CFLAGS} $GTK_CFLAGS"
 		LDFLAGS="${LDFLAGS} $GTK_LIBS"
-	else
-		AC_DEFINE(USE_GTK, 0, [Define to 1 if using the GTK+ 2.x interface and GTK+ 2.x is found.])
 	fi
 fi
 
 dnl SDL mixer checking
 
-if test "$disable_sdl_mixer" != "yes"; then
+if test "$enable_sdl_mixer" = "yes"; then
 	AC_CHECK_LIB(SDL_mixer, Mix_OpenAudio, found_sdl_mixer=yes, found_sdl_mixer=no)
 
 	if test "$found_sdl_mixer" = "yes"; then
-		AC_DEFINE(SDL_SOUND, 1, [Enabled SDL_mixer sound support])
+		AC_DEFINE(SDL_SOUND, 1, [Define to 1 if using SDL_mixer sound support and it's found.])
 		LDFLAGS="${LDFLAGS} -lSDL_mixer"
-	else
-		AC_DEFINE(SDL_SOUND, 0, [Disabled SDL_mixer sound support])
 	fi
 fi
 
@@ -208,7 +200,6 @@ dnl Check for structs.
 AC_STRUCT_TM
 
 dnl Check for functions.
-AC_FUNC_STAT
 AC_CHECK_FUNCS([memmove memset mkdir strtol mkstemp setegid can_change_color])
 
 dnl XXX: Work around some autoconf bugs.
