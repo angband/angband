@@ -36,8 +36,6 @@
  *
  * Consider the use of "savetty()" and "resetty()".  XXX XXX XXX
  */
-
-
 #include "angband.h"
 
 
@@ -53,11 +51,12 @@
 /* Avoid 'struct term' name conflict with <curses.h> (via <term.h>) on AIX */
 #define term System_term
 
+
 /*
  * Include the proper "header" file
  */
 #ifdef USE_NCURSES
-# if defined(HAVE_STDBOOL_H)
+# ifdef HAVE_STDBOOL_H
 #  define NCURSES_ENABLE_STDBOOL_H 0
 # endif
 
@@ -69,13 +68,8 @@
 #undef term
 
 
-#ifdef HAVE_CAN_CHANGE_COLOR
-
-/*
- * Try redefining the colors at startup.
- */
-#define REDEFINE_COLORS
-
+#if !defined(HAVE_CAN_CHANGE_COLOR) && defined(PDCURSES)
+# define HAVE_CAN_CHANGE_COLOR
 #endif /* HAVE_CAN_CHANGE_COLOR */
 
 
@@ -100,62 +94,25 @@ _stdcall void Sleep(int);
  * POSIX stuff
  */
 #ifdef USE_TPOSIX
-/*# include <sys/ioctl.h>*/
 # include <termios.h>
 #endif
 
-/*
- * OPTION: Use old BSD curses.
- *
- * Some versions of curses does things a bit differently.
- *
- * If you have an old BSD 4.4 version of curses that isn't
- * XSI Curses standard compatible enable this.
- */
-/* #define USE_OLD_CURSES */
 
 
 /*
- * Turn on options that are available in modern curses.
- */
-#if defined (USE_OLD_CURSES)
-/* Nothing */
-#else
-# define USE_GETCH
-# define USE_CURS_SET
-#endif
-
-/*
- * You might want to turn on some of the options below this line
- * if you had to turn on USE_OLD_CURSES
- */
+ * If you have errors relating to curs_set(), comment out the following line
+ */ 
+#define USE_CURS_SET
 
 
 /*
- * OPTION: Use "blocking getch() calls" in "main-gcu.c".
- */
-/* #define USE_GETCH */
-
-/*
- * OPTION: Use the "curs_set()" call in "main-gcu.c".
- */
-/* #define USE_CURS_SET */
-
-
-
-/*
- * OPTION: some machines lack "cbreak()"
- * On these machines, we use an older definition
+ * If you have errors with any of the functions mentioned below, try
+ * uncommenting the line it's mentioned on.
  */
 /* #define cbreak() crmode() */
-
-
-/*
- * OPTION: some machines cannot handle "nonl()" and "nl()"
- * On these machines, we can simply ignore those commands.
- */
 /* #define nonl() */
 /* #define nl() */
+
 
 
 /*
@@ -165,7 +122,6 @@ _stdcall void Sleep(int);
 #ifdef USE_TPOSIX
 
 static struct termios  norm_termios;
-
 static struct termios  game_termios;
 
 #endif
@@ -174,14 +130,11 @@ static struct termios  game_termios;
 /*
  * Information about a term
  */
-typedef struct term_data term_data;
-
-struct term_data
+typedef struct term_data
 {
 	term t;                 /* All term info */
-
 	WINDOW *win;            /* Pointer to the curses window */
-};
+} term_data;
 
 /* Max number of windows on screen */
 #define MAX_TERM_DATA 4
@@ -189,11 +142,9 @@ struct term_data
 /* Information about our windows */
 static term_data data[MAX_TERM_DATA];
 
-
-/*
- * Hack -- Number of initialized "term" structures
- */
+/* Number of initialized "term" structures */
 static int active = 0;
+
 
 
 #ifdef A_COLOR
@@ -387,13 +338,11 @@ static void Term_init_gcu(term *t)
 {
 	term_data *td = (term_data *)(t->data);
 
-#ifdef USE_GETCH
 	/*
 	 * This is necessary to keep the first call to getch()
 	 * from clearing the screen
 	 */
 	wrefresh(stdscr);
-#endif /* USE_GETCH */
 
 	/* Count init's, handle first */
 	if (active++ != 0) return;
@@ -456,8 +405,6 @@ static void Term_nuke_gcu(term *t)
 
 
 
-#ifdef USE_GETCH
-
 /*
  * Process events, with optional wait
  */
@@ -499,6 +446,17 @@ static errr Term_xtra_gcu_event(int v)
 		if (i == EOF) return (1);
 	}
 
+#ifdef KEY_DOWN
+	/* Handle arrow keys */
+	switch (i)
+	{
+		case KEY_DOWN:  i = ARROW_DOWN;  break;
+		case KEY_UP:    i = ARROW_UP;    break;
+		case KEY_LEFT:  i = ARROW_LEFT;  break;
+		case KEY_RIGHT: i = ARROW_RIGHT; break;
+	}
+#endif
+
 	/* Enqueue the keypress */
 	Term_keypress(i);
 
@@ -506,57 +464,6 @@ static errr Term_xtra_gcu_event(int v)
 	return (0);
 }
 
-#else	/* USE_GETCH */
-
-/*
- * Process events (with optional wait)
- */
-static errr Term_xtra_gcu_event(int v)
-{
-	int i, k;
-
-	char buf[2];
-
-	/* Wait */
-	if (v)
-	{
-		/* Wait for one byte */
-		i = read(0, buf, 1);
-
-		/* Hack -- Handle bizarre "errors" */
-		if ((i <= 0) && (errno != EINTR)) exit_game_panic();
-	}
-
-	/* Do not wait */
-	else
-	{
-		/* Get the current flags for stdin */
-		k = fcntl(0, F_GETFL, 0);
-
-		/* Oops */
-		if (k < 0) return (1);
-
-		/* Tell stdin not to block */
-		if (fcntl(0, F_SETFL, k | O_NONBLOCK) < 0) return (1);
-
-		/* Read one byte, if possible */
-		i = read(0, buf, 1);
-
-		/* Replace the flags for stdin */
-		if (fcntl(0, F_SETFL, k)) return (1);
-	}
-
-	/* Ignore "invalid" keys */
-	if ((i != 1) || (!buf[0])) return (1);
-
-	/* Enqueue the keypress */
-	Term_keypress(buf[0]);
-
-	/* Success */
-	return (0);
-}
-
-#endif	/* USE_GETCH */
 
 /*
  * React to changes
@@ -846,7 +753,7 @@ errr init_gcu(int argc, char **argv)
 	can_use_color = ((start_color() != ERR) && has_colors() &&
 	                 (COLORS >= 8) && (COLOR_PAIRS >= 8));
 
-#ifdef REDEFINE_COLORS
+#ifdef HAVE_CAN_CHANGE_COLOR
 
 	/* Can we change colors? */
 	can_fix_color = (can_use_color && can_change_color() &&
@@ -915,17 +822,17 @@ errr init_gcu(int argc, char **argv)
 
 	/*** Low level preparation ***/
 
-#ifdef USE_GETCH
-
 	/* Paranoia -- Assume no waiting */
 	nodelay(stdscr, FALSE);
-
-#endif
 
 	/* Prepare */
 	cbreak();
 	noecho();
 	nonl();
+
+#ifdef PDCURSES
+	keypad(stdscr, TRUE);
+#endif
 
 	/* Extract the game keymap */
 	keymap_game_prepare();
