@@ -333,12 +333,6 @@ extern void show_scores(void);
 extern void display_scores(int from, int to);
 extern void close_game(void);
 extern void exit_game_panic(void);
-#ifdef HANDLE_SIGNALS
-extern void (*(*signal_aux)(int, void (*)(int)))(int);
-#endif
-extern void signals_ignore_tstp(void);
-extern void signals_handle_tstp(void);
-extern void signals_init(void);
 
 /* generate.c */
 extern void generate_cave(void);
@@ -480,6 +474,11 @@ extern void display_koff(int k_idx);
 
 /* pathfind.c */
 extern bool findpath(int y, int x);
+
+/* signals.c */
+extern void signals_ignore_tstp(void);
+extern void signals_handle_tstp(void);
+extern void signals_init(void);
 
 /* save.c */
 extern bool save_player(void);

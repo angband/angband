@@ -15,7 +15,7 @@
  * whether you wish to keep, comment, or uncomment them.  You should not
  * have to modify any lines not indicated by "OPTION".
  *
- * Note: Also examine the "system" configuration file "h-config.h".
+ * Note: Also examine the "system" configuration file "h-basic.h".
  *
  * And finally, remember that the "Makefile" will specify some rather
  * important compile time options, like what visual module to use.
@@ -235,36 +235,12 @@
 
 
 /*
- * Hack -- Macintosh stuff
+ * Do not handle signals
  */
-#ifdef MACINTOSH
-
-/* Do not handle signals */
+#if defined(MACINTOSH) || defined(WINDOWS)
 # undef HANDLE_SIGNALS
-
 #endif
 
-
-/*
- * Hack -- Windows stuff
- */
-#ifdef WINDOWS
-
-/* Do not handle signals */
-# undef HANDLE_SIGNALS
-
-#endif
-
-
-/*
- * Hack -- EMX stuff
- */
-#ifdef USE_EMX
-
-/* Do not handle signals */
-# undef HANDLE_SIGNALS
-
-#endif
 
 
 /*
@@ -374,9 +350,8 @@
 /*
  * OPTION: Attempt to minimize the size of the game
  */
-#ifndef ANGBAND_LITE
 /* #define ANGBAND_LITE */
-#endif
+
 
 /*
  * Hack -- React to the "ANGBAND_LITE" flag

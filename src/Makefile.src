@@ -43,6 +43,7 @@ ANGFILES = \
 	randart.o \
 	randname.o \
 	pathfind.o \
+	signals.o \
 	save.o \
 	spells1.o \
 	spells2.o \

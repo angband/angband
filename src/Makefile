@@ -6,7 +6,7 @@ include ../mk/objective.mk
 include Makefile.src
 HEADERS = $(HDRS) $(INCS)
 OBJECTS = $(ANGFILES) $(MAINFILES) $(ZFILES)
-SOURCES = ${FILES:.o=.c}
+SOURCES = ${OBJECTS:.o=.c}
 
 # These are for OS-specific ports; ignore 'em until we use autoconf everywhere.
 # SUBDIRS = osx win

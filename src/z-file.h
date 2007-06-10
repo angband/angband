@@ -4,9 +4,9 @@
 /*** Various system-specific fixes ***/
 
 /*
- * Use POSIX file control where we can, otherwise help out RISC OS
+ * Use POSIX file control where we can, otherwise help out other platforms
  */
-#ifndef RISCOS
+#ifdef HAVE_FCNTL_H
 # include <fcntl.h>
 #else
 # define O_RDONLY   0

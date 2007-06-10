@@ -1,9 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([angband], [3.0.8], [bugs@rephial.org])
+AC_INIT([Angband], [3.0.8], [bugs@rephial.org], [angband])
 AC_PREREQ([2.50])
-
-AC_CANONICAL_HOST
-AC_CANONICAL_TARGET
 
 AC_CONFIG_HEADER(src/autoconf.h)
 
@@ -16,8 +13,6 @@ AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])
 
 dnl Check for C compiler
 AC_PROG_CC
-AC_ISC_POSIX
-AC_C_BIGENDIAN
 
 test "$GCC" = "yes" && CFLAGS="$CFLAGS -Wall -pipe -g -fno-strength-reduce"
 PICFLAGS="-fPIC"
@@ -31,8 +26,6 @@ AC_PROG_MAKE_SET
 AC_PATH_PROG(RM, rm)
 AC_PATH_PROG(MV, mv)
 AC_PATH_PROG(CP, cp)
-AC_PATH_PROG(AR, ar)
-AC_PATH_PROG(RANLIB, ranlib)
 
 AC_ARG_WITH(setgid,
 [  --with-setgid=NAME      install angband as group NAME],
@@ -92,6 +85,8 @@ AC_ARG_ENABLE(sdl_mixer,
 	[enable_sdl_mixer=yes])
 
 
+
+
 dnl curses checking
 if test "$enable_curses" = "yes"; then
 	AC_CHECK_LIB(curses  , initscr, found_curses=yes,found_curses=no)
@@ -126,6 +121,7 @@ if test "$enable_curses" = "yes"; then
 	fi
 fi
 
+
 dnl X11 checking
 if test "$enable_x11" = "yes"; then
 	AC_PATH_XTRA
@@ -139,6 +135,7 @@ if test "$enable_x11" = "yes"; then
 		with_x11=yes
 	fi
 fi
+
 
 dnl SDL checking
 if test "$enable_sdl" = "yes"; then
@@ -158,6 +155,7 @@ if test "$enable_sdl" = "yes"; then
 	fi
 fi
 
+
 dnl GTK checking
 if test "$enable_gtk" = "yes"; then
 	PKG_CHECK_MODULES(GTK, [glib-2.0 >= 2.6.0 gtk+-2.0 >= 2.6.0 gthread-2.0 pango],
@@ -176,8 +174,8 @@ if test "$enable_gtk" = "yes"; then
 	fi
 fi
 
-dnl SDL mixer checking
 
+dnl SDL mixer checking
 if test "$enable_sdl_mixer" = "yes"; then
 	AC_CHECK_LIB(SDL_mixer, Mix_OpenAudio, found_sdl_mixer=yes, found_sdl_mixer=no)
 
@@ -188,19 +186,15 @@ if test "$enable_sdl_mixer" = "yes"; then
 fi
 
 
-dnl Check for headers.
-dnl AC_HEADER_STDBOOL -- not yet
-AC_HEADER_TIME
-AC_CHECK_HEADERS([unistd.h fcntl.h dirent.h limits.h stdint.h sys/time.h termios.h])
 
-dnl Check for types.
+dnl Check for headers, types, functions
+AC_CHECK_HEADERS([fcntl.h stdint.h])
+AC_HEADER_STDBOOL
+AC_C_CONST
 AC_TYPE_SIGNAL
+AC_CHECK_FUNCS([mkstemp setegid can_change_color])
 
-dnl Check for structs.
-AC_STRUCT_TM
 
-dnl Check for functions.
-AC_CHECK_FUNCS([memmove memset mkdir strtol mkstemp setegid can_change_color])
 
 dnl XXX: Work around some autoconf bugs.
 if test "$prefix" = "NONE"; then
@@ -211,9 +205,7 @@ if test -z "$datadir"; then
 fi
 
 
-AC_CONFIG_FILES([
-	mk/rules.mk
-])
+AC_CONFIG_FILES([mk/rules.mk])
 
 AC_OUTPUT
 

@@ -7,37 +7,53 @@
 #ifndef INCLUDED_H_BASIC_H
 #define INCLUDED_H_BASIC_H
 
+/*
+ * Include autoconf autodetections, otherwise try to autodetect ourselves
+ */
 #ifdef HAVE_CONFIG_H
-#include "autoconf.h"
-#endif /* HAVE_CONFIG_H */
 
+# include "autoconf.h"
 
-/*** Autodetect platform ***/
+#else
 
 /*
  * Extract the "RISCOS" flag from the compiler
  */
-#ifdef __riscos
-# ifndef RISCOS
-#  define RISCOS
+# ifdef __riscos
+#  ifndef RISCOS
+#   define RISCOS
+#  endif
 # endif
-#endif
-
 
 /*
  * Extract the "WINDOWS" flag from the compiler
  */
-#if defined(_Windows) || defined(__WINDOWS__) || \
-    defined(__WIN32__) || defined(WIN32) || \
-    defined(__WINNT__) || defined(__NT__)
-# ifndef WINDOWS
-#  define WINDOWS
+# if defined(_Windows) || defined(__WINDOWS__) || \
+     defined(__WIN32__) || defined(WIN32) || \
+     defined(__WINNT__) || defined(__NT__)
+#  ifndef WINDOWS
+#   define WINDOWS
+#  endif
 # endif
-#endif
+
 
 
 /*
- * OPTION: set "SET_UID" if the machine is a "multi-user" machine.
+ * Using C99, assume we have stdint and stdbool
+ */
+# if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+#  define HAVE_STDINT_H
+#  define HAVE_STDBOOL_H
+# endif
+
+
+#endif /* HAVE_CONFIG_H */
+
+
+
+
+/*
+ * OPTION: set "SET_UID" if the machine is a "multi-user" wmachine.
  *
  * This option is used to verify the use of "uids" and "gids" for
  * various "Unix" calls, and of "pids" for getting a random seed,
@@ -50,6 +66,13 @@
 #if !defined(MACH_O_CARBON) && !defined(WINDOWS) && \
     !defined(RISCOS) && !defined(GAMEBOY)
 # define SET_UID
+
+/* Without autoconf, turn on some things */
+# ifndef HAVE_CONFIG_H
+#  define HAVE_FCNTL_H
+#  define HAVE_DIRENT_H
+# endif
+
 #endif
 
 
@@ -115,24 +138,6 @@
 # include <unistd.h>
 #endif
 
-#ifdef SET_UID
-# include <sys/types.h>
-#endif
-
-#if defined(__DJGPP__) || defined(__MWERKS__)
-#include <unistd.h>
-#endif
-
-/** Other headers **/
-
-#if defined(MACINTOSH) && defined(__MWERKS__)
-# include <unix.h>
-#endif
-
-#if defined(WINDOWS) || defined(MSDOS) || defined(USE_EMX)
-# include <io.h>
-#endif
-
 
 
 /*** Define the basic game types ***/
@@ -158,7 +163,10 @@ typedef const char *cptr;
 typedef int errr;
 
 
-#if defined(HAVE_STDBOOL_H)
+/*
+ * Use a real bool type where possible
+ */
+#ifdef HAVE_STDBOOL_H
 
   #include <stdbool.h>
 
@@ -178,8 +186,11 @@ typedef int errr;
 #endif
 
 
-/* C99/stdint.h provide guaranteed-size ints */
-#if (defined __STDC_VERSION__ && __STDC_VERSION__ >= 199901L) || defined HAVE_STDINT_H
+
+/*
+ * Use guaranteed-size ints where possible
+ */
+#ifdef HAVE_STDINT_H
 
   /* Use guaranteed-size types */
   #include <stdint.h>

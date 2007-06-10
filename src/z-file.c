@@ -18,6 +18,105 @@
 #include "angband.h"
 #include "z-file.h"
 
+#ifndef RISCOS
+# include <sys/types.h>
+# include <sys/stat.h>
+
+# ifdef WINDOWS
+#  include <io.h>
+# endif
+#endif
+
+
+
+/*
+ * Hack -- drop permissions
+ */
+void safe_setuid_drop(void)
+{
+
+#ifdef SET_UID
+
+# ifdef SAFE_SETUID
+
+#  ifdef HAVE_SETEGID
+
+	if (setegid(getgid()) != 0)
+	{
+		quit("setegid(): cannot set permissions correctly!");
+	}
+ 
+#  else /* HAVE_SETEGID */
+
+#   ifdef SAFE_SETUID_POSIX
+
+	if (setgid(getgid()) != 0)
+	{
+		quit("setgid(): cannot set permissions correctly!");
+	}
+    
+#   else /* SAFE_SETUID_POSIX */
+
+	if (setregid(getegid(), getgid()) != 0)
+	{
+		quit("setregid(): cannot set permissions correctly!");
+	}
+
+#   endif /* SAFE_SETUID_POSIX */
+
+#  endif /* HAVE_SETEGID */
+
+# endif /* SAFE_SETUID */
+
+#endif /* SET_UID */
+
+}
+
+
+/*
+ * Hack -- grab permissions
+ */
+void safe_setuid_grab(void)
+{
+
+#ifdef SET_UID
+
+# ifdef SAFE_SETUID
+
+#  ifdef HAVE_SETEGID
+
+	if (setegid(player_egid) != 0)
+	{
+		quit("setegid(): cannot set permissions correctly!");
+	}
+
+#  else /* HAVE_SETEGID */
+
+#   ifdef SAFE_SETUID_POSIX
+
+	if (setgid(player_egid) != 0)
+	{
+		quit("setgid(): cannot set permissions correctly!");
+	}
+
+#   else /* SAFE_SETUID_POSIX */
+
+	if (setregid(getegid(), getgid()) != 0)
+	{
+		quit("setregid(): cannot set permissions correctly!");
+	}
+
+#   endif /* SAFE_SETUID_POSIX */
+
+#  endif /* HAVE_SETEGID */
+
+# endif /* SAFE_SETUID */
+
+#endif /* SET_UID */
+
+}
+
+
 
 /*
  * The concept of the file routines is that all file handling should be done
@@ -46,20 +145,8 @@
  * not be defined.
  */
 
-#ifndef RISCOS
-# ifdef MACINTOSH
-#  include <stat.h>
-# else
-#  include <sys/types.h>
-#  include <sys/stat.h>
-# endif /* MACINTOSH */
-#endif
-
-
 
 #ifdef HAVE_MKSTEMP
-
-#include <unistd.h>
 
 FILE *my_fopen_temp(char *buf, size_t max)
 {
@@ -588,21 +675,18 @@ int fd_open(cptr file, int flags)
 
 
 /*
- * Hack -- attempt to lock a file descriptor
+ * Attempt to lock a file descriptor
  *
  * Legal lock types -- F_UNLCK, F_RDLCK, F_WRLCK
  */
 errr fd_lock(int fd, int what)
 {
-#ifdef SET_UID
+#ifdef HAVE_FCNTL_H
 
 	struct flock lock;
-#endif
 
 	/* Verify the fd */
 	if (fd < 0) return (-1);
-
-#ifdef SET_UID
 
 	lock.l_type = what;
 	lock.l_start = 0; /* Lock the entire file */
@@ -616,10 +700,10 @@ errr fd_lock(int fd, int what)
 	 */
 	return (fcntl(fd, F_SETLKW, &lock));
 
+#else /* HAVE_FCNTL_H */
 
-#else /* SET_UID */
-
-	/* Unused parameter */
+	/* Unused parameters */
+	(void)fd;
 	(void)what;
 
 	/* Success */
@@ -738,7 +822,7 @@ errr fd_close(int fd)
 }
 
 
-#if defined(CHECK_MODIFICATION_TIME) && !defined(MAC_MPW)
+#if defined(CHECK_MODIFICATION_TIME)
 
 errr check_modification_date(int fd, cptr template_file)
 {
@@ -814,20 +898,8 @@ void my_dclose(ang_dir *dir);
 
 
 
-/*
- * Assume UNIX-style directory handling.
- */
-#if !defined(HAVE_CONFIG_H) && !defined(WINDOWS) && !defined(RISCOS)
-#define HAVE_DIRENT_H
-#endif
-
 
 #ifdef WINDOWS
-
-/* Paranoia */
-# ifdef HAVE_DIRENT_H
-#  undef HAVE_DIRENT_H
-# endif
 
 /* Include Windows header */
 #include <windows.h>

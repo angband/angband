@@ -261,7 +261,7 @@ depend:
 			if [ $(VERBOSITY) -gt 0 ]; then \
 				echo "[building depend file for subobjective: $$i]"; \
 			fi; \
-			cd $$i; touch .depend; $(MAKE) depend || exit; cd ..; \
+			cd $$i; touch .depend; $(MAKE) -f Makefile depend || exit; cd ..; \
 			if [ $(VERBOSITY) -gt 0 ]; then \
 				echo "[finished subobjective: $$i]"; \
 			fi; \
