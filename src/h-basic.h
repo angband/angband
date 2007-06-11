@@ -47,6 +47,14 @@
 # endif
 
 
+
+/*
+ * Everyone except RISC OS has fcntl.h
+ */
+#ifndef RISCOS
+# define HAVE_FCNTL_H
+#endif
+
 #endif /* HAVE_CONFIG_H */
 
 
@@ -69,7 +77,6 @@
 
 /* Without autoconf, turn on some things */
 # ifndef HAVE_CONFIG_H
-#  define HAVE_FCNTL_H
 #  define HAVE_DIRENT_H
 # endif
 

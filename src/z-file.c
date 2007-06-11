@@ -681,7 +681,7 @@ int fd_open(cptr file, int flags)
  */
 errr fd_lock(int fd, int what)
 {
-#ifdef HAVE_FCNTL_H
+#if defined(HAVE_FCNTL_H) && defined(SET_UID)
 
 	struct flock lock;
 
