@@ -174,11 +174,12 @@
 
 #ifdef MACH_O_CARBON
 
+#include "angband.h"
+
 #include <Carbon/Carbon.h>
 #include <QuickTime/QuickTime.h>
 #include <CoreServices/CoreServices.h>
 #include <CoreFoundation/CoreFoundation.h>
-#include "angband.h"
 
 #include "osx/osx_tables.h"
 
@@ -327,6 +328,7 @@ static void Term_wipe_mac_aux(int x, int y, int n);
 inline static void term_data_color(int a);
 static void install_handlers(WindowRef w);
 static void graphics_tiles_nuke(void);
+static void play_sound(int num);
 
 /*
  * Available values for 'wait'

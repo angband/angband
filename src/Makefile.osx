@@ -29,7 +29,7 @@ TOOLDIR = /Developer/Tools
 SETFILE = $(TOOLDIR)/SetFile
 
 CFLAGS = \
-	-Wall -std=c99 $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
+	-Wall -std=gnu99 $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
 	-DPRIVATE_USER_PATH=\"~/Library/Preferences\" -DUSE_PRIVATE_PATHS
 LIBS = -framework CoreFoundation -framework QuickTime -framework Carbon
 

@@ -53,10 +53,9 @@ enum {
 
 // Special Menu
 enum {
-	kSound	 			= 1, /* Toggle sound */
-							 /* \-p */
-	kWizard				= 3, /* Toggle wizard mode */
-	kFiddle				= 4  /* Don't know what this is. */
+	/* kSound	 		= -1, Toggle sound */
+	kWizard				= 1, /* Toggle wizard mode */
+	kFiddle				= 2  /* Don't know what this is. */
 };
 
 
@@ -202,7 +201,6 @@ static struct {
 } toggle_defs [] = {
 	{ &arg_wizard, kSpecialMenu, kWizard, 	false},
 	{ &arg_fiddle, kSpecialMenu, kFiddle, 	false},
-	{ &use_sound,  kSpecialMenu, kSound,	false},
 	{ &use_bigtile, kStyleMenu,  kBigTile,	true},
 	{ &interpolate, kStyleMenu,  kInterpolate, true},
 	{ &antialias,	kStyleMenu,	kAntialias,	true}
