@@ -1015,7 +1015,11 @@ ang_dir *my_dopen(const char *dirname)
 
 	/* Allocate memory for the handle */
 	dir = ralloc(sizeof dir);
-	if (!dir) return NULL;
+	if (!dir) 
+	{
+		closedir(d);
+		return NULL;
+	}
 
 	/* Set up the handle */
 	dir->d = d;
@@ -1023,6 +1027,7 @@ ang_dir *my_dopen(const char *dirname)
 
 	if (!dir->dirname)
 	{
+		closedir(d);
 		rnfree(dir);
 		return NULL;
 	}
