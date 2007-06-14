@@ -1000,12 +1000,13 @@ void my_dclose(ang_dir *dir)
 struct ang_dir
 {
 	DIR *d;
+	const char *dirname;
 };
 
 /* Specified above */
 ang_dir *my_dopen(const char *dirname)
 {
-   	ang_dir *dir;
+	ang_dir *dir;
 	DIR *d;
 
 	/* Try to open the directory */
@@ -1018,6 +1019,13 @@ ang_dir *my_dopen(const char *dirname)
 
 	/* Set up the handle */
 	dir->d = d;
+	dir->dirname = string_make(dirname);
+
+	if (!dir->dirname)
+	{
+		rnfree(dir);
+		return NULL;
+	}
 
 	/* Success */
 	return dir;
@@ -1028,6 +1036,7 @@ bool my_dread(ang_dir *dir, char *fname, size_t len)
 {
 	struct dirent *entry;
 	struct stat filedata;
+	char path[1024] = "";
 
 	assert(dir != NULL);
 
@@ -1037,8 +1046,10 @@ bool my_dread(ang_dir *dir, char *fname, size_t len)
 		entry = readdir(dir->d);
 		if (!entry) return FALSE;
 
+		path_build(path, sizeof path, dir->dirname, entry->d_name);
+            
 		/* Check to see if it exists */
-		if (stat(entry->d_name, &filedata) != 0)
+		if (stat(path, &filedata) != 0)
 			continue;
 
 		/* Check to see if it's a directory */
@@ -1059,7 +1070,10 @@ void my_dclose(ang_dir *dir)
 {
 	/* Close directory */
 	if (dir->d)
+	{
 		closedir(dir->d);
+		string_free(dir->dirname);
+	}
 
 	/* Free memory */
 	FREE(dir);
