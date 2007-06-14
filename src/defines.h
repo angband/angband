@@ -203,9 +203,8 @@
 
 /*
  * OPTION: Maximum number of macros (see "util.c")
- * Default: assume at most 256 macros are used
  */
-#define MACRO_MAX	256
+#define MACRO_MAX	512
 
 /*
  * OPTION: Maximum number of "quarks" (see "util.c")

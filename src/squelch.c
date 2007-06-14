@@ -178,7 +178,7 @@ int get_autoinscription_index(s16b k_idx)
 /*
  * DOCUMENT ME!
  */
-static cptr get_autoinscription(s16b kind_idx)
+const char *get_autoinscription(s16b kind_idx)
 {
 	int i;
 

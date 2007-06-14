@@ -1289,9 +1289,6 @@ static errr rd_extra(void)
  */
 static errr rd_randarts(void)
 {
-
-#ifdef GJW_RANDART
-
 	int i;
 	byte tmp8u;
 	s16b tmp16s;
@@ -1419,14 +1416,6 @@ static errr rd_randarts(void)
 	}
 
 	return (0);
-
-#else /* GJW_RANDART */
-
-	note("Random artifacts are disabled in this binary.");
-	return (-1);
-
-#endif /* GJW_RANDART */
-
 }
 
 

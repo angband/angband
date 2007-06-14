@@ -2330,8 +2330,6 @@ static int mon_will_run(int m_idx)
 {
 	monster_type *m_ptr = &mon_list[m_idx];
 
-#ifdef ALLOW_TERROR
-
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	u16b p_lev, m_lev;
@@ -2339,15 +2337,11 @@ static int mon_will_run(int m_idx)
 	u16b m_chp, m_mhp;
 	u32b p_val, m_val;
 
-#endif /* ALLOW_TERROR */
-
 	/* Keep monsters from running too far away */
 	if (m_ptr->cdis > MAX_SIGHT + 5) return (FALSE);
 
 	/* All "afraid" monsters will run away */
 	if (m_ptr->monfear) return (TRUE);
-
-#ifdef ALLOW_TERROR
 
 	/* Nearby monsters will not become terrified */
 	if (m_ptr->cdis <= 5) return (FALSE);
@@ -2376,8 +2370,6 @@ static int mon_will_run(int m_idx)
 
 	/* Strong players scare strong monsters */
 	if (p_val * m_mhp > m_val * p_mhp) return (TRUE);
-
-#endif /* ALLOW_TERROR */
 
 	/* Assume no terror */
 	return (FALSE);

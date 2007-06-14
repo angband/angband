@@ -96,17 +96,6 @@
 
 
 /*
- * OPTION: Allow monsters to "flee" when hit hard
- */
-#define ALLOW_FEAR
-
-/*
- * OPTION: Allow monsters to "flee" from strong players
- */
-#define ALLOW_TERROR
-
-
-/*
  * OPTION: Allow parsing of the ascii template files in "init.c".
  * This must be defined if you do not have valid binary image files.
  * It should be usually be defined anyway to allow easy "updating".
@@ -147,19 +136,9 @@
 
 
 /*
- * OPTION: Allow "Wizards" to yield "high scores"
- */
-/* #define SCORE_WIZARDS */
-
-/*
  * OPTION: Allow "Borgs" to yield "high scores"
  */
 /* #define SCORE_BORGS */
-
-/*
- * OPTION: Allow "Cheaters" to yield "high scores"
- */
-/* #define SCORE_CHEATERS */
 
 
 
@@ -215,12 +194,6 @@
  * learning that the player is not harmed by that attack.
  */
 #define DRS_SMART_OPTIONS
-
-
-/*
- * OPTION: Allow the use of random artifacts (see "randart.c").
- */
-#define GJW_RANDART
 
 
 /*
@@ -361,7 +334,6 @@
 # undef ALLOW_VISUALS
 # undef ALLOW_MACROS
 # undef MONSTER_FLOW
-# undef ALLOW_TERROR
 # undef DRS_SMART_OPTIONS
 # undef GJW_RANDART
 # undef ALLOW_BORG

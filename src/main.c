@@ -18,7 +18,7 @@
 
 
 #if defined(WIN32_CONSOLE_MODE) \
-    || (!defined(MACINTOSH) && !defined(WINDOWS) && !defined(RISCOS)) \
+    || (!defined(WINDOWS) && !defined(RISCOS)) \
     || defined(USE_SDL)
 
 #include "main.h"

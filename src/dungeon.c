@@ -1946,30 +1946,15 @@ void play_game(bool new_game)
 		/* Hack -- seed for town layout */
 		seed_town = rand_int(0x10000000);
 
-#ifdef GJW_RANDART
-
 		/* Hack -- seed for random artifacts */
 		seed_randart = rand_int(0x10000000);
-
-#endif /* GJW_RANDART */
 
 		/* Roll up a new character */
 		player_birth();
 
-#ifdef GJW_RANDART
-
 		/* Randomize the artifacts */
 		if (adult_randarts)
-		{
 			do_randart(seed_randart, TRUE);
-		}
-
-#else /* GJW_RANDART */
-
-		/* Make sure random artifacts are turned off if not available */
-		adult_randarts = FALSE;
-
-#endif /* GJW_RANDART */
 
 		/* Hack -- enter the world */
 		turn = 1;

@@ -4556,12 +4556,4 @@ errr emit_r_info_index(FILE *fp, header *head, int i)
 
 #endif /* ALLOW_TEMPLATES_OUTPUT */
 
-
-
-#else	/* ALLOW_TEMPLATES */
-
-#ifdef MACINTOSH
-static int i = 0;
-#endif
-
 #endif	/* ALLOW_TEMPLATES */

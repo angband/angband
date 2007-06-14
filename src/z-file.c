@@ -242,7 +242,7 @@ errr my_fgets(FILE *fff, char *buf, size_t n)
 			return (0);
 		}
 
-#if defined(MACINTOSH) || defined(MACH_O_CARBON)
+#ifdef MACH_O_CARBON
 
 		/*
 		 * Be nice to the Macintosh, where a file can have Mac or Unix
@@ -251,7 +251,7 @@ errr my_fgets(FILE *fff, char *buf, size_t n)
 		 */
 		if (c == '\r') c = '\n';
 
-#endif /* MACINTOSH || MACH_O_CARBON */
+#endif /* MACH_O_CARBON */
 
 		/* End of line */
 		if (c == '\n')
@@ -546,7 +546,7 @@ FILE *my_fopen(cptr file, cptr mode)
 	/* Attempt to fopen the file anyway */
 	fff = fopen(buf, mode);
 
-#if defined(MAC_MPW) || defined(MACH_O_CARBON)
+#if defined(MACH_O_CARBON)
 
 	/* Set file creator and type */
 	if (fff && strchr(mode, 'w')) fsetfileinfo(buf, _fcreator, _ftype);
@@ -623,19 +623,10 @@ int fd_make(cptr file, int mode)
 	/* Hack -- Try to parse the path */
 	if (path_parse(buf, sizeof(buf), file)) return (-1);
 
-#if defined(MACINTOSH)
-
-	/* Create the file, fail if exists, write-only, binary */
-	fd = open(buf, O_CREAT | O_EXCL | O_WRONLY | O_BINARY);
-
-#else
-
 	/* Create the file, fail if exists, write-only, binary */
 	fd = open(buf, O_CREAT | O_EXCL | O_WRONLY | O_BINARY, mode);
 
-#endif
-
-#if defined(MAC_MPW) || defined(MACH_O_CARBON)
+#ifdef MACH_O_CARBON
 
 	/* Set file creator and type */
 	if (fd >= 0) fsetfileinfo(buf, _fcreator, _ftype);
@@ -659,18 +650,8 @@ int fd_open(cptr file, int flags)
 	/* Hack -- Try to parse the path */
 	if (path_parse(buf, sizeof(buf), file)) return (-1);
 
-#if defined(MACINTOSH) || defined(WINDOWS)
-
-	/* Attempt to open the file */
-	return (open(buf, flags | O_BINARY));
-
-#else
-
 	/* Attempt to open the file */
 	return (open(buf, flags | O_BINARY, 0));
-
-#endif
-
 }
 
 

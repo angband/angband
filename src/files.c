@@ -2480,7 +2480,7 @@ void process_player_name(bool sf)
 		op_ptr->base_name[i] = c;
 	}
 
-#if defined(WINDOWS) || defined(MSDOS)
+#if defined(WINDOWS)
 
 	/* Max length */
 	if (i > 8) i = 8;
@@ -3323,9 +3323,7 @@ static int score_idx = -1;
  */
 static errr enter_score(void)
 {
-#ifndef SCORE_CHEATERS
 	int j;
-#endif /* SCORE_CHEATERS */
 
 	high_score the_score;
 
@@ -3336,8 +3334,6 @@ static errr enter_score(void)
 		return (0);
 	}
 
-#ifndef SCORE_WIZARDS
-
 	/* Wizard-mode pre-empts scoring */
 	if (p_ptr->noscore & NOSCORE_WIZARD)
 	{
@@ -3346,8 +3342,6 @@ static errr enter_score(void)
 		score_idx = -1;
 		return (0);
 	}
-
-#endif
 
 #ifndef SCORE_BORGS
 
@@ -3361,8 +3355,6 @@ static errr enter_score(void)
 	}
 #endif /* SCORE_BORGS */
 
-#ifndef SCORE_CHEATERS
-
 	/* Cheaters are not scored */
 	for (j = OPT_SCORE; j < OPT_MAX; ++j)
 	{
@@ -3373,8 +3365,6 @@ static errr enter_score(void)
 		score_idx = -1;
 		return (0);
 	}
-
-#endif /* SCORE_CHEATERS */
 
 	/* Hack -- Interupted */
 	if (!p_ptr->total_winner && streq(p_ptr->died_from, "Interrupting"))

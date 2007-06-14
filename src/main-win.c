@@ -91,15 +91,6 @@
 #endif /* HTML_HELP */
 
 
-/*
- * Extract the "WIN32" flag from the compiler
- */
-#if defined(__WIN32__) || defined(__WINNT__) || defined(__NT__)
-# ifndef WIN32
-#  define WIN32
-# endif
-#endif
-
 
 #ifdef ALLOW_BORG
 
@@ -279,20 +270,12 @@
 /*
  * Hack -- Fake declarations from "dos.h" XXX XXX XXX
  */
-#ifdef WIN32
 #define INVALID_FILE_NAME (DWORD)0xFFFFFFFF
-#else /* WIN32 */
-#define FA_LABEL    0x08        /* Volume label */
-#define FA_DIREC    0x10        /* Directory */
-unsigned _cdecl _dos_getfileattr(const char *, unsigned *);
-#endif /* WIN32 */
 
 /*
  * Silliness in WIN32 drawing routine
  */
-#ifdef WIN32
-# define MoveTo(H,X,Y) MoveToEx(H, X, Y, NULL)
-#endif /* WIN32 */
+#define MoveTo(H,X,Y) MoveToEx(H, X, Y, NULL)
 
 /*
  * Silliness for Windows 95
@@ -763,20 +746,10 @@ static bool check_file(cptr s)
 {
 	char path[1024];
 
-#ifdef WIN32
-
 	DWORD attrib;
-
-#else /* WIN32 */
-
-	unsigned int attrib;
-
-#endif /* WIN32 */
 
 	/* Copy it */
 	my_strcpy(path, s, sizeof(path));
-
-#ifdef WIN32
 
 	/* Examine */
 	attrib = GetFileAttributes(path);
@@ -786,19 +759,6 @@ static bool check_file(cptr s)
 
 	/* Prohibit directory */
 	if (attrib & FILE_ATTRIBUTE_DIRECTORY) return (FALSE);
-
-#else /* WIN32 */
-
-	/* Examine and verify */
-	if (_dos_getfileattr(path, &attrib)) return (FALSE);
-
-	/* Prohibit something */
-	if (attrib & FA_LABEL) return (FALSE);
-
-	/* Prohibit directory */
-	if (attrib & FA_DIREC) return (FALSE);
-
-#endif /* WIN32 */
 
 	/* Success */
 	return (TRUE);
@@ -814,15 +774,7 @@ static bool check_dir(cptr s)
 
 	char path[1024];
 
-#ifdef WIN32
-
 	DWORD attrib;
-
-#else /* WIN32 */
-
-	unsigned int attrib;
-
-#endif /* WIN32 */
 
 	/* Copy it */
 	my_strcpy(path, s, sizeof(path));
@@ -833,8 +785,6 @@ static bool check_dir(cptr s)
 	/* Remove trailing backslash */
 	if (i && (path[i-1] == '\\')) path[--i] = '\0';
 
-#ifdef WIN32
-
 	/* Examine */
 	attrib = GetFileAttributes(path);
 
@@ -843,19 +793,6 @@ static bool check_dir(cptr s)
 
 	/* Require directory */
 	if (!(attrib & FILE_ATTRIBUTE_DIRECTORY)) return (FALSE);
-
-#else /* WIN32 */
-
-	/* Examine and verify */
-	if (_dos_getfileattr(path, &attrib)) return (FALSE);
-
-	/* Prohibit something */
-	if (attrib & FA_LABEL) return (FALSE);
-
-	/* Require directory */
-	if (!(attrib & FA_DIREC)) return (FALSE);
-
-#endif /* WIN32 */
 
 	/* Success */
 	return (TRUE);
@@ -1876,11 +1813,7 @@ static errr Term_xtra_win_react(void)
 		use_graphics = arg_graphics;
 
 		/* Reset visuals */
-#ifdef ANGBAND_2_8_1
-		reset_visuals();
-#else /* ANGBAND_2_8_1 */
 		reset_visuals(TRUE);
-#endif /* ANGBAND_2_8_1 */
 	}
 
 #endif /* USE_GRAPHICS */
@@ -2037,17 +1970,8 @@ static void Term_xtra_win_sound(int v)
 	/* Build the path */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_SOUND, sound_file[v][Rand_simple(i)]);
 
-#ifdef WIN32
-
 	/* Play the sound, catch errors */
 	return (PlaySound(buf, 0, SND_FILENAME | SND_ASYNC));
-
-#else /* WIN32 */
-
-	/* Play the sound, catch errors */
-	return (sndPlaySound(buf, SND_ASYNC));
-
-#endif /* WIN32 */
 
 #else /* USE_SOUND */
 
@@ -2063,31 +1987,8 @@ static void Term_xtra_win_sound(int v)
  */
 static int Term_xtra_win_delay(int v)
 {
-#ifdef WIN32
-
 	/* Sleep */
 	if (v > 0) Sleep(v);
-
-#else /* WIN32 */
-
-	DWORD t;
-	MSG msg;
-
-	/* Final count */
-	t = GetTickCount() + v;
-
-	/* Wait for it */
-	while (GetTickCount() < t)
-	{
-		/* Handle messages */
-		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-	}
-
-#endif /* WIN32 */
 
 	/* Success */
 	return (0);
@@ -2543,29 +2444,6 @@ static void windows_map_aux(void)
 	byte ta;
 	char tc;
 
-#ifdef ZANGBAND
-
-	td->map_tile_wid = (td->tile_wid * td->cols) / MAX_WID;
-	td->map_tile_hgt = (td->tile_hgt * td->rows) / MAX_HGT;
-
-#ifdef ZANGBAND_WILDERNESS
-
-	min_x = min_wid;
-	min_y = min_hgt;
-	max_x = max_wid;
-	max_y = max_hgt;
-
-#else /* ZANGBAND_WILDERNESS */
-
-	min_x = 0;
-	min_y = 0;
-	max_x = cur_wid;
-	max_y = cur_hgt;
-
-#endif /* ZANGBAND_WILDERNESS */
-
-#else /* ZANGBAND */
-
 	td->map_tile_wid = (td->tile_wid * td->cols) / DUNGEON_WID;
 	td->map_tile_hgt = (td->tile_hgt * td->rows) / DUNGEON_HGT;
 
@@ -2573,8 +2451,6 @@ static void windows_map_aux(void)
 	min_y = 0;
 	max_x = DUNGEON_WID;
 	max_y = DUNGEON_HGT;
-
-#endif /* ZANGBAND */
 
 	/* Draw the map */
 	for (x = min_x; x < max_x; x++)
@@ -2834,23 +2710,6 @@ static void init_windows(void)
 
 	term_data_link(td);
 	term_screen = &td->t;
-
-#ifdef ZANGBAND_BIGSCREEN
-
-	/*
-	 * Reset map size if required
-	 */
-
-	/* Mega-Hack -- no panel yet */
-	panel_row_min = 0;
-	panel_row_max = 0;
-	panel_col_min = 0;
-	panel_col_max = 0;
-
-	/* Reset the panels */
-	map_panel_size();
-
-#endif /* ZANGBAND_BIGSCREEN */
 
 	/* Activate the main window */
 	SetActiveWindow(td->w);
@@ -3399,11 +3258,7 @@ static void process_menus(WORD wCmd)
 				msg_flag = FALSE;
 
 				/* Save the game */
-#ifdef ZANGBAND
-				do_cmd_save_game(FALSE);
-#else /* ZANGBAND */
 				do_cmd_save_game();
-#endif /* ZANGBAND */
 			}
 			else
 			{
@@ -3429,11 +3284,7 @@ static void process_menus(WORD wCmd)
 				msg_flag = FALSE;
 
 				/* Save the game */
-#ifdef ZANGBAND
-				do_cmd_save_game(FALSE);
-#else /* ZANGBAND */
 				do_cmd_save_game();
-#endif /* ZANGBAND */
 			}
 			quit(NULL);
 			break;
@@ -4115,11 +3966,7 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 				msg_flag = FALSE;
 
 				/* Save the game */
-#ifdef ZANGBAND
-				do_cmd_save_game(FALSE);
-#else /* ZANGBAND */
 				do_cmd_save_game();
-#endif /* ZANGBAND */
 			}
 			quit(NULL);
 			return 0;

@@ -18,8 +18,6 @@
  * Random artifact generator (randart) by Greg Wooledge.
  */
 
-#ifdef GJW_RANDART
-
 #define MAX_TRIES 200
 
 /* Random name parameters */
@@ -1432,10 +1430,3 @@ errr do_randart(u32b randart_seed, bool full)
 	return (err);
 }
 
-#else /* GJW_RANDART */
-
-#ifdef MACINTOSH
-static int i = 0;
-#endif /* MACINTOSH */
-
-#endif /* GJW_RANDART */
