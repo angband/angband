@@ -16,6 +16,15 @@
 EXE = angband.exe
 default: ../$(EXE)
 
+ifneq (,$(findstring WINDOWS\system32,$(PATH)))
+  CP = copy
+  RM = del
+else
+  CP = -cp
+  RM = -rm
+endif
+
+
 ifndef MINGW
   CYGWIN=yes
 endif
@@ -25,6 +34,7 @@ include Makefile.inc
 
 ifdef CONSOLE
   CFLAGS = -DUSE_GCU -DWIN32_CONSOLE_MODE -I$(PDCURSES_INC)
+  LIBS = -s $(PDCURSES_LIB)
   IOBJS = $(BASEOBJS) main-gcu.o main.o
 
   #PDCURSES_INC = ../../pdcurses/include
@@ -32,15 +42,17 @@ ifdef CONSOLE
 else
   CFLAGS = -DWINDOWS
   IOBJS = $(BASEOBJS) win/angband.res main-win.o win/readdib.o
+  LIBS = -s -mwindows -lwinmm
 endif
 
 CC = $(CROSS)gcc
 WRES = $(CROSS)windres
 CFLAGS += -Wall -W -std=iso9899:199409 -pedantic -O2
+LIBS += -s
 
 ifdef CYGWIN
 
-  LIBS = -s -mno-cygwin -mwindows -lwinmm -e _mainCRTStartup
+  LIBS = -mno-cygwin -e _mainCRTStartup
 
   # Note the additional -DNEAR= flag to cope with the 'NEAR'
   # keyword used in readdib.c
@@ -50,29 +62,18 @@ ifdef CYGWIN
 endif
 
 
-ifdef MINGW
-
-  ifdef CONSOLE
-    LIBS = -s $(PDCURSES_LIB)
-  else
-    LIBS = -s -mwindows -lwinmm
-  endif
-
-  ifdef CROSS
-    # This is an issue on mingw32 on linux
-    CFLAGS += -D_stdcall=
-  endif
-
-endif
-
 # Handle cross compiles
 ifdef CROSS
   CFLAGS += -DCROSS_COMPILE
+
+  ifdef MINGW
+    # This is an issue on mingw32 on linux
+    CFLAGS += -D_stdcall=
+  endif
 endif
 
 # Handle object output in a different directory
 ifdef OBJDIR
-#  OBJDIR = mingw32/
   OBJS = $(patsubst %.o, $(OBJDIR)%.o, $(IOBJS))
   mkdirs:; -mkdir -p $(OBJDIR) $(OBJDIR)win
   $(EXE): mkdirs
@@ -87,13 +88,13 @@ endif
 #
 
 ../$(EXE): $(EXE)
-	-cp $(EXE) ..
+	$(CP) $(EXE) ..
 
 $(EXE): $(OBJS)
 	$(CC) -o $(EXE) $(OBJS) $(LIBS)
 
 clean:
-	-rm -f $(EXE) $(OBJS)
+	$(RM) -f $(EXE) $(OBJS)
 
 
 #
