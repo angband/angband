@@ -16,7 +16,7 @@
 EXE = angband.exe
 default: ../$(EXE)
 
-ifneq (,$(findstring WINDOWS\system32,$(PATH)))
+ifneq (,$(findstring \system32,$(PATH)))
   CP = copy
   RM = del
 else
