@@ -1,72 +1,48 @@
+Angband 3.0.8
+=============
 
-                     _                _                     _
-                    / \   _ __   __ _| |__   __ _ _ __   __| |
-                   / _ \ | '_ \ / _` | '_ \ / _` | '_ \ / _` |
-                  / ___ \| | | | (_| | |_) | (_| | | | | (_| |
-                 /_/   \_\_| |_|\__, |_.__/ \__,_|_| |_|\__,_|
-                                |___/
-
-                 Version 3.0.8 by Andrew Sidwell and Pete Mack
-
-           Send comments, bug reports and patches to the newsgroup:
-      <news:rec.games.roguelike.angband> or at <http://angband.oook.cz/>.
-
-           Based on Moria:   Copyright (c) 1985 Robert Alan Koeneke
-               and Umoria:   Copyright (c) 1989 James E. Wilson
-      Angband 2.0 - 2.6.2:   Alex Cutler, Andy Astrand, Sean Marsh,
-                             Geoff Hill, Charles Teague, Charles Swiger
-            2.7.0 - 2.8.5:   Ben Harrison
-            2.9.0 - 3.0.6:   Robert Ruehlmann
+Bug reports to <bugs@rephial.org>
+Website at     http://rephial.org/
 
 
 Angband is a graphical dungeon adventure game that uses textual characters
 to represent the walls and floors of a dungeon and the inhabitants therein, 
 in the vein of games like NetHack and Rogue.
 
-The current main website is http://angband.rogueforge.net/, which contains
-various help files, changelists, and development information.  There also
-are various files included here which give valuable information, like
-changes.txt and the help files in lib/help/, which can be viewed in-game.
+The game's website is http://rephial.org/, which contains various help files,
+changelists, and development information.  There are also files included here
+which give valuable information, like changes.txt and the help files in
+lib/help/, which can be viewed in-game.
 
-If you want compile the game, please check:
-  <http://ajps.mine.nu/angband/wiki/BuildSystem>
+Angband is currently maintained by a development "team" headed by Andrew
+Sidwell.  Please see the "thanks.txt" file for a full listing of credits.
 
-
-For information on variants, patches, and other assorted things, you're best
-off looking at both the main website and http://angband.oook.cz/, a fansite
-which provides access to the Angband newsgroups, a place to upload character
-dumps, and various spoilers.
-
-Bug reports should go to <http://angband.rogueforge.net/trac/newticket>.
-Please include your email address (even with a NOSPAM in there) so we can ask
-for more details if necessary.
-
-
-
-=== Getting a working copy ===
-
-This version of Angband has support for Windows, Mac OS X, various Unixes
-(both console and X11 versions), RISC OS, and DOS.  If you're interested in
-writing support for a new version, then please do!  It will gladly be
-incorporated into the official sources.
 
 If you've downloaded the source, please be aware that there are precompiled
 versions available for at least Mac OS X, Windows, and RISC OS, available
-at the main site.  See compile.txt for details on compiling if you need to.
+at the main site.  However, if you want to compile, you may find the page
+<http://rephial.org/wiki/Compiling> useful.
 
+
+For information on variants, patches, and other assorted things, you're best
+off looking at the main community site for Angband, <http://angband.oook.cz/>.
+It has the Angband forum, provides access to the Angband newsgroup, and allows
+you to upload character dumps and screenshots.
+
+Bug reports should be sent to either the forum, in the "Vanilla" section, or
+via email to bugs@rephial.org.
 
 
 
 === Special instructions for certain platforms ===
 
-Make sure you keep all your savefiles in the proper place,
-and if you load a savefile from the wrong place, note that the game
-may decide to re-save your savefile in the proper place when you quit.
+Make sure you keep all your savefiles in the proper place, and if you load a
+savefile from the wrong place, note that the game may decide to re-save your
+savefile in the proper place when you quit.
 
-Some archive generation programs refuse to handle empty directories,
-so special "fake" files with names like "DELETEME.TXT" may have been
-placed into certain directories to avoid this problem.  You may safely
-delete these files if you so desire.
+Some kinds of archive (namely Zip files) don't handle empty directories, so
+there are "delete.me" files in those.  You may safely delete these files if
+they annoy you.
 
 
 === Upgrading from older versions (and/or other platforms) ===

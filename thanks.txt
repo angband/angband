@@ -1,5 +1,26 @@
+If your name should be included in this file and it's not, please email us
+so we can fix it. :)
+
+
+Previous maintainers:
+=====================
+
+Angband 2.9.0 - 3.0.6:
+Robert Ruehlmann <rr9@thangorodrim.net>
+
+Angband 2.7.0 - 2.8.5:
+Ben Harrison <benh@phial.com>
+
+Angband 2.0 - 2.4 - 2.6.1 by:
+Alex Cutler, Andy Astrand, Sean Marsh,
+Geoff Hill, Charles Teague, Charles Swiger
+
+Based on Moria, Copyright (c) 1985 Robert Alan Koeneke
+and Umoria, Copyright (c) 1989 James E. Wilson
+
+
 Contributors:
--------------
+=============
 
 Many thanks go to the following people who have contributed patches,
 bugfixes, and other stuff for Angband:
@@ -77,22 +98,6 @@ Andrew and Antony Sidwell:
 Colorname support in the lib/edit/*.txt files, and various utility
 functions, bugfixes, and patches
 
-The developers of the Lua scripting language and the 'tolua' wrapper
-generators for a nice scripting language that is not only easy to learn
-and use, but also incredibly small and fast!
-
 The UPX team (Markus Oberhumer and Laszlo Molnar)
 The UPX packer for executables < http://upx.tsx.org/ > is used to reduce
 the size of the Windows and DOS binaries.
-
-The Lua < http://www.lua.org > team from TeCGraf, the Computer Graphics
-Technology Group of PUC-Rio, including Luiz Henrique de Figueiredo, Waldemar
-Celes, and Roberto Ierusalimschy.  Lua is a light-weight programming language
-that is used in Angband to script things like object use and spell effects.
-
-I hope I've remembered everyone who ought to be mentioned here. If your
-name should be included, my apologies, and please tell me so I can correct
-the oversight!
-
---
-Robert Ruehlmann < rr9@thangorodrim.net >
