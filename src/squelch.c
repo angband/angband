@@ -662,7 +662,6 @@ static void quality_menu(void)
 static void sval_display(menu_type *menu, int oid, bool cursor, int row, int col, int width)
 {
 	char buf[80];
-	const char *inscrip;
 	const u16b *choice = menu->menu_data;
 	int idx = choice[oid];
 
@@ -676,11 +675,6 @@ static void sval_display(menu_type *menu, int oid, bool cursor, int row, int col
 	c_put_str(attr, format("[ ] %s", buf), row, col);
 	if (k_info[idx].squelch)
 		c_put_str(TERM_L_RED, "*", row, col + 1);
-
-	inscrip = get_autoinscription(choice[oid]);
-	if (!inscrip) inscrip = "(none)";
-
-	c_put_str(attr, format("%-40s", inscrip), row, col + 40);
 }
 
 /*
@@ -688,7 +682,6 @@ static void sval_display(menu_type *menu, int oid, bool cursor, int row, int col
  */
 static bool sval_action(char cmd, void *db, int oid)
 {
-	char buf[80] = "";
 	u16b *choice = db;
 
 	/* Toggle */
@@ -696,33 +689,6 @@ static bool sval_action(char cmd, void *db, int oid)
 	{
 		int idx = choice[oid];
 		k_info[idx].squelch = !k_info[idx].squelch;
-
-		return TRUE;
-	}
-
-	/* Set inscription */
-	else if (cmd == '\n' || cmd == '\r')
-	{
-		s16b k_idx = choice[oid];
-		const char *inscrip;
-
-		/* Obtain the current inscription */
-		inscrip = get_autoinscription(k_idx);	
-
-		/* Copy of the current inscription, or clear the buffer */
-		if (inscrip)
-			my_strcpy(buf, inscrip, sizeof(buf));
-
-		/* Get a new inscription (possibly empty) */
-		if (get_string("Autoinscription: ", buf, sizeof(buf)))
-		{
-			/* Save the inscription */
-			add_autoinscription(k_idx, buf);
-
-			/* Notice stuff (later) */
-			p_ptr->notice |= (PN_AUTOINSCRIBE);
-			p_ptr->window |= (PW_INVEN | PW_EQUIP);
-		}
 
 		return TRUE;
 	}
@@ -793,9 +759,7 @@ static bool sval_menu(int tval, const char *desc)
 	text_out_c(TERM_L_GREEN, "ESC");
 	text_out(" to return to the previous menu.  ");
 	text_out_c(TERM_L_BLUE, "Space");
-	text_out(" toggles the current setting, and ");
-	text_out_c(TERM_L_GREEN, "Enter");
-	text_out(" will prompt you for a new autoinscription.");
+	text_out(" toggles the current setting.");
 
 	/* Set up the menu */
 	WIPE(&menu, menu);

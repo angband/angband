@@ -20,6 +20,8 @@
 #include "ui.h"
 
 
+
+
 /*
  * Code cleanup -- Pete Mack 02/2007
  * Use proper function tables and database methodology.
@@ -67,44 +69,44 @@
 
 typedef struct
 {
-		int maxnum; /* Maximum possible item count for this class */
-		bool easy_know; /* Items don't need to be IDed to recognize membership */
+	int maxnum; /* Maximum possible item count for this class */
+	bool easy_know; /* Items don't need to be IDed to recognize membership */
 
-		const char *(*name)(int gid); /* name of this group */
+	const char *(*name)(int gid); /* name of this group */
 
-		/* Compare, in group and display order */
-		/* Optional, if already sorted */
-		int (*gcomp)(const void *, const void *); /* Compare GroupIDs of two oids */
-		int (*group)(int oid); /* Group ID for of an oid */
-		bool (*aware)(object_type *obj); /* Object is known sufficiently for group */
+	/* Compare, in group and display order */
+	/* Optional, if already sorted */
+	int (*gcomp)(const void *, const void *); /* Compare GroupIDs of two oids */
+	int (*group)(int oid); /* Group ID for of an oid */
 
-		/* summary function for the "object" information. */
-		void (*summary)(int gid, const int *object_list, int n, int top, int row, int col);
+	/* summary function for the "object" information. */
+	void (*summary)(int gid, const int *object_list, int n, int top, int row, int col);
+
 } group_funcs;
 
 typedef struct
 {
+	/* Print a tabular-formatted description for an oid */
+	/* This includes things like kill-count, the current graphic, */
+	/* any tile illumination info. Item id for Wizard mode and */
+	/* autoinscription are handled by the caller */
+	void (*display_member)(int col, int row, bool cursor, int oid);
 
-		/* Print a tabular-formatted description for an oid */
-		/* This includes things like kill-count, the current graphic, */
-		/* any tile illumination info. Item id for Wizard mode and */
-		/* autoinscription are handled by the caller */
-		void (*display_member)(int col, int row, bool cursor, int oid); 
-
-		void (*lore)(int oid); /* Dump known lore to screen*/
+	void (*lore)(int oid); /* Dump known lore to screen*/
 
 
-		/* Required only for objects with modifiable display attributes */
-		/* Unknown 'flavors' return flavor attributes */
-		char *(*xchar)(int oid); /* get character attr for OID (by address) */
-		byte *(*xattr)(int oid); /* get color attr for OID (by address) */
+	/* Required only for objects with modifiable display attributes */
+	/* Unknown 'flavors' return flavor attributes */
+	char *(*xchar)(int oid); /* get character attr for OID (by address) */
+	byte *(*xattr)(int oid); /* get color attr for OID (by address) */
 
-		/* Required only for manipulable (ordinary) objects */
-		/* Address of inscription.  Unknown 'flavors' return null  */
-		u16b *(*note)(int oid);
 
-		/* extra context for display of members */
-		bool is_visual;
+	const char *(*xtra_prompt)(int oid);		/* For kinds that need extra prompts */
+	void (*xtra_act)(char ch, int oid);		/* For kinds that need extra actions */
+
+
+	/* extra context for display of members */
+	bool is_visual;
 
 
 } member_funcs;
@@ -300,64 +302,6 @@ static int logical_height(int height)
 	return height / div;
 }
 
-/*
- * Interact with inscriptions.
- * Create a copy of an existing quark, except if the quark has '=x' in it, 
- * If an quark has '=x' in it remove it from the copied string, otherwise append it where 'x' is ch.
- * Return the new quark location.
- */
-static int auto_note_modify(int note, char ch)
-{
-	char tmp[80];
-
-	cptr s;
-
-	/* Paranoia */
-	if (!ch) return(note);
-
-	/* Null length string to start */
-	tmp[0] = '\0';
-
-	/* Inscription */
-	if (note)
-	{
-
-		/* Get the inscription */
-		s = quark_str(note);
-
-		/* Temporary copy */
-		my_strcpy(tmp,s,80);
-
-		/* Process inscription */
-		while (s)
-		{
-
-			/* Auto-pickup on "=g" */
-			if (s[1] == ch)
-			{
-
-				/* Truncate string */
-				tmp[strlen(tmp)-strlen(s)] = '\0';
-
-				/* Overwrite shorter string */
-				my_strcat(tmp,s+2,80);
-
-				/* Create quark */
-				return(quark_add(tmp));
-			}
-
-			/* Find another '=' */
-			s = strchr(s + 1, '=');
-		}
-	}
-
-	/* Append note */
-	my_strcat(tmp,format("=%c",ch),80);
-
-	/* Create quark */
-	return(quark_add(tmp));
-}
-
 
 static void display_group_member(menu_type *menu, int oid,
 						bool cursor, int row, int col, int wid)
@@ -365,11 +309,6 @@ static void display_group_member(menu_type *menu, int oid,
 	member_funcs *o_funcs = (member_funcs*) menu->menu_data;
 	byte attr = curs_attrs[CURS_KNOWN][cursor == oid];
 
-	/* Show inscription, if applicable, aware and existing */
-	if (o_funcs->note && o_funcs->note(oid) && *o_funcs->note(oid))
-	{
-		c_put_str(TERM_YELLOW,quark_str(*o_funcs->note(oid)), row, 65);
-	}
 	/* Print the interesting part */
 	o_funcs->display_member(col, row, cursor, oid);
 
@@ -420,7 +359,6 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	bool visual_list = FALSE;
 	byte attr_top = 0;
 	char char_left = 0;
-	int note_idx = 0;
 
 	int delay = 0;
 
@@ -519,15 +457,16 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		{
 			region_erase(&title_area);
 			prt(format("Knowledge - %s", title), 2, 0);
-			prt( "Group", 4, 0);
+			prt("Group", 4, 0);
 			prt("Name", 4, g_name_len + 3);
-			Term_gotoxy(65, 4);
-			if (o_funcs.note)
-				Term_addstr(-1, TERM_WHITE, "Inscribed ");
+
+			Term_gotoxy(55, 4);
 			if (otherfields)
 				Term_addstr(-1, TERM_WHITE, otherfields);
+
 			for (i = 0; i < 78; i++)
 				Term_putch(i, 5, TERM_WHITE, '=');
+
 			for (i = 0; i < browser_rows; i++)
 				Term_putch(g_name_len + 1, 6 + i, TERM_WHITE, '|');
 
@@ -543,6 +482,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			group_menu.cursor = g_cur;
 			object_menu.cursor = 0;
 		}
+
 		/* HACK ... */
 		if (!visual_list)
 		{
@@ -555,29 +495,26 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		{
 			/* ... or just a single element in the group. */
 			o_funcs.is_visual = TRUE;
-			menu_set_filter(&object_menu, obj_list + o_cur +g_offset[g_cur], 1);
+			menu_set_filter(&object_menu, obj_list + o_cur + g_offset[g_cur], 1);
 			object_menu.cursor = 0;
 		}
+
 		oid = obj_list[g_offset[g_cur]+o_cur];
+
 		/* Prompt */
 		{
 			const char *pedit = (!o_funcs.xattr) ? "" :
 					(!(attr_idx|char_idx) ? ", 'c' to copy" : ", 'c', 'p' to paste");
 
-			const char *pnote = (!o_funcs.note || !o_funcs.note(oid)) ?
-							"" : ((note_idx) ? ", '\\' to re-inscribe"  :  "");
-
-			const char *pnote1 = (!o_funcs.note || !o_funcs.note(oid)) ?
-									"" : ", '{', '}', 'k', 'g', ...";
-
-			const char *pvs = (!o_funcs.xattr) ? "" : ", 'v' for visuals";
+			const char *pvs =  o_funcs.xattr       ? ", 'v' for visuals"      : "";
+			const char *xtra = o_funcs.xtra_prompt ? o_funcs.xtra_prompt(oid) : "";
 
 			if (visual_list)
 				prt(format("<dir>, 'r' to recall, ENTER to accept%s, ESC", pedit), hgt-1, 0);
 			else 
-				prt(format("<dir>, 'r' to recall%s ESC%s%s%s",
-										pvs, pedit, pnote, pnote1), hgt-1, 0);
+				prt(format("<dir>, 'r' to recall%s%s%s, ESC", pvs, pedit, xtra), hgt-1, 0);
 		}
+
 		if (do_swap)
 		{
 			do_swap = FALSE;
@@ -595,7 +532,6 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 		if (visual_list)
 		{
-	
 			display_visual_list(g_name_len + 3, 7, browser_rows-1,
                                    wid - (g_name_len + 3), attr_top, char_left);
 			place_visual_list_cursor(g_name_len + 3, 7, *o_funcs.xattr(oid), 
@@ -635,9 +571,11 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 				panel = 1-panel;
 			}
 		}
+
 		ke0 = run_event_loop(&active_menu->target, 0, &ke);
 		if (ke0.type != EVT_AGAIN) ke = ke0;
-		switch(ke.type) {
+		switch(ke.type)
+		{
 			case EVT_KBRD:
 				break;
 			case ESCAPE:
@@ -658,9 +596,9 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			default:
 				continue;
 		}
+
 		switch (ke.key)
 		{
-
 			case ESCAPE:
 			{
 				flag = TRUE;
@@ -678,69 +616,10 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 				break;
 			}
 
-			/* HACK: make this a function.  Replace g_funcs.aware() */
-			case '{':
-			case '}':
-			case '\\':
-				/* precondition -- valid object */
-				if (o_funcs.note == NULL || o_funcs.note(oid) == 0)
-						break;
-			{
-				char note_text[80] = "";
-				u16b *note = o_funcs.note(oid);
-				u16b old_note = *note;
-
-				if (ke.key == '{')
-				{
-					/* Prompt */
-					prt("Inscribe with: ", hgt, 0);
-
-					/* Default note */
-					if (old_note)
-						strnfmt(note_text, sizeof note_text, "%s", quark_str(old_note));
-
-					/* Get a filename */
-					if (!askfor_aux(note_text, sizeof note_text, NULL)) continue;
-
-						/* Set the inscription */
-						*note = quark_add(note_text);
-
-					/* Set the current default note */
-					note_idx = *note;
-				}
-				else if (ke.key == '}')
-				{
-					*note = 0;
-				}
-				else
-				{
-					/* '\\' */
-					*note = note_idx;
-				}
-
-				/* Process existing objects */
-				for (i = 1; i < o_max; i++)
-				{
-					/* Get the object */
-					object_type *i_ptr = &o_list[i];
-
-					/* Skip dead or differently sourced items */
-					if (!i_ptr->k_idx || i_ptr->note != old_note) continue;
-
-					/* Not matching item */
-					if (!g_funcs.group(oid) != i_ptr->tval) continue;
-
-					/* Auto-inscribe */
-					if (g_funcs.aware(i_ptr) || cheat_peek)
-						i_ptr->note = note_idx;
-				}
-
-				break;
-			}
-
 			default:
 			{
 				int d = target_dir(ke.key);
+
 				/* Handle key-driven motion between panels */
 				if (ddx[d] && ((ddx[d] < 0) == (panel == 1)))
 				{
@@ -751,11 +630,11 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 					else if (o_cur >= g_o_count) o_cur = g_o_count-1;
 					do_swap = TRUE;
 				}
-				else if (o_funcs.note && o_funcs.note(oid))
+				else if (o_funcs.xtra_act)
 				{
-					note_idx = auto_note_modify(*o_funcs.note(oid), ke.key);
-					*o_funcs.note(oid) = note_idx;
+					o_funcs.xtra_act(ke.key, oid);
 				}
+
 				break;
 			}
 		}
@@ -1111,9 +990,9 @@ static void mon_summary(int gid, const int *object_list, int n, int top, int row
 static void do_cmd_knowledge_monsters(void)
 {
 	group_funcs r_funcs = {N_ELEMENTS(monster_group), FALSE, race_name,
-							m_cmp_race, default_group, 0, mon_summary};
+							m_cmp_race, default_group, mon_summary};
 
-	member_funcs m_funcs = {display_monster, mon_lore, m_xchar, m_xattr, 0, 0};
+	member_funcs m_funcs = {display_monster, mon_lore, m_xchar, m_xattr, 0, 0, 0};
 
 	
 	int *monsters;
@@ -1160,7 +1039,7 @@ static void do_cmd_knowledge_monsters(void)
 	}
 
 	display_knowledge("monsters", monsters, m_count, r_funcs, m_funcs,
-						"Sym  Kills");
+						"          Sym  Kills");
 	FREE(monsters);
 	FREE(default_join);
 	default_join = 0;
@@ -1254,8 +1133,8 @@ static int art2tval(int oid) { return a_info[oid].tval; }
 static void do_cmd_knowledge_artifacts(void)
 {
 	/* HACK -- should be TV_MAX */
-	group_funcs obj_f = {TV_GOLD, FALSE, kind_name, a_cmp_tval, art2tval, 0, 0};
-	member_funcs art_f = {display_artifact, desc_art_fake, 0, 0, 0, 0};
+	group_funcs obj_f = {TV_GOLD, FALSE, kind_name, a_cmp_tval, art2tval, 0};
+	member_funcs art_f = {display_artifact, desc_art_fake, 0, 0, 0, 0, 0};
 
 
 	int *artifacts;
@@ -1384,9 +1263,9 @@ static int e_cmp_tval(const void *a, const void *b)
 static void do_cmd_knowledge_ego_items(void)
 {
 	group_funcs obj_f =
-		{TV_GOLD, FALSE, ego_grp_name, e_cmp_tval, default_group, 0, 0};
+		{TV_GOLD, FALSE, ego_grp_name, e_cmp_tval, default_group, 0};
 
-	member_funcs ego_f = {display_ego_item, desc_ego_fake, 0, 0, 0, 0/*e_note */ };
+	member_funcs ego_f = {display_ego_item, desc_ego_fake, 0, 0, 0, 0, 0};
 
 	int *egoitems;
 	int e_count = 0;
@@ -1428,10 +1307,11 @@ static void display_object(int col, int row, bool cursor, int oid)
 {
 	int k_idx = oid;
 	
-	/* Access the object */
 	object_kind *k_ptr = &k_info[k_idx];
+	const char *inscrip = get_autoinscription(oid);
 
 	char o_name[80];
+
 
 	/* Choose a color */
 	bool aware = (k_ptr->flavor == 0) || (k_ptr->aware);
@@ -1451,8 +1331,13 @@ static void display_object(int col, int row, bool cursor, int oid)
 	/* Tidy name */
 	strip_name(o_name, k_idx, cheat_know);
 
+
 	/* Display the name */
 	c_prt(attr, o_name, row, col);
+
+	/* Show autoinscription if around */
+	if (inscrip)
+		c_put_str(TERM_YELLOW, inscrip, row, 55);
 
 
 	/* Hack - don't use if double tile */
@@ -1530,20 +1415,92 @@ static byte *o_xattr(int oid) {
 	else return &flavor_info[k_ptr->flavor].x_attr;
 }
 
-static u16b *o_note(int oid) {
+/*
+ * Display special prompt for object inscription.
+ */
+static const char *o_xtra_prompt(int oid)
+{
 	object_kind *k_ptr = &k_info[oid];
-	int ind = get_autoinscription_index(oid);
-	if (!k_ptr->flavor || k_ptr->aware) return (u16b*) &inscriptions[ind].inscription_idx;
-	else return 0;
+	s16b idx = get_autoinscription_index(oid);
+
+	const char *no_insc = ", '{'";
+	const char *with_insc = ", '{', '}'";
+
+
+	/* Forget it if we've never seen the thing */
+	if (!k_ptr->everseen)
+		return "";
+
+	/* If it's already inscribed */
+	if (idx != -1)
+		return with_insc;
+
+	return no_insc;
 }
+
+/*
+ * Special key actions for object inscription.
+ */
+static void o_xtra_act(char ch, int oid)
+{
+	object_kind *k_ptr = &k_info[oid];
+	s16b idx = get_autoinscription_index(oid);
+
+	/* Forget it if we've never seen the thing */
+	if (!k_ptr->everseen)
+		return;
+
+	/* Uninscribe */
+	if (ch == '}')
+	{
+		if (idx) remove_autoinscription(oid);
+		return;
+	}
+
+	/* Inscribe */
+	else if (ch == '{')
+	{
+		char note_text[80] = "";
+
+		/* Avoid the prompt getting in the way */
+		screen_save();
+
+		/* Prompt */
+		prt("Inscribe with: ", 0, 0);
+
+		/* Default note */
+		if (idx != -1)
+			strnfmt(note_text, sizeof(note_text), "%s", get_autoinscription(oid));
+
+		/* Get an inscription */
+		if (askfor_aux(note_text, sizeof(note_text), NULL))
+		{
+			/* Remove old inscription if existent */
+			if (idx != -1)
+				remove_autoinscription(oid);
+
+			/* Add the autoinscription */
+			add_autoinscription(oid, note_text);
+
+			/* Notice stuff (later) */
+			p_ptr->notice |= (PN_AUTOINSCRIBE);
+			p_ptr->window |= (PW_INVEN | PW_EQUIP);
+		}
+
+		/* Reload the screen */
+		screen_load();
+	}
+}
+
+
 
 /*
  * Display known objects
  */
 static void do_cmd_knowledge_objects(void)
 {
-	group_funcs kind_f = {TV_GOLD, FALSE, kind_name, o_cmp_tval, obj2gid, 0, 0};
-	member_funcs obj_f = {display_object, desc_obj_fake, o_xchar, o_xattr,0 /* o_note*/};
+	group_funcs kind_f = {TV_GOLD, FALSE, kind_name, o_cmp_tval, obj2gid, 0};
+	member_funcs obj_f = {display_object, desc_obj_fake, o_xchar, o_xattr, o_xtra_prompt, o_xtra_act, 0};
 
 	int *objects;
 	int o_count = 0;
@@ -1559,7 +1516,9 @@ static void do_cmd_knowledge_objects(void)
 			if (c >= 0) objects[o_count++] = i;
 		}
 	}
-	display_knowledge("known objects", objects, o_count, kind_f, obj_f, "         Sym");
+
+	display_knowledge("known objects", objects, o_count, kind_f, obj_f, "Inscribed          Sym");
+
 	FREE(objects);
 }
 
@@ -1615,9 +1574,9 @@ static void feat_lore(int oid) { /* noop */ }
 static void do_cmd_knowledge_features(void)
 {
 	group_funcs fkind_f = {N_ELEMENTS(feature_group_text), FALSE,
-							fkind_name, f_cmp_fkind, feat_order, 0, 0};
+							fkind_name, f_cmp_fkind, feat_order, 0};
 
-	member_funcs feat_f = {display_feature, feat_lore, f_xchar, f_xattr, 0};
+	member_funcs feat_f = {display_feature, feat_lore, f_xchar, f_xattr, 0, 0, 0};
 
 	int *features;
 	int f_count = 0;
@@ -1630,7 +1589,7 @@ static void do_cmd_knowledge_features(void)
 		features[f_count++] = i; /* Currently no filter for features */
 	}
 
-	display_knowledge("features", features, f_count, fkind_f, feat_f, " Sym");
+	display_knowledge("features", features, f_count, fkind_f, feat_f, "           Sym");
 	FREE(features);
 }
 
