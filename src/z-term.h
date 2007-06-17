@@ -80,6 +80,7 @@ typedef enum
 
 	EVT_AGAIN		= 0x4000000,	/* Retry notification */
 	EVT_STOP		= 0x8000000		/* Loop stopped (never handled) */
+
 } event_class;
 
 #ifdef RISCOS
@@ -95,6 +96,9 @@ struct event_type
 	char key; 
 	short index;
 };
+
+#define EVENT_EMPTY		{ EVT_NONE, 0, 0, 0, 0 }
+
 
 /*
  * An actual "term" structure

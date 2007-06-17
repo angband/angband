@@ -676,7 +676,7 @@ errr fd_lock(int fd, int what)
 
 	/* Wait for access and set lock status */
 	/*
-	 * Change F_SETLKW to G_SETLK if it's preferable to return
+	 * Change F_SETLKW to F_SETLK if it's preferable to return
 	 * without locking and reporting an error instead of waiting.
 	 */
 	return (fcntl(fd, F_SETLKW, &lock));

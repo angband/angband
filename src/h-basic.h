@@ -156,9 +156,6 @@
  * A "byte" is an unsigned byte of memory.
  * s16b/u16b are exactly 2 bytes (where possible)
  * s32b/u32b are exactly 4 bytes (where possible)
- *
- * We define a "bool" as a char.  We should really be able to use the C89 types
- * where available. XXX
  */
 
 /* C++ defines its own bool type, so we hack around it */
@@ -182,6 +179,7 @@ typedef int errr;
 
 #else
 
+  /* Use a char otherwise */
   typedef char bool;
 
   #undef TRUE
@@ -213,7 +211,7 @@ typedef int errr;
 #define MAX_UCHAR		UINT8_MAX
 #define MAX_SHORT		INT16_MAX
 
-#else /* __STDC__ */
+#else /* HAVE_STDINT_H */
 
   /* Try hacks instead (not guaranteed to work) */
   typedef unsigned char byte;
@@ -230,9 +228,9 @@ typedef int errr;
   #else
     typedef signed long s32b;
     typedef unsigned long u32b;
-  #endif /* L64 */
+  #endif
 
-#endif /* __STDC__ */
+#endif /* HAVE_STDINT_H */
 
 
 
@@ -294,6 +292,4 @@ typedef int errr;
 #define isarrow(c)	((c >= ARROW_DOWN) && (c <= ARROW_UP))
 
 
-#endif
-
-
+#endif /* INCLUDED_H_BASIC_H */
