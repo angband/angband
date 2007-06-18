@@ -1,0 +1,3 @@
+signals.o: signals.c
+main-crb.o: main-crb.c
+main-ros.o: main-ros.c

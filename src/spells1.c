@@ -752,7 +752,8 @@ static int inven_damage(inven_func typ, int perc)
 	object_type *o_ptr;
 
 	char o_name[80];
-
+	
+	bool damage;
 
 	/* Count the casualties */
 	k = 0;
@@ -774,11 +775,82 @@ static int inven_damage(inven_func typ, int perc)
 			/* Scale the destruction chance up */
 			int chance = perc * 100;
 
-			/* Rods are tough */
-			if (o_ptr->tval == TV_ROD) chance = (chance / 4);
+			damage = FALSE;
+
+			/* Analyze the type to see if we just damage it */
+			switch (o_ptr->tval)
+			{
+				/* Weapons */
+				case TV_BOW:
+				case TV_SWORD:
+				case TV_HAFTED:
+				case TV_POLEARM:
+				case TV_DIGGING:
+				{
+					/* Chance to damage it */
+					if (rand_int(100) < perc)
+					{
+						/* Damage the item */
+						o_ptr->to_h--;
+						o_ptr->to_d--;
+
+						/* Damaged! */
+						damage = TRUE;
+					}
+					else continue;
+
+					break;
+				}
+
+				/* Wearable items */
+				case TV_HELM:
+				case TV_CROWN:
+				case TV_SHIELD:
+				case TV_BOOTS:
+				case TV_GLOVES:
+				case TV_CLOAK:
+				case TV_SOFT_ARMOR:
+				case TV_HARD_ARMOR:
+				case TV_DRAG_ARMOR:
+				{
+					/* Chance to damage it */
+					if (rand_int(100) < perc)
+					{
+						/* Damage the item */
+						o_ptr->to_a--;
+
+						/* Damaged! */
+						damage = TRUE;
+					}
+					else continue;
+
+					break;
+				}
+				
+				/* Rods are tough */
+				case TV_ROD:
+				{
+					chance = (chance / 4);
+					
+					break;
+				}
+			}
+
+			/* Damage instead of destroy */
+			if (damage)
+			{
+				/* Calculate bonuses */
+				p_ptr->update |= (PU_BONUS);
+
+				/* Window stuff */
+				p_ptr->window |= (PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
+
+				/* Casualty count */
+				amt = o_ptr->number;
+			}
 
 			/* Count the casualties */
-			for (amt = j = 0; j < o_ptr->number; ++j)
+			else for (amt = j = 0; j < o_ptr->number; ++j)
 			{
 				if (rand_int(10000) < chance) amt++;
 			}
@@ -790,12 +862,16 @@ static int inven_damage(inven_func typ, int perc)
 				object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 3);
 
 				/* Message */
-				message_format(MSG_DESTROY, 0, "%sour %s (%c) %s destroyed!",
+				message_format(MSG_DESTROY, 0, "%sour %s (%c) %s %s!",
 				           ((o_ptr->number > 1) ?
 				            ((amt == o_ptr->number) ? "All of y" :
 				             (amt > 1 ? "Some of y" : "One of y")) : "Y"),
 				           o_name, index_to_label(i),
-				           ((amt > 1) ? "were" : "was"));
+				           ((amt > 1) ? "were" : "was"),
+					   (damage ? "damaged" : "destroyed"));
+
+				/* Damage already done? */
+				if (damage) continue;
 
 				/* Hack -- If rods, wands, or staves are destroyed, the total
 				 * maximum timeout or charges of the stack needs to be reduced,
