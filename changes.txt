@@ -4,8 +4,11 @@ Angband 3.0.8
 This is Angband 3.0.8, the "final" release of the Angband 3.0.7s series.
 Quite a number of people have been involved in this version, and thanks
 must be given to Hugo Kornelis, Pete Mack, Marco K and Frank Palazzolo,
-Christer Nyfalt, Leon Marrick, Antony Sidwell, Andrew Doull, Kenneth
-Boyd, Iain McFall, Kiyoshi Aman, and Brendon Oliver.
+Christer Nyfalt, Leon Marrick, Andrew Doull, Kenneth Boyd, Iain McFall,
+Kiyoshi Aman, and Brendon Oliver.
+
+Special thanks go to Antony Sidwell for setting up the new website, and
+to Yendor for hosting the issue-tracker and source code repository.
 
 Changes from 3.0.6 are now sectioned, because some people will care about
 low-level changes, and others won't.
@@ -21,9 +24,8 @@ Major visible changes
 
 - New splash screen.
 
-- Steam Mecha class added (may be a bit hard to play right now).
-
-- The Ey/Un-style knowledge browser has been imported.
+- The Ey/Un-style knowledge browser has been imported.  You can set
+  autoinscription settings through that browser now.
 
 - Mouse support a la FAangband added, but nowhere near as advanced or
   useful.  Most of the menus you encounter can be selected using the
@@ -37,10 +39,11 @@ Major visible changes
   - new option: remaining HP changes the colour of the '@' sign.
   - new option: always pick up things matching an item in the inventory
   - experience to next level always displayed until clev50
-  - macros/visuals/colours are now accessible from the options menu.
+  - macros/visuals/colours are now accessible (only) from the options
+    menu
 
-- Sangband-style object handling added, which makes it much easier to
-  sift through things in the dungeon.
+- Sangband-style object handling, which makes it much easier to sift
+  through things in the dungeon.
 
 - Item squelching support, EyAngband-style.  Instead of being
   automatically destroyed, items are instead marked with the inscription
@@ -52,32 +55,30 @@ Major visible changes
   not get pseudo-ID'd.  For those that do, you can choose to mark things
   as "squelch" depending on the feeling you get when you first ID them
   in that way.  These categories are much broader than those found in
-  other variants; if you want a less coarse selection, give me a shout
-  and I'll see what I can do.
+  other variants; complain if necessary.
 
   Worthless items and emptied chests are automatically inscribed with
   "squelch", saving some micromanagement.
 
-- Ego-lanterns now exist, despite existence not being a predicate.
-  There are four brands, and you'll know when you find one; there's
+- Two kinds of ego-light added.  You'll know when you find one; there's
   no ID required to figure out if your lantern is special or not.
 
 - Lights now don't use fuel in the daylight in the town.
 
 - Amnesia (the monster attack) is now a timed effect (a la confusion),
-  and has a real gameplay effect, that lasts 25 turns:
+  and has a real gameplay effect:
   - casting/praying and zapping rods has a 1 in 3 success rate
   - reading scrolls, using staves and aiming wands has a 1 in 4 success
     rate
 
   Potions of Healing, *Healing* and Life are the only three things which
-  will get rid of amnesia early.  In the future, maybe eating mushrooms
-  of hallucination will cure it...
+  will get rid of amnesia early.  It's probably not balanced right yet.
 
 
 Minor visible changes
 ---------------------
-- Added echo to macro trigger entry.
+- Allow weapons and armour to be damaged instead of destroyed by
+  inventory damage effects, thus making swap weapons more viable.
 - Browsing books now displays information about the spells therein, if
   requested.  As part of this, move spell names/descriptions/locations
   out into a new file, spell.txt.  (Hugo Kornelis)
@@ -122,6 +123,7 @@ Minor visible changes
   from which you can select what command you would like to use.  This
   is inspired by (but not derived from) Hengband.
 - Prompt for overwriting savefiles.
+- Added echo to macro trigger entry.
 - Restore some pre-Ben flavour text.
 
 
