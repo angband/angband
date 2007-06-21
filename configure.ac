@@ -62,7 +62,7 @@ dnl Frontends
 AC_ARG_ENABLE(gtk,
 	[  --enable-gtk                         Enables GTK 2.x frontend (default: disabled)],
 	[enable_gtk=$enableval],
-	[enable_gtk=no])
+	[enable_gtk=yes])
 AC_ARG_ENABLE(curses,
 	[  --enable-curses                      Enables Curses frontend (default: enabled)],
 	[enable_curses=$enableval],
@@ -155,7 +155,7 @@ fi
 
 dnl GTK checking
 if test "$enable_gtk" = "yes"; then
-	PKG_CHECK_MODULES(GTK, [glib-2.0 >= 2.6.0 gtk+-2.0 >= 2.6.0 gthread-2.0 pango libglade],
+	PKG_CHECK_MODULES(GTK, [glib-2.0 >= 2.6.0 gtk+-2.0 >= 2.6.0 gthread-2.0 pango libglade-2.0],
 		[with_gtk=yes],
 		[with_gtk=no]
 	)

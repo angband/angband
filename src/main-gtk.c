@@ -858,7 +858,7 @@ static void init_gtk_window(term_data *td, int i)
 	plog_fmt("ANGBAND_XTRA path = %s",buf);
 	
 	/* Set up the Glade file */
-	xml = glade_xml_new(buf, NULL);
+	xml = glade_xml_new(buf, NULL, NULL);
 	
 	if (main_window)
 	{
