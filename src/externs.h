@@ -30,6 +30,9 @@ extern cptr macro_trigger_keycode[2][MAX_MACRO_TRIGGER];
 extern char pf_result[];
 extern int pf_result_index;
 
+/* files.c */
+extern int score_idx;
+
 /* tables.c */
 extern const s16b ddd[9];
 extern const s16b ddx[10];
@@ -475,6 +478,9 @@ extern void display_koff(int k_idx);
 /* pathfind.c */
 extern bool findpath(int y, int x);
 
+/* randart.c */
+extern errr do_randart(u32b randart_seed, bool full);
+
 /* signals.c */
 extern void signals_ignore_tstp(void);
 extern void signals_handle_tstp(void);
@@ -669,6 +675,12 @@ extern void build_gamma_table(int gamma);
 extern byte gamma_table[256];
 #endif /* SUPPORT_GAMMA */
 
+/* util.c */
+extern void repeat_push(int what);
+extern bool repeat_pull(int *what);
+extern void repeat_clear(void);
+extern void repeat_check(void);
+
 /* xtra1.c */
 extern void cnv_stat(int val, char *out_val, size_t len);
 extern s16b modify_stat_value(int value, int amount);
@@ -715,20 +727,6 @@ extern bool confuse_dir(int *dp);
 extern void user_name(char *buf, size_t len, int id);
 #endif /* SET_UID */
 
-
-#ifdef ALLOW_REPEAT
-/* util.c */
-extern void repeat_push(int what);
-extern bool repeat_pull(int *what);
-extern void repeat_clear(void);
-extern void repeat_check(void);
-#endif /* ALLOW_REPEAT */
-
-
-#ifdef GJW_RANDART
-/* randart.c */
-extern errr do_randart(u32b randart_seed, bool full);
-#endif /* GJW_RANDART */
 
 #ifdef RISCOS
 /* main-ros.c */

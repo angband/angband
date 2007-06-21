@@ -3313,7 +3313,7 @@ void display_scores(int from, int to)
 /*
  * Hack - save index of player's high score
  */
-static int score_idx = -1;
+int score_idx = -1;
 
 
 /*
