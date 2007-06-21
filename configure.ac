@@ -15,8 +15,6 @@ dnl Check for C compiler
 AC_PROG_CC
 
 test "$GCC" = "yes" && CFLAGS="$CFLAGS -Wall -pipe -g -fno-strength-reduce"
-PICFLAGS="-fPIC"
-AC_SUBST(PICFLAGS)
 
 dnl Checks for various programs
 AC_PROG_INSTALL
@@ -136,7 +134,6 @@ if test "$enable_x11" = "yes"; then
 	fi
 fi
 
-
 dnl SDL checking
 if test "$enable_sdl" = "yes"; then
 	AM_PATH_SDL(1.2.0,,)
@@ -158,7 +155,7 @@ fi
 
 dnl GTK checking
 if test "$enable_gtk" = "yes"; then
-	PKG_CHECK_MODULES(GTK, [glib-2.0 >= 2.6.0 gtk+-2.0 >= 2.6.0 gthread-2.0 pango],
+	PKG_CHECK_MODULES(GTK, [glib-2.0 >= 2.6.0 gtk+-2.0 >= 2.6.0 gthread-2.0 pango libglade],
 		[with_gtk=yes],
 		[with_gtk=no]
 	)
@@ -188,7 +185,7 @@ fi
 
 
 dnl Check for headers, types, functions
-AC_CHECK_HEADERS([fcntl.h stdint.h])
+AC_CHECK_HEADERS([fcntl.h stdint.h dirent.h])
 AC_HEADER_STDBOOL
 AC_C_CONST
 AC_TYPE_SIGNAL

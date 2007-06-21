@@ -1,8 +1,8 @@
 /*
  * File: main-gtk.c
- * Purpose: Angband GTK2 port
+ * Purpose: GTK port for Angband
  *
- * Copyright (c) 2000-2007 Robert Ruehlmann, Andrew Sidwell, Shanonah Alkire
+ * Copyright (c) 2000-2007 Robert Ruehlmann, Shanoah Alkire
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -24,17 +24,9 @@
 
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
+#include <glade/glade.h>
 
-/*
- * Include some helpful X11 code.
- */
-#include "maid-x11.h"
-
-
-#define NO_PADDING 0
-
-#define MAX_TERM_DATA 8
-
+#define MAX_TERM_DATA 1
 /*
  * Extra data to associate with each "window"
  *
@@ -51,13 +43,21 @@ struct term_data
 
 	GtkWidget *window;
 	GtkWidget *drawing_area;
-	GdkFont *font;
+	
+	cairo_t *cairo_draw;
+	PangoFontDescription *font;
+	PangoLayout *layout;
+	
 	GdkPixmap *pixmap;
-	GdkGC *gc;
+	GdkGC *gc, *back_color;
 
 	int font_wid;
 	int font_hgt;
-
+	
+	int tile_wid;
+	int tile_hgt;
+	GdkPixmap *tiles;
+	GdkPixmap *mask;
 	int rows;
 	int cols;
 
@@ -70,7 +70,6 @@ struct term_data
  */
 static term_data data[MAX_TERM_DATA];
 
-
 /*
  * game in progress
  */
@@ -81,29 +80,85 @@ static bool game_in_progress = FALSE;
  */
 static int num_term = 1;
 
+/* Our glade file */
+GladeXML *xml;
+
+
+/*
+ * Path to the Gtk settings file
+ */
+char settings[1024];
+
+/*
+ * Set foreground color
+ */
+static void set_foreground_color(term_data *td, byte a)
+{
+	static unsigned int failed = 0;
+	GdkColor color;
+	/*int red, green, blue;*/
+
+	color.red     = angband_color_table[a][1] * 256;
+	color.green = angband_color_table[a][2] * 256;
+	color.blue    = angband_color_table[a][3] * 256;
+	
+	g_assert(td->cairo_draw != 0);
+
+	if (gdk_colormap_alloc_color(gdk_colormap_get_system(), &color, FALSE, TRUE)) 
+	{
+		gdk_gc_set_foreground(td->gc, &color);
+		cairo_set_source_rgb (td->cairo_draw, color.red, color.green, color.blue);
+	}
+	else if (!failed++)
+		g_print("Couldn't allocate color.\n");
+}
+
+/* 
+ * Set a GdkRectangle 
+ */
+
+static void init_gdk_rect(GdkRectangle *r, int x, int y, int w, int h)
+{
+	r->x = x;
+	r->y = y;
+	r->width = w;
+	r->height = h;
+}
+
+/*
+ * Draw a cairo rectangle from a GdkRectangle object.
+ */
+static void c_rect(cairo_t *cr, GdkRectangle r)
+{
+	cairo_rectangle (cr, r.x, r.y, r.width, r.height);
+}
 
 /*
  * Erase the whole term.
  */
 static errr Term_clear_gtk(void)
 {
-	int width, height;
+	GdkRectangle r;
 
 	term_data *td = (term_data*)(Term->data);
-
-	g_assert(td->pixmap != NULL);
+	
+	/* Set dimensions of the window */
+	init_gdk_rect(&r, 0, 0, td->cols * td->font_wid, td->rows * td->font_hgt);
+	
 	g_assert(td->drawing_area->window != 0);
-
-	/* Find proper dimensions for rectangle */
-	gdk_window_get_size(td->drawing_area->window, &width, &height);
-
+	
 	/* Clear the area */
-	gdk_draw_rectangle(td->pixmap, td->drawing_area->style->black_gc,
-	                   1, 0, 0, width, height);
+	cairo_save(td->cairo_draw);
+	
+	c_rect(td->cairo_draw, r);
+	set_foreground_color(td, TERM_DARK);
+	cairo_fill(td->cairo_draw);
+	cairo_close_path(td->cairo_draw);
 
-	/* Copy it to the window */
-	gdk_draw_pixmap(td->drawing_area->window, td->gc, td->pixmap,
-	                0, 0, 0, 0, width, height);
+	cairo_restore(td->cairo_draw);
+	
+	gdk_window_invalidate_rect(td->drawing_area->window, &r, TRUE);
+	gdk_window_process_updates(td->drawing_area->window, TRUE);
 
 	/* Success */
 	return (0);
@@ -115,81 +170,66 @@ static errr Term_clear_gtk(void)
  */
 static errr Term_wipe_gtk(int x, int y, int n)
 {
+	GdkRectangle r;
 	term_data *td = (term_data*)(Term->data);
-
+	
+	/* Set dimensions */
+	init_gdk_rect(&r, x * td->font_wid, y * td->font_hgt,  td->font_wid * n, td->font_hgt);
+	
 	g_assert(td->pixmap != NULL);
 	g_assert(td->drawing_area->window != 0);
-
-	gdk_draw_rectangle(td->pixmap, td->drawing_area->style->black_gc,
-	                   TRUE, x * td->font_wid, y * td->font_hgt,
-	                   n * td->font_wid, td->font_hgt);
-
-	/* Copy it to the window */
-	gdk_draw_pixmap(td->drawing_area->window, td->gc, td->pixmap,
-	                x * td->font_wid, y * td->font_hgt,
-	                x * td->font_wid, y * td->font_hgt,
-	                n * td->font_wid, td->font_hgt);
+	
+	cairo_save(td->cairo_draw);
+	
+	c_rect(td->cairo_draw, r);
+	set_foreground_color(td, TERM_DARK);
+	cairo_fill(td->cairo_draw);
+	cairo_close_path(td->cairo_draw);
+	
+	cairo_restore(td->cairo_draw);
+	
+	gdk_window_invalidate_rect(td->drawing_area->window, &r, TRUE);
+	gdk_window_process_updates(td->drawing_area->window, TRUE);
 
 	/* Success */
 	return (0);
 }
-
-
-/*
- * Set foreground color
- */
-static void set_foreground_color(term_data *td, byte a)
-{
-	static unsigned int failed = 0;
-
-	GdkColor color;
-
-	color.red   = angband_color_table[a][1] * 256;
-	color.green = angband_color_table[a][2] * 256;
-	color.blue  = angband_color_table[a][3] * 256;
-
-	g_assert(td->pixmap != NULL);
-	g_assert(td->drawing_area->window != 0);
-
-	if (gdk_colormap_alloc_color(gdk_colormap_get_system(), &color, FALSE, TRUE))
-		gdk_gc_set_foreground(td->gc, &color);
-	else if (!failed++)
-		g_print("Couldn't allocate color.\n");
-}
-
 
 /*
  * Draw some textual characters.
  */
 static errr Term_text_gtk(int x, int y, int n, byte a, cptr s)
 {
-	int i;
 	term_data *td = (term_data*)(Term->data);
+	GdkRectangle r;
 	
-	set_foreground_color(td, a);
-
+	/* Set dimensions */
+	init_gdk_rect(&r, x * td->font_wid, y * td->font_hgt,  td->font_wid * n, td->font_hgt);
+	
+	g_assert(td->layout != NULL);
+	
 	/* Clear the line */
 	Term_wipe_gtk(x, y, n);
-
+	
+	cairo_save(td->cairo_draw);
+	
+	/* Create a PangoLayout, set the font and text */
+	set_foreground_color(td, a);
+	pango_layout_set_text(td->layout, s, n);
+	pango_layout_set_font_description(td->layout, td->font);
+	
 	/* Draw the text to the pixmap */
-	for (i = 0; i < n; i++)
-	{
-		gdk_draw_text(td->pixmap, td->font, td->gc,
-		              (x + i) * td->font_wid,
-			      td->font->ascent + y * td->font_hgt,
-			      s + i, 1);
-	}
-
-	/* Copy it to the window */
-	gdk_draw_pixmap(td->drawing_area->window, td->gc, td->pixmap,
-	                x * td->font_wid, y * td->font_hgt,
-	                x * td->font_wid, y * td->font_hgt,
-	                n * td->font_wid, td->font_hgt);
-
+	cairo_move_to(td->cairo_draw, r.x, r.y);
+	pango_cairo_show_layout(td->cairo_draw, td->layout);
+	
+	cairo_restore(td->cairo_draw);
+	
+	gdk_window_invalidate_rect(td->drawing_area->window, &r, TRUE);
+	gdk_window_process_updates(td->drawing_area->window, TRUE);
+			
 	/* Success */
 	return (0);
 }
-
 
 static errr CheckEvent(bool wait)
 {
@@ -209,6 +249,7 @@ static errr CheckEvent(bool wait)
 
 static errr Term_flush_gtk(void)
 {
+	gdk_flush();
 	/* XXX */
 	return (0);
 }
@@ -260,22 +301,45 @@ static errr Term_xtra_gtk(int n, int v)
 static errr Term_curs_gtk(int x, int y)
 {
 	term_data *td = (term_data*)(Term->data);
+	GdkRectangle r;
 
-	set_foreground_color(td, TERM_YELLOW);
+	/* Set dimensions */
+	init_gdk_rect(&r, x * td->font_wid, y * td->font_hgt,  td->font_wid, td->font_hgt);
 	
-	gdk_draw_rectangle(td->pixmap, td->gc, FALSE,
-	                   x * td->font_wid, y * td->font_hgt, td->font_wid - 1, td->font_hgt - 1);
-
-	/* Copy it to the window */
-	gdk_draw_pixmap(td->drawing_area->window, td->gc, td->pixmap,
-	                x * td->font_wid, y * td->font_hgt,
-	                x * td->font_wid, y * td->font_hgt,
-	                td->font_wid, td->font_hgt);
-
+	cairo_save(td->cairo_draw);
+	
+	c_rect(td->cairo_draw, r);
+	set_foreground_color(td, TERM_YELLOW);
+	cairo_stroke(td->cairo_draw);
+	
+	cairo_restore(td->cairo_draw);
+	
+	gdk_window_invalidate_rect(td->drawing_area->window, &r, TRUE);
+	gdk_window_process_updates(td->drawing_area->window, TRUE);
+	gdk_flush();
+	
 	/* Success */
 	return (0);
 }
 
+/*
+ * Hack -- redraw a term_data
+ *
+ * Note that "Term_redraw()" calls "TERM_XTRA_CLEAR"
+ */
+static void term_data_redraw(term_data *td)
+{
+	term *old = Term;
+	/* Activate the term */
+	Term_activate(&data[0].t);
+
+	/* Redraw the contents */
+	Term_redraw();
+
+	/* Flush the output */
+	Term_fresh();
+	Term_activate(old);
+}
 
 static void save_game_gtk(void)
 {
@@ -289,7 +353,7 @@ static void save_game_gtk(void)
 
 		/* Hack -- Forget messages */
 		msg_flag = FALSE;
-
+		
 		/* Save the game */
 #ifdef ZANGBAND
 		do_cmd_save_game(FALSE);
@@ -306,27 +370,28 @@ static void hook_quit(cptr str)
 }
 
 
-static void quit_event_handler(GtkButton *was_clicked, gpointer user_data)
+void quit_event_handler(GtkButton *was_clicked, gpointer user_data)
 {
 	save_game_gtk();
-
 	quit(NULL);
+	gtk_exit(0);
 }
 
 
-static void destroy_event_handler(GtkButton *was_clicked, gpointer user_data)
+void destroy_event_handler(GtkButton *was_clicked, gpointer user_data)
 {
 	quit(NULL);
+	gtk_exit(0);
 }
 
 
-static void hide_event_handler(GtkWidget *window, gpointer user_data)
+void hide_event_handler(GtkWidget *window, gpointer user_data)
 {
 	gtk_widget_hide(window);
 }
 
 
-static void new_event_handler(GtkButton *was_clicked, gpointer user_data)
+void new_event_handler(GtkButton *was_clicked, gpointer user_data)
 {
 	if (game_in_progress)
 	{
@@ -348,58 +413,114 @@ static void new_event_handler(GtkButton *was_clicked, gpointer user_data)
 
 /*** Callbacks: font selector */
 
-static void load_font(term_data *td, cptr fontname)
-{
-	td->font = gdk_font_load(fontname);
-
-	/* Calculate the size of the font XXX */
-	td->font_wid = gdk_char_width(td->font, '@');
-	td->font_hgt = td->font->ascent + td->font->descent;
+static void load_font_by_name(term_data *td, cptr fontname)
+{	
+	PangoRectangle r;
+	PangoLayout *temp;
+	
+	cairo_t *cr;
+	cairo_surface_t *surface;
+	
+	GdkPixmap *temp_pix;
+	
+	/* Create a temp pango/cairo context to play in */
+	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 200, 200);
+	cr = cairo_create(surface);
+	temp = pango_cairo_create_layout(cr);
+	td->font =  pango_font_description_from_string(fontname);
+	
+	g_assert(surface != NULL);
+	g_assert(cr != NULL);
+	g_assert(td->font != NULL);
+	
+	plog(fontname);
+	
+	/* Draw an @, and measure it */
+	pango_layout_set_font_description(temp, td->font);
+	pango_layout_set_text(temp, "@", 1);
+	pango_cairo_show_layout(cr, temp);
+	pango_layout_get_pixel_extents(temp, NULL, &r);
+	
+	/* Set the char width and height */
+	td->font_wid = r.width;
+	td->font_hgt = r.height;
+	plog_fmt("Width & Height: %i, %i", td->font_wid, td->font_hgt);
+	
+	/* Blow up our temp variables */
+	g_object_unref(temp);
+	cairo_destroy(cr);
+	cairo_surface_destroy(surface);
+	
+	if (td->pixmap != NULL) 
+	{
+	/* Resize the term window accordingly */
+	gtk_widget_set_size_request(GTK_WIDGET(td->drawing_area), td->cols * td->font_wid + 1, td->rows * td->font_hgt + 1);
+	/* Hack - the values I'm giving it are smaller then the size the window should be;
+	    and as such, it sets it to the smallest size it can while showing everything,
+	    which is actually what I want it at. */
+	gtk_window_resize(td->window, td->cols * td->font_wid + 1, td->rows * td->font_hgt + 1);
+	
+		
+	/* Move out old pixmap, etc... to different vars */
+	temp_pix = td->pixmap;
+	cr = td->cairo_draw;
+	temp = td->layout;
+	
+	/* Make a new pixmap, cairo context, etc */
+	td->pixmap = gdk_pixmap_new(td->drawing_area->window, td->cols * td->font_wid, td->rows * td->font_hgt, -1);
+	g_object_set_data(G_OBJECT(td->drawing_area), "pixmap", td->pixmap);
+	td->cairo_draw = gdk_cairo_create(td->pixmap);
+	td->layout = pango_cairo_create_layout (td->cairo_draw); 
+	
+	/* Destroy the old ones */
+	g_object_unref(temp);
+	cairo_destroy(cr);
+	g_object_unref(temp_pix);
+		
+	Term_flush();
+	term_data_redraw(td);
+	}
+	plog("Cleaned up.");
 }
 
-static void font_ok_callback(GtkWidget *widget, GtkWidget *font_selector)
+void font_ok_callback(GtkWidget *widget, GtkWidget *font_selector)
 {
 	gchar *fontname;
-	term_data *td = gtk_object_get_data(GTK_OBJECT(font_selector), "term_data");
+	term_data *td = g_object_get_data(G_OBJECT(font_selector), "term_data");
 
 	g_assert(td != NULL);
 
 	fontname = gtk_font_selection_dialog_get_font_name(GTK_FONT_SELECTION_DIALOG(font_selector));
-
-	g_assert(fontname != NULL);
-
-	load_font(td, fontname);
+	
+	load_font_by_name(td, fontname);
+	g_assert(td->font != NULL);
 }
 
 
-static void change_font_event_handler(GtkWidget *widget, gpointer user_data)
+void change_font_event_handler(GtkWidget *widget, gpointer user_data)
 {
 	GtkWidget *font_selector;
-
-	gchar *spacings[] = { "c", "m", NULL };
-
-	font_selector = gtk_font_selection_dialog_new("Select font");
-
-	gtk_object_set_data(GTK_OBJECT(font_selector), "term_data", user_data);
-
-#if 0
-	/* Filter to show only fixed-width fonts */
-	gtk_font_selection_dialog_set_filter(GTK_FONT_SELECTION_DIALOG(font_selector),
-	                                     GTK_FONT_FILTER_BASE, GTK_FONT_ALL,
-	                                     NULL, NULL, NULL, NULL, spacings, NULL);
-#endif
-
-	gtk_signal_connect(GTK_OBJECT(GTK_FONT_SELECTION_DIALOG(font_selector)->ok_button),
-	                   "clicked", font_ok_callback, (gpointer)font_selector);
+	GtkFontSelectionDialog *dialog;
+	term_data *td = (term_data*)(Term->data);
+	char *fontname = pango_font_description_to_string(td->font);
+	
+	font_selector = glade_xml_get_widget(xml, "font-window");
+	
+	g_object_set_data(G_OBJECT(font_selector), "term_data", user_data);
+	
+	dialog = GTK_FONT_SELECTION_DIALOG(font_selector);
+	
+	gtk_font_selection_dialog_set_font_name(dialog, fontname);
+	
+	g_signal_connect(G_OBJECT(dialog->ok_button), "clicked", G_CALLBACK(font_ok_callback), 
+				   (gpointer)font_selector);
 
 	/* Ensure that the dialog box is destroyed when the user clicks a button. */
-	gtk_signal_connect_object(GTK_OBJECT(GTK_FONT_SELECTION_DIALOG(font_selector)->ok_button),
-	                          "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy),
-	                          (gpointer)font_selector);
+	g_signal_connect_swapped(G_OBJECT(dialog->ok_button), "clicked", GTK_SIGNAL_FUNC(gtk_widget_hide),
+						   (gpointer)font_selector);
 
-	gtk_signal_connect_object(GTK_OBJECT(GTK_FONT_SELECTION_DIALOG(font_selector)->cancel_button),
-	                          "clicked", GTK_SIGNAL_FUNC(gtk_widget_destroy),
-	                         (gpointer)font_selector);
+	g_signal_connect_swapped(G_OBJECT(dialog->cancel_button), "clicked", GTK_SIGNAL_FUNC(gtk_widget_hide),
+						  (gpointer)font_selector);
 
 	gtk_widget_show(GTK_WIDGET(font_selector));
 }
@@ -427,34 +548,59 @@ static gboolean file_open_filter(const GtkFileFilterInfo *filter_info, gpointer 
 	return TRUE;
 }
 
-
-
-static void open_event_handler(GtkButton *was_clicked, gpointer user_data)
+/*
+ * Open/Save Dialog box
+ */
+static bool save_dialog_box(bool save)
 {
 	GtkWidget *selector_wid;
 	GtkFileChooser *selector;
-
+	bool accepted;
+	
 	char buf[1024];
 	const char *filename;
 
 	/* Forget it if the game is in progress */
 	/* XXX Should disable the menu entry */
-	if (game_in_progress)
+	if (game_in_progress && !save)
 	{
 		plog("You can't open a new game while you're still playing!");
-		return;
+		return FALSE;
+	}
+			
+	if ((!game_in_progress || !character_generated) && save)
+	{
+		plog("You can't save a new game unless you're still playing!");
+		return FALSE;
 	}
 
+	if (!inkey_flag && save)
+	{
+		plog("You may not do that right now.");
+		return FALSE;
+	}
+	
 	/* Create a new file selector dialogue box, with no parent */
+	if (!save)
+	{
 	selector_wid = gtk_file_chooser_dialog_new("Select a savefile", NULL,
 	                                       GTK_FILE_CHOOSER_ACTION_OPEN,
 	                                       GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 	                                       GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
 	                                       NULL);
-
+	}
+	else
+	{
+	selector_wid = gtk_file_chooser_dialog_new("Save your game", NULL,
+	                                       GTK_FILE_CHOOSER_ACTION_SAVE,
+	                                       GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+	                                       GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+	                                       NULL);
+	}
 	/* For convenience */
 	selector = GTK_FILE_CHOOSER(selector_wid);
-
+	gtk_file_chooser_set_do_overwrite_confirmation (selector, TRUE);
+	
 	/* Get the current directory (so we can find lib/save/) */
 	filename = gtk_file_chooser_get_current_folder(selector);
 	path_build(buf, sizeof buf, filename, ANGBAND_DIR_SAVE);
@@ -466,44 +612,70 @@ static void open_event_handler(GtkButton *was_clicked, gpointer user_data)
 	filter = gtk_file_filter_new();
 	gtk_file_filter_add_custom(filter, GTK_FILE_FILTER_DISPLAY_NAME, file_open_filter, NULL, NULL);
 	gtk_file_chooser_set_filter(selector, filter);
-
+	
+	accepted = (gtk_dialog_run(GTK_DIALOG(selector_wid)) == GTK_RESPONSE_ACCEPT);
 	/* Run the dialogue */
-	if (gtk_dialog_run(GTK_DIALOG(selector_wid)) == GTK_RESPONSE_ACCEPT)
+	if (accepted)
 	{
 		/* Get the filename, copy it into the savefile name */
 		filename = gtk_file_chooser_get_filename(selector);
 		my_strcpy(savefile, filename, sizeof(savefile));
+	}
+		
+	/* Destroy it now that we're done with it */
+	gtk_widget_destroy(selector_wid);
+	
+	/* Done */
+	return accepted;
+}
 
+void open_event_handler(GtkButton *was_clicked, gpointer user_data)
+{
+	bool accepted;
+	
+	accepted = save_dialog_box(FALSE);
+	
+	if (accepted)
+	{
 		/* Start playing the game */
 		game_in_progress = TRUE;
 		Term_flush();
 		play_game(FALSE);
+#ifdef HAS_CLEANUP
 		cleanup_angband();
+#endif /* HAS_CLEANUP */
 		quit(NULL);
 	}
-
-	/* Destroy it now we're done */
-	gtk_widget_destroy(selector);
-
+	
 	/* Done */
 	return;
 }
-
-
-
-
-
-
-static gboolean delete_event_handler(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+void save_event_handler(GtkButton *was_clicked, gpointer user_data)
+{
+	bool accepted;
+	
+	accepted = save_dialog_box(TRUE);
+	
+	if (accepted)
+	{
+		Term_flush();
+		save_game_gtk();
+	}
+	
+	/* Done */
+	return;
+}
+gboolean delete_event_handler(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
 	save_game_gtk();
-
-	/* Don't prevent closure */
 	return (FALSE);
 }
+gboolean toggle_menu(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+	return(FALSE);
+}
 
-
-static gboolean keypress_event_handler(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
+gboolean keypress_event_handler(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
 	int i, mc, ms, mo, mx;
 
@@ -576,7 +748,6 @@ static gboolean keypress_event_handler(GtkWidget *widget, GdkEventKey *event, gp
 			Term_keypress('\010');
 			return (TRUE);
 		}
-
 		case GDK_Shift_L:
 		case GDK_Shift_R:
 		case GDK_Control_L:
@@ -616,21 +787,16 @@ static gboolean keypress_event_handler(GtkWidget *widget, GdkEventKey *event, gp
 	return (TRUE);
 }
 
-
-static gboolean expose_event_handler(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
+gboolean expose_event_handler(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
 	term_data *td = user_data;
-
-	GdkPixmap *pixmap = gtk_object_get_data(GTK_OBJECT(widget), "pixmap");
-
+	
+	GdkPixmap *pixmap = g_object_get_data(G_OBJECT(widget), "pixmap");
 	if (pixmap)
 	{
-		/* Restrict the area - Don't forget to reset it! XXX */
-		/* gdk_gc_set_clip_rectangle(td->gc, &(event->area)); */
-
 		g_assert(widget->window != 0);
-
-		gdk_draw_pixmap(widget->window, td->gc, pixmap,
+		
+		gdk_draw_drawable(widget->window, td->gc, pixmap,
 		                event->area.x, event->area.y,
 		                event->area.x, event->area.y,
 		                event->area.width, event->area.height);
@@ -638,7 +804,6 @@ static gboolean expose_event_handler(GtkWidget *widget, GdkEventExpose *event, g
 
 	return (TRUE);
 }
-
 
 static errr term_data_init(term_data *td, int i)
 {
@@ -656,8 +821,8 @@ static errr term_data_init(term_data *td, int i)
 	/* Use a "soft" cursor */
 	t->soft_cursor = TRUE;
 
-	/* Erase with "white space" */
-	t->attr_blank = TERM_WHITE;
+	/* Erase with "dark space" */
+	t->attr_blank = TERM_DARK;
 	t->char_blank = ' ';
 
 	t->xtra_hook = Term_xtra_gtk;
@@ -675,98 +840,68 @@ static errr term_data_init(term_data *td, int i)
 	return (0);
 }
 
-
 static void init_gtk_window(term_data *td, int i)
 {
 	cptr font;
-
+	char buf[1024];
+	
 	bool main_window = (i == 0) ? TRUE : FALSE;
+	GtkWidget *menu_item;
 
-	GtkWidget *menu_bar, *file_item, *file_menu, *box;
-	GtkWidget *seperator_item, *file_exit_item, *file_new_item, *file_open_item;
-	GtkWidget *options_item, *options_menu, *options_font_item;
-
-	/* Get default font for this term */
-	font = get_default_font(i);
-
-	load_font(td, font);
-
-	/* Create widgets */
-	td->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-	box = gtk_vbox_new(FALSE, 0);
-	td->drawing_area = gtk_drawing_area_new();
-
-	/* Set attributes */
-	gtk_window_set_title(GTK_WINDOW(td->window), td->name);
-	gtk_drawing_area_size(GTK_DRAWING_AREA(td->drawing_area), td->cols * td->font_wid, td->rows * td->font_hgt);
-
-	gtk_signal_connect(GTK_OBJECT(td->window), "delete_event", GTK_SIGNAL_FUNC(delete_event_handler), NULL);
-	gtk_signal_connect(GTK_OBJECT(td->window), "key_press_event", GTK_SIGNAL_FUNC(keypress_event_handler), NULL);
-	gtk_signal_connect(GTK_OBJECT(td->drawing_area), "expose_event", GTK_SIGNAL_FUNC(expose_event_handler), td);
-
-	if (main_window)
-		gtk_signal_connect(GTK_OBJECT(td->window), "destroy_event", GTK_SIGNAL_FUNC(destroy_event_handler), NULL);
-	else
-		gtk_signal_connect(GTK_OBJECT(td->window), "destroy_event", GTK_SIGNAL_FUNC(hide_event_handler), td);
-
-	gtk_container_add(GTK_CONTAINER(td->window), box);
-
-	/* Create main-menu */
+	/* Default to the default monospace font in Gtk */
+	font = "Monospace 12";
+	load_font_by_name(td, font);
+	
+	/* Build the path */
+	path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA, "angband.glade");
+	
+	plog_fmt("ANGBAND_XTRA path = %s",buf);
+	
+	/* Set up the Glade file */
+	xml = glade_xml_new(buf, NULL);
+	
 	if (main_window)
 	{
-		/* Create the menu-bar and menu-items */
-		menu_bar = gtk_menu_bar_new();
-		file_item = gtk_menu_item_new_with_label("File");
-		file_menu = gtk_menu_new();
-		file_new_item = gtk_menu_item_new_with_label("New");
-		file_open_item = gtk_menu_item_new_with_label("Open");
-		seperator_item = gtk_menu_item_new();
-		file_exit_item = gtk_menu_item_new_with_label("Exit");
-		options_item = gtk_menu_item_new_with_label("Options");
-		options_menu = gtk_menu_new();
-		options_font_item = gtk_menu_item_new_with_label("Font");
-
-		/* Register callbacks */
-		g_signal_connect(GTK_OBJECT(file_exit_item), "activate", G_CALLBACK(quit_event_handler), NULL);
-		g_signal_connect(GTK_OBJECT(file_new_item), "activate", G_CALLBACK(new_event_handler), NULL);
-		g_signal_connect(GTK_OBJECT(file_open_item), "activate", G_CALLBACK(open_event_handler), NULL);
-		g_signal_connect(GTK_OBJECT(options_font_item), "activate", G_CALLBACK(change_font_event_handler), td);
-
-		/* Build the menu bar */
-		gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), file_item);
-		gtk_menu_bar_append(GTK_MENU_BAR(menu_bar), options_item);
-		gtk_menu_item_set_submenu(GTK_MENU_ITEM(file_item), file_menu);
-		gtk_menu_item_set_submenu(GTK_MENU_ITEM(options_item), options_menu);
-		gtk_menu_append(GTK_MENU(file_menu), file_new_item);
-		gtk_menu_append(GTK_MENU(file_menu), file_open_item);
-		gtk_menu_append(GTK_MENU(file_menu), seperator_item);
-		gtk_menu_append(GTK_MENU(file_menu), file_exit_item);
-		gtk_menu_append(GTK_MENU(options_menu), options_font_item);
-
-		/* Pack the menu bar */
-		gtk_box_pack_start(GTK_BOX(box), menu_bar, FALSE, FALSE, NO_PADDING);
+		td->window = glade_xml_get_widget(xml, "main-window");
+		td->drawing_area = glade_xml_get_widget(xml, "drawingarea1");
+		menu_item = glade_xml_get_widget(xml, "font_menu_item");
+		g_signal_connect (menu_item, "activate", G_CALLBACK(change_font_event_handler), td);
+		
 	}
+	else
+	{
+		td->window = glade_xml_get_widget(xml, "term-window");
+		td->drawing_area = glade_xml_get_widget(xml, "drawingarea2");
+		g_signal_connect(td->window, "hide_event", G_CALLBACK(hide_event_handler), td);
+	}
+	
+	g_signal_connect(td->drawing_area, "expose_event", G_CALLBACK(expose_event_handler), td);
+	
+	g_assert(td->window != NULL);
+	g_assert(td->drawing_area != NULL);
+	
+	/* connect signal handlers that aren't passed data */
+	glade_xml_signal_autoconnect(xml);
+	
+	/* Set attributes */
+	gtk_window_set_title(GTK_WINDOW(td->window), td->name);
+	gtk_widget_set_size_request(GTK_WIDGET(td->drawing_area), td->cols * td->font_wid + 1, td->rows * td->font_hgt + 1);
+	gtk_window_move( GTK_WINDOW(td->window), 100, 100);
 
-	/* Pack the display area */
-	gtk_box_pack_start_defaults(GTK_BOX(box), td->drawing_area);
-
+	/* Create a pixmap as buffer for screen updates */
+	td->pixmap = gdk_pixmap_new(td->drawing_area->window, td->cols * td->font_wid, td->rows * td->font_hgt, -1);
+	g_object_set_data(G_OBJECT(td->drawing_area), "pixmap", td->pixmap);
+	td->gc = gdk_gc_new(td->drawing_area->window);
+	td->cairo_draw = gdk_cairo_create(td->pixmap);
+	td->layout = pango_cairo_create_layout (td->cairo_draw); 
+	
+	g_assert(td->pixmap != NULL);
+	g_assert(td->gc != NULL);
+	g_assert(td->cairo_draw != NULL);
+	g_assert(td->layout != NULL);
+	
 	/* Show the widgets */
 	gtk_widget_show_all(td->window);
-
-	/* Create a pixmap as buffer for screenupdates */
-	td->pixmap = gdk_pixmap_new(td->drawing_area->window, td->cols * td->font_wid, td->rows * td->font_hgt, -1);
-	gtk_object_set_data(GTK_OBJECT(td->drawing_area), "pixmap", td->pixmap);
-	td->gc = gdk_gc_new(td->drawing_area->window);
-
-	/* Clear the pixmap */
-	gdk_draw_rectangle(td->pixmap, td->drawing_area->style->black_gc, TRUE,
-	                   0, 0,
-	                   td->cols * td->font_wid, td->rows * td->font_hgt);
-
-	/* Copy it to the window */
-	gdk_draw_pixmap(td->drawing_area->window, td->gc, td->pixmap,
-	                0, 0, 0, 0,
-	                td->cols * td->font_wid, td->rows * td->font_hgt);
 }
 
 
@@ -783,7 +918,7 @@ errr init_gtk(int argc, char **argv)
 
 	/* Initialize the environment */
 	gtk_init(&argc, &argv);
-
+	
 	/* Parse args */
 	for (i = 1; i < argc; i++)
 	{
@@ -797,7 +932,7 @@ errr init_gtk(int argc, char **argv)
 
 		plog_fmt("Ignoring option: %s", argv[i]);
 	}
-
+	
 	/* Initialize the windows */
 	for (i = 0; i < num_term; i++)
 	{
