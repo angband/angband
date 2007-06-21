@@ -3237,8 +3237,6 @@ bool get_aim_dir(int *dp)
 
 	cptr p;
 
-#ifdef ALLOW_REPEAT
-
 	if (repeat_pull(dp))
 	{
 		/* Verify */
@@ -3252,8 +3250,6 @@ bool get_aim_dir(int *dp)
 			repeat_clear();
 		}
 	}
-
-#endif /* ALLOW_REPEAT */
 
 	/* Initialize */
 	(*dp) = 0;
@@ -3343,11 +3339,7 @@ bool get_aim_dir(int *dp)
 	/* Save direction */
 	(*dp) = dir;
 
-#ifdef ALLOW_REPEAT
-
 	repeat_push(dir);
-
-#endif /* ALLOW_REPEAT */
 
 	/* A "valid" direction was entered */
 	return (TRUE);
@@ -3378,14 +3370,10 @@ bool get_rep_dir(int *dp)
 
 	cptr p;
 
-#ifdef ALLOW_REPEAT
-
 	if (repeat_pull(dp))
 	{
 		return (TRUE);
 	}
-
-#endif /* ALLOW_REPEAT */
 
 	/* Initialize */
 	(*dp) = 0;
@@ -3418,11 +3406,7 @@ bool get_rep_dir(int *dp)
 	/* Save direction */
 	(*dp) = dir;
 
-#ifdef ALLOW_REPEAT
-
 	repeat_push(dir);
-
-#endif /* ALLOW_REPEAT */
 
 	/* Success */
 	return (TRUE);

@@ -2502,7 +2502,7 @@ void process_player_name(bool sf)
 	{
 		char temp[128];
 
-#ifdef SAVEFILE_USE_UID
+#if defined(SET_UID)
 		/* Rename the savefile, using the player_uid and base_name */
 		strnfmt(temp, sizeof(temp), "%d.%s", player_uid, op_ptr->base_name);
 #else

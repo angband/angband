@@ -595,12 +595,8 @@ void cmd_init(void)
  */
 void process_command(bool no_request)
 {
-#ifdef ALLOW_REPEAT
-
 	/* Handle repeating the last command */
 	repeat_check();
-
-#endif /* ALLOW_REPEAT */
 
 	if (!no_request)
 		request_command();

@@ -1406,6 +1406,15 @@ enum
 
 
 
+/*** Monster AI stuff ***/
+
+/*
+ * Maximum flow depth when using "MONSTER_FLOW"
+ */
+#define MONSTER_FLOW_DEPTH 3
+
+
+
 /*** Monster blow constants ***/
 
 

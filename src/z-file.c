@@ -21,10 +21,10 @@
 #ifndef RISCOS
 # include <sys/types.h>
 # include <sys/stat.h>
+#endif
 
-# ifdef WINDOWS
-#  include <io.h>
-# endif
+#ifdef WINDOWS
+# include <io.h>
 #endif
 
 
@@ -34,42 +34,23 @@
  */
 void safe_setuid_drop(void)
 {
-
 #ifdef SET_UID
+# if defined(HAVE_SETRESGID)
+	if (setresgid(-1, getgid(), -1) != 0)
+		quit("setegid(): cannot set permissions correctly!");
 
-# ifdef SAFE_SETUID
-
-#  ifdef HAVE_SETEGID
+# elif defined(HAVE_SETEGID)
 
 	if (setegid(getgid()) != 0)
-	{
 		quit("setegid(): cannot set permissions correctly!");
-	}
- 
-#  else /* HAVE_SETEGID */
 
-#   ifdef SAFE_SETUID_POSIX
+# else
 
 	if (setgid(getgid()) != 0)
-	{
 		quit("setgid(): cannot set permissions correctly!");
-	}
-    
-#   else /* SAFE_SETUID_POSIX */
 
-	if (setregid(getegid(), getgid()) != 0)
-	{
-		quit("setregid(): cannot set permissions correctly!");
-	}
-
-#   endif /* SAFE_SETUID_POSIX */
-
-#  endif /* HAVE_SETEGID */
-
-# endif /* SAFE_SETUID */
-
+# endif
 #endif /* SET_UID */
-
 }
 
 
@@ -78,42 +59,23 @@ void safe_setuid_drop(void)
  */
 void safe_setuid_grab(void)
 {
-
 #ifdef SET_UID
+# if defined(HAVE_SETRESGID)
+	if (setresgid(-1, player_egid, -1) != 0)
+		quit("setegid(): cannot set permissions correctly!");
 
-# ifdef SAFE_SETUID
-
-#  ifdef HAVE_SETEGID
+# elif defined(HAVE_SETEGID)
 
 	if (setegid(player_egid) != 0)
-	{
 		quit("setegid(): cannot set permissions correctly!");
-	}
 
-#  else /* HAVE_SETEGID */
-
-#   ifdef SAFE_SETUID_POSIX
+# else
 
 	if (setgid(player_egid) != 0)
-	{
 		quit("setgid(): cannot set permissions correctly!");
-	}
 
-#   else /* SAFE_SETUID_POSIX */
-
-	if (setregid(getegid(), getgid()) != 0)
-	{
-		quit("setregid(): cannot set permissions correctly!");
-	}
-
-#   endif /* SAFE_SETUID_POSIX */
-
-#  endif /* HAVE_SETEGID */
-
-# endif /* SAFE_SETUID */
-
+# endif
 #endif /* SET_UID */
-
 }
 
 
@@ -369,11 +331,8 @@ void user_name(char *buf, size_t len, int id)
 		/* Get the first 15 characters of the user name */
 		my_strcpy(buf, pw->pw_name, len);
 
-#ifdef CAPITALIZE_USER_NAME
-		/* Hack -- capitalize the user name */
-		if (islower((unsigned char)buf[0]))
-			buf[0] = toupper((unsigned char)buf[0]);
-#endif /* CAPITALIZE_USER_NAME */
+		/* Capitalize the user name */
+		buf[0] = toupper((unsigned char)buf[0]);
 
 		return;
 	}

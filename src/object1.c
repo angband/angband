@@ -2752,8 +2752,6 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	int floor_num;
 
 
-#ifdef ALLOW_REPEAT
-
 	/* Get the item index */
 	if (repeat_pull(cp))
 	{
@@ -2775,8 +2773,6 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 			repeat_clear();
 		}
 	}
-
-#endif /* ALLOW_REPEAT */
 
 
 	/* Paranoia XXX XXX XXX */
@@ -3409,12 +3405,8 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	/* Warning if needed */
 	if (oops && str) msg_print(str);
 
-#ifdef ALLOW_REPEAT
-
 	/* Save item if available */
 	if (item) repeat_push(*cp);
-
-#endif /* ALLOW_REPEAT */
 
 	/* Result */
 	return (item);

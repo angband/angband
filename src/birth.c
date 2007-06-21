@@ -1170,8 +1170,6 @@ static bool player_birth_aux_3(bool autoroll)
 	char buf[80];
 
 
-#ifdef ALLOW_AUTOROLLER
-
 	s16b stat_limit[A_MAX];
 
 	s32b stat_match[A_MAX];
@@ -1279,8 +1277,6 @@ static bool player_birth_aux_3(bool autoroll)
 		}
 	}
 
-#endif /* ALLOW_AUTOROLLER */
-
 	/* Clean up */
 	clear_from(10);
 
@@ -1291,8 +1287,6 @@ static bool player_birth_aux_3(bool autoroll)
 	while (TRUE)
 	{
 		int col = 42;
-
-#ifdef ALLOW_AUTOROLLER
 
 		/* Feedback */
 		if (autoroll)
@@ -1407,9 +1401,6 @@ static bool player_birth_aux_3(bool autoroll)
 
 		/* Otherwise just get a character */
 		else
-
-#endif /* ALLOW_AUTOROLLER */
-
 		{
 			/* Get a new character */
 			get_stats();

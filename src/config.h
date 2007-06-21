@@ -35,27 +35,6 @@
  */
 
 
-/*
- * OPTION: for multi-user machines running the game setuid to some other
- * user (like 'games') this SAFE_SETUID option allows the program to drop
- * its privileges when saving files that allow for user specified pathnames.
- * This lets the game be installed system wide without major security
- * concerns.  There should not be any side effects on any machines.
- *
- * This will handle "gids" correctly once the permissions are set right.
- */
-#define SAFE_SETUID
-
-
-/*
- * This flag enables the "POSIX" methods for "SAFE_SETUID".
- */
-#ifdef _POSIX_SAVED_IDS
-# define SAFE_SETUID_POSIX
-#endif
-
-
-
 
 /*
  * OPTION: Hack -- Compile in support for "Borg mode"
@@ -90,12 +69,6 @@
 
 
 /*
- * OPTION: Allow characteres to be "auto-rolled"
- */
-#define ALLOW_AUTOROLLER
-
-
-/*
  * OPTION: Allow parsing of the ascii template files in "init.c".
  * This must be defined if you do not have valid binary image files.
  * It should be usually be defined anyway to allow easy "updating".
@@ -123,17 +96,6 @@
 /* #define ALLOW_TEMPLATES_OUTPUT */
 
 
-/*
- * OPTION: Allow repeating of last command.
- */
-#define ALLOW_REPEAT
-
-
-/*
- * OPTION: Handle signals
- */
-#define HANDLE_SIGNALS
-
 
 /*
  * OPTION: Allow "Borgs" to yield "high scores"
@@ -148,11 +110,6 @@
  */
 #define MONSTER_FLOW
 
-
-/*
- * OPTION: Maximum flow depth when using "MONSTER_FLOW"
- */
-#define MONSTER_FLOW_DEPTH 32
 
 
 /*
@@ -207,13 +164,6 @@
 #define USE_GRAPHICS
 
 
-/*
- * Do not handle signals
- */
-#if defined(MACINTOSH) || defined(WINDOWS)
-# undef HANDLE_SIGNALS
-#endif
-
 
 
 /*
@@ -262,13 +212,6 @@
 #endif /* PRIVATE_USER_PATH */
 
 
-/*
- * On multiuser systems, add the "uid" to savefile names
- */
-#ifdef SET_UID
-# define SAVEFILE_USE_UID
-#endif /* SET_UID */
-
 
 /*
  * OPTION: Prevent usage of the "ANGBAND_PATH" environment variable and
@@ -280,13 +223,6 @@
 #ifdef SET_UID
 #define FIXED_PATHS
 #endif /* SET_UID */
-
-
-/*
- * OPTION: Capitalize the "user_name" (for "default" player name)
- * This option is only relevant on SET_UID machines.
- */
-#define CAPITALIZE_USER_NAME
 
 
 
@@ -309,16 +245,6 @@
 #define DEFAULT_X11_FONT_7		"5x8"
 
 
-/*
- * Hack -- Mach-O (native binary format of OS X) is basically a Un*x
- * but has Mac OS/Windows-like user interface
- */
-#ifdef MACH_O_CARBON
-# ifdef SAVEFILE_USE_UID
-#  undef SAVEFILE_USE_UID
-# endif
-#endif
-
 
 /*
  * OPTION: Attempt to minimize the size of the game
@@ -335,7 +261,6 @@
 # undef ALLOW_MACROS
 # undef MONSTER_FLOW
 # undef DRS_SMART_OPTIONS
-# undef GJW_RANDART
 # undef ALLOW_BORG
 # undef ALLOW_DEBUG
 # undef ALLOW_SPOILERS

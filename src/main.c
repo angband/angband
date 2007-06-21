@@ -293,34 +293,13 @@ int main(int argc, char *argv[])
 	/* Get the user id (?) */
 	player_uid = getuid();
 
-# ifdef SAFE_SETUID
-
-#  if defined(HAVE_SETEGID) || defined(SAFE_SETUID_POSIX)
+# if defined(HAVE_SETEGID)
 
 	/* Save some info for later */
 	player_euid = geteuid();
 	player_egid = getegid();
 
-#  endif /* defined(HAVE_SETEGID) || defined(SAFE_SETUID_POSIX) */
-
-#  if 0 /* XXX XXX XXX */
-
-	/* Redundant setting necessary in case root is running the game */
-	/* If not root or game not setuid the following two calls do nothing */
-
-	if (setgid(getegid()) != 0)
-	{
-		quit("setgid(): cannot set permissions correctly!");
-	}
-
-	if (setuid(geteuid()) != 0)
-	{
-		quit("setuid(): cannot set permissions correctly!");
-	}
-
-#  endif /* 0 */
-
-# endif /* SAFE_SETUID */
+# endif /* defined(HAVE_SETEGID) */
 
 #endif /* SET_UID */
 

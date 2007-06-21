@@ -2937,15 +2937,11 @@ s16b get_quantity(cptr prompt, int max)
 		p_ptr->command_arg = 0;
 	}
 
-#ifdef ALLOW_REPEAT
-
 	/* Get the item index */
 	else if ((max != 1) && repeat_pull(&amt))
 	{
 		/* nothing */
 	}
-
-#endif /* ALLOW_REPEAT */
 
 	/* Prompt if needed */
 	else if ((max != 1))
@@ -2983,11 +2979,7 @@ s16b get_quantity(cptr prompt, int max)
 	/* Enforce the minimum */
 	if (amt < 0) amt = 0;
 
-#ifdef ALLOW_REPEAT
-
 	if (amt) repeat_push(amt);
-
-#endif /* ALLOW_REPEAT */
 
 	/* Return the result */
 	return (amt);
@@ -3673,8 +3665,6 @@ static bool insert_str(char *buf, cptr target, cptr insert)
 #endif
 
 
-#ifdef ALLOW_REPEAT
-
 #define REPEAT_MAX 20
 
 /* Number of chars saved */
@@ -3773,8 +3763,6 @@ void repeat_check(void)
 		repeat_push(what);
 	}
 }
-
-#endif /* ALLOW_REPEAT */
 
 
 #ifdef SUPPORT_GAMMA
