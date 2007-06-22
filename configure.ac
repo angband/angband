@@ -167,7 +167,7 @@ if test "$enable_gtk" = "yes"; then
 	if test "$with_gtk" = "yes"; then
 		AC_DEFINE(USE_GTK, 1, [Define to 1 if using the GTK+ 2.x interface and GTK+ 2.x is found.])
 		CFLAGS="${CFLAGS} $GTK_CFLAGS"
-		LDFLAGS="${LDFLAGS} $GTK_LIBS"
+		LDFLAGS="${LDFLAGS} $GTK_LIBS -rdynamic -export-dynamic"
 	fi
 fi
 

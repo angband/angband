@@ -537,8 +537,7 @@ static gboolean file_open_filter(const GtkFileFilterInfo *filter_info, gpointer 
 	(void)data;
 
 	/* Count out known non-savefiles */
-	if (strcmp(name, "Makefile.am") == 0 ||
-	    strcmp(name, "Makefile.in") == 0 ||
+	if (strcmp(name, "Makefile") == 0 ||
 	    strcmp(name, "delete.me") == 0)
 	{
 		return FALSE;
