@@ -1740,7 +1740,13 @@ static void store_display_help(void)
 	if (store_current == STORE_HOME) text_out(" picks up");
 	else text_out(" purchases");
 
-	text_out(" the selected item.  ");
+	text_out(" the selected item. '");
+	
+	text_out_c(TERM_L_GREEN, "d");
+	if (store_current == STORE_HOME) text_out("' drops");
+	else text_out("' sells");
+
+	text_out(" an item from your inventory. ");
 
 	text_out_c(TERM_L_GREEN, "ESC");
 	text_out(" exits the building.");
