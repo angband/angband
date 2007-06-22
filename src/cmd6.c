@@ -289,7 +289,7 @@ void do_cmd_read_scroll(void)
 	p_ptr->energy_use = 100;
 
 	/* Check for amnesia */
-	if (rand_int(4) != 0 && p_ptr->timed[TMD_AMNESIA])
+	if (rand_int(2) != 0 && p_ptr->timed[TMD_AMNESIA])
 	{
 		/* Can't remember how */
 		msg_print("You can't remember how to read!");
@@ -393,13 +393,6 @@ void do_cmd_use_staff(void)
 	/* Take a turn */
 	p_ptr->energy_use = 100;
 
-	/* Check for amnesia */
-	if (rand_int(4) != 0 && p_ptr->timed[TMD_AMNESIA])
-	{
-		/* Can't remember how */
-		msg_print("You can't remember how to use the staff!");
-		return;
-	}
 
 	/* Not identified yet */
 	ident = FALSE;
@@ -540,14 +533,6 @@ void do_cmd_aim_wand(void)
 		o_ptr = &o_list[0 - item];
 	}
 
-	/* Check for amnesia */
-	if (rand_int(4) != 0 && p_ptr->timed[TMD_AMNESIA])
-	{
-		/* Can't remember how */
-		p_ptr->energy_use = 100;
-		msg_print("You can't remember how to activate the wand!");
-		return;
-	}
 
 
 	/* Aim the wand */
@@ -719,14 +704,6 @@ void do_cmd_activate(void)
 	/* Take a turn */
 	p_ptr->energy_use = 100;
 
-	/* Check for amnesia */
-	if (rand_int(3) && p_ptr->timed[TMD_AMNESIA])
-	{
-		/* Can't remember how */
-		if (flush_failure) flush();
-		msg_print("You can't remember how to activate that.");
-		return;
-	}
 
 	/* Extract the item level */
 	lev = k_info[o_ptr->k_idx].level;
@@ -748,6 +725,14 @@ void do_cmd_activate(void)
 	if ((chance < USE_DEVICE) && (rand_int(USE_DEVICE - chance + 1) == 0))
 	{
 		chance = USE_DEVICE;
+	}
+
+	/* Check for amnesia */
+	if (rand_int(2) != 0 && p_ptr->timed[TMD_AMNESIA])
+	{
+		if (flush_failure) flush();
+		msg_print("You can't remember how to activate it.");
+		return;
 	}
 
 	/* Roll for usage */

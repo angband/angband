@@ -906,7 +906,7 @@ void do_cmd_cast(void)
 	}
 
 	/* Check for amnesia */
-	else if (rand_int(3) != 0 && p_ptr->timed[TMD_AMNESIA])
+	else if (rand_int(2) != 0 && p_ptr->timed[TMD_AMNESIA])
 	{
 		/* Can't remember how */
 		if (flush_failure) flush();
@@ -1084,7 +1084,7 @@ void do_cmd_pray(void)
 	}
 
 	/* Check for amnesia */
-	else if (rand_int(3) != 0 && p_ptr->timed[TMD_AMNESIA])
+	else if (rand_int(2) != 0 && p_ptr->timed[TMD_AMNESIA])
 	{
 		/* Can't remember how */
 		if (flush_failure) flush();
