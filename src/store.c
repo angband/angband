@@ -42,6 +42,7 @@ static unsigned int scr_places_y[LOC_MAX];
 #define STORE_FRAME_CHANGE     0x02
 
 #define STORE_SHOW_HELP        0x04
+#define STORE_KEEP_PROMPT      0x08
 
 
 
@@ -1463,9 +1464,9 @@ void store_init(void)
 
 	store_type *st_ptr;
 
-    /* Initialise all the stores */
-    for (n = 0; n < MAX_STORES; n++)
-    {
+	/* Initialise all the stores */
+	for (n = 0; n < MAX_STORES; n++)
+	{
 		/* Activate this store */
 		st_ptr = &store[n];
 
@@ -1483,12 +1484,12 @@ void store_init(void)
 		}
 
 
-        /* Ignore home */
-        if (n == STORE_HOME) continue;
+		/* Ignore home */
+		if (n == STORE_HOME) continue;
 
-        /* Maintain the shop (ten times) */
-        for (i = 0; i < 10; i++) store_maint(n);
-    }
+		/* Maintain the shop (ten times) */
+		for (i = 0; i < 10; i++) store_maint(n);
+	}
 }
 
 
@@ -1832,8 +1833,6 @@ static bool store_purchase(int item)
 	msg_flag = FALSE;
 	prt("", 0, 0);
 
-
-
 	if (store_current == STORE_HOME)
 	{
 		amt = o_ptr->number;
@@ -1848,6 +1847,7 @@ static bool store_purchase(int item)
 		{
 			/* Tell the user */
 			msg_print("You do not have enough gold for this item.");
+			store_flags |= STORE_KEEP_PROMPT;
 
 			/* Abort now */
 			return FALSE;
@@ -1871,7 +1871,7 @@ static bool store_purchase(int item)
 	object_copy(i_ptr, o_ptr);
 
 	/*
-     * XXX Stacking
+	 * XXX Stacking
 	 * If a rod or wand, allocate total maximum timeouts or charges
 	 * between those purchased and left on the shelf.
 	 */
@@ -1884,6 +1884,7 @@ static bool store_purchase(int item)
 	if (!inven_carry_okay(i_ptr))
 	{
 		msg_print("You cannot carry that many items.");
+		store_flags |= STORE_KEEP_PROMPT;
 		return FALSE;
 	}
 
@@ -1940,6 +1941,7 @@ static bool store_purchase(int item)
 
 		/* Message */
 		msg_format("You have %s (%c).", o_name, index_to_label(item_new));
+		store_flags |= STORE_KEEP_PROMPT;
 
 		/* Now, reduce the original stack's pval */
 		if ((o_ptr->tval == TV_ROD) ||
@@ -2001,6 +2003,7 @@ static bool store_purchase(int item)
 
 		/* Message */
 		msg_format("You have %s (%c).", o_name, index_to_label(item_new));
+		store_flags |= STORE_KEEP_PROMPT;
 
 		/* Handle stuff */
 		handle_stuff();
@@ -2062,6 +2065,7 @@ static void store_sell(void)
 	{
 		/* Oops */
 		msg_print("Hmmm, it seems to be cursed.");
+		store_flags |= STORE_KEEP_PROMPT;
 
 		/* Nope */
 		return;
@@ -2085,9 +2089,9 @@ static void store_sell(void)
 
 
 	/*
-     * XXX Stacking
-     * If a rod, wand, or staff, allocate total maximum timeouts or charges
-     * to those being sold.
+	 * XXX Stacking
+	 * If a rod, wand, or staff, allocate total maximum timeouts or charges
+	 * to those being sold.
 	 */
 	if ((o_ptr->tval == TV_ROD) ||
 	    (o_ptr->tval == TV_WAND) ||
@@ -2103,6 +2107,8 @@ static void store_sell(void)
 	/* Is there room in the store (or the home?) */
 	if (!store_check_num(store_current, i_ptr))
 	{
+		store_flags |= STORE_KEEP_PROMPT;
+
 		if (store_current == STORE_HOME)
 			msg_print("Your home is full.");
 
@@ -2182,6 +2188,7 @@ static void store_sell(void)
 		/* Describe the result (in message buffer) */
 		msg_format("You sold %s (%c) for %ld gold.",
 		           o_name, index_to_label(item), (long)price);
+		store_flags |= STORE_KEEP_PROMPT;
 
 		/* Analyze the prices (and comment verbally) */
 		purchase_analyze(price, value, dummy);
@@ -2208,6 +2215,7 @@ static void store_sell(void)
 
 		/* Describe */
 		msg_format("You drop %s (%c).", o_name, index_to_label(item));
+		store_flags |= STORE_KEEP_PROMPT;
 
 		/* Take it from the players inventory */
 		inven_item_increase(item, -amt);
@@ -2278,6 +2286,7 @@ bool store_overflow(void)
 
 		/* Give a message */
 		msg_print("Your pack overflows!");
+		store_flags |= STORE_KEEP_PROMPT;
 
 		/* Get local object */
 		i_ptr = &object_type_body;
@@ -2611,7 +2620,7 @@ void do_cmd_store(void)
 		menu.selections = "abcfghjmnopqruvyz1234567890";
 
 		/* Keep the cursor in range of the stock */
-		if (cursor >= menu.count)
+		if (cursor < 0 || cursor >= menu.count)
 			cursor = menu.count - 1;
 
 		if (menu.count >= menu.active.page_rows)
@@ -2627,8 +2636,23 @@ void do_cmd_store(void)
 
 		menu_layout(&menu, &menu.boundary);
 
+		evt.type = EVT_MOVE;
 		/* Get a selection/action */
-		evt = menu_select(&menu, &cursor, 0);
+		while (evt.type == EVT_MOVE)
+		{
+			evt = menu_select(&menu, &cursor, EVT_MOVE);
+			if (store_flags & STORE_KEEP_PROMPT)
+			{
+				store_flags &= ~STORE_KEEP_PROMPT;
+			}
+			else
+			{
+				/* Clear the prompt, and mark it as read (i.e. no -more-
+				   prompt will be issued when messages are flushed. */
+				prt("", 0, 0);
+				msg_flag = FALSE;
+			}
+		}
 
 		if (evt.key == ESCAPE || evt.type == EVT_BACK)
 		{
