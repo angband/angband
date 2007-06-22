@@ -485,6 +485,10 @@ static bool is_valid_row(menu_type *menu, int cursor)
 	return menu->row_funcs->valid_row(menu, oid);
 }
 
+/* 
+ * Return a new position in the menu based on the key
+ * pressed and the flags and various handler functions.
+ */
 static int get_cursor_key(menu_type *menu, int top, char key)
 {
 	int i;
@@ -709,28 +713,36 @@ static bool menu_handle_event(menu_type *menu, const event_type *in)
 					return handle_menu_key(in->key, menu, *cursor);
 			}
 
-			if (!(menu->flags & MN_NO_TAGS))
-			{
-				int c = get_cursor_key(menu, menu->top, in->key);
+			int c = get_cursor_key(menu, menu->top, in->key);
 
-				/* retry! */
-				if (c > 0 && !is_valid_row(menu, c))
+			/* keypress shortcuts are allowed, but the choice */
+			/* was invalid - try again! */
+			if (c > 0 && !is_valid_row(menu, c))
+			{
+				return FALSE;
+			}
+			/* Valid selection */
+			else if (c >= 0)
+			{
+				out.index = c;
+
+				if (*cursor == c || !(menu->flags & MN_DBL_TAP))
 				{
-					return FALSE;
-				}
-				else if (c >= 0)
-				{
-					if (menu->cursor != c)
+					if (*cursor != c)
 					{
-						menu->cursor = c;
+						*cursor = c;
 						menu_refresh(menu);
 					}
-
 					out.type = EVT_SELECT;
-					out.index = c;
-
-					break;
 				}
+				else
+				{
+					out.type = EVT_MOVE;
+				}
+
+				*cursor = c;
+
+				break;
 			}
 
 			/* Not handled */
