@@ -31,9 +31,13 @@ Dennis van Es, Kenneth A. Strom, Wei-Hwa Huang, Nikodemus, Timo Pietilä,
 Shayne Steele, Dr. Andrew White, Chris Carr, Greg Flint, Christopher Jeris,
 Ian Parkhouse, "Warhammer", Scott Holder, Brent Ross, Kazuo Ito,
 Willem Siemelink, "Luthien", David J. Grabiner, Ilya Bely, "chungkuo",
-Kieron Dunbar, Timo Pietla, George W. Harris, Willem Siemelink,
-Joseph Oberlander, Paul Moore, Andreas Tophinke, Leon Marrick,
-Peter J. Rowe, Wim Benthem, Jaroslav Sladek, Keith Perkins
+Kieron Dunbar, George W. Harris, Willem Siemelink, Joseph Oberlander,
+Paul Moore, Andreas Tophinke, Leon Marrick, Peter J. Rowe, Wim Benthem,
+Jaroslav Sladek, Keith Perkins, Hugo Kornelis, Pete Mack, Marco K,
+Frank Palazzolo, Christer Nyfalt, Leon Marrick, Andrew Doull, Kenneth Boyd,
+Iain McFall, Kiyoshi Aman, Christophe Cavalaria, Nick McConnell, 
+Brendon Oliver.
+
 
 Greg Wooledge < greg@wooledge.org >
 Basic autoconf support, random artifacts, and various ideas for rebalancing
@@ -94,10 +98,10 @@ bugfixes
 Kusunose Toru
 Various bugfixes
 
-Andrew and Antony Sidwell:
-Colorname support in the lib/edit/*.txt files, and various utility
-functions, bugfixes, and patches
+Antony Sidwell and Yendor:
+For hosting and setting up the website and source code management,
+respectively.
 
 The UPX team (Markus Oberhumer and Laszlo Molnar)
-The UPX packer for executables < http://upx.tsx.org/ > is used to reduce
+The UPX packer for executables <http://upx.tsx.org/> is used to reduce
 the size of the Windows and DOS binaries.

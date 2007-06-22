@@ -5,7 +5,7 @@ This is Angband 3.0.8, the "final" release of the Angband 3.0.7s series.
 Quite a number of people have been involved in this version, and thanks
 must be given to Hugo Kornelis, Pete Mack, Marco K and Frank Palazzolo,
 Christer Nyfalt, Leon Marrick, Andrew Doull, Kenneth Boyd, Iain McFall,
-Kiyoshi Aman, and Brendon Oliver.
+Kiyoshi Aman, Christophe Cavalaria, Nick McConnell, and Brendon Oliver.
 
 Special thanks go to Antony Sidwell for setting up the new website, and
 to Yendor for hosting the issue-tracker and source code repository.
