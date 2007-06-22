@@ -1960,7 +1960,7 @@ bool make_attack_spell(int m_idx)
 			if (rand_int(100) < p_ptr->skills[SKILL_SAV])
 				msg_print("You resist the effects!");
 			else
-				inc_timed(TMD_AMNESIA, 25);
+				inc_timed(TMD_AMNESIA, 3);
 
 			break;
 		}

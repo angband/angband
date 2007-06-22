@@ -66,13 +66,11 @@ Major visible changes
 - Lights now don't use fuel in the daylight in the town.
 
 - Amnesia (the monster attack) is now a timed effect (a la confusion),
-  and has a real gameplay effect:
-  - casting/praying and zapping rods has a 1 in 3 success rate
-  - reading scrolls, using staves and aiming wands has a 1 in 4 success
-    rate
+  and has makes you forget how to read scrolls/pray/cast spells one
+  time in two.
 
   Potions of Healing, *Healing* and Life are the only three things which
-  will get rid of amnesia early.  It's probably not balanced right yet.
+  will get rid of amnesia early, but it goes away within a few turns.
 
 
 Minor visible changes
