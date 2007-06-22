@@ -78,6 +78,10 @@
 /* Without autoconf, turn on some things */
 # ifndef HAVE_CONFIG_H
 #  define HAVE_DIRENT_H
+#  define HAVE_SETEGID
+#  if defined(linux)
+#   define HAVE_SETRESGID
+#  endif
 # endif
 
 #endif
