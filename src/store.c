@@ -2615,10 +2615,11 @@ void do_cmd_store(void)
 		menu_init2(&menu, find_menu_skin(MN_SCROLL), cur_menu, &items_region);
 
 		if (menu.count >= menu.active.page_rows)
-		{
 			menu.prompt = "  -more-";
-			menu_layout(&menu, &menu.boundary);
-		}
+		else
+			menu.prompt = NULL;
+
+		menu_layout(&menu, &menu.boundary);
 
 		/* Get a selection/action */
 		evt = menu_select(&menu, &cursor, 0);
