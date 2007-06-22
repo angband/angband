@@ -68,10 +68,6 @@
 #undef term
 
 
-#if !defined(HAVE_CAN_CHANGE_COLOR) && defined(PDCURSES)
-# define HAVE_CAN_CHANGE_COLOR
-#endif /* HAVE_CAN_CHANGE_COLOR */
-
 
 /*
  * Use POSIX terminal I/O
