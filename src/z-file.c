@@ -36,18 +36,19 @@ void safe_setuid_drop(void)
 {
 #ifdef SET_UID
 # if defined(HAVE_SETRESGID)
+
 	if (setresgid(-1, getgid(), -1) != 0)
-		quit("setegid(): cannot set permissions correctly!");
+		quit("setegid(): cannot drop permissions correctly!");
 
 # elif defined(HAVE_SETEGID)
 
 	if (setegid(getgid()) != 0)
-		quit("setegid(): cannot set permissions correctly!");
+		quit("setegid(): cannot drop permissions correctly!");
 
 # else
 
 	if (setgid(getgid()) != 0)
-		quit("setgid(): cannot set permissions correctly!");
+		quit("setgid(): cannot drop permissions correctly!");
 
 # endif
 #endif /* SET_UID */
@@ -61,18 +62,19 @@ void safe_setuid_grab(void)
 {
 #ifdef SET_UID
 # if defined(HAVE_SETRESGID)
+
 	if (setresgid(-1, player_egid, -1) != 0)
-		quit("setegid(): cannot set permissions correctly!");
+		quit("setegid(): cannot grab permissions correctly!");
 
 # elif defined(HAVE_SETEGID)
 
 	if (setegid(player_egid) != 0)
-		quit("setegid(): cannot set permissions correctly!");
+		quit("setegid(): cannot grab permissions correctly!");
 
 # else
 
 	if (setgid(player_egid) != 0)
-		quit("setgid(): cannot set permissions correctly!");
+		quit("setgid(): cannot grab permissions correctly!");
 
 # endif
 #endif /* SET_UID */
