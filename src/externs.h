@@ -328,7 +328,7 @@ extern errr file_character(cptr name, bool full);
 extern bool show_file(cptr name, cptr what, int line, int mode);
 extern void do_cmd_help(void);
 extern void process_player_name(bool sf);
-extern void get_name(bool sf);
+extern bool get_name(bool sf);
 extern void do_cmd_suicide(void);
 extern void do_cmd_save_game(void);
 extern long total_points(void);

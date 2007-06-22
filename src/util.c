@@ -2855,7 +2855,7 @@ bool get_name_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, char
  *
  * What a horrible name for a global function.  XXX XXX XXX
  */
-void get_name(bool sf)
+bool get_name(bool sf)
 {
 	bool res;
 	char tmp[32];
@@ -2883,6 +2883,8 @@ void get_name(bool sf)
 		/* Process the player name */
 		process_player_name(sf);
 	}
+
+	return res;
 }
 
 

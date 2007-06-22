@@ -435,15 +435,25 @@ static void get_money(void)
 /*
  * Clear all the global "character" data
  */
-static void player_wipe(void)
+static void player_wipe(bool really_wipe)
 {
 	int i;
 
-	/* Backup the player choices */
-	byte psex = p_ptr->psex;
-	byte prace = p_ptr->prace;
-	byte pclass = p_ptr->pclass;
+	byte psex, prace, pclass;
 
+	if (really_wipe)
+	{
+		psex = 0;
+		prace = 0;
+		pclass = 0;
+	}
+	else
+	{
+		/* Backup the player choices */
+		psex = p_ptr->psex;
+		prace = p_ptr->prace;
+		pclass = p_ptr->pclass;
+	}
 
 	/* Wipe the player */
 	(void)WIPE(p_ptr, player_type);
@@ -596,12 +606,6 @@ static void player_outfit(void)
 }
 
 
-/* "Failure" codes */
-#define BIRTH_SUCCESS             0
-#define BIRTH_RESTART            -1
-#define BIRTH_BACK               -2
-
-
 /* Locations of the tables on the screen */
 #define HEADER_ROW       1
 #define QUESTION_ROW     7
@@ -686,7 +690,7 @@ static void class_aux_hook(int class_idx, void *db, const region *loc)
 static region gender_region = {SEX_COL, TABLE_ROW, 15, -2};
 static region race_region = {RACE_COL, TABLE_ROW, 15, -2};
 static region class_region = {CLASS_COL, TABLE_ROW, 19, -2};
-static region roller_region = {44, TABLE_ROW, 20, -2};
+static region roller_region = {44, TABLE_ROW, 21, -2};
 
 
 /* Event handler implementation */
@@ -771,11 +775,11 @@ static void display_roller(menu_type *menu, int oid, bool cursor,
 	const char *str;
 
 	if (oid == 0)
-	    str = "Point-based";
+		str = "Point-based";
 	else if (oid == 1)
-	    str = "Autoroller";
+		str = "Autoroller";
 	else
-	    str = "Standard roller";
+		str = "Standard roller";
 
 	c_prt(attr, str, row, col);
 }
@@ -791,7 +795,7 @@ static bool roller_handler(char cmd, void *db, int oid)
 	if (cmd == '\xff' || cmd == '\r')
 		roller_type = oid;
 	else if (cmd == '*')
-		roller_type = 3;
+		roller_type = 2;
 	else if(cmd == '=')
 		do_cmd_options();
 	else if(cmd == KTRL('X'))
@@ -869,17 +873,15 @@ static bool choose_character()
 
 		cx = menu_select(&menu, &cursor, 0);
 
-		if (cx.key == ESCAPE)
+		if (cx.key == ESCAPE || cx.type == EVT_BACK)
 		{
-			/* Restart */
-			return FALSE;
-		}
-		else if (cx.type == EVT_BACK)
-		{
-			/* Move back one menu */
-			*values[i] = cursor;
-			region_erase(regions[i]);
-			i--;
+			if (i > 0) 
+			{
+				/* Move back one menu */
+				*values[i] = cursor;
+				region_erase(regions[i]);
+				i--;
+			}
 		}
 		else if (cx.key == '*')
 		{
@@ -930,7 +932,7 @@ static bool player_birth_aux_1(void)
 	text_out_c(TERM_L_GREEN, "*");
 	text_out("' for a random menu item, '");
 	text_out_c(TERM_L_GREEN, "ESC");
-	text_out("' to restart the character selection, '");
+	text_out("' to step back through the birth process, '");
 	text_out_c(TERM_L_GREEN, "=");
 	text_out("' for the birth options, '");
 	text_out_c(TERM_L_GREEN, "?");
@@ -961,9 +963,6 @@ static bool player_birth_aux_1(void)
 		squelch_level[i] = 0;
 
 
-	/* Clear */
-	Term_clear();
-
 	/* Done */
 	return (TRUE);
 }
@@ -987,7 +986,7 @@ static const int birth_stat_costs[(18-10)+1] = { 0, 1, 2, 4, 7, 11, 16, 22, 30 }
  *
  * Each unused point is converted into 100 gold pieces.
  */
-static bool player_birth_aux_2(void)
+static int player_birth_aux_2(void)
 {
 	int i;
 
@@ -1004,6 +1003,10 @@ static bool player_birth_aux_2(void)
 
 	char buf[80];
 
+	bool first_time = TRUE;
+
+	/* Clear */
+	Term_clear();
 
 	/* Initialize stats */
 	for (i = 0; i < A_MAX; i++)
@@ -1108,11 +1111,16 @@ static bool player_birth_aux_2(void)
 		/* Get key */
 		ch = inkey();
 
-		/* Quit */
-		if (ch == 'Q') quit(NULL);
+		/* Go back a step, or back to the start of this step */
+		if (ch == ESCAPE) 
+		{
+			if (first_time) 
+				return -1;
+			else 
+				return 0;
+		}
 
-		/* Start over */
-		if (ch == 'S') return (FALSE);
+		first_time = FALSE;
 
 		/* Done */
 		if ((ch == '\r') || (ch == '\n')) break;
@@ -1145,8 +1153,8 @@ static bool player_birth_aux_2(void)
 	}
 
 
-	/* Done */
-	return (TRUE);
+	/* Done - advance a step*/
+	return +1;
 }
 
 
@@ -1155,7 +1163,7 @@ static bool player_birth_aux_2(void)
  *
  * This function handles "auto-rolling" and "random-rolling".
  */
-static bool player_birth_aux_3(bool autoroll)
+static int player_birth_aux_3(bool autoroll)
 {
 	int i, j, m, v;
 
@@ -1178,6 +1186,9 @@ static bool player_birth_aux_3(bool autoroll)
 
 	s32b last_round;
 
+
+	/* Clear */
+	Term_clear();
 
 	/*** Autoroll ***/
 
@@ -1254,7 +1265,15 @@ static bool player_birth_aux_3(bool autoroll)
 				inp[0] = '\0';
 
 				/* Get a response (or escape) */
-				if (!askfor_aux(inp, 9, NULL)) inp[0] = '\0';
+				if (!askfor_aux(inp, 9, NULL)) 
+				{
+					if (i == 0) 
+						/* Back a step */
+						return -1;
+					else 
+						/* Repeat this step */
+						return 0;
+				}
 
 				/* Hack -- add a fake slash */
 				my_strcat(inp, "/", sizeof(inp));
@@ -1279,7 +1298,6 @@ static bool player_birth_aux_3(bool autoroll)
 
 	/* Clean up */
 	clear_from(10);
-
 
 	/*** Generate ***/
 
@@ -1453,11 +1471,15 @@ static bool player_birth_aux_3(bool autoroll)
 			/* Prompt and get a command */
 			ch = inkey();
 
-			/* Quit */
-			if (ch == 'Q') quit(NULL);
-
-			/* Start over */
-			if (ch == 'S') return (FALSE);
+			/* Go back to the start of the step, or the previous step */
+			/* if we're not autorolling. */
+			if (ch == ESCAPE) 
+			{
+				if (autoroll) 
+					return 0;
+				else 
+					return -1;
+			}
 
 			/* 'Enter' accepts the roll */
 			if ((ch == '\r') || (ch == '\n')) break;
@@ -1496,9 +1518,19 @@ static bool player_birth_aux_3(bool autoroll)
 	/* Clear prompt */
 	clear_from(23);
 
-	/* Done */
-	return (TRUE);
+	/* Done - move on a stage */
+	return +1;
 }
+
+typedef enum 
+{
+	BIRTH_RESTART = 0,
+	BIRTH_QUESTIONS,
+	BIRTH_STATS,
+	BIRTH_NAME,
+	BIRTH_FINAL_APPROVAL,
+	BIRTH_ACCEPTED
+} birth_stages;
 
 
 /*
@@ -1506,48 +1538,89 @@ static bool player_birth_aux_3(bool autoroll)
  *
  * See "display_player" for screen layout code.
  */
-static bool player_birth_aux(void)
+static void player_birth_aux(void)
 {
 	char ch;
-	cptr prompt = "['Q' to suicide, 'S' to start over, or any other key to continue]";
+	cptr prompt = "['ESC' to step back, 'S' to start over, or any other key to continue]";
+	birth_stages state = BIRTH_QUESTIONS;
 
-	/* Ask questions */
-	if (!player_birth_aux_1()) return (FALSE);
-
-	/* Point-based */
-	if (roller_type == ROLLER_POINT)
+	while (1)
 	{
-		/* Point based */
-		if (!player_birth_aux_2()) return (FALSE);
+		switch (state)
+		{
+			case BIRTH_RESTART:
+			{
+				player_wipe(FALSE);
+				state++;
+				break;
+			}
+
+			case BIRTH_QUESTIONS:
+			{
+				/* Race, class, etc. choices */
+				if (player_birth_aux_1()) state++;
+				break;
+			}
+
+			case BIRTH_STATS:
+			{
+				if (roller_type == ROLLER_POINT)
+				{
+					/* Fill stats using point-based methods */
+					state += player_birth_aux_2();
+				}
+				else
+				{
+					/* Fills stats using the standard- or auto-roller */
+					state += player_birth_aux_3(roller_type == ROLLER_AUTO);
+				}
+				break;
+			}
+
+			case BIRTH_NAME:
+			{
+				/* Get a name, prepare savefile */
+				if (get_name(FALSE)) 
+					state++;
+				else 
+					state--;
+
+				break;
+			}
+			
+			case BIRTH_FINAL_APPROVAL:
+			{
+				/* Display the player */
+				display_player(0);
+
+				/* Prompt for it */
+				prt(prompt, Term->hgt - 1, Term->wid / 2 - strlen(prompt) / 2);
+
+				/* Get a key */
+				ch = inkey();
+
+				/* Start over */
+				if (ch == 'S') 
+					state = BIRTH_RESTART;
+
+				if (ch == ESCAPE) 
+					state--;
+				else
+					state++;
+
+				/* Clear prompt */
+				clear_from(23);
+
+				break;
+			}
+			
+			case BIRTH_ACCEPTED:
+			{
+				return;
+			}
+
+		}
 	}
-
-	/* Random */
-	else
-	{
-		/* Auto-roll */
-		if (!player_birth_aux_3(roller_type == ROLLER_AUTO)) return (FALSE);
-	}
-
-	/* Get a name, prepare savefile */
-	get_name(FALSE);
-
-	/* Display the player */
-	display_player(0);
-
-	/* Prompt for it */
-	prt(prompt, Term->hgt - 1, Term->wid / 2 - strlen(prompt) / 2);
-
-	/* Get a key */
-	ch = inkey();
-
-	/* Quit */
-	if (ch == 'Q') quit(NULL);
-
-	/* Start over */
-	if (ch == 'S') return (FALSE);
-
-	/* Accept */
-	return (TRUE);
 }
 
 
@@ -1559,16 +1632,11 @@ static bool player_birth_aux(void)
  */
 void player_birth(void)
 {
+	/* Wipe the player properly */
+	player_wipe(TRUE);
+                
 	/* Create a new character */
-	while (1)
-	{
-		/* Wipe the player */
-		player_wipe();
-
-		/* Roll up a new character */
-		if (player_birth_aux()) break;
-	}
-
+	player_birth_aux();
 
 	/* Note player birth in the message recall */
 	message_add(" ", MSG_GENERIC);
