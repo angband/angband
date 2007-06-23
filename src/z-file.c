@@ -30,7 +30,7 @@
 
 
 /*
- * Hack -- drop permissions
+ * Drop permissions
  */
 void safe_setuid_drop(void)
 {
@@ -40,15 +40,10 @@ void safe_setuid_drop(void)
 	if (setresgid(-1, getgid(), -1) != 0)
 		quit("setegid(): cannot drop permissions correctly!");
 
-# elif defined(HAVE_SETEGID)
+# else
 
 	if (setegid(getgid()) != 0)
 		quit("setegid(): cannot drop permissions correctly!");
-
-# else
-
-	if (setgid(getgid()) != 0)
-		quit("setgid(): cannot drop permissions correctly!");
 
 # endif
 #endif /* SET_UID */
@@ -56,7 +51,7 @@ void safe_setuid_drop(void)
 
 
 /*
- * Hack -- grab permissions
+ * Grab permissions
  */
 void safe_setuid_grab(void)
 {
@@ -70,11 +65,6 @@ void safe_setuid_grab(void)
 
 	if (setegid(player_egid) != 0)
 		quit("setegid(): cannot grab permissions correctly!");
-
-# else
-
-	if (setgid(player_egid) != 0)
-		quit("setgid(): cannot grab permissions correctly!");
 
 # endif
 #endif /* SET_UID */

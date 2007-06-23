@@ -296,7 +296,6 @@ int main(int argc, char *argv[])
 # if defined(HAVE_SETEGID)
 
 	/* Save some info for later */
-	player_euid = geteuid();
 	player_egid = getegid();
 
 # endif /* defined(HAVE_SETEGID) */

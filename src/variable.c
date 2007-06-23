@@ -135,7 +135,6 @@ bool closing_flag;		/* Dungeon is closing */
  * Player info
  */
 int player_uid;
-int player_euid;
 int player_egid;
 
 
@@ -856,5 +855,5 @@ void (*sound_hook)(int sound);
 /*
  * For autoinscriptions.
  */
-autoinscription* inscriptions = 0;
+autoinscription *inscriptions = 0;
 u16b inscriptions_count = 0;

@@ -137,7 +137,6 @@ extern s16b rating;
 extern bool good_item_flag;
 extern bool closing_flag;
 extern int player_uid;
-extern int player_euid;
 extern int player_egid;
 extern char savefile[1024];
 extern s16b macro__num;
