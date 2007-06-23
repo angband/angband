@@ -369,20 +369,6 @@ int main(int argc, char *argv[])
 				break;
 			}
 
-			case 'R':
-			case 'r':
-			{
-				arg_force_roguelike = TRUE;
-				break;
-			}
-
-			case 'O':
-			case 'o':
-			{
-				arg_force_original = TRUE;
-				break;
-			}
-
 			case 'S':
 			case 's':
 			{
@@ -430,17 +416,15 @@ int main(int argc, char *argv[])
 			{
 				/* Dump usage information */
 				puts("Usage: angband [options] [-- subopts]");
-				puts("  -n       Start a new character");
-				puts("  -w       Resurrect dead character");
-				puts("  -f       Request fiddle (verbose) mode");
-				puts("  -v       Request sound mode");
-				puts("  -g       Request graphics mode");
-				puts("  -o       Request original keyset (default)");
-				puts("  -r       Request rogue-like keyset");
-				puts("  -s<num>  Show <num> high scores (default: 10)");
-				puts("  -u<who>  Use your <who> savefile");
-				puts("  -d<def>  Define a 'lib' dir sub-path");
-				puts("  -m<sys>  use Module <sys>, where <sys> can be:");
+				puts("  -n             Start a new character");
+				puts("  -w             Resurrect dead character (marks savefile)");
+				puts("  -f             Request fiddle (verbose) mode");
+				puts("  -v             Request sound mode");
+				puts("  -g             Request graphics mode");
+				puts("  -s<num>        Show <num> high scores (default: 10)");
+				puts("  -u<who>        Use your <who> savefile");
+				puts("  -d<def>=<path> Instead of lib/<def>, use <path>");
+				puts("  -m<sys>        Use module <sys>, where <sys> can be:");
 
 				/* Print the name and help for each available module */
 				for (i = 0; i < (int)N_ELEMENTS(modules); i++)

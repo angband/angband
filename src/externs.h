@@ -97,8 +97,6 @@ extern bool arg_fiddle;
 extern bool arg_wizard;
 extern bool arg_sound;
 extern bool arg_graphics;
-extern bool arg_force_original;
-extern bool arg_force_roguelike;
 extern bool character_generated;
 extern bool character_dungeon;
 extern bool character_saved;

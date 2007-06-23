@@ -1033,12 +1033,6 @@ static void load_prefs(void)
 	/* Extract the "arg_wizard" flag */
 	arg_wizard = (GetPrivateProfileInt("Angband", "Wizard", 0, ini_file) != 0);
 
-	/* Extract the "arg_roguelike" flag */
-	arg_force_roguelike = (GetPrivateProfileInt("Angband", "force_roguelike", 0, ini_file) != 0);
-
-	/* Extract the "arg_original" flag */
-	arg_force_original = (GetPrivateProfileInt("Angband", "force_original", 0, ini_file) != 0);
-
 #ifdef SUPPORT_GAMMA
 
 	/* Extract the gamma correction */
