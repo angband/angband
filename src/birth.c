@@ -17,10 +17,11 @@
 /*
  * Forward declare
  */
-typedef struct birther birther;
+typedef struct birther /*lovely*/ birther; /*sometimes we think she's a dream*/
 
 /*
- * A structure to hold "rolled" information
+ * A structure to hold "rolled" information, and any
+ * other useful state for the birth process.
  */
 struct birther
 {
@@ -32,6 +33,8 @@ struct birther
 	s32b au;
 
 	s16b stat[A_MAX];
+
+	char *name;
 
 	char history[250];
 };
@@ -823,7 +826,7 @@ static const menu_iter menu_defs[] = {
 
 
 
-static bool choose_character()
+static bool choose_character(bool start_at_end)
 {
 	int i = 0;
 
@@ -871,28 +874,40 @@ static bool choose_character()
 		clear_question();
 		Term_putstr(QUESTION_COL, QUESTION_ROW, -1, TERM_YELLOW, hints[i]);
 
-		cx = menu_select(&menu, &cursor, 0);
-
-		if (cx.key == ESCAPE || cx.type == EVT_BACK)
+		if (start_at_end)
 		{
-			if (i > 0) 
+			menu_refresh(&menu);
+			i++;
+			if (i == N_ELEMENTS(menu_defs) - 1)
 			{
-				/* Move back one menu */
-				*values[i] = cursor;
-				region_erase(regions[i]);
-				i--;
+				start_at_end = FALSE;
 			}
 		}
-		else if (cx.key == '*')
+		else
 		{
-			/* Force refresh */
-			Term_key_push('6');
-			continue;
-		}
+			cx = menu_select(&menu, &cursor, 0);
 
-		/* Selection! */
-		else if(cx.key == '\r' || cx.key == '\n' || cx.key == '\xff')
-			i++;
+			if (cx.key == ESCAPE || cx.type == EVT_BACK)
+			{
+				if (i > 0) 
+				{
+					/* Move back one menu */
+					*values[i] = cursor;
+					region_erase(regions[i]);
+					i--;
+				}
+			}
+			else if (cx.key == '*')
+			{
+				/* Force refresh */
+				Term_key_push('6');
+				continue;
+			}
+
+			/* Selection! */
+			else if(cx.key == '\r' || cx.key == '\n' || cx.key == '\xff')
+				i++;
+		}
 	}
 
 	return TRUE;
@@ -905,7 +920,7 @@ static bool choose_character()
  * This function allows the player to select a sex, race, and class, and
  * modify options (including the birth options).
  */
-static bool player_birth_aux_1(void)
+static bool player_birth_aux_1(bool start_at_end)
 {
 	int i;
 
@@ -943,7 +958,7 @@ static bool player_birth_aux_1(void)
 	/* Reset text_out() indentation */
 	text_out_indent = 0;
 
-	if (!choose_character()) return FALSE;
+	if (!choose_character(start_at_end)) return FALSE;
 
 
 	/* Set adult options from birth options */
@@ -986,7 +1001,7 @@ static const int birth_stat_costs[(18-10)+1] = { 0, 1, 2, 4, 7, 11, 16, 22, 30 }
  *
  * Each unused point is converted into 100 gold pieces.
  */
-static int player_birth_aux_2(void)
+static int player_birth_aux_2(bool start_at_end)
 {
 	int i;
 
@@ -995,7 +1010,7 @@ static int player_birth_aux_2(void)
 
 	int stat = 0;
 
-	int stats[A_MAX];
+	static int stats[A_MAX];
 
 	int cost;
 
@@ -1003,28 +1018,32 @@ static int player_birth_aux_2(void)
 
 	char buf[80];
 
-	bool first_time = TRUE;
+	bool first_time = FALSE;
 
 	/* Clear */
 	Term_clear();
 
-	/* Initialize stats */
-	for (i = 0; i < A_MAX; i++)
+	if (!start_at_end)
 	{
-		/* Initial stats */
-		stats[i] = 10;
+		first_time = TRUE;
+
+		/* Initialize stats */
+		for (i = 0; i < A_MAX; i++)
+		{
+			/* Initial stats */
+			stats[i] = 10;
+		}
+
+
+		/* Roll for base hitpoints */
+		get_extra();
+
+		/* Roll for age/height/weight */
+		get_ahw();
+
+		/* Roll for social class */
+		get_history();
 	}
-
-
-	/* Roll for base hitpoints */
-	get_extra();
-
-	/* Roll for age/height/weight */
-	get_ahw();
-
-	/* Roll for social class */
-	get_history();
-
 
 	/* Interact */
 	while (1)
@@ -1111,6 +1130,9 @@ static int player_birth_aux_2(void)
 		/* Get key */
 		ch = inkey();
 
+		if (ch == KTRL('X')) 
+			quit(NULL);
+
 		/* Go back a step, or back to the start of this step */
 		if (ch == ESCAPE) 
 		{
@@ -1158,17 +1180,26 @@ static int player_birth_aux_2(void)
 }
 
 
+bool minstat_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, char keypress, bool firsttime)
+{
+	if (keypress == KTRL('x'))
+		quit(NULL);
+
+	return askfor_aux_keypress(buf, buflen, curs, len, keypress, firsttime);
+}
+
+
 /*
  * Helper function for 'player_birth()'.
  *
  * This function handles "auto-rolling" and "random-rolling".
  */
-static int player_birth_aux_3(bool autoroll)
+static int player_birth_aux_3(bool start_at_end, bool autoroll)
 {
 	int i, j, m, v;
 
 	bool flag;
-	bool prev = FALSE;
+	static bool prev = FALSE;
 
 	char ch;
 
@@ -1178,7 +1209,8 @@ static int player_birth_aux_3(bool autoroll)
 	char buf[80];
 
 
-	s16b stat_limit[A_MAX];
+	/* We'll keep these for when we step "back" into the autoroller */
+	static s16b stat_limit[A_MAX];
 
 	s32b stat_match[A_MAX];
 
@@ -1193,12 +1225,13 @@ static int player_birth_aux_3(bool autoroll)
 	/*** Autoroll ***/
 
 	/* Initialize */
-	if (autoroll)
+	if (!start_at_end && autoroll)
 	{
 		int mval[A_MAX];
 
 		char inp[80];
 
+		prev = FALSE;
 
 		/* Extra info */
 		Term_putstr(5, 10, -1, TERM_WHITE,
@@ -1265,7 +1298,7 @@ static int player_birth_aux_3(bool autoroll)
 				inp[0] = '\0';
 
 				/* Get a response (or escape) */
-				if (!askfor_aux(inp, 9, NULL)) 
+				if (!askfor_aux(inp, 9, minstat_keypress)) 
 				{
 					if (i == 0) 
 						/* Back a step */
@@ -1296,151 +1329,158 @@ static int player_birth_aux_3(bool autoroll)
 		}
 	}
 
+
 	/* Clean up */
-	clear_from(10);
+	if (!start_at_end)
+		clear_from(10);
 
 	/*** Generate ***/
 
 	/* Roll */
 	while (TRUE)
 	{
-		int col = 42;
-
-		/* Feedback */
-		if (autoroll)
+		if (!start_at_end)
 		{
-			Term_clear();
+			int col = 42;
 
-			/* Label */
-			put_str(" Limit", 2, col+5);
-
-			/* Label */
-			put_str("  Freq", 2, col+13);
-
-			/* Label */
-			put_str("  Roll", 2, col+24);
-
-			/* Put the minimal stats */
-			for (i = 0; i < A_MAX; i++)
+			/* Feedback */
+			if (autoroll)
 			{
-				/* Label stats */
-				put_str(stat_names[i], 3+i, col);
+				Term_clear();
 
-				/* Put the stat */
-				cnv_stat(stat_limit[i], buf, sizeof(buf));
-				c_put_str(TERM_L_BLUE, buf, 3+i, col+5);
-			}
+				/* Label */
+				put_str(" Limit", 2, col+5);
 
-			/* Note when we started */
-			last_round = auto_round;
+				/* Label */
+				put_str("  Freq", 2, col+13);
 
-			/* Label count */
-			put_str("Round:", 10, col+13);
+				/* Label */
+				put_str("  Roll", 2, col+24);
 
-			/* Indicate the state */
-			put_str("(Hit ESC to stop)", 12, col+13);
-
-			/* Auto-roll */
-			while (1)
-			{
-				bool accept = TRUE;
-
-				/* Get a new character */
-				get_stats();
-
-				/* Advance the round */
-				auto_round++;
-
-				/* Hack -- Prevent overflow */
-				if (auto_round >= 1000000L) break;
-
-				/* Check and count acceptable stats */
+				/* Put the minimal stats */
 				for (i = 0; i < A_MAX; i++)
 				{
-					/* This stat is okay */
-					if (stat_use[i] >= stat_limit[i])
-					{
-						stat_match[i]++;
-					}
+					/* Label stats */
+					put_str(stat_names[i], 3+i, col);
 
-					/* This stat is not okay */
-					else
-					{
-						accept = FALSE;
-					}
+					/* Put the stat */
+					cnv_stat(stat_limit[i], buf, sizeof(buf));
+					c_put_str(TERM_L_BLUE, buf, 3+i, col+5);
 				}
 
-				/* Break if "happy" */
-				if (accept) break;
+				/* Note when we started */
+				last_round = auto_round;
 
-				/* Take note every 25 rolls */
-				flag = (!(auto_round % 25L));
+				/* Label count */
+				put_str("Round:", 10, col+13);
 
-				/* Update display occasionally */
-				if (flag || (auto_round < last_round + 100))
+				/* Indicate the state */
+				put_str("(Hit ESC to stop)", 12, col+13);
+
+				/* Auto-roll */
+				while (1)
 				{
-					/* Put the stats (and percents) */
+					bool accept = TRUE;
+
+					/* Get a new character */
+					get_stats();
+
+					/* Advance the round */
+					auto_round++;
+
+					/* Hack -- Prevent overflow */
+					if (auto_round >= 1000000L) break;
+
+					/* Check and count acceptable stats */
 					for (i = 0; i < A_MAX; i++)
 					{
-						/* Put the stat */
-						cnv_stat(stat_use[i], buf, sizeof(buf));
-						c_put_str(TERM_L_GREEN, buf, 3+i, col+24);
-
-						/* Put the percent */
-						if (stat_match[i])
+						/* This stat is okay */
+						if (stat_use[i] >= stat_limit[i])
 						{
-							int p = 1000L * stat_match[i] / auto_round;
-							byte attr = (p < 100) ? TERM_YELLOW : TERM_L_GREEN;
-							strnfmt(buf, sizeof(buf), "%3d.%d%%", p/10, p%10);
-							c_put_str(attr, buf, 3+i, col+13);
+							stat_match[i]++;
 						}
 
-						/* Never happened */
+						/* This stat is not okay */
 						else
 						{
-							c_put_str(TERM_RED, "(NONE)", 3+i, col+13);
+							accept = FALSE;
 						}
 					}
 
-					/* Dump round */
-					put_str(format("%10ld", auto_round), 10, col+20);
+					/* Break if "happy" */
+					if (accept) break;
 
-					/* Make sure they see everything */
-					Term_fresh();
+					/* Take note every 25 rolls */
+					flag = (!(auto_round % 25L));
 
-					/* Do not wait for a key */
-					inkey_scan = TRUE;
+					/* Update display occasionally */
+					if (flag || (auto_round < last_round + 100))
+					{
+						/* Put the stats (and percents) */
+						for (i = 0; i < A_MAX; i++)
+						{
+							/* Put the stat */
+							cnv_stat(stat_use[i], buf, sizeof(buf));
+							c_put_str(TERM_L_GREEN, buf, 3+i, col+24);
 
-					/* Check for a keypress */
-					if (inkey()) break;
+							/* Put the percent */
+							if (stat_match[i])
+							{
+								int p = 1000L * stat_match[i] / auto_round;
+								byte attr = (p < 100) ? TERM_YELLOW : TERM_L_GREEN;
+								strnfmt(buf, sizeof(buf), "%3d.%d%%", p/10, p%10);
+								c_put_str(attr, buf, 3+i, col+13);
+							}
+
+							/* Never happened */
+							else
+							{
+								c_put_str(TERM_RED, "(NONE)", 3+i, col+13);
+							}
+						}
+
+						/* Dump round */
+						put_str(format("%10ld", auto_round), 10, col+20);
+
+						/* Make sure they see everything */
+						Term_fresh();
+
+						/* Do not wait for a key */
+						inkey_scan = TRUE;
+
+						/* Check for a keypress */
+						if (inkey()) break;
+					}
 				}
 			}
+
+			/* Otherwise just get a character */
+			else
+			{
+				/* Get a new character */
+				get_stats();
+			}
+
+			/* Flush input */
+			flush();
+
+
+			/*** Display ***/
+
+			/* Roll for base hitpoints */
+			get_extra();
+
+			/* Roll for age/height/weight */
+			get_ahw();
+
+			/* Roll for social class */
+			get_history();
+
+			/* Roll for gold */
+			get_money();
 		}
 
-		/* Otherwise just get a character */
-		else
-		{
-			/* Get a new character */
-			get_stats();
-		}
-
-		/* Flush input */
-		flush();
-
-
-		/*** Display ***/
-
-		/* Roll for base hitpoints */
-		get_extra();
-
-		/* Roll for age/height/weight */
-		get_ahw();
-
-		/* Roll for social class */
-		get_history();
-
-		/* Roll for gold */
-		get_money();
+		start_at_end = FALSE;
 
 		/* Input loop */
 		while (TRUE)
@@ -1501,6 +1541,9 @@ static int player_birth_aux_3(bool autoroll)
 				continue;
 			}
 
+			if (ch == KTRL('X')) 
+				quit(NULL);
+
 			/* Warning */
 			bell("Illegal auto-roller command!");
 		}
@@ -1543,14 +1586,17 @@ static void player_birth_aux(void)
 	char ch;
 	cptr prompt = "['ESC' to step back, 'S' to start over, or any other key to continue]";
 	birth_stages state = BIRTH_QUESTIONS;
+	birth_stages last_state = BIRTH_RESTART;
 
 	while (1)
 	{
+		bool start_at_end = (last_state > state);
+		last_state = state;
+
 		switch (state)
 		{
 			case BIRTH_RESTART:
 			{
-				player_wipe(FALSE);
 				state++;
 				break;
 			}
@@ -1558,7 +1604,8 @@ static void player_birth_aux(void)
 			case BIRTH_QUESTIONS:
 			{
 				/* Race, class, etc. choices */
-				if (player_birth_aux_1()) state++;
+				if (player_birth_aux_1(start_at_end)) 
+					state++;
 				break;
 			}
 
@@ -1567,12 +1614,12 @@ static void player_birth_aux(void)
 				if (roller_type == ROLLER_POINT)
 				{
 					/* Fill stats using point-based methods */
-					state += player_birth_aux_2();
+					state += player_birth_aux_2(start_at_end);
 				}
 				else
 				{
 					/* Fills stats using the standard- or auto-roller */
-					state += player_birth_aux_3(roller_type == ROLLER_AUTO);
+					state += player_birth_aux_3(start_at_end, roller_type == ROLLER_AUTO);
 				}
 				break;
 			}
@@ -1602,6 +1649,9 @@ static void player_birth_aux(void)
 				/* Start over */
 				if (ch == 'S') 
 					state = BIRTH_RESTART;
+
+				if(ch == KTRL('X')) 
+					quit(NULL);
 
 				if (ch == ESCAPE) 
 					state--;
@@ -1634,7 +1684,7 @@ void player_birth(void)
 {
 	/* Wipe the player properly */
 	player_wipe(TRUE);
-                
+
 	/* Create a new character */
 	player_birth_aux();
 
