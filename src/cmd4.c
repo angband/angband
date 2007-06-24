@@ -209,7 +209,7 @@ static bool visual_mode_command(event_type ke, bool *visual_list_ptr,
 static void place_visual_list_cursor(int col, int row, byte a,
 				byte c, byte attr_top, byte char_left);
 
-static void dump_pref_file(void (*dump)(FILE*), const char *title);
+static void dump_pref_file(void (*dump)(FILE*), const char *title, int row);
 
 /*
  * Clipboard variables for copy&paste in visual mode
@@ -2157,6 +2157,8 @@ static bool update_option(char key, void *pgdb, int oid)
 
 		case 'T':
 		case '5':
+		case '\n':
+		case '\r':
 		case '\xff':
 		{
 			op_ptr->opt[oid] = !op_ptr->opt[oid];
@@ -2173,7 +2175,7 @@ static bool update_option(char key, void *pgdb, int oid)
 	return TRUE;
 }
 
-static const menu_iter options_iter =
+static const menu_iter options_toggle_iter =
 {
 	0,
 	NULL,
@@ -2220,7 +2222,7 @@ static void do_cmd_options_aux(void *vpage, cptr info)
 
 		cx = menu_select(menu, &cursor_pos, EVT_MOVE);
 
-		if (cx.type == EVT_BACK || cx.key == ESCAPE)
+		if (cx.key == ESCAPE)
 			break;
 		else if (cx.type == EVT_MOVE)
 			cursor_pos = cx.index;
@@ -2351,7 +2353,7 @@ static void do_cmd_options_win(void)
 		}
 
 		/* Toggle */
-		if ((ke.key == '5') || (ke.key == 't') || ((ke.key == '\xff') && (ke.index)))
+		if ((ke.key == '5') || (ke.key == 't') || (ke.key == '\n') || (ke.key == '\r') || ((ke.key == '\xff') && (ke.index)))
 		{
 			/* Hack -- ignore the main window */
 			if (x == 0)
@@ -2574,13 +2576,11 @@ static void pref_footer(FILE *fff, const char *mark)
  * - dump(FILE *) needs to emit only the raw data for the dump.
  *   Comments are generated automatically
  */
-static void dump_pref_file(void (*dump)(FILE*), const char *title)
+static void dump_pref_file(void (*dump)(FILE*), const char *title, int row)
 {
 	char ftmp[80];
 	char buf[1025];
 	FILE *fff;
-
-	int row = 15;
 
 	/* Prompt */
 	prt(format("%s to a pref file", title), row, 0);
@@ -3021,6 +3021,7 @@ void do_cmd_macros(void)
 
 
 		if (ESCAPE == c.key) break;
+                if (c.key == ARROW_LEFT || c.key == ARROW_RIGHT) continue;
 		evt = macro_actions[cursor].id;
 
 		switch(evt)
@@ -3035,7 +3036,7 @@ void do_cmd_macros(void)
 		case APP_MACRO:
 		{
 			/* Dump the macros */
-			(void)dump_pref_file(macro_dump, "Dump Macros");
+			(void)dump_pref_file(macro_dump, "Dump Macros", 15);
 
 			break;
 		}
@@ -3137,7 +3138,7 @@ void do_cmd_macros(void)
 		case APP_KEYMAP:
 		{
 			/* Dump the keymaps */
-			(void)dump_pref_file(keymap_dump, "Dump Keymaps");
+			(void)dump_pref_file(keymap_dump, "Dump Keymaps", 15);
 			break;
 		}
 		case ASK_KEYMAP:
@@ -3513,6 +3514,9 @@ void do_cmd_visuals(void)
 		if (key.key == ESCAPE) 
 			break;
 
+		if (key.key == ARROW_LEFT || key.key == ARROW_RIGHT)
+			continue;
+
 		assert(cursor >= 0 && cursor < visual_menu.count);
 
 		evt = visual_menu_items[cursor].id;
@@ -3527,23 +3531,23 @@ void do_cmd_visuals(void)
 
 		else if (evt == DUMP_MON)
 		{
-			dump_pref_file(dump_monsters, "Dump Monster attr/chars");
+			dump_pref_file(dump_monsters, "Dump Monster attr/chars", 15);
 		}
 
 		else if (evt == DUMP_OBJ)
 		{
-			dump_pref_file(dump_objects, "Dump Object attr/chars");
+			dump_pref_file(dump_objects, "Dump Object attr/chars", 15);
 		}
 
 		else if (evt == DUMP_FEAT)
 		{
-			dump_pref_file(dump_features, "Dump Feature attr/chars");
+			dump_pref_file(dump_features, "Dump Feature attr/chars", 15);
 		}
 
 		/* Dump flavor attr/chars */
 		else if (evt == DUMP_FLAV) 
 		{
-			dump_pref_file(dump_flavors, "Dump Flavor attr/chars");
+			dump_pref_file(dump_flavors, "Dump Flavor attr/chars", 15);
 		}
 
 		/* Modify monster attr/chars */
@@ -3685,6 +3689,9 @@ void do_cmd_colors(void)
 
 		/* Done */
 		if (key.key == ESCAPE) break;
+
+		if (key.key == ARROW_RIGHT || key.key == ARROW_LEFT) continue;
+
 		evt = color_events[cursor].id;
 
 		/* Load a user pref file */
@@ -3707,7 +3714,7 @@ void do_cmd_colors(void)
 		/* Dump colors */
 		else if (evt == DUMP_COL)
 		{
-			dump_pref_file(dump_colors, "Dump Colors");
+			dump_pref_file(dump_colors, "Dump Colors", 15);
 		}
 
 		/* Edit colors */
@@ -3902,7 +3909,7 @@ static void do_cmd_pref_file_hack(long row)
  */
 static void do_dump_options(void *unused, const char *title)
 {
-	dump_pref_file(option_dump, title);
+	dump_pref_file(option_dump, title, 20);
 }
 
 
@@ -3914,28 +3921,63 @@ static void do_dump_options(void *unused, const char *title)
  *
  * XXX Too many entries.
  */
-static menu_item option_actions [] =
+
+static event_action option_actions [] = 
 {
-	{{0, "Interface options", do_cmd_options_aux, (void*)0}, '1'},
-	{{0, "Display options", do_cmd_options_aux, (void*)1}, '2'},
-	{{0, "Warning options", do_cmd_options_aux, (void*)2}, '3'},
-	{{0, "Birth (Difficulty) options", do_cmd_options_aux, (void*)3}, '4'},
-	{{0, "Cheat options", do_cmd_options_aux, (void*)4}, '5'},
-	{{0, 0, 0, 0}}, /* Load and append */
-	{{0, "Subwindow display settings", (action_f) do_cmd_options_win, 0}, 'W'},
-	{{0, "Item squelch and Autoinscribe settings", (action_f) do_cmd_options_item, 0}, 'S'},
-	{{0, "Set base delay factor", (action_f) do_cmd_delay, 0}, 'D'},
-	{{0, "Set hitpoint warning", (action_f) do_cmd_hp_warn, 0}, 'H'},
-	{{0, 0, 0,}, 0}, /* Special choices */
-	{{0, "Load a user pref file", (action_f) do_cmd_pref_file_hack, (void*)20}, 'L'},
-	{{0, "Dump options", do_dump_options, 0}, 'A'},
-	{{0, 0, 0,}, 0}, /* Interact with */	
-	{{0, "Interact with macros (advanced)", (action_f) do_cmd_macros, 0}, 'M'},
-	{{0, "Interact with visuals (advanced)", (action_f) do_cmd_visuals, 0}, 'V'},
-	{{0, "Interact with colours (advanced)", (action_f) do_cmd_colors, 0}, 'C'},
+	{'1', "Interface options", do_cmd_options_aux, (void*)0}, 
+	{'2', "Display options", do_cmd_options_aux, (void*)1},
+	{'3', "Warning options", do_cmd_options_aux, (void*)2}, 
+	{'4', "Birth (Difficulty) options", do_cmd_options_aux, (void*)3}, 
+	{'5', "Cheat options", do_cmd_options_aux, (void*)4}, 
+	{0, 0, 0, 0}, /* Load and append */
+	{'W', "Subwindow display settings", (action_f) do_cmd_options_win, 0}, 
+	{'S', "Item squelch and Autoinscribe settings", (action_f) do_cmd_options_item, 0}, 
+	{'D', "Set base delay factor", (action_f) do_cmd_delay, 0}, 
+	{'H', "Set hitpoint warning", (action_f) do_cmd_hp_warn, 0}, 
+	{0, 0, 0,}, /* Special choices */
+	{'L', "Load a user pref file", (action_f) do_cmd_pref_file_hack, (void*)20},
+	{'A', "Dump options", do_dump_options, 0}, 
+	{0, 0, 0,}, /* Interact with */	
+	{'M', "Interact with macros (advanced)", (action_f) do_cmd_macros, 0},
+	{'V', "Interact with visuals (advanced)", (action_f) do_cmd_visuals, 0},
+	{'C', "Interact with colours (advanced)", (action_f) do_cmd_colors, 0},
 };
 
 static menu_type option_menu;
+
+static char tag_opt_main(menu_type *menu, int oid)
+{
+	if (option_actions[oid].id)
+		return option_actions[oid].id;
+
+	return 0;
+}
+
+static int valid_opt_main(menu_type *menu, int oid)
+{
+	if (option_actions[oid].name)
+		return 1;
+
+	return 0;
+}
+
+static void display_opt_main(menu_type *menu, int oid, bool cursor, int row, int col, int width)
+{
+	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
+
+	if (option_actions[oid].name)
+		c_prt(attr, option_actions[oid].name, row, col);
+}
+
+
+static const menu_iter options_iter =
+{
+	0,
+	tag_opt_main,
+	valid_opt_main,
+	display_opt_main,
+	NULL
+};
 
 
 /*
@@ -3953,6 +3995,11 @@ void do_cmd_options(void)
 	{
 		clear_from(0);
 		c = menu_select(&option_menu, &cursor, 0);
+		if (c.type == EVT_SELECT && option_actions[cursor].action)
+		{
+			option_actions[cursor].action(option_actions[cursor].data,
+			                              option_actions[cursor].name);
+		}
 	}
 
 	screen_load();
@@ -4010,8 +4057,11 @@ static void cleanup_cmds(void)
  */
 void init_cmd4_c(void)
 {
+	/* some useful standard command keys */
+	static const char cmd_keys[] = { ARROW_LEFT, ARROW_RIGHT, '\0' };
+
 	/* Initialize the menus */
-	menu_type *menu;
+	menu_type *menu;                 
 
 	/* options screen selection menu */
 	menu = &option_menu;
@@ -4019,24 +4069,26 @@ void init_cmd4_c(void)
 	menu_set_id(menu, OPTION_MENU);
 	menu->title = "Options Menu";
 	menu->menu_data = option_actions;
+	menu->cmd_keys = cmd_keys;
 	menu->count = N_ELEMENTS(option_actions);
-	menu_init(menu, MN_SCROLL, MN_ACT, &SCREEN_REGION);
+	menu_init2(menu, find_menu_skin(MN_SCROLL), &options_iter, &SCREEN_REGION);
 
 	/* Initialize the options toggle menu */
 	menu = &option_toggle_menu;
 	WIPE(menu, menu_type);
 	menu->prompt = "Set option (y/n/t), '?' for information";
-	menu->cmd_keys = "?YyNnTt";
+	menu->cmd_keys = "?Yy\n\rNnTt\x8C"; /* \x8c = ARROW_RIGHT */
 	menu->selections = "abcdefghijklmopqrsuvwxz";
 	menu->count = OPT_PAGE_PER;
 	menu->flags = MN_DBL_TAP;
-	menu_init2(menu, find_menu_skin(MN_SCROLL), &options_iter, &SCREEN_REGION);
+	menu_init2(menu, find_menu_skin(MN_SCROLL), &options_toggle_iter, &SCREEN_REGION);
 
 	/* macro menu */
 	menu = &macro_menu;
 	WIPE(menu, menu_type);
 	menu_set_id(menu, MACRO_MENU);
 	menu->title = "Interact with macros";
+	menu->cmd_keys = cmd_keys;
 	menu->selections = default_choice;
 	menu->menu_data = macro_actions;
 	menu->count = N_ELEMENTS(macro_actions);
@@ -4047,6 +4099,7 @@ void init_cmd4_c(void)
 	WIPE(menu, menu_type);
 	menu_set_id(menu, VISUAL_MENU);
 	menu->title = "Interact with visuals";
+	menu->cmd_keys = cmd_keys;
 	menu->selections = default_choice;
 	menu->menu_data = visual_menu_items;
 	menu->count = N_ELEMENTS(visual_menu_items);
@@ -4057,6 +4110,7 @@ void init_cmd4_c(void)
 	WIPE(menu, menu_type);
 	menu_set_id(menu, COLOR_MENU);
 	menu->title = "Interact with colors";
+	menu->cmd_keys = cmd_keys;
 	menu->selections = default_choice;
 	menu->menu_data = color_events;
 	menu->count = N_ELEMENTS(color_events);
@@ -4129,7 +4183,7 @@ void do_cmd_version(void)
 {
 	/* Silly message */
 	msg_format("You are playing %s %s.  Type '?' for more info.",
-		   VERSION_NAME, VERSION_STRING);
+		       VERSION_NAME, VERSION_STRING);
 }
 
 

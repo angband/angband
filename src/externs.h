@@ -596,7 +596,7 @@ void autoinscribe_pack(void);
 
 void squelch_set(object_type *o_ptr);
 void squelch_items(void);
-void do_cmd_options_item(void);
+void do_cmd_options_item(void *, cptr);
 
 /* store.c */
 extern void do_cmd_store(void);

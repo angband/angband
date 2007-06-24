@@ -362,7 +362,7 @@ static bool squelch_item_ok(object_type *o_ptr)
 				return TRUE;
 			}
 
-      		break;
+			break;
 		}
 
 		case SQUELCH_AVERAGE:
@@ -374,13 +374,13 @@ static bool squelch_item_ok(object_type *o_ptr)
 				return TRUE;
 			}
 
-      		break;
+			break;
 		}
 
 		case SQUELCH_GOOD_WEAK:
 		{
 			if ((feel == INSCRIP_BROKEN) || (feel == INSCRIP_TERRIBLE) ||
-		 	    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED) ||
+			    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED) ||
 			    (feel == INSCRIP_AVERAGE) || (feel == INSCRIP_GOOD))
 			{
 				return TRUE;
@@ -406,7 +406,7 @@ static bool squelch_item_ok(object_type *o_ptr)
 		case SQUELCH_ALL:
 		{
 			return TRUE;
-      		break;
+			break;
 		}
 	}
 
@@ -644,7 +644,7 @@ static void quality_menu(void)
 	menu_init2(&menu, find_menu_skin(MN_SCROLL), &menu_f, &area);
 
 	/* Select an entry */
-	while (evt.key != ESCAPE && evt.type != EVT_BACK)
+	while (evt.key != ESCAPE)
 		evt = menu_select(&menu, &cursor, 0);
 
 	/* Load screen */
@@ -685,7 +685,7 @@ static bool sval_action(char cmd, void *db, int oid)
 	u16b *choice = db;
 
 	/* Toggle */
-	if (cmd == ' ')
+	if (cmd == '\n' || cmd == '\r')
 	{
 		int idx = choice[oid];
 		k_info[idx].squelch = !k_info[idx].squelch;
@@ -695,6 +695,7 @@ static bool sval_action(char cmd, void *db, int oid)
 
 	return FALSE;
 }
+
 
 /*
  * Display list of svals to be squelched.
@@ -758,7 +759,7 @@ static bool sval_menu(int tval, const char *desc)
 	text_out(" to scroll the list or ");
 	text_out_c(TERM_L_GREEN, "ESC");
 	text_out(" to return to the previous menu.  ");
-	text_out_c(TERM_L_BLUE, "Space");
+	text_out_c(TERM_L_BLUE, "Enter");
 	text_out(" toggles the current setting.");
 
 	/* Set up the menu */
@@ -769,7 +770,7 @@ static bool sval_menu(int tval, const char *desc)
 	menu_init2(&menu, find_menu_skin(MN_SCROLL), &menu_f, &area);
 
 	/* Select an entry */
-	while (evt.key != ESCAPE && evt.type != EVT_BACK)
+	while (evt.key != ESCAPE)
 		evt = menu_select(&menu, &cursor, 0);
 
 	/* Free memory */
@@ -781,62 +782,140 @@ static bool sval_menu(int tval, const char *desc)
 }
 
 
+/* Returns TRUE if there's anything to display a menu of */
+static bool seen_tval(int tval)
+{
+	int i;
+
+	for (i = 1; i < z_info->k_max; i++)
+	{
+		object_kind *k_ptr = &k_info[i];
+
+		/* Skip empty objects, unseen objects, and incorrect tvals */
+		if (!k_ptr->name) continue;
+		if (!k_ptr->everseen) continue;
+		if (k_ptr->tval != tval) continue;
+
+		 return TRUE;
+	}
+
+
+	return FALSE;
+}
+
+
+/* Extra options on the "item options" menu */
+struct {
+	char tag;
+	char *name;
+	void (*action)(void);
+} extra_item_options[] = { {'Q', "Quality squelching options", quality_menu } };
+
+static char tag_options_item(menu_type *menu, int oid)
+{
+	if (oid < N_ELEMENTS(sval_dependent))
+		return I2A(oid);
+
+	/* Separator - blank line. */
+	if (oid == N_ELEMENTS(sval_dependent))
+		return 0;
+
+	oid = oid - N_ELEMENTS(sval_dependent);
+
+	if (oid - 1 < N_ELEMENTS(extra_item_options))
+		return extra_item_options[oid - 1].tag;
+
+	return 0;
+}
+
+static int valid_options_item(menu_type *menu, int oid)
+{
+	if (oid < N_ELEMENTS(sval_dependent))
+		return 1;
+
+	/* Separator - blank line. */
+	if (oid == N_ELEMENTS(sval_dependent))
+		return 0;
+
+	oid = oid - N_ELEMENTS(sval_dependent);
+
+	if (oid - 1 < N_ELEMENTS(extra_item_options))
+		return 1;
+
+	return 0;
+}
+
+static void display_options_item(menu_type *menu, int oid, bool cursor, int row, int col, int width)
+{
+	if (oid < N_ELEMENTS(sval_dependent))
+	{
+		bool known = seen_tval(sval_dependent[oid].tval);
+		byte attr = curs_attrs[known ? CURS_KNOWN: CURS_UNKNOWN][(int)cursor];
+
+		c_prt(attr, sval_dependent[oid].desc, row, col);
+	}
+	else
+	{
+		byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
+
+		oid = oid - N_ELEMENTS(sval_dependent);
+    
+		if (oid - 1 < N_ELEMENTS(extra_item_options))
+			c_prt(attr, extra_item_options[oid - 1].name, row, col);
+	}
+}
+
+
+static const menu_iter options_item_iter =
+{
+	0,
+	tag_options_item,
+	valid_options_item,
+	display_options_item,
+	NULL
+};
+
 
 /*
  * Display and handle the main squelching menu.
  */
-void do_cmd_options_item(void)
+void do_cmd_options_item(void *unused, cptr title)
 {
-	bool done = FALSE;
-	bool no_known = FALSE;
-	size_t i;
+	int cursor = 0;
+	event_type c = EVENT_EMPTY;
+	const char cmd_keys[] = { ARROW_LEFT, ARROW_RIGHT, '\0' };
+
+	menu_type menu;
+
+	WIPE(&menu, menu_type);
+	menu.title = title;
+        menu.cmd_keys = cmd_keys;
+	menu.count = N_ELEMENTS(sval_dependent) + N_ELEMENTS(extra_item_options) + 1;
+	menu_init2(&menu, find_menu_skin(MN_SCROLL), &options_item_iter, &SCREEN_REGION);
+
+	menu_layout(&menu, &SCREEN_REGION);
 
 	/* Save and clear screen */
 	screen_save();
 	clear_from(0);
 
-
-	/* Header */
-	prt("Item handling menu", 0, 0);
-
-	/* Print all typevals and their descriptions */
-	for (i = 0; i < N_ELEMENTS(sval_dependent); i++)
-		prt(format("%c) %s", I2A(i), sval_dependent[i].desc), i + 3, 1);
-
-	prt("Q) Quality squelching options", i + 4, 1);
-	prt("ESC) Back to options menu.", i + 6, 1);
-
-	while (!done)
+	while (c.key != ESCAPE)
 	{
-		char ch;
+		clear_from(0);
+		c = menu_select(&menu, &cursor, 0);
 
-		if (no_known)
+		if (c.type == EVT_SELECT)
 		{
-			prt("You've not seen any object of that type yet.", 1, 0);
-			no_known = FALSE;
-		}
-		else
-		{
-			prt("", 1, 0);
-		}
-
-		/* Prompt */
-		ch = inkey();
-
-		/* Choose! */
-		if (ch == 'Q') quality_menu();         /* Switch to secondary squelching menu */
-		else if (ch == ESCAPE) done = TRUE;         /* Finished */
-
-		else
-	 	{
-			/* Analyze choice */
-			int choice = A2I(ch);
-
-			/* Ignore illegal choice */
-			if (choice < 0 || choice >= (int)N_ELEMENTS(sval_dependent)) continue;
-
-			if (!sval_menu(sval_dependent[choice].tval, sval_dependent[choice].desc))
-				no_known = TRUE;
+			if (cursor < N_ELEMENTS(sval_dependent))
+			{
+				sval_menu(sval_dependent[cursor].tval, sval_dependent[cursor].desc);
+			}
+			else
+			{
+				cursor = cursor - N_ELEMENTS(sval_dependent) - 1;
+				if (cursor< N_ELEMENTS(extra_item_options))
+					extra_item_options[cursor].action();
+			}
 		}
 	}
 
