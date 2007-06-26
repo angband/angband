@@ -56,7 +56,7 @@
  * PORTVERSION
  *   This is the port version; it appears in the infobox.
  */
-#define PORTVERSION	"1.33 (2007-02-06)"
+#define PORTVERSION	"1.34 (2007-06-24)"
 
 /*
  * VARIANT & VERSION

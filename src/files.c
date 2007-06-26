@@ -9,6 +9,7 @@
  */
 
 #include "angband.h"
+#include "cmds.h"
 
 #define MAX_PANEL 12
 

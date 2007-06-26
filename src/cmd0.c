@@ -36,10 +36,13 @@ typedef void do_cmd_type(void);
 
 
 /* Forward declare these, because they're really defined later */
-static do_cmd_type do_cmd_wizard, do_cmd_try_debug, do_cmd_try_borg,
+static do_cmd_type do_cmd_wizard, do_cmd_try_debug,
             do_cmd_cast_or_pray, do_cmd_quit, do_cmd_mouseclick, do_cmd_port,
             do_cmd_xxx_options, do_cmd_menu, do_cmd_monlist;
 
+#ifdef ALLOW_BORG
+static do_cmd_type do_cmd_try_borg;
+#endif
 
 /*
  * Holds a generic command.
@@ -561,7 +564,8 @@ void cmd_init(void)
 		{
 			unsigned char key = commands[i].key;
 
-			assert(key < N_ELEMENTS(converted_list));
+			/* Note: at present converted_list is UCHAR_MAX + 1 
+			   large, so 'key' is always a valid index. */
 			converted_list[key] = commands[i].hook;
 		}
 	}

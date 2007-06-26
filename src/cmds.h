@@ -1,5 +1,5 @@
-#ifndef __angband_cmds_h__
-#define __angband_cmds_h__
+#ifndef INCLUDED_CMDS_H
+#define INCLUDED_CMDS_H
 
 /* cmd.c */
 extern void cmd_init(void);

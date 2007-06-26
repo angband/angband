@@ -701,7 +701,7 @@ static bool menu_handle_event(menu_type *menu, const event_type *in)
 
 		case EVT_KBRD:
 		{
-			int dir;
+			int c, dir;
 
 			/* could install handle_menu_key as a handler */
 			if ((menu->cmd_keys && strchr(menu->cmd_keys, in->key))
@@ -713,7 +713,7 @@ static bool menu_handle_event(menu_type *menu, const event_type *in)
 					return handle_menu_key(in->key, menu, *cursor);
 			}
 
-			int c = get_cursor_key(menu, menu->top, in->key);
+			c = get_cursor_key(menu, menu->top, in->key);
 
 			/* keypress shortcuts are allowed, but the choice */
 			/* was invalid - try again! */
@@ -1127,7 +1127,7 @@ bool menu_init(menu_type *menu, skin_id skin_id,
 void menu_destroy(menu_type *menu)
 {
 	if (menu->object_list)
-		FREE(menu->object_list);
+		FREE((void *)menu->object_list);
 }
 
 

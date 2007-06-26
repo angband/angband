@@ -813,33 +813,37 @@ struct {
 
 static char tag_options_item(menu_type *menu, int oid)
 {
-	if (oid < N_ELEMENTS(sval_dependent))
+	size_t line = (size_t) oid;
+
+	if (line < N_ELEMENTS(sval_dependent))
 		return I2A(oid);
 
 	/* Separator - blank line. */
-	if (oid == N_ELEMENTS(sval_dependent))
+	if (line == N_ELEMENTS(sval_dependent))
 		return 0;
 
-	oid = oid - N_ELEMENTS(sval_dependent);
+	line = line - N_ELEMENTS(sval_dependent) - 1;
 
-	if (oid - 1 < N_ELEMENTS(extra_item_options))
-		return extra_item_options[oid - 1].tag;
+	if (line < N_ELEMENTS(extra_item_options))
+		return extra_item_options[line].tag;
 
 	return 0;
 }
 
 static int valid_options_item(menu_type *menu, int oid)
 {
-	if (oid < N_ELEMENTS(sval_dependent))
+	size_t line = (size_t) oid;
+
+	if (line < N_ELEMENTS(sval_dependent))
 		return 1;
 
 	/* Separator - blank line. */
-	if (oid == N_ELEMENTS(sval_dependent))
+	if (line == N_ELEMENTS(sval_dependent))
 		return 0;
 
-	oid = oid - N_ELEMENTS(sval_dependent);
+	line = line - N_ELEMENTS(sval_dependent) - 1;
 
-	if (oid - 1 < N_ELEMENTS(extra_item_options))
+	if (line < N_ELEMENTS(extra_item_options))
 		return 1;
 
 	return 0;
@@ -847,21 +851,25 @@ static int valid_options_item(menu_type *menu, int oid)
 
 static void display_options_item(menu_type *menu, int oid, bool cursor, int row, int col, int width)
 {
-	if (oid < N_ELEMENTS(sval_dependent))
+	size_t line = (size_t) oid;
+
+	/* First section of menu - the svals */
+	if (line < N_ELEMENTS(sval_dependent))
 	{
-		bool known = seen_tval(sval_dependent[oid].tval);
+		bool known = seen_tval(sval_dependent[line].tval);
 		byte attr = curs_attrs[known ? CURS_KNOWN: CURS_UNKNOWN][(int)cursor];
 
-		c_prt(attr, sval_dependent[oid].desc, row, col);
+		c_prt(attr, sval_dependent[line].desc, row, col);
 	}
+	/* Second section - the "extra options" */
 	else
 	{
 		byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
 
-		oid = oid - N_ELEMENTS(sval_dependent);
+		line = line - N_ELEMENTS(sval_dependent) - 1;
     
-		if (oid - 1 < N_ELEMENTS(extra_item_options))
-			c_prt(attr, extra_item_options[oid - 1].name, row, col);
+		if (line < N_ELEMENTS(extra_item_options))
+			c_prt(attr, extra_item_options[line].name, row, col);
 	}
 }
 
@@ -906,14 +914,14 @@ void do_cmd_options_item(void *unused, cptr title)
 
 		if (c.type == EVT_SELECT)
 		{
-			if (cursor < N_ELEMENTS(sval_dependent))
+			if ((size_t) cursor < N_ELEMENTS(sval_dependent))
 			{
 				sval_menu(sval_dependent[cursor].tval, sval_dependent[cursor].desc);
 			}
 			else
 			{
 				cursor = cursor - N_ELEMENTS(sval_dependent) - 1;
-				if (cursor< N_ELEMENTS(extra_item_options))
+				if ((size_t) cursor< N_ELEMENTS(extra_item_options))
 					extra_item_options[cursor].action();
 			}
 		}

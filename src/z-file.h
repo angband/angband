@@ -1,5 +1,5 @@
-#ifndef __angband_z_file__
-#define __angband_z_file__
+#ifndef INCLUDED_Z_FILE_H
+#define INCLUDED_Z_FILE_H
 
 /*** Various system-specific fixes ***/
 

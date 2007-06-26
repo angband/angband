@@ -9,7 +9,7 @@
  */
 
 #include "angband.h"
-
+#include "cmds.h"
 
 /* TRUE if a paragraph break should be output before next p_text_out() */
 static bool new_paragraph = FALSE;
