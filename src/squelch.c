@@ -339,6 +339,12 @@ static bool squelch_item_ok(object_type *o_ptr)
 		return TRUE;
 
 
+        /* Do squelching by type */
+	if (k_info[o_ptr->k_idx].squelch)
+	{
+		if (fullid) return TRUE;
+	}
+
 	/* Find the appropriate squelch group */
 	for (i = 0; i < N_ELEMENTS(type_tvals); i++)
 	{
