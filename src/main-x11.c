@@ -1629,8 +1629,8 @@ static void pixel_to_square(int * const x, int * const y,
 {
 	term_data *td = (term_data*)(Term->data);
 
-	(*x) = (ox - Infowin->ox - 13 * Infofnt->wid) / td->tile_wid;
-	(*y) = (oy - Infowin->oy) / td->tile_hgt - 1;
+	(*x) = (ox - Infowin->ox) / td->tile_wid;
+	(*y) = (oy - Infowin->oy) / td->tile_hgt;
 }
 
 
@@ -1694,6 +1694,8 @@ static errr CheckEvent(bool wait)
 	{
 		case ButtonPress:
 		{
+			bool press = (xev->type == ButtonPress);
+
 			int z = 0;
 
 			/* Where is the mouse */
@@ -1710,7 +1712,7 @@ static errr CheckEvent(bool wait)
 
 			/* The co-ordinates are only used in Angband format. */
 			pixel_to_square(&x, &y, x, y);
-			Term_mousepress(x, y, 0);
+			if (press) Term_mousepress(x, y, z);
 
 			break;
 		}
@@ -2440,7 +2442,8 @@ static errr term_data_init(term_data *td, int i)
 	                 Metadpy->fg, Metadpy->bg);
 
 	/* Ask for certain events */
-	Infowin_set_mask(ExposureMask | StructureNotifyMask | KeyPressMask);
+	Infowin_set_mask(ExposureMask | StructureNotifyMask | KeyPressMask
+			 | ButtonPressMask);
 
 	/* Set the window name */
 	Infowin_set_name(name);
@@ -2962,4 +2965,5 @@ errr init_x11(int argc, char **argv)
 }
 
 #endif /* USE_X11 */
+
 
