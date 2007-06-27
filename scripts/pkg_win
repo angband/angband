@@ -32,7 +32,7 @@ touch lib/apex/delete.me lib/bone/delete.me lib/data/delete.me \
       lib/info/delete.me lib/user/delete.me lib/save/delete.me
 
 cp ../*.exe .
-cp ../changes.txt ../AUTHORS ../THANKS ../COPYING ../readme.txt .
+cp ../changes.txt  ../thanks.txt ../copying.txt ../readme.txt .
 
 cp ../lib/edit/*.txt lib/edit
 cp ../lib/file/*.txt lib/file
@@ -47,7 +47,6 @@ cp ../lib/xtra/font/*.fon lib/xtra/font
 cp ../lib/xtra/graf/8x8.bmp lib/xtra/graf
 cp ../lib/xtra/graf/16x16.bmp lib/xtra/graf
 cp ../lib/xtra/graf/mask.bmp lib/xtra/graf
-cp ../lib/xtra/graf/readme.txt lib/xtra/graf
 
 cp ../lib/xtra/sound/sound.cfg lib/xtra/sound
 cp ../lib/xtra/sound/*.wav lib/xtra/sound
