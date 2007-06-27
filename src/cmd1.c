@@ -2363,16 +2363,68 @@ void run_step(int dir)
 		}
 		else
 		{
+			/* Abort if we have finished */
 			if (pf_result_index < 0)
 			{
 				disturb(0, 0);
-				p_ptr->running_withpathfind = 0;
+				p_ptr->running_withpathfind = FALSE;
 				return;
 			}
+			/* Abort if we would hit a wall */
+			else if (pf_result_index == 0)
+			{
+				/* Get next step */
+				y = p_ptr->py + ddy[pf_result[pf_result_index] - '0'];
+				x = p_ptr->px + ddx[pf_result[pf_result_index] - '0'];
+
+				/* Known wall */
+				if ((cave_info[y][x] & (CAVE_MARK)) && !cave_floor_bold(y, x))
+				{
+					disturb(0,0);
+					p_ptr->running_withpathfind = FALSE;
+					return;
+				}
+			}
+			/* Hack -- walking stick lookahead.
+			 *
+			 * If the player has computed a path that is going to end up in a wall,
+			 * we notice this and convert to a normal run. This allows us to click
+			 * on unknown areas to explore the map.
+			 *
+			 * We have to look ahead two, otherwise we don't know which is the last
+			 * direction moved and don't initialise the run properly.
+			 */
+			else if (pf_result_index > 0)
+			{
+				/* Get next step */
+				y = p_ptr->py + ddy[pf_result[pf_result_index] - '0'];
+				x = p_ptr->px + ddx[pf_result[pf_result_index] - '0'];
+
+				/* Known wall */
+				if ((cave_info[y][x] & (CAVE_MARK)) && !cave_floor_bold(y, x))
+				{
+					disturb(0,0);
+					p_ptr->running_withpathfind = FALSE;
+					return;
+				}
+
+				/* Get step after */
+				y = y + ddy[pf_result[pf_result_index-1] - '0'];
+				x = x + ddx[pf_result[pf_result_index-1] - '0'];
+
+				/* Known wall */
+				if ((cave_info[y][x] & (CAVE_MARK)) && !cave_floor_bold(y, x))
+				{
+					p_ptr->running_withpathfind = FALSE;
+
+					run_init(pf_result[pf_result_index] - '0');
+				}
+			}
+
 			p_ptr->run_cur_dir = pf_result[pf_result_index--] - '0';
-			x = p_ptr->px + ddx[p_ptr->run_cur_dir];
-			y = p_ptr->py + ddy[p_ptr->run_cur_dir];
-			if (!do_cmd_walk_test(y, x)) return;
+
+			/* Hack -- allow easy_alter */
+			p_ptr->command_dir = p_ptr->run_cur_dir;
 		}
 	}
 

@@ -2717,6 +2717,19 @@ enum
 
 
 /*
+ * Convert a "key event" into a "location" (Y)
+ */
+#define KEY_GRID_Y(K) \
+	((int) ((K.mousey - ROW_MAP) + Term->offset_y))
+
+/*
+ * Convert a "key event" into a "location" (X)
+ */
+#define KEY_GRID_X(K) \
+	((int) (((K.mousex - COL_MAP) / (use_bigtile ? 2 : 1)) + Term->offset_x))
+
+
+/*
  * Determines if a map location is "meaningful"
  */
 #define in_bounds(Y,X) \

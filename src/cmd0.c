@@ -333,15 +333,35 @@ static void do_cmd_mouseclick(void)
 {
 	int x, y;
 
-	x = p_ptr->command_cmd_ex.mousex - COL_MAP;
-	if (use_bigtile) x /= 2;
-	x += Term->offset_x;
-	y = p_ptr->command_cmd_ex.mousey - ROW_MAP + Term->offset_y;
+	y = KEY_GRID_Y(p_ptr->command_cmd_ex);
+	x = KEY_GRID_X(p_ptr->command_cmd_ex);
 
-	if (x < 0 || y < 0)
-		return;
+	/* Check for a valid location */
+	if (!in_bounds_fully(y, x)) return;
 
-	do_cmd_pathfind(y, x);
+	/* XXX We could try various things here like going up/down stairs */
+	if ((p_ptr->py == y) && (p_ptr->px == x) /* && (p_ptr->command_cmd_ex.mousebutton) */)
+	{
+		do_cmd_rest();
+	}
+	else /* if (p_ptr->command_cmd_ex.mousebutton == 1) */
+	{
+		if (p_ptr->timed[TMD_CONFUSED])
+		{
+			do_cmd_walk();
+		}
+		else
+		{
+			do_cmd_pathfind(y, x);
+		}
+	}
+	/*
+	else if (p_ptr->command_cmd_ex.mousebutton == 2)
+	{
+		target_set_location(y, x);
+		msg_print("Target set.");
+	}
+	*/
 }
 
 

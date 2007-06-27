@@ -474,6 +474,10 @@ extern void display_koff(int k_idx);
 
 /* pathfind.c */
 extern bool findpath(int y, int x);
+extern byte get_angle_to_grid[41][41];
+extern int get_angle_to_target(int y0, int x0, int y1, int x1, int dir);
+extern void get_grid_using_angle(int angle, int y0, int x0,
+	int *ty, int *tx);
 
 /* randart.c */
 extern errr do_randart(u32b randart_seed, bool full);

@@ -3366,7 +3366,7 @@ bool get_rep_dir(int *dp)
 {
 	int dir;
 
-	char ch;
+	event_type ke;
 
 	cptr p;
 
@@ -3388,10 +3388,35 @@ bool get_rep_dir(int *dp)
 		p = "Direction (Escape to cancel)? ";
 
 		/* Get a command (or Cancel) */
-		if (!get_com(p, &ch)) break;
+		if (!get_com_ex(p, &ke)) break;
+
+		/* Check mouse coordinates */
+		if (ke.key == '\xff')
+		{
+			/*if (ke.button) */
+			{
+				int y = KEY_GRID_Y(ke);
+				int x = KEY_GRID_X(ke);
+
+				/* Calculate approximate angle */
+				int angle = get_angle_to_target(p_ptr->py, p_ptr->px, y, x, 0);
+
+				/* Convert angle to direction */
+				if (angle < 15) dir = 6;
+				else if (angle < 33) dir = 9;
+				else if (angle < 59) dir = 8;
+				else if (angle < 78) dir = 7;
+				else if (angle < 104) dir = 4;
+				else if (angle < 123) dir = 1;
+				else if (angle < 149) dir = 2;
+				else if (angle < 168) dir = 3;
+				else dir = 6;
+			}
+			/* else continue; */
+		}
 
 		/* Convert keypress into a direction */
-		dir = target_dir(ch);
+		else dir = target_dir(ke.key);
 
 		/* Oops */
 		if (!dir) bell("Illegal repeatable direction!");
