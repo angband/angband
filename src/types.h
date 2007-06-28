@@ -204,7 +204,7 @@ struct object_kind
 	bool tried;		/* The player has "tried" one of the items */
 
 	bool squelch;		/* Squelch this item? */
-	bool everseen1;		/* Used to despoilify squelch menus */
+	bool everseen;		/* Used to despoilify squelch menus */
 };
 
 
