@@ -561,6 +561,7 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 				break;
 			}
 
+#if 0 /* Later */
 			/* Binary */
 			case 'b':
 			{
@@ -572,7 +573,6 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 				/* Get the next argument */
 				arg = va_arg(vp, int);
 
-#if 0 /* Later */
 				/* Check our aux string */
 				switch (aux[0])
 				{
@@ -583,7 +583,6 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 					default: 
 					case '5': max = 32; break;
 				}
-#endif
 				/* Format specially */
 				for (i = 1; i <= max; i++, bitmask *= 2)
 				{
@@ -600,6 +599,7 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 				/* Done */
 				break;
 			}
+#endif
 
 			/* Oops */
 			default:

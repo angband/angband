@@ -2626,7 +2626,7 @@ errr init_x11(int argc, char **argv)
 
 #ifdef USE_GRAPHICS
 
-	cptr bitmap_file;
+	cptr bitmap_file = NULL;
 	char filename[1024];
 
 	int pict_wid = 0;
@@ -2802,67 +2802,61 @@ errr init_x11(int argc, char **argv)
 
 #ifdef USE_GRAPHICS
 
+	/* Paranoia */
+	use_graphics = GRAPHICS_NONE;
+
 	/* Try graphics */
 	switch (arg_graphics)
 	{
-	case GRAPHICS_ADAM_BOLT:
-		/* Use tile graphics of Adam Bolt */
-		bitmap_file = "16x16.bmp";
-
-		/* Try the "16x16.bmp" file */
-		path_build(filename, sizeof(filename), ANGBAND_DIR_XTRA, format("graf/%s", bitmap_file));
-
-		/* Use the "16x16.bmp" file if it exists */
-		if (0 == fd_close(fd_open(filename, O_RDONLY)))
+		case GRAPHICS_ADAM_BOLT:
 		{
-			/* Use graphics */
+			bitmap_file = "graf/16x16.bmp";
+
 			use_graphics = GRAPHICS_ADAM_BOLT;
 			use_transparency = TRUE;
-
 			pict_wid = pict_hgt = 16;
-
 			ANGBAND_GRAF = "new";
 
 			break;
 		}
-		/* Fall through */
 
-	case GRAPHICS_ORIGINAL:
-		/* Use original tile graphics */
-		bitmap_file = "8x8.bmp";
-
-		/* Try the "8x8.bmp" file */
-		path_build(filename, sizeof(filename), ANGBAND_DIR_XTRA, format("graf/%s", bitmap_file));
-
-		/* Use the "8x8.bmp" file if it exists */
-		if (0 == fd_close(fd_open(filename, O_RDONLY)))
+		case GRAPHICS_ORIGINAL:
 		{
-			/* Use graphics */
+			bitmap_file = "graf/8x8.bmp";
+
 			use_graphics = GRAPHICS_ORIGINAL;
-
 			pict_wid = pict_hgt = 8;
-
 			ANGBAND_GRAF = "old";
+
 			break;
 		}
-		break;
 
-	case GRAPHICS_DAVID_GERVAIS:
-		/* Use tile graphics of David Gervais */
-		bitmap_file = "32x32.bmp";
+		case GRAPHICS_DAVID_GERVAIS:
+		{
+			bitmap_file = "32x32.bmp";
 
-		/* Use graphics */
-		use_graphics = GRAPHICS_DAVID_GERVAIS;
-		use_transparency = TRUE;
+			use_graphics = GRAPHICS_DAVID_GERVAIS;
+			use_transparency = TRUE;
+			pict_wid = pict_hgt = 32;
+			ANGBAND_GRAF = "david";
 
-		pict_wid = pict_hgt = 32;
-
-		ANGBAND_GRAF = "david";
-		break;
+			break;
+		}
 	}
 
+
+	/* Try the file */
+	path_build(filename, sizeof(filename), ANGBAND_DIR_XTRA, bitmap_file);
+	if (!my_fexists(filename))
+	{
+		use_graphics = GRAPHICS_NONE;
+		use_transparency = FALSE;
+		ANGBAND_GRAF = 0;
+	}
+
+
 	/* Load graphics */
-	if (use_graphics)
+	if (use_graphics != GRAPHICS_NONE)
 	{
 		Display *dpy = Metadpy->dpy;
 
@@ -2875,7 +2869,7 @@ errr init_x11(int argc, char **argv)
 			td->tiles = NULL;
 		}
 
-		path_build(filename, sizeof(filename), ANGBAND_DIR_XTRA, format("graf/%s", bitmap_file));
+		path_build(filename, sizeof(filename), ANGBAND_DIR_XTRA, bitmap_file);
 
 		/* Load the graphical tiles */
 		tiles_raw = ReadBMP(dpy, filename);

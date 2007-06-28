@@ -96,7 +96,7 @@ extern u16b sf_saves;
 extern bool arg_fiddle;
 extern bool arg_wizard;
 extern bool arg_sound;
-extern bool arg_graphics;
+extern int arg_graphics;
 extern bool character_generated;
 extern bool character_dungeon;
 extern bool character_saved;

@@ -107,6 +107,7 @@ typedef struct join
 
 /* A default group-by */
 static join_t *default_join;
+#if 0
 static int default_join_cmp(const void *a, const void *b)
 {
 		join_t *ja = &default_join[*(int*)a];
@@ -115,6 +116,7 @@ static int default_join_cmp(const void *a, const void *b)
 		if (c) return c;
 		return ja->oid - jb->oid;
 }
+#endif
 static int default_group(int oid) { return default_join[oid].gid; }
 
 

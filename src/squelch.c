@@ -638,7 +638,7 @@ static void quality_menu(void)
 	menu_type menu;
 	menu_iter menu_f = { 0, 0, 0, quality_display, quality_action };
 	region area = { 1, 5, -1, -1 };
-	event_type evt;
+	event_type evt = EVENT_EMPTY;
 	int cursor = 0;
 
 	/* Save screen */

@@ -17,6 +17,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "cmds.h"
 
 /*
  * Comments and suggestions are welcome. The UI probably needs some
@@ -3209,7 +3210,7 @@ static errr load_gfx(void)
 	SDL_Surface *temp;
 	Uint8 r, g, b;
 	Uint32 key;
-	Uint32 Pixel;
+	Uint32 Pixel = 0;
 	int x = GfxDesc[use_graphics].x, y = GfxDesc[use_graphics].y;
 	
 	/* This may be called when GRAPHICS_NONE is set */
@@ -3447,7 +3448,6 @@ static void init_paths(void)
 	int i;
 	char path[1024];
 	char buf[1024];
-	FILE *fff;
 	ang_dir *dir;
 	
 	/* Build the gfx path */
