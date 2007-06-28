@@ -8,8 +8,16 @@
 # Use in the root directory of the game, like so:
 #   scripts/pkg_win <name of of release, e.g. angband-3.4.6>
 #
-mkdir $1
-cd $1
+DIR=$1
+
+function cp_unix2dos {
+  # Just in case they're already DOS_format, we strip them to UNIX first. :)
+  awk '{ sub("\r$", ""); sub("$", "\r"); print }' $1 > $2
+}
+
+
+mkdir $DIR
+cd $DIR
 
 mkdir lib
 mkdir lib/apex
@@ -32,7 +40,12 @@ touch lib/apex/delete.me lib/bone/delete.me lib/data/delete.me \
       lib/info/delete.me lib/user/delete.me lib/save/delete.me
 
 cp ../*.exe .
-cp ../changes.txt  ../thanks.txt ../copying.txt ../readme.txt .
+
+# Copy the readmes and suchlike, converting to DOS line endings on the way
+cp_unix2dos ../changes.txt ./changes.txt
+cp_unix2dos ../thanks.txt ./thanks.txt
+cp_unix2dos ../copying.txt ./copying.txt
+cp_unix2dos ../readme.txt ./readme.txt
 
 cp ../lib/edit/*.txt lib/edit
 cp ../lib/file/*.txt lib/file
