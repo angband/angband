@@ -336,16 +336,25 @@ static bool squelch_item_ok(object_type *o_ptr)
 	if (o_ptr->tval == TV_CHEST && o_ptr->pval == 0)
 		return TRUE;
 
-        /* Do squelching by type */
+	/* Do squelching by sval, if the tval's allowed */
 	if (k_info[o_ptr->k_idx].squelch && fullid)
-		return TRUE;
+	{
+		for (i = 0; i < N_ELEMENTS(sval_dependent); i++)
+		{
+			if (k_info[o_ptr->k_idx].tval == sval_dependent[i].tval)
+				return TRUE;
+		}
+	}
 
 
 	/* Find the appropriate squelch group */
 	for (i = 0; i < N_ELEMENTS(type_tvals); i++)
 	{
 		if (type_tvals[i][1] == o_ptr->tval)
+		{
 			num = type_tvals[i][0];
+			break;
+		}
 	}
 
 	/* Never squelched */
@@ -542,14 +551,6 @@ void squelch_items(void)
 }
 
 
-
-
-
-/*** UI stuff ***/
-
-/*
- * This is much simpler than it used to be.
- */
 
 
 /*** Quality-squelch menu ***/
