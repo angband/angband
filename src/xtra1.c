@@ -2670,26 +2670,33 @@ void notice_stuff(void)
 	if (!p_ptr->notice) return;
 
 
-	/* Combine the pack */
-	if (p_ptr->notice & (PN_COMBINE))
-	{
-		p_ptr->notice &= ~(PN_COMBINE);
-		combine_pack();
-	}
-
-	/* Reorder the pack */
-	if (p_ptr->notice & (PN_REORDER))
-	{
-		p_ptr->notice &= ~(PN_REORDER);
-		reorder_pack();
-	}
-
 	/* Deal with autoinscribe stuff */
 	if (p_ptr->notice & PN_AUTOINSCRIBE)
 	{
 		p_ptr->notice &= ~(PN_AUTOINSCRIBE);
 		autoinscribe_pack();
 		autoinscribe_ground();
+	}
+
+	/* Deal with squelch stuff */
+	if (p_ptr->notice & PN_SQUELCH)
+	{
+		p_ptr->notice &= ~(PN_SQUELCH);
+		if (auto_squelch) squelch_items();
+	}
+
+	/* Combine the pack */
+	if (p_ptr->notice & PN_COMBINE)
+	{
+		p_ptr->notice &= ~(PN_COMBINE);
+		combine_pack();
+	}
+
+	/* Reorder the pack */
+	if (p_ptr->notice & PN_REORDER)
+	{
+		p_ptr->notice &= ~(PN_REORDER);
+		reorder_pack();
 	}
 }
 

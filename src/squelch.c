@@ -18,6 +18,7 @@
  */
 #include "angband.h"
 
+
 /*
  * The squelch code has a long history.  Originally it started out as a simple
  * sval-dependent item destroyer, but then ego-item and quality squelch was
@@ -319,7 +320,7 @@ static bool squelch_item_ok(object_type *o_ptr)
 	size_t i;
 	int num = -1;
 
-	bool fullid = object_aware_p(o_ptr);
+	bool fullid = object_known_p(o_ptr);
 	bool sensed = (o_ptr->ident & IDENT_SENSE) || fullid;
 	byte feel   = fullid ? value_check_aux1(o_ptr) : o_ptr->pseudo;
 
@@ -331,19 +332,14 @@ static bool squelch_item_ok(object_type *o_ptr)
 	if (!sensed) return FALSE;
 
 
-	/* Auto-squelch junk items */
-	if (object_value(o_ptr) == 0) return TRUE;
-
 	/* Auto-squelch dead chests */
 	if (o_ptr->tval == TV_CHEST && o_ptr->pval == 0)
 		return TRUE;
 
-
         /* Do squelching by type */
-	if (k_info[o_ptr->k_idx].squelch)
-	{
-		if (fullid) return TRUE;
-	}
+	if (k_info[o_ptr->k_idx].squelch && fullid)
+		return TRUE;
+
 
 	/* Find the appropriate squelch group */
 	for (i = 0; i < N_ELEMENTS(type_tvals); i++)
@@ -426,8 +422,9 @@ static bool squelch_item_ok(object_type *o_ptr)
  */
 bool squelch_hide_item(object_type *o_ptr)
 {
-  return (hide_squelchable ? squelch_item_ok(o_ptr) : FALSE);
+	return (hide_squelchable ? squelch_item_ok(o_ptr) : FALSE);
 }
+
 
 /*
  * Set squelch inscription on an object.
@@ -441,7 +438,10 @@ void squelch_set(object_type *o_ptr)
 
 	/* Set squelch inscription unless there's already one */
 	if (!o_ptr->note && can_squelch)
+	{
 		o_ptr->note = quark_add("squelch");
+		p_ptr->notice = PN_SQUELCH;
+	}
 
 
 	/* Done */

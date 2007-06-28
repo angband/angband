@@ -1562,6 +1562,7 @@ enum
 #define PN_REORDER      0x00000002L	/* Reorder the pack */
 #define PN_AUTOINSCRIBE	0x00000004L	/* Autoinscribe items */
 #define PN_PICKUP       0x00000008L	/* Pick stuff up */
+#define PN_SQUELCH      0x00000010L	/* Squelch stuff */
 /* xxx (many) */
 
 
@@ -2425,6 +2426,7 @@ enum
 #define OPT_auto_more				71
 #define OPT_hp_changes_color		74
 #define OPT_hide_squelchable		75
+#define OPT_auto_squelch		76
 
 
 #define OPT_birth_maximize          (OPT_BIRTH+0)
@@ -2481,84 +2483,86 @@ enum
  */
 #define OPTION(opt_name)	op_ptr->opt[OPT_##opt_name]
 
-#define rogue_like_commands		op_ptr->opt[OPT_rogue_like_commands]
-#define quick_messages			op_ptr->opt[OPT_quick_messages]
-#define use_sound				op_ptr->opt[OPT_use_sound]
-#define query_floor				op_ptr->opt[OPT_query_floor]
-#define use_old_target			op_ptr->opt[OPT_use_old_target]
-#define always_pickup			op_ptr->opt[OPT_always_pickup]
-#define pickup_inven			op_ptr->opt[OPT_pickup_inven]
-#define depth_in_feet			op_ptr->opt[OPT_depth_in_feet]
-#define show_labels				op_ptr->opt[OPT_show_labels]
-#define ring_bell				op_ptr->opt[OPT_ring_bell]
-#define show_flavors			op_ptr->opt[OPT_show_flavors]
-#define run_ignore_doors		op_ptr->opt[OPT_run_ignore_doors]
-#define disturb_move			op_ptr->opt[OPT_disturb_move]
-#define disturb_near			op_ptr->opt[OPT_disturb_near]
-#define disturb_panel			op_ptr->opt[OPT_disturb_panel]
-#define disturb_state			op_ptr->opt[OPT_disturb_state]
-#define disturb_minor			op_ptr->opt[OPT_disturb_minor]
-#define view_perma_grids		op_ptr->opt[OPT_view_perma_grids]
-#define view_torch_grids		op_ptr->opt[OPT_view_torch_grids]
-#define flush_failure			op_ptr->opt[OPT_flush_failure]
-#define flush_disturb			op_ptr->opt[OPT_flush_disturb]
-#define hilite_player			op_ptr->opt[OPT_hilite_player]
-#define view_yellow_lite		op_ptr->opt[OPT_view_yellow_lite]
-#define view_bright_lite		op_ptr->opt[OPT_view_bright_lite]
-#define view_granite_lite		op_ptr->opt[OPT_view_granite_lite]
-#define view_special_lite		op_ptr->opt[OPT_view_special_lite]
-#define easy_open				op_ptr->opt[OPT_easy_open]
-#define easy_alter				op_ptr->opt[OPT_easy_alter]
-#define show_piles				op_ptr->opt[OPT_show_piles]
-#define center_player			op_ptr->opt[OPT_center_player]
-#define auto_more				op_ptr->opt[OPT_auto_more]
-#define hp_changes_color		op_ptr->opt[OPT_hp_changes_color]
+#define rogue_like_commands		OPTION(rogue_like_commands)
+#define quick_messages			OPTION(quick_messages)
+#define use_sound				OPTION(use_sound)
+#define query_floor				OPTION(query_floor)
+#define use_old_target			OPTION(use_old_target)
+#define always_pickup			OPTION(always_pickup)
+#define pickup_inven			OPTION(pickup_inven)
+#define depth_in_feet			OPTION(depth_in_feet)
+#define show_labels				OPTION(show_labels)
+#define ring_bell				OPTION(ring_bell)
+#define show_flavors			OPTION(show_flavors)
+#define run_ignore_doors		OPTION(run_ignore_doors)
+#define disturb_move			OPTION(disturb_move)
+#define disturb_near			OPTION(disturb_near)
+#define disturb_panel			OPTION(disturb_panel)
+#define disturb_state			OPTION(disturb_state)
+#define disturb_minor			OPTION(disturb_minor)
+#define view_perma_grids		OPTION(view_perma_grids)
+#define view_torch_grids		OPTION(view_torch_grids)
+#define flush_failure			OPTION(flush_failure)
+#define flush_disturb			OPTION(flush_disturb)
+#define hilite_player			OPTION(hilite_player)
+#define view_yellow_lite		OPTION(view_yellow_lite)
+#define view_bright_lite		OPTION(view_bright_lite)
+#define view_granite_lite		OPTION(view_granite_lite)
+#define view_special_lite		OPTION(view_special_lite)
+#define easy_open				OPTION(easy_open)
+#define easy_alter				OPTION(easy_alter)
+#define show_piles				OPTION(show_piles)
+#define center_player			OPTION(center_player)
+#define auto_more				OPTION(auto_more)
+#define hp_changes_color		OPTION(hp_changes_color)
 #define hide_squelchable		OPTION(hide_squelchable)
-#define birth_maximize			op_ptr->opt[OPT_birth_maximize]
-#define birth_randarts			op_ptr->opt[OPT_birth_randarts]
-#define birth_autoscum			op_ptr->opt[OPT_birth_autoscum]
-#define birth_ironman			op_ptr->opt[OPT_birth_ironman]
-#define birth_no_stores			op_ptr->opt[OPT_birth_no_stores]
-#define birth_no_artifacts		op_ptr->opt[OPT_birth_no_artifacts]
-#define birth_no_stacking       op_ptr->opt[OPT_birth_no_stacking]
-#define birth_no_preserve       op_ptr->opt[OPT_birth_no_preserve]
-#define birth_no_stairs			op_ptr->opt[OPT_birth_no_stairs]
-#define birth_ai_sound			op_ptr->opt[OPT_birth_ai_sound]
-#define birth_ai_smell			op_ptr->opt[OPT_birth_ai_smell]
-#define birth_ai_packs			op_ptr->opt[OPT_birth_ai_packs]
-#define birth_ai_learn			op_ptr->opt[OPT_birth_ai_learn]
-#define birth_ai_cheat			op_ptr->opt[OPT_birth_ai_cheat]
-#define birth_ai_smart			op_ptr->opt[OPT_birth_ai_smart]
+#define auto_squelch			OPTION(auto_squelch)
 
-#define cheat_peek				op_ptr->opt[OPT_cheat_peek]
-#define cheat_hear				op_ptr->opt[OPT_cheat_hear]
-#define cheat_room				op_ptr->opt[OPT_cheat_room]
-#define cheat_xtra				op_ptr->opt[OPT_cheat_xtra]
-#define cheat_know				op_ptr->opt[OPT_cheat_know]
-#define cheat_live				op_ptr->opt[OPT_cheat_live]
+#define birth_maximize			OPTION(birth_maximize)
+#define birth_randarts			OPTION(birth_randarts)
+#define birth_autoscum			OPTION(birth_autoscum)
+#define birth_ironman			OPTION(birth_ironman)
+#define birth_no_stores			OPTION(birth_no_stores)
+#define birth_no_artifacts		OPTION(birth_no_artifacts)
+#define birth_no_stacking       OPTION(birth_no_stacking)
+#define birth_no_preserve       OPTION(birth_no_preserve)
+#define birth_no_stairs			OPTION(birth_no_stairs)
+#define birth_ai_sound			OPTION(birth_ai_sound)
+#define birth_ai_smell			OPTION(birth_ai_smell)
+#define birth_ai_packs			OPTION(birth_ai_packs)
+#define birth_ai_learn			OPTION(birth_ai_learn)
+#define birth_ai_cheat			OPTION(birth_ai_cheat)
+#define birth_ai_smart			OPTION(birth_ai_smart)
 
-#define adult_maximize			op_ptr->opt[OPT_adult_maximize]
-#define adult_randarts			op_ptr->opt[OPT_adult_randarts]
-#define adult_autoscum			op_ptr->opt[OPT_adult_autoscum]
-#define adult_ironman			op_ptr->opt[OPT_adult_ironman]
-#define adult_no_stores			op_ptr->opt[OPT_adult_no_stores]
-#define adult_no_artifacts		op_ptr->opt[OPT_adult_no_artifacts]
-#define adult_no_stacking       op_ptr->opt[OPT_adult_no_stacking]
-#define adult_no_preserve		op_ptr->opt[OPT_adult_no_preserve]
-#define adult_no_stairs			op_ptr->opt[OPT_adult_no_stairs]
-#define adult_ai_sound			op_ptr->opt[OPT_adult_ai_sound]
-#define adult_ai_smell			op_ptr->opt[OPT_adult_ai_smell]
-#define adult_ai_packs			op_ptr->opt[OPT_adult_ai_packs]
-#define adult_ai_learn			op_ptr->opt[OPT_adult_ai_learn]
-#define adult_ai_cheat			op_ptr->opt[OPT_adult_ai_cheat]
-#define adult_ai_smart			op_ptr->opt[OPT_adult_ai_smart]
+#define cheat_peek				OPTION(cheat_peek)
+#define cheat_hear				OPTION(cheat_hear)
+#define cheat_room				OPTION(cheat_room)
+#define cheat_xtra				OPTION(cheat_xtra)
+#define cheat_know				OPTION(cheat_know)
+#define cheat_live				OPTION(cheat_live)
 
-#define score_peek				op_ptr->opt[OPT_score_peek]
-#define score_hear				op_ptr->opt[OPT_score_hear]
-#define score_room				op_ptr->opt[OPT_score_room]
-#define score_xtra				op_ptr->opt[OPT_score_xtra]
-#define score_know				op_ptr->opt[OPT_score_know]
-#define score_live				op_ptr->opt[OPT_score_live]
+#define adult_maximize			OPTION(adult_maximize)
+#define adult_randarts			OPTION(adult_randarts)
+#define adult_autoscum			OPTION(adult_autoscum)
+#define adult_ironman			OPTION(adult_ironman)
+#define adult_no_stores			OPTION(adult_no_stores)
+#define adult_no_artifacts		OPTION(adult_no_artifacts)
+#define adult_no_stacking		OPTION(adult_no_stacking)
+#define adult_no_preserve		OPTION(adult_no_preserve)
+#define adult_no_stairs			OPTION(adult_no_stairs)
+#define adult_ai_sound			OPTION(adult_ai_sound)
+#define adult_ai_smell			OPTION(adult_ai_smell)
+#define adult_ai_packs			OPTION(adult_ai_packs)
+#define adult_ai_learn			OPTION(adult_ai_learn)
+#define adult_ai_cheat			OPTION(adult_ai_cheat)
+#define adult_ai_smart			OPTION(adult_ai_smart)
+
+#define score_peek				OPTION(score_peek)
+#define score_hear				OPTION(score_hear)
+#define score_room				OPTION(score_room)
+#define score_xtra				OPTION(score_xtra)
+#define score_know				OPTION(score_know)
+#define score_live				OPTION(score_live)
 
 
 /*

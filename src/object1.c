@@ -673,6 +673,16 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 	/* Allow flavors to be hidden when aware */
 	if (aware && !show_flavors) flavor = FALSE;
 
+	/* Hack -- mark-to-squelch worthless items XXX */
+	if (!k_ptr->everseen && aware)
+	{
+		if (object_value(o_ptr) == 0)
+		{
+			k_ptr->squelch = TRUE;
+			squelch_set((object_type *) o_ptr);
+		}
+	}
+
 	/* We've seen it at least once now we're aware of it */
 	if (aware) k_ptr->everseen = TRUE;
 

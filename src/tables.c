@@ -1472,7 +1472,7 @@ cptr option_text[OPT_MAX] =
 	NULL,						/* xxx smart_packs */
 	"hp_changes_color",			/* OPT_hp_changes_color */
 	"hide_squelchable",			/* OPT_hide_squelchable */
-	NULL,						/* xxx */
+	"auto_squelch",				/* OPT_auto_squelch */
 	NULL,						/* xxx */
 	NULL,						/* xxx */
 	NULL,						/* xxx */
@@ -1736,7 +1736,7 @@ cptr option_desc[OPT_MAX] =
 	NULL,										/* xxx smart_packs */
 	"Player color indicates low hit points",	/* OPT_hp_changes_color */
 	"Hide items set as squelchable",               	/* OPT_hide_squelchable */
-	NULL,										/* xxx */
+	"Destroy items marked as squelch automatically",	/* OPT_auto_squelch */
 	NULL,										/* xxx */
 	NULL,										/* xxx */
 	NULL,										/* xxx */
@@ -2000,7 +2000,7 @@ const bool option_norm[OPT_MAX] =
 	FALSE,		/* xxx smart_packs */
 	FALSE,		/* OPT_hp_changes_color */
 	FALSE,		/* OPT_hide_squelchable */
-	FALSE,		/* xxx */
+	FALSE,		/* OPT_auto_squelch */
 	FALSE,		/* xxx */
 	FALSE,		/* xxx */
 	FALSE,		/* xxx */
@@ -2196,9 +2196,9 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_always_pickup,
 		OPT_query_floor,
 		OPT_pickup_inven,
+		OPT_auto_squelch,
 		OPT_easy_alter,
 		OPT_easy_open,
-		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
