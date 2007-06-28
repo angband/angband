@@ -768,7 +768,7 @@ byte py_pickup(int pickup)
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Ignore all hidden objects */
-		if ((!o_ptr->marked) || squelch_hide_item(o_ptr)) continue;
+		if (squelch_hide_item(o_ptr)) continue;
 
 		/* Paranoia -- ignore all dead objects  XXX */
 		if (!o_ptr->k_idx) continue;
