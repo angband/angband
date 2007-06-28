@@ -1558,11 +1558,10 @@ enum
 /*
  * Bit flags for the "p_ptr->notice" variable
  */
-#define PN_COMBINE		0x00000001L	/* Combine the pack */
-#define PN_REORDER		0x00000002L	/* Reorder the pack */
+#define PN_COMBINE      0x00000001L	/* Combine the pack */
+#define PN_REORDER      0x00000002L	/* Reorder the pack */
 #define PN_AUTOINSCRIBE	0x00000004L	/* Autoinscribe items */
-#define PN_PICKUP0      0x00000008L	/* Notice stuff (allow pickup) */
-#define PN_PICKUP1      0x00000010L	/* Pick up stuff */
+#define PN_PICKUP       0x00000008L	/* Pick stuff up */
 /* xxx (many) */
 
 

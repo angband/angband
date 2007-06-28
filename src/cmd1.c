@@ -490,7 +490,7 @@ void search(void)
 
 
 /*
- * Determine if the object can be picked up, and has "=g" in its inscription.
+ * Determine if the object can be picked up automatically.
  */
 static bool auto_pickup_okay(const object_type *o_ptr, bool check_pack)
 {
@@ -529,40 +529,6 @@ static bool auto_pickup_okay(const object_type *o_ptr, bool check_pack)
 
 			/* Find another '=' */
 			s = strchr(s + 1, '=');
-		}
-	}
-
-	/* Optionally, check the backpack */
-	if (check_pack)
-	{
-		int j;
-
-		/* Look for similar and inscribed */
-		for (j = 0; j < INVEN_PACK; j++)
-		{
-			object_type *j_ptr = &inventory[j];
-
-			/* Skip non-objects */
-			if (!j_ptr->k_idx) continue;
-
-			/* The two items must be able to combine */
-			if (!object_similar(j_ptr, o_ptr)) continue;
-
-			/* The backpack item must be inscribed */
-			if (!j_ptr->note) continue;
-
-			/* Find a '=' */
-			s = strchr(quark_str(j_ptr->note), '=');
-
-			/* Process permissions */
-			while (s)
-			{
-				/* =g ('g'et) means auto pickup */
-				if (s[1] == 'g') return (TRUE);
-
-				/* Find another '=' */
-				s = strchr(s + 1, '=');
-			}
 		}
 	}
 
@@ -612,13 +578,10 @@ static void py_pickup_aux(int o_idx, bool msg)
  * Pick up objects and treasure on the floor.  -LM-
  *
  * Called with pickup:
- * 0 to grab gold and describe non-gold objects.
+ * 0 to grab gold, auto-pickup some objects, and describe others objects.
  * 1 to pick up objects either with or without displaying a menu.
  * 2 to pick up objects, allowing cancel and quick pickup of single objects.
  * 3 to pick up objects, forcing a menu for any number of objects.
- *
- * Use the "p_ptr->auto_pickup_okay" variable to allow or dis-allow
- * automatically picking things up that take time.  (NOT INCLUDED)
  *
  * Scan the list of objects in that floor grid.   Pick up gold automatically.
  * Pick up objects automatically until pile or backpack space is full if
@@ -815,7 +778,7 @@ byte py_pickup(int pickup)
 
 
 		/* Automatically pick up items into the backpack */
-		if ((p_ptr->auto_pickup_okay) && (pickup) && (auto_pickup_okay(o_ptr, TRUE)))
+		if (p_ptr->auto_pickup_okay && auto_pickup_okay(o_ptr, TRUE))
 		{
 			/* Pick up the object (with a message) */
 			py_pickup_aux(this_o_idx, TRUE);
@@ -1547,7 +1510,7 @@ void py_attack(int y, int x)
  * Note that this routine handles monsters in the destination grid,
  * and also handles attempting to move into walls/doors/rubble/etc.
  */
-void move_player(int dir, int do_pickup)
+void move_player(int dir)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -1687,19 +1650,16 @@ void move_player(int dir, int do_pickup)
 			/* Hack -- Enter store */
 			p_ptr->command_new = '_';
 
-			/* Free turn XXX XXX XXX */
-			p_ptr->energy_use = 0;
-
 			/* Handle objects now.  XXX */
-			p_ptr->energy_use += py_pickup(do_pickup) * 10;
+			p_ptr->energy_use = py_pickup(1) * 10;
 		}
+
 
 		/* All other grids (including traps) */
 		else
 		{
 			/* Handle objects (later) */
-			if (do_pickup) p_ptr->notice |= (PN_PICKUP1);
-			else           p_ptr->notice |= (PN_PICKUP0);
+			p_ptr->notice |= (PN_PICKUP);
 		}
 
 
@@ -2428,6 +2388,7 @@ void run_step(int dir)
 		}
 	}
 
+
 	/* Decrease counter */
 	p_ptr->running--;
 
@@ -2435,7 +2396,6 @@ void run_step(int dir)
 	p_ptr->energy_use = 100;
 
 	/* Move the player.  Never pick up objects */
-	move_player(p_ptr->run_cur_dir, FALSE);
+	p_ptr->auto_pickup_okay = FALSE;
+	move_player(p_ptr->run_cur_dir);
 }
-
-

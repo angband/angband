@@ -154,7 +154,6 @@ static command_type cmd_hidden[] =
 	{ "Walk",                     ';', do_cmd_walk },
 	{ "Start running",            '.', do_cmd_run },
 	{ "Stand still",              ',', do_cmd_hold },
-	{ "Jump (into a trap)",       '-', do_cmd_jump },
 	{ "Check knowledge",          '|', do_cmd_knowledge },
 	{ "Display menu of actions", '\n', do_cmd_menu },
 	{ "Display menu of actions", '\r', do_cmd_menu },

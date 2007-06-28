@@ -304,7 +304,7 @@ extern void search(void);
 extern byte py_pickup(int pickup);
 extern void hit_trap(int y, int x);
 extern void py_attack(int y, int x);
-extern void move_player(int dir, int do_pickup);
+extern void move_player(int dir);
 extern void run_step(int dir);
 bool do_cmd_walk_test(int y, int x);
 

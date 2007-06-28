@@ -198,13 +198,13 @@ struct object_kind
 
 
 	u16b flavor;		/* Special object flavor (or zero) */
+	u16b note;          /* Autoinscription field (later) */
 
+	bool aware : 1;		/* The player is "aware" of the item's effects */
+	bool tried : 1;		/* The player has "tried" one of the items */
 
-	bool aware;			/* The player is "aware" of the item's effects */
-	bool tried;			/* The player has "tried" one of the items */
-
-	bool squelch;		/* Squelch this item? */
-	bool everseen;		/* Used to despoilify squelch menus */
+	bool squelch : 1;	/* Squelch this item? */
+	bool everseen : 1;	/* Used to despoilify squelch menus */
 };
 
 

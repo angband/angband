@@ -1270,19 +1270,11 @@ static void process_player(void)
 		}
 
 		/* Picking up objects */
-		else if (p_ptr->notice & (PN_PICKUP1))
+		else if (p_ptr->notice & (PN_PICKUP))
 		{
 			/* Recursively call the pickup function, use energy */
-			p_ptr->energy_use = py_pickup(1) * 10;
-			p_ptr->notice &= ~(PN_PICKUP0 | PN_PICKUP1);
-		}
-
-		/* Noticing objects (allow pickup) */
-		else if (p_ptr->notice & (PN_PICKUP0))
-		{
-			/* Recursively call the pickup function, use energy */
-			p_ptr->energy_use = py_pickup(0) * 10;
-			p_ptr->notice &= ~(PN_PICKUP0 | PN_PICKUP1);
+			p_ptr->energy_use = py_pickup(always_pickup) * 10;
+			p_ptr->notice &= ~(PN_PICKUP);
 		}
 
 		/* Resting */

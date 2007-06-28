@@ -2044,12 +2044,11 @@ bool do_cmd_walk_test(int y, int x)
 
 
 /*
- * Helper function for the "walk" and "jump" commands.
+ * Helper function for the "walk" command.
  */
-static void do_cmd_walk_or_jump(int do_pickup)
+void do_cmd_walk(void)
 {
 	int y, x, dir;
-
 
 	/* Get a direction (or abort) */
 	if (!get_rep_dir(&dir)) return;
@@ -2093,28 +2092,9 @@ static void do_cmd_walk_or_jump(int do_pickup)
 	}
 
 	/* Move the player */
-	move_player(dir, do_pickup);
+	move_player(dir);
 }
 
-
-/*
- * Walk into a grid (pick up objects as set by the auto-pickup option)
- */
-void do_cmd_walk(void)
-{
-	/* Move (usually pickup) */
-	do_cmd_walk_or_jump(always_pickup);
-}
-
-
-/*
- * Jump into a grid (flip pickup mode)
- */
-void do_cmd_jump(void)
-{
-	/* Move (usually do not pickup) */
-	do_cmd_walk_or_jump(!always_pickup);
-}
 
 
 /*
@@ -2181,7 +2161,7 @@ void do_cmd_pathfind(int y, int x)
  * Stay still.  Search.  Enter stores.
  * Pick up treasure if "pickup" is true.
  */
-static void do_cmd_hold_or_stay(int pickup)
+void do_cmd_hold(void)
 {
 	/* Allow repeated command */
 	if (p_ptr->command_arg)
@@ -2212,7 +2192,7 @@ static void do_cmd_hold_or_stay(int pickup)
 	}
 
 	/* Handle objects now.  XXX XXX XXX */
-	p_ptr->energy_use += py_pickup(pickup) * 10;
+	p_ptr->energy_use += py_pickup(always_pickup) * 10;
 
 	/* Hack -- enter a store if we are on one */
 	if ((cave_feat[p_ptr->py][p_ptr->px] >= FEAT_SHOP_HEAD) &&
@@ -2227,16 +2207,6 @@ static void do_cmd_hold_or_stay(int pickup)
 		/* Free turn XXX XXX XXX */
 		p_ptr->energy_use = 0;
 	}
-}
-
-
-/*
- * Hold still (usually pickup)
- */
-void do_cmd_hold(void)
-{
-	/* Hold still (usually pickup) */
-	do_cmd_hold_or_stay(always_pickup);
 }
 
 
