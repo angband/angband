@@ -491,6 +491,7 @@ static bool quaff_potion(object_type *o_ptr, bool *ident)
 			if (clear_timed(TMD_POISONED)) *ident = TRUE;
 			if (clear_timed(TMD_STUN)) *ident = TRUE;
 			if (clear_timed(TMD_CUT)) *ident = TRUE;
+			if (clear_timed(TMD_AMNESIA)) *ident = TRUE;
 			break;
 		}
 

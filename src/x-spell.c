@@ -1038,6 +1038,7 @@ static bool cast_priest_spell(int spell)
 		{
 			(void)hp_player(damroll(6, 10));
 			(void)clear_timed(TMD_CUT);
+			(void)clear_timed(TMD_AMNESIA);
 			break;
 		}
 

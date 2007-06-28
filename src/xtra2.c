@@ -57,6 +57,10 @@ static timed_effect effects[] =
 	{ "Your eyes feel very sensitive!", "Your eyes feel less sensitive.", 0, 0, (PU_BONUS | PU_MONSTERS), MSG_SEE_INVIS },
 	{ "Your eyes begin to tingle!", "Your eyes stop tingling.", 0, 0, (PU_BONUS | PU_MONSTERS), MSG_INFRARED },
 	{ "You feel resistant to poison!", "You feel less resistant to poison", PR_OPPOSE_ELEMENTS, 0, 0, MSG_RES_POIS },
+	{ "", "", 0, 0, 0, 0 },  /* acid -- handled seperately */
+	{ "", "", 0, 0, 0, 0 },  /* elec -- handled seperately */
+	{ "", "", 0, 0, 0, 0 },  /* fire -- handled seperately */
+	{ "", "", 0, 0, 0, 0 },  /* cold -- handled seperately */
 	{ "You feel your memories fade.", "Your memories come flooding back.", PR_CONFUSED, 0, 0, MSG_GENERIC },
 };
 
