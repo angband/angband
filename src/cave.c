@@ -842,7 +842,7 @@ void map_info(int y, int x, byte *ap, char *cp, byte *tap, char *tcp)
 	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
 	{
 		/* Memorized objects */
-		if (o_ptr->marked)
+		if (o_ptr->marked && !squelch_hide_item(o_ptr))
 		{
 			/* Hack -- object hallucination */
 			if (image)

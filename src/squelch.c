@@ -420,6 +420,14 @@ static bool squelch_item_ok(object_type *o_ptr)
 	return FALSE;
 }
 
+/* 
+ * Returns TRUE if an item should be hidden due to the player's
+ * current settings.
+ */
+bool squelch_hide_item(object_type *o_ptr)
+{
+  return (hide_squelchable ? squelch_item_ok(o_ptr) : FALSE);
+}
 
 /*
  * Set squelch inscription on an object.

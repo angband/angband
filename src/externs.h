@@ -599,6 +599,7 @@ void autoinscribe_ground(void);
 void autoinscribe_pack(void);
 
 void squelch_set(object_type *o_ptr);
+bool squelch_hide_item(object_type *o_ptr);
 void squelch_items(void);
 void do_cmd_options_item(void *, cptr);
 

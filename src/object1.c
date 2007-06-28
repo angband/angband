@@ -1891,7 +1891,7 @@ bool item_tester_okay(const object_type *o_ptr)
  *
  * Valid flags are any combination of the bits:
  *   0x01 -- Verify item tester
- *   0x02 -- Marked items only
+ *   0x02 -- Marked/visible items only
  *   0x04 -- Only the top item
  */
 bool scan_floor(int *items, int *item_num, int y, int x, int mode)
@@ -1920,7 +1920,8 @@ bool scan_floor(int *items, int *item_num, int y, int x, int mode)
 		if ((mode & 0x01) && !item_tester_okay(o_ptr)) continue;
 
 		/* Marked */
-		if ((mode & 0x02) && !o_ptr->marked) continue;
+		if ((mode & 0x02) && (!o_ptr->marked || squelch_hide_item(o_ptr)))
+			continue;
 
 		/* Accept this item */
 		items[num++] = this_o_idx;

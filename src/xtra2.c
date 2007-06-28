@@ -2262,7 +2262,7 @@ static bool target_set_interactive_accept(int y, int x)
 	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
 	{
 		/* Memorized object */
-		if (o_ptr->marked) return (TRUE);
+		if (o_ptr->marked && !squelch_hide_item(o_ptr)) return (TRUE);
 	}
 
 	/* Interesting memorized features */
@@ -2693,7 +2693,7 @@ static event_type target_set_interactive_aux(int y, int x, int mode, cptr info)
 			if (floored) continue;
 
 			/* Describe it */
-			if (o_ptr->marked)
+			if (o_ptr->marked && !squelch_hide_item(o_ptr))
 			{
 				char o_name[80];
 

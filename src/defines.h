@@ -2424,6 +2424,7 @@ enum
 
 #define OPT_auto_more				71
 #define OPT_hp_changes_color		74
+#define OPT_hide_squelchable		75
 
 
 #define OPT_birth_maximize          (OPT_BIRTH+0)
@@ -2478,6 +2479,8 @@ enum
 /*
  * Hack -- Option symbols
  */
+#define OPTION(opt_name)	op_ptr->opt[OPT_##opt_name]
+
 #define rogue_like_commands		op_ptr->opt[OPT_rogue_like_commands]
 #define quick_messages			op_ptr->opt[OPT_quick_messages]
 #define use_sound				op_ptr->opt[OPT_use_sound]
@@ -2510,7 +2513,7 @@ enum
 #define center_player			op_ptr->opt[OPT_center_player]
 #define auto_more				op_ptr->opt[OPT_auto_more]
 #define hp_changes_color		op_ptr->opt[OPT_hp_changes_color]
-
+#define hide_squelchable		OPTION(hide_squelchable)
 #define birth_maximize			op_ptr->opt[OPT_birth_maximize]
 #define birth_randarts			op_ptr->opt[OPT_birth_randarts]
 #define birth_autoscum			op_ptr->opt[OPT_birth_autoscum]

@@ -1471,7 +1471,7 @@ cptr option_text[OPT_MAX] =
 	NULL,						/* xxx smart_monsters */
 	NULL,						/* xxx smart_packs */
 	"hp_changes_color",			/* OPT_hp_changes_color */
-	NULL,						/* xxx */
+	"hide_squelchable",			/* OPT_hide_squelchable */
 	NULL,						/* xxx */
 	NULL,						/* xxx */
 	NULL,						/* xxx */
@@ -1735,7 +1735,7 @@ cptr option_desc[OPT_MAX] =
 	NULL,										/* xxx smart_monsters */
 	NULL,										/* xxx smart_packs */
 	"Player color indicates low hit points",	/* OPT_hp_changes_color */
-	NULL,										/* xxx */
+	"Hide items set as squelchable",               	/* OPT_hide_squelchable */
 	NULL,										/* xxx */
 	NULL,										/* xxx */
 	NULL,										/* xxx */
@@ -1999,7 +1999,7 @@ const bool option_norm[OPT_MAX] =
 	FALSE,		/* xxx smart_monsters */
 	FALSE,		/* xxx smart_packs */
 	FALSE,		/* OPT_hp_changes_color */
-	FALSE,		/* xxx */
+	FALSE,		/* OPT_hide_squelchable */
 	FALSE,		/* xxx */
 	FALSE,		/* xxx */
 	FALSE,		/* xxx */
@@ -2213,6 +2213,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_depth_in_feet,
 		OPT_hilite_player,
  		OPT_center_player,
+		OPT_hide_squelchable,
 		OPT_show_piles,
 		OPT_show_flavors,
 		OPT_show_labels,
@@ -2222,7 +2223,6 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_view_special_lite,
 		OPT_view_perma_grids,
 		OPT_view_torch_grids,
-		OPT_NONE,
 		OPT_NONE,
 	},
 

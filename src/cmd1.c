@@ -768,7 +768,7 @@ byte py_pickup(int pickup)
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Ignore all hidden objects */
-		if (!o_ptr->marked) continue;
+		if ((!o_ptr->marked) || squelch_hide_item(o_ptr)) continue;
 
 		/* Paranoia -- ignore all dead objects  XXX */
 		if (!o_ptr->k_idx) continue;
@@ -2051,7 +2051,7 @@ static bool run_test(void)
 		for (o_ptr = get_first_object(row, col); o_ptr; o_ptr = get_next_object(o_ptr))
 		{
 			/* Visible object */
-			if (o_ptr->marked) return (TRUE);
+			if (o_ptr->marked && !squelch_hide_item(o_ptr)) return (TRUE);
 		}
 
 
