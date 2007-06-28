@@ -8,6 +8,9 @@ OBJECTIVE_DATA = \
 
 include ../../mk/objective.mk
 
+clean-posthook:
+	-$(RM) *.raw
+
 install-posthook:
 	touch ${DATA_PATH}/data/artifact.raw
 	touch ${DATA_PATH}/data/cost_adj.raw
