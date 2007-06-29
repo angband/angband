@@ -194,7 +194,7 @@ static void prt_welcome(const owner_type *ot_ptr)
 		/* Get a title for the character */
 		if ((i % 2) && rand_int(2)) player_name = c_text + cp_ptr->title[(p_ptr->lev - 1) / 5];
 		else if (rand_int(2))       player_name = op_ptr->full_name;
-		else                        player_name = "sir";
+		else                        player_name = (p_ptr->psex == SEX_MALE ? "sir" : "lady");
 
 		/* Balthazar says "Welcome" */
 		prt(format(comment_welcome[i], short_name, player_name), 0, 0);
