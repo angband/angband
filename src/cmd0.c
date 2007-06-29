@@ -618,11 +618,11 @@ void cmd_init(void)
  */
 void process_command(bool no_request)
 {
-	/* Handle repeating the last command */
-	repeat_check();
-
 	if (!no_request)
 		request_command();
+
+	/* Handle repeating the last command */
+	repeat_check();
 
 	/* Handle resize events XXX */
 	if (p_ptr->command_cmd_ex.type == EVT_RESIZE)
