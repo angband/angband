@@ -66,6 +66,9 @@ s16b spell_chance(int spell)
 	if (p_ptr->timed[TMD_STUN] > 50) chance += 25;
 	else if (p_ptr->timed[TMD_STUN]) chance += 15;
 
+	/* Amnesia makes spells fail half the time */
+	if (p_ptr->timed[TMD_AMNESIA]) chance *= 2;
+
 	/* Always a 5 percent chance of working */
 	if (chance > 95) chance = 95;
 
@@ -599,24 +602,6 @@ void do_cmd_browse(void)
 		return;
 	}
 
-#if 0
-
-	/* No lite */
-	if (p_ptr->timed[TMD_BLIND] || no_lite())
-	{
-		msg_print("You cannot see!");
-		return;
-	}
-
-	/* Confused */
-	if (p_ptr->timed[TMD_CONFUSED])
-	{
-		msg_print("You are too confused!");
-		return;
-	}
-
-#endif
-
 	/* Restrict choices to "useful" books */
 	item_tester_tval = cp_ptr->spell_book;
 
@@ -905,14 +890,6 @@ void do_cmd_cast(void)
 		msg_print("You failed to get the spell off!");
 	}
 
-	/* Check for amnesia */
-	else if (rand_int(2) != 0 && p_ptr->timed[TMD_AMNESIA])
-	{
-		/* Can't remember how */
-		if (flush_failure) flush();
-		msg_print("The words are meaningless; you cannot remember how to read.");
-	}
-
 	/* Process spell */
 	else
 	{
@@ -1081,14 +1058,6 @@ void do_cmd_pray(void)
 	{
 		if (flush_failure) flush();
 		msg_print("You failed to concentrate hard enough!");
-	}
-
-	/* Check for amnesia */
-	else if (rand_int(2) != 0 && p_ptr->timed[TMD_AMNESIA])
-	{
-		/* Can't remember how */
-		if (flush_failure) flush();
-		msg_print("The words are meaningless; you cannot remember how to read.");
 	}
 
 	/* Success */
