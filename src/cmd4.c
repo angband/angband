@@ -3928,18 +3928,18 @@ static event_action option_actions [] =
 {
 	{'1', "Interface options", do_cmd_options_aux, (void*)0}, 
 	{'2', "Display options", do_cmd_options_aux, (void*)1},
-	{'3', "Warning options", do_cmd_options_aux, (void*)2}, 
-	{'4', "Birth (Difficulty) options", do_cmd_options_aux, (void*)3}, 
+	{'3', "Warning and disturbance options", do_cmd_options_aux, (void*)2}, 
+	{'4', "Birth (difficulty) options", do_cmd_options_aux, (void*)3}, 
 	{'5', "Cheat options", do_cmd_options_aux, (void*)4}, 
 	{0, 0, 0, 0}, /* Load and append */
 	{'W', "Subwindow display settings", (action_f) do_cmd_options_win, 0}, 
-	{'S', "Item squelch and Autoinscribe settings", (action_f) do_cmd_options_item, 0}, 
+	{'S', "Item squelch settings", (action_f) do_cmd_options_item, 0}, 
 	{'D', "Set base delay factor", (action_f) do_cmd_delay, 0}, 
 	{'H', "Set hitpoint warning", (action_f) do_cmd_hp_warn, 0}, 
-	{0, 0, 0,}, /* Special choices */
+	{0, 0, 0, 0}, /* Special choices */
 	{'L', "Load a user pref file", (action_f) do_cmd_pref_file_hack, (void*)20},
 	{'A', "Dump options", do_dump_options, 0}, 
-	{0, 0, 0,}, /* Interact with */	
+	{0, 0, 0, 0}, /* Interact with */	
 	{'M', "Interact with macros (advanced)", (action_f) do_cmd_macros, 0},
 	{'V', "Interact with visuals (advanced)", (action_f) do_cmd_visuals, 0},
 	{'C', "Interact with colours (advanced)", (action_f) do_cmd_colors, 0},
