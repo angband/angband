@@ -72,6 +72,10 @@ Major visible changes
 
   Potions of Healing, *Healing* and Life are the only three things which
   will get rid of amnesia early, but it goes away within a few turns.
+  
+- Defined potions of life, healing, *healing*, augmentation as 'good'
+  drops, as well as restore mana for spell casters, and stat potions,
+  when the stat is not maximised.
 
 
 Minor visible changes
