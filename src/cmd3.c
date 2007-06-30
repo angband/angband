@@ -499,9 +499,6 @@ void do_cmd_destroy(void)
 	}
 
 
-	/* Take a turn */
-	p_ptr->energy_use = 100;
-
 	/* Artifacts cannot be destroyed */
 	if (artifact_p(o_ptr))
 	{
@@ -558,6 +555,15 @@ void do_cmd_destroy(void)
 		floor_item_increase(0 - item, -amt);
 		floor_item_describe(0 - item);
 		floor_item_optimize(0 - item);
+	}
+
+
+	/* We have destroyed a floor item, and the floor is not empty */
+	if ((item < 0) && (cave_o_idx[p_ptr->py][p_ptr->px]))
+	{
+		/* Automatically repeat this command (unless disturbed) */
+		p_ptr->command_cmd = 'k';
+		p_ptr->command_rep = 2;
 	}
 }
 
