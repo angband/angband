@@ -2390,9 +2390,9 @@ enum
 #define OPT_rogue_like_commands		0
 #define OPT_quick_messages			1
 #define OPT_use_sound               2
-#define OPT_query_floor				3
+#define OPT_pickup_detail			3
 #define OPT_use_old_target			4
-#define OPT_always_pickup			5
+#define OPT_pickup_always			5
 #define OPT_pickup_inven			6
 #define OPT_depth_in_feet			7
 
@@ -2486,9 +2486,9 @@ enum
 #define rogue_like_commands		OPTION(rogue_like_commands)
 #define quick_messages			OPTION(quick_messages)
 #define use_sound				OPTION(use_sound)
-#define query_floor				OPTION(query_floor)
+#define pickup_detail			OPTION(pickup_detail)
 #define use_old_target			OPTION(use_old_target)
-#define always_pickup			OPTION(always_pickup)
+#define pickup_always			OPTION(pickup_always)
 #define pickup_inven			OPTION(pickup_inven)
 #define depth_in_feet			OPTION(depth_in_feet)
 #define show_labels				OPTION(show_labels)

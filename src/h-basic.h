@@ -260,12 +260,17 @@ typedef int errr;
 #define SGN(a)		(((a) < 0)   ? (-1) : ((a) != 0))
 
 
-/*** Useful array length macro ***/
+/*** Useful fairly generic macros ***/
 
 /*
- * Given an array, determine how many elements are in the array.
+ * Given an array, determine how many elements are in it.
  */
 #define N_ELEMENTS(a) (sizeof(a) / sizeof((a)[0]))
+
+/*
+ * Return "s" (or not) depending on whether n is singular.
+ */
+#define PLURAL(n)		((n) == 1 ? "" : "s")
 
 
 /*** Some hackish character manipulation ***/

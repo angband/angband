@@ -1399,9 +1399,9 @@ cptr option_text[OPT_MAX] =
 	"rogue_like_commands",		/* OPT_rogue_like_commands */
 	"quick_messages",			/* OPT_quick_messages */
 	"use_sound",				/* OPT_use_sound */
-	"query_floor",				/* OPT_query_floor */
+	"pickup_detail",			/* OPT_pickup_detail */
 	"use_old_target",			/* OPT_use_old_target */
-	"always_pickup",			/* OPT_always_pickup */
+	"pickup_always",			/* OPT_pickup_always */
 	"pickup_inven",				/* OPT_pickup_inven */
 	"depth_in_feet",			/* OPT_depth_in_feet */
 	NULL,						/* xxx stack_force_notes */
@@ -1663,9 +1663,9 @@ cptr option_desc[OPT_MAX] =
 	"Rogue-like commands",						/* OPT_rogue_like_commands */
 	"Activate quick messages",					/* OPT_quick_messages */
 	"Use sound",								/* OPT_use_sound */
-	"Display things before picking them up",	/* OPT_query_floor */
+	"Be verbose when picking things up",		/* OPT_pickup_detail */
 	"Use old target by default",				/* OPT_use_old_target */
-	"Pick things up by default",				/* OPT_always_pickup */
+	"Always pickup items",						/* OPT_pickup_always */
 	"Always pickup items matching inventory",	/* OPT_pickup_inven */
 	"Show dungeon level in feet",				/* OPT_depth_in_feet */
 	NULL,										/* xxx stack_force_notes */
@@ -2193,9 +2193,9 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_use_sound,
 		OPT_rogue_like_commands,
 		OPT_use_old_target,
-		OPT_always_pickup,
-		OPT_query_floor,
+		OPT_pickup_always,
 		OPT_pickup_inven,
+		OPT_pickup_detail,
 		OPT_auto_squelch,
 		OPT_easy_alter,
 		OPT_easy_open,

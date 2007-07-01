@@ -2192,7 +2192,7 @@ void do_cmd_hold(void)
 	}
 
 	/* Handle objects now.  XXX XXX XXX */
-	p_ptr->energy_use += py_pickup(always_pickup) * 10;
+	p_ptr->energy_use += py_pickup(0) * 10;
 
 	/* Hack -- enter a store if we are on one */
 	if ((cave_feat[p_ptr->py][p_ptr->px] >= FEAT_SHOP_HEAD) &&
@@ -2219,7 +2219,7 @@ void do_cmd_pickup(void)
 	int energy_cost;
 
 	/* Pick up floor objects, forcing a menu for multiple objects. */
-	energy_cost = py_pickup(2) * 10;
+	energy_cost = py_pickup(1) * 10;
 
 	/* Maximum time expenditure is a full turn. */
 	if (energy_cost > 100) energy_cost = 100;

@@ -315,7 +315,7 @@ void autoinscribe_pack(void)
 /*
  * Determines if an object is eligable for squelching.
  */
-static bool squelch_item_ok(object_type *o_ptr)
+static bool squelch_item_ok(const object_type *o_ptr)
 {
 	size_t i;
 	int num = -1;
@@ -440,40 +440,14 @@ bool squelch_hide_item(object_type *o_ptr)
  */
 void squelch_set(object_type *o_ptr)
 {
-	bool can_squelch;
-
-	/* Check if we can squelch */
-	can_squelch = squelch_item_ok(o_ptr);
-
 	/* Set squelch inscription unless there's already one */
-	if (!o_ptr->note && can_squelch)
-	{
-		o_ptr->note = quark_add("squelch");
+	if (squelch_item_ok(o_ptr))
 		p_ptr->notice = PN_SQUELCH;
-	}
-
 
 	/* Done */
 	return;
 }
 
-
-/*
- * An item_tester_hook for squelched items.
- */
-static bool item_tester_squelched(const object_type *o_ptr)
-{
-	const char *inscrip = (o_ptr->note ? quark_str(o_ptr->note) : NULL);
-
-	/* Check for inscription */
-	if (!o_ptr->note) return FALSE;
-
-	/* Find "squelch" */
-	if (inscrip && streq(inscrip, "squelch")) return TRUE;
-
-	/* Nope */
-	return FALSE;
-}
 
 
 /*
@@ -490,7 +464,7 @@ void squelch_items(void)
 	object_type *o_ptr;
 
 	/* Set the hook and scan the floor */
-	item_tester_hook = item_tester_squelched;
+	item_tester_hook = squelch_item_ok;
 	(void)scan_floor(floor_list, &floor_num, p_ptr->py, p_ptr->px, 0x01);
 
 	if (floor_num)
@@ -541,13 +515,6 @@ void squelch_items(void)
 		/* Combine/reorder the pack */
 		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
 	}
-	else
-	{
-		message(MSG_GENERIC, 0, "No squelched items to destroy.");
-	}
-
-	/* Happy now I've sold my soul */
-	return;
 }
 
 
