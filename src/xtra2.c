@@ -2390,6 +2390,9 @@ static event_type target_set_interactive_aux(int y, int x, int mode, cptr info)
 
 	int feat;
 
+	int floor_list[MAX_FLOOR_STACK];
+	int floor_num;
+
 	event_type query;
 
 	char out_val[256];
@@ -2609,97 +2612,67 @@ static event_type target_set_interactive_aux(int y, int x, int mode, cptr info)
 		/* Assume not floored */
 		floored = FALSE;
 
-		/* Scan all objects in the grid */
+		/* Scan all marked objects in the grid */
+		if ((scan_floor(floor_list, &floor_num, y, x, 0x02)) &&
+		    (!(p_ptr->timed[TMD_BLIND]) || (y == p_ptr->py && x == p_ptr->px)))
 		{
-			int floor_list[MAX_FLOOR_STACK];
-			int floor_num;
+			/* Not boring */
+			boring = FALSE;
 
-			/* Scan all marked objects in the grid */
-			if ((scan_floor(floor_list, &floor_num, y, x, 0x02)) &&
-				(!(p_ptr->timed[TMD_BLIND]) || (y == p_ptr->py && x == p_ptr->px)))
+			/* If there is more than one item... */
+			if (floor_num > 1) while (1)
 			{
-				/* Not boring */
-				boring = FALSE;
+				floored = TRUE;
 
-				/* If there is more than one item... */
-				if (floor_num > 1) while (1)
+				/* Describe the pile */
+				if (p_ptr->wizard)
 				{
-					floored = TRUE;
-
-					/* Describe the pile */
-					if (p_ptr->wizard)
-					{
-						strnfmt(out_val, sizeof(out_val),
-						        "%s%s%sa pile of %d objects [r,%s] (%d:%d)",
-						        s1, s2, s3, floor_num, info, y, x);
-					}
-					else
-					{
-						strnfmt(out_val, sizeof(out_val),
-						        "%s%s%sa pile of %d objects [r,%s]",
-						        s1, s2, s3, floor_num, info);
-					}
-
-					prt(out_val, 0, 0);
-					move_cursor_relative(y, x);
-					query = inkey_ex();
-
-					/* Display objects */
-					if (query.key == 'r')
-					{
-						/* Save screen */
-						screen_save();
-
-						/* Display */
-						show_floor(floor_list, floor_num, TRUE);
-
-						/* Describe the pile */
-						prt(out_val, 0, 0);
-						query = inkey_ex();
-
-						/* Load screen */
-						screen_load();
-
-						/* Continue on 'r' only */
-						if (query.key == 'r') continue;
-					}
-
-					/* Done */
-					break;
+					strnfmt(out_val, sizeof(out_val),
+					        "%s%s%sa pile of %d objects [r,%s] (%d:%d)",
+					        s1, s2, s3, floor_num, info, y, x);
+				}
+				else
+				{
+					strnfmt(out_val, sizeof(out_val),
+					        "%s%s%sa pile of %d objects [r,%s]",
+					        s1, s2, s3, floor_num, info);
 				}
 
-				/* Stop on everything but "return"/"space" */
-				if ((query.key != '\n') && (query.key != '\r') && (query.key != ' ')) break;
+				prt(out_val, 0, 0);
+				move_cursor_relative(y, x);
+				query = inkey_ex();
 
-				/* Sometimes stop at "space" key */
-				if ((query.key == ' ') && !(mode & (TARGET_LOOK))) break;
+				/* Display objects */
+				if (query.key == 'r')
+				{
+					/* Save screen */
+					screen_save();
 
-				/* Change the intro */
-				s1 = "It is ";
+					/* Display */
+					show_floor(floor_list, floor_num, TRUE);
 
-				/* Preposition */
-				s2 = "on ";
+					/* Describe the pile */
+					prt(out_val, 0, 0);
+					query = inkey_ex();
+
+					/* Load screen */
+					screen_load();
+
+					/* Continue on 'r' only */
+					if (query.key == 'r') continue;
+				}
+
+				/* Done */
+				break;
 			}
-		}
-
-		/* Scan all objects in the grid */
-		for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
-		{
-			object_type *o_ptr;
-
-			/* Get the object */
-			o_ptr = &o_list[this_o_idx];
-
-			/* Get the next object */
-			next_o_idx = o_ptr->next_o_idx;
-
-			/* Skip objects if floored */
-			if (floored) continue;
-
-			/* Describe it */
-			if (o_ptr->marked && !squelch_hide_item(o_ptr))
+			/* Only one object to display */
+			else
 			{
+
 				char o_name[80];
+
+				/* Get the single object in the list */
+				object_type *o_ptr = &o_list[floor_list[0]];
 
 				/* Not boring */
 				boring = FALSE;
