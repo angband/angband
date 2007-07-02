@@ -1176,48 +1176,50 @@ event_type inkey_ex(void)
 		/* Hack -- Handle "inkey_base" */
 		if (inkey_base)
 		{
-		  int w = 0;
+			int w = 0;
 
-		  /* Wait forever */
-		  if (!inkey_scan)
-		  {
-			/* Wait for (and remove) a pending key */
-			if (0 == Term_inkey(&ke, TRUE, TRUE))
+			/* Wait forever */
+			if (!inkey_scan)
 			{
-				/* Done */
-				break;
-			}
-
-			/* Oops */
-			break;
-		  }
-
-		  /* Wait */
-		  while (TRUE)
-		  {
-			/* Check for (and remove) a pending key */
-			if (0 == Term_inkey(&ke, FALSE, TRUE))
-			{
-				/* Done */
-				break;
-			}
-
-			/* No key ready */
-			else
-			{
-				/* Increase "wait" */
-				w += 10;
-			
-				/* Excessive delay */
-				if (w >= 100) break;
-			
-				/* Delay */
-				Term_xtra(TERM_XTRA_DELAY, w);
+				/* Wait for (and remove) a pending key */
+				if (0 == Term_inkey(&ke, TRUE, TRUE))
+				{
+					/* Done */
+					break;
 				}
-		  }
 
-		  /* Done */
-		  break;
+				/* Oops */
+				break;
+			}
+
+			/* Wait only as long as macro activation would wait*/
+			while (TRUE)
+			{
+				/* Check for (and remove) a pending key */
+				if (0 == Term_inkey(&ke, FALSE, TRUE))
+				{
+					/* Done */
+					break;
+				}
+
+				/* No key ready */
+				else
+				{
+					/* Increase "wait" */
+					w += 10;
+
+					/* Excessive delay */
+					if (w >= 100) break;
+
+					/* Delay */
+					Term_xtra(TERM_XTRA_DELAY, w);
+
+				}
+			}
+
+			/* Done */
+			ke.type = EVT_KBRD;
+			break;
 		}
 		
 		

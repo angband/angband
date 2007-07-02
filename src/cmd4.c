@@ -2826,7 +2826,7 @@ static void do_cmd_macro_aux(char *buf)
 	text_out_hook = text_out_to_screen;
 
 	/* Read the pattern */
-	while (ch != ESCAPE && ch != '\xff')
+	while (ch != 0 && ch != '\xff')
 	{
 		/* Save the key */
 		buf[n++] = ch;
@@ -2835,8 +2835,6 @@ static void do_cmd_macro_aux(char *buf)
 		/* echo */
 		ascii_to_text(tmp, sizeof(tmp), buf+n-1);
 		text_out(tmp);
-		flush();
-
 
 		/* Do not process macros */
 		inkey_base = TRUE;
