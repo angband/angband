@@ -1203,7 +1203,8 @@ static int a_cmp_tval(const void *a, const void *b)
 }
 
 static const char *kind_name(int gid) { return object_text_order[gid].name; }
-static int art2tval(int oid) { return a_info[oid].tval; }
+static int art2gid(int oid) { return obj_group_order[a_info[oid].tval]; }
+
 
 /*
  * Display known artifacts
@@ -1211,7 +1212,7 @@ static int art2tval(int oid) { return a_info[oid].tval; }
 static void do_cmd_knowledge_artifacts(void)
 {
 	/* HACK -- should be TV_MAX */
-	group_funcs obj_f = {TV_GOLD, FALSE, kind_name, a_cmp_tval, art2tval, 0};
+	group_funcs obj_f = {TV_GOLD, FALSE, kind_name, a_cmp_tval, art2gid, 0};
 	member_funcs art_f = {display_artifact, desc_art_fake, 0, 0, 0, 0, 0};
 
 
