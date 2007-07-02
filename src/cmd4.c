@@ -4006,6 +4006,12 @@ void do_cmd_options(void)
 }
 
 
+void do_cmd_self_knowledge(void *obj, const char *name)
+{
+	/* display self knowledge we already know about. */
+	self_knowledge(FALSE);
+}
+
 /*
  * Definition of the "player knowledge" menu.
  */
@@ -4016,7 +4022,7 @@ static menu_item knowledge_actions[] =
 	{{0, "Display ego item knowledge", (action_f)do_cmd_knowledge_ego_items, 0}, '3'},
 	{{0, "Display object knowledge", (action_f)do_cmd_knowledge_objects, 0}, '4'},
 	{{0, "Display feature knowledge", (action_f)do_cmd_knowledge_features, 0}, '5'},
-	{{0, "Display self-knowledge", (action_f)self_knowledge, 0}, '6'},
+	{{0, "Display self-knowledge", do_cmd_self_knowledge, 0}, '6'},
 };
 
 static menu_type knowledge_menu;

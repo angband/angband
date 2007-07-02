@@ -1612,7 +1612,7 @@ void do_cmd_debug(void)
 		/* Self-Knowledge */
 		case 'k':
 		{
-			self_knowledge();
+			self_knowledge(TRUE);
 			break;
 		}
 
