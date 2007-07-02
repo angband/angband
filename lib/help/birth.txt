@@ -573,3 +573,41 @@ has.
 characters to each other in the absence of other bonuses from high stats 
 (strength bonus to-dam, dex bonus to-hit, wisdom bonus to saving throw,
 intelligence bonus to magical device usage, etc.) or wearing magical items.)
+
+=== Stat rollers ===
+
+There are currently three different ways to determine the starting stats of
+your character - you can choose which one to use from the birth screen.
+
+***** <Point-based>
+          Point-based
+              The point-based method allows you to "buy" improvements to
+              your basic stats by "spending" points on them.  You have a
+              fixed number of points to spend, and making small changes
+              to a stat costs proportionally less than making large changed.
+              Any unspent points are converted into your starting money that 
+              you can use to buy equipment at the start of the game.
+
+              This is the recommended birth method.
+
+***** <Autoroller>
+          Autoroller
+              The autoroller allows you to choose minimum values for your
+              stats, and then repeated "rolls" random characters using
+              Angband's traditional stat-rolling system until your creteria
+              have been met (or an insanely large number of rolls have been
+              made without finding one that matches your choices).
+
+***** <Standard roller>
+          Standard roller
+              The standard roller is the traditional Angband method of
+              determining the starting stats for a character, it simply
+              "rolls" up a single set of starting values, and gives you
+              the choice of asking for another "roll" to be made or 
+              accepting the current outcome.  This can obviously make for
+              harder characters to play than the other two methods as
+              you are less likely to have high values in the stats that might
+              be most useful to you.
+   
+    
+

@@ -699,24 +699,33 @@ static region roller_region = {44, TABLE_ROW, 21, -2};
 /* Event handler implementation */
 static bool handler_aux(char cmd, int oid, byte *val, int max, int mask, cptr topic)
 {
-	if(cmd == '\xff' || cmd == '\r') {
+	if (cmd == '\xff' || cmd == '\r') {
 		*val = oid;
 	}
-	else if(cmd == '*') {
-		for(;;) {
+	else if (cmd == '*') {
+		for(;;) 
+		{
 			oid = rand_int(max);
 			*val = oid;
 			if(mask & (1L << oid)) break;
 		}
 	}
-	else if(cmd == '=') do_cmd_options();
-	else if(cmd == KTRL('X')) quit(NULL);
-	else if(cmd == '?') {
+	else if (cmd == '=') 
+	{
+		do_cmd_options();
+		return FALSE;
+	}
+	else if (cmd == KTRL('X')) 
+	{
+		quit(NULL);
+	}
+	else if (cmd == '?') {
 		char buf[80];
 		strnfmt(buf, sizeof(buf), "%s#%s", "birth.txt", topic);
 		screen_save();
 		show_file(buf, NULL, 0, 0);
 		screen_load();
+		return FALSE;
 	}
 	else return FALSE;
 
@@ -796,17 +805,37 @@ static byte roller_type = 0;
 static bool roller_handler(char cmd, void *db, int oid)
 {
 	if (cmd == '\xff' || cmd == '\r')
+	{
 		roller_type = oid;
+		return TRUE;
+	}
 	else if (cmd == '*')
+	{
 		roller_type = 2;
+		return TRUE;
+	}
 	else if(cmd == '=')
 		do_cmd_options();
 	else if(cmd == KTRL('X'))
 		quit(NULL);
-	else
-		return FALSE;
+	else if(cmd == '?') {
+		char buf[80];
+		char *str;
 
-	return TRUE;
+		if (oid == 0)
+			str = "Point-based";
+		else if (oid == 1)
+			str = "Autoroller";
+		else
+			str = "Standard roller";
+
+		strnfmt(buf, sizeof(buf), "%s#%s", "birth.txt", str);
+		screen_save();
+		show_file(buf, NULL, 0, 0);
+		screen_load();
+	}
+
+	return FALSE;
 }
 
 
