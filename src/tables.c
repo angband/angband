@@ -1473,7 +1473,7 @@ cptr option_text[OPT_MAX] =
 	"hp_changes_color",			/* OPT_hp_changes_color */
 	"hide_squelchable",			/* OPT_hide_squelchable */
 	"auto_squelch",				/* OPT_auto_squelch */
-	NULL,						/* xxx */
+	"mouse_movement",			/* OPT_mouse_movement */
 	NULL,						/* xxx */
 	NULL,						/* xxx */
 	NULL,						/* xxx */
@@ -1737,7 +1737,7 @@ cptr option_desc[OPT_MAX] =
 	"Player color indicates low hit points",	/* OPT_hp_changes_color */
 	"Hide items set as squelchable",               	/* OPT_hide_squelchable */
 	"Destroy items marked as squelch automatically",	/* OPT_auto_squelch */
-	NULL,										/* xxx */
+	"Allow mouse clicks to move the player",       /* OPT_mouse_movement */
 	NULL,										/* xxx */
 	NULL,										/* xxx */
 	NULL,										/* xxx */
@@ -2001,7 +2001,7 @@ const bool option_norm[OPT_MAX] =
 	FALSE,		/* OPT_hp_changes_color */
 	FALSE,		/* OPT_hide_squelchable */
 	FALSE,		/* OPT_auto_squelch */
-	FALSE,		/* xxx */
+	FALSE,		/* OPT_mouse_movement */
 	FALSE,		/* xxx */
 	FALSE,		/* xxx */
 	FALSE,		/* xxx */
@@ -2199,7 +2199,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_auto_squelch,
 		OPT_easy_alter,
 		OPT_easy_open,
-		OPT_NONE,
+		OPT_mouse_movement,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,

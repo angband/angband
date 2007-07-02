@@ -332,6 +332,8 @@ static void do_cmd_mouseclick(void)
 {
 	int x, y;
 
+	if (!mouse_movement) return;
+
 	y = KEY_GRID_Y(p_ptr->command_cmd_ex);
 	x = KEY_GRID_X(p_ptr->command_cmd_ex);
 
