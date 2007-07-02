@@ -492,7 +492,7 @@ void search(void)
 /*
  * Pickup all gold at the player's current location.
  */
-static bool py_pickup_gold(void)
+static void  py_pickup_gold(void)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -500,20 +500,11 @@ static bool py_pickup_gold(void)
 	s32b total_gold = 0L;
 	byte *treasure;
 
-	char o_name[80];
-	char buf[1024];
-
 	s16b this_o_idx, next_o_idx = 0;
 
 	object_type *o_ptr;
 
-	int can_pickup = 0;
-	bool call_function_again = FALSE;
 	int sound_msg;
-
-	bool blind = ((p_ptr->timed[TMD_BLIND]) || (no_lite()));
-	bool msg = TRUE;
-
 
 	/* Allocate and wipe an array of ordinary gold objects */
 	C_MAKE(treasure, SV_GOLD_MAX, byte);
@@ -751,7 +742,6 @@ byte py_pickup(int pickup)
 	int px = p_ptr->px;
 
 	char o_name[80];
-	char ch;
 
 	s16b this_o_idx, next_o_idx = 0;
 
@@ -764,7 +754,6 @@ byte py_pickup(int pickup)
 
 	int can_pickup = 0;
 	bool call_function_again = FALSE;
-	int sound_msg;
 
 	bool blind = ((p_ptr->timed[TMD_BLIND]) || (no_lite()));
 	bool msg = TRUE;
