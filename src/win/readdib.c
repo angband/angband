@@ -25,16 +25,6 @@
 
 
 /*
- * Extract the "WIN32" flag from the compiler
- */
-#if defined(__WIN32__) || defined(__WINNT__) || defined(__NT__)
-# ifndef WIN32
-#  define WIN32
-# endif
-#endif
-
-
-/*
  * Needed for lcc-win32
  */
 #ifndef SEEK_SET
