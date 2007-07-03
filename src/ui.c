@@ -494,6 +494,9 @@ static int get_cursor_key(menu_type *menu, int top, char key)
 	int i;
 	int n = menu->filter_count;
 
+	if (MN_CASELESS_TAGS)
+		key = toupper((unsigned char) key);
+
 	if (menu->flags & MN_NO_TAGS)
 	{
 		return -1;
@@ -503,6 +506,10 @@ static int get_cursor_key(menu_type *menu, int top, char key)
 		for (i = 0; i < n; i++)
 		{
 			char c = menu->skin->get_tag(menu, i);
+
+			if ((menu->flags & MN_CASELESS_TAGS) && c)
+				c = toupper((unsigned char) c);
+
 			if (c && c == key)
 				return i + menu->top;
 		}
@@ -511,7 +518,12 @@ static int get_cursor_key(menu_type *menu, int top, char key)
 	{
 		for (i = 0; menu->selections[i]; i++)
 		{
-			if (menu->selections[i] == key)
+			char c = menu->selections[i];
+
+			if (menu->flags & MN_CASELESS_TAGS)
+				c = toupper((unsigned char) c);
+
+			if (c == key)
 				return i;
 		}
 	}
@@ -521,6 +533,10 @@ static int get_cursor_key(menu_type *menu, int top, char key)
 		{
 			int oid = menu->object_list ? menu->object_list[i] : i;
 			char c = menu->row_funcs->get_tag(menu, oid);
+
+			if ((menu->flags & MN_CASELESS_TAGS) && c)
+				c = toupper((unsigned char) c);
+
 			if (c && c == key)
 				return i;
 		}

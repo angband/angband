@@ -4146,6 +4146,7 @@ void init_cmd4_c(void)
 	menu_set_id(menu, OPTION_MENU);
 	menu->title = "Options Menu";
 	menu->menu_data = option_actions;
+	menu->flags = MN_CASELESS_TAGS;
 	menu->cmd_keys = cmd_keys;
 	menu->count = N_ELEMENTS(option_actions);
 	menu_init2(menu, find_menu_skin(MN_SCROLL), &options_iter, &SCREEN_REGION);
