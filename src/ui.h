@@ -229,6 +229,7 @@ typedef enum {
 	/* Reserved for rows in action_menu structure. */
 	MN_DISABLED		= 0x0100000,	/* Neither action nor selection is permitted */
 	MN_GRAYED		= 0x0200000,	/* Row is displayed with CURS_UNKNOWN colors */
+	MN_GREYED		= 0x0200000,	/* Row is displayed with CURS_UNKNOWN colors */
 	MN_SELECTED		= 0x0400000,	/* Row is currently selected */
 	MN_SELECTABLE	= 0x0800000,	/* Row is permitted to be selected */
 	MN_HIDDEN		= 0x1000000		/* Row is hidden, but may be selected via */

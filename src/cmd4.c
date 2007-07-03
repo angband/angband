@@ -573,7 +573,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		if (visual_list)
 		{
 			display_visual_list(g_name_len + 3, 7, browser_rows-1,
-                                   wid - (g_name_len + 3), attr_top, char_left);
+			                             wid - (g_name_len + 3), attr_top, char_left);
 			place_visual_list_cursor(g_name_len + 3, 7, *o_funcs.xattr(oid), 
 										*o_funcs.xchar(oid), attr_top, char_left);
 		}
@@ -1063,10 +1063,34 @@ static void mon_summary(int gid, const int *object_list, int n, int top, int row
 	}
 }
 
+static int count_known_monsters(void)
+{
+	int m_count = 0;
+	int i;
+	size_t j;
+
+	for (i = 0; i < z_info->r_max; i++)
+	{
+		monster_race *r_ptr = &r_info[i];
+		if (!cheat_know && !l_list[i].sights) continue;
+		if (!r_ptr->name) continue;
+
+		if (r_ptr->flags1 & RF1_UNIQUE) m_count++;
+
+		for (j = 1; j < N_ELEMENTS(monster_group) - 1; j++)
+		{
+			const char *pat = monster_group[j].chars;
+			if (strchr(pat, r_ptr->d_char)) m_count++;
+		}
+	}
+
+	return m_count;
+}
+
 /*
  * Display known monsters.
  */
-static void do_cmd_knowledge_monsters(void)
+static void do_cmd_knowledge_monsters(void *obj, const char *name)
 {
 	group_funcs r_funcs = {N_ELEMENTS(monster_group), FALSE, race_name,
 							m_cmp_race, default_group, mon_summary};
@@ -1206,39 +1230,63 @@ static const char *kind_name(int gid) { return object_text_order[gid].name; }
 static int art2gid(int oid) { return obj_group_order[a_info[oid].tval]; }
 
 
+/* If 'artifacts' is NULL, it counts the number of known artifacts, otherwise
+   it collects the list of known artifacts into 'artifacts' as well. */
+static int collect_known_artifacts(int *artifacts, size_t artifacts_len)
+{
+	int a_count = 0;
+	int i, j;
+
+	if (artifacts)
+		assert(artifacts_len >= z_info->a_max);
+
+	for (j = 0; j < z_info->a_max; j++)
+	{
+		/* If the artifact has been created (or we're cheating) */
+		if ((cheat_xtra || a_info[j].cur_num) && a_info[j].name)
+		{
+			bool valid = TRUE;
+
+			for (i = 0; !cheat_xtra && i < z_info->o_max; i++)
+			{
+				int a = o_list[i].name1;
+
+				/* If we haven't actually identified the artifact yet */
+				if (a && a == j && !object_known_p(&o_list[i]))
+				{
+					valid = FALSE;
+				}
+			}
+
+			if (valid)
+			{
+				if (artifacts)
+					artifacts[a_count++] = j;
+				else
+					a_count++;
+			}
+		}
+	}
+
+	return a_count;
+}
+
 /*
  * Display known artifacts
  */
-static void do_cmd_knowledge_artifacts(void)
+static void do_cmd_knowledge_artifacts(void *obj, const char *name)
 {
 	/* HACK -- should be TV_MAX */
 	group_funcs obj_f = {TV_GOLD, FALSE, kind_name, a_cmp_tval, art2gid, 0};
 	member_funcs art_f = {display_artifact, desc_art_fake, 0, 0, 0, 0, 0};
 
-
 	int *artifacts;
 	int a_count = 0;
-	int i, j;
 
 	C_MAKE(artifacts, z_info->a_max, int);
-	
+
 	/* Collect valid artifacts */
-	for (i = 0; i < z_info->a_max; i++)
-	{
-		if ((cheat_xtra || a_info[i].cur_num) && a_info[i].name)
-			artifacts[a_count++] = i;
-	}
-	for (i = 0; !cheat_xtra && i < z_info->o_max; i++)
-	{
-		int a = o_list[i].name1;
-		if (a && !object_known_p(&o_list[i]))
-		{
-			for (j = 0; j < a_count && a != artifacts[j]; j++);
-			a_count -= 1;
-			for (; j < a_count; j++) 
-				artifacts[j] = artifacts[j+1];
-		}
-	}
+	a_count = collect_known_artifacts(artifacts, z_info->a_max);
 
 	display_knowledge("artifacts", artifacts, a_count, obj_f, art_f, 0);
 	FREE(artifacts);
@@ -1339,7 +1387,7 @@ static int e_cmp_tval(const void *a, const void *b)
 /*
  * Display known ego_items
  */
-static void do_cmd_knowledge_ego_items(void)
+static void do_cmd_knowledge_ego_items(void *obj, const char *name)
 {
 	group_funcs obj_f =
 		{TV_GOLD, FALSE, ego_grp_name, e_cmp_tval, default_group, 0};
@@ -1593,7 +1641,7 @@ static void o_xtra_act(char ch, int oid)
 /*
  * Display known objects
  */
-static void do_cmd_knowledge_objects(void)
+static void do_cmd_knowledge_objects(void *obj, const char *name)
 {
 	group_funcs kind_f = {TV_GOLD, FALSE, kind_name, o_cmp_tval, obj2gid, 0};
 	member_funcs obj_f = {display_object, desc_obj_fake, o_xchar, o_xattr, o_xtra_prompt, o_xtra_act, 0};
@@ -1669,7 +1717,7 @@ static void feat_lore(int oid) { /* noop */ }
 /*
  * Interact with feature visuals.
  */
-static void do_cmd_knowledge_features(void)
+static void do_cmd_knowledge_features(void *obj, const char *name)
 {
 	group_funcs fkind_f = {N_ELEMENTS(feature_group_text), FALSE,
 							fkind_name, f_cmp_fkind, feat_order, 0};
@@ -1695,7 +1743,7 @@ static void do_cmd_knowledge_features(void)
 
 
 
-void do_cmd_knowledge_home()  
+void do_cmd_knowledge_home() 
 {
 	/* TODO */
 }
@@ -3022,7 +3070,7 @@ void do_cmd_macros(void)
 
 
 		if (ESCAPE == c.key) break;
-                if (c.key == ARROW_LEFT || c.key == ARROW_RIGHT) continue;
+		if (c.key == ARROW_LEFT || c.key == ARROW_RIGHT) continue;
 		evt = macro_actions[cursor].id;
 
 		switch(evt)
@@ -4007,7 +4055,7 @@ void do_cmd_options(void)
 }
 
 
-void do_cmd_self_knowledge(void *obj, const char *name)
+static void do_cmd_self_knowledge(void *obj, const char *name)
 {
 	/* display self knowledge we already know about. */
 	self_knowledge(FALSE);
@@ -4018,11 +4066,11 @@ void do_cmd_self_knowledge(void *obj, const char *name)
  */
 static menu_item knowledge_actions[] =
 {
-	{{0, "Display artifact knowledge", (action_f)do_cmd_knowledge_artifacts, 0}, '1'},
-	{{0, "Display monster knowledge", (action_f)do_cmd_knowledge_monsters, 0}, '2'},
-	{{0, "Display ego item knowledge", (action_f)do_cmd_knowledge_ego_items, 0}, '3'},
-	{{0, "Display object knowledge", (action_f)do_cmd_knowledge_objects, 0}, '4'},
-	{{0, "Display feature knowledge", (action_f)do_cmd_knowledge_features, 0}, '5'},
+	{{0, "Display object knowledge", do_cmd_knowledge_objects, 0}, '1'},
+	{{0, "Display artifact knowledge", do_cmd_knowledge_artifacts, 0}, '2'},
+	{{0, "Display ego item knowledge", do_cmd_knowledge_ego_items, 0}, '3'},
+	{{0, "Display monster knowledge", do_cmd_knowledge_monsters, 0}, '4'},
+	{{0, "Display feature knowledge", do_cmd_knowledge_features, 0}, '5'},
 	{{0, "Display self-knowledge", do_cmd_self_knowledge, 0}, '6'},
 };
 
@@ -4035,8 +4083,30 @@ static menu_type knowledge_menu;
 void do_cmd_knowledge(void)
 {
 	int cursor = 0;
+	int i;
 	event_type c = EVENT_EMPTY;
 	region knowledge_region = { 0, 0, -1, 11 };
+
+	/* Grey out menu items that won't display anything */
+	if (collect_known_artifacts(NULL, 0) > 0)
+		knowledge_actions[1].flags = 0;
+	else
+		knowledge_actions[1].flags = MN_GREYED;
+
+	knowledge_actions[2].flags = MN_GREYED;
+	for (i = 0; i < z_info->e_max; i++)
+	{
+		if (e_info[i].everseen || cheat_xtra)
+		{
+			knowledge_actions[2].flags = 0;
+			break;
+		}
+	}
+
+	if (count_known_monsters() > 0)
+		knowledge_actions[3].flags = 0;
+	else
+		knowledge_actions[3].flags = MN_GREYED;
 
 	screen_save();
 	menu_layout(&knowledge_menu, &knowledge_region);

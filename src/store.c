@@ -2046,6 +2046,10 @@ static void store_sell(void)
 	const char *reject = "You have nothing that I want. ";
 	const char *prompt = "Sell which item? ";
 
+	/* Clear all current messages */
+	msg_flag = FALSE;
+	prt("", 0, 0);
+
 	if (store_current == STORE_HOME)
 		prompt = "Drop which item? ";
 	else
@@ -2571,14 +2575,14 @@ void do_cmd_store(void)
 	p_ptr->command_new = 0;
 
 
-    /*** Set up state ***/
+	/*** Set up state ***/
 
 	/* XXX Take note of the store number from the terrain feature */
 	store_current = (cave_feat[py][px] - FEAT_SHOP_HEAD);
 
 
 
-    /*** Display ***/
+	/*** Display ***/
 
 	/* Save current screen (ie. dungeon) */
 	screen_save();
@@ -2601,8 +2605,8 @@ void do_cmd_store(void)
 	menu.flags = MN_DBL_TAP | MN_PAGE;
 
 	/* Calculate the positions of things and redraw */
-	store_display_recalc();
 	store_flags = STORE_INIT_CHANGE;
+	store_display_recalc();
 	store_redraw();
 
 	/* Say a friendly hello. */
@@ -2611,9 +2615,8 @@ void do_cmd_store(void)
 	/* Loop */
 	while (!leave)
 	{
-		/* Keep track of stock and number of rows */
+		/* As many rows in the menus as there are items in the store */
 		menu.count = st_ptr->stock_num;
-		items_region.page_rows = scr_places_y[LOC_ITEMS_END] - scr_places_y[LOC_ITEMS_START] + 1;
 
 		/* These two can't intersect! */
 		menu.cmd_keys = "\n\x010\r?=CdeEiIklstwx\x8B\x8C"; /* \x10 = ^p */
@@ -2623,13 +2626,12 @@ void do_cmd_store(void)
 		if (cursor < 0 || cursor >= menu.count)
 			cursor = menu.count - 1;
 
-		if (menu.count >= menu.active.page_rows)
-			items_region.page_rows += 1;
+		items_region.page_rows = scr_places_y[LOC_MORE] - scr_places_y[LOC_ITEMS_START];
 
 		/* Init the menu structure */
 		menu_init2(&menu, find_menu_skin(MN_SCROLL), cur_menu, &items_region);
 
-		if (menu.count >= menu.active.page_rows)
+		if (menu.count > items_region.page_rows)
 			menu.prompt = "  -more-";
 		else
 			menu.prompt = NULL;
