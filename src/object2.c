@@ -4149,6 +4149,7 @@ void inven_drop(int item, int amt)
 
 /*
  * Combine items in the pack
+ * Also "pick up" any gold in the inventory by accident
  *
  * Note special handling of the "overflow" slot
  */
@@ -4165,14 +4166,24 @@ void combine_pack(void)
 	/* Combine the pack (backwards) */
 	for (i = INVEN_PACK; i > 0; i--)
 	{
+		bool slide = FALSE;
+
 		/* Get the item */
 		o_ptr = &inventory[i];
 
 		/* Skip empty items */
 		if (!o_ptr->k_idx) continue;
 
+		/* Absorb gold */
+		if (o_ptr->tval == TV_GOLD)
+		{
+			/* Count the gold */
+			slide = TRUE;
+			p_ptr->au += o_ptr->pval;
+		}
+
 		/* Scan the items above that item */
-		for (j = 0; j < i; j++)
+		else for (j = 0; j < i; j++)
 		{
 			/* Get the item */
 			j_ptr = &inventory[j];
@@ -4184,30 +4195,34 @@ void combine_pack(void)
 			if (object_similar(j_ptr, o_ptr))
 			{
 				/* Take note */
-				flag = TRUE;
+				flag = slide = TRUE;
 
 				/* Add together the item counts */
 				object_absorb(j_ptr, o_ptr);
 
-				/* One object is gone */
-				p_ptr->inven_cnt--;
-
-				/* Slide everything down */
-				for (k = i; k < INVEN_PACK; k++)
-				{
-					/* Hack -- slide object */
-					COPY(&inventory[k], &inventory[k+1], object_type);
-				}
-
-				/* Hack -- wipe hole */
-				object_wipe(&inventory[k]);
-
-				/* Window stuff */
-				p_ptr->window |= (PW_INVEN);
-
-				/* Done */
 				break;
 			}
+		}
+
+
+		/* Compact the inventory */
+		if (slide)
+		{
+			/* One object is gone */
+			p_ptr->inven_cnt--;
+
+			/* Slide everything down */
+			for (k = i; k < INVEN_PACK; k++)
+			{
+				/* Hack -- slide object */
+				COPY(&inventory[k], &inventory[k+1], object_type);
+			}
+
+			/* Hack -- wipe hole */
+			object_wipe(&inventory[k]);
+
+			/* Window stuff */
+			p_ptr->window |= (PW_INVEN);
 		}
 	}
 
