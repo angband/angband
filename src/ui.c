@@ -494,7 +494,7 @@ static int get_cursor_key(menu_type *menu, int top, char key)
 	int i;
 	int n = menu->filter_count;
 
-	if (MN_CASELESS_TAGS)
+	if (menu->flags & MN_CASELESS_TAGS)
 		key = toupper((unsigned char) key);
 
 	if (menu->flags & MN_NO_TAGS)
