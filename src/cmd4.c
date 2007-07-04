@@ -1041,13 +1041,16 @@ static void mon_summary(int gid, const int *object_list, int n, int top, int row
 	int i;
 	int kills = 0;
 
+	/* Access the race */
+	
 	for (i = 0; i < n; i++)
 	{
 		int oid = default_join[object_list[i+top]].oid;
 		kills += l_list[oid].pkills;
 	}
 
-	if (gid == 0)
+	/* Different display for the first item if we've got uniques to show */
+	if (gid == 0 && ((&r_info[default_join[object_list[0]].oid])->flags1 & (RF1_UNIQUE)))
 	{
 		c_prt(TERM_L_BLUE, format("%d known uniques, %d slain.", n, kills),
 					row, col);
