@@ -503,16 +503,12 @@ void squelch_items(void)
  */
 void squelch_drop(void)
 {
-	int floor_list[MAX_FLOOR_STACK];
-	int floor_num, n;
-	int count = 0;
-
-	object_type *o_ptr;
+	int n;
 
 	/* Scan through the slots backwards */
 	for (n = INVEN_PACK - 1; n >= 0; n--)
 	{
-		o_ptr = &inventory[n];
+		object_type *o_ptr = &inventory[n];
 
 		/* Skip non-objects and unsquelchable objects */
 		if (!o_ptr->k_idx) continue;

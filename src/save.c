@@ -419,6 +419,17 @@ static void wr_squelch(void)
 	for (i = 0; i < SQUELCH_BYTES; i++)
 		wr_byte(squelch_level[i]);
 
+	/* Write ego-item squelch bits */
+	wr_u16b(z_info->e_max);
+	for (i = 0; i < z_info->e_max; i++)
+	{
+		byte flags = 0;
+
+		/* Figure out and write the everseen flag */
+		if (e_info[i].everseen) flags |= 0x02;
+		wr_byte(flags);
+	}
+
 	/* Write the current number of auto-inscriptions */
 	wr_u16b(inscriptions_count);
 

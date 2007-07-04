@@ -265,18 +265,14 @@ static errr rd_item(object_type *o_ptr)
 	/* Type/Subtype */
 	rd_byte(&o_ptr->tval);
 	rd_byte(&o_ptr->sval);
-
-	/* Special pval */
 	rd_s16b(&o_ptr->pval);
 
-
+	/* Pseudo-ID bit */
 	rd_byte(&o_ptr->pseudo);
 
 	/* Fix the field */
 	if (o_ptr->pseudo > 99)
 	    o_ptr->pseudo -= 100;
-	else
-	    o_ptr->pseudo = 0;
 
 	rd_byte(&o_ptr->number);
 	rd_s16b(&o_ptr->weight);
@@ -995,14 +991,28 @@ static int rd_squelch(void)
 			rd_byte(&squelch_level[i]);
 	}
 
-	/* Handle pre-cleanup squelch */
-	if (older_than(3, 0, 9))
+	/* Handle ego-item squelch */
+	if ((sf_major == 3) && (sf_minor == 0) && (sf_patch != 9))
 	{
-		u16b tmp16u;
+		u16b file_e_max;
 
-		/* Read the number of saved ego-item types and ignore them all */
-		rd_u16b(&tmp16u);
-		strip_bytes(tmp16u);
+		/* Read the number of saved ego-item */
+		rd_u16b(&file_e_max);
+
+		for (i = 0; i < file_e_max; i++)
+		{
+			if (i < z_info->e_max)
+			{
+				byte flags;
+
+				/* Read and extract the flag */
+				rd_byte(&flags);
+				e_info[i].everseen |= (flags & 0x02);
+			}
+		}
+	}
+	else
+	{
 	}
 
 	/* Read the current number of auto-inscriptions */

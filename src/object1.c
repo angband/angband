@@ -2739,7 +2739,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 	char which;
 
-	int i, j, k;
+	int j, k;
 
 	int i1, i2;
 	int e1, e2;
