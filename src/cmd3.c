@@ -725,13 +725,19 @@ void do_cmd_inscribe(void)
  */
 static bool item_tester_refill_lantern(const object_type *o_ptr)
 {
+	u32b f1, f2, f3;
+
+	/* Get flags */
+	object_flags(o_ptr, &f1, &f2, &f3);
+
 	/* Flasks of oil are okay */
 	if (o_ptr->tval == TV_FLASK) return (TRUE);
 
-	/* Non-empty lanterns are okay */
+	/* Non-empty, non-everburning lanterns are okay */
 	if ((o_ptr->tval == TV_LITE) &&
 	    (o_ptr->sval == SV_LITE_LANTERN) &&
-	    (o_ptr->timeout > 0))
+	    (o_ptr->timeout > 0) &&
+		!(f3 & TR3_NO_FUEL))
 	{
 		return (TRUE);
 	}
@@ -874,9 +880,18 @@ static void do_cmd_refill_lamp(void)
  */
 static bool item_tester_refill_torch(const object_type *o_ptr)
 {
+	u32b f1, f2, f3;
+
+	/* Get flags */
+	object_flags(o_ptr, &f1, &f2, &f3);
+
 	/* Torches are okay */
 	if ((o_ptr->tval == TV_LITE) &&
-	    (o_ptr->sval == SV_LITE_TORCH)) return (TRUE);
+	    (o_ptr->sval == SV_LITE_TORCH) &&
+		!(f3 & TR3_NO_FUEL))
+	{
+		return (TRUE);
+	}
 
 	/* Assume not okay */
 	return (FALSE);
@@ -974,9 +989,14 @@ static void do_cmd_refill_torch(void)
 void do_cmd_refill(void)
 {
 	object_type *o_ptr;
+	u32b f1, f2, f3;
 
 	/* Get the light */
 	o_ptr = &inventory[INVEN_LITE];
+
+	/* Get flags */
+	object_flags(o_ptr, &f1, &f2, &f3);
+
 
 	/* It is nothing */
 	if (o_ptr->tval != TV_LITE)
@@ -984,16 +1004,19 @@ void do_cmd_refill(void)
 		msg_print("You are not wielding a light.");
 	}
 
-	/* It's a lamp */
-	else if (o_ptr->sval == SV_LITE_LANTERN)
+	else if (!(f3 & TR3_NO_FUEL))
 	{
-		do_cmd_refill_lamp();
-	}
+		/* It's a lamp */
+		if (o_ptr->sval == SV_LITE_LANTERN)
+		{
+			do_cmd_refill_lamp();
+		}
 
-	/* It's a torch */
-	else if (o_ptr->sval == SV_LITE_TORCH)
-	{
-		do_cmd_refill_torch();
+		/* It's a torch */
+		else if (o_ptr->sval == SV_LITE_TORCH)
+		{
+			do_cmd_refill_torch();
+		}
 	}
 
 	/* No torch to refill */
