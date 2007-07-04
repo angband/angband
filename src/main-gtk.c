@@ -458,7 +458,7 @@ static void load_font_by_name(term_data *td, cptr fontname)
 	/* Hack - the values I'm giving it are smaller then the size the window should be;
 	    and as such, it sets it to the smallest size it can while showing everything,
 	    which is actually what I want it at. */
-	gtk_window_resize(td->window, td->cols * td->font_wid + 1, td->rows * td->font_hgt + 1);
+	gtk_window_resize(GTK_WINDOW(td->window), td->cols * td->font_wid + 1, td->rows * td->font_hgt + 1);
 	
 		
 	/* Move out old pixmap, etc... to different vars */
