@@ -578,7 +578,7 @@ static void  py_pickup_gold(void)
 			if (k_idx <= 0) continue;
 
 			/* Get the object name */
-			strip_name(tmp, k_idx, TRUE);
+			object_kind_name(tmp, sizeof tmp, k_idx, TRUE);
 
 			/* Build up the pickup string */
 			my_strcat(buf, tmp, sizeof(buf));

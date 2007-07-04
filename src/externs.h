@@ -392,6 +392,7 @@ extern void object_info_screen(const object_type *o_ptr);
 /* object1.c */
 extern void flavor_init(void);
 extern void reset_visuals(bool prefs);
+extern void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know);
 extern void object_flags(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
 extern void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
 extern void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int mode);
@@ -766,4 +767,3 @@ extern void do_cmd_spoilers(void);
 #endif /* ALLOW_SPOILERS */
 
 bool make_fake_artifact(object_type *o_ptr, byte name1);
-extern void strip_name(char *buf, int k_idx, bool easy_know);

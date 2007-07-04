@@ -177,7 +177,7 @@ void flavor_init(void)
 			wordlen = randname_make(RANDNAME_SCROLL, 2, 8, end, 24 - titlelen);
 		}
 		buf[titlelen - 1] = '\0';
-          
+
 		/* Check the scroll name hasn't already been generated */
 		for (j = 0; j < i; j++)
 		{
@@ -187,7 +187,7 @@ void flavor_init(void)
 				break;
 			}
 		}
-          
+
 		if (okay)
 		{
 			my_strcpy(scroll_adj[i], buf, sizeof(scroll_adj[0]));
@@ -447,6 +447,87 @@ static void object_flags_aux(int mode, const object_type *o_ptr, u32b *f1, u32b 
 	}
 }
 
+
+
+/*
+ * Puts a very stripped-down version of an object's name into buf.
+ * If easy_know is TRUE, then the IDed names are used, otherwise
+ * flavours, scroll names, etc will be used.
+ *
+ * Just truncates if the buffer isn't big enough.
+ */
+void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know)
+{
+	char *t;
+
+	object_kind *k_ptr = &k_info[k_idx];
+
+	/* If not aware, use flavor */
+	if (!easy_know && !k_ptr->aware && k_ptr->flavor)
+	{
+		if (k_ptr->tval == TV_SCROLL)
+		{
+			strnfmt(buf, max, "\"%s\"", scroll_adj[k_ptr->sval]);
+		}
+		else if (k_ptr->tval == TV_FOOD && k_ptr->sval < SV_FOOD_MIN_FOOD)
+		{
+			strnfmt(buf, max, "%s Mushroom", flavor_text + flavor_info[k_ptr->flavor].text);
+		}
+		else
+		{
+			/* Plain flavour (e.g. Copper) will do. */
+			my_strcpy(buf, flavor_text + flavor_info[k_ptr->flavor].text, max);
+		}
+	}
+	else
+	/* Use proper name (Healing, or whatever) */
+	{
+		cptr str = (k_name + k_ptr->name);
+
+		if (k_ptr->tval == TV_FOOD && k_ptr->sval < SV_FOOD_MIN_FOOD)
+		{
+			my_strcpy(buf, "Mushroom of ", max);
+			max -= strlen(buf);
+			t = buf + strlen(buf);
+		}
+		else
+		{
+			t = buf;
+		}
+
+		/* Skip past leading characters */
+		while ((*str == ' ') || (*str == '&')) str++;
+
+		/* Copy useful chars */
+		for (; *str && max > 1; str++)
+		{
+			/* Pluralizer for irregular plurals */
+			/* Useful for languages where adjective changes for plural */
+			if (*str == '|')
+			{
+				/* Process singular part */
+				for (str++; *str != '|' && max > 1; str++) 
+				{
+					*t++ = *str;
+					max--;
+				}
+
+				/* Process plural part */
+				for (str++; *str != '|'; str++) ;
+			}
+
+			/* English plural indicator can simply be skipped */
+			else if (*str != '~')
+			{
+				*t++ = *str;
+				max--;
+			}
+		}
+
+		/* Terminate the new name */
+		*t = '\0';
+	}
+}
 
 
 

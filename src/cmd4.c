@@ -1444,7 +1444,6 @@ static void display_object(int col, int row, bool cursor, int oid)
 
 	char o_name[80];
 
-
 	/* Choose a color */
 	bool aware = (k_ptr->flavor == 0) || (k_ptr->aware);
 	byte a = (aware && k_ptr->x_attr) ?
@@ -1461,14 +1460,13 @@ static void display_object(int col, int row, bool cursor, int oid)
 	}
 
 	/* Tidy name */
-	strip_name(o_name, k_idx, cheat_know);
-
+        object_kind_name(o_name, sizeof o_name, k_idx, cheat_know);
 
 	/* Display the name */
 	c_prt(attr, o_name, row, col);
 
 	/* Show autoinscription if around */
-	if (inscrip)
+	if (aware && inscrip)
 		c_put_str(TERM_YELLOW, inscrip, row, 55);
 
 #ifdef UNANGBAND
@@ -1575,7 +1573,7 @@ static const char *o_xtra_prompt(int oid)
 
 
 	/* Forget it if we've never seen the thing */
-	if (!k_ptr->everseen)
+	if (k_ptr->flavor && !k_ptr->aware)
 		return "";
 
 	/* If it's already inscribed */
@@ -1594,7 +1592,7 @@ static void o_xtra_act(char ch, int oid)
 	s16b idx = get_autoinscription_index(oid);
 
 	/* Forget it if we've never seen the thing */
-	if (!k_ptr->everseen)
+	if (k_ptr->flavor && !k_ptr->aware)
 		return;
 
 	/* Uninscribe */

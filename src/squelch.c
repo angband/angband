@@ -655,7 +655,7 @@ static void sval_display(menu_type *menu, int oid, bool cursor, int row, int col
 
 
 	/* Acquire the "name" of object "i" */
-	strip_name(buf, idx, TRUE);
+	object_kind_name(buf, sizeof(buf), idx, TRUE);
 
 	/* Print it */
 	c_put_str(attr, format("[ ] %s", buf), row, col);

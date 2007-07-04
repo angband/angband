@@ -412,48 +412,6 @@ static const tval_desc tvals[] =
 };
 
 
-/*
- * Strip an "object name" into a buffer
- */
-void strip_name(char *buf, int k_idx, bool easy_know)
-{
-	char *t;
-
-	object_kind *k_ptr = &k_info[k_idx];
-
-	cptr str = (k_name + k_ptr->name);
-
-    /* If not aware, use flavor */
-    if (!easy_know && !k_ptr->aware && k_ptr->flavor)
-			str = flavor_text + flavor_info[k_ptr->flavor].text;
-
-
-
-	/* Skip past leading characters */
-	while ((*str == ' ') || (*str == '&')) str++;
-
-	/* Copy useful chars */
-	for (t = buf; *str; str++)
-	{
-		/* Pluralizer for irregular plurals */
-		/* Useful for languages where adjective changes for plural */
-		if (*str == '|')
-		{
-			/* Process singular part */
-			for (str++; *str != '|'; str++) *t++ = *str;
-
-			/* Process plural part */
-			for (str++; *str != '|'; str++) ;
-		}
-
-		/* English plural indicator can simply be skipped */
-		else if (*str != '~') *t++ = *str;
-	}
-
-	/* Terminate the new name */
-	*t = '\0';
-}
-
 
 /*
  * Get an object kind for creation (or zero)
@@ -531,7 +489,7 @@ static int wiz_create_itemtype(void)
 			ch  = choice_name[num];
 
 			/* Get the "name" of object "i" */
-			strip_name(buf, i, TRUE);
+			object_kind_name(buf, sizeof buf, i, TRUE);
 
 			/* Print it */
 			prt(format("[%c] %s", ch, buf), row, col);
