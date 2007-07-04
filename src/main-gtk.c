@@ -96,27 +96,30 @@ static void set_foreground_color(term_data *td, byte a)
 {
 	static unsigned int failed = 0;
 	GdkColor color;
-	/*int red, green, blue;*/
 
-	color.red     = angband_color_table[a][1] * 256;
+	color.red   = angband_color_table[a][1] * 256;
 	color.green = angband_color_table[a][2] * 256;
-	color.blue    = angband_color_table[a][3] * 256;
+	color.blue  = angband_color_table[a][3] * 256;
 	
 	g_assert(td->cairo_draw != 0);
 
 	if (gdk_colormap_alloc_color(gdk_colormap_get_system(), &color, FALSE, TRUE)) 
 	{
 		gdk_gc_set_foreground(td->gc, &color);
-		cairo_set_source_rgb (td->cairo_draw, color.red, color.green, color.blue);
+		cairo_set_source_rgb(td->cairo_draw, (double)color.red / 65536,
+		                     (double)color.green / 65536,
+		                     (double)color.blue / 65536);
 	}
+
 	else if (!failed++)
+	{
 		g_print("Couldn't allocate color.\n");
+	}
 }
 
 /* 
  * Set a GdkRectangle 
  */
-
 static void init_gdk_rect(GdkRectangle *r, int x, int y, int w, int h)
 {
 	r->x = x;
