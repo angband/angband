@@ -2193,7 +2193,7 @@ static bool update_option(char key, void *pgdb, int oid)
 {
 	/* Ignore arrow events */
 	if (key == ARROW_LEFT || key == ARROW_RIGHT)
-		return;
+		return TRUE;
 
 	switch (toupper((unsigned char) key))
 	{
