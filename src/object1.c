@@ -679,7 +679,7 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 		if (object_value(o_ptr) == 0)
 		{
 			k_ptr->squelch = TRUE;
-			squelch_set((object_type *) o_ptr);
+			p_ptr->notice = PN_SQUELCH;
 		}
 	}
 
@@ -1561,6 +1561,10 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 		/* Terminate the inscription */
 		*t++ = c2;
 	}
+
+	/* Add squelch marker */
+	if (!hide_squelchable && squelch_item_ok(o_ptr))
+		object_desc_str_macro(t, " (squelch)");
 
 
 object_desc_done:

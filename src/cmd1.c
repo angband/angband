@@ -684,7 +684,7 @@ static void py_pickup_aux(int o_idx, bool msg)
 	o_ptr = &inventory[slot];
 
 	/* Set squelch status */
-	squelch_set(o_ptr);
+	p_ptr->notice = PN_SQUELCH;
 
 	/* Optionally, display a message */
 	if (msg)

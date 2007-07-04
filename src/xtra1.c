@@ -2682,7 +2682,7 @@ void notice_stuff(void)
 	if (p_ptr->notice & PN_SQUELCH)
 	{
 		p_ptr->notice &= ~(PN_SQUELCH);
-		if (auto_squelch) squelch_items();
+		if (hide_squelchable) squelch_drop();
 	}
 
 	/* Combine the pack */

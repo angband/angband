@@ -3818,7 +3818,7 @@ void do_ident_item(int item, object_type *o_ptr)
 	apply_autoinscription(o_ptr);
 
 	/* Set squelch flag */
-	squelch_set(o_ptr);
+	p_ptr->notice = PN_SQUELCH;
 
 	/* Recalculate bonuses */
 	p_ptr->update |= (PU_BONUS);

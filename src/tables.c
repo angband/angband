@@ -1472,7 +1472,7 @@ cptr option_text[OPT_MAX] =
 	NULL,						/* xxx smart_packs */
 	"hp_changes_color",			/* OPT_hp_changes_color */
 	"hide_squelchable",			/* OPT_hide_squelchable */
-	"auto_squelch",				/* OPT_auto_squelch */
+	NULL,						/* xxx */
 	"mouse_movement",			/* OPT_mouse_movement */
 	NULL,						/* xxx */
 	NULL,						/* xxx */
@@ -1735,9 +1735,9 @@ cptr option_desc[OPT_MAX] =
 	NULL,										/* xxx smart_monsters */
 	NULL,										/* xxx smart_packs */
 	"Player color indicates low hit points",	/* OPT_hp_changes_color */
-	"Hide items set as squelchable",               	/* OPT_hide_squelchable */
-	"Destroy items marked as squelch automatically",	/* OPT_auto_squelch */
-	"Allow mouse clicks to move the player",       /* OPT_mouse_movement */
+	"Hide items set as squelchable",			/* OPT_hide_squelchable */
+	NULL,										/* xxx */
+	"Allow mouse clicks to move the player",	/* OPT_mouse_movement */
 	NULL,										/* xxx */
 	NULL,										/* xxx */
 	NULL,										/* xxx */
@@ -2000,7 +2000,7 @@ const bool option_norm[OPT_MAX] =
 	FALSE,		/* xxx smart_packs */
 	FALSE,		/* OPT_hp_changes_color */
 	FALSE,		/* OPT_hide_squelchable */
-	FALSE,		/* OPT_auto_squelch */
+	FALSE,		/* xxx */
 	FALSE,		/* OPT_mouse_movement */
 	FALSE,		/* xxx */
 	FALSE,		/* xxx */
@@ -2196,7 +2196,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_pickup_always,
 		OPT_pickup_inven,
 		OPT_pickup_detail,
-		OPT_auto_squelch,
+		OPT_hide_squelchable,
 		OPT_easy_alter,
 		OPT_easy_open,
 		OPT_mouse_movement,
@@ -2213,7 +2213,6 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_depth_in_feet,
 		OPT_hilite_player,
  		OPT_center_player,
-		OPT_hide_squelchable,
 		OPT_show_piles,
 		OPT_show_flavors,
 		OPT_show_labels,
@@ -2223,6 +2222,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_view_special_lite,
 		OPT_view_perma_grids,
 		OPT_view_torch_grids,
+		OPT_NONE,
 		OPT_NONE,
 	},
 

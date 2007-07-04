@@ -393,7 +393,7 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		chest_death(y, x, o_idx);
 
 		/* Squelch chest if autosquelch calls for it */
-		squelch_set(o_ptr);
+		p_ptr->notice = PN_SQUELCH;
 	}
 
 	/* Result */

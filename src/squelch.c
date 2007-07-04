@@ -26,20 +26,14 @@
  * purple dots, and by this time the code was quite unmaintainable and pretty
  * much impossible to work with.
  *
- * Luckily, though, it's been cleaned up.  Here's a quick overview of the
- * options available now:
+ * Luckily, though, it's been cleaned up.  There is now only sval-dependent
+ * squelch and quality-based squelch, and the two don't interact -- quality-based
+ * is for items that get pseudo-id'd and sval-dependent is for potions and the
+ * like.
  *
- * Squelched items are not automatically destroyed -- they're instead marked
- * "{squelch}", and destroyed with a special command on the "item destruction"
- * screen.  This is much cleaner.
- *
- * There is now only sval-dependent squelch and quality-based squelch, and the
- * two don't interact -- quality-based is for items that get pseudo-id'd and
- * sval-dependent is for potions and the like.
- *
- * The squelch code figures most things out itself.  If you want to make the
- * code see if it should add the squelch flag to an object, simply call
- * squelch_set(o_ptr), and it will do the rest.
+ * The squelch code figures most things out itself.  Simply do:
+ *     p_ptr->notice = PN_SQUELCH;
+ * whenever you want to make the game check for squelched items.
  *
  * The quality-dependent squelch is much reduced in scope from how it used to
  * be.  If less "general" settings are desired, they can be added easily enough
@@ -425,6 +419,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 	return FALSE;
 }
 
+
 /* 
  * Returns TRUE if an item should be hidden due to the player's
  * current settings.
@@ -433,21 +428,6 @@ bool squelch_hide_item(object_type *o_ptr)
 {
 	return (hide_squelchable ? squelch_item_ok(o_ptr) : FALSE);
 }
-
-
-/*
- * Set squelch inscription on an object.
- */
-void squelch_set(object_type *o_ptr)
-{
-	/* Set squelch inscription unless there's already one */
-	if (squelch_item_ok(o_ptr))
-		p_ptr->notice = PN_SQUELCH;
-
-	/* Done */
-	return;
-}
-
 
 
 /*
@@ -517,6 +497,34 @@ void squelch_items(void)
 	}
 }
 
+
+/*
+ * Drop all {squelch}able items.
+ */
+void squelch_drop(void)
+{
+	int floor_list[MAX_FLOOR_STACK];
+	int floor_num, n;
+	int count = 0;
+
+	object_type *o_ptr;
+
+	/* Scan through the slots backwards */
+	for (n = INVEN_PACK - 1; n >= 0; n--)
+	{
+		o_ptr = &inventory[n];
+
+		/* Skip non-objects and unsquelchable objects */
+		if (!o_ptr->k_idx) continue;
+		if (!squelch_item_ok(o_ptr)) continue;
+
+		/* Drop item */
+		inven_drop(n, o_ptr->number);
+	}
+
+	/* Combine/reorder the pack */
+	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+}
 
 
 

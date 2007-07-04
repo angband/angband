@@ -2198,7 +2198,7 @@ static void store_sell(void)
 		purchase_analyze(price, value, dummy);
 
 		/* Set squelch flag */
-		squelch_set(o_ptr);
+		p_ptr->notice = PN_SQUELCH;
 
 		/* Take the object from the player */
 		inven_item_increase(item, -amt);

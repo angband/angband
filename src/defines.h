@@ -2426,7 +2426,6 @@ enum
 #define OPT_auto_more				71
 #define OPT_hp_changes_color		74
 #define OPT_hide_squelchable		75
-#define OPT_auto_squelch		76
 #define OPT_mouse_movement		77
 
 
@@ -2517,7 +2516,6 @@ enum
 #define auto_more				OPTION(auto_more)
 #define hp_changes_color		OPTION(hp_changes_color)
 #define hide_squelchable		OPTION(hide_squelchable)
-#define auto_squelch			OPTION(auto_squelch)
 #define mouse_movement			OPTION(mouse_movement)
 
 #define birth_maximize			OPTION(birth_maximize)

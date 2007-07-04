@@ -295,7 +295,7 @@ void do_cmd_wield(void)
 		o_ptr->ident |= (IDENT_SENSE);
 
 		/* Set squelched status */
-		squelch_set(o_ptr);
+		p_ptr->notice = PN_SQUELCH;
 	}
 
 	/* Recalculate bonuses */
