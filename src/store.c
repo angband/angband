@@ -2392,6 +2392,7 @@ static bool store_process_command(char cmd, void *db, int oid)
 		}
 
 		/* Take off equipment */
+		case 'T':
 		case 't':
 		{
 			do_cmd_takeoff();
@@ -2399,6 +2400,7 @@ static bool store_process_command(char cmd, void *db, int oid)
 		}
 
 		/* Destroy an item */
+		case KTRL('D'):
 		case 'k':
 		{
 			do_cmd_destroy();
@@ -2455,6 +2457,7 @@ static bool store_process_command(char cmd, void *db, int oid)
 		/*** Use various objects ***/
 
 		/* Browse a book */
+		case 'P':
 		case 'b':
 		{
 			do_cmd_browse();
@@ -2618,9 +2621,21 @@ void do_cmd_store(void)
 		/* As many rows in the menus as there are items in the store */
 		menu.count = st_ptr->stock_num;
 
-		/* These two can't intersect! */
-		menu.cmd_keys = "\n\x010\r?=CdeEiIklstwx\x8B\x8C"; /* \x10 = ^p */
-		menu.selections = "abcfghjmnopqruvyz1234567890";
+		/* Roguelike */
+		if (rogue_like_commands)
+		{
+			/* These two can't intersect! */
+			menu.cmd_keys = "\n\x04\x10\r?=CPdeEiIsTwx\x8B\x8Chl"; /* \x10 = ^p , \x04 = ^D */
+			menu.selections = "abcfghmnopqruvyz1234567890";
+		}
+
+		/* Original */
+		else
+		{
+			/* These two can't intersect! */
+			menu.cmd_keys = "\n\x010\r?=CbdeEiIklstw\x8B\x8C"; /* \x10 = ^p */
+			menu.selections = "acfghmnopqruvxyz13456790";
+		}
 
 		/* Keep the cursor in range of the stock */
 		if (cursor < 0 || cursor >= menu.count)

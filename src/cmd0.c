@@ -121,8 +121,6 @@ static command_type cmd_info[] =
 	{ "Help",                         '?', do_cmd_help },
 	{ "Identify symbol",              '/', do_cmd_query_symbol },
 	{ "Character description",        'C', do_cmd_change_name },
-	{ "Interact with options",        '=', do_cmd_xxx_options },
-	{ "Port-specific preferences",    '!', do_cmd_port },
 	{ "Check knowledge",              '~', do_cmd_knowledge },
 	{ "Repeat level feeling",   KTRL('F'), do_cmd_feeling },
 	{ "Show previous message",  KTRL('O'), do_cmd_message_one },
@@ -132,6 +130,9 @@ static command_type cmd_info[] =
 /* Utility/assorted commands */
 static command_type cmd_util[] =
 {
+	{ "Interact with options",        '=', do_cmd_xxx_options },
+	{ "Port-specific preferences",    '!', do_cmd_port },
+
 	{ "Save and don't quit",  KTRL('S'), do_cmd_save_game },
 	{ "Save and quit",        KTRL('X'), do_cmd_quit },
 	{ "Quit (commit suicide)",      'Q', do_cmd_suicide },
