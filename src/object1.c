@@ -3154,22 +3154,21 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 						break;
 					}
-
-					/* Hack -- Fix screen */
-					if (p_ptr->command_see)
-					{
-						/* Load screen */
-						screen_load();
-
-						/* Save screen */
-						screen_save();
-					}
-
-					p_ptr->command_wrk = (USE_FLOOR);
-
-					break;
 				}
 
+				/* Hack -- Fix screen */
+				if (p_ptr->command_see)
+				{
+					/* Load screen */
+					screen_load();
+
+					/* Save screen */
+					screen_save();
+				}
+
+				p_ptr->command_wrk = (USE_FLOOR);
+
+#if 0
 				/* Check each legal object */
 				for (i = 0; i < floor_num; ++i)
 				{
@@ -3188,6 +3187,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 					done = TRUE;
 					break;
 				}
+#endif
 
 				break;
 			}

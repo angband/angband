@@ -2958,7 +2958,7 @@ s16b get_quantity(cptr prompt, int max)
 		if (!prompt)
 		{
 			/* Build a prompt */
-			strnfmt(tmp, sizeof(tmp), "Quantity (0-%d): ", max);
+			strnfmt(tmp, sizeof(tmp), "Quantity (0-%d, *=all): ", max);
 
 			/* Use that prompt */
 			prompt = tmp;
@@ -2973,8 +2973,8 @@ s16b get_quantity(cptr prompt, int max)
 		/* Extract a number */
 		amt = atoi(buf);
 
-		/* A letter means "all" */
-		if (isalpha((unsigned char)buf[0])) amt = max;
+		/* A star or letter means "all" */
+		if ((buf[0] == '*') || isalpha((unsigned char)buf[0])) amt = max;
 	}
 
 	/* Enforce the maximum */

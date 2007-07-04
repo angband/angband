@@ -435,8 +435,6 @@ void do_cmd_destroy(void)
 
 	cptr q, s;
 
-	const char *inscrip;
-
 	/* Get an item */
 	q = "Destroy which item? ";
 	s = "You have nothing to destroy.";
@@ -489,14 +487,6 @@ void do_cmd_destroy(void)
 
 	/* Verify destruction */
 	strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", o_name);
-
-	inscrip = (o_ptr->note ? quark_str(o_ptr->note) : NULL);
-
-	/* Destroying a squelched item is prompt-free */
-	if (!inscrip || !streq(inscrip, "squelch"))
-	{
-		if (!get_check(out_val)) return;
-	}
 
 
 	/* Artifacts cannot be destroyed */
@@ -557,6 +547,11 @@ void do_cmd_destroy(void)
 		floor_item_optimize(0 - item);
 	}
 
+#if 0
+	/*
+	 * We can only re-enable this when it can be made to interact well with
+	 * the repeat code.
+	 */
 
 	/* We have destroyed a floor item, and the floor is not empty */
 	if ((item < 0) && (cave_o_idx[p_ptr->py][p_ptr->px]))
@@ -565,6 +560,7 @@ void do_cmd_destroy(void)
 		p_ptr->command_cmd = 'k';
 		p_ptr->command_rep = 2;
 	}
+#endif
 }
 
 
