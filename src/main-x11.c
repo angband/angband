@@ -2845,13 +2845,16 @@ errr init_x11(int argc, char **argv)
 	}
 
 
-	/* Try the file */
-	path_build(filename, sizeof(filename), ANGBAND_DIR_XTRA, bitmap_file);
-	if (!my_fexists(filename))
+	if (bitmap_file)
 	{
-		use_graphics = GRAPHICS_NONE;
-		use_transparency = FALSE;
-		ANGBAND_GRAF = 0;
+		/* Try the file */
+		path_build(filename, sizeof(filename), ANGBAND_DIR_XTRA, bitmap_file);
+		if (!my_fexists(filename))
+		{
+			use_graphics = GRAPHICS_NONE;
+			use_transparency = FALSE;
+			ANGBAND_GRAF = 0;
+		}
 	}
 
 
