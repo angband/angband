@@ -107,12 +107,12 @@ can always, for example, use "\" + "." + "6", to specify "run east".
  y  (unused)                             Y  (unused)
  z  Zap a rod                            Z  (unused)
  !  Interact with system                ^A  (special - debug command)
- @  Interact with macros                ^B  (unused)
+ @  (unused)                            ^B  (unused)
  #  (unused)                            ^C  (special - break)
- $  User interface                      ^D  (unused)
- %  Interact with visuals               ^E  Toggle choice window
+ $  (unused)                            ^D  (unused)
+ %  (unused)                            ^E  Toggle choice window
  ^  (special - control key)             ^F  Repeat level feeling
- &  Interact with colors                ^G  (unused)
+ &  (unused)                            ^G  (unused)
  *  Target monster or location          ^H  (unused)
  (  Load screen dump                    ^I  (special - tab)
  )  Dump screen dump                    ^J  (special - linefeed)
@@ -167,12 +167,12 @@ can always, for example, use "\" + "." + "6", to specify "run east".
  y  (walk - north west)                  Y  (run - north west)
  z  Aim a wand (Zap)                     Z  Use a staff (Zap)
  !  Interact with system                ^A  (special - debug command)
- @  Interact with macros                ^B  (alter - south west)
+ @  (unused)                            ^B  (alter - south west)
  #  Toggle search mode                  ^C  (special - break)
  $  (unused)                            ^D  Destroy item
- %  Interact with visuals               ^E  Toggle choice window
+ %  (unused)                            ^E  Toggle choice window
  ^  (special - control key)             ^F  Repeat level feeling
- &  Interact with colors                ^G  (unused)
+ &  (unused)                            ^G  (unused)
  *  Target monster or location          ^H  (alter - west)
  (  Load screen dump                    ^I  (special - tab)
  )  Dump screen dump                    ^J  (alter - south)

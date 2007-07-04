@@ -1795,7 +1795,7 @@ cptr option_desc[OPT_MAX] =
 	"Restrict the use of stores/home",			/* OPT_birth_no_stores */
 	"Restrict creation of artifacts",			/* OPT_birth_no_artifacts */
 	"Don't stack objects on the floor",			/* OPT_birth_no_stacking */
-	"Preserve artifacts when leaving level",	/* OPT_birth_no_preserve */
+	"Don't preserve artifacts when leaving level",	/* OPT_birth_no_preserve */
 	"Don't generate connected stairs",			/* OPT_birth_no_stairs */
 	NULL,										/* xxx */
 	NULL,										/* xxx */

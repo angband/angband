@@ -1,7 +1,7 @@
 Welcome to the Angband Online Help System.
 
 Please choose one of the following online help files:
-    (1) README for Angband 3.0.8   (308.txt)
+    (k) README for Angband 3.0.8   (308.txt)
 
     (a) General Information        (general.txt)
     (b) Creating a Character       (birth.txt)
@@ -20,7 +20,6 @@ Browser/help commands:
   SPACE advance 1 page     -  back up 1 page     /  search for text
   RET   advance 1 line     =  back up 1 line     &  show (highlight) some text
   +     advance 1/2 page   _  back up 1/2 page   !  toggle case sentitivity
-***** [1] 308.txt
 ***** [a] general.txt
 ***** [b] birth.txt
 ***** [c] dungeon.txt
@@ -31,4 +30,4 @@ Browser/help commands:
 ***** [h] version.txt
 ***** [i] spoiler.hlp
 ***** [j] user.hlp
-
+***** [k] 308.txt
