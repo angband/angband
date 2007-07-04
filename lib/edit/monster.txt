@@ -3504,7 +3504,7 @@ F:ONLY_ITEM | DROP_90 | DROP_1D2 | DROP_GOOD
 F:OPEN_DOOR | BASH_DOOR
 F:EVIL | IM_FIRE | IM_ELEC | NO_CONF | NO_SLEEP
 S:1_IN_4
-S:SLOW | FORGET
+S:SLOW | CONF
 D:A Black Numenorean with a blacker heart.
 
 N:274:Angamaite of Umbar
@@ -3521,7 +3521,7 @@ F:ONLY_ITEM | DROP_90 | DROP_1D2 | DROP_GOOD
 F:OPEN_DOOR | BASH_DOOR
 F:EVIL | IM_FIRE | IM_ELEC | NO_CONF | NO_SLEEP
 S:1_IN_4
-S:SLOW | FORGET
+S:SLOW | CONF
 D:A Black Numenorean who hates the men of the west.
 
 N:275:Banshee
@@ -3719,7 +3719,7 @@ F:ONLY_ITEM | DROP_2D2
 F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL
 F:IM_ACID | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_3
-S:BLIND | CONF | SCARE | FORGET
+S:BLIND | CONF | SCARE
 D:Who knows why you are now facing an angel as an enemy? Is it a punishment
 D: from your own god for your sins, or a test of your mettle, or has this angel
 D: been sent by another god on behalf of someone who wishes to claim the glory
@@ -3862,7 +3862,7 @@ F:COLD_BLOOD | DROP_60 | DROP_1D2
 F:OPEN_DOOR | BASH_DOOR | REGENERATE
 F:EVIL | UNDEAD | IM_COLD | IM_POIS | HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_9
-S:TELE_TO | HOLD | SCARE | CAUSE_2 | MIND_BLAST | FORGET | DARKNESS
+S:TELE_TO | HOLD | SCARE | CAUSE_2 | MIND_BLAST | DARKNESS
 D:It is a humanoid with an aura of power.  You notice a sharp set of front
 D: teeth.
 
@@ -4103,7 +4103,7 @@ F:FORCE_SLEEP | NEVER_MOVE
 F:EMPTY_MIND | COLD_BLOOD
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_4
-S:BLIND | CONF | SCARE | CAUSE_2 | FORGET
+S:BLIND | CONF | SCARE | CAUSE_2
 S:BO_ACID | BO_FIRE | BO_COLD | BO_ELEC
 S:S_MONSTER
 D:A strange creature that disguises itself as a discarded ring to lure
@@ -4617,7 +4617,7 @@ F:INVISIBLE | COLD_BLOOD | TAKE_ITEM | PASS_WALL
 F:EVIL | UNDEAD | IM_COLD | IM_POIS
 F:NO_CONF | NO_SLEEP
 S:1_IN_15
-S:BLIND | HOLD | DRAIN_MANA | FORGET
+S:BLIND | HOLD | DRAIN_MANA
 D:A shadowy form clutches at you from the darkness.  A powerful undead creature
 D: with a deadly touch.
 
@@ -4634,7 +4634,7 @@ F:INVISIBLE | COLD_BLOOD | TAKE_ITEM | PASS_WALL
 F:EVIL | UNDEAD | IM_COLD | IM_POIS
 F:NO_CONF | NO_SLEEP
 S:1_IN_15
-S:BLIND | HOLD | DRAIN_MANA | FORGET
+S:BLIND | HOLD | DRAIN_MANA
 D:A phantasmal shrieking spirit.  Its wail drives the intense cold of pure
 D: evil deep within your body.
 
@@ -4793,7 +4793,7 @@ F:DROP_4D2
 F:COLD_BLOOD | OPEN_DOOR | BASH_DOOR | REGENERATE
 F:EVIL | UNDEAD | IM_COLD | IM_POIS | HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_6
-S:TELE_TO | HOLD | CONF | SCARE | CAUSE_3 | MIND_BLAST | FORGET
+S:TELE_TO | HOLD | CONF | SCARE | CAUSE_3 | MIND_BLAST
 S:DARKNESS | BO_NETH
 D:It is a humanoid form dressed in robes.  Power emanates from its chilling
 D: frame.
@@ -6259,7 +6259,7 @@ F:SMART | INVISIBLE | PASS_WALL
 F:EVIL | DEMON | IM_FIRE | IM_POIS
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_10
-S:BLIND | CONF | SCARE | CAUSE_3 | FORGET
+S:BLIND | CONF | SCARE | CAUSE_3
 S:S_DEMON
 D:It is a demon of small stature, but its armoured frame moves with
 D: lightning speed and its powers make it a tornado of death and destruction.
@@ -7386,7 +7386,7 @@ F:OPEN_DOOR | BASH_DOOR
 F:IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_4
 S:HEAL | BLIND | CONF | SCARE | CAUSE_3 | CAUSE_4 | BRAIN_SMASH
-S:FORGET | S_MONSTERS | S_ANIMAL
+S:S_MONSTERS | S_ANIMAL
 D:He is one of the greatest dwarven priests to walk the earth.  Fundin has
 D: earned a high position in the church, and his skill with both weapon and
 D: spell only justify his position further.  His combination of both dwarven
@@ -8160,7 +8160,7 @@ F:EVIL | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_2
 S:TPORT | TELE_LEVEL | BLIND | SCARE | CAUSE_4
-S:BO_ICEE | BO_MANA | BO_PLAS | BRAIN_SMASH | FORGET
+S:BO_ICEE | BO_MANA | BO_PLAS | BRAIN_SMASH
 S:BA_MANA | BA_FIRE | BA_WATE | BA_NETH | BA_DARK
 S:S_MONSTERS | S_HI_DEMON | S_HI_UNDEAD | S_HI_DRAGON
 S:S_WRAITH | S_UNIQUE
