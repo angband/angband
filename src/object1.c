@@ -2920,24 +2920,24 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 			/* Count windows displaying equip */
 			if (op_ptr->window_flag[j] & (PW_EQUIP)) ne++;
-
-			/* Toggle if needed */
-			if (((p_ptr->command_wrk == (USE_EQUIP)) && ni && !ne) ||
-			    ((p_ptr->command_wrk == (USE_INVEN)) && !ni && ne))
-			{
-				/* Toggle */
-				toggle_inven_equip();
-
-				/* Track toggles */
-				toggle = !toggle;
-			}
-
-			/* Update */
-			p_ptr->window |= (PW_INVEN | PW_EQUIP);
-
-			/* Redraw windows */
-			window_stuff();
 		}
+
+		/* Toggle if needed */
+		if (((p_ptr->command_wrk == (USE_EQUIP)) && ni && !ne) ||
+		    ((p_ptr->command_wrk == (USE_INVEN)) && !ni && ne))
+		{
+			/* Toggle */
+			toggle_inven_equip();
+
+			/* Track toggles */
+			toggle = !toggle;
+		}
+
+		/* Update */
+		p_ptr->window |= (PW_INVEN | PW_EQUIP);
+
+		/* Redraw windows */
+		window_stuff();
 
 		/* Viewing inventory */
 		if (p_ptr->command_wrk == (USE_INVEN))
