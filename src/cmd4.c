@@ -2191,29 +2191,21 @@ static void display_option(menu_type *menu, int oid,
  */
 static bool update_option(char key, void *pgdb, int oid)
 {
+	/* Ignore arrow events */
+	if (key == ARROW_LEFT || key == ARROW_RIGHT)
+		return;
+
 	switch (toupper((unsigned char) key))
 	{
 		case 'Y':
-		case '6':
 		{
 			op_ptr->opt[oid] = TRUE;
 			break;
 		}
 
 		case 'N':
-		case '4':
 		{
 			op_ptr->opt[oid] = FALSE;
-			break;
-		}
-
-		case 'T':
-		case '5':
-		case '\n':
-		case '\r':
-		case '\xff':
-		{
-			op_ptr->opt[oid] = !op_ptr->opt[oid];
 			break;
 		}
 
@@ -2222,6 +2214,13 @@ static bool update_option(char key, void *pgdb, int oid)
 			show_file(format("option.txt#%s", option_text[oid]), NULL, 0, 0);
 			break;
 		}
+
+		default:
+		{
+			op_ptr->opt[oid] = !op_ptr->opt[oid];
+			break;
+		}
+
 	}
 
 	return TRUE;
