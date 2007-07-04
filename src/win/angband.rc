@@ -112,7 +112,6 @@ ANGBAND MENU
 			MENUITEM "&Bigtile mode", 409
 		}
 
-		MENUITEM "&Sound", 410
 		MENUITEM SEPARATOR
 		MENUITEM "Low Priority", 420
 		MENUITEM "Activate Screensaver", 430

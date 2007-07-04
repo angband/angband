@@ -179,7 +179,6 @@
 #define IDM_OPTIONS_GRAPHICS_ADAM   402
 #define IDM_OPTIONS_GRAPHICS_DAVID  403
 #define IDM_OPTIONS_BIGTILE         409
-#define IDM_OPTIONS_SOUND           410
 #define IDM_OPTIONS_LOW_PRIORITY    420
 #define IDM_OPTIONS_SAVER           430
 #define IDM_OPTIONS_MAP             440
@@ -955,9 +954,6 @@ static void save_prefs(void)
 	strcpy(buf, use_bigtile ? "1" : "0");
 	WritePrivateProfileString("Angband", "Bigtile", buf, ini_file);
 
-	/* Save the "arg_sound" flag */
-	strcpy(buf, arg_sound ? "1" : "0");
-	WritePrivateProfileString("Angband", "Sound", buf, ini_file);
 
 	/* Save window prefs */
 	for (i = 0; i < MAX_TERM_DATA; i++)
@@ -1023,9 +1019,6 @@ static void load_prefs(void)
 
 	/* Extract the "use_bigtile" flag */
 	use_bigtile = GetPrivateProfileInt("Angband", "Bigtile", FALSE, ini_file);
-
-	/* Extract the "arg_sound" flag */
-	arg_sound = (GetPrivateProfileInt("Angband", "Sound", 0, ini_file) != 0);
 
 	/* Extract the "arg_fiddle" flag */
 	arg_fiddle = (GetPrivateProfileInt("Angband", "Fiddle", 0, ini_file) != 0);
@@ -1765,17 +1758,17 @@ static errr Term_xtra_win_react(void)
 	if (use_sound != arg_sound)
 	{
 		/* Initialize (if needed) */
-		if (arg_sound && !init_sound())
+		if (use_sound && !init_sound())
 		{
 			/* Warning */
 			plog("Cannot initialize sound!");
 
 			/* Cannot enable */
-			arg_sound = FALSE;
+			use_sound = FALSE;
 		}
 
 		/* Change setting */
-		use_sound = arg_sound;
+		arg_sound = use_sound;
 	}
 
 #endif /* USE_SOUND */
@@ -2900,8 +2893,6 @@ static void setup_menus(void)
 	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 	EnableMenuItem(hm, IDM_OPTIONS_BIGTILE,
 	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
-	EnableMenuItem(hm, IDM_OPTIONS_SOUND,
-	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 	EnableMenuItem(hm, IDM_OPTIONS_SAVER,
 	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 	EnableMenuItem(hm, IDM_OPTIONS_LOW_PRIORITY,
@@ -2926,8 +2917,7 @@ static void setup_menus(void)
 
 	CheckMenuItem(hm, IDM_OPTIONS_BIGTILE,
 	              (use_bigtile ? MF_CHECKED : MF_UNCHECKED));
-	CheckMenuItem(hm, IDM_OPTIONS_SOUND,
-	              (arg_sound ? MF_CHECKED : MF_UNCHECKED));
+
 #ifdef USE_SAVER
 	CheckMenuItem(hm, IDM_OPTIONS_SAVER,
 	              (hwndSaver ? MF_CHECKED : MF_UNCHECKED));
@@ -2947,14 +2937,6 @@ static void setup_menus(void)
 		EnableMenuItem(hm, IDM_OPTIONS_BIGTILE, MF_ENABLED);
 	}
 #endif /* USE_GRAPHICS */
-
-#ifdef USE_SOUND
-	if (inkey_flag && initialized)
-	{
-		/* Menu "Options", Item "Sound" */
-		EnableMenuItem(hm, IDM_OPTIONS_SOUND, MF_ENABLED);
-	}
-#endif /* USE_SOUND */
 
 #ifdef USE_SAVER
 	/* Menu "Options", Item "ScreenSaver" */
@@ -3576,27 +3558,6 @@ static void process_menus(WORD wCmd)
 			use_bigtile = !use_bigtile;
 
 			/* Mega-Hack : Redraw screen */
-			Term_key_push(KTRL('R'));
-
-			break;
-		}
-
-		case IDM_OPTIONS_SOUND:
-		{
-			/* Paranoia */
-			if (!inkey_flag || !initialized)
-			{
-				plog("You may not do that right now.");
-				break;
-			}
-
-			/* Toggle "arg_sound" */
-			arg_sound = !arg_sound;
-
-			/* React to changes */
-			Term_xtra_win_react();
-
-			/* Hack -- Force redraw */
 			Term_key_push(KTRL('R'));
 
 			break;
