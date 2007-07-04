@@ -598,6 +598,7 @@ int add_autoinscription(s16b kind, cptr inscription);
 void autoinscribe_ground(void);
 void autoinscribe_pack(void);
 
+bool squelch_item_ok(const object_type *o_ptr);
 void squelch_set(object_type *o_ptr);
 bool squelch_hide_item(object_type *o_ptr);
 void squelch_items(void);

@@ -315,7 +315,7 @@ void autoinscribe_pack(void)
 /*
  * Determines if an object is eligable for squelching.
  */
-static bool squelch_item_ok(const object_type *o_ptr)
+bool squelch_item_ok(const object_type *o_ptr)
 {
 	size_t i;
 	int num = -1;

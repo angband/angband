@@ -95,7 +95,7 @@ struct listener_list
 
 void stop_event_loop()
 {
-	event_type stop = { EVT_STOP };
+	event_type stop = { EVT_STOP, 0, 0, 0, 0 };
 
 	/* Stop right away! */
 	Term_event_push(&stop);
@@ -646,7 +646,7 @@ static bool menu_handle_event(menu_type *menu, const event_type *in)
 	if (menu->target.observers)
 	{
 		/* TODO: need a panel dispatcher here, not a generic target */
-		event_target t = { { 0, 0, 0, 0 }, FALSE, 0 /* menu->target.observers */};
+		event_target t = { EVENT_EMPTY, FALSE, 0 /* menu->target.observers */};
 		t.observers = menu->target.observers;
 		out = run_event_loop(&t, FALSE, in);
 

@@ -57,7 +57,8 @@ static sample_list samples[MSG_MAX];
  */
 static void close_audio(void)
 {
-	size_t i, j;
+	size_t i;
+	int j;
 
 	/* Free all the sample data*/
 	for (i = 0; i < MSG_MAX; i++)
@@ -122,9 +123,7 @@ static bool sound_sdl_init(bool no_cache)
 {
 	char path[2048];
 	char buffer[2048];
-	int i;
 	FILE *fff;
-	Mix_Chunk *wave = NULL;		
 
 
 	/* Initialise the mixer  */

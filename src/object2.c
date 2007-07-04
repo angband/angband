@@ -286,43 +286,82 @@ static void compact_objects_aux(int i1, int i2)
 
 
 /*
- * Compact and Reorder the object list
+ * Compact and reorder the object list
  *
  * This function can be very dangerous, use with caution!
  *
- * When actually "compacting" objects, we base the saving throw on a
- * combination of object level, distance from player, and current
- * "desperation".
+ * When compacting objects, we first destroy gold, on the basis that by the
+ * time item compaction becomes an issue, the player really won't care.
+ * We also nuke items marked as squelch.
  *
- * After "compacting" (if needed), we "reorder" the objects into a more
- * compact order, and we reset the allocation info, and the "live" array.
+ * When compacting other objects, we base the saving throw on a combination of
+ * object level, distance from player, and current "desperation".
+ *
+ * After compacting, we "reorder" the objects into a more compact order, and we
+ * reset the allocation info, and the "live" array.
  */
 void compact_objects(int size)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	int i, y, x, num, cnt;
+	int i, y, x, cnt;
 
 	int cur_lev, cur_dis, chance;
 
 
-	/* Compact */
-	if (size)
+	/* Reorder objects when not passed a size */
+	if (!size)
 	{
-		/* Message */
-		msg_print("Compacting objects...");
+		/* Excise dead objects (backwards!) */
+		for (i = o_max - 1; i >= 1; i--)
+		{
+			object_type *o_ptr = &o_list[i];
 
-		/* Redraw map */
-		p_ptr->redraw |= (PR_MAP);
+			/* Skip real objects */
+			if (o_ptr->k_idx) continue;
 
-		/* Window stuff */
-		p_ptr->window |= (PW_OVERHEAD | PW_MAP);
+			/* Move last object into open hole */
+			compact_objects_aux(o_max - 1, i);
+
+			/* Compress "o_max" */
+			o_max--;
+		}
+
+		return;
+	}
+
+
+	/* Message */
+	msg_print("Compacting objects...");
+
+	/* Redraw map */
+	p_ptr->redraw |= (PR_MAP);
+
+	/* Window stuff */
+	p_ptr->window |= (PW_OVERHEAD | PW_MAP);
+
+
+
+
+	/*** Try destroying objects ***/
+
+	/* First do gold */
+	for (i = 1; (i < o_max) && (size); i++)
+	{
+		object_type *o_ptr = &o_list[i];
+
+		/* Nuke gold or squelched items */
+		if (o_ptr->tval == TV_GOLD || squelch_item_ok(o_ptr))
+		{
+			delete_object_idx(i);
+			size--;
+		}
 	}
 
 
 	/* Compact at least 'size' objects */
-	for (num = 0, cnt = 1; num < size; cnt++)
+	for (cnt = 1; size; cnt++)
 	{
 		/* Get more vicious each iteration */
 		cur_lev = 5 * cnt;
@@ -331,10 +370,9 @@ void compact_objects(int size)
 		cur_dis = 5 * (20 - cnt);
 
 		/* Examine the objects */
-		for (i = 1; i < o_max; i++)
+		for (i = 1; (i < o_max) && (size); i++)
 		{
 			object_type *o_ptr = &o_list[i];
-
 			object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
 			/* Skip dead objects */
@@ -376,9 +414,6 @@ void compact_objects(int size)
 			/* Saving throw */
 			chance = 90;
 
-			/* Squelched items get compacted */
-			if (k_ptr->aware && k_ptr->squelch) chance = 0;
-
 
 			/* Hack -- only compact artifacts in emergencies */
 			if (artifact_p(o_ptr) && (cnt < 1000)) chance = 100;
@@ -388,27 +423,13 @@ void compact_objects(int size)
 
 			/* Delete the object */
 			delete_object_idx(i);
-
-			/* Count it */
-			num++;
+			size--;
 		}
 	}
 
 
-	/* Excise dead objects (backwards!) */
-	for (i = o_max - 1; i >= 1; i--)
-	{
-		object_type *o_ptr = &o_list[i];
-
-		/* Skip real objects */
-		if (o_ptr->k_idx) continue;
-
-		/* Move last object into open hole */
-		compact_objects_aux(o_max - 1, i);
-
-		/* Compress "o_max" */
-		o_max--;
-	}
+	/* Reorder objects */
+	compact_objects(0);
 }
 
 

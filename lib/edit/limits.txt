@@ -51,7 +51,7 @@ M:L:303
 M:S:122
 
 # Maximum number of objects on the level
-M:O:512
+M:O:1024
 
 # Maximum number of monsters on the level
 M:M:1024
