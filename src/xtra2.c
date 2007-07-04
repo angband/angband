@@ -2380,7 +2380,7 @@ static void target_set_interactive_prepare(int mode)
  */
 static event_type target_set_interactive_aux(int y, int x, int mode, cptr info)
 {
-	s16b this_o_idx, next_o_idx = 0;
+	s16b this_o_idx = 0, next_o_idx = 0;
 
 	cptr s1, s2, s3;
 
