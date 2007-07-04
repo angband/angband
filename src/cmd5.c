@@ -158,6 +158,7 @@ void print_spells(const byte *spells, int num, int y, int x)
 		get_spell_info(cp_ptr->spell_book, spell, help, sizeof(help));
 
 		/* Assume spell is known and tried */
+		comment = help;
 		line_attr = TERM_WHITE;
 
 		/* Analyze the spell */
