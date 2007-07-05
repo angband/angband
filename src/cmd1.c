@@ -521,9 +521,6 @@ static void  py_pickup_gold(void)
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
 
-		/* Ignore all hidden objects */
-		if (!o_ptr->marked) continue;
-
 		/* Ignore if not legal treasure */
 		if ((o_ptr->tval != TV_GOLD) ||
 		    (o_ptr->sval >= SV_GOLD_MAX)) continue;

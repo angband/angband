@@ -408,6 +408,7 @@ static const tval_desc tvals[] =
 	{ TV_SKELETON,          "Skeletons"            },
 	{ TV_BOTTLE,            "Empty bottle"         },
 	{ TV_JUNK,              "Junk"                 },
+	{ TV_GOLD,              "Gold"                 },
 	{ 0,                    NULL                   }
 };
 
@@ -1025,6 +1026,15 @@ static void wiz_create_item(void)
 
 	/* Apply magic (no messages, no artifacts) */
 	apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
+
+	if (k_info[k_idx].tval == TV_GOLD)
+	{
+		/* Hack -- Base coin cost */
+		s32b base = k_info[k_idx].cost;
+
+		/* Determine how much the treasure is "worth" */
+		i_ptr->pval = (base + (8L * randint(base)) + randint(8));
+	}
 
 	/* Drop the object from heaven */
 	drop_near(i_ptr, -1, py, px);
