@@ -487,7 +487,7 @@ void do_cmd_destroy(void)
 
 	/* Verify destruction */
 	strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", o_name);
-
+	if (!get_check(out_val)) return; 
 
 	/* Artifacts cannot be destroyed */
 	if (artifact_p(o_ptr))
