@@ -29,17 +29,15 @@ Gameplay changes
 
 This release carries a few gameplay changes.
 
-Ego-lanterns now exist, despite existence not being a predicate.  There are
-two brands, and you'll know when you find one; there's no ID required to
-figure out if your lantern is special or not.
+Ego-lanterns now exist.  There are two brands, and you'll know when you find
+one; there's no ID required to figure out if your lantern is special or not.
 
 Amnesia (the monster attack) is now a timed effect (a la confusion), and has
 a real gameplay effect:
- * casting/praying and zapping rods has a 1 in 3 success rate
- * reading scrolls, using staves and aiming wands has a 1 in 4 success rate
+ * casting/praying and reading scrolls fail 1 time in 2.
 
-Potions of Healing, *Healing* and Life are the only three things which will
-get rid of amnesia early.
+CCW, Healing, *Healing* and Life are the only four things which will get rid
+you of amnesia early.
 
 
 Interface changes
@@ -62,16 +60,7 @@ Sangband-style object handling makes a visit to Angband, making handling items
 quite a bit less tiring.  Also, with the introduction of a "Pick up things
 matching the inventory" option, you can be sure not to miss valuable potions!
 
-Item squelching has been added; the implementation is closest to that of
-EyAngband.  Instead of being automatically destroyed, items are instead marked
-with the inscription "squelch" (if there is no already existing inscription),
-and all items in your inventory and on the floor inscribed with this will be
-destroyed if you press '!' at the "destroy" command.  You can set individual
-squelch settings for only those items which do not get pseudo-ID'd.  For those
-that do, you can choose to mark things as "squelch" depending on the feeling
-you get when you first ID them in that way.  These categories are much broader
-than those found in other variants.  Worthless items and emptied chests are
-automatically inscribed with "squelch".
+Item squelching is added; see the changelog for more details.
 
 The stores work quite differently from how they used to; buying and selling
 should be more streamlined, and the stores react to bigscreen at last!

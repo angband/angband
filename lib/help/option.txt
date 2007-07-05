@@ -33,20 +33,21 @@ Use old target by default    [use_old_target]
     current "target" if there is one.  Use of this option can be dangerous
     if you target locations on the ground, unless you clear them when done.
 
-***** <always_pickup>
-***** <query_floor>
-Pick things up by default                     [always_pickup]
-Display things before picking them up         [query_floor]
-     When "always_pickup" is on, the game assumes you want to pick up
-     any object you encounter.  If "query_floor" is off, you pick up objects
-     automatically.  Otherwise, you are shown a list and prompted to pick up.
+***** <pickup_always>
+***** <pickup_inven>
+Always pickup items                           [pickup_always]
+Always pickup items matching inventory        [pickup_inven]
+     If pickup_always is on, all items are always picked up, providing it is
+     safe to do so.  If pickup_inven is on, then items matching those in your
+     inventory are always picked up.
 
-     When "always_pickup" is off, the game assumes you want to pick
-     things up selectively.  If "query_floor" is off, you get a one-line
-     description of the object or pile.  If "query_floor" is on, you see a
-     full list, including weights.  In either case, you can start picking
-     things up by typing "g".
+***** <pickup_detail>
+Be verbose when picking things up             [pickup_detail]
+     If this is off, you get a one-line description of the objects or piles on
+     the floor after the other pickup options have acted.  If this option is
+     on, you get a full list for more than one item, including weights.
 
+     In either case, you can start picking things up by typing "g".
      When standing still, you are never charged extra time for picking
      up objects.  When walking, you always take a second partial turn to
      pick up objects; each object picked up takes 1/10th of a turn.

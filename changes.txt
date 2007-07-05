@@ -11,12 +11,12 @@ Shanoah Alkire.
 Special thanks go to Antony Sidwell for setting up the new website, and
 to Yendor for hosting the issue-tracker and source code repository.
 
-Changes from 3.0.6 are now sectioned, because some people will care about
-low-level changes, and others won't.
+Changes from 3.0.6 are now sectioned, because some people will care
+about low-level changes, and others won't.
 
 All gameplay options are now only alterable at birth.  Be careful when
-importing savefiles to make sure that the AI and scumming options are as
-you want them for the entire game!
+importing savefiles to make sure that the AI and scumming options are
+as you want them for the entire game!
 
 
 
@@ -38,7 +38,6 @@ Major visible changes
   - many options have been removed (20 or so, I think)
   - a large number have new default settings
   - new option: remaining HP changes the colour of the '@' sign.
-  - new option: always pick up things matching an item in the inventory
   - experience to next level always displayed until clev50
   - macros/visuals/colours are now accessible (only) from the options
     menu
@@ -46,11 +45,17 @@ Major visible changes
 - Sangband-style object handling, which makes it much easier to sift
   through things in the dungeon.
 
-- Item squelching support, EyAngband-style.  Instead of being
-  automatically destroyed, items are instead marked with the inscription
-  "squelch" (if there is no already existing inscription), and all items
-  in your inventory and on the floor inscribed with this will be
-  destroyed if you press '!' at the "destroy" command.
+- Item squelching support.
+
+  This can operate in one of two ways.  If you prefer your squelchables
+  hidden, then turn on hide_squelchable, and whenever you find an item
+  which matches your squelch settings, it will be dropped but not
+  destroyed.  This means that you can unsquelch it by changing your
+  settings later if you so desire.
+
+  If you prefer squelch to just help automate item destruction, then
+  you can press '!' at the "destroy" prompt to destroy all squelchables
+  on the floor or in your inventory.
 
   You can set individual squelch settings for only those items which do
   not get pseudo-ID'd.  For those that do, you can choose to mark things
@@ -58,8 +63,12 @@ Major visible changes
   in that way.  These categories are much broader than those found in
   other variants; complain if necessary.
 
-  Worthless items and emptied chests are automatically inscribed with
-  "squelch", saving some micromanagement.
+  Worthless items and emptied chests are automatically squelched,
+  saving some micromanagement.  All item destruction now takes 0
+  energy.
+
+  When objects are compressed, gold and squelched items are the first
+  to be destroyed.
 
 - Two kinds of ego-light added.  You'll know when you find one; there's
   no ID required to figure out if your lantern is special or not.
@@ -68,10 +77,10 @@ Major visible changes
 
 - Amnesia (the monster attack) is now a timed effect (a la confusion),
   and has makes you forget how to read scrolls/pray/cast spells one
-  time in two.
+  time in two.  Fewer monsters now have the attack, too.
 
-  Potions of Healing, *Healing* and Life are the only three things which
-  will get rid of amnesia early, but it goes away within a few turns.
+  CCW, Healing, *Healing* and Life are the only things which will get
+  rid of amnesia early, but it goes away within a few turns.
   
 - Defined potions of life, healing, *healing*, augmentation as 'good'
   drops, as well as restore mana for spell casters, and stat potions,
@@ -85,10 +94,10 @@ Minor visible changes
 - Browsing books now displays information about the spells therein, if
   requested.  As part of this, move spell names/descriptions/locations
   out into a new file, spell.txt.  (Hugo Kornelis)
-- Arrow keys are now distinct from the numeric movement keys, and because
-  of this you can now edit text at prompts in game properly.  Supported
-  on Windows, Mac (untested), and curses.  If you get it working for
-  anything else, please send the patch!
+- Arrow keys are now distinct from the numeric movement keys, and
+  because of this you can now edit text at prompts in game properly.
+  Supported on Windows, Mac (untested), and curses.  If you get it
+  working for anything else, please send the patch!
 - Resizing the game window automatically updates its contents, on
   platforms which support this.
 - Inscribing an item with '!t' will now confirm if you try to take it
@@ -153,9 +162,9 @@ non-functional cruft.
   "Makefile.src", which simplifies maintainance.  Makefile.std has also
   been rewritten and contains much less cruft.
 - Timed player modifiers (blind, confused, etc.) are now kept in an
-  array, rather than being seperate variables in p_ptr.  This simplifies
-  a *lot* of code, and makes it trivial to add new effects.  The majority
-  of the work was done using sed scripts.
+  array, rather than being seperate variables in p_ptr.  This
+  simplifies a *lot* of code, and makes it trivial to add new effects.
+  The majority of the work was done using sed scripts.
 - Use a new autoconf/automake system, called OMK.
 - Removed Lua.
 - Charges for wands/staves are customisable in the lib/edit/ files.
@@ -166,8 +175,9 @@ non-functional cruft.
 - Combine the various h-*.h files into a single header file; remove a
   lot of cruft, use C99 types when available, 
 - Clean up file locking, move file handling functions into z-file.c,
-  remove usleep() function, add a "portable" directory scanning interface
-  (works on Windows and Unixes at the moment), and my_fexists().
+  remove usleep() function, add a "portable" directory scanning
+  interface (works on Windows and Unixes at the moment), and
+  my_fexists().
 - Use the safer string handling functions much more; the only use of
   the "unsafe" built-ins are in the various main-* files.
 - Split random name code from randart code into its own file with a bit
@@ -202,7 +212,8 @@ Platform
 - Fixed Windows bug where you can't move one of the font files after
   having played a game this reboot.  (Thanks to Leon Marrick.)
 - Add platform-specific ifdefs to readdib.c and main-ami.c.
-- Allow ^S without freezing the game on the console.  (Hallvard Furuseth)
+- Allow ^S without freezing the game on the console.  (Hallvard
+  Furuseth)
 - Mouse support on RISC OS.
 - Sort out licences for the various fonts distributed with the game.
 - Import the old DOS/IBM fonts for use in the Windows port.
