@@ -322,16 +322,12 @@ bool squelch_item_ok(const object_type *o_ptr)
 	/* Don't squelch artifacts */
 	if (artifact_p(o_ptr)) return FALSE;
 
-	/* Don't check things that aren't known at all */
-	if (!sensed) return FALSE;
-
-
 	/* Auto-squelch dead chests */
 	if (o_ptr->tval == TV_CHEST && o_ptr->pval == 0)
 		return TRUE;
 
 	/* Do squelching by sval, if the tval's allowed */
-	if (k_info[o_ptr->k_idx].squelch && fullid)
+	if (k_info[o_ptr->k_idx].squelch)
 	{
 		for (i = 0; i < N_ELEMENTS(sval_dependent); i++)
 		{
@@ -339,6 +335,11 @@ bool squelch_item_ok(const object_type *o_ptr)
 				return TRUE;
 		}
 	}
+
+
+	/* Don't check pseudo-ID for nonsensed things */
+	if (!sensed) return FALSE;
+
 
 
 	/* Find the appropriate squelch group */
