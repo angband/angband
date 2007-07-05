@@ -9,6 +9,11 @@ OBJECTIVE_DATA = \
 include ../../mk/objective.mk
 
 install-posthook:
-	touch ${DATA_PATH}/apex/scores.raw
-	chown -R root:${SETEGID} ${DATA_PATH}/apex
-	chmod -R g+w ${DATA_PATH}/apex
+	if [ "x$(SETEGID)" != "x" ]; then \
+		printf "%10s     %-20s\n" TOUCH ${DATA_PATH}/apex/scores.raw; \
+		if [ "x$(DRY)" = "x" ]; then \
+			touch ${DATA_PATH}/apex/scores.raw; \
+			chown -R root:${SETEGID} ${DATA_PATH}/apex; \
+			chmod -R g+w ${DATA_PATH}/apex; \
+		fi; \
+	fi;

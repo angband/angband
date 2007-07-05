@@ -28,7 +28,7 @@ AC_PATH_PROG(CP, cp)
 AC_ARG_WITH(setgid,
 [  --with-setgid=NAME      install angband as group NAME],
 [case "${withval}" in
-  no) SETEGID="games";;
+  no) SETEGID="";;
   yes) AC_MSG_ERROR(missing argument for --with-setgid);;
   *) SETEGID="$withval";;
 esac])
@@ -37,7 +37,7 @@ AC_SUBST(SETEGID)
 AC_LANG([C])
 
 dnl generate the installation path for the ./lib/ folder
-if test "$GAMEGROUP" != ""; then
+if test "$SETEGID" != ""; then
   MY_EXPAND_DIR(game_datadir, "$datadir/$PACKAGE/")
 else
   MY_EXPAND_DIR(game_datadir, "./lib/")
@@ -60,7 +60,7 @@ AC_SUBST(DATA_PATH)
 
 dnl Frontends
 AC_ARG_ENABLE(gtk,
-	[  --enable-gtk                         Enables GTK 2.x frontend (default: disabled)],
+	[  --enable-gtk                         Enables GTK 2.x frontend, can't use on system-wide installs (default: disabled)],
 	[enable_gtk=$enableval],
 	[enable_gtk=yes])
 AC_ARG_ENABLE(curses,
@@ -163,6 +163,11 @@ if test "$enable_gtk" = "yes"; then
 		[with_gtkx=yes],
 		[with_gtk=no]
 	)
+
+	if [ "x$SETEGID" != "x"]; then
+		enable_gtk=no
+		with_gtk=no
+	fi
 
 	if test "$with_gtk" = "yes"; then
 		AC_DEFINE(USE_GTK, 1, [Define to 1 if using the GTK+ 2.x interface and GTK+ 2.x is found.])

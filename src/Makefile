@@ -13,17 +13,8 @@ SOURCES = ${OBJECTS:.o=.c}
 
 OBJECTIVE_BINS = angband
 
-CFLAGS += \
-	-I.
+CFLAGS += -I.
 
 angband: $(OBJECTS)
 	$(CC) $(LDFLAGS) $(OBJECTS) $(LDADD) -o $@ 
 	@printf "%10s     %-20s\n" LINK $@
-
-localinstall: angband
-	@if test "${DATA_PATH}" != "./lib/"; then \
-		echo; \
-		echo "WARNING: data path is ${DATA_PATH}"; \
-		echo "If this isn't './lib/', your angband may not function correctly."; \
-	fi
-	cp angband ..

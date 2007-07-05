@@ -6,18 +6,10 @@ all: build
 install: build
 	$(MAKE) install-prehook
 	@for i in $(BINDIR) $(LIBDIR) $(INCLUDEDIR); do \
-		if [ ! -d $(DESTDIR)/$$i ]; then \
-			$(INSTALL) -d -m 755 $(DESTDIR)/$$i; \
+		if [ ! -d $(DESTDIR)$$i ]; then \
+			$(INSTALL) -d -m 755 $(DESTDIR)$$i; \
 		fi; \
 	done;
-	@if [ "x$(OVERLAYS)" != "x" ]; then \
-		for i in `find $(OVERLAYS) -type d -maxdepth 1 -mindepth 1`; do \
-			if [ $(VERBOSITY) -gt 0 ]; then \
-				echo "[installing overlay: $$i]"; \
-			fi; \
-			cd $$i; OVERLAYS="" $(MAKE) install || exit; cd ..; \
-		done; \
-	fi
 	@if [ "x$(SUBDIRS)" != "x" ]; then \
 		for i in $(SUBDIRS); do \
 			if [ $(VERBOSITY) -gt 0 ]; then \
@@ -29,37 +21,31 @@ install: build
 	@if [ "x$(OBJECTIVE_DIRECTORIES)" != "x" ]; then \
 		for i in $(OBJECTIVE_DIRECTORIES); do \
 			printf "%10s     %-20s\n" MKDIR $$i; \
-			$(INSTALL) -d -m 755 $(DESTDIR)/$$i; \
-		done; \
-	fi
-	@if [ "x$(HEADERS)" != "x" ]; then \
-		for i in $(HEADERS); do \
-			printf "%10s     %-20s\n" INSTALL $$i; \
-			$(INSTALL_DATA) $(INSTALL_OVERRIDE) $$i $(DESTDIR)/$(INCLUDEDIR)/$$i; \
-		done; \
-	fi
-	@if [ "x$(OBJECTIVE_LIBS)" != "x" ]; then \
-		for i in $(OBJECTIVE_LIBS); do \
-			printf "%10s     %-20s\n" INSTALL $$i; \
-			$(INSTALL) $(INSTALL_OVERRIDE) $$i $(DESTDIR)/$(LIBDIR)/$$i; \
+			$(INSTALL) -d -m 755 $(DESTDIR)$$i; \
 		done; \
 	fi
 	@if [ "x$(OBJECTIVE_BINS)" != "x" ]; then \
 		for i in $(OBJECTIVE_BINS); do \
-			printf "%10s     %-20s\n" INSTALL $$i; \
-			$(INSTALL) $(INSTALL_OVERRIDE) $$i $(DESTDIR)/$(BINDIR)/$$i; \
+			printf "%10s     %-20s (-> $(DESTDIR)$(BINDIR))\n" INSTALL $$i; \
+			if [ "x$(DRY)" = "x" ]; then \
+				$(INSTALL) $(INSTALL_OVERRIDE) $$i $(DESTDIR)$(BINDIR)/$$i; \
+			fi; \
 		done; \
-	fi;
+	fi
 	@if [ "x$(OBJECTIVE_DATA)" != "x" ]; then \
+	 if [ "x$(SETEGID)" != "x" ]; then \
 		for i in $(OBJECTIVE_DATA); do \
 			source=`echo $$i | cut -d ":" -f1`; \
 			destination=`echo $$i | cut -d ":" -f2`; \
-			if [ ! -d $(DESTDIR)/$$destination ]; then \
-				$(INSTALL) -d -m 755 $(DESTDIR)/$$destination; \
+			printf "%10s     %-20s (-> $(DESTDIR)$$destination)\n" INSTALL $$source; \
+			if [ "x$(DRY)" = "x" ]; then \
+				if [ ! -d $(DESTDIR)$$destination ]; then \
+					$(INSTALL) -d -m 755 $(DESTDIR)$$destination; \
+				fi; \
+				$(INSTALL_DATA) $(INSTALL_OVERRIDE) $$source $(DESTDIR)$$destination; \
 			fi; \
-			printf "%10s     %-20s\n" INSTALL $$source; \
-			$(INSTALL_DATA) $(INSTALL_OVERRIDE) $$source $(DESTDIR)/$$destination; \
 		done; \
+	fi; \
 	fi
 	$(MAKE) install-posthook
 	@if [ $(VERBOSITY) -gt 0 ]; then \

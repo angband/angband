@@ -1,5 +1,6 @@
 include ../../../mk/rules.mk
 include ../../../mk/init.mk
+include ../../../mk/objective.mk
 
 OBJECTIVE_DATA = \
 	copying.txt:${DATA_PATH}/xtra/font  \
@@ -24,7 +25,4 @@ OBJECTIVE_DATA = \
 	12x20.fon:${DATA_PATH}/xtra/font    \
 	12x24.fon:${DATA_PATH}/xtra/font    \
 	16x25b.fon:${DATA_PATH}/xtra/font   \
-	16x25.fon:${DATA_PATH}/xtra/font    \
-
-
-include ../../../mk/objective.mk
+	16x25.fon:${DATA_PATH}/xtra/font
