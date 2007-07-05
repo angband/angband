@@ -2659,6 +2659,7 @@ static void dump_pref_file(void (*dump)(FILE*), const char *title, int row)
 	/* Failure */
 	if (!fff)
 	{
+		prt("", 0, 0);
 		msg_print("Failed");
 		return;
 	}
@@ -2684,6 +2685,7 @@ static void dump_pref_file(void (*dump)(FILE*), const char *title, int row)
 	my_fclose(fff);
 
 	/* Message */
+	prt("", 0, 0);
 	msg_print(format("Dumped %s", strstr(title, " ")+1));
 }
 
@@ -3110,6 +3112,7 @@ void do_cmd_macros(void)
 			if (k < 0)
 			{
 				/* Prompt */
+				prt("", 0, 0);
 				msg_print("Found no macro.");
 			}
 
@@ -3126,6 +3129,7 @@ void do_cmd_macros(void)
 				prt(tmp, 22, 0);
 
 				/* Prompt */
+				prt("", 0, 0);
 				msg_print("Found a macro.");
 			}
 			break;
@@ -3161,6 +3165,7 @@ void do_cmd_macros(void)
 				macro_add(pat, macro_buffer);
 
 				/* Prompt */
+				prt("", 0, 0);
 				msg_print("Added a macro.");
 			}
 			break;
@@ -3181,6 +3186,7 @@ void do_cmd_macros(void)
 			macro_add(pat, pat);
 
 			/* Prompt */
+			prt("", 0, 0);
 			msg_print("Removed a macro.");
 			break;
 		}
@@ -3210,6 +3216,7 @@ void do_cmd_macros(void)
 			if (!act)
 			{
 				/* Prompt */
+				prt("", 0, 0);
 				msg_print("Found no keymap.");
 			}
 
@@ -3226,6 +3233,7 @@ void do_cmd_macros(void)
 				prt(tmp, 22, 0);
 
 				/* Prompt */
+				prt("", 0, 0);
 				msg_print("Found a keymap.");
 			}
 			break;
@@ -3263,6 +3271,7 @@ void do_cmd_macros(void)
 				keymap_act[mode][(byte)(pat[0])] = string_make(macro_buffer);
 
 				/* Prompt */
+				prt("", 0, 0);
 				msg_print("Added a keymap.");
 			}
 			break;
@@ -3285,6 +3294,7 @@ void do_cmd_macros(void)
 			keymap_act[mode][(byte)(pat[0])] = NULL;
 
 			/* Prompt */
+			prt("", 0, 0);
 			msg_print("Removed a keymap.");
 			break;
 		}
@@ -3690,8 +3700,11 @@ void do_cmd_visuals(void)
 			reset_visuals(TRUE);
 
 			/* Message */
+			prt("", 0, 0);
 			msg_print("Visual attr/char tables reset.");
 		}
+
+		message_flush();
 	}
 
 	/* Load screen */
@@ -3838,6 +3851,7 @@ void do_cmd_colors(void)
 		}
 
 #endif /* ALLOW_COLORS */
+		message_flush();
 
 		/* Clear screen */
 		clear_from(0);
@@ -3941,15 +3955,15 @@ static void do_cmd_pref_file_hack(long row)
 	if (process_pref_file(ftmp))
 	{
 		/* Mention failure */
+		prt("", 0, 0);
 		msg_format("Failed to load '%s'!", ftmp);
 	}
 	else
 	{
 		/* Mention success */
+		prt("", 0, 0);
 		msg_format("Loaded '%s'.", ftmp);
 	}
-
-	inkey_ex();
 }
 
 
@@ -4049,6 +4063,8 @@ void do_cmd_options(void)
 			option_actions[cursor].action(option_actions[cursor].data,
 			                              option_actions[cursor].name);
 		}
+
+		message_flush();
 	}
 
 	screen_load();
