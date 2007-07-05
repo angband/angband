@@ -290,15 +290,11 @@ int main(int argc, char *argv[])
 
 #ifdef SET_UID
 
-	/* Get the user id (?) */
+	/* Get the user id */
 	player_uid = getuid();
 
-# if defined(HAVE_SETEGID)
-
-	/* Save some info for later */
+	/* Save the effective GID for later recall */
 	player_egid = getegid();
-
-# endif /* defined(HAVE_SETEGID) */
 
 #endif /* SET_UID */
 
