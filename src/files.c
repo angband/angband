@@ -1495,20 +1495,36 @@ static const char *show_speed()
 	return buffer;
 }
 
-static const char *show_weapon(const object_type *o_ptr)
+static const char *show_melee_weapon(const object_type *o_ptr)
 {
-	/* buffer[0] <- melee; buffer[1] <- bow */
-	static char buffer[2][12];
+	static char buffer[12];
 	int hit = p_ptr->dis_to_h;
 	int dam = p_ptr->dis_to_d;
-	bool is_bow = (o_ptr->tval == TV_BOW);
+
 	if (object_known_p(o_ptr))
 	{
 		hit += o_ptr->to_h;
-		if (!is_bow) dam += o_ptr->to_d;
+		dam += o_ptr->to_d;
 	}
-	strnfmt(buffer[(int)is_bow], sizeof(buffer), "(%+d,%+d)", hit, dam);
-	return buffer[(int)is_bow];
+
+	strnfmt(buffer, sizeof(buffer), "(%+d,%+d)", hit, dam);
+	return buffer;
+}
+
+static const char *show_missile_weapon(const object_type *o_ptr)
+{
+	static char buffer[12];
+	int hit = p_ptr->dis_to_h;
+	int dam = 0;
+
+	if (object_known_p(o_ptr))
+	{
+		hit += o_ptr->to_h;
+		dam += o_ptr->to_d;
+	}
+
+	strnfmt(buffer, sizeof(buffer), "(%+d,%+d)", hit, dam);
+	return buffer;
 }
 
 static byte max_color(int val, int max)
@@ -1537,8 +1553,8 @@ int get_panel(int oid, data_panel *panel, size_t size)
 	P_I(TERM_L_BLUE, "Race",	"%y",	s2u(p_name + rp_ptr->name), END  );
 	P_I(TERM_L_BLUE, "Class",	"%y",	s2u(c_name + cp_ptr->name), END  );
 	P_I(TERM_L_BLUE, "Title",	"%y",	s2u(show_title()), END  );
-	P_I(TERM_L_BLUE, "HP",	"%y/%y",	i2u(p_ptr->mhp), i2u(p_ptr->chp)  );
-	P_I(TERM_L_BLUE, "SP",	"%y/%y",	i2u(p_ptr->msp), i2u(p_ptr->csp)  );
+	P_I(TERM_L_BLUE, "HP",	"%y/%y",	i2u(p_ptr->chp), i2u(p_ptr->mhp)  );
+	P_I(TERM_L_BLUE, "SP",	"%y/%y",	i2u(p_ptr->csp), i2u(p_ptr->msp)  );
 	P_I(TERM_L_BLUE, "Level",	"%y",	i2u(p_ptr->lev), END  );
 	assert(i == boundaries[1].page_rows);
 	return ret;
@@ -1566,8 +1582,8 @@ int get_panel(int oid, data_panel *panel, size_t size)
 	ret = boundaries[3].page_rows;
 	P_I(TERM_L_BLUE, "Armor", "[%y,%+y]",	i2u(p_ptr->dis_ac), i2u(p_ptr->dis_to_a)  );
 	P_I(TERM_L_BLUE, "Fight", "(%+y,%+y)",	i2u(p_ptr->dis_to_h), i2u(p_ptr->dis_to_d)  );
-	P_I(TERM_L_BLUE, "Melee", "%y",			s2u(show_weapon(&inventory[INVEN_WIELD])), END  );
-	P_I(TERM_L_BLUE, "Shoot", "%y",			s2u(show_weapon(&inventory[INVEN_BOW])), END  );
+	P_I(TERM_L_BLUE, "Melee", "%y",			s2u(show_melee_weapon(&inventory[INVEN_WIELD])), END  );
+	P_I(TERM_L_BLUE, "Shoot", "%y",			s2u(show_missile_weapon(&inventory[INVEN_BOW])), END  );
 	P_I(TERM_L_BLUE, "Blows", "%y/turn",	i2u(p_ptr->num_blow), END  );
 	P_I(TERM_L_BLUE, "Shots", "%y/turn",	i2u(p_ptr->num_fire), END  );
 	P_I(TERM_L_BLUE, "Infra", "%y ft",		i2u(p_ptr->see_infra * 10), END  );
