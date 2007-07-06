@@ -763,7 +763,7 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 		if (object_value(o_ptr) == 0)
 		{
 			k_ptr->squelch = TRUE;
-			p_ptr->notice = PN_SQUELCH;
+			p_ptr->notice |= PN_SQUELCH;
 		}
 	}
 

@@ -32,7 +32,7 @@
  * like.
  *
  * The squelch code figures most things out itself.  Simply do:
- *     p_ptr->notice = PN_SQUELCH;
+ *     p_ptr->notice |= PN_SQUELCH;
  * whenever you want to make the game check for squelched items.
  *
  * The quality-dependent squelch is much reduced in scope from how it used to

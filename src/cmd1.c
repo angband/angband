@@ -492,7 +492,7 @@ void search(void)
 /*
  * Pickup all gold at the player's current location.
  */
-static void  py_pickup_gold(void)
+static void py_pickup_gold(void)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -681,7 +681,7 @@ static void py_pickup_aux(int o_idx, bool msg)
 	o_ptr = &inventory[slot];
 
 	/* Set squelch status */
-	p_ptr->notice = PN_SQUELCH;
+	p_ptr->notice |= PN_SQUELCH;
 
 	/* Optionally, display a message */
 	if (msg)

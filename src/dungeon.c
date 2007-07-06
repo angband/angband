@@ -218,7 +218,7 @@ static void sense_inventory(void)
 
 		/* Set squelch flag as appropriate */
 		if (i < INVEN_WIELD)
-			p_ptr->notice = PN_SQUELCH;
+			p_ptr->notice |= PN_SQUELCH;
 
 
 		/* Combine / Reorder the pack (later) */
