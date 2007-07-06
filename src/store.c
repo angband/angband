@@ -1625,7 +1625,7 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 	o_ptr = &st_ptr->stock[oid];
 
 	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 4);
 
 	/* Display the object */
 	c_put_str(tval_to_attr[o_ptr->tval & 0x7F], o_name, row, col);

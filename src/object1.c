@@ -479,8 +479,9 @@ void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know)
 			my_strcpy(buf, flavor_text + flavor_info[k_ptr->flavor].text, max);
 		}
 	}
-	else
+
 	/* Use proper name (Healing, or whatever) */
+	else
 	{
 		cptr str = (k_name + k_ptr->name);
 
@@ -648,7 +649,7 @@ void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
  * possible description, which can get pretty long, including inscriptions,
  * such as:
  * "no more Maces of Disruption (Defender) (+10,+10) [+5] (+3 to stealth)".
-
+ *
  * Note that the object description will be clipped to fit into the given
  * buffer size.
  *
@@ -693,13 +694,15 @@ void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
  *   0 -- Chain Mail of Death
  *   1 -- A Cloak of Death [1,+3]
  *   2 -- An Amulet of Death [1,+3] (+2 to Stealth)
- *   3 -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty}
+ *   3 -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty} (squelch)
+ *   4 -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty}
  *
  * Modes ("pref" is FALSE):
  *   0 -- Chain Mail of Death
  *   1 -- Cloak of Death [1,+3]
  *   2 -- Amulet of Death [1,+3] (+2 to Stealth)
- *   3 -- Rings of Death [1,+3] (+2 to Stealth) {nifty}
+ *   3 -- Rings of Death [1,+3] (+2 to Stealth) {nifty} (squelch)
+ *   4 -- Rings of Death [1,+3] (+2 to Stealth) {nifty}
  */
 void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int mode)
 {
@@ -1643,8 +1646,9 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 		*t++ = c2;
 	}
 
-	/* Add squelch marker */
-	if (!hide_squelchable && squelch_item_ok(o_ptr))
+
+	/* Add squelch marker unless mode == 4 (in-store) */
+	if (mode != 4 && !hide_squelchable && squelch_item_ok(o_ptr))
 		object_desc_str_macro(t, " (squelch)");
 
 
