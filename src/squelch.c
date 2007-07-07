@@ -142,14 +142,18 @@ typedef struct
 /* Categories for sval-dependent squelch. */
 static tval_desc sval_dependent[] =
 {
-	{ TV_STAFF,		"Staffs" },
-	{ TV_WAND,		"Wands" },
-	{ TV_ROD,		"Rods" },
-	{ TV_SCROLL,	"Scrolls" },
-	{ TV_POTION,	"Potions" },
-	{ TV_RING,		"Rings" },
-	{ TV_AMULET,	"Amulets" },
-	{ TV_FOOD,		"Food" }
+	{ TV_STAFF,			"Staffs" },
+	{ TV_WAND,			"Wands" },
+	{ TV_ROD,			"Rods" },
+	{ TV_SCROLL,		"Scrolls" },
+	{ TV_POTION,		"Potions" },
+	{ TV_RING,			"Rings" },
+	{ TV_AMULET,		"Amulets" },
+	{ TV_FOOD,			"Food" },
+	{ TV_MAGIC_BOOK,	"Magic books" },
+	{ TV_PRAYER_BOOK,	"Prayer books" },
+	{ TV_SPIKE,			"Spikes" },
+	{ TV_LITE,			"Lights" },
 };
 
 
