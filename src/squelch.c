@@ -17,6 +17,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "cmds.h"
 
 
 /*
@@ -606,7 +607,7 @@ static bool quality_action(char cmd, void *db, int oid)
 /*
  * Display quality squelch menu.
  */
-static void quality_menu(void)
+static void quality_menu(void *unused, const char *also_unused)
 {
 	menu_type menu;
 	menu_iter menu_f = { 0, 0, 0, quality_display, quality_action };
@@ -792,11 +793,16 @@ static bool seen_tval(int tval)
 
 
 /* Extra options on the "item options" menu */
-struct {
+struct
+{
 	char tag;
 	char *name;
-	void (*action)(void);
-} extra_item_options[] = { {'Q', "Quality squelching options", quality_menu } };
+	void (*action)(void *unused, const char *also_unused);
+} extra_item_options[] =
+{
+	{ 'Q', "Quality squelching options", quality_menu },
+	{ '{', "Autoinscription setup", do_cmd_knowledge_objects },
+};
 
 static char tag_options_item(menu_type *menu, int oid)
 {
@@ -908,8 +914,8 @@ void do_cmd_options_item(void *unused, cptr title)
 			else
 			{
 				cursor = cursor - N_ELEMENTS(sval_dependent) - 1;
-				if ((size_t) cursor< N_ELEMENTS(extra_item_options))
-					extra_item_options[cursor].action();
+				if ((size_t) cursor < N_ELEMENTS(extra_item_options))
+					extra_item_options[cursor].action(NULL, NULL);
 			}
 		}
 	}

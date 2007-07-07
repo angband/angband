@@ -1642,7 +1642,7 @@ static void o_xtra_act(char ch, int oid)
 /*
  * Display known objects
  */
-static void do_cmd_knowledge_objects(void *obj, const char *name)
+void do_cmd_knowledge_objects(void *obj, const char *name)
 {
 	group_funcs kind_f = {TV_GOLD, FALSE, kind_name, o_cmp_tval, obj2gid, 0};
 	member_funcs obj_f = {display_object, desc_obj_fake, o_xchar, o_xattr, o_xtra_prompt, o_xtra_act, 0};

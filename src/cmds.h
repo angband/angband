@@ -64,6 +64,8 @@ extern void do_cmd_save_screen(void);
 extern void do_cmd_knowledge(void);
 extern void init_cmd4_c(void);
 
+extern void do_cmd_knowledge_objects(void *obj, const char *name);
+
 /* cmd5.c */
 extern void do_cmd_browse_aux(const object_type *o_ptr);
 extern void do_cmd_browse(void);
