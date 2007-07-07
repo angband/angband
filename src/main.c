@@ -29,10 +29,6 @@
  */
 static const struct module modules[] =
 {
-#ifdef USE_SDL
-	{ "sdl", help_sdl, init_sdl },
-#endif /* USE_SDL */
-
 #ifdef USE_GTK
 	{ "gtk", help_gtk, init_gtk },
 #endif /* USE_GTK */
@@ -44,6 +40,10 @@ static const struct module modules[] =
 #ifdef USE_X11
 	{ "x11", help_x11, init_x11 },
 #endif /* USE_X11 */
+
+#ifdef USE_SDL
+	{ "sdl", help_sdl, init_sdl },
+#endif /* USE_SDL */
 
 #ifdef USE_GCU
 	{ "gcu", help_gcu, init_gcu },
