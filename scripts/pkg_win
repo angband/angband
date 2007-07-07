@@ -46,6 +46,7 @@ cp_unix2dos ../changes.txt ./changes.txt
 cp_unix2dos ../thanks.txt ./thanks.txt
 cp_unix2dos ../copying.txt ./copying.txt
 cp_unix2dos ../readme.txt ./readme.txt
+cp_unix2dos ../faq.txt ./faq.txt
 
 cp ../lib/edit/*.txt lib/edit
 cp ../lib/file/*.txt lib/file
@@ -56,6 +57,7 @@ cp ../lib/help/*.hlp lib/help
 cp ../lib/pref/*.prf lib/pref
 
 cp ../lib/xtra/font/*.fon lib/xtra/font
+cp_unix2dos ../lib/xtra/font/copying.txt lib/xtra/font
 
 cp ../lib/xtra/graf/8x8.bmp lib/xtra/graf
 cp ../lib/xtra/graf/16x16.bmp lib/xtra/graf
@@ -64,7 +66,7 @@ cp ../lib/xtra/graf/mask.bmp lib/xtra/graf
 cp ../lib/xtra/sound/sound.cfg lib/xtra/sound
 cp ../lib/xtra/sound/*.wav lib/xtra/sound
 
-#upx -9 angband.exe
+upx -9 angband.exe
 
 cd ..
 
