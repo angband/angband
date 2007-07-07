@@ -1182,8 +1182,9 @@ static bool do_cmd_tunnel_aux(int y, int x)
 				/* Create a simple object */
 				place_object(y, x, FALSE, FALSE);
 
-				/* Observe new object */
-				if (player_can_see_bold(y, x))
+				/* Observe the new object */
+				if (!squelch_hide_item(&o_list[cave_o_idx[y][x]]) &&
+				    player_can_see_bold(y, x))
 				{
 					msg_print("You have found something!");
 				}
