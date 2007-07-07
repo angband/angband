@@ -127,7 +127,8 @@ Minor visible changes
 - Semi-rewrite of the store code; now uses a scrolling menu with a
   slightly more streamlined interface.  Bigscreen support in stores.
   Ammo is treated in more aesthetically pleasing quantities.
-  General Store always stocks what it stocks now.
+  General Store always stocks what it stocks now, and doesn't buy
+  anything back off the player.
 - Remove double-rate spellcasting with the smart_monsters option.
   (imported from V CVS; Julian Lighton).
 - '[' command displays a monster list in the main terminal window.
@@ -156,7 +157,6 @@ non-functional cruft.
     streamlined.
 - Nuked a lot of old ports: cap, lsl, sla, xpj, ibm, dos, vcs, lfb, ami,
   emx, vme.
-- Added a new SDL port by Iain McFall, based on the ToME and Sang ports.
 - As a result of the above, makefiles considerably simplified.  As many
   makefiles as possible use a common list of source files in
   "Makefile.src", which simplifies maintainance.  Makefile.std has also
@@ -221,3 +221,6 @@ Platform
   main.c mechanism.  Thanks to Brendon Oliver for the initial code
   for this.
 - GTK port is a GTK2 port, and uses pango and cairo.  (Shanoah Alkire)
+- Added a new SDL port by Iain McFall, based on the ToME and Sang ports.
+  Both the SDL and GTK ports are disabled by default, as neither is
+  quite finished, though both are perfectly functional.

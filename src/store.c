@@ -248,25 +248,8 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 		/* General Store */
 		case STORE_GENERAL:
 		{
-			/* Analyze the type */
-			switch (o_ptr->tval)
-			{
-				case TV_SPIKE:
-				case TV_SHOT:
-				case TV_ARROW:
-				case TV_BOLT:
-				case TV_DIGGING:
-				case TV_CLOAK:
-					break;
-
-				case TV_LITE:
-					if (artifact_p(o_ptr) || ego_item_p(o_ptr))
-						break;
-
-				default:
-					return (FALSE);
-			}
-			break;
+			/* Doesn't buy anything back */
+			return (FALSE);
 		}
 
 		/* Armoury */
