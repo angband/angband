@@ -1,36 +1,32 @@
 Angband 3.0.8
 =============
 
-Bug reports to <bugs@rephial.org>
-Website at     http://rephial.org/
-
-
 Angband is a graphical dungeon adventure game that uses textual characters
 to represent the walls and floors of a dungeon and the inhabitants therein, 
 in the vein of games like NetHack and Rogue.
 
-The game's website is http://rephial.org/, which contains various help files,
-changelists, and development information.  There are also files included here
-which give valuable information, like changes.txt and the help files in
-lib/help/, which can be viewed in-game.
-
 Angband is currently maintained by a development "team" headed by Andrew
 Sidwell.  Please see the "thanks.txt" file for a full listing of credits.
 
+  Report bugs here:     bugs@rephial.org       
+  The Angband website:  http://rephial.org/
+  Angband forums:       http://angband.oook.cz/forum/
 
-If you've downloaded the source, please be aware that there are precompiled
-versions available for at least Mac OS X, Windows, and RISC OS, available
-at the main site.  However, if you want to compile, you may find the page
-<http://rephial.org/wiki/Compiling> useful.
+  32x32 graphics for X11 and Windows:
+    http://angband.oook.cz/download/extra/graf-32x32-306.zip
 
+  When upgrading, please read changes.txt!
 
-For information on variants, patches, and other assorted things, you're best
-off looking at the main community site for Angband, <http://angband.oook.cz/>.
-It has the Angband forum, provides access to the Angband newsgroup, and allows
-you to upload character dumps and screenshots.
+  '?' in-game lets you browse the help system.
 
-Bug reports should be sent to either the forum, in the "Vanilla" section, or
-via email to bugs@rephial.org.
+  For more information about the game, its variants, and somewhere to upload
+  your characters and screenshots, please see http://angband.oook.cz/.
+
+  If you've downloaded the source, please be aware that precompiled versions
+  are available for at least Mac OS X, Windows, and RISC OS, available at the
+  main site.  However, if you want to compile, try reading:
+    http://rephial.org/wiki/Compiling
+
 
 
 
@@ -39,10 +35,6 @@ via email to bugs@rephial.org.
 Make sure you keep all your savefiles in the proper place, and if you load a
 savefile from the wrong place, note that the game may decide to re-save your
 savefile in the proper place when you quit.
-
-Some kinds of archive (namely Zip files) don't handle empty directories, so
-there are "delete.me" files in those.  You may safely delete these files if
-they annoy you.
 
 
 === Upgrading from older versions (and/or other platforms) ===
@@ -60,11 +52,6 @@ and "NNN" is the name of the "character" in the savefile.
 Angband uses a platform independant file format for the binary file
 used to store the high score list.  This file is named "scores.raw".  To
 use an old high score list, simply copy it into the "lib/apex" directory.
-
-Angband uses a set of ascii "user pref files" which are kept in the
-"lib/pref" directory.  Most of these files can only be used on a small set
-of platforms, and may need slight modifications when imported from older
-versions.
 
 If you're interested in what else lies in lib/, then please read
 "lib/readme.txt".

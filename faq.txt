@@ -1,0 +1,28 @@
+A brief Angband FAQ
+===================
+
+1. "I want old school #s as wall tiles, not solid blocks!"
+   "There are no walls, and I'm playing on Windows Vista."
+
+   Please see:
+     http://angband.oook.cz/forum/showthread.php?t=88 and
+     http://angband.oook.cz/forum/showthread.php?t=26
+
+2. "How do I get hold of the David Gervais 32x32 tiles?"
+
+   If you're on Windows or using the X11 port, you'll have to download
+   them from the below URL and place the files in your lib/xtra directory.
+
+   http://angband.oook.cz/download/extra/graf-32x32-306.zip
+
+3. "I play in the console on Linux, and the colours are screwed up"
+
+   Please see:
+     http://angband.oook.cz/forum/showthread.php?t=77
+
+4. "I'm playing in a terminal and the Escape key isn't working as it
+   should - I have to press it twice, or just wait a while."
+
+   This is a feature of terminals to allow you to enter keypresses that
+   can't be sent directly.  Use the backtick ('`') key instead -- it's
+   equivalent in every way to Escape.
