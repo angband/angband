@@ -62,7 +62,7 @@ dnl Frontends
 AC_ARG_ENABLE(gtk,
 	[  --enable-gtk                         Enables GTK 2.x frontend, can't use on system-wide installs (default: disabled)],
 	[enable_gtk=$enableval],
-	[enable_gtk=yes])
+	[enable_gtk=no])
 AC_ARG_ENABLE(curses,
 	[  --enable-curses                      Enables Curses frontend (default: enabled)],
 	[enable_curses=$enableval],
@@ -136,7 +136,7 @@ fi
 
 dnl SDL checking
 if test "$enable_sdl" = "yes"; then
-	AM_PATH_SDL(1.2.0,,)
+	AM_PATH_SDL(1.2.10,,)
 
 	if test "$SDL_CONFIG" = "no"; then
 		with_sdl=no
