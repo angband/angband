@@ -72,9 +72,9 @@ AC_ARG_ENABLE(x11,
 	[enable_x11=$enableval],
 	[enable_x11=yes])
 AC_ARG_ENABLE(sdl,
-	[  --enable-sdl                         Enables SDL frontend (default: enabled)],
+	[  --enable-sdl                         Enables SDL frontend (default: disabled)],
 	[enable_sdl=$enableval],
-	[enable_sdl=yes])
+	[enable_sdl=no])
 
 dnl Sound modules
 AC_ARG_ENABLE(sdl_mixer,
