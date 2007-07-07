@@ -2833,7 +2833,7 @@ errr init_x11(int argc, char **argv)
 
 		case GRAPHICS_DAVID_GERVAIS:
 		{
-			bitmap_file = "32x32.bmp";
+			bitmap_file = "graf/32x32.bmp";
 
 			use_graphics = GRAPHICS_DAVID_GERVAIS;
 			use_transparency = TRUE;
