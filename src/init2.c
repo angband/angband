@@ -1141,6 +1141,7 @@ static errr init_other(void)
 
 	/* Padded into array */
 	C_MAKE(cave_info, DUNGEON_HGT, byte_256);
+	C_MAKE(cave_info2, DUNGEON_HGT, byte_256);
 
 	/* Feature array */
 	C_MAKE(cave_feat, DUNGEON_HGT, byte_wid);
@@ -1872,6 +1873,7 @@ void cleanup_angband(void)
 	FREE(cave_o_idx);
 	FREE(cave_m_idx);
 	FREE(cave_feat);
+	FREE(cave_info2);
 	FREE(cave_info);
 
 	/* Free the "update_view()" array */

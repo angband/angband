@@ -877,8 +877,26 @@ static void prt_speed(int row, int col)
 		strnfmt(buf, sizeof(buf), "%s (%+d)", type, (i - 110));
 
 	/* Display the speed */
-	c_put_str(attr, format("%-14s", buf), row, col);
+	c_put_str(attr, format("%-10s", buf), row, col);
 }
+
+
+/*
+ * Prints trap detection status
+ */
+static void prt_dtrap(int row, int col)
+{
+	byte info = cave_info2[p_ptr->py][p_ptr->px];
+
+	/* The player is in a trap-detected grid */
+	if (info & (CAVE2_DTRAP))
+		c_put_str(TERM_GREEN, "DTrap", row, col);
+
+	/* Not in a trap-detected grid */
+	else
+		put_str("     ", row, col);
+}
+
 
 
 /*
@@ -969,9 +987,10 @@ static const struct status_handler_t
 	{ PR_AFRAID,   22, prt_afraid },   /* "Afraid" */
 	{ PR_POISONED, 29, prt_poisoned }, /* "Poisoned" */
 	{ PR_STATE,    38, prt_state },    /* <state> */
-	{ PR_SPEED,    49, prt_speed },    /* "Slow (-NN)" or "Fast (+NN)" */
-	{ PR_STUDY,    64, prt_study },    /* "Study" */
-	{ PR_DEPTH,    70, prt_depth },    /* "Lev NNN" / "NNNN ft" */
+	{ PR_DTRAP,    49, prt_dtrap },    /* "DTrap" */
+	{ PR_SPEED,    55, prt_speed },    /* "Slow (-NN)" or "Fast (+NN)" */
+	{ PR_STUDY,    66, prt_study },    /* "Study" */
+	{ PR_DEPTH,    72, prt_depth },    /* "Lev NNN" / "NNNN ft" */
 	{ PR_OPPOSE_ELEMENTS, 80, prt_elements }, /* Acid Elec Fire Cold Pois */
 };
 

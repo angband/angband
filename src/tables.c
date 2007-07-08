@@ -1418,7 +1418,7 @@ cptr option_text[OPT_MAX] =
 	NULL,						/* xxx run_use_corners */
 	"disturb_move",				/* OPT_disturb_move */
 	"disturb_near",				/* OPT_disturb_near */
-	"disturb_panel",			/* OPT_disturb_panel */
+	"disturb_detect",			/* OPT_disturb_detect */
 	"disturb_state",			/* OPT_disturb_state */
 	"disturb_minor",			/* OPT_disturb_minor */
 	NULL,						/* xxx next_xp */
@@ -1682,7 +1682,7 @@ cptr option_desc[OPT_MAX] =
 	NULL,										/* xxx run_use_corners */
 	"Disturb whenever any monster moves",		/* OPT_disturb_move */
 	"Disturb whenever viewable monster moves",	/* OPT_disturb_near */
-	"Disturb whenever map panel changes",		/* OPT_disturb_panel */
+	"Disturb whenever leaving trap detected area", /* OPT_disturb_detect */
 	"Disturb whenever player state changes",	/* OPT_disturb_state */
 	"Disturb whenever boring things happen",	/* OPT_disturb_minor */
 	NULL,										/* xxx next_xp */
@@ -1946,7 +1946,7 @@ const bool option_norm[OPT_MAX] =
 	FALSE,		/* xxx run_use_corners */
 	FALSE,		/* OPT_disturb_move */
 	TRUE,		/* OPT_disturb_near */
-	TRUE,		/* OPT_disturb_panel */
+	TRUE,		/* OPT_disturb_detect */
 	TRUE,		/* OPT_disturb_state */
 	TRUE,		/* OPT_disturb_minor */
 	FALSE,		/* xxx next_xp */
@@ -2230,7 +2230,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 	{
 		OPT_disturb_move,
 		OPT_disturb_near,
-		OPT_disturb_panel,
+		OPT_disturb_detect,
 		OPT_disturb_state,
 		OPT_disturb_minor,
 		OPT_quick_messages,

@@ -44,7 +44,7 @@
  */
 #define VERSION_MAJOR	3
 #define VERSION_MINOR	0
-#define VERSION_PATCH	10
+#define VERSION_PATCH	11
 #define VERSION_EXTRA	0
 
 /*
@@ -1606,7 +1606,7 @@ enum
 #define PR_CUT			0x00001000L	/* Display Extra (Cut) */
 #define PR_STUN			0x00002000L	/* Display Extra (Stun) */
 #define PR_HUNGER		0x00004000L	/* Display Extra (Hunger) */
-/* xxx */
+#define PR_DTRAP		0x00008000L /* Display Extra (Trap detection) */
 #define PR_BLIND		0x00010000L	/* Display Extra (Blind) */
 #define PR_CONFUSED		0x00020000L	/* Display Extra (Confused) */
 #define PR_AFRAID		0x00040000L	/* Display Extra (Afraid) */
@@ -1669,6 +1669,7 @@ enum
 #define CAVE_TEMP		0x40 	/* temp flag */
 #define CAVE_WALL		0x80 	/* wall flag */
 
+#define CAVE2_DTRAP		0x01	/* trap detected grid */
 
 
 /*** Object flags ***/
@@ -2403,7 +2404,7 @@ enum
 
 #define OPT_disturb_move			20
 #define OPT_disturb_near			21
-#define OPT_disturb_panel			22
+#define OPT_disturb_detect			22
 #define OPT_disturb_state			23
 #define OPT_disturb_minor			24
 
@@ -2497,7 +2498,7 @@ enum
 #define run_ignore_doors		OPTION(run_ignore_doors)
 #define disturb_move			OPTION(disturb_move)
 #define disturb_near			OPTION(disturb_near)
-#define disturb_panel			OPTION(disturb_panel)
+#define disturb_detect			OPTION(disturb_detect)
 #define disturb_state			OPTION(disturb_state)
 #define disturb_minor			OPTION(disturb_minor)
 #define view_perma_grids		OPTION(view_perma_grids)

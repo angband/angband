@@ -3527,6 +3527,7 @@ void wiz_dark(void)
 		{
 			/* Process the grid */
 			cave_info[y][x] &= ~(CAVE_MARK);
+			cave_info2[y][x] &= ~(CAVE2_DTRAP);
 		}
 	}
 

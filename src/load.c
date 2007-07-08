@@ -1653,6 +1653,31 @@ static errr rd_dungeon(void)
 		}
 	}
 
+	/* Load the dungeon data */
+	if (!older_than(3, 0, 11)) for (x = y = 0; y < DUNGEON_HGT; )
+	{
+		/* Grab RLE info */
+		rd_byte(&count);
+		rd_byte(&tmp8u);
+
+		/* Apply the RLE info */
+		for (i = count; i > 0; i--)
+		{
+			/* Extract "info" */
+			cave_info2[y][x] = tmp8u;
+
+			/* Advance/Wrap */
+			if (++x >= DUNGEON_WID)
+			{
+				/* Wrap */
+				x = 0;
+
+				/* Advance/Wrap */
+				if (++y >= DUNGEON_HGT) break;
+			}
+		}
+	}
+
 
 	/*** Run length decoding ***/
 

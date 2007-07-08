@@ -949,20 +949,24 @@ bool detect_traps(void)
 				/* Redraw */
 				lite_spot(y, x);
 
-				/* Obvious */
+				/* We found something to detect */
 				detect = TRUE;
 			}
+
+			/* Mark as trap-detected */
+			cave_info2[y][x] |= (CAVE2_DTRAP);
 		}
 	}
 
 	/* Describe */
 	if (detect)
-	{
 		msg_print("You sense the presence of traps!");
-	}
+
+	/* Mark the redraw flag */
+	p_ptr->redraw |= (PR_DTRAP);
 
 	/* Result */
-	return (detect);
+	return (TRUE);
 }
 
 

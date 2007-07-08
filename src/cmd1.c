@@ -1400,6 +1400,9 @@ void move_player(int dir)
 	int y, x;
 
 
+	bool old_dtrap, new_dtrap;
+
+
 	/* Find the result of moving */
 	y = py + ddy[dir];
 	x = px + ddx[dir];
@@ -1500,8 +1503,27 @@ void move_player(int dir)
 		/* Sound XXX XXX XXX */
 		/* sound(MSG_WALK); */
 
-		/* Move player */
-		monster_swap(py, px, y, x);
+		/* See if trap detection status will change */
+		old_dtrap = ((cave_info2[py][px] & (CAVE2_DTRAP)) != 0);
+		new_dtrap = ((cave_info2[y][x] & (CAVE2_DTRAP)) != 0);
+
+		/* Note the change in the detect status */
+		if (old_dtrap != new_dtrap) p_ptr->redraw |= (PR_DTRAP);
+
+		/* Disturb player if the player is about to leave the detect area XXX */
+		if (disturb_detect && p_ptr->running && old_dtrap && !new_dtrap)
+		{
+			/* Disturb the player */
+			disturb(0, 0);
+
+			/* Done XXX */
+			return;
+		}
+
+  		/* Move player */
+  		monster_swap(py, px, y, x);
+  
+
 
 		/* New location */
 		y = py = p_ptr->py;

@@ -3385,6 +3385,7 @@ void generate_cave(void)
 			{
 				/* No flags */
 				cave_info[y][x] = 0;
+				cave_info2[y][x] = 0;
 
 				/* No features */
 				cave_feat[y][x] = 0;
