@@ -890,7 +890,7 @@ static void display_statusline(void)
 	size_t i;
 
 	/* Don't worry about non-statusline bits */
-	if (!(p_ptr->redraw & (PR_STATE | PR_STUDY | PR_STATUS)))
+	if (!(p_ptr->redraw & (PR_STATE | PR_STUDY | PR_STATUS | PR_DTRAP)))
 		return;
 
 	/* Clear the remainder of the line */
