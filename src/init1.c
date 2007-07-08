@@ -1014,10 +1014,10 @@ errr parse_v_info(char *buf, header *head)
 		v_ptr->wid = wid;
 
 		/* Check for maximum vault sizes */
-		if ((v_ptr->typ == 7) && ((v_ptr->wid > 33) || (v_ptr->hgt > 22)))
+		if ((v_ptr->typ == 6) && ((v_ptr->wid > 33) || (v_ptr->hgt > 22)))
 			return (PARSE_ERROR_VAULT_TOO_BIG);
 
-		if ((v_ptr->typ == 8) && ((v_ptr->wid > 66) || (v_ptr->hgt > 44)))
+		if ((v_ptr->typ == 7) && ((v_ptr->wid > 66) || (v_ptr->hgt > 44)))
 			return (PARSE_ERROR_VAULT_TOO_BIG);
 	}
 	else

@@ -1491,8 +1491,6 @@ static void dungeon(void)
 	monster_type *m_ptr;
 	int i;
 
-	int py = p_ptr->py;
-	int px = p_ptr->px;
 
 
 	/* Hack -- enforce illegal panel */
@@ -1546,45 +1544,6 @@ static void dungeon(void)
 		p_ptr->max_depth = p_ptr->depth;
 	}
 
-
-	/* No stairs down from Quest */
-	if (is_quest(p_ptr->depth))
-	{
-		p_ptr->create_down_stair = FALSE;
-	}
-
-	/* No stairs from town or if not allowed */
-	if (!p_ptr->depth || adult_no_stairs)
-	{
-		p_ptr->create_down_stair = p_ptr->create_up_stair = FALSE;
-	}
-
-	/* Make a staircase */
-	if (p_ptr->create_down_stair || p_ptr->create_up_stair)
-	{
-		/* Place a staircase */
-		if (cave_valid_bold(py, px))
-		{
-			/* XXX XXX XXX */
-			delete_object(py, px);
-
-			/* Make stairs */
-			if (p_ptr->create_down_stair)
-			{
-				cave_set_feat(py, px, FEAT_MORE);
-			}
-			else
-			{
-				cave_set_feat(py, px, FEAT_LESS);
-			}
-
-			/* Mark the stairs as known */
-			cave_info[py][px] |= (CAVE_MARK);
-		}
-
-		/* Cancel the stair request */
-		p_ptr->create_down_stair = p_ptr->create_up_stair = FALSE;
-	}
 
 
 	/* Choose panel */
