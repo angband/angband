@@ -3366,36 +3366,28 @@ void update_flow(void)
 
 
 /*
- * Map the current panel (plus some) ala "magic mapping"
+ * Map a radius 30 area around the player.
  *
  * We must never attempt to map the outer dungeon walls, or we
  * might induce illegal cave grid references.
  */
 void map_area(void)
 {
-	int i, x, y, y1, y2, x1, x2;
+	int i, x, y;
 
-
-	/* Pick an area to map */
-	y1 = Term->offset_y - randint(10);
-	y2 = Term->offset_y + SCREEN_HGT + randint(10);
-	x1 = Term->offset_x - randint(20);
-	x2 = Term->offset_x + SCREEN_WID + randint(20);
-
-	/* Efficiency -- shrink to fit legal bounds */
-	if (y1 < 1) y1 = 1;
-	if (y2 > DUNGEON_HGT-1) y2 = DUNGEON_HGT-1;
-	if (x1 < 1) x1 = 1;
-	if (x2 > DUNGEON_WID-1) x2 = DUNGEON_WID-1;
-
-	/* Scan that area */
-	for (y = y1; y < y2; y++)
+	/* Scan the dungeon */
+	for (y = 1; y < DUNGEON_HGT - 1; y++)
 	{
-		for (x = x1; x < x2; x++)
+		for (x = 1; x < DUNGEON_WID - 1; x++)
 		{
 			/* All non-walls are "checked" */
 			if (cave_feat[y][x] < FEAT_SECRET)
 			{
+				if (!in_bounds_fully(y, x)) continue;
+
+				/* Restrict to being in a certain radius */
+				if (distance(p_ptr->py, p_ptr->px, y, x) > 30) continue;
+
 				/* Memorize normal features */
 				if (cave_feat[y][x] > FEAT_INVIS)
 				{

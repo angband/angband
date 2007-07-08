@@ -914,9 +914,17 @@ void set_recall(void)
 }
 
 
+/*
+ * Old covered area on a 80x24 screen was around 66*22 = 1452
+ * New covered area from circular detection 3.14*22*22 = 1962
+ *
+ * A slight gain, but I think an OK one.
+ */
+#define DET_RADIUS   22
+
 
 /*
- * Detect all traps on current panel
+ * Detect all traps inside radius 22.
  */
 bool detect_traps(void)
 {
@@ -925,12 +933,15 @@ bool detect_traps(void)
 	bool detect = FALSE;
 
 
-	/* Scan the current panel */
-	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
+	/* Scan the dungeon */
+	for (y = 1; y < DUNGEON_HGT - 1; y++)
 	{
-		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
+		for (x = 1; x < DUNGEON_WID - 1; x++)
 		{
 			if (!in_bounds_fully(y, x)) continue;
+
+			/* Restrict to being in a certain radius */
+			if (distance(p_ptr->py, p_ptr->px, y, x) > DET_RADIUS) continue;
 
 			/* Detect invisible traps */
 			if (cave_feat[y][x] == FEAT_INVIS)
@@ -972,7 +983,7 @@ bool detect_traps(void)
 
 
 /*
- * Detect all doors on current panel
+ * Detect all doors inside radius 22.
  */
 bool detect_doors(void)
 {
@@ -981,12 +992,15 @@ bool detect_doors(void)
 	bool detect = FALSE;
 
 
-	/* Scan the panel */
-	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
+	/* Scan the dungeon */
+	for (y = 1; y < DUNGEON_HGT - 1; y++)
 	{
-		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
+		for (x = 1; x < DUNGEON_WID - 1; x++)
 		{
 			if (!in_bounds_fully(y, x)) continue;
+
+			/* Restrict to being in a certain radius */
+			if (distance(p_ptr->py, p_ptr->px, y, x) > DET_RADIUS) continue;
 
 			/* Detect secret doors */
 			if (cave_feat[y][x] == FEAT_SECRET)
@@ -1025,7 +1039,7 @@ bool detect_doors(void)
 
 
 /*
- * Detect all stairs on current panel
+ * Detect all stairs inside radius 22.
  */
 bool detect_stairs(void)
 {
@@ -1034,12 +1048,15 @@ bool detect_stairs(void)
 	bool detect = FALSE;
 
 
-	/* Scan the panel */
-	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
+	/* Scan the dungeon */
+	for (y = 1; y < DUNGEON_HGT - 1; y++)
 	{
-		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
+		for (x = 1; x < DUNGEON_WID - 1; x++)
 		{
 			if (!in_bounds_fully(y, x)) continue;
+
+			/* Restrict to being in a certain radius */
+			if (distance(p_ptr->py, p_ptr->px, y, x) > DET_RADIUS) continue;
 
 			/* Detect stairs */
 			if ((cave_feat[y][x] == FEAT_LESS) ||
@@ -1069,7 +1086,7 @@ bool detect_stairs(void)
 
 
 /*
- * Detect any treasure on the current panel
+ * Detect any treasure inside radius 22.
  */
 bool detect_treasure(void)
 {
@@ -1078,12 +1095,15 @@ bool detect_treasure(void)
 	bool detect = FALSE;
 
 
-	/* Scan the current panel */
-	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
+	/* Scan the dungeon */
+	for (y = 1; y < DUNGEON_HGT - 1; y++)
 	{
-		for (x = Term->offset_x; x < Term->offset_x + SCREEN_WID; x++)
+		for (x = 1; x < DUNGEON_WID - 1; x++)
 		{
 			if (!in_bounds_fully(y, x)) continue;
+
+			/* Restrict to being in a certain radius */
+			if (distance(p_ptr->py, p_ptr->px, y, x) > DET_RADIUS) continue;
 
 			/* Notice embedded gold */
 			if ((cave_feat[y][x] == FEAT_MAGMA_H) ||
@@ -1122,7 +1142,7 @@ bool detect_treasure(void)
 
 
 /*
- * Detect all "gold" objects on the current panel
+ * Detect all "gold" objects inside radius 22.
  */
 bool detect_objects_gold(void)
 {
@@ -1147,7 +1167,7 @@ bool detect_objects_gold(void)
 		x = o_ptr->ix;
 
 		/* Only detect nearby objects */
-		if (!panel_contains(y, x)) continue;
+		if (distance(p_ptr->py, p_ptr->px, y, x) > DET_RADIUS) continue;
 
 		/* Detect "gold" objects */
 		if (o_ptr->tval == TV_GOLD)
@@ -1175,7 +1195,7 @@ bool detect_objects_gold(void)
 
 
 /*
- * Detect all "normal" objects on the current panel
+ * Detect all "normal" objects inisde radius 22.
  */
 bool detect_objects_normal(void)
 {
@@ -1200,7 +1220,7 @@ bool detect_objects_normal(void)
 		x = o_ptr->ix;
 
 		/* Only detect nearby objects */
-		if (!panel_contains(y, x)) continue;
+		if (distance(p_ptr->py, p_ptr->px, y, x) > DET_RADIUS) continue;
 
 		/* Detect "real" objects */
 		if (o_ptr->tval != TV_GOLD)
@@ -1228,7 +1248,7 @@ bool detect_objects_normal(void)
 
 
 /*
- * Detect all "magic" objects on the current panel.
+ * Detect all "magic" objects inside radius 22.
  *
  * This will light up all spaces with "magic" items, including artifacts,
  * ego-items, potions, scrolls, books, rods, wands, staves, amulets, rings,
@@ -1259,7 +1279,7 @@ bool detect_objects_magic(void)
 		x = o_ptr->ix;
 
 		/* Only detect nearby objects */
-		if (!panel_contains(y, x)) continue;
+		if (distance(p_ptr->py, p_ptr->px, y, x) > DET_RADIUS) continue;
 
 		/* Examine the tval */
 		tv = o_ptr->tval;
@@ -1295,7 +1315,7 @@ bool detect_objects_magic(void)
 
 
 /*
- * Detect all "normal" monsters on the current panel
+ * Detect all "normal" monsters inside radius 22.
  */
 bool detect_monsters_normal(void)
 {
@@ -1318,7 +1338,7 @@ bool detect_monsters_normal(void)
 		x = m_ptr->fx;
 
 		/* Only detect nearby monsters */
-		if (!panel_contains(y, x)) continue;
+		if (distance(p_ptr->py, p_ptr->px, y, x) > DET_RADIUS) continue;
 
 		/* Detect all non-invisible monsters */
 		if (!(r_ptr->flags2 & (RF2_INVISIBLE)))
@@ -1350,7 +1370,7 @@ bool detect_monsters_normal(void)
 
 
 /*
- * Detect all "invisible" monsters on current panel
+ * Detect all "invisible" monsters inside radius 22.
  */
 bool detect_monsters_invis(void)
 {
@@ -1374,7 +1394,7 @@ bool detect_monsters_invis(void)
 		x = m_ptr->fx;
 
 		/* Only detect nearby monsters */
-		if (!panel_contains(y, x)) continue;
+		if (distance(p_ptr->py, p_ptr->px, y, x) > DET_RADIUS) continue;
 
 		/* Detect invisible monsters */
 		if (r_ptr->flags2 & (RF2_INVISIBLE))
@@ -1417,7 +1437,7 @@ bool detect_monsters_invis(void)
 
 
 /*
- * Detect all "evil" monsters on current panel
+ * Detect all "evil" monsters inside radius 22.
  */
 bool detect_monsters_evil(void)
 {
@@ -1441,7 +1461,7 @@ bool detect_monsters_evil(void)
 		x = m_ptr->fx;
 
 		/* Only detect nearby monsters */
-		if (!panel_contains(y, x)) continue;
+		if (distance(p_ptr->py, p_ptr->px, y, x) > DET_RADIUS) continue;
 
 		/* Detect evil monsters */
 		if (r_ptr->flags3 & (RF3_EVIL))
