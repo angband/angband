@@ -1699,66 +1699,66 @@ static void player_birth_aux(void)
  */
 static bool player_birth_quick(void)
 {
-    char ch;
-    int i;
-    birther old_char;
-    byte old_hitdie;
-    u16b old_expfact;
-    s16b old_hp[PY_MAX_LEVEL];
+	char ch;
+	int i;
+	birther old_char;
+	byte old_hitdie;
+	u16b old_expfact;
+	s16b old_hp[PY_MAX_LEVEL];
 
-    old_hitdie = p_ptr->hitdie;
-    old_expfact = p_ptr->expfact;
+	old_hitdie = p_ptr->hitdie;
+	old_expfact = p_ptr->expfact;
 
-    old_char.age = p_ptr->age;
-    old_char.au = p_ptr->au_birth;
-    old_char.ht = p_ptr->ht_birth;
-    old_char.wt = p_ptr->wt_birth;
-    old_char.sc = p_ptr->sc;
+	old_char.age = p_ptr->age;
+	old_char.au = p_ptr->au_birth;
+	old_char.ht = p_ptr->ht_birth;
+	old_char.wt = p_ptr->wt_birth;
+	old_char.sc = p_ptr->sc;
 
-    /* Save the stats */
-    for (i = 0; i < A_MAX; i++)
-    {
-        old_char.stat[i] = p_ptr->stat_birth[i];
-    }
+	/* Save the stats */
+	for (i = 0; i < A_MAX; i++)
+	{
+		old_char.stat[i] = p_ptr->stat_birth[i];
+	}
 
-    /* Save the history */
-    my_strcpy(old_char.history, p_ptr->history, sizeof(old_char.history));
+	/* Save the history */
+	my_strcpy(old_char.history, p_ptr->history, sizeof(old_char.history));
 
-    /* Save the hp */
-    for (i = 0; i < PY_MAX_LEVEL; i++)
-    {
-        old_hp[i] = p_ptr->player_hp[i];
-    }
+	/* Save the hp */
+	for (i = 0; i < PY_MAX_LEVEL; i++)
+	{
+		old_hp[i] = p_ptr->player_hp[i];
+	}
 
-    /* Wipe the player */
-    player_wipe();
+	/* Wipe the player */
+	player_wipe();
 
-    /* Level one */
-    p_ptr->max_lev = p_ptr->lev = 1;
+	/* Level one */
+	p_ptr->max_lev = p_ptr->lev = 1;
 
-    p_ptr->hitdie = old_hitdie;
-    p_ptr->expfact = old_expfact;
+	p_ptr->hitdie = old_hitdie;
+	p_ptr->expfact = old_expfact;
 
-    p_ptr->age = old_char.age;
-    p_ptr->au_birth = p_ptr->au = old_char.au;
-    p_ptr->ht_birth = p_ptr->ht = old_char.ht;
-    p_ptr->wt_birth = p_ptr->wt = old_char.wt;
-    p_ptr->sc = old_char.sc;
+	p_ptr->age = old_char.age;
+	p_ptr->au_birth = p_ptr->au = old_char.au;
+	p_ptr->ht_birth = p_ptr->ht = old_char.ht;
+	p_ptr->wt_birth = p_ptr->wt = old_char.wt;
+	p_ptr->sc = old_char.sc;
 
-    /* Load the stats */
-    for (i = 0; i < A_MAX; i++)
-    {
-        p_ptr->stat_birth[i] = p_ptr->stat_cur[i] = p_ptr->stat_max[i] = old_char.stat[i];
-    }
+	/* Load the stats */
+	for (i = 0; i < A_MAX; i++)
+	{
+		p_ptr->stat_birth[i] = p_ptr->stat_cur[i] = p_ptr->stat_max[i] = old_char.stat[i];
+	}
 
-    /* Load the history */
-    my_strcpy(p_ptr->history, old_char.history, sizeof(p_ptr->history));
+	/* Load the history */
+	my_strcpy(p_ptr->history, old_char.history, sizeof(p_ptr->history));
 
-    /* Load the hp */
-    for (i = 0; i < PY_MAX_LEVEL; i++)
-    {
-        p_ptr->player_hp[i] = old_hp[i];
-    }
+	/* Load the hp */
+	for (i = 0; i < PY_MAX_LEVEL; i++)
+	{
+		p_ptr->player_hp[i] = old_hp[i];
+	}
 
 	/* Set adult options from birth options */
 	for (i = OPT_BIRTH; i < OPT_CHEAT; i++)
@@ -1772,38 +1772,38 @@ static bool player_birth_quick(void)
 		op_ptr->opt[OPT_SCORE + (i - OPT_CHEAT)] = op_ptr->opt[i];
 	}
 
-    /* Calculate the bonuses and hitpoints */
-    p_ptr->update |= (PU_BONUS | PU_HP);
+	/* Calculate the bonuses and hitpoints */
+	p_ptr->update |= (PU_BONUS | PU_HP);
 
-    /* Update stuff */
-    update_stuff();
+	/* Update stuff */
+	update_stuff();
 
-    /* Fully healed */
-    p_ptr->chp = p_ptr->mhp;
+	/* Fully healed */
+	p_ptr->chp = p_ptr->mhp;
 
-    /* Fully rested */
-    p_ptr->csp = p_ptr->msp;
+	/* Fully rested */
+	p_ptr->csp = p_ptr->msp;
 
-    /* Display the player */
-    display_player(0);
+	/* Display the player */
+	display_player(0);
 
-    /* Get a name, prepare savefile */
-    get_name(FALSE);
+	/* Get a name, prepare savefile */
+	get_name(FALSE);
 
-    /* Prompt for it */
-    prt("['CTRL-X' to quit, 'ESC' to start over, or any other key to continue]", 23, 5);
+	/* Prompt for it */
+	prt("['CTRL-X' to quit, 'ESC' to start over, or any other key to continue]", 23, 5);
 
-    /* Get a key */
-    ch = inkey();
+	/* Get a key */
+	ch = inkey();
 
-    /* Quit */
-    if (ch == KTRL('X')) quit(NULL);
+	/* Quit */
+	if (ch == KTRL('X')) quit(NULL);
 
-    /* Start over */
-    if (ch == ESCAPE) return (FALSE);
+	/* Start over */
+	if (ch == ESCAPE) return (FALSE);
 
-    /* Accept */
-    return (TRUE);
+	/* Accept */
+	return (TRUE);
 }
 
 
