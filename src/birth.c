@@ -115,16 +115,15 @@ static void load_prev_data(void)
 
 	/* Load the data */
 	p_ptr->age = prev.age;
-	p_ptr->wt = prev.wt;
-	p_ptr->ht = prev.ht;
+	p_ptr->wt = p_ptr->wt_birth = prev.wt;
+	p_ptr->ht = p_ptr->ht_birth = prev.ht;
 	p_ptr->sc = prev.sc;
-	p_ptr->au = prev.au;
+	p_ptr->au = p_ptr->au_birth = prev.au;
 
 	/* Load the stats */
 	for (i = 0; i < A_MAX; i++)
 	{
-		p_ptr->stat_max[i] = prev.stat[i];
-		p_ptr->stat_cur[i] = prev.stat[i];
+		p_ptr->stat_max[i] = p_ptr->stat_cur[i] = p_ptr->stat_birth[i] = prev.stat[i];
 	}
 
 	/* Load the history */
@@ -269,6 +268,8 @@ static void get_stats(void)
 			/* Save the resulting stat maximum */
 			p_ptr->stat_cur[i] = p_ptr->stat_max[i] = stat_use[i];
 		}
+
+		p_ptr->stat_birth[i] = p_ptr->stat_max[i];
 	}
 }
 
@@ -389,15 +390,15 @@ static void get_ahw(void)
 	/* Calculate the height/weight for males */
 	if (p_ptr->psex == SEX_MALE)
 	{
-		p_ptr->ht = Rand_normal(rp_ptr->m_b_ht, rp_ptr->m_m_ht);
-		p_ptr->wt = Rand_normal(rp_ptr->m_b_wt, rp_ptr->m_m_wt);
+		p_ptr->ht = p_ptr->ht_birth = Rand_normal(rp_ptr->m_b_ht, rp_ptr->m_m_ht);
+		p_ptr->wt = p_ptr->wt_birth = Rand_normal(rp_ptr->m_b_wt, rp_ptr->m_m_wt);
 	}
 
 	/* Calculate the height/weight for females */
 	else if (p_ptr->psex == SEX_FEMALE)
 	{
-		p_ptr->ht = Rand_normal(rp_ptr->f_b_ht, rp_ptr->f_m_ht);
-		p_ptr->wt = Rand_normal(rp_ptr->f_b_wt, rp_ptr->f_m_wt);
+		p_ptr->ht = p_ptr->ht_birth = Rand_normal(rp_ptr->f_b_ht, rp_ptr->f_m_ht);
+		p_ptr->wt = p_ptr->wt_birth = Rand_normal(rp_ptr->f_b_wt, rp_ptr->f_m_wt);
 	}
 }
 
@@ -430,7 +431,7 @@ static void get_money(void)
 	if (gold < 100) gold = 100;
 
 	/* Save the gold */
-	p_ptr->au = gold;
+	p_ptr->au = p_ptr->au_birth = gold;
 }
 
 
@@ -438,25 +439,14 @@ static void get_money(void)
 /*
  * Clear all the global "character" data
  */
-static void player_wipe(bool really_wipe)
+static void player_wipe(void)
 {
 	int i;
 
-	byte psex, prace, pclass;
-
-	if (really_wipe)
-	{
-		psex = 0;
-		prace = 0;
-		pclass = 0;
-	}
-	else
-	{
-		/* Backup the player choices */
-		psex = p_ptr->psex;
-		prace = p_ptr->prace;
-		pclass = p_ptr->pclass;
-	}
+	/* Backup the player choices */
+	byte psex = p_ptr->psex;
+	byte prace = p_ptr->prace;
+	byte pclass = p_ptr->pclass;
 
 	/* Wipe the player */
 	(void)WIPE(p_ptr, player_type);
@@ -1087,8 +1077,7 @@ static int player_birth_aux_2(bool start_at_end)
 			if (adult_maximize)
 			{
 				/* Reset stats */
-				p_ptr->stat_cur[i] = p_ptr->stat_max[i] = stats[i];
-
+				p_ptr->stat_cur[i] = p_ptr->stat_max[i] = p_ptr->stat_birth[i] = stats[i];
 			}
 
 			/* Fixed stat maxes */
@@ -1120,7 +1109,7 @@ static int player_birth_aux_2(bool start_at_end)
 		}
 
 		/* Gold is inversely proportional to cost */
-		p_ptr->au = (100 * (48 - cost)) + 100;
+		p_ptr->au = p_ptr->au_birth = (100 * (48 - cost)) + 100;
 
 		/* Calculate the bonuses and hitpoints */
 		p_ptr->update |= (PU_BONUS | PU_HP);
@@ -1679,7 +1668,7 @@ static void player_birth_aux(void)
 				if (ch == 'S') 
 					state = BIRTH_RESTART;
 
-				if(ch == KTRL('X')) 
+				if (ch == KTRL('X')) 
 					quit(NULL);
 
 				if (ch == ESCAPE) 
@@ -1704,6 +1693,122 @@ static void player_birth_aux(void)
 
 
 /*
+ * Helper function for 'player_birth_quick()'.
+ *
+ * See "display_player" for screen layout code.
+ */
+static bool player_birth_quick(void)
+{
+    char ch;
+    int i;
+    birther old_char;
+    byte old_hitdie;
+    u16b old_expfact;
+    s16b old_hp[PY_MAX_LEVEL];
+
+    old_hitdie = p_ptr->hitdie;
+    old_expfact = p_ptr->expfact;
+
+    old_char.age = p_ptr->age;
+    old_char.au = p_ptr->au_birth;
+    old_char.ht = p_ptr->ht_birth;
+    old_char.wt = p_ptr->wt_birth;
+    old_char.sc = p_ptr->sc;
+
+    /* Save the stats */
+    for (i = 0; i < A_MAX; i++)
+    {
+        old_char.stat[i] = p_ptr->stat_birth[i];
+    }
+
+    /* Save the history */
+    my_strcpy(old_char.history, p_ptr->history, sizeof(old_char.history));
+
+    /* Save the hp */
+    for (i = 0; i < PY_MAX_LEVEL; i++)
+    {
+        old_hp[i] = p_ptr->player_hp[i];
+    }
+
+    /* Wipe the player */
+    player_wipe();
+
+    /* Level one */
+    p_ptr->max_lev = p_ptr->lev = 1;
+
+    p_ptr->hitdie = old_hitdie;
+    p_ptr->expfact = old_expfact;
+
+    p_ptr->age = old_char.age;
+    p_ptr->au_birth = p_ptr->au = old_char.au;
+    p_ptr->ht_birth = p_ptr->ht = old_char.ht;
+    p_ptr->wt_birth = p_ptr->wt = old_char.wt;
+    p_ptr->sc = old_char.sc;
+
+    /* Load the stats */
+    for (i = 0; i < A_MAX; i++)
+    {
+        p_ptr->stat_birth[i] = p_ptr->stat_cur[i] = p_ptr->stat_max[i] = old_char.stat[i];
+    }
+
+    /* Load the history */
+    my_strcpy(p_ptr->history, old_char.history, sizeof(p_ptr->history));
+
+    /* Load the hp */
+    for (i = 0; i < PY_MAX_LEVEL; i++)
+    {
+        p_ptr->player_hp[i] = old_hp[i];
+    }
+
+	/* Set adult options from birth options */
+	for (i = OPT_BIRTH; i < OPT_CHEAT; i++)
+	{
+		op_ptr->opt[OPT_ADULT + (i - OPT_BIRTH)] = op_ptr->opt[i];
+	}
+
+	/* Reset score options from cheat options */
+	for (i = OPT_CHEAT; i < OPT_ADULT; i++)
+	{
+		op_ptr->opt[OPT_SCORE + (i - OPT_CHEAT)] = op_ptr->opt[i];
+	}
+
+    /* Calculate the bonuses and hitpoints */
+    p_ptr->update |= (PU_BONUS | PU_HP);
+
+    /* Update stuff */
+    update_stuff();
+
+    /* Fully healed */
+    p_ptr->chp = p_ptr->mhp;
+
+    /* Fully rested */
+    p_ptr->csp = p_ptr->msp;
+
+    /* Display the player */
+    display_player(0);
+
+    /* Get a name, prepare savefile */
+    get_name(FALSE);
+
+    /* Prompt for it */
+    prt("['CTRL-X' to quit, 'ESC' to start over, or any other key to continue]", 23, 5);
+
+    /* Get a key */
+    ch = inkey();
+
+    /* Quit */
+    if (ch == KTRL('X')) quit(NULL);
+
+    /* Start over */
+    if (ch == ESCAPE) return (FALSE);
+
+    /* Accept */
+    return (TRUE);
+}
+
+
+
+/*
  * Create a new character.
  *
  * Note that we may be called with "junk" leftover in the various
@@ -1711,11 +1816,50 @@ static void player_birth_aux(void)
  */
 void player_birth(void)
 {
-	/* Wipe the player properly */
-	player_wipe(TRUE);
+	bool quickstart = FALSE;
+	char ch;
 
-	/* Create a new character */
-	player_birth_aux();
+	/*
+	 * If this a pre-existing savefile, offer to do a quick creation, based
+	 * on the previous character.
+	 */
+	if (character_existed && p_ptr->ht_birth)
+	{
+		/* Prompt */
+		while (TRUE)
+		{
+			Term_clear();
+
+			put_str("Quick-start character based on previous one (y/n)? ", 2, 2);
+			ch = inkey();
+
+			if (ch == KTRL('X'))
+				quit(NULL);
+			else if ((ch == ESCAPE) || strchr("YyNn\r\n", ch))
+				break;
+			else if (ch == '?')
+				(void)show_file("birth.hlp", NULL, 0, 0);
+			else
+				bell("Illegal answer!");
+		}
+
+		/* Quick generation */
+		if ((ch == 'y') || (ch == 'Y'))
+		{
+			if (player_birth_quick()) quickstart = TRUE;
+		}
+	}
+
+
+	/* Quickstart trumps normal creation */
+	if (!quickstart)
+	{
+		/* Wipe the player properly */
+		player_wipe();
+
+		/* Create a new character */
+		player_birth_aux();
+	}
 
 	/* Note player birth in the message recall */
 	message_add(" ", MSG_GENERIC);

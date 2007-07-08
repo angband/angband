@@ -98,6 +98,7 @@ extern bool arg_wizard;
 extern bool arg_sound;
 extern int arg_graphics;
 extern bool character_generated;
+extern bool character_existed;
 extern bool character_dungeon;
 extern bool character_saved;
 extern s16b character_icky;

@@ -470,14 +470,20 @@ static void wr_extra(void)
 	wr_s16b(p_ptr->ht);
 	wr_s16b(p_ptr->wt);
 
-	/* Dump the stats (maximum and current) */
+	/* Dump the stats (maximum and current and birth) */
 	for (i = 0; i < A_MAX; ++i) wr_s16b(p_ptr->stat_max[i]);
 	for (i = 0; i < A_MAX; ++i) wr_s16b(p_ptr->stat_cur[i]);
+	for (i = 0; i < A_MAX; ++i) wr_s16b(p_ptr->stat_birth[i]);
 
-	/* Ignore the transient stats */
-	for (i = 0; i < 12; ++i) wr_s16b(0);
+	wr_s16b(p_ptr->ht_birth);
+	wr_s16b(p_ptr->wt_birth);
+	wr_u32b(p_ptr->au_birth);
+
+	/* Padding */
+	wr_u32b(0);
 
 	wr_u32b(p_ptr->au);
+
 
 	wr_u32b(p_ptr->max_exp);
 	wr_u32b(p_ptr->exp);

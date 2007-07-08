@@ -1056,6 +1056,12 @@ struct player_type
 	byte ammo_tval;		/* Ammo variety */
 
 	s16b pspeed;		/* Current speed */
+
+    /* Generation fields (for quick start) */
+	s32b au_birth;          /* Birth gold */
+	s16b stat_birth[A_MAX]; /* Birth "natural" stat values */
+	s16b ht_birth;          /* Birth Height */
+	s16b wt_birth;          /* Birth Weight */
 };
 
 

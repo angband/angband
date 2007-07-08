@@ -59,6 +59,7 @@ int arg_graphics;			/* Command arg -- Request graphics mode */
  */
 
 bool character_generated;	/* The character exists */
+bool character_existed;		/* A character existed on the same savefile */
 bool character_dungeon;		/* The character has a dungeon */
 bool character_saved;		/* The character was just saved to a savefile */
 

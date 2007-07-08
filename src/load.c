@@ -1110,8 +1110,13 @@ static errr rd_extra(void)
 	/* Read the stat info */
 	for (i = 0; i < A_MAX; i++) rd_s16b(&p_ptr->stat_max[i]);
 	for (i = 0; i < A_MAX; i++) rd_s16b(&p_ptr->stat_cur[i]);
+	for (i = 0; i < A_MAX; i++) rd_s16b(&p_ptr->stat_birth[i]);
 
-	strip_bytes(24);	/* oops */
+	rd_s16b(&p_ptr->ht_birth);
+	rd_s16b(&p_ptr->wt_birth);
+	rd_s32b(&p_ptr->au_birth);
+
+	strip_bytes(4);
 
 	rd_s32b(&p_ptr->au);
 
@@ -2305,6 +2310,9 @@ bool load_player(bool *character_loaded, bool *reusing_savefile)
 
 			/* Forget death */
 			p_ptr->is_dead = FALSE;
+
+			/* A character existed in this savefile. */
+			character_existed = TRUE;
 
 			/* Count lives */
 			sf_lives++;
