@@ -3781,7 +3781,7 @@ static void try_door(int y0, int x0)
  *   FEAT_PERM_OUTER -- outer room walls (perma)
  *   FEAT_PERM_SOLID -- dungeon border (perma)
  */
-void build_tunnel(int start_room, int end_room)
+static void build_tunnel(int start_room, int end_room)
 {
 	int i = 0, j = 0, tmp, y, x;
 	int y0, x0, y1, x1;
