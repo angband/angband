@@ -332,6 +332,7 @@
 /*
  * Player "food" crucial values
  */
+#define PY_FOOD_UPPER   20000   /* Upper limit on food counter */
 #define PY_FOOD_MAX		15000	/* Food value (Bloated) */
 #define PY_FOOD_FULL	10000	/* Food value (Normal) */
 #define PY_FOOD_ALERT	2000	/* Food value (Hungry) */
@@ -1600,35 +1601,26 @@ enum
 #define PR_HP			0x00000040L	/* Display Hitpoints */
 #define PR_MANA			0x00000080L	/* Display Mana */
 #define PR_GOLD			0x00000100L	/* Display Gold */
-#define PR_DEPTH		0x00000200L	/* Display Depth */
 #define PR_EQUIPPY		0x00000400L	/* Display Equippy chars */
 #define PR_HEALTH		0x00000800L	/* Display Health Bar */
-#define PR_CUT			0x00001000L	/* Display Extra (Cut) */
-#define PR_STUN			0x00002000L	/* Display Extra (Stun) */
-#define PR_HUNGER		0x00004000L	/* Display Extra (Hunger) */
-#define PR_DTRAP		0x00008000L /* Display Extra (Trap detection) */
-#define PR_BLIND		0x00010000L	/* Display Extra (Blind) */
-#define PR_CONFUSED		0x00020000L	/* Display Extra (Confused) */
-#define PR_AFRAID		0x00040000L	/* Display Extra (Afraid) */
-#define PR_POISONED		0x00080000L	/* Display Extra (Poisoned) */
-#define PR_STATE		0x00100000L	/* Display Extra (State) */
-#define PR_SPEED		0x00200000L	/* Display Extra (Speed) */
-#define PR_STUDY		0x00400000L	/* Display Extra (Study) */
-#define PR_MAP			0x00800000L	/* Display Map */
-#define PR_OPPOSE_ELEMENTS	0x01000000L	/* Display temp. resists */
-#define PR_TEMP_SPELLS		0x02000000L	/* Display temp. spell effects */
+#define PR_SPEED		0x00001000L	/* Display Extra (Speed) */
+#define PR_STUDY		0x00002000L	/* Display Extra (Study) */
+#define PR_DEPTH		0x00004000L	/* Display Depth */
+#define PR_STATUS       0x00008000L
+#define PR_DTRAP		0x00010000L /* Trap detection indicator */
+#define PR_STATE		0x00020000L	/* Display Extra (State) */
+#define PR_MAP			0x00040000L	/* Display Map */
+
 
 /* Display Basic Info */
 #define PR_BASIC \
 	(PR_MISC | PR_TITLE | PR_STATS | PR_LEV |\
 	 PR_EXP | PR_GOLD | PR_ARMOR | PR_HP |\
-	 PR_MANA | PR_DEPTH | PR_HEALTH | PR_EQUIPPY)
+	 PR_MANA | PR_DEPTH | PR_HEALTH | PR_EQUIPPY | PR_SPEED)
 
 /* Display Extra Info */
 #define PR_EXTRA \
-	(PR_CUT | PR_STUN | PR_HUNGER | PR_BLIND |\
-	 PR_CONFUSED | PR_AFRAID | PR_POISONED | PR_STATE |\
-	 PR_SPEED | PR_STUDY | PR_OPPOSE_ELEMENTS)
+	(PR_STATUS | PR_STATE | PR_STUDY)
 
 
 /*

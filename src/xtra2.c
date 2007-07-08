@@ -39,13 +39,12 @@ static timed_effect effects[] =
 {
 	{ "You feel yourself moving faster!", "You feel yourself slow down.", 0, 0, PU_BONUS, MSG_SPEED },
 	{ "You feel yourself moving slower!", "You feel yourself speed up.", 0, 0, PU_BONUS, MSG_SLOW },
-	{ "You are blind.", "You can see again.", (PR_MAP | PR_BLIND),
-	  (PW_OVERHEAD | PW_MAP), (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS), MSG_BLIND },
-	{ "You are paralyzed!", "You can move again.", PR_STATE, 0, 0, MSG_PARALYZED },
-	{ "You are confused!", "You feel less confused now.", PR_CONFUSED, 0, 0, MSG_CONFUSED },
-	{ "You are terrified!", "You feel bolder now.", PR_AFRAID, 0, 0, MSG_AFRAID },
+	{ "You are blind.", "You can see again.", PR_MAP, (PW_OVERHEAD | PW_MAP), (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS), MSG_BLIND },
+	{ "You are paralyzed!", "You can move again.", 0, 0, 0, MSG_PARALYZED },
+	{ "You are confused!", "You feel less confused now.", 0, 0, 0, MSG_CONFUSED },
+	{ "You are terrified!", "You feel bolder now.", 0, 0, 0, MSG_AFRAID },
 	{ "You feel drugged!", "You can see clearly again.", PR_MAP, (PW_OVERHEAD | PW_MAP), 0, MSG_DRUGGED },
-	{ "You are poisoned!", "You are no longer poisoned.", PR_POISONED, 0, 0, MSG_POISONED },
+	{ "You are poisoned!", "You are no longer poisoned.", 0, 0, 0, MSG_POISONED },
 	{ "", "", 0, 0, 0, 0 },  /* TMD_CUT -- handled seperately */
 	{ "", "", 0, 0, 0, 0 },  /* TMD_STUN -- handled seperately */
 	{ "You feel safe from evil!", "You no longer feel safe from evil.", 0, 0, 0, MSG_PROT_EVIL },
@@ -60,8 +59,8 @@ static timed_effect effects[] =
 	{ "", "", 0, 0, 0, 0 },  /* elec -- handled seperately */
 	{ "", "", 0, 0, 0, 0 },  /* fire -- handled seperately */
 	{ "", "", 0, 0, 0, 0 },  /* cold -- handled seperately */
-	{ "You feel resistant to poison!", "You feel less resistant to poison", PR_OPPOSE_ELEMENTS, 0, 0, MSG_RES_POIS },
-	{ "You feel your memories fade.", "Your memories come flooding back.", PR_CONFUSED, 0, 0, MSG_GENERIC },
+	{ "You feel resistant to poison!", "You feel less resistant to poison", 0, 0, 0, MSG_RES_POIS },
+	{ "You feel your memories fade.", "Your memories come flooding back.", 0, 0, 0, MSG_GENERIC },
 };
 
 /*
@@ -118,7 +117,7 @@ bool set_timed(int idx, int v)
 
 	/* Update the visuals, as appropriate. */
 	p_ptr->update |= effect->flag_update;
-	p_ptr->redraw |= effect->flag_redraw;
+	p_ptr->redraw |= (PR_STATUS | effect->flag_redraw);
 	p_ptr->window |= effect->flag_window;
 
 	/* Handle stuff */
@@ -196,7 +195,7 @@ static bool set_oppose_acid(int v)
 	if (disturb_state) disturb(0, 0);
 
 	/* Redraw */
-	p_ptr->redraw |= PR_OPPOSE_ELEMENTS;
+	p_ptr->redraw |= PR_STATUS;
 
 	/* Handle stuff */
 	handle_stuff();
@@ -246,7 +245,7 @@ static bool set_oppose_elec(int v)
 	if (disturb_state) disturb(0, 0);
 
 	/* Redraw */
-	p_ptr->redraw |= PR_OPPOSE_ELEMENTS;
+	p_ptr->redraw |= PR_STATUS;
 
 	/* Handle stuff */
 	handle_stuff();
@@ -296,7 +295,7 @@ static bool set_oppose_fire(int v)
 	if (disturb_state) disturb(0, 0);
 
 	/* Redraw */
-	p_ptr->redraw |= PR_OPPOSE_ELEMENTS;
+	p_ptr->redraw |= PR_STATUS;
 
 	/* Handle stuff */
 	handle_stuff();
@@ -346,7 +345,7 @@ static bool set_oppose_cold(int v)
 	if (disturb_state) disturb(0, 0);
 
 	/* Redraw */
-	p_ptr->redraw |= PR_OPPOSE_ELEMENTS;
+	p_ptr->redraw |= PR_STATUS;
 
 	/* Handle stuff */
 	handle_stuff();
@@ -483,7 +482,7 @@ static bool set_stun(int v)
 	p_ptr->update |= (PU_BONUS);
 
 	/* Redraw the "stun" */
-	p_ptr->redraw |= (PR_STUN);
+	p_ptr->redraw |= (PR_STATUS);
 
 	/* Handle stuff */
 	handle_stuff();
@@ -695,7 +694,7 @@ static bool set_cut(int v)
 	p_ptr->update |= (PU_BONUS);
 
 	/* Redraw the "cut" */
-	p_ptr->redraw |= (PR_CUT);
+	p_ptr->redraw |= (PR_STATUS);
 
 	/* Handle stuff */
 	handle_stuff();
@@ -734,7 +733,8 @@ bool set_food(int v)
 	bool notice = FALSE;
 
 	/* Hack -- Force good values */
-	v = (v > 20000) ? 20000 : (v < 0) ? 0 : v;
+	v = MIN(v, PY_FOOD_UPPER);
+	v = MAX(v, 0);
 
 	/* Fainting / Starving */
 	if (p_ptr->food < PY_FOOD_FAINT)
@@ -918,7 +918,7 @@ bool set_food(int v)
 	p_ptr->update |= (PU_BONUS);
 
 	/* Redraw hunger */
-	p_ptr->redraw |= (PR_HUNGER);
+	p_ptr->redraw |= (PR_STATUS);
 
 	/* Handle stuff */
 	handle_stuff();
@@ -3454,5 +3454,6 @@ bool confuse_dir(int *dp)
 	/* Not confused */
 	return (FALSE);
 }
+
 
 
