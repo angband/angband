@@ -70,6 +70,12 @@ struct term_data
  */
 static term_data data[MAX_TERM_DATA];
 
+/* Save the prefs. */
+static void save_prefs(void);
+
+/* Ignore the prefs. */
+bool ignore_prefs;
+
 /*
  * game in progress
  */
@@ -80,9 +86,15 @@ static bool game_in_progress = FALSE;
  */
 static int num_term = 1;
 
-/* Our glade file */
-GladeXML *xml;
+/*
+ * Remember the number of terminal windows open
+ */
+static int term_windows_open = 1;
 
+/* 
+ * Our glade file 
+ */
+GladeXML *xml;
 
 /*
  * Path to the Gtk settings file
@@ -369,6 +381,7 @@ static void save_game_gtk(void)
 
 static void hook_quit(cptr str)
 {
+	save_prefs();
 	gtk_exit(0);
 }
 
@@ -376,6 +389,7 @@ static void hook_quit(cptr str)
 void quit_event_handler(GtkButton *was_clicked, gpointer user_data)
 {
 	save_game_gtk();
+	save_prefs();
 	quit(NULL);
 	gtk_exit(0);
 }
@@ -789,6 +803,257 @@ gboolean keypress_event_handler(GtkWidget *widget, GdkEventKey *event, gpointer 
 	return (TRUE);
 }
 
+/* Prefs - copied straight from main-x11.c and hacked.
+ * It'd probably be better to use something more gtkish,
+ * but at lest we'll have prefs. */
+
+static void save_prefs(void)
+{
+	FILE *fff;
+	int i;
+	int x,y;
+
+	/* Open the settings file */
+	fff = my_fopen(settings, "w");
+
+	/* Oops */
+	if (!fff) return;
+
+	/* Header */
+	fprintf(fff, "# %s GTK settings\n\n", VERSION_NAME);
+
+	/* Number of term windows to open */
+	fprintf(fff, "TERM_WINS=%d\n\n", term_windows_open);
+
+	/* Save window prefs */
+	for (i = 0; i < MAX_TERM_DATA; i++)
+	{
+		term_data *td = &data[i];
+
+		if (!td->t.mapped_flag) continue;
+
+		/* Header */
+		fprintf(fff, "# Term %d\n", i);
+
+			
+		gtk_window_get_position(GTK_WINDOW(td->window), &x, &y);
+		
+		/*
+		 * This doesn't seem to work under various WMs
+		 * since the decoration messes the position up
+		 *
+		 * Hack -- Use saved window positions.
+		 * This means that we won't remember ingame repositioned
+		 * windows, but also means that WMs won't screw predefined
+		 * positions up. -CJN-
+		 */
+
+		/* Window specific location (x) */
+		fprintf(fff, "AT_X_%d=%d\n", i, x);
+
+		/* Window specific location (y) */
+		fprintf(fff, "AT_Y_%d=%d\n", i, y);
+
+		/* Window specific cols */
+		fprintf(fff, "COLS_%d=%d\n", i, td->cols);
+
+		/* Window specific rows */
+		fprintf(fff, "ROWS_%d=%d\n", i, td->rows);
+		
+		/* Window specific font name */
+		fprintf(fff, "FONT_%d=%s\n", i, pango_font_description_to_string(td->font));
+
+		/* Window specific tile width */
+		fprintf(fff, "TILE_WIDTH_%d=%d\n", i, td->tile_wid);
+
+		/* Window specific tile height */
+		fprintf(fff, "TILE_HEIGHT_%d=%d\n", i, td->tile_hgt);
+
+		/* Footer */
+		fprintf(fff, "\n");
+	}
+
+	/* Close */
+	(void)my_fclose(fff);
+}
+
+static int check_env_i(char* name, int i, int dfault)
+{
+	cptr str;
+	int val;
+	char buf[1024];
+	
+	sprintf(buf, name, i);
+	str = getenv(buf);
+	val = (str != NULL) ? atoi(str) : -1;
+	
+	if (val <= 0) val = dfault;
+		
+	return val;
+}
+
+static int get_value(cptr buf)
+{
+	cptr str;
+	int i;
+	
+	str = strstr(buf, "=");
+	i = (str != NULL) ? atoi(str + 1) : -1;
+	
+	return i;
+}
+
+static void load_prefs(term_data *td, int i)
+{
+	cptr font = "";
+
+	int x = 0;
+	int y = 0;
+
+	int cols = 80;
+	int rows = 24;
+
+	cptr str;
+
+	int val;
+
+	FILE *fff;
+
+	char buf[1024];
+	char cmd[40];
+	char font_name[256];
+
+	int line = 0;
+	
+	
+
+	/* Build the filename and open the file */
+	path_build(settings, sizeof(settings), ANGBAND_DIR_USER, "gtk-settings.prf");
+	fff = my_fopen(settings, "r");
+
+	/* File exists */
+	if ((fff) && (!ignore_prefs))
+	{
+		/* Process the file */
+		while (0 == my_fgets(fff, buf, sizeof(buf)))
+		{
+			/* Count lines */
+			line++;
+
+			/* Skip "empty" lines, "blank" lines, and comments */
+			if (!buf[0]) continue;
+			if (isspace((unsigned char)buf[0])) continue;
+			if (buf[0] == '#') continue;
+
+			/* Window specific location (x) */
+			sprintf(cmd, "AT_X_%d", i);
+
+			if (prefix(buf, cmd))
+			{
+				x = get_value(buf);
+				continue;
+			}
+			
+			/* Window specific location (y) */
+			sprintf(cmd, "AT_Y_%d", i);
+
+			if (prefix(buf, cmd))
+			{
+				y = get_value(buf);
+				continue;
+			}
+		
+			/* Window specific cols */
+			sprintf(cmd, "COLS_%d", i);
+
+			if (prefix(buf, cmd))
+			{
+				val = get_value(buf);
+				if (val > 0) cols = val;
+				continue;
+			}
+				
+
+			/* Window specific rows */
+			sprintf(cmd, "ROWS_%d", i);
+
+			if (prefix(buf, cmd))
+			{
+				val = get_value(buf);
+				if (val > 0) rows = val;
+				continue;
+			}
+
+			/* Window specific font name */
+			sprintf(cmd, "FONT_%d", i);
+
+			if (prefix(buf, cmd))
+			{
+				str = strstr(buf, "=");
+				if (str != NULL)
+				{
+					my_strcpy(font_name, str + 1, sizeof(font_name));
+					font = font_name;
+				}
+				continue;
+			}
+
+			/* Window specific tile width */
+			sprintf(cmd, "TILE_WIDTH_%d", i);
+
+			if (prefix(buf, cmd))
+			{
+				val = get_value(buf);
+				if (val > 0) td->tile_wid = val;
+				continue;
+			}
+
+			/* Window specific tile height */
+			sprintf(cmd, "TILE_HEIGHT_%d", i);
+
+			if (prefix(buf, cmd))
+			{
+				val = get_value(buf);
+				if (val > 0) td->tile_hgt = val;
+				continue;
+			}
+		}
+
+		/* Close */
+		my_fclose(fff);
+	}
+
+	/*
+	 * Env-vars overwrite the settings in the settings file
+	 */
+
+	x = check_env_i("ANGBAND_X11_AT_X_%d", i, x);
+	y = check_env_i("ANGBAND_X11_AT_Y_%d", i, y);
+	cols = check_env_i("ANGBAND_X11_COLS_%d", i,  cols);
+	rows = check_env_i("ANGBAND_X11_ROWS_%d", i, rows);
+		
+	/* Window specific font name */
+	sprintf(buf, "ANGBAND_X11_FONT_%d", i);
+	str = getenv(buf);
+	if (str) font = str;
+	
+	if (cols <= 0) cols = 80;
+	if (rows <= 0) rows = 24;
+	if ((x <= 0) && (y <= 0))
+	{
+		x = 100;
+		y = 100;
+	}
+	
+	td->cols = cols;
+	td->rows = rows;
+	
+	if (font != "") load_font_by_name(td, font);
+	
+	gtk_widget_set_size_request(GTK_WIDGET(td->drawing_area),  td->cols * td->font_wid + 1, td->rows * td->font_hgt + 1);
+	gtk_window_move( GTK_WINDOW(td->window), x, y);
+}
+
 gboolean expose_event_handler(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
 	term_data *td = user_data;
@@ -837,7 +1102,7 @@ static errr term_data_init(term_data *td, int i)
 
 	/* Activate (important) */
 	Term_activate(t);
-
+	
 	/* Success */
 	return (0);
 }
@@ -887,8 +1152,9 @@ static void init_gtk_window(term_data *td, int i)
 	
 	/* Set attributes */
 	gtk_window_set_title(GTK_WINDOW(td->window), td->name);
-	gtk_widget_set_size_request(GTK_WIDGET(td->drawing_area), td->cols * td->font_wid + 1, td->rows * td->font_hgt + 1);
-	gtk_window_move( GTK_WINDOW(td->window), 100, 100);
+	
+	/* Load window and other prefs */
+	load_prefs(td, i);
 
 	/* Create a pixmap as buffer for screen updates */
 	td->pixmap = gdk_pixmap_new(td->drawing_area->window, td->cols * td->font_wid, td->rows * td->font_hgt, -1);
@@ -908,7 +1174,7 @@ static void init_gtk_window(term_data *td, int i)
 
 
 const char help_gtk[] =
-	"GTK for X11, subopts -n<windows> and standard GTK options";
+	"GTK for X11, subopts -n<windows>, -i to ignore prefs, and standard GTK options";
 
 
 /*
@@ -923,7 +1189,7 @@ errr init_gtk(int argc, char **argv)
 	
 	/* Parse args */
 	for (i = 1; i < argc; i++)
-	{
+	{	
 		if (prefix(argv[i], "-n"))
 		{
 			num_term = atoi(&argv[i][2]);
@@ -931,7 +1197,14 @@ errr init_gtk(int argc, char **argv)
 			else if (num_term < 1) num_term = 1;
 			continue;
 		}
-
+		
+		if (prefix(argv[i], "-i"))
+		{
+			plog("Ignoring preferences.");
+			ignore_prefs = TRUE;
+			continue;
+		}
+		
 		plog_fmt("Ignoring option: %s", argv[i]);
 	}
 	
