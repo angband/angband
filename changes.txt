@@ -8,15 +8,29 @@ this version.
 
 Changes up to now:
 
- * Add Ey-style quickstart.  (Eytan Zweig)
+Bigger
+------
 
- * Add DTrap indicator. (pelpel)
+* Add Ey-style quickstart.  (Eytan Zweig)
 
- * Adopted various parts of the OAngband dungeon generation code.
-   (Leon Marrick) For more information, please see:
-   http://dev.rephial.org/trac/attachment/ticket/156/notes.txt
+* Add trap detection indicator. (pelpel)  Also, make detection spells
+  circular, of radius 22, and magic mapping circular of radius 30.
 
- * Transient indicators now appear on the bottom line, starting at the
-   left of the dungeon display; things like depth and speed appear on
-   the main sidebar.  As a result of this, every timed effect is now
-   displayed on the status bar.
+* Adopted various parts of the OAngband dungeon generation code.
+  (Leon Marrick) For more information, please see:
+  http://dev.rephial.org/trac/attachment/ticket/156/notes.txt
+
+* Transient indicators now appear on the bottom line, starting at the
+  left of the dungeon display; things like depth and speed appear on
+  the main sidebar.  As a result of this, every timed effect is now
+  displayed on the status bar.
+
+Smaller
+-------
+
+* Monster recall colours changed somewhat, they're now closer to Ey,
+  which I find much more readable.
+
+Invisible (or almost so)
+---------
+

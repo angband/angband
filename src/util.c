@@ -2583,9 +2583,22 @@ void text_out_to_file(byte a, cptr str)
  * Output text to the screen or to a file depending on the selected
  * text_out hook.
  */
-void text_out(cptr str)
+void text_out(const char *fmt, ...)
 {
-	text_out_c(TERM_WHITE, str);
+	char buf[1024];
+	va_list vp;
+
+	/* Begin the Varargs Stuff */
+	va_start(vp, fmt);
+
+	/* Do the va_arg fmt to the buffer */
+	(void)vstrnfmt(buf, sizeof(buf), fmt, vp);
+
+	/* End the Varargs Stuff */
+	va_end(vp);
+
+	/* Output now */
+	text_out_hook(TERM_WHITE, buf);
 }
 
 
@@ -2593,9 +2606,22 @@ void text_out(cptr str)
  * Output text to the screen (in color) or to a file depending on the
  * selected hook.
  */
-void text_out_c(byte a, cptr str)
+void text_out_c(byte a, const char *fmt, ...)
 {
-	text_out_hook(a, str);
+	char buf[1024];
+	va_list vp;
+
+	/* Begin the Varargs Stuff */
+	va_start(vp, fmt);
+
+	/* Do the va_arg fmt to the buffer */
+	(void)vstrnfmt(buf, sizeof(buf), fmt, vp);
+
+	/* End the Varargs Stuff */
+	va_end(vp);
+
+	/* Output now */
+	text_out_hook(a, buf);
 }
 
 
