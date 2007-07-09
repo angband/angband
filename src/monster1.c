@@ -946,6 +946,8 @@ static void describe_monster_movement(int r_idx, const monster_lore *l_ptr)
 	}
 	else if (l_ptr->tkills)
 	{
+		byte colour = (r_ptr->level > p_ptr->max_depth) ? TERM_RED : TERM_L_GREEN;
+
 		if (l_ptr->flags1 & RF1_FORCE_DEPTH)
 			text_out(" is found ");
 		else
@@ -954,13 +956,13 @@ static void describe_monster_movement(int r_idx, const monster_lore *l_ptr)
 		if (depth_in_feet)
 		{
 			text_out("at depths of ");
-			text_out_c(TERM_ORANGE, "%d", r_ptr->level * 50);
+			text_out_c(colour, "%d", r_ptr->level * 50);
 			text_out(" feet");
 		}
 		else
 		{
 			text_out("on dungeon level ");
-			text_out_c(TERM_ORANGE, "%d", r_ptr->level);
+			text_out_c(colour, "%d", r_ptr->level);
 		}
 
 		old = TRUE;
