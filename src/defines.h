@@ -58,7 +58,7 @@
 /*
  * Version of random artifact code.
  */
-#define RANDART_VERSION	62
+#define RANDART_VERSION	63
 
 
 /*

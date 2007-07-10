@@ -118,7 +118,7 @@ static int check_devices(object_type *o_ptr)
 		case TV_ROD:   msg = "zap the rod";   break;
 		case TV_WAND:  msg = "use the wand";  what = "wand";  break;
 		case TV_STAFF: msg = "use the staff"; what = "staff"; break;
-		default:       msg = "active it";     break;
+		default:       msg = "activatee it";  break;
 	}
 
 	/* Extract the item level */
@@ -263,12 +263,19 @@ static void do_cmd_use(const char *q, const char *s, int flag, int snd, use_type
 		else
 			floor_item_charges(0 - item);
 	}
-	else if (use == USE_TIMEOUT && o_ptr->tval == TV_ROD)
+	else if (use == USE_TIMEOUT)
 	{
-		const object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
-		/* Drain the charge */
-		o_ptr->timeout += k_ptr->pval;
+		/* Artifacts use their own special field */
+		if (o_ptr->name1)
+		{
+			const artifact_type *a_ptr = &a_info[o_ptr->name1];
+			o_ptr->timeout = a_ptr->time_base + damroll(a_ptr->time_dice, a_ptr->time_sides);
+		}
+		else
+		{
+			const object_kind *k_ptr = &k_info[o_ptr->k_idx];
+			o_ptr->timeout = k_ptr->time_base + damroll(k_ptr->time_dice, k_ptr->time_sides);
+		}
 	}
 	else if (use == USE_SINGLE)
 	{

@@ -1318,7 +1318,7 @@ static errr rd_randarts(void)
 	u32b tmp32u;
 
 
-	if (older_than(2, 9, 3))
+	if (older_than(3, 0, 11))
 	{
 		/*
 		 * XXX XXX XXX
@@ -1392,9 +1392,10 @@ static errr rd_randarts(void)
 				rd_byte(&a_ptr->level);
 				rd_byte(&a_ptr->rarity);
 
-				rd_byte(&a_ptr->activation);
-				rd_u16b(&a_ptr->time);
-				rd_u16b(&a_ptr->randtime);
+				rd_u16b(&a_ptr->effect);
+				rd_u16b(&a_ptr->time_base);
+				rd_byte(&a_ptr->time_dice);
+				rd_byte(&a_ptr->time_sides);
 			}
 		}
 		else
@@ -1425,9 +1426,10 @@ static errr rd_randarts(void)
 				rd_byte(&tmp8u); /* a_ptr->level */
 				rd_byte(&tmp8u); /* a_ptr->rarity */
 
-				rd_byte(&tmp8u); /* a_ptr->activation */
-				rd_u16b(&tmp16u); /* a_ptr->time */
-				rd_u16b(&tmp16u); /* a_ptr->randtime */
+				rd_u16b(&tmp16u); /* a_ptr->effect */
+				rd_u16b(&tmp16u); /* a_ptr->time_base */
+				rd_byte(&tmp8u); /* a_ptr->time_dice */
+				rd_byte(&tmp8u); /* a_ptr->time_sides */
 			}
 		}
 

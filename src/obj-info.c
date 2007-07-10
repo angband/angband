@@ -453,11 +453,29 @@ static bool describe_misc_magic(const object_type *o_ptr, u32b f3)
  */
 static bool describe_activation(const object_type *o_ptr, u32b f3)
 {
-	int effect = k_info[o_ptr->k_idx].effect;
+	const object_kind *k_ptr = &k_info[o_ptr->k_idx];
+	int effect, base, dice, sides;
 	char temp[] = "x";
 
+	if (o_ptr->name1)
+	{
+		const artifact_type *a_ptr = &a_info[o_ptr->name1];
+
+		effect = a_ptr->effect;
+		base = a_ptr->time_base;
+		dice = a_ptr->time_dice;
+		sides = a_ptr->time_sides;
+	}
+	else
+	{
+		effect = k_ptr->effect;
+		base = k_ptr->time_base;
+		dice = k_ptr->time_dice;
+		sides = k_ptr->time_sides;
+	}
+
 	/* Make sure we have an effect */
-	if (!k_info[o_ptr->k_idx].effect)
+	if (!effect)
 	{
 		/* Check for the activation flag */
 		if (f3 & TR3_ACTIVATE)
@@ -501,6 +519,27 @@ static bool describe_activation(const object_type *o_ptr, u32b f3)
 		} while (*desc++);
 
 		text_out(".  ");
+
+		if (base || dice || sides)
+		{
+			/* Some artifacts can be activated */
+			text_out("When it is used, it takes ");
+
+			/* Output the number of turns */
+			if (dice && dice != 1)
+			    text_out_c(TERM_L_GREEN, "%d", dice);
+
+			if (sides)
+			    text_out_c(TERM_L_GREEN, "d%d", sides);
+
+			if (base)
+			{
+				if (sides) text_out_c(TERM_L_GREEN, "+");
+			    text_out_c(TERM_L_GREEN, "%d", base);
+			}
+
+			text_out(" turns to recharge.  ");
+		}
 	}
 
 	/* No activation */

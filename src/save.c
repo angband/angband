@@ -603,9 +603,10 @@ static void wr_randarts(void)
 		wr_byte(a_ptr->level);
 		wr_byte(a_ptr->rarity);
 
-		wr_byte(a_ptr->activation);
-		wr_u16b(a_ptr->time);
-		wr_u16b(a_ptr->randtime);
+		wr_byte(a_ptr->effect);
+		wr_u16b(a_ptr->time_base);
+		wr_u16b(a_ptr->time_dice);
+		wr_u16b(a_ptr->time_sides);
 	}
 }
 

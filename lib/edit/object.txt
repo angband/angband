@@ -20,6 +20,7 @@
 # A: depth/rarity : depth/rarity : etc
 # C: charges
 # M: chance of being generated in a pile : dice for number of items
+# E: effect when used : recharge time (if applicable)
 # F: flag | flag | etc
 # D: description
 
@@ -1243,7 +1244,7 @@ A:50/2
 P:0:0d0:0:0:15
 F:RES_FIRE | IGNORE_FIRE | 
 F:ACTIVATE
-E:RING_FLAMES
+E:RING_FLAMES:50+d50
 
 N:147:Acid
 G:=:d
@@ -1253,7 +1254,7 @@ A:50/2
 P:0:0d0:0:0:15
 F:RES_ACID | IGNORE_ACID | 
 F:ACTIVATE
-E:RING_ACID
+E:RING_ACID:50+d50
 
 N:148:Ice
 G:=:d
@@ -1263,7 +1264,7 @@ A:50/2
 P:0:0d0:0:0:15
 F:RES_COLD | IGNORE_COLD | 
 F:ACTIVATE
-E:RING_ICE
+E:RING_ICE:50+d50
 
 N:149:Woe
 G:=:d
@@ -3808,7 +3809,7 @@ I:45:38:0
 W:50:0:2:5000
 A:50/2
 F:RES_ELEC | IGNORE_ELEC | ACTIVATE
-E:RING_LIGHTNING
+E:RING_LIGHTNING:50+d50
 
 ### Items 432-436 unused ###
 

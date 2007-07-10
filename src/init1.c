@@ -48,6 +48,14 @@
 
 /*** Helper arrays for parsing ascii template files ***/
 
+
+/* Use a slightly unusual include method to create effect_list[] */
+#define LIST_STRINGS
+#include "effects.h"
+#undef LIST_STRINGS
+
+
+
 /*
  * Monster Blow Methods
  */
@@ -472,70 +480,6 @@ static cptr k_info_flags3[] =
 	"HEAVY_CURSE",
 	"PERMA_CURSE"
 };
-
-/* Use a slightly unusual include method to create effect_list[] */
-#define LIST_STRINGS
-#include "effects.h"
-#undef LIST_STRINGS
-
-
-/*
- * Activation type
- */
-static cptr a_info_act[ACT_MAX] =
-{
-	"ILLUMINATION",
-	"MAGIC_MAP",
-	"CLAIRVOYANCE",
-	"PROT_EVIL",
-	"DISP_EVIL",
-	"HEAL1",
-	"HEAL2",
-	"CURE_WOUNDS",
-	"HASTE1",
-	"HASTE2",
-	"FIRE1",
-	"FIRE2",
-	"FIRE3",
-	"FROST1",
-	"FROST2",
-	"FROST3",
-	"FROST4",
-	"FROST5",
-	"ACID1",
-	"RECHARGE1",
-	"SLEEP",
-	"LIGHTNING_BOLT",
-	"ELEC2",
-	"BANISHMENT",
-	"MASS_BANISHMENT",
-	"IDENTIFY",
-	"DRAIN_LIFE1",
-	"DRAIN_LIFE2",
-	"BIZZARE",
-	"STAR_BALL",
-	"RAGE_BLESS_RESIST",
-	"PHASE",
-	"TRAP_DOOR_DEST",
-	"DETECT",
-	"RESIST",
-	"TELEPORT",
-	"RESTORE_LIFE",
-	"MISSILE",
-	"ARROW",
-	"REM_FEAR_POIS",
-	"STINKING_CLOUD",
-	"STONE_TO_MUD",
-	"TELE_AWAY",
-	"WOR",
-	"CONFUSE",
-	"PROBE",
-	"FIREBRAND",
-	"STARLIGHT",
-	"MANA_BOLT",
-	"BERSERKER"
-};
-
 
 /*
  * Class flags
@@ -1226,7 +1170,7 @@ errr parse_k_info(char *buf, header *head)
 {
 	int i;
 
-	char *s, *t;
+	char *s = NULL, *t;
 
 	/* Current entry */
 	static object_kind *k_ptr = NULL;
@@ -1475,12 +1419,49 @@ errr parse_k_info(char *buf, header *head)
 	/* Process 'E' for effect */
 	else if (buf[0] == 'E')
 	{
+		int base, ds, dd;
+
+		/* Find the colon after the name, nuke it and advance */
+		s = strchr(buf + 2, ':');
+		if (s) *s++ = '\0';
+
 		/* Get the activation */
 		k_ptr->effect = grab_one_effect(buf + 2);
+		if (!k_ptr->effect) return (PARSE_ERROR_GENERIC);
 
-		/* No luck */
-		if (!k_ptr->effect)
+		if (!s)
+		{
+		}
+		else if (1 == sscanf(s, "d%d", &ds))
+		{
+			k_ptr->time_dice = 1;
+			k_ptr->time_sides = ds;
+		}
+		else if (2 == sscanf(s, "%d+d%d", &base, &ds))
+		{
+			k_ptr->time_base = base;
+			k_ptr->time_dice = 1;
+			k_ptr->time_sides = ds;
+		}
+		else if (2 == sscanf(s, "%dd%d", &dd, &ds))
+		{
+			k_ptr->time_dice = dd;
+			k_ptr->time_sides = ds;
+		}
+		else if (3 == sscanf(s, "%d+%dd%d", &base, &dd, &ds))
+		{
+			k_ptr->time_base = base;
+			k_ptr->time_dice = dd;
+			k_ptr->time_sides = ds;
+		}
+		else if (1 == sscanf(s, "%d", &base))
+		{
+			k_ptr->time_base = base;
+		}
+		else
+		{
 			return (PARSE_ERROR_GENERIC);
+		}
 	}
 
 	/* Process 'D' for "Description" */
@@ -1522,32 +1503,6 @@ static errr grab_one_artifact_flag(artifact_type *a_ptr, cptr what)
 	/* Error */
 	return (PARSE_ERROR_GENERIC);
 }
-
-
-/*
- * Grab one activation from a textual string
- */
-static errr grab_one_activation(artifact_type *a_ptr, cptr what)
-{
-	int i;
-
-	/* Scan activations */
-	for (i = 0; i < ACT_MAX; i++)
-	{
-		if (streq(what, a_info_act[i]))
-		{
-			a_ptr->activation = i;
-			return (0);
-		}
-	}
-
-	/* Oops */
-	msg_format("Unknown artifact activation '%s'.", what);
-
-	/* Error */
-	return (PARSE_ERROR_GENERIC);
-}
-
 
 
 /*
@@ -1599,15 +1554,18 @@ errr parse_a_info(char *buf, header *head)
 
 		/* Ignore everything */
 		a_ptr->flags3 |= (TR3_IGNORE_MASK);
+
+		/* Return early */
+		return (0);
 	}
+
+	/* There better be a current a_ptr */
+	if (!a_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 	/* Process 'I' for "Info" (one line only) */
 	else if (buf[0] == 'I')
 	{
 		int tval, sval, pval;
-
-		/* There better be a current a_ptr */
-		if (!a_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Scan for the values */
 		if (3 != sscanf(buf+2, "%d:%d:%d",
@@ -1625,9 +1583,6 @@ errr parse_a_info(char *buf, header *head)
 		int level, rarity, wgt;
 		long cost;
 
-		/* There better be a current a_ptr */
-		if (!a_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
-
 		/* Scan for the values */
 		if (4 != sscanf(buf+2, "%d:%d:%d:%ld",
 			            &level, &rarity, &wgt, &cost)) return (PARSE_ERROR_GENERIC);
@@ -1644,9 +1599,6 @@ errr parse_a_info(char *buf, header *head)
 	{
 		int ac, hd1, hd2, th, td, ta;
 
-		/* There better be a current a_ptr */
-		if (!a_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
-
 		/* Scan for the values */
 		if (6 != sscanf(buf+2, "%d:%dd%d:%d:%d:%d",
 			            &ac, &hd1, &hd2, &th, &td, &ta)) return (PARSE_ERROR_GENERIC);
@@ -1662,9 +1614,6 @@ errr parse_a_info(char *buf, header *head)
 	/* Process 'F' for flags */
 	else if (buf[0] == 'F')
 	{
-		/* There better be a current a_ptr */
-		if (!a_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
-
 		/* Parse every entry textually */
 		for (s = buf + 2; *s; )
 		{
@@ -1689,46 +1638,66 @@ errr parse_a_info(char *buf, header *head)
 	/* Process 'A' for "Activation & time" */
 	else if (buf[0] == 'A')
 	{
-		int time, rand;
+		int base, ds, dd;
 
-		/* There better be a current a_ptr */
-		if (!a_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
-
-		/* Find the colon before the name */
+		/* Find the colon after the name */
 		s = strchr(buf + 2, ':');
-
-		/* Verify that colon */
 		if (!s) return (PARSE_ERROR_GENERIC);
 
 		/* Nuke the colon, advance to the name */
 		*s++ = '\0';
-
-		/* Paranoia -- require a name */
 		if (!*s) return (PARSE_ERROR_GENERIC);
 
 		/* Get the activation */
-		if (grab_one_activation(a_ptr, buf + 2)) return (PARSE_ERROR_GENERIC);
+		a_ptr->effect = grab_one_effect(buf + 2);
+		if (!a_ptr->effect) return (PARSE_ERROR_GENERIC);
 
 		/* Scan for the values */
-		if (2 != sscanf(s, "%d:%d",
-			            &time, &rand)) return (PARSE_ERROR_GENERIC);
+		if (1 == sscanf(s, "%d", &base))
+		{
+			a_ptr->time_base = base;
+		}
+		else if (1 == sscanf(s, "d%d", &ds))
+		{
+			a_ptr->time_dice = 1;
+			a_ptr->time_sides = ds;
+		}
+		else if (2 == sscanf(s, "%d+d%d", &base, &ds))
+		{
+			a_ptr->time_base = base;
+			a_ptr->time_dice = 1;
+			a_ptr->time_sides = ds;
+		}
+		else if (2 == sscanf(s, "%dd%d", &dd, &ds))
+		{
+			a_ptr->time_dice = dd;
+			a_ptr->time_sides = ds;
+		}
+		else if (3 == sscanf(s, "%d+%dd%d", &base, &dd, &ds))
+		{
+			a_ptr->time_base = base;
+			a_ptr->time_dice = dd;
+			a_ptr->time_sides = ds;
+		}
+		else
+		{
+			return (PARSE_ERROR_GENERIC);
+		}
+	}
 
-		/* Save the values */
-		a_ptr->time = time;
-		a_ptr->randtime = rand;
+	/* Process 'M' for "Effect message" */
+	else if (buf[0] == 'M')
+	{
+		/* Store the text */
+		if (!add_text(&a_ptr->effect_msg, head, buf+2))
+			return (PARSE_ERROR_OUT_OF_MEMORY);
 	}
 
 	/* Process 'D' for "Description" */
 	else if (buf[0] == 'D')
 	{
-		/* There better be a current a_ptr */
-		if (!a_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
-
-		/* Get the text */
-		s = buf+2;
-
 		/* Store the text */
-		if (!add_text(&a_ptr->text, head, s))
+		if (!add_text(&a_ptr->text, head, buf+2))
 			return (PARSE_ERROR_OUT_OF_MEMORY);
 	}
 

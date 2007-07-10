@@ -68,6 +68,9 @@ bool do_effect(object_type *o_ptr, bool *ident, int dir)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
+	if (o_ptr->name1)
+		effect = a_info[o_ptr->name1].effect;
+
 	switch (effect)
 	{
 		case EF_POISON:
@@ -202,6 +205,7 @@ bool do_effect(object_type *o_ptr, bool *ident, int dir)
 		case EF_CW_SERIOUS:
 		{
 			if (hp_player(damroll(4, 8))) *ident = TRUE;
+			if (set_timed(TMD_CUT, (p_ptr->timed[TMD_CUT] / 2) - 50)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -529,6 +533,302 @@ bool do_effect(object_type *o_ptr, bool *ident, int dir)
 			return TRUE;
 		}
 
+		case EF_ILLUMINATION:
+		{
+			if (lite_area(damroll(2, 15), 3)) *ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_CLAIRVOYANCE:
+		{
+			*ident = TRUE;
+			wiz_lite();
+			(void)detect_traps();
+			(void)detect_doors();
+			(void)detect_stairs();
+			return TRUE;
+		}
+
+		case EF_DISP_EVIL:
+		{
+			*ident = TRUE;
+			dispel_evil(p_ptr->lev * 5);
+			return TRUE;
+		}
+
+		case EF_HASTE2:
+		{
+			*ident = TRUE;
+			if (!p_ptr->timed[TMD_FAST])
+				(void)set_timed(TMD_FAST, randint(75) + 75);
+			else
+				(void)inc_timed(TMD_FAST, 5);
+			return TRUE;
+		}
+
+		case EF_FIRE3:
+		{
+			*ident = TRUE;
+			fire_ball(GF_FIRE, dir, 120, 3);
+			return TRUE;
+		}
+
+		case EF_FROST5:
+		{
+			*ident = TRUE;
+			fire_ball(GF_COLD, dir, 200, 3);
+			return TRUE;
+		}
+
+		case EF_ELEC2:
+		{
+			*ident = TRUE;
+			fire_ball(GF_ELEC, dir, 250, 3);
+			return TRUE;
+		}
+
+		case EF_BIZARRE:
+		{
+			*ident = TRUE;
+			ring_of_power(dir);
+			return TRUE;
+		}
+
+
+		case EF_STAR_BALL:
+		{
+			int i;
+			*ident = TRUE;
+			for (i = 0; i < 8; i++) fire_ball(GF_ELEC, ddd[i], 150, 3);
+			return TRUE;
+		}
+
+		case EF_RAGE_BLESS_RESIST:
+		{
+			*ident = TRUE;
+			(void)hp_player(30);
+			(void)clear_timed(TMD_AFRAID);
+			(void)inc_timed(TMD_SHERO, randint(50) + 50);
+			(void)inc_timed(TMD_BLESSED, randint(50) + 50);
+			(void)inc_timed(TMD_OPP_ACID, randint(50) + 50);
+			(void)inc_timed(TMD_OPP_ELEC, randint(50) + 50);
+			(void)inc_timed(TMD_OPP_FIRE, randint(50) + 50);
+			(void)inc_timed(TMD_OPP_COLD, randint(50) + 50);
+			(void)inc_timed(TMD_OPP_POIS, randint(50) + 50);
+			return TRUE;
+		}
+
+		case EF_HEAL2:
+		{
+			*ident = TRUE;
+			(void)hp_player(1000);
+			(void)clear_timed(TMD_CUT);
+			return TRUE;
+		}
+
+		case EF_DETECT_ALL:
+		{
+				*ident = TRUE;
+			detect_all();
+			return TRUE;
+		}
+
+		case EF_HEAL1:
+		{
+			*ident = TRUE;
+			(void)hp_player(500);
+			(void)clear_timed(TMD_CUT);
+			return TRUE;
+		}
+
+		case EF_RESIST_ALL:
+		{
+			if (inc_timed(TMD_OPP_ACID, randint(20) + 20)) *ident = TRUE;
+			if (inc_timed(TMD_OPP_ELEC, randint(20) + 20)) *ident = TRUE;
+			if (inc_timed(TMD_OPP_FIRE, randint(20) + 20)) *ident = TRUE;
+			if (inc_timed(TMD_OPP_COLD, randint(20) + 20)) *ident = TRUE;
+			if (inc_timed(TMD_OPP_POIS, randint(20) + 20)) *ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_SLEEPII:
+		{
+			*ident = TRUE;
+			sleep_monsters_touch();
+			return TRUE;
+		}
+
+		case EF_RESTORE_LIFE:
+		{
+			*ident = TRUE;
+			restore_level();
+			return TRUE;
+		}
+
+		case EF_MISSILE:
+		{
+			*ident = TRUE;
+			fire_bolt(GF_MISSILE, dir, damroll(2, 6));
+			return TRUE;
+		}
+
+		case EF_FIRE1:
+		{
+			*ident = TRUE;
+			fire_bolt(GF_FIRE, dir, damroll(9, 8));
+			return TRUE;
+		}
+
+		case EF_FROST1:
+		{
+			*ident = TRUE;
+			fire_bolt(GF_COLD, dir, damroll(6, 8));
+			return TRUE;
+		}
+
+		case EF_LIGHTNING_BOLT:
+		{
+			*ident = TRUE;
+			fire_bolt(GF_ELEC, dir, damroll(4, 8));
+			return TRUE;
+		}
+
+		case EF_ACID1:
+		{
+			*ident = TRUE;
+			fire_bolt(GF_ACID, dir, damroll(5, 8));
+			return TRUE;
+		}
+
+		case EF_ARROW:
+		{
+			*ident = TRUE;
+			fire_bolt(GF_ARROW, dir, 150);
+			return TRUE;
+		}
+
+		case EF_HASTE1:
+		{
+			*ident = TRUE;
+			if (!p_ptr->timed[TMD_FAST])
+				(void)set_timed(TMD_FAST, randint(20) + 20);
+			else
+				(void)inc_timed(TMD_FAST, 5);
+			return TRUE;
+		}
+
+		case EF_REM_FEAR_POIS:
+		{
+			*ident = TRUE;
+			(void)clear_timed(TMD_AFRAID);
+			(void)clear_timed(TMD_POISONED);
+			return TRUE;
+		}
+
+		case EF_STINKING_CLOUD:
+		{
+			*ident = TRUE;
+			fire_ball(GF_POIS, dir, 12, 3);
+			return TRUE;
+		}
+
+		case EF_FROST2:
+		{
+			*ident = TRUE;
+			fire_ball(GF_COLD, dir, 48, 2);
+			return TRUE;
+		}
+
+		case EF_FROST4:
+		{
+			*ident = TRUE;
+			fire_bolt(GF_COLD, dir, damroll(12, 8));
+			return TRUE;
+		}
+
+		case EF_FROST3:
+		{
+			*ident = TRUE;
+			fire_ball(GF_COLD, dir, 100, 2);
+			return TRUE;
+		}
+
+		case EF_FIRE2:
+		{
+			*ident = TRUE;
+			fire_ball(GF_FIRE, dir, 72, 2);
+			return TRUE;
+		}
+
+		case EF_DRAIN_LIFE2:
+		{
+			*ident = TRUE;
+			drain_life(dir, 120);
+			return TRUE;
+		}
+
+		case EF_STONE_TO_MUD:
+		{
+			*ident = TRUE;
+			wall_to_mud(dir);
+			return TRUE;
+		}
+
+		case EF_TELE_AWAY:
+		{
+			*ident = TRUE;
+			teleport_monster(dir);
+			return TRUE;
+		}
+
+		case EF_CONFUSE2:
+		{
+			*ident = TRUE;
+			confuse_monster(dir, 20);
+			return TRUE;
+		}
+
+		case EF_PROBE:
+		{
+			*ident = TRUE;
+			probing();
+			return TRUE;
+		}
+
+		case EF_DRAIN_LIFE1:
+		{
+			*ident = TRUE;
+			drain_life(dir, 90);
+			return TRUE;
+		}
+
+		case EF_FIREBRAND:
+		{
+			*ident = TRUE;
+			if (!brand_bolts()) return FALSE;
+			return TRUE;
+		}
+ 
+		case EF_STARLIGHT:
+		{
+			int k;
+			for (k = 0; k < 8; k++) strong_lite_line(ddd[k]);
+			*ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_MANA_BOLT:
+		{
+			fire_bolt(GF_MANA, dir, damroll(12, 8));
+			*ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_BERSERKER:
+		{
+			if (inc_timed(TMD_SHERO, randint(50) + 50)) *ident = TRUE;
+			return TRUE;
+		}
 
 
 		case EF_FOOD_GOOD:
@@ -549,6 +849,7 @@ bool do_effect(object_type *o_ptr, bool *ident, int dir)
 
 		case EF_RING_ACID:
 		{
+			*ident = TRUE;
 			fire_ball(GF_ACID, dir, 70, 2);
 			inc_timed(TMD_OPP_ACID, randint(20) + 20);
 			return TRUE;
@@ -556,25 +857,25 @@ bool do_effect(object_type *o_ptr, bool *ident, int dir)
 
 		case EF_RING_FLAMES:
 		{
+			*ident = TRUE;
 			fire_ball(GF_FIRE, dir, 80, 2);
 			inc_timed(TMD_OPP_FIRE, randint(20) + 20);
-			o_ptr->timeout = rand_int(50) + 50;
 			return TRUE;
 		}
 
 		case EF_RING_ICE:
 		{
+			*ident = TRUE;
 			fire_ball(GF_COLD, dir, 75, 2);
 			inc_timed(TMD_OPP_COLD, randint(20) + 20);
-			o_ptr->timeout = rand_int(50) + 50;
 			return TRUE;
 		}
 
 		case EF_RING_LIGHTNING:
 		{
+			*ident = TRUE;
 			fire_ball(GF_ELEC, dir, 85, 2);
 			inc_timed(TMD_OPP_ELEC, randint(20) + 20);
-			o_ptr->timeout = rand_int(50) + 50;
 			return TRUE;
 		}
 	}
@@ -583,4 +884,3 @@ bool do_effect(object_type *o_ptr, bool *ident, int dir)
 	msg_print("Effect not handled.");
 	return FALSE;
 }
-

@@ -21,7 +21,8 @@
 # W: depth : rarity : weight : cost
 # P: base armor class : base damage : plus to-hit : plus to-dam : plus to-ac
 # F: flag | flag | etc
-# A: activation : recharge time : recharge time dice
+# A: activation : recharge time
+# M: message when activated
 # D: description
 
 # 'N' indicates the beginning of an entry. The serial number must
@@ -85,7 +86,8 @@ W:5:5:10:10000
 P:0:1d1:0:0:0
 F:ACTIVATE | NO_FUEL |
 F:INSTA_ART
-A:ILLUMINATION:10:10
+A:ILLUMINATION:10+d10
+M:The phial wells with clear light...
 D:A small crystal phial, with the light of Earendil's Star contained inside.  
 D:Its light is imperishable, and near it darkness cannot endure.
 
@@ -98,7 +100,8 @@ W:30:25:5:30000
 P:0:1d1:0:0:0
 F:ACTIVATE | SEE_INVIS | NO_FUEL |
 F:INSTA_ART
-A:MAGIC_MAP:50:50
+A:MAPPING:50+d50
+M:The star shines brightly...
 D:The shining Star of the West, a treasured heirloom of Elendil's house.
 
 # The Arkenstone of Thrain
@@ -109,7 +112,8 @@ W:50:50:5:50000
 P:0:1d1:0:0:0
 F:ACTIVATE | SEE_INVIS | HOLD_LIFE | RES_LITE | RES_DARK | NO_FUEL |
 F:INSTA_ART
-A:DETECT:30:30
+A:DETECT_ALL:30+d30
+M:The Arkenstone forms an image in your mind...
 D:A great globe seemingly filled with moonlight, the famed Heart of the 
 D:Mountain, which splinters the light that falls upon it into a thousand 
 D:glowing shards.
@@ -123,7 +127,8 @@ W:50:10:3:60000
 F:CON | HIDE_TYPE | 
 F:ACTIVATE | RES_FIRE | 
 F:INSTA_ART
-A:PROT_EVIL:225:225
+A:PROTEVIL:225:+d225
+M:The amulet lets out a shrill wail...
 D:A fiery circle of bronze, with mighty spells to ward off and banish evil.
 
 
@@ -136,7 +141,8 @@ F:INT | WIS | CHR | INFRA | HIDE_TYPE |
 F:SEE_INVIS | FREE_ACT | ACTIVATE | 
 F:RES_ACID | RES_COLD | RES_ELEC | 
 F:INSTA_ART
-A:DISP_EVIL:50:50
+A:DISP_EVIL:50+d50
+M:The amulet floods the area with goodness...
 D:The ancient heirloom of Ingwe, high lord of the Vanyar, against whom nothing 
 D:of evil could stand.
 
@@ -166,7 +172,8 @@ F:ACTIVATE | NO_FUEL |
 F:INT | WIS | SEARCH | INFRA | SEE_INVIS | TELEPATHY | 
 F:RES_CHAOS | RES_BLIND | AGGRAVATE | DRAIN_EXP | 
 F:INSTA_ART | HIDE_TYPE
-A:CLAIRVOYANCE:50:50
+A:CLAIRVOYANCE:50+d50
+M:The palantir glows a deep green...
 D:A great globe with a heart of fire, providing the wearer with sight 
 D:of far places - at a cost, for those espied upon are aware of it.
 
@@ -191,7 +198,8 @@ W:70:50:2:150000
 F:STR | DEX | CON | HIDE_TYPE | RES_FEAR | 
 F:ACTIVATE | 
 F:INSTA_ART
-A:HASTE2:150:150
+A:HASTE2:150+d150
+M:The ring glows brightly...
 D:The treasure of Tulkas, most fleet and wrathful of the Valar.
 
 
@@ -208,7 +216,8 @@ F:SLOW_DIGEST | REGEN |
 F:SUST_STR | SUST_CON | SUST_WIS | SUST_CHR | 
 F:IM_FIRE | RES_FIRE | RES_NETHR | RES_FEAR |
 F:INSTA_ART
-A:FIRE3:20:20
+A:FIRE3:20+d20
+M:Narya glows deep red...
 D:The Ring of Fire, set with a ruby that glows like flame.  Narya is one 
 D:of the three Rings of Power created by the Elves and hidden by them from 
 D:Sauron.
@@ -227,7 +236,8 @@ F:FEATHER | REGEN |
 F:SUST_INT | SUST_WIS | SUST_CHR | 
 F:IM_COLD | RES_COLD | RES_BLIND | TELEPATHY | 
 F:INSTA_ART
-A:FROST5:20:20
+A:FROST5:20+d20
+M:Nenya glows bright white...
 D:The Ring of Adamant, with a pure white stone as centerpiece.  Nenya is one 
 D:of the three Rings of Power created by the Elves and hidden by them from 
 D:Sauron.
@@ -246,7 +256,8 @@ F:FEATHER | SLOW_DIGEST | REGEN |
 F:SUST_STR | SUST_DEX | SUST_CON | 
 F:IM_ELEC | RES_ELEC | RES_POIS | RES_DISEN | 
 F:INSTA_ART
-A:ELEC2:20:20
+A:ELEC2:20+d20
+M:Vilya glows deep blue...
 D:The Ring of Sapphire, with clear blue gems that shine like stars, 
 D:glittering untouchable despite all that Morgoth ever wrought.  Vilya is 
 D:one of the three Rings of Power created by the Elves and hidden by them 
@@ -268,7 +279,8 @@ F:RES_NETHR | TELEPATHY | RES_BLIND | RES_DISEN | RES_FEAR |
 F:SUST_STR | SUST_DEX | SUST_CON | 
 F:SUST_INT | SUST_WIS | SUST_CHR | 
 F:INSTA_ART
-A:BIZZARE:30:30
+A:BIZARRE:30+d30
+M:The One Ring glows intensely black...
 D:"One Ring to rule them all, One Ring to find them, One Ring to bring 
 D:them all and in the darkness bind them."  Made of massive gold, and 
 D:set with runes in the foul speech of Mordor, Isildur's Bane possesses 
@@ -286,7 +298,8 @@ F:STR | WIS | CHR | SPEED |
 F:RES_FEAR | RES_FIRE | RES_POIS | HIDE_TYPE | 
 F:ACTIVATE |
 F:INSTA_ART
-A:HEAL1:200:0
+A:HEAL1:200+d0
+M:Your feel a warm tingling inside...
 D:A green stone, imbued with the power of Elvendom and fit to be borne by 
 D:a true King of Men, one such as brings healing after victory in battle.
 
@@ -300,7 +313,8 @@ F:HOLD_LIFE | SUST_CON | SUST_WIS | SUST_INT |
 F:RES_DARK | RES_COLD | 
 F:ACTIVATE |
 F:INSTA_ART
-A:RESTORE_LIFE:150:0
+A:RESTORE_LIFE:150+d0
+M:Your Cloak glows a deep red...
 D:A plain white jewel, given by Queen Arwen to Frodo Baggins before his 
 D:return to the Shire.
 
@@ -321,7 +335,8 @@ F:RES_ACID | RES_FIRE | RES_COLD |
 F:RES_POIS | RES_LITE | RES_DARK | 
 F:LITE | SEE_INVIS | AGGRAVATE | 
 F:ACTIVATE
-A:STAR_BALL:50:0
+A:STAR_BALL:50
+M:Your Dragon Scale Mail is surrounded by lightning!
 D:A massive suit of heavy dragon scales deeply saturated with many colors.  
 D:It throbs with angry energies, and you feel the raw elemental might of 
 D:untamed Lightning as you put it on.
@@ -338,7 +353,8 @@ F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_POIS | RES_FEAR |
 F:RES_LITE | RES_DARK | RES_BLIND | RES_CONFU | RES_SOUND | 
 F:RES_SHARD | RES_NETHR | RES_NEXUS | RES_CHAOS | RES_DISEN | 
 F:ACTIVATE
-A:RAGE_BLESS_RESIST:400:0
+A:RAGE_BLESS_RESIST:400
+M:Bladeturner glows many colors...
 D:A suit of adamant, set with scales of every color, surrounded in a nimbus 
 D:of perfectly untramelled yet inextricably intermingled and utterly mastered 
 D:powers elemental and ethereal.
@@ -354,7 +370,8 @@ F:RES_CHAOS | RES_DISEN | RES_SHARD | RES_SOUND |
 F:RES_CONFU | RES_NEXUS | AGGRAVATE | 
 F:FREE_ACT | SLOW_DIGEST | REGEN | 
 F:ACTIVATE
-A:STAR_BALL:50:0
+A:STAR_BALL:50
+M:Your Dragon Scale Male is surrounded by lightning!
 D:A great suit of dragon hide, set with scales of many hues. Even the 
 D:mightiest wyrms of Law and Chaos fear the judgement of its wearer.
 
@@ -372,7 +389,8 @@ F:HOLD_LIFE | SUST_CON |
 F:RES_ACID | RES_COLD | RES_DARK | RES_NETHR | RES_NEXUS | 
 F:RES_CHAOS | RES_CONFU | RES_FEAR | 
 F:ACTIVATE
-A:HEAL2:444:0
+A:HEAL2:444
+M:Soulkeeper glows a bright white...
 D:A suit of imperishable adamant, with unconquerable strength to endure evil 
 D:and disruptive magics, that protects the life force of its wearer as 
 D:nothing else can.
@@ -412,7 +430,8 @@ W:40:3:150:105000
 P:28:1d4:-1:0:20
 F:STEALTH | HIDE_TYPE | 
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_POIS | ACTIVATE
-A:PHASE:2:0
+A:TELE_PHASE:2
+M:Belegennon twists space around you...
 D:This wondrous suit of fine-linked chain shimmers as though of pure silver.  
 D:It stands untouched amidst the fury of the elements, and a power of 
 D:concealment rests within.
@@ -427,7 +446,8 @@ P:35:2d4:-3:0:25
 F:STR | CHR | HIDE_TYPE | 
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_DARK | 
 F:RES_DISEN | ACTIVATE
-A:BANISHMENT:500:0
+A:BANISHMENT:500
+M:Your Mithril Plate Mail glows deep blue...
 D:A shimmering suit of true-silver, forged long ago by dwarven smiths of 
 D:legend.  It gleams with purest white as you gaze upon it, and mighty are 
 D:its powers to protect and banish.
@@ -454,7 +474,8 @@ W:25:9:270:40000
 P:16:1d4:-2:0:20
 F:INT | WIS | CON | HIDE_TYPE | 
 F:RES_ACID | RES_POIS | RES_CONFU | ACTIVATE
-A:TRAP_DOOR_DEST:10:0
+A:DESTROY_TDOORS:10
+M:Your Augmented Chain Mail glows bright red...
 D:A hauberk, leggings, and sleeves of interlocking steel rings, strategically 
 D:reinforced at vital locations with a second layer of chain.  Magics to 
 D:enhance body and mind lie within, and no door can bar the wearer's path.
@@ -469,7 +490,8 @@ I:36:6:0
 W:50:20:100:35000
 P:6:0d0:0:0:15
 F:RES_CHAOS | RES_NETHR | RES_POIS | ACTIVATE
-A:PROT_EVIL:100:100
+A:PROTEVIL:100+d100
+M:The armor lets out a shrill wail...
 D:Contained within this studded cuirass of pliable leather is the memory of 
 D:unvanquished Himring, defiant fortress surrounded by the legions of Morgoth.
 
@@ -510,7 +532,8 @@ F:ACTIVATE |
 F:LITE | WIS | CHR | 
 F:RES_ELEC | RES_ACID | RES_DISEN | RES_DARK | HIDE_TYPE | 
 F:SUST_WIS | SUST_DEX | SUST_CHR
-A:STARLIGHT:100:0
+A:STARLIGHT:100
+M:Your Sheild of Deflection glows with the light of a thousand stars...
 D:The legendary shield of Ereinion Gil-galad, who fought his way to the 
 D:gates of the Dark Tower, and with whom came light even to Gorgoroth.
 
@@ -654,7 +677,8 @@ W:20:5:75:100000
 P:5:1d3:0:0:10
 F:INT | WIS | SEARCH | HIDE_TYPE | 
 F:RES_BLIND | RES_CONFU | SEE_INVIS | ACTIVATE
-A:DETECT:55:55
+A:DETECT_ALL:55+d55
+M:Holhenneth forms an image in your mind...
 D:A famous helm of forged iron granting extraordinary powers of mind and 
 D:awareness.
 
@@ -682,7 +706,8 @@ F:STR | WIS | CON | SPEED | HIDE_TYPE |
 F:RES_COLD | RES_FIRE | RES_LITE | RES_BLIND | 
 F:RES_CONFU | RES_SOUND | RES_CHAOS | 
 F:LITE | SEE_INVIS | REGEN | ACTIVATE
-A:HEAL1:250:0
+A:HEAL1:250
+M:Your feel a warm tingling inside...
 D:The shining winged circlet brought by Elendil from dying Numenor, emblem of 
 D:Gondor through an age of the world.
 
@@ -698,7 +723,7 @@ F:INT | DEX | CHR | SEARCH | SPEED | HIDE_TYPE |
 F:SEE_INVIS | FREE_ACT |  
 F:RES_SHARD | RES_SOUND | RES_COLD | 
 F:RES_LITE | RES_DARK | RES_BLIND | LITE
-# A:ANALYZE:50:0
+# A:ANALYZE:50
 D:A crown of massive gold, set with wondrous jewels of thought and warding, 
 D:worn by the kings of ancient Numenor.
 
@@ -712,7 +737,8 @@ I:35:1:0
 W:5:45:10:50000
 P:1:0d0:0:0:15
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_POIS | ACTIVATE
-A:RESIST:111:0
+A:RESIST_ALL:111
+M:Colluin glows many colours...
 D:A cape worn by a hero from Valinor, a land utterly beyond the strife 
 D:of Elements.
 
@@ -725,7 +751,8 @@ W:5:25:10:18000
 P:1:0d0:0:0:4
 F:INT | WIS | SPEED | STEALTH | HIDE_TYPE | 
 F:RES_ACID | ACTIVATE
-A:SLEEP:55:0
+A:SLEEPII:55
+M:Holcolleth glows deep blue...
 D:This elven-grey mantle possesses great powers of tranquility and of 
 D:concealment, and grants the wearer the knowledge and understanding of 
 D:the Sindar.
@@ -739,7 +766,8 @@ W:5:50:10:35000
 P:1:0d0:0:0:18
 F:DEX | CHR | HIDE_TYPE | 
 F:FREE_ACT | RES_ACID | RES_FIRE | RES_COLD | ACTIVATE
-A:RECHARGE1:70:0
+A:RECHARGE:70
+M:Your Cloak glows bright yellow...
 D:A cloak of translucent, pearly grey, with glowing elven-runes to restore 
 D:magic showing calm and clear as moonlight on still water.
 
@@ -763,7 +791,8 @@ W:5:20:10:20000
 P:1:0d0:0:0:15
 F:STEALTH | SPEED | HIDE_TYPE | 
 F:RES_NEXUS | ACTIVATE
-A:TELEPORT:45:0
+A:TELE_LONG:45
+M:Your Cloak twists space around you.
 D:A crystal-blue cape of fine silk worn by a silent messenger of the forces 
 D:of Law. Seldom will the wearer be diverted from his mission.
 
@@ -776,7 +805,8 @@ W:40:40:5:45000
 P:6:0d0:0:0:20
 F:INT | WIS | CHR | SPEED | STEALTH | HIDE_TYPE | 
 F:RES_ACID | RES_FIRE | RES_COLD | ACTIVATE
-A:RESTORE_LIFE:250:0
+A:RESTORE_LIFE:250
+M:Your Cloak glows a deep red...
 D:The opaque midnight folds of this cloak, inset with a multitude of tiny 
 D:diamonds, swirl around you and you feel a hint, a fragment of the 
 D:knowledge and power to restore that lay in Luthien, the most beautiful 
@@ -806,7 +836,8 @@ W:55:35:25:40000
 P:2:1d1:-5:-5:15
 F:INT | FREE_ACT | FEATHER | RES_ELEC | RES_DARK | RES_POIS | AGGRAVATE
 F:ACTIVATE
-A:MANA_BOLT:30:30
+A:MANA_BOLT:30+d30
+M:Your Gauntlets glow white...
 D:The iron-shod gauntlets of the Dark Elven smith Eol, tingling with magics 
 D:that he could channel in battle.
 
@@ -829,7 +860,8 @@ I:31:1:0
 W:10:3:5:30000
 P:1:0d0:0:0:10
 F:FREE_ACT | RES_LITE | SUST_CON | LITE | ACTIVATE
-A:MISSILE:2:0
+A:MISSILE:2
+M:Cammithrim glows very brightly...
 D:These gloves glow so brightly as to light the way for the player and cast 
 D:magical bolts with great frequency.
 
@@ -841,7 +873,8 @@ I:31:2:0
 W:10:3:25:15000
 P:2:1d1:0:0:15
 F:RES_FIRE | REGEN | ACTIVATE
-A:FIRE1:8:8
+A:FIRE1:8+d8
+M:Your Gauntlets are covered in fire...
 D:A set of gauntlets that smoulder with an unnatural heat.
 
 
@@ -852,7 +885,8 @@ I:31:2:0
 W:10:3:25:13000
 P:2:1d1:0:0:15
 F:RES_COLD | SLOW_DIGEST | ACTIVATE
-A:FROST1:7:7
+A:FROST1:7+d7
+M:Your Gauntlets are covered in frost...
 D:A set of handgear, freezing with unnatural cold.
 
 
@@ -863,7 +897,8 @@ I:31:2:0
 W:10:3:25:11000
 P:2:1d1:0:0:15
 F:RES_ELEC | LITE | ACTIVATE
-A:LIGHTNING_BOLT:6:6
+A:LIGHTNING_BOLT:6+d6
+M:Your Gauntlets are covered in sparks...
 D:A set of handgear with sparks that crackle across its knuckleguards.
 
 
@@ -874,7 +909,8 @@ I:31:2:0
 W:10:3:25:12000
 P:2:1d1:0:0:15
 F:RES_ACID | FEATHER | ACTIVATE
-A:ACID1:5:5
+A:ACID1:5+d5
+M:Your Gauntlets are covered in acid...
 D:A set of gauntlets that gives off a foul, acrid odour yet remains untarnished.
 
 
@@ -899,7 +935,8 @@ W:40:15:40:110000
 P:5:1d1:10:10:20
 F:DEX | HIDE_TYPE | 
 F:FREE_ACT | RES_ACID | ACTIVATE | SHOW_MODS
-A:ARROW:30:30
+A:ARROW:30+d30
+M:Your Cesti grow magical spikes...
 D:The hand-sheathing of Fingolfin, warrior-king of Elves and Men, who dealt 
 D:Morgoth seven mighty wounds and pain that will last forever.
 
@@ -914,7 +951,8 @@ W:40:120:40:300000
 P:3:1d1:0:0:20
 F:SPEED | HIDE_TYPE | 
 F:RES_NEXUS | ACTIVATE
-A:HASTE1:200:0
+A:HASTE1:200
+M:Your Hard Leather Boots glow bright green...
 D:This wondrous pair of leather boots once sped Feanor, creator of the 
 D:Silmarils and the mightiest of the Eldar, to fulfill his hero's challenge 
 D:and do battle for a Middle-Earth held in thrall.  "Dear-bought those songs 
@@ -931,7 +969,8 @@ P:2:1d1:0:0:15
 F:DEX | HIDE_TYPE | 
 F:ACTIVATE | FREE_ACT | 
 F:RES_NETHR | RES_CHAOS | RES_CONFU | SUST_CON
-A:REM_FEAR_POIS:5:0
+A:REM_FEAR_POIS:5
+M:Your Soft Leather Boots glow deep blue...
 D:A pair of high-laced shoes, strong against the powers of corruption and 
 D:withering, that grant the wearer extraordinary agility.
 
@@ -955,7 +994,8 @@ W:10:15:20:17000
 P:2:1d1:-8:-8:0
 F:INT | DEX | STEALTH | SPEED | FEATHER | LIGHT_CURSE | HIDE_TYPE
 F:ACTIVATE
-A:PHASE:20:0
+A:TELE_PHASE:20
+M:Your Boots twist space around you.
 D:A pair of running shoes once used by the treacherous Grima son of 
 D:Galmod, the Wormtongue of Edoras.  They are aptly suited for a 
 D:messenger, a servant, a spy... or a coward.
@@ -999,7 +1039,8 @@ I:23:4:0
 W:4:3:12:12000
 P:0:2d4:4:6:0
 F:BRAND_FIRE | RES_FIRE | ACTIVATE | SHOW_MODS
-A:FIRE1:8:8
+A:FIRE1:8+d8
+M:Narthanc is covered in fire...
 D:A flame, instead of a blade, seems to spring forth from this dagger's hilt.
 
 
@@ -1010,7 +1051,8 @@ I:23:4:0
 W:4:3:12:11000
 P:0:2d4:4:6:0
 F:BRAND_COLD | RES_COLD | ACTIVATE | SHOW_MODS
-A:FROST1:7:7
+A:FROST1:7+d8
+M:Nimthanc is covered in frost...
 D:From the hilt of this dagger springs not so much a blade as an icicle.
 
 
@@ -1021,7 +1063,8 @@ I:23:4:0
 W:4:3:12:13000
 P:0:2d4:4:6:0
 F:BRAND_ELEC | RES_ELEC | ACTIVATE | SHOW_MODS
-A:LIGHTNING_BOLT:6:6
+A:LIGHTNING_BOLT:6+d6
+M:Dethanc is covered in sparks...
 D:In this dagger is bound the very force of the lightning.
 
 
@@ -1032,7 +1075,8 @@ I:23:4:0
 W:5:40:12:15000
 P:0:2d4:4:3:0
 F:SLAY_ORC | BRAND_POIS | RES_POIS | RES_DISEN | ACTIVATE | SHOW_MODS
-A:STINKING_CLOUD:4:4
+A:STINKING_CLOUD:4+d4
+M:The Dagger of Rilia throws deep green...
 D:A large stiletto dagger that glistens with odorless poison, to which the 
 D:wearer seems oddly immune.
 
@@ -1046,7 +1090,8 @@ P:0:2d4:6:9:0
 F:DEX | HIDE_TYPE | 
 F:BRAND_COLD | RES_COLD | SEE_INVIS | SLOW_DIGEST | REGEN | ACTIVATE | 
 F:SHOW_MODS
-A:FROST2:5:5
+A:FROST2:5+d5
+M:Your Dagger is covered in frost...
 D:A frosty dagger wreathed in a nimbus of ice with a hilt of elk horn and 
 D:an edge to wound the wind.
 
@@ -1075,7 +1120,8 @@ P:0:3d5:20:12:0
 F:DEX | HIDE_TYPE | 
 F:SLAY_DEMON | SLAY_ORC | FREE_ACT | RES_COLD | FEATHER | 
 F:SLOW_DIGEST | ACTIVATE | SHOW_MODS
-A:FROST4:50:0
+A:FROST4:50
+M:Arunuth glows a pale blue...
 D:The beautiful sword of Thingol, justly named "King's Ire".  It glistens 
 D:icy enough to freeze the hearts of demons, and you feel supple and 
 D:lightfooted as you clasp its hilt of gold and silver inlay.
@@ -1216,7 +1262,8 @@ F:SPEED | RES_FEAR | BLESSED |
 F:SLAY_EVIL | BRAND_COLD | SLAY_UNDEAD | KILL_DEMON | SLAY_TROLL | 
 F:FREE_ACT | RES_COLD | RES_LITE | LITE | SEE_INVIS | SLOW_DIGEST | REGEN | 
 F:ACTIVATE | SHOW_MODS
-A:FROST3:40:0
+A:FROST3:40
+M:Ringil glows an intense blue...
 D:The weapon of Fingolfin, High King of the Noldor; it shines like a column 
 D:of ice lit by light unquenchable.  Morgoth came but unwillingly to meet it 
 D:of old; his lame foot will remind him of its might should he face it again.
@@ -1232,7 +1279,8 @@ F:STR | DEX | HIDE_TYPE | RES_FEAR | FREE_ACT | BLESSED |
 F:SLAY_EVIL | BRAND_FIRE | SLAY_TROLL | SLAY_ORC | SLAY_UNDEAD | 
 F:RES_FIRE | RES_DISEN | 
 F:SUST_STR | SUST_DEX | SEE_INVIS | ACTIVATE | SHOW_MODS
-A:FIRE2:40:0
+A:FIRE2:40
+M:Anduril rages in fire...
 D:The famed "Flame of the West", the Sword that was Broken and is forged 
 D:again.  It glows with the essence of fire, its wearer is mighty in combat, 
 D:and no creature of Sauron can withstand it.
@@ -1365,7 +1413,8 @@ W:20:15:180:40000
 P:0:2d6:8:10:0
 F:WIS | CON | HIDE_TYPE | 
 F:SLAY_DRAGON | TELEPATHY | SLOW_DIGEST | ACTIVATE | SHOW_MODS
-A:DRAIN_LIFE2:40:0
+A:DRAIN_LIFE2:40
+M:Your Beaked Axe glows black...
 D:The narrow axe head of this weapon would pierce the armour of a very 
 D:Dragon, and the designs of your enemies stand naked and revealed.
 
@@ -1417,7 +1466,8 @@ P:0:3d6:15:25:5
 F:WIS | DEX | HIDE_TYPE | RES_FEAR | 
 F:BRAND_COLD | RES_COLD | SLAY_EVIL | SLAY_TROLL | SLAY_ORC | KILL_UNDEAD | 
 F:FREE_ACT | SLOW_DIGEST | ACTIVATE | BLESSED | SHOW_MODS
-A:FROST3:35:0
+A:FROST3:35
+M:Aeglos glows an intense blue...
 D:The mighty spear of Gil-galad, famed as "Snow-point" in the songs of Elves, 
 D:against which all the foul corruptions of Sauron dashed in vain.
 
@@ -1432,7 +1482,8 @@ P:0:4d6:15:15:0
 F:INT | SPEED | INFRA | HIDE_TYPE | 
 F:BRAND_FIRE | SLAY_GIANT | SLAY_ANIMAL | RES_FIRE | RES_LITE | 
 F:FEATHER | LITE | SEE_INVIS | ACTIVATE | BLESSED | SHOW_MODS
-A:STONE_TO_MUD:5:0
+A:STONE_TO_MUD:5
+M:Your Spear pulsates...
 D:The thrusting spear of wise Orome the Vala, strong against giants of frost, 
 D:and able to pierce rock or flesh with ease.
 
@@ -1490,7 +1541,8 @@ F:SLAY_EVIL | BRAND_COLD | SLAY_UNDEAD | KILL_DEMON |
 F:SLAY_ORC | FREE_ACT | IM_COLD | RES_COLD | 
 F:SEE_INVIS | ACTIVATE | 
 F:BLESSED | SHOW_MODS
-A:MASS_BANISHMENT:1000:0
+A:LOSKILL:1000
+M:Your Greate Axe lets out a long, shrill note...
 D:The axe of Eonwe, leader of the Hosts of the West before the gates of 
 D:Thangorodrim, strikes with icy wrath at the undead, disperses hosts of 
 D:evil at a word, and grants Maia-like powers of body and mind.
@@ -1519,7 +1571,8 @@ W:30:15:170:21000
 P:0:2d8:4:3:0
 F:STR | DEX | HIDE_TYPE | 
 F:SLAY_TROLL | SLAY_ORC | ACTIVATE | SHOW_MODS
-A:CURE_WOUNDS:3:3
+A:CW_SERIOUS:3+d3
+M:Your Battle Axe radiates deep purple...
 D:A superbly crafted double-bladed axe once borne by Ceruthain, commander 
 D:of the Rangers of Arnor.
 
@@ -1575,7 +1628,8 @@ F:SLAY_DRAGON | SLAY_ANIMAL | FREE_ACT | HOLD_LIFE |
 F:IM_ACID | RES_ACID | RES_NETHR | 
 F:SEE_INVIS | SLOW_DIGEST | REGEN | ACTIVATE | 
 F:BLESSED | SHOW_MODS
-A:TELE_AWAY:50:0
+A:TELE_AWAY:50
+M:Your Trident glows deep red...
 D:The awesome weapon of the Vala Ulmo, Lord of Waters.  Mightest of all the 
 D:powers of good save Manwe himself, Ulmo laughs to scorn the dread powers 
 D:of the undead, and is utterly in command of the Element of water.
@@ -1590,7 +1644,8 @@ P:0:5d3:8:8:10
 F:DEX | CHR | HIDE_TYPE | 
 F:BRAND_COLD | BRAND_FIRE | FREE_ACT | RES_FIRE | RES_COLD | 
 F:RES_LITE | LITE | SEE_INVIS | ACTIVATE | SHOW_MODS
-A:WOR:200:0
+A:RECALL:200
+M:Avavir pulses a soft white.
 D:Binding elemental powers whose struggles turn this weapon red and purest 
 D:white, this shining reaper bears within it a power of going forth and 
 D:returning.
@@ -1607,7 +1662,8 @@ F:ACTIVATE | KILL_DEMON |
 F:STR | CON | HIDE_TYPE | 
 F:BRAND_ACID | RES_ACID | RES_DARK | RES_FIRE | LITE | 
 F:SLAY_DRAGON | SLAY_TROLL | SHOW_MODS
-A:BERSERKER:80:80
+A:BERSERKER:80+d80
+M:The Beaked Axe of Hurin glows in anger!
 D:Wielded by Hurin Thalion, last lord of Dor-Lomin at the Battle 
 D:of Tears Unnumbered.  He stood alone, his friends and kinsmen 
 D:dead about him, his axe smoking in the black blood of Gothmog's 
@@ -1640,7 +1696,8 @@ P:0:3d6:6:8:0
 F:STEALTH | 
 F:SLAY_EVIL | BRAND_FIRE | RES_FIRE | RES_CONFU | ACTIVATE | 
 F:SHOW_MODS
-A:CONFUSE:15:0
+A:CONFUSE2:15
+M:Tolita glows in scintillating colours...
 D:A flail whose head befuddles those who stare as you whirl it round, and 
 D:becomes a fiery comet as you bring it down.
 
@@ -1679,9 +1736,10 @@ I:21:12:0
 W:20:15:150:35000
 P:0:2d6:5:7:2
 F:BRAND_FIRE | RES_FIRE | ACTIVATE | SHOW_MODS
-A:FIRE2:20:0
-D:A famed battle-lord of old with a ruddy head, coloured as embers are that 
-D:can yet rise up in wrath.
+A:FIRE2:20
+M:Firestar rages in fire...
+D:A famed battle-lord of old with a ruddy head, coloured as embers are that
+D: can yet rise up in wrath.
 
 
 # The Mace 'Taratol'
@@ -1692,7 +1750,8 @@ W:20:15:200:50000
 P:0:3d4:12:12:0
 F:KILL_DRAGON | BRAND_ELEC | IM_ELEC | RES_ELEC | 
 F:ACTIVATE | SHOW_MODS
-A:HASTE1:100:100
+A:HASTE1:100+d100
+M:Taratol glows bright green...
 D:A great ridged mace that surrounds you in a nimbus of living lightning; 
 D:you remain utterly untouched, even as fat sparks crackle around your 
 D:fingers and eyebrows.
@@ -1734,7 +1793,8 @@ W:20:18:150:20000
 P:0:1d9:3:5:0
 F:INT | WIS | HIDE_TYPE | 
 F:SLAY_EVIL | RES_LITE | LITE | SEE_INVIS | ACTIVATE | SHOW_MODS
-A:IDENTIFY:10:0
+A:IDENTIFY:10
+M:Your Quarterstaff glows yellow...
 D:The radiant golden staff of an Istar of legend; this wizard's companion 
 D:grants keen sight and clear knowledge of many hidden things.
 
@@ -1748,7 +1808,8 @@ P:0:2d9:10:13:0
 F:INT | WIS | CHR | HIDE_TYPE | KILL_DEMON | 
 F:SLAY_EVIL | BRAND_FIRE | SLAY_TROLL | SLAY_ORC | 
 F:HOLD_LIFE | RES_FIRE | RES_NETHR | SEE_INVIS | ACTIVATE | SHOW_MODS
-A:PROBE:20:0
+A:PROBE:20
+M:The Quarterstaff of Olorin glows brightly...
 D:A staff tall and sturdy, borne of old by Gandalf.  Rough-hewn runes that 
 D:invoke the element of Earth stand bold upon its gnarled surface, and no 
 D:creature who lives in the shadow of mountains can withstand the blows it 
@@ -1782,7 +1843,8 @@ P:0:2d5:10:6:8
 F:WIS | INFRA | HIDE_TYPE | 
 F:BRAND_COLD | SLAY_ORC | RES_COLD | RES_LITE | LITE | REGEN | 
 F:ACTIVATE | SHOW_MODS
-A:DRAIN_LIFE1:40:0
+A:DRAIN_LIFE1:40
+M:Turmil glows white...
 D:Wielded by the High Priest of Meneltarma, this great mace gleams coldly as 
 D:though moonlit, and it can strike as mighty a blow spiritually as 
 D:physically.
@@ -1800,7 +1862,8 @@ F:LIGHT_CURSE | HEAVY_CURSE | AGGRAVATE |
 F:BRAND_FIRE | IM_FIRE | RES_ELEC | RES_DARK | LITE
 F:SLAY_ANIMAL | KILL_DRAGON | SLAY_TROLL | SLAY_GIANT | 
 F:ACTIVATE | SHOW_MODS
-A:FIRE3:15:0
+A:FIRE3:15
+M:The whip glows deep red...
 D:A great crackling Balrog's whip of flame, this weapon could bring 
 D:even Ungoliant to heel.
 
@@ -1839,7 +1902,8 @@ W:50:25:110:50000
 P:0:0d0:10:14:0
 F:SPEED | HIDE_TYPE | 
 F:RES_FIRE | ACTIVATE | SHOW_MODS
-A:FIREBRAND:999:0
+A:FIREBRAND:999
+M:Cubragol glows a deep red...
 D:A crossbow that grants fiery speed to he who finds it, and from which 
 D:shoot bolts that blaze with flame unquenchable.
 
@@ -1853,7 +1917,8 @@ P:0:4d1:18:18:0
 F:STR | CON | MIGHT | AGGRAVATE | 
 F:RES_LITE | RES_DARK | RES_BLIND | RES_ELEC | 
 F:HIDE_TYPE | ACTIVATE | SHOW_MODS
-A:ARROW:20:20
+A:ARROW:20+d20
+M:Your Heavy Crossbow forms a magical arrow...
 D:A great brazen arbalest with arms of gleaming steel shooting quarrels with 
 D:mighty power for those brave enough to risk betrayal.
 
@@ -1896,7 +1961,8 @@ F:TUNNEL | INFRA | SEARCH | STR |
 F:SLAY_ORC | SLAY_TROLL | SLAY_GIANT | SLAY_DRAGON | 
 F:RES_DARK | RES_DISEN |
 F:ACTIVATE | 
-A:STONE_TO_MUD:2:0
+A:STONE_TO_MUD:2
+M:Your Spear pulsates...
 D:A mighty Dwarven mattock, as good for hewing orc-necks as for hewing 
 D:stone.  Nain, King of the Iron Hills, brought his mattock-wielding 
 D:warriors to the Battle of Azanulbizar, and no Orc could withstand them, 
@@ -1928,7 +1994,8 @@ F:STR | WIS | SPEED | LITE | HIDE_TYPE |
 F:SLAY_EVIL | SLAY_UNDEAD | 
 F:RES_FIRE | RES_ELEC | RES_NETHR | HOLD_LIFE | 
 F:ACTIVATE
-A:DISP_EVIL:100:100
+A:DISP_EVIL:100+d100
+M:The Ball-and-Chain floods the area will goodness...
 D:The weapon of a mighty dwarven priest, whose shade is rumoured to 
 D:still haunt the halls of Angband itself.
 
@@ -1955,7 +2022,8 @@ P:4:1d2:0:0:15
 F:ACTIVATE | 
 F:STR | CON | SUST_STR | SUST_CON | HIDE_TYPE | 
 F:RES_FEAR | RES_BLIND | RES_POIS | AGGRAVATE
-A:BERSERKER:50:0
+A:BERSERKER:50
+M:Your Large Leather Shield glows in anger!
 D:The painted shield of a chieftain of Far Harad, gaudy and barbaric.  
 D:Its wielder will fear nothing and fight with unnatural strength, but 
 D:also draw attention to himself.

@@ -189,10 +189,14 @@ struct object_kind
 	byte x_attr;		/* Desired object attribute */
 	char x_char;		/* Desired object character */
 
-	u32b effect;		/* Effect (defined in effects.h) */
+	u16b effect;		/* Effect this item produces */
+	u16b time_base;		/* Recharge time (if appropriate) */
+	byte time_dice;
+	byte time_sides;
 
 	byte charge_base;	/* Charge base */
-	byte charge_dd, charge_ds;	/* Charge dice/sides */
+	byte charge_dd;
+	byte charge_ds;	/* Charge dice/sides */
 
 	byte gen_mult_prob;     /* Probability of generating more than one */
 	byte gen_dice;          /* Average number to generate - dice rolled */
@@ -250,9 +254,11 @@ struct artifact_type
 	byte cur_num;		/* Number created (0 or 1) */
 	byte max_num;		/* Unused (should be "1") */
 
-	byte activation;	/* Activation to use */
-	u16b time;			/* Activation time */
-	u16b randtime;		/* Activation time dice */
+	u16b effect;		/* Effect this item produces */
+	u32b effect_msg;	/* Effect message (offset) into text */
+	u16b time_base;		/* Recharge time (if appropriate) */
+	byte time_dice;
+	byte time_sides;
 };
 
 
