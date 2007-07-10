@@ -253,7 +253,8 @@ I:80:16:500
 W:15:0:1:75
 A:15/1
 F:EASY_KNOW
-D:It cures 4d8 points of damage.
+E:CW_SERIOUS
+
 
 ##### Normal Food #####
 
@@ -1446,7 +1447,7 @@ I:70:17:0
 W:15:0:5:125
 A:15/1
 F:EASY_KNOW
-D:It attempts to magically enhance a weapon's to-hit bonus once.
+E:ENCHANT_TOHIT
 
 N:174:Enchant Weapon To-Dam
 G:?:w
@@ -1454,7 +1455,7 @@ I:70:18:0
 W:15:0:5:125
 A:15/1
 F:EASY_KNOW
-D:It attempts to magically enhance a weapon's to-dam bonus once.
+E:ENCHANT_TODAM
 
 N:175:Enchant Armor
 G:?:w
@@ -1462,7 +1463,7 @@ I:70:16:0
 W:15:0:5:125
 A:15/1
 F:EASY_KNOW
-D:It attempts to enchant a piece of armor once.
+E:ENCHANT_ARMOR
 
 N:176:Identify
 G:?:w
@@ -1470,8 +1471,7 @@ I:70:12:0
 W:1:0:5:50
 A:1/1:5/1:10/1:30/1
 F:EASY_KNOW
-D:It reveals all normal (magical but non-hidden) powers of one object.
-D:  (The spell may be aborted without using up the scroll.)
+E:IDENTIFY
 
 N:177:*Identify*
 G:?:w
@@ -1479,10 +1479,7 @@ I:70:13:0
 W:30:0:5:1000
 A:25/1:40/1:70/1
 F:EASY_KNOW
-D:It reveals all normal and hidden powers of one object, and also
-D: permanently implants this knowledge into your mind, so that you will
-D: never forget it even if hit by magical amnesia.
-D:  (The spell may be aborted without using up the scroll.)
+E:IDENTIFY2
 
 ## XXX 178 XXX ##
 
@@ -1494,8 +1491,7 @@ I:70:14:0
 W:10:0:5:100
 A:10/1
 F:EASY_KNOW
-D:It removes all ordinary curses from all equipped items.
-D:  Heavy or permanent curses are unaffected.
+E:REMOVE_CURSE
 
 N:181:Light
 G:?:w
@@ -1503,10 +1499,7 @@ I:70:24:0
 W:0:0:5:15
 A:0/1:3/1:10/1
 F:EASY_KNOW
-D:It lights up an area with a radius of 2 squares, plus the entire room
-D: if you are currently in one.
-D:  This inflicts 2d8 points of damage on any light-sensitive creatures
-D: within the radius of the spell.
+E:LIGHT
 
 ## XXX 182 XXX ##
 
@@ -1518,10 +1511,7 @@ I:70:4:0
 W:1:0:5:0
 A:1/1
 F:EASY_KNOW
-D:It summons 1d3 monsters that are generated at the current dungeon
-D: level.
-D:  If a monster normally appears in groups, a whole group will appear.
-D:  If a monster normally has escorts, it will appear with escorts.
+E:SUMMON_MON
 
 N:185:Phase Door
 G:?:w
@@ -1529,7 +1519,7 @@ I:70:8:0
 W:1:0:5:15
 A:1/1
 F:EASY_KNOW
-D:It teleports you randomly up to 10 squares away.
+E:TELE_PHASE
 
 N:186:Teleportation
 G:?:w
@@ -1537,7 +1527,7 @@ I:70:9:0
 W:10:0:5:40
 A:10/1
 F:EASY_KNOW
-D:It teleports you randomly up to 100 squares away.
+E:TELE_LONG
 
 N:187:Teleport Level
 G:?:w
@@ -1545,11 +1535,7 @@ I:70:10:0
 W:20:0:5:50
 A:20/1
 F:EASY_KNOW
-D:It teleports you 1 level up or down (chosen at random).
-D:  The direction will always be down from the town level, and up from
-D: level 99 if Sauron has not been killed or level 100 if Morgoth has
-D: not been killed.
-D:  This scroll has no effect when the "Ironman" option is set.
+E:TELE_LEVEL
 
 N:188:Monster Confusion
 G:?:w
@@ -1557,9 +1543,7 @@ I:70:36:0
 W:5:0:5:30
 A:5/1
 F:EASY_KNOW
-D:It enchants you with an aura of confusion that causes your hands to
-D: glow red.  The enchantment is dissipated when you strike a monster;
-D: at that moment an attempt is made to confuse the monster.
+E:CONFUSING
 
 N:189:Magic Mapping
 G:?:w
@@ -1567,7 +1551,7 @@ I:70:25:0
 W:5:0:5:40
 A:5/1
 F:EASY_KNOW
-D:It maps out a portion of the level centered on you.
+E:MAPPING
 
 N:190:Rune of Protection
 G:?:w
@@ -1575,10 +1559,7 @@ I:70:38:0
 W:60:0:5:500
 A:60/4:90/1
 F:EASY_KNOW
-D:It inscribes a glyph of warding beneath you.  Monsters can't move onto
-D: the glyph, though they do have a (monster level) in 550 chance of
-D: breaking the glyph when they try to move there.  Note that you can
-D: still be attacked if you are standing on the glyph!
+E:RUNE
 
 N:191:*Remove Curse*
 G:?:w
@@ -1586,8 +1567,7 @@ I:70:15:0
 W:50:0:5:8000
 A:50/2:95/1
 F:EASY_KNOW
-D:It removes all ordinary and heavy curses from all equipped objects.
-D:  Permanent curses are unaffected.
+E:REMOVE_CURSE2
 
 N:192:Treasure Detection
 G:?:w
@@ -1595,7 +1575,7 @@ I:70:26:0
 W:0:0:5:15
 A:0/1
 F:EASY_KNOW
-D:It detects all treasure in the immediate area.
+E:DET_GOLD
 
 N:193:Object Detection
 G:?:w
@@ -1603,7 +1583,7 @@ I:70:27:0
 W:0:0:5:15
 A:0/1
 F:EASY_KNOW
-D:It detects all objects in the immediate area.
+E:DET_OBJ
 
 N:194:Trap Detection
 G:?:w
@@ -1611,7 +1591,7 @@ I:70:28:0
 W:5:0:5:35
 A:5/1:10/1
 F:EASY_KNOW
-D:It detects all traps in the immediate area.
+D:DET_TRAPS
 
 ## XXX 195 XXX ##
 
@@ -1623,7 +1603,7 @@ I:70:29:0
 W:5:0:5:35
 A:5/1:10/1:15/1
 F:EASY_KNOW
-D:It detects all stairs and doors in the immediate area.
+E:DET_DOORSTAIR
 
 N:198:Acquirement
 G:?:w
@@ -1631,7 +1611,7 @@ I:70:46:0
 W:20:0:5:100000
 A:20/8
 F:EASY_KNOW
-D:It creates one good object on the floor near you.
+E:ACQUIRE
 
 N:199:*Acquirement*
 G:?:w
@@ -1639,7 +1619,7 @@ I:70:47:0
 W:60:0:5:200000
 A:60/16
 F:EASY_KNOW
-D:It creates 1+1d2 good objects on the ground near you.
+E:ACQUIRE2
 
 N:200:Mass Banishment
 G:?:w
@@ -1647,9 +1627,7 @@ I:70:45:0
 W:50:0:5:1000
 A:50/4:95/4
 F:EASY_KNOW
-D:It removes all monsters within 20 squares of you.
-D:  Uniques are unaffected.
-D:  You take 1d3 points of damage for every monster removed.
+E:LOSKILL
 
 N:201:Detect Invisible
 G:?:w
@@ -1657,7 +1635,7 @@ I:70:30:0
 W:1:0:5:15
 A:1/1
 F:EASY_KNOW
-D:It detects all invisible monsters in the immediate area.
+E:DET_INVIS
 
 N:202:Aggravate Monster
 G:?:w
@@ -1665,8 +1643,7 @@ I:70:1:0
 W:5:0:5:0
 A:5/1
 F:EASY_KNOW
-D:It awakens all sleeping monsters within 40 squares of you, and hastes
-D: all monsters within line of sight unless they are already hasted.
+E:ANNOY_MON
 
 N:203:Trap Creation
 G:?:w
@@ -1674,7 +1651,7 @@ I:70:7:0
 W:10:0:5:0
 A:10/1
 F:EASY_KNOW
-D:It creates traps on all empty squares within a 1-square radius of you.
+E:CREATE_TRAP
 
 N:204:Trap/Door Destruction
 G:?:w
@@ -1682,7 +1659,7 @@ I:70:39:0
 W:10:0:5:50
 A:10/1
 F:EASY_KNOW
-D:It destroys all traps and doors within a 1-square radius of you.
+E:DESTROY_TDOORS
 
 ## XXX 205 XXX ##
 
@@ -1692,10 +1669,7 @@ I:70:22:0
 W:40:0:5:200
 A:40/1
 F:EASY_KNOW
-D:It recharges a wand or a staff.
-D:  If successful, a wand or staff gains 2+1d(60/((level of
-D: wand/staff)+2)+1) charges; failure occurs 1 time in (160-(level of
-D: wand/staff)-(10*(# of charges)))/15, and uncharges the wand or staff.
+E:RECHARGE
 
 N:207:Banishment
 G:?:w
@@ -1703,9 +1677,7 @@ I:70:44:0
 W:40:0:5:750
 A:40/4:80/2
 F:EASY_KNOW
-D:It removes all monsters represented by a chosen symbol from the level.
-D:  Uniques are unaffected.
-D:  You take 1d4 points of damage for every monster removed.
+E:BANISHMENT
 
 N:208:Darkness
 G:?:w
@@ -1713,9 +1685,7 @@ I:70:0:0
 W:1:0:5:0
 A:1/1
 F:EASY_KNOW
-D:It darkens all squares within 3 squares of you, plus the entire room
-D: if you are currently in one; and blinds you for 3+1d5 turns unless
-D: you have resistance to blindness.
+E:DARKNESS
 
 N:209:Protection from Evil
 G:?:w
@@ -1723,8 +1693,7 @@ I:70:37:0
 W:30:0:5:50
 A:30/1
 F:EASY_KNOW
-D:It grants you the enchantment of protection from evil for a duration
-D: equal to 1d25 plus three times your character level.
+E:PROTEVIL
 
 N:210:Satisfy Hunger
 G:?:w
@@ -1732,8 +1701,7 @@ I:70:32:0
 W:5:0:5:10
 A:5/1
 F:EASY_KNOW
-D:It magically renders you well-fed (but not satiated).
-D:  This will also cure a bloated stomach.
+E:SATISFY
 
 N:211:Dispel Undead
 G:?:w
@@ -1741,8 +1709,7 @@ I:70:42:0
 W:40:0:5:200
 A:40/1
 F:EASY_KNOW
-D:It inflicts 60 points of damage on all undead creatures within line of
-D: sight.
+E:DISPEL_UNDEAD
 
 N:212:*Enchant Weapon*
 G:?:w
@@ -1750,8 +1717,7 @@ I:70:21:0
 W:50:0:5:500
 A:50/1
 F:EASY_KNOW
-D:It attempts to magically enhance a weapon's to-dam and to-hit bonuses
-D: 1d3 times each.
+E:ENCHANT_WEAPON
 
 N:213:Curse Weapon
 G:?:w
@@ -1759,10 +1725,7 @@ I:70:3:0
 W:50:0:5:0
 A:50/1
 F:EASY_KNOW
-D:It curses the currently wielded melee weapon, removing all of its
-D: special powers and changing the weapon's to-hit and to-dam bonuses
-D: both to -2d5.
-D:  Artifacts have a 1 in 2 chance to resist.
+E:CURSE_WEAPON
 
 N:214:*Enchant Armor*
 G:?:w
@@ -1770,7 +1733,7 @@ I:70:20:0
 W:50:0:5:500
 A:50/1:50/1
 F:EASY_KNOW
-D:It attempts to enchant a piece of armor 2+1d3 times.
+E:ENCHANT_ARMOR2
 
 N:215:Curse Armor
 G:?:w
@@ -1778,10 +1741,7 @@ I:70:2:0
 W:50:0:5:0
 A:50/1
 F:EASY_KNOW
-D:It curses the currently equipped body armor, removing all of its
-D: special powers, reducing the base AC of the armor to 0, and changing
-D: the magical AC bonus of the armor to -2d5.
-D:  Artifacts have a 1 in 2 chance to resist.
+E:CURSE_ARMOR
 
 N:216:Summon Undead
 G:?:w
@@ -1789,10 +1749,7 @@ I:70:5:0
 W:15:0:5:0
 A:15/1
 F:EASY_KNOW
-D:It summons 1d3 non-unique undead monsters that are generated at the
-D: current dungeon level.
-D:  If a monster normally appears in groups, a whole group will appear.
-D:  If a monster normally has escorts, it will appear with escorts.
+E:SUMMON_UNDEAD
 
 N:217:Blessing
 G:?:w
@@ -1800,8 +1757,7 @@ I:70:33:0
 W:1:0:5:15
 A:1/1
 F:EASY_KNOW
-D:It blesses you (a bonus of +5 to armor class and +10 to-hit) for
-D: 6+1d12 turns.
+E:BLESSING
 
 N:218:Holy Chant
 G:?:w
@@ -1809,8 +1765,7 @@ I:70:34:0
 W:10:0:5:40
 A:10/1
 F:EASY_KNOW
-D:It blesses you (a bonus of +5 to armor class and +10 to-hit) for
-D: 12+1d24 turns.
+E:BLESSING2
 
 N:219:Holy Prayer
 G:?:w
@@ -1818,8 +1773,7 @@ I:70:35:0
 W:25:0:5:80
 A:25/1
 F:EASY_KNOW
-D:It blesses you (a bonus of +5 to armor class and +10 to-hit) for
-D: 24+1d48 turns.
+E:BLESSING3
 
 N:220:Word of Recall
 G:?:w
@@ -1827,10 +1781,7 @@ I:70:11:0
 W:5:0:5:150
 A:5/1
 F:EASY_KNOW
-D:It invokes the spell of recall, which takes you from the dungeon to
-D: the town or from the town to the deepest level you have visited in
-D: the dungeon.  It takes a while for the spell to act.  Until then, the
-D: spell can be canceled by reading a second scroll.
+E:RECALL
 
 N:221:*Destruction*
 G:?:w
@@ -1838,12 +1789,8 @@ I:70:41:0
 W:40:0:5:250
 A:40/1
 F:EASY_KNOW
-D:It destroys a circular area centered at you with a radius of 15
-D: squares, randomly placing new walls and floor space (stairs are
-D: immune).  All monsters and objects (excluding artifacts) are removed
-D: from the affected area.
-D:  This effect will also cause blindness lasting for 10+1d10 turns
-D: unless you have resistance to either blindness or light.
+E:DESTRUCTION2
+
 
 ##### Potions #####
 

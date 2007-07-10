@@ -267,6 +267,11 @@ static errr rd_item(object_type *o_ptr)
 	rd_byte(&o_ptr->sval);
 	rd_s16b(&o_ptr->pval);
 
+#if 0
+	/* This can wait until object reorganisation */
+	o_ptr->k_idx = lookup_kind(o_ptr->tval, o_ptr->sval);
+#endif
+
 	/* Pseudo-ID bit */
 	rd_byte(&o_ptr->pseudo);
 
