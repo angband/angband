@@ -28,6 +28,7 @@ ANGFILES = \
 	cmd5.o \
 	cmd6.o \
 	dungeon.o \
+	effects.o \
 	files.o \
 	generate.o \
 	init1.o \

@@ -7,7 +7,6 @@
  * and not for profit purposes provided that this copyright and statement
  * are included in all such copies.  Other copyrights may also apply.
  */
-
 #include "angband.h"
 
 
@@ -473,6 +472,11 @@ static cptr k_info_flags3[] =
 	"HEAVY_CURSE",
 	"PERMA_CURSE"
 };
+
+/* Use a slightly unusual include method to create effect_list[] */
+#define LIST_STRINGS
+#include "effects.h"
+#undef LIST_STRINGS
 
 
 /*
@@ -1192,6 +1196,28 @@ static errr grab_one_kind_flag(object_kind *k_ptr, cptr what)
 }
 
 
+/*
+ * Figure out what index an activation should have
+ */
+static u32b grab_one_effect(const char *what)
+{
+	size_t i;
+
+	/* Scan activations */
+	for (i = 0; i < N_ELEMENTS(effect_list); i++)
+	{
+		if (streq(what, effect_list[i]))
+			return i;
+	}
+
+	/* Oops */
+	msg_format("Unknown effect '%s'.", what);
+
+	/* Error */
+	return 0;
+}
+
+
 
 /*
  * Initialize the "k_info" array, by parsing an ascii "template" file
@@ -1239,16 +1265,19 @@ errr parse_k_info(char *buf, header *head)
 		/* Store the name */
 		if (!(k_ptr->name = add_name(head, s)))
 			return (PARSE_ERROR_OUT_OF_MEMORY);
+
+		/* Success (return early) */
+		return (0);
 	}
 
+	/* There better be a current k_ptr */
+	if (!k_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
+
 	/* Process 'G' for "Graphics" (one line only) */
-	else if (buf[0] == 'G')
+	if (buf[0] == 'G')
 	{
 		char d_char;
 		int d_attr;
-
-		/* There better be a current k_ptr */
-		if (!k_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Paranoia */
 		if (!buf[2]) return (PARSE_ERROR_GENERIC);
@@ -1286,9 +1315,6 @@ errr parse_k_info(char *buf, header *head)
 	{
 		int tval, sval, pval;
 
-		/* There better be a current k_ptr */
-		if (!k_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
-
 		/* Scan for the values */
 		if (3 != sscanf(buf+2, "%d:%d:%d",
 			            &tval, &sval, &pval)) return (PARSE_ERROR_GENERIC);
@@ -1305,9 +1331,6 @@ errr parse_k_info(char *buf, header *head)
 		int level, extra, wgt;
 		long cost;
 
-		/* There better be a current k_ptr */
-		if (!k_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
-
 		/* Scan for the values */
 		if (4 != sscanf(buf+2, "%d:%d:%d:%ld",
 			            &level, &extra, &wgt, &cost)) return (PARSE_ERROR_GENERIC);
@@ -1323,9 +1346,6 @@ errr parse_k_info(char *buf, header *head)
 	else if (buf[0] == 'A')
 	{
 		int i;
-
-		/* There better be a current k_ptr */
-		if (!k_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* XXX Simply read each number following a colon */
 		for (i = 0, s = buf+1; s && (s[0] == ':') && s[1]; ++i)
@@ -1359,9 +1379,6 @@ errr parse_k_info(char *buf, header *head)
 	{
 		int ac, hd1, hd2, th, td, ta;
 
-		/* There better be a current k_ptr */
-		if (!k_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
-
 		/* Scan for the values */
 		if (6 != sscanf(buf+2, "%d:%dd%d:%d:%d:%d",
 			            &ac, &hd1, &hd2, &th, &td, &ta)) return (PARSE_ERROR_GENERIC);
@@ -1380,9 +1397,6 @@ errr parse_k_info(char *buf, header *head)
 		int base = 0;
 		int ds = 0;
 		int dd = 1;
-
-		/* There better be a current k_ptr */
-		if (!k_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Assign base values */
 		k_ptr->charge_base = 0;
@@ -1421,9 +1435,6 @@ errr parse_k_info(char *buf, header *head)
 	{
 		int prob, dice, side;
 
-		/* There better be a current k_ptr */
-		if (!k_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
-
 		/* Scan for the values */
 		if (3 != sscanf(buf+2, "%d:%dd%d", &prob, &dice, &side))
 			return (PARSE_ERROR_GENERIC);
@@ -1440,9 +1451,6 @@ errr parse_k_info(char *buf, header *head)
 	/* Hack -- Process 'F' for flags */
 	else if (buf[0] == 'F')
 	{
-		/* There better be a current k_ptr */
-		if (!k_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
-
 		/* Parse every entry textually */
 		for (s = buf + 2; *s; )
 		{
@@ -1464,17 +1472,22 @@ errr parse_k_info(char *buf, header *head)
 		}
 	}
 
+	/* Process 'E' for effect */
+	else if (buf[0] == 'E')
+	{
+		/* Get the activation */
+		k_ptr->effect = grab_one_effect(buf + 2);
+
+		/* No luck */
+		if (!k_ptr->effect)
+			return (PARSE_ERROR_GENERIC);
+	}
+
 	/* Process 'D' for "Description" */
 	else if (buf[0] == 'D')
 	{
-		/* There better be a current k_ptr */
-		if (!k_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
-
-		/* Get the text */
-		s = buf+2;
-
 		/* Store the text */
-		if (!add_text(&(k_ptr->text), head, s))
+		if (!add_text(&(k_ptr->text), head, buf + 2))
 			return (PARSE_ERROR_OUT_OF_MEMORY);
 	}
 

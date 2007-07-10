@@ -97,10 +97,7 @@ I:80:1:500
 W:5:0:1:0
 A:5/1
 F:EASY_KNOW
-D:It causes blindness that lasts for 199+1d200 turns, unless you have
-D: resistance to blindness.
-D:  Mushrooms provide nourishment for about 250 turns under normal
-D: conditions.
+E:BLIND
 
 N:2:Paranoia
 G:,:d
@@ -108,10 +105,7 @@ I:80:2:500
 W:5:0:1:0
 A:5/1
 F:EASY_KNOW
-D:It induces fear that lasts for 9+1d10 turns, unless you have
-D: resistance to fear.
-D:  Mushrooms provide nourishment for about 250 turns under normal
-D: conditions.
+E:SCARE
 
 N:3:Confusion
 G:,:d
@@ -119,10 +113,7 @@ I:80:3:500
 W:5:0:1:0
 A:5/1
 F:EASY_KNOW
-D:It induces confusion that lasts for 9+1d10 turns, unless you have
-D: resistance to confusion.
-D:  Mushrooms provide nourishment for about 250 turns under normal
-D: conditions.
+E:CONFUSE
 
 N:4:Hallucination
 G:,:d
@@ -130,10 +121,7 @@ I:80:4:500
 W:10:0:1:0
 A:10/1
 F:EASY_KNOW
-D:It causes you to hallucinate for 249+1d250 turns, unless you have
-D: resistance to chaos.
-D:  Mushrooms provide nourishment for about 250 turns under normal
-D: conditions.
+E:HALLUC
 
 N:5:Cure Poison
 G:,:d
@@ -141,9 +129,7 @@ I:80:12:500
 W:10:0:1:60
 A:10/1
 F:EASY_KNOW
-D:It neutralizes poison.
-D:  Mushrooms provide nourishment for about 250 turns under normal
-D: conditions.
+E:CURE_POISON
 
 N:6:Cure Blindness
 G:,:d
@@ -151,9 +137,7 @@ I:80:13:500
 W:10:0:1:50
 A:10/1
 F:EASY_KNOW
-D:It cures blindness.
-D:  Mushrooms provide nourishment for about 250 turns under normal
-D: conditions.
+E:CURE_BLINDNESS
 
 N:7:Cure Paranoia
 G:,:d
@@ -161,9 +145,7 @@ I:80:14:500
 W:10:0:1:25
 A:10/1
 F:EASY_KNOW
-D:It removes your fear.
-D:  Mushrooms provide nourishment for about 250 turns under normal
-D: conditions.
+E:CURE_PARANOIA
 
 N:8:Cure Confusion
 G:,:d
@@ -171,9 +153,7 @@ I:80:15:500
 W:10:0:1:50
 A:10/1
 F:EASY_KNOW
-D:It cures confusion.
-D:  Mushrooms provide nourishment for about 250 turns under normal
-D: conditions.
+E:CURE_CONFUSION
 
 N:9:Weakness
 G:,:d
@@ -181,10 +161,7 @@ I:80:6:500
 W:10:0:1:0
 A:10/1
 F:EASY_KNOW
-D:It inflicts 6d6 points of damage, and also reduces strength unless you
-D: have sustain strength.
-D:  Mushrooms provide nourishment for about 250 turns under normal
-D: conditions.
+E:LOSE_STR
 
 N:10:Unhealth
 G:,:d
@@ -193,11 +170,8 @@ W:15:0:1:50
 A:15/1
 P:0:10d10:0:0:0
 F:EASY_KNOW
-D:It inflicts 10d10 points of damage, and also reduces constitution
-D: unless you have sustain constitution.
-D:  It may also be thrown to inflict 10d10 points of damage.
-D:  Mushrooms provide nourishment for about 250 turns under normal
-D: conditions.
+E:LOSE_CON2
+D:It may also be thrown to inflict 10d10 points of damage.
 
 N:11:Restore Constitution
 G:,:d
@@ -205,9 +179,7 @@ I:80:18:500
 W:20:0:1:350
 A:20/1
 F:EASY_KNOW
-D:It restores constitution to maximum if it is currently below maximum.
-D:  Mushrooms provide nourishment for about 250 turns under normal
-D: conditions.
+E:RESTORE_CON
 
 N:12:Restoring
 G:,:d
@@ -215,9 +187,7 @@ I:80:19:500
 W:20:0:1:1000
 A:20/8:30/4:40/1
 F:EASY_KNOW
-D:It restores to maximum all stats that are currently below maximum.
-D:  Mushrooms provide nourishment for about 250 turns under normal
-D: conditions.
+E:RESTORE_ALL
 
 N:13:Stupidity
 G:,:d
@@ -225,10 +195,7 @@ I:80:8:500
 W:15:0:1:0
 A:15/1
 F:EASY_KNOW
-D:It inflicts 8d8 points of damage, and also reduces intelligence unless
-D: you have sustain intelligence.
-D:  Mushrooms provide nourishment for about 250 turns under normal
-D: conditions.
+E:LOSE_INT
 
 N:14:Naivety
 G:,:d
@@ -236,10 +203,7 @@ I:80:9:500
 W:15:0:1:0
 A:15/1
 F:EASY_KNOW
-D:It inflicts 8d8 points of damage, and also reduces wisdom unless you
-D: have sustain wisdom.
-D:  Mushrooms provide nourishment for about 250 turns under normal
-D: conditions.
+E:LOSE_WIS
 
 N:15:Poison
 G:,:d
@@ -247,10 +211,7 @@ I:80:0:500
 W:5:0:1:0
 A:5/1:5/1
 F:EASY_KNOW
-D:It poisons you (adding 9+1d10 points to the poison counter), unless
-D: you have resistance to poison.
-D:  Mushrooms provide nourishment for about 250 turns under normal
-D: conditions.
+E:POISON
 
 N:16:Sickness
 G:,:d
@@ -258,10 +219,7 @@ I:80:7:500
 W:10:0:1:0
 A:10/1
 F:EASY_KNOW
-D:It inflicts 6d6 points of damage, and also reduces constitution unless
-D: you have sustain constitution.
-D:  Mushrooms provide nourishment for about 250 turns under normal
-D: conditions.
+E:LOSE_CON
 
 N:17:Paralysis
 G:,:d
@@ -269,10 +227,7 @@ I:80:5:500
 W:20:0:1:0
 A:20/1
 F:EASY_KNOW
-D:It induces paralysis that lasts for 9+1d10 turns, unless you have free
-D: action.
-D:  Mushrooms provide nourishment for about 250 turns under normal
-D: conditions.
+E:PARALYZE
 
 N:18:Restore Strength
 G:,:d
@@ -280,9 +235,7 @@ I:80:17:500
 W:20:0:1:350
 A:20/1
 F:EASY_KNOW
-D:It restores strength to maximum if it is currently below maximum.
-D:  Mushrooms provide nourishment for about 250 turns under normal
-D: conditions.
+E:RESTORE_STR
 
 N:19:Disease
 G:,:d
@@ -291,11 +244,8 @@ W:20:0:1:50
 A:20/1
 P:0:10d10:0:0:0
 F:EASY_KNOW
-D:It inflicts 10d10 points of damage, and also reduces strength unless
-D: you have sustain strength.
-D:  It may also be thrown to inflict 10d10 points of damage.
-D:  Mushrooms provide nourishment for about 250 turns under normal
-D: conditions.
+E:LOSE_STR2
+D:It may also be thrown to inflict 10d10 points of damage.
 
 N:20:Cure Serious Wounds
 G:,:d
@@ -304,8 +254,6 @@ W:15:0:1:75
 A:15/1
 F:EASY_KNOW
 D:It cures 4d8 points of damage.
-D:  Mushrooms provide nourishment for about 250 turns under normal
-D: conditions.
 
 ##### Normal Food #####
 
@@ -315,21 +263,21 @@ I:80:35:5000
 W:0:0:10:3
 A:0/1:5/1:10/1
 F:EASY_KNOW
-D:It provides nourishment for about 2500 turns under normal conditions.
+E:FOOD_GOOD
 
 N:22:& Hard Biscuit~
 G:,:U
 I:80:32:500
 W:0:0:2:1
 F:EASY_KNOW
-D:It provides nourishment for about 250 turns under normal conditions.
+E:FOOD_GOOD
 
 N:23:& Strip~ of Beef Jerky
 G:,:u
 I:80:33:1500
 W:0:0:2:2
 F:EASY_KNOW
-D:It provides nourishment for about 750 turns under normal conditions.
+E:FOOD_GOOD
 
 N:24:& Slime Mold~
 G:,:g
@@ -337,7 +285,7 @@ I:80:36:3000
 W:1:0:5:2
 A:1/1
 F:EASY_KNOW
-D:It provides nourishment for about 1500 turns under normal conditions.
+E:FOOD_GOOD
 
 N:25:& Piece~ of Elvish Waybread
 G:,:B
@@ -345,23 +293,21 @@ I:80:37:7500
 W:5:0:3:10
 A:5/1:10/1:20/1
 F:EASY_KNOW
-D:It cures 4d8 points of damage and neutralizes poison.
-D:  It provides nourishment for about 3750 turns under normal
-D: conditions.
+E:FOOD_WAYBREAD
 
 N:26:& Pint~ of Fine Ale
 G:,:y
 I:80:38:500
 W:0:0:5:1
 F:EASY_KNOW
-D:It provides nourishment for about 250 turns under normal conditions.
+E:FOOD_GOOD
 
 N:27:& Pint~ of Fine Wine
 G:,:r
 I:80:39:1000
 W:0:0:10:2
 F:EASY_KNOW
-D:It provides nourishment for about 500 turns under normal conditions.
+E:FOOD_GOOD
 
 
 ## XXX 28 XXX ##

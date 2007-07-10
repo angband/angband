@@ -189,6 +189,8 @@ struct object_kind
 	byte x_attr;		/* Desired object attribute */
 	char x_char;		/* Desired object character */
 
+	u32b effect;		/* Effect (defined in effects.h) */
+
 	byte charge_base;	/* Charge base */
 	byte charge_dd, charge_ds;	/* Charge dice/sides */
 

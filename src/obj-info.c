@@ -478,7 +478,21 @@ bool object_info_out(const object_type *o_ptr)
 	/* Grab the object flags */
 	object_info_out_flags(o_ptr, &f1, &f2, &f3);
 
+
+	/* New para */
+	new_paragraph = TRUE;
+
+	/* Describe boring bits */
+	if (o_ptr->tval == TV_FOOD)
+	{
+		p_text_out("It provides nourishment for about ");
+		text_out_c(TERM_L_GREEN, "%d", o_ptr->pval / 2);
+		text_out(" turns under normal conditions.");
+	}
+
+
 	/* Describe the object */
+	new_paragraph = TRUE;
 	if (describe_stats(o_ptr, f1)) something = TRUE;
 	if (describe_slay(o_ptr, f1)) something = TRUE;
 	if (describe_brand(o_ptr, f1)) something = TRUE;
@@ -572,7 +586,6 @@ void object_info_screen(const object_type *o_ptr)
 	object_info_out_flags = object_flags_known;
 
 	/* Dump the info */
-	new_paragraph = TRUE;
 	has_info = object_info_out(o_ptr);
 
 	new_paragraph = TRUE;
