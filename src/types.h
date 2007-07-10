@@ -955,6 +955,7 @@ struct player_type
 	s16b command_arg;		/* Gives argument of current command */
 	s16b command_rep;		/* Gives repetition of current command */
 	s16b command_dir;		/* Gives direction of current command */
+	int  command_inv;		/* Gives item of current command */
 	event_type command_cmd_ex; /* Gives additional information of current command */
 
 	s16b command_see;		/* See "cmd1.c" */

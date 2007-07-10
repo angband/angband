@@ -7,7 +7,7 @@
 
 /* Object and spell useage.  To be put somewhere else eventually. */
 /* Right now they're fine here.  -AS- */
-extern bool use_object(object_type *o_ptr, bool *ident);
+extern bool use_object(object_type *o_ptr, bool *ident, int dir);
 extern int get_spell_index(const object_type *o_ptr, int index);
 extern cptr get_spell_name(int tval, int index);
 extern void get_spell_info(int tval, int index, char *buf, size_t len);

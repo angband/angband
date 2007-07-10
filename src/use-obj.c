@@ -1282,63 +1282,21 @@ static bool use_staff(object_type *o_ptr, bool *ident)
 	return (use_charge);
 }
 
-
-static bool aim_wand(object_type *o_ptr, bool *ident)
+/*
+ * There are no wands which can "destroy" themselves, in the inventory
+ * or on the ground, so we can ignore this possibility.  Note that this
+ * required giving "wand of wonder" the ability to ignore destruction
+ * by electric balls.
+ *
+ * All wands can be "cancelled" at the "Direction?" prompt for free.
+ *
+ * Note that the basic "bolt" wands do slightly less damage than the
+ * basic "bolt" rods, but the basic "ball" wands do the same damage
+ * as the basic "ball" rods.
+ */
+static bool aim_wand(object_type *o_ptr, bool *ident, int dir)
 {
-	int lev, chance, dir, sval;
-
-
-	/* Allow direction to be cancelled for free */
-	if (!get_aim_dir(&dir)) return (FALSE);
-
-	/* Take a turn */
-	p_ptr->energy_use = 100;
-
-	/* Not identified yet */
-	*ident = FALSE;
-
-	/* Get the level */
-	lev = k_info[o_ptr->k_idx].level;
-
-	/* Base chance of success */
-	chance = p_ptr->skills[SKILL_DEV];
-
-	/* Confusion hurts skill */
-	if (p_ptr->timed[TMD_CONFUSED]) chance = chance / 2;
-
-	/* High level objects are harder */
-	chance = chance - ((lev > 50) ? 50 : lev);
-
-	/* Give everyone a (slight) chance */
-	if ((chance < USE_DEVICE) && (rand_int(USE_DEVICE - chance + 1) == 0))
-	{
-		chance = USE_DEVICE;
-	}
-
-	/* Roll for usage */
-	if ((chance < USE_DEVICE) || (randint(chance) < USE_DEVICE))
-	{
-		if (flush_failure) flush();
-		msg_print("You failed to use the wand properly.");
-		return (FALSE);
-	}
-
-	/* The wand is already empty! */
-	if (o_ptr->pval <= 0)
-	{
-		if (flush_failure) flush();
-		msg_print("The wand has no charges left.");
-		o_ptr->ident |= (IDENT_EMPTY);
-		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
-		p_ptr->window |= (PW_INVEN);
-		return (FALSE);
-	}
-
-
-	/* Sound */
-	/* TODO: Create wand sound?  Do the individual effects have sounds? */
-	/* sound(MSG_ZAP_ROD); */
-
+	int sval;
 
 	/* XXX Hack -- Extract the "sval" effect */
 	sval = o_ptr->sval;
@@ -1575,69 +1533,8 @@ static bool aim_wand(object_type *o_ptr, bool *ident)
 }
 
 
-static bool zap_rod(object_type *o_ptr, bool *ident)
+static bool zap_rod(object_type *o_ptr, bool *ident, int dir)
 {
-	int chance, dir, lev;
-	bool used_charge = TRUE;
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
-
-	/* Get a direction (unless KNOWN not to need it) */
-	if ((o_ptr->sval >= SV_ROD_MIN_DIRECTION) || !object_aware_p(o_ptr))
-	{
-		/* Get a direction, allow cancel */
-		if (!get_aim_dir(&dir)) return FALSE;
-	}
-
-
-	/* Take a turn */
-	p_ptr->energy_use = 100;
-
-	/* Not identified yet */
-	*ident = FALSE;
-
-	/* Extract the item level */
-	lev = k_info[o_ptr->k_idx].level;
-
-	/* Base chance of success */
-	chance = p_ptr->skills[SKILL_DEV];
-
-	/* Confusion hurts skill */
-	if (p_ptr->timed[TMD_CONFUSED]) chance = chance / 2;
-
-	/* High level objects are harder */
-	chance = chance - ((lev > 50) ? 50 : lev);
-
-	/* Give everyone a (slight) chance */
-	if ((chance < USE_DEVICE) && (rand_int(USE_DEVICE - chance + 1) == 0))
-	{
-		chance = USE_DEVICE;
-	}
-
-	/* Roll for usage */
-	if ((chance < USE_DEVICE) || (randint(chance) < USE_DEVICE))
-	{
-		if (flush_failure) flush();
-		msg_print("You failed to use the rod properly.");
-		return FALSE;
-	}
-
-	/* Still charging? */
-	if (o_ptr->timeout > (o_ptr->pval - k_ptr->pval))
-	{
-		if (flush_failure) flush();
-
-		if (o_ptr->number == 1)
-			msg_print("The rod is still charging");
-		else
-			msg_print("The rods are all still charging");
-
-		return FALSE;
-	}
-
-	/* Sound */
-	sound(MSG_ZAP_ROD);
-
 	/* Analyze the rod */
 	switch (o_ptr->sval)
 	{
@@ -1657,7 +1554,7 @@ static bool zap_rod(object_type *o_ptr, bool *ident)
 		case SV_ROD_IDENTIFY:
 		{
 			*ident = TRUE;
-			if (!ident_spell()) used_charge = FALSE;
+			if (!ident_spell()) return FALSE;
 			break;
 		}
 
@@ -1839,9 +1736,6 @@ static bool zap_rod(object_type *o_ptr, bool *ident)
 		}
 	}
 
-	/* Drain the charge */
-	if (used_charge) o_ptr->timeout += k_ptr->pval;
-
 	return TRUE;
 }
 
@@ -1859,14 +1753,6 @@ static bool zap_rod(object_type *o_ptr, bool *ident)
 static bool activate_object(object_type *o_ptr, bool *ident)
 {
 	int k, dir, i, chance;
-
-
-	/* Check the recharge */
-	if (o_ptr->timeout)
-	{
-		msg_print("It whines, glows and fades...");
-		return FALSE;
-	}
 
 	/* Activate the artifact */
 	message(MSG_ACT_ARTIFACT, 0, "You activate it...");
@@ -2523,7 +2409,7 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 }
 
 
-bool use_object(object_type *o_ptr, bool *ident)
+bool use_object(object_type *o_ptr, bool *ident, int dir)
 {
 	bool used;
 
@@ -2556,13 +2442,13 @@ bool use_object(object_type *o_ptr, bool *ident)
 
 		case TV_WAND:
 		{
-			used = aim_wand(o_ptr, ident);
+			used = aim_wand(o_ptr, ident, dir);
 			break;
 		}
 
 		case TV_ROD:
 		{
-			used = zap_rod(o_ptr, ident);
+			used = zap_rod(o_ptr, ident, dir);
 			break;
 		}
 
