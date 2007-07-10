@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "effects.h"
 #include "cmds.h"
 
 
@@ -452,14 +453,54 @@ static bool describe_misc_magic(const object_type *o_ptr, u32b f3)
  */
 static bool describe_activation(const object_type *o_ptr, u32b f3)
 {
-	/* Check for the activation flag */
-	if (f3 & TR3_ACTIVATE)
-	{
-		p_text_out("It activates for ");
-		describe_item_activation(o_ptr);
-		text_out(".  ");
+	int effect = k_info[o_ptr->k_idx].effect;
+	char temp[] = "x";
 
-		return (TRUE);
+	/* Make sure we have an effect */
+	if (!k_info[o_ptr->k_idx].effect)
+	{
+		/* Check for the activation flag */
+		if (f3 & TR3_ACTIVATE)
+		{
+			p_text_out("It activates for ");
+			describe_item_activation(o_ptr);
+			text_out(".  ");
+
+			return (TRUE);
+		}
+	}
+	else
+	{
+		const char *desc = effect_desc(effect);
+		if (!desc) return FALSE;
+
+		text_out("When ");
+
+		if (f3 & TR3_ACTIVATE)
+			text_out("activated");
+		else if (effect_aim(effect))
+			text_out("aimed");
+		else if (o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION)
+			text_out("ingested");
+		else if (o_ptr->tval == TV_SCROLL)
+		    text_out("read");
+		else
+		    text_out("used");
+
+		text_out(", it ");
+
+		/* Print a colourised description */
+		do
+		{
+			temp[0] = *desc;
+
+			if (isdigit((unsigned char) *desc) || isdigit((unsigned char) *(desc + 1)))
+				text_out_c(TERM_L_GREEN, temp);
+			else
+				text_out(temp);
+		} while (*desc++);
+
+		text_out(".  ");
 	}
 
 	/* No activation */
@@ -487,7 +528,7 @@ bool object_info_out(const object_type *o_ptr)
 	{
 		p_text_out("It provides nourishment for about ");
 		text_out_c(TERM_L_GREEN, "%d", o_ptr->pval / 2);
-		text_out(" turns under normal conditions.");
+		text_out(" turns under normal conditions.  ");
 	}
 
 

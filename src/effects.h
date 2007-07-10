@@ -18,7 +18,9 @@
 
 
 /* Function */
-extern bool do_effect(object_type *o_ptr, bool *ident, int dir);
+bool do_effect(object_type *o_ptr, bool *ident, int dir);
+bool effect_aim(int effect);
+const char *effect_desc(int effect);
 
 
 /*
@@ -26,11 +28,11 @@ extern bool do_effect(object_type *o_ptr, bool *ident, int dir);
  * needless duplication of lists...
  */
 #if defined(LIST_STRINGS)
-# define START				const char *effect_list[] = {
+# define START				static const char *effect_list[] = {
 # define EFFECT(x, y, z)	#x,
 # define END				};
 #elif defined(MAKE_TABLE)
-# define START				info_entry effects[] = {
+# define START				static const info_entry effects[] = {
 # define EFFECT(x, y, z)	{ EF_##x, y, z },
 # define END				};
 #else
@@ -107,6 +109,10 @@ START
 
 	EFFECT(FOOD_GOOD,      FALSE, NULL)
 	EFFECT(FOOD_WAYBREAD,  FALSE, "restores 4d8 hit points and neutralizes poison")	
+	EFFECT(RING_ACID,      TRUE,  "grants acid resistance for d20+20 turns and creates an acid ball of damage 70")
+	EFFECT(RING_FLAMES,    TRUE,  "grants fire resistance for d20+20 turns and creates an fire ball of damage 80")
+	EFFECT(RING_ICE,       TRUE,  "grants cold resistance for d20+20 turns and creates an cold ball of damage 75")
+	EFFECT(RING_LIGHTNING, TRUE,  "grants electricity resistance for d20+20 turns and creates an lightning ball of damage 85")
 END
 
 #undef START

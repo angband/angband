@@ -1713,21 +1713,24 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 
 			case SV_DRAGON_MULTIHUED:
 			{
-				chance = rand_int(5);
-				sound(     ((chance == 1) ? MSG_BR_ELEC :
-				            ((chance == 2) ? MSG_BR_FROST :
-				             ((chance == 3) ? MSG_BR_ACID :
-				              ((chance == 4) ? MSG_BR_GAS : MSG_BR_FIRE)))));
-				msg_format("You breathe %s.",
-				           ((chance == 1) ? "lightning" :
-				            ((chance == 2) ? "frost" :
-				             ((chance == 3) ? "acid" :
-				              ((chance == 4) ? "poison gas" : "fire")))));
-				fire_ball(((chance == 1) ? GF_ELEC :
-				           ((chance == 2) ? GF_COLD :
-				            ((chance == 3) ? GF_ACID :
-				             ((chance == 4) ? GF_POIS : GF_FIRE)))),
-				          dir, 250, 2);
+				static const struct
+				{
+					int sound;
+					const char *msg;
+					int typ;
+				} mh[] =
+				{
+					{ MSG_BR_ELEC,  "lightning",  GF_ELEC },
+					{ MSG_BR_FROST, "frost",      GF_COLD },
+					{ MSG_BR_ACID,  "acid",       GF_ACID },
+					{ MSG_BR_GAS,   "poison gas", GF_POIS },
+					{ MSG_BR_FIRE,  "fire",       GF_FIRE }
+				};
+
+				chance = randint(5);
+				sound(mh[chance].sound);
+				msg_format("You breathe %s.", mh[chance].msg);
+				fire_ball(mh[chance].typ, dir, 250, 2);
 				o_ptr->timeout = rand_int(225) + 225;
 				break;
 			}
@@ -1817,55 +1820,6 @@ static bool activate_object(object_type *o_ptr, bool *ident)
 		return FALSE;
 	}
 
-	/* Hack -- some Rings can be activated for double resist and element ball */
-	if (o_ptr->tval == TV_RING)
-	{
-		/* Get a direction for firing (or abort) */
-		if (!get_aim_dir(&dir)) return FALSE;
-
-		/* Branch on the sub-type */
-		switch (o_ptr->sval)
-		{
-			case SV_RING_ACID:
-			{
-				fire_ball(GF_ACID, dir, 70, 2);
-				inc_timed(TMD_OPP_ACID, randint(20) + 20);
-				o_ptr->timeout = rand_int(50) + 50;
-				break;
-			}
-
-			case SV_RING_FLAMES:
-			{
-				fire_ball(GF_FIRE, dir, 80, 2);
-				inc_timed(TMD_OPP_FIRE, randint(20) + 20);
-				o_ptr->timeout = rand_int(50) + 50;
-				break;
-			}
-
-			case SV_RING_ICE:
-			{
-				fire_ball(GF_COLD, dir, 75, 2);
-				inc_timed(TMD_OPP_COLD, randint(20) + 20);
-				o_ptr->timeout = rand_int(50) + 50;
-				break;
-			}
-
-			case SV_RING_LIGHTNING:
-			{
-				fire_ball(GF_ELEC, dir, 85, 2);
-				inc_timed(TMD_OPP_ELEC, randint(20) + 20);
-				o_ptr->timeout = rand_int(50) + 50;
-				break;
-			}
-		}
-
-		/* Window stuff */
-		p_ptr->window |= (PW_EQUIP);
-
-		/* Success */
-		return FALSE;
-	}
-
 	/* Mistake */
 	msg_print("Oops.  That object cannot be activated.");
 
@@ -1926,7 +1880,11 @@ bool use_object(object_type *o_ptr, bool *ident, int dir)
 
 		default:
 		{
-			used = activate_object(o_ptr, ident);
+			if (artifact_p(o_ptr) || o_ptr->tval == TV_DRAG_ARMOR)
+				used = activate_object(o_ptr, ident);
+			else
+				used = do_effect(o_ptr, ident, dir);
+
 			break;
 		}
 	}
@@ -2029,31 +1987,7 @@ void describe_item_activation(const object_type *o_ptr)
 	/* Ring activations */
 	if (o_ptr->tval == TV_RING)
 	{
-		/* Branch on the sub-type */
-		switch (o_ptr->sval)
-		{
-			case SV_RING_ACID:
-			{
-				text_out("acid resistance (20+d20 turns) and acid ball (70) every 50+d50 turns");
-				break;
-			}
-			case SV_RING_FLAMES:
-			{
-				text_out("fire resistance (20+d20 turns) and fire ball (80) every 50+d50 turns");
-				break;
-			}
-			case SV_RING_ICE:
-			{
-				text_out("cold resistance (20+d20 turns) and cold ball (75) every 50+d50 turns");
-				break;
-			}
-
-			case SV_RING_LIGHTNING:
-			{
-				text_out("electricity resistance (20+d20 turns) and electricity ball (85) every 50+d50 turns");
-				break;
-			}
-		}
+		text_out(" every 50+d50 turns");
 
 		return;
 	}

@@ -18,7 +18,6 @@
 #include "angband.h"
 #include "effects.h"
 
-#if 0
 
 /*
  * Entries for spell/activation descriptions
@@ -37,7 +36,26 @@ typedef struct
 #include "effects.h"
 #undef MAKE_TABLE
 
-#endif
+
+/*
+ * Utility functions
+ */
+bool effect_aim(int effect)
+{
+	if (effect < 1 || effect > EF_MAX)
+		return FALSE;
+
+	return effects[effect].aim;
+}
+
+const char *effect_desc(int effect)
+{
+	if (effect < 1 || effect > EF_MAX)
+		return FALSE;
+
+	return effects[effect].desc;
+}
+
 
 
 
@@ -526,6 +544,37 @@ bool do_effect(object_type *o_ptr, bool *ident, int dir)
 			(void)clear_timed(TMD_POISONED);
 			(void)hp_player(damroll(4, 8));
 			*ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_RING_ACID:
+		{
+			fire_ball(GF_ACID, dir, 70, 2);
+			inc_timed(TMD_OPP_ACID, randint(20) + 20);
+			return TRUE;
+		}
+
+		case EF_RING_FLAMES:
+		{
+			fire_ball(GF_FIRE, dir, 80, 2);
+			inc_timed(TMD_OPP_FIRE, randint(20) + 20);
+			o_ptr->timeout = rand_int(50) + 50;
+			return TRUE;
+		}
+
+		case EF_RING_ICE:
+		{
+			fire_ball(GF_COLD, dir, 75, 2);
+			inc_timed(TMD_OPP_COLD, randint(20) + 20);
+			o_ptr->timeout = rand_int(50) + 50;
+			return TRUE;
+		}
+
+		case EF_RING_LIGHTNING:
+		{
+			fire_ball(GF_ELEC, dir, 85, 2);
+			inc_timed(TMD_OPP_ELEC, randint(20) + 20);
+			o_ptr->timeout = rand_int(50) + 50;
 			return TRUE;
 		}
 	}
