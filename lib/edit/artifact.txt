@@ -1571,7 +1571,7 @@ W:30:15:170:21000
 P:0:2d8:4:3:0
 F:STR | DEX | HIDE_TYPE | 
 F:SLAY_TROLL | SLAY_ORC | ACTIVATE | SHOW_MODS
-A:CW_SERIOUS:3+d3
+A:CURE_SERIOUS:3+d3
 M:Your Battle Axe radiates deep purple...
 D:A superbly crafted double-bladed axe once borne by Ceruthain, commander 
 D:of the Rangers of Arnor.
