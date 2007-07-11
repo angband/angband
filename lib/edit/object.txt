@@ -254,7 +254,7 @@ I:80:16:500
 W:15:0:1:75
 A:15/1
 F:EASY_KNOW
-E:CW_SERIOUS
+E:CURE_SERIOUS
 
 
 ##### Normal Food #####
@@ -1802,34 +1802,25 @@ N:222:Slime Mold Juice
 G:!:d
 I:75:2:400
 W:0:0:4:2
-A:0/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It has no effect apart from providing nourishment (for about 200 turns
-D: under normal conditions).
-D:  Note: These are always Icky Green Potions.
+E:DRINK_GOOD
 
 N:223:Apple Juice
 G:!:d
 I:75:1:250
 W:0:0:4:1
-A:0/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It has no effect apart from providing nourishment (for about 125 turns
-D: under normal conditions).
-D:  Note: These are always Light Brown Potions.
+E:DRINK_GOOD
 
 N:224:Water
 G:!:d
 I:75:0:200
 W:0:0:4:1
-A:0/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It has no effect apart from providing nourishment (for about 100 turns
-D: under normal conditions).
-D:  Note: These are always Clear Potions.
+E:DRINK_GOOD
 
 N:225:Strength
 G:!:d
@@ -1838,8 +1829,7 @@ W:30:0:4:8000
 A:30/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It first acts as a Potion of Restore Strength, then permanently
-D: increases strength.
+E:GAIN_STR
 
 N:226:Weakness
 G:!:d
@@ -1848,7 +1838,7 @@ W:3:0:4:0
 A:3/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It reduces strength (unless you have sustain strength).
+E:LOSE_STR
 
 N:227:Restore Strength
 G:!:d
@@ -1857,7 +1847,7 @@ W:25:0:4:300
 A:25/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It restores strength to maximum if it is currently below maximum.
+E:RESTORE_STR
 
 N:228:Intelligence
 G:!:d
@@ -1866,8 +1856,7 @@ W:30:0:4:8000
 A:30/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It first acts as a Potion of Restore Intelligence, then permanently
-D: increases intelligence.
+E:GAIN_INT
 
 N:229:Stupidity
 G:!:d
@@ -1876,7 +1865,7 @@ W:20:0:4:0
 A:20/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It reduces intelligence (unless you have sustain intelligence).
+E:LOSE_INT
 
 N:230:Restore Intelligence
 G:!:d
@@ -1885,7 +1874,7 @@ W:25:0:4:300
 A:25/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It restores intelligence to maximum if it is currently below maximum.
+E:RESTORE_INT
 
 N:231:Wisdom
 G:!:d
@@ -1894,8 +1883,7 @@ W:30:0:4:8000
 A:30/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It first acts as a Potion of Restore Wisdom, then permanently
-D: increases wisdom.
+E:GAIN_WIS
 
 N:232:Naivety
 G:!:d
@@ -1904,7 +1892,7 @@ W:20:0:4:0
 A:20/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It reduces wisdom (unless you have sustain wisdom).
+E:LOSE_WIS
 
 N:233:Restore Wisdom
 G:!:d
@@ -1913,7 +1901,7 @@ W:25:0:4:300
 A:25/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It restores wisdom to maximum if it is currently below maximum.
+E:RESTORE_WIS
 
 N:234:Charisma
 G:!:d
@@ -1922,8 +1910,7 @@ W:20:0:4:1000
 A:20/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It first acts as a Potion of Restore Charisma, then permanently
-D: increases charisma.
+E:GAIN_CHR
 
 N:235:Ugliness
 G:!:d
@@ -1932,7 +1919,7 @@ W:20:0:4:0
 A:20/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It reduces charisma (unless you have sustain charisma).
+E:LOSE_CHR
 
 N:236:Restore Charisma
 G:!:d
@@ -1941,7 +1928,7 @@ W:20:0:4:300
 A:20/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It restores charisma to maximum if it is currently below maximum.
+E:RESTORE_CHR
 
 N:237:Cure Light Wounds
 G:!:d
@@ -1950,10 +1937,7 @@ W:0:0:4:15
 A:0/1:1/1:3/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It cures 2d8 points of damage, heals 10 points worth of cuts, and
-D: cures blindness.
-D:  It also provides nourishment for about 25 turns under normal
-D: conditions.
+E:CURE_LIGHT
 
 N:238:Clumsiness
 G:!:d
@@ -1962,7 +1946,7 @@ W:5:0:4:0
 A:5/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It reduces dexterity (unless you have sustain dexterity).
+E:LOSE_DEX
 
 N:239:Sickliness
 G:!:d
@@ -1971,7 +1955,7 @@ W:10:0:4:0
 A:10/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It reduces constitution (unless you have sustain constitution).
+E:LOSE_CON
 
 N:240:Cure Serious Wounds
 G:!:d
@@ -1980,10 +1964,7 @@ W:3:0:4:40
 A:3/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It cures 4d8 points of damage, heals half of all cut damage plus
-D: another 50 points, and cures blindness and confusion.
-D:  It also provides nourishment for about 50 turns under normal
-D: conditions.
+E:CURE_SERIOUS
 
 N:241:Cure Critical Wounds
 G:!:d
@@ -1992,10 +1973,7 @@ W:5:0:4:100
 A:5/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It cures 6d8 points of damage, cures all stunning, heals all cut
-D: damage, neutralizes poison, and cures blindness and confusion.
-D:  It also provides nourishment for about 50 turns under normal
-D: conditions.
+E:CURE_CRITICAL
 
 N:242:Healing
 G:!:d
@@ -2004,10 +1982,7 @@ W:15:0:4:300
 A:15/1:60/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It cures 300 points of damage, cures all stunning, heals all cut
-D: damage, neutralizes poison, and cures blindness and confusion.
-D:  It also provides nourishment for about 100 turns under normal
-D: conditions.
+E:CURE_FULL
 
 N:243:Constitution
 G:!:d
@@ -2016,8 +1991,7 @@ W:30:0:4:8000
 A:30/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It first acts as a Potion of Restore Constitution, then permanently
-D: increases constitution.
+E:GAIN_CON
 
 N:244:Experience
 G:!:d
@@ -2026,8 +2000,7 @@ W:65:0:4:25000
 A:65/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It grants either 100000 experience points or half the current
-D: experience point total plus 10, whichever is less.
+E:GAIN_EXP
 
 N:245:Sleep
 G:!:d
@@ -2036,9 +2009,7 @@ W:0:0:4:0
 A:0/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It induces paralyzation for 3+1d4 turns, unless you have free action.
-D:  It also provides nourishment for about 50 turns under normal
-D: conditions.
+E:PARALYZE
 
 N:246:Blindness
 G:!:d
@@ -2047,8 +2018,7 @@ W:0:0:4:0
 A:0/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It induces blindness for 99+1d100 turns, unless you have resistance to
-D: blindness.
+E:BLIND
 
 N:247:Confusion
 G:!:d
@@ -2057,10 +2027,7 @@ W:0:0:4:0
 A:0/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It induces confusion for 14+1d20 turns, unless you have resistance to
-D: confusion.
-D:  It also provides nourishment for about 25 turns under normal
-D: conditions.
+E:CONFUSE
 
 N:248:Poison
 G:!:d
@@ -2069,8 +2036,7 @@ W:3:0:4:0
 A:3/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It poisons you (adding 9+1d15 points to the poison counter), unless
-D: you have resistance to poison.
+E:POISON
 
 N:249:Speed
 G:!:d
@@ -2079,9 +2045,7 @@ W:1:0:4:75
 A:1/1:40/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It hastes you (+10 to speed) for 15+1d25 turns (or 5 additional turns
-D: if you already are under the effect of a temporary haste
-D: enchantment).
+E:HASTE
 
 N:250:Slowness
 G:!:d
@@ -2090,10 +2054,7 @@ W:1:0:4:0
 A:1/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It slows you down (-10 to speed) for 15+1d25 turns; this duration is
-D: cumulative with other temporary slowing enchantments.
-D:  It also provides nourishment for about 25 turns under normal
-D: conditions.
+E:SLOW
 
 N:251:Dexterity
 G:!:d
@@ -2102,8 +2063,7 @@ W:30:0:4:8000
 A:30/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It first acts as a Potion of Restore Dexterity, then permanently
-D: increases dexterity.
+E:GAIN_DEX
 
 N:252:Restore Dexterity
 G:!:d
@@ -2112,7 +2072,7 @@ W:25:0:4:300
 A:25/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It restores dexterity to maximum if it is currently below maximum.
+E:RESTORE_DEX
 
 N:253:Restore Constitution
 G:!:d
@@ -2121,7 +2081,7 @@ W:25:0:4:300
 A:25/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It restores constution to maximum if it is currently below maximum.
+E:RESTORE_CON
 
 N:254:Lose Memories
 G:!:d
@@ -2130,7 +2090,7 @@ W:10:0:4:0
 A:10/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It drains 25% of your experience total, unless you have hold life.
+E:LOSE_EXP
 
 N:255:Salt Water
 G:!:d
@@ -2139,10 +2099,7 @@ W:0:0:4:0
 A:0/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It induces vomiting, which will result in severe hunger but will also
-D: clear away all poison.
-D:  This will also cause 4 turns of paralysis, even if you have free
-D: action.
+E:DRINK_SALT
 
 N:256:Enlightenment
 G:!:d
@@ -2151,7 +2108,7 @@ W:25:0:4:800
 A:25/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It completely lights up and magically maps the current dungeon level.
+E:ENLIGHTENMENT
 
 N:257:Heroism
 G:!:d
@@ -2160,8 +2117,7 @@ W:1:0:4:35
 A:1/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It cures 10 points of damage, removes fear and grants you heroism
-D: (resistance to fear, and a bonus of +12 to-hit) for 25+1d25 turns.
+E:HERO
 
 N:258:Berserk Strength
 G:!:d
@@ -2170,9 +2126,7 @@ W:3:0:4:100
 A:3/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It cures 30 points of damage, removes fear and grants you berserk
-D: strength (resistance to fear, a bonus of +12 to-hit, and a penalty of
-D: -10 to AC) for 25+1d25 turns.
+E:SHERO
 
 N:259:Boldness
 G:!:d
@@ -2181,7 +2135,7 @@ W:1:0:4:10
 A:1/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It removes fear.
+E:CURE_PARANOIA
 
 N:260:Restore Life Levels
 G:!:d
@@ -2190,7 +2144,7 @@ W:40:0:4:400
 A:40/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It restores experience to maximum if it is currently below maximum.
+E:RESTORE_EXP
 
 N:261:Resist Heat
 G:!:d
@@ -2199,10 +2153,7 @@ W:1:0:4:30
 A:1/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It grants you temporary resistance to fire for 10+1d10 turns.
-D:  Temporary resistance is cumulative with permanent resistance, if one
-D: of your equipped items provides that.  The duration is cumulative
-D: with other magic providing temporary fire resistance.
+E:RESIST_FIRE
 
 N:262:Resist Cold
 G:!:d
@@ -2211,19 +2162,16 @@ W:1:0:4:30
 A:1/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It grants you temporary resistance to cold for 10+1d10 turns.
-D:  Temporary resistance is cumulative with permanent resistance, if one
-D: of your equipped items provides that.  The duration is cumulative
-D: with other magic providing temporary cold resistance.
+E:RESIST_COLD
 
-N:263:Detect Invisible
+N:263:See Invisible
 G:!:d
 I:75:25:0
 W:3:0:4:50
 A:3/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It enables you to see invisible creatures for 12+1d12 turns.
+E:TMD_SINVIS
 
 N:264:Slow Poison
 G:!:d
@@ -2232,7 +2180,7 @@ W:1:0:4:25
 A:1/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It halves the severity of any current poisoning.
+E:CURE_POISON2
 
 N:265:Neutralize Poison
 G:!:d
@@ -2241,7 +2189,7 @@ W:5:0:4:75
 A:5/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It neutralizes poison.
+E:CURE_POISON
 
 N:266:Restore Mana
 G:!:d
@@ -2250,8 +2198,7 @@ W:25:0:4:350
 A:25/1:70/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It restores mana points to maximum if they are currently below
-D: maximum.
+E:RESTORE_MANA
 
 N:267:Infravision
 G:!:d
@@ -2260,8 +2207,7 @@ W:3:0:4:20
 A:3/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It extends the radius of your infravision by 50 feet for 100+1d100
-D: turns.
+E:TMD_INFRA
 
 ## XXX 268 XXX ##
 
@@ -3651,9 +3597,7 @@ W:55:0:4:0
 A:55/4
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It inflicts 5000 points of damage.
-D:  Death can only be avoided if you have magical invulnerability, which
-D: just happens to be unavailable in the current version of Angband.
+E:DRINK_DEATH
 
 N:416:Ruination
 G:!:d
@@ -3662,8 +3606,7 @@ W:40:0:4:0
 A:40/8
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It inflicts 10d10 points of damage and permanently decreases all stats
-D: (even if you have stat sustains).
+E:DRINK_RUIN
 
 N:417:Detonations
 G:!:d
@@ -3672,10 +3615,7 @@ W:60:0:4:10000
 A:60/8
 P:0:25d25:0:0:0
 F:EASY_KNOW
-D:It inflicts 50d20 points of damage from massive explosions, severe
-D: cuts (+5000 to the cut counter), and stunning (+75 to the stun
-D: counter).
-D:  It can also be thrown for 25d25 points of damage.
+E:DRINK_DETONATE
 
 N:418:Augmentation
 G:!:d
@@ -3684,8 +3624,7 @@ W:40:0:4:60000
 A:40/16
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It first restores to maximum any stats below maximum, then permanently
-D: increases all stats.
+E:GAIN_ALL
 
 N:419:*Healing*
 G:!:d
@@ -3694,8 +3633,7 @@ W:40:0:4:1500
 A:40/4:80/2
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It cures 1200 points of damage, cures all stunning, heals all cut
-D: damage, neutralizes poison, and cures blindness and confusion.
+E:CURE_FULL2
 
 N:420:Life
 G:!:d
@@ -3704,9 +3642,7 @@ W:60:0:4:5000
 A:60/4:100/4
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It restores experience and all stats to maximum, cures 5000 points of
-D: damage, cures all stunning, heals all cut damage, neutralizes poison,
-D: stops hallucination, and cures blindness and confusion.
+E:CURE_NONORLYBIG
 
 N:421:Self Knowledge
 G:!:d
@@ -3715,8 +3651,7 @@ W:40:0:4:2000
 A:40/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It grants knowledge of all special powers (whether intrinsic,
-D: temporary, or provided by a magical item) that you currently possess.
+E:SELF_KNOW
 
 N:422:*Enlightenment*
 G:!:d
@@ -3725,10 +3660,7 @@ W:70:0:4:80000
 A:70/4
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It has the powers of the Potions of Enlightenment, Intelligence,
-D: Wisdom, and Self Knowledge; also identifies all items you are
-D: carrying, and detects all treasure, objects, secret doors, stairs,
-D: and traps in the immediate area.
+E:ENLIGHTENMENT2
 
 ##### Items 423 to 430 are new amulets thought up by JLE #####
 

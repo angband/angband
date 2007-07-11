@@ -157,7 +157,7 @@ static bool describe_slay(const object_type *o_ptr, u32b f1)
 {
 	cptr slays[8], execs[3];
 	int slcnt = 0, excnt = 0;
-	bool prev;
+	bool prev = FALSE;
 
 	/* Unused parameter */
 	(void)o_ptr;
@@ -492,7 +492,7 @@ static bool describe_activation(const object_type *o_ptr, u32b f3)
 		const char *desc = effect_desc(effect);
 		if (!desc) return FALSE;
 
-		text_out("When ");
+		p_text_out("When ");
 
 		if (f3 & TR3_ACTIVATE)
 			text_out("activated");
@@ -563,7 +563,8 @@ bool object_info_out(const object_type *o_ptr)
 	new_paragraph = TRUE;
 
 	/* Describe boring bits */
-	if (o_ptr->tval == TV_FOOD)
+	if ((o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION) &&
+		o_ptr->pval)
 	{
 		p_text_out("It provides nourishment for about ");
 		text_out_c(TERM_L_GREEN, "%d", o_ptr->pval / 2);

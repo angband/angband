@@ -18,7 +18,7 @@
 
 
 /* Function */
-bool do_effect(object_type *o_ptr, bool *ident, int dir);
+bool do_effect(int effect, bool *ident, int dir);
 bool effect_aim(int effect);
 const char *effect_desc(int effect);
 
@@ -43,26 +43,69 @@ const char *effect_desc(int effect);
 
 START
 	EFFECT(XXX,            FALSE, NULL)
-	EFFECT(POISON,         FALSE, "poisons you for 1d10+10 turns")
-	EFFECT(BLIND,          FALSE, "blinds you for 1d200+200 turns")
+	EFFECT(POISON,         FALSE, "poisons you for 2d7+10 turns")
+	EFFECT(BLIND,          FALSE, "blinds you for 4d25+75 turns")
 	EFFECT(SCARE,          FALSE, "induces fear in you for 1d10+10 turns")
-	EFFECT(CONFUSE,        FALSE, "confuses you for ")
+	EFFECT(CONFUSE,        FALSE, "confuses you for 4d5+10 turns")
 	EFFECT(HALLUC,         FALSE, "causes you to hallucinate")
-	EFFECT(PARALYZE,       FALSE, "induces paralysis for 1d10+10 turns")
-	EFFECT(LOSE_STR,       FALSE, "reduces your strength with damage 6d6")
-	EFFECT(LOSE_STR2,      FALSE, "reduces your strength with damage 10d10")
-	EFFECT(LOSE_CON,       FALSE, "reduces your constitution with damage 6d6")
-	EFFECT(LOSE_CON2,      FALSE, "reduces your constitution with damage 10d10")
-	EFFECT(LOSE_INT,       FALSE, "reduces your intelligence with damage 8d8")
-	EFFECT(LOSE_WIS,       FALSE, "reduces your wisdom with damage 8d8")
+	EFFECT(PARALYZE,       FALSE, "induces paralysis for 1d5+5 turns")
+	EFFECT(SLOW,           FALSE, "slows you for 1d25+15 turns")
+
 	EFFECT(CURE_POISON,    FALSE, "neutralizes poison")
+	EFFECT(CURE_POISON2,   FALSE, "halves the severity of any poisoning")
 	EFFECT(CURE_BLINDNESS, FALSE, "cures blindness")
 	EFFECT(CURE_PARANOIA,  FALSE, "removes your fear")
 	EFFECT(CURE_CONFUSION, FALSE, "cures confusion")
-	EFFECT(CW_SERIOUS,     FALSE, "restores 4d8 hit points")
+
+	EFFECT(CURE_LIGHT,     FALSE, "restores 2d8 hit points, heals some cut damage and cures blindness")
+	EFFECT(CURE_SERIOUS,   FALSE, "restores 4d8 hit points, heals some cut damage and cures blindness and confusion")
+	EFFECT(CURE_CRITICAL,  FALSE, "restores 6d8 hit points, heals cut damage, and cures poison, blindness, and confusion")
+	EFFECT(CURE_FULL,      FALSE, "restores 300 hit points, heals cut damage, and cures stunning, poison, blindness, and confusion")
+	EFFECT(CURE_FULL2,     FALSE, "restores 1200 hit points, heals cut damage, and cures stunning, poison, blindness, and confusion")
+	EFFECT(CURE_NONORLYBIG,FALSE, "restores 5000 hit points, restores experience and stats, heals cut damage, and cures stunning, poison, blindness, and confusion")
+
+	EFFECT(GAIN_EXP,       FALSE, "grants either 100000 experience points or half the current experience point total plus 10, whichever is less")
+	EFFECT(LOSE_EXP,       FALSE, "drains a quarter of your experience")
+	EFFECT(RESTORE_EXP,    FALSE, "restores your experience")
+
+	EFFECT(RESTORE_MANA,   FALSE, "restores your mana points to maximum")
+
+	EFFECT(GAIN_STR,       FALSE, "restores and increases your strength")
+	EFFECT(GAIN_INT,       FALSE, "restores and increases your intelligence")
+	EFFECT(GAIN_WIS,       FALSE, "restores and increases your wisdom")
+	EFFECT(GAIN_DEX,       FALSE, "restores and increases your dexterity")
+	EFFECT(GAIN_CON,       FALSE, "restores and increases your constitution")
+	EFFECT(GAIN_CHR,       FALSE, "restores and increases your charisma")
+	EFFECT(GAIN_ALL,       FALSE, "restores and increases all your stats")
+	EFFECT(LOSE_STR,       FALSE, "reduces your strength with damage 5d5")
+	EFFECT(LOSE_INT,       FALSE, "reduces your intelligence with damage 5d5")
+	EFFECT(LOSE_WIS,       FALSE, "reduces your wisdom with damage 5d5")
+	EFFECT(LOSE_DEX,       FALSE, "reduces your dexterity with damage 5d5")
+	EFFECT(LOSE_CON,       FALSE, "reduces your constitution with damage 5d5")
+	EFFECT(LOSE_CHR,       FALSE, "reduces your intelligence with damage 5d5")
+	EFFECT(LOSE_STR2,      FALSE, "reduces your strength with damage 10d10")
+	EFFECT(LOSE_CON2,      FALSE, "reduces your constitution with damage 10d10")
 	EFFECT(RESTORE_STR,    FALSE, "restores your strength")
+	EFFECT(RESTORE_INT,    FALSE, "restores your intelligence")
+	EFFECT(RESTORE_WIS,    FALSE, "restores your wisdom")
+	EFFECT(RESTORE_DEX,    FALSE, "restores your dexterity")
 	EFFECT(RESTORE_CON,    FALSE, "restores your constitution")
+	EFFECT(RESTORE_CHR,    FALSE, "restores your charisma")
 	EFFECT(RESTORE_ALL,    FALSE, "restores all your stats")
+
+	EFFECT(TMD_INFRA,      FALSE, "extends your infravision by 50 feet for 4d25+100 turns")
+	EFFECT(TMD_SINVIS,     FALSE, "allows you to see invisible things for 2d6+12 turns")
+
+	EFFECT(ENLIGHTENMENT,  FALSE, "completely lights up and magically maps the level")
+	EFFECT(ENLIGHTENMENT2, FALSE, "increases your intelligence and wisdom, detects and maps everything in the surrounding area, and identifies all items in your pack")
+	EFFECT(SELF_KNOW,      FALSE, "grants knowledge of all special powers that you currently possess")
+
+	EFFECT(HERO,           FALSE, "restores 10 hit points, removes fear and grants you resistance to fear and +12 to-hit for 1d25+25 turns")
+	EFFECT(SHERO,          FALSE, "restores 30 hit points, removes fear and grants you resistance to fear, +12 to-hit, and -10AC for 1d25+25 turns")
+
+	EFFECT(RESIST_FIRE,    FALSE, "grants you temporary resistance to fire for 1d10+10 turns")
+	EFFECT(RESIST_COLD,    FALSE, "grants you temporary resistance to cold for 1d10+10 turns")
+	EFFECT(RESIST_ALL,     FALSE, "grants resistance to everything!!!")
 
 	EFFECT(ENCHANT_TOHIT,  FALSE, "attempts to magically enhance a weapon's to-hit bonus")
 	EFFECT(ENCHANT_TODAM,  FALSE, "attempts to magically enhance a weapon's to-dam bonus")
@@ -112,6 +155,7 @@ START
 	EFFECT(DISP_EVIL,      FALSE, "dispels evil creatures")
 	EFFECT(HEAL1,          FALSE, "heals 500 hit points")
 	EFFECT(HEAL2,          FALSE, "heals 1000 hit points")
+	EFFECT(HASTE,          FALSE, "hastens you for d25+15 turns")
 	EFFECT(HASTE1,         FALSE, "hastens you for d20+20 turns")
 	EFFECT(HASTE2,         FALSE, "hastens you for d75+75 turns")
 	EFFECT(FIRE1,          TRUE,  "creates a fire bolt with damage 9d8")
@@ -132,7 +176,6 @@ START
 	EFFECT(STAR_BALL,      FALSE, "fires a ball of electricity in all directions, each one causing 150 damage")
 	EFFECT(RAGE_BLESS_RESIST, FALSE, "beserk rage, bless, and resistance")
 	EFFECT(DETECT_ALL,     FALSE, "detects XXX")
-	EFFECT(RESIST_ALL,     FALSE, "grants resistance to everything!!!")
 	EFFECT(RESTORE_LIFE,   FALSE, "restores your experience to full")
 	EFFECT(MISSILE,        TRUE,  "fires a magic missile with damage 2d6")
 	EFFECT(ARROW,          TRUE,  "fires a magical arrow with damage 150")
@@ -147,7 +190,11 @@ START
 	EFFECT(MANA_BOLT,      TRUE,  "fires a mana bolt with damage 12d8")
 	EFFECT(BERSERKER,      FALSE, "puts you in a berserker rage for d50+50 turns")
 
-
+	EFFECT(DRINK_GOOD,     FALSE, NULL)
+	EFFECT(DRINK_SALT,     FALSE, "induces vomiting and paralysis for 4 turns, resulting in severe hunger but also curing poison")
+	EFFECT(DRINK_DEATH,    FALSE, "inflicts 5000 points of damage")
+	EFFECT(DRINK_RUIN,     FALSE, "inflicts 10d10 points of damage and decreases all your stats")
+	EFFECT(DRINK_DETONATE, FALSE, "inflicts 50d20 points of damage, severe cuts, and stunning")
 	EFFECT(FOOD_GOOD,      FALSE, NULL)
 	EFFECT(FOOD_WAYBREAD,  FALSE, "restores 4d8 hit points and neutralizes poison")	
 	EFFECT(RING_ACID,      TRUE,  "grants acid resistance for d20+20 turns and creates an acid ball of damage 70")

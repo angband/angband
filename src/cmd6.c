@@ -17,6 +17,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "effects.h"
 #include "script.h"
 
 /* Types of item use */
@@ -184,6 +185,7 @@ static void do_cmd_use(const char *q, const char *s, int flag, int snd, use_type
 {
 	int item;
 	object_type *o_ptr;
+	int effect;
 	bool ident = FALSE, used;
 	int dir = 5;
 
@@ -195,8 +197,15 @@ static void do_cmd_use(const char *q, const char *s, int flag, int snd, use_type
 	if (item >= 0) o_ptr = &inventory[item];
 	else o_ptr = &o_list[0 - item];
 
+	/* Figure out effect to use */
+	if (o_ptr->name1)
+		effect = a_info[o_ptr->name1].effect;
+	else
+		effect = k_info[o_ptr->k_idx].effect;
+
 	/* If the item requires a direction, get one (allow cancelling) */
-	if ((o_ptr->tval == TV_WAND) || 
+	if (effect_aim(effect) ||
+	    (o_ptr->tval == TV_WAND) ||
 	    (o_ptr->tval == TV_ROD && (o_ptr->sval >= SV_ROD_MIN_DIRECTION || !object_aware_p(o_ptr))))
 	{
 		/* Get a direction, allow cancel */
@@ -214,11 +223,34 @@ static void do_cmd_use(const char *q, const char *s, int flag, int snd, use_type
 			return;
 	}
 
-	/* Make a noise! */
-	sound(snd);
+	/* Special message for artifacts */
+	if (artifact_p(o_ptr))
+	{
+		message(snd, 0, "You activate it.");
+		msg_print(a_text + a_info[o_ptr->name1].effect_msg);
+	}
+	else
+	{
+		/* Make a noise! */
+		sound(snd);
+	}
 
 	/* Use the object */
-	used = use_object(o_ptr, &ident, dir);
+	if (effect)
+	{
+		/* Do effect */
+        used = do_effect(effect, &ident, dir);
+
+		/* Food feeds the player */
+		if (o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION)
+			(void)set_food(p_ptr->food + o_ptr->pval);
+	}
+	else
+	{
+		/* Use the more prosaic method */
+		used = use_object(o_ptr, &ident, dir);
+	}
+
 	if (!used && !ident) return;
 
 	/* Mark as tried and redisplay */
@@ -388,5 +420,5 @@ void do_cmd_activate(void)
 	item_tester_hook = item_tester_hook_activate;
 
 	/* Use the object */
-	do_cmd_use("Activate which item? ", "You have nothing to activate.", USE_EQUIP, MSG_GENERIC, USE_TIMEOUT);
+	do_cmd_use("Activate which item? ", "You have nothing to activate.", USE_EQUIP, MSG_ACT_ARTIFACT, USE_TIMEOUT);
 }

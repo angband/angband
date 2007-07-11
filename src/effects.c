@@ -58,18 +58,19 @@ const char *effect_desc(int effect)
 
 
 
-
 /*
  * Do an effect, given an object.
  */
-bool do_effect(object_type *o_ptr, bool *ident, int dir)
+bool do_effect(int effect, bool *ident, int dir)
 {
-	effect_type effect = k_info[o_ptr->k_idx].effect;
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	if (o_ptr->name1)
-		effect = a_info[o_ptr->name1].effect;
+	if (effect < 1 || effect > EF_MAX)
+	{
+		msg_print("Bad effect passed to do_effect().  Please report this bug.");
+		return FALSE;
+	}
 
 	switch (effect)
 	{
@@ -77,7 +78,7 @@ bool do_effect(object_type *o_ptr, bool *ident, int dir)
 		{
 			if (!(p_ptr->resist_pois || p_ptr->timed[TMD_OPP_POIS]))
 			{
-				if (inc_timed(TMD_POISONED, rand_int(10) + 10))
+				if (inc_timed(TMD_POISONED, damroll(2, 7) + 10))
 					*ident = TRUE;
 			}
 
@@ -86,7 +87,7 @@ bool do_effect(object_type *o_ptr, bool *ident, int dir)
 
 		case EF_BLIND:
 		{
-			if (!p_ptr->resist_blind && inc_timed(TMD_BLIND, rand_int(200) + 200))
+			if (!p_ptr->resist_blind && inc_timed(TMD_BLIND, damroll(4, 25) + 75))
 				*ident = TRUE;
 
 			return TRUE;
@@ -102,7 +103,7 @@ bool do_effect(object_type *o_ptr, bool *ident, int dir)
 
 		case EF_CONFUSE:
 		{
-			if (!p_ptr->resist_confu && inc_timed(TMD_CONFUSED, rand_int(10) + 10))
+			if (!p_ptr->resist_confu && inc_timed(TMD_CONFUSED, damroll(4, 5) + 10))
 				*ident = TRUE;
 
 			return TRUE;
@@ -118,69 +119,27 @@ bool do_effect(object_type *o_ptr, bool *ident, int dir)
 
 		case EF_PARALYZE:
 		{
-			if (!p_ptr->free_act && inc_timed(TMD_PARALYZED, rand_int(10) + 10))
+			if (!p_ptr->free_act && inc_timed(TMD_PARALYZED, rand_int(5) + 5))
 				*ident = TRUE;
 
 			return TRUE;
 		}
 
-		case EF_LOSE_STR:
+		case EF_SLOW:
 		{
-			take_hit(damroll(6, 6), "poisonous food");
-			(void)do_dec_stat(A_STR);
-			*ident = TRUE;
-
-			return TRUE;
-		}
-
-		case EF_LOSE_STR2:
-		{
-			take_hit(damroll(10, 10), "poisonous food");
-			(void)do_dec_stat(A_STR);
-			*ident = TRUE;
-
-			return TRUE;
-		}
-
-		case EF_LOSE_CON:
-		{
-			take_hit(damroll(6, 6), "poisonous food");
-			(void)do_dec_stat(A_CON);
-			*ident = TRUE;
-
-			return TRUE;
-		}
-
-		case EF_LOSE_CON2:
-		{
-			take_hit(damroll(10, 10), "poisonous food");
-			(void)do_dec_stat(A_CON);
-			*ident = TRUE;
-
-			return TRUE;
-		}
-
-		case EF_LOSE_INT:
-		{
-			take_hit(damroll(8, 8), "poisonous food");
-			(void)do_dec_stat(A_INT);
-			*ident = TRUE;
-
-			return TRUE;
-		}
-
-		case EF_LOSE_WIS:
-		{
-			take_hit(damroll(8, 8), "poisonous food");
-			(void)do_dec_stat(A_WIS);
-			*ident = TRUE;
-
-			return TRUE;
+			if (inc_timed(TMD_SLOW, randint(25) + 15)) *ident = TRUE;
+			break;
 		}
 
 		case EF_CURE_POISON:
 		{
 			if (clear_timed(TMD_POISONED)) *ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_CURE_POISON2:
+		{
+			if (set_timed(TMD_POISONED, p_ptr->timed[TMD_POISONED] / 2)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -202,23 +161,194 @@ bool do_effect(object_type *o_ptr, bool *ident, int dir)
 			return TRUE;
 		}
 
-		case EF_CW_SERIOUS:
+		case EF_CURE_LIGHT:
+		{
+			if (hp_player(damroll(2, 8))) *ident = TRUE;
+			if (clear_timed(TMD_BLIND)) *ident = TRUE;
+			if (dec_timed(TMD_CUT, 10)) *ident = TRUE;
+			break;
+		}
+
+		case EF_CURE_SERIOUS:
 		{
 			if (hp_player(damroll(4, 8))) *ident = TRUE;
 			if (set_timed(TMD_CUT, (p_ptr->timed[TMD_CUT] / 2) - 50)) *ident = TRUE;
+			if (clear_timed(TMD_BLIND)) *ident = TRUE;
+			if (clear_timed(TMD_CONFUSED)) *ident = TRUE;
+
+			return TRUE;
+		}
+
+		case EF_CURE_CRITICAL:
+		{
+			if (hp_player(damroll(6, 8))) *ident = TRUE;
+			if (clear_timed(TMD_BLIND)) *ident = TRUE;
+			if (clear_timed(TMD_CONFUSED)) *ident = TRUE;
+			if (clear_timed(TMD_POISONED)) *ident = TRUE;
+			if (clear_timed(TMD_STUN)) *ident = TRUE;
+			if (clear_timed(TMD_CUT)) *ident = TRUE;
+			if (clear_timed(TMD_AMNESIA)) *ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_CURE_FULL:
+		{
+			if (hp_player(300)) *ident = TRUE;
+			if (clear_timed(TMD_BLIND)) *ident = TRUE;
+			if (clear_timed(TMD_CONFUSED)) *ident = TRUE;
+			if (clear_timed(TMD_POISONED)) *ident = TRUE;
+			if (clear_timed(TMD_STUN)) *ident = TRUE;
+			if (clear_timed(TMD_CUT)) *ident = TRUE;
+			if (clear_timed(TMD_AMNESIA)) *ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_CURE_FULL2:
+		{
+			if (hp_player(1200)) *ident = TRUE;
+			if (clear_timed(TMD_BLIND)) *ident = TRUE;
+			if (clear_timed(TMD_CONFUSED)) *ident = TRUE;
+			if (clear_timed(TMD_POISONED)) *ident = TRUE;
+			if (clear_timed(TMD_STUN)) *ident = TRUE;
+			if (clear_timed(TMD_CUT)) *ident = TRUE;
+			if (clear_timed(TMD_AMNESIA)) *ident = TRUE;
+			return TRUE;
+		}
+
+
+		case EF_GAIN_EXP:
+		{
+			if (p_ptr->exp < PY_MAX_EXP)
+			{
+				s32b ee = (p_ptr->exp / 2) + 10;
+				if (ee > 100000L) ee = 100000L;
+				msg_print("You feel more experienced.");
+				gain_exp(ee);
+				*ident = TRUE;
+			}
+			return TRUE;
+		}
+
+		case EF_LOSE_EXP:
+		{
+			if (!p_ptr->hold_life && (p_ptr->exp > 0))
+			{
+				msg_print("You feel your memories fade.");
+				lose_exp(p_ptr->exp / 4);
+				*ident = TRUE;
+			}
+			return TRUE;
+		}
+
+		case EF_RESTORE_EXP:
+		{
+			if (restore_level()) *ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_RESTORE_MANA:
+		{
+			if (p_ptr->csp < p_ptr->msp)
+			{
+				p_ptr->csp = p_ptr->msp;
+				p_ptr->csp_frac = 0;
+				msg_print("Your feel your head clear.");
+				p_ptr->redraw |= (PR_MANA);
+				p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
+				*ident = TRUE;
+			}
+			return TRUE;
+		}
+
+		case EF_GAIN_STR:
+		case EF_GAIN_INT:
+		case EF_GAIN_WIS:
+		case EF_GAIN_DEX:
+		case EF_GAIN_CON:
+		case EF_GAIN_CHR:
+		{
+			int stat = effect - EF_GAIN_STR;
+			if (do_inc_stat(stat)) *ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_GAIN_ALL:
+		{
+			if (do_inc_stat(A_STR)) *ident = TRUE;
+			if (do_inc_stat(A_INT)) *ident = TRUE;
+			if (do_inc_stat(A_WIS)) *ident = TRUE;
+			if (do_inc_stat(A_DEX)) *ident = TRUE;
+			if (do_inc_stat(A_CON)) *ident = TRUE;
+			if (do_inc_stat(A_CHR)) *ident = TRUE;
+			break;
+		}
+
+		case EF_LOSE_STR:
+		case EF_LOSE_INT:
+		case EF_LOSE_WIS:
+		case EF_LOSE_DEX:
+		case EF_LOSE_CON:
+		case EF_LOSE_CHR:
+		{
+			int stat = effect - EF_LOSE_STR;
+
+			take_hit(damroll(5, 5), "stat drain");
+			(void)do_dec_stat(stat);
+			*ident = TRUE;
+
+			return TRUE;
+		}
+
+		case EF_LOSE_STR2:
+		{
+			take_hit(damroll(10, 10), "poisonous food");
+			(void)do_dec_stat(A_STR);
+			*ident = TRUE;
+
+			return TRUE;
+		}
+
+		case EF_LOSE_CON2:
+		{
+			take_hit(damroll(10, 10), "poisonous food");
+			(void)do_dec_stat(A_CON);
+			*ident = TRUE;
+
 			return TRUE;
 		}
 
 		case EF_RESTORE_STR:
+		case EF_RESTORE_INT:
+		case EF_RESTORE_WIS:
+		case EF_RESTORE_DEX:
+		case EF_RESTORE_CON:
+		case EF_RESTORE_CHR:
 		{
-			if (do_res_stat(A_STR)) *ident = TRUE;
+			int stat = effect - EF_RESTORE_STR;
+			if (do_res_stat(stat)) *ident = TRUE;
 			return TRUE;
 		}
 
-		case EF_RESTORE_CON:
+		case EF_CURE_NONORLYBIG:
 		{
-			if (do_res_stat(A_CON)) *ident = TRUE;
-			return TRUE;
+			msg_print("You feel life flow through your body!");
+			restore_level();
+			(void)clear_timed(TMD_POISONED);
+			(void)clear_timed(TMD_BLIND);
+			(void)clear_timed(TMD_CONFUSED);
+			(void)clear_timed(TMD_IMAGE);
+			(void)clear_timed(TMD_STUN);
+			(void)clear_timed(TMD_CUT);
+			(void)clear_timed(TMD_AMNESIA);
+
+			/* Recalculate max. hitpoints */
+			update_stuff();
+
+			hp_player(5000);
+
+			*ident = TRUE;
+
+			/* Now restore all */
 		}
 
 		case EF_RESTORE_ALL:
@@ -231,6 +361,101 @@ bool do_effect(object_type *o_ptr, bool *ident, int dir)
 			if (do_res_stat(A_CHR)) *ident = TRUE;
 			return TRUE;
 		}
+
+
+		case EF_TMD_INFRA:
+		{
+			if (inc_timed(TMD_SINFRA, 100 + damroll(4, 25)))
+				*ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_TMD_SINVIS:
+		{
+			if (inc_timed(TMD_SINVIS, 12 + damroll(2, 6)))
+				*ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_ENLIGHTENMENT:
+		{
+			msg_print("An image of your surroundings forms in your mind...");
+			wiz_lite();
+			*ident = TRUE;
+			break;
+		}
+
+
+		case EF_ENLIGHTENMENT2:
+		{
+			msg_print("You begin to feel more enlightened...");
+			message_flush();
+			wiz_lite();
+			(void)do_inc_stat(A_INT);
+			(void)do_inc_stat(A_WIS);
+			(void)detect_traps();
+			(void)detect_doors();
+			(void)detect_stairs();
+			(void)detect_treasure();
+			(void)detect_objects_gold();
+			(void)detect_objects_normal();
+			identify_pack();
+			self_knowledge(TRUE);
+			*ident = TRUE;
+			break;
+		}
+
+		case EF_SELF_KNOW:
+		{
+			msg_print("You begin to know yourself a little better...");
+			message_flush();
+			self_knowledge(TRUE);
+			*ident = TRUE;
+			break;
+		}
+
+
+		case EF_HERO:
+		{
+			if (hp_player(10)) *ident = TRUE;
+			if (clear_timed(TMD_AFRAID)) *ident = TRUE;
+			if (inc_timed(TMD_HERO, randint(25) + 25)) *ident = TRUE;
+			break;
+		}
+
+		case EF_SHERO:
+		{
+			if (hp_player(30)) *ident = TRUE;
+			if (clear_timed(TMD_AFRAID)) *ident = TRUE;
+			if (inc_timed(TMD_SHERO, randint(25) + 25)) *ident = TRUE;
+			break;
+		}
+
+
+		case EF_RESIST_FIRE:
+		{
+			if (inc_timed(TMD_OPP_FIRE, randint(10) + 10))
+				*ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_RESIST_COLD:
+		{
+			if (inc_timed(TMD_OPP_COLD, randint(10) + 10))
+				*ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_RESIST_ALL:
+		{
+			if (inc_timed(TMD_OPP_ACID, randint(20) + 20)) *ident = TRUE;
+			if (inc_timed(TMD_OPP_ELEC, randint(20) + 20)) *ident = TRUE;
+			if (inc_timed(TMD_OPP_FIRE, randint(20) + 20)) *ident = TRUE;
+			if (inc_timed(TMD_OPP_COLD, randint(20) + 20)) *ident = TRUE;
+			if (inc_timed(TMD_OPP_POIS, randint(20) + 20)) *ident = TRUE;
+			return TRUE;
+		}
+
 
 		case EF_ENCHANT_TOHIT:
 		{
@@ -556,13 +781,33 @@ bool do_effect(object_type *o_ptr, bool *ident, int dir)
 			return TRUE;
 		}
 
-		case EF_HASTE2:
+		case EF_HASTE:
 		{
-			*ident = TRUE;
 			if (!p_ptr->timed[TMD_FAST])
-				(void)set_timed(TMD_FAST, randint(75) + 75);
+				if (set_timed(TMD_FAST, randint(25) + 15)) *ident = TRUE;
 			else
 				(void)inc_timed(TMD_FAST, 5);
+
+			return TRUE;
+		}
+
+		case EF_HASTE1:
+		{
+			if (!p_ptr->timed[TMD_FAST])
+				if (set_timed(TMD_FAST, randint(20) + 20)) *ident = TRUE;
+			else
+				(void)inc_timed(TMD_FAST, 5);
+
+			return TRUE;
+		}
+
+		case EF_HASTE2:
+		{
+			if (!p_ptr->timed[TMD_FAST])
+				if (set_timed(TMD_FAST, randint(75) + 75)) *ident = TRUE;
+			else
+				(void)inc_timed(TMD_FAST, 5);
+
 			return TRUE;
 		}
 
@@ -641,16 +886,6 @@ bool do_effect(object_type *o_ptr, bool *ident, int dir)
 			return TRUE;
 		}
 
-		case EF_RESIST_ALL:
-		{
-			if (inc_timed(TMD_OPP_ACID, randint(20) + 20)) *ident = TRUE;
-			if (inc_timed(TMD_OPP_ELEC, randint(20) + 20)) *ident = TRUE;
-			if (inc_timed(TMD_OPP_FIRE, randint(20) + 20)) *ident = TRUE;
-			if (inc_timed(TMD_OPP_COLD, randint(20) + 20)) *ident = TRUE;
-			if (inc_timed(TMD_OPP_POIS, randint(20) + 20)) *ident = TRUE;
-			return TRUE;
-		}
-
 		case EF_SLEEPII:
 		{
 			*ident = TRUE;
@@ -704,16 +939,6 @@ bool do_effect(object_type *o_ptr, bool *ident, int dir)
 		{
 			*ident = TRUE;
 			fire_bolt(GF_ARROW, dir, 150);
-			return TRUE;
-		}
-
-		case EF_HASTE1:
-		{
-			*ident = TRUE;
-			if (!p_ptr->timed[TMD_FAST])
-				(void)set_timed(TMD_FAST, randint(20) + 20);
-			else
-				(void)inc_timed(TMD_FAST, 5);
 			return TRUE;
 		}
 
@@ -830,6 +1055,55 @@ bool do_effect(object_type *o_ptr, bool *ident, int dir)
 			return TRUE;
 		}
 
+
+		case EF_DRINK_GOOD:
+		{
+			msg_print("You feel less thirsty.");
+			*ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_DRINK_DEATH:
+		{
+			msg_print("A feeling of Death flows through your body.");
+			take_hit(5000, "a potion of Death");
+			*ident = TRUE;
+			break;
+		}
+
+		case EF_DRINK_RUIN:
+		{
+			msg_print("Your nerves and muscles feel weak and lifeless!");
+			take_hit(damroll(10, 10), "a potion of Ruination");
+			(void)dec_stat(A_DEX, 25, TRUE);
+			(void)dec_stat(A_WIS, 25, TRUE);
+			(void)dec_stat(A_CON, 25, TRUE);
+			(void)dec_stat(A_STR, 25, TRUE);
+			(void)dec_stat(A_CHR, 25, TRUE);
+			(void)dec_stat(A_INT, 25, TRUE);
+			*ident = TRUE;
+			break;
+		}
+
+		case EF_DRINK_DETONATE:
+		{
+			msg_print("Massive explosions rupture your body!");
+			take_hit(damroll(50, 20), "a potion of Detonation");
+			(void)inc_timed(TMD_STUN, 75);
+			(void)inc_timed(TMD_CUT, 5000);
+			*ident = TRUE;
+			break;
+		}
+
+		case EF_DRINK_SALT:
+		{
+			msg_print("The potion makes you vomit!");
+			(void)set_food(PY_FOOD_STARVE - 1);
+			(void)clear_timed(TMD_POISONED);
+			(void)inc_timed(TMD_PARALYZED, 4);
+			*ident = TRUE;
+			break;
+		}
 
 		case EF_FOOD_GOOD:
 		{

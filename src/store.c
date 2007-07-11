@@ -178,6 +178,9 @@ static void prt_welcome(const owner_type *ot_ptr)
 	/* Only show the message one in four times to stop it being irritating. */
 	if (!rand_int(4)) return;
 
+	/* Make sure level 50 players don't overflow */
+	i = MIN(i, N_ELEMENTS(comment_welcome) - 1);
+
 	/* Welcome the character */
 	if (i)
 	{
