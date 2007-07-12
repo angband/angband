@@ -112,7 +112,7 @@ W:50:50:5:50000
 P:0:1d1:0:0:0
 F:ACTIVATE | SEE_INVIS | HOLD_LIFE | RES_LITE | RES_DARK | NO_FUEL |
 F:INSTA_ART
-A:DETECT_ALL:30+d30
+A:DET_ALL:30+d30
 M:The Arkenstone forms an image in your mind...
 D:A great globe seemingly filled with moonlight, the famed Heart of the 
 D:Mountain, which splinters the light that falls upon it into a thousand 
@@ -141,7 +141,7 @@ F:INT | WIS | CHR | INFRA | HIDE_TYPE |
 F:SEE_INVIS | FREE_ACT | ACTIVATE | 
 F:RES_ACID | RES_COLD | RES_ELEC | 
 F:INSTA_ART
-A:DISP_EVIL:50+d50
+A:DISPEL_EVIL:50+d50
 M:The amulet floods the area with goodness...
 D:The ancient heirloom of Ingwe, high lord of the Vanyar, against whom nothing 
 D:of evil could stand.
@@ -216,7 +216,7 @@ F:SLOW_DIGEST | REGEN |
 F:SUST_STR | SUST_CON | SUST_WIS | SUST_CHR | 
 F:IM_FIRE | RES_FIRE | RES_NETHR | RES_FEAR |
 F:INSTA_ART
-A:FIRE3:20+d20
+A:FIRE_BALL:20+d20
 M:Narya glows deep red...
 D:The Ring of Fire, set with a ruby that glows like flame.  Narya is one 
 D:of the three Rings of Power created by the Elves and hidden by them from 
@@ -236,7 +236,7 @@ F:FEATHER | REGEN |
 F:SUST_INT | SUST_WIS | SUST_CHR | 
 F:IM_COLD | RES_COLD | RES_BLIND | TELEPATHY | 
 F:INSTA_ART
-A:FROST5:20+d20
+A:COLD_BALL2:20+d20
 M:Nenya glows bright white...
 D:The Ring of Adamant, with a pure white stone as centerpiece.  Nenya is one 
 D:of the three Rings of Power created by the Elves and hidden by them from 
@@ -256,7 +256,7 @@ F:FEATHER | SLOW_DIGEST | REGEN |
 F:SUST_STR | SUST_DEX | SUST_CON | 
 F:IM_ELEC | RES_ELEC | RES_POIS | RES_DISEN | 
 F:INSTA_ART
-A:ELEC2:20+d20
+A:ELEC_BALL2:20+d20
 M:Vilya glows deep blue...
 D:The Ring of Sapphire, with clear blue gems that shine like stars, 
 D:glittering untouchable despite all that Morgoth ever wrought.  Vilya is 
@@ -532,7 +532,7 @@ F:ACTIVATE |
 F:LITE | WIS | CHR | 
 F:RES_ELEC | RES_ACID | RES_DISEN | RES_DARK | HIDE_TYPE | 
 F:SUST_WIS | SUST_DEX | SUST_CHR
-A:STARLIGHT:100
+A:STARLIGHT2:100
 M:Your Sheild of Deflection glows with the light of a thousand stars...
 D:The legendary shield of Ereinion Gil-galad, who fought his way to the 
 D:gates of the Dark Tower, and with whom came light even to Gorgoroth.
@@ -677,7 +677,7 @@ W:20:5:75:100000
 P:5:1d3:0:0:10
 F:INT | WIS | SEARCH | HIDE_TYPE | 
 F:RES_BLIND | RES_CONFU | SEE_INVIS | ACTIVATE
-A:DETECT_ALL:55+d55
+A:DET_ALL:55+d55
 M:Holhenneth forms an image in your mind...
 D:A famous helm of forged iron granting extraordinary powers of mind and 
 D:awareness.
@@ -873,7 +873,7 @@ I:31:2:0
 W:10:3:25:15000
 P:2:1d1:0:0:15
 F:RES_FIRE | REGEN | ACTIVATE
-A:FIRE1:8+d8
+A:FIRE_BOLT:8+d8
 M:Your Gauntlets are covered in fire...
 D:A set of gauntlets that smoulder with an unnatural heat.
 
@@ -885,7 +885,7 @@ I:31:2:0
 W:10:3:25:13000
 P:2:1d1:0:0:15
 F:RES_COLD | SLOW_DIGEST | ACTIVATE
-A:FROST1:7+d7
+A:COLD_BOLT:7+d7
 M:Your Gauntlets are covered in frost...
 D:A set of handgear, freezing with unnatural cold.
 
@@ -897,7 +897,7 @@ I:31:2:0
 W:10:3:25:11000
 P:2:1d1:0:0:15
 F:RES_ELEC | LITE | ACTIVATE
-A:LIGHTNING_BOLT:6+d6
+A:ELEC_BOLT:6+d6
 M:Your Gauntlets are covered in sparks...
 D:A set of handgear with sparks that crackle across its knuckleguards.
 
@@ -909,7 +909,7 @@ I:31:2:0
 W:10:3:25:12000
 P:2:1d1:0:0:15
 F:RES_ACID | FEATHER | ACTIVATE
-A:ACID1:5+d5
+A:ACID_BOLT:5+d5
 M:Your Gauntlets are covered in acid...
 D:A set of gauntlets that gives off a foul, acrid odour yet remains untarnished.
 
@@ -1039,7 +1039,7 @@ I:23:4:0
 W:4:3:12:12000
 P:0:2d4:4:6:0
 F:BRAND_FIRE | RES_FIRE | ACTIVATE | SHOW_MODS
-A:FIRE1:8+d8
+A:FIRE_BOLT:8+d8
 M:Narthanc is covered in fire...
 D:A flame, instead of a blade, seems to spring forth from this dagger's hilt.
 
@@ -1051,7 +1051,7 @@ I:23:4:0
 W:4:3:12:11000
 P:0:2d4:4:6:0
 F:BRAND_COLD | RES_COLD | ACTIVATE | SHOW_MODS
-A:FROST1:7+d8
+A:COLD_BOLT:7+d8
 M:Nimthanc is covered in frost...
 D:From the hilt of this dagger springs not so much a blade as an icicle.
 
@@ -1063,7 +1063,7 @@ I:23:4:0
 W:4:3:12:13000
 P:0:2d4:4:6:0
 F:BRAND_ELEC | RES_ELEC | ACTIVATE | SHOW_MODS
-A:LIGHTNING_BOLT:6+d6
+A:ELEC_BOLT:6+d6
 M:Dethanc is covered in sparks...
 D:In this dagger is bound the very force of the lightning.
 
@@ -1090,7 +1090,7 @@ P:0:2d4:6:9:0
 F:DEX | HIDE_TYPE | 
 F:BRAND_COLD | RES_COLD | SEE_INVIS | SLOW_DIGEST | REGEN | ACTIVATE | 
 F:SHOW_MODS
-A:FROST2:5+d5
+A:COLD_BALL50:5+d5
 M:Your Dagger is covered in frost...
 D:A frosty dagger wreathed in a nimbus of ice with a hilt of elk horn and 
 D:an edge to wound the wind.
@@ -1120,7 +1120,7 @@ P:0:3d5:20:12:0
 F:DEX | HIDE_TYPE | 
 F:SLAY_DEMON | SLAY_ORC | FREE_ACT | RES_COLD | FEATHER | 
 F:SLOW_DIGEST | ACTIVATE | SHOW_MODS
-A:FROST4:50
+A:COLD_BOLT2:50
 M:Arunuth glows a pale blue...
 D:The beautiful sword of Thingol, justly named "King's Ire".  It glistens 
 D:icy enough to freeze the hearts of demons, and you feel supple and 
@@ -1262,7 +1262,7 @@ F:SPEED | RES_FEAR | BLESSED |
 F:SLAY_EVIL | BRAND_COLD | SLAY_UNDEAD | KILL_DEMON | SLAY_TROLL | 
 F:FREE_ACT | RES_COLD | RES_LITE | LITE | SEE_INVIS | SLOW_DIGEST | REGEN | 
 F:ACTIVATE | SHOW_MODS
-A:FROST3:40
+A:COLD_BALL100:40
 M:Ringil glows an intense blue...
 D:The weapon of Fingolfin, High King of the Noldor; it shines like a column 
 D:of ice lit by light unquenchable.  Morgoth came but unwillingly to meet it 
@@ -1279,7 +1279,7 @@ F:STR | DEX | HIDE_TYPE | RES_FEAR | FREE_ACT | BLESSED |
 F:SLAY_EVIL | BRAND_FIRE | SLAY_TROLL | SLAY_ORC | SLAY_UNDEAD | 
 F:RES_FIRE | RES_DISEN | 
 F:SUST_STR | SUST_DEX | SEE_INVIS | ACTIVATE | SHOW_MODS
-A:FIRE2:40
+A:FIRE_BOLT72:40
 M:Anduril rages in fire...
 D:The famed "Flame of the West", the Sword that was Broken and is forged 
 D:again.  It glows with the essence of fire, its wearer is mighty in combat, 
@@ -1466,7 +1466,7 @@ P:0:3d6:15:25:5
 F:WIS | DEX | HIDE_TYPE | RES_FEAR | 
 F:BRAND_COLD | RES_COLD | SLAY_EVIL | SLAY_TROLL | SLAY_ORC | KILL_UNDEAD | 
 F:FREE_ACT | SLOW_DIGEST | ACTIVATE | BLESSED | SHOW_MODS
-A:FROST3:35
+A:COLD_BALL100:35
 M:Aeglos glows an intense blue...
 D:The mighty spear of Gil-galad, famed as "Snow-point" in the songs of Elves, 
 D:against which all the foul corruptions of Sauron dashed in vain.
@@ -1628,7 +1628,7 @@ F:SLAY_DRAGON | SLAY_ANIMAL | FREE_ACT | HOLD_LIFE |
 F:IM_ACID | RES_ACID | RES_NETHR | 
 F:SEE_INVIS | SLOW_DIGEST | REGEN | ACTIVATE | 
 F:BLESSED | SHOW_MODS
-A:TELE_AWAY:50
+A:TELE_OTHER:50
 M:Your Trident glows deep red...
 D:The awesome weapon of the Vala Ulmo, Lord of Waters.  Mightest of all the 
 D:powers of good save Manwe himself, Ulmo laughs to scorn the dread powers 
@@ -1736,7 +1736,7 @@ I:21:12:0
 W:20:15:150:35000
 P:0:2d6:5:7:2
 F:BRAND_FIRE | RES_FIRE | ACTIVATE | SHOW_MODS
-A:FIRE2:20
+A:FIRE_BOLT72:20
 M:Firestar rages in fire...
 D:A famed battle-lord of old with a ruddy head, coloured as embers are that
 D: can yet rise up in wrath.
@@ -1808,7 +1808,7 @@ P:0:2d9:10:13:0
 F:INT | WIS | CHR | HIDE_TYPE | KILL_DEMON | 
 F:SLAY_EVIL | BRAND_FIRE | SLAY_TROLL | SLAY_ORC | 
 F:HOLD_LIFE | RES_FIRE | RES_NETHR | SEE_INVIS | ACTIVATE | SHOW_MODS
-A:PROBE:20
+A:PROBING:20
 M:The Quarterstaff of Olorin glows brightly...
 D:A staff tall and sturdy, borne of old by Gandalf.  Rough-hewn runes that 
 D:invoke the element of Earth stand bold upon its gnarled surface, and no 
@@ -1862,7 +1862,7 @@ F:LIGHT_CURSE | HEAVY_CURSE | AGGRAVATE |
 F:BRAND_FIRE | IM_FIRE | RES_ELEC | RES_DARK | LITE
 F:SLAY_ANIMAL | KILL_DRAGON | SLAY_TROLL | SLAY_GIANT | 
 F:ACTIVATE | SHOW_MODS
-A:FIRE3:15
+A:FIRE_BALL:15
 M:The whip glows deep red...
 D:A great crackling Balrog's whip of flame, this weapon could bring 
 D:even Ungoliant to heel.
@@ -1994,7 +1994,7 @@ F:STR | WIS | SPEED | LITE | HIDE_TYPE |
 F:SLAY_EVIL | SLAY_UNDEAD | 
 F:RES_FIRE | RES_ELEC | RES_NETHR | HOLD_LIFE | 
 F:ACTIVATE
-A:DISP_EVIL:100+d100
+A:DISPEL_EVIL:100+d100
 M:The Ball-and-Chain floods the area will goodness...
 D:The weapon of a mighty dwarven priest, whose shade is rumoured to 
 D:still haunt the halls of Angband itself.

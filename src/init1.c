@@ -38,7 +38,8 @@
  * program, but that feels a little silly, especially considering some
  * of the platforms that we currently support.
  */
-
+#include "angband.h"
+#include "effects.h"
 
 #ifdef ALLOW_TEMPLATES
 
@@ -48,12 +49,12 @@
 
 /*** Helper arrays for parsing ascii template files ***/
 
-
 /* Use a slightly unusual include method to create effect_list[] */
-#define LIST_STRINGS
-#include "effects.h"
-#undef LIST_STRINGS
-
+static const char *effect_list[] =
+{
+    #define EFFECT(x, y, z)	#x,
+	#include "effects.h"
+};
 
 
 /*

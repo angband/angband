@@ -399,7 +399,6 @@ extern void object_flags(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
 extern void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
 extern void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int mode);
 extern void object_desc_spoil(char *buf, size_t max, const object_type *o_ptr, int pref, int mode);
-extern void describe_item_activation(const object_type *o_ptr);
 extern void identify_random_gen(const object_type *o_ptr);
 extern char index_to_label(int i);
 extern s16b label_to_inven(int c);

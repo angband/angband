@@ -1595,7 +1595,7 @@ I:70:28:0
 W:5:0:5:35
 A:5/1:10/1
 F:EASY_KNOW
-D:DET_TRAPS
+E:DET_TRAP
 
 ## XXX 195 XXX ##
 
@@ -2221,8 +2221,7 @@ W:3:0:10:200
 A:3/1
 P:0:1d1:0:0:0
 C:6+d10
-D:It lights up a line of squares, inflicting 6d8 points of damage on
-D: light-sensitive creatures on the line.
+E:LIGHT_LINE
 
 N:270:Lightning Bolts
 G:-:d
@@ -2231,8 +2230,7 @@ W:15:0:10:600
 A:15/1
 P:0:1d1:0:0:0
 C:6+d8
-D:It shoots a lightning bolt that inflicts 6d6 points of damage, with a
-D: 20% chance of getting a lightning beam.
+E:ELEC_BOLT
 
 N:271:Frost Bolts
 G:-:d
@@ -2241,8 +2239,7 @@ W:20:0:10:800
 A:20/1
 P:0:1d1:0:0:0
 C:6+d5
-D:It shoots a frost bolt that inflicts 6d8 points of damage, with a 20%
-D: chance of getting a cold beam.
+E:COLD_BOLT
 
 N:272:Fire Bolts
 G:-:d
@@ -2251,8 +2248,7 @@ W:30:0:10:1000
 A:30/1
 P:0:1d1:0:0:0
 C:6+d8
-D:It shoots a fire bolt that inflicts 12d8 points of damage, with a 20%
-D: chance of getting a fire beam.
+E:FIRE_BOLT2
 
 N:273:Stone to Mud
 G:-:d
@@ -2261,11 +2257,7 @@ W:10:0:10:300
 A:10/1
 P:0:1d1:0:0:0
 C:3+d4
-D:It turns the first section of wall encountered by the beam shot by
-D: this spell into mud.
-D:  Permanent walls are not affected.
-D:  If a monster that is susceptible to rock remover is caught in the
-D: beam, it will take 20+1d30 points of damage.
+E:STONE_TO_MUD
 
 N:274:Polymorph
 G:-:d
@@ -2274,8 +2266,7 @@ W:20:0:10:400
 A:20/1
 P:0:1d1:0:0:0
 C:6+d8
-D:It attempts to polymorph a single monster.
-D:  Uniques are unaffected.
+E:POLYMORPH
 
 N:275:Heal Monster
 G:-:d
@@ -2284,7 +2275,7 @@ W:3:0:10:0
 A:3/1
 P:0:1d1:0:0:0
 C:8+d20
-D:It cures a single monster for 4d6 points of damage.
+E:MON_HEAL
 
 N:276:Haste Monster
 G:-:d
@@ -2293,7 +2284,7 @@ W:3:0:10:0
 A:3/1
 P:0:1d1:0:0:0
 C:8+d20
-D:It hastes a single monster.
+E:MON_HASTE
 
 N:277:Slow Monster
 G:-:d
@@ -2302,8 +2293,7 @@ W:5:0:10:500
 A:5/1
 P:0:1d1:0:0:0
 C:6+d10
-D:It attempts to slow down a single monster.
-D:  Uniques are unaffected.
+E:MON_SLOW
 
 N:278:Confuse Monster
 G:-:d
@@ -2312,8 +2302,7 @@ W:5:0:10:500
 A:5/1
 P:0:1d1:0:0:0
 C:6+d12
-D:It attempts to confuse a single monster.
-D:  Uniques are unaffected.
+E:MON_CONFUSE
 
 N:279:Sleep Monster
 G:-:d
@@ -2322,8 +2311,7 @@ W:5:0:10:500
 A:5/1
 P:0:1d1:0:0:0
 C:8+d15
-D:It attempts to put a single monster to sleep.
-D:  Uniques are unaffected.
+E:MON_SLEEP
 
 N:280:Drain Life
 G:-:d
@@ -2332,8 +2320,7 @@ W:50:0:10:1200
 A:50/1
 P:0:1d1:0:0:0
 C:3+d3
-D:It inflicts 150 points of damage on a single monster that is not
-D: undead, a demon, an elemental, a golem, or a vortex.
+E:DRAIN_LIFE3
 
 N:281:Trap/Door Destruction
 G:-:d
@@ -2342,7 +2329,7 @@ W:10:0:10:100
 A:10/1
 P:0:1d1:0:0:0
 C:6+d8
-D:It destroys all doors and disarms all traps in a line.
+E:TDOOR_DEST
 
 N:282:Magic Missile
 G:-:d
@@ -2351,8 +2338,7 @@ W:3:0:10:200
 A:3/1
 P:0:1d1:0:0:0
 C:6+d10
-D:It fires a magic missile that inflicts 3d4 points of damage, with a
-D: 20% chance of getting a magic beam.
+E:MISSILE
 
 N:283:Clone Monster
 G:-:d
@@ -2361,9 +2347,7 @@ W:15:0:10:0
 A:15/1:50/1
 P:0:1d1:0:0:0
 C:3+d5
-D:It hastes and fully heals a single monster.  If the monster is next to
-D: an empty space and not a unique, a new monster of the same type will
-D: be created.
+E:MON_CLONE
 
 N:284:Scare Monster
 G:-:d
@@ -2372,8 +2356,7 @@ W:10:0:10:500
 A:10/4
 P:0:1d1:0:0:0
 C:3+d5
-D:It attempts to scare a single monster.
-D:  Uniques are unaffected.
+E:MON_SCARE
 
 N:285:Teleport Other
 G:-:d
@@ -2382,8 +2365,7 @@ W:20:0:10:350
 A:20/1
 P:0:1d1:0:0:0
 C:6+d5
-D:It produces a beam that teleports all monsters caught in it up to 100
-D: squares away.
+E:TELE_OTHER
 
 N:286:Disarming
 G:-:d
@@ -2392,8 +2374,7 @@ W:20:0:10:700
 A:20/1
 P:0:1d1:0:0:0
 C:4+d5
-D:It produces a beam that disarms all traps, unlocks all locked doors
-D: and reveals all secret doors.
+E:DISARMING
 
 N:287:Lightning Balls
 G:-:d
@@ -2403,8 +2384,7 @@ A:35/1
 P:0:1d1:0:0:0
 C:4+d8
 F:IGNORE_ELEC
-D:It shoots a radius-2 lightning ball that inflicts 64 points of damage
-D: at its center.
+E:ELEC_BALL
 
 N:288:Cold Balls
 G:-:d
@@ -2414,8 +2394,7 @@ A:40/1
 P:0:1d1:0:0:0
 C:2+d6
 F:IGNORE_COLD
-D:It shoots a radius-2 frost ball that inflicts 96 points of damage at
-D: its center.
+E:COLD_BALL100
 
 N:289:Fire Balls
 G:-:d
@@ -2425,8 +2404,7 @@ A:50/1
 P:0:1d1:0:0:0
 C:2+d4
 F:IGNORE_FIRE
-D:It shoots a radius-2 fire ball that inflicts 144 points of damage at
-D: its center.
+E:FIRE_BALL
 
 N:290:Stinking Cloud
 G:-:d
@@ -2435,8 +2413,7 @@ W:5:0:10:400
 A:5/1
 P:0:1d1:0:0:0
 C:6+d8
-D:It shoots a radius-2 poison cloud that inflicts 12 points of damage at
-D: its center.
+E:STINKING_CLOUD
 
 N:291:Acid Balls
 G:-:d
@@ -2446,8 +2423,7 @@ A:50/1
 P:0:1d1:0:0:0
 C:2+d5
 F:IGNORE_ACID
-D:It shoots a radius-2 acid ball that inflicts 120 points of damage at
-D: its center.
+E:ACID_BALL
 
 N:292:Wonder
 G:-:d
@@ -2457,8 +2433,7 @@ A:3/1
 P:0:1d1:0:0:0
 C:8+d15
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-D:It has a random effect chosen from the various wand effects, except
-D: Dragon's Flame, Dragon's Frost, Dragon's Breath, Annihilation.
+E:WONDER
 
 ## XXX 293 XXX ##
 
@@ -2469,8 +2444,7 @@ W:30:0:10:950
 A:30/1
 P:0:1d1:0:0:0
 C:6+d8
-D:It shoots an acid bolt that inflicts 10d8 points of damage, with a 20%
-D: chance of getting an acid beam.
+E:ACID_BOLT2
 
 N:295:Dragon's Flame
 G:-:d
@@ -2480,8 +2454,7 @@ A:50/4
 P:0:1d1:0:0:0
 C:1+d3
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-D:It shoots a radius-3 fire ball that inflicts 200 points of damage at
-D: its center.
+E:FIRE_BALL200
 
 N:296:Dragon's Frost
 G:-:d
@@ -2491,8 +2464,7 @@ A:50/4
 P:0:1d1:0:0:0
 C:1+d3
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-D:It shoots a radius-3 frost ball that inflicts 160 points of damage at
-D: its center.
+E:COLD_BALL160
 
 N:297:Dragon's Breath
 G:-:d
@@ -2502,9 +2474,7 @@ A:60/4
 P:0:1d1:0:0:0
 C:1+d3
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-D:It shoots a radius-3 fire/frost/acid/lightning/poison ball that
-D: inflicts 200/160/200/180/120 points of damage at its center (damage
-D: type chosen at random).
+E:WAND_BREATH
 
 N:298:Annihilation
 G:-:d
@@ -2514,8 +2484,7 @@ A:60/4
 P:0:1d1:0:0:0
 C:1+d2
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
-D:It inflicts 250 points of damage on a single monster that is not
-D: undead, a demon, an elemental, a golem, or a vortex.
+E:DRAIN_LIFE4
 
 ## XXX 299 XXX ##
 
@@ -2529,7 +2498,7 @@ W:10:0:50:350
 A:10/1
 P:0:1d2:0:0:0
 C:6+d5
-D:It detects all traps in the immediate area.
+E:DET_TRAP
 
 N:301:Treasure Location
 G:_:d
@@ -2538,7 +2507,7 @@ W:5:0:50:200
 A:5/1
 P:0:1d2:0:0:0
 C:8+d20
-D:It detects all treasure in the immediate area.
+E:DET_GOLD
 
 N:302:Object Location
 G:_:d
@@ -2547,7 +2516,7 @@ W:5:0:50:200
 A:5/1
 P:0:1d2:0:0:0
 C:6+d15
-D:It detects all objects in the immediate area.
+E:DET_OBJ
 
 N:303:Teleportation
 G:_:d
@@ -2556,7 +2525,7 @@ W:20:0:50:2000
 A:20/1
 P:0:1d2:0:0:0
 C:5+d4
-D:It teleports you randomly with a maximum range of 100 squares.
+E:TELE_LONG
 
 N:304:Earthquakes
 G:_:d
@@ -2565,12 +2534,7 @@ W:40:0:50:350
 A:40/1
 P:0:1d2:0:0:0
 C:3+d5
-D:It causes an earthquake centered on you that has a 10-square radius;
-D: this randomly places new walls and floor space.  Monsters can be
-D: caught by a newly created wall; this does not affect monsters that
-D: can bore through rock or pass through walls, but otherwise monsters
-D: take 4d8 points of damage if they can evade the falling rock, or are
-D: lost inside the rock forever if they cannot.
+E:EARTHQUAKES
 
 N:305:Summoning
 G:_:d
@@ -2578,11 +2542,8 @@ I:55:3:0
 W:10:0:50:0
 A:10/1:50/1
 P:0:1d2:0:0:0
-C:1+d3
-D:It summons 1d4 monsters that are generated at the current dungeon
-D: level.
-D:  If a monster normally appears in groups, a whole group will appear.
-D:  If a monster normally has escorts, it will appear with escorts.
+C:2d3
+E:SUMMON_MON
 
 N:306:Light
 G:_:d
@@ -2591,10 +2552,7 @@ W:5:0:50:250
 A:5/1
 P:0:1d2:0:0:0
 C:8+d20
-D:It lights up an area with a radius of 2 squares, plus the entire room
-D: if you are currently in one.
-D:  This inflicts 2d8 points of damage on any light-sensitive creatures
-D: within the radius of the spell.
+E:LIGHT
 
 N:307:*Destruction*
 G:_:d
@@ -2603,12 +2561,7 @@ W:50:0:50:2500
 A:50/1:70/1
 P:0:1d2:0:0:0
 C:1+d3
-D:It destroys a circular area centered at you with a radius of 15
-D: squares, randomly placing new walls and floor space (stairs are
-D: immune).  All monsters and objects (excluding artifacts) are removed
-D: from the affected area.
-D:  This effect will also cause blindness lasting for 10+1d10 turns
-D: unless you have resistance to either blindness or light.
+E:DESTRUCTION2
 
 N:308:Starlight
 G:_:d
@@ -2617,9 +2570,7 @@ W:20:0:50:800
 A:20/1
 P:0:1d2:0:0:0
 C:6+d5
-D:It fires a line of light in all eight cardinal directions;
-D: light-sensitive monsters caught in one of the lines take 6d8 points
-D: of damage.
+E:STARLIGHT
 
 N:309:Haste Monsters
 G:_:d
@@ -2628,7 +2579,7 @@ W:10:0:50:0
 A:10/1
 P:0:1d2:0:0:0
 C:8+d8
-D:It hastes all monsters within line of sight.
+E:LOSHASTE
 
 N:310:Slow Monsters
 G:_:d
@@ -2637,8 +2588,7 @@ W:10:0:50:800
 A:10/1
 P:0:1d2:0:0:0
 C:6+d5
-D:It attempts to slow down all monsters within line of sight.
-D:  Uniques are unaffected.
+E:LOSSLOW
 
 N:311:Sleep Monsters
 G:_:d
@@ -2647,8 +2597,7 @@ W:10:0:50:700
 A:10/1
 P:0:1d2:0:0:0
 C:6+d5
-D:It attempts to put all monsters within line of sight to sleep.
-D:  Uniques are unaffected.
+E:LOSSLEEP
 
 N:312:Cure Light Wounds
 G:_:d
@@ -2657,7 +2606,8 @@ W:5:0:50:350
 A:5/1
 P:0:1d2:0:0:0
 C:6+d5
-D:It cures 1d8 points of damage.
+#! now works like a real CLW effect
+E:CURE_LIGHT
 
 N:313:Detect Invisible
 G:_:d
@@ -2666,7 +2616,7 @@ W:5:0:50:200
 A:5/1
 P:0:1d2:0:0:0
 C:8+d15
-D:It detects all invisible monsters in the immediate area.
+E:DET_INVIS
 
 N:314:Speed
 G:_:d
@@ -2675,9 +2625,8 @@ W:40:0:50:1000
 A:40/1
 P:0:1d2:0:0:0
 C:4+d3
-D:It hastes you (+10 to speed) for 15+1d30 turns (or 5 additional turns
-D: if you already are under the effect of a temporary haste
-D: enchantment).
+#! now duration d25+15; used to be d30+15
+E:HASTE
 
 N:315:Slowness
 G:_:d
@@ -2686,8 +2635,7 @@ W:40:0:50:0
 A:40/1
 P:0:1d2:0:0:0
 C:8+d8
-D:It slows you down (-10 to speed) for 15+1d30 turns; this duration is
-D: cumulative with other temporary slowing enchantments.
+E:SLOW
 
 N:316:Door/Stair Location
 G:_:d
@@ -2696,7 +2644,7 @@ W:10:0:50:350
 A:10/1
 P:0:1d2:0:0:0
 C:6+d8
-D:It detects all doors and stairs in the immediate area.
+E:DET_DOORSTAIR
 
 N:317:Remove Curse
 G:_:d
@@ -2705,8 +2653,7 @@ W:40:0:50:500
 A:40/1
 P:0:1d2:0:0:0
 C:4+d3
-D:It removes all ordinary curses from all equipped items.
-D:  Heavy or permanent curses are unaffected.
+E:REMOVE_CURSE
 
 N:318:Detect Evil
 G:_:d
@@ -2715,7 +2662,7 @@ W:20:0:50:350
 A:20/1
 P:0:1d2:0:0:0
 C:8+d15
-D:It detects all evil monsters in the immediate area.
+E:DET_EVIL
 
 N:319:Curing
 G:_:d
@@ -2724,8 +2671,7 @@ W:25:0:50:1000
 A:25/1
 P:0:1d2:0:0:0
 C:4+d3
-D:It cures all stunning, heals all cut damage, neutralizes poison, and
-D: cures blindness and confusion.
+E:CURE_TEMP
 
 N:320:Dispel Evil
 G:_:d
@@ -2734,8 +2680,7 @@ W:50:0:50:1200
 A:50/1
 P:0:1d2:0:0:0
 C:4+d3
-D:It inflicts 60 points of damage on all evil monsters within line of
-D: sight.
+E:DISPEL_EVIL60
 
 N:321:Probing
 G:_:d
@@ -2744,10 +2689,7 @@ W:30:0:50:2000
 A:30/1
 P:0:1d2:0:0:0
 C:2+d6
-D:It probes all monsters within line of sight, giving information both
-D: on the current hit points of the monsters and many of their
-D: characteristics and abilities (excluding melee, spellcasting, and
-D: breath attacks).
+E:PROBING
 
 N:322:Darkness
 G:_:d
@@ -2756,9 +2698,7 @@ W:5:0:50:0
 A:5/1:50/1
 P:0:1d2:0:0:0
 C:8+d8
-D:It darkens all squares within 3 squares of you, plus the entire room
-D: if you are currently in one; and blinds you for 3+1d5 turns, unless
-D: you have resistance to blindness.
+E:DARKNESS
 
 N:323:Banishment
 G:_:d
@@ -2767,9 +2707,7 @@ W:70:0:50:3500
 A:70/4
 P:0:1d2:0:0:0
 C:1+d2
-D:It removes all monsters represented by a chosen symbol from the level.
-D:  Uniques are unaffected.
-D:  You take 1d4 points of damage for every monster removed.
+E:BANISHMENT
 
 N:324:Power
 G:_:d
@@ -2778,7 +2716,7 @@ W:70:0:50:4000
 A:70/2
 P:0:1d2:0:0:0
 C:1+d3
-D:It inflicts 120 points of damage on all monsters within line of sight.
+E:DISPEL_ALL
 
 N:325:the Magi
 G:_:d
@@ -2786,19 +2724,17 @@ I:55:19:0
 W:70:0:50:4500
 A:70/2
 P:0:1d2:0:0:0
-C:2+d2
-D:It restores both intelligence and mana points to maximum if either or
-D: both are currently below maximum.
+C:2+1d2
+E:STAFF_MAGI
 
-N:326:Perception
+N:326:Identify
 G:_:d
 I:55:5:0
 W:10:0:50:400
 A:10/1
 P:0:1d2:0:0:0
 C:5+d15
-D:It reveals all normal (magical but non-hidden) powers of one object.
-D:  (The spell may be aborted without using up a charge.)
+E:IDENTIFY
 
 N:327:Holiness
 G:_:d
@@ -2806,21 +2742,17 @@ I:55:26:0
 W:70:0:50:4500
 A:70/2
 P:0:1d2:0:0:0
-C:2+d2
-D:It inflicts 120 points of damage on all evil monsters within line of
-D: sight, cures 50 points of damage, cures all stunning, heals all cut
-D: damage, neutralizes poison, removes fear, and also grants you the
-D: enchantment of protection from evil for a duration equal to 1d25 plus
-D: three times your character level.
+C:2d2
+E:STAFF_HOLY
 
-N:328:Enlightenment
+N:328:Mapping
 G:_:d
 I:55:9:0
 W:20:0:50:750
 A:20/1
 P:0:1d2:0:0:0
 C:5+d5
-D:It maps out a portion of the level centered on you.
+E:MAPPING
 
 N:329:Healing
 G:_:d
@@ -2829,9 +2761,8 @@ W:70:0:50:5000
 A:70/2
 P:0:1d2:0:0:0
 C:1+d2
-D:It cures 300 points of damage, cures all stunning, and heals all cut
-D: damage.
-
+#! now cures poison, blindness, conf also
+E:CURE_FULL
 
 ##### Basic Books #####
 
@@ -3015,274 +2946,246 @@ F:EASY_KNOW
 
 N:351:Door/Stair Location
 G:-:d
-I:66:1:70
+I:66:1:0
 W:15:0:15:1000
 A:15/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It detects all secret doors and stairs in the immediate area.
+E:DET_DOORSTAIR:70
 
 N:352:Trap Location
 G:-:d
-I:66:0:50
+I:66:0:0
 W:5:0:15:100
 A:5/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It detects all traps in the immediate area.
+E:DET_TRAP:50
 
 N:353:Probing
 G:-:d
-I:66:7:50
+I:66:7:0
 W:40:0:15:4000
 A:40/4
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It probes all monsters within line of sight, giving information both
-D: on the current hit points of the monsters and many of their
-D: characteristics and abilities (excluding melee, spellcasting, and
-D: breath attacks).
+E:PROBING:50
 
 N:354:Recall
 G:-:d
-I:66:3:60
+I:66:3:0
 W:30:0:15:4000
 A:30/4
 P:0:1d1:0:0:0
 F:EASY_KNOW | IGNORE_ELEC
-D:It invokes the spell of recall.
+E:RECALL:60
 
 N:355:Illumination
 G:-:d
-I:66:4:30
+I:66:4:0
 W:20:0:15:1000
 A:20/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It lights up an area with a radius of 2 squares, plus the entire room
-D: if you are currently in one.
-D:  This inflicts 2d8 points of damage on any light-sensitive creatures
-D: within the radius of the spell.
+E:LIGHT:30
 
 N:356:Light
 G:-:d
-I:66:15:9
+I:66:15:0
 W:10:0:15:500
 A:10/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It lights up a line of squares, inflicting 6d8 points of damage on any
-D: light-sensitive creatures on the line.
+E:LIGHT_LINE:9
 
 N:357:Lightning Bolts
 G:-:d
-I:66:21:11
+I:66:21:0
 W:20:0:15:2000
 A:20/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It shoots a lightning bolt that inflicts 6d6 points of damage, with a
-D: 10% chance of getting a lightning beam.
+E:ELEC_BOLT:11
 
 N:358:Frost Bolts
 G:-:d
-I:66:23:13
+I:66:23:0
 W:25:0:15:2500
 A:25/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It shoots a frost bolt that inflicts 10d8 points of damage, with a 10%
-D: chance of getting a frost beam.
+E:COLD_BOLT2:13
 
 N:359:Fire Bolts
 G:-:d
-I:66:22:15
+I:66:22:0
 W:30:0:15:3000
 A:30/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It shoots a fire bolt that inflicts 16d8 points of damage, with a 10%
-D: chance of getting a fire beam.
+E:FIRE_BOLT3:15
 
 N:360:Polymorph
 G:-:d
-I:66:19:25
+I:66:19:0
 W:35:0:15:1200
 A:35/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It attempts to polymorph a single monster.
-D:  Uniques are unaffected.
+E:POLYMORPH:25
 
 N:361:Slow Monster
 G:-:d
-I:66:17:20
+I:66:17:0
 W:30:0:15:1500
 A:30/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It attempts to slow down a single monster.
-D:  Uniques are unaffected.
+E:MON_SLOW:20
 
 N:362:Sleep Monster
 G:-:d
-I:66:16:18
+I:66:16:0
 W:30:0:15:1500
 A:30/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It attempts to put a single monster to sleep.
-D:  Uniques are unaffected.
+E:MON_SLEEP:18
 
 N:363:Drain Life
 G:-:d
-I:66:18:23
+I:66:18:0
 W:75:0:15:3600
 A:75/4
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It inflicts 150 points of damage on a single monster that is not
-D: undead, a demon, an elemental, a golem, or a vortex.
+E:DRAIN_LIFE3:23
 
 N:364:Teleport Other
 G:-:d
-I:66:13:25
+I:66:13:0
 W:45:0:15:1400
 A:45/2
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It produces a beam that teleports all monsters caught in it up to 100
-D: squares away.
+E:TELE_OTHER:25
 
 N:365:Disarming
 G:-:d
-I:66:14:30
+I:66:14:0
 W:35:0:15:2100
 A:35/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It produces a beam that disarms all traps, unlocks all locked doors
-D: and reveals all secret doors.
+E:DISARMING:30
 
 N:366:Lightning Balls
 G:-:d
-I:66:25:23
+I:66:25:0
 W:55:0:15:4000
 A:55/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It shoots a radius-2 lightning ball that inflicts 64 points of damage
-D: at its center.
+E:ELEC_BALL:23
 
 N:367:Cold Balls
 G:-:d
-I:66:27:25
+I:66:27:0
 W:60:0:15:4500
 A:60/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It shoots a radius-2 frost ball that inflicts 96 points of damage at
-D: its center.
+E:COLD_BALL100:25
 
 N:368:Fire Balls
 G:-:d
-I:66:26:30
+I:66:26:0
 W:75:0:15:5000
 A:75/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It shoots a radius-2 fire ball that inflicts 144 points of damage at
-D: its center.
+E:FIRE_BALL:30
 
 N:369:Acid Balls
 G:-:d
-I:66:24:27
+I:66:24:0
 W:70:0:15:5500
 A:70/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It shoots a radius-2 acid ball that inflicts 120 points of damage at
-D: its center.
+E:ACID_BALL:27
 
 N:370:Acid Bolts
 G:-:d
-I:66:20:12
+I:66:20:0
 W:40:0:15:3500
 A:40/1
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It shoots an acid bolt that inflicts 12d8 points of damage, with a 10%
-D: chance of getting an acid beam.
+E:ACID_BOLT3:12
 
-N:371:Enlightenment
+N:371:Magic Mapping
 G:-:d
-I:66:5:99
+I:66:5:0
 W:65:0:15:10000
 A:65/4
 P:0:1d1:0:0:0
 F:EASY_KNOW
-D:It maps out a portion of the level centered on you.
+E:MAPPING:100
 
-N:372:Perception
+N:372:Identify
 G:-:d
-I:66:2:10
+I:66:2:0
 W:50:0:15:13000
 A:50/8
 P:0:1d1:0:0:0
 F:EASY_KNOW | IGNORE_ELEC
-D:It reveals all normal (magical but non-hidden) powers of one object.
-D:  (The spell may be aborted without using up a charge.)
+E:IDENTIFY:10
 
 N:373:Curing
 G:-:d
-I:66:8:999
+I:66:8:0
 W:65:0:15:15000
 A:65/8
 P:0:1d1:0:0:0
 F:EASY_KNOW | IGNORE_ELEC
-D:It cures all stunning, heals all cut damage, neutralizes poison, and
-D: cures blindness and confusion.
+E:CURE_TEMP:1000
 
 N:374:Healing
 G:-:d
-I:66:9:999
+I:66:9:0
 W:80:0:15:20000
 A:80/8
 P:0:1d1:0:0:0
 F:EASY_KNOW | IGNORE_ELEC
-D:It cures 500 points of damage, cures all stunning, and heals all cut
-D: damage.
+E:HEAL3:1000
 
 N:375:Detection
 G:-:d
-I:66:6:99
+I:66:6:0
 W:30:0:15:5000
 A:30/8
 P:0:1d1:0:0:0
 F:EASY_KNOW | IGNORE_ELEC
-D:It detects all treasure, objects, secret doors, stairs, traps, and
-D: monsters in the immediate area.
+E:DET_ALL:100
 
 N:376:Restoration
 G:-:d
-I:66:10:999
+I:66:10:0
 W:80:0:15:25000
 A:80/16
 P:0:1d1:0:0:0
 F:EASY_KNOW | IGNORE_ELEC
-D:It restores experience points and all stats to maximum if any of them
-D: are below maximum.
+E:RESTORE_ST_LEV:1000
 
 N:377:Speed
 G:-:d
-I:66:11:99
+I:66:11:0
 W:95:0:15:50000
 A:95/16
 P:0:1d1:0:0:0
 F:EASY_KNOW | IGNORE_ELEC
-D:It hastes you (+10 to speed) for 15+1d30 turns (or 5 additional turns
-D: if you already are under the effect of a temporary haste
-D: enchantment).
+E:HASTE:100
 
 
 ##### Special Books (note resistances) #####
@@ -3472,6 +3375,7 @@ A:50/8
 P:30:2d4:-2:0:10
 F:RES_ACID |
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+E:ACID_BALL:450+1d450
 
 N:401:Blue Dragon Scale Mail~
 G:[:b
@@ -3481,6 +3385,7 @@ A:50/8
 P:30:2d4:-2:0:10
 F:RES_ELEC |
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+E:DRAGON_BLUE:450+1d450
 
 N:402:White Dragon Scale Mail~
 G:[:w
@@ -3490,6 +3395,7 @@ A:50/8
 P:30:2d4:-2:0:10
 F:RES_COLD |
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+E:COLD_BALL100:450+1d450
 
 N:403:Red Dragon Scale Mail~
 G:[:r
@@ -3499,6 +3405,7 @@ A:50/8
 P:30:2d4:-2:0:10
 F:RES_FIRE |
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+E:DRAGON_RED:450+1d450
 
 N:404:Green Dragon Scale Mail~
 G:[:g
@@ -3508,6 +3415,7 @@ A:60/8
 P:30:2d4:-2:0:10
 F:RES_POIS |
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+E:DRAGON_GREEN:450+1d450
 
 N:405:Multi-Hued Dragon Scale Mail~
 G:[:v
@@ -3517,6 +3425,7 @@ A:90/32
 P:30:2d4:-2:0:10
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_POIS |
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+E:DRAGON_MULTIHUED:225+1d225
 
 N:406:Pseudo-Dragon Scale Mail~
 G:[:o
@@ -3526,6 +3435,7 @@ A:65/16
 P:30:2d4:-2:0:10
 F:RES_LITE | RES_DARK |
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+E:DRAGON_SHINING:300+1d300
 
 N:407:Law Dragon Scale Mail~
 G:[:B
@@ -3535,6 +3445,7 @@ A:80/16
 P:30:2d4:-2:0:10
 F:RES_SOUND | RES_SHARD |
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+E:DRAGON_LAW:300+1d300
 
 N:408:Bronze Dragon Scale Mail~
 G:[:U
@@ -3544,6 +3455,7 @@ A:50/8
 P:30:2d4:-2:0:10
 F:RES_CONFU |
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+E:DRAGON_BRONZE:450+1d450
 
 N:409:Gold Dragon Scale Mail~
 G:[:y
@@ -3553,6 +3465,7 @@ A:50/8
 P:30:2d4:-2:0:10
 F:RES_SOUND |
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+E:DRAGON_GOLD:450+1d450
 
 N:410:Chaos Dragon Scale Mail~
 G:[:v
@@ -3562,6 +3475,7 @@ A:80/16
 P:30:2d4:-2:0:10
 F:RES_CHAOS | RES_DISEN |
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+E:DRAGON_CHAOS:300+1d300
 
 N:411:Balance Dragon Scale Mail~
 G:[:v
@@ -3571,6 +3485,7 @@ A:95/32
 P:30:2d4:-2:0:10
 F:RES_SOUND | RES_SHARD | RES_CHAOS | RES_DISEN |
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+E:DRAGON_BALANCE:300+1d300
 
 N:412:Power Dragon Scale Mail~
 G:[:v
@@ -3582,6 +3497,7 @@ F:RES_ACID | RES_FIRE | RES_COLD | RES_ELEC | RES_POIS |
 F:RES_CONFU | RES_DISEN | RES_SOUND | RES_SHARD | RES_BLIND | 
 F:RES_LITE | RES_DARK | RES_NEXUS | RES_NETHR | RES_CHAOS |
 F:ACTIVATE | IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
+E:DRAGON_POWER:300+1d300
 
 ## XXX 413 XXX ##
 

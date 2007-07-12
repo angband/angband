@@ -454,12 +454,15 @@ static bool describe_misc_magic(const object_type *o_ptr, u32b f3)
 static bool describe_activation(const object_type *o_ptr, u32b f3)
 {
 	const object_kind *k_ptr = &k_info[o_ptr->k_idx];
+	const char *desc;
+
 	int effect, base, dice, sides;
 	char temp[] = "x";
 
 	if (o_ptr->name1)
 	{
 		const artifact_type *a_ptr = &a_info[o_ptr->name1];
+		if (!object_known_p(o_ptr)) return FALSE;
 
 		effect = a_ptr->effect;
 		base = a_ptr->time_base;
@@ -468,78 +471,68 @@ static bool describe_activation(const object_type *o_ptr, u32b f3)
 	}
 	else
 	{
+        if (!object_aware_p(o_ptr)) return FALSE;
+        
 		effect = k_ptr->effect;
 		base = k_ptr->time_base;
 		dice = k_ptr->time_dice;
 		sides = k_ptr->time_sides;
 	}
 
-	/* Make sure we have an effect */
-	if (!effect)
-	{
-		/* Check for the activation flag */
-		if (f3 & TR3_ACTIVATE)
-		{
-			p_text_out("It activates for ");
-			describe_item_activation(o_ptr);
-			text_out(".  ");
+	/* Forget it without an effect */
+	if (!effect) return FALSE;
 
-			return (TRUE);
-		}
-	}
+	/* Obtain the description */
+	desc = effect_desc(effect);
+	if (!desc) return FALSE;
+
+	p_text_out("When ");
+
+	if (f3 & TR3_ACTIVATE)
+		text_out("activated");
+	else if (effect_aim(effect))
+		text_out("aimed");
+	else if (o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION)
+		text_out("ingested");
+	else if (o_ptr->tval == TV_SCROLL)
+	    text_out("read");
 	else
+	    text_out("used");
+
+	text_out(", it ");
+
+	/* Print a colourised description */
+	do
 	{
-		const char *desc = effect_desc(effect);
-		if (!desc) return FALSE;
+		temp[0] = *desc;
 
-		p_text_out("When ");
-
-		if (f3 & TR3_ACTIVATE)
-			text_out("activated");
-		else if (effect_aim(effect))
-			text_out("aimed");
-		else if (o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION)
-			text_out("ingested");
-		else if (o_ptr->tval == TV_SCROLL)
-		    text_out("read");
+		if (isdigit((unsigned char) *desc) || isdigit((unsigned char) *(desc + 1)))
+			text_out_c(TERM_L_GREEN, temp);
 		else
-		    text_out("used");
+			text_out(temp);
+	} while (*desc++);
 
-		text_out(", it ");
+	text_out(".  ");
 
-		/* Print a colourised description */
-		do
+	if (base || dice || sides)
+	{
+		/* Some artifacts can be activated */
+		text_out("When it is used, it takes ");
+
+		/* Output the number of turns */
+		if (dice && dice != 1)
+		    text_out_c(TERM_L_GREEN, "%d", dice);
+
+		if (sides)
+		    text_out_c(TERM_L_GREEN, "d%d", sides);
+
+		if (base)
 		{
-			temp[0] = *desc;
-
-			if (isdigit((unsigned char) *desc) || isdigit((unsigned char) *(desc + 1)))
-				text_out_c(TERM_L_GREEN, temp);
-			else
-				text_out(temp);
-		} while (*desc++);
-
-		text_out(".  ");
-
-		if (base || dice || sides)
-		{
-			/* Some artifacts can be activated */
-			text_out("When it is used, it takes ");
-
-			/* Output the number of turns */
-			if (dice && dice != 1)
-			    text_out_c(TERM_L_GREEN, "%d", dice);
-
-			if (sides)
-			    text_out_c(TERM_L_GREEN, "d%d", sides);
-
-			if (base)
-			{
-				if (sides) text_out_c(TERM_L_GREEN, "+");
-			    text_out_c(TERM_L_GREEN, "%d", base);
-			}
-
-			text_out(" turns to recharge.  ");
+			if (sides) text_out_c(TERM_L_GREEN, "+");
+		    text_out_c(TERM_L_GREEN, "%d", base);
 		}
+
+		text_out(" turns to recharge.  ");
 	}
 
 	/* No activation */

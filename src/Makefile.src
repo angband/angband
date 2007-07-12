@@ -52,7 +52,6 @@ ANGFILES = \
 	store.o \
 	tables.o \
 	ui.o \
-	use-obj.o  \
 	util.o  \
 	variable.o \
 	wizard1.o \

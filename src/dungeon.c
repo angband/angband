@@ -457,10 +457,10 @@ static void recharge_objects(void)
 			o_ptr->timeout--;
 
 			/* Notice changes */
-			if (!(o_ptr->timeout)) charged++;
+			if (!o_ptr->timeout) charged++;
 
 			/* Message if item is recharged, if inscribed with "!!" */
-			if (!(o_ptr->timeout)) recharged_notice(o_ptr, TRUE);
+			if (!o_ptr->timeout) recharged_notice(o_ptr, TRUE);
 		}
 	}
 
@@ -486,8 +486,7 @@ static void recharge_objects(void)
 		if ((o_ptr->tval == TV_ROD) && (o_ptr->timeout))
 		{
 			/* Determine how many rods are charging */
-			int temp = (o_ptr->timeout + (k_ptr->pval - 1)) / k_ptr->pval;
-
+			int temp = (o_ptr->timeout + (k_ptr->time_base - 1)) / k_ptr->time_base;
 			if (temp > o_ptr->number) temp = o_ptr->number;
 
 			/* Decrease timeout by that number */
@@ -497,13 +496,13 @@ static void recharge_objects(void)
 			if (o_ptr->timeout < 0) o_ptr->timeout = 0;
 
 			/* Update if any rods are recharged */
-			if (temp > (o_ptr->timeout + (k_ptr->pval - 1)) / k_ptr->pval)
+			if (temp > (o_ptr->timeout + (k_ptr->time_base - 1)) / k_ptr->time_base)
 			{
 				/* Update window */
 				charged++;
 
 				/* Message if whole stack is recharged, if inscribed with "!!" */
-				if (!(o_ptr->timeout)) recharged_notice(o_ptr, TRUE);
+				if (!o_ptr->timeout) recharged_notice(o_ptr, TRUE);
 				/* Message if first in a stack is recharged, if inscribed with "!!" -HK- */
 				else if (temp == o_ptr->number) recharged_notice(o_ptr, FALSE);
 			}
@@ -533,7 +532,7 @@ static void recharge_objects(void)
 		if (!o_ptr->k_idx) continue;
 
 		/* Recharge rods on the ground */
-		if ((o_ptr->tval == TV_ROD) && (o_ptr->timeout))
+		if ((o_ptr->tval == TV_ROD) && o_ptr->timeout)
 		{
 			/* Charge it */
 			o_ptr->timeout -= o_ptr->number;

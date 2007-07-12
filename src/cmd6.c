@@ -18,7 +18,7 @@
  */
 #include "angband.h"
 #include "effects.h"
-#include "script.h"
+
 
 /* Types of item use */
 typedef enum
@@ -64,7 +64,7 @@ static bool item_tester_hook_zap(const object_type *o_ptr)
 	if (o_ptr->tval != TV_ROD) return FALSE;
 
 	/* All still charging? */
-	if (o_ptr->timeout > (o_ptr->pval - k_ptr->pval)) return FALSE;
+	if (o_ptr->number <= (o_ptr->timeout + (k_ptr->time_base - 1)) / k_ptr->time_base) return FALSE;
 
 	/* Otherwise OK */
 	return TRUE;
@@ -164,6 +164,20 @@ static int check_devices(object_type *o_ptr)
 	return TRUE;
 }
 
+/*
+ * Return the chance of an effect beaming, given a tval.
+ */
+static int beam_chance(int tval)
+{
+	switch (tval)
+	{
+		case TV_WAND: return 20;
+		case TV_ROD:  return 10;
+	}
+
+	return 0;
+}
+
 
 /*
  * Use an object the right way.
@@ -235,21 +249,12 @@ static void do_cmd_use(const char *q, const char *s, int flag, int snd, use_type
 		sound(snd);
 	}
 
-	/* Use the object */
-	if (effect)
-	{
-		/* Do effect */
-        used = do_effect(effect, &ident, dir);
+	/* Do effect */
+	used = do_effect(effect, &ident, dir, beam_chance(o_ptr->tval));
 
-		/* Food feeds the player */
-		if (o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION)
-			(void)set_food(p_ptr->food + o_ptr->pval);
-	}
-	else
-	{
-		/* Use the more prosaic method */
-		used = use_object(o_ptr, &ident, dir);
-	}
+	/* Food feeds the player */
+	if (o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION)
+		(void)set_food(p_ptr->food + o_ptr->pval);
 
 	if (!used && !ident) return;
 
@@ -306,7 +311,7 @@ static void do_cmd_use(const char *q, const char *s, int flag, int snd, use_type
 		else
 		{
 			const object_kind *k_ptr = &k_info[o_ptr->k_idx];
-			o_ptr->timeout = k_ptr->time_base + damroll(k_ptr->time_dice, k_ptr->time_sides);
+			o_ptr->timeout += k_ptr->time_base + damroll(k_ptr->time_dice, k_ptr->time_sides);
 		}
 	}
 	else if (use == USE_SINGLE)
