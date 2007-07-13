@@ -529,6 +529,67 @@ static void player_wipe(void)
 	for (i = 0; i < PY_MAX_SPELLS; i++) p_ptr->spell_order[i] = 99;
 }
 
+/*
+ * Try to wield everything wieldable in the inventory.
+ */
+static void wield_all(void)
+{
+	object_type *o_ptr;
+	object_type *i_ptr;
+	object_type object_type_body;
+
+	int slot;
+	int item;
+
+	/* Scan through the slots backwards */
+	for (item = INVEN_PACK - 1; item >= 0; item--)
+	{
+		o_ptr = &inventory[item];
+
+		/* Skip non-objects */
+		if (!o_ptr->k_idx) continue;
+
+		/* Make sure we can wield it and that there's nothing else in that slot */
+		slot = wield_slot(o_ptr);
+		if (slot < INVEN_WIELD) continue;
+		if (inventory[slot].k_idx) continue;
+
+		/* Get local object */
+		i_ptr = &object_type_body;
+		object_copy(i_ptr, o_ptr);
+
+		/* Modify quantity */
+		i_ptr->number = 1;
+
+		/* Decrease the item (from the pack) */
+		if (item >= 0)
+		{
+			inven_item_increase(item, -1);
+			inven_item_optimize(item);
+		}
+
+		/* Decrease the item (from the floor) */
+		else
+		{
+			floor_item_increase(0 - item, -1);
+			floor_item_optimize(0 - item);
+		}
+
+		/* Get the wield slot */
+		o_ptr = &inventory[slot];
+
+		/* Wear the new stuff */
+		object_copy(o_ptr, i_ptr);
+
+		/* Increase the weight */
+		p_ptr->total_weight += i_ptr->weight;
+
+		/* Increment the equip counter by hand */
+		p_ptr->equip_cnt++;
+	}
+
+	return;
+}
 
 
 /*
@@ -596,6 +657,10 @@ static void player_outfit(void)
 	object_aware(i_ptr);
 	object_known(i_ptr);
 	(void)inven_carry(i_ptr);
+
+
+	/* Now try wielding everything */
+	wield_all();
 }
 
 

@@ -298,14 +298,8 @@ void do_cmd_wield(void)
 		p_ptr->notice |= PN_SQUELCH;
 	}
 
-	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
-
-	/* Recalculate torch */
-	p_ptr->update |= (PU_TORCH);
-
-	/* Recalculate mana */
-	p_ptr->update |= (PU_MANA);
+	/* Recalculate bonuses, torch, mana */
+	p_ptr->update |= (PU_BONUS | PU_TORCH | PU_MANA);
 
 	/* Window stuff */
 	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
