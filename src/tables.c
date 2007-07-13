@@ -1407,7 +1407,7 @@ cptr option_text[OPT_MAX] =
 	NULL,						/* xxx stack_force_notes */
 	NULL,						/* xxx stack_force_costs */
 	"show_labels",				/* OPT_show_labels */
-	NULL,						/* xxx show_weights */
+	"show_lists",				/* OPT_show_lists */
 	NULL,						/* xxx show_choices */
 	NULL,						/* xxx show_details */
 	"ring_bell",				/* OPT_ring_bell */
@@ -1671,7 +1671,7 @@ cptr option_desc[OPT_MAX] =
 	NULL,										/* xxx stack_force_notes */
 	NULL,										/* xxx stack_force_costs */
 	"Show labels in equipment listings",		/* OPT_show_labels */
-	NULL,										/* xxx show_weights */
+	"Always show lists",						/* OPT_show_lists */
 	NULL,										/* xxx show_choices */
 	NULL,										/* xxx show_details */
 	"Audible bell (on errors, etc)",			/* OPT_ring_bell */
@@ -1935,7 +1935,7 @@ const bool option_norm[OPT_MAX] =
 	FALSE,		/* OPT_stack_force_notes */
 	FALSE,		/* xxx stack_force_costs */
 	TRUE,		/* OPT_show_labels */
-	FALSE,		/* xxx show_weights */
+	TRUE,		/* OPT_show_weights */
 	FALSE,		/* xxx show_choices */
 	FALSE,		/* xxx show_details */
 	TRUE,		/* OPT_ring_bell */
@@ -2199,8 +2199,8 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_hide_squelchable,
 		OPT_easy_alter,
 		OPT_easy_open,
+		OPT_show_lists,
 		OPT_mouse_movement,
-		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,

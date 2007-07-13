@@ -2852,6 +2852,10 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	int floor_num;
 
 
+	/* Always show lists */
+	if (OPT(show_lists)) p_ptr->command_see = TRUE;
+
+
 	/* Get the item index */
 	if (repeat_pull(cp))
 	{
@@ -2938,7 +2942,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	if (!allow_inven && !allow_equip && !allow_floor)
 	{
 		/* Cancel p_ptr->command_see */
-		p_ptr->command_see = FALSE;
+		if (!OPT(show_lists)) p_ptr->command_see = FALSE;
 
 		/* Oops */
 		oops = TRUE;
@@ -3149,24 +3153,27 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 			case '?':
 			case ' ':
 			{
-				/* Hide the list */
-				if (p_ptr->command_see)
+				if (!OPT(show_lists))
 				{
-					/* Flip flag */
-					p_ptr->command_see = FALSE;
+					/* Hide the list */
+					if (p_ptr->command_see)
+					{
+						/* Flip flag */
+						p_ptr->command_see = FALSE;
 
-					/* Load screen */
-					screen_load();
-				}
+						/* Load screen */
+						screen_load();
+					}
 
-				/* Show the list */
-				else
-				{
-					/* Save screen */
-					screen_save();
+					/* Show the list */
+					else
+					{
+						/* Save screen */
+						screen_save();
 
-					/* Flip flag */
-					p_ptr->command_see = TRUE;
+						/* Flip flag */
+						p_ptr->command_see = TRUE;
+					}
 				}
 
 				break;

@@ -350,7 +350,7 @@ static int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool bro
 	redraw = FALSE;
 
 	/* Hack -- when browsing a book, start with list shown */
-	if (browse)
+	if (browse || OPT(show_lists))
 	{
 		/* Show list */
 		redraw = TRUE;
@@ -363,14 +363,15 @@ static int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool bro
 	}
 
 	/* Build a prompt (accept all spells) */
-	strnfmt(out_val, 78, "(%^ss %c-%c, *=List, ESC=exit) %^s which %s? ",
-	        p, I2A(0), I2A(num - 1), prompt, p);
+	strnfmt(out_val, sizeof(out_val), "(%^ss a-%c%s, ESC=exit) %^s which %s? ",
+	        p, I2A(num - 1), (OPT(show_lists) ? "" : ", *=List"), prompt, p);
 
 	/* Get a spell from the user */
 	while (!flag && get_com(out_val, &choice))
 	{
 		/* Request redraw */
-		if ((choice == ' ') || (choice == '*') || (choice == '?'))
+		if (!OPT(show_lists) &&
+		    ((choice == ' ') || (choice == '*') || (choice == '?')))
 		{
 			/* Hide the list */
 			if (redraw)
@@ -436,7 +437,7 @@ static int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool bro
 			s_ptr = &mp_ptr->info[spell];
 
 			/* Prompt */
-			strnfmt(tmp_val, 78, "%^s %s (%d mana, %d%% fail)? ",
+			strnfmt(tmp_val, sizeof(tmp_val), "%^s %s (%d mana, %d%% fail)? ",
 			        prompt, get_spell_name(cp_ptr->spell_book, spell),
 			        s_ptr->smana, spell_chance(spell));
 
@@ -775,8 +776,7 @@ void do_cmd_study(void)
 	{
 		/* Message */
 		msg_format("You can learn %d more %s%s.",
-		           p_ptr->new_spells, p,
-		           (p_ptr->new_spells != 1) ? "s" : "");
+		           p_ptr->new_spells, p, PLURAL(p_ptr->new_spells));
 	}
 
 	/* Redraw Study Status */
