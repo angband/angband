@@ -81,6 +81,42 @@ int my_strnicmp(cptr a, cptr b, int n)
 	return 0;
 }
 
+/*
+ * An ANSI version of strstr() with case insensitivity.
+ *
+ * In the public domain; found at:
+ *    http://c.snippets.org/code/stristr.c
+ */
+char *my_stristr(const char *string, const char *pattern)
+{
+      char *pptr, *sptr, *start;
+
+      for (start = (char *)string; *start != 0; start++)
+      {
+            /* find start of pattern in string */
+            for ( ; ((*start != 0) &&
+			        (toupper((unsigned char)*start) != toupper((unsigned char)*pattern))); start++)
+                  ;
+            if (*start == 0)
+                  return NULL;
+
+            pptr = (char *)pattern;
+            sptr = (char *)start;
+
+            while (toupper((unsigned char)*sptr) == toupper((unsigned char)*pptr))
+            {
+                  sptr++;
+                  pptr++;
+
+                  /* if end of pattern then pattern was found */
+                  if (*pptr == 0)
+                        return (start);
+            }
+      }
+
+      return NULL;
+}
+
 
 /*
  * The my_strcpy() function copies up to 'bufsize'-1 characters from 'src'

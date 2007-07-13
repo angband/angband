@@ -38,6 +38,9 @@ extern void (*quit_aux)(cptr);
 extern int my_stricmp(const char *s1, const char *s2);
 extern int my_strnicmp(cptr a, cptr b, int n);
 
+/* Case-insensitive strstr */
+extern char *my_stristr(const char *string, const char *pattern);
+
 /* Copy a string */
 extern size_t my_strcpy(char *buf, const char *src, size_t bufsize);
 

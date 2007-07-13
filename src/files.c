@@ -2374,15 +2374,9 @@ bool show_file(cptr name, cptr what, int line, int mode)
 		}
 
 		/* Back up one line */
-		if ((ch == '8') || (ch == '='))
+		if (ch == ARROW_UP || ch == '8')
 		{
 			line = line - 1;
-		}
-
-		/* Back up one half page */
-		if (ch == '_')
-		{
-			line = line - ((hgt - 4) / 2);
 		}
 
 		/* Back up one full page */
@@ -2398,15 +2392,9 @@ bool show_file(cptr name, cptr what, int line, int mode)
 		}
 
 		/* Advance one line */
-		if ((ch == '2') || (ch == '\n') || (ch == '\r'))
+		if ((ch == ARROW_DOWN) || (ch == '2') || (ch == '\n') || (ch == '\r'))
 		{
 			line = line + 1;
-		}
-
-		/* Advance one half page */
-		if (ch == '+')
-		{
-			line = line + ((hgt - 4) / 2);
 		}
 
 		/* Advance one full page */

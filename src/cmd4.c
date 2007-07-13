@@ -1957,15 +1957,8 @@ void do_cmd_messages(void)
 	int i, j, n, q;
 	int wid, hgt;
 
-	char shower[80];
-	char finder[80];
+	char shower[80] = "";
 
-
-	/* Wipe finder */
-	my_strcpy(finder, "", sizeof(shower));
-
-	/* Wipe shower */
-	my_strcpy(shower, "", sizeof(finder));
 
 
 	/* Total messages */
@@ -2007,12 +2000,12 @@ void do_cmd_messages(void)
 				cptr str = msg;
 
 				/* Display matches */
-				while ((str = strstr(str, shower)) != NULL)
+				while ((str = my_stristr(str, shower)) != NULL)
 				{
 					int len = strlen(shower);
 
 					/* Display the match */
-					Term_putstr(str-msg, hgt - 3 - j, len, TERM_YELLOW, shower);
+					Term_putstr(str-msg, hgt - 3 - j, len, TERM_YELLOW, str);
 
 					/* Advance */
 					str += len;
@@ -2020,24 +2013,39 @@ void do_cmd_messages(void)
 			}
 		}
 
-		/* Display header XXX XXX XXX */
-		prt(format("Message Recall (%d-%d of %d), Offset %d",
-			   i, i + j - 1, n, q), 0, 0);
+		/* Display header */
+		prt(format("Message recall (%d-%d of %d), offset %d", i, i + j - 1, n, q), 0, 0);
 
 		/* Display prompt (not very informative) */
-		prt("[Press 'p' for older, 'n' for newer, ..., or ESCAPE]", hgt - 1, 0);
+		if (shower[0])
+		    prt("[Movement keys to navigate, '-' for next, '=' to find]", hgt - 1, 0);
+		else
+			prt("[Movement keys to navigate, '=' to find, or ESCAPE to exit]", hgt - 1, 0);
+			
 
 		/* Get a command */
 		ke = inkey_ex();
 
-		/* Exit on Escape */
-		if (ke.key == ESCAPE) break;
 
-		/* Hack -- Save the old index */
-		j = i;
+		/* Exit on Escape */
+		if (ke.key == ESCAPE)
+		{
+			break;
+		}
+
+		/* Find text */
+		else if (ke.key == '=')
+		{
+			/* Get the string to find */
+			prt("Find: ", hgt - 1, 0);
+			if (!askfor_aux(shower, sizeof shower, NULL)) continue;
+
+			/* Set to find */
+			ke.key = '-';
+		}
 
 		/* Horizontal scroll */
-		if (ke.key == '4')
+		else if (ke.key == '4' || ke.key == ARROW_LEFT)
 		{
 			/* Scroll left */
 			q = (q >= wid / 2) ? (q - wid / 2) : 0;
@@ -2047,7 +2055,7 @@ void do_cmd_messages(void)
 		}
 
 		/* Horizontal scroll */
-		if (ke.key == '6')
+		else if (ke.key == '6'|| ke.key == ARROW_RIGHT)
 		{
 			/* Scroll right */
 			q = q + wid / 2;
@@ -2056,94 +2064,36 @@ void do_cmd_messages(void)
 			continue;
 		}
 
-		/* Hack -- handle show */
-		if (ke.key == '=')
-		{
-			/* Prompt */
-			prt("Show: ", hgt - 1, 0);
-
-			/* Get a "shower" string, or continue */
-			if (!askfor_aux(shower, sizeof shower, NULL)) continue;
-
-			/* Okay */
-			continue;
-		}
-
-		/* Hack -- handle find */
-		if (ke.key == '/')
-		{
-			s16b z;
-
-			/* Prompt */
-			prt("Find: ", hgt - 1, 0);
-
-			/* Get a "finder" string, or continue */
-			if (!askfor_aux(finder, sizeof finder, NULL)) continue;
-
-			/* Show it */
-			my_strcpy(shower, finder, sizeof(shower));
-
-			/* Scan messages */
-			for (z = i + 1; z < n; z++)
-			{
-				cptr msg = message_str(z);
-
-				/* Search for it */
-				if (strstr(msg, finder))
-				{
-					/* New location */
-					i = z;
-
-					/* Done */
-					break;
-				}
-			}
-		}
-
-		/* Recall 20 older messages */
-		if ((ke.key == 'p') || (ke.key == KTRL('P')) || (ke.key == ' '))
-		{
-			/* Go older if legal */
-			if (i + 20 < n) i += 20;
-		}
-
-		/* Recall 10 older messages */
-		if (ke.key == '+')
-		{
-			/* Go older if legal */
-			if (i + 10 < n) i += 10;
-		}
-
 		/* Recall 1 older message */
-		if ((ke.key == '8') || (ke.key == '\n') || (ke.key == '\r'))
+		else if (ke.key == '8' || ke.key == ARROW_UP)
 		{
 			/* Go older if legal */
 			if (i + 1 < n) i += 1;
 		}
 
-		/* Recall 20 newer messages */
-		if ((ke.key == 'n') || (ke.key == KTRL('N')))
-		{
-			/* Go newer (if able) */
-			i = (i >= 20) ? (i - 20) : 0;
-		}
-
-		/* Recall 10 newer messages */
-		if (ke.key == '-')
-		{
-			/* Go newer (if able) */
-			i = (i >= 10) ? (i - 10) : 0;
-		}
-
 		/* Recall 1 newer messages */
-		if (ke.key == '2')
+		else if (ke.key == '2' || ke.key == ARROW_DOWN || ke.key == '\r' || ke.key == '\n')
 		{
 			/* Go newer (if able) */
 			i = (i >= 1) ? (i - 1) : 0;
 		}
 
+		/* Recall 20 older messages */
+		else if ((ke.key == 'p') || (ke.key == KTRL('P')) || (ke.key == ' '))
+		{
+			/* Go older if legal */
+			if (i + 20 < n) i += 20;
+		}
+
+		/* Recall 20 newer messages */
+		else if ((ke.key == 'n') || (ke.key == KTRL('N')))
+		{
+			/* Go newer (if able) */
+			i = (i >= 20) ? (i - 20) : 0;
+		}
+
 		/* Scroll forwards or backwards using mouse clicks */
-		if (ke.key == '\xff')
+		else if (ke.key == '\xff')
 		{
 			if (ke.index)
 			{
@@ -2160,8 +2110,32 @@ void do_cmd_messages(void)
 			}
 		}
 
-		/* Hack -- Error of some kind */
-		if (i == j) bell(NULL);
+		/* Error time */
+		else
+		{
+			bell(NULL);
+		}
+
+
+		/* Find the next item */
+		if (ke.key == '-' && shower[0])
+		{
+			s16b z;
+
+			/* Scan messages */
+			for (z = i + 1; z < n; z++)
+			{
+				/* Search for it */
+				if (my_stristr(message_str(z), shower))
+				{
+					/* New location */
+					i = z;
+
+					/* Done */
+					break;
+				}
+			}
+		}
 	}
 
 	/* Load screen */
