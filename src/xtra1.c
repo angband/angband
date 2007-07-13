@@ -601,7 +601,7 @@ static void display_sidebar(void)
  */
 struct state_info
 {
-	size_t value;
+	int value;
 	const char *str;
 	size_t len;
 	byte attr;
@@ -1614,6 +1614,34 @@ static void calc_torch(void)
 	}
 }
 
+/*
+ * Calculate the blows a player would get, in current condition, wielding "o_ptr".
+ */
+int calc_blows(const object_type *o_ptr)
+{
+	int blows;
+	int str_index, dex_index;
+	int div;
+
+	/* Enforce a minimum "weight" (tenth pounds) */
+	div = ((o_ptr->weight < cp_ptr->min_weight) ? cp_ptr->min_weight : o_ptr->weight);
+
+	/* Get the strength vs weight */
+	str_index = (adj_str_blow[p_ptr->stat_ind[A_STR]] * cp_ptr->att_multiply / div);
+
+	/* Maximal value */
+	if (str_index > 11) str_index = 11;
+
+	/* Index by dexterity */
+	dex_index = MIN(adj_dex_blow[p_ptr->stat_ind[A_DEX]], 11);
+
+	/* Use the blows table */
+	blows = MIN(blows_table[str_index][dex_index], cp_ptr->max_attacks);
+
+	/* Require at least one blow */
+	return MAX(blows, 1);
+}
+
 
 /*
  * Computes current weight limit.
@@ -2336,36 +2364,8 @@ static void calc_bonuses(void)
 	/* Normal weapons */
 	if (o_ptr->k_idx && !p_ptr->heavy_wield)
 	{
-		int str_index, dex_index;
-
-		int div;
-
-		/* Enforce a minimum "weight" (tenth pounds) */
-		div = ((o_ptr->weight < cp_ptr->min_weight) ? cp_ptr->min_weight : o_ptr->weight);
-
-		/* Get the strength vs weight */
-		str_index = (adj_str_blow[p_ptr->stat_ind[A_STR]] * cp_ptr->att_multiply / div);
-
-		/* Maximal value */
-		if (str_index > 11) str_index = 11;
-
-		/* Index by dexterity */
-		dex_index = (adj_dex_blow[p_ptr->stat_ind[A_DEX]]);
-
-		/* Maximal value */
-		if (dex_index > 11) dex_index = 11;
-
-		/* Use the blows table */
-		p_ptr->num_blow = blows_table[str_index][dex_index];
-
-		/* Maximal value */
-		if (p_ptr->num_blow > cp_ptr->max_attacks) p_ptr->num_blow = cp_ptr->max_attacks;
-
-		/* Add in the "bonus blows" */
-		p_ptr->num_blow += extra_blows;
-
-		/* Require at least one blow */
-		if (p_ptr->num_blow < 1) p_ptr->num_blow = 1;
+		/* Calculate number of blows */
+		p_ptr->num_blow = calc_blows(o_ptr) + extra_blows;;
 
 		/* Boost digging skill by weapon weight */
 		p_ptr->skills[SKILL_DIG] += (o_ptr->weight / 10);

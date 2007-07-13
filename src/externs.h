@@ -690,6 +690,7 @@ extern void repeat_check(void);
 /* xtra1.c */
 extern void cnv_stat(int val, char *out_val, size_t len);
 extern s16b modify_stat_value(int value, int amount);
+extern int calc_blows(const object_type *o_ptr);
 extern void notice_stuff(void);
 extern void update_stuff(void);
 extern void redraw_stuff(void);

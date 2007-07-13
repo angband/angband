@@ -149,94 +149,107 @@ static bool describe_stats(const object_type *o_ptr, u32b f1)
 	return prev;
 }
 
-
 /*
- * Describe the special slays and executes of an item.
+ * list[] and mult[] must be > 11 in size
  */
-static bool describe_slay(const object_type *o_ptr, u32b f1)
+static int collect_slays(cptr desc[], int mult[], u32b f1)
 {
-	cptr slays[8], execs[3];
-	int slcnt = 0, excnt = 0;
-	bool prev = FALSE;
+	int cnt = 0;
 
-	/* Unused parameter */
-	(void)o_ptr;
+	/* Collect slays */
+	if (f1 & TR1_SLAY_ANIMAL) { mult[cnt] = 2; desc[cnt++] = "animals"; }
+	if (f1 & TR1_SLAY_EVIL)   { mult[cnt] = 2; desc[cnt++] = "evil creatures"; }
 
-	/* Collect brands */
-	if (f1 & (TR1_SLAY_ANIMAL)) slays[slcnt++] = "animals";
-	if (f1 & (TR1_SLAY_ORC))    slays[slcnt++] = "orcs";
-	if (f1 & (TR1_SLAY_TROLL))  slays[slcnt++] = "trolls";
-	if (f1 & (TR1_SLAY_GIANT))  slays[slcnt++] = "giants";
+	if (f1 & TR1_SLAY_ORC)    { mult[cnt] = 3; desc[cnt++] = "orcs"; }
+	if (f1 & TR1_SLAY_TROLL)  { mult[cnt] = 3; desc[cnt++] = "trolls"; }
+	if (f1 & TR1_SLAY_GIANT)  { mult[cnt] = 3; desc[cnt++] = "giants"; }
+	if (f1 & TR1_SLAY_DRAGON) { mult[cnt] = 3; desc[cnt++] = "dragons"; }
+	if (f1 & TR1_SLAY_DEMON)  { mult[cnt] = 3; desc[cnt++] = "demons"; }
+	if (f1 & TR1_SLAY_UNDEAD) { mult[cnt] = 3; desc[cnt++] = "undead"; }
 
-	/* Dragon slay/execute */
-	if (f1 & TR1_KILL_DRAGON)
-		execs[excnt++] = "dragons";
-	else if (f1 & TR1_SLAY_DRAGON)
-		slays[slcnt++] = "dragons";
+	if (f1 & TR1_BRAND_ACID)  { mult[cnt] = 3; desc[cnt++] = "acid-vulnerable creatures"; }
+	if (f1 & TR1_BRAND_ELEC)  { mult[cnt] = 3; desc[cnt++] = "electricity-vulnerable creatures"; }
+	if (f1 & TR1_BRAND_FIRE)  { mult[cnt] = 3; desc[cnt++] = "fire-vulnerable creatures"; }
+	if (f1 & TR1_BRAND_COLD)  { mult[cnt] = 3; desc[cnt++] = "frost-vulnerable creatures"; }
+	if (f1 & TR1_BRAND_POIS)  { mult[cnt] = 3; desc[cnt++] = "poison-vulnerable creatures"; }
 
-	/* Demon slay/execute */
-	if (f1 & TR1_KILL_DEMON)
-		execs[excnt++] = "demons";
-	else if (f1 & TR1_SLAY_DEMON)
-		slays[slcnt++] = "demons";
+	if (f1 & TR1_KILL_DRAGON) { mult[cnt] = 5; desc[cnt++] = "dragons"; }
+	if (f1 & TR1_KILL_DEMON)  { mult[cnt] = 5; desc[cnt++] = "demons"; }
+	if (f1 & TR1_KILL_UNDEAD) { mult[cnt] = 5; desc[cnt++] = "undead"; }
 
-	/* Undead slay/execute */
-	if (f1 & TR1_KILL_UNDEAD)
-		execs[excnt++] = "undead";
-	else if (f1 & TR1_SLAY_UNDEAD)
-		slays[slcnt++] = "undead";
-
-	if (f1 & (TR1_SLAY_EVIL)) slays[slcnt++] = "all evil creatures";
-
-	if (slcnt)
-	{
-		p_text_out("It slays ");
-		output_list(slays, slcnt);
-		prev = TRUE;
-	}
-
-	if (excnt)
-	{
-		/* Intro */
-		if (prev) text_out(", and is especially deadly against ");
-		else p_text_out("It is especially deadly against ");
-
-		/* List */
-		output_list(execs, excnt);
-		prev = TRUE;
-	}
-
-	/* Output end */
-	if (prev) text_out(".  ");
-
-	/* We are done here */
-	return prev;
+	return cnt;
 }
 
 
 /*
- * Describe elemental brands.
+ * Describe combat advantages.
  */
-static bool describe_brand(const object_type *o_ptr, u32b f1)
+static bool describe_combat(const object_type *o_ptr, u32b f1)
 {
-	cptr descs[5];
-	int cnt = 0;
+	cptr desc[15];
+	int mult[15];
+	int cnt, dam;
+	object_type *j_ptr = &inventory[INVEN_BOW];
 
-	/* Unused parameter */
-	(void)o_ptr;
+	bool weapon = (wield_slot(o_ptr) == INVEN_WIELD);
+	bool ammo   = (p_ptr->ammo_tval == o_ptr->tval) &&
+	              (j_ptr->k_idx);
 
-	/* Collect brands */
-	if (f1 & (TR1_BRAND_ACID)) descs[cnt++] = "acid";
-	if (f1 & (TR1_BRAND_ELEC)) descs[cnt++] = "electricity";
-	if (f1 & (TR1_BRAND_FIRE)) descs[cnt++] = "fire";
-	if (f1 & (TR1_BRAND_COLD)) descs[cnt++] = "frost";
-	if (f1 & (TR1_BRAND_POIS)) descs[cnt++] = "poison";
+	/* Abort if we've nothing to say */
+	if (!weapon && !ammo) return FALSE;
 
-	/* Describe brands */
-	output_desc_list("It is branded with ", descs, cnt);
+	if (weapon)
+	{
+		int blows = calc_blows(o_ptr);
 
-	/* We are done here */
-	return (cnt ? TRUE : FALSE);
+		dam = (o_ptr->ds * o_ptr->dd * 5);
+		dam += (o_ptr->to_d + p_ptr->to_d) * 10;
+
+	    p_text_out("Using this weapon, in your current condition, you are able to score ");
+	    text_out_c(TERM_L_GREEN, format("%d ", blows));
+	    if (blows > 1)
+			text_out("blows per round.  Each blow will do an average damage of ");
+	    else
+			text_out("blow per round, averaging a damage of ");
+	}
+	else
+	{
+		int tdis = 10 + 5 * p_ptr->ammo_mult;
+
+		/* Calculate damage */
+		dam = (o_ptr->ds * o_ptr->dd * 5);
+		dam += (o_ptr->to_d + j_ptr->to_d * 10);
+		dam *= p_ptr->ammo_mult;
+
+		p_text_out("Fired from your current bow, this arrow will hit targets up to ");
+		text_out_c(TERM_L_GREEN, format("%d", tdis * 10));
+		text_out(" feet away, inflicting an average damage of ");
+	}
+
+	/* Collect slays */
+	cnt = collect_slays(desc, mult, f1);
+	if (object_known_p(o_ptr) && cnt)
+	{
+		size_t i;
+
+		for (i = 0; i < cnt; i++)
+		{
+			text_out_c(TERM_L_GREEN, "%d", (dam * mult[i]) / 10);
+			text_out(" against %s, ", desc[i]);
+		}
+
+		text_out("and ");
+	}
+
+    if (dam % 10)
+		text_out_c(TERM_L_GREEN, "%d.%d", dam / 10, dam % 10);
+    else
+		text_out_c(TERM_L_GREEN, "%d", dam / 10);
+
+	text_out(" against normal creatures.  ");
+
+	/* You always have something to say... */
+	return TRUE;
 }
 
 
@@ -565,11 +578,13 @@ bool object_info_out(const object_type *o_ptr)
 	}
 
 
-	/* Describe the object */
+	/* Describe combat bits */
+	new_paragraph = TRUE;
+	if (describe_combat(o_ptr, f1)) something = TRUE;
+
+	/* Describe other bits */
 	new_paragraph = TRUE;
 	if (describe_stats(o_ptr, f1)) something = TRUE;
-	if (describe_slay(o_ptr, f1)) something = TRUE;
-	if (describe_brand(o_ptr, f1)) something = TRUE;
 	if (describe_immune(o_ptr, f2, f3)) something = TRUE;
 	if (describe_sustains(o_ptr, f2)) something = TRUE;
 	if (describe_misc_magic(o_ptr, f3)) something = TRUE;

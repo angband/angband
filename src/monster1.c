@@ -138,15 +138,13 @@ static bool know_damage(int r_idx, const monster_lore *l_ptr, int i)
 	return (FALSE);
 }
 
-
+/*
+ * Dump flavour text
+ */
 static void describe_monster_desc(int r_idx)
 {
 	const monster_race *r_ptr = &r_info[r_idx];
-	char buf[2048];
-
-	/* Dump it */
-	text_out(r_text + r_ptr->text);
-	text_out("\n");
+	text_out("%s\n", r_text + r_ptr->text);
 }
 
 
@@ -352,12 +350,7 @@ static void describe_monster_drop(int r_idx, const monster_lore *l_ptr)
 {
 	const monster_race *r_ptr = &r_info[r_idx];
 
-	bool sin = FALSE;
-
 	int n;
-
-	const char *p = NULL;
-
 	int msex = 0;
 
 
@@ -566,12 +559,10 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 {
 	const monster_race *r_ptr = &r_info[r_idx];
 
-	int n;
-	bool prev = FALSE;
-
 	int vn;
 	cptr vp[64];
-
+	bool prev = FALSE;
+	
 	int msex = 0;
 
 

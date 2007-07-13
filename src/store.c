@@ -173,13 +173,10 @@ static void prt_welcome(const owner_type *ot_ptr)
 	const char *player_name;
 
 	const char *owner_name = &b_name[ot_ptr->owner_name];
-	int i = p_ptr->lev / 5;
+	int i = (p_ptr->lev - 1) / 5;
 
 	/* Only show the message one in four times to stop it being irritating. */
 	if (!rand_int(4)) return;
-
-	/* Make sure level 50 players don't overflow */
-	i = MIN(i, N_ELEMENTS(comment_welcome) - 1);
 
 	/* Welcome the character */
 	if (i)

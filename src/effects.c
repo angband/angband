@@ -1025,9 +1025,13 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 		case EF_HASTE:
 		{
 			if (!p_ptr->timed[TMD_FAST])
+			{
 				if (set_timed(TMD_FAST, damroll(2, 10) + 20)) *ident = TRUE;
+			}
 			else
+			{
 				(void)inc_timed(TMD_FAST, 5);
+			}
 
 			return TRUE;
 		}
@@ -1035,9 +1039,13 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 		case EF_HASTE1:
 		{
 			if (!p_ptr->timed[TMD_FAST])
+			{
 				if (set_timed(TMD_FAST, randint(20) + 20)) *ident = TRUE;
+			}
 			else
+			{
 				(void)inc_timed(TMD_FAST, 5);
+			}
 
 			return TRUE;
 		}
@@ -1045,9 +1053,13 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 		case EF_HASTE2:
 		{
 			if (!p_ptr->timed[TMD_FAST])
+			{
 				if (set_timed(TMD_FAST, randint(75) + 75)) *ident = TRUE;
+			}
 			else
+			{
 				(void)inc_timed(TMD_FAST, 5);
+			}
 
 			return TRUE;
 		}
