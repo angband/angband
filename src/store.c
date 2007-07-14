@@ -2616,7 +2616,7 @@ void do_cmd_store(void)
 
 	/* Wipe the menu and set it up */
 	WIPE(&menu, menu);
-	menu.flags = MN_DBL_TAP | MN_PAGE;
+	menu.flags = MN_DBL_TAP;
 
 	/* Calculate the positions of things and redraw */
 	store_flags = STORE_INIT_CHANGE;

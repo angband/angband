@@ -224,7 +224,6 @@ typedef enum {
 
 	MN_DBL_TAP	= 0x1000, /* double tap for selection; single tap is cursor movement */
 	MN_NO_ACT	= 0x2000, /* Do not invoke the specified action; menu selection only */
-	MN_PAGE		= 0x4000, /* Use full-page scrolling rather than small increment */
 	MN_NO_CURSOR = 0x8000, /* No cursor movement */
 
 	/* Reserved for rows in action_menu structure. */

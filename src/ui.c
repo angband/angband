@@ -339,22 +339,15 @@ static void display_scrolling(menu_type *menu, int cursor, int *top, region *loc
 	int n = menu->filter_count;
 	int i;
 
+	/* Keep a certain distance from the top when possible */
 	if ((cursor <= *top) && (*top > 0))
-	{
-		if(menu->flags & MN_PAGE) *top = cursor;
-		else *top = cursor - jumpscroll - 1;
-	}
+		*top = cursor - jumpscroll - 1;
 
+	/* Keep a certain distance from the bottom when possible */
 	if (cursor >= *top + (rows_per_page - 1))
-	{
-		if (menu->flags & MN_PAGE && cursor + rows_per_page < n)
-			*top = cursor;
-		else if (menu->flags & MN_PAGE)
-			*top = n - rows_per_page;
-		else 
-			*top = cursor - (rows_per_page - 1) + 1 + jumpscroll;
-	}
+		*top = cursor - (rows_per_page - 1) + 1 + jumpscroll;
 
+	/* Limit the top to legal places */
 	if (*top > n - rows_per_page)
 		*top = n - rows_per_page;
 	if (*top < 0)
@@ -765,14 +758,20 @@ static bool menu_handle_event(menu_type *menu, const event_type *in)
 			if (menu->flags & MN_NO_CURSOR)
 				return FALSE;
 
-			if (in->key == ' ' && (menu->flags & MN_PAGE))
+			if (in->key == ' ')
 			{
+				int rows = menu->active.page_rows;
+				int total = menu->filter_count;
+
+				/* Ignore it if there's a page or less to show */
+				if (rows >= total) return FALSE;
+
 				/* Go to start of next page */
-				*cursor += menu->active.page_rows - (*cursor % menu->active.page_rows);
+				*cursor += menu->active.page_rows;
+				if (*cursor >= total - 1) *cursor = 0;
+				menu->top = *cursor;
 
-				if (*cursor >= menu->filter_count)
-					*cursor = 0;
-
+				/* Set the out event type */
 				out.type = EVT_MOVE;
 				out.index = *cursor;
 
