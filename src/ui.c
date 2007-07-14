@@ -348,10 +348,9 @@ static void display_scrolling(menu_type *menu, int cursor, int *top, region *loc
 		*top = cursor - (rows_per_page - 1) + 1 + jumpscroll;
 
 	/* Limit the top to legal places */
-	if (*top > n - rows_per_page)
-		*top = n - rows_per_page;
-	if (*top < 0)
-		*top = 0;
+	*top = MIN(*top, n - rows_per_page);
+	*top = MAX(*top, 0);
+
 
 	for (i = 0; i < rows_per_page && i < n; i++)
 	{
@@ -787,28 +786,45 @@ static bool menu_handle_event(menu_type *menu, const event_type *in)
 				out.type = EVT_SELECT;
 				out.index = *cursor;
 			}
+
 			/* Reject diagonals */
 			else if (ddx[dir] && ddy[dir])
 			{
 				return FALSE;
 			}
+
 			/* Forward/back */
 			else if (ddx[dir])
 			{
 				out.type = ddx[dir] < 0 ? EVT_BACK : EVT_SELECT;
 				out.index = *cursor;
 			}
+
 			/* Move up or down to the next valid & visible row */
 			else if (ddy[dir])
 			{
-				int ind;
 				int dy = ddy[dir];
+				int ind = *cursor + dy;
+				bool beenherebefore = FALSE;
 
+				/* Duck out here for 0-entry lists */
+				if (n == 0) return FALSE;
+
+				/* Find the next valid row */
+				while (!is_valid_row(menu, ind))
+				{
+					/* Loop around */
+					if (ind > n - 1)  ind = 0;
+					else if (ind < 0) ind = n - 1;
+					else              ind += dy;
+				}
+
+				/* Set the cursor */
+				*cursor = ind;
+
+				/* Set the "out" event information */
 				out.type = EVT_MOVE;
-				for (ind = *cursor + dy; ind < n && ind >= 0
-					 && (TRUE != is_valid_row(menu, ind)); ind += dy) ;
 				out.index = ind;
-				if (ind < n && ind >= 0) *cursor = ind;
 			}
 			else
 			{
