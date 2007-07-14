@@ -203,7 +203,8 @@ static bool describe_combat(const object_type *o_ptr, u32b f1)
 		int blows = calc_blows(o_ptr);
 
 		dam = (o_ptr->ds * o_ptr->dd * 5);
-		dam += (o_ptr->to_d + p_ptr->to_d) * 10;
+		if (object_known_p(o_ptr)) dam += (o_ptr->to_d * 10);
+		dam += (p_ptr->to_d * 10);
 
 	    p_text_out("Using this weapon, in your current condition, you are able to score ");
 	    text_out_c(TERM_L_GREEN, format("%d ", blows));
@@ -218,7 +219,8 @@ static bool describe_combat(const object_type *o_ptr, u32b f1)
 
 		/* Calculate damage */
 		dam = (o_ptr->ds * o_ptr->dd * 5);
-		dam += (o_ptr->to_d + j_ptr->to_d * 10);
+		if (object_known_p(o_ptr)) dam += (o_ptr->to_d * 10);
+		if (object_known_p(j_ptr)) dam += (j_ptr->to_d * 10);
 		dam *= p_ptr->ammo_mult;
 
 		p_text_out("Fired from your current bow, this arrow will hit targets up to ");
