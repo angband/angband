@@ -1789,13 +1789,36 @@ static bool store_get_check(const char *prompt)
 }
 
 
+/*
+ * Return the quantity of a given item in the pack.
+ */
+static int find_inven(const object_type *o_ptr)
+{
+	int j;
+
+	/* Similar slot? */
+	for (j = 0; j < INVEN_PACK; j++)
+	{
+		object_type *j_ptr = &inventory[j];
+
+		/* Skip non-objects */
+		if (!j_ptr->k_idx) continue;
+
+		/* Check if the two items can be combined */
+		if (object_similar(j_ptr, o_ptr))
+			return j_ptr->number;
+	}
+
+	return 0;
+}
+
 
 /*
  * Buy an object from a store
  */
 static bool store_purchase(int item)
 {
-	int amt, item_new;
+	int amt, item_new, num;
 
 	store_type *st_ptr = &store[store_current];
 
@@ -1810,7 +1833,7 @@ static bool store_purchase(int item)
 
 	/* Get the actual object */
 	o_ptr = &st_ptr->stock[item];
-	if(item < 0) return FALSE;
+	if (item < 0) return FALSE;
 
 	/* Clear all current messages */
 	msg_flag = FALSE;
@@ -1841,8 +1864,13 @@ static bool store_purchase(int item)
 		if (amt > o_ptr->number) amt = o_ptr->number;
 	}
 
+	/* Find the number of this item in the inventory */
+	num = find_inven(o_ptr);
+	strnfmt(o_name, sizeof o_name, "Buy how many%s? (max %d) ",
+	        num ? format(" (you have %d)", num) : "", amt);
+
 	/* Get a quantity */
-	amt = get_quantity(NULL, amt);
+	amt = get_quantity(o_name, amt);
 
 	/* Allow user abort */
 	if (amt <= 0) return FALSE;
