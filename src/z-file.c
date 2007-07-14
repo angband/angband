@@ -840,7 +840,7 @@ void my_dclose(ang_dir *dir);
 struct ang_dir
 {
 	HANDLE h;
-	const char *first_file;
+	char *first_file;
 };
 
 /* Specified above */
@@ -858,7 +858,7 @@ ang_dir *my_dopen(const char *dirname)
 		return NULL;
 
 	/* Allocate for the handle */
-	dir = ralloc(sizeof dir);
+	dir = ZNEW(ang_dir);
 	if (!dir) return NULL;
 
 	/* Remember details */
@@ -932,7 +932,7 @@ void my_dclose(ang_dir *dir)
 struct ang_dir
 {
 	DIR *d;
-	const char *dirname;
+	char *dirname;
 };
 
 /* Specified above */
@@ -946,7 +946,7 @@ ang_dir *my_dopen(const char *dirname)
 	if (!d) return NULL;
 
 	/* Allocate memory for the handle */
-	dir = ralloc(sizeof dir);
+	dir = ZNEW(ang_dir);
 	if (!dir) 
 	{
 		closedir(d);

@@ -46,14 +46,6 @@
 /**** Available macros ****/
 
 
-/* Set every byte in an array of type T[N], at location P, to V, and return P */
-#define C_BSET(P, V, N, T) \
-	(memset((P), (V), (N) * sizeof(T)))
-
-/* Set every byte in a thing of type T, at location P, to V, and return P */
-#define BSET(P, V, T) \
-	(memset((P), (V), sizeof(T)))
-
 
 /* Wipe an array of type T[N], at location P, and return P */
 #define C_WIPE(P, N, T) \
@@ -75,11 +67,11 @@
 
 /* Allocate, and return, an array of type T[N] */
 #define C_RNEW(N, T) \
-	(ralloc((N) * sizeof(T)))
+	(mem_alloc((N) * sizeof(T)))
 
 /* Allocate, and return, a thing of type T */
 #define RNEW(T) \
-	(ralloc(sizeof(T)))
+	(mem_alloc(sizeof(T)))
 
 
 /* Allocate, wipe, and return an array of type T[N] */
@@ -91,52 +83,39 @@
 	(WIPE(RNEW(T), T))
 
 
-/* Allocate a wiped array of type T[N], assign to pointer P */
-#define C_MAKE(P, N, T) \
-	((P) = C_ZNEW(N, T))
-
-/* Allocate a wiped thing of type T, assign to pointer P */
-#define MAKE(P, T) \
-	((P) = ZNEW(T))
-
-
 /* Free one thing at P, return NULL */
-#define FREE(P) \
-	(rnfree(P))
-
-/* Free a thing at location P and set P to NULL */
-#define KILL(P) \
-	((P)=FREE(P))
+#define FREE(P) (P = mem_free(P))
 
 
 
-/**** Available variables ****/
+/*** Initialisation bits ***/
 
-/* Replacement hook for "rnfree()" */
-extern void* (*rnfree_aux)(void*);
+/* Hook types for memory allocation */
+typedef void *(*mem_alloc_hook)(size_t);
+typedef void *(*mem_free_hook)(void *);
+typedef void *(*mem_realloc_hook)(void *, size_t);
 
-/* Replacement hook for "rpanic()" */
-extern void* (*rpanic_aux)(size_t);
-
-/* Replacement hook for "ralloc()" */
-extern void* (*ralloc_aux)(size_t);
+/* Set up memory allocation hooks */
+bool mem_set_hooks(mem_alloc_hook alloc, mem_free_hook free, mem_realloc_hook realloc);
 
 
-/**** Available functions ****/
-
-/* De-allocate memory */
-extern void* rnfree(void *p);
-
-/* Panic, attempt to allocate 'len' bytes */
-extern void* rpanic(size_t len);
+/**** Normal bits ***/
 
 /* Allocate (and return) 'len', or quit */
-extern void* ralloc(size_t len);
+void *mem_alloc(size_t len);
+
+/* De-allocate memory */
+void *mem_free(void *p);
+
+/* Reallocate memory */
+void *mem_realloc(void *p, size_t len);
+
 
 /* Create a "dynamic string" */
-extern cptr string_make(cptr str);
+char *string_make(const char *str);
 
 /* Free a string allocated with "string_make()" */
-extern errr string_free(cptr str);
+char *string_free(char *str);
+#define string_free mem_free
 
 #endif /* INCLUDED_Z_VIRT_H */

@@ -151,12 +151,12 @@ s16b macro__num;
 /*
  * Array of macro patterns [MACRO_MAX]
  */
-cptr *macro__pat;
+char **macro__pat;
 
 /*
  * Array of macro actions [MACRO_MAX]
  */
-cptr *macro__act;
+char **macro__act;
 
 
 /*
@@ -184,11 +184,11 @@ char angband_term_name[ANGBAND_TERM_MAX][16] =
 
 
 int max_macrotrigger = 0;
-cptr macro_template = NULL;
-cptr macro_modifier_chr;
-cptr macro_modifier_name[MAX_MACRO_MOD];
-cptr macro_trigger_name[MAX_MACRO_TRIGGER];
-cptr macro_trigger_keycode[2][MAX_MACRO_TRIGGER];
+char *macro_template = NULL;
+char *macro_modifier_chr;
+char *macro_modifier_name[MAX_MACRO_MOD];
+char *macro_trigger_name[MAX_MACRO_TRIGGER];
+char *macro_trigger_keycode[2][MAX_MACRO_TRIGGER];
 
 
 /*
@@ -537,7 +537,7 @@ char macro_buffer[1024];
 /*
  * Keymaps for each "mode" associated with each keypress.
  */
-cptr keymap_act[KEYMAP_MODES][256];
+char *keymap_act[KEYMAP_MODES][256];
 
 
 
@@ -682,85 +682,34 @@ s16b spell_list[MAX_REALMS][BOOKS_PER_REALM][SPELLS_PER_BOOK];
  * Hack -- The special Angband "System Suffix"
  * This variable is used to choose an appropriate "pref-xxx" file
  */
-cptr ANGBAND_SYS = "xxx";
+const char *ANGBAND_SYS = "xxx";
 
 /*
  * Hack -- The special Angband "Graphics Suffix"
  * This variable is used to choose an appropriate "graf-xxx" file
  */
-cptr ANGBAND_GRAF = "old";
+const char *ANGBAND_GRAF = "old";
 
 /*
  * Path name: The main "lib" directory
  * This variable is not actually used anywhere in the code
  */
-cptr ANGBAND_DIR;
+char *ANGBAND_DIR;
 
 /*
- * High score files (binary)
- * These files may be portable between platforms
+ * Various lib/ sub-directories.
  */
-cptr ANGBAND_DIR_APEX;
-
-/*
- * Bone files for player ghosts (ascii)
- * These files are portable between platforms
- */
-cptr ANGBAND_DIR_BONE;
-
-/*
- * Binary image files for the "*_info" arrays (binary)
- * These files are not portable between platforms
- */
-cptr ANGBAND_DIR_DATA;
-
-/*
- * Textual template files for the "*_info" arrays (ascii)
- * These files are portable between platforms
- */
-cptr ANGBAND_DIR_EDIT;
-
-/*
- * Various extra files (ascii)
- * These files may be portable between platforms
- */
-cptr ANGBAND_DIR_FILE;
-
-/*
- * Help files (normal) for the online help (ascii)
- * These files are portable between platforms
- */
-cptr ANGBAND_DIR_HELP;
-
-/*
- * Help files (spoilers) for the online help (ascii)
- * These files are portable between platforms
- */
-cptr ANGBAND_DIR_INFO;
-
-/*
- * Savefiles for current characters (binary)
- * These files are portable between platforms
- */
-cptr ANGBAND_DIR_SAVE;
-
-/*
- * Default user "preference" files (ascii)
- * These files are rarely portable between platforms
- */
-cptr ANGBAND_DIR_PREF;
-
-/*
- * User defined "preference" files (ascii)
- * These files are rarely portable between platforms
- */
-cptr ANGBAND_DIR_USER;
-
-/*
- * Various extra files (binary)
- * These files are rarely portable between platforms
- */
-cptr ANGBAND_DIR_XTRA;
+char *ANGBAND_DIR_APEX;
+char *ANGBAND_DIR_BONE;
+char *ANGBAND_DIR_DATA;
+char *ANGBAND_DIR_EDIT;
+char *ANGBAND_DIR_FILE;
+char *ANGBAND_DIR_HELP;
+char *ANGBAND_DIR_INFO;
+char *ANGBAND_DIR_SAVE;
+char *ANGBAND_DIR_PREF;
+char *ANGBAND_DIR_USER;
+char *ANGBAND_DIR_XTRA;
 
 
 /*

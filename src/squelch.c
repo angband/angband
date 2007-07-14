@@ -707,7 +707,7 @@ static bool sval_menu(int tval, const char *desc)
 
 
 	/* Create the array */
-	C_MAKE(choice, z_info->k_max, u16b);
+	choice = C_ZNEW(z_info->k_max, u16b);
 
 	/* Iterate over all possible object kinds, finding ones which can be squelched */
 	for (i = 1; i < z_info->k_max; i++)

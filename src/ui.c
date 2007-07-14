@@ -159,7 +159,7 @@ void add_listener(event_target * target, event_listener * observer)
 {
 	listener_list *link;
 
-	MAKE(link, listener_list);
+	link = ZNEW(listener_list);
 	link->listener = observer;
 	link->next = target->observers;
 	target->observers = link;
@@ -1035,7 +1035,7 @@ void add_menu_iter(const menu_iter * iter, menu_iter_id id)
  */
 void menu_set_filter(menu_type *menu, const int object_list[], int n)
 {
-	menu->object_list = object_list;
+	menu->object_list = (int *)object_list;
 	menu->filter_count = n;
 }
 
@@ -1044,9 +1044,7 @@ void menu_set_filter(menu_type *menu, const int object_list[], int n)
 /* as: FREE(menu_remove_filter(m)); */
 void menu_release_filter(menu_type *menu)
 {
-	if (menu->object_list)
-		FREE((void *)menu->object_list);
-	menu->object_list = 0;
+	FREE(menu->object_list);
 	menu->filter_count = menu->count;
 }
 
@@ -1142,8 +1140,7 @@ bool menu_init(menu_type *menu, skin_id skin_id,
 
 void menu_destroy(menu_type *menu)
 {
-	if (menu->object_list)
-		FREE((void *)menu->object_list);
+	FREE(menu->object_list);
 }
 
 

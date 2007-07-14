@@ -3713,37 +3713,6 @@ static bool CheckEvents(int wait)
 
 /*** Some Hooks for various routines ***/
 
-/*
- * Mega-Hack -- emergency lifeboat
- */
-static void *lifeboat = NULL;
-
-
-/*
- * Hook to handle "out of memory" errors
- */
-static void *hook_rpanic(huge size)
-{
-#pragma unused(size)
-
-	/* Free the lifeboat */
-	if (lifeboat)
-	{
-		/* Free the lifeboat */
-		free(lifeboat);
-
-		/* Forget the lifeboat */
-		lifeboat = NULL;
-
-		/* Mega-Hack -- Warning */
-		mac_warning("Running out of Memory!\nTerminate this process now!");
-
-		(void) pause();
-	}
-
-	/* Mega-Hack -- Crash */
-	return (NULL);
-}
 
 
 /*
@@ -3835,10 +3804,6 @@ int main(void)
 	_ftype = 'TEXT';
 
 
-	/* Hook in some "z-virt.c" hooks */
-	rnfree_aux = NULL;
-	ralloc_aux = NULL;
-	rpanic_aux = hook_rpanic;
 
 	/* Hooks in some "z-util.c" hooks */
 	plog_aux = hook_plog;
@@ -3882,8 +3847,6 @@ int main(void)
 	Cursor tempCursor;
 	SetCursor(GetQDGlobalsArrow(&tempCursor));
 
-	/* Mega-Hack -- Allocate a "lifeboat" */
-	lifeboat = malloc(16384);
 
 	/* Quicktime -- Load sound effect resources */
 

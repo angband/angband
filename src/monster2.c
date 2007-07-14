@@ -581,7 +581,7 @@ void display_monlist(void)
 	}
 
 	/* Allocate the array */
-	C_MAKE(race_count, z_info->r_max, u16b);
+	race_count = C_ZNEW(z_info->r_max, u16b);
 
 	/* Scan the monster list */
 	for (i = 1; i < mon_max; i++)

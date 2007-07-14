@@ -312,7 +312,7 @@ struct menu_type
 	/* Flags specifying the behavior of this menu. See enum MENU_FLAGS */
 	int flags;
 	int filter_count;		/* number of rows in current view */
-	const int *object_list;	/* optional filter (view) of menu objects */
+	int *object_list;		/* optional filter (view) of menu objects */
 	int count;				/* number of rows in underlying data set */
 	const void *menu_data;	/* the data used to access rows. */
 

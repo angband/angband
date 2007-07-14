@@ -300,27 +300,21 @@ static errr init_info_raw(int fd, header *head)
 	COPY(head, &test, header);
 
 
-	/* Allocate the "*_info" array */
-	C_MAKE(head->info_ptr, head->info_size, char);
-
-	/* Read the "*_info" array */
+	/* Allocate and read the "*_info" array */
+	head->info_ptr = C_RNEW(head->info_size, char);
 	fd_read(fd, head->info_ptr, head->info_size);
 
 	if (head->name_size)
 	{
-		/* Allocate the "*_name" array */
-		C_MAKE(head->name_ptr, head->name_size, char);
-
-		/* Read the "*_name" array */
+		/* Allocate and read the "*_name" array */
+		head->name_ptr = C_RNEW(head->name_size, char);
 		fd_read(fd, head->name_ptr, head->name_size);
 	}
 
 	if (head->text_size)
 	{
-		/* Allocate the "*_text" array */
-		C_MAKE(head->text_ptr, head->text_size, char);
-
-		/* Read the "*_text" array */
+		/* Allocate and read the "*_text" array */
+		head->text_ptr = C_RNEW(head->text_size, char);
 		fd_read(fd, head->text_ptr, head->text_size);
 	}
 
@@ -437,13 +431,13 @@ static errr init_info(cptr filename, header *head)
 		/*** Make the fake arrays ***/
 
 		/* Allocate the "*_info" array */
-		C_MAKE(head->info_ptr, head->info_size, char);
+		head->info_ptr = C_ZNEW(head->info_size, char);
 
 		/* MegaHack -- make "fake" arrays */
 		if (z_info)
 		{
-			C_MAKE(head->name_ptr, z_info->fake_name_size, char);
-			C_MAKE(head->text_ptr, z_info->fake_text_size, char);
+			head->name_ptr = C_ZNEW(z_info->fake_name_size, char);
+			head->text_ptr = C_ZNEW(z_info->fake_text_size, char);
 		}
 
 
@@ -589,14 +583,15 @@ static errr init_info(cptr filename, header *head)
 		/*** Kill the fake arrays ***/
 
 		/* Free the "*_info" array */
-		KILL(head->info_ptr);
+		FREE(head->info_ptr);
 
 		/* MegaHack -- Free the "fake" arrays */
 		if (z_info)
 		{
-			KILL(head->name_ptr);
-			KILL(head->text_ptr);
+			FREE(head->name_ptr);
+			FREE(head->text_ptr);
 		}
+
 
 #endif /* ALLOW_TEMPLATES */
 
@@ -1098,7 +1093,7 @@ static void autoinscribe_init(void)
 	inscriptions = 0;
 	inscriptions_count = 0;
 
-	C_MAKE(inscriptions, AUTOINSCRIPTIONS_MAX, autoinscription);
+	inscriptions = C_ZNEW(AUTOINSCRIPTIONS_MAX, autoinscription);
 }
 
 
@@ -1127,10 +1122,10 @@ static errr init_other(void)
 	/*** Prepare grid arrays ***/
 
 	/* Array of grids */
-	C_MAKE(view_g, VIEW_MAX, u16b);
+	view_g = C_ZNEW(VIEW_MAX, u16b);
 
 	/* Array of grids */
-	C_MAKE(temp_g, TEMP_MAX, u16b);
+	temp_g = C_ZNEW(TEMP_MAX, u16b);
 
 	/* Hack -- use some memory twice */
 	temp_y = ((byte*)(temp_g)) + 0;
@@ -1140,21 +1135,21 @@ static errr init_other(void)
 	/*** Prepare dungeon arrays ***/
 
 	/* Padded into array */
-	C_MAKE(cave_info, DUNGEON_HGT, byte_256);
-	C_MAKE(cave_info2, DUNGEON_HGT, byte_256);
+	cave_info = C_ZNEW(DUNGEON_HGT, byte_256);
+	cave_info2 = C_ZNEW(DUNGEON_HGT, byte_256);
 
 	/* Feature array */
-	C_MAKE(cave_feat, DUNGEON_HGT, byte_wid);
+	cave_feat = C_ZNEW(DUNGEON_HGT, byte_wid);
 
 	/* Entity arrays */
-	C_MAKE(cave_o_idx, DUNGEON_HGT, s16b_wid);
-	C_MAKE(cave_m_idx, DUNGEON_HGT, s16b_wid);
+	cave_o_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
+	cave_m_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
 
 #ifdef MONSTER_FLOW
 
 	/* Flow arrays */
-	C_MAKE(cave_cost, DUNGEON_HGT, byte_wid);
-	C_MAKE(cave_when, DUNGEON_HGT, byte_wid);
+	cave_cost = C_ZNEW(DUNGEON_HGT, byte_wid);
+	cave_when = C_ZNEW(DUNGEON_HGT, byte_wid);
 
 #endif /* MONSTER_FLOW */
 
@@ -1167,34 +1162,34 @@ static errr init_other(void)
 	/*** Prepare entity arrays ***/
 
 	/* Objects */
-	C_MAKE(o_list, z_info->o_max, object_type);
+	o_list = C_ZNEW(z_info->o_max, object_type);
 
 	/* Monsters */
-	C_MAKE(mon_list, z_info->m_max, monster_type);
+	mon_list = C_ZNEW(z_info->m_max, monster_type);
 
 
 	/*** Prepare lore array ***/
 
 	/* Lore */
-	C_MAKE(l_list, z_info->r_max, monster_lore);
+	l_list = C_ZNEW(z_info->r_max, monster_lore);
 
 
 	/*** Prepare quest array ***/
 
 	/* Quests */
-	C_MAKE(q_list, MAX_Q_IDX, quest);
+	q_list = C_ZNEW(MAX_Q_IDX, quest);
 
 
 	/*** Prepare the inventory ***/
 
 	/* Allocate it */
-	C_MAKE(inventory, INVEN_TOTAL, object_type);
+	inventory = C_ZNEW(INVEN_TOTAL, object_type);
 
 
 	/*** Prepare the stores ***/
 
 	/* Allocate the stores */
-	C_MAKE(store, MAX_STORES, store_type);
+	store = C_ZNEW(MAX_STORES, store_type);
 
 	/* Fill in each store */
 	for (i = 0; i < MAX_STORES; i++)
@@ -1208,7 +1203,7 @@ static errr init_other(void)
 		st_ptr->stock_size = STORE_INVEN_MAX;
 
 		/* Allocate the stock */
-		C_MAKE(st_ptr->stock, st_ptr->stock_size, object_type);
+		st_ptr->stock = C_ZNEW(st_ptr->stock_size, object_type);
 
 		/* No table for the black market or home */
 		if ((i == STORE_B_MARKET) || (i == STORE_HOME)) continue;
@@ -1217,7 +1212,7 @@ static errr init_other(void)
 		st_ptr->table_size = STORE_CHOICES;
 
 		/* Allocate the stock */
-		C_MAKE(st_ptr->table, st_ptr->table_size, s16b);
+		st_ptr->table = C_ZNEW(st_ptr->table_size, s16b);
 
 		/* Scan the choices */
 		for (k = 0; k < STORE_CHOICES; k++)
@@ -1340,7 +1335,7 @@ static errr init_alloc(void)
 	/*** Initialize object allocation info ***/
 
 	/* Allocate the alloc_kind_table */
-	C_MAKE(alloc_kind_table, alloc_kind_size, alloc_entry);
+	alloc_kind_table = C_ZNEW(alloc_kind_size, alloc_entry);
 
 	/* Get the table entry */
 	table = alloc_kind_table;
@@ -1426,7 +1421,7 @@ static errr init_alloc(void)
 	/*** Initialize monster allocation info ***/
 
 	/* Allocate the alloc_race_table */
-	C_MAKE(alloc_race_table, alloc_race_size, alloc_entry);
+	alloc_race_table = C_ZNEW(alloc_race_size, alloc_entry);
 
 	/* Get the table entry */
 	table = alloc_race_table;
@@ -1504,7 +1499,7 @@ static errr init_alloc(void)
 	/*** Initialize ego-item allocation info ***/
 
 	/* Allocate the alloc_ego_table */
-	C_MAKE(alloc_ego_table, alloc_ego_size, alloc_entry);
+	alloc_ego_table = C_ZNEW(alloc_ego_size, alloc_entry);
 
 	/* Get the table entry */
 	table = alloc_ego_table;

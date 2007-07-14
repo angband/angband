@@ -42,7 +42,7 @@ typedef struct
 {
 	int num;                        /* Number of samples for this event */
 	Mix_Chunk *wavs[MAX_SAMPLES];   /* Sample array */
-	const char *paths[MAX_SAMPLES]; /* Relative pathnames for samples */
+	char *paths[MAX_SAMPLES]; /* Relative pathnames for samples */
 } sample_list;
 
 

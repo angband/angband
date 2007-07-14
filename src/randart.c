@@ -48,11 +48,11 @@ static errr init_names(void)
 	int i;
 
 	/* Temporary space for names, while reading and randomizing them. */
-	cptr *names;
+	char **names;
 
 	/* Allocate the "names" array */
 	/* ToDo: Make sure the memory is freed correctly in case of errors */
-	C_MAKE(names, z_info->a_max, cptr);
+	names = C_ZNEW(z_info->a_max, cptr);
 
 	for (i = 0; i < z_info->a_max; i++)
 	{
@@ -84,7 +84,7 @@ static errr init_names(void)
 		name_size += strlen(names[i-1]) + 2;	/* skip first char */
 	}
 
-	C_MAKE(a_base, name_size, char);
+	a_base = C_ZNEW(name_size, char);
 
 	a_next = a_base + 1;	/* skip first char */
 
@@ -1366,7 +1366,7 @@ static bool artifacts_acceptable(void)
 static errr scramble(void)
 {
 	/* Allocate the "kinds" array */
-	C_MAKE(kinds, z_info->a_max, s16b);
+	kinds = C_ZNEW(z_info->a_max, s16b);
 
 	while (1)
 	{

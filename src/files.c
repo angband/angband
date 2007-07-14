@@ -479,6 +479,7 @@ errr process_pref_file_command(char *buf)
 				macro_modifier_name[i] = string_make(zz[2+i]);
 			}
 		}
+
 		/* Macro trigger */
 		else if (tok >= 2)
 		{
@@ -493,7 +494,7 @@ errr process_pref_file_command(char *buf)
 			}
 
 			/* Buffer for the trigger name */
-			C_MAKE(buf, strlen(zz[0]) + 1, char);
+			buf = C_ZNEW(strlen(zz[0]) + 1, char);
 
 			/* Simulate strcpy() and skip the '\' escape character */
 			s = zz[0];

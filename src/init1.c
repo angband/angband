@@ -3923,7 +3923,7 @@ errr eval_r_power(header *head)
 	int iteration;
 
 	/* Allocate space for power */
-	C_MAKE(power, z_info->r_max, long);
+	power = C_ZNEW(z_info->r_max, long);
 
 
 for (iteration = 0; iteration < 3; iteration ++)

@@ -506,9 +506,9 @@ static void py_pickup_gold(void)
 
 	int sound_msg;
 
-	/* Allocate and wipe an array of ordinary gold objects */
-	C_MAKE(treasure, SV_GOLD_MAX, byte);
-	(void)C_WIPE(treasure, SV_GOLD_MAX, byte);
+	/* Allocate an array of ordinary gold objects */
+	treasure = C_ZNEW(SV_GOLD_MAX, byte);
+
 
 	/* Pick up all the ordinary gold objects */
 	for (this_o_idx = cave_o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)

@@ -422,8 +422,8 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 
 	/* Sort everything into group order */
-	C_MAKE(g_list, max_group + 1, int);
-	C_MAKE(g_offset, max_group + 1, int);
+	g_list = C_ZNEW(max_group + 1, int);
+	g_offset = C_ZNEW(max_group + 1, int);
 
 	for (i = 0; i < o_count; i++)
 	{
@@ -440,7 +440,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 
 	/* The compact set of group names, in display order */
-	C_MAKE(g_names, grp_cnt, const char **);
+	g_names = C_ZNEW(grp_cnt, const char **);
 
 	for (i = 0; i < grp_cnt; i++)
 	{
@@ -1121,8 +1121,8 @@ static void do_cmd_knowledge_monsters(void *obj, const char *name)
 		}
 	}
 
-	C_MAKE(default_join, m_count, join_t);
-	C_MAKE(monsters, m_count, int);
+	default_join = C_ZNEW(m_count, join_t);
+	monsters = C_ZNEW(m_count, int);
 
 	m_count = 0;
 	for (i = 0; i < z_info->r_max; i++)
@@ -1147,7 +1147,7 @@ static void do_cmd_knowledge_monsters(void *obj, const char *name)
 
 	display_knowledge("monsters", monsters, m_count, r_funcs, m_funcs,
 						"          Sym  Kills");
-	KILL(default_join);
+	FREE(default_join);
 	FREE(monsters);
 }
 
@@ -1286,7 +1286,7 @@ static void do_cmd_knowledge_artifacts(void *obj, const char *name)
 	int *artifacts;
 	int a_count = 0;
 
-	C_MAKE(artifacts, z_info->a_max, int);
+	artifacts = C_ZNEW(z_info->a_max, int);
 
 	/* Collect valid artifacts */
 	a_count = collect_known_artifacts(artifacts, z_info->a_max);
@@ -1402,8 +1402,8 @@ static void do_cmd_knowledge_ego_items(void *obj, const char *name)
 	int i, j;
 
 	/* HACK: currently no more than 3 tvals for one ego type */
-	C_MAKE(egoitems, z_info->e_max * EGO_TVALS_MAX, int);
-	C_MAKE(default_join, z_info->e_max * EGO_TVALS_MAX, join_t);
+	egoitems = C_ZNEW(z_info->e_max * EGO_TVALS_MAX, int);
+	default_join = C_ZNEW(z_info->e_max * EGO_TVALS_MAX, join_t);
 
 	for (i = 0; i < z_info->e_max; i++)
 	{
@@ -1425,7 +1425,7 @@ static void do_cmd_knowledge_ego_items(void *obj, const char *name)
 
 	display_knowledge("ego items", egoitems, e_count, obj_f, ego_f, "");
 
-	KILL(default_join);
+	FREE(default_join);
 	FREE(egoitems);
 }
 
@@ -1651,7 +1651,7 @@ void do_cmd_knowledge_objects(void *obj, const char *name)
 	int o_count = 0;
 	int i;
 
-	C_MAKE(objects, z_info->k_max, int);
+	objects = C_ZNEW(z_info->k_max, int);
 
 	for (i = 0; i < z_info->k_max; i++)
 	{
@@ -1728,7 +1728,8 @@ static void do_cmd_knowledge_features(void *obj, const char *name)
 	int *features;
 	int f_count = 0;
 	int i;
-	C_MAKE(features, z_info->f_max, int);
+
+	features = C_ZNEW(z_info->f_max, int);
 
 	for (i = 0; i < z_info->f_max; i++)
 	{
@@ -4199,7 +4200,7 @@ void init_cmd4_c(void)
 		int i;
 		int gid = -1;
 
-		C_MAKE(obj_group_order, TV_GOLD+1, int);
+		obj_group_order = C_ZNEW(TV_GOLD + 1, int);
 		atexit(cleanup_cmds);
 
 		/* Sllow for missing values */

@@ -336,7 +336,7 @@ XImage *ReadBMP(Display *dpy, char *Name)
 	total = infoheader.biWidth * infoheader.biHeight * i;
 
 	/* Allocate image memory */
-	C_MAKE(Data, total, char);
+	Data = C_ZNEW(total, char);
 
 	Res = XCreateImage(dpy, visual, depth, ZPixmap, 0 /*offset*/,
 	                   Data, infoheader.biWidth, infoheader.biHeight,
@@ -345,7 +345,7 @@ XImage *ReadBMP(Display *dpy, char *Name)
 	/* Failure */
 	if (Res == NULL)
 	{
-		KILL(Data);
+		FREE(Data);
 		fclose(f);
 		return (NULL);
 	}

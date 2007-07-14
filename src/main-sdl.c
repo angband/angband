@@ -131,11 +131,11 @@ static bool fullscreen = FALSE;
 /*
  * Directory names
  */
-static cptr ANGBAND_DIR_XTRA_FONT;
-static cptr ANGBAND_DIR_XTRA_GRAF;
+static char *ANGBAND_DIR_XTRA_FONT;
+static char *ANGBAND_DIR_XTRA_GRAF;
 
 /* XXXXXXXXX */
-static cptr ANGBAND_DIR_USER_SDL;
+static char *ANGBAND_DIR_USER_SDL;
 
 /* Later...
 static cptr ANGBAND_DIR_XTRA_SOUND;
@@ -147,7 +147,7 @@ static cptr ANGBAND_DIR_XTRA_SOUND;
 static cptr DEFAULT_FONT_FILE = "6x10.fon";
 
 #define MAX_FONTS 20
-cptr FontList[MAX_FONTS];
+char *FontList[MAX_FONTS];
 static int num_fonts = 0;
 
 
@@ -197,7 +197,7 @@ struct term_window
 	int keys;				/* Size of keypress storage */
 	
 	sdl_Font font;			/* Font info */
-	cptr req_font;			/* Requested font */
+	char *req_font;			/* Requested font */
 	int rows;				/* Dimension in tiles */
 	int cols;
 	
@@ -507,9 +507,7 @@ static errr sdl_CheckFont(cptr fontname, int *width, int *height)
 static void sdl_FontFree(sdl_Font *font)
 {
 	/* The only memory reserved is the data */
-	if (font->data) FREE(font->data);
-	
-	font->data = NULL;
+	FREE(font->data);
 }
 
 
@@ -554,7 +552,7 @@ static errr sdl_FontCreate(sdl_Font *font, cptr fontname, SDL_Surface *surface)
 	font->bpp = surface->format->BytesPerPixel;
 	
 	/* Make a very large temporary holding bin for pixel offset data  XXX */
-	C_MAKE(temp_array, NUM_GLYPHS * 1000, int);
+	temp_array = C_ZNEW(NUM_GLYPHS * 1000, int);
 	
 	/* Render and encode all the characters */
 	for (i = 0; i < NUM_GLYPHS; i++)
@@ -603,7 +601,7 @@ static errr sdl_FontCreate(sdl_Font *font, cptr fontname, SDL_Surface *surface)
 	temp_array[NUM_GLYPHS] = num_pixels;
 	
 	/* Make a pixel access array for this font */
-	C_MAKE(font->data, num_pixels, int);
+	font->data = C_ZNEW(num_pixels, int);
 	
 	/* Save the data gathered in our temporary array */
 	for (i = 0; i < num_pixels; i++) font->data[i] = temp_array[i];
@@ -787,9 +785,8 @@ static void sdl_ButtonVisible(sdl_Button *button, bool visible)
 static void sdl_ButtonBankInit(sdl_ButtonBank *bank, sdl_Window *window)
 {
 	bank->window = window;
-	
-	C_MAKE(bank->buttons, MAX_BUTTONS, sdl_Button);
-	C_MAKE(bank->used, MAX_BUTTONS, bool);
+	bank->buttons = C_ZNEW(MAX_BUTTONS, sdl_Button);
+	bank->used = C_ZNEW(MAX_BUTTONS, bool);
 	bank->need_update = TRUE;
 }
 
@@ -1117,9 +1114,7 @@ static void hook_quit(cptr str)
 	SDL_Quit();
 	
 	for (i = 0; i < MAX_FONTS; i++)
-	{
-		if (FontList[i]) string_free(FontList[i]);
-	}
+		string_free(FontList[i]);
 }
 
 static void BringToTop()

@@ -2491,7 +2491,7 @@ errr vinfo_init(void)
 
 
 	/* Make hack */
-	MAKE(hack, vinfo_hack);
+	hack = ZNEW(vinfo_hack);
 
 
 	/* Analyze grids */
@@ -2682,7 +2682,7 @@ errr vinfo_init(void)
 
 
 	/* Kill hack */
-	KILL(hack);
+	FREE(hack);
 
 
 	/* Success */

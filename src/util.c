@@ -679,10 +679,10 @@ errr macro_add(cptr pat, cptr act)
 errr macro_init(void)
 {
 	/* Macro patterns */
-	C_MAKE(macro__pat, MACRO_MAX, cptr);
+	macro__pat = C_ZNEW(MACRO_MAX, cptr);
 
 	/* Macro actions */
-	C_MAKE(macro__act, MACRO_MAX, cptr);
+	macro__act = C_ZNEW(MACRO_MAX, cptr);
 
 	/* Success */
 	return (0);
@@ -703,8 +703,8 @@ errr macro_free(void)
 		string_free(macro__act[i]);
 	}
 
-	FREE((void*)macro__pat);
-	FREE((void*)macro__act);
+	FREE(macro__pat);
+	FREE(macro__act);
 
 	/* Free the keymaps */
 	for (i = 0; i < KEYMAP_MODES; ++i)
@@ -752,13 +752,10 @@ errr macro_trigger_free(void)
 
 		/* Free modifier names */
 		for (i = 0; i < num; i++)
-		{
 			string_free(macro_modifier_name[i]);
-		}
 
 		/* Free modifier chars */
 		string_free(macro_modifier_chr);
-		macro_modifier_chr = NULL;
 	}
 
 	/* Success */
@@ -1407,7 +1404,7 @@ static s16b quark__num = 1;
 /*
  * The array[QUARK_MAX] of pointers to the quarks
  */
-static cptr *quark__str;
+static char **quark__str;
 
 
 /*
@@ -1462,7 +1459,7 @@ cptr quark_str(s16b i)
 errr quarks_init(void)
 {
 	/* Quark variables */
-	C_MAKE(quark__str, QUARK_MAX, cptr);
+	quark__str = C_ZNEW(QUARK_MAX, const char *);
 
 	/* Success */
 	return (0);
@@ -1478,9 +1475,7 @@ errr quarks_free(void)
 
 	/* Free the "quarks" */
 	for (i = 1; i < quark__num; i++)
-	{
 		string_free(quark__str[i]);
-	}
 
 	/* Free the list of "quarks" */
 	FREE(quark__str);
@@ -1914,13 +1909,13 @@ void message_add(cptr str, u16b type)
 errr messages_init(void)
 {
 	/* Message variables */
-	C_MAKE(message__ptr, MESSAGE_MAX, u16b);
-	C_MAKE(message__buf, MESSAGE_BUF, char);
-	C_MAKE(message__type, MESSAGE_MAX, u16b);
-	C_MAKE(message__count, MESSAGE_MAX, u16b);
+	message__ptr = C_ZNEW(MESSAGE_MAX, u16b);
+	message__buf = C_ZNEW(MESSAGE_BUF, char);
+	message__type = C_ZNEW(MESSAGE_MAX, u16b);
+	message__count = C_ZNEW(MESSAGE_MAX, u16b);
 
 	/* Init the message colors to white */
-	(void)C_BSET(message__color, TERM_WHITE, MSG_MAX, byte);
+	memset(message__color, TERM_WHITE, MSG_MAX);
 
 	/* Hack -- No messages yet */
 	message__tail = MESSAGE_BUF;
