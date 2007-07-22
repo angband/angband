@@ -957,13 +957,6 @@ ang_dir *my_dopen(const char *dirname)
 	dir->d = d;
 	dir->dirname = string_make(dirname);
 
-	if (!dir->dirname)
-	{
-		closedir(d);
-		rnfree(dir);
-		return NULL;
-	}
-
 	/* Success */
 	return dir;
 }
