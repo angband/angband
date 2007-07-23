@@ -59,11 +59,11 @@ N:2:Phase Door
 I:90:0:2
 D:Teleports you randomly up to 10 squares away.
 
+# Damage should probably be displayed on screen
 N:3:Light Area
 I:90:0:3
 D:Lights up all squares in a level-dependant area, and hurts
-D: light-sensitive monsters in the area of effect for 2d(level/2)
-D: points of damage.
+D: all light-sensitive monsters in the area of effect.
 D:  If you are in a room, the entire room will be lit up as well.
 
 N:4:Find Hidden Traps/Doors
@@ -148,7 +148,7 @@ D:Destroys all traps and doors within a 1-square radius of you.
 N:20:Spear of Light
 I:90:1:6
 D:Fires a beam that lights up each square and hurts each
-D: light-sensitive monster in its path for 6d8 points of damage.
+D: light-sensitive monster in its path.
 
 N:21:Turn Stone to Mud
 I:90:2:2
@@ -158,8 +158,8 @@ D: is susceptible to rock remover takes 20+1d30 points of damage.
 
 N:22:Door Creation
 I:90:6:0
-D:A (closed) door is created on each empty floor space that is
-D:directly adjacent to you.
+D:A door is created on each empty floor space that is directly
+D: adjacent to you.  These doors are closed, but not locked
 
 N:23:Earthquake
 I:90:8:0
@@ -224,6 +224,7 @@ N:34:Word of Recall
 I:90:6:3
 D:Teleports you from the dungeon to the town or from the town to the
 D: deepest level you have visited in the dungeon.
+
 D:  The recall effect is not immediate; it is delayed by 14+1d20 turns.
 D:  During that delay, the spell can be canceled by invoking the spell
 D: of recall again.
@@ -238,7 +239,7 @@ D:  Uniques are not affected.
 N:36:Shock Wave
 I:90:5:0
 D:Shoots a radius-2 sound ball.
-D:  Apart from doing sound damage, this also attempts to stun
+D:  Apart from doing sound damage, this also has a chance to stun
 D: each monster in the area of effect.
 
 N:37:Explosion
@@ -257,7 +258,7 @@ D:  Uniques and monsters that resist confusion are not affected.
 N:40:Bedlam
 I:90:8:1
 D:Shoots a radius-4 confusion ball that doesn't cause physical
-D: damage but attempts to confuse each monster in the area of effect.
+D: damage but has a chance to confuse each monster in the area of effect.
 D:  Uniques or monsters that resist confusion are not affected.
 
 N:41:Rend Soul
@@ -320,7 +321,7 @@ I:90:2:1
 D:Adds charges to a stack of wands or staves.
 D:  Chance of success and number of charges gained increase with your
 D: level and decrease with level of wand or staff and number of charges.
-D:  A failed attempt to recharge drains all charges from the stack.
+D:  A failed attempt to recharge destroys one wand or staff from the stack.
 
 N:51:Enchant Armor
 I:90:7:2
@@ -336,7 +337,7 @@ D:Adds charges to a stack of wands or staves.
 D:  Chance of success and number of charges gained increase with your
 D: level and decrease with level of wand or staff and number of charges,
 D: but are overall much better than for the spell Lesser Recharging.
-D:  A failed attempt to recharge drains all charges from the stack.
+D:  A failed attempt to recharge destroys one wand or staff from the stack.
 
 N:54:Elemental Brand
 I:90:7:5
@@ -386,8 +387,8 @@ D:  You take 1d3 points of damage for every monster removed.
 
 N:62:Rift
 I:90:5:6
-D:Fires a gravity beam that hurts each monster in its path,
-D: then attempts to teleport it away.
+D:Fires a gravity beam that hurts each monster in its path
+D: and has a chance of teleporting it away.
 
 N:63:Mana Storm
 I:90:8:7
@@ -414,11 +415,11 @@ N:67:Remove Fear
 I:91:0:3
 D:Removes fear.
 
+# Damage should probably be displayed on screen
 N:68:Call Light
 I:91:0:4
 D:Lights up all squares in a level-dependant area, and hurts
-D: light-sensitive monsters in the area of effect for 2d(level/2)
-D: points of damage.
+D: all light-sensitive monsters in the area of effect.
 D:  If you are in a room, the entire room will be lit up as well.
 
 N:69:Find Traps
@@ -605,7 +606,7 @@ D:Inflicts unresistable damage on each evil monster within line of sight.
 
 N:107:Banish Evil
 I:91:8:2
-D:Teleports each evil monster within line of sight away.
+D:Teleports away each evil monster within line of sight.
 
 N:108:Word of Destruction
 I:91:8:3
@@ -631,7 +632,7 @@ I:91:7:1
 D:Adds charges to a stack of wands or staves.
 D:  Chance of success and number of charges gained increase with your
 D: level and decrease with level of wand or staff and number of charges.
-D:  A failed attempt to recharge drains all charges from the stack.
+D:  A failed attempt to recharge destroys one wand or staff from the stack.
 
 N:112:Dispel Curse
 I:91:7:2
