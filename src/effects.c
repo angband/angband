@@ -62,7 +62,6 @@ const char *effect_desc(int effect)
 /*
  * The "wonder" effect.
  */
-
 static void spell_wonder(int dir, int die, int beam)
 {
 /* This spell should become more useful (more
@@ -75,9 +74,6 @@ static void spell_wonder(int dir, int die, int beam)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 	int plev = p_ptr->lev;
-
-	if (die == 0)
-		die = randint(100) + plev / 5;
 
 	if (die > 100)
 		msg_print("You feel a surge of power!");
@@ -1355,7 +1351,7 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 
 		case EF_WONDER:
 		{
-			spell_wonder(dir, 111, beam);
+			spell_wonder(dir, randint(100) + p_ptr->lev / 5;, beam);
 			return TRUE;
 		}
 

@@ -41,6 +41,8 @@ typedef enum
 
 #else
 
+	/*     name            aim?   short description */
+
 	EFFECT(XXX,            FALSE, NULL)
 	EFFECT(POISON,         FALSE, "poisons you for 2d7+10 turns")
 	EFFECT(BLIND,          FALSE, "blinds you for 4d25+75 turns")
