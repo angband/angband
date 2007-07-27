@@ -373,9 +373,8 @@ struct _term_data
 
 	bool bizarre;
 
-	cptr font_want;
-
-	cptr font_file;
+	char *font_want;
+	char *font_file;
 
 	HFONT font_id;
 
@@ -504,7 +503,7 @@ static bool can_use_sound = FALSE;
 /*
  * An array of sound file names
  */
-static cptr sound_file[MSG_MAX][SAMPLE_MAX];
+static char *sound_file[MSG_MAX][SAMPLE_MAX];
 
 #endif /* USE_SOUND */
 
@@ -512,7 +511,7 @@ static cptr sound_file[MSG_MAX][SAMPLE_MAX];
 /*
  * Full path to ANGBAND.INI
  */
-static cptr ini_file = NULL;
+static char *ini_file = NULL;
 
 /*
  * Name of application
@@ -527,10 +526,10 @@ static cptr AngList = "AngList";
 /*
  * Directory names
  */
-static cptr ANGBAND_DIR_XTRA_FONT;
-static cptr ANGBAND_DIR_XTRA_GRAF;
-static cptr ANGBAND_DIR_XTRA_SOUND;
-static cptr ANGBAND_DIR_XTRA_HELP;
+static char *ANGBAND_DIR_XTRA_FONT;
+static char *ANGBAND_DIR_XTRA_GRAF;
+static char *ANGBAND_DIR_XTRA_SOUND;
+static char *ANGBAND_DIR_XTRA_HELP;
 
 /*
  * The "complex" color values
@@ -1179,7 +1178,7 @@ static int new_palette(void)
 	/* Use the bitmap */
 	if (hBmPal)
 	{
-		lppe = ralloc(256 * sizeof(PALETTEENTRY));
+		lppe = mem_alloc(256 * sizeof(PALETTEENTRY));
 		nEntries = GetPaletteEntries(hBmPal, 0, 255, lppe);
 		if ((nEntries == 0) || (nEntries > 220))
 		{
