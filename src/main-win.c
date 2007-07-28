@@ -1186,7 +1186,7 @@ static int new_palette(void)
 			plog("Please switch to high- or true-color mode.");
 
 			/* Cleanup */
-			free(lppe);
+			mem_free(lppe);
 
 			/* Fail */
 			return (FALSE);
@@ -1199,7 +1199,7 @@ static int new_palette(void)
 	pLogPalSize = sizeof(LOGPALETTE) + (nEntries + 16) * sizeof(PALETTEENTRY);
 
 	/* Allocate palette */
-	pLogPal = (LPLOGPALETTE)ralloc(pLogPalSize);
+	pLogPal = (LPLOGPALETTE)mem_alloc(pLogPalSize);
 
 	/* Version */
 	pLogPal->palVersion = 0x300;
@@ -1242,14 +1242,14 @@ static int new_palette(void)
 	}
 
 	/* Free something */
-	if (lppe) free(lppe);
+	if (lppe) mem_free(lppe);
 
 	/* Create a new palette, or fail */
 	hNewPal = CreatePalette(pLogPal);
 	if (!hNewPal) quit("Cannot create palette!");
 
 	/* Free the palette */
-	free(pLogPal);
+	mem_free(pLogPal);
 
 	/* Main window */
 	td = &data[0];

@@ -1351,7 +1351,7 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 
 		case EF_WONDER:
 		{
-			spell_wonder(dir, randint(100) + p_ptr->lev / 5;, beam);
+			spell_wonder(dir, randint(100) + p_ptr->lev / 5, beam);
 			return TRUE;
 		}
 
