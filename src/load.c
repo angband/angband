@@ -300,8 +300,12 @@ static errr rd_item(object_type *o_ptr)
 
 	rd_byte(&o_ptr->marked);
 
+	rd_byte(&o_ptr->origin);
+	rd_byte(&o_ptr->origin_depth);
+	rd_u16b(&o_ptr->origin_xtra);
+
 	/* Old flags */
-	strip_bytes(12);
+	strip_bytes(8);
 
 	/* Monster holding object */
 	rd_s16b(&o_ptr->held_m_idx);

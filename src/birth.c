@@ -626,6 +626,7 @@ static void player_outfit(void)
 			/* Prepare the item */
 			object_prep(i_ptr, k_idx);
 			i_ptr->number = (byte)rand_range(e_ptr->min, e_ptr->max);
+			i_ptr->origin = ORIGIN_BIRTH;
 
 			object_aware(i_ptr);
 			object_known(i_ptr);
@@ -643,9 +644,10 @@ static void player_outfit(void)
 	/* Hack -- Give the player some food */
 	object_prep(i_ptr, lookup_kind(TV_FOOD, SV_FOOD_RATION));
 	i_ptr->number = (byte)rand_range(3, 7);
+	i_ptr->origin = ORIGIN_BIRTH;
 	object_aware(i_ptr);
 	object_known(i_ptr);
-        k_info[i_ptr->k_idx].everseen = TRUE;
+	k_info[i_ptr->k_idx].everseen = TRUE;
 	(void)inven_carry(i_ptr);
 
 
@@ -656,6 +658,7 @@ static void player_outfit(void)
 	object_prep(i_ptr, lookup_kind(TV_LITE, SV_LITE_TORCH));
 	i_ptr->number = (byte)rand_range(3, 7);
 	i_ptr->timeout = rand_range(3, 7) * 500;
+	i_ptr->origin = ORIGIN_BIRTH;
 	object_aware(i_ptr);
 	object_known(i_ptr);
         k_info[i_ptr->k_idx].everseen = TRUE;

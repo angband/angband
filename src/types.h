@@ -492,25 +492,26 @@ struct object_type
 	byte xtra1;			/* Extra info type */
 	byte xtra2;			/* Extra info index */
 
+	s16b ac;			/* Normal AC */
+	s16b to_a;			/* Plusses to AC */
 	s16b to_h;			/* Plusses to hit */
 	s16b to_d;			/* Plusses to damage */
-	s16b to_a;			/* Plusses to AC */
-
-	s16b ac;			/* Normal AC */
 
 	byte dd, ds;		/* Damage dice/sides */
 
 	s16b timeout;		/* Timeout Counter */
 
 	byte ident;			/* Special flags */
-
 	byte marked;		/* Object is marked */
 
 	u16b note;			/* Inscription index */
 
 	s16b next_o_idx;	/* Next object in stack (if any) */
-
 	s16b held_m_idx;	/* Monster holding us (if any) */
+
+	byte origin;        /* How this item was found */
+	byte origin_depth;  /* What depth the item was found at */
+	u16b origin_xtra;   /* Extra information about origin */
 };
 
 

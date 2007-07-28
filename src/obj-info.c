@@ -602,6 +602,76 @@ static bool describe_activation(const object_type *o_ptr, u32b f3)
 
 
 /*
+ * Describe origin of an item
+ */
+static bool describe_origin(const object_type *o_ptr)
+{
+	/* Abort now if undisplayable origin */
+	if (o_ptr->origin == ORIGIN_NONE ||
+	    o_ptr->origin == ORIGIN_MIXED)
+		return FALSE;
+
+	if (o_ptr->number > 1)
+		p_text_out("They were ");
+	else
+		p_text_out("It was ");
+
+	/* Display the right thing */
+	switch (o_ptr->origin)
+	{
+		case ORIGIN_BIRTH:
+			text_out("an inheritance from your family");
+			break;
+
+		case ORIGIN_STORE:
+			text_out("bought in a store");
+			break;
+
+		case ORIGIN_FLOOR:
+			text_out("lying on the floor");
+ 			break;
+
+		case ORIGIN_DROP:
+		{
+			const char *name = r_name + r_info[o_ptr->origin_xtra].name;
+			bool unique = (r_info[o_ptr->origin_xtra].flags1 & RF1_UNIQUE) ? TRUE : FALSE;
+
+			text_out("dropped by %s%s", is_a_vowel(name[0]) ? "an " : "a ", name);
+
+ 			break;
+		}
+
+		case ORIGIN_DROP_UNKNOWN:
+			text_out("dropped by an unknown monster");
+			break;
+
+		case ORIGIN_ACQUIRE:
+			text_out("conjured forth by magic");
+ 			break;
+
+		case ORIGIN_CHEAT:
+			text_out("created by a debug option");
+ 			break;
+
+		case ORIGIN_CHEST:
+			text_out("found in a chest");
+			break;
+	}
+
+	if (o_ptr->origin_depth)
+	{
+		if (depth_in_feet)
+			text_out(" at a depth of %d feet", o_ptr->origin_depth * 50);
+		else
+			text_out(" on dungeon level %d", o_ptr->origin_depth);
+	}
+
+	text_out(".  ");
+	return TRUE;
+}
+
+
+/*
  * Output object information
  */
 bool object_info_out(const object_type *o_ptr)
@@ -724,6 +794,9 @@ void object_info_screen(const object_type *o_ptr)
 
 	/* Dump the info */
 	has_info = object_info_out(o_ptr);
+
+	/* Dump origin info */
+	describe_origin(o_ptr);
 
 	new_paragraph = TRUE;
 	if (!object_known_p(o_ptr))

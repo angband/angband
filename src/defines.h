@@ -668,6 +668,24 @@ enum
 
 
 
+/*** Object origin kinds ***/
+
+enum
+{
+	ORIGIN_NONE = 0,
+	ORIGIN_MIXED,
+	ORIGIN_BIRTH,
+	ORIGIN_STORE,
+	ORIGIN_FLOOR,
+	ORIGIN_DROP,
+	ORIGIN_DROP_UNKNOWN,
+	ORIGIN_ACQUIRE,
+	ORIGIN_CHEAT,
+	ORIGIN_CHEST
+};
+
+
+
 /*** Important artifact indexes (see "lib/edit/artifact.txt") ***/
 
 #define ART_POWER			13

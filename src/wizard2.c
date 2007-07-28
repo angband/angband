@@ -624,6 +624,9 @@ static void wiz_reroll_item(object_type *o_ptr)
 	/* Notice change */
 	if (changed)
 	{
+		/* Mark as cheat */
+		i_ptr->origin = ORIGIN_CHEAT;
+
 		/* Restore the position information */
 		i_ptr->iy = o_ptr->iy;
 		i_ptr->ix = o_ptr->ix;
@@ -1027,6 +1030,9 @@ static void wiz_create_item(void)
 	/* Apply magic (no messages, no artifacts) */
 	apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
 
+	/* Mark as cheat */
+	i_ptr->origin = ORIGIN_CHEAT;
+
 	if (k_info[k_idx].tval == TV_GOLD)
 	{
 		/* Hack -- Base coin cost */
@@ -1086,8 +1092,11 @@ static void wiz_create_artifact(int a_idx)
 	i_ptr->to_d = a_ptr->to_d;
 	i_ptr->weight = a_ptr->weight;
 
-        /* Mark that the artifact has been created. */
+	/* Mark that the artifact has been created. */
 	a_ptr->cur_num = 1;
+
+	/* Mark as cheat */
+	i_ptr->origin = ORIGIN_CHEAT;
 
 	/* Drop the artifact from heaven */
 	drop_near(i_ptr, -1, p_ptr->py, p_ptr->px);
