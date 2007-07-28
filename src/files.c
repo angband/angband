@@ -1083,6 +1083,13 @@ void player_flags(u32b *f1, u32b *f2, u32b *f3)
 	(*f2) |= rp_ptr->flags2;
 	(*f3) |= rp_ptr->flags3;
 
+	/* If the race has innate infravision, set the corresponding flag */
+	if (rp_ptr->infra > 0)
+	{
+		(*f1) |= (TR1_INFRA);
+	}
+
+	/* Some classes become immune to fear at a certain plevel */
 	if (cp_ptr->flags & CF_BRAVERY_30)
 	{
 		if (p_ptr->lev >= 30) (*f2) |= (TR2_RES_FEAR);
@@ -2661,7 +2668,7 @@ static void make_bones(void)
 {
 	FILE *fp;
 
-â	char str[1024];
+ÅEchar str[1024];
 
 
 	/* Ignore wizards and borgs */
