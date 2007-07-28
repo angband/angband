@@ -2376,7 +2376,7 @@ static void calc_bonuses(void)
 	if (o_ptr->k_idx && !p_ptr->heavy_wield)
 	{
 		/* Calculate number of blows */
-		p_ptr->num_blow = calc_blows(o_ptr) + extra_blows;;
+		p_ptr->num_blow = calc_blows(o_ptr) + extra_blows;
 
 		/* Boost digging skill by weapon weight */
 		p_ptr->skills[SKILL_DIG] += (o_ptr->weight / 10);

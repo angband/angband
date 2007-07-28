@@ -188,7 +188,7 @@ static bool describe_combat(const object_type *o_ptr, u32b f1)
 {
 	cptr desc[15];
 	int mult[15];
-	int cnt, dam;
+	int cnt, dam, xtra_dam;
 	object_type *j_ptr = &inventory[INVEN_BOW];
 
 	bool weapon = (wield_slot(o_ptr) == INVEN_WIELD);
@@ -198,14 +198,26 @@ static bool describe_combat(const object_type *o_ptr, u32b f1)
 	/* Abort if we've nothing to say */
 	if (!weapon && !ammo) return FALSE;
 
+
+
 	if (weapon)
 	{
 		int blows = calc_blows(o_ptr);
 
 		dam = (o_ptr->ds * o_ptr->dd * 5);
-		if (object_known_p(o_ptr)) dam += (o_ptr->to_d * 10);
-		dam += (p_ptr->to_d * 10);
 
+		xtra_dam = (p_ptr->to_d * 10);
+		if (object_known_p(o_ptr))
+			xtra_dam += (o_ptr->to_d * 10);
+
+		/* Warn about heavy weapons */
+		if (adj_str_hold[p_ptr->stat_ind[A_STR]] < o_ptr->weight / 10)
+		{
+			if (new_paragraph) { text_out("\n\n"); new_paragraph = FALSE; }
+			text_out_c(TERM_L_RED, "You are too weak to use this weapon effectively!  ");
+			blows = 1;
+		}
+	
 	    p_text_out("Using this weapon, in your current condition, you are able to score ");
 	    text_out_c(TERM_L_GREEN, format("%d ", blows));
 	    if (blows > 1)
@@ -218,6 +230,7 @@ static bool describe_combat(const object_type *o_ptr, u32b f1)
 		int tdis = 10 + 5 * p_ptr->ammo_mult;
 
 		/* Calculate damage */
+		xtra_dam = 0;
 		dam = (o_ptr->ds * o_ptr->dd * 5);
 		if (object_known_p(o_ptr)) dam += (o_ptr->to_d * 10);
 		if (object_known_p(j_ptr)) dam += (j_ptr->to_d * 10);
@@ -236,7 +249,7 @@ static bool describe_combat(const object_type *o_ptr, u32b f1)
 
 		for (i = 0; i < cnt; i++)
 		{
-			text_out_c(TERM_L_GREEN, "%d", (dam * mult[i]) / 10);
+			text_out_c(TERM_L_GREEN, "%d", ((dam * mult[i]) + xtra_dam) / 10);
 			text_out(" against %s, ", desc[i]);
 		}
 
@@ -249,6 +262,14 @@ static bool describe_combat(const object_type *o_ptr, u32b f1)
 		text_out_c(TERM_L_GREEN, "%d", dam / 10);
 
 	text_out(" against normal creatures.  ");
+
+	/* Add breakage chance */
+	if (ammo)
+	{
+		text_out("It has a ");
+		text_out_c(TERM_L_GREEN, "%d%%", breakage_chance(o_ptr));
+		text_out(" chance of breaking upon contact.");
+	}
 
 	/* You always have something to say... */
 	return TRUE;

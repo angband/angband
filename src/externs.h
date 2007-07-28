@@ -261,6 +261,7 @@ extern byte squelch_level[SQUELCH_BYTES];
  */
 
 /* attack.c */
+extern int breakage_chance(const object_type *o_ptr);
 extern void py_attack(int y, int x);
 extern void do_cmd_fire(void);
 extern void do_cmd_throw(void);

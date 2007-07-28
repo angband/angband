@@ -23,7 +23,7 @@
  *
  * Note that artifacts never break, see the "drop_near()" function.
  */
-static int breakage_chance(const object_type *o_ptr)
+int breakage_chance(const object_type *o_ptr)
 {
 	/* Examine the item type */
 	switch (o_ptr->tval)
