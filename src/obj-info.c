@@ -188,7 +188,8 @@ static bool describe_combat(const object_type *o_ptr, u32b f1)
 {
 	cptr desc[15];
 	int mult[15];
-	int cnt, dam, xtra_dam;
+	int cnt, dam;
+	int xtra_dam = 0;
 	object_type *j_ptr = &inventory[INVEN_BOW];
 
 	bool weapon = (wield_slot(o_ptr) == INVEN_WIELD);
@@ -230,7 +231,6 @@ static bool describe_combat(const object_type *o_ptr, u32b f1)
 		int tdis = 10 + 5 * p_ptr->ammo_mult;
 
 		/* Calculate damage */
-		xtra_dam = 0;
 		dam = (o_ptr->ds * o_ptr->dd * 5);
 		if (object_known_p(o_ptr)) dam += (o_ptr->to_d * 10);
 		if (object_known_p(j_ptr)) dam += (j_ptr->to_d * 10);
