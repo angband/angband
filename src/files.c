@@ -2668,7 +2668,7 @@ static void make_bones(void)
 {
 	FILE *fp;
 
-ÅEchar str[1024];
+	char str[1024];
 
 
 	/* Ignore wizards and borgs */
