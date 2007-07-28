@@ -18,6 +18,7 @@ MAINFILES = main.o maid-x11.o main-crb.o main-gcu.o main-gtk.o \
 	main-ros.o main-sdl.o main-win.o main-x11.o main-xaw.o snd-sdl.o
 
 ANGFILES = \
+	attack.o \
 	birth.o \
 	cave.o \
 	cmd0.o \

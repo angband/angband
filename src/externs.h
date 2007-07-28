@@ -260,6 +260,11 @@ extern byte squelch_level[SQUELCH_BYTES];
  * Automatically generated "function declarations"
  */
 
+/* attack.c */
+extern void py_attack(int y, int x);
+extern void do_cmd_fire(void);
+extern void do_cmd_throw(void);
+
 /* birth.c */
 extern void player_birth(void);
 
@@ -305,7 +310,6 @@ extern int tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m
 extern void search(void);
 extern byte py_pickup(int pickup);
 extern void hit_trap(int y, int x);
-extern void py_attack(int y, int x);
 extern void move_player(int dir);
 extern void run_step(int dir);
 bool do_cmd_walk_test(int y, int x);
