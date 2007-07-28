@@ -1472,7 +1472,7 @@ cptr option_text[OPT_MAX] =
 	NULL,						/* xxx smart_packs */
 	"hp_changes_color",			/* OPT_hp_changes_color */
 	"hide_squelchable",			/* OPT_hide_squelchable */
-	NULL,						/* xxx */
+	"squelch_worthless",			/* OPT_squelch_worthless */
 	"mouse_movement",			/* OPT_mouse_movement */
 	NULL,						/* xxx */
 	NULL,						/* xxx */
@@ -1736,7 +1736,7 @@ cptr option_desc[OPT_MAX] =
 	NULL,										/* xxx smart_packs */
 	"Player color indicates low hit points",	/* OPT_hp_changes_color */
 	"Hide items set as squelchable",			/* OPT_hide_squelchable */
-	NULL,										/* xxx */
+	"Automatically squelch worthless items",	/* OPT_squelch_worthless */
 	"Allow mouse clicks to move the player",	/* OPT_mouse_movement */
 	NULL,										/* xxx */
 	NULL,										/* xxx */
@@ -2000,7 +2000,7 @@ const bool option_norm[OPT_MAX] =
 	FALSE,		/* xxx smart_packs */
 	FALSE,		/* OPT_hp_changes_color */
 	FALSE,		/* OPT_hide_squelchable */
-	FALSE,		/* xxx */
+	FALSE,		/* OPT_squelch_worthless */
 	FALSE,		/* OPT_mouse_movement */
 	FALSE,		/* xxx */
 	FALSE,		/* xxx */
@@ -2197,11 +2197,11 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_pickup_inven,
 		OPT_pickup_detail,
 		OPT_hide_squelchable,
+		OPT_squelch_worthless,
 		OPT_easy_alter,
 		OPT_easy_open,
 		OPT_show_lists,
 		OPT_mouse_movement,
-		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
@@ -2302,6 +2302,18 @@ cptr inscrip_text[MAX_INSCRIP] =
 
 const grouper object_text_order [] =
 {
+	{TV_RING,			"Ring"			},
+	{TV_AMULET,			"Amulet"		},
+	{TV_POTION,			"Potion"		},
+	{TV_SCROLL,			"Scroll"		},
+	{TV_WAND,			"Wand"			},
+	{TV_STAFF,			"Staff"			},
+	{TV_ROD,			"Rod"			},
+	{TV_FOOD,			"Food"			},
+	{TV_PRAYER_BOOK,	"Priest Book"	},
+	{TV_MAGIC_BOOK,		"Magic Book"	},
+	{TV_LITE,			"Light"			},
+	{TV_FLASK,			"Flask"			},
 	{TV_SWORD,			"Sword"			},
 	{TV_POLEARM,		"Polearm"		},
 	{TV_HAFTED,			"Hafted Weapon" },
@@ -2318,20 +2330,8 @@ const grouper object_text_order [] =
 	{TV_DRAG_ARMOR,		"Dragon Scale Mail" },
 	{TV_HARD_ARMOR,		"Hard Armor"	},
 	{TV_SOFT_ARMOR,		"Soft Armor"	},
-	{TV_RING,			"Ring"			},
-	{TV_AMULET,			"Amulet"		},
-	{TV_LITE,			"Light"			},
-	{TV_POTION,			"Potion"		},
-	{TV_SCROLL,			"Scroll"		},
-	{TV_WAND,			"Wand"			},
-	{TV_STAFF,			"Staff"			},
-	{TV_ROD,			"Rod"			},
-	{TV_PRAYER_BOOK,	"Priest Book"	},
-	{TV_MAGIC_BOOK,		"Magic Book"	},
 	{TV_SPIKE,			"Spike"			},
 	{TV_DIGGING,		"Digger"		},
-	{TV_FOOD,			"Food"			},
-	{TV_FLASK,			"Flask"			},
 	{TV_JUNK,			"Junk"			},
 	{0,					NULL			}
 };

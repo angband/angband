@@ -757,18 +757,21 @@ bool make_attack_normal(int m_idx)
 
 				case RBE_EAT_LITE:
 				{
+					u32b f1, f2, f3; 
+
 					/* Take damage */
 					take_hit(damage, ddesc);
 
-					/* Get the lite */
+					/* Get the lite, and its flags */
 					o_ptr = &inventory[INVEN_LITE];
+					object_flags(o_ptr, &f1, &f2, &f3);
 
-					/* Drain fuel */
-					if ((o_ptr->pval > 0) && (!artifact_p(o_ptr)))
+					/* Drain fuel where applicable */
+					if (!(f3 & TR3_NO_FUEL) && (o_ptr->timeout > 0))
 					{
 						/* Reduce fuel */
-						o_ptr->pval -= (250 + randint(250));
-						if (o_ptr->pval < 1) o_ptr->pval = 1;
+						o_ptr->timeout -= (250 + randint(250));
+						if (o_ptr->timeout < 1) o_ptr->timeout = 1;
 
 						/* Notice */
 						if (!p_ptr->timed[TMD_BLIND])

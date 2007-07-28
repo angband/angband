@@ -4035,7 +4035,7 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 			if (wParam && !HIWORD(lParam))
 			{
 				/* Do something to sub-windows */
-				for (i = 1; i < MAX_TERM_DATA; i++)
+				for (i = MAX_TERM_DATA - 1; i >= 0; i--)
 				{
 					SetWindowPos(data[i].w, hWnd, 0, 0, 0, 0,
 					             SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);

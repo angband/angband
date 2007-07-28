@@ -788,7 +788,7 @@ static int inven_damage(inven_func typ, int perc)
 				case TV_DIGGING:
 				{
 					/* Chance to damage it */
-					if (rand_int(100) < perc)
+					if (rand_int(10000) < perc)
 					{
 						/* Damage the item */
 						o_ptr->to_h--;
@@ -814,7 +814,7 @@ static int inven_damage(inven_func typ, int perc)
 				case TV_DRAG_ARMOR:
 				{
 					/* Chance to damage it */
-					if (rand_int(100) < perc)
+					if (rand_int(10000) < perc)
 					{
 						/* Damage the item */
 						o_ptr->to_a--;

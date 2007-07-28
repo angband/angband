@@ -128,7 +128,7 @@ static const char *comment_bad[] =
 	"Damn!",
 	"You fiend!",
 	"The shopkeeper curses at you.",
-	"The shopkeeper glares at you.",
+	"The shopkeeper glares at you."
 };
 
 static const char *comment_accept[] =
@@ -173,7 +173,11 @@ static void prt_welcome(const owner_type *ot_ptr)
 	const char *player_name;
 
 	const char *owner_name = &b_name[ot_ptr->owner_name];
+	/* We go from level 1 - 50  */
 	int i = (p_ptr->lev - 1) / 5;
+
+	/* Sanity check in case we increase the max level carelessly */
+	i = MIN(i, N_ELEMENTS(comment_welcome) - 1);
 
 	/* Only show the message one in four times to stop it being irritating. */
 	if (!rand_int(4)) return;
@@ -377,8 +381,8 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 /*
  * Determine the price of an object (qty one) in a store.
  *
- * `flip` == TRUE  means the shop is buying, player selling
- *        == FALSE means the shop is selling, player buying
+ *  store_buying == TRUE  means the shop is buying, player selling
+ *               == FALSE means the shop is selling, player buying
  *
  * This function takes into account the player's charisma, and the
  * shop-keepers friendliness, and the shop-keeper's base greed, but
@@ -1951,6 +1955,7 @@ static bool store_purchase(int item)
 		item_new = inven_carry(i_ptr);
 
 		/* Message */
+		object_desc(o_name, sizeof(o_name), &inventory[item_new], TRUE, 3);
 		msg_format("You have %s (%c).", o_name, index_to_label(item_new));
 		store_flags |= STORE_KEEP_PROMPT;
 
@@ -2637,7 +2642,7 @@ void do_cmd_store(void)
 		{
 			/* These two can't intersect! */
 			menu.cmd_keys = "\n\x04\x10\r?=CPdeEiIsTwx\x8B\x8Chl"; /* \x10 = ^p , \x04 = ^D */
-			menu.selections = "abcfghmnopqruvyz1234567890";
+			menu.selections = "abcfgmnopqruvyz1234567890";
 		}
 
 		/* Original */
@@ -2671,14 +2676,13 @@ void do_cmd_store(void)
 			evt = menu_select(&menu, &cursor, EVT_MOVE);
 			if (store_flags & STORE_KEEP_PROMPT)
 			{
+				/* Unset so that the prompt is cleared next time */
 				store_flags &= ~STORE_KEEP_PROMPT;
 			}
 			else
 			{
-				/* Clear the prompt, and mark it as read (i.e. no -more-
-				   prompt will be issued when messages are flushed. */
+				/* Clear the prompt */
 				prt("", 0, 0);
-				msg_flag = FALSE;
 			}
 		}
 
@@ -2706,6 +2710,8 @@ void do_cmd_store(void)
 			if (inventory[INVEN_PACK].k_idx)
 				leave = store_overflow();
 		}
+
+		msg_flag = FALSE;
 	}
 
 	}

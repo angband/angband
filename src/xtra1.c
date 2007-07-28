@@ -1542,8 +1542,11 @@ static void calc_torch(void)
 	int i;
 
 	s16b old_lite = p_ptr->cur_lite;
-	s16b new_lite = 0;
 	bool burn_light = TRUE;
+
+	s16b new_lite = 0;
+	int extra_lite = 0;
+
 
 
 	/* Ascertain lightness if in the town */
@@ -1565,9 +1568,6 @@ static void calc_torch(void)
 		/* Extract the flags */
 		object_flags(o_ptr, &f1, &f2, &f3);
 
-		/* LITE flag on an object always increases radius */
-		if (f3 & TR3_LITE) amt++;
-
 		/* Cursed objects emit no light */
 		if (o_ptr->ident & IDENT_CURSED)
 		{
@@ -1577,18 +1577,20 @@ static void calc_torch(void)
 		/* Examine actual lites */
 		else if (o_ptr->tval == TV_LITE)
 		{
+			int flag_inc = (f3 & TR3_LITE) ? 1 : 0;
+
 			/* Artifact Lites provide permanent bright light */
 			if (artifact_p(o_ptr))
-				amt += 3;
+				amt = 3 + flag_inc;
 
 			/* Non-artifact lights and those without fuel provide no light */
 			else if (!burn_light || o_ptr->timeout == 0)
-			    amt = 0;
+				amt = 0;
 
 			/* All lit lights provide at least radius 2 light */
 			else
 			{
-				amt += 2;
+				amt = 2 + flag_inc;
 
 				/* Torches below half fuel provide less light */
 				if (o_ptr->sval == SV_LITE_TORCH && o_ptr->timeout < (FUEL_TORCH / 4))
@@ -1596,13 +1598,22 @@ static void calc_torch(void)
 			}
 		}
 
+		else
+		{
+			/* LITE flag on an non-cursed non-lights always increases radius */
+			if (f3 & TR3_LITE) extra_lite++;
+		}
+
 		/* Alter p_ptr->cur_lite if reasonable */
 		if (new_lite < amt)
 		    new_lite = amt;
 	}
 
-	/* Limit light radius (paranoia) */
-	new_lite = MIN(new_lite, 4);
+	/* Add bonus from LITE flags */
+	new_lite += extra_lite;
+
+	/* Limit light */
+	new_lite = MIN(new_lite, 5);
 	new_lite = MAX(new_lite, 0);
 
 	/* Notice changes in the "lite radius" */

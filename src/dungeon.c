@@ -1471,10 +1471,6 @@ static void process_player(void)
 	}
 
 	while (!p_ptr->energy_use && !p_ptr->leaving);
-
-
-	/* Allowed to automatically pick up things again */
-	p_ptr->auto_pickup_okay = TRUE;
 }
 
 

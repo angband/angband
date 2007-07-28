@@ -36,7 +36,7 @@
  * Name of the version/variant and its version string
  */
 #define VERSION_NAME   "Angband"
-#define VERSION_STRING "3.0.8"
+#define VERSION_STRING "3.0.9"
 
 
 /*
@@ -1705,7 +1705,6 @@ enum
 #define INSCRIP_SPECIAL         8
 #define INSCRIP_UNCURSED        9
 #define INSCRIP_INDESTRUCTIBLE  10
-#define INSCRIP_SQUELCH			11
 
 /*
  * Number of special inscriptions, plus one.
@@ -2416,10 +2415,10 @@ enum
 #define OPT_easy_alter 				65
 #define OPT_show_piles				67
 #define OPT_center_player			68
-
-#define OPT_auto_more				71
+#define OPT_auto_more			71
 #define OPT_hp_changes_color		74
 #define OPT_hide_squelchable		75
+#define OPT_squelch_worthless		76
 #define OPT_mouse_movement		77
 
 

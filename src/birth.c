@@ -630,6 +630,7 @@ static void player_outfit(void)
 			object_aware(i_ptr);
 			object_known(i_ptr);
 			(void)inven_carry(i_ptr);
+			k_info[k_idx].everseen = TRUE;
 		}
 	}
 
@@ -644,6 +645,7 @@ static void player_outfit(void)
 	i_ptr->number = (byte)rand_range(3, 7);
 	object_aware(i_ptr);
 	object_known(i_ptr);
+        k_info[i_ptr->k_idx].everseen = TRUE;
 	(void)inven_carry(i_ptr);
 
 
@@ -656,6 +658,7 @@ static void player_outfit(void)
 	i_ptr->timeout = rand_range(3, 7) * 500;
 	object_aware(i_ptr);
 	object_known(i_ptr);
+        k_info[i_ptr->k_idx].everseen = TRUE;
 	(void)inven_carry(i_ptr);
 
 

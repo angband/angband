@@ -16,5 +16,13 @@ OBJECTIVE_BINS = angband
 CFLAGS += -I.
 
 angband: $(OBJECTS)
-	$(CC) $(LDFLAGS) $(OBJECTS) $(LDADD) -o $@ 
+	$(CC) $(OBJECTS) $(LDFLAGS) $(LDADD) -o $@ 
 	@printf "%10s     %-20s\n" LINK $@
+
+install-posthook:
+	@if [ "x$(SETEGID)" != "x" ]; then \
+		printf "%10s     $(DESTDIR)$(BINDIR)/angband\n" CHOWN; \
+		if [ "x$(DRY)" = "x" ]; then \
+			chown root:${SETEGID} $(DESTDIR)$(BINDIR)/angband; \
+		fi; \
+	fi

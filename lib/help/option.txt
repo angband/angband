@@ -296,8 +296,11 @@ Restrict the creation of artifacts    [birth_no_artifacts]
 
 ***** <birth_no_preserve>
 Don't preserve artifacts on leaving level    [birth_no_preserve]
-     With preserve mode off, no artifact can be generated more than once in
-     the game. If it's on a level and you miss it, it's gone forever.
+     Normally artifacts can be generated more than once in the game - so
+     if you leave a level with an unidentified artifact on it you may
+     still find it later.  With this option on, they can only be created
+     once - if you leave a level with an artifact on it's gone for the
+     rest of the game whether you knew it was there or not.
 
 ***** <birth_no_stacking>
 Don't stack objects on the floor   [birth_no_stacking]

@@ -107,6 +107,7 @@ static command_type cmd_item_manage[]  =
 	{ "Take/unwield off an item",  't', do_cmd_takeoff },
 	{ "Drop an item",              'd', do_cmd_drop },
 	{ "Destroy an item",           'k', do_cmd_destroy },
+	{ "Mark an item as squelch",   'K', do_cmd_mark_squelch },
 	{ "Examine an item",           'I', do_cmd_observe },
 	{ "Inscribe an object",        '{', do_cmd_inscribe },
 	{ "Uninscribe an object",      '}', do_cmd_uninscribe }
@@ -153,6 +154,7 @@ static command_type cmd_hidden[] =
 	{ "Toggle windows",     KTRL('E'), toggle_inven_equip }, /* XXX */
 	{ "Alter a grid",             '+', do_cmd_alter },
 	{ "Walk",                     ';', do_cmd_walk },
+	{ "Jump into a trap",         '-', do_cmd_jump },
 	{ "Start running",            '.', do_cmd_run },
 	{ "Stand still",              ',', do_cmd_hold },
 	{ "Check knowledge",          '|', do_cmd_knowledge },
@@ -471,7 +473,7 @@ static bool cmd_menu(command_list *list, void *selection_p)
 {
 	menu_type menu;
 	menu_iter commands_menu = { 0, 0, 0, cmd_sub_entry, cmd_sub_action };
-	region area = { 24, 4, 37, 13 };
+	region area = { 23, 4, 37, 13 };
 
 	event_type evt;
 	int cursor = 0;
@@ -486,7 +488,7 @@ static bool cmd_menu(command_list *list, void *selection_p)
 
 	/* Set up the screen */
 	screen_save();
-	window_make(22, 3, 62, 17);
+	window_make(21, 3, 62, 17);
 
 	/* Select an entry */
 	evt = menu_select(&menu, &cursor, 0);
@@ -536,7 +538,7 @@ static void do_cmd_menu(void)
 {
 	menu_type menu;
 	menu_iter commands_menu = { 0, 0, 0, cmd_list_entry, cmd_list_action };
-	region area = { 20, 5, 37, 6 };
+	region area = { 21, 5, 37, 6 };
 
 	event_type evt;
 	int cursor = 0;
@@ -551,7 +553,7 @@ static void do_cmd_menu(void)
 
 	/* Set up the screen */
 	screen_save();
-	window_make(18, 4, 58, 11);
+	window_make(19, 4, 58, 11);
 
 	/* Select an entry */
 	evt = menu_select(&menu, &cursor, 0);

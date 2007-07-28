@@ -636,8 +636,8 @@ void do_cmd_uninscribe(void)
 	/* Remove the inscription */
 	o_ptr->note = 0;
 
-	/* Combine the pack */
-	p_ptr->notice |= (PN_COMBINE);
+	/* Combine the pack, check for squelchables */
+	p_ptr->notice |= (PN_COMBINE | PN_SQUELCH);
 
 	/* Window stuff */
 	p_ptr->window |= (PW_INVEN | PW_EQUIP);
@@ -700,8 +700,8 @@ void do_cmd_inscribe(void)
 		/* Save the inscription */
 		o_ptr->note = quark_add(tmp);
 
-		/* Combine the pack */
-		p_ptr->notice |= (PN_COMBINE);
+		/* Combine the pack, check for squelchables */
+		p_ptr->notice |= (PN_COMBINE | PN_SQUELCH);
 
 		/* Window stuff */
 		p_ptr->window |= (PW_INVEN | PW_EQUIP);

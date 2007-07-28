@@ -2865,13 +2865,13 @@ bool target_set_interactive(int mode)
 			/* Allow target */
 			if ((cave_m_idx[y][x] > 0) && target_able(cave_m_idx[y][x]))
 			{
-				my_strcpy(info, "q,t,p,o,+,-,<dir>", sizeof(info));
+				my_strcpy(info, "g,q,t,p,o,+,-,<dir>, <click>", sizeof(info));
 			}
 
 			/* Dis-allow target */
 			else
 			{
-				my_strcpy(info, "q,p,o,+,-,<dir>", sizeof(info));
+				my_strcpy(info, "g,q,p,o,+,-,<dir>, <click>", sizeof(info));
 			}
 
 			/* Adjust panel if needed */
@@ -3033,7 +3033,7 @@ bool target_set_interactive(int mode)
 		else
 		{
 			/* Default prompt */
-			my_strcpy(info, "q,t,p,m,+,-,<dir>", sizeof(info));
+			my_strcpy(info, "g,q,t,p,m,+,-,<dir>, <click>", sizeof(info));
 
 			/* Describe and Prompt (enable "TARGET_LOOK") */
 			query = target_set_interactive_aux(y, x, mode | TARGET_LOOK, info);
@@ -3243,11 +3243,11 @@ bool get_aim_dir(int *dp)
 		/* Choose a prompt */
 		if (!target_okay())
 		{
-			p = "Direction ('*' to choose a target, Escape to cancel)? ";
+			p = "Direction ('*' or <click> to choose a target, Escape to cancel)? ";
 		}
 		else
 		{
-			p = "Direction ('5' for target, '*' to re-target, Escape to cancel)? ";
+			p = "Direction ('5' or <click> for target, '*' to re-target, Escape to cancel)? ";
 		}
 
 		/* Get a command (or Cancel) */
@@ -3362,7 +3362,7 @@ bool get_rep_dir(int *dp)
 	while (!dir)
 	{
 		/* Choose a prompt */
-		p = "Direction (Escape to cancel)? ";
+		p = "Direction or <click> (Escape to cancel)? ";
 
 		/* Get a command (or Cancel) */
 		if (!get_com_ex(p, &ke)) break;

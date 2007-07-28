@@ -758,7 +758,7 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 	if (aware && !show_flavors) flavor = FALSE;
 
 	/* Hack -- mark-to-squelch worthless items XXX */
-	if (!k_ptr->everseen && aware)
+	if (!k_ptr->everseen && aware && OPT(squelch_worthless))
 	{
 		if (object_value(o_ptr) == 0)
 		{
@@ -2631,9 +2631,8 @@ bool verify_item(cptr prompt, int item)
  */
 static bool get_item_allow(int item)
 {
-	cptr s;
-
 	object_type *o_ptr;
+	char verify_inscrip[] = "!*";
 
 	/* Inventory */
 	if (item >= 0)
@@ -2647,24 +2646,14 @@ static bool get_item_allow(int item)
 		o_ptr = &o_list[0 - item];
 	}
 
-	/* No inscription */
-	if (!o_ptr->note) return (TRUE);
+	/* Check for a "prevention" inscription */
+	verify_inscrip[1] = p_ptr->command_cmd;
 
-	/* Find a '!' */
-	s = strchr(quark_str(o_ptr->note), '!');
-
-	/* Process preventions */
-	while (s)
+	if (o_ptr->note && (check_for_inscrip(o_ptr, "!*") || 
+		            check_for_inscrip(o_ptr, verify_inscrip)))
 	{
-		/* Check the "restriction" */
-		if ((s[1] == p_ptr->command_cmd) || (s[1] == '*'))
-		{
-			/* Verify the choice */
-			if (!verify_item("Really try", item)) return (FALSE);
-		}
-
-		/* Find another '!' */
-		s = strchr(s + 1, '!');
+		/* Verify the choice */
+		if (!verify_item("Really try", item)) return (FALSE);
 	}
 
 	/* Allow it */
@@ -2920,8 +2909,8 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	if (e1 <= e2) allow_equip = TRUE;
 
 
-	/* Scan all marked non-gold objects in the grid */
-	(void)scan_floor(floor_list, &floor_num, py, px, 0x03);
+	/* Scan all non-gold objects in the grid */
+	(void)scan_floor(floor_list, &floor_num, py, px, 0x01);
 
 	/* Full floor */
 	f1 = 0;

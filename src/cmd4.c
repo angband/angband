@@ -127,8 +127,8 @@ static int *obj_group_order;
  */
 static struct
 {
-		cptr chars;
-		cptr name;
+	cptr chars;
+	cptr name;
 } monster_group[] =
 {
 	{ (cptr)-1,	"Uniques" },
@@ -148,15 +148,15 @@ static struct
 	{ "g",		"Golems" },
 	{ "H",		"Harpies/Hybrids" },
 	{ "h",		"Hominids (Elves, Dwarves)" },
-	{ "H",		"Hydras" },
+	{ "M",		"Hydras" },
 	{ "i",		"Icky Things" },
-	{ "FI",		"Insects" },
+	{ "lFI",	"Insects" },
 	{ "j",		"Jellies" },
 	{ "K",		"Killer Beetles" },
 	{ "k",		"Kobolds" },
 	{ "L",		"Lichs" },
 	{ "tp",		"Men" },
-	{ "$?!_",	"Mimics" },
+	{ ".$?!_",	"Mimics" },
 	{ "m",		"Molds" },
 	{ ",",		"Mushroom Patches" },
 	{ "n",		"Nagas" },
@@ -238,7 +238,6 @@ int feat_order(int feat)
 
 		default:
 		{
-			if (isdigit(f_ptr->d_char)) return 7;
 			return 8;
 		}
 	}
@@ -342,6 +341,10 @@ static void display_group_member(menu_type *menu, int oid,
 	}
 }
 
+static const char *recall_prompt(int oid)
+{
+	return ", 'r' to recall";
+}
 
 #define swap(a, b) (swapspace = (void*)(a)), ((a) = (b)), ((b) = swapspace)
 
@@ -547,7 +550,9 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			if (visual_list) pvs = ", ENTER to accept";
 			else if (o_funcs.xattr) pvs = ", 'v' for visuals";
 
-			prt(format("<dir>, 'r' to recall%s%s%s, ESC", pvs, pedit, xtra), hgt - 1, 0);
+
+
+			prt(format("<dir>%s%s%s, ESC", pvs, pedit, xtra), hgt - 1, 0);
 		}
 
 		if (do_swap)
@@ -1034,7 +1039,26 @@ static int m_cmp_race(const void *a, const void *b)
 static char *m_xchar(int oid) { return &r_info[default_join[oid].oid].x_char; }
 static byte *m_xattr(int oid) { return &r_info[default_join[oid].oid].x_attr; }
 static const char *race_name(int gid) { return monster_group[gid].name; }
-static void mon_lore(int oid) { screen_roff(default_join[oid].oid); inkey_ex(); }
+
+static void mon_lore(int oid) 
+{ 
+	/* Save the screen */
+	screen_save();
+
+	/* Describe */
+	text_out_hook = text_out_to_screen;
+
+	/* Recall monster */
+	roff_top(default_join[oid].oid);
+	Term_gotoxy(0, 2);
+	describe_monster(default_join[oid].oid, FALSE);
+
+	text_out_c(TERM_L_BLUE, "\n[Press any key to continue]\n");
+	(void)anykey();
+
+	/* Load the screen */
+	screen_load();
+}
 
 static void mon_summary(int gid, const int *object_list, int n, int top, int row, int col)
 {
@@ -1098,7 +1122,7 @@ static void do_cmd_knowledge_monsters(void *obj, const char *name)
 	group_funcs r_funcs = {N_ELEMENTS(monster_group), FALSE, race_name,
 							m_cmp_race, default_group, mon_summary};
 
-	member_funcs m_funcs = {display_monster, mon_lore, m_xchar, m_xattr, 0, 0, 0};
+	member_funcs m_funcs = {display_monster, mon_lore, m_xchar, m_xattr, recall_prompt, 0, 0};
 
 	
 	int *monsters;
@@ -1154,29 +1178,31 @@ static void do_cmd_knowledge_monsters(void *obj, const char *name)
 /* =================== ARTIFACTS ==================================== */
 /* Many-to-one grouping */
 
+static void get_artifact_display_name(char *o_name, size_t namelen, int a_idx)
+{
+	object_type object_type_body;
+	object_type *o_ptr = &object_type_body;
+
+	/* Make fake artifact */
+	o_ptr = &object_type_body;
+	object_wipe(o_ptr);
+	make_fake_artifact(o_ptr, a_idx);
+
+	/* Get its name */
+	object_desc_spoil(o_name, namelen, o_ptr, TRUE, 0);
+}
+
 /*
  * Display an artifact label
  */
 static void display_artifact(int col, int row, bool cursor, int oid)
 {
 	char o_name[80];
-	object_type object_type_body;
-	object_type *o_ptr = &object_type_body;
 
 	/* Choose a color */
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
 
-	/* Get local object */
-	o_ptr = &object_type_body;
-
-	/* Wipe the object */
-	object_wipe(o_ptr);
-
-	/* Make fake artifact */
-	make_fake_artifact(o_ptr, oid);
-
-	/* Get its name */
-	object_desc_spoil(o_name, sizeof(o_name), o_ptr, TRUE, 0);
+	get_artifact_display_name(o_name, sizeof o_name, oid);
 
 	/* Display the name */
 	c_prt(attr, o_name, row, col);
@@ -1207,6 +1233,7 @@ static void desc_art_fake(int a_idx)
 	/* Save the screen */
 	screen_save();
 
+	Term_gotoxy(0, 0);
 	object_info_screen(o_ptr);
 
 	/* Load the screen */
@@ -1232,42 +1259,67 @@ static int a_cmp_tval(const void *a, const void *b)
 static const char *kind_name(int gid) { return object_text_order[gid].name; }
 static int art2gid(int oid) { return obj_group_order[a_info[oid].tval]; }
 
+/* Check if the given artifact idx is something we should "Know" about */
+static bool artifact_is_known(int a_idx)
+{
+	int i;
+
+	/* Artifact doesn't exist at all, or not created yet */
+	if (!a_info[a_idx].name || a_info[a_idx].cur_num == 0) return FALSE;
+
+	/* Check all objects to see if it exists but hasn't been IDed */
+	for (i = 0; i < z_info->o_max; i++)
+	{
+		int a = o_list[i].name1;
+
+		/* If we haven't actually identified the artifact yet */
+		if (a && a == a_idx && !object_known_p(&o_list[i]))
+		{
+			return FALSE;
+		}
+	}
+
+        /* Check inventory for the same */
+	for (i = 0; i < INVEN_TOTAL; i++)
+	{
+		object_type *o_ptr = &inventory[i];
+
+		/* Ignore non-objects */
+		if (!o_ptr->k_idx) continue;
+
+
+		if (o_ptr->name1 && o_ptr->name1 == a_idx && 
+		    !object_known_p(o_ptr))
+		{
+			return FALSE;
+		}
+	}
+
+	return TRUE;
+}
+ 
 
 /* If 'artifacts' is NULL, it counts the number of known artifacts, otherwise
    it collects the list of known artifacts into 'artifacts' as well. */
 static int collect_known_artifacts(int *artifacts, size_t artifacts_len)
 {
 	int a_count = 0;
-	int i, j;
+	int j;
 
 	if (artifacts)
 		assert(artifacts_len >= z_info->a_max);
 
 	for (j = 0; j < z_info->a_max; j++)
 	{
-		/* If the artifact has been created (or we're cheating) */
-		if ((cheat_xtra || a_info[j].cur_num) && a_info[j].name)
+		/* Artifact doesn't exist */
+		if (!a_info[j].name) continue;
+
+		if (cheat_xtra || artifact_is_known(j))
 		{
-			bool valid = TRUE;
-
-			for (i = 0; !cheat_xtra && i < z_info->o_max; i++)
-			{
-				int a = o_list[i].name1;
-
-				/* If we haven't actually identified the artifact yet */
-				if (a && a == j && !object_known_p(&o_list[i]))
-				{
-					valid = FALSE;
-				}
-			}
-
-			if (valid)
-			{
-				if (artifacts)
-					artifacts[a_count++] = j;
-				else
-					a_count++;
-			}
+			if (artifacts)
+				artifacts[a_count++] = j;
+			else
+				a_count++;
 		}
 	}
 
@@ -1281,7 +1333,7 @@ static void do_cmd_knowledge_artifacts(void *obj, const char *name)
 {
 	/* HACK -- should be TV_MAX */
 	group_funcs obj_f = {TV_GOLD, FALSE, kind_name, a_cmp_tval, art2gid, 0};
-	member_funcs art_f = {display_artifact, desc_art_fake, 0, 0, 0, 0, 0};
+	member_funcs art_f = {display_artifact, desc_art_fake, 0, 0, recall_prompt, 0, 0};
 
 	int *artifacts;
 	int a_count = 0;
@@ -1341,6 +1393,8 @@ static void desc_ego_fake(int oid)
 
 	/* Begin recall */
 	Term_gotoxy(0, 1);
+	text_out("\n");
+
 	if (e_ptr->text)
 	{
 		int x, y;
@@ -1366,9 +1420,8 @@ static void desc_ego_fake(int oid)
 		}
 	}
 
-	Term_flush();
-
-	(void)inkey_ex();
+	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
+	(void)anykey();
 
 	screen_load();
 }
@@ -1395,7 +1448,7 @@ static void do_cmd_knowledge_ego_items(void *obj, const char *name)
 	group_funcs obj_f =
 		{TV_GOLD, FALSE, ego_grp_name, e_cmp_tval, default_group, 0};
 
-	member_funcs ego_f = {display_ego_item, desc_ego_fake, 0, 0, 0, 0, 0};
+	member_funcs ego_f = {display_ego_item, desc_ego_fake, 0, 0, recall_prompt, 0, 0};
 
 	int *egoitems;
 	int e_count = 0;
@@ -1433,6 +1486,31 @@ static void do_cmd_knowledge_ego_items(void *obj, const char *name)
 /* Many-to-one grouping */
 
 /*
+ * Looks up an artifact idx given an object_kind *that's already known
+ * to be an artifact*.  Behaviour is distinctly unfriendly if passed
+ * flavours which don't correspond to an artifact.
+ */
+static int get_artifact_from_kind(object_kind *k_ptr)
+{
+	int i;
+
+	assert(k_ptr->flags3 & TR3_INSTA_ART);
+
+	/* Look for the corresponding artifact */
+	for (i = 0; i < z_info->a_max; i++)
+	{
+		if (k_ptr->tval == a_info[i].tval &&
+		    k_ptr->sval == a_info[i].sval)
+		{
+			break;
+		}
+	}
+
+        assert(i < z_info->a_max);
+	return i;
+}
+
+/*
  * Display the objects in a group.
  */
 static void display_object(int col, int row, bool cursor, int oid)
@@ -1445,22 +1523,25 @@ static void display_object(int col, int row, bool cursor, int oid)
 	char o_name[80];
 
 	/* Choose a color */
-	bool aware = (k_ptr->flavor == 0) || (k_ptr->aware);
-	byte a = (aware && k_ptr->x_attr) ?
-				k_ptr->x_attr : flavor_info[k_ptr->flavor].x_attr;
-	byte c = aware ? k_ptr->x_char : flavor_info[k_ptr->flavor].x_char;
-	byte attr = curs_attrs[(int)k_ptr->flavor == 0 || k_ptr->aware][(int)cursor];
+	bool aware = (!k_ptr->flavor || k_ptr->aware);
+	byte attr = curs_attrs[(int)aware][(int)cursor];
 
-	/* Symbol is unknown.  This should never happen.*/	
-	if (!k_ptr->aware && !k_ptr->flavor && !p_ptr->wizard)
+	/* Find graphics bits -- versions of the object_char and object_attr defines */
+	bool use_flavour = (k_ptr->flavor) && !(aware && k_ptr->tval == TV_SCROLL);
+
+	byte a = use_flavour ? flavor_info[k_ptr->flavor].x_attr : k_ptr->x_attr;
+	byte c = use_flavour ? flavor_info[k_ptr->flavor].x_char : k_ptr->x_char;
+
+	/* Display known artifacts differently */
+	if ((k_ptr->flags3 & TR3_INSTA_ART) && artifact_is_known(get_artifact_from_kind(k_ptr)))
 	{
-		assert(0);
-		c = ' ';
-		a = TERM_DARK;
+		get_artifact_display_name(o_name, sizeof(o_name), get_artifact_from_kind(k_ptr));
 	}
-
-	/* Tidy name */
-        object_kind_name(o_name, sizeof o_name, k_idx, cheat_know);
+	else
+	{
+		/* Tidy name */
+	        object_kind_name(o_name, sizeof(o_name), k_idx, cheat_know);
+	}
 
 	/* Display the name */
 	c_prt(attr, o_name, row, col);
@@ -1484,8 +1565,16 @@ static void display_object(int col, int row, bool cursor, int oid)
  */
 static void desc_obj_fake(int k_idx)
 {
+	object_kind *k_ptr = &k_info[k_idx];
 	object_type object_type_body;
 	object_type *o_ptr = &object_type_body;
+
+	/* Check for known artifacts, display them as artifacts */
+	if ((k_ptr->flags3 & TR3_INSTA_ART) && artifact_is_known(get_artifact_from_kind(k_ptr)))
+	{
+		desc_art_fake(get_artifact_from_kind(k_ptr));
+		return;
+	}
 
 	/* Wipe the object */
 	object_wipe(o_ptr);
@@ -1567,9 +1656,9 @@ static const char *o_xtra_prompt(int oid)
 {
 	object_kind *k_ptr = &k_info[oid];
 	s16b idx = get_autoinscription_index(oid);
-
-	const char *no_insc = ", '{'";
-	const char *with_insc = ", '{', '}'";
+			
+	const char *no_insc = ", 'r' to recall, '{'";
+	const char *with_insc = ", 'r' to recall, '{', '}'";
 
 
 	/* Forget it if we've never seen the thing */
@@ -1598,7 +1687,7 @@ static void o_xtra_act(char ch, int oid)
 	/* Uninscribe */
 	if (ch == '}')
 	{
-		if (idx) remove_autoinscription(oid);
+		if (idx != -1) remove_autoinscription(oid);
 		return;
 	}
 
@@ -2252,7 +2341,7 @@ static void do_cmd_options_aux(void *vpage, cptr info)
 			break;
 		else if (cx.type == EVT_MOVE)
 			cursor_pos = cx.index;
-		else if (cx.type == EVT_SELECT && strchr("YN", toupper(cx.key)))
+		else if (cx.type == EVT_SELECT && strchr("YN", toupper((unsigned char) cx.key)))
 			cursor_pos++;
 
 		cursor_pos = (cursor_pos+n) % n;
@@ -2835,9 +2924,12 @@ static void do_cmd_macro_aux(char *buf)
 	char ch;
 
 	int n = 0;
+	int curs_x, curs_y;
 
-	char tmp[1024];
+	char tmp[1024] = "";
 
+	/* Get cursor position */
+	Term_locate(&curs_x, &curs_y);
 
 	/* Flush */
 	flush();
@@ -2849,7 +2941,6 @@ static void do_cmd_macro_aux(char *buf)
 	/* First key */
 	ch = inkey();
 
-	text_out_hook = text_out_to_screen;
 
 	/* Read the pattern */
 	while (ch != 0 && ch != '\xff')
@@ -2858,10 +2949,14 @@ static void do_cmd_macro_aux(char *buf)
 		buf[n++] = ch;
 		buf[n] = 0;
 
-		/* echo */
-		ascii_to_text(tmp, sizeof(tmp), buf+n-1);
-		text_out(tmp);
+		/* Get representation of the sequence so far */
+		ascii_to_text(tmp, sizeof(tmp), buf);
 
+		/* Echo it after the prompt */
+		Term_erase(curs_x, curs_y, 80);
+		Term_gotoxy(curs_x, curs_y);
+		Term_addstr(-1, TERM_WHITE, tmp);
+		
 		/* Do not process macros */
 		inkey_base = TRUE;
 
@@ -4052,6 +4147,11 @@ static void do_cmd_self_knowledge(void *obj, const char *name)
 	self_knowledge(FALSE);
 }
 
+static void do_cmd_knowledge_scores(void *obj, const char *name)
+{
+	show_scores();
+}
+
 /*
  * Definition of the "player knowledge" menu.
  */
@@ -4063,6 +4163,7 @@ static menu_item knowledge_actions[] =
 	{{0, "Display monster knowledge", do_cmd_knowledge_monsters, 0}, '4'},
 	{{0, "Display feature knowledge", do_cmd_knowledge_features, 0}, '5'},
 	{{0, "Display self-knowledge", do_cmd_self_knowledge, 0}, '6'},
+	{{0, "Display hall of fame", do_cmd_knowledge_scores, 0}, '7'},
 };
 
 static menu_type knowledge_menu;

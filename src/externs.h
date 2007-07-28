@@ -600,6 +600,7 @@ int add_autoinscription(s16b kind, cptr inscription);
 void autoinscribe_ground(void);
 void autoinscribe_pack(void);
 
+bool squelch_tval(int tval);
 bool squelch_item_ok(const object_type *o_ptr);
 bool squelch_hide_item(object_type *o_ptr);
 void squelch_drop(void);
@@ -635,6 +636,7 @@ extern s16b quark_add(cptr str);
 extern cptr quark_str(s16b i);
 extern errr quarks_init(void);
 extern errr quarks_free(void);
+extern bool check_for_inscrip(const object_type *o_ptr, const char *inscrip);
 extern s16b message_num(void);
 extern cptr message_str(s16b age);
 extern u16b message_type(s16b age);

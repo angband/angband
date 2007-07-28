@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([Angband], [3.0.8], [bugs@rephial.org], [angband])
+AC_INIT([Angband], [3.0.9], [bugs@rephial.org], [angband])
 AC_PREREQ([2.50])
 
 AC_CONFIG_HEADER(src/autoconf.h)
@@ -12,6 +12,7 @@ AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of package])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])
 
 dnl Check for C compiler
+AC_LANG([C])
 AC_PROG_CC
 
 test "$GCC" = "yes" && CFLAGS="$CFLAGS -Wall -pipe -g -fno-strength-reduce"
@@ -25,38 +26,34 @@ AC_PATH_PROG(RM, rm)
 AC_PATH_PROG(MV, mv)
 AC_PATH_PROG(CP, cp)
 
-AC_ARG_WITH(setgid,
-[  --with-setgid=NAME      install angband as group NAME],
-[case "${withval}" in
-  no) SETEGID="";;
-  yes) AC_MSG_ERROR(missing argument for --with-setgid);;
-  *) SETEGID="$withval";;
-esac])
-AC_SUBST(SETEGID)
-
-AC_LANG([C])
-
-dnl generate the installation path for the ./lib/ folder
-if test "$SETEGID" != ""; then
-  MY_EXPAND_DIR(game_datadir, "$datadir/$PACKAGE/")
-else
-  MY_EXPAND_DIR(game_datadir, "./lib/")
-  bindir=".."
+dnl Work around an autoconf bugs.
+if test "$prefix" = "NONE"; then
+	prefix="${ac_default_prefix}"
 fi
 
-dnl overwrite the path with an user-specified value
-AC_ARG_WITH(libpath,
-[  --with-libpath=path     specify the path to the Angband lib folder],
 
-[case "/$withval" in
-  */) game_datadir="$withval"  ;;
-  *)  game_datadir="$withval/" ;;
-esac])
+AC_ARG_WITH(setgid,  [  --with-setgid=NAME      install angband as group NAME])
+AC_ARG_WITH(libpath, [  --with-libpath=PATH     use PATH as the path to the Angband lib folder])
 
-AC_DEFINE_UNQUOTED([DEFAULT_PATH], "$game_datadir",
-                   [Path to the game's lib directory])
-DATA_PATH="$game_datadir"
-AC_SUBST(DATA_PATH)
+if test "$with_libpath" != ""; then
+	libpath="${with_libpath}"
+elif test "$with_setgid" != ""; then
+	libpath="${prefix}/share/${PACKAGE}/"
+else
+	libpath="./lib/"
+	bindir=".."
+fi
+
+case "/$libpath" in
+	*/) MY_EXPAND_DIR(game_datadir, "$libpath")  ;;
+	*)  MY_EXPAND_DIR(game_datadir, "$libpath/") ;;
+esac
+
+AC_DEFINE_UNQUOTED([DEFAULT_PATH], "${game_datadir}", [Path to the game's lib directory])
+
+SETEGID="$with_setgid";    AC_SUBST(SETEGID)
+DATA_PATH="$game_datadir"; AC_SUBST(DATA_PATH)
+
 
 dnl Frontends
 AC_ARG_ENABLE(gtk,
@@ -129,7 +126,7 @@ if test "$enable_x11" = "yes"; then
 	else
 		AC_DEFINE(USE_X11, 1, [Define to 1 if using the X11 frontend and X11 libraries are found.])
 		CFLAGS="$CFLAGS $X_CFLAGS"
-		LDFLAGS="$LDFLAGS $X_PRE_LIBS -lX11 $X_EXTRA_LIBS"
+		LDFLAGS="$LDFLAGS $X_PRE_LIBS $X_LIBS -lX11 $X_EXTRA_LIBS"
 		with_x11=yes
 	fi
 fi
@@ -182,7 +179,9 @@ if test "$enable_sdl_mixer" = "yes"; then
 	AC_CHECK_LIB(SDL_mixer, Mix_OpenAudio, found_sdl_mixer=yes, found_sdl_mixer=no)
 
 	if test "$found_sdl_mixer" = "yes"; then
-		AC_DEFINE(SDL_SOUND, 1, [Define to 1 if using SDL_mixer sound support and it's found.])
+		AC_DEFINE(SOUND_SDL, 1, [Define to 1 if using SDL_mixer sound support and it's found.])
+		SDL_CFLAGS=`sdl-config --cflags`
+		CFLAGS="${CFLAGS} ${SDL_CFLAGS}"
 		LDFLAGS="${LDFLAGS} -lSDL_mixer"
 	fi
 fi
@@ -198,17 +197,7 @@ AC_CHECK_FUNCS([mkstemp setresgid setegid can_change_color])
 
 
 
-dnl XXX: Work around some autoconf bugs.
-if test "$prefix" = "NONE"; then
-	prefix="${ac_default_prefix}"
-fi
-if test -z "$datadir"; then
-	datadir="${prefix}/share"
-fi
-
-
 AC_CONFIG_FILES([mk/rules.mk])
-
 AC_OUTPUT
 
 
@@ -216,6 +205,7 @@ echo
 echo "Configuration:"
 echo
 echo "  Install path:                           ${prefix}"
+echo "  lib/ path:                              ${game_datadir}"
 echo
 echo "-- Frontends --"
 if test "$enable_curses" = "yes"; then

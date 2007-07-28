@@ -395,6 +395,31 @@ static bool describe_misc_magic(const object_type *o_ptr, u32b f3)
 	int gc = 0, bc = 0;
 	bool something = FALSE;
 
+	/* Describe lights */
+	if (o_ptr->tval == TV_LITE || (f3 & TR3_LITE))
+	{
+		bool artifact = artifact_p(o_ptr);
+		bool no_fuel = (f3 & TR3_NO_FUEL) ? TRUE : FALSE;
+		int rad = 0;
+
+		if (artifact)
+			rad = 3;
+		else if (o_ptr->tval == TV_LITE)
+			rad = 2;
+
+		if (f3 & TR3_LITE) rad++;
+
+		p_text_out("It usually provides light of radius ");
+		text_out_c(TERM_L_GREEN, format("%d", rad));
+		if (no_fuel && !artifact)
+			text_out(", and never needs refuelling");
+		else if (o_ptr->tval == TV_LITE && o_ptr->sval == SV_LITE_TORCH)
+			text_out(", though this is reduced when running of out fuel");
+		text_out(".  ");
+
+		something = TRUE;
+	}
+
 	/* Collect stuff which can't be categorized */
 	if (f3 & (TR3_BLESSED))     good[gc++] = "is blessed by the gods";
 	if (f3 & (TR3_IMPACT))      good[gc++] = "creates earthquakes on impact";

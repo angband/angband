@@ -1,7 +1,4 @@
-default: all
-all: build
-
-.SUFFIXES: .cxx .cc
+default: build
 
 install: build
 	$(MAKE) install-prehook
@@ -264,4 +261,4 @@ depend:
 # compatibility with automake follows
 am--refresh:
 
-include .depend
+-include .depend

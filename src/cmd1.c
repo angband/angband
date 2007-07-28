@@ -755,6 +755,12 @@ byte py_pickup(int pickup)
 	bool blind = ((p_ptr->timed[TMD_BLIND]) || (no_lite()));
 	bool msg = TRUE;
 
+	bool auto_okay = p_ptr->auto_pickup_okay;
+
+
+	/* Reset auto_pickup_okay */
+	p_ptr->auto_pickup_okay = TRUE;
+
 
 	/* Nothing to pick up -- return */
 	if (!cave_o_idx[py][px]) return (0);
@@ -779,7 +785,7 @@ byte py_pickup(int pickup)
 
 
 		/* Automatically pick up items into the backpack */
-		if (p_ptr->auto_pickup_okay && auto_pickup_okay(o_ptr))
+		if (auto_okay && auto_pickup_okay(o_ptr))
 		{
 			/* Pick up the object with message */
 			py_pickup_aux(this_o_idx, TRUE);

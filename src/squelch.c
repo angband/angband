@@ -312,6 +312,24 @@ void autoinscribe_pack(void)
 /*** Squelch code ***/
 
 /*
+ * Determines whether a tval is eligable for sval-squelch.
+ */
+bool squelch_tval(int tval)
+{
+	size_t i;
+
+	/* Only squelch if the tval's allowed */
+	for (i = 0; i < N_ELEMENTS(sval_dependent); i++)
+	{
+		if (tval == sval_dependent[i].tval)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+
+/*
  * Determines if an object is eligable for squelching.
  */
 bool squelch_item_ok(const object_type *o_ptr)
@@ -319,6 +337,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 	size_t i;
 	int num = -1;
 
+	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	bool fullid = object_known_p(o_ptr);
 	bool sensed = (o_ptr->ident & IDENT_SENSE) || fullid;
 	byte feel   = fullid ? value_check_aux1(o_ptr) : o_ptr->pseudo;
@@ -327,18 +346,21 @@ bool squelch_item_ok(const object_type *o_ptr)
 	/* Don't squelch artifacts */
 	if (artifact_p(o_ptr)) return FALSE;
 
+	/* Don't squelch stuff inscribed not to be destroyed (!k) */
+	if (check_for_inscrip(o_ptr, "!k") || check_for_inscrip(o_ptr, "!*"))
+	{
+		return FALSE;
+	}
+
 	/* Auto-squelch dead chests */
 	if (o_ptr->tval == TV_CHEST && o_ptr->pval == 0)
 		return TRUE;
 
-	/* Do squelching by sval, if the tval's allowed */
-	if (k_info[o_ptr->k_idx].squelch)
+	/* Do squelching by sval, if we 'know' the flavour. */
+	if (k_ptr->squelch && (k_ptr->flavor == 0 || k_ptr->aware))
 	{
-		for (i = 0; i < N_ELEMENTS(sval_dependent); i++)
-		{
-			if (k_info[o_ptr->k_idx].tval == sval_dependent[i].tval)
-				return TRUE;
-		}
+		if (squelch_tval(k_info[o_ptr->k_idx].tval))
+			return TRUE;
 	}
 
 
@@ -520,8 +542,12 @@ void squelch_drop(void)
 		if (!o_ptr->k_idx) continue;
 		if (!squelch_item_ok(o_ptr)) continue;
 
-		/* Drop item */
-		inven_drop(n, o_ptr->number);
+		/* Check for !d (no drop) inscription */
+		if (!check_for_inscrip(o_ptr, "!d") && !check_for_inscrip(o_ptr, "!*"))
+		{
+			/* We're allowed to drop it. */
+			inven_drop(n, o_ptr->number);
+		}
 	}
 
 	/* Combine/reorder the pack */
@@ -753,6 +779,8 @@ static bool sval_menu(int tval, const char *desc)
 	text_out(" to return to the previous menu.  ");
 	text_out_c(TERM_L_BLUE, "Enter");
 	text_out(" toggles the current setting.");
+
+	text_out_indent = 0;
 
 	/* Set up the menu */
 	WIPE(&menu, menu);

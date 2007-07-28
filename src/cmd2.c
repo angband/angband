@@ -2096,6 +2096,29 @@ void do_cmd_walk(void)
 	move_player(dir);
 }
 
+/*
+ * Jump into a trap, turn off pickup.
+ *
+ * What a horrible function.
+ */
+void do_cmd_jump(void)
+{
+	bool old_easy_alter;
+
+	/* Picking up NOT okay, so whatever you heard is obviously wrong */
+	p_ptr->auto_pickup_okay = FALSE;
+
+	/* easy_alter can be turned off (don't disarm traps) */
+	old_easy_alter = easy_alter;
+	easy_alter = FALSE;
+
+	/* Now actually do this silly walk */
+	do_cmd_walk();
+
+	/* Restore easy_alter */
+	easy_alter = old_easy_alter;
+}
+
 
 
 /*
@@ -2954,4 +2977,53 @@ void do_cmd_throw(void)
 
 	/* Drop (or break) near that location */
 	drop_near(i_ptr, j, y, x);
+}
+
+
+/*
+ * See if one can squelch a given kind of item.
+ */
+static bool squelchable_hook(const object_type *o_ptr)
+{
+	object_kind *k_ptr = &k_info[o_ptr->k_idx];
+
+	/* No point in double-squelching things */
+	if (k_ptr->squelch) return FALSE;
+
+	/* Don't squelch bad tvals */
+	if (!squelch_tval(o_ptr->tval)) return FALSE;
+
+	/* Only allow if aware */
+	return object_aware_p(o_ptr);
+}
+
+
+
+/*
+ * Mark item as "squelch".
+ */
+void do_cmd_mark_squelch()
+{
+	const char *q = "Squelch which item kind? ";
+	const char *s = "You have nothing you can squelch.";
+
+	object_type *o_ptr;
+	object_kind *k_ptr;
+	int item;
+
+	/* Get an item */
+	item_tester_hook = squelchable_hook;
+	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
+
+	/* Get the object */
+	if (item >= 0)
+		o_ptr = &inventory[item];
+	else
+		o_ptr = &o_list[0 - item];
+
+	/* Get object kind */
+	k_ptr = &k_info[o_ptr->k_idx];
+
+	/* Set squelch flag */
+	k_ptr->squelch = TRUE;
 }
