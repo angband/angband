@@ -1443,7 +1443,7 @@ void do_cmd_query_symbol(void)
 
 
 	/* Prompt */
-	put_str("Recall details? (k/p/y/n): ", 0, 40);
+	put_str("Recall details? (y/k/n): ", 0, 40);
 
 	/* Query */
 	query = inkey();
@@ -1451,41 +1451,34 @@ void do_cmd_query_symbol(void)
 	/* Restore */
 	prt(buf, 0, 0);
 
-
-	/* Sort by kills (and level) */
+	/* Interpret the response */
 	if (query == 'k')
 	{
+		/* Sort by kills (and level) */
 		why = 4;
-		query = 'y';
 	}
-
-	/* Sort by level */
-	if (query == 'p')
+	else if (query == 'y' || query == 'p')
 	{
+		/* Sort by level; accept 'p' as legacy */
 		why = 2;
-		query = 'y';
 	}
-
-	/* Catch "escape" */
-	if (query != 'y')
+	else
 	{
+		/* Any unsupported response is "nope, no history please" */
+	
 		/* XXX XXX Free the "who" array */
 		FREE(who);
 
 		return;
 	}
 
-	/* Sort if needed */
-	if (why)
-	{
-		/* Select the sort method */
-		ang_sort_comp = ang_sort_comp_hook;
-		ang_sort_swap = ang_sort_swap_hook;
 
-		/* Sort the array */
-		ang_sort(who, &why, n);
-	}
+	/* Select the sort method */
+	ang_sort_comp = ang_sort_comp_hook;
+	ang_sort_swap = ang_sort_swap_hook;
 
+	/* Sort the array */
+	ang_sort(who, &why, n);
 
 	/* Start at the end */
 	i = n - 1;
