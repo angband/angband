@@ -1083,12 +1083,6 @@ void player_flags(u32b *f1, u32b *f2, u32b *f3)
 	(*f2) |= rp_ptr->flags2;
 	(*f3) |= rp_ptr->flags3;
 
-	/* If the race has innate infravision, set the corresponding flag */
-	if (rp_ptr->infra > 0)
-	{
-		(*f1) |= (TR1_INFRA);
-	}
-
 	/* Some classes become immune to fear at a certain plevel */
 	if (cp_ptr->flags & CF_BRAVERY_30)
 	{
@@ -1208,7 +1202,17 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 			if(j < INVEN_TOTAL)
 				object_flags_known(o_ptr, &f[1], &f[2], &f[3]);
 			else
+			{
 				player_flags(&f[1], &f[2], &f[3]);
+
+				/* If the race has innate infravision, force the corresponding flag
+				   here.  If we set it in player_flags(), then all callers of that
+				   function will think the infravision is caused by equipment. */
+				if (rp_ptr->infra > 0)
+				{
+					f[1] |= (TR1_INFRA);
+				}
+			}
 
 			res = (0 != (f[resists[i].set] & resists[i].res_flag));
 			imm = (0 != (f[resists[i].set] & resists[i].im_flag));
