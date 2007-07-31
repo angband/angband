@@ -1359,39 +1359,36 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 
 		case EF_WAND_BREATH:
 		{
+			/* pick a random ball effect... */
 			switch (randint(5))
 			{
 				case 1:
 				{
 					fire_ball(GF_ACID, dir, 200, 3);
-					return TRUE;
 				}
 
 				case 2:
 				{
 					fire_ball(GF_ELEC, dir, 160, 3);
-					return TRUE;
 				}
 
 				case 3:
 				{
 					fire_ball(GF_FIRE, dir, 200, 3);
-					return TRUE;
 				}
 
 				case 4:
 				{
 					fire_ball(GF_COLD, dir, 160, 3);
-					return TRUE;
 				}
 
 				default:
 				{
 					fire_ball(GF_POIS, dir, 120, 3);
-					return TRUE;
 				}
 			}
 
+			/* ...and ID the item */
 			*ident = TRUE;
 			return TRUE;
 		}
