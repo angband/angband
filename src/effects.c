@@ -200,12 +200,6 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 			return TRUE;
 		}
 
-		case EF_CURE_POISON2:
-		{
-			if (set_timed(TMD_POISONED, p_ptr->timed[TMD_POISONED] / 2)) *ident = TRUE;
-			return TRUE;
-		}
-
 		case EF_CURE_BLINDNESS:
 		{
 			if (clear_timed(TMD_BLIND)) *ident = TRUE;
@@ -223,6 +217,23 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 			if (clear_timed(TMD_CONFUSED)) *ident = TRUE;
 			return TRUE;
 		}
+
+		case EF_CURE_MIND:
+		{
+			if (clear_timed(TMD_CONFUSED)) *ident = TRUE;
+			if (clear_timed(TMD_AFRAID)) *ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_CURE_BODY:
+		{
+			if (clear_timed(TMD_STUN)) *ident = TRUE;
+			if (clear_timed(TMD_CUT)) *ident = TRUE;
+			if (clear_timed(TMD_POISONED)) *ident = TRUE;
+			if (clear_timed(TMD_BLIND)) *ident = TRUE;
+			return TRUE;
+		}
+
 
 		case EF_CURE_LIGHT:
 		{
@@ -394,15 +405,6 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 			return TRUE;
 		}
 
-		case EF_LOSE_STR2:
-		{
-			take_hit(damroll(10, 10), "poisonous food");
-			(void)do_dec_stat(A_STR);
-			*ident = TRUE;
-
-			return TRUE;
-		}
-
 		case EF_LOSE_CON2:
 		{
 			take_hit(damroll(10, 10), "poisonous food");
@@ -483,6 +485,15 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 				*ident = TRUE;
 			return TRUE;
 		}
+
+		case EF_TMD_ESP:
+		{
+			if (clear_timed(TMD_BLIND)) *ident = TRUE;
+			if (inc_timed(TMD_TELEPATHY, 12 + damroll(6, 6)))
+				*ident = TRUE;
+			return TRUE;
+		}
+
 
 		case EF_ENLIGHTENMENT:
 		{

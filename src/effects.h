@@ -32,7 +32,7 @@ typedef enum
     #define EFFECT(x, y, z)		EF_##x,
 	#include "effects.h"
 
-	EFFECT(MAX, FALSE, NULL)
+	EF_MAX
 } effect_type;
 
 #undef EFFECT
@@ -53,10 +53,11 @@ typedef enum
 	EFFECT(SLOW,           FALSE, "slows you for 1d25+15 turns")
 
 	EFFECT(CURE_POISON,    FALSE, "neutralizes poison")
-	EFFECT(CURE_POISON2,   FALSE, "halves the severity of any poisoning")
 	EFFECT(CURE_BLINDNESS, FALSE, "cures blindness")
 	EFFECT(CURE_PARANOIA,  FALSE, "removes your fear")
 	EFFECT(CURE_CONFUSION, FALSE, "cures confusion")
+	EFFECT(CURE_MIND,      FALSE, "cures confusion and removes fear")
+	EFFECT(CURE_BODY,      FALSE, "heals cut damage, and cures stunning, poison and blindness")
 
 	EFFECT(CURE_LIGHT,     FALSE, "restores 2d8 hit points, heals some cut damage and cures blindness")
 	EFFECT(CURE_SERIOUS,   FALSE, "restores 4d8 hit points, heals some cut damage and cures blindness and confusion")
@@ -88,7 +89,6 @@ typedef enum
 	EFFECT(LOSE_DEX,       FALSE, "reduces your dexterity with damage 5d5")
 	EFFECT(LOSE_CON,       FALSE, "reduces your constitution with damage 5d5")
 	EFFECT(LOSE_CHR,       FALSE, "reduces your intelligence with damage 5d5")
-	EFFECT(LOSE_STR2,      FALSE, "reduces your strength with damage 10d10")
 	EFFECT(LOSE_CON2,      FALSE, "reduces your constitution with damage 10d10")
 	EFFECT(RESTORE_STR,    FALSE, "restores your strength")
 	EFFECT(RESTORE_INT,    FALSE, "restores your intelligence")
@@ -102,6 +102,7 @@ typedef enum
 
 	EFFECT(TMD_INFRA,      FALSE, "extends your infravision by 50 feet for 4d25+100 turns")
 	EFFECT(TMD_SINVIS,     FALSE, "allows you to see invisible things for 2d6+12 turns")
+	EFFECT(TMD_ESP,        FALSE, "gives you telepathy for 6d6+12 turns and cures blindness")
 
 	EFFECT(ENLIGHTENMENT,  FALSE, "completely lights up and magically maps the level")
 	EFFECT(ENLIGHTENMENT2, FALSE, "increases your intelligence and wisdom, detects and maps everything in the surrounding area, and identifies all items in your pack")

@@ -648,6 +648,7 @@ static const struct state_info effects[] =
 	{ TMD_IMAGE,     S("Halluc"),     TERM_ORANGE },
 	{ TMD_POISONED,  S("Poisoned"),   TERM_ORANGE },
 	{ TMD_PROTEVIL,  S("ProtEvil"),   TERM_L_GREEN },
+	{ TMD_TELEPATHY, S("ESP"),        TERM_L_BLUE },
 	{ TMD_INVULN,    S("Invuln"),     TERM_L_GREEN },
 	{ TMD_HERO,      S("Hero"),       TERM_L_GREEN },
 	{ TMD_SHERO,     S("Berserk"),    TERM_L_GREEN },
@@ -2118,6 +2119,7 @@ static void calc_bonuses(void)
 	{
 		p_ptr->to_h += 12;
 		p_ptr->dis_to_h += 12;
+		p_ptr->resist_fear = TRUE;
 	}
 
 	/* Temporary "Berserk" */
@@ -2127,40 +2129,30 @@ static void calc_bonuses(void)
 		p_ptr->dis_to_h += 24;
 		p_ptr->to_a -= 10;
 		p_ptr->dis_to_a -= 10;
+		p_ptr->resist_fear = TRUE;
 	}
 
 	/* Temporary "fast" */
 	if (p_ptr->timed[TMD_FAST])
-	{
 		p_ptr->pspeed += 10;
-	}
 
 	/* Temporary "slow" */
 	if (p_ptr->timed[TMD_SLOW])
-	{
 		p_ptr->pspeed -= 10;
-	}
+
 
 	/* Temporary see invisible */
 	if (p_ptr->timed[TMD_SINVIS])
-	{
 		p_ptr->see_inv = TRUE;
-	}
 
 	/* Temporary infravision boost */
 	if (p_ptr->timed[TMD_SINFRA])
-	{
 		p_ptr->see_infra += 5;
-	}
 
+	/* Temporary telepathy */
+	if (p_ptr->timed[TMD_TELEPATHY])
+		p_ptr->telepathy = TRUE;
 
-	/*** Special flags ***/
-
-	/* Hack -- Hero/Shero -> Res fear */
-	if (p_ptr->timed[TMD_HERO] || p_ptr->timed[TMD_SHERO])
-	{
-		p_ptr->resist_fear = TRUE;
-	}
 
 
 	/*** Analyze weight ***/

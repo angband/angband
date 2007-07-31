@@ -49,11 +49,9 @@
 # effect the item has, if applicable (a fixed value: variable pvals
 # are currently hard-coded.) 
 
-# 'W' is for extra information. Depth is the depth the object is normally
-# found at (and defines what "level" the object is, when determining how easy 
-# it is to use a wand, staff or rod, rarity determines how common the object
-# is (currently unused, thanks to the A: allocation lines), weight is in
-# tenth-pounds and cost is the item's base value.
+# 'W' is for extra information. Depth defines what "level" the object is,
+# when determining how easy it is to use a wand, staff or rod; rarity
+# is unused; weight is in tenth-pounds and cost is the item's base value.
 
 # 'P' is for power information. The items base armor class, its base
 # damage and pluses to-hit, to-dam and to-ac (assuming the latter 
@@ -92,11 +90,21 @@ G:&:w
 
 ##### Mushrooms #####
 
+# Removed in 3.1: Naivety, Disease, Sickness, Paralysis.  These were
+# introduced in 2.7.8 as replacements for duplicated effects between
+# some mushrooms and "hairy molds".
+
+# Changed in 3.1: Cure Paranoia + Cure Confusion now "Clear Mind"
+# Added in 3.1: Mending, which cures cut/stun/poison/blindness (idea from S)
+#               Second Sight, which gives temp ESP and cures blindness
+
+## Basic "bad" kinds
+
 N:1:Blindness
 G:,:d
 I:80:1:500
 W:5:0:1:0
-A:100:5 to 100
+A:75:10 to 15
 F:EASY_KNOW
 E:BLIND
 
@@ -104,7 +112,7 @@ N:2:Paranoia
 G:,:d
 I:80:2:500
 W:5:0:1:0
-A:100:5 to 100
+A:75:10 to 15
 F:EASY_KNOW
 E:SCARE
 
@@ -112,7 +120,7 @@ N:3:Confusion
 G:,:d
 I:80:3:500
 W:5:0:1:0
-A:100:5 to 100
+A:75:10 to 15
 F:EASY_KNOW
 E:CONFUSE
 
@@ -120,69 +128,114 @@ N:4:Hallucination
 G:,:d
 I:80:4:500
 W:10:0:1:0
-A:100:10 to 100
+A:75:10 to 15
 F:EASY_KNOW
 E:HALLUC
 
-N:5:Cure Poison
+N:5:Poison
 G:,:d
-I:80:12:500
-W:10:0:1:60
-A:100:10 to 100
+I:80:0:500
+W:5:0:1:0
+A:75:10 to 20
 F:EASY_KNOW
-E:CURE_POISON
+E:POISON
 
-N:6:Cure Blindness
-G:,:d
-I:80:13:500
-W:10:0:1:50
-A:100:10 to 100
-F:EASY_KNOW
-E:CURE_BLINDNESS
+## 6
 
-N:7:Cure Paranoia
-G:,:d
-I:80:14:500
-W:10:0:1:25
-A:100:10 to 100
-F:EASY_KNOW
-E:CURE_PARANOIA
-
-N:8:Cure Confusion
-G:,:d
-I:80:15:500
-W:10:0:1:50
-A:100:10 to 100
-F:EASY_KNOW
-E:CURE_CONFUSION
-
-N:9:Weakness
+N:7:Weakness
 G:,:d
 I:80:6:500
 W:10:0:1:0
-A:100:10 to 100
+A:75:15 to 30
 F:EASY_KNOW
 E:LOSE_STR
 
-N:10:Unhealth
+N:8:Stupidity
+G:,:d
+I:80:8:500
+W:15:0:1:0
+A:75:15 to 30
+F:EASY_KNOW
+E:LOSE_INT
+
+N:9:Unhealth
 G:,:d
 I:80:10:500
-W:15:0:1:50
-A:100:15 to 100
+W:15:0:1:0
+A:40:20 to 50
 P:0:10d10:0:0:0
 F:EASY_KNOW
 E:LOSE_CON2
 D:It may also be thrown to inflict 10d10 points of damage.
 
-N:11:Restore Constitution
+
+## Curing of various kinds
+
+N:10:Cure Poison
+G:,:d
+I:80:12:500
+W:10:0:1:60
+A:100:10 to 40
+M:70:1d4
+F:EASY_KNOW
+E:CURE_POISON
+
+N:11:Cure Blindness
+G:,:d
+I:80:13:500
+W:10:0:1:50
+A:100:10 to 40
+M:70:1d4
+F:EASY_KNOW
+E:CURE_BLINDNESS
+
+N:12:Clear Mind
+G:,:d
+I:80:14:500
+W:10:0:1:90
+A:100:10 to 100
+M:70:1d4
+F:EASY_KNOW
+E:CURE_MIND
+
+N:13:Mending
+G:,:d
+I:80:25:500
+W:10:0:1:100
+A:80:20 to 100
+M:70:1d4
+F:EASY_KNOW
+E:CURE_BODY
+
+## 14
+
+N:15:Cure Serious Wounds
+G:,:d
+I:80:16:500
+W:15:0:1:75
+A:90:15 to 35
+F:EASY_KNOW
+E:CURE_SERIOUS
+
+## Restoration
+
+N:16:Restore Strength
+G:,:d
+I:80:17:500
+W:20:0:1:350
+A:100:20 to 50
+F:EASY_KNOW
+E:RESTORE_STR
+
+N:17:Restore Constitution
 G:,:d
 I:80:18:500
 W:20:0:1:350
-A:100:20 to 100
+A:100:20 to 50
 F:EASY_KNOW
 E:RESTORE_CON
 
-N:12:Restoring
+N:18:Restoring
 G:,:d
 I:80:19:500
 W:20:0:1:1000
@@ -190,71 +243,18 @@ A:50:30 to 100
 F:EASY_KNOW
 E:RESTORE_ALL
 
-N:13:Stupidity
-G:,:d
-I:80:8:500
-W:15:0:1:0
-A:100:15 to 100
-F:EASY_KNOW
-E:LOSE_INT
+## A stranger mushroom
 
-N:14:Naivety
+N:19:Second Sight
 G:,:d
-I:80:9:500
-W:15:0:1:0
-A:100:15 to 100
+I:80:26:200
+W:0:0:1:1250
+A:20:15 to 100
 F:EASY_KNOW
-E:LOSE_WIS
+E:TMD_ESP
 
-N:15:Poison
-G:,:d
-I:80:0:500
-W:5:0:1:0
-A:100:5 to 20
-F:EASY_KNOW
-E:POISON
 
-N:16:Sickness
-G:,:d
-I:80:7:500
-W:10:0:1:0
-A:100:10 to 100
-F:EASY_KNOW
-E:LOSE_CON
-
-N:17:Paralysis
-G:,:d
-I:80:5:500
-W:20:0:1:0
-A:100:20 to 100
-F:EASY_KNOW
-E:PARALYZE
-
-N:18:Restore Strength
-G:,:d
-I:80:17:500
-W:20:0:1:350
-A:100:20 to 100
-F:EASY_KNOW
-E:RESTORE_STR
-
-N:19:Disease
-G:,:d
-I:80:11:500
-W:20:0:1:50
-A:100:20 to 100
-P:0:10d10:0:0:0
-F:EASY_KNOW
-E:LOSE_STR2
-D:It may also be thrown to inflict 10d10 points of damage.
-
-N:20:Cure Serious Wounds
-G:,:d
-I:80:16:500
-W:15:0:1:75
-A:100:15 to 100
-F:EASY_KNOW
-E:CURE_SERIOUS
+## 20
 
 
 ##### Normal Food #####
@@ -275,7 +275,7 @@ N:22:& Slime Mold~
 G:,:g
 I:80:36:2500
 W:1:0:2:2
-A:100:1 to 100
+A:110:5 to 60
 M:100:2d3
 F:EASY_KNOW
 E:FOOD_GOOD
@@ -284,7 +284,7 @@ N:23:& Piece~ of Elvish Waybread
 G:,:B
 I:80:37:7500
 W:5:0:3:10
-A:100:25 to 100
+A:90:30 to 100
 F:EASY_KNOW
 E:FOOD_WAYBREAD
 

@@ -142,6 +142,34 @@ static bool wearable_p(const object_type *o_ptr)
 }
 
 
+/* A wonderful savefile conversion function. Temporary only. */
+void convert_kind(byte *tval, byte *sval)
+{
+	switch (*tval)
+	{
+		case TV_FOOD:
+		{
+			/* Cure Paranoia + Cure Confusion -> Clear Mind */
+			if (*sval == 15) *sval = 16;
+
+			/* Sickness -> Weakness */
+			if (*sval == 7) *sval = 6;
+
+			/* LoseWis -> Stupidity */
+			if (*sval == 9) *sval = 8;
+
+			/* Paralysis -> Poison */
+			if (*sval == 5) *sval = 0;
+
+			/* Disease -> Unhealth */
+			if (*sval == 11) *sval = 10;
+
+			break;
+		}
+	}
+}
+
+
 /*
  * The following functions are used to load the basic building blocks
  * of savefiles.  They also maintain the "checksum" info.
@@ -315,6 +343,9 @@ static errr rd_item(object_type *o_ptr)
 	/* Save the inscription */
 	if (buf[0]) o_ptr->note = quark_add(buf);
 
+
+	/* Convert tval/sval */
+	convert_kind(&o_ptr->tval, &o_ptr->sval);
 
 	/* Lookup item kind */
 	o_ptr->k_idx = lookup_kind(o_ptr->tval, o_ptr->sval);

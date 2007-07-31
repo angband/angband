@@ -61,6 +61,7 @@ static timed_effect effects[] =
 	{ "", "", 0, 0, 0, 0 },  /* cold -- handled seperately */
 	{ "You feel resistant to poison!", "You feel less resistant to poison", 0, 0, 0, MSG_RES_POIS },
 	{ "You feel your memories fade.", "Your memories come flooding back.", 0, 0, 0, MSG_GENERIC },
+	{ "Your mind expands.", "Your horizons are once more limited.", 0, 0, PU_BONUS, MSG_GENERIC },
 };
 
 /*
