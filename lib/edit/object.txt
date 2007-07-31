@@ -1800,33 +1800,19 @@ E:DESTRUCTION2
 
 N:222:Slime Mold Juice
 G:!:d
-I:75:2:400
+I:75:2:1000
 W:0:0:4:2
-A:50:1 to 5
+A:50:1 to 10
 F:EASY_KNOW
 E:DRINK_GOOD
 
-N:223:Apple Juice
-G:!:d
-I:75:1:250
-W:0:0:4:1
-A:100:0 to 0
-F:EASY_KNOW
-E:DRINK_GOOD
-
-N:224:Water
-G:!:d
-I:75:0:200
-W:0:0:4:1
-A:50:1 to 5
-F:EASY_KNOW
-E:DRINK_GOOD
+## 223, 224: Apple Juice, Water
 
 N:225:Strength
 G:!:d
 I:75:48:0
 W:30:0:4:8000
-A:100:30 to 90
+A:90:30 to 90
 F:EASY_KNOW
 E:GAIN_STR
 
@@ -1842,7 +1828,7 @@ N:227:Restore Strength
 G:!:d
 I:75:42:0
 W:25:0:4:300
-A:75:25 to 60
+A:75:20 to 60
 F:EASY_KNOW
 E:RESTORE_STR
 
@@ -1850,7 +1836,7 @@ N:228:Intelligence
 G:!:d
 I:75:49:0
 W:30:0:4:8000
-A:100:30 to 90
+A:90:30 to 90
 F:EASY_KNOW
 E:GAIN_INT
 
@@ -1866,7 +1852,7 @@ N:230:Restore Intelligence
 G:!:d
 I:75:43:0
 W:50:0:4:300
-A:75:25 to 60
+A:75:20 to 60
 F:EASY_KNOW
 E:RESTORE_INT
 
@@ -1874,7 +1860,7 @@ N:231:Wisdom
 G:!:d
 I:75:50:0
 W:30:0:4:8000
-A:100:30 to 90
+A:90:30 to 90
 F:EASY_KNOW
 E:GAIN_WIS
 
@@ -1890,7 +1876,7 @@ N:233:Restore Wisdom
 G:!:d
 I:75:44:0
 W:25:0:4:300
-A:75:25 to 60
+A:75:20 to 60
 F:EASY_KNOW
 E:RESTORE_WIS
 
@@ -1898,7 +1884,7 @@ N:234:Charisma
 G:!:d
 I:75:53:0
 W:20:0:4:1000
-A:90:20 to 90
+A:80:25 to 90
 F:EASY_KNOW
 E:GAIN_CHR
 
@@ -1914,7 +1900,7 @@ N:236:Restore Charisma
 G:!:d
 I:75:47:0
 W:20:0:4:300
-A:75:25 to 60
+A:75:20 to 60
 F:EASY_KNOW
 E:RESTORE_CHR
 
@@ -1971,7 +1957,7 @@ N:243:Constitution
 G:!:d
 I:75:52:0
 W:30:0:4:8000
-A:100:30 to 90
+A:90:30 to 90
 F:EASY_KNOW
 E:GAIN_CON
 
@@ -2041,7 +2027,7 @@ N:251:Dexterity
 G:!:d
 I:75:51:0
 W:30:0:4:8000
-A:100:30 to 90
+A:90:30 to 90
 P:0:1d1:0:0:0
 F:EASY_KNOW
 E:GAIN_DEX
@@ -2050,7 +2036,7 @@ N:252:Restore Dexterity
 G:!:d
 I:75:45:0
 W:25:0:4:300
-A:100:25 to 60
+A:100:20 to 60
 P:0:1d1:0:0:0
 F:EASY_KNOW
 E:RESTORE_DEX
@@ -2059,7 +2045,7 @@ N:253:Restore Constitution
 G:!:d
 I:75:46:0
 W:25:0:4:300
-A:100:25 to 60
+A:100:20 to 60
 P:0:1d1:0:0:0
 F:EASY_KNOW
 E:RESTORE_CON
@@ -2154,20 +2140,13 @@ P:0:1d1:0:0:0
 F:EASY_KNOW
 E:TMD_SINVIS
 
-N:264:Slow Poison
-G:!:d
-I:75:26:0
-W:1:0:4:25
-A:100:0 to 5
-P:0:1d1:0:0:0
-F:EASY_KNOW
-E:CURE_POISON2
+# 264: Slow Poison
 
 N:265:Neutralize Poison
 G:!:d
 I:75:27:0
 W:5:0:4:75
-A:100:5 to 35
+A:100:1 to 35
 P:0:1d1:0:0:0
 F:EASY_KNOW
 E:CURE_POISON
@@ -3518,7 +3497,7 @@ N:418:Augmentation
 G:!:d
 I:75:55:0
 W:40:0:4:60000
-A:10:40 to 100
+A:15:40 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW
 E:GAIN_ALL
@@ -3527,7 +3506,7 @@ N:419:*Healing*
 G:!:d
 I:75:38:0
 W:40:0:4:1500
-A:35:50 to 100
+A:35:40 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW
 E:CURE_FULL2
@@ -3536,7 +3515,7 @@ N:420:Life
 G:!:d
 I:75:39:0
 W:60:0:4:5000
-A:35:60 to 100
+A:40:60 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW
 E:CURE_NONORLYBIG
