@@ -267,11 +267,6 @@ static errr rd_item(object_type *o_ptr)
 	rd_byte(&o_ptr->sval);
 	rd_s16b(&o_ptr->pval);
 
-#if 0
-	/* This can wait until object reorganisation */
-	o_ptr->k_idx = lookup_kind(o_ptr->tval, o_ptr->sval);
-#endif
-
 	/* Pseudo-ID bit */
 	rd_byte(&o_ptr->pseudo);
 
@@ -320,12 +315,18 @@ static errr rd_item(object_type *o_ptr)
 	/* Save the inscription */
 	if (buf[0]) o_ptr->note = quark_add(buf);
 
-	/* Obtain the "kind" template */
+
+	/* Lookup item kind */
+	o_ptr->k_idx = lookup_kind(o_ptr->tval, o_ptr->sval);
 	k_ptr = &k_info[o_ptr->k_idx];
 
-	/* Obtain tval/sval from k_info */
-	o_ptr->tval = k_ptr->tval;
-	o_ptr->sval = k_ptr->sval;
+	/* Return now in case of "blank" or "empty" objects */
+	if (!k_ptr->name || !o_ptr->k_idx)
+	{
+		o_ptr->k_idx = 0;
+		return 0;
+	}
+
 
 
 	/* Hack -- notice "broken" items */
@@ -659,7 +660,8 @@ static errr rd_store(int n)
 		}
 
 		/* Accept any valid items */
-		if (st_ptr->stock_num < STORE_INVEN_MAX)
+		if ((st_ptr->stock_num < STORE_INVEN_MAX) &&
+		    (i_ptr->k_idx))
 		{
 			int k = st_ptr->stock_num++;
 
@@ -1484,7 +1486,7 @@ static errr rd_inventory(void)
 		}
 
 		/* Hack -- verify item */
-		if (!i_ptr->k_idx) return (-1);
+		if (!i_ptr->k_idx) continue;;
 
 		/* Verify slot */
 		if (n >= INVEN_TOTAL) return (-1);

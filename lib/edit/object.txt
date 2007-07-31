@@ -259,37 +259,28 @@ E:CURE_SERIOUS
 
 ##### Normal Food #####
 
+# Removed in 3.1: Hard Biscuit, Beef Jerky, Fine Ale, Fine Wine
+# Not considered interesting enough.
+
 N:21:& Ration~ of Food
 G:,:U
-I:80:35:5000
-W:0:0:10:3
+I:80:35:6000
+W:0:0:8:3
 A:100:0 to 50
+M:100:1d5
 F:EASY_KNOW
 E:FOOD_GOOD
 
-N:22:& Hard Biscuit~
-G:,:U
-I:80:32:500
-W:0:0:2:1
-F:EASY_KNOW
-E:FOOD_GOOD
-
-N:23:& Strip~ of Beef Jerky
-G:,:u
-I:80:33:1500
-W:0:0:2:2
-F:EASY_KNOW
-E:FOOD_GOOD
-
-N:24:& Slime Mold~
+N:22:& Slime Mold~
 G:,:g
-I:80:36:3000
-W:1:0:5:2
+I:80:36:2500
+W:1:0:2:2
 A:100:1 to 100
+M:100:2d3
 F:EASY_KNOW
 E:FOOD_GOOD
 
-N:25:& Piece~ of Elvish Waybread
+N:23:& Piece~ of Elvish Waybread
 G:,:B
 I:80:37:7500
 W:5:0:3:10
@@ -297,24 +288,8 @@ A:100:25 to 100
 F:EASY_KNOW
 E:FOOD_WAYBREAD
 
-N:26:& Pint~ of Fine Ale
-G:,:y
-I:80:38:500
-W:0:0:5:1
-F:EASY_KNOW
-E:FOOD_GOOD
 
-N:27:& Pint~ of Fine Wine
-G:,:r
-I:80:39:1000
-W:0:0:10:2
-F:EASY_KNOW
-E:FOOD_GOOD
-
-
-## XXX 28 XXX ##
-
-## XXX 29 XXX ##
+## Slots 24-29 for future expansion (maybe) ##
 
 
 ##### Edged Weapons #####
