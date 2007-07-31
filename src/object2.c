@@ -572,10 +572,9 @@ object_type* get_first_object(int y, int x)
 
 
 /*
- * Get the next object in a stack or
- * NULL if there isn't one.
+ * Get the next object in a stack or NULL if there isn't one.
  */
-object_type* get_next_object(const object_type *o_ptr)
+object_type *get_next_object(const object_type *o_ptr)
 {
 	if (o_ptr->next_o_idx) return (&o_list[o_ptr->next_o_idx]);
 
@@ -584,178 +583,105 @@ object_type* get_next_object(const object_type *o_ptr)
 }
 
 
+
+
+static u32b obj_total[MAX_DEPTH];
+static byte *obj_alloc;
+
+/* Don't worry about probabilities for anything past dlev100 */
+#define MAX_O_DEPTH		100
+
 /*
- * Apply a "object restriction function" to the "object allocation table"
+ * Free object allocation info.
  */
-errr get_obj_num_prep(void)
+void free_obj_alloc(void)
 {
-	int i;
+	FREE(obj_alloc);
+}
 
-	/* Get the entry */
-	alloc_entry *table = alloc_kind_table;
 
-	/* Scan the allocation table */
-	for (i = 0; i < alloc_kind_size; i++)
+/*
+ * Using k_info[], init rarity data for the entire dungeon.
+ */
+bool init_obj_alloc(void)
+{
+	int k_max = z_info->k_max;
+	int item, lev;
+
+
+	/* Free obj_allocs if allocated */
+	FREE(obj_alloc);
+
+	/* Allocate and wipe */
+	obj_alloc = C_ZNEW(MAX_O_DEPTH * k_max, byte);
+
+	/* Wipe the totals */
+	C_WIPE(obj_total, MAX_O_DEPTH, u32b);
+
+
+	/* Init allocation data */
+	for (item = 1; item < k_max; item++)
 	{
-		/* Accept objects which pass the restriction, if any */
-		if (!get_obj_num_hook || (*get_obj_num_hook)(table[i].index))
-		{
-			/* Accept this object */
-			table[i].prob2 = table[i].prob1;
-		}
+		object_kind *k_ptr = &k_info[item];
 
-		/* Do not use this object */
-		else
+		int min = k_ptr->alloc_min;
+		int max = k_ptr->alloc_max;
+
+		/* If an item doesn't have a rarity, move on */
+		if (!k_ptr->alloc_prob) continue;
+
+		/* Go through all the dungeon levels */
+		for (lev = 0; lev < MAX_O_DEPTH; lev++)
 		{
-			/* Decline this object */
-			table[i].prob2 = 0;
+			int rarity = k_ptr->alloc_prob;
+
+			/* Give out-of-depth items a tiny chance at being made */
+			if ((lev < min) || (lev > max)) rarity = 0;
+
+			/* Save the probability */
+			obj_total[lev] += rarity;
+			obj_alloc[(lev * k_max) + item] = rarity;
 		}
 	}
 
-	/* Success */
-	return (0);
+	return TRUE;
 }
 
 
 
+
 /*
- * Choose an object kind that seems "appropriate" to the given level
- *
- * This function uses the "prob2" field of the "object allocation table",
- * and various local information, to calculate the "prob3" field of the
- * same table, which is then used to choose an "appropriate" object, in
- * a relatively efficient manner.
- *
- * It is (slightly) more likely to acquire an object of the given level
- * than one of a lower level.  This is done by choosing several objects
- * appropriate to the given level and keeping the "hardest" one.
- *
- * Note that if no objects are "appropriate", then this function will
- * fail, and return zero, but this should *almost* never happen.
+ * Choose an object kind given a dungeon level to choose it for.
  */
 s16b get_obj_num(int level)
 {
-	int i, j, p;
+	/* This is the base index into obj_alloc for this dlev */
+	size_t ind = level * z_info->k_max;
 
-	int k_idx;
+	size_t item;
 
-	long value, total;
-
-	object_kind *k_ptr;
-
-	alloc_entry *table = alloc_kind_table;
+	u32b value;
 
 
-	/* Boost level */
-	if (level > 0)
-	{
-		/* Occasional "boost" */
-		if (rand_int(GREAT_OBJ) == 0)
-		{
-			/* What a bizarre calculation */
-			level = 1 + (level * MAX_DEPTH / randint(MAX_DEPTH));
-		}
-	}
-
-
-	/* Reset total */
-	total = 0L;
-
-	/* Process probabilities */
-	for (i = 0; i < alloc_kind_size; i++)
-	{
-		/* Objects are sorted by depth */
-		if (table[i].level > level) break;
-
-		/* Default */
-		table[i].prob3 = 0;
-
-		/* Get the index */
-		k_idx = table[i].index;
-
-		/* Get the actual kind */
-		k_ptr = &k_info[k_idx];
-
-		/* Hack -- prevent embedded chests */
-		if (opening_chest && (k_ptr->tval == TV_CHEST)) continue;
-
-		/* Accept */
-		table[i].prob3 = table[i].prob2;
-
-		/* Total */
-		total += table[i].prob3;
-	}
-
-	/* No legal objects */
-	if (total <= 0) return (0);
+	/* Paranoia */
+	level = MIN(level, MAX_O_DEPTH);
+	level = MAX(level, 0);
 
 
 	/* Pick an object */
-	value = rand_int(total);
-
-	/* Find the object */
-	for (i = 0; i < alloc_kind_size; i++)
+	value = rand_int(obj_total[level]);
+	for (item = 1; item < z_info->k_max; item++)
 	{
-		/* Found the entry */
-		if (value < table[i].prob3) break;
+		/* Found it */
+		if (value < obj_alloc[ind + item]) break;
 
 		/* Decrement */
-		value = value - table[i].prob3;
+		value -= obj_alloc[ind + item];
 	}
 
 
-	/* Power boost */
-	p = rand_int(100);
-
-	/* Try for a "better" object once (50%) or twice (10%) */
-	if (p < 60)
-	{
-		/* Save old */
-		j = i;
-
-		/* Pick a object */
-		value = rand_int(total);
-
-		/* Find the monster */
-		for (i = 0; i < alloc_kind_size; i++)
-		{
-			/* Found the entry */
-			if (value < table[i].prob3) break;
-
-			/* Decrement */
-			value = value - table[i].prob3;
-		}
-
-		/* Keep the "best" one */
-		if (table[i].level < table[j].level) i = j;
-	}
-
-	/* Try for a "better" object twice (10%) */
-	if (p < 10)
-	{
-		/* Save old */
-		j = i;
-
-		/* Pick a object */
-		value = rand_int(total);
-
-		/* Find the object */
-		for (i = 0; i < alloc_kind_size; i++)
-		{
-			/* Found the entry */
-			if (value < table[i].prob3) break;
-
-			/* Decrement */
-			value = value - table[i].prob3;
-		}
-
-		/* Keep the "best" one */
-		if (table[i].level < table[j].level) i = j;
-	}
-
-
-	/* Result */
-	return (table[i].index);
+	/* Return the item index */
+	return item;
 }
 
 
@@ -2963,6 +2889,7 @@ bool make_object(object_type *j_ptr, bool good, bool great)
 	{
 		int k_idx;
 
+#if 0
 		/* Good objects */
 		if (good)
 		{
@@ -2972,10 +2899,12 @@ bool make_object(object_type *j_ptr, bool good, bool great)
 			/* Prepare allocation table */
 			get_obj_num_prep();
 		}
+#endif
 
 		/* Pick a random object */
 		k_idx = get_obj_num(base);
 
+#if 0
 		/* Good objects */
 		if (good)
 		{
@@ -2985,6 +2914,7 @@ bool make_object(object_type *j_ptr, bool good, bool great)
 			/* Prepare allocation table */
 			get_obj_num_prep();
 		}
+#endif
 
 		/* Handle failure */
 		if (!k_idx) return (FALSE);

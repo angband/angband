@@ -1282,7 +1282,6 @@ errr parse_k_info(char *buf, header *head)
 
 		/* Save the values */
 		k_ptr->level = level;
-		k_ptr->extra = extra;
 		k_ptr->weight = wgt;
 		k_ptr->cost = cost;
 	}
@@ -1290,33 +1289,23 @@ errr parse_k_info(char *buf, header *head)
 	/* Process 'A' for "Allocation" (one line only) */
 	else if (buf[0] == 'A')
 	{
-		int i;
+		int common, min, max;
 
-		/* XXX Simply read each number following a colon */
-		for (i = 0, s = buf+1; s && (s[0] == ':') && s[1]; ++i)
-		{
-			/* Sanity check */
-			if (i > 3) return (PARSE_ERROR_TOO_MANY_ALLOCATIONS);
+		/* Format is "A:<common>:<min> to <max>" */
+		if (3 != sscanf(buf+2, "%d:%d to %d", &common, &min, &max))
+			return (PARSE_ERROR_GENERIC);
 
-			/* Default chance */
-			k_ptr->chance[i] = 1;
 
-			/* Store the attack damage index */
-			k_ptr->locale[i] = atoi(s+1);
+		/* Limit to size a byte */
+		if (common < 0 || common > 255) return (PARSE_ERROR_GENERIC);
+		if (min < 0 || min > 255) return (PARSE_ERROR_GENERIC);
+		if (max < 0 || max > 255) return (PARSE_ERROR_GENERIC);
 
-			/* Find the slash */
-			t = strchr(s+1, '/');
 
-			/* Find the next colon */
-			s = strchr(s+1, ':');
-
-			/* If the slash is "nearby", use it */
-			if (t && (!s || t < s))
-			{
-				int chance = atoi(t+1);
-				if (chance > 0) k_ptr->chance[i] = chance;
-			}
-		}
+		/* Set up data */
+		k_ptr->alloc_prob = common;
+		k_ptr->alloc_min = min;
+		k_ptr->alloc_max = max;
 	}
 
 	/* Hack -- Process 'P' for "power" and such */

@@ -175,19 +175,18 @@ struct object_kind
 	u32b flags2;		/* Flags, set 2 */
 	u32b flags3;		/* Flags, set 3 */
 
-	byte locale[4];		/* Allocation level(s) */
-	byte chance[4];		/* Allocation chance(s) */
-
+	byte alloc_prob;	/* Allocation: commonness */
+	byte alloc_min;		/* Highest normal dungeon level */
+	byte alloc_max;		/* Lowest normal dungeon level */
 	byte level;			/* Level */
-	byte extra;			/* Something */
 
 
 	byte d_attr;		/* Default object attribute */
 	char d_char;		/* Default object character */
 
-
 	byte x_attr;		/* Desired object attribute */
 	char x_char;		/* Desired object character */
+
 
 	u16b effect;		/* Effect this item produces */
 	u16b time_base;		/* Recharge time (if appropriate) */

@@ -1275,9 +1275,7 @@ static errr init_other(void)
  */
 static errr init_alloc(void)
 {
-	int i, j;
-
-	object_kind *k_ptr;
+	int i;
 
 	monster_race *r_ptr;
 
@@ -1290,93 +1288,10 @@ static errr init_alloc(void)
 	s16b aux[MAX_DEPTH];
 
 
-	/*** Analyze object allocation info ***/
-
-	/* Clear the "aux" array */
-	(void)C_WIPE(aux, MAX_DEPTH, s16b);
-
-	/* Clear the "num" array */
-	(void)C_WIPE(num, MAX_DEPTH, s16b);
-
-	/* Size of "alloc_kind_table" */
-	alloc_kind_size = 0;
-
-	/* Scan the objects */
-	for (i = 1; i < z_info->k_max; i++)
-	{
-		k_ptr = &k_info[i];
-
-		/* Scan allocation pairs */
-		for (j = 0; j < 4; j++)
-		{
-			/* Count the "legal" entries */
-			if (k_ptr->chance[j])
-			{
-				/* Count the entries */
-				alloc_kind_size++;
-
-				/* Group by level */
-				num[k_ptr->locale[j]]++;
-			}
-		}
-	}
-
-	/* Collect the level indexes */
-	for (i = 1; i < MAX_DEPTH; i++)
-	{
-		/* Group by level */
-		num[i] += num[i-1];
-	}
-
-	/* Paranoia */
-	if (!num[0]) quit("No town objects!");
-
-
 	/*** Initialize object allocation info ***/
 
-	/* Allocate the alloc_kind_table */
-	alloc_kind_table = C_ZNEW(alloc_kind_size, alloc_entry);
+	init_obj_alloc();
 
-	/* Get the table entry */
-	table = alloc_kind_table;
-
-	/* Scan the objects */
-	for (i = 1; i < z_info->k_max; i++)
-	{
-		k_ptr = &k_info[i];
-
-		/* Scan allocation pairs */
-		for (j = 0; j < 4; j++)
-		{
-			/* Count the "legal" entries */
-			if (k_ptr->chance[j])
-			{
-				int p, x, y, z;
-
-				/* Extract the base level */
-				x = k_ptr->locale[j];
-
-				/* Extract the base probability */
-				p = (100 / k_ptr->chance[j]);
-
-				/* Skip entries preceding our locale */
-				y = (x > 0) ? num[x-1] : 0;
-
-				/* Skip previous entries at this locale */
-				z = y + aux[x];
-
-				/* Load the entry */
-				table[z].index = i;
-				table[z].level = x;
-				table[z].prob1 = p;
-				table[z].prob2 = p;
-				table[z].prob3 = p;
-
-				/* Another entry complete for this locale */
-				aux[x]++;
-			}
-		}
-	}
 
 
 	/*** Analyze monster allocation info ***/
@@ -1825,9 +1740,9 @@ void cleanup_angband(void)
 	macro_trigger_free();
 
 	/* Free the allocation tables */
+	free_obj_alloc();
 	FREE(alloc_ego_table);
 	FREE(alloc_race_table);
-	FREE(alloc_kind_table);
 
 	if (store)
 	{

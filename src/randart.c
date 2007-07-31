@@ -399,12 +399,13 @@ static void choose_item(int a_idx)
 	k_ptr = &k_info[k_idx];
 	target_level = k_ptr->level;
 
+#if 0
 	/*
 	 * Add base object kind's rarity to artifact rarity.  Later we will
 	 * subtract the new object kind's rarity.
 	 */
-	a_ptr->rarity += k_ptr->chance[0];
-
+	a_ptr->rarity += k_ptr->;
+#endif
 	/*
 	 * Pick a category (tval) of weapon randomly.  Within each tval, roll
 	 * an sval (specific item) based on the target level.  The number we
@@ -586,6 +587,7 @@ static void choose_item(int a_idx)
 	k_ptr = &k_info[k_idx];
 	kinds[a_idx] = k_idx;
 
+#if 0
 	/*
 	 * Subtract the new object kind's rarity (see above).  We can't
 	 * blindly subtract, because a_ptr->rarity is a byte.
@@ -594,6 +596,7 @@ static void choose_item(int a_idx)
 		a_ptr->rarity = 1;
 	else
 		a_ptr->rarity -= k_ptr->chance[0];
+#endif
 
 	a_ptr->tval = k_ptr->tval;
 	a_ptr->sval = k_ptr->sval;

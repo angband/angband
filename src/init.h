@@ -141,6 +141,7 @@ extern errr emit_r_info_index(FILE *fp, header *head, int i);
 extern int error_idx;
 extern int error_line;
 
+
 #endif /* ALLOW_TEMPLATES */
 
 
