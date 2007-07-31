@@ -1376,21 +1376,25 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 				case 1:
 				{
 					fire_ball(GF_ACID, dir, 200, 3);
+					break;
 				}
 
 				case 2:
 				{
 					fire_ball(GF_ELEC, dir, 160, 3);
+					break;
 				}
 
 				case 3:
 				{
 					fire_ball(GF_FIRE, dir, 200, 3);
+					break;
 				}
 
 				case 4:
 				{
 					fire_ball(GF_COLD, dir, 160, 3);
+					break;
 				}
 
 				default:
