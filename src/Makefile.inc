@@ -25,4 +25,4 @@ z-file.o: z-file.h
 $(addsuffix .o, cmd5 cmd6 init2 script wizard2 xtra1): script.h
 $(addsuffix .o, init1 init2 randart): init.h
 $(addsuffix .o, cmd4 files init1 init2 util squelch save load wizard1): z-file.h
-
+$(addsuffic .o, init1 effects): effects.h

@@ -150,7 +150,7 @@ static cptr desc_stat_neg[] =
 /*
  * Lose a "point"
  */
-bool do_dec_stat(int stat)
+bool do_dec_stat(int stat, bool perma)
 {
 	bool sust = FALSE;
 
@@ -177,7 +177,7 @@ bool do_dec_stat(int stat)
 	}
 
 	/* Attempt to reduce the stat */
-	if (dec_stat(stat, 10, FALSE))
+	if (dec_stat(stat, 10, perma))
 	{
 		/* Message */
 		message_format(MSG_DRAIN_STAT, stat, "You feel very %s.", desc_stat_neg[stat]);

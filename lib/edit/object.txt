@@ -1791,13 +1791,13 @@ A:90:30 to 90
 F:EASY_KNOW
 E:GAIN_STR
 
-N:226:Weakness
+N:226:Brawn
 G:!:d
 I:75:16:0
 W:3:0:4:0
-A:33:1 to 10
+A:33:10 to 20
 F:EASY_KNOW
-E:LOSE_STR
+E:BRAWN
 
 N:227:Restore Strength
 G:!:d
@@ -1815,13 +1815,13 @@ A:90:30 to 90
 F:EASY_KNOW
 E:GAIN_INT
 
-N:229:Stupidity
+N:229:Intellect
 G:!:d
 I:75:17:0
 W:20:0:4:0
 A:33:5 to 15
 F:EASY_KNOW
-E:LOSE_INT
+E:INTELLECT
 
 N:230:Restore Intelligence
 G:!:d
@@ -1839,13 +1839,13 @@ A:90:30 to 90
 F:EASY_KNOW
 E:GAIN_WIS
 
-N:232:Naivety
+N:232:Contemplation
 G:!:d
 I:75:18:0
 W:20:0:4:0
 A:33:5 to 15
 F:EASY_KNOW
-E:LOSE_WIS
+E:CONTEMPLATION
 
 N:233:Restore Wisdom
 G:!:d
@@ -1863,13 +1863,13 @@ A:80:25 to 90
 F:EASY_KNOW
 E:GAIN_CHR
 
-N:235:Ugliness
+N:235:Pleasing
 G:!:d
 I:75:21:0
 W:20:0:4:0
 A:33:1 to 15
 F:EASY_KNOW
-E:LOSE_CHR
+E:PLEASING
 
 N:236:Restore Charisma
 G:!:d
@@ -1887,21 +1887,21 @@ A:100:0 to 10
 F:EASY_KNOW
 E:CURE_LIGHT
 
-N:238:Clumsiness
+N:238:Nimbleness
 G:!:d
 I:75:19:0
 W:5:0:4:0
 A:33:1 to 10
 F:EASY_KNOW
-E:LOSE_DEX
+E:NIMBLENESS
 
-N:239:Sickliness
+N:239:Toughness
 G:!:d
 I:75:20:0
 W:10:0:4:0
 A:33:1 to 10
 F:EASY_KNOW
-E:LOSE_CON
+E:TOUGHNESS
 
 N:240:Cure Serious Wounds
 G:!:d
@@ -2106,7 +2106,7 @@ P:0:1d1:0:0:0
 F:EASY_KNOW
 E:RESIST_COLD
 
-N:263:See Invisible
+N:263:True Seeing
 G:!:d
 I:75:25:0
 W:3:0:4:50

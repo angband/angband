@@ -964,7 +964,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Damage (stat) */
-					if (do_dec_stat(A_STR)) obvious = TRUE;
+					if (do_dec_stat(A_STR, FALSE)) obvious = TRUE;
 
 					break;
 				}
@@ -975,7 +975,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Damage (stat) */
-					if (do_dec_stat(A_INT)) obvious = TRUE;
+					if (do_dec_stat(A_INT, FALSE)) obvious = TRUE;
 
 					break;
 				}
@@ -986,7 +986,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Damage (stat) */
-					if (do_dec_stat(A_WIS)) obvious = TRUE;
+					if (do_dec_stat(A_WIS, FALSE)) obvious = TRUE;
 
 					break;
 				}
@@ -997,7 +997,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Damage (stat) */
-					if (do_dec_stat(A_DEX)) obvious = TRUE;
+					if (do_dec_stat(A_DEX, FALSE)) obvious = TRUE;
 
 					break;
 				}
@@ -1008,7 +1008,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Damage (stat) */
-					if (do_dec_stat(A_CON)) obvious = TRUE;
+					if (do_dec_stat(A_CON, FALSE)) obvious = TRUE;
 
 					break;
 				}
@@ -1019,7 +1019,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Damage (stat) */
-					if (do_dec_stat(A_CHR)) obvious = TRUE;
+					if (do_dec_stat(A_CHR, FALSE)) obvious = TRUE;
 
 					break;
 				}
@@ -1030,12 +1030,12 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Damage (stats) */
-					if (do_dec_stat(A_STR)) obvious = TRUE;
-					if (do_dec_stat(A_DEX)) obvious = TRUE;
-					if (do_dec_stat(A_CON)) obvious = TRUE;
-					if (do_dec_stat(A_INT)) obvious = TRUE;
-					if (do_dec_stat(A_WIS)) obvious = TRUE;
-					if (do_dec_stat(A_CHR)) obvious = TRUE;
+					if (do_dec_stat(A_STR, FALSE)) obvious = TRUE;
+					if (do_dec_stat(A_DEX, FALSE)) obvious = TRUE;
+					if (do_dec_stat(A_CON, FALSE)) obvious = TRUE;
+					if (do_dec_stat(A_INT, FALSE)) obvious = TRUE;
+					if (do_dec_stat(A_WIS, FALSE)) obvious = TRUE;
+					if (do_dec_stat(A_CHR, FALSE)) obvious = TRUE;
 
 					break;
 				}

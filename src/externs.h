@@ -517,7 +517,7 @@ extern bool project(int who, int rad, int y, int x, int dam, int typ, int flg);
 extern bool hp_player(int num);
 extern bool heal_player(int perc, int min);
 extern void warding_glyph(void);
-extern bool do_dec_stat(int stat);
+extern bool do_dec_stat(int stat, bool perma);
 extern bool do_res_stat(int stat);
 extern bool do_inc_stat(int stat);
 extern void identify_pack(void);

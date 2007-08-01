@@ -83,6 +83,12 @@ typedef enum
 	EFFECT(GAIN_CON,       FALSE, "restores and increases your constitution")
 	EFFECT(GAIN_CHR,       FALSE, "restores and increases your charisma")
 	EFFECT(GAIN_ALL,       FALSE, "restores and increases all your stats")
+	EFFECT(BRAWN,          FALSE, "raises your strength at the expense of your intelligence")
+	EFFECT(INTELLECT,      FALSE, "raises your intelligence at the expense of your constitution")
+	EFFECT(CONTEMPLATION,  FALSE, "raises your wisdom at the expense of your dexterity")
+	EFFECT(TOUGHNESS,      FALSE, "raises your constitution at the expense of your charisma")
+	EFFECT(NIMBLENESS,     FALSE, "raises your dexterity at the expense of your strength")
+	EFFECT(PLEASING,       FALSE, "raises your charisma at the expense of your wisdom")
 	EFFECT(LOSE_STR,       FALSE, "reduces your strength with damage 5d5")
 	EFFECT(LOSE_INT,       FALSE, "reduces your intelligence with damage 5d5")
 	EFFECT(LOSE_WIS,       FALSE, "reduces your wisdom with damage 5d5")
@@ -101,8 +107,8 @@ typedef enum
 	EFFECT(RESTORE_ST_LEV, FALSE, "restores all your stats and your experience points")
 
 	EFFECT(TMD_INFRA,      FALSE, "extends your infravision by 50 feet for 4d25+100 turns")
-	EFFECT(TMD_SINVIS,     FALSE, "allows you to see invisible things for 2d6+12 turns")
-	EFFECT(TMD_ESP,        FALSE, "gives you telepathy for 6d6+12 turns and cures blindness")
+	EFFECT(TMD_SINVIS,     FALSE, "cures blindness and allows you to see invisible things for 2d6+12 turns")
+	EFFECT(TMD_ESP,        FALSE, "cures blindness and gives you telepathy for 6d6+12 turns")
 
 	EFFECT(ENLIGHTENMENT,  FALSE, "completely lights up and magically maps the level")
 	EFFECT(ENLIGHTENMENT2, FALSE, "increases your intelligence and wisdom, detects and maps everything in the surrounding area, and identifies all items in your pack")

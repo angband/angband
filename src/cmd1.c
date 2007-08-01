@@ -756,7 +756,7 @@ void hit_trap(int y, int x)
 				msg_print("A small dart hits you!");
 				dam = damroll(1, 4);
 				take_hit(dam, name);
-				(void)do_dec_stat(A_STR);
+				(void)do_dec_stat(A_STR, FALSE);
 			}
 			else
 			{
@@ -772,7 +772,7 @@ void hit_trap(int y, int x)
 				msg_print("A small dart hits you!");
 				dam = damroll(1, 4);
 				take_hit(dam, name);
-				(void)do_dec_stat(A_DEX);
+				(void)do_dec_stat(A_DEX, FALSE);
 			}
 			else
 			{
@@ -788,7 +788,7 @@ void hit_trap(int y, int x)
 				msg_print("A small dart hits you!");
 				dam = damroll(1, 4);
 				take_hit(dam, name);
-				(void)do_dec_stat(A_CON);
+				(void)do_dec_stat(A_CON, FALSE);
 			}
 			else
 			{

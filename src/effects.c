@@ -399,6 +399,48 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 			return TRUE;
 		}
 
+		case EF_BRAWN:
+		{
+			if (do_inc_stat(A_STR)) *ident = TRUE;
+			if (dec_stat(A_INT, 10, TRUE)) *ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_INTELLECT:
+		{
+			if (do_inc_stat(A_INT)) *ident = TRUE;
+			if (do_dec_stat(A_CON, TRUE)) *ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_CONTEMPLATION:
+		{
+			if (do_inc_stat(A_WIS)) *ident = TRUE;
+			if (do_dec_stat(A_DEX, TRUE)) *ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_TOUGHNESS:
+		{
+			if (do_inc_stat(A_CON)) *ident = TRUE;
+			if (do_dec_stat(A_CHR, TRUE)) *ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_NIMBLENESS:
+		{
+			if (do_inc_stat(A_DEX)) *ident = TRUE;
+			if (do_dec_stat(A_STR, TRUE)) *ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_PLEASING:
+		{
+			if (do_inc_stat(A_CHR)) *ident = TRUE;
+			if (do_dec_stat(A_WIS, TRUE)) *ident = TRUE;
+			return TRUE;
+		}
+
 		case EF_LOSE_STR:
 		case EF_LOSE_INT:
 		case EF_LOSE_WIS:
@@ -409,7 +451,7 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 			int stat = effect - EF_LOSE_STR;
 
 			take_hit(damroll(5, 5), "stat drain");
-			(void)do_dec_stat(stat);
+			(void)do_dec_stat(stat, FALSE);
 			*ident = TRUE;
 
 			return TRUE;
@@ -418,7 +460,7 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 		case EF_LOSE_CON2:
 		{
 			take_hit(damroll(10, 10), "poisonous food");
-			(void)do_dec_stat(A_CON);
+			(void)do_dec_stat(A_CON, FALSE);
 			*ident = TRUE;
 
 			return TRUE;
@@ -484,23 +526,21 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 
 		case EF_TMD_INFRA:
 		{
-			if (inc_timed(TMD_SINFRA, 100 + damroll(4, 25)))
-				*ident = TRUE;
+			if (inc_timed(TMD_SINFRA, 100 + damroll(4, 25))) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_TMD_SINVIS:
 		{
-			if (inc_timed(TMD_SINVIS, 12 + damroll(2, 6)))
-				*ident = TRUE;
+			if (clear_timed(TMD_BLIND)) *ident = TRUE;
+			if (inc_timed(TMD_SINVIS, 12 + damroll(2, 6))) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_TMD_ESP:
 		{
 			if (clear_timed(TMD_BLIND)) *ident = TRUE;
-			if (inc_timed(TMD_TELEPATHY, 12 + damroll(6, 6)))
-				*ident = TRUE;
+			if (inc_timed(TMD_TELEPATHY, 12 + damroll(6, 6))) *ident = TRUE;
 			return TRUE;
 		}
 
