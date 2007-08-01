@@ -38,29 +38,15 @@ bool hp_player(int num)
 		/* Window stuff */
 		p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 
-		/* Heal 0-4 */
+		/* Print a nice message */
 		if (num < 5)
-		{
 			msg_print("You feel a little better.");
-		}
-
-		/* Heal 5-14 */
 		else if (num < 15)
-		{
 			msg_print("You feel better.");
-		}
-
-		/* Heal 15-34 */
 		else if (num < 35)
-		{
 			msg_print("You feel much better.");
-		}
-
-		/* Heal 35+ */
 		else
-		{
 			msg_print("You feel very good.");
-		}
 
 		/* Notice */
 		return (TRUE);
@@ -69,6 +55,36 @@ bool hp_player(int num)
 	/* Ignore */
 	return (FALSE);
 }
+
+
+/*
+ * Heal the player by a given percentage of his wounds, or a minimum
+ * amount, whichever is larger.
+ *
+ * Copied wholesale from EyAngband.
+ */
+bool heal_player(int perc, int min)
+{
+	int i;
+
+	/* Paranoia */
+	if ((perc <= 0) && (min <= 0)) return (FALSE);
+
+
+	/* No healing needed */
+	if (p_ptr->chp >= p_ptr->mhp) return (FALSE);
+
+	/* Figure healing level */
+	i = ((p_ptr->mhp - p_ptr->chp) * perc) / 100;
+
+	/* Enforce minimums */
+	if (i < min) i = min;
+
+	/* Actual healing */
+	return hp_player(i);
+}
+
+
 
 
 

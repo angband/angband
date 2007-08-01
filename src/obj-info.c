@@ -518,7 +518,6 @@ static bool describe_activation(const object_type *o_ptr, u32b f3)
 	const char *desc;
 
 	int effect, base, dice, sides;
-	char temp[] = "x";
 
 	if (o_ptr->name1)
 	{
@@ -565,12 +564,10 @@ static bool describe_activation(const object_type *o_ptr, u32b f3)
 	/* Print a colourised description */
 	do
 	{
-		temp[0] = *desc;
-
 		if (isdigit((unsigned char) *desc) || isdigit((unsigned char) *(desc + 1)))
-			text_out_c(TERM_L_GREEN, temp);
+			text_out_c(TERM_L_GREEN, "%c", *desc);
 		else
-			text_out(temp);
+			text_out("%c", *desc);
 	} while (*desc++);
 
 	text_out(".  ");
@@ -636,7 +633,12 @@ static bool describe_origin(const object_type *o_ptr)
 			const char *name = r_name + r_info[o_ptr->origin_xtra].name;
 			bool unique = (r_info[o_ptr->origin_xtra].flags1 & RF1_UNIQUE) ? TRUE : FALSE;
 
-			text_out("dropped by %s%s", is_a_vowel(name[0]) ? "an " : "a ", name);
+			text_out("dropped by ");
+
+			if (unique)
+				text_out("%s", name);
+			else
+				text_out("%s%s", is_a_vowel(name[0]) ? "an " : "a ", name);
 
  			break;
 		}

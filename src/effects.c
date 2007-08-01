@@ -247,7 +247,7 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 
 		case EF_CURE_LIGHT:
 		{
-			if (hp_player(damroll(2, 8))) *ident = TRUE;
+			if (heal_player(5, 10)) *ident = TRUE;
 			if (clear_timed(TMD_BLIND)) *ident = TRUE;
 			if (dec_timed(TMD_CUT, 10)) *ident = TRUE;
 			return TRUE;
@@ -255,7 +255,7 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 
 		case EF_CURE_SERIOUS:
 		{
-			if (hp_player(damroll(4, 8))) *ident = TRUE;
+			if (heal_player(15, 21)) *ident = TRUE;
 			if (set_timed(TMD_CUT, (p_ptr->timed[TMD_CUT] / 2) - 50)) *ident = TRUE;
 			if (clear_timed(TMD_BLIND)) *ident = TRUE;
 			if (clear_timed(TMD_CONFUSED)) *ident = TRUE;
@@ -265,7 +265,7 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 
 		case EF_CURE_CRITICAL:
 		{
-			if (hp_player(damroll(6, 8))) *ident = TRUE;
+			if (heal_player(30, 30)) *ident = TRUE;
 			if (clear_timed(TMD_BLIND)) *ident = TRUE;
 			if (clear_timed(TMD_CONFUSED)) *ident = TRUE;
 			if (clear_timed(TMD_POISONED)) *ident = TRUE;
