@@ -1787,15 +1787,15 @@ N:225:Strength
 G:!:d
 I:75:48:0
 W:30:0:4:8000
-A:90:30 to 90
+A:80:30 to 90
 F:EASY_KNOW
 E:GAIN_STR
 
 N:226:Brawn
 G:!:d
 I:75:16:0
-W:3:0:4:0
-A:33:10 to 20
+W:3:0:4:1000
+A:20:10 to 20
 F:EASY_KNOW
 E:BRAWN
 
@@ -1803,7 +1803,7 @@ N:227:Restore Strength
 G:!:d
 I:75:42:0
 W:25:0:4:300
-A:75:20 to 60
+A:75:19 to 60
 F:EASY_KNOW
 E:RESTORE_STR
 
@@ -1811,15 +1811,15 @@ N:228:Intelligence
 G:!:d
 I:75:49:0
 W:30:0:4:8000
-A:90:30 to 90
+A:80:30 to 90
 F:EASY_KNOW
 E:GAIN_INT
 
 N:229:Intellect
 G:!:d
 I:75:17:0
-W:20:0:4:0
-A:33:10 to 20
+W:20:0:4:1000
+A:20:10 to 20
 F:EASY_KNOW
 E:INTELLECT
 
@@ -1827,7 +1827,7 @@ N:230:Restore Intelligence
 G:!:d
 I:75:43:0
 W:50:0:4:300
-A:75:20 to 60
+A:75:19 to 60
 F:EASY_KNOW
 E:RESTORE_INT
 
@@ -1835,15 +1835,15 @@ N:231:Wisdom
 G:!:d
 I:75:50:0
 W:30:0:4:8000
-A:90:30 to 90
+A:80:30 to 90
 F:EASY_KNOW
 E:GAIN_WIS
 
 N:232:Contemplation
 G:!:d
 I:75:18:0
-W:20:0:4:0
-A:33:10 to 20
+W:20:0:4:1000
+A:20:10 to 20
 F:EASY_KNOW
 E:CONTEMPLATION
 
@@ -1866,8 +1866,8 @@ E:GAIN_CHR
 N:235:Pleasing
 G:!:d
 I:75:21:0
-W:20:0:4:0
-A:33:10 to 20
+W:20:0:4:1000
+A:20:10 to 20
 F:EASY_KNOW
 E:PLEASING
 
@@ -1883,23 +1883,23 @@ N:237:Cure Light Wounds
 G:!:d
 I:75:34:50
 W:0:0:4:15
-A:100:0 to 10
+A:100:0 to 15
 F:EASY_KNOW
 E:CURE_LIGHT
 
 N:238:Nimbleness
 G:!:d
 I:75:19:0
-W:5:0:4:0
-A:33:10 to 20
+W:5:0:4:1000
+A:20:10 to 20
 F:EASY_KNOW
 E:NIMBLENESS
 
 N:239:Toughness
 G:!:d
 I:75:20:0
-W:10:0:4:0
-A:33:10 to 20
+W:10:0:4:1000
+A:20:10 to 20
 F:EASY_KNOW
 E:TOUGHNESS
 
@@ -1915,7 +1915,7 @@ N:241:Cure Critical Wounds
 G:!:d
 I:75:36:100
 W:5:0:4:100
-A:100:5 to 100
+A:100:6 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW
 E:CURE_CRITICAL
@@ -1932,7 +1932,7 @@ N:243:Constitution
 G:!:d
 I:75:52:0
 W:30:0:4:8000
-A:90:30 to 90
+A:80:30 to 90
 F:EASY_KNOW
 E:GAIN_CON
 
@@ -2002,7 +2002,7 @@ N:251:Dexterity
 G:!:d
 I:75:51:0
 W:30:0:4:8000
-A:90:30 to 90
+A:80:30 to 90
 P:0:1d1:0:0:0
 F:EASY_KNOW
 E:GAIN_DEX
@@ -2011,7 +2011,7 @@ N:252:Restore Dexterity
 G:!:d
 I:75:45:0
 W:25:0:4:300
-A:100:20 to 60
+A:75:20 to 60
 P:0:1d1:0:0:0
 F:EASY_KNOW
 E:RESTORE_DEX
@@ -2020,7 +2020,7 @@ N:253:Restore Constitution
 G:!:d
 I:75:46:0
 W:25:0:4:300
-A:100:20 to 60
+A:75:21 to 60
 P:0:1d1:0:0:0
 F:EASY_KNOW
 E:RESTORE_CON
@@ -2038,7 +2038,7 @@ N:255:Salt Water
 G:!:d
 I:75:5:0
 W:0:0:4:0
-A:20:0 to 100
+A:20:3 to 15
 P:0:1d1:0:0:0
 F:EASY_KNOW
 E:DRINK_SALT
@@ -3445,7 +3445,7 @@ N:415:Death
 G:!:d
 I:75:23:0
 W:55:0:4:0
-A:10:55 to 100
+A:10:50 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW
 E:DRINK_DEATH
