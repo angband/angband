@@ -61,8 +61,10 @@ const char *effect_desc(int effect)
 
 /*
  * The "wonder" effect.
+ * 
+ * Returns TRUE if the effect is evident.
  */
-static void spell_wonder(int dir, int die, int beam)
+static bool spell_wonder(int dir, int die, int beam)
 {
 /* This spell should become more useful (more
    controlled) as the player gains experience levels.
@@ -71,39 +73,45 @@ static void spell_wonder(int dir, int die, int beam)
    keeping the results quite random.  It also allows
    some potent effects only at high level. */
 
+	bool visible = FALSE;
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 	int plev = p_ptr->lev;
 
 	if (die > 100)
+	{
+		/* above 100 the effect is always visible */
 		msg_print("You feel a surge of power!");
+		visible = TRUE;
+	}
 
-	if (die < 8) clone_monster(dir);
-	else if (die < 14) speed_monster(dir);
-	else if (die < 26) heal_monster(dir);
-	else if (die < 31) poly_monster(dir);
+	if (die < 8) visible = clone_monster(dir);
+	else if (die < 14) visible = speed_monster(dir);
+	else if (die < 26) visible = heal_monster(dir);
+	else if (die < 31) visible = poly_monster(dir);
 	else if (die < 36)
-		fire_bolt_or_beam(beam - 10, GF_MISSILE, dir,
-		                  damroll(3 + ((plev - 1) / 5), 4));
-	else if (die < 41) confuse_monster(dir, plev);
-	else if (die < 46) fire_ball(GF_POIS, dir, 20 + (plev / 2), 3);
-	else if (die < 51) lite_line(dir);
+		visible = fire_bolt_or_beam(beam - 10, GF_MISSILE, dir,
+		                            damroll(3 + ((plev - 1) / 5), 4));
+	else if (die < 41) visible = confuse_monster(dir, plev);
+	else if (die < 46) visible = fire_ball(GF_POIS, dir, 20 + (plev / 2), 3);
+	else if (die < 51) visible = lite_line(dir);
 	else if (die < 56)
-		fire_beam(GF_ELEC, dir, damroll(3+((plev-5)/6), 6));
+		visible = fire_beam(GF_ELEC, dir, damroll(3+((plev-5)/6), 6));
 	else if (die < 61)
-		fire_bolt_or_beam(beam-10, GF_COLD, dir,
-		                  damroll(5+((plev-5)/4), 8));
+		visible = fire_bolt_or_beam(beam-10, GF_COLD, dir,
+		                            damroll(5+((plev-5)/4), 8));
 	else if (die < 66)
-		fire_bolt_or_beam(beam, GF_ACID, dir,
-		                  damroll(6+((plev-5)/4), 8));
+		visible = fire_bolt_or_beam(beam, GF_ACID, dir,
+		                            damroll(6+((plev-5)/4), 8));
 	else if (die < 71)
-		fire_bolt_or_beam(beam, GF_FIRE, dir,
-		                  damroll(8+((plev-5)/4), 8));
-	else if (die < 76) drain_life(dir, 75);
-	else if (die < 81) fire_ball(GF_ELEC, dir, 30 + plev / 2, 2);
-	else if (die < 86) fire_ball(GF_ACID, dir, 40 + plev, 2);
-	else if (die < 91) fire_ball(GF_ICE, dir, 70 + plev, 3);
-	else if (die < 96) fire_ball(GF_FIRE, dir, 80 + plev, 3);
+		visible = fire_bolt_or_beam(beam, GF_FIRE, dir,
+		                            damroll(8+((plev-5)/4), 8));
+	else if (die < 76) visible = drain_life(dir, 75);
+	else if (die < 81) visible = fire_ball(GF_ELEC, dir, 30 + plev / 2, 2);
+	else if (die < 86) visible = fire_ball(GF_ACID, dir, 40 + plev, 2);
+	else if (die < 91) visible = fire_ball(GF_ICE, dir, 70 + plev, 3);
+	else if (die < 96) visible = fire_ball(GF_FIRE, dir, 80 + plev, 3);
+	/* above 100 'visible' is already true */
 	else if (die < 101) drain_life(dir, 100 + plev);
 	else if (die < 104) earthquake(py, px, 12);
 	else if (die < 106) destroy_area(py, px, 15, TRUE);
@@ -116,6 +124,8 @@ static void spell_wonder(int dir, int die, int beam)
 		sleep_monsters();
 		hp_player(300);
 	}
+
+	return visible;
 }
 
 
@@ -1362,7 +1372,7 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 
 		case EF_WONDER:
 		{
-			spell_wonder(dir, randint(100) + p_ptr->lev / 5, beam);
+			if (spell_wonder(dir, randint(100) + p_ptr->lev / 5, beam)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1370,41 +1380,18 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 
 		case EF_WAND_BREATH:
 		{
-			/* pick a random ball effect... */
-			switch (randint(5))
-			{
-				case 1:
-				{
-					fire_ball(GF_ACID, dir, 200, 3);
-					break;
-				}
-
-				case 2:
-				{
-					fire_ball(GF_ELEC, dir, 160, 3);
-					break;
-				}
-
-				case 3:
-				{
-					fire_ball(GF_FIRE, dir, 200, 3);
-					break;
-				}
-
-				case 4:
-				{
-					fire_ball(GF_COLD, dir, 160, 3);
-					break;
-				}
-
-				default:
-				{
-					fire_ball(GF_POIS, dir, 120, 3);
-				}
-			}
-
-			/* ...and ID the item */
-			*ident = TRUE;
+			/* table of random ball effects and their damages */
+			const int breath_types[] = {
+				GF_ACID, 200,
+				GF_ELEC, 160,
+				GF_FIRE, 200,
+				GF_COLD, 160,
+				GF_POIS, 120
+			};
+			/* pick a random (type, damage) tuple in the table */
+			int which = 2 * rand_int(sizeof(breath_types) / (2 * sizeof(int)));
+			if (fire_ball(breath_types[which], dir, breath_types[which + 1], 3))
+				*ident = TRUE;
 			return TRUE;
 		}
 
