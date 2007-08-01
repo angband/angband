@@ -166,6 +166,30 @@ void convert_kind(byte *tval, byte *sval)
 
 			break;
 		}
+
+		/* Some staffs removed, replace with rods */
+		case TV_STAFF:
+		{
+			int new_sval = 0;
+
+			/* Treasure location */
+			if (*sval == 10) new_sval = 28;
+
+			/* Object location */
+			if (*sval == 11) new_sval = 29;
+
+			/* Door/stair location */
+			if (*sval == 13) new_sval = 1;
+
+			/* Probing */
+			if (*sval == 23) new_sval = 7;
+
+			if (new_sval != *sval)
+			{
+				*tval = TV_ROD;
+				*sval = new_sval;
+			}
+		}
 	}
 }
 

@@ -2423,35 +2423,27 @@ E:DRAIN_LIFE4
 
 ## XXX 299 XXX ##
 
+## XXX 300 Staff of Trap Location XXX ##
 
-##### Staffs #####
 
-N:300:Trap Location
-G:_:d
-I:55:12:0
-W:10:0:50:350
-A:100:10 to 100
-P:0:1d2:0:0:0
-C:6+d5
-E:DET_TRAP
+##### Lazy Rods
 
-N:301:Treasure Location
-G:_:d
-I:55:10:0
-W:5:0:50:200
+N:300:Treasure Location
+G:-:d
+I:66:28:0
+W:5:0:50:400
 A:100:5 to 100
-P:0:1d2:0:0:0
-C:8+d20
-E:DET_GOLD
+E:DET_GOLD:35
 
 N:302:Object Location
-G:_:d
-I:55:11:0
+G:-:d
+I:66:29:0
 W:5:0:50:200
 A:100:5 to 100
-P:0:1d2:0:0:0
-C:6+d15
-E:DET_OBJ
+E:DET_OBJ:35
+
+
+##### Staffs #####
 
 N:303:Teleportation
 G:_:d
@@ -2475,7 +2467,7 @@ N:305:Summoning
 G:_:d
 I:55:3:0
 W:10:0:50:0
-A:100:10 to 100
+A:20:10 to 100
 P:0:1d2:0:0:0
 C:2d3
 E:SUMMON_MON
@@ -2511,7 +2503,7 @@ N:309:Haste Monsters
 G:_:d
 I:55:2:0
 W:10:0:50:0
-A:100:10 to 100
+A:100:10 to 20
 P:0:1d2:0:0:0
 C:8+d8
 E:LOSHASTE
@@ -2541,7 +2533,6 @@ W:5:0:50:350
 A:100:5 to 100
 P:0:1d2:0:0:0
 C:6+d5
-#! now works like a real CLW effect
 E:CURE_LIGHT
 
 N:313:Detect Invisible
@@ -2567,19 +2558,12 @@ N:315:Slowness
 G:_:d
 I:55:1:0
 W:40:0:50:0
-A:100:40 to 100
+A:100:40 to 50
 P:0:1d2:0:0:0
 C:8+d8
 E:SLOW
 
-N:316:Door/Stair Location
-G:_:d
-I:55:13:0
-W:10:0:50:350
-A:100:10 to 100
-P:0:1d2:0:0:0
-C:6+d8
-E:DET_DOORSTAIR
+### 316 Door/Stair Location ###
 
 N:317:Remove Curse
 G:_:d
@@ -2617,20 +2601,13 @@ P:0:1d2:0:0:0
 C:4+d3
 E:DISPEL_EVIL60
 
-N:321:Probing
-G:_:d
-I:55:23:0
-W:30:0:50:2000
-A:100:30 to 100
-P:0:1d2:0:0:0
-C:2+d6
-E:PROBING
+### 321 Probing ###
 
 N:322:Darkness
 G:_:d
 I:55:0:0
 W:5:0:50:0
-A:100:5 to 20
+A:80:5 to 10
 P:0:1d2:0:0:0
 C:8+d8
 E:DARKNESS
@@ -2696,7 +2673,6 @@ W:70:0:50:5000
 A:50:70 to 100
 P:0:1d2:0:0:0
 C:1+d2
-#! now cures poison, blindness, conf also
 E:CURE_FULL
 
 ##### Basic Books #####
@@ -2883,7 +2859,7 @@ N:351:Door/Stair Location
 G:-:d
 I:66:1:0
 W:15:0:15:1000
-A:100:15 to 100
+A:100:10 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW
 E:DET_DOORSTAIR:70
@@ -2900,8 +2876,8 @@ E:DET_TRAP:50
 N:353:Probing
 G:-:d
 I:66:7:0
-W:40:0:15:4000
-A:25:40 to 100
+W:35:0:15:4000
+A:70:35 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW
 E:PROBING:50

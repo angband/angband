@@ -45,7 +45,7 @@ M:H:165
 M:B:4
 
 # Maximum number of flavors
-M:L:303
+M:L:313
 
 # Maximum number of spells
 M:S:122
