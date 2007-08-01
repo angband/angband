@@ -809,21 +809,21 @@ N:91:& Pair~ of Soft Leather Boots
 G:]:U
 I:30:2:0
 W:3:0:20:7
-A:100:3 to 100
+A:110:3 to 100
 P:2:1d1:0:0:0
 
 N:92:& Pair~ of Hard Leather Boots
 G:]:U
 I:30:3:0
 W:5:0:40:12
-A:100:5 to 100
+A:110:5 to 100
 P:3:1d1:0:0:0
 
 N:93:& Pair~ of Metal Shod Boots
 G:]:s
 I:30:6:0
 W:20:0:80:50
-A:100:20 to 100
+A:110:20 to 100
 P:6:1d1:0:0:0
 
 N:94:& Hard Leather Cap~
@@ -1000,7 +1000,7 @@ N:118:Adamantite Plate Mail~
 G:[:G
 I:37:30:0
 W:75:0:420:20000
-A:25:75 to 100
+A:18:75 to 100
 P:40:2d4:-4:0:0
 F:IGNORE_ACID
 
@@ -1030,11 +1030,11 @@ P:16:1d4:-2:0:0
 
 # This shield does not belong here
 
-N:122:& Shield~ of Deflection
+N:122:& Mithril Shield~
 G:):B
 I:34:10:0
 W:70:0:100:10000
-A:25:70 to 100
+A:20:70 to 100
 P:10:1d1:0:0:10
 F:IGNORE_ACID
 
@@ -1118,28 +1118,28 @@ G:=:d
 I:45:24:0
 W:30:0:2:500
 A:100:30 to 100
-F:STR | SUST_STR | HIDE_TYPE
+F:STR | HIDE_TYPE
 
 N:133:Dexterity
 G:=:d
 I:45:26:0
 W:30:0:2:500
 A:100:30 to 100
-F:DEX | SUST_DEX | HIDE_TYPE
+F:DEX | HIDE_TYPE
 
 N:134:Constitution
 G:=:d
 I:45:27:0
 W:30:0:2:500
 A:100:30 to 100
-F:CON | SUST_CON | HIDE_TYPE
+F:CON | HIDE_TYPE
 
 N:135:Intelligence
 G:=:d
 I:45:25:0
 W:30:0:2:500
 A:100:30 to 100
-F:INT | SUST_INT | HIDE_TYPE
+F:INT | HIDE_TYPE
 
 N:136:Speed
 G:=:d
@@ -1190,7 +1190,7 @@ W:5:0:2:200
 A:100:5 to 100
 F:FEATHER | EASY_KNOW
 
-N:143:Resist Poison
+N:143:Poison Resistance
 G:=:d
 I:45:20:0
 W:40:0:2:16000
@@ -1215,7 +1215,7 @@ N:146:Flames
 G:=:d
 I:45:18:0
 W:50:0:2:3000
-A:50:50 to 100
+A:100:50 to 100
 P:0:0d0:0:0:15
 F:RES_FIRE | IGNORE_FIRE | 
 F:ACTIVATE
@@ -1225,7 +1225,7 @@ N:147:Acid
 G:=:d
 I:45:17:0
 W:50:0:2:3000
-A:50:50 to 100
+A:100:50 to 100
 P:0:0d0:0:0:15
 F:RES_ACID | IGNORE_ACID | 
 F:ACTIVATE
@@ -1235,7 +1235,7 @@ N:148:Ice
 G:=:d
 I:45:19:0
 W:50:0:2:3000
-A:50:50 to 100
+A:100:50 to 100
 P:0:0d0:0:0:15
 F:RES_COLD | IGNORE_COLD | 
 F:ACTIVATE
@@ -1293,43 +1293,43 @@ F:SEE_INVIS | EASY_KNOW
 N:156:Sustain Strength
 G:=:d
 I:45:10:0
-W:20:0:2:400
-A:100:20 to 100
+W:30:0:2:750
+A:100:30 to 100
 F:SUST_STR | EASY_KNOW
 
 N:157:Sustain Intelligence
 G:=:d
 I:45:11:0
-W:20:0:2:400
-A:100:20 to 100
+W:30:0:2:600
+A:100:30 to 100
 F:SUST_INT | EASY_KNOW
 
 N:158:Sustain Wisdom
 G:=:d
 I:45:12:0
-W:20:0:2:400
-A:100:20 to 100
+W:30:0:2:600
+A:100:30 to 100
 F:SUST_WIS | EASY_KNOW
 
 N:159:Sustain Constitution
 G:=:d
 I:45:13:0
-W:20:0:2:400
-A:100:20 to 100
+W:30:0:2:750
+A:100:30 to 100
 F:SUST_CON | EASY_KNOW
 
 N:160:Sustain Dexterity
 G:=:d
 I:45:14:0
-W:20:0:2:400
-A:100:20 to 100
+W:30:0:2:750
+A:100:30 to 100
 F:SUST_DEX | EASY_KNOW
 
 N:161:Sustain Charisma
 G:=:d
 I:45:15:0
-W:20:0:2:400
-A:100:20 to 100
+W:30:0:2:500
+A:100:30 to 100
 F:SUST_CHR | EASY_KNOW
 
 N:162:Slaying
@@ -1346,15 +1346,15 @@ N:163:Wisdom
 G:":d
 I:40:6:0
 W:30:0:3:500
-A:100:30 to 100
-F:WIS | SUST_WIS | HIDE_TYPE
+A:100:20 to 100
+F:WIS | HIDE_TYPE
 
 N:164:Charisma
 G:":d
 I:40:7:0
 W:30:0:3:500
-A:100:30 to 100
-F:CHR | SUST_CHR | HIDE_TYPE
+A:100:20 to 100
+F:CHR | HIDE_TYPE
 
 N:165:Searching
 G:":d
@@ -1456,7 +1456,7 @@ N:177:*Identify*
 G:?:w
 I:70:13:0
 W:30:0:5:1000
-A:100:25 to 100
+A:100:30 to 100
 F:EASY_KNOW
 E:IDENTIFY2
 
@@ -3048,7 +3048,7 @@ N:372:Identify
 G:-:d
 I:66:2:0
 W:50:0:15:13000
-A:12:50 to 100
+A:25:50 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW | IGNORE_ELEC
 E:IDENTIFY:10
@@ -3093,7 +3093,7 @@ N:377:Speed
 G:-:d
 I:66:11:0
 W:95:0:15:50000
-A:6:95 to 100
+A:12:95 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW | IGNORE_ELEC
 E:HASTE:100
