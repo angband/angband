@@ -1,0 +1,48 @@
+# Windows Angband makefile for NMAKE and MS Visual C
+#
+# Debug build:   NMAKE /F Makefile.nmake
+# Release build: NMAKE /F Makefile.nmake RELEASE=1
+
+
+EXE = Angband.exe
+default: ..\$(EXE)
+exe: $(EXE)
+
+
+# tools and config
+CC = cl
+LINK = link
+RC = rc
+CFLAGS = /DWINDOWS /W3 /GF /GA /nologo
+LFLAGS = /nologo
+RCFLAGS =
+LIBS = Gdi32.lib User32.lib Comdlg32.lib Shell32.lib Winmm.lib
+
+!if defined(RELEASE)
+CFLAGS = $(CFLAGS) /O2 /Os /Gs
+!else
+CFLAGS = $(CFLAGS) /Od /Zi
+!endif
+
+
+# files
+include Makefile.src
+OBJS = $(ANGFILES) $(ZFILES) main-win.o win\readdib.o
+RES = win\angband.res
+
+
+# rules
+.c.o:
+	$(CC) /c /Fo$@ $(CFLAGS) $?
+
+$(RES) : win\angband.rc
+	$(RC) $(RCFLAGS) $**
+
+$(EXE) : $(OBJS) $(RES)
+	$(LINK) /out:$@ $(LFLAGS) $** $(LIBS)
+
+..\$(EXE) : $(EXE)
+	copy $** $@
+
+clean:
+	del $(OBJS) $(EXE)
