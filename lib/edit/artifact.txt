@@ -1898,9 +1898,8 @@ N:126:'Cubragol'
 I:19:23:10
 W:50:25:110:50000
 P:0:0d0:10:14:0
-F:SPEED | HIDE_TYPE | 
+F:SPEED | HIDE_TYPE | BRAND_FIRE |
 F:RES_FIRE | ACTIVATE | SHOW_MODS
-A:FIREBRAND:999
 M:Cubragol glows a deep red...
 D:A crossbow that grants fiery speed to he who finds it, and from which 
 D:shoot bolts that blaze with flame unquenchable.

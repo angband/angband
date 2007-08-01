@@ -232,9 +232,10 @@ static bool describe_combat(const object_type *o_ptr, u32b f1)
 
 		/* Calculate damage */
 		dam = (o_ptr->ds * o_ptr->dd * 5);
-		if (object_known_p(o_ptr)) dam += (o_ptr->to_d * 10);
-		if (object_known_p(j_ptr)) dam += (j_ptr->to_d * 10);
-		dam *= p_ptr->ammo_mult;
+		if (object_known_p(o_ptr)) xtra_dam += (o_ptr->to_d * 10);
+		if (object_known_p(j_ptr)) xtra_dam += (j_ptr->to_d * 10);
+		xtra_dam *= p_ptr->ammo_mult;
+		xtra_dam += (dam * 2);
 
 		p_text_out("Fired from your current bow, this arrow will hit targets up to ");
 		text_out_c(TERM_L_GREEN, format("%d", tdis * 10));

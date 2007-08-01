@@ -98,7 +98,7 @@ bool test_hit(int chance, int ac, int vis)
  * Critical hits (from objects thrown by player)
  * Factor in item weight, total plusses, and player level.
  */
-int critical_shot(int weight, int plus, int dam)
+static int critical_shot(int weight, int plus, int dam)
 {
 	int i, k;
 
@@ -137,7 +137,7 @@ int critical_shot(int weight, int plus, int dam)
  *
  * Factor in weapon weight, total plusses, player level.
  */
-int critical_norm(int weight, int plus, int dam)
+static int critical_norm(int weight, int plus, int dam)
 {
 	int i, k;
 
@@ -191,15 +191,12 @@ int critical_norm(int weight, int plus, int dam)
 
 
 /*
- * Extract the "total damage" from a given object hitting a given monster.
+ * Extract the "multiplier" from a given object hitting a given monster.
  *
- * Note that "flasks of oil" do NOT do fire damage, although they
- * certainly could be made to do so.  XXX XXX
- *
- * Note that most brands and slays are x3, except Slay Animal (x2),
- * Slay Evil (x2), and Kill dragon (x5).
+ * Most brands and slays are x3, except Slay Animal (x2), Slay Evil (x2),
+ * and Kill dragon (x5).
  */
-int tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr)
+static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
 {
 	int mult = 1;
 
@@ -211,251 +208,194 @@ int tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr)
 	/* Extract the flags */
 	object_flags(o_ptr, &f1, &f2, &f3);
 
-	/* Some "weapons" and "ammo" do extra damage */
-	switch (o_ptr->tval)
+
+	/* Slay Animal */
+	if ((f1 & TR1_SLAY_ANIMAL) && (r_ptr->flags3 & RF3_ANIMAL))
 	{
-		case TV_SHOT:
-		case TV_ARROW:
-		case TV_BOLT:
-		case TV_HAFTED:
-		case TV_POLEARM:
-		case TV_SWORD:
-		case TV_DIGGING:
+		if (m_ptr->ml)
+			l_ptr->flags3 |= (RF3_ANIMAL);
+
+		if (mult < 2) mult = 2;
+	}
+
+	/* Slay Evil */
+	if ((f1 & TR1_SLAY_EVIL) && (r_ptr->flags3 & RF3_EVIL))
+	{
+		if (m_ptr->ml)
+			l_ptr->flags3 |= (RF3_EVIL);
+
+		if (mult < 2) mult = 2;
+	}
+
+	/* Slay Undead */
+	if ((f1 & TR1_SLAY_UNDEAD) && (r_ptr->flags3 & RF3_UNDEAD))
+	{
+		if (m_ptr->ml)
+			l_ptr->flags3 |= (RF3_UNDEAD);
+
+		if (mult < 3) mult = 3;
+	}
+
+	/* Slay Demon */
+	if ((f1 & TR1_SLAY_DEMON) && (r_ptr->flags3 & RF3_DEMON))
+	{
+		if (m_ptr->ml)
+			l_ptr->flags3 |= (RF3_DEMON);
+
+		if (mult < 3) mult = 3;
+	}
+
+	/* Slay Orc */
+	if ((f1 & TR1_SLAY_ORC) && (r_ptr->flags3 & RF3_ORC))
+	{
+		if (m_ptr->ml)
+			l_ptr->flags3 |= (RF3_ORC);
+
+		if (mult < 3) mult = 3;
+	}
+
+	/* Slay Troll */
+	if ((f1 & TR1_SLAY_TROLL) && (r_ptr->flags3 & RF3_TROLL))
+	{
+		if (m_ptr->ml)
+			l_ptr->flags3 |= (RF3_TROLL);
+
+		if (mult < 3) mult = 3;
+	}
+
+	/* Slay Giant */
+	if ((f1 & TR1_SLAY_GIANT) && (r_ptr->flags3 & RF3_GIANT))
+	{
+		if (m_ptr->ml)
+			l_ptr->flags3 |= (RF3_GIANT);
+
+		if (mult < 3) mult = 3;
+	}
+
+	/* Slay Dragon */
+	if ((f1 & TR1_SLAY_DRAGON) && (r_ptr->flags3 & RF3_DRAGON))
+	{
+		if (m_ptr->ml)
+			l_ptr->flags3 |= (RF3_DRAGON);
+
+		if (mult < 3) mult = 3;
+	}
+
+	/* Execute Dragon */
+	if ((f1 & TR1_KILL_DRAGON) && (r_ptr->flags3 & RF3_DRAGON))
+	{
+		if (m_ptr->ml)
+			l_ptr->flags3 |= (RF3_DRAGON);
+
+		if (mult < 5) mult = 5;
+	}
+
+	/* Execute demon */
+	if ((f1 & TR1_KILL_DEMON) && (r_ptr->flags3 & RF3_DEMON))
+	{
+		if (m_ptr->ml)
+			l_ptr->flags3 |= (RF3_DEMON);
+
+		if (mult < 5) mult = 5;
+	}
+
+	/* Execute undead */
+	if ((f1 & TR1_KILL_UNDEAD) && (r_ptr->flags3 & RF3_UNDEAD))
+	{
+		if (m_ptr->ml)
+			l_ptr->flags3 |= (RF3_UNDEAD);
+
+		if (mult < 5) mult = 5;
+	}
+
+	/* Brand (Acid) */
+	if (f1 & (TR1_BRAND_ACID))
+	{
+		/* Notice immunity */
+		if (r_ptr->flags3 & (RF3_IM_ACID))
 		{
-			/* Slay Animal */
-			if ((f1 & (TR1_SLAY_ANIMAL)) &&
-			    (r_ptr->flags3 & (RF3_ANIMAL)))
-			{
-				if (m_ptr->ml)
-				{
-					l_ptr->flags3 |= (RF3_ANIMAL);
-				}
+			if (m_ptr->ml)
+				l_ptr->flags3 |= (RF3_IM_ACID);
+		}
 
-				if (mult < 2) mult = 2;
-			}
+		/* Otherwise, take the damage */
+		else
+		{
+			if (mult < 3) mult = 3;
+		}
+	}
 
-			/* Slay Evil */
-			if ((f1 & (TR1_SLAY_EVIL)) &&
-			    (r_ptr->flags3 & (RF3_EVIL)))
-			{
-				if (m_ptr->ml)
-				{
-					l_ptr->flags3 |= (RF3_EVIL);
-				}
+	/* Brand (Elec) */
+	if (f1 & (TR1_BRAND_ELEC))
+	{
+		/* Notice immunity */
+		if (r_ptr->flags3 & (RF3_IM_ELEC))
+		{
+			if (m_ptr->ml)
+				l_ptr->flags3 |= (RF3_IM_ELEC);
+		}
 
-				if (mult < 2) mult = 2;
-			}
+		/* Otherwise, take the damage */
+		else
+		{
+			if (mult < 3) mult = 3;
+		}
+	}
 
-			/* Slay Undead */
-			if ((f1 & (TR1_SLAY_UNDEAD)) &&
-			    (r_ptr->flags3 & (RF3_UNDEAD)))
-			{
-				if (m_ptr->ml)
-				{
-					l_ptr->flags3 |= (RF3_UNDEAD);
-				}
+	/* Brand (Fire) */
+	if (f1 & (TR1_BRAND_FIRE))
+	{
+		/* Notice immunity */
+		if (r_ptr->flags3 & (RF3_IM_FIRE))
+		{
+			if (m_ptr->ml)
+				l_ptr->flags3 |= (RF3_IM_FIRE);
+		}
 
-				if (mult < 3) mult = 3;
-			}
+		/* Otherwise, take the damage */
+		else
+		{
+			if (mult < 3) mult = 3;
+		}
+	}
 
-			/* Slay Demon */
-			if ((f1 & (TR1_SLAY_DEMON)) &&
-			    (r_ptr->flags3 & (RF3_DEMON)))
-			{
-				if (m_ptr->ml)
-				{
-					l_ptr->flags3 |= (RF3_DEMON);
-				}
+	/* Brand (Cold) */
+	if (f1 & (TR1_BRAND_COLD))
+	{
+		/* Notice immunity */
+		if (r_ptr->flags3 & (RF3_IM_COLD))
+		{
+			if (m_ptr->ml)
+				l_ptr->flags3 |= (RF3_IM_COLD);
+		}
 
-				if (mult < 3) mult = 3;
-			}
+		/* Otherwise, take the damage */
+		else
+		{
+			if (mult < 3) mult = 3;
+		}
+	}
 
-			/* Slay Orc */
-			if ((f1 & (TR1_SLAY_ORC)) &&
-			    (r_ptr->flags3 & (RF3_ORC)))
-			{
-				if (m_ptr->ml)
-				{
-					l_ptr->flags3 |= (RF3_ORC);
-				}
+	/* Brand (Poison) */
+	if (f1 & (TR1_BRAND_POIS))
+	{
+		/* Notice immunity */
+		if (r_ptr->flags3 & (RF3_IM_POIS))
+		{
+			if (m_ptr->ml)
+				l_ptr->flags3 |= (RF3_IM_POIS);
+		}
 
-				if (mult < 3) mult = 3;
-			}
-
-			/* Slay Troll */
-			if ((f1 & (TR1_SLAY_TROLL)) &&
-			    (r_ptr->flags3 & (RF3_TROLL)))
-			{
-				if (m_ptr->ml)
-				{
-					l_ptr->flags3 |= (RF3_TROLL);
-				}
-
-				if (mult < 3) mult = 3;
-			}
-
-			/* Slay Giant */
-			if ((f1 & (TR1_SLAY_GIANT)) &&
-			    (r_ptr->flags3 & (RF3_GIANT)))
-			{
-				if (m_ptr->ml)
-				{
-					l_ptr->flags3 |= (RF3_GIANT);
-				}
-
-				if (mult < 3) mult = 3;
-			}
-
-			/* Slay Dragon */
-			if ((f1 & (TR1_SLAY_DRAGON)) &&
-			    (r_ptr->flags3 & (RF3_DRAGON)))
-			{
-				if (m_ptr->ml)
-				{
-					l_ptr->flags3 |= (RF3_DRAGON);
-				}
-
-				if (mult < 3) mult = 3;
-			}
-
-			/* Execute Dragon */
-			if ((f1 & (TR1_KILL_DRAGON)) &&
-			    (r_ptr->flags3 & (RF3_DRAGON)))
-			{
-				if (m_ptr->ml)
-				{
-					l_ptr->flags3 |= (RF3_DRAGON);
-				}
-
-				if (mult < 5) mult = 5;
-			}
-
-			/* Execute demon */
-			if ((f1 & (TR1_KILL_DEMON)) &&
-			    (r_ptr->flags3 & (RF3_DEMON)))
-			{
-				if (m_ptr->ml)
-				{
-					l_ptr->flags3 |= (RF3_DEMON);
-				}
-
-				if (mult < 5) mult = 5;
-			}
-
-			/* Execute undead */
-			if ((f1 & (TR1_KILL_UNDEAD)) &&
-			    (r_ptr->flags3 & (RF3_UNDEAD)))
-			{
-				if (m_ptr->ml)
-				{
-					l_ptr->flags3 |= (RF3_UNDEAD);
-				}
-
-				if (mult < 5) mult = 5;
-			}
-
-			/* Brand (Acid) */
-			if (f1 & (TR1_BRAND_ACID))
-			{
-				/* Notice immunity */
-				if (r_ptr->flags3 & (RF3_IM_ACID))
-				{
-					if (m_ptr->ml)
-					{
-						l_ptr->flags3 |= (RF3_IM_ACID);
-					}
-				}
-
-				/* Otherwise, take the damage */
-				else
-				{
-					if (mult < 3) mult = 3;
-				}
-			}
-
-			/* Brand (Elec) */
-			if (f1 & (TR1_BRAND_ELEC))
-			{
-				/* Notice immunity */
-				if (r_ptr->flags3 & (RF3_IM_ELEC))
-				{
-					if (m_ptr->ml)
-					{
-						l_ptr->flags3 |= (RF3_IM_ELEC);
-					}
-				}
-
-				/* Otherwise, take the damage */
-				else
-				{
-					if (mult < 3) mult = 3;
-				}
-			}
-
-			/* Brand (Fire) */
-			if (f1 & (TR1_BRAND_FIRE))
-			{
-				/* Notice immunity */
-				if (r_ptr->flags3 & (RF3_IM_FIRE))
-				{
-					if (m_ptr->ml)
-					{
-						l_ptr->flags3 |= (RF3_IM_FIRE);
-					}
-				}
-
-				/* Otherwise, take the damage */
-				else
-				{
-					if (mult < 3) mult = 3;
-				}
-			}
-
-			/* Brand (Cold) */
-			if (f1 & (TR1_BRAND_COLD))
-			{
-				/* Notice immunity */
-				if (r_ptr->flags3 & (RF3_IM_COLD))
-				{
-					if (m_ptr->ml)
-					{
-						l_ptr->flags3 |= (RF3_IM_COLD);
-					}
-				}
-
-				/* Otherwise, take the damage */
-				else
-				{
-					if (mult < 3) mult = 3;
-				}
-			}
-
-			/* Brand (Poison) */
-			if (f1 & (TR1_BRAND_POIS))
-			{
-				/* Notice immunity */
-				if (r_ptr->flags3 & (RF3_IM_POIS))
-				{
-					if (m_ptr->ml)
-					{
-						l_ptr->flags3 |= (RF3_IM_POIS);
-					}
-				}
-
-				/* Otherwise, take the damage */
-				else
-				{
-					if (mult < 3) mult = 3;
-				}
-			}
-
-			break;
+		/* Otherwise, take the damage */
+		else
+		{
+			if (mult < 3) mult = 3;
 		}
 	}
 
 
-	/* Return the total damage */
-	return (tdam * mult);
+	/* Return the multiplier */
+	return (mult);
 }
 
 
@@ -542,7 +482,7 @@ void py_attack(int y, int x)
 			if (o_ptr->k_idx)
 			{
 				k = damroll(o_ptr->dd, o_ptr->ds);
-				k = tot_dam_aux(o_ptr, k, m_ptr);
+				k *= tot_dam_aux(o_ptr, m_ptr);
 				if (p_ptr->impact && (k > 50)) do_quake = TRUE;
 				k = critical_norm(o_ptr->weight, o_ptr->to_h, k);
 				k += o_ptr->to_d;
@@ -624,8 +564,6 @@ void py_attack(int y, int x)
  *
  * You may only fire items that "match" your missile launcher.
  *
- * You must use slings + pebbles/shots, bows + arrows, xbows + bolts.
- *
  * See "calc_bonuses()" for more calculations and such.
  *
  * Note that "firing" a missile is MUCH better than "throwing" it.
@@ -635,7 +573,6 @@ void py_attack(int y, int x)
  * Objects are more likely to break if they "attempt" to hit a monster.
  *
  * Rangers (with Bows) and Anyone (with "Extra Shots") get extra shots.
- *
  * The "extra shot" code works by decreasing the amount of energy
  * required to make each shot, spreading the shots out over time.
  *
@@ -644,8 +581,6 @@ void py_attack(int y, int x)
  *
  * Note that Bows of "Extra Might" get extra range and an extra bonus
  * for the damage multiplier.
- *
- * Note that Bows of "Extra Shots" give an extra shot.
  */
 void do_cmd_fire(void)
 {
@@ -749,18 +684,15 @@ void do_cmd_fire(void)
 	/* Use the proper number of shots */
 	thits = p_ptr->num_fire;
 
-	/* Base damage from thrown object plus launcher bonus */
-	tdam = damroll(i_ptr->dd, i_ptr->ds) + i_ptr->to_d + j_ptr->to_d;
-
 	/* Actually "fire" the object */
 	bonus = (p_ptr->to_h + i_ptr->to_h + j_ptr->to_h);
 	chance = (p_ptr->skills[SKILL_THB] + (bonus * BTH_PLUS_ADJ));
 
+	/* Base damage from thrown object plus launcher bonus */
+	tdam = damroll(i_ptr->dd, i_ptr->ds);
+
 	/* Assume a base multiplier */
 	tmul = p_ptr->ammo_mult;
-
-	/* Boost the damage */
-	tdam *= tmul;
 
 	/* Base range XXX XXX */
 	tdis = 10 + 5 * tmul;
@@ -839,6 +771,9 @@ void do_cmd_fire(void)
 
 			int visible = m_ptr->ml;
 
+			int ammo_mult = tot_dam_aux(i_ptr, m_ptr);
+			int shoot_mult = tot_dam_aux(j_ptr, m_ptr);
+
 			/* Note the collision */
 			hit_body = TRUE;
 
@@ -886,8 +821,10 @@ void do_cmd_fire(void)
 					if (m_ptr->ml) health_track(cave_m_idx[y][x]);
 				}
 
-				/* Apply special damage XXX XXX XXX */
-				tdam = tot_dam_aux(i_ptr, tdam, m_ptr);
+				/* Apply damage: multiplier, slays, criticals, bonuses */
+				tdam *= MAX(ammo_mult, shoot_mult);
+				tdam += i_ptr->to_d + j_ptr->to_d;
+				tdam *= tmul;
 				tdam = critical_shot(i_ptr->weight, i_ptr->to_h, tdam);
 
 				/* No negative damage */
@@ -1173,7 +1110,7 @@ void do_cmd_throw(void)
 				}
 
 				/* Apply special damage XXX XXX XXX */
-				tdam = tot_dam_aux(i_ptr, tdam, m_ptr);
+				tdam *= tot_dam_aux(i_ptr, m_ptr);
 				tdam = critical_shot(i_ptr->weight, i_ptr->to_h, tdam);
 
 				/* No negative damage */

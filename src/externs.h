@@ -260,6 +260,7 @@ extern byte squelch_level[SQUELCH_BYTES];
 
 /* attack.c */
 extern int breakage_chance(const object_type *o_ptr);
+extern bool test_hit(int chance, int ac, int vis);
 extern void py_attack(int y, int x);
 extern void do_cmd_fire(void);
 extern void do_cmd_throw(void);
@@ -302,10 +303,6 @@ extern void disturb(int stop_search, int unused_flag);
 extern bool is_quest(int level);
 
 /* cmd1.c */
-extern bool test_hit(int chance, int ac, int vis);
-extern int critical_shot(int weight, int plus, int dam);
-extern int critical_norm(int weight, int plus, int dam);
-extern int tot_dam_aux(const object_type *o_ptr, int tdam, const monster_type *m_ptr);
 extern void search(void);
 extern byte py_pickup(int pickup);
 extern void hit_trap(int y, int x);
