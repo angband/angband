@@ -207,16 +207,15 @@ D:The treasure of Tulkas, most fleet and wrathful of the Valar.
 
 N:10:of Power 'Narya'
 I:45:34:1
-W:70:60:2:100000
+W:70:30:2:100000
 P:0:0d0:6:6:0
 # F: DRAIN_MANA | 
 F:STR | INT | WIS | DEX | CON | CHR | SPEED | HIDE_TYPE | 
 F:ACTIVATE | FREE_ACT | SEE_INVIS | 
-F:SLOW_DIGEST | REGEN | 
-F:SUST_STR | SUST_CON | SUST_WIS | SUST_CHR | 
-F:IM_FIRE | RES_FIRE | RES_NETHR | RES_FEAR |
+F:SLOW_DIGEST | REGEN | TELEPATHY |
+F:SUST_STR | SUST_DEX | IM_FIRE | RES_FIRE 
 F:INSTA_ART
-A:FIRE_BALL:20+d20
+A:PROTEVIL:200+4d50
 M:Narya glows deep red...
 D:The Ring of Fire, set with a ruby that glows like flame.  Narya is one 
 D:of the three Rings of Power created by the Elves and hidden by them from 
@@ -227,16 +226,15 @@ D:Sauron.
 
 N:11:of Power 'Nenya'
 I:45:35:2
-W:80:70:2:200000
+W:80:40:2:200000
 P:0:0d0:8:8:0
-# F: DRAIN_MANA | 
 F:STR | INT | WIS | DEX | CON | CHR | SPEED | HIDE_TYPE | 
 F:ACTIVATE | HOLD_LIFE | FREE_ACT | SEE_INVIS | 
-F:FEATHER | REGEN | 
-F:SUST_INT | SUST_WIS | SUST_CHR | 
+F:FEATHER | REGEN
+F:SUST_INT | SUST_WIS |
 F:IM_COLD | RES_COLD | RES_BLIND | TELEPATHY | 
 F:INSTA_ART
-A:COLD_BALL2:20+d20
+A:RESTORE_LIFE:200+2d50
 M:Nenya glows bright white...
 D:The Ring of Adamant, with a pure white stone as centerpiece.  Nenya is one 
 D:of the three Rings of Power created by the Elves and hidden by them from 
@@ -252,11 +250,11 @@ P:0:0d0:10:10:0
 # F: DRAIN_MANA | 
 F:STR | INT | WIS | DEX | CON | CHR | SPEED | HIDE_TYPE | 
 F:ACTIVATE | HOLD_LIFE | FREE_ACT | SEE_INVIS | 
-F:FEATHER | SLOW_DIGEST | REGEN | 
-F:SUST_STR | SUST_DEX | SUST_CON | 
-F:IM_ELEC | RES_ELEC | RES_POIS | RES_DISEN | 
+F:FEATHER | SLOW_DIGEST | REGEN | TELEPATHY |
+F:SUST_STR | SUST_DEX | SUST_INT | SUST_WIS |
+F:IM_ELEC | RES_ELEC | RES_POIS | RES_DARK | 
 F:INSTA_ART
-A:ELEC_BALL2:20+d20
+A:HEAL2:200+2d50
 M:Vilya glows deep blue...
 D:The Ring of Sapphire, with clear blue gems that shine like stars, 
 D:glittering untouchable despite all that Morgoth ever wrought.  Vilya is 
@@ -273,13 +271,13 @@ P:0:0d0:15:15:0
 # F: DRAIN_MANA | DRAIN_HP | 
 F:STR | INT | WIS | DEX | CON | CHR | SPEED | HIDE_TYPE | 
 F:ACTIVATE | LIGHT_CURSE | HEAVY_CURSE | PERMA_CURSE |
-F:AGGRAVATE | DRAIN_EXP | SEE_INVIS | REGEN |
-F:IM_FIRE | IM_COLD | IM_ELEC | IM_ACID | RES_POIS | 
-F:RES_NETHR | TELEPATHY | RES_BLIND | RES_DISEN | RES_FEAR | 
+F:AGGRAVATE | DRAIN_EXP | SEE_INVIS | REGEN | TELEPATHY |
+F:IM_FIRE | IM_COLD | IM_ELEC | IM_ACID |
+F:RES_FIRE | RES_COLD | RES_ELEC | RES_ACID | RES_DARK |
 F:SUST_STR | SUST_DEX | SUST_CON | 
 F:SUST_INT | SUST_WIS | SUST_CHR | 
 F:INSTA_ART
-A:BIZARRE:30+d30
+A:BIZARRE:450+9d50
 M:The One Ring glows intensely black...
 D:"One Ring to rule them all, One Ring to find them, One Ring to bring 
 D:them all and in the darkness bind them."  Made of massive gold, and 
@@ -335,7 +333,7 @@ F:RES_ACID | RES_FIRE | RES_COLD |
 F:RES_POIS | RES_LITE | RES_DARK | 
 F:LITE | SEE_INVIS | AGGRAVATE | 
 F:ACTIVATE
-A:STAR_BALL:50
+A:STAR_BALL:1000
 M:Your Dragon Scale Mail is surrounded by lightning!
 D:A massive suit of heavy dragon scales deeply saturated with many colors.  
 D:It throbs with angry energies, and you feel the raw elemental might of 
