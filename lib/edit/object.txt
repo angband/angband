@@ -1819,7 +1819,7 @@ N:229:Intellect
 G:!:d
 I:75:17:0
 W:20:0:4:0
-A:33:5 to 15
+A:33:10 to 20
 F:EASY_KNOW
 E:INTELLECT
 
@@ -1843,7 +1843,7 @@ N:232:Contemplation
 G:!:d
 I:75:18:0
 W:20:0:4:0
-A:33:5 to 15
+A:33:10 to 20
 F:EASY_KNOW
 E:CONTEMPLATION
 
@@ -1867,7 +1867,7 @@ N:235:Pleasing
 G:!:d
 I:75:21:0
 W:20:0:4:0
-A:33:1 to 15
+A:33:10 to 20
 F:EASY_KNOW
 E:PLEASING
 
@@ -1891,7 +1891,7 @@ N:238:Nimbleness
 G:!:d
 I:75:19:0
 W:5:0:4:0
-A:33:1 to 10
+A:33:10 to 20
 F:EASY_KNOW
 E:NIMBLENESS
 
@@ -1899,7 +1899,7 @@ N:239:Toughness
 G:!:d
 I:75:20:0
 W:10:0:4:0
-A:33:1 to 10
+A:33:10 to 20
 F:EASY_KNOW
 E:TOUGHNESS
 
