@@ -22,6 +22,7 @@ LIBS = Gdi32.lib User32.lib Comdlg32.lib Shell32.lib Winmm.lib
 CFLAGS = $(CFLAGS) /O2 /Os /Gs
 !else
 CFLAGS = $(CFLAGS) /Od /Zi
+LFLAGS = $(LFLAGS) /debug
 !endif
 
 
