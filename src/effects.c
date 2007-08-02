@@ -401,43 +401,43 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 
 		case EF_BRAWN:
 		{
+			if (!do_dec_stat(A_INT, TRUE)) return FALSE;
 			if (do_inc_stat(A_STR)) *ident = TRUE;
-			if (dec_stat(A_INT, 10, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_INTELLECT:
 		{
+			if (!do_dec_stat(A_CON, TRUE)) return FALSE;
 			if (do_inc_stat(A_INT)) *ident = TRUE;
-			if (do_dec_stat(A_CON, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_CONTEMPLATION:
 		{
+			if (!do_dec_stat(A_DEX, TRUE)) return FALSE;
 			if (do_inc_stat(A_WIS)) *ident = TRUE;
-			if (do_dec_stat(A_DEX, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_TOUGHNESS:
 		{
+			if (!do_dec_stat(A_CHR, TRUE)) return FALSE;
 			if (do_inc_stat(A_CON)) *ident = TRUE;
-			if (do_dec_stat(A_CHR, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_NIMBLENESS:
 		{
+			if (!do_dec_stat(A_STR, TRUE)) return FALSE;
 			if (do_inc_stat(A_DEX)) *ident = TRUE;
-			if (do_dec_stat(A_STR, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_PLEASING:
 		{
+			if (!do_dec_stat(A_WIS, TRUE)) return FALSE;
 			if (do_inc_stat(A_CHR)) *ident = TRUE;
-			if (do_dec_stat(A_WIS, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
