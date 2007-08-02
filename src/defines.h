@@ -1358,13 +1358,9 @@ enum
 #define SV_FOOD_RESTORE_CON		18
 #define SV_FOOD_RESTORING		19
 /* many missing mushrooms */
-#define SV_FOOD_BISCUIT			32
-#define SV_FOOD_JERKY			33
 #define SV_FOOD_RATION			35
 #define SV_FOOD_SLIME_MOLD		36
 #define SV_FOOD_WAYBREAD		37
-#define SV_FOOD_PINT_OF_ALE		38
-#define SV_FOOD_PINT_OF_WINE	39
 
 /* The "sval" codes for TV_GOLD */
 #define SV_COPPER1                        1
