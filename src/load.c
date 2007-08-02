@@ -170,7 +170,7 @@ void convert_kind(byte *tval, byte *sval)
 		/* Some staffs removed, replace with rods */
 		case TV_STAFF:
 		{
-			int new_sval = 0;
+			int new_sval = *sval;
 
 			/* Treasure location */
 			if (*sval == 10) new_sval = 28;
