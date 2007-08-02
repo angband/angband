@@ -1611,14 +1611,14 @@ int get_panel(int oid, data_panel *panel, size_t size)
 		int div;
 	} skills[] =
 	{
-		{ "Saving Throw", SKILL_SAV, 6 },
-		{ "Stealth", SKILL_STL, 1 },
-		{ "Fighting", SKILL_THN, 12 },
-		{ "Shooting", SKILL_THB, 12 },
-		{ "Disarming", SKILL_DIS, 8 },
-		{ "Magic Device", SKILL_DEV, 6 },
-		{ "Perception", SKILL_FOS, 6 },
-		{ "Searching", SKILL_SRH, 6 }
+		{ "Saving Throw", SKILL_SAVE, 6 },
+		{ "Stealth", SKILL_STEALTH, 1 },
+		{ "Fighting", SKILL_TO_HIT_MELEE, 12 },
+		{ "Shooting", SKILL_TO_HIT_BOW, 12 },
+		{ "Disarming", SKILL_DISARM, 8 },
+		{ "Magic Device", SKILL_DEVICE, 6 },
+		{ "Perception", SKILL_SEARCH_FREQUENCY, 6 },
+		{ "Searching", SKILL_SEARCH, 6 }
 	};
 	int i;
 	assert(N_ELEMENTS(skills) == boundaries[4].page_rows);

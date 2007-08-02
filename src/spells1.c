@@ -1390,7 +1390,7 @@ static void apply_nexus(const monster_type *m_ptr)
 
 		case 6:
 		{
-			if (rand_int(100) < p_ptr->skills[SKILL_SAV])
+			if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 				break;
@@ -1403,7 +1403,7 @@ static void apply_nexus(const monster_type *m_ptr)
 
 		case 7:
 		{
-			if (rand_int(100) < p_ptr->skills[SKILL_SAV])
+			if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 				break;

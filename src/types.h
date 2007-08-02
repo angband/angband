@@ -701,14 +701,7 @@ struct player_race
 
 	s16b r_adj[A_MAX];	/* Racial stat bonuses */
 
-	s16b r_dis;			/* disarming */
-	s16b r_dev;			/* magic devices */
-	s16b r_sav;			/* saving throw */
-	s16b r_stl;			/* stealth */
-	s16b r_srh;			/* search ability */
-	s16b r_fos;			/* search frequency */
-	s16b r_thn;			/* combat (normal) */
-	s16b r_thb;			/* combat (shooting) */
+	s16b r_skills[SKILL_MAX_NO_RACE_CLASS];	/* racial skills */
 
 	byte r_mhp;			/* Race hit-dice modifier */
 	byte r_exp;			/* Race experience factor */
@@ -761,23 +754,8 @@ struct player_class
 
 	s16b c_adj[A_MAX];	/* Class stat modifier */
 
-	s16b c_dis;			/* class disarming */
-	s16b c_dev;			/* class magic devices */
-	s16b c_sav;			/* class saving throws */
-	s16b c_stl;			/* class stealth */
-	s16b c_srh;			/* class searching ability */
-	s16b c_fos;			/* class searching frequency */
-	s16b c_thn;			/* class to hit (normal) */
-	s16b c_thb;			/* class to hit (bows) */
-
-	s16b x_dis;			/* extra disarming */
-	s16b x_dev;			/* extra magic devices */
-	s16b x_sav;			/* extra saving throws */
-	s16b x_stl;			/* extra stealth */
-	s16b x_srh;			/* extra searching ability */
-	s16b x_fos;			/* extra searching frequency */
-	s16b x_thn;			/* extra to hit (normal) */
-	s16b x_thb;			/* extra to hit (bows) */
+	s16b c_skills[SKILL_MAX_NO_RACE_CLASS];	/* class skills */
+	s16b x_skills[SKILL_MAX_NO_RACE_CLASS];	/* extra skills */
 
 	s16b c_mhp;			/* Class hit-dice adjustment */
 	s16b c_exp;			/* Class experience factor */
@@ -1138,4 +1116,5 @@ struct autoinscription
 	s16b kind_idx;
 	s16b inscription_idx;
 };
+
 

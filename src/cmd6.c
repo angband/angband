@@ -129,7 +129,7 @@ static int check_devices(object_type *o_ptr)
 		lev = k_info[o_ptr->k_idx].level;
 
 	/* Base chance of success */
-	chance = p_ptr->skills[SKILL_DEV];
+	chance = p_ptr->skills[SKILL_DEVICE];
 
 	/* Confusion hurts skill */
 	if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_AMNESIA])

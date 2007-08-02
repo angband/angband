@@ -2290,6 +2290,30 @@ static errr grab_one_racial_flag(player_race *pr_ptr, cptr what)
 	return (PARSE_ERROR_GENERIC);
 }
 
+/*
+ * Helper function for reading a list of skills
+ */
+static bool parse_skills(s16b *skills_array, const char *buf)
+{
+	int dis, dev, sav, stl, srh, fos, thn, thb;
+
+	/* Scan for the values */
+	if (8 != sscanf(buf, "%d:%d:%d:%d:%d:%d:%d:%d",
+			            &dis, &dev, &sav, &stl,
+			            &srh, &fos, &thn, &thb)) return FALSE;
+
+	/* Save the values */
+	skills_array[SKILL_DISARM] = dis;
+	skills_array[SKILL_DEVICE] = dev;
+	skills_array[SKILL_SAVE] = sav;
+	skills_array[SKILL_STEALTH] = stl;
+	skills_array[SKILL_SEARCH] = srh;
+	skills_array[SKILL_SEARCH_FREQUENCY] = fos;
+	skills_array[SKILL_TO_HIT_MELEE] = thn;
+	skills_array[SKILL_TO_HIT_BOW] = thb;
+
+	return TRUE;
+}
 
 
 /*
@@ -2377,25 +2401,14 @@ errr parse_p_info(char *buf, header *head)
 	/* Process 'R' for "Racial Skills" (one line only) */
 	else if (buf[0] == 'R')
 	{
-		int dis, dev, sav, stl, srh, fos, thn, thb;
-
 		/* There better be a current pr_ptr */
 		if (!pr_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
-		/* Scan for the values */
-		if (8 != sscanf(buf+2, "%d:%d:%d:%d:%d:%d:%d:%d",
-			            &dis, &dev, &sav, &stl,
-			            &srh, &fos, &thn, &thb)) return (PARSE_ERROR_GENERIC);
+		/* Verify text */
+		if (!buf[1] || !buf[2]) return (PARSE_ERROR_GENERIC);
 
-		/* Save the values */
-		pr_ptr->r_dis = dis;
-		pr_ptr->r_dev = dev;
-		pr_ptr->r_sav = sav;
-		pr_ptr->r_stl = stl;
-		pr_ptr->r_srh = srh;
-		pr_ptr->r_fos = fos;
-		pr_ptr->r_thn = thn;
-		pr_ptr->r_thb = thb;
+		/* Scan and save the values */
+		if (!parse_skills(pr_ptr->r_skills, buf+2)) return (PARSE_ERROR_GENERIC);
 	}
 
 	/* Process 'X' for "Extra Info" (one line only) */
@@ -2641,49 +2654,27 @@ errr parse_c_info(char *buf, header *head)
 	/* Process 'C' for "Class Skills" (one line only) */
 	else if (buf[0] == 'C')
 	{
-		int dis, dev, sav, stl, srh, fos, thn, thb;
-
 		/* There better be a current pc_ptr */
 		if (!pc_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
-		/* Scan for the values */
-		if (8 != sscanf(buf+2, "%d:%d:%d:%d:%d:%d:%d:%d",
-			            &dis, &dev, &sav, &stl,
-			            &srh, &fos, &thn, &thb)) return (PARSE_ERROR_GENERIC);
+		/* Verify text */
+		if (!buf[1] || !buf[2]) return (PARSE_ERROR_GENERIC);
 
-		/* Save the values */
-		pc_ptr->c_dis = dis;
-		pc_ptr->c_dev = dev;
-		pc_ptr->c_sav = sav;
-		pc_ptr->c_stl = stl;
-		pc_ptr->c_srh = srh;
-		pc_ptr->c_fos = fos;
-		pc_ptr->c_thn = thn;
-		pc_ptr->c_thb = thb;
+		/* Scan and save the values */
+		if (!parse_skills(pc_ptr->c_skills, buf+2)) return (PARSE_ERROR_GENERIC);
 	}
 
 	/* Process 'X' for "Extra Skills" (one line only) */
 	else if (buf[0] == 'X')
 	{
-		int dis, dev, sav, stl, srh, fos, thn, thb;
-
 		/* There better be a current pc_ptr */
 		if (!pc_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
-		/* Scan for the values */
-		if (8 != sscanf(buf+2, "%d:%d:%d:%d:%d:%d:%d:%d",
-			            &dis, &dev, &sav, &stl,
-			            &srh, &fos, &thn, &thb)) return (PARSE_ERROR_GENERIC);
+		/* Verify text */
+		if (!buf[1] || !buf[2]) return (PARSE_ERROR_GENERIC);
 
-		/* Save the values */
-		pc_ptr->x_dis = dis;
-		pc_ptr->x_dev = dev;
-		pc_ptr->x_sav = sav;
-		pc_ptr->x_stl = stl;
-		pc_ptr->x_srh = srh;
-		pc_ptr->x_fos = fos;
-		pc_ptr->x_thn = thn;
-		pc_ptr->x_thb = thb;
+		/* Scan and save the values */
+		if (!parse_skills(pc_ptr->x_skills, buf+2)) return (PARSE_ERROR_GENERIC);
 	}
 
 	/* Process 'I' for "Info" (one line only) */

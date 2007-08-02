@@ -463,7 +463,7 @@ void py_attack(int y, int x)
 
 	/* Calculate the "attack quality" */
 	bonus = p_ptr->to_h + o_ptr->to_h;
-	chance = (p_ptr->skills[SKILL_THN] + (bonus * BTH_PLUS_ADJ));
+	chance = (p_ptr->skills[SKILL_TO_HIT_MELEE] + (bonus * BTH_PLUS_ADJ));
 
 
 	/* Attack once for each legal blow */
@@ -686,7 +686,7 @@ void do_cmd_fire(void)
 
 	/* Actually "fire" the object */
 	bonus = (p_ptr->to_h + i_ptr->to_h + j_ptr->to_h);
-	chance = (p_ptr->skills[SKILL_THB] + (bonus * BTH_PLUS_ADJ));
+	chance = (p_ptr->skills[SKILL_TO_HIT_BOW] + (bonus * BTH_PLUS_ADJ));
 
 	/* Base damage from thrown object plus launcher bonus */
 	tdam = damroll(i_ptr->dd, i_ptr->ds);
@@ -986,7 +986,7 @@ void do_cmd_throw(void)
 	tdam = damroll(i_ptr->dd, i_ptr->ds) + i_ptr->to_d;
 
 	/* Chance of hitting */
-	chance = (p_ptr->skills[SKILL_THT] + (p_ptr->to_h * BTH_PLUS_ADJ));
+	chance = (p_ptr->skills[SKILL_TO_HIT_THROW] + (p_ptr->to_h * BTH_PLUS_ADJ));
 
 
 	/* Take a turn */

@@ -28,7 +28,7 @@ void search(void)
 
 
 	/* Start with base search ability */
-	chance = p_ptr->skills[SKILL_SRH];
+	chance = p_ptr->skills[SKILL_SEARCH];
 
 	/* Penalize various conditions */
 	if (p_ptr->timed[TMD_BLIND] || no_lite()) chance = chance / 10;
@@ -989,8 +989,8 @@ void move_player(int dir)
 
 
 		/* Spontaneous Searching */
-		if ((p_ptr->skills[SKILL_FOS] >= 50) ||
-		    (0 == rand_int(50 - p_ptr->skills[SKILL_FOS])))
+		if ((p_ptr->skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
+		    (0 == rand_int(50 - p_ptr->skills[SKILL_SEARCH_FREQUENCY])))
 		{
 			search();
 		}

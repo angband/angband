@@ -1374,7 +1374,7 @@ bool make_attack_spell(int m_idx)
 				msg_format("%^s gazes deep into your eyes.", m_name);
 			}
 
-			if (rand_int(100) < p_ptr->skills[SKILL_SAV])
+			if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1403,7 +1403,7 @@ bool make_attack_spell(int m_idx)
 			{
 				msg_format("%^s looks deep into your eyes.", m_name);
 			}
-			if (rand_int(100) < p_ptr->skills[SKILL_SAV])
+			if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1435,7 +1435,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s points at you and curses.", m_name);
-			if (rand_int(100) < p_ptr->skills[SKILL_SAV])
+			if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1453,7 +1453,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s points at you and curses horribly.", m_name);
-			if (rand_int(100) < p_ptr->skills[SKILL_SAV])
+			if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1471,7 +1471,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles loudly.", m_name);
 			else msg_format("%^s points at you, incanting terribly!", m_name);
-			if (rand_int(100) < p_ptr->skills[SKILL_SAV])
+			if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1489,7 +1489,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg_format("%^s screams the word 'DIE!'", m_name);
 			else msg_format("%^s points at you, screaming the word DIE!", m_name);
-			if (rand_int(100) < p_ptr->skills[SKILL_SAV])
+			if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1636,7 +1636,7 @@ bool make_attack_spell(int m_idx)
 			{
 				msg_print("You refuse to be frightened.");
 			}
-			else if (rand_int(100) < p_ptr->skills[SKILL_SAV])
+			else if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You refuse to be frightened.");
 			}
@@ -1659,7 +1659,7 @@ bool make_attack_spell(int m_idx)
 			{
 				msg_print("You are unaffected!");
 			}
-			else if (rand_int(100) < p_ptr->skills[SKILL_SAV])
+			else if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1682,7 +1682,7 @@ bool make_attack_spell(int m_idx)
 			{
 				msg_print("You disbelieve the feeble spell.");
 			}
-			else if (rand_int(100) < p_ptr->skills[SKILL_SAV])
+			else if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You disbelieve the feeble spell.");
 			}
@@ -1704,7 +1704,7 @@ bool make_attack_spell(int m_idx)
 			{
 				msg_print("You are unaffected!");
 			}
-			else if (rand_int(100) < p_ptr->skills[SKILL_SAV])
+			else if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1727,7 +1727,7 @@ bool make_attack_spell(int m_idx)
 			{
 				msg_print("You are unaffected!");
 			}
-			else if (rand_int(100) < p_ptr->skills[SKILL_SAV])
+			else if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_format("You resist the effects!");
 			}
@@ -1909,7 +1909,7 @@ bool make_attack_spell(int m_idx)
 			{
 				msg_print("You are unaffected!");
 			}
-			else if (rand_int(100) < p_ptr->skills[SKILL_SAV])
+			else if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1957,7 +1957,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			msg_format("%^s tries to blank your mind.", m_name);
 
-			if (rand_int(100) < p_ptr->skills[SKILL_SAV])
+			if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
 				msg_print("You resist the effects!");
 			else
 				inc_timed(TMD_AMNESIA, 3);
