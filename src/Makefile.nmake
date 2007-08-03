@@ -46,4 +46,4 @@ $(EXE) : $(OBJS) $(RES)
 	copy $** $@
 
 clean:
-	del $(OBJS) $(EXE)
+	del $(OBJS) $(RES) $(EXE)
