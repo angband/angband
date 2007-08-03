@@ -2939,21 +2939,23 @@ static bool get_moves(int m_idx, int mm[5])
 	    (r_ptr->flags1 & RF1_FRIENDS) && (r_ptr->flags3 & RF3_ANIMAL) &&
 	    !((r_ptr->flags2 & (RF2_PASS_WALL)) || (r_ptr->flags2 & (RF2_KILL_WALL))))
 	{
-		int i, room = 0;
+		int i, open = 0;
 
-		/* Count room grids next to player */
+		/* Count empty grids next to player */
 		for (i = 0; i < 8; i++)
 		{
-			/* Check grid */
-			if (cave_info[py + ddy_ddd[i]][px + ddx_ddd[i]] & (CAVE_ROOM))
+			/* Check grid around the player for room interior (room walls count)
+			   or other empty space */
+			if ((cave_feat[py + ddy_ddd[i]][px + ddx_ddd[i]] <= FEAT_MORE) ||
+				(cave_info[py + ddy_ddd[i]][px + ddx_ddd[i]] & (CAVE_ROOM)))
 			{
-				/* One more room grid */
-				room++;
+				/* One more open grid */
+				open++;
 			}
 		}
 
-		/* Not in a room and strong player */
-		if ((room < 8) && (p_ptr->chp > p_ptr->mhp / 2))
+		/* Not in an empty space and strong player */
+		if ((open < 7) && (p_ptr->chp > p_ptr->mhp / 2))
 		{
 			/* Find hiding place */
 			if (find_hiding(m_idx, &y, &x)) done = TRUE;
