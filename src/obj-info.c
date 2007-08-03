@@ -763,12 +763,20 @@ static bool screen_out_head(const object_type *o_ptr)
 	/* Display the known object description */
 	else if (object_aware_p(o_ptr) || object_known_p(o_ptr))
 	{
+		bool did_desc = FALSE;
+
 		if (k_info[o_ptr->k_idx].text)
+		{
 			p_text_out(k_text + k_info[o_ptr->k_idx].text);
+			did_desc = TRUE;
+		}
 
 		/* Display an additional ego-item description */
 		if (o_ptr->name2 && object_known_p(o_ptr) && e_info[o_ptr->name2].text)
+		{
+			if (did_desc) p_text_out("  ");
 			p_text_out(e_text + e_info[o_ptr->name2].text);
+		}
 	}
 
 	else
