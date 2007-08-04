@@ -1231,7 +1231,7 @@ static errr Infofnt_nuke(void)
 	if (ifnt->name)
 	{
 		/* Free the name */
-		string_free(ifnt->name);
+		string_free((void *) ifnt->name);
 	}
 
 	/* Nuke info if needed */
@@ -2414,7 +2414,7 @@ static errr term_data_init(term_data *td, int i)
 	}
 
 	/* Prepare the standard font */
-	MAKE(td->fnt, infofnt);
+	td->fnt = ZNEW(infofnt);
 	Infofnt_set(td->fnt);
 	if (Infofnt_init_data(font)) quit_fmt("Couldn't load the requested font. (%s)", font);
 
@@ -2436,7 +2436,7 @@ static errr term_data_init(term_data *td, int i)
 	hgt = rows * td->tile_hgt + (oy + oy);
 
 	/* Create a top-window */
-	MAKE(td->win, infowin);
+	td->win = ZNEW(infowin);
 	Infowin_set(td->win);
 	Infowin_init_top(x, y, wid, hgt, 0,
 	                 Metadpy->fg, Metadpy->bg);
@@ -2578,12 +2578,12 @@ static void hook_quit(cptr str)
 		/* Free fonts */
 		Infofnt_set(td->fnt);
 		(void)Infofnt_nuke();
-		KILL(td->fnt);
+		FREE(td->fnt);
 
 		/* Free window */
 		Infowin_set(td->win);
 		(void)Infowin_nuke();
-		KILL(td->win);
+		FREE(td->win);
 
 		/* Free term */
 		(void)term_nuke(t);
@@ -2592,13 +2592,13 @@ static void hook_quit(cptr str)
 	/* Free colors */
 	Infoclr_set(xor);
 	(void)Infoclr_nuke();
-	KILL(xor);
+	FREE(xor);
 
 	for (i = 0; i < MAX_COLORS; ++i)
 	{
 		Infoclr_set(clr[i]);
 		(void)Infoclr_nuke();
-		KILL(clr[i]);
+		FREE(clr[i]);
 	}
 
 	/* Close link to display */
@@ -2742,7 +2742,7 @@ errr init_x11(int argc, char **argv)
 	term_windows_open = num_term;
 
 	/* Prepare cursor color */
-	MAKE(xor, infoclr);
+	xor = ZNEW(infoclr);
 	Infoclr_set(xor);
 	Infoclr_init_ppn(Metadpy->fg, Metadpy->bg, "xor", 0);
 
@@ -2752,7 +2752,7 @@ errr init_x11(int argc, char **argv)
 	{
 		Pixell pixel;
 
-		MAKE(clr[i], infoclr);
+		clr[i] = ZNEW(infoclr);
 
 		Infoclr_set(clr[i]);
 
