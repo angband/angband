@@ -522,9 +522,6 @@ static errr sdl_FontCreate(sdl_Font *font, cptr fontname, SDL_Surface *surface)
 	
 	TTF_Font *ttf_font;
 	
-	/* Free any old data */
-	if (font->data) sdl_FontFree(font);
-	
 	/* Our temporary glyph will be rendered in white */
 	SDL_Color white = { 255, 255, 255, 0 };
 	
@@ -533,6 +530,9 @@ static errr sdl_FontCreate(sdl_Font *font, cptr fontname, SDL_Surface *surface)
 	/* The first pixel data is stored immediately after the character indexes */
 	/* But we need an extra space to store the total pixel count */
 	int num_pixels = NUM_GLYPHS + 1;
+	
+	/* Free any old data */
+	if (font->data) sdl_FontFree(font);
 	
 	/* Build the path */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_FONT, fontname);
@@ -1251,7 +1251,7 @@ static void sdl_BlitAll(void)
 	sdl_Window *window = &StatusBar;
 	int i;
 	Uint32 colour = SDL_MapRGB(AppWin->format, 160, 160, 60);
-	//Uint32 ccolour = SDL_MapRGB(AppWin->format, 160, 40, 40);
+	/* int32 ccolour = SDL_MapRGB(AppWin->format, 160, 40, 40); */
 	SDL_FillRect(AppWin, NULL, back_colour);
 	
 	for (i = 0; i < ANGBAND_TERM_MAX; i++)
@@ -1270,7 +1270,7 @@ static void sdl_BlitAll(void)
 			SizingSpot.h = 10;
 			SizingSpot.x = win->left + win->width - 10;
 			SizingSpot.y = win->top + win->height - 10;
-			//SDL_FillRect(AppWin, &SizingSpot, ccolour);
+			/* SDL_FillRect(AppWin, &SizingSpot, ccolour); */
 			
 			if (Sizing)
 			{
@@ -1383,13 +1383,14 @@ static void SelectTerm(sdl_Button *sender)
 static void TermActivate(sdl_Button *sender)
 {
 	int i, maxl = 0;
+	int width = maxl * StatusBar.font.width + 20;
+	int height = ANGBAND_TERM_MAX * (StatusBar.font.height + 1);
+
 	for (i = 0; i < ANGBAND_TERM_MAX; i++)
 	{
 		int l = strlen(angband_term_name[i]); 
 		if (l > maxl) maxl = l;
 	}
-	int width = maxl * StatusBar.font.width + 20;
-	int height = ANGBAND_TERM_MAX * (StatusBar.font.height + 1);
 	
 	sdl_WindowInit(&PopUp, width, height, AppWin, StatusBar.font.name);
 	PopUp.left = sender->pos.x;
@@ -1470,13 +1471,14 @@ static void SelectFont(sdl_Button *sender)
 static void FontActivate(sdl_Button *sender)
 {
 	int i, maxl = 0;
+	int width = maxl * StatusBar.font.width + 20;
+	int height = num_fonts * (StatusBar.font.height + 1);
+
 	for (i = 0; i < num_fonts; i++)
 	{
 		int l = strlen(FontList[i]); 
 		if (l > maxl) maxl = l;
 	}
-	int width = maxl * StatusBar.font.width + 20;
-	int height = num_fonts * (StatusBar.font.height + 1);
 	
 	sdl_WindowInit(&PopUp, width, height, AppWin, StatusBar.font.name);
 	PopUp.left = sender->pos.x;
@@ -2271,7 +2273,7 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 					/* Let's get moving */
 					Moving = TRUE;
 					
-					//BringToTop(idx);
+					/* BringToTop(idx); */
 					
 					/* Remember where we started */
 					Movingx = mouse.x - win->left;
@@ -2325,11 +2327,12 @@ static void sdl_HandleMouseEvent(SDL_Event *event)
 				/* See if it's inside a term_window */
 				else if (idx != -1)
 				{
+					int x, y;
 					win = &windows[idx];
 					
 					/* Calculate the 'cell' coords */
-					int x = (mouse.x - win->left - win->border) / win->tile_wid;
-					int y = (mouse.y - win->top - win->title_height) / win->tile_hgt;
+					x = (mouse.x - win->left - win->border) / win->tile_wid;
+					y = (mouse.y - win->top - win->title_height) / win->tile_hgt;
 					
 					/* Bounds check */
 					if ((x >= 0) && (y >= 0) && (x < win->cols) && (y < win->rows))
@@ -2419,7 +2422,7 @@ static void sdl_keypress(SDL_keysym keysym)
 	/* Handle print screen */
 	if (key_sym == SDLK_PRINT)
 	{
-		//sdl_print_screen();
+		/* sdl_print_screen();*/
 		return;
 	}
 	
@@ -2816,7 +2819,7 @@ static errr Term_wipe_sdl(int col, int row, int n)
 	
 	SDL_Rect rc;
 	
-	//if (use_bigtile) n*=2;
+	/*if (use_bigtile) n*=2;*/
 	/* Build the area to black out */
 	rc.x = col * win->tile_wid;
 	rc.y = row * win->tile_hgt;
@@ -3108,8 +3111,9 @@ static void init_morewindows(void)
 {
 	char buf[128];
 	sdl_Button *button;
-	popped = FALSE;
 	int x;
+
+	popped = FALSE;
 	
 	/* Make sure */
 	sdl_WindowFree(&PopUp);
