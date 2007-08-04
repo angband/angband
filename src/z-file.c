@@ -158,7 +158,13 @@ errr my_fgets(FILE *fff, char *buf, size_t n)
 	u16b i = 0;
 	char *s = buf;
 	int len;
+	
+#ifdef MACH_O_CARBON
+	
+	/* For the \r vs. \r\n vs \n handling code below */
+	bool seen_cr = FALSE;
 
+#endif /* MACH_O_CARBON */
 
 	/* Paranoia */
 	if (n <= 0) return (1);
@@ -202,8 +208,26 @@ errr my_fgets(FILE *fff, char *buf, size_t n)
 		 * Be nice to the Macintosh, where a file can have Mac or Unix
 		 * end of line, especially since the introduction of OS X.
 		 * MPW tools were also very tolerant to the Unix EOL.
+		 *
+		 * Watch for \r; when found, set flag and advance.
+		 * If the next character isn't \n, rewind the file one character 
+		 * and act like we found \n anyway to end the line.
 		 */
-		if (c == '\r') c = '\n';
+		if (c == '\r') 
+		{
+			seen_cr = TRUE;
+			continue;
+		}
+		else
+			seen_cr = FALSE;
+			
+		if (seen_cr && c != '\n')
+		{
+			fseek(fff, -1, SEEK_CUR);
+			
+			/* Put a fake newline in to end the line */
+			c = '\n';
+		}
 
 #endif /* MACH_O_CARBON */
 
