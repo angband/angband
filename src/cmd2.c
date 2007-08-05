@@ -206,9 +206,6 @@ static void chest_death(int y, int x, s16b o_idx)
 	/* Opening a chest */
 	opening_chest = TRUE;
 
-	/* Determine the "value" of the items */
-	object_level = ABS(o_ptr->pval) + 10;
-
 	/* Drop some objects (non-chests) */
 	for (; number > 0; --number)
 	{
@@ -235,9 +232,6 @@ static void chest_death(int y, int x, s16b o_idx)
 		/* Drop it in the dungeon */
 		drop_near(i_ptr, -1, y, x);
 	}
-
-	/* Reset the object level */
-	object_level = p_ptr->depth;
 
 	/* No longer opening a chest */
 	opening_chest = FALSE;
