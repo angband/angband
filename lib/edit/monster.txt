@@ -105,7 +105,9 @@ N:0:<player>
 G:@:w
 
 
-##### Town monsters #####
+##### Monster races proper #####
+
+### Dungeon level 0 ###
 
 N:1:Filthy street urchin
 G:t:D
@@ -147,8 +149,7 @@ F:FORCE_MAXHP
 F:ONLY_ITEM | DROP_90 | DROP_GOOD
 F:OPEN_DOOR | BASH_DOOR
 F:NO_CONF | NO_SLEEP
-D:He's lost his dogs.  He's had his mushrooms stolen.  He's not a happy
-D: hobbit!
+D:He's lost his dogs.  He's had his mushrooms stolen.  He's not a happy hobbit!
 
 N:5:Blubbering idiot
 G:t:W
@@ -257,8 +258,7 @@ F:RAND_50 | DROP_90
 F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR
 D:He doesn't take to strangers kindly.
 
-
-##### Normal monsters #####
+### Dungeon level 1 ###
 
 N:15:Grey mold
 G:m:s
@@ -365,6 +365,8 @@ F:OPEN_DOOR | BASH_DOOR
 F:EVIL | IM_POIS
 D:It is a squat and ugly humanoid figure with a canine face.
 
+### Dungeon level 2 ###
+
 N:25:Kobold
 G:k:G
 I:110:3d7:20:16:10
@@ -374,6 +376,8 @@ F:DROP_60
 F:OPEN_DOOR | BASH_DOOR
 F:EVIL | IM_POIS
 D:It is a small, dog-headed humanoid.
+
+### Dungeon level 1 ###
 
 N:26:White worm mass
 G:w:w
@@ -427,6 +431,8 @@ W:1:1:0:1
 B:BITE:HURT:1d1
 F:ANIMAL
 D:A fast-moving pest.
+
+### Dungeon level 2 ###
 
 N:32:Shrieker mushroom patch
 G:,:R
@@ -593,8 +599,8 @@ F:UNIQUE
 F:FORCE_MAXHP | RAND_25
 F:BASH_DOOR
 F:ANIMAL | NO_CONF | NO_SLEEP
-D:A rather vicious dog belonging to Farmer Maggot.  It thinks you are
-D: stealing mushrooms.
+D:A rather vicious dog belonging to Farmer Maggot.  It thinks you are stealing
+D: mushrooms.
 
 N:47:Fang, Farmer Maggot's dog
 G:C:U
@@ -605,8 +611,8 @@ F:UNIQUE
 F:FORCE_MAXHP | RAND_25
 F:BASH_DOOR
 F:ANIMAL | NO_CONF | NO_SLEEP
-D:A rather vicious dog belonging to Farmer Maggot.  It thinks you are
-D: stealing mushrooms.
+D:A rather vicious dog belonging to Farmer Maggot.  It thinks you are stealing
+D: mushrooms.
 
 N:48:Green worm mass
 G:w:g
@@ -648,8 +654,10 @@ B:CLAW:HURT:1d3
 B:CLAW:HURT:1d3
 F:BASH_DOOR
 F:ANIMAL
-D:A larger than normal feline, hissing loudly.  Its velvet paws conceal a
-D: fistful of needles.
+D:A larger than normal feline, hissing loudly.  Its velvet paws conceal a fistful
+D: of needles.
+
+### Dungeon level 3 ###
 
 N:52:Smeagol
 G:h:B
@@ -743,8 +751,7 @@ F:IM_POIS | HURT_LITE
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_15
 S:DRAIN_MANA
-D:It is a large pile of silver flesh that sucks all light from its
-D: surroundings.
+D:It is a large pile of silver flesh that sucks all light from its surroundings.
 
 N:60:Yellow jelly
 G:j:y
@@ -769,8 +776,8 @@ F:MALE
 F:DROP_60
 F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR
 F:EVIL
-D:A short little guy, in bedraggled clothes.  He appears to be looking
-D: for a good tavern.
+D:A short little guy, in bedraggled clothes.  He appears to be looking for a good
+D: tavern.
 
 N:62:Giant white ant
 G:a:w
@@ -834,6 +841,8 @@ F:HURT_LITE | NO_FEAR
 S:1_IN_11
 S:DRAIN_MANA
 D:A disembodied eye, crackling with energy.
+
+### Dungeon level 4 ###
 
 N:68:Cave lizard
 G:R:u
@@ -923,6 +932,8 @@ F:BASH_DOOR
 F:ANIMAL
 D:It is about ten feet long.
 
+### Dungeon level 5 ###
+
 N:76:Bullroarer the Hobbit
 G:h:U
 I:120:6d10:16:8:10
@@ -932,8 +943,10 @@ B:HIT:HURT:1d8
 F:UNIQUE | MALE | FORCE_MAXHP
 F:ONLY_ITEM | DROP_2D2 | DROP_GOOD
 F:OPEN_DOOR | BASH_DOOR
-D:He is a sturdy hobbit who is renowned for his unusual strength and
-D: vigour.  He can prove a troublesome opponent.
+D:He is a sturdy hobbit who is renowned for his unusual strength and vigour.  He
+D: can prove a troublesome opponent.
+
+### Dungeon level 6 ###
 
 N:77:Novice mage
 G:p:r
@@ -947,6 +960,8 @@ F:OPEN_DOOR | BASH_DOOR
 S:1_IN_12
 S:BLINK | BLIND | CONF | MISSILE
 D:He is leaving behind a trail of dropped spell components.
+
+### Dungeon level 5 ###
 
 N:78:Green naga
 G:n:g
@@ -1056,6 +1071,8 @@ F:BASH_DOOR
 F:ANIMAL | IM_POIS
 D:It has a copper head and sharp venomous fangs.
 
+### Dungeon level 6 ###
+
 N:88:Purple mushroom patch
 G:,:v
 I:110:1d1:2:1:0
@@ -1124,6 +1141,8 @@ F:RAND_50
 F:ANIMAL
 D:It screeches as it attacks.
 
+### Dungeon level 4 ###
+
 N:94:Kobold archer
 G:k:W
 I:110:6d7:20:16:10
@@ -1132,8 +1151,11 @@ B:HIT:HURT:1d9
 F:DROP_60
 F:OPEN_DOOR | BASH_DOOR
 F:EVIL | IM_POIS
-S:1_IN_5 | ARROW_2
+S:1_IN_5
+S:ARROW_2
 D:It is an ugly dog-headed humanoid wielding a bow.
+
+### Dungeon level 6 ###
 
 N:95:Creeping silver coins
 G:$:s
@@ -1155,8 +1177,7 @@ F:MALE
 F:FRIENDS | DROP_60
 F:OPEN_DOOR | BASH_DOOR
 F:EVIL | ORC | HURT_LITE
-D:He is one of the many weaker 'slave' orcs, often mistakenly known as a
-D: goblin.
+D:He is one of the many weaker 'slave' orcs, often mistakenly known as a goblin.
 
 N:97:Rattlesnake
 G:J:r
@@ -1166,8 +1187,10 @@ B:BITE:POISON:2d5
 F:RAND_50
 F:BASH_DOOR
 F:ANIMAL | IM_POIS
-D:It is recognized by the hard-scaled end of its body that is often rattled
-D: to frighten its prey.
+D:It is recognized by the hard-scaled end of its body that is often rattled to
+D: frighten its prey.
+
+### Dungeon level 7 ###
 
 N:98:Cave orc
 G:o:G
@@ -1321,6 +1344,8 @@ F:OPEN_DOOR | BASH_DOOR
 F:EVIL | IM_POIS
 D:Strong and powerful, for a kobold.
 
+### Dungeon level 8 ###
+
 N:111:Wormtongue, Agent of Saruman
 G:p:B
 I:110:25d10:20:30:20
@@ -1336,8 +1361,8 @@ F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR
 F:EVIL
 S:1_IN_5
 S:HEAL | SLOW | TRAPS | BO_COLD | BA_POIS
-D:He's been spying for Saruman.  He is a snivelling wretch with no morals
-D: and disgusting habits.
+D:He's been spying for Saruman.  He is a snivelling wretch with no morals and
+D: disgusting habits.
 
 N:112:Lagduf, the Snaga
 G:o:y
@@ -1353,8 +1378,8 @@ F:ESCORT
 F:ONLY_ITEM | DROP_1D2 | DROP_GOOD
 F:OPEN_DOOR | BASH_DOOR
 F:EVIL | ORC
-D:A captain of a regiment of weaker orcs, Lagduf keeps his troop in order
-D: with displays of excessive violence.
+D:A captain of a regiment of weaker orcs, Lagduf keeps his troop in order with
+D: displays of excessive violence.
 
 N:113:Brown yeek
 G:y:u
@@ -1460,6 +1485,8 @@ F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR
 F:EVIL
 D:He is after your cash!
 
+### Dungeon level 9 ###
+
 N:122:Yeti
 G:Y:w
 I:110:11d9:20:24:10
@@ -1533,8 +1560,8 @@ F:OPEN_DOOR | BASH_DOOR
 F:EVIL | DRAGON | IM_ELEC
 S:1_IN_12
 S:BR_ELEC
-D:This hatchling dragon is still soft, its eyes unaccustomed to light and
-D: its scales a pale blue.
+D:This hatchling dragon is still soft, its eyes unaccustomed to light and its
+D: scales a pale blue.
 
 N:128:Baby white dragon
 G:d:w
@@ -1549,8 +1576,8 @@ F:OPEN_DOOR | BASH_DOOR
 F:EVIL | DRAGON | IM_COLD
 S:1_IN_12
 S:BR_COLD
-D:This hatchling dragon is still soft, its eyes unaccustomed to light and
-D: its scales a pale white.
+D:This hatchling dragon is still soft, its eyes unaccustomed to light and its
+D: scales a pale white.
 
 N:129:Baby green dragon
 G:d:g
@@ -1565,8 +1592,8 @@ F:OPEN_DOOR | BASH_DOOR
 F:EVIL | DRAGON | IM_POIS
 S:1_IN_12
 S:BR_POIS
-D:This hatchling dragon is still soft, its eyes unaccustomed to light and
-D: its scales a sickly green.
+D:This hatchling dragon is still soft, its eyes unaccustomed to light and its
+D: scales a sickly green.
 
 N:130:Baby black dragon
 G:d:s
@@ -1581,8 +1608,8 @@ F:OPEN_DOOR | BASH_DOOR
 F:EVIL | DRAGON | IM_ACID
 S:1_IN_12
 S:BR_ACID
-D:This hatchling dragon is still soft, its eyes unaccustomed to light and
-D: its scales a dull black.
+D:This hatchling dragon is still soft, its eyes unaccustomed to light and its
+D: scales a dull black.
 
 N:131:Baby red dragon
 G:d:r
@@ -1597,8 +1624,8 @@ F:OPEN_DOOR | BASH_DOOR
 F:EVIL | DRAGON | IM_FIRE
 S:1_IN_12
 S:BR_FIRE
-D:This hatchling dragon is still soft, its eyes unaccustomed to light and
-D: its scales a pale red.
+D:This hatchling dragon is still soft, its eyes unaccustomed to light and its
+D: scales a pale red.
 
 N:132:Giant red ant
 G:a:r
@@ -1634,6 +1661,8 @@ F:RAND_50
 F:BASH_DOOR
 F:ANIMAL | IM_POIS
 D:It is a large snake with a hooded face.
+
+### Dungeon level 10 ###
 
 N:135:Giant spider
 G:S:v
@@ -1779,8 +1808,8 @@ F:OPEN_DOOR | BASH_DOOR
 F:EVIL | DEMON | IM_FIRE | NO_FEAR
 S:1_IN_3
 S:BLINK | TELE_TO
-D:It is a fast-moving demon that blinks quickly in and out of existence; no
-D: other demon matches its teleporting mastery.
+D:It is a fast-moving demon that blinks quickly in and out of existence; no other
+D: demon matches its teleporting mastery.
 
 N:146:Creeping gold coins
 G:$:y
@@ -1791,8 +1820,8 @@ B:TOUCH:POISON:3d5
 F:ONLY_GOLD | DROP_90 | DROP_1D2
 F:COLD_BLOOD | BASH_DOOR
 F:IM_POIS | IM_ELEC | IM_ACID | NO_CONF | NO_SLEEP
-D:It appears to be a pile of gold coins, until it starts crawling towards you
-D: on tiny legs.
+D:It appears to be a pile of gold coins, until it starts crawling towards you on
+D: tiny legs.
 
 N:147:Wolf
 G:C:u
@@ -1823,8 +1852,7 @@ B:CLAW:HURT:1d8
 B:CLAW:HURT:1d8
 F:BASH_DOOR
 F:ANIMAL
-D:A large black cat, stalking you with intent.  It thinks you're its next
-D: meal.
+D:A large black cat, stalking you with intent.  It thinks you're its next meal.
 
 N:150:Brigand
 G:p:b
@@ -1837,6 +1865,8 @@ F:DROP_1D2
 F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR
 F:EVIL
 D:He is eyeing your backpack.
+
+### Dungeon level 11 ###
 
 N:151:Baby multi-hued dragon
 G:d:v
@@ -1853,8 +1883,8 @@ F:EVIL | DRAGON
 F:IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 S:1_IN_12
 S:BR_ACID | BR_FIRE | BR_COLD | BR_ELEC | BR_POIS
-D:This hatchling dragon is still soft, its eyes unaccustomed to light and
-D: its scales shimmering with hints of many different colours.
+D:This hatchling dragon is still soft, its eyes unaccustomed to light and its
+D: scales shimmering with hints of many different colours.
 
 N:152:Hippogriff
 G:H:U
@@ -1893,6 +1923,8 @@ S:BLINK | DARKNESS | BO_COLD
 S:S_MONSTER
 D:A mage of short stature.
 
+### Dungeon level 12 ###
+
 N:155:Black mamba
 G:J:D
 I:120:10d8:10:32:1
@@ -1913,8 +1945,8 @@ F:RAND_25
 F:FRIENDS
 F:BASH_DOOR
 F:ANIMAL | IM_COLD
-D:A large and muscled wolf from the northern wastes.  Its breath is cold and
-D: icy and its fur coated in frost.
+D:A large and muscled wolf from the northern wastes.  Its breath is cold and icy
+D: and its fur coated in frost.
 
 N:157:Grape jelly
 G:j:v
@@ -1937,8 +1969,8 @@ B:TOUCH:EXP_10
 F:RAND_50 | RAND_25
 F:STUPID | WEIRD_MIND | MULTIPLY | BASH_DOOR
 F:ANIMAL | HURT_LITE | NO_FEAR
-D:It is a disgusting mass of dark worms, eating each other, the floor,
-D: the air, you....
+D:It is a disgusting mass of dark worms, eating each other, the floor, the air,
+D: you....
 
 N:159:Golfimbul, the Hill Orc Chief
 G:o:y
@@ -2096,6 +2128,8 @@ F:IM_ACID | IM_POIS | HURT_LITE
 F:NO_CONF | NO_SLEEP | NO_FEAR
 D:A strange jelly thing, covered in discoloured blotches.
 
+### Dungeon level 13 ###
+
 N:171:Drider
 G:S:b
 I:110:10d13:8:30:80
@@ -2170,7 +2204,8 @@ F:FORCE_SLEEP | DROP_1D2
 F:SMART | OPEN_DOOR | BASH_DOOR
 F:EVIL
 S:1_IN_3
-S:HASTE | BLINK | TPORT | BLIND | HOLD | SLOW | CONF | DARKNESS
+S:HASTE | BLINK | TPORT | BLIND | HOLD | SLOW | CONF
+S:DARKNESS
 D:A deceptive spell caster.
 
 N:177:Druid
@@ -2184,8 +2219,8 @@ F:FORCE_SLEEP | DROP_1D2
 F:SMART | OPEN_DOOR | BASH_DOOR
 F:EVIL
 S:1_IN_3
-S:S_ANIMAL
 S:HASTE | BLINK | BLIND | HOLD | SLOW | BO_FIRE | BO_ELEC
+S:S_ANIMAL
 D:A priest devoted to Nature.
 
 N:178:Black orc
@@ -2198,7 +2233,8 @@ F:MALE
 F:FRIENDS | DROP_60
 F:OPEN_DOOR | BASH_DOOR
 F:EVIL | ORC | HURT_LITE
-S:1_IN_9 | ARROW_2
+S:1_IN_9
+S:ARROW_2
 D:He is a large orc with powerful arms and deep black skin.
 
 N:179:Ochre jelly
@@ -2212,8 +2248,10 @@ F:STUPID | EMPTY_MIND | COLD_BLOOD
 F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR
 F:IM_ACID | IM_POIS
 F:NO_CONF | NO_SLEEP | NO_FEAR
-D:A fast moving highly acidic jelly thing, that is eating away the floor it
-D: rests on.
+D:A fast moving highly acidic jelly thing, that is eating away the floor it rests
+D: on.
+
+### Dungeon level 14 ###
 
 N:180:Giant flea
 G:I:s
@@ -2269,8 +2307,10 @@ F:MULTIPLY | OPEN_DOOR | BASH_DOOR
 F:EVIL | IM_POIS
 S:1_IN_8
 S:BLIND | CONF | SCARE
-D:It is a strange, slimy, icky creature, with rudimentary intelligence,
-D: but evil cunning.  It hungers for food, and you look tasty.
+D:It is a strange, slimy, icky creature, with rudimentary intelligence, but evil
+D: cunning.  It hungers for food, and you look tasty.
+
+### Dungeon level 25 ###
 
 N:184:Hill giant
 G:P:U
@@ -2284,6 +2324,8 @@ F:EVIL | GIANT
 S:1_IN_10
 S:BOULDER
 D:A ten foot tall humanoid with powerful muscles.
+
+### Dungeon level 14 ###
 
 N:185:Flesh golem
 G:g:R
@@ -2327,8 +2369,10 @@ F:CHAR_CLEAR | ATTR_CLEAR
 F:NEVER_MOVE | FORCE_MAXHP
 F:EMPTY_MIND | INVISIBLE | COLD_BLOOD
 F:NO_CONF | NO_SLEEP | NO_FEAR
-D:A strange creature that merges with the dungeon floor, trapping its
-D: victims by enveloping them within its perfectly disguised form.
+D:A strange creature that merges with the dungeon floor, trapping its victims by
+D: enveloping them within its perfectly disguised form.
+
+### Dungeon level 15 ###
 
 N:189:Wererat
 G:r:D
@@ -2414,8 +2458,7 @@ F:BASH_DOOR
 F:ANIMAL
 S:1_IN_5
 S:BR_DARK
-D:A hole in the air in the shape of a huge hound.  No light falls upon its
-D: form.
+D:A hole in the air in the shape of a huge hound.  No light falls upon its form.
 
 N:195:Half-orc
 G:o:s
@@ -2427,9 +2470,9 @@ F:MALE
 F:FRIENDS | DROP_60
 F:OPEN_DOOR | BASH_DOOR
 F:EVIL | ORC
-D:He is a hideous deformed cross-breed with man and orc, combining man's
-D: strength and cunning with orcish evil.  The traitorous wizard Saruman is
-D: generally believed to be responsible for this abomination.
+D:He is a hideous deformed cross-breed with man and orc, combining man's strength
+D: and cunning with orcish evil.  The traitorous wizard Saruman is generally
+D: believed to be responsible for this abomination.
 
 N:196:Giant tarantula
 G:S:o
@@ -2463,8 +2506,10 @@ B:BITE:POISON:1d6
 F:FRIENDS
 F:WEIRD_MIND | BASH_DOOR
 F:ANIMAL | EVIL | IM_POIS
-D:A strong and powerful spider from Mirkwood forest.  Cunning and evil, it
-D: seeks to taste your juicy insides.
+D:A strong and powerful spider from Mirkwood forest.  Cunning and evil, it seeks
+D: to taste your juicy insides.
+
+### Dungeon level 28 ###
 
 N:199:Frost giant
 G:P:w
@@ -2479,6 +2524,8 @@ F:IM_COLD
 S:1_IN_10
 S:BOULDER
 D:A twelve foot tall giant covered in furs.
+
+### Dungeon level 15 ###
 
 N:200:Griffon
 G:H:u
@@ -2539,6 +2586,8 @@ F:HURT_ROCK
 F:NO_CONF | NO_SLEEP | NO_FEAR
 D:It is a massive animated statue made out of hardened clay.
 
+### Dungeon level 16 ###
+
 N:205:Umber hulk
 G:X:U
 I:110:20d10:20:50:10
@@ -2552,8 +2601,10 @@ F:BASH_DOOR | KILL_WALL
 F:ANIMAL | EVIL
 F:IM_POIS
 F:HURT_ROCK | NO_CONF | NO_SLEEP
-D:This bizarre creature has glaring eyes and large mandibles capable of
-D: slicing through rock.
+D:This bizarre creature has glaring eyes and large mandibles capable of slicing
+D: through rock.
+
+### Dungeon level 18 ###
 
 N:206:Orc captain
 G:o:o
@@ -2565,8 +2616,11 @@ B:HIT:HURT:3d5
 F:MALE | ESCORT | DROP_90
 F:OPEN_DOOR | BASH_DOOR
 F:EVIL | ORC | IM_POIS
-S:1_IN_9 | ARROW_2
+S:1_IN_9
+S:ARROW_2
 D:An armoured orc with an air of authority.
+
+### Dungeon level 16 ###
 
 N:207:Gelatinous cube
 G:j:G
@@ -2581,10 +2635,10 @@ F:STUPID | EMPTY_MIND | COLD_BLOOD
 F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR
 F:IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 F:NO_CONF | NO_SLEEP | NO_FEAR
-D:It is a strange, vast gelatinous structure that assumes cubic proportions
-D: as it lines all four walls of the corridors it patrols.  Through its
-D: transparent jelly structure you can see treasures it has engulfed, and a
-D: few corpses as well.
+D:It is a strange, vast gelatinous structure that assumes cubic proportions as it
+D: lines all four walls of the corridors it patrols.  Through its transparent
+D: jelly structure you can see treasures it has engulfed, and a few corpses as
+D: well.
 
 N:208:Giant green dragon fly
 G:F:g
@@ -2597,6 +2651,8 @@ F:ANIMAL | IM_POIS
 S:1_IN_10
 S:BR_POIS
 D:A vast, foul-smelling dragonfly.
+
+### Dungeon level 30 ###
 
 N:209:Fire giant
 G:P:r
@@ -2611,6 +2667,8 @@ F:IM_FIRE
 S:1_IN_8
 S:BOULDER
 D:A glowing fourteen foot tall giant.  Flames drip from its red skin.
+
+### Dungeon level 16 ###
 
 N:210:Hummerhorn
 G:I:y
@@ -2653,6 +2711,8 @@ F:EVIL | DEMON | IM_FIRE
 S:1_IN_10
 S:BLINK | TPORT | TELE_TO | TELE_LEVEL | BLIND | CONF | SCARE
 D:The chaotic evil master's favourite pet.
+
+### Dungeon level 17 ###
 
 N:213:Imp
 G:u:g
@@ -2697,10 +2757,10 @@ F:OPEN_DOOR | BASH_DOOR
 F:IM_FIRE | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_6
 S:HEAL | BLIND | CONF | CAUSE_2 | MIND_BLAST
-D:The friend and companion of the dwarven king Thror, he went mad with
-D: grief after Thror's death at the hands of Azog the Orc.  With torn beard
-D: and ragged clothes, he seems to have fixed on you as a convenient target
-D: to vent his anger.
+D:The friend and companion of the dwarven king Thror, he went mad with grief
+D: after Thror's death at the hands of Azog the Orc.  With torn beard and ragged
+D: clothes, he seems to have fixed on you as a convenient target to vent his
+D: anger.
 
 N:216:2-headed hydra
 G:M:u
@@ -2750,6 +2810,8 @@ F:PASS_WALL
 F:IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | HURT_ROCK
 F:NO_CONF | NO_SLEEP | NO_FEAR
 D:A whirling form of sentient rock.
+
+### Dungeon level 18 ###
 
 N:220:Fire spirit
 G:E:r
@@ -2808,8 +2870,8 @@ F:BASH_DOOR
 F:ANIMAL | IM_ELEC
 S:1_IN_10
 S:BR_ELEC
-D:Saint Elmo's Fire forms a ghostly halo around this hound, and sparks sting
-D: your fingers as energy builds up in the air around you.
+D:Saint Elmo's Fire forms a ghostly halo around this hound, and sparks sting your
+D: fingers as energy builds up in the air around you.
 
 N:224:Potion mimic
 G:!:w
@@ -2838,8 +2900,10 @@ F:BASH_DOOR
 F:ANIMAL
 S:1_IN_4
 S:BLINK | TELE_TO
-D:A strange magical member of the canine race, its form seems to shimmer and
-D: fade in front of your very eyes.
+D:A strange magical member of the canine race, its form seems to shimmer and fade
+D: in front of your very eyes.
+
+### Dungeon level 16 ###
 
 N:226:Uruk
 G:o:B
@@ -2851,9 +2915,11 @@ F:MALE
 F:FORCE_MAXHP | FRIENDS | DROP_60
 F:OPEN_DOOR | BASH_DOOR
 F:EVIL | ORC | IM_POIS
-S:1_IN_9 | ARROW_2
-D:A cunning orc of power, as tall as a man, and stronger.  It fears
-D: little.
+S:1_IN_9
+S:ARROW_2
+D:A cunning orc of power, as tall as a man, and stronger.  It fears little.
+
+### Dungeon level 19 ###
 
 N:227:Shagrat, the Orc Captain
 G:o:g
@@ -2869,7 +2935,8 @@ F:ESCORT
 F:ONLY_ITEM | DROP_1D2 | DROP_GOOD
 F:OPEN_DOOR | BASH_DOOR
 F:EVIL | ORC | IM_POIS
-D:He is an orc of power and great cunning, leader of the garrison at Cirith Ungol.
+D:He is an orc of power and great cunning, leader of the garrison at Cirith
+D: Ungol.
 
 N:228:Gorbag, the Orc Captain
 G:o:g
@@ -2885,7 +2952,10 @@ F:ESCORT
 F:ONLY_ITEM | DROP_1D2 | DROP_GOOD
 F:OPEN_DOOR | BASH_DOOR
 F:EVIL | ORC | IM_POIS
-D:He is an orc of power and great cunning, leader of the garrison at Minas Morgul.
+D:He is an orc of power and great cunning, leader of the garrison at Minas
+D: Morgul.
+
+### Dungeon level 18 ###
 
 N:229:Shambling mound
 G:,:g
@@ -2899,8 +2969,10 @@ F:EVIL
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_4
 S:SHRIEK
-D:A pile of rotting vegetation that slides towards you with a disgusting
-D: stench, waking all it nears.
+D:A pile of rotting vegetation that slides towards you with a disgusting stench,
+D: waking all it nears.
+
+### Dungeon level 33 ###
 
 N:230:Stone giant
 G:P:W
@@ -2915,6 +2987,8 @@ S:1_IN_5
 S:BOULDER
 D:It is eighteen feet tall and looking at you.
 
+### Dungeon level 18 ###
+
 N:231:Giant black dragon fly
 G:F:s
 I:120:3d8:12:20:50
@@ -2925,6 +2999,8 @@ F:ANIMAL | IM_ACID
 S:1_IN_10
 S:BR_ACID
 D:The size of a large bird, this fly drips caustic acid.
+
+### Dungeon level 19 ###
 
 N:232:Stone golem
 G:g:W
@@ -2947,8 +3023,7 @@ F:NEVER_MOVE
 F:STUPID | EMPTY_MIND
 F:IM_FIRE | IM_POIS
 F:NO_CONF | NO_SLEEP | NO_FEAR
-D:It is a strange red growth on the dungeon floor; it seems to burn with
-D: flame.
+D:It is a strange red growth on the dungeon floor; it seems to burn with flame.
 
 N:234:Giant gold dragon fly
 G:F:y
@@ -2964,6 +3039,8 @@ S:BR_SOUN
 D:Large beating wings support this dazzling insect.  A loud buzzing noise
 D: pervades the air.
 
+### Dungeon level 20 ###
+
 N:235:Bolg, Son of Azog
 G:o:v
 I:120:50d10:20:50:20
@@ -2978,8 +3055,8 @@ F:ESCORT
 F:ONLY_ITEM | DROP_2D2 | DROP_GOOD
 F:OPEN_DOOR | BASH_DOOR
 F:EVIL | ORC | IM_POIS
-D:A large and powerful orc, he looks just like his father.  He is tall and
-D: fast, but fortunately blessed with orcish brains.
+D:A large and powerful orc, he looks just like his father.  He is tall and fast,
+D: but fortunately blessed with orcish brains.
 
 N:236:Phase spider
 G:S:B
@@ -3025,8 +3102,8 @@ F:BASH_DOOR
 F:ANIMAL
 S:1_IN_10
 S:BR_SHAR
-D:A beautiful crystalline shape does not disguise the danger this hound
-D: clearly presents.  Your flesh tingles as it approaches.
+D:A beautiful crystalline shape does not disguise the danger this hound clearly
+D: presents.  Your flesh tingles as it approaches.
 
 N:239:Air hound
 G:Z:g
@@ -3055,8 +3132,8 @@ B:BITE:HURT:1d10
 B:BITE:HURT:1d10
 F:BASH_DOOR
 F:ANIMAL
-D:A fierce and dangerous cat, its huge tusks and sharp claws would lacerate
-D: even the strongest armour.
+D:A fierce and dangerous cat, its huge tusks and sharp claws would lacerate even
+D: the strongest armour.
 
 N:241:Water hound
 G:Z:s
@@ -3072,8 +3149,8 @@ F:BASH_DOOR
 F:ANIMAL | IM_ACID
 S:1_IN_10
 S:BR_ACID
-D:Liquid footprints follow this hound as it pads around the dungeon.  An
-D: acrid smell of acid rises from the dog's pelt.
+D:Liquid footprints follow this hound as it pads around the dungeon.  An acrid
+D: smell of acid rises from the dog's pelt.
 
 N:242:Chimaera
 G:H:r
@@ -3140,6 +3217,8 @@ S:1_IN_5
 S:HASTE | BLIND | CONF | DARKNESS | BO_FIRE | BO_COLD
 D:A dark elven figure in armour and radiating evil power.
 
+### Dungeon level 36 ###
+
 N:247:Cloud giant
 G:P:b
 I:110:35d20:20:60:50
@@ -3152,6 +3231,8 @@ F:EVIL | GIANT | IM_ELEC
 S:1_IN_8
 S:BOULDER
 D:It is a twenty foot tall giant wreathed in clouds.
+
+### Dungeon level 21 ###
 
 N:248:Lugdush, the Uruk
 G:o:b
@@ -3169,6 +3250,8 @@ F:OPEN_DOOR | BASH_DOOR
 F:EVIL | ORC | IM_POIS
 D:A large and powerful orc, captain of one of Saruman's orcish regiments.
 
+### Dungeon level 22 ###
+
 N:249:Ugluk, the Uruk
 G:o:b
 I:110:72d10:20:95:20
@@ -3184,6 +3267,8 @@ F:ONLY_ITEM | DROP_1D2 | DROP_GOOD
 F:OPEN_DOOR | BASH_DOOR
 F:EVIL | ORC | IM_FIRE | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 D:A strong and cunning orc warrior, the commander of Saruman's orcish horde.
+
+### Dungeon level 21 ###
 
 N:250:Blue dragon bat
 G:b:b
@@ -3277,6 +3362,8 @@ F:IM_COLD | IM_POIS
 F:NO_CONF | NO_SLEEP | NO_FEAR
 D:It is an orcish figure covered in wrappings.
 
+### Dungeon level 22 ###
+
 N:257:Killer stag beetle
 G:K:g
 I:110:15d8:12:55:30
@@ -3310,6 +3397,8 @@ B:STING:POISON:2d5
 F:WEIRD_MIND | BASH_DOOR
 F:ANIMAL
 D:It is a giant scorpion with a sharp stinger.
+
+### Dungeon level 23 ###
 
 N:260:Black ooze
 G:j:D
@@ -3349,8 +3438,8 @@ F:ESCORT | ESCORTS
 F:ONLY_ITEM | DROP_2D2 | DROP_GOOD
 F:OPEN_DOOR | BASH_DOOR
 F:EVIL | ORC | IM_POIS
-D:He is also known as the King of Khazad-dum.  His ego is renowned to be
-D: bigger than his head.
+D:He is also known as the King of Khazad-dum.  His ego is renowned to be bigger
+D: than his head.
 
 N:263:Master rogue
 G:p:b
@@ -3399,6 +3488,8 @@ S:1_IN_10
 S:BR_CONF
 D:This vast gleaming bronze fly has wings which beat mesmerically fast.
 
+### Dungeon level 24 ###
+
 N:267:Forest wight
 G:W:g
 I:110:12d8:20:30:30
@@ -3430,8 +3521,8 @@ F:OPEN_DOOR | BASH_DOOR
 F:IM_FIRE | IM_COLD | NO_CONF | NO_SLEEP
 S:1_IN_8
 S:HEAL | SLOW | BO_FIRE
-D:One of the last of the Petty-Dwarves.  Ibun is a tricky sorcerous little
-D: being, full of mischief.
+D:One of the last of the Petty-Dwarves.  Ibun is a tricky sorcerous little being,
+D: full of mischief.
 
 N:269:Khim, Son of Mim
 G:h:o
@@ -3448,8 +3539,8 @@ F:OPEN_DOOR | BASH_DOOR
 F:IM_FIRE | IM_COLD | NO_CONF | NO_SLEEP
 S:1_IN_8
 S:HEAL | SLOW | BO_FIRE
-D:One of the last of the Petty-Dwarves.  Khim is a tricky sorcerous little
-D: being, full of mischief.
+D:One of the last of the Petty-Dwarves.  Khim is a tricky sorcerous little being,
+D: full of mischief.
 
 N:270:4-headed hydra
 G:M:y
@@ -3538,6 +3629,8 @@ S:1_IN_15
 S:TPORT | DRAIN_MANA
 D:It is a ghostly woman's form that wails mournfully.
 
+### Dungeon level 25 ###
+
 N:276:Pukelman
 G:g:D
 I:110:80d12:12:80:10
@@ -3551,8 +3644,8 @@ F:HURT_ROCK
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_4
 S:SLOW | CONF | BO_ACID
-D:A stumpy figure carved from stone, with glittering eyes, this sentinel
-D: strides towards you with deadly intent.
+D:A stumpy figure carved from stone, with glittering eyes, this sentinel strides
+D: towards you with deadly intent.
 
 N:277:Dark elven druid
 G:h:G
@@ -3584,6 +3677,8 @@ F:OPEN_DOOR | BASH_DOOR
 F:EVIL | TROLL | HURT_LITE | HURT_ROCK | REGENERATE
 D:He is a giant troll with scabrous black skin.
 
+### Dungeon level 26 ###
+
 N:279:Troll priest
 G:T:G
 I:110:30d10:20:50:30
@@ -3598,6 +3693,8 @@ F:EVIL | TROLL | HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_5
 S:BLINK | SCARE | CAUSE_1 | MISSILE | DARKNESS
 D:A troll who is so bright he knows how to read.
+
+### Dungeon level 25 ###
 
 N:280:Wereworm
 G:w:D
@@ -3633,6 +3730,8 @@ F:RAND_25
 F:WEIRD_MIND | BASH_DOOR
 F:ANIMAL
 D:It is a giant beetle with poisonous mandibles.
+
+### Dungeon level 26 ###
 
 N:283:Giant grey ant
 G:a:s
@@ -3720,11 +3819,12 @@ F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL
 F:IM_ACID | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_3
 S:BLIND | CONF | SCARE
-D:Who knows why you are now facing an angel as an enemy? Is it a punishment
-D: from your own god for your sins, or a test of your mettle, or has this angel
-D: been sent by another god on behalf of someone who wishes to claim the glory
-D: for his own god? Perhaps you will never know: but it is here, and you must
-D: fight it.
+D:Who knows why you are now facing an angel as an enemy?  Is it a punishment from
+D: your own god for your sins, or a test of your mettle, or has this angel been
+D: sent by another god on behalf of someone who wishes to claim the glory for his
+D: own god?  Perhaps you will never know: but it is here, and you must fight it.
+
+### Dungeon level 27 ###
 
 N:290:Mim, Betrayer of Turin
 G:h:o
@@ -3743,8 +3843,8 @@ F:NO_CONF | NO_SLEEP
 S:1_IN_6
 S:HEAL | SCARE | BO_ACID | BA_ACID
 D:The last of his race, Mim is a Petty-Dwarf.  Petty-Dwarves are strange
-D: creatures, powerful in sorcery and originating in the East.  They have
-D: been hunted nearly to extinction by the High Elves.
+D: creatures, powerful in sorcery and originating in the East.  They have been
+D: hunted nearly to extinction by the High Elves.
 
 N:291:Killer fire beetle
 G:K:R
@@ -3796,8 +3896,8 @@ F:BASH_DOOR
 F:ANIMAL | NO_CONF | NO_SLEEP
 S:1_IN_5
 S:BR_SOUN
-D:A blurry canine form which seems to be moving as fast as the eye can
-D: follow.  You can feel the earth resonating beneath your feet.
+D:A blurry canine form which seems to be moving as fast as the eye can follow.
+D: You can feel the earth resonating beneath your feet.
 
 N:295:Nexus hound
 G:Z:v
@@ -3813,8 +3913,8 @@ F:BASH_DOOR
 F:ANIMAL | NO_CONF | NO_SLEEP | RES_NEXUS
 S:1_IN_5
 S:BR_NEXU
-D:A locus of conflicting points coalesce to form the vague shape of a huge
-D: hound.  Or is it just your imagination?
+D:A locus of conflicting points coalesce to form the vague shape of a huge hound.
+D: Or is it just your imagination?
 
 N:296:Ogre mage
 G:O:r
@@ -3833,6 +3933,8 @@ S:HEAL | HOLD | TRAPS | BA_COLD
 S:S_MONSTER
 D:A hideous ogre wrapped in black sorcerous robes.
 
+### Dungeon level 32 ###
+
 N:297:Lokkak, the Ogre Chieftain
 G:O:v
 I:120:15d100:20:100:20
@@ -3849,6 +3951,8 @@ F:EVIL | GIANT | IM_POIS
 D:An ogre renowned for acts of surpassing cruelty, Lokkak quickly became the
 D: leader of a large band of violent ogres.
 
+### Dungeon level 27 ###
+
 N:298:Vampire
 G:V:W
 I:110:25d12:20:45:10
@@ -3863,8 +3967,7 @@ F:OPEN_DOOR | BASH_DOOR | REGENERATE
 F:EVIL | UNDEAD | IM_COLD | IM_POIS | HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_9
 S:TELE_TO | HOLD | SCARE | CAUSE_2 | MIND_BLAST | DARKNESS
-D:It is a humanoid with an aura of power.  You notice a sharp set of front
-D: teeth.
+D:It is a humanoid with an aura of power.  You notice a sharp set of front teeth.
 
 N:299:Gorgimaera
 G:H:o
@@ -3878,9 +3981,8 @@ F:BASH_DOOR
 F:IM_FIRE
 S:1_IN_8
 S:BR_FIRE
-D:The result of evil experiments, this travesty of nature should never be
-D: alive.  It has three heads - goat, dragon and gorgon - all attached to a
-D: lion's body.
+D:The result of evil experiments, this travesty of nature should never be alive.
+D: It has three heads - goat, dragon and gorgon - all attached to a lion's body.
 
 N:300:Colbran
 G:g:y
@@ -3894,8 +3996,10 @@ F:IM_ELEC | IM_POIS
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_3
 S:BO_ELEC
-D:A man-shaped form of living lightning, sparks and shocks crackle all over
-D: this madly capering figure, as it leaps and whirls around and about you.
+D:A man-shaped form of living lightning, sparks and shocks crackle all over this
+D: madly capering figure, as it leaps and whirls around and about you.
+
+### Dungeon level 28 ###
 
 N:301:Spirit naga
 G:n:w
@@ -3912,8 +4016,8 @@ F:INVISIBLE | OPEN_DOOR | BASH_DOOR
 F:EVIL | NO_CONF | NO_SLEEP
 S:1_IN_4
 S:HEAL | BLIND | MIND_BLAST | DARKNESS
-D:A wraithly snake-like form with the torso of a beautiful woman, it is the
-D: most powerful of its kind.
+D:A wraithly snake-like form with the torso of a beautiful woman, it is the most
+D: powerful of its kind.
 
 N:302:5-headed hydra
 G:M:g
@@ -3944,8 +4048,7 @@ F:OPEN_DOOR | BASH_DOOR
 F:EVIL
 S:1_IN_8
 S:BLIND | SCARE | CAUSE_3 | DARKNESS
-D:He is a figure encased in deep black plate armour; he looks at you
-D: menacingly.
+D:He is a figure encased in deep black plate armour; he looks at you menacingly.
 
 N:304:Uldor the Accursed
 G:p:U
@@ -3960,10 +4063,11 @@ F:FORCE_MAXHP
 F:ONLY_ITEM | DROP_1D2 | DROP_GOOD
 F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR
 F:EVIL
-S:1_IN_10 | S_KIN
+S:1_IN_10
+S:S_KIN
 D:An evil and cunning man from the East.  Having once sworn allegiance to the
-D: sons of Feanor, it was Uldor's treachery that turned the tide of the Battle
-D: of Unnumbered Tears in Morgoth's favour.
+D: sons of Feanor, it was Uldor's treachery that turned the tide of the Battle of
+D: Unnumbered Tears in Morgoth's favour.
 
 N:305:Mage
 G:p:r
@@ -3977,8 +4081,8 @@ F:ONLY_ITEM | DROP_1D2
 F:SMART | OPEN_DOOR | BASH_DOOR
 F:EVIL
 S:1_IN_3
-S:HASTE | TPORT | TELE_TO | BLIND | CONF
-S:BO_FIRE | BO_COLD | BO_ELEC
+S:HASTE | TPORT | TELE_TO | BLIND | CONF | BO_FIRE | BO_COLD
+S:BO_ELEC
 S:S_MONSTER
 D:A mage of some power - you can tell by the size of his hat.
 
@@ -3994,8 +4098,8 @@ F:OPEN_DOOR | BASH_DOOR
 F:EVIL | NO_CONF | NO_SLEEP
 S:1_IN_8
 S:BLIND | HOLD | SCARE | MIND_BLAST | BRAIN_SMASH | FORGET
-D:A humanoid form with a gruesome head, tentacular mouth, and piercing
-D: eyes.  Claws reach out for you and you feel a presence invade your mind.
+D:A humanoid form with a gruesome head, tentacular mouth, and piercing eyes.
+D: Claws reach out for you and you feel a presence invade your mind.
 
 N:307:Draebor, the Imp
 G:u:v
@@ -4013,8 +4117,9 @@ F:ONLY_ITEM | DROP_4D2 | DROP_GOOD
 F:SMART | INVISIBLE | BASH_DOOR
 F:EVIL | DEMON | IM_FIRE
 S:1_IN_5
-S:BLINK | TPORT | TELE_TO | TELE_AWAY | TELE_LEVEL | BLIND
-S:CONF | SCARE | S_KIN
+S:BLINK | TPORT | TELE_TO | TELE_AWAY | TELE_LEVEL | BLIND | CONF
+S:SCARE
+S:S_KIN
 D:An intensely irritating git of a monster.
 
 N:308:Basilisk
@@ -4030,8 +4135,8 @@ F:OPEN_DOOR | BASH_DOOR
 F:ANIMAL | NO_CONF | NO_SLEEP
 S:1_IN_8
 S:BR_POIS
-D:An evil reptile that preys on unsuspecting travellers.  Its eyes stare
-D: deeply at you and your soul starts to wilt!
+D:An evil reptile that preys on unsuspecting travellers.  Its eyes stare deeply
+D: at you and your soul starts to wilt!
 
 N:309:Ice troll
 G:T:w
@@ -4047,6 +4152,8 @@ F:OPEN_DOOR | BASH_DOOR | REGENERATE
 F:EVIL | TROLL | IM_COLD | HURT_LITE
 D:He is a white troll with powerfully clawed hands.
 
+### Dungeon level 29 ###
+
 N:310:Purple worm
 G:w:v
 I:110:65d8:14:65:30
@@ -4056,8 +4163,10 @@ B:BITE:ACID:2d8
 B:STING:POISON:1d8
 F:BASH_DOOR
 F:ANIMAL | IM_ACID | IM_POIS
-D:It is a massive worm form, many feet in length.  Its vast maw drips acid
-D: and poison.
+D:It is a massive worm form, many feet in length.  Its vast maw drips acid and
+D: poison.
+
+### Dungeon level 34 ###
 
 N:311:Archangel
 G:A:B
@@ -4073,8 +4182,10 @@ F:SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL
 F:IM_FIRE | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_3
 S:HEAL | HASTE | BLIND | CONF | SCARE
-D:An angel protected by an aura of holiness.  Its muscular form looks
-D: extremely powerful next to your own frail body.
+D:An angel protected by an aura of holiness.  Its muscular form looks extremely
+D: powerful next to your own frail body.
+
+### Dungeon level 29 ###
 
 N:312:Catoblepas
 G:q:g
@@ -4087,8 +4198,8 @@ B:BITE:HURT:2d12
 F:ONLY_GOLD | DROP_2D2
 F:BASH_DOOR
 F:ANIMAL | IM_POIS
-D:A strange ox-like form with a huge head but a thin, weak neck, it looks
-D: likes the creation of some deranged alchemist.
+D:A strange ox-like form with a huge head but a thin, weak neck, it looks likes
+D: the creation of some deranged alchemist.
 
 N:313:Ring mimic
 G:=:w
@@ -4103,8 +4214,8 @@ F:FORCE_SLEEP | NEVER_MOVE
 F:EMPTY_MIND | COLD_BLOOD
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_4
-S:BLIND | CONF | SCARE | CAUSE_2
-S:BO_ACID | BO_FIRE | BO_COLD | BO_ELEC
+S:BLIND | CONF | SCARE | CAUSE_2 | BO_ACID | BO_FIRE | BO_COLD
+S:BO_ELEC
 S:S_MONSTER
 D:A strange creature that disguises itself as a discarded ring to lure
 D: unsuspecting adventurers within reach of its venomous claws.
@@ -4123,8 +4234,8 @@ F:EVIL | DRAGON | IM_ELEC
 S:1_IN_10
 S:SCARE
 S:BR_ELEC
-D:It has a form that legends are made of.  Its still-tender scales are a
-D: deep blue in hue.  Sparks crackle along its length.
+D:It has a form that legends are made of.  Its still-tender scales are a deep
+D: blue in hue.  Sparks crackle along its length.
 
 N:315:Young white dragon
 G:d:w
@@ -4140,8 +4251,8 @@ F:EVIL | DRAGON | IM_COLD
 S:1_IN_10
 S:SCARE
 S:BR_COLD
-D:It has a form that legends are made of.  Its still-tender scales are a
-D: frosty white in hue.  Icy blasts of cold air come from it as it breathes.
+D:It has a form that legends are made of.  Its still-tender scales are a frosty
+D: white in hue.  Icy blasts of cold air come from it as it breathes.
 
 N:316:Young green dragon
 G:d:g
@@ -4157,8 +4268,8 @@ F:EVIL | DRAGON | IM_POIS
 S:1_IN_10
 S:SCARE
 S:BR_POIS
-D:It has a form that legends are made of.  Its still-tender scales are a
-D: deep green in hue.  Foul gas seeps through its scales.
+D:It has a form that legends are made of.  Its still-tender scales are a deep
+D: green in hue.  Foul gas seeps through its scales.
 
 N:317:Young bronze dragon
 G:d:U
@@ -4177,6 +4288,8 @@ S:BR_CONF
 D:It has a form that legends are made of.  Its still-tender scales are a rich
 D: bronze hue, and its shape glitters with strange colours that confuse you.
 
+### Dungeon level 30 ###
+
 N:318:Mithril golem
 G:g:B
 I:110:80d15:12:100:10
@@ -4191,6 +4304,8 @@ F:IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 F:NO_CONF | NO_SLEEP | NO_FEAR
 D:It is a massive statue of purest mithril.  It looks expensive!
 
+### Dungeon level 33 ###
+
 N:319:Shadow drake
 G:d:G
 I:110:30d10:20:70:70
@@ -4203,10 +4318,13 @@ F:ONLY_ITEM | DROP_3D2 | PASS_WALL
 F:INVISIBLE | OPEN_DOOR | BASH_DOOR
 F:EVIL | DRAGON | NO_CONF | NO_SLEEP
 S:1_IN_6
-S:SLOW | CONF | SCARE | DARKNESS | BR_NETH
-D:It is a dragon-like form wrapped in shadow.  Glowing red eyes shine out in
-D: the dark, and it is surrounded by an aura of unearthly cold that chills
-D: the soul rather than the body.
+S:SLOW | CONF | SCARE | DARKNESS
+S:BR_NETH
+D:It is a dragon-like form wrapped in shadow.  Glowing red eyes shine out in the
+D: dark, and it is surrounded by an aura of unearthly cold that chills the soul
+D: rather than the body.
+
+### Dungeon level 30 ###
 
 N:320:Skeleton troll
 G:s:w
@@ -4234,8 +4352,8 @@ F:BASH_DOOR
 F:EVIL
 S:1_IN_5
 S:ARROW_4
-D:It is a winged lion's body with a human torso and a tail covered in
-D: vicious spikes.
+D:It is a winged lion's body with a human torso and a tail covered in vicious
+D: spikes.
 
 N:322:Giant blue ant
 G:a:b
@@ -4255,8 +4373,8 @@ B:BITE:HURT:2d12
 F:RAND_25 | KILL_BODY | FRIENDS
 F:WEIRD_MIND | BASH_DOOR
 F:ANIMAL
-D:An armoured form moving with purpose.  Powerful on its own, flee when
-D: hordes of them march.
+D:An armoured form moving with purpose.  Powerful on its own, flee when hordes of
+D: them march.
 
 N:324:Grave wight
 G:W:b
@@ -4282,8 +4400,9 @@ B:BITE:HURT:5d8
 B:BITE:HURT:5d8
 F:WEIRD_MIND | BASH_DOOR
 F:ANIMAL
-D:It is a beetle with deadly sharp cutting mandibles and a rock-hard
-D: carapace.
+D:It is a beetle with deadly sharp cutting mandibles and a rock-hard carapace.
+
+### Dungeon level 31 ###
 
 N:326:Ghost
 G:G:w
@@ -4311,6 +4430,8 @@ F:WEIRD_MIND | BASH_DOOR
 F:ANIMAL
 D:It is a giant beetle that produces a chilling sound.
 
+### Dungeon level 27 ###
+
 N:328:Ogre shaman
 G:O:G
 I:110:25d12:20:55:30
@@ -4327,6 +4448,8 @@ S:TPORT | HOLD | SCARE | CAUSE_2 | TRAPS | BO_FIRE
 S:S_MONSTER
 D:It is an ogre wrapped in furs and covered in grotesque body paints.
 
+### Dungeon level 32 ###
+
 N:329:Nexus quylthulg
 G:Q:v
 I:110:10d12:10:1:0
@@ -4337,6 +4460,8 @@ F:NO_CONF | NO_SLEEP | NO_FEAR | RES_NEXUS
 S:1_IN_1
 S:BLINK | TELE_AWAY
 D:It is a very unstable, strange pulsing mound of flesh.
+
+### Dungeon level 55 ###
 
 N:330:Shelob, Spider of Darkness
 G:S:D
@@ -4353,13 +4478,16 @@ F:ONLY_ITEM | DROP_1D2 | DROP_2D2 | DROP_GOOD
 F:SMART | BASH_DOOR
 F:ANIMAL | EVIL | HURT_LITE | NO_CONF | NO_SLEEP | IM_POIS | IM_ACID
 S:1_IN_4
-S:HEAL | BLIND | SLOW | CONF | SCARE
-S:CAUSE_3 | CAUSE_4 | BR_DARK | BR_POIS
-S:TRAPS | S_KIN
+S:HEAL | BLIND | SLOW | CONF | SCARE | CAUSE_3 | CAUSE_4
+S:TRAPS
+S:S_KIN
+S:BR_DARK | BR_POIS
 D:Shelob is an enormous bloated spider, the last daughter of Ungoliant the
 D: Unlight.  Her poison is legendary, as is her ego.  She normally guards the
-D: pass through Cirith Ungol, but occasionally goes out foraging for food to
-D: feed her voracious appetite.
+D: pass through Cirith Ungol, but occasionally goes out foraging for food to feed
+D: her voracious appetite.
+
+### Dungeon level 32 ###
 
 N:331:Ninja
 G:p:y
@@ -4385,8 +4513,9 @@ F:STUPID | EMPTY_MIND
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_6
 S:FORGET
-D:A mass of green vegetation.  You don't remember seeing anything like it
-D: before.
+D:A mass of green vegetation.  You don't remember seeing anything like it before.
+
+### Dungeon level 40 ###
 
 N:333:Storm giant
 G:P:B
@@ -4401,6 +4530,8 @@ S:1_IN_8
 S:BOULDER | BLINK | TELE_TO | CONF | SCARE | BO_ELEC | BA_ELEC
 D:It is a twenty-five foot tall giant wreathed in lightning.
 
+### Dungeon level 33 ###
+
 N:334:Cave troll
 G:T:u
 I:110:24d12:20:50:50
@@ -4414,6 +4545,8 @@ F:FRIENDS | DROP_60
 F:OPEN_DOOR | BASH_DOOR | REGENERATE
 F:EVIL | TROLL | IM_POIS | HURT_LITE
 D:He is a vicious monster, feared for his ferocity.
+
+### Dungeon level 34 ###
 
 N:335:Half-troll
 G:T:U
@@ -4430,6 +4563,8 @@ F:OPEN_DOOR | BASH_DOOR
 F:EVIL | TROLL | IM_POIS | REGENERATE
 D:A huge, ugly, half-human in search of plunder.
 
+### Dungeon level 33 ###
+
 N:336:Mystic
 G:p:o
 I:120:35d10:30:50:5
@@ -4444,10 +4579,10 @@ F:ONLY_ITEM | DROP_1D2
 F:INVISIBLE | OPEN_DOOR | BASH_DOOR
 F:IM_ACID | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_6
-S:HEAL | S_SPIDER | S_ANIMAL
-D:An adept at unarmed combat, the mystic strikes with stunning power.  He
-D: can summon help from nature and is able to focus his power to ease any
-D: pain.
+S:HEAL
+S:S_SPIDER | S_ANIMAL
+D:An adept at unarmed combat, the mystic strikes with stunning power.  He can
+D: summon help from nature and is able to focus his power to ease any pain.
 
 N:337:Barrow wight
 G:W:v
@@ -4494,8 +4629,8 @@ F:IM_FIRE | NO_CONF | NO_SLEEP | RES_DISE
 S:1_IN_6
 S:SLOW | CONF | SCARE
 S:BR_DISE | BR_CHAO
-D:A dragon twisted by the forces of chaos.  It seems first ugly, then fair,
-D: as its form shimmers and changes in front of your eyes.
+D:A dragon twisted by the forces of chaos.  It seems first ugly, then fair, as
+D: its form shimmers and changes in front of your eyes.
 
 N:340:Law drake
 G:d:B
@@ -4512,8 +4647,8 @@ F:IM_COLD | NO_CONF | NO_SLEEP
 S:1_IN_6
 S:SLOW | CONF | SCARE
 S:BR_SOUN | BR_SHAR
-D:This dragon is clever and cunning.  It laughs at your puny efforts to
-D: disturb it.
+D:This dragon is clever and cunning.  It laughs at your puny efforts to disturb
+D: it.
 
 N:341:Balance drake
 G:d:v
@@ -4530,8 +4665,8 @@ F:IM_FIRE | IM_COLD | NO_CONF | NO_SLEEP | RES_DISE
 S:1_IN_6
 S:SLOW | CONF | SCARE
 S:BR_SOUN | BR_SHAR | BR_DISE | BR_CHAO
-D:A mighty dragon, the balance drake seeks to maintain the Cosmic Balance,
-D: and despises your feeble efforts to destroy evil.
+D:A mighty dragon, the balance drake seeks to maintain the Cosmic Balance, and
+D: despises your feeble efforts to destroy evil.
 
 N:342:Ethereal drake
 G:d:o
@@ -4547,8 +4682,10 @@ F:EVIL | DRAGON | NO_CONF | NO_SLEEP
 S:1_IN_6
 S:SLOW | CONF | SCARE
 S:BR_LITE | BR_DARK
-D:A dragon of great power, with control over light and dark, the
-D: ethereal drake's eyes glare with white hatred from the shadows.
+D:A dragon of great power, with control over light and dark, the ethereal drake's
+D: eyes glare with white hatred from the shadows.
+
+### Dungeon level 34 ###
 
 N:343:Bert the Stone Troll
 G:T:s
@@ -4565,8 +4702,8 @@ F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR | REGENERATE
 F:EVIL | TROLL | IM_COLD | IM_POIS | HURT_LITE | HURT_ROCK
 S:1_IN_7
 S:BOULDER
-D:Big, brawny, powerful and with a taste for hobbit.  He has friends called
-D: Bill and Tom.
+D:Big, brawny, powerful and with a taste for hobbit.  He has friends called Bill
+D: and Tom.
 
 N:344:Bill the Stone Troll
 G:T:s
@@ -4583,8 +4720,8 @@ F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR | REGENERATE
 F:EVIL | TROLL | IM_COLD | IM_POIS | HURT_LITE | HURT_ROCK
 S:1_IN_7
 S:BOULDER
-D:Big, brawny, powerful and with a taste for hobbit.  He has friends called
-D: Bert and Tom.
+D:Big, brawny, powerful and with a taste for hobbit.  He has friends called Bert
+D: and Tom.
 
 N:345:Tom the Stone Troll
 G:T:s
@@ -4601,8 +4738,10 @@ F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR | REGENERATE
 F:EVIL | TROLL | IM_COLD | IM_POIS | HURT_LITE | HURT_ROCK
 S:1_IN_7
 S:BOULDER
-D:Big, brawny, powerful and with a taste for hobbit.  He has friends called
-D: Bert and Bill.
+D:Big, brawny, powerful and with a taste for hobbit.  He has friends called Bert
+D: and Bill.
+
+### Dungeon level 33 ###
 
 N:346:Shade
 G:G:D
@@ -4621,6 +4760,8 @@ S:BLIND | HOLD | DRAIN_MANA
 D:A shadowy form clutches at you from the darkness.  A powerful undead creature
 D: with a deadly touch.
 
+### Dungeon level 34 ###
+
 N:347:Spectre
 G:G:U
 I:120:14d20:20:30:10
@@ -4635,8 +4776,10 @@ F:EVIL | UNDEAD | IM_COLD | IM_POIS
 F:NO_CONF | NO_SLEEP
 S:1_IN_15
 S:BLIND | HOLD | DRAIN_MANA
-D:A phantasmal shrieking spirit.  Its wail drives the intense cold of pure
-D: evil deep within your body.
+D:A phantasmal shrieking spirit.  Its wail drives the intense cold of pure evil
+D: deep within your body.
+
+### Dungeon level 35 ###
 
 N:348:Water troll
 G:T:B
@@ -4653,6 +4796,8 @@ F:OPEN_DOOR | BASH_DOOR | REGENERATE
 F:EVIL | TROLL | IM_COLD | IM_POIS | HURT_LITE
 D:He is a troll that reeks of brine.
 
+### Dungeon level 33 ###
+
 N:349:Fire elemental
 G:E:r
 I:110:30d8:12:50:50
@@ -4667,6 +4812,8 @@ F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_6
 S:BO_FIRE
 D:It is a towering inferno of flames.
+
+### Dungeon level 39 ###
 
 N:350:Cherub
 G:A:G
@@ -4684,8 +4831,10 @@ F:NO_CONF | NO_SLEEP
 S:1_IN_3
 S:HEAL | HASTE | BLIND | SCARE | MIND_BLAST | BO_FIRE
 S:S_MONSTERS
-D:It is an angel moving very quickly, wielding a holy war hammer and casting
-D: a volley of powerful spells in your direction.
+D:It is an angel moving very quickly, wielding a holy war hammer and casting a
+D: volley of powerful spells in your direction.
+
+### Dungeon level 33 ###
 
 N:351:Water elemental
 G:E:b
@@ -4703,6 +4852,8 @@ S:1_IN_6
 S:BO_COLD
 D:It is a towering tempest of water.
 
+### Dungeon level 35 ###
+
 N:352:Invisible stalker
 G:E:y
 I:130:19d12:20:46:20
@@ -4716,6 +4867,8 @@ F:OPEN_DOOR | BASH_DOOR | POWERFUL
 F:EVIL | IM_ELEC | IM_POIS
 F:NO_CONF | NO_SLEEP | NO_FEAR
 D:It is impossible to define its form but its violence is legendary.
+
+### Dungeon level 34 ###
 
 N:353:Carrion crawler
 G:c:o
@@ -4758,10 +4911,11 @@ F:FORCE_MAXHP
 F:ONLY_ITEM | DROP_2D2 | DROP_GOOD
 F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR
 F:EVIL
-S:1_IN_10 | S_KIN
-D:A short and swarthy Easterling dressed in black.  He and his three sons
-D: once openly swore allegiance to the High Elves, but were secretly in the
-D: pay of Morgoth.
+S:1_IN_10
+S:S_KIN
+D:A short and swarthy Easterling dressed in black.  He and his three sons once
+D: openly swore allegiance to the High Elves, but were secretly in the pay of
+D: Morgoth.
 
 N:356:Lich
 G:L:o
@@ -4780,6 +4934,8 @@ S:BLINK | TELE_TO | TELE_AWAY | BLIND | HOLD | SLOW | SCARE
 S:CAUSE_3 | DRAIN_MANA | BRAIN_SMASH
 D:It is a skeletal form dressed in robes.  It radiates vastly evil power.
 
+### Dungeon level 36 ###
+
 N:357:Master vampire
 G:V:g
 I:110:34d10:20:60:10
@@ -4793,10 +4949,12 @@ F:DROP_4D2
 F:COLD_BLOOD | OPEN_DOOR | BASH_DOOR | REGENERATE
 F:EVIL | UNDEAD | IM_COLD | IM_POIS | HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_6
-S:TELE_TO | HOLD | CONF | SCARE | CAUSE_3 | MIND_BLAST
-S:DARKNESS | BO_NETH
+S:TELE_TO | HOLD | CONF | SCARE | CAUSE_3 | MIND_BLAST | DARKNESS
+S:BO_NETH
 D:It is a humanoid form dressed in robes.  Power emanates from its chilling
 D: frame.
+
+### Dungeon level 34 ###
 
 N:358:Giant grey scorpion
 G:S:s
@@ -4840,6 +4998,8 @@ S:1_IN_8
 S:BO_ELEC
 D:It is a towering tornado of winds.
 
+### Dungeon level 35 ###
+
 N:361:Hellhound
 G:C:r
 I:120:40d10:25:80:30
@@ -4855,6 +5015,8 @@ S:1_IN_5
 S:BR_FIRE
 D:It is a giant dog that glows with heat.  Flames pour from its nostrils.
 
+### Dungeon level 34 ###
+
 N:362:Eog golem
 G:g:u
 I:100:100d20:12:125:10
@@ -4868,8 +5030,10 @@ F:EMPTY_MIND | COLD_BLOOD | BASH_DOOR
 F:IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 F:NO_CONF | NO_SLEEP | NO_FEAR
 D:It is a massive deep brown statue, striding towards you with an
-D: all-too-familiar purpose.  Your magic surprisingly feels much less
-D: powerful now.
+D: all-too-familiar purpose.  Your magic surprisingly feels much less powerful
+D: now.
+
+### Dungeon level 36 ###
 
 N:363:Olog
 G:T:y
@@ -4883,6 +5047,8 @@ F:FORCE_MAXHP | OPEN_DOOR | FRIENDS | DROP_60
 F:SMART | BASH_DOOR
 F:EVIL | TROLL | IM_POIS | REGENERATE
 D:It is a massive intelligent troll with needle-sharp fangs.
+
+### Dungeon level 35 ###
 
 N:364:Dagashi
 G:p:y
@@ -4911,9 +5077,9 @@ F:BASH_DOOR
 F:ANIMAL | NO_CONF | NO_SLEEP
 S:1_IN_5
 S:BR_GRAV
-D:Unfettered by the usual constraints of gravity, these unnatural creatures
-D: are walking on the walls and even the ceiling!  The earth suddenly feels
-D: rather less solid as you see gravity warp all round the monsters.
+D:Unfettered by the usual constraints of gravity, these unnatural creatures are
+D: walking on the walls and even the ceiling!  The earth suddenly feels rather
+D: less solid as you see gravity warp all round the monsters.
 
 N:366:Acidic cytoplasm
 G:j:s
@@ -4943,8 +5109,8 @@ F:BASH_DOOR
 F:ANIMAL | NO_CONF | NO_SLEEP
 S:1_IN_5
 S:BR_INER
-D:Bizarrely, this hound seems to be hardly moving at all, yet it approaches
-D: you with deadly menace.  It makes you tired just to look at it.
+D:Bizarrely, this hound seems to be hardly moving at all, yet it approaches you
+D: with deadly menace.  It makes you tired just to look at it.
 
 N:368:Impact hound
 G:Z:u
@@ -4960,9 +5126,9 @@ F:BASH_DOOR
 F:ANIMAL | NO_CONF | NO_SLEEP
 S:1_IN_5
 S:BR_WALL
-D:A deep brown shape is visible before you, its canine form strikes you with
-D: an almost physical force.  The dungeon floor buckles as if struck by a
-D: powerful blow as it stalks towards you.
+D:A deep brown shape is visible before you, its canine form strikes you with an
+D: almost physical force.  The dungeon floor buckles as if struck by a powerful
+D: blow as it stalks towards you.
 
 N:369:Dread
 G:G:o
@@ -4978,9 +5144,11 @@ F:EVIL | UNDEAD | IM_COLD | IM_POIS
 F:NO_CONF | NO_SLEEP
 S:1_IN_15
 S:BLIND | HOLD | CONF | DRAIN_MANA | BO_NETH
-D:It is a form that screams its presence against the eye.  Death incarnate,
-D: its hideous black body seems to struggle against reality as the universe
-D: itself struggles to banish it.
+D:It is a form that screams its presence against the eye.  Death incarnate, its
+D: hideous black body seems to struggle against reality as the universe itself
+D: struggles to banish it.
+
+### Dungeon level 36 ###
 
 N:370:Ooze elemental
 G:E:g
@@ -5013,6 +5181,8 @@ S:1_IN_5
 S:DARKNESS | BO_FIRE
 D:It is a towering blackened form, crackling with heat.
 
+### Dungeon level 31 ###
+
 N:372:Young black dragon
 G:d:s
 I:110:30d10:20:60:70
@@ -5027,8 +5197,10 @@ F:EVIL | DRAGON | IM_ACID
 S:1_IN_10
 S:SCARE
 S:BR_ACID
-D:It has a form that legends are made of.  Its still-tender scales are a
-D: darkest black hue.  Acid drips from its body.
+D:It has a form that legends are made of.  Its still-tender scales are a darkest
+D: black hue.  Acid drips from its body.
+
+### Dungeon level 35 ###
 
 N:373:Mumak
 G:q:s
@@ -5052,6 +5224,8 @@ F:WEIRD_MIND | BASH_DOOR
 F:ANIMAL | IM_FIRE
 D:A giant ant covered in shaggy fur.  Its powerful jaws glow with heat.
 
+### Dungeon level 34 ###
+
 N:375:Mature white dragon
 G:d:w
 I:110:40d10:20:70:70
@@ -5067,6 +5241,8 @@ S:SCARE
 S:BR_COLD
 D:A large dragon, scales gleaming bright white.
 
+### Dungeon level 36 ###
+
 N:376:Xorn
 G:X:u
 I:110:16d10:20:80:10
@@ -5080,8 +5256,8 @@ F:EMPTY_MIND | COLD_BLOOD
 F:KILL_ITEM | PASS_WALL
 F:IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 F:HURT_ROCK | NO_CONF | NO_SLEEP
-D:A huge creature of the element Earth.  Able to merge with its element, it
-D: has four huge arms protruding from its enormous torso.
+D:A huge creature of the element Earth.  Able to merge with its element, it has
+D: four huge arms protruding from its enormous torso.
 
 N:377:Shadow
 G:G:D
@@ -5097,9 +5273,9 @@ F:INVISIBLE | COLD_BLOOD | PASS_WALL
 F:EVIL | UNDEAD | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_8
 S:TELE_TO | SLOW | BO_NETH
-D:A mighty spirit of darkness of vaguely humanoid form.  Razor-edged claws
-D: reach out to end your life as it glides towards you, seeking to suck the
-D: energy from your soul to feed its power.
+D:A mighty spirit of darkness of vaguely humanoid form.  Razor-edged claws reach
+D: out to end your life as it glides towards you, seeking to suck the energy from
+D: your soul to feed its power.
 
 N:378:Phantom
 G:G:v
@@ -5115,8 +5291,8 @@ F:INVISIBLE | COLD_BLOOD | PASS_WALL
 F:EVIL | UNDEAD | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_5
 S:FORGET
-D:An unholy creature of darkness, the aura emanating from this evil being
-D: saps your very soul.
+D:An unholy creature of darkness, the aura emanating from this evil being saps
+D: your very soul.
 
 N:379:Grey wraith
 G:W:s
@@ -5131,8 +5307,10 @@ F:COLD_BLOOD | OPEN_DOOR | BASH_DOOR
 F:EVIL | UNDEAD | HURT_LITE | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_7
 S:HOLD | SCARE | CAUSE_3 | DARKNESS
-D:A tangible but ghostly form, made of grey fog.  The air around it feels
-D: deathly cold.
+D:A tangible but ghostly form, made of grey fog.  The air around it feels deathly
+D: cold.
+
+### Dungeon level 32 ###
 
 N:380:Young multi-hued dragon
 G:d:v
@@ -5149,8 +5327,10 @@ F:EVIL | DRAGON | IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 S:1_IN_8
 S:SCARE
 S:BR_ACID | BR_FIRE | BR_COLD | BR_ELEC | BR_POIS
-D:It has a form that legends are made of.  Beautiful scales of shimmering
-D: and magical colours cover it.
+D:It has a form that legends are made of.  Beautiful scales of shimmering and
+D: magical colours cover it.
+
+### Dungeon level 36 ###
 
 N:381:Colossus
 G:g:G
@@ -5166,8 +5346,9 @@ F:IM_FIRE | IM_COLD | IM_ELEC
 F:IM_POIS
 F:NO_CONF | NO_SLEEP | NO_FEAR
 D:An enormous construct resembling a titan made from stone.  It strides
-D: purposefully towards you, swinging its slow fists with earth-shattering
-D: power.
+D: purposefully towards you, swinging its slow fists with earth-shattering power.
+
+### Dungeon level 31 ###
 
 N:382:Young gold dragon
 G:d:y
@@ -5186,6 +5367,8 @@ S:BR_SOUN
 D:It has a form that legends are made of.  Its still-tender scales are a
 D: tarnished gold hue, and light is reflected from its form.
 
+### Dungeon level 42 ###
+
 N:383:Rogrog the Black Troll
 G:T:D
 I:120:20d100:20:70:50
@@ -5202,8 +5385,10 @@ F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR
 F:EVIL | TROLL | IM_COLD | IM_POIS | REGENERATE
 S:1_IN_7
 S:BOULDER
-D:A massive and cruel troll of great power, drool slides caustically down
-D: his muscular frame.  Despite his bulk, he strikes with stunning speed.
+D:A massive and cruel troll of great power, drool slides caustically down his
+D: muscular frame.  Despite his bulk, he strikes with stunning speed.
+
+### Dungeon level 34 ###
 
 N:384:Mature blue dragon
 G:d:b
@@ -5250,6 +5435,8 @@ S:CONF | SCARE
 S:BR_CONF
 D:A large dragon with scales of rich bronze.
 
+### Dungeon level 31 ###
+
 N:387:Young red dragon
 G:d:r
 I:110:30d10:20:60:70
@@ -5264,8 +5451,10 @@ F:EVIL | DRAGON | IM_FIRE
 S:1_IN_10
 S:SCARE
 S:BR_FIRE
-D:It has a form that legends are made of.  Its still-tender scales are a
-D: deepest red hue.  Heat radiates from its form.
+D:It has a form that legends are made of.  Its still-tender scales are a deepest
+D: red hue.  Heat radiates from its form.
+
+### Dungeon level 36 ###
 
 N:388:Trapper
 G:.:w
@@ -5279,8 +5468,8 @@ F:CHAR_CLEAR | ATTR_CLEAR
 F:NEVER_MOVE | FORCE_MAXHP
 F:INVISIBLE | EMPTY_MIND | COLD_BLOOD
 F:NO_CONF | NO_SLEEP | NO_FEAR
-D:A larger cousin of the lurker, this creature traps unsuspecting victims
-D: and paralyzes them, to be slowly digested later.
+D:A larger cousin of the lurker, this creature traps unsuspecting victims and
+D: paralyzes them, to be slowly digested later.
 
 N:389:Bodak
 G:u:r
@@ -5297,6 +5486,8 @@ S:BO_FIRE | BA_FIRE
 S:S_DEMON
 D:It is a humanoid form composed of flames and hatred.
 
+### Dungeon level 37 ###
+
 N:390:Ice elemental
 G:E:w
 I:110:35d10:10:60:90
@@ -5312,6 +5503,8 @@ F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_5
 S:BO_ICEE | BA_COLD
 D:It is a towering glacier of ice.
+
+### Dungeon level 36 ###
 
 N:391:Necromancer
 G:p:R
@@ -5347,8 +5540,7 @@ F:NO_CONF | NO_SLEEP
 S:1_IN_4
 S:TELE_TO
 S:S_MONSTERS
-D:A mighty warrior from the east, Lorgan hates everything that he cannot
-D: control.
+D:A mighty warrior from the east, Lorgan hates everything that he cannot control.
 
 N:393:Demonologist
 G:p:R
@@ -5363,9 +5555,11 @@ F:ONLY_ITEM | DROP_1D2
 F:SMART | OPEN_DOOR | BASH_DOOR
 F:EVIL
 S:1_IN_2
-S:TPORT | HOLD
-S:S_DEMON | BO_FIRE
+S:TPORT | HOLD | BO_FIRE
+S:S_DEMON
 D:A figure twisted by evil standing in robes of deepest crimson.
+
+### Dungeon level 37 ###
 
 N:394:Mummified troll
 G:z:w
@@ -5399,6 +5593,8 @@ S:1_IN_2
 S:S_KIN
 D:She's upset because you hurt her children.
 
+### Dungeon level 38 ###
+
 N:396:Will o' the wisp
 G:E:W
 I:130:20d10:30:150:0
@@ -5413,9 +5609,11 @@ F:IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_2
 S:BLINK | TPORT | CONF | CAUSE_2
-D:A strange ball of glowing light.  It disappears and reappears and seems to
-D: draw you to it.  You seem somehow compelled to stand still and watch its
-D: strange dancing motion.
+D:A strange ball of glowing light.  It disappears and reappears and seems to draw
+D: you to it.  You seem somehow compelled to stand still and watch its strange
+D: dancing motion.
+
+### Dungeon level 37 ###
 
 N:397:Magma elemental
 G:E:o
@@ -5490,6 +5688,8 @@ S:1_IN_6
 S:BR_PLAS
 D:A whirlpool of intense flame, charring the stones at your feet.
 
+### Dungeon level 36 ###
+
 N:402:Mature red dragon
 G:d:r
 I:110:50d10:20:80:70
@@ -5522,6 +5722,8 @@ S:CONF | SCARE
 S:BR_SOUN
 D:A large dragon with scales of gleaming gold.
 
+### Dungeon level 33 ###
+
 N:404:Crystal drake
 G:d:u
 I:110:45d10:20:70:70
@@ -5536,8 +5738,10 @@ F:EVIL | DRAGON | IM_COLD | NO_CONF | NO_SLEEP
 S:1_IN_6
 S:SLOW | CONF | SCARE
 S:BR_SHAR
-D:A dragon of strange crystalline form.  Light shines through it, dazzling
-D: your eyes with spectrums of colour.
+D:A dragon of strange crystalline form.  Light shines through it, dazzling your
+D: eyes with spectrums of colour.
+
+### Dungeon level 36 ###
 
 N:405:Mature black dragon
 G:d:s
@@ -5554,6 +5758,8 @@ S:1_IN_9
 S:SCARE
 S:BR_ACID
 D:A large dragon, with scales of deepest black.
+
+### Dungeon level 38 ###
 
 N:406:Mature multi-hued dragon
 G:d:v
@@ -5587,9 +5793,8 @@ F:EVIL | IM_COLD
 S:1_IN_5
 S:BLIND | SCARE | CAUSE_3 | BO_NETH
 S:S_MONSTERS
-D:It is a humanoid figure dressed in armour of an ancient form.  From beneath
-D: its helmet, eyes glow a baleful red and seem to pierce you like lances of
-D: fire.
+D:It is a humanoid figure dressed in armour of an ancient form.  From beneath its
+D: helmet, eyes glow a baleful red and seem to pierce you like lances of fire.
 
 N:408:Castamir the Usurper
 G:p:R
@@ -5633,10 +5838,13 @@ F:RAND_50 | RAND_25
 F:EMPTY_MIND | BASH_DOOR | POWERFUL
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_4
-S:BR_LITE | SHRIEK
+S:SHRIEK
+S:BR_LITE
 D:A strange pillar of shining light that hurts your eyes.  Its shape changes
 D: constantly as it cuts through the air towards you.  It is like a beacon,
 D: waking monsters from their slumber.
+
+### Dungeon level 40 ###
 
 N:411:Ancient blue dragon
 G:D:b
@@ -5682,10 +5890,12 @@ F:FORCE_SLEEP | FORCE_MAXHP
 F:BASH_DOOR
 F:EVIL | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_2
-S:BLIND | SLOW | CONF | SCARE | DRAIN_MANA | MIND_BLAST
-S:FORGET | DARKNESS | BO_ACID | BO_FIRE | BO_COLD | BO_ELEC
-D:A vile creature with one huge central eye, twelve smaller eyes on stalks, and
-D: a huge mouth filled with sharp teeth.
+S:BLIND | SLOW | CONF | SCARE | DRAIN_MANA | MIND_BLAST | FORGET
+S:DARKNESS | BO_ACID | BO_FIRE | BO_COLD | BO_ELEC
+D:A vile creature with one huge central eye, twelve smaller eyes on stalks, and a
+D: huge mouth filled with sharp teeth.
+
+### Dungeon level 38 ###
 
 N:414:Emperor wight
 G:W:r
@@ -5704,6 +5914,8 @@ S:HOLD | SCARE | CAUSE_3 | BO_NETH
 D:Your life force is torn from your body as this powerful unearthly being
 D: approaches.
 
+### Dungeon level 45 ###
+
 N:415:Seraph
 G:A:r
 I:120:150d10:30:68:255
@@ -5720,8 +5932,10 @@ F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_11
 S:HEAL | HASTE | TELE_AWAY | CONF | BO_MANA | BO_PLAS
 S:S_MONSTERS | S_ANGEL
-D:It is an angel, fast and strong.  You are stunned by its extreme holiness
-D: and try to resist all desires to obey it.
+D:It is an angel, fast and strong.  You are stunned by its extreme holiness and
+D: try to resist all desires to obey it.
+
+### Dungeon level 43 ###
 
 N:416:Vargo, Tyrant of Fire
 G:E:r
@@ -5740,6 +5954,8 @@ F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_4
 S:BO_PLAS | BA_FIRE
 D:A towering fire elemental, Vargo burns everything beyond recognition.
+
+### Dungeon level 38 ###
 
 N:417:Black wraith
 G:W:D
@@ -5772,8 +5988,10 @@ F:EVIL | DEMON
 F:IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_7
 S:BLIND | CONF | BO_FIRE
-D:It is a lesser demon of female form; however, she takes little time to
-D: show her true colours.
+D:It is a lesser demon of female form; however, she takes little time to show her
+D: true colours.
+
+### Dungeon level 39 ###
 
 N:419:Nether wraith
 G:W:G
@@ -5790,8 +6008,10 @@ F:EVIL | UNDEAD | IM_COLD | IM_POIS
 F:HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_6
 S:BLIND | SCARE | CAUSE_3 | MIND_BLAST | DARKNESS | BO_NETH
-D:A form that hurts the eye, death permeates the air around it.  As it nears
-D: you, a coldness saps your soul.
+D:A form that hurts the eye, death permeates the air around it.  As it nears you,
+D: a coldness saps your soul.
+
+### Dungeon level 37 ###
 
 N:420:Eldrak
 G:T:r
@@ -5806,6 +6026,8 @@ F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR
 F:EVIL | TROLL | IM_POIS | NO_CONF | NO_SLEEP
 D:A massive troll, larger and stronger than many men together.
 
+### Dungeon level 38 ###
+
 N:421:Ettin
 G:T:b
 I:110:15d100:20:100:30
@@ -5819,6 +6041,8 @@ F:OPEN_DOOR | BASH_DOOR
 F:EVIL | TROLL | IM_POIS | NO_CONF | NO_SLEEP
 D:A massive two-headed troll of huge strength, ettins are stupid but violent.
 D: They are also living proof that two heads are not more intelligent than one...
+
+### Dungeon level 43 ###
 
 N:422:Waldern, King of Water
 G:E:b
@@ -5836,8 +6060,10 @@ F:IM_POIS | IM_ACID | IM_FIRE | IM_COLD | IM_WATER
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_4
 S:BO_ICEE | BO_WATE | BA_COLD | BA_WATE
-D:A towering water elemental, Waldern is master of all things liquid.
-D: Wave after wave drowns your frail body.
+D:A towering water elemental, Waldern is master of all things liquid.  Wave after
+D: wave drowns your frail body.
+
+### Dungeon level 39 ###
 
 N:423:Kavlax the Many-Headed
 G:d:v
@@ -5854,10 +6080,12 @@ F:OPEN_DOOR | BASH_DOOR | POWERFUL
 F:EVIL | DRAGON | IM_ACID | IM_FIRE | IM_COLD | IM_ELEC
 F:NO_CONF | NO_SLEEP | RES_NEXUS
 S:1_IN_4
-S:BR_ACID | BR_FIRE | BR_COLD | BR_ELEC | BR_SOUN | BR_CONF
-S:BR_SHAR | BR_GRAV | BR_NEXU
-D:A large dragon with a selection of heads, all shouting and arguing as they
-D: look for prey, but each with its own deadly breath weapon.
+S:BR_ACID | BR_FIRE | BR_COLD | BR_ELEC | BR_SOUN | BR_CONF | BR_SHAR
+S:BR_GRAV | BR_NEXU
+D:A large dragon with a selection of heads, all shouting and arguing as they look
+D: for prey, but each with its own deadly breath weapon.
+
+### Dungeon level 40 ###
 
 N:424:Ancient white dragon
 G:D:w
@@ -5891,6 +6119,8 @@ S:BLIND | CONF | SCARE
 S:BR_POIS
 D:A huge draconic form enveloped in clouds of poisonous vapour.
 
+### Dungeon level 39 ###
+
 N:426:7-headed hydra
 G:M:G
 I:120:100d10:20:90:20
@@ -5920,8 +6150,10 @@ F:FORCE_MAXHP
 F:ONLY_GOLD | DROP_2D2
 F:COLD_BLOOD | OPEN_DOOR | BASH_DOOR
 F:EVIL | UNDEAD | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
-D:A fearsome skeletal horse with glowing eyes, that watch you with little
-D: more than a hatred of all that lives.
+D:A fearsome skeletal horse with glowing eyes, that watch you with little more
+D: than a hatred of all that lives.
+
+### Dungeon level 42 ###
 
 N:428:Vampire lord
 G:V:b
@@ -5937,9 +6169,11 @@ F:COLD_BLOOD | OPEN_DOOR | BASH_DOOR | REGENERATE
 F:EVIL | UNDEAD | IM_COLD | IM_POIS | HURT_LITE
 F:NO_CONF | NO_SLEEP
 S:1_IN_7
-S:BLIND | HOLD | SCARE | CAUSE_3 | CAUSE_4 | DRAIN_MANA
-S:BRAIN_SMASH | DARKNESS | BO_NETH
+S:BLIND | HOLD | SCARE | CAUSE_3 | CAUSE_4 | DRAIN_MANA | BRAIN_SMASH
+S:DARKNESS | BO_NETH
 D:A foul wind chills your bones as this ghastly figure approaches.
+
+### Dungeon level 41 ###
 
 N:429:Ancient black dragon
 G:D:s
@@ -5957,6 +6191,8 @@ S:BLIND | CONF | SCARE
 S:BR_ACID
 D:A huge draconic form.  Pools of acid melt the floor around it.
 
+### Dungeon level 40 ###
+
 N:430:Disenchanter worm mass
 G:w:v
 I:100:10d8:7:5:10
@@ -5965,8 +6201,10 @@ B:CRAWL:UN_BONUS:1d4
 F:RAND_50 | ATTR_MULTI
 F:STUPID | WEIRD_MIND | MULTIPLY | BASH_DOOR
 F:ANIMAL | HURT_LITE | NO_FEAR | RES_DISE
-D:It is a strange mass of squirming worms.  Magical energy crackles
-D: around its disgusting form.
+D:It is a strange mass of squirming worms.  Magical energy crackles around its
+D: disgusting form.
+
+### Dungeon level 45 ###
 
 N:431:Rotting quylthulg
 G:Q:u
@@ -5979,6 +6217,8 @@ S:1_IN_2
 S:BLINK | TPORT
 S:S_UNDEAD
 D:It is a pulsing flesh mound that reeks of death and putrefaction.
+
+### Dungeon level 40 ###
 
 N:432:Spirit troll
 G:G:G
@@ -5994,6 +6234,8 @@ F:EVIL | UNDEAD | TROLL | IM_COLD | IM_ELEC | IM_POIS
 F:NO_CONF | NO_SLEEP | REGENERATE
 D:A weird ghostly troll-like being from the ethereal plane.
 
+### Dungeon level 56 ###
+
 N:433:Lesser titan
 G:P:y
 I:120:24d100:30:80:15
@@ -6007,9 +6249,12 @@ F:DROP_4D2 | DROP_GOOD | ONLY_ITEM
 F:SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR
 F:EVIL | GIANT
 S:1_IN_3
-S:BOULDER | HEAL | TELE_TO | S_MONSTERS
-D:It is a humanoid figure thirty feet tall that gives off an aura of power
-D: and hate.
+S:BOULDER | HEAL | TELE_TO
+S:S_MONSTERS
+D:It is a humanoid figure thirty feet tall that gives off an aura of power and
+D: hate.
+
+### Dungeon level 40 ###
 
 N:434:9-headed hydra
 G:M:r
@@ -6043,8 +6288,10 @@ F:EVIL | NO_CONF | NO_SLEEP
 S:1_IN_2
 S:BLIND
 S:S_DRAGON
-D:This elusive female spellcaster has a special affinity for dragons, whom
-D: she rarely fights without.
+D:This elusive female spellcaster has a special affinity for dragons, whom she
+D: rarely fights without.
+
+### Dungeon level 44 ###
 
 N:436:Knight Templar
 G:p:w
@@ -6058,13 +6305,16 @@ F:ONLY_ITEM | DROP_90 | DROP_2D2
 F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR | SMART
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_4
-S:HEAL | CAUSE_3 | CAUSE_4 | HASTE | SCARE | BLIND | S_ANGEL
-D:It seems that the more devout the person, the more likely they are to cross
-D: the boundary between piety and sanctimoniousness.  And such is the case with
-D: the Order of the Knights Templar; they are among the most pious and
-D: powerful of the religious knightly orders, but noted for their intolerance.
-D: Thus it is Morgoth's will that is unwittingly done, as the forces of good
-D: are set against each other.
+S:HEAL | CAUSE_3 | CAUSE_4 | HASTE | SCARE | BLIND
+S:S_ANGEL
+D:It seems that the more devout the person, the more likely they are to cross the
+D: boundary between piety and sanctimoniousness.  And such is the case with the
+D: Order of the Knights Templar; they are among the most pious and powerful of
+D: the religious knightly orders, but noted for their intolerance.  Thus it is
+D: Morgoth's will that is unwittingly done, as the forces of good are set against
+D: each other.
+
+### Dungeon level 40 ###
 
 N:437:Sorcerer
 G:p:R
@@ -6079,11 +6329,11 @@ F:ONLY_ITEM | DROP_90 | DROP_4D2
 F:OPEN_DOOR | BASH_DOOR
 F:EVIL | NO_CONF | NO_SLEEP
 S:1_IN_2
-S:BLINK | TELE_TO | BLIND | CONF | CAUSE_3 | TRAPS
-S:BO_ACID | BA_FIRE | BA_COLD
+S:BLINK | TELE_TO | BLIND | CONF | CAUSE_3 | TRAPS | BO_ACID
+S:BA_FIRE | BA_COLD
 S:S_MONSTER | S_UNDEAD | S_DRAGON
-D:A human figure in robes, he moves with magically improved speed, and his
-D: hands are ablur with spell casting.
+D:A human figure in robes, he moves with magically improved speed, and his hands
+D: are ablur with spell casting.
 
 N:438:Xaren
 G:X:s
@@ -6110,8 +6360,8 @@ B:CRUSH:HURT:8d12
 B:HIT:ELEC:12d12
 F:BASH_DOOR
 F:ANIMAL | IM_ELEC
-D:A vast legendary bird, its iron talons rake the most impenetrable of
-D: surfaces and its screech echoes through the many winding dungeon corridors.
+D:A vast legendary bird, its iron talons rake the most impenetrable of surfaces
+D: and its screech echoes through the many winding dungeon corridors.
 
 N:440:Uvatha the Horseman
 G:W:D
@@ -6126,8 +6376,8 @@ F:FORCE_MAXHP
 F:ONLY_ITEM | DROP_2D2 | DROP_GOOD
 F:COLD_BLOOD | OPEN_DOOR | BASH_DOOR | MOVE_BODY
 F:EVIL | UNDEAD | IM_COLD | IM_POIS | HURT_LITE | NO_CONF | NO_SLEEP
-D:A tall black cloaked Ringwraith, he is a master of horsemanship.  He longs
-D: to taste your blood.
+D:A tall black cloaked Ringwraith, he is a master of horsemanship.  He longs to
+D: taste your blood.
 
 N:441:Minotaur
 G:H:s
@@ -6157,9 +6407,11 @@ F:EVIL | IM_ACID | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_2
 S:HOLD | SCARE | CAUSE_3 | BO_FIRE | BO_PLAS | BA_ACID
 S:S_HYDRA | S_KIN
-D:One of the original three ugly sisters.  Her face could sink a thousand
-D: ships.  Her scales rattle as she slithers towards you, venom dripping from
-D: her ghastly mouth.
+D:One of the original three ugly sisters.  Her face could sink a thousand ships.
+D: Her scales rattle as she slithers towards you, venom dripping from her ghastly
+D: mouth.
+
+### Dungeon level 45 ###
 
 N:443:Death drake
 G:D:G
@@ -6174,10 +6426,12 @@ F:INVISIBLE | TAKE_ITEM
 F:SMART | PASS_WALL | POWERFUL | MOVE_BODY
 F:EVIL | DRAGON | IM_COLD | NO_CONF | NO_SLEEP
 S:1_IN_5
-S:SLOW | CONF | SCARE
-S:BR_NETH | DARKNESS
-D:It is a dragon-like form wrapped in darkness.  You cannot make out its
-D: true form but you sense its evil.
+S:SLOW | CONF | SCARE | DARKNESS
+S:BR_NETH
+D:It is a dragon-like form wrapped in darkness.  You cannot make out its true
+D: form but you sense its evil.
+
+### Dungeon level 41 ###
 
 N:444:Ancient red dragon
 G:D:r
@@ -6193,8 +6447,8 @@ F:EVIL | DRAGON | IM_FIRE | NO_CONF | NO_SLEEP
 S:1_IN_6
 S:BLIND | CONF | SCARE
 S:BR_FIRE
-D:A huge draconic form.  Wisps of smoke steam from its nostrils and the
-D: extreme heat surrounding it makes you gasp for breath.
+D:A huge draconic form.  Wisps of smoke steam from its nostrils and the extreme
+D: heat surrounding it makes you gasp for breath.
 
 N:445:Ancient gold dragon
 G:D:y
@@ -6210,7 +6464,10 @@ F:EVIL | DRAGON | NO_CONF | NO_SLEEP
 S:1_IN_6
 S:BLIND | CONF | SCARE
 S:BR_SOUN
-D:A huge draconic form wreathed in a nimbus of light. Its roar stuns and deafens you.
+D:A huge draconic form wreathed in a nimbus of light.  Its roar stuns and deafens
+D: you.
+
+### Dungeon level 45 ###
 
 N:446:Great crystal drake
 G:D:u
@@ -6226,9 +6483,10 @@ F:EVIL | DRAGON | IM_COLD | NO_CONF | NO_SLEEP
 S:1_IN_5
 S:SLOW | CONF | SCARE
 S:BR_SHAR
-D:A huge crystalline dragon.  Its claws could cut you to shreds and its
-D: teeth are razor sharp.  Strange colours ripple through it as it moves in
-D: the light.
+D:A huge crystalline dragon.  Its claws could cut you to shreds and its teeth are
+D: razor sharp.  Strange colours ripple through it as it moves in the light.
+
+### Dungeon level 40 ###
 
 N:447:Vrock
 G:U:s
@@ -6261,8 +6519,10 @@ F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_10
 S:BLIND | CONF | SCARE | CAUSE_3
 S:S_DEMON
-D:It is a demon of small stature, but its armoured frame moves with
-D: lightning speed and its powers make it a tornado of death and destruction.
+D:It is a demon of small stature, but its armoured frame moves with lightning
+D: speed and its powers make it a tornado of death and destruction.
+
+### Dungeon level 43 ###
 
 N:449:Adunaphel the Quiet
 G:W:D
@@ -6279,11 +6539,13 @@ F:INVISIBLE | COLD_BLOOD | PASS_WALL | MOVE_BODY
 F:EVIL | UNDEAD | IM_COLD | IM_POIS
 F:HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_3
-S:BLIND | HOLD | SCARE | CAUSE_3 | FORGET
-S:BO_ACID | BO_FIRE | BO_COLD | BO_NETH
+S:BLIND | HOLD | SCARE | CAUSE_3 | FORGET | BO_ACID | BO_FIRE
+S:BO_COLD | BO_NETH
 S:S_MONSTER
-D:A sorceress in life, Adunaphel quickly fell under Sauron's sway and the
-D: power of the rings.
+D:A sorceress in life, Adunaphel quickly fell under Sauron's sway and the power
+D: of the rings.
+
+### Dungeon level 41 ###
 
 N:450:Dark elven sorcerer
 G:h:R
@@ -6301,8 +6563,8 @@ S:1_IN_2
 S:HEAL | BLINK | TELE_TO | BLIND | CONF | CAUSE_3 | DARKNESS
 S:BO_ACID | BA_FIRE | BA_COLD
 S:S_MONSTER | S_UNDEAD | S_DEMON
-D:A dark elven figure, dressed in deepest black.  Power seems to crackle
-D: from his slender frame.
+D:A dark elven figure, dressed in deepest black.  Power seems to crackle from his
+D: slender frame.
 
 N:451:Master lich
 G:L:r
@@ -6317,8 +6579,8 @@ F:ONLY_ITEM | DROP_2D2 | DROP_4D2
 F:COLD_BLOOD | OPEN_DOOR | BASH_DOOR
 F:EVIL | UNDEAD | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_3
-S:BLINK | TELE_TO | BLIND | HOLD | CONF | SCARE | CAUSE_3 | CAUSE_4
-S:DRAIN_MANA | BRAIN_SMASH
+S:BLINK | TELE_TO | BLIND | HOLD | CONF | SCARE | CAUSE_3
+S:CAUSE_4 | DRAIN_MANA | BRAIN_SMASH
 S:S_UNDEAD
 D:A skeletal form wrapped in robes.  Powerful magic crackles along its bony
 D: fingers.
@@ -6338,6 +6600,8 @@ S:BO_FIRE
 S:S_DEMON
 D:It is a demon of lizard form with cruel-looking jaws.
 
+### Dungeon level 45 ###
+
 N:453:Akhorahil the Blind
 G:W:D
 I:120:24d100:90:70:10
@@ -6352,12 +6616,14 @@ F:ONLY_ITEM | DROP_4D2 | DROP_GOOD
 F:COLD_BLOOD | OPEN_DOOR | BASH_DOOR | MOVE_BODY
 F:EVIL | UNDEAD | IM_COLD | IM_POIS | HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_3
-S:BLIND | HOLD | SCARE | CAUSE_3 | DARKNESS
-S:BO_FIRE | BO_COLD | BO_NETH
+S:BLIND | HOLD | SCARE | CAUSE_3 | DARKNESS | BO_FIRE | BO_COLD
+S:BO_NETH
 S:S_MONSTERS
 D:A mighty sorcerer King, Akhorahil was blind in life.  With powerful
-D: enchantments, he created jewelled eyes that enabled him to see better than
-D: any ordinary man ever could.
+D: enchantments, he created jewelled eyes that enabled him to see better than any
+D: ordinary man ever could.
+
+### Dungeon level 41 ###
 
 N:454:Gorlim, Betrayer of Barahir
 G:p:s
@@ -6375,9 +6641,11 @@ F:IM_ACID | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_2
 S:CAUSE_3 | BO_WATE | BO_MANA
 D:This sad creature - once a mighty warrior - betrayed his former friends to
-D: Morgoth's army in return for, he thought, safety for himself and his wife.
-D: And so he fell under Morgoth's power and became little more than a mindless
+D: Morgoth's army in return for, he thought, safety for himself and his wife.  And
+D: so he fell under Morgoth's power and became little more than a mindless
 D: servant of evil, even though the other side of his "bargain" was not kept.
+
+### Dungeon level 55 ###
 
 N:455:Archon
 G:A:y
@@ -6395,9 +6663,11 @@ F:NO_CONF | NO_FEAR | NO_SLEEP
 S:1_IN_3
 S:TELE_TO | BLIND | SCARE | CAUSE_2 | CAUSE_4 | BO_MANA
 S:S_ANGEL
-D:Never a more heavenly being have you seen.  The very holiness of its
-D: presence makes you deeply respect it.  Few creatures can match the powers
-D: of an Archon; fewer still live to tell the tale after attacking one.
+D:Never a more heavenly being have you seen.  The very holiness of its presence
+D: makes you deeply respect it.  Few creatures can match the powers of an Archon;
+D: fewer still live to tell the tale after attacking one.
+
+### Dungeon level 43 ###
 
 N:456:Glabrezu
 G:U:U
@@ -6413,6 +6683,8 @@ S:1_IN_9
 S:BO_FIRE
 S:S_DEMON
 D:It is demon with arms and pincers, its form a true mockery of life.
+
+### Dungeon level 48 ###
 
 N:457:Ren the Unclean
 G:W:D
@@ -6431,9 +6703,11 @@ F:HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_3
 S:BLIND | HOLD | SCARE | CAUSE_3 | BO_FIRE | BO_NETH | BA_FIRE
 S:S_MONSTER
-D:Ren was an insane eastern king who believed himself to be the son of a
-D: volcano god.  At an early age his sanity was destroyed by a plague that
-D: wiped out his family, and he never recovered.
+D:Ren was an insane eastern king who believed himself to be the son of a volcano
+D: god.  At an early age his sanity was destroyed by a plague that wiped out his
+D: family, and he never recovered.
+
+### Dungeon level 45 ###
 
 N:458:Nalfeshnee
 G:U:r
@@ -6449,10 +6723,10 @@ F:EVIL | DEMON
 F:IM_FIRE | NO_CONF | NO_SLEEP
 S:1_IN_9
 S:BLIND | CONF
-S:BR_FIRE
 S:S_DEMON
-D:It is a large demon with the head of a giant boar.  Flames run up and down
-D: its length.
+S:BR_FIRE
+D:It is a large demon with the head of a giant boar.  Flames run up and down its
+D: length.
 
 N:459:Undead beholder
 G:e:u
@@ -6468,13 +6742,15 @@ F:EVIL | UNDEAD
 F:IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 F:NO_CONF | NO_SLEEP
 S:1_IN_2
-S:SLOW | CONF | CAUSE_4 | DRAIN_MANA | MIND_BLAST | FORGET
-S:BO_MANA | BO_NETH | BRAIN_SMASH | BA_FIRE | BA_COLD | BO_ACID
+S:SLOW | CONF | CAUSE_4 | DRAIN_MANA | MIND_BLAST | FORGET | BO_MANA
+S:BO_NETH | BRAIN_SMASH | BA_FIRE | BA_COLD | BO_ACID
 S:S_UNDEAD
 D:A beholder which has cheated death.  Black nether storms rage around the
-D: bloodshot pupil of its central giant eye, and light seems to bend as it
-D: sucks its power from the very air around it.  Your soul chills as it drains
-D: your vitality for its evil enchantments.
+D: bloodshot pupil of its central giant eye, and light seems to bend as it sucks
+D: its power from the very air around it.  Your soul chills as it drains your
+D: vitality for its evil enchantments.
+
+### Dungeon level 42 ###
 
 N:460:Dread
 G:G:o
@@ -6491,9 +6767,11 @@ F:EVIL | UNDEAD | IM_COLD | IM_POIS
 F:NO_CONF | NO_SLEEP
 S:1_IN_15
 S:BLIND | HOLD | CONF | DRAIN_MANA | BO_NETH
-D:It is a form that screams its presence against the eye.  Death incarnate,
-D: its hideous black body seems to struggle against reality as the universe
-D: itself struggles to banish it.
+D:It is a form that screams its presence against the eye.  Death incarnate, its
+D: hideous black body seems to struggle against reality as the universe itself
+D: struggles to banish it.
+
+### Dungeon level 43 ###
 
 N:461:Mumak
 G:q:s
@@ -6523,8 +6801,10 @@ F:IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_5
 S:BLIND | CONF | SCARE
 S:BR_ACID | BR_FIRE | BR_COLD | BR_ELEC | BR_POIS
-D:A huge draconic form.  Many colours ripple down its massive frame.  Few
-D: live to see another.
+D:A huge draconic form.  Many colours ripple down its massive frame.  Few live to
+D: see another.
+
+### Dungeon level 45 ###
 
 N:463:Ethereal dragon
 G:D:o
@@ -6541,9 +6821,11 @@ F:EVIL | DRAGON | NO_CONF | NO_SLEEP
 S:1_IN_5
 S:BLIND | CONF
 S:BR_LITE | BR_DARK | BR_CONF
-D:A huge dragon emanating from the ethereal plane, this terrible dragon is
-D: a master of light and dark.  Its form disappears from sight as it cloaks
-D: itself in unearthly shadows.
+D:A huge dragon emanating from the ethereal plane, this terrible dragon is a
+D: master of light and dark.  Its form disappears from sight as it cloaks itself
+D: in unearthly shadows.
+
+### Dungeon level 52 ###
 
 N:464:Ji Indur Dawndeath
 G:W:D
@@ -6560,11 +6842,13 @@ F:INVISIBLE | COLD_BLOOD | OPEN_DOOR | BASH_DOOR | MOVE_BODY
 F:EVIL | UNDEAD | IM_FIRE | IM_COLD | IM_POIS
 F:HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_3
-S:BLIND | HOLD | SCARE | CAUSE_3
-S:BA_FIRE | BA_NETH | BA_COLD | BA_ELEC | BA_ACID
+S:BLIND | HOLD | SCARE | CAUSE_3 | BA_FIRE | BA_NETH | BA_COLD
+S:BA_ELEC | BA_ACID
 S:S_UNDEAD
-D:This Ringwraith was a weak-minded sorcerer-king who fell easily under
-D: Sauron's power.
+D:This Ringwraith was a weak-minded sorcerer-king who fell easily under Sauron's
+D: power.
+
+### Dungeon level 47 ###
 
 N:465:Marilith
 G:U:y
@@ -6583,6 +6867,8 @@ S:1_IN_9
 S:BLIND | CAUSE_2
 S:S_DEMON
 D:She is a demon of female form with many arms, each bearing deadly weapons.
+
+### Dungeon level 43 ###
 
 N:466:Quaker, Master of Earth
 G:E:u
@@ -6604,6 +6890,8 @@ S:BO_ACID | BA_ACID
 D:A towering stone elemental stands before you.  The walls and ceiling are
 D: reduced to rubble as Quaker advances.
 
+### Dungeon level 49 ###
+
 N:467:Lesser Balrog
 G:U:v
 I:120:20d100:20:50:80
@@ -6618,9 +6906,11 @@ F:OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY
 F:EVIL | DEMON | IM_FIRE | NO_CONF | NO_SLEEP
 S:1_IN_4
 S:BLIND | CONF
-S:BR_FIRE
 S:S_DEMON
+S:BR_FIRE
 D:It is a massive humanoid demon wreathed in flames.
+
+### Dungeon level 43 ###
 
 N:468:Ariel, Queen of Air
 G:E:B
@@ -6639,8 +6929,10 @@ F:IM_ACID | IM_COLD | IM_ELEC | IM_POIS
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_5
 S:BO_ELEC | BA_COLD | BA_ELEC
-D:A towering air elemental, Ariel, the sorceress, avoids your blows
-D: with her extreme speed.
+D:A towering air elemental, Ariel, the sorceress, avoids your blows with her
+D: extreme speed.
+
+### Dungeon level 44 ###
 
 N:469:11-headed hydra
 G:M:R
@@ -6659,6 +6951,8 @@ S:SCARE | BO_FIRE | BO_PLAS | BA_FIRE
 S:BR_FIRE
 D:A strange reptilian hybrid with eleven smouldering heads.
 
+### Dungeon level 40 ###
+
 N:470:Patriarch
 G:p:G
 I:120:52d10:20:60:10
@@ -6674,9 +6968,11 @@ F:EVIL | NO_CONF | NO_SLEEP
 S:1_IN_2
 S:HEAL | BLIND | HOLD | CAUSE_3 | CAUSE_4
 S:S_MONSTER | S_UNDEAD
-D:An evil priest, dressed all in black.  Deadly spells hit you at an
-D: alarming rate as his black spiked mace rains down blow after blow on your
-D: pitiful frame.
+D:An evil priest, dressed all in black.  Deadly spells hit you at an alarming
+D: rate as his black spiked mace rains down blow after blow on your pitiful
+D: frame.
+
+### Dungeon level 44 ###
 
 N:471:Dreadmaster
 G:G:y
@@ -6693,9 +6989,9 @@ F:EVIL | UNDEAD | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_9
 S:TELE_LEVEL | BLIND | HOLD | CONF | CAUSE_4 | DRAIN_MANA | BO_NETH
 S:S_UNDEAD
-D:It is an unlife of power almost unequaled.  An affront to existence, its
-D: very touch abuses and disrupts the flow of life, and its unearthly limbs,
-D: of purest black, crush rock and flesh with ease.
+D:It is an unlife of power almost unequaled.  An affront to existence, its very
+D: touch abuses and disrupts the flow of life, and its unearthly limbs, of purest
+D: black, crush rock and flesh with ease.
 
 N:472:Drolem
 G:g:g
@@ -6713,9 +7009,11 @@ F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_5
 S:BLIND | SLOW | CONF | ARROW_3
 S:BR_POIS
-D:A constructed dragon, the drolem has massive strength.  Powerful spells
-D: weaved during its creation make it a fearsome adversary.  Its eyes show
-D: little intelligence, but it has been instructed to destroy all it meets.
+D:A constructed dragon, the drolem has massive strength.  Powerful spells weaved
+D: during its creation make it a fearsome adversary.  Its eyes show little
+D: intelligence, but it has been instructed to destroy all it meets.
+
+### Dungeon level 46 ###
 
 N:473:Scatha the Worm
 G:D:W
@@ -6733,9 +7031,11 @@ F:EVIL | DRAGON | IM_COLD | NO_CONF | NO_SLEEP
 S:1_IN_4
 S:CONF | CAUSE_3
 S:BR_COLD
-D:An ancient and wise Dragon.  Scatha has grown clever over the long years.
-D: His scales are covered with frost, and his breath sends a shower of ice
-D: into the air.
+D:An ancient and wise Dragon.  Scatha has grown clever over the long years.  His
+D: scales are covered with frost, and his breath sends a shower of ice into the
+D: air.
+
+### Dungeon level 56 ###
 
 N:474:Dwar, Dog Lord of Waw
 G:W:D
@@ -6754,8 +7054,10 @@ F:IM_POIS | HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_3
 S:BLIND | HOLD | SCARE | CAUSE_3 | BA_FIRE | BA_NETH
 S:S_MONSTERS | S_UNDEAD | S_HOUND
-D:Dwar had a special affinity for dogs in life, and can still command them
-D: at will.  He howls maniacally as he reaches out to destroy you.
+D:Dwar had a special affinity for dogs in life, and can still command them at
+D: will.  He howls maniacally as he reaches out to destroy you.
+
+### Dungeon level 48 ###
 
 N:475:Smaug the Golden
 G:D:R
@@ -6773,10 +7075,12 @@ F:EVIL | DRAGON | IM_FIRE | NO_CONF | NO_SLEEP
 S:1_IN_4
 S:CONF | CAUSE_3
 S:BR_FIRE
-D:Smaug is one of the Uruloki that still survive, a fire-drake of immense
-D: cunning and intelligence.  His speed through air is matched by few other
-D: dragons and his dragonfire is what legends are made of; he is believed to
-D: be the greatest dragon still surviving into the Third Age.
+D:Smaug is one of the Uruloki that still survive, a fire-drake of immense cunning
+D: and intelligence.  His speed through air is matched by few other dragons and
+D: his dragonfire is what legends are made of; he is believed to be the greatest
+D: dragon still surviving into the Third Age.
+
+### Dungeon level 55 ###
 
 N:476:Dracolich
 G:D:G
@@ -6794,9 +7098,11 @@ F:NO_CONF | NO_SLEEP
 S:1_IN_6
 S:CONF | SCARE
 S:BR_COLD | BR_NETH
-D:The skeletal form of a once-great dragon, enchanted by magic most
-D: perilous.  Its animated form strikes with speed and drains life from its
-D: prey to satisfy its hunger.
+D:The skeletal form of a once-great dragon, enchanted by magic most perilous.  Its
+D: animated form strikes with speed and drains life from its prey to satisfy its
+D: hunger.
+
+### Dungeon level 66 ###
 
 N:477:Greater titan
 G:P:o
@@ -6811,10 +7117,13 @@ F:ONLY_ITEM | DROP_4D2 | DROP_1D2 | DROP_GOOD
 F:SMART | TAKE_ITEM | BASH_DOOR
 F:EVIL | GIANT
 S:1_IN_3
-S:BOULDER | HEAL | TELE_TO | S_MONSTERS
+S:BOULDER | HEAL | TELE_TO
+S:S_MONSTERS
 D:A forty foot tall humanoid that shakes the ground as it walks.  The power
 D: radiating from its frame shakes your courage, its hatred inspired by your
 D: defiance.
+
+### Dungeon level 55 ###
 
 N:478:Dracolisk
 G:D:R
@@ -6835,6 +7144,8 @@ S:BR_FIRE | BR_NEXU
 D:A mixture of dragon and basilisk, the dracolisk stares at you with deep
 D: piercing eyes, its evil breath burning the ground where it stands.
 
+### Dungeon level 47 ###
+
 N:479:Death mold
 G:m:D
 I:140:100d20:200:60:0
@@ -6847,8 +7158,8 @@ F:FORCE_SLEEP | NEVER_MOVE
 F:EVIL | IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 F:NO_CONF | NO_SLEEP | NO_FEAR
 D:It is the epitome of all that is evil, in a mold.  Its lifeless form draws
-D: power from sucking the souls of those that approach it, a nimbus of pure
-D: evil surrounds it.  Luckily for you, it can't move.
+D: power from sucking the souls of those that approach it, a nimbus of pure evil
+D: surrounds it.  Luckily for you, it can't move.
 
 N:480:Itangast the Fire Drake
 G:D:R
@@ -6866,8 +7177,10 @@ F:EVIL | DRAGON | IM_FIRE | NO_CONF | NO_SLEEP
 S:1_IN_4
 S:CONF | CAUSE_3
 S:BR_FIRE
-D:A mighty ancient dragon, Itangast's form scorches your flesh.  Wisps of
-D: smoke curl up from his nostrils as he regards you with disdain.
+D:A mighty ancient dragon, Itangast's form scorches your flesh.  Wisps of smoke
+D: curl up from his nostrils as he regards you with disdain.
+
+### Dungeon level 70 ###
 
 N:481:Glaurung, Father of the Dragons
 G:D:R
@@ -6885,12 +7198,14 @@ F:EVIL | DRAGON | IM_POIS | IM_FIRE
 F:NO_CONF | NO_SLEEP
 S:1_IN_3
 S:BLIND | CONF | SCARE
-S:BR_FIRE | BR_POIS
 S:S_HI_DRAGON
+S:BR_FIRE | BR_POIS
 D:Glaurung is the father of all dragons, and was for a long time the most
-D: powerful.  Though this is no longer so, he still has full command over
-D: his brood and can command them to appear whenever he so wishes.  He is
-D: the definition of dragonfire.
+D: powerful.  Though this is no longer so, he still has full command over his
+D: brood and can command them to appear whenever he so wishes.  He is the
+D: definition of dragonfire.
+
+### Dungeon level 50 ###
 
 N:482:Master mystic
 G:p:o
@@ -6907,10 +7222,11 @@ F:INVISIBLE | OPEN_DOOR | BASH_DOOR
 F:IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 F:NO_CONF | NO_SLEEP
 S:1_IN_3
-S:S_ANIMAL | HEAL
-D:A lord of all that is natural, skilled in the mystic ways.  He is a master
-D: of martial arts and is at one with nature, able to summon help from the
-D: wild if need be.
+S:HEAL
+S:S_ANIMAL
+D:A lord of all that is natural, skilled in the mystic ways.  He is a master of
+D: martial arts and is at one with nature, able to summon help from the wild if
+D: need be.
 
 N:483:The Balrog of Moria
 G:U:v
@@ -6929,11 +7245,13 @@ F:EVIL | DEMON | IM_FIRE
 F:NO_CONF | NO_SLEEP
 S:1_IN_4
 S:CONF | SCARE
-S:BR_FIRE
 S:S_UNDEAD | S_DEMON
-D:A huge Balrog surrounded by raging pillars of fire, this is indeed a
-D: terrible opponent.  Wielding a great whip of fire and a blazing sword, his
-D: fury blisters your skin and melts your flesh!
+S:BR_FIRE
+D:A huge Balrog surrounded by raging pillars of fire, this is indeed a terrible
+D: opponent.  Wielding a great whip of fire and a blazing sword, his fury
+D: blisters your skin and melts your flesh!
+
+### Dungeon level 61 ###
 
 N:484:Nightwing
 G:W:D
@@ -6948,13 +7266,14 @@ F:ONLY_ITEM | DROP_2D2 | DROP_GOOD
 F:SMART | COLD_BLOOD | OPEN_DOOR | BASH_DOOR
 F:EVIL | UNDEAD | IM_COLD | IM_POIS | HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_4
-S:BLIND | SCARE | CAUSE_4 | BRAIN_SMASH
-S:BO_MANA | BO_NETH | BA_NETH | S_UNDEAD
-D:Everywhere colours seem paler and the air chiller.  At the centre of the
-D: cold stands a mighty figure.  Its wings envelop you in the chill of death
-D: as the nightwing reaches out to draw you into oblivion.  Your muscles sag
-D: and your mind loses all will to fight as you stand in awe of this mighty
-D: being.
+S:BLIND | SCARE | CAUSE_4 | BRAIN_SMASH | BO_MANA | BO_NETH | BA_NETH
+S:S_UNDEAD
+D:Everywhere colours seem paler and the air chiller.  At the centre of the cold
+D: stands a mighty figure.  Its wings envelop you in the chill of death as the
+D: nightwing reaches out to draw you into oblivion.  Your muscles sag and your
+D: mind loses all will to fight as you stand in awe of this mighty being.
+
+### Dungeon level 51 ###
 
 N:485:Nether hound
 G:Z:G
@@ -6987,9 +7306,9 @@ F:OPEN_DOOR | BASH_DOOR
 F:ANIMAL | NO_CONF | NO_SLEEP
 S:1_IN_5
 S:BR_TIME
-D:You get a terrible sense of deja vu, or is it a premonition?  All at once
-D: you see a little puppy and a toothless old dog.  Perhaps you should give
-D: up and go to bed.
+D:You get a terrible sense of deja vu, or is it a premonition?  All at once you
+D: see a little puppy and a toothless old dog.  Perhaps you should give up and go
+D: to bed.
 
 N:487:Plasma hound
 G:Z:R
@@ -7005,9 +7324,11 @@ F:OPEN_DOOR | BASH_DOOR
 F:ANIMAL | IM_FIRE | IM_ELEC | NO_CONF | NO_SLEEP | RES_PLAS
 S:1_IN_5
 S:BR_PLAS
-D:The very air warps as pure elemental energy stalks towards you in the
-D: shape of a giant hound.  Your hair stands on end and your palms itch as
-D: you sense trouble.
+D:The very air warps as pure elemental energy stalks towards you in the shape of
+D: a giant hound.  Your hair stands on end and your palms itch as you sense
+D: trouble.
+
+### Dungeon level 45 ###
 
 N:488:Demonic quylthulg
 G:Q:r
@@ -7021,6 +7342,8 @@ S:BLINK | TPORT
 S:S_DEMON
 D:A pile of pulsing flesh that glows with an inner hellish fire.  The world
 D: itself seems to cry out against it.
+
+### Dungeon level 63 ###
 
 N:489:Great Storm Wyrm
 G:D:b
@@ -7037,9 +7360,11 @@ F:EVIL | DRAGON | IM_ELEC | NO_CONF | NO_SLEEP
 S:1_IN_4
 S:BLIND | CONF | SCARE
 S:BR_ELEC
-D:A vast dragon of power.  Storms and lightning crash around its titanic
-D: form.  Deep blue scales reflect the flashes and highlight the creature's
-D: great muscles.  It regards you with contempt.
+D:A vast dragon of power.  Storms and lightning crash around its titanic form.
+D: Deep blue scales reflect the flashes and highlight the creature's great
+D: muscles.  It regards you with contempt.
+
+### Dungeon level 58 ###
 
 N:490:Baphomet the Minotaur Lord
 G:H:v
@@ -7057,8 +7382,10 @@ F:EVIL | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_6
 S:SLOW | ARROW_4 | BO_MANA | BO_PLAS | BA_ELEC
 S:BR_WALL
-D:A fearsome bull-headed monster, Baphomet swings a mighty axe as he curses
-D: all that defy him.
+D:A fearsome bull-headed monster, Baphomet swings a mighty axe as he curses all
+D: that defy him.
+
+### Dungeon level 51 ###
 
 N:491:Harowen the Black Hand
 G:p:B
@@ -7075,8 +7402,10 @@ F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR
 F:IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_6
 S:TRAPS
-D:He is a master of disguise, an expert of stealth, a genius at traps, and
-D: moves with blinding speed.  Check your pockets!
+D:He is a master of disguise, an expert of stealth, a genius at traps, and moves
+D: with blinding speed.  Check your pockets!
+
+### Dungeon level 64 ###
 
 N:492:Hoarmurath of Dir
 G:W:D
@@ -7093,11 +7422,13 @@ F:COLD_BLOOD | OPEN_DOOR | BASH_DOOR | MOVE_BODY
 F:EVIL | UNDEAD | IM_COLD | IM_POIS
 F:HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_3
-S:BLIND | HOLD | SCARE | CAUSE_3 | CAUSE_4 | MIND_BLAST
-S:BO_COLD | BA_COLD | BA_NETH
+S:BLIND | HOLD | SCARE | CAUSE_3 | CAUSE_4 | MIND_BLAST | BO_COLD
+S:BA_COLD | BA_NETH
 S:S_UNDEAD
-D:A Ringwraith powerful in fell sorcery, he yearns for the life he has lost
-D: for an unlife of everlasting torment.
+D:A Ringwraith powerful in fell sorcery, he yearns for the life he has lost for
+D: an unlife of everlasting torment.
+
+### Dungeon level 57 ###
 
 N:493:Grand master mystic
 G:p:o
@@ -7113,10 +7444,13 @@ F:ONLY_ITEM | DROP_4D2
 F:INVISIBLE | OPEN_DOOR | BASH_DOOR
 F:IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_3
-S:HEAL | MIND_BLAST | S_SPIDER | S_HOUND | S_ANIMAL
-D:He is one of the few true masters of the art, being extremely skillful in
-D: all forms of unarmed combat and controlling the world's natural creatures
-D: with disdainful ease.
+S:HEAL | MIND_BLAST
+S:S_SPIDER | S_HOUND | S_ANIMAL
+D:He is one of the few true masters of the art, being extremely skillful in all
+D: forms of unarmed combat and controlling the world's natural creatures with
+D: disdainful ease.
+
+### Dungeon level 72 ###
 
 N:494:Khamul, the Black Easterling
 G:W:D
@@ -7134,9 +7468,12 @@ F:EVIL | UNDEAD | IM_ACID | IM_FIRE | IM_COLD | IM_POIS
 F:HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_2
 S:TELE_LEVEL | BLIND | HOLD | SCARE | CAUSE_3 | CAUSE_4 | BO_MANA
-S:BA_FIRE | BA_COLD | BA_NETH | S_HI_UNDEAD
-D:A warrior-king of the East.  Khamul is a powerful opponent, his skill in
-D: combat awesome and his form twisted by evil cunning.
+S:BA_FIRE | BA_COLD | BA_NETH
+S:S_HI_UNDEAD
+D:A warrior-king of the East.  Khamul is a powerful opponent, his skill in combat
+D: awesome and his form twisted by evil cunning.
+
+### Dungeon level 59 ###
 
 N:495:Ethereal hound
 G:Z:G
@@ -7151,8 +7488,10 @@ F:INVISIBLE | PASS_WALL
 F:ANIMAL | NO_CONF | NO_SLEEP
 S:1_IN_5
 S:BR_NETH
-D:A pale green hound.  Pulsing red lines and strange fluorescent light
-D: hints at internal organs best left to the imagination.
+D:A pale green hound.  Pulsing red lines and strange fluorescent light hints at
+D: internal organs best left to the imagination.
+
+### Dungeon level 63 ###
 
 N:496:Great Ice Wyrm
 G:D:w
@@ -7169,9 +7508,11 @@ F:EVIL | DRAGON | IM_COLD | NO_CONF | NO_SLEEP
 S:1_IN_4
 S:BLIND | CONF | SCARE
 S:BR_COLD
-D:An immense dragon capable of awesome destruction.  You have never felt
-D: such extreme cold, or witnessed such an icy stare.  Begone quickly or feel
-D: its wrath!
+D:An immense dragon capable of awesome destruction.  You have never felt such
+D: extreme cold, or witnessed such an icy stare.  Begone quickly or feel its
+D: wrath!
+
+### Dungeon level 54 ###
 
 N:497:The Phoenix
 G:B:r
@@ -7189,9 +7530,12 @@ F:ANIMAL | IM_ACID | IM_FIRE | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 F:RES_PLAS
 S:1_IN_3
 S:BO_FIRE | BO_PLAS | BA_FIRE
-S:BR_FIRE | BR_LITE | BR_PLAS | S_KIN
-D:A massive glowing eagle bathed in flames.  The searing heat chars your
-D: skin and melts your armour.
+S:S_KIN
+S:BR_FIRE | BR_LITE | BR_PLAS
+D:A massive glowing eagle bathed in flames.  The searing heat chars your skin and
+D: melts your armour.
+
+### Dungeon level 69 ###
 
 N:498:Nightcrawler
 G:W:D
@@ -7207,13 +7551,15 @@ F:COLD_BLOOD | OPEN_DOOR | BASH_DOOR
 F:EVIL | UNDEAD | IM_FIRE | IM_COLD | IM_POIS
 F:HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_4
-S:BLIND | SCARE | BRAIN_SMASH
-S:BO_MANA | BO_NETH | BA_NETH
-S:BR_NETH | S_UNDEAD
-D:This intensely evil creature bears the form of a gargantuan black worm.
-D: Its gaping maw is a void of blackness, acid drips from its steely hide.
-D: It is like nothing you have ever seen before, and a terrible chill runs
-D: down your spine as you face it.
+S:BLIND | SCARE | BRAIN_SMASH | BO_MANA | BO_NETH | BA_NETH
+S:S_UNDEAD
+S:BR_NETH
+D:This intensely evil creature bears the form of a gargantuan black worm.  Its
+D: gaping maw is a void of blackness, acid drips from its steely hide.  It is
+D: like nothing you have ever seen before, and a terrible chill runs down your
+D: spine as you face it.
+
+### Dungeon level 57 ###
 
 N:499:Hand druj
 G:s:y
@@ -7226,8 +7572,9 @@ F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_1
 S:TELE_AWAY | BLIND | CONF | SCARE | CAUSE_3 | FORGET | DARKNESS
 S:BO_FIRE | BO_ACID | BO_COLD | BO_ELEC
-D:A skeletal hand floating in the air, motionless except for its flexing
-D: fingers.
+D:A skeletal hand floating in the air, motionless except for its flexing fingers.
+
+### Dungeon level 58 ###
 
 N:500:Eye druj
 G:s:r
@@ -7244,6 +7591,8 @@ S:S_UNDEAD
 D:A bloodshot eyeball floating in the air, you'd be forgiven for assuming it
 D: harmless.
 
+### Dungeon level 59 ###
+
 N:501:Skull druj
 G:s:o
 I:130:14d100:20:120:10
@@ -7254,11 +7603,13 @@ F:EVIL | UNDEAD
 F:IM_FIRE | IM_COLD | IM_POIS
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_1
-S:SLOW | CAUSE_4 | MIND_BLAST | BRAIN_SMASH | TRAPS | BO_PLAS
-S:BO_NETH | BA_WATE
+S:SLOW | CAUSE_4 | MIND_BLAST | BRAIN_SMASH | TRAPS | BO_PLAS | BO_NETH
+S:BA_WATE
 S:S_UNDEAD
-D:A glowing skull possessed by sorcerous power.  It need not move, but
-D: merely blast you with mighty magic as it speaks the words of power.
+D:A glowing skull possessed by sorcerous power.  It need not move, but merely
+D: blast you with mighty magic as it speaks the words of power.
+
+### Dungeon level 53 ###
 
 N:502:Chaos vortex
 G:v:v
@@ -7276,6 +7627,8 @@ S:1_IN_6
 S:BR_CHAO
 D:Void, nothingness, spinning destructively.
 
+### Dungeon level 60 ###
+
 N:503:Aether vortex
 G:v:v
 I:130:40d20:100:40:0
@@ -7292,10 +7645,12 @@ F:RES_PLAS | RES_NEXUS
 F:IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_6
-S:BR_ACID | BR_FIRE | BR_COLD | BR_ELEC | BR_POIS | BR_LITE
-S:BR_DARK | BR_SOUN | BR_CONF | BR_CHAO | BR_SHAR | BR_NETH
-S:BR_WALL | BR_INER | BR_TIME | BR_GRAV | BR_PLAS | BR_NEXU
+S:BR_ACID | BR_FIRE | BR_COLD | BR_ELEC | BR_POIS | BR_LITE | BR_DARK
+S:BR_SOUN | BR_CONF | BR_CHAO | BR_SHAR | BR_NETH | BR_WALL | BR_INER
+S:BR_TIME | BR_GRAV | BR_PLAS | BR_NEXU
 D:An awesome vortex of pure magic, power radiates from its frame.
+
+### Dungeon level 57 ###
 
 N:504:The Lernaean Hydra
 G:M:v
@@ -7312,12 +7667,14 @@ F:OPEN_DOOR | BASH_DOOR | KILL_BODY | POWERFUL
 F:ANIMAL | IM_FIRE | IM_POIS
 F:NO_CONF | NO_SLEEP | REGENERATE
 S:1_IN_3
-S:SCARE
-S:BO_FIRE | BO_PLAS | BA_FIRE | BA_POIS
-S:BR_FIRE | BR_POIS | S_HYDRA | S_KIN
-D:A massive legendary hydra.  It has twelve powerful heads.  Its many eyes
-D: stare at you as clouds of smoke and poisonous vapour rise from its
-D: seething form.  And it grows new heads as fast as you chop them off.
+S:SCARE | BO_FIRE | BO_PLAS | BA_FIRE | BA_POIS
+S:S_HYDRA | S_KIN
+S:BR_FIRE | BR_POIS
+D:A massive legendary hydra.  It has twelve powerful heads.  Its many eyes stare
+D: at you as clouds of smoke and poisonous vapour rise from its seething form.
+D: And it grows new heads as fast as you chop them off.
+
+### Dungeon level 67 ###
 
 N:505:Thuringwethil, the Vampire Messenger
 G:V:v
@@ -7333,11 +7690,12 @@ F:ONLY_ITEM | DROP_2D2 | DROP_3D2 | DROP_4D2 | DROP_GOOD
 F:COLD_BLOOD | OPEN_DOOR | BASH_DOOR | REGENERATE
 F:EVIL | UNDEAD | IM_COLD | IM_POIS | HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_3
-S:BLIND | HOLD | SCARE | CAUSE_3 | CAUSE_4 | DRAIN_MANA
-S:BRAIN_SMASH | BA_NETH | S_KIN | S_HI_UNDEAD
-D:Chief messenger between Sauron and Morgoth, she is surely the most deadly
-D: of her vampire race.  At first she is charming to meet, but her wings and
-D: eyes give away her true form.
+S:BLIND | HOLD | SCARE | CAUSE_3 | CAUSE_4 | DRAIN_MANA | BRAIN_SMASH
+S:BA_NETH
+S:S_KIN | S_HI_UNDEAD
+D:Chief messenger between Sauron and Morgoth, she is surely the most deadly of
+D: her vampire race.  At first she is charming to meet, but her wings and eyes
+D: give away her true form.
 
 N:506:Great Hell Wyrm
 G:D:r
@@ -7354,9 +7712,11 @@ F:EVIL | DRAGON | IM_FIRE | NO_CONF | NO_SLEEP
 S:1_IN_4
 S:BLIND | CONF | SCARE
 S:BR_FIRE
-D:A vast dragon of immense power.  Fire leaps continuously from its huge
-D: form.  The air around it scalds you.  Its slightest glance burns you, and
-D: you truly realize how insignificant you are.
+D:A vast dragon of immense power.  Fire leaps continuously from its huge form.
+D: The air around it scalds you.  Its slightest glance burns you, and you truly
+D: realize how insignificant you are.
+
+### Dungeon level 45 ###
 
 N:507:Draconic quylthulg
 G:Q:g
@@ -7368,8 +7728,10 @@ F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_2
 S:BLINK | TPORT
 S:S_DRAGON
-D:It looks like it was once a dragon corpse, now deeply infected with
-D: magical bacteria that make it pulse in a foul and degrading way.
+D:It looks like it was once a dragon corpse, now deeply infected with magical
+D: bacteria that make it pulse in a foul and degrading way.
+
+### Dungeon level 59 ###
 
 N:508:Fundin Bluecloak
 G:h:B
@@ -7387,10 +7749,12 @@ F:IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_4
 S:HEAL | BLIND | CONF | SCARE | CAUSE_3 | CAUSE_4 | BRAIN_SMASH
 S:S_MONSTERS | S_ANIMAL
-D:He is one of the greatest dwarven priests to walk the earth.  Fundin has
-D: earned a high position in the church, and his skill with both weapon and
-D: spell only justify his position further.  His combination of both dwarven
-D: strength and priestly wisdom are a true match for any adventurer.
+D:He is one of the greatest dwarven priests to walk the earth.  Fundin has earned
+D: a high position in the church, and his skill with both weapon and spell only
+D: justify his position further.  His combination of both dwarven strength and
+D: priestly wisdom are a true match for any adventurer.
+
+### Dungeon level 61 ###
 
 N:509:Uriel, Angel of Fire
 G:A:R
@@ -7407,13 +7771,14 @@ F:SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY
 F:IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 F:RES_PLAS
 S:1_IN_2
-S:TELE_TO | BLIND
-S:BO_FIRE | BO_MANA | BO_PLAS | BA_FIRE
-S:BR_FIRE | BR_PLAS
+S:TELE_TO | BLIND | BO_FIRE | BO_MANA | BO_PLAS | BA_FIRE
 S:S_ANGEL
-D:A creature of godly appearance, you dare not challenge Uriel's supremacy.
-D: Those who stood against him before are but a memory, cremated by his
-D: mastery of elemental fire.
+S:BR_FIRE | BR_PLAS
+D:A creature of godly appearance, you dare not challenge Uriel's supremacy.  Those
+D: who stood against him before are but a memory, cremated by his mastery of
+D: elemental fire.
+
+### Dungeon level 62 ###
 
 N:510:Azriel, Angel of Death
 G:A:D
@@ -7429,13 +7794,14 @@ F:ONLY_ITEM | DROP_3D2 | DROP_4D2 | DROP_GOOD
 F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY
 F:IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 S:1_IN_2
-S:TELE_TO | BLIND
-S:BO_MANA | BO_NETH | BA_NETH
-S:BR_NETH | S_ANGEL
-D:Azriel commands awesome power, his visage holy enough to shrivel your
-D: soul.  You shriek with disbelief as his mastery of death draws you to your
-D: grave.  It is truly beyond all but the mightiest of warriors to stand
-D: against him and live.
+S:TELE_TO | BLIND | BO_MANA | BO_NETH | BA_NETH
+S:S_ANGEL
+S:BR_NETH
+D:Azriel commands awesome power, his visage holy enough to shrivel your soul.  You
+D: shriek with disbelief as his mastery of death draws you to your grave.  It is
+D: truly beyond all but the mightiest of warriors to stand against him and live.
+
+### Dungeon level 85 ###
 
 N:511:Ancalagon the Black
 G:D:D
@@ -7452,10 +7818,12 @@ F:SMART | BASH_DOOR | POWERFUL | MOVE_BODY
 F:EVIL | DRAGON
 F:IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_3
-S:BR_ACID | BR_FIRE | BR_COLD | BR_ELEC | BR_POIS
 S:S_HI_DRAGON | S_KIN
+S:BR_ACID | BR_FIRE | BR_COLD | BR_ELEC | BR_POIS
 D:"Rushing Jaws" is his name, and death is his game; the greatest and most
 D: terrible of all dragonkind, his power dismayed even the Valar for a time.
+
+### Dungeon level 73 ###
 
 N:512:Nightwalker
 G:W:D
@@ -7471,14 +7839,15 @@ F:SMART | COLD_BLOOD | OPEN_DOOR | BASH_DOOR
 F:EVIL | UNDEAD | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 F:HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_4
-S:BLIND | SCARE | BRAIN_SMASH
-S:BO_MANA | BO_NETH | BA_NETH
+S:BLIND | SCARE | BRAIN_SMASH | BO_MANA | BO_NETH | BA_NETH
 S:S_UNDEAD
-D:A huge giant garbed in black, more massive than a titan and stronger than
-D: a dragon.  With terrible blows, it breaks your armour from your back,
-D: leaving you defenseless against its evil wrath.  It can smell your fear,
-D: and you in turn smell the awful stench of death as this ghastly figure
-D: strides towards you menacingly.
+D:A huge giant garbed in black, more massive than a titan and stronger than a
+D: dragon.  With terrible blows, it breaks your armour from your back, leaving
+D: you defenseless against its evil wrath.  It can smell your fear, and you in
+D: turn smell the awful stench of death as this ghastly figure strides towards
+D: you menacingly.
+
+### Dungeon level 64 ###
 
 N:513:Gabriel, the Messenger
 G:A:w
@@ -7495,11 +7864,14 @@ F:ONLY_ITEM | DROP_3D2 | DROP_4D2 | DROP_GOOD
 F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY
 F:IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 S:1_IN_2
-S:TELE_TO | BLIND | BO_MANA | S_KIN
-D:Commanding a legion of angels, Gabriel will destroy you for your sins.  He
-D: will crush you like the pitiful insignificant being he sees you to be.
-D: Your very soul will be taken into judgement by his supreme authority as he
-D: cleanses the world of evil.
+S:TELE_TO | BLIND | BO_MANA
+S:S_KIN
+D:Commanding a legion of angels, Gabriel will destroy you for your sins.  He will
+D: crush you like the pitiful insignificant being he sees you to be.  Your very
+D: soul will be taken into judgement by his supreme authority as he cleanses the
+D: world of evil.
+
+### Dungeon level 60 ###
 
 N:514:Saruman of Many Colours
 G:p:v
@@ -7517,13 +7889,14 @@ F:EVIL | IM_FIRE | IM_COLD
 F:IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_2
 S:HEAL | HASTE | TPORT | TELE_AWAY | BLIND | MIND_BLAST | SCARE
-S:CAUSE_4 | FORGET | TRAPS
-S:BO_ICEE | BA_ACID | BA_FIRE | BA_COLD | BA_WATE
+S:CAUSE_4 | FORGET | TRAPS | BO_ICEE | BA_ACID | BA_FIRE | BA_COLD
+S:BA_WATE
 S:S_UNDEAD | S_DEMON | S_HI_DRAGON | S_MONSTERS | S_ANIMAL
-D:Originally known as the White, Saruman fell prey to Sauron's wiles.  He
-D: seeks to emulate him and breeds orcs and trolls to fight for him.  He
-D: searches forever for the One Ring, to become a mighty Sorcerer-King of the
-D: world.
+D:Originally known as the White, Saruman fell prey to Sauron's wiles.  He seeks
+D: to emulate him and breeds orcs and trolls to fight for him.  He searches
+D: forever for the One Ring, to become a mighty Sorcerer-King of the world.
+
+### Dungeon level 62 ###
 
 N:515:Dreadlord
 G:G:r
@@ -7539,12 +7912,15 @@ F:INVISIBLE | COLD_BLOOD | TAKE_ITEM | PASS_WALL
 F:EVIL | UNDEAD
 F:IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_4
-S:BLIND | HOLD | CONF | DRAIN_MANA | BA_NETH
-S:S_UNDEAD | TELE_TO | TPORT | BLINK | BRAIN_SMASH
+S:BLIND | HOLD | CONF | DRAIN_MANA | BA_NETH | TELE_TO | TPORT
+S:BLINK | BRAIN_SMASH
+S:S_UNDEAD
 D:It is a massive form of animated death, its colour deeper than black.  It
-D: drinks in light, and space around it is twisted and torn by the weight of
-D: its evil.  It is unlife and it knows nothing but the stealing of souls and
-D: the stench of death.  Flee its hunger!
+D: drinks in light, and space around it is twisted and torn by the weight of its
+D: evil.  It is unlife and it knows nothing but the stealing of souls and the
+D: stench of death.  Flee its hunger!
+
+### Dungeon level 66 ###
 
 N:516:The Cat Lord
 G:f:v
@@ -7561,8 +7937,11 @@ F:ONLY_ITEM | DROP_4D2 | DROP_GOOD
 F:INVISIBLE | OPEN_DOOR | BASH_DOOR
 F:IM_FIRE | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_3
-S:TELE_TO | S_KIN
+S:TELE_TO
+S:S_KIN
 D:Master of all things feline, the Cat Lord moves with unsurpassed stealth.
+
+### Dungeon level 68 ###
 
 N:517:Jabberwock
 G:H:v
@@ -7580,8 +7959,10 @@ F:ANIMAL
 S:1_IN_5
 S:CAUSE_4
 S:BR_CHAO
-D:"Beware the Jabberwock, my son! The jaws that bite, the claws that catch!"
-D: Run and run quickly, for death incarnate chases behind you!
+D:"Beware the Jabberwock, my son!  The jaws that bite, the claws that catch!" Run
+D: and run quickly, for death incarnate chases behind you!
+
+### Dungeon level 64 ###
 
 N:518:Chaos hound
 G:Z:v
@@ -7602,6 +7983,8 @@ D:A constantly changing canine form, this hound rushes towards you as if
 D: expecting mayhem and chaos ahead.  It appears to have an almost kamikaze
 D: relish for combat.  You suspect all may not be as it seems.
 
+### Dungeon level 75 ###
+
 N:519:Great Wyrm of Chaos
 G:D:v
 I:120:45d100:40:170:100
@@ -7618,11 +8001,11 @@ F:EVIL | DRAGON | NO_CONF | NO_SLEEP | IM_FIRE
 F:RES_DISE
 S:1_IN_4
 S:BLIND | CONF | SCARE
-S:BR_CHAO | BR_DISE
 S:S_DRAGON | S_HI_DRAGON
-D:A massive dragon of changing form.  As you watch, it appears first fair
-D: and then foul.  Its body is twisted by chaotic forces as it strives to
-D: stay real.  Its very existence distorts the universe around it.
+S:BR_CHAO | BR_DISE
+D:A massive dragon of changing form.  As you watch, it appears first fair and
+D: then foul.  Its body is twisted by chaotic forces as it strives to stay real.
+D: Its very existence distorts the universe around it.
 
 N:520:Great Wyrm of Law
 G:D:B
@@ -7638,11 +8021,13 @@ F:SMART | BASH_DOOR | POWERFUL | MOVE_BODY
 F:EVIL | DRAGON | NO_CONF | NO_SLEEP | IM_COLD
 S:1_IN_4
 S:BLIND | CONF | SCARE
-S:BR_SOUN | BR_SHAR
 S:S_DRAGON | S_HI_DRAGON
-D:A massive dragon of powerful intellect.  It seeks to dominate the universe
-D: and despises all other life.  It sees all who do not obey it as mere
-D: insects to be crushed underfoot.
+S:BR_SOUN | BR_SHAR
+D:A massive dragon of powerful intellect.  It seeks to dominate the universe and
+D: despises all other life.  It sees all who do not obey it as mere insects to be
+D: crushed underfoot.
+
+### Dungeon level 79 ###
 
 N:521:Great Wyrm of Balance
 G:D:v
@@ -7659,12 +8044,13 @@ F:EVIL | DRAGON | NO_CONF | NO_SLEEP | IM_FIRE | IM_COLD
 F:RES_DISE
 S:1_IN_4
 S:BLIND | CONF | SCARE
-S:BR_SOUN | BR_CHAO | BR_SHAR | BR_DISE
 S:S_DRAGON | S_HI_DRAGON
-D:A massive dragon, one of the mightiest of dragonkind.  It is thousands of
-D: years old and seeks to maintain the Cosmic Balance.  It sees you as an
-D: upstart troublemaker without the wisdom to control your actions.  It will
-D: destroy you.
+S:BR_SOUN | BR_CHAO | BR_SHAR | BR_DISE
+D:A massive dragon, one of the mightiest of dragonkind.  It is thousands of years
+D: old and seeks to maintain the Cosmic Balance.  It sees you as an upstart
+D: troublemaker without the wisdom to control your actions.  It will destroy you.
+
+### Dungeon level 68 ###
 
 N:522:Tselakus, the Dreadlord
 G:G:R
@@ -7681,15 +8067,16 @@ F:INVISIBLE | COLD_BLOOD | PASS_WALL
 F:EVIL | UNDEAD | IM_COLD
 F:IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_3
-S:BLIND | HOLD | CONF
-S:BA_DARK | BA_NETH
+S:BLIND | HOLD | CONF | BA_DARK | BA_NETH
 S:S_WRAITH | S_HI_UNDEAD | S_KIN
 D:This huge affront to existence twists and tears at the fabric of space.  A
 D: master of mighty magic, Tselakus hungers for your tender flesh.  Darkness
-D: itself recoils from the touch of Tselakus as he leaves a trail of death
-D: and destruction.  Tselakus is a being of sneering contempt, laughing at
-D: your pitiful efforts to defy him.  Mighty claws rend reality as he
-D: annihilates all in his path to your soul!
+D: itself recoils from the touch of Tselakus as he leaves a trail of death and
+D: destruction.  Tselakus is a being of sneering contempt, laughing at your
+D: pitiful efforts to defy him.  Mighty claws rend reality as he annihilates all
+D: in his path to your soul!
+
+### Dungeon level 79 ###
 
 N:523:Great Wyrm of Many Colours
 G:D:v
@@ -7706,10 +8093,12 @@ F:ONLY_ITEM | DROP_2D2 | DROP_3D2 | DROP_4D2 | DROP_GOOD
 F:SMART | BASH_DOOR | POWERFUL | MOVE_BODY
 F:EVIL | DRAGON | NO_CONF | NO_SLEEP
 S:1_IN_4
-S:BR_POIS | BR_ELEC | BR_ACID | BR_FIRE | BR_COLD
 S:CONF | SCARE | BLIND
 S:S_DRAGON | S_HI_DRAGON
+S:BR_POIS | BR_ELEC | BR_ACID | BR_FIRE | BR_COLD
 D:A gigantic dragon whose scales shimmer in myriad hues.
+
+### Dungeon level 74 ###
 
 N:524:Black reaver
 G:L:D
@@ -7728,8 +8117,10 @@ S:1_IN_3
 S:TELE_TO | BLIND | HOLD | CONF | CAUSE_3 | CAUSE_4 | DRAIN_MANA
 S:BRAIN_SMASH | BA_MANA | BA_NETH
 S:S_UNDEAD
-D:A humanoid form,  black as night, advancing steadily and unstoppably, even
-D: the very rock of the dungeon cannot prevent it reaching you.
+D:A humanoid form, black as night, advancing steadily and unstoppably, even the
+D: very rock of the dungeon cannot prevent it reaching you.
+
+### Dungeon level 71 ###
 
 N:525:Greater demonic quylthulg
 G:Q:R
@@ -7740,7 +8131,8 @@ F:INVISIBLE | EMPTY_MIND
 F:ANIMAL
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_2
-S:BLINK | TELE_TO | S_HI_DEMON
+S:BLINK | TELE_TO
+S:S_HI_DEMON
 D:A massive pulsating mound of flesh, glowing with a hellish light.
 
 N:526:Greater draconic quylthulg
@@ -7753,8 +8145,7 @@ F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_2
 S:BLINK | TELE_TO
 S:S_HI_DRAGON
-D:A massive mound of scaled flesh, throbbing and pulsating with multi-hued
-D: light.
+D:A massive mound of scaled flesh, throbbing and pulsating with multi-hued light.
 
 N:527:Greater rotting quylthulg
 G:Q:U
@@ -7768,6 +8159,8 @@ S:BLINK | TELE_TO
 S:S_HI_UNDEAD
 D:A massive pile of rotting flesh.  A disgusting stench fills the air as it
 D: throbs and writhes.
+
+### Dungeon level 77 ###
 
 N:528:Feagwath, the Undead Sorcerer
 G:L:y
@@ -7785,11 +8178,13 @@ F:SMART | COLD_BLOOD | OPEN_DOOR | BASH_DOOR
 F:EVIL | UNDEAD | IM_COLD
 F:IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_2
-S:BLINK | TELE_TO | BLIND | HOLD | SCARE | CAUSE_4
-S:BRAIN_SMASH | TRAPS | BA_MANA
-S:BO_MANA | BA_NETH | S_KIN | S_MONSTERS | S_UNDEAD
-D:A stench of corruption and decay surrounds this sorcerer, who has clearly
-D: risen from the dead to continue his foul plots and schemes.
+S:BLINK | TELE_TO | BLIND | HOLD | SCARE | CAUSE_4 | BRAIN_SMASH
+S:TRAPS | BA_MANA | BO_MANA | BA_NETH
+S:S_KIN | S_MONSTERS | S_UNDEAD
+D:A stench of corruption and decay surrounds this sorcerer, who has clearly risen
+D: from the dead to continue his foul plots and schemes.
+
+### Dungeon level 73 ###
 
 N:529:Omarax, the Eye Tyrant
 G:e:v
@@ -7805,12 +8200,14 @@ F:SMART | BASH_DOOR
 F:EVIL | IM_POIS | IM_FIRE | IM_COLD | IM_ACID
 F:NO_CONF | NO_SLEEP
 S:1_IN_2
-S:BLIND | CONF | FORGET | SCARE | DRAIN_MANA | BRAIN_SMASH
-S:BA_DARK | BO_MANA | BA_NETH | BA_ACID | BA_FIRE | BA_COLD
+S:BLIND | CONF | FORGET | SCARE | DRAIN_MANA | BRAIN_SMASH | BA_DARK
+S:BO_MANA | BA_NETH | BA_ACID | BA_FIRE | BA_COLD
 S:S_KIN
-D:A beholder of great size and age, floating in the air.  His gaze seems to
-D: shred your soul and his spells crush your will.  He is ancient, his history
-D: steeped in forgotten evils, his atrocities numerous and sickening.
+D:A beholder of great size and age, floating in the air.  His gaze seems to shred
+D: your soul and his spells crush your will.  He is ancient, his history steeped
+D: in forgotten evils, his atrocities numerous and sickening.
+
+### Dungeon level 75 ###
 
 N:530:Ungoliant, the Unlight
 G:S:D
@@ -7827,12 +8224,15 @@ F:SMART | BASH_DOOR
 F:ANIMAL | EVIL | IM_POIS | IM_ACID | HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_3
 S:HEAL | BLIND | SLOW | CONF | SCARE | DARKNESS | BA_DARK
-S:BR_POIS | BR_DARK | S_KIN
-D:This enormous, hideous spirit of void is in the form of a spider of
-D: immense proportions.  She is surrounded by a cloud of Unlight as she sucks
-D: in all living light into her bloated body, and breathes out the blackest of
-D: darkness.  She is always ravenously hungry and would even eat herself to
-D: avoid starvation.
+S:S_KIN
+S:BR_POIS | BR_DARK
+D:This enormous, hideous spirit of void is in the form of a spider of immense
+D: proportions.  She is surrounded by a cloud of Unlight as she sucks in all
+D: living light into her bloated body, and breathes out the blackest of darkness.
+D: She is always ravenously hungry and would even eat herself to avoid
+D: starvation.
+
+### Dungeon level 74 ###
 
 N:531:Aether hound
 G:Z:v
@@ -7850,13 +8250,14 @@ F:ANIMAL | IM_ACID | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 F:NO_CONF | NO_SLEEP
 F:RES_PLAS | RES_NEXUS | RES_DISE
 S:1_IN_5
-S:BR_ACID | BR_FIRE | BR_COLD | BR_ELEC | BR_POIS
-S:BR_LITE | BR_DARK | BR_SOUN | BR_CONF | BR_CHAO | BR_SHAR
-S:BR_NETH | BR_DISE | BR_WALL | BR_INER | BR_TIME
-S:BR_GRAV | BR_PLAS | BR_NEXU
-D:A shifting, swirling form.  It seems to be all colours and sizes and
-D: shapes, though the dominant form is that of a huge dog.  You feel very
-D: uncertain all of a sudden.
+S:BR_ACID | BR_FIRE | BR_COLD | BR_ELEC | BR_POIS | BR_LITE | BR_DARK
+S:BR_SOUN | BR_CONF | BR_CHAO | BR_SHAR | BR_NETH | BR_DISE | BR_WALL
+S:BR_INER | BR_TIME | BR_GRAV | BR_PLAS | BR_NEXU
+D:A shifting, swirling form.  It seems to be all colours and sizes and shapes,
+D: though the dominant form is that of a huge dog.  You feel very uncertain all
+D: of a sudden.
+
+### Dungeon level 65 ###
 
 N:532:The Mouth of Sauron
 G:p:v
@@ -7873,13 +8274,14 @@ F:INVISIBLE | OPEN_DOOR | BASH_DOOR
 F:EVIL | IM_FIRE | IM_COLD
 F:IM_ELEC | NO_CONF | NO_SLEEP
 S:1_IN_2
-S:TELE_TO | HOLD | CAUSE_3 | TRAPS
-S:BO_PLAS | BA_DARK | BA_MANA | BA_FIRE | BA_WATE | BA_NETH
+S:TELE_TO | HOLD | CAUSE_3 | TRAPS | BO_PLAS | BA_DARK | BA_MANA
+S:BA_FIRE | BA_WATE | BA_NETH
 S:S_HI_DEMON | S_HI_UNDEAD
 D:The Mouth of Sauron is a mighty spell caster.  So old that even he cannot
 D: remember his own name, his power and evil are undeniable.  He believes
-D: unshakably that he is unbeatable and laughs as he weaves his awesome
-D: spells.
+D: unshakably that he is unbeatable and laughs as he weaves his awesome spells.
+
+### Dungeon level 76 ###
 
 N:533:Master quylthulg
 G:Q:B
@@ -7889,9 +8291,11 @@ F:FORCE_SLEEP | FORCE_MAXHP | NEVER_MOVE | NEVER_BLOW
 F:INVISIBLE | EMPTY_MIND | ANIMAL
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_1
-S:S_ANIMAL
-S:S_MONSTERS | S_HI_UNDEAD | S_HI_DRAGON | S_HI_DEMON | BLINK | TELE_TO
+S:BLINK | TELE_TO
+S:S_ANIMAL | S_MONSTERS | S_HI_UNDEAD | S_HI_DRAGON | S_HI_DEMON
 D:A giant seething mass of flesh, overwhelming you with monster after monster.
+
+### Dungeon level 79 ###
 
 N:534:Qlzqqlzuup, the Emperor Quylthulg
 G:Q:v
@@ -7903,12 +8307,13 @@ F:ONLY_ITEM | DROP_4D2
 F:INVISIBLE | EMPTY_MIND | ANIMAL
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_1
-S:S_ANIMAL
-S:S_MONSTERS | S_ANGEL | S_HOUND | S_HYDRA | S_SPIDER
-S:S_HI_UNDEAD | S_HI_DRAGON | S_HI_DEMON | S_WRAITH | S_UNIQUE | S_KIN
-D:A gigantic seething mass of flesh, Qlzqqlzuup changes colours in front
-D: of your eyes.  Pulsating first one colour then the next, it knows only it
-D: must bring help to protect itself.
+S:S_ANIMAL | S_MONSTERS | S_ANGEL | S_HOUND | S_HYDRA | S_SPIDER | S_HI_UNDEAD
+S:S_HI_DRAGON | S_HI_DEMON | S_WRAITH | S_UNIQUE | S_KIN
+D:A gigantic seething mass of flesh, Qlzqqlzuup changes colours in front of your
+D: eyes.  Pulsating first one colour then the next, it knows only it must bring
+D: help to protect itself.
+
+### Dungeon level 80 ###
 
 N:535:The Witch-King of Angmar
 G:W:D
@@ -7925,13 +8330,15 @@ F:COLD_BLOOD | OPEN_DOOR | BASH_DOOR | MOVE_BODY
 F:EVIL | UNDEAD
 F:IM_COLD | IM_POIS | HURT_LITE | NO_CONF | NO_SLEEP
 S:1_IN_2
-S:TELE_AWAY | BLIND | HOLD | SCARE | CAUSE_3
-S:BO_MANA | BA_NETH | BRAIN_SMASH
+S:TELE_AWAY | BLIND | HOLD | SCARE | CAUSE_3 | BO_MANA | BA_NETH
+S:BRAIN_SMASH
 S:S_MONSTERS | S_WRAITH | S_HI_UNDEAD | S_HI_DRAGON | S_HI_DEMON | S_KIN
-D:The Chief of the Ringwraiths.  A fell being of devastating power.  His
-D: spells are lethal and his combat blows crushingly hard.  He moves at
-D: speed, and commands legions of evil to do his bidding.  It is said that he
-D: is fated never to die by the hand of mortal man.
+D:The Chief of the Ringwraiths.  A fell being of devastating power.  His spells
+D: are lethal and his combat blows crushingly hard.  He moves at speed, and
+D: commands legions of evil to do his bidding.  It is said that he is fated never
+D: to die by the hand of mortal man.
+
+### Dungeon level 82 ###
 
 N:536:Pazuzu, Lord of Air
 G:U:b
@@ -7948,9 +8355,12 @@ F:INVISIBLE | OPEN_DOOR | BASH_DOOR
 F:EVIL | DEMON | IM_ACID | IM_FIRE | IM_COLD | IM_ELEC
 F:IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_3
-S:MIND_BLAST | BO_ELEC | BO_MANA | BA_ELEC | S_HI_DEMON
-D:A winged humanoid demon from the Planes of Hell, Pazuzu grins inhumanely at
-D: you as he decides your fate.
+S:MIND_BLAST | BO_ELEC | BO_MANA | BA_ELEC
+S:S_HI_DEMON
+D:A winged humanoid demon from the Planes of Hell, Pazuzu grins inhumanely at you
+D: as he decides your fate.
+
+### Dungeon level 78 ###
 
 N:537:Hellhound
 G:C:r
@@ -7967,6 +8377,8 @@ S:1_IN_5
 S:BR_FIRE
 D:It is a giant dog that glows with heat.  Flames pour from its nostrils.
 
+### Dungeon level 84 ###
+
 N:538:Cantoras, the Skeletal Lord
 G:s:v
 I:140:75d100:20:120:80
@@ -7982,12 +8394,14 @@ F:SMART | COLD_BLOOD | OPEN_DOOR | BASH_DOOR
 F:EVIL | UNDEAD | IM_FIRE | IM_COLD | IM_POIS
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_2
-S:TELE_TO | SLOW | SCARE | CAUSE_4 | BRAIN_SMASH
-S:BO_ICEE | BO_MANA | BA_WATE | BA_NETH
+S:TELE_TO | SLOW | SCARE | CAUSE_4 | BRAIN_SMASH | BO_ICEE | BO_MANA
+S:BA_WATE | BA_NETH
 S:S_HI_UNDEAD
-D:A legion of evil undead druj animating the skeleton of a once mighty
-D: sorcerer.  His power is devastating and his speed unmatched in the
-D: underworld.  Flee his wrath!
+D:A legion of evil undead druj animating the skeleton of a once mighty sorcerer.
+D: His power is devastating and his speed unmatched in the underworld.  Flee his
+D: wrath!
+
+### Dungeon level 86 ###
 
 N:539:The Tarrasque
 G:R:v
@@ -8005,8 +8419,10 @@ F:ANIMAL | IM_FIRE | IM_COLD | NO_CONF | NO_SLEEP
 F:RES_DISE
 S:1_IN_2
 S:BR_FIRE | BR_COLD | BR_DISE
-D:The Tarrasque is a massive reptile of legend, rumoured to be unkillable
-D: and immune to magic.  Fear its anger, for its devastation is unmatched!
+D:The Tarrasque is a massive reptile of legend, rumoured to be unkillable and
+D: immune to magic.  Fear its anger, for its devastation is unmatched!
+
+### Dungeon level 88 ###
 
 N:540:Lungorthin, the Balrog of White Fire
 G:U:v
@@ -8026,11 +8442,13 @@ F:NO_CONF | NO_SLEEP
 F:RES_PLAS
 S:1_IN_4
 S:BLIND | CONF | SCARE
-S:BR_FIRE | BR_PLAS
 S:S_HI_DEMON | S_UNDEAD
-D:A massive form cloaked in flame.  Lungorthin stares balefully at you with
-D: eyes that smoulder red.  The dungeon floor where he stands is scorched by
-D: the heat of his body.
+S:BR_FIRE | BR_PLAS
+D:A massive form cloaked in flame.  Lungorthin stares balefully at you with eyes
+D: that smoulder red.  The dungeon floor where he stands is scorched by the heat
+D: of his body.
+
+### Dungeon level 83 ###
 
 N:541:Draugluin, Sire of All Werewolves
 G:C:u
@@ -8048,9 +8466,12 @@ F:ONLY_ITEM | DROP_1D2 | DROP_GOOD
 F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR | MOVE_BODY
 F:ANIMAL | EVIL | IM_POIS
 S:1_IN_3
-S:SCARE | S_MONSTERS | S_HOUND
-D:Draugluin provides Sauron with a fearsome personal guard.  He is an
-D: enormous wolf inhabited with a human spirit.  He is chief of all his kind.
+S:SCARE
+S:S_MONSTERS | S_HOUND
+D:Draugluin provides Sauron with a fearsome personal guard.  He is an enormous
+D: wolf inhabited with a human spirit.  He is chief of all his kind.
+
+### Dungeon level 92 ###
 
 N:542:Vecna, the Emperor Lich
 G:L:v
@@ -8068,11 +8489,13 @@ F:SMART | COLD_BLOOD | OPEN_DOOR | BASH_DOOR
 F:EVIL | UNDEAD
 F:IM_FIRE | IM_COLD | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_2
-S:TPORT | BLIND | SCARE | CAUSE_4 | BRAIN_SMASH
-S:BA_MANA | BO_MANA | BA_FIRE | BA_NETH
+S:TPORT | BLIND | SCARE | CAUSE_4 | BRAIN_SMASH | BA_MANA | BO_MANA
+S:BA_FIRE | BA_NETH
 S:S_MONSTERS | S_HI_DEMON | S_HI_UNDEAD | S_KIN
 D:The greatest of all undead sorcerers, even the gods once feared him.  This
 D: ancient shadow of death wilts every living thing it passes.
+
+### Dungeon level 90 ###
 
 N:543:Huan, Wolfhound of the Valar
 G:C:W
@@ -8109,12 +8532,13 @@ F:ONLY_ITEM | DROP_4D2 | DROP_GOOD
 F:SMART | OPEN_DOOR | BASH_DOOR | MOVE_BODY
 F:ANIMAL | EVIL | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_3
-S:BR_DARK | BR_POIS
-S:BR_FIRE | BR_NETH
 S:S_HOUND
-D:The first guard of Angband, Carcharoth, also known as 'The Red Maw', is
-D: the greatest wolf to ever walk the earth.  He is highly intelligent and a
-D: deadly opponent in combat.
+S:BR_DARK | BR_POIS | BR_FIRE | BR_NETH
+D:The first guard of Angband, Carcharoth, also known as 'The Red Maw', is the
+D: greatest wolf to ever walk the earth.  He is highly intelligent and a deadly
+D: opponent in combat.
+
+### Dungeon level 95 ###
 
 N:545:Gothmog, the High Captain of Balrogs
 G:U:v
@@ -8134,15 +8558,14 @@ F:IM_FIRE | IM_ELEC | NO_CONF | NO_SLEEP
 F:RES_PLAS
 S:1_IN_3
 S:BLIND | CONF | SCARE
-S:BR_FIRE | BR_PLAS
 S:S_HI_DEMON | S_HI_UNDEAD
-D:Gothmog is the Chief Balrog in Morgoth's personal guard.  He is renowned
-D: for slaying Feanor and Fingon, two of the High Kings of the Noldor Elves,
-D: and has never been defeated in combat.  With his whip of flame and awesome
-D: fiery breath he saved his master from Ungoliant's rage.
+S:BR_FIRE | BR_PLAS
+D:Gothmog is the Chief Balrog in Morgoth's personal guard.  He is renowned for
+D: slaying Feanor and Fingon, two of the High Kings of the Noldor Elves, and has
+D: never been defeated in combat.  With his whip of flame and awesome fiery
+D: breath he saved his master from Ungoliant's rage.
 
-# Sauron is the basic "Quest" (thus the QUESTOR flag).
-# You must kill him to gain access to Morgoth's level.
+### Dungeon level 99 ###
 
 N:546:Sauron, the Sorcerer
 G:p:v
@@ -8159,17 +8582,14 @@ F:SMART | OPEN_DOOR | BASH_DOOR | MOVE_BODY | REGENERATE
 F:EVIL | IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_2
-S:TPORT | TELE_LEVEL | BLIND | SCARE | CAUSE_4
-S:BO_ICEE | BO_MANA | BO_PLAS | BRAIN_SMASH
-S:BA_MANA | BA_FIRE | BA_WATE | BA_NETH | BA_DARK
-S:S_MONSTERS | S_HI_DEMON | S_HI_UNDEAD | S_HI_DRAGON
-S:S_WRAITH | S_UNIQUE
-D:He is Morgoth's most powerful servant.  Mighty in spells and enchantments,
-D: he created the One Ring.  His eyes glow with power and his gaze seeks to
-D: destroy your soul.  He has many servants, and rarely fights without them.
+S:TPORT | TELE_LEVEL | BLIND | SCARE | CAUSE_4 | BO_ICEE | BO_MANA
+S:BO_PLAS | BRAIN_SMASH | BA_MANA | BA_FIRE | BA_WATE | BA_NETH | BA_DARK
+S:S_MONSTERS | S_HI_DEMON | S_HI_UNDEAD | S_HI_DRAGON | S_WRAITH | S_UNIQUE
+D:He is Morgoth's most powerful servant.  Mighty in spells and enchantments, he
+D: created the One Ring.  His eyes glow with power and his gaze seeks to destroy
+D: your soul.  He has many servants, and rarely fights without them.
 
-# Morgoth is the final "Quest" (thus the QUESTOR flag).
-# You must kill him to complete the final quest, and win the game.
+### Dungeon level 100 ###
 
 N:547:Morgoth, Lord of Darkness
 G:P:D
@@ -8190,17 +8610,18 @@ F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_3
 S:BA_MANA | BO_MANA | BA_NETH | BRAIN_SMASH
 S:S_MONSTERS | S_UNIQUE | S_WRAITH | S_HI_UNDEAD | S_HI_DRAGON | S_HI_DEMON
-D:He is the Master of the Pits of Angband.  His figure is like a black
-D: mountain crowned with lightning.  He rages with everlasting anger, his
-D: body scarred by Fingolfin's eight mighty wounds.  He can never rest from
-D: his pain, but seeks forever to dominate all that is light and good in the
-D: world.  He is the origin of man's fear of darkness and created many foul
-D: creatures with his evil powers.  Orcs, Dragons, and Trolls are his most
-D: foul corruptions, causing much pain and suffering in the world to please
-D: him.  His disgusting visage, twisted with evil, is crowned with iron, the
-D: two remaining Silmarils forever burning him.  Grond, the mighty Hammer of
-D: the Underworld, cries defiance as he strides towards you to crush you to a
-D: pulp!
+D:He is the Master of the Pits of Angband.  His figure is like a black mountain
+D: crowned with lightning.  He rages with everlasting anger, his body scarred by
+D: Fingolfin's eight mighty wounds.  He can never rest from his pain, but seeks
+D: forever to dominate all that is light and good in the world.  He is the origin
+D: of man's fear of darkness and created many foul creatures with his evil
+D: powers.  Orcs, Dragons, and Trolls are his most foul corruptions, causing much
+D: pain and suffering in the world to please him.  His disgusting visage, twisted
+D: with evil, is crowned with iron, the two remaining Silmarils forever burning
+D: him.  Grond, the mighty Hammer of the Underworld, cries defiance as he strides
+D: towards you to crush you to a pulp!
+
+### Dungeon level 4 ###
 
 N:548:Silver mouse
 G:r:W
@@ -8213,6 +8634,8 @@ F:ANIMAL
 D:It is about three feet long with large teeth.  As the light of your lamp falls
 D: on it, it seems to grow stronger.
 
+### Dungeon level 5 ###
+
 N:549:Rot jelly
 G:j:u
 I:120:20d8:2:30:99
@@ -8223,8 +8646,10 @@ F:NEVER_MOVE
 F:STUPID | EMPTY_MIND
 F:HURT_LITE | IM_POIS
 F:NO_CONF | NO_SLEEP | NO_FEAR
-D:It is a large pile of rotting flesh, whose touch spoils your food.  The terrible
-D: smell it exudes is also very hard to get rid of...
+D:It is a large pile of rotting flesh, whose touch spoils your food.  The
+D: terrible smell it exudes is also very hard to get rid of...
+
+### Dungeon level 15 ###
 
 N:550:Giant tan bat
 G:b:U
@@ -8236,6 +8661,8 @@ B:CLAW:HURT:1d2
 F:FORCE_SLEEP | RAND_50 | ANIMAL
 D:A giant bat, the beating of whose wings produces a strangely unnerving noise.
 
+### Dungeon level 23 ###
+
 N:551:Giant silver ant
 G:a:W
 I:110:9d8:10:38:40
@@ -8245,6 +8672,8 @@ F:RAND_25
 F:WEIRD_MIND | BASH_DOOR
 F:ANIMAL
 D:A giant silver ant with a caustic bite.
+
+### Dungeon level 25 ###
 
 N:552:Giant brown tick
 G:S:u
@@ -8256,6 +8685,8 @@ F:WEIRD_MIND | BASH_DOOR
 F:ANIMAL | IM_POIS
 D:It is moving slowly towards you.
 
+### Dungeon level 26 ###
+
 N:553:Disenchanter bat
 G:b:v
 I:130:6d8:12:28:50
@@ -8263,6 +8694,8 @@ W:26:4:0:75
 B:HIT:UN_BONUS
 F:FORCE_SLEEP | RAND_50 | ANIMAL | ATTR_MULTI | RES_DISE
 D:A giant bat which feeds on raw magical energy.
+
+### Dungeon level 27 ###
 
 N:554:Shimmering mold
 G:m:b
@@ -8276,6 +8709,8 @@ F:IM_ELEC | IM_POIS
 F:NO_CONF | NO_SLEEP | NO_FEAR
 D:It is a strange growth on the dungeon floor, glowing and crackling with sparks.
 
+### Dungeon level 22 ###
+
 N:555:Wyvern
 G:d:g
 I:120:5d80:20:66:60
@@ -8288,6 +8723,8 @@ F:ONLY_GOLD | DROP_2D2 | IM_POIS
 F:OPEN_DOOR | BASH_DOOR | MOVE_BODY
 F:ANIMAL | EVIL | DRAGON
 D:A fast-moving and deadly draconian animal.  Beware its poisonous sting!
+
+### Dungeon level 35 ###
 
 N:556:Chest mimic
 G:~:s
@@ -8304,11 +8741,13 @@ F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_5
 S:BLIND | CONF | SCARE | CAUSE_2 | BA_POIS
 S:S_MONSTER
-D:A strange creature that disguises itself as a chest to lure
-D: unsuspecting adventurers within reach of its venomous claws.  The
-D: first that most adventurers realise of the deception is when the
-D: seemingly invitingly open lid of the chest suddenly grows teeth
-D: and then slams shut on the adventurer's hand...
+D:A strange creature that disguises itself as a chest to lure unsuspecting
+D: adventurers within reach of its venomous claws.  The first that most
+D: adventurers realise of the deception is when the seemingly invitingly open lid
+D: of the chest suddenly grows teeth and then slams shut on the adventurer's
+D: hand...
+
+### Dungeon level 54 ###
 
 N:557:Demilich
 G:L:U
@@ -8323,10 +8762,12 @@ F:ONLY_ITEM | DROP_2D2 | DROP_3D2 | DROP_GOOD
 F:COLD_BLOOD | OPEN_DOOR | BASH_DOOR
 F:EVIL | UNDEAD | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_3
-S:BLINK | TELE_TO | BLIND | HOLD | CONF | SCARE | CAUSE_3 | CAUSE_4
-S:DRAIN_MANA | BRAIN_SMASH | S_UNDEAD | S_DEMON | FORGET
-S:TPORT | HEAL
+S:BLINK | TELE_TO | BLIND | HOLD | CONF | SCARE | CAUSE_3
+S:CAUSE_4 | DRAIN_MANA | BRAIN_SMASH | FORGET | TPORT | HEAL
+S:S_UNDEAD | S_DEMON
 D:A lich who is partially immaterial, on its way to a new, ethereal form.
+
+### Dungeon level 64 ###
 
 N:558:Archlich
 G:L:B
@@ -8341,11 +8782,13 @@ F:ONLY_ITEM | DROP_4D2 | DROP_2D2 | DROP_GOOD
 F:COLD_BLOOD | OPEN_DOOR | BASH_DOOR | PASS_WALL
 F:EVIL | UNDEAD | IM_COLD | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_3
-S:BLINK | TELE_TO | SCARE | HOLD | CAUSE_4
-S:DRAIN_MANA | BRAIN_SMASH | FORGET
-S:TPORT | HEAL | S_HI_UNDEAD | S_DEMON | BA_NETH
-D:A lich who has reached its ultimate evolutionary stage:  a completely
-D: immaterial state.
+S:BLINK | TELE_TO | SCARE | HOLD | CAUSE_4 | DRAIN_MANA | BRAIN_SMASH
+S:FORGET | TPORT | HEAL | BA_NETH
+S:S_HI_UNDEAD | S_DEMON
+D:A lich who has reached its ultimate evolutionary stage: a completely immaterial
+D: state.
+
+### Dungeon level 2 ###
 
 N:559:Crow
 G:B:s
@@ -8356,6 +8799,8 @@ B:BITE:HURT:1d3
 F:ANIMAL
 D:It is a hooded crow, gray except for the black wings and head.
 
+### Dungeon level 4 ###
+
 N:560:Raven
 G:B:D
 I:120:4d5:40:12:0
@@ -8365,6 +8810,8 @@ B:BITE:HURT:1d4
 F:ANIMAL
 D:Larger than a crow, and pitch black.
 
+### Dungeon level 16 ###
+
 N:561:Crebain
 G:B:D
 I:120:3d5:40:12:0
@@ -8372,10 +8819,13 @@ W:16:4:0:20
 B:CLAW:HURT:1d4
 B:CLAW:HURT:1d4
 F:ANIMAL | FRIENDS
-S:1_IN_8 | SHRIEK
+S:1_IN_8
+S:SHRIEK
 D:A type of crow, specially bred by the forces of evil as spies; their
-D: rudimentary intelligence guided by an evil mind has tracked you down,
-D: and now they seek to alert other evil creatures to your presence.
+D: rudimentary intelligence guided by an evil mind has tracked you down, and now
+D: they seek to alert other evil creatures to your presence.
+
+### Dungeon level 48 ###
 
 N:562:Winged Horror
 G:B:D
@@ -8388,10 +8838,12 @@ B:BITE:EXP_40:4d6
 F:ANIMAL | IM_COLD | IM_POIS
 S:1_IN_6
 S:BR_NETH | BR_DARK | BR_POIS
-D:A terrifying sight:  a winged creature greater than any bird you have ever
-D: seen, and with no feathers on its horrid black leathery wings.  Descended
-D: from a creature of an older world perhaps, bred by Sauron to be a winged
-D: steed for his Ringwraiths.
+D:A terrifying sight: a winged creature greater than any bird you have ever seen,
+D: and with no feathers on its horrid black leathery wings.  Descended from a
+D: creature of an older world perhaps, bred by Sauron to be a winged steed for
+D: his Ringwraiths.
+
+### Dungeon level 9 ###
 
 N:563:Cave bear
 G:q:u
@@ -8401,8 +8853,10 @@ B:CLAW:HURT:1d6
 B:CLAW:HURT:1d6
 B:BITE:HURT:1d8
 F:BASH_DOOR | ANIMAL | RAND_25
-D:A large bear appears to have made its home in this cave.  It is hungry,
-D: and you are trespassing in its territory.
+D:A large bear appears to have made its home in this cave.  It is hungry, and you
+D: are trespassing in its territory.
+
+### Dungeon level 16 ###
 
 N:564:Grizzly bear
 G:q:U
@@ -8415,6 +8869,8 @@ B:CRUSH:HURT:1d10
 F:BASH_DOOR | ANIMAL
 D:A huge, beastly bear, more savage than most of its kind.
 
+### Dungeon level 24 ###
+
 N:565:Werebear
 G:q:D
 I:110:25d25:20:50:20
@@ -8426,9 +8882,11 @@ B:CRUSH:HURT:2d6
 F:BASH_DOOR | OPEN_DOOR
 F:ANIMAL | EVIL | DROP_1D2
 D:In the eyes of this bear, there glimmers the faintest light of intelligence.
-D: And then its form begins to change... The combination of animal cunning,
-D: human intelligence and the great physical strength of the bear makes for
-D: a dangerous enemy.
+D: And then its form begins to change...  The combination of animal cunning,
+D: human intelligence and the great physical strength of the bear makes for a
+D: dangerous enemy.
+
+### Dungeon level 28 ###
 
 N:566:Beorn, the Shape-Changer
 G:q:D
@@ -8441,10 +8899,12 @@ B:CRUSH:HURT:3d6
 F:UNIQUE | MALE | FORCE_MAXHP | FORCE_SLEEP
 F:BASH_DOOR | ANIMAL | ESCORT | MOVE_BODY | SMART
 F:ONLY_ITEM | DROP_2D2 | DROP_GOOD
-D:Beorn is only occasionally seen in human form these days, preferring to
-D: appear in the shape of a giant black bear:  he also prefers the company of
-D: beasts to that of humans.  He has never taken kindly to strangers, even in
-D: human form - and still less when in bear's shape, as he is now.
+D:Beorn is only occasionally seen in human form these days, preferring to appear
+D: in the shape of a giant black bear: he also prefers the company of beasts to
+D: that of humans.  He has never taken kindly to strangers, even in human form -
+D: and still less when in bear's shape, as he is now.
+
+### Dungeon level 55 ###
 
 N:567:Barbazu
 G:U:G
@@ -8459,10 +8919,13 @@ F:ONLY_ITEM | DROP_1D2
 F:OPEN_DOOR | BASH_DOOR | POWERFUL
 F:EVIL | DEMON | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_10
-S:SCARE | S_DEMON
-D:A foul, humanoid creature with a long tail, clawed hands and feet,
-D: and a disgusting, wiry, snaky beard.  They are the elite shock troops
-D: of the hells, capable of a terrifying berserk fury.
+S:SCARE
+S:S_DEMON
+D:A foul, humanoid creature with a long tail, clawed hands and feet, and a
+D: disgusting, wiry, snaky beard.  They are the elite shock troops of the hells,
+D: capable of a terrifying berserk fury.
+
+### Dungeon level 61 ###
 
 N:568:Bile Demon
 G:U:R
@@ -8476,11 +8939,15 @@ F:ONLY_ITEM | DROP_3D2 | DROP_GOOD
 F:OPEN_DOOR | BASH_DOOR | POWERFUL
 F:EVIL | DEMON | IM_POIS | IM_ACID | NO_CONF | NO_SLEEP
 S:1_IN_6
-S:BR_POIS | BR_ACID | S_DEMON | BLIND | CONF | ARROW_4
-D:It's big.  It's fat.  It's red.  It's ugly.  It's got a severe attack of
-D: highly poisonous flatulence.  And its insides are corrosive.  All of which
-D: go together to make the single most repulsive sight - and smell - you have
-D: ever experienced.
+S:BLIND | CONF | ARROW_4
+S:S_DEMON
+S:BR_POIS | BR_ACID
+D:It's big.  It's fat.  It's red.  It's ugly.  It's got a severe attack of highly
+D: poisonous flatulence.  And its insides are corrosive.  All of which go
+D: together to make the single most repulsive sight - and smell - you have ever
+D: experienced.
+
+### Dungeon level 65 ###
 
 N:569:Osyluth
 G:U:W
@@ -8496,10 +8963,13 @@ F:OPEN_DOOR | BASH_DOOR | POWERFUL | MOVE_BODY
 F:EVIL | DEMON | NO_CONF | NO_SLEEP | INVISIBLE
 F:IM_ACID | IM_ELEC | IM_POIS | IM_COLD | IM_FIRE
 S:1_IN_6
-S:BA_ELEC | BA_COLD | BO_ICEE | SCARE | S_DEMON
-D:It is a demon made almost entirely out of bones.  It is humanoid, but with
-D: a large tail similar to that of a giant scorpion, and emits a foul smell
-D: of decay and rot.  They are despised even in the hells.
+S:BA_ELEC | BA_COLD | BO_ICEE | SCARE
+S:S_DEMON
+D:It is a demon made almost entirely out of bones.  It is humanoid, but with a
+D: large tail similar to that of a giant scorpion, and emits a foul smell of
+D: decay and rot.  They are despised even in the hells.
+
+### Dungeon level 69 ###
 
 N:570:Gelugon
 G:U:w
@@ -8514,13 +8984,15 @@ F:ONLY_ITEM | DROP_GOOD | DROP_4D2
 F:OPEN_DOOR | BASH_DOOR | POWERFUL | REGENERATE
 F:EVIL | DEMON | IM_COLD | NO_CONF | NO_SLEEP
 S:1_IN_6
-S:BR_COLD | BR_SHAR | BA_COLD | BO_ICEE | S_HI_DEMON
-S:SLOW | SCARE | HOLD
+S:BA_COLD | BO_ICEE | SLOW | SCARE | HOLD
+S:S_HI_DEMON
+S:BR_COLD | BR_SHAR
 D:This demon from the ice planes is a truly terrifying sight.  It has an
-D: extremely large, insect-like body towering a full twelve feet tall, with
-D: great claws on its hands and pincers on its mouth, and its head bulges
-D: with great multi-faceted eyes.  Its tail is covered with razor-sharp
-D: spikes.
+D: extremely large, insect-like body towering a full twelve feet tall, with great
+D: claws on its hands and pincers on its mouth, and its head bulges with great
+D: multi-faceted eyes.  Its tail is covered with razor-sharp spikes.
+
+### Dungeon level 72 ###
 
 N:571:Horned Reaper
 G:U:B
@@ -8536,11 +9008,14 @@ F:OPEN_DOOR | BASH_DOOR | KILL_BODY | POWERFUL
 F:EVIL | DEMON | NO_CONF | NO_SLEEP
 F:IM_FIRE | IM_COLD | IM_POIS | IM_ACID | IM_ELEC
 S:1_IN_5
-S:HASTE | SLOW | SCARE | S_HI_DEMON
-D:A giant humanoid demon wielding a massive, heavy and sharp scythe.  Feared
-D: by foes and friends alike when it flies into one of its berserk rages, the
-D: Horned Reaper will cut down anything in its path between it and you - even
-D: the minions it has just summoned.
+S:HASTE | SLOW | SCARE
+S:S_HI_DEMON
+D:A giant humanoid demon wielding a massive, heavy and sharp scythe.  Feared by
+D: foes and friends alike when it flies into one of its berserk rages, the Horned
+D: Reaper will cut down anything in its path between it and you - even the
+D: minions it has just summoned.
+
+### Dungeon level 77 ###
 
 N:572:Pit Fiend
 G:U:o
@@ -8555,12 +9030,15 @@ F:ONLY_ITEM | DROP_GOOD | DROP_4D2 | DROP_2D2
 F:OPEN_DOOR | BASH_DOOR | MOVE_BODY | POWERFUL
 F:EVIL | DEMON | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_5
-S:S_HI_DEMON | S_HI_DRAGON | BR_FIRE | BR_POIS | BR_CHAO
 S:SCARE | BA_FIRE | CAUSE_4
-D:Appearing as a giant, clawed and winged humanoid with a scaly red body
-D: and massive fangs dripping a foul green liquid, the Pit Fiend is a
-D: dreadful enemy from the lowest depths of the hells.  They are often the
-D: commanders of vast demon armies.
+S:S_HI_DEMON | S_HI_DRAGON
+S:BR_FIRE | BR_POIS | BR_CHAO
+D:Appearing as a giant, clawed and winged humanoid with a scaly red body and
+D: massive fangs dripping a foul green liquid, the Pit Fiend is a dreadful enemy
+D: from the lowest depths of the hells.  They are often the commanders of vast
+D: demon armies.
+
+### Dungeon level 79 ###
 
 N:573:Greater Balrog
 G:U:v
@@ -8577,12 +9055,14 @@ F:EVIL | DEMON | IM_FIRE | IM_ELEC | IM_POIS
 F:NO_CONF | NO_SLEEP
 F:RES_PLAS
 S:1_IN_3
-S:CONF | SCARE
-S:BR_FIRE | BR_PLAS | BO_PLAS | BA_FIRE
+S:CONF | SCARE | BO_PLAS | BA_FIRE
 S:S_UNDEAD | S_DEMON | S_HI_DEMON
-D:Originally of the semi-divine Maiar, this evil spirit swore allegiance
-D: to Morgoth at the beginning of time and is now one of his most terrible
-D: demonic servants.  With its flaming whip and sword it seeks to destroy you.
+S:BR_FIRE | BR_PLAS
+D:Originally of the semi-divine Maiar, this evil spirit swore allegiance to
+D: Morgoth at the beginning of time and is now one of his most terrible demonic
+D: servants.  With its flaming whip and sword it seeks to destroy you.
+
+### Dungeon level 9 ###
 
 N:574:Baby bronze dragon
 G:d:U
@@ -8597,8 +9077,8 @@ F:OPEN_DOOR | BASH_DOOR
 F:EVIL | DRAGON | NO_CONF
 S:1_IN_12
 S:BR_CONF
-D:This hatchling dragon is still soft, its eyes unaccustomed to light and
-D: its scales a dull bronze.
+D:This hatchling dragon is still soft, its eyes unaccustomed to light and its
+D: scales a dull bronze.
 
 N:575:Baby gold dragon
 G:d:y
@@ -8613,8 +9093,10 @@ F:OPEN_DOOR | BASH_DOOR
 F:EVIL | DRAGON
 S:1_IN_12
 S:BR_SOUN
-D:This hatchling dragon is still soft, its eyes unaccustomed to light and
-D: its scales a pale gold.
+D:This hatchling dragon is still soft, its eyes unaccustomed to light and its
+D: scales a pale gold.
+
+### Dungeon level 63 ###
 
 N:576:Great Swamp Wyrm
 G:D:g
@@ -8631,9 +9113,9 @@ F:EVIL | DRAGON | IM_POIS | NO_CONF | NO_SLEEP
 S:1_IN_4
 S:BLIND | CONF | SCARE
 S:BR_POIS
-D:A truly enormous dragon with great powers.  The foul gases issuing
-D: from the beast nearly make you vomit; and while you may try to hold
-D: your breath as you fight it, it sees no reason to do likewise.
+D:A truly enormous dragon with great powers.  The foul gases issuing from the
+D: beast nearly make you vomit; and while you may try to hold your breath as you
+D: fight it, it sees no reason to do likewise.
 
 N:577:Great Wyrm of Perplexity
 G:D:U
@@ -8650,9 +9132,11 @@ F:EVIL | DRAGON | NO_CONF | NO_SLEEP
 S:1_IN_4
 S:BLIND | CONF | SCARE
 S:BR_CONF
-D:A dragon of great size and power.  Its polished bronze scales reflect the
-D: light in strange and confusing patterns, and you find it hard to keep your
-D: mind on the job of fighting for your life.
+D:A dragon of great size and power.  Its polished bronze scales reflect the light
+D: in strange and confusing patterns, and you find it hard to keep your mind on
+D: the job of fighting for your life.
+
+### Dungeon level 67 ###
 
 N:578:Great Bile Wyrm
 G:D:s
@@ -8669,9 +9153,9 @@ F:EVIL | DRAGON | IM_ACID | NO_CONF | NO_SLEEP
 S:1_IN_4
 S:BLIND | CONF | SCARE
 S:BR_ACID
-D:A huge and very powerful dragon.  Great steaming pools of acid drip from
-D: its form onto the ground.  You shudder when you see the acid eating away
-D: the very stones of the dungeon - what could it do to you?
+D:A huge and very powerful dragon.  Great steaming pools of acid drip from its
+D: form onto the ground.  You shudder when you see the acid eating away the very
+D: stones of the dungeon - what could it do to you?
 
 N:579:Great Wyrm of Thunder
 G:D:y
@@ -8692,6 +9176,8 @@ D:A dragon of gigantic proportions, with destructive abilities to match.  The
 D: sheer loudness of its roar leaves you stunned and unable to think clearly
 D: enough to defend yourself adequately.
 
+### Dungeon level 20 ###
+
 N:580:Ranger
 G:p:W
 I:110:15d11:20:40:40
@@ -8702,8 +9188,8 @@ F:MALE
 F:DROP_1D2
 F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR
 S:1_IN_4
-S:S_ANIMAL
 S:ARROW_2 | MISSILE | BO_COLD | BO_ELEC | BLINK
+S:S_ANIMAL
 D:A warrior who is at one with nature.  A master of both bow and sword, with
 D: minor spellcasting skills, and animals come to do his bidding.
 
@@ -8721,6 +9207,8 @@ S:HEAL | CAUSE_2 | SLOW | SCARE | BLIND
 D:A warrior for a holy cause.  Unfortunately, his god is not yours, and there is
 D: rivalry even between the various gods of Good, so he is your enemy.
 
+### Dungeon level 41 ###
+
 N:582:Ranger Chieftain
 G:p:W
 I:120:50d20:20:60:10
@@ -8734,13 +9222,15 @@ F:TAKE_ITEM | OPEN_DOOR | BASH_DOOR
 F:NO_CONF | NO_SLEEP
 F:IM_FIRE | IM_ELEC | IM_COLD | IM_POIS
 S:1_IN_4
-S:S_ANIMAL
 S:ARROW_2 | ARROW_3 | ARROW_4 | MISSILE | BO_FIRE | BO_ELEC | BA_COLD
 S:HASTE | BLINK
-D:A chieftain among the Rangers.  His understanding of nature gives him
-D: powerful elemental spells to use against you, in addition to his skills
-D: as an archer and a warrior.  Furthermore, he is a master of camouflage, so
-D: you will need magically enhanced seeing to spot him.
+S:S_ANIMAL
+D:A chieftain among the Rangers.  His understanding of nature gives him powerful
+D: elemental spells to use against you, in addition to his skills as an archer
+D: and a warrior.  Furthermore, he is a master of camouflage, so you will need
+D: magically enhanced seeing to spot him.
+
+### Dungeon level 45 ###
 
 N:583:Berserker
 G:p:u
@@ -8753,7 +9243,8 @@ F:MALE | FORCE_MAXHP
 F:ONLY_ITEM | DROP_90 | DROP_2D2
 F:BASH_DOOR | KILL_BODY
 F:NO_CONF | NO_SLEEP | NO_FEAR
-S:1_IN_4 | HASTE | SCARE
+S:1_IN_4
+S:HASTE | SCARE
 D:Even the strongest of normal human warriors fears the Berserker - the one who
 D: can drive himself into such a terrible battle-frenzy that he can survive blows
 D: which should kill him, and still apparently feel no pain.  He tramples weaker
@@ -8774,6 +9265,8 @@ S:1_IN_8
 S:BOULDER
 D:A gigantic ugly humanoid with but one eye and very thick skin.
 
+### Dungeon level 69 ###
+
 N:585:Polyphemus, the Blind Cyclops
 G:P:g
 I:130:53d100:40:140:40
@@ -8788,10 +9281,12 @@ F:BASH_DOOR | KILL_BODY
 F:EVIL | GIANT | IM_ACID | IM_POIS | IM_FIRE | IM_COLD
 S:1_IN_5
 S:BOULDER | BO_WATE | BA_WATE | BO_ICEE | BA_ACID
-D:No ordinary cyclops, but the son of a sea-god:  he wields the powers of
-D: elemental water as well as the considerable strength of a cyclops.  His
-D: one eye was blinded long ago by the warrior Odysseus, but he has trained
-D: himself to hear so well that it nearly makes up for his disability.
+D:No ordinary cyclops, but the son of a sea-god: he wields the powers of
+D: elemental water as well as the considerable strength of a cyclops.  His one
+D: eye was blinded long ago by the warrior Odysseus, but he has trained himself
+D: to hear so well that it nearly makes up for his disability.
+
+### Dungeon level 76 ###
 
 N:586:Atlas, the Titan
 G:P:s
@@ -8809,8 +9304,10 @@ F:EVIL | GIANT | HURT_ROCK
 F:IM_FIRE | IM_COLD | IM_ACID | IM_ELEC | IM_POIS
 S:1_IN_5
 S:BOULDER
-D:The strongest of all the Titans.  Legend has it that he used to hold the sky
-D: on his shoulders; and the mountain range that now does so is named after him.
+D:The strongest of all the Titans.  Legend has it that he used to hold the sky on
+D: his shoulders; and the mountain range that now does so is named after him.
+
+### Dungeon level 87 ###
 
 N:587:Kronos, Lord of the Titans
 G:P:v
@@ -8827,10 +9324,13 @@ F:SMART | TAKE_ITEM | BASH_DOOR
 F:EVIL | GIANT | ESCORT
 F:IM_FIRE | IM_COLD | IM_ACID | IM_POIS | IM_ELEC
 S:1_IN_3
-S:BOULDER | BR_FIRE | BR_COLD | BR_SHAR | BR_SOUN
-S:S_MONSTERS | S_KIN | TELE_TO | HEAL
-D:The lord of the Titans, he has broken loose from his confinement in
-D: the nether hells to seek revenge on the world.
+S:BOULDER | TELE_TO | HEAL
+S:S_MONSTERS | S_KIN
+S:BR_FIRE | BR_COLD | BR_SHAR | BR_SOUN
+D:The lord of the Titans, he has broken loose from his confinement in the nether
+D: hells to seek revenge on the world.
+
+### Dungeon level 18 ###
 
 N:588:Evil eye
 G:e:g
@@ -8846,6 +9346,8 @@ D:A huge disembodied eye.  As you stare into the black nothingness of its pupil,
 D: you feel your will and vitality draining away, and are unable to do anything
 D: except approach it in horrified fascination.
 
+### Dungeon level 28 ###
+
 N:589:Spectator
 G:e:B
 I:110:15d13:30:1:5
@@ -8857,9 +9359,11 @@ F:FORCE_SLEEP | FORCE_MAXHP
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_6
 S:FORGET | CAUSE_2 | HOLD | SLOW
-D:A lesser relative of the beholder:  a globular body with a large toothy mouth,
-D: a large central eye, and four smaller eyes on stalks protruding from the top
-D: of its body.
+D:A lesser relative of the beholder: a globular body with a large toothy mouth, a
+D: large central eye, and four smaller eyes on stalks protruding from the top of
+D: its body.
+
+### Dungeon level 36 ###
 
 N:590:Gauth
 G:e:D
@@ -8875,6 +9379,8 @@ S:1_IN_5
 S:CAUSE_2 | TELE_AWAY | BA_COLD | BO_ELEC | HOLD | DRAIN_MANA
 D:Another lesser relative of the beholder, this six-eyed creature feeds on magic.
 
+### Dungeon level 67 ###
+
 N:591:Beholder hive-mother
 G:e:b
 I:120:35d100:30:80:10
@@ -8888,11 +9394,13 @@ F:FEMALE | EVIL
 F:SMART | BASH_DOOR
 F:NO_CONF | NO_SLEEP | IM_POIS
 S:1_IN_2
-S:BLIND | CONF | FORGET | SCARE | DRAIN_MANA | BRAIN_SMASH
-S:BA_DARK | BO_MANA | BA_ACID | BA_FIRE | BA_COLD | BO_NETH
+S:BLIND | CONF | FORGET | SCARE | DRAIN_MANA | BRAIN_SMASH | BA_DARK
+S:BO_MANA | BA_ACID | BA_FIRE | BA_COLD | BO_NETH
 S:S_KIN
 D:A hive mother of the race of beholders, she can summon her brood to her aid
 D: whenever she wishes.
+
+### Dungeon level 19 ###
 
 N:592:Neekerbreeker
 G:I:D
@@ -8908,6 +9416,8 @@ D: from its incessant squeaking, which can best be described as "neek-breek,
 D: neek-breek".  The noise can drive people frantic, and worse still, can be
 D: heard for quite some distance, alerting other monsters to your presence.
 
+### Dungeon level 24 ###
+
 N:593:Giant firefly
 G:I:r
 I:120:3d2:8:18:10
@@ -8915,8 +9425,10 @@ W:24:4:0:4
 B:BITE:BLIND:1d2
 F:RAND_50 | RAND_25
 F:MULTIPLY | WEIRD_MIND | ANIMAL
-D:Clouds of these monsters light up the dungeon - so brightly that you can
-D: barely see through them.
+D:Clouds of these monsters light up the dungeon - so brightly that you can barely
+D: see through them.
+
+### Dungeon level 49 ###
 
 N:594:Eol, the Dark Elf
 G:h:D
@@ -8934,10 +9446,11 @@ S:1_IN_2
 S:HEAL | BLINK | TELE_TO | BLIND | CONF | CAUSE_4 | DARKNESS
 S:BA_NETH | BA_ELEC | BA_ACID | BA_FIRE | BA_COLD | BO_MANA
 S:S_MONSTERS | S_UNDEAD | S_DRAGON | S_DEMON
-D:A lord of the Teleri, Eol is a mighty metalsmith, the only one to ever
-D: forge weapons of meteorite iron.  The mortal enemy of the Eldar,
-D: he is currently fleeing their wrath, following the murder of Princess
-D: Aredhel of Gondolin.
+D:A lord of the Teleri, Eol is a mighty metalsmith, the only one to ever forge
+D: weapons of meteorite iron.  The mortal enemy of the Eldar, he is currently
+D: fleeing their wrath, following the murder of Princess Aredhel of Gondolin.
+
+### Dungeon level 81 ###
 
 N:595:Maeglin, the Traitor of Gondolin
 G:h:D
@@ -8953,12 +9466,13 @@ F:ONLY_ITEM | DROP_3D2 | DROP_4D2 | DROP_GOOD | DROP_GREAT
 F:OPEN_DOOR | BASH_DOOR | KILL_WALL | MOVE_BODY
 F:EVIL | IM_POIS | IM_FIRE | IM_COLD | NO_CONF | NO_SLEEP
 S:1_IN_6
-S:S_ANIMAL
-S:S_MONSTERS | S_WRAITH | S_HI_UNDEAD | S_HI_DRAGON | S_HI_DEMON | S_UNIQUE
-D:The son of Eol the Dark Elf, Maeglin is every bit as evil as his father
-D: and more.  His greed for gold led him to betray the Hidden Kingdom of
-D: Gondolin to Morgoth's forces.  He is a mighty warrior himself, and some
-D: of Morgoth's greatest servants answer to his call.
+S:S_ANIMAL | S_MONSTERS | S_WRAITH | S_HI_UNDEAD | S_HI_DRAGON | S_HI_DEMON | S_UNIQUE
+D:The son of Eol the Dark Elf, Maeglin is every bit as evil as his father and
+D: more.  His greed for gold led him to betray the Hidden Kingdom of Gondolin to
+D: Morgoth's forces.  He is a mighty warrior himself, and some of Morgoth's
+D: greatest servants answer to his call.
+
+### Dungeon level 54 ###
 
 N:596:Elder vampire
 G:V:r
@@ -8975,12 +9489,14 @@ F:INVISIBLE | PASS_WALL
 F:EVIL | UNDEAD | IM_COLD | IM_POIS | IM_FIRE | HURT_LITE
 F:NO_CONF | NO_SLEEP
 S:1_IN_5
-S:HOLD | SCARE | CAUSE_3 | CAUSE_4 | DRAIN_MANA
-S:BRAIN_SMASH | DARKNESS | BO_NETH | S_UNDEAD
-D:A terrible robed undead figure, this creature has existed in its
-D: unlife for many centuries by stealing the life of others.  It can
-D: summon the very shades of its victims from beyond the grave to
-D: come enslaved to its aid.
+S:HOLD | SCARE | CAUSE_3 | CAUSE_4 | DRAIN_MANA | BRAIN_SMASH | DARKNESS
+S:BO_NETH
+S:S_UNDEAD
+D:A terrible robed undead figure, this creature has existed in its unlife for
+D: many centuries by stealing the life of others.  It can summon the very shades
+D: of its victims from beyond the grave to come enslaved to its aid.
+
+### Dungeon level 35 ###
 
 N:597:Silent watcher
 G:g:r
@@ -8995,9 +9511,12 @@ F:IM_FIRE | IM_COLD | IM_ELEC | IM_POIS
 F:HURT_ROCK | COLD_BLOOD | HURT_LITE
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_6
-S:SHRIEK | S_MONSTER | S_MONSTERS | HOLD | CONF | MIND_BLAST | DRAIN_MANA
-D:A figure carved from stone, with three vulture faces whose eyes glow
-D: with a malevolent light.
+S:SHRIEK | HOLD | CONF | MIND_BLAST | DRAIN_MANA
+S:S_MONSTER | S_MONSTERS
+D:A figure carved from stone, with three vulture faces whose eyes glow with a
+D: malevolent light.
+
+### Dungeon level 8 ###
 
 N:598:Nighthawk
 G:B:u
@@ -9008,6 +9527,8 @@ B:CLAW:HURT:1d3
 B:BITE:HURT:1d4
 F:ANIMAL | NO_FEAR
 D:Trained to hunt and kill without fear.
+
+### Dungeon level 26 ###
 
 N:599:Ghoul
 G:z:U
@@ -9023,6 +9544,8 @@ S:1_IN_9
 S:SCARE | HOLD
 D:Flesh is falling off in chunks from this decaying abomination.
 
+### Dungeon level 30 ###
+
 N:600:Ghast
 G:z:u
 I:120:30d10:30:50:20
@@ -9036,8 +9559,10 @@ F:EVIL | UNDEAD | ESCORT | IM_POIS | IM_COLD | NO_CONF | NO_SLEEP
 F:COLD_BLOOD | HURT_LITE
 S:1_IN_7
 S:SCARE | HOLD
-D:This vile abomination is a relative of ghouls, and often leads packs
-D: of them. It smells foul, and its bite carries a rotting disease.
+D:This vile abomination is a relative of ghouls, and often leads packs of them.
+D: It smells foul, and its bite carries a rotting disease.
+
+### Dungeon level 45 ###
 
 N:601:Greater basilisk
 G:R:D
@@ -9054,6 +9579,8 @@ S:1_IN_8
 S:BR_POIS | BR_DARK | BR_NEXU
 D:A large basilisk, whose shape resembles that of a great wyrm.
 
+### Dungeon level 38 ###
+
 N:602:Aranea
 G:S:R
 I:110:30d10:20:45:50
@@ -9069,6 +9596,8 @@ S:1_IN_6
 S:BO_FIRE | SLOW | HOLD | CAUSE_3 | MISSILE
 D:An intelligent arachnid whose hairy legs weave spells in the air.
 
+### Dungeon level 48 ###
+
 N:603:Elder aranea
 G:S:r
 I:120:60d20:20:65:50
@@ -9081,11 +9610,14 @@ F:FORCE_MAXHP | FORCE_SLEEP | ESCORT
 F:OPEN_DOOR | BASH_DOOR | HURT_LITE | SMART
 F:ANIMAL | EVIL | IM_FIRE | IM_POIS
 S:1_IN_6
-S:SLOW | HOLD | DRAIN_MANA | MIND_BLAST | HEAL
-S:BA_FIRE | BO_FIRE | CAUSE_3 | S_SPIDER | S_KIN
+S:SLOW | HOLD | DRAIN_MANA | MIND_BLAST | HEAL | BA_FIRE | BO_FIRE
+S:CAUSE_3
+S:S_SPIDER | S_KIN
 D:A vast, bloated arachnid, master of its brood: among the more terrible of
 D: Ungoliant's descendants, this is a monster such as those who haunted the dread
 D: valley of Nan Dungortheb long ago.
+
+### Dungeon level 3 ###
 
 N:604:Kobold shaman
 G:k:r
@@ -9095,8 +9627,11 @@ B:HIT:HURT:1d8
 F:DROP_60
 F:OPEN_DOOR | BASH_DOOR
 F:EVIL | IM_POIS
-S:1_IN_5 | MISSILE | CAUSE_1 | HEAL | CONF
+S:1_IN_5
+S:MISSILE | CAUSE_1 | HEAL | CONF
 D:It is a kobold dressed in skins and gesturing wildly.
+
+### Dungeon level 28 ###
 
 N:605:Bat of Gorgoroth
 G:b:g
@@ -9108,9 +9643,12 @@ F:DROP_60 | RAND_25 | MOVE_BODY
 F:BASH_DOOR | WEIRD_MIND
 F:ANIMAL | IM_POIS | FRIENDS
 S:1_IN_8
-S:SCARE | BR_POIS | BR_DARK
-D:Fed with horrid meats and grown to enormous size, this slavering creature
-D: seeks livelier prey.
+S:SCARE
+S:BR_POIS | BR_DARK
+D:Fed with horrid meats and grown to enormous size, this slavering creature seeks
+D: livelier prey.
+
+### Dungeon level 32 ###
 
 N:606:Doombat
 G:b:R
@@ -9121,8 +9659,10 @@ B:BITE:FIRE:5d4
 B:BITE:FIRE:5d4
 F:WEIRD_MIND | BASH_DOOR
 F:IM_FIRE | ANIMAL
-D:It is a fast moving creature of chaos, a gigantic black bat
-D: surrounded by flickering bright red flames.
+D:It is a fast moving creature of chaos, a gigantic black bat surrounded by
+D: flickering bright red flames.
+
+### Dungeon level 26 ###
 
 N:607:Wolf chieftain
 G:C:D
@@ -9135,9 +9675,12 @@ B:WAIL:TERRIFY
 F:ESCORTS | FORCE_MAXHP | IM_COLD | IM_ACID
 F:SMART | ESCORT | ANIMAL | EVIL
 F:OPEN_DOOR | BASH_DOOR | NO_FEAR | MALE
-S:1_IN_8 | DARKNESS
-D:A great wolf-chieftain whose pack is in the service of the Dark Lord,
-D: and whose howls strike fear into even the boldest heart.
+S:1_IN_8
+S:DARKNESS
+D:A great wolf-chieftain whose pack is in the service of the Dark Lord, and whose
+D: howls strike fear into even the boldest heart.
+
+### Dungeon level 68 ###
 
 N:608:Bone golem
 G:g:D
@@ -9152,10 +9695,12 @@ F:COLD_BLOOD | OPEN_DOOR | BASH_DOOR
 F:UNDEAD | IM_COLD | IM_POIS | IM_FIRE | IM_ELEC
 F:NO_CONF | NO_SLEEP | NO_FEAR
 S:1_IN_8
-S:TELE_TO | CAUSE_4 | DRAIN_MANA
-S:BRAIN_SMASH | BA_NETH | S_UNDEAD
-D:A skeletal form, black as night, constructed from the bones of its
-D: previous victims.
+S:TELE_TO | CAUSE_4 | DRAIN_MANA | BRAIN_SMASH | BA_NETH
+S:S_UNDEAD
+D:A skeletal form, black as night, constructed from the bones of its previous
+D: victims.
+
+### Dungeon level 75 ###
 
 N:609:Bronze golem
 G:g:o
@@ -9169,9 +9714,13 @@ F:FORCE_MAXHP | FORCE_SLEEP | EMPTY_MIND | COLD_BLOOD
 F:OPEN_DOOR | BASH_DOOR | IM_FIRE | IM_ELEC | IM_POIS | IM_ACID
 F:NO_CONF | NO_SLEEP | NO_FEAR | DEMON
 S:1_IN_8
-S:BO_PLAS | BA_FIRE | BR_FIRE | BA_ELEC | S_DEMON | TELE_TO
+S:BO_PLAS | BA_FIRE | BA_ELEC | TELE_TO
+S:S_DEMON
+S:BR_FIRE
 D:A gigantic four-armed animated bronze statue of demonic shape, glowing with
 D: great heat.
+
+### Dungeon level 30 ###
 
 N:610:Ogre chieftain
 G:O:b
@@ -9188,6 +9737,8 @@ F:EVIL | MALE | GIANT | ESCORT
 D:This ogre is leader of his tribe.  He sneers at you as he advances towards you,
 D: wielding a huge club and pushing his own followers rudely aside.
 
+### Dungeon level 55 ###
+
 N:611:Ar-Pharazon the Golden
 G:p:y
 I:130:40d100:30:45:255
@@ -9201,10 +9752,13 @@ F:ONLY_ITEM | DROP_1D2 | DROP_3D2 | DROP_GOOD | DROP_GREAT
 F:SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | MOVE_BODY
 F:IM_FIRE | IM_ELEC | IM_POIS
 S:1_IN_6
-S:HEAL | TELE_AWAY | S_MONSTERS | S_KIN
-D:Last and proudest king of ancient Numenor. Corrupted by power and
-D: avarice, he fell victim to Sauron's wiles, tried to fight the Valar
-D: themselves, and condemned Numenor to oblivion.
+S:HEAL | TELE_AWAY
+S:S_MONSTERS | S_KIN
+D:Last and proudest king of ancient Numenor.  Corrupted by power and avarice, he
+D: fell victim to Sauron's wiles, tried to fight the Valar themselves, and
+D: condemned Numenor to oblivion.
+
+### Dungeon level 40 ###
 
 N:612:Troll chieftain
 G:T:v
@@ -9217,8 +9771,10 @@ B:BITE:HURT:3d6
 F:FORCE_MAXHP | ESCORT | OPEN_DOOR | DROP_1D2
 F:SMART | BASH_DOOR | TAKE_ITEM | REGENERATE | MOVE_BODY
 F:EVIL | TROLL | IM_POIS | NO_FEAR
-D:This troll's great strength and size have won it the place of chieftain
-D: of its tribe. It fears nothing.
+D:This troll's great strength and size have won it the place of chieftain of its
+D: tribe.  It fears nothing.
+
+### Dungeon level 37 ###
 
 N:613:Shardstorm
 G:v:u
@@ -9233,6 +9789,8 @@ S:BR_SHAR
 D:A howling blast of razor-sharp mountain fragments, kept intact by perilous
 D: magics.
 
+### Dungeon level 53 ###
+
 N:614:Storm of Unmagic
 G:v:v
 I:120:30d20:50:40:0
@@ -9245,8 +9803,10 @@ F:EMPTY_MIND | BASH_DOOR | POWERFUL
 F:NO_CONF | NO_SLEEP | NO_FEAR | RES_DISE
 S:1_IN_6
 S:BR_DISE
-D:Howling through the disintegrating dungeon, this whirlpool of Unmagic
-D: rips the enchantments from everything it touches.
+D:Howling through the disintegrating dungeon, this whirlpool of Unmagic rips the
+D: enchantments from everything it touches.
+
+### Dungeon level 36 ###
 
 N:615:Greater mummy
 G:z:y
@@ -9262,10 +9822,12 @@ F:SMART | TAKE_ITEM | OPEN_DOOR | BASH_DOOR | ESCORT | MOVE_BODY
 F:IM_ACID | IM_COLD | IM_ELEC | IM_POIS
 F:NO_CONF | NO_SLEEP
 S:1_IN_3
-S:HEAL | HASTE | BLIND | SCARE | S_UNDEAD
-S:BA_POIS | BO_NETH | BA_COLD | DRAIN_MANA
-S:MIND_BLAST | CAUSE_3 | DARKNESS | FORGET
+S:HEAL | HASTE | BLIND | SCARE | BA_POIS | BO_NETH | BA_COLD
+S:DRAIN_MANA | MIND_BLAST | CAUSE_3 | DARKNESS | FORGET
+S:S_UNDEAD
 D:Once a powerful ruler, now an even more powerful undead menace.
+
+### Dungeon level 43 ###
 
 N:616:Multi-hued hound
 G:Z:v
