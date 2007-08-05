@@ -1175,8 +1175,8 @@ void monster_death(int m_idx)
 	bool good = (r_ptr->flags1 & (RF1_DROP_GOOD)) ? TRUE : FALSE;
 	bool great = (r_ptr->flags1 & (RF1_DROP_GREAT)) ? TRUE : FALSE;
 
-	bool do_gold = (!(r_ptr->flags1 & (RF1_ONLY_ITEM)));
-	bool do_item = (!(r_ptr->flags1 & (RF1_ONLY_GOLD)));
+	bool gold_ok = (!(r_ptr->flags1 & (RF1_ONLY_ITEM)));
+	bool item_ok = (!(r_ptr->flags1 & (RF1_ONLY_GOLD)));
 
 	int force_coin = get_coin_type(r_ptr);
 
@@ -1286,10 +1286,10 @@ void monster_death(int m_idx)
 		object_wipe(i_ptr);
 
 		/* Make Gold */
-		if (do_gold && (!do_item || (rand_int(100) < 50)))
+		if (gold_ok && (!item_ok || (rand_int(100) < 50)))
 		{
 			/* Make some gold */
-			if (!make_gold(i_ptr)) continue;
+			if (!make_gold(i_ptr, object_level)) continue;
 
 			/* Assume seen XXX XXX XXX */
 			dump_gold++;
@@ -1299,7 +1299,7 @@ void monster_death(int m_idx)
 		else
 		{
 			/* Make an object */
-			if (!make_object(i_ptr, good, great)) continue;
+			if (!make_object(i_ptr, object_level, good, great)) continue;
 
 			/* Assume seen XXX XXX XXX */
 			dump_item++;

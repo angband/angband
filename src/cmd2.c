@@ -222,14 +222,14 @@ static void chest_death(int y, int x, s16b o_idx)
 		if (tiny && (rand_int(100) < 75))
 		{
 			/* Make some gold */
-			if (!make_gold(i_ptr)) continue;
+			if (!make_gold(i_ptr, o_ptr->origin_depth)) continue;
 		}
 
 		/* Otherwise drop an item */
 		else
 		{
 			/* Make an object */
-			if (!make_object(i_ptr, FALSE, FALSE)) continue;
+			if (!make_object(i_ptr, o_ptr->origin_depth, FALSE, FALSE)) continue;
 		}
 
 		/* Drop it in the dungeon */

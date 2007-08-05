@@ -1342,7 +1342,7 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 			monster_race *s_ptr = &r_info[j_ptr->origin_xtra];
 
 			bool r_uniq = (r_ptr->flags1 & RF1_UNIQUE) ? TRUE : FALSE;
-			bool s_uniq = (r_ptr->flags1 & RF1_UNIQUE) ? TRUE : FALSE;
+			bool s_uniq = (s_ptr->flags1 & RF1_UNIQUE) ? TRUE : FALSE;
 
 			if (r_uniq && !s_uniq) act = 0;
 			else if (s_uniq && !r_uniq) act = 1;
@@ -2867,11 +2867,9 @@ static bool kind_is_good(int k_idx)
  *
  * This routine plays nasty games to generate the "special artifacts".
  *
- * This routine uses "object_level" for the "generation level".
- *
  * We assume that the given object has been "wiped".
  */
-bool make_object(object_type *j_ptr, bool good, bool great)
+bool make_object(object_type *j_ptr, int lev, bool good, bool great)
 {
 	int prob, base;
 	object_kind *k_ptr;
@@ -2881,7 +2879,7 @@ bool make_object(object_type *j_ptr, bool good, bool great)
 	prob = (good ? 10 : 1000);
 
 	/* Base level for the object */
-	base = (good ? (object_level + 10) : object_level);
+	base = (good ? (lev + 10) : lev);
 
 
 	/* Generate a special artifact, or a normal object */
@@ -2924,7 +2922,7 @@ bool make_object(object_type *j_ptr, bool good, bool great)
 	}
 
 	/* Apply magic (allow artifacts) */
-	apply_magic(j_ptr, object_level, TRUE, good, great);
+	apply_magic(j_ptr, lev, TRUE, good, great);
 
 
 	/* Generate multiple items */
@@ -2966,7 +2964,7 @@ bool make_object(object_type *j_ptr, bool good, bool great)
  *
  * The location must be a legal, clean, floor grid.
  */
-bool make_gold(object_type *j_ptr)
+bool make_gold(object_type *j_ptr, int lev)
 {
 	int sval;
 	int k_idx;
@@ -2974,12 +2972,12 @@ bool make_gold(object_type *j_ptr)
 
 
 	/* Hack -- Pick a Treasure variety */
-	sval = ((randint(object_level + 2) + 2) / 2);
+	sval = ((randint(lev + 2) + 2) / 2);
 
 	/* Apply "extra" magic */
 	if (rand_int(GREAT_OBJ) == 0)
 	{
-		sval += randint(object_level + 1);
+		sval += randint(lev + 1);
 	}
 
 	/* Hack -- Creeping Coins only generate "themselves" */
@@ -3326,7 +3324,7 @@ void acquirement(int y1, int x1, int num, bool great)
 		object_wipe(i_ptr);
 
 		/* Make a good (or great) object (if possible) */
-		if (!make_object(i_ptr, TRUE, great)) continue;
+		if (!make_object(i_ptr, object_level, TRUE, great)) continue;
 		i_ptr->origin = ORIGIN_ACQUIRE;
 		i_ptr->origin_depth = p_ptr->depth;
 
@@ -3357,7 +3355,7 @@ void place_object(int y, int x, bool good, bool great)
 	object_wipe(i_ptr);
 
 	/* Make an object (if possible) */
-	if (make_object(i_ptr, good, great))
+	if (make_object(i_ptr, object_level, good, great))
 	{
 		i_ptr->origin = ORIGIN_FLOOR;
 		i_ptr->origin_depth = p_ptr->depth;
@@ -3393,7 +3391,7 @@ void place_gold(int y, int x)
 	object_wipe(i_ptr);
 
 	/* Make some gold */
-	if (make_gold(i_ptr))
+	if (make_gold(i_ptr, object_level))
 	{
 		/* Give it to the floor */
 		(void)floor_carry(y, x, i_ptr);
