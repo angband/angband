@@ -2002,19 +2002,18 @@ errr parse_r_info(char *buf, header *head)
 		/* Store the name */
 		if (!(r_ptr->name = add_name(head, s)))
 			return (PARSE_ERROR_OUT_OF_MEMORY);
+
+		return 0;
 	}
 
+	/* There better be a current r_ptr */
+	if (!r_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
+
 	/* Process 'D' for "Description" */
-	else if (buf[0] == 'D')
+	if (buf[0] == 'D')
 	{
-		/* There better be a current r_ptr */
-		if (!r_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
-
-		/* Get the text */
-		s = buf+2;
-
 		/* Store the text */
-		if (!add_text(&(r_ptr->text), head, s))
+		if (!add_text(&(r_ptr->text), head, buf+2))
 			return (PARSE_ERROR_OUT_OF_MEMORY);
 	}
 
@@ -2023,9 +2022,6 @@ errr parse_r_info(char *buf, header *head)
 	{
 		char d_char;
 		int d_attr;
-
-		/* There better be a current r_ptr */
-		if (!r_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Paranoia */
 		if (!buf[2]) return (PARSE_ERROR_GENERIC);
@@ -2061,19 +2057,15 @@ errr parse_r_info(char *buf, header *head)
 	/* Process 'I' for "Info" (one line only) */
 	else if (buf[0] == 'I')
 	{
-		int spd, hp1, hp2, aaf, ac, slp;
-
-		/* There better be a current r_ptr */
-		if (!r_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
+		int spd, lif, aaf, ac, slp;
 
 		/* Scan for the other values */
-		if (6 != sscanf(buf+2, "%d:%dd%d:%d:%d:%d",
-			            &spd, &hp1, &hp2, &aaf, &ac, &slp)) return (PARSE_ERROR_GENERIC);
+		if (5 != sscanf(buf+2, "%d:%d:%d:%d:%d",
+			            &spd, &lif, &aaf, &ac, &slp)) return (PARSE_ERROR_GENERIC);
 
 		/* Save the values */
 		r_ptr->speed = spd;
-		r_ptr->hdice = hp1;
-		r_ptr->hside = hp2;
+		r_ptr->avg_hp = lif;
 		r_ptr->aaf = aaf;
 		r_ptr->ac = ac;
 		r_ptr->sleep = slp;
@@ -2084,9 +2076,6 @@ errr parse_r_info(char *buf, header *head)
 	{
 		int lev, rar, pad;
 		long exp;
-
-		/* There better be a current r_ptr */
-		if (!r_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Scan for the values */
 		if (4 != sscanf(buf+2, "%d:%d:%d:%ld",
@@ -2103,9 +2092,6 @@ errr parse_r_info(char *buf, header *head)
 	else if (buf[0] == 'B')
 	{
 		int n1, n2;
-
-		/* There better be a current r_ptr */
-		if (!r_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Find the next empty blow slot (if any) */
 		for (i = 0; i < MONSTER_BLOW_MAX; i++) if (!r_ptr->blow[i].method) break;
@@ -2163,9 +2149,6 @@ errr parse_r_info(char *buf, header *head)
 	/* Process 'F' for "Basic Flags" (multiple lines) */
 	else if (buf[0] == 'F')
 	{
-		/* There better be a current r_ptr */
-		if (!r_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
-
 		/* Parse every entry */
 		for (s = buf + 2; *s; )
 		{
@@ -2190,9 +2173,6 @@ errr parse_r_info(char *buf, header *head)
 	/* Process 'S' for "Spell Flags" (multiple lines) */
 	else if (buf[0] == 'S')
 	{
-		/* There better be a current r_ptr */
-		if (!r_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
-
 		/* Parse every entry */
 		for (s = buf + 2; *s; )
 		{
@@ -2237,32 +2217,6 @@ errr parse_r_info(char *buf, header *head)
 		return (PARSE_ERROR_UNDEFINED_DIRECTIVE);
 	}
 
-#if 0
-	/* XXX XXX XXX The ghost is unused */
-
-	/* Mega-Hack -- acquire "ghost" */
-	r_ptr = &r_info[z_info->r_max - 1];
-
-	/* Hack -- Default name/text for the ghost */
-	r_ptr->name = add_name(head, "Nobody, the Undefined Ghost");
-	add_text(&r_ptr->text, head, "It seems strangely familiar...");
-
-	/* Hack -- set the attr/char info */
-	r_ptr->d_attr = r_ptr->x_attr = TERM_WHITE;
-	r_ptr->d_char = r_ptr->x_char = 'G';
-
-	/* Hack -- Try to prevent a few "potential" bugs */
-	r_ptr->flags1 |= (RF1_UNIQUE);
-
-	/* Hack -- Try to prevent a few "potential" bugs */
-	r_ptr->flags1 |= (RF1_NEVER_MOVE | RF1_NEVER_BLOW);
-
-	/* Hack -- Try to prevent a few "potential" bugs */
-	r_ptr->hdice = r_ptr->hside = 1;
-
-	/* Hack -- Try to prevent a few "potential" bugs */
-	r_ptr->mexp = 1L;
-#endif
 
 	/* Success */
 	return (0);
@@ -3433,8 +3387,7 @@ static long eval_max_dam(monster_race *r_ptr)
 	melee_dam = breath_dam = atk_dam = spell_dam = 0;
 
 	/* Evaluate average HP for this monster */
-	if (r_ptr->flags1 & (RF1_FORCE_MAXHP)) hp = r_ptr->hdice * r_ptr->hside;
-	else hp = r_ptr->hdice * (r_ptr->hside + 1) / 2;
+	hp = r_ptr->avg_hp;
 
 	/* Extract the monster level, force 1 for town monsters */
 	rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);
@@ -3788,8 +3741,7 @@ static long eval_hp_adjust(monster_race *r_ptr)
 	int hide_bonus = 0;
 
 	/* Get the monster base hitpoints */
-	if (r_ptr->flags1 & (RF1_FORCE_MAXHP)) hp = r_ptr->hdice * r_ptr->hside;
-	else hp = r_ptr->hdice * (r_ptr->hside + 1) / 2;
+	hp = r_ptr->avg_hp;
 
 	/* Never moves with no ranged attacks - high hit points count for less */
 	if ((r_ptr->flags1 & (RF1_NEVER_MOVE)) && !(r_ptr->freq_innate || r_ptr->freq_spell))
@@ -4459,7 +4411,7 @@ errr emit_r_info_index(FILE *fp, header *head, int i)
 	fprintf(fp, "G:%c:%c\n",r_ptr->d_char,color_attr_to_char[r_ptr->d_attr]);
 
 	/* Output 'I' for "Info" (one line only) */
-	fprintf(fp, "I:%d:%dd%d:%d:%d:%d\n",r_ptr->speed,r_ptr->hdice,r_ptr->hside,r_ptr->aaf,r_ptr->ac,r_ptr->sleep);
+	fprintf(fp, "I:%d:%d:%d:%d:%d\n",r_ptr->speed,r_ptr->avg_hp,r_ptr->aaf,r_ptr->ac,r_ptr->sleep);
 
 	/* Output 'W' for "More Info" (one line only) */
 	fprintf(fp,"W:%d:%d:%d:%d\n",r_ptr->level, r_ptr->rarity, 0, r_ptr->mexp);

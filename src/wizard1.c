@@ -632,10 +632,7 @@ static void spoil_mon_desc(cptr fname)
 		strnfmt(ac, sizeof(ac), "%d", r_ptr->ac);
 
 		/* Hitpoints */
-		if ((r_ptr->flags1 & (RF1_FORCE_MAXHP)) || (r_ptr->hside == 1))
-			strnfmt(hp, sizeof(hp), "%d", r_ptr->hdice * r_ptr->hside);
-		else
-			strnfmt(hp, sizeof(hp), "%dd%d", r_ptr->hdice, r_ptr->hside);
+		strnfmt(hp, sizeof(hp), "%d", r_ptr->avg_hp);
 
 
 		/* Experience */
@@ -793,14 +790,7 @@ static void spoil_mon_info(cptr fname)
 		text_out(buf);
 
 		/* Hitpoints */
-		if ((r_ptr->flags1 & RF1_FORCE_MAXHP) || (r_ptr->hside == 1))
-		{
-			strnfmt(buf, sizeof(buf), "Hp:%d  ", r_ptr->hdice * r_ptr->hside);
-		}
-		else
-		{
-			strnfmt(buf, sizeof(buf), "Hp:%dd%d  ", r_ptr->hdice, r_ptr->hside);
-		}
+		strnfmt(buf, sizeof(buf), "Hp:%d  ", r_ptr->avg_hp);
 		text_out(buf);
 
 		/* Armor Class */

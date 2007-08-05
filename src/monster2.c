@@ -1604,14 +1604,18 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 	}
 
 
-	/* Assign maximal hitpoints */
-	if (r_ptr->flags1 & (RF1_FORCE_MAXHP))
+	/* Uniques get a fixed amount of HP */
+	if (r_ptr->flags1 & (RF1_UNIQUE))
 	{
-		n_ptr->maxhp = maxroll(r_ptr->hdice, r_ptr->hside);
+		n_ptr->maxhp = r_ptr->avg_hp;
 	}
 	else
 	{
-		n_ptr->maxhp = damroll(r_ptr->hdice, r_ptr->hside);
+		int std_dev = (((r_ptr->avg_hp * 10) / 8) + 5) / 10;
+		if (r_ptr->avg_hp > 1) std_dev++;
+
+		n_ptr->maxhp = Rand_normal(r_ptr->avg_hp, std_dev);
+		n_ptr->maxhp = MAX(n_ptr->maxhp, 1);
 	}
 
 	/* And start out fully healthy */

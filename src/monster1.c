@@ -837,16 +837,13 @@ static void describe_monster_toughness(int r_idx, const monster_lore *l_ptr)
 		/* Armor */
 		text_out("%^s has an armor rating of ", wd_he[msex]);
 		text_out_c(TERM_L_GREEN, "%d", r_ptr->ac);
-		text_out(", and a life rating of ");
+		text_out(", and a");
 
-		/* Maximized hitpoints */
-		if (l_ptr->flags1 & RF1_FORCE_MAXHP)
-			text_out_c(TERM_L_GREEN, "%d", r_ptr->hdice * r_ptr->hside);
+		if (!(l_ptr->flags1 & RF1_UNIQUE))
+			text_out("n average");
 
-		/* Variable hitpoints */
-		else
-			text_out_c(TERM_L_GREEN, "%dd%d", r_ptr->hdice, r_ptr->hside);
-
+		text_out(" life rating of ");
+		text_out_c(TERM_L_GREEN, "%d", r_ptr->avg_hp);
 		text_out(".  ");
 	}
 }
@@ -1099,7 +1096,7 @@ void describe_monster(int r_idx, bool spoilers)
 		lore.flags3 |= (r_ptr->flags3 & RF3_RACE_MASK);
 
 		/* Know "forced" flags */
-		lore.flags1 |= (r_ptr->flags1 & (RF1_FORCE_DEPTH | RF1_FORCE_MAXHP));
+		lore.flags1 |= (r_ptr->flags1 & (RF1_FORCE_DEPTH));
 	}
 
 	/* Cheat -- know everything */
