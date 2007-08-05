@@ -820,14 +820,14 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 
 		case EF_ACQUIRE:
 		{
-			acquirement(py, px, 1, TRUE);
+			acquirement(py, px, p_ptr->depth, 1, TRUE);
 			*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_ACQUIRE2:
 		{
-			acquirement(py, px, randint(2) + 1, TRUE);
+			acquirement(py, px, p_ptr->depth, randint(2) + 1, TRUE);
 			*ident = TRUE;
 			return TRUE;
 		}

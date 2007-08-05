@@ -1634,9 +1634,6 @@ static void dungeon(void)
 	/* Reset the monster generation level */
 	monster_level = p_ptr->depth;
 
-	/* Reset the object generation level */
-	object_level = p_ptr->depth;
-
 	/* Main loop */
 	while (TRUE)
 	{

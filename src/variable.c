@@ -72,7 +72,6 @@ u32b seed_flavor;		/* Hack -- consistent object colors */
 u32b seed_town;			/* Hack -- consistent town layout */
 
 s16b num_repro;			/* Current reproducer count */
-s16b object_level;		/* Current object creation level */
 s16b monster_level;		/* Current monster creation level */
 
 char summon_kin_type;		/* Hack -- See summon_specific() */

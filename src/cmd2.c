@@ -1133,7 +1133,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 			if (gold)
 			{
 				/* Place some gold */
-				place_gold(y, x);
+				place_gold(y, x, p_ptr->depth);
 
 				/* Message */
 				msg_print("You have found something!");
@@ -1177,7 +1177,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 			if (rand_int(100) < 10)
 			{
 				/* Create a simple object */
-				place_object(y, x, FALSE, FALSE);
+				place_object(y, x, p_ptr->depth, FALSE, FALSE);
 
 				/* Observe the new object */
 				if (!squelch_hide_item(&o_list[cave_o_idx[y][x]]) &&

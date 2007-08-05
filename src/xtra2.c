@@ -1156,7 +1156,7 @@ static void build_quest_stairs(int y, int x)
  */
 void monster_death(int m_idx)
 {
-	int i, j, y, x;
+	int i, j, y, x, level;
 
 	int dump_item = 0;
 	int dump_gold = 0;
@@ -1273,8 +1273,8 @@ void monster_death(int m_idx)
 	/* Hack -- handle creeping coins */
 	coin_type = force_coin;
 
-	/* Average dungeon and monster levels */
-	object_level = (p_ptr->depth + r_ptr->level) / 2;
+	/* Average monster level and current depth */
+	level = (p_ptr->depth + r_ptr->level) / 2;
 
 	/* Drop some objects */
 	for (j = 0; j < number; j++)
@@ -1289,7 +1289,7 @@ void monster_death(int m_idx)
 		if (gold_ok && (!item_ok || (rand_int(100) < 50)))
 		{
 			/* Make some gold */
-			if (!make_gold(i_ptr, object_level)) continue;
+			if (!make_gold(i_ptr, level)) continue;
 
 			/* Assume seen XXX XXX XXX */
 			dump_gold++;
@@ -1299,7 +1299,7 @@ void monster_death(int m_idx)
 		else
 		{
 			/* Make an object */
-			if (!make_object(i_ptr, object_level, good, great)) continue;
+			if (!make_object(i_ptr, level, good, great)) continue;
 
 			/* Assume seen XXX XXX XXX */
 			dump_item++;
@@ -1314,12 +1314,8 @@ void monster_death(int m_idx)
 		drop_near(i_ptr, -1, y, x);
 	}
 
-	/* Reset the object level */
-	object_level = p_ptr->depth;
-
 	/* Reset "coin" type */
 	coin_type = 0;
-
 
 	/* Take note of any dropped treasure */
 	if (visible && (dump_item || dump_gold))
@@ -1328,13 +1324,11 @@ void monster_death(int m_idx)
 		lore_treasure(m_idx, dump_item, dump_gold);
 	}
 
-
 	/* Update monster list window */
 	p_ptr->window |= PW_MONLIST;
 
 	/* Only process "Quest Monsters" */
 	if (!(r_ptr->flags1 & (RF1_QUESTOR))) return;
-
 
 	/* Hack -- Mark quests as complete */
 	for (i = 0; i < MAX_Q_IDX; i++)

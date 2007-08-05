@@ -664,7 +664,7 @@ static void wiz_reroll_item(object_type *o_ptr)
  * counter flags to prevent weirdness.  We use the items to collect
  * statistics on item creation relative to the initial item.
  */
-static void wiz_statistics(object_type *o_ptr)
+static void wiz_statistics(object_type *o_ptr, int level)
 {
 	long i, matches, better, worse, other;
 
@@ -761,7 +761,7 @@ static void wiz_statistics(object_type *o_ptr)
 			object_wipe(i_ptr);
 
 			/* Create an object */
-			make_object(i_ptr, object_level, good, great);
+			make_object(i_ptr, level, good, great);
 
 
 			/* Mega-Hack -- allow multiple artifacts XXX XXX XXX */
@@ -937,7 +937,7 @@ static void do_cmd_wiz_play(void)
 
 		if (ch == 's' || ch == 'S')
 		{
-			wiz_statistics(i_ptr);
+			wiz_statistics(i_ptr, p_ptr->depth);
 		}
 
 		if (ch == 'r' || ch == 'r')
@@ -1566,7 +1566,7 @@ void do_cmd_debug(void)
 		case 'g':
 		{
 			if (p_ptr->command_arg <= 0) p_ptr->command_arg = 1;
-			acquirement(py, px, p_ptr->command_arg, FALSE);
+			acquirement(py, px, p_ptr->depth, p_ptr->command_arg, FALSE);
 			break;
 		}
 
@@ -1667,7 +1667,7 @@ void do_cmd_debug(void)
 		case 'v':
 		{
 			if (p_ptr->command_arg <= 0) p_ptr->command_arg = 1;
-			acquirement(py, px, p_ptr->command_arg, TRUE);
+			acquirement(py, px, p_ptr->depth, p_ptr->command_arg, TRUE);
 			break;
 		}
 

@@ -70,7 +70,7 @@ s16b poly_r_idx(int r_idx)
  */
 void teleport_away(int m_idx, int dis)
 {
-	int ny, nx, oy, ox, d, i, min;
+	int ny = 0, nx = 0, oy, ox, d, i, min;
 
 	bool look = TRUE;
 
@@ -1629,7 +1629,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ)
 				cave_set_feat(y, x, FEAT_FLOOR);
 
 				/* Place some gold */
-				place_gold(y, x);
+				place_gold(y, x, p_ptr->depth);
 			}
 
 			/* Quartz / Magma */
@@ -1676,7 +1676,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ)
 					}
 
 					/* Place gold */
-					place_object(y, x, FALSE, FALSE);
+					place_object(y, x, p_ptr->depth, FALSE, FALSE);
 				}
 			}
 

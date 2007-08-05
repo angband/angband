@@ -1213,7 +1213,7 @@ static void alloc_stairs(int feat, int num, int walls)
 /*
  * Allocates some objects (using "place" and "type")
  */
-static void alloc_object(int set, int typ, int num)
+static void alloc_object(int set, int typ, int num, int depth)
 {
 	int y, x, k;
 
@@ -1262,13 +1262,13 @@ static void alloc_object(int set, int typ, int num)
 
 			case ALLOC_TYP_GOLD:
 			{
-				place_gold(y, x);
+				place_gold(y, x, depth);
 				break;
 			}
 
 			case ALLOC_TYP_OBJECT:
 			{
-				place_object(y, x, FALSE, FALSE);
+				place_object(y, x, depth, FALSE, FALSE);
 				break;
 			}
 		}
@@ -1619,13 +1619,13 @@ static void spread_objects(int depth, int num, int y0, int x0, int dy, int dx)
 		/* Place an item */
 		if (rand_int(100) < 67)
 		{
-			place_object(y, x, FALSE, FALSE);
+			place_object(y, x, depth, FALSE, FALSE);
 		}
 
 		/* Place gold */
 		else
 		{
-			place_gold(y, x);
+			place_gold(y, x, depth);
 		}
 
 		/* Count the object, reset the loop count */
@@ -2432,10 +2432,8 @@ static bool build_type3(void)
 			/* Open the inner vault with a secret door */
 			generate_hole(y1b, x1a, y2b, x2a, FEAT_SECRET);
 
-			/* Place a treasure in the vault */
-			object_level = p_ptr->depth + 2;
-			place_object(y0, x0, FALSE, FALSE);
-			object_level = p_ptr->depth;
+			/* Place a slightly out-of-depth treasure in the vault */
+			place_object(y0, x0, p_ptr->depth + 2, FALSE, FALSE);
 
 			/* Let's guard the treasure well */
 			monster_level = p_ptr->depth + 4;
@@ -2570,12 +2568,10 @@ static bool build_type4(void)
 			/* Monsters on guard */
 			spread_monsters('\0', p_ptr->depth + 2, 4, y0, x0, 2, 6);
 
-			/* Object (80%) */
+			/* Object (80%), slightly out-of-depth value */
 			if (rand_int(100) < 80)
 			{
-				object_level = p_ptr->depth + 2;
-				place_object(y0, x0, FALSE, FALSE);
-				object_level = p_ptr->depth;
+				place_object(y0, x0, p_ptr->depth + 2, FALSE, FALSE);
 			}
 
 			/* Stairs (20%) */
@@ -2638,8 +2634,10 @@ static bool build_type4(void)
 				spread_monsters('\0', p_ptr->depth, randint(4), y0, x0, 2, 7);
 
 				/* Objects */
-				if (rand_int(3) == 0) place_object(y0, x0 - 2, FALSE, FALSE);
-				if (rand_int(3) == 0) place_object(y0, x0 + 2, FALSE, FALSE);
+				if (rand_int(3) == 0)
+					place_object(y0, x0 - 2, p_ptr->depth, FALSE, FALSE);
+				if (rand_int(3) == 0)
+					place_object(y0, x0 + 2, p_ptr->depth, FALSE, FALSE);
 			}
 
 			break;
@@ -3026,7 +3024,7 @@ static bool build_vault(int y0, int x0, int ymax, int xmax, cptr data,
 				{
 					if (rand_int(100) < 75)
 					{
-						place_object(y, x, FALSE, FALSE);
+						place_object(y, x, p_ptr->depth, FALSE, FALSE);
 					}
 					else
 					{
@@ -3087,9 +3085,7 @@ static bool build_vault(int y0, int x0, int ymax, int xmax, cptr data,
 					monster_level = p_ptr->depth + 9;
 					place_monster(y, x, TRUE, TRUE);
 					monster_level = p_ptr->depth;
-					object_level = p_ptr->depth + 7;
-					place_object(y, x, TRUE, FALSE);
-					object_level = p_ptr->depth;
+					place_object(y, x, p_ptr->depth + 7, TRUE, FALSE);
 					break;
 				}
 
@@ -3099,9 +3095,7 @@ static bool build_vault(int y0, int x0, int ymax, int xmax, cptr data,
 					monster_level = p_ptr->depth + 40;
 					place_monster(y, x, TRUE, TRUE);
 					monster_level = p_ptr->depth;
-					object_level = p_ptr->depth + 20;
-					place_object(y, x, TRUE, TRUE);
-					object_level = p_ptr->depth;
+					place_object(y, x, p_ptr->depth + 20, TRUE, TRUE);
 					break;
 				}
 
@@ -3116,9 +3110,8 @@ static bool build_vault(int y0, int x0, int ymax, int xmax, cptr data,
 					}
 					if (rand_int(100) < 50)
 					{
-						object_level = p_ptr->depth + 7;
-						place_object(y, x, FALSE, FALSE);
-						object_level = p_ptr->depth;
+						/* Moderately out-of-depth item */
+						place_object(y, x, p_ptr->depth + 7, FALSE, FALSE);
 					}
 					break;
 				}
@@ -4743,10 +4736,10 @@ static void cave_gen(void)
 	alloc_stairs(FEAT_LESS, rand_range(1, 2), 3);
 
 	/* Put some rubble in corridors */
-	alloc_object(ALLOC_SET_CORR, ALLOC_TYP_RUBBLE, randint(k));
+	alloc_object(ALLOC_SET_CORR, ALLOC_TYP_RUBBLE, randint(k), p_ptr->depth);
 
 	/* Place some traps in the dungeon */
-	alloc_object(ALLOC_SET_BOTH, ALLOC_TYP_TRAP, randint(k));
+	alloc_object(ALLOC_SET_BOTH, ALLOC_TYP_TRAP, randint(k), p_ptr->depth);
 
 
 	/* Determine the character location */
@@ -4802,11 +4795,17 @@ static void cave_gen(void)
 	}
 
 	/* Put some objects in rooms */
-	alloc_object(ALLOC_SET_ROOM, ALLOC_TYP_OBJECT, Rand_normal(DUN_AMT_ROOM, 3));
+	alloc_object(ALLOC_SET_ROOM,
+		ALLOC_TYP_OBJECT, Rand_normal(DUN_AMT_ROOM, 3),
+		p_ptr->depth);
 
 	/* Put some objects/gold in the dungeon */
-	alloc_object(ALLOC_SET_BOTH, ALLOC_TYP_OBJECT, Rand_normal(DUN_AMT_ITEM, 3));
-	alloc_object(ALLOC_SET_BOTH, ALLOC_TYP_GOLD, Rand_normal(DUN_AMT_GOLD, 3));
+	alloc_object(ALLOC_SET_BOTH,
+		ALLOC_TYP_OBJECT, Rand_normal(DUN_AMT_ITEM, 3),
+		p_ptr->depth);
+	alloc_object(ALLOC_SET_BOTH,
+		ALLOC_TYP_GOLD, Rand_normal(DUN_AMT_GOLD, 3),
+		p_ptr->depth);
 }
 
 
@@ -5115,9 +5114,6 @@ void generate_cave(void)
 
 		/* Reset the monster generation level */
 		monster_level = p_ptr->depth;
-
-		/* Reset the object generation level */
-		object_level = p_ptr->depth;
 
 		/* Nothing special here yet */
 		good_item_flag = FALSE;

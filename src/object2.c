@@ -659,7 +659,6 @@ s16b get_obj_num(int level)
 	size_t ind = level * z_info->k_max;
 
 	size_t item;
-
 	u32b value;
 
 
@@ -1583,9 +1582,9 @@ static void object_mention(const object_type *o_ptr)
  * If no legal ego item is found, this routine returns 0, resulting in
  * an unenchanted item.
  */
-static int make_ego_item(object_type *o_ptr, bool only_good)
+static int make_ego_item(object_type *o_ptr, int level, bool only_good)
 {
-	int i, j, level;
+	int i, j;
 
 	int e_idx;
 
@@ -1599,8 +1598,6 @@ static int make_ego_item(object_type *o_ptr, bool only_good)
 	/* Fail if object already is ego or artifact */
 	if (o_ptr->name1) return (FALSE);
 	if (o_ptr->name2) return (FALSE);
-
-	level = object_level;
 
 	/* Boost level (like with object base types) */
 	if (level > 0)
@@ -1695,7 +1692,7 @@ static int make_ego_item(object_type *o_ptr, bool only_good)
  * only major effect of this logic is that the Phial (with rarity one)
  * is always the first special artifact created.
  */
-static bool make_artifact_special(object_type *o_ptr)
+static bool make_artifact_special(object_type *o_ptr, int level)
 {
 	int i;
 
@@ -1736,10 +1733,10 @@ static bool make_artifact_special(object_type *o_ptr)
 		k_idx = lookup_kind(a_ptr->tval, a_ptr->sval);
 
 		/* Enforce minimum "object" level (loosely) */
-		if (k_info[k_idx].level > object_level)
+		if (k_info[k_idx].level > level)
 		{
 			/* Get the "out-of-depth factor" */
-			int d = (k_info[k_idx].level - object_level) * 5;
+			int d = (k_info[k_idx].level - level) * 5;
 
 			/* Roll for out-of-depth creation */
 			if (rand_int(d) != 0) continue;
@@ -2608,7 +2605,7 @@ void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great)
 			{
 				int ego_power;
 
-				ego_power = make_ego_item(o_ptr, (bool)(good || great));
+				ego_power = make_ego_item(o_ptr, lev, (bool)(good || great));
 
 				if (ego_power) power = ego_power;
 			}
@@ -2632,7 +2629,7 @@ void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great)
 			{
 				int ego_power;
 
-				ego_power = make_ego_item(o_ptr, (bool)(good || great));
+				ego_power = make_ego_item(o_ptr, lev, (bool)(good || great));
 
 				if (ego_power) power = ego_power;
 			}
@@ -2654,7 +2651,7 @@ void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great)
 		{
 			if ((power > 1) || (power < -1))
 			{
-				make_ego_item(o_ptr, (bool)(good || great));
+				make_ego_item(o_ptr, lev, (bool)(good || great));
 			}
 
 			/* Fuel it */
@@ -2883,7 +2880,7 @@ bool make_object(object_type *j_ptr, int lev, bool good, bool great)
 
 
 	/* Generate a special artifact, or a normal object */
-	if ((rand_int(prob) != 0) || !make_artifact_special(j_ptr))
+	if ((rand_int(prob) != 0) || !make_artifact_special(j_ptr, lev))
 	{
 		int k_idx;
 
@@ -3309,7 +3306,7 @@ void drop_near(object_type *j_ptr, int chance, int y, int x)
 /*
  * Scatter some "great" objects near the player
  */
-void acquirement(int y1, int x1, int num, bool great)
+void acquirement(int y1, int x1, int level, int num, bool great)
 {
 	object_type *i_ptr;
 	object_type object_type_body;
@@ -3324,7 +3321,7 @@ void acquirement(int y1, int x1, int num, bool great)
 		object_wipe(i_ptr);
 
 		/* Make a good (or great) object (if possible) */
-		if (!make_object(i_ptr, object_level, TRUE, great)) continue;
+		if (!make_object(i_ptr, level, TRUE, great)) continue;
 		i_ptr->origin = ORIGIN_ACQUIRE;
 		i_ptr->origin_depth = p_ptr->depth;
 
@@ -3337,7 +3334,7 @@ void acquirement(int y1, int x1, int num, bool great)
 /*
  * Attempt to place an object (normal or good/great) at the given location.
  */
-void place_object(int y, int x, bool good, bool great)
+void place_object(int y, int x, int level, bool good, bool great)
 {
 	object_type *i_ptr;
 	object_type object_type_body;
@@ -3355,7 +3352,7 @@ void place_object(int y, int x, bool good, bool great)
 	object_wipe(i_ptr);
 
 	/* Make an object (if possible) */
-	if (make_object(i_ptr, object_level, good, great))
+	if (make_object(i_ptr, level, good, great))
 	{
 		i_ptr->origin = ORIGIN_FLOOR;
 		i_ptr->origin_depth = p_ptr->depth;
@@ -3373,7 +3370,7 @@ void place_object(int y, int x, bool good, bool great)
 /*
  * Places a treasure (Gold or Gems) at given location
  */
-void place_gold(int y, int x)
+void place_gold(int y, int x, int level)
 {
 	object_type *i_ptr;
 	object_type object_type_body;
@@ -3391,7 +3388,7 @@ void place_gold(int y, int x)
 	object_wipe(i_ptr);
 
 	/* Make some gold */
-	if (make_gold(i_ptr, object_level))
+	if (make_gold(i_ptr, level))
 	{
 		/* Give it to the floor */
 		(void)floor_carry(y, x, i_ptr);
