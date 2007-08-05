@@ -2448,9 +2448,6 @@ static void a_m_aux_4(object_type *o_ptr, int level, int power)
 			/* Never exceed "difficulty" of 55 to 59 */
 			if (o_ptr->pval > 55) o_ptr->pval = (s16b)(55 + rand_int(5));
 
-			/* The contents of a chest are based on its level of origin */
-			o_ptr->origin_depth = level;
-
 			break;
 		}
 	}

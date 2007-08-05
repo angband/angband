@@ -181,7 +181,7 @@ static s16b chest_check(int y, int x)
  */
 static void chest_death(int y, int x, s16b o_idx)
 {
-	int number;
+	int number, value;
 
 	bool tiny;
 
@@ -206,6 +206,9 @@ static void chest_death(int y, int x, s16b o_idx)
 	/* Opening a chest */
 	opening_chest = TRUE;
 
+	/* Determine the "value" of the items */
+	value = ABS(o_ptr->pval) + 10;
+
 	/* Drop some objects (non-chests) */
 	for (; number > 0; --number)
 	{
@@ -219,14 +222,14 @@ static void chest_death(int y, int x, s16b o_idx)
 		if (tiny && (rand_int(100) < 75))
 		{
 			/* Make some gold */
-			if (!make_gold(i_ptr, o_ptr->origin_depth)) continue;
+			if (!make_gold(i_ptr, value)) continue;
 		}
 
 		/* Otherwise drop an item */
 		else
 		{
 			/* Make an object */
-			if (!make_object(i_ptr, o_ptr->origin_depth, FALSE, FALSE)) continue;
+			if (!make_object(i_ptr, value, FALSE, FALSE)) continue;
 		}
 
 		/* Drop it in the dungeon */

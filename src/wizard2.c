@@ -1030,8 +1030,9 @@ static void wiz_create_item(void)
 	/* Apply magic (no messages, no artifacts) */
 	apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
 
-	/* Mark as cheat */
+	/* Mark as cheat, and where created */
 	i_ptr->origin = ORIGIN_CHEAT;
+	i_ptr->origin_depth = p_ptr->depth;
 
 	if (k_info[k_idx].tval == TV_GOLD)
 	{
