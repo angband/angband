@@ -592,6 +592,14 @@ void do_cmd_observe(void)
 }
 
 
+/*
+ * Return whether the item has an inscription.
+ */
+static bool item_has_inscription(const object_type *o_ptr)
+{
+	return (o_ptr->note ? TRUE : FALSE);
+}
+
 
 /*
  * Remove the inscription from an object
@@ -609,6 +617,7 @@ void do_cmd_uninscribe(void)
 	/* Get an item */
 	q = "Un-inscribe which item? ";
 	s = "You have nothing to un-inscribe.";
+	item_tester_hook = item_has_inscription;
 	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return;
 
 	/* Get the item (in the pack) */
