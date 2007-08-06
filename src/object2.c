@@ -613,10 +613,10 @@ bool init_obj_alloc(void)
 	FREE(obj_alloc);
 
 	/* Allocate and wipe */
-	obj_alloc = C_ZNEW(MAX_O_DEPTH * k_max, byte);
+	obj_alloc = C_ZNEW((MAX_O_DEPTH + 1) * k_max, byte);
 
 	/* Wipe the totals */
-	C_WIPE(obj_total, MAX_O_DEPTH, u32b);
+	C_WIPE(obj_total, MAX_O_DEPTH + 1, u32b);
 
 
 	/* Init allocation data */
@@ -631,7 +631,7 @@ bool init_obj_alloc(void)
 		if (!k_ptr->alloc_prob) continue;
 
 		/* Go through all the dungeon levels */
-		for (lev = 0; lev < MAX_O_DEPTH; lev++)
+		for (lev = 0; lev <= MAX_O_DEPTH; lev++)
 		{
 			int rarity = k_ptr->alloc_prob;
 
@@ -656,18 +656,22 @@ bool init_obj_alloc(void)
 s16b get_obj_num(int level)
 {
 	/* This is the base index into obj_alloc for this dlev */
-	size_t ind = level * z_info->k_max;
-
-	size_t item;
+	size_t ind, item;
 	u32b value;
 
+	/* Occasional level boost */
+	if ((level > 0) && !rand_int(GREAT_OBJ))
+	{ 
+		/* What a bizarre calculation */ 
+		level = 1 + (level * MAX_O_DEPTH / randint(MAX_O_DEPTH)); 
+	}
 
 	/* Paranoia */
 	level = MIN(level, MAX_O_DEPTH);
 	level = MAX(level, 0);
 
-
 	/* Pick an object */
+	ind = level * z_info->k_max;
 	value = rand_int(obj_total[level]);
 	for (item = 1; item < z_info->k_max; item++)
 	{
