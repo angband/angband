@@ -735,7 +735,7 @@ static void process_world(void)
 	if (rand_int(MAX_M_ALLOC_CHANCE) == 0)
 	{
 		/* Make a new monster */
-		(void)alloc_monster(MAX_SIGHT + 5, FALSE);
+		(void)alloc_monster(MAX_SIGHT + 5, FALSE, p_ptr->depth);
 	}
 
 	/* Hack -- Check for creature regeneration */
@@ -1630,9 +1630,6 @@ static void dungeon(void)
 
 
 	/*** Process this dungeon level ***/
-
-	/* Reset the monster generation level */
-	monster_level = p_ptr->depth;
 
 	/* Main loop */
 	while (TRUE)

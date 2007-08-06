@@ -1706,9 +1706,6 @@ static void spread_monsters(char symbol, int depth, int num,
 	/* Restrict monsters.  Allow uniques. */
 	(void)mon_restrict(symbol, (byte)depth, &dummy, TRUE);
 
-	/* Set generation level */
-	monster_level = depth;
-
 	/* Build the monster probability table. */
 	if (!get_mon_num(depth)) return;
 
@@ -1741,7 +1738,7 @@ static void spread_monsters(char symbol, int depth, int num,
 		if (!cave_empty_bold(y, x)) continue;
 
 		/* Place the monster (sleeping, allow groups) */
-		(void)place_monster(y, x, TRUE, TRUE);
+		(void)place_monster(y, x, depth, TRUE, TRUE);
 
 		/* Rein in monster groups and escorts a little. */
 		if (mon_max - start_mon_num > num * 2) break;
@@ -1753,9 +1750,6 @@ static void spread_monsters(char symbol, int depth, int num,
 
 	/* Remove monster restrictions. */
 	(void)mon_restrict('\0', (byte)depth, &dummy, TRUE);
-
-	/* Reset monster generation level. */
-	monster_level = p_ptr->depth;
 }
 
 
@@ -2436,9 +2430,7 @@ static bool build_type3(void)
 			place_object(y0, x0, p_ptr->depth + 2, FALSE, FALSE);
 
 			/* Let's guard the treasure well */
-			monster_level = p_ptr->depth + 4;
-			(void)place_monster(y0, x0, TRUE, TRUE);
-			monster_level = p_ptr->depth;
+			(void)place_monster(y0, x0, p_ptr->depth + 4, TRUE, TRUE);
 
 			/* Traps, naturally. */
 			spread_traps(randint(3), y0, x0, 4, 4);
@@ -3064,27 +3056,21 @@ static bool build_vault(int y0, int x0, int ymax, int xmax, cptr data,
 				/* Monster */
 				case '&':
 				{
-					monster_level = p_ptr->depth + 5;
-					place_monster(y, x, TRUE, TRUE);
-					monster_level = p_ptr->depth;
+					place_monster(y, x, p_ptr->depth + 5, TRUE, TRUE);
 					break;
 				}
 
 				/* Meaner monster */
 				case '@':
 				{
-					monster_level = p_ptr->depth + 11;
-					place_monster(y, x, TRUE, TRUE);
-					monster_level = p_ptr->depth;
+					place_monster(y, x, p_ptr->depth + 11, TRUE, TRUE);
 					break;
 				}
 
 				/* Meaner monster, plus treasure */
 				case '9':
 				{
-					monster_level = p_ptr->depth + 9;
-					place_monster(y, x, TRUE, TRUE);
-					monster_level = p_ptr->depth;
+					place_monster(y, x, p_ptr->depth + 9, TRUE, TRUE);
 					place_object(y, x, p_ptr->depth + 7, TRUE, FALSE);
 					break;
 				}
@@ -3092,9 +3078,7 @@ static bool build_vault(int y0, int x0, int ymax, int xmax, cptr data,
 				/* Nasty monster and treasure */
 				case '8':
 				{
-					monster_level = p_ptr->depth + 40;
-					place_monster(y, x, TRUE, TRUE);
-					monster_level = p_ptr->depth;
+					place_monster(y, x, p_ptr->depth + 40, TRUE, TRUE);
 					place_object(y, x, p_ptr->depth + 20, TRUE, TRUE);
 					break;
 				}
@@ -3104,9 +3088,7 @@ static bool build_vault(int y0, int x0, int ymax, int xmax, cptr data,
 				{
 					if (rand_int(100) < 50)
 					{
-						monster_level = p_ptr->depth + 3;
-						place_monster(y, x, TRUE, TRUE);
-						monster_level = p_ptr->depth;
+						place_monster(y, x, p_ptr->depth + 3, TRUE, TRUE);
 					}
 					if (rand_int(100) < 50)
 					{
@@ -4749,9 +4731,6 @@ static void cave_gen(void)
 	/* Paranoia -- Remove all monster restrictions. */
 	mon_restrict('\0', (byte)p_ptr->depth, &dummy, TRUE);
 
-	/* Paranoia -- Reset the monster generation depth. */
-	monster_level = p_ptr->depth;
-
 
 	/* Pick a base number of monsters */
 	i = MIN_M_ALLOC_LEVEL + randint(8);
@@ -4760,7 +4739,7 @@ static void cave_gen(void)
 	for (j = i + k; j > 0; j--)
 	{
 		/* Place a random monster */
-		(void)alloc_monster(0, TRUE);
+		(void)alloc_monster(0, TRUE, p_ptr->depth);
 	}
 
 
@@ -5049,7 +5028,7 @@ static void town_gen(void)
 	for (i = 0; i < residents; i++)
 	{
 		/* Make a resident */
-		(void)alloc_monster(3, TRUE);
+		(void)alloc_monster(3, TRUE, p_ptr->depth);
 	}
 }
 
@@ -5111,9 +5090,6 @@ void generate_cave(void)
 		Term->offset_y = DUNGEON_HGT;
 		Term->offset_x = DUNGEON_WID;
 
-
-		/* Reset the monster generation level */
-		monster_level = p_ptr->depth;
 
 		/* Nothing special here yet */
 		good_item_flag = FALSE;

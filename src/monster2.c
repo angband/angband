@@ -1885,14 +1885,14 @@ bool place_monster_aux(int y, int x, int r_idx, bool slp, bool grp)
 /*
  * Hack -- attempt to place a monster at the given location
  *
- * Attempt to find a monster appropriate to the "monster_level"
+ * Attempt to find a monster appropriate to the given depth
  */
-bool place_monster(int y, int x, bool slp, bool grp)
+bool place_monster(int y, int x, int depth, bool slp, bool grp)
 {
 	int r_idx;
 
 	/* Pick a monster */
-	r_idx = get_mon_num(monster_level);
+	r_idx = get_mon_num(depth);
 
 	/* Handle failure */
 	if (!r_idx) return (FALSE);
@@ -1970,9 +1970,9 @@ bool place_monster(int y, int x, bool slp, bool grp)
  *
  * Use "slp" to choose the initial "sleep" status
  *
- * Use "monster_level" for the monster level
+ * Use "depth" for the monster level
  */
-bool alloc_monster(int dis, bool slp)
+bool alloc_monster(int dis, bool slp, int depth)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -2005,7 +2005,7 @@ bool alloc_monster(int dis, bool slp)
 	}
 
 	/* Attempt to place the monster, allow groups */
-	if (place_monster(y, x, slp, TRUE)) return (TRUE);
+	if (place_monster(y, x, depth, slp, TRUE)) return (TRUE);
 
 	/* Nope */
 	return (FALSE);
