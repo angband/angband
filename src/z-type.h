@@ -1,4 +1,5 @@
-
+#ifndef INCLUDED_ZTYPE_H
+#define INCLUDED_ZTYPE_H
 
 typedef struct data_panel data_panel;
 typedef struct type_union type_union;
@@ -42,3 +43,4 @@ struct data_panel
 	type_union value[MAX_FMT];	/* (short) arugment list */
 };
 
+#endif /* !INCLUDED_ZTYPE_H */

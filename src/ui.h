@@ -1,4 +1,3 @@
-
 /*
  * Copyright (c) 2007 Pete Mack and others
  * This code released under the Gnu Public License. See www.fsf.org
@@ -9,8 +8,8 @@
 
 
 
-#ifndef UI_H
-#define UI_H
+#ifndef INCLUDED_UI_H
+#define INCLUDED_UI_H
 
 /* ============= Constants ============ */
 
@@ -383,8 +382,4 @@ void add_menu_iter(const menu_iter *skin, menu_iter_id id);
 void window_make(int origin_x, int origin_y, int end_x, int end_y);
 
 
-#endif /* UI_H */
-
-
-
-
+#endif /* INCLUDED_UI_H */

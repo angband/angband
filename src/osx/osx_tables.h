@@ -2,6 +2,9 @@
  * Maximum menu ID.
  * IMPORTANT: see note in main-crb.c if you wish to add menus.
  */
+#ifndef INCLUDED_OSX_TABLES_H
+#define INCLUDED_OSX_TABLES_H
+
 #define MAX_MENU_ID (150)
 
 /* These numbers must agree with the corresponding Menu ID in the nib. */
@@ -206,3 +209,4 @@ static struct {
 	{ &antialias,	kStyleMenu,	kAntialias,	true}
 };
 
+#endif /* !INCLUDED_OSX_TABLES_H */

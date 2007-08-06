@@ -19,8 +19,8 @@
 
 /* Function */
 #ifndef EFFECT
-#ifndef ANGBAND_EFFECTS_H
-#define ANGBAND_EFFECTS_H
+#ifndef INCLUDED_EFFECTS_H
+#define INCLUDED_EFFECTS_H
 
 bool do_effect(int effect, bool *ident, int dir, int beam);
 bool effect_aim(int effect);
@@ -37,7 +37,7 @@ typedef enum
 
 #undef EFFECT
 
-#endif /* ANGBAND_EFFECTS_H */
+#endif /* INCLUDED_EFFECTS_H */
 
 #else
 

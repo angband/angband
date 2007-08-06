@@ -1,5 +1,8 @@
 /* File: config.h */
 
+#ifndef INCLUDED_CONFIG_H
+#define INCLUDED_CONFIG_H
+
 /*
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -284,3 +287,5 @@
 #  define ALLOW_BORG_GRAPHICS
 # endif /* USE_GRAPHICS */
 #endif /* ALLOW_BORG */
+
+#endif /* !INCLUDED_CONFIG_H */

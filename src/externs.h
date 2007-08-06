@@ -1,5 +1,8 @@
 /* File: externs.h */
 
+#ifndef INCLUDED_EXTERNS_H
+#define INCLUDED_EXTERNS_H
+
 /*
  * Copyright (c) 1997 Ben Harrison
  *
@@ -772,3 +775,5 @@ extern void do_cmd_spoilers(void);
 #endif /* ALLOW_SPOILERS */
 
 bool make_fake_artifact(object_type *o_ptr, byte name1);
+
+#endif /* !INCLUDED_EXTERNS_H */

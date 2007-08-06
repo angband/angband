@@ -1,5 +1,8 @@
 /* File: defines.h */
 
+#ifndef INCLUDED_DEFINES_H
+#define INCLUDED_DEFINES_H
+
 /*
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -3119,3 +3122,5 @@ enum
 #define NOSCORE_WIZARD		0x0002
 #define NOSCORE_DEBUG		0x0008
 #define NOSCORE_BORG		0x0010
+
+#endif /* !INCLUDED_DEFINES_H */
