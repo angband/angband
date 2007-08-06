@@ -846,7 +846,7 @@ static size_t prt_study(int row, int col)
 	{
 		char *text = format("Study (%d)", p_ptr->new_spells);
 		put_str(text, row, col);
-		return strlen(text);
+		return strlen(text) + 1;
 	}
 
 	return 0;
