@@ -502,7 +502,7 @@ struct object_type
 	byte ident;			/* Special flags */
 	byte marked;		/* Object is marked */
 
-	u16b note;			/* Inscription index */
+	quark_t note;			/* Inscription index */
 
 	s16b next_o_idx;	/* Next object in stack (if any) */
 	s16b held_m_idx;	/* Monster holding us (if any) */

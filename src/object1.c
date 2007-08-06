@@ -1568,17 +1568,8 @@ void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int 
 	if (mode < 3) goto object_desc_done;
 
 
-	/* Use standard inscription */
-	if (o_ptr->note)
-	{
-		u = quark_str(o_ptr->note);
-	}
-
-	/* Use nothing */
-	else
-	{
-		u = NULL;
-	}
+	/* Get inscription */
+	u = (o_ptr->note ? quark_str(o_ptr->note) : NULL);
 
 
 

@@ -13,7 +13,7 @@ INCS = angband.h config.h defines.h externs.h types.h \
 
 HEADERS = $(HDRS) $(INCS)
 
-ZFILES = z-file.o z-form.o z-rand.o z-term.o z-type.o z-util.o z-virt.o
+ZFILES = z-file.o z-form.o z-quark.o z-rand.o z-term.o z-type.o z-util.o z-virt.o
 MAINFILES = main.o maid-x11.o main-crb.o main-gcu.o main-gtk.o \
 	main-ros.o main-sdl.o main-win.o main-x11.o main-xaw.o snd-sdl.o
 

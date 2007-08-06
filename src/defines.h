@@ -210,12 +210,6 @@
 #define MACRO_MAX	512
 
 /*
- * OPTION: Maximum number of "quarks" (see "util.c")
- * Default: assume at most 512 different inscriptions are used
- */
-#define QUARK_MAX	512
-
-/*
  * OPTION: Maximum number of autoinscriptions(see "object1.c")
  */
 #define AUTOINSCRIPTIONS_MAX 216
