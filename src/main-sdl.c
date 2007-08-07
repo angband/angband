@@ -2498,8 +2498,28 @@ static errr sdl_HandleEvent(SDL_Event *event)
 		}
 		case SDL_MOUSEBUTTONDOWN:
 		case SDL_MOUSEBUTTONUP:
+		{
+			/* Handle mouse stuff */
+			sdl_HandleMouseEvent(event);
+			break;
+		}
+
 		case SDL_MOUSEMOTION:
 		{
+                        int i;  
+                        SDL_Event events[10];
+
+			/*
+                         * If there are a bundle of mouse movements pending,
+                         * we'll just take every tenth one - this makes a
+                         * simple approach to dragging practical, for instance.
+			 */  
+                        i = SDL_PeepEvents(events, 10, SDL_GETEVENT, SDL_EVENTMASK(SDL_MOUSEMOTION));
+                        if (i > 0) 
+                        {
+                                *event = events[i - 1];
+                        }
+
 			/* Handle mouse stuff */
 			sdl_HandleMouseEvent(event);
 			break;
