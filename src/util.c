@@ -129,6 +129,7 @@ static size_t trigger_text_to_ascii(char *buf, size_t max, cptr *strptr)
 		{
 			/* Modifier key character */
 			case '&':
+			{
 				size_t j;
 				for (j = 0; macro_modifier_chr[j]; j++)
 				{
@@ -136,16 +137,21 @@ static size_t trigger_text_to_ascii(char *buf, size_t max, cptr *strptr)
 						strnfcat(buf, max, &current_len, "%c", macro_modifier_chr[j]);
 				}
 				break;
+			}
 
 			/* Key code */
 			case '#':
+			{
 				strnfcat(buf, max, &current_len, "%s", key_code);
 				break;
+			}
 
 			/* Fixed string */
 			default:
+			{
 				strnfcat(buf, max, &current_len, "%c", ch);
 				break;
+			}
 		}
 	}
 
@@ -297,6 +303,7 @@ static size_t trigger_ascii_to_text(char *buf, size_t max, cptr *strptr)
 		{
 			/* Read modifier */
 			case '&':
+			{
 				size_t j;
 				while ((tmp = strchr(macro_modifier_chr, *str)))
 				{
@@ -305,19 +312,24 @@ static size_t trigger_ascii_to_text(char *buf, size_t max, cptr *strptr)
 					str++;
 				}
 				break;
+			}
 
 			/* Read key code */
 			case '#':
+			{
 				size_t j;
 				for (j = 0; *str && (*str != '\r') && (j < sizeof(key_code) - 1); j++)
 					key_code[j] = *str++;
 				key_code[j] = '\0';
 				break;
+			}
 
 			/* Skip fixed strings */
 			default:
+			{
 				if (ch != *str) return 0;
 				str++;
+			}
 		}
 	}
 

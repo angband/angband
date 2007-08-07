@@ -664,7 +664,6 @@ extern bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *
 extern bool askfor_aux(char *buf, size_t len, bool keypress_h(char *, size_t, size_t *, size_t *, char, bool));
 extern bool get_string(cptr prompt, char *buf, size_t len);
 extern s16b get_quantity(cptr prompt, int max);
-extern int get_check_other(cptr prompt, char other);
 extern bool get_check(cptr prompt);
 extern bool get_com(cptr prompt, char *command);
 extern bool get_com_ex(cptr prompt, event_type *command);
