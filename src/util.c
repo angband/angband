@@ -21,8 +21,6 @@ static char hexify(int i)
 	return (hexsym[i % 16]);
 }
 
-
-
 /*
  * Convert a hexidecimal-digit into a decimal
  */
@@ -80,7 +78,7 @@ static size_t trigger_text_to_ascii(char *buf, size_t max, cptr *strptr)
 		mod_status[i] = TRUE;
 
 		/* Shift key might be going to change keycode */
-		if ('S' == macro_modifier_chr[i])
+		if (macro_modifier_chr[i] == 'S')
 			shiftstatus = 1;
 	}
 
@@ -126,26 +124,28 @@ static size_t trigger_text_to_ascii(char *buf, size_t max, cptr *strptr)
 	for (i = 0; macro_template[i]; i++)
 	{
 		char ch = macro_template[i];
-		int j;
 
-		switch(ch)
+		switch (ch)
 		{
-		case '&':
 			/* Modifier key character */
-			for (j = 0; macro_modifier_chr[j]; j++)
-			{
-				if (mod_status[j])
-					strnfcat(buf, max, &current_len, "%c", macro_modifier_chr[j]);
-			}
-			break;
-		case '#':
+			case '&':
+				size_t j;
+				for (j = 0; macro_modifier_chr[j]; j++)
+				{
+					if (mod_status[j])
+						strnfcat(buf, max, &current_len, "%c", macro_modifier_chr[j]);
+				}
+				break;
+
 			/* Key code */
-			strnfcat(buf, max, &current_len, "%s", key_code);
-			break;
-		default:
+			case '#':
+				strnfcat(buf, max, &current_len, "%s", key_code);
+				break;
+
 			/* Fixed string */
-			strnfcat(buf, max, &current_len, "%c", ch);
-			break;
+			default:
+				strnfcat(buf, max, &current_len, "%c", ch);
+				break;
 		}
 	}
 
@@ -179,95 +179,68 @@ void text_to_ascii(char *buf, size_t len, cptr str)
 		/* Backslash codes */
 		if (*str == '\\')
 		{
-			/* Skip the backslash */
 			str++;
+			if (*str == '\0') break;
 
-			/* Paranoia */
-			if (!(*str)) break;
-
-			/* Macro Trigger */
-			if (*str == '[')
+			switch (*str)
 			{
-				/* Terminate before appending the trigger */
-				*s = '\0';
-
-				s += trigger_text_to_ascii(buf, len, &str);
-			}
-
-			/* Hack -- simple way to specify Escape */
-			else if (*str == 'e')
-			{
-				*s++ = ESCAPE;
-			}
-
-			/* Hack -- simple way to specify "space" */
-			else if (*str == 's')
-			{
-				*s++ = ' ';
-			}
-
-			/* Backspace */
-			else if (*str == 'b')
-			{
-				*s++ = '\b';
-			}
-
-			/* Newline */
-			else if (*str == 'n')
-			{
-				*s++ = '\n';
-			}
-
-			/* Return */
-			else if (*str == 'r')
-			{
-				*s++ = '\r';
-			}
-
-			/* Tab */
-			else if (*str == 't')
-			{
-				*s++ = '\t';
-			}
-
-			/* Bell */
-			else if (*str == 'a')
-			{
-				*s++ = '\a';
-			}
-
-			/* Actual "backslash" */
-			else if (*str == '\\')
-			{
-				*s++ = '\\';
-			}
-
-			/* Hack -- Actual "caret" */
-			else if (*str == '^')
-			{
-				*s++ = '^';
-			}
-
-			/* Hack -- Hex-mode */
-			else if (*str == 'x')
-			{
-				if (isxdigit((unsigned char)(*(str + 1))) &&
-				    isxdigit((unsigned char)(*(str + 2))))
+				/* Macro trigger */
+				case '[':
 				{
-					*s = 16 * dehex(*++str);
-					*s++ += dehex(*++str);
+					/* Terminate before appending the trigger */
+					*s = '\0';
+					s += trigger_text_to_ascii(buf, len, &str);
+					break;
 				}
-				else
-				{
-					/* HACK - Invalid hex number */
-					*s++ = '?';
-				}
-			}
 
-			/* Oops */
-			else
-			{
-				*s = *str;
+				/* Hex-mode */
+				case 'x':
+				{
+					if (isxdigit((unsigned char)(*(str + 1))) &&
+					    isxdigit((unsigned char)(*(str + 2))))
+					{
+						*s = 16 * dehex(*++str);
+						*s++ += dehex(*++str);
+					}
+					else
+					{
+						/* HACK - Invalid hex number */
+						*s++ = '?';
+					}
+					break;
+				}
+
+				case 'e':
+					*s++ = ESCAPE;
+					break;
+				case 's':
+					*s++ = ' ';
+					break;
+				case 'b':
+					*s++ = '\b';
+					break;
+				case 'n':
+					*s++ = '\n';
+					break;
+				case 'r':
+					*s++ = '\r';
+					break;
+				case 't':
+					*s++ = '\t';
+					break;
+				case 'a':
+					*s++ = '\a';
+					break;
+				case '\\':
+					*s++ = '\\';
+					break;
+				case '^':
+					*s++ = '^';
+					break;
+
+				default:
+					*s = *str;
+					break;
 			}
 
 			/* Skip the final char */
@@ -278,12 +251,10 @@ void text_to_ascii(char *buf, size_t len, cptr str)
 		else if (*str == '^')
 		{
 			str++;
+			if (*str == '\0') break;
 
-			if (*str)
-			{
-				*s++ = KTRL(*str);
-				str++;
-			}
+			*s++ = KTRL(*str);
+			str++;
 		}
 
 		/* Normal chars */
@@ -320,30 +291,33 @@ static size_t trigger_ascii_to_text(char *buf, size_t max, cptr *strptr)
 	/* Use template to read key-code style trigger */
 	for (i = 0; macro_template[i]; i++)
 	{
-		int j;
 		char ch = macro_template[i];
 
-		switch(ch)
+		switch (ch)
 		{
-		case '&':
 			/* Read modifier */
-			while ((tmp = strchr(macro_modifier_chr, *str)))
-			{
-				j = (int)(tmp - macro_modifier_chr);
-				strnfcat(buf, max, &current_len, "%s", macro_modifier_name[j]);
-				str++;
-			}
-			break;
-		case '#':
+			case '&':
+				size_t j;
+				while ((tmp = strchr(macro_modifier_chr, *str)))
+				{
+					j = tmp - macro_modifier_chr;
+					strnfcat(buf, max, &current_len, "%s", macro_modifier_name[j]);
+					str++;
+				}
+				break;
+
 			/* Read key code */
-			for (j = 0; *str && (*str != '\r') && (j < (int)sizeof(key_code) - 1); j++)
-				key_code[j] = *str++;
-			key_code[j] = '\0';
-			break;
-		default:
+			case '#':
+				size_t j;
+				for (j = 0; *str && (*str != '\r') && (j < sizeof(key_code) - 1); j++)
+					key_code[j] = *str++;
+				key_code[j] = '\0';
+				break;
+
 			/* Skip fixed strings */
-			if (ch != *str) return 0;
-			str++;
+			default:
+				if (ch != *str) return 0;
+				str++;
 		}
 	}
 
@@ -501,22 +475,17 @@ int macro_find_exact(cptr pat)
 
 	/* Nothing possible */
 	if (!macro__use[(byte)(pat[0])])
-	{
-		return (-1);
-	}
+		return -1;
 
 	/* Scan the macros */
 	for (i = 0; i < macro__num; ++i)
 	{
-		/* Skip macros which do not match the pattern */
-		if (!streq(macro__pat[i], pat)) continue;
-
-		/* Found one */
-		return (i);
+		if (streq(macro__pat[i], pat))
+			return i;
 	}
 
 	/* No matches */
-	return (-1);
+	return -1;
 }
 
 
@@ -529,24 +498,18 @@ static int macro_find_check(cptr pat)
 
 	/* Nothing possible */
 	if (!macro__use[(byte)(pat[0])])
-	{
-		return (-1);
-	}
+		return -1;
 
 	/* Scan the macros */
 	for (i = 0; i < macro__num; ++i)
 	{
-		/* Skip macros which do not contain the pattern */
-		if (!prefix(macro__pat[i], pat)) continue;
-
-		/* Found one */
-		return (i);
+		if (prefix(macro__pat[i], pat))
+			return i;
 	}
 
 	/* Nothing */
-	return (-1);
+	return -1;
 }
-
 
 
 /*
@@ -558,26 +521,19 @@ static int macro_find_maybe(cptr pat)
 
 	/* Nothing possible */
 	if (!macro__use[(byte)(pat[0])])
-	{
-		return (-1);
-	}
+		return -1;
 
 	/* Scan the macros */
 	for (i = 0; i < macro__num; ++i)
 	{
-		/* Skip macros which do not contain the pattern */
-		if (!prefix(macro__pat[i], pat)) continue;
-
-		/* Skip macros which exactly match the pattern XXX XXX */
-		if (streq(macro__pat[i], pat)) continue;
-
-		/* Found one */
-		return (i);
+		if (prefix(macro__pat[i], pat) && !streq(macro__pat[i], pat))
+			return i;
 	}
 
 	/* Nothing */
-	return (-1);
+	return -1;
 }
+
 
 
 /*
@@ -589,9 +545,7 @@ static int macro_find_ready(cptr pat)
 
 	/* Nothing possible */
 	if (!macro__use[(byte)(pat[0])])
-	{
-		return (-1);
-	}
+		return -1;
 
 	/* Scan the macros */
 	for (i = 0; i < macro__num; ++i)
@@ -611,7 +565,7 @@ static int macro_find_ready(cptr pat)
 	}
 
 	/* Result */
-	return (n);
+	return n;
 }
 
 
@@ -633,8 +587,6 @@ errr macro_add(cptr pat, cptr act)
 {
 	int n;
 
-
-	/* Paranoia -- require data */
 	if (!pat || !act) return (-1);
 
 
@@ -644,7 +596,6 @@ errr macro_add(cptr pat, cptr act)
 	/* Replace existing macro */
 	if (n >= 0)
 	{
-		/* Free the old macro action */
 		string_free(macro__act[n]);
 	}
 
@@ -653,8 +604,6 @@ errr macro_add(cptr pat, cptr act)
 	{
 		/* Get a new index */
 		n = macro__num++;
-
-		/* Boundary check */
 		if (macro__num >= MACRO_MAX) quit("Too many macros!");
 
 		/* Save the pattern */
@@ -694,7 +643,8 @@ errr macro_init(void)
  */
 errr macro_free(void)
 {
-	int i, j;
+	int i;
+	size_t j;
 
 	/* Free the macros */
 	for (i = 0; i < macro__num; ++i)
@@ -709,7 +659,7 @@ errr macro_free(void)
 	/* Free the keymaps */
 	for (i = 0; i < KEYMAP_MODES; ++i)
 	{
-		for (j = 0; j < (int)N_ELEMENTS(keymap_act[i]); ++j)
+		for (j = 0; j < N_ELEMENTS(keymap_act[i]); ++j)
 		{
 			string_free(keymap_act[i][j]);
 			keymap_act[i][j] = NULL;
@@ -1297,15 +1247,15 @@ event_type inkey_ex(void)
  */
 char anykey(void)
 {
-  event_type ke = EVENT_EMPTY;
+	event_type ke = EVENT_EMPTY;
   
-  /* Only accept a keypress or mouse click*/
-  do
-    {
-      ke = inkey_ex();
-    } while (!(ke.type & (EVT_MOUSE|EVT_KBRD)));
-  
-  return ke.key;
+	/* Only accept a keypress or mouse click*/
+	do
+	{
+		ke = inkey_ex();
+	} while ((ke.type != EVT_MOUSE) && (ke.type != EVT_KBRD));
+
+	return ke.key;
 }
 
 /*
@@ -1313,16 +1263,16 @@ char anykey(void)
  */
 char inkey(void)
 {
-	event_type ke;
+	event_type ke = EVENT_EMPTY;
 
 	/* Only accept a keypress */
 	do
 	{
 		ke = inkey_ex();
-	} while (!(ke.type  & (EVT_KBRD|EVT_ESCAPE)));
-	/* Paranoia */
-	if(ke.type == EVT_ESCAPE) ke.key = ESCAPE;
+	} while ((ke.type != EVT_ESCAPE) && (ke.type != EVT_KBRD));
 
+	/* Paranoia */
+	if (ke.type == EVT_ESCAPE) ke.key = ESCAPE;
 	return ke.key;
 }
 
@@ -1343,8 +1293,6 @@ void bell(cptr reason)
 
 		/* Window stuff */
 		p_ptr->window |= (PW_MESSAGE);
-
-		/* Force window redraw */
 		window_stuff();
 	}
 
@@ -1363,11 +1311,9 @@ void bell(cptr reason)
 void sound(int val)
 {
 	/* No sound */
-	if (!use_sound) return;
+	if (!use_sound || !sound_hook) return;
 
-	/* Make a noise */
-	if (sound_hook)
-		sound_hook(val);
+	sound_hook(val);
 }
 
 
@@ -1384,6 +1330,7 @@ bool check_for_inscrip(const object_type *o_ptr, const char *inscrip)
 	
 	return FALSE;
 }
+
 
 /*
  * The "message memorization" package.
@@ -1532,19 +1479,16 @@ cptr message_str(s16b age)
  */
 u16b message_type(s16b age)
 {
-	s16b x;
-
 	/* Paranoia */
-	if (!message__type) return (MSG_GENERIC);
+	if (!message__type)
+		return MSG_GENERIC;
 
 	/* Forgotten messages are generic */
-	if ((age < 0) || (age >= message_num())) return (MSG_GENERIC);
-
-	/* Get the "logical" index */
-	x = message_age2idx(age);
+	if ((age < 0) || (age >= message_num()))
+		return MSG_GENERIC;
 
 	/* Return the message type */
-	return (message__type[x]);
+	return (message__type[message_age2idx(age)]);
 }
 
 
@@ -1557,7 +1501,7 @@ static byte message_type_color(u16b type)
 
 	if (color == TERM_DARK) color = TERM_WHITE;
 
-	return (color);
+	return color;
 }
 
 
@@ -1572,14 +1516,11 @@ byte message_color(s16b age)
 
 errr message_color_define(u16b type, byte color)
 {
-	/* Ignore illegal types */
-	if (type >= MSG_MAX) return (1);
+	if (type >= MSG_MAX) return 1;
 
 	/* Store the color */
 	message__color[type] = color;
-
-	/* Success */
-	return (0);
+	return 0;
 }
 
 
@@ -1633,8 +1574,6 @@ void message_add(cptr str, u16b type)
 	{
 		/* Increase the message count */
 		message__count[x]++;
-
-		/* Success */
 		return;
 	}
 
@@ -1821,7 +1760,7 @@ errr messages_init(void)
 	message__tail = MESSAGE_BUF;
 
 	/* Success */
-	return (0);
+	return 0;
 }
 
 
@@ -1838,50 +1777,7 @@ void messages_free(void)
 }
 
 
-/*
- * XXX XXX XXX Important note about "colors" XXX XXX XXX
- *
- * The "TERM_*" color definitions list the "composition" of each
- * "Angband color" in terms of "quarters" of each of the three color
- * components (Red, Green, Blue), for example, TERM_UMBER is defined
- * as 2/4 Red, 1/4 Green, 0/4 Blue.
- *
- * The following info is from "Torbjorn Lindgren" (see "main-xaw.c").
- *
- * These values are NOT gamma-corrected.  On most machines (with the
- * Macintosh being an important exception), you must "gamma-correct"
- * the given values, that is, "correct for the intrinsic non-linearity
- * of the phosphor", by converting the given intensity levels based
- * on the "gamma" of the target screen, which is usually 1.7 (or 1.5).
- *
- * The actual formula for conversion is unknown to me at this time,
- * but you can use the table below for the most common gamma values.
- *
- * So, on most machines, simply convert the values based on the "gamma"
- * of the target screen, which is usually in the range 1.5 to 1.7, and
- * usually is closest to 1.7.  The converted value for each of the five
- * different "quarter" values is given below:
- *
- *  Given     Gamma 1.0       Gamma 1.5       Gamma 1.7     Hex 1.7
- *  -----       ----            ----            ----          ---
- *   0/4        0.00            0.00            0.00          #00
- *   1/4        0.25            0.27            0.28          #47
- *   2/4        0.50            0.55            0.56          #8f
- *   3/4        0.75            0.82            0.84          #d7
- *   4/4        1.00            1.00            1.00          #ff
- *
- * Note that some machines (i.e. most IBM machines) are limited to a
- * hard-coded set of colors, and so the information above is useless.
- *
- * Also, some machines are limited to a pre-determined set of colors,
- * for example, the IBM can only display 16 colors, and only 14 of
- * those colors resemble colors used by Angband, and then only when
- * you ignore the fact that "Slate" and "cyan" are not really matches,
- * so on the IBM, we use "orange" for both "Umber", and "Light Umber"
- * in addition to the obvious "Orange", since by combining all of the
- * "indeterminate" colors into a single color, the rest of the colors
- * are left with "meaningful" values.
- */
+
 
 
 
@@ -2654,6 +2550,7 @@ bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, ch
 	return FALSE;
 }
 
+
 /*
  * Get some input at the cursor location.
  *
@@ -2678,7 +2575,6 @@ bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, ch
  */
 bool askfor_aux(char *buf, size_t len, bool keypress_h(char *, size_t, size_t *, size_t *, char, bool))
 {
-
 	int y, x;
 
 	size_t k = 0;		/* Cursor position */
@@ -2738,6 +2634,7 @@ bool askfor_aux(char *buf, size_t len, bool keypress_h(char *, size_t, size_t *,
 	/* Done */
 	return (ch != ESCAPE);
 }
+
 
 /*
  * A "keypress" handling function for askfor_aux, that handles the special
@@ -2910,67 +2807,6 @@ s16b get_quantity(cptr prompt, int max)
 	return (amt);
 }
 
-/*
- * Hack - duplication of get_check prompt to give option of setting destroyed
- * option to squelch.
- *
- * 0 - No
- * 1 = Yes
- * 2 = third option
- *
- * The "prompt" should take the form "Query? "
- *
- * Note that "[y/n/{char}]" is appended to the prompt.
- */
-int get_check_other(cptr prompt, char other)
-{
-	char ch;
-	char buf[80];
-
-	int result;
-
-	/* Paranoia XXX XXX XXX */
-	message_flush();
-
-	/* Hack -- Build a "useful" prompt */
-	strnfmt(buf, 78, "%.70s[y/n/%c] ", prompt, other);
-
-	/* Prompt for it */
-	prt(buf, 0, 0);
-
-	/* Get an acceptable answer */
-	while (TRUE)
-	{
-		ch = inkey();
-		if (quick_messages) break;
-		if (ch == ESCAPE) break;
-		if (strchr("YyNn", ch)) break;
-		if (ch == toupper((unsigned char) other)) break;
-		if (ch == tolower((unsigned char) other)) break;
-		bell("Illegal response to question!");
-	}
-
-	/* Erase the prompt */
-	prt("", 0, 0);
-
-
-	/* Yes */
-	if ((ch == 'Y') || (ch == 'y'))
-		result = 1;
-
-	/* Third option */
-	else if ((ch == toupper((unsigned char) other)) || (ch == tolower((unsigned char) other)))
-		result = 2;
-
-	/* Default to no */
-	else
-		result = 0;
-
-
-	/* Success */
-	return (result);
-}
-
 
 /*
  * Verify something with the user
@@ -3032,6 +2868,7 @@ bool get_com(cptr prompt, char *command)
 
 	return result;
 }
+
 
 bool get_com_ex(cptr prompt, event_type *command)
 {
@@ -3101,34 +2938,22 @@ static char request_command_buffer[256];
 void request_command(void)
 {
 	int i;
+	int mode;
 
 	event_type ke = EVENT_EMPTY;
-
-	int mode;
 
 	cptr act;
 
 
-	/* Roguelike */
 	if (rogue_like_commands)
-	{
 		mode = KEYMAP_MODE_ROGUE;
-	}
-
-	/* Original */
 	else
-	{
 		mode = KEYMAP_MODE_ORIG;
-	}
 
 
-	/* No command yet */
+	/* Reset command/argument/direction */
 	p_ptr->command_cmd = 0;
-
-	/* No "argument" yet */
 	p_ptr->command_arg = 0;
-
-	/* No "direction" yet */
 	p_ptr->command_dir = 0;
 
 
@@ -3377,28 +3202,6 @@ void request_command(void)
 
 
 
-/*
- * Generates damage for "2d6" style dice rolls
- */
-int damroll(int num, int sides)
-{
-	int i;
-	int sum = 0;
-
-
-	/* HACK - prevent undefined behaviour */
-	if (sides <= 0) return (0);
-
-	for (i = 0; i < num; i++)
-	{
-		sum += rand_die(sides);
-	}
-
-	return (sum);
-}
-
-
-
 
 /*
  * Check a char for "vowel-hood"
@@ -3412,7 +3215,9 @@ bool is_a_vowel(int ch)
 		case 'i':
 		case 'o':
 		case 'u':
+		{
 			return (TRUE);
+		}
 	}
 
 	return (FALSE);
@@ -3455,25 +3260,25 @@ int color_char_to_attr(char c)
  */
 int color_text_to_attr(cptr name)
 {
-	if (my_stricmp(name, "dark")       == 0) return (TERM_DARK);
-	if (my_stricmp(name, "white")      == 0) return (TERM_WHITE);
-	if (my_stricmp(name, "slate")      == 0) return (TERM_SLATE);
-	if (my_stricmp(name, "orange")     == 0) return (TERM_ORANGE);
-	if (my_stricmp(name, "red")        == 0) return (TERM_RED);
-	if (my_stricmp(name, "green")      == 0) return (TERM_GREEN);
-	if (my_stricmp(name, "blue")       == 0) return (TERM_BLUE);
-	if (my_stricmp(name, "umber")      == 0) return (TERM_UMBER);
-	if (my_stricmp(name, "violet")     == 0) return (TERM_VIOLET);
-	if (my_stricmp(name, "yellow")     == 0) return (TERM_YELLOW);
-	if (my_stricmp(name, "lightdark")  == 0) return (TERM_L_DARK);
-	if (my_stricmp(name, "lightwhite") == 0) return (TERM_L_WHITE);
-	if (my_stricmp(name, "lightred")   == 0) return (TERM_L_RED);
-	if (my_stricmp(name, "lightgreen") == 0) return (TERM_L_GREEN);
-	if (my_stricmp(name, "lightblue")  == 0) return (TERM_L_BLUE);
-	if (my_stricmp(name, "lightumber") == 0) return (TERM_L_UMBER);
+	if (my_stricmp(name, "dark")       == 0) return TERM_DARK;
+	if (my_stricmp(name, "white")      == 0) return TERM_WHITE;
+	if (my_stricmp(name, "slate")      == 0) return TERM_SLATE;
+	if (my_stricmp(name, "orange")     == 0) return TERM_ORANGE;
+	if (my_stricmp(name, "red")        == 0) return TERM_RED;
+	if (my_stricmp(name, "green")      == 0) return TERM_GREEN;
+	if (my_stricmp(name, "blue")       == 0) return TERM_BLUE;
+	if (my_stricmp(name, "umber")      == 0) return TERM_UMBER;
+	if (my_stricmp(name, "violet")     == 0) return TERM_VIOLET;
+	if (my_stricmp(name, "yellow")     == 0) return TERM_YELLOW;
+	if (my_stricmp(name, "lightdark")  == 0) return TERM_L_DARK;
+	if (my_stricmp(name, "lightwhite") == 0) return TERM_L_WHITE;
+	if (my_stricmp(name, "lightred")   == 0) return TERM_L_RED;
+	if (my_stricmp(name, "lightgreen") == 0) return TERM_L_GREEN;
+	if (my_stricmp(name, "lightblue")  == 0) return TERM_L_BLUE;
+	if (my_stricmp(name, "lightumber") == 0) return TERM_L_UMBER;
 
 	/* Oops */
-	return (-1);
+	return -1;
 }
 
 
@@ -3484,26 +3289,26 @@ cptr attr_to_text(byte a)
 {
 	switch (a)
 	{
-		case TERM_DARK:    return ("Dark");
-		case TERM_WHITE:   return ("White");
-		case TERM_SLATE:   return ("Slate");
-		case TERM_ORANGE:  return ("Orange");
-		case TERM_RED:     return ("Red");
-		case TERM_GREEN:   return ("Green");
-		case TERM_BLUE:    return ("Blue");
-		case TERM_UMBER:   return ("Umber");
-		case TERM_L_DARK:  return ("L.Dark");
-		case TERM_L_WHITE: return ("L.Slate");
-		case TERM_VIOLET:  return ("Violet");
-		case TERM_YELLOW:  return ("Yellow");
-		case TERM_L_RED:   return ("L.Red");
-		case TERM_L_GREEN: return ("L.Green");
-		case TERM_L_BLUE:  return ("L.Blue");
-		case TERM_L_UMBER: return ("L.Umber");
+		case TERM_DARK:    return "Dark";
+		case TERM_WHITE:   return "White";
+		case TERM_SLATE:   return "Slate";
+		case TERM_ORANGE:  return "Orange";
+		case TERM_RED:     return "Red";
+		case TERM_GREEN:   return "Green";
+		case TERM_BLUE:    return "Blue";
+		case TERM_UMBER:   return "Umber";
+		case TERM_L_DARK:  return "L.Dark";
+		case TERM_L_WHITE: return "L.Slate";
+		case TERM_VIOLET:  return "Violet";
+		case TERM_YELLOW:  return "Yellow";
+		case TERM_L_RED:   return "L.Red";
+		case TERM_L_GREEN: return "L.Green";
+		case TERM_L_BLUE:  return "L.Blue";
+		case TERM_L_UMBER: return "L.Umber";
 	}
 
 	/* Oops */
-	return ("Icky");
+	return "Icky";
 }
 
 
@@ -3557,6 +3362,7 @@ void repeat_clear(void)
 	/* Start over from the failed pull */
 	if (repeat__idx)
 		repeat__cnt = --repeat__idx;
+
 	/* Paranoia */
 	else
 		repeat__cnt = repeat__idx;
@@ -3609,6 +3415,39 @@ void repeat_check(void)
 
 
 #ifdef SUPPORT_GAMMA
+
+/*
+ * XXX XXX XXX Important note about "colors" XXX XXX XXX
+ *
+ * The "TERM_*" color definitions list the "composition" of each
+ * "Angband color" in terms of "quarters" of each of the three color
+ * components (Red, Green, Blue), for example, TERM_UMBER is defined
+ * as 2/4 Red, 1/4 Green, 0/4 Blue.
+ *
+ * The following info is from "Torbjorn Lindgren" (see "main-xaw.c").
+ *
+ * These values are NOT gamma-corrected.  On most machines (with the
+ * Macintosh being an important exception), you must "gamma-correct"
+ * the given values, that is, "correct for the intrinsic non-linearity
+ * of the phosphor", by converting the given intensity levels based
+ * on the "gamma" of the target screen, which is usually 1.7 (or 1.5).
+ *
+ * The actual formula for conversion is unknown to me at this time,
+ * but you can use the table below for the most common gamma values.
+ *
+ * So, on most machines, simply convert the values based on the "gamma"
+ * of the target screen, which is usually in the range 1.5 to 1.7, and
+ * usually is closest to 1.7.  The converted value for each of the five
+ * different "quarter" values is given below:
+ *
+ *  Given     Gamma 1.0       Gamma 1.5       Gamma 1.7     Hex 1.7
+ *  -----       ----            ----            ----          ---
+ *   0/4        0.00            0.00            0.00          #00
+ *   1/4        0.25            0.27            0.28          #47
+ *   2/4        0.50            0.55            0.56          #8f
+ *   3/4        0.75            0.82            0.84          #d7
+ *   4/4        1.00            1.00            1.00          #ff
+ */
 
 /* Table of gamma values */
 byte gamma_table[256];

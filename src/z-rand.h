@@ -91,5 +91,7 @@ extern u32b Rand_div(u32b m);
 extern s16b Rand_normal(int mean, int stand);
 extern u32b Rand_simple(u32b m);
 
+extern int damroll(int num, int sides);
+
 
 #endif /* INCLUDED_Z_RAND_H */

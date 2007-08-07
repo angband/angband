@@ -345,3 +345,22 @@ u32b Rand_simple(u32b m)
 	/* Use the value */
 	return (result);
 }
+
+
+
+/*
+ * Generates damage for "2d6" style dice rolls
+ */
+int damroll(int num, int sides)
+{
+	int i;
+	int sum = 0;
+
+	if (sides <= 0) return (0);
+
+	for (i = 0; i < num; i++)
+		sum += rand_die(sides);
+
+	return (sum);
+}
+

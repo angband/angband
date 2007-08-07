@@ -670,8 +670,6 @@ extern bool get_com(cptr prompt, char *command);
 extern bool get_com_ex(cptr prompt, event_type *command);
 extern void pause_line(int row);
 extern void request_command(void);
-extern int damroll(int num, int sides);
-extern int maxroll(int num, int sides);
 extern bool is_a_vowel(int ch);
 extern int color_char_to_attr(char c);
 extern int color_text_to_attr(cptr name);
