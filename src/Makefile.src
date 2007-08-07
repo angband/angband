@@ -8,7 +8,7 @@
 VERSION = 3.0.9
 
 HDRS = h-basic.h
-INCS = angband.h config.h defines.h externs.h types.h \
+INCS = angband.h config.h defines.h externs.h types.h option.h \
        z-term.h z-rand.h z-type.h z-util.h z-virt.h z-form.h
 
 HEADERS = $(HDRS) $(INCS)
@@ -39,9 +39,10 @@ ANGFILES = \
 	melee2.o \
 	monster1.o \
 	monster2.o \
-	obj-info.o \
 	object1.o \
 	object2.o \
+	obj-info.o \
+	option.o \
 	randart.o \
 	randname.o \
 	pathfind.o \

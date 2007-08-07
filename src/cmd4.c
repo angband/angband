@@ -17,6 +17,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "option.h"
 #include "ui.h"
 
 
@@ -2245,8 +2246,8 @@ static void display_option(menu_type *menu, int oid,
 {
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
 
-	c_prt(attr, format("%-45s: %s  (%s)", option_desc[oid],
-	                   op_ptr->opt[oid] ? "yes" : "no ", option_text[oid]),
+	c_prt(attr, format("%-45s: %s  (%s)", option_desc(oid),
+	                   op_ptr->opt[oid] ? "yes" : "no ", option_name(oid)),
 	                   row, col);
 }
 
@@ -2275,7 +2276,7 @@ static bool update_option(char key, void *pgdb, int oid)
 
 		case '?':
 		{
-			show_file(format("option.txt#%s", option_text[oid]), NULL, 0, 0);
+			show_file(format("option.txt#%s", option_name(oid)), NULL, 0, 0);
 			break;
 		}
 
@@ -2820,21 +2821,17 @@ static void option_dump(FILE *fff)
 	/* Dump options (skip cheat, adult, score) */
 	for (i = 0; i < OPT_CHEAT; i++)
 	{
-		/* Require a real option */
-		if (!option_text[i]) continue;
+		const char *name = option_name(i);
+		if (!name) continue;
 
 		/* Comment */
-		fprintf(fff, "# Option '%s'\n", option_desc[i]);
+		fprintf(fff, "# Option '%s'\n", option_desc(i));
 
 		/* Dump the option */
 		if (op_ptr->opt[i])
-		{
-			fprintf(fff, "Y:%s\n", option_text[i]);
-		}
+			fprintf(fff, "Y:%s\n", name);
 		else
-		{
-			fprintf(fff, "X:%s\n", option_text[i]);
-		}
+			fprintf(fff, "X:%s\n", name);
 
 		/* Skip a line */
 		fprintf(fff, "\n");

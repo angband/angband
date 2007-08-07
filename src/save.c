@@ -9,6 +9,7 @@
  */
 
 #include "angband.h"
+#include "option.h"
 
 
 
@@ -344,7 +345,7 @@ static void wr_options(void)
 		int ob = i % 32;
 
 		/* Process real entries */
-		if (option_text[i])
+		if (option_name(i))
 		{
 			/* Set flag */
 			if (op_ptr->opt[i])

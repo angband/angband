@@ -10,6 +10,7 @@
 
 #include "angband.h"
 #include "cmds.h"
+#include "option.h"
 
 #define MAX_PANEL 12
 
@@ -542,9 +543,9 @@ errr process_pref_file_command(char *buf)
 		/* Check non-adult options */
 		for (i = 0; i < OPT_ADULT; i++)
 		{
-			if (option_text[i] && streq(option_text[i], buf + 2))
+			if (option_name(i) && streq(option_name(i), buf + 2))
 			{
-				op_ptr->opt[i] = FALSE;
+				option_set(i, FALSE);
 				return (0);
 			}
 		}
@@ -559,9 +560,9 @@ errr process_pref_file_command(char *buf)
 		/* Check non-adult options */
 		for (i = 0; i < OPT_ADULT; i++)
 		{
-			if (option_text[i] && streq(option_text[i], buf + 2))
+			if (option_name(i) && streq(option_name(i), buf + 2))
 			{
-				op_ptr->opt[i] = TRUE;
+				option_set(i, TRUE);
 				return (0);
 			}
 		}
@@ -1946,12 +1947,12 @@ errr file_character(cptr name, bool full)
 	/* Dump options */
 	for (i = OPT_ADULT; i < OPT_MAX; i++)
 	{
-		if (option_desc[i])
+		if (option_name(i))
 		{
 			fprintf(fff, "%-45s: %s (%s)\n",
-			        option_desc[i],
+			        option_desc(i),
 			        op_ptr->opt[i] ? "yes" : "no ",
-			        option_text[i]);
+			        option_name(i));
 		}
 	}
 

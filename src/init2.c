@@ -14,6 +14,7 @@
 #include "init.h"
 #include "script.h"
 #include "cmds.h"
+#include "option.h"
 
 /*
  * This file is used to initialize various variables and arrays for the
@@ -1242,13 +1243,7 @@ static errr init_other(void)
 
 
 	/*** Prepare the options ***/
-
-	/* Initialize the options */
-	for (i = 0; i < OPT_MAX; i++)
-	{
-		/* Default value */
-		op_ptr->opt[i] = option_norm[i];
-	}
+	option_set_defaults();
 
 	/* Initialize the window flags */
 	for (i = 0; i < ANGBAND_TERM_MAX; i++)

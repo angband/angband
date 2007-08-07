@@ -32,6 +32,7 @@
  */
 #include "config.h"
 #include "defines.h"
+#include "option.h"
 #include "types.h"
 #include "ui.h"
 #include "z-type.h"
