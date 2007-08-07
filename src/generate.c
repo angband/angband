@@ -1003,6 +1003,7 @@ static void new_player_spot(void)
 	/*
 	 * Check stored stair locations, then search at random.
 	 */
+	
 	while (TRUE)
 	{
 		i++;
@@ -1072,6 +1073,16 @@ static void new_player_spot(void)
 			if (i < 300 && (next_to_walls(y, x) < 2)) continue;
 			else if (i < 600 && (next_to_walls(y, x) < 1)) continue;
 
+			/* MAKE stairs if we're looking here */
+			
+			if (!adult_no_stairs)
+			{
+				if (p_ptr->create_down_stair)
+						cave_set_feat(y, x, FEAT_MORE);
+				if (p_ptr->create_up_stair)
+						cave_set_feat(y, x, FEAT_LESS);
+			}
+			
 			/* Success */
 			break;
 		}

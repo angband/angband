@@ -37,6 +37,7 @@ void do_cmd_go_up(void)
 	message(MSG_STAIRS_UP, 0, "You enter a maze of up staircases.");
 
 	/* Create a way back */
+	p_ptr->create_up_stair = FALSE;
 	p_ptr->create_down_stair = TRUE;
 
 	/* New depth */
@@ -67,6 +68,7 @@ void do_cmd_go_down(void)
 
 	/* Create a way back */
 	p_ptr->create_up_stair = TRUE;
+	p_ptr->create_down_stair = FALSE;
 
 	/* New level */
 	p_ptr->depth++;
