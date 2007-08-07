@@ -1996,7 +1996,7 @@ void do_cmd_spike(void)
 /*
  * Determine if a given grid may be "walked"
  */
-bool do_cmd_walk_test(int y, int x)
+static bool do_cmd_walk_test(int y, int x)
 {
 	/* Hack -- walking obtains knowledge XXX XXX */
 	if (!(cave_info[y][x] & (CAVE_MARK))) return (TRUE);

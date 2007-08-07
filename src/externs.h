@@ -304,8 +304,6 @@ extern void search(void);
 extern byte py_pickup(int pickup);
 extern void hit_trap(int y, int x);
 extern void move_player(int dir);
-extern void run_step(int dir);
-bool do_cmd_walk_test(int y, int x);
 
 /* dungeon.c */
 extern void play_game(bool new_game);
@@ -478,6 +476,7 @@ extern byte get_angle_to_grid[41][41];
 extern int get_angle_to_target(int y0, int x0, int y1, int x1, int dir);
 extern void get_grid_using_angle(int angle, int y0, int x0,
 	int *ty, int *tx);
+extern void run_step(int dir);
 
 /* randart.c */
 extern errr do_randart(u32b randart_seed, bool full);
