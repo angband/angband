@@ -1034,7 +1034,7 @@ static void new_player_spot(void)
 						break;
 					}
 				}
-				else
+				else if (p_ptr->create_up_stair)
 				{
 					/* Accept up stairs */
 					if (cave_feat[y][x] == FEAT_LESS) break;
@@ -1079,7 +1079,7 @@ static void new_player_spot(void)
 			{
 				if (p_ptr->create_down_stair)
 						cave_set_feat(y, x, FEAT_MORE);
-				if (p_ptr->create_up_stair)
+				else if (p_ptr->create_up_stair)
 						cave_set_feat(y, x, FEAT_LESS);
 			}
 			
