@@ -3401,64 +3401,6 @@ void place_gold(int y, int x, int level)
 
 
 
-/*
- * Hack -- instantiate a trap
- *
- * XXX XXX XXX This routine should be redone to reflect trap "level".
- * That is, it does not make sense to have spiked pits at 50 feet.
- * Actually, it is not this routine, but the "trap instantiation"
- * code, which should also check for "trap doors" on quest levels.
- */
-void pick_trap(int y, int x)
-{
-	int feat;
-
-	/* Paranoia */
-	if (cave_feat[y][x] != FEAT_INVIS) return;
-
-	/* Pick a trap */
-	while (1)
-	{
-		/* Hack -- pick a trap */
-		feat = FEAT_TRAP_HEAD + rand_int(16);
-
-		/* Hack -- no trap doors on quest levels */
-		if ((feat == FEAT_TRAP_HEAD + 0x00) && is_quest(p_ptr->depth)) continue;
-
-		/* Hack -- no trap doors on the deepest level */
-		if ((feat == FEAT_TRAP_HEAD + 0x00) && (p_ptr->depth >= MAX_DEPTH-1)) continue;
-
-		/* Done */
-		break;
-	}
-
-	/* Activate the trap */
-	cave_set_feat(y, x, feat);
-}
-
-
-
-/*
- * Places a random trap at the given location.
- *
- * The location must be a legal, naked, floor grid.
- *
- * Note that all traps start out as "invisible" and "untyped", and then
- * when they are "discovered" (by detecting them or setting them off),
- * the trap is "instantiated" as a visible, "typed", trap.
- */
-void place_trap(int y, int x)
-{
-	/* Paranoia */
-	if (!in_bounds(y, x)) return;
-
-	/* Require empty, clean, floor grid */
-	if (!cave_naked_bold(y, x)) return;
-
-	/* Place an invisible trap */
-	cave_set_feat(y, x, FEAT_INVIS);
-}
-
 
 /*
  * Place a secret door at the given location

@@ -53,6 +53,7 @@ ANGFILES = \
 	squelch.o \
 	store.o \
 	tables.o \
+	trap.o \
 	ui.o \
 	util.o  \
 	variable.o \

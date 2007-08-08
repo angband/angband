@@ -302,7 +302,6 @@ extern bool is_quest(int level);
 /* cmd1.c */
 extern void search(void);
 extern byte py_pickup(int pickup);
-extern void hit_trap(int y, int x);
 extern void move_player(int dir);
 
 /* dungeon.c */
@@ -445,8 +444,6 @@ extern void drop_near(object_type *j_ptr, int chance, int y, int x);
 extern void acquirement(int y1, int x1, int level, int num, bool great);
 extern void place_object(int y, int x, int level, bool good, bool great);
 extern void place_gold(int y, int x, int level);
-extern void pick_trap(int y, int x);
-extern void place_trap(int y, int x);
 extern void place_secret_door(int y, int x);
 extern void place_closed_door(int y, int x);
 extern void place_random_door(int y, int x);
@@ -610,6 +607,11 @@ extern void do_cmd_store(void);
 extern void store_shuffle(int which);
 extern void store_maint(int which);
 extern void store_init(void);
+
+/* trap.c */
+extern void hit_trap(int y, int x);
+extern void pick_trap(int y, int x);
+extern void place_trap(int y, int x);
 
 /* typeutils.c */
 void display_panel(const data_panel *panel, int count,
