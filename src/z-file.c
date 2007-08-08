@@ -332,34 +332,6 @@ bool my_fexists(const char *fname)
 #ifndef RISCOS
 
 
-#ifdef SET_UID
-
-/*
- * Find a default user name from the system.
- */
-void user_name(char *buf, size_t len, int id)
-{
-	struct passwd *pw;
-
-	/* Look up the user name */
-	if ((pw = getpwuid(id)))
-	{
-		/* Get the first 15 characters of the user name */
-		my_strcpy(buf, pw->pw_name, len);
-
-		/* Capitalize the user name */
-		buf[0] = toupper((unsigned char)buf[0]);
-
-		return;
-	}
-
-	/* Oops.  Hack -- default to "PLAYER" */
-	my_strcpy(buf, "PLAYER", len);
-}
-
-#endif /* SET_UID */
-
-
 #if defined(SET_UID) || defined(USE_PRIVATE_PATHS)
 
 /*

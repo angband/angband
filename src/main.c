@@ -251,6 +251,31 @@ static void change_path(cptr info)
 }
 
 
+
+
+#ifdef SET_UID
+
+/*
+ * Find a default user name from the system.
+ */
+static void user_name(char *buf, size_t len, int id)
+{
+	struct passwd *pw = getpwuid(id);
+
+	/* Default to PLAYER */
+	if (!pw)
+	{
+		my_strcpy(buf, "PLAYER", len);
+		return;
+	}
+
+	/* Capitalise and copy */
+	strnfmt(buf, len, "%^s", pw->pw_name);
+}
+
+#endif /* SET_UID */
+
+
 /*
  * Simple "main" function for multiple platforms.
  *

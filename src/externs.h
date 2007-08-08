@@ -725,11 +725,6 @@ extern bool confuse_dir(int *dp);
  * Hack -- conditional (or "bizarre") externs
  */
 
-#ifdef SET_UID
-extern void user_name(char *buf, size_t len, int id);
-#endif /* SET_UID */
-
-
 #ifdef RISCOS
 /* main-ros.c */
 extern char *riscosify_name(cptr path);
