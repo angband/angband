@@ -1687,33 +1687,9 @@ void display_map(int *cy, int *cx)
 		}
 	}
 
-	/* Clear the screen (but don't force a redraw) */
-	clear_from(0);
 
-	/* Corners */
-	x = map_wid + 1;
-	y = map_hgt + 1;
-
-	/* Draw the corners */
-	Term_putch(0, 0, ta, '+');
-	Term_putch(x, 0, ta, '+');
-	Term_putch(0, y, ta, '+');
-	Term_putch(x, y, ta, '+');
-
-	/* Draw the horizontal edges */
-	for (x = 1; x <= map_wid; x++)
-	{
-		Term_putch(x, 0, ta, '-');
-		Term_putch(x, y, ta, '-');
-	}
-
-	/* Draw the vertical edges */
-	for (y = 1; y <= map_hgt; y++)
-	{
-		Term_putch(0, y, ta, '|');
-		Term_putch(x, y, ta, '|');
-	}
-
+	/* Draw a box around the edge of the term */
+	window_make(0, 0, map_wid + 1, map_hgt + 1);
 
 	/* Analyze the actual map */
 	for (y = 0; y < dungeon_hgt; y++)
