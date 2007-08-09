@@ -1,4 +1,4 @@
-#/* File: init1.c */
+/* File: init1.c */
 
 /*
  * Copyright (c) 1997 Ben Harrison
