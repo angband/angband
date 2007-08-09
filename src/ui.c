@@ -805,7 +805,6 @@ static bool menu_handle_event(menu_type *menu, const event_type *in)
 			{
 				int dy = ddy[dir];
 				int ind = *cursor + dy;
-				bool beenherebefore = FALSE;
 
 				/* Duck out here for 0-entry lists */
 				if (n == 0) return FALSE;

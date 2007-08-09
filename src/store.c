@@ -174,7 +174,7 @@ static void prt_welcome(const owner_type *ot_ptr)
 
 	const char *owner_name = &b_name[ot_ptr->owner_name];
 	/* We go from level 1 - 50  */
-	int i = (p_ptr->lev - 1) / 5;
+	size_t i = ((unsigned)p_ptr->lev - 1) / 5;
 
 	/* Sanity check in case we increase the max level carelessly */
 	i = MIN(i, N_ELEMENTS(comment_welcome) - 1);
@@ -666,7 +666,7 @@ static void store_object_absorb(object_type *o_ptr, object_type *j_ptr)
 			monster_race *s_ptr = &r_info[j_ptr->origin_xtra];
 
 			bool r_uniq = (r_ptr->flags1 & RF1_UNIQUE) ? TRUE : FALSE;
-			bool s_uniq = (r_ptr->flags1 & RF1_UNIQUE) ? TRUE : FALSE;
+			bool s_uniq = (s_ptr->flags1 & RF1_UNIQUE) ? TRUE : FALSE;
 
 			if (r_uniq && !s_uniq) act = 0;
 			else if (s_uniq && !r_uniq) act = 1;

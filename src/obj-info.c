@@ -246,7 +246,7 @@ static bool describe_combat(const object_type *o_ptr, u32b f1)
 	cnt = collect_slays(desc, mult, f1);
 	if (object_known_p(o_ptr) && cnt)
 	{
-		size_t i;
+		int i;
 
 		for (i = 0; i < cnt; i++)
 		{
