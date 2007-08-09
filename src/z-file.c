@@ -697,35 +697,8 @@ bool file_putf(ang_file *f, const char *fmt, ...)
 /*** Directory scanning API ***/
 
 /*
- * Opens a directory handle.
- * 
- * `dirname` must be a system-specific pathname to the directory
- * you want scanned.
- *
- * Returns a valid directory handle on success, NULL otherwise.
+ * For information on what these are meant to do, please read the header file.
  */
-ang_dir *my_dopen(const char *dirname);
-
-
-/*
- * Reads a directory entry.
- *
- * `dir` must point to a directory handle previously returned by my_dopen().
- * `fname` must be a pointer to a writeable chunk of memory `len` long.
- *
- * Returns TRUE on successful reading, FALSE otherwise.
- * (FALSE generally indicates that there are no more files to be read.)
- */
-bool my_dread(ang_dir *dir, char *fname, size_t len);
-
-
-/*
- * Close a directory handle.
- */
-void my_dclose(ang_dir *dir);
-
-
-
 
 #ifdef WINDOWS
 
@@ -737,7 +710,6 @@ struct ang_dir
 	char *first_file;
 };
 
-/* Specified above */
 ang_dir *my_dopen(const char *dirname)
 {
 	WIN32_FIND_DATA fd;
@@ -760,7 +732,6 @@ ang_dir *my_dopen(const char *dirname)
 	return dir;
 }
 
-/* Specified above */
 bool my_dread(ang_dir *dir, char *fname, size_t len)
 {
 	WIN32_FIND_DATA fd;
@@ -822,7 +793,6 @@ struct ang_dir
 	char *dirname;
 };
 
-/* Specified above */
 ang_dir *my_dopen(const char *dirname)
 {
 	ang_dir *dir;
@@ -848,7 +818,6 @@ ang_dir *my_dopen(const char *dirname)
 	return dir;
 }
 
-/* Specified above */
 bool my_dread(ang_dir *dir, char *fname, size_t len)
 {
 	struct dirent *entry;
