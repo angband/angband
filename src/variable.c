@@ -129,13 +129,6 @@ bool closing_flag;		/* Dungeon is closing */
 
 
 /*
- * Player info
- */
-int player_uid;
-int player_egid;
-
-
-/*
  * Buffer to hold the current savefile name
  */
 char savefile[1024];
@@ -753,7 +746,7 @@ void (*object_info_out_flags)(const object_type *o_ptr, u32b *f1, u32b *f2, u32b
 /*
  * Hack - the destination file for text_out_to_file.
  */
-FILE *text_out_file = NULL;
+ang_file *text_out_file = NULL;
 
 
 /*

@@ -81,15 +81,6 @@ CFLAGS += $(patsubst -l%,,$(MODULES)) $(INCLUDES)
 LIBS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
 
 
-# Extract system we're running on
-uname = $(shell uname -s)
-
-# Enable linux-specific modules, if requested.
-ifeq ($(uname),Linux)
-  CFLAGS += -DHAVE_MKSTEMP
-endif
-
-
 # Object definitions
 X11OBJS = maid-x11.o main-x11.o main-xaw.o main-gtk.o
 MAINOBJS = main.o main-gcu.o main-sdl.o snd-sdl.o $(X11OBJS)

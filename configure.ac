@@ -193,7 +193,7 @@ AC_CHECK_HEADERS([fcntl.h stdint.h dirent.h])
 AC_HEADER_STDBOOL
 AC_C_CONST
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS([mkstemp setresgid setegid can_change_color])
+AC_CHECK_FUNCS([setresgid setegid can_change_color stat])
 
 
 

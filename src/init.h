@@ -40,8 +40,8 @@ typedef struct header header;
 
 typedef errr (*parse_info_txt_func)(char *buf, header *head);
 typedef errr (*eval_info_power_func)(header *head);
-typedef errr (*emit_info_txt_index_func)(FILE *fp, header *head, int i);
-typedef errr (*emit_info_txt_always_func)(FILE *fp, header *head);
+typedef errr (*emit_info_txt_index_func)(ang_file *fp, header *head, int i);
+typedef errr (*emit_info_txt_always_func)(ang_file *fp, header *head);
 
 /*
  * Template file header information (see "init.c").  16 bytes.
@@ -102,12 +102,12 @@ struct header
 	
 };
 
-extern errr init_info_txt(FILE *fp, char *buf, header *head,
+extern errr init_info_txt(ang_file *fp, char *buf, header *head,
                           parse_info_txt_func parse_info_txt_line);
 
 extern errr eval_info(eval_info_power_func eval_info_process, header *head);
 
-extern errr emit_info_txt(FILE *fp, FILE *template, char *buf, header *head,
+extern errr emit_info_txt(ang_file *fp, ang_file *template, char *buf, header *head,
    emit_info_txt_index_func emit_info_txt_index, emit_info_txt_always_func emit_info_txt_always);
 
 #ifdef ALLOW_TEMPLATES

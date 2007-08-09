@@ -18,7 +18,7 @@
 /*
  * The spoiler file being created
  */
-static FILE *fff = NULL;
+static ang_file *fh = NULL;
 
 
 /*
@@ -26,7 +26,7 @@ static FILE *fff = NULL;
  */
 static void spoiler_out_n_chars(int n, char c)
 {
-	while (--n >= 0) fputc(c, fff);
+	while (--n >= 0) file_writec(fh, c);
 }
 
 /*
@@ -230,17 +230,12 @@ static void spoil_obj_desc(cptr fname)
 
 	cptr format = "%-51s  %7s%6s%4s%9s\n";
 
-	/* Build the filename */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
-
-	/* File type is "TEXT" */
-	FILE_TYPE(FILE_TYPE_TEXT);
-
 	/* Open the file */
-	fff = my_fopen(buf, "w");
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
+	fh = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 
 	/* Oops */
-	if (!fff)
+	if (!fh)
 	{
 		msg_print("Cannot create spoiler file.");
 		return;
@@ -248,11 +243,11 @@ static void spoil_obj_desc(cptr fname)
 
 
 	/* Header */
-	fprintf(fff, "Spoiler File -- Basic Items (%s)\n\n\n", VERSION_STRING);
+	file_putf(fh, "Spoiler File -- Basic Items (%s)\n\n\n", VERSION_STRING);
 
 	/* More Header */
-	fprintf(fff, format, "Description", "Dam/AC", "Wgt", "Lev", "Cost");
-	fprintf(fff, format, "----------------------------------------",
+	file_putf(fh, format, "Description", "Dam/AC", "Wgt", "Lev", "Cost");
+	file_putf(fh, format, "----------------------------------------",
 	        "------", "---", "---", "----");
 
 	/* List the groups */
@@ -297,7 +292,7 @@ static void spoil_obj_desc(cptr fname)
 				kind_info(buf, sizeof(buf), dam, sizeof(dam), wgt, sizeof(wgt), &e, &v, who[s]);
 
 				/* Dump it */
-				fprintf(fff, "  %-51s%7s%6s%4d%9ld\n",
+				file_putf(fh, "  %-51s%7s%6s%4d%9ld\n",
 				        buf, dam, wgt, e, (long)(v));
 			}
 
@@ -308,7 +303,7 @@ static void spoil_obj_desc(cptr fname)
 			if (!group_item[i].tval) break;
 
 			/* Start a new set */
-			fprintf(fff, "\n\n%s\n\n", group_item[i].name);
+			file_putf(fh, "\n\n%s\n\n", group_item[i].name);
 		}
 
 		/* Get legal item types */
@@ -329,7 +324,7 @@ static void spoil_obj_desc(cptr fname)
 
 
 	/* Check for errors */
-	if (ferror(fff) || my_fclose(fff))
+	if (!file_close(fh))
 	{
 		msg_print("Cannot close spoiler file.");
 		return;
@@ -436,15 +431,10 @@ static void spoil_artifact(cptr fname)
 
 	/* Build the filename */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
-
-	/* File type is "TEXT" */
-	FILE_TYPE(FILE_TYPE_TEXT);
-
-	/* Open the file */
-	fff = my_fopen(buf, "w");
+	fh = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 
 	/* Oops */
-	if (!fff)
+	if (!fh)
 	{
 		msg_print("Cannot create spoiler file.");
 		return;
@@ -452,7 +442,7 @@ static void spoil_artifact(cptr fname)
 
 	/* Dump to the spoiler file */
 	text_out_hook = text_out_to_file;
-	text_out_file = fff;
+	text_out_file = fh;
 
 	/* Set object_info_out() hook */
 	object_info_out_flags = object_flags;
@@ -513,7 +503,7 @@ static void spoil_artifact(cptr fname)
 	}
 
 	/* Check for errors */
-	if (ferror(fff) || my_fclose(fff))
+	if (!file_close(fh))
 	{
 		msg_print("Cannot close spoiler file.");
 		return;
@@ -550,29 +540,24 @@ static void spoil_mon_desc(cptr fname)
 
 	/* Build the filename */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
-
-	/* File type is "TEXT" */
-	FILE_TYPE(FILE_TYPE_TEXT);
-
-	/* Open the file */
-	fff = my_fopen(buf, "w");
+	fh = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 
 	/* Oops */
-	if (!fff)
+	if (!fh)
 	{
 		msg_print("Cannot create spoiler file.");
 		return;
 	}
 
 	/* Dump the header */
-	fprintf(fff, "Monster Spoilers for %s Version %s\n",
+	file_putf(fh, "Monster Spoilers for %s Version %s\n",
 	        VERSION_NAME, VERSION_STRING);
-	fprintf(fff, "------------------------------------------\n\n");
+	file_putf(fh, "------------------------------------------\n\n");
 
 	/* Dump the header */
-	fprintf(fff, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
+	file_putf(fh, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
 	        "Name", "Lev", "Rar", "Spd", "Hp", "Ac", "Visual Info");
-	fprintf(fff, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
+	file_putf(fh, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
 	        "----", "---", "---", "---", "--", "--", "-----------");
 
 	/* Allocate the "who" array */
@@ -642,19 +627,19 @@ static void spoil_mon_desc(cptr fname)
 		strnfmt(exp, sizeof(exp), "%s '%c'", attr_to_text(r_ptr->d_attr), r_ptr->d_char);
 
 		/* Dump the info */
-		fprintf(fff, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
+		file_putf(fh, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
 		        nam, lev, rar, spd, hp, ac, exp);
 	}
 
 	/* End it */
-	fprintf(fff, "\n");
+	file_putf(fh, "\n");
 
 	/* Free the "who" array */
 	FREE(who);
 
 
 	/* Check for errors */
-	if (ferror(fff) || my_fclose(fff))
+	if (!file_close(fh))
 	{
 		msg_print("Cannot close spoiler file.");
 		return;
@@ -684,17 +669,12 @@ static void spoil_mon_info(cptr fname)
 	int count = 0;
 
 
-	/* Build the filename */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
-
-	/* File type is "TEXT" */
-	FILE_TYPE(FILE_TYPE_TEXT);
-
 	/* Open the file */
-	fff = my_fopen(buf, "w");
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
+	fh = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 
 	/* Oops */
-	if (!fff)
+	if (!fh)
 	{
 		msg_print("Cannot create spoiler file.");
 		return;
@@ -702,7 +682,7 @@ static void spoil_mon_info(cptr fname)
 
 	/* Dump to the spoiler file */
 	text_out_hook = text_out_to_file;
-	text_out_file = fff;
+	text_out_file = fh;
 
 	/* Dump the header */
 	strnfmt(buf, sizeof(buf), "Monster Spoilers for %s Version %s\n",
@@ -812,7 +792,7 @@ static void spoil_mon_info(cptr fname)
 	FREE(who);
 
 	/* Check for errors */
-	if (ferror(fff) || my_fclose(fff))
+	if (!file_close(fh))
 	{
 		msg_print("Cannot close spoiler file.");
 		return;

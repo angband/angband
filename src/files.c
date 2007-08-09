@@ -854,10 +854,9 @@ static cptr process_pref_file_expr(char **sp, char *fp)
  */
 static errr process_pref_file_aux(cptr name)
 {
-	FILE *fp;
+	ang_file *fp;
 
 	char buf[1024];
-
 	char old[1024];
 
 	int line = -1;
@@ -868,14 +867,12 @@ static errr process_pref_file_aux(cptr name)
 
 
 	/* Open the file */
-	fp = my_fopen(name, "r");
-
-	/* No such file */
+	fp = file_open(name, MODE_READ, -1);
 	if (!fp) return (-1);
 
 
 	/* Process the file */
-	while (0 == my_fgets(fp, buf, sizeof(buf)))
+	while (file_getl(fp, buf, sizeof(buf)))
 	{
 		/* Count lines */
 		line++;
@@ -885,7 +882,7 @@ static errr process_pref_file_aux(cptr name)
 		if (!buf[0]) continue;
 
 		/* Skip "blank" lines */
-		if (isspace((unsigned char)buf[0])) continue;
+		if (isspace((unsigned char) buf[0])) continue;
 
 		/* Skip comments */
 		if (buf[0] == '#') continue;
@@ -949,7 +946,7 @@ static errr process_pref_file_aux(cptr name)
 	}
 
 	/* Close the file */
-	my_fclose(fp);
+	file_close(fp);
 
 	/* Result */
 	return (err);
@@ -1743,7 +1740,7 @@ errr file_character(cptr name, bool full)
 	byte a;
 	char c;
 
-	FILE *fff = NULL;
+	ang_file *fp;
 
 	store_type *st_ptr = &store[STORE_HOME];
 
@@ -1758,11 +1755,8 @@ errr file_character(cptr name, bool full)
 	/* Build the filename */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, name);
 
-	/* File type is "TEXT" */
-	FILE_TYPE(FILE_TYPE_TEXT);
-
 	/* Check if the file currently exists */
-	if (my_fexists(buf))
+	if (file_exists(buf))
 	{
 		char out_val[160];
 
@@ -1774,19 +1768,16 @@ errr file_character(cptr name, bool full)
 			return -1;
 	}
 
-
 	/* Open the file for writing */
-	fff = my_fopen(buf, "w");
-
-	/* Invalid file */
-	if (!fff) return (-1);
+	fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
+	if (!fp) return (-1);
 
 
 	text_out_hook = text_out_to_file;
-	text_out_file = fff;
+	text_out_file = fp;
 
 	/* Begin dump */
-	fprintf(fff, "  [%s %s Character Dump]\n\n",
+	file_putf(fp, "  [%s %s Character Dump]\n\n",
 	        VERSION_NAME, VERSION_STRING);
 
 
@@ -1813,11 +1804,11 @@ errr file_character(cptr name, bool full)
 		buf[x] = '\0';
 
 		/* End the row */
-		fprintf(fff, "%s\n", buf);
+		file_putf(fp, "%s\n", buf);
 	}
 
 	/* Skip a line */
-	fprintf(fff, "\n");
+	file_putf(fp, "\n");
 
 	/* Display player */
 	display_player(1);
@@ -1842,11 +1833,11 @@ errr file_character(cptr name, bool full)
 		buf[x] = '\0';
 
 		/* End the row */
-		fprintf(fff, "%s\n", buf);
+		file_putf(fp, "%s\n", buf);
 	}
 
 	/* Skip a line */
-	fprintf(fff, "\n");
+	file_putf(fp, "\n");
 
 	/* Dump part of the screen */
 	for (y = 11; y < 20; y++)
@@ -1868,11 +1859,11 @@ errr file_character(cptr name, bool full)
 		buf[x] = '\0';
 
 		/* End the row */
-		fprintf(fff, "%s\n", buf);
+		file_putf(fp, "%s\n", buf);
 	}
 
 	/* Skip some lines */
-	fprintf(fff, "\n\n");
+	file_putf(fp, "\n\n");
 
 
 	/* If dead, dump last messages -- Prfnoff */
@@ -1880,76 +1871,76 @@ errr file_character(cptr name, bool full)
 	{
 		i = message_num();
 		if (i > 15) i = 15;
-		fprintf(fff, "  [Last Messages]\n\n");
+		file_putf(fp, "  [Last Messages]\n\n");
 		while (i-- > 0)
 		{
-			fprintf(fff, "> %s\n", message_str((s16b)i));
+			file_putf(fp, "> %s\n", message_str((s16b)i));
 		}
-		fprintf(fff, "\n\n");
+		file_putf(fp, "\n\n");
 	}
 
 	/* Dump the equipment */
 	if (p_ptr->equip_cnt)
 	{
-		fprintf(fff, "  [Character Equipment]\n\n");
+		file_putf(fp, "  [Character Equipment]\n\n");
 		for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 		{
 			object_desc(o_name, sizeof(o_name), &inventory[i], TRUE, 3);
-			fprintf(fff, "%c) %s\n",
+			file_putf(fp, "%c) %s\n",
 			        index_to_label(i), o_name);
 
 			/* Describe random object attributes */
 			identify_random_gen(&inventory[i]);
 		}
-		fprintf(fff, "\n\n");
+		file_putf(fp, "\n\n");
 	}
 
 	/* Dump the inventory */
-	fprintf(fff, "  [Character Inventory]\n\n");
+	file_putf(fp, "  [Character Inventory]\n\n");
 	for (i = 0; i < INVEN_PACK; i++)
 	{
 		if (!inventory[i].k_idx) break;
 
 		object_desc(o_name, sizeof(o_name), &inventory[i], TRUE, 3);
-		fprintf(fff, "%c) %s\n",
+		file_putf(fp, "%c) %s\n",
 		        index_to_label(i), o_name);
 
 		/* Describe random object attributes */
 		identify_random_gen(&inventory[i]);
 	}
-	fprintf(fff, "\n\n");
+	file_putf(fp, "\n\n");
 
 
 	/* Dump the Home -- if anything there */
 	if (st_ptr->stock_num)
 	{
 		/* Header */
-		fprintf(fff, "  [Home Inventory]\n\n");
+		file_putf(fp, "  [Home Inventory]\n\n");
 
 		/* Dump all available items */
 		for (i = 0; i < st_ptr->stock_num; i++)
 		{
 			object_desc(o_name, sizeof(o_name), &st_ptr->stock[i], TRUE, 3);
-			fprintf(fff, "%c) %s\n", I2A(i), o_name);
+			file_putf(fp, "%c) %s\n", I2A(i), o_name);
 
 			/* Describe random object attributes */
 			identify_random_gen(&st_ptr->stock[i]);
 		}
 
 		/* Add an empty line */
-		fprintf(fff, "\n\n");
+		file_putf(fp, "\n\n");
 	}
 
 
 	/* Dump options */
-	fprintf(fff, "  [Options]\n\n");
+	file_putf(fp, "  [Options]\n\n");
 
 	/* Dump options */
 	for (i = OPT_ADULT; i < OPT_MAX; i++)
 	{
 		if (option_name(i))
 		{
-			fprintf(fff, "%-45s: %s (%s)\n",
+			file_putf(fp, "%-45s: %s (%s)\n",
 			        option_desc(i),
 			        op_ptr->opt[i] ? "yes" : "no ",
 			        option_name(i));
@@ -1957,11 +1948,9 @@ errr file_character(cptr name, bool full)
 	}
 
 	/* Skip some lines */
-	fprintf(fff, "\n\n");
+	file_putf(fp, "\n\n");
 
-
-	/* Close it */
-	my_fclose(fff);
+	file_close(fp);
 
 
 	/* Success */
@@ -2021,7 +2010,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 	bool case_sensitive = FALSE;
 
 	/* Current help file */
-	FILE *fff = NULL;
+	ang_file *fff = NULL;
 
 	/* Find this string (if any) */
 	char *find = NULL;
@@ -2086,40 +2075,28 @@ bool show_file(cptr name, cptr what, int line, int mode)
 	/* Hack XXX XXX XXX */
 	if (what)
 	{
-		/* Caption */
 		my_strcpy(caption, what, sizeof(caption));
 
-		/* Get the filename */
 		my_strcpy(path, name, sizeof(path));
-
-		/* Open */
-		fff = my_fopen(path, "r");
+		fff = file_open(path, MODE_READ, -1);
 	}
 
 	/* Look in "help" */
 	if (!fff)
 	{
-		/* Caption */
 		strnfmt(caption, sizeof(caption), "Help file '%s'", name);
 
-		/* Build the filename */
 		path_build(path, sizeof(path), ANGBAND_DIR_HELP, name);
-
-		/* Open the file */
-		fff = my_fopen(path, "r");
+		fff = file_open(path, MODE_READ, -1);
 	}
 
 	/* Look in "info" */
 	if (!fff)
 	{
-		/* Caption */
 		strnfmt(caption, sizeof(caption), "Info file '%s'", name);
 
-		/* Build the filename */
 		path_build(path, sizeof(path), ANGBAND_DIR_INFO, name);
-
-		/* Open the file */
-		fff = my_fopen(path, "r");
+		fff = file_open(path, MODE_READ, -1);
 	}
 
 	/* Oops */
@@ -2138,7 +2115,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 	while (TRUE)
 	{
 		/* Read a line or stop */
-		if (my_fgets(fff, buf, sizeof(buf))) break;
+		if (!file_getl(fff, buf, sizeof(buf))) break;
 
 		/* XXX Parse "menu" items */
 		if (prefix(buf, "***** "))
@@ -2205,12 +2182,10 @@ bool show_file(cptr name, cptr what, int line, int mode)
 		if (next > line)
 		{
 			/* Close it */
-			my_fclose(fff);
+			file_close(fff);
 
 			/* Hack -- Re-Open the file */
-			fff = my_fopen(path, "r");
-
-			/* Oops */
+			fff = file_open(path, MODE_READ, -1);
 			if (!fff) return (TRUE);
 
 			/* File has been restarted */
@@ -2222,7 +2197,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 		while (next < line)
 		{
 			/* Get a line */
-			if (my_fgets(fff, buf, sizeof(buf))) break;
+			if (!file_getl(fff, buf, sizeof(buf))) break;
 
 			/* Skip tags/links */
 			if (prefix(buf, "***** ")) continue;
@@ -2239,7 +2214,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 			if (!i) line = next;
 
 			/* Get a line of the file or stop */
-			if (my_fgets(fff, buf, sizeof(buf))) break;
+			if (!file_getl(fff, buf, sizeof(buf))) break;
 
 			/* Hack -- skip "special" lines */
 			if (prefix(buf, "***** ")) continue;
@@ -2441,7 +2416,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 	}
 
 	/* Close the file */
-	my_fclose(fff);
+	file_close(fff);
 
 	/* Done */
 	return (ch != '?');
@@ -2671,59 +2646,43 @@ static void center_string(char *buf, size_t len, cptr str)
  */
 static void make_bones(void)
 {
-	FILE *fp;
-
+	ang_file *fp;
 	char str[1024];
-
+	char tmp[128];
 
 	/* Ignore wizards and borgs */
-	if (!(p_ptr->noscore & (NOSCORE_WIZARD | NOSCORE_BORG)))
-	{
-		/* Ignore people who die in town */
-		if (p_ptr->depth)
-		{
-			char tmp[128];
+	if (p_ptr->noscore & (NOSCORE_WIZARD | NOSCORE_BORG))
+		return;
 
-			/* XXX XXX XXX "Bones" name */
-			strnfmt(tmp, sizeof(tmp), "bone.%03d", p_ptr->depth);
+	/* Ignore people who die in town */
+	if (!p_ptr->depth) return;
 
-			/* Build the filename */
-			path_build(str, sizeof(str), ANGBAND_DIR_BONE, tmp);
 
-			/* Attempt to open the bones file */
-			fp = my_fopen(str, "r");
+	/* XXX XXX XXX "Bones" name */
+	strnfmt(tmp, sizeof(tmp), "bone.%03d", p_ptr->depth);
 
-			/* Close it right away */
-			if (fp) my_fclose(fp);
+	/* Build the filename */
+	path_build(str, sizeof(str), ANGBAND_DIR_BONE, tmp);
 
-			/* Do not over-write a previous ghost */
-			if (fp) return;
+	/* Do not over-write a previous ghost */
+	if (file_exists(str)) return;
 
-			/* File type is "TEXT" */
-			FILE_TYPE(FILE_TYPE_TEXT);
+	/* Try to write a new "Bones File" */
+	safe_setuid_grab();
+	fp = file_open(str, MODE_WRITE, FTYPE_TEXT);
+	safe_setuid_drop();
 
-			/* Grab permissions */
-			safe_setuid_grab();
+	/* Not allowed to write it?  Weird. */
+	if (!fp) return;
 
-			/* Try to write a new "Bones File" */
-			fp = my_fopen(str, "w");
+	/* Save the info */
+	file_putf(fp, "%s\n", op_ptr->full_name);
+	file_putf(fp, "%d\n", p_ptr->mhp);
+	file_putf(fp, "%d\n", p_ptr->prace);
+	file_putf(fp, "%d\n", p_ptr->pclass);
 
-			/* Drop permissions */
-			safe_setuid_drop();
-
-			/* Not allowed to write it?  Weird. */
-			if (!fp) return;
-
-			/* Save the info */
-			fprintf(fp, "%s\n", op_ptr->full_name);
-			fprintf(fp, "%d\n", p_ptr->mhp);
-			fprintf(fp, "%d\n", p_ptr->prace);
-			fprintf(fp, "%d\n", p_ptr->pclass);
-
-			/* Close and save the Bones file */
-			my_fclose(fp);
-		}
-	}
+	/* Close and save the Bones file */
+	file_close(fp);
 }
 
 #endif /* 0 */
@@ -2746,17 +2705,15 @@ static void print_tomb(void)
 
 	char buf[1024];
 
-	FILE *fp;
+	ang_file *fp;
 
 
 	/* Clear screen */
 	Term_clear();
 
-	/* Build the filename */
+	/* Open the death file */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "dead.txt");
-
-	/* Open the News file */
-	fp = my_fopen(buf, "r");
+	fp = file_open(buf, MODE_READ, -1);
 
 	/* Dump */
 	if (fp)
@@ -2764,14 +2721,10 @@ static void print_tomb(void)
 		int i = 0;
 
 		/* Dump the file to the screen */
-		while (0 == my_fgets(fp, buf, sizeof(buf)))
-		{
-			/* Display and advance */
+		while (file_getl(fp, buf, sizeof(buf)))
 			put_str(buf, i++, 0);
-		}
 
-		/* Close */
-		my_fclose(fp);
+		file_close(fp);
 	}
 
 
@@ -3005,71 +2958,48 @@ static void death_examine(void)
 
 
 
-/*
- * The "highscore" file descriptor, if available.
- */
-static int highscore_fd = -1;
-
 
 /*
  * Seek score 'i' in the highscore file
  */
-static int highscore_seek(int i)
+static bool highscore_seek(ang_file *f, int i)
 {
 	/* Seek for the requested record */
-	return (fd_seek(highscore_fd, i * sizeof(high_score)));
+	return (file_seek(f, i * sizeof(high_score)));
 }
 
 
 /*
  * Read one score from the highscore file
  */
-static errr highscore_read(high_score *score)
+static bool highscore_read(ang_file *f, high_score *score)
 {
 	/* Read the record, note failure */
-	return (fd_read(highscore_fd, (char*)(score), sizeof(high_score)));
+	return (file_read(f, (char *)score, sizeof(high_score)) > 0);
 }
-
-
-/*
- * Write one score to the highscore file
- */
-static int highscore_write(const high_score *score)
-{
-	/* Write the record, note failure */
-	return (fd_write(highscore_fd, (cptr)(score), sizeof(high_score)));
-}
-
-
-
 
 /*
  * Just determine where a new score *would* be placed
  * Return the location (0 is best) or -1 on failure
  */
-static int highscore_where(const high_score *score)
+static int highscore_where(ang_file *f, const high_score *score)
 {
 	int i;
-
 	high_score the_score;
 
-	/* Paranoia -- it may not have opened */
-	if (highscore_fd < 0) return (-1);
-
 	/* Go to the start of the highscore file */
-	if (highscore_seek(0)) return (-1);
+	if (!highscore_seek(f, 0)) return (-1);
 
 	/* Read until we get to a higher score */
 	for (i = 0; i < MAX_HISCORES; i++)
 	{
-		if (highscore_read(&the_score)) return (i);
+		if (!highscore_read(f, &the_score)) return (i);
 		if (strcmp(the_score.pts, score->pts) < 0) return (i);
 	}
 
 	/* The "last" entry is always usable */
 	return (MAX_HISCORES - 1);
 }
-
 
 /*
  * Actually place an entry into the high score file
@@ -3078,37 +3008,74 @@ static int highscore_where(const high_score *score)
 static int highscore_add(const high_score *score)
 {
 	int i, slot;
-	bool done = FALSE;
+	bool error = FALSE;
 
-	high_score the_score, tmpscore;
+	high_score tmpscore;
+
+	ang_file *old, *new, *lok;
+	char cur_name[1024];
+	char old_name[1024];
+	char new_name[1024];
+	char lok_name[1024];
+
+	path_build(cur_name, sizeof(cur_name), ANGBAND_DIR_APEX, "scores.raw");
+	path_build(old_name, sizeof(old_name), ANGBAND_DIR_APEX, "scores.old");
+	path_build(new_name, sizeof(new_name), ANGBAND_DIR_APEX, "scores.new");
+	path_build(lok_name, sizeof(lok_name), ANGBAND_DIR_APEX, "scores.lok");
 
 
-	/* Paranoia -- it may not have opened */
-	if (highscore_fd < 0) return (-1);
+	old = file_open(cur_name, MODE_READ, -1);
+
+	safe_setuid_grab();
+	new = file_open(new_name, MODE_WRITE, FTYPE_RAW);
+	lok = file_open(lok_name, MODE_WRITE, FTYPE_RAW);
+	file_lock(lok);
+	safe_setuid_drop();
+
 
 	/* Determine where the score should go */
-	slot = highscore_where(score);
+	slot = highscore_where(old, score);
 
-	/* Hack -- Not on the list */
-	if (slot < 0) return (-1);
-
-	/* Hack -- prepare to dump the new score */
-	the_score = (*score);
-
-	/* Slide all the scores down one */
-	for (i = slot; !done && (i < MAX_HISCORES); i++)
+	/* Read entries from the old and write them to the new */
+	for (i = 0; (i < MAX_HISCORES) && !error; i++)
 	{
-		/* Read the old guy, note errors */
-		if (highscore_seek(i)) return (-1);
-		if (highscore_read(&tmpscore)) done = TRUE;
+		if (!highscore_seek(old, i)) return (-1);
 
-		/* Back up and dump the score we were holding */
-		if (highscore_seek(i)) return (-1);
-		if (highscore_write(&the_score)) return (-1);
+		/* Insert the new one at the right slot */
+		if (i == slot)
+		{
+			if (!file_write(new, (const char *)score, sizeof(high_score)))
+			{
+				error = TRUE;
+				slot = -1;
+			}
+		}
 
-		/* Hack -- Save the old score, for the next pass */
-		the_score = tmpscore;
+		/* Read old one, write again */
+		if (highscore_read(old, &tmpscore))
+		{
+			if (!file_write(new, (const char *)&tmpscore, sizeof(high_score)))
+			{
+				error = TRUE;
+				slot = -1;
+			}
+		}
 	}
+
+	file_close(new);
+	file_close(old);
+
+	/* Move things around */
+	safe_setuid_grab();
+
+	file_delete(old_name);
+
+	file_move(cur_name, old_name);
+	file_move(new_name, cur_name);
+	file_delete(old_name);
+
+	file_close(lok);
+	safe_setuid_drop();
 
 	/* Return location used */
 	return (slot);
@@ -3137,10 +3104,13 @@ static void display_scores_aux(int from, int to, int note, high_score *score)
 
 	byte attr;
 
+	ang_file *f;
+	char buf[1024];
 
-	/* Paranoia -- it may not have opened */
-	if (highscore_fd < 0) return;
 
+	path_build(buf, sizeof(buf), ANGBAND_DIR_APEX, "scores.raw");
+	f = file_open(buf, MODE_READ, -1);
+	if (!f) return;
 
 	/* Assume we will show the first 10 */
 	if (from < 0) from = 0;
@@ -3148,13 +3118,10 @@ static void display_scores_aux(int from, int to, int note, high_score *score)
 	if (to > MAX_HISCORES) to = MAX_HISCORES;
 
 
-	/* Seek to the beginning */
-	if (highscore_seek(0)) return;
-
 	/* Hack -- Count the high scores */
 	for (count = 0; count < MAX_HISCORES; count++)
 	{
-		if (highscore_read(&the_score)) break;
+		if (!highscore_read(f, &the_score)) break;
 	}
 
 	/* Hack -- allow "fake" entry to be last */
@@ -3171,8 +3138,8 @@ static void display_scores_aux(int from, int to, int note, high_score *score)
 		Term_clear();
 
 		/* Title */
-		put_str(format("                %s Hall of Fame", VERSION_NAME),
-		        0, 0);
+		put_str(format("%s Hall of Fame", VERSION_NAME), 0, 26);
+
 
 		/* Indicate non-top scores */
 		if (k > 0)
@@ -3207,8 +3174,8 @@ static void display_scores_aux(int from, int to, int note, high_score *score)
 			else
 			{
 				/* Read the proper record */
-				if (highscore_seek(j)) break;
-				if (highscore_read(&the_score)) break;
+				if (!highscore_seek(f, j)) break;
+				if (!highscore_read(f, &the_score)) break;
 			}
 
 			/* Extract the race/class */
@@ -3284,6 +3251,9 @@ static void display_scores_aux(int from, int to, int note, high_score *score)
 		/* Hack -- notice Escape */
 		if (ch == ESCAPE) break;
 	}
+
+	file_close(f);
+	return;
 }
 
 
@@ -3295,35 +3265,11 @@ static void display_scores_aux(int from, int to, int note, high_score *score)
  */
 void display_scores(int from, int to)
 {
-	char buf[1024];
-
-	/* Build the filename */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_APEX, "scores.raw");
-
-	/* Open the binary high score file, for reading */
-	highscore_fd = fd_open(buf, O_RDONLY);
-
-	/* Clear screen */
-	Term_clear();
-
-	/* Title */
-	put_str(format("                %s Hall of Fame", VERSION_NAME), 0, 0);
-
-	/* Display the scores */
 	display_scores_aux(from, to, -1, NULL);
 
-	/* Shut the high score file */
-	fd_close(highscore_fd);
-
-	/* Forget the high score fd */
-	highscore_fd = -1;
-
-	/* Wait for response */
 	prt("[Press any key to exit.]", 23, 17);
 	(void)inkey();
-	prt("", 23, 0);
 
-	/* Quit */
 	quit(NULL);
 }
 
@@ -3342,15 +3288,7 @@ int score_idx = -1;
 static errr enter_score(void)
 {
 	int j;
-
 	high_score the_score;
-
-
-	/* No score file */
-	if (highscore_fd < 0)
-	{
-		return (0);
-	}
 
 	/* Wizard-mode pre-empts scoring */
 	if (p_ptr->noscore & NOSCORE_WIZARD)
@@ -3442,26 +3380,8 @@ static errr enter_score(void)
 	/* Save the cause of death (31 chars) */
 	strnfmt(the_score.how, sizeof(the_score.how), "%-.31s", p_ptr->died_from);
 
-	/* Grab permissions */
-	safe_setuid_grab();
-
-	/* Lock (for writing) the highscore file, or fail */
-	if (fd_lock(highscore_fd, F_WRLCK)) return (1);
-
-	/* Drop permissions */
-	safe_setuid_drop();
-
 	/* Add a new entry to the score list, see where it went */
 	score_idx = highscore_add(&the_score);
-
-	/* Grab permissions */
-	safe_setuid_grab();
-
-	/* Unlock the highscore file, or fail */
-	if (fd_lock(highscore_fd, F_UNLCK)) return (1);
-
-	/* Drop permissions */
-	safe_setuid_drop();
 
 	/* Success */
 	return (0);
@@ -3475,31 +3395,18 @@ static errr enter_score(void)
  *
  * Assumes "signals_ignore_tstp()" has been called.
  */
-static void top_twenty(void)
+static void top_twenty()
 {
 	/* Clear screen */
 	Term_clear();
 
-	/* No score file */
-	if (highscore_fd < 0)
-	{
-		msg_print("Score file unavailable.");
-		message_flush();
-		return;
-	}
-
 	/* Player's score unavailable */
 	if (score_idx == -1)
-	{
 		display_scores_aux(0, 10, -1, NULL);
-		return;
-	}
 
 	/* Hack -- Display the top fifteen scores */
 	else if (score_idx < 10)
-	{
 		display_scores_aux(0, 15, score_idx, NULL);
-	}
 
 	/* Display the scores surrounding the player */
 	else
@@ -3507,10 +3414,6 @@ static void top_twenty(void)
 		display_scores_aux(0, 5, score_idx, NULL);
 		display_scores_aux(score_idx - 2, score_idx + 7, score_idx, NULL);
 	}
-
-
-	/* Success */
-	return;
 }
 
 
@@ -3519,19 +3422,11 @@ static void top_twenty(void)
  */
 static errr predict_score(void)
 {
+	ang_file *f;
+	char buf[1024];
+
 	int j;
-
 	high_score the_score;
-
-
-	/* No score file */
-	if (highscore_fd < 0)
-	{
-		msg_print("Score file unavailable.");
-		message_flush();
-		return (0);
-	}
-
 
 	/* Save the version */
 	strnfmt(the_score.what, sizeof(the_score.what), "%s", VERSION_STRING);
@@ -3567,8 +3462,16 @@ static errr predict_score(void)
 	my_strcpy(the_score.how, "nobody (yet!)", sizeof(the_score.how));
 
 
+
+	/* Open the highscore file */
+	path_build(buf, sizeof(buf), ANGBAND_DIR_APEX, "scores.raw");
+	f = file_open(buf, MODE_READ, -1);
+	if (!f) return -1;
+
 	/* See where the entry would be placed */
-	j = highscore_where(&the_score);
+	j = highscore_where(f, &the_score);
+
+	file_close(f);
 
 
 	/* Hack -- Display the top fifteen scores */
@@ -3592,45 +3495,18 @@ static errr predict_score(void)
 
 void show_scores(void)
 {
-	char buf[1024];
+	screen_save();
 
-	/* Build the filename */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_APEX, "scores.raw");
-
-	/* Open the binary high score file, for reading */
-	highscore_fd = fd_open(buf, O_RDONLY);
-
-	/* Paranoia -- No score file */
-	if (highscore_fd < 0)
-	{
-		msg_print("Score file unavailable.");
-	}
+	/* Display the scores */
+	if (character_generated)
+		predict_score();
 	else
-	{
-		/* Save Screen */
-		screen_save();
+		display_scores_aux(0, MAX_HISCORES, -1, NULL);
 
-		/* Clear screen */
-		Term_clear();
+	screen_load();
 
-		/* Display the scores */
-		if (character_generated)
-			predict_score();
-		else
-			display_scores_aux(0, MAX_HISCORES, -1, NULL);
-
-		/* Shut the high score file */
-		(void)fd_close(highscore_fd);
-
-		/* Forget the high score fd */
-		highscore_fd = -1;
-
-		/* Load screen */
-		screen_load();
-
-		/* Hack - Flush it */
-		Term_fresh();
-	}
+	/* Hack - Flush it */
+	Term_fresh();
 }
 
 
@@ -3872,9 +3748,6 @@ static void close_game_aux(void)
  */
 void close_game(void)
 {
-	char buf[1024];
-
-
 	/* Handle stuff */
 	handle_stuff();
 
@@ -3893,18 +3766,6 @@ void close_game(void)
 	character_icky++;
 
 
-	/* Build the filename */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_APEX, "scores.raw");
-
-	/* Grab permissions */
-	safe_setuid_grab();
-
-	/* Open the high score file, for reading/writing */
-	highscore_fd = fd_open(buf, O_RDWR);
-
-	/* Drop permissions */
-	safe_setuid_drop();
-
 	/* Handle death */
 	if (p_ptr->is_dead)
 	{
@@ -3918,7 +3779,8 @@ void close_game(void)
 		/* Save the game */
 		do_cmd_save_game();
 
-		if(Term->mapped_flag) {
+		if (Term->mapped_flag)
+		{
 			/* Prompt for scores XXX XXX XXX */
 			prt("Press Return (or Escape).", 0, 40);
 
@@ -3926,13 +3788,6 @@ void close_game(void)
 			if (inkey() != ESCAPE) predict_score();
 		}
 	}
-
-
-	/* Shut the high score file */
-	fd_close(highscore_fd);
-
-	/* Forget the high score fd */
-	highscore_fd = -1;
 
 
 	/* Hack -- Decrease "icky" depth */
@@ -3989,21 +3844,21 @@ void exit_game_panic(void)
 
 
 
-static void write_html_escape_char(FILE *htm, char c)
+static void write_html_escape_char(ang_file *fp, char c)
 {
 	switch (c)
 	{
 		case '<':
-			fprintf(htm, "&lt;");
+			file_putf(fp, "&lt;");
 			break;
 		case '>':
-			fprintf(htm, "&gt;");
+			file_putf(fp, "&gt;");
 			break;
 		case '&':
-			fprintf(htm, "&amp;");
+			file_putf(fp, "&amp;");
 			break;
 		default:
-			fprintf(htm, "%c", c);
+			file_putf(fp, "%c", c);
 			break;
 	}
 }
@@ -4027,21 +3882,15 @@ void html_screenshot(cptr name, int mode)
 					: "[/COLOR][COLOR=\"#%02X%02X%02X\"]";
 	const char *close_color_fmt = mode ==  0 ? "</font>" : "[/COLOR]";
 
-	FILE *htm;
-
+	ang_file *fp;
 	char buf[1024];
 
-	/* Build the filename */
+
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, name);
-
-	/* File type is "TEXT" */
-	FILE_TYPE(FILE_TYPE_TEXT);
-
-	/* Append to the file */
-	htm = my_fopen(buf, "w");
+	fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 
 	/* Oops */
-	if (!htm)
+	if (!fp)
 	{
 		plog_fmt("Cannot write the '%s' file!", buf);
 		return;
@@ -4050,19 +3899,19 @@ void html_screenshot(cptr name, int mode)
 	/* Retrieve current screen size */
 	Term_get_size(&wid, &hgt);
 
-	if(mode == 0)
+	if (mode == 0)
 	{
-		fprintf(htm, "<!DOCTYPE html><html><head>\n");
-		fprintf(htm, "  <meta='generator' content='%s %s'>\n",
+		file_putf(fp, "<!DOCTYPE html><html><head>\n");
+		file_putf(fp, "  <meta='generator' content='%s %s'>\n",
 	            	VERSION_NAME, VERSION_STRING);
-		fprintf(htm, "  <title>%s</title>\n", name);
-		fprintf(htm, "</head>\n\n");
-		fprintf(htm, "<body style='color: #fff; background: #000;'>\n");
-		fprintf(htm, "<pre>\n");
+		file_putf(fp, "  <title>%s</title>\n", name);
+		file_putf(fp, "</head>\n\n");
+		file_putf(fp, "<body style='color: #fff; background: #000;'>\n");
+		file_putf(fp, "<pre>\n");
 	}
 	else 
 	{
-		fprintf(htm, "[CODE][TT][BC=black][COLOR=white]\n");
+		file_putf(fp, "[CODE][TT][BC=black][COLOR=white]\n");
 	}
 
 	/* Dump the screen */
@@ -4079,20 +3928,22 @@ void html_screenshot(cptr name, int mode)
 				/* From the default white to another color */
 				if (oa == TERM_WHITE)
 				{
-					fprintf(htm, new_color_fmt,
+					file_putf(fp, new_color_fmt,
 					        angband_color_table[a][1],
 					        angband_color_table[a][2],
 					        angband_color_table[a][3]);
 				}
+
 				/* From another color to the default white */
 				else if (a == TERM_WHITE)
 				{
-					fprintf(htm, close_color_fmt);
+					file_putf(fp, close_color_fmt);
 				}
+
 				/* Change colors */
 				else
 				{
-					fprintf(htm, change_color_fmt,
+					file_putf(fp, change_color_fmt,
 					        angband_color_table[a][1],
 					        angband_color_table[a][2],
 					        angband_color_table[a][3]);
@@ -4103,28 +3954,28 @@ void html_screenshot(cptr name, int mode)
 			}
 
 			/* Write the character and escape special HTML characters */
-			if (mode == 0) write_html_escape_char(htm, c);
-			else fprintf(htm, "%c", c);
+			if (mode == 0) write_html_escape_char(fp, c);
+			else file_putf(fp, "%c", c);
 		}
 
 		/* End the row */
-		fprintf(htm, "\n");
+		file_putf(fp, "\n");
 	}
 
 	/* Close the last font-color tag if necessary */
-	if (oa != TERM_WHITE) fprintf(htm, close_color_fmt);
+	if (oa != TERM_WHITE) file_putf(fp, close_color_fmt);
 
 	if (mode == 0)
 	{
-		fprintf(htm, "</pre>\n");
-		fprintf(htm, "</body>\n");
-		fprintf(htm, "</html>\n");
+		file_putf(fp, "</pre>\n");
+		file_putf(fp, "</body>\n");
+		file_putf(fp, "</html>\n");
 	}
 	else 
 	{
-		fprintf(htm, "[/COLOR][/BC][/TT][/CODE]\n");
+		file_putf(fp, "[/COLOR][/BC][/TT][/CODE]\n");
 	}
 
 	/* Close it */
-	my_fclose(htm);
+	file_close(fp);
 }

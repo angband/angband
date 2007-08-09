@@ -132,8 +132,6 @@ extern byte feeling;
 extern s16b rating;
 extern bool good_item_flag;
 extern bool closing_flag;
-extern int player_uid;
-extern int player_egid;
 extern char savefile[1024];
 extern s16b macro__num;
 extern char **macro__pat;
@@ -238,7 +236,7 @@ extern void (*ang_sort_swap)(void *u, void *v, int a, int b);
 extern bool (*get_mon_num_hook)(int r_idx);
 extern bool (*get_obj_num_hook)(int k_idx);
 extern void (*object_info_out_flags)(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
-extern FILE *text_out_file;
+extern ang_file *text_out_file;
 extern void (*text_out_hook)(byte a, cptr str);
 extern int text_out_wrap;
 extern int text_out_indent;
@@ -722,25 +720,8 @@ extern bool confuse_dir(int *dp);
 
 
 /*
- * Hack -- conditional (or "bizarre") externs
+ * Hack -- conditional externs
  */
-
-#ifdef RISCOS
-/* main-ros.c */
-extern char *riscosify_name(cptr path);
-#endif /* RISCOS */
-
-#if defined(MAC_MPW) || defined(MACH_O_CARBON)
-/* main-mac.c, or its derivatives */
-extern u32b _fcreator;
-extern u32b _ftype;
-# if defined(MAC_MPW) && defined(CARBON)
-extern void convert_pathname(char *path);
-# endif
-# if defined(MACH_O_CARBON)
-extern void fsetfileinfo(cptr path, u32b fcreator, u32b ftype);
-# endif
-#endif
 
 #ifdef ALLOW_DEBUG
 /* wizard2.c */

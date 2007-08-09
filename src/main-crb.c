@@ -99,20 +99,6 @@
  * You might wish to disable some SET_UID features for various reasons:
  * to have user folder within the lib folder, savefile names etc.
  *
- * For the best compatibility with the Classic ports and my PEF Carbon
- * ports, my_fopen, fd_make and fd_open [in util.c] should call
- *   (void)fsetfileinfo(buf, _fcreator, _ftype);
- * when a file is successfully opened.  Or you'll see odd icons for some files
- * in the lib folder.  In order to do so, extern.h should contain these lines,
- *
- *   extern int fsetfileinfo(char *path, u32b fcreator, u32b ftype);
- *   extern u32b _fcreator;
- *   extern u32b _ftype;
- * And enable the four FILE_TYPE macros in h-config.h for defined(MACH_O_CARBON)
- *
- * All calls to my_fopen should be preceded by the appropriate FILE_TYPE(xxx),
- * especially those in file.c and save.c
- *
  * 2. Installation
  *
  * The "angband" binary must be arranged this way for it to work:
@@ -185,18 +171,7 @@
 
 
 
- /*
- * #define ANGBAND_CREATOR four letter code for your variant, if any.
- * or use the default one. (This is used to specify the standard program
- * for opening data files.
- *
- */
-
 /* Default creator signature */
-#ifndef ANGBAND_CREATOR
-# define ANGBAND_CREATOR 'A271'
-#endif
-
 #ifndef huge
 #define huge size_t
 #endif
@@ -249,13 +224,6 @@ static int graf_mode = 0;
 /* Tile dimensions of the current graphics mode */
 static int graf_height = 0;
 static int graf_width = 0;
-
-/*
- * Creator signature and file type - Didn't I say that I abhor file name
- * extentions?  Names and metadata are entirely different set of notions.
- */
-u32b _fcreator;
-u32b _ftype;
 
 typedef struct GlyphInfo GlyphInfo;
 
@@ -2489,7 +2457,7 @@ static bool select_savefile(bool all)
 	NavDialogOptions dialogOptions;
 	NavReplyRecord reply;
 	/* Used only when 'all' is true */
-	NavTypeList types = {ANGBAND_CREATOR, 1, 1, {'SAVE'}};
+	NavTypeList types = {'A271', 1, 1, {'SAVE'}};
 	NavTypeListHandle myTypeList;
 	AEDesc defaultLocation;
 
@@ -3797,11 +3765,6 @@ int main(void)
 	 * problems
 	 */
 	(void)Gestalt(gestaltSystemVersion, &mac_os_version);
-
-	/* Mark ourself as the file creator */
-	_fcreator = ANGBAND_CREATOR;
-	/* Default to saving a "text" file */
-	_ftype = 'TEXT';
 
 
 

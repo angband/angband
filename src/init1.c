@@ -1,4 +1,4 @@
-/* File: init1.c */
+#/* File: init1.c */
 
 /*
  * Copyright (c) 1997 Ben Harrison
@@ -528,7 +528,7 @@ static cptr c_info_flags[] =
 /*
  * Initialize an "*_info" array, by parsing an ascii "template" file
  */
-errr init_info_txt(FILE *fp, char *buf, header *head,
+errr init_info_txt(ang_file *fp, char *buf, header *head,
                    parse_info_txt_func parse_info_txt_line)
 {
 	errr err;
@@ -548,7 +548,7 @@ errr init_info_txt(FILE *fp, char *buf, header *head,
 	head->text_size = 0;
 
 	/* Parse */
-	while (0 == my_fgets(fp, buf, 1024))
+	while (file_getl(fp, buf, 1024))
 	{
 		/* Advance the line number */
 		error_line++;
@@ -4117,7 +4117,7 @@ for (iteration = 0; iteration < 3; iteration ++)
  * 
  * We parse the previous "template" file to allow us to include comments.
  */
-errr emit_info_txt(FILE *fp, FILE *template, char *buf, header *head,
+errr emit_info_txt(ang_file *fp, ang_file *template, char *buf, header *head,
    emit_info_txt_index_func emit_info_txt_index, emit_info_txt_always_func emit_info_txt_always)
 {
 	errr err;
@@ -4134,7 +4134,7 @@ errr emit_info_txt(FILE *fp, FILE *template, char *buf, header *head,
 	error_line = 0;
 
 	/* Parse */
-	while (0 == my_fgets(template, buf, 1024))
+	while (file_getl(template, buf, 1024))
 	{
 		/* Advance the line number */
 		error_line++;
@@ -4152,8 +4152,8 @@ errr emit_info_txt(FILE *fp, FILE *template, char *buf, header *head,
 			/* Skip comments created by emission process */
 			if ((buf[1] == '$') && (buf[2] == '#')) continue;
 
-			while (blanklines--) fprintf(fp,"\n");
-			fprintf(fp,"%s\n",buf);
+			while (blanklines--) file_put(fp, "\n");
+			file_putf(fp, "%s\n", buf);
 			comment = TRUE;
 			blanklines = 0;
 			continue;
@@ -4165,11 +4165,11 @@ errr emit_info_txt(FILE *fp, FILE *template, char *buf, header *head,
 		/* Hack -- Process 'V' for "Version" */
 		if (buf[0] == 'V')
 		{
-			if (comment) fprintf(fp,"\n");
+			if (comment) file_putf(fp,"\n");
 			comment = FALSE;
 
 			/* Output the version number */
-			fprintf(fp, "\nV:%d.%d.%d\n\n", head->v_major, head->v_minor, head->v_patch);
+			file_putf(fp, "\nV:%d.%d.%d\n\n", head->v_major, head->v_minor, head->v_patch);
 			
 			/* Okay to proceed */
 			okay = TRUE;
@@ -4194,13 +4194,13 @@ errr emit_info_txt(FILE *fp, FILE *template, char *buf, header *head,
 			/* Verify information */
 			if (idx >= head->info_num) return (PARSE_ERROR_TOO_MANY_ENTRIES);
 			
-			if (comment) fprintf(fp,"\n");
+			if (comment) file_putf(fp,"\n");
 			comment = FALSE;
 			blanklines = 0;
 
 			while (error_idx < idx)
 			{
-				fprintf(fp,"### %d - Unused ###\n\n",error_idx++);	
+				file_putf(fp,"### %d - Unused ###\n\n",error_idx++);	
 			}
 
 			if ((err = (emit_info_txt_index(fp, head, idx))) != 0)
@@ -4225,7 +4225,7 @@ errr emit_info_txt(FILE *fp, FILE *template, char *buf, header *head,
 /*
  * Emit one textual string based on a flag.
  */
-static errr emit_flags_32(FILE *fp, cptr intro_text, u32b flags, cptr names[])
+static errr emit_flags_32(ang_file *fp, cptr intro_text, u32b flags, cptr names[])
 {
 	int i;
 	bool intro = TRUE;
@@ -4239,7 +4239,7 @@ static errr emit_flags_32(FILE *fp, cptr intro_text, u32b flags, cptr names[])
 			/* Newline needed */
 			if (len + strlen(names[i]) > 75)
 			{
-					fprintf(fp,"\n");
+					file_putf(fp,"\n");
 					len = 0;
 					intro = TRUE;
 			}
@@ -4247,24 +4247,24 @@ static errr emit_flags_32(FILE *fp, cptr intro_text, u32b flags, cptr names[])
 			/* Introduction needed */
 			if (intro)
 			{
-				fprintf(fp, intro_text);
+				file_putf(fp, intro_text);
 				len += strlen(intro_text);
 				intro = FALSE;
 			}
 			else
 			{
-				fprintf(fp," ");
+				file_putf(fp," ");
 				len++;
 			}
 			
 			/* Output flag */
-			fprintf(fp, "%s |", names[i]);
+			file_putf(fp, "%s |", names[i]);
 			len += strlen(names[i]) + 2;
 		}
 	}
 
 	/* Something output */
-	if (!intro) fprintf(fp, "\n");
+	if (!intro) file_putf(fp, "\n");
 
 	return (0);
 }
@@ -4276,7 +4276,7 @@ static errr emit_flags_32(FILE *fp, cptr intro_text, u32b flags, cptr names[])
  * TODO: Consider merging with text_out_to_file in util.c,
  * where most of this came from.
  */
-static errr emit_desc(FILE *fp, cptr intro_text, cptr text)
+static errr emit_desc(ang_file *fp, cptr intro_text, cptr text)
 {	
 	/* Current position on the line */
 	int pos = 0;
@@ -4298,7 +4298,7 @@ static errr emit_desc(FILE *fp, cptr intro_text, cptr text)
 		/* If we are at the start of the line... */
 		if (pos == 0)
 		{
-			fprintf(fp, intro_text);
+			file_putf(fp, intro_text);
 		}
 
 		/* Find length of line up to next newline or end-of-string */
@@ -4396,25 +4396,25 @@ static char color_attr_to_char[] =
 /*
  * Emit the "r_info" array into an ascii "template" file
  */
-errr emit_r_info_index(FILE *fp, header *head, int i)
+errr emit_r_info_index(ang_file *fp, header *head, int i)
 {
 	int n;
 
 	/* Current entry */
-	monster_race *r_ptr = (monster_race*)head->info_ptr + i;
+	monster_race *r_ptr = (monster_race *)head->info_ptr + i;
 	
 	
 	/* Output 'N' for "New/Number/Name" */
-	fprintf(fp, "N:%d:%s\n", i,head->name_ptr + r_ptr->name);
+	file_putf(fp, "N:%d:%s\n", i,head->name_ptr + r_ptr->name);
 
 	/* Output 'G' for "Graphics" (one line only) */
-	fprintf(fp, "G:%c:%c\n",r_ptr->d_char,color_attr_to_char[r_ptr->d_attr]);
+	file_putf(fp, "G:%c:%c\n",r_ptr->d_char,color_attr_to_char[r_ptr->d_attr]);
 
 	/* Output 'I' for "Info" (one line only) */
-	fprintf(fp, "I:%d:%d:%d:%d:%d\n",r_ptr->speed,r_ptr->avg_hp,r_ptr->aaf,r_ptr->ac,r_ptr->sleep);
+	file_putf(fp, "I:%d:%d:%d:%d:%d\n",r_ptr->speed,r_ptr->avg_hp,r_ptr->aaf,r_ptr->ac,r_ptr->sleep);
 
 	/* Output 'W' for "More Info" (one line only) */
-	fprintf(fp,"W:%d:%d:%d:%d\n",r_ptr->level, r_ptr->rarity, 0, r_ptr->mexp);
+	file_putf(fp, "W:%d:%d:%d:%d\n",r_ptr->level, r_ptr->rarity, 0, r_ptr->mexp);
 
 	/* Output 'B' for "Blows" (up to four lines) */
 	for (n = 0; n < 4; n++)
@@ -4423,22 +4423,22 @@ errr emit_r_info_index(FILE *fp, header *head, int i)
 		if (!r_ptr->blow[n].method) break;
 
 		/* Output blow method */		
-		fprintf(fp, "B:%s", r_info_blow_method[r_ptr->blow[n].method]);
+		file_putf(fp, "B:%s", r_info_blow_method[r_ptr->blow[n].method]);
 		
 		/* Output blow effect */
 		if (r_ptr->blow[n].effect)
 		{
-			fprintf(fp, ":%s", r_info_blow_effect[r_ptr->blow[n].effect]);
+			file_putf(fp, ":%s", r_info_blow_effect[r_ptr->blow[n].effect]);
 			
 			/* Output blow damage if required */
 			if ((r_ptr->blow[n].d_dice) && (r_ptr->blow[n].d_side))
 			{
-				fprintf(fp, ":%dd%d", r_ptr->blow[n].d_dice, r_ptr->blow[n].d_side);
+				file_putf(fp, ":%dd%d", r_ptr->blow[n].d_dice, r_ptr->blow[n].d_side);
 			}
 		}
 		
 		/* End line */
-		fprintf(fp, "\n");
+		file_putf(fp, "\n");
 	}
 
 	/* Output 'F' for "Flags" */
@@ -4457,12 +4457,12 @@ errr emit_r_info_index(FILE *fp, header *head, int i)
 	 * 
 	 * XXX Need to check for rounding errors here.
 	 */
-	if (r_ptr->freq_innate) fprintf(fp, "S:1_IN_%d\n",100/r_ptr->freq_innate);
+	if (r_ptr->freq_innate) file_putf(fp, "S:1_IN_%d\n",100/r_ptr->freq_innate);
 
 	/* Output 'D' for "Description" */
 	emit_desc(fp, "D:", head->text_ptr + r_ptr->text);
 
-	fprintf(fp,"\n");
+	file_putf(fp,"\n");
 
 	/* Success */
 	return (0);	

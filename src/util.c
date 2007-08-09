@@ -2297,7 +2297,7 @@ void text_out_to_file(byte a, cptr str)
 			/* Output the indent */
 			for (i = 0; i < text_out_indent; i++)
 			{
-				fputc(' ', text_out_file);
+				file_writec(text_out_file, ' ');
 				pos++;
 			}
 		}
@@ -2328,7 +2328,7 @@ void text_out_to_file(byte a, cptr str)
 			else
 			{
 				/* Begin a new line */
-				fputc('\n', text_out_file);
+				file_writec(text_out_file, '\n');
 
 				/* Reset */
 				pos = 0;
@@ -2352,7 +2352,7 @@ void text_out_to_file(byte a, cptr str)
 			ch = (isprint((unsigned char) s[n]) ? s[n] : ' ');
 
 			/* Write out the character */
-			fputc(ch, text_out_file);
+			file_writec(text_out_file, ch);
 
 			/* Increment */
 			pos++;
@@ -2368,7 +2368,7 @@ void text_out_to_file(byte a, cptr str)
 		if (*s == '\n') s++;
 
 		/* Begin a new line */
-		fputc('\n', text_out_file);
+		file_writec(text_out_file, '\n');
 
 		/* Reset */
 		pos = 0;

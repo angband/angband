@@ -191,7 +191,7 @@
  * or "/usr/games/lib/angband/", or "/pkg/angband/lib".
  */
 #ifndef DEFAULT_PATH
-# define DEFAULT_PATH "./lib/"
+# define DEFAULT_PATH "." PATH_SEP "lib" PATH_SEP
 #endif /* DEFAULT_PATH */
 
 

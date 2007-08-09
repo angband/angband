@@ -1913,7 +1913,7 @@ void play_game(bool new_game)
 	}
         
 	/* Check if we're overwriting a savefile */
-	while (!reusing_savefile && my_fexists(savefile))
+	while (!reusing_savefile && file_exists(savefile))
 	{
 		/* Ask for confirmation */
 		bool overwrite = get_check("Continuing will overwrite an existing savefile.  Overwrite? ");

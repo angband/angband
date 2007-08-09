@@ -1143,11 +1143,8 @@ static void BringToTop()
  */
 static void validate_file(cptr s)
 {
-	int fd = fd_open(s, O_WRONLY);
-	
-	if (fd >= 0) fd_close(fd);
-	
-	if (fd < 0) quit_fmt("Cannot find required file:\n%s", s);
+	if (!file_exists(s))
+		quit_fmt("Cannot find required file:\n%s", s);
 }
 
 /*
@@ -1894,7 +1891,7 @@ static void ResizeWin(term_window* win, int w, int h)
 static errr load_prefs(void)
 {
 	char buf[1024];
-	FILE *fff;
+	ang_file *fff;
 	term_window *win;
 	int i;
 	
@@ -1932,19 +1929,19 @@ static errr load_prefs(void)
 	}
 	
 	/* Build the path */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_USER , "sdlinit.txt");
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "sdlinit.txt");
 	
 	/* XXXXX */
 	ANGBAND_DIR_USER_SDL = string_make(buf);
 	
 	/* Open the file */
-	fff = my_fopen(buf, "r");
+	fff = file_open(buf, MODE_READ, -1);
 	
 	/* Check it */
 	if (!fff) return (1);
 	
 	/* Process the file */
-	while (0 == my_fgets(fff, buf, sizeof(buf)))
+	while (file_getl(fff, buf, sizeof(buf)))
 	{
 		char *s;
 		if (!buf[0]) continue;
@@ -2013,43 +2010,44 @@ static errr load_prefs(void)
 	if (screen_w < 640) screen_w = 640;
 	if (screen_h < 480) screen_h = 480;
 	
-	my_fclose(fff);
+	file_close(fff);
 	
 	return (0);
 }
 
 static errr save_prefs()
 {
-	FILE *fff;
+	ang_file *fff;
 	int i;
-	
+
 	/* Open the file */
-	fff = my_fopen(ANGBAND_DIR_USER_SDL, "w");
-	
+	fff = file_open(ANGBAND_DIR_USER_SDL, MODE_WRITE, FTYPE_TEXT);
+
 	/* Check it */
 	if (!fff) return (1);
+
+	file_putf(fff, "Resolution = %dx%d\n", screen_w, screen_h);
+	file_putf(fff, "Fullscreen = %d\n", fullscreen);
+	file_putf(fff, "Graphics = %d\n", use_graphics);
+	file_putf(fff, "Bigtile = %d\n\n", use_bigtile);
 	
-	fprintf(fff, "Resolution = %dx%d\n", screen_w, screen_h);
-	fprintf(fff, "Fullscreen = %d\n", fullscreen);
-	fprintf(fff, "Graphics = %d\n", use_graphics);
-	fprintf(fff, "Bigtile = %d\n", use_bigtile);
 	for (i = 0; i < ANGBAND_TERM_MAX; i++)
 	{
 		term_window *win = &windows[i];
 		
-		fprintf(fff, "\nWindow = %d\n", i);
-		fprintf(fff, "Visible = %d\n", (int)win->visible);
-		fprintf(fff, "Left = %d\n", win->left); 
-		fprintf(fff, "Top = %d\n", win->top);
-		fprintf(fff, "Width = %d\n", win->width);
-		fprintf(fff, "Height = %d\n", win->height);
+		file_putf(fff, "Window = %d\n", i);
+		file_putf(fff, "Visible = %d\n", (int)win->visible);
+		file_putf(fff, "Left = %d\n", win->left);
+		file_putf(fff, "Top = %d\n", win->top);
+		file_putf(fff, "Width = %d\n", win->width);
+		file_putf(fff, "Height = %d\n", win->height);
 		
-		fprintf(fff, "Keys = %d\n", win->keys);
+		file_putf(fff, "Keys = %d\n", win->keys);
 		
-		fprintf(fff, "Font = %s\n", win->req_font);
+		file_putf(fff, "Font = %s\n\n", win->req_font);
 	}	
 	
-	my_fclose(fff);
+	file_close(fff);
 	
 	/* Done */
 	return (0);
@@ -3322,10 +3320,8 @@ static void init_gfx(void)
 		if (GfxDesc[i].gfxfile)
 		{
 			path_build(path, sizeof(path), ANGBAND_DIR_XTRA_GRAF, GfxDesc[i].gfxfile);
-			fd = fd_open(path, O_WRONLY);
-			
-			if (fd >= 0) fd_close(fd);
-			else
+
+			if (!file_exists(path))
 			{
 				plog_fmt("Can't find file %s - graphics mode '%s' will be disabled.", path, GfxDesc[i].name);
 				GfxDesc[i].avail = FALSE;

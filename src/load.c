@@ -43,7 +43,7 @@
 /*
  * Local "savefile" pointer
  */
-static FILE	*fff;
+static ang_file *fff;
 
 /*
  * Hack -- old "encryption" byte
@@ -204,7 +204,8 @@ static byte sf_get(void)
 	byte c, v;
 
 	/* Get a character, decode the value */
-	c = getc(fff) & 0xFF;
+	file_readc(fff, &c);
+	c &= 0xFF;
 	v = c ^ xor_byte;
 	xor_byte = c;
 
@@ -2209,13 +2210,9 @@ static errr rd_savefile(void)
 {
 	errr err;
 
-	/* Grab permissions */
+	/* Open savefile */
 	safe_setuid_grab();
-
-	/* The savefile is a binary file */
-	fff = my_fopen(savefile, "rb");
-
-	/* Drop permissions */
+	fff = file_open(savefile, MODE_READ, -1);
 	safe_setuid_drop();
 
 	/* Paranoia */
@@ -2224,11 +2221,8 @@ static errr rd_savefile(void)
 	/* Call the sub-function */
 	err = rd_savefile_new_aux();
 
-	/* Check for errors */
-	if (ferror(fff)) err = -1;
-
 	/* Close the file */
-	my_fclose(fff);
+	file_close(fff);
 
 	/* Result */
 	return (err);
@@ -2251,13 +2245,10 @@ static errr rd_savefile(void)
  */
 bool load_player(bool *character_loaded, bool *reusing_savefile)
 {
-	int fd = -1;
+	ang_file *fh;
+	cptr what = "generic";
 
 	errr err = 0;
-
-	byte vvv[4];
-
-	cptr what = "generic";
 
 
 	/* Paranoia */
@@ -2270,17 +2261,8 @@ bool load_player(bool *character_loaded, bool *reusing_savefile)
 	/* Allow empty savefile name */
 	if (!savefile[0]) return (TRUE);
 
-	/* Grab permissions */
-	safe_setuid_grab();
-
-	/* Open the savefile */
-	fd = fd_open(savefile, O_RDONLY);
-
-	/* Drop permissions */
-	safe_setuid_drop();
-
 	/* No file */
-	if (fd < 0)
+	if (!file_exists(savefile))
 	{
 		/* Give a message */
 		msg_print("Savefile does not exist.");
@@ -2290,51 +2272,36 @@ bool load_player(bool *character_loaded, bool *reusing_savefile)
 		return (TRUE);
 	}
 
-	/* Close the file */
-	fd_close(fd);
+	/* Open savefile */
+	safe_setuid_grab();
+	fh = file_open(savefile, MODE_READ, -1);
+	safe_setuid_drop();
 
-
-	/* Okay */
-	if (!err)
+	/* No file */
+	if (!fh)
 	{
-		/* Grab permissions */
-		safe_setuid_grab();
-
-		/* Open the savefile */
-		fd = fd_open(savefile, O_RDONLY);
-
-		/* Drop permissions */
-		safe_setuid_drop();
-
-		/* No file */
-		if (fd < 0) err = -1;
-
-		/* Message (below) */
-		if (err) what = "Cannot open savefile";
-	}
-
-	/* Process file */
-	if (!err)
-	{
-		/* Read the first four bytes */
-		if (fd_read(fd, (char*)(vvv), sizeof(vvv))) err = -1;
-
-		/* What */
-		if (err) what = "Cannot read savefile";
-
-		/* Close the file */
-		fd_close(fd);
+		err = -1;
+		what = "Cannot open savefile";
 	}
 
 	/* Process file */
 	if (!err)
 	{
 		/* Extract version */
-		sf_major = vvv[0];
-		sf_minor = vvv[1];
-		sf_patch = vvv[2];
-		sf_extra = vvv[3];
+		err = file_readc(fh, &sf_major) ? 0 : -1;
+		if (!err) err = file_readc(fh, &sf_minor) ? 0 : -1;
+		if (!err) err = file_readc(fh, &sf_patch) ? 0 : -1;
+		if (!err) err = file_readc(fh, &sf_extra) ? 0 : -1;
 
+		if (err)
+			what = "Cannot read savefile";
+
+		file_close(fh);
+	}
+
+	/* Process file */
+	if (!err)
+	{
 		/* Clear screen */
 		Term_clear();
 

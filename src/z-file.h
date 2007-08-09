@@ -1,69 +1,63 @@
 #ifndef INCLUDED_Z_FILE_H
 #define INCLUDED_Z_FILE_H
 
-/*** Various system-specific fixes ***/
+#include "h-basic.h"
 
-/*
- * Use POSIX file control where we can, otherwise help out other platforms
- */
-#ifdef HAVE_FCNTL_H
-# include <fcntl.h>
-#else
-# define O_RDONLY   0
-# define O_WRONLY   1
-# define O_RDWR     2
-#endif
+extern int player_uid;
+extern int player_egid;
 
+void safe_setuid_drop(void);
+void safe_setuid_grab(void);
 
-/*
- * Several systems have no "O_BINARY" flag
- */
-#ifndef O_BINARY
-# define O_BINARY 0
-#endif /* O_BINARY */
+size_t path_build(char *buf, size_t len, const char *base, const char *leaf);
 
+/* File code */
+typedef struct ang_file ang_file;
 
-/*
- * Hack -- force definitions -- see fd_lock()  XXX
- */
-#ifndef F_UNLCK
-# define F_UNLCK    0
-#endif
-#ifndef F_RDLCK
-# define F_RDLCK    1
-#endif
-#ifndef F_WRLCK
-# define F_WRLCK    2
-#endif
+typedef enum
+{
+	MODE_WRITE,
+	MODE_READ,
+	MODE_APPEND,
+} file_mode;
 
+typedef enum
+{
+	FTYPE_TEXT = 1, /* -> FILE_TYPE_TEXT */
+	FTYPE_SAVE,
+	FTYPE_RAW,		/* -> FILE_TYPE_DATA */
+	FTYPE_HTML
+} file_type;
 
-/*** Functions provided in the package ***/
+bool file_exists(const char *fname);
+bool file_delete(const char *fname);
+bool file_move(const char *fname, const char *newname);
+bool file_newer(const char *first, const char *second);
 
-extern errr path_parse(char *buf, size_t max, cptr file);
-extern errr path_build(char *buf, size_t max, cptr path, cptr file);
-extern FILE *my_fopen(cptr file, cptr mode);
-extern FILE *my_fopen_temp(char *buf, size_t max);
-extern errr my_fclose(FILE *fff);
-extern errr my_fgets(FILE *fff, char *buf, size_t n);
-extern errr my_fputs(FILE *fff, cptr buf, size_t n);
-extern bool my_fexists(const char *fname);
-extern errr fd_kill(cptr file);
-extern errr fd_move(cptr file, cptr what);
-extern int fd_make(cptr file, int mode);
-extern int fd_open(cptr file, int flags);
-extern errr fd_lock(int fd, int what);
-extern errr fd_seek(int fd, long n);
-extern errr fd_read(int fd, char *buf, size_t n);
-extern errr fd_write(int fd, cptr buf, size_t n);
-extern errr fd_close(int fd);
-extern errr check_modification_date(int fd, cptr template_file);
+ang_file *file_open(const char *buf, file_mode mode, file_type ftype);
+ang_file *file_temp();
+bool file_close(ang_file *f);
+
+void file_lock(ang_file *f);
+void file_unlock(ang_file *f);
+
+bool file_getl(ang_file *f, char *buf, size_t n);
+bool file_put(ang_file *f, const char *buf);
+bool file_putf(ang_file *f, const char *fmt, ...);
+
+bool file_seek(ang_file *f, u32b pos);
+size_t file_read(ang_file *f, char *buf, size_t n);
+bool file_write(ang_file *f, const char *buf, size_t n);
+bool file_readc(ang_file *f, byte *b);
+bool file_writec(ang_file *f, byte b);
 
 
+
+/* Directory code */
 typedef struct ang_dir ang_dir;
 
 ang_dir *my_dopen(const char *dirname);
 bool my_dread(ang_dir *dir, char *fname, size_t len);
 void my_dclose(ang_dir *dir);
-
 
 #endif

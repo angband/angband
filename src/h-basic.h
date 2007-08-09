@@ -49,10 +49,11 @@
 
 
 /*
- * Everyone except RISC OS has fcntl.h
+ * Everyone except RISC OS has fcntl.h and sys/stat.h
  */
 #ifndef RISCOS
 # define HAVE_FCNTL_H
+# define HAVE_STAT
 #endif
 
 #endif /* HAVE_CONFIG_H */
@@ -105,25 +106,6 @@
 # undef PATH_SEP
 # define PATH_SEP "\\"
 #endif
-
-
-/*
- * Mac support
- */
-#ifdef MACH_O_CARBON
-
-/* OS X uses filetypes when creating files. */
-# define FILE_TYPE_TEXT 'TEXT'
-# define FILE_TYPE_DATA 'DATA'
-# define FILE_TYPE_SAVE 'SAVE'
-# define FILE_TYPE(X) (_ftype = (X))
-
-#else
-
-# define FILE_TYPE(X) ((void)0)
-
-#endif
-
 
 
 /*** Include the library header files ***/

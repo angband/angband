@@ -738,32 +738,6 @@ static char *analyze_font(char *path, int *wp, int *hp)
 
 
 /*
- * Check for existance of a file
- */
-static bool check_file(cptr s)
-{
-	char path[1024];
-
-	DWORD attrib;
-
-	/* Copy it */
-	my_strcpy(path, s, sizeof(path));
-
-	/* Examine */
-	attrib = GetFileAttributes(path);
-
-	/* Require valid filename */
-	if (attrib == INVALID_FILE_NAME) return (FALSE);
-
-	/* Prohibit directory */
-	if (attrib & FILE_ATTRIBUTE_DIRECTORY) return (FALSE);
-
-	/* Success */
-	return (TRUE);
-}
-
-
-/*
  * Check for existance of a directory
  */
 static bool check_dir(cptr s)
@@ -803,10 +777,8 @@ static bool check_dir(cptr s)
 static void validate_file(cptr s)
 {
 	/* Verify or fail */
-	if (!check_file(s))
-	{
+	if (!file_exists(s))
 		quit_fmt("Cannot find required file:\n%s", s);
-	}
 }
 
 
@@ -1127,7 +1099,7 @@ static void load_sound_prefs(void)
 			path_build(wav_path, sizeof(wav_path), ANGBAND_DIR_XTRA_SOUND, zz[j]);
 
 			/* Save the sound filename, if it exists */
-			if (check_file(wav_path))
+			if (file_exists(wav_path))
 				sound_file[i][j] = string_make(zz[j]);
 		}
 	}
@@ -1501,7 +1473,7 @@ static errr term_force_font(term_data *td, cptr path)
 	if (!suffix(base, ".FON")) return (1);
 
 	/* Verify file */
-	if (!check_file(buf)) return (1);
+	if (!file_exists(buf)) return (1);
 
 	/* Load the new font */
 	if (!AddFontResource(buf)) return (1);
@@ -3027,7 +2999,7 @@ static char screensaver_inkey_hack(int flush_first)
  */
 static void start_screensaver(void)
 {
-	bool file_exists;
+	bool file_exist;
 
 #ifdef ALLOW_BORG
 	int i, j;
@@ -3040,10 +3012,10 @@ static void start_screensaver(void)
 	process_player_name(TRUE);
 
 	/* Does the savefile already exist? */
-	file_exists = check_file(savefile);
+	file_exist = file_exists(savefile);
 
 	/* Don't try to load a non-existant savefile */
-	if (!file_exists) savefile[0] = '\0';
+	if (!file_exist) savefile[0] = '\0';
 
 	/* Game in progress */
 	game_in_progress = TRUE;
@@ -3126,7 +3098,7 @@ static void start_screensaver(void)
 #endif /* ALLOW_BORG */
 
 	/* Play game */
-	play_game((bool)!file_exists);
+	play_game((bool)!file_exist);
 }
 
 #endif /* USE_SAVER */
@@ -3141,7 +3113,7 @@ static void display_help(cptr filename)
 
 	path_build(tmp, sizeof(tmp), ANGBAND_DIR_XTRA_HELP, filename);
 
-	if (check_file(tmp))
+	if (file_exists(tmp))
 	{
 		ShellExecute(data[0].w, "open", tmp, NULL, NULL, SW_SHOWNORMAL);
 	}

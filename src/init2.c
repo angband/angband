@@ -74,7 +74,6 @@ void init_file_paths(const char *path)
 {
 #ifdef PRIVATE_USER_PATH
 	char buf[1024];
-	char dirpath[1024];
 #endif /* PRIVATE_USER_PATH */
 
 	/*** Free everything ***/
@@ -112,11 +111,8 @@ void init_file_paths(const char *path)
 
 #ifdef PRIVATE_USER_PATH
 
-	/* Get an absolute path from the filename, */
-	path_parse(dirpath, sizeof(dirpath), PRIVATE_USER_PATH);
-
 	/* Build the path to the user specific directory */
-	path_build(buf, sizeof(buf), dirpath, VERSION_NAME);
+	path_build(buf, sizeof(buf), PRIVATE_USER_PATH, VERSION_NAME);
 	ANGBAND_DIR_USER = string_make(buf);
 
 #else /* PRIVATE_USER_PATH */
@@ -171,7 +167,7 @@ void create_user_dirs(void)
 
 
 	/* Get an absolute path from the filename */
-	path_parse(dirpath, sizeof(dirpath), PRIVATE_USER_PATH);
+	path_build(dirpath, sizeof(dirpath), PRIVATE_USER_PATH, "");
 
 	/* Create the ~/.angband/ directory */
 	mkdir(dirpath, 0700);
@@ -276,13 +272,15 @@ header s_head;
 /*
  * Initialize a "*_info" array, by parsing a binary "image" file
  */
-static errr init_info_raw(int fd, header *head)
+static bool init_info_raw(const char *fname, header *head)
 {
 	header test;
+	ang_file *fh = file_open(fname, MODE_READ, -1);
 
+	if (!fh) return FALSE;
 
 	/* Read and verify the header */
-	if (fd_read(fd, (char*)(&test), sizeof(header)) ||
+	if (!file_read(fh, (char *)(&test), sizeof(header)) ||
 	    (test.v_major != head->v_major) ||
 	    (test.v_minor != head->v_minor) ||
 	    (test.v_patch != head->v_patch) ||
@@ -292,8 +290,8 @@ static errr init_info_raw(int fd, header *head)
 	    (test.head_size != head->head_size) ||
 	    (test.info_size != head->info_size))
 	{
-		/* Error */
-		return (-1);
+		file_close(fh);
+		return FALSE;
 	}
 
 
@@ -303,24 +301,24 @@ static errr init_info_raw(int fd, header *head)
 
 	/* Allocate and read the "*_info" array */
 	head->info_ptr = C_RNEW(head->info_size, char);
-	fd_read(fd, head->info_ptr, head->info_size);
+	file_read(fh, head->info_ptr, head->info_size);
 
 	if (head->name_size)
 	{
 		/* Allocate and read the "*_name" array */
 		head->name_ptr = C_RNEW(head->name_size, char);
-		fd_read(fd, head->name_ptr, head->name_size);
+		file_read(fh, head->name_ptr, head->name_size);
 	}
 
 	if (head->text_size)
 	{
 		/* Allocate and read the "*_text" array */
 		head->text_ptr = C_RNEW(head->text_size, char);
-		fd_read(fd, head->text_ptr, head->text_size);
+		file_read(fh, head->text_ptr, head->text_size);
 	}
 
-	/* Success */
-	return (0);
+	file_close(fh);
+	return TRUE;
 }
 
 
@@ -385,241 +383,142 @@ static void display_parse_error(cptr filename, errr err, cptr buf)
  */
 static errr init_info(cptr filename, header *head)
 {
-	int fd;
+	ang_file *fh;
 
 	errr err = 1;
 
-	FILE *fp;
+	char raw_file[1024];
+	char txt_file[1024];
 
-#ifdef ALLOW_TEMPLATES_OUTPUT
-	FILE *fpout;
-#endif /* ALLOW_TEMPLATES_OUTPUT */
-
-	/* General buffer */
 	char buf[1024];
+
+
+	/* Build the filenames */
+	path_build(raw_file, sizeof(raw_file), ANGBAND_DIR_DATA, format("%s.raw", filename));
+	path_build(txt_file, sizeof(txt_file), ANGBAND_DIR_EDIT, format("%s.txt", filename));
 
 
 #ifdef ALLOW_TEMPLATES
 
-	/*** Load the binary image file ***/
-
-	/* Build the filename */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_DATA, format("%s.raw", filename));
-
-	/* Attempt to open the "raw" file */
-	fd = fd_open(buf, O_RDONLY);
-
-	/* Process existing "raw" file */
-	if (fd >= 0)
+	/* If the raw file's more recent than the text file, load it */
+	if (file_newer(raw_file, txt_file) &&
+	    init_info_raw(raw_file, head))
 	{
-#ifdef CHECK_MODIFICATION_TIME
-
-		err = check_modification_date(fd, format("%s.txt", filename));
-
-#endif /* CHECK_MODIFICATION_TIME */
-
-		/* Attempt to parse the "raw" file */
-		if (!err)
-			err = init_info_raw(fd, head);
-
-		/* Close it */
-		fd_close(fd);
+		return 0;
 	}
 
-	/* Do we have to parse the *.txt file? */
-	if (err)
+
+	/*** Make the fake arrays ***/
+
+	/* Allocate the "*_info" array */
+	head->info_ptr = C_ZNEW(head->info_size, char);
+
+	/* MegaHack -- make "fake" arrays */
+	if (z_info)
 	{
-		/*** Make the fake arrays ***/
-
-		/* Allocate the "*_info" array */
-		head->info_ptr = C_ZNEW(head->info_size, char);
-
-		/* MegaHack -- make "fake" arrays */
-		if (z_info)
-		{
-			head->name_ptr = C_ZNEW(z_info->fake_name_size, char);
-			head->text_ptr = C_ZNEW(z_info->fake_text_size, char);
-		}
+		head->name_ptr = C_ZNEW(z_info->fake_name_size, char);
+		head->text_ptr = C_ZNEW(z_info->fake_text_size, char);
+	}
 
 
-		/*** Load the ascii template file ***/
+	/*** Load the ascii template file ***/
 
-		/* Build the filename */
-		path_build(buf, sizeof(buf), ANGBAND_DIR_EDIT, format("%s.txt", filename));
+	/* Open the file */
+	fh = file_open(txt_file, MODE_READ, -1);
+	if (!fh) quit(format("Cannot open '%s.txt' file.", filename));
 
-		/* Open the file */
-		fp = my_fopen(buf, "r");
+	/* Parse the file */
+	err = init_info_txt(fh, buf, head, head->parse_info_txt);
 
-		/* Parse it */
-		if (!fp) quit(format("Cannot open '%s.txt' file.", filename));
+	file_close(fh);
 
-		/* Parse the file */
-		err = init_info_txt(fp, buf, head, head->parse_info_txt);
+	/* Errors */
+	if (err) display_parse_error(filename, err, buf);
 
-		/* Close it */
-		my_fclose(fp);
-
-		/* Errors */
-		if (err) display_parse_error(filename, err, buf);
-
-		/* Post processing the data */
-		if (head->eval_info_power) eval_info(head->eval_info_power, head);
+	/* Post processing the data */
+	if (head->eval_info_power) eval_info(head->eval_info_power, head);
 
 #ifdef ALLOW_TEMPLATES_OUTPUT
 
-		/*** Output a 'parsable' ascii template file ***/
-		if ((head->emit_info_txt_index) || (head->emit_info_txt_always))
-		{
-			/* Build the filename */
-			path_build(buf, 1024, ANGBAND_DIR_EDIT, format("%s.txt", filename));
+	/*** Output a 'parsable' ascii template file ***/
+	if ((head->emit_info_txt_index) || (head->emit_info_txt_always))
+	{
+		char user_file[1024];
+		ang_file *fout;
 
-			/* Open the file */
-			fp = my_fopen(buf, "r");
+		/* Open the original */
+		fh = file_open(txt_file, MODE_READ, -1);
+		if (!fh) quit(format("Cannot open '%s.txt' file for re-parsing.", filename));
 
-			/* Parse it */
-			if (!fp) quit(format("Cannot open '%s.txt' file for re-parsing.", filename));
+		/* Open for output */
+		path_build(user_file, 1024, ANGBAND_DIR_USER, format("%s.txt", filename));
+		fout = file_open(user_file, MODE_WRITE, FTYPE_TEXT);
+		if (!fout) quit(format("Cannot open '%s.txt' file for output.", filename));
 
-			/* Build the filename */
-			path_build(buf, 1024, ANGBAND_DIR_USER, format("%s.txt", filename));
+		/* Parse and output the files */
+		err = emit_info_txt(fout, fh, user_file, head, head->emit_info_txt_index, head->emit_info_txt_always);
 
-			/* Open the file */
-			fpout = my_fopen(buf, "w");
-
-			/* Parse it */
-			if (!fpout) quit(format("Cannot open '%s.txt' file for output.", filename));
-
-			/* Parse and output the files */
-			err = emit_info_txt(fpout, fp, buf, head, head->emit_info_txt_index, head->emit_info_txt_always);
-
-			/* Close both files */
-			my_fclose(fpout);
-			my_fclose(fp);
-		}
+		/* Close both files */
+		file_close(fh);
+		file_close(fout);
+	}
 
 #endif
 
 
-		/*** Dump the binary image file ***/
+	/*** Dump the binary image file ***/
 
-		/* File type is "DATA" */
-		FILE_TYPE(FILE_TYPE_DATA);
+	safe_setuid_grab();
+	fh = file_open(raw_file, MODE_WRITE, FTYPE_RAW);
+	safe_setuid_drop();
 
-		/* Build the filename */
-		path_build(buf, sizeof(buf), ANGBAND_DIR_DATA, format("%s.raw", filename));
-
-
-		/* Attempt to open the file */
-		fd = fd_open(buf, O_RDONLY);
-
-		/* Failure */
-		if (fd < 0)
-		{
-			int mode = 0644;
-
-			/* Grab permissions */
-			safe_setuid_grab();
-
-			/* Create a new file */
-			fd = fd_make(buf, mode);
-
-			/* Drop permissions */
-			safe_setuid_drop();
-
-			/* Failure */
-			if (fd < 0)
-			{
-				/* Complain */
-				plog_fmt("Cannot create the '%s' file!", buf);
-
-				/* Continue */
-				return (0);
-			}
-		}
-
-		/* Close it */
-		fd_close(fd);
-
-		/* Grab permissions */
-		safe_setuid_grab();
-
-		/* Attempt to create the raw file */
-		fd = fd_open(buf, O_WRONLY);
-
-		/* Drop permissions */
-		safe_setuid_drop();
-
-		/* Failure */
-		if (fd < 0)
-		{
-			/* Complain */
-			plog_fmt("Cannot write the '%s' file!", buf);
-
-			/* Continue */
-			return (0);
-		}
-
-		/* Dump to the file */
-		if (fd >= 0)
-		{
-			/* Dump it */
-			fd_write(fd, (cptr)head, head->head_size);
-
-			/* Dump the "*_info" array */
-			if (head->info_size > 0)
-				fd_write(fd, head->info_ptr, head->info_size);
-
-			/* Dump the "*_name" array */
-			if (head->name_size > 0)
-				fd_write(fd, head->name_ptr, head->name_size);
-
-			/* Dump the "*_text" array */
-			if (head->text_size > 0)
-				fd_write(fd, head->text_ptr, head->text_size);
-
-			/* Close */
-			fd_close(fd);
-		}
-
-
-		/*** Kill the fake arrays ***/
-
-		/* Free the "*_info" array */
-		FREE(head->info_ptr);
-
-		/* MegaHack -- Free the "fake" arrays */
-		if (z_info)
-		{
-			FREE(head->name_ptr);
-			FREE(head->text_ptr);
-		}
-
-
-#endif /* ALLOW_TEMPLATES */
-
-
-		/*** Load the binary image file ***/
-
-		/* Build the filename */
-		path_build(buf, sizeof(buf), ANGBAND_DIR_DATA, format("%s.raw", filename));
-
-		/* Attempt to open the "raw" file */
-		fd = fd_open(buf, O_RDONLY);
-
-		/* Process existing "raw" file */
-		if (fd < 0) quit(format("Cannot load '%s.raw' file.", filename));
-
-		/* Attempt to parse the "raw" file */
-		err = init_info_raw(fd, head);
-
-		/* Close it */
-		fd_close(fd);
-
-		/* Error */
-		if (err) quit(format("Cannot parse '%s.raw' file.", filename));
-
-#ifdef ALLOW_TEMPLATES
+	/* Failure */
+	if (!fh)
+	{
+		plog_fmt("Cannot write the '%s' file!", raw_file);
+		return (0);
 	}
+
+	/* Dump it */
+	file_write(fh, (const char *) head, head->head_size);
+
+	/* Dump the "*_info" array */
+	if (head->info_size > 0)
+		file_write(fh, head->info_ptr, head->info_size);
+
+	/* Dump the "*_name" array */
+	if (head->name_size > 0)
+		file_write(fh, head->name_ptr, head->name_size);
+
+	/* Dump the "*_text" array */
+	if (head->text_size > 0)
+		file_write(fh, head->text_ptr, head->text_size);
+
+	/* Close */
+	file_close(fh);
+
+
+	/*** Kill the fake arrays ***/
+
+	/* Free the "*_info" array */
+	FREE(head->info_ptr);
+
+	/* MegaHack -- Free the "fake" arrays */
+	if (z_info)
+	{
+		FREE(head->name_ptr);
+		FREE(head->text_ptr);
+	}
+
+
 #endif /* ALLOW_TEMPLATES */
+
+
+	/*** Load the binary image file ***/
+
+	if (!init_info_raw(raw_file, head))
+		quit(format("Cannot load '%s.raw' file.", filename));
+
 
 	/* Success */
 	return (0);
@@ -1528,49 +1427,31 @@ static void init_angband_aux(cptr why)
  */
 void init_angband(void)
 {
-	int fd;
-
-	int mode = 0644;
-
-	FILE *fp;
+	ang_file *fp;
 
 	char buf[1024];
 
 
 	/*** Verify the "news" file ***/
 
-	/* Build the filename */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "news.txt");
-
-	/* Attempt to open the file */
-	fd = fd_open(buf, O_RDONLY);
-
-	/* Failure */
-	if (fd < 0)
+	if (!file_exists(buf))
 	{
 		char why[1024];
 
-		/* Message */
-		strnfmt(why, sizeof(why), "Cannot access the '%s' file!", buf);
-
 		/* Crash and burn */
+		strnfmt(why, sizeof(why), "Cannot access the '%s' file!", buf);
 		init_angband_aux(why);
 	}
-
-	/* Close it */
-	fd_close(fd);
 
 
 	/*** Display the "news" file ***/
 
-	/* Clear screen */
 	Term_clear();
 
-	/* Build the filename */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "news.txt");
-
 	/* Open the News file */
-	fp = my_fopen(buf, "r");
+	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "news.txt");
+	fp = file_open(buf, MODE_READ, -1);
 
 	/* Dump */
 	if (fp)
@@ -1578,62 +1459,19 @@ void init_angband(void)
 		int i = 0;
 
 		/* Dump the file to the screen */
-		while (0 == my_fgets(fp, buf, sizeof(buf)))
-		{
-			/* Display and advance */
+		while (file_getl(fp, buf, sizeof(buf)))
 			Term_putstr(0, i++, -1, TERM_WHITE, buf);
-		}
 
-		/* Close */
-		my_fclose(fp);
+		file_close(fp);
 	}
 
 	/* Flush it */
 	Term_fresh();
 
 
-	/*** Verify (or create) the "high score" file ***/
-
-	/* Build the filename */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_APEX, "scores.raw");
-
-	/* Attempt to open the high score file */
-	fd = fd_open(buf, O_RDONLY);
-
-	/* Failure */
-	if (fd < 0)
-	{
-		/* File type is "DATA" */
-		FILE_TYPE(FILE_TYPE_DATA);
-
-		/* Grab permissions */
-		safe_setuid_grab();
-
-		/* Create a new high score file */
-		fd = fd_make(buf, mode);
-
-		/* Drop permissions */
-		safe_setuid_drop();
-
-		/* Failure */
-		if (fd < 0)
-		{
-			char why[1024];
-
-			/* Message */
-			strnfmt(why, sizeof(why), "Cannot create the '%s' file!", buf);
-
-			/* Crash and burn */
-			init_angband_aux(why);
-		}
-	}
-
-	/* Close it */
-	fd_close(fd);
-
 
 	/* Initialize the menus */
-	/* This must occur before preference files are read */
+	/* This must occur before preference files are read(?) */
 	init_cmd4_c();
 	
 	/*** Initialize some arrays ***/

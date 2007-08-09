@@ -18,7 +18,7 @@
  * Some "local" parameters, used to help write savefiles
  */
 
-static FILE	*fff;		/* Current save "file" */
+static ang_file *fff;		/* Current save "file" */
 
 static byte	xor_byte;	/* Simple encryption */
 
@@ -35,7 +35,7 @@ static void sf_put(byte v)
 {
 	/* Encode the value, write a character */
 	xor_byte ^= v;
-	(void)putc((int)xor_byte, fff);
+	file_writec(fff, xor_byte);
 
 	/* Maintain the checksum info */
 	v_stamp += v;
@@ -807,7 +807,7 @@ static void wr_dungeon(void)
 /*
  * Actually write a save-file
  */
-static bool wr_savefile_new(void)
+static void wr_savefile_new(void)
 {
 	int i;
 
@@ -1002,13 +1002,6 @@ static bool wr_savefile_new(void)
 
 	/* Write the "encoded checksum" */
 	wr_u32b(x_stamp);
-
-
-	/* Error in save */
-	if (ferror(fff) || (fflush(fff) == EOF)) return FALSE;
-
-	/* Successful save */
-	return TRUE;
 }
 
 
@@ -1017,133 +1010,70 @@ static bool wr_savefile_new(void)
  */
 static bool save_player_aux(cptr name)
 {
-	bool ok = FALSE;
-
-	int fd;
-
-	int mode = 0644;
-
+	bool ok = TRUE;
 
 	/* No file yet */
 	fff = NULL;
 
-
-	/* File type is "SAVE" */
-	FILE_TYPE(FILE_TYPE_SAVE);
-
-
-	/* Grab permissions */
+	/* Open the savefile */
 	safe_setuid_grab();
-
-	/* Create the savefile */
-	fd = fd_make(name, mode);
-
-	/* Drop permissions */
+	fff = file_open(name, MODE_WRITE, FTYPE_SAVE);
 	safe_setuid_drop();
 
-	/* File is okay */
-	if (fd >= 0)
-	{
-		/* Close the "fd" */
-		fd_close(fd);
+	/* Successful open */
+	if (fff) wr_savefile_new();
+	else ok = FALSE;
 
-		/* Grab permissions */
-		safe_setuid_grab();
-
-		/* Open the savefile */
-		fff = my_fopen(name, "wb");
-
-		/* Drop permissions */
-		safe_setuid_drop();
-
-		/* Successful open */
-		if (fff)
-		{
-			/* Write the savefile */
-			if (wr_savefile_new()) ok = TRUE;
-
-			/* Attempt to close it */
-			if (my_fclose(fff)) ok = FALSE;
-		}
-
-		/* Grab permissions */
-		safe_setuid_grab();
-
-		/* Remove "broken" files */
-		if (!ok) fd_kill(name);
-
-		/* Drop permissions */
-		safe_setuid_drop();
-	}
+	/* Attempt to close it */
+	if (ok && !file_close(fff)) ok = FALSE;
 
 
-	/* Failure */
-	if (!ok) return (FALSE);
+	if (ok)
+		character_saved = TRUE;
 
-	/* Successful save */
-	character_saved = TRUE;
-
-	/* Success */
-	return (TRUE);
+	return ok;
 }
 
-
+#include <errno.h>
 
 /*
  * Attempt to save the player in a savefile
  */
 bool save_player(void)
 {
-	int result = FALSE;
-
-	char safe[1024];
-
+	char new_savefile[1024];
+	char old_savefile[1024];
 
 	/* New savefile */
-	my_strcpy(safe, savefile, sizeof(safe));
-	my_strcat(safe, ".new", sizeof(safe));
+	strnfmt(new_savefile, sizeof(new_savefile), "%s.new", savefile);
+	strnfmt(old_savefile, sizeof(old_savefile), "%s.old", savefile);
 
-	/* Grab permissions */
+	/* Make sure that the savefile doesn't already exist */
 	safe_setuid_grab();
-
-	/* Remove it */
-	fd_kill(safe);
-
-	/* Drop permissions */
+	file_delete(new_savefile);
+	file_delete(old_savefile);
 	safe_setuid_drop();
 
 	/* Attempt to save the player */
-	if (save_player_aux(safe))
+	if (save_player_aux(new_savefile))
 	{
-		char temp[1024];
+		int error;
 
-		/* Old savefile */
-		my_strcpy(temp, savefile, sizeof(temp));
-		my_strcat(temp, ".old", sizeof(temp));
-
-		/* Grab permissions */
 		safe_setuid_grab();
 
-		/* Remove it */
-		fd_kill(temp);
+		file_move(savefile, old_savefile);
+		file_move(new_savefile, savefile);
+		file_delete(old_savefile);
 
-		/* Preserve old savefile */
-		fd_move(savefile, temp);
-
-		/* Activate new savefile */
-		fd_move(safe, savefile);
-
-		/* Remove preserved savefile */
-		fd_kill(temp);
-
-		/* Drop permissions */
 		safe_setuid_drop();
 
-		/* Success */
-		result = TRUE;
+		return TRUE;
 	}
 
+	/* Delete temp file */
+	safe_setuid_grab();
+	file_delete(new_savefile);
+	safe_setuid_drop();
 
-	/* Return the result */
-	return (result);
+	return FALSE;
 }
