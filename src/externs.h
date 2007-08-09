@@ -33,7 +33,7 @@ extern char *macro_trigger_keycode[2][MAX_MACRO_TRIGGER];
 extern char pf_result[];
 extern int pf_result_index;
 
-/* files.c */
+/* score.c */
 extern int score_idx;
 
 /* tables.c */
@@ -323,8 +323,6 @@ extern bool get_name(bool sf);
 extern void do_cmd_suicide(void);
 extern void do_cmd_save_game(void);
 extern long total_points(void);
-extern void show_scores(void);
-extern void display_scores(int from, int to);
 extern void close_game(void);
 extern void exit_game_panic(void);
 
@@ -475,6 +473,14 @@ extern void run_step(int dir);
 
 /* randart.c */
 extern errr do_randart(u32b randart_seed, bool full);
+
+/* score.c */
+extern errr enter_score(time_t *death_time);
+extern void show_scores(void);
+extern void display_scores(int from, int to);
+extern void top_twenty(void);
+extern void predict_score(void);
+
 
 /* signals.c */
 extern void signals_ignore_tstp(void);
