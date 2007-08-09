@@ -2845,64 +2845,6 @@ enum
 #define AUTO_REPEAT_COMMANDS "TBDoc+"
 
 
-/*
- * Artifact activation index
- */
-#define ACT_ILLUMINATION        0
-#define ACT_MAGIC_MAP           1
-#define ACT_CLAIRVOYANCE        2
-#define ACT_PROT_EVIL           3
-#define ACT_DISP_EVIL           4
-#define ACT_HEAL1               5
-#define ACT_HEAL2               6
-#define ACT_CURE_WOUNDS         7
-#define ACT_HASTE1              8
-#define ACT_HASTE2              9
-#define ACT_FIRE1               10
-#define ACT_FIRE2               11
-#define ACT_FIRE3               12
-#define ACT_FROST1              13
-#define ACT_FROST2              14
-#define ACT_FROST3              15
-#define ACT_FROST4              16
-#define ACT_FROST5              17
-#define ACT_ACID1               18
-#define ACT_RECHARGE1           19
-#define ACT_SLEEP               20
-#define ACT_LIGHTNING_BOLT      21
-#define ACT_ELEC2               22
-#define ACT_BANISHMENT          23
-#define ACT_MASS_BANISHMENT     24
-#define ACT_IDENTIFY            25
-#define ACT_DRAIN_LIFE1         26
-#define ACT_DRAIN_LIFE2         27
-#define ACT_BIZZARE             28
-#define ACT_STAR_BALL           29
-#define ACT_RAGE_BLESS_RESIST   30
-#define ACT_PHASE               31
-#define ACT_TRAP_DOOR_DEST      32
-#define ACT_DETECT              33
-#define ACT_RESIST              34
-#define ACT_TELEPORT            35
-#define ACT_RESTORE_LIFE        36
-#define ACT_MISSILE             37
-#define ACT_ARROW               38
-#define ACT_REM_FEAR_POIS       39
-#define ACT_STINKING_CLOUD      40
-#define ACT_STONE_TO_MUD        41
-#define ACT_TELE_AWAY           42
-#define ACT_WOR                 43
-#define ACT_CONFUSE             44
-#define ACT_PROBE               45
-#define ACT_FIREBRAND           46
-#define ACT_STARLIGHT           47
-#define ACT_MANA_BOLT           48
-#define ACT_BERSERKER           49
-
-#define ACT_MAX                 50
-
-
-
 /* player_type.noscore flags */
 #define NOSCORE_WIZARD		0x0002
 #define NOSCORE_DEBUG		0x0008
