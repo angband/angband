@@ -984,16 +984,25 @@ static void fix_message(void)
 	int w, h;
 	int x, y;
 
+	const char *msg;
+
 	/* Get size */
 	Term_get_size(&w, &h);
 
 	/* Dump messages */
 	for (i = 0; i < h; i++)
 	{
-		byte color = message_color((s16b)i);
+		byte color = message_color(i);
+		u16b count = message_count(i);
+		const char *str = message_str(i);
 
-		/* Dump the message on the appropriate line */
-		Term_putstr(0, (h - 1) - i, -1, color, message_str((s16b)i));
+		if (count == 1)
+			msg = str;
+		else
+			msg = format("%s <%dx>", str, count);
+
+		Term_putstr(0, (h - 1) - i, -1, color, msg);
+
 
 		/* Cursor */
 		Term_locate(&x, &y);

@@ -1869,7 +1869,7 @@ errr file_character(cptr name, bool full)
 	/* If dead, dump last messages -- Prfnoff */
 	if (p_ptr->is_dead)
 	{
-		i = message_num();
+		i = messages_num();
 		if (i > 15) i = 15;
 		file_putf(fp, "  [Last Messages]\n\n");
 		while (i-- > 0)

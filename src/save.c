@@ -876,7 +876,7 @@ static void wr_savefile_new(void)
 
 
 	/* Dump the number of "messages" */
-	tmp16u = message_num();
+	tmp16u = messages_num();
 	if (tmp16u > 80) tmp16u = 80;
 	wr_u16b(tmp16u);
 

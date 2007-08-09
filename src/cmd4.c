@@ -2053,7 +2053,7 @@ void do_cmd_messages(void)
 
 
 	/* Total messages */
-	n = message_num();
+	n = messages_num();
 
 	/* Start on first message */
 	i = 0;
@@ -2076,8 +2076,15 @@ void do_cmd_messages(void)
 		/* Dump messages */
 		for (j = 0; (j < hgt - 4) && (i + j < n); j++)
 		{
-			cptr msg = message_str((s16b)(i+j));
-			byte attr = message_color((s16b)(i+j));
+			const char *msg;
+			const char *str = message_str(i + j);
+			byte attr = message_color(i + j);
+			u16b count = message_count(i + j);
+
+			if (count == 1)
+				msg = str;
+			else
+				msg = format("%s <%dx>", str, count);
 
 			/* Apply horizontal scroll */
 			msg = ((int)strlen(msg) >= q) ? (msg + q) : "";
