@@ -521,21 +521,24 @@ static void special_lighting_floor(byte *a, char *c, enum grid_light_level light
 }
 
 /*
- * This function modifies the attr/char pair for an wall grids
- * to reflect the various lighting options available.
+ * This function modifies the attr/char pair for a wall (or other "interesting"
+ * grids to show them as more-or-less lit.  Note that how walls are drawn 
+ * isn't directly related to how they are lit - walls are always "lit".
+ * The lighting effects we use are as a visual cue to emphasise blindness 
+ * and to show field-of-view (view_bright_lite).
  *
- * For text, this means changing the colouring for dark grids or
- * view_bright_lite, and for graphics it means modifying the char to
+ * For text, we change the attr and for graphics we modify the char to
  * use a different tile in the tileset.  These modifications are different
  * for different sets, depending on the tiles available, and their position 
  * in the set.
  */
-static void special_lighting_wall(byte *a, char *c, enum grid_light_level lighting, bool in_view, int feat)
+static void special_wall_display(byte *a, char *c, bool in_view, int feat)
 {
-	/* Grids currently in view are left alone. */
+	/* Grids currently in view are left alone, rendered as "white" */
 	if (in_view) return;
 
-	if (lighting == LIGHT_DARK)
+	/* When blind, we make walls and other "white" things dark */
+	if (p_ptr->timed[TMD_BLIND])
 	{
 		switch (use_graphics)
 		{
@@ -551,7 +554,7 @@ static void special_lighting_wall(byte *a, char *c, enum grid_light_level lighti
 		}
 	}
 
-	/* Handle "view_bright_lite" */
+	/* Handle "view_bright_lite" by dimming walls not "in view" */
 	else if (view_bright_lite)
 	{
 		switch (use_graphics)
@@ -635,7 +638,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 
 	/* Special lighting effects (walls only) */
 	if (g->f_idx > FEAT_INVIS && view_granite_lite) 
-		special_lighting_wall(&a, &c, g->lighting, g->in_view, g->f_idx);
+		special_wall_display(&a, &c, g->in_view, g->f_idx);
 
 	/* Save the terrain info for the transparency effects */
 	(*tap) = a;
@@ -796,22 +799,16 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
  *  - g->lighting is set to indicate the lighting level for the grid:
  *    LIGHT_DARK for unlit grids, LIGHT_TORCH for those lit by the player's
  *    light source, and LIGHT_GLOW for inherently light grids (lit rooms, etc).
+ *    Note that lighting is always LIGHT_GLOW for known "interesting" grids
+ *    like walls.
  *       
  * NOTES:
  * This is called pretty frequently, whenever a grid on the map display
  * needs updating, so don't overcomplicate it.
  *
  * Terrain is remembered separately from objects and monsters, so can be
- * shown even when the player can't "see" it.  This leads to the "interesting"
- * effects when doors out of view change from closed to open and so on.
- * 
- * Note that "boring" grids (floors, invisible traps, and any illegal grids)
- * are different from "interesting" grids (all other terrain features),
- * and the two are handled differently, with LIGHT_TORCH only applied to 
- * the boring grids.  In fact, wall grids are handled strangely wrt lighting
- * altogether because we have to be careful not to have "paper walls" where a
- * wall shows as lit from the other side (i.e. a dark corridor next to a lit
- * room).
+ * shown even when the player can't "see" it.  This leads to things like
+ * doors out of the player's view still change from closed to open and so on.
  *
  * TODO:
  * Hallucination is currently disabled (it was a display-level hack before,
@@ -877,18 +874,8 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 			else if (p_ptr->timed[TMD_BLIND] || !(info & CAVE_GLOW))
 				g->lighting = LIGHT_DARK;
 		}
-		/* Interesting grids (non-floors) */
 		else
 		{
-			/* Skip currently visible grids for lighting */
-			if (!(info & (CAVE_SEEN)))
-			{
-				/* Handle "blind" */
-				if (p_ptr->timed[TMD_BLIND])
-					g->lighting = LIGHT_DARK;
-				else
-					g->lighting = LIGHT_GLOW;
-			}
 		}
 	}
 	/* Unknown */
