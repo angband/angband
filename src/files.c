@@ -3029,41 +3029,56 @@ static int highscore_add(const high_score *score)
 	safe_setuid_grab();
 	new = file_open(new_name, MODE_WRITE, FTYPE_RAW);
 	lok = file_open(lok_name, MODE_WRITE, FTYPE_RAW);
-	file_lock(lok);
+	if (new && lok)
+		file_lock(lok);
 	safe_setuid_drop();
 
+	if (!new || !lok) return -1;
 
 	/* Determine where the score should go */
-	slot = highscore_where(old, score);
-
-	/* Read entries from the old and write them to the new */
-	for (i = 0; (i < MAX_HISCORES) && !error; i++)
+	if (old)
 	{
-		if (!highscore_seek(old, i)) return (-1);
+		slot = highscore_where(old, score);
 
-		/* Insert the new one at the right slot */
-		if (i == slot)
+		/* Read entries from the old and write them to the new */
+		for (i = 0; (i < MAX_HISCORES) && !error; i++)
 		{
-			if (!file_write(new, (const char *)score, sizeof(high_score)))
+			if (!highscore_seek(old, i)) return (-1);
+
+			/* Insert the new one at the right slot */
+			if (i == slot)
 			{
-				error = TRUE;
-				slot = -1;
+				if (!file_write(new, (const char *)score, sizeof(high_score)))
+				{
+					error = TRUE;
+					slot = -1;
+				}
+			}
+	
+			/* Read old one, write again */
+			if (highscore_read(old, &tmpscore))
+			{
+				if (!file_write(new, (const char *)&tmpscore, sizeof(high_score)))
+				{
+					error = TRUE;
+					slot = -1;
+				}
 			}
 		}
 
-		/* Read old one, write again */
-		if (highscore_read(old, &tmpscore))
+		file_close(old);
+	}
+	else
+	{
+		slot = 0;
+		if (!file_write(new, (const char *)score, sizeof(high_score)))
 		{
-			if (!file_write(new, (const char *)&tmpscore, sizeof(high_score)))
-			{
-				error = TRUE;
-				slot = -1;
-			}
+			error = TRUE;
+			slot = -1;
 		}
 	}
 
 	file_close(new);
-	file_close(old);
 
 	/* Move things around */
 	safe_setuid_grab();
