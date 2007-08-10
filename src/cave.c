@@ -609,7 +609,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 	char c;
 	
 	feature_type *f_ptr = &f_info[g->f_idx];
-	
+
 	/* Normal attr and char */
 	a = f_ptr->x_attr;
 	c = f_ptr->x_char;
@@ -680,7 +680,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 				byte da;
 				char dc;
 				
-				/* Desired attr & char*/
+				/* Desired attr & char */
 				da = r_ptr->x_attr;
 				dc = r_ptr->x_char;
 				
@@ -751,20 +751,44 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 		if ((hp_changes_color) && (arg_graphics == GRAPHICS_NONE))
 		{
 			switch(p_ptr->chp * 10 / p_ptr->mhp)
-				{
+			{
 				case 10:
-				case  9:	a = TERM_WHITE  ;	break;
+				case  9: 
+				{
+					a = TERM_WHITE; 
+					break;
+				}
 				case  8:
-				case  7:	a = TERM_YELLOW ;	break;
+				case  7:
+				{
+					a = TERM_YELLOW;
+					break;
+				}
 				case  6:
-				case  5:	a = TERM_ORANGE ;	break;
+				case  5:
+				{
+					a = TERM_ORANGE;
+					break;
+				}
 				case  4:
-				case  3:	a = TERM_L_RED  ;	break;
+				case  3:
+				{
+					a = TERM_L_RED;
+					break;
+				}
 				case  2:
 				case  1:
-				case  0:	a = TERM_RED    ;	break;
-				default:	a = TERM_WHITE  ;	break;
+				case  0:
+				{
+					a = TERM_RED;
+					break;
 				}
+				default:
+				{
+					a = TERM_WHITE;
+					break;
+				}
+			}
 		}
 
 		/* Get the "player" char */
@@ -828,7 +852,12 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 void map_info(unsigned y, unsigned x, grid_data *g)
 {
 	object_type *o_ptr;
-	byte info = cave_info[y][x];
+	byte info;
+
+	assert(x < DUNGEON_WID);
+	assert(y < DUNGEON_HGT);
+
+	info = cave_info[y][x];
 	
 	/* Default "clear" values, others will be set later where appropriate. */
 	g->first_k_idx = 0;
@@ -901,7 +930,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	/* Rare random hallucination on non-outer walls */
 	if (g->hallucinate && g->m_idx == 0 && g->first_k_idx == 0)
 	{
-		if (rand_int(256) == 0 && g->f_idx < FEAT_PERM_SOLID)
+		if (rand_int(256) == 0 && (g->f_idx < FEAT_PERM_SOLID))
 		{
 			/* Normally, make an imaginary monster */
 			if (rand_int(100) < 75)
@@ -919,6 +948,11 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 			g->hallucinate = FALSE;
 		}
 	}
+
+	assert(g->f_idx <= FEAT_PERM_SOLID);
+	assert(g->m_idx < (u32b) mon_max);
+	assert(g->first_k_idx < z_info->k_max);
+	/* All other g fields are 'flags', mostly booleans. */
 }
 
 
@@ -1557,7 +1591,6 @@ void display_map(int *cy, int *cx)
 	bool old_view_granite_lite;
 
 	monster_race *r_ptr = &r_info[0];
-
 
 	/* Desired map height */
 	map_hgt = Term->hgt - 2;
