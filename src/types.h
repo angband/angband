@@ -1126,12 +1126,14 @@ enum grid_light_level
 
 typedef struct
 {
-	s32b m_idx;		/* Monster index - 0 for none, -1 for the player */
+	u32b m_idx;		/* Monster index */
 	u32b f_idx;		/* Feature index */
 	u32b first_k_idx;	/* The "Kind" of the first item on the grid */
 	bool multiple_objects;	/* Is there more than one item there? */
 
 	enum grid_light_level lighting; /* Light level */
 	bool in_view; /* TRUE when the player can currently see the grid. */
+	bool is_player;
+	bool hallucinate;
 } grid_data;
 
