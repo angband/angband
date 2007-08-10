@@ -643,8 +643,8 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			object_kind *k_ptr = &k_info[g->first_k_idx];
 			
 			/* Normal attr and char */
-			a = k_ptr->x_attr;
-			c = k_ptr->x_char;
+			a = object_kind_attr(g->first_k_idx);
+			c = object_kind_char(g->first_k_idx);
 			
 			if (show_piles && g->multiple_objects)
 			{

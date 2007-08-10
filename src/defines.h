@@ -2372,8 +2372,11 @@ enum
 /*
  * Determine if a given inventory item is "aware"
  */
+#define object_kind_aware_p(K) \
+	(k_info[(K)].aware)
+
 #define object_aware_p(T) \
-	(k_info[(T)->k_idx].aware)
+	(object_kind_aware_p((T)->k_idx))
 
 /*
  * Determine if a given inventory item is "tried"
@@ -2392,16 +2395,34 @@ enum
 	 ((k_info[(T)->k_idx].flags3 & (TR3_EASY_KNOW)) && \
 	  k_info[(T)->k_idx].aware))
 
-
 /*
  * Determine if the attr and char should consider the item's flavor
  *
  * Identified scrolls should use their own tile.
  */
-#define use_flavor_glyph(T) \
-	((k_info[(T)->k_idx].flavor) && \
-	 !((k_info[(T)->k_idx].tval == TV_SCROLL) && object_aware_p(T)))
+#define use_flavor_glyph(K) \
+	((k_info[(K)].flavor) && \
+	 !((k_info[(K)].tval == TV_SCROLL) && object_kind_aware_p(K)))
 
+/*
+ * Return the "attr" for a given item kind.
+ * Use "flavor" if available.
+ * Default to user definitions.
+ */
+#define object_kind_attr(K) \
+	(use_flavor_glyph(K) ? \
+	 (flavor_info[k_info[(K)].flavor].x_attr) : \
+	 (k_info[(K)].x_attr))
+
+/*
+ * Return the "char" for a given item kind.
+ * Use "flavor" if available.
+ * Default to user definitions.
+ */
+#define object_kind_char(K) \
+	(use_flavor_glyph(K) ? \
+	 (flavor_info[k_info[(K)].flavor].x_char) : \
+	 (k_info[(K)].x_char))
 
 /*
  * Return the "attr" for a given item.
@@ -2409,9 +2430,7 @@ enum
  * Default to user definitions.
  */
 #define object_attr(T) \
-	(use_flavor_glyph(T) ? \
-	 (flavor_info[k_info[(T)->k_idx].flavor].x_attr) : \
-	 (k_info[(T)->k_idx].x_attr))
+	(object_kind_attr((T)->k_idx))
 
 /*
  * Return the "char" for a given item.
@@ -2419,9 +2438,7 @@ enum
  * Default to user definitions.
  */
 #define object_char(T) \
-	(use_flavor_glyph(T) ? \
-	 (flavor_info[k_info[(T)->k_idx].flavor].x_char) : \
-	 (k_info[(T)->k_idx].x_char))
+	(object_kind_char((T)->k_idx))
 
 
 /*
