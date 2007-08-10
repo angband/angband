@@ -332,25 +332,25 @@ bool cave_valid_bold(int y, int x)
 /*
  * Hack -- Hallucinatory monster
  */
-static u16b image_monster(void)
+static u16b hallucinatory_monster(void)
 {
 	monster_race *r_ptr;
-
+	
 	byte a;
 	char c;
-
+	
 	while (1)
 	{
 		/* Select a random monster */
 		r_ptr = &r_info[rand_int(z_info->r_max)];
-
+		
 		/* Skip non-entries */
 		if (!r_ptr->name) continue;
-
+		
 		/* Retrieve attr/char */
 		a = r_ptr->x_attr;
 		c = r_ptr->x_char;
-
+		
 		/* Encode */
 		return (PICT(a,c));
 	}
@@ -360,51 +360,33 @@ static u16b image_monster(void)
 /*
  * Hack -- Hallucinatory object
  */
-static u16b image_object(void)
+static u16b hallucinatory_object(void)
 {
 	object_kind *k_ptr;
-
+	
 	byte a;
 	char c;
-
+	
 	while (1)
 	{
 		/* Select a random object */
 		k_ptr = &k_info[rand_int(z_info->k_max - 1) + 1];
-
+		
 		/* Skip non-entries */
 		if (!k_ptr->name) continue;
-
+		
 		/* Retrieve attr/char (HACK - without flavors) */
 		a = k_ptr->x_attr;
 		c = k_ptr->x_char;
-
+		
 		/* HACK - Skip empty entries */
 		if ((a == 0) || (c == 0)) continue;
-
+		
 		/* Encode */
 		return (PICT(a,c));
 	}
 }
 
-
-/*
- * Hack -- Random hallucination
- */
-static u16b image_random(void)
-{
-	/* Normally, assume monsters */
-	if (rand_int(100) < 75)
-	{
-		return (image_monster());
-	}
-
-	/* Otherwise, assume objects */
-	else
-	{
-		return (image_object());
-	}
-}
 
 
 /*
@@ -648,97 +630,119 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 	/* If there's an object, deal with that. */
 	if (g->first_k_idx)
 	{
-		object_kind *k_ptr = &k_info[g->first_k_idx];
-
-		/* Normal attr and char */
-		a = k_ptr->x_attr;
-		c = k_ptr->x_char;
-		
-		if (show_piles && g->multiple_objects)
+		if (g->hallucinate)
 		{
-			/* Get the "pile" feature instead */
-			k_ptr = &k_info[0];
+			/* Just pick a random object to display. */
+			int i = hallucinatory_object();
 			
+			a = PICT_A(i);
+			c = PICT_C(i);
+		}
+		else
+		{
+			object_kind *k_ptr = &k_info[g->first_k_idx];
+			
+			/* Normal attr and char */
 			a = k_ptr->x_attr;
 			c = k_ptr->x_char;
+			
+			if (show_piles && g->multiple_objects)
+			{
+				/* Get the "pile" feature instead */
+				k_ptr = &k_info[0];
+				
+				a = k_ptr->x_attr;
+				c = k_ptr->x_char;
+			}
 		}
 	}
 
-	/* If there's a monster (that's not the player) */
+	/* If there's a monster */
 	if (g->m_idx > 0)
 	{
-		monster_type *m_ptr = &mon_list[g->m_idx];
-		
-		/* Visible monster */
-		if (m_ptr->ml)
+		if (g->hallucinate)
 		{
-			monster_race *r_ptr = &r_info[m_ptr->r_idx];
-
-			byte da;
-			char dc;
-
-			/* Desired attr & char*/
-			da = r_ptr->x_attr;
-			dc = r_ptr->x_char;
-
-			/* Special attr/char codes */
-			if ((da & 0x80) && (dc & 0x80))
+			/* Just pick a random monster to display. */
+			int i = hallucinatory_monster();
+			
+			a = PICT_A(i);
+			c = PICT_C(i);
+		}
+		else
+		{
+			monster_type *m_ptr = &mon_list[g->m_idx];
+			
+			/* Visible monster */
+			if (m_ptr->ml)
 			{
-				/* Use attr */
-				a = da;
-
-				/* Use char */
-				c = dc;
-			}
-
-			/* Multi-hued monster */
-			else if (r_ptr->flags1 & (RF1_ATTR_MULTI))
-			{
-				/* Multi-hued attr */
-				a = randint(15);
-
-				/* Normal char */
-				c = dc;
-			}
-
-			/* Normal monster (not "clear" in any way) */
-			else if (!(r_ptr->flags1 & (RF1_ATTR_CLEAR | RF1_CHAR_CLEAR)))
-			{
-				/* Use attr */
-				a = da;
-
-				/* Use char */
-				c = dc;
-			}
-
-			/* Hack -- Bizarre grid under monster */
-			else if ((a & 0x80) || (c & 0x80))
-			{
-				/* Use attr */
-				a = da;
-
-				/* Use char */
-				c = dc;
-			}
-
-			/* Normal char, Clear attr, monster */
-			else if (!(r_ptr->flags1 & (RF1_CHAR_CLEAR)))
-			{
-				/* Normal char */
-				c = dc;
-			}
-
-			/* Normal attr, Clear char, monster */
-			else if (!(r_ptr->flags1 & (RF1_ATTR_CLEAR)))
-			{
-				/* Normal attr */
-				a = da;
+				monster_race *r_ptr = &r_info[m_ptr->r_idx];
+				
+				byte da;
+				char dc;
+				
+				/* Desired attr & char*/
+				da = r_ptr->x_attr;
+				dc = r_ptr->x_char;
+				
+				/* Special attr/char codes */
+				if ((da & 0x80) && (dc & 0x80))
+				{
+					/* Use attr */
+					a = da;
+					
+					/* Use char */
+					c = dc;
+				}
+				
+				/* Multi-hued monster */
+				else if (r_ptr->flags1 & (RF1_ATTR_MULTI))
+				{
+					/* Multi-hued attr */
+					a = randint(15);
+					
+					/* Normal char */
+					c = dc;
+				}
+				
+				/* Normal monster (not "clear" in any way) */
+				else if (!(r_ptr->flags1 & (RF1_ATTR_CLEAR | RF1_CHAR_CLEAR)))
+				{
+					/* Use attr */
+					a = da;
+					
+					/* Use char */
+					c = dc;
+				}
+				
+				/* Hack -- Bizarre grid under monster */
+				else if ((a & 0x80) || (c & 0x80))
+				{
+					/* Use attr */
+					a = da;
+					
+					/* Use char */
+					c = dc;
+				}
+				
+				/* Normal char, Clear attr, monster */
+				else if (!(r_ptr->flags1 & (RF1_CHAR_CLEAR)))
+				{
+					/* Normal char */
+					c = dc;
+				}
+				
+				/* Normal attr, Clear char, monster */
+				else if (!(r_ptr->flags1 & (RF1_ATTR_CLEAR)))
+				{
+					/* Normal attr */
+					a = da;
+				}
 			}
 		}
 	}
 
 	/* Handle "player" */
-	else if (g->m_idx < 0)
+	else if (g->is_player)
 	{
 		monster_race *r_ptr = &r_info[0];
 
@@ -801,6 +805,10 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
  *    light source, and LIGHT_GLOW for inherently light grids (lit rooms, etc).
  *    Note that lighting is always LIGHT_GLOW for known "interesting" grids
  *    like walls.
+ *  - g->is_player is TRUE if the player is on the given grid.
+ *  - g->hallucinate is TRUE if the player is hallucinating something "strange"
+ *    for this grid - this should pick a random monster to show if the m_idx
+ *    is non-zero, and a random object if first_k_idx is non-zero.
  *       
  * NOTES:
  * This is called pretty frequently, whenever a grid on the map display
@@ -821,32 +829,18 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 {
 	object_type *o_ptr;
 	byte info = cave_info[y][x];
-
-#if HALLUCINATION_SUPPORT
-	s16b image = p_ptr->timed[TMD_IMAGE];
-#endif
-
+	
 	/* Default "clear" values, others will be set later where appropriate. */
 	g->first_k_idx = 0;
 	g->multiple_objects = FALSE;
 	g->lighting = LIGHT_GLOW;
 
-	/* Set various indexes */
-	g->m_idx = cave_m_idx[y][x];
+	/* Set things we can work out right now */
 	g->f_idx = cave_feat[y][x];
-
-#if HALLUCINATION_SUPPORT
-	/* Hack -- rare random hallucination on non-outer walls */
-	if (image && (!rand_int(256)) && (g->f_idx < FEAT_PERM_SOLID))
-	{
-		int i = image_random();
-
-		a = PICT_A(i);
-		c = PICT_C(i);
-	}
-#endif
-
 	g->in_view = (info & CAVE_SEEN) ? TRUE : FALSE;
+	g->is_player = (cave_m_idx[y][x] < 0) ? TRUE : FALSE;
+	g->m_idx = (g->is_player) ? 0 : cave_m_idx[y][x];
+	g->hallucinate = p_ptr->timed[TMD_IMAGE] ? TRUE : FALSE;
 
 	/* If the grid is memorised or can currently be seen */
 	if ((info & CAVE_MARK) || (info & CAVE_SEEN))
@@ -874,9 +868,6 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 			else if (p_ptr->timed[TMD_BLIND] || !(info & CAVE_GLOW))
 				g->lighting = LIGHT_DARK;
 		}
-		else
-		{
-		}
 	}
 	/* Unknown */
 	else
@@ -892,18 +883,6 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 		/* Memorized objects */
 		if (o_ptr->marked && !squelch_hide_item(o_ptr))
 		{
-#ifdef HALLUCINATION_SUPPORT
-			/* Hack -- object hallucination */
-			if (image)
-			{
-				int i = image_object();
-
-				a = PICT_A(i);
-				c = PICT_C(i);
-
-				break;
-			}
-#endif
 			/* First item found */
 			if (g->first_k_idx == 0)
 			{
@@ -919,26 +898,26 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 		}
 	}
 
-
-#if HALLUCINATION_SUPPORT
-	/* Monsters */
-	if (g->m_idx > 0)
+	/* Rare random hallucination on non-outer walls */
+	if (g->hallucinate && g->m_idx == 0 && g->first_k_idx == 0)
 	{
-		/* Hack -- monster hallucination */
-		if (image)
+		if (rand_int(256) == 0 && g->f_idx < FEAT_PERM_SOLID)
 		{
-			int i = image_monster();
-			
-			a = PICT_A(i);
-			c = PICT_C(i);
+			/* Normally, make an imaginary monster */
+			if (rand_int(100) < 75)
+			{
+				g->m_idx = 1;
+			}
+			/* Otherwise, an imaginary object */
+			else
+			{
+				g->first_k_idx = 1;
+			}
 		}
-	}
-#endif
-
-	/* Handle the player */
-	if (g->m_idx < 0)
-	{
-		g->m_idx = -1;
+		else
+		{
+			g->hallucinate = FALSE;
+		}
 	}
 }
 
