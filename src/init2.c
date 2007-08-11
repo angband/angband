@@ -1587,8 +1587,10 @@ void cleanup_angband(void)
 
 			/* Free the store inventory */
 			FREE(st_ptr->stock);
+			FREE(st_ptr->table);
 		}
 	}
+
 
 	/* Free the stores */
 	FREE(store);
