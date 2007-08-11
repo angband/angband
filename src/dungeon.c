@@ -1784,7 +1784,7 @@ static void process_some_user_pref_files(void)
  * by the "-n" option in "main.c".
  *
  * If the savefile does not exist, cannot be loaded, or contains a dead
- * (non-wizard-mode) character, then a new game will be started.
+ * character, then a new game will be started.
  *
  * Several platforms (Windows, Macintosh, Amiga) start brand new games
  * with "savefile" and "op_ptr->base_name" both empty, and initialize
@@ -1798,40 +1798,44 @@ static void process_some_user_pref_files(void)
  */
 void play_game(bool new_game)
 {
-	bool character_loaded;
-	bool reusing_savefile;
+	/*** Do horrible, hacky things, to start the game off ***/
 
 	/* Hack -- Increase "icky" depth */
 	character_icky++;
 
-
 	/* Verify main term */
 	if (!term_screen)
-	{
 		quit("main window does not exist");
-	}
 
 	/* Make sure main term is active */
 	Term_activate(term_screen);
 
 	/* Verify minimum size */
 	if ((Term->hgt < 24) || (Term->wid < 80))
-	{
 		quit("main window is too small");
-	}
 
 	/* Hack -- Turn off the cursor */
 	(void)Term_set_cursor(FALSE);
 
-	/* Attempt to load */
-	if (!load_player(&character_loaded, &reusing_savefile))
+
+	/*** Try to load the savefile ***/
+
+	p_ptr->is_dead = TRUE;
+
+	if (savefile[0] && file_exists(savefile))
 	{
-		/* Oops */
-		quit("broken savefile");
+		bool ok = new_save ? load(savefile) : old_load();
+		if (!ok) quit("broken savefile");
+
+		if (p_ptr->is_dead && arg_wizard)
+		{
+			p_ptr->is_dead = FALSE;
+			p_ptr->noscore |= NOSCORE_WIZARD;
+		}
 	}
 
-	/* Nothing loaded */
-	if (!character_loaded)
+	/* No living character loaded */
+	if (p_ptr->is_dead)
 	{
 		/* Make new player */
 		new_game = TRUE;
@@ -1845,9 +1849,8 @@ void play_game(bool new_game)
 
 	/* Hack -- Default base_name */
 	if (!op_ptr->base_name[0])
-	{
 		my_strcpy(op_ptr->base_name, "PLAYER", sizeof(op_ptr->base_name));
-	}
+
 
 	/* Init RNG */
 	if (Rand_quick)
@@ -1897,39 +1900,36 @@ void play_game(bool new_game)
 			do_randart(seed_randart, TRUE);
 
 		/* Hack -- enter the world */
-		turn = 1;
+		old_turn = turn = 1;
 	}
+
 
 	/* Normal machine (process player name) */
 	if (savefile[0])
-	{
 		process_player_name(FALSE);
-	}
 
 	/* Weird machine (process player name, pick savefile name) */
 	else
-	{
 		process_player_name(TRUE);
-	}
+
         
 	/* Check if we're overwriting a savefile */
-	while (!reusing_savefile && file_exists(savefile))
+	while (new_game && file_exists(savefile))
 	{
-		/* Ask for confirmation */
 		bool overwrite = get_check("Continuing will overwrite an existing savefile.  Overwrite? ");
          
-		if (overwrite)
-		{
-			break;
-		}                        
-		else
-		{
-			get_name(TRUE);
-		}                        
+		if (overwrite) break;
+		get_name(TRUE);
 	}
+
+	/* Stop the player being quite so dead */
+	p_ptr->is_dead = FALSE;
+
+
 
 	/* Flash a message */
 	prt("Please wait...", 0, 0);
+
 
 	/* Flush the message */
 	Term_fresh();

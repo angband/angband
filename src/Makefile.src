@@ -14,7 +14,7 @@ INCS = angband.h config.h defines.h externs.h types.h option.h \
 HEADERS = $(HDRS) $(INCS)
 
 ZFILES = z-file.o z-form.o z-msg.o z-quark.o z-rand.o z-term.o z-type.o \
-         z-util.o z-virt.o
+         z-util.o z-virt.o z-blockfile.o z-smap.o 
 MAINFILES = main.o maid-x11.o main-crb.o main-gcu.o main-gtk.o \
             main-ros.o main-sdl.o main-win.o main-x11.o main-xaw.o snd-sdl.o
 
@@ -36,6 +36,7 @@ ANGFILES = \
 	init1.o \
 	init2.o \
 	load.o \
+	loadsave.o \
 	melee1.o \
 	melee2.o \
 	monster1.o \

@@ -1039,7 +1039,7 @@ static bool save_player_aux(cptr name)
 /*
  * Attempt to save the player in a savefile
  */
-bool save_player(void)
+bool old_save(void)
 {
 	char new_savefile[1024];
 	char old_savefile[1024];

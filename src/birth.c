@@ -1891,10 +1891,9 @@ void player_birth(void)
 	char ch;
 
 	/*
-	 * If this a pre-existing savefile, offer to do a quick creation, based
-	 * on the previous character.
+	 * If the birth height value is set, we can do a quick-start character.
 	 */
-	if (character_existed && p_ptr->ht_birth)
+	if (p_ptr->ht_birth)
 	{
 		/* Prompt */
 		while (TRUE)

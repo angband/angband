@@ -2582,7 +2582,7 @@ void do_cmd_save_game(void)
 	signals_ignore_tstp();
 
 	/* Save the player */
-	if (save_player())
+	if (new_save ? save(savefile) : old_save())
 	{
 		prt("Saving game... done.", 0, 0);
 	}
@@ -3026,7 +3026,7 @@ static void close_game_aux(void)
 	if (p_ptr->total_winner) kingly();
 
 	/* Save dead player */
-	if (!save_player())
+	if (new_save ? !save(savefile) : !old_save())
 	{
 		msg_print("death save failed!");
 		message_flush();
@@ -3284,7 +3284,8 @@ void exit_game_panic(void)
 	my_strcpy(p_ptr->died_from, "(panic save)", sizeof(p_ptr->died_from));
 
 	/* Panic save, or get worried */
-	if (!save_player()) quit("panic save failed!");
+	if (new_save ? !save(panic_savefile) : !old_save()) quit("panic save failed!");
+
 
 	/* Successful panic save */
 	quit("panic save succeeded!");

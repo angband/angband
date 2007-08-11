@@ -2243,39 +2243,15 @@ static errr rd_savefile(void)
  * Note that we always try to load the "current" savefile, even if
  * there is no such file, so we must check for "empty" savefile names.
  */
-bool load_player(bool *character_loaded, bool *reusing_savefile)
+bool old_load(void)
 {
 	ang_file *fh;
 	cptr what = "generic";
 
 	errr err = 0;
 
-
-	/* Paranoia */
-	turn = 0;
-	p_ptr->is_dead = FALSE;
-        
-	*character_loaded = FALSE;
-	*reusing_savefile = FALSE;
-
-	/* Allow empty savefile name */
-	if (!savefile[0]) return (TRUE);
-
-	/* No file */
-	if (!file_exists(savefile))
-	{
-		/* Give a message */
-		msg_print("Savefile does not exist.");
-		message_flush();
-
-		/* Allow this */
-		return (TRUE);
-	}
-
-	/* Open savefile */
-	safe_setuid_grab();
 	fh = file_open(savefile, MODE_READ, -1);
-	safe_setuid_drop();
+
 
 	/* No file */
 	if (!fh)
@@ -2339,54 +2315,6 @@ bool load_player(bool *character_loaded, bool *reusing_savefile)
 	/* Okay */
 	if (!err)
 	{
-		*reusing_savefile = TRUE;
-
-		/* Give a conversion warning */
-		if ((version_major != sf_major) ||
-		    (version_minor != sf_minor) ||
-		    (version_patch != sf_patch))
-		{
-			/* Message */
-			msg_format("Converted a %d.%d.%d savefile.",
-			           sf_major, sf_minor, sf_patch);
-			message_flush();
-		}
-
-		/* Player is dead */
-		if (p_ptr->is_dead)
-		{
-			/* Cheat death (unless the character retired) */
-			if (arg_wizard)
-			{
-				/* A character was loaded */
-				*character_loaded = TRUE;
-
-				/* Mark the savefile */
-				p_ptr->noscore |= NOSCORE_WIZARD;
-
-				/* Done */
-				return (TRUE);
-			}
-
-			/* Forget death */
-			p_ptr->is_dead = FALSE;
-
-			/* A character existed in this savefile. */
-			character_existed = TRUE;
-
-			/* Count lives */
-			sf_lives++;
-
-			/* Forget turns */
-			turn = old_turn = 0;
-                        
-			/* Done */
-			return (TRUE);
-		}
-
-		/* A character was loaded */
-		*character_loaded = TRUE;
-
 		/* Still alive */
 		if (p_ptr->chp >= 0)
 		{

@@ -59,7 +59,6 @@ int arg_graphics;			/* Command arg -- Request graphics mode */
  */
 
 bool character_generated;	/* The character exists */
-bool character_existed;		/* A character existed on the same savefile */
 bool character_dungeon;		/* The character has a dungeon */
 bool character_saved;		/* The character was just saved to a savefile */
 
@@ -132,6 +131,7 @@ bool closing_flag;		/* Dungeon is closing */
  * Buffer to hold the current savefile name
  */
 char savefile[1024];
+char panic_savefile[1024];
 
 
 /*

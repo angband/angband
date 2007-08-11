@@ -133,6 +133,7 @@ extern s16b rating;
 extern bool good_item_flag;
 extern bool closing_flag;
 extern char savefile[1024];
+extern char panic_savefile[1024];
 extern s16b macro__num;
 extern char **macro__pat;
 extern char **macro__act;
@@ -336,7 +337,11 @@ extern void init_angband(void);
 extern void cleanup_angband(void);
 
 /* load.c */
-extern bool load_player(bool *character_loaded, bool *reusing_savefile);
+extern bool old_load(void);
+
+/* loadsave.c */
+bool save(char *filename);
+bool load(char *filename);
 
 /* melee1.c */
 extern bool make_attack_normal(int m_idx);
@@ -488,7 +493,7 @@ extern void signals_handle_tstp(void);
 extern void signals_init(void);
 
 /* save.c */
-extern bool save_player(void);
+extern bool old_save(void);
 
 /* spells1.c */
 extern s16b poly_r_idx(int r_idx);
@@ -740,5 +745,8 @@ extern void do_cmd_spoilers(void);
 #endif /* ALLOW_SPOILERS */
 
 bool make_fake_artifact(object_type *o_ptr, byte name1);
+
+/* Testing Hacks XXX */
+extern bool new_save;
 
 #endif /* !INCLUDED_EXTERNS_H */

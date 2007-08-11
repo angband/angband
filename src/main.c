@@ -53,6 +53,8 @@ static const struct module modules[] =
 
 #ifdef USE_SOUND
 
+bool new_save;
+
 /*
  * List of sound modules in the order they should be tried.
  */
@@ -361,6 +363,12 @@ int main(int argc, char *argv[])
 				break;
 			}
 
+			case 'L':
+			{
+				new_save = TRUE;
+				break;
+			}
+
 			case 'F':
 			case 'f':
 			{
@@ -438,6 +446,7 @@ int main(int argc, char *argv[])
 				/* Dump usage information */
 				puts("Usage: angband [options] [-- subopts]");
 				puts("  -n             Start a new character");
+				puts("  -L             Load a new-format save file");
 				puts("  -w             Resurrect dead character (marks savefile)");
 				puts("  -f             Request fiddle (verbose) mode");
 				puts("  -v             Request sound mode");
