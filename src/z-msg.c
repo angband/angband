@@ -57,15 +57,24 @@ errr messages_init(void)
 
 void messages_free(void)
 {
+	msgcolor_t *c = messages->colors;
+	msgcolor_t *nextc;
 	message_t *m = messages->head;
-	message_t *t;
+	message_t *nextm;
 
 	while (m)
 	{
-		t = m->next;
+		nextm = m->next;
 		FREE(m->str);
 		FREE(m);
-		m = t;
+		m = nextm;
+	}
+
+	while (c)
+	{
+		nextc = c->next;
+		FREE(c);
+		c = nextc;
 	}
 
 	FREE(messages);

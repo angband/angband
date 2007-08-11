@@ -49,6 +49,7 @@ void smap_free(smap_t *smap)
 		if (se->type == ST_BLOB)
 			FREE(se->value.blobval);
 
+		string_free(se->key);
 		FREE(se);
 		se = next;
 	}
@@ -387,6 +388,7 @@ smap_t *smap_fromstring(char *string, u32b length)
 		}
 
 		idx += tmp_dlen;
+		FREE(tmp_key);
 	}
 
 	return smap;
