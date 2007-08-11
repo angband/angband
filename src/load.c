@@ -2299,6 +2299,16 @@ bool old_load(void)
 			/* Message (below) */
 			if (err) what = "Cannot parse savefile";
 		}
+
+		/* Try using the new savefile code instead */
+		if (err)
+		{
+			if (load(savefile))
+			{
+				new_save = TRUE;
+				return TRUE;
+			}
+		}
 	}
 
 	/* Paranoia */

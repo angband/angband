@@ -159,8 +159,6 @@ bool save(char *filename)
 	file_delete(old_name);
 	safe_setuid_drop();
 
-	printf("hello!\n");
-
 	return TRUE;
 }
 
