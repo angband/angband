@@ -671,72 +671,71 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 		else
 		{
 			monster_type *m_ptr = &mon_list[g->m_idx];
+			monster_race *r_ptr = &r_info[m_ptr->r_idx];
+				
+			byte da;
+			char dc;
 			
-			/* Visible monster */
-			if (m_ptr->ml)
+			/* Desired attr & char*/
+			da = r_ptr->x_attr;
+			dc = r_ptr->x_char;
+			
+			/* Special attr/char codes */
+			if ((da & 0x80) && (dc & 0x80))
 			{
-				monster_race *r_ptr = &r_info[m_ptr->r_idx];
+				/* Use attr */
+				a = da;
 				
-				byte da;
-				char dc;
+				/* Use char */
+				c = dc;
+			}
+			
+			/* Multi-hued monster */
+			else if (r_ptr->flags1 & (RF1_ATTR_MULTI))
+			{
+				/* Multi-hued attr */
+				a = randint(15);
 				
+				/* Normal char */
+				c = dc;
+			}
+			
+			/* Normal monster (not "clear" in any way) */
+			else if (!(r_ptr->flags1 & (RF1_ATTR_CLEAR | RF1_CHAR_CLEAR)))
+			{
+				/* Use attr */
+				a = da;
+
 				/* Desired attr & char */
 				da = r_ptr->x_attr;
 				dc = r_ptr->x_char;
 				
-				/* Special attr/char codes */
-				if ((da & 0x80) && (dc & 0x80))
-				{
-					/* Use attr */
+				/* Use char */
+				c = dc;
+			}
+			
+			/* Hack -- Bizarre grid under monster */
+			else if ((a & 0x80) || (c & 0x80))
+			{
+				/* Use attr */
+				a = da;
+				
+				/* Use char */
+				c = dc;
+			}
+			
+			/* Normal char, Clear attr, monster */
+			else if (!(r_ptr->flags1 & (RF1_CHAR_CLEAR)))
+			{
+				/* Normal char */
+				c = dc;
+			}
+				
+			/* Normal attr, Clear char, monster */
+			else if (!(r_ptr->flags1 & (RF1_ATTR_CLEAR)))
+			{
+				/* Normal attr */
 					a = da;
-					
-					/* Use char */
-					c = dc;
-				}
-				
-				/* Multi-hued monster */
-				else if (r_ptr->flags1 & (RF1_ATTR_MULTI))
-				{
-					/* Multi-hued attr */
-					a = randint(15);
-					
-					/* Normal char */
-					c = dc;
-				}
-				
-				/* Normal monster (not "clear" in any way) */
-				else if (!(r_ptr->flags1 & (RF1_ATTR_CLEAR | RF1_CHAR_CLEAR)))
-				{
-					/* Use attr */
-					a = da;
-					
-					/* Use char */
-					c = dc;
-				}
-				
-				/* Hack -- Bizarre grid under monster */
-				else if ((a & 0x80) || (c & 0x80))
-				{
-					/* Use attr */
-					a = da;
-					
-					/* Use char */
-					c = dc;
-				}
-				
-				/* Normal char, Clear attr, monster */
-				else if (!(r_ptr->flags1 & (RF1_CHAR_CLEAR)))
-				{
-					/* Normal char */
-					c = dc;
-				}
-				
-				/* Normal attr, Clear char, monster */
-				else if (!(r_ptr->flags1 & (RF1_ATTR_CLEAR)))
-				{
-					/* Normal attr */
-					a = da;
-				}
 			}
 		}
 	}
@@ -848,7 +847,6 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
  * may turn into different objects, monsters into different monsters, and
  * terrain may be objects, monsters, or stay the same.
  */
-#undef HALLUCINATION_SUPPORT /* needs to be generalised. */
 void map_info(unsigned y, unsigned x, grid_data *g)
 {
 	object_type *o_ptr;
@@ -925,6 +923,15 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 				break;
 			}
 		}
+	}
+
+	/* Monsters */
+	if (g->m_idx > 0)
+	{
+		/* If the monster isn't "visible", make sure we don't list it.*/
+		monster_type *m_ptr = &mon_list[g->m_idx];
+		if (!m_ptr->ml) g->m_idx = 0;
+
 	}
 
 	/* Rare random hallucination on non-outer walls */
