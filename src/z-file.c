@@ -451,7 +451,7 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 		char mac_type = 'TEXT';
 
 		if (ftype == FTYPE_RAW) mac_type = 'DATA';
-		else if (ftype == TYPE_SAVE) mac_type = 'SAVE';
+		else if (ftype == FTYPE_SAVE) mac_type = 'SAVE';
 
 		fsetfileinfo(buf, 'A271', ftype);
 	}

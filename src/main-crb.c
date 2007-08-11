@@ -3744,7 +3744,7 @@ static void init_paths(void)
 	path_build(path, sizeof(path), ANGBAND_DIR_FILE, "news.txt");
 
 	/* Attempt to open and close that file */
-	if (0 != fd_close(fd_open(path, O_RDONLY)))
+	if (!file_exists(path))
 	{
 		/* Warning */
 		plog_fmt("Unable to open the '%s' file.", path);
