@@ -17,7 +17,7 @@
 #include "z-virt.h"
 #include "z-blockfile.h"
 
-void bf_load(blockfile_t *bf);
+static void bf_load(blockfile_t *bf);
 void bf_loadblock(blockfile_t *bf);
 void bf_loadrecord(blockfile_t *bf, block_t *bl);
 void bf_saveblock(blockfile_t *bf, block_t *bl);
@@ -25,7 +25,7 @@ void bf_saverecord(blockfile_t *bf, record_t *rec);
 void bf_freeblock(block_t *bl);
 
 /* Public interface */
-blockfile_t *bf_open(char *name, u32b flags)
+blockfile_t *bf_open(const char *name, u32b flags)
 {
 	blockfile_t *bf = ZNEW(blockfile_t);
 
@@ -50,7 +50,7 @@ u32b bf_nrblocks(blockfile_t *bf)
 	return bf->nr_blocks;
 }
 
-block_t *bf_createblock(blockfile_t *bf, char *name)
+block_t *bf_createblock(blockfile_t *bf, const char *name)
 {
 	block_t *block = ZNEW(block_t);
 
@@ -72,7 +72,7 @@ block_t *bf_createblock(blockfile_t *bf, char *name)
 	return block;
 }
 
-block_t *bf_findblock(blockfile_t *bf, char *name)
+block_t *bf_findblock(blockfile_t *bf, const char *name)
 {
 	block_t *tmp = bf->block_head;
 
@@ -97,7 +97,7 @@ block_t *bf_nextblock(blockfile_t *bf)
 	return bl;
 }
 
-void bf_rewindblock(blockfile_t *bf)
+void bf_rewind(blockfile_t *bf)
 {
 	bf->block_curr = bf->block_head;
 }
@@ -112,7 +112,7 @@ void bf_eachblock(blockfile_t *bf, void (*fn)(block_t *block))
 	}
 }
 
-char *bf_name(block_t *block)
+const char *bf_name(block_t *block)
 {
 	return block->name;
 }
@@ -157,7 +157,7 @@ void bf_createrecord(block_t *block, void *data, u32b len)
 	block->nr_records++;
 }
 
-void *bf_nextrecord(block_t *block, u32b *len)
+const void *bf_nextrecord(block_t *block, u32b *len)
 {
 	record_t *rec = block->record_curr;
 	if (!rec) return NULL;
@@ -173,12 +173,12 @@ void bf_rewindrecord(block_t *block)
 	block->record_curr = block->record_head;
 }
 
-void bf_eachrecord(block_t *block, void (*fn)(record_t *))
+void bf_eachrecord(block_t *block, void (*fn)(const void *, u32b))
 {
 	record_t *rec = block->record_head;
 	while (rec)
 	{
-		fn(rec);
+		fn(rec->data, rec->len);
 		rec = rec->next;
 	}
 }
@@ -217,7 +217,7 @@ void bf_close(blockfile_t *bf)
 	FREE(bf);
 }
 
-void bf_load(blockfile_t *bf)
+static void bf_load(blockfile_t *bf)
 {
 	u32b blockno = 0;
 

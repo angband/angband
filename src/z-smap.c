@@ -313,7 +313,7 @@ char *smap_tostring(smap_t *smap, u32b *length)
 }
 
 
-smap_t *smap_fromstring(char *string, u32b length)
+smap_t *smap_fromstring(const char *string, u32b length)
 {
 	smap_t *smap = smap_new();
 	u32b total_len = 0;

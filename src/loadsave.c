@@ -105,7 +105,7 @@ bool save(char *filename)
 
 	safe_setuid_grab();
 	file_delete(new_name);
-	bf = bf_open(new_name, BF_WRITE);
+	bf = bf_open(new_name, BF_WRITE | BF_SAVE);
 	safe_setuid_drop();
 
 	if (!bf) return FALSE;
@@ -216,7 +216,7 @@ smap_t *load_smap(block_t *block)
 {
 	u32b len = 0;
 
-	char *data = bf_nextrecord(block, &len);
+	const char *data = bf_nextrecord(block, &len);
 	if (!data) return NULL;
 
 	return smap_fromstring(data, len);
@@ -501,14 +501,14 @@ void save_quests(blockfile_t *bf)
 void load_system(blockfile_t *bf)
 {
 	block_t *global_block;
-	void *rec;
+	const void *rec;
 	u32b len = 0;
 
 	smap_t *global_smap;
 
 	global_block = bf_findblock(bf, "system");
 	rec = bf_nextrecord(global_block, &len);
-	global_smap = smap_fromstring((char *)rec, len);
+	global_smap = smap_fromstring(rec, len);
 
 	sf_saves = smap_get_u16b(global_smap, "past_saves");
 	sf_lives = smap_get_u16b(global_smap, "past_lives");

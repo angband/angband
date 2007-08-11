@@ -51,7 +51,7 @@ char *smap_get_str(smap_t *smap, const char *key);
 void *smap_get_blob(smap_t *smap, const char *key, u32b *len);
 
 char *smap_tostring(smap_t *smap, u32b *length);
-smap_t *smap_fromstring(char *string, u32b length);
+smap_t *smap_fromstring(const char *string, u32b length);
 
 void smap_foreach(smap_t *smap, void (*fn)(sentry_t *se));
 void smap_print(smap_t *smap);
