@@ -281,7 +281,7 @@ static void build_prob(name_probs probs, cptr *learn)
  */
 size_t randname_make(randname_type name_type, size_t min, size_t max, char *word_buf, size_t buflen)
 {
-	size_t lnum;
+	size_t lnum = 0;
 	bool found_word = FALSE;
 
 	static name_probs lprobs;

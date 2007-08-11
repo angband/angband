@@ -2651,7 +2651,7 @@ void do_cmd_store(void)
 	const menu_iter *cur_menu = &store_menu;
 
 	menu_type menu;
-	event_type evt;
+	event_type evt = EVENT_EMPTY;
 	int cursor = 0;
 
 	store_type *st_ptr = &store[store_current];

@@ -36,6 +36,8 @@
  * other places, to prevent the creation of inconsistant data.
  */
 
+#ifndef INCLUDED_TYPES_H
+#define INCLUDED_TYPES_H
 
 
 /**** Available Types ****/
@@ -1137,3 +1139,5 @@ typedef struct
 	bool hallucinate;
 } grid_data;
 
+
+#endif /* !INCLUDED_TYPES_H */

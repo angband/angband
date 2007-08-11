@@ -305,7 +305,7 @@ static size_t trigger_ascii_to_text(char *buf, size_t max, cptr *strptr)
 			case '&':
 			{
 				size_t j;
-				while ((tmp = strchr(macro_modifier_chr, *str)))
+				while ((tmp = strchr(macro_modifier_chr, *str)) != 0)
 				{
 					j = tmp - macro_modifier_chr;
 					strnfcat(buf, max, &current_len, "%s", macro_modifier_name[j]);

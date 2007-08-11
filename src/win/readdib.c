@@ -227,7 +227,7 @@ BOOL ReadDIB(HWND hWnd, LPSTR lpFileName, DIBINIT *pInfo)
 			goto ErrExit;
 	}
 
-	if (!(nNumColors = (WORD)lpbi->biClrUsed))
+	if ((nNumColors = (WORD)lpbi->biClrUsed) == 0)
 	{
 		/* no color table for 24-bit, default size otherwise */
 		if (lpbi->biBitCount != 24)

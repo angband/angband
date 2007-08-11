@@ -1057,8 +1057,6 @@ bool save_player(void)
 	/* Attempt to save the player */
 	if (save_player_aux(new_savefile))
 	{
-		int error;
-
 		safe_setuid_grab();
 
 		file_move(savefile, old_savefile);

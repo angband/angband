@@ -1977,7 +1977,7 @@ bool alloc_monster(int dis, bool slp, int depth)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	int y, x;
+	int y = 0, x = 0;
 	int	attempts_left = 10000;
 
 	/* Find a legal, distant, unoccupied, space */
@@ -2165,7 +2165,7 @@ static bool summon_specific_okay(int r_idx)
  */
 bool summon_specific(int y1, int x1, int lev, int type)
 {
-	int i, x, y, r_idx;
+	int i, x = 0, y = 0, r_idx;
 
 
 	/* Look for a location */

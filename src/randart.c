@@ -1155,7 +1155,7 @@ static void scramble_artifact(int a_idx)
 	u32b activates = a_ptr->flags3 & TR3_ACTIVATE;
 	s32b power;
 	int tries;
-	s32b ap;
+	s32b ap = 0;
 	bool curse_me = FALSE;
 	bool aggravate_me = FALSE;
 

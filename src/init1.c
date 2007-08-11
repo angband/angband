@@ -926,7 +926,7 @@ errr parse_v_info(char *buf, header *head)
 		v_ptr = (vault_type*)head->info_ptr + i;
 
 		/* Store the name */
-		if (!(v_ptr->name = add_name(head, s)))
+		if ((v_ptr->name = add_name(head, s)) == 0)
 			return (PARSE_ERROR_OUT_OF_MEMORY);
 	}
 
@@ -1025,7 +1025,7 @@ errr parse_f_info(char *buf, header *head)
 		f_ptr = (feature_type*)head->info_ptr + i;
 
 		/* Store the name */
-		if (!(f_ptr->name = add_name(head, s)))
+		if ((f_ptr->name = add_name(head, s)) == 0)
 			return (PARSE_ERROR_OUT_OF_MEMORY);
 
 		/* Default "mimic" */
@@ -1208,7 +1208,7 @@ errr parse_k_info(char *buf, header *head)
 		k_ptr = (object_kind*)head->info_ptr + i;
 
 		/* Store the name */
-		if (!(k_ptr->name = add_name(head, s)))
+		if ((k_ptr->name = add_name(head, s)) == 0)
 			return (PARSE_ERROR_OUT_OF_MEMORY);
 
 		/* Success (return early) */
@@ -1539,7 +1539,7 @@ errr parse_a_info(char *buf, header *head)
 		a_ptr = (artifact_type*)head->info_ptr + i;
 
 		/* Store the name */
-		if (!(a_ptr->name = add_name(head, s)))
+		if ((a_ptr->name = add_name(head, s)) == 0)
 			return (PARSE_ERROR_OUT_OF_MEMORY);
 
 		/* Ignore everything */
@@ -1772,7 +1772,7 @@ errr parse_e_info(char *buf, header *head)
 		e_ptr = (ego_item_type*)head->info_ptr + i;
 
 		/* Store the name */
-		if (!(e_ptr->name = add_name(head, s)))
+		if ((e_ptr->name = add_name(head, s)) == 0)
 			return (PARSE_ERROR_OUT_OF_MEMORY);
 
 		/* Start with the first of the tval indices */
@@ -2000,7 +2000,7 @@ errr parse_r_info(char *buf, header *head)
 		r_ptr = (monster_race*)head->info_ptr + i;
 
 		/* Store the name */
-		if (!(r_ptr->name = add_name(head, s)))
+		if ((r_ptr->name = add_name(head, s)) == 0)
 			return (PARSE_ERROR_OUT_OF_MEMORY);
 
 		return 0;
@@ -2314,7 +2314,7 @@ errr parse_p_info(char *buf, header *head)
 		pr_ptr = (player_race*)head->info_ptr + i;
 
 		/* Store the name */
-		if (!(pr_ptr->name = add_name(head, s)))
+		if ((pr_ptr->name = add_name(head, s)) == 0)
 			return (PARSE_ERROR_OUT_OF_MEMORY);
 	}
 
@@ -2563,7 +2563,7 @@ errr parse_c_info(char *buf, header *head)
 		pc_ptr = (player_class*)head->info_ptr + i;
 
 		/* Store the name */
-		if (!(pc_ptr->name = add_name(head, s)))
+		if ((pc_ptr->name = add_name(head, s)) == 0)
 			return (PARSE_ERROR_OUT_OF_MEMORY);
 
 		/* No titles and equipment yet */
@@ -2947,7 +2947,7 @@ errr parse_b_info(char *buf, header *head)
 		ot_ptr = (owner_type*)head->info_ptr + i;
 
 		/* Store the name */
-		if (!(ot_ptr->owner_name = add_name(head, t)))
+		if ((ot_ptr->owner_name = add_name(head, t)) == 0)
 			return (PARSE_ERROR_OUT_OF_MEMORY);
 	}
 
@@ -3208,7 +3208,7 @@ errr parse_s_info(char *buf, header *head)
 		s_ptr = (spell_type*)head->info_ptr + i;
 
 		/* Store the name */
-		if (!(s_ptr->name = add_name(head, s)))
+		if ((s_ptr->name = add_name(head, s)) == 0)
 			return (PARSE_ERROR_OUT_OF_MEMORY);
 	}
 

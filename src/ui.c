@@ -115,7 +115,7 @@ void stop_event_loop()
  */
 event_type run_event_loop(event_target * target, bool forever, const event_type *start)
 {
-	event_type ke;
+	event_type ke = EVENT_EMPTY;
 	bool handled = TRUE;
 
 	while (forever || handled)
