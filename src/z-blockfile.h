@@ -6,6 +6,7 @@
 
 #define BF_WRITE	0x00000001
 #define BF_READ		0x00000002
+#define BF_SAVE		0x00000004
 
 typedef struct _record_t
 {

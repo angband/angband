@@ -31,7 +31,10 @@ blockfile_t *bf_open(char *name, u32b flags)
 
 	if (flags & BF_WRITE)
 	{
-		bf->fh = file_open(name, MODE_WRITE, FTYPE_RAW);
+		int ftype = FTYPE_RAW;
+		if (flags & BF_SAVE) ftype = FTYPE_SAVE;
+
+		bf->fh = file_open(name, MODE_WRITE, ftype);
 	}
 	else
 	{
