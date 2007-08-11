@@ -37,7 +37,7 @@ void smap_put_s16b(smap_t *smap, const char *key, s16b val);
 void smap_put_u16b(smap_t *smap, const char *key, u16b val);
 void smap_put_s32b(smap_t *smap, const char *key, s32b val);
 void smap_put_u32b(smap_t *smap, const char *key, u32b val);
-void smap_put_str(smap_t *smap,  const char *key, char *val);
+void smap_put_str(smap_t *smap,  const char *key, const char *val);
 void smap_put_blob(smap_t *smap, const char *key, void *blob, u32b len);
 
 bool smap_get_bool(smap_t *smap, const char *key);
