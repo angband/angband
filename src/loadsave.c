@@ -40,15 +40,12 @@ void deserialize_lore(monster_race *r_ptr, monster_lore *l_ptr, smap_t *smap);
 void deserialize_store(store_type *st_ptr, smap_t *smap);
 void deserialize_artifact(artifact_type *a_ptr, smap_t *smap);
 
-void save_object(block_t *block, object_type *o_ptr);
 void save_object_memory(block_t *block, object_kind *k_ptr);
 void save_monster(block_t *block, monster_type *m_ptr);
 void save_lore(block_t *block, monster_race *r_ptr, monster_lore *l_ptr);
 void save_store(block_t *block, store_type *st_ptr);
 void save_artifact(block_t *block, artifact_type *a_ptr);
 
-void load_object(object_type *o_ptr, smap_t *smap);
-void load_object_memory(object_kind *k_ptr, smap_t *smap);
 void load_monster(monster_type *m_ptr, smap_t *smap);
 void load_lore(monster_race *r_ptr, monster_lore *l_ptr, smap_t *smap);
 void load_store(store_type *st_ptr, smap_t *smap);
@@ -61,6 +58,7 @@ void save_player_inventory(blockfile_t *bf);
 void save_cave(blockfile_t *bf);
 void save_objects(blockfile_t *bf);
 void save_object_memories(blockfile_t *bf);
+void save_artifact_status(blockfile_t *bf);
 void save_monsters(blockfile_t *bf);
 void save_lores(blockfile_t *bf);
 void save_stores(blockfile_t *bf);
@@ -77,6 +75,7 @@ void load_player_hp(blockfile_t *bf);
 void load_player_spells(blockfile_t *bf);
 void load_player_inventory(blockfile_t *bf);
 void load_object_memories(blockfile_t *bf);
+void load_artifact_status(blockfile_t *bf);
 void load_cave(blockfile_t *bf);
 void load_objects(blockfile_t *bf);
 void load_monsters(blockfile_t *bf);
@@ -138,6 +137,7 @@ bool save(char *filename)
 	save_cave(bf);
 	save_objects(bf);
 	save_object_memories(bf);
+	save_artifact_status(bf);
 	save_monsters(bf);
 	save_stores(bf);
 	save_options(bf);
@@ -184,6 +184,7 @@ bool load(char *filename)
 	load_monsters(bf);
 	load_objects(bf);
 	load_object_memories(bf);
+	load_artifact_status(bf);
 	load_stores(bf);
 	load_options(bf);
 	load_squelch(bf);
@@ -309,7 +310,11 @@ void save_objects(blockfile_t *bf)
 	int i;
 
 	for (i = 1; i < o_max; i++)
-		save_object(object_block, &o_list[i]);
+	{
+		smap_t *sm = serialize_object(&o_list[i]);
+		save_smap(object_block, sm);
+		smap_free(sm);
+	}
 }
 
 void save_object_memories(blockfile_t *bf)
@@ -318,7 +323,34 @@ void save_object_memories(blockfile_t *bf)
 	int i;
 
 	for (i = 1; i < z_info->k_max; i++)
-		save_object_memory(object_block, &k_info[i]);
+	{
+		object_kind *k_ptr = &k_info[i];
+		smap_t *sm = smap_new();
+
+		if (k_ptr->aware) smap_put_bool(sm, "aware", TRUE);
+		if (k_ptr->tried) smap_put_bool(sm, "tried", TRUE);
+		if (k_ptr->squelch) smap_put_bool(sm, "squelch", TRUE);
+		if (k_ptr->everseen) smap_put_bool(sm, "everseen", TRUE);
+
+		save_smap(object_block, sm);
+		smap_free(sm);
+	}
+}
+
+void save_artifact_status(blockfile_t *bf)
+{
+	block_t *art_block = bf_createblock(bf, "artifacts");
+	int i;
+
+	for (i = 1; i < z_info->a_max; i++)
+	{
+		smap_t *sm = smap_new();
+
+		if (a_info[i].cur_num) smap_put_bool(sm, "created", TRUE);
+
+		save_smap(art_block, sm);
+		smap_free(sm);
+	}
 }
 
 void save_monsters(blockfile_t *bf)
@@ -525,7 +557,7 @@ void load_player_inventory(blockfile_t *bf)
 
 		blob = smap_get_blob(sm, "object", &len);
 		obj_smap = smap_fromstring(blob, len);
-		load_object(&temp, obj_smap);
+		deserialize_object(&temp, obj_smap);
 		smap_free(obj_smap);
 		FREE(blob);
 
@@ -601,7 +633,7 @@ void load_objects(blockfile_t *bf)
 		if (!o_idx) return;
 
 		o_ptr = &o_list[o_idx];
-		load_object(o_ptr, s);
+		deserialize_object(o_ptr, s);
 		smap_free(s);
 
 		if (!o_ptr->held_m_idx)
@@ -630,11 +662,32 @@ void load_object_memories(blockfile_t *bf)
 
 	for (i = 1; i < z_info->k_max; i++)
 	{
+		object_kind *k_ptr = &k_info[i];
 		smap_t *sm = load_smap(object_block);
 		if (!sm) break;
 
-		load_object_memory(&k_info[i], sm);
+		k_ptr->aware = smap_get_bool(sm, "aware");
+		k_ptr->tried = smap_get_bool(sm, "tried");
+		k_ptr->squelch = smap_get_bool(sm, "squelch");
+		k_ptr->everseen = smap_get_bool(sm, "everseen");
+
 		smap_free(sm);
+	}
+}
+
+void load_artifact_status(blockfile_t *bf)
+{
+	block_t *art_block = bf_findblock(bf, "artifacts");
+	u32b i;
+
+	for (i = 1; i < z_info->a_max; i++)
+	{
+		smap_t *s = load_smap(art_block);
+		if (!s) return;
+
+		a_info[i].cur_num = smap_get_bool(s, "created") ? 1 : 0;
+
+		smap_free(s);
 	}
 }
 
@@ -642,12 +695,11 @@ void load_monsters(blockfile_t *bf)
 {
 	block_t *monster_block = bf_findblock(bf, "monsters");
 	u32b i;
-	smap_t *s;
 	monster_type mon;
 
 	for (i = 1; i < z_info->m_max; i++)
 	{
-		s = load_smap(monster_block);
+		smap_t *s = load_smap(monster_block);
 		if (!s) return;
 
 		load_monster(&mon, s);
@@ -837,26 +889,6 @@ void load_quests(blockfile_t *bf)
 
 /* Low-level functions */
 
-void save_object_memory(block_t *block, object_kind *k_ptr)
-{
-	smap_t *sm = smap_new();
-
-	if (k_ptr->aware) smap_put_bool(sm, "aware", TRUE);
-	if (k_ptr->tried) smap_put_bool(sm, "tried", TRUE);
-	if (k_ptr->squelch) smap_put_bool(sm, "squelch", TRUE);
-	if (k_ptr->everseen) smap_put_bool(sm, "everseen", TRUE);
-
-	save_smap(block, sm);
-	smap_free(sm);
-}
-
-void save_object(block_t *block, object_type *o_ptr)
-{
-	smap_t *sm = serialize_object(o_ptr);
-	save_smap(block, sm);
-	smap_free(sm);
-}
-
 void save_monster(block_t *block, monster_type *m_ptr)
 {
 	smap_t *sm = serialize_monster(m_ptr);
@@ -883,19 +915,6 @@ void save_artifact(block_t *block, artifact_type *a_ptr)
 	smap_t *sm = serialize_artifact(a_ptr);
 	save_smap(block, sm);
 	smap_free(sm);
-}
-
-void load_object(object_type *o_ptr, smap_t *smap)
-{
-	deserialize_object(o_ptr, smap);
-}
-
-void load_object_memory(object_kind *k_ptr, smap_t *sm)
-{
-	k_ptr->aware = smap_get_bool(sm, "aware");
-	k_ptr->tried = smap_get_bool(sm, "tried");
-	k_ptr->squelch = smap_get_bool(sm, "squelch");
-	k_ptr->everseen = smap_get_bool(sm, "everseen");
 }
 
 void load_monster(monster_type *m_ptr, smap_t *smap)
@@ -1573,3 +1592,4 @@ void deserialize_artifact(artifact_type *a_ptr, smap_t *s)
 	a_ptr->time_dice = smap_get_u16b(s, "time_dice");
 	a_ptr->time_sides = smap_get_u16b(s, "time_sides");
 }
+
