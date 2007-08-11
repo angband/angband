@@ -184,9 +184,10 @@ void bf_eachrecord(block_t *block, void (*fn)(record_t *))
 void bf_save(blockfile_t *bf)
 {
 	block_t *tmp;
+	u32b nr_blocks = flip_u32b(bf->nr_blocks);
 
 	file_seek(bf->fh, 0);
-	file_write(bf->fh, (char *) &(bf->nr_blocks), sizeof(bf->nr_blocks));
+	file_write(bf->fh, (char *) &(nr_blocks), sizeof(nr_blocks));
 
 	tmp = bf->block_head;
 	while (tmp)
@@ -218,6 +219,7 @@ void bf_load(blockfile_t *bf)
 	u32b blockno = 0;
 
 	file_read(bf->fh, (char *) &(bf->nr_blocks), sizeof(bf->nr_blocks));
+	bf->nr_blocks = flip_u32b(bf->nr_blocks);
 
 	while (blockno < bf->nr_blocks)
 	{
@@ -232,11 +234,13 @@ void bf_loadblock(blockfile_t *bf)
 	u32b recno = 0;
 
 	file_read(bf->fh, (char *) &(bl->namelen), sizeof(bl->namelen));
+	bl->namelen = flip_u32b(bl->namelen);
 
 	bl->name = mem_alloc(bl->namelen);
 	file_read(bf->fh, bl->name, bl->namelen);
 
 	file_read(bf->fh, (char *) &(bl->nr_records), sizeof(bl->nr_records));
+	bl->nr_records = flip_u32b(bl->nr_records);
 
 	while (recno < bl->nr_records)
 	{
@@ -260,6 +264,7 @@ void bf_loadrecord(blockfile_t *bf, block_t *bl)
 	record_t *rec = ZNEW(record_t);
 
 	file_read(bf->fh, (char *) &(rec->len), sizeof(rec->len));
+	rec->len = flip_u32b(rec->len);
 
 	rec->data = mem_alloc(rec->len);
 	file_read(bf->fh, rec->data, rec->len);
@@ -280,10 +285,12 @@ void bf_loadrecord(blockfile_t *bf, block_t *bl)
 void bf_saveblock(blockfile_t *bf, block_t *bl)
 {
 	record_t *tmp;
+	u32b namelen = flip_u32b(bl->namelen);
+	u32b nr_records = flip_u32b(bl->nr_records);
 
-	file_write(bf->fh, (char *) &(bl->namelen), sizeof(bl->namelen));
+	file_write(bf->fh, (char *) &(namelen), sizeof(namelen));
 	file_write(bf->fh, bl->name, bl->namelen);
-	file_write(bf->fh, (char *) &(bl->nr_records), sizeof(bl->nr_records));
+	file_write(bf->fh, (char *) &(nr_records), sizeof(nr_records));
 
 	tmp = bl->record_head;
 	while (tmp)
@@ -295,7 +302,9 @@ void bf_saveblock(blockfile_t *bf, block_t *bl)
 
 void bf_saverecord(blockfile_t *bf, record_t *rec)
 {
-	file_write(bf->fh, (char *) &(rec->len), sizeof(rec->len));
+	u32b len = flip_u32b(rec->len);
+
+	file_write(bf->fh, (char *) &(len), sizeof(rec->len));
 	file_write(bf->fh, rec->data, rec->len);
 }
 

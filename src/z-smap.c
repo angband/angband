@@ -15,6 +15,7 @@
  *    and/or other materials provided with the distribution.
  */
 #include "z-virt.h"
+#include "z-file.h"
 #include "z-smap.h"
 
 
@@ -64,7 +65,7 @@ static sentry_t *smap_put(smap_t *smap, const char *key, byte type, u32b dlen)
 
 	snew->type = type;
 	snew->keylen = strlen(key) + 1;
-	snew->key = strdup(key);
+	snew->key = string_make(key);
 	snew->datalen = dlen;
 
 	if (!smap->entries)
@@ -117,7 +118,7 @@ void smap_put_u32b(smap_t *smap, const char *key, u32b val)
 	(smap_put(smap, key, ST_U32B, sizeof(val)))->value.u32bval = val;
 }
 
-void smap_put_str(smap_t *smap, const char *key, char *val)
+void smap_put_str(smap_t *smap, const char *key, const char *val)
 {
 	(smap_put(smap, key, ST_STR, strlen(val) + 1))->value.strval = string_make(val);
 }
@@ -213,6 +214,12 @@ void *smap_get_blob(smap_t *smap, const char *key, u32b *len)
 
 /*** Serialising functions ***/
 
+#define memcpy_u32b(where, variable) \
+	do { \
+		u32b temp = flip_u32b(variable); \
+		memcpy(where, &temp, sizeof(temp)); \
+	} while (0);
+
 char *smap_tostring(smap_t *smap, u32b *length)
 {
 	u32b total_size;
@@ -233,20 +240,19 @@ char *smap_tostring(smap_t *smap, u32b *length)
 	}
 
 	newbuf = mem_alloc(total_size);
-
-	memcpy(newbuf + curr_idx, &total_size, sizeof(total_size));
+	memcpy_u32b(newbuf + curr_idx, total_size);
 	curr_idx += sizeof(total_size);
 
 	se = smap->entries;
 	while (se)
 	{
-		memcpy(newbuf + curr_idx, &(se->type), sizeof(se->type));
+		memcpy(newbuf + curr_idx, &se->type, sizeof(se->type));
 		curr_idx += sizeof(se->type);
 		
-		memcpy(newbuf + curr_idx, &(se->keylen), sizeof(se->keylen));
+		memcpy_u32b(newbuf + curr_idx, se->keylen);
 		curr_idx += sizeof(se->keylen);
 
-		memcpy(newbuf + curr_idx, &(se->datalen), sizeof(se->datalen));
+		memcpy_u32b(newbuf + curr_idx, se->datalen);
 		curr_idx += sizeof(se->datalen);
 
 		memcpy(newbuf + curr_idx, se->key, se->keylen);
@@ -264,17 +270,29 @@ char *smap_tostring(smap_t *smap, u32b *length)
 				memcpy(newbuf + curr_idx, &(se->value.byteval), sizeof(byte));
 				break;
 			case ST_S16B:
-				memcpy(newbuf + curr_idx, &(se->value.s16bval), sizeof(s16b));
+			{
+				u16b temp = flip_u16b((u16b) se->value.s16bval);
+				memcpy(newbuf + curr_idx, &temp, sizeof(temp));
 				break;
+			}
 			case ST_U16B:
-				memcpy(newbuf + curr_idx, &(se->value.u16bval), sizeof(u16b));
+			{
+				u16b temp = flip_u16b(se->value.u16bval);
+				memcpy(newbuf + curr_idx, &temp, sizeof(temp));
 				break;
+			}
 			case ST_S32B:
-				memcpy(newbuf + curr_idx, &(se->value.s32bval), sizeof(s32b));
+			{
+				u32b temp = flip_u32b((u32b) se->value.s32bval);
+				memcpy(newbuf + curr_idx, &temp, sizeof(temp));
 				break;
+			}
 			case ST_U32B:
-				memcpy(newbuf + curr_idx, &(se->value.u32bval), sizeof(u32b));
+			{
+				u32b temp = flip_u32b(se->value.u32bval);
+				memcpy(newbuf + curr_idx, &temp, sizeof(temp));
 				break;
+			}
 			case ST_STR:
 				memcpy(newbuf + curr_idx, se->value.strval, se->datalen);
 				break;
@@ -307,7 +325,10 @@ smap_t *smap_fromstring(char *string, u32b length)
 	u32b tmp_dlen;
 
 	memcpy(&total_len, string + idx, sizeof(total_len));
+	total_len = flip_u32b(total_len);
 	idx += sizeof(total_len);
+
+	/* We should do some checking of total_len against length here */
 
 	while (idx < total_len)
 	{
@@ -315,9 +336,11 @@ smap_t *smap_fromstring(char *string, u32b length)
 		idx += sizeof(tmp_type);
 
 		memcpy(&tmp_klen, string + idx, sizeof(tmp_klen));
+		tmp_klen = flip_u32b(tmp_klen);
 		idx += sizeof(tmp_klen);
 
 		memcpy(&tmp_dlen, string + idx, sizeof(tmp_dlen));
+		tmp_dlen = flip_u32b(tmp_dlen);
 		idx += sizeof(tmp_dlen);
 
 		tmp_key = string_make(string + idx);
@@ -337,15 +360,19 @@ smap_t *smap_fromstring(char *string, u32b length)
 				break;
 			case ST_S16B:
 				memcpy(&(se->value.s16bval), string + idx, sizeof(s16b));
+				se->value.s16bval = (s16b) flip_u16b((u16b) se->value.s16bval);
 				break;
 			case ST_U16B:
 				memcpy(&(se->value.u16bval), string + idx, sizeof(u16b));
+				se->value.u16bval = flip_u16b(se->value.u16bval);
 				break;
 			case ST_S32B:
 				memcpy(&(se->value.s32bval), string + idx, sizeof(s32b));
+				se->value.s32bval = (s32b) flip_u32b((u32b) se->value.s32bval);
 				break;
 			case ST_U32B:
 				memcpy(&(se->value.u32bval), string + idx, sizeof(u32b));
+				se->value.u32bval = flip_u32b(se->value.u32bval);
 				break;
 			case ST_STR:
 				se->value.strval = mem_alloc(tmp_dlen);

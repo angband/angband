@@ -41,6 +41,20 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf);
 
 
 
+/*** Byte-flipping functions ***/
+
+/*
+ * "Flip" the bits of the integer specified in `arg` to make them big-endian.
+ * Useful when writing to files intended to be portable across systems.
+ * 
+ * Returns the flipped value, or the original if the current system is already
+ * big-endian.
+ */
+u16b flip_u16b(u16b arg);
+u32b flip_u32b(u32b arg);
+
+
+
 /*** File access code ***/
 
 /** Data types **/
