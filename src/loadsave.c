@@ -1198,7 +1198,7 @@ smap_t *serialize_cave()
 void deserialize_cave(smap_t *s)
 {
 	u32b len;
-	void *buf;
+	byte *buf;
 	u32b i;
 	u32b j;
 
