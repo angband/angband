@@ -19,7 +19,6 @@
 #include "z-blockfile.h"
 #include "z-smap.h"
 
-#define SAVEFILE_VERSION	0
 #define KEYLEN	64
 
 u16b sf_saves = 0;
@@ -113,12 +112,10 @@ bool save(char *filename)
 	global_block = bf_createblock(bf, "system");
 	if (!global_block) return FALSE;
 	global_smap = smap_new();
-	if (!global_smap) return FALSE;
 
 	sf_saves++;
 
 	smap_put_str(global_smap, "version_string", VERSION_STRING);
-	smap_put_u32b(global_smap, "savefile_version", SAVEFILE_VERSION);
 	smap_put_u16b(global_smap, "past_saves", sf_saves);
 	smap_put_u32b(global_smap, "seed_flavor", seed_flavor);
 	smap_put_u32b(global_smap, "seed_town", seed_town);

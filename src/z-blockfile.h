@@ -87,11 +87,17 @@ blockfile_t *bf_open(const char *name, u32b flags);
 
 /*
  * Save all currently held data to the blockfile.
+ *
+ * Only do this if you have opened a blockfile for writing.  If you do *not* do
+ * this when writing, then data will not be stored to the blockfile.
  */
 void bf_save(blockfile_t *bf);
 
 /*
  * Close a blockfile handle.
+ *
+ * If the blockfile is opened for writing, you should call bf_save() first to
+ * save any data you have added, or it will not be saved.
  */
 void bf_close(blockfile_t *bf);
 
