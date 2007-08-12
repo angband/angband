@@ -9,7 +9,6 @@
  */
 
 #include "angband.h"
-#include "script.h"
 
 
 

@@ -12,7 +12,6 @@
 #include "angband.h"
 
 #include "init.h"
-#include "script.h"
 #include "cmds.h"
 #include "option.h"
 

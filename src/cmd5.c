@@ -10,8 +10,6 @@
 
 #include "angband.h"
 
-#include "script.h"
-
 
 /*
  * Returns chance of failure for a spell

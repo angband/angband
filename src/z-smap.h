@@ -3,12 +3,14 @@
 
 #include "h-basic.h"
 
-typedef struct _sentry_t {
+typedef struct _sentry_t
+{
 	byte type;
 	u32b keylen;
 	u32b datalen;
 	char *key;
-	union {
+	union
+	{
 		bool boolval;
 		char charval;
 		byte byteval;
@@ -23,7 +25,8 @@ typedef struct _sentry_t {
 	struct _sentry_t *next;
 } sentry_t;
 
-typedef struct _smap_t {
+typedef struct _smap_t
+{
 	sentry_t *entries;
 } smap_t;
 
