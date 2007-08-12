@@ -22,6 +22,7 @@ ANGFILES = \
 	attack.o \
 	birth.o \
 	cave.o \
+	compress.o \
 	cmd0.o \
 	cmd1.o \
 	cmd2.o \

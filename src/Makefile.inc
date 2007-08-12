@@ -22,6 +22,7 @@ birth.o: birth.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
 cave.o: cave.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h z-quark.h z-msg.h config.h defines.h option.h types.h \
   ui.h z-type.h externs.h
+compress.o: compress.c compress.h h-basic.h
 cmd0.o: cmd0.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h z-quark.h z-msg.h config.h defines.h option.h types.h \
   ui.h z-type.h externs.h cmds.h
