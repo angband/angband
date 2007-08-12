@@ -537,7 +537,7 @@ void load_player_inventory(blockfile_t *bf)
 {
 	block_t *inv_block = bf_findblock(bf, "player_inventory");
 	smap_t *sm;
-	void *blob;
+	const void *blob;
 	u32b len;
 
 	unsigned slot = 0;
@@ -557,7 +557,6 @@ void load_player_inventory(blockfile_t *bf)
 		obj_smap = smap_fromstring(blob, len);
 		deserialize_object(&temp, obj_smap);
 		smap_free(obj_smap);
-		FREE(blob);
 
 		smap_free(sm);
 
@@ -765,7 +764,7 @@ void load_random(blockfile_t *bf)
 {
 	block_t *rand_block = bf_findblock(bf, "random");
 	u32b len = 0;
-	void *data = NULL;
+	const void *data = NULL;
 	smap_t *s = load_smap(rand_block);
 
 	Rand_place = smap_get_u16b(s, "rand_place");
@@ -773,7 +772,6 @@ void load_random(blockfile_t *bf)
 	/* NOT ENDIANSAFE */
 	data = smap_get_blob(s, "rand_state", &len);
 	memcpy(Rand_state, data, len);
-	FREE(data);
 
 	smap_free(s);
 }
@@ -811,14 +809,13 @@ void load_squelch(blockfile_t *bf)
 	u32b i;
 	smap_t *s;
 	char nb[KEYLEN];
-	char *data;
+	const char *data;
 	u32b len;
 
 	s = load_smap(squelch_block);
 
 	data = smap_get_blob(s, "squelch_levels", &len);
 	memcpy(squelch_level, data, SQUELCH_BYTES);
-	FREE(data);
 
 	data = smap_get_blob(s, "everseen", &len);
 	if (len == z_info->e_max)
@@ -826,7 +823,6 @@ void load_squelch(blockfile_t *bf)
 		for (i = 0; i < z_info->e_max; i++)
 			e_info[i].everseen = (bool) data[i];
 	}
-	FREE(data);
 
 	inscriptions_count = smap_get_u16b(s, "inscriptions");
 	for (i = 0; i < inscriptions_count; i++)
@@ -835,9 +831,7 @@ void load_squelch(blockfile_t *bf)
 		inscriptions[i].kind_idx = smap_get_s16b(s, nb);
 
 		strnfmt(nb, KEYLEN, "inscription_str[%u]", (unsigned int)i);
-		data = smap_get_str(s, nb);
-		inscriptions[i].inscription_idx = quark_add(data);
-		FREE(data);
+		inscriptions[i].inscription_idx = quark_add(smap_get_str(s, nb));
 	}
 
 	smap_free(s);
@@ -849,7 +843,7 @@ void load_messages(blockfile_t *bf)
 
 	while (1)
 	{
-		char *text;
+		const char *text;
 		u16b type, count;
 
 		smap_t *sm = load_smap(message_block);
@@ -862,7 +856,6 @@ void load_messages(blockfile_t *bf)
 		while (count--)
 			message_add(text, type);
 
-		FREE(text);
 		smap_free(sm);
 	}
 }
@@ -1021,19 +1014,16 @@ void deserialize_player(smap_t *s)
 {
 	char nb[KEYLEN];
 	u32b i;
-	char *buf;
+	const char *buf;
 
 	buf = smap_get_str(s, "name");
 	my_strcpy(op_ptr->full_name, buf, sizeof(op_ptr->full_name));
-	FREE(buf);
 	
 	buf = smap_get_str(s, "died_from");
 	my_strcpy(p_ptr->died_from, buf, sizeof(p_ptr->died_from));
-	FREE(buf);
 
 	buf = smap_get_str(s, "history");
 	my_strcpy(p_ptr->history, buf, sizeof(p_ptr->history));
-	FREE(buf);
 
 	p_ptr->prace = smap_get_byte(s, "race");
 	p_ptr->pclass = smap_get_byte(s, "class");
@@ -1198,7 +1188,7 @@ smap_t *serialize_cave()
 void deserialize_cave(smap_t *s)
 {
 	u32b len;
-	byte *buf;
+	const byte *buf;
 	u32b i;
 	u32b j;
 
@@ -1227,12 +1217,10 @@ void deserialize_cave(smap_t *s)
 	buf = smap_get_blob(s, "cave_info", &len);
 	for (i = 0; i < DUNGEON_HGT; i++)
 		memcpy(&(cave_info[i]), buf + (i * 256), 256);
-	FREE(buf);
 
 	buf = smap_get_blob(s, "cave_info2", &len);
 	for (i = 0; i < DUNGEON_HGT; i++)
 		memcpy(&(cave_info2[i]), buf + (i * 256), 256);
-	FREE(buf);
 
 	buf = smap_get_blob(s, "cave_feat", &len);
 	for (i = 0; i < DUNGEON_HGT; i++)
@@ -1240,7 +1228,6 @@ void deserialize_cave(smap_t *s)
 		for (j = 0; j < DUNGEON_WID; j++)
 			cave_set_feat(i, j, *((byte *)(buf + (i * DUNGEON_WID) + j)));
 	}
-	FREE(buf);
 
 	player_place(p_ptr->py, p_ptr->px);
 }
@@ -1292,7 +1279,7 @@ smap_t *serialize_object(object_type *o_ptr)
 
 void deserialize_object(object_type *o_ptr, smap_t *s)
 {
-	char *inscrip;
+	const char *inscrip;
 
 	object_wipe(o_ptr);
 
@@ -1330,10 +1317,7 @@ void deserialize_object(object_type *o_ptr, smap_t *s)
 
 	inscrip = smap_get_str(s, "note");
 	if (inscrip)
-	{
 		o_ptr->note = quark_add(inscrip);
-		FREE(inscrip);
-	}
 
 
 	/*** Fix old objects ***/
@@ -1499,7 +1483,7 @@ void deserialize_store(store_type *st_ptr, smap_t *s)
 	char nb[KEYLEN];
 	smap_t *sm;
 	u32b len;
-	char *blob;
+	const char *blob;
 
 	st_ptr->owner = smap_get_byte(s, "owner");
 	if (st_ptr->owner >= z_info->b_max)
@@ -1518,7 +1502,6 @@ void deserialize_store(store_type *st_ptr, smap_t *s)
 			store_items++;
 
 		i++;
-		FREE(blob);
 		smap_free(sm);
 	}
 

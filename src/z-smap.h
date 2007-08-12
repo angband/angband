@@ -47,8 +47,8 @@ s16b smap_get_s16b(smap_t *smap, const char *key);
 u16b smap_get_u16b(smap_t *smap, const char *key);
 s32b smap_get_s32b(smap_t *smap, const char *key);
 u32b smap_get_u32b(smap_t *smap, const char *key);
-char *smap_get_str(smap_t *smap, const char *key);
-void *smap_get_blob(smap_t *smap, const char *key, u32b *len);
+const char *smap_get_str(smap_t *smap, const char *key);
+const void *smap_get_blob(smap_t *smap, const char *key, u32b *len);
 
 char *smap_tostring(smap_t *smap, u32b *length);
 smap_t *smap_fromstring(const char *string, u32b length);

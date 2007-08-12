@@ -191,25 +191,20 @@ u32b smap_get_u32b(smap_t *smap, const char *key)
 	return (!se ? 0 : se->value.u32bval);
 }
 
-char *smap_get_str(smap_t *smap, const char *key)
+const char *smap_get_str(smap_t *smap, const char *key)
 {
 	sentry_t *se = smap_get(smap, key);
-	return (!se ? NULL : string_make(se->value.strval));
+	return (!se ? NULL : se->value.strval);
 }
 
-void *smap_get_blob(smap_t *smap, const char *key, u32b *len)
+const void *smap_get_blob(smap_t *smap, const char *key, u32b *len)
 {
 	sentry_t *se = smap_get(smap, key);
-	void *nb;
 
-	if (!se)
-		return NULL;
+	if (!se) return NULL;
 
-	nb = mem_alloc(se->datalen);
-	memcpy(nb, se->value.blobval, se->datalen);
 	*len = se->datalen;
-
-	return nb;
+	return se->value.blobval;
 }
 
 
