@@ -1500,6 +1500,7 @@ static term_data data[MAX_TERM_DATA];
 /*
  * Path to the X11 settings file
  */
+static const char *x11_prefs = "x11-settings.prf";
 char settings[1024];
 
 
@@ -2230,9 +2231,6 @@ static errr term_data_init(term_data *td, int i)
 	/* Get default font for this term */
 	font = get_default_font(i);
 
-	/* Build the filename */
-	path_build(settings, sizeof(settings), ANGBAND_DIR_USER, "x11-settings.prf");
-
 	/* Open the file */
 	fff = file_open(settings, MODE_READ, -1);
 
@@ -2470,11 +2468,16 @@ static errr term_data_init(term_data *td, int i)
 	/* Oops */
 	if (sh == NULL) quit("XAllocSizeHints failed");
 
+	if (x || y)
+		sh->flags = USPosition;
+	else
+		sh->flags = 0;
+
 	/* Main window has a differing minimum size */
 	if (i == 0)
 	{
 		/* Main window min size is 80x24 */
-		sh->flags = PMinSize | PMaxSize;
+		sh->flags |= (PMinSize | PMaxSize);
 		sh->min_width = 80 * td->tile_wid + (ox + ox);
 		sh->min_height = 24 * td->tile_hgt + (oy + oy);
 		sh->max_width = 255 * td->tile_wid + (ox + ox);
@@ -2485,7 +2488,7 @@ static errr term_data_init(term_data *td, int i)
 	else
 	{
 		/* Other windows */
-		sh->flags = PMinSize | PMaxSize;
+		sh->flags |= (PMinSize | PMaxSize);
 		sh->min_width = td->tile_wid + (ox + ox);
 		sh->min_height = td->tile_hgt + (oy + oy);
 		sh->max_width = 255 * td->tile_wid + (ox + ox);
@@ -2544,7 +2547,7 @@ static errr term_data_init(term_data *td, int i)
 }
 
 
-const char help_x11[] = "Basic X11, subopts -d<display> -n<windows>"
+const char help_x11[] = "Basic X11, subopts -d<display> -n<windows> -x<file>"
 #ifdef USE_GRAPHICS
                         " -s(moothRescale)"
                         "\n           -b(Bigtile) -o(original) -a(AdamBolt) -g(David Gervais)"
@@ -2613,7 +2616,7 @@ errr init_x11(int argc, char **argv)
 
 	cptr dpy_name = "";
 
-	int num_term = 1;
+	int num_term = -1;
 
 	ang_file *fff;
 
@@ -2633,50 +2636,6 @@ errr init_x11(int argc, char **argv)
 	char *TmpData;
 
 #endif /* USE_GRAPHICS */
-
-
-	/*
-	 * Check x11-settings for the number of windows before handling
-	 * command line options to allow for easy override
-	 */
-
-	/* Build the filename */
-	(void)path_build(settings, sizeof(settings), ANGBAND_DIR_USER, "x11-settings.prf");
-
-	/* Open the file */
-	fff = file_open(settings, MODE_READ, -1);
-
-	/* File exists */
-	if (fff)
-	{
-		/* Process the file */
-		while (file_getl(fff, buf, sizeof(buf)))
-		{
-			/* Count lines */
-			line++;
-
-			/* Skip "empty" lines */
-			if (!buf[0]) continue;
-
-			/* Skip "blank" lines */
-			if (isspace((unsigned char)buf[0])) continue;
-
-			/* Skip comments */
-			if (buf[0] == '#') continue;
-
-			/* Number of terminal windows */
-			if (prefix(buf, "TERM_WINS"))
-			{
-				str = strstr(buf, "=");
-				val = (str != NULL) ? atoi(str + 1) : -1;
-				if (val > 0) num_term = val;
-				continue;
-			}
-		}
-
-		/* Close */
-		(void)file_close(fff);
-	}
 
 	/* Parse args */
 	for (i = 1; i < argc; i++)
@@ -2729,7 +2688,57 @@ errr init_x11(int argc, char **argv)
 			continue;
 		}
 
+		if (prefix(argv[i], "-x"))
+		{
+			x11_prefs = argv[i] + 2;
+			continue;
+		}
+
 		plog_fmt("Ignoring option: %s", argv[i]);
+	}
+
+
+	if (num_term == -1)
+	{
+		num_term = 1;
+
+		/* Build the filename */
+		(void)path_build(settings, sizeof(settings), ANGBAND_DIR_USER, "x11-settings.prf");
+
+		/* Open the file */
+		fff = file_open(settings, MODE_READ, -1);
+
+		/* File exists */
+		if (fff)
+		{
+			/* Process the file */
+			while (file_getl(fff, buf, sizeof(buf)))
+			{
+				/* Count lines */
+				line++;
+	
+				/* Skip "empty" lines */
+				if (!buf[0]) continue;
+	
+				/* Skip "blank" lines */
+				if (isspace((unsigned char)buf[0])) continue;
+	
+				/* Skip comments */
+				if (buf[0] == '#') continue;
+	
+				/* Number of terminal windows */
+				if (prefix(buf, "TERM_WINS"))
+				{
+					str = strstr(buf, "=");
+					val = (str != NULL) ? atoi(str + 1) : -1;
+					if (val > 0) num_term = val;
+					continue;
+				}
+			}
+	
+			/* Close */
+			(void)file_close(fff);
+		}
 	}
 
 
