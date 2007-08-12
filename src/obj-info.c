@@ -567,7 +567,7 @@ static bool describe_activation(const object_type *o_ptr, u32b f3)
 	/* Print a colourised description */
 	do
 	{
-		if (isdigit((unsigned char) *desc) || isdigit((unsigned char) *(desc + 1)))
+		if (isdigit((unsigned char) *desc))
 			text_out_c(TERM_L_GREEN, "%c", *desc);
 		else
 			text_out("%c", *desc);
@@ -809,6 +809,7 @@ void object_info_screen(const object_type *o_ptr)
 	has_info = object_info_out(o_ptr);
 
 	/* Dump origin info */
+	new_paragraph = TRUE;
 	describe_origin(o_ptr);
 
 	new_paragraph = TRUE;

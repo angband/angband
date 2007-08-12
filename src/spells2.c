@@ -173,7 +173,7 @@ bool do_dec_stat(int stat, bool perma)
 	}
 
 	/* Sustain */
-	if (sust)
+	if (sust && !perma)
 	{
 		/* Message */
 		msg_format("You feel very %s for a moment, but the feeling passes.",
