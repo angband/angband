@@ -1,5 +1,5 @@
 /*
- * File: z-map.c
+ * File: z-smap.c
  * Purpose: Implement a serializable map type
  *
  * Copyright (c) 2007 Elly
@@ -63,9 +63,12 @@ void smap_free(smap_t *smap)
 static sentry_t *smap_put(smap_t *smap, const char *key, byte type, u32b dlen)
 {
 	sentry_t *snew = ZNEW(sentry_t);
+	size_t keylen = strlen(key) + 1;
+
+	if (keylen > 255) return NULL;
 
 	snew->type = type;
-	snew->keylen = strlen(key) + 1;
+	snew->keylen = keylen;
 	snew->key = string_make(key);
 	snew->datalen = dlen;
 
@@ -216,12 +219,12 @@ const void *smap_get_blob(smap_t *smap, const char *key, u32b *len)
 		memcpy(where, &temp, sizeof(temp)); \
 	} while (0);
 
-char *smap_tostring(smap_t *smap, u32b *length)
+byte *smap_tostring(smap_t *smap, u32b *length)
 {
 	u32b total_size;
 	u32b curr_idx = 0;
 	sentry_t *se = smap->entries;
-	char *newbuf = NULL;
+	byte *newbuf = NULL;
 
 
 	/* Make room for the total_size field at the start */
@@ -244,8 +247,8 @@ char *smap_tostring(smap_t *smap, u32b *length)
 	{
 		memcpy(newbuf + curr_idx, &se->type, sizeof(se->type));
 		curr_idx += sizeof(se->type);
-		
-		memcpy_u32b(newbuf + curr_idx, se->keylen);
+
+		memcpy(newbuf + curr_idx, &se->keylen, sizeof(se->keylen));
 		curr_idx += sizeof(se->keylen);
 
 		memcpy_u32b(newbuf + curr_idx, se->datalen);
@@ -308,7 +311,7 @@ char *smap_tostring(smap_t *smap, u32b *length)
 }
 
 
-smap_t *smap_fromstring(const char *string, u32b length)
+smap_t *smap_fromstring(const byte *string, u32b length)
 {
 	smap_t *smap = smap_new();
 	u32b total_len = 0;
@@ -317,7 +320,7 @@ smap_t *smap_fromstring(const char *string, u32b length)
 
 	char *tmp_key;
 	byte tmp_type;
-	u32b tmp_klen;
+	byte tmp_klen;
 	u32b tmp_dlen;
 
 	memcpy(&total_len, string + idx, sizeof(total_len));
@@ -332,14 +335,13 @@ smap_t *smap_fromstring(const char *string, u32b length)
 		idx += sizeof(tmp_type);
 
 		memcpy(&tmp_klen, string + idx, sizeof(tmp_klen));
-		tmp_klen = flip_u32b(tmp_klen);
 		idx += sizeof(tmp_klen);
 
 		memcpy(&tmp_dlen, string + idx, sizeof(tmp_dlen));
 		tmp_dlen = flip_u32b(tmp_dlen);
 		idx += sizeof(tmp_dlen);
 
-		tmp_key = string_make(string + idx);
+		tmp_key = string_make((char *) string + idx);
 		idx += strlen(tmp_key) + 1;
 
 		se = smap_put(smap, tmp_key, tmp_type, tmp_dlen);

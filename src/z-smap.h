@@ -6,7 +6,7 @@
 typedef struct _sentry_t
 {
 	byte type;
-	u32b keylen;
+	byte keylen;
 	u32b datalen;
 	char *key;
 	union
@@ -53,8 +53,8 @@ u32b smap_get_u32b(smap_t *smap, const char *key);
 const char *smap_get_str(smap_t *smap, const char *key);
 const void *smap_get_blob(smap_t *smap, const char *key, u32b *len);
 
-char *smap_tostring(smap_t *smap, u32b *length);
-smap_t *smap_fromstring(const char *string, u32b length);
+byte *smap_tostring(smap_t *smap, u32b *length);
+smap_t *smap_fromstring(const byte *string, u32b length);
 
 void smap_foreach(smap_t *smap, void (*fn)(sentry_t *se));
 void smap_print(smap_t *smap);

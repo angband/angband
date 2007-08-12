@@ -202,7 +202,7 @@ bool load(char *filename)
 void save_smap(block_t *block, smap_t *smap)
 {
 	u32b len = 0;
-	char *data = smap_tostring(smap, &len);
+	byte *data = smap_tostring(smap, &len);
 	bf_createrecord(block, data, len);
 	FREE(data);
 }
@@ -211,7 +211,7 @@ smap_t *load_smap(block_t *block)
 {
 	u32b len = 0;
 
-	const char *data = bf_nextrecord(block, &len);
+	const byte *data = bf_nextrecord(block, &len);
 	if (!data) return NULL;
 
 	return smap_fromstring(data, len);
@@ -1452,7 +1452,6 @@ smap_t *serialize_store(store_type *st_ptr)
 	smap_t *s = smap_new();
 	char nb[KEYLEN];
 	u32b i;
-	char *blob;
 	u32b len;
 
 	smap_put_byte(s, "owner", st_ptr->owner);
@@ -1460,7 +1459,7 @@ smap_t *serialize_store(store_type *st_ptr)
 	for (i = 0; i < st_ptr->stock_num; i++)
 	{
 		smap_t *t = serialize_object(&(st_ptr->stock[i]));
-		blob = smap_tostring(t, &len);
+		byte *blob = smap_tostring(t, &len);
 
 		strnfmt(nb, sizeof(nb), "stock[%u]", (unsigned int)i);
 		smap_put_blob(s, nb, blob, len);
@@ -1480,7 +1479,7 @@ void deserialize_store(store_type *st_ptr, smap_t *s)
 	char nb[KEYLEN];
 	smap_t *sm;
 	u32b len;
-	const char *blob;
+	const byte *blob;
 
 	st_ptr->owner = smap_get_byte(s, "owner");
 	if (st_ptr->owner >= z_info->b_max)
