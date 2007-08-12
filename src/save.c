@@ -2,7 +2,7 @@
  * File: save.c
  * Purpose: Old-style savefile saving
  *
- * Copyright (c) [yyyy] [author list]
+ * Copyright (c) 1997 Ben Harrison
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:

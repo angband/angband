@@ -1,5 +1,5 @@
 /*
- * File: xxx.c
+ * File: cmd1.c
  * Purpose: Searching, movement, and pickup
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke,
