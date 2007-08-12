@@ -239,27 +239,6 @@
 
 
 
-/*
- * OPTION: Attempt to minimize the size of the game
- */
-/* #define ANGBAND_LITE */
-
-
-/*
- * Hack -- React to the "ANGBAND_LITE" flag
- */
-#ifdef ANGBAND_LITE
-# undef ALLOW_COLORS
-# undef ALLOW_VISUALS
-# undef ALLOW_MACROS
-# undef MONSTER_FLOW
-# undef DRS_SMART_OPTIONS
-# undef ALLOW_BORG
-# undef ALLOW_DEBUG
-# undef ALLOW_SPOILERS
-# undef ALLOW_TEMPLATES
-# undef MONSTER_AI
-#endif
 
 
 /*

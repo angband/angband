@@ -2657,15 +2657,6 @@ enum
 
 
 /*
- * Hack -- attempt to reduce various values
- */
-#ifdef ANGBAND_LITE
-# undef MACRO_MAX
-# define MACRO_MAX	128
-#endif
-
-
-/*
  * Available graphic modes
  */
 #define GRAPHICS_NONE           0
