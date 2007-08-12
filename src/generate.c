@@ -8,6 +8,7 @@
  * messages, autoscummer behavior.  Creation of the town.
  *
  * Copyright (c) 1997-2001 Ben Harrison, James E. Wilson, Robert A. Koeneke
+ * Copyright (c) 2006 Leon Marrick
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:

@@ -2,7 +2,7 @@
  * File: main-ros.c
  * Purpose: Support for RISC OS versions of Angband
  *
- * Copyright (c) 2000-2007  Musus Umbra, Antony Sidwell, Thomas Harris,
+ * Copyright (c) 2000-2007 Musus Umbra, Antony Sidwell, Thomas Harris,
  * Andrew Sidwell, Ben Harrison.
  *
  * This work is free software; you can redistribute it and/or modify it
@@ -16,10 +16,10 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+#include "angband.h"
+
 
 #ifdef __riscos
-
-#include "angband.h"
 
 /*
  * Purpose: Support for RISC OS Angband 2.9.x onwards (and variants)

@@ -1,5 +1,5 @@
 /*
- * File: save-block.c
+ * File: z-blockfile.c
  * Purpose: Blockfile saving and loading
  *
  * Copyright (c) 2007 Elly

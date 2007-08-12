@@ -1,5 +1,5 @@
 /*
- * File: obj-info.c
+ * File: monster1.c
  * Purpose: Monster description code.
  *
  * Copyright (c) 1997-2007 Ben Harrison, James E. Wilson, Robert A. Koeneke

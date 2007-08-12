@@ -3,7 +3,8 @@
  * Purpose: Save memory by storing strings in a global array, ensuring
  * that each is only allocated once.
  *
- * Copyright (c) 1997-2007 Ben Harrison, "Elly"
+ * Copyright (c) 1997 Ben Harrison
+ * Copyright (c) 2007 "Elly"
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:

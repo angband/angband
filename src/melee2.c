@@ -1,13 +1,20 @@
-/* File: melee2.c */
-
 /*
- * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
+ * File: melee2.c
+ * Purpose: Monster AI routines
  *
- * This software may be copied and distributed for educational, research,
- * and not for profit purposes provided that this copyright and statement
- * are included in all such copies.  Other copyrights may also apply.
+ * Copyright (c) 1997 Ben Harrison, David Reeve Sward, Keldon Jones.
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
  */
-
 #include "angband.h"
 
 
@@ -16,10 +23,6 @@
 
 /*
  * And now for Intelligent monster attacks (including spells).
- *
- * Original idea and code by "DRS" (David Reeve Sward).
- *
- * Major modifications by "BEN" (Ben Harrison).
  *
  * Give monsters more intelligent attack/spell selection based on
  * observations of previous attacks on the player, and/or by allowing

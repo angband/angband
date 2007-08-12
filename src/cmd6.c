@@ -2,8 +2,8 @@
  * File: cmd6.c
  * Purpose: Eating/quaffing/reading/aiming/staving/zapping/activating
  *
- * Copyright (c) 1997-2007 Andrew Sidwell, Ben Harrison, James E. Wilson,
- * Robert A. Koeneke
+ * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
+ * Copyright (c) 2007 Andrew Sidwell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:

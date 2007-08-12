@@ -1,12 +1,22 @@
-/* File: z-rand.c */
-
 /*
- * Copyright (c) 1997 Ben Harrison, and others
+ * File: z-rand.c
+ * Purpose: A simple RNG for Angband
  *
- * This software may be copied and distributed for educational, research,
- * and not for profit purposes provided that this copyright and statement
- * are included in all such copies.  Other copyrights may also apply.
+ * Copyright (c) 1997 Ben Harrison, Randy Hutson
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
  */
+#include "z-rand.h"
+
 
 
 /*
@@ -32,15 +42,9 @@
  * This (optimized) random number generator is based loosely on the old
  * "random.c" file from Berkeley but with some major optimizations and
  * algorithm changes.  See below for more details.
- *
- * Some code by Ben Harrison (benh@phial.com).
- *
- * Some code by Randy (randy@stat.tamu.edu).
  */
 
 
-
-#include "z-rand.h"
 
 
 /*
