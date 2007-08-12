@@ -1,142 +1,11 @@
-/* File: config.h */
-
 #ifndef INCLUDED_CONFIG_H
 #define INCLUDED_CONFIG_H
 
-/*
- * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
- *
- * This software may be copied and distributed for educational, research,
- * and not for profit purposes provided that this copyright and statement
- * are included in all such copies.  Other copyrights may also apply.
- */
-
+/*** Some really important things you ought to change ***/
 
 /*
- * Look through the following lines, and where a comment includes the
- * tag "OPTION:", examine the associated "#define" statements, and decide
- * whether you wish to keep, comment, or uncomment them.  You should not
- * have to modify any lines not indicated by "OPTION".
- *
- * Note: Also examine the "system" configuration file "h-basic.h".
- *
- * And finally, remember that the "Makefile" will specify some rather
- * important compile time options, like what visual module to use.
- */
-
-
-/*
- * OPTION: See the Makefile(s), where several options may be declared.
- *
- * Some popular options include "USE_GCU" (allow use with Unix "curses"),
- * "USE_X11" (allow basic use with Unix X11), "USE_XAW" (allow use with
- * Unix X11 plus the Athena Widget set), and "USE_CAP" (allow use with
- * the "termcap" library, or with hard-coded vt100 terminals).
- *
- * Several other such options are available for non-unix machines,
- * such as "MACINTOSH", "WINDOWS", "USE_IBM", "USE_EMX".
- */
-
-
-
-/*
- * OPTION: Hack -- Compile in support for "Borg mode"
- */
-/* #define ALLOW_BORG */
-
-
-/*
- * OPTION: Hack -- Compile in support for "Debug Commands"
- */
-#define ALLOW_DEBUG
-
-/*
- * OPTION: Hack -- Compile in support for "Spoiler Generation"
- */
-#define ALLOW_SPOILERS
-
-/*
- * OPTION: Allow "do_cmd_colors" at run-time
- */
-#define ALLOW_COLORS
-
-/*
- * OPTION: Allow "do_cmd_visuals" at run-time
- */
-#define ALLOW_VISUALS
-
-/*
- * OPTION: Allow "do_cmd_macros" at run-time
- */
-#define ALLOW_MACROS
-
-
-/*
- * OPTION: Allow parsing of the ascii template files in "init.c".
- * This must be defined if you do not have valid binary image files.
- * It should be usually be defined anyway to allow easy "updating".
- */
-#define ALLOW_TEMPLATES
-
-
-/*
- * OPTION: Allow processing of template files once parsed.
- * This 'evaluates' the contents of the files. It is is currently
- * used for balancing the monster list (monster.txt).
- */
-
-/* #define ALLOW_TEMPLATES_PROCESS */
-
-
-/*
- * OPTION: Allow output of 'parsable' ascii template files.
- * This can be used to help change the ascii template format, and to
- * make changes to the data in the parsed files within Angband itself.
- *
- * Files are output to lib\user with the same file names as lib\edit.
- */
-
-/* #define ALLOW_TEMPLATES_OUTPUT */
-
-
-
-/*
- * OPTION: Allow "Borgs" to yield "high scores"
- */
-/* #define SCORE_BORGS */
-
-
-
-
-/*
- * OPTION: Use the "complex" wall illumination code
- */
-/* #define UPDATE_VIEW_COMPLEX_WALL_ILLUMINATION */
-
-
-/*
- * OPTION: Gamma correct colours (with X11)
- */
-#define SUPPORT_GAMMA
-
-/*
- * OPTION: Allow the use of "sound" in various places.
- */
-#define USE_SOUND
-
-/*
- * OPTION: Allow the use of "graphics" in various places
- */
-#define USE_GRAPHICS
-
-
-
-
-/*
- * OPTION: Set the "default" path to the angband "lib" directory.
- *
- * See "main.c" for usage, and note that this value is only used on
- * certain machines, primarily Unix machines.
+ * Defines the default path to the Angband "lib" directory, for ports that use
+ * the main.c file.
  *
  * The configure script overrides this value.  Check the "--prefix=<dir>"
  * option of the configure script.
@@ -179,6 +48,83 @@
 
 
 
+/*** Some no-brainer defines ***/
+
+/* Allow the game to make noises correlating to what the player does in-game */
+#define USE_SOUND
+
+/* Allow the use of graphics rather than only having a text-mode */
+#define USE_GRAPHICS
+
+/* Compile in support for debug commands */
+#define ALLOW_DEBUG
+
+/* Compile in support for spoiler generation */
+#define ALLOW_SPOILERS
+
+/* Allow changing colours at runtime */
+#define ALLOW_COLORS
+
+/* Allow changing "visuals" at runtime */
+#define ALLOW_VISUALS
+
+/* Allow chaning macros at run-time */
+#define ALLOW_MACROS
+
+/* Allow parsing of the lib/edit/ files. */
+#define ALLOW_TEMPLATES
+
+
+
+/*** Borg ***/
+
+/* Compile in support for the borg. */
+/* #define ALLOW_BORG */
+
+/* Allow borgs to yield "high scores"? */
+/* #define SCORE_BORGS */
+
+
+/*
+ * Allow the Borg to use graphics.
+ */
+#if defined(ALLOW_BORG) && defined(USE_GRAPHICS)
+# define ALLOW_BORG_GRAPHICS
+#endif
+
+
+
+/*** Things useful for debugging compiles ***/
+
+/*
+ * OPTION: Allow processing of template files once parsed.
+ * This 'evaluates' the contents of the files. It is is currently used for
+ * balancing the monster list (monster.txt).
+ */
+/* #define ALLOW_TEMPLATES_PROCESS */
+
+
+/*
+ * OPTION: Allow output of 'parsable' ascii template files.
+ * This can be used to help change the ascii template format, and to make
+ * changes to the data in the parsed files within Angband itself.
+ *
+ * Files are output to lib/user with the same file names as lib/edit.
+ */
+/* #define ALLOW_TEMPLATES_OUTPUT */
+
+
+
+
+
+/*** X11 settings ***/
+
+/*
+ * OPTION: Gamma correct colours (with X11)
+ */
+#define SUPPORT_GAMMA
+
+
 /*
  * OPTION: Default font (when using X11).
  */
@@ -197,24 +143,5 @@
 #define DEFAULT_X11_FONT_6		"5x8"
 #define DEFAULT_X11_FONT_7		"5x8"
 
-
-
-
-
-/*
- * HACK - define if the source contains the cleanup_angband() function.
- */
-#define HAS_CLEANUP
-
-
-
-/*
- * Allow the Borg to use graphics.
- */
-#ifdef ALLOW_BORG
-# ifdef USE_GRAPHICS
-#  define ALLOW_BORG_GRAPHICS
-# endif /* USE_GRAPHICS */
-#endif /* ALLOW_BORG */
 
 #endif /* !INCLUDED_CONFIG_H */

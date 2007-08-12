@@ -77,6 +77,9 @@
 #if (defined(WINDOWS) && !defined(USE_SDL))
 
 
+#define HAS_CLEANUP
+
+
 /*
  * Use HTML-Help.
  */

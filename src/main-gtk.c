@@ -20,6 +20,9 @@
 
 #ifdef USE_GTK
 
+#define HAS_CLEANUP
+
+
 #include "main.h"
 
 #include <gtk/gtk.h>

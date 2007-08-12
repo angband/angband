@@ -2938,31 +2938,12 @@ void update_view(void)
 							int yy = (y < py) ? (y + 1) : (y > py) ? (y - 1) : y;
 							int xx = (x < px) ? (x + 1) : (x > px) ? (x - 1) : x;
 
-#ifdef UPDATE_VIEW_COMPLEX_WALL_ILLUMINATION
-
-							/* Check for "complex" illumination */
-							if ((!(cave_info[yy][xx] & (CAVE_WALL)) &&
-							      (cave_info[yy][xx] & (CAVE_GLOW))) ||
-							    (!(cave_info[y][xx] & (CAVE_WALL)) &&
-							      (cave_info[y][xx] & (CAVE_GLOW))) ||
-							    (!(cave_info[yy][x] & (CAVE_WALL)) &&
-							      (cave_info[yy][x] & (CAVE_GLOW))))
-							{
-								/* Mark as seen */
-								info |= (CAVE_SEEN);
-							}
-
-#else /* UPDATE_VIEW_COMPLEX_WALL_ILLUMINATION */
-
 							/* Check for "simple" illumination */
 							if (cave_info[yy][xx] & (CAVE_GLOW))
 							{
 								/* Mark as seen */
 								info |= (CAVE_SEEN);
 							}
-
-#endif /* UPDATE_VIEW_COMPLEX_WALL_ILLUMINATION */
-
 						}
 
 						/* Save cave info */
