@@ -220,7 +220,7 @@ static void do_cmd_use(const char *q, const char *s, int flag, int snd, use_type
 	/* If the item requires a direction, get one (allow cancelling) */
 	if (effect_aim(effect) ||
 	    (o_ptr->tval == TV_WAND) ||
-	    (o_ptr->tval == TV_ROD && (o_ptr->sval >= SV_ROD_MIN_DIRECTION || !object_aware_p(o_ptr))))
+	    (o_ptr->tval == TV_ROD && !object_aware_p(o_ptr)))
 	{
 		/* Get a direction, allow cancel */
 		if (!get_aim_dir(&dir))
