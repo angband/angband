@@ -324,8 +324,6 @@ static void remove_bad_spells(int m_idx, u32b *f4p, u32b *f5p, u32b *f6p)
 #endif /* DRS_SMART_OPTIONS */
 
 
-#ifdef MONSTER_AI
-
 /*
  * Determine if there is a space near the selected spot in which
  * a summoned creature can appear
@@ -396,7 +394,6 @@ static bool clean_shot(int y1, int x1, int y2, int x2)
 	return (TRUE);
 }
 
-#endif /* MONSTER_AI */
 
 
 /*
@@ -474,8 +471,6 @@ static int choose_attack_spell(int m_idx, u32b f4, u32b f5, u32b f6)
 	byte spells[96];
 
 	int i, py = p_ptr->py, px = p_ptr->px;
-
-#ifdef MONSTER_AI
 
 	bool has_escape, has_attack, has_summon, has_tactic;
 	bool has_annoy, has_haste, has_heal;
@@ -603,8 +598,6 @@ static int choose_attack_spell(int m_idx, u32b f4, u32b f5, u32b f6)
 		if (!(f4 || f5 || f6)) return (0);
 	}
 
-#endif /* MONSTER_AI */
-
 	/* Extract the "innate" spells */
 	for (i = 0; i < 32; i++)
 	{
@@ -683,9 +676,7 @@ bool make_attack_spell(int m_idx)
 
 	int k, chance, thrown_spell, rlev;
 
-#ifdef MONSTER_AI
 	int failrate;
-#endif /* MONSTER_AI */
 
 	u32b f4, f5, f6;
 
@@ -780,8 +771,6 @@ bool make_attack_spell(int m_idx)
 
 #endif /* DRS_SMART_OPTIONS */
 
-#ifdef MONSTER_AI
-
 	/* Check whether summons and bolts are worth it. */
 	if (adult_ai_smart && !(r_ptr->flags2 & (RF2_STUPID)))
 	{
@@ -809,7 +798,6 @@ bool make_attack_spell(int m_idx)
 		/* No spells left */
 		if (!f4 && !f5 && !f6) return (FALSE);
 	}
-#endif /* MONSTER_AI */
 
 	/* Handle "leaving" */
 	if (p_ptr->leaving) return (FALSE);
@@ -831,7 +819,6 @@ bool make_attack_spell(int m_idx)
 	/* Abort if no spell was chosen */
 	if (!thrown_spell) return (FALSE);
 
-#ifdef MONSTER_AI
 	/* Calculate spell failure rate */
 	failrate = 25 - (rlev + 3) / 4;
 
@@ -846,7 +833,6 @@ bool make_attack_spell(int m_idx)
 
 		return (TRUE);
 	}
-#endif /* MONSTER_AI */
 
 	/* Cast the spell. */
 	switch (thrown_spell)
@@ -2478,8 +2464,6 @@ static bool get_moves_aux(int m_idx, int *yp, int *xp)
 	return (TRUE);
 }
 
-#ifdef MONSTER_AI
-
 /*
  * Provide a location to flee to, but give the player a wide berth.
  *
@@ -2569,12 +2553,9 @@ static bool get_fear_moves_aux(int m_idx, int *yp, int *xp)
 	return (TRUE);
 }
 
-#endif /* MONSTER_AI */
-
 #endif /* MONSTER_FLOW */
 
 
-#ifdef MONSTER_AI
 
 /*
  * Hack -- Precompute a bunch of calls to distance() in find_safety() and
@@ -2711,8 +2692,6 @@ static const int *dist_offsets_x[10] =
 	d_off_x_5, d_off_x_6, d_off_x_7, d_off_x_8, d_off_x_9
 };
 
-#endif /* MONSTER_AI */
-
 
 /*
  * Choose a "safe" location near a monster for it to run toward.
@@ -2729,7 +2708,6 @@ static const int *dist_offsets_x[10] =
 static bool find_safety(int m_idx, int *yp, int *xp)
 {
 
-#ifdef MONSTER_AI
 #ifdef MONSTER_FLOW
 
 	monster_type *m_ptr = &mon_list[m_idx];
@@ -2806,14 +2784,13 @@ static bool find_safety(int m_idx, int *yp, int *xp)
 	}
 
 #endif /* MONSTER_FLOW */
-#endif /* MONSTER_AI */
 
 	/* No safe place */
 	return (FALSE);
 }
 
 
-#ifdef MONSTER_AI
+
 
 /*
  * Choose a good hiding place near a monster for it to run toward.
@@ -2894,8 +2871,6 @@ static bool find_hiding(int m_idx, int *yp, int *xp)
 	return (FALSE);
 }
 
-#endif /* MONSTER_AI */
-
 
 /*
  * Choose "logical" directions for monster movement
@@ -2935,7 +2910,6 @@ static bool get_moves(int m_idx, int mm[5])
 	x = m_ptr->fx - x2;
 
 
-#ifdef MONSTER_AI
 
 	/* Normal animal packs try to get the player out of corridors. */
 	if (adult_ai_packs &&
@@ -2965,7 +2939,6 @@ static bool get_moves(int m_idx, int mm[5])
 		}
 	}
 
-#endif /* MONSTER_AI */
 
 	/* Apply fear */
 	if (!done && mon_will_run(m_idx))
@@ -2978,7 +2951,6 @@ static bool get_moves(int m_idx, int mm[5])
 			x = (-x);
 		}
 
-#ifdef MONSTER_AI
 #ifdef MONSTER_FLOW
 
 		else
@@ -2992,13 +2964,10 @@ static bool get_moves(int m_idx, int mm[5])
 		}
 
 #endif /* MONSTER_FLOW */
-#endif /* MONSTER_AI */
 
 		done = TRUE;
 	}
 
-
-#ifdef MONSTER_AI
 
 	/* Monster groups try to surround the player */
 	if (!done && adult_ai_packs && (r_ptr->flags1 & RF1_FRIENDS))
@@ -3033,8 +3002,6 @@ static bool get_moves(int m_idx, int mm[5])
 		y = m_ptr->fy - y2;
 		x = m_ptr->fx - x2;
 	}
-
-#endif /* MONSTER_AI */
 
 
 	/* Check for no move */

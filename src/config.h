@@ -116,16 +116,6 @@
 
 
 /*
- * OPTION: Allow use of the "adult_ai_smart" and "adult_ai_packs"
- * software options, which attempt to make monsters smarter.
- *
- * AI code by Keldon Jones (keldon@umr.edu), modified by Julian
- * Lighton (jl8e@fragment.com).
- */
-#define MONSTER_AI
-
-
-/*
  * OPTION: Use the "complex" wall illumination code
  */
 /* #define UPDATE_VIEW_COMPLEX_WALL_ILLUMINATION */
