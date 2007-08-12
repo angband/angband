@@ -1,9 +1,8 @@
 /*
  * File: randname.c
  * Purpose: Random name generation
- * Based on W. Sheldon Simms name generator originally in randart.c
  *
- * Copyright (c) 2007 Antony Sidwell and others
+ * Copyright (c) 2007 Antony Sidwell, Sheldon Simms
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
