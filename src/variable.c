@@ -422,8 +422,6 @@ s16b (*cave_o_idx)[DUNGEON_WID];
 s16b (*cave_m_idx)[DUNGEON_WID];
 
 
-#ifdef MONSTER_FLOW
-
 /*
  * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid flow "cost" values
  */
@@ -433,8 +431,6 @@ byte (*cave_cost)[DUNGEON_WID];
  * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid flow "when" stamps
  */
 byte (*cave_when)[DUNGEON_WID];
-
-#endif	/* MONSTER_FLOW */
 
 
 /*

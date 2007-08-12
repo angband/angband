@@ -18,9 +18,6 @@
 #include "angband.h"
 
 
-#ifdef DRS_SMART_OPTIONS
-
-
 /*
  * And now for Intelligent monster attacks (including spells).
  *
@@ -319,9 +316,6 @@ static void remove_bad_spells(int m_idx, u32b *f4p, u32b *f5p, u32b *f6p)
 	(*f5p) = f5;
 	(*f6p) = f6;
 }
-
-
-#endif /* DRS_SMART_OPTIONS */
 
 
 /*
@@ -761,15 +755,11 @@ bool make_attack_spell(int m_idx)
 	}
 
 
-#ifdef DRS_SMART_OPTIONS
-
 	/* Remove the "ineffective" spells */
 	remove_bad_spells(m_idx, &f4, &f5, &f6);
 
 	/* No spells left */
 	if (!f4 && !f5 && !f6) return (FALSE);
-
-#endif /* DRS_SMART_OPTIONS */
 
 	/* Check whether summons and bolts are worth it. */
 	if (adult_ai_smart && !(r_ptr->flags2 & (RF2_STUPID)))
@@ -2367,8 +2357,6 @@ static int mon_will_run(int m_idx)
 
 
 
-#ifdef MONSTER_FLOW
-
 /*
  * Choose the "best" direction for "flowing"
  *
@@ -2553,8 +2541,6 @@ static bool get_fear_moves_aux(int m_idx, int *yp, int *xp)
 	return (TRUE);
 }
 
-#endif /* MONSTER_FLOW */
-
 
 
 /*
@@ -2707,9 +2693,6 @@ static const int *dist_offsets_x[10] =
  */
 static bool find_safety(int m_idx, int *yp, int *xp)
 {
-
-#ifdef MONSTER_FLOW
-
 	monster_type *m_ptr = &mon_list[m_idx];
 
 	int fy = m_ptr->fy;
@@ -2782,8 +2765,6 @@ static bool find_safety(int m_idx, int *yp, int *xp)
 			return (TRUE);
 		}
 	}
-
-#endif /* MONSTER_FLOW */
 
 	/* No safe place */
 	return (FALSE);
@@ -2894,16 +2875,12 @@ static bool get_moves(int m_idx, int mm[5])
 
 	bool done = FALSE;
 
-#ifdef MONSTER_FLOW
-
 	/* Flow towards the player */
 	if (adult_ai_sound)
 	{
 		/* Flow towards the player */
 		(void)get_moves_aux(m_idx, &y2, &x2);
 	}
-
-#endif /* MONSTER_FLOW */
 
 	/* Extract the "pseudo-direction" */
 	y = m_ptr->fy - y2;
@@ -2951,8 +2928,6 @@ static bool get_moves(int m_idx, int mm[5])
 			x = (-x);
 		}
 
-#ifdef MONSTER_FLOW
-
 		else
 		{
 			/* Attempt to avoid the player */
@@ -2962,8 +2937,6 @@ static bool get_moves(int m_idx, int mm[5])
 				get_fear_moves_aux(m_idx, &y, &x);
 			}
 		}
-
-#endif /* MONSTER_FLOW */
 
 		done = TRUE;
 	}
@@ -4085,8 +4058,6 @@ static void process_monster(int m_idx)
 }
 
 
-#ifdef MONSTER_FLOW
-
 static bool monster_can_flow(int m_idx)
 {
 	/* Hack -- Monsters can "smell" the player from far away */
@@ -4110,18 +4081,6 @@ static bool monster_can_flow(int m_idx)
 
 	return FALSE;
 }
-
-#else /* MONSTER_FLOW */
-
-static bool monster_can_flow(int m_idx)
-{
-	/* Unused parameter */
-	(void)m_idx;
-
-	return FALSE;
-}
-
-#endif /* MONSTER_FLOW */
 
 
 

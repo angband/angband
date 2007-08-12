@@ -1044,13 +1044,10 @@ static errr init_other(void)
 	cave_o_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
 	cave_m_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
 
-#ifdef MONSTER_FLOW
-
 	/* Flow arrays */
 	cave_cost = C_ZNEW(DUNGEON_HGT, byte_wid);
 	cave_when = C_ZNEW(DUNGEON_HGT, byte_wid);
 
-#endif /* MONSTER_FLOW */
 
 	/*** Prepare "vinfo" array ***/
 
@@ -1605,13 +1602,9 @@ void cleanup_angband(void)
 	FREE(mon_list);
 	FREE(o_list);
 
-#ifdef MONSTER_FLOW
-
 	/* Flow arrays */
 	FREE(cave_when);
 	FREE(cave_cost);
-
-#endif /* MONSTER_FLOW */
 
 	/* Free the cave */
 	FREE(cave_o_idx);

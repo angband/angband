@@ -551,12 +551,7 @@ struct monster_type
 
 	s16b hold_o_idx;	/* Object being held (if any) */
 
-#ifdef DRS_SMART_OPTIONS
-
 	u32b smart;			/* Field for "adult_ai_learn" */
-
-#endif /* DRS_SMART_OPTIONS */
-
 };
 
 

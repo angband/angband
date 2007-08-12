@@ -3102,8 +3102,6 @@ void update_view(void)
 
 
 
-#ifdef MONSTER_FLOW
-
 /*
  * Size of the circular queue used by "update_flow()"
  */
@@ -3125,8 +3123,6 @@ void update_view(void)
  */
 static int flow_save = 0;
 
-#endif /* MONSTER_FLOW */
-
 
 
 /*
@@ -3134,9 +3130,6 @@ static int flow_save = 0;
  */
 void forget_flow(void)
 {
-
-#ifdef MONSTER_FLOW
-
 	int x, y;
 
 	/* Nothing to forget */
@@ -3155,9 +3148,6 @@ void forget_flow(void)
 
 	/* Start over */
 	flow_save = 0;
-
-#endif
-
 }
 
 
@@ -3177,9 +3167,6 @@ void forget_flow(void)
  */
 void update_flow(void)
 {
-
-#ifdef MONSTER_FLOW
-
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
@@ -3291,9 +3278,6 @@ void update_flow(void)
 			if (flow_tail == flow_head) flow_tail = old_head;
 		}
 	}
-
-#endif
-
 }
 
 

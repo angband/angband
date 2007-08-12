@@ -135,12 +135,6 @@ static void init_stuff(void)
 
 	cptr tail = NULL;
 
-#ifndef FIXED_PATHS
-
-	/* Get the environment variable */
-	tail = getenv("ANGBAND_PATH");
-
-#endif /* FIXED_PATHS */
 
 	/* Use the angband_path, or a default */
 	my_strcpy(path, tail ? tail : DEFAULT_PATH, sizeof(path));
@@ -168,95 +162,11 @@ static void init_stuff(void)
  */
 static void change_path(cptr info)
 {
-	cptr s;
+	if (!info || !info[0])
+		quit_fmt("Try '-d<path>'.", info);
 
-	/* Find equal sign */
-	s = strchr(info, '=');
-
-	/* Verify equal sign */
-	if (!s) quit_fmt("Try '-d<what>=<path>' not '-d%s'", info);
-
-	/* Analyze */
-	switch (tolower((unsigned char)info[0]))
-	{
-#ifndef FIXED_PATHS
-		case 'a':
-		{
-			string_free(ANGBAND_DIR_APEX);
-			ANGBAND_DIR_APEX = string_make(s+1);
-			break;
-		}
-
-		case 'f':
-		{
-			string_free(ANGBAND_DIR_FILE);
-			ANGBAND_DIR_FILE = string_make(s+1);
-			break;
-		}
-
-		case 'h':
-		{
-			string_free(ANGBAND_DIR_HELP);
-			ANGBAND_DIR_HELP = string_make(s+1);
-			break;
-		}
-
-		case 'i':
-		{
-			string_free(ANGBAND_DIR_INFO);
-			ANGBAND_DIR_INFO = string_make(s+1);
-			break;
-		}
-
-		case 'x':
-		{
-			string_free(ANGBAND_DIR_XTRA);
-			ANGBAND_DIR_XTRA = string_make(s+1);
-			break;
-		}
-
-		case 'b':
-		{
-			string_free(ANGBAND_DIR_BONE);
-			ANGBAND_DIR_BONE = string_make(s+1);
-			break;
-		}
-
-		case 'd':
-		{
-			string_free(ANGBAND_DIR_DATA);
-			ANGBAND_DIR_DATA = string_make(s+1);
-			break;
-		}
-
-		case 'e':
-		{
-			string_free(ANGBAND_DIR_EDIT);
-			ANGBAND_DIR_EDIT = string_make(s+1);
-			break;
-		}
-
-		case 's':
-		{
-			string_free(ANGBAND_DIR_SAVE);
-			ANGBAND_DIR_SAVE = string_make(s+1);
-			break;
-		}
-
-#endif /* FIXED_PATHS */
-
-		case 'u':
-		{
-			string_free(ANGBAND_DIR_USER);
-			ANGBAND_DIR_USER = string_make(s+1);
-			break;
-		}
-
-		default:
-		{
-			quit_fmt("Bad semantics in '-d%s'", info);
-		}
-	}
+	string_free(ANGBAND_DIR_USER);
+	ANGBAND_DIR_USER = string_make(info);
 }
 
 
@@ -460,7 +370,7 @@ int main(int argc, char *argv[])
 				puts("  -g             Request graphics mode");
 				puts("  -s<num>        Show <num> high scores (default: 10)");
 				puts("  -u<who>        Use your <who> savefile");
-				puts("  -d<def>=<path> Instead of lib/<def>, use <path>");
+				puts("  -d<path>       Store pref files and screendumps in <path>");
 				puts("  -m<sys>        Use module <sys>, where <sys> can be:");
 
 				/* Print the name and help for each available module */

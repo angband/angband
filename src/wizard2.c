@@ -27,9 +27,6 @@
  */
 static void do_cmd_wiz_hack_ben(void)
 {
-
-#ifdef MONSTER_FLOW
-
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
@@ -87,14 +84,6 @@ static void do_cmd_wiz_hack_ben(void)
 
 	/* Redraw map */
 	prt_map();
-
-#else /* MONSTER_FLOW */
-
-	/* Oops */
-	msg_print("Oops");
-
-#endif /* MONSTER_FLOW */
-
 }
 
 

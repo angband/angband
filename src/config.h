@@ -107,13 +107,6 @@
 
 
 
-/*
- * OPTION: Allow use of the "adult_ai_smell" and "adult_ai_sound"
- * software options, which enable "monster flowing".
- */
-#define MONSTER_FLOW
-
-
 
 /*
  * OPTION: Use the "complex" wall illumination code
@@ -125,26 +118,6 @@
  * OPTION: Gamma correct colours (with X11)
  */
 #define SUPPORT_GAMMA
-
-
-/*
- * OPTION: Check the modification time of *_info.raw files
- */
-#define CHECK_MODIFICATION_TIME
-
-
-/*
- * OPTION: Enable the "adult_ai_learn" and "adult_ai_cheat" options.
- *
- * They let monsters make more "intelligent" choices about attacks (including
- * spell attacks) based on their observations of the player's reactions to
- * previous attacks.  The "cheat" option lets the monster know how the player
- * would react to an attack without actually needing to make the attack.  The
- * "learn" option requires that a monster make a "failed" attack before
- * learning that the player is not harmed by that attack.
- */
-#define DRS_SMART_OPTIONS
-
 
 /*
  * OPTION: Allow the use of "sound" in various places.
@@ -203,19 +176,6 @@
 #ifdef PRIVATE_USER_PATH
 /* # define USE_PRIVATE_PATHS */
 #endif /* PRIVATE_USER_PATH */
-
-
-
-/*
- * OPTION: Prevent usage of the "ANGBAND_PATH" environment variable and
- * the '-d<what>=<path>' command line option (except for '-du=<path>').
- *
- * This prevents cheating in multi-user installs as well as possible
- * security problems when running setgid.
- */
-#ifdef SET_UID
-#define FIXED_PATHS
-#endif /* SET_UID */
 
 
 

@@ -5084,12 +5084,9 @@ void generate_cave(void)
 				cave_info[y][x] = 0;
 				cave_info2[y][x] = 0;
 
-#ifdef MONSTER_FLOW
 				/* No flow */
 				cave_cost[y][x] = 0;
 				cave_when[y][x] = 0;
-#endif /* MONSTER_FLOW */
-
 			}
 		}
 
