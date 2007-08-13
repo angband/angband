@@ -779,6 +779,7 @@ void load_options(blockfile_t *bf)
 	u32b i;
 	char nb[KEYLEN];
 	smap_t *s;
+	u32b window_flags[ANGBAND_TERM_MAX];
 
 	s = load_smap(opt_block);
 
@@ -794,8 +795,10 @@ void load_options(blockfile_t *bf)
 	for (i = 0; i < ANGBAND_TERM_MAX; i++)
 	{
 		strnfmt(nb, KEYLEN, "window_flag[%u]", (unsigned int)i);
-		op_ptr->window_flag[i] = smap_get_u32b(s, nb);
+		window_flags[i] = smap_get_u32b(s, nb);
 	}
+
+	subwindows_set_flags(window_flags, ANGBAND_TERM_MAX);
 
 	smap_free(s);
 }

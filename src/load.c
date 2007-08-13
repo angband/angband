@@ -908,19 +908,17 @@ static void rd_options(void)
 			/* Process valid flags */
 			if (window_flag_desc[i])
 			{
-				/* Process valid flags */
-				if (window_mask[n] & (1L << i))
+				/* Blank invalid flags */
+				if (!(window_mask[n] & (1L << i)))
 				{
-					/* Set */
-					if (window_flag[n] & (1L << i))
-					{
-						/* Set */
-						op_ptr->window_flag[n] |= (1L << i);
-					}
+					window_flag[n] &= ~(1L << i);
 				}
 			}
 		}
 	}
+
+	/* Set up the subwindows */
+	subwindows_set_flags(window_flag, ANGBAND_TERM_MAX);
 }
 
 

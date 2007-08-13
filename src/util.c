@@ -1311,8 +1311,8 @@ void bell(cptr reason)
 		message_add(reason, MSG_BELL);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_MESSAGE);
-		window_stuff();
+		p_ptr->redraw |= (PR_MESSAGE);
+		redraw_stuff();
 	}
 
 	/* Make a bell noise (if allowed) */
@@ -1451,7 +1451,7 @@ static void msg_print_aux(u16b type, cptr msg)
 		message_add(msg, type);
 
 	/* Window stuff */
-	p_ptr->window |= (PW_MESSAGE);
+	p_ptr->redraw |= (PR_MESSAGE);
 
 	/* Copy it */
 	my_strcpy(buf, msg, sizeof(buf));

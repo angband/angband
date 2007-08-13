@@ -2547,46 +2547,6 @@ void show_floor(const int *floor_list, int floor_num, bool gold)
 
 
 /*
- * Flip "inven" and "equip" in any sub-windows
- */
-void toggle_inven_equip(void)
-{
-	int j;
-
-	/* Scan windows */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
-	{
-		/* Unused */
-		if (!angband_term[j]) continue;
-
-		/* Flip inven to equip */
-		if (op_ptr->window_flag[j] & (PW_INVEN))
-		{
-			/* Flip flags */
-			op_ptr->window_flag[j] &= ~(PW_INVEN);
-			op_ptr->window_flag[j] |= (PW_EQUIP);
-
-			/* Window stuff */
-			p_ptr->window |= (PW_EQUIP);
-		}
-
-		/* Flip inven to equip */
-		else if (op_ptr->window_flag[j] & (PW_EQUIP))
-		{
-			/* Flip flags */
-			op_ptr->window_flag[j] &= ~(PW_EQUIP);
-			op_ptr->window_flag[j] |= (PW_INVEN);
-
-			/* Window stuff */
-			p_ptr->window |= (PW_INVEN);
-		}
-	}
-}
-
-
-
-
-/*
  * Verify the choice of an item.
  *
  * The item can be negative to mean "item on floor".
@@ -3013,11 +2973,11 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 			toggle = !toggle;
 		}
 
-		/* Update */
-		p_ptr->window |= (PW_INVEN | PW_EQUIP);
+		/* Redraw */
+		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 
 		/* Redraw windows */
-		window_stuff();
+		redraw_stuff();
 
 		/* Viewing inventory */
 		if (p_ptr->command_wrk == (USE_INVEN))
@@ -3487,10 +3447,8 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	if (toggle) toggle_inven_equip();
 
 	/* Update */
-	p_ptr->window |= (PW_INVEN | PW_EQUIP);
-
-	/* Window stuff */
-	window_stuff();
+	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
+	redraw_stuff();
 
 
 	/* Clear the prompt line */

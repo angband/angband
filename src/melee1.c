@@ -569,8 +569,8 @@ bool make_attack_normal(int m_idx)
 							/* Combine / Reorder the pack */
 							p_ptr->notice |= (PN_COMBINE | PN_REORDER);
 
-							/* Window stuff */
-							p_ptr->window |= (PW_INVEN);
+							/* Redraw stuff */
+							p_ptr->redraw |= (PR_INVEN);
 
 							/* Affect only a single inventory slot */
 							break;
@@ -625,9 +625,6 @@ bool make_attack_normal(int m_idx)
 
 						/* Redraw gold */
 						p_ptr->redraw |= (PR_GOLD);
-
-						/* Window stuff */
-						p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 
 						/* Blink away */
 						blinked = TRUE;
@@ -787,8 +784,8 @@ bool make_attack_normal(int m_idx)
 							obvious = TRUE;
 						}
 
-						/* Window stuff */
-						p_ptr->window |= (PW_EQUIP);
+						/* Redraw stuff */
+						p_ptr->redraw |= (PR_EQUIP);
 					}
 
 					break;

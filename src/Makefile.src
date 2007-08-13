@@ -59,10 +59,12 @@ ANGFILES = \
 	tables.o \
 	trap.o \
 	ui.o \
+	ui-event.o \
 	util.o  \
 	variable.o \
 	wizard1.o \
 	wizard2.o \
 	x-spell.o \
 	xtra1.o \
-	xtra2.o
+	xtra2.o \
+	xtra3.o

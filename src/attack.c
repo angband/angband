@@ -745,13 +745,13 @@ void do_cmd_fire(void)
 			move_cursor_relative(y, x);
 
 			Term_fresh();
-			if (p_ptr->window) window_stuff();
+			if (p_ptr->redraw) redraw_stuff();
 
 			Term_xtra(TERM_XTRA_DELAY, msec);
 			lite_spot(y, x);
 
 			Term_fresh();
-			if (p_ptr->window) window_stuff();
+			if (p_ptr->redraw) redraw_stuff();
 		}
 
 		/* Delay anyway for consistency */
@@ -1036,13 +1036,13 @@ void do_cmd_throw(void)
 			move_cursor_relative(y, x);
 
 			Term_fresh();
-			if (p_ptr->window) window_stuff();
+			if (p_ptr->redraw) redraw_stuff();
 
 			Term_xtra(TERM_XTRA_DELAY, msec);
 			lite_spot(y, x);
 
 			Term_fresh();
-			if (p_ptr->window) window_stuff();
+			if (p_ptr->redraw) redraw_stuff();
 		}
 
 		/* Delay anyway for consistency */

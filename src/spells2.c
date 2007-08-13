@@ -42,9 +42,6 @@ bool hp_player(int num)
 		/* Redraw */
 		p_ptr->redraw |= (PR_HP);
 
-		/* Window stuff */
-		p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
-
 		/* Print a nice message */
 		if (num < 5)
 			msg_print("You feel a little better.");
@@ -356,8 +353,8 @@ static int remove_curse_aux(int all)
 		/* Recalculate the bonuses */
 		p_ptr->update |= (PU_BONUS);
 
-		/* Window stuff */
-		p_ptr->window |= (PW_EQUIP);
+		/* Redraw stuff */
+		p_ptr->redraw |= (PR_EQUIP);
 
 		/* Count the uncursings */
 		cnt++;
@@ -1439,8 +1436,8 @@ bool detect_monsters_invis(void)
 			/* Update monster recall window */
 			if (p_ptr->monster_race_idx == m_ptr->r_idx)
 			{
-				/* Window stuff */
-				p_ptr->window |= (PW_MONSTER);
+				/* Redraw stuff */
+				p_ptr->redraw |= (PR_MONSTER);
 			}
 
 			/* Optimize -- Repair flags */
@@ -1506,8 +1503,8 @@ bool detect_monsters_evil(void)
 			/* Update monster recall window */
 			if (p_ptr->monster_race_idx == m_ptr->r_idx)
 			{
-				/* Window stuff */
-				p_ptr->window |= (PW_MONSTER);
+				/* Redraw stuff */
+				p_ptr->redraw |= (PR_MONSTER);
 			}
 
 			/* Optimize -- Repair flags */
@@ -1807,8 +1804,8 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 	/* Combine / Reorder the pack (later) */
 	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
 
-	/* Window stuff */
-	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
+	/* Redraw stuff */
+	p_ptr->redraw |= (PR_INVEN | PR_EQUIP );
 
 	/* Success */
 	return (TRUE);
@@ -2104,8 +2101,8 @@ bool recharge(int num)
 	/* Combine / Reorder the pack (later) */
 	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
 
-	/* Window stuff */
-	p_ptr->window |= (PW_INVEN);
+	/* Redraw stuff */
+	p_ptr->redraw |= (PR_INVEN);
 
 	/* Something was done */
 	return (TRUE);
@@ -2322,7 +2319,7 @@ bool banishment(void)
 	take_hit(dam, "the strain of casting Banishment");
 
 	/* Update monster list window */
-	p_ptr->window |= PW_MONLIST;
+	p_ptr->redraw |= PR_MONLIST;
 
 	/* Success */
 	return TRUE;
@@ -2369,7 +2366,7 @@ bool mass_banishment(void)
 	result = (dam > 0) ? TRUE : FALSE;
 
 	/* Update monster list window */
-	if (result) p_ptr->window |= PW_MONLIST;
+	if (result) p_ptr->redraw |= PR_MONLIST;
 
 	return (result);
 }
@@ -2552,11 +2549,8 @@ void destroy_area(int y1, int x1, int r, bool full)
 	/* Fully update the flow */
 	p_ptr->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 
-	/* Redraw map */
-	p_ptr->redraw |= (PR_MAP);
-
-	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD | PW_MAP | PW_MONLIST);
+	/* Redraw map, monster list */
+	p_ptr->redraw |= (PR_MAP | PR_MONLIST);
 }
 
 
@@ -2907,7 +2901,7 @@ void earthquake(int cy, int cx, int r)
 	p_ptr->redraw |= (PR_HEALTH);
 
 	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD | PW_MAP | PW_MONLIST);
+	p_ptr->redraw |= (PR_MONLIST);
 }
 
 
@@ -3544,7 +3538,7 @@ bool curse_armor(void)
 		p_ptr->update |= (PU_MANA);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
+		p_ptr->redraw |= (PR_INVEN | PR_EQUIP );
 	}
 
 	return (TRUE);
@@ -3608,7 +3602,7 @@ bool curse_weapon(void)
 		p_ptr->update |= (PU_MANA);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
+		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 	}
 
 	/* Notice */
@@ -3660,7 +3654,7 @@ void brand_object(object_type *o_ptr, byte brand_type)
 		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_INVEN | PW_EQUIP);
+		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 	
 		/* Enchant */
 		enchant(o_ptr, rand_int(3) + 4, ENCH_TOHIT | ENCH_TODAM);
@@ -3893,7 +3887,7 @@ void do_ident_item(int item, object_type *o_ptr)
 	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
 
 	/* Window stuff */
-	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
+	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 
 	/* Description */
 	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);

@@ -1315,9 +1315,6 @@ bool make_attack_spell(int m_idx)
 				/* Redraw mana */
 				p_ptr->redraw |= (PR_MANA);
 
-				/* Window stuff */
-				p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
-
 				/* Heal the monster */
 				if (m_ptr->hp < m_ptr->maxhp)
 				{

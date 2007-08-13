@@ -370,7 +370,6 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 				p_ptr->csp_frac = 0;
 				msg_print("Your feel your head clear.");
 				p_ptr->redraw |= (PR_MANA);
-				p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 				*ident = TRUE;
 			}
 			return TRUE;
@@ -1445,7 +1444,6 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 				*ident = TRUE;
 				msg_print("Your feel your head clear.");
 				p_ptr->redraw |= (PR_MANA);
-				p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 			}
 			return TRUE;
 		}

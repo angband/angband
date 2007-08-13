@@ -1427,6 +1427,8 @@ void init_angband(void)
 
 	char buf[1024];
 
+	/* Set up the display handlers and things. */
+	init_display();
 
 	/*** Verify the "news" file ***/
 

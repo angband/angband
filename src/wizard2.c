@@ -637,7 +637,7 @@ static void wiz_reroll_item(object_type *o_ptr)
 		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
+		p_ptr->redraw |= (PR_INVEN | PR_EQUIP );
 	}
 }
 
@@ -972,7 +972,7 @@ static void do_cmd_wiz_play(void)
 		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
+		p_ptr->redraw |= (PR_INVEN | PR_EQUIP );
 	}
 
 	/* Ignore change */
@@ -1258,9 +1258,6 @@ static void do_cmd_rerate(void)
 	p_ptr->update |= (PU_HP);
 	p_ptr->redraw |= (PR_HP);
 
-	/* Window stuff */
-	p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
-
 	/* Handle stuff */
 	handle_stuff();
 
@@ -1343,7 +1340,7 @@ static void do_cmd_wiz_zap(int d)
 	}
 
 	/* Update monster list window */
-	p_ptr->window |= PW_MONLIST;
+	p_ptr->redraw |= PR_MONLIST;
 }
 
 

@@ -300,11 +300,7 @@ void do_cmd_wield(void)
 
 	/* Recalculate bonuses, torch, mana */
 	p_ptr->update |= (PU_BONUS | PU_TORCH | PU_MANA);
-
-	/* Window stuff */
-	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
-
-	p_ptr->redraw |= (PR_EQUIPPY);
+	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 }
 
 
@@ -510,10 +506,8 @@ void do_cmd_destroy(void)
 		/* Combine the pack */
 		p_ptr->notice |= (PN_COMBINE);
 
-		/* Window stuff */
-		p_ptr->window |= (PW_INVEN | PW_EQUIP);
-
-		p_ptr->redraw |= (PR_EQUIPPY);
+		/* Redraw stuff */
+		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 
 		/* Done */
 		return;
@@ -648,8 +642,8 @@ void do_cmd_uninscribe(void)
 	/* Combine the pack, check for squelchables */
 	p_ptr->notice |= (PN_COMBINE | PN_SQUELCH);
 
-	/* Window stuff */
-	p_ptr->window |= (PW_INVEN | PW_EQUIP);
+	/* Redraw stuff */
+	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 }
 
 
@@ -712,8 +706,8 @@ void do_cmd_inscribe(void)
 		/* Combine the pack, check for squelchables */
 		p_ptr->notice |= (PN_COMBINE | PN_SQUELCH);
 
-		/* Window stuff */
-		p_ptr->window |= (PW_INVEN | PW_EQUIP);
+		/* Redraw stuff */
+		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 	}
 }
 
@@ -841,8 +835,8 @@ static void do_cmd_refill_lamp(void)
 		/* Combine / Reorder the pack (later) */
 		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
 
-		/* Window stuff */
-		p_ptr->window |= (PW_INVEN);
+		/* Redraw stuff */
+		p_ptr->redraw |= (PR_INVEN);
 	}
 
 	/* Refilled from a flask */
@@ -868,8 +862,8 @@ static void do_cmd_refill_lamp(void)
 	/* Recalculate torch */
 	p_ptr->update |= (PU_TORCH);
 
-	/* Window stuff */
-	p_ptr->window |= (PW_EQUIP);
+	/* Redraw stuff */
+	p_ptr->redraw |= (PR_EQUIP);
 }
 
 
@@ -975,8 +969,8 @@ static void do_cmd_refill_torch(void)
 	/* Recalculate torch */
 	p_ptr->update |= (PU_TORCH);
 
-	/* Window stuff */
-	p_ptr->window |= (PW_EQUIP);
+	/* Redraw stuff */
+	p_ptr->redraw |= (PR_EQUIP);
 }
 
 

@@ -1,6 +1,7 @@
 /*
  * File: xtra1.c
- * Purpose: Sidebar and status panel updates, player status calculation
+ * Purpose: Player status calculation, signalling ui events based on status
+ *          changes.
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
@@ -16,33 +17,13 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "ui-event.h"
 
-
-
-/*
- * Converts stat num into a six-char (right justified) string
- */
-void cnv_stat(int val, char *out_val, size_t out_len)
+struct flag_event_trigger
 {
-	/* Above 18 */
-	if (val > 18)
-	{
-		int bonus = (val - 18);
-
-		if (bonus >= 100)
-			strnfmt(out_val, out_len, "18/%03d", bonus);
-		else
-			strnfmt(out_val, out_len, " 18/%02d", bonus);
-	}
-
-	/* From 3 to 18 */
-	else
-	{
-		strnfmt(out_val, out_len, "    %2d", val);
-	}
-}
-
-
+	u32b flag;
+	ui_event_type event;
+};
 
 /*
  * Modify a stat value by a "modifier", return new value
@@ -92,1062 +73,6 @@ s16b modify_stat_value(int value, int amount)
 	return (value);
 }
 
-
-
-
-/*** Sidebar display functions ***/
-
-/*
- * Print character info at given row, column in a 13 char field
- */
-static void prt_field(cptr info, int row, int col)
-{
-	/* Dump 13 spaces to clear */
-	c_put_str(TERM_WHITE, "             ", row, col);
-
-	/* Dump the info itself */
-	c_put_str(TERM_L_BLUE, info, row, col);
-}
-
-
-/*
- * Print character stat in given row, column
- */
-static void prt_stat(int stat, int row, int col)
-{
-	char tmp[32];
-
-	/* Display "injured" stat */
-	if (p_ptr->stat_cur[stat] < p_ptr->stat_max[stat])
-	{
-		put_str(stat_names_reduced[stat], row, col);
-		cnv_stat(p_ptr->stat_use[stat], tmp, sizeof(tmp));
-		c_put_str(TERM_YELLOW, tmp, row, col + 6);
-	}
-
-	/* Display "healthy" stat */
-	else
-	{
-		put_str(stat_names[stat], row, col);
-		cnv_stat(p_ptr->stat_use[stat], tmp, sizeof(tmp));
-		c_put_str(TERM_L_GREEN, tmp, row, col + 6);
-	}
-
-	/* Indicate natural maximum */
-	if (p_ptr->stat_max[stat] == 18+100)
-	{
-		put_str("!", row, col + 3);
-	}
-}
-
-
-/*
- * Prints "title", including "wizard" or "winner" as needed.
- */
-static void prt_title(int row, int col)
-{
-	cptr p;
-
-	/* Wizard */
-	if (p_ptr->wizard)
-	{
-		p = "[=-WIZARD-=]";
-	}
-
-	/* Winner */
-	else if (p_ptr->total_winner || (p_ptr->lev > PY_MAX_LEVEL))
-	{
-		p = "***WINNER***";
-	}
-
-	/* Normal */
-	else
-	{
-		p = c_text + cp_ptr->title[(p_ptr->lev - 1) / 5];
-	}
-
-	prt_field(p, row, col);
-}
-
-
-/*
- * Prints level
- */
-static void prt_level(int row, int col)
-{
-	char tmp[32];
-
-	strnfmt(tmp, sizeof(tmp), "%6d", p_ptr->lev);
-
-	if (p_ptr->lev >= p_ptr->max_lev)
-	{
-		put_str("LEVEL ", row, col);
-		c_put_str(TERM_L_GREEN, tmp, row, col + 6);
-	}
-	else
-	{
-		put_str("Level ", row, col);
-		c_put_str(TERM_YELLOW, tmp, row, col + 6);
-	}
-}
-
-
-/*
- * Display the experience
- */
-static void prt_exp(int row, int col)
-{
-	char out_val[32];
-	bool lev50 = (p_ptr->lev == 50);
-
-	long xp = (long)p_ptr->exp;
-
-
-	/* Calculate XP for next level */
-	if (!lev50)
-		xp = (long)(player_exp[p_ptr->lev - 1] * p_ptr->expfact / 100L) - p_ptr->exp;
-
-	/* Format XP */
-	strnfmt(out_val, sizeof(out_val), "%8ld", (long)xp);
-
-
-	if (p_ptr->exp >= p_ptr->max_exp)
-	{
-		put_str((lev50 ? "EXP" : "NXT"), row, col);
-		c_put_str(TERM_L_GREEN, out_val, row, col + 4);
-	}
-	else
-	{
-		put_str((lev50 ? "Exp" : "Nxt"), row, col);
-		c_put_str(TERM_YELLOW, out_val, row, col + 4);
-	}
-}
-
-
-/*
- * Prints current gold
- */
-static void prt_gold(int row, int col)
-{
-	char tmp[32];
-
-	put_str("AU ", row, col);
-	strnfmt(tmp, sizeof(tmp), "%9ld", (long)p_ptr->au);
-	c_put_str(TERM_L_GREEN, tmp, row, col + 3);
-}
-
-
-/*
- * Equippy chars
- */
-static void prt_equippy(int row, int col)
-{
-	int i;
-
-	byte a;
-	char c;
-
-	object_type *o_ptr;
-
-	/* No equippy chars in bigtile mode */
-	if (use_bigtile) return;
-
-	/* Dump equippy chars */
-	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
-	{
-		/* Object */
-		o_ptr = &inventory[i];
-
-		a = object_attr(o_ptr);
-		c = object_char(o_ptr);
-
-		/* Clear the part of the screen */
-		if (!o_ptr->k_idx)
-		{
-			c = ' ';
-			a = TERM_WHITE;
-		}
-
-		/* Dump */
-		Term_putch(col + i - INVEN_WIELD, row, a, c);
-	}
-}
-
-
-/*
- * Prints current AC
- */
-static void prt_ac(int row, int col)
-{
-	char tmp[32];
-
-	put_str("Cur AC ", row, col);
-	strnfmt(tmp, sizeof(tmp), "%5d", p_ptr->dis_ac + p_ptr->dis_to_a);
-	c_put_str(TERM_L_GREEN, tmp, row, col + 7);
-}
-
-
-/*
- * Prints Cur hit points
- */
-static void prt_hp(int row, int col)
-{
-	char cur_hp[32], max_hp[32];
-	byte color;
-
-	put_str("HP ", row, col);
-
-	strnfmt(max_hp, sizeof(max_hp), "%4d", p_ptr->mhp);
-	strnfmt(cur_hp, sizeof(cur_hp), "%4d", p_ptr->chp);
-
-	if (p_ptr->chp >= p_ptr->mhp)
-		color = TERM_L_GREEN;
-	else if (p_ptr->chp > (p_ptr->mhp * op_ptr->hitpoint_warn) / 10)
-		color = TERM_YELLOW;
-	else
-		color = TERM_RED;
-
-	c_put_str(color, cur_hp, row, col + 3);
-	c_put_str(TERM_WHITE, "/", row, col + 7);
-	c_put_str(TERM_L_GREEN, max_hp, row, col + 8);
-}
-
-
-/*
- * Prints players max/cur spell points
- */
-static void prt_sp(int row, int col)
-{
-	char cur_sp[32], max_sp[32];
-	byte color;
-
-	/* Do not show mana unless it matters */
-	if (!cp_ptr->spell_book) return;
-
-	put_str("SP ", row, col);
-
-	strnfmt(max_sp, sizeof(max_sp), "%4d", p_ptr->msp);
-	strnfmt(cur_sp, sizeof(cur_sp), "%4d", p_ptr->csp);
-
-	if (p_ptr->csp >= p_ptr->msp)
-		color = TERM_L_GREEN;
-	else if (p_ptr->csp > (p_ptr->msp * op_ptr->hitpoint_warn) / 10)
-		color = TERM_YELLOW;
-	else
-		color = TERM_RED;
-
-	/* Show mana */
-	c_put_str(color, cur_sp, row, col + 3);
-	c_put_str(TERM_WHITE, "/", row, col + 7);
-	c_put_str(TERM_L_GREEN, max_sp, row, col + 8);
-}
-
-
-/*
- * Redraw the "monster health bar"
- *
- * The "monster health bar" provides visual feedback on the "health"
- * of the monster currently being "tracked".  There are several ways
- * to "track" a monster, including targetting it, attacking it, and
- * affecting it (and nobody else) with a ranged attack.  When nothing
- * is being tracked, we clear the health bar.  If the monster being
- * tracked is not currently visible, a special health bar is shown.
- */
-static void prt_health(int row, int col)
-{
-	/* Not tracking */
-	if (!p_ptr->health_who)
-	{
-		/* Erase the health bar */
-		Term_erase(col, row, 12);
-	}
-
-	/* Tracking an unseen monster */
-	else if (!mon_list[p_ptr->health_who].ml)
-	{
-		/* Indicate that the monster health is "unknown" */
-		Term_putstr(col, row, 12, TERM_WHITE, "[----------]");
-	}
-
-	/* Tracking a hallucinatory monster */
-	else if (p_ptr->timed[TMD_IMAGE])
-	{
-		/* Indicate that the monster health is "unknown" */
-		Term_putstr(col, row, 12, TERM_WHITE, "[----------]");
-	}
-
-	/* Tracking a dead monster (?) */
-	else if (!mon_list[p_ptr->health_who].hp < 0)
-	{
-		/* Indicate that the monster health is "unknown" */
-		Term_putstr(col, row, 12, TERM_WHITE, "[----------]");
-	}
-
-	/* Tracking a visible monster */
-	else
-	{
-		int pct, len;
-
-		monster_type *m_ptr = &mon_list[p_ptr->health_who];
-
-		/* Default to almost dead */
-		byte attr = TERM_RED;
-
-		/* Extract the "percent" of health */
-		pct = 100L * m_ptr->hp / m_ptr->maxhp;
-
-		/* Badly wounded */
-		if (pct >= 10) attr = TERM_L_RED;
-
-		/* Wounded */
-		if (pct >= 25) attr = TERM_ORANGE;
-
-		/* Somewhat Wounded */
-		if (pct >= 60) attr = TERM_YELLOW;
-
-		/* Healthy */
-		if (pct >= 100) attr = TERM_L_GREEN;
-
-		/* Afraid */
-		if (m_ptr->monfear) attr = TERM_VIOLET;
-
-		/* Confused */
-		if (m_ptr->confused) attr = TERM_UMBER;
-
-		/* Stunned */
-		if (m_ptr->stunned) attr = TERM_L_BLUE;
-
-		/* Asleep */
-		if (m_ptr->csleep) attr = TERM_BLUE;
-
-		/* Convert percent into "health" */
-		len = (pct < 10) ? 1 : (pct < 90) ? (pct / 10 + 1) : 10;
-
-		/* Default to "unknown" */
-		Term_putstr(col, row, 12, TERM_WHITE, "[----------]");
-
-		/* Dump the current "health" (use '*' symbols) */
-		Term_putstr(col + 1, row, len, attr, "**********");
-	}
-}
-
-
-/*
- * Prints the speed of a character.
- */
-static void prt_speed(int row, int col)
-{
-	int i = p_ptr->pspeed;
-
-	byte attr = TERM_WHITE;
-	const char *type = NULL;
-	char buf[32] = "";
-
-	/* Hack -- Visually "undo" the Search Mode Slowdown */
-	if (p_ptr->searching) i += 10;
-
-	/* Fast */
-	if (i > 110)
-	{
-		attr = TERM_L_GREEN;
-		type = "Fast";
-	}
-
-	/* Slow */
-	else if (i < 110)
-	{
-		attr = TERM_L_UMBER;
-		type = "Slow";
-	}
-
-	if (type)
-		strnfmt(buf, sizeof(buf), "%s (%+d)", type, (i - 110));
-
-	/* Display the speed */
-	c_put_str(attr, format("%-10s", buf), row, col);
-}
-
-
-/*
- * Prints depth in stat area
- */
-static void prt_depth(int row, int col)
-{
-	char depths[32];
-
-	if (!p_ptr->depth)
-	{
-		my_strcpy(depths, "Town", sizeof(depths));
-	}
-	else if (depth_in_feet)
-	{
-		strnfmt(depths, sizeof(depths), "%d ft", p_ptr->depth * 50);
-	}
-	else
-	{
-		strnfmt(depths, sizeof(depths), "Lev %d", p_ptr->depth);
-	}
-
-	/* Right-Adjust the "depth", and clear old values */
-	put_str(format("%-13s", depths), row, col);
-}
-
-
-
-
-/* Some simple wrapper functions */
-static void prt_str(int row, int col) { prt_stat(A_STR, row, col); }
-static void prt_dex(int row, int col) { prt_stat(A_DEX, row, col); }
-static void prt_wis(int row, int col) { prt_stat(A_WIS, row, col); }
-static void prt_int(int row, int col) { prt_stat(A_INT, row, col); }
-static void prt_con(int row, int col) { prt_stat(A_CON, row, col); }
-static void prt_chr(int row, int col) { prt_stat(A_CHR, row, col); }
-static void prt_race(int row, int col) { prt_field(p_name + rp_ptr->name, row, col); }
-static void prt_class(int row, int col) { prt_field(c_name + cp_ptr->name, row, col); }
-
-
-/*
- * Struct of sidebar handlers.
- */
-static const struct side_handler_t
-{
-	void (*hook)(int, int);		/* int row, int col */
-	int priority;				/* 1 is most important (always displayed) */
-	u32b flag;					/* PR_* flag this corresponds to */
-} side_handlers[] =
-{
-	{ prt_race,      19, PR_MISC },
-	{ prt_title,     18, PR_TITLE },
-	{ prt_class,     22, PR_MISC },
-	{ prt_level,     10, PR_LEV },
-	{ prt_exp,       16, PR_EXP },
-	{ prt_gold,      11, PR_GOLD },
-	{ prt_equippy,   17, PR_EQUIPPY },
-	{ prt_str,        6, PR_STATS },
-	{ prt_int,        5, PR_STATS },
-	{ prt_wis,        4, PR_STATS },
-	{ prt_dex,        3, PR_STATS },
-	{ prt_con,        2, PR_STATS },
-	{ prt_chr,        1, PR_STATS },
-	{ NULL,          15, 0 },
-	{ prt_ac,         7, PR_ARMOR },
-	{ prt_hp,         8, PR_HP },
-	{ prt_sp,         9, PR_MANA },
-	{ NULL,          21, 0 },
-	{ prt_health,    12, PR_HEALTH },
-	{ NULL,          20, 0 },
-	{ NULL,          22, 0 },
-	{ prt_speed,    -13, PR_SPEED },    /* "Slow (-NN)" or "Fast (+NN)" */
-	{ prt_depth,    -14, PR_DEPTH },    /* "Lev NNN" / "NNNN ft" */
-};
-
-
-/*
- * This prints the sidebar, using a clever method which means that it will only
- * print as much as can be displayed on <24-line screens.
- *
- * Each row is given a priority; the least important higher numbers and the most
- * important lower numbers.  As the screen gets smaller, the rows start to
- * disappear in the order of lowest to highest importance.
- */
-static void display_sidebar(void)
-{
-	int x, y, row;
-	int max_priority;
-	size_t i;
-
-
-	Term_get_size(&x, &y);
-
-	/* Keep the top and bottom lines clear. */
-	max_priority = y - 2;
-
-	/* Display list entries */
-	for (i = 0, row = 1; i < N_ELEMENTS(side_handlers); i++)
-	{
-		const struct side_handler_t *hnd = &side_handlers[i];
-		int priority = hnd->priority;
-		bool from_bottom = FALSE;
-
-		/* Negative means print from bottom */
-		if (priority < 0)
-		{
-			priority = -priority;
-			from_bottom = TRUE;
-		}
-
-		/* If this is high enough priority, display it */
-		if (priority <= max_priority)
-		{
-			/* If the redraw flag it set, and there is a hook */
-			if ((p_ptr->redraw & hnd->flag) && hnd->hook)
-			{
-				if (from_bottom)
-					hnd->hook(Term->hgt - (N_ELEMENTS(side_handlers) - i), 0);
-				else
-				    hnd->hook(row, 0);
-			}
-
-				/* Increment for next time */
-			row++;
-		}
-	}
-}
-
-
-
-
-/*** Status line display functions ***/
-
-/* Simple macro to initialise structs */
-#define S(s)		s, sizeof(s)
-
-/*
- * Struct to describe different timed effects
- */
-struct state_info
-{
-	int value;
-	const char *str;
-	size_t len;
-	byte attr;
-};
-
-/* TMD_CUT descriptions */
-static const struct state_info cut_data[] =
-{
-	{ 1000, S("Mortal wound"), TERM_L_RED },
-	{  200, S("Deep gash"),    TERM_RED },
-	{  100, S("Severe cut"),   TERM_RED },
-	{   50, S("Nasty cut"),    TERM_ORANGE },
-	{   25, S("Bad cut"),      TERM_ORANGE },
-	{   10, S("Light cut"),    TERM_YELLOW },
-	{    0, S("Graze"),        TERM_YELLOW },
-};
-
-/* TMD_STUN descriptions */
-static const struct state_info stun_data[] =
-{
-	{   100, S("Knocked out"), TERM_RED },
-	{    50, S("Heavy stun"),  TERM_ORANGE },
-	{     0, S("Stun"),        TERM_ORANGE },
-};
-
-/* p_ptr->hunger descriptions */
-static const struct state_info hunger_data[] =
-{
-	{ PY_FOOD_FAINT, S("Faint"),    TERM_RED },
-	{ PY_FOOD_WEAK,  S("Weak"),     TERM_ORANGE },
-	{ PY_FOOD_ALERT, S("Hungry"),   TERM_YELLOW },
-	{ PY_FOOD_FULL,  S(""),         TERM_L_GREEN },
-	{ PY_FOOD_MAX,   S("Full"),     TERM_L_GREEN },
-	{ PY_FOOD_UPPER, S("Gorged"),   TERM_GREEN },
-};
-
-/* For the various TMD_* effects */
-static const struct state_info effects[] =
-{
-	{ TMD_BLIND,     S("Blind"),      TERM_ORANGE },
-	{ TMD_PARALYZED, S("Paralyzed!"), TERM_RED },
-	{ TMD_CONFUSED,  S("Confused"),   TERM_ORANGE },
-	{ TMD_AFRAID,    S("Afraid"),     TERM_ORANGE },
-	{ TMD_IMAGE,     S("Halluc"),     TERM_ORANGE },
-	{ TMD_POISONED,  S("Poisoned"),   TERM_ORANGE },
-	{ TMD_PROTEVIL,  S("ProtEvil"),   TERM_L_GREEN },
-	{ TMD_TELEPATHY, S("ESP"),        TERM_L_BLUE },
-	{ TMD_INVULN,    S("Invuln"),     TERM_L_GREEN },
-	{ TMD_HERO,      S("Hero"),       TERM_L_GREEN },
-	{ TMD_SHERO,     S("Berserk"),    TERM_L_GREEN },
-	{ TMD_SHIELD,    S("Shield"),     TERM_L_GREEN },
-	{ TMD_BLESSED,   S("Blssd"),      TERM_L_GREEN },
-	{ TMD_SINVIS,    S("SInvis"),     TERM_L_GREEN },
-	{ TMD_SINFRA,    S("Infra"),      TERM_L_GREEN },
-	{ TMD_OPP_ACID,  S("RAcid"),      TERM_SLATE },
-	{ TMD_OPP_ELEC,  S("RElec"),      TERM_BLUE },
-	{ TMD_OPP_FIRE,  S("RFire"),      TERM_RED },
-	{ TMD_OPP_COLD,  S("RCold"),      TERM_WHITE },
-	{ TMD_OPP_POIS,  S("RPois"),      TERM_GREEN },
-	{ TMD_AMNESIA,   S("Amnesiac"),   TERM_ORANGE },
-};
-
-#define PRINT_STATE(sym, data, index, row, col) \
-{ \
-	size_t i; \
-	\
-	for (i = 0; i < N_ELEMENTS(data); i++) \
-	{ \
-		if (index sym data[i].value) \
-		{ \
-			if (data[i].str[0]) \
-			{ \
-				c_put_str(data[i].attr, data[i].str, row, col); \
-				return data[i].len; \
-			} \
-			else \
-			{ \
-				return 0; \
-			} \
-		} \
-	} \
-}
-
-
-/*
- * Print cut indicator.
- */
-static size_t prt_cut(int row, int col)
-{
-	PRINT_STATE(>, cut_data, p_ptr->timed[TMD_CUT], row, col);
-	return 0;
-}
-
-
-/*
- * Print stun indicator.
- */
-static size_t prt_stun(int row, int col)
-{
-	PRINT_STATE(>, stun_data, p_ptr->timed[TMD_STUN], row, col);
-	return 0;
-}
-
-
-/*
- * Prints status of hunger
- */
-static size_t prt_hunger(int row, int col)
-{
-	PRINT_STATE(<, hunger_data, p_ptr->food, row, col);
-	return 0;
-}
-
-
-
-/*
- * Prints Searching, Resting, or 'count' status
- * Display is always exactly 10 characters wide (see below)
- *
- * This function was a major bottleneck when resting, so a lot of
- * the text formatting code was optimized in place below.
- */
-static size_t prt_state(int row, int col)
-{
-	byte attr = TERM_WHITE;
-
-	char text[16] = "";
-
-
-	/* Resting */
-	if (p_ptr->resting)
-	{
-		int i;
-		int n = p_ptr->resting;
-
-		/* Start with "Rest" */
-		my_strcpy(text, "Rest      ", sizeof(text));
-
-		/* Extensive (timed) rest */
-		if (n >= 1000)
-		{
-			i = n / 100;
-			text[9] = '0';
-			text[8] = '0';
-			text[7] = I2D(i % 10);
-			if (i >= 10)
-			{
-				i = i / 10;
-				text[6] = I2D(i % 10);
-				if (i >= 10)
-				{
-					text[5] = I2D(i / 10);
-				}
-			}
-		}
-
-		/* Long (timed) rest */
-		else if (n >= 100)
-		{
-			i = n;
-			text[9] = I2D(i % 10);
-			i = i / 10;
-			text[8] = I2D(i % 10);
-			text[7] = I2D(i / 10);
-		}
-
-		/* Medium (timed) rest */
-		else if (n >= 10)
-		{
-			i = n;
-			text[9] = I2D(i % 10);
-			text[8] = I2D(i / 10);
-		}
-
-		/* Short (timed) rest */
-		else if (n > 0)
-		{
-			i = n;
-			text[9] = I2D(i);
-		}
-
-		/* Rest until healed */
-		else if (n == -1)
-		{
-			text[5] = text[6] = text[7] = text[8] = text[9] = '*';
-		}
-
-		/* Rest until done */
-		else if (n == -2)
-		{
-			text[5] = text[6] = text[7] = text[8] = text[9] = '&';
-		}
-	}
-
-	/* Repeating */
-	else if (p_ptr->command_rep)
-	{
-		if (p_ptr->command_rep > 999)
-			strnfmt(text, sizeof(text), "Rep. %3d00", p_ptr->command_rep / 100);
-		else
-			strnfmt(text, sizeof(text), "Repeat %3d", p_ptr->command_rep);
-	}
-
-	/* Searching */
-	else if (p_ptr->searching)
-	{
-		my_strcpy(text, "Searching ", sizeof(text));
-	}
-
-	/* Display the info (or blanks) */
-	c_put_str(attr, text, row, col);
-
-	return strlen(text);
-}
-
-
-/*
- * Prints trap detection status
- */
-static size_t prt_dtrap(int row, int col)
-{
-	byte info = cave_info2[p_ptr->py][p_ptr->px];
-
-	/* The player is in a trap-detected grid */
-	if (info & (CAVE2_DTRAP))
-	{
-		c_put_str(TERM_GREEN, "DTrap", row, col);
-		return 5;
-	}
-
-	return 0;
-}
-
-
-
-/*
- * Print whether a character is studying or not.
- */
-static size_t prt_study(int row, int col)
-{
-	if (p_ptr->new_spells)
-	{
-		char *text = format("Study (%d)", p_ptr->new_spells);
-		put_str(text, row, col);
-		return strlen(text) + 1;
-	}
-
-	return 0;
-}
-
-
-
-/*
- * Print all timed effects.
- */
-static size_t prt_tmd(int row, int col)
-{
-	size_t i, len = 0;
-
-	for (i = 0; i < N_ELEMENTS(effects); i++)
-	{
-		if (p_ptr->timed[effects[i].value])
-		{
-			c_put_str(effects[i].attr, effects[i].str, row, col + len);
-			len += effects[i].len;
-		}
-	}
-
-	return len;
-}
-
-
-/* Useful typedef */
-typedef size_t status_f(int row, int col);
-
-status_f *status_handlers[] =
-{ prt_state, prt_cut, prt_stun, prt_hunger, prt_study, prt_tmd, prt_dtrap };
-
-
-/*
- * Print the status line.
- */
-static void display_statusline(void)
-{
-	int row = Term->hgt - 1;
-	int col = 13;
-	size_t i;
-
-	/* Don't worry about non-statusline bits */
-	if (!(p_ptr->redraw & (PR_STATE | PR_STUDY | PR_STATUS | PR_DTRAP)))
-		return;
-
-	/* Clear the remainder of the line */
-	prt("", row, col);
-
-	/* Display those which need redrawing */
-	for (i = 0; i < N_ELEMENTS(status_handlers); i++)
-		col += status_handlers[i](row, col);
-}
-
-
-
-
-/*** Subwindow display functions ***/
-
-/*
- * Hack -- display player in sub-windows (mode 0)
- */
-static void fix_player_0(void)
-{
-	/* Display player */
-	display_player(0);
-}
-
-
-/*
- * Hack -- display player in sub-windows (mode 1)
- */
-static void fix_player_1(void)
-{
-	/* Display flags */
-	display_player(1);
-}
-
-
-/*
- * Hack - Display the left-hand-side of the main term in a separate window
- */
-static void fix_frame_compact(void)
-{
-	int row = 0;
-	int col = 0;
-	int i;
-
-	/* Race and Class */
-	prt_field(p_name + rp_ptr->name, row++, col);
-	prt_field(c_name + cp_ptr->name, row++, col);
-
-	/* Title */
-	prt_title(row++, col);
-
-	/* Level/Experience */
-	prt_level(row++, col);
-	prt_exp(row++, col);
-
-	/* Gold */
-	prt_gold(row++, col);
-
-	/* Equippy chars */
-	prt_equippy(row++, col);
-
-	/* All Stats */
-	for (i = 0; i < A_MAX; i++) prt_stat(i, row++, col);
-
-	/* Empty row */
-	row++;
-
-	/* Armor */
-	prt_ac(row++, col);
-
-	/* Hitpoints */
-	prt_hp(row++, col);
-
-	/* Spellpoints */
-	prt_sp(row++, col);
-
-	/* Monster health */
-	prt_health(row++, col);
-}
-
-
-/*
- * Hack -- display recent messages in sub-windows
- *
- * Adjust for width and split messages.  XXX XXX XXX
- */
-static void fix_message(void)
-{
-	int i;
-	int w, h;
-	int x, y;
-
-	const char *msg;
-
-	/* Get size */
-	Term_get_size(&w, &h);
-
-	/* Dump messages */
-	for (i = 0; i < h; i++)
-	{
-		byte color = message_color(i);
-		u16b count = message_count(i);
-		const char *str = message_str(i);
-
-		if (count == 1)
-			msg = str;
-		else
-			msg = format("%s <%dx>", str, count);
-
-		Term_putstr(0, (h - 1) - i, -1, color, msg);
-
-
-		/* Cursor */
-		Term_locate(&x, &y);
-
-		/* Clear to end of line */
-		Term_erase(x, y, 255);
-	}
-}
-
-
-/*
- * Hack -- display overhead view in sub-windows.
- *
- * This is most useful on a fast machine with the "center_player" option set,
- * which induces a call to this function every time the player moves.  With
- * the "center_player" option not set, this function is only called when the
- * panel changes.
- *
- * The "display_map()" function handles NULL arguments in a special manner.
- */
-static void fix_overhead(void)
-{
-	/* Redraw map */
-	display_map(NULL, NULL);
-}
-
-
-/*
- * Hack -- display monster recall in sub-windows
- */
-static void fix_monster(void)
-{
-	/* Display monster race info */
-	if (p_ptr->monster_race_idx)
-		display_roff(p_ptr->monster_race_idx);
-}
-
-
-/*
- * Hack -- display object recall in sub-windows
- */
-static void fix_object(void)
-{
-	/* Display object type info */
-	if (p_ptr->object_kind_idx)
-		display_koff(p_ptr->object_kind_idx);
-}
-
-
-
-/*
- * Struct of subwindow display handlers.
- */
-static const struct win_handler_t
-{
-	u32b flag;
-	void (*hook)(void);
-} win_handlers[] =
-{
-	{ PW_INVEN, display_inven },		/* Display inventory */
-	{ PW_EQUIP, display_equip },		/* Display equipment */
-	{ PW_PLAYER_0, fix_player_0 },
-	{ PW_PLAYER_1, fix_player_1 },
-	{ PW_PLAYER_2, fix_frame_compact },
-#if 0
-	{ PW_MAP, fix_map },				/* The maps are always up-to-date */
-#endif
-	{ PW_MESSAGE, fix_message },
-	{ PW_OVERHEAD, fix_overhead },
-	{ PW_MONSTER, fix_monster },
-	{ PW_OBJECT, fix_object },
-	{ PW_MONLIST, display_monlist },	/* Display visible monsters */
-};
-
-
-/*
- * Handle "p_ptr->window"
- */
-void window_stuff(void)
-{
-	size_t i, j;
-	u32b mask = 0L;
-	term *old = Term;
-
-	/* Nothing to do */
-	if (!p_ptr->window) return;
-
-	/* Scan windows */
-	for (i = 0; i < ANGBAND_TERM_MAX; i++)
-	{
-		/* Ignore non-windows */
-		if (!angband_term[i]) break;
-
-		/* Save usable flags */
-		mask |= op_ptr->window_flag[i];
-	}
-
-	/* Apply usable flags */
-	p_ptr->window &= (mask);
-
-	/* Nothing to do */
-	if (!p_ptr->window) return;
-
-
-	/* Walk through all the handlers */
-	for (i = 0; i < N_ELEMENTS(win_handlers); i++)
-	{
-		const struct win_handler_t *hnd = &win_handlers[i];
-
-		/* Don't bother if it has no flags set */
-		if (!(p_ptr->window & hnd->flag)) continue;
-
-		/* Iterate over all the terms */
-		for (j = 0; j < ANGBAND_TERM_MAX; j++)
-		{
-			/* No window */
-			if (!angband_term[j]) continue;
-
-			/* No relevant flags */
-			if (!(op_ptr->window_flag[j] & hnd->flag)) continue;
-
-			/* Call the hook */
-			Term_activate(angband_term[j]);
-			hnd->hook();
-			Term_fresh();
-		}
-
-		/* Forget the flag */
-		p_ptr->window &= ~(hnd->flag);
-	}
-
-	/* Restore old terminal */
-	Term_activate(old);
-}
-
-
-
-
-/*** Update flag handler functions ***/
 
 /*
  * Calculate number of spells player should have, and forget,
@@ -1352,10 +277,7 @@ static void calc_spells(void)
 		}
 
 		/* Redraw Study Status */
-		p_ptr->redraw |= (PR_STUDY);
-
-		/* Redraw object recall */
-		p_ptr->window |= (PW_OBJECT);
+		p_ptr->redraw |= (PR_STUDY | PR_OBJECT);
 	}
 }
 
@@ -1464,9 +386,6 @@ static void calc_mana(void)
 
 		/* Display mana later */
 		p_ptr->redraw |= (PR_MANA);
-
-		/* Window stuff */
-		p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 	}
 
 
@@ -1538,9 +457,6 @@ static void calc_hitpoints(void)
 
 		/* Display hitpoints (later) */
 		p_ptr->redraw |= (PR_HP);
-
-		/* Window stuff */
-		p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 	}
 }
 
@@ -2383,9 +1299,6 @@ static void calc_bonuses(void)
 		{
 			/* Redisplay the stats later */
 			p_ptr->redraw |= (PR_STATS);
-
-			/* Window stuff */
-			p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 		}
 
 		/* Notice changes */
@@ -2393,9 +1306,6 @@ static void calc_bonuses(void)
 		{
 			/* Redisplay the stats later */
 			p_ptr->redraw |= (PR_STATS);
-
-			/* Window stuff */
-			p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 		}
 
 		/* Notice changes */
@@ -2453,9 +1363,6 @@ static void calc_bonuses(void)
 	{
 		/* Redraw */
 		p_ptr->redraw |= (PR_ARMOR);
-
-		/* Window stuff */
-		p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 	}
 
 	/* Hack -- handle "xtra" mode */
@@ -2651,16 +1558,48 @@ void update_stuff(void)
 	if (p_ptr->update & (PU_PANEL))
 	{
 		p_ptr->update &= ~(PU_PANEL);
-		verify_panel();
+		ui_event_signal(ui_PLAYER_MOVED);
 	}
 }
 
+
+
+/*
+ * Events triggered by the various flags.
+ */
+static const struct flag_event_trigger redraw_events[] =
+{
+	{ PR_MISC, ui_RACE_CLASS_CHANGED },
+	{ PR_TITLE, ui_TITLE_CHANGED },
+	{ PR_LEV, ui_LEVEL_CHANGED },
+	{ PR_EXP, ui_EXPERIENCE_CHANGED },
+	{ PR_STATS, ui_STATS_CHANGED },
+	{ PR_ARMOR, ui_AC_CHANGED },
+	{ PR_HP, ui_HP_CHANGED },
+	{ PR_MANA, ui_MANA_CHANGED },
+	{ PR_GOLD, ui_GOLD_CHANGED },
+	{ PR_HEALTH, ui_HEALTH_CHANGED },
+	{ PR_DEPTH, ui_DEPTH_CHANGED },
+	{ PR_SPEED, ui_SPEED_CHANGED },
+	{ PR_STATE, ui_STATE_CHANGED },
+	{ PR_STATUS, ui_STATUS_CHANGED },
+	{ PR_STUDY, ui_STUDY_CHANGED },
+	{ PR_DTRAP, ui_DETECT_TRAPS_CHANGED },
+
+	{ PW_INVEN, ui_INVENTORY_CHANGED },
+	{ PW_EQUIP, ui_EQUIPMENT_CHANGED },
+	{ PW_MONLIST, ui_MONSTERLIST_CHANGED },
+	{ PW_MONSTER, ui_MONSTER_TARGET_CHANGED },
+	{ PW_MESSAGE, ui_MESSAGES_CHANGED },
+};
 
 /*
  * Handle "p_ptr->redraw"
  */
 void redraw_stuff(void)
 {
+	int i;
+	
 	/* Redraw stuff */
 	if (!p_ptr->redraw) return;
 
@@ -2670,48 +1609,27 @@ void redraw_stuff(void)
 	/* Character is in "icky" mode, no screen updates */
 	if (character_icky) return;
 
-
-	/* HACK - Redraw window "Display player (compact)" if necessary */
-	if (p_ptr->redraw & (PR_MISC | PR_TITLE | PR_LEV | PR_EXP |
-	                     PR_STATS | PR_ARMOR | PR_HP | PR_MANA |
-	                     PR_GOLD | PR_HEALTH | PR_EQUIPPY | PR_DEPTH | PR_SPEED))
+	/* Deal with the basic signals */
+	for (i = 0; i < N_ELEMENTS(redraw_events); i++)
 	{
-		p_ptr->window |= PW_PLAYER_2;
+		const struct flag_event_trigger *hnd = &redraw_events[i];
+		if (p_ptr->redraw & hnd->flag)
+			ui_event_signal(hnd->event);
 	}
 
-	if (p_ptr->redraw & (PR_MAP))
+	/* Then the ones that require parameters to be supplied. */
+	if (p_ptr->redraw & PR_MAP)
 	{
-		prt_map();
+		/* We probably really want map changes to be incremental */
+		ui_event_signal_point(ui_MAP_CHANGED, -1, -1);
 	}
 
-	if (p_ptr->redraw & (PR_HP))
-	{
-		/*
-		 * hack:  redraw player, since the player's color
-		 * now indicates approximate health.  Note that
-		 * using this command when graphics mode is on
-		 * causes the character to be a black square.
-		 */
-		if ((hp_changes_color) && (arg_graphics == GRAPHICS_NONE))
-		{
-			lite_spot(p_ptr->py, p_ptr->px);
-		}
-	}
-
-	/* Redraw the sidebar */
-	display_sidebar();
-
-	/* Redraw the status line */
-	display_statusline();
-
-
-	/* Reset p_ptr->redraw */
 	p_ptr->redraw = 0;
 }
 
 
 /*
- * Handle "p_ptr->update" and "p_ptr->redraw" and "p_ptr->window"
+ * Handle "p_ptr->update" and "p_ptr->redraw" 
  */
 void handle_stuff(void)
 {
@@ -2720,10 +1638,5 @@ void handle_stuff(void)
 
 	/* Redraw stuff */
 	if (p_ptr->redraw) redraw_stuff();
-
-	/* Window stuff */
-	if (p_ptr->window) window_stuff();
 }
-
-
 

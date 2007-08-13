@@ -1600,22 +1600,28 @@ enum
 #define PR_HP			0x00000040L	/* Display Hitpoints */
 #define PR_MANA			0x00000080L	/* Display Mana */
 #define PR_GOLD			0x00000100L	/* Display Gold */
-#define PR_EQUIPPY		0x00000400L	/* Display Equippy chars */
+
 #define PR_HEALTH		0x00000800L	/* Display Health Bar */
 #define PR_SPEED		0x00001000L	/* Display Extra (Speed) */
 #define PR_STUDY		0x00002000L	/* Display Extra (Study) */
 #define PR_DEPTH		0x00004000L	/* Display Depth */
-#define PR_STATUS       0x00008000L
+#define PR_STATUS		0x00008000L
 #define PR_DTRAP		0x00010000L /* Trap detection indicator */
 #define PR_STATE		0x00020000L	/* Display Extra (State) */
 #define PR_MAP			0x00040000L	/* Display Map */
 
+#define PR_INVEN		0x00080000L /* Display inven/equip */
+#define PR_EQUIP		0x00100000L /* Display equip/inven */
+#define PR_MESSAGE		0x00200000L /* Display messages */
+#define PR_MONSTER		0x00400000L /* Display monster recall */
+#define PR_OBJECT		0x00800000L /* Display object recall */
+#define PR_MONLIST		0x01000000L /* Display monster list */
 
 /* Display Basic Info */
 #define PR_BASIC \
 	(PR_MISC | PR_TITLE | PR_STATS | PR_LEV |\
 	 PR_EXP | PR_GOLD | PR_ARMOR | PR_HP |\
-	 PR_MANA | PR_DEPTH | PR_HEALTH | PR_EQUIPPY | PR_SPEED)
+	 PR_MANA | PR_DEPTH | PR_HEALTH | PR_SPEED)
 
 /* Display Extra Info */
 #define PR_EXTRA \

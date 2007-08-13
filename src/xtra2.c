@@ -39,37 +39,37 @@ static bool set_cut(int v);
 typedef struct
 {
   const char *on_begin, *on_end;
-  u32b flag_redraw, flag_window, flag_update;
+  u32b flag_redraw, flag_update;
   int msg;
 } timed_effect;
 
 static timed_effect effects[] =
 {
-	{ "You feel yourself moving faster!", "You feel yourself slow down.", 0, 0, PU_BONUS, MSG_SPEED },
-	{ "You feel yourself moving slower!", "You feel yourself speed up.", 0, 0, PU_BONUS, MSG_SLOW },
-	{ "You are blind.", "You can see again.", PR_MAP, (PW_OVERHEAD | PW_MAP), (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS), MSG_BLIND },
-	{ "You are paralyzed!", "You can move again.", 0, 0, 0, MSG_PARALYZED },
-	{ "You are confused!", "You feel less confused now.", 0, 0, 0, MSG_CONFUSED },
-	{ "You are terrified!", "You feel bolder now.", 0, 0, 0, MSG_AFRAID },
-	{ "You feel drugged!", "You can see clearly again.", PR_MAP, (PW_OVERHEAD | PW_MAP), 0, MSG_DRUGGED },
-	{ "You are poisoned!", "You are no longer poisoned.", 0, 0, 0, MSG_POISONED },
-	{ "", "", 0, 0, 0, 0 },  /* TMD_CUT -- handled seperately */
-	{ "", "", 0, 0, 0, 0 },  /* TMD_STUN -- handled seperately */
-	{ "You feel safe from evil!", "You no longer feel safe from evil.", 0, 0, 0, MSG_PROT_EVIL },
-	{ "You feel invulnerable!", "You feel vulnerable once more.", 0, 0, PU_BONUS, MSG_INVULN },
-	{ "You feel like a hero!", "The heroism wears off.", 0, 0, PU_BONUS, MSG_HERO },
-	{ "You feel like a killing machine!", "You feel less Berserk.", 0, 0, PU_BONUS, MSG_BERSERK },
-	{ "A mystic shield forms around your body!", "Your mystic shield crumbles away.", 0, 0, PU_BONUS, MSG_SHIELD },
-	{ "You feel righteous!", "The prayer has expired.", 0, 0, PU_BONUS, MSG_BLESSED },
-	{ "Your eyes feel very sensitive!", "Your eyes feel less sensitive.", 0, 0, (PU_BONUS | PU_MONSTERS), MSG_SEE_INVIS },
-	{ "Your eyes begin to tingle!", "Your eyes stop tingling.", 0, 0, (PU_BONUS | PU_MONSTERS), MSG_INFRARED },
-	{ "", "", 0, 0, 0, 0 },  /* acid -- handled seperately */
-	{ "", "", 0, 0, 0, 0 },  /* elec -- handled seperately */
-	{ "", "", 0, 0, 0, 0 },  /* fire -- handled seperately */
-	{ "", "", 0, 0, 0, 0 },  /* cold -- handled seperately */
-	{ "You feel resistant to poison!", "You feel less resistant to poison.", 0, 0, 0, MSG_RES_POIS },
-	{ "You feel your memories fade.", "Your memories come flooding back.", 0, 0, 0, MSG_GENERIC },
-	{ "Your mind expands.", "Your horizons are once more limited.", 0, 0, PU_BONUS, MSG_GENERIC },
+	{ "You feel yourself moving faster!", "You feel yourself slow down.", 0, PU_BONUS, MSG_SPEED },
+	{ "You feel yourself moving slower!", "You feel yourself speed up.", 0, PU_BONUS, MSG_SLOW },
+	{ "You are blind.", "You can see again.", (PR_MAP), (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS), MSG_BLIND },
+	{ "You are paralyzed!", "You can move again.", 0, 0, MSG_PARALYZED },
+	{ "You are confused!", "You feel less confused now.", 0, 0, MSG_CONFUSED },
+	{ "You are terrified!", "You feel bolder now.", 0, 0, MSG_AFRAID },
+	{ "You feel drugged!", "You can see clearly again.", (PR_MAP), 0, MSG_DRUGGED },
+	{ "You are poisoned!", "You are no longer poisoned.", 0, 0, MSG_POISONED },
+	{ "", "", 0, 0, 0 },  /* TMD_CUT -- handled seperately */
+	{ "", "", 0, 0, 0 },  /* TMD_STUN -- handled seperately */
+	{ "You feel safe from evil!", "You no longer feel safe from evil.", 0, 0, MSG_PROT_EVIL },
+	{ "You feel invulnerable!", "You feel vulnerable once more.", 0, PU_BONUS, MSG_INVULN },
+	{ "You feel like a hero!", "The heroism wears off.", 0, PU_BONUS, MSG_HERO },
+	{ "You feel like a killing machine!", "You feel less Berserk.", 0, PU_BONUS, MSG_BERSERK },
+	{ "A mystic shield forms around your body!", "Your mystic shield crumbles away.", 0, PU_BONUS, MSG_SHIELD },
+	{ "You feel righteous!", "The prayer has expired.", 0, PU_BONUS, MSG_BLESSED },
+	{ "Your eyes feel very sensitive!", "Your eyes feel less sensitive.", 0, (PU_BONUS | PU_MONSTERS), MSG_SEE_INVIS },
+	{ "Your eyes begin to tingle!", "Your eyes stop tingling.", 0, (PU_BONUS | PU_MONSTERS), MSG_INFRARED },
+	{ "", "", 0, 0, 0 },  /* acid -- handled seperately */
+	{ "", "", 0, 0, 0 },  /* elec -- handled seperately */
+	{ "", "", 0, 0, 0 },  /* fire -- handled seperately */
+	{ "", "", 0, 0, 0 },  /* cold -- handled seperately */
+	{ "You feel resistant to poison!", "You feel less resistant to poison.", 0, 0, MSG_RES_POIS },
+	{ "You feel your memories fade.", "Your memories come flooding back.", 0, 0, MSG_GENERIC },
+	{ "Your mind expands.", "Your horizons are once more limited.", 0, PU_BONUS, MSG_GENERIC },
 };
 
 /*
@@ -127,7 +127,6 @@ bool set_timed(int idx, int v)
 	/* Update the visuals, as appropriate. */
 	p_ptr->update |= effect->flag_update;
 	p_ptr->redraw |= (PR_STATUS | effect->flag_redraw);
-	p_ptr->window |= effect->flag_window;
 
 	/* Handle stuff */
 	handle_stuff();
@@ -982,9 +981,6 @@ void check_experience(void)
 		/* Redraw some stuff */
 		p_ptr->redraw |= (PR_LEV | PR_TITLE | PR_EXP);
 
-		/* Window stuff */
-		p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
-
 		/* Handle stuff */
 		handle_stuff();
 	}
@@ -1010,9 +1006,6 @@ void check_experience(void)
 		/* Redraw some stuff */
 		p_ptr->redraw |= (PR_LEV | PR_TITLE | PR_EXP);
 
-		/* Window stuff */
-		p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
-
 		/* Handle stuff */
 		handle_stuff();
 	}
@@ -1030,9 +1023,6 @@ void check_experience(void)
 
 		/* Redraw some stuff */
 		p_ptr->redraw |= (PR_LEV | PR_TITLE | PR_EXP);
-
-		/* Window stuff */
-		p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 
 		/* Handle stuff */
 		handle_stuff();
@@ -1333,7 +1323,7 @@ void monster_death(int m_idx)
 	}
 
 	/* Update monster list window */
-	p_ptr->window |= PW_MONLIST;
+	p_ptr->redraw |= PR_MONLIST;
 
 	/* Only process "Quest Monsters" */
 	if (!(r_ptr->flags1 & (RF1_QUESTOR))) return;
@@ -1609,7 +1599,6 @@ bool modify_panel(term *t, int wy, int wx)
 
 		/* Redraw map */
 		p_ptr->redraw |= (PR_MAP);
-		p_ptr->window |= (PW_OVERHEAD | PW_MAP);
 
 		/* Changed */
 		return (TRUE);

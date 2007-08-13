@@ -1719,7 +1719,7 @@ static void o_xtra_act(char ch, int oid)
 
 			/* Notice stuff (later) */
 			p_ptr->notice |= (PN_AUTOINSCRIBE);
-			p_ptr->window |= (PW_INVEN | PW_EQUIP);
+			p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 		}
 
 		/* Reload the screen */
@@ -1891,12 +1891,9 @@ void do_cmd_redraw(void)
 	p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
 	/* Redraw everything */
-	p_ptr->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_EQUIPPY);
-
-	/* Window stuff */
-	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1 |
-	                  PW_MESSAGE | PW_OVERHEAD | PW_MONSTER | PW_OBJECT |
-	                  PW_MAP | PW_MONLIST);
+	p_ptr->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_INVEN | PR_EQUIP |
+	                  PR_MESSAGE | PR_MONSTER | PR_OBJECT |
+	                  PR_MONLIST);
 
 	/* Clear screen */
 	Term_clear();
@@ -2381,13 +2378,13 @@ static void do_cmd_options_win(void)
 
 	event_type ke;
 
-	u32b old_flag[ANGBAND_TERM_MAX];
+	u32b new_flags[ANGBAND_TERM_MAX];
 
 
-	/* Memorize old flags */
+	/* Set new flags to the old values */
 	for (j = 0; j < ANGBAND_TERM_MAX; j++)
 	{
-		old_flag[j] = op_ptr->window_flag[j];
+		new_flags[j] = op_ptr->window_flag[j];
 	}
 
 
@@ -2441,7 +2438,7 @@ static void do_cmd_options_win(void)
 				if ((i == y) && (j == x)) a = TERM_L_BLUE;
 
 				/* Active flag */
-				if (op_ptr->window_flag[j] & (1L << i)) c = 'X';
+				if (new_flags[j] & (1L << i)) c = 'X';
 
 				/* Flag value */
 				Term_putch(35 + j * 5, i + 5, a, c);
@@ -2485,15 +2482,15 @@ static void do_cmd_options_win(void)
 			}
 
 			/* Toggle flag (off) */
-			else if (op_ptr->window_flag[x] & (1L << y))
+			else if (new_flags[x] & (1L << y))
 			{
-				op_ptr->window_flag[x] &= ~(1L << y);
+				new_flags[x] &= ~(1L << y);
 			}
 
 			/* Toggle flag (on) */
 			else
 			{
-				op_ptr->window_flag[x] |= (1L << y);
+				new_flags[x] |= (1L << y);
 			}
 
 			/* Continue */
@@ -2518,28 +2515,7 @@ static void do_cmd_options_win(void)
 	}
 
 	/* Notice changes */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
-	{
-		term *old = Term;
-
-		/* Dead window */
-		if (!angband_term[j]) continue;
-
-		/* Ignore non-changes */
-		if (op_ptr->window_flag[j] == old_flag[j]) continue;
-
-		/* Activate */
-		Term_activate(angband_term[j]);
-
-		/* Erase */
-		Term_clear();
-
-		/* Refresh */
-		Term_fresh();
-
-		/* Restore */
-		Term_activate(old);
-	}
+	subwindows_set_flags(new_flags, ANGBAND_TERM_MAX);
 }
 
 

@@ -2218,9 +2218,8 @@ static void store_sell(void)
 		/* Combine / Reorder the pack (later) */
 		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
 
-		/* Window stuff */
-		p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
-		p_ptr->redraw |= (PR_EQUIPPY);
+		/* Redraw stuff */
+		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 
 		/* The object belongs to the store now */
 		i_ptr->ident |= IDENT_STORE;
@@ -2787,7 +2786,4 @@ void do_cmd_store(void)
 
 	/* Redraw map */
 	p_ptr->redraw |= (PR_MAP);
-
-	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD);
 }

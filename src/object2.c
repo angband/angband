@@ -338,9 +338,6 @@ void compact_objects(int size)
 	/* Redraw map */
 	p_ptr->redraw |= (PR_MAP);
 
-	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD | PW_MAP);
-
 
 
 
@@ -742,9 +739,6 @@ void object_aware(object_type *o_ptr)
 	{
 		/* Redraw map */
 		p_ptr->redraw |= (PR_MAP);
-
-		/* Window stuff */
-		p_ptr->window |= (PW_OVERHEAD | PW_MAP);
 	}
 }
 
@@ -3561,8 +3555,8 @@ void inven_item_increase(int item, int num)
 		/* Combine the pack */
 		p_ptr->notice |= (PN_COMBINE);
 
-		/* Window stuff */
-		p_ptr->window |= (PW_INVEN | PW_EQUIP);
+		/* Redraw stuff */
+		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 	}
 }
 
@@ -3598,8 +3592,8 @@ void inven_item_optimize(int item)
 		/* Hack -- wipe hole */
 		(void)WIPE(&inventory[i], object_type);
 
-		/* Window stuff */
-		p_ptr->window |= (PW_INVEN);
+		/* Redraw stuff */
+		p_ptr->redraw |= (PR_INVEN);
 	}
 
 	/* The item is being wielded */
@@ -3620,10 +3614,8 @@ void inven_item_optimize(int item)
 		/* Recalculate mana XXX */
 		p_ptr->update |= (PU_MANA);
 
-		/* Window stuff */
-		p_ptr->window |= (PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
-
-		p_ptr->redraw |= (PR_EQUIPPY);
+		/* Redraw stuff */
+		p_ptr->redraw |= (PR_EQUIP);
 	}
 }
 
@@ -3794,8 +3786,8 @@ s16b inven_carry(object_type *o_ptr)
 			/* Recalculate bonuses */
 			p_ptr->update |= (PU_BONUS);
 
-			/* Window stuff */
-			p_ptr->window |= (PW_INVEN);
+			/* Redraw stuff */
+			p_ptr->redraw |= (PR_INVEN);
 
 			/* Success */
 			return (j);
@@ -3918,8 +3910,8 @@ s16b inven_carry(object_type *o_ptr)
 	/* Combine and Reorder pack */
 	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
 
-	/* Window stuff */
-	p_ptr->window |= (PW_INVEN);
+	/* Redraw stuff */
+	p_ptr->redraw |= (PR_INVEN);
 
 	/* Return the slot */
 	return (i);
@@ -4153,8 +4145,8 @@ void combine_pack(void)
 			/* Hack -- wipe hole */
 			object_wipe(&inventory[k]);
 
-			/* Window stuff */
-			p_ptr->window |= (PW_INVEN);
+			/* Redraw stuff */
+			p_ptr->redraw |= (PR_INVEN);
 		}
 	}
 
@@ -4267,8 +4259,8 @@ void reorder_pack(void)
 		/* Insert the moving item */
 		object_copy(&inventory[j], i_ptr);
 
-		/* Window stuff */
-		p_ptr->window |= (PW_INVEN);
+		/* Redraw stuff */
+		p_ptr->redraw |= (PR_INVEN);
 	}
 
 	/* Message */

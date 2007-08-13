@@ -260,7 +260,7 @@ static void do_cmd_use(const char *q, const char *s, int flag, int snd, use_type
 
 	/* Mark as tried and redisplay */
 	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
-	p_ptr->window |= (PW_INVEN | PW_EQUIP);
+	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 
 
 	/*

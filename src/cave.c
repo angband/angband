@@ -1110,7 +1110,7 @@ static void print_rel_map(char c, byte a, int y, int x)
 		}
 
 		/* Redraw map */
-		p_ptr->window |= (PW_MAP);
+		p_ptr->redraw |= (PR_MAP);
 	}
 }
 
@@ -1296,7 +1296,7 @@ static void lite_spot_map(int y, int x)
 		}
 
 		/* Redraw map */
-		p_ptr->window |= (PW_MAP);
+		p_ptr->redraw |= (PR_MAP);
 	}
 }
 
@@ -1423,7 +1423,7 @@ static void prt_map_aux(void)
 		}
 	
 		/* Redraw map */
-		p_ptr->window |= (PW_MAP);
+		p_ptr->redraw |= (PR_MAP);
 	}
 }
 
@@ -3313,9 +3313,6 @@ void map_area(void)
 
 	/* Redraw map */
 	p_ptr->redraw |= (PR_MAP);
-
-	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD | PW_MAP);
 }
 
 
@@ -3395,11 +3392,8 @@ void wiz_lite(void)
 	/* Fully update the visuals */
 	p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
-	/* Redraw map */
-	p_ptr->redraw |= (PR_MAP);
-
-	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD | PW_MONLIST | PW_MAP);
+	/* Redraw map, monster list */
+	p_ptr->redraw |= (PR_MAP | PR_MONLIST);
 }
 
 
@@ -3440,11 +3434,8 @@ void wiz_dark(void)
 	/* Fully update the visuals */
 	p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
-	/* Redraw map */
-	p_ptr->redraw |= (PR_MAP);
-
-	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD | PW_MONLIST | PW_MAP);
+	/* Redraw map, monster list */
+	p_ptr->redraw |= (PR_MAP | PR_MONLIST);
 }
 
 
@@ -3532,11 +3523,8 @@ void town_illuminate(bool daytime)
 	/* Fully update the visuals */
 	p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
-	/* Redraw map */
-	p_ptr->redraw |= (PR_MAP);
-
-	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD | PW_MONLIST | PW_MAP);
+	/* Redraw map, monster list */
+	p_ptr->redraw |= (PR_MAP | PR_MONLIST);
 }
 
 
@@ -3950,7 +3938,7 @@ void monster_race_track(int r_idx)
 	p_ptr->monster_race_idx = r_idx;
 
 	/* Window stuff */
-	p_ptr->window |= (PW_MONSTER);
+	p_ptr->redraw |= (PR_MONSTER);
 }
 
 
@@ -3964,7 +3952,7 @@ void object_kind_track(int k_idx)
 	p_ptr->object_kind_idx = k_idx;
 
 	/* Window stuff */
-	p_ptr->window |= (PW_OBJECT);
+	p_ptr->redraw |= (PR_OBJECT);
 }
 
 

@@ -227,9 +227,6 @@ static void py_pickup_gold(void)
 
 		/* Redraw gold */
 		p_ptr->redraw |= (PR_GOLD);
-
-		/* Window stuff */
-		p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 	}
 
 	/* Free the gold array */

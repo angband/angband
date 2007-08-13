@@ -230,8 +230,8 @@ static void sense_inventory(void)
 		/* Combine / Reorder the pack (later) */
 		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
 
-		/* Window stuff */
-		p_ptr->window |= (PW_INVEN | PW_EQUIP);
+		/* Redraw stuff */
+		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 	}
 }
 
@@ -277,9 +277,6 @@ static void regenhp(int percent)
 	{
 		/* Redraw */
 		p_ptr->redraw |= (PR_HP);
-
-		/* Window stuff */
-		p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 	}
 }
 
@@ -323,9 +320,6 @@ static void regenmana(int percent)
 	{
 		/* Redraw */
 		p_ptr->redraw |= (PR_MANA);
-
-		/* Window stuff */
-		p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 	}
 }
 
@@ -474,7 +468,7 @@ static void recharge_objects(void)
 	if (charged)
 	{
 		/* Window stuff */
-		p_ptr->window |= (PW_EQUIP);
+		p_ptr->redraw |= (PR_EQUIP);
 	}
 
 	charged = 0;
@@ -521,8 +515,8 @@ static void recharge_objects(void)
 		/* Combine pack */
 		p_ptr->notice |= (PN_COMBINE);
 
-		/* Window stuff */
-		p_ptr->window |= (PW_INVEN);
+		/* Redraw stuff */
+		p_ptr->redraw |= (PR_INVEN);
 	}
 
 
@@ -923,8 +917,8 @@ static void process_world(void)
 			/* Hack -- notice interesting fuel steps */
 			if ((o_ptr->timeout < 100) || (!(o_ptr->timeout % 100)))
 			{
-				/* Window stuff */
-				p_ptr->window |= (PW_EQUIP);
+				/* Redraw stuff */
+				p_ptr->redraw |= (PR_EQUIP);
 			}
 
 			/* Hack -- Special treatment when blind */
@@ -1099,11 +1093,9 @@ static void process_player_aux(void)
 			old_cast_innate = l_ptr->cast_innate;
 			old_cast_spell = l_ptr->cast_spell;
 
-			/* Window stuff */
-			p_ptr->window |= (PW_MONSTER);
-
-			/* Window stuff */
-			window_stuff();
+			/* Redraw stuff */
+			p_ptr->redraw |= (PR_MONSTER);
+			redraw_stuff();
 		}
 	}
 }
@@ -1202,9 +1194,6 @@ static void process_player(void)
 		/* Redraw stuff (if needed) */
 		if (p_ptr->redraw) redraw_stuff();
 
-		/* Redraw stuff (if needed) */
-		if (p_ptr->window) window_stuff();
-
 
 		/* Place the cursor on the player */
 		move_cursor_relative(p_ptr->py, p_ptr->px);
@@ -1253,9 +1242,6 @@ static void process_player(void)
 
 			/* Redraw stuff (if needed) */
 			if (p_ptr->redraw) redraw_stuff();
-
-			/* Window stuff (if needed) */
-			if (p_ptr->window) window_stuff();
 		}
 
 
@@ -1356,7 +1342,6 @@ static void process_player(void)
 			if (p_ptr->timed[TMD_IMAGE])
 			{
 				p_ptr->redraw |= (PR_MAP);
-				p_ptr->window |= (PW_MAP);
 			}
 
 			/* Shimmer monsters if needed */
@@ -1580,25 +1565,16 @@ static void dungeon(void)
 	p_ptr->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 
 	/* Redraw dungeon */
-	p_ptr->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_EQUIPPY);
+	p_ptr->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP);
 
-	/* Window stuff */
-	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
-
-	/* Window stuff */
-	p_ptr->window |= (PW_MONSTER | PW_MONLIST);
-
-	/* Window stuff */
-	p_ptr->window |= (PW_OVERHEAD | PW_MAP);
+	/* Redraw "statusy" things */
+	p_ptr->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MONLIST);
 
 	/* Update stuff */
 	update_stuff();
 
 	/* Redraw stuff */
 	redraw_stuff();
-
-	/* Redraw stuff */
-	window_stuff();
 
 
 	/* Hack -- Decrease "xtra" depth */
@@ -1619,9 +1595,6 @@ static void dungeon(void)
 
 	/* Redraw stuff */
 	redraw_stuff();
-
-	/* Window stuff */
-	window_stuff();
 
 	/* Refresh */
 	Term_fresh();
@@ -1677,9 +1650,6 @@ static void dungeon(void)
 		/* Redraw stuff */
 		if (p_ptr->redraw) redraw_stuff();
 
-		/* Redraw stuff */
-		if (p_ptr->window) window_stuff();
-
 		/* Hack -- Hilite the player */
 		move_cursor_relative(p_ptr->py, p_ptr->px);
 
@@ -1699,9 +1669,6 @@ static void dungeon(void)
 		/* Redraw stuff */
 		if (p_ptr->redraw) redraw_stuff();
 
-		/* Redraw stuff */
-		if (p_ptr->window) window_stuff();
-
 		/* Hack -- Hilite the player */
 		move_cursor_relative(p_ptr->py, p_ptr->px);
 
@@ -1720,9 +1687,6 @@ static void dungeon(void)
 
 		/* Redraw stuff */
 		if (p_ptr->redraw) redraw_stuff();
-
-		/* Window stuff */
-		if (p_ptr->window) window_stuff();
 
 		/* Hack -- Hilite the player */
 		move_cursor_relative(p_ptr->py, p_ptr->px);
@@ -1948,10 +1912,9 @@ void play_game(bool new_game)
 	reset_visuals(TRUE);
 
 
-	/* Window stuff */
-	p_ptr->window |= (PW_INVEN | PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
-	p_ptr->window |= (PW_MONSTER | PW_MESSAGE);
-	window_stuff();
+	/* Redraw stuff */
+	p_ptr->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MESSAGE);
+	redraw_stuff();
 
 
 	/* Process some user pref files */
@@ -1998,9 +1961,6 @@ void play_game(bool new_game)
 
 		/* Redraw stuff */
 		if (p_ptr->redraw) redraw_stuff();
-
-		/* Window stuff */
-		if (p_ptr->window) window_stuff();
 
 
 		/* Cancel the target */

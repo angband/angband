@@ -492,9 +492,6 @@ void take_hit(int dam, cptr kb_str)
 	/* Display the hitpoints */
 	p_ptr->redraw |= (PR_HP);
 
-	/* Window stuff */
-	p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
-
 	/* Dead player */
 	if (p_ptr->chp < 0)
 	{
@@ -849,7 +846,7 @@ static int inven_damage(inven_func typ, int perc)
 				p_ptr->update |= (PU_BONUS);
 
 				/* Window stuff */
-				p_ptr->window |= (PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
+				p_ptr->redraw |= (PR_EQUIP);
 
 				/* Casualty count */
 				amt = o_ptr->number;
@@ -966,7 +963,7 @@ static int minus_ac(void)
 	p_ptr->update |= (PU_BONUS);
 
 	/* Window stuff */
-	p_ptr->window |= (PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
+	p_ptr->redraw |= (PR_EQUIP);
 
 	/* Item was damaged */
 	return (TRUE);
@@ -1366,7 +1363,7 @@ bool apply_disenchant(int mode)
 	p_ptr->update |= (PU_BONUS);
 
 	/* Window stuff */
-	p_ptr->window |= (PW_EQUIP | PW_PLAYER_0 | PW_PLAYER_1);
+	p_ptr->redraw |= (PR_EQUIP);
 
 	/* Notice */
 	return (TRUE);
@@ -3294,7 +3291,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ)
 	if (p_ptr->monster_race_idx == m_ptr->r_idx)
 	{
 		/* Window stuff */
-		p_ptr->window |= (PW_MONSTER);
+		p_ptr->redraw |= (PR_MONSTER);
 	}
 
 
@@ -4117,14 +4114,14 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 				move_cursor_relative(y, x);
 
 				Term_fresh();
-				if (p_ptr->window) window_stuff();
+				if (p_ptr->redraw) redraw_stuff();
 
 				Term_xtra(TERM_XTRA_DELAY, msec);
 
 				lite_spot(y, x);
 
 				Term_fresh();
-				if (p_ptr->window) window_stuff();
+				if (p_ptr->redraw) redraw_stuff();
 
 				/* Display "beam" grids */
 				if (flg & (PROJECT_BEAM))
@@ -4246,7 +4243,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 			Term_fresh();
 
 			/* Flush */
-			if (p_ptr->window) window_stuff();
+			if (p_ptr->redraw) redraw_stuff();
 
 			/* Delay (efficiently) */
 			if (visual || drawn)
@@ -4279,7 +4276,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 			Term_fresh();
 
 			/* Flush */
-			if (p_ptr->window) window_stuff();
+			if (p_ptr->redraw) redraw_stuff();
 		}
 	}
 

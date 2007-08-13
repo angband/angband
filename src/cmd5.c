@@ -785,10 +785,8 @@ void do_cmd_study(void)
 	}
 
 	/* Redraw Study Status */
-	p_ptr->redraw |= (PR_STUDY);
+	p_ptr->redraw |= (PR_STUDY | PR_OBJECT);
 
-	/* Redraw object recall */
-	p_ptr->window |= (PW_OBJECT);
 }
 
 
@@ -915,7 +913,7 @@ void do_cmd_cast(void)
 			gain_exp(e * s_ptr->slevel);
 
 			/* Redraw object recall */
-			p_ptr->window |= (PW_OBJECT);
+			p_ptr->redraw |= (PR_OBJECT);
 		}
 	}
 
@@ -959,9 +957,6 @@ void do_cmd_cast(void)
 
 	/* Redraw mana */
 	p_ptr->redraw |= (PR_MANA);
-
-	/* Window stuff */
-	p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 }
 
 
@@ -1085,7 +1080,7 @@ void do_cmd_pray(void)
 			gain_exp(e * s_ptr->slevel);
 
 			/* Redraw object recall */
-			p_ptr->window |= (PW_OBJECT);
+			p_ptr->redraw |= (PR_OBJECT);
 		}
 	}
 
@@ -1129,7 +1124,4 @@ void do_cmd_pray(void)
 
 	/* Redraw mana */
 	p_ptr->redraw |= (PR_MANA);
-
-	/* Window stuff */
-	p_ptr->window |= (PW_PLAYER_0 | PW_PLAYER_1);
 }

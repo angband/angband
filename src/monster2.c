@@ -881,7 +881,7 @@ void lore_do_probe(int m_idx)
 	if (p_ptr->monster_race_idx == m_ptr->r_idx)
 	{
 		/* Window stuff */
-		p_ptr->window |= (PW_MONSTER);
+		p_ptr->redraw |= (PR_MONSTER);
 	}
 }
 
@@ -918,7 +918,7 @@ void lore_treasure(int m_idx, int num_item, int num_gold)
 	if (p_ptr->monster_race_idx == m_ptr->r_idx)
 	{
 		/* Window stuff */
-		p_ptr->window |= (PW_MONSTER);
+		p_ptr->redraw |= (PR_MONSTER);
 	}
 }
 
@@ -1161,7 +1161,7 @@ void update_mon(int m_idx, bool full)
 			if (disturb_move) disturb(1, 0);
 
 			/* Window stuff */
-			p_ptr->window |= PW_MONLIST;
+			p_ptr->redraw |= PR_MONLIST;
 		}
 	}
 
@@ -1184,7 +1184,7 @@ void update_mon(int m_idx, bool full)
 			if (disturb_move) disturb(1, 0);
 
 			/* Window stuff */
-			p_ptr->window |= PW_MONLIST;
+			p_ptr->redraw |= PR_MONLIST;
 		}
 	}
 
@@ -1367,7 +1367,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		p_ptr->update |= (PU_UPDATE_FLOW);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_OVERHEAD | PW_MAP);
+		p_ptr->redraw |= (PR_MAP);
 	}
 
 	/* Monster 2 */
@@ -1403,7 +1403,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 		p_ptr->update |= (PU_UPDATE_FLOW);
 
 		/* Window stuff */
-		p_ptr->window |= (PW_OVERHEAD | PW_MAP);
+		p_ptr->redraw |= (PR_MAP);
 	}
 
 

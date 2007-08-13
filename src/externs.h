@@ -694,11 +694,13 @@ extern bool cast_spell(int tval, int index);
 extern void cnv_stat(int val, char *out_val, size_t len);
 extern s16b modify_stat_value(int value, int amount);
 extern int calc_blows(const object_type *o_ptr);
+extern void display_player_compact(void);
 extern void notice_stuff(void);
 extern void update_stuff(void);
 extern void redraw_stuff(void);
 extern void window_stuff(void);
 extern void handle_stuff(void);
+extern void init_display(void);
 
 /* xtra2.c */
 extern bool set_timed(int idx, int v);
