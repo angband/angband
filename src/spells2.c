@@ -2472,6 +2472,8 @@ void destroy_area(int y1, int x1, int r, bool full)
 
 			/* Lose light and knowledge */
 			cave_info[y][x] &= ~(CAVE_GLOW | CAVE_MARK);
+			
+			lite_spot(y, x);
 
 			/* Hack -- Notice player affect */
 			if (cave_m_idx[y][x] < 0)
@@ -2549,8 +2551,8 @@ void destroy_area(int y1, int x1, int r, bool full)
 	/* Fully update the flow */
 	p_ptr->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 
-	/* Redraw map, monster list */
-	p_ptr->redraw |= (PR_MAP | PR_MONLIST);
+	/* Redraw monster list */
+	p_ptr->redraw |= (PR_MONLIST);
 }
 
 
@@ -2623,7 +2625,7 @@ void earthquake(int cy, int cx, int r)
 
 			/* Lose light and knowledge */
 			cave_info[yy][xx] &= ~(CAVE_GLOW | CAVE_MARK);
-
+			
 			/* Skip the epicenter */
 			if (!dx && !dy) continue;
 
@@ -2841,14 +2843,14 @@ void earthquake(int cy, int cx, int r)
 			yy = cy + dy;
 			xx = cx + dx;
 
-			/* Skip unaffected grids */
-			if (!map[16+yy-cy][16+xx-cx]) continue;
-
-			/* Paranoia -- never affect player */
-			if ((yy == py) && (xx == px)) continue;
+			/* Note unaffected grids for light changes, etc. */
+			if (!map[16+yy-cy][16+xx-cx])
+			{
+				lite_spot(yy, xx);
+			}
 
 			/* Destroy location (if valid) */
-			if (cave_valid_bold(yy, xx))
+			else if (cave_valid_bold(yy, xx))
 			{
 				int feat = FEAT_FLOOR;
 
@@ -2893,9 +2895,6 @@ void earthquake(int cy, int cx, int r)
 
 	/* Fully update the flow */
 	p_ptr->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
-
-	/* Redraw map */
-	p_ptr->redraw |= (PR_MAP);
 
 	/* Update the health bar */
 	p_ptr->redraw |= (PR_HEALTH);

@@ -33,7 +33,7 @@ typedef enum ui_event_type
 	ui_MONSTER_TARGET_CHANGED,
 	ui_MESSAGES_CHANGED,
 
-	ui_event_REDRAW		/* A 'set' of events has finished */
+	ui_event_REDRAW		/* It's the end of a "set" of events, so safe to update */
 } ui_event_type;
 
 #define  N_UI_EVENTS ui_event_REDRAW

@@ -335,12 +335,6 @@ void compact_objects(int size)
 	/* Message */
 	msg_print("Compacting objects...");
 
-	/* Redraw map */
-	p_ptr->redraw |= (PR_MAP);
-
-
-
-
 	/*** Try destroying objects ***/
 
 	/* First do gold */
@@ -731,14 +725,22 @@ void object_known(object_type *o_ptr)
  */
 void object_aware(object_type *o_ptr)
 {
+	int i;
+
 	/* Fully aware of the effects */
 	k_info[o_ptr->k_idx].aware = TRUE;
 
-	/* Scrolls can change the graphics when becoming aware */
-	if (o_ptr->tval == TV_SCROLL)
+	/* Some objects can change their "tile" when becoming aware */
+	for (i = 1; i < o_max; i++)
 	{
-		/* Redraw map */
-		p_ptr->redraw |= (PR_MAP);
+		object_type *floor_o_ptr = &o_list[i];
+
+		/* If it's on the floor and of the right "kind" */
+		if (!(floor_o_ptr->held_m_idx) && floor_o_ptr->k_idx == o_ptr->k_idx)
+		{
+			/* Redraw that location */
+			lite_spot(floor_o_ptr->iy, floor_o_ptr->ix);
+		}
 	}
 }
 

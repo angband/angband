@@ -903,6 +903,94 @@ static void update_statusline(ui_event_type type, ui_event_data *data, void *use
 }
 
 
+/* ------------------------------------------------------------------------
+ * Map redraw.
+ * ------------------------------------------------------------------------ */
+static void trace_map_updates(ui_event_type type, ui_event_data *data, void *user)
+{
+	if (data->point.x == -1 && data->point.y == -1)
+	{
+		printf("Redraw whole map\n");
+	}
+	else
+	{
+		printf("Redraw (%i, %i)\n", data->point.x, data->point.y);
+	}
+}
+
+static void update_maps(ui_event_type type, ui_event_data *data, void *user)
+{
+	term *t = user;
+
+	/* This signals a whole-map redraw. */
+	if (data->point.x == -1 && data->point.y == -1)
+	{
+		prt_map();
+	}
+	/* Single point to be redrawn */
+	else
+	{
+		grid_data g;
+		byte a, ta;
+		char c, tc;
+		
+		int ky, kx;
+		int vy, vx;
+		
+		/* Location relative to panel */
+		ky = data->point.y - t->offset_y;
+		kx = data->point.x - t->offset_x;
+
+		if (t == angband_term[0])
+		{
+			/* Verify location */
+			if ((ky < 0) || (ky >= SCREEN_HGT)) return;
+			
+			/* Verify location */
+			if ((kx < 0) || (kx >= SCREEN_WID)) return;
+			
+			/* Location in window */
+			vy = ky + ROW_MAP;
+			vx = kx + COL_MAP;
+
+			if (use_bigtile) vx += kx;
+		}
+		else
+		{
+			if (use_bigtile)
+			{
+				kx += kx;
+				if (kx + 1 >= t->wid) return;
+			}
+			
+			/* Verify location */
+			if ((ky < 0) || (ky >= t->hgt)) return;
+			if ((kx < 0) || (kx >= t->wid)) return;
+			
+			/* Location in window */
+			vy = ky;
+			vx = kx;
+		}
+
+		
+		/* Redraw the grid spot */
+		map_info(data->point.y, data->point.x, &g);
+		grid_data_as_text(&g, &a, &c, &ta, &tc);
+		Term_queue_char(t, vx, vy, TERM_L_GREEN, c, ta, tc);
+/*		Term_queue_char(t, vx, vy, a, c, ta, tc);*/
+		
+		if (use_bigtile)
+		{
+			vx++;
+			
+			/* Mega-Hack : Queue dummy char */
+			if (a & 0x80)
+				Term_queue_char(t, vx, vy, 255, -1, 0, 0);
+			else
+				Term_queue_char(t, vx, vy, TERM_WHITE, ' ', TERM_WHITE, ' ');
+		}
+	}
+}
 
 /* ------------------------------------------------------------------------
  * Subwindow displays
@@ -1043,24 +1131,37 @@ static void update_messages_subwindow(ui_event_type type, ui_event_data *data, v
 	Term_activate(old);
 }
 
+static struct minimap_flags
+{
+	int win_idx;
+	bool needs_redraw;
+} minimap_data[ANGBAND_TERM_MAX];
 
-/*
- * The "display_map()" function handles NULL arguments in a special manner.
- */
 static void update_minimap_subwindow(ui_event_type type, ui_event_data *data, void *user)
 {
-	term *old = Term;
-	term *inv_term = user;
+	struct minimap_flags *flags = user;
 
-	/* Activate */
-	Term_activate(inv_term);
+	if (type == ui_MAP_CHANGED)
+	{
+		flags->needs_redraw = TRUE;
+	}
+	else if (type == ui_event_REDRAW)
+	{
+		term *old = Term;
+		term *t = angband_term[flags->win_idx];
+		
+		/* Activate */
+		Term_activate(t);
+		
+		/* Redraw map */
+		display_map(NULL, NULL);
+		Term_fresh();
+		
+		/* Restore */
+		Term_activate(old);
 
-	/* Redraw map */
-	display_map(NULL, NULL);
-	Term_fresh();
-	
-	/* Restore */
-	Term_activate(old);
+		flags->needs_redraw = FALSE;
+	}
 }
 
 
@@ -1163,6 +1264,20 @@ static void update_player_compact_subwindow(ui_event_type type, ui_event_data *d
 }
 
 
+static void flush_subwindow(ui_event_type type, ui_event_data *data, void *user)
+{
+	term *old = Term;
+	term *t = user;
+
+	/* Activate */
+	Term_activate(t);
+
+	Term_fresh();
+	
+	/* Restore */
+	Term_activate(old);
+}
+
 
 static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 {
@@ -1227,8 +1342,16 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 		}
 
 		case PW_MAP:
-			/* Doesn't need to do anything atm. */
+		{
+			register_or_deregister(ui_MAP_CHANGED,
+					       update_maps,
+					       angband_term[win_idx]);
+
+			register_or_deregister(ui_event_REDRAW,
+					       flush_subwindow,
+					       angband_term[win_idx]);
 			break;
+		}
 
 
 		case PW_MESSAGE:
@@ -1241,9 +1364,15 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 
 		case PW_OVERHEAD:
 		{
+			minimap_data[win_idx].win_idx = win_idx;
+
 			register_or_deregister(ui_MAP_CHANGED,
 					       update_minimap_subwindow,
-					       angband_term[win_idx]);
+					       &minimap_data[win_idx]);
+
+			register_or_deregister(ui_event_REDRAW,
+					       update_minimap_subwindow,
+					       &minimap_data[win_idx]);
 			break;
 		}
 
@@ -1330,11 +1459,6 @@ void subwindows_set_flags(u32b *new_flags, size_t n_subwindows)
 /* ------------------------------------------------------------------------
  * Temporary (hopefully) hackish solutions.
  * ------------------------------------------------------------------------ */
-static void update_maps(ui_event_type type, ui_event_data *data, void *user)
-{
-	prt_map();
-}
-
 static void check_panel(ui_event_type type, ui_event_data *data, void *user)
 {
 	verify_panel();
@@ -1359,8 +1483,10 @@ void init_display(void)
 	ui_event_register(ui_HP_CHANGED, hp_colour_change, NULL);
 
 	/* Simplest way to keep the map up to date - will do for now */
-	ui_event_register(ui_MAP_CHANGED, update_maps, NULL);
-
+	ui_event_register(ui_MAP_CHANGED, update_maps, angband_term[0]);
+#if 0
+	ui_event_register(ui_MAP_CHANGED, trace_map_updates, angband_term[0]);
+#endif
 	/* Check if the panel should shift when the player's moved */
 	ui_event_register(ui_PLAYER_MOVED, check_panel, NULL);
 }

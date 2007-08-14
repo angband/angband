@@ -1609,10 +1609,11 @@ void redraw_stuff(void)
 	/* Character is in "icky" mode, no screen updates */
 	if (character_icky) return;
 
-	/* Deal with the basic signals */
+	/* For each listed flag, send the appropriate signal to the UI */
 	for (i = 0; i < N_ELEMENTS(redraw_events); i++)
 	{
 		const struct flag_event_trigger *hnd = &redraw_events[i];
+
 		if (p_ptr->redraw & hnd->flag)
 			ui_event_signal(hnd->event);
 	}
@@ -1620,11 +1621,17 @@ void redraw_stuff(void)
 	/* Then the ones that require parameters to be supplied. */
 	if (p_ptr->redraw & PR_MAP)
 	{
-		/* We probably really want map changes to be incremental */
+		/* Mark the whole map to be redrawn */
 		ui_event_signal_point(ui_MAP_CHANGED, -1, -1);
 	}
 
 	p_ptr->redraw = 0;
+
+	/* 
+	 * Do any plotting, etc. delayed from earlier - this set of updates
+	 * is over. 
+	 */
+	ui_event_signal(ui_event_REDRAW);
 }
 
 

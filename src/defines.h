@@ -1608,7 +1608,7 @@ enum
 #define PR_STATUS		0x00008000L
 #define PR_DTRAP		0x00010000L /* Trap detection indicator */
 #define PR_STATE		0x00020000L	/* Display Extra (State) */
-#define PR_MAP			0x00040000L	/* Display Map */
+#define PR_MAP			0x00040000L	/* Redraw whole map */
 
 #define PR_INVEN		0x00080000L /* Display inven/equip */
 #define PR_EQUIP		0x00100000L /* Display equip/inven */

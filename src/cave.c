@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "ui-event.h"
 
 /*
  * Support for Adam Bolt's tileset, lighting and transparency effects
@@ -1108,9 +1109,6 @@ static void print_rel_map(char c, byte a, int y, int x)
 			else
 				Term_queue_char(t, kx+1, ky, TERM_WHITE, ' ', 0, 0);
 		}
-
-		/* Redraw map */
-		p_ptr->redraw |= (PR_MAP);
 	}
 }
 
@@ -1244,122 +1242,15 @@ void note_spot(int y, int x)
 }
 
 
-static void lite_spot_map(int y, int x)
-{
-	grid_data g;
-	byte a, ta;
-	char c, tc;
-
-	int ky, kx;
-
-	int j;
-
-	/* Scan windows */
-	for (j = 0; j < ANGBAND_TERM_MAX; j++)
-	{
-		term *t = angband_term[j];
-
-		/* No window */
-		if (!t) continue;
-
-		/* No relevant flags */
-		if (!(op_ptr->window_flag[j] & (PW_MAP))) continue;
-
-		/* Location relative to panel */
-		ky = y - t->offset_y;
-		kx = x - t->offset_x;
-
-		if (use_bigtile)
-		{
-			kx += kx;
-			if (kx + 1 >= t->wid) continue;
-		}
-
-		/* Verify location */
-		if ((ky < 0) || (ky >= t->hgt)) continue;
-		if ((kx < 0) || (kx >= t->wid)) continue;
-
-		/* Hack -- redraw the grid spot */
-		map_info(y, x, &g);
-		grid_data_as_text(&g, &a, &c, &ta, &tc);
-		Term_queue_char(t, kx, ky, a, c, ta, tc);
-
-		if (use_bigtile)
-		{
-			kx++;
-
-			/* Mega-Hack : Queue dummy char */
-			if (a & 0x80)
-				Term_queue_char(t, kx, ky, 255, -1, 0, 0);
-			else
-				Term_queue_char(t, kx, ky, TERM_WHITE, ' ', TERM_WHITE, ' ');
-		}
-
-		/* Redraw map */
-		p_ptr->redraw |= (PR_MAP);
-	}
-}
-
-
 
 /*
  * Redraw (on the screen) a given map location
  *
  * This function should only be called on "legal" grids.
- *
- * Note the inline use of "print_rel()" for efficiency.
- *
- * The main screen will always be at least 24x80 in size.
  */
 void lite_spot(int y, int x)
 {
-	byte a;
-	char c;
-	byte ta;
-	char tc;
-	grid_data g;
-
-	int ky, kx;
-	int vy, vx;
-
-	/* Update map sub-windows */
-	lite_spot_map(y, x);
-
-	/* Location relative to panel */
-	ky = y - Term->offset_y;
-
-	/* Verify location */
-	if ((ky < 0) || (ky >= SCREEN_HGT)) return;
-
-	/* Location relative to panel */
-	kx = x - Term->offset_x;
-
-	/* Verify location */
-	if ((kx < 0) || (kx >= SCREEN_WID)) return;
-
-	/* Location in window */
-	vy = ky + ROW_MAP;
-
-	/* Location in window */
-	vx = kx + COL_MAP;
-
-	if (use_bigtile) vx += kx;
-
-	/* Hack -- redraw the grid */
-	map_info(y, x, &g);
-	grid_data_as_text(&g, &a, &c, &ta, &tc);
-	Term_queue_char(Term, vx, vy, a, c, ta, tc);
-
-	if (use_bigtile)
-	{
-		vx++;
-
-		/* Mega-Hack : Queue dummy char */
-		if (a & 0x80)
-			Term_queue_char(Term, vx, vy, 255, -1, 0, 0);
-		else
-			Term_queue_char(Term, vx, vy, TERM_WHITE, ' ', TERM_WHITE, ' ');
-	}
+	ui_event_signal_point(ui_MAP_CHANGED, x, y);
 }
 
 
@@ -1421,9 +1312,6 @@ static void prt_map_aux(void)
 				}
 			}
 		}
-	
-		/* Redraw map */
-		p_ptr->redraw |= (PR_MAP);
 	}
 }
 
@@ -3292,6 +3180,7 @@ void map_area(void)
 				{
 					/* Memorize the object */
 					cave_info[y][x] |= (CAVE_MARK);
+					lite_spot(y, x);
 				}
 
 				/* Memorize known walls */
@@ -3305,14 +3194,12 @@ void map_area(void)
 					{
 						/* Memorize the walls */
 						cave_info[yy][xx] |= (CAVE_MARK);
+						lite_spot(yy, xx);
 					}
 				}
 			}
 		}
 	}
-
-	/* Redraw map */
-	p_ptr->redraw |= (PR_MAP);
 }
 
 
@@ -3392,7 +3279,7 @@ void wiz_lite(void)
 	/* Fully update the visuals */
 	p_ptr->update |= (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS);
 
-	/* Redraw map, monster list */
+	/* Redraw whole map, monster list */
 	p_ptr->redraw |= (PR_MAP | PR_MONLIST);
 }
 
