@@ -17,6 +17,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "cmds.h"
 #include "effects.h"
 
 
@@ -199,11 +200,9 @@ void do_cmd_use(object_type *o_ptr, int item, int snd, use_type use)
 		/* Use a single charge */
 		o_ptr->pval--;
 
-		/* Describe charges in the pack */
+		/* Describe charges */
 		if (item >= 0)
 			inven_item_charges(item);
-
-		/* Describe charges on the floor */
 		else
 			floor_item_charges(0 - item);
 	}

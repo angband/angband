@@ -437,7 +437,7 @@ static bool obj_can_refill(const object_type *o_ptr)
 	return (FALSE);
 }
 
-static bool obj_refill(object_type *o_ptr, int item)
+static void obj_refill(object_type *o_ptr, int item)
 {
 	object_type *j_ptr = &inventory[INVEN_LITE];
 	p_ptr->energy_use = 50;
