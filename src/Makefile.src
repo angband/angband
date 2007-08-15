@@ -30,6 +30,7 @@ ANGFILES = \
 	cmd4.o \
 	cmd5.o \
 	cmd6.o \
+	cmd-obj.o \
 	dungeon.o \
 	effects.o \
 	files.o \
