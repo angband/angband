@@ -108,114 +108,20 @@ void do_cmd_equip(void)
 
 
 /*
- * The "wearable" tester
- */
-static bool item_tester_hook_wear(const object_type *o_ptr)
-{
-	/* Check for a usable slot */
-	if (wield_slot(o_ptr) >= INVEN_WIELD) return (TRUE);
-
-	/* Assume not wearable */
-	return (FALSE);
-}
-
-
-/*
  * Wield or wear a single item from the pack or floor
  */
-void do_cmd_wield(void)
+void wield_item(object_type *o_ptr, int item)
 {
-	int item, slot;
-
-	object_type *o_ptr;
-
-	object_type *i_ptr;
 	object_type object_type_body;
-
-	object_type *equip_o_ptr;
+	object_type *i_ptr = &object_type_body;
 
 	cptr act;
-
-	cptr q, s;
-
 	char o_name[80];
-	char out_val[160];
 
-
-	/* Restrict the choices */
-	item_tester_hook = item_tester_hook_wear;
-
-	/* Get an item */
-	q = "Wear/Wield which item? ";
-	s = "You have nothing you can wear or wield.";
-	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
-
-	/* Get the item (in the pack) */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-
-	/* Get the item (on the floor) */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
-
-
-	/* Check the slot */
-	slot = wield_slot(o_ptr);
-
-	/* Get a pointer to the slot to be removed */
-	equip_o_ptr = &inventory[slot];
-
-	/* Prevent wielding into a cursed slot */
-	if (cursed_p(equip_o_ptr))
-	{
-		/* Describe it */
-		object_desc(o_name, sizeof(o_name), equip_o_ptr, FALSE, 0);
-
-		/* Message */
-		msg_format("The %s you are %s appears to be cursed.",
-		           o_name, describe_use(slot));
-
-		/* Cancel the command */
-		return;
-	}
-
-	/* Double-check taking off an item with "!t" */
-	if (equip_o_ptr->note)
-	{
-		/* Find a '!' */
-		s = strchr(quark_str(equip_o_ptr->note), '!');
-
-		/* Process preventions */
-		/* XXX Perhaps this should be factored out to a separate function? */
-		while (s)
-		{
-			/* Check the "restriction" */
-			if (s[1] == 't')
-			{
-				/* Describe it */
-				object_desc(o_name, sizeof(o_name), equip_o_ptr, TRUE, 3);
-
-				/* Prompt */
-				strnfmt(out_val, sizeof(out_val), "Really take off %s? ", o_name);
-
-				/* Forget it */
-				if (!get_check(out_val)) return;
-			}
-
-			/* Find another '!' */
-			s = strchr(s + 1, '!');
-		}
-	}
+	int slot = wield_slot(o_ptr);
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
-
-	/* Get local object */
-	i_ptr = &object_type_body;
 
 	/* Obtain local object */
 	object_copy(i_ptr, o_ptr);
@@ -258,21 +164,13 @@ void do_cmd_wield(void)
 
 	/* Where is the item now */
 	if (slot == INVEN_WIELD)
-	{
 		act = "You are wielding";
-	}
 	else if (slot == INVEN_BOW)
-	{
 		act = "You are shooting with";
-	}
 	else if (slot == INVEN_LITE)
-	{
 		act = "Your light source is";
-	}
 	else
-	{
 		act = "You are wearing";
-	}
 
 	/* Describe the result */
 	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
@@ -301,109 +199,6 @@ void do_cmd_wield(void)
 	/* Recalculate bonuses, torch, mana */
 	p_ptr->update |= (PU_BONUS | PU_TORCH | PU_MANA);
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
-}
-
-
-
-/*
- * Take off an item
- */
-void do_cmd_takeoff(void)
-{
-	int item;
-
-	object_type *o_ptr;
-
-	cptr q, s;
-
-
-	/* Get an item */
-	q = "Take off which item? ";
-	s = "You are not wearing anything to take off.";
-	if (!get_item(&item, q, s, (USE_EQUIP))) return;
-
-	/* Get the item (in the pack) */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-
-	/* Get the item (on the floor) */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
-
-
-	/* Item is cursed */
-	if (cursed_p(o_ptr))
-	{
-		/* Oops */
-		msg_print("Hmmm, it seems to be cursed.");
-
-		/* Nope */
-		return;
-	}
-
-
-	/* Take a partial turn */
-	p_ptr->energy_use = 50;
-
-	/* Take off the item */
-	(void)inven_takeoff(item, 255);
-}
-
-
-/*
- * Drop an item
- */
-void do_cmd_drop(void)
-{
-	int item, amt;
-
-	object_type *o_ptr;
-
-	cptr q, s;
-
-
-	/* Get an item */
-	q = "Drop which item? ";
-	s = "You have nothing to drop.";
-	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN))) return;
-
-	/* Get the item (in the pack) */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-
-	/* Get the item (on the floor) */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
-
-	/* Get a quantity */
-	amt = get_quantity(NULL, o_ptr->number);
-
-	/* Allow user abort */
-	if (amt <= 0) return;
-
-	/* Hack -- Cannot remove cursed items */
-	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
-	{
-		/* Oops */
-		msg_print("Hmmm, it seems to be cursed.");
-
-		/* Nope */
-		return;
-	}
-
-	/* Take a partial turn */
-	p_ptr->energy_use = 50;
-
-	/* Drop (some of) the item */
-	inven_drop(item, amt);
 }
 
 
@@ -552,234 +347,10 @@ void do_cmd_destroy(void)
 }
 
 
-/*
- * Observe an item, displaying what is known about it
- */
-void do_cmd_observe(void)
+
+
+void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 {
-	int item;
-
-	object_type *o_ptr;
-
-	cptr q, s;
-
-
-	/* Get an item */
-	q = "Examine which item? ";
-	s = "You have nothing to examine.";
-	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return;
-
-	/* Get the item (in the pack) */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-
-	/* Get the item (on the floor) */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
-
-	/* Describe */
-	object_info_screen(o_ptr);
-}
-
-
-/*
- * Return whether the item has an inscription.
- */
-static bool item_has_inscription(const object_type *o_ptr)
-{
-	return (o_ptr->note ? TRUE : FALSE);
-}
-
-
-/*
- * Remove the inscription from an object
- * XXX Mention item (when done)?
- */
-void do_cmd_uninscribe(void)
-{
-	int item;
-
-	object_type *o_ptr;
-
-	cptr q, s;
-
-
-	/* Get an item */
-	q = "Un-inscribe which item? ";
-	s = "You have nothing to un-inscribe.";
-	item_tester_hook = item_has_inscription;
-	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return;
-
-	/* Get the item (in the pack) */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-
-	/* Get the item (on the floor) */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
-
-	/* Nothing to remove */
-	if (!o_ptr->note)
-	{
-		msg_print("That item had no inscription to remove.");
-		return;
-	}
-
-	/* Message */
-	msg_print("Inscription removed.");
-
-	/* Remove the inscription */
-	o_ptr->note = 0;
-
-	/* Combine the pack, check for squelchables */
-	p_ptr->notice |= (PN_COMBINE | PN_SQUELCH);
-
-	/* Redraw stuff */
-	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
-}
-
-
-/*
- * Inscribe an object with a comment
- */
-void do_cmd_inscribe(void)
-{
-	int item;
-
-	object_type *o_ptr;
-
-	char o_name[80];
-
-	char tmp[80];
-
-	cptr q, s;
-
-
-	/* Get an item */
-	q = "Inscribe which item? ";
-	s = "You have nothing to inscribe.";
-	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return;
-
-	/* Get the item (in the pack) */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-
-	/* Get the item (on the floor) */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
-
-	/* Describe the activity */
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
-
-	/* Message */
-	msg_format("Inscribing %s.", o_name);
-	message_flush();
-
-	/* Start with nothing */
-	tmp[0] = '\0';
-
-	/* Use old inscription */
-	if (o_ptr->note)
-	{
-		/* Start with the old inscription */
-		strnfmt(tmp, sizeof(tmp), "%s", quark_str(o_ptr->note));
-	}
-
-	/* Get a new inscription (possibly empty) */
-	if (get_string("Inscription: ", tmp, sizeof(tmp)))
-	{
-		/* Save the inscription */
-		o_ptr->note = quark_add(tmp);
-
-		/* Combine the pack, check for squelchables */
-		p_ptr->notice |= (PN_COMBINE | PN_SQUELCH);
-
-		/* Redraw stuff */
-		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
-	}
-}
-
-
-
-/*
- * An "item_tester_hook" for refilling lanterns
- */
-static bool item_tester_refill_lantern(const object_type *o_ptr)
-{
-	u32b f1, f2, f3;
-
-	/* Get flags */
-	object_flags(o_ptr, &f1, &f2, &f3);
-
-	/* Flasks of oil are okay */
-	if (o_ptr->tval == TV_FLASK) return (TRUE);
-
-	/* Non-empty, non-everburning lanterns are okay */
-	if ((o_ptr->tval == TV_LITE) &&
-	    (o_ptr->sval == SV_LITE_LANTERN) &&
-	    (o_ptr->timeout > 0) &&
-		!(f3 & TR3_NO_FUEL))
-	{
-		return (TRUE);
-	}
-
-	/* Assume not okay */
-	return (FALSE);
-}
-
-
-/*
- * Refill the players lamp (from the pack or floor)
- */
-static void do_cmd_refill_lamp(void)
-{
-	int item;
-
-	object_type *o_ptr;
-	object_type *j_ptr;
-
-	cptr q, s;
-
-
-	/* Restrict the choices */
-	item_tester_hook = item_tester_refill_lantern;
-
-	/* Get an item */
-	q = "Refill with which source of oil? ";
-	s = "You have no sources of oil.";
-	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
-
-	/* Get the item (in the pack) */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-
-	/* Get the item (on the floor) */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
-
-
-	/* Take a partial turn */
-	p_ptr->energy_use = 50;
-
-	/* Get the lantern */
-	j_ptr = &inventory[INVEN_LITE];
-
 	/* Refuel */
 	j_ptr->timeout += o_ptr->timeout ? o_ptr->timeout : o_ptr->pval;
 
@@ -867,70 +438,8 @@ static void do_cmd_refill_lamp(void)
 }
 
 
-
-/*
- * An "item_tester_hook" for refilling torches
- */
-static bool item_tester_refill_torch(const object_type *o_ptr)
+void refuel_torch(object_type *j_ptr, object_type *o_ptr, int item)
 {
-	u32b f1, f2, f3;
-
-	/* Get flags */
-	object_flags(o_ptr, &f1, &f2, &f3);
-
-	/* Torches are okay */
-	if ((o_ptr->tval == TV_LITE) &&
-	    (o_ptr->sval == SV_LITE_TORCH) &&
-		!(f3 & TR3_NO_FUEL))
-	{
-		return (TRUE);
-	}
-
-	/* Assume not okay */
-	return (FALSE);
-}
-
-
-/*
- * Refuel the players torch (from the pack or floor)
- */
-static void do_cmd_refill_torch(void)
-{
-	int item;
-
-	object_type *o_ptr;
-	object_type *j_ptr;
-
-	cptr q, s;
-
-
-	/* Restrict the choices */
-	item_tester_hook = item_tester_refill_torch;
-
-	/* Get an item */
-	q = "Refuel with which torch? ";
-	s = "You have no extra torches.";
-	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
-
-	/* Get the item (in the pack) */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-
-	/* Get the item (on the floor) */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
-
-
-	/* Take a partial turn */
-	p_ptr->energy_use = 50;
-
-	/* Get the primary torch */
-	j_ptr = &inventory[INVEN_LITE];
-
 	/* Refuel */
 	j_ptr->timeout += o_ptr->timeout + 5;
 
@@ -971,52 +480,6 @@ static void do_cmd_refill_torch(void)
 
 	/* Redraw stuff */
 	p_ptr->redraw |= (PR_EQUIP);
-}
-
-
-
-
-/*
- * Refill the players lamp, or restock his torches
- */
-void do_cmd_refill(void)
-{
-	object_type *o_ptr;
-	u32b f1, f2, f3;
-
-	/* Get the light */
-	o_ptr = &inventory[INVEN_LITE];
-
-	/* Get flags */
-	object_flags(o_ptr, &f1, &f2, &f3);
-
-
-	/* It is nothing */
-	if (o_ptr->tval != TV_LITE)
-	{
-		msg_print("You are not wielding a light.");
-	}
-
-	else if (!(f3 & TR3_NO_FUEL))
-	{
-		/* It's a lamp */
-		if (o_ptr->sval == SV_LITE_LANTERN)
-		{
-			do_cmd_refill_lamp();
-		}
-
-		/* It's a torch */
-		else if (o_ptr->sval == SV_LITE_TORCH)
-		{
-			do_cmd_refill_torch();
-		}
-	}
-
-	/* No torch to refill */
-	else
-	{
-		msg_print("Your light cannot be refilled.");
-	}
 }
 
 

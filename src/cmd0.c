@@ -37,7 +37,7 @@ typedef void do_cmd_type(void);
 
 /* Forward declare these, because they're really defined later */
 static do_cmd_type do_cmd_wizard, do_cmd_try_debug,
-            do_cmd_cast_or_pray, do_cmd_quit, do_cmd_mouseclick, do_cmd_port,
+            do_cmd_quit, do_cmd_mouseclick, do_cmd_port,
             do_cmd_xxx_options, do_cmd_menu, do_cmd_monlist;
 
 #ifdef ALLOW_BORG
@@ -60,8 +60,8 @@ static command_type cmd_magic[] =
 {
 	{ "Gain new spells or prayers", 'G', do_cmd_study },
 	{ "Browse a book",              'b', do_cmd_browse },
-	{ "Cast a spell",               'm', do_cmd_cast_or_pray },
-	{ "Pray a prayer",              'p', do_cmd_cast_or_pray }
+	{ "Cast a spell",               'm', do_cmd_cast },
+	{ "Pray a prayer",              'p', do_cmd_pray }
 };
 
 /* General actions */
@@ -300,19 +300,6 @@ static bool do_cmd_try_borg(void)
 }
 
 #endif /* ALLOW_BORG */
-
-
-
-/*
- * Helper -- cast or pray, depending on the character.
- */
-static void do_cmd_cast_or_pray(void)
-{
-	if (cp_ptr->spell_book == TV_PRAYER_BOOK)
-		do_cmd_pray();
-	else
-		do_cmd_cast();
-}
 
 
 /*

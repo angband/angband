@@ -303,6 +303,16 @@ extern void search(void);
 extern byte py_pickup(int pickup);
 extern void move_player(int dir);
 
+/* cmd5.c */
+s16b spell_chance(int spell);
+bool spell_okay(int spell, bool known, bool browse);
+int spell_choose_new(const object_type *o_ptr);
+bool spell_cast(int spell);
+void spell_learn(int spell);
+
+int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool browse);
+void do_cmd_browse_aux(const object_type *o_ptr);
+
 /* dungeon.c */
 extern void play_game(bool new_game);
 extern int value_check_aux1(const object_type *o_ptr);
@@ -463,10 +473,6 @@ extern s16b inven_takeoff(int item, int amt);
 extern void inven_drop(int item, int amt);
 extern void combine_pack(void);
 extern void reorder_pack(void);
-extern s16b spell_chance(int spell);
-extern bool spell_okay(int spell, bool known, bool browse);
-extern void print_spells(const byte *spells, int num, int y, int x);
-extern void display_koff(int k_idx);
 
 /* pathfind.c */
 extern bool findpath(int y, int x);
