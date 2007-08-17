@@ -1210,7 +1210,6 @@ static void update_player1_subwindow(ui_event_type type, ui_event_data *data, vo
 
 
 /*
-/*
  * Display the left-hand-side of the main term, in more compact fashion.
  */
 static void update_player_compact_subwindow(ui_event_type type, ui_event_data *data, void *user)
@@ -1443,7 +1442,7 @@ static void subwindow_set_flags(int win_idx, u32b new_flags)
  */
 void subwindows_set_flags(u32b *new_flags, size_t n_subwindows)
 {
-	int j;
+	size_t j;
 
 	for (j = 0; j < n_subwindows; j++)
 	{
