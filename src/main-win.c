@@ -4156,8 +4156,7 @@ static LRESULT FAR PASCAL AngbandListProc(HWND hWnd, UINT uMsg,
 				InvalidateRect(td->w, NULL, TRUE);
 
 				/* HACK - Redraw all windows */
-				p_ptr->window = 0xFFFFFFFF;
-				window_stuff();
+				if (character_dungeon) do_cmd_redraw();
 			}
 
 			td->size_hack = FALSE;

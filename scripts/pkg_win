@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Simple packaging file for the Windows port.  Only really useful when
 # cross-compiling, or using Cygwin.  Originally by Robert Ruehlmann.

@@ -60,8 +60,6 @@ static const struct module modules[] =
 
 #ifdef USE_SOUND
 
-bool new_save;
-
 /*
  * List of sound modules in the order they should be tried.
  */
