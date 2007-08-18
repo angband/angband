@@ -428,30 +428,9 @@ static void object_flags_aux(int mode, const object_type *o_ptr, u32b *f1, u32b 
 		if (!(o_ptr->ident & IDENT_MENTAL)) return;
 	}
 
-	/* Extra powers */
-	switch (o_ptr->xtra1)
-	{
-		case OBJECT_XTRA_TYPE_SUSTAIN:
-		{
-			/* OBJECT_XTRA_WHAT_SUSTAIN == 2 */
-			(*f2) |= (OBJECT_XTRA_BASE_SUSTAIN << o_ptr->xtra2);
-			break;
-		}
-
-		case OBJECT_XTRA_TYPE_RESIST:
-		{
-			/* OBJECT_XTRA_WHAT_RESIST == 2 */
-			(*f2) |= (OBJECT_XTRA_BASE_RESIST << o_ptr->xtra2);
-			break;
-		}
-
-		case OBJECT_XTRA_TYPE_POWER:
-		{
-			/* OBJECT_XTRA_WHAT_POWER == 3 */
-			(*f3) |= (OBJECT_XTRA_BASE_POWER << o_ptr->xtra2);
-			break;
-		}
-	}
+	(*f1) |= o_ptr->flags1;
+	(*f2) |= o_ptr->flags2;
+	(*f3) |= o_ptr->flags3;
 }
 
 

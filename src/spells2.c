@@ -301,7 +301,7 @@ static const int enchant_table[16] =
 static void uncurse_object(object_type *o_ptr)
 {
 	/* Uncurse it */
-	o_ptr->ident &= ~(IDENT_CURSED);
+	o_ptr->flags3 &= ~(TR3_LIGHT_CURSE);
 
 	/* Mark as uncursed */
 	o_ptr->pseudo = INSCRIP_UNCURSED;
@@ -3525,7 +3525,7 @@ bool curse_armor(void)
 		o_ptr->ds = 0;
 
 		/* Curse it */
-		o_ptr->ident |= (IDENT_CURSED);
+		o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
 		/* Break it */
 		o_ptr->ident |= (IDENT_BROKEN);
@@ -3589,7 +3589,7 @@ bool curse_weapon(void)
 		o_ptr->ds = 0;
 
 		/* Curse it */
-		o_ptr->ident |= (IDENT_CURSED);
+		o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
 		/* Break it */
 		o_ptr->ident |= (IDENT_BROKEN);

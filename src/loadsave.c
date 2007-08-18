@@ -1268,8 +1268,10 @@ smap_t *serialize_object(object_type *o_ptr)
 	smap_put_u16b(s, "origin_xtra", o_ptr->origin_xtra);
 
 	smap_put_s16b(s, "held_m_idx", o_ptr->held_m_idx);
-	smap_put_byte(s, "xtra1", o_ptr->xtra1);
-	smap_put_byte(s, "xtra2", o_ptr->xtra2);
+
+	smap_put_u32b(s, "flags1", o_ptr->flags1);
+	smap_put_u32b(s, "flags2", o_ptr->flags2);
+	smap_put_u32b(s, "flags3", o_ptr->flags3);
 
 	if (o_ptr->note)
 		smap_put_str(s, "note", (char*)quark_str(o_ptr->note));
@@ -1312,8 +1314,9 @@ void deserialize_object(object_type *o_ptr, smap_t *s)
 	o_ptr->origin_xtra = smap_get_u16b(s, "origin_xtra");
 
 	o_ptr->held_m_idx = smap_get_s16b(s, "held_m_idx");
-	o_ptr->xtra1 = smap_get_byte(s, "xtra1");
-	o_ptr->xtra2 = smap_get_byte(s, "xtra2");
+	o_ptr->flags1 = smap_get_u32b(s, "flags1");
+	o_ptr->flags2 = smap_get_u32b(s, "flags2");
+	o_ptr->flags3 = smap_get_u32b(s, "flags3");
 
 	inscrip = smap_get_str(s, "note");
 	if (inscrip)
@@ -1381,9 +1384,6 @@ smap_t *serialize_lore(monster_race *r_ptr, monster_lore *l_ptr)
 
 	smap_put_byte(s, "wake", l_ptr->wake);
 	smap_put_byte(s, "ignore", l_ptr->ignore);
-	
-	smap_put_byte(s, "xtra1", l_ptr->xtra1);
-	smap_put_byte(s, "xtra2", l_ptr->xtra2);
 
 	smap_put_byte(s, "drop_gold", l_ptr->drop_gold);
 	smap_put_byte(s, "drop_item", l_ptr->drop_item);
@@ -1422,9 +1422,6 @@ void deserialize_lore(monster_race *r_ptr, monster_lore *l_ptr, smap_t *s)
 
 	l_ptr->wake = smap_get_byte(s, "wake");
 	l_ptr->ignore = smap_get_byte(s, "ignore");
-
-	l_ptr->xtra1 = smap_get_byte(s, "xtra1");
-	l_ptr->xtra2 = smap_get_byte(s, "xtra2");
 
 	l_ptr->drop_gold = smap_get_byte(s, "drop_gold");
 	l_ptr->drop_item = smap_get_byte(s, "drop_item");

@@ -611,9 +611,6 @@ static bool store_object_similar(const object_type *o_ptr, const object_type *j_
 	/* Require identical "ego-item" names */
 	if (o_ptr->name2 != j_ptr->name2) return (0);
 
-	/* Hack -- Never stack "powerful" items */
-	if (o_ptr->xtra1 || j_ptr->xtra1) return (0);
-
 	/* Hack -- Never stack recharging items */
 	if ((o_ptr->timeout || j_ptr->timeout) && o_ptr->tval != TV_LITE)
 		return (0);
@@ -629,6 +626,11 @@ static bool store_object_similar(const object_type *o_ptr, const object_type *j_
 
 	/* Hack -- Never stack chests */
 	if (o_ptr->tval == TV_CHEST) return (0);
+
+	/* Different flags */
+	if (o_ptr->flags1 != j_ptr->flags1 ||
+		o_ptr->flags2 != j_ptr->flags2 ||
+		o_ptr->flags3 != j_ptr->flags3) return FALSE;
 
 	/* They match, so they must be similar */
 	return (TRUE);

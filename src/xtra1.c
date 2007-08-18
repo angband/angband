@@ -501,7 +501,7 @@ static void calc_torch(void)
 		object_flags(o_ptr, &f1, &f2, &f3);
 
 		/* Cursed objects emit no light */
-		if (o_ptr->ident & IDENT_CURSED)
+		if (f3 & TR3_LIGHT_CURSE)
 		{
 			amt = 0;
 		}

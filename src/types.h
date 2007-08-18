@@ -402,9 +402,6 @@ struct monster_lore
 	byte wake;				/* Number of times woken up (?) */
 	byte ignore;			/* Number of times ignored (?) */
 
-	byte xtra1;				/* Something (unused) */
-	byte xtra2;				/* Something (unused) */
-
 	byte drop_gold;			/* Max number of gold dropped at once */
 	byte drop_item;			/* Max number of item dropped at once */
 
@@ -480,17 +477,14 @@ struct object_type
 
 	s16b pval;			/* Item extra-parameter */
 
-	byte pseudo;		/* Pseudo-ID marker */
-
-	byte number;		/* Number of items */
-
 	s16b weight;		/* Item weight */
 
 	byte name1;			/* Artifact type, if any */
 	byte name2;			/* Ego-Item type, if any */
 
-	byte xtra1;			/* Extra info type */
-	byte xtra2;			/* Extra info index */
+	u32b flags1;		/* Flags, set 1 */
+	u32b flags2;		/* Flags, set 2 */
+	u32b flags3;		/* Flags, set 3 */
 
 	s16b ac;			/* Normal AC */
 	s16b to_a;			/* Plusses to AC */
@@ -501,10 +495,11 @@ struct object_type
 
 	s16b timeout;		/* Timeout Counter */
 
+	byte number;		/* Number of items */
+
+	byte pseudo;		/* Pseudo-ID marker */
 	byte ident;			/* Special flags */
 	byte marked;		/* Object is marked */
-
-	quark_t note;			/* Inscription index */
 
 	s16b next_o_idx;	/* Next object in stack (if any) */
 	s16b held_m_idx;	/* Monster holding us (if any) */
@@ -512,6 +507,8 @@ struct object_type
 	byte origin;        /* How this item was found */
 	byte origin_depth;  /* What depth the item was found at */
 	u16b origin_xtra;   /* Extra information about origin */
+
+	quark_t note;			/* Inscription index */
 };
 
 

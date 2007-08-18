@@ -45,7 +45,7 @@
  */
 #define VERSION_MAJOR	3
 #define VERSION_MINOR	0
-#define VERSION_PATCH	11
+#define VERSION_PATCH	12
 #define VERSION_EXTRA	0
 
 /*
@@ -1692,7 +1692,7 @@ enum
 #define IDENT_KNOWN     0x08	/* Item abilities are known */
 #define IDENT_STORE     0x10	/* Item is in the inventory of a store */
 #define IDENT_MENTAL    0x20	/* Item information is known */
-#define IDENT_CURSED    0x40	/* Item is temporarily cursed */
+/* ... */
 #define IDENT_BROKEN    0x80	/* Item is permanently worthless */
 
 
@@ -1757,21 +1757,13 @@ enum
 
 
 /*
- * As of 2.7.8, the "object flags" are valid for all objects, and as
- * of 2.7.9, these flags are not actually stored with the object, but
- * rather in the object_kind, ego_item, and artifact structures.
+ * flags1 contains all flags dependant on "pval" (e.g. stat bonuses),
+ * plus all "extra attack damage" flags (SLAY_XXX and BRAND_XXX).
  *
- * Note that "flags1" contains all flags dependant on "pval" (including
- * stat bonuses, but NOT stat sustainers), plus all "extra attack damage"
- * flags (SLAY_XXX and BRAND_XXX).
+ * flags2 contains all "resistances" (including "sustain" flags, immunity
+ * flags, and resistance flags).
  *
- * Note that "flags2" contains all "resistances" (including "sustain" flags,
- * immunity flags, and resistance flags).  Note that "free action" and "hold
- * life" are no longer considered to be "immunities".
- *
- * Note that "flags3" contains everything else (including eight good flags,
- * seven unused flags, four bad flags, four damage ignoring flags, six weird
- * flags, and three cursed flags).
+ * flags3 contains everything else.
  */
 
 #define TR1_STR             0x00000001L /* STR += "pval" */
@@ -1891,34 +1883,12 @@ enum
 	(TR3_IGNORE_ACID | TR3_IGNORE_ELEC | TR3_IGNORE_FIRE | \
 	 TR3_IGNORE_COLD )
 
-
 /*
  * Hack -- special "xtra" object flag info (type)
  */
 #define OBJECT_XTRA_TYPE_SUSTAIN	1
 #define OBJECT_XTRA_TYPE_RESIST		2
 #define OBJECT_XTRA_TYPE_POWER		3
-
-/*
- * Hack -- special "xtra" object flag info (what flag set)
- */
-#define OBJECT_XTRA_WHAT_SUSTAIN	2
-#define OBJECT_XTRA_WHAT_RESIST		2
-#define OBJECT_XTRA_WHAT_POWER		3
-
-/*
- * Hack -- special "xtra" object flag info (base flag value)
- */
-#define OBJECT_XTRA_BASE_SUSTAIN	TR2_SUST_STR
-#define OBJECT_XTRA_BASE_RESIST		TR2_RES_POIS
-#define OBJECT_XTRA_BASE_POWER		TR3_SLOW_DIGEST
-
-/*
- * Hack -- special "xtra" object flag info (number of flags)
- */
-#define OBJECT_XTRA_SIZE_SUSTAIN	6
-#define OBJECT_XTRA_SIZE_RESIST		12
-#define OBJECT_XTRA_SIZE_POWER		8
 
 
 /*** Class flags ***/
@@ -2491,7 +2461,7 @@ enum
  * Cursed items.
  */
 #define cursed_p(T) \
-	((T)->ident & (IDENT_CURSED))
+	((T)->flags3 & (TR3_LIGHT_CURSE))
 
 
 /*

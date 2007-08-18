@@ -571,7 +571,9 @@ errr init_info_txt(ang_file *fp, char *buf, header *head,
 				(v2 != head->v_minor) ||
 				(v3 != head->v_patch))
 			{
+#if 0
 				return (PARSE_ERROR_OBSOLETE_FILE);
+#endif
 			}
 
 			/* Okay to proceed */

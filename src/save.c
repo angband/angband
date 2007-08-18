@@ -134,16 +134,12 @@ static void wr_item(const object_type *o_ptr)
 	wr_byte(o_ptr->origin_depth);
 	wr_u16b(o_ptr->origin_xtra);
 
-	/* Old flags */
-	wr_u32b(0L);
-	wr_u32b(0L);
+	wr_u32b(o_ptr->flags1);
+	wr_u32b(o_ptr->flags2);
+	wr_u32b(o_ptr->flags3);
 
 	/* Held by monster index */
 	wr_s16b(o_ptr->held_m_idx);
-
-	/* Extra information */
-	wr_byte(o_ptr->xtra1);
-	wr_byte(o_ptr->xtra2);
 
 	/* Save the inscription (if any) */
 	if (o_ptr->note)
@@ -196,10 +192,6 @@ static void wr_lore(int r_idx)
 	/* Count wakes and ignores */
 	wr_byte(l_ptr->wake);
 	wr_byte(l_ptr->ignore);
-
-	/* Extra stuff */
-	wr_byte(l_ptr->xtra1);
-	wr_byte(l_ptr->xtra2);
 
 	/* Count drops */
 	wr_byte(l_ptr->drop_gold);

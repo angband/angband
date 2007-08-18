@@ -1211,9 +1211,6 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 			/* Require identical "ego-item" names */
 			if (o_ptr->name2 != j_ptr->name2) return (FALSE);
 
-			/* Hack -- Never stack "powerful" items */
-			if (o_ptr->xtra1 || j_ptr->xtra1) return (FALSE);
-
 			/* Hack - Never stack recharging items */
 			if ((o_ptr->timeout || j_ptr->timeout) && o_ptr->tval != TV_LITE) 
 				return FALSE;
@@ -1243,9 +1240,8 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 	}
 
 
-	/* Hack -- Require identical "cursed" and "broken" status */
-	if (((o_ptr->ident & (IDENT_CURSED)) != (j_ptr->ident & (IDENT_CURSED))) ||
-	    ((o_ptr->ident & (IDENT_BROKEN)) != (j_ptr->ident & (IDENT_BROKEN))))
+	/* Hack -- Require identical "broken" status */
+	if ((o_ptr->ident & IDENT_BROKEN) != (j_ptr->ident & IDENT_BROKEN))
 	{
 		return (0);
 	}
@@ -1262,6 +1258,13 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 	/* Different pseudo-ID statuses preclude combination */
 	if (o_ptr->pseudo != j_ptr->pseudo)
 		return (0);
+
+
+	/* Different flags */
+	if (o_ptr->flags1 != j_ptr->flags1 ||
+		o_ptr->flags2 != j_ptr->flags2 ||
+		o_ptr->flags3 != j_ptr->flags3)
+		return FALSE;
 
 
 	/* Maximal "stacking" limit */
@@ -1453,7 +1456,8 @@ void object_prep(object_type *o_ptr, int k_idx)
 	if (k_ptr->cost <= 0) o_ptr->ident |= (IDENT_BROKEN);
 
 	/* Hack -- cursed items are always "cursed" */
-	if (k_ptr->flags3 & (TR3_LIGHT_CURSE)) o_ptr->ident |= (IDENT_CURSED);
+	if (k_ptr->flags3 & (TR3_LIGHT_CURSE))
+	    o_ptr->flags3 |= TR3_LIGHT_CURSE;
 }
 
 
@@ -1868,7 +1872,8 @@ static void a_m_aux_1(object_type *o_ptr, int level, int power)
 		}
 
 		/* Cursed (if "bad") */
-		if (o_ptr->to_h + o_ptr->to_d < 0) o_ptr->ident |= (IDENT_CURSED);
+		if (o_ptr->to_h + o_ptr->to_d < 0)
+			o_ptr->flags3 |= TR3_LIGHT_CURSE;
 	}
 
 
@@ -1982,7 +1987,8 @@ static void a_m_aux_2(object_type *o_ptr, int level, int power)
 		}
 
 		/* Cursed (if "bad") */
-		if (o_ptr->to_a < 0) o_ptr->ident |= (IDENT_CURSED);
+		if (o_ptr->to_a < 0)
+		    o_ptr->flags3 |= TR3_LIGHT_CURSE;
 	}
 
 
@@ -2038,7 +2044,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 						o_ptr->ident |= (IDENT_BROKEN);
 
 						/* Cursed */
-						o_ptr->ident |= (IDENT_CURSED);
+						o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
 						/* Reverse pval */
 						o_ptr->pval = 0 - (o_ptr->pval);
@@ -2063,7 +2069,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 						o_ptr->ident |= (IDENT_BROKEN);
 
 						/* Cursed */
-						o_ptr->ident |= (IDENT_CURSED);
+						o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
 						/* Reverse pval */
 						o_ptr->pval = 0 - (o_ptr->pval);
@@ -2095,8 +2101,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 						o_ptr->ident |= (IDENT_BROKEN);
 
 						/* Cursed */
-						o_ptr->ident |= (IDENT_CURSED);
-
+						o_ptr->flags3 |= TR3_LIGHT_CURSE;
 						/* Reverse pval */
 						o_ptr->pval = 0 - (o_ptr->pval);
 					}
@@ -2123,7 +2128,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					o_ptr->ident |= (IDENT_BROKEN);
 
 					/* Cursed */
-					o_ptr->ident |= (IDENT_CURSED);
+					o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
 					/* Penalize */
 					o_ptr->pval = 0 - (1 + m_bonus(5, level));
@@ -2138,7 +2143,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					o_ptr->ident |= (IDENT_BROKEN);
 
 					/* Cursed */
-					o_ptr->ident |= (IDENT_CURSED);
+					o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
 					/* Penalize */
 					o_ptr->to_a = 0 - (5 + m_bonus(10, level));
@@ -2160,7 +2165,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 						o_ptr->ident |= (IDENT_BROKEN);
 
 						/* Cursed */
-						o_ptr->ident |= (IDENT_CURSED);
+						o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
 						/* Reverse bonus */
 						o_ptr->to_d = 0 - (o_ptr->to_d);
@@ -2182,7 +2187,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 						o_ptr->ident |= (IDENT_BROKEN);
 
 						/* Cursed */
-						o_ptr->ident |= (IDENT_CURSED);
+						o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
 						/* Reverse tohit */
 						o_ptr->to_h = 0 - (o_ptr->to_h);
@@ -2204,7 +2209,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 						o_ptr->ident |= (IDENT_BROKEN);
 
 						/* Cursed */
-						o_ptr->ident |= (IDENT_CURSED);
+						o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
 						/* Reverse toac */
 						o_ptr->to_a = 0 - (o_ptr->to_a);
@@ -2227,7 +2232,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 						o_ptr->ident |= (IDENT_BROKEN);
 
 						/* Cursed */
-						o_ptr->ident |= (IDENT_CURSED);
+						o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
 						/* Reverse bonuses */
 						o_ptr->to_h = 0 - (o_ptr->to_h);
@@ -2260,7 +2265,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 						o_ptr->ident |= (IDENT_BROKEN);
 
 						/* Cursed */
-						o_ptr->ident |= (IDENT_CURSED);
+						o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
 						/* Reverse bonuses */
 						o_ptr->pval = 0 - (o_ptr->pval);
@@ -2281,7 +2286,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 						o_ptr->ident |= (IDENT_BROKEN);
 
 						/* Cursed */
-						o_ptr->ident |= (IDENT_CURSED);
+						o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
 						/* Reverse bonuses */
 						o_ptr->pval = 0 - (o_ptr->pval);
@@ -2364,7 +2369,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					o_ptr->ident |= (IDENT_BROKEN);
 
 					/* Cursed */
-					o_ptr->ident |= (IDENT_CURSED);
+					o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
 					/* Penalize */
 					o_ptr->pval = 0 - (randint(5) + m_bonus(5, level));
@@ -2449,6 +2454,44 @@ static void a_m_aux_4(object_type *o_ptr, int level, int power)
 		}
 	}
 }
+
+static const u32b ego_sustains[] =
+{
+	TR2_SUST_STR,
+	TR2_SUST_INT,
+	TR2_SUST_WIS,
+	TR2_SUST_DEX,
+	TR2_SUST_CON,
+	TR2_SUST_CHR,
+};
+
+static const u32b ego_resists[] =
+{
+	TR2_RES_ACID,
+	TR2_RES_ELEC,
+	TR2_RES_FIRE,
+	TR2_RES_COLD,
+	TR2_RES_POIS,
+	TR2_RES_FEAR,
+	TR2_RES_LITE,
+	TR2_RES_DARK,
+	TR2_RES_BLIND,
+	TR2_RES_CONFU,
+	TR2_RES_SOUND,
+	TR2_RES_SHARD,
+};
+
+static const u32b ego_powers[] =
+{
+	TR3_SLOW_DIGEST,
+	TR3_FEATHER,
+	TR3_LITE,
+	TR3_REGEN,
+	TR3_TELEPATHY,
+	TR3_SEE_INVIS,
+	TR3_FREE_ACT,
+	TR3_HOLD_LIFE,
+};
 
 
 
@@ -2570,7 +2613,8 @@ void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great)
 		if (!a_ptr->cost) o_ptr->ident |= (IDENT_BROKEN);
 
 		/* Hack -- extract the "cursed" flag */
-		if (a_ptr->flags3 & (TR3_LIGHT_CURSE)) o_ptr->ident |= (IDENT_CURSED);
+		if (a_ptr->flags3 & TR3_LIGHT_CURSE)
+			o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
 		/* Mega-Hack -- increase the rating */
 		rating += 10;
@@ -2673,28 +2717,24 @@ void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great)
 		ego_item_type *e_ptr = &e_info[o_ptr->name2];
 
 		/* Extra powers */
-		if (e_ptr->xtra)
+		switch (e_ptr->xtra)
 		{
-			o_ptr->xtra1 = e_ptr->xtra;
-			switch (o_ptr->xtra1)
+			case OBJECT_XTRA_TYPE_SUSTAIN:
 			{
-				case OBJECT_XTRA_TYPE_SUSTAIN:
-				{
-					o_ptr->xtra2 = (byte)rand_int(OBJECT_XTRA_SIZE_SUSTAIN);
-					break;
-				}
+				o_ptr->flags2 |= ego_sustains[rand_int(N_ELEMENTS(ego_sustains))];
+				break;
+			}
 
-				case OBJECT_XTRA_TYPE_RESIST:
-				{
-					o_ptr->xtra2 = (byte)rand_int(OBJECT_XTRA_SIZE_RESIST);
-					break;
-				}
+			case OBJECT_XTRA_TYPE_RESIST:
+			{
+				o_ptr->flags2 |= ego_resists[rand_int(N_ELEMENTS(ego_resists))];
+				break;
+			}
 
-				case OBJECT_XTRA_TYPE_POWER:
-				{
-					o_ptr->xtra2 = (byte)rand_int(OBJECT_XTRA_SIZE_POWER);
-					break;
-				}
+			case OBJECT_XTRA_TYPE_POWER:
+			{
+				o_ptr->flags3 |= ego_powers[rand_int(N_ELEMENTS(ego_powers))];
+				break;
 			}
 		}
 
@@ -2702,7 +2742,8 @@ void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great)
 		if (!e_ptr->cost) o_ptr->ident |= (IDENT_BROKEN);
 
 		/* Hack -- acquire "cursed" flag */
-		if (e_ptr->flags3 & (TR3_LIGHT_CURSE)) o_ptr->ident |= (IDENT_CURSED);
+		if (e_ptr->flags3 & (TR3_LIGHT_CURSE))
+		    o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
 		/* Hack -- apply extra penalties if needed */
 		if (cursed_p(o_ptr) || broken_p(o_ptr))
@@ -2748,7 +2789,8 @@ void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great)
 		if (!k_ptr->cost) o_ptr->ident |= (IDENT_BROKEN);
 
 		/* Hack -- acquire "cursed" flag */
-		if (k_ptr->flags3 & (TR3_LIGHT_CURSE)) o_ptr->ident |= (IDENT_CURSED);
+		if (k_ptr->flags3 & (TR3_LIGHT_CURSE))
+		    o_ptr->flags3 |= TR3_LIGHT_CURSE;
 	}
 }
 

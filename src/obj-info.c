@@ -716,7 +716,7 @@ bool object_info_out(const object_type *o_ptr)
 
 	/* Unknown extra powers (ego-item with random extras or artifact) */
 	if (object_known_p(o_ptr) && (!(o_ptr->ident & IDENT_MENTAL)) &&
-	    ((o_ptr->xtra1) || artifact_p(o_ptr)))
+	    (o_ptr->flags2 || o_ptr->flags3 || artifact_p(o_ptr)))
 	{
 		/* Hack -- Put this in a separate paragraph if screen dump */
 		if (text_out_hook == text_out_to_screen)

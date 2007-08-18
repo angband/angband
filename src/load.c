@@ -46,6 +46,46 @@
 
 
 
+/* XXX Taken from object2.c */
+static const u32b ego_sustains[] =
+{
+	TR2_SUST_STR,
+	TR2_SUST_INT,
+	TR2_SUST_WIS,
+	TR2_SUST_DEX,
+	TR2_SUST_CON,
+	TR2_SUST_CHR,
+};
+
+static const u32b ego_resists[] =
+{
+	TR2_RES_ACID,
+	TR2_RES_ELEC,
+	TR2_RES_FIRE,
+	TR2_RES_COLD,
+	TR2_RES_POIS,
+	TR2_RES_FEAR,
+	TR2_RES_LITE,
+	TR2_RES_DARK,
+	TR2_RES_BLIND,
+	TR2_RES_CONFU,
+	TR2_RES_SOUND,
+	TR2_RES_SHARD,
+};
+
+static const u32b ego_powers[] =
+{
+	TR3_SLOW_DIGEST,
+	TR3_FEATHER,
+	TR3_LITE,
+	TR3_REGEN,
+	TR3_TELEPATHY,
+	TR3_SEE_INVIS,
+	TR3_FREE_ACT,
+	TR3_HOLD_LIFE,
+};
+
+
 
 /*
  * Local "savefile" pointer
@@ -303,6 +343,7 @@ static errr rd_item(object_type *o_ptr)
 {
 	byte old_dd;
 	byte old_ds;
+	byte tmp8u;
 
 	u32b f1, f2, f3;
 
@@ -352,6 +393,8 @@ static errr rd_item(object_type *o_ptr)
 	rd_byte(&old_ds);
 
 	rd_byte(&o_ptr->ident);
+	if (o_ptr->ident & 0x40)
+		o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
 	rd_byte(&o_ptr->marked);
 
@@ -360,14 +403,54 @@ static errr rd_item(object_type *o_ptr)
 	rd_u16b(&o_ptr->origin_xtra);
 
 	/* Old flags */
-	strip_bytes(8);
+	if (older_than(3, 0, 12))
+	{
+		strip_bytes(8);
+	}
+	else
+	{
+		rd_u32b(&o_ptr->flags1);
+		rd_u32b(&o_ptr->flags2);
+		rd_u32b(&o_ptr->flags3);
+	}
 
 	/* Monster holding object */
 	rd_s16b(&o_ptr->held_m_idx);
 
-	/* Special powers */
-	rd_byte(&o_ptr->xtra1);
-	rd_byte(&o_ptr->xtra2);
+	/* (Old) special powers */
+	if (older_than(3, 0, 12))
+	{
+		byte xtra1;
+		byte xtra2;
+		ego_item_type *e_ptr = NULL;
+
+		if (o_ptr->name2) e_ptr = &e_info[o_ptr->name2];
+
+		rd_byte(&xtra1);
+		rd_byte(&xtra2);
+
+		/* Extra powers */
+		switch (xtra1)
+		{
+			case OBJECT_XTRA_TYPE_SUSTAIN:
+			{
+				o_ptr->flags2 |= ego_sustains[xtra2];
+				break;
+			}
+
+			case OBJECT_XTRA_TYPE_RESIST:
+			{
+				o_ptr->flags2 |= ego_resists[xtra2];
+				break;
+			}
+
+			case OBJECT_XTRA_TYPE_POWER:
+			{
+				o_ptr->flags3 |= ego_powers[xtra2];
+				break;
+			}
+		}
+	}
 
 	/* Inscription */
 	rd_string(buf, sizeof(buf));
@@ -621,9 +704,7 @@ static void rd_lore(int r_idx)
 	rd_byte(&l_ptr->wake);
 	rd_byte(&l_ptr->ignore);
 
-	/* Extra stuff */
-	rd_byte(&l_ptr->xtra1);
-	rd_byte(&l_ptr->xtra2);
+	if (older_than(3, 0, 12)) strip_bytes(2);
 
 	/* Count drops */
 	rd_byte(&l_ptr->drop_gold);
