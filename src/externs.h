@@ -548,7 +548,6 @@ extern bool enchant(object_type *o_ptr, int n, int eflag);
 extern bool enchant_spell(int num_hit, int num_dam, int num_ac);
 extern void do_ident_item(int item, object_type *o_ptr);
 extern bool ident_spell(void);
-extern bool identify_fully(void);
 extern bool recharge(int num);
 extern bool speed_monsters(void);
 extern bool slow_monsters(void);

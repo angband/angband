@@ -711,13 +711,6 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 			return TRUE;
 		}
 
-		case EF_IDENTIFY2:
-		{
-			*ident = TRUE;
-			if (!identify_fully()) return FALSE;
-			return TRUE;
-		}
-
 		case EF_REMOVE_CURSE:
 		{
 			if (remove_curse())

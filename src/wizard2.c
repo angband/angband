@@ -1546,13 +1546,6 @@ void do_cmd_debug(void)
 			break;
 		}
 
-		/* View item info */
-		case 'f':
-		{
-			(void)identify_fully();
-			break;
-		}
-
 		/* Good Objects */
 		case 'g':
 		{

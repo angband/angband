@@ -714,18 +714,6 @@ bool object_info_out(const object_type *o_ptr)
 	if (describe_activation(o_ptr, f3)) something = TRUE;
 	if (describe_ignores(o_ptr, f3)) something = TRUE;
 
-	/* Unknown extra powers (ego-item with random extras or artifact) */
-	if (object_known_p(o_ptr) && (!(o_ptr->ident & IDENT_MENTAL)) &&
-	    (o_ptr->flags2 || o_ptr->flags3 || artifact_p(o_ptr)))
-	{
-		/* Hack -- Put this in a separate paragraph if screen dump */
-		if (text_out_hook == text_out_to_screen)
-			new_paragraph = TRUE;
-
-		p_text_out("It might have hidden powers.");
-		something = TRUE;
-	}
-
 	/* We are done. */
 	return something;
 }
@@ -814,7 +802,7 @@ void object_info_screen(const object_type *o_ptr)
 
 	new_paragraph = TRUE;
 	if (!object_known_p(o_ptr))
-		p_text_out("This item has not been identified.");
+		p_text_out("You do not know the full extent of this item's powers.");
 	else if (!has_description && !has_info)
 		p_text_out("This item does not seem to possess any special abilities.");
 

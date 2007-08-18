@@ -413,7 +413,6 @@ bool restore_level(void)
  * Hack -- acquire self knowledge
  *
  * List various information about the player and/or his current equipment.
- * See also "identify_fully()".
  *
  * This tests the flags of the equipment being carried and the innate player
  * flags, so any changes made in calc_bonuses need to be shadowed here.
@@ -1655,15 +1654,6 @@ static bool item_tester_unknown(const object_type *o_ptr)
 }
 
 
-static bool item_tester_unknown_star(const object_type *o_ptr)
-{
-	if (o_ptr->ident & IDENT_MENTAL)
-		return FALSE;
-	else
-		return TRUE;
-}
-
-
 /*
  * Enchant an item
  *
@@ -1927,60 +1917,6 @@ bool ident_spell(void)
 
 
 /*
- * Fully "identify" an object in the inventory
- *
- * This routine returns TRUE if an item was identified.
- */
-bool identify_fully(void)
-{
-	int item;
-
-	object_type *o_ptr;
-
-	cptr q, s;
-
-
-	/* Only un-*id*'ed items */
-	item_tester_hook = item_tester_unknown_star;
-
-	/* Get an item */
-	q = "Identify which item? ";
-	s = "You have nothing to identify.";
-	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
-
-	/* Get the item (in the pack) */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-
-	/* Get the item (on the floor) */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
-
-	/* Identify the object */
-	do_ident_item(item, o_ptr);
-
-	/* Mark the item as fully known */
-	o_ptr->ident |= (IDENT_MENTAL);
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Describe it fully */
-	object_info_screen(o_ptr);
-
-
-	/* Success */
-	return (TRUE);
-}
-
-
-
-
-/*
  * Hook for "get_item()".  Determine if something is rechargable.
  */
 static bool item_tester_hook_recharge(const object_type *o_ptr)
@@ -2055,13 +1991,6 @@ bool recharge(int num)
 		/* Reduce the charges of rods/wands/staves */
 		reduce_charges(o_ptr, 1);
 
-		/* *Identified* items keep the knowledge about the charges */
-		if (!(o_ptr->ident & IDENT_MENTAL))
-		{
-			/* We no longer "know" the item */
-			o_ptr->ident &= ~(IDENT_KNOWN);
-		}
-
 		/* Reduce and describe inventory */
 		if (item >= 0)
 		{
@@ -2086,13 +2015,6 @@ bool recharge(int num)
 
 		/* Recharge based on the power */
 		if (t > 0) o_ptr->pval += 2 + randint(t);
-
-		/* *Identified* items keep the knowledge about the charges */
-		if (!(o_ptr->ident & IDENT_MENTAL))
-		{
-			/* We no longer "know" the item */
-			o_ptr->ident &= ~(IDENT_KNOWN);
-		}
 
 		/* We no longer think the item is empty */
 		o_ptr->ident &= ~(IDENT_EMPTY);

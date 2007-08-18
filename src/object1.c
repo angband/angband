@@ -333,21 +333,16 @@ void reset_visuals(bool unused)
  */
 static void object_flags_aux(int mode, const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
 {
-	object_kind *k_ptr;
+	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
-	if (mode != OBJECT_FLAGS_FULL)
-	{
-		/* Clear */
-		(*f1) = (*f2) = (*f3) = 0L;
+	/* Clear */
+	(*f1) = (*f2) = (*f3) = 0L;
 
-		/* Must be identified */
-		if (!object_known_p(o_ptr)) return;
-	}
+	/* Unless requesting full flags, the object must be known */
+	if ((mode != OBJECT_FLAGS_FULL) && !object_known_p(o_ptr)) return;
 
 	if (mode != OBJECT_FLAGS_RANDOM)
 	{
-		k_ptr = &k_info[o_ptr->k_idx];
-
 		/* Base object */
 		(*f1) = k_ptr->flags1;
 		(*f2) = k_ptr->flags2;
@@ -393,21 +388,6 @@ static void object_flags_aux(int mode, const object_type *o_ptr, u32b *f1, u32b 
 
 	if (mode != OBJECT_FLAGS_FULL)
 	{
-		bool spoil = FALSE;
-
-#ifdef SPOIL_ARTIFACTS
-		/* Full knowledge for some artifacts */
-		if (artifact_p(o_ptr)) spoil = TRUE;
-#endif /* SPOIL_ARTIFACTS */
-
-#ifdef SPOIL_EGO_ITEMS
-		/* Full knowledge for some ego-items */
-		if (ego_item_p(o_ptr)) spoil = TRUE;
-#endif /* SPOIL_ARTIFACTS */
-
-		/* Need full knowledge or spoilers */
-		if (!spoil && !(o_ptr->ident & IDENT_MENTAL)) return;
-
 		/* Artifact */
 		if (o_ptr->name1)
 		{
@@ -423,9 +403,6 @@ static void object_flags_aux(int mode, const object_type *o_ptr, u32b *f1, u32b 
 				(*f3) &= ~(TR3_IGNORE_MASK);
 			}
 		}
-
-		/* Full knowledge for *identified* objects */
-		if (!(o_ptr->ident & IDENT_MENTAL)) return;
 	}
 
 	(*f1) |= o_ptr->flags1;

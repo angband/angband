@@ -1691,7 +1691,6 @@ enum
 #define IDENT_EMPTY     0x04	/* Item charges are known */
 #define IDENT_KNOWN     0x08	/* Item abilities are known */
 #define IDENT_STORE     0x10	/* Item is in the inventory of a store */
-#define IDENT_MENTAL    0x20	/* Item information is known */
 /* ... */
 #define IDENT_BROKEN    0x80	/* Item is permanently worthless */
 
@@ -2367,8 +2366,8 @@ enum
  * Test Two -- Check for "Easy Know" + "Aware"
  */
 #define object_known_p(T) \
-	(((T)->ident & (IDENT_KNOWN)) || \
-	 ((k_info[(T)->k_idx].flags3 & (TR3_EASY_KNOW)) && \
+	(((T)->ident & IDENT_KNOWN) || \
+	 ((k_info[(T)->k_idx].flags3 & TR3_EASY_KNOW) && \
 	  k_info[(T)->k_idx].aware))
 
 /*

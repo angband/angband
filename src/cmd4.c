@@ -1226,7 +1226,6 @@ static void desc_art_fake(int a_idx)
 	/* Make fake artifact */
 	make_fake_artifact(o_ptr, a_idx);
 	o_ptr->ident |= (IDENT_STORE | IDENT_KNOWN);
-	if (cheat_xtra) o_ptr->ident |= IDENT_MENTAL;
 
 	/* Hack -- Handle stuff */
 	handle_stuff();

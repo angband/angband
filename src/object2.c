@@ -1307,9 +1307,6 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 	/* Hack -- Blend store status */
 	if (j_ptr->ident & (IDENT_STORE)) o_ptr->ident |= (IDENT_STORE);
 
-	/* Hack -- Blend "mental" status */
-	if (j_ptr->ident & (IDENT_MENTAL)) o_ptr->ident |= (IDENT_MENTAL);
-
 	/* Hack -- Blend "notes" */
 	if (j_ptr->note != 0) o_ptr->note = j_ptr->note;
 

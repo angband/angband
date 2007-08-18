@@ -2805,7 +2805,7 @@ static void death_knowledge(void)
 		object_known(o_ptr);
 
 		/* Fully known */
-		o_ptr->ident |= (IDENT_MENTAL);
+		o_ptr->ident |= (IDENT_KNOWN);
 	}
 
 	/* Hack -- Know everything in the home */
@@ -2821,7 +2821,7 @@ static void death_knowledge(void)
 		object_known(o_ptr);
 
 		/* Fully known */
-		o_ptr->ident |= (IDENT_MENTAL);
+		o_ptr->ident |= (IDENT_KNOWN);
 	}
 
 	/* Hack -- Recalculate bonuses */
@@ -2949,7 +2949,7 @@ static void death_examine(void)
 		o_ptr = &inventory[item];
 
 		/* Fully known */
-		o_ptr->ident |= (IDENT_MENTAL);
+		o_ptr->ident |= (IDENT_KNOWN);
 
 		/* Describe */
 		object_info_screen(o_ptr);
