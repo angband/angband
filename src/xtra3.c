@@ -1459,6 +1459,74 @@ void subwindows_set_flags(u32b *new_flags, size_t n_subwindows)
 }
 
 /* ------------------------------------------------------------------------
+ * Showing and updating the splash screen.
+ * ------------------------------------------------------------------------ */
+/*
+ * Hack -- Explain a broken "lib" folder and quit (see below).
+ */
+static void init_angband_aux(cptr why)
+{
+	quit_fmt("%s\n\n%s", why,
+	         "The 'lib' directory is probably missing or broken.\n"
+	         "Perhaps the archive was not extracted correctly.\n"
+	         "See the 'readme.txt' file for more information.");
+}
+
+/*
+ * Hack -- take notes on line 23
+ */
+static void splashscreen_note(ui_event_type type, ui_event_data *data, void *user)
+{
+	Term_erase(0, 23, 255);
+	Term_putstr(20, 23, -1, TERM_WHITE, format("[%s]", data->string));
+	Term_fresh();
+}
+
+static void show_splashscreen(ui_event_type type, ui_event_data *data, void *user)
+{
+	ang_file *fp;
+
+	char buf[1024];
+
+	/*** Verify the "news" file ***/
+
+	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "news.txt");
+	if (!file_exists(buf))
+	{
+		char why[1024];
+
+		/* Crash and burn */
+		strnfmt(why, sizeof(why), "Cannot access the '%s' file!", buf);
+		init_angband_aux(why);
+	}
+
+
+	/*** Display the "news" file ***/
+
+	Term_clear();
+
+	/* Open the News file */
+	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "news.txt");
+	fp = file_open(buf, MODE_READ, -1);
+
+	/* Dump */
+	if (fp)
+	{
+		int i = 0;
+
+		/* Dump the file to the screen */
+		while (file_getl(fp, buf, sizeof(buf)))
+			Term_putstr(0, i++, -1, TERM_WHITE, buf);
+
+		file_close(fp);
+	}
+
+	/* Flush it */
+	Term_fresh();
+}
+
+
+/* ------------------------------------------------------------------------
  * Temporary (hopefully) hackish solutions.
  * ------------------------------------------------------------------------ */
 static void check_panel(ui_event_type type, ui_event_data *data, void *user)
@@ -1491,4 +1559,9 @@ void init_display(void)
 #endif
 	/* Check if the panel should shift when the player's moved */
 	ui_event_register(ui_PLAYER_MOVED, check_panel, NULL);
+
+
+	/* Set up our splashscreen handlers */
+	ui_event_register(ui_ENTER_INIT, show_splashscreen, NULL);
+	ui_event_register(ui_INIT_STATUS, splashscreen_note, NULL);
 }

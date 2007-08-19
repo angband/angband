@@ -14,6 +14,8 @@
 #include "init.h"
 #include "cmds.h"
 #include "option.h"
+#include "ui-event.h"
+#include "game-cmd.h"
 
 /*
  * This file is used to initialize various variables and arrays for the
@@ -1350,29 +1352,6 @@ static errr init_alloc(void)
 }
 
 
-/*
- * Hack -- take notes on line 23
- */
-static void note(cptr str)
-{
-	Term_erase(0, 23, 255);
-	Term_putstr(20, 23, -1, TERM_WHITE, str);
-	Term_fresh();
-}
-
-
-
-/*
- * Hack -- Explain a broken "lib" folder and quit (see below).
- */
-static void init_angband_aux(cptr why)
-{
-	quit_fmt("%s\n\n%s", why,
-	         "The 'lib' directory is probably missing or broken.\n"
-	         "Perhaps the archive was not extracted correctly.\n"
-	         "See the 'readme.txt' file for more information.");
-}
-
 
 /*
  * Hack -- main Angband initialization entry point
@@ -1421,52 +1400,9 @@ static void init_angband_aux(cptr why)
  * Note that the "graf-xxx.prf" file must be loaded separately,
  * if needed, in the first (?) pass through "TERM_XTRA_REACT".
  */
-void init_angband(void)
+bool init_angband(void)
 {
-	ang_file *fp;
-
-	char buf[1024];
-
-	/* Set up the display handlers and things. */
-	init_display();
-
-	/*** Verify the "news" file ***/
-
-	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "news.txt");
-	if (!file_exists(buf))
-	{
-		char why[1024];
-
-		/* Crash and burn */
-		strnfmt(why, sizeof(why), "Cannot access the '%s' file!", buf);
-		init_angband_aux(why);
-	}
-
-
-	/*** Display the "news" file ***/
-
-	Term_clear();
-
-	/* Open the News file */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "news.txt");
-	fp = file_open(buf, MODE_READ, -1);
-
-	/* Dump */
-	if (fp)
-	{
-		int i = 0;
-
-		/* Dump the file to the screen */
-		while (file_getl(fp, buf, sizeof(buf)))
-			Term_putstr(0, i++, -1, TERM_WHITE, buf);
-
-		file_close(fp);
-	}
-
-	/* Flush it */
-	Term_fresh();
-
-
+	ui_event_signal(ui_ENTER_INIT);
 
 	/* Initialize the menus */
 	/* This must occur before preference files are read(?) */
@@ -1474,88 +1410,104 @@ void init_angband(void)
 	
 	/*** Initialize some arrays ***/
 
-
 	/* Initialize size info */
-	note("[Initializing array sizes...]");
+	ui_event_signal_string(ui_INIT_STATUS, "Initializing array sizes...");
 	if (init_z_info()) quit("Cannot initialize sizes");
 
 	/* Initialize feature info */
-	note("[Initializing arrays... (features)]");
+	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (features)");
 	if (init_f_info()) quit("Cannot initialize features");
 
 	/* Initialize object info */
-	note("[Initializing arrays... (objects)]");
+	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (objects)");
 	if (init_k_info()) quit("Cannot initialize objects");
 
 	/* Initialize artifact info */
-	note("[Initializing arrays... (artifacts)]");
+	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (artifacts)");
 	if (init_a_info()) quit("Cannot initialize artifacts");
 
 	/* Initialize ego-item info */
-	note("[Initializing arrays... (ego-items)]");
+	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (ego-items");
 	if (init_e_info()) quit("Cannot initialize ego-items");
 
 	/* Initialize monster info */
-	note("[Initializing arrays... (monsters)]");
+	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (monsters)");
 	if (init_r_info()) quit("Cannot initialize monsters");
 
 	/* Initialize feature info */
-	note("[Initializing arrays... (vaults)]");
+	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (vaults)");
 	if (init_v_info()) quit("Cannot initialize vaults");
 
 	/* Initialize history info */
-	note("[Initializing arrays... (histories)]");
+	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (histories)");
 	if (init_h_info()) quit("Cannot initialize histories");
 
 	/* Initialize race info */
-	note("[Initializing arrays... (races)]");
+	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (races)");
 	if (init_p_info()) quit("Cannot initialize races");
 
 	/* Initialize class info */
-	note("[Initializing arrays... (classes)]");
+	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (classes)");
 	if (init_c_info()) quit("Cannot initialize classes");
 
 	/* Initialize owner info */
-	note("[Initializing arrays... (owners)]");
+	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (owners)");
 	if (init_b_info()) quit("Cannot initialize owners");
 
 	/* Initialize price info */
-	note("[Initializing arrays... (prices)]");
+	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (prices)");
 	if (init_g_info()) quit("Cannot initialize prices");
 
 	/* Initialize flavor info */
-	note("[Initializing arrays... (flavors)]");
+	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (flavors)");
 	if (init_flavor_info()) quit("Cannot initialize flavors");
 	
 	/* Initialize spell info */
-	note("[Initializing arrays... (spells)]");
+	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (spells)");
 	if (init_s_info()) quit("Cannot initialize spells");
 
 	/* Initialize spellbook info */
-	note("[Initializing arrays... (spellbooks)]");
+	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (spellbooks)");
 	init_books();
 
 	/* Initialize some other arrays */
-	note("[Initializing arrays... (other)]");
+	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (other)");
 	if (init_other()) quit("Cannot initialize other stuff");
 
 	/* Initialize some other arrays */
-	note("[Initializing arrays... (alloc)]");
+	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (alloc)");
 	if (init_alloc()) quit("Cannot initialize alloc stuff");
 
 	/*** Load default user pref files ***/
 
 	/* Initialize feature info */
-	note("[Loading basic user pref file...]");
+	ui_event_signal_string(ui_INIT_STATUS, "Loading basic user pref file...");
 
 	/* Process that file */
 	(void)process_pref_file("pref.prf");
 
 	/* Done */
-	note("[Initialization complete]");
+	ui_event_signal_string(ui_INIT_STATUS, "Initialization complete");
 
 	/* Sneakily init command list */
 	cmd_init();
+
+	/* Ask for a "command" until we get one we like. */
+	while (1)
+	{
+		game_command command_req = get_game_command();
+
+		if (command_req.command == CMD_QUIT)
+			quit(NULL);
+
+		else if (command_req.command == CMD_NEWGAME)
+			return TRUE;
+
+		else if (command_req.command == CMD_LOADFILE)
+			/* In future we might want to pass back or set the savefile
+			   path here. */
+			return FALSE;
+	}
 }
 
 

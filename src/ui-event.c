@@ -128,3 +128,12 @@ void ui_event_signal_point(ui_event_type type, int x, int y)
 
 	ui_event_dispatch(type, &data);
 }
+
+
+void ui_event_signal_string(ui_event_type type, const char *s)
+{
+	ui_event_data data;
+	data.string = s;
+
+	ui_event_dispatch(type, &data);
+}

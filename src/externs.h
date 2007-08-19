@@ -314,7 +314,7 @@ int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool browse);
 void do_cmd_browse_aux(const object_type *o_ptr);
 
 /* dungeon.c */
-extern void play_game(bool new_game);
+extern void play_game(void);
 extern int value_check_aux1(const object_type *o_ptr);
 
 /* files.c */
@@ -343,7 +343,7 @@ extern void generate_cave(void);
 /* init2.c */
 extern void init_file_paths(const char *path);
 extern void create_user_dirs(void);
-extern void init_angband(void);
+extern bool init_angband(void);
 extern void cleanup_angband(void);
 
 /* load.c */

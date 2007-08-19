@@ -1766,8 +1766,13 @@ static void process_some_user_pref_files(void)
  * code marks successful loading of the RNG state using the "Rand_quick"
  * flag, which is a hack, but which optimizes loading of savefiles.
  */
-void play_game(bool new_game)
+void play_game(void)
 {
+	/* Initialize */
+	bool new_game = init_angband();
+
+
+
 	/*** Do horrible, hacky things, to start the game off ***/
 
 	/* Hack -- Increase "icky" depth */

@@ -660,6 +660,10 @@ static const byte special_key_list[] =
 	0
 };
 
+#include "game-cmd.h"
+
+static game_command cmd = { CMD_NULL, 0 };
+
 #if 0
 /*
  * Hack -- given a pathname, point at the filename
@@ -2945,7 +2949,7 @@ static void check_for_save_file(LPSTR cmd_line)
 
 	/* Next arg */
 	p = strchr(s, ' ');
-
+	
 	/* Tokenize */
 	if (p) *p = '\0';
 
@@ -2955,16 +2959,8 @@ static void check_for_save_file(LPSTR cmd_line)
 	/* Validate the file */
 	validate_file(savefile);
 
-	/* Game in progress */
-	game_in_progress = TRUE;
-
-	Term_fresh();
-
-	/* Play game */
-	play_game(FALSE);
-
-	/* Quit */
-	quit(NULL);
+	/* Set the command now so that we skip the "Open File" prompt. */
+	cmd.command = CMD_LOADFILE;
 }
 
 
@@ -3158,10 +3154,8 @@ static void process_menus(WORD wCmd)
 			}
 			else
 			{
-				game_in_progress = TRUE;
-				Term_flush();
-				play_game(TRUE);
-				quit(NULL);
+				/* We'll return NEWGAME to the game. */
+				cmd.command = CMD_NEWGAME;
 			}
 			break;
 		}
@@ -3193,10 +3187,9 @@ static void process_menus(WORD wCmd)
 				{
 					/* Load 'savefile' */
 					validate_file(savefile);
-					game_in_progress = TRUE;
-					Term_flush();
-					play_game(FALSE);
-					quit(NULL);
+
+					/* We'll return NEWGAME to the game. */
+					cmd.command = CMD_LOADFILE;
 				}
 			}
 			break;
@@ -4556,6 +4549,28 @@ static void hook_quit(cptr str)
 }
 
 
+static game_command get_init_cmd()
+{
+	MSG msg;
+
+	/* Prompt the user */
+	prt("[Choose 'New' or 'Open' from the 'File' menu]", 23, 17);
+	Term_fresh();
+
+	/* Process messages forever */
+	while (cmd.command == CMD_NULL && GetMessage(&msg, NULL, 0, 0))
+	{
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+	/* Bit of a hack, we'll do this when we leave the INIT context in future. */
+	game_in_progress = TRUE;
+
+	return cmd;
+}
+
+
 
 /*** Initialize ***/
 
@@ -4708,7 +4723,6 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 
 	WNDCLASS wc;
 	HDC hdc;
-	MSG msg;
 
 	/* Unused parameter */
 	(void)nCmdShow;
@@ -4842,12 +4856,6 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	/* Set the system suffix */
 	ANGBAND_SYS = "win";
 
-	/* Initialize */
-	init_angband();
-
-	/* We are now initialized */
-	initialized = TRUE;
-
 #ifdef USE_SAVER
 	if (screensaver)
 	{
@@ -4869,16 +4877,16 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	/* Did the user double click on a save file? */
 	check_for_save_file(lpCmdLine);
 
-	/* Prompt the user */
-	prt("[Choose 'New' or 'Open' from the 'File' menu]", 23, 17);
-	Term_fresh();
+	/* Set command hook */
+	get_game_command = get_init_cmd;
 
-	/* Process messages forever */
-	while (GetMessage(&msg, NULL, 0, 0))
-	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
+	/* Set up the display handlers and things. */
+	init_display();
+
+	initialized = TRUE;
+
+	/* Play the game */
+	play_game();
 
 	/* Paranoia */
 	quit(NULL);

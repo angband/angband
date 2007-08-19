@@ -29,6 +29,7 @@
     || defined(USE_SDL)
 
 #include "main.h"
+#include "game-cmd.h"
 
 
 /*
@@ -192,6 +193,28 @@ static void user_name(char *buf, size_t len, int id)
 
 #endif /* SET_UID */
 
+static bool new_game;
+
+/*
+ * Pass the appropriate "Initialisation screen" command to the game,
+ * getting user input if needed.
+ */ 
+static game_command get_init_cmd()
+{
+	game_command cmd;
+
+	/* Wait for response */
+	pause_line(Term->hgt - 1);
+
+	if (new_game)
+		cmd.command = CMD_NEWGAME;
+	else
+		/* This might be modified to supply the filename in future. */
+		cmd.command = CMD_LOADFILE;
+
+	return cmd;
+}
+
 
 /*
  * Simple "main" function for multiple platforms.
@@ -205,7 +228,6 @@ int main(int argc, char *argv[])
 	int i;
 
 	bool done = FALSE;
-	bool new_game = FALSE;
 
 	int show_score = 0;
 
@@ -434,17 +456,14 @@ int main(int argc, char *argv[])
 	/* Catch nasty signals */
 	signals_init();
 
-	/* Initialize */
-	init_angband();
+	/* Set up the command hooks */
+	get_game_command = get_init_cmd;
 
-	/* Hack -- If requested, display scores and quit */
-	if (show_score > 0) display_scores(0, show_score);
-
-	/* Wait for response */
-	pause_line(Term->hgt - 1);
+	/* Set up the display handlers and things. */
+	init_display();      
 
 	/* Play the game */
-	play_game(new_game);
+	play_game();
 
 	/* Free resources */
 	cleanup_angband();

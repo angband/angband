@@ -33,10 +33,19 @@ typedef enum ui_event_type
 	ui_MONSTER_TARGET_CHANGED,
 	ui_MESSAGES_CHANGED,
 
-	ui_event_REDRAW		/* It's the end of a "set" of events, so safe to update */
+	ui_event_REDRAW,		/* It's the end of a "set" of events, so safe to update */
+
+	ui_INIT_STATUS,		/* New status message for initialisation */
+
+	/* Changing of the game state/context. */
+	ui_ENTER_INIT,
+	ui_ENTER_BIRTH,
+	ui_ENTER_GAME,
+	ui_ENTER_STORE,
+	ui_ENTER_DEATH
 } ui_event_type;
 
-#define  N_UI_EVENTS ui_event_REDRAW
+#define  N_UI_EVENTS ui_ENTER_DEATH
 
 typedef union
 {
@@ -45,6 +54,8 @@ typedef union
 		int x;
 		int y;
 	} point;
+
+	const char *string;
 
 } ui_event_data;
 
@@ -56,6 +67,7 @@ void ui_event_register_set(ui_event_type *type, size_t n_types, ui_event_handler
 void ui_event_deregister_set(ui_event_type *type, size_t n_types, ui_event_handler *fn, void *user);
 
 void ui_event_signal_point(ui_event_type, int x, int y);
+void ui_event_signal_string(ui_event_type, const char *s);
 void ui_event_signal(ui_event_type);
 
 #endif /* INCLUDED_UI_EVENT_H */

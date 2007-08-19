@@ -34,6 +34,7 @@ ANGFILES = \
 	dungeon.o \
 	effects.o \
 	files.o \
+	game-cmd.o \
 	generate.o \
 	init1.o \
 	init2.o \
