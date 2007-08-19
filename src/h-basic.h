@@ -111,6 +111,7 @@
 /*** Include the library header files ***/
 
 /* Use various POSIX functions if available */
+#undef _GNU_SOURCE
 #define _GNU_SOURCE
 
 /** ANSI C headers **/

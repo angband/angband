@@ -90,7 +90,7 @@ void ui_event_deregister(ui_event_type type, ui_event_handler *fn, void *user)
 		prev = this;
 		this = this->next;
 	}
-};
+}
 
 void ui_event_register_set(ui_event_type *type, size_t n_types, ui_event_handler *fn, void *user)
 {

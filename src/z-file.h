@@ -71,7 +71,7 @@ typedef enum
 {
 	MODE_WRITE,
 	MODE_READ,
-	MODE_APPEND,
+	MODE_APPEND
 } file_mode;
 
 /*
