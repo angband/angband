@@ -3313,7 +3313,6 @@ static void init_gfx(void)
 	/* Check for existence of required files */
 	for (i = 0; i < GfxModes; i++)
 	{
-		int fd;
 		char path[1024];
 		
 		/* Check the graphic file */
