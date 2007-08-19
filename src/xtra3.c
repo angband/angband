@@ -1388,7 +1388,7 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 
 		case PW_MONLIST:
 		{
-			register_or_deregister(ui_EQUIPMENT_CHANGED,
+			register_or_deregister(ui_MONSTERLIST_CHANGED,
 					       update_monlist_subwindow,
 					       angband_term[win_idx]);
 			break;
