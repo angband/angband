@@ -221,14 +221,11 @@ typedef int errr;
 #endif /* HAVE_STDINT_H */
 
 
+/** Debugging macros ***/
 
-/*** Simple constants ***/
-
-/* Define NULL */
-#ifndef NULL
-# define NULL ((void*)0)
-#endif
-
+#define DSTRINGIFY(x) #x
+#define DSTRING(x)    DSTRINGIFY(x)
+#define DHERE         __FILE__ ":" DSTRING(__LINE__) ": "
 
 
 /*** Basic math macros ***/
