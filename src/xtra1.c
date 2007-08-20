@@ -22,7 +22,7 @@
 struct flag_event_trigger
 {
 	u32b flag;
-	ui_event_type event;
+	game_event_type event;
 };
 
 /*
@@ -1558,7 +1558,7 @@ void update_stuff(void)
 	if (p_ptr->update & (PU_PANEL))
 	{
 		p_ptr->update &= ~(PU_PANEL);
-		ui_event_signal(ui_PLAYER_MOVED);
+		event_signal(EVENT_PLAYERMOVED);
 	}
 }
 
@@ -1569,28 +1569,28 @@ void update_stuff(void)
  */
 static const struct flag_event_trigger redraw_events[] =
 {
-	{ PR_MISC, ui_RACE_CLASS_CHANGED },
-	{ PR_TITLE, ui_TITLE_CHANGED },
-	{ PR_LEV, ui_LEVEL_CHANGED },
-	{ PR_EXP, ui_EXPERIENCE_CHANGED },
-	{ PR_STATS, ui_STATS_CHANGED },
-	{ PR_ARMOR, ui_AC_CHANGED },
-	{ PR_HP, ui_HP_CHANGED },
-	{ PR_MANA, ui_MANA_CHANGED },
-	{ PR_GOLD, ui_GOLD_CHANGED },
-	{ PR_HEALTH, ui_HEALTH_CHANGED },
-	{ PR_DEPTH, ui_DEPTH_CHANGED },
-	{ PR_SPEED, ui_SPEED_CHANGED },
-	{ PR_STATE, ui_STATE_CHANGED },
-	{ PR_STATUS, ui_STATUS_CHANGED },
-	{ PR_STUDY, ui_STUDY_CHANGED },
-	{ PR_DTRAP, ui_DETECT_TRAPS_CHANGED },
-
-	{ PR_INVEN, ui_INVENTORY_CHANGED },
-	{ PR_EQUIP, ui_EQUIPMENT_CHANGED },
-	{ PR_MONLIST, ui_MONSTERLIST_CHANGED },
-	{ PR_MONSTER, ui_MONSTER_TARGET_CHANGED },
-	{ PR_MESSAGE, ui_MESSAGES_CHANGED },
+	{ PR_MISC,    EVENT_RACE_CLASS },
+	{ PR_TITLE,   EVENT_PLAYERTITLE },
+	{ PR_LEV,     EVENT_PLAYERLEVEL },
+	{ PR_EXP,     EVENT_EXPERIENCE },
+	{ PR_STATS,   EVENT_STATS },
+	{ PR_ARMOR,   EVENT_AC },
+	{ PR_HP,      EVENT_HP },
+	{ PR_MANA,    EVENT_MANA },
+	{ PR_GOLD,    EVENT_GOLD },
+	{ PR_HEALTH,  EVENT_MONSTERHEALTH },
+	{ PR_DEPTH,   EVENT_DUNGEONLEVEL },
+	{ PR_SPEED,   EVENT_PLAYERSPEED },
+	{ PR_STATE,   EVENT_STATE },
+	{ PR_STATUS,  EVENT_STATUS },
+	{ PR_STUDY,   EVENT_STUDYSTATUS },
+	{ PR_DTRAP,   EVENT_DETECTIONSTATUS },
+	
+	{ PR_INVEN,   EVENT_INVENTORY },
+	{ PR_EQUIP,   EVENT_EQUIPMENT },
+	{ PR_MONLIST, EVENT_MONSTERLIST },
+	{ PR_MONSTER, EVENT_MONSTERTARGET },
+	{ PR_MESSAGE, EVENT_MESSAGE },
 };
 
 /*
@@ -1615,14 +1615,14 @@ void redraw_stuff(void)
 		const struct flag_event_trigger *hnd = &redraw_events[i];
 
 		if (p_ptr->redraw & hnd->flag)
-			ui_event_signal(hnd->event);
+			event_signal(hnd->event);
 	}
 
 	/* Then the ones that require parameters to be supplied. */
 	if (p_ptr->redraw & PR_MAP)
 	{
 		/* Mark the whole map to be redrawn */
-		ui_event_signal_point(ui_MAP_CHANGED, -1, -1);
+		event_signal_point(EVENT_MAP, -1, -1);
 	}
 
 	p_ptr->redraw = 0;
@@ -1631,7 +1631,7 @@ void redraw_stuff(void)
 	 * Do any plotting, etc. delayed from earlier - this set of updates
 	 * is over. 
 	 */
-	ui_event_signal(ui_event_REDRAW);
+	event_signal(EVENT_END);
 }
 
 

@@ -1,51 +1,52 @@
 
-#ifndef INCLUDED_UI_EVENT_H
-#define INCLUDED_UI_EVENT_H
+#ifndef INCLUDED_GAME_EVENT_H
+#define INCLUDED_GAME_EVENT_H
 
 /* The various events we can send signals about. */
-typedef enum ui_event_type
+typedef enum game_event_type
 {
-	ui_MAP_CHANGED,		/* Some part of the map has changed. */
+	EVENT_MAP,		/* Some part of the map has changed. */
 
-	ui_STATS_CHANGED,  	/* One or more of the stats. */
-	ui_HP_CHANGED,	   	/* HP or MaxHP. */
-	ui_MANA_CHANGED,	/* Mana or MaxMana. */
-	ui_AC_CHANGED,		/* Armour Class. */
-	ui_EXPERIENCE_CHANGED,	/* Experience or MaxExperience. */
-	ui_LEVEL_CHANGED,	/* Player's level has changed */
-	ui_TITLE_CHANGED,	/* Player's title has changed */
-	ui_GOLD_CHANGED,	/* Player's gold amount. */
-	ui_HEALTH_CHANGED,	/* Observed monster's health level. */
-	ui_DEPTH_CHANGED,	/* Dungeon depth */
-	ui_SPEED_CHANGED,	/* Player's speed */
-	ui_RACE_CLASS_CHANGED,	/* Race or Class */
-	ui_STUDY_CHANGED,	/* "Study" availability */
-	ui_STATUS_CHANGED,	/* Status */
-	ui_DETECT_TRAPS_CHANGED,/* Trap detection status */
-	ui_STATE_CHANGED,	/* The three 'R's: Resting, Repeating and
+	EVENT_STATS,  		/* One or more of the stats. */
+	EVENT_HP,	   	/* HP or MaxHP. */
+	EVENT_MANA,		/* Mana or MaxMana. */
+	EVENT_AC,		/* Armour Class. */
+	EVENT_EXPERIENCE,	/* Experience or MaxExperience. */
+	EVENT_PLAYERLEVEL,	/* Player's level has changed */
+	EVENT_PLAYERTITLE,	/* Player's title has changed */
+	EVENT_GOLD,		/* Player's gold amount. */
+	EVENT_MONSTERHEALTH,	/* Observed monster's health level. */
+	EVENT_DUNGEONLEVEL,	/* Dungeon depth */
+	EVENT_PLAYERSPEED,	/* Player's speed */
+	EVENT_RACE_CLASS,	/* Race or Class */
+	EVENT_STUDYSTATUS,	/* "Study" availability */
+	EVENT_STATUS,		/* Status */
+	EVENT_DETECTIONSTATUS,	/* Trap detection status */
+	EVENT_STATE,		/* The three 'R's: Resting, Repeating and
 				   Searching */
 
-	ui_PLAYER_MOVED,
+	EVENT_PLAYERMOVED,
 
-	ui_INVENTORY_CHANGED,
-	ui_EQUIPMENT_CHANGED,
-	ui_MONSTERLIST_CHANGED,
-	ui_MONSTER_TARGET_CHANGED,
-	ui_MESSAGES_CHANGED,
+	EVENT_INVENTORY,
+	EVENT_EQUIPMENT,
+	EVENT_MONSTERLIST,
+	EVENT_MONSTERTARGET,
+	EVENT_MESSAGE,
 
-	ui_event_REDRAW,		/* It's the end of a "set" of events, so safe to update */
 
-	ui_INIT_STATUS,		/* New status message for initialisation */
+	EVENT_INITSTATUS,	/* New status message for initialisation */
 
 	/* Changing of the game state/context. */
-	ui_ENTER_INIT,
-	ui_ENTER_BIRTH,
-	ui_ENTER_GAME,
-	ui_ENTER_STORE,
-	ui_ENTER_DEATH
-} ui_event_type;
+	EVENT_ENTER_INIT,
+	EVENT_ENTER_BIRTH,
+	EVENT_ENTER_GAME,
+	EVENT_ENTER_STORE,
+	EVENT_ENTER_DEATH,
 
-#define  N_UI_EVENTS ui_ENTER_DEATH
+	EVENT_END  /* Can be sent at the end of a series of events */
+} game_event_type;
+
+#define  N_GAME_EVENTS EVENT_END
 
 typedef union
 {
@@ -57,17 +58,24 @@ typedef union
 
 	const char *string;
 
-} ui_event_data;
+} game_event_data;
 
-typedef void ui_event_handler(ui_event_type type, ui_event_data *data, void *user);
 
-void ui_event_register(ui_event_type type, ui_event_handler *fn, void *user);
-void ui_event_deregister(ui_event_type type, ui_event_handler *fn, void *user);
-void ui_event_register_set(ui_event_type *type, size_t n_types, ui_event_handler *fn, void *user);
-void ui_event_deregister_set(ui_event_type *type, size_t n_types, ui_event_handler *fn, void *user);
+/* 
+ * A function called when a game event occurs - these are registered to be
+ * called by event_add_handler or event_add_handler_set, and deregistered
+ * when they should no longer be called through event_remove_handler or
+ * event_remove_handler_set.
+ */
+typedef void game_event_handler(game_event_type type, game_event_data *data, void *user);
 
-void ui_event_signal_point(ui_event_type, int x, int y);
-void ui_event_signal_string(ui_event_type, const char *s);
-void ui_event_signal(ui_event_type);
+void event_add_handler(game_event_type type, game_event_handler *fn, void *user);
+void event_remove_handler(game_event_type type, game_event_handler *fn, void *user);
+void event_add_handler_set(game_event_type *type, size_t n_types, game_event_handler *fn, void *user);
+void event_remove_handler_set(game_event_type *type, size_t n_types, game_event_handler *fn, void *user);
 
-#endif /* INCLUDED_UI_EVENT_H */
+void event_signal_point(game_event_type, int x, int y);
+void event_signal_string(game_event_type, const char *s);
+void event_signal(game_event_type);
+
+#endif /* INCLUDED_GAME_EVENT_H */

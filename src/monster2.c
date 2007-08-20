@@ -83,7 +83,6 @@ void delete_monster_idx(int i)
 	/* Count monsters */
 	mon_cnt--;
 
-
 	/* Visual update */
 	lite_spot(y, x);
 }

@@ -26,13 +26,13 @@ struct event_handler_entry;
 struct event_handler_entry
 {
 	struct event_handler_entry *next;	
-	ui_event_handler *fn;
+	game_event_handler *fn;
 	void *user;
 };
 
-struct event_handler_entry *event_handlers[N_UI_EVENTS];
+struct event_handler_entry *event_handlers[N_GAME_EVENTS];
 
-static void ui_event_dispatch(ui_event_type type, ui_event_data *data)
+static void game_event_dispatch(game_event_type type, game_event_data *data)
 {
 	struct event_handler_entry *this = event_handlers[type];
 
@@ -47,7 +47,7 @@ static void ui_event_dispatch(ui_event_type type, ui_event_data *data)
 	}
 }
 
-void ui_event_register(ui_event_type type, ui_event_handler *fn, void *user)
+void event_add_handler(game_event_type type, game_event_handler *fn, void *user)
 {
 	struct event_handler_entry *new;
 
@@ -63,7 +63,7 @@ void ui_event_register(ui_event_type type, ui_event_handler *fn, void *user)
 	event_handlers[type] = new;
 }
 
-void ui_event_deregister(ui_event_type type, ui_event_handler *fn, void *user)
+void event_remove_handler(game_event_type type, game_event_handler *fn, void *user)
 {
 	struct event_handler_entry *prev = NULL;
 	struct event_handler_entry *this = event_handlers[type];
@@ -92,48 +92,49 @@ void ui_event_deregister(ui_event_type type, ui_event_handler *fn, void *user)
 	}
 }
 
-void ui_event_register_set(ui_event_type *type, size_t n_types, ui_event_handler *fn, void *user)
+void event_add_handler_set(game_event_type *type, size_t n_types, game_event_handler *fn, void *user)
 {
 	int i;
 
 	for (i = 0; i < n_types; i++)
 	{
-		ui_event_register(type[i], fn, user);
+		event_add_handler(type[i], fn, user);
 	}
 }
 
-void ui_event_deregister_set(ui_event_type *type, size_t n_types, ui_event_handler *fn, void *user)
+void event_remove_handler_set(game_event_type *type, size_t n_types, game_event_handler *fn, void *user)
 {
 	int i;
 
 	for (i = 0; i < n_types; i++)
 	{
-		ui_event_deregister(type[i], fn, user);
+		event_remove_handler(type[i], fn, user);
 	}
 }
 
 
 
 
-void ui_event_signal(ui_event_type type)
+void event_signal(game_event_type type)
 {
-	ui_event_dispatch(type, NULL);
+	game_event_dispatch(type, NULL);
 }
 
-void ui_event_signal_point(ui_event_type type, int x, int y)
+
+void event_signal_point(game_event_type type, int x, int y)
 {
-	ui_event_data data;
+	game_event_data data;
 	data.point.x = x;
 	data.point.y = y;
 
-	ui_event_dispatch(type, &data);
+	game_event_dispatch(type, &data);
 }
 
 
-void ui_event_signal_string(ui_event_type type, const char *s)
+void event_signal_string(game_event_type type, const char *s)
 {
-	ui_event_data data;
+	game_event_data data;
 	data.string = s;
 
-	ui_event_dispatch(type, &data);
+	game_event_dispatch(type, &data);
 }

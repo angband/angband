@@ -1402,7 +1402,7 @@ static errr init_alloc(void)
  */
 bool init_angband(void)
 {
-	ui_event_signal(ui_ENTER_INIT);
+	event_signal(EVENT_ENTER_INIT);
 
 	/* Initialize the menus */
 	/* This must occur before preference files are read(?) */
@@ -1411,83 +1411,83 @@ bool init_angband(void)
 	/*** Initialize some arrays ***/
 
 	/* Initialize size info */
-	ui_event_signal_string(ui_INIT_STATUS, "Initializing array sizes...");
+	event_signal_string(EVENT_INITSTATUS, "Initializing array sizes...");
 	if (init_z_info()) quit("Cannot initialize sizes");
 
 	/* Initialize feature info */
-	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (features)");
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (features)");
 	if (init_f_info()) quit("Cannot initialize features");
 
 	/* Initialize object info */
-	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (objects)");
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (objects)");
 	if (init_k_info()) quit("Cannot initialize objects");
 
 	/* Initialize artifact info */
-	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (artifacts)");
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (artifacts)");
 	if (init_a_info()) quit("Cannot initialize artifacts");
 
 	/* Initialize ego-item info */
-	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (ego-items");
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (ego-items");
 	if (init_e_info()) quit("Cannot initialize ego-items");
 
 	/* Initialize monster info */
-	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (monsters)");
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monsters)");
 	if (init_r_info()) quit("Cannot initialize monsters");
 
 	/* Initialize feature info */
-	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (vaults)");
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (vaults)");
 	if (init_v_info()) quit("Cannot initialize vaults");
 
 	/* Initialize history info */
-	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (histories)");
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (histories)");
 	if (init_h_info()) quit("Cannot initialize histories");
 
 	/* Initialize race info */
-	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (races)");
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (races)");
 	if (init_p_info()) quit("Cannot initialize races");
 
 	/* Initialize class info */
-	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (classes)");
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (classes)");
 	if (init_c_info()) quit("Cannot initialize classes");
 
 	/* Initialize owner info */
-	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (owners)");
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (owners)");
 	if (init_b_info()) quit("Cannot initialize owners");
 
 	/* Initialize price info */
-	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (prices)");
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (prices)");
 	if (init_g_info()) quit("Cannot initialize prices");
 
 	/* Initialize flavor info */
-	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (flavors)");
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (flavors)");
 	if (init_flavor_info()) quit("Cannot initialize flavors");
 	
 	/* Initialize spell info */
-	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (spells)");
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (spells)");
 	if (init_s_info()) quit("Cannot initialize spells");
 
 	/* Initialize spellbook info */
-	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (spellbooks)");
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (spellbooks)");
 	init_books();
 
 	/* Initialize some other arrays */
-	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (other)");
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (other)");
 	if (init_other()) quit("Cannot initialize other stuff");
 
 	/* Initialize some other arrays */
-	ui_event_signal_string(ui_INIT_STATUS, "Initializing arrays... (alloc)");
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (alloc)");
 	if (init_alloc()) quit("Cannot initialize alloc stuff");
 
 	/*** Load default user pref files ***/
 
 	/* Initialize feature info */
-	ui_event_signal_string(ui_INIT_STATUS, "Loading basic user pref file...");
+	event_signal_string(EVENT_INITSTATUS, "Loading basic user pref file...");
 
 	/* Process that file */
 	(void)process_pref_file("pref.prf");
 
 	/* Done */
-	ui_event_signal_string(ui_INIT_STATUS, "Initialization complete");
+	event_signal_string(EVENT_INITSTATUS, "Initialization complete");
 
 	/* Sneakily init command list */
 	cmd_init();

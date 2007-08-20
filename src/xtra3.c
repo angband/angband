@@ -27,30 +27,31 @@
  * of the basic player events.  For convenience, these have been grouped 
  * in this list.
  */
-ui_event_type player_events[] =
+game_event_type player_events[] =
 {
-	ui_RACE_CLASS_CHANGED,
-	ui_TITLE_CHANGED,
-	ui_EXPERIENCE_CHANGED,
-	ui_LEVEL_CHANGED,
-	ui_GOLD_CHANGED,
-	ui_EXPERIENCE_CHANGED,
-	ui_EQUIPMENT_CHANGED,
-	ui_STATS_CHANGED,
-	ui_AC_CHANGED,
-	ui_MANA_CHANGED,
-	ui_HP_CHANGED,
-	ui_HEALTH_CHANGED,
-	ui_SPEED_CHANGED,
-	ui_DEPTH_CHANGED,
+	EVENT_RACE_CLASS,
+	EVENT_PLAYERTITLE,
+	EVENT_EXPERIENCE,
+	EVENT_PLAYERLEVEL,
+	EVENT_GOLD,
+	EVENT_EQUIPMENT,  /* For equippy chars */
+	EVENT_STATS,
+	EVENT_HP,
+	EVENT_MANA,
+	EVENT_AC,
+
+	EVENT_MONSTERHEALTH,
+
+	EVENT_PLAYERSPEED,
+	EVENT_DUNGEONLEVEL,
 };
 
-ui_event_type statusline_events[] =
+game_event_type statusline_events[] =
 {
-	ui_STATE_CHANGED,
-	ui_STATUS_CHANGED,
-	ui_DETECT_TRAPS_CHANGED,
-	ui_STUDY_CHANGED
+	EVENT_STUDYSTATUS,
+	EVENT_STATUS,
+	EVENT_DETECTIONSTATUS,
+	EVENT_STATE,
 };
 
 
@@ -497,32 +498,32 @@ static const struct side_handler_t
 {
 	void (*hook)(int, int);	 /* int row, int col */
 	int priority;		 /* 1 is most important (always displayed) */
-	ui_event_type type;	 /* PR_* flag this corresponds to */
+	game_event_type type;	 /* PR_* flag this corresponds to */
 } side_handlers[] =
 {
-	{ prt_race,    19, ui_RACE_CLASS_CHANGED },
-	{ prt_title,   18, ui_TITLE_CHANGED },
-	{ prt_class,   22, ui_RACE_CLASS_CHANGED },
-	{ prt_level,   10, ui_LEVEL_CHANGED },
-	{ prt_exp,     16, ui_EXPERIENCE_CHANGED },
-	{ prt_gold,    11, ui_GOLD_CHANGED },
-	{ prt_equippy, 17, ui_EQUIPMENT_CHANGED },
-	{ prt_str,      6, ui_STATS_CHANGED },
-	{ prt_int,      5, ui_STATS_CHANGED },
-	{ prt_wis,      4, ui_STATS_CHANGED },
-	{ prt_dex,      3, ui_STATS_CHANGED },
-	{ prt_con,      2, ui_STATS_CHANGED },
-	{ prt_chr,      1, ui_STATS_CHANGED },
+	{ prt_race,    19, EVENT_RACE_CLASS },
+	{ prt_title,   18, EVENT_PLAYERTITLE },
+	{ prt_class,   22, EVENT_RACE_CLASS },
+	{ prt_level,   10, EVENT_PLAYERLEVEL },
+	{ prt_exp,     16, EVENT_EXPERIENCE },
+	{ prt_gold,    11, EVENT_GOLD },
+	{ prt_equippy, 17, EVENT_EQUIPMENT },
+	{ prt_str,      6, EVENT_STATS },
+	{ prt_int,      5, EVENT_STATS },
+	{ prt_wis,      4, EVENT_STATS },
+	{ prt_dex,      3, EVENT_STATS },
+	{ prt_con,      2, EVENT_STATS },
+	{ prt_chr,      1, EVENT_STATS },
 	{ NULL,        15, 0 },
-	{ prt_ac,       7, ui_AC_CHANGED },
-	{ prt_hp,       8, ui_HP_CHANGED },
-	{ prt_sp,       9, ui_MANA_CHANGED },
+	{ prt_ac,       7, EVENT_AC },
+	{ prt_hp,       8, EVENT_HP },
+	{ prt_sp,       9, EVENT_MANA },
 	{ NULL,        21, 0 },
-	{ prt_health,  12, ui_HEALTH_CHANGED },
+	{ prt_health,  12, EVENT_MONSTERHEALTH },
 	{ NULL,        20, 0 },
 	{ NULL,        22, 0 },
-	{ prt_speed,   13, ui_SPEED_CHANGED }, /* Slow (-NN) / Fast (+NN) */
-	{ prt_depth,   14, ui_DEPTH_CHANGED }, /* Lev NNN / NNNN ft */
+	{ prt_speed,   13, EVENT_PLAYERSPEED }, /* Slow (-NN) / Fast (+NN) */
+	{ prt_depth,   14, EVENT_DUNGEONLEVEL }, /* Lev NNN / NNNN ft */
 };
 
 
@@ -534,7 +535,7 @@ static const struct side_handler_t
  * important lower numbers.  As the screen gets smaller, the rows start to
  * disappear in the order of lowest to highest importance.
  */
-static void update_sidebar(ui_event_type type, ui_event_data *data, void *user)
+static void update_sidebar(game_event_type type, game_event_data *data, void *user)
 {
 	int x, y, row;
 	int max_priority;
@@ -577,7 +578,7 @@ static void update_sidebar(ui_event_type type, ui_event_data *data, void *user)
 	}
 }
 
-static void hp_colour_change(ui_event_type type, ui_event_data *data, void *user)
+static void hp_colour_change(game_event_type type, game_event_data *data, void *user)
 {
 	/*
 	 * hack:  redraw player, since the player's color
@@ -888,7 +889,7 @@ status_f *status_handlers[] =
 /*
  * Print the status line.
  */
-static void update_statusline(ui_event_type type, ui_event_data *data, void *user)
+static void update_statusline(game_event_type type, game_event_data *data, void *user)
 {
 	int row = Term->hgt - 1;
 	int col = 13;
@@ -906,7 +907,7 @@ static void update_statusline(ui_event_type type, ui_event_data *data, void *use
 /* ------------------------------------------------------------------------
  * Map redraw.
  * ------------------------------------------------------------------------ */
-static void trace_map_updates(ui_event_type type, ui_event_data *data, void *user)
+static void trace_map_updates(game_event_type type, game_event_data *data, void *user)
 {
 	if (data->point.x == -1 && data->point.y == -1)
 	{
@@ -918,7 +919,7 @@ static void trace_map_updates(ui_event_type type, ui_event_data *data, void *use
 	}
 }
 
-static void update_maps(ui_event_type type, ui_event_data *data, void *user)
+static void update_maps(game_event_type type, game_event_data *data, void *user)
 {
 	term *t = user;
 
@@ -1005,7 +1006,7 @@ static void update_maps(ui_event_type type, ui_event_data *data, void *user)
  */
 static bool flip_inven;
 
-static void update_inven_subwindow(ui_event_type type, ui_event_data *data,
+static void update_inven_subwindow(game_event_type type, game_event_data *data,
 				       void *user)
 {
 	term *old = Term;
@@ -1026,7 +1027,7 @@ static void update_inven_subwindow(ui_event_type type, ui_event_data *data,
 	Term_activate(old);
 }
 
-static void update_equip_subwindow(ui_event_type type, ui_event_data *data,
+static void update_equip_subwindow(game_event_type type, game_event_data *data,
 				   void *user)
 {
 	term *old = Term;
@@ -1054,7 +1055,7 @@ void toggle_inven_equip(void)
 	flip_inven = !flip_inven;
 }
 
-static void update_monlist_subwindow(ui_event_type type, ui_event_data *data, void *user)
+static void update_monlist_subwindow(game_event_type type, game_event_data *data, void *user)
 {
 	term *old = Term;
 	term *inv_term = user;
@@ -1070,7 +1071,7 @@ static void update_monlist_subwindow(ui_event_type type, ui_event_data *data, vo
 }
 
 
-static void update_monster_subwindow(ui_event_type type, ui_event_data *data, void *user)
+static void update_monster_subwindow(game_event_type type, game_event_data *data, void *user)
 {
 	term *old = Term;
 	term *inv_term = user;
@@ -1089,7 +1090,7 @@ static void update_monster_subwindow(ui_event_type type, ui_event_data *data, vo
 }
 
 
-static void update_messages_subwindow(ui_event_type type, ui_event_data *data, void *user)
+static void update_messages_subwindow(game_event_type type, game_event_data *data, void *user)
 {
 	term *old = Term;
 	term *inv_term = user;
@@ -1140,15 +1141,15 @@ static struct minimap_flags
 	bool needs_redraw;
 } minimap_data[ANGBAND_TERM_MAX];
 
-static void update_minimap_subwindow(ui_event_type type, ui_event_data *data, void *user)
+static void update_minimap_subwindow(game_event_type type, game_event_data *data, void *user)
 {
 	struct minimap_flags *flags = user;
 
-	if (type == ui_MAP_CHANGED)
+	if (type == EVENT_MAP)
 	{
 		flags->needs_redraw = TRUE;
 	}
-	else if (type == ui_event_REDRAW)
+	else if (type == EVENT_END)
 	{
 		term *old = Term;
 		term *t = angband_term[flags->win_idx];
@@ -1171,7 +1172,7 @@ static void update_minimap_subwindow(ui_event_type type, ui_event_data *data, vo
 /*
  * Hack -- display player in sub-windows (mode 0)
  */
-static void update_player0_subwindow(ui_event_type type, ui_event_data *data, void *user)
+static void update_player0_subwindow(game_event_type type, game_event_data *data, void *user)
 {
 	term *old = Term;
 	term *inv_term = user;
@@ -1191,7 +1192,7 @@ static void update_player0_subwindow(ui_event_type type, ui_event_data *data, vo
 /*
  * Hack -- display player in sub-windows (mode 1)
  */
-static void update_player1_subwindow(ui_event_type type, ui_event_data *data, void *user)
+static void update_player1_subwindow(game_event_type type, game_event_data *data, void *user)
 {
 	term *old = Term;
 	term *inv_term = user;
@@ -1212,7 +1213,7 @@ static void update_player1_subwindow(ui_event_type type, ui_event_data *data, vo
 /*
  * Display the left-hand-side of the main term, in more compact fashion.
  */
-static void update_player_compact_subwindow(ui_event_type type, ui_event_data *data, void *user)
+static void update_player_compact_subwindow(game_event_type type, game_event_data *data, void *user)
 {
 	int row = 0;
 	int col = 0;
@@ -1266,7 +1267,7 @@ static void update_player_compact_subwindow(ui_event_type type, ui_event_data *d
 }
 
 
-static void flush_subwindow(ui_event_type type, ui_event_data *data, void *user)
+static void flush_subwindow(game_event_type type, game_event_data *data, void *user)
 {
 	term *old = Term;
 	term *t = user;
@@ -1283,26 +1284,26 @@ static void flush_subwindow(ui_event_type type, ui_event_data *data, void *user)
 
 static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 {
-	void (*register_or_deregister)(ui_event_type type, ui_event_handler *fn, void *user);
-	void (*set_register_or_deregister)(ui_event_type *type, size_t n_events, ui_event_handler *fn, void *user);
+	void (*register_or_deregister)(game_event_type type, game_event_handler *fn, void *user);
+	void (*set_register_or_deregister)(game_event_type *type, size_t n_events, game_event_handler *fn, void *user);
 
 	/* Decide whether to register or deregister an evenrt handler */
 	if (new_state == FALSE)
 	{
-		register_or_deregister = ui_event_deregister;
-		set_register_or_deregister = ui_event_deregister_set;
+		register_or_deregister = event_remove_handler;
+		set_register_or_deregister = event_remove_handler_set;
 	}
 	else
 	{
-		register_or_deregister = ui_event_register;
-		set_register_or_deregister = ui_event_register_set;
+		register_or_deregister = event_add_handler;
+		set_register_or_deregister = event_add_handler_set;
 	}
 
 	switch (flag)
 	{
 		case PW_INVEN:
 		{
-			register_or_deregister(ui_INVENTORY_CHANGED,
+			register_or_deregister(EVENT_INVENTORY,
 					       update_inven_subwindow,
 					       angband_term[win_idx]);
 			break;
@@ -1310,7 +1311,7 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 
 		case PW_EQUIP:
 		{
-			register_or_deregister(ui_EQUIPMENT_CHANGED,
+			register_or_deregister(EVENT_EQUIPMENT,
 					       update_equip_subwindow,
 					       angband_term[win_idx]);
 			break;
@@ -1345,11 +1346,11 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 
 		case PW_MAP:
 		{
-			register_or_deregister(ui_MAP_CHANGED,
+			register_or_deregister(EVENT_MAP,
 					       update_maps,
 					       angband_term[win_idx]);
 
-			register_or_deregister(ui_event_REDRAW,
+			register_or_deregister(EVENT_END,
 					       flush_subwindow,
 					       angband_term[win_idx]);
 			break;
@@ -1358,7 +1359,7 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 
 		case PW_MESSAGE:
 		{
-			register_or_deregister(ui_MONSTER_TARGET_CHANGED,
+			register_or_deregister(EVENT_MESSAGE,
 					       update_messages_subwindow,
 					       angband_term[win_idx]);
 			break;
@@ -1368,11 +1369,11 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 		{
 			minimap_data[win_idx].win_idx = win_idx;
 
-			register_or_deregister(ui_MAP_CHANGED,
+			register_or_deregister(EVENT_MAP,
 					       update_minimap_subwindow,
 					       &minimap_data[win_idx]);
 
-			register_or_deregister(ui_event_REDRAW,
+			register_or_deregister(EVENT_END,
 					       update_minimap_subwindow,
 					       &minimap_data[win_idx]);
 			break;
@@ -1380,7 +1381,7 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 
 		case PW_MONSTER:
 		{
-			register_or_deregister(ui_MONSTER_TARGET_CHANGED,
+			register_or_deregister(EVENT_MONSTERTARGET,
 					       update_monster_subwindow,
 					       angband_term[win_idx]);
 			break;
@@ -1388,7 +1389,7 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 
 		case PW_MONLIST:
 		{
-			register_or_deregister(ui_MONSTERLIST_CHANGED,
+			register_or_deregister(EVENT_MONSTERLIST,
 					       update_monlist_subwindow,
 					       angband_term[win_idx]);
 			break;
@@ -1475,14 +1476,14 @@ static void init_angband_aux(cptr why)
 /*
  * Hack -- take notes on line 23
  */
-static void splashscreen_note(ui_event_type type, ui_event_data *data, void *user)
+static void splashscreen_note(game_event_type type, game_event_data *data, void *user)
 {
 	Term_erase(0, 23, 255);
 	Term_putstr(20, 23, -1, TERM_WHITE, format("[%s]", data->string));
 	Term_fresh();
 }
 
-static void show_splashscreen(ui_event_type type, ui_event_data *data, void *user)
+static void show_splashscreen(game_event_type type, game_event_data *data, void *user)
 {
 	ang_file *fp;
 
@@ -1529,7 +1530,7 @@ static void show_splashscreen(ui_event_type type, ui_event_data *data, void *use
 /* ------------------------------------------------------------------------
  * Temporary (hopefully) hackish solutions.
  * ------------------------------------------------------------------------ */
-static void check_panel(ui_event_type type, ui_event_data *data, void *user)
+static void check_panel(game_event_type type, game_event_data *data, void *user)
 {
 	verify_panel();
 }
@@ -1541,27 +1542,27 @@ void init_display(void)
 {
 	/* Because of the "flexible" sidebar, all these things trigger
 	   the same function. */
-	ui_event_register_set(player_events, N_ELEMENTS(player_events),
+	event_add_handler_set(player_events, N_ELEMENTS(player_events),
 			      update_sidebar, NULL);
 
 	/* The flexible statusbar has similar requirements, so is
 	   also trigger by a large set of events. */
-	ui_event_register_set(statusline_events, N_ELEMENTS(statusline_events),
+	event_add_handler_set(statusline_events, N_ELEMENTS(statusline_events),
 			      update_statusline, NULL);
 
 	/* Player HP can optionally change the colour of the '@' now. */
-	ui_event_register(ui_HP_CHANGED, hp_colour_change, NULL);
+	event_add_handler(EVENT_HP, hp_colour_change, NULL);
 
 	/* Simplest way to keep the map up to date - will do for now */
-	ui_event_register(ui_MAP_CHANGED, update_maps, angband_term[0]);
+	event_add_handler(EVENT_MAP, update_maps, angband_term[0]);
 #if 0
-	ui_event_register(ui_MAP_CHANGED, trace_map_updates, angband_term[0]);
+	event_add_handler(EVENT_MAP, trace_map_updates, angband_term[0]);
 #endif
 	/* Check if the panel should shift when the player's moved */
-	ui_event_register(ui_PLAYER_MOVED, check_panel, NULL);
+	event_add_handler(EVENT_PLAYERMOVED, check_panel, NULL);
 
 
 	/* Set up our splashscreen handlers */
-	ui_event_register(ui_ENTER_INIT, show_splashscreen, NULL);
-	ui_event_register(ui_INIT_STATUS, splashscreen_note, NULL);
+	event_add_handler(EVENT_ENTER_INIT, show_splashscreen, NULL);
+	event_add_handler(EVENT_INITSTATUS, splashscreen_note, NULL);
 }

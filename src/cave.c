@@ -1250,7 +1250,7 @@ void note_spot(int y, int x)
  */
 void lite_spot(int y, int x)
 {
-	ui_event_signal_point(ui_MAP_CHANGED, x, y);
+	event_signal_point(EVENT_MAP, x, y);
 }
 
 
