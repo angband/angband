@@ -20,7 +20,7 @@
 
 #include <assert.h>
 #include "z-virt.h"
-#include "ui-event.h"
+#include "game-event.h"
 
 struct event_handler_entry;
 struct event_handler_entry

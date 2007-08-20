@@ -35,6 +35,7 @@ ANGFILES = \
 	effects.o \
 	files.o \
 	game-cmd.o \
+	game-event.o \
 	generate.o \
 	init1.o \
 	init2.o \
@@ -61,7 +62,6 @@ ANGFILES = \
 	tables.o \
 	trap.o \
 	ui.o \
-	ui-event.o \
 	util.o  \
 	variable.o \
 	wizard1.o \

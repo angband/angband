@@ -14,7 +14,7 @@
 #include "init.h"
 #include "cmds.h"
 #include "option.h"
-#include "ui-event.h"
+#include "game-event.h"
 #include "game-cmd.h"
 
 /*

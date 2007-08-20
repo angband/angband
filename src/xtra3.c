@@ -19,7 +19,7 @@
  */
 
 #include "angband.h"
-#include "ui-event.h"
+#include "game-event.h"
 
 
 /* 

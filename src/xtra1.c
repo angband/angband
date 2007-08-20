@@ -17,7 +17,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-#include "ui-event.h"
+#include "game-event.h"
 
 struct flag_event_trigger
 {
