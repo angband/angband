@@ -12,7 +12,7 @@
 #define INCLUDED_Z_TERM_H
 
 #include "h-basic.h"
-
+#include "ui-event.h"
 
 
 /*
@@ -55,49 +55,6 @@ struct term_win
 
 	term_win *next;
 };
-
-
-/*
- * Event record for general input
- * Note that there are currently no event subtypes.
- */
-
-typedef enum 
-{
-	EVT_NONE		= 0x0,
-	EVT_ESCAPE		= 0x0001,		/* Synonym for KBRD + key = ESCAPE */
-	EVT_KBRD		= 0x0002,		/* keypress */
-	EVT_MOUSE		= 0x0004,		/* mousepress */
-	EVT_BACK		= 0x0008,		/* Up one level in heirarchical menus. */
-	EVT_MOVE		= 0x0010,		/* menu movement */
-	EVT_SELECT		= 0x0020,		/* Menu selection */
-	EVT_BUTTON		= 0x0040,		/* button press */
-	EVT_CMD			= 0x0080,		/* Command key execute */
-	EVT_OK			= 0x0100,		/* Callback successful */
-									/* For example, a command key action. */
-	EVT_REFRESH		= 0x0200,		/* Display refresh */
-	EVT_RESIZE		= 0x0400,		/* Display resize */
-
-	EVT_AGAIN		= 0x4000000,	/* Retry notification */
-	EVT_STOP		= 0x8000000		/* Loop stopped (never handled) */
-
-} event_class;
-
-#ifdef RISCOS
-#define event_type ang_event_type
-#endif
-
-typedef struct event_type event_type;
-
-struct event_type
-{
-	event_class type;
-	byte mousex, mousey;
-	char key; 
-	short index;
-};
-
-#define EVENT_EMPTY		{ EVT_NONE, 0, 0, 0, 0 }
 
 
 /*
@@ -228,7 +185,7 @@ struct term
 	byte attr_blank;
 	char char_blank;
 
-	event_type *key_queue;
+	ui_event_data *key_queue;
 
 	u16b key_head;
 	u16b key_tail;
@@ -375,8 +332,8 @@ extern errr Term_flush(void);
 extern errr Term_mousepress(int x, int y, char button);
 extern errr Term_keypress(int k);
 extern errr Term_key_push(int k);
-extern errr Term_event_push(const event_type *ke);
-extern errr Term_inkey(event_type *ch, bool wait, bool take);
+extern errr Term_event_push(const ui_event_data *ke);
+extern errr Term_inkey(ui_event_data *ch, bool wait, bool take);
 
 extern errr Term_save(void);
 extern errr Term_load(void);

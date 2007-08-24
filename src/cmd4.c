@@ -19,7 +19,7 @@
 #include "angband.h"
 #include "option.h"
 #include "ui.h"
-
+#include "ui-menu.h"
 
 
 static void do_cmd_pref_file_hack(long row);
@@ -203,7 +203,7 @@ const char *feature_group_text[] =
 static void display_visual_list(int col, int row, int height, int width,
 				byte attr_top, char char_left);
 
-static bool visual_mode_command(event_type ke, bool *visual_list_ptr, 
+static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr, 
 				int height, int width, 
 				byte *attr_top_ptr, char *char_left_ptr, 
 				byte *cur_attr_ptr, char *cur_char_ptr,
@@ -478,7 +478,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 	o_funcs.is_visual = FALSE;
 
-	menu_init(&group_menu, MN_SCROLL, MN_STRING, &group_region);
+	menu_init(&group_menu, MN_SCROLL, MN_STRINGS, &group_region);
 	menu_init2(&object_menu, find_menu_skin(MN_SCROLL), &object_iter, &object_region);
 
 
@@ -487,7 +487,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	/* with "pop-up menu" for lore */
 	while ((!flag) && (grp_cnt))
 	{
-		event_type ke, ke0;
+		ui_event_data ke, ke0;
 
 		if (redraw)
 		{
@@ -776,7 +776,7 @@ static void place_visual_list_cursor(int col, int row, byte a, byte c, byte attr
 /*
  *  Do visual mode command -- Change symbols
  */
-static bool visual_mode_command(event_type ke, bool *visual_list_ptr, 
+static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr, 
 				int height, int width, 
 				byte *attr_top_ptr, char *char_left_ptr, 
 				byte *cur_attr_ptr, char *cur_char_ptr,
@@ -1931,7 +1931,7 @@ void do_cmd_redraw(void)
  */
 void do_cmd_change_name(void)
 {
-	event_type ke;
+	ui_event_data ke;
 
 	int mode = 0;
 
@@ -2039,7 +2039,7 @@ void do_cmd_message_one(void)
  */
 void do_cmd_messages(void)
 {
-	event_type ke;
+	ui_event_data ke;
 
 	int i, j, n, q;
 	int wid, hgt;
@@ -2337,7 +2337,7 @@ static void do_cmd_options_aux(void *vpage, cptr info)
 
 	while (TRUE)
 	{
-		event_type cx;
+		ui_event_data cx;
 
 		cx = menu_select(menu, &cursor_pos, EVT_MOVE);
 
@@ -2375,7 +2375,7 @@ static void do_cmd_options_win(void)
 	int y = 0;
 	int x = 0;
 
-	event_type ke;
+	ui_event_data ke;
 
 	u32b new_flags[ANGBAND_TERM_MAX];
 
@@ -2986,7 +2986,7 @@ static void keymap_dump(ang_file *fff)
  * CLEANUP
  */
 
-static event_action macro_actions[] =
+static menu_action macro_actions[] =
 {
 	{LOAD_PREF, "Load a user pref file", 0},
 #ifdef ALLOW_MACROS
@@ -3030,7 +3030,7 @@ void do_cmd_macros(void)
 	/* Process requests until done */
 	while (1)
 	{
-		event_type c;
+		ui_event_data c;
 		int evt;
 
 		/* Clear screen */
@@ -3503,7 +3503,7 @@ int modify_attribute(const char *clazz, int oid, const char *name,
 	return cx;
 }
 
-event_action visual_menu_items [] =
+menu_action visual_menu_items [] =
 {
 	{ LOAD_PREF, "Load a user pref file", 0, 0},
 	{ DUMP_MON,  "Dump monster attr/chars", 0, 0},
@@ -3535,7 +3535,7 @@ void do_cmd_visuals(void)
 	/* Interact until done */
 	while (1)
 	{
-		event_type key;
+		ui_event_data key;
 		int evt = -1;
 		clear_from(0);
 		key = menu_select(&visual_menu, &cursor, EVT_CMD);
@@ -3681,7 +3681,7 @@ void do_cmd_visuals(void)
 }
 
 
-static event_action color_events [] =
+static menu_action color_events [] =
 {
 	{LOAD_PREF, "Load a user pref file", 0, 0},
 #ifdef ALLOW_COLORS
@@ -3709,7 +3709,7 @@ void do_cmd_colors(void)
 	/* Interact until done */
 	while (1)
 	{
-		event_type key;
+		ui_event_data key;
 		int evt;
 		clear_from(0);
 		key = menu_select(&color_menu, &cursor, EVT_CMD);
@@ -3950,7 +3950,7 @@ static void do_dump_options(void *unused, const char *title)
  * XXX Too many entries.
  */
 
-static event_action option_actions [] = 
+static menu_action option_actions [] = 
 {
 	{'1', "Interface options", do_cmd_options_aux, (void*)0}, 
 	{'2', "Display options", do_cmd_options_aux, (void*)1},
@@ -4014,7 +4014,7 @@ static const menu_iter options_iter =
 void do_cmd_options(void)
 {
 	int cursor = 0;
-	event_type c = EVENT_EMPTY;
+	ui_event_data c = EVENT_EMPTY;
 
 	screen_save();
 	menu_layout(&option_menu, &SCREEN_REGION);
@@ -4071,7 +4071,7 @@ void do_cmd_knowledge(void)
 {
 	int cursor = 0;
 	int i;
-	event_type c = EVENT_EMPTY;
+	ui_event_data c = EVENT_EMPTY;
 	region knowledge_region = { 0, 0, -1, 11 };
 
 	/* Grey out menu items that won't display anything */
@@ -4157,7 +4157,7 @@ void init_cmd4_c(void)
 	menu->selections = default_choice;
 	menu->menu_data = macro_actions;
 	menu->count = N_ELEMENTS(macro_actions);
-	menu_init(menu, MN_SCROLL, MN_EVT, &SCREEN_REGION);
+	menu_init(menu, MN_SCROLL, MN_ACTIONS, &SCREEN_REGION);
 
 	/* visuals menu */
 	menu = &visual_menu;
@@ -4168,7 +4168,7 @@ void init_cmd4_c(void)
 	menu->selections = default_choice;
 	menu->menu_data = visual_menu_items;
 	menu->count = N_ELEMENTS(visual_menu_items);
-	menu_init(menu, MN_SCROLL, MN_EVT, &SCREEN_REGION);
+	menu_init(menu, MN_SCROLL, MN_ACTIONS, &SCREEN_REGION);
 
 	/* colors menu */
 	menu = &color_menu;
@@ -4179,7 +4179,7 @@ void init_cmd4_c(void)
 	menu->selections = default_choice;
 	menu->menu_data = color_events;
 	menu->count = N_ELEMENTS(color_events);
-	menu_init(menu, MN_SCROLL, MN_EVT, &SCREEN_REGION);
+	menu_init(menu, MN_SCROLL, MN_ACTIONS, &SCREEN_REGION);
 
 	/* knowledge menu */
 	menu = &knowledge_menu;
@@ -4188,7 +4188,7 @@ void init_cmd4_c(void)
 	menu->title = "Display current knowledge";
 	menu->menu_data = knowledge_actions;
 	menu->count = N_ELEMENTS(knowledge_actions),
-	menu_init(menu, MN_SCROLL, MN_ACT, &SCREEN_REGION);
+	menu_init(menu, MN_SCROLL, MN_ITEMS, &SCREEN_REGION);
 
 	/* initialize other static variables */
 	if (!obj_group_order)

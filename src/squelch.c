@@ -18,7 +18,7 @@
  */
 #include "angband.h"
 #include "cmds.h"
-
+#include "ui-menu.h"
 
 /*
  * The squelch code has a long history.  Originally it started out as a simple
@@ -603,7 +603,7 @@ static bool quality_action(char cmd, void *db, int oid)
 	menu_type menu;
 	menu_iter menu_f = { 0, 0, 0, quality_subdisplay, quality_subaction };
 	region area = { 24, 5, 26, SQUELCH_MAX };
-	event_type evt;
+	ui_event_data evt;
 	int cursor;
 
 	/* Display at the right point */
@@ -642,7 +642,7 @@ static void quality_menu(void *unused, const char *also_unused)
 	menu_type menu;
 	menu_iter menu_f = { 0, 0, 0, quality_display, quality_action };
 	region area = { 1, 5, -1, -1 };
-	event_type evt = EVENT_EMPTY;
+	ui_event_data evt = EVENT_EMPTY;
 	int cursor = 0;
 
 	/* Save screen */
@@ -723,7 +723,7 @@ static bool sval_menu(int tval, const char *desc)
 	menu_type menu;
 	menu_iter menu_f = { 0, 0, 0, sval_display, sval_action };
 	region area = { 1, 5, -1, -1 };
-	event_type evt = { EVT_NONE, 0, 0, 0, 0 };
+	ui_event_data evt = { EVT_NONE, 0, 0, 0, 0 };
 	int cursor = 0;
 
 	int num = 0;
@@ -915,7 +915,7 @@ static const menu_iter options_item_iter =
 void do_cmd_options_item(void *unused, cptr title)
 {
 	int cursor = 0;
-	event_type c = EVENT_EMPTY;
+	ui_event_data c = EVENT_EMPTY;
 	const char cmd_keys[] = { ARROW_LEFT, ARROW_RIGHT, '\0' };
 
 	menu_type menu;

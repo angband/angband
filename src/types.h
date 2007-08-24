@@ -935,7 +935,7 @@ struct player_type
 	s16b command_rep;		/* Gives repetition of current command */
 	s16b command_dir;		/* Gives direction of current command */
 	int  command_inv;		/* Gives item of current command */
-	event_type command_cmd_ex; /* Gives additional information of current command */
+	ui_event_data command_cmd_ex; /* Gives additional information of current command */
 
 	s16b command_see;		/* See "cmd1.c" */
 	s16b command_wrk;		/* See "cmd1.c" */
@@ -1101,6 +1101,13 @@ struct flavor_type
 	byte x_attr;    /* Desired flavor attribute */
 	char x_char;    /* Desired flavor character */
 };
+
+/* ============= Defines a visual grouping ============ */
+typedef struct
+{
+	byte tval;
+	cptr name;
+} grouper;
 
 /* Information for object auto-inscribe */
 struct autoinscription

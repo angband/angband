@@ -2381,7 +2381,7 @@ static void target_set_interactive_prepare(int mode)
  *
  * This function must handle blindness/hallucination.
  */
-static event_type target_set_interactive_aux(int y, int x, int mode, cptr info)
+static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr info)
 {
 	s16b this_o_idx = 0, next_o_idx = 0;
 
@@ -2396,7 +2396,7 @@ static event_type target_set_interactive_aux(int y, int x, int mode, cptr info)
 	int floor_list[MAX_FLOOR_STACK];
 	int floor_num;
 
-	event_type query;
+	ui_event_data query;
 
 	char out_val[256];
 
@@ -2837,7 +2837,7 @@ bool target_set_interactive(int mode)
 
 	bool flag = TRUE;
 
-	event_type query;
+	ui_event_data query;
 
 	char info[80];
 
@@ -3213,7 +3213,7 @@ bool get_aim_dir(int *dp)
 {
 	int dir;
 
-	event_type ke;
+	ui_event_data ke;
 
 	cptr p;
 
@@ -3346,7 +3346,7 @@ bool get_rep_dir(int *dp)
 {
 	int dir;
 
-	event_type ke;
+	ui_event_data ke;
 
 	cptr p;
 

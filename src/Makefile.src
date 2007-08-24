@@ -62,6 +62,8 @@ ANGFILES = \
 	tables.o \
 	trap.o \
 	ui.o \
+	ui-event.o \
+	ui-menu.o \
 	util.o  \
 	variable.o \
 	wizard1.o \

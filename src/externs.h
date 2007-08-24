@@ -629,7 +629,7 @@ extern void place_trap(int y, int x);
 
 /* typeutils.c */
 void display_panel(const data_panel *panel, int count,
-					bool left_adj, const region *bounds);
+		   bool left_adj, const region *bounds);
 
 /* util.c */
 extern void text_to_ascii(char *buf, size_t len, cptr str);
@@ -642,7 +642,7 @@ extern errr macro_trigger_free(void);
 extern void flush(void);
 extern void flush_fail(void);
 extern char inkey(void);
-extern event_type inkey_ex(void);
+extern ui_event_data inkey_ex(void);
 extern char anykey(void);
 extern void bell(cptr reason);
 extern void sound(int val);
@@ -669,7 +669,7 @@ extern bool get_string(cptr prompt, char *buf, size_t len);
 extern s16b get_quantity(cptr prompt, int max);
 extern bool get_check(cptr prompt);
 extern bool get_com(cptr prompt, char *command);
-extern bool get_com_ex(cptr prompt, event_type *command);
+extern bool get_com_ex(cptr prompt, ui_event_data *command);
 extern void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp);
 extern void pause_line(int row);
 extern void request_command(void);

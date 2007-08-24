@@ -789,11 +789,11 @@ static bool parse_under = FALSE;
  * macro trigger, 500 milliseconds must pass before the key sequence is
  * known not to be that macro trigger.  XXX XXX XXX
  */
-static event_type inkey_aux(void)
+static ui_event_data inkey_aux(void)
 {
 	int k = 0, n, p = 0, w = 0;
 	
-	event_type ke, ke0;
+	ui_event_data ke, ke0;
 	char ch;
 	
 	cptr pat, act;
@@ -1026,11 +1026,11 @@ char (*inkey_hack)(int flush_first) = NULL;
  * Mega-Hack -- Note the use of "inkey_hack" to allow the "Borg" to steal
  * control of the keyboard from the user.
  */
-event_type inkey_ex(void)
+ui_event_data inkey_ex(void)
 {
 	bool cursor_state;
-	event_type kk;
-	event_type ke;
+	ui_event_data kk;
+	ui_event_data ke;
 	
 	bool done = FALSE;
 	
@@ -1266,7 +1266,7 @@ event_type inkey_ex(void)
  */
 char anykey(void)
 {
-	event_type ke = EVENT_EMPTY;
+	ui_event_data ke = EVENT_EMPTY;
   
 	/* Only accept a keypress or mouse click*/
 	do
@@ -1282,7 +1282,7 @@ char anykey(void)
  */
 char inkey(void)
 {
-	event_type ke = EVENT_EMPTY;
+	ui_event_data ke = EVENT_EMPTY;
 
 	/* Only accept a keypress */
 	do
@@ -2428,7 +2428,7 @@ bool get_check(cptr prompt)
  */
 bool get_com(cptr prompt, char *command)
 {
-	event_type ke;
+	ui_event_data ke;
 	bool result;
 
 	result = get_com_ex(prompt, &ke);
@@ -2438,9 +2438,9 @@ bool get_com(cptr prompt, char *command)
 }
 
 
-bool get_com_ex(cptr prompt, event_type *command)
+bool get_com_ex(cptr prompt, ui_event_data *command)
 {
-	event_type ke;
+	ui_event_data ke;
 
 	/* Paranoia XXX XXX XXX */
 	message_flush();
@@ -2508,7 +2508,7 @@ void request_command(void)
 	int i;
 	int mode;
 
-	event_type ke = EVENT_EMPTY;
+	ui_event_data ke = EVENT_EMPTY;
 
 	cptr act;
 

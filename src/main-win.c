@@ -2446,7 +2446,7 @@ static void windows_map_aux(void)
 static void windows_map(void)
 {
 	term_data *td = &data[0];
-	event_type ch;
+	ui_event_data ch;
 
 	/* Only in graphics mode since the fonts can't be scaled */
 	if (!use_graphics) return;

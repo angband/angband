@@ -17,7 +17,7 @@
  */
 #include "angband.h"
 #include "cmds.h"
-
+#include "ui-menu.h"
 
 /*
  * This file contains (several) big lists of commands, so that they can be
@@ -462,7 +462,7 @@ static bool cmd_menu(command_list *list, void *selection_p)
 	menu_iter commands_menu = { 0, 0, 0, cmd_sub_entry, cmd_sub_action };
 	region area = { 23, 4, 37, 13 };
 
-	event_type evt;
+	ui_event_data evt;
 	int cursor = 0;
 	command_type *selection = selection_p;
 
@@ -527,7 +527,7 @@ static void do_cmd_menu(void)
 	menu_iter commands_menu = { 0, 0, 0, cmd_list_entry, cmd_list_action };
 	region area = { 21, 5, 37, 6 };
 
-	event_type evt;
+	ui_event_data evt;
 	int cursor = 0;
 	command_type chosen_command = { NULL, 0, NULL };
 

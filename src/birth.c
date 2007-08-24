@@ -10,7 +10,7 @@
 
 #include "angband.h"
 #include "cmds.h"
-
+#include "ui-menu.h"
 
 
 /*
@@ -799,7 +799,7 @@ static bool handler_aux(char cmd, int oid, byte *val, int max, int mask, cptr to
 /* GENDER */
 /* Display a gender */
 static void display_gender(menu_type *menu, int oid, bool cursor,
-							int row, int col, int width)
+			   int row, int col, int width)
 {
 	byte attr = curs_attrs[CURS_KNOWN][0 != cursor];
 	c_put_str(attr, sex_info[oid].title, row, col);
@@ -813,7 +813,7 @@ static bool gender_handler(char cmd, void *db, int oid)
 
 /* RACE */
 static void display_race(menu_type *menu, int oid, bool cursor,
-						int row, int col, int width)
+			 int row, int col, int width)
 {
 	byte attr = curs_attrs[CURS_KNOWN][0 != cursor];
 	c_put_str(attr, p_name + p_info[oid].name, row, col);
@@ -827,7 +827,7 @@ static bool race_handler(char cmd, void *db, int oid)
 
 /* CLASS */
 static void display_class(menu_type *menu, int oid, bool cursor,
-							int row, int col, int width)
+			  int row, int col, int width)
 {
 	byte attr = curs_attrs[0 != (rp_ptr->choice & (1L << oid))][0 != cursor];
 	c_put_str(attr, c_name + c_info[oid].name, row, col);
@@ -841,7 +841,7 @@ static bool class_handler(char cmd, void *db, int oid)
 
 /* ROLLER */
 static void display_roller(menu_type *menu, int oid, bool cursor,
-							int row, int col, int width)
+			   int row, int col, int width)
 {
 	byte attr = curs_attrs[CURS_KNOWN][0 != cursor];
 	const char *str;
@@ -952,7 +952,7 @@ static bool choose_character(bool start_at_end)
 
 	while (i < (int)N_ELEMENTS(menu_defs))
 	{
-		event_type cx;
+		ui_event_data cx;
 		int cursor = *values[i];
 
 		menu.flags = MN_DBL_TAP;

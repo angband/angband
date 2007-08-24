@@ -18,7 +18,7 @@
  */
 #include "angband.h"
 #include "cmds.h"
-
+#include "ui-menu.h"
 
 /*** Constants and definitions ***/
 
@@ -2659,7 +2659,7 @@ void do_cmd_store(void)
 	const menu_iter *cur_menu = &store_menu;
 
 	menu_type menu;
-	event_type evt = EVENT_EMPTY;
+	ui_event_data evt = EVENT_EMPTY;
 	int cursor = 0;
 
 	store_type *st_ptr = &store[store_current];
