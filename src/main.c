@@ -31,7 +31,6 @@
 #include "main.h"
 #include "game-cmd.h"
 
-
 /*
  * List of the available modules in the order they are tried.
  */
@@ -457,10 +456,11 @@ int main(int argc, char *argv[])
 	signals_init();
 
 	/* Set up the command hooks */
-	get_game_command = get_init_cmd;
+	if (get_game_command == NULL)
+		get_game_command = get_init_cmd;
 
 	/* Set up the display handlers and things. */
-	init_display();      
+	init_display();   
 
 	/* Play the game */
 	play_game();

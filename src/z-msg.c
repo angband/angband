@@ -19,9 +19,6 @@
 #include "z-term.h"
 #include "z-msg.h"
 
-/* Maximum number of messages to remember */
-#define MESSAGE_MAX		2048
-
 typedef struct _message_t
 {
 	char *str;
@@ -44,6 +41,7 @@ typedef struct _msgqueue_t
 	message_t *tail;
 	msgcolor_t *colors;
 	u32b count;
+	u32b max;
 } msgqueue_t;
 
 static msgqueue_t *messages = NULL;
@@ -52,6 +50,7 @@ static msgqueue_t *messages = NULL;
 errr messages_init(void)
 {
 	messages = ZNEW(msgqueue_t);
+	messages->max = 2048;
 	return 0;
 }
 
@@ -108,11 +107,11 @@ void message_add(const char *str, u16b type)
 	messages->count++;
 	messages->head = m;
 
-	if (messages->count > MESSAGE_MAX)
+	if (messages->count > messages->max)
 	{
 		message_t *m = messages->tail;
-		FREE(m->str);
 		messages->tail = m->prev;
+		FREE(m->str);
 		FREE(m);
 		messages->count--;
 	}
@@ -187,14 +186,19 @@ errr message_color_define(u16b type, byte color)
 
 byte message_type_color(u16b type)
 {
-	msgcolor_t *mc = messages->colors;
+	msgcolor_t *mc;
 	byte color = TERM_WHITE;
 
-	while (mc && mc->type != type)
-		mc = mc->next;
+	if (messages)
+	{
+		mc = messages->colors;
 
-	if (mc && (mc->color != TERM_DARK))
-		color = mc->color;
+		while (mc && mc->type != type)
+			mc = mc->next;
+
+		if (mc && (mc->color != TERM_DARK))
+			color = mc->color;
+	}
 
 	return color;
 }

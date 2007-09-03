@@ -8,14 +8,12 @@
 VERSION = 3.0.9
 
 HDRS = h-basic.h
-INCS = angband.h config.h defines.h externs.h types.h option.h \
+INCS = angband.h config.h defines.h externs.h types.h option.h main-gtk.h cairo-utils.h \
        z-term.h z-rand.h z-type.h z-util.h z-virt.h z-form.h
-
-HEADERS = $(HDRS) $(INCS)
 
 ZFILES = z-file.o z-form.o z-msg.o z-quark.o z-rand.o z-term.o z-type.o \
          z-util.o z-virt.o z-blockfile.o z-smap.o 
-MAINFILES = main.o maid-x11.o main-crb.o main-gcu.o main-gtk.o \
+MAINFILES = main.o maid-x11.o main-crb.o main-gcu.o main-gtk.o cairo-utils.o \
             main-ros.o main-sdl.o main-win.o main-x11.o main-xaw.o snd-sdl.o
 
 ANGFILES = \

@@ -82,7 +82,7 @@ LIBS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
 
 
 # Object definitions
-X11OBJS = maid-x11.o main-x11.o main-xaw.o main-gtk.o
+X11OBJS = maid-x11.o main-x11.o main-xaw.o main-gtk.o cairo-utils.o
 MAINOBJS = main.o main-gcu.o main-sdl.o snd-sdl.o $(X11OBJS)
 OBJS = $(BASEOBJS) $(MAINOBJS)
 

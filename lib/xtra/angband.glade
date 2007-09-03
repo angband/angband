@@ -4,20 +4,25 @@
 <glade-interface>
 
 <widget class="GtkWindow" id="main-window">
-  <property name="visible">True</property>
+  <property name="can_focus">True</property>
+  <property name="has_focus">True</property>
+  <property name="events">GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK | GDK_STRUCTURE_MASK | GDK_PROPERTY_CHANGE_MASK | GDK_VISIBILITY_NOTIFY_MASK</property>
   <property name="title" translatable="yes">Angband</property>
   <property name="type">GTK_WINDOW_TOPLEVEL</property>
   <property name="window_position">GTK_WIN_POS_NONE</property>
   <property name="modal">False</property>
+  <property name="default_width">800</property>
+  <property name="default_height">453</property>
   <property name="resizable">True</property>
   <property name="destroy_with_parent">False</property>
   <property name="decorated">True</property>
   <property name="skip_taskbar_hint">False</property>
   <property name="skip_pager_hint">False</property>
-  <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
-  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_TOOLBAR</property>
+  <property name="gravity">GDK_GRAVITY_STATIC</property>
   <property name="focus_on_map">True</property>
   <property name="urgency_hint">False</property>
+  <signal name="button_press_event" handler="on_mouse_click"/>
   <signal name="key_press_event" handler="keypress_event_handler"/>
   <signal name="delete_event" handler="delete_event_handler"/>
   <signal name="destroy_event" handler="destroy_event_handler"/>
@@ -31,6 +36,7 @@
       <child>
 	<widget class="GtkMenuBar" id="menubar1">
 	  <property name="visible">True</property>
+	  <property name="can_focus">True</property>
 	  <property name="pack_direction">GTK_PACK_DIRECTION_LTR</property>
 	  <property name="child_pack_direction">GTK_PACK_DIRECTION_LTR</property>
 
@@ -66,7 +72,7 @@
 		      <property name="visible">True</property>
 		      <property name="label">gtk-save</property>
 		      <property name="use_stock">True</property>
-		      <signal name="activate" handler="save_event_handler" last_modification_time="Sat, 12 May 2007 23:44:03 GMT"/>
+		      <signal name="activate" handler="save_event_handler"/>
 		    </widget>
 		  </child>
 
@@ -99,10 +105,209 @@
 		<widget class="GtkMenu" id="options_menu_menu">
 
 		  <child>
+		    <widget class="GtkMenuItem" id="graphics_menu">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">_Graphics</property>
+		      <property name="use_underline">True</property>
+
+		      <child>
+			<widget class="GtkMenu" id="graphics_menu_menu">
+
+			  <child>
+			    <widget class="GtkCheckMenuItem" id="none_gr_item">
+			      <property name="visible">True</property>
+			      <property name="label" translatable="yes">None</property>
+			      <property name="use_underline">True</property>
+			      <property name="active">False</property>
+			      <signal name="activate" handler="on_no_graphics_activate"/>
+			    </widget>
+			  </child>
+
+			  <child>
+			    <widget class="GtkCheckMenuItem" id="old_gr_item">
+			      <property name="visible">True</property>
+			      <property name="label" translatable="yes">Old</property>
+			      <property name="use_underline">True</property>
+			      <property name="active">False</property>
+			      <signal name="activate" handler="on_old_graphics_activate"/>
+			    </widget>
+			  </child>
+
+			  <child>
+			    <widget class="GtkCheckMenuItem" id="adam_bolt_gr_item">
+			      <property name="visible">True</property>
+			      <property name="label" translatable="yes">Adam Bolt</property>
+			      <property name="use_underline">True</property>
+			      <property name="active">False</property>
+			      <signal name="activate" handler="on_adam_bolt_graphics_activate"/>
+			    </widget>
+			  </child>
+
+			  <child>
+			    <widget class="GtkCheckMenuItem" id="david_gervais_gr_item">
+			      <property name="visible">True</property>
+			      <property name="label" translatable="yes">David Gervais</property>
+			      <property name="use_underline">True</property>
+			      <property name="active">False</property>
+			      <signal name="activate" handler="on_david_gervais_graphics_activate"/>
+			    </widget>
+			  </child>
+			</widget>
+		      </child>
+		    </widget>
+		  </child>
+
+		  <child>
 		    <widget class="GtkMenuItem" id="font_menu_item">
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">Font...</property>
 		      <property name="use_underline">True</property>
+		    </widget>
+		  </child>
+		</widget>
+	      </child>
+	    </widget>
+	  </child>
+
+	  <child>
+	    <widget class="GtkMenuItem" id="view_menu">
+	      <property name="visible">True</property>
+	      <property name="label" translatable="yes">_View</property>
+	      <property name="use_underline">True</property>
+
+	      <child>
+		<widget class="GtkMenu" id="view_menu_menu">
+
+		  <child>
+		    <widget class="GtkCheckMenuItem" id="term_menu_item_1">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">_Term Window 1</property>
+		      <property name="use_underline">True</property>
+		      <property name="active">False</property>
+		      <signal name="activate" handler="on_window_toggle"/>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkCheckMenuItem" id="term_menu_item_2">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">_Term Window 2</property>
+		      <property name="use_underline">True</property>
+		      <property name="active">False</property>
+		      <signal name="activate" handler="on_window_toggle"/>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkCheckMenuItem" id="term_menu_item_3">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">_Term Window 3</property>
+		      <property name="use_underline">True</property>
+		      <property name="active">False</property>
+		      <signal name="activate" handler="on_window_toggle"/>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkCheckMenuItem" id="term_menu_item_4">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">_Term Window 4</property>
+		      <property name="use_underline">True</property>
+		      <property name="active">False</property>
+		      <signal name="activate" handler="on_window_toggle"/>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkCheckMenuItem" id="term_menu_item_5">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">_Term Window 5</property>
+		      <property name="use_underline">True</property>
+		      <property name="active">False</property>
+		      <signal name="activate" handler="on_window_toggle"/>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkCheckMenuItem" id="term_menu_item_6">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">_Term Window 6</property>
+		      <property name="use_underline">True</property>
+		      <property name="active">False</property>
+		      <signal name="activate" handler="on_window_toggle"/>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkCheckMenuItem" id="term_menu_item_7">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">_Term Window 7</property>
+		      <property name="use_underline">True</property>
+		      <property name="active">False</property>
+		      <signal name="activate" handler="on_window_toggle"/>
+		    </widget>
+		  </child>
+		</widget>
+	      </child>
+	    </widget>
+	  </child>
+
+	  <child>
+	    <widget class="GtkMenuItem" id="testing_menu">
+	      <property name="visible">True</property>
+	      <property name="label" translatable="yes">_Testing</property>
+	      <property name="use_underline">True</property>
+
+	      <child>
+		<widget class="GtkMenu" id="testing_menu_menu">
+
+		  <child>
+		    <widget class="GtkCheckMenuItem" id="messages_item">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">_Messages</property>
+		      <property name="use_underline">True</property>
+		      <property name="active">False</property>
+		      <signal name="activate" handler="toggle_message_window" last_modification_time="Sun, 26 Aug 2007 01:29:48 GMT"/>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkCheckMenuItem" id="inv_item">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">_Inventory</property>
+		      <property name="use_underline">True</property>
+		      <property name="active">False</property>
+		      <signal name="activate" handler="toggle_inv_window" last_modification_time="Sun, 26 Aug 2007 07:18:03 GMT"/>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkCheckMenuItem" id="equip_item">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">_Equipment</property>
+		      <property name="use_underline">True</property>
+		      <property name="active">False</property>
+		      <signal name="activate" handler="toggle_equip_window" last_modification_time="Sun, 26 Aug 2007 07:18:03 GMT"/>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkCheckMenuItem" id="monst_list_item">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">_Monster List</property>
+		      <property name="use_underline">True</property>
+		      <property name="active">False</property>
+		      <signal name="activate" handler="toggle_monst_list_window" last_modification_time="Sun, 26 Aug 2007 07:18:03 GMT"/>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkCheckMenuItem" id="debug_item">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">_Debug</property>
+		      <property name="use_underline">True</property>
+		      <property name="active">False</property>
+		      <signal name="activate" handler="toggle_debug_window" last_modification_time="Sun, 26 Aug 2007 07:18:03 GMT"/>
 		    </widget>
 		  </child>
 		</widget>
@@ -120,79 +325,14 @@
       <child>
 	<widget class="GtkDrawingArea" id="drawingarea1">
 	  <property name="visible">True</property>
+	  <property name="can_default">True</property>
+	  <property name="has_default">True</property>
+	  <signal name="expose_event" handler="expose_event_handler" object="td"/>
 	</widget>
 	<packing>
 	  <property name="padding">0</property>
 	  <property name="expand">True</property>
 	  <property name="fill">True</property>
-	</packing>
-      </child>
-    </widget>
-  </child>
-</widget>
-
-<widget class="GtkFileChooserDialog" id="file-chooser">
-  <property name="action">GTK_FILE_CHOOSER_ACTION_OPEN</property>
-  <property name="local_only">True</property>
-  <property name="select_multiple">False</property>
-  <property name="show_hidden">True</property>
-  <property name="do_overwrite_confirmation">False</property>
-  <property name="type">GTK_WINDOW_TOPLEVEL</property>
-  <property name="window_position">GTK_WIN_POS_NONE</property>
-  <property name="modal">False</property>
-  <property name="resizable">True</property>
-  <property name="destroy_with_parent">False</property>
-  <property name="decorated">True</property>
-  <property name="skip_taskbar_hint">False</property>
-  <property name="skip_pager_hint">False</property>
-  <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
-  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
-  <property name="focus_on_map">True</property>
-  <property name="urgency_hint">False</property>
-
-  <child internal-child="vbox">
-    <widget class="GtkVBox" id="dialog-vbox1">
-      <property name="visible">True</property>
-      <property name="homogeneous">False</property>
-      <property name="spacing">24</property>
-
-      <child internal-child="action_area">
-	<widget class="GtkHButtonBox" id="dialog-action_area1">
-	  <property name="visible">True</property>
-	  <property name="layout_style">GTK_BUTTONBOX_END</property>
-
-	  <child>
-	    <widget class="GtkButton" id="button1">
-	      <property name="visible">True</property>
-	      <property name="can_default">True</property>
-	      <property name="can_focus">True</property>
-	      <property name="label">gtk-cancel</property>
-	      <property name="use_stock">True</property>
-	      <property name="relief">GTK_RELIEF_NORMAL</property>
-	      <property name="focus_on_click">True</property>
-	      <property name="response_id">-6</property>
-	    </widget>
-	  </child>
-
-	  <child>
-	    <widget class="GtkButton" id="button2">
-	      <property name="visible">True</property>
-	      <property name="can_default">True</property>
-	      <property name="has_default">True</property>
-	      <property name="can_focus">True</property>
-	      <property name="label">gtk-open</property>
-	      <property name="use_stock">True</property>
-	      <property name="relief">GTK_RELIEF_NORMAL</property>
-	      <property name="focus_on_click">True</property>
-	      <property name="response_id">-5</property>
-	    </widget>
-	  </child>
-	</widget>
-	<packing>
-	  <property name="padding">0</property>
-	  <property name="expand">False</property>
-	  <property name="fill">True</property>
-	  <property name="pack_type">GTK_PACK_END</property>
 	</packing>
       </child>
     </widget>
@@ -222,7 +362,7 @@
       <property name="can_focus">True</property>
       <property name="relief">GTK_RELIEF_NORMAL</property>
       <property name="focus_on_click">True</property>
-      <signal name="clicked" handler="gtk_true" last_modification_time="Thu, 28 Jun 2007 09:00:54 GMT"/>
+      <signal name="clicked" handler="gtk_widget_hide" object="font-window"/>
     </widget>
   </child>
 
@@ -233,7 +373,6 @@
       <property name="can_focus">True</property>
       <property name="relief">GTK_RELIEF_NORMAL</property>
       <property name="focus_on_click">True</property>
-      <signal name="clicked" handler="font_selector" last_modification_time="Sat, 12 May 2007 23:44:17 GMT"/>
     </widget>
   </child>
 
@@ -244,7 +383,6 @@
       <property name="can_focus">True</property>
       <property name="relief">GTK_RELIEF_NORMAL</property>
       <property name="focus_on_click">True</property>
-      <signal name="clicked" handler="font_selector" last_modification_time="Sat, 12 May 2007 23:43:36 GMT"/>
     </widget>
   </child>
 
@@ -263,6 +401,52 @@
 </widget>
 
 <widget class="GtkWindow" id="term-window">
+  <property name="can_focus">True</property>
+  <property name="events">GDK_EXPOSURE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_FOCUS_CHANGE_MASK | GDK_STRUCTURE_MASK | GDK_PROPERTY_CHANGE_MASK | GDK_VISIBILITY_NOTIFY_MASK</property>
+  <property name="title" translatable="yes"></property>
+  <property name="type">GTK_WINDOW_TOPLEVEL</property>
+  <property name="window_position">GTK_WIN_POS_NONE</property>
+  <property name="modal">False</property>
+  <property name="resizable">True</property>
+  <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">False</property>
+  <property name="skip_pager_hint">False</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_TOOLBAR</property>
+  <property name="gravity">GDK_GRAVITY_STATIC</property>
+  <property name="focus_on_map">True</property>
+  <property name="urgency_hint">False</property>
+  <signal name="key_press_event" handler="keypress_event_handler"/>
+  <signal name="hide" handler="gtk_false"/>
+  <signal name="delete_event" handler="delete_event_handler"/>
+  <signal name="destroy_event" handler="hide_event_handler"/>
+
+  <child>
+    <widget class="GtkTable" id="table1">
+      <property name="visible">True</property>
+      <property name="n_rows">1</property>
+      <property name="n_columns">1</property>
+      <property name="homogeneous">False</property>
+      <property name="row_spacing">0</property>
+      <property name="column_spacing">0</property>
+
+      <child>
+	<widget class="GtkDrawingArea" id="drawingarea2">
+	  <property name="visible">True</property>
+	  <signal name="expose_event" handler="expose_event_handler" object="td"/>
+	</widget>
+	<packing>
+	  <property name="left_attach">0</property>
+	  <property name="right_attach">1</property>
+	  <property name="top_attach">0</property>
+	  <property name="bottom_attach">1</property>
+	</packing>
+      </child>
+    </widget>
+  </child>
+</widget>
+
+<widget class="GtkWindow" id="status_window">
   <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
   <property name="title" translatable="yes"></property>
   <property name="type">GTK_WINDOW_TOPLEVEL</property>
@@ -277,14 +461,329 @@
   <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="focus_on_map">True</property>
   <property name="urgency_hint">False</property>
-  <signal name="key_press_event" handler="keypress_event_handler"/>
-  <signal name="delete_event" handler="delete_event_handler"/>
-  <signal name="destroy_event" handler="hide_event_handler"/>
+  <signal name="destroy_event" handler="gtk_widget_hide" last_modification_time="Mon, 27 Aug 2007 02:45:05 GMT"/>
 
   <child>
-    <widget class="GtkDrawingArea" id="drawingarea2">
+    <widget class="GtkHPaned" id="hpaned1">
       <property name="visible">True</property>
-      <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+      <property name="can_focus">True</property>
+
+      <child>
+	<widget class="GtkLabel" id="label1">
+	  <property name="visible">True</property>
+	  <property name="label" translatable="yes">Name
+Race
+Title
+Class
+Level
+XP
+Gold
+equip
+STR
+INT
+WIS
+DEX
+CON
+CHR
+
+AC
+HP
+SP
+
+Monster HP
+Dungeon level</property>
+	  <property name="use_underline">False</property>
+	  <property name="use_markup">False</property>
+	  <property name="justify">GTK_JUSTIFY_LEFT</property>
+	  <property name="wrap">False</property>
+	  <property name="selectable">False</property>
+	  <property name="xalign">0.5</property>
+	  <property name="yalign">0.5</property>
+	  <property name="xpad">0</property>
+	  <property name="ypad">0</property>
+	  <property name="ellipsize">PANGO_ELLIPSIZE_NONE</property>
+	  <property name="width_chars">-1</property>
+	  <property name="single_line_mode">False</property>
+	  <property name="angle">0</property>
+	</widget>
+	<packing>
+	  <property name="shrink">True</property>
+	  <property name="resize">False</property>
+	</packing>
+      </child>
+
+      <child>
+	<widget class="GtkTextView" id="status_window">
+	  <property name="visible">True</property>
+	  <property name="can_focus">True</property>
+	  <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+	  <property name="editable">True</property>
+	  <property name="overwrite">False</property>
+	  <property name="accepts_tab">True</property>
+	  <property name="justification">GTK_JUSTIFY_LEFT</property>
+	  <property name="wrap_mode">GTK_WRAP_NONE</property>
+	  <property name="cursor_visible">True</property>
+	  <property name="pixels_above_lines">0</property>
+	  <property name="pixels_below_lines">0</property>
+	  <property name="pixels_inside_wrap">0</property>
+	  <property name="left_margin">0</property>
+	  <property name="right_margin">0</property>
+	  <property name="indent">0</property>
+	  <property name="text" translatable="yes"></property>
+	</widget>
+	<packing>
+	  <property name="shrink">True</property>
+	  <property name="resize">True</property>
+	</packing>
+      </child>
+    </widget>
+  </child>
+</widget>
+
+<widget class="GtkWindow" id="message_window">
+  <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+  <property name="title" translatable="yes">Messages</property>
+  <property name="type">GTK_WINDOW_TOPLEVEL</property>
+  <property name="window_position">GTK_WIN_POS_NONE</property>
+  <property name="modal">False</property>
+  <property name="default_width">200</property>
+  <property name="default_height">500</property>
+  <property name="resizable">True</property>
+  <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">True</property>
+  <property name="skip_pager_hint">True</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
+  <property name="focus_on_map">True</property>
+  <property name="urgency_hint">False</property>
+  <signal name="destroy_event" handler="gtk_widget_hide" object="message_window" last_modification_time="Mon, 27 Aug 2007 02:48:04 GMT"/>
+
+  <child>
+    <widget class="GtkScrolledWindow" id="scrolledwindow1">
+      <property name="visible">True</property>
+      <property name="can_focus">True</property>
+      <property name="hscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+      <property name="vscrollbar_policy">GTK_POLICY_AUTOMATIC</property>
+      <property name="shadow_type">GTK_SHADOW_NONE</property>
+      <property name="window_placement">GTK_CORNER_TOP_LEFT</property>
+
+      <child>
+	<widget class="GtkTextView" id="message_text">
+	  <property name="visible">True</property>
+	  <property name="can_focus">True</property>
+	  <property name="events">GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+	  <property name="editable">False</property>
+	  <property name="overwrite">False</property>
+	  <property name="accepts_tab">False</property>
+	  <property name="justification">GTK_JUSTIFY_LEFT</property>
+	  <property name="wrap_mode">GTK_WRAP_NONE</property>
+	  <property name="cursor_visible">False</property>
+	  <property name="pixels_above_lines">0</property>
+	  <property name="pixels_below_lines">0</property>
+	  <property name="pixels_inside_wrap">0</property>
+	  <property name="left_margin">0</property>
+	  <property name="right_margin">0</property>
+	  <property name="indent">0</property>
+	  <property name="text" translatable="yes"></property>
+	</widget>
+      </child>
+    </widget>
+  </child>
+</widget>
+
+<widget class="GtkWindow" id="inv_window">
+  <property name="title" translatable="yes">Inventory</property>
+  <property name="type">GTK_WINDOW_TOPLEVEL</property>
+  <property name="window_position">GTK_WIN_POS_NONE</property>
+  <property name="modal">False</property>
+  <property name="default_width">200</property>
+  <property name="default_height">500</property>
+  <property name="resizable">True</property>
+  <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">True</property>
+  <property name="skip_pager_hint">True</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
+  <property name="focus_on_map">True</property>
+  <property name="urgency_hint">False</property>
+
+  <child>
+    <widget class="GtkScrolledWindow" id="scrolledwindow2">
+      <property name="visible">True</property>
+      <property name="can_focus">True</property>
+      <property name="hscrollbar_policy">GTK_POLICY_ALWAYS</property>
+      <property name="vscrollbar_policy">GTK_POLICY_ALWAYS</property>
+      <property name="shadow_type">GTK_SHADOW_IN</property>
+      <property name="window_placement">GTK_CORNER_TOP_LEFT</property>
+
+      <child>
+	<widget class="GtkTextView" id="inv_text">
+	  <property name="visible">True</property>
+	  <property name="can_focus">True</property>
+	  <property name="editable">False</property>
+	  <property name="overwrite">False</property>
+	  <property name="accepts_tab">False</property>
+	  <property name="justification">GTK_JUSTIFY_LEFT</property>
+	  <property name="wrap_mode">GTK_WRAP_NONE</property>
+	  <property name="cursor_visible">False</property>
+	  <property name="pixels_above_lines">0</property>
+	  <property name="pixels_below_lines">0</property>
+	  <property name="pixels_inside_wrap">0</property>
+	  <property name="left_margin">0</property>
+	  <property name="right_margin">0</property>
+	  <property name="indent">0</property>
+	  <property name="text" translatable="yes"></property>
+	</widget>
+      </child>
+    </widget>
+  </child>
+</widget>
+
+<widget class="GtkWindow" id="equip_window">
+  <property name="title" translatable="yes">Equipment</property>
+  <property name="type">GTK_WINDOW_TOPLEVEL</property>
+  <property name="window_position">GTK_WIN_POS_NONE</property>
+  <property name="modal">False</property>
+  <property name="default_width">200</property>
+  <property name="default_height">500</property>
+  <property name="resizable">True</property>
+  <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">True</property>
+  <property name="skip_pager_hint">True</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
+  <property name="focus_on_map">True</property>
+  <property name="urgency_hint">False</property>
+
+  <child>
+    <widget class="GtkScrolledWindow" id="scrolledwindow3">
+      <property name="visible">True</property>
+      <property name="can_focus">True</property>
+      <property name="hscrollbar_policy">GTK_POLICY_ALWAYS</property>
+      <property name="vscrollbar_policy">GTK_POLICY_ALWAYS</property>
+      <property name="shadow_type">GTK_SHADOW_IN</property>
+      <property name="window_placement">GTK_CORNER_TOP_LEFT</property>
+
+      <child>
+	<widget class="GtkTextView" id="equip_text">
+	  <property name="visible">True</property>
+	  <property name="can_focus">True</property>
+	  <property name="editable">False</property>
+	  <property name="overwrite">False</property>
+	  <property name="accepts_tab">False</property>
+	  <property name="justification">GTK_JUSTIFY_LEFT</property>
+	  <property name="wrap_mode">GTK_WRAP_NONE</property>
+	  <property name="cursor_visible">False</property>
+	  <property name="pixels_above_lines">0</property>
+	  <property name="pixels_below_lines">0</property>
+	  <property name="pixels_inside_wrap">0</property>
+	  <property name="left_margin">0</property>
+	  <property name="right_margin">0</property>
+	  <property name="indent">0</property>
+	  <property name="text" translatable="yes"></property>
+	</widget>
+      </child>
+    </widget>
+  </child>
+</widget>
+
+<widget class="GtkWindow" id="monst_list_window">
+  <property name="title" translatable="yes">Monster List</property>
+  <property name="type">GTK_WINDOW_TOPLEVEL</property>
+  <property name="window_position">GTK_WIN_POS_NONE</property>
+  <property name="modal">False</property>
+  <property name="default_width">175</property>
+  <property name="default_height">500</property>
+  <property name="resizable">True</property>
+  <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">True</property>
+  <property name="skip_pager_hint">True</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
+  <property name="focus_on_map">True</property>
+  <property name="urgency_hint">False</property>
+
+  <child>
+    <widget class="GtkScrolledWindow" id="scrolledwindow4">
+      <property name="visible">True</property>
+      <property name="can_focus">True</property>
+      <property name="hscrollbar_policy">GTK_POLICY_ALWAYS</property>
+      <property name="vscrollbar_policy">GTK_POLICY_ALWAYS</property>
+      <property name="shadow_type">GTK_SHADOW_IN</property>
+      <property name="window_placement">GTK_CORNER_TOP_LEFT</property>
+
+      <child>
+	<widget class="GtkTextView" id="monst_list_text">
+	  <property name="visible">True</property>
+	  <property name="can_focus">True</property>
+	  <property name="editable">False</property>
+	  <property name="overwrite">False</property>
+	  <property name="accepts_tab">False</property>
+	  <property name="justification">GTK_JUSTIFY_LEFT</property>
+	  <property name="wrap_mode">GTK_WRAP_NONE</property>
+	  <property name="cursor_visible">False</property>
+	  <property name="pixels_above_lines">0</property>
+	  <property name="pixels_below_lines">0</property>
+	  <property name="pixels_inside_wrap">0</property>
+	  <property name="left_margin">0</property>
+	  <property name="right_margin">0</property>
+	  <property name="indent">0</property>
+	  <property name="text" translatable="yes"></property>
+	</widget>
+      </child>
+    </widget>
+  </child>
+</widget>
+
+<widget class="GtkWindow" id="debug_window">
+  <property name="title" translatable="yes">Debug</property>
+  <property name="type">GTK_WINDOW_TOPLEVEL</property>
+  <property name="window_position">GTK_WIN_POS_NONE</property>
+  <property name="modal">False</property>
+  <property name="default_width">500</property>
+  <property name="default_height">200</property>
+  <property name="resizable">True</property>
+  <property name="destroy_with_parent">False</property>
+  <property name="decorated">True</property>
+  <property name="skip_taskbar_hint">True</property>
+  <property name="skip_pager_hint">True</property>
+  <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
+  <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
+  <property name="focus_on_map">True</property>
+  <property name="urgency_hint">False</property>
+
+  <child>
+    <widget class="GtkScrolledWindow" id="scrolledwindow5">
+      <property name="visible">True</property>
+      <property name="can_focus">True</property>
+      <property name="hscrollbar_policy">GTK_POLICY_ALWAYS</property>
+      <property name="vscrollbar_policy">GTK_POLICY_ALWAYS</property>
+      <property name="shadow_type">GTK_SHADOW_IN</property>
+      <property name="window_placement">GTK_CORNER_TOP_LEFT</property>
+
+      <child>
+	<widget class="GtkTextView" id="debug_text">
+	  <property name="visible">True</property>
+	  <property name="can_focus">True</property>
+	  <property name="editable">False</property>
+	  <property name="overwrite">False</property>
+	  <property name="accepts_tab">False</property>
+	  <property name="justification">GTK_JUSTIFY_LEFT</property>
+	  <property name="wrap_mode">GTK_WRAP_NONE</property>
+	  <property name="cursor_visible">False</property>
+	  <property name="pixels_above_lines">0</property>
+	  <property name="pixels_below_lines">0</property>
+	  <property name="pixels_inside_wrap">0</property>
+	  <property name="left_margin">0</property>
+	  <property name="right_margin">0</property>
+	  <property name="indent">0</property>
+	  <property name="text" translatable="yes"></property>
+	</widget>
+      </child>
     </widget>
   </child>
 </widget>
