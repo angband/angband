@@ -1510,14 +1510,17 @@ static void show_splashscreen(game_event_type type, game_event_data *data, void 
 	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "news.txt");
 	fp = file_open(buf, MODE_READ, -1);
 
+	text_out_hook = text_out_to_screen;
+
 	/* Dump */
 	if (fp)
 	{
-		int i = 0;
-
 		/* Dump the file to the screen */
 		while (file_getl(fp, buf, sizeof(buf)))
-			Term_putstr(0, i++, -1, TERM_WHITE, buf);
+		{
+			text_out_e(buf);
+			text_out("\n");
+		}
 
 		file_close(fp);
 	}

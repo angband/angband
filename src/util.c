@@ -1983,6 +1983,154 @@ void text_out_c(byte a, const char *fmt, ...)
 	text_out_hook(a, buf);
 }
 
+/*
+ * Given a "formatted" chunk of text (i.e. one including tags like {red}{/})
+ * in 'source', with starting point 'init', this finds the next section of
+ * text and any tag that goes with it, return TRUE if it finds something to 
+ * print.
+ * 
+ * If it returns TRUE, then it also fills 'text' with a pointer to the start
+ * of the next printable section of text, and 'len' with the length of that 
+ * text, and 'end' with a pointer to the start of the next section.  This
+ * may differ from "text + len" because of the presence of tags.  If a tag
+ * applies to the section of text, it returns a pointer to the start of that
+ * tag in 'tag' and the length in 'taglen'.  Otherwise, 'tag' is filled with
+ * NULL.
+ *
+ * See text_out_e for an example of its use.
+ */
+bool next_section(const char *source, size_t init, const char **text, size_t *len, const char **tag, size_t *taglen, const char **end)
+{
+	const char *next;	
+
+	*tag = NULL;
+	*text = source + init;
+	if (*text[0] == '\0') return FALSE;
+
+	next = strchr(*text, '{');
+	while (next)
+	{
+		const char *s = next + 1;
+
+		while (*s && isalpha((unsigned char) *s)) s++;
+
+		/* Woo!  valid opening tag thing */
+		if (*s == '}')
+		{
+			const char *close = strstr(s, "{/}");
+
+			/* There's a closing thing, so it's valid. */
+			if (close)
+			{
+				/* If this tag is at the start of the fragment */
+				if (next == *text)
+				{
+					*tag = *text + 1;
+					*taglen = s - *text - 1;
+					*text = s + 1;
+					*len = close - *text;
+					*end = close + 3;
+					return TRUE;
+				}
+				/* Otherwise return the chunk up to this */
+				else
+				{
+					*len = next - *text;
+					*end = *text + *len;
+					return TRUE;
+				}
+			}
+			/* No closing thing, therefore all one lump of text. */
+			else
+			{
+				*len = strlen(*text);
+				*end = *text + *len;
+				return TRUE;
+			}
+		}
+		/* End of the string, that's fine. */
+		else if (*s == '\0')
+		{
+				*len = strlen(*text);
+				*end = *text + *len;
+				return TRUE;
+		}
+		/* An invalid tag, skip it. */
+		else
+		{
+			next = next + 1;
+		}
+
+		next = strchr(next, '{');
+	}
+
+	/* Default to the rest of the string */
+	*len = strlen(*text);
+	*end = *text + *len;
+
+	return TRUE;
+}
+
+/*
+ * Output text to the screen or to a file depending on the
+ * selected hook.  Takes strings with "embedded formatting",
+ * such that something within {red}{/} will be printed in red.
+ *
+ * Note that such formatting will be treated as a "breakpoint"
+ * for the printing, so if used within words may lead to part of the
+ * word being moved to the next line.
+ */
+void text_out_e(const char *fmt, ...)
+{
+	char buf[1024];
+	char smallbuf[1024];
+	va_list vp;
+
+	char *start;
+	const char *next, *text, *tag;
+	size_t textlen, taglen;
+
+	/* Begin the Varargs Stuff */
+	va_start(vp, fmt);
+
+	/* Do the va_arg fmt to the buffer */
+	(void)vstrnfmt(buf, sizeof(buf), fmt, vp);
+
+	/* End the Varargs Stuff */
+	va_end(vp);
+
+	start = buf;
+	while (next_section(start, 0, &text, &textlen, &tag, &taglen, &next))
+	{
+		int a = -1;
+
+		memcpy(smallbuf, text, textlen);
+		smallbuf[textlen] = 0;
+
+		if (tag)
+		{
+			char tagbuffer[11];
+
+			/* Colour names are less than 11 characters long. */
+			assert(taglen < 11);
+
+			memcpy(tagbuffer, tag, taglen);
+			tagbuffer[taglen] = '\0';
+
+			a = color_text_to_attr(tagbuffer);
+		}
+		
+		if (a == -1) 
+			a = TERM_WHITE;
+
+		/* Output now */
+		text_out_hook(a, smallbuf);
+
+		start = next;
+	}
+}
+
+
 
 /*
  * Clear part of the screen
