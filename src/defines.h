@@ -1411,7 +1411,7 @@ enum
 /*
  * Maximum flow depth when using "MONSTER_FLOW"
  */
-#define MONSTER_FLOW_DEPTH 3
+#define MONSTER_FLOW_DEPTH 32
 
 
 
