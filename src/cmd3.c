@@ -36,7 +36,9 @@ void do_cmd_inven(void)
 	item_tester_full = FALSE;
 
 	/* Prompt for a command */
-	prt("(Inventory) Command: ", 0, 0);
+	prt(format("(Inventory) Burden %d.%dlb (%d%% capacity). Command: ",
+	    p_ptr->total_weight / 10, p_ptr->total_weight % 10,
+	    (10 * p_ptr->total_weight) / (6 * adj_str_wgt[p_ptr->stat_ind[A_STR]])), 0, 0);
 
 	/* Hack -- Get a new command */
 	p_ptr->command_new = inkey();
