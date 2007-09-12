@@ -15,7 +15,7 @@ dnl Check for C compiler
 AC_LANG([C])
 AC_PROG_CC
 
-test "$GCC" = "yes" && CFLAGS="$CFLAGS -Wall -pipe -g -fno-strength-reduce"
+test "$GCC" = "yes" && CFLAGS="$CFLAGS -fno-strength-reduce -Wall"
 
 dnl Checks for various programs
 AC_PROG_INSTALL
@@ -243,4 +243,16 @@ if test "$enable_sdl" = "yes"; then
 	fi
 else
 	echo "- SDL                                     Disabled"
+fi
+
+echo
+
+if test "$enable_sdl_mixer" = "yes"; then
+	if test "$found_sdl_mixer" = "no"; then
+		echo "- SDL sound                               No; missing libraries"
+	else
+		echo "- SDL sound                               Yes"
+	fi
+else
+	echo "- SDL sound                               Disabled"
 fi
