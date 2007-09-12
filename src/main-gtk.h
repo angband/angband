@@ -15,13 +15,8 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#include "angband.h"
-
-#ifdef USE_GTK
-
-#ifndef MAIN_GTK_H
-#define MAIN_GTK_H
-#endif
+#ifndef INCLUDED_MAIN_GTK_H
+#define INCLUDED_MAIN_GTK_H
 
 #include "main.h"
 #include "cairo-utils.h"
@@ -366,4 +361,6 @@ static errr term_data_init(term_data *td, int i);
 
 /* Init gtk */
 errr init_gtk(int argc, char **argv);
-#endif
+
+#endif /* INCLUDED_MAIN_GTK_H */
+
