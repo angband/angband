@@ -6,7 +6,7 @@
 {yellow}                 /_/   \_\_| |_|\__, |_.__/ \__,_|_| |_|\__,_|{/}
 {yellow}                                |___/                         {/}  
 
-                                Version 3.0.9                 
+                                Version 3.1.0
                        Bug reports to <bugs@rephial.org>
 
    For resources and links to places you can talk about the game, please see:
