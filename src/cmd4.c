@@ -3952,23 +3952,23 @@ static void do_dump_options(void *unused, const char *title)
 
 static menu_action option_actions [] = 
 {
-	{'1', "Interface options", do_cmd_options_aux, (void*)0}, 
-	{'2', "Display options", do_cmd_options_aux, (void*)1},
-	{'3', "Warning and disturbance options", do_cmd_options_aux, (void*)2}, 
-	{'4', "Birth (difficulty) options", do_cmd_options_aux, (void*)3}, 
-	{'5', "Cheat options", do_cmd_options_aux, (void*)4}, 
+	{'a', "Interface options", do_cmd_options_aux, (void*)0}, 
+	{'b', "Display options", do_cmd_options_aux, (void*)1},
+	{'c', "Warning and disturbance options", do_cmd_options_aux, (void*)2}, 
+	{'d', "Birth (difficulty) options", do_cmd_options_aux, (void*)3}, 
+	{'e', "Cheat options", do_cmd_options_aux, (void*)4}, 
 	{0, 0, 0, 0}, /* Load and append */
-	{'W', "Subwindow display settings", (action_f) do_cmd_options_win, 0}, 
-	{'S', "Item squelch settings", (action_f) do_cmd_options_item, 0}, 
-	{'D', "Set base delay factor", (action_f) do_cmd_delay, 0}, 
-	{'H', "Set hitpoint warning", (action_f) do_cmd_hp_warn, 0}, 
+	{'w', "Subwindow display settings", (action_f) do_cmd_options_win, 0}, 
+	{'s', "Item squelch settings", (action_f) do_cmd_options_item, 0}, 
+	{'d', "Set base delay factor", (action_f) do_cmd_delay, 0}, 
+	{'h', "Set hitpoint warning", (action_f) do_cmd_hp_warn, 0}, 
 	{0, 0, 0, 0}, /* Special choices */
-	{'L', "Load a user pref file", (action_f) do_cmd_pref_file_hack, (void*)20},
-	{'A', "Dump options", do_dump_options, 0}, 
+	{'l', "Load a user pref file", (action_f) do_cmd_pref_file_hack, (void*)20},
+	{'o', "Dump options", do_dump_options, 0}, 
 	{0, 0, 0, 0}, /* Interact with */	
-	{'M', "Interact with macros (advanced)", (action_f) do_cmd_macros, 0},
-	{'V', "Interact with visuals (advanced)", (action_f) do_cmd_visuals, 0},
-	{'C', "Interact with colours (advanced)", (action_f) do_cmd_colors, 0},
+	{'m', "Interact with macros (advanced)", (action_f) do_cmd_macros, 0},
+	{'v', "Interact with visuals (advanced)", (action_f) do_cmd_visuals, 0},
+	{'c', "Interact with colours (advanced)", (action_f) do_cmd_colors, 0},
 };
 
 static menu_type option_menu;
@@ -4052,13 +4052,13 @@ static void do_cmd_knowledge_scores(void *obj, const char *name)
  */
 static menu_item knowledge_actions[] =
 {
-	{{0, "Display object knowledge", do_cmd_knowledge_objects, 0}, '1'},
-	{{0, "Display artifact knowledge", do_cmd_knowledge_artifacts, 0}, '2'},
-	{{0, "Display ego item knowledge", do_cmd_knowledge_ego_items, 0}, '3'},
-	{{0, "Display monster knowledge", do_cmd_knowledge_monsters, 0}, '4'},
-	{{0, "Display feature knowledge", do_cmd_knowledge_features, 0}, '5'},
-	{{0, "Display self-knowledge", do_cmd_self_knowledge, 0}, '6'},
-	{{0, "Display hall of fame", do_cmd_knowledge_scores, 0}, '7'},
+	{{0, "Display object knowledge", do_cmd_knowledge_objects, 0}, 'a'},
+	{{0, "Display artifact knowledge", do_cmd_knowledge_artifacts, 0}, 'b'},
+	{{0, "Display ego item knowledge", do_cmd_knowledge_ego_items, 0}, 'c'},
+	{{0, "Display monster knowledge", do_cmd_knowledge_monsters, 0}, 'd'},
+	{{0, "Display feature knowledge", do_cmd_knowledge_features, 0}, 'e'},
+	{{0, "Display self-knowledge", do_cmd_self_knowledge, 0}, 'f'},
+	{{0, "Display hall of fame", do_cmd_knowledge_scores, 0}, 'g'},
 };
 
 static menu_type knowledge_menu;
@@ -4154,7 +4154,7 @@ void init_cmd4_c(void)
 	menu_set_id(menu, MACRO_MENU);
 	menu->title = "Interact with macros";
 	menu->cmd_keys = cmd_keys;
-	menu->selections = default_choice;
+	menu->selections = lower_case;
 	menu->menu_data = macro_actions;
 	menu->count = N_ELEMENTS(macro_actions);
 	menu_init(menu, MN_SCROLL, MN_ACTIONS, &SCREEN_REGION);
@@ -4165,7 +4165,7 @@ void init_cmd4_c(void)
 	menu_set_id(menu, VISUAL_MENU);
 	menu->title = "Interact with visuals";
 	menu->cmd_keys = cmd_keys;
-	menu->selections = default_choice;
+	menu->selections = lower_case;
 	menu->menu_data = visual_menu_items;
 	menu->count = N_ELEMENTS(visual_menu_items);
 	menu_init(menu, MN_SCROLL, MN_ACTIONS, &SCREEN_REGION);
@@ -4176,7 +4176,7 @@ void init_cmd4_c(void)
 	menu_set_id(menu, COLOR_MENU);
 	menu->title = "Interact with colors";
 	menu->cmd_keys = cmd_keys;
-	menu->selections = default_choice;
+	menu->selections = lower_case;
 	menu->menu_data = color_events;
 	menu->count = N_ELEMENTS(color_events);
 	menu_init(menu, MN_SCROLL, MN_ACTIONS, &SCREEN_REGION);

@@ -20,9 +20,6 @@
 #include "ui-menu.h"
 
 /* Some useful constants */
-const char default_choice[] =
-	"1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-
 const char lower_case[] = "abcdefghijklmnopqrstuvwxyz";
 const char upper_case[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
