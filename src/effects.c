@@ -1337,13 +1337,13 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 
 		case EF_MON_CLONE:
 		{
-			if (fear_monster(dir, 10)) *ident = TRUE;
+			if (clone_monster(dir)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_MON_SCARE:
 		{
-			if (clone_monster(dir)) *ident = TRUE;
+			if (fear_monster(dir, 10)) *ident = TRUE;
 			return TRUE;
 		}
 
