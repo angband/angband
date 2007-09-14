@@ -240,41 +240,12 @@ static void py_pickup_gold(void)
  */
 static bool auto_pickup_okay(const object_type *o_ptr)
 {
-	const char *s;
+	if (!inven_carry_okay(o_ptr)) return FALSE;
 
-	/*** Negative checks ***/
+	if (OPT(pickup_inven) && inven_stack_okay(o_ptr)) return TRUE;
+	if (OPT(pickup_always) || check_for_inscrip(o_ptr, "=g")) return TRUE;
 
-	/* It can't be carried */
-	if (!inven_carry_okay(o_ptr)) return (FALSE);
-
-
-	/*** Positive checks ***/
-
-	/* Pickup if it matches the inventory */
-	if (pickup_inven && inven_stack_okay(o_ptr)) return (TRUE);
-
-	/* Vacuum up everything if requested */
-	if (pickup_always) return (TRUE);
-
-	/* Check inscription */
-	if (o_ptr->note)
-	{
-		/* Find a '=' */
-		s = strchr(quark_str(o_ptr->note), '=');
-
-		/* Process permissions */
-		while (s)
-		{
-			/* =g ('g'et) means auto pickup */
-			if (s[1] == 'g') return (TRUE);
-
-			/* Find another '=' */
-			s = strchr(s + 1, '=');
-		}
-	}
-
-	/* Don't auto pickup */
-	return (FALSE);
+	return FALSE;
 }
 
 
