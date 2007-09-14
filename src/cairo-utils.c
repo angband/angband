@@ -1,9 +1,9 @@
 /*
- * File: main-cairo.c
+ * File: cairo_utils.c
  * Purpose: Cairo calls for use in Angband ports
  * (Currently for the Gtk port, but should be reusable.)
  *
- * Copyright (c) 2007 Shanoah Alkire
+ * Copyright (c) 2000-2007 Robert Ruehlmann, Shanoah Alkire
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -16,10 +16,10 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#include "angband.h" 
+
+#include "angband.h"
 
 #ifdef USE_GTK
-
 #include "cairo-utils.h"
 
 void set_foreground_color(cairo_t *cr, byte a)
@@ -31,21 +31,6 @@ void set_foreground_color(cairo_t *cr, byte a)
 	blue  = angband_color_table[a][3] * 256;
 	
 	cairo_set_source_rgb(cr, red / 65536, green / 65536, blue / 65536);
-}
-
-const char * colour_as_text(byte a)
-{
-	unsigned int red, green, blue;
-	char* c, str[10] = "#FFFFFF";
-
-	c = str;
-	red   = angband_color_table[a][1];
-	green = angband_color_table[a][2];
-	blue  = angband_color_table[a][3];
-	
-	sprintf(str, "#%x%x%x", red, green, blue);
-	plog_fmt("Color: %s; %s", str);
-	return(c);
 }
 
 void init_cairo_rect(cairo_rectangle_t *r, int x, int y, int w, int h)
@@ -140,7 +125,7 @@ void cairo_draw_from_surface(cairo_t *cr, cairo_surface_t *surface, cairo_rectan
  */
 void draw_tiles(
 cairo_t *cr, int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp, 
-int font_h, int font_w, int tile_h, int tile_w)
+font_info font, measurements tile)
 {
 	cairo_rectangle_t char_rect;
 	cairo_matrix_t m;
@@ -151,21 +136,21 @@ int font_h, int font_w, int tile_h, int tile_w)
 	int cx, cy;
 	
 	/* Get a matrix set up to scale the graphics. */
-	m = cairo_font_scaling(cr, tile_w, tile_h, font_w, font_h);
+	m = cairo_font_scaling(cr, tile.w, tile.h, font.w, font.h);
 	
 	/* Get the current position, Minus cx, which changes for each iteration */
 	cx = 0;
-	cy = (y * font_h);
+	cy = (y * font.h);
 	
 	for (i = 0; i < n; i++)
 	{
 		/* Increment x 1 step */
-		cx += (x* font_w);
-		init_cairo_rect(&char_rect, cx, cy, font_w, font_h);
+		cx += (x* font.w);
+		init_cairo_rect(&char_rect, cx, cy, font.w, font.h);
 		
 		/* Get the terrain tile, scaled to the font size */
-		tx= (tcp[i] & 0x7F) * font_w;
-		ty = (tap[i] & 0x7F) * font_h;
+		tx= (tcp[i] & 0x7F) * font.w;
+		ty = (tap[i] & 0x7F) * font.h;
 		
 		draw_tile(cr, m, char_rect, tx, ty);
 	
@@ -173,10 +158,67 @@ int font_h, int font_w, int tile_h, int tile_w)
 		if ((tap[i] == ap[i]) && (tcp[i] == cp[i])) continue;
 		
 		/* Get the foreground tile size, scaled to the font size */
-		tx = (cp[i] & 0x7F) * font_w;
-		ty = (ap[i] & 0x7F) * font_h;
+		tx = (cp[i] & 0x7F) * font.w;
+		ty = (ap[i] & 0x7F) * font.h;
 	
 		draw_tile(cr, m, char_rect, tx, ty);
 	}
 }
-#endif
+
+void get_font_size(font_info *font)
+{
+	
+	PangoRectangle r;
+	PangoLayout *temp;
+	PangoFontDescription *temp_font;
+	
+	cairo_t *cr;
+	cairo_surface_t *surface;
+	
+	surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 200, 200);
+	cr = cairo_create(surface);
+	
+	temp = pango_cairo_create_layout(cr);
+	temp_font = pango_font_description_from_string(font->name);
+	
+	/* Draw an @, and measure it */
+	pango_layout_set_font_description(temp, temp_font);
+	
+	/* Voodoo for the toy api, if I want to re-enable it */
+	/*td->font_pt = (pango_font_description_get_size(temp_font) / (double)(PANGO_SCALE)) * (96.0 / 72.0);*/
+	
+	pango_layout_set_text(temp, "@", 1);
+	pango_cairo_show_layout(cr, temp);
+	pango_layout_get_pixel_extents(temp, NULL, &r);
+	
+	font->w = r.width;
+	font->h = r.height;
+
+	cairo_destroy(cr);
+	cairo_surface_destroy(surface);
+	g_object_unref(temp);
+}
+void draw_text(cairo_t *cr, font_info *font, int x, int y, int n, byte a, cptr s)
+{
+	cairo_rectangle_t r;
+	PangoLayout *layout;
+	PangoFontDescription *temp_font;
+	
+	init_cairo_rect(&r, x * font->w, y * font->h,  font->w * n, font->h);
+	
+	/* Create a PangoLayout, set the font and text */
+	layout = pango_cairo_create_layout(cr); 
+	
+	temp_font = pango_font_description_from_string(font->name);
+	set_foreground_color(cr, a);
+	pango_layout_set_text(layout, s, n);
+	pango_layout_set_font_description(layout, temp_font);
+	
+	/* Draw the text to the pixmap */
+	cairo_move_to(cr, r.x, r.y);
+	
+	pango_cairo_show_layout(cr, layout);
+	g_object_unref(G_OBJECT(layout));
+}
+
+#endif  /*USE_GTK */

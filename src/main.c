@@ -414,13 +414,6 @@ int main(int argc, char *argv[])
 	}
 
 
-	/* Process the player name */
-	process_player_name(TRUE);
-
-
-	/* Install "quit" hook */
-	quit_aux = quit_hook;
-
 	/* Try the modules in the order specified by modules[] */
 	for (i = 0; i < (int)N_ELEMENTS(modules); i++)
 	{
@@ -438,7 +431,14 @@ int main(int argc, char *argv[])
 
 	/* Make sure we have a display! */
 	if (!done) quit("Unable to prepare any 'display module'!");
+	
 
+	/* Process the player name */
+	if (ANGBAND_SYS != "gtk")
+		process_player_name(TRUE);
+
+	/* Install "quit" hook */
+	quit_aux = quit_hook;
 
 #ifdef USE_SOUND
 

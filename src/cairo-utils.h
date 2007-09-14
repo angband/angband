@@ -16,30 +16,54 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#ifndef INCLUDED_CAIRO_UTILS_H
+ 
+#include "angband.h"
+
+#ifndef INCLUDED_CAIRO_UTILS_H 
 #define INCLUDED_CAIRO_UTILS_H
 
-#include "cairo.h"
- 
+#include "cairo.h" 
+#include <gtk/gtk.h>
+
+typedef struct font_info font_info;
+typedef struct point point;
+typedef struct measurements measurements;
+struct font_info
+{
+	char name[256];
+	int w,h;
+};
+
+struct point
+{
+	int x,y;
+};
+
+struct measurements
+{
+	int w,h;
+};
+cairo_surface_t* graphical_tiles;
+cairo_pattern_t *tile_pattern;
+
 /* Set the current color */
 extern void set_foreground_color(cairo_t *cr, byte a);
-extern const char *colour_as_text(byte a);
-/* Set up a GdkRectangle easily */
-/*void init_gdk_rect(GdkRectangle *r, int x, int y, int w, int h);*/
+
+/* Set up a cairo rectangle easily */
 extern void init_cairo_rect(cairo_rectangle_t *r, int x, int y, int w, int h);
 
 /* Use it as a cairo rectangle */
-/*void c_rect(cairo_t *cr, GdkRectangle r);*/
 extern void c_rect(cairo_t *cr, cairo_rectangle_t r);
 
 extern cairo_matrix_t cairo_font_scaling(cairo_t *cr, double tile_w, double tile_h, double font_w, double font_h);
 extern void cairo_clear(cairo_t *cr, cairo_rectangle_t r, byte c);
 extern void cairo_cursor(cairo_t *cr, cairo_rectangle_t r, byte c);
 extern void draw_tile(cairo_t *cr, cairo_matrix_t m, cairo_rectangle_t r, int tx, int ty);
-extern void draw_tiles(cairo_t *cr, int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp, int font_h, int font_w, int tile_h, int tile_w);
-void cairo_draw_from_surface(cairo_t *cr, cairo_surface_t *surface, cairo_rectangle_t r);
-
-cairo_surface_t* graphical_tiles;
-cairo_pattern_t *tile_pattern;
-
-#endif /* INCLUDED_CAIRO_UTILS_H */
+extern void draw_tiles(
+cairo_t *cr, int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp, 
+font_info font, measurements tile);
+extern void cairo_draw_from_surface(cairo_t *cr, cairo_surface_t *surface, cairo_rectangle_t r);
+extern void init_cairo(cairo_t *cr, cairo_surface_t *surface, measurements size);
+extern void get_font_size(font_info *font);
+extern void draw_text(cairo_t *cr, font_info *font, int x, int y, int n, byte a, cptr s);
+#endif /* INCLUDED_CAIRO_UTILS_H*/
