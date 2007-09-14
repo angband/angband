@@ -5,7 +5,7 @@
  * Code for making, stocking, and populating levels when generated.  
  * Includes rooms of every kind, pits, vaults (inc. interpretation of 
  * vault.txt), streamers, tunnelling, etc.  Level feelings and other 
- * messages, autoscummer behavior.  Creation of the town.
+ * messages.  Creation of the town.
  *
  * Copyright (c) 1997-2001 Ben Harrison, James E. Wilson, Robert A. Koeneke
  * Copyright (c) 2006 Leon Marrick
@@ -5162,29 +5162,6 @@ void generate_cave(void)
 
 			/* Message */
 			okay = FALSE;
-		}
-
-		/* Mega-Hack -- "auto-scum" */
-		if (adult_autoscum && (num < 100))
-		{
-			/* Require "goodness" */
-			if ((feeling > 9) ||
-			    ((p_ptr->depth >= 5) && (feeling > 8)) ||
-			    ((p_ptr->depth >= 10) && (feeling > 7)) ||
-			    ((p_ptr->depth >= 20) && (feeling > 6)) ||
-			    ((p_ptr->depth >= 40) && (feeling > 5)))
-			{
-				/* Give message to cheaters */
-				if (cheat_room || cheat_hear ||
-				    cheat_peek || cheat_xtra)
-				{
-					/* Message */
-					why = "boring level";
-				}
-
-				/* Try again */
-				okay = FALSE;
-			}
 		}
 
 		/* Message */

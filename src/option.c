@@ -84,7 +84,6 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 	{
 		OPT_birth_maximize,
 		OPT_birth_randarts,
-		OPT_birth_autoscum,
 		OPT_birth_ironman,
 		OPT_birth_no_stores,
 		OPT_birth_no_artifacts,
@@ -259,7 +258,7 @@ static option_entry options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 127 */
 { "birth_maximize",      "Maximize effect of race/class bonuses",       TRUE },  /* 128 */
 { "birth_randarts",      "Randomize some of the artifacts (alpha)",     FALSE }, /* 129 */
-{ "birth_autoscum",      "Auto-scum for good levels",                   FALSE }, /* 130 */
+{ NULL,                  NULL,                                          FALSE }, /* 130 */
 { "birth_ironman",       "Restrict the use of stairs/recall",           FALSE }, /* 131 */
 { "birth_no_stores",     "Restrict the use of stores/home",             FALSE }, /* 132 */
 { "birth_no_artifacts",  "Restrict creation of artifacts",              FALSE }, /* 133 */
@@ -323,7 +322,7 @@ static option_entry options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 191 */
 { "adult_maximize",      "Adult: Maximize effect of race/class bonuses",  TRUE },  /* 192 */
 { "adult_randarts",      "Adult: Randomize some of the artifacts (beta)", FALSE }, /* 193 */
-{ "adult_autoscum",      "Adult: Auto-scum for good levels",            FALSE }, /* 194 */
+{ NULL,                  NULL,                                          FALSE }, /* 194 */
 { "adult_ironman",       "Adult: Restrict the use of stairs/recall",    FALSE }, /* 195 */
 { "adult_no_stores",     "Adult: Restrict the use of stores/home",      FALSE }, /* 196 */
 { "adult_no_artifacts",  "Adult: Restrict creation of artifacts",       FALSE }, /* 197 */

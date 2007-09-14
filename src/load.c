@@ -928,7 +928,7 @@ static void rd_options(void)
 		 * Slot	Old layout:	New layout:
 		 * 0	xxx			maximise
 		 * 1	xxx			randarts
-		 * 2	maximise	autoscum
+		 * 2	maximise	xxx
 		 * 3	preserve	ironman
 		 * 4	ironman		no_stores
 		 * 5	no_stores	no_artifacts
@@ -955,7 +955,6 @@ static void rd_options(void)
 		birth_no_stacking = adult_no_stacking = old_birth[8];
 
 		birth_no_stairs = adult_no_stairs = !OLD_OPT(41);
-		birth_autoscum = adult_autoscum = OLD_OPT(33);
 		birth_ai_sound = adult_ai_sound = OLD_OPT(42);
 		birth_ai_smell = adult_ai_smell = OLD_OPT(43);
 		birth_ai_packs = adult_ai_packs = OLD_OPT(73);
