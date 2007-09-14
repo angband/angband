@@ -441,6 +441,14 @@ static bool describe_misc_magic(const object_type *o_ptr, u32b f3)
 			text_out(", though this is reduced when running of out fuel");
 		text_out(".  ");
 
+		if (o_ptr->tval == TV_LITE)
+		{
+			const char *name = (o_ptr->sval == SV_LITE_TORCH) ? "torch" : "lantern";
+			int turns = (o_ptr->sval == SV_LITE_TORCH) ? FUEL_TORCH : FUEL_LAMP;
+
+			text_out("It can refill another %s, up to %d turns of fuel.  ", name, turns);
+		}
+
 		something = TRUE;
 	}
 
@@ -450,10 +458,6 @@ static bool describe_misc_magic(const object_type *o_ptr, u32b f3)
 	if (f3 & (TR3_SLOW_DIGEST)) good[gc++] = "slows your metabolism";
 	if (f3 & (TR3_FEATHER))     good[gc++] = "makes you fall like a feather";
 	if (f3 & (TR3_REGEN))       good[gc++] = "speeds your regeneration";
-
-	if ((o_ptr->tval == TV_LITE) || (f3 & TR3_LITE))
-		good[gc++] = "lights the dungeon around you";
-	if (f3 & TR3_NO_FUEL)       good[gc++] = "does not require fuel";
 
 	/* Describe */
 	if (gc)
