@@ -1636,28 +1636,6 @@ void object_desc_spoil(char *buf, size_t max, const object_type *o_ptr, int pref
 
 
 /*
- * Describe an item's random attributes for "character dumps"
- */
-void identify_random_gen(const object_type *o_ptr)
-{
-	/* Set hooks for character dump */
-	object_info_out_flags = object_flags_known;
-
-	/* Set the indent/wrap */
-	text_out_indent = 3;
-	text_out_wrap = 72;
-
-	/* Dump the info */
-	if (object_info_out(o_ptr))
-		text_out("\n");
-
-	/* Reset indent/wrap */
-	text_out_indent = 0;
-	text_out_wrap = 0;
-}
-
-
-/*
  * Convert an inventory index into a one character label.
  *
  * Note that the label does NOT distinguish inven/equip.

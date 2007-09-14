@@ -452,9 +452,6 @@ static void spoil_artifact(cptr fname)
 	text_out_hook = text_out_to_file;
 	text_out_file = fh;
 
-	/* Set object_info_out() hook */
-	object_info_out_flags = object_flags;
-
 	/* Dump the header */
 	spoiler_underline(format("Artifact Spoilers for %s %s",
 	                         VERSION_NAME, VERSION_STRING), '=');
@@ -495,7 +492,7 @@ static void spoil_artifact(cptr fname)
 			spoiler_underline(buf, '-');
 
 			/* Write out the artifact description to the spoiler file */
-			object_info_out(i_ptr);
+			object_info_full(i_ptr);
 
 			/*
 			 * Determine the minimum depth an artifact can appear, its rarity,

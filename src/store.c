@@ -2303,7 +2303,7 @@ static void store_examine(int item)
 	store_type *st_ptr = &store[store_current];
 	object_type *o_ptr;
 
-	if(item < 0) return;
+	if (item < 0) return;
 
 	/* Get the actual object */
 	o_ptr = &st_ptr->stock[item];
@@ -2311,7 +2311,14 @@ static void store_examine(int item)
 	/* Describe it fully */
 	Term_erase(0, 0, 255);
 	Term_gotoxy(0, 0);
-	object_info_screen(o_ptr);
+	object_info_full(o_ptr);
+
+	/* Hack -- Browse book, then prompt for a command */
+	if (o_ptr->tval == cp_ptr->spell_book)
+	{
+		/* Call the aux function */
+		do_cmd_browse_aux(o_ptr);
+	}
 }
 
 

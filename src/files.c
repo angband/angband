@@ -1879,6 +1879,11 @@ errr file_character(cptr name, bool full)
 		file_putf(fp, "\n\n");
 	}
 
+
+	/* Set the indent/wrap */
+	text_out_indent = 3;
+	text_out_wrap = 72;
+
 	/* Dump the equipment */
 	if (p_ptr->equip_cnt)
 	{
@@ -1886,11 +1891,9 @@ errr file_character(cptr name, bool full)
 		for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 		{
 			object_desc(o_name, sizeof(o_name), &inventory[i], TRUE, 3);
-			file_putf(fp, "%c) %s\n",
-			        index_to_label(i), o_name);
 
-			/* Describe random object attributes */
-			identify_random_gen(&inventory[i]);
+			file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
+			object_info_known(&inventory[i]);
 		}
 		file_putf(fp, "\n\n");
 	}
@@ -1902,11 +1905,9 @@ errr file_character(cptr name, bool full)
 		if (!inventory[i].k_idx) break;
 
 		object_desc(o_name, sizeof(o_name), &inventory[i], TRUE, 3);
-		file_putf(fp, "%c) %s\n",
-		        index_to_label(i), o_name);
 
-		/* Describe random object attributes */
-		identify_random_gen(&inventory[i]);
+		file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
+		object_info_known(&inventory[i]);
 	}
 	file_putf(fp, "\n\n");
 
@@ -1923,13 +1924,14 @@ errr file_character(cptr name, bool full)
 			object_desc(o_name, sizeof(o_name), &st_ptr->stock[i], TRUE, 3);
 			file_putf(fp, "%c) %s\n", I2A(i), o_name);
 
-			/* Describe random object attributes */
-			identify_random_gen(&st_ptr->stock[i]);
+			object_info_known(&st_ptr->stock[i]);
 		}
 
 		/* Add an empty line */
 		file_putf(fp, "\n\n");
 	}
+
+	text_out_indent = text_out_wrap = 0;
 
 
 	/* Dump options */
@@ -2928,9 +2930,6 @@ static void show_info(void)
 static void death_examine(void)
 {
 	int item;
-
-	object_type *o_ptr;
-
 	cptr q, s;
 
 
@@ -2941,18 +2940,26 @@ static void death_examine(void)
 	q = "Examine which item? ";
 	s = "You have nothing to examine.";
 
-	while (TRUE)
+	while (get_item(&item, q, s, (USE_INVEN | USE_EQUIP)))
 	{
-		if (!get_item(&item, q, s, (USE_INVEN | USE_EQUIP))) return;
+		object_type *o_ptr = &inventory[item];
 
-		/* Get the item */
-		o_ptr = &inventory[item];
-
-		/* Fully known */
-		o_ptr->ident |= (IDENT_KNOWN);
+		/* "Know" */
+		o_ptr->ident |= IDENT_KNOWN;
 
 		/* Describe */
-		object_info_screen(o_ptr);
+		text_out_hook = text_out_to_screen;
+		screen_save();
+		Term_gotoxy(0, 0);
+
+		object_info_header(o_ptr);
+		if (!object_info_known(o_ptr))
+			text_out("This item does not possess any special abilities.");
+
+		text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
+		(void)anykey();
+      
+		screen_load();
 	}
 }
 

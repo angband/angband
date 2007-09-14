@@ -236,7 +236,6 @@ extern bool (*ang_sort_comp)(const void *u, const void *v, int a, int b);
 extern void (*ang_sort_swap)(void *u, void *v, int a, int b);
 extern bool (*get_mon_num_hook)(int r_idx);
 extern bool (*get_obj_num_hook)(int k_idx);
-extern void (*object_info_out_flags)(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
 extern ang_file *text_out_file;
 extern void (*text_out_hook)(byte a, cptr str);
 extern int text_out_wrap;
@@ -393,8 +392,9 @@ extern void message_pain(int m_idx, int dam);
 extern void update_smart_learn(int m_idx, int what);
 
 /* obj-info.c */
-extern bool object_info_out(const object_type *o_ptr);
-extern void object_info_screen(const object_type *o_ptr);
+extern void object_info_header(const object_type *o_ptr);
+extern bool object_info_known(const object_type *o_ptr);
+extern bool object_info_full(const object_type *o_ptr);
 
 /* object1.c */
 extern void flavor_init(void);

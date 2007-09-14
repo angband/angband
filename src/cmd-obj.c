@@ -66,7 +66,17 @@ static void obj_inscribe(object_type *o_ptr, int item)
 /*** Examination ***/
 static void obj_examine(object_type *o_ptr, int item)
 {
-    object_info_screen(o_ptr);
+	text_out_hook = text_out_to_screen;
+	screen_save();
+
+	object_info_header(o_ptr);
+	if (!object_info_known(o_ptr))
+		text_out("This item does not seem to possess any special abilities.");
+
+	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
+	(void)anykey();
+      
+	screen_load();
 }
 
 

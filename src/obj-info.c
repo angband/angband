@@ -683,13 +683,14 @@ static bool describe_origin(const object_type *o_ptr)
 /*
  * Output object information
  */
-bool object_info_out(const object_type *o_ptr)
+bool object_info_out(const object_type *o_ptr,
+                     void (*flags)(const object_type *, u32b *, u32b *, u32b *))
 {
 	u32b f1, f2, f3;
 	bool something = FALSE;
 
 	/* Grab the object flags */
-	object_info_out_flags(o_ptr, &f1, &f2, &f3);
+	flags(o_ptr, &f1, &f2, &f3);
 
 
 	/* New para */
@@ -728,7 +729,7 @@ bool object_info_out(const object_type *o_ptr)
  *
  * Return TRUE if an object description was displayed.
  */
-static bool screen_out_head(const object_type *o_ptr)
+void object_info_header(const object_type *o_ptr)
 {
 	char *o_name;
 	int name_size = Term->wid;
@@ -749,7 +750,8 @@ static bool screen_out_head(const object_type *o_ptr)
 	if (!adult_randarts && o_ptr->name1 &&
 	    object_known_p(o_ptr) && a_info[o_ptr->name1].text)
 	{
-		p_text_out(a_text + a_info[o_ptr->name1].text);
+		text_out("\n\n");
+		text_out(a_text + a_info[o_ptr->name1].text);
 	}
 
 	/* Display the known object description */
@@ -759,70 +761,45 @@ static bool screen_out_head(const object_type *o_ptr)
 
 		if (k_info[o_ptr->k_idx].text)
 		{
-			p_text_out(k_text + k_info[o_ptr->k_idx].text);
+			text_out("\n\n");
+			text_out(k_text + k_info[o_ptr->k_idx].text);
 			did_desc = TRUE;
 		}
 
 		/* Display an additional ego-item description */
 		if (o_ptr->name2 && object_known_p(o_ptr) && e_info[o_ptr->name2].text)
 		{
-			if (did_desc) p_text_out("  ");
-			p_text_out(e_text + e_info[o_ptr->name2].text);
+			if (did_desc) text_out("  ");
+			else text_out("\n\n");
+
+			text_out(e_text + e_info[o_ptr->name2].text);
 		}
 	}
 
-	else
-	{
-		return FALSE;
-	}
-
-	return TRUE;
+	return;
 }
 
 
-/*
- * Place an item description on the screen.
- */
-void object_info_screen(const object_type *o_ptr)
+bool object_info_known(const object_type *o_ptr)
 {
-	bool has_description, has_info;
+	bool has_info = FALSE;
 
-	/* Redirect output to the screen */
-	text_out_hook = text_out_to_screen;
-
-	/* Save the screen */
-	screen_save();
+	has_info = object_info_out(o_ptr, object_flags_known);
 
 	new_paragraph = TRUE;
-	has_description = screen_out_head(o_ptr);
-	object_info_out_flags = object_flags_known;
-
-	/* Dump the info */
-	has_info = object_info_out(o_ptr);
-
-	/* Dump origin info */
-	new_paragraph = TRUE;
-	describe_origin(o_ptr);
+	if (describe_origin(o_ptr)) has_info = TRUE;
 
 	new_paragraph = TRUE;
 	if (!object_known_p(o_ptr))
-		p_text_out("You do not know the full extent of this item's powers.");
-	else if (!has_description && !has_info)
-		p_text_out("This item does not seem to possess any special abilities.");
-
-	new_paragraph = TRUE;
-	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
-
-	/* Wait for input */
-	(void)anykey();
-
-	/* Load the screen */
-	screen_load();
-
-	/* Hack -- Browse book, then prompt for a command */
-	if (o_ptr->tval == cp_ptr->spell_book)
 	{
-		/* Call the aux function */
-		do_cmd_browse_aux(o_ptr);
+		p_text_out("You do not know the full extent of this item's powers.");
+		has_info = TRUE;
 	}
+
+	return has_info;
+}
+
+bool object_info_full(const object_type *o_ptr)
+{
+	return object_info_out(o_ptr, object_flags);
 }

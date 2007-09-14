@@ -1230,13 +1230,17 @@ static void desc_art_fake(int a_idx)
 	/* Hack -- Handle stuff */
 	handle_stuff();
 
-	/* Save the screen */
+	text_out_hook = text_out_to_screen;
 	screen_save();
 
 	Term_gotoxy(0, 0);
-	object_info_screen(o_ptr);
+	object_info_header(o_ptr);
+	if (!object_info_known(o_ptr))
+		text_out("This item does not seem to possess any special abilities.");
 
-	/* Load the screen */
+	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
+	(void)anykey();
+      
 	screen_load();
 }
 
@@ -1405,8 +1409,7 @@ static void desc_ego_fake(int oid)
 
 	/* List ego flags */
 	dummy.name2 = e_idx;
-	object_info_out_flags = object_flags;
-	object_info_out(&dummy);
+	object_info_full(&dummy);
 
 	if (e_ptr->xtra)
 		text_out(format("It provides one random %s.", xtra[e_ptr->xtra - 1]));
@@ -1591,14 +1594,18 @@ static void desc_obj_fake(int k_idx)
 	/* Hack -- Handle stuff */
 	handle_stuff();
 
-	/* Save the screen */
+	/* Describe */
+	text_out_hook = text_out_to_screen;
 	screen_save();
 
-	/* Describe */
 	Term_gotoxy(0,0);
-	object_info_screen(o_ptr);
+	object_info_header(o_ptr);
+	if (!object_info_known(o_ptr))
+		text_out("This item does not seem to possess any special abilities.");
 
-	/* Load the screen */
+	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
+	(void)anykey();
+      
 	screen_load();
 }
 
