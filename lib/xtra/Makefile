@@ -1,6 +1,8 @@
 include ../../mk/rules.mk
 include ../../mk/init.mk
+include ../../mk/objective.mk
 
 SUBDIRS = font graf sound
 
-include ../../mk/objective.mk
+OBJECTIVE_DATA =                   \
+	angband.glade:$(DATA_PATH)/xtra
