@@ -96,6 +96,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_birth_ai_learn,
 		OPT_birth_ai_cheat,
 		OPT_birth_ai_smart,
+		OPT_NONE,
 	},
 
 	/* Cheat */

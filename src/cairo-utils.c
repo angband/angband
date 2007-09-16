@@ -24,13 +24,10 @@
 
 void set_foreground_color(cairo_t *cr, byte a)
 {
-	double red, green, blue;
-
-	red   = angband_color_table[a][1] * 256;
-	green = angband_color_table[a][2] * 256;
-	blue  = angband_color_table[a][3] * 256;
-	
-	cairo_set_source_rgb(cr, red / 65536, green / 65536, blue / 65536);
+	cairo_set_source_rgb(cr, 
+	(double)angband_color_table[a][1] / 256, 
+	(double)angband_color_table[a][2] / 256, 
+	(double)angband_color_table[a][3] / 256);
 }
 
 void init_cairo_rect(cairo_rectangle_t *r, int x, int y, int w, int h)
@@ -43,7 +40,8 @@ void init_cairo_rect(cairo_rectangle_t *r, int x, int y, int w, int h)
 
 void c_rect(cairo_t *cr, cairo_rectangle_t r)
 {
-	cairo_rectangle (cr, r.x, r.y, r.width, r.height);
+	if (cr !=NULL)
+		cairo_rectangle (cr, r.x, r.y, r.width, r.height);
 }
 
 /*
@@ -51,48 +49,56 @@ void c_rect(cairo_t *cr, cairo_rectangle_t r)
  */
 void cairo_clear(cairo_t *cr, cairo_rectangle_t r, byte c)
 {
-	cairo_save(cr);
-	c_rect(cr, r);
-	set_foreground_color(cr, c);
-	cairo_fill(cr);
-	cairo_close_path(cr);
-	cairo_restore(cr);
+	if (cr !=NULL)
+	{
+		cairo_save(cr);
+		c_rect(cr, r);
+		set_foreground_color(cr, c);
+		cairo_fill(cr);
+		cairo_close_path(cr);
+		cairo_restore(cr);
+	}
 }
 
 void cairo_cursor(cairo_t *cr, cairo_rectangle_t r, byte c)
 {
-	cairo_save(cr);
-	c_rect(cr, r);
-	set_foreground_color(cr, c);
+	if (cr !=NULL)
+	{
+		cairo_save(cr);
+		c_rect(cr, r);
+		set_foreground_color(cr, c);
 	
-	cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-	cairo_fill(cr);
-	cairo_close_path(cr);
-	cairo_restore(cr);
+		cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+		cairo_fill(cr);
+		cairo_close_path(cr);
+		cairo_restore(cr);
+	}
 }
 
 void draw_tile(cairo_t *cr, cairo_matrix_t m, cairo_rectangle_t r, int tx, int ty)
 {
+	if (cr !=NULL)
+	{
+		cairo_save(cr); 
 	
-	cairo_save(cr); 
+		/* Use the rect and pattern */
+		c_rect(cr, r);
+		cairo_set_source (cr, tile_pattern);
 	
-	/* Use the rect and pattern */
-	c_rect(cr, r);
-	cairo_set_source (cr, tile_pattern);
+		/* Pull the tile we need */
+		cairo_surface_set_device_offset(graphical_tiles, tx - r.x, ty - r.y);
 	
-	/* Pull the tile we need */
-	cairo_surface_set_device_offset(graphical_tiles, tx - r.x, ty - r.y);
+		/* Use transparency */
+		cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
 	
-	/* Use transparency */
-	cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+		/* Use the matrix with our pattern */
+		cairo_pattern_set_matrix(tile_pattern, &m);
 	
-	/* Use the matrix with our pattern */
-	cairo_pattern_set_matrix(tile_pattern, &m);
+		/* Draw it */
+		cairo_fill(cr);
 	
-	/* Draw it */
-	cairo_fill(cr);
-	
-	cairo_restore(cr);
+		cairo_restore(cr);
+	}
 }
 
 cairo_matrix_t cairo_font_scaling(cairo_t *cr, double tile_w, double tile_h, double font_w, double font_h)
@@ -100,22 +106,28 @@ cairo_matrix_t cairo_font_scaling(cairo_t *cr, double tile_w, double tile_h, dou
 	cairo_matrix_t m;
 	double sx, sy;
 
-	/* Get a matrix set up to scale the graphics. */
-	cairo_get_matrix(cr, &m);
-	sx = (tile_w)/(font_w);
-	sy = (tile_h)/(font_h);
+	if (cr !=NULL)
+	{
+		/* Get a matrix set up to scale the graphics. */
+		cairo_get_matrix(cr, &m);
+		sx = (tile_w)/(font_w);
+		sy = (tile_h)/(font_h);
 	
-	cairo_matrix_scale(&m, sx, sy);
+		cairo_matrix_scale(&m, sx, sy);
+	}
 	return(m);
 }
 
 void cairo_draw_from_surface(cairo_t *cr, cairo_surface_t *surface, cairo_rectangle_t r)
-{
-	cairo_save(cr);
-	c_rect(cr, r);
-	cairo_set_source_surface(cr, surface, 0, 0);
-	cairo_fill(cr);
-	cairo_restore(cr);
+{	
+	if (cr !=NULL)
+	{
+		cairo_save(cr);
+		c_rect(cr, r);
+		cairo_set_source_surface(cr, surface, 0, 0);
+		cairo_fill(cr);
+		cairo_restore(cr);
+	}
 }
 
 /*
@@ -135,6 +147,8 @@ font_info font, measurements tile)
 	int tx, ty;
 	int cx, cy;
 	
+	if (cr !=NULL)
+	{
 	/* Get a matrix set up to scale the graphics. */
 	m = cairo_font_scaling(cr, tile.w, tile.h, font.w, font.h);
 	
@@ -162,6 +176,7 @@ font_info font, measurements tile)
 		ty = (ap[i] & 0x7F) * font.h;
 	
 		draw_tile(cr, m, char_rect, tx, ty);
+	}
 	}
 }
 
@@ -193,17 +208,21 @@ void get_font_size(font_info *font)
 	
 	font->w = r.width;
 	font->h = r.height;
-
+	
+	pango_font_description_free(temp_font);
 	cairo_destroy(cr);
 	cairo_surface_destroy(surface);
 	g_object_unref(temp);
 }
+
 void draw_text(cairo_t *cr, font_info *font, int x, int y, int n, byte a, cptr s)
 {
 	cairo_rectangle_t r;
 	PangoLayout *layout;
 	PangoFontDescription *temp_font;
 	
+	if (cr !=NULL)
+	{
 	init_cairo_rect(&r, x * font->w, y * font->h,  font->w * n, font->h);
 	
 	/* Create a PangoLayout, set the font and text */
@@ -219,6 +238,7 @@ void draw_text(cairo_t *cr, font_info *font, int x, int y, int n, byte a, cptr s
 	
 	pango_cairo_show_layout(cr, layout);
 	g_object_unref(G_OBJECT(layout));
+	}
 }
 
 #endif  /*USE_GTK */

@@ -75,7 +75,6 @@ struct term_data
 	
 	GtkWidget *window;
 	GtkWidget *drawing_area;
-	GladeXML *xml;
 };
 
 struct xtra_win_data
@@ -83,7 +82,6 @@ struct xtra_win_data
 	int x;
 	cptr name, win_name, text_view_name, item_name, drawing_area_name;
 	bool visible;
-	/*char font_name[256];*/
 	font_info font;
 	
 	GtkWidget *win, *text_view, *menu, *drawing_area;
@@ -162,6 +160,22 @@ const char help_gtk[] = "GTK for X11, subopts -n<windows>, -i to ignore prefs, a
 
 /*  Path to the Gtk settings file */
 static char settings[1024];
+static game_command cmd = { CMD_NULL, 0 }; 
+
+GladeXML *gtk_xml;
+
+/* Abstracted out for future changes */
+static int max_win_width(term_data *td);
+static int max_win_height(term_data *td);
+static int drawing_win_width(term_data *td);
+static int drawing_win_height(term_data *td);
+static int drawing_win_width(term_data *td);
+static int drawing_win_height(term_data *td);
+
+/*
+ * Find the square a particular pixel is part of.
+ */
+static void pixel_to_square(int * const x, int * const y, const int ox, const int oy);
 
 /* Cairo's rect type to Gdks */
 static GdkRectangle cairo_rect_to_gdk(cairo_rectangle_t *r);
@@ -171,7 +185,6 @@ static cairo_rectangle_t gdk_rect_to_cairo(GdkRectangle *r);
 
 /* Mark part of a window as invalid, so it gets redrawn */
 static void invalidate_rect(term_data *td, cairo_rectangle_t r);
-
 
 /* 
  * Get the position of the term window and save it. Gtk being what it is, this is a major hack.
@@ -234,6 +247,7 @@ static errr Term_curs_gtk(int x, int y);
  */
 static void term_data_redraw(term_data *td);
 
+static void create_term_cairo(term_data *td);
 /* Check for events - Traditional */
 static errr CheckEvent(bool wait);
 
@@ -295,9 +309,6 @@ static void load_term_prefs();
 
 /* Load the prefs */
 static void load_prefs();
-
-/* Find the square a particular pixel is part of. */
-static void pixel_to_square(int * const x, int * const y, const int ox, const int oy);
 
 /* Register a mouse click */
 gboolean on_mouse_click(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
@@ -413,4 +424,8 @@ static void init_handlers();
 /* Init gtk */
 errr init_gtk(int argc, char **argv);
 
+/* Nuke things */
+static void xtra_data_destroy(xtra_win_data *xd);
+static void term_data_destroy(term_data *td);
+static void release_memory();
 #endif /* INCLUDED_MAIN_GTK_H */ 
