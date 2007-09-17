@@ -131,7 +131,7 @@ extern errr eval_r_power(header *head);
 #endif
 
 #ifdef ALLOW_TEMPLATES_OUTPUT
-extern errr emit_r_info_index(FILE *fp, header *head, int i);
+extern errr emit_r_info_index(ang_file *fp, header *head, int i);
 #endif
 
 

@@ -4324,7 +4324,7 @@ static errr emit_desc(ang_file *fp, cptr intro_text, cptr text)
 			else
 			{
 				/* Begin a new line */
-				fputc('\n', fp);
+				file_putf(fp, "\n");
 
 				/* Reset */
 				pos = 0;
@@ -4348,7 +4348,7 @@ static errr emit_desc(ang_file *fp, cptr intro_text, cptr text)
 			ch = (isprint(s[n]) ? s[n] : ' ');
 
 			/* Write out the character */
-			fputc(ch, fp);
+			file_putf(fp, "%c", ch);
 
 			/* Increment */
 			pos++;
@@ -4361,7 +4361,7 @@ static errr emit_desc(ang_file *fp, cptr intro_text, cptr text)
 		if (*s == '\n') s++;
 
 		/* Begin a new line */
-		fputc('\n', fp);
+		file_put(fp, "\n");
 
 		/* If we are at the end of the string, end */
 		if (*s == '\0') return (0);
