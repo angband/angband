@@ -24,23 +24,14 @@
 #include "angband.h"
 
 
-
-/*
- * Level generation is not an important bottleneck, though it can be 
- * annoyingly slow on older machines...  Thus we emphasize simplicity 
- * and correctness over speed.  See individual functions for notes.
- *
- * This entire file is only needed for generating levels.
- * This may allow smart compilers to only load it when needed.
- *
- * The "vault.txt" file is used to store vault generation info.
- */
-
-
 /*
  * Dungeon generation values
  */
-#define DUN_ROOMS			30	/* Number of rooms to attempt */
+#define DUN_ROOMS_MIN  10
+#define DUN_ROOMS_MAX  30
+
+
+
 #define DEST_LEVEL_CHANCE	30	/* 1/chance of being a destroyed level */
 
 
@@ -100,7 +91,7 @@
  * Bounds on some arrays used in the "dun_data" structure.
  * These bounds are checked, though usually this is a formality.
  */
-#define CENT_MAX	DUN_ROOMS
+#define CENT_MAX	DUN_ROOMS_MAX
 #define DOOR_MAX	100
 #define WALL_MAX	40
 #define TUNN_MAX	300
@@ -3224,7 +3215,7 @@ static int num_rooms_allowed(int room_type)
 	if (room_type == 0) return (0);
 
 	/* No special limit on ordinary rooms. */
-	if (room_type == 1) return (DUN_ROOMS);
+	if (room_type == 1) return (DUN_ROOMS_MAX);
 
 
 	/* If below level 100, use the rarity value for level 100. */
@@ -3252,7 +3243,7 @@ static int num_rooms_allowed(int room_type)
 	/* Find out how many times we'll try to boost the room count. */
 	num_tries = 3 * base_num / 100;
 	if (num_tries < 2) num_tries = (base_num < 12 ? 1 : 2);
-	if (num_tries > DUN_ROOMS / 2) num_tries = DUN_ROOMS / 2;
+	if (num_tries > DUN_ROOMS_MAX / 2) num_tries = DUN_ROOMS_MAX / 2;
 
 
 	/* Try several times to increase the number of rooms to build. */
@@ -4510,6 +4501,8 @@ static void cave_gen(void)
 	int room_type;
 	int rooms_built = 0;
 
+	int max_rooms = rand_range(DUN_ROOMS_MIN, DUN_ROOMS_MAX);
+
 	/* Build rooms in descending order of difficulty. */
 	byte room_build_order[ROOM_MAX] = {7, 6, 5, 4, 3, 2, 1, 0};
 
@@ -4592,7 +4585,7 @@ static void cave_gen(void)
 		for (j = 0; j < num_to_build; j++)
 		{
 			/* Stop building rooms when we hit the maximum. */
-			if (rooms_built >= DUN_ROOMS) break;
+			if (rooms_built >= max_rooms) break;
 
 			/* Build the room. */
 			if (room_build(room_type))
