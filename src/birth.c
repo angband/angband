@@ -656,7 +656,7 @@ static void player_outfit(void)
 	/* Hack -- Give the player some torches */
 	object_prep(i_ptr, lookup_kind(TV_LITE, SV_LITE_TORCH));
 	i_ptr->number = (byte)rand_range(3, 7);
-	i_ptr->timeout = rand_range(3, 7) * 500;
+	i_ptr->timeout = FUEL_TORCH / 2;
 	i_ptr->origin = ORIGIN_BIRTH;
 	object_aware(i_ptr);
 	object_known(i_ptr);
