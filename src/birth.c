@@ -1179,7 +1179,7 @@ static int player_birth_aux_2(bool start_at_end)
 		}
 
 		/* Gold is inversely proportional to cost */
-		p_ptr->au = p_ptr->au_birth = (100 * (48 - cost)) + 100;
+		p_ptr->au = p_ptr->au_birth = (50 * (48 - cost)) + 100;
 
 		/* Calculate the bonuses and hitpoints */
 		p_ptr->update |= (PU_BONUS | PU_HP);
