@@ -5,11 +5,41 @@
 # across a range of different makefiles, to cut down on maintenance.
 #
 
-VERSION = 3.0.9
+VERSION = 3.1.0
 
-HDRS = h-basic.h
-INCS = angband.h config.h defines.h externs.h types.h option.h main-gtk.h cairo-utils.h \
-       z-term.h z-rand.h z-type.h z-util.h z-virt.h z-form.h
+HEADERS = \
+	angband.h \
+	cairo-utils.h \
+	cmds.h \
+	compress.h \
+	config.h \
+	defines.h \
+	effects.h \
+	externs.h \
+	game-cmd.h \
+	game-event.h \
+	h-basic.h \
+	init.h \
+	maid-x11.h \
+	main-gtk.h \
+	main.h \
+	option.h \
+	randname.h \
+	types.h \
+	ui-event.h \
+	ui.h \
+	ui-menu.h \
+	z-blockfile.h \
+	z-file.h \
+	z-form.h \
+	z-msg.h \
+	z-quark.h \
+	z-rand.h \
+	z-smap.h \
+	z-term.h \
+	z-type.h \
+	z-util.h \
+	z-virt.h
 
 ZFILES = z-file.o z-form.o z-msg.o z-quark.o z-rand.o z-term.o z-type.o \
          z-util.o z-virt.o z-blockfile.o z-smap.o 

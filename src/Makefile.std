@@ -111,6 +111,7 @@ $(EXE): $(OBJS)
 # Install the game.
 install: ../$(EXE)
 
+docs: doc/index.html
 
 ../$(EXE): $(EXE)
 	cp $(EXE) ..
@@ -159,9 +160,11 @@ depend:
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 # X11 dependencies
-$(X11OBJS) : $(INCS) maid-x11.h main.h
+$(X11OBJS) : $(HEADERS) maid-x11.h main.h
 
 # Basic dependencies for main-xxx.c, main.c
-$(MAINOBJS) : main.h $(INCS)
+$(MAINOBJS) : main.h $(HEADERS)
 
-
+# fake Dependency
+doc/index.html: $(HEADERS)
+	doxygen doc/doxygen.conf

@@ -170,13 +170,13 @@ enum
 
 /** Initialisation/exit **/
 
-/*
+/**
  * Initialise the messages package.  Should be called before using any other
  * functions in the package.
  */
 errr messages_init(void);
 
-/*
+/**
  * Free the message package.
  */
 void messages_free(void);
@@ -184,7 +184,7 @@ void messages_free(void);
 
 /** General info **/
 
-/*
+/**
  * Return the current number of messages stored.
  */
 u16b messages_num(void);	
@@ -192,7 +192,7 @@ u16b messages_num(void);
 
 /** Individual message handling **/
 
-/*
+/**
  * Save a new message into the memory buffer, with text `str` and type `type`.
  * The type should be one of the MSG_ constants defined above.
  *
@@ -203,7 +203,7 @@ u16b messages_num(void);
 void message_add(const char *str, u16b type);
 
 
-/*
+/**
  * Returns the text of the message of age `age`.  The age of the most recently
  * saved message is 0, the one before that is of age 1, etc.
  *
@@ -212,7 +212,7 @@ void message_add(const char *str, u16b type);
  */
 const char *message_str(u16b age);
 
-/*
+/**
  * Returns the number of times the message of age `age` was saved. The age of
  * the most recently saved message is 0, the one before that is of age 1, etc.
  *
@@ -222,7 +222,7 @@ const char *message_str(u16b age);
  */
 u16b message_count(u16b age);
 
-/*
+/**
  * Returns the type of the message of age `age`.  The age of the most recently
  * saved message is 0, the one before that is of age 1, etc.
  *
@@ -230,7 +230,7 @@ u16b message_count(u16b age);
  */
 u16b message_type(u16b age);
 
-/*
+/**
  * Returns the display colour of the message memorised `age` messages ago.
  * (i.e. age = 0 represents the last memorised message, age = 1 is the one
  * before that, etc).
@@ -240,12 +240,12 @@ byte message_color(u16b age);
 
 /** Message type changes **/
 
-/*
+/**
  * Returns the colour for the message type `type`.
  */ 
 byte message_type_color(u16b type);
 
-/*
+/**
  * Defines the color `color` for the message type `type`.
  */
 errr message_color_define(u16b type, byte color);

@@ -5,7 +5,7 @@
 
 /*** Permissions code ***/
 
-/* 
+/**
  * Player's user ID and group ID, respectively.
  *
  * Only relevant to POSIX systems that use main.c, and set there.
@@ -13,7 +13,7 @@
 extern int player_uid;
 extern int player_egid;
 
-/*
+/**
  * Drop or grab privileges.
  *
  * This is used on multiuser systems, where the game wants to gain access to
@@ -31,7 +31,7 @@ void safe_setuid_drop(void);
 
 /*** Path building code ***/
 
-/*
+/**
  * Concatenates "leaf" onto the end of "base", using system-specific path
  * separators, and places the result in buf[], truncated to "len" bytes.
  *
@@ -43,7 +43,7 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf);
 
 /*** Byte-flipping functions ***/
 
-/*
+/**
  * "Flip" the bits of the integer specified in `arg` to make them big-endian.
  * Useful when writing to files intended to be portable across systems.
  * 
@@ -59,12 +59,12 @@ u32b flip_u32b(u32b arg);
 
 /** Data types **/
 
-/*
+/**
  * An opaque file handle for Angband file handling.
  */
 typedef struct ang_file ang_file;
 
-/*
+/**
  * Specifies what kind of access is required to a file.  See file_open().
  */
 typedef enum
@@ -74,8 +74,8 @@ typedef enum
 	MODE_APPEND
 } file_mode;
 
-/*
- * Specified what kind of thing a file is, when writing.  See file_open().
+/**
+ * Specifies what kind of thing a file is, when writing.  See file_open().
  */
 typedef enum
 {
@@ -88,26 +88,26 @@ typedef enum
 
 /** Utility functions **/
 
-/*
+/**
  * Returns TRUE if `fname` exists (and is a file), FALSE otherwise.
  */
 bool file_exists(const char *fname);
 
-/*
+/**
  * Tries to delete `fname`.
  *
  * Returns TRUE if successful, FALSE otherwise.
  */
 bool file_delete(const char *fname);
 
-/*
+/**
  * Moves the file `fname` to `newname`.
  *
  * Returns TRUE if successful, FALSE otherwise.
  */
 bool file_move(const char *fname, const char *newname);
 
-/*
+/**
  * Returns TRUE if the file `first` is newer than `second`.
  */
 bool file_newer(const char *first, const char *second);
@@ -115,7 +115,7 @@ bool file_newer(const char *first, const char *second);
 
 /** File handle creation **/
 
-/*
+/**
  * Open file `buf`, returning a a file handling representing that file.
  *
  * The file mode specifies what kind of access is required to the file:
@@ -132,7 +132,7 @@ bool file_newer(const char *first, const char *second);
  */
 ang_file *file_open(const char *buf, file_mode mode, file_type ftype);
 
-/*
+/**
  * Attempt to close the file handle `f`.
  *
  * Returns TRUE if successful, FALSE otherwise.
@@ -142,7 +142,7 @@ bool file_close(ang_file *f);
 
 /** File locking **/
 
-/*
+/**
  * Lock or unlock the file represented by `f` for writing.
  * If the file is not open for writing, this call will fail.
  *
@@ -154,7 +154,7 @@ void file_unlock(ang_file *f);
 
 /** Line-based IO **/
 
-/*
+/**
  * Get a line of text from the file represented by `f`, placing it into `buf`
  * to a maximum length of `n`.
  *
@@ -165,14 +165,14 @@ void file_unlock(ang_file *f);
  */
 bool file_getl(ang_file *f, char *buf, size_t n);
 
-/*
+/**
  * Write the string pointed to by `buf` to the file represented by `f`.
  *
  * Returns TRUE if successful, FALSE otherwise.
  */
 bool file_put(ang_file *f, const char *buf);
 
-/*
+/**
  * Format (using strnfmt) the given args, and then call file_put().
  */
 bool file_putf(ang_file *f, const char *fmt, ...);
@@ -180,14 +180,14 @@ bool file_putf(ang_file *f, const char *fmt, ...);
 
 /** Byte-based IO */
 
-/*
+/**
  * Seek to position `pos` in the file represented by `f`.
  *
  * Returns TRUE if successful, FALSE otherwise. 
  */
 bool file_seek(ang_file *f, u32b pos);
 
-/*
+/**
  * Reads `n` bytes from the file represented by `f` into the buffer `buf`.
  * Do not mix with calls to file_readc().
  *
@@ -195,7 +195,7 @@ bool file_seek(ang_file *f, u32b pos);
  */
 size_t file_read(ang_file *f, char *buf, size_t n);
 
-/*
+/**
  * Write the first `n` bytes following the pointer `buf` to the file represented
  * by `f`.  Do not mix with calls to file_writec().
  *
@@ -203,7 +203,7 @@ size_t file_read(ang_file *f, char *buf, size_t n);
  */
 bool file_write(ang_file *f, const char *buf, size_t n);
 
-/*
+/**
  * Read a byte from the file represented by `f` and place it at the location
  * specified by 'b'.
  *
@@ -211,7 +211,7 @@ bool file_write(ang_file *f, const char *buf, size_t n);
  */
 bool file_readc(ang_file *f, byte *b);
 
-/*
+/**
  * Write the byte `b` to the file represented by `f`.
  *
  * Returns TRUE if successful, FALSE otherwise.
@@ -222,13 +222,13 @@ bool file_writec(ang_file *f, byte b);
 
 /*** Directory code ***/
 
-/*
+/**
  * An opaque file handle for Angband directory handling.
  */
 typedef struct ang_dir ang_dir;
 
 
-/*
+/**
  * Opens a directory handle.
  *
  * `dirname` must be a system-specific pathname to the directory
@@ -238,7 +238,7 @@ typedef struct ang_dir ang_dir;
  */
 ang_dir *my_dopen(const char *dirname);
 
-/*
+/**
  * Reads a directory entry.
  *
  * `dir` must point to a directory handle previously returned by my_dopen().
@@ -249,7 +249,7 @@ ang_dir *my_dopen(const char *dirname);
  */
 bool my_dread(ang_dir *dir, char *fname, size_t len);
 
-/*
+/**
  * Close a directory handle.
  */
 void my_dclose(ang_dir *dir);
