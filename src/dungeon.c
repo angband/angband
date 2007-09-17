@@ -1768,6 +1768,8 @@ static void process_some_user_pref_files(void)
  */
 void play_game(void)
 {
+	bool existing_dead_save = FALSE;
+
 	/* Initialize */
 	bool new_game = init_angband();
 
@@ -1806,6 +1808,11 @@ void play_game(void)
 		{
 			p_ptr->is_dead = FALSE;
 			p_ptr->noscore |= NOSCORE_WIZARD;
+		}
+
+		else if (p_ptr->is_dead)
+		{
+			existing_dead_save = TRUE;
 		}
 	}
 
@@ -1887,9 +1894,9 @@ void play_game(void)
 	else
 		process_player_name(TRUE);
 
-        
+
 	/* Check if we're overwriting a savefile */
-	while (new_game && file_exists(savefile))
+	while (new_game && !existing_dead_save)
 	{
 		bool overwrite = get_check("Continuing will overwrite an existing savefile.  Overwrite? ");
          
