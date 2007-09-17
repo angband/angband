@@ -983,7 +983,9 @@ void do_cmd_throw(void)
 	if (tdis > 10) tdis = 10;
 
 	/* Hack -- Base damage from thrown object */
-	tdam = damroll(i_ptr->dd, i_ptr->ds) + i_ptr->to_d;
+	tdam = damroll(i_ptr->dd, i_ptr->ds);
+	if (!tdam) tdam = 1;
+	tdam += i_ptr->to_d;
 
 	/* Chance of hitting */
 	chance = (p_ptr->skills[SKILL_TO_HIT_THROW] + (p_ptr->to_h * BTH_PLUS_ADJ));

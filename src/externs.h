@@ -395,6 +395,7 @@ extern void update_smart_learn(int m_idx, int what);
 extern void object_info_header(const object_type *o_ptr);
 extern bool object_info_known(const object_type *o_ptr);
 extern bool object_info_full(const object_type *o_ptr);
+extern bool object_info_store(const object_type *o_ptr);
 
 /* object1.c */
 extern void flavor_init(void);

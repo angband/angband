@@ -2315,7 +2315,18 @@ static void store_examine(int item)
 	/* Describe it fully */
 	Term_erase(0, 0, 255);
 	Term_gotoxy(0, 0);
-	object_info_full(o_ptr);
+
+	text_out_hook = text_out_to_screen;
+	screen_save();
+
+	object_info_header(o_ptr);
+	if (!object_info_store(o_ptr))
+		text_out("\n\nThis item does not seem to possess any special abilities.");
+
+	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
+	(void)anykey();
+      
+	screen_load();
 
 	/* Hack -- Browse book, then prompt for a command */
 	if (o_ptr->tval == cp_ptr->spell_book)

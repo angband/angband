@@ -67,17 +67,11 @@ static void output_list(const char *list[], int num)
 
 static void output_desc_list(cptr intro, cptr list[], int n)
 {
-	if (n != 0)
-	{
-		/* Output intro */
-		p_text_out(intro);
+	if (!n) return;
 
-		/* Output list */
-		output_list(list, n);
-
-		/* Output end */
-		text_out(".  ");
-	}
+	p_text_out(intro);
+	output_list(list, n);
+	text_out(".  ");
 }
 
 
@@ -184,7 +178,7 @@ static int collect_slays(cptr desc[], int mult[], u32b f1)
 /*
  * Describe combat advantages.
  */
-static bool describe_combat(const object_type *o_ptr, u32b f1)
+static bool describe_combat(const object_type *o_ptr, bool full)
 {
 	cptr desc[15];
 	int mult[15];
@@ -192,13 +186,28 @@ static bool describe_combat(const object_type *o_ptr, u32b f1)
 	int xtra_dam = 0;
 	object_type *j_ptr = &inventory[INVEN_BOW];
 
+	u32b f1, f2, f3;
+
 	bool weapon = (wield_slot(o_ptr) == INVEN_WIELD);
 	bool ammo   = (p_ptr->ammo_tval == o_ptr->tval) &&
 	              (j_ptr->k_idx);
 
 	/* Abort if we've nothing to say */
-	if (!weapon && !ammo) return FALSE;
+	if (!weapon && !ammo)
+	{
+		/* Potions can have special text */
+		if (o_ptr->tval != TV_POTION) return FALSE;
+		if (!o_ptr->dd || !o_ptr->ds) return FALSE;
+		if (!object_known_p(o_ptr)) return FALSE;
 
+		p_text_out("It can be thrown at monsters with damaging effect.  ");
+		return TRUE;
+	}
+
+	if (full)
+		object_flags(o_ptr, &f1, &f2, &f3);
+	else
+		object_flags_known(o_ptr, &f1, &f2, &f3);
 
 
 	if (weapon)
@@ -519,7 +528,7 @@ static bool describe_misc_magic(const object_type *o_ptr, u32b f3)
 /*
  * Describe an object's activation, if any.
  */
-static bool describe_activation(const object_type *o_ptr, u32b f3)
+static bool describe_activation(const object_type *o_ptr, u32b f3, bool full)
 {
 	const object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	const char *desc;
@@ -529,7 +538,7 @@ static bool describe_activation(const object_type *o_ptr, u32b f3)
 	if (o_ptr->name1)
 	{
 		const artifact_type *a_ptr = &a_info[o_ptr->name1];
-		if (!object_known_p(o_ptr)) return FALSE;
+		if (!object_known_p(o_ptr) && !full) return FALSE;
 
 		effect = a_ptr->effect;
 		base = a_ptr->time_base;
@@ -538,7 +547,7 @@ static bool describe_activation(const object_type *o_ptr, u32b f3)
 	}
 	else
 	{
-        if (!object_aware_p(o_ptr)) return FALSE;
+		if (!object_aware_p(o_ptr) && !full) return FALSE;
         
 		effect = k_ptr->effect;
 		base = k_ptr->time_base;
@@ -600,8 +609,7 @@ static bool describe_activation(const object_type *o_ptr, u32b f3)
 		text_out(" turns to recharge.  ");
 	}
 
-	/* No activation */
-	return (FALSE);
+	return TRUE;
 }
 
 
@@ -683,32 +691,16 @@ static bool describe_origin(const object_type *o_ptr)
 /*
  * Output object information
  */
-bool object_info_out(const object_type *o_ptr,
-                     void (*flags)(const object_type *, u32b *, u32b *, u32b *))
+static bool object_info_out(const object_type *o_ptr, bool full)
 {
 	u32b f1, f2, f3;
 	bool something = FALSE;
 
 	/* Grab the object flags */
-	flags(o_ptr, &f1, &f2, &f3);
-
-
-	/* New para */
-	new_paragraph = TRUE;
-
-	/* Describe boring bits */
-	if ((o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION) &&
-		o_ptr->pval)
-	{
-		p_text_out("It provides nourishment for about ");
-		text_out_c(TERM_L_GREEN, "%d", o_ptr->pval / 2);
-		text_out(" turns under normal conditions.  ");
-	}
-
-
-	/* Describe combat bits */
-	new_paragraph = TRUE;
-	if (describe_combat(o_ptr, f1)) something = TRUE;
+	if (full)
+		object_flags(o_ptr, &f1, &f2, &f3);
+	else
+		object_flags_known(o_ptr, &f1, &f2, &f3);
 
 	/* Describe other bits */
 	new_paragraph = TRUE;
@@ -716,7 +708,7 @@ bool object_info_out(const object_type *o_ptr,
 	if (describe_immune(o_ptr, f2, f3)) something = TRUE;
 	if (describe_sustains(o_ptr, f2)) something = TRUE;
 	if (describe_misc_magic(o_ptr, f3)) something = TRUE;
-	if (describe_activation(o_ptr, f3)) something = TRUE;
+	if (describe_activation(o_ptr, f3, full)) something = TRUE;
 	if (describe_ignores(o_ptr, f3)) something = TRUE;
 
 	/* We are done. */
@@ -784,10 +776,17 @@ bool object_info_known(const object_type *o_ptr)
 {
 	bool has_info = FALSE;
 
-	has_info = object_info_out(o_ptr, object_flags_known);
+	has_info = object_info_out(o_ptr, FALSE);
 
-	new_paragraph = TRUE;
-	if (describe_origin(o_ptr)) has_info = TRUE;
+	/* Describe boring bits */
+	if ((o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION) &&
+		o_ptr->pval)
+	{
+		p_text_out("It provides nourishment for about ");
+		text_out_c(TERM_L_GREEN, "%d", o_ptr->pval / 2);
+		text_out(" turns under normal conditions.  ");
+		has_info = TRUE;
+	}
 
 	new_paragraph = TRUE;
 	if (!object_known_p(o_ptr))
@@ -796,10 +795,39 @@ bool object_info_known(const object_type *o_ptr)
 		has_info = TRUE;
 	}
 
+	/* Describe combat bits */
+	new_paragraph = TRUE;
+	if (describe_combat(o_ptr, FALSE)) has_info = TRUE;
+
+	new_paragraph = TRUE;
+	if (describe_origin(o_ptr)) has_info = TRUE;
+
 	return has_info;
 }
 
 bool object_info_full(const object_type *o_ptr)
 {
-	return object_info_out(o_ptr, object_flags);
+	return object_info_out(o_ptr, TRUE);
+}
+
+bool object_info_store(const object_type *o_ptr)
+{
+	bool has_info = FALSE;
+
+	has_info = object_info_out(o_ptr, TRUE);
+
+	/* Describe boring bits */
+	if ((o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION) &&
+		o_ptr->pval)
+	{
+		p_text_out("It provides nourishment for about ");
+		text_out_c(TERM_L_GREEN, "%d", o_ptr->pval / 2);
+		text_out(" turns under normal conditions.  ");
+		has_info = TRUE;
+	}
+
+	new_paragraph = TRUE;
+	if (describe_combat(o_ptr, TRUE)) has_info = TRUE;
+
+	return has_info;
 }

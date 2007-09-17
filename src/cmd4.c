@@ -1236,7 +1236,7 @@ static void desc_art_fake(int a_idx)
 	Term_gotoxy(0, 0);
 	object_info_header(o_ptr);
 	if (!object_info_known(o_ptr))
-		text_out("This item does not seem to possess any special abilities.");
+		text_out("\n\nThis item does not seem to possess any special abilities.");
 
 	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
 	(void)anykey();
@@ -1601,7 +1601,7 @@ static void desc_obj_fake(int k_idx)
 	Term_gotoxy(0,0);
 	object_info_header(o_ptr);
 	if (!object_info_known(o_ptr))
-		text_out("This item does not seem to possess any special abilities.");
+		text_out("\n\nThis item does not seem to possess any special abilities.");
 
 	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
 	(void)anykey();
