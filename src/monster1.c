@@ -941,17 +941,11 @@ static void describe_monster_movement(int r_idx, const monster_lore *l_ptr)
 		else
 			text_out(" is normally found ");
 		
-		if (depth_in_feet)
-		{
-			text_out("at depths of ");
-			text_out_c(colour, "%d", r_ptr->level * 50);
-			text_out(" feet");
-		}
-		else
-		{
-			text_out("on dungeon level ");
-			text_out_c(colour, "%d", r_ptr->level);
-		}
+		text_out("at depths of ");
+		text_out_c(colour, "%d", r_ptr->level * 50);
+		text_out(" feet (level ");
+		text_out_c(colour, "%d", r_ptr->level);
+		text_out(")");
 
 		old = TRUE;
 	}

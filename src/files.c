@@ -1446,7 +1446,7 @@ static const region boundaries [] =
 {
 	{ 0,	0,		0,		0 },
 	{ 1,	2,		40,		8 }, /* Name, Class, ... */
-	{ 1,	10,		18,		8 }, /* Cur Exp, Max Exp, ... */
+	{ 1,	10,		22,		8 }, /* Cur Exp, Max Exp, ... */
 	{ 26,	10,		17,		8 }, /* AC, melee, ... */
 	{ 48, 	10,		24,		8 }, /* skills */
 	{ 26,	3,		13,		5 }, /* Age, ht, wt, ... */
@@ -1480,17 +1480,13 @@ static const char *show_adv_exp(void)
 
 static const char *show_depth(void)
 {
-	static char buffer[10];
+	static char buffer[13];
+
 	if (p_ptr->max_depth == 0) return "Town";
-	else if (depth_in_feet)
-	{
-		strnfmt(buffer, sizeof(buffer), "%d ft", p_ptr->max_depth * 50);
-		return buffer;
-	}
-	else {
-		strnfmt(buffer, sizeof(buffer), "Lev %d", p_ptr->max_depth);
-		return buffer;
-	}
+
+	strnfmt(buffer, sizeof(buffer), "%d' (L%d)",
+	        p_ptr->max_depth * 50, p_ptr->max_depth);
+	return buffer;
 }
 
 static const char *show_speed()

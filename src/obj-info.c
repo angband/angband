@@ -677,10 +677,8 @@ static bool describe_origin(const object_type *o_ptr)
 
 	if (o_ptr->origin_depth)
 	{
-		if (depth_in_feet)
-			text_out(" at a depth of %d feet", o_ptr->origin_depth * 50);
-		else
-			text_out(" on dungeon level %d", o_ptr->origin_depth);
+		text_out(" at a depth of %d feet (level %d)",
+		         o_ptr->origin_depth * 50, o_ptr->origin_depth);
 	}
 
 	text_out(".  ");

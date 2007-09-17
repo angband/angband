@@ -45,7 +45,6 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 	/* Display */
 	{
 		OPT_hp_changes_color,
-		OPT_depth_in_feet,
 		OPT_hilite_player,
  		OPT_center_player,
 		OPT_show_piles,
@@ -57,6 +56,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_view_special_lite,
 		OPT_view_perma_grids,
 		OPT_view_torch_grids,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 	},
@@ -136,7 +136,7 @@ static option_entry options[OPT_MAX] =
 { "use_old_target",      "Use old target by default",                   FALSE }, /* 4 */
 { "pickup_always",       "Always pickup items",                         FALSE }, /* 5 */
 { "pickup_inven",        "Always pickup items matching inventory",      TRUE },  /* 6 */
-{ "depth_in_feet",       "Show dungeon level in feet",                  FALSE }, /* 7 */
+{ NULL,                  NULL,                                          FALSE }, /* 7 */
 { NULL,                  NULL,                                          FALSE }, /* 8 */
 { NULL,                  NULL,                                          FALSE }, /* 9 */
 { "show_labels",         "Show labels in equipment listings",           TRUE },  /* 10 */

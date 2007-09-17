@@ -464,13 +464,10 @@ static void prt_depth(int row, int col)
 	{
 		my_strcpy(depths, "Town", sizeof(depths));
 	}
-	else if (depth_in_feet)
-	{
-		strnfmt(depths, sizeof(depths), "%d ft", p_ptr->depth * 50);
-	}
 	else
 	{
-		strnfmt(depths, sizeof(depths), "Lev %d", p_ptr->depth);
+		strnfmt(depths, sizeof(depths), "%d' (L%d)",
+		        p_ptr->depth * 50, p_ptr->depth);
 	}
 
 	/* Right-Adjust the "depth", and clear old values */

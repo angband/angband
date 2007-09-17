@@ -47,7 +47,6 @@ extern const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_use_old_target			4
 #define OPT_pickup_always			5
 #define OPT_pickup_inven			6
-#define OPT_depth_in_feet			7
 
 #define OPT_show_labels				10
 #define OPT_show_lists              11
@@ -144,7 +143,6 @@ extern const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define use_old_target			OPT(use_old_target)
 #define pickup_always			OPT(pickup_always)
 #define pickup_inven			OPT(pickup_inven)
-#define depth_in_feet			OPT(depth_in_feet)
 #define show_labels				OPT(show_labels)
 #define ring_bell				OPT(ring_bell)
 #define show_flavors			OPT(show_flavors)
