@@ -806,18 +806,15 @@ D:Wrinkled
 
 ##### Potions #####
 
-# Fixed: water
-N:193:75:0
+N:193:75
 G:!:w
 D:Clear
 
-# Fixed: apple juice
-N:194:75:1
+N:194:75
 G:!:U
 D:Light Brown
 
-# Fixed: slime mold juice
-N:195:75:2
+N:195:75
 G:!:g
 D:Icky Green
 
