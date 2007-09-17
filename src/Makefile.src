@@ -59,6 +59,7 @@ ANGFILES = \
 	cmd5.o \
 	cmd6.o \
 	cmd-obj.o \
+	debug.o \
 	dungeon.o \
 	effects.o \
 	files.o \
