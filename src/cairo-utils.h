@@ -45,6 +45,7 @@ struct measurements
 };
 cairo_surface_t* graphical_tiles;
 cairo_pattern_t *tile_pattern;
+cairo_matrix_t matrix;
 
 /* Set the current color */
 extern void set_foreground_color(cairo_t *cr, byte a);
@@ -61,9 +62,9 @@ extern void cairo_cursor(cairo_t *cr, cairo_rectangle_t r, byte c);
 extern void draw_tile(cairo_t *cr, cairo_matrix_t m, cairo_rectangle_t r, int tx, int ty);
 extern void draw_tiles(
 cairo_t *cr, int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp, 
-font_info font, measurements tile);
+font_info *font, measurements *actual, measurements *tile);
 extern void cairo_draw_from_surface(cairo_t *cr, cairo_surface_t *surface, cairo_rectangle_t r);
 extern void init_cairo(cairo_t *cr, cairo_surface_t *surface, measurements size);
 extern void get_font_size(font_info *font);
-extern void draw_text(cairo_t *cr, font_info *font, int x, int y, int n, byte a, cptr s);
+extern void draw_text(cairo_t *cr, font_info *font, measurements *actual, int x, int y, int n, byte a, cptr s);
 #endif /* INCLUDED_CAIRO_UTILS_H*/

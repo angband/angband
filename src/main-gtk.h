@@ -67,6 +67,7 @@ struct term_data
 	point location;
 	measurements size; /* of the window */
 	measurements tile;
+	measurements actual;
 	
 	cairo_surface_t *surface;
 	cairo_t *cr;
@@ -172,6 +173,7 @@ static int drawing_win_height(term_data *td);
 static int drawing_win_width(term_data *td);
 static int drawing_win_height(term_data *td);
 
+static void term_data_resize(term_data *td);
 /*
  * Find the square a particular pixel is part of.
  */
@@ -193,10 +195,16 @@ static void invalidate_rect(term_data *td, cairo_rectangle_t r);
  * Given that I've majorly revised the window code since this was added, some of it 
  * may no longer be neccessary...
  */
-static void get_size_pos(term_data *td);
+/*static void get_size_pos(term_data *td);*/
 
 /* Do the same, less hackishly, for the extra windows */
-static void get_xtra_pos(xtra_win_data *xd);
+/*static void get_xtra_pos(xtra_win_data *xd);*/
+
+/* Get the position of a term window when it changes */
+static gboolean configure_event_handler(GtkWidget *widget, GdkEventConfigure *event, gpointer user_data);
+
+/* Get the position of an extra window when it changes */
+static gboolean configure_xtra_event_handler(GtkWidget *widget, GdkEventConfigure *event, gpointer user_data);
 
 /* Set the window geometry */
 static void set_window_defaults(term_data *td);
@@ -209,12 +217,6 @@ static void set_xtra_window_size(xtra_win_data *xd);
 
 /* If a term window is shown, do a few checks */
 static gboolean show_event_handler(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
-
-/* Get the position of a term window when it changes */
-static gboolean configure_event_handler(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
-
-/* Get the position of an extra window when it changes */
-static gboolean configure_xtra_event_handler(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
 
 /* Erase the whole term. */
 static errr Term_clear_gtk(void);

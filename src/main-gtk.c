@@ -48,12 +48,12 @@ static int max_win_height(term_data *td)
 
 static int drawing_win_width(term_data *td)
 {
-	return (td->cols * td->font.w);
+	return (td->cols * td->actual.w);
 }
 
 static int drawing_win_height(term_data *td)
 {
-	return(td->rows * td->font.h);
+	return(td->rows * td->actual.h);
 }
 
 static int row_in_pixels(term_data *td, int x)
@@ -75,6 +75,28 @@ static void pixel_to_square(int * const x, int * const y, const int ox, const in
 
 	(*x) = (ox / td->font.w);
 	(*y) = (oy / td->font.h);
+}
+
+void set_term_matrix(term_data *td)
+{
+	
+	/* Get a matrix set up to scale the graphics. */
+	if (td->cr != NULL)
+		matrix = cairo_font_scaling(td->cr, td->tile.w, td->tile.h, td->actual.w, td->actual.h);
+}
+
+gboolean on_big_tiles(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+	term_data *td = &data[0];
+	
+	if (!gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)))
+		use_bigtile = FALSE;
+	else
+		use_bigtile = TRUE;
+	
+	load_font_by_name(td, td->font.name);
+	term_data_resize(td);
+	return(TRUE);
 }
 
 static GdkRectangle cairo_rect_to_gdk(cairo_rectangle_t *r)
@@ -125,101 +147,79 @@ static void term_data_resize(term_data *td)
 	Term_key_push(KTRL('R'));
 	Term_activate(old);
 }
-/* 
- * Get the position of the window and save it. Gtk being what it is, this is a major hack.
- * It'd be nice to replace this with something cleaner...
- *
- * Given that I've majorly revised the window code since this was added, some of it 
- * may no longer be neccessary...
- */
-static void get_size_pos(term_data *td)
+
+void set_row_and_cols(term_data *td)
 {
+	int cols = td->cols;
+	int rows = td->rows;
+	
+	td->cols = td->size.w / td->font.w;
+	td->rows= td->size.h / td->font.h;
+	
+	if (MAIN_WINDOW(td))
+	{
+		if (td->cols < 80) td->cols = cols;
+		if (td->rows < 24) td->rows = rows;
+	}
+	
+	if ((cols != td->cols) || (rows != td->rows))
+		term_data_resize(td);
+}
+
+/* 
+ * Get the position of the window and save it.
+ */
+gboolean configure_event_handler(GtkWidget *widget, GdkEventConfigure *event, gpointer user_data)
+{
+	
+	term_data *td = user_data;
+	
 	#ifdef GTK_DEBUG
 	gtk_log_fmt(TERM_WHITE, "Calling Get_size_pos");
 	#endif
 	
-	int x = 0, y = 0, w = 0, h = 0, ww = 0, hh = 0;
-	GdkRectangle r;
+	int x = 0, y = 0, w = 0, h = 0;
 	
+	w = event->width;
+	h = event->height;
+		
+	x = event->x;
+	y = event->y;
+	
+		#ifdef GTK_DEBUG
+		gtk_log_fmt(TERM_WHITE, "Window %s: Location(%d/%d), Size(%d/%d)", td->name, x, y, w, h);
+		#endif
 	if (GTK_WIDGET_VISIBLE(td->window) && GTK_WIDGET_VISIBLE(td->drawing_area))
 	{
+		gtk_widget_translate_coordinates(widget, td->drawing_area, w, h, &w, &h);
 		
-		gdk_window_get_frame_extents(td->window->window, &r);
-		x = r.x;
-		y = r.y;
-		
-		gtk_window_get_size(GTK_WINDOW(td->window), &w, &h);
-		
-		/* The first few times this is called, both getting the drawing area size,
-		     and the main window size go all screwy, but not at the same time,
-		     so pick the more reasonable of the two.*/
-		gtk_widget_get_size_request(GTK_WIDGET(td->drawing_area), &ww, &hh);
-		if (((abs(h - td->size.h) < 20) && (abs(w - td->size.w) < 20)) || ((abs(td->size.h - h) < 20) && (abs(td->size.w - w) < 20)))
-		{
-			hh = h;
-			ww = w;
-		}
-		
-		if ((hh == td->size.h) && (ww == td->size.w))
-		{
-			h = hh;
-			w = ww;
-		}
-		if ((h <= 100) && (hh > 100)) h = hh;
-		if ((h > 100) && (hh <= 100)) hh = h;
-		
-		/* Take the titlebar into account, but only if this looks like the titlebar height, and it isn't already right. */
-		
-		if ((abs(y - td->location.y) < 20) || (abs(td->location.y - y) < 20))
-		{
-			y = td->location.y;
-		}
-		else if (y != td->location.y)
-		{
-			if ((r.height - h) < 50) 
-			{
-				y = y + (r.height - h);
-			}
-		}
-		
-		if ((abs(x - td->location.x) < 20) || (abs(td->location.x - x) < 20))
-		{
-			x = td->location.x;
-		}
-		/* Don't randomly reposition at the top of the screen, either */
+		/* Don't randomly reposition at the top of the screen */
 		if (x != 0) td->location.x = x;
 		if (y != 0) td->location.y = y;
 			
 		/* Hurrah for preventing weird glitches with workarounds.
-		    I honestly have no idea why the windows occassionally
-		    ignore my size requests, and show up as 100x100 or 200x190. */
+		 * I honestly have no idea why the windows occassionally
+		 * ignore my size requests, and show up as 100x100 or 200x190. 
+		 * It may not even do that any more...
+		 */
 		if (((w != 200) && (h != 190)) || ((w <= 100) && (h <= 100)))
 		{
-			/*int cols = td->cols;
-			int rows = td->rows;*/
-			
-			if (w != 0) 
-			{
-				td->size.w = w;
-				td->cols = td->size.w / td->font.w;
-			}
-			if (h != 0) 
-			{
-				td->size.h = h;
-				td->rows= td->size.h / td->font.h;
-			}
-			/*if ((cols != td->cols) || (rows != td->rows))
-				term_data_resize(td);*/
+			if (w != 0) td->size.w = w;
+			if (h != 0)  td->size.h = h;
+			set_row_and_cols(td);
 		}
 		
 		#ifdef GTK_DEBUG
 		gtk_log_fmt(TERM_WHITE, "Window %s: Location(%d/%d), Size(%d/%d)", td->name, td->location.x, td->location.y, td->size.w, td->size.h);
 		#endif
 	}
+	return(FALSE);
 }
 
-static void get_xtra_pos(xtra_win_data *xd)
+gboolean configure_xtra_event_handler(GtkWidget *widget, GdkEventConfigure *event, gpointer user_data)
 {
+	xtra_win_data *xd = user_data;
+	
 	#ifdef GTK_DEBUG
 	gtk_log_fmt(TERM_WHITE, "Calling Get_xtra_pos");
 	#endif
@@ -229,15 +229,14 @@ static void get_xtra_pos(xtra_win_data *xd)
 	
 	if (GTK_WIDGET_VISIBLE(xd->win))
 	{
-		
 		gdk_window_get_frame_extents(xd->win->window, &r);
 		x = r.x;
 		y = r.y;
-		
+			
 		gtk_window_get_size(GTK_WINDOW(xd->win), &w, &h);
 		
-		if (x != 0)  xd->location.x = r.x;
-		if (y != 0)  xd->location.y = r.y;
+		if (x != 0)  xd->location.x = x;
+		if (y != 0)  xd->location.y = y;
 		if (w != 0) xd->size.w = w;
 		if (h != 0)  xd->size.h = h;
 		
@@ -249,7 +248,11 @@ static void get_xtra_pos(xtra_win_data *xd)
 	}
 	else
 		xd->visible = FALSE;
+	
+	return(FALSE);
 }
+	
+
 
 static void set_window_defaults(term_data *td)
 {
@@ -258,32 +261,55 @@ static void set_window_defaults(term_data *td)
 	geo.width_inc = td->font.w;
 	geo.height_inc = td->font.h;
 	
-	/*geo.max_width = max_win_width();
-	geo.max_height = max_win_height();*/
+	if (MAIN_WINDOW(td))
+	{
+		geo.min_width = (td->font.w * 80);
+		geo.min_height = (td->font.h * 24);
+	}
+	else
+	{
+		geo.min_width = td->font.w;
+		geo.min_height = td->font.h;
+	}
 	
-	/*geo.min_width = td->font.w;
-	geo.min_height = td->font.h;*/
-	
+	#ifdef GTK_DEBUG
+	gtk_log_fmt(TERM_WHITE, "Calling Set window defaults.");
+	gtk_log_fmt(TERM_WHITE, "Min Size for %s is (%d/%d)", td->name, geo.min_width, geo.min_height);
+	#endif
 	gtk_window_set_geometry_hints(GTK_WINDOW(td->window), td->drawing_area, &geo, 
-	GDK_HINT_RESIZE_INC | GDK_HINT_MAX_SIZE); /* GDK_HINT_POS | | GDK_HINT_MIN_SIZE*/
+	GDK_HINT_RESIZE_INC | GDK_HINT_MIN_SIZE); /* GDK_HINT_POS |GDK_HINT_MAX_SIZE | */
 }
 
 static void set_window_size(term_data *td)
 {
-	
+	int x, y, w, h, xx, yy;
 	#ifdef GTK_DEBUG
 	gtk_log_fmt(TERM_WHITE, "Calling Set window size.");
 	gtk_log_fmt(TERM_WHITE, "Size for %s is going to be resized to (%d/%d)", td->name, td->size.w, td->size.h);
 	#endif
 	
+	set_window_defaults(td);
+	
+	x = td->location.x;
+	y = td->location.y;
+	
+	w = td->size.w;
+	h = td->size.h;
+	
 	gtk_window_set_position(GTK_WINDOW(td->window),GTK_WIN_POS_NONE);
 	
-	if MAIN_WINDOW(td)
-		gtk_widget_set_size_request(GTK_WIDGET(td->drawing_area), td->size.w, td->size.h);
-	else
-		gtk_window_resize(GTK_WINDOW(td->window), td->size.w, td->size.h);
 	
-	gtk_window_move(GTK_WINDOW(td->window), td->location.x, td->location.y);
+	if MAIN_WINDOW(td)
+		gtk_widget_set_size_request(GTK_WIDGET(td->drawing_area), w, h);
+	
+	gtk_window_resize(GTK_WINDOW(td->window), w, h);
+	
+	gtk_window_move(GTK_WINDOW(td->window), x, y);
+	
+	gtk_window_get_size(GTK_WINDOW(td->window), &w, &h);
+	#ifdef GTK_DEBUG
+	gtk_log_fmt(TERM_WHITE, "Size for %s is (%d/%d)", td->name, w,h);
+	#endif
 }
 
 static void set_xtra_window_size(xtra_win_data *xd)
@@ -303,24 +329,6 @@ gboolean show_event_handler(GtkWidget *widget, GdkEventExpose *event, gpointer u
 	sscanf(win_name, "term_window_%d", &t);
 	
 	term_data *td = &data[t];
-	set_window_size(td);
-	return(FALSE);
-}
-
-gboolean configure_event_handler(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
-{
-	
-	term_data *td = user_data;
-	
-	get_size_pos(td);
-	return(FALSE);
-}
-
-gboolean configure_xtra_event_handler(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
-{
-	xtra_win_data *xd = user_data;
-	
-	get_xtra_pos(xd);
 	return(FALSE);
 }
 
@@ -349,7 +357,7 @@ static errr Term_wipe_gtk(int x, int y, int n)
 	cairo_rectangle_t r;
 	
 	/* Set dimensions */
-	init_cairo_rect(&r, row_in_pixels(td, x), col_in_pixels(td, y), (td->font.w * n), (td->font.h));
+	init_cairo_rect(&r, (td->actual.w * x), (td->actual.h * y), (td->actual.w * n), (td->actual.h));
 	cairo_clear(td->cr, r, TERM_DARK);
 	invalidate_rect(td, r);
 
@@ -366,13 +374,10 @@ static errr Term_text_gtk(int x, int y, int n, byte a, cptr s)
 	cairo_rectangle_t r;
 	
 	/* Set dimensions */
-	init_cairo_rect(&r, row_in_pixels(td, x), col_in_pixels(td, y),  td->font.w * n, td->font.h);
-	
-	/* Clear the line */
-	Term_wipe_gtk(x, y, n);
+	init_cairo_rect(&r, (td->font.w * x), (td->font.h * y),  (td->font.w * n), td->font.h);
 	
 	/* Draw the text */
-	draw_text(td->cr, &td->font, x, y, n, a, s);
+	draw_text(td->cr, &td->font, &td->actual, x, y, n, a, s);
 	
 	invalidate_rect(td, r);
 			
@@ -386,14 +391,11 @@ static errr Term_pict_gtk(int x, int y, int n, const byte *ap, const char *cp, c
 	cairo_rectangle_t r;
 	
 	/* Set dimensions */
-	init_cairo_rect(&r, row_in_pixels(td, x), col_in_pixels(td, y),  td->font.w * n, td->font.h);
-	
-	/* Clear the line */
-	Term_wipe_gtk(x, y, n);
+	init_cairo_rect(&r, (td->actual.w * x), (td->actual.h * y),  (td->actual.w * n), (td->actual.h));
 	
 	/* I can't count on at all the td fields names being the same for everything that uses cairo-utils,
 	    hence a lot of variables being passed. */
-	draw_tiles(td->cr, x, y, n, ap, cp, tap, tcp, td->font, td->tile);
+	draw_tiles(td->cr, x, y, n, ap, cp, tap, tcp, &td->font, &td->actual, &td->tile);
 
 	invalidate_rect(td, r);
 			
@@ -468,14 +470,13 @@ static errr Term_xtra_gtk(int n, int v)
 	return (1);
 }
 
-
 static errr Term_curs_gtk(int x, int y)
 {
 	term_data *td = (term_data*)(Term->data);
 	cairo_rectangle_t r;
 
 	/* Set dimensions */
-	init_cairo_rect(&r, row_in_pixels(td, x)+1, col_in_pixels(td, y) + 1,  (td->font.w) - 2, (td->font.h) - 2);
+	init_cairo_rect(&r, row_in_pixels(td, x)+1, col_in_pixels(td, y) + 1,  (td->actual.w) - 2, (td->actual.h) - 2);
 	cairo_cursor(td->cr, r, TERM_SLATE);
 	invalidate_rect(td, r);
 	
@@ -543,8 +544,8 @@ static void hook_quit(cptr str)
 	#ifdef GTK_DEBUG
 	gtk_log_fmt(TERM_WHITE, "Calling hook_quit");
 	#endif
+	gtk_log_fmt(TERM_RED,"%s", str);
 	save_prefs();
-	do_cmd_save_game();
 	release_memory();
 	gtk_exit(0);
 }
@@ -613,21 +614,48 @@ gboolean new_event_handler(GtkWidget *widget, GdkEventButton *event, gpointer us
 	}
 }
 
-/*** Callbacks: font selector */
-
 static void load_font_by_name(term_data *td, cptr font_name)
 {	
+	int old_font_height = td->font.h;
+	int old_font_width = td->font.w;
+	
 	my_strcpy(td->font.name, font_name, sizeof(td->font.name));
 	
 	get_font_size(&td->font);
-	td->size.w =drawing_win_width(td);
-	td->size.h = drawing_win_height(td);
+	if (use_bigtile)
+	{
+		td->actual.w = td->font.w * 2;
+		td->actual.h = td->font.h;
+	}
+	else
+	{
+		td->actual.w = td->font.w;
+		td->actual.h = td->font.h;
+	}
 	
+	if ((old_font_height == 0) || (old_font_width == 0))
+	{
+		td->size.w = td->cols *  td->font.w;
+		td->size.h = td->rows *  td->font.h;
+	}
+		else
+	{
+		td->size.w = (double)td->size.w * (double)((double)td->font.w / (double)old_font_width);
+		td->size.h = (double)td->size.h * (double)((double)td->font.h / (double)old_font_height);
+	}
+	
+	/* Get a matrix set up to scale the graphics. */
+	set_term_matrix(td);
 	if (td->window != NULL) 
 	{
+		
+
+	gtk_widget_hide(td->window);
+		
 	/* Set defaults, and resize the window accordingly */
-	set_window_defaults(td);
 	set_window_size(td);
+		
+	if (td->visible) gtk_widget_show(td->window);
 		
 	create_term_cairo(td);
 	}
@@ -935,6 +963,7 @@ static void save_prefs(void)
 	file_putf(fff, "[General Settings]\n");
 	/* Graphics setting */
 	file_putf(fff,"Tile set=%d\n", arg_graphics);
+	file_putf(fff,"Big Tiles=%d\n", use_bigtile);
 
 	/* New section */
 	file_putf(fff, "\n");
@@ -1067,6 +1096,13 @@ static void load_term_prefs()
 					arg_graphics = use_graphics = val;
 					continue;
 				}
+				if (prefix(buf, "Big Tiles="))
+				{
+					val = get_value(buf);
+					sscanf(buf, "Big Tiles=%d", &val);
+					use_bigtile = val;
+					continue;
+				}
 			}
 			
 			if (section == TERM_PREFS)	
@@ -1145,24 +1181,26 @@ static void load_prefs()
 		td->location.y = check_env_i("ANGBAND_X11_AT_Y_%d", i,td->location.y);
 		td->cols = check_env_i("ANGBAND_X11_COLS_%d", i,  td->cols);
 		td->rows = check_env_i("ANGBAND_X11_ROWS_%d", i, td->rows);
-	
-		/* Set defaults if not initialized, or if funny values are there */
-		if (td->cols == 0) td->cols = 80;
-		if (td->rows == 0) td->rows = 24;
-			
-		if (td->size.w <=0) td->size.w = drawing_win_width(td);
-		if (td->size.h <=0) td->size.h = drawing_win_height(td);
-		if (td->tile.w <= 0) td->tile.w = td->font.w;
-		if (td->tile.h <= 0) td->tile.h = td->font.h;
-		
-		/* The main window should always be visible */
-		if (i == 0) td->visible = 1;
 			
 		if ((td->location.x <= 0) && (td->location.y <= 0)) td->location.x = td->location.y = 100;
 		if ((td->font.name == "") || (strlen(td->font.name)<2)) 
 			my_strcpy(td->font.name, "Monospace 12", sizeof(td->font.name));
 		
 		load_font_by_name(td, td->font.name);
+	
+		/* Set defaults if not initialized, or if funny values are there */
+		
+		if (td->size.w <=0) td->size.w = (td->rows * td->actual.h);
+		if (td->size.h <=0) td->size.h = (td->cols * td->actual.w);
+		if (td->tile.w <= 0) td->tile.w = td->font.w;
+		if (td->tile.h <= 0) td->tile.h = td->font.h;
+		
+		/* The main window should always be visible */
+		if (i == 0) td->visible = 1;
+		
+		/* Discard the old cols & rows values, and recalculate. */
+		set_row_and_cols(td);
+		
 	}
 
 	for (i = 0; i < MAX_XTRA_WIN_DATA; i++)
@@ -1266,21 +1304,29 @@ static void create_term_cairo(term_data *td)
 {	
 		measurements size;
 		
-		if (td->surface != NULL)
+		/*if (td->surface != NULL)
 		{	
 			cairo_surface_destroy(td->surface);
 			cairo_destroy(td->cr);
-		}
+		}*/
 	
 		size.w = max_win_width(td);
 		size.h = max_win_height(td);
 		
 		td->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, size.w, size.h);
 		td->cr = cairo_create(td->surface);
-		
+	
+		set_term_matrix(td);
 		term_data_redraw(td);
 }
-
+static void destroy_term_cairo(term_data *td)
+{
+	if (td->surface != NULL)
+	{	
+		cairo_surface_destroy(td->surface);
+		cairo_destroy(td->cr);
+	}
+}
 gboolean toggle_term_window(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
 	int t;
@@ -1302,7 +1348,10 @@ gboolean toggle_term_window(GtkWidget *widget, GdkEvent *event, gpointer user_da
 		gtk_widget_show(td->window);
 	}
 	else
+	{
 		gtk_widget_hide(td->window);
+		destroy_term_cairo(td);
+	}
 	
 	return(td->visible);
 }
@@ -1335,6 +1384,7 @@ static void init_graf(int g)
 {
 	char buf[1024];
 	term_data *td= &data[0];
+	int i = 0;
 	
 	arg_graphics = use_graphics = g;
 	
@@ -1392,6 +1442,17 @@ static void init_graf(int g)
 	
 	g_assert(graphical_tiles != NULL);
 	g_assert(tile_pattern != NULL);
+	
+	/* Hack - all windows have the same tileset */
+	for (i = 0; i < num_term; i++)
+	{
+		term_data *t = &data[i];
+		
+		t->tile.w = td->tile.w;
+		t->tile.h = td->tile.h;
+	}
+	
+	set_term_matrix(td);
 	
 	/* Hack -- Force redraw */
 	if (game_in_progress)
@@ -1632,6 +1693,10 @@ static void show_windows()
 			if (xd->visible) 
 				gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(xd->menu), TRUE);
 	}
+	
+	menu_item = glade_xml_get_widget(gtk_xml, "big_tile_item");
+	if (use_bigtile) 
+				gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item), TRUE);
 }
 
 
@@ -2370,12 +2435,8 @@ static void handle_sidebar(game_event_type type, game_event_data *data, void *us
 	blank_row(xd);
 	
 	/* Print the level */
-	if (!p_ptr->depth)
-		strnfmt(str, sizeof(str), "Town"); 
-	else if (depth_in_feet)
-		strnfmt(str, sizeof(str), "%d ft", p_ptr->depth * 50);
-	else 
-		strnfmt(str, sizeof(str), "Lev %d", p_ptr->depth);
+	strnfmt(str, sizeof(str), "%d' (L%d)", p_ptr->depth * 50, p_ptr->depth); 
+	
 	strnfmt(str, sizeof(str), "%-*s", sidebar_length, str);
 	text_view_print(xd, str, TERM_WHITE);
 	}

@@ -66,6 +66,7 @@ void cairo_cursor(cairo_t *cr, cairo_rectangle_t r, byte c)
 	{
 		cairo_save(cr);
 		c_rect(cr, r);
+		
 		set_foreground_color(cr, c);
 	
 		cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
@@ -112,7 +113,6 @@ cairo_matrix_t cairo_font_scaling(cairo_t *cr, double tile_w, double tile_h, dou
 		cairo_get_matrix(cr, &m);
 		sx = (tile_w)/(font_w);
 		sy = (tile_h)/(font_h);
-	
 		cairo_matrix_scale(&m, sx, sy);
 	}
 	return(m);
@@ -137,10 +137,9 @@ void cairo_draw_from_surface(cairo_t *cr, cairo_surface_t *surface, cairo_rectan
  */
 void draw_tiles(
 cairo_t *cr, int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp, 
-font_info font, measurements tile)
+font_info *font, measurements *actual, measurements *tile)
 {
-	cairo_rectangle_t char_rect;
-	cairo_matrix_t m;
+	cairo_rectangle_t char_rect, r;
 	int i;
 	
 	/* Tile & Current Position */
@@ -149,33 +148,37 @@ font_info font, measurements tile)
 	
 	if (cr !=NULL)
 	{
-	/* Get a matrix set up to scale the graphics. */
-	m = cairo_font_scaling(cr, tile.w, tile.h, font.w, font.h);
+	init_cairo_rect(&r, x * font->w, y * font->h,  actual->w * n, actual->h);
+	
+	cairo_clear(cr, r, TERM_DARK);
 	
 	/* Get the current position, Minus cx, which changes for each iteration */
 	cx = 0;
-	cy = (y * font.h);
+	cy = (y * font->h);
 	
 	for (i = 0; i < n; i++)
 	{
-		/* Increment x 1 step */
-		cx += (x* font.w);
-		init_cairo_rect(&char_rect, cx, cy, font.w, font.h);
+		/* Increment x 1 step; use the font width because of equippy chars and the gap between 
+   		 * the status bar and the map.
+		 */
+		cx += x * font->w;
+		init_cairo_rect(&char_rect, cx, cy, actual->w, actual->h);
 		
+		cairo_clear(cr, char_rect, TERM_DARK);
 		/* Get the terrain tile, scaled to the font size */
-		tx= (tcp[i] & 0x7F) * font.w;
-		ty = (tap[i] & 0x7F) * font.h;
+		tx= (tcp[i] & 0x7F) * actual->w;
+		ty = (tap[i] & 0x7F) * actual->h;
 		
-		draw_tile(cr, m, char_rect, tx, ty);
+		draw_tile(cr, matrix, char_rect, tx, ty);
 	
 		/* If foreground is the same as background, we're done */
 		if ((tap[i] == ap[i]) && (tcp[i] == cp[i])) continue;
 		
 		/* Get the foreground tile size, scaled to the font size */
-		tx = (cp[i] & 0x7F) * font.w;
-		ty = (ap[i] & 0x7F) * font.h;
+		tx = (cp[i] & 0x7F) * actual->w;
+		ty = (ap[i] & 0x7F) * actual->h;
 	
-		draw_tile(cr, m, char_rect, tx, ty);
+		draw_tile(cr, matrix, char_rect, tx, ty);
 	}
 	}
 }
@@ -215,7 +218,7 @@ void get_font_size(font_info *font)
 	g_object_unref(temp);
 }
 
-void draw_text(cairo_t *cr, font_info *font, int x, int y, int n, byte a, cptr s)
+void draw_text(cairo_t *cr, font_info *font, measurements *actual, int x, int y, int n, byte a, cptr s)
 {
 	cairo_rectangle_t r;
 	PangoLayout *layout;
@@ -223,8 +226,10 @@ void draw_text(cairo_t *cr, font_info *font, int x, int y, int n, byte a, cptr s
 	
 	if (cr !=NULL)
 	{
-	init_cairo_rect(&r, x * font->w, y * font->h,  font->w * n, font->h);
+	init_cairo_rect(&r, x * font->w, y * font->h,  actual->w * n, actual->h);
 	
+	cairo_clear(cr, r, TERM_DARK);
+		
 	/* Create a PangoLayout, set the font and text */
 	layout = pango_cairo_create_layout(cr); 
 	
@@ -234,7 +239,7 @@ void draw_text(cairo_t *cr, font_info *font, int x, int y, int n, byte a, cptr s
 	pango_layout_set_font_description(layout, temp_font);
 	
 	/* Draw the text to the pixmap */
-	cairo_move_to(cr, r.x, r.y);
+	cairo_move_to(cr, x * font->w, y * font->h);
 	
 	pango_cairo_show_layout(cr, layout);
 	g_object_unref(G_OBJECT(layout));
