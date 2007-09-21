@@ -94,7 +94,7 @@ void message_add(const char *str, u16b type)
 	    messages->head->type == type &&
 	    !strcmp(messages->head->str, str))
 	{
-	    	messages->head->count++;
+		messages->head->count++;
 		return;
 	}
 
@@ -104,8 +104,14 @@ void message_add(const char *str, u16b type)
 	m->count = 1;
 	m->older = messages->head;
 
-	messages->count++;
+	if (messages->head)
+		messages->head->newer = m;
+
 	messages->head = m;
+	messages->count++;
+
+	if (!messages->tail)
+		messages->tail = m;
 
 	if (messages->count > messages->max)
 	{
