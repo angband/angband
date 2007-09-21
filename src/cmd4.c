@@ -3959,11 +3959,11 @@ static void do_dump_options(void *unused, const char *title)
 
 static menu_action option_actions [] = 
 {
-	{'1', "Interface options", do_cmd_options_aux, (void*)0}, 
-	{'2', "Display options", do_cmd_options_aux, (void*)1},
-	{'3', "Warning and disturbance options", do_cmd_options_aux, (void*)2}, 
-	{'4', "Birth (difficulty) options", do_cmd_options_aux, (void*)3}, 
-	{'5', "Cheat options", do_cmd_options_aux, (void*)4}, 
+	{'a', "Interface options", do_cmd_options_aux, (void*)0}, 
+	{'b', "Display options", do_cmd_options_aux, (void*)1},
+	{'e', "Warning and disturbance options", do_cmd_options_aux, (void*)2}, 
+	{'f', "Birth (difficulty) options", do_cmd_options_aux, (void*)3}, 
+	{'g', "Cheat options", do_cmd_options_aux, (void*)4}, 
 	{0, 0, 0, 0}, /* Load and append */
 	{'w', "Subwindow display settings", (action_f) do_cmd_options_win, 0}, 
 	{'s', "Item squelch settings", (action_f) do_cmd_options_item, 0}, 
