@@ -22,8 +22,8 @@
 typedef struct _message_t
 {
 	char *str;
-	struct _message_t *prev;
-	struct _message_t *next;
+	struct _message_t *newer;
+	struct _message_t *older;
 	u16b type;
 	u16b count;
 } message_t;
@@ -63,7 +63,7 @@ void messages_free(void)
 
 	while (m)
 	{
-		nextm = m->next;
+		nextm = m->older;
 		FREE(m->str);
 		FREE(m);
 		m = nextm;
@@ -102,17 +102,19 @@ void message_add(const char *str, u16b type)
 	m->str = string_make(str);
 	m->type = type;
 	m->count = 1;
-	m->next = messages->head;
+	m->older = messages->head;
 
 	messages->count++;
 	messages->head = m;
 
 	if (messages->count > messages->max)
 	{
-		message_t *m = messages->tail;
-		messages->tail = m->prev;
-		FREE(m->str);
-		FREE(m);
+		message_t *old_tail = messages->tail;
+
+		messages->tail = old_tail->newer;
+		messages->tail->older = NULL;
+		FREE(old_tail->str);
+		FREE(old_tail);
 		messages->count--;
 	}
 }
@@ -122,7 +124,7 @@ static message_t *message_get(u16b age)
 	message_t *m = messages->head;
 
 	while (m && age--)
-		m = m->next;
+		m = m->older;
 
 	return m;
 }
