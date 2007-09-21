@@ -182,6 +182,7 @@ void do_cmd_use(object_type *o_ptr, int item, int snd, use_type use)
 		int lev = k_info[o_ptr->k_idx].level;
 
 		object_aware(o_ptr);
+		if (o_ptr->tval == TV_ROD) object_known(o_ptr);
 		gain_exp((lev + (p_ptr->lev / 2)) / p_ptr->lev);
 		p_ptr->notice |= PN_SQUELCH;
 	}
