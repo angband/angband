@@ -46,16 +46,6 @@ static int max_win_height(term_data *td)
 	return(255 * td->font.h);
 }
 
-static int drawing_win_width(term_data *td)
-{
-	return (td->cols * td->actual.w);
-}
-
-static int drawing_win_height(term_data *td)
-{
-	return(td->rows * td->actual.h);
-}
-
 static int row_in_pixels(term_data *td, int x)
 {
 	return(x * td->font.w);
@@ -122,18 +112,18 @@ static cairo_rectangle_t gdk_rect_to_cairo(GdkRectangle *r)
 	
 	return(s);
 }
-
-static void invalidate_rect(term_data *td, cairo_rectangle_t r)
+static void invalidate_drawing_area(GtkWidget *widget, cairo_rectangle_t r)
 {
 	GdkRectangle s;
 	
 	s = cairo_rect_to_gdk(&r);
-	gdk_window_invalidate_rect(td->drawing_area->window, &s, TRUE);
+	gdk_window_invalidate_rect(widget->window, &s, TRUE);
 }
 
 static void term_data_resize(term_data *td)
 {
 	term *old = Term;
+	
 	/* Activate the term */
 	Term_activate(&td->t);
 
@@ -282,7 +272,7 @@ static void set_window_defaults(term_data *td)
 
 static void set_window_size(term_data *td)
 {
-	int x, y, w, h, xx, yy;
+	int x, y, w, h;
 	#ifdef GTK_DEBUG
 	gtk_log_fmt(TERM_WHITE, "Calling Set window size.");
 	gtk_log_fmt(TERM_WHITE, "Size for %s is going to be resized to (%d/%d)", td->name, td->size.w, td->size.h);
@@ -322,13 +312,7 @@ static void set_xtra_window_size(xtra_win_data *xd)
 
 gboolean show_event_handler(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
-	const char *win_name;
-	int t;
-	
-	win_name = (char*)gtk_widget_get_name(GTK_WIDGET(widget));	
-	sscanf(win_name, "term_window_%d", &t);
-	
-	term_data *td = &data[t];
+	/* Not presently used */
 	return(FALSE);
 }
 
@@ -342,7 +326,7 @@ static errr Term_clear_gtk(void)
 	
 	init_cairo_rect(&r, 0, 0, max_win_width(td), max_win_height(td));
 	cairo_clear(td->cr, r, TERM_DARK);
-	invalidate_rect(td, r);
+	invalidate_drawing_area(td->drawing_area, r);
 
 	/* Success */
 	return (0);
@@ -359,7 +343,7 @@ static errr Term_wipe_gtk(int x, int y, int n)
 	/* Set dimensions */
 	init_cairo_rect(&r, (td->actual.w * x), (td->actual.h * y), (td->actual.w * n), (td->actual.h));
 	cairo_clear(td->cr, r, TERM_DARK);
-	invalidate_rect(td, r);
+	invalidate_drawing_area(td->drawing_area, r);
 
 	/* Success */
 	return (0);
@@ -379,7 +363,7 @@ static errr Term_text_gtk(int x, int y, int n, byte a, cptr s)
 	/* Draw the text */
 	draw_text(td->cr, &td->font, &td->actual, x, y, n, a, s);
 	
-	invalidate_rect(td, r);
+	invalidate_drawing_area(td->drawing_area, r);
 			
 	/* Success */
 	return (0);
@@ -397,7 +381,7 @@ static errr Term_pict_gtk(int x, int y, int n, const byte *ap, const char *cp, c
 	    hence a lot of variables being passed. */
 	draw_tiles(td->cr, x, y, n, ap, cp, tap, tcp, &td->font, &td->actual, &td->tile);
 
-	invalidate_rect(td, r);
+	invalidate_drawing_area(td->drawing_area, r);
 			
 	/* Success */
 	return (0);
@@ -415,7 +399,7 @@ static errr Term_fresh_gtk(void)
 	cairo_rectangle_t r;
 	
 	init_cairo_rect(&r, 0, 0, max_win_width(td), max_win_height(td));
-	invalidate_rect(td, r);
+	invalidate_drawing_area(td->drawing_area, r);
 	gdk_window_process_updates(td->window->window, 1);
 	/* XXX */
 	return (0);
@@ -478,7 +462,7 @@ static errr Term_curs_gtk(int x, int y)
 	/* Set dimensions */
 	init_cairo_rect(&r, row_in_pixels(td, x)+1, col_in_pixels(td, y) + 1,  (td->actual.w) - 2, (td->actual.h) - 2);
 	cairo_cursor(td->cr, r, TERM_SLATE);
-	invalidate_rect(td, r);
+	invalidate_drawing_area(td->drawing_area, r);
 	
 	/* Success */
 	return (0);
@@ -618,10 +602,29 @@ static void load_font_by_name(term_data *td, cptr font_name)
 {	
 	int old_font_height = td->font.h;
 	int old_font_width = td->font.w;
+	PangoFontDescription *temp_font;
+	char buf[80];
+	int i, j = 0;
 	
 	my_strcpy(td->font.name, font_name, sizeof(td->font.name));
 	
+	
+	for(i = 0; i < (strlen(font_name)); i++)
+	{
+		if (font_name[i] == ' ') j = i;
+	}
+	
+	for(i = j ; i < strlen(font_name); i++)
+	{
+		buf[i - j] = font_name[i];
+	}
+	
+	temp_font = pango_font_description_from_string(font_name);
+	my_strcpy(td->font.family, pango_font_description_get_family(temp_font), sizeof(td->font.name));
+	td->font.size = atof(buf);
+	if (td->font.size == 0) td->font.size = 12;
 	get_font_size(&td->font);
+	
 	if (use_bigtile)
 	{
 		td->actual.w = td->font.w * 2;
@@ -687,8 +690,14 @@ void set_xtra_font(GtkFontButton *widget, gpointer user_data)
 	
 	temp = gtk_font_button_get_font_name(widget);
 	my_strcpy(xd->font.name, temp, sizeof(xd->font.name));
-	gtk_widget_modify_font(GTK_WIDGET(xd->text_view), pango_font_description_from_string(xd->font.name));
+	get_font_size(&xd->font);
+	if (xd->text_view != NULL)
+		gtk_widget_modify_font(GTK_WIDGET(xd->text_view), pango_font_description_from_string(xd->font.name));
 	
+	if ((xd->cr != NULL) && (xd->event != 0))
+	{
+		event_signal(xd->event);
+	}
 }
 
 /*** Callbacks: savefile opening ***/
@@ -1209,6 +1218,7 @@ static void load_prefs()
 		
 		if ((xd->font.name == "") || (strlen(xd->font.name)<2)) 
 			my_strcpy(xd->font.name, "Monospace 10", sizeof(xd->font.name));
+		get_font_size(&xd->font);
 		
 		if ((xd->size.w <=0 ) || (xd->size.h <= 0))
 		{
@@ -1303,12 +1313,6 @@ gboolean hide_options(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 static void create_term_cairo(term_data *td)
 {	
 		measurements size;
-		
-		/*if (td->surface != NULL)
-		{	
-			cairo_surface_destroy(td->surface);
-			cairo_destroy(td->cr);
-		}*/
 	
 		size.w = max_win_width(td);
 		size.h = max_win_height(td);
@@ -1519,6 +1523,7 @@ static void xtra_data_init(xtra_win_data *xd, int i)
 	xd->text_view_name = xtra_text_names[i];
 	xd->item_name = xtra_menu_names[i];
 	xd->drawing_area_name = xtra_drawing_names[i];
+	xd->event = xtra_events[i];
 }
 
 static void init_xtra_windows(void)
@@ -1557,10 +1562,14 @@ static void init_xtra_windows(void)
 		}
 		if (xd->drawing_area != NULL)
 		{
+			cairo_rectangle_t r;
+			
 			g_signal_connect(xd->drawing_area, "expose_event", G_CALLBACK(expose_xtra_handler), xd);
 		
 			xd->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 255 * main_term->font.w, 255 * main_term->font.h);
 			xd->cr = cairo_create(xd->surface);
+			init_cairo_rect(&r, 0, 0, 255 * main_term->font.w, 255 * main_term->font.h);
+			cairo_clear(xd->cr, r, TERM_DARK);
 		}
 		
 	}
@@ -1749,7 +1758,7 @@ static void release_memory()
 		term_data_destroy(td);
 	}
 	
-	g_object_unref (gtk_xml);
+	g_object_unref(gtk_xml);
 }
 
 static errr term_data_init(term_data *td, int i)
@@ -1862,59 +1871,6 @@ static void text_view_print(xtra_win_data *xd, const char *str, byte color)
 {	
 	strnfmt((char *)str, strlen(str) + 2, "%s\n", str);
 	text_view_put(xd, str, color);
-}
-
-static void aligned_text_print(xtra_win_data *xd, const char *str, byte color, const char *str2, byte color2, int length)
-{
-	int str_length, str2_length, padding_length;
-	char adj_str[length + 1], padding[length+1];
-	
-	str_length = strlen(str);
-	str2_length = strlen(str2);
-	padding_length = length - str_length - str2_length + 1;
-	if (padding_length > 0)
-	{
-		strnfmt(padding, padding_length + 1, "%*c", padding_length, ' ');
-		strnfmt(adj_str, str_length + padding_length, "%s%s", str, padding);
-		text_view_put(xd, adj_str, color);
-		text_view_print(xd, str2, color2);
-	}
-	else
-	{
-		text_view_put(xd, str, color);
-		text_view_print(xd, str2, color2);
-	}
-}
-
-static void text_status_bar_print(xtra_win_data *xd, float percent, byte color)
-{
-	char str[13];
-	int num = (percent * 10);
-	
-	if (num == 0)
-	{
-		strnfmt(str, 13, "[----------] ");
-		text_view_put(xd, str, TERM_WHITE);
-	}
-	else
-	{
-		strnfmt(str, 2, "[");
-		text_view_put(xd, str, TERM_WHITE);
-		
-		strnfmt(str, num + 1, "%s", "**********");
-		text_view_put(xd, str, color);
-		num = 10 - num;
-		
-		if (num == 0)
-			strnfmt(str, 2, "]");
-		else
-		{
-			strnfmt(str, num + 1, "%s", "----------");
-			strnfmt(str, num + 2, "%s]", str);
-		}
-		
-		text_view_print(xd, str, TERM_WHITE);
-	}
 }
 
 void gtk_log_fmt(byte c, cptr fmt, ...)
@@ -2230,14 +2186,6 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 	}
 }
 
-static void blank_row(xtra_win_data *xd)
-{
-	char str[80];
-	
-	strnfmt(str, sizeof(str), " "); 
-	text_view_print(xd, str, TERM_WHITE);
-}
-
 static byte monst_color(float percent)
 {
 	int pct = percent * 100;
@@ -2271,22 +2219,54 @@ static byte monst_color(float percent)
 	return attr;
 }
 
+static void draw_xtra_cr_text(xtra_win_data *xd, int x, int y, byte color, cptr str)
+{
+	measurements size;
+	cairo_rectangle_t r;
+	int n = strlen(str);
+	
+	/* Set dimensions */
+	
+	size.w = xd->font.w;
+	size.h = xd->font.h;
+	draw_text(xd->cr, &xd->font, &size, x, y, n, color, str);
+	
+	invalidate_drawing_area(xd->drawing_area, r);
+}
+
+static void cr_aligned_text_print(xtra_win_data *xd, int x, int y, const char *str, byte color, const char *str2, byte color2, int length)
+{
+	int x2;
+	
+	x2 = x + length - strlen(str2) + 1;
+	
+	if (x2 > 0)
+	{
+		draw_xtra_cr_text(xd, x, y, color, str);
+		draw_xtra_cr_text(xd, x2, y, color2, str2);
+	}
+	else
+	{
+		draw_xtra_cr_text(xd, x, y, color, str);
+		draw_xtra_cr_text(xd, x + strlen(str) + 1, y, color2, str2);
+	}
+}
+
 /*
  * Equippy chars
  */
-static void print_equippy(xtra_win_data *xd)
+static void cr_print_equippy(xtra_win_data *xd, int y)
 {
-	int i;
+	int i, j = 0;
 
 	byte a;
 	char c[6];
 
 	object_type *o_ptr;
 
-	/* No equippy chars if graphics are on, or we're in bigtile mode */
-	if ((use_bigtile) || (arg_graphics != GRAPHICS_NONE))
+	/* No equippy chars if  we're in bigtile mode */
+	if ((use_bigtile) || (arg_graphics != 0))
 	{
-		blank_row(xd);
 		return;
 	}
 
@@ -2307,138 +2287,169 @@ static void print_equippy(xtra_win_data *xd)
 		}
 
 		/* Dump */
-		text_view_put(xd, c, a);
+		draw_xtra_cr_text(xd, j, y, a, c);
+		j++;
 	}
 	strnfmt(c, sizeof(c), " "); 
-	text_view_print(xd,c, a);
+	draw_xtra_cr_text(xd, j + 1, y, a, c);
+}
+
+static void xtra_drawn_progress_bar(xtra_win_data *xd, int x, int y, float curr, float max, byte color, int size)
+{
+	cairo_rectangle_t r;
+	/*GdkRectangle s;*/
+	
+	init_cairo_rect(&r, (xd->font.w * x)+ 1, (xd->font.h) * y + 1,  (xd->font.w * size) - 1, xd->font.h - 2);
+	
+	drawn_progress_bar(xd->cr, &xd->font, x, y, curr, max, color, size);
+	
+	invalidate_drawing_area(xd->drawing_area, r);
 }
 
 static void handle_sidebar(game_event_type type, game_event_data *data, void *user)
 {
-	xtra_win_data *xd = &xdata[5];
 	char str[80], str2[80];
 	byte color;
+	float m_cur_hp, m_max_hp, percent;
+	cairo_rectangle_t r;
+	
+	xtra_win_data *xd = &xdata[5];
 	long xp = (long)p_ptr->exp;
 	monster_type *m_ptr = &mon_list[p_ptr->health_who];
-	float mhp;
-	float m_cur_hp, m_max_hp;
-	
 	int sidebar_length = 12;
 
 	/* Calculate XP for next level */
 	if (p_ptr->lev != 50)
 		xp = (long)(player_exp[p_ptr->lev - 1] * p_ptr->expfact / 100L) - p_ptr->exp;
 	
-	if (xd != NULL)
+	if (xd->cr != NULL)
 	{
-	xd->buf = gtk_text_buffer_new(NULL);
-	gtk_text_view_set_buffer(GTK_TEXT_VIEW (xd->text_view), xd->buf);
-	init_color_tags(xd);
-	
-	/* Char Name */
-	strnfmt(str, sizeof(str), "%s", op_ptr->full_name); 
-	text_view_print(xd, str, TERM_L_BLUE);
-	/* Char Race */
-	strnfmt(str, sizeof(str), "%s", p_name + rp_ptr->name);
-	text_view_print(xd, str, TERM_L_BLUE);
-	/* Char Title*/
-	strnfmt(str, sizeof(str), "%s", c_text + cp_ptr->title[(p_ptr->lev - 1) / 5], TERM_L_BLUE); 
-	text_view_print(xd, str, TERM_L_BLUE);
-	/* Char Class */
-	strnfmt(str, sizeof(str), "%s", c_name + cp_ptr->name); 
-	text_view_print(xd, str, TERM_L_BLUE);
-	
-	/* Char Level */
-	strnfmt(str, sizeof(str), "Level:"); 
-	strnfmt(str2, sizeof(str2), "%i", p_ptr->lev);
-	aligned_text_print(xd, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
-	
-	/* Char xp */
-	if (p_ptr->lev != 50) strnfmt(str, sizeof(str), "Next: ");
-	else 			 strnfmt(str, sizeof(str), "XP: "); 
-	strnfmt(str2, sizeof(str2), "%ld", xp); 
-	aligned_text_print(xd, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
-	
-	/* Char Gold */
-	strnfmt(str, sizeof(str), "Gold:"); 
-	strnfmt(str2, sizeof(str2), "%ld", p_ptr->au); 
-	aligned_text_print(xd, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
-	
-	/* Equippy chars */
-	print_equippy(xd);
-	
-	/* Char Stats */
-	strnfmt(str, sizeof(str), "STR:"); 
-	cnv_stat(p_ptr->stat_use[A_STR], str2, sizeof(str2));
-	aligned_text_print(xd, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
-	
-	strnfmt(str, sizeof(str), "INT:"); 
-	cnv_stat(p_ptr->stat_use[A_INT], str2, sizeof(str2));
-	aligned_text_print(xd, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
-	
-	strnfmt(str, sizeof(str), "WIS:"); 
-	cnv_stat(p_ptr->stat_use[A_WIS], str2, sizeof(str2));
-	aligned_text_print(xd, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
-	
-	strnfmt(str, sizeof(str), "DEX:"); 
-	cnv_stat(p_ptr->stat_use[A_DEX], str2, sizeof(str2));
-	aligned_text_print(xd, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
-	
-	strnfmt(str, sizeof(str), "CON:"); 
-	cnv_stat(p_ptr->stat_use[A_CON], str2, sizeof(str2));
-	aligned_text_print(xd, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
-	
-	strnfmt(str, sizeof(str), "CHR:"); 
-	cnv_stat(p_ptr->stat_use[A_CHR], str2, sizeof(str2));
-	aligned_text_print(xd, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
-	
-	blank_row(xd);
-	
-	/* Char AC */
-	strnfmt(str, sizeof(str), "AC:"); 
-	strnfmt(str2, sizeof(str2), "%i", p_ptr->dis_ac + p_ptr->dis_to_a); 
-	aligned_text_print(xd, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
-	
-	/* Char HP */
-	strnfmt(str, sizeof(str), "HP:"); 
-	strnfmt(str2, sizeof(str2), "%4d/%4d", p_ptr->chp, p_ptr->mhp); 
-	if (p_ptr->chp >= p_ptr->mhp)
-		color = TERM_L_GREEN;
-	else if (p_ptr->chp > (p_ptr->mhp * op_ptr->hitpoint_warn) / 10)
-		color = TERM_YELLOW;
-	else
-		color = TERM_RED;
-	aligned_text_print(xd, str, TERM_WHITE, str2, color, sidebar_length);
-	
-	/* Char MP */
-	strnfmt(str, sizeof(str), "SP:"); 
-	strnfmt(str2, sizeof(str2), "%4d/%4d", p_ptr->csp, p_ptr->msp); 
-	if (p_ptr->csp >= p_ptr->msp)
-		color = TERM_L_GREEN;
-	else if (p_ptr->csp > (p_ptr->msp * op_ptr->hitpoint_warn) / 10)
-		color = TERM_YELLOW;
-	else
-		color = TERM_RED;
-	aligned_text_print(xd, str, TERM_WHITE, str2, color, sidebar_length);
-	
-	blank_row(xd);
-	
-	m_cur_hp = m_ptr->hp;
-	m_max_hp = m_ptr->maxhp;
-	if ((m_max_hp > 0.0) && (m_cur_hp > 0.0))
-		mhp = m_cur_hp / m_max_hp;
-	else
-		mhp = 0;
+		/* Clear the window */
+		init_cairo_rect(&r, 0, 0,  xd->font.w * 255, xd->font.h * 255);
+		cairo_clear(xd->cr, r, TERM_DARK);
 		
-	text_status_bar_print(xd, mhp , monst_color(mhp));
+		/* Char Name */
+		strnfmt(str, sizeof(str), "%s", op_ptr->full_name); 
+		draw_xtra_cr_text(xd, 0, 0, TERM_L_BLUE, str);
+		
+		/* Char Race */
+		strnfmt(str, sizeof(str), "%s", p_name + rp_ptr->name);
+		draw_xtra_cr_text(xd, 0, 1, TERM_L_BLUE, str);
+		
+		/* Char Title*/
+		strnfmt(str, sizeof(str), "%s", c_text + cp_ptr->title[(p_ptr->lev - 1) / 5], TERM_L_BLUE); 
+		draw_xtra_cr_text(xd, 0, 2, TERM_L_BLUE, str);
+		
+		/* Char Class */
+		strnfmt(str, sizeof(str), "%s", c_name + cp_ptr->name); 
+		draw_xtra_cr_text(xd, 0, 3, TERM_L_BLUE, str);
+
+		/* Char Level */
+		strnfmt(str, sizeof(str), "Level:"); 
+		strnfmt(str2, sizeof(str2), "%i", p_ptr->lev);
+		cr_aligned_text_print(xd, 0, 4, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
+		
+		/* Char xp */
+		if (p_ptr->lev != 50) 
+			strnfmt(str, sizeof(str), "Next: ");
+		else 			 
+			strnfmt(str, sizeof(str), "XP: "); 
+		strnfmt(str2, sizeof(str2), "%ld", xp); 
+		cr_aligned_text_print(xd, 0, 5, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
 	
-	blank_row(xd);
+		/* Char Gold */
+		strnfmt(str, sizeof(str), "Gold:"); 
+		strnfmt(str2, sizeof(str2), "%ld", p_ptr->au); 
+		cr_aligned_text_print(xd, 0, 6, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
+		
+		/* Equippy chars is 0,7 */
+		cr_print_equippy(xd, 7);
+		
+		/* Char Stats */
+		strnfmt(str, sizeof(str), "STR:"); 
+		cnv_stat(p_ptr->stat_use[A_STR], str2, sizeof(str2));
+		cr_aligned_text_print(xd, 0, 8, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
 	
-	/* Print the level */
-	strnfmt(str, sizeof(str), "%d' (L%d)", p_ptr->depth * 50, p_ptr->depth); 
+		strnfmt(str, sizeof(str), "INT:"); 
+		cnv_stat(p_ptr->stat_use[A_INT], str2, sizeof(str2));
+		cr_aligned_text_print(xd, 0, 9, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
 	
-	strnfmt(str, sizeof(str), "%-*s", sidebar_length, str);
-	text_view_print(xd, str, TERM_WHITE);
+		strnfmt(str, sizeof(str), "WIS:"); 
+		cnv_stat(p_ptr->stat_use[A_WIS], str2, sizeof(str2));
+		cr_aligned_text_print(xd, 0, 10, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
+	
+		strnfmt(str, sizeof(str), "DEX:"); 
+		cnv_stat(p_ptr->stat_use[A_DEX], str2, sizeof(str2));
+		cr_aligned_text_print(xd, 0, 11, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
+	
+		strnfmt(str, sizeof(str), "CON:"); 
+		cnv_stat(p_ptr->stat_use[A_CON], str2, sizeof(str2));
+		cr_aligned_text_print(xd, 0, 12, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
+	
+		strnfmt(str, sizeof(str), "CHR:"); 
+		cnv_stat(p_ptr->stat_use[A_CHR], str2, sizeof(str2));
+		cr_aligned_text_print(xd, 0, 13, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
+		
+		/* 14 is a blank row */
+		
+		/* Char AC */
+		strnfmt(str, sizeof(str), "AC:"); 
+		strnfmt(str2, sizeof(str2), "%i", p_ptr->dis_ac + p_ptr->dis_to_a); 
+		cr_aligned_text_print(xd, 0, 15, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
+	
+		/* Char HP */
+		strnfmt(str, sizeof(str), "HP:"); 
+		strnfmt(str2, sizeof(str2), "%4d/%4d", p_ptr->chp, p_ptr->mhp); 
+		if (p_ptr->chp >= p_ptr->mhp)
+			color = TERM_L_GREEN;
+		else if (p_ptr->chp > (p_ptr->mhp * op_ptr->hitpoint_warn) / 10)
+			color = TERM_YELLOW;
+		else
+			color = TERM_RED;
+		
+		percent = 0;
+		if (p_ptr->mhp > 0.0)
+			percent = (p_ptr->chp / p_ptr->mhp);
+		
+		cr_aligned_text_print(xd, 0, 16, str, TERM_WHITE, str2, color, sidebar_length);
+		xtra_drawn_progress_bar(xd, 0, 17, p_ptr->chp, p_ptr->mhp, color, 13);
+	
+		/* Char MP */
+		strnfmt(str, sizeof(str), "SP:"); 
+		strnfmt(str2, sizeof(str2), "%4d/%4d", p_ptr->csp, p_ptr->msp); 
+		if (p_ptr->csp >= p_ptr->msp)
+			color = TERM_L_GREEN;
+		else if (p_ptr->csp > (p_ptr->msp * op_ptr->hitpoint_warn) / 10)
+			color = TERM_YELLOW;
+		else
+			color = TERM_RED;
+		cr_aligned_text_print(xd, 0, 18, str, TERM_WHITE, str2, color, sidebar_length);
+		
+		percent = 0;
+		if (p_ptr->msp > 0)
+			percent = p_ptr->csp/p_ptr->msp;
+		
+		xtra_drawn_progress_bar(xd, 0, 19, p_ptr->csp, p_ptr->msp, color, 13);
+	
+		/* 20 is blank */
+	
+		m_cur_hp = m_ptr->hp;
+		m_max_hp = m_ptr->maxhp;
+		if ((m_max_hp > 0.0) && (m_cur_hp > 0.0))
+			percent = m_cur_hp / m_max_hp;
+		else
+			percent = 0;
+		
+		xtra_drawn_progress_bar(xd, 0, 21, m_cur_hp, m_max_hp, monst_color(percent), 13);
+		
+		/* 20 is blank */
+	
+		/* Print the level */
+		strnfmt(str, sizeof(str), "%d' (L%d)", p_ptr->depth * 50, p_ptr->depth); 
+		strnfmt(str, sizeof(str), "%-*s", sidebar_length, str);
+		draw_xtra_cr_text(xd, 0, 22, TERM_WHITE, str);
+		
+		invalidate_drawing_area(xd->drawing_area, r);
 	}
 }
 

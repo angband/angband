@@ -66,8 +66,7 @@ struct term_data
 	int cols;
 	point location;
 	measurements size; /* of the window */
-	measurements tile;
-	measurements actual;
+	measurements tile, actual;
 	
 	cairo_surface_t *surface;
 	cairo_t *cr;
@@ -91,6 +90,17 @@ struct xtra_win_data
 	cairo_surface_t *surface;
 	measurements size;
 	point location;
+	game_event_type event;
+};
+
+static game_event_type xtra_events[]=
+{
+	EVENT_MESSAGE, 
+	EVENT_INVENTORY, 
+	EVENT_EQUIPMENT, 
+	EVENT_MONSTERLIST, 
+	0, 
+	EVENT_PLAYERTITLE
 };
 
 char xtra_names[MAX_XTRA_WIN_DATA][20] =
@@ -168,10 +178,6 @@ GladeXML *gtk_xml;
 /* Abstracted out for future changes */
 static int max_win_width(term_data *td);
 static int max_win_height(term_data *td);
-static int drawing_win_width(term_data *td);
-static int drawing_win_height(term_data *td);
-static int drawing_win_width(term_data *td);
-static int drawing_win_height(term_data *td);
 
 static void term_data_resize(term_data *td);
 /*
@@ -186,19 +192,7 @@ static GdkRectangle cairo_rect_to_gdk(cairo_rectangle_t *r);
 static cairo_rectangle_t gdk_rect_to_cairo(GdkRectangle *r);
 
 /* Mark part of a window as invalid, so it gets redrawn */
-static void invalidate_rect(term_data *td, cairo_rectangle_t r);
-
-/* 
- * Get the position of the term window and save it. Gtk being what it is, this is a major hack.
- * It'd be nice to replace this with something cleaner...
- *
- * Given that I've majorly revised the window code since this was added, some of it 
- * may no longer be neccessary...
- */
-/*static void get_size_pos(term_data *td);*/
-
-/* Do the same, less hackishly, for the extra windows */
-/*static void get_xtra_pos(xtra_win_data *xd);*/
+static void invalidate_drawing_area(GtkWidget *widget, cairo_rectangle_t r);
 
 /* Get the position of a term window when it changes */
 static gboolean configure_event_handler(GtkWidget *widget, GdkEventConfigure *event, gpointer user_data);
@@ -250,6 +244,7 @@ static errr Term_curs_gtk(int x, int y);
 static void term_data_redraw(term_data *td);
 
 static void create_term_cairo(term_data *td);
+
 /* Check for events - Traditional */
 static errr CheckEvent(bool wait);
 
@@ -371,12 +366,6 @@ static void text_view_put(xtra_win_data *xd, const char *str, byte color);
 /* Put text in a textview with a \n */
 static void text_view_print(xtra_win_data *xd, const char *str, byte color);
 
-/* Print str & str2, with enough space in between to line it up to length */
-static void aligned_text_print(xtra_win_data *xd, const char *str, byte color, const char *str2, byte color2, int length);
-
-/* Print a percentage bar */
-static void text_status_bar_print(xtra_win_data *xd, float percent, byte color);
-
 /* plog_fmt reborn */
 void gtk_log_fmt(byte c, cptr fmt, ...);
 
@@ -398,14 +387,8 @@ static void handle_equip(game_event_type type, game_event_data *data, void *user
 /* Print the monster window */
 static void handle_mons_list(game_event_type type, game_event_data *data, void *user);
 
-/* Print \n */
-static void blank_row(xtra_win_data *xd);
-
 /* Return the color of the monster bar */
 static byte monst_color(float percent);
-
-/* Equippy chars */
-static void print_equippy(xtra_win_data *xd);
 
 /* Print the sidebar */
 static void handle_sidebar(game_event_type type, game_event_data *data, void *user);
