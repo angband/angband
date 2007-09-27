@@ -349,7 +349,7 @@ static bool obj_can_activate(const object_type *o_ptr)
 	object_flags(o_ptr, &f1, &f2, &f3);
 
 	/* Check activation flag */
-	return (f3 & TR3_ACTIVATE);
+	return (f3 & TR3_ACTIVATE) ? TRUE : FALSE;
 }
 
 
