@@ -321,15 +321,15 @@ static option_entry options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 189 */
 { NULL,                  NULL,                                          FALSE }, /* 190 */
 { NULL,                  NULL,                                          FALSE }, /* 191 */
-{ "adult_maximize",      "Adult: Maximize effect of race/class bonuses",  TRUE },  /* 192 */
-{ "adult_randarts",      "Adult: Randomize some of the artifacts (beta)", FALSE }, /* 193 */
+{ "adult_maximize",      "Maximize effect of race/class bonuses",       TRUE },  /* 192 */
+{ "adult_randarts",      "Randomize some of the artifacts (beta)",      FALSE }, /* 193 */
 { NULL,                  NULL,                                          FALSE }, /* 194 */
-{ "adult_ironman",       "Adult: Restrict the use of stairs/recall",    FALSE }, /* 195 */
-{ "adult_no_stores",     "Adult: Restrict the use of stores/home",      FALSE }, /* 196 */
-{ "adult_no_artifacts",  "Adult: Restrict creation of artifacts",       FALSE }, /* 197 */
-{ "adult_no_stacking",   "Adult: Don't stack objects on the floor",     FALSE }, /* 198 */
-{ "adult_no_preserve",   "Adult: Preserve artifacts when leaving level",  FALSE }, /* 199 */
-{ "adult_no_stairs",     "Adult: Don't generate connected stairs",      FALSE }, /* 200 */
+{ "adult_ironman",       "Restrict the use of stairs/recall",           FALSE }, /* 195 */
+{ "adult_no_stores",     "Restrict the use of stores/home",             FALSE }, /* 196 */
+{ "adult_no_artifacts",  "Restrict creation of artifacts",              FALSE }, /* 197 */
+{ "adult_no_stacking",   "Don't stack objects on the floor",            FALSE }, /* 198 */
+{ "adult_no_preserve",   "Don't preserve artifacts when leaving level", FALSE }, /* 199 */
+{ "adult_no_stairs",     "Don't generate connected stairs",             FALSE }, /* 200 */
 { NULL,                  NULL,                                          FALSE }, /* 201 */
 { NULL,                  NULL,                                          FALSE }, /* 202 */
 { NULL,                  NULL,                                          FALSE }, /* 203 */
