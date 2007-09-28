@@ -1,19 +1,15 @@
-.SILENT:
-
 include ../../mk/rules.mk
-include ../../mk/init.mk
+include ../../mk/objective.mk
 
 OBJECTIVE_DATA = \
 	delete.me:${DATA_PATH}/data
-
-include ../../mk/objective.mk
 
 clean-posthook:
 	-$(RM) *.raw
 
 install-posthook:
 	if [ "x$(SETEGID)" != "x" ]; then \
-		printf "%10s     %s*.raw\n" TOUCH ${DATA_PATH}/data/; \
+		printf "%10s %s*.raw\n" TOUCH ${DATA_PATH}/data/; \
 		if [ "x$(DRY)" = "x" ]; then \
 			touch ${DATA_PATH}/data/artifact.raw; \
 			touch ${DATA_PATH}/data/cost_adj.raw; \

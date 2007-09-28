@@ -1,5 +1,5 @@
 include ../../../mk/rules.mk
-include ../../../mk/init.mk
+include ../../../mk/objective.mk
 
 OBJECTIVE_DATA = \
 	16x16.bmp:${DATA_PATH}/xtra/graf    \
@@ -10,5 +10,3 @@ OBJECTIVE_DATA = \
 	8x8.png:${DATA_PATH}/xtra/graf      \
 	backgrnd.bmp:${DATA_PATH}/xtra/graf \
 	mask.bmp:${DATA_PATH}/xtra/graf     \
-
-include ../../../mk/objective.mk

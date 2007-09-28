@@ -123,8 +123,10 @@ AC_ARG_ENABLE(sdl_mixer,
 	[enable_sdl_mixer=yes])
 
 
-if test "x$enable_gtk$with_setgid" != "xyes"; then
-	AC_MSG_ERROR([The "setgid" option and the GTK port are incompatible.])
+if test "x$enable_gtk" = "xyes"; then
+	if test "x$wsetgid" = "xyes"; then
+		AC_MSG_ERROR([The "setgid" option and the GTK port are incompatible.])
+	fi
 fi
 
 

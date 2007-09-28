@@ -1,10 +1,8 @@
 include ../../mk/rules.mk
-include ../../mk/init.mk
+include ../../mk/objective.mk
 
 OBJECTIVE_DATA = \
 	delete.me:${DATA_PATH}/bone
-
-include ../../mk/objective.mk
 
 install-posthook:
 	if [ "x$(SETEGID)" != "x" ]; then \

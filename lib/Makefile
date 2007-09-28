@@ -1,6 +1,4 @@
 include ../mk/rules.mk
-include ../mk/init.mk
+include ../mk/objective.mk
 
 SUBDIRS = apex bone data edit file help info pref save user xtra
-
-include ../mk/objective.mk

@@ -1,3 +1,23 @@
+.SILENT:
+
+OBJECTIVE_DIRECTORIES = 
+OBJECTIVE_LIBS = 
+OBJECTIVE_LIBS_NOINST = 
+OBJECTIVE_BINS = 
+OBJECTIVE_DATA = 
+SUBDIRS = 
+HEADERS = 
+V = 0
+VERBOSE ?= $(V)
+VERBOSITY = 0
+SHOW_CFLAGS ?= $(VERBOSE)
+
+LIBDIR = $(libdir)
+BINDIR = $(bindir)
+INCLUDEDIR = $(pkgincludedir)
+CFLAGS += -DHAVE_CONFIG_H -I/usr/pkg/include -I/usr/pkg/xorg/include
+CXXFLAGS += -DHAVE_CONFIG_H -I/usr/pkg/include -I/usr/pkg/xorg/include
+
 default: build
 
 install: build
@@ -177,17 +197,17 @@ build: depend
 
 .c.o:
 	@if [ $(SHOW_CFLAGS) -eq 1 ]; then	\
-		printf "%10s     %-20s (%s)\n" CC $< "${CFLAGS}";	\
+		printf "%10s %-20s (%s)\n" CC $< "${CFLAGS}";	\
 	else \
-		printf "%10s     %-20s\n" CC $<;	\
+		printf "%10s %-20s\n" CC $<;	\
 	fi;
 	$(CC) $(CFLAGS) -c $< -o $@
 
 .cc.o .cxx.o:
 	@if [ $(SHOW_CFLAGS) -eq 1 ]; then	\
-		printf "%10s     %-20s (%s)\n" CXX $< "${CXXFLAGS}";	\
+		printf "%10s %-20s (%s)\n" CXX $< "${CXXFLAGS}";	\
 	else \
-		printf "%10s     %-20s\n" CXX $<;	\
+		printf "%10s %-20s\n" CXX $<;	\
 	fi;
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
