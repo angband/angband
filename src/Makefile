@@ -24,5 +24,6 @@ install-posthook:
 		printf "%10s     $(DESTDIR)$(BINDIR)/angband\n" CHOWN; \
 		if [ "x$(DRY)" = "x" ]; then \
 			chown root:${SETEGID} $(DESTDIR)$(BINDIR)/angband; \
+			chmod g+s $(DESTDIR)$(BINDIR)/angband; \
 		fi; \
 	fi

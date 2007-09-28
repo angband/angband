@@ -30,7 +30,7 @@ install: build
 		done; \
 	fi
 	@if [ "x$(OBJECTIVE_DATA)" != "x" ]; then \
-	 if [ "x$(SETEGID)" != "x" ]; then \
+	 if [ "x$(NOINSTALL)" = "x" ]; then \
 		for i in $(OBJECTIVE_DATA); do \
 			source=`echo $$i | cut -d ":" -f1`; \
 			destination=`echo $$i | cut -d ":" -f2`; \

@@ -27,6 +27,7 @@ install-posthook:
 			touch ${DATA_PATH}/data/p_race.raw; \
 			touch ${DATA_PATH}/data/prices.raw; \
 			touch ${DATA_PATH}/data/shop_own.raw; \
+			touch ${DATA_PATH}/data/spells.raw; \
 			touch ${DATA_PATH}/data/terrain.raw; \
 			touch ${DATA_PATH}/data/vault.raw; \
 			chown -R root:${SETEGID} ${DATA_PATH}/data; \
