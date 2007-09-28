@@ -51,6 +51,10 @@
 #define rand_spread(A,D)	((A) + (rand_int(1+(D)+(D))) - (D))
 
 
+/**
+ * Return TRUE one time in `x`.
+ */
+#define one_in_(x)		(!rand_int(x))
 
 /**** Available Variables ****/
 

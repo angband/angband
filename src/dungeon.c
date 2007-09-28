@@ -108,25 +108,22 @@ static void sense_inventory(void)
 
 	char o_name[80];
 
+	unsigned int rate;
 
-	/*** Check for "sensing" ***/
 
-	/* No sensing when confused */
+	/* No ID when resting or confused */
+	if (p_ptr->resting) return;
 	if (p_ptr->timed[TMD_CONFUSED]) return;
 
+
+	/* Get improvement rate */
 	if (cp_ptr->flags & CF_PSEUDO_ID_IMPROV)
-	{
-		if (0 != rand_int(cp_ptr->sense_base / (plev * plev + cp_ptr->sense_div)))
-			return;
-	}
+		rate = cp_ptr->sense_base / (plev * plev + cp_ptr->sense_div);
 	else
-	{
-		if (0 != rand_int(cp_ptr->sense_base / (plev + cp_ptr->sense_div)))
-			return;
-	}
+		rate = cp_ptr->sense_base / (plev + cp_ptr->sense_div);
 
+	if (!one_in_(rate)) return;
 
-	/*** Sense everything ***/
 
 	/* Check everything */
 	for (i = 0; i < INVEN_TOTAL; i++)
@@ -167,18 +164,28 @@ static void sense_inventory(void)
 		/* Skip non-sense machines */
 		if (!okay) continue;
 
-		/* It's already been pseudo-ID'd */
-		if (o_ptr->pseudo &&
-		    o_ptr->pseudo != INSCRIP_INDESTRUCTIBLE) continue;
-
-		/* It has already been sensed, do not sense it again */
-		if (o_ptr->ident & (IDENT_SENSE)) continue;
-
 		/* It is known, no information needed */
 		if (object_known_p(o_ptr)) continue;
 
+
+		/* It has already been sensed, do not sense it again */
+		if (o_ptr->ident & (IDENT_SENSE))
+		{
+			/* Small chance of wielded, sensed items getting complete ID */
+			if (!o_ptr->name1 && (i >= INVEN_WIELD) && one_in_(1000))
+				do_ident_item(i, o_ptr);
+
+			continue;
+		}
+
 		/* Occasional failure on inventory items */
-		if ((i < INVEN_WIELD) && (0 != rand_int(5))) continue;
+		if ((i < INVEN_WIELD) && one_in_(5)) continue;
+
+
+
+		/* It's already been pseudo-ID'd */
+		if (o_ptr->pseudo &&
+		    o_ptr->pseudo != INSCRIP_INDESTRUCTIBLE) continue;
 
 		/* Indestructible objects are either excellent or terrible */
 		if (o_ptr->pseudo == INSCRIP_INDESTRUCTIBLE)
