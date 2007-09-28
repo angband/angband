@@ -1090,6 +1090,8 @@ static errr rd_player_spells(void)
 	}
 	else
 	{
+		int cnt;
+
 		/* Read the number of spells */
 		rd_u16b(&tmp16u);
 		if (tmp16u > PY_MAX_SPELLS)
@@ -1099,15 +1101,19 @@ static errr rd_player_spells(void)
 		}
 
 		/* Read the spell flags */
-		for (i = 0; i < tmp16u; i++)
+		for (i = 0, cnt = 0; i < tmp16u; i++, cnt++)
 		{
-			rd_byte(&p_ptr->spell_flags[i]);
+			rd_byte(&p_ptr->spell_flags[cnt]);
+			if (p_ptr->spell_order[cnt] == 7)
+				cnt--;
 		}
 
 		/* Read the spell order */
-		for (i = 0; i < tmp16u; i++)
+		for (i = 0, cnt = 0; i < tmp16u; i++, cnt++)
 		{
-			rd_byte(&p_ptr->spell_order[i]);
+			rd_byte(&p_ptr->spell_order[cnt]);
+			if (p_ptr->spell_order[cnt] == 7)
+				cnt--;
 		}
 	}
 

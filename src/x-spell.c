@@ -31,7 +31,7 @@
 #define SPELL_FIND_TRAPS_DOORS          4
 #define SPELL_CURE_LIGHT_WOUNDS         5
 #define SPELL_TREASURE_DETECTION        6
-#define SPELL_OBJECT_DETECTION          7
+/* #define SPELL_OBJECT_DETECTION          7 */
 #define SPELL_IDENTIFY                  8
 #define SPELL_DETECT_INVISIBLE          9
 #define SPELL_DETECT_ENCHANTMENT        10
@@ -509,7 +509,6 @@ static bool cast_mage_spell(int spell)
 		case SPELL_TREASURE_DETECTION:
 		{
 			(void)detect_treasure();
-			(void)detect_objects_gold();
 			break;
 		}
 
@@ -521,17 +520,10 @@ static bool cast_mage_spell(int spell)
 			break;
 		}
 
-		case SPELL_OBJECT_DETECTION:
-		{
-			(void)detect_objects_normal();
-			break;
-		}
-
 		case SPELL_FIND_TRAPS_DOORS:
 		{
 			(void)detect_traps();
-			(void)detect_doors();
-			(void)detect_stairs();
+			(void)detect_doorstairs();
 			break;
 		}
 
@@ -967,8 +959,7 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_DETECT_DOORS_STAIRS:
 		{
-			(void)detect_doors();
-			(void)detect_stairs();
+			(void)detect_doorstairs();
 			break;
 		}
 

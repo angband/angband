@@ -564,11 +564,8 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 			(void)do_inc_stat(A_INT);
 			(void)do_inc_stat(A_WIS);
 			(void)detect_traps();
-			(void)detect_doors();
-			(void)detect_stairs();
+			(void)detect_doorstairs();
 			(void)detect_treasure();
-			(void)detect_objects_gold();
-			(void)detect_objects_normal();
 			identify_pack();
 			self_knowledge(TRUE);
 			*ident = TRUE;
@@ -626,17 +623,9 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 			return TRUE;
 		}
 
-
-		case EF_DET_GOLD:
+		case EF_DET_TREASURE:
 		{
 			if (detect_treasure()) *ident = TRUE;
-			if (detect_objects_gold()) *ident = TRUE;
-			return TRUE;
-		}
-
-		case EF_DET_OBJ:
-		{
-			if (detect_objects_normal()) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -648,8 +637,7 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 
 		case EF_DET_DOORSTAIR:
 		{
-			if (detect_doors()) *ident = TRUE;
-			if (detect_stairs()) *ident = TRUE;
+			if (detect_doorstairs()) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -970,8 +958,7 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 			*ident = TRUE;
 			wiz_lite();
 			(void)detect_traps();
-			(void)detect_doors();
-			(void)detect_stairs();
+			(void)detect_doorstairs();
 			return TRUE;
 		}
 

@@ -78,10 +78,6 @@ N:6:Detect Treasure
 I:90:0:4
 D:Detects all treasure in the immediate area.
 
-N:7:Detect Objects
-I:90:0:6
-D:Detects all objects in the immediate area.
-
 N:8:Identify
 I:90:2:5
 D:Reveals all normal (magical but non-hidden) powers of one object.

@@ -121,10 +121,9 @@ typedef enum
 	EFFECT(RESIST_COLD,    FALSE, "grants you temporary resistance to cold for 1d10+10 turns")
 	EFFECT(RESIST_ALL,     FALSE, "grants resistance to everything!!!")
 
-	EFFECT(DET_GOLD,       FALSE, "detects all treasure in the surrounding area")
-	EFFECT(DET_OBJ,        FALSE, "detects all objects in the surrounding area")
+	EFFECT(DET_TREASURE,   FALSE, "detects all gold and objects on the level")
 	EFFECT(DET_TRAP,       FALSE, "detects all traps in the surrounding area")
-	EFFECT(DET_DOORSTAIR,  FALSE, "detects all doors and stairs in the surrounding area")
+	EFFECT(DET_DOORSTAIR,  FALSE, "detects all doors and stairs on the level")
 	EFFECT(DET_INVIS,      FALSE, "detects all invisible creatures in the surrounding area")
 	EFFECT(DET_EVIL,       FALSE, "detects all evil creatures in the immidiate area")
 	EFFECT(DET_ALL,        FALSE, "detects treasure, objects, traps, doors, stairs, and all creatures in the surrounding area")

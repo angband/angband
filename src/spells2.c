@@ -1011,13 +1011,12 @@ bool detect_traps(void)
 
 
 /*
- * Detect all doors inside radius 22.
+ * Detect all doors and stairs.
  */
-bool detect_doors(void)
+bool detect_doorstairs(void)
 {
 	int y, x;
-
-	bool detect = FALSE;
+	bool doors = FALSE, stairs = FALSE;
 
 
 	/* Scan the dungeon */
@@ -1027,15 +1026,9 @@ bool detect_doors(void)
 		{
 			if (!in_bounds_fully(y, x)) continue;
 
-			/* Restrict to being in a certain radius */
-			if (distance(p_ptr->py, p_ptr->px, y, x) > DET_RADIUS) continue;
-
 			/* Detect secret doors */
 			if (cave_feat[y][x] == FEAT_SECRET)
-			{
-				/* Pick a door */
 				place_closed_door(y, x);
-			}
 
 			/* Detect doors */
 			if (((cave_feat[y][x] >= FEAT_DOOR_HEAD) &&
@@ -1050,41 +1043,8 @@ bool detect_doors(void)
 				lite_spot(y, x);
 
 				/* Obvious */
-				detect = TRUE;
+				doors = TRUE;
 			}
-		}
-	}
-
-	/* Describe */
-	if (detect)
-	{
-		msg_print("You sense the presence of doors!");
-	}
-
-	/* Result */
-	return (detect);
-}
-
-
-/*
- * Detect all stairs inside radius 22.
- */
-bool detect_stairs(void)
-{
-	int y, x;
-
-	bool detect = FALSE;
-
-
-	/* Scan the dungeon */
-	for (y = 1; y < DUNGEON_HGT - 1; y++)
-	{
-		for (x = 1; x < DUNGEON_WID - 1; x++)
-		{
-			if (!in_bounds_fully(y, x)) continue;
-
-			/* Restrict to being in a certain radius */
-			if (distance(p_ptr->py, p_ptr->px, y, x) > DET_RADIUS) continue;
 
 			/* Detect stairs */
 			if ((cave_feat[y][x] == FEAT_LESS) ||
@@ -1097,19 +1057,19 @@ bool detect_stairs(void)
 				lite_spot(y, x);
 
 				/* Obvious */
-				detect = TRUE;
+				stairs = TRUE;
 			}
+
 		}
 	}
 
 	/* Describe */
-	if (detect)
-	{
-		msg_print("You sense the presence of stairs!");
-	}
+	if (doors && !stairs)      msg_print("You sense the presence of doors!");
+	else if (!doors && stairs) msg_print("You sense the presence of stairs!");
+	else if (doors && stairs)  msg_print("You sense the presence of doors and stairs!");
 
 	/* Result */
-	return (detect);
+	return (doors || stairs);
 }
 
 
@@ -1118,9 +1078,12 @@ bool detect_stairs(void)
  */
 bool detect_treasure(void)
 {
+	int i;
 	int y, x;
 
-	bool detect = FALSE;
+	bool gold_buried = FALSE;
+	bool gold_object = FALSE;
+	bool objects = FALSE;
 
 
 	/* Scan the dungeon */
@@ -1129,9 +1092,6 @@ bool detect_treasure(void)
 		for (x = 1; x < DUNGEON_WID - 1; x++)
 		{
 			if (!in_bounds_fully(y, x)) continue;
-
-			/* Restrict to being in a certain radius */
-			if (distance(p_ptr->py, p_ptr->px, y, x) > DET_RADIUS) continue;
 
 			/* Notice embedded gold */
 			if ((cave_feat[y][x] == FEAT_MAGMA_H) ||
@@ -1152,33 +1112,11 @@ bool detect_treasure(void)
 				lite_spot(y, x);
 
 				/* Detect */
-				detect = TRUE;
+				gold_buried = TRUE;
 			}
 		}
 	}
 
-	/* Describe */
-	if (detect)
-	{
-		msg_print("You sense the presence of buried treasure!");
-	}
-
-	/* Result */
-	return (detect);
-}
-
-
-
-/*
- * Detect all "gold" objects inside radius 22.
- */
-bool detect_objects_gold(void)
-{
-	int i, y, x;
-
-	bool detect = FALSE;
-
-
 	/* Scan objects */
 	for (i = 1; i < o_max; i++)
 	{
@@ -1194,85 +1132,27 @@ bool detect_objects_gold(void)
 		y = o_ptr->iy;
 		x = o_ptr->ix;
 
-		/* Only detect nearby objects */
-		if (distance(p_ptr->py, p_ptr->px, y, x) > DET_RADIUS) continue;
+		/* Hack -- memorize it */
+		o_ptr->marked = TRUE;
 
-		/* Detect "gold" objects */
-		if (o_ptr->tval == TV_GOLD)
-		{
-			/* Hack -- memorize it */
-			o_ptr->marked = TRUE;
+		/* Redraw */
+		lite_spot(y, x);
 
-			/* Redraw */
-			lite_spot(y, x);
-
-			/* Detect */
-			detect = TRUE;
-		}
+		/* Detect */
+		if (!squelch_hide_item(o_ptr))
+			objects = TRUE;
 	}
 
-	/* Describe */
-	if (detect)
-	{
+	if (gold_object)
 		msg_print("You sense the presence of treasure!");
-	}
 
-	/* Result */
-	return (detect);
-}
+	if (gold_buried)
+		msg_print("You sense the presence of buried treasure!");
 
-
-/*
- * Detect all "normal" objects inisde radius 22.
- */
-bool detect_objects_normal(void)
-{
-	int i, y, x;
-
-	bool detect = FALSE;
-
-
-	/* Scan objects */
-	for (i = 1; i < o_max; i++)
-	{
-		object_type *o_ptr = &o_list[i];
-
-		/* Skip dead objects */
-		if (!o_ptr->k_idx) continue;
-
-		/* Skip held objects */
-		if (o_ptr->held_m_idx) continue;
-
-		/* Location */
-		y = o_ptr->iy;
-		x = o_ptr->ix;
-
-		/* Only detect nearby objects */
-		if (distance(p_ptr->py, p_ptr->px, y, x) > DET_RADIUS) continue;
-
-		/* Detect "real" objects */
-		if (o_ptr->tval != TV_GOLD)
-		{
-			/* Hack -- memorize it */
-			o_ptr->marked = TRUE;
-
-			/* Redraw */
-			lite_spot(y, x);
-
-			/* Detect */
-			if (!squelch_hide_item(o_ptr))
-				detect = TRUE;
-		}
-	}
-
-	/* Describe */
-	if (detect)
-	{
+	if (objects)
 		msg_print("You sense the presence of objects!");
-	}
 
-	/* Result */
-	return (detect);
+	return (gold_object || gold_buried || objects);
 }
 
 
@@ -1333,14 +1213,10 @@ bool detect_objects_magic(void)
 		}
 	}
 
-	/* Describe */
 	if (detect)
-	{
 		msg_print("You sense the presence of magic objects!");
-	}
 
-	/* Return result */
-	return (detect);
+	return detect;
 }
 
 
@@ -1387,15 +1263,11 @@ bool detect_monsters_normal(void)
 		}
 	}
 
-	/* Describe */
 	if (flag)
-	{
-		/* Describe result */
 		msg_print("You sense the presence of monsters!");
-	}
 
 	/* Result */
-	return (flag);
+	return flag;
 }
 
 
@@ -1453,14 +1325,9 @@ bool detect_monsters_invis(void)
 		}
 	}
 
-	/* Describe */
 	if (flag)
-	{
-		/* Describe result */
 		msg_print("You sense the presence of invisible creatures!");
-	}
 
-	/* Result */
 	return (flag);
 }
 
@@ -1520,15 +1387,10 @@ bool detect_monsters_evil(void)
 		}
 	}
 
-	/* Describe */
 	if (flag)
-	{
-		/* Describe result */
 		msg_print("You sense the presence of evil creatures!");
-	}
 
-	/* Result */
-	return (flag);
+	return flag;
 }
 
 
@@ -1542,11 +1404,8 @@ bool detect_all(void)
 
 	/* Detect everything */
 	if (detect_traps()) detect = TRUE;
-	if (detect_doors()) detect = TRUE;
-	if (detect_stairs()) detect = TRUE;
+	if (detect_doorstairs()) detect = TRUE;
 	if (detect_treasure()) detect = TRUE;
-	if (detect_objects_gold()) detect = TRUE;
-	if (detect_objects_normal()) detect = TRUE;
 	if (detect_monsters_invis()) detect = TRUE;
 	if (detect_monsters_normal()) detect = TRUE;
 

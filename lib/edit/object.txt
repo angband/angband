@@ -1548,18 +1548,17 @@ E:REMOVE_CURSE2
 N:192:Treasure Detection
 G:?:w
 I:70:26:0
-W:0:0:5:15
+W:0:0:5:30
 A:100:0 to 100
 F:EASY_KNOW
-E:DET_GOLD
+E:DET_TREASURE
 
 N:193:Object Detection
 G:?:w
 I:70:27:0
 W:0:0:5:15
-A:100:0 to 100
 F:EASY_KNOW
-E:DET_OBJ
+E:DET_TREASURE
 
 N:194:Trap Detection
 G:?:w
@@ -1576,7 +1575,7 @@ E:DET_TRAP
 N:197:Door/Stair Location
 G:?:w
 I:70:29:0
-W:5:0:5:35
+W:5:0:5:60
 A:100:5 to 100
 F:EASY_KNOW
 E:DET_DOORSTAIR
@@ -2423,14 +2422,13 @@ G:-:d
 I:66:28:0
 W:5:0:50:400
 A:100:5 to 100
-E:DET_GOLD:35
+E:DET_TREASURE:50
 
 N:302:Object Location
 G:-:d
 I:66:29:0
 W:5:0:50:200
-A:100:5 to 100
-E:DET_OBJ:35
+E:DET_TREASURE:35
 
 
 ##### Staffs #####
