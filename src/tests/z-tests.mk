@@ -1,11 +1,11 @@
-# Simple UNIX-only makefile for the z-file tests
-EXE = z-file
+# Simple UNIX-only makefile for the z-tests tests.
+EXE = z-tests
 
 CC = gcc
 CFLAGS = -Wall -O2 -Wno-unused-parameter -fprofile-arcs -ftest-coverage
 LDFLAGS = -fprofile-arcs -ftest-coverage
 
-OBJS = z-file.o ../z-tests.o ../z-file.o ../z-virt.o ../z-util.o ../z-form.o 
+OBJS = z-tests.o ../z-tests.o
 
 $(EXE): $(OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS)
@@ -16,5 +16,5 @@ clean:
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
 
-z-file.o: ../z-file.o ../z-form.o
-../z-file.o: ../z-virt.o ../z-util.o ../z-form.o
+z-tests.o: ../z-tests.o
+

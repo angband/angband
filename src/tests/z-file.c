@@ -13,53 +13,7 @@
  */
 #include <stdio.h>
 #include "../z-file.h"
-
-/*** Hacky basic test structure ***/
-
-typedef struct
-{
-	unsigned num_tests;
-	unsigned num_tests_failed;
-} test_stats;
-
-typedef int (*test_func)(void);
-
-void test_run(test_stats *stats, const char *name, test_func tester)
-{
-	stats->num_tests++;
-	printf("running test %s... ", name);
-
-	if ((*tester)() == 0)
-	{
-		stats->num_tests_failed++;
-		printf("FAIL\n");
-	}
-	else
-	{
-		printf("successful\n");
-	}
-}
-
-void test_summarise(test_stats *stats)
-{
-	printf("%d tests\n", stats->num_tests);
-	printf("%d failed\n", stats->num_tests_failed);
-}
-
-int test_success(test_stats *stats)
-{
-	return (stats->num_tests_failed) ? 1 : 0;
-}
-
-#define TEST_RUN(stat, test)		test_run(stat, #test, test_##test)
-
-#define TEST(x)		static int test_##x(void) {
-#define TEST_END	return 1; }
-
-#define FAIL		return 0;
-
-
-
+#include "../z-tests.h"
 /*** z-file tests ***/
 
 static const char *test_fname = "./test";
@@ -355,7 +309,7 @@ TEST_END
 
 int main(void)
 {
-	test_stats test = { 0, 0 };
+	TEST_PLAN(test, 10);
 
 	TEST_RUN(&test, file_open);
 	TEST_RUN(&test, file_exists);
@@ -369,7 +323,5 @@ int main(void)
 
 	TEST_RUN(&test, path_build);
 
-	test_summarise(&test);
-
-	return test_success(&test) ? 0 : 1;
+	TESTS_COMPLETE(test);
 }
