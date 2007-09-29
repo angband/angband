@@ -1101,7 +1101,7 @@ static void load_term_prefs()
 				{
 					val = get_value(buf);
 					sscanf(buf, "Tile set=%d", &val);
-					arg_graphics = use_graphics = val;
+					arg_graphics = val;
 					continue;
 				}
 				if (prefix(buf, "Big Tiles="))
@@ -1393,7 +1393,7 @@ static void init_graf(int g)
 	term_data *td= &data[0];
 	int i = 0;
 	
-	arg_graphics = use_graphics = g;
+	arg_graphics = g;
 	
 	switch(arg_graphics)
 	{
@@ -1817,20 +1817,6 @@ static game_command get_init_cmd()
 		game_in_progress = TRUE;
 	
 	return cmd;
-}
-
-static void handle_map(game_event_type type, game_event_data *data, void *user)
-{
-	/*gtk_log_fmt(TERM_WHITE, "The map changed.");*/
-}
-
-static void handle_moved(game_event_type type, game_event_data *data, void *user)
-{
-	/*gtk_log_fmt(TERM_WHITE, "The player moved.");*/
-}
-static void handle_mons_target(game_event_type type, game_event_data *data, void *user)
-{
-	/*gtk_log_fmt(TERM_WHITE, "Monster targetting.");*/
 }
 
 /*
@@ -2418,6 +2404,24 @@ static void handle_sidebar(game_event_type type, game_event_data *data, void *us
 	}
 }
 
+static void handle_map(game_event_type type, game_event_data *data, void *user)
+{
+	/*gtk_log_fmt(TERM_WHITE, "The map changed.");*/
+	if (use_graphics != arg_graphics)
+	{
+		use_graphics = arg_graphics;
+		init_graf(arg_graphics);
+	}
+}
+
+static void handle_moved(game_event_type type, game_event_data *data, void *user)
+{
+	/*gtk_log_fmt(TERM_WHITE, "The player moved.");*/
+}
+static void handle_mons_target(game_event_type type, game_event_data *data, void *user)
+{
+	/*gtk_log_fmt(TERM_WHITE, "Monster targetting.");*/
+}
 static void handle_init_status(game_event_type type, game_event_data *data, void *user)
 {
 	/*gtk_log_fmt(TERM_WHITE, "Init status.");*/
@@ -2429,6 +2433,7 @@ static void handle_birth(game_event_type type, game_event_data *data, void *user
 static void handle_game(game_event_type type, game_event_data *data, void *user)
 {
 	gtk_log_fmt(TERM_WHITE, "Into the game.");
+	init_graf(arg_graphics);
 }
 static void handle_store(game_event_type type, game_event_data *data, void *user)
 {
