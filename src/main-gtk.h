@@ -376,7 +376,7 @@ static void handle_message(game_event_type type, game_event_data *data, void *us
 static int last_inv_slot(void);
 
 /* Return an inventory slot */
-static void inv_slot(char *str, int i, bool equip);
+static void inv_slot(char *str, size_t len, int i, bool equip);
 
 /* Print the inventory */
 static void handle_inv(game_event_type type, game_event_data *data, void *user);
@@ -388,7 +388,7 @@ static void handle_equip(game_event_type type, game_event_data *data, void *user
 static void handle_mons_list(game_event_type type, game_event_data *data, void *user);
 
 /* Return the color of the monster bar */
-static byte monst_color(float percent);
+static byte monst_color(const monster_type *m_ptr);
 
 /* Print the sidebar */
 static void handle_sidebar(game_event_type type, game_event_data *data, void *user);

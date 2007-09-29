@@ -374,7 +374,7 @@ static errr Term_pict_gtk(int x, int y, int n, const byte *ap, const char *cp, c
 	
 	/* Set dimensions */
 	init_cairo_rect(&r, (td->actual.w * x), (td->actual.h * y),  (td->actual.w * n), (td->actual.h));
-	
+
 	/* I can't count on at all the td fields names being the same for everything that uses cairo-utils,
 	    hence a lot of variables being passed. */
 	draw_tiles(td->cr, x, y, n, ap, cp, tap, tcp, &td->font, &td->actual, &td->tile);
@@ -563,7 +563,7 @@ gboolean hide_event_handler(GtkWidget *widget, GdkEventButton *event, gpointer u
 	
 	if ((td != NULL) && (td->window == widget))
 	{
-	strnfmt(item_name, 16+1,  "term_menu_item_%i", td->number);
+	strnfmt(item_name, sizeof(item_name),  "term_menu_item_%i", td->number);
 	menu_item = glade_xml_get_widget(gtk_xml, item_name);
 	gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item), FALSE);
 	}
@@ -603,22 +603,21 @@ static void load_font_by_name(term_data *td, cptr font_name)
 	PangoFontDescription *temp_font;
 	char buf[80];
 	int i, j = 0;
-	
+
 	my_strcpy(td->font.name, font_name, sizeof(td->font.name));
-	
-	
-	for(i = 0; i < (strlen(font_name)); i++)
+
+
+	for (i = 0; i < strlen(font_name); i++)
 	{
 		if (font_name[i] == ' ') j = i;
 	}
 	
-	for(i = j ; i < strlen(font_name); i++)
-	{
+	for (i = j ; i < strlen(font_name); i++)
 		buf[i - j] = font_name[i];
-	}
+
 	
 	temp_font = pango_font_description_from_string(font_name);
-	my_strcpy(td->font.family, pango_font_description_get_family(temp_font), sizeof(td->font.name));
+	my_strcpy(td->font.family, pango_font_description_get_family(temp_font), sizeof(td->font.family));
 	td->font.size = atof(buf);
 	if (td->font.size == 0) td->font.size = 12;
 	get_font_size(&td->font);
@@ -636,10 +635,10 @@ static void load_font_by_name(term_data *td, cptr font_name)
 	
 	if ((old_font_height == 0) || (old_font_width == 0))
 	{
-		td->size.w = td->cols *  td->font.w;
-		td->size.h = td->rows *  td->font.h;
+		td->size.w = td->cols * td->font.w;
+		td->size.h = td->rows * td->font.h;
 	}
-		else
+	else
 	{
 		td->size.w = (double)td->size.w * (double)((double)td->font.w / (double)old_font_width);
 		td->size.h = (double)td->size.h * (double)((double)td->font.h / (double)old_font_height);
@@ -649,7 +648,7 @@ static void load_font_by_name(term_data *td, cptr font_name)
 	set_term_matrix(td);
 	if (td->window != NULL) 
 	{
-		
+
 
 	gtk_widget_hide(td->window);
 		
@@ -664,14 +663,17 @@ static void load_font_by_name(term_data *td, cptr font_name)
 
 void set_term_font(GtkFontButton *widget, gpointer user_data)   
 {
-	const char *font_name, *s;
+	term_data *td;
+
+	const char *font_name;
+	const char *s;
 	int t;
 	
-	s = (char*)gtk_widget_get_name(GTK_WIDGET(widget));
+	s = gtk_widget_get_name(GTK_WIDGET(widget));
 	sscanf(s, "term_font_%d", &t);
-	
-	term_data *td=&data[t];
-	
+
+	td = &data[t];
+
 	font_name = gtk_font_button_get_font_name(widget);
 	load_font_by_name(td, font_name);
 }
@@ -708,8 +710,8 @@ static gboolean file_open_filter(const GtkFileFilterInfo *filter_info, gpointer 
 	(void)data;
 
 	/* Count out known non-savefiles */
-	if (strcmp(name, "Makefile") == 0 ||
-	    strcmp(name, "delete.me") == 0)
+	if (!strcmp(name, "Makefile") ||
+	    !strcmp(name, "delete.me"))
 	{
 		return FALSE;
 	}
@@ -853,8 +855,8 @@ gboolean keypress_event_handler(GtkWidget *widget, GdkEventKey *event, gpointer 
 	    (event->keyval >= GDK_KP_0) && (event->keyval <= GDK_KP_9))
 	{
 		/* Build the macro trigger string */
-		strnfmt(msg, -1, "%cS_%X%c", 31, event->keyval, 13);
-		
+		strnfmt(msg, sizeof(msg), "%cS_%X%c", 31, event->keyval, 13);
+
 		/* Enqueue the "macro trigger" string */
 		for (i = 0; msg[i]; i++) Term_keypress(msg[i]);
 
@@ -908,6 +910,7 @@ gboolean keypress_event_handler(GtkWidget *widget, GdkEventKey *event, gpointer 
 			Term_keypress('\010');
 			return (TRUE);
 		}
+
 		case GDK_Shift_L:
 		case GDK_Shift_R:
 		case GDK_Control_L:
@@ -960,8 +963,6 @@ static void save_prefs(void)
 	
 	/* Open the settings file */
 	fff = file_open(settings, MODE_WRITE, FTYPE_TEXT);
-
-	/* Oops */
 	if (!fff) return;
 
 	/* Header */
@@ -1196,15 +1197,14 @@ static void load_prefs()
 		load_font_by_name(td, td->font.name);
 	
 		/* Set defaults if not initialized, or if funny values are there */
-		
-		if (td->size.w <=0) td->size.w = (td->rows * td->actual.h);
-		if (td->size.h <=0) td->size.h = (td->cols * td->actual.w);
+		if (td->size.w <= 0) td->size.w = (td->rows * td->actual.h);
+		if (td->size.h <= 0) td->size.h = (td->cols * td->actual.w);
 		if (td->tile.w <= 0) td->tile.w = td->font.w;
 		if (td->tile.h <= 0) td->tile.h = td->font.h;
-		
+
 		/* The main window should always be visible */
 		if (i == 0) td->visible = 1;
-		
+
 		/* Discard the old cols & rows values, and recalculate. */
 		set_row_and_cols(td);
 		
@@ -1216,6 +1216,7 @@ static void load_prefs()
 		
 		if ((xd->font.name == "") || (strlen(xd->font.name)<2)) 
 			my_strcpy(xd->font.name, "Monospace 10", sizeof(xd->font.name));
+
 		get_font_size(&xd->font);
 		
 		if ((xd->size.w <=0 ) || (xd->size.h <= 0))
@@ -1237,8 +1238,8 @@ static void load_prefs()
 gboolean on_mouse_click(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
 	int z = 0;
-	term_data *td = (term_data*)(Term->data);
-	
+	term_data *td = Term->data;
+
 	/* Where is the mouse */
 	int x = event->x;
 	int y = event->y;
@@ -1252,9 +1253,9 @@ gboolean on_mouse_click(GtkWidget *widget, GdkEventButton *event, gpointer user_
 	
 	/* The co-ordinates are only used in Angband format. */
 	pixel_to_square(&x, &y, x, y);
-	
 	Term_mousepress(x, y, z);
-	return(FALSE);
+
+	return FALSE;
 }
 
 gboolean expose_event_handler(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
@@ -1265,8 +1266,7 @@ gboolean expose_event_handler(GtkWidget *widget, GdkEventExpose *event, gpointer
 	term_data *td = user_data;
 	
 	g_assert(td->drawing_area->window != 0);
-	
-	
+
 	if (td->window)
 	{
 		g_assert(widget->window != 0);
@@ -1302,6 +1302,7 @@ gboolean expose_xtra_handler(GtkWidget *widget, GdkEventExpose *event, gpointer 
 
 	return (TRUE);
 }
+
 gboolean hide_options(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
 	gtk_widget_hide(widget);
@@ -1310,17 +1311,18 @@ gboolean hide_options(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 
 static void create_term_cairo(term_data *td)
 {	
-		measurements size;
+	measurements size;
 	
-		size.w = max_win_width(td);
-		size.h = max_win_height(td);
+	size.w = max_win_width(td);
+	size.h = max_win_height(td);
 		
-		td->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, size.w, size.h);
-		td->cr = cairo_create(td->surface);
+	td->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, size.w, size.h);
+	td->cr = cairo_create(td->surface);
 	
-		set_term_matrix(td);
-		term_data_redraw(td);
+	set_term_matrix(td);
+	term_data_redraw(td);
 }
+
 static void destroy_term_cairo(term_data *td)
 {
 	if (td->surface != NULL)
@@ -1329,21 +1331,24 @@ static void destroy_term_cairo(term_data *td)
 		cairo_destroy(td->cr);
 	}
 }
+
 gboolean toggle_term_window(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
+	term_data *td;
+
 	int t;
 	bool window_is_visible;
-	char* s;
-	
-	s = (char*)gtk_widget_get_name(widget);
+	const char *s;
+
+	s = gtk_widget_get_name(widget);
 	sscanf(s, "term_menu_item_%d", &t);
-	term_data *td = &data[t];
-	
+	td = &data[t];
+
 	window_is_visible = (GTK_WIDGET_VISIBLE(GTK_WIDGET(td->window)));
-	
+
 	/* I'm assuming this is only called by a menu item. I may want to put a check in for that. */
 	td->visible = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget));
-			
+
 	if (td->visible)
 	{
 		create_term_cairo(td);
@@ -1354,8 +1359,8 @@ gboolean toggle_term_window(GtkWidget *widget, GdkEvent *event, gpointer user_da
 		gtk_widget_hide(td->window);
 		destroy_term_cairo(td);
 	}
-	
-	return(td->visible);
+
+	return td->visible;
 }
 
 gboolean toggle_xtra_window(GtkWidget *widget, GdkEvent *event, gpointer user_data)
@@ -1405,6 +1410,7 @@ static void init_graf(int g)
 			#endif
 			break;
 		}
+
 		case GRAPHICS_ORIGINAL:
 		{
 			ANGBAND_GRAF = "old";
@@ -1416,6 +1422,7 @@ static void init_graf(int g)
 			#endif
 			break;
 		}
+
 		case GRAPHICS_ADAM_BOLT:
 		{
 			ANGBAND_GRAF = "new";
@@ -1427,6 +1434,7 @@ static void init_graf(int g)
 			#endif
 			break;
 		}
+
 		case GRAPHICS_DAVID_GERVAIS:
 		{
 			ANGBAND_GRAF = "david";
@@ -1438,7 +1446,8 @@ static void init_graf(int g)
 			#endif
 			break;
 		}
-	};
+	}
+
 	graphical_tiles = cairo_image_surface_create_from_png(buf);
 	tile_pattern = cairo_pattern_create_for_surface(graphical_tiles);
 	
@@ -1464,21 +1473,22 @@ static void init_graf(int g)
 	}
 } 
 
-static void setup_graphics_menu()
+static void setup_graphics_menu(void)
 {
-	int i = 0;
-	
-	for(i=0;i < 4; i++)
-	{
-		char s[12];
-		GtkWidget *menu;
-		bool checked = (i == arg_graphics);
+	GtkWidget *menu;
 		
-		strnfmt(s, 12, "graphics_%d", i);
+	char s[12];
+	int i;
+	
+	for (i = 0; i < 4; i++)
+	{
+		bool checked = (i == arg_graphics);
+
+		strnfmt(s, sizeof(s), "graphics_%d", i);
 		menu = glade_xml_get_widget(gtk_xml, s);
-		if (checked)
-			if (!gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu)))
-				gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu), TRUE); 
+
+		if (checked && !gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu)))
+			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu), TRUE); 
 	}
 }
 
@@ -1486,19 +1496,19 @@ static void setup_graphics_menu()
 gboolean on_graphics_activate(GtkWidget *widget, GdkEventExpose *event, gpointer user_data)
 {
 	int g;
-	char* s;
+	const char *s;
 	
-	s = (char*)gtk_widget_get_name(widget);
+	s = gtk_widget_get_name(widget);
 	sscanf(s, "graphics_%d", &g);
-	
+
 	/* Free up old graphics */
 	if (graphical_tiles != NULL)
 		cairo_surface_destroy(graphical_tiles);
 	if (tile_pattern != NULL)
 		cairo_pattern_destroy(tile_pattern);
-	
+
 	init_graf(g);
-	return(FALSE);
+	return FALSE;
 }
 
 /*
@@ -1506,7 +1516,7 @@ gboolean on_graphics_activate(GtkWidget *widget, GdkEventExpose *event, gpointer
  */
 static void white_on_black_textview(xtra_win_data *xd)
 {
-	GdkColor black =  { 0, 0x0000, 0x0000, 0x0000 };
+	GdkColor black = { 0, 0x0000, 0x0000, 0x0000 };
 	GdkColor white = { 0, 0xffff, 0xffff, 0xffff };
 	
 	gtk_widget_modify_base(xd->text_view, GTK_STATE_NORMAL, &black);
@@ -1527,7 +1537,7 @@ static void xtra_data_init(xtra_win_data *xd, int i)
 static void init_xtra_windows(void)
 {
 	int i = 0;
-	term_data *main_term= &data[0];
+	term_data *main_term = &data[0];
 	char temp[20];
 	GtkWidget *temp_widget;
 	
@@ -1535,7 +1545,7 @@ static void init_xtra_windows(void)
 	{
 		xtra_win_data *xd = &xdata[i];
 		
-		strnfmt(temp, 14, "xtra_font_%d", i);
+		strnfmt(temp, sizeof(temp), "xtra_font_%d", i);
 		temp_widget = glade_xml_get_widget(gtk_xml, temp);
 		gtk_font_button_set_font_name(GTK_FONT_BUTTON (temp_widget), xd->font.name);
 
@@ -1571,8 +1581,10 @@ static void init_xtra_windows(void)
 
 static void init_gtk_windows(void)
 {
-	char buf[1024], logo[1024], temp[20];
 	GtkWidget *options, *temp_widget;
+	GdkColor black = { 0, 0x0000, 0x0000, 0x0000 };
+
+	char buf[1024], logo[1024], temp[20];
 	int i = 0;
 	bool err;
 	
@@ -1622,7 +1634,7 @@ static void init_gtk_windows(void)
 		g_signal_connect(td->window, "delete_event", GTK_SIGNAL_FUNC(hide_event_handler), td);
 		
 		/* Set title and name */
-		strnfmt(temp, 14, "term_window_%d", i);
+		strnfmt(temp, sizeof(temp), "term_window_%d", i);
 		gtk_widget_set_name(td->window, temp);
 		gtk_window_set_title(GTK_WINDOW(td->window), td->name);
 		
@@ -1640,47 +1652,46 @@ static void init_gtk_windows(void)
 	for (i = 0; i < num_term; i++)
 	{
 		term_data *td = &data[i];
-		GdkColor black =  { 0, 0x0000, 0x0000, 0x0000 };
-		
+
 		gtk_widget_realize(td->window);
 		gtk_widget_realize(td->drawing_area); 
 		
 		gtk_widget_modify_bg(td->window, GTK_STATE_NORMAL, &black);
 		gtk_widget_modify_bg(td->drawing_area, GTK_STATE_NORMAL, &black);
-		
-		strnfmt(temp, 14, "term_font_%d", i);
+
+		strnfmt(temp, sizeof(temp), "term_font_%d", i);
 		temp_widget = glade_xml_get_widget(gtk_xml, temp);
 		gtk_widget_realize(temp_widget);
 		
-		err = gtk_font_button_set_font_name(GTK_FONT_BUTTON (temp_widget), td->font.name);
+		err = gtk_font_button_set_font_name(GTK_FONT_BUTTON(temp_widget), td->font.name);
 	}
 }
-static void show_windows()
+
+static void show_windows(void)
 {
 	int i;
+
 	GtkWidget *menu_item;
+	char item_name[20];
 	
 	/* Initialize the windows */
 	for (i = 0; i < num_term; i++)
 	{
 		term_data *td = &data[i];
-		char item_name[20];
 		
 		/* Activate the window screen */
 		Term_activate(&data[i].t);
 		
 		set_window_size(td);
 		
-		strnfmt(item_name, 16+1,  "term_menu_item_%i", i);
+		strnfmt(item_name, sizeof(item_name),  "term_menu_item_%i", i);
 		menu_item = glade_xml_get_widget(gtk_xml, item_name);
 		
-	if (td->visible)
+		if (td->visible)
 			create_term_cairo(td);
 			
 		if (i == 0)
-		{
 			gtk_widget_show(td->window);
-		}
 		else if (gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_item)) != td->visible)
 			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item), td->visible);
 		
@@ -1691,10 +1702,10 @@ static void show_windows()
 	{
 		xtra_win_data *xd = &xdata[i];
 		
-			set_xtra_window_size(xd);
-		
-			if (xd->visible) 
-				gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(xd->menu), TRUE);
+		set_xtra_window_size(xd);
+
+		if (xd->visible) 
+			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(xd->menu), TRUE);
 	}
 	
 	menu_item = glade_xml_get_widget(gtk_xml, "big_tile_item");
@@ -1705,13 +1716,13 @@ static void show_windows()
 
 static void xtra_data_destroy(xtra_win_data *xd)
 {
-	if GTK_IS_WIDGET(xd->win)
+	if (GTK_IS_WIDGET(xd->win))
 		gtk_widget_destroy(xd->win);
-	if GTK_IS_WIDGET(xd->text_view)
+	if (GTK_IS_WIDGET(xd->text_view))
 		gtk_widget_destroy(xd->text_view);
-	if GTK_IS_WIDGET(xd->menu)
+	if (GTK_IS_WIDGET(xd->menu))
 		gtk_widget_destroy(xd->menu);
-	if GTK_IS_WIDGET(xd->drawing_area)
+	if (GTK_IS_WIDGET(xd->drawing_area))
 		gtk_widget_destroy(xd->drawing_area);
 	
 	cairo_surface_destroy(xd->surface);
@@ -1720,9 +1731,9 @@ static void xtra_data_destroy(xtra_win_data *xd)
 
 static void term_data_destroy(term_data *td)
 {	
-	if GTK_IS_WIDGET(td->window)
+	if (GTK_IS_WIDGET(td->window))
 		gtk_widget_destroy(td->window);
-	if GTK_IS_WIDGET(td->drawing_area)
+	if (GTK_IS_WIDGET(td->drawing_area))
 		gtk_widget_destroy(td->drawing_area);
 	
 	cairo_surface_destroy(td->surface);
@@ -1740,7 +1751,7 @@ static void release_memory()
 	for (i = 0; i < MAX_XTRA_WIN_DATA; i++)
 	{
 		xtra_win_data *xd = &xdata[i];
-		
+
 		xtra_data_destroy(xd);
 	}
 	
@@ -1748,7 +1759,7 @@ static void release_memory()
 	for (i = 0; i < num_term; i++)
 	{
 		term_data *td = &data[i];
-		
+
 		term_data_destroy(td);
 	}
 	
@@ -1828,21 +1839,23 @@ static void handle_mons_target(game_event_type type, game_event_data *data, void
 static void init_color_tags(xtra_win_data *xd)
 {
 	int i;
-	char *c = NULL, colorname[10] = "color-00",str[10] = "#FFFFFF";
+	char colorname[10] = "color-00";
+	char str[10] = "#FFFFFF";
+
 	GtkTextTagTable *tags;
-	c = str;
+
 	tags = gtk_text_buffer_get_tag_table(xd->buf);
 	
 	for (i = 0; i <= 15; i++)
 	{
-		strnfmt(colorname, 8 + 1,  "color-%d", i);
-		strnfmt(c, 14, "#%02x%02x%02x", angband_color_table[i][1], angband_color_table[i][2], angband_color_table[i][3]);
-		
+		strnfmt(colorname, sizeof(colorname),  "color-%d", i);
+		strnfmt(str, sizeof(str), "#%02x%02x%02x", angband_color_table[i][1], angband_color_table[i][2], angband_color_table[i][3]);
+
 		if (gtk_text_tag_table_lookup(tags, colorname) != NULL)
 			gtk_text_tag_table_remove(tags, gtk_text_tag_table_lookup(tags, colorname));
 		
 		if (gtk_text_tag_table_lookup(tags, colorname) == NULL)
-			gtk_text_buffer_create_tag(xd->buf, colorname, "foreground", c, NULL);
+			gtk_text_buffer_create_tag(xd->buf, colorname, "foreground", str, NULL);
 	}
 }
 
@@ -1852,7 +1865,7 @@ static void text_view_put(xtra_win_data *xd, const char *str, byte color)
 	GtkTextIter start, end;
 	
 	/* Get the color tag ready, and tack a line feed on the line we're printing */
-	strnfmt(colorname, 8 + 1,  "color-%d", color);
+	strnfmt(colorname, sizeof(colorname),  "color-%d", color);
 	
 	/* Print it at the end of the window */
 	gtk_text_buffer_get_bounds(xd->buf, &start, &end);
@@ -1860,18 +1873,17 @@ static void text_view_put(xtra_win_data *xd, const char *str, byte color)
 }
 
 static void text_view_print(xtra_win_data *xd, const char *str, byte color)
-{	
-	strnfmt((char *)str, strlen(str) + 2, "%s\n", str);
+{
 	text_view_put(xd, str, color);
+	text_view_put(xd, "\n", color);
 }
 
 void gtk_log_fmt(byte c, cptr fmt, ...)
 {
 	xtra_win_data *xd = &xdata[4];
 	
-	char *res, str[80];
+	char str[80];
 	va_list vp;
-	int n;
 	
 	if (GTK_IS_TEXT_VIEW(xd->text_view))
 	{
@@ -1884,17 +1896,10 @@ void gtk_log_fmt(byte c, cptr fmt, ...)
 		init_color_tags(xd);
 	}
 	
-	/* Begin the Varargs Stuff */
 	va_start(vp, fmt);
-
-	/* Format the args */
-	res = vformat(fmt, vp);
-
-	/* End the Varargs Stuff */
+	(void)vstrnfmt(str, sizeof(str), fmt, vp);
 	va_end(vp);
 
-	n = my_strcpy(str, res, strlen(res) + 1);
-	
 	#ifdef VERBOSE_DEBUG
 	if (GTK_IS_TEXT_VIEW(xd->text_view))
 		plog(str);
@@ -1912,13 +1917,12 @@ void gtk_log_fmt(byte c, cptr fmt, ...)
 static void handle_message(game_event_type type, game_event_data *data, void *user)
 {
 	xtra_win_data *xd = &xdata[0];
-	
+
 	u16b num;
-	int i,c;
-	char str[80];
-	
-	if (xd != NULL)
-	{
+	int i;
+
+	if (!xd) return;
+
 	xd->buf = gtk_text_buffer_new(NULL);
 	gtk_text_view_set_buffer(GTK_TEXT_VIEW (xd->text_view), xd->buf);
 	
@@ -1927,13 +1931,7 @@ static void handle_message(game_event_type type, game_event_data *data, void *us
 	num = messages_num();
 	
 	for (i = 0; i < num; i++)
-	{
-		c = message_color(i);
-
-		strnfmt(str, strlen(message_str(i)) + 1, "%s", message_str(i));
-		text_view_print(xd, str, c);
-	}
-}
+		text_view_print(xd, message_str(i), message_color(i));
 }
 
 /* 
@@ -1959,7 +1957,7 @@ static int last_inv_slot(void)
 	return z;
 }
 
-static void inv_slot(char *str, int i, bool equip)
+static void inv_slot(char *str, size_t len, int i, bool equip)
 {
 	object_type *o_ptr;
 	register int n;
@@ -1970,15 +1968,15 @@ static void inv_slot(char *str, int i, bool equip)
 	o_ptr = &inventory[i];
 
 	/* Is this item "acceptable"? */
-	if (item_tester_okay(o_ptr) || equip )
+	if (item_tester_okay(o_ptr) || equip)
 	{
 		/* Obtain an item description */
 		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
 			
 		/* Obtain the length of the description */
 		n = strlen(o_name);
-		
-		strnfmt(label, 3 + 1, "%c) ",index_to_label(i));
+
+		strnfmt(label, sizeof(label), "%c) ", index_to_label(i));
 		
 		if (equip && show_labels)
 			name_size = name_size - 19;
@@ -1986,23 +1984,22 @@ static void inv_slot(char *str, int i, bool equip)
 		/* Display the weight if needed */
 		if (o_ptr->weight) 
 		{
-			
+			int wgt = o_ptr->weight * o_ptr->number;			
 			name_size = name_size - 4 - 9 - 9 - 5;
-			int wgt = o_ptr->weight * o_ptr->number;
 			
 			if (equip && show_labels)
-				strnfmt(str, 80,  "%s%-*s %3d.%1d lb <-- %s", label, name_size, o_name, wgt / 10, wgt % 10, mention_use(i));
+				strnfmt(str, len, "%s%-*s %3d.%1d lb <-- %s", label, name_size, o_name, wgt / 10, wgt % 10, mention_use(i));
 			else
-				strnfmt(str, 80, "%s%-*s %3d.%1d lb", label, name_size, o_name, wgt / 10, wgt % 10);
-			
+				strnfmt(str, len, "%s%-*s %3d.%1d lb", label, name_size, o_name, wgt / 10, wgt % 10);
 		}
 		else
 		{
 			name_size = name_size - 4 - 9 - 5;
+
 			if (equip && show_labels)
-				strnfmt(str, 80, "%s%-*s <-- %s", label, name_size, o_name, mention_use(i));
+				strnfmt(str, len, "%s%-*s <-- %s", label, name_size, o_name, mention_use(i));
 			else
-				strnfmt(str, 80, "%s%-*s", label, name_size, o_name);
+				strnfmt(str, len, "%s%-*s", label, name_size, o_name);
 		}
 	}
 }
@@ -2010,15 +2007,17 @@ static void inv_slot(char *str, int i, bool equip)
 static void handle_inv(game_event_type type, game_event_data *data, void *user)
 {
 	xtra_win_data *xd = &xdata[1];
-	
+
+	char str[80];
+		
 	register int i, z;
 	byte attr;
-	object_type *o_ptr;
-	
-	if (xd != NULL)
-	{
+
+
+	if (!xd) return;
+
 	xd->buf = gtk_text_buffer_new(NULL);
-	gtk_text_view_set_buffer(GTK_TEXT_VIEW (xd->text_view), xd->buf);
+	gtk_text_view_set_buffer(GTK_TEXT_VIEW(xd->text_view), xd->buf);
 	
 	init_color_tags(xd);
 	
@@ -2027,10 +2026,8 @@ static void handle_inv(game_event_type type, game_event_data *data, void *user)
 	/* Display the pack */
 	for (i = 0; i < z; i++)
 	{
-		char str[80];
-	
 		/* Examine the item */
-		o_ptr = &inventory[i];
+		object_type *o_ptr = &inventory[i];
 
 		/* Is this item "acceptable"? */
 		if (item_tester_okay(o_ptr))
@@ -2038,11 +2035,10 @@ static void handle_inv(game_event_type type, game_event_data *data, void *user)
 			/* Get inventory color */
 			attr = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
 			
-			inv_slot(str, i, FALSE);
+			inv_slot(str, sizeof(str), i, FALSE);
 			text_view_print(xd, str, attr);
 		}
 	}
-}
 }
 
 static void handle_equip(game_event_type type, game_event_data *data, void *user)
@@ -2051,31 +2047,28 @@ static void handle_equip(game_event_type type, game_event_data *data, void *user
 	
 	register int i;
 	byte attr;
-	object_type *o_ptr;
+		char str[80];
 	
-	if (xd != NULL)
-	{
+	if (!xd) return;
+
 	xd->buf = gtk_text_buffer_new(NULL);
-	gtk_text_view_set_buffer(GTK_TEXT_VIEW (xd->text_view), xd->buf);
+	gtk_text_view_set_buffer(GTK_TEXT_VIEW(xd->text_view), xd->buf);
 	
 	init_color_tags(xd);
 	
 	/* Display the pack */
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
-		char str[80];
+		object_type *o_ptr = &inventory[i];
 	
-		/* Examine the item */
-		o_ptr = &inventory[i];
-		
-		/* Is this item "acceptable"? */
 		attr = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
-		
-		inv_slot(str, i, TRUE);
+
+		inv_slot(str, sizeof(str), i, TRUE);
+
 		text_view_print(xd, str, attr);
 	}
-	}
 }
+
 static void handle_mons_list(game_event_type type, game_event_data *data, void *user)
 {
 	xtra_win_data *xd = &xdata[3];
@@ -2095,8 +2088,10 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 
 	u16b *race_count;
 	
-	if (xd != NULL)
-	{
+
+	if (!xd) return;
+
+
 	xd->buf = gtk_text_buffer_new(NULL);
 	gtk_text_view_set_buffer(GTK_TEXT_VIEW (xd->text_view), xd->buf);
 	
@@ -2121,7 +2116,7 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 	/* Note no visible monsters */
 	if (!total_count)
 	{
-		strnfmt(str, 20 + 1, "You see no monsters.");
+		strnfmt(str, sizeof(str), "You see no monsters.");
 		text_view_print(xd, str, TERM_SLATE);
 
 		/* Free up memory */
@@ -2131,7 +2126,7 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 		return;
 	}
 	
-	strnfmt(str, 25 + 1, "You can see %d monster%s:", total_count, (total_count > 1 ? "s" : ""));
+	strnfmt(str, sizeof(str), "You can see %d monster%s:", total_count, PLURAL(total_count));
 	text_view_print(xd, str, 1);
 	
 	/* Go over */
@@ -2161,22 +2156,24 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 			my_strcpy(buf, m_name, sizeof(buf));
 		else
 			strnfmt(buf, sizeof(buf), "%s (x%d) ", m_name, race_count[i]);
-		
+
 		text_view_print(xd, buf, attr);
 		line++;
 	}
 
 	/* Free the race counters */
 	FREE(race_count);
-	}
 }
 
-static byte monst_color(float percent)
+static byte monst_color(const monster_type *m_ptr)
 {
-	int pct = percent * 100;
 	byte attr = TERM_WHITE;
-	monster_type *m_ptr = &mon_list[p_ptr->health_who];
-	
+	int pct = 0;
+
+	if (m_ptr->maxhp)
+		pct = (m_ptr->hp * 100) / m_ptr->maxhp;
+
+
 	/* Badly wounded */
 	if (pct >= 10) attr = TERM_L_RED;
 
@@ -2188,6 +2185,7 @@ static byte monst_color(float percent)
 
 	/* Healthy */
 	if (pct >= 100) attr = TERM_L_GREEN;
+
 
 	/* Afraid */
 	if (m_ptr->monfear) attr = TERM_VIOLET;
@@ -2295,7 +2293,6 @@ static void handle_sidebar(game_event_type type, game_event_data *data, void *us
 {
 	char str[80], str2[80];
 	byte color;
-	float m_cur_hp, m_max_hp, percent;
 	cairo_rectangle_t r;
 	
 	xtra_win_data *xd = &xdata[5];
@@ -2391,11 +2388,7 @@ static void handle_sidebar(game_event_type type, game_event_data *data, void *us
 			color = TERM_YELLOW;
 		else
 			color = TERM_RED;
-		
-		percent = 0;
-		if (p_ptr->mhp > 0.0)
-			percent = (p_ptr->chp / p_ptr->mhp);
-		
+
 		cr_aligned_text_print(xd, 0, 16, str, TERM_WHITE, str2, color, sidebar_length);
 		xtra_drawn_progress_bar(xd, 0, 17, p_ptr->chp, p_ptr->mhp, color, 13);
 	
@@ -2410,29 +2403,16 @@ static void handle_sidebar(game_event_type type, game_event_data *data, void *us
 			color = TERM_RED;
 		cr_aligned_text_print(xd, 0, 18, str, TERM_WHITE, str2, color, sidebar_length);
 		
-		percent = 0;
-		if (p_ptr->msp > 0)
-			percent = p_ptr->csp/p_ptr->msp;
-		
 		xtra_drawn_progress_bar(xd, 0, 19, p_ptr->csp, p_ptr->msp, color, 13);
 	
 		/* 20 is blank */
 	
-		m_cur_hp = m_ptr->hp;
-		m_max_hp = m_ptr->maxhp;
-		if ((m_max_hp > 0.0) && (m_cur_hp > 0.0))
-			percent = m_cur_hp / m_max_hp;
-		else
-			percent = 0;
-		
-		xtra_drawn_progress_bar(xd, 0, 21, m_cur_hp, m_max_hp, monst_color(percent), 13);
-		
-		/* 20 is blank */
-	
+		xtra_drawn_progress_bar(xd, 0, 21, m_ptr->hp, m_ptr->maxhp, monst_color(m_ptr), 13);
+
 		/* Print the level */
 		strnfmt(str, sizeof(str), "%d' (L%d)", p_ptr->depth * 50, p_ptr->depth); 
-		strnfmt(str, sizeof(str), "%-*s", sidebar_length, str);
-		draw_xtra_cr_text(xd, 0, 22, TERM_WHITE, str);
+		strnfmt(str2, sizeof(str2), "%-*s", sidebar_length, str);
+		draw_xtra_cr_text(xd, 0, 22, TERM_WHITE, str2);
 		
 		invalidate_drawing_area(xd->drawing_area, r);
 	}
@@ -2479,7 +2459,7 @@ void init_handlers()
 
 	/* Set command hook */
 	get_game_command = get_init_cmd;
-	
+
 	/* I plan to put everything on the sidebar together, so... */
 	event_add_handler_set(my_player_events, N_ELEMENTS(my_player_events), handle_sidebar, NULL);
 
@@ -2607,4 +2587,4 @@ errr init_gtk(int argc, char **argv)
 	return (0);
 }
 
-#endif  /*USE_GTK */
+#endif /* USE_GTK */
