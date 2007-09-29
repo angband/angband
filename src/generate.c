@@ -5039,142 +5039,123 @@ static void town_gen(void)
 
 
 /*
+ * Clear the dungeon, ready for generation to begin.
+ */
+static void clear_cave(void)
+{
+	int x, y;
+
+	wipe_o_list();
+	o_max = 1;
+
+	wipe_mon_list();
+	mon_max = 1;
+
+
+	/* Clear flags and flow information. */
+	for (y = 0; y < DUNGEON_HGT; y++)
+	{
+		for (x = 0; x < DUNGEON_WID; x++)
+		{
+			/* No features */
+			cave_feat[y][x] = 0;
+
+			/* No flags */
+			cave_info[y][x] = 0;
+			cave_info2[y][x] = 0;
+
+			/* No flow */
+			cave_cost[y][x] = 0;
+			cave_when[y][x] = 0;
+		}
+	}
+
+	/* Mega-Hack -- no player in dungeon yet */
+	cave_m_idx[p_ptr->py][p_ptr->px] = 0;
+	p_ptr->px = p_ptr->py = 0;
+
+	/* Hack -- illegal panel */
+	Term->offset_y = DUNGEON_HGT;
+	Term->offset_x = DUNGEON_WID;
+
+
+	/* Nothing special here yet */
+	good_item_flag = FALSE;
+
+	/* Nothing good here yet */
+	rating = 0;
+}
+
+
+/*
+ * Calculate the level feeling, using a "rating" and the player's depth.
+ */
+static int calculate_feeling(int rating, int depth)
+{
+	int feeling;
+
+	/* Town gets no feeling */
+	if (!depth == 0) return 0;
+
+
+	/* Extract the feeling */
+	if      (rating > 50 +     depth    ) feeling = 2;
+	else if (rating > 40 + 4 * depth / 5) feeling = 3;
+	else if (rating > 30 + 3 * depth / 5) feeling = 4;
+	else if (rating > 20 + 2 * depth / 5) feeling = 5;
+	else if (rating > 15 + 1 * depth / 3) feeling = 6;
+	else if (rating > 10 + 1 * depth / 5) feeling = 7;
+	else if (rating >  5 + 1 * depth /10) feeling = 8;
+	else if (rating >  0) feeling = 9;
+	else feeling = 10;
+
+	/* Hack -- Have a special feeling sometimes */
+	if (good_item_flag && OPT(adult_no_preserve)) feeling = 1;
+
+	return feeling;
+}
+
+
+/*
  * Generate a random dungeon level
- *
- * Hack -- regenerate any "overflow" levels
- *
- * Hack -- allow auto-scumming via a gameplay option.
- *
- * Note that this function resets flow data and grid flags directly.
- * Note that this function does not reset features, monsters, or objects.  
- * Features are left to the town and dungeon generation functions, and 
- * "wipe_m_list()" and "wipe_o_list()" handle monsters and objects.
  */
 void generate_cave(void)
 {
-	int y, x, num;
+	const char *error = "no generation";
 
 	/* The dungeon is not ready */
 	character_dungeon = FALSE;
 
-	/* Generate */
-	for (num = 0; TRUE; num++)
+	while (error)
 	{
-		bool okay = TRUE;
-		cptr why = NULL;
+		error = NULL;
+		clear_cave();
 
-		/* Reset monsters and objects */
-		o_max = 1;
-		mon_max = 1;
-
-
-		/* Clear flags and flow information. */
-		for (y = 0; y < DUNGEON_HGT; y++)
-		{
-			for (x = 0; x < DUNGEON_WID; x++)
-			{
-				/* No flags */
-				cave_info[y][x] = 0;
-				cave_info2[y][x] = 0;
-
-				/* No flow */
-				cave_cost[y][x] = 0;
-				cave_when[y][x] = 0;
-			}
-		}
-
-
-		/* Mega-Hack -- no player in dungeon yet */
-		cave_m_idx[p_ptr->py][p_ptr->px] = 0;
-		p_ptr->px = p_ptr->py = 0;
-
-		/* Hack -- illegal panel */
-		Term->offset_y = DUNGEON_HGT;
-		Term->offset_x = DUNGEON_WID;
-
-
-		/* Nothing special here yet */
-		good_item_flag = FALSE;
-
-		/* Nothing good here yet */
-		rating = 0;
-
-		/* Build the town */
-		if (!p_ptr->depth)
-		{
-			/* Make a town */
+		if (p_ptr->depth == 0)
 			town_gen();
-		}
-
-		/* Build a real level */
 		else
-		{
-			/* Make a dungeon */
 			cave_gen();
-		}
-
-		okay = TRUE;
-
-
-		/* Extract the feeling */
-		if      (rating > 50 +     p_ptr->depth    ) feeling = 2;
-		else if (rating > 40 + 4 * p_ptr->depth / 5) feeling = 3;
-		else if (rating > 30 + 3 * p_ptr->depth / 5) feeling = 4;
-		else if (rating > 20 + 2 * p_ptr->depth / 5) feeling = 5;
-		else if (rating > 15 + 1 * p_ptr->depth / 3) feeling = 6;
-		else if (rating > 10 + 1 * p_ptr->depth / 5) feeling = 7;
-		else if (rating >  5 + 1 * p_ptr->depth /10) feeling = 8;
-		else if (rating >  0) feeling = 9;
-		else feeling = 10;
-
-		/* Hack -- Have a special feeling sometimes */
-		if (good_item_flag && adult_no_preserve) feeling = 1;
 
 		/* It takes 1000 game turns for "feelings" to recharge */
-		if (((turn - old_turn) < 1000) && (old_turn > 1)) feeling = 0;
+		if (((turn - old_turn) < 1000) && (old_turn > 1))
+			feeling = 0;
+		else
+			feeling = calculate_feeling(rating, p_ptr->depth);
 
-		/* Hack -- no feeling in the town */
-		if (!p_ptr->depth) feeling = 0;
-
-
-		/* Prevent object over-flow */
+		/* Hack -- regenerate any "overflow" levels */
 		if (o_max >= z_info->o_max)
-		{
-			/* Message */
-			why = "too many objects";
-
-			/* Message */
-			okay = FALSE;
-		}
-
-		/* Prevent monster over-flow */
+			error = "too many objects";
 		if (mon_max >= z_info->m_max)
-		{
-			/* Message */
-			why = "too many monsters";
+			error = "too many monsters";
 
-			/* Message */
-			okay = FALSE;
-		}
 
-		/* Message */
-		if ((cheat_room) && (why)) 
-			msg_format("Generation restarted (%s)", why);
-
-		/* Accept */
-		if (okay) break;
-
-		/* Wipe the objects */
-		wipe_o_list();
-
-		/* Wipe the monsters */
-		wipe_mon_list();
+		if (OPT(cheat_room) && error)
+			msg_format("Generation restarted: %s.", error);
 	}
 
 
 	/* The dungeon is ready */
 	character_dungeon = TRUE;
-
 
 	/* Remember when this level was "created" */
 	old_turn = turn;

@@ -1997,11 +1997,6 @@ void play_game(void)
 		if (!p_ptr->playing && !p_ptr->is_dead) break;
 
 
-		/* Erase the old cave */
-		wipe_o_list();
-		wipe_mon_list();
-
-
 		/* XXX XXX XXX */
 		message_flush();
 
