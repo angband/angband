@@ -16,8 +16,10 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "wizard.h"
 #include "cmds.h"
 #include "ui-menu.h"
+
 
 /*
  * This file contains (several) big lists of commands, so that they can be

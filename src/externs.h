@@ -739,22 +739,10 @@ extern bool confuse_dir(int *dp);
  * Hack -- conditional externs
  */
 
-#ifdef ALLOW_DEBUG
-/* wizard2.c */
-extern void do_cmd_debug(void);
-#endif /* ALLOW_DEBUG */
-
-
 #ifdef ALLOW_BORG
 /* borg.h */
 extern void do_cmd_borg(void);
 #endif /* ALLOW_BORG */
-
-
-/* wizard1.c */
-#ifdef ALLOW_SPOILERS
-extern void do_cmd_spoilers(void);
-#endif /* ALLOW_SPOILERS */
 
 bool make_fake_artifact(object_type *o_ptr, byte name1);
 

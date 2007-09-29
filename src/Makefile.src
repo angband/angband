@@ -29,6 +29,7 @@ HEADERS = \
 	ui-event.h \
 	ui.h \
 	ui-menu.h \
+	wizard.h \
 	z-blockfile.h \
 	z-file.h \
 	z-form.h \
@@ -87,7 +88,6 @@ ANGFILES = \
 	spells1.o \
 	spells2.o \
 	squelch.o \
-	stats.o \
 	store.o \
 	tables.o \
 	trap.o \
@@ -96,8 +96,9 @@ ANGFILES = \
 	ui-menu.o \
 	util.o  \
 	variable.o \
-	wizard1.o \
-	wizard2.o \
+	wiz-spoil.o \
+	wiz-stats.o \
+	wizard.o \
 	x-spell.o \
 	xtra1.o \
 	xtra2.o \
