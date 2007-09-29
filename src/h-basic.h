@@ -1,9 +1,3 @@
-/*
- * File: h-basic.h
- *
- * The most basic "include" file.
- */
-
 #ifndef INCLUDED_H_BASIC_H
 #define INCLUDED_H_BASIC_H
 
@@ -195,6 +189,9 @@ typedef int errr;
 
   typedef uint32_t u32b;
   typedef int32_t s32b;
+
+  typedef uint64_t u64b;
+  typedef int64_t s64b;
 
 #define MAX_UCHAR		UINT8_MAX
 #define MAX_SHORT		INT16_MAX
