@@ -180,6 +180,12 @@ static bool obj_can_set_squelch(const object_type *o_ptr)
 static void obj_set_squelch(object_type *o_ptr, int item)
 {
 	k_info[o_ptr->k_idx].squelch = TRUE;
+
+	/* Hack -- Cannot remove cursed items */
+	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
+		return;
+
+	inven_drop(item, o_ptr->number);
 }
 
 
