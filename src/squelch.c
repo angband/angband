@@ -473,7 +473,7 @@ void squelch_items(void)
 
 	/* Set the hook and scan the floor */
 	item_tester_hook = squelch_item_ok;
-	(void)scan_floor(floor_list, &floor_num, p_ptr->py, p_ptr->px, 0x01);
+	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), p_ptr->py, p_ptr->px, 0x01);
 
 	if (floor_num)
 	{

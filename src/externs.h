@@ -413,7 +413,7 @@ extern s16b wield_slot(const object_type *o_ptr);
 extern cptr mention_use(int i);
 extern cptr describe_use(int i);
 extern bool item_tester_okay(const object_type *o_ptr);
-extern bool scan_floor(int *items, int *item_num, int y, int x, int mode);
+extern int scan_floor(int *items, int max_size, int y, int x, int mode);
 extern void display_inven(void);
 extern void display_equip(void);
 extern void show_inven(void);

@@ -2615,8 +2615,10 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 		/* Assume not floored */
 		floored = FALSE;
 
+		floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), y, x, 0x02);
+
 		/* Scan all marked objects in the grid */
-		if ((scan_floor(floor_list, &floor_num, y, x, 0x02)) &&
+		if ((floor_num > 0) &&
 		    (!(p_ptr->timed[TMD_BLIND]) || (y == p_ptr->py && x == p_ptr->px)))
 		{
 			/* Not boring */

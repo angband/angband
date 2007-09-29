@@ -1925,21 +1925,23 @@ bool item_tester_okay(const object_type *o_ptr)
  *   0x02 -- Marked/visible items only
  *   0x04 -- Only the top item
  */
-bool scan_floor(int *items, int *item_num, int y, int x, int mode)
+int scan_floor(int *items, int max_size, int y, int x, int mode)
 {
 	int this_o_idx, next_o_idx;
 
 	int num = 0;
 
-	(*item_num) = 0;
-
 	/* Sanity */
-	if (!in_bounds(y, x)) return (FALSE);
+	if (!in_bounds(y, x)) return 0;
 
 	/* Scan all objects in the grid */
 	for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
 	{
 		object_type *o_ptr;
+
+		/* XXX Hack -- Enforce limit */
+		if (num >= max_size) break;
+
 
 		/* Get the object */
 		o_ptr = &o_list[this_o_idx];
@@ -1959,16 +1961,9 @@ bool scan_floor(int *items, int *item_num, int y, int x, int mode)
 
 		/* Only one */
 		if (mode & 0x04) break;
-
-		/* XXX Hack -- Enforce limit */
-		if (num == MAX_FLOOR_STACK) break;
 	}
 
-	/* Number of items */
-	(*item_num) = num;
-
-	/* Result */
-	return (num != 0);
+	return num;
 }
 
 
@@ -2802,7 +2797,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 
 	/* Scan all non-gold objects in the grid */
-	(void)scan_floor(floor_list, &floor_num, py, px, 0x01);
+	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x03);
 
 	/* Full floor */
 	f1 = 0;

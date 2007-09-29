@@ -365,6 +365,10 @@ byte py_pickup(int pickup, bool pickup_okay)
 		/* Ignore all hidden objects and non-objects */
 		if (squelch_hide_item(o_ptr) || !o_ptr->k_idx) continue;
 
+		/* XXX Hack -- Enforce limit */
+		if (floor_num >= N_ELEMENTS(floor_list)) break;
+
+
 		/* Hack -- disturb */
 		disturb(0, 0);
 
@@ -391,9 +395,6 @@ byte py_pickup(int pickup, bool pickup_okay)
 		/* Tally objects that can be picked up.*/
 		if (inven_carry_okay(o_ptr))
 			can_pickup++;
-
-		/* XXX Hack -- Enforce limit */
-		if (floor_num == MAX_FLOOR_STACK) break;
 	}
 
 	/* There are no objects left */
@@ -437,7 +438,7 @@ byte py_pickup(int pickup, bool pickup_okay)
 				else if (!can_pickup) p = "have no room for the following objects";
 
 				/* Scan all marked objects in the grid */
-				(void)scan_floor(floor_list, &floor_num, py, px, 0x03);
+				floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x03);
 
 				/* Save screen */
 				screen_save();
@@ -479,7 +480,7 @@ byte py_pickup(int pickup, bool pickup_okay)
 	if (pickup == 1)
 	{
 		/* Scan floor (again) */
-		(void)scan_floor(floor_list, &floor_num, py, px, 0x03);
+		floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x03);
 
 		/* Use a menu interface for multiple objects, or pickup single objects */
 		if (floor_num > 1)
