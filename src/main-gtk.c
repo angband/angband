@@ -31,11 +31,6 @@
 */
 /*#define VERBOSE_DEBUG*/
 
-/*
- * This will disable testing features.
- */
- /*#define DISABLE_GTK_TESTING*/
-
 static int max_win_width(term_data *td)
 {
 	return (255 * td->font.w);
@@ -117,7 +112,10 @@ static void invalidate_drawing_area(GtkWidget *widget, cairo_rectangle_t r)
 	GdkRectangle s;
 	
 	s = cairo_rect_to_gdk(&r);
-	gdk_window_invalidate_rect(widget->window, &s, TRUE);
+	if (widget->window != NULL)
+	{
+		gdk_window_invalidate_rect(widget->window, &s, TRUE);
+	}
 }
 
 static void term_data_resize(term_data *td)
@@ -1549,10 +1547,6 @@ static void init_xtra_windows(void)
 		xd->menu = glade_xml_get_widget(gtk_xml, xd->item_name);
 		g_signal_connect(xd->menu, "activate", G_CALLBACK(toggle_xtra_window), (gpointer) xd->name);
 		
-		#ifdef DISABLE_GTK_TESTING
-		gtk_widget_set_sensitive(xd->menu, FALSE);
-		#endif
-		
 		xd->text_view = glade_xml_get_widget(gtk_xml, xd->text_view_name);
 		xd->drawing_area = glade_xml_get_widget(gtk_xml, xd->drawing_area_name);
 		if (xd->text_view != NULL)
@@ -1814,7 +1808,6 @@ static game_command get_init_cmd()
 	return cmd;
 }
 
-#ifndef DISABLE_GTK_TESTING
 static void handle_map(game_event_type type, game_event_data *data, void *user)
 {
 	/*gtk_log_fmt(TERM_WHITE, "The map changed.");*/
@@ -1852,7 +1845,6 @@ static void init_color_tags(xtra_win_data *xd)
 			gtk_text_buffer_create_tag(xd->buf, colorname, "foreground", c, NULL);
 	}
 }
-#endif
 
 static void text_view_put(xtra_win_data *xd, const char *str, byte color)
 {
@@ -1875,15 +1867,12 @@ static void text_view_print(xtra_win_data *xd, const char *str, byte color)
 
 void gtk_log_fmt(byte c, cptr fmt, ...)
 {
-	#ifndef DISABLE_GTK_TESTING
 	xtra_win_data *xd = &xdata[4];
-	#endif
 	
 	char *res, str[80];
 	va_list vp;
 	int n;
 	
-	#ifndef DISABLE_GTK_TESTING
 	if (GTK_IS_TEXT_VIEW(xd->text_view))
 	{
 		xd->buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(xd->text_view));
@@ -1894,7 +1883,6 @@ void gtk_log_fmt(byte c, cptr fmt, ...)
 		}
 		init_color_tags(xd);
 	}
-	#endif
 	
 	/* Begin the Varargs Stuff */
 	va_start(vp, fmt);
@@ -1912,15 +1900,12 @@ void gtk_log_fmt(byte c, cptr fmt, ...)
 		plog(str);
 	#endif
 	
-	#ifndef DISABLE_GTK_TESTING
 	if (GTK_IS_TEXT_VIEW(xd->text_view))
 		text_view_print(xd, str, c);
 	else
-	#endif
 		plog(str);
 }
 
-#ifndef DISABLE_GTK_TESTING
 /*
  * Update our own personal message window.
  */
@@ -2485,7 +2470,6 @@ static void handle_statusline(game_event_type type, game_event_data *data, void 
 {
 	gtk_log_fmt(TERM_WHITE, "Showing the statusline.");
 }
-#endif
 
 void init_handlers()
 {
@@ -2496,7 +2480,6 @@ void init_handlers()
 	/* Set command hook */
 	get_game_command = get_init_cmd;
 	
-	#ifndef DISABLE_GTK_TESTING
 	/* I plan to put everything on the sidebar together, so... */
 	event_add_handler_set(my_player_events, N_ELEMENTS(my_player_events), handle_sidebar, NULL);
 
@@ -2517,7 +2500,6 @@ void init_handlers()
 	event_add_handler(EVENT_ENTER_STORE, handle_store, NULL);
 	event_add_handler(EVENT_ENTER_DEATH, handle_death, NULL);
 	event_add_handler(EVENT_END, handle_end, NULL);
-	#endif
 }
 
 errr init_gtk(int argc, char **argv)

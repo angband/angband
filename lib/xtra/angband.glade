@@ -283,13 +283,13 @@
 	  </child>
 
 	  <child>
-	    <widget class="GtkMenuItem" id="testing_menu">
+	    <widget class="GtkMenuItem" id="extra_menu">
 	      <property name="visible">True</property>
-	      <property name="label" translatable="yes">_Testing</property>
+	      <property name="label" translatable="yes">_Extra</property>
 	      <property name="use_underline">True</property>
 
 	      <child>
-		<widget class="GtkMenu" id="testing_menu_menu">
+		<widget class="GtkMenu" id="extra_menu_menu">
 
 		  <child>
 		    <widget class="GtkCheckMenuItem" id="messages_item">
