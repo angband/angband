@@ -87,6 +87,7 @@ ANGFILES = \
 	spells1.o \
 	spells2.o \
 	squelch.o \
+	stats.o \
 	store.o \
 	tables.o \
 	trap.o \

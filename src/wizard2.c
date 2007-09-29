@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "stats.h"
 #include "cmds.h"
 
 
@@ -1543,6 +1544,12 @@ void do_cmd_debug(void)
 		case 'e':
 		{
 			do_cmd_wiz_change();
+			break;
+		}
+
+		case 'f':
+		{
+			stats_collect();
 			break;
 		}
 
