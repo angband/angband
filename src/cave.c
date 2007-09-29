@@ -3907,13 +3907,6 @@ void disturb(int stop_search, int unused_flag)
 		p_ptr->redraw |= (PR_STATE);
 	}
 
-	/* Cancel auto-pickup if badly wounded  XXX XXX */
-	if ((p_ptr->notice & (PN_PICKUP)) &&
-	    (p_ptr->chp < (p_ptr->mhp * op_ptr->hitpoint_warn / 10)))
-	{
-		p_ptr->auto_pickup_okay = FALSE;
-	}
-
 	/* Flush the input if requested */
 	if (flush_disturb) flush();
 }

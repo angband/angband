@@ -1101,7 +1101,6 @@ void run_step(int dir)
 	p_ptr->energy_use = 100;
 
 	/* Move the player.  Never pick up objects */
-	p_ptr->auto_pickup_okay = FALSE;
-	move_player(p_ptr->run_cur_dir);
+	move_player(p_ptr->run_cur_dir, FALSE);
 }
 

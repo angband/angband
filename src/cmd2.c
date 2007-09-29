@@ -2053,7 +2053,7 @@ static bool do_cmd_walk_test(int y, int x)
 /*
  * Helper function for the "walk" command.
  */
-void do_cmd_walk(void)
+static void walk(bool can_pickup)
 {
 	int y, x, dir;
 
@@ -2099,27 +2099,32 @@ void do_cmd_walk(void)
 	}
 
 	/* Move the player */
-	move_player(dir);
+	move_player(dir, can_pickup);
+}
+
+/*
+ * Walk.
+ */
+void do_cmd_walk(void)
+{
+	walk(TRUE);
 }
 
 /*
  * Jump into a trap, turn off pickup.
  *
- * What a horrible function.
+ * What a horrible concept.
  */
 void do_cmd_jump(void)
 {
 	bool old_easy_alter;
 
-	/* Picking up NOT okay, so whatever you heard is obviously wrong */
-	p_ptr->auto_pickup_okay = FALSE;
-
 	/* easy_alter can be turned off (don't disarm traps) */
 	old_easy_alter = easy_alter;
 	easy_alter = FALSE;
 
-	/* Now actually do this silly walk */
-	do_cmd_walk();
+	/* Walk without pickup */
+	walk(FALSE);
 
 	/* Restore easy_alter */
 	easy_alter = old_easy_alter;
@@ -2223,7 +2228,7 @@ void do_cmd_hold(void)
 	}
 
 	/* Handle objects now.  XXX XXX XXX */
-	p_ptr->energy_use += py_pickup(0) * 10;
+	p_ptr->energy_use += py_pickup(0, TRUE) * 10;
 
 	/* Hack -- enter a store if we are on one */
 	if ((cave_feat[p_ptr->py][p_ptr->px] >= FEAT_SHOP_HEAD) &&
@@ -2250,7 +2255,7 @@ void do_cmd_pickup(void)
 	int energy_cost;
 
 	/* Pick up floor objects, forcing a menu for multiple objects. */
-	energy_cost = py_pickup(1) * 10;
+	energy_cost = py_pickup(1, TRUE) * 10;
 
 	/* Maximum time expenditure is a full turn. */
 	if (energy_cost > 100) energy_cost = 100;

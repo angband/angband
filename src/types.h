@@ -928,8 +928,6 @@ struct player_type
 	bool run_break_right;	/* Looking for a break (right) */
 	bool run_break_left;	/* Looking for a break (left) */
 
-	bool auto_pickup_okay;      /* Allow automatic pickup */
-
 	s16b command_cmd;		/* Gives identity of current command */
 	s16b command_arg;		/* Gives argument of current command */
 	s16b command_rep;		/* Gives repetition of current command */

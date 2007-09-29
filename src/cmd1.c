@@ -240,6 +240,9 @@ static void py_pickup_gold(void)
  */
 static bool auto_pickup_okay(const object_type *o_ptr)
 {
+	/* Bad wounds prelude autopickup */
+	if (p_ptr->chp < (p_ptr->mhp * op_ptr->hitpoint_warn / 10)) return FALSE;
+
 	if (!inven_carry_okay(o_ptr)) return FALSE;
 
 	if (OPT(pickup_inven) && inven_stack_okay(o_ptr)) return TRUE;
@@ -321,7 +324,7 @@ static void py_pickup_aux(int o_idx, bool msg)
  * Note the lack of chance for the character to be disturbed by unmarked
  * objects.  They are truly "unknown".
  */
-byte py_pickup(int pickup)
+byte py_pickup(int pickup, bool pickup_okay)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -342,12 +345,6 @@ byte py_pickup(int pickup)
 
 	bool blind = ((p_ptr->timed[TMD_BLIND]) || (no_lite()));
 	bool msg = TRUE;
-
-	bool auto_okay = p_ptr->auto_pickup_okay;
-
-
-	/* Reset auto_pickup_okay */
-	p_ptr->auto_pickup_okay = TRUE;
 
 
 	/* Nothing to pick up -- return */
@@ -373,7 +370,7 @@ byte py_pickup(int pickup)
 
 
 		/* Automatically pick up items into the backpack */
-		if (auto_okay && auto_pickup_okay(o_ptr))
+		if (pickup_okay && auto_pickup_okay(o_ptr))
 		{
 			/* Pick up the object with message */
 			py_pickup_aux(this_o_idx, TRUE);
@@ -531,7 +528,7 @@ byte py_pickup(int pickup)
 	 * If requested, call this function recursively.  Count objects picked
 	 * up.  Force the display of a menu in all cases.
 	 */
-	if (call_function_again) objs_picked_up += py_pickup(2);
+	if (call_function_again) objs_picked_up += py_pickup(2, pickup_okay);
 
 	/* Indicate how many objects have been picked up. */
 	return (objs_picked_up);
@@ -547,7 +544,7 @@ byte py_pickup(int pickup)
  * Note that this routine handles monsters in the destination grid,
  * and also handles attempting to move into walls/doors/rubble/etc.
  */
-void move_player(int dir)
+void move_player(int dir, bool pickup_okay)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -710,7 +707,7 @@ void move_player(int dir)
 			p_ptr->command_new = '_';
 
 			/* Handle objects now.  XXX */
-			p_ptr->energy_use = py_pickup(2) * 10;
+			p_ptr->energy_use = py_pickup(2, pickup_okay) * 10;
 		}
 
 

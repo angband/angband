@@ -1271,7 +1271,7 @@ static void process_player(void)
 		else if (p_ptr->notice & (PN_PICKUP))
 		{
 			/* Recursively call the pickup function, use energy */
-			p_ptr->energy_use = py_pickup(0) * 10;
+			p_ptr->energy_use = py_pickup(0, TRUE) * 10;
 			p_ptr->notice &= ~(PN_PICKUP);
 		}
 
