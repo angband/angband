@@ -1142,12 +1142,6 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 		case TV_STAFF:
 		case TV_WAND:
 		{
-			/* Require either knowledge or known empty for both wands/staves */
-			if ((!(o_ptr->ident & (IDENT_EMPTY)) &&
-				!object_known_p(o_ptr)) ||
-				(!(j_ptr->ident & (IDENT_EMPTY)) &&
-				!object_known_p(j_ptr))) return(0);
-
 			/* Assume okay */
 			break;
 		}
@@ -1216,7 +1210,7 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 				return FALSE;
 
 			/* Lites must have same amount of fuel */
-			else if(o_ptr->timeout != j_ptr->timeout && o_ptr->tval == TV_LITE)
+			else if (o_ptr->timeout != j_ptr->timeout && o_ptr->tval == TV_LITE)
 				return FALSE;
 
 			/* Require identical "values" */

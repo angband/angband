@@ -169,7 +169,7 @@ static void sense_inventory(void)
 
 
 		/* It has already been sensed, do not sense it again */
-		if (o_ptr->ident & (IDENT_SENSE))
+		if (o_ptr->ident & IDENT_SENSE)
 		{
 			/* Small chance of wielded, sensed items getting complete ID */
 			if (!o_ptr->name1 && (i >= INVEN_WIELD) && one_in_(1000))
@@ -200,34 +200,37 @@ static void sense_inventory(void)
 		/* Stop everything */
 		if (disturb_minor) disturb(0, 0);
 
-		/* Get an object description */
-		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 0);
-
-		/* Message (equipment) */
-		sound(MSG_PSEUDOID);
-
-		if (i >= INVEN_WIELD)
+		/* Average pseudo-ID means full ID */
+		if (feel == INSCRIP_AVERAGE)
 		{
-			msg_format("You feel the %s (%c) you are %s %s %s...",
-			           o_name, index_to_label(i), describe_use(i),
-			           ((o_ptr->number == 1) ? "is" : "are"),
-			           inscrip_text[feel - INSCRIP_NULL]);
+			do_ident_item(i, o_ptr);
 		}
-
-		/* Message (inventory) */
 		else
 		{
-			msg_format("You feel the %s (%c) in your pack %s %s...",
-			           o_name, index_to_label(i),
-			           ((o_ptr->number == 1) ? "is" : "are"),
-			           inscrip_text[feel - INSCRIP_NULL]);
+			object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 0);
+
+			if (i >= INVEN_WIELD)
+			{
+				message_format(MSG_PSEUDOID, 0, "You feel the %s (%c) you are %s %s %s...",
+				           o_name, index_to_label(i), describe_use(i),
+				           ((o_ptr->number == 1) ? "is" : "are"),
+				           inscrip_text[feel - INSCRIP_NULL]);
+			}
+			else
+			{
+				message_format(MSG_PSEUDOID, 0, "You feel the %s (%c) in your pack %s %s...",
+				           o_name, index_to_label(i),
+				           ((o_ptr->number == 1) ? "is" : "are"),
+				           inscrip_text[feel - INSCRIP_NULL]);
+			}
+
+			/* Sense the object */
+			o_ptr->pseudo = feel;
+
+			/* The object has been "sensed" */
+			o_ptr->ident |= (IDENT_SENSE);
 		}
 
-		/* Sense the object */
-		o_ptr->pseudo = feel;
-
-		/* The object has been "sensed" */
-		o_ptr->ident |= (IDENT_SENSE);
 
 		/* Set squelch flag as appropriate */
 		if (i < INVEN_WIELD)
