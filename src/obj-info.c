@@ -19,129 +19,255 @@
 #include "effects.h"
 #include "cmds.h"
 
-
-/* TRUE if a paragraph break should be output before next p_text_out() */
-static bool new_paragraph = FALSE;
-
-
-static void p_text_out(cptr str)
+/*
+ * Describes a flag-name pair.
+ */
+typedef struct
 {
-	if (new_paragraph)
-	{
-		text_out("\n\n");
-		new_paragraph = FALSE;
-	}
-
-	text_out(str);
-}
+	u32b flag;
+	const char *name;
+} flag_type;
 
 
-static void output_list(const char *list[], int num)
+
+/*** Utility code ***/
+
+/*
+ * Given an array of strings, as so:
+ *  { "intelligence", "fish", "lens", "prime", "number" },
+ *
+ * ... output a list like "intelligence, fish, lens, prime, number.\n".
+ */
+static inline void info_out_list(const char *list[], size_t count)
 {
-	int i;
-	const char *conjunction = "and ";
+	size_t i;
 
-	if (num < 0)
+	for (i = 0; i < count; i++)
 	{
-		num = -num;
-		conjunction = "or ";
-	}
-
-	for (i = 0; i < num; i++)
-	{
-        if (i)
-		{
-			if (num > 2)
-				text_out(", ");
-			else
-				text_out(" ");
-
-			if (i == num - 1)
-				text_out(conjunction);
-		}
-
 		text_out(list[i]);
+		if (i != (count - 1)) text_out(", ");
 	}
+
+	text_out(".\n");
 }
 
 
-static void output_desc_list(cptr intro, cptr list[], int n)
+/*
+ *
+ */
+size_t info_collect(const flag_type list[], size_t max, u32b flag, const char *recepticle[])
 {
-	if (!n) return;
+	size_t i, count = 0;
 
-	p_text_out(intro);
-	output_list(list, n);
-	text_out(".  ");
+	for (i = 0; i < max; i++)
+	{
+		if (flag & list[i].flag)
+			recepticle[count++] = list[i].name;
+	}
+
+	return count;
 }
 
 
+/*** Big fat data tables ***/
+
+static const flag_type f1_pval[] =
+{
+	{ TR1_STR,     "strength" },
+	{ TR1_INT,     "intelligence" },
+	{ TR1_WIS,     "wisdom" },
+	{ TR1_DEX,     "dexterity" },
+	{ TR1_CON,     "constitution" },
+	{ TR1_CHR,     "charisma" },
+	{ TR1_STEALTH, "stealth" },
+	{ TR1_SEARCH,  "searching" },
+	{ TR1_INFRA,   "infravision" },
+	{ TR1_TUNNEL,  "tunneling" },
+	{ TR1_SPEED,   "speed" },
+	{ TR1_BLOWS,   "attack speed" },
+	{ TR1_SHOTS,   "shooting speed" },
+	{ TR1_MIGHT,   "shooting power" },
+};
+
+static const flag_type f2_immunity[] =
+{
+	{ TR2_IM_ACID, "acid" },
+	{ TR2_IM_ELEC, "lightning" },
+	{ TR2_IM_FIRE, "fire" },
+	{ TR2_IM_COLD, "cold" },
+};
+
+static const flag_type f2_resist[] =
+{
+	{ TR2_RES_ACID,  "acid" },
+	{ TR2_RES_ELEC,  "lightning" },
+	{ TR2_RES_FIRE,  "fire" },
+	{ TR2_RES_COLD,  "cold" },
+	{ TR2_RES_POIS,  "poison" },
+	{ TR2_RES_FEAR,  "fear" },
+	{ TR2_RES_LITE,  "light" },
+	{ TR2_RES_DARK,  "dark" },
+	{ TR2_RES_BLIND, "blindness" },
+	{ TR2_RES_CONFU, "confusion" },
+	{ TR2_RES_SOUND, "sound" },
+	{ TR2_RES_SHARD, "shards" },
+	{ TR2_RES_NEXUS, "nexus"  },
+	{ TR2_RES_NETHR, "nether" },
+	{ TR2_RES_CHAOS, "chaos" },
+	{ TR2_RES_DISEN, "disenchantment" },
+};
+
+static const flag_type f3_ignore[] =
+{
+	{ TR3_IGNORE_ACID, "acid" },
+	{ TR3_IGNORE_ELEC, "electricity" },
+	{ TR3_IGNORE_FIRE, "fire" },
+	{ TR3_IGNORE_COLD, "cold" },
+};
+
+static const flag_type f2_sustains[] =
+{
+	{ TR2_SUST_STR, "strength" },
+	{ TR2_SUST_INT, "intelligence" },
+	{ TR2_SUST_WIS, "wisdom" },
+	{ TR2_SUST_DEX, "dexterity" },
+	{ TR2_SUST_CON, "constitution" },
+	{ TR2_SUST_CHR, "charisma" },
+};
+
+static const flag_type f3_misc[] =
+{
+	{ TR3_BLESSED,     "Blessed by the gods" },
+	{ TR3_SLOW_DIGEST, "Slows your metabolism" },
+	{ TR3_FEATHER,     "Feather Falling" },
+	{ TR3_REGEN,       "Speeds regeneration" },
+	{ TR3_FREE_ACT,    "Prevents paralysis" },
+	{ TR3_HOLD_LIFE,   "Stops experience drain" },
+	{ TR3_TELEPATHY,   "Grants telepathy" },
+	{ TR3_SEE_INVIS,   "Grants the ability to see invisible things" },
+	{ TR3_AGGRAVATE,   "Aggravates creatures nearby" },
+	{ TR3_DRAIN_EXP,   "Drains experience" },
+	{ TR3_TELEPORT,    "Induces random teleportation" },
+};
+
+
+/*** Code that makes use of the data tables ***/
 
 /*
  * Describe stat modifications.
  */
-static bool describe_stats(const object_type *o_ptr, u32b f1)
+static bool describe_stats(u32b f1, int pval)
 {
-	cptr descs[16];
-	int cnt = 0;
+	cptr descs[N_ELEMENTS(f1_pval)];
+	size_t count;
+
+	if (!pval) return FALSE;
+
+	count = info_collect(f1_pval, N_ELEMENTS(f1_pval), f1, descs);
+	if (!count) return FALSE;
+
+	text_out_c((pval > 0) ? TERM_L_GREEN : TERM_RED, "%+i ", pval);
+	info_out_list(descs, count);
+
+	return TRUE;
+}
+
+
+/*
+ * Describe immunities granted by an object.
+ */
+static bool describe_immune(u32b f2)
+{
+	const char *descs[N_ELEMENTS(f2_resist)];
+	size_t count;
+
 	bool prev = FALSE;
 
-	int pval = (o_ptr->pval > 0 ? o_ptr->pval : -o_ptr->pval);
-	const char *what = (o_ptr->pval > 0) ? "increases" : "decreases";
-	byte col = (o_ptr->pval > 0) ? TERM_L_GREEN : TERM_RED;
-
-
-	/* No pval?  Forget it! */
-	if (!o_ptr->pval) return FALSE;
-
-	/* Collect stat bonuses */
-	cnt = 0;
-	if (f1 & (TR1_STR)) descs[cnt++] = stat_names_full[A_STR];
-	if (f1 & (TR1_INT)) descs[cnt++] = stat_names_full[A_INT];
-	if (f1 & (TR1_WIS)) descs[cnt++] = stat_names_full[A_WIS];
-	if (f1 & (TR1_DEX)) descs[cnt++] = stat_names_full[A_DEX];
-	if (f1 & (TR1_CON)) descs[cnt++] = stat_names_full[A_CON];
-	if (f1 & (TR1_CHR)) descs[cnt++] = stat_names_full[A_CHR];
-
-    /* Shorten to "all stats" if appropriate */
-	if (cnt == A_MAX)
+	/* Immunities */
+	count = info_collect(f2_immunity, N_ELEMENTS(f2_immunity), f2, descs);
+	if (count)
 	{
-		p_text_out(format("It %s all your stats", what));
-		cnt = 0;
+		text_out("Provides immunity to ");
+		info_out_list(descs, count);
 		prev = TRUE;
 	}
 
-	/* Collect secondry bonuses */
-	if (f1 & (TR1_STEALTH)) descs[cnt++] = "stealth";
-	if (f1 & (TR1_SEARCH))  descs[cnt++] = "searching";
-	if (f1 & (TR1_INFRA))   descs[cnt++] = "infravision";
-	if (f1 & (TR1_TUNNEL))  descs[cnt++] = "tunneling";
-	if (f1 & (TR1_SPEED))   descs[cnt++] = "speed";
-	if (f1 & (TR1_BLOWS))   descs[cnt++] = "attack speed";
-	if (f1 & (TR1_SHOTS))   descs[cnt++] = "shooting speed";
-	if (f1 & (TR1_MIGHT))   descs[cnt++] = "shooting power";
-
-	if (cnt)
+	/* Resistances */
+	count = info_collect(f2_resist, N_ELEMENTS(f2_resist), f2, descs);
+	if (count)
 	{
-		if (prev)
-			text_out(" and your ");
-		else
-			p_text_out(format("It %s your ", what));
-
-		/* Output list */
-		output_list(descs, cnt);
+		text_out("Provides resistance to ");
+		info_out_list(descs, count);
 		prev = TRUE;
-	}
-
-	/* Output end */
-	if (prev)
-	{
-		text_out(" by ");
-		text_out_c(col, "%i", pval);
-		text_out(".  ");
 	}
 
 	return prev;
 }
+
+
+/*
+ * Describe 'ignores' of an object.
+ */
+static bool describe_ignores(u32b f3)
+{
+	const char *descs[N_ELEMENTS(f3_ignore)];
+	size_t count = info_collect(f3_ignore, N_ELEMENTS(f3_ignore), f3, descs);
+
+	if (!count) return FALSE;
+
+	text_out("Cannot be harmed by ");
+	info_out_list(descs, count);
+
+	return TRUE;
+}
+
+
+/*
+ * Describe stat sustains.
+ */
+static bool describe_sustains(u32b f2)
+{
+	const char *descs[N_ELEMENTS(f2_sustains)];
+	size_t count = info_collect(f2_sustains, N_ELEMENTS(f2_sustains), f2, descs);
+
+	if (!count) return FALSE;
+
+	text_out("Sustains ");
+	info_out_list(descs, count);
+
+	return TRUE;
+}
+
+
+/*
+ * Describe miscellaneous powers.
+ */
+static bool describe_misc_magic(u32b f3)
+{
+	size_t i;
+	bool printed = FALSE;
+
+	for (i = 0; i < N_ELEMENTS(f3_misc); i++)
+	{
+		if (f3 & f3_misc[i].flag)
+		{
+			text_out("%s.\n", f3_misc[i].name);
+			printed = TRUE;
+		}
+	}
+
+	return printed;
+}
+
+
+
+
+
+
+
+
+
+
 
 /*
  * list[] and mult[] must be > 11 in size
@@ -175,6 +301,7 @@ static int collect_slays(cptr desc[], int mult[], u32b f1)
 }
 
 
+
 /*
  * Describe combat advantages.
  */
@@ -200,7 +327,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 		if (!o_ptr->dd || !o_ptr->ds) return FALSE;
 		if (!object_known_p(o_ptr)) return FALSE;
 
-		p_text_out("It can be thrown at monsters with damaging effect.  ");
+		text_out("It can be thrown at creatures with damaging effect.\n");
 		return TRUE;
 	}
 
@@ -223,12 +350,11 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 		/* Warn about heavy weapons */
 		if (adj_str_hold[p_ptr->stat_ind[A_STR]] < o_ptr->weight / 10)
 		{
-			if (new_paragraph) { text_out("\n\n"); new_paragraph = FALSE; }
-			text_out_c(TERM_L_RED, "You are too weak to use this weapon effectively!  ");
+			text_out_c(TERM_L_RED, "You are too weak to use this weapon effectively!\n");
 			blows = 1;
 		}
 	
-	    p_text_out("Using this weapon, in your current condition, you are able to score ");
+	    text_out("With this weapon, you would currently get ");
 	    text_out_c(TERM_L_GREEN, format("%d ", blows));
 	    if (blows > 1)
 			text_out("blows per round.  Each blow will do an average damage of ");
@@ -246,7 +372,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 		xtra_dam *= p_ptr->ammo_mult;
 		xtra_dam += (dam * 2);
 
-		p_text_out("Fired from your current bow, this arrow will hit targets up to ");
+		text_out("Fired from your current missile launcher, this arrow will hit targets up to ");
 		text_out_c(TERM_L_GREEN, format("%d", tdis * 10));
 		text_out(" feet away, inflicting an average damage of ");
 	}
@@ -273,14 +399,17 @@ static bool describe_combat(const object_type *o_ptr, bool full)
     else
 		text_out_c(TERM_L_GREEN, "%d", dam / 10);
 
-	text_out(" against normal creatures.  ");
+	text_out(" against normal creatures.\n");
+
+	/* Note the impact flag */
+	if (f3 & TR3_IMPACT)
+		text_out("Sometimes creates earthquakes on impact.\n");
 
 	/* Add breakage chance */
 	if (ammo)
 	{
-		text_out("It has a ");
 		text_out_c(TERM_L_GREEN, "%d%%", breakage_chance(o_ptr));
-		text_out(" chance of breaking upon contact.");
+		text_out(" chance of breaking upon contact.\n");
 	}
 
 	/* You always have something to say... */
@@ -288,241 +417,48 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 }
 
 
-/*
- * Describe immunities granted by an object.
- */
-static bool describe_immune(const object_type *o_ptr, u32b f2, u32b f3)
-{
-	cptr vp[26];
-	int vn;
-	bool prev = FALSE;
-
-	/* Unused parameter */
-	(void)o_ptr;
-
-	/* Collect immunities */
-	vn = 0;
-	if (f2 & (TR2_IM_ACID))  vp[vn++] = "acid";
-	if (f2 & (TR2_IM_ELEC))  vp[vn++] = "lightning";
-	if (f2 & (TR2_IM_FIRE))  vp[vn++] = "fire";
-	if (f2 & (TR2_IM_COLD))  vp[vn++] = "cold";
-	if (f3 & (TR3_FREE_ACT)) vp[vn++] = "paralysis";
-
-	/* Describe immunities */
-	if (vn)
-	{
-		text_out("It provides immunity to ");
-
-		output_list(vp, vn);
-		prev = TRUE;
-	}
-
-	/* Collect resistances */
-	vn = 0;
-	if ((f2 & (TR2_RES_ACID)) && !(f2 & (TR2_IM_ACID)))
-		vp[vn++] = "acid";
-	if ((f2 & (TR2_RES_ELEC)) && !(f2 & (TR2_IM_ELEC)))
-		vp[vn++] = "lightning";
-	if ((f2 & (TR2_RES_FIRE)) && !(f2 & (TR2_IM_FIRE)))
-		vp[vn++] = "fire";
-	if ((f2 & (TR2_RES_COLD)) && !(f2 & (TR2_IM_COLD)))
-		vp[vn++] = "cold";
-
-	if (f2 & (TR2_RES_POIS))  vp[vn++] = "poison";
-	if (f2 & (TR2_RES_FEAR))  vp[vn++] = "fear";
-	if (f2 & (TR2_RES_LITE))  vp[vn++] = "light";
-	if (f2 & (TR2_RES_DARK))  vp[vn++] = "dark";
-	if (f2 & (TR2_RES_BLIND)) vp[vn++] = "blindness";
-	if (f2 & (TR2_RES_CONFU)) vp[vn++] = "confusion";
-	if (f2 & (TR2_RES_SOUND)) vp[vn++] = "sound";
-	if (f2 & (TR2_RES_SHARD)) vp[vn++] = "shards";
-	if (f2 & (TR2_RES_NEXUS)) vp[vn++] = "nexus" ;
-	if (f2 & (TR2_RES_NETHR)) vp[vn++] = "nether";
-	if (f2 & (TR2_RES_CHAOS)) vp[vn++] = "chaos";
-	if (f2 & (TR2_RES_DISEN)) vp[vn++] = "disenchantment";
-	if (f3 & (TR3_HOLD_LIFE)) vp[vn++] = "life draining";
-
-	if (vn)
-	{
-		if (prev)
-			text_out(", and provides resistance to ");
-		else
-			p_text_out("It provides resistance to ");
-
-		/* Output list */
-		output_list(vp, vn);
-		prev = TRUE;
-	}
-
-	/* Parting words */
-	if (prev) text_out(".  ");
-
-	return prev;
-}
-
 
 /*
- * Describe 'ignores' of an object.
+ * Describe things that look like lights.
  */
-static bool describe_ignores(const object_type *o_ptr, u32b f3)
+static bool describe_light(const object_type *o_ptr, u32b f3)
 {
-	cptr list[4];
-	int n = 0;
+	int rad = 0;
 
-	/* Unused parameter */
-	(void)o_ptr;
+	bool artifact = artifact_p(o_ptr);
+	bool no_fuel = (f3 & TR3_NO_FUEL) ? TRUE : FALSE;
+	bool is_lite = (o_ptr->tval == TV_LITE) ? TRUE : FALSE;
 
-	/* Collect the ignores */
-	if (f3 & (TR3_IGNORE_ACID)) list[n++] = "acid";
-	if (f3 & (TR3_IGNORE_ELEC)) list[n++] = "electricity";
-	if (f3 & (TR3_IGNORE_FIRE)) list[n++] = "fire";
-	if (f3 & (TR3_IGNORE_COLD)) list[n++] = "cold";
+	if ((o_ptr->tval != TV_LITE) && !(f3 & TR3_LITE))
+		return FALSE;
 
-	/* Describe ignores */
-	if (n == 4)
-		p_text_out("It cannot be harmed by the elements.  ");
-	else
-		output_desc_list("It cannot be harmed by ", list, -n);
+	/* Work out radius */
+	if (artifact)      rad = 3;
+	else if (is_lite)  rad = 2;
+	if (f3 & TR3_LITE) rad++;
 
-	return (n ? TRUE : FALSE);
+	/* Describe here */
+	text_out("Radius ");
+	text_out_c(TERM_L_GREEN, format("%d", rad));
+	if (no_fuel && !artifact)
+		text_out(" light.  No fuel required.");
+	else if (is_lite && o_ptr->sval == SV_LITE_TORCH)
+		text_out(" light, reduced when running of out fuel");
+	text_out(".");
+
+	if (is_lite)
+	{
+		const char *name = (o_ptr->sval == SV_LITE_TORCH) ? "torch" : "lantern";
+		int turns = (o_ptr->sval == SV_LITE_TORCH) ? FUEL_TORCH : FUEL_LAMP;
+
+		text_out("  Can refill another %s, up to %d turns of fuel.", name, turns);
+	}
+
+	text_out("\n");
+
+	return TRUE;
 }
 
-
-/*
- * Describe stat sustains.
- */
-static bool describe_sustains(const object_type *o_ptr, u32b f2)
-{
-	cptr list[A_MAX];
-	int n = 0;
-
-	/* Unused parameter */
-	(void)o_ptr;
-
-	/* Collect the sustains */
-	if (f2 & (TR2_SUST_STR)) list[n++] = stat_names_full[A_STR];
-	if (f2 & (TR2_SUST_INT)) list[n++] = stat_names_full[A_INT];
-	if (f2 & (TR2_SUST_WIS)) list[n++] = stat_names_full[A_WIS];
-	if (f2 & (TR2_SUST_DEX)) list[n++] = stat_names_full[A_DEX];
-	if (f2 & (TR2_SUST_CON)) list[n++] = stat_names_full[A_CON];
-	if (f2 & (TR2_SUST_CHR)) list[n++] = stat_names_full[A_CHR];
-
-	/* Describe immunities */
-	if (n == A_MAX)
-		p_text_out("It sustains all your stats.  ");
-	else
-		output_desc_list("It sustains your ", list, n);
-
-	/* We are done here */
-	return (n ? TRUE : FALSE);
-}
-
-
-/*
- * Describe miscellaneous powers such as see invisible, free action,
- * permanent light, etc; also note curses and penalties.
- */
-static bool describe_misc_magic(const object_type *o_ptr, u32b f3)
-{
-	cptr good[6], bad[4];
-	int gc = 0, bc = 0;
-	bool something = FALSE;
-
-	/* Describe lights */
-	if (o_ptr->tval == TV_LITE || (f3 & TR3_LITE))
-	{
-		bool artifact = artifact_p(o_ptr);
-		bool no_fuel = (f3 & TR3_NO_FUEL) ? TRUE : FALSE;
-		int rad = 0;
-
-		if (artifact)
-			rad = 3;
-		else if (o_ptr->tval == TV_LITE)
-			rad = 2;
-
-		if (f3 & TR3_LITE) rad++;
-
-		p_text_out("It usually provides light of radius ");
-		text_out_c(TERM_L_GREEN, format("%d", rad));
-		if (no_fuel && !artifact)
-			text_out(", and never needs refuelling");
-		else if (o_ptr->tval == TV_LITE && o_ptr->sval == SV_LITE_TORCH)
-			text_out(", though this is reduced when running of out fuel");
-		text_out(".  ");
-
-		if (o_ptr->tval == TV_LITE)
-		{
-			const char *name = (o_ptr->sval == SV_LITE_TORCH) ? "torch" : "lantern";
-			int turns = (o_ptr->sval == SV_LITE_TORCH) ? FUEL_TORCH : FUEL_LAMP;
-
-			text_out("It can refill another %s, up to %d turns of fuel.  ", name, turns);
-		}
-
-		something = TRUE;
-	}
-
-	/* Collect stuff which can't be categorized */
-	if (f3 & (TR3_BLESSED))     good[gc++] = "is blessed by the gods";
-	if (f3 & (TR3_IMPACT))      good[gc++] = "creates earthquakes on impact";
-	if (f3 & (TR3_SLOW_DIGEST)) good[gc++] = "slows your metabolism";
-	if (f3 & (TR3_FEATHER))     good[gc++] = "makes you fall like a feather";
-	if (f3 & (TR3_REGEN))       good[gc++] = "speeds your regeneration";
-
-	/* Describe */
-	if (gc)
-	{
-		output_desc_list("It ", good, gc);
-		something = TRUE;
-	}
-
-
-	/* Collect granted powers */
-	gc = 0;
-	if (f3 & (TR3_TELEPATHY)) good[gc++] = "the power of telepathy";
-	if (f3 & (TR3_SEE_INVIS)) good[gc++] = "the ability to see invisible things";
-
-	/* Collect penalties */
-	if (f3 & (TR3_AGGRAVATE)) bad[bc++] = "aggravates creatures around you";
-	if (f3 & (TR3_DRAIN_EXP)) bad[bc++] = "drains experience";
-	if (f3 & (TR3_TELEPORT))  bad[bc++] = "induces random teleportation";
-
-	/* Deal with cursed stuff */
-	if (cursed_p(o_ptr))
-	{
-		if (f3 & (TR3_PERMA_CURSE)) bad[bc++] = "is permanently cursed";
-		else if (f3 & (TR3_HEAVY_CURSE)) bad[bc++] = "is heavily cursed";
-		else if (object_known_p(o_ptr)) bad[bc++] = "is cursed";
-	}
-
-	/* Describe */
-	if (gc)
-	{
-		/* Output intro */
-		p_text_out("It grants you ");
-
-		/* Output list */
-		output_list(good, gc);
-
-		/* Output end (if needed) */
-		if (!bc) p_text_out(".  ");
-	}
-
-	if (bc)
-	{
-		/* Output intro */
-		if (gc) p_text_out(", but it also ");
-		else p_text_out("It ");
-
-		/* Output list */
-		output_list(bad, bc);
-
-		/* Output end */
-		p_text_out(".  ");
-	}
-
-	/* Return "something" */
-	return (gc || bc) ? TRUE : FALSE;
-}
 
 
 /*
@@ -562,7 +498,7 @@ static bool describe_activation(const object_type *o_ptr, u32b f3, bool full)
 	desc = effect_desc(effect);
 	if (!desc) return FALSE;
 
-	p_text_out("When ");
+	text_out("When ");
 
 	if (f3 & TR3_ACTIVATE)
 		text_out("activated");
@@ -613,78 +549,6 @@ static bool describe_activation(const object_type *o_ptr, u32b f3, bool full)
 }
 
 
-/*
- * Describe origin of an item
- */
-static bool describe_origin(const object_type *o_ptr)
-{
-	/* Abort now if undisplayable origin */
-	if (o_ptr->origin == ORIGIN_NONE ||
-	    o_ptr->origin == ORIGIN_MIXED)
-		return FALSE;
-
-	if (o_ptr->number > 1)
-		p_text_out("They were ");
-	else
-		p_text_out("It was ");
-
-	/* Display the right thing */
-	switch (o_ptr->origin)
-	{
-		case ORIGIN_BIRTH:
-			text_out("an inheritance from your family");
-			break;
-
-		case ORIGIN_STORE:
-			text_out("bought in a store");
-			break;
-
-		case ORIGIN_FLOOR:
-			text_out("lying on the floor");
- 			break;
-
-		case ORIGIN_DROP:
-		{
-			const char *name = r_name + r_info[o_ptr->origin_xtra].name;
-			bool unique = (r_info[o_ptr->origin_xtra].flags1 & RF1_UNIQUE) ? TRUE : FALSE;
-
-			text_out("dropped by ");
-
-			if (unique)
-				text_out("%s", name);
-			else
-				text_out("%s%s", is_a_vowel(name[0]) ? "an " : "a ", name);
-
- 			break;
-		}
-
-		case ORIGIN_DROP_UNKNOWN:
-			text_out("dropped by an unknown monster");
-			break;
-
-		case ORIGIN_ACQUIRE:
-			text_out("conjured forth by magic");
- 			break;
-
-		case ORIGIN_CHEAT:
-			text_out("created by a debug option");
- 			break;
-
-		case ORIGIN_CHEST:
-			text_out("found in a chest");
-			break;
-	}
-
-	if (o_ptr->origin_depth)
-	{
-		text_out(" at a depth of %d feet (level %d)",
-		         o_ptr->origin_depth * 50, o_ptr->origin_depth);
-	}
-
-	text_out(".  ");
-	return TRUE;
-}
-
 
 /*
  * Output object information
@@ -700,48 +564,107 @@ static bool object_info_out(const object_type *o_ptr, bool full)
 	else
 		object_flags_known(o_ptr, &f1, &f2, &f3);
 
-	/* Describe other bits */
-	new_paragraph = TRUE;
-	if (describe_stats(o_ptr, f1)) something = TRUE;
-	if (describe_immune(o_ptr, f2, f3)) something = TRUE;
-	if (describe_sustains(o_ptr, f2)) something = TRUE;
-	if (describe_misc_magic(o_ptr, f3)) something = TRUE;
-	if (describe_activation(o_ptr, f3, full)) something = TRUE;
-	if (describe_ignores(o_ptr, f3)) something = TRUE;
 
-	/* We are done. */
+	if (cursed_p(o_ptr))
+	{
+		if (f3 & TR3_PERMA_CURSE)
+			text_out_c(TERM_L_RED, "Permanently cursed.\n");
+		else if (f3 & TR3_HEAVY_CURSE)
+			text_out_c(TERM_L_RED, "Heavily cursed.\n");
+		else if (object_known_p(o_ptr))
+			text_out_c(TERM_L_RED, "Cursed.\n");
+	}
+
+	if (describe_stats(f1, o_ptr->pval)) something = TRUE;
+	if (describe_immune(f2)) something = TRUE;
+	if (describe_ignores(f3)) something = TRUE;
+	if (describe_sustains(f2)) something = TRUE;
+	if (describe_misc_magic(f3)) something = TRUE;
+
+	if (something) text_out("\n");
+
+	if (describe_activation(o_ptr, f3, full)) something = TRUE;
+	if (describe_light(o_ptr, f3)) something = TRUE;
+
 	return something;
 }
 
 
 /*
- * Header for additional information when printing to screen.
- *
- * Return TRUE if an object description was displayed.
+ * Print name, origin, and descriptive text for a given object.
  */
 void object_info_header(const object_type *o_ptr)
 {
-	char *o_name;
-	int name_size = Term->wid;
+	char o_name[120];
 
-	/* Allocate memory to the size of the screen */
-	o_name = C_RNEW(name_size, char);
+	/* Object name */
+	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
+	text_out_c(TERM_L_BLUE, "%^s\n", o_name);
 
-	/* Description */
-	object_desc(o_name, name_size, o_ptr, TRUE, 3);
+	/* Display the origin */
+	switch (o_ptr->origin)
+	{
+		case ORIGIN_NONE:
+		case ORIGIN_MIXED:
+			break;
 
-	/* Print, in colour */
-	text_out_c(TERM_YELLOW, format("%^s", o_name));
+		case ORIGIN_BIRTH:
+			text_out("(an inheritance from your family)\n");
+			break;
 
-	/* Free up the memory */
-	FREE(o_name);
+		case ORIGIN_STORE:
+			text_out("(bought in a store)\n");
+			break;
+
+		case ORIGIN_FLOOR:
+			text_out("(lying on the floor at %d feet (level %d))\n",
+		         o_ptr->origin_depth * 50, o_ptr->origin_depth);			
+ 			break;
+
+		case ORIGIN_DROP:
+		{
+			const char *name = r_name + r_info[o_ptr->origin_xtra].name;
+			bool unique = (r_info[o_ptr->origin_xtra].flags1 & RF1_UNIQUE) ? TRUE : FALSE;
+
+			text_out("dropped by ");
+
+			if (unique)
+				text_out("%s", name);
+			else
+				text_out("%s%s", is_a_vowel(name[0]) ? "an " : "a ", name);
+
+			text_out(" at %d feet (level %d))\n",
+		         o_ptr->origin_depth * 50, o_ptr->origin_depth);			
+
+ 			break;
+		}
+
+		case ORIGIN_DROP_UNKNOWN:
+			text_out("(dropped by an unknown monster)\n");
+			break;
+
+		case ORIGIN_ACQUIRE:
+			text_out("(conjured forth by magic)\n");
+ 			break;
+
+		case ORIGIN_CHEAT:
+			text_out("(created by debug option)\n");
+ 			break;
+
+		case ORIGIN_CHEST:
+			text_out("(found in a chest at %d feet (level %d))\n",
+		         o_ptr->origin_depth * 50, o_ptr->origin_depth);			
+			break;
+	}
+
+	text_out("\n");
 
 	/* Display the known artifact description */
 	if (!adult_randarts && o_ptr->name1 &&
 	    object_known_p(o_ptr) && a_info[o_ptr->name1].text)
 	{
-		text_out("\n\n");
 		text_out(a_text + a_info[o_ptr->name1].text);
+		text_out("\n\n");
 	}
 
 	/* Display the known object description */
@@ -751,7 +674,6 @@ void object_info_header(const object_type *o_ptr)
 
 		if (k_info[o_ptr->k_idx].text)
 		{
-			text_out("\n\n");
 			text_out(k_text + k_info[o_ptr->k_idx].text);
 			did_desc = TRUE;
 		}
@@ -760,9 +682,12 @@ void object_info_header(const object_type *o_ptr)
 		if (o_ptr->name2 && object_known_p(o_ptr) && e_info[o_ptr->name2].text)
 		{
 			if (did_desc) text_out("  ");
-			else text_out("\n\n");
-
 			text_out(e_text + e_info[o_ptr->name2].text);
+			text_out("\n\n");
+		}
+		else if (did_desc)
+		{
+			text_out("\n\n");
 		}
 	}
 
@@ -780,25 +705,20 @@ bool object_info_known(const object_type *o_ptr)
 	if ((o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION) &&
 		o_ptr->pval)
 	{
-		p_text_out("It provides nourishment for about ");
+		text_out("Provides nourishment for about ");
 		text_out_c(TERM_L_GREEN, "%d", o_ptr->pval / 2);
-		text_out(" turns under normal conditions.  ");
+		text_out(" turns under normal conditions.");
 		has_info = TRUE;
 	}
 
-	new_paragraph = TRUE;
 	if (!object_known_p(o_ptr))
 	{
-		p_text_out("You do not know the full extent of this item's powers.");
+		text_out("You do not know the full extent of this item's powers.");
 		has_info = TRUE;
 	}
 
 	/* Describe combat bits */
-	new_paragraph = TRUE;
 	if (describe_combat(o_ptr, FALSE)) has_info = TRUE;
-
-	new_paragraph = TRUE;
-	if (describe_origin(o_ptr)) has_info = TRUE;
 
 	return has_info;
 }
@@ -818,13 +738,12 @@ bool object_info_store(const object_type *o_ptr)
 	if ((o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION) &&
 		o_ptr->pval)
 	{
-		p_text_out("It provides nourishment for about ");
+		text_out("Provides nourishment for about ");
 		text_out_c(TERM_L_GREEN, "%d", o_ptr->pval / 2);
 		text_out(" turns under normal conditions.  ");
 		has_info = TRUE;
 	}
 
-	new_paragraph = TRUE;
 	if (describe_combat(o_ptr, TRUE)) has_info = TRUE;
 
 	return has_info;
