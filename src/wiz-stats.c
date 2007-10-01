@@ -21,6 +21,58 @@
 
 #ifdef WITH_STATS
 
+/*** Utility ***/
+
+typedef struct
+{
+	char *key;
+	char *value;
+} keyv;
+
+keyv results[10];
+size_t no_results = 0;
+
+void results_reset(void)
+{
+	size_t i;
+	for (i = 0; i < no_results; i++)
+	{
+		FREE(results[i].key);
+		FREE(results[i].value);
+	}
+
+	no_results = 0;
+}
+
+void result_add(const char *key, const char *value)
+{
+	results[no_results].key = string_make(key);
+	results[no_results].value = string_make(value);
+	no_results++;
+}
+
+void results_print_csv_titles(void)
+{
+	size_t i;
+	for (i = 0; i < no_results; i++)
+		printf("%s,", results[i].key);
+
+	printf("\n");
+}
+
+void results_print_csv(void)
+{
+	size_t i;
+	for (i = 0; i < no_results; i++)
+		printf("%s,", results[i].value);
+
+	printf("\n");
+}
+
+
+
+/*** Statsgen ***/
+
 /*
  * This file does some very simple operations; namely, it iterates over the
  * entire dungeon grid and collects statistics on what monsters, objects, and
@@ -43,11 +95,21 @@ inline static void stats_print_o(void)
 	for (i = 0; i < TRIES; i++)
 		y += gold_count[i];
 
-	printf("floor,%f\n", (float) x / TRIES);
-	printf("gold,%f\n", (float) y / TRIES);
+	result_add("floor-objs", format("%f", (float) x / TRIES));
+	result_add("floor-gold",  format("%f", (float) y / TRIES));
 }
 
 
+float avg_drop_by_level[] =
+{
+	/* 0   1      2      3      4      5      6      7      8      9   */
+	10.7,  11.11, 11.53, 11.94, 12.35, 12.76, 13.18, 13.59, 14,    14.41,
+	14.83, 15.24, 15.65, 16.06, 16.48, 16.89, 17.3,  17.71, 18.13, 18.54,
+	18.95, 19.36, 19.78, 20.38, 21.2,  22.03, 22.85, 23.68, 24.5,  25.33,
+	26.15, 26.98, 27.8,  28.63, 29.45, 30.28, 31.1,  31.93, 32.75, 33.58,
+	34.4,  35.45, 37.1,  38.75, 40.4,  42.05, 43.7,  45.35, 47,    48.65,
+	50.3,  51.95, 54.2,  57.5,  60.8,  64.1,  77,    93.5,  110,   125
+};
 
 
 double mon_drop;
@@ -55,8 +117,15 @@ double mon_gold;
 
 inline static void stats_print_m(void)
 {
-	printf("drops,%f\n", mon_drop / TRIES);
-	printf("goldd,%f\n", mon_gold / TRIES);
+	float gold_per_drop;
+
+	if ((unsigned)p_ptr->depth >= N_ELEMENTS(avg_drop_by_level))
+		gold_per_drop = avg_drop_by_level[N_ELEMENTS(avg_drop_by_level)-1];
+	else
+		gold_per_drop = avg_drop_by_level[p_ptr->depth];
+
+	result_add("mon-drops", format("%f", mon_drop / TRIES));
+	result_add("mon-gold", format("%f", (mon_gold * gold_per_drop) / TRIES));
 }
 
 void stats_monster(const monster_type *m_ptr)
@@ -96,6 +165,7 @@ void stats_monster(const monster_type *m_ptr)
  */
 void stats_collect2(void)
 {
+	static bool first = TRUE;
 	size_t i, x, y;
 
 	memset(o_count, 0, sizeof(o_count));
@@ -103,6 +173,10 @@ void stats_collect2(void)
 
 	mon_gold = 0.0;
 	mon_drop = 0.0;
+
+	results_reset();
+	result_add("level", format("%d", p_ptr->depth));
+
 
 	for (i = 0; i < TRIES; i++)
 	{
@@ -135,10 +209,16 @@ void stats_collect2(void)
 		}
 	}
 
-	printf("level,%d\n", p_ptr->depth);
 	stats_print_o();
 	stats_print_m();
-	printf("\n");
+
+	if (first)
+	{
+		results_print_csv_titles();
+		first = FALSE;
+	}
+
+	results_print_csv();
 
 	do_cmd_redraw();
 }
@@ -149,7 +229,7 @@ void stats_collect(void)
 {
 	int depth;
 
-	for (depth = 40; depth < 100; depth += 5)
+	for (depth = 0; depth < 40; depth += 5)
 	{
 		p_ptr->depth = depth;
 		if (p_ptr->depth == 0) p_ptr->depth = 1;
