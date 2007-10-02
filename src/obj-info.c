@@ -38,7 +38,7 @@ typedef struct
  *
  * ... output a list like "intelligence, fish, lens, prime, number.\n".
  */
-static inline void info_out_list(const char *list[], size_t count)
+static void info_out_list(const char *list[], size_t count)
 {
 	size_t i;
 
@@ -55,7 +55,7 @@ static inline void info_out_list(const char *list[], size_t count)
 /*
  *
  */
-size_t info_collect(const flag_type list[], size_t max, u32b flag, const char *recepticle[])
+static size_t info_collect(const flag_type list[], size_t max, u32b flag, const char *recepticle[])
 {
 	size_t i, count = 0;
 
