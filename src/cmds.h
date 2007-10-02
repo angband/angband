@@ -27,37 +27,38 @@ void do_cmd_read_scroll(void);
 void do_cmd_refill(void);
 
 /* cmd2.c */
-extern void do_cmd_go_up(void);
-extern void do_cmd_go_down(void);
-extern void do_cmd_search(void);
-extern void do_cmd_toggle_search(void);
-extern void do_cmd_open(void);
-extern void do_cmd_close(void);
-extern void do_cmd_tunnel(void);
-extern void do_cmd_disarm(void);
-extern void do_cmd_bash(void);
-extern void do_cmd_alter(void);
-extern void do_cmd_spike(void);
-extern void do_cmd_walk(void);
-extern void do_cmd_jump(void);
-extern void do_cmd_run(void);
-extern void do_cmd_pathfind(int y, int x);
-extern void do_cmd_hold(void);
-extern void do_cmd_pickup(void);
-extern void do_cmd_rest(void);
+void do_cmd_go_up(void);
+void do_cmd_go_down(void);
+void do_cmd_search(void);
+void do_cmd_toggle_search(void);
+void do_cmd_open(void);
+void do_cmd_close(void);
+void do_cmd_tunnel(void);
+void do_cmd_disarm(void);
+void do_cmd_bash(void);
+void do_cmd_alter(void);
+void do_cmd_spike(void);
+void do_cmd_walk(void);
+void do_cmd_jump(void);
+void do_cmd_run(void);
+void do_cmd_pathfind(int y, int x);
+void do_cmd_hold(void);
+void do_cmd_pickup(void);
+void do_cmd_rest(void);
 
 /* cmd3.c */
-extern void do_cmd_inven(void);
-extern void do_cmd_equip(void);
-extern void do_cmd_destroy(void);
-void refill_lamp(object_type *o_ptr, object_type *j_ptr, int item);
-void refuel_torch(object_type *o_ptr, object_type *j_ptr,  int item);
-extern void do_cmd_target(void);
-extern void do_cmd_look(void);
-extern void do_cmd_locate(void);
-extern void do_cmd_query_symbol(void);
-extern bool ang_sort_comp_hook(const void *u, const void *v, int a, int b);
-extern void ang_sort_swap_hook(void *u, void *v, int a, int b);
+void do_cmd_inven(void);
+void do_cmd_equip(void);
+void wield_item(object_type *o_ptr, int item);
+void do_cmd_destroy(void);
+void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item);
+void refuel_torch(object_type *j_ptr, object_type *o_ptr, int item);
+void do_cmd_target(void);
+void do_cmd_look(void);
+void do_cmd_locate(void);
+bool ang_sort_comp_hook(const void *u, const void *v, int a, int b);
+void ang_sort_swap_hook(void *u, void *v, int a, int b);
+void do_cmd_query_symbol(void);
 
 /* cmd4.c */
 extern void do_cmd_redraw(void);
