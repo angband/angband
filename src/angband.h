@@ -38,7 +38,7 @@
 #include "ui.h"
 #include "z-type.h"
 #include "externs.h"
-
+#include "object.h"
 
 
 /***** Some older copyright messages follow below *****/

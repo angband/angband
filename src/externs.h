@@ -391,90 +391,6 @@ extern bool multiply_monster(int m_idx);
 extern void message_pain(int m_idx, int dam);
 extern void update_smart_learn(int m_idx, int what);
 
-/* obj-info.c */
-extern void object_info_header(const object_type *o_ptr);
-extern bool object_info_known(const object_type *o_ptr);
-extern bool object_info_full(const object_type *o_ptr);
-extern bool object_info_store(const object_type *o_ptr);
-
-/* object1.c */
-extern void flavor_init(void);
-extern void reset_visuals(bool prefs);
-extern void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know);
-extern void object_flags(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
-extern void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
-extern void object_desc(char *buf, size_t max, const object_type *o_ptr, int pref, int mode);
-extern void object_desc_spoil(char *buf, size_t max, const object_type *o_ptr, int pref, int mode);
-extern void identify_random_gen(const object_type *o_ptr);
-extern char index_to_label(int i);
-extern s16b label_to_inven(int c);
-extern s16b label_to_equip(int c);
-extern s16b wield_slot(const object_type *o_ptr);
-extern cptr mention_use(int i);
-extern cptr describe_use(int i);
-extern bool item_tester_okay(const object_type *o_ptr);
-extern int scan_floor(int *items, int max_size, int y, int x, int mode);
-extern void display_inven(void);
-extern void display_equip(void);
-extern void show_inven(void);
-extern void show_equip(void);
-extern void show_floor(const int *floor_list, int floor_num, bool gold);
-extern void toggle_inven_equip(void);
-extern bool verify_item(cptr prompt, int item);
-extern bool get_item(int *cp, cptr pmt, cptr str, int mode);
-
-/* object2.c */
-extern void excise_object_idx(int o_idx);
-extern void delete_object_idx(int o_idx);
-extern void delete_object(int y, int x);
-extern void compact_objects(int size);
-extern void wipe_o_list(void);
-extern s16b o_pop(void);
-extern object_type *get_first_object(int y, int x);
-extern object_type *get_next_object(const object_type *o_ptr);
-extern bool init_obj_alloc(void);
-extern void free_obj_alloc(void);
-extern s16b get_obj_num(int level);
-extern void object_known(object_type *o_ptr);
-extern void object_aware(object_type *o_ptr);
-extern void object_tried(object_type *o_ptr);
-extern bool is_blessed(const object_type *o_ptr);
-extern s32b object_value(const object_type *o_ptr);
-extern void distribute_charges(object_type *o_ptr, object_type *i_ptr, int amt);
-extern void reduce_charges(object_type *o_ptr, int amt);
-extern bool object_similar(const object_type *o_ptr, const object_type *j_ptr);
-extern void object_absorb(object_type *o_ptr, const object_type *j_ptr);
-extern s16b lookup_kind(int tval, int sval);
-extern void object_wipe(object_type *o_ptr);
-extern void object_copy(object_type *o_ptr, const object_type *j_ptr);
-extern void object_prep(object_type *o_ptr, int k_idx);
-extern void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great);
-extern bool make_object(object_type *j_ptr, int lev, bool good, bool great);
-extern bool make_gold(object_type *j_ptr, int lev);
-extern s16b floor_carry(int y, int x, object_type *j_ptr);
-extern void drop_near(object_type *j_ptr, int chance, int y, int x);
-extern void acquirement(int y1, int x1, int level, int num, bool great);
-extern void place_object(int y, int x, int level, bool good, bool great);
-extern void place_gold(int y, int x, int level);
-extern void place_secret_door(int y, int x);
-extern void place_closed_door(int y, int x);
-extern void place_random_door(int y, int x);
-extern void inven_item_charges(int item);
-extern void inven_item_describe(int item);
-extern void inven_item_increase(int item, int num);
-extern void inven_item_optimize(int item);
-extern void floor_item_charges(int item);
-extern void floor_item_describe(int item);
-extern void floor_item_increase(int item, int num);
-extern void floor_item_optimize(int item);
-extern bool inven_stack_okay(const object_type *o_ptr);
-extern bool inven_carry_okay(const object_type *o_ptr);
-extern s16b inven_carry(object_type *o_ptr);
-extern s16b inven_takeoff(int item, int amt);
-extern void inven_drop(int item, int amt);
-extern void combine_pack(void);
-extern void reorder_pack(void);
-
 /* pathfind.c */
 extern bool findpath(int y, int x);
 extern byte get_angle_to_grid[41][41];
@@ -695,56 +611,56 @@ extern void get_spell_info(int tval, int index, char *buf, size_t len);
 extern bool cast_spell(int tval, int index);
 
 /* xtra1.c */
-extern void cnv_stat(int val, char *out_val, size_t len);
-extern s16b modify_stat_value(int value, int amount);
-extern int calc_blows(const object_type *o_ptr);
-extern void display_player_compact(void);
-extern void notice_stuff(void);
-extern void update_stuff(void);
-extern void redraw_stuff(void);
-extern void window_stuff(void);
-extern void handle_stuff(void);
-extern void init_display(void);
+s16b modify_stat_value(int value, int amount);
+int calc_blows(const object_type *o_ptr);
+void notice_stuff(void);
+void update_stuff(void);
+void redraw_stuff(void);
+void handle_stuff(void);
 
 /* xtra2.c */
-extern bool set_timed(int idx, int v);
-extern bool inc_timed(int idx, int v);
-extern bool dec_timed(int idx, int v);
-extern bool clear_timed(int idx);
-extern bool set_food(int v);
-extern void check_experience(void);
-extern void gain_exp(s32b amount);
-extern void lose_exp(s32b amount);
-extern void monster_death(int m_idx);
-extern bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note);
-extern bool modify_panel(term *t, int wy, int wx);
-extern bool adjust_panel(int y, int x);
-extern bool change_panel(int dir);
-extern void verify_panel(void);
-extern void ang_sort_aux(void *u, void *v, int p, int q);
-extern void ang_sort(void *u, void *v, int n);
-extern int motion_dir(int y1, int x1, int y2, int x2);
-extern int target_dir(char ch);
-extern bool target_able(int m_idx);
-extern bool target_okay(void);
-extern void target_set_monster(int m_idx);
-extern void target_set_location(int y, int x);
-extern bool target_set_interactive(int mode);
-extern bool get_aim_dir(int *dp);
-extern bool get_rep_dir(int *dp);
-extern bool confuse_dir(int *dp);
+bool set_timed(int idx, int v);
+bool inc_timed(int idx, int v);
+bool dec_timed(int idx, int v);
+bool clear_timed(int idx);
+bool set_food(int v);
+void check_experience(void);
+void gain_exp(s32b amount);
+void lose_exp(s32b amount);
+void monster_death(int m_idx);
+bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note);
+bool modify_panel(term *t, int wy, int wx);
+bool adjust_panel(int y, int x);
+bool change_panel(int dir);
+void verify_panel(void);
+void ang_sort_aux(void *u, void *v, int p, int q);
+void ang_sort(void *u, void *v, int n);
+int motion_dir(int y1, int x1, int y2, int x2);
+int target_dir(char ch);
+bool target_able(int m_idx);
+bool target_okay(void);
+void target_set_monster(int m_idx);
+void target_set_location(int y, int x);
+bool target_set_interactive(int mode);
+bool get_aim_dir(int *dp);
+bool get_rep_dir(int *dp);
+bool confuse_dir(int *dp);
+
+/* xtra3.c */
+void cnv_stat(int val, char *out_val, size_t out_len);
+void toggle_inven_equip(void);
+void subwindows_set_flags(u32b *new_flags, size_t n_subwindows);
+void init_display(void);
+
+/* wiz-spoil.c */
+bool make_fake_artifact(object_type *o_ptr, byte name1);
 
 
-/*
- * Hack -- conditional externs
- */
 
-#ifdef ALLOW_BORG
 /* borg.h */
+#ifdef ALLOW_BORG
 extern void do_cmd_borg(void);
 #endif /* ALLOW_BORG */
-
-bool make_fake_artifact(object_type *o_ptr, byte name1);
 
 /* Testing Hacks XXX */
 extern bool new_save;
