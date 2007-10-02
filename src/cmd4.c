@@ -1542,9 +1542,12 @@ static void display_object(int col, int row, bool cursor, int oid)
 	}
 	else
 	{
-		/* Tidy name */
-	        object_kind_name(o_name, sizeof(o_name), k_idx, cheat_know);
+ 		object_kind_name(o_name, sizeof(o_name), k_idx, cheat_know);
 	}
+
+	/* If the type is "tried", display that */
+	if (k_ptr->tried && !aware)
+		my_strcat(o_name, " {tried}", sizeof(o_name));
 
 	/* Display the name */
 	c_prt(attr, o_name, row, col);
@@ -1623,11 +1626,16 @@ static int o_cmp_tval(const void *a, const void *b)
 	/* Order by */
 	c = k_a->aware - k_b->aware;
 	if (c) return -c; /* aware has low sort weight */
+
+	c = k_a->tried - k_b->tried;
+	if (c) return -c;
+
 	if (!k_a->aware)
 	{
 		return strcmp(flavor_text + flavor_info[k_a->flavor].text,
-									flavor_text +flavor_info[k_b->flavor].text);
+		              flavor_text + flavor_info[k_b->flavor].text);
 	}
+
 	c = k_a->cost - k_b->cost;
 	if (c) return c;
 
