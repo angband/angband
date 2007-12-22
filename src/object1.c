@@ -321,94 +321,54 @@ void reset_visuals(bool unused)
 
 
 /*
- * Modes of object_flags_aux()
- */
-#define OBJECT_FLAGS_FULL   1 /* Full info */
-#define OBJECT_FLAGS_KNOWN  2 /* Only flags known to the player */
-#define OBJECT_FLAGS_RANDOM 3 /* Only known random flags */
-
-
-/*
  * Obtain the "flags" for an item
  */
-static void object_flags_aux(int mode, const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
+void object_flags(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
-	/* Clear */
-	(*f1) = (*f2) = (*f3) = 0L;
+	(*f1) = k_ptr->flags1;
+	(*f2) = k_ptr->flags2;
+	(*f3) = k_ptr->flags3;
 
-	/* Unless requesting full flags, the object must be known */
-	if ((mode != OBJECT_FLAGS_FULL) && !object_known_p(o_ptr)) return;
-
-	if (mode != OBJECT_FLAGS_RANDOM)
+	if (o_ptr->name1)
 	{
-		/* Base object */
-		(*f1) = k_ptr->flags1;
-		(*f2) = k_ptr->flags2;
-		(*f3) = k_ptr->flags3;
+		artifact_type *a_ptr = &a_info[o_ptr->name1];
 
-		if (mode == OBJECT_FLAGS_FULL)
-		{
-			/* Artifact */
-			if (o_ptr->name1)
-			{
-				artifact_type *a_ptr = &a_info[o_ptr->name1];
-
-				(*f1) = a_ptr->flags1;
-				(*f2) = a_ptr->flags2;
-				(*f3) = a_ptr->flags3;
-			}
-		}
-
-		/* Ego-item */
-		if (o_ptr->name2)
-		{
-			ego_item_type *e_ptr = &e_info[o_ptr->name2];
-
-			(*f1) |= e_ptr->flags1;
-			(*f2) |= e_ptr->flags2;
-			(*f3) |= e_ptr->flags3;
-		}
-
-		if (mode == OBJECT_FLAGS_KNOWN)
-		{
-			/* Obvious artifact flags */
-			if (o_ptr->name1)
-			{
-				artifact_type *a_ptr = &a_info[o_ptr->name1];
-
-				/* Obvious flags (pval) */
-				(*f1) = (a_ptr->flags1 & (TR1_PVAL_MASK));
-
-				(*f3) = (a_ptr->flags3 & (TR3_IGNORE_MASK));
-			}
-		}
+		(*f1) = a_ptr->flags1;
+		(*f2) = a_ptr->flags2;
+		(*f3) = a_ptr->flags3;
 	}
 
-	if (mode != OBJECT_FLAGS_FULL)
+	if (o_ptr->name2)
 	{
-		/* Artifact */
-		if (o_ptr->name1)
-		{
-			artifact_type *a_ptr = &a_info[o_ptr->name1];
+		ego_item_type *e_ptr = &e_info[o_ptr->name2];
 
-			(*f1) = a_ptr->flags1;
-			(*f2) = a_ptr->flags2;
-			(*f3) = a_ptr->flags3;
-
-			if (mode == OBJECT_FLAGS_RANDOM)
-			{
-				/* Hack - remove 'ignore' flags */
-				(*f3) &= ~(TR3_IGNORE_MASK);
-			}
-		}
+		(*f1) |= e_ptr->flags1;
+		(*f2) |= e_ptr->flags2;
+		(*f3) |= e_ptr->flags3;
 	}
 
 	(*f1) |= o_ptr->flags1;
 	(*f2) |= o_ptr->flags2;
 	(*f3) |= o_ptr->flags3;
 }
+
+
+/*
+ * Obtain the "flags" for an item which are known to the player
+ */
+void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
+{
+	if (!object_known_p(o_ptr))
+	{
+		(*f1) = (*f2) = (*f3) = 0L;
+		return;
+	}
+
+	object_flags(o_ptr, f1, f2, f3);
+}
+
 
 
 
@@ -493,25 +453,6 @@ void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know)
 	}
 }
 
-
-
-/*
- * Obtain the "flags" for an item
- */
-void object_flags(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
-{
-	object_flags_aux(OBJECT_FLAGS_FULL, o_ptr, f1, f2, f3);
-}
-
-
-
-/*
- * Obtain the "flags" for an item which are known to the player
- */
-void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
-{
-	object_flags_aux(OBJECT_FLAGS_KNOWN, o_ptr, f1, f2, f3);
-}
 
 
 /*
