@@ -403,42 +403,48 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 
 		case EF_BRAWN:
 		{
-			if (!do_dec_stat(A_INT, TRUE)) return FALSE;
+			int stat = rand_int(A_MAX);
+			if (!do_dec_stat(stat, TRUE)) return FALSE;
 			if (do_inc_stat(A_STR)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_INTELLECT:
 		{
-			if (!do_dec_stat(A_CON, TRUE)) return FALSE;
+			int stat = rand_int(A_MAX);
+			if (!do_dec_stat(stat, TRUE)) return FALSE;
 			if (do_inc_stat(A_INT)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_CONTEMPLATION:
 		{
-			if (!do_dec_stat(A_DEX, TRUE)) return FALSE;
+			int stat = rand_int(A_MAX);
+			if (!do_dec_stat(stat, TRUE)) return FALSE;
 			if (do_inc_stat(A_WIS)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_TOUGHNESS:
 		{
-			if (!do_dec_stat(A_CHR, TRUE)) return FALSE;
+			int stat = rand_int(A_MAX);
+			if (!do_dec_stat(stat, TRUE)) return FALSE;
 			if (do_inc_stat(A_CON)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_NIMBLENESS:
 		{
-			if (!do_dec_stat(A_STR, TRUE)) return FALSE;
+			int stat = rand_int(A_MAX);
+			if (!do_dec_stat(stat, TRUE)) return FALSE;
 			if (do_inc_stat(A_DEX)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_PLEASING:
 		{
-			if (!do_dec_stat(A_WIS, TRUE)) return FALSE;
+			int stat = rand_int(A_MAX);
+			if (!do_dec_stat(stat, TRUE)) return FALSE;
 			if (do_inc_stat(A_CHR)) *ident = TRUE;
 			return TRUE;
 		}
