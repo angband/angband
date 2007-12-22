@@ -7,11 +7,6 @@ exceptions:
    available under the Angband licence; the brackets after their name indicate
    the code which is not clean as a result:
 
-   - Prfnoff (character death menu, customizable player races, player history,
-              and shop owners)
-   - Chris Ang (various 2.5.x bits of code which I believe the game is
-                still derivative of)
-
    - Ron Anderson (Mac port)
    - Ross E Becker (Windows port)
    - Kieron Dunbar (X11 copy and paste support)
