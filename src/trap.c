@@ -159,7 +159,7 @@ void hit_trap(int y, int x)
 				dam = damroll(2, 6);
 
 				/* Extra spike damage */
-				if (one_in_(100))
+				if (one_in_(2))
 				{
 					msg_print("You are impaled!");
 
