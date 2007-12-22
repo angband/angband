@@ -1,25 +1,39 @@
-/* File: variable.c */
-
 /*
+ * File: variable.c
+ * Purpose: Various global variables
+ *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
  *
- * This software may be copied and distributed for educational, research,
- * and not for profit purposes provided that this copyright and statement
- * are included in all such copies.  Other copyrights may also apply.
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
  */
-
 #include "angband.h"
 
 
 /*
  * Hack -- Link a copyright message into the executable
  */
-cptr copyright =
-	"Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Keoneke\n"
+const char *copyright =
+	"Copyright (c) 1987-2007 Angband contributors.\n"
 	"\n"
-	"This software may be copied and distributed for educational, research,\n"
-	"and not for profit purposes provided that this copyright and statement\n"
-	"are included in all such copies.  Other copyrights may also apply.\n";
+	"This work is free software; you can redistribute it and/or modify it\n"
+	"under the terms of either:\n"
+	"\n"
+	"a) the GNU General Public License as published by the Free Software\n"
+	"   Foundation, version 2, or\n"
+	"\n"
+	"b) the Angband licence:\n"
+	"   This software may be copied and distributed for educational, research,\n"
+	"   and not for profit purposes provided that this copyright and statement\n"
+	"   are included in all such copies.  Other copyrights may also apply.\n";
 
 
 /*
