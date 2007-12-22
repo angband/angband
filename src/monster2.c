@@ -621,6 +621,8 @@ void display_monlist(void)
 	/* Go over */
 	for (i = 1; (i < z_info->r_max) && (line < max); i++)
 	{
+		monster_lore *l_ptr = &l_list[i];
+
 		/* No monsters of this race are visible */
 		if (!race_count[i]) continue;
 
@@ -637,6 +639,8 @@ void display_monlist(void)
 		/* Display uniques in a special colour */
 		if (r_ptr->flags1 & RF1_UNIQUE)
 			attr = TERM_VIOLET;
+		else if (l_ptr->r_tkills && (r_ptr->level > p_ptr->depth))
+			attr = TERM_RED;
 		else
 			attr = TERM_WHITE;
 
