@@ -1213,15 +1213,17 @@ static bool store_create_random(int st)
 	 */
 	if (st == STORE_B_MARKET)
 	{
-		min_level = 25;
-		max_level = 50;
+		min_level = p_ptr->max_depth + 5;
+		max_level = p_ptr->max_depth + 20;
 	}
 	else
 	{
-		min_level = 1;
-		max_level = STORE_OBJ_LEVEL;
+		min_level = 1 + MAX(p_ptr->max_depth - 10, 0);
+		max_level = STORE_OBJ_LEVEL + MAX(p_ptr->max_depth - 10, 0);
 	}
 
+	if (min_level > 55) min_level = 65;
+	if (max_level > 70) max_level = 70;
 
 	/* Consider up to six items */
 	for (tries = 0; tries < 6; tries++)
@@ -1313,6 +1315,7 @@ static struct staple_type
 	{ TV_FOOD, SV_FOOD_RATION, MAKE_NORMAL },
 	{ TV_LITE, SV_LITE_TORCH, MAKE_NORMAL },
 	{ TV_SCROLL, SV_SCROLL_WORD_OF_RECALL, MAKE_NORMAL },
+	{ TV_SCROLL, SV_SCROLL_PHASE_DOOR, MAKE_NORMAL },
 	{ TV_LITE, SV_LITE_TORCH, MAKE_NORMAL },
 	{ TV_FLASK, 0, MAKE_NORMAL },
 	{ TV_SPIKE, 0, MAKE_NORMAL },
