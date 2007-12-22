@@ -100,8 +100,6 @@ static void sense_inventory(void)
 
 	int plev = p_ptr->lev;
 
-	bool heavy = ((cp_ptr->flags & CF_PSEUDO_ID_HEAVY) ? TRUE : FALSE);
-
 	int feel;
 
 	object_type *o_ptr;
@@ -129,6 +127,7 @@ static void sense_inventory(void)
 	for (i = 0; i < INVEN_TOTAL; i++)
 	{
 		bool okay = FALSE;
+		bool heavy = ((cp_ptr->flags & CF_PSEUDO_ID_HEAVY) ? TRUE : FALSE);
 
 		o_ptr = &inventory[i];
 
