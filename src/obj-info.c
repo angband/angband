@@ -522,12 +522,12 @@ static bool describe_activation(const object_type *o_ptr, u32b f3, bool full)
 			text_out("%c", *desc);
 	} while (*desc++);
 
-	text_out(".  ");
+	text_out(".\n");
 
 	if (base || dice || sides)
 	{
 		/* Some artifacts can be activated */
-		text_out("When it is used, it takes ");
+		text_out("It takes ");
 
 		/* Output the number of turns */
 		if (dice && dice != 1)
@@ -542,7 +542,7 @@ static bool describe_activation(const object_type *o_ptr, u32b f3, bool full)
 		    text_out_c(TERM_L_GREEN, "%d", base);
 		}
 
-		text_out(" turns to recharge.  ");
+		text_out(" turns to recharge after use.\n");
 	}
 
 	return TRUE;
@@ -707,7 +707,7 @@ bool object_info_known(const object_type *o_ptr)
 	{
 		text_out("Provides nourishment for about ");
 		text_out_c(TERM_L_GREEN, "%d", o_ptr->pval / 2);
-		text_out(" turns under normal conditions.");
+		text_out(" turns under normal conditions.\n");
 		has_info = TRUE;
 	}
 
@@ -740,7 +740,7 @@ bool object_info_store(const object_type *o_ptr)
 	{
 		text_out("Provides nourishment for about ");
 		text_out_c(TERM_L_GREEN, "%d", o_ptr->pval / 2);
-		text_out(" turns under normal conditions.  ");
+		text_out(" turns under normal conditions.\n");
 		has_info = TRUE;
 	}
 
