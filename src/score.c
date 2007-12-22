@@ -26,6 +26,15 @@ int score_idx = -1;
 
 
 /*
+ * Hack -- Calculates the total number of points earned
+ */
+static long total_points(void)
+{
+	return (p_ptr->max_exp + (100 * p_ptr->max_depth));
+}
+
+
+/*
  * Seek score 'i' in the highscore file
  */
 static bool highscore_seek(ang_file *f, int i)

@@ -312,6 +312,9 @@ void spell_learn(int spell);
 int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool browse);
 void do_cmd_browse_aux(const object_type *o_ptr);
 
+/* death.c */
+void death_screen(void);
+
 /* dungeon.c */
 extern void play_game(void);
 extern int value_check_aux1(const object_type *o_ptr);
@@ -332,7 +335,6 @@ extern void process_player_name(bool sf);
 extern bool get_name(bool sf);
 extern void do_cmd_suicide(void);
 extern void do_cmd_save_game(void);
-extern long total_points(void);
 extern void close_game(void);
 extern void exit_game_panic(void);
 
