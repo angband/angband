@@ -1479,9 +1479,6 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 		/* Generate treasure */
 		monster_death(m_idx);
 
-		/* When the player kills a Unique, it stays dead */
-		if (r_ptr->flags1 & (RF1_UNIQUE)) r_ptr->max_num = 0;
-
 		/* Recall even invisible uniques or winners */
 		if (m_ptr->ml || (r_ptr->flags1 & (RF1_UNIQUE)))
 		{
