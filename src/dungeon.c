@@ -716,7 +716,7 @@ static void process_world(void)
 			}
 
 			/* Sometimes, shuffle the shop-keepers */
-			if (rand_int(STORE_SHUFFLE) == 0)
+			if (one_in_(STORE_SHUFFLE))
 			{
 				/* Message */
 				if (cheat_xtra) msg_print("Shuffling a Shopkeeper...");
@@ -741,7 +741,7 @@ static void process_world(void)
 	/*** Process the monsters ***/
 
 	/* Check for creature generation */
-	if (rand_int(MAX_M_ALLOC_CHANCE) == 0)
+	if (one_in_(MAX_M_ALLOC_CHANCE))
 	{
 		/* Make a new monster */
 		(void)alloc_monster(MAX_SIGHT + 5, FALSE, p_ptr->depth);
@@ -846,7 +846,7 @@ static void process_world(void)
 		if (p_ptr->food < PY_FOOD_FAINT)
 		{
 			/* Faint occasionally */
-			if (!p_ptr->timed[TMD_PARALYZED] && (rand_int(100) < 10))
+			if (!p_ptr->timed[TMD_PARALYZED] && one_in_(10))
 			{
 				/* Message */
 				msg_print("You faint from the lack of food.");
@@ -962,7 +962,7 @@ static void process_world(void)
 	/* Handle experience draining */
 	if (p_ptr->exp_drain)
 	{
-		if ((rand_int(100) < 10) && (p_ptr->exp > 0))
+		if ((p_ptr->exp > 0) && one_in_(10))
 		{
 			p_ptr->exp--;
 			p_ptr->max_exp--;
@@ -980,7 +980,7 @@ static void process_world(void)
 	/*** Involuntary Movement ***/
 
 	/* Mega-Hack -- Random teleportation XXX XXX XXX */
-	if ((p_ptr->teleport) && (rand_int(100) < 1))
+	if ((p_ptr->teleport) && one_in_(100))
 	{
 		/* Teleport player */
 		teleport_player(40);

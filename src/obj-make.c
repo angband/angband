@@ -92,7 +92,7 @@ s16b get_obj_num(int level)
 	u32b value;
 
 	/* Occasional level boost */
-	if ((level > 0) && !rand_int(GREAT_OBJ))
+	if ((level > 0) && one_in_(GREAT_OBJ))
 	{ 
 		/* What a bizarre calculation */ 
 		level = 1 + (level * MAX_O_DEPTH / randint(MAX_O_DEPTH)); 
@@ -268,7 +268,7 @@ static int make_ego_item(object_type *o_ptr, int level, bool only_good)
 	if (level > 0)
 	{
 		/* Occasional "boost" */
-		if (rand_int(GREAT_EGO) == 0)
+		if (one_in_(GREAT_EGO))
 		{
 			/* The bizarre calculation again */
 			level = 1 + (level * MAX_DEPTH / randint(MAX_DEPTH));
@@ -570,7 +570,7 @@ static void a_m_aux_1(object_type *o_ptr, int level, int power)
 			{
 				/* Hack -- Super-charge the damage dice */
 				while ((o_ptr->dd * o_ptr->ds > 0) &&
-				       (rand_int(10L * o_ptr->dd * o_ptr->ds) == 0))
+				       one_in_(10L * o_ptr->dd * o_ptr->ds))
 				{
 					o_ptr->dd++;
 				}
@@ -592,7 +592,7 @@ static void a_m_aux_1(object_type *o_ptr, int level, int power)
 			{
 				/* Hack -- super-charge the damage dice */
 				while ((o_ptr->dd * o_ptr->ds > 0) &&
-				       (rand_int(10L * o_ptr->dd * o_ptr->ds) == 0))
+				       one_in_(10L * o_ptr->dd * o_ptr->ds))
 				{
 					o_ptr->dd++;
 				}
@@ -1675,7 +1675,7 @@ bool make_gold(object_type *j_ptr, int lev)
 	sval = ((randint(lev + 2) + 2) / 2);
 
 	/* Apply "extra" magic */
-	if (rand_int(GREAT_OBJ) == 0)
+	if (one_in_(GREAT_OBJ))
 	{
 		sval += randint(lev + 1);
 	}

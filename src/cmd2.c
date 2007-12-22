@@ -2216,7 +2216,7 @@ void do_cmd_hold(void)
 
 	/* Spontaneous Searching */
 	if ((p_ptr->skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
-	    (0 == rand_int(50 - p_ptr->skills[SKILL_SEARCH_FREQUENCY])))
+	    one_in_(50 - p_ptr->skills[SKILL_SEARCH_FREQUENCY]))
 	{
 		search();
 	}

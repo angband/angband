@@ -594,7 +594,7 @@ static void build_streamer(int feat, int chance)
 			cave_set_feat(ty, tx, feat);
 
 			/* Hack -- Add some (known) treasure */
-			if (rand_int(chance) == 0) cave_feat[ty][tx] += 0x04;
+			if (one_in_(chance)) cave_feat[ty][tx] += 0x04;
 		}
 
 		/* Advance the streamer */
@@ -999,7 +999,7 @@ static void build_type1(int y0, int x0)
 
 
 	/* Hack -- Occasional pillar room */
-	if (rand_int(20) == 0)
+	if (one_in_(20))
 	{
 		for (y = y1; y <= y2; y += 2)
 		{
@@ -1011,7 +1011,7 @@ static void build_type1(int y0, int x0)
 	}
 
 	/* Hack -- Occasional ragged-edge room */
-	else if (rand_int(50) == 0)
+	else if (one_in_(50))
 	{
 		for (y = y1 + 2; y <= y2 - 2; y += 2)
 		{
@@ -1188,7 +1188,7 @@ static void build_type3(int y0, int x0)
 		case 4:
 		{
 			/* Occasionally pinch the center shut */
-			if (rand_int(3) == 0)
+			if (one_in_(3))
 			{
 				/* Pinch the east/west sides */
 				for (y = y1b; y <= y2b; y++)
@@ -1207,20 +1207,20 @@ static void build_type3(int y0, int x0)
 				}
 
 				/* Open sides with secret doors */
-				if (rand_int(3) == 0)
+				if (one_in_(3))
 				{
 					generate_open(y1b-1, x1a-1, y2b+1, x2a+1, FEAT_SECRET);
 				}
 			}
 
 			/* Occasionally put a "plus" in the center */
-			else if (rand_int(3) == 0)
+			else if (one_in_(3))
 			{
 				generate_plus(y1b, x1a, y2b, x2a, FEAT_WALL_INNER);
 			}
 
 			/* Occasionally put a "pillar" in the center */
-			else if (rand_int(3) == 0)
+			else if (one_in_(3))
 			{
 				cave_set_feat(y0, x0, FEAT_WALL_INNER);
 			}
@@ -1339,10 +1339,10 @@ static void build_type4(int y0, int x0)
 			generate_fill(y0-1, x0-1, y0+1, x0+1, FEAT_WALL_INNER);
 
 			/* Occasionally, two more Large Inner Pillars */
-			if (rand_int(2) == 0)
+			if (one_in_(2))
 			{
 				/* Three spaces */
-				if (rand_int(100) < 50)
+				if (one_in_(2))
 				{
 					/* Inner pillar */
 					generate_fill(y0-1, x0-7, y0+1, x0-5, FEAT_WALL_INNER);
@@ -1363,7 +1363,7 @@ static void build_type4(int y0, int x0)
 			}
 
 			/* Occasionally, some Inner rooms */
-			if (rand_int(3) == 0)
+			if (one_in_(3))
 			{
 				/* Inner rectangle */
 				generate_draw(y0-1, x0-5, y0+1, x0+5, FEAT_WALL_INNER);
@@ -1377,8 +1377,8 @@ static void build_type4(int y0, int x0)
 				vault_monsters(y0, x0 + 2, p_ptr->depth + 2, randint(2));
 
 				/* Objects */
-				if (rand_int(3) == 0) place_object(y0, x0 - 2, p_ptr->depth, FALSE, FALSE);
-				if (rand_int(3) == 0) place_object(y0, x0 + 2, p_ptr->depth, FALSE, FALSE);
+				if (one_in_(3)) place_object(y0, x0 - 2, p_ptr->depth, FALSE, FALSE);
+				if (one_in_(3)) place_object(y0, x0 + 2, p_ptr->depth, FALSE, FALSE);
 			}
 
 			break;
@@ -2821,7 +2821,7 @@ static void cave_gen(void)
 
 
 	/* Possible "destroyed" level */
-	if ((p_ptr->depth > 10) && (rand_int(DUN_DEST) == 0)) destroyed = TRUE;
+	if ((p_ptr->depth > 10) && one_in_(DUN_DEST)) destroyed = TRUE;
 
 	/* Hack -- No destroyed "quest" levels */
 	if (is_quest(p_ptr->depth)) destroyed = FALSE;

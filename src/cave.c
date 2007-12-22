@@ -945,7 +945,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	/* Rare random hallucination on non-outer walls */
 	if (g->hallucinate && g->m_idx == 0 && g->first_k_idx == 0)
 	{
-		if (rand_int(256) == 0 && (g->f_idx < FEAT_PERM_SOLID))
+		if (one_in_(256) && (g->f_idx < FEAT_PERM_SOLID))
 		{
 			/* Normally, make an imaginary monster */
 			if (rand_int(100) < 75)

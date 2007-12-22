@@ -1842,7 +1842,7 @@ bool recharge(int num)
 	i = (num + 100 - lev - (10 * (o_ptr->pval / o_ptr->number))) / 15;
 
 	/* Back-fire */
-	if ((i <= 1) || (rand_int(i) == 0))
+	if ((i <= 1) || one_in_(i))
 	{
 		msg_print("The recharge backfires!");
 		msg_print("There is a bright flash of light.");

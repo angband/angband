@@ -3482,7 +3482,7 @@ static void process_monster(int m_idx)
 		}
 
 		/* Hack -- multiply slower in crowded areas */
-		if ((k < 4) && (!k || !rand_int(k * MON_MULT_ADJ)))
+		if ((k < 4) && (!k || one_in_(k * MON_MULT_ADJ)))
 		{
 			/* Try to multiply */
 			if (multiply_monster(m_idx))

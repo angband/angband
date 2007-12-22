@@ -57,7 +57,7 @@ static int check_devices(object_type *o_ptr)
 	chance -= MIN(lev, 50);
 
 	/* Give everyone a (slight) chance */
-	if ((chance < USE_DEVICE) && (rand_int(USE_DEVICE - chance + 1) == 0))
+	if ((chance < USE_DEVICE) && one_in_(USE_DEVICE - chance + 1))
 	{
 		chance = USE_DEVICE;
 	}

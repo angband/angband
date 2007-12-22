@@ -187,7 +187,7 @@ static void prt_welcome(const owner_type *ot_ptr)
 	i = MIN(i, N_ELEMENTS(comment_welcome) - 1);
 
 	/* Only show the message one in four times to stop it being irritating. */
-	if (!rand_int(4)) return;
+	if (one_in_(4)) return;
 
 	/* Welcome the character */
 	if (i)
@@ -1993,7 +1993,7 @@ static bool store_purchase(int item)
 		i_ptr->ident &= ~(IDENT_STORE);
 
 		/* Message */
-		if (!rand_int(3)) message(MSG_STORE5, 0, ONE_OF(comment_accept));
+		if (one_in_(3)) message(MSG_STORE5, 0, ONE_OF(comment_accept));
 		msg_format("You bought %s (%c) for %ld gold.", o_name,
 		           store_to_label(item), (long)price);
 
@@ -2029,7 +2029,7 @@ static bool store_purchase(int item)
 			int i;
 
 			/* Shuffle */
-			if (rand_int(STORE_SHUFFLE) == 0)
+			if (one_in_(STORE_SHUFFLE))
 			{
 				/* Message */
 				msg_print("The shopkeeper retires.");

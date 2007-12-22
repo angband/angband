@@ -66,7 +66,7 @@ static errr init_names(void)
 		randname_make(RANDNAME_TOLKIEN, MIN_NAME_LEN, MAX_NAME_LEN, word, sizeof word);
 		word[0] = toupper((unsigned char) word[0]);
 
-		if (rand_int(3) == 0)
+		if (one_in_(3))
 			strnfmt(buf, sizeof(buf), "'%s'", word);
 		else
 			strnfmt(buf, sizeof(buf), "of %s", word);
@@ -657,10 +657,10 @@ static void choose_item(int a_idx)
 			{
 			case TV_SOFT_ARMOR:
 			case TV_HARD_ARMOR:
-				if (rand_int(2) == 0) a_ptr->flags2 |= TR2_RES_ACID;
-				if (rand_int(2) == 0) a_ptr->flags2 |= TR2_RES_ELEC;
-				if (rand_int(2) == 0) a_ptr->flags2 |= TR2_RES_COLD;
-				if (rand_int(2) == 0) a_ptr->flags2 |= TR2_RES_FIRE;
+				if (one_in_(2)) a_ptr->flags2 |= TR2_RES_ACID;
+				if (one_in_(2)) a_ptr->flags2 |= TR2_RES_ELEC;
+				if (one_in_(2)) a_ptr->flags2 |= TR2_RES_COLD;
+				if (one_in_(2)) a_ptr->flags2 |= TR2_RES_FIRE;
 				break;
 			}
 			break;
@@ -677,9 +677,9 @@ static void do_pval(artifact_type *a_ptr)
 	if (a_ptr->pval == 0) a_ptr->pval = (s16b)(1 + rand_int(3));
 	else if (a_ptr->pval < 0)
 	{
-		if (rand_int(2) == 0) a_ptr->pval--;
+		if (one_in_(2)) a_ptr->pval--;
 	}
-	else if (rand_int(3) > 0) a_ptr->pval++;
+	else if (!one_in_(3)) a_ptr->pval++;
 }
 
 
@@ -752,7 +752,7 @@ static void add_ability(artifact_type *a_ptr)
 				{
 					a_ptr->flags1 |= TR1_WIS;
 					do_pval(a_ptr);
-					if (rand_int(2) == 0) a_ptr->flags2 |= TR2_SUST_WIS;
+					if (one_in_(2)) a_ptr->flags2 |= TR2_SUST_WIS;
 					if ((a_ptr->tval == TV_SWORD) ||
 					    (a_ptr->tval == TV_POLEARM))
 						a_ptr->flags3 |= TR3_BLESSED;
@@ -760,22 +760,22 @@ static void add_ability(artifact_type *a_ptr)
 				else if (r < 7)
 				{
 					a_ptr->flags1 |= TR1_BRAND_ACID;
-					if (rand_int(4) > 0) a_ptr->flags2 |= TR2_RES_ACID;
+					if (!one_in_(4)) a_ptr->flags2 |= TR2_RES_ACID;
 				}
 				else if (r < 10)
 				{
 					a_ptr->flags1 |= TR1_BRAND_ELEC;
-					if (rand_int(4) > 0) a_ptr->flags2 |= TR2_RES_ELEC;
+					if (!one_in_(4)) a_ptr->flags2 |= TR2_RES_ELEC;
 				}
 				else if (r < 15)
 				{
 					a_ptr->flags1 |= TR1_BRAND_FIRE;
-					if (rand_int(4) > 0) a_ptr->flags2 |= TR2_RES_FIRE;
+					if (!one_in_(4)) a_ptr->flags2 |= TR2_RES_FIRE;
 				}
 				else if (r < 20)
 				{
 					a_ptr->flags1 |= TR1_BRAND_COLD;
-					if (rand_int(4) > 0) a_ptr->flags2 |= TR2_RES_COLD;
+					if (!one_in_(4)) a_ptr->flags2 |= TR2_RES_COLD;
 				}
 				else if (r < 28)
 				{
@@ -790,30 +790,30 @@ static void add_ability(artifact_type *a_ptr)
 				else if (r < 50)
 				{
 					a_ptr->flags1 |= TR1_SLAY_UNDEAD;
-					if (rand_int(2) == 0) a_ptr->flags1 |= TR1_SLAY_DEMON;
+					if (one_in_(2)) a_ptr->flags1 |= TR1_SLAY_DEMON;
 				}
 				else if (r < 54)
 				{
 					a_ptr->flags1 |= TR1_SLAY_DEMON;
-					if (rand_int(2) == 0) a_ptr->flags1 |= TR1_SLAY_UNDEAD;
+					if (one_in_(2)) a_ptr->flags1 |= TR1_SLAY_UNDEAD;
 				}
 				else if (r < 59)
 				{
 					a_ptr->flags1 |= TR1_SLAY_ORC;
-					if (rand_int(2) == 0) a_ptr->flags1 |= TR1_SLAY_TROLL;
-					if (rand_int(2) == 0) a_ptr->flags1 |= TR1_SLAY_GIANT;
+					if (one_in_(2)) a_ptr->flags1 |= TR1_SLAY_TROLL;
+					if (one_in_(2)) a_ptr->flags1 |= TR1_SLAY_GIANT;
 				}
 				else if (r < 63)
 				{
 					a_ptr->flags1 |= TR1_SLAY_TROLL;
-					if (rand_int(2) == 0) a_ptr->flags1 |= TR1_SLAY_ORC;
-					if (rand_int(2) == 0) a_ptr->flags1 |= TR1_SLAY_GIANT;
+					if (one_in_(2)) a_ptr->flags1 |= TR1_SLAY_ORC;
+					if (one_in_(2)) a_ptr->flags1 |= TR1_SLAY_GIANT;
 				}
 				else if (r < 67)
 				{
 					a_ptr->flags1 |= TR1_SLAY_GIANT;
-					if (rand_int(2) == 0) a_ptr->flags1 |= TR1_SLAY_ORC;
-					if (rand_int(2) == 0) a_ptr->flags1 |= TR1_SLAY_TROLL;
+					if (one_in_(2)) a_ptr->flags1 |= TR1_SLAY_ORC;
+					if (one_in_(2)) a_ptr->flags1 |= TR1_SLAY_TROLL;
 				}
 				else if (r < 72) a_ptr->flags3 |= TR3_SEE_INVIS;
 				else if (r < 76)
@@ -862,7 +862,7 @@ static void add_ability(artifact_type *a_ptr)
 
 					if (a_ptr->pval == 0)
 						a_ptr->pval = (s16b)(3 + rand_int(8));
-					else if (rand_int(2) == 0)
+					else if (one_in_(2))
 						a_ptr->pval++;
 				}
 				else
@@ -939,7 +939,7 @@ static void add_ability(artifact_type *a_ptr)
 				{
 					a_ptr->flags1 |= TR1_CON;
 					do_pval(a_ptr);
-					if (rand_int(2) == 0)
+					if (one_in_(2))
 						a_ptr->flags2 |= TR2_SUST_CON;
 				}
 				else if (r < 34) a_ptr->flags2 |= TR2_RES_ACID;
@@ -961,34 +961,34 @@ static void add_ability(artifact_type *a_ptr)
 			case 0:
 				a_ptr->flags1 |= TR1_STR;
 				do_pval(a_ptr);
-				if (rand_int(2) == 0) a_ptr->flags2 |= TR2_SUST_STR;
+				if (one_in_(2)) a_ptr->flags2 |= TR2_SUST_STR;
 				break;
 			case 1:
 				a_ptr->flags1 |= TR1_INT;
 				do_pval(a_ptr);
-				if (rand_int(2) == 0) a_ptr->flags2 |= TR2_SUST_INT;
+				if (one_in_(2)) a_ptr->flags2 |= TR2_SUST_INT;
 				break;
 			case 2:
 				a_ptr->flags1 |= TR1_WIS;
 				do_pval(a_ptr);
-				if (rand_int(2) == 0) a_ptr->flags2 |= TR2_SUST_WIS;
+				if (one_in_(2)) a_ptr->flags2 |= TR2_SUST_WIS;
 				if (a_ptr->tval == TV_SWORD || a_ptr->tval == TV_POLEARM)
 					a_ptr->flags3 |= TR3_BLESSED;
 				break;
 			case 3:
 				a_ptr->flags1 |= TR1_DEX;
 				do_pval(a_ptr);
-				if (rand_int(2) == 0) a_ptr->flags2 |= TR2_SUST_DEX;
+				if (one_in_(2)) a_ptr->flags2 |= TR2_SUST_DEX;
 				break;
 			case 4:
 				a_ptr->flags1 |= TR1_CON;
 				do_pval(a_ptr);
-				if (rand_int(2) == 0) a_ptr->flags2 |= TR2_SUST_CON;
+				if (one_in_(2)) a_ptr->flags2 |= TR2_SUST_CON;
 				break;
 			case 5:
 				a_ptr->flags1 |= TR1_CHR;
 				do_pval(a_ptr);
-				if (rand_int(2) == 0) a_ptr->flags2 |= TR2_SUST_CHR;
+				if (one_in_(2)) a_ptr->flags2 |= TR2_SUST_CHR;
 				break;
 
 			case 6:
@@ -1011,7 +1011,7 @@ static void add_ability(artifact_type *a_ptr)
 
 			case 10:
 				a_ptr->flags2 |= TR2_SUST_STR;
-				if (rand_int(2) == 0)
+				if (one_in_(2))
 				{
 					a_ptr->flags1 |= TR1_STR;
 					do_pval(a_ptr);
@@ -1019,7 +1019,7 @@ static void add_ability(artifact_type *a_ptr)
 				break;
 			case 11:
 				a_ptr->flags2 |= TR2_SUST_INT;
-				if (rand_int(2) == 0)
+				if (one_in_(2))
 				{
 					a_ptr->flags1 |= TR1_INT;
 					do_pval(a_ptr);
@@ -1027,7 +1027,7 @@ static void add_ability(artifact_type *a_ptr)
 				break;
 			case 12:
 				a_ptr->flags2 |= TR2_SUST_WIS;
-				if (rand_int(2) == 0)
+				if (one_in_(2))
 				{
 					a_ptr->flags1 |= TR1_WIS;
 					do_pval(a_ptr);
@@ -1037,7 +1037,7 @@ static void add_ability(artifact_type *a_ptr)
 				break;
 			case 13:
 				a_ptr->flags2 |= TR2_SUST_DEX;
-				if (rand_int(2) == 0)
+				if (one_in_(2))
 				{
 					a_ptr->flags1 |= TR1_DEX;
 					do_pval(a_ptr);
@@ -1045,7 +1045,7 @@ static void add_ability(artifact_type *a_ptr)
 				break;
 			case 14:
 				a_ptr->flags2 |= TR2_SUST_CON;
-				if (rand_int(2) == 0)
+				if (one_in_(2))
 				{
 					a_ptr->flags1 |= TR1_CON;
 					do_pval(a_ptr);
@@ -1053,7 +1053,7 @@ static void add_ability(artifact_type *a_ptr)
 				break;
 			case 15:
 				a_ptr->flags2 |= TR2_SUST_CHR;
-				if (rand_int(2) == 0)
+				if (one_in_(2))
 				{
 					a_ptr->flags1 |= TR1_CHR;
 					do_pval(a_ptr);
@@ -1062,22 +1062,22 @@ static void add_ability(artifact_type *a_ptr)
 
 			case 16:
 			{
-				if (rand_int(3) == 0) a_ptr->flags2 |= TR2_IM_ACID;
+				if (one_in_(3)) a_ptr->flags2 |= TR2_IM_ACID;
 				break;
 			}
 			case 17:
 			{
-				if (rand_int(3) == 0) a_ptr->flags2 |= TR2_IM_ELEC;
+				if (one_in_(3)) a_ptr->flags2 |= TR2_IM_ELEC;
 				break;
 			}
 			case 18:
 			{
-				if (rand_int(4) == 0) a_ptr->flags2 |= TR2_IM_FIRE;
+				if (one_in_(4)) a_ptr->flags2 |= TR2_IM_FIRE;
 				break;
 			}
 			case 19:
 			{
-				if (rand_int(3) == 0) a_ptr->flags2 |= TR2_IM_COLD;
+				if (one_in_(3)) a_ptr->flags2 |= TR2_IM_COLD;
 				break;
 			}
 			case 20: a_ptr->flags3 |= TR3_FREE_ACT; break;
@@ -1095,20 +1095,20 @@ static void add_ability(artifact_type *a_ptr)
 			case 31: a_ptr->flags2 |= TR2_RES_SOUND; break;
 			case 32: a_ptr->flags2 |= TR2_RES_SHARD; break;
 			case 33:
-				if (rand_int(2) == 0)
+				if (one_in_(2))
 					a_ptr->flags2 |= TR2_RES_NETHR;
 				break;
 			case 34: a_ptr->flags2 |= TR2_RES_NEXUS; break;
 			case 35: a_ptr->flags2 |= TR2_RES_CHAOS; break;
 			case 36:
-				if (rand_int(2) == 0)
+				if (one_in_(2))
 					a_ptr->flags2 |= TR2_RES_DISEN;
 				break;
 			case 37: a_ptr->flags3 |= TR3_FEATHER; break;
 			case 38: a_ptr->flags3 |= TR3_LITE; break;
 			case 39: a_ptr->flags3 |= TR3_SEE_INVIS; break;
 			case 40:
-				if (rand_int(3) == 0)
+				if (one_in_(3))
 					a_ptr->flags3 |= TR3_TELEPATHY;
 				break;
 			case 41: a_ptr->flags3 |= TR3_SLOW_DIGEST; break;
@@ -1126,31 +1126,31 @@ static void add_ability(artifact_type *a_ptr)
  */
 static void do_curse(artifact_type *a_ptr)
 {
-	if (rand_int(3) == 0)
+	if (one_in_(3))
 		a_ptr->flags3 |= TR3_AGGRAVATE;
-	if (rand_int(5) == 0)
+	if (one_in_(5))
 		a_ptr->flags3 |= TR3_DRAIN_EXP;
-	if (rand_int(7) == 0)
+	if (one_in_(7))
 		a_ptr->flags3 |= TR3_TELEPORT;
 
-	if ((a_ptr->pval > 0) && (rand_int(2) == 0))
+	if ((a_ptr->pval > 0) && one_in_(2))
 		a_ptr->pval = -a_ptr->pval;
-	if ((a_ptr->to_a > 0) && (rand_int(2) == 0))
+	if ((a_ptr->to_a > 0) && one_in_(2))
 		a_ptr->to_a = -a_ptr->to_a;
-	if ((a_ptr->to_h > 0) && (rand_int(2) == 0))
+	if ((a_ptr->to_h > 0) && one_in_(2))
 		a_ptr->to_h = -a_ptr->to_h;
-	if ((a_ptr->to_d > 0) && (rand_int(4) == 0))
+	if ((a_ptr->to_d > 0) && one_in_(4))
 		a_ptr->to_d = -a_ptr->to_d;
 
 	if (a_ptr->flags3 & TR3_LIGHT_CURSE)
 	{
-		if (rand_int(2) == 0) a_ptr->flags3 |= TR3_HEAVY_CURSE;
+		if (one_in_(2)) a_ptr->flags3 |= TR3_HEAVY_CURSE;
 		return;
 	}
 
 	a_ptr->flags3 |= TR3_LIGHT_CURSE;
 
-	if (rand_int(4) == 0)
+	if (one_in_(4))
 		a_ptr->flags3 |= TR3_HEAVY_CURSE;
 }
 

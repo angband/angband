@@ -419,7 +419,7 @@ s16b get_mon_num(int level)
 	if (level > 0)
 	{
 		/* Occasional "nasty" monster */
-		if (rand_int(NASTY_MON) == 0)
+		if (one_in_(NASTY_MON))
 		{
 			/* Pick a level bonus */
 			int d = level / 4 + 2;
@@ -429,7 +429,7 @@ s16b get_mon_num(int level)
 		}
 
 		/* Occasional "nasty" monster */
-		if (rand_int(NASTY_MON) == 0)
+		if (one_in_(NASTY_MON))
 		{
 			/* Pick a level bonus */
 			int d = level / 4 + 2;
