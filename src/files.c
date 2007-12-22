@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "ui-menu.h"
 #include "cmds.h"
 #include "option.h"
 
@@ -2640,58 +2641,6 @@ static void center_string(char *buf, size_t len, cptr str)
 
 
 
-#if 0
-
-/*
- * Save a "bones" file for a dead character
- *
- * Note that we will not use these files until a later version, and
- * then we will only use the name and level on which death occured.
- *
- * Should probably attempt some form of locking...
- */
-static void make_bones(void)
-{
-	ang_file *fp;
-	char str[1024];
-	char tmp[128];
-
-	/* Ignore wizards and borgs */
-	if (p_ptr->noscore & (NOSCORE_WIZARD | NOSCORE_BORG))
-		return;
-
-	/* Ignore people who die in town */
-	if (!p_ptr->depth) return;
-
-
-	/* XXX XXX XXX "Bones" name */
-	strnfmt(tmp, sizeof(tmp), "bone.%03d", p_ptr->depth);
-
-	/* Build the filename */
-	path_build(str, sizeof(str), ANGBAND_DIR_BONE, tmp);
-
-	/* Do not over-write a previous ghost */
-	if (file_exists(str)) return;
-
-	/* Try to write a new "Bones File" */
-	safe_setuid_grab();
-	fp = file_open(str, MODE_WRITE, FTYPE_TEXT);
-	safe_setuid_drop();
-
-	/* Not allowed to write it?  Weird. */
-	if (!fp) return;
-
-	/* Save the info */
-	file_putf(fp, "%s\n", op_ptr->full_name);
-	file_putf(fp, "%d\n", p_ptr->mhp);
-	file_putf(fp, "%d\n", p_ptr->prace);
-	file_putf(fp, "%d\n", p_ptr->pclass);
-
-	/* Close and save the Bones file */
-	file_close(fp);
-}
-
-#endif /* 0 */
 
 
 /*
@@ -2708,10 +2657,11 @@ static void print_tomb(void)
 	cptr p;
 
 	char tmp[160];
-
 	char buf[1024];
 
 	ang_file *fp;
+
+	int line = 7;
 
 
 	/* Clear screen */
@@ -2734,55 +2684,51 @@ static void print_tomb(void)
 	}
 
 
-	/* King or Queen */
-	if (p_ptr->total_winner || (p_ptr->lev > PY_MAX_LEVEL))
-	{
+	/* Get the right total */
+	if (p_ptr->total_winner)
 		p = "Magnificent";
-	}
-
-	/* Normal */
 	else
-	{
 		p = c_text + cp_ptr->title[(p_ptr->lev - 1) / 5];
-	}
 
 	center_string(buf, sizeof(buf), op_ptr->full_name);
-	put_str(buf, 6, 11);
+	put_str(buf, line++, 8);
 
 	center_string(buf, sizeof(buf), "the");
-	put_str(buf, 7, 11);
+	put_str(buf, line++, 8);
 
 	center_string(buf, sizeof(buf), p);
-	put_str(buf, 8, 11);
+	put_str(buf, line++, 8);
 
+	line++;
 
 	center_string(buf, sizeof(buf), c_name + cp_ptr->name);
-	put_str(buf, 10, 11);
+	put_str(buf, line++, 8);
 
 	strnfmt(tmp, sizeof(tmp), "Level: %d", (int)p_ptr->lev);
 	center_string(buf, sizeof(buf), tmp);
-	put_str(buf, 11, 11);
+	put_str(buf, line++, 8);
 
 	strnfmt(tmp, sizeof(tmp), "Exp: %ld", (long)p_ptr->exp);
 	center_string(buf, sizeof(buf), tmp);
-	put_str(buf, 12, 11);
+	put_str(buf, line++, 8);
 
 	strnfmt(tmp, sizeof(tmp), "AU: %ld", (long)p_ptr->au);
 	center_string(buf, sizeof(buf), tmp);
-	put_str(buf, 13, 11);
+	put_str(buf, line++, 8);
 
 	strnfmt(tmp, sizeof(tmp), "Killed on Level %d", p_ptr->depth);
 	center_string(buf, sizeof(buf), tmp);
-	put_str(buf, 14, 11);
+	put_str(buf, line++, 8);
 
 	strnfmt(tmp, sizeof(tmp), "by %s.", p_ptr->died_from);
 	center_string(buf, sizeof(buf), tmp);
-	put_str(buf, 15, 11);
+	put_str(buf, line++, 8);
 
+	line++;
 
 	strnfmt(tmp, sizeof(tmp), "%-.24s", ctime(&death_time));
 	center_string(buf, sizeof(buf), tmp);
-	put_str(buf, 17, 11);
+	put_str(buf, line++, 8);
 }
 
 
@@ -2838,17 +2784,98 @@ static void death_knowledge(void)
 }
 
 
+
 /*
- * Display some character info
+ * Change the player into a Winner
  */
-static void show_info(void)
+static void kingly(void)
+{
+	/* Hack -- retire in town */
+	p_ptr->depth = 0;
+
+	/* Fake death */
+	my_strcpy(p_ptr->died_from, "Ripe Old Age", sizeof(p_ptr->died_from));
+
+	/* Restore the experience */
+	p_ptr->exp = p_ptr->max_exp;
+
+	/* Restore the level */
+	p_ptr->lev = p_ptr->max_lev;
+
+	/* Hack -- Instant Gold */
+	p_ptr->au += 10000000L;
+
+	/* Clear screen */
+	Term_clear();
+
+	/* Display a crown */
+	put_str("#", 1, 34);
+	put_str("#####", 2, 32);
+	put_str("#", 3, 34);
+	put_str(",,,  $$$  ,,,", 4, 28);
+	put_str(",,=$   \"$$$$$\"   $=,,", 5, 24);
+	put_str(",$$        $$$        $$,", 6, 22);
+	put_str("*>         <*>         <*", 7, 22);
+	put_str("$$         $$$         $$", 8, 22);
+	put_str("\"$$        $$$        $$\"", 9, 22);
+	put_str("\"$$       $$$       $$\"", 10, 23);
+	put_str("*#########*#########*", 11, 24);
+	put_str("*#########*#########*", 12, 24);
+
+	/* Display a message */
+	put_str("Veni, Vidi, Vici!", 15, 26);
+	put_str("I came, I saw, I conquered!", 16, 21);
+	put_str(format("All Hail the Mighty %s!", sp_ptr->winner), 17, 22);
+
+	/* Flush input */
+	flush();
+
+	/* Wait for response */
+	pause_line(Term->hgt - 1);
+}
+
+
+
+
+
+
+
+static void death_file(void *unused, const char *title)
+{
+	char ftmp[80];
+	strnfmt(ftmp, sizeof(ftmp), "%s.txt", op_ptr->base_name);
+
+	if (!get_string("File name: ", ftmp, sizeof(ftmp)))
+		return;
+
+	if (ftmp[0] && (ftmp[0] != ' '))
+	{
+		errr err;
+
+		/* Dump a character file */
+		screen_save();
+		err = file_character(ftmp, FALSE);
+		screen_load();
+
+		/* Check result */
+		if (err)
+			msg_print("Character dump failed!");
+		else
+			msg_print("Character dump successful.");
+
+		/* Flush messages */
+		message_flush();
+	}
+}
+
+static void death_info(void *unused, const char *title)
 {
 	int i, j, k;
-
 	object_type *o_ptr;
-
 	store_type *st_ptr = &store[STORE_HOME];
 
+
+	screen_save();
 
 	/* Display player */
 	display_player(0);
@@ -2925,17 +2952,32 @@ static void show_info(void)
 			if (inkey() == ESCAPE) return;
 		}
 	}
+
+	screen_load();
 }
 
+static void death_messages(void *unused, const char *title)
+{
+	screen_save();
+	do_cmd_messages();
+	screen_load();
+}
 
-/*
- * Special version of 'do_cmd_examine'
- */
-static void death_examine(void)
+static void death_scores(void *unused, const char *title)
+{
+	screen_save();
+	top_twenty();
+	screen_load();
+}
+
+static void death_examine(void *unused, const char *title)
 {
 	int item;
 	cptr q, s;
 
+
+	screen_save();
+	Term_clear();
 
 	/* Start out in "display" mode */
 	p_ptr->command_see = TRUE;
@@ -2962,65 +3004,63 @@ static void death_examine(void)
 
 		text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
 		(void)anykey();
-      
+
 		screen_load();
 	}
+
+	screen_load();
 }
 
+menu_type death_menu;
 
-
-
-
-
-
-/*
- * Change the player into a Winner
- */
-static void kingly(void)
+static const menu_action death_actions[] =
 {
-	/* Hack -- retire in town */
-	p_ptr->depth = 0;
+	{ 'i', "Information",   death_info,     NULL },
+	{ 'm', "Messages",      death_messages, NULL },
+	{ 'f', "File dump",     death_file,     NULL },
+	{ 'v', "View scores",   death_scores,   NULL },
+	{ 'x', "Examine items", death_examine,  NULL },
+	{ 'q', "Quit",          death_examine,  NULL },
+};
 
-	/* Fake death */
-	my_strcpy(p_ptr->died_from, "Ripe Old Age", sizeof(p_ptr->died_from));
 
-	/* Restore the experience */
-	p_ptr->exp = p_ptr->max_exp;
 
-	/* Restore the level */
-	p_ptr->lev = p_ptr->max_lev;
 
-	/* Hack -- Instant Gold */
-	p_ptr->au += 10000000L;
+static char tag_death_main(menu_type *menu, int oid)
+{
+	if (death_actions[oid].id)
+		return death_actions[oid].id;
 
-	/* Clear screen */
-	Term_clear();
-
-	/* Display a crown */
-	put_str("#", 1, 34);
-	put_str("#####", 2, 32);
-	put_str("#", 3, 34);
-	put_str(",,,  $$$  ,,,", 4, 28);
-	put_str(",,=$   \"$$$$$\"   $=,,", 5, 24);
-	put_str(",$$        $$$        $$,", 6, 22);
-	put_str("*>         <*>         <*", 7, 22);
-	put_str("$$         $$$         $$", 8, 22);
-	put_str("\"$$        $$$        $$\"", 9, 22);
-	put_str("\"$$       $$$       $$\"", 10, 23);
-	put_str("*#########*#########*", 11, 24);
-	put_str("*#########*#########*", 12, 24);
-
-	/* Display a message */
-	put_str("Veni, Vidi, Vici!", 15, 26);
-	put_str("I came, I saw, I conquered!", 16, 21);
-	put_str(format("All Hail the Mighty %s!", sp_ptr->winner), 17, 22);
-
-	/* Flush input */
-	flush();
-
-	/* Wait for response */
-	pause_line(Term->hgt - 1);
+	return 0;
 }
+
+static int valid_death_main(menu_type *menu, int oid)
+{
+	if (death_actions[oid].name)
+		return 1;
+
+	return 0;
+}
+
+static void display_death_main(menu_type *menu, int oid, bool cursor, int row, int col, int width)
+{
+	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
+
+	if (death_actions[oid].name)
+		c_prt(attr, death_actions[oid].name, row, col);
+}
+
+
+static const menu_iter death_iter =
+{
+	0,
+	tag_death_main,
+	valid_death_main,
+	display_death_main,
+	NULL
+};
+
+
 
 
 /*
@@ -3028,9 +3068,7 @@ static void kingly(void)
  */
 static void close_game_aux(void)
 {
-	int ch;
 	bool wants_to_quit = FALSE;
-	cptr p = "[(i)nformation, (m)essages, (f)ile dump, (v)iew scores, e(x)amine item, ESC]";
 
 
 	/* Handle retirement */
@@ -3061,140 +3099,41 @@ static void close_game_aux(void)
 	/* Flush messages */
 	message_flush();
 
-	/* Loop */
-	while (!wants_to_quit)
+
+	/* Initialize the menus */
+	menu_type *menu;
+   const char cmd_keys[] = { ARROW_LEFT, ARROW_RIGHT, '\0' };
+	const region area = { 51, 2, 0, 6 };
+
+	int cursor = 0;
+	ui_event_data c = EVENT_EMPTY;
+
+
+	/* options screen selection menu */
+	menu = &death_menu;
+	WIPE(menu, menu_type);
+	menu_set_id(menu, 1);
+	menu->menu_data = death_actions;
+	menu->flags = MN_CASELESS_TAGS;
+	menu->cmd_keys = cmd_keys;
+	menu->count = N_ELEMENTS(death_actions);
+
+	menu_init2(menu, find_menu_skin(MN_SCROLL), &death_iter, &area);
+
+	while (TRUE)
 	{
-		/* Describe options */
-		Term_putstr(1, 23, -1, TERM_WHITE, p);
+		c = menu_select(&death_menu, &cursor, 0);
 
-		/* Query */
-		ch = inkey();
-
-		switch (ch)
+		if (c.key == ESCAPE || cursor == 5)
 		{
-			/* Exit */
-			case ESCAPE:
-			{
-				if (get_check("Do you want to quit? "))
-					wants_to_quit = TRUE;
-
+			if (get_check("Do you want to quit? "))
 				break;
-			}
-
-			/* File dump */
-			case 'f':
-			case 'F':
-			{
-				char ftmp[80];
-
-				strnfmt(ftmp, sizeof(ftmp), "%s.txt", op_ptr->base_name);
-
-				if (get_string("File name: ", ftmp, sizeof(ftmp)))
-				{
-					if (ftmp[0] && (ftmp[0] != ' '))
-					{
-						errr err;
-
-						/* Save screen */
-						screen_save();
-
-						/* Dump a character file */
-						err = file_character(ftmp, FALSE);
-
-						/* Load screen */
-						screen_load();
-
-						/* Check result */
-						if (err)
-						{
-							msg_print("Character dump failed!");
-						}
-						else
-						{
-							msg_print("Character dump successful.");
-						}
-
-						/* Flush messages */
-						message_flush();
-					}
-				}
-
-				break;
-			}
-
-			/* Show more info */
-			case 'i':
-			case 'I':
-			{
-				/* Save screen */
-				screen_save();
-
-				/* Show the character */
-				show_info();
-
-				/* Load screen */
-				screen_load();
-
-				break;
-			}
-
-			/* Show last messages */
-			case 'm':
-			case 'M':
-			{
-				/* Save screen */
-				screen_save();
-
-				/* Display messages */
-				do_cmd_messages();
-
-				/* Load screen */
-				screen_load();
-
-				break;
-			}
-
-			/* Show top scores */
-			case 'v':
-			case 'V':
-			{
-				/* Save screen */
-				screen_save();
-
-				/* Show the scores */
-				top_twenty();
-
-				/* Load screen */
-				screen_load();
-
-				break;
-			}
-
-			/* Examine an item */
-			case 'x':
-			case 'X':
-			{
-				/* Save screen */
-				screen_save();
-
-				/* Clear the screen */
-				Term_clear();
-
-				/* Examine items */
-				death_examine();
-
-				/* Load screen */
-				screen_load();
-
-				break;
-			}
+		}
+		else if (c.type == EVT_SELECT && death_actions[cursor].action)
+		{
+			death_actions[cursor].action(death_actions[cursor].data, NULL);
 		}
 	}
-
-#if 0
-	/* Dump bones file */
-	make_bones();
-#endif
 }
 
 
