@@ -541,12 +541,12 @@ bool file_readc(ang_file *f, byte *b)
 	return TRUE;
 }
 
-/* 
+/*
  * Write a single, 8-bit character 'b' to file 'f'.
  */
 bool file_writec(ang_file *f, byte b)
 {
-	return (fputc((int)b, f->fh) != EOF);
+	return file_write(f, &b, 1);
 }
 
 /*
