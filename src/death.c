@@ -19,177 +19,125 @@
 #include "ui-menu.h"
 
 
-
-/*
- * Centers a string within a 31 character string
- */
-static void center_string(char *buf, size_t len, cptr str)
-{
-	int i, j;
-
-	/* Total length */
-	i = strlen(str);
-
-	/* Necessary border */
-	j = 15 - i / 2;
-
-	/* Mega-Hack */
-	strnfmt(buf, len, "%*s%s%*s", j, "", str, 31 - i - j, "");
-}
-
-
-
-
-
 /*
  * Hack - save the time of death
  */
 static time_t death_time = (time_t)0;
 
 
+
 /*
- * Display a "tomb-stone"
+ * Write formatted string `fmt` on line `y`, centred between points x1 and x2.
+ */
+static void put_str_centred(int y, int x1, int x2, const char *fmt, ...)
+{
+	va_list vp;
+	char *tmp;
+	size_t len;
+	int x;
+
+	/* Format into the (growable) tmp */
+	va_start(vp, fmt);
+	tmp = vformat(fmt, vp);
+	va_end(vp);
+
+	/* Centre now */
+	len = strlen(tmp);
+	x = x1 + ((x2-x1)/2 - len/2);
+
+	put_str(tmp, y, x);
+}
+
+
+/*
+ * Display the tombstone
  */
 static void print_tomb(void)
 {
-	cptr p;
-
-	char tmp[160];
-	char buf[1024];
-
 	ang_file *fp;
+	char buf[1024];
+	int line = 0;
 
-	int line = 7;
 
-
-	/* Clear screen */
 	Term_clear();
 
 	/* Open the death file */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_FILE, "dead.txt");
 	fp = file_open(buf, MODE_READ, -1);
 
-	/* Dump */
 	if (fp)
 	{
-		int i = 0;
-
-		/* Dump the file to the screen */
 		while (file_getl(fp, buf, sizeof(buf)))
-			put_str(buf, i++, 0);
+			put_str(buf, line++, 0);
 
 		file_close(fp);
 	}
 
+	line = 7;
 
-	/* Get the right total */
+	put_str_centred(line++, 8, 8+31, "%s", op_ptr->full_name);
+	put_str_centred(line++, 8, 8+31, "the");
 	if (p_ptr->total_winner)
-		p = "Magnificent";
+		put_str_centred(line++, 8, 8+31, "Magnificent");
 	else
-		p = c_text + cp_ptr->title[(p_ptr->lev - 1) / 5];
-
-	center_string(buf, sizeof(buf), op_ptr->full_name);
-	put_str(buf, line++, 8);
-
-	center_string(buf, sizeof(buf), "the");
-	put_str(buf, line++, 8);
-
-	center_string(buf, sizeof(buf), p);
-	put_str(buf, line++, 8);
+		put_str_centred(line++, 8, 8+31, "%s", c_text + cp_ptr->title[(p_ptr->lev - 1) / 5]);
 
 	line++;
 
-	center_string(buf, sizeof(buf), c_name + cp_ptr->name);
-	put_str(buf, line++, 8);
-
-	strnfmt(tmp, sizeof(tmp), "Level: %d", (int)p_ptr->lev);
-	center_string(buf, sizeof(buf), tmp);
-	put_str(buf, line++, 8);
-
-	strnfmt(tmp, sizeof(tmp), "Exp: %ld", (long)p_ptr->exp);
-	center_string(buf, sizeof(buf), tmp);
-	put_str(buf, line++, 8);
-
-	strnfmt(tmp, sizeof(tmp), "AU: %ld", (long)p_ptr->au);
-	center_string(buf, sizeof(buf), tmp);
-	put_str(buf, line++, 8);
-
-	strnfmt(tmp, sizeof(tmp), "Killed on Level %d", p_ptr->depth);
-	center_string(buf, sizeof(buf), tmp);
-	put_str(buf, line++, 8);
-
-	strnfmt(tmp, sizeof(tmp), "by %s.", p_ptr->died_from);
-	center_string(buf, sizeof(buf), tmp);
-	put_str(buf, line++, 8);
+	put_str_centred(line++, 8, 8+31, "%s", c_name + cp_ptr->name);
+	put_str_centred(line++, 8, 8+31, "Level: %d", (int)p_ptr->lev);
+	put_str_centred(line++, 8, 8+31, "Exp: %d", (int)p_ptr->exp);
+	put_str_centred(line++, 8, 8+31, "AU: %d", (int)p_ptr->au);
+	put_str_centred(line++, 8, 8+31, "Killed on Level %d", p_ptr->depth);
+	put_str_centred(line++, 8, 8+31, "by %s.", p_ptr->died_from);
 
 	line++;
 
-	strnfmt(tmp, sizeof(tmp), "%-.24s", ctime(&death_time));
-	center_string(buf, sizeof(buf), tmp);
-	put_str(buf, line++, 8);
+	put_str_centred(line++, 8, 8+31, "by %-.24s", ctime(&death_time));
 }
 
 
 /*
- * Hack - Know inventory and home items upon death
+ * Know inventory and home items upon death
  */
 static void death_knowledge(void)
 {
-	int i;
-
+	store_type *st_ptr = &store[STORE_HOME];
 	object_type *o_ptr;
 
-	store_type *st_ptr = &store[STORE_HOME];
+	int i;
 
-
-	/* Hack -- Know everything in the inven/equip */
 	for (i = 0; i < INVEN_TOTAL; i++)
 	{
 		o_ptr = &inventory[i];
-
-		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
 
-		/* Aware and Known */
 		object_aware(o_ptr);
 		object_known(o_ptr);
-
-		/* Fully known */
-		o_ptr->ident |= (IDENT_KNOWN);
 	}
 
-	/* Hack -- Know everything in the home */
 	for (i = 0; i < st_ptr->stock_num; i++)
 	{
 		o_ptr = &st_ptr->stock[i];
-
-		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
 
-		/* Aware and Known */
 		object_aware(o_ptr);
 		object_known(o_ptr);
-
-		/* Fully known */
-		o_ptr->ident |= (IDENT_KNOWN);
 	}
 
 	/* Hack -- Recalculate bonuses */
 	p_ptr->update |= (PU_BONUS);
-
-	/* Handle stuff */
 	handle_stuff();
 }
 
 
 
 /*
- * Display the winner file
+ * Display the winner crown
  */
 static void display_winner(void)
 {
 	char buf[1024];
-	char tmp[1024];
 	ang_file *fp;
 
 	int wid, hgt;
@@ -218,24 +166,23 @@ static void display_winner(void)
 		file_close(fp);
 	}
 
-	strnfmt(buf, sizeof(buf), "All Hail the Mighty %s!", sp_ptr->winner);
-	center_string(tmp, sizeof(tmp), buf);
-	put_str(tmp, i++, (wid/2) - (31/2));
+	put_str_centred(i, 0, wid, "All Hail the Mighty %s!", sp_ptr->winner);
 
 	flush();
 	pause_line(Term->hgt - 1);
 }
 
 
-
-
-
-
-
+/*
+ * Menu command: dump character dump to file.
+ */
 static void death_file(void *unused, const char *title)
 {
 	char ftmp[80];
 	strnfmt(ftmp, sizeof(ftmp), "%s.txt", op_ptr->base_name);
+
+	(void)unused;
+	(void)title;
 
 	if (!get_string("File name: ", ftmp, sizeof(ftmp)))
 		return;
@@ -260,11 +207,17 @@ static void death_file(void *unused, const char *title)
 	}
 }
 
+/*
+ * Menu command: view character dump and inventory.
+ */
 static void death_info(void *unused, const char *title)
 {
 	int i, j, k;
 	object_type *o_ptr;
 	store_type *st_ptr = &store[STORE_HOME];
+
+	(void)unused;
+	(void)title;
 
 
 	screen_save();
@@ -348,24 +301,42 @@ static void death_info(void *unused, const char *title)
 	screen_load();
 }
 
+/*
+ * Menu command: peruse pre-death messages.
+ */
 static void death_messages(void *unused, const char *title)
 {
+	(void)unused;
+	(void)title;
+
 	screen_save();
 	do_cmd_messages();
 	screen_load();
 }
 
+/*
+ * Menu command: see top twenty scores.
+ */
 static void death_scores(void *unused, const char *title)
 {
+	(void)unused;
+	(void)title;
+
 	screen_save();
 	top_twenty();
 	screen_load();
 }
 
+/*
+ * Menu command: examine items in the inventory.
+ */
 static void death_examine(void *unused, const char *title)
 {
 	int item;
 	cptr q, s;
+
+	(void)unused;
+	(void)title;
 
 
 	screen_save();
@@ -381,9 +352,6 @@ static void death_examine(void *unused, const char *title)
 	while (get_item(&item, q, s, (USE_INVEN | USE_EQUIP)))
 	{
 		object_type *o_ptr = &inventory[item];
-
-		/* "Know" */
-		o_ptr->ident |= IDENT_KNOWN;
 
 		/* Describe */
 		text_out_hook = text_out_to_screen;
@@ -403,8 +371,11 @@ static void death_examine(void *unused, const char *title)
 	screen_load();
 }
 
-menu_type death_menu;
 
+/*
+ * Menu structures for the death menu.
+ */
+static menu_type death_menu;
 static const menu_action death_actions[] =
 {
 	{ 'i', "Information",   death_info,     NULL },
@@ -415,40 +386,28 @@ static const menu_action death_actions[] =
 	{ 'q', "Quit",          death_examine,  NULL },
 };
 
-
-
-
-static char tag_death_main(menu_type *menu, int oid)
+/* Return the tag for a menu entry */
+static char death_menu_tag(menu_type *menu, int oid)
 {
-	if (death_actions[oid].id)
-		return death_actions[oid].id;
-
-	return 0;
+	(void)menu;
+	return death_actions[oid].id;
 }
 
-static int valid_death_main(menu_type *menu, int oid)
-{
-	if (death_actions[oid].name)
-		return 1;
-
-	return 0;
-}
-
-static void display_death_main(menu_type *menu, int oid, bool cursor, int row, int col, int width)
+/* Display a menu entry */
+static void death_menu_display(menu_type *menu, int oid, bool cursor, int row, int col, int width)
 {
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
-
-	if (death_actions[oid].name)
-		c_prt(attr, death_actions[oid].name, row, col);
+	(void)menu;
+	(void)width;
+	c_prt(attr, death_actions[oid].name, row, col);
 }
-
 
 static const menu_iter death_iter =
 {
 	0,
-	tag_death_main,
-	valid_death_main,
-	display_death_main,
+	death_menu_tag,
+	NULL,
+	death_menu_display,
 	NULL
 };
 
@@ -460,12 +419,17 @@ static const menu_iter death_iter =
  */
 void death_screen(void)
 {
-	bool wants_to_quit = FALSE;
+	menu_type *menu;
+	const char cmd_keys[] = { ARROW_LEFT, ARROW_RIGHT, '\0' };
+	const region area = { 51, 2, 0, 6 };
+
+	int cursor = 0;
+	ui_event_data c = EVENT_EMPTY;
 
 
+	/* Retire in the town in a good state */
 	if (p_ptr->total_winner)
 	{
-		/* Retire in the town in a good state */
 		p_ptr->depth = 0;
 		my_strcpy(p_ptr->died_from, "Ripe Old Age", sizeof(p_ptr->died_from));
 		p_ptr->exp = p_ptr->max_exp;
@@ -484,33 +448,16 @@ void death_screen(void)
 
 	/* Get time of death */
 	(void)time(&death_time);
-
-	/* You are dead */
 	print_tomb();
-
-	/* Hack - Know everything upon death */
 	death_knowledge();
-
-	/* Enter player in high score list */
 	enter_score(&death_time);
 
-	/* Flush all input keys */
+	/* Flush all input and output */
 	flush();
-
-	/* Flush messages */
 	message_flush();
 
 
-	/* Initialize the menus */
-	menu_type *menu;
-   const char cmd_keys[] = { ARROW_LEFT, ARROW_RIGHT, '\0' };
-	const region area = { 51, 2, 0, 6 };
-
-	int cursor = 0;
-	ui_event_data c = EVENT_EMPTY;
-
-
-	/* options screen selection menu */
+	/* Initialize the menu */
 	menu = &death_menu;
 	WIPE(menu, menu_type);
 	menu_set_id(menu, 1);
@@ -536,5 +483,3 @@ void death_screen(void)
 		}
 	}
 }
-
-
