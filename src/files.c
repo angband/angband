@@ -1896,7 +1896,8 @@ errr file_character(cptr name, bool full)
 			object_desc(o_name, sizeof(o_name), &inventory[i], TRUE, 3);
 
 			file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
-			object_info_known(&inventory[i]);
+			if (inventory[i].k_idx && object_info_known(&inventory[i]))
+				file_putf(fp, "\n");
 		}
 		file_putf(fp, "\n\n");
 	}
