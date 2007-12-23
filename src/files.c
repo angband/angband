@@ -1350,6 +1350,21 @@ static void display_player_sust_info(void)
 	/* Column */
 	col = 26;
 
+	/* low-level dependencies */
+	assert(TR1_STR == (1<<A_STR));
+	assert(TR1_INT == (1<<A_INT));
+	assert(TR1_WIS == (1<<A_WIS));
+	assert(TR1_DEX == (1<<A_DEX));
+	assert(TR1_CON == (1<<A_CON));
+	assert(TR1_CHR == (1<<A_CHR));
+
+	assert(TR2_SUST_STR == (1<<A_STR));
+	assert(TR2_SUST_INT == (1<<A_INT));
+	assert(TR2_SUST_WIS == (1<<A_WIS));
+	assert(TR2_SUST_DEX == (1<<A_DEX));
+	assert(TR2_SUST_CON == (1<<A_CON));
+	assert(TR2_SUST_CHR == (1<<A_CHR));
+
 	/* Header */
 	c_put_str(TERM_WHITE, "abcdefghijkl@", row-1, col);
 
