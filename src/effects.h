@@ -121,12 +121,12 @@ typedef enum
 	EFFECT(RESIST_COLD,    FALSE, "grants you temporary resistance to cold for 1d10+10 turns")
 	EFFECT(RESIST_ALL,     FALSE, "grants resistance to everything!!!")
 
-	EFFECT(DET_TREASURE,   FALSE, "detects all gold and objects on the level")
-	EFFECT(DET_TRAP,       FALSE, "detects all traps in the surrounding area")
-	EFFECT(DET_DOORSTAIR,  FALSE, "detects all doors and stairs on the level")
-	EFFECT(DET_INVIS,      FALSE, "detects all invisible creatures in the surrounding area")
-	EFFECT(DET_EVIL,       FALSE, "detects all evil creatures in the immidiate area")
-	EFFECT(DET_ALL,        FALSE, "detects treasure, objects, traps, doors, stairs, and all creatures in the surrounding area")
+	EFFECT(DETECT_TREASURE,   FALSE, "detects all gold and objects on the level")
+	EFFECT(DETECT_TRAP,       FALSE, "detects all traps in the surrounding area")
+	EFFECT(DETECT_DOORSTAIR,  FALSE, "detects all doors and stairs on the level")
+	EFFECT(DETECT_INVIS,      FALSE, "detects all invisible creatures in the surrounding area")
+	EFFECT(DETECT_EVIL,       FALSE, "detects all evil creatures in the immidiate area")
+	EFFECT(DETECT_ALL,        FALSE, "detects treasure, objects, traps, doors, stairs, and all creatures in the surrounding area")
 
 	EFFECT(ENCHANT_TOHIT,  FALSE, "attempts to magically enhance a weapon's to-hit bonus")
 	EFFECT(ENCHANT_TODAM,  FALSE, "attempts to magically enhance a weapon's to-dam bonus")

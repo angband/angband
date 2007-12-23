@@ -629,37 +629,37 @@ bool do_effect(int effect, bool *ident, int dir, int beam)
 			return TRUE;
 		}
 
-		case EF_DET_TREASURE:
+		case EF_DETECT_TREASURE:
 		{
 			if (detect_treasure()) *ident = TRUE;
 			return TRUE;
 		}
 
-		case EF_DET_TRAP:
+		case EF_DETECT_TRAP:
 		{
 			if (detect_traps()) *ident = TRUE;
 			return TRUE;
 		}
 
-		case EF_DET_DOORSTAIR:
+		case EF_DETECT_DOORSTAIR:
 		{
 			if (detect_doorstairs()) *ident = TRUE;
 			return TRUE;
 		}
 
-		case EF_DET_INVIS:
+		case EF_DETECT_INVIS:
 		{
 			if (detect_monsters_invis()) *ident = TRUE;
 			return TRUE;
 		}
 
-		case EF_DET_EVIL:
+		case EF_DETECT_EVIL:
 		{
 			if (detect_monsters_evil()) *ident = TRUE;
 			return TRUE;
 		}
 
-		case EF_DET_ALL:
+		case EF_DETECT_ALL:
 		{
 			if (detect_all()) *ident = TRUE;
 			return TRUE;
