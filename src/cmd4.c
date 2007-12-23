@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "option.h"
 #include "ui.h"
+#include "externs.h"
 #include "ui-menu.h"
 
 
@@ -4062,6 +4063,12 @@ static void do_cmd_knowledge_scores(void *obj, const char *name)
 	show_scores();
 }
 
+static void do_cmd_knowledge_history(void *obj, const char *name)
+{
+	history_display();	
+}
+
+
 /*
  * Definition of the "player knowledge" menu.
  */
@@ -4074,6 +4081,7 @@ static menu_item knowledge_actions[] =
 	{{0, "Display feature knowledge", do_cmd_knowledge_features, 0}, 'e'},
 	{{0, "Display self-knowledge", do_cmd_self_knowledge, 0}, 'f'},
 	{{0, "Display hall of fame", do_cmd_knowledge_scores, 0}, 'g'},
+	{{0, "Display character history", do_cmd_knowledge_history, 0}, 'h'},
 };
 
 static menu_type knowledge_menu;
@@ -4253,6 +4261,9 @@ void do_cmd_note(void)
 
 	/* Add the note to the message recall */
 	msg_format("Note: %s", tmp);
+
+	/* Add a history entry */
+	history_add(tmp, HISTORY_USER_INPUT, 0);
 }
 
 

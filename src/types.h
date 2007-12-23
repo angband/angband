@@ -90,6 +90,7 @@ typedef struct player_other player_other;
 typedef struct player_type player_type;
 typedef struct start_item start_item;
 typedef struct autoinscription autoinscription;
+typedef struct history_info history_info;
 
 
 /**** Available structs ****/
@@ -1034,7 +1035,7 @@ struct player_type
 
 	s16b pspeed;		/* Current speed */
 
-    /* Generation fields (for quick start) */
+	/* Generation fields (for quick start) */
 	s32b au_birth;          /* Birth gold */
 	s16b stat_birth[A_MAX]; /* Birth "natural" stat values */
 	s16b ht_birth;          /* Birth Height */
@@ -1114,6 +1115,16 @@ struct autoinscription
 	s16b inscription_idx;
 };
 
+
+struct history_info
+{
+	u16b type;			/* Kind of history item */
+	s16b dlev;			/* Dungeon level when this item was recorded */
+	s16b clev;			/* Character level when this item was recorded */
+	byte a_idx;			/* Artifact this item relates to */
+	s32b turn;			/* Turn this item was recorded on */
+	char event[80];	/* The text of the item */
+};
 
 enum grid_light_level
 {

@@ -68,6 +68,7 @@ ANGFILES = \
 	game-cmd.o \
 	game-event.o \
 	generate.o \
+	history.o \
 	init1.o \
 	init2.o \
 	load.o \

@@ -1077,6 +1077,10 @@ static void store_delete_item(int st)
 
 	}
 
+	/* Is the item an artifact? Mark it as lost if the player has it in history list */
+	if (artifact_p(o_ptr))
+		history_lose_artifact(o_ptr->name1);
+
 	/* Delete the item */
 	store_item_increase(st, what, -num);
 	store_item_optimize(st, what);
@@ -2223,6 +2227,10 @@ static void store_sell(void)
 		/* Identify original object */
 		object_aware(o_ptr);
 		object_known(o_ptr);
+
+		/* Update the auto-history if selling an artifact that was previously un-IDed. (Ouch!) */
+		if (artifact_p(o_ptr))
+			history_add_artifact(o_ptr->name1, TRUE);
 
 		/* Combine / Reorder the pack (later) */
 		p_ptr->notice |= (PN_COMBINE | PN_REORDER);

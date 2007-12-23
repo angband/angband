@@ -3689,6 +3689,10 @@ void do_ident_item(int item, object_type *o_ptr)
 		sound(MSG_IDENT_EGO);
 	}
 
+	/* Log artifacts to the history list. */
+	if (artifact_p(o_ptr))
+		history_add_artifact(o_ptr->name1, TRUE);
+
 	/* Describe */
 	if (item >= INVEN_WIELD)
 	{

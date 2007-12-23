@@ -373,6 +373,18 @@ static void death_examine(void *unused, const char *title)
 
 
 /*
+ * Menu command: view character history.
+ */
+static void death_history(void *unused, const char *title)
+{
+	(void)unused;
+	(void)title;
+
+	history_display();
+}
+
+
+/*
  * Menu structures for the death menu.
  */
 static menu_type death_menu;
@@ -383,6 +395,7 @@ static const menu_action death_actions[] =
 	{ 'f', "File dump",     death_file,     NULL },
 	{ 'v', "View scores",   death_scores,   NULL },
 	{ 'x', "Examine items", death_examine,  NULL },
+	{ 'h', "History",       death_history,  NULL },
 	{ 'q', "Quit",          death_examine,  NULL },
 };
 
@@ -421,7 +434,7 @@ void death_screen(void)
 {
 	menu_type *menu;
 	const char cmd_keys[] = { ARROW_LEFT, ARROW_RIGHT, '\0' };
-	const region area = { 51, 2, 0, 6 };
+	const region area = { 51, 2, 0, 7 };
 
 	int cursor = 0;
 	ui_event_data c = EVENT_EMPTY;
@@ -472,7 +485,7 @@ void death_screen(void)
 	{
 		c = menu_select(&death_menu, &cursor, 0);
 
-		if (c.key == ESCAPE || cursor == 5)
+		if (c.key == ESCAPE || cursor == 6)
 		{
 			if (get_check("Do you want to quit? "))
 				break;

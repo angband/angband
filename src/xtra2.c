@@ -991,12 +991,22 @@ void check_experience(void)
 	       (p_ptr->exp >= (player_exp[p_ptr->lev-1] *
 	                       p_ptr->expfact / 100L)))
 	{
+		char buf[80];
+		
 		/* Gain a level */
 		p_ptr->lev++;
 
 		/* Save the highest level */
-		if (p_ptr->lev > p_ptr->max_lev) p_ptr->max_lev = p_ptr->lev;
+		if (p_ptr->lev > p_ptr->max_lev) 
+		{
+			p_ptr->max_lev = p_ptr->lev;
 
+			/* Log level updates (TODO: perhaps only every other level or every 5) */
+			strnfmt(buf, sizeof(buf), "Reached level %d", p_ptr->lev);
+			history_add(buf, HISTORY_GAIN_LEVEL, 0);
+			
+		}
+			
 		/* Message */
 		message_format(MSG_LEVEL, p_ptr->lev, "Welcome to level %d.", p_ptr->lev);
 
@@ -1408,6 +1418,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 	if (m_ptr->hp < 0)
 	{
 		char m_name[80];
+		char buf[80];
 
 		/* Assume normal death sound */
 		int soundfx = MSG_KILL;
@@ -1473,6 +1484,20 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 			p_ptr->exp_frac = (u16b)new_exp_frac;
 		}
 
+		/* When the player kills a Unique, it stays dead */
+		if (r_ptr->flags1 & (RF1_UNIQUE))
+		{
+			char unique_name[80];
+			r_ptr->max_num = 0;
+			
+			/* This gets the correct name if we slay an invisible unique and don't have See Invisible. */
+			monster_desc(unique_name, sizeof(unique_name), m_ptr, 0x88);
+
+			/* Log the slaying of a unique */
+			strnfmt(buf, sizeof(buf), "Killed %s", unique_name);
+			history_add(buf, HISTORY_SLAY_UNIQUE, 0);
+		}
+			
 		/* Gain experience */
 		gain_exp(new_exp);
 

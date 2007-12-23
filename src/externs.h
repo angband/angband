@@ -245,6 +245,9 @@ extern void (*sound_hook)(int);
 extern autoinscription *inscriptions;
 extern u16b inscriptions_count;
 
+/* history.c */
+extern history_info *history_list;
+
 /* squelch.c */
 extern byte squelch_level[SQUELCH_BYTES];
 
@@ -340,6 +343,16 @@ extern void exit_game_panic(void);
 
 /* generate.c */
 extern void generate_cave(void);
+
+/* history.c */
+void history_clear(void);
+size_t history_get_num(void);
+bool history_add_full(u16b type, byte a_idx, s16b dlev, s16b clev, s32b turn, const char *text);
+bool history_add(const char *event, u16b type, byte a_idx);
+bool history_add_artifact(byte a_idx, bool known);
+void history_unmask_unknown(void);
+bool history_lose_artifact(byte a_idx);
+void history_display(void);
 
 /* init2.c */
 extern void init_file_paths(const char *path);

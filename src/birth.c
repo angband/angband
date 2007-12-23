@@ -1937,6 +1937,11 @@ void player_birth(void)
 		player_birth_aux();
 	}
 
+
+	/* Clear old messages, add new starting message */
+	history_clear();
+	history_add("Began the quest to destroy Morgoth.", HISTORY_PLAYER_BIRTH, 0);
+
 	/* Note player birth in the message recall */
 	message_add(" ", MSG_GENERIC);
 	message_add("  ", MSG_GENERIC);

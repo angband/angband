@@ -2049,6 +2049,7 @@ static errr rd_savefile_new_aux(void)
 	u32b n_x_check, n_v_check;
 	u32b o_x_check, o_v_check;
 
+	char buf[80];
 
 	/* Mention the savefile version */
 	note(format("Loading a %d.%d.%d savefile...",
@@ -2257,6 +2258,45 @@ static errr rd_savefile_new_aux(void)
 		rd_ghost();
 	}
 
+	/* Read in the history list if the savefile is new enough */
+	if (!older_than(3, 0, 11))
+	{
+		size_t i;
+
+		history_clear();
+
+		rd_u32b(&tmp32u);
+		for (i = 0; i < tmp32u; i++)
+		{
+			s32b turn;
+			s16b dlev, clev;
+			u16b type;
+			byte art_name;
+			char text[80];
+
+			rd_u16b(&type);
+			rd_s32b(&turn);
+			rd_s16b(&dlev);
+			rd_s16b(&clev);
+			rd_byte(&art_name);
+			rd_string(text, sizeof(text));
+
+			history_add_full(type, art_name, dlev, clev, turn, text);
+		}
+	}
+
+	/*
+	 * Savefile is from an older version:
+	 * Still have to initialize the variables correctly.
+	 * Then the game should correctly log future history entries.
+	 */
+	else
+	{
+		history_clear();
+		strnfmt(buf, sizeof(buf), "Imported an Angband %d.%d.%d savefile",
+			sf_major, sf_minor, sf_patch);
+		history_add(buf, HISTORY_SAVEFILE_IMPORT, 0);
+	}
 
 	/* Save the checksum */
 	n_v_check = v_check;

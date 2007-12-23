@@ -813,7 +813,7 @@ static void wr_savefile_new(void)
 	u32b now;
 
 	u16b tmp16u;
-
+	u32b tmp32u;
 
 	/* Guess at the current time */
 	now = time((time_t *)0);
@@ -993,6 +993,22 @@ static void wr_savefile_new(void)
 
 		/* Dump the ghost */
 		wr_ghost();
+	}
+
+	/* NEW (jdw): dumping history entries */
+	/* Dump the number of history entries */
+	tmp32u = history_get_num();
+	wr_u32b(tmp32u);
+
+	/* Dump the history entries one-by-one */
+	for (i = 0; i < tmp32u; i++)
+	{
+		wr_u16b(history_list[i].type);
+		wr_s32b(history_list[i].turn);
+		wr_s16b(history_list[i].dlev);
+		wr_s16b(history_list[i].clev);
+		wr_byte(history_list[i].a_idx);
+		wr_string(history_list[i].event);
 	}
 
 

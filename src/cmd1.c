@@ -284,6 +284,10 @@ static void py_pickup_aux(int o_idx, bool msg)
 		msg_format("You have %s (%c).", o_name, index_to_label(slot));
 	}
 
+	/* Log if picking up an artifact. */
+	if (artifact_p(o_ptr))
+		history_add_artifact(o_ptr->name1, object_known_p(o_ptr));
+
 	/* Delete the object */
 	delete_object_idx(o_idx);
 }

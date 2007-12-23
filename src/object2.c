@@ -464,6 +464,10 @@ void wipe_o_list(void)
 				a_info[o_ptr->name1].cur_num = 0;
 		}
 
+		/* Mark artifacts as lost in logs */
+		if (artifact_p(o_ptr))
+			history_lose_artifact(o_ptr->name1);
+
 		/* Monster */
 		if (o_ptr->held_m_idx)
 		{
