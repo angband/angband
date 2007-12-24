@@ -2259,7 +2259,7 @@ static errr rd_savefile_new_aux(void)
 	}
 
 	/* Read in the history list if the savefile is new enough */
-	if (!older_than(3, 1, 0))
+	if (!older_than(3, 0, 13))
 	{
 		size_t i;
 
