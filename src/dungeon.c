@@ -1824,6 +1824,10 @@ void play_game(void)
 			existing_dead_save = TRUE;
 		}
 	}
+	else
+	{
+		existing_dead_save = TRUE;
+	}
 
 	/* No living character loaded */
 	if (p_ptr->is_dead)
@@ -1908,7 +1912,7 @@ void play_game(void)
 	while (new_game && !existing_dead_save)
 	{
 		bool overwrite = get_check("Continuing will overwrite an existing savefile.  Overwrite? ");
-         
+
 		if (overwrite) break;
 		get_name(TRUE);
 	}
