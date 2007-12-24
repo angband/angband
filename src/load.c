@@ -689,7 +689,7 @@ static void rd_lore(int r_idx)
 {
 	int i;
 	byte tmp8u;
-	
+
 	monster_race *r_ptr = &r_info[r_idx];
 	monster_lore *l_ptr = &l_list[r_idx];
 
@@ -2259,7 +2259,7 @@ static errr rd_savefile_new_aux(void)
 	}
 
 	/* Read in the history list if the savefile is new enough */
-	if (!older_than(3, 0, 11))
+	if (!older_than(3, 1, 0))
 	{
 		size_t i;
 

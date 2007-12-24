@@ -44,8 +44,8 @@
  * Current savefile version
  */
 #define VERSION_MAJOR	3
-#define VERSION_MINOR	0
-#define VERSION_PATCH	12
+#define VERSION_MINOR	1
+#define VERSION_PATCH	0
 #define VERSION_EXTRA	0
 
 /*
