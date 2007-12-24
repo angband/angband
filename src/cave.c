@@ -3153,58 +3153,6 @@ void update_flow(void)
 
 
 /*
- * Map a radius 30 area around the player.
- *
- * We must never attempt to map the outer dungeon walls, or we
- * might induce illegal cave grid references.
- */
-void map_area(void)
-{
-	int i, x, y;
-
-	/* Scan the dungeon */
-	for (y = 1; y < DUNGEON_HGT - 1; y++)
-	{
-		for (x = 1; x < DUNGEON_WID - 1; x++)
-		{
-			/* All non-walls are "checked" */
-			if (cave_feat[y][x] < FEAT_SECRET)
-			{
-				if (!in_bounds_fully(y, x)) continue;
-
-				/* Restrict to being in a certain radius */
-				if (distance(p_ptr->py, p_ptr->px, y, x) > 30) continue;
-
-				/* Memorize normal features */
-				if (cave_feat[y][x] > FEAT_INVIS)
-				{
-					/* Memorize the object */
-					cave_info[y][x] |= (CAVE_MARK);
-					lite_spot(y, x);
-				}
-
-				/* Memorize known walls */
-				for (i = 0; i < 8; i++)
-				{
-					int yy = y + ddy_ddd[i];
-					int xx = x + ddx_ddd[i];
-
-					/* Memorize walls (etc) */
-					if (cave_feat[yy][xx] >= FEAT_SECRET)
-					{
-						/* Memorize the walls */
-						cave_info[yy][xx] |= (CAVE_MARK);
-						lite_spot(yy, xx);
-					}
-				}
-			}
-		}
-	}
-}
-
-
-
-/*
  * Light up the dungeon using "claravoyance"
  *
  * This function "illuminates" every grid in the dungeon, memorizes all

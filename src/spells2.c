@@ -942,34 +942,102 @@ void set_recall(void)
 }
 
 
+/*** Detection spells ***/
+
 /*
- * Old covered area on a 80x24 screen was around 66*22 = 1452
- * New covered area from circular detection 3.14*22*22 = 1962
- *
- * A slight gain, but I think an OK one.
+ * Useful constants for the area around the player to detect.
+ * This is instead of using circular detection spells.
  */
-#define DET_RADIUS   22
+#define DETECT_DIST_X	26	/* Detect 26 grids to the left & right */
+#define DETECT_DIST_Y	55	/* Detect 55 grids to the top & bottom */
+
 
 
 /*
- * Detect all traps inside radius 22.
+ * Map an area around the player.
+ *
+ * We must never attempt to map the outer dungeon walls, or we
+ * might induce illegal cave grid references.
+ */
+void map_area(void)
+{
+	int i, x, y;
+	int x1, x2, y1, y2;
+
+	/* Pick an area to map */
+	y1 = p_ptr->py - DETECT_DIST_Y;
+	y2 = p_ptr->py + DETECT_DIST_Y;
+	x1 = p_ptr->px - DETECT_DIST_X;
+	x2 = p_ptr->px + DETECT_DIST_X;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+
+	/* Scan the dungeon */
+	for (y = y1; y < y2; y++)
+	{
+		for (x = x1; x < x2; x++)
+		{
+			/* All non-walls are "checked" */
+			if (cave_feat[y][x] < FEAT_SECRET)
+			{
+				if (!in_bounds_fully(y, x)) continue;
+
+				/* Memorize normal features */
+				if (cave_feat[y][x] > FEAT_INVIS)
+				{
+					/* Memorize the object */
+					cave_info[y][x] |= (CAVE_MARK);
+					lite_spot(y, x);
+				}
+
+				/* Memorize known walls */
+				for (i = 0; i < 8; i++)
+				{
+					int yy = y + ddy_ddd[i];
+					int xx = x + ddx_ddd[i];
+
+					/* Memorize walls (etc) */
+					if (cave_feat[yy][xx] >= FEAT_SECRET)
+					{
+						/* Memorize the walls */
+						cave_info[yy][xx] |= (CAVE_MARK);
+						lite_spot(yy, xx);
+					}
+				}
+			}
+		}
+	}
+}
+
+
+
+/*
+ * Detect traps around the player.
  */
 bool detect_traps(void)
 {
 	int y, x;
+	int x1, x2, y1, y2;
 
 	bool detect = FALSE;
 
+	/* Pick an area to map */
+	y1 = p_ptr->py - DETECT_DIST_Y;
+	y2 = p_ptr->py + DETECT_DIST_Y;
+	x1 = p_ptr->px - DETECT_DIST_X;
+	x2 = p_ptr->px + DETECT_DIST_X;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+
 
 	/* Scan the dungeon */
-	for (y = 1; y < DUNGEON_HGT - 1; y++)
+	for (y = y1; y < y2; y++)
 	{
-		for (x = 1; x < DUNGEON_WID - 1; x++)
+		for (x = x1; x < x2; x++)
 		{
 			if (!in_bounds_fully(y, x)) continue;
-
-			/* Restrict to being in a certain radius */
-			if (distance(p_ptr->py, p_ptr->px, y, x) > DET_RADIUS) continue;
 
 			/* Detect invisible traps */
 			if (cave_feat[y][x] == FEAT_INVIS)
@@ -1011,18 +1079,30 @@ bool detect_traps(void)
 
 
 /*
- * Detect all doors and stairs.
+ * Detect doors and stairs around the player.
  */
 bool detect_doorstairs(void)
 {
 	int y, x;
+	int x1, x2, y1, y2;
+
 	bool doors = FALSE, stairs = FALSE;
 
 
+	/* Pick an area to map */
+	y1 = p_ptr->py - DETECT_DIST_Y;
+	y2 = p_ptr->py + DETECT_DIST_Y;
+	x1 = p_ptr->px - DETECT_DIST_X;
+	x2 = p_ptr->px + DETECT_DIST_X;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+
+
 	/* Scan the dungeon */
-	for (y = 1; y < DUNGEON_HGT - 1; y++)
+	for (y = y1; y < y2; y++)
 	{
-		for (x = 1; x < DUNGEON_WID - 1; x++)
+		for (x = x1; x < x2; x++)
 		{
 			if (!in_bounds_fully(y, x)) continue;
 
@@ -1074,22 +1154,33 @@ bool detect_doorstairs(void)
 
 
 /*
- * Detect any treasure inside radius 22.
+ * Detect all treasure around the player.
  */
 bool detect_treasure(void)
 {
 	int i;
 	int y, x;
+	int x1, x2, y1, y2;
 
 	bool gold_buried = FALSE;
 	bool gold_object = FALSE;
 	bool objects = FALSE;
 
 
+	/* Pick an area to map */
+	y1 = p_ptr->py - DETECT_DIST_Y;
+	y2 = p_ptr->py + DETECT_DIST_Y;
+	x1 = p_ptr->px - DETECT_DIST_X;
+	x2 = p_ptr->px + DETECT_DIST_X;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+
+
 	/* Scan the dungeon */
-	for (y = 1; y < DUNGEON_HGT - 1; y++)
+	for (y = y1; y < y2; y++)
 	{
-		for (x = 1; x < DUNGEON_WID - 1; x++)
+		for (x = x1; x < x2; x++)
 		{
 			if (!in_bounds_fully(y, x)) continue;
 
@@ -1132,6 +1223,9 @@ bool detect_treasure(void)
 		y = o_ptr->iy;
 		x = o_ptr->ix;
 
+		/* Only detect nearby objects */
+		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
+
 		/* Hack -- memorize it */
 		o_ptr->marked = TRUE;
 
@@ -1157,7 +1251,7 @@ bool detect_treasure(void)
 
 
 /*
- * Detect all "magic" objects inside radius 22.
+ * Detect "magic" objects around the player.
  *
  * This will light up all spaces with "magic" items, including artifacts,
  * ego-items, potions, scrolls, books, rods, wands, staves, amulets, rings,
@@ -1168,8 +1262,19 @@ bool detect_treasure(void)
 bool detect_objects_magic(void)
 {
 	int i, y, x, tv;
+	int x1, x2, y1, y2;
 
 	bool detect = FALSE;
+
+
+	/* Pick an area to map */
+	y1 = p_ptr->py - DETECT_DIST_Y;
+	y2 = p_ptr->py + DETECT_DIST_Y;
+	x1 = p_ptr->px - DETECT_DIST_X;
+	x2 = p_ptr->px + DETECT_DIST_X;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
 
 
 	/* Scan all objects */
@@ -1187,8 +1292,9 @@ bool detect_objects_magic(void)
 		y = o_ptr->iy;
 		x = o_ptr->ix;
 
+
 		/* Only detect nearby objects */
-		if (distance(p_ptr->py, p_ptr->px, y, x) > DET_RADIUS) continue;
+		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Examine the tval */
 		tv = o_ptr->tval;
@@ -1221,13 +1327,25 @@ bool detect_objects_magic(void)
 
 
 /*
- * Detect all "normal" monsters inside radius 22.
+ * Detect "normal" monsters around the player.
  */
 bool detect_monsters_normal(void)
 {
 	int i, y, x;
+	int x1, x2, y1, y2;
 
 	bool flag = FALSE;
+
+
+	/* Pick an area to map */
+	y1 = p_ptr->py - DETECT_DIST_Y;
+	y2 = p_ptr->py + DETECT_DIST_Y;
+	x1 = p_ptr->px - DETECT_DIST_X;
+	x2 = p_ptr->px + DETECT_DIST_X;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+
 
 
 	/* Scan monsters */
@@ -1244,7 +1362,7 @@ bool detect_monsters_normal(void)
 		x = m_ptr->fx;
 
 		/* Only detect nearby monsters */
-		if (distance(p_ptr->py, p_ptr->px, y, x) > DET_RADIUS) continue;
+		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Detect all non-invisible monsters */
 		if (!(r_ptr->flags2 & (RF2_INVISIBLE)))
@@ -1272,13 +1390,23 @@ bool detect_monsters_normal(void)
 
 
 /*
- * Detect all "invisible" monsters inside radius 22.
+ * Detect "invisible" monsters around the player.
  */
 bool detect_monsters_invis(void)
 {
 	int i, y, x;
+	int x1, x2, y1, y2;
 
 	bool flag = FALSE;
+
+	/* Pick an area to map */
+	y1 = p_ptr->py - DETECT_DIST_Y;
+	y2 = p_ptr->py + DETECT_DIST_Y;
+	x1 = p_ptr->px - DETECT_DIST_X;
+	x2 = p_ptr->px + DETECT_DIST_X;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
 
 
 	/* Scan monsters */
@@ -1295,8 +1423,8 @@ bool detect_monsters_invis(void)
 		y = m_ptr->fy;
 		x = m_ptr->fx;
 
-		/* Only detect nearby monsters */
-		if (distance(p_ptr->py, p_ptr->px, y, x) > DET_RADIUS) continue;
+		/* Only detect nearby objects */
+		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Detect invisible monsters */
 		if (r_ptr->flags2 & (RF2_INVISIBLE))
@@ -1334,13 +1462,23 @@ bool detect_monsters_invis(void)
 
 
 /*
- * Detect all "evil" monsters inside radius 22.
+ * Detect "evil" monsters around the player.
  */
 bool detect_monsters_evil(void)
 {
 	int i, y, x;
+	int x1, x2, y1, y2;
 
 	bool flag = FALSE;
+
+	/* Pick an area to map */
+	y1 = p_ptr->py - DETECT_DIST_Y;
+	y2 = p_ptr->py + DETECT_DIST_Y;
+	x1 = p_ptr->px - DETECT_DIST_X;
+	x2 = p_ptr->px + DETECT_DIST_X;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
 
 
 	/* Scan monsters */
@@ -1357,8 +1495,8 @@ bool detect_monsters_evil(void)
 		y = m_ptr->fy;
 		x = m_ptr->fx;
 
-		/* Only detect nearby monsters */
-		if (distance(p_ptr->py, p_ptr->px, y, x) > DET_RADIUS) continue;
+		/* Only detect nearby objects */
+		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Detect evil monsters */
 		if (r_ptr->flags3 & (RF3_EVIL))
