@@ -948,8 +948,8 @@ void set_recall(void)
  * Useful constants for the area around the player to detect.
  * This is instead of using circular detection spells.
  */
-#define DETECT_DIST_X	26	/* Detect 26 grids to the left & right */
-#define DETECT_DIST_Y	55	/* Detect 55 grids to the top & bottom */
+#define DETECT_DIST_X	52	/* Detect 52 grids to the left & right */
+#define DETECT_DIST_Y	23	/* Detect 23 grids to the top & bottom */
 
 
 

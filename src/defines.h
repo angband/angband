@@ -105,14 +105,14 @@
 
 
 /*
- * Number of grids in each dungeon (horizontally)
+ * Number of grids in each dungeon (vertically)
  * Must be a multiple of SCREEN_HGT
  * Must be less or equal to 256
  */
 #define DUNGEON_HGT		66
 
 /*
- * Number of grids in each dungeon (vertically)
+ * Number of grids in each dungeon (horizontally)
  * Must be a multiple of SCREEN_WID
  * Must be less or equal to 256
  */
