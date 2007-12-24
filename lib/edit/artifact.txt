@@ -112,7 +112,7 @@ W:50:50:5:50000
 P:0:1d1:0:0:0
 F:ACTIVATE | SEE_INVIS | HOLD_LIFE | RES_LITE | RES_DARK | NO_FUEL |
 F:INSTA_ART
-A:DET_ALL:30+d30
+A:DETECT_ALL:30+d30
 M:The Arkenstone forms an image in your mind...
 D:A great globe seemingly filled with moonlight, the famed Heart of the 
 D:Mountain, which splinters the light that falls upon it into a thousand 
@@ -675,7 +675,7 @@ W:20:5:75:100000
 P:5:1d3:0:0:10
 F:INT | WIS | SEARCH | HIDE_TYPE | 
 F:RES_BLIND | RES_CONFU | SEE_INVIS | ACTIVATE
-A:DET_ALL:55+d55
+A:DETECT_ALL:55+d55
 M:Holhenneth forms an image in your mind...
 D:A famous helm of forged iron granting extraordinary powers of mind and 
 D:awareness.
