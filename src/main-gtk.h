@@ -69,18 +69,18 @@ struct term_data
 	measurements tile, actual;
 	
 	cairo_surface_t *surface;
-	cairo_t *cr;
+	/*cairo_t *cr;*/
 	cairo_matrix_t matrix;
 	font_info font;
 	
-	GtkWidget *window;
+	GtkWidget *win;
 	GtkWidget *drawing_area;
 };
 
 struct xtra_win_data
 {
 	int x;
-	cptr name, win_name, text_view_name, item_name, drawing_area_name;
+	cptr name, win_name, text_view_name, item_name, drawing_area_name, font_button_name;
 	bool visible;
 	font_info font;
 	
@@ -103,6 +103,9 @@ static game_event_type xtra_events[]=
 	EVENT_PLAYERTITLE
 };
 
+GdkColor black = { 0, 0x0000, 0x0000, 0x0000 };
+GdkColor white = { 0, 0xffff, 0xffff, 0xffff };
+	
 char xtra_names[MAX_XTRA_WIN_DATA][20] =
 { "Messages", "Inventory", "Equipment", "Monster List", "Debug", "Status" };
 
@@ -116,7 +119,10 @@ char xtra_drawing_names[MAX_XTRA_WIN_DATA][24] =
 { "message_drawing_area", "inv_drawing_area", "equip_drawing_area", "monst_list_drawing_area", "debug_drawing_area", "status_drawing_area" };
 
 char xtra_menu_names[MAX_XTRA_WIN_DATA][20] =
-{ "messages_item", "inv_item", "equip_item", "monst_list_item", "debug_item", "status_item" };
+{ "message_item", "inv_item", "equip_item", "monst_list_item", "debug_item", "status_item" };
+
+char xtra_font_button_names[MAX_XTRA_WIN_DATA][20] =
+{ "message_font", "inv_font", "equip_font", "monst_list_font", "debug_font", "status_font" };
 /*
  * An array of "term_data" structures, one for each "sub-window"
  */
@@ -195,10 +201,10 @@ static cairo_rectangle_t gdk_rect_to_cairo(GdkRectangle *r);
 static void invalidate_drawing_area(GtkWidget *widget, cairo_rectangle_t r);
 
 /* Get the position of a term window when it changes */
-static gboolean configure_event_handler(GtkWidget *widget, GdkEventConfigure *event, gpointer user_data);
+gboolean configure_event_handler(GtkWidget *widget, GdkEventConfigure *event, gpointer user_data);
 
 /* Get the position of an extra window when it changes */
-static gboolean configure_xtra_event_handler(GtkWidget *widget, GdkEventConfigure *event, gpointer user_data);
+gboolean xtra_configure_event_handler(GtkWidget *widget, GdkEventConfigure *event, gpointer user_data);
 
 /* Set the window geometry */
 static void set_window_defaults(term_data *td);
@@ -210,7 +216,7 @@ static void set_window_size(term_data *td);
 static void set_xtra_window_size(xtra_win_data *xd);
 
 /* If a term window is shown, do a few checks */
-static gboolean show_event_handler(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
+gboolean show_event_handler(GtkWidget *widget, GdkEventExpose *event, gpointer user_data);
 
 /* Erase the whole term. */
 static errr Term_clear_gtk(void);
@@ -242,8 +248,6 @@ static errr Term_curs_gtk(int x, int y);
  * Note that "Term_redraw()" calls "TERM_XTRA_CLEAR"
  */
 static void term_data_redraw(term_data *td);
-
-static void create_term_cairo(term_data *td);
 
 /* Check for events - Traditional */
 static errr CheckEvent(bool wait);
@@ -392,6 +396,7 @@ static byte monst_color(const monster_type *m_ptr);
 
 /* Print the sidebar */
 static void handle_sidebar(game_event_type type, game_event_data *data, void *user);
+static void glog(cptr fmt, ...);
 
 /* More Stubs */
 static void handle_init_status(game_event_type type, game_event_data *data, void *user);

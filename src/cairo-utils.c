@@ -48,8 +48,13 @@ void c_rect(cairo_t *cr, cairo_rectangle_t r)
 /*
  * Erase the whole term.
  */
-void cairo_clear(cairo_t *cr, cairo_rectangle_t r, byte c)
+void cairo_clear(cairo_surface_t *surface, cairo_rectangle_t r, byte c)
 {
+	cairo_t *cr;
+	
+	if (surface != NULL)
+	{
+	cr = cairo_create(surface);
 	if (cr !=NULL)
 	{
 		cairo_save(cr);
@@ -59,10 +64,18 @@ void cairo_clear(cairo_t *cr, cairo_rectangle_t r, byte c)
 		cairo_close_path(cr);
 		cairo_restore(cr);
 	}
+	
+		cairo_destroy(cr);
+	}
 }
 
-void cairo_cursor(cairo_t *cr, cairo_rectangle_t r, byte c)
+void cairo_cursor(cairo_surface_t *surface, cairo_rectangle_t r, byte c)
 {
+	cairo_t *cr;
+	
+	if (surface != NULL)
+	{
+	cr = cairo_create(surface);
 	if (cr !=NULL)
 	{
 		cairo_save(cr);
@@ -75,10 +88,13 @@ void cairo_cursor(cairo_t *cr, cairo_rectangle_t r, byte c)
 		cairo_close_path(cr);
 		cairo_restore(cr);
 	}
+		cairo_destroy(cr);
+	}
 }
 
-void drawn_progress_bar(cairo_t *cr, font_info *font, int x, int y, float curr, float max, byte color, int len)
+void drawn_progress_bar(cairo_surface_t *surface, font_info *font, int x, int y, float curr, float max, byte color, int len)
 {
+	cairo_t *cr;
 	int temp;
 	cairo_rectangle_t r;
 	float percent;
@@ -87,13 +103,17 @@ void drawn_progress_bar(cairo_t *cr, font_info *font, int x, int y, float curr, 
 	 size.w = font->w;
 	size.h = font->h;
 	
+	if (surface != NULL)
+	{
+	cr = cairo_create(surface);
+	
 	if (max > 0)
 		percent = curr / max;
 	else
 		percent = 0;
 	
 	init_cairo_rect(&r, (size.w * x)+ 1, (size.h) * y + 1,  (size.w * len) - 1, size.h - 2);
-	cairo_clear(cr, r, TERM_DARK);
+	cairo_clear(surface, r, TERM_DARK);
 	
 	temp = cairo_get_line_width(cr);
 	set_foreground_color(cr, color);
@@ -114,6 +134,8 @@ void drawn_progress_bar(cairo_t *cr, font_info *font, int x, int y, float curr, 
 		cairo_stroke(cr);
 		
 		cairo_set_line_width(cr, temp);
+	}
+		cairo_destroy(cr);
 	}
 }
 
@@ -143,11 +165,15 @@ void draw_tile(cairo_t *cr, cairo_matrix_t m, cairo_rectangle_t r, int tx, int t
 	}
 }
 
-cairo_matrix_t cairo_font_scaling(cairo_t *cr, double tile_w, double tile_h, double font_w, double font_h)
+cairo_matrix_t cairo_font_scaling(cairo_surface_t *surface, double tile_w, double tile_h, double font_w, double font_h)
 {
+	cairo_t *cr;
 	cairo_matrix_t m;
 	double sx, sy;
 
+	if (surface != NULL)
+	{
+	cr = cairo_create(surface);
 	if (cr !=NULL)
 	{
 		/* Get a matrix set up to scale the graphics. */
@@ -156,12 +182,15 @@ cairo_matrix_t cairo_font_scaling(cairo_t *cr, double tile_w, double tile_h, dou
 		sy = (tile_h)/(font_h);
 		cairo_matrix_scale(&m, sx, sy);
 	}
+	
+	cairo_destroy(cr);
+	}
 	return(m);
 }
 
 void cairo_draw_from_surface(cairo_t *cr, cairo_surface_t *surface, cairo_rectangle_t r)
 {	
-	if (cr !=NULL)
+	if ((cr !=NULL) && (surface != NULL))
 	{
 		cairo_save(cr);
 		c_rect(cr, r);
@@ -177,9 +206,10 @@ void cairo_draw_from_surface(cairo_t *cr, cairo_surface_t *surface, cairo_rectan
  * across the board, honestly. 
  */
 void draw_tiles(
-cairo_t *cr, int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp, 
+cairo_surface_t *surface, int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp, 
 font_info *font, measurements *actual, measurements *tile)
 {
+	cairo_t *cr;
 	cairo_rectangle_t char_rect, r;
 	int i;
 	
@@ -187,11 +217,14 @@ font_info *font, measurements *actual, measurements *tile)
 	int tx, ty;
 	int cx, cy;
 	
+	if (surface != NULL)
+	{
+	cr = cairo_create(surface);
 	if (cr !=NULL)
 	{
 	init_cairo_rect(&r, x * font->w, y * font->h,  actual->w * n, actual->h);
 	
-	cairo_clear(cr, r, TERM_DARK);
+	cairo_clear(surface, r, TERM_DARK);
 	
 	/* Get the current position, Minus cx, which changes for each iteration */
 	cx = 0;
@@ -205,7 +238,7 @@ font_info *font, measurements *actual, measurements *tile)
 		cx += x * font->w;
 		init_cairo_rect(&char_rect, cx, cy, actual->w, actual->h);
 		
-		cairo_clear(cr, char_rect, TERM_DARK);
+		cairo_clear(surface, char_rect, TERM_DARK);
 		/* Get the terrain tile, scaled to the font size */
 		tx= (tcp[i] & 0x7F) * actual->w;
 		ty = (tap[i] & 0x7F) * actual->h;
@@ -221,6 +254,8 @@ font_info *font, measurements *actual, measurements *tile)
 	
 		draw_tile(cr, matrix, char_rect, tx, ty);
 	}
+	}
+	cairo_destroy(cr);
 	}
 }
 
@@ -258,8 +293,13 @@ void get_font_size(font_info *font)
 	#endif
 }
 
-void draw_text(cairo_t *cr, font_info *font, measurements *actual, int x, int y, int n, byte a, cptr s)
+void draw_text(cairo_surface_t *surface, font_info *font, measurements *actual, int x, int y, int n, byte a, cptr s)
 {
+	cairo_t *cr;
+	
+	if (surface != NULL)
+	{
+	cr = cairo_create(surface);
 	#ifndef USE_PANGO
 	draw_toy_text(cr, font, actual, x, y, n, a, s);
 	#else
@@ -271,7 +311,7 @@ void draw_text(cairo_t *cr, font_info *font, measurements *actual, int x, int y,
 	{
 	init_cairo_rect(&r, x * font->w, y * font->h,  actual->w * n, actual->h);
 	
-	cairo_clear(cr, r, TERM_DARK);
+	cairo_clear(surface, r, TERM_DARK);
 		
 	/* Create a PangoLayout, set the font and text */
 	layout = pango_cairo_create_layout(cr); 
@@ -288,6 +328,8 @@ void draw_text(cairo_t *cr, font_info *font, measurements *actual, int x, int y,
 	g_object_unref(G_OBJECT(layout));
 	}
 	#endif
+	cairo_destroy(cr);
+	}
 }
 
 /* Experimental - Currently messes up the display if larger then 12 point Monospace */

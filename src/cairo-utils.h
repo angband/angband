@@ -56,18 +56,18 @@ extern void init_cairo_rect(cairo_rectangle_t *r, int x, int y, int w, int h);
 /* Use it as a cairo rectangle */
 extern void c_rect(cairo_t *cr, cairo_rectangle_t r);
 
-extern cairo_matrix_t cairo_font_scaling(cairo_t *cr, double tile_w, double tile_h, double font_w, double font_h);
-extern void cairo_clear(cairo_t *cr, cairo_rectangle_t r, byte c);
-extern void cairo_cursor(cairo_t *cr, cairo_rectangle_t r, byte c);
+extern cairo_matrix_t cairo_font_scaling(cairo_surface_t *surface, double tile_w, double tile_h, double font_w, double font_h);
+extern void cairo_clear(cairo_surface_t *surface, cairo_rectangle_t r, byte c);
+extern void cairo_cursor(cairo_surface_t *surface, cairo_rectangle_t r, byte c);
 extern void draw_tile(cairo_t *cr, cairo_matrix_t m, cairo_rectangle_t r, int tx, int ty);
 extern void draw_tiles(
-cairo_t *cr, int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp, 
+cairo_surface_t *surface, int x, int y, int n, const byte *ap, const char *cp, const byte *tap, const char *tcp, 
 font_info *font, measurements *actual, measurements *tile);
 extern void cairo_draw_from_surface(cairo_t *cr, cairo_surface_t *surface, cairo_rectangle_t r);
 extern void init_cairo(cairo_t *cr, cairo_surface_t *surface, measurements size);
 extern void get_font_size(font_info *font);
-extern void draw_text(cairo_t *cr, font_info *font, measurements *actual, int x, int y, int n, byte a, cptr s);
-extern void drawn_progress_bar(cairo_t *cr, font_info *font, int x, int y, float curr, float max, byte color, int size);
+extern void draw_text(cairo_surface_t *surface, font_info *font, measurements *actual, int x, int y, int n, byte a, cptr s);
+extern void drawn_progress_bar(cairo_surface_t *surface, font_info *font, int x, int y, float curr, float max, byte color, int size);
 
 extern void get_toy_font_size(font_info *font);
 extern void draw_toy_text(cairo_t *cr, font_info *font, measurements *actual, int x, int y, int n, byte a, cptr s);
