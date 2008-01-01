@@ -1809,7 +1809,7 @@ static void show_windows(void)
 		
 		set_window_size(td);
 		
-		if (i == 0) td->visible = true;
+		if (i == 0) td->visible = TRUE;
 			
 		if ((td->visible) || (i == 0))
 		{
