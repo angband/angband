@@ -29,7 +29,7 @@
 /* 
  *Write all debugger messages to the command line, as well as the debugger window. 
 */
-/*#define VERBOSE_DEBUG*/
+#define VERBOSE_DEBUG
 
 #ifdef GTK_DEBUG
 static void surface_status(cptr function_name, term_data *td)
@@ -128,7 +128,7 @@ gboolean on_big_tiles(GtkWidget *widget, GdkEventButton *event, gpointer user_da
 		use_bigtile = TRUE;
 	
 	load_font_by_name(td, td->font.name);
-	term_data_resize(td);
+	term_data_redraw(td);
 	return(TRUE);
 }
 
@@ -166,24 +166,6 @@ static void invalidate_drawing_area(GtkWidget *widget, cairo_rectangle_t r)
 	}
 }
 
-static void term_data_resize(term_data *td)
-{
-	term *old = Term;
-	
-	/* Activate the term */
-	Term_activate(&td->t);
-
-	Term_resize(td->cols, td->rows);
-	
-	/* Redraw the contents */
-	Term_redraw();
-
-	/* Flush the output */
-	Term_fresh();
-	Term_key_push(KTRL('R'));
-	Term_activate(old);
-}
-
 void set_row_and_cols(term_data *td)
 {
 	int cols = td->cols;
@@ -199,7 +181,7 @@ void set_row_and_cols(term_data *td)
 	}
 	
 	if ((cols != td->cols) || (rows != td->rows))
-		term_data_resize(td);
+		term_data_redraw(td);
 }
 
 /* 
@@ -213,7 +195,7 @@ gboolean configure_event_handler(GtkWidget *widget, GdkEventConfigure *event, gp
 	
 	s = gtk_widget_get_name(widget);
 	sscanf(s, "term_drawing_area_%d", &t);
-	/*glog("Configuring '%s'", s);*/
+	
 	if (t != -1)
 	{
 		td = &data[t];
@@ -247,12 +229,21 @@ gboolean configure_event_handler(GtkWidget *widget, GdkEventConfigure *event, gp
 			* ignore my size requests, and show up as 100x100 or 200x190. 
 			* It may not even do that any more...
 			*/
-			/*if (((w != 200) && (h != 190)) || ((w <= 100) && (h <= 100)))
-			{*/
+			if (((w != 200) && (h != 190)) || ((w <= 100) && (h <= 100)))
+			{
 			if (w != 0) td->size.w = w;
 			if (h != 0)  td->size.h = h;
+				
 			set_row_and_cols(td);
-			/*}*/
+			term_data_redraw(td);
+			
+			/* Hack -- Force redraw */
+			if (game_in_progress)
+			{
+				reset_visuals(TRUE);
+				Term_key_push(KTRL('R'));
+			}
+			}
 		
 			#ifdef GTK_DEBUG
 			glog( "Window %s: Location(%d/%d), Size(%d/%d)", td->name, td->location.x, td->location.y, td->size.w, td->size.h);
@@ -557,6 +548,8 @@ static void term_data_redraw(term_data *td)
 	#endif
 	/* Activate the term passed to it, not term 0! */
 	Term_activate(&td->t);
+
+	Term_resize(td->cols, td->rows);
 
 	/* Redraw the contents */
 	Term_redraw();
@@ -1421,6 +1414,11 @@ gboolean xtra_show_event_handler(GtkWidget *widget, GdkEventExpose *event, gpoin
 			init_cairo_rect(&r, 0, 0, 255 * xd->font.w, 255 * xd->font.h);
 			cairo_clear(xd->surface, r, TERM_DARK);
 		}
+			
+		if (xd->event != 0)
+		{
+			event_signal(xd->event);
+		}
 	}
 	return(TRUE);
 }
@@ -1788,6 +1786,8 @@ static void init_gtk_windows(void)
 		gtk_widget_realize(temp_widget);
 		
 		err = gtk_font_button_set_font_name(GTK_FONT_BUTTON(temp_widget), td->font.name);
+	
+		set_window_size(td);
 	}
 }
 
@@ -1806,8 +1806,6 @@ static void show_windows(void)
 		
 		/* Activate the window screen */
 		Term_activate(&data[i].t);
-		
-		set_window_size(td);
 		
 		if (i == 0) td->visible = TRUE;
 			
