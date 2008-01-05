@@ -61,7 +61,7 @@ struct term_data
 	cptr name;
 	int number;
 	
-	bool visible;
+	bool visible, initialized;
 	int rows;
 	int cols;
 	point location;
@@ -184,13 +184,12 @@ GladeXML *gtk_xml;
 /* Abstracted out for future changes */
 static int max_win_width(term_data *td);
 static int max_win_height(term_data *td);
-
-static void term_data_resize(term_data *td);
 /*
  * Find the square a particular pixel is part of.
  */
 static void pixel_to_square(int * const x, int * const y, const int ox, const int oy);
 
+void set_term_matrix(term_data *td);
 /* Cairo's rect type to Gdks */
 static GdkRectangle cairo_rect_to_gdk(cairo_rectangle_t *r);
 

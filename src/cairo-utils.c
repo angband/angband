@@ -50,11 +50,12 @@ void c_rect(cairo_t *cr, cairo_rectangle_t r)
  */
 void cairo_clear(cairo_surface_t *surface, cairo_rectangle_t r, byte c)
 {
-	cairo_t *cr;
+	cairo_t *cr = NULL;
 	
-	if (surface != NULL)
+	if ((surface != NULL) &&(cairo_surface_status(surface) == CAIRO_STATUS_SUCCESS))
 	{
 	cr = cairo_create(surface);
+	
 	if (cr !=NULL)
 	{
 		cairo_save(cr);
