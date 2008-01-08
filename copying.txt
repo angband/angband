@@ -33,12 +33,14 @@ exceptions:
  * Adam Bolt's (16x16) graphics may be redistributed and used for any purpose, 
    with or without modification.
 
- * David Gervais' (32x32) graphics may be redistributed and used but only
-   not-for-profit, and may only be distributed over the Internet.
+ * David Gervais' (32x32) graphics may be redistributed, modified, and used
+   only under the terms of the Creative Commons Attribution 3.0 licence:
+   http://creativecommons.org/licenses/by/3.0/
 
  * the sounds are freeware, whatever that means.
 
- * the font files are under the licences noted in lib/xtra/font/copying.txt.
+ * the font files are under the licences noted in lib/xtra/font/copying.txt,
+   all of which are OSI-compliant.
 
 
 It is considered good practice to retain this statement for derivatives, rather
