@@ -2,18 +2,17 @@
  * File: z-msg.c
  * Purpose: Message handling
  *
- * Copyright (c) 2007 Elly
+ * Copyright (c) 2007 Elly, Andrew Sidwell
  *
- * This work is free software; you can redistribute it and/or modify it
- * under the terms of either:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
- * a) the GNU General Public License as published by the Free Software
- *    Foundation, version 2, or
+ *  * Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
  *
- * b) the "Angband licence":
- *    This software may be copied and distributed for educational, research,
- *    and not for profit purposes provided that this copyright and statement
- *    are included in all such copies.  Other copyrights may also apply.
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
  */
 #include "z-virt.h"
 #include "z-term.h"
