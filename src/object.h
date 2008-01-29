@@ -102,14 +102,16 @@ enum
  * indicator of the number of items in the pile.
  *
  * Modes ("prefix" is TRUE):
- *   OD_BASENAME -- Chain Mail of Death
- *   OD_INSTORE  -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty}
- *   OD_ALL      -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty} (squelch)
+ *   OD_BASE   -- Chain Mail of Death
+ *   OD_COMBAT -- Chain Mail of Death [1,+3]
+ *   OD_STORE  -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty}
+ *   OD_fULL   -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty} (squelch)
  *
  * Modes ("prefix" is FALSE):
- *   OD_BASENAME -- Chain Mail of Death
- *   OD_INSTORE  -- Rings of Death [1,+3] (+2 to Stealth) {nifty}
- *   OD_ALL      -- Rings of Death [1,+3] (+2 to Stealth) {nifty} (squelch)
+ *   OD_BASE   -- Chain Mail of Death
+ *   OD_COMBAT -- Chain Mail of Death [1,+3]
+ *   OD_STORE  -- Rings of Death [1,+3] (+2 to Stealth) {nifty}
+ *   OD_FULL   -- Rings of Death [1,+3] (+2 to Stealth) {nifty} (squelch)
  */
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix, int mode);
 
