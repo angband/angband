@@ -79,6 +79,7 @@ ANGFILES = \
 	monster2.o \
 	object1.o \
 	object2.o \
+	obj-desc.o \
 	obj-info.o \
 	obj-make.o \
 	option.o \
