@@ -3371,7 +3371,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 	/* Get the monster's real name */
-	monster_desc(killer, sizeof(killer), m_ptr, 0x88);
+	monster_desc(killer, sizeof(killer), m_ptr, MDESC_SHOW | MDESC_IND2);
 
 
 	/* Analyze the damage */

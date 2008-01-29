@@ -159,8 +159,7 @@ bool make_attack_normal(int m_idx)
 	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 	/* Get the "died from" information (i.e. "a kobold") */
-	monster_desc(ddesc, sizeof(ddesc), m_ptr, 0x88);
-
+	monster_desc(ddesc, sizeof(ddesc), m_ptr, MDESC_SHOW | MDESC_IND2);
 
 	/* Assume no blink */
 	blinked = FALSE;

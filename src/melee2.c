@@ -797,10 +797,10 @@ bool make_attack_spell(int m_idx)
 	monster_desc(m_name, sizeof(m_name), m_ptr, 0x00);
 
 	/* Get the monster possessive ("his"/"her"/"its") */
-	monster_desc(m_poss, sizeof(m_poss), m_ptr, 0x22);
+	monster_desc(m_poss, sizeof(m_poss), m_ptr, MDESC_PRO2 | MDESC_POSS);
 
 	/* Hack -- Get the "died from" name */
-	monster_desc(ddesc, sizeof(ddesc), m_ptr, 0x88);
+	monster_desc(ddesc, sizeof(ddesc), m_ptr, MDESC_SHOW | MDESC_IND2);
 
 
 	/* Choose a spell to cast */
@@ -3449,7 +3449,7 @@ static void process_monster(int m_idx)
 
 				/* Get the monster name/poss */
 				monster_desc(m_name, sizeof(m_name), m_ptr, 0);
-				monster_desc(m_poss, sizeof(m_poss), m_ptr, 0x22);
+				monster_desc(m_poss, sizeof(m_poss), m_ptr, MDESC_PRO2 | MDESC_POSS);
 
 				/* Dump a message */
 				msg_format("%^s recovers %s courage.", m_name, m_poss);
@@ -3897,7 +3897,7 @@ static void process_monster(int m_idx)
 					object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
 
 					/* Get the monster name */
-					monster_desc(m_name, sizeof(m_name), m_ptr, 0x04);
+					monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND1);
 
 					/* React to objects that hurt the monster */
 					if (f1 & (TR1_KILL_DRAGON)) flg3 |= (RF3_DRAGON);

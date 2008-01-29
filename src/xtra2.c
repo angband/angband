@@ -1489,15 +1489,15 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 		{
 			char unique_name[80];
 			r_ptr->max_num = 0;
-			
+
 			/* This gets the correct name if we slay an invisible unique and don't have See Invisible. */
-			monster_desc(unique_name, sizeof(unique_name), m_ptr, 0x88);
+			monster_desc(unique_name, sizeof(unique_name), m_ptr, MDESC_SHOW | MDESC_IND2);
 
 			/* Log the slaying of a unique */
 			strnfmt(buf, sizeof(buf), "Killed %s", unique_name);
 			history_add(buf, HISTORY_SLAY_UNIQUE, 0);
 		}
-			
+
 		/* Gain experience */
 		gain_exp(new_exp);
 
@@ -2495,7 +2495,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 				boring = FALSE;
 
 				/* Get the monster name ("a kobold") */
-				monster_desc(m_name, sizeof(m_name), m_ptr, 0x08);
+				monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND2);
 
 				/* Hack -- track this monster race */
 				monster_race_track(m_ptr->r_idx);

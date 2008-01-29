@@ -2322,7 +2322,7 @@ bool probing(void)
 			if (!probe) msg_print("Probing...");
 
 			/* Get "the monster" or "something" */
-			monster_desc(m_name, sizeof(m_name), m_ptr, 0x04);
+			monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND1);
 
 			/* Describe the monster */
 			msg_format("%^s has %d hit points.", m_name, m_ptr->hp);
