@@ -52,7 +52,8 @@ LIBS += -s
 
 ifdef CYGWIN
 
-  LIBS = -mno-cygwin -e _mainCRTStartup
+  LIBS += -mno-cygwin -e _mainCRTStartup
+  CFLAGS += -mno-cygwin
 
   # Note the additional -DNEAR= flag to cope with the 'NEAR'
   # keyword used in readdib.c
