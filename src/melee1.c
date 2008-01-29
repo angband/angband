@@ -675,7 +675,7 @@ bool make_attack_normal(int m_idx)
 						if (artifact_p(o_ptr)) continue;
 
 						/* Get a description */
-						object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 3);
+						object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_FULL);
 
 						/* Message */
 						msg_format("%sour %s (%c) was stolen!",
@@ -738,7 +738,7 @@ bool make_attack_normal(int m_idx)
 						if (o_ptr->tval != TV_FOOD) continue;
 
 						/* Get a description */
-						object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 0);
+						object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
 
 						/* Message */
 						msg_format("%sour %s (%c) was eaten!",

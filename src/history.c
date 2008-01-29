@@ -235,7 +235,7 @@ bool history_add_artifact(byte a_idx, bool known)
 	/* Make fake artifact for description purposes */
 	object_wipe(o_ptr);
 	make_fake_artifact(o_ptr, a_idx);
-	object_desc_spoil(o_name, sizeof(o_name), o_ptr, TRUE, 0);
+	object_desc_spoil(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_BASE);
 	strnfmt(buf, sizeof(buf), "Found %s", o_name);
 
 	/* Known objects gets different treatment */

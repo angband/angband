@@ -1469,7 +1469,7 @@ void drop_near(object_type *j_ptr, int chance, int y, int x)
 	if (j_ptr->number != 1) plural = TRUE;
 
 	/* Describe object */
-	object_desc(o_name, sizeof(o_name), j_ptr, FALSE, 0);
+	object_desc(o_name, sizeof(o_name), j_ptr, FALSE, ODESC_BASE);
 
 
 	/* Handle normal "breakage" */
@@ -1855,7 +1855,7 @@ void inven_item_describe(int item)
 	if (artifact_p(o_ptr) && object_known_p(o_ptr))
 	{
 		/* Get a description */
-		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 3);
+		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_FULL);
 
 		/* Print a message */
 		msg_format("You no longer have the %s (%c).", o_name, index_to_label(item));
@@ -1863,7 +1863,7 @@ void inven_item_describe(int item)
 	else
 	{
 		/* Get a description */
-		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
+		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
 
 		/* Print a message */
 		msg_format("You have %s (%c).", o_name, index_to_label(item));
@@ -2001,7 +2001,7 @@ void floor_item_describe(int item)
 	char o_name[80];
 
 	/* Get a description */
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
 
 	/* Print a message */
 	msg_format("You see %s.", o_name);
@@ -2312,7 +2312,7 @@ s16b inven_takeoff(int item, int amt)
 	i_ptr->number = amt;
 
 	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
 
 	/* Took off weapon */
 	if (item == INVEN_WIELD)
@@ -2406,7 +2406,7 @@ void inven_drop(int item, int amt)
 	i_ptr->number = amt;
 
 	/* Describe local object */
-	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
 
 	/* Message */
 	msg_format("You drop %s (%c).", o_name, index_to_label(item));

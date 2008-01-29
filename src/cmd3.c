@@ -182,7 +182,7 @@ void wield_item(object_type *o_ptr, int item)
 		act = "You are wearing";
 
 	/* Describe the result */
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
 
 	/* Message */
 	sound(MSG_WIELD);
@@ -277,7 +277,7 @@ void do_cmd_destroy(void)
 	i_ptr->number = amt;
 
 	/* Describe the destroyed object */
-	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
 
 	/* Verify destruction */
 	strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", o_name);

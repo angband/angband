@@ -214,7 +214,7 @@ static void object_mention(const object_type *o_ptr)
 	char o_name[80];
 
 	/* Describe */
-	object_desc_spoil(o_name, sizeof(o_name), o_ptr, FALSE, 0);
+	object_desc_spoil(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
 
 	/* Artifact */
 	if (artifact_p(o_ptr))

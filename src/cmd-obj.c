@@ -44,7 +44,7 @@ static void obj_inscribe(object_type *o_ptr, int item)
 	char o_name[80];
 	char tmp[80] = "";
 
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
 	msg_format("Inscribing %s.", o_name);
 	message_flush();
 
@@ -120,7 +120,7 @@ static void obj_wear(object_type *o_ptr, int item)
 	if (cursed_p(equip_o_ptr))
 	{
 		/* Message */
-		object_desc(o_name, sizeof(o_name), equip_o_ptr, FALSE, 0);
+		object_desc(o_name, sizeof(o_name), equip_o_ptr, FALSE, ODESC_BASE);
 		msg_format("The %s you are %s appears to be cursed.",
 		           o_name, describe_use(slot));
 
@@ -131,7 +131,7 @@ static void obj_wear(object_type *o_ptr, int item)
 	if (check_for_inscrip(o_ptr, "!t"))
 	{
 		/* Prompt */
-		object_desc(o_name, sizeof(o_name), equip_o_ptr, TRUE, 3);
+		object_desc(o_name, sizeof(o_name), equip_o_ptr, TRUE, ODESC_FULL);
 
 		/* Forget it */
 		if (!get_check(format("Really take off %s? ", o_name))) return;

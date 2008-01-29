@@ -278,7 +278,7 @@ static void py_pickup_aux(int o_idx, bool msg)
 	if (msg)
 	{
 		/* Describe the object */
-		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
+		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
 
 		/* Message */
 		msg_format("You have %s (%c).", o_name, index_to_label(slot));
@@ -426,8 +426,8 @@ byte py_pickup(int pickup, bool pickup_okay)
 			o_ptr = &o_list[floor_o_idx];
 
 			/* Describe the object.  Less detail if blind. */
-			if (blind) object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 0);
-			else       object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
+			if (blind) object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_BASE);
+			else       object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
 
 			/* Message */
 			message_flush();

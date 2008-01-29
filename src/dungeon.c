@@ -206,7 +206,7 @@ static void sense_inventory(void)
 		}
 		else
 		{
-			object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 0);
+			object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
 
 			if (i >= INVEN_WIELD)
 			{
@@ -405,7 +405,7 @@ static void recharged_notice(const object_type *o_ptr, bool all)
 		if (s[1] == '!')
 		{
 			/* Describe (briefly) */
-			object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 0);
+			object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
 
 			/* Disturb the player */
 			if (disturb_minor) disturb(0, 0);
@@ -1230,7 +1230,7 @@ static void process_player(void)
 			msg_print("Your pack overflows!");
 
 			/* Describe */
-			object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
+			object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
 
 			/* Message */
 			msg_format("You drop %s (%c).", o_name, index_to_label(item));

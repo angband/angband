@@ -154,7 +154,7 @@ static void kind_info(char *buf, size_t buf_len,
 
 	/* Make known */
 	i_ptr->ident |= (IDENT_KNOWN);
-	
+
 	/* Value */
 	(*val) = object_value(i_ptr);
 
@@ -162,7 +162,7 @@ static void kind_info(char *buf, size_t buf_len,
 
 	/* Description (too brief) */
 	if (buf)
-		object_desc_spoil(buf, buf_len, i_ptr, FALSE, 0);
+		object_desc_spoil(buf, buf_len, i_ptr, FALSE, ODESC_BASE);
 
 	/* Weight */
 	if (wgt)
@@ -486,7 +486,7 @@ static void spoil_artifact(cptr fname)
 			if (!make_fake_artifact(i_ptr, (byte)j)) continue;
 
 			/* Grab artifact name */
-			object_desc_spoil(buf, sizeof(buf), i_ptr, TRUE, 1);
+			object_desc_spoil(buf, sizeof(buf), i_ptr, TRUE, ODESC_COMBAT);
 
 			/* Print name and underline */
 			spoiler_underline(buf, '-');

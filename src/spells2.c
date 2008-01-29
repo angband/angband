@@ -1842,7 +1842,7 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 
 
 	/* Description */
-	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 0);
+	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
 
 	/* Describe */
 	msg_format("%s %s glow%s brightly!",
@@ -3417,7 +3417,7 @@ bool curse_armor(void)
 
 
 	/* Describe */
-	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 3);
+	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_FULL);
 
 	/* Attempt a saving throw for artifacts */
 	if (artifact_p(o_ptr) && (rand_int(100) < 50))
@@ -3481,7 +3481,7 @@ bool curse_weapon(void)
 
 
 	/* Describe */
-	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 3);
+	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_FULL);
 
 	/* Attempt a saving throw */
 	if (artifact_p(o_ptr) && (rand_int(100) < 50))
@@ -3544,7 +3544,7 @@ void brand_object(object_type *o_ptr, byte brand_type)
 		cptr act = "magical";
 		char o_name[80];
 
-		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 0);
+		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
 
 		switch (brand_type)
 		{
@@ -3808,7 +3808,7 @@ void do_ident_item(int item, object_type *o_ptr)
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 
 	/* Description */
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
 
 	/* Possibly play a sound depending on object quality. */
 	if (o_ptr->pval < 0)

@@ -1664,7 +1664,7 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 	o_ptr = &st_ptr->stock[oid];
 
 	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 4);
+	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_STORE);
 
 	/* Display the object */
 	c_put_str(tval_to_attr[o_ptr->tval & 0x7F], o_name, row, col);
@@ -1957,7 +1957,7 @@ static bool store_purchase(int item)
 	}
 
 	/* Describe the object (fully) */
-	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
 
 	/* Attempt to buy it */
 	if (store_current != STORE_HOME)
@@ -2008,7 +2008,7 @@ static bool store_purchase(int item)
 		item_new = inven_carry(i_ptr);
 
 		/* Message */
-		object_desc(o_name, sizeof(o_name), &inventory[item_new], TRUE, 3);
+		object_desc(o_name, sizeof(o_name), &inventory[item_new], TRUE, ODESC_FULL);
 		msg_format("You have %s (%c).", o_name, index_to_label(item_new));
 		store_flags |= STORE_KEEP_PROMPT;
 
@@ -2068,7 +2068,7 @@ static bool store_purchase(int item)
 		item_new = inven_carry(i_ptr);
 
 		/* Describe just the result */
-		object_desc(o_name, sizeof(o_name), &inventory[item_new], TRUE, 3);
+		object_desc(o_name, sizeof(o_name), &inventory[item_new], TRUE, ODESC_FULL);
 
 		/* Message */
 		msg_format("You have %s (%c).", o_name, index_to_label(item_new));
@@ -2178,7 +2178,7 @@ static void store_sell(void)
 	}
 
 	/* Get a full description */
-	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, 3);
+	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
 
 
 	/* Is there room in the store (or the home?) */
@@ -2263,7 +2263,7 @@ static void store_sell(void)
 		value = object_value(i_ptr) * i_ptr->number;
 
 		/* Get the description all over again */
-		object_desc(o_name, sizeof(o_name), i_ptr, TRUE, 3);
+		object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
 
 		/* Describe the result (in message buffer) */
 		msg_format("You sold %s (%c) for %ld gold.",
@@ -2393,7 +2393,7 @@ bool store_overflow(void)
 		object_copy(i_ptr, o_ptr);
 
 		/* Describe it */
-		object_desc(o_name, sizeof(o_name), i_ptr, TRUE, 3);
+		object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
 
 		/* Message */
 		msg_format("You drop %s (%c).", o_name, index_to_label(item));

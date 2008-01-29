@@ -89,9 +89,10 @@ void reduce_charges(object_type *o_ptr, int amt);
  */
 enum
 {
-	ODESC_BASENAME = 0,
-	ODESC_ALL = 3,
-	ODESC_INSTORE = 4
+	ODESC_BASE = 0,
+	ODESC_COMBAT = 1,
+	ODESC_FULL = 3,
+	ODESC_STORE = 4
 };
 
 /**

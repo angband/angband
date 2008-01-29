@@ -1909,7 +1909,7 @@ errr file_character(cptr name, bool full)
 		file_putf(fp, "  [Character Equipment]\n\n");
 		for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 		{
-			object_desc(o_name, sizeof(o_name), &inventory[i], TRUE, 3);
+			object_desc(o_name, sizeof(o_name), &inventory[i], TRUE, ODESC_FULL);
 
 			file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
 			if (inventory[i].k_idx && object_info_known(&inventory[i]))
@@ -1924,7 +1924,7 @@ errr file_character(cptr name, bool full)
 	{
 		if (!inventory[i].k_idx) break;
 
-		object_desc(o_name, sizeof(o_name), &inventory[i], TRUE, 3);
+		object_desc(o_name, sizeof(o_name), &inventory[i], TRUE, ODESC_FULL);
 
 		file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
 		object_info_known(&inventory[i]);
@@ -1941,7 +1941,7 @@ errr file_character(cptr name, bool full)
 		/* Dump all available items */
 		for (i = 0; i < st_ptr->stock_num; i++)
 		{
-			object_desc(o_name, sizeof(o_name), &st_ptr->stock[i], TRUE, 3);
+			object_desc(o_name, sizeof(o_name), &st_ptr->stock[i], TRUE, ODESC_FULL);
 			file_putf(fp, "%c) %s\n", I2A(i), o_name);
 
 			object_info_known(&st_ptr->stock[i]);

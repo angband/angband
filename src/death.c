@@ -281,7 +281,7 @@ static void death_info(void *unused, const char *title)
 				prt(tmp_val, j+2, 4);
 
 				/* Get the object description */
-				object_desc(o_name, sizeof(o_name), o_ptr, TRUE, 3);
+				object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
 
 				/* Get the inventory color */
 				attr = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];

@@ -746,7 +746,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix,
 
 	/** Append things depending on mode **/
 
-	if (mode == OD_BASENAME)
+	if (mode == ODESC_BASE)
 		return end;
 
 	if (o_ptr->tval == TV_CHEST)
@@ -755,6 +755,9 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix,
 		end = obj_desc_light(o_ptr, buf, max, end);
 
 	end = obj_desc_combat(o_ptr, buf, max, end);
+
+	if (mode == ODESC_COMBAT)
+		return end;
 
 	if (known)
 	{
@@ -766,7 +769,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix,
 
 
 	/* Add squelch marker  */
-	if (mode == OD_ALL)
+	if (mode == ODESC_FULL)
 	{
 		if (!OPT(hide_squelchable) && squelch_item_ok(o_ptr))
 			strnfcat(buf, max, &end, " (squelch)");

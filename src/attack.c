@@ -674,7 +674,7 @@ void do_cmd_fire(void)
 
 
 	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), i_ptr, FALSE, 3);
+	object_desc(o_name, sizeof(o_name), i_ptr, FALSE, ODESC_FULL);
 
 	/* Find the color and symbol for the object for throwing */
 	missile_attr = object_attr(i_ptr);
@@ -963,7 +963,7 @@ void do_cmd_throw(void)
 
 
 	/* Description */
-	object_desc(o_name, sizeof(o_name), i_ptr, FALSE, 3);
+	object_desc(o_name, sizeof(o_name), i_ptr, FALSE, ODESC_FULL);
 
 	/* Find the color and symbol for the object for throwing */
 	missile_attr = object_attr(i_ptr);

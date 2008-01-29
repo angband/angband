@@ -862,7 +862,7 @@ static int inven_damage(inven_func typ, int perc)
 			if (amt)
 			{
 				/* Get a description */
-				object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 3);
+				object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_FULL);
 
 				/* Message */
 				message_format(MSG_DESTROY, 0, "%sour %s (%c) %s %s!",
@@ -940,7 +940,7 @@ static int minus_ac(void)
 
 
 	/* Describe */
-	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 0);
+	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
 
 	/* Extract the flags */
 	object_flags(o_ptr, &f1, &f2, &f3);
@@ -1326,7 +1326,7 @@ bool apply_disenchant(int mode)
 
 
 	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 0);
+	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
 
 
 	/* Artifacts have 60% chance to resist */
@@ -2021,7 +2021,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 			if (o_ptr->marked)
 			{
 				obvious = TRUE;
-				object_desc(o_name, sizeof(o_name), o_ptr, FALSE, 0);
+				object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
 			}
 
 			/* Artifacts, and other objects, get to resist */
