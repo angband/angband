@@ -33,9 +33,6 @@ SYS_x11 = -DUSE_X11 -lX11
 SYS_gcu = -DUSE_GCU -DUSE_NCURSES -lncurses
 #SYS_gcu = -DUSE_GCU -lcurses -ltermcap
 
-# Support Xaw motif (main-xaw.c)
-#SYS_xaw = -DUSE_XAW -lXaw -lXext -lSM -lICE -lXmu -lXt -lX11
-
 # Support the GTK2 graphical tookit (main-gtk.c)
 #SYS_gtk = -rdynamic -export-dynamic -DUSE_GTK $(shell pkg-config libglade-2.0 gtk+-2.0 --libs --cflags)
 
@@ -76,13 +73,13 @@ EXE = angband
 
 
 # Extract CFLAGS and LIBS from the system definitions
-MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_xaw) $(SYS_gtk) $(SYS_sdl) $(SOUND_sdl)
+MODULES = $(SYS_x11) $(SYS_gcu) $(SYS_gtk) $(SYS_sdl) $(SOUND_sdl)
 CFLAGS += $(patsubst -l%,,$(MODULES)) $(INCLUDES)
 LIBS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
 
 
 # Object definitions
-X11OBJS = maid-x11.o main-x11.o main-xaw.o main-gtk.o cairo-utils.o
+X11OBJS = maid-x11.o main-x11.o main-gtk.o cairo-utils.o
 MAINOBJS = main.o main-gcu.o main-sdl.o snd-sdl.o $(X11OBJS)
 OBJS = $(BASEOBJS) $(MAINOBJS)
 

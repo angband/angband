@@ -45,7 +45,7 @@ HEADERS = \
 ZFILES = z-file.o z-form.o z-msg.o z-quark.o z-rand.o z-term.o z-type.o \
          z-util.o z-virt.o z-blockfile.o z-smap.o 
 MAINFILES = main.o maid-x11.o main-crb.o main-gcu.o main-gtk.o cairo-utils.o \
-            main-ros.o main-sdl.o main-win.o main-x11.o main-xaw.o snd-sdl.o
+            main-ros.o main-sdl.o main-win.o main-x11.o snd-sdl.o
 
 ANGFILES = \
 	attack.o \

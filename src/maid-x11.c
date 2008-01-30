@@ -18,7 +18,7 @@
  *
  * Major fixes and cleanup by Ben Harrison (benh@phial.com).
  *
- * This file is designed to be "included" by "main-x11.c" or "main-xaw.c",
+ * This file is designed to be "included" by "main-x11.c",
  * which will have already "included" several relevant header files.
  */
 
