@@ -77,11 +77,11 @@ ANGFILES = \
 	melee2.o \
 	monster1.o \
 	monster2.o \
-	object2.o \
 	obj-desc.o \
 	obj-info.o \
 	obj-make.o \
 	obj-ui.o \
+	obj-util.o \
 	option.o \
 	randart.o \
 	randname.o \

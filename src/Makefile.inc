@@ -99,12 +99,6 @@ monster1.o: monster1.c angband.h h-basic.h z-file.h z-form.h z-util.h \
 monster2.o: monster2.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
   defines.h option.h types.h ui.h z-type.h externs.h object.h
-object1.o: object1.c angband.h h-basic.h z-file.h z-form.h z-util.h \
-  z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h randname.h
-object2.o: object2.c angband.h h-basic.h z-file.h z-form.h z-util.h \
-  z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h
 obj-desc.o: obj-desc.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
   defines.h option.h types.h ui.h z-type.h externs.h object.h
@@ -118,6 +112,9 @@ obj-make.o: obj-make.c angband.h h-basic.h z-file.h z-form.h z-util.h \
 obj-ui.o: obj-ui.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
   defines.h option.h types.h ui.h z-type.h externs.h object.h
+obj-util.o: obj-util.c angband.h h-basic.h z-file.h z-form.h z-util.h \
+  z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
+  defines.h option.h types.h ui.h z-type.h externs.h object.h randname.h
 option.o: option.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
   defines.h option.h types.h ui.h z-type.h externs.h object.h
