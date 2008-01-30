@@ -34,16 +34,16 @@
 # where to store the processed list of warnings
 WARNING_LIST=/tmp/warning-list
 
-if [ $# -gt 1 ]; then
-  if [ -f $1 ]; then
-    cp $1 ${WARNING_LIST}
-  else
-    echo "Need a valid warning file"
-    exit 1
-  fi
+if [ $# != 1 ]; then
+	echo "Syntax: $0 <warning-file>"
+	exit 1
+fi
+
+if [ -f $1 ]; then
+	cp $1 ${WARNING_LIST}
 else
-  make clean 2>&1 >/dev/null
-  make nsgtk 2>&1 |grep "warning:" | sort | uniq > ${WARNING_LIST}
+	echo "Need a valid warning file"
+	exit 1
 fi
 
 for blamefile in $(cat ${WARNING_LIST} | cut -f 1 -d ':'  | sort | uniq ); do
