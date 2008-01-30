@@ -694,8 +694,23 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 }
 
 
-/*
- * Describe an object into the buffer "buf".
+/**
+ * Describes item `o_ptr` into buffer `buf` of size `max`.
+ *
+ * If `prefix` is TRUE, then the name will be prefixed with a pseudo-numeric
+ * indicator of the number of items in the pile.
+ *
+ * Modes ("prefix" is TRUE):
+ *   OD_BASE   -- Chain Mail of Death
+ *   OD_COMBAT -- Chain Mail of Death [1,+3]
+ *   OD_STORE  -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty}
+ *   OD_fULL   -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty} (squelch)
+ *
+ * Modes ("prefix" is FALSE):
+ *   OD_BASE   -- Chain Mail of Death
+ *   OD_COMBAT -- Chain Mail of Death [1,+3]
+ *   OD_STORE  -- Rings of Death [1,+3] (+2 to Stealth) {nifty}
+ *   OD_FULL   -- Rings of Death [1,+3] (+2 to Stealth) {nifty} (squelch)
  */
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix, int mode)
 {
@@ -779,8 +794,11 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix,
 }
 
 
-/*
- * Describe an item and pretend the item is fully known and has no flavor.
+/**
+ * Describes item `o_ptr` fully into buffer `buf` of size `max`.
+ *
+ * This differs from object_desc() only in that it can provide information the
+ * player isn't meant to know.
  */
 void object_desc_spoil(char *buf, size_t max, const object_type *o_ptr, int pref, int mode)
 {

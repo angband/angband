@@ -1,20 +1,60 @@
 #ifndef INCLUDED_OBJECT_H
 #define INCLUDED_OBJECT_H
 
-
 /*** Variables ***/
 
-/* object1.c */
+/** Maximum number of scroll titles generated */
+#define MAX_TITLES     50
 
-#define MAX_TITLES     50       /* Used with scrolls (min 48) */
-
-/* The titles of scrolls, by sval. */
+/** The titles of scrolls, ordered by sval. */
 extern char scroll_adj[MAX_TITLES][16];
+
+
+/*** Constants ***/
+
+/**
+ * Modes for object_desc().
+ */
+enum
+{
+	ODESC_BASE = 0,   /** Only describe the base name */
+	ODESC_COMBAT = 1, /** Also show combat bonuses */
+	ODESC_FULL = 3,   /** Show entire description */
+	ODESC_STORE = 4   /** Also show {squelch} marker */
+};
 
 
 /*** Functions ***/
 
-/* object1.c */
+/* obj-desc.c */
+void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know);
+size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix, int mode);
+void object_desc_spoil(char *buf, size_t max, const object_type *o_ptr, int pref, int mode);
+
+/* obj-info.c */
+void object_info_header(const object_type *o_ptr);
+bool object_info_known(const object_type *o_ptr);
+bool object_info_full(const object_type *o_ptr);
+bool object_info_store(const object_type *o_ptr);
+
+/* obj-make.c */
+void free_obj_alloc(void);
+bool init_obj_alloc(void);
+s16b get_obj_num(int level);
+void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great);
+bool make_object(object_type *j_ptr, int lev, bool good, bool great);
+bool make_gold(object_type *j_ptr, int lev);
+
+/* obj-ui.c */
+void display_inven(void);
+void display_equip(void);
+void show_inven(void);
+void show_equip(void);
+void show_floor(const int *floor_list, int floor_num, bool gold);
+bool verify_item(cptr prompt, int item);
+bool get_item(int *cp, cptr pmt, cptr str, int mode);
+
+/* obj-util.c */
 void flavor_init(void);
 void reset_visuals(bool unused);
 void object_flags(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
@@ -23,19 +63,10 @@ char index_to_label(int i);
 s16b label_to_inven(int c);
 s16b label_to_equip(int c);
 s16b wield_slot(const object_type *o_ptr);
-const char *mention_use(int i);
-const char *describe_use(int i);
+const char *mention_use(int slot);
+cptr describe_use(int i);
 bool item_tester_okay(const object_type *o_ptr);
 int scan_floor(int *items, int max_size, int y, int x, int mode);
-void display_inven(void);
-void display_equip(void);
-void show_inven(void);
-void show_equip(void);
-void show_floor(const int *floor_list, int floor_num, bool gold);
-bool verify_item(const char *prompt, int item);
-bool get_item(int *cp, const char *pmt, const char *str, int mode);
-
-/* object2.c */
 void excise_object_idx(int o_idx);
 void delete_object_idx(int o_idx);
 void delete_object(int y, int x);
@@ -81,68 +112,5 @@ void reorder_pack(void);
 void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt);
 void reduce_charges(object_type *o_ptr, int amt);
 
-
-/*** obj-name.c ***/
-
-/**
- * Modes for object_desc().
- */
-enum
-{
-	ODESC_BASE = 0,
-	ODESC_COMBAT = 1,
-	ODESC_FULL = 3,
-	ODESC_STORE = 4
-};
-
-/**
- * Describes item "o_ptr" into buffer "buf" of size "max".
- *
- * If "prefix" is TRUE, then the name will be prefixed with a pseudo-numeric
- * indicator of the number of items in the pile.
- *
- * Modes ("prefix" is TRUE):
- *   OD_BASE   -- Chain Mail of Death
- *   OD_COMBAT -- Chain Mail of Death [1,+3]
- *   OD_STORE  -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty}
- *   OD_fULL   -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty} (squelch)
- *
- * Modes ("prefix" is FALSE):
- *   OD_BASE   -- Chain Mail of Death
- *   OD_COMBAT -- Chain Mail of Death [1,+3]
- *   OD_STORE  -- Rings of Death [1,+3] (+2 to Stealth) {nifty}
- *   OD_FULL   -- Rings of Death [1,+3] (+2 to Stealth) {nifty} (squelch)
- */
-size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix, int mode);
-
-/**
- * Describes item "o_ptr" fully into buffer "buf" of size "max".
- *
- * This differs from object_desc() only in that it can provide information the
- * player isn't meant to know.
- */
-void object_desc_spoil(char *buf, size_t max, const object_type *o_ptr, int pref, int mode);
-
-/**
- * Describe item kind "k_idx" into buffer "buf" of size "max".
- *
- * XXX
- */
-void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know);
-
-
-/* obj-make.c */
-void free_obj_alloc(void);
-bool init_obj_alloc(void);
-s16b get_obj_num(int level);
-void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great);
-bool make_object(object_type *j_ptr, int lev, bool good, bool great);
-bool make_gold(object_type *j_ptr, int lev);
-
-/* obj-info.c */
-void object_info_header(const object_type *o_ptr);
-bool object_info_known(const object_type *o_ptr);
-bool object_info_full(const object_type *o_ptr);
-bool object_info_store(const object_type *o_ptr);
 
 #endif /* !INCLUDED_OBJECT_H */

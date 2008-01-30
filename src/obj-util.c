@@ -1228,7 +1228,7 @@ s16b o_pop(void)
  * Get the first object at a dungeon location
  * or NULL if there isn't one.
  */
-object_type* get_first_object(int y, int x)
+object_type *get_first_object(int y, int x)
 {
 	s16b o_idx = cave_o_idx[y][x];
 
