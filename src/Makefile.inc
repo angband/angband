@@ -115,6 +115,9 @@ obj-info.o: obj-info.c angband.h h-basic.h z-file.h z-form.h z-util.h \
 obj-make.o: obj-make.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
   defines.h option.h types.h ui.h z-type.h externs.h object.h
+obj-ui.o: obj-ui.c angband.h h-basic.h z-file.h z-form.h z-util.h \
+  z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
+  defines.h option.h types.h ui.h z-type.h externs.h object.h
 option.o: option.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
   defines.h option.h types.h ui.h z-type.h externs.h object.h

@@ -82,6 +82,7 @@ ANGFILES = \
 	obj-desc.o \
 	obj-info.o \
 	obj-make.o \
+	obj-ui.o \
 	option.o \
 	randart.o \
 	randname.o \
