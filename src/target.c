@@ -18,6 +18,21 @@
 #include "angband.h"
 
 
+/*** File-wide variables ***/
+
+/* Is the target set? */
+bool target_set;
+
+/* Current monster being tracked, or 0 */
+u16b target_who;
+
+/* Target location */
+s16b target_x, target_y;
+
+
+
+/*** Functions ***/
+
 /*
  * Monster health description
  */
@@ -121,15 +136,15 @@ bool target_able(int m_idx)
 bool target_okay(void)
 {
 	/* No target */
-	if (!p_ptr->target_set) return (FALSE);
+	if (!target_set) return (FALSE);
 
 	/* Accept "location" targets */
-	if (p_ptr->target_who == 0) return (TRUE);
+	if (target_who == 0) return (TRUE);
 
 	/* Check "monster" targets */
-	if (p_ptr->target_who > 0)
+	if (target_who > 0)
 	{
-		int m_idx = p_ptr->target_who;
+		int m_idx = target_who;
 
 		/* Accept reasonable targets */
 		if (target_able(m_idx))
@@ -137,8 +152,8 @@ bool target_okay(void)
 			monster_type *m_ptr = &mon_list[m_idx];
 
 			/* Get the monster location */
-			p_ptr->target_row = m_ptr->fy;
-			p_ptr->target_col = m_ptr->fx;
+			target_y = m_ptr->fy;
+			target_x = m_ptr->fx;
 
 			/* Good target */
 			return (TRUE);
@@ -161,20 +176,20 @@ void target_set_monster(int m_idx)
 		monster_type *m_ptr = &mon_list[m_idx];
 
 		/* Save target info */
-		p_ptr->target_set = TRUE;
-		p_ptr->target_who = m_idx;
-		p_ptr->target_row = m_ptr->fy;
-		p_ptr->target_col = m_ptr->fx;
+		target_set = TRUE;
+		target_who = m_idx;
+		target_y = m_ptr->fy;
+		target_x = m_ptr->fx;
 	}
 
 	/* Clear target */
 	else
 	{
 		/* Reset target info */
-		p_ptr->target_set = FALSE;
-		p_ptr->target_who = 0;
-		p_ptr->target_row = 0;
-		p_ptr->target_col = 0;
+		target_set = FALSE;
+		target_who = 0;
+		target_y = 0;
+		target_x = 0;
 	}
 }
 
@@ -188,20 +203,20 @@ void target_set_location(int y, int x)
 	if (in_bounds_fully(y, x))
 	{
 		/* Save target info */
-		p_ptr->target_set = TRUE;
-		p_ptr->target_who = 0;
-		p_ptr->target_row = y;
-		p_ptr->target_col = x;
+		target_set = TRUE;
+		target_who = 0;
+		target_y = y;
+		target_x = x;
 	}
 
 	/* Clear target */
 	else
 	{
 		/* Reset target info */
-		p_ptr->target_set = FALSE;
-		p_ptr->target_who = 0;
-		p_ptr->target_row = 0;
-		p_ptr->target_col = 0;
+		target_set = FALSE;
+		target_who = 0;
+		target_y = 0;
+		target_x = 0;
 	}
 }
 
@@ -1268,7 +1283,7 @@ bool target_set_interactive(int mode)
 	handle_stuff();
 
 	/* Failure to set target */
-	if (!p_ptr->target_set) return (FALSE);
+	if (!target_set) return (FALSE);
 
 	/* Success */
 	return (TRUE);
@@ -1286,8 +1301,8 @@ void target_get(s16b *col, s16b *row)
 	assert(col);
 	assert(row);
 
-	*col = p_ptr->target_col;
-	*row = p_ptr->target_row;
+	*col = target_x;
+	*row = target_y;
 }
 
 
@@ -1296,6 +1311,6 @@ void target_get(s16b *col, s16b *row)
  */
 s16b target_get_monster(void)
 {
-	return p_ptr->target_who;
+	return target_who;
 }
 

@@ -119,12 +119,14 @@ static void prt_binary(u32b flags, int row, int col)
  */
 static void do_cmd_wiz_bamf(void)
 {
+	s16b x, y;
+
 	/* Must have a target */
-	if (target_okay())
-	{
-		/* Teleport to the target */
-		teleport_player_to(p_ptr->target_row, p_ptr->target_col);
-	}
+	if (!target_okay()) return;
+
+	/* Teleport to the target */
+	target_get(&x, &y);
+	teleport_player_to(y, x);
 }
 
 

@@ -905,11 +905,6 @@ struct player_type
 	s16b inven_cnt;			/* Number of items in inventory */
 	s16b equip_cnt;			/* Number of items in equipment */
 
-	s16b target_set;		/* Target flag */
-	s16b target_who;		/* Target identity */
-	s16b target_row;		/* Target location */
-	s16b target_col;		/* Target location */
-
 	s16b health_who;		/* Health bar trackee */
 
 	s16b monster_race_idx;	/* Monster race trackee */
