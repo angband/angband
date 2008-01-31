@@ -3148,8 +3148,7 @@ bool fire_ball(int typ, int dir, int dam, int rad)
 	{
 		flg &= ~(PROJECT_STOP);
 
-		ty = p_ptr->target_row;
-		tx = p_ptr->target_col;
+		target_get(&tx, &ty);
 	}
 
 	/* Analyze the "dir" and the "target".  Hurt items on floor. */
@@ -3180,10 +3179,7 @@ bool fire_swarm(int num, int typ, int dir, int dam, int rad)
 
 	/* Hack -- Use an actual "target" (early detonation) */
 	if ((dir == 5) && target_okay())
-	{
-		ty = p_ptr->target_row;
-		tx = p_ptr->target_col;
-	}
+		target_get(&tx, &ty);
 
 	while (num--)
 	{
@@ -3214,10 +3210,7 @@ static bool project_hook(int typ, int dir, int dam, int flg)
 
 	/* Hack -- Use an actual "target" */
 	if ((dir == 5) && target_okay())
-	{
-		ty = p_ptr->target_row;
-		tx = p_ptr->target_col;
-	}
+		target_get(&tx, &ty);
 
 	/* Analyze the "dir" and the "target", do NOT explode */
 	return (project(-1, 0, ty, tx, dam, typ, flg));

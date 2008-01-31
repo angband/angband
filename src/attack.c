@@ -713,8 +713,7 @@ void do_cmd_fire(void)
 	/* Check for "target request" */
 	if ((dir == 5) && target_okay())
 	{
-		tx = p_ptr->target_col;
-		ty = p_ptr->target_row;
+		target_get(&tx, &ty);
 	}
 
 	/* Calculate the path */
@@ -1006,8 +1005,7 @@ void do_cmd_throw(void)
 	/* Check for "target request" */
 	if ((dir == 5) && target_okay())
 	{
-		tx = p_ptr->target_col;
-		ty = p_ptr->target_row;
+		target_get(&tx, &ty);
 	}
 
 	/* Calculate the path */
