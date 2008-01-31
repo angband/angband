@@ -67,12 +67,12 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_disturb_near,
 		OPT_disturb_detect,
 		OPT_disturb_state,
-		OPT_disturb_minor,
 		OPT_quick_messages,
 		OPT_auto_more,
 		OPT_ring_bell,
 		OPT_flush_failure,
 		OPT_flush_disturb,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
@@ -153,7 +153,7 @@ static option_entry options[OPT_MAX] =
 { "disturb_near",        "Disturb whenever viewable monster moves",     TRUE },  /* 21 */
 { "disturb_detect",      "Disturb whenever leaving trap detected area", TRUE },  /* 22 */
 { "disturb_state",       "Disturb whenever player state changes",       TRUE },  /* 23 */
-{ "disturb_minor",       "Disturb whenever boring things happen",       TRUE },  /* 24 */
+{ NULL,                  NULL,                                          FALSE }, /* 24 */
 { NULL,                  NULL,                                          FALSE }, /* 25 */
 { NULL,                  NULL,                                          FALSE }, /* 26 */
 { NULL,                  NULL,                                          FALSE }, /* 27 */

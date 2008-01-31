@@ -3699,7 +3699,7 @@ static void process_monster(int m_idx)
 					msg_print("You hear a door burst open!");
 
 					/* Disturb (sometimes) */
-					if (disturb_minor) disturb(0, 0);
+					disturb(0, 0);
 
 					/* The door was bashed open */
 					did_bash_door = TRUE;

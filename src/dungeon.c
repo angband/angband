@@ -197,7 +197,7 @@ static void sense_inventory(void)
 		if (!feel) continue;
 
 		/* Stop everything */
-		if (disturb_minor) disturb(0, 0);
+		disturb(0, 0);
 
 		/* Average pseudo-ID means full ID */
 		if (feel == INSCRIP_AVERAGE)
@@ -408,7 +408,7 @@ static void recharged_notice(const object_type *o_ptr, bool all)
 			object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
 
 			/* Disturb the player */
-			if (disturb_minor) disturb(0, 0);
+			disturb(0, 0);
 
 			/* Notify the player */
 			if (o_ptr->number > 1)
@@ -947,7 +947,7 @@ static void process_world(void)
 			/* The light is getting dim */
 			else if ((o_ptr->timeout < 100) && (!(o_ptr->timeout % 10)))
 			{
-				if (disturb_minor) disturb(0, 0);
+				disturb(0, 0);
 				msg_print("Your light is growing faint.");
 			}
 		}
