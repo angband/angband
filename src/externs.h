@@ -232,8 +232,6 @@ extern char *ANGBAND_DIR_XTRA;
 extern bool item_tester_full;
 extern byte item_tester_tval;
 extern bool (*item_tester_hook)(const object_type*);
-extern bool (*ang_sort_comp)(const void *u, const void *v, int a, int b);
-extern void (*ang_sort_swap)(void *u, void *v, int a, int b);
 extern bool (*get_mon_num_hook)(int r_idx);
 extern bool (*get_obj_num_hook)(int k_idx);
 extern ang_file *text_out_file;
@@ -551,6 +549,14 @@ extern void store_shuffle(int which);
 extern void store_maint(int which);
 extern void store_init(void);
 
+/* target.c */
+bool target_able(int m_idx);
+bool target_okay(void);
+void target_set_monster(int m_idx);
+void target_set_location(int y, int x);
+bool target_set_interactive(int mode);
+bool get_aim_dir(int *dp);
+
 /* trap.c */
 extern void hit_trap(int y, int x);
 extern void pick_trap(int y, int x);
@@ -648,16 +654,8 @@ bool modify_panel(term *t, int wy, int wx);
 bool adjust_panel(int y, int x);
 bool change_panel(int dir);
 void verify_panel(void);
-void ang_sort_aux(void *u, void *v, int p, int q);
-void ang_sort(void *u, void *v, int n);
 int motion_dir(int y1, int x1, int y2, int x2);
 int target_dir(char ch);
-bool target_able(int m_idx);
-bool target_okay(void);
-void target_set_monster(int m_idx);
-void target_set_location(int y, int x);
-bool target_set_interactive(int mode);
-bool get_aim_dir(int *dp);
 bool get_rep_dir(int *dp);
 bool confuse_dir(int *dp);
 

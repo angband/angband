@@ -725,19 +725,6 @@ bool (*item_tester_hook)(const object_type*);
 
 
 /*
- * Current "comp" function for ang_sort()
- */
-bool (*ang_sort_comp)(const void *u, const void *v, int a, int b);
-
-
-/*
- * Current "swap" function for ang_sort()
- */
-void (*ang_sort_swap)(void *u, void *v, int a, int b);
-
-
-
-/*
  * Hack -- function hook to restrict "get_mon_num_prep()" function
  */
 bool (*get_mon_num_hook)(int r_idx);

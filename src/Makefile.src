@@ -94,6 +94,7 @@ ANGFILES = \
 	squelch.o \
 	store.o \
 	tables.o \
+	target.o \
 	trap.o \
 	ui.o \
 	ui-event.o \

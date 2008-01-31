@@ -74,5 +74,13 @@ extern void plog(cptr str);
 extern void quit(cptr str);
 
 
+/* Sorting functions */
+/* TODO: make ang_sort() take comp and swap hooks rather than use globals */
+void ang_sort(void *u, void *v, int n);
+void ang_sort_aux(void *u, void *v, int p, int q);
+
+extern bool (*ang_sort_comp)(const void *u, const void *v, int a, int b);
+extern void (*ang_sort_swap)(void *u, void *v, int a, int b);
+
 
 #endif /* INCLUDED_Z_UTIL_H */
