@@ -273,7 +273,7 @@
 /*
  * Refueling constants
  */
-#define FUEL_TORCH	6000	/* Maximum amount of fuel in a torch */
+#define FUEL_TORCH	5000	/* Maximum amount of fuel in a torch */
 #define FUEL_LAMP	15000   /* Maximum amount of fuel in a lantern */
 
 

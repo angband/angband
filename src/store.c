@@ -1267,7 +1267,7 @@ static bool store_create_random(int st)
 
 		/* Apply some "low-level" magic (no artifacts) */
 		apply_magic(i_ptr, level, FALSE, FALSE, FALSE);
-	
+
 		/* The object is "known" and belongs to a store */
 		object_known(i_ptr);
 		i_ptr->ident |= IDENT_STORE;
@@ -1288,7 +1288,7 @@ static bool store_create_random(int st)
 		/* Charge lights XXX */
 		if (i_ptr->tval == TV_LITE)
 		{
-			if (i_ptr->sval == SV_LITE_TORCH) i_ptr->timeout = FUEL_TORCH / 2;
+			if (i_ptr->sval == SV_LITE_TORCH) i_ptr->timeout = FUEL_TORCH;
 			if (i_ptr->sval == SV_LITE_LANTERN) i_ptr->timeout = FUEL_LAMP / 2;
 		}
 

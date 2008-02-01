@@ -947,16 +947,11 @@ static void a_m_aux_4(object_type *o_ptr, int level, int power)
 	{
 		case TV_LITE:
 		{
-			/* Hack -- Torches & lanterns -- random fuel at 1/2 max */
+			/* Torches and lanterns get half-fuel */
 			if (o_ptr->sval == SV_LITE_TORCH)
-			{
-				o_ptr->timeout = randint(FUEL_TORCH/2);
-			}
-
+				o_ptr->timeout = FUEL_TORCH;
 			else if (o_ptr->sval == SV_LITE_LANTERN)
-			{
-				o_ptr->timeout = randint(FUEL_LAMP/2);
-			}
+				o_ptr->timeout = FUEL_LAMP / 2;
 
 			break;
 		}
