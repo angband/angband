@@ -109,10 +109,10 @@ size_t squelch_size = TYPE_MAX;
 enum
 {
 	SQUELCH_NONE,
-	SQUELCH_CURSED,
+	SQUELCH_BAD,
 	SQUELCH_AVERAGE,
-	SQUELCH_GOOD_STRONG,
-	SQUELCH_GOOD_WEAK,
+	SQUELCH_GOOD,
+	SQUELCH_EXCELLENT,
 	SQUELCH_ALL,
 
 	SQUELCH_MAX
@@ -123,12 +123,12 @@ enum
  */
 static const char *quality_names[SQUELCH_MAX] =
 {
-	"none",							/* SQUELCH_NONE */
-	"cursed",						/* SQUELCH_CURSED */
-	"average",						/* SQUELCH_AVERAGE */
-	"good (strong pseudo-ID)",		/* SQUELCH_GOOD_STRONG */
-	"good (weak pseudo-ID)",		/* SQUELCH_GOOD_WEAK */
-	"everything except artifacts",	/* SQUELCH_ALL */
+	"none",                        /* SQUELCH_NONE */
+	"bad",                         /* SQUELCH_BAD */
+	"average",                     /* SQUELCH_AVERAGE */
+	"good",                        /* SQUELCH_GOOD */
+	"excellent",                   /* SQUELCH_EXCELLENT */
+	"everything except artifacts", /* SQUELCH_ALL */
 };
 
 
@@ -387,13 +387,17 @@ bool squelch_item_ok(const object_type *o_ptr)
 	/* Get result based on the feeling and the squelch_level */
 	switch (squelch_level[num])
 	{
-		case SQUELCH_CURSED:
+		case SQUELCH_BAD:
 		{
 			if ((feel == INSCRIP_BROKEN) || (feel == INSCRIP_TERRIBLE) ||
 			    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED))
 			{
 				return TRUE;
 			}
+
+			if (fullid &&
+				 (o_ptr->to_a <= 0 && o_ptr->to_h <= 0 && o_ptr->to_d <= 0))
+				return TRUE;
 
 			break;
 		}
@@ -410,30 +414,30 @@ bool squelch_item_ok(const object_type *o_ptr)
 			break;
 		}
 
-		case SQUELCH_GOOD_WEAK:
+		case SQUELCH_GOOD:
 		{
 			if ((feel == INSCRIP_BROKEN) || (feel == INSCRIP_TERRIBLE) ||
 			    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED) ||
-			    (feel == INSCRIP_AVERAGE) || (feel == INSCRIP_GOOD))
+			    (feel == INSCRIP_AVERAGE))
 			{
 				return TRUE;
 			}
+
+			if (fullid && !o_ptr->name2 && !o_ptr->name1 &&
+				 (o_ptr->to_a >= 0 && o_ptr->to_h >= 0 && o_ptr->to_d >= 0))
+				return TRUE;
 
 			break;
 		}
 
-		case SQUELCH_GOOD_STRONG:
+		case SQUELCH_EXCELLENT:
 		{
 			if ((feel == INSCRIP_BROKEN) || (feel == INSCRIP_TERRIBLE) ||
 			    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED) ||
-			    (feel == INSCRIP_AVERAGE) ||
-			    ((feel == INSCRIP_GOOD) &&
-			     ((fullid) || (cp_ptr->flags & CF_PSEUDO_ID_HEAVY))))
+			    (feel == INSCRIP_AVERAGE) || (feel == INSCRIP_EXCELLENT))
 			{
 				return TRUE;
 			}
-
-			break;
 		}
 
 		case SQUELCH_ALL:
@@ -448,7 +452,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 }
 
 
-/* 
+/*
  * Returns TRUE if an item should be hidden due to the player's
  * current settings.
  */
@@ -618,7 +622,7 @@ static bool quality_action(char cmd, void *db, int oid)
 	menu.cmd_keys = "\n\r";
 	menu.count = SQUELCH_MAX;
 	if (oid == TYPE_JEWELRY)
-		menu.count = area.page_rows = SQUELCH_CURSED + 1;
+		menu.count = area.page_rows = SQUELCH_BAD + 1;
 
 	menu_init2(&menu, find_menu_skin(MN_SCROLL), &menu_f, &area);
 	window_make(area.col - 2, area.row - 1, area.col + area.width + 2, area.row + area.page_rows);

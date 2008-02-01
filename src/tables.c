@@ -1406,11 +1406,12 @@ const char *inscrip_text[] =
 	"cursed",
 	"broken",
 	"average",
-	"good",
+	"magical",
 	"excellent",
 	"special",
 	"uncursed",
-	"indestructible"
+	"indestructible",
+	"strange"
 };
 
 const grouper object_text_order [] =

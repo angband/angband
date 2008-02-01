@@ -531,10 +531,6 @@ static void a_m_aux_1(object_type *o_ptr, int level, int power)
 			o_ptr->to_h -= tohit2;
 			o_ptr->to_d -= todam2;
 		}
-
-		/* Cursed (if "bad") */
-		if (o_ptr->to_h < 0 || o_ptr->to_d < 0)
-		    o_ptr->flags3 |= TR3_LIGHT_CURSE;
 	}
 
 
@@ -646,10 +642,6 @@ static void a_m_aux_2(object_type *o_ptr, int level, int power)
 			/* Penalize again */
 			o_ptr->to_a -= toac2;
 		}
-
-		/* Cursed (if "bad") */
-		if (o_ptr->to_a < 0)
-		    o_ptr->flags3 |= TR3_LIGHT_CURSE;
 	}
 
 
@@ -1530,13 +1522,13 @@ static bool kind_is_good(int k_idx)
 			if (k_ptr->sval == SV_AMULET_TRICKERY) return (TRUE);
 			return (FALSE);
 		}
-		
+
 		/* Potions -- Potions of life, healing, *healing* are good,
 		 * restore mana for spell casters are good,
 		 * as are stat potions, when the stat is not maximised,
 		 * as is augmentation (acts as a potion of 'restoration' if all
 		 * stats are maximised).
-		 * 
+		 *
 		 * XXX If we make too many useful items 'good' we may want to
 		 * consider limiting the total number of good drops to uniques
 		 * and truely nasty monsters.
@@ -1701,6 +1693,8 @@ bool make_gold(object_type *j_ptr, int lev)
 	return (TRUE);
 }
 
+
+
 /*
  * Return a "feeling" (or NULL) about an item.  Method 1 (Heavy).
  */
@@ -1726,11 +1720,15 @@ int object_pseudo_heavy(const object_type *o_ptr)
 		return INSCRIP_CURSED;
 	else if (broken_p(o_ptr))
 		return INSCRIP_BROKEN;
-	else if (o_ptr->to_a > 0 || (o_ptr->to_h + o_ptr->to_d > 0))
-		return INSCRIP_GOOD;
 
-	/* Default to "average" */
-	return (INSCRIP_AVERAGE);
+	else if (o_ptr->to_a == 0 && o_ptr->to_h == 0 && o_ptr->to_d == 0)
+		return INSCRIP_AVERAGE;
+	else if (o_ptr->to_a >= 0 && o_ptr->to_h >= 0 && o_ptr->to_d >= 0)
+		return INSCRIP_MAGICAL;
+	else if (o_ptr->to_a <= 0 && o_ptr->to_h <= 0 && o_ptr->to_d <= 0)
+		return INSCRIP_MAGICAL;
+
+	return INSCRIP_STRANGE;
 }
 
 
@@ -1747,16 +1745,14 @@ int object_pseudo_light(const object_type *o_ptr)
 	if (broken_p(o_ptr)) return (INSCRIP_BROKEN);
 
 	/* Artifacts -- except cursed/broken ones */
-	if (artifact_p(o_ptr)) return (INSCRIP_GOOD);
+	if (artifact_p(o_ptr)) return (INSCRIP_EXCELLENT);
 
 	/* Ego-Items -- except cursed/broken ones */
-	if (ego_item_p(o_ptr)) return (INSCRIP_GOOD);
+	if (ego_item_p(o_ptr)) return (INSCRIP_EXCELLENT);
 
 	/* Good armor bonus */
-	if (o_ptr->to_a > 0) return (INSCRIP_GOOD);
-
-	/* Good weapon bonuses */
-	if (o_ptr->to_h + o_ptr->to_d > 0) return (INSCRIP_GOOD);
+	if (o_ptr->to_a > 0 || o_ptr->to_h != 0 || o_ptr->to_d > 0)
+		return (INSCRIP_MAGICAL);
 
 	/* No feeling */
 	return (0);
