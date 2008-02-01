@@ -3439,9 +3439,6 @@ bool curse_armor(void)
 		/* Curse it */
 		o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
-		/* Break it */
-		o_ptr->ident |= (IDENT_BROKEN);
-
 		/* Recalculate bonuses */
 		p_ptr->update |= (PU_BONUS);
 
@@ -3503,9 +3500,6 @@ bool curse_weapon(void)
 		/* Curse it */
 		o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
-		/* Break it */
-		o_ptr->ident |= (IDENT_BROKEN);
-
 		/* Recalculate bonuses */
 		p_ptr->update |= (PU_BONUS);
 
@@ -3529,10 +3523,9 @@ bool curse_weapon(void)
 void brand_object(object_type *o_ptr, byte brand_type)
 {
 	/* you can never modify artifacts / ego-items */
-	/* you can never modify broken / cursed items */
-	if ((o_ptr->k_idx) &&
-	    (!artifact_p(o_ptr)) && (!ego_item_p(o_ptr)) &&
-	    (!broken_p(o_ptr)) && (!cursed_p(o_ptr)))
+	/* you can never modify cursed / worthless items */
+	if (o_ptr->k_idx && !cursed_p(o_ptr) && k_info[o_ptr->k_idx].cost &&
+	    !artifact_p(o_ptr) && !ego_item_p(o_ptr))
 	{
 		cptr act = "magical";
 		char o_name[80];
@@ -3566,7 +3559,7 @@ void brand_object(object_type *o_ptr, byte brand_type)
 
 		/* Window stuff */
 		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
-	
+
 		/* Enchant */
 		enchant(o_ptr, rand_int(3) + 4, ENCH_TOHIT | ENCH_TODAM);
 	}

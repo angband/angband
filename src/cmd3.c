@@ -281,7 +281,7 @@ void do_cmd_destroy(void)
 
 	/* Verify destruction */
 	strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", o_name);
-	if (!get_check(out_val)) return; 
+	if (!get_check(out_val)) return;
 
 	/* Artifacts cannot be destroyed */
 	if (artifact_p(o_ptr))
@@ -296,7 +296,7 @@ void do_cmd_destroy(void)
 		if (o_ptr->ident & (IDENT_SENSE))
 		{
 			/* Already sensed objects always get improved feelings */
-			if (cursed_p(o_ptr) || broken_p(o_ptr))
+			if (cursed_p(o_ptr))
 				o_ptr->pseudo = INSCRIP_TERRIBLE;
 			else
 				o_ptr->pseudo = INSCRIP_SPECIAL;

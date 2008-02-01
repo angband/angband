@@ -33,14 +33,13 @@ typedef enum
 	INSCRIP_TERRIBLE = 1,        /*!< Cursed artifact */
 	INSCRIP_WORTHLESS = 2,       /*!< Worthless item */
 	INSCRIP_CURSED = 3,          /*!< Cursed normal item */
-	INSCRIP_BROKEN = 4,          /*!< Cursed ego-item */
+	INSCRIP_STRANGE = 4,         /*!< Item that has mixed combat bonuses */
 	INSCRIP_AVERAGE = 5,         /*!< Item with no interesting features */
 	INSCRIP_MAGICAL = 6,         /*!< Item with combat bonuses */
 	INSCRIP_EXCELLENT = 7,       /*!< Ego-item */
 	INSCRIP_SPECIAL = 8,         /*!< Artifact */
 	INSCRIP_UNCURSED = 9,        /*!< Item previous cursed, now uncursed */
 	INSCRIP_INDESTRUCTIBLE = 10, /*!< Artifact that was tried to be destroyed */
-	INSCRIP_STRANGE = 12,        /*!< Item that has mixed combat bonuses */
 
 	INSCRIP_MAX                  /*!< Maximum number of pseudo-ID markers */
 } obj_pseudo_t;

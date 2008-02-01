@@ -693,9 +693,6 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					/* Cursed */
 					if (power < 0)
 					{
-						/* Broken */
-						o_ptr->ident |= (IDENT_BROKEN);
-
 						/* Cursed */
 						o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
@@ -718,9 +715,6 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					/* Cursed Ring */
 					if (power < 0)
 					{
-						/* Broken */
-						o_ptr->ident |= (IDENT_BROKEN);
-
 						/* Cursed */
 						o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
@@ -750,11 +744,9 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					/* Cursed */
 					if (power < 0)
 					{
-						/* Broken */
-						o_ptr->ident |= (IDENT_BROKEN);
-
 						/* Cursed */
 						o_ptr->flags3 |= TR3_LIGHT_CURSE;
+
 						/* Reverse pval */
 						o_ptr->pval = 0 - (o_ptr->pval);
 					}
@@ -777,9 +769,6 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 				case SV_RING_WEAKNESS:
 				case SV_RING_STUPIDITY:
 				{
-					/* Broken */
-					o_ptr->ident |= (IDENT_BROKEN);
-
 					/* Cursed */
 					o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
@@ -792,9 +781,6 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 				/* WOE, Stupidity */
 				case SV_RING_WOE:
 				{
-					/* Broken */
-					o_ptr->ident |= (IDENT_BROKEN);
-
 					/* Cursed */
 					o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
@@ -814,9 +800,6 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					/* Cursed */
 					if (power < 0)
 					{
-						/* Broken */
-						o_ptr->ident |= (IDENT_BROKEN);
-
 						/* Cursed */
 						o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
@@ -836,9 +819,6 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					/* Cursed */
 					if (power < 0)
 					{
-						/* Broken */
-						o_ptr->ident |= (IDENT_BROKEN);
-
 						/* Cursed */
 						o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
@@ -858,9 +838,6 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					/* Cursed */
 					if (power < 0)
 					{
-						/* Broken */
-						o_ptr->ident |= (IDENT_BROKEN);
-
 						/* Cursed */
 						o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
@@ -881,9 +858,6 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					/* Cursed */
 					if (power < 0)
 					{
-						/* Broken */
-						o_ptr->ident |= (IDENT_BROKEN);
-
 						/* Cursed */
 						o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
@@ -914,9 +888,6 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					/* Cursed */
 					if (power < 0)
 					{
-						/* Broken */
-						o_ptr->ident |= (IDENT_BROKEN);
-
 						/* Cursed */
 						o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
@@ -935,9 +906,6 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					/* Cursed */
 					if (power < 0)
 					{
-						/* Broken */
-						o_ptr->ident |= (IDENT_BROKEN);
-
 						/* Cursed */
 						o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
@@ -1018,9 +986,6 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 				/* Amulet of Doom -- always cursed */
 				case SV_AMULET_DOOM:
 				{
-					/* Broken */
-					o_ptr->ident |= (IDENT_BROKEN);
-
 					/* Cursed */
 					o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
@@ -1262,9 +1227,6 @@ void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great)
 		o_ptr->to_d = a_ptr->to_d;
 		o_ptr->weight = a_ptr->weight;
 
-		/* Hack -- extract the "broken" flag */
-		if (!a_ptr->cost) o_ptr->ident |= (IDENT_BROKEN);
-
 		/* Hack -- extract the "cursed" flag */
 		if (a_ptr->flags3 & TR3_LIGHT_CURSE)
 			o_ptr->flags3 |= TR3_LIGHT_CURSE;
@@ -1391,15 +1353,12 @@ void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great)
 			}
 		}
 
-		/* Hack -- acquire "broken" flag */
-		if (!e_ptr->cost) o_ptr->ident |= (IDENT_BROKEN);
-
 		/* Hack -- acquire "cursed" flag */
 		if (e_ptr->flags3 & (TR3_LIGHT_CURSE))
 		    o_ptr->flags3 |= TR3_LIGHT_CURSE;
 
 		/* Hack -- apply extra penalties if needed */
-		if (cursed_p(o_ptr) || broken_p(o_ptr))
+		if (cursed_p(o_ptr))
 		{
 			/* Hack -- obtain bonuses */
 			if (e_ptr->max_to_h > 0) o_ptr->to_h -= randint(e_ptr->max_to_h);
@@ -1437,9 +1396,6 @@ void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great)
 	if (o_ptr->k_idx)
 	{
 		object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
-		/* Hack -- acquire "broken" flag */
-		if (!k_ptr->cost) o_ptr->ident |= (IDENT_BROKEN);
 
 		/* Hack -- acquire "cursed" flag */
 		if (k_ptr->flags3 & (TR3_LIGHT_CURSE))
@@ -1630,8 +1586,7 @@ bool make_object(object_type *j_ptr, int lev, bool good, bool great)
 
 
 	/* Notice "okay" out-of-depth objects */
-	if (!cursed_p(j_ptr) && !broken_p(j_ptr) &&
-	    (k_info[j_ptr->k_idx].level > p_ptr->depth))
+	if (!cursed_p(j_ptr) && (k_info[j_ptr->k_idx].level > p_ptr->depth))
 	{
 		/* Rating increase */
 		rating += (k_info[j_ptr->k_idx].level - p_ptr->depth);
@@ -1702,7 +1657,7 @@ int object_pseudo_heavy(const object_type *o_ptr)
 {
 	if (artifact_p(o_ptr))
 	{
-		if (cursed_p(o_ptr) || broken_p(o_ptr))
+		if (cursed_p(o_ptr))
 			return INSCRIP_TERRIBLE;
 		else
 			return INSCRIP_SPECIAL;
@@ -1710,7 +1665,7 @@ int object_pseudo_heavy(const object_type *o_ptr)
 
 	if (ego_item_p(o_ptr))
 	{
-		if (cursed_p(o_ptr) || broken_p(o_ptr))
+		if (cursed_p(o_ptr))
 			return INSCRIP_WORTHLESS;
 		else
 			return INSCRIP_EXCELLENT;
@@ -1718,8 +1673,6 @@ int object_pseudo_heavy(const object_type *o_ptr)
 
 	if (cursed_p(o_ptr))
 		return INSCRIP_CURSED;
-	else if (broken_p(o_ptr))
-		return INSCRIP_BROKEN;
 
 	else if (o_ptr->to_a == 0 && o_ptr->to_h == 0 && o_ptr->to_d == 0)
 		return INSCRIP_AVERAGE;
@@ -1740,9 +1693,6 @@ int object_pseudo_light(const object_type *o_ptr)
 {
 	/* Cursed items (all of them) */
 	if (cursed_p(o_ptr)) return (INSCRIP_CURSED);
-
-	/* Broken items (all of them) */
-	if (broken_p(o_ptr)) return (INSCRIP_BROKEN);
 
 	/* Artifacts -- except cursed/broken ones */
 	if (artifact_p(o_ptr)) return (INSCRIP_EXCELLENT);

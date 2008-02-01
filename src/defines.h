@@ -1703,7 +1703,6 @@ enum
 #define IDENT_KNOWN     0x08	/* Item abilities are known */
 #define IDENT_STORE     0x10	/* Item is in the inventory of a store */
 /* ... */
-#define IDENT_BROKEN    0x80	/* Item is permanently worthless */
 
 
 /*
@@ -2438,13 +2437,6 @@ enum
  */
 #define ego_item_p(T) \
 	((T)->name2 ? TRUE : FALSE)
-
-
-/*
- * Broken items.
- */
-#define broken_p(T) \
-	((T)->ident & (IDENT_BROKEN))
 
 /*
  * Cursed items.

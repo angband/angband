@@ -1626,9 +1626,6 @@ s32b object_value(const object_type *o_ptr)
 	/* Unknown items -- acquire a base value */
 	if (object_known_p(o_ptr))
 	{
-		/* Broken items -- worthless */
-		if (broken_p(o_ptr)) return (0L);
-
 		/* Cursed items -- worthless */
 		if (cursed_p(o_ptr)) return (0L);
 
@@ -1639,9 +1636,6 @@ s32b object_value(const object_type *o_ptr)
 	/* Known items -- acquire the actual value */
 	else
 	{
-		/* Hack -- Felt broken items */
-		if ((o_ptr->ident & (IDENT_SENSE)) && broken_p(o_ptr)) return (0L);
-
 		/* Hack -- Felt cursed items */
 		if ((o_ptr->ident & (IDENT_SENSE)) && cursed_p(o_ptr)) return (0L);
 
@@ -1794,13 +1788,6 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 			/* Probably okay */
 			break;
 		}
-	}
-
-
-	/* Hack -- Require identical "broken" status */
-	if ((o_ptr->ident & IDENT_BROKEN) != (j_ptr->ident & IDENT_BROKEN))
-	{
-		return (0);
 	}
 
 
@@ -2005,9 +1992,6 @@ void object_prep(object_type *o_ptr, int k_idx)
 	o_ptr->ac = k_ptr->ac;
 	o_ptr->dd = k_ptr->dd;
 	o_ptr->ds = k_ptr->ds;
-
-	/* Hack -- worthless items are always "broken" */
-	if (k_ptr->cost <= 0) o_ptr->ident |= (IDENT_BROKEN);
 
 	/* Hack -- cursed items are always "cursed" */
 	if (k_ptr->flags3 & (TR3_LIGHT_CURSE))

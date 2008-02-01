@@ -475,10 +475,6 @@ static errr rd_item(object_type *o_ptr)
 
 
 
-	/* Hack -- notice "broken" items */
-	if (k_ptr->cost <= 0) o_ptr->ident |= (IDENT_BROKEN);
-
-
 	/*
 	 * Ensure that rods and wands get the appropriate pvals,
 	 * and transfer rod charges to timeout.
@@ -573,9 +569,6 @@ static errr rd_item(object_type *o_ptr)
 	/* Get the standard weight */
 	o_ptr->weight = k_ptr->weight;
 
-	/* Hack -- extract the "broken" flag */
-	if (o_ptr->pval < 0) o_ptr->ident |= (IDENT_BROKEN);
-
 
 	/* Artifacts */
 	if (o_ptr->name1)
@@ -595,9 +588,6 @@ static errr rd_item(object_type *o_ptr)
 
 		/* Get the new artifact weight */
 		o_ptr->weight = a_ptr->weight;
-
-		/* Hack -- extract the "broken" flag */
-		if (!a_ptr->cost) o_ptr->ident |= (IDENT_BROKEN);
 	}
 
 	/* Ego items */
@@ -614,9 +604,6 @@ static errr rd_item(object_type *o_ptr)
 			/* Keep old boosted damage dice */
 			o_ptr->dd = old_dd;
 		}
-
-		/* Hack -- extract the "broken" flag */
-		if (!e_ptr->cost) o_ptr->ident |= (IDENT_BROKEN);
 
 		/* Hack -- enforce legal pval */
 		if (e_ptr->flags1 & (TR1_PVAL_MASK))
