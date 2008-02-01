@@ -712,7 +712,7 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
  *   OD_STORE  -- Rings of Death [1,+3] (+2 to Stealth) {nifty}
  *   OD_FULL   -- Rings of Death [1,+3] (+2 to Stealth) {nifty} (squelch)
  */
-size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix, int mode)
+size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix, odesc_detail_t mode)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
@@ -800,7 +800,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix,
  * This differs from object_desc() only in that it can provide information the
  * player isn't meant to know.
  */
-void object_desc_spoil(char *buf, size_t max, const object_type *o_ptr, int pref, int mode)
+void object_desc_spoil(char *buf, size_t max, const object_type *o_ptr, int pref, odesc_detail_t mode)
 {
 	object_type object_type_body;
 	object_type *i_ptr = &object_type_body;

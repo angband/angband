@@ -15,21 +15,44 @@ extern char scroll_adj[MAX_TITLES][16];
 /**
  * Modes for object_desc().
  */
-enum
+typedef enum
 {
-	ODESC_BASE = 0,   /** Only describe the base name */
-	ODESC_COMBAT = 1, /** Also show combat bonuses */
-	ODESC_FULL = 3,   /** Show entire description */
-	ODESC_STORE = 4   /** Also show {squelch} marker */
-};
+	ODESC_BASE = 0,   /*!< Only describe the base name */
+	ODESC_COMBAT = 1, /*!< Also show combat bonuses */
+	ODESC_FULL = 3,   /*!< Show entire description */
+	ODESC_STORE = 4   /*!< Also show {squelch} marker */
+} odesc_detail_t;
+
+
+/**
+ * Pseudo-ID markers.
+ */
+typedef enum
+{
+	INSCRIP_NULL = 0,            /*!< No pseudo-ID status */
+	INSCRIP_TERRIBLE = 1,        /*!< Cursed artifact */
+	INSCRIP_WORTHLESS = 2,       /*!< Worthless item */
+	INSCRIP_CURSED = 3,          /*!< Cursed normal item */
+	INSCRIP_BROKEN = 4,          /*!< Cursed ego-item */
+	INSCRIP_AVERAGE = 5,         /*!< Item with no interesting features */
+	INSCRIP_GOOD = 6,            /*!< Item with some combat bonuses */
+	INSCRIP_EXCELLENT = 7,       /*!< Ego-item */
+	INSCRIP_SPECIAL = 8,         /*!< Artifact */
+	INSCRIP_UNCURSED = 9,        /*!< Item previous cursed, now uncursed */
+	INSCRIP_INDESTRUCTIBLE = 10, /*!< Artifact that was tried to be destroyed */
+
+	INSCRIP_MAX                  /*!< Maximum number of pseudo-ID markers */
+} obj_pseudo_t;
+
+
 
 
 /*** Functions ***/
 
 /* obj-desc.c */
 void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know);
-size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix, int mode);
-void object_desc_spoil(char *buf, size_t max, const object_type *o_ptr, int pref, int mode);
+size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix, odesc_detail_t mode);
+void object_desc_spoil(char *buf, size_t max, const object_type *o_ptr, int pref, odesc_detail_t mode);
 
 /* obj-info.c */
 void object_info_header(const object_type *o_ptr);
@@ -44,6 +67,8 @@ s16b get_obj_num(int level);
 void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great);
 bool make_object(object_type *j_ptr, int lev, bool good, bool great);
 bool make_gold(object_type *j_ptr, int lev);
+int object_pseudo_heavy(const object_type *o_ptr);
+int object_pseudo_light(const object_type *o_ptr);
 
 /* obj-ui.c */
 void display_inven(void);

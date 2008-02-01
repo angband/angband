@@ -74,7 +74,7 @@ extern cptr stat_names[A_MAX];
 extern cptr stat_names_reduced[A_MAX];
 extern cptr stat_names_full[A_MAX];
 extern const char *window_flag_desc[32];
-extern cptr inscrip_text[MAX_INSCRIP];
+extern const char *inscrip_text[];
 extern const grouper object_text_order[];
 extern const byte store_choices[MAX_STORES-2][STORE_CHOICES][2];
 

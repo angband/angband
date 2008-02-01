@@ -1398,7 +1398,7 @@ const char *window_flag_desc[32] =
 };
 
 
-cptr inscrip_text[MAX_INSCRIP] =
+const char *inscrip_text[] =
 {
 	NULL,
 	"terrible",

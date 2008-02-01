@@ -93,9 +93,9 @@ s16b get_obj_num(int level)
 
 	/* Occasional level boost */
 	if ((level > 0) && one_in_(GREAT_OBJ))
-	{ 
-		/* What a bizarre calculation */ 
-		level = 1 + (level * MAX_O_DEPTH / randint(MAX_O_DEPTH)); 
+	{
+		/* What a bizarre calculation */
+		level = 1 + (level * MAX_O_DEPTH / randint(MAX_O_DEPTH));
 	}
 
 	/* Paranoia */
@@ -533,8 +533,8 @@ static void a_m_aux_1(object_type *o_ptr, int level, int power)
 		}
 
 		/* Cursed (if "bad") */
-		if (o_ptr->to_h + o_ptr->to_d < 0)
-			o_ptr->flags3 |= TR3_LIGHT_CURSE;
+		if (o_ptr->to_h < 0 || o_ptr->to_d < 0)
+		    o_ptr->flags3 |= TR3_LIGHT_CURSE;
 	}
 
 
@@ -1687,7 +1687,7 @@ bool make_gold(object_type *j_ptr, int lev)
 	if (sval > MAX_GOLD) sval = MAX_GOLD;
 
 	k_idx = lookup_kind(TV_GOLD, sval);
-	
+
 	/* Prepare a gold object */
 	object_prep(j_ptr, k_idx);
 
@@ -1701,4 +1701,64 @@ bool make_gold(object_type *j_ptr, int lev)
 	return (TRUE);
 }
 
+/*
+ * Return a "feeling" (or NULL) about an item.  Method 1 (Heavy).
+ */
+int object_pseudo_heavy(const object_type *o_ptr)
+{
+	if (artifact_p(o_ptr))
+	{
+		if (cursed_p(o_ptr) || broken_p(o_ptr))
+			return INSCRIP_TERRIBLE;
+		else
+			return INSCRIP_SPECIAL;
+	}
+
+	if (ego_item_p(o_ptr))
+	{
+		if (cursed_p(o_ptr) || broken_p(o_ptr))
+			return INSCRIP_WORTHLESS;
+		else
+			return INSCRIP_EXCELLENT;
+	}
+
+	if (cursed_p(o_ptr))
+		return INSCRIP_CURSED;
+	else if (broken_p(o_ptr))
+		return INSCRIP_BROKEN;
+	else if (o_ptr->to_a > 0 || (o_ptr->to_h + o_ptr->to_d > 0))
+		return INSCRIP_GOOD;
+
+	/* Default to "average" */
+	return (INSCRIP_AVERAGE);
+}
+
+
+
+/*
+ * Return a "feeling" (or NULL) about an item.  Method 2 (Light).
+ */
+int object_pseudo_light(const object_type *o_ptr)
+{
+	/* Cursed items (all of them) */
+	if (cursed_p(o_ptr)) return (INSCRIP_CURSED);
+
+	/* Broken items (all of them) */
+	if (broken_p(o_ptr)) return (INSCRIP_BROKEN);
+
+	/* Artifacts -- except cursed/broken ones */
+	if (artifact_p(o_ptr)) return (INSCRIP_GOOD);
+
+	/* Ego-Items -- except cursed/broken ones */
+	if (ego_item_p(o_ptr)) return (INSCRIP_GOOD);
+
+	/* Good armor bonus */
+	if (o_ptr->to_a > 0) return (INSCRIP_GOOD);
+
+	/* Good weapon bonuses */
+	if (o_ptr->to_h + o_ptr->to_d > 0) return (INSCRIP_GOOD);
+
+	/* No feeling */
+	return (0);
+}
 

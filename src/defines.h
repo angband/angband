@@ -1707,27 +1707,6 @@ enum
 
 
 /*
- * The special inscriptions.
- */
-#define INSCRIP_NULL            0
-#define INSCRIP_TERRIBLE        1
-#define INSCRIP_WORTHLESS       2
-#define INSCRIP_CURSED          3
-#define INSCRIP_BROKEN          4
-#define INSCRIP_AVERAGE         5
-#define INSCRIP_GOOD            6
-#define INSCRIP_EXCELLENT       7
-#define INSCRIP_SPECIAL         8
-#define INSCRIP_UNCURSED        9
-#define INSCRIP_INDESTRUCTIBLE  10
-
-/*
- * Number of special inscriptions, plus one.
- */
-#define MAX_INSCRIP			11
-
-
-/*
  * Some bit-flags for the "smart" field of "monster_type".
  *
  * Most of these map to the "TR2_xxx" flags.

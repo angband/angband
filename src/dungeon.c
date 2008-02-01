@@ -20,76 +20,6 @@
 #include "cmds.h"
 
 
-/*
- * Return a "feeling" (or NULL) about an item.  Method 1 (Heavy).
- */
-int value_check_aux1(const object_type *o_ptr)
-{
-	/* Artifacts */
-	if (artifact_p(o_ptr))
-	{
-		/* Cursed/Broken */
-		if (cursed_p(o_ptr) || broken_p(o_ptr)) return (INSCRIP_TERRIBLE);
-
-		/* Normal */
-		return (INSCRIP_SPECIAL);
-	}
-
-	/* Ego-Items */
-	if (ego_item_p(o_ptr))
-	{
-		/* Cursed/Broken */
-		if (cursed_p(o_ptr) || broken_p(o_ptr)) return (INSCRIP_WORTHLESS);
-
-		/* Normal */
-		return (INSCRIP_EXCELLENT);
-	}
-
-	/* Cursed items */
-	if (cursed_p(o_ptr)) return (INSCRIP_CURSED);
-
-	/* Broken items */
-	if (broken_p(o_ptr)) return (INSCRIP_BROKEN);
-
-	/* Good "armor" bonus */
-	if (o_ptr->to_a > 0) return (INSCRIP_GOOD);
-
-	/* Good "weapon" bonus */
-	if (o_ptr->to_h + o_ptr->to_d > 0) return (INSCRIP_GOOD);
-
-	/* Default to "average" */
-	return (INSCRIP_AVERAGE);
-}
-
-
-/*
- * Return a "feeling" (or NULL) about an item.  Method 2 (Light).
- */
-static int value_check_aux2(const object_type *o_ptr)
-{
-	/* Cursed items (all of them) */
-	if (cursed_p(o_ptr)) return (INSCRIP_CURSED);
-
-	/* Broken items (all of them) */
-	if (broken_p(o_ptr)) return (INSCRIP_BROKEN);
-
-	/* Artifacts -- except cursed/broken ones */
-	if (artifact_p(o_ptr)) return (INSCRIP_GOOD);
-
-	/* Ego-Items -- except cursed/broken ones */
-	if (ego_item_p(o_ptr)) return (INSCRIP_GOOD);
-
-	/* Good armor bonus */
-	if (o_ptr->to_a > 0) return (INSCRIP_GOOD);
-
-	/* Good weapon bonuses */
-	if (o_ptr->to_h + o_ptr->to_d > 0) return (INSCRIP_GOOD);
-
-	/* No feeling */
-	return (0);
-}
-
-
 
 /*
  * Sense the inventory
@@ -191,7 +121,7 @@ static void sense_inventory(void)
 			heavy = TRUE;
 
 		/* Check for a feeling */
-		feel = (heavy ? value_check_aux1(o_ptr) : value_check_aux2(o_ptr));
+		feel = (heavy ? object_pseudo_heavy(o_ptr) : object_pseudo_light(o_ptr));
 
 		/* Skip non-feelings */
 		if (!feel) continue;
