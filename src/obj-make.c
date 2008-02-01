@@ -550,7 +550,7 @@ static void a_m_aux_1(object_type *o_ptr, int level, int power)
 			else if (power < 0)
 			{
 				/* Hack -- Reverse digging bonus */
-				o_ptr->pval = 0 - (o_ptr->pval);
+				o_ptr->pval = -o_ptr->pval;
 			}
 
 			break;
@@ -673,6 +673,9 @@ static void a_m_aux_2(object_type *o_ptr, int level, int power)
  */
 static void a_m_aux_3(object_type *o_ptr, int level, int power)
 {
+	if (power < 0)
+		o_ptr->flags3 |= TR3_LIGHT_CURSE;
+
 	/* Apply magic (good or bad) according to type */
 	switch (o_ptr->tval)
 	{
@@ -692,13 +695,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 
 					/* Cursed */
 					if (power < 0)
-					{
-						/* Cursed */
-						o_ptr->flags3 |= TR3_LIGHT_CURSE;
-
-						/* Reverse pval */
-						o_ptr->pval = 0 - (o_ptr->pval);
-					}
+						o_ptr->pval = -o_ptr->pval;
 
 					break;
 				}
@@ -715,22 +712,17 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					/* Cursed Ring */
 					if (power < 0)
 					{
-						/* Cursed */
-						o_ptr->flags3 |= TR3_LIGHT_CURSE;
-
 						/* Reverse pval */
-						o_ptr->pval = 0 - (o_ptr->pval);
-
-						break;
+						o_ptr->pval = -o_ptr->pval;
 					}
 					else
 					{
 						/* Rating boost */
 						rating += 25;
-					}
 
-					/* Mention the item */
-					if (cheat_peek) object_mention(o_ptr);
+						/* Mention the item */
+						if (cheat_peek) object_mention(o_ptr);
+					}
 
 					break;
 				}
@@ -743,13 +735,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 
 					/* Cursed */
 					if (power < 0)
-					{
-						/* Cursed */
-						o_ptr->flags3 |= TR3_LIGHT_CURSE;
-
-						/* Reverse pval */
-						o_ptr->pval = 0 - (o_ptr->pval);
-					}
+						o_ptr->pval = -o_ptr->pval;
 
 					break;
 				}
@@ -765,32 +751,6 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					break;
 				}
 
-				/* Weakness, Stupidity */
-				case SV_RING_WEAKNESS:
-				case SV_RING_STUPIDITY:
-				{
-					/* Cursed */
-					o_ptr->flags3 |= TR3_LIGHT_CURSE;
-
-					/* Penalize */
-					o_ptr->pval = 0 - (1 + m_bonus(5, level));
-
-					break;
-				}
-
-				/* WOE, Stupidity */
-				case SV_RING_WOE:
-				{
-					/* Cursed */
-					o_ptr->flags3 |= TR3_LIGHT_CURSE;
-
-					/* Penalize */
-					o_ptr->to_a = 0 - (5 + m_bonus(10, level));
-					o_ptr->pval = 0 - (1 + m_bonus(5, level));
-
-					break;
-				}
-
 				/* Ring of damage */
 				case SV_RING_DAMAGE:
 				{
@@ -799,13 +759,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 
 					/* Cursed */
 					if (power < 0)
-					{
-						/* Cursed */
-						o_ptr->flags3 |= TR3_LIGHT_CURSE;
-
-						/* Reverse bonus */
-						o_ptr->to_d = 0 - (o_ptr->to_d);
-					}
+						o_ptr->to_d = -o_ptr->to_d;
 
 					break;
 				}
@@ -818,13 +772,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 
 					/* Cursed */
 					if (power < 0)
-					{
-						/* Cursed */
-						o_ptr->flags3 |= TR3_LIGHT_CURSE;
-
-						/* Reverse tohit */
-						o_ptr->to_h = 0 - (o_ptr->to_h);
-					}
+						o_ptr->to_h = -o_ptr->to_h;
 
 					break;
 				}
@@ -837,13 +785,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 
 					/* Cursed */
 					if (power < 0)
-					{
-						/* Cursed */
-						o_ptr->flags3 |= TR3_LIGHT_CURSE;
-
-						/* Reverse toac */
-						o_ptr->to_a = 0 - (o_ptr->to_a);
-					}
+						o_ptr->to_a = -o_ptr->to_a;
 
 					break;
 				}
@@ -855,15 +797,11 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					o_ptr->to_d = randint(5) + m_bonus(5, level);
 					o_ptr->to_h = randint(5) + m_bonus(5, level);
 
-					/* Cursed */
+					/* Cursed -- reverse bonuses */
 					if (power < 0)
 					{
-						/* Cursed */
-						o_ptr->flags3 |= TR3_LIGHT_CURSE;
-
-						/* Reverse bonuses */
-						o_ptr->to_h = 0 - (o_ptr->to_h);
-						o_ptr->to_d = 0 - (o_ptr->to_d);
+						o_ptr->to_h = -o_ptr->to_h;
+						o_ptr->to_d = -o_ptr->to_d;
 					}
 
 					break;
@@ -887,13 +825,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 
 					/* Cursed */
 					if (power < 0)
-					{
-						/* Cursed */
-						o_ptr->flags3 |= TR3_LIGHT_CURSE;
-
-						/* Reverse bonuses */
-						o_ptr->pval = 0 - (o_ptr->pval);
-					}
+						o_ptr->pval = -o_ptr->pval;
 
 					break;
 				}
@@ -905,13 +837,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 
 					/* Cursed */
 					if (power < 0)
-					{
-						/* Cursed */
-						o_ptr->flags3 |= TR3_LIGHT_CURSE;
-
-						/* Reverse bonuses */
-						o_ptr->pval = 0 - (o_ptr->pval);
-					}
+						o_ptr->pval = -o_ptr->pval;
 
 					break;
 				}

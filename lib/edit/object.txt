@@ -1206,7 +1206,7 @@ N:145:Weakness
 G:=:d
 I:45:2:-5
 W:5:0:2:0
-A:100:5 to 100
+#A:100:5 to 100
 F:LIGHT_CURSE | STR | HIDE_TYPE
 
 N:146:Flames
@@ -1243,14 +1243,14 @@ N:149:Woe
 G:=:d
 I:45:0:-5
 W:50:0:2:0
-A:100:50 to 100
+#A:100:50 to 100
 F:LIGHT_CURSE | TELEPORT | WIS | CHR | HIDE_TYPE
 
 N:150:Stupidity
 G:=:d
 I:45:3:-5
 W:5:0:2:0
-A:100:5 to 100
+#A:100:5 to 100
 F:LIGHT_CURSE | INT | HIDE_TYPE
 
 N:151:Damage
