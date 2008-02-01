@@ -3135,7 +3135,7 @@ bool fire_ball(int typ, int dir, int dam, int rad)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	int ty, tx;
+	s16b ty, tx;
 
 	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
@@ -3169,7 +3169,7 @@ bool fire_swarm(int num, int typ, int dir, int dam, int rad)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	int ty, tx;
+	s16b ty, tx;
 
 	int flg = PROJECT_STOP | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
 
@@ -3199,7 +3199,7 @@ static bool project_hook(int typ, int dir, int dam, int flg)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	int ty, tx;
+	s16b ty, tx;
 
 	/* Pass through the target if needed */
 	flg |= (PROJECT_THRU);
