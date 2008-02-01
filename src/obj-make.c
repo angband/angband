@@ -216,26 +216,13 @@ static void object_mention(const object_type *o_ptr)
 	/* Describe */
 	object_desc_spoil(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
 
-	/* Artifact */
+	/* Provide a silly message */
 	if (artifact_p(o_ptr))
-	{
-		/* Silly message */
 		msg_format("Artifact (%s)", o_name);
-	}
-
-	/* Ego-item */
 	else if (ego_item_p(o_ptr))
-	{
-		/* Silly message */
 		msg_format("Ego-item (%s)", o_name);
-	}
-
-	/* Normal item */
 	else
-	{
-		/* Silly message */
 		msg_format("Object (%s)", o_name);
-	}
 }
 
 
