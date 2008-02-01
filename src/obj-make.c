@@ -497,40 +497,29 @@ static void a_m_aux_1(object_type *o_ptr, int level, int power)
 	int tohit1 = randint(5) + m_bonus(5, level);
 	int todam1 = randint(5) + m_bonus(5, level);
 
-	int tohit2 = m_bonus(10, level);
-	int todam2 = m_bonus(10, level);
+	int tohit2 = tohit1 + m_bonus(10, level);
+	int todam2 = todam2 + m_bonus(10, level);
 
 
-	/* Good */
-	if (power > 0)
+	if (power == -2)
 	{
-		/* Enchant */
-		o_ptr->to_h += tohit1;
-		o_ptr->to_d += todam1;
-
-		/* Very good */
-		if (power > 1)
-		{
-			/* Enchant again */
-			o_ptr->to_h += tohit2;
-			o_ptr->to_d += todam2;
-		}
+		o_ptr->to_h -= tohit2;
+		o_ptr->to_d -= todam2;
 	}
-
-	/* Cursed */
-	else if (power < 0)
+	else if (power == -1)
 	{
-		/* Penalize */
 		o_ptr->to_h -= tohit1;
 		o_ptr->to_d -= todam1;
-
-		/* Very cursed */
-		if (power < -1)
-		{
-			/* Penalize again */
-			o_ptr->to_h -= tohit2;
-			o_ptr->to_d -= todam2;
-		}
+	}
+	else if (power == 1)
+	{
+		o_ptr->to_h += tohit1;
+		o_ptr->to_d += todam1;
+	}
+	else if (power == 2)
+	{
+		o_ptr->to_h += tohit2;
+		o_ptr->to_d += todam2;
 	}
 
 
@@ -604,45 +593,22 @@ static void a_m_aux_1(object_type *o_ptr, int level, int power)
 
 
 /*
- * Apply magic to an item known to be "armor"
- *
- * Hack -- note special processing for crown/helm
- * Hack -- note special processing for robe of permanence
+ * Apply magic to armour
  */
 static void a_m_aux_2(object_type *o_ptr, int level, int power)
 {
 	int toac1 = randint(5) + m_bonus(5, level);
-
 	int toac2 = m_bonus(10, level);
 
 
-	/* Good */
-	if (power > 0)
-	{
-		/* Enchant */
-		o_ptr->to_a += toac1;
-
-		/* Very good */
-		if (power > 1)
-		{
-			/* Enchant again */
-			o_ptr->to_a += toac2;
-		}
-	}
-
-	/* Cursed */
-	else if (power < 0)
-	{
-		/* Penalize */
+	if (power == -2)
+		o_ptr->to_a -= toac1 + toac2;
+	else if (power == -1)
 		o_ptr->to_a -= toac1;
-
-		/* Very cursed */
-		if (power < -1)
-		{
-			/* Penalize again */
-			o_ptr->to_a -= toac2;
-		}
-	}
+	else if (power == 1)
+		o_ptr->to_a += toac1;
+	else if (power == 2)
+		o_ptr->to_a += toac1 + toac2;
 
 
 	/* Analyze type */
