@@ -389,7 +389,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 	{
 		case SQUELCH_BAD:
 		{
-			if ((feel == INSCRIP_BROKEN) || (feel == INSCRIP_TERRIBLE) ||
+			if ((feel == INSCRIP_TERRIBLE) ||
 			    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED))
 			{
 				return TRUE;
@@ -404,7 +404,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 
 		case SQUELCH_AVERAGE:
 		{
-			if ((feel == INSCRIP_BROKEN) || (feel == INSCRIP_TERRIBLE) ||
+			if ((feel == INSCRIP_TERRIBLE) ||
 			    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED) ||
 			    (feel == INSCRIP_AVERAGE))
 			{
@@ -416,7 +416,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 
 		case SQUELCH_GOOD:
 		{
-			if ((feel == INSCRIP_BROKEN) || (feel == INSCRIP_TERRIBLE) ||
+			if ((feel == INSCRIP_TERRIBLE) ||
 			    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED) ||
 			    (feel == INSCRIP_AVERAGE))
 			{
@@ -432,7 +432,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 
 		case SQUELCH_EXCELLENT:
 		{
-			if ((feel == INSCRIP_BROKEN) || (feel == INSCRIP_TERRIBLE) ||
+			if ((feel == INSCRIP_TERRIBLE) ||
 			    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED) ||
 			    (feel == INSCRIP_AVERAGE) || (feel == INSCRIP_EXCELLENT))
 			{
