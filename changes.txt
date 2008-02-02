@@ -3,34 +3,243 @@ Angband 3.1.0
 
 This is an Angband development version -- it may be buggy, so be warned!
 
-Thanks go to Eytan Zweig, pelpel, and Leon Marrick for patches used in
-this version.
+Thanks for this release go to: Eytan Zweig, pelpel, Kenneth Boyd,
+J.D. White, and more
+XXX fill in before release
 
-Changes up to now:
+Leon Marrick's dungeon generator from O was imported briefly, but since
+he wasn't around to answer questions or improve it at all, it's been
+reverted (see revisions 306 and 612).  Also, using the 3.0.x dungeon
+generator makes it much easier to balance the object allocation changes.
+The dungeon generator is scheduled for some attention sometime in the
+3.1.x series, but it's not my main concern right now.
 
-Bigger
-------
+Noticeable up-front UI changes
+------------------------------
 
-* Add Ey-style quickstart.  (Eytan Zweig)
+ * Add EyAngband-style quickstart option.
+ * Notes, like NPP and FA, except with brand new code by J.D. White.
+   (#10)
+ * Add a trap detection indicator (#19)
+ * Make status bar display all timed effects, left-to-right, which
+   involves moving the dungeon level to the bottom of the left-hand
+   display. (#191)
+ * Add show_lists option, which is the same as always_show_lists in
+   Ey. (#25)
+ * Auto-wield birth items (#24)
+ * Change the object information screen quite a bit: (#214, #26)
+   - Show average damage for weapons and ammo (#26)
+   - Make descriptions a fair bit terser (#399)
+   - Show breakage chance for ammo
+   - Track item origin, so every item has a tag telling you where it
+     came from (#149)
+ * Recolour the monster recall: (part of #152)
+   - Monster's depth is in red if it's beyond maximum depth, light green
+     otherwise.
+ * Add how many items the player already has when buying something at
+   the store.  (closes #151)
+ * Allow use of the space bar to advance a screenful in all
+   menus.  (#244)
+ * Make all menus wraparound at the top/bottom.  (#244)
+ * Monster recall display now cycles through monsters in level order,
+   not in the order that the monster definition file is written
+   in.  (#302)
+ * Add an indication of maximum capacity in the inventory
+   display.  (#358)
+ * Menus should use 1234567890 as little as possible for "tags".  (#292)
+ * Remove the "depth_in_feet" option, instead displaying both the
+   dungeon level and the depth everywhere.
+ * Ensure that store-bought and birth-given torches have the same number
+   of turns for stacking purposes.
+ * Death screen now uses scrollable menu. (#416)
+ * Drop squelched items
+ * Append {tried} to tried items in the object browser (r606)
+ * Put {tried} items before untried items in the object browser
+ * The monster list display has a little more colour-coding
+ * Death menu now uses a scrolly menu.
 
-* Add trap detection indicator. (pelpel)  Also, make detection spells
-  circular, of radius 22, and magic mapping circular of radius 30.
 
-* Adopted various parts of the OAngband dungeon generation code.
-  (Leon Marrick) For more information, please see:
-  http://dev.rephial.org/trac/attachment/ticket/156/notes.txt
+Gameplay
+--------
 
-* Transient indicators now appear on the bottom line, starting at the
-  left of the dungeon display; things like depth and speed appear on
-  the main sidebar.  As a result of this, every timed effect is now
-  displayed on the status bar.
+ * Remove autoscum.  (#365)
+ * Make point-based points worth less gold.
 
-Smaller
--------
+Detection:
+Try a different approach at detection: make all of magic mapping and
+detect trap/door/stair/monster/item/treasure use the same width and
+height rectangular area around the player.
 
-* Monster recall colours changed somewhat, they're now closer to Ey,
-  which I find much more readable.
+Stores:
+ * Phase Door is now a staple item.
+ * Start stocking deeper items as the character descends.
 
-Invisible (or almost so)
----------
+ID:
+ * Make ID reveal all powers of an object, and remove *ID*.  (#158)
+ * Make pseudo-id not occur whilst resting, but also make pseudo-ID
+   lengths shorter (by a little over half) to compensate.
+ * Some items, when worn long enough, get automatically ID'd
+ * Items pseudo-id'd as {average} are automatically ID'd, and thus will
+   stack properly
+ * Make wands/staffs stack even when un-ID'd
+ * Remove "good" pseudo-ID, replace with "magical" -- for non-cursed
+   non-average non-ego non-artifacts
+ * Add "strange" pseudo-ID, for when items have mixed blessings
+ * Stop automatically cursing all bad weaponry
+ * Make weak pseudo-id notice the difference between magical and
+   excellent
+ * Stop making rings of Stupidity, Weakness, and Woe.
+ * Allow any/all rings/amulets to be cursed if the game wants to
+   generate a "bad" item.  This is liable to be rethought in the future.
+
+
+Combat:
+ * On shooters, slays affect rolled damage, not total damage, like
+   combat.  Also, transfer slays and brands from the shooter to
+   ammunition. e.g. Cubragol is firebranded.  This tones down ranged
+   combat quite a bit at the high end.
+
+Monsters:
+
+Monsters have only had one change, but it's not a very noticeable one
+(hopefully): monster HP is specified as an average value around which to
+randomise, instead of using a "12d5"-type calculation.  Uniques always
+have the number of HPs specified in the monster.txt file, like before.
+
+Pack AI for trying to confront the player in rooms was exploitable: it
+was not considering open spaces created by digging creatures or
+stone-to-mud, making it possible for the player to clear "safe" open
+space at the side of a room.  Now the pack AI tries to attack in any
+open space where the player can be surrounded, not just room interiors.
+
+
+Objects:
+#310 #228 #311 #313 #316
+
+There is a new object allocation algorithm, something like the Sangband
+system but not quite the same.  This made it possible to rebalance the
+object rarities with better accuracy and knowledge of how such changes
+would affect the game.
+
+As a result, object rarities have undergone fairly extensive changes,
+especially with regard to consumables and rechargeables.  Some items
+have been removed, some new ones have been added, and most rarities have
+been changed.  There are a few quirks with the allocations as they
+stand, like speed potions being abnormally common on the first few
+dungeon levels.
+
+A selection of the most notable changes appear below:
+
+ - Water and Apple Juice are gone.
+ - Various potions have a tendency to appear in stacks.
+ - Reduce the number of food varities in the game.
+ - Add a new timed telepathy effect to some items
+ - Make potions of CLW, CSW, CCW heal a proportion of wounds, not just
+   a set value.  In the process, make all the potions more useful, to
+   the point where even CLW can be used usefully; CSW is about as useful
+   as the old CCW, and CCW is now only found in the dungeon -- albeit in
+   piles.  (#313)
+ - Add a selection of "gain one, lose one" stat potions to replace the
+   old stat loss potions-- they guarantee a stat to raise and reduce one
+   randomly.
+ - Stop Broken Daggers being generated, make Filthy Rags [0,+0], and
+   make Broken Swords (+0,+0) by default.
+ - Stop fixing the flavour for slime mold juice.
+ - The Elven Rings have a variety of healings, at the suggestion of
+   Timo.  Also, apply some other changes from the TV-patch (r428)
+ - Bad potions (confusion and the like) have a more damaging effect than
+   good potions when thrown.  This is like a lazy version of potions
+   actually having the proper effect on monsters they hit.
+ - Make torches always be found at 5000 turns, and lanterns at 7500
+   turns
+
+
+Port
+----
+
+ * X11: Add -x commandline option for choosing the location of the
+   settings file (#333, patch by morth)
+ * GTK2: Continue work; add term windows, graphics, etc. and also some
+   special dedicated display windows, like "messages" and "monster
+   list". (shanoah)
+
+
+Code-level
+----------
+
+A lot of code-level cleanup has been applied to this release, much of it
+still in flux.  Many new files have been split out of existing files,
+which should now have much more self-explanitory names.
+
+There is also a new generic effects handler so that all item activations
+and use abilities share the same code; this replaces use-obj.c and a lot
+of descriptions from lib/edit/object.txt. (#234)
+
+Memory handling has been reviewed.  Now, all code should assume that
+allocation will succeed, just like it did already.  There is also a
+realloc()-style function along with its own hook.  string_make() has
+been modified to no longer return a "const char *", and so all the code
+now only uses "const" when it means "const".  Some macros have been
+removed.
+
+"Elly" rewrote the message and quark packages, previously in util.c,
+and in the process split them out into their own z- files.  The z-msg
+package is now much more understandable but marginally less "efficient",
+and certainly less "optimised".
+
+Option definitions have moved to option.h, and the names and
+descriptions for options have moved to option.c.  Option data is now
+stored in a much more visually compact way, much more suitable for
+editing than the old system was. (#64)
+
+Additionally, a new file API has been introduced which combines the
+previous mishmash of fd_*() and my_f*() calls into a simpler, better
+documented interface.  (#137)
+
+Set up an event system for UI display updates, where the game
+communicates with the UI by sending messages saying that something's
+changed that the UI might be interested in, rather than deciding that
+specific things should be redraw.  The main screen updates all use this
+system now.  Amongst other things, this system should help things like
+the borg and graphical frontends, because they can hook right into
+changes in state.  (#348)
+
+object1.c and object2.c have been split out into a series of files,
+obj-{desc,make,ui,util}.c.  This makes it much easier to remember what
+is where.  Also, object_desc() has seen a rewrite, so hopefully it's a
+lot more hackable now.
+
+The beginnings of an organised code documentation scheme have started,
+using doxygen.  Makefile.std provides an easy mechanism to generate docs
+(try "make docs").
+
+There is some new and preliminary load/save code, which has involved
+creating a host of new files:
+ - z-blockfile deals with "tar"-like blocks of data, where each block
+   contains a number of records
+ - z-smap is a serialisable map type, used to store values in the
+   blockfile
+ - compress is a quick and space-efficient compression algorithm stolen
+   from "liblzf".
+
+The new code is much easier to use and read, but it's not ready for use
+by anyone who cares about their characters yet.
+
+Other assorted changes:
+ * Remove a whole load of useless or unused configuration options from
+   config.h.
+ * "make -f Makefile.inc depgen" will output "Makefile.new", which then
+   contains up-to-date dependencies for the project.
+ * Add "flags" back to object_type, removing the need for the hacky
+   "xtra" bytes.  This paves the way for e.g. fireproofing scrolls
+   later. (#120)
+ * Makefile for MSVC/NMAKE command-line build.  Currently works with
+   MSVC 6+; flags could use tweaking for MSVC 8+.
+ * Clean up racial and class skill values into arrays.  (Kenneth Boyd)
+ * Use header file guards in all header files, and use a consistent
+   naming scheme for them ("Elly")
+ * Add a very basic test harness for "unit testing" of the game's code,
+   though this is barely used at present.  Thanks to Fennec for cleaning
+   this up a bit.
+ * Introduce the one_in_() notation to the game, for percentile dice.
 
