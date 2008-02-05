@@ -117,15 +117,15 @@ typedef enum
 	EFFECT(HERO,           FALSE, "restores 10 hit points, removes fear and grants you resistance to fear and +12 to-hit for 1d25+25 turns")
 	EFFECT(SHERO,          FALSE, "restores 30 hit points, removes fear and grants you resistance to fear, +12 to-hit, and -10AC for 1d25+25 turns")
 
-	EFFECT(RESIST_FIRE,    FALSE, "grants you temporary resistance to fire for 1d10+10 turns")
-	EFFECT(RESIST_COLD,    FALSE, "grants you temporary resistance to cold for 1d10+10 turns")
-	EFFECT(RESIST_ALL,     FALSE, "grants resistance to everything!!!")
+	EFFECT(RESIST_FIRE,    FALSE, "grants temporary resistance to fire for 1d10+10 turns")
+	EFFECT(RESIST_COLD,    FALSE, "grants temporary resistance to cold for 1d10+10 turns")
+	EFFECT(RESIST_ALL,     FALSE, "grants temporary resistance to acid, electricity, fire, cold and poison for 1d20+20 turns")
 
 	EFFECT(DETECT_TREASURE,   FALSE, "detects all gold and objects on the level")
 	EFFECT(DETECT_TRAP,       FALSE, "detects all traps in the surrounding area")
 	EFFECT(DETECT_DOORSTAIR,  FALSE, "detects all doors and stairs on the level")
 	EFFECT(DETECT_INVIS,      FALSE, "detects all invisible creatures in the surrounding area")
-	EFFECT(DETECT_EVIL,       FALSE, "detects all evil creatures in the immidiate area")
+	EFFECT(DETECT_EVIL,       FALSE, "detects all evil creatures in the immediate area")
 	EFFECT(DETECT_ALL,        FALSE, "detects treasure, objects, traps, doors, stairs, and all creatures in the surrounding area")
 
 	EFFECT(ENCHANT_TOHIT,  FALSE, "attempts to magically enhance a weapon's to-hit bonus")
@@ -171,8 +171,8 @@ typedef enum
 	EFFECT(LOSSLEEP,       FALSE, "sleeps all non-unique creatures within line of sight")
 	EFFECT(LOSKILL,        FALSE, "removes all non-unique monsters within 20 squares, dealing you damage in the process")
 
-	EFFECT(ILLUMINATION,   FALSE, "!")
-	EFFECT(CLAIRVOYANCE,   FALSE, "!")
+	EFFECT(ILLUMINATION,   FALSE, "lights up the surrounding area, hurting light-sensitive creatures")
+	EFFECT(CLAIRVOYANCE,   FALSE, "maps the entire level and detects objects, traps, doors, and stairs")
 	EFFECT(PROBING,        FALSE, "gives you information on the health and abilities of monsters you can see")
 
 	EFFECT(HASTE,          FALSE, "hastens you for 2d10+20 turns")
@@ -189,7 +189,7 @@ typedef enum
 	EFFECT(RAGE_BLESS_RESIST, FALSE, "beserk rage, bless, and resistance")
 	EFFECT(RESTORE_LIFE,   FALSE, "restores your experience to full")
 	EFFECT(REM_FEAR_POIS,  FALSE, "cures you of fear and poison")
-	EFFECT(PROBE,          FALSE, "!probes, somewhat ominously")
+	EFFECT(PROBE,          FALSE, "reveals information about a monster")
 	EFFECT(FIREBRAND,      FALSE, "brands bolts with fire, in an unbalanced fashion")
 
 	EFFECT(FIRE_BOLT,      TRUE,  "creates a fire bolt with damage 9d8")
@@ -243,7 +243,7 @@ typedef enum
 	EFFECT(STARLIGHT2,     FALSE, "fires a line of light in all directions, each one causing 10d8 damage")
 	EFFECT(BERSERKER,      FALSE, "puts you in a berserker rage for d50+50 turns")
 
-	EFFECT(WONDER,         TRUE,  "wonderous things")
+	EFFECT(WONDER,         TRUE,  "creates random and unpredictable effects")
 
 	EFFECT(WAND_BREATH,    TRUE,  "shoots a large ball of one of the base elements for 120-200 damage")
 	EFFECT(STAFF_MAGI,     FALSE, "restores both intelligence and manapoints to maximum")
