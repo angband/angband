@@ -482,31 +482,30 @@ static bool make_artifact(object_type *o_ptr)
 static void a_m_aux_1(object_type *o_ptr, int level, int power)
 {
 	int tohit1 = randint(5) + m_bonus(5, level);
+	int tohit2 = m_bonus(10, level);
+
 	int todam1 = randint(5) + m_bonus(5, level);
+	int todam2 = m_bonus(10, level);
 
-	int tohit2 = tohit1 + m_bonus(10, level);
-	int todam2 = todam2 + m_bonus(10, level);
+	switch (power)
+	{
+		case -2:
+			o_ptr->to_h -= tohit2;
+			o_ptr->to_d -= todam2;
 
+		case -1:
+			o_ptr->to_h -= tohit1;
+			o_ptr->to_d -= todam1;
+			break;
 
-	if (power == -2)
-	{
-		o_ptr->to_h -= tohit2;
-		o_ptr->to_d -= todam2;
-	}
-	else if (power == -1)
-	{
-		o_ptr->to_h -= tohit1;
-		o_ptr->to_d -= todam1;
-	}
-	else if (power == 1)
-	{
-		o_ptr->to_h += tohit1;
-		o_ptr->to_d += todam1;
-	}
-	else if (power == 2)
-	{
-		o_ptr->to_h += tohit2;
-		o_ptr->to_d += todam2;
+		case 2:
+			o_ptr->to_h += tohit2;
+			o_ptr->to_d += todam2;
+
+		case 1:
+			o_ptr->to_h += tohit1;
+			o_ptr->to_d += todam1;
+			break;
 	}
 
 
