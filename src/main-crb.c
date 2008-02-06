@@ -326,11 +326,6 @@ static long mac_os_version;
 static bool game_in_progress = FALSE;
 
 
-/*
- * Indicate if the user chooses "new" to start a game
- */
-static bool new_game = FALSE;
-
 
 /* Out-of-band color identifiers */
 /* True black (TERM_BLACK may be altered) */
@@ -366,6 +361,11 @@ static term_data data[MAX_TERM_DATA];
  */
 static bool initialized = FALSE;
 
+/*
+ * Support the improved game command handling
+ */
+#include "game-cmd.h"
+static game_command cmd = { CMD_NULL, 0 };
 
 
 static MenuRef MyGetMenuHandle_aux(int menuID, bool first)
@@ -2677,7 +2677,7 @@ static void validate_menus(void)
 		DisableMenuItem(MyGetMenuHandle(kFileMenu), kSave);
 	}
 	for(int i = kNew; i <= kImport; i++) {
-		if(!game_in_progress) 
+		if(cmd.command == CMD_NULL) 
 			EnableMenuItem(MyGetMenuHandle(kFileMenu), i);
 		else
 			DisableMenuItem(MyGetMenuHandle(kFileMenu), i);
@@ -2701,13 +2701,9 @@ static OSStatus ValidateMenuCommand(EventHandlerCallRef inCallRef,
 static OSStatus AngbandGame(EventHandlerCallRef inCallRef,
 							EventRef inEvent, void *inUserData )
 {
-	/* Initialize  For quartz, this must be within the message loop.*/
-	init_angband();
 	// Only enabled options are Fonts, Open/New/Import and Quit. 
 	DisableAllMenuItems(MyGetMenuHandle(kTileWidMenu));
 	DisableAllMenuItems(MyGetMenuHandle(kTileHgtMenu));
-	/* Prompt the user - You may have to change this for some variants */
-	prt("[Choose 'New', 'Open' or 'Import' from the 'File' menu]", 23, 11);
 
 	SetFontInfoForSelection(kFontSelectionATSUIType, 0, 0, 0);
 
@@ -2724,19 +2720,7 @@ static OSStatus AngbandGame(EventHandlerCallRef inCallRef,
 	Term_fresh();
 	Term_flush();
 
-	EventTargetRef target = GetEventDispatcherTarget();
-	while(!game_in_progress) {
-		// if(event is interesting) break;
-		OSStatus err;
-		EventRef event;
-		err = ReceiveNextEvent(0, 0, kEventDurationForever, true, &event);
-		if(err == noErr) {
-			SendEventToEventTarget (event, target);
-			ReleaseEvent(event);
-		}
-	}
-
-	play_game(new_game);
+	play_game();
 	quit(0);
 	// Not reached
 	return noErr;
@@ -2757,14 +2741,45 @@ static OSStatus openGame(int op)
 	/* Wait for a keypress */
 	pause_line(Term->hgt - 1);
 
+	/* Set the game status */
+	if (op == kNew)
+		cmd.command = CMD_NEWGAME;
+	else
+		cmd.command = CMD_LOADFILE;
+		
 	/* Game is in progress */
 	game_in_progress = TRUE;
 
-	/* Use an existing savefile */
-	new_game = (op == kNew);
-
 	return noErr;
 }
+
+/*
+ *	Run the event loop and return a gameplay status to init_angband
+ */
+static game_command get_init_cmd() 
+{ 
+	EventTargetRef target = GetEventDispatcherTarget();
+	OSStatus err;
+	EventRef event;
+	
+	/* Prompt the user */ 
+	prt("[Choose 'New', 'Open' or 'Import' from the 'File' menu]", 23, 11);
+	Term_fresh();
+	
+	while (cmd.command == CMD_NULL) {
+		err = ReceiveNextEvent(0, 0, kEventDurationForever, true, &event);
+		if(err == noErr) {
+			SendEventToEventTarget (event, target);
+			ReleaseEvent(event);
+		}
+	}
+	
+	/* Bit of a hack, we'll do this when we leave the INIT context in future. */ 
+	game_in_progress = TRUE; 
+	
+	return cmd; 
+} 
+
 
 /* Open Document is only remaining apple event that needs to be handled
    explicitly */
@@ -2775,7 +2790,6 @@ static OSStatus AppleCommand(EventHandlerCallRef inCallRef,
 	(void) AEProcessAppleEvent(&aevent);
 	if(open_when_ready) {
 		game_in_progress = TRUE;
-		new_game = false;
 	}
 	return noErr;
 }
@@ -3824,6 +3838,12 @@ int main(void)
 
 	/* Reset event queue */
 	FlushEventQueue(GetMainEventQueue());
+
+	/* Set command hook */ 
+	get_game_command = get_init_cmd; 
+
+	/* Set up the display handlers and things. */
+	init_display();
 
 	/* We are now initialized */
 	initialized = TRUE;
