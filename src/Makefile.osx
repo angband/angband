@@ -30,9 +30,18 @@ SETFILE = $(TOOLDIR)/SetFile
 
 CFLAGS = \
 	-Wall -std=gnu99 $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
-	-DPRIVATE_USER_PATH=\"~/Library/Preferences\" -DUSE_PRIVATE_PATHS
+	-DPRIVATE_USER_PATH=\"~/Library/Preferences\" -DUSE_PRIVATE_PATHS \
+	-arch ppc -arch i386 -mmacosx-version-min=10.0
 LIBS = -framework CoreFoundation -framework QuickTime -framework Carbon
 
+#
+# Provide a CFLAGS override so that older versions of OS X can continue to
+# compile their own builds.  The default CFLAGS provide a backwards-compatible
+# binary, but will error when building on <10.3.9.
+#
+ppc: CFLAGS = \
+	-Wall -std=gnu99 $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
+	-DPRIVATE_USER_PATH=\"~/Library/Preferences\" -DUSE_PRIVATE_PATHS
 
 # Object definitions are in common file.
 
@@ -71,6 +80,9 @@ include Makefile.inc
 
 
 $(EXE): $(OBJS) 
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS) 
+
+ppc: $(OBJS) 
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS) 
 
 borg: $(OBJS) $(BOBJS)
