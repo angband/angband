@@ -395,7 +395,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 				return TRUE;
 			}
 
-			if (fullid &&
+			if ((feel != INSCRIP_AVERAGE) && fullid &&
 				 (o_ptr->to_a <= 0 && o_ptr->to_h <= 0 && o_ptr->to_d <= 0))
 				return TRUE;
 
