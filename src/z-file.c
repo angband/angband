@@ -448,12 +448,12 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 	/* OS X uses its own kind of filetypes */
 	if (mode != MODE_READ)
 	{
-		char mac_type = 'TEXT';
+		u32b mac_type = 'TEXT';
 
 		if (ftype == FTYPE_RAW) mac_type = 'DATA';
 		else if (ftype == FTYPE_SAVE) mac_type = 'SAVE';
 
-		fsetfileinfo(buf, 'A271', ftype);
+		fsetfileinfo(buf, 'A271', mac_type);
 	}
 #endif
 
