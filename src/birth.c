@@ -433,8 +433,8 @@ static void get_money(void)
 		else gold -= (stat_use[i] - 8) * 10;
 	}
 
-	/* Minimum 100 gold */
-	if (gold < 100) gold = 100;
+	/* Minimum 200 gold */
+	if (gold < 100) gold = 200;
 
 	/* Save the gold */
 	p_ptr->au = p_ptr->au_birth = gold;
@@ -1083,7 +1083,10 @@ static bool player_birth_aux_1(bool start_at_end)
 /*
  * Initial stat costs (initial stats always range from 10 to 18 inclusive).
  */
-static const int birth_stat_costs[(18-10)+1] = { 0, 1, 2, 4, 7, 11, 16, 22, 30 };
+static const int birth_stat_costs[(18-10)+1] = { 0, 1, 2, 3, 4, 5, 6, 8, 12 };
+
+/* It is feasible to get base 17 in 3 stats with the autoroller */
+#define MAX_BIRTH_COST (3 * birth_stat_costs[7])
 
 
 /*
@@ -1173,7 +1176,7 @@ static int player_birth_aux_2(bool start_at_end)
 		}
 
 		/* Restrict cost */
-		if (cost > 48)
+		if (cost > MAX_BIRTH_COST)
 		{
 			/* Warning */
 			bell("Excessive stats!");
@@ -1186,7 +1189,7 @@ static int player_birth_aux_2(bool start_at_end)
 		}
 
 		/* Gold is inversely proportional to cost */
-		p_ptr->au = p_ptr->au_birth = (50 * (48 - cost)) + 100;
+		p_ptr->au = p_ptr->au_birth = (35 * (MAX_BIRTH_COST - cost)) + 200;
 
 		/* Calculate the bonuses and hitpoints */
 		p_ptr->update |= (PU_BONUS | PU_HP);
@@ -1216,7 +1219,7 @@ static int player_birth_aux_2(bool start_at_end)
 
 
 		/* Prompt XXX XXX XXX */
-		strnfmt(buf, sizeof(buf), "Total Cost %2d/48.  Use 2/8 to move, 4/6 to modify, 'Enter' to accept.", cost);
+		strnfmt(buf, sizeof(buf), "Total Cost %2d/%d.  Use up/down to move, left/right to modify, 'Enter' to accept.", cost, MAX_BIRTH_COST);
 		prt(buf, 0, 0);
 
 		/* Place cursor just after cost of current stat */
