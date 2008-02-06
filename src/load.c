@@ -1017,91 +1017,30 @@ static errr rd_player_spells(void)
 	int i;
 	u16b tmp16u;
 
-	if (older_than(2, 9, 8))
+	int cnt;
+
+	/* Read the number of spells */
+	rd_u16b(&tmp16u);
+	if (tmp16u > PY_MAX_SPELLS)
 	{
-		/* The magic spells were changed drastically in Angband 2.9.7 */
-		if (older_than(2, 9, 7) &&
-		    (c_info[p_ptr->pclass].spell_book == TV_MAGIC_BOOK))
-		{
-			/* Discard old spell info */
-			strip_bytes(24);
-
-			/* Discard old spell order */
-			strip_bytes(64);
-
-			/* None of the spells have been learned yet */
-			for (i = 0; i < 64; i++)
-				p_ptr->spell_order[i] = 99;
-		}
-		else
-		{
-			u32b spell_learned1, spell_learned2;
-			u32b spell_worked1, spell_worked2;
-			u32b spell_forgotten1, spell_forgotten2;
-
-			/* Read spell info */
-			rd_u32b(&spell_learned1);
-			rd_u32b(&spell_learned2);
-			rd_u32b(&spell_worked1);
-			rd_u32b(&spell_worked2);
-			rd_u32b(&spell_forgotten1);
-			rd_u32b(&spell_forgotten2);
-
-			for (i = 0; i < 64; i++)
-			{
-				if (i < 32)
-				{
-					if (spell_learned1 & (1L << i))
-						p_ptr->spell_flags[i] |= PY_SPELL_LEARNED;
-					if (spell_worked1 & (1L << i))
-						p_ptr->spell_flags[i] |= PY_SPELL_WORKED;
-					if (spell_forgotten1 & (1L << i))
-						p_ptr->spell_flags[i] |= PY_SPELL_FORGOTTEN;
-				}
-				else
-				{
-					if (spell_learned2 & (1L << (i - 32)))
-						p_ptr->spell_flags[i] |= PY_SPELL_LEARNED;
-					if (spell_worked2 & (1L << (i - 32)))
-						p_ptr->spell_flags[i] |= PY_SPELL_WORKED;
-					if (spell_forgotten2 & (1L << (i - 32)))
-						p_ptr->spell_flags[i] |= PY_SPELL_FORGOTTEN;
-				}
-			}
-
-			for (i = 0; i < 64; i++)
-			{
-				rd_byte(&p_ptr->spell_order[i]);
-			}
-		}
+		note(format("Too many player spells (%d).", tmp16u));
+		return (-1);
 	}
-	else
+
+	/* Read the spell flags */
+	for (i = 0; i < tmp16u; i++)
 	{
-		int cnt;
+		rd_byte(&p_ptr->spell_flags[i]);
+		if (i == 7)
+			p_ptr->spell_flags[i] = 0;
+	}
 
-		/* Read the number of spells */
-		rd_u16b(&tmp16u);
-		if (tmp16u > PY_MAX_SPELLS)
-		{
-			note(format("Too many player spells (%d).", tmp16u));
-			return (-1);
-		}
-
-		/* Read the spell flags */
-		for (i = 0; i < tmp16u; i++)
-		{
-			rd_byte(&p_ptr->spell_flags[i]);
-			if (i == 7)
-				p_ptr->spell_flags[i] = 0;
-		}
-
-		/* Read the spell order */
-		for (i = 0, cnt = 0; i < tmp16u; i++, cnt++)
-		{
-			rd_byte(&p_ptr->spell_order[cnt]);
-			if (p_ptr->spell_order[cnt] == 7)
-				cnt--;
-		}
+	/* Read the spell order */
+	for (i = 0, cnt = 0; i < tmp16u; i++, cnt++)
+	{
+		rd_byte(&p_ptr->spell_order[cnt]);
+		if (p_ptr->spell_order[cnt] == 7)
+			cnt--;
 	}
 
 	/* Success */
@@ -1190,33 +1129,8 @@ static errr rd_extra(void)
 
 
 	rd_string(op_ptr->full_name, sizeof(op_ptr->full_name));
-
 	rd_string(p_ptr->died_from, 80);
-
-	if (older_than(3, 0, 1))
-	{
-		char *hist = p_ptr->history;
-
-		for (i = 0; i < 4; i++)
-		{
-			/* Read a part of the history */
-			rd_string(hist, 60);
-
-			/* Advance */
-			hist += strlen(hist);
-
-			/* Separate by spaces */
-			hist[0] = ' ';
-			hist++;
-		}
-
-		/* Make sure it is terminated */
-		hist[0] = '\0';
-	}
-	else
-	{
-		rd_string(p_ptr->history, 250);
-	}
+	rd_string(p_ptr->history, 250);
 
 	/* Player race */
 	rd_byte(&p_ptr->prace);
@@ -1692,10 +1606,7 @@ static void rd_messages(void)
 		rd_string(buf, sizeof(buf));
 
 		/* Read the message type */
-		if (!older_than(2, 9, 1))
-			rd_u16b(&tmp16u);
-		else
-			tmp16u = MSG_GENERIC;
+		rd_u16b(&tmp16u);
 
 		/* Save the message */
 		message_add(buf, tmp16u);
@@ -2012,9 +1923,11 @@ static errr rd_dungeon(void)
 	/* The dungeon is ready */
 	character_dungeon = TRUE;
 
-	/* Regenerate town in post 2.9.3 versions */
-	if (older_than(2, 9, 4) && (p_ptr->depth == 0))
+#if 0
+	/* Regenerate town in old versions */
+	if (p_ptr->depth == 0)
 		character_dungeon = FALSE;
+#endif
 
 	/* Success */
 	return (0);

@@ -51,9 +51,9 @@
 /*
  * Oldest version number that can still be imported
  */
-#define OLD_VERSION_MAJOR	2
-#define OLD_VERSION_MINOR	9
-#define OLD_VERSION_PATCH	0
+#define OLD_VERSION_MAJOR	3
+#define OLD_VERSION_MINOR	0
+#define OLD_VERSION_PATCH	1
 
 
 /*
