@@ -52,6 +52,27 @@ static void recreate_surface(term_data *td)
 	set_term_matrix(td);	
 }
 
+static void set_term_menu(int number, bool value)
+{
+	term_data *td = &data[number];
+	
+	if (td->menu_item != NULL) 
+		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(td->menu_item), value);
+
+}
+
+static bool get_term_menu(int number)
+{
+	bool value = FALSE;
+	term_data *td = &data[number];
+	
+	if (td->menu_item != NULL) 
+		value = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(td->menu_item));
+	
+	return value;
+
+}
+
 static int xtra_window_from_name(cptr s)
 {
 	xtra_win_data *xd;
@@ -137,7 +158,7 @@ gboolean on_big_tiles(GtkWidget *widget, GdkEventButton *event, gpointer user_da
 {
 	term_data *td = &data[0];
 	
-	if (!gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)))
+	if ((widget != NULL) && (!gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget))))
 		use_bigtile = FALSE;
 	else
 		use_bigtile = TRUE;
@@ -1319,13 +1340,13 @@ gboolean xtra_expose_event_handler(GtkWidget *widget, GdkEventExpose *event, gpo
 	xtra_win_data *xd;
 
 	t = xtra_window_from_drawing_area(gtk_widget_get_name(widget));
+	
 	if (t != -1)
 	{
 		xd = &xdata[t];
 	
 		if ((xd->win) && (xd->drawing_area != NULL))
 		{
-		
 			cr = gdk_cairo_create(xd->drawing_area->window);
 		
 			gdk_region_get_rectangles (event->region, &rects, &n_rects);
@@ -1403,7 +1424,8 @@ gboolean xtra_hide_event_handler(GtkWidget *widget, GdkEventButton *event, gpoin
 	{
 		xd = &xdata[t];
 		xd->visible = FALSE;
-		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(xd->menu), FALSE);
+		if (xd->menu != NULL)
+			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(xd->menu), FALSE);
 	
 		if ((xd->drawing_area != NULL) && (cairo_surface_get_reference_count(xd->surface) > 0))
 		{
@@ -1416,8 +1438,6 @@ gboolean xtra_hide_event_handler(GtkWidget *widget, GdkEventButton *event, gpoin
 gboolean hide_event_handler(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
 	term_data *td;
-	GtkWidget *menu_item;
-	char item_name[20];
 	int t;
 	
 	t = term_window_from_widget(widget);
@@ -1425,11 +1445,8 @@ gboolean hide_event_handler(GtkWidget *widget, GdkEventButton *event, gpointer u
 	{
 		td = &data[t];
 		if ((td != NULL) && (td->win == widget))
-		{
-			strnfmt(item_name, sizeof(item_name),  "term_menu_item_%i", td->number);
-			menu_item = glade_xml_get_widget(gtk_xml, item_name);
-			if (menu_item != NULL) gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item), FALSE);
-		}
+			set_term_menu(td->number, FALSE);
+		
 		if ((td->drawing_area != NULL) && (td->surface != NULL))
 		{
 			int count = cairo_surface_get_reference_count(td->surface);
@@ -1453,7 +1470,8 @@ gboolean toggle_term_window(GtkWidget *widget, GdkEvent *event, gpointer user_da
 
 	window_is_visible = (GTK_WIDGET_VISIBLE(GTK_WIDGET(td->win)));
 
-	td->visible = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget));
+	if (widget != NULL)
+		td->visible = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget));
 	
 	if (td->visible)
 	{
@@ -1480,7 +1498,8 @@ gboolean toggle_xtra_window(GtkWidget *widget, GdkEvent *event, gpointer user_da
 		{
 			xtra_win_data *xd = &xdata[i];
 			
-			xd->visible = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget));
+			if (widget != NULL)
+				xd->visible = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget));
 			
 			if (xd->visible)
 				gtk_widget_show(xd->win);
@@ -1582,7 +1601,7 @@ static void init_graf(int g)
 	}
 } 
 
-static void setup_graphics_menu(void)
+static void setup_graphics_menu(GladeXML *xml)
 {
 	GtkWidget *menu;
 		
@@ -1594,7 +1613,8 @@ static void setup_graphics_menu(void)
 		bool checked = (i == arg_graphics);
 
 		strnfmt(s, sizeof(s), "graphics_%d", i);
-		menu = glade_xml_get_widget(gtk_xml, s);
+		menu = glade_xml_get_widget(xml, s);
+		
 		if (checked && !gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu)))
 			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu), TRUE); 
 	}
@@ -1639,16 +1659,20 @@ static void init_xtra_windows(void)
 	int i = 0;
 	term_data *main_term = &data[0];
 	GtkWidget *font_button;
+	GladeXML *xml;
+	char buf[1024];
+	
+	path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA, "angband.glade");
+	xml = glade_xml_new(buf, NULL, NULL);
 	
 	for (i = 0; i < MAX_XTRA_WIN_DATA; i++)
 	{
 		xtra_win_data *xd = &xdata[i];
-		
-		font_button = glade_xml_get_widget(gtk_xml, xd->font_button_name);
-		xd->win = glade_xml_get_widget(gtk_xml, xd->win_name);
-		xd->menu = glade_xml_get_widget(gtk_xml, xd->item_name);
-		xd->text_view = glade_xml_get_widget(gtk_xml, xd->text_view_name);
-		xd->drawing_area = glade_xml_get_widget(gtk_xml, xd->drawing_area_name);
+			
+		font_button = glade_xml_get_widget(xml, xd->font_button_name);
+		xd->win = glade_xml_get_widget(xml, xd->win_name);
+		xd->text_view = glade_xml_get_widget(xml, xd->text_view_name);
+		xd->drawing_area = glade_xml_get_widget(xml, xd->drawing_area_name);
 		
 		gtk_font_button_set_font_name(GTK_FONT_BUTTON(font_button), xd->font.name);
 		gtk_widget_realize(xd->win);
@@ -1673,11 +1697,14 @@ static void init_xtra_windows(void)
 		}
 		
 	}
+	glade_xml_signal_autoconnect(xml);
+	g_object_unref(G_OBJECT(xml));
 }
 
 static void init_gtk_windows(void)
 {
 	GtkWidget *options, *temp_widget;
+	GladeXML *gtk_xml;
 
 	char buf[1024], logo[1024], temp[20];
 	int i = 0;
@@ -1710,6 +1737,10 @@ static void init_gtk_windows(void)
 		
 			td->win = glade_xml_get_widget(xml, "term_window");
 			td->drawing_area = glade_xml_get_widget(xml, "term_drawing");
+			
+			strnfmt(temp, sizeof(temp),  "term_menu_item_%i", i);
+			td->menu_item = glade_xml_get_widget(gtk_xml, temp);
+			
 			glade_xml_signal_autoconnect(xml);
 			
 			g_object_unref (xml);
@@ -1722,7 +1753,6 @@ static void init_gtk_windows(void)
 			
 			g_signal_connect(options, "delete_event", GTK_SIGNAL_FUNC(hide_options), NULL);
 		}
-		
 		/* Set title and name */
 		strnfmt(temp, sizeof(temp), "term_window_%d", i);
 		gtk_widget_set_name(td->win, temp);
@@ -1736,11 +1766,18 @@ static void init_gtk_windows(void)
 		#endif
 	}
 
+	for(i = 0; i < MAX_XTRA_WIN_DATA; i++)
+	{
+		xtra_win_data *xd = &xdata[i];
+		
+		xd->menu = glade_xml_get_widget(gtk_xml, xd->item_name);
+	}
+		
 	/* connect signal handlers that aren't passed data */
 	glade_xml_signal_autoconnect(gtk_xml);
 	
-	setup_graphics_menu();
-	
+	setup_graphics_menu(gtk_xml);
+	big_tile_item = glade_xml_get_widget(gtk_xml, "big_tile_item");
 	/* Initialize the windows */
 	for (i = 0; i < num_term; i++)
 	{
@@ -1761,14 +1798,13 @@ static void init_gtk_windows(void)
 		td->initialized = TRUE;
 		set_window_size(td);
 	}
+	
+	g_object_unref(G_OBJECT(gtk_xml));
 }
 
 static void show_windows(void)
 {
 	int i;
-
-	GtkWidget *menu_item;
-	char item_name[20];
 	
 	/* Initialize the windows */
 	for (i = 0; i < num_term; i++)
@@ -1787,12 +1823,10 @@ static void show_windows(void)
 		
 		if (i !=0)
 		{
-			strnfmt(item_name, sizeof(item_name),  "term_menu_item_%i", i);
-			menu_item = glade_xml_get_widget(gtk_xml, item_name);
-		
-			active = gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menu_item));
+			active = get_term_menu(td->number);
+			
 			if ( active != td->visible)
-				gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item), td->visible);
+				set_term_menu(td->number, td->visible);
 		}
 		
 		Term_clear_gtk(); 
@@ -1803,36 +1837,33 @@ static void show_windows(void)
 		xtra_win_data *xd = &xdata[i];
 		
 		set_xtra_window_size(xd);
-		if (xd->visible) 
+		if ((xd->visible) && (xd->menu != NULL))
 			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(xd->menu),TRUE);
 	}
 	
-	menu_item = glade_xml_get_widget(gtk_xml, "big_tile_item");
-	if (use_bigtile)	
-		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(menu_item), TRUE);
+	if ((use_bigtile) && (big_tile_item != NULL))
+		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(big_tile_item), TRUE);
 }
 
 
 static void xtra_data_destroy(xtra_win_data *xd)
 {
-	if (GTK_IS_WIDGET(xd->win))
-		gtk_widget_destroy(xd->win);
 	if (GTK_IS_WIDGET(xd->text_view))
 		gtk_widget_destroy(xd->text_view);
-	if (GTK_IS_WIDGET(xd->menu))
-		gtk_widget_destroy(xd->menu);
 	if (GTK_IS_WIDGET(xd->drawing_area))
 		gtk_widget_destroy(xd->drawing_area);
+	if (GTK_IS_WIDGET(xd->win))
+		gtk_widget_destroy(xd->win);
 	if (cairo_surface_get_reference_count(xd->surface) > 0)
 		cairo_surface_destroy(xd->surface);
 }
 
 static void term_data_destroy(term_data *td)
 {	
-	if (GTK_IS_WIDGET(td->win))
-		gtk_widget_destroy(td->win);
 	if (GTK_IS_WIDGET(td->drawing_area))
 		gtk_widget_destroy(td->drawing_area);
+	if (GTK_IS_WIDGET(td->win))
+		gtk_widget_destroy(td->win);
 	if (cairo_surface_get_reference_count(td->surface) > 0)
 		cairo_surface_destroy(td->surface);
 }
@@ -1845,7 +1876,6 @@ static void release_memory()
 		cairo_pattern_destroy(tile_pattern);
 	if (cairo_surface_get_reference_count(graphical_tiles) > 0)
 		cairo_surface_destroy(graphical_tiles);
-	
 	for (i = 0; i < MAX_XTRA_WIN_DATA; i++)
 	{
 		xtra_win_data *xd = &xdata[i];
@@ -1853,14 +1883,12 @@ static void release_memory()
 		xtra_data_destroy(xd);
 	}
 	
-	for (i = 0; i < num_term; i++)
+	for (i = num_term; i > 0; i--)
 	{
 		term_data *td = &data[i];
 
 		term_data_destroy(td);
 	}
-	
-	g_object_unref(gtk_xml);
 }
 
 static errr term_data_init(term_data *td, int i)
@@ -2396,7 +2424,6 @@ static void cr_print_equippy(xtra_win_data *xd, int y)
 static void xtra_drawn_progress_bar(xtra_win_data *xd, int x, int y, float curr, float max, byte color, int size)
 {
 	cairo_rectangle_t r;
-	/*GdkRectangle s;*/
 	
 	init_cairo_rect(&r, (xd->font.w * x)+ 1, (xd->font.h) * y + 1,  (xd->font.w * size) - 1, xd->font.h - 2);
 	

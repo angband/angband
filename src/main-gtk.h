@@ -55,7 +55,7 @@ typedef struct xtra_win_data xtra_win_data;
  * back to the term_data structure.
  */
 
-struct term_data
+struct term_data 
 {
 	term t;
 	cptr name;
@@ -75,6 +75,7 @@ struct term_data
 	
 	GtkWidget *win;
 	GtkWidget *drawing_area;
+	GtkWidget *menu_item;
 };
 
 struct xtra_win_data
@@ -133,6 +134,9 @@ static term_data data[MAX_TERM_DATA];
  */
 static xtra_win_data xdata[MAX_XTRA_WIN_DATA];
 
+/* An array of graphic menu items */
+/*static GtkWidget *graphics_item[4];*/
+static GtkWidget *big_tile_item;
 /* 
  * There are a few functions installed to be triggered by several 
  * of the basic player events.  For convenience, these have been grouped 
@@ -178,8 +182,6 @@ const char help_gtk[] = "GTK for X11, subopts -n<windows>, -i to ignore prefs, a
 /*  Path to the Gtk settings file */
 static char settings[1024];
 static game_command cmd = { CMD_NULL, 0 }; 
-
-GladeXML *gtk_xml;
 
 /* Abstracted out for future changes */
 static int max_win_width(term_data *td);
