@@ -375,7 +375,7 @@ void get_mon_num_prep(void)
 	}
 
 	/* Success */
-	return (0);
+	return;
 }
 
 
