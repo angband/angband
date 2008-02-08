@@ -2781,20 +2781,6 @@ static game_command get_init_cmd()
 } 
 
 
-/* Open Document is only remaining apple event that needs to be handled
-   explicitly */
-static OSStatus AppleCommand(EventHandlerCallRef inCallRef,
-							EventRef inEvent, void *inUserData )
-{
-	EventRecord aevent;
-	(void) AEProcessAppleEvent(&aevent);
-	if(open_when_ready) {
-		game_in_progress = TRUE;
-	}
-	return noErr;
-}
-
-
 static OSStatus QuitCommand(EventHandlerCallRef inCallRef,
 							EventRef inEvent, void *inUserData )
 {
@@ -3460,91 +3446,43 @@ static OSErr AEH_Open(const AppleEvent *theAppleEvent, AppleEvent* reply,
 {
 	FSSpec myFSS;
 	AEDescList docList;
+	long fileindex;
+	long filecount;
 	OSErr err;
-	Size actualSize;
-	AEKeyword keywd;
-	DescType returnedType;
-	char msg[128];
 	FInfo myFileInfo;
 
 	/* Put the direct parameter (a descriptor list) into a docList */
-	err = AEGetParamDesc(
-		theAppleEvent, keyDirectObject, typeAEList, &docList);
+	err = AEGetParamDesc(theAppleEvent, keyDirectObject, typeAEList, &docList);
+	if (err) return err;
+	
+	err = AECountItems(&docList, &filecount);
 	if (err) return err;
 
-	/*
-	 * We ignore the validity check, because we trust the FInder, and we only
-	 * allow one savefile to be opened, so we ignore the depth of the list.
-	 */
-	err = AEGetNthPtr(
-		&docList, 1L, typeFSS, &keywd, &returnedType,
-		(Ptr) &myFSS, sizeof(myFSS), &actualSize);
-	if (err) return err;
-
-	/* Only needed to check savefile type below */
-	err = FSpGetFInfo(&myFSS, &myFileInfo);
-	if (err)
+	/* Only open one file, but check for the first valid file in the list */
+	for (fileindex = 1; fileindex <= filecount; fileindex++)
 	{
-		strnfmt(msg, sizeof(msg), "Argh!  FSpGetFInfo failed with code %d", err);
-		mac_warning(msg);
-		return err;
+		err = AEGetNthPtr(&docList, fileindex, typeFSS, NULL, NULL, &myFSS, sizeof(myFSS), NULL);
+		if (err) continue;
+		
+		err = FSpGetFInfo(&myFSS, &myFileInfo);
+		if (err) continue;
+		
+		if (myFileInfo.fdType == 'SAVE')
+		{
+			
+			/* Extract the filename and delay the open */
+			(void)spec_to_path(&myFSS, savefile, sizeof(savefile));
+			cmd.command = CMD_LOADFILE;
+			
+			break;
+		}
 	}
-
-	/* Ignore non 'SAVE' files */
-	if (myFileInfo.fdType != 'SAVE') return noErr;
-
-	/* Extract a file name */
-	(void)spec_to_path(&myFSS, savefile, sizeof(savefile));
-
-	/* Delay actual open */
-	open_when_ready = TRUE;
 
 	/* Dispose */
 	err = AEDisposeDesc(&docList);
 
 	/* Success */
 	return noErr;
-}
-
-/*
- * Apple Event Handler -- Re-open Application
- *
- * If no windows are currently open, show the Angband window.
- * This required AppleEvent was introduced by System 8 -- pelpel
- */
-static OSErr AEH_Reopen(const AppleEvent *theAppleEvent,
-			     AppleEvent* reply, long handlerRefCon)
-{
-#pragma unused(theAppleEvent, reply, handlerRefCon)
-
-	term_data *td = NULL;
-
-	/* No open windows */
-	if (NULL == FrontWindow())
-	{
-		/* Obtain the Angband window */
-		td = &data[0];
-
-		/* Mapped */
-		td->mapped = TRUE;
-
-		/* Link */
-		term_data_link(0);
-
-		/* Mapped (?) */
-		td->t->mapped_flag = TRUE;
-
-		/* Show the window */
-		ShowWindow(td->w);
-
-		/* Bring to the front */
-		SelectWindow(td->w);
-
-		/* Make it active */
-		activate(td->w);
-	}
-	/* Event handled */
-	return (noErr);
 }
 
 
@@ -3802,16 +3740,13 @@ int main(void)
 	/* Prepare the windows */
 	init_windows();
 
-#if 0
-	/* Handle 'apple' events */
-    /* Install the open event hook (ignore error codes) */
+    /* Install the 'Apple Event' handler hook (ignore error codes) */
     (void)AEInstallEventHandler(
         kCoreEventClass,
         kAEOpenDocuments,
         NewAEEventHandlerUPP(AEH_Open),
         0L,
         FALSE);
-#endif
 
 	/* Install menu and application handlers */
 	install_handlers(0);
@@ -3856,7 +3791,7 @@ int main(void)
 	EventRef newGameEvent = nil;
 	CreateEvent ( nil, 'Play', 'Band', GetCurrentEventTime(),    
 									kEventAttributeNone, &newGameEvent ); 
-	PostEventToQueue(GetMainEventQueue(), newGameEvent, kEventPriorityHigh);
+	PostEventToQueue(GetMainEventQueue(), newGameEvent, kEventPriorityLow);
 
 	RunApplicationEventLoop();
 
