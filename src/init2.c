@@ -1078,6 +1078,11 @@ static errr init_other(void)
 	l_list = C_ZNEW(z_info->r_max, monster_lore);
 
 
+	/*** Prepare mouse buttons ***/
+
+	button_init(button_add_text, button_kill_text);
+
+
 	/*** Prepare quest array ***/
 
 	/* Quests */

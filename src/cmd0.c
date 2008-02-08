@@ -389,7 +389,7 @@ static void do_cmd_monlist(void)
 	display_monlist();
 
 	/* Wait */
-	inkey();
+	anykey();
 
 	/* Return */
 	screen_load();

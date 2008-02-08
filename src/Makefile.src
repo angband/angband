@@ -50,6 +50,7 @@ MAINFILES = main.o maid-x11.o main-crb.o main-gcu.o main-gtk.o cairo-utils.o \
 ANGFILES = \
 	attack.o \
 	birth.o \
+	button.o \
 	cave.o \
 	compress.o \
 	cmd0.o \

@@ -749,7 +749,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	char which;
+	ui_event_data which;
 
 	int j, k;
 
@@ -980,16 +980,32 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 			}
 
 			/* Indicate ability to "view" */
-			if (!p_ptr->command_see) my_strcat(out_val, " * to see,", sizeof(out_val));
+			if (!p_ptr->command_see)
+			{
+				my_strcat(out_val, " * to see,", sizeof(out_val));
+				button_add("[*]", '*');
+			}
 
 			/* Indicate legality of "toggle" */
-			if (use_equip) my_strcat(out_val, " / for Equip,", sizeof(out_val));
+			if (use_equip)
+			{
+				my_strcat(out_val, " / for Equip,", sizeof(out_val));
+				button_add("[/]", '/');
+			}
 
 			/* Indicate legality of the "floor" */
-			if (allow_floor) my_strcat(out_val, " - for floor,", sizeof(out_val));
+			if (allow_floor)
+			{
+				my_strcat(out_val, " - for floor,", sizeof(out_val));
+				button_add("[-]", '-');
+			}
 
 			/* Indicate that squelched items can be selected */
-			if (can_squelch) my_strcat(out_val, " ! for squelched,", sizeof(out_val));
+			if (can_squelch)
+			{
+				my_strcat(out_val, " ! for squelched,", sizeof(out_val));
+				button_add("[!]", '!');
+			}
 		}
 
 		/* Viewing equipment */
@@ -1013,13 +1029,25 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 			}
 
 			/* Indicate ability to "view" */
-			if (!p_ptr->command_see) my_strcat(out_val, " * to see,", sizeof(out_val));
+			if (!p_ptr->command_see)
+			{
+				my_strcat(out_val, " * to see,", sizeof(out_val));
+				button_add("[*]", '*');
+			}
 
 			/* Indicate legality of "toggle" */
-			if (use_inven) my_strcat(out_val, " / for Inven,", sizeof(out_val));
+			if (use_inven)
+			{
+				my_strcat(out_val, " / for Inven,", sizeof(out_val));
+				button_add("[/]", '/');
+			}
 
 			/* Indicate legality of the "floor" */
-			if (allow_floor) my_strcat(out_val, " - for floor,", sizeof(out_val));
+			if (allow_floor)
+			{
+				my_strcat(out_val, " - for floor,", sizeof(out_val));
+				button_add("[!]", '!');
+			}
 		}
 
 		/* Viewing floor */
@@ -1042,17 +1070,35 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 			}
 
 			/* Indicate ability to "view" */
-			if (!p_ptr->command_see) my_strcat(out_val, " * to see,", sizeof(out_val));
+			if (!p_ptr->command_see)
+			{
+				my_strcat(out_val, " * to see,", sizeof(out_val));
+				button_add("[*]", '*');
+			}
 
 			/* Append */
-			if (use_inven) my_strcat(out_val, " / for Inven,", sizeof(out_val));
+			if (use_inven)
+			{
+				my_strcat(out_val, " / for Inven,", sizeof(out_val));
+				button_add("[/]", '/');
+			}
 
 			/* Append */
-			else if (use_equip) my_strcat(out_val, " / for Equip,", sizeof(out_val));
+			else if (use_equip)
+			{
+				my_strcat(out_val, " / for Equip,", sizeof(out_val));
+				button_add("[/]", '/');
+			}
 
 			/* Indicate that squelched items can be selected */
-			if (can_squelch) my_strcat(out_val, " ! for squelched,", sizeof(out_val));
+			if (can_squelch)
+			{
+				my_strcat(out_val, " ! for squelched,", sizeof(out_val));
+				button_add("[!]", '!');
+			}
 		}
+
+		redraw_stuff();
 
 		/* Finish the prompt */
 		my_strcat(out_val, " ESC", sizeof(out_val));
@@ -1065,10 +1111,10 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 
 		/* Get a key */
-		which = inkey();
+		which = inkey_ex();
 
 		/* Parse it */
-		switch (which)
+		switch (which.key)
 		{
 			case ESCAPE:
 			{
@@ -1217,7 +1263,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 			case '7': case '8': case '9':
 			{
 				/* Look up the tag */
-				if (!get_tag(&k, which))
+				if (!get_tag(&k, which.key))
 				{
 					bell("Illegal object choice (tag)!");
 					break;
@@ -1330,15 +1376,15 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 				bool verify;
 
 				/* Note verify */
-				verify = (isupper((unsigned char)which) ? TRUE : FALSE);
+				verify = (isupper((unsigned char)which.key) ? TRUE : FALSE);
 
 				/* Lowercase */
-				which = tolower((unsigned char)which);
+				which.key = tolower((unsigned char)which.key);
 
 				/* Convert letter to inventory index */
 				if (p_ptr->command_wrk == (USE_INVEN))
 				{
-					k = label_to_inven(which);
+					k = label_to_inven(which.key);
 
 					if (k < 0)
 					{
@@ -1350,7 +1396,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 				/* Convert letter to equipment index */
 				else if (p_ptr->command_wrk == (USE_EQUIP))
 				{
-					k = label_to_equip(which);
+					k = label_to_equip(which.key);
 
 					if (k < 0)
 					{
@@ -1362,7 +1408,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 				/* Convert letter to floor index */
 				else
 				{
-					k = (islower((unsigned char)which) ? A2I(which) : -1);
+					k = (islower((unsigned char)which.key) ? A2I(which.key) : -1);
 
 					if (k < 0 || k >= floor_num)
 					{
@@ -1416,6 +1462,13 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	}
 
 
+	/* Kill buttons */
+	button_kill('*');
+	button_kill('/');
+	button_kill('-');
+	button_kill('!');
+	redraw_stuff();
+  
 	/* Forget the item_tester_tval restriction */
 	item_tester_tval = 0;
 

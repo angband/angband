@@ -834,8 +834,10 @@ void ang_sort_swap_hook(void *u, void *v, int a, int b)
 void do_cmd_query_symbol(void)
 {
 	int i, n, r_idx;
-	char sym, query;
+	char sym;
 	char buf[128];
+
+	ui_event_data query;
 
 	bool all = FALSE;
 	bool uniq = FALSE;
@@ -916,23 +918,35 @@ void do_cmd_query_symbol(void)
 		return;
 	}
 
+	/* Buttons */
+	button_add("[y]", 'y');
+	button_add("[k]", 'k');
+	/* Don't collide with the repeat button */
+	button_add("[n]", 'q'); 
+	redraw_stuff();
 
 	/* Prompt */
 	put_str("Recall details? (y/k/n): ", 0, 40);
 
 	/* Query */
-	query = inkey();
+	query = inkey_ex();
 
 	/* Restore */
 	prt(buf, 0, 0);
 
+	/* Buttons */
+	button_kill('y');
+	button_kill('k');
+	button_kill('q');
+	redraw_stuff();
+
 	/* Interpret the response */
-	if (query == 'k')
+	if (query.key == 'k')
 	{
 		/* Sort by kills (and level) */
 		why = 4;
 	}
-	else if (query == 'y' || query == 'p')
+	else if (query.key == 'y' || query.key == 'p')
 	{
 		/* Sort by level; accept 'p' as legacy */
 		why = 2;
@@ -957,6 +971,12 @@ void do_cmd_query_symbol(void)
 
 	/* Start at the end */
 	i = n - 1;
+
+	/* Button */
+	button_add("[r]", 'r');
+	button_add("[-]", '-');
+	button_add("[+]", '+');
+	redraw_stuff();
 
 	/* Scan the monster memory */
 	while (1)
@@ -993,7 +1013,7 @@ void do_cmd_query_symbol(void)
 			}
 
 			/* Command */
-			query = inkey();
+			query = inkey_ex();
 
 			/* Unrecall */
 			if (recall)
@@ -1003,17 +1023,17 @@ void do_cmd_query_symbol(void)
 			}
 
 			/* Normal commands */
-			if (query != 'r') break;
+			if (query.key != 'r') break;
 
 			/* Toggle recall */
 			recall = !recall;
 		}
 
 		/* Stop scanning */
-		if (query == ESCAPE) break;
+		if (query.key == ESCAPE) break;
 
 		/* Move to "prev" monster */
-		if (query == '-')
+		if (query.key == '-')
 		{
 			if (++i == n)
 				i = 0;
@@ -1027,6 +1047,11 @@ void do_cmd_query_symbol(void)
 		}
 	}
 
+	/* Button */
+	button_kill('r');
+	button_kill('-');
+	button_kill('+');
+	redraw_stuff();
 
 	/* Re-display the identity */
 	prt(buf, 0, 0);

@@ -1114,6 +1114,7 @@ static int player_birth_aux_2(bool start_at_end)
 	int cost;
 
 	char ch;
+	ui_event_data ke;
 
 	char buf[80];
 
@@ -1222,11 +1223,23 @@ static int player_birth_aux_2(bool start_at_end)
 		strnfmt(buf, sizeof(buf), "Total Cost %2d/%d.  Use up/down to move, left/right to modify, 'Enter' to accept.", cost, MAX_BIRTH_COST);
 		prt(buf, 0, 0);
 
+		/* Buttons */
+		clear_from(Term->hgt - 2);
+		button_kill_all();
+		button_add("[Back]", ESCAPE);
+		button_add("[Done]", '\r');
+		button_add("[Up]", '8');
+		button_add("[Down]", '2');
+		button_add("[Incr]", '6');
+		button_add("[Decr]", '4');
+		redraw_stuff();
+
 		/* Place cursor just after cost of current stat */
 		Term_gotoxy(col + 36, row + stat);
 
 		/* Get key */
-		ch = inkey();
+		ke = inkey_ex();
+		ch = ke.key;
 
 		if (ch == KTRL('X')) 
 			quit(NULL);
@@ -1273,6 +1286,10 @@ static int player_birth_aux_2(bool start_at_end)
 	}
 
 
+	/* Kill buttons */
+	button_kill_all();
+	redraw_stuff();
+  
 	/* Done - advance a step*/
 	return +1;
 }
@@ -1300,6 +1317,7 @@ static int player_birth_aux_3(bool start_at_end, bool autoroll)
 	static bool prev = FALSE;
 
 	char ch;
+	ui_event_data ke;
 
 	char b1 = '[';
 	char b2 = ']';
@@ -1547,7 +1565,7 @@ static int player_birth_aux_3(bool start_at_end, bool autoroll)
 						inkey_scan = TRUE;
 
 						/* Check for a keypress */
-						if (inkey()) break;
+						if (anykey()) break;
 					}
 				}
 			}
@@ -1598,6 +1616,14 @@ static int player_birth_aux_3(bool start_at_end, bool autoroll)
 			/* Display the player */
 			display_player(0);
 
+			/* Add buttons */
+			button_add("[ESC]", ESCAPE);
+			button_add("[Enter]", '\r');
+			button_add("[r]", 'r');
+			if (prev) button_add("[p]", 'p');
+			clear_from(Term->hgt - 2);
+			redraw_stuff();
+
 			/* Prepare a prompt (must squeeze everything in) */
 			Term_gotoxy(2, 23);
 			Term_addch(TERM_WHITE, b1);
@@ -1607,12 +1633,15 @@ static int player_birth_aux_3(bool start_at_end, bool autoroll)
 			Term_addch(TERM_WHITE, b2);
 
 			/* Prompt and get a command */
-			ch = inkey();
+			ke = inkey_ex();
+			ch = ke.key;
 
 			/* Go back to the start of the step, or the previous step */
 			/* if we're not autorolling. */
 			if (ch == ESCAPE) 
 			{
+			        button_kill('r');
+				button_kill('p');
 				if (autoroll) 
 					return 0;
 				else 
@@ -1645,6 +1674,13 @@ static int player_birth_aux_3(bool start_at_end, bool autoroll)
 			/* Warning */
 			bell("Illegal auto-roller command!");
 		}
+
+		/* Kill buttons */
+		button_kill(ESCAPE);
+		button_kill('\r');
+		button_kill('r');
+		button_kill('p');
+		redraw_stuff();
 
 		/* Are we done? */
 		if ((ch == '\r') || (ch == '\n')) break;
@@ -1681,7 +1717,7 @@ typedef enum
  */
 static void player_birth_aux(void)
 {
-	char ch;
+	ui_event_data ke;
 	cptr prompt = "['ESC' to step back, 'S' to start over, or any other key to continue]";
 	birth_stages state = BIRTH_QUESTIONS;
 	birth_stages last_state = BIRTH_RESTART;
@@ -1741,21 +1777,32 @@ static void player_birth_aux(void)
 				/* Prompt for it */
 				prt(prompt, Term->hgt - 1, Term->wid / 2 - strlen(prompt) / 2);
 
+				/* Buttons */
+				button_kill_all();
+				button_add("[Continue]", 'q');
+				button_add("[ESC]", ESCAPE);
+				button_add("[S]", 'S');
+				redraw_stuff();
+	    
 				/* Get a key */
-				ch = inkey();
+				ke = inkey_ex();
 
 				/* Start over */
-				if (ch == 'S') 
+				if (ke.key == 'S') 
 					state = BIRTH_RESTART;
 
-				if (ch == KTRL('X')) 
+				if (ke.key == KTRL('X')) 
 					quit(NULL);
 
-				if (ch == ESCAPE) 
+				if (ke.key == ESCAPE) 
 					state--;
 				else
 					state++;
 
+				/* Buttons */
+				button_kill_all();
+				redraw_stuff();
+	    
 				/* Clear prompt */
 				clear_from(23);
 
@@ -1779,7 +1826,7 @@ static void player_birth_aux(void)
  */
 static bool player_birth_quick(void)
 {
-	char ch;
+	ui_event_data ke;
 	int i;
 	birther old_char;
 	byte old_hitdie;
@@ -1873,14 +1920,21 @@ static bool player_birth_quick(void)
 	/* Prompt for it */
 	prt("['CTRL-X' to quit, 'ESC' to start over, or any other key to continue]", 23, 5);
 
+	/* Buttons */
+	button_kill_all();
+	button_add("[Continue]", 'q');
+	button_add("[ESC]", ESCAPE);
+	button_add("[Exit]", KTRL('X'));
+	redraw_stuff();
+	    
 	/* Get a key */
-	ch = inkey();
+	ke = inkey_ex();
 
 	/* Quit */
-	if (ch == KTRL('X')) quit(NULL);
+	if (ke.key == KTRL('X')) quit(NULL);
 
 	/* Start over */
-	if (ch == ESCAPE) return (FALSE);
+	if (ke.key == ESCAPE) return (FALSE);
 
 	/* Accept */
 	return (TRUE);
@@ -1897,7 +1951,7 @@ static bool player_birth_quick(void)
 void player_birth(void)
 {
 	bool quickstart = FALSE;
-	char ch;
+	ui_event_data ke;
 
 	/*
 	 * If the birth height value is set, we can do a quick-start character.
@@ -1910,20 +1964,29 @@ void player_birth(void)
 			Term_clear();
 
 			put_str("Quick-start character based on previous one (y/n)? ", 2, 2);
-			ch = inkey();
 
-			if (ch == KTRL('X'))
+			/* Buttons */
+			button_kill_all();
+			button_add("[Exit]", KTRL('X'));
+			button_add("[ESC]", ESCAPE);
+			button_add("[y]", 'y');
+			button_add("[n]", 'n');
+			button_add("[Help]", '?');
+
+			ke = inkey_ex();
+
+			if (ke.key == KTRL('X'))
 				quit(NULL);
-			else if ((ch == ESCAPE) || strchr("YyNn\r\n", ch))
+			else if ((ke.key == ESCAPE) || strchr("YyNn\r\n", ke.key))
 				break;
-			else if (ch == '?')
+			else if (ke.key == '?')
 				(void)show_file("birth.hlp", NULL, 0, 0);
 			else
 				bell("Illegal answer!");
 		}
 
 		/* Quick generation */
-		if ((ch == 'y') || (ch == 'Y'))
+		if ((ke.key == 'y') || (ke.key == 'Y'))
 		{
 			if (player_birth_quick()) quickstart = TRUE;
 		}

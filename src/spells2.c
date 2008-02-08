@@ -879,7 +879,7 @@ void self_knowledge(bool spoil)
 		if ((k == 22) && (j+1 < i))
 		{
 			prt("-- more --", k, 0);
-			inkey();
+			anykey();
 
 			/* Clear the screen */
 			Term_clear();
@@ -894,7 +894,7 @@ void self_knowledge(bool spoil)
 
 	/* Pause */
 	prt("[Press any key to continue]", k, 0);
-	(void)inkey();
+	(void)anykey();
 
 
 	/* Load screen */

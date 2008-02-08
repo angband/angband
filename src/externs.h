@@ -264,6 +264,18 @@ extern void do_cmd_throw(void);
 /* birth.c */
 extern void player_birth(void);
 
+/* button.c */
+int button_add_text(const char *label, unsigned char keypress);
+int button_add(char *label, unsigned char keypress);
+void button_backup_all(void);
+void button_restore(void);
+int button_kill_text(unsigned char keypress);
+int button_kill(unsigned char keypress);
+void button_kill_all(void);
+void button_init(button_add_f add, button_kill_f kill);
+char button_get_key(int x, int y);
+size_t button_print(int row, int col);
+
 /* cave.c */
 extern int distance(int y1, int x1, int y2, int x2);
 extern bool los(int y1, int x1, int y2, int x2);

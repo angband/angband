@@ -61,6 +61,13 @@ typedef s16b s16b_wid[DUNGEON_WID];
 
 
 
+/** Function hook types **/
+
+typedef int (*button_add_f)(const char *, unsigned char);
+typedef int (*button_kill_f)(unsigned char);
+
+
+
 /**** Available Structs ****/
 
 

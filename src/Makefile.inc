@@ -15,184 +15,190 @@ depgen:
 # Dependencies
 attack.o: attack.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h
 birth.o: birth.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h cmds.h ui-menu.h
+  option.h types.h ui.h z-type.h object.h externs.h cmds.h ui-menu.h
+button.o: button.c angband.h h-basic.h z-file.h z-form.h z-util.h \
+  z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
+  defines.h option.h types.h ui.h z-type.h object.h externs.h
 cave.o: cave.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h game-event.h
+  option.h types.h ui.h z-type.h object.h externs.h game-event.h
 compress.o: compress.c compress.h h-basic.h
 cmd0.o: cmd0.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h wizard.h cmds.h \
+  option.h types.h ui.h z-type.h object.h externs.h wizard.h cmds.h \
   ui-menu.h
 cmd1.o: cmd1.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h cmds.h
+  option.h types.h ui.h z-type.h object.h externs.h cmds.h
 cmd2.o: cmd2.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h
+  option.h types.h ui.h z-type.h object.h externs.h
 cmd3.o: cmd3.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h
+  option.h types.h ui.h z-type.h object.h externs.h
 cmd4.o: cmd4.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h ui-menu.h
+  option.h types.h ui.h z-type.h object.h externs.h ui-menu.h
 cmd5.o: cmd5.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h
+  option.h types.h ui.h z-type.h object.h externs.h
 cmd6.o: cmd6.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h cmds.h effects.h
+  option.h types.h ui.h z-type.h object.h externs.h cmds.h effects.h
 cmd-obj.o: cmd-obj.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h cmds.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h cmds.h
 death.o: death.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h ui-menu.h
+  option.h types.h ui.h z-type.h object.h externs.h ui-menu.h
 debug.o: debug.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h debug.h
+  option.h types.h ui.h z-type.h object.h externs.h debug.h
 dungeon.o: dungeon.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h cmds.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h cmds.h
 effects.o: effects.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h effects.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h effects.h
 files.o: files.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h ui-menu.h cmds.h
+  option.h types.h ui.h z-type.h object.h externs.h ui-menu.h cmds.h
 game-cmd.o: game-cmd.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h game-cmd.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h game-cmd.h
 game-event.o: game-event.c z-virt.h h-basic.h game-event.h
 generate.o: generate.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h
 history.o: history.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h
 init1.o: init1.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h effects.h init.h
+  option.h types.h ui.h z-type.h object.h externs.h effects.h init.h
 init2.o: init2.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h init.h cmds.h \
+  option.h types.h ui.h z-type.h object.h externs.h init.h cmds.h \
   game-event.h game-cmd.h
 load.o: load.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h
+  option.h types.h ui.h z-type.h object.h externs.h
 loadsave.o: loadsave.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h \
+  defines.h option.h types.h ui.h z-type.h object.h externs.h \
   z-blockfile.h z-smap.h
 melee1.o: melee1.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h
 melee2.o: melee2.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h
 monster1.o: monster1.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h
 monster2.o: monster2.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h
 obj-desc.o: obj-desc.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h
 obj-info.o: obj-info.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h effects.h \
+  defines.h option.h types.h ui.h z-type.h object.h externs.h effects.h \
   cmds.h
 obj-make.o: obj-make.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h
 obj-ui.o: obj-ui.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h
 obj-util.o: obj-util.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h randname.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h randname.h
 option.o: option.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h
 randart.o: randart.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h init.h \
+  defines.h option.h types.h ui.h z-type.h object.h externs.h init.h \
   randname.h
 randname.o: randname.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h randname.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h randname.h
 pathfind.o: pathfind.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h
 score.o: score.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h
+  option.h types.h ui.h z-type.h object.h externs.h
 signals.o: signals.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h
 save.o: save.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h
+  option.h types.h ui.h z-type.h object.h externs.h
 spells1.o: spells1.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h
 spells2.o: spells2.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h
 squelch.o: squelch.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h cmds.h \
+  defines.h option.h types.h ui.h z-type.h object.h externs.h cmds.h \
   ui-menu.h
 store.o: store.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h cmds.h ui-menu.h
+  option.h types.h ui.h z-type.h object.h externs.h cmds.h ui-menu.h
 tables.o: tables.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h
+target.o: target.c angband.h h-basic.h z-file.h z-form.h z-util.h \
+  z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
+  defines.h option.h types.h ui.h z-type.h object.h externs.h
 trap.o: trap.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h
+  option.h types.h ui.h z-type.h object.h externs.h
 ui.o: ui.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h
+  option.h types.h ui.h z-type.h object.h externs.h
 ui-event.o: ui-event.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h
 ui-menu.o: ui-menu.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h ui-menu.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h ui-menu.h
 util.o: util.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h randname.h
+  option.h types.h ui.h z-type.h object.h externs.h randname.h
 variable.o: variable.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h
 wiz-spoil.o: wiz-spoil.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h cmds.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h cmds.h
 wiz-stats.o: wiz-stats.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h wizard.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h wizard.h
 wizard.o: wizard.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h wizard.h \
+  defines.h option.h types.h ui.h z-type.h object.h externs.h wizard.h \
   cmds.h
 x-spell.o: x-spell.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h externs.h object.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h
 xtra1.o: xtra1.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h game-event.h
+  option.h types.h ui.h z-type.h object.h externs.h game-event.h
 xtra2.o: xtra2.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h cmds.h
+  option.h types.h ui.h z-type.h object.h externs.h cmds.h
 xtra3.o: xtra3.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h externs.h object.h game-event.h
+  option.h types.h ui.h z-type.h object.h externs.h game-event.h
 z-file.o: z-file.c z-file.h h-basic.h z-virt.h z-util.h z-form.h
 z-form.o: z-form.c z-form.h h-basic.h z-type.h z-util.h z-virt.h
 z-msg.o: z-msg.c z-virt.h h-basic.h z-term.h ui-event.h z-msg.h

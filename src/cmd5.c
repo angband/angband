@@ -481,7 +481,7 @@ static void browse_spell(int spell)
 	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
 
 	/* Wait for input */
-	(void)inkey();
+	(void)anykey();
 
 	/* Load screen */
 	screen_load();

@@ -1187,18 +1187,38 @@ ui_event_data inkey_ex(void)
 			ke.type = EVT_KBRD;
 			break;
 		}
-		
-		
-			/* Get a key (see above) */
-			ke = inkey_aux();
-		
-		
+
+		/* Get a key (see above) */
+		ke = inkey_aux();
+
+		/* Handle mouse buttons */
+		if ((ke.type == EVT_MOUSE) && (mouse_buttons))
+		{
+			/* Check to see if we've hit a button */
+			/* Assuming text buttons here for now - this would have to
+			 * change for GUI buttons */
+			char key = button_get_key(ke.mousex, ke.mousey);
+
+			if (key)
+			{
+				/* Rewrite the event */
+				ke.type = EVT_KBRD;
+				ke.key = key;
+				ke.index = 0;
+				ke.mousey = 0;
+				ke.mousex = 0;
+
+				/* Done */
+				break;
+			}
+		}
+
 		/* Handle "control-right-bracket" */
 		if (ke.key == 29)
 		{
 			/* Strip this key */
 			ke.key = 0;
-		
+
 			/* Continue */
 			continue;
 		}
@@ -2533,34 +2553,52 @@ s16b get_quantity(cptr prompt, int max)
  */
 bool get_check(cptr prompt)
 {
-	char ch;
+	ui_event_data ke;
 
 	char buf[80];
 
+	bool repeat = FALSE;
+  
 	/* Paranoia XXX XXX XXX */
 	message_flush();
 
 	/* Hack -- Build a "useful" prompt */
 	strnfmt(buf, 78, "%.70s[y/n] ", prompt);
 
+	/* Hack - kill the repeat button */
+	if (button_kill('n')) repeat = TRUE;
+	
+	/* Make some buttons */
+	button_add("[y]", 'y');
+	button_add("[n]", 'n');
+	redraw_stuff();
+  
 	/* Prompt for it */
 	prt(buf, 0, 0);
 
 	/* Get an acceptable answer */
 	while (TRUE)
 	{
-		ch = inkey();
+		ke = inkey_ex();
 		if (quick_messages) break;
-		if (ch == ESCAPE) break;
-		if (strchr("YyNn", ch)) break;
+		if (ke.key == ESCAPE) break;
+		if (strchr("YyNn", ke.key)) break;
 		bell("Illegal response to a 'yes/no' question!");
 	}
 
+	/* Kill the buttons */
+	button_kill('y');
+	button_kill('n');
+
+	/* Hack - restore the repeat button */
+	if (repeat) button_add("[Rpt]", 'n');
+	redraw_stuff();
+  
 	/* Erase the prompt */
 	prt("", 0, 0);
 
 	/* Normal negation */
-	if ((ch != 'Y') && (ch != 'y')) return (FALSE);
+	if ((ke.key != 'Y') && (ke.key != 'y')) return (FALSE);
 
 	/* Success */
 	return (TRUE);
@@ -2619,7 +2657,7 @@ void pause_line(int row)
 {
 	prt("", row, 0);
 	put_str("[Press any key to continue]", row, 23);
-	(void)inkey();
+	(void)anykey();
 	prt("", row, 0);
 }
 

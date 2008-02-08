@@ -80,6 +80,7 @@ extern const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_hide_squelchable		75
 #define OPT_squelch_worthless		76
 #define OPT_mouse_movement		77
+#define OPT_mouse_buttons		78
 
 
 #define OPT_birth_maximize          (OPT_BIRTH+0)
@@ -169,6 +170,7 @@ extern const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define hp_changes_color		OPT(hp_changes_color)
 #define hide_squelchable		OPT(hide_squelchable)
 #define mouse_movement			OPT(mouse_movement)
+#define mouse_buttons			OPT(mouse_buttons)
 
 #define birth_maximize			OPT(birth_maximize)
 #define birth_randarts			OPT(birth_randarts)

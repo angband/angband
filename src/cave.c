@@ -1636,7 +1636,7 @@ void do_cmd_view_map(void)
 	Term_gotoxy(cx, cy);
 
 	/* Get any key */
-	(void)inkey();
+	(void)anykey();
 
 	/* Load screen */
 	screen_load();

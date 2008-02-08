@@ -1526,6 +1526,16 @@ static void dungeon(void)
 	/* Combine / Reorder the pack */
 	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
 
+	/* Make basic mouse buttons */
+	(void) button_add("[ESC]", ESCAPE);
+	(void) button_add("[Ret]", '\r');
+	(void) button_add("[Spc]", ' ');
+	(void) button_add("[Rpt]", 'n');
+	(void) button_add("[Std]", ',');
+
+	/* Redraw buttons */
+	p_ptr->redraw |= (PR_BUTTONS);
+
 	/* Notice stuff */
 	notice_stuff();
 

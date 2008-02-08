@@ -37,7 +37,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_easy_open,
 		OPT_show_lists,
 		OPT_mouse_movement,
-		OPT_NONE,
+		OPT_mouse_buttons,
 		OPT_NONE,
 		OPT_NONE,
 	},
@@ -207,7 +207,7 @@ static option_entry options[OPT_MAX] =
 { "hide_squelchable",    "Hide items set as squelchable",               FALSE }, /* 75 */
 { "squelch_worthless",   "Automatically squelch worthless items",       FALSE }, /* 76 */
 { "mouse_movement",      "Allow mouse clicks to move the player",       FALSE }, /* 77 */
-{ NULL,                  NULL,                                          FALSE }, /* 78 */
+{ "mouse_buttons",        "Show mouse status line buttons",             FALSE }, /* 78 */
 { NULL,                  NULL,                                          FALSE }, /* 79 */
 { NULL,                  NULL,                                          FALSE }, /* 80 */
 { NULL,                  NULL,                                          FALSE }, /* 81 */
