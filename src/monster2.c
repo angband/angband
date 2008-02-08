@@ -349,7 +349,7 @@ s16b mon_pop(void)
 /*
  * Apply a "monster restriction function" to the "monster allocation table"
  */
-errr get_mon_num_prep(void)
+void get_mon_num_prep(void)
 {
 	int i;
 

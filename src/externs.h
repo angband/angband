@@ -384,7 +384,7 @@ extern void delete_monster(int y, int x);
 extern void compact_monsters(int size);
 extern void wipe_mon_list(void);
 extern s16b mon_pop(void);
-extern errr get_mon_num_prep(void);
+extern void get_mon_num_prep(void);
 extern s16b get_mon_num(int level);
 extern void display_monlist(void);
 extern void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode);
