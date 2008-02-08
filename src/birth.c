@@ -434,7 +434,7 @@ static void get_money(void)
 	}
 
 	/* Minimum 200 gold */
-	if (gold < 100) gold = 200;
+	if (gold < 200) gold = 200;
 
 	/* Save the gold */
 	p_ptr->au = p_ptr->au_birth = gold;
