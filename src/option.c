@@ -264,7 +264,7 @@ static option_entry options[OPT_MAX] =
 { "birth_no_stores",     "Restrict the use of stores/home",             FALSE }, /* 132 */
 { "birth_no_artifacts",  "Restrict creation of artifacts",              FALSE }, /* 133 */
 { "birth_no_stacking",   "Don't stack objects on the floor",            FALSE }, /* 134 */
-{ "birth_no_preserve",   "Don't preserve artifacts when leaving level", FALSE }, /* 135 */
+{ "birth_no_preserve",   "Lose artifacts when leaving level",           FALSE }, /* 135 */
 { "birth_no_stairs",     "Don't generate connected stairs",             FALSE }, /* 136 */
 { NULL,                  NULL,                                          FALSE }, /* 137 */
 { NULL,                  NULL,                                          FALSE }, /* 138 */
