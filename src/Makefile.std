@@ -54,7 +54,7 @@ CFLAGS = -Wall -O2 -Wno-unused-parameter
 
 # Add additional search directives here
 # Example: -I/usr/X11R6/include -I/usr/include/ncurses
-INCLUDES =
+INCLUDES = -I.
 # Example: -L/usr/X11R6/lib 
 LIBS =
 
@@ -79,8 +79,9 @@ LIBS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
 
 
 # Object definitions
-X11OBJS = maid-x11.o main-x11.o main-gtk.o cairo-utils.o
-MAINOBJS = main.o main-gcu.o main-sdl.o snd-sdl.o $(X11OBJS)
+X11OBJS = maid-x11.o main-x11.o
+GTKOBJS = gtk/main-gtk.o gtk/cairo-utils.o
+MAINOBJS = main.o main-gcu.o main-sdl.o snd-sdl.o $(X11OBJS) $(GTKOBJS)
 OBJS = $(BASEOBJS) $(MAINOBJS)
 
 
