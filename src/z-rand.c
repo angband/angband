@@ -117,15 +117,13 @@ void Rand_state_init(u32b seed)
  *
  * This method has no bias, and is much less affected by patterns
  * in the "low" bits of the underlying RNG's.
- *
- * Note that "m" must not be greater than 0x1000000, or division
- * by zero will result.
- *
- * ToDo: Check for m > 0x1000000.
  */
 u32b Rand_div(u32b m)
 {
 	u32b r, n;
+
+	/* Division by zero will result if m is larger than 0x10000000 */
+	assert(m <= 0x10000000);
 
 	/* Hack -- simple case */
 	if (m <= 1) return (0);
@@ -198,10 +196,10 @@ u32b Rand_div(u32b m)
  */
 static s16b Rand_normal_table[RANDNOR_NUM] =
 {
-	206,     613,    1022,    1430,		1838,	 2245,	  2652,	   3058,
-	3463,    3867,    4271,    4673,	5075,	 5475,	  5874,	   6271,
-	6667,    7061,    7454,    7845,	8234,	 8621,	  9006,	   9389,
-	9770,   10148,   10524,   10898,   11269,	11638,	 12004,	  12367,
+	206,     613,     1022,    1430,		1838,    2245,     2652,     3058,
+	3463,    3867,    4271,    4673,    5075,    5475,     5874,     6271,
+	6667,    7061,    7454,    7845,    8234,    8621,     9006,     9389,
+	9770,    10148,   10524,   10898,   11269,	11638,	 12004,	  12367,
 	12727,   13085,   13440,   13792,   14140,	14486,	 14828,	  15168,
 	15504,   15836,   16166,   16492,   16814,	17133,	 17449,	  17761,
 	18069,   18374,   18675,   18972,   19266,	19556,	 19842,	  20124,
@@ -305,8 +303,6 @@ s16b Rand_normal(int mean, int stand)
  * This function should be used when generating random numbers in
  * "external" program parts like the main-*.c files.  It preserves
  * the current RNG state to prevent influences on game-play.
- *
- * Could also use rand() from <stdlib.h> directly. XXX XXX XXX
  */
 u32b Rand_simple(u32b m)
 {
@@ -360,6 +356,7 @@ int damroll(int num, int sides)
 	int i;
 	int sum = 0;
 
+/*	assert(sides > 0); */
 	if (sides <= 0) return (0);
 
 	for (i = 0; i < num; i++)
@@ -368,3 +365,19 @@ int damroll(int num, int sides)
 	return (sum);
 }
 
+
+/**
+ * Generates a random signed long integer X where `A` <= X <= `B`.
+ * The integer X falls along a uniform distribution.
+ *
+ * Note that "rand_range(0, N-1)" == "rand_int(N)".
+ */
+int rand_range(int A, int B)
+{
+	if (A == B) return A;
+
+	assert(A < B);
+	assert(B > A);
+
+	return A + (s32b)Rand_div(1 + B - A);
+}

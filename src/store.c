@@ -1213,7 +1213,7 @@ static bool store_create_random(int st)
 	int min_level, max_level;
 
 	/*
-	 * Decide min/max levels 
+	 * Decide min/max levels
 	 */
 	if (st == STORE_B_MARKET)
 	{
@@ -1226,7 +1226,7 @@ static bool store_create_random(int st)
 		max_level = STORE_OBJ_LEVEL + MAX(p_ptr->max_depth - 10, 0);
 	}
 
-	if (min_level > 55) min_level = 65;
+	if (min_level > 55) min_level = 55;
 	if (max_level > 70) max_level = 70;
 
 	/* Consider up to six items */

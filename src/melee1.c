@@ -446,7 +446,10 @@ bool make_attack_normal(int m_idx)
 			obvious = TRUE;
 
 			/* Roll out the damage */
-			damage = damroll(d_dice, d_side);
+			if (d_dice > 0 && d_side > 0)
+				damage = damroll(d_dice, d_side);
+			else
+				damage = 0;
 
 			/* Apply appropriate damage */
 			switch (effect)

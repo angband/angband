@@ -34,15 +34,6 @@
 
 
 /**
- * Generates a random signed long integer X where "A <= X <= B"
- * Note that "rand_range(0, N-1)" == "rand_int(N)"
- *
- * The integer X falls along a uniform distribution.
- */
-#define rand_range(A,B)		((A) + (rand_int(1+(B)-(A))))
-
-
-/**
  * Generate a random signed long integer X where "A-D <= X <= A+D" holds.
  * Note that "rand_spread(A, D)" == "rand_range(A-D, A+D)"
  *
@@ -98,6 +89,14 @@ u32b Rand_simple(u32b m);
  * Emulate a number `num` of dice rolls of dice with `sides` sides.
  */
 int damroll(int num, int sides);
+
+/**
+ * Generates a random signed long integer X where "A <= X <= B"
+ * Note that "rand_range(0, N-1)" == "rand_int(N)"
+ *
+ * The integer X falls along a uniform distribution.
+ */
+int rand_range(int A, int B);
 
 
 #endif /* INCLUDED_Z_RAND_H */
