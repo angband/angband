@@ -1094,118 +1094,118 @@ static void load_term_prefs()
 	ang_file *fff;
 	term_data *td = &data[0];
 	xtra_win_data *xd = &xdata[0];
-	
+
+	if (ignore_prefs) return;
+
 	/* Build the filename and open the file */
 	path_build(settings, sizeof(settings), ANGBAND_DIR_USER, "gtk-settings.prf");
 	fff = file_open(settings, MODE_READ, -1);
-	
-	/* File exists */
-	if ((fff) && (!ignore_prefs))
-	{
-		/* Process the file */
-		while (file_getl(fff, buf, sizeof(buf)))
-		{
-			/* Count lines */
-			line++;
 
-			/* Skip "empty" lines, "blank" lines, and comments */
-			if (!buf[0]) continue;
-			if (isspace((unsigned char)buf[0])) continue;
-			if (buf[0] == '#') continue;
-			
-			if (buf[0] == '[') 
+	/* File doesn't exist */
+	if (!fff) return;
+
+	/* Process the file */
+	while (file_getl(fff, buf, sizeof(buf)))
+	{
+		/* Count lines */
+		line++;
+
+		/* Skip "empty" lines, "blank" lines, and comments */
+		if (!buf[0]) continue;
+		if (isspace((unsigned char)buf[0])) continue;
+		if (buf[0] == '#') continue;
+
+		if (buf[0] == '[')
+		{
+			if (prefix(buf, "[General Settings]"))
 			{
-				if (prefix(buf, "[General Settings]"))
-				{
-					section = GENERAL_PREFS;
-				}
-				else if (prefix(buf,"[Term window"))
-				{
-					section = TERM_PREFS;
-					sscanf(buf, "[Term window %d]", &t);
-					td = &data[t];
-				}
-				else if (prefix(buf,"[Extra window"))
-				{
-					section = XTRA_WIN_PREFS;
-					sscanf(buf, "[Extra window %d]", &x);
-					xd = &xdata[x];
-				}
+				section = GENERAL_PREFS;
+			}
+			else if (prefix(buf,"[Term window"))
+			{
+				section = TERM_PREFS;
+				sscanf(buf, "[Term window %d]", &t);
+				td = &data[t];
+			}
+			else if (prefix(buf,"[Extra window"))
+			{
+				section = XTRA_WIN_PREFS;
+				sscanf(buf, "[Extra window %d]", &x);
+				xd = &xdata[x];
+			}
+			continue;
+		}
+
+		if (section == GENERAL_PREFS)
+		{
+			if (prefix(buf, "Tile set="))
+			{
+				val = get_value(buf);
+				sscanf(buf, "Tile set=%d", &val);
+				arg_graphics = val;
 				continue;
 			}
-			
-			if (section == GENERAL_PREFS)
+			if (prefix(buf, "Big Tiles="))
 			{
-				if (prefix(buf, "Tile set="))
-				{
-					val = get_value(buf);
-					sscanf(buf, "Tile set=%d", &val);
-					arg_graphics = val;
-					continue;
-				}
-				if (prefix(buf, "Big Tiles="))
-				{
-					val = get_value(buf);
-					sscanf(buf, "Big Tiles=%d", &val);
-					use_bigtile = val;
-					continue;
-				}
-			}
-			
-			if (section == TERM_PREFS)	
-			{
-				if (prefix(buf, "visible="))
-				{
-					sscanf(buf, "visible=%d", &val);
-					td->visible = val;
-				}
-				else if (prefix(buf, "font="))
-				{
-					str = my_stristr(buf, "=");
-					if (str != NULL)
-					{
-						if (str[0] == '=')
-							str++;
-						my_strcpy(td->font.name, str, strlen(str) + 1);
-					}
-				}
-				else if (prefix(buf, "x="))                 sscanf(buf, "x=%d", &td->location.x);
-				else if (prefix(buf, "y="))                 sscanf(buf, "y=%d",&td->location.y);
-				else if (prefix(buf, "width="))         sscanf(buf, "width=%d", &td->size.w);
-				else if (prefix(buf, "height="))        sscanf(buf, "height=%d", &td->size.h);
-				else if (prefix(buf, "cols="))             sscanf(buf, "cols=%d", &td->cols);
-				else if (prefix(buf, "rows="))           sscanf(buf, "rows=%d", &td->rows);
-				else if (prefix(buf, "tile_width="))  sscanf(buf, "tile_width=%d", &td->tile.w);
-				else if (prefix(buf, "tile_height=")) sscanf(buf, "tile_height=%d", &td->tile.h);
+				val = get_value(buf);
+				sscanf(buf, "Big Tiles=%d", &val);
+				use_bigtile = val;
 				continue;
-			}
-			
-			if (section == XTRA_WIN_PREFS)
-			{
-				if (prefix(buf, "visible="))
-				{
-					sscanf(buf, "visible=%d", &val);
-					xd->visible = val;
-				}
-				else if (prefix(buf, "font="))
-				{
-					str = my_stristr(buf, "=");
-					if (str != NULL)
-					{
-						if (str[0] == '=')
-							str++;
-						my_strcpy(xd->font.name, str, strlen(str) + 1);
-					}
-				}
-				else if (prefix(buf, "x="))                 sscanf(buf, "x=%d", &xd->location.x);
-				else if (prefix(buf, "y="))                 sscanf(buf, "y=%d",&xd->location.y);
-				else if (prefix(buf, "width="))         sscanf(buf, "width=%d", &xd->size.w);
-				else if (prefix(buf, "height="))        sscanf(buf, "height=%d", &xd->size.h);
 			}
 		}
+
+		if (section == TERM_PREFS)
+		{
+			if (prefix(buf, "visible="))
+			{
+				sscanf(buf, "visible=%d", &val);
+				td->visible = val;
+			}
+			else if (prefix(buf, "font="))
+			{
+				str = my_stristr(buf, "=");
+				if (str != NULL)
+				{
+					if (str[0] == '=')
+						str++;
+					my_strcpy(td->font.name, str, strlen(str) + 1);
+				}
+			}
+			else if (prefix(buf, "x="))                 sscanf(buf, "x=%d", &td->location.x);
+			else if (prefix(buf, "y="))                 sscanf(buf, "y=%d",&td->location.y);
+			else if (prefix(buf, "width="))         sscanf(buf, "width=%d", &td->size.w);
+			else if (prefix(buf, "height="))        sscanf(buf, "height=%d", &td->size.h);
+			else if (prefix(buf, "cols="))             sscanf(buf, "cols=%d", &td->cols);
+			else if (prefix(buf, "rows="))           sscanf(buf, "rows=%d", &td->rows);
+			else if (prefix(buf, "tile_width="))  sscanf(buf, "tile_width=%d", &td->tile.w);
+			else if (prefix(buf, "tile_height=")) sscanf(buf, "tile_height=%d", &td->tile.h);
+			continue;
+		}
+
+		if (section == XTRA_WIN_PREFS)
+		{
+			if (prefix(buf, "visible="))
+			{
+				sscanf(buf, "visible=%d", &val);
+				xd->visible = val;
+			}
+			else if (prefix(buf, "font="))
+			{
+				str = my_stristr(buf, "=");
+				if (str != NULL)
+				{
+					if (str[0] == '=')
+						str++;
+					my_strcpy(xd->font.name, str, strlen(str) + 1);
+				}
+			}
+			else if (prefix(buf, "x="))                 sscanf(buf, "x=%d", &xd->location.x);
+			else if (prefix(buf, "y="))                 sscanf(buf, "y=%d",&xd->location.y);
+			else if (prefix(buf, "width="))         sscanf(buf, "width=%d", &xd->size.w);
+			else if (prefix(buf, "height="))        sscanf(buf, "height=%d", &xd->size.h);
+		}
 	}
-	
-	/* Close the file */
+
 	file_close(fff);
 }
 
