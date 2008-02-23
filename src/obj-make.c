@@ -1528,6 +1528,8 @@ bool make_gold(object_type *j_ptr, int lev)
  */
 int object_pseudo_heavy(const object_type *o_ptr)
 {
+	object_kind *k_ptr = &k_info[o_ptr->k_idx];
+	
 	if (artifact_p(o_ptr))
 	{
 		if (cursed_p(o_ptr))
@@ -1547,11 +1549,11 @@ int object_pseudo_heavy(const object_type *o_ptr)
 	if (cursed_p(o_ptr))
 		return INSCRIP_CURSED;
 
-	else if (o_ptr->to_a == 0 && o_ptr->to_h == 0 && o_ptr->to_d == 0)
+	else if (o_ptr->to_a == k_ptr->to_a && o_ptr->to_h == k_ptr->to_h && o_ptr->to_d == k_ptr->to_d)
 		return INSCRIP_AVERAGE;
-	else if (o_ptr->to_a >= 0 && o_ptr->to_h >= 0 && o_ptr->to_d >= 0)
+	else if (o_ptr->to_a >= k_ptr->to_a && o_ptr->to_h >= k_ptr->to_h && o_ptr->to_d >= k_ptr->to_d)
 		return INSCRIP_MAGICAL;
-	else if (o_ptr->to_a <= 0 && o_ptr->to_h <= 0 && o_ptr->to_d <= 0)
+	else if (o_ptr->to_a <= k_ptr->to_a && o_ptr->to_h <= k_ptr->to_h && o_ptr->to_d <= k_ptr->to_d)
 		return INSCRIP_MAGICAL;
 
 	return INSCRIP_STRANGE;
@@ -1573,9 +1575,13 @@ int object_pseudo_light(const object_type *o_ptr)
 	/* Ego-Items -- except cursed/broken ones */
 	if (ego_item_p(o_ptr)) return (INSCRIP_EXCELLENT);
 
-	/* Good armor bonus */
-	if (o_ptr->to_a > 0 || o_ptr->to_h != 0 || o_ptr->to_d > 0)
-		return (INSCRIP_MAGICAL);
+	/* Catch anything average */
+	if (o_ptr->to_a == k_ptr->to_a && o_ptr->to_h == k_ptr->to_h && o_ptr->to_d == k_ptr->to_d)
+		return INSCRIP_AVERAGE;
+
+	/* Catch magical things */
+	if (o_ptr->to_a != k_ptr->to_a || o_ptr->to_h != k_ptr->to_h || o_ptr->to_d != k_ptr->to_d)
+		return INSCRIP_MAGICAL;
 
 	/* No feeling */
 	return (0);
