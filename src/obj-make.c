@@ -1529,7 +1529,7 @@ bool make_gold(object_type *j_ptr, int lev)
 int object_pseudo_heavy(const object_type *o_ptr)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
-	
+
 	if (artifact_p(o_ptr))
 	{
 		if (cursed_p(o_ptr))
@@ -1566,6 +1566,8 @@ int object_pseudo_heavy(const object_type *o_ptr)
  */
 int object_pseudo_light(const object_type *o_ptr)
 {
+	object_kind *k_ptr = &k_info[o_ptr->k_idx];
+
 	/* Cursed items (all of them) */
 	if (cursed_p(o_ptr)) return (INSCRIP_CURSED);
 
