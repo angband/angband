@@ -784,11 +784,8 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix,
 
 
 	/* Add squelch marker  */
-	if (mode == ODESC_FULL)
-	{
-		if (!OPT(hide_squelchable) && squelch_item_ok(o_ptr))
-			strnfcat(buf, max, &end, " (squelch)");
-	}
+	if (mode == ODESC_FULL && squelch_item_ok(o_ptr))
+		strnfcat(buf, max, &end, " (squelch)");
 
 	return end;
 }
