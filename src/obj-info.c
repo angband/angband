@@ -633,7 +633,7 @@ void object_info_header(const object_type *o_ptr)
 			else
 				text_out("%s%s", is_a_vowel(name[0]) ? "an " : "a ", name);
 
-			text_out(" at %d feet (level %d))\n",
+			text_out(" at %d feet (level %d)\n",
 		         o_ptr->origin_depth * 50, o_ptr->origin_depth);			
 
  			break;
