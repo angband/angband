@@ -1921,7 +1921,11 @@ static bool store_purchase(int item)
 	}
 
 	/* Find the number of this item in the inventory */
-	num = find_inven(o_ptr);
+	if (!object_aware_p(o_ptr))
+		num = 0;
+	else
+		num = find_inven(o_ptr);
+
 	strnfmt(o_name, sizeof o_name, "%s how many%s? (max %d) ",
 	        (store_current == STORE_HOME) ? "Take" : "Buy",
 	        num ? format(" (you have %d)", num) : "", amt);
