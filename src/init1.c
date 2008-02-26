@@ -60,8 +60,9 @@
 /* Use a slightly unusual include method to create effect_list[] */
 static const char *effect_list[] =
 {
-    #define EFFECT(x, y, z)	#x,
-	#include "effects.h"
+	#define EFFECT(x, y, z)    #x,
+	#include "list-effects.h"
+	#undef EFFECT
 };
 
 

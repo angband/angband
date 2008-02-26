@@ -34,8 +34,9 @@ typedef struct
  */
 static const info_entry effects[] =
 {
-	#define EFFECT(x, y, z)	{ EF_##x, y, z },
-	#include "effects.h"
+	#define EFFECT(x, y, z)    { EF_##x, y, z },
+	#include "list-effects.h"
+	#undef EFFECT
 };
 
 
