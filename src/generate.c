@@ -3473,10 +3473,7 @@ void generate_cave(void)
 
 
 		if (OPT(cheat_room) && error)
-		{
 			msg_format("Generation restarted: %s.", error);
-			printf("again\n");
-		}	
 	}
 
 
