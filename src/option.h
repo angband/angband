@@ -91,6 +91,7 @@ extern const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_birth_no_stacking       (OPT_BIRTH+6)
 #define OPT_birth_no_preserve       (OPT_BIRTH+7)
 #define OPT_birth_no_stairs			(OPT_BIRTH+8)
+#define OPT_birth_feelings				(OPT_BIRTH+9)
 /* leave four spaces for future */
 #define OPT_birth_ai_sound			(OPT_BIRTH+13)
 #define OPT_birth_ai_smell			(OPT_BIRTH+14)
@@ -114,6 +115,7 @@ extern const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_adult_no_stacking       (OPT_ADULT+6)
 #define OPT_adult_no_preserve       (OPT_ADULT+7)
 #define OPT_adult_no_stairs			(OPT_ADULT+8)
+#define OPT_adult_feelings				(OPT_ADULT+9)
 /* leave four spaces for future */
 #define OPT_adult_ai_sound			(OPT_ADULT+13)
 #define OPT_adult_ai_smell			(OPT_ADULT+14)

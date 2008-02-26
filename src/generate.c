@@ -3392,7 +3392,7 @@ static int calculate_feeling(int rating, int depth)
 	int feeling;
 
 	/* Town gets no feeling */
-	if (!depth == 0) return 0;
+	if (depth == 0) return 0;
 
 #if 0
 	/* Extract the feeling */

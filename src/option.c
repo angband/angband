@@ -84,19 +84,19 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 	{
 		OPT_birth_maximize,
 		OPT_birth_randarts,
-		OPT_birth_ironman,
-		OPT_birth_no_stores,
-		OPT_birth_no_artifacts,
-		OPT_birth_no_stacking,
-		OPT_birth_no_preserve,
-		OPT_birth_no_stairs,
 		OPT_birth_ai_sound,
 		OPT_birth_ai_smell,
 		OPT_birth_ai_packs,
 		OPT_birth_ai_learn,
 		OPT_birth_ai_cheat,
 		OPT_birth_ai_smart,
-		OPT_NONE,
+		OPT_birth_ironman,
+		OPT_birth_no_stores,
+		OPT_birth_no_artifacts,
+		OPT_birth_no_stacking,
+		OPT_birth_no_preserve,
+		OPT_birth_no_stairs,
+		OPT_birth_feelings
 	},
 
 	/* Cheat */
@@ -266,7 +266,7 @@ static option_entry options[OPT_MAX] =
 { "birth_no_stacking",   "Don't stack objects on the floor",            FALSE }, /* 134 */
 { "birth_no_preserve",   "Lose artifacts when leaving level",           FALSE }, /* 135 */
 { "birth_no_stairs",     "Don't generate connected stairs",             FALSE }, /* 136 */
-{ NULL,                  NULL,                                          FALSE }, /* 137 */
+{ "birth_feelings",      "Don't show level feelings",                   FALSE }, /* 137 */
 { NULL,                  NULL,                                          FALSE }, /* 138 */
 { NULL,                  NULL,                                          FALSE }, /* 139 */
 { NULL,                  NULL,                                          FALSE }, /* 140 */
