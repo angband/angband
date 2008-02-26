@@ -59,9 +59,9 @@ typedef enum
 	EFFECT(CURE_MIND,      FALSE, "cures confusion and removes fear")
 	EFFECT(CURE_BODY,      FALSE, "heals cut damage, and cures stunning, poison and blindness")
 
-	EFFECT(CURE_LIGHT,     FALSE, "heals you a little (15% or 15HP), heals some cut damage, makes you a little less confused, and cures blindness")
-	EFFECT(CURE_SERIOUS,   FALSE, "heals you a little (1/4 or 25HP), heals cut damage, and cures blindness and confusion")
-	EFFECT(CURE_CRITICAL,  FALSE, "heals you a little (1/3 or 33HP), heals cut damage, and cures poisoning, blindness, and confusion")
+	EFFECT(CURE_LIGHT,     FALSE, "heals you a little (15% of your wounds, minimum 15HP), heals some cut damage, makes you a little less confused, and cures blindness")
+	EFFECT(CURE_SERIOUS,   FALSE, "heals you a little (1/4 of your wounds, minimum 25HP), heals cut damage, and cures blindness and confusion")
+	EFFECT(CURE_CRITICAL,  FALSE, "heals you a little (1/3 of your wounds, minimum 33HP), heals cut damage, and cures poisoning, blindness, and confusion")
 	EFFECT(CURE_FULL,      FALSE, "restores 300 hit points, heals cut damage, and cures stunning, poisoning, blindness, and confusion")
 	EFFECT(CURE_FULL2,     FALSE, "restores 1200 hit points, heals cut damage, and cures stunning, poisoning, blindness, and confusion")
 	EFFECT(CURE_NONORLYBIG,FALSE, "restores 5000 hit points, restores experience and stats, heals cut damage, and cures stunning, poison, blindness, and confusion")
