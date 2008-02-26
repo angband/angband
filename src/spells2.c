@@ -426,6 +426,7 @@ bool restore_level(void)
 void self_knowledge(bool spoil)
 {
 	int i = 0, j, k;
+	int max_x = Term->hgt - 2;
 
 	u32b t1, t2, t3;
 
@@ -876,7 +877,7 @@ void self_knowledge(bool spoil)
 		prt(info[j], k++, 0);
 
 		/* Page wrap */
-		if ((k == 22) && (j+1 < i))
+		if ((k == max_x) && (j+1 < i))
 		{
 			prt("-- more --", k, 0);
 			anykey();
