@@ -18,10 +18,6 @@
 #ifndef INCLUDED_EFFECTS_H
 #define INCLUDED_EFFECTS_H
 
-bool do_effect(int effect, bool *ident, int dir, int beam);
-bool effect_aim(int effect);
-const char *effect_desc(int effect);
-
 /* Types of effect */
 typedef enum
 {
@@ -31,5 +27,12 @@ typedef enum
 
 	EF_MAX
 } effect_type;
+
+/*** Functions ***/
+
+bool effect_do(effect_type effect, bool *ident, int dir, int beam);
+bool effect_aim(effect_type effect);
+const char *effect_desc(effect_type effect);
+bool effect_obvious(effect_type effect);
 
 #endif /* INCLUDED_EFFECTS_H */

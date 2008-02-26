@@ -117,6 +117,7 @@ void do_cmd_use(object_type *o_ptr, int item, int snd, use_type use)
 {
 	int effect;
 	bool ident = FALSE, used;
+	bool was_aware = object_aware_p(o_ptr);
 	int dir = 5;
 
 	/* Figure out effect to use */
@@ -135,7 +136,7 @@ void do_cmd_use(object_type *o_ptr, int item, int snd, use_type use)
 			return;
 	}
 
-	/* Use energy regardless of failure */	
+	/* Use energy regardless of failure */
 	p_ptr->energy_use = 100;
 
 	/* Check for use */
@@ -157,8 +158,12 @@ void do_cmd_use(object_type *o_ptr, int item, int snd, use_type use)
 		sound(snd);
 	}
 
+	/* A bit of a hack to make ID work better.
+	   -- Check for "obvious" effects beforehand. */
+	if (effect_obvious(effect)) object_aware(o_ptr);
+
 	/* Do effect */
-	used = do_effect(effect, &ident, dir, beam_chance(o_ptr->tval));
+	used = effect_do(effect, &ident, dir, beam_chance(o_ptr->tval));
 
 	/* Food feeds the player */
 	if (o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION)
@@ -176,7 +181,7 @@ void do_cmd_use(object_type *o_ptr, int item, int snd, use_type use)
 	 * aware and reward the player with some experience.  Otherwise, mark
 	 * it as "tried".
 	 */
-	if (ident && !object_aware_p(o_ptr))
+	if (ident && !was_aware)
 	{
 		/* Object level */
 		int lev = k_info[o_ptr->k_idx].level;
@@ -191,7 +196,7 @@ void do_cmd_use(object_type *o_ptr, int item, int snd, use_type use)
 		object_tried(o_ptr);
 	}
 
-	
+
 	/* Some uses are "free" */
 	if (!used) return;
 

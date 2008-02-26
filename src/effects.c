@@ -43,7 +43,7 @@ static const info_entry effects[] =
 /*
  * Utility functions
  */
-bool effect_aim(int effect)
+bool effect_aim(effect_type effect)
 {
 	if (effect < 1 || effect > EF_MAX)
 		return FALSE;
@@ -51,7 +51,7 @@ bool effect_aim(int effect)
 	return effects[effect].aim;
 }
 
-const char *effect_desc(int effect)
+const char *effect_desc(effect_type effect)
 {
 	if (effect < 1 || effect > EF_MAX)
 		return FALSE;
@@ -59,10 +59,18 @@ const char *effect_desc(int effect)
 	return effects[effect].desc;
 }
 
+bool effect_obvious(effect_type effect)
+{
+	if (effect == EF_IDENTIFY)
+		return TRUE;
+
+	return FALSE;
+}
+
 
 /*
  * The "wonder" effect.
- * 
+ *
  * Returns TRUE if the effect is evident.
  */
 static bool spell_wonder(int dir, int die, int beam)
@@ -135,7 +143,7 @@ static bool spell_wonder(int dir, int die, int beam)
 /*
  * Do an effect, given an object.
  */
-bool do_effect(int effect, bool *ident, int dir, int beam)
+bool effect_do(effect_type effect, bool *ident, int dir, int beam)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
