@@ -226,10 +226,10 @@ static void death_info(void *unused, const char *title)
 	display_player(0);
 
 	/* Prompt for inventory */
-	prt("Hit any key to see more information (ESC to abort): ", 0, 0);
+	prt("Hit any key to see more information: ", 0, 0);
 
 	/* Allow abort at this point */
-	if (inkey() == ESCAPE) return;
+	(void)anykey();
 
 
 	/* Show equipment and inventory */
@@ -241,7 +241,7 @@ static void death_info(void *unused, const char *title)
 		item_tester_full = TRUE;
 		show_equip();
 		prt("You are using: -more-", 0, 0);
-		if (inkey() == ESCAPE) return;
+		(void)anykey();
 	}
 
 	/* Inventory -- if any */
@@ -251,7 +251,7 @@ static void death_info(void *unused, const char *title)
 		item_tester_full = TRUE;
 		show_inven();
 		prt("You are carrying: -more-", 0, 0);
-		if (inkey() == ESCAPE) return;
+		(void)anykey();
 	}
 
 
@@ -294,7 +294,7 @@ static void death_info(void *unused, const char *title)
 			prt(format("Your home contains (page %d): -more-", k+1), 0, 0);
 
 			/* Wait for it */
-			if (inkey() == ESCAPE) return;
+			(void)anykey();
 		}
 	}
 
