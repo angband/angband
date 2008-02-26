@@ -503,15 +503,12 @@ byte py_pickup(int pickup, bool pickup_okay)
 		/* Restrict the choices */
 		item_tester_hook = inven_carry_okay;
 
-		/* Request a list */
-		p_ptr->command_see = TRUE;
-
 		/* Get an object or exit. */
 		q = "Get which item?";
 		s = "You see nothing there.";
 		if (!get_item(&item, q, s, USE_FLOOR))
 			return (objs_picked_up);
-		
+
 		this_o_idx = 0 - item;
 		call_function_again = TRUE;
 

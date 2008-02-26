@@ -938,9 +938,7 @@ struct player_type
 	int  command_inv;		/* Gives item of current command */
 	ui_event_data command_cmd_ex; /* Gives additional information of current command */
 
-	s16b command_see;		/* See "cmd1.c" */
 	s16b command_wrk;		/* See "cmd1.c" */
-
 	s16b command_new;		/* Hack -- command chaining XXX XXX */
 
 	s16b new_spells;		/* Number of spells available */

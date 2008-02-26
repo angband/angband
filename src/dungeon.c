@@ -1184,8 +1184,8 @@ static void process_player(void)
 		}
 
 
-		/* Hack -- cancel "lurking browse mode" */
-		if (!p_ptr->command_new) p_ptr->command_see = FALSE;
+		/* Hack -- reset to inventory display */
+		if (!p_ptr->command_new) p_ptr->command_wrk = USE_INVEN;
 
 
 		/* Assume free turn */

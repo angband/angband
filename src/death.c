@@ -226,7 +226,7 @@ static void death_info(void *unused, const char *title)
 	display_player(0);
 
 	/* Prompt for inventory */
-	prt("Hit any key to see more information (ESC to abort): ", 23, 0);
+	prt("Hit any key to see more information (ESC to abort): ", 0, 0);
 
 	/* Allow abort at this point */
 	if (inkey() == ESCAPE) return;
@@ -338,13 +338,6 @@ static void death_examine(void *unused, const char *title)
 	(void)unused;
 	(void)title;
 
-
-	screen_save();
-	Term_clear();
-
-	/* Start out in "display" mode */
-	p_ptr->command_see = TRUE;
-
 	/* Get an item */
 	q = "Examine which item? ";
 	s = "You have nothing to examine.";
@@ -367,8 +360,6 @@ static void death_examine(void *unused, const char *title)
 
 		screen_load();
 	}
-
-	screen_load();
 }
 
 
