@@ -185,7 +185,8 @@ static void obj_set_squelch(object_type *o_ptr, int item)
 	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
 		return;
 
-	inven_drop(item, o_ptr->number);
+	if (item >= 0)
+		inven_drop(item, o_ptr->number);
 }
 
 
@@ -200,7 +201,7 @@ static bool obj_can_browse(const object_type *o_ptr)
 
 static bool obj_cast_pre(void)
 {
-   	if (!cp_ptr->spell_book)
+	if (!cp_ptr->spell_book)
 	{
 		msg_print("You cannot pray or produce magics.");
 		return FALSE;
