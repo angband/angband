@@ -446,7 +446,7 @@ static bool describe_light(const object_type *o_ptr, u32b f3)
 		text_out(" light, reduced when running of out fuel");
 	text_out(".");
 
-	if (is_lite)
+	if (is_lite && !artifact)
 	{
 		const char *name = (o_ptr->sval == SV_LITE_TORCH) ? "torch" : "lantern";
 		int turns = (o_ptr->sval == SV_LITE_TORCH) ? FUEL_TORCH : FUEL_LAMP;
