@@ -1914,7 +1914,7 @@ N:241:Cure Critical Wounds
 G:!:d
 I:75:36:100
 W:5:0:4:130
-A:100:10 to 35
+A:105:12 to 100
 M:75:2d3
 F:EASY_KNOW
 E:CURE_CRITICAL
