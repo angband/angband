@@ -1,0 +1,11 @@
+#!/bin/sh
+
+DIR=angband-3.0.9a
+OUT=$DIR.tar.gz
+
+svn export . $DIR &&
+	cd $DIR &&
+	./autogen.sh &&
+	rm -rf autogen.sh autom4te.cache &&
+	cd .. &&
+	tar czvf $OUT $DIR
