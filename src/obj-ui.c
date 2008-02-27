@@ -572,26 +572,23 @@ static bool get_item_allow(int item)
 	object_type *o_ptr;
 	char verify_inscrip[] = "!*";
 
-	/* Inventory */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
+	unsigned n;
 
-	/* Floor */
+	/* Inventory or floor */
+	if (item >= 0)
+		o_ptr = &inventory[item];
 	else
-	{
 		o_ptr = &o_list[0 - item];
-	}
 
 	/* Check for a "prevention" inscription */
 	verify_inscrip[1] = p_ptr->command_cmd;
 
-	if (o_ptr->note && (check_for_inscrip(o_ptr, "!*") || 
-	                    check_for_inscrip(o_ptr, verify_inscrip)))
+	/* Find both sets of inscriptions, add togther, and prompt that number of times */
+	n = check_for_inscrip(o_ptr, "!*") + check_for_inscrip(o_ptr, verify_inscrip);
+	while (n--)
 	{
-		/* Verify the choice */
-		if (!verify_item("Really try", item)) return (FALSE);
+		if (!verify_item("Really try", item))
+			return (FALSE);
 	}
 
 	/* Allow it */

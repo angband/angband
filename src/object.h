@@ -135,6 +135,6 @@ void combine_pack(void);
 void reorder_pack(void);
 void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt);
 void reduce_charges(object_type *o_ptr, int amt);
-bool check_for_inscrip(const object_type *o_ptr, const char *inscrip);
+unsigned check_for_inscrip(const object_type *o_ptr, const char *inscrip);
 
 #endif /* !INCLUDED_OBJECT_H */

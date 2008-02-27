@@ -75,7 +75,7 @@ static void obj_examine(object_type *o_ptr, int item)
 
 	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
 	(void)anykey();
-      
+
 	screen_load();
 }
 
@@ -111,32 +111,38 @@ static void obj_wear(object_type *o_ptr, int item)
 
 	char o_name[80];
 
+	unsigned n;
 
 	/* Check the slot */
 	slot = wield_slot(o_ptr);
 	equip_o_ptr = &inventory[slot];
 
-	/* Prevent wielding into a cursed slot */
-	if (cursed_p(equip_o_ptr))
+	/* Check for existing wielded item */
+	if (equip_o_ptr)
 	{
-		/* Message */
-		object_desc(o_name, sizeof(o_name), equip_o_ptr, FALSE, ODESC_BASE);
-		msg_format("The %s you are %s appears to be cursed.",
-		           o_name, describe_use(slot));
+		/* Prevent wielding into a cursed slot */
+		if (cursed_p(equip_o_ptr))
+		{
+			/* Message */
+			object_desc(o_name, sizeof(o_name), equip_o_ptr, FALSE, ODESC_BASE);
+			msg_format("The %s you are %s appears to be cursed.",
+			           o_name, describe_use(slot));
 
-		return;
+			return;
+		}
+
+		/* "!t" checks for taking off */
+		n = check_for_inscrip(equip_o_ptr, "!t");
+		while (n--)
+		{
+			/* Prompt */
+			object_desc(o_name, sizeof(o_name), equip_o_ptr, TRUE, ODESC_FULL);
+
+			/* Forget it */
+			if (!get_check(format("Really take off %s? ", o_name))) return;
+		}
 	}
 
-	/* "!t" checks for taking off */
-	if (check_for_inscrip(o_ptr, "!t"))
-	{
-		/* Prompt */
-		object_desc(o_name, sizeof(o_name), equip_o_ptr, TRUE, ODESC_FULL);
-
-		/* Forget it */
-		if (!get_check(format("Really take off %s? ", o_name))) return;
-	}
-	
 	wield_item(o_ptr, item);
 }
 

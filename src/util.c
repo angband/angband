@@ -2912,6 +2912,7 @@ void request_command(void)
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
 		char verify_inscrip[] = "^*";
+		unsigned n;
 
 		object_type *o_ptr = &inventory[i];
 
@@ -2920,15 +2921,13 @@ void request_command(void)
 
 		/* Set up string to look for, e.g. "^d" */
 		verify_inscrip[1] = p_ptr->command_cmd;
-		
-		if (check_for_inscrip(o_ptr, "^*") || check_for_inscrip(o_ptr, verify_inscrip))
+
+		/* Verify command */
+		n = check_for_inscrip(o_ptr, "^*") + check_for_inscrip(o_ptr, verify_inscrip);
+		while (n--)
 		{
-			/* Hack -- Verify command */
 			if (!get_check("Are you sure? "))
-			{
-				/* Hack -- Use "newline" */
 				p_ptr->command_cmd = '\n';
-			}
 		}
 	}
 

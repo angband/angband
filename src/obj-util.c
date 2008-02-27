@@ -3334,15 +3334,24 @@ void reduce_charges(object_type *o_ptr, int amt)
 /*
  * Looks if "inscrip" is present on the given object.
  */
-bool check_for_inscrip(const object_type *o_ptr, const char *inscrip)
+unsigned check_for_inscrip(const object_type *o_ptr, const char *inscrip)
 {
-	if (o_ptr->note)
+	unsigned i = 0;
+	const char *s;
+
+	if (!o_ptr->note) return 0;
+
+	s = quark_str(o_ptr->note);
+
+	do
 	{
-		const char *s = strstr(quark_str(o_ptr->note), inscrip);
-		if (s) return TRUE;
+		s = strstr(s, inscrip);
+		if (!s) break;
+
+		i++;
+		s++;
 	}
-	
-	return FALSE;
+	while (s);
+
+	return i;
 }
-
-
