@@ -330,14 +330,6 @@ int main(int argc, char *argv[])
 				break;
 			}
 
-			case 'S':
-			case 's':
-			{
-				show_score = atoi(arg);
-				if (show_score <= 0) show_score = 10;
-				continue;
-			}
-
 			case 'u':
 			case 'U':
 			{
@@ -383,7 +375,6 @@ int main(int argc, char *argv[])
 				puts("  -f             Request fiddle (verbose) mode");
 				puts("  -v             Request sound mode");
 				puts("  -g             Request graphics mode");
-				puts("  -s<num>        Show <num> high scores (default: 10)");
 				puts("  -u<who>        Use your <who> savefile");
 				puts("  -d<path>       Store pref files and screendumps in <path>");
 				puts("  -m<sys>        Use module <sys>, where <sys> can be:");
@@ -456,7 +447,7 @@ int main(int argc, char *argv[])
 		get_game_command = get_init_cmd;
 
 	/* Set up the display handlers and things. */
-	init_display();   
+	init_display();
 
 	/* Play the game */
 	play_game();
