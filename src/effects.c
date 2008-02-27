@@ -614,16 +614,37 @@ bool effect_do(effect_type effect, bool *ident, int dir, int beam)
 		}
 
 
+		case EF_RESIST_ACID:
+		{
+			if (inc_timed(TMD_OPP_ACID, randint1(10) + 10))
+				*ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_RESIST_ELEC:
+		{
+			if (inc_timed(TMD_OPP_ELEC, randint1(10) + 10))
+				*ident = TRUE;
+			return TRUE;
+		}
+
 		case EF_RESIST_FIRE:
 		{
-			if (inc_timed(TMD_OPP_FIRE, randint(10) + 10))
+			if (inc_timed(TMD_OPP_FIRE, randint1(10) + 10))
 				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_RESIST_COLD:
 		{
-			if (inc_timed(TMD_OPP_COLD, randint(10) + 10))
+			if (inc_timed(TMD_OPP_COLD, randint1(10) + 10))
+				*ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_RESIST_POIS:
+		{
+			if (inc_timed(TMD_OPP_POIS, randint1(10) + 10))
 				*ident = TRUE;
 			return TRUE;
 		}

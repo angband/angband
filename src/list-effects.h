@@ -78,8 +78,11 @@ EFFECT(SELF_KNOW,      FALSE, "grants knowledge of all special powers that you c
 EFFECT(HERO,           FALSE, "restores 10 hit points, removes fear and grants you resistance to fear and +12 to-hit for 1d25+25 turns")
 EFFECT(SHERO,          FALSE, "restores 30 hit points, removes fear and grants you resistance to fear, +12 to-hit, and -10AC for 1d25+25 turns")
 
+EFFECT(RESIST_ACID,    FALSE, "grants temporary resistance to acid for 1d10+10 turns")
+EFFECT(RESIST_ELEC,    FALSE, "grants temporary resistance to electricity for 1d10+10 turns")
 EFFECT(RESIST_FIRE,    FALSE, "grants temporary resistance to fire for 1d10+10 turns")
 EFFECT(RESIST_COLD,    FALSE, "grants temporary resistance to cold for 1d10+10 turns")
+EFFECT(RESIST_POIS,    FALSE, "grants temporary resistance to poison for 1d10+10 turns")
 EFFECT(RESIST_ALL,     FALSE, "grants temporary resistance to acid, electricity, fire, cold and poison for 1d20+20 turns")
 
 EFFECT(DETECT_TREASURE,   FALSE, "detects all gold and objects on the level")
