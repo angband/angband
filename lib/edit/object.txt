@@ -2133,7 +2133,13 @@ A:100:3 to 25
 F:EASY_KNOW
 E:TMD_INFRA
 
-## XXX 268 XXX ##
+N:268:Resist Poison
+G:!:d
+I:75:60:0
+W:1:0:4:30
+A:70:8 to 100
+F:EASY_KNOW
+E:RESIST_POIS
 
 
 ##### Wands #####
