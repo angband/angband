@@ -595,7 +595,6 @@ extern ui_event_data inkey_ex(void);
 extern char anykey(void);
 extern void bell(cptr reason);
 extern void sound(int val);
-extern bool check_for_inscrip(const object_type *o_ptr, const char *inscrip);
 extern void msg_print(cptr msg);
 extern void msg_format(cptr fmt, ...);
 extern void message(u16b message_type, s16b extra, cptr message);

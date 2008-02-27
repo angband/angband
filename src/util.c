@@ -1356,19 +1356,6 @@ void sound(int val)
 }
 
 
-/*
- * Looks if "inscrip" is present on the given object.
- */
-bool check_for_inscrip(const object_type *o_ptr, const char *inscrip)
-{
-	if (o_ptr->note)
-	{
-		const char *s = strstr(quark_str(o_ptr->note), inscrip);
-		if (s) return TRUE;
-	}
-	
-	return FALSE;
-}
 
 /*
  * Hack -- flush
