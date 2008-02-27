@@ -31,7 +31,7 @@
  * The integer X falls along a uniform distribution.
  */
 #define randint(M)		((s32b) Rand_div(M) + 1)
-#define rand_die(M)		((s23b) Rand_div(M) + 1)
+#define rand_die(M)		((s32b) Rand_div(M) + 1)
 #define randint1(M)		((s32b) Rand_div(M) + 1)
 
 /**
