@@ -1,22 +1,33 @@
 #!/bin/bash
-#
-# Simple packaging file for the Windows port.  Only really useful when
-# cross-compiling, or using Cygwin.  Originally by Robert Ruehlmann.
-#
-# Requires you have UPX (http://upx.sf.net/) installed.
-#
-# Use in the root directory of the game, like so:
-#   scripts/pkg_win <name of of release, e.g. angband-3.4.6>
-#
-DIR=$1
 
+if [ $# -ne 1 ] && [ $# -ne 2 ]; then
+	echo "Simple packaging file for the Windows port.  Only really useful when"
+	echo "cross-compiling, or using Cygwin.  Originally by Robert Ruehlmann."
+	echo ""
+	echo "Requires you have UPX (http://upx.sf.net/) installed."
+	echo ""
+	echo "Use in the root directory of the game, like so:"
+	echo "   scripts/pkg_win <name of of release, e.g. angband-4.0.1> [<output filename>]"
+	echo ""
+
+	exit 1
+fi
+
+DIR=$1
+if [ $# -eq 1 ]; then
+	OUT=$1.zip
+else
+	OUT=$2
+fi
+
+            
 function cp_unix2dos {
   # Just in case they're already DOS_format, we strip them to UNIX first. :)
   awk '{ sub("\r$", ""); sub("$", "\r"); print }' $1 > $2
 }
 
 
-mkdir $DIR
+mkdir -p $DIR
 cd $DIR
 
 mkdir lib
@@ -69,7 +80,5 @@ cp ../lib/xtra/sound/*.wav lib/xtra/sound
 upx -9 angband.exe
 
 cd ..
-
-zip -9 -r $1.zip $1
-
-rm -rf $1
+zip -9 -r $OUT $DIR
+rm -rf $DIR
