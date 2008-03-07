@@ -419,8 +419,8 @@ byte py_pickup(int pickup, bool pickup_okay)
 		/* One object */
 		if (floor_num == 1)
 		{
-			if (blind)            p = "feel";
-			else if (!can_pickup) p = "have no room for";
+			if (!can_pickup)	p = "have no room for";
+			else if (blind)     p = "feel";
 
 			/* Get the object */
 			o_ptr = &o_list[floor_o_idx];
@@ -438,8 +438,8 @@ byte py_pickup(int pickup, bool pickup_okay)
 			/* Optionally, display more information about floor items */
 			if (pickup_detail)
 			{
-				if (blind)            p = "feel something on the floor";
-				else if (!can_pickup) p = "have no room for the following objects";
+				if (!can_pickup)	p = "have no room for the following objects";
+				else if (blind)     p = "feel something on the floor";
 
 				/* Scan all marked objects in the grid */
 				floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x03);
