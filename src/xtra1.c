@@ -563,23 +563,73 @@ static void calc_torch(void)
 int calc_blows(const object_type *o_ptr)
 {
 	int blows;
-	int str_index, dex_index;
+	int str_index1, str_index2, dex_index1, dex_index2;
 	int div;
+	
+	object_type *j_ptr = &inventory[INVEN_WIELD];
 
 	/* Enforce a minimum "weight" (tenth pounds) */
 	div = ((o_ptr->weight < cp_ptr->min_weight) ? cp_ptr->min_weight : o_ptr->weight);
 
+	/* If we're wielding this weapon, use the current stats */
+	if (o_ptr == j_ptr)
+	{
+		str_index1 = p_ptr->stat_ind[A_STR];
+		dex_index1 = p_ptr->stat_ind[A_DEX];
+	}
+	else
+	{
+		/* Recalculate bonuses as if we were wielding this weapon */
+		
+		int str_change = 0, dex_change = 0;
+		int new_str = p_ptr->stat_use[A_STR];
+		int new_dex = p_ptr->stat_use[A_DEX];
+		
+		/* object_type *j_ptr = &inventory[INVEN_WIELD]; */
+		
+		u32b jf1, jf2, jf3;
+		u32b of1, of2, of3;
+		
+		/* Examine the wielded weapon */
+		object_flags(j_ptr, &jf1, &jf2, &jf3);
+		if (jf1 & (TR1_STR)) str_change -= j_ptr->pval;
+		if (jf1 & (TR1_DEX)) dex_change -= j_ptr->pval;
+
+		/* Examine the weapon in the pack*/
+		object_flags(o_ptr, &of1, &of2, &of3);
+		if (of1 & (TR1_STR)) str_change += o_ptr->pval;
+		if (of1 & (TR1_DEX)) dex_change += o_ptr->pval;
+
+		new_str = modify_stat_value(new_str, str_change);
+		new_dex = modify_stat_value(new_dex, dex_change);
+		
+		if (new_str <= 18)
+			str_index1 = new_str - 3;
+		else if (new_str <= 18+219)
+			str_index1 = (15 + (new_str - 18) / 10);
+		else
+			str_index1 = 37;
+			
+		if (new_dex <= 18)
+			dex_index1 = new_dex - 3;
+		else if (new_dex <= 18+219)
+			dex_index1 = (15 + (new_dex - 18) / 10);
+		else
+			dex_index1 = 37;
+	}
+	
+
 	/* Get the strength vs weight */
-	str_index = (adj_str_blow[p_ptr->stat_ind[A_STR]] * cp_ptr->att_multiply / div);
+	str_index2 = (adj_str_blow[str_index1] * cp_ptr->att_multiply / div);
 
 	/* Maximal value */
-	if (str_index > 11) str_index = 11;
+	if (str_index2 > 11) str_index2 = 11;
 
 	/* Index by dexterity */
-	dex_index = MIN(adj_dex_blow[p_ptr->stat_ind[A_DEX]], 11);
+	dex_index2 = MIN(adj_dex_blow[dex_index1], 11);
 
 	/* Use the blows table */
-	blows = MIN(blows_table[str_index][dex_index], cp_ptr->max_attacks);
+	blows = MIN(blows_table[str_index2][dex_index2], cp_ptr->max_attacks);
 
 	/* Require at least one blow */
 	return MAX(blows, 1);

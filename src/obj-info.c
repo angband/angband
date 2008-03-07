@@ -340,8 +340,12 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	if (weapon)
 	{
 		int blows = calc_blows(o_ptr);
+		int extra_blows = 0;
+		
+		if (f1 & (TR1_BLOWS)) extra_blows += o_ptr->pval;
+		blows += extra_blows;
 
-		dam = (o_ptr->ds * o_ptr->dd * 5);
+		dam = ((o_ptr->ds + 1) * o_ptr->dd * 5);
 
 		xtra_dam = (p_ptr->to_d * 10);
 		if (object_known_p(o_ptr))
@@ -366,7 +370,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 		int tdis = 10 + 5 * p_ptr->ammo_mult;
 
 		/* Calculate damage */
-		dam = (o_ptr->ds * o_ptr->dd * 5);
+		dam = ((o_ptr->ds + 1) * o_ptr->dd * 5);
 		if (object_known_p(o_ptr)) xtra_dam += (o_ptr->to_d * 10);
 		if (object_known_p(j_ptr)) xtra_dam += (j_ptr->to_d * 10);
 		xtra_dam *= p_ptr->ammo_mult;
@@ -433,7 +437,7 @@ static bool describe_light(const object_type *o_ptr, u32b f3)
 		return FALSE;
 
 	/* Work out radius */
-	if (artifact)      rad = 3;
+	if (artifact && is_lite) rad = 3;
 	else if (is_lite)  rad = 2;
 	if (f3 & TR3_LITE) rad++;
 
@@ -441,9 +445,11 @@ static bool describe_light(const object_type *o_ptr, u32b f3)
 	text_out("Radius ");
 	text_out_c(TERM_L_GREEN, format("%d", rad));
 	if (no_fuel && !artifact)
-		text_out(" light.  No fuel required.");
+		text_out(" light.  No fuel required");
 	else if (is_lite && o_ptr->sval == SV_LITE_TORCH)
 		text_out(" light, reduced when running of out fuel");
+	else
+		text_out (" light");
 	text_out(".");
 
 	if (is_lite && !artifact)
