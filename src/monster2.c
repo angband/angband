@@ -618,8 +618,8 @@ void display_monlist(void)
 		return;
 	}
 
-	/* Go over */
-	for (i = 1; (i < z_info->r_max) && (line < max); i++)
+	/* Go over in reverse order (so we show harder monsters first) */
+	for (i = z_info->r_max - 1; (i > 0) && (line < max); i--)
 	{
 		monster_lore *l_ptr = &l_list[i];
 
