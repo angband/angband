@@ -412,7 +412,9 @@ bool effect_do(effect_type effect, bool *ident, int dir, int beam)
 
 		case EF_BRAWN:
 		{
-			int stat = rand_int(A_MAX);
+			/* Pick a random stat to decrease other than strength */
+			int stat = rand_int(A_MAX-1) + 1;
+			
 			if (!do_dec_stat(stat, TRUE)) return FALSE;
 			if (do_inc_stat(A_STR)) *ident = TRUE;
 			return TRUE;
@@ -420,7 +422,10 @@ bool effect_do(effect_type effect, bool *ident, int dir, int beam)
 
 		case EF_INTELLECT:
 		{
-			int stat = rand_int(A_MAX);
+			/* Pick a random stat to decrease other than intelligence */
+			int stat = rand_int(A_MAX-1);
+			if (stat >= A_INT) stat++;
+			
 			if (!do_dec_stat(stat, TRUE)) return FALSE;
 			if (do_inc_stat(A_INT)) *ident = TRUE;
 			return TRUE;
@@ -428,7 +433,10 @@ bool effect_do(effect_type effect, bool *ident, int dir, int beam)
 
 		case EF_CONTEMPLATION:
 		{
-			int stat = rand_int(A_MAX);
+			/* Pick a random stat to decrease other than wisdom */
+			int stat = rand_int(A_MAX-1);
+			if (stat >= A_WIS) stat++;
+			
 			if (!do_dec_stat(stat, TRUE)) return FALSE;
 			if (do_inc_stat(A_WIS)) *ident = TRUE;
 			return TRUE;
@@ -436,7 +444,10 @@ bool effect_do(effect_type effect, bool *ident, int dir, int beam)
 
 		case EF_TOUGHNESS:
 		{
-			int stat = rand_int(A_MAX);
+			/* Pick a random stat to decrease other than constitution */
+			int stat = rand_int(A_MAX-1);
+			if (stat >= A_CON) stat++;
+			
 			if (!do_dec_stat(stat, TRUE)) return FALSE;
 			if (do_inc_stat(A_CON)) *ident = TRUE;
 			return TRUE;
@@ -444,7 +455,10 @@ bool effect_do(effect_type effect, bool *ident, int dir, int beam)
 
 		case EF_NIMBLENESS:
 		{
-			int stat = rand_int(A_MAX);
+			/* Pick a random stat to decrease other than dexterity */
+			int stat = rand_int(A_MAX-1);
+			if (stat >= A_DEX) stat++;
+			
 			if (!do_dec_stat(stat, TRUE)) return FALSE;
 			if (do_inc_stat(A_DEX)) *ident = TRUE;
 			return TRUE;
@@ -452,7 +466,9 @@ bool effect_do(effect_type effect, bool *ident, int dir, int beam)
 
 		case EF_PLEASING:
 		{
-			int stat = rand_int(A_MAX);
+			/* Pick a random stat to decrease other than charisma */
+			int stat = rand_int(A_MAX-1);
+			
 			if (!do_dec_stat(stat, TRUE)) return FALSE;
 			if (do_inc_stat(A_CHR)) *ident = TRUE;
 			return TRUE;
@@ -1182,6 +1198,13 @@ bool effect_do(effect_type effect, bool *ident, int dir, int beam)
 			return TRUE;
 		}
 
+		case EF_FIRE_BALL200:
+		{
+			*ident = TRUE;
+			fire_ball(GF_FIRE, dir, 200, 3);
+			return TRUE;
+		}
+
 		case EF_COLD_BOLT:
 		{
 			*ident = TRUE;
@@ -1214,6 +1237,13 @@ bool effect_do(effect_type effect, bool *ident, int dir, int beam)
 		{
 			*ident = TRUE;
 			fire_ball(GF_COLD, dir, 100, 2);
+			return TRUE;
+		}
+		
+		case EF_COLD_BALL160:
+		{
+			*ident = TRUE;
+			fire_ball(GF_COLD, dir, 160, 3);
 			return TRUE;
 		}
 
