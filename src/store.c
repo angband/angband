@@ -1857,14 +1857,137 @@ static int find_inven(const object_type *o_ptr)
 	{
 		object_type *j_ptr = &inventory[j];
 
-		/* Skip non-objects */
-		if (!j_ptr->k_idx) continue;
+		/* Require identical object types */
+		if (!j_ptr->k_idx || o_ptr->k_idx != j_ptr->k_idx) continue;
 
-		/* Check if the two items can be combined */
-		if (object_similar(j_ptr, o_ptr))
-			return j_ptr->number;
+		/* Analyze the items */
+		switch (o_ptr->tval)
+		{
+			/* Chests */
+			case TV_CHEST:
+			{
+				/* Never okay */
+				return 0;
+			}
+
+			/* Food and Potions and Scrolls */
+			case TV_FOOD:
+			case TV_POTION:
+			case TV_SCROLL:
+			{
+				/* Assume okay */
+				break;
+			}
+
+			/* Staves and Wands */
+			case TV_STAFF:
+			case TV_WAND:
+			{
+				/* Assume okay */
+				break;
+			}
+
+			/* Rods */
+			case TV_ROD:
+			{
+				/* Assume okay */
+				break;
+			}
+
+			/* Weapons and Armor */
+			case TV_BOW:
+			case TV_DIGGING:
+			case TV_HAFTED:
+			case TV_POLEARM:
+			case TV_SWORD:
+			case TV_BOOTS:
+			case TV_GLOVES:
+			case TV_HELM:
+			case TV_CROWN:
+			case TV_SHIELD:
+			case TV_CLOAK:
+			case TV_SOFT_ARMOR:
+			case TV_HARD_ARMOR:
+			case TV_DRAG_ARMOR:
+			{
+				/* Fall through */
+			}
+
+			/* Rings, Amulets, Lites */
+			case TV_RING:
+			case TV_AMULET:
+			case TV_LITE:
+			{
+				/* Require both items to be known */
+				if (!object_known_p(o_ptr) || !object_known_p(j_ptr)) continue;
+
+				/* Fall through */
+			}
+
+			/* Missiles */
+			case TV_BOLT:
+			case TV_ARROW:
+			case TV_SHOT:
+			{
+				/* Require identical knowledge of both items */
+				if (object_known_p(o_ptr) != object_known_p(j_ptr)) continue;
+
+				/* Require identical "bonuses" */
+				if (o_ptr->to_h != j_ptr->to_h) continue;
+				if (o_ptr->to_d != j_ptr->to_d) continue;
+				if (o_ptr->to_a != j_ptr->to_a) continue;
+
+				/* Require identical "pval" code */
+				if (o_ptr->pval != j_ptr->pval) continue;
+
+				/* Require identical "artifact" names */
+				if (o_ptr->name1 != j_ptr->name1) continue;
+
+				/* Require identical "ego-item" names */
+				if (o_ptr->name2 != j_ptr->name2) continue;
+
+				/* Lites must have same amount of fuel */
+				else if (o_ptr->timeout != j_ptr->timeout && o_ptr->tval == TV_LITE)
+					continue;
+
+				/* Require identical "values" */
+				if (o_ptr->ac != j_ptr->ac) continue;
+				if (o_ptr->dd != j_ptr->dd) continue;
+				if (o_ptr->ds != j_ptr->ds) continue;
+
+				/* Probably okay */
+				break;
+			}
+
+			/* Various */
+			default:
+			{
+				/* Require knowledge */
+				if (!object_known_p(o_ptr) || !object_known_p(j_ptr)) continue;
+
+				/* Probably okay */
+				break;
+			}
+		}
+
+
+		/* Different pseudo-ID statuses preclude combination */
+		if (o_ptr->pseudo != j_ptr->pseudo) continue;
+
+
+		/* Different flags */
+		if (o_ptr->flags1 != j_ptr->flags1 ||
+			o_ptr->flags2 != j_ptr->flags2 ||
+			o_ptr->flags3 != j_ptr->flags3)
+			continue;
+
+
+		/* They match, so they must be similar */
+		return j_ptr->number;
+
 	}
 
+	/* No matches found */
 	return 0;
 }
 
