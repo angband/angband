@@ -143,7 +143,7 @@ static bool spell_wonder(int dir, int die, int beam)
 /*
  * Do an effect, given an object.
  */
-bool effect_do(effect_type effect, bool *ident, int dir, int beam)
+bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -594,9 +594,9 @@ bool effect_do(effect_type effect, bool *ident, int dir, int beam)
 			wiz_lite();
 			(void)do_inc_stat(A_INT);
 			(void)do_inc_stat(A_WIS);
-			(void)detect_traps();
-			(void)detect_doorstairs();
-			(void)detect_treasure();
+			(void)detect_traps(TRUE);
+			(void)detect_doorstairs(TRUE);
+			(void)detect_treasure(TRUE);
 			identify_pack();
 			self_knowledge(TRUE);
 			*ident = TRUE;
@@ -677,37 +677,37 @@ bool effect_do(effect_type effect, bool *ident, int dir, int beam)
 
 		case EF_DETECT_TREASURE:
 		{
-			if (detect_treasure()) *ident = TRUE;
+			if (detect_treasure(aware)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_DETECT_TRAP:
 		{
-			if (detect_traps()) *ident = TRUE;
+			if (detect_traps(aware)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_DETECT_DOORSTAIR:
 		{
-			if (detect_doorstairs()) *ident = TRUE;
+			if (detect_doorstairs(aware)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_DETECT_INVIS:
 		{
-			if (detect_monsters_invis()) *ident = TRUE;
+			if (detect_monsters_invis(aware)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_DETECT_EVIL:
 		{
-			if (detect_monsters_evil()) *ident = TRUE;
+			if (detect_monsters_evil(aware)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_DETECT_ALL:
 		{
-			if (detect_all()) *ident = TRUE;
+			if (detect_all(aware)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1009,8 +1009,8 @@ bool effect_do(effect_type effect, bool *ident, int dir, int beam)
 		{
 			*ident = TRUE;
 			wiz_lite();
-			(void)detect_traps();
-			(void)detect_doorstairs();
+			(void)detect_traps(TRUE);
+			(void)detect_doorstairs(TRUE);
 			return TRUE;
 		}
 

@@ -490,7 +490,7 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_DETECT_MONSTERS:
 		{
-			(void)detect_monsters_normal();
+			(void)detect_monsters_normal(TRUE);
 			break;
 		}
 
@@ -508,7 +508,7 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_TREASURE_DETECTION:
 		{
-			(void)detect_treasure();
+			(void)detect_treasure(TRUE);
 			break;
 		}
 
@@ -522,8 +522,8 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_FIND_TRAPS_DOORS:
 		{
-			(void)detect_traps();
-			(void)detect_doorstairs();
+			(void)detect_traps(TRUE);
+			(void)detect_doorstairs(TRUE);
 			break;
 		}
 
@@ -766,13 +766,13 @@ static bool cast_mage_spell(int spell)
 		}
 		case SPELL_DETECT_INVISIBLE:
 		{
-			(void)detect_monsters_invis();
+			(void)detect_monsters_invis(TRUE);
 			break;
 		}
 
 		case SPELL_DETECT_ENCHANTMENT:
 		{
-			(void)detect_objects_magic();
+			(void)detect_objects_magic(TRUE);
 			break;
 		}
 
@@ -922,7 +922,7 @@ static bool cast_priest_spell(int spell)
 	{
 		case PRAYER_DETECT_EVIL:
 		{
-			(void)detect_monsters_evil();
+			(void)detect_monsters_evil(TRUE);
 			break;
 		}
 
@@ -953,13 +953,13 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_FIND_TRAPS:
 		{
-			(void)detect_traps();
+			(void)detect_traps(TRUE);
 			break;
 		}
 
 		case PRAYER_DETECT_DOORS_STAIRS:
 		{
-			(void)detect_doorstairs();
+			(void)detect_doorstairs(TRUE);
 			break;
 		}
 
@@ -1127,13 +1127,13 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_DETECT_MONSTERS:
 		{
-			(void)detect_monsters_normal();
+			(void)detect_monsters_normal(TRUE);
 			break;
 		}
 
 		case PRAYER_DETECTION:
 		{
-			(void)detect_all();
+			(void)detect_all(TRUE);
 			break;
 		}
 

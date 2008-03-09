@@ -37,7 +37,7 @@ static int check_devices(object_type *o_ptr)
 		case TV_ROD:   msg = "zap the rod";   break;
 		case TV_WAND:  msg = "use the wand";  what = "wand";  break;
 		case TV_STAFF: msg = "use the staff"; what = "staff"; break;
-		default:       msg = "activatee it";  break;
+		default:       msg = "activate it";  break;
 	}
 
 	/* Extract the item level */
@@ -163,7 +163,7 @@ void do_cmd_use(object_type *o_ptr, int item, int snd, use_type use)
 	if (effect_obvious(effect)) object_aware(o_ptr);
 
 	/* Do effect */
-	used = effect_do(effect, &ident, dir, beam_chance(o_ptr->tval));
+	used = effect_do(effect, &ident, was_aware, dir, beam_chance(o_ptr->tval));
 
 	/* Food feeds the player */
 	if (o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION)

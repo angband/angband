@@ -1016,7 +1016,7 @@ void map_area(void)
 /*
  * Detect traps around the player.
  */
-bool detect_traps(void)
+bool detect_traps(bool aware)
 {
 	int y, x;
 	int x1, x2, y1, y2;
@@ -1069,6 +1069,9 @@ bool detect_traps(void)
 	/* Describe */
 	if (detect)
 		msg_print("You sense the presence of traps!");
+	else
+		/* Trap detection always makes you aware, even if no traps are present */
+		msg_print("You sense no traps.");
 
 	/* Mark the redraw flag */
 	p_ptr->redraw |= (PR_DTRAP);
@@ -1082,7 +1085,7 @@ bool detect_traps(void)
 /*
  * Detect doors and stairs around the player.
  */
-bool detect_doorstairs(void)
+bool detect_doorstairs(bool aware)
 {
 	int y, x;
 	int x1, x2, y1, y2;
@@ -1148,6 +1151,7 @@ bool detect_doorstairs(void)
 	if (doors && !stairs)      msg_print("You sense the presence of doors!");
 	else if (!doors && stairs) msg_print("You sense the presence of stairs!");
 	else if (doors && stairs)  msg_print("You sense the presence of doors and stairs!");
+	else if (aware && !doors && !stairs) msg_print("You sense no doors or stairs.");
 
 	/* Result */
 	return (doors || stairs);
@@ -1157,7 +1161,7 @@ bool detect_doorstairs(void)
 /*
  * Detect all treasure around the player.
  */
-bool detect_treasure(void)
+bool detect_treasure(bool aware)
 {
 	int i;
 	int y, x;
@@ -1247,6 +1251,9 @@ bool detect_treasure(void)
 	if (objects)
 		msg_print("You sense the presence of objects!");
 
+	if (aware && !gold_object && !gold_buried && !objects)
+		msg_print("You sense no treasure or objects.");
+
 	return (gold_object || gold_buried || objects);
 }
 
@@ -1260,7 +1267,7 @@ bool detect_treasure(void)
  *
  * It can probably be argued that this function is now too powerful.
  */
-bool detect_objects_magic(void)
+bool detect_objects_magic(bool aware)
 {
 	int i, y, x, tv;
 	int x1, x2, y1, y2;
@@ -1322,6 +1329,8 @@ bool detect_objects_magic(void)
 
 	if (detect)
 		msg_print("You sense the presence of magic objects!");
+	else if (aware && !detect)
+		msg_print("You sense no magic objects.");
 
 	return detect;
 }
@@ -1330,7 +1339,7 @@ bool detect_objects_magic(void)
 /*
  * Detect "normal" monsters around the player.
  */
-bool detect_monsters_normal(void)
+bool detect_monsters_normal(bool aware)
 {
 	int i, y, x;
 	int x1, x2, y1, y2;
@@ -1384,7 +1393,9 @@ bool detect_monsters_normal(void)
 
 	if (flag)
 		msg_print("You sense the presence of monsters!");
-
+	else if (aware && !flag)
+		msg_print("You sense no monsters.");
+		
 	/* Result */
 	return flag;
 }
@@ -1393,7 +1404,7 @@ bool detect_monsters_normal(void)
 /*
  * Detect "invisible" monsters around the player.
  */
-bool detect_monsters_invis(void)
+bool detect_monsters_invis(bool aware)
 {
 	int i, y, x;
 	int x1, x2, y1, y2;
@@ -1456,6 +1467,8 @@ bool detect_monsters_invis(void)
 
 	if (flag)
 		msg_print("You sense the presence of invisible creatures!");
+	else if (aware && !flag)
+		msg_print("You sense no invisible creatures.");
 
 	return (flag);
 }
@@ -1465,7 +1478,7 @@ bool detect_monsters_invis(void)
 /*
  * Detect "evil" monsters around the player.
  */
-bool detect_monsters_evil(void)
+bool detect_monsters_evil(bool aware)
 {
 	int i, y, x;
 	int x1, x2, y1, y2;
@@ -1528,6 +1541,8 @@ bool detect_monsters_evil(void)
 
 	if (flag)
 		msg_print("You sense the presence of evil creatures!");
+	else if (aware && !flag)
+		msg_print("You sense no evil creatures.");
 
 	return flag;
 }
@@ -1537,16 +1552,16 @@ bool detect_monsters_evil(void)
 /*
  * Detect everything
  */
-bool detect_all(void)
+bool detect_all(bool aware)
 {
 	bool detect = FALSE;
 
 	/* Detect everything */
-	if (detect_traps()) detect = TRUE;
-	if (detect_doorstairs()) detect = TRUE;
-	if (detect_treasure()) detect = TRUE;
-	if (detect_monsters_invis()) detect = TRUE;
-	if (detect_monsters_normal()) detect = TRUE;
+	if (detect_traps(aware)) detect = TRUE;
+	if (detect_doorstairs(aware)) detect = TRUE;
+	if (detect_treasure(aware)) detect = TRUE;
+	if (detect_monsters_invis(aware)) detect = TRUE;
+	if (detect_monsters_normal(aware)) detect = TRUE;
 
 	/* Result */
 	return (detect);
