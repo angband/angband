@@ -117,6 +117,7 @@ docs: doc/index.html
 # Clean up old junk
 clean:
 	-rm -f *.o gtk/*.o $(EXE)
+	-rm ../lib/data/*.raw
 
 # make a distribution
 DIRS = lib/apex lib/bone lib/data lib/edit lib/file lib/help lib/info \

@@ -152,7 +152,6 @@ EFFECT(STAR_BALL,      FALSE, "fires a ball of electricity in all directions, ea
 EFFECT(RAGE_BLESS_RESIST, FALSE, "beserk rage, bless, and resistance")
 EFFECT(RESTORE_LIFE,   FALSE, "restores your experience to full")
 EFFECT(REM_FEAR_POIS,  FALSE, "cures you of fear and poison")
-EFFECT(PROBE,          FALSE, "reveals information about a monster")
 EFFECT(FIREBRAND,      FALSE, "brands bolts with fire, in an unbalanced fashion")
 
 EFFECT(FIRE_BOLT,      TRUE,  "creates a fire bolt with damage 9d8")
