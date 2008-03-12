@@ -1379,15 +1379,16 @@ static void SelectTerm(sdl_Button *sender)
 	
 static void TermActivate(sdl_Button *sender)
 {
-	int i, maxl = 0;
-	int width = maxl * StatusBar.font.width + 20;
-	int height = ANGBAND_TERM_MAX * (StatusBar.font.height + 1);
+	int i, maxl = 0; 
+	int width, height = ANGBAND_TERM_MAX * (StatusBar.font.height + 1);
 
 	for (i = 0; i < ANGBAND_TERM_MAX; i++)
 	{
 		int l = strlen(angband_term_name[i]); 
 		if (l > maxl) maxl = l;
 	}
+	
+	width = maxl * StatusBar.font.width + 20;
 	
 	sdl_WindowInit(&PopUp, width, height, AppWin, StatusBar.font.name);
 	PopUp.left = sender->pos.x;
@@ -1467,15 +1468,16 @@ static void SelectFont(sdl_Button *sender)
 
 static void FontActivate(sdl_Button *sender)
 {
-	int i, maxl = 0;
-	int width = maxl * StatusBar.font.width + 20;
-	int height = num_fonts * (StatusBar.font.height + 1);
+	int i, maxl = 0; 
+	int width, height = num_fonts * (StatusBar.font.height + 1);
 
 	for (i = 0; i < num_fonts; i++)
 	{
 		int l = strlen(FontList[i]); 
 		if (l > maxl) maxl = l;
 	}
+	
+	width = maxl * StatusBar.font.width + 20;
 	
 	sdl_WindowInit(&PopUp, width, height, AppWin, StatusBar.font.name);
 	PopUp.left = sender->pos.x;
