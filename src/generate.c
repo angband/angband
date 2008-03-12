@@ -328,6 +328,14 @@ static void new_player_spot(void)
 		/* Refuse to start on anti-teleport grids */
 		if (cave_info[y][x] & (CAVE_ICKY)) continue;
 
+		if (!adult_no_stairs)
+		{
+			if (p_ptr->create_down_stair)
+				cave_set_feat(y, x, FEAT_MORE);
+			else if (p_ptr->create_up_stair)
+				cave_set_feat(y, x, FEAT_LESS);
+		}
+
 		/* Done */
 		break;
 	}
