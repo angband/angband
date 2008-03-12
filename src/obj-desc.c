@@ -312,7 +312,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type
 			 *                 ^ ^^ */
 			const char *singular = basename + 1;
 			const char *plural   = strchr(singular, '|');
-			const char *endmark;
+			const char *endmark  = NULL;
 
 			if (plural)
 			{
@@ -344,7 +344,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type
 					 *                 ^ ^^ */
 					const char *singular = basename + 1;
 					const char *plural   = strchr(singular, '|');
-					const char *endmark;
+					const char *endmark  = NULL;
 
 					if (plural)
 					{
