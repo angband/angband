@@ -22,7 +22,7 @@
 #include "z-virt.h"
 #include "game-event.h"
 
-struct event_handler_entry;
+typedef struct event_handler_entry;
 struct event_handler_entry
 {
 	struct event_handler_entry *next;	

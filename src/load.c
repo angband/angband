@@ -343,7 +343,6 @@ static errr rd_item(object_type *o_ptr)
 {
 	byte old_dd;
 	byte old_ds;
-	byte tmp8u;
 
 	u32b f1, f2, f3;
 

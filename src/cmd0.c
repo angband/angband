@@ -461,7 +461,7 @@ static bool cmd_sub_action(char cmd, void *db, int oid)
 static bool cmd_menu(command_list *list, void *selection_p)
 {
 	menu_type menu;
-	menu_iter commands_menu = { 0, 0, 0, cmd_sub_entry, cmd_sub_action };
+	menu_iter commands_menu = { MN_NULL, 0, 0, cmd_sub_entry, cmd_sub_action };
 	region area = { 23, 4, 37, 13 };
 
 	ui_event_data evt;
@@ -526,7 +526,7 @@ static void cmd_list_entry(menu_type *menu, int oid, bool cursor, int row, int c
 static void do_cmd_menu(void)
 {
 	menu_type menu;
-	menu_iter commands_menu = { 0, 0, 0, cmd_list_entry, cmd_list_action };
+	menu_iter commands_menu = { MN_NULL, 0, 0, cmd_list_entry, cmd_list_action };
 	region area = { 21, 5, 37, 6 };
 
 	ui_event_data evt;

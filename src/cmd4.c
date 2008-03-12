@@ -2312,7 +2312,7 @@ static bool update_option(char key, void *pgdb, int oid)
 
 static const menu_iter options_toggle_iter =
 {
-	0,
+	MN_NULL,
 	NULL,
 	NULL,
 	display_option,		/* label */

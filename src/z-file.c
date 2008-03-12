@@ -546,7 +546,7 @@ bool file_readc(ang_file *f, byte *b)
  */
 bool file_writec(ang_file *f, byte b)
 {
-	return file_write(f, &b, 1);
+	return file_write(f, (const char *)&b, 1);
 }
 
 /*
