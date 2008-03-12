@@ -1722,6 +1722,10 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			fire_ball(GF_MISSILE, dir, 300, 2);
 			return TRUE;
 		}
+
+		case EF_XXX:
+		case EF_MAX:
+			break;
 	}
 
 	/* Not used */
