@@ -1406,7 +1406,8 @@ bool make_object(object_type *j_ptr, int lev, bool good, bool great)
 	/* Generate a special artifact, or a normal object */
 	if ((rand_int(prob) != 0) || !make_artifact_special(j_ptr, lev))
 	{
-		int k_idx;
+		int k_idx, i;
+		int tries = 1;
 
 #if 0
 		/* Good objects */
@@ -1420,8 +1421,19 @@ bool make_object(object_type *j_ptr, int lev, bool good, bool great)
 		}
 #endif
 
-		/* Pick a random object */
-		k_idx = get_obj_num(base);
+		if (great)
+		    tries = 5;
+		else if (good)
+		    tries = 3;
+
+		for (i = 0; i < tries; i++)
+		{
+		    /* Pick a random object */
+		    k_idx = get_obj_num(base);
+		    
+		    /* Keep if it's good, or try again */
+		    if (kind_is_good(k_idx)) break;
+		}
 
 #if 0
 		/* Good objects */
