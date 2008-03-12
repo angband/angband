@@ -342,7 +342,8 @@ byte py_pickup(int pickup, bool pickup_okay)
 	/* Objects picked up.  Used to determine time cost of command. */
 	byte objs_picked_up = 0;
 
-	int floor_num = 0, floor_list[MAX_FLOOR_STACK + 1], floor_o_idx = 0;
+	size_t floor_num = 0;
+	int floor_list[MAX_FLOOR_STACK + 1], floor_o_idx = 0;
 
 	int can_pickup = 0;
 	bool call_function_again = FALSE;
