@@ -2731,6 +2731,9 @@ static OSStatus AngbandGame(EventHandlerCallRef inCallRef,
  */
 static OSStatus openGame(int op)
 {
+	/* If a game is in progress, do not proceed */
+	if (game_in_progress) return noErr;
+
 	/* Let the player to choose savefile */
 	if (op != kNew && 0 == select_savefile(op == kImport))
 	{
@@ -2750,6 +2753,10 @@ static OSStatus openGame(int op)
 	/* Game is in progress */
 	game_in_progress = TRUE;
 
+	/* Disable the file-handling options in the file menu */
+	for(int i = kNew; i <= kImport; i++)
+		DisableMenuItem(MyGetMenuHandle(kFileMenu), i);
+	
 	return noErr;
 }
 
@@ -3451,6 +3458,9 @@ static OSErr AEH_Open(const AppleEvent *theAppleEvent, AppleEvent* reply,
 	OSErr err;
 	FInfo myFileInfo;
 
+	/* If a game is in progress, do not proceed */
+	if (game_in_progress) return noErr;
+	
 	/* Put the direct parameter (a descriptor list) into a docList */
 	err = AEGetParamDesc(theAppleEvent, keyDirectObject, typeAEList, &docList);
 	if (err) return err;
