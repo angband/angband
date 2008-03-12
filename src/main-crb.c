@@ -3309,6 +3309,11 @@ static OSStatus KeyboardCommand ( EventHandlerCallRef inCallRef,
 	EventRecord event;
 	ConvertEventRefToEventRecord(inEvent, &event);
 
+	/* Don't handle keyboard events in open/save dialogs, to prevent a 10.4 keyboard interaction bug */
+	UInt32 windowClass;
+	GetWindowClass(GetUserFocusWindow(), &windowClass);
+	if (windowClass == kMovableModalWindowClass) return eventNotHandledErr;
+
 	/* Extract some modifiers */
 	int mc = (event.modifiers & controlKey) ? TRUE : FALSE;
 	int ms = (event.modifiers & shiftKey) ? TRUE : FALSE;
