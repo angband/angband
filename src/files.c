@@ -1900,7 +1900,7 @@ errr file_character(cptr name, bool full)
 
 
 	/* Set the indent/wrap */
-	text_out_indent = 3;
+	text_out_indent = 5;
 	text_out_wrap = 72;
 
 	/* Dump the equipment */

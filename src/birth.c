@@ -533,6 +533,10 @@ static void player_wipe(void)
 
 	/* None of the spells have been learned yet */
 	for (i = 0; i < PY_MAX_SPELLS; i++) p_ptr->spell_order[i] = 99;
+
+
+	/* First turn. */
+	turn = old_turn = 1;
 }
 
 /*

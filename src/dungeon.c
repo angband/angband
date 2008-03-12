@@ -1833,9 +1833,6 @@ void play_game(void)
 		/* Randomize the artifacts */
 		if (adult_randarts)
 			do_randart(seed_randart, TRUE);
-
-		/* Hack -- enter the world */
-		old_turn = turn = 1;
 	}
 
 
