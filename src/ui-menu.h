@@ -179,6 +179,9 @@ struct menu_skin
 /* Identifiers for canned row iterator implementations */
 typedef enum
 {
+	/* An empty slate */
+	MN_NULL	= 0x0,
+
 	/* A simple list of actions with an associated name and id.
 	   An array of menu_action */
 	MN_ACTIONS  = 0x1, 

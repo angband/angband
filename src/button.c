@@ -54,7 +54,6 @@ static button_mouse *button_backup;
 static int button_start;
 static int button_length;
 static int button_num;
-static int prompt_end;
 
 
 /*

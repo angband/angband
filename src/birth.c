@@ -906,11 +906,12 @@ static bool roller_handler(char cmd, void *db, int oid)
 }
 
 
-static const menu_iter menu_defs[] = {
-	{ 0, 0, 0, display_gender, gender_handler },
-	{ 0, 0, 0, display_race, race_handler },
-	{ 0, 0, 0, display_class, class_handler },
-	{ 0, 0, 0, display_roller, roller_handler },
+static const menu_iter menu_defs[] =
+{
+	{ MN_NULL, 0, 0, display_gender, gender_handler },
+	{ MN_NULL, 0, 0, display_race, race_handler },
+	{ MN_NULL, 0, 0, display_class, class_handler },
+	{ MN_NULL, 0, 0, display_roller, roller_handler },
 };
 
 /* Menu display and selector */
@@ -1699,7 +1700,7 @@ static int player_birth_aux_3(bool start_at_end, bool autoroll)
 	return +1;
 }
 
-typedef enum 
+typedef enum
 {
 	BIRTH_RESTART = 0,
 	BIRTH_QUESTIONS,
@@ -1731,44 +1732,52 @@ static void player_birth_aux(void)
 		{
 			case BIRTH_RESTART:
 			{
-				state++;
+				state = BIRTH_QUESTIONS;
 				break;
 			}
 
 			case BIRTH_QUESTIONS:
 			{
 				/* Race, class, etc. choices */
-				if (player_birth_aux_1(start_at_end)) 
-					state++;
+				if (player_birth_aux_1(start_at_end))
+					state = BIRTH_STATS;
 				break;
 			}
 
 			case BIRTH_STATS:
 			{
+				int temp;
+
 				if (roller_type == ROLLER_POINT)
 				{
 					/* Fill stats using point-based methods */
-					state += player_birth_aux_2(start_at_end);
+					temp = player_birth_aux_2(start_at_end);
 				}
 				else
 				{
 					/* Fills stats using the standard- or auto-roller */
-					state += player_birth_aux_3(start_at_end, roller_type == ROLLER_AUTO);
+					temp = player_birth_aux_3(start_at_end, roller_type == ROLLER_AUTO);
 				}
+
+				if (temp > 0)
+					state = BIRTH_NAME;
+				else if (temp < 0)
+					state = BIRTH_QUESTIONS;
+
 				break;
 			}
 
 			case BIRTH_NAME:
 			{
 				/* Get a name, prepare savefile */
-				if (get_name(FALSE)) 
-					state++;
-				else 
-					state--;
+				if (get_name(FALSE))
+					state = BIRTH_FINAL_APPROVAL;
+				else
+					state = BIRTH_STATS;
 
 				break;
 			}
-			
+
 			case BIRTH_FINAL_APPROVAL:
 			{
 				/* Display the player */
@@ -1783,32 +1792,32 @@ static void player_birth_aux(void)
 				button_add("[ESC]", ESCAPE);
 				button_add("[S]", 'S');
 				redraw_stuff();
-	    
+
 				/* Get a key */
 				ke = inkey_ex();
 
 				/* Start over */
-				if (ke.key == 'S') 
+				if (ke.key == 'S')
 					state = BIRTH_RESTART;
 
-				if (ke.key == KTRL('X')) 
+				if (ke.key == KTRL('X'))
 					quit(NULL);
 
-				if (ke.key == ESCAPE) 
-					state--;
+				if (ke.key == ESCAPE)
+					state = BIRTH_NAME;
 				else
-					state++;
+					state = BIRTH_ACCEPTED;
 
 				/* Buttons */
 				button_kill_all();
 				redraw_stuff();
-	    
+
 				/* Clear prompt */
 				clear_from(23);
 
 				break;
 			}
-			
+
 			case BIRTH_ACCEPTED:
 			{
 				return;
