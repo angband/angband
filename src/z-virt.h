@@ -84,7 +84,7 @@
 
 
 /* Free one thing at P, return NULL */
-#define FREE(P) (P = mem_free(P))
+#define FREE(P) (mem_free(P), P = NULL)
 
 
 
