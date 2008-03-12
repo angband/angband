@@ -224,8 +224,6 @@ int main(int argc, char *argv[])
 
 	bool done = FALSE;
 
-	int show_score = 0;
-
 	const char *mstr = NULL;
 
 	bool args = TRUE;
@@ -418,10 +416,10 @@ int main(int argc, char *argv[])
 
 	/* Make sure we have a display! */
 	if (!done) quit("Unable to prepare any 'display module'!");
-	
+
 
 	/* Process the player name */
-	if (ANGBAND_SYS != "gtk")
+	if (!strcmp(ANGBAND_SYS, "gtk"))
 		process_player_name(TRUE);
 
 	/* Install "quit" hook */
