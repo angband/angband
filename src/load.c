@@ -466,7 +466,7 @@ static errr rd_item(object_type *o_ptr)
 
 	switch (o_ptr->k_idx)
 	{
-		case 158;
+		case 158:
 			o_ptr->k_idx = 157;
 			break;
 
