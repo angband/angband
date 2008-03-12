@@ -144,7 +144,6 @@ static const char *obj_desc_get_basename(const object_type *o_ptr)
 	if (artifact_p(o_ptr) && object_aware_p(o_ptr))
 		return (k_name + k_ptr->name);
 
-
 	/* Analyze the object */
 	switch (o_ptr->tval)
 	{
@@ -381,15 +380,14 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type
 
 	/** Append extra names of various kinds **/
 
-	if (aware && (k_ptr->flavor || k_ptr->tval == TV_SCROLL))
-		strnfcat(buf, max, &end, " of %s", k_name + k_ptr->name);
-
 	if (known && o_ptr->name1)
 		strnfcat(buf, max, &end, " %s", a_name + a_info[o_ptr->name1].name);
 
-	if (known && o_ptr->name2)
+	else if (known && o_ptr->name2)
 		strnfcat(buf, max, &end, " %s", e_name + e_info[o_ptr->name2].name);
 
+	else if (aware && (k_ptr->flavor || k_ptr->tval == TV_SCROLL))
+		strnfcat(buf, max, &end, " of %s", k_name + k_ptr->name);
 
 	return end;
 }
