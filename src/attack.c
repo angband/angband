@@ -585,7 +585,8 @@ void py_attack(int y, int x)
 void do_cmd_fire(void)
 {
 	int dir, item;
-	int i, j, y, x, ty, tx;
+	int i, j, y, x;
+	s16b ty, tx;
 	int tdam, tdis, thits, tmul;
 	int bonus, chance;
 
@@ -889,7 +890,8 @@ void do_cmd_fire(void)
 void do_cmd_throw(void)
 {
 	int dir, item;
-	int i, j, y, x, ty, tx;
+	int i, j, y, x;
+	s16b ty, tx;
 	int chance, tdam, tdis;
 	int mul, div;
 

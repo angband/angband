@@ -2093,8 +2093,7 @@ void text_out_e(const char *fmt, ...)
 	char smallbuf[1024];
 	va_list vp;
 
-	char *start;
-	const char *next, *text, *tag;
+	const char *start, *next, *text, *tag;
 	size_t textlen, taglen;
 
 	/* Begin the Varargs Stuff */

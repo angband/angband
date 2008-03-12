@@ -17,6 +17,7 @@
  */
 #include "angband.h"
 #include "ui-menu.h"
+#include "cmds.h"
 
 
 /*
