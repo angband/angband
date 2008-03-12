@@ -135,28 +135,23 @@ if test "$enable_curses" = "yes"; then
 	AC_CHECK_LIB(curses  , initscr, found_curses=yes,found_curses=no)
 	AC_CHECK_LIB(ncurses , initscr, found_ncurses=yes,found_ncurses=no)
 	AC_CHECK_LIB(pdcurses, initscr, found_pdcurses=yes,found_pdcurses=no)
-	if test "$found_ncurses" = "no"; then
-		if test "$found_pdcurses" = "no"; then
-			if test "$found_curses" = "no"; then
-				AC_DEFINE(USE_NCURSES, 0, [Define to 1 if NCurses is found.])
-				AC_DEFINE(USE_CURSES, 0, [Define to 1 if Curses or PDCurses is found, but NCurses is not.])
-				AC_DEFINE(USE_GCU, 0, [Define to 1 if using the Curses frontend.])
+	if test "x$found_ncurses" = "xno"; then
+		if test "x$found_pdcurses" = "xno"; then
+			if test "x$found_curses" = "xno"; then
+				with_curses=no
 			else
-				AC_DEFINE(USE_NCURSES, 0, [Define to 1 if NCurses is found.])
 				AC_DEFINE(USE_CURSES, 1, [Define to 1 if Curses or PDCurses is found, but NCurses is not.])
 				AC_DEFINE(USE_GCU, 1, [Define to 1 if using the Curses frontend.])
 				LDFLAGS="${LDFLAGS} -lcurses"
 				with_curses=yes
 			fi
 		else
-			AC_DEFINE(USE_NCURSES, 0, [Define to 1 if NCurses is found.])
 			AC_DEFINE(USE_CURSES, 1, [Define to 1 if Curses or PDCurses is found, but NCurses is not.])
 			AC_DEFINE(USE_GCU, 1, [Define to 1 if using the Curses frontend.])
 			LDFLAGS="${LDFLAGS} -lpdcurses"
 			with_curses=yes
 		fi
 	else
-		AC_DEFINE(USE_CURSES, 0, [Define to 1 if Curses or PDCurses is found, but NCurses is not.])
 		AC_DEFINE(USE_NCURSES, 1, [Define to 1 if NCurses is found.])
 		AC_DEFINE(USE_GCU, 1, [Define to 1 if using the Curses frontend.])
 		LDFLAGS="${LDFLAGS} -lncurses"
