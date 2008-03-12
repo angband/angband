@@ -1288,40 +1288,23 @@ W:30:0:2:340
 A:100:30 to 100
 F:SEE_INVIS | EASY_KNOW
 
-N:156:Sustain Strength
+N:156:Sustain Body
 G:=:d
 I:45:10:0
 W:30:0:2:750
 A:100:30 to 100
-F:SUST_STR | EASY_KNOW
+F:SUST_STR | SUST_DEX | SUST_CON | EASY_KNOW
 
-N:157:Sustain Intelligence
+N:157:Sustain Mind
 G:=:d
 I:45:11:0
 W:30:0:2:600
 A:100:30 to 100
-F:SUST_INT | EASY_KNOW
+F:SUST_STR | SUST_INT | SUST_WIS | EASY_KNOW
 
-N:158:Sustain Wisdom
-G:=:d
-I:45:12:0
-W:30:0:2:600
-A:100:30 to 100
-F:SUST_WIS | EASY_KNOW
-
-N:159:Sustain Constitution
-G:=:d
-I:45:13:0
-W:30:0:2:750
-A:100:30 to 100
-F:SUST_CON | EASY_KNOW
-
-N:160:Sustain Dexterity
-G:=:d
-I:45:14:0
-W:30:0:2:750
-A:100:30 to 100
-F:SUST_DEX | EASY_KNOW
+## 158
+## 159
+## 160
 
 N:161:Sustain Charisma
 G:=:d

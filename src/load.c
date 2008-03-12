@@ -463,6 +463,19 @@ static errr rd_item(object_type *o_ptr)
 
 	/* Lookup item kind */
 	o_ptr->k_idx = lookup_kind(o_ptr->tval, o_ptr->sval);
+
+	switch (o_ptr->k_idx)
+	{
+		case 158;
+			o_ptr->k_idx = 157;
+			break;
+
+		case 159:
+		case 160:
+			o_ptr->k_idx = 156;
+			break;
+	}
+
 	k_ptr = &k_info[o_ptr->k_idx];
 
 	/* Return now in case of "blank" or "empty" objects */
