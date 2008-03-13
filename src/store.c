@@ -444,9 +444,6 @@ static s32b price_item(const object_type *o_ptr, bool store_buying)
 
 		/* Mega-Hack -- Black market sucks */
 		if (store_current == STORE_B_MARKET) price = price / 2;
-
-		/* Now limit the price to the purse limit */
-		if (price > ot_ptr->max_cost) price = ot_ptr->max_cost;
 	}
 
 	/* Shop is selling */
@@ -464,6 +461,10 @@ static s32b price_item(const object_type *o_ptr, bool store_buying)
 
 	/* Compute the final price (with rounding) */
 	price = (price * adjust + 50L) / 100L;
+
+	/* Now limit the price to the purse limit */
+	if (store_buying && (price > ot_ptr->max_cost))
+		price = ot_ptr->max_cost;
 
 	/* Note -- Never become "free" */
 	if (price <= 0L) return (1L);
