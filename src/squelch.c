@@ -154,6 +154,7 @@ static tval_desc sval_dependent[] =
 	{ TV_PRAYER_BOOK,	"Prayer books" },
 	{ TV_SPIKE,			"Spikes" },
 	{ TV_LITE,			"Lights" },
+	{ TV_FLASK,			"Flasks of oil" },
 };
 
 
@@ -411,6 +412,10 @@ bool squelch_item_ok(const object_type *o_ptr)
 				return TRUE;
 			}
 
+			if ((feel != INSCRIP_AVERAGE) && fullid &&
+				 (o_ptr->to_a <= 0 && o_ptr->to_h <= 0 && o_ptr->to_d <= 0))
+				return TRUE;
+
 			break;
 		}
 
@@ -418,7 +423,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 		{
 			if ((feel == INSCRIP_TERRIBLE) ||
 			    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED) ||
-			    (feel == INSCRIP_AVERAGE))
+			    (feel == INSCRIP_AVERAGE) || (feel == INSCRIP_MAGICAL))
 			{
 				return TRUE;
 			}
