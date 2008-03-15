@@ -1,0 +1,6 @@
+angband (780-1) hardy; urgency=low
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- Andrew Sidwell <takkaria@gmail.com>  Fri, 14 Mar 2008 16:08:41 +0000
+

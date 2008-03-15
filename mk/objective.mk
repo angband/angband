@@ -126,9 +126,6 @@ distclean: clean
 			cd $$i; OVERLAYS="" $(MAKE) distclean || exit; cd ..; \
 		done; \
 	fi
-	@if [ -f Makefile.in ]; then \
-		rm -f Makefile; \
-	fi
 	@if [ -f mk/rules.mk ]; then \
 		rm -f mk/rules.mk; \
 	fi

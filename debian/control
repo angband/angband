@@ -1,0 +1,14 @@
+Source: angband
+Section: unknown
+Priority: extra
+Maintainer: Andrew Sidwell <takkaria@gmail.com>
+Build-Depends: debhelper (>= 5), autotools-dev, libncurses5-dev, libsdl1.2-dev, \
+					libsdl-ttf2.0-dev, libsdl-mixer1.2-dev, libsdl-image1.2-dev
+Standards-Version: 3.7.2
+Homepage: http://rephial.org/
+
+Package: angband
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: A single-player tactical dungeon simulation game.
+ Angband is a single-player, text-based, dungeon simulation derived from the game Moria, which was in turn based on Rogue.

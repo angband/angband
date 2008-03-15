@@ -7,8 +7,7 @@ HEADERS = $(HDRS) $(INCS)
 OBJECTS = $(ANGFILES) $(MAINFILES) $(ZFILES)
 SOURCES = ${OBJECTS:.o=.c}
 
-# These are for OS-specific ports; ignore 'em until we use autoconf everywhere.
-# SUBDIRS = osx win
+SUBDIRS = gtk
 
 OBJECTIVE_BINS = angband
 
@@ -17,6 +16,9 @@ CFLAGS += -I.
 angband: $(OBJECTS)
 	$(CC) $(OBJECTS) $(LDFLAGS) $(LDADD) -o $@ 
 	@printf "%10s %-20s\n" LINK $@
+
+clean-prehook:
+	-rm autoconf.h
 
 install-posthook:
 	@if [ "x$(SETEGID)" != "x" ]; then \

@@ -1,0 +1,67 @@
+#!/usr/bin/make -f
+
+export DH_VERBOSE=1
+
+build: build-stamp
+build-stamp:
+	dh_testdir
+	./configure --prefix=/usr --mandir=\$${prefix}/share/man \
+	            CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs" \
+	            --disable-x11 --enable-sdl --enable-sdl-mixer \
+	            --disable-gtk --with-private-dirs
+	$(MAKE)
+	touch $@
+
+clean:
+	dh_testdir
+	dh_testroot
+	$(MAKE) distclean
+	rm -f build-stamp
+	dh_clean 
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k 
+
+	# Add here commands to install the package into debian/angband.
+	$(MAKE) DESTDIR=$(CURDIR)/debian/angband/ install
+
+
+# Build architecture-independent files here.
+binary-indep: build install
+# We have nothing to do by default.
+
+# Build architecture-dependent files here.
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs changes.txt
+	dh_installdocs
+	dh_installexamples
+#	dh_install
+#	dh_installmenu
+#	dh_installdebconf	
+#	dh_installlogrotate
+#	dh_installemacsen
+#	dh_installpam
+#	dh_installmime
+#	dh_python
+#	dh_installinit
+#	dh_installcron
+#	dh_installinfo
+	dh_installman
+	dh_link
+#	dh_strip
+	dh_compress
+	dh_fixperms
+#	dh_perl
+#	dh_makeshlibs
+	dh_installdeb
+	dh_shlibdeps
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install 
