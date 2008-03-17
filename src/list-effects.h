@@ -219,9 +219,9 @@ EFFECT(FOOD_GOOD,      FALSE, NULL)
 EFFECT(FOOD_WAYBREAD,  FALSE, "restores 4d8 hit points and neutralizes poison")
 
 EFFECT(RING_ACID,      TRUE,  "grants acid resistance for d20+20 turns and creates an acid ball of damage 70")
-EFFECT(RING_FLAMES,    TRUE,  "grants fire resistance for d20+20 turns and creates an fire ball of damage 80")
-EFFECT(RING_ICE,       TRUE,  "grants cold resistance for d20+20 turns and creates an cold ball of damage 75")
-EFFECT(RING_LIGHTNING, TRUE,  "grants electricity resistance for d20+20 turns and creates an lightning ball of damage 85")
+EFFECT(RING_FLAMES,    TRUE,  "grants fire resistance for d20+20 turns and creates a fire ball of damage 80")
+EFFECT(RING_ICE,       TRUE,  "grants cold resistance for d20+20 turns and creates a cold ball of damage 75")
+EFFECT(RING_LIGHTNING, TRUE,  "grants electricity resistance for d20+20 turns and creates a lightning ball of damage 85")
 
 EFFECT(DRAGON_BLUE,    TRUE, "allows you to breathe lightning for 100 damage")
 EFFECT(DRAGON_GREEN,   TRUE, "allows you to breathe poison gas for 150 damage")

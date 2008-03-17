@@ -719,7 +719,7 @@ bool object_info_known(const object_type *o_ptr)
 
 	if (!object_known_p(o_ptr))
 	{
-		text_out("You do not know the full extent of this item's powers.");
+		text_out("You do not know the full extent of this item's powers.\n");
 		has_info = TRUE;
 	}
 
