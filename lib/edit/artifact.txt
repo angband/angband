@@ -1887,7 +1887,7 @@ I:19:13:2
 W:30:20:40:20000
 P:0:0d0:17:19:0
 F:DEX | SPEED | MIGHT | HIDE_TYPE | 
-F:FREE_ACT | SHOW_MODS
+F:FREE_ACT | SHOW_MODS | SLAY_DRAGON
 D:The great yew bow of grim-faced Bard, who shot the mightiest arrow that 
 D:songs record.
 
