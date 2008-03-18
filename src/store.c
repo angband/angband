@@ -2168,6 +2168,7 @@ static bool store_purchase(int item)
 
 				/* Shuffle the store */
 				store_shuffle(store_current);
+				store_flags |= STORE_FRAME_CHANGE;
 			}
 
 			/* Maintain */
@@ -2464,7 +2465,7 @@ static void store_examine(int item)
 
 	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
 	(void)anykey();
-      
+
 	screen_load();
 
 	/* Hack -- Browse book, then prompt for a command */
