@@ -2290,7 +2290,7 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 		m_name = r_name + r_ptr->name;
 
 		/* Display uniques in a special colour */
-		if (r_ptr->flags1 & RF1_UNIQUE)
+		if (r_ptr->flags[0] & RF1_UNIQUE)
 			attr = TERM_VIOLET;
 		else
 			attr = TERM_WHITE;

@@ -419,8 +419,7 @@ int main(int argc, char *argv[])
 
 
 	/* Process the player name */
-	if (strcmp(ANGBAND_SYS, "gtk"))
-		process_player_name(TRUE);
+	process_player_name(TRUE);
 
 	/* Install "quit" hook */
 	quit_aux = quit_hook;
