@@ -1637,9 +1637,6 @@ static int o_cmp_tval(const void *a, const void *b)
 		              flavor_text + flavor_info[k_b->flavor].text);
 	}
 
-	c = k_a->cost - k_b->cost;
-	if (c) return c;
-
 	return strcmp(k_name + k_a->name, k_name + k_b->name);
 }
 
@@ -1672,7 +1669,7 @@ static const char *o_xtra_prompt(int oid)
 {
 	object_kind *k_ptr = &k_info[oid];
 	s16b idx = get_autoinscription_index(oid);
-			
+
 	const char *no_insc = ", 'r' to recall, '{'";
 	const char *with_insc = ", 'r' to recall, '{', '}'";
 
