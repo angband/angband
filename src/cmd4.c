@@ -4303,16 +4303,16 @@ void do_cmd_pref(void)
 static const char *feeling_text[] =
 {
 	"Looks like any other level.",
-	"You feel there is something special about this level.",
+	"You feel there is something special here...",
 	"You have a superb feeling about this level.",
 	"You have an excellent feeling...",
 	"You have a very good feeling...",
 	"You have a good feeling...",
-	"You feel strangely lucky...",
-	"You feel your luck is turning...",
-	"You like the look of this place...",
-	"This level can't be all bad...",
-	"What a boring place..."
+	"You feel a little lucky.",
+	"You are unsure about this place.",
+	"This place seems reasonably safe.",
+	"This seems a quiet, peaceful place.",
+	"This place looks uninteresting.",
 };
 
 
