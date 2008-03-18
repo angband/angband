@@ -1202,7 +1202,7 @@ ui_event_data inkey_ex(void)
 			if (key)
 			{
 				/* Rewrite the event */
-				ke.type = EVT_KBRD;
+				ke.type = EVT_BUTTON;
 				ke.key = key;
 				ke.index = 0;
 				ke.mousey = 0;
@@ -2680,6 +2680,8 @@ void request_command(void)
 	int i;
 	int mode;
 
+	char tmp[2] = { '\0', '\0' };
+
 	ui_event_data ke = EVENT_EMPTY;
 
 	cptr act;
@@ -2865,8 +2867,16 @@ void request_command(void)
 		}
 
 
+		/* Buttons are always specified in standard keyset */
+		if (ke.type == EVT_BUTTON)
+		{
+			act = tmp;
+			tmp[0] = ke.key;
+		}
+
 		/* Look up applicable keymap */
-		act = keymap_act[mode][(byte)(ke.key)];
+		else
+			act = keymap_act[mode][(byte)(ke.key)];
 
 		/* Apply keymap if not inside a keymap already */
 		if (act && !inkey_next)
