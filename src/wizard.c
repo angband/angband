@@ -345,12 +345,12 @@ static void wiz_display_item(const object_type *o_ptr)
 	prt_binary(f2, 23, j);
 
 	prt("+------------FLAGS3------------+", 10, j+32);
-	prt("s   ts h     tadiiii   aiehs  hp", 11, j+32);
-	prt("lf  eefo     egrgggg  bcnaih  vr", 12, j+32);
-	prt("we  lerl    ilgannnn  ltssdo  ym", 13, j+32);
-	prt("da reied    merirrrr  eityew ccc", 14, j+32);
-	prt("itlepnel    ppanaefc  svaktm uuu", 15, j+32);
-	prt("ghigavai    aoveclio  saanyo rrr", 16, j+32);
+	prt("s   ts hn    tadiiii   aiehs  hp", 11, j+32);
+	prt("lf  eefoo    egrgggg  bcnaih  vr", 12, j+32);
+	prt("we  lerlf   ilgannnn  ltssdo  ym", 13, j+32);
+	prt("da reiedu   merirrrr  eityew ccc", 14, j+32);
+	prt("itlepnele   ppanaefc  svaktm uuu", 15, j+32);
+	prt("ghigavail   aoveclio  saanyo rrr", 16, j+32);
 	prt("seteticf    craxierl  etropd sss", 17, j+32);
 	prt("trenhste    tttpdced  detwes eee", 18, j+32);
 	prt_binary(f3, 19, j+32);
