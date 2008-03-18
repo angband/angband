@@ -484,8 +484,8 @@ void py_attack(int y, int x)
 				k = damroll(o_ptr->dd, o_ptr->ds);
 				k *= tot_dam_aux(o_ptr, m_ptr);
 				if (p_ptr->impact && (k > 50)) do_quake = TRUE;
-				k = critical_norm(o_ptr->weight, o_ptr->to_h, k);
 				k += o_ptr->to_d;
+				k = critical_norm(o_ptr->weight, o_ptr->to_h, k);
 			}
 
 			/* Apply the player damage bonuses */
