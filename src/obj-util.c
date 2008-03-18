@@ -1399,9 +1399,9 @@ static s32b object_value_base(const object_type *o_ptr)
  *
  * Every wearable item with a "pval" bonus is worth extra (see below).
  */
-static s32b object_value_real(const object_type *o_ptr)
+static s32b object_value_real(const object_type *o_ptr, int qty)
 {
-	s32b value;
+	s32b value, total_value;
 
 	u32b f1, f2, f3;
 
@@ -1501,15 +1501,23 @@ static s32b object_value_real(const object_type *o_ptr)
 	}
 
 
-	/* Analyze the item */
+	/* Analyze the item type and quantity*/
 	switch (o_ptr->tval)
 	{
 		/* Wands/Staffs */
 		case TV_WAND:
 		case TV_STAFF:
 		{
+			int charges;
+
+			total_value = value * qty;
+
+			/* Calculate number of charges, rounded up */
+			charges = o_ptr->pval * qty / o_ptr->number;
+			if ((o_ptr->pval * qty) % o_ptr->number != 0) charges++;
+
 			/* Pay extra for charges, depending on standard number of charges */
-			value += ((value / 20) * (o_ptr->pval / o_ptr->number));
+			total_value += value * charges / 20;
 
 			/* Done */
 			break;
@@ -1526,6 +1534,9 @@ static s32b object_value_real(const object_type *o_ptr)
 
 			/* Give credit for bonuses */
 			value += ((o_ptr->to_h + o_ptr->to_d + o_ptr->to_a) * 100L);
+
+			/* Calculate total value */
+			total_value = value * qty;
 
 			/* Done */
 			break;
@@ -1551,6 +1562,9 @@ static s32b object_value_real(const object_type *o_ptr)
 			/* Give credit for armor bonus */
 			value += (o_ptr->to_a * 100L);
 
+			/* Calculate total value */
+			total_value = value * qty;
+
 			/* Done */
 			break;
 		}
@@ -1574,6 +1588,9 @@ static s32b object_value_real(const object_type *o_ptr)
 				value += (o_ptr->dd - k_ptr->dd) * o_ptr->ds * 100L;
 			}
 
+			/* Calculate total value */
+			total_value = value * qty;
+
 			/* Done */
 			break;
 		}
@@ -1595,16 +1612,25 @@ static s32b object_value_real(const object_type *o_ptr)
 				value += (o_ptr->dd - k_ptr->dd) * o_ptr->ds * 5L;
 			}
 
+			/* Calculate total value */
+			total_value = value * qty;
+
 			/* Done */
+			break;
+		}
+		
+		default:
+		{
+			total_value = value * qty;
 			break;
 		}
 	}
 
 	/* No negative value */
-	if (value < 0) value = 0;
+	if (total_value < 0) total_value = 0;
 
 	/* Return the value */
-	return (value);
+	return (total_value);
 }
 
 
@@ -1618,7 +1644,7 @@ static s32b object_value_real(const object_type *o_ptr)
  *
  * Note that discounted items stay discounted forever.
  */
-s32b object_value(const object_type *o_ptr)
+s32b object_value(const object_type *o_ptr, int qty)
 {
 	s32b value;
 
@@ -1630,7 +1656,7 @@ s32b object_value(const object_type *o_ptr)
 		if (cursed_p(o_ptr)) return (0L);
 
 		/* Real value (see above) */
-		value = object_value_real(o_ptr);
+		value = object_value_real(o_ptr, qty);
 	}
 
 	/* Known items -- acquire the actual value */
@@ -1640,7 +1666,7 @@ s32b object_value(const object_type *o_ptr)
 		if ((o_ptr->ident & (IDENT_SENSE)) && cursed_p(o_ptr)) return (0L);
 
 		/* Base value (see above) */
-		value = object_value_base(o_ptr);
+		value = object_value_base(o_ptr) * qty;
 	}
 
 
@@ -2819,7 +2845,7 @@ s16b inven_carry(object_type *o_ptr)
 		s32b o_value, j_value;
 
 		/* Get the "value" of the item */
-		o_value = object_value(o_ptr);
+		o_value = object_value(o_ptr, 1);
 
 		/* Scan every occupied slot */
 		for (j = 0; j < INVEN_PACK; j++)
@@ -2859,7 +2885,7 @@ s16b inven_carry(object_type *o_ptr)
 			}
 
 			/* Determine the "value" of the pack item */
-			j_value = object_value(j_ptr);
+			j_value = object_value(j_ptr, 1);
 
 			/* Objects sort by decreasing value */
 			if (o_value > j_value) break;
@@ -3190,7 +3216,7 @@ void reorder_pack(void)
 		if (!o_ptr->k_idx) continue;
 
 		/* Get the "value" of the item */
-		o_value = object_value(o_ptr);
+		o_value = object_value(o_ptr, 1);
 
 		/* Scan every occupied slot */
 		for (j = 0; j < INVEN_PACK; j++)
@@ -3231,7 +3257,7 @@ void reorder_pack(void)
 			}
 
 			/* Determine the "value" of the pack item */
-			j_value = object_value(j_ptr);
+			j_value = object_value(j_ptr, 1);
 
 			/* Objects sort by decreasing value */
 			if (o_value > j_value) break;

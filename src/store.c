@@ -373,7 +373,7 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 	}
 
 	/* Ignore "worthless" items XXX XXX XXX */
-	if (object_value(o_ptr) <= 0) return (FALSE);
+	if (object_value(o_ptr, 1) <= 0) return (FALSE);
 
 	/* Assume okay */
 	return (TRUE);
@@ -407,7 +407,7 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
  * to adjust (by 200) to extract a usable multiplier.  Note that the
  * "greed" value is always something (?).
  */
-static s32b price_item(const object_type *o_ptr, bool store_buying)
+static s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 {
 	int factor;
 	int adjust;
@@ -419,8 +419,8 @@ static s32b price_item(const object_type *o_ptr, bool store_buying)
 	int greed = ot_ptr->inflate;
 
 
-	/* Get the value of one of the items */
-	price = object_value(o_ptr);
+	/* Get the value of the given quantity of items */
+	price = object_value(o_ptr, qty);
 
 	/* Worthless items */
 	if (price <= 0) return (0L);
@@ -463,11 +463,11 @@ static s32b price_item(const object_type *o_ptr, bool store_buying)
 	price = (price * adjust + 50L) / 100L;
 
 	/* Now limit the price to the purse limit */
-	if (store_buying && (price > ot_ptr->max_cost))
-		price = ot_ptr->max_cost;
+	if (store_buying && (price > ot_ptr->max_cost * qty))
+		price = ot_ptr->max_cost * qty;
 
 	/* Note -- Never become "free" */
-	if (price <= 0L) return (1L);
+	if (price <= 0L) return (qty);
 
 	/* Return the price */
 	return (price);
@@ -496,7 +496,7 @@ static int mass_roll(int times, int max)
 static void mass_produce(object_type *o_ptr)
 {
 	int size = 1;
-	s32b cost = object_value(o_ptr);
+	s32b cost = object_value(o_ptr, 1);
 
 	/* Analyze the type */
 	switch (o_ptr->tval)
@@ -794,7 +794,7 @@ static int home_carry(object_type *o_ptr)
 
 
 	/* Determine the "value" of the object */
-	value = object_value(o_ptr);
+	value = object_value(o_ptr, 1);
 
 	/* Check existing slots to see if we must "slide" */
 	for (slot = 0; slot < st_ptr->stock_num; slot++)
@@ -825,7 +825,7 @@ static int home_carry(object_type *o_ptr)
 		if (!object_known_p(j_ptr)) break;
 
 		/* Objects sort by decreasing value */
-		j_value = object_value(j_ptr);
+		j_value = object_value(j_ptr, 1);
 		if (value > j_value) break;
 		if (value < j_value) continue;
 	}
@@ -869,7 +869,7 @@ static int store_carry(int st, object_type *o_ptr)
 	store_type *st_ptr = &store[st];
 
 	/* Evaluate the object */
-	value = object_value(o_ptr);
+	value = object_value(o_ptr, 1);
 
 	/* Cursed/Worthless items "disappear" when sold */
 	if (value <= 0) return (-1);
@@ -914,7 +914,7 @@ static int store_carry(int st, object_type *o_ptr)
 		if (o_ptr->sval > j_ptr->sval) continue;
 
 		/* Evaluate that slot */
-		j_value = object_value(j_ptr);
+		j_value = object_value(j_ptr, 1);
 
 		/* Objects sort by decreasing value */
 		if (value > j_value) break;
@@ -1109,7 +1109,7 @@ static bool black_market_ok(const object_type *o_ptr)
 
 
 	/* No cheap items */
-	if (object_value(o_ptr) < 10) return (FALSE);
+	if (object_value(o_ptr, 1) < 10) return (FALSE);
 
 	/* Check the other stores */
 	for (i = 0; i < MAX_STORES; i++)
@@ -1282,7 +1282,7 @@ static bool store_create_random(int st)
 			continue;
 
 		/* No "worthless" items */
-		if (object_value(i_ptr) < 1) continue;
+		if (object_value(i_ptr, 1) < 1) continue;
 
 
 
@@ -1679,7 +1679,7 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 	if (store_current != STORE_HOME)
 	{
 		/* Extract the "minimum" price */
-		x = price_item(o_ptr, FALSE);
+		x = price_item(o_ptr, FALSE, 1);
 
 		/* Make sure the player can afford it */
 		if ((int) p_ptr->au < (int) x)
@@ -2026,7 +2026,7 @@ static bool store_purchase(int item)
 	else
 	{
 		/* Price of one */
-		price = price_item(o_ptr, FALSE);
+		price = price_item(o_ptr, FALSE, 1);
 
 		/* Check if the player can afford any at all */
 		if ((u32b)p_ptr->au < (u32b)price)
@@ -2042,6 +2042,11 @@ static bool store_purchase(int item)
 		/* Work out how many the player can afford */
 		amt = p_ptr->au / price;
 		if (amt > o_ptr->number) amt = o_ptr->number;
+		
+		/* Double check for wands/staves */
+		if ((p_ptr->au >= price_item(o_ptr, FALSE, amt+1)) && (amt < o_ptr->number))
+			amt++;
+
 	}
 
 	/* Find the number of this item in the inventory */
@@ -2094,7 +2099,7 @@ static bool store_purchase(int item)
 		bool response;
 
 		/* Extract the price for the entire stack */
-		price = price_item(i_ptr, FALSE) * i_ptr->number;
+		price = price_item(i_ptr, FALSE, i_ptr->number);
 
 		screen_save();
 
@@ -2331,7 +2336,7 @@ static void store_sell(void)
 		u32b price, dummy, value;
 
 		/* Extract the value of the items */
-		price = price_item(i_ptr, TRUE) * amt;
+		price = price_item(i_ptr, TRUE, amt);
 
 		screen_save();
 
@@ -2371,7 +2376,7 @@ static void store_sell(void)
 		i_ptr->ident |= IDENT_STORE;
 
 		/* Get the "apparent" value */
-		dummy = object_value(i_ptr) * i_ptr->number;
+		dummy = object_value(i_ptr, i_ptr->number);
 
 		/* Get local object */
 		i_ptr = &object_type_body;
@@ -2389,7 +2394,7 @@ static void store_sell(void)
 		distribute_charges(o_ptr, i_ptr, amt);
 
 		/* Get the "actual" value */
-		value = object_value(i_ptr) * i_ptr->number;
+		value = object_value(i_ptr, i_ptr->number);
 
 		/* Get the description all over again */
 		object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
