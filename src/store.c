@@ -675,8 +675,8 @@ static void store_object_absorb(object_type *o_ptr, object_type *j_ptr)
 			monster_race *r_ptr = &r_info[o_ptr->origin_xtra];
 			monster_race *s_ptr = &r_info[j_ptr->origin_xtra];
 
-			bool r_uniq = (r_ptr->flags1 & RF1_UNIQUE) ? TRUE : FALSE;
-			bool s_uniq = (s_ptr->flags1 & RF1_UNIQUE) ? TRUE : FALSE;
+			bool r_uniq = (r_ptr->flags[0] & RF1_UNIQUE) ? TRUE : FALSE;
+			bool s_uniq = (s_ptr->flags[0] & RF1_UNIQUE) ? TRUE : FALSE;
 
 			if (r_uniq && !s_uniq) act = 0;
 			else if (s_uniq && !r_uniq) act = 1;

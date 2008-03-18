@@ -490,7 +490,7 @@ static bool describe_activation(const object_type *o_ptr, u32b f3, bool full)
 	else
 	{
 		if (!object_aware_p(o_ptr) && !full) return FALSE;
-        
+
 		effect = k_ptr->effect;
 		base = k_ptr->time_base;
 		dice = k_ptr->time_dice;
@@ -630,7 +630,7 @@ void object_info_header(const object_type *o_ptr)
 		case ORIGIN_DROP:
 		{
 			const char *name = r_name + r_info[o_ptr->origin_xtra].name;
-			bool unique = (r_info[o_ptr->origin_xtra].flags1 & RF1_UNIQUE) ? TRUE : FALSE;
+			bool unique = (r_info[o_ptr->origin_xtra].flags[0] & RF1_UNIQUE) ? TRUE : FALSE;
 
 			text_out("dropped by ");
 

@@ -718,12 +718,8 @@ static void rd_lore(int r_idx)
 		rd_byte(&l_ptr->blows[i]);
 
 	/* Memorize flags */
-	rd_u32b(&l_ptr->flags1);
-	rd_u32b(&l_ptr->flags2);
-	rd_u32b(&l_ptr->flags3);
-	rd_u32b(&l_ptr->flags4);
-	rd_u32b(&l_ptr->flags5);
-	rd_u32b(&l_ptr->flags6);
+	for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
+		rd_u32b(&l_ptr->flags[i]);
 
 
 	/* Read the "Racial" monster limit per level */
@@ -736,12 +732,8 @@ static void rd_lore(int r_idx)
 
 
 	/* Repair the lore flags */
-	l_ptr->flags1 &= r_ptr->flags1;
-	l_ptr->flags2 &= r_ptr->flags2;
-	l_ptr->flags3 &= r_ptr->flags3;
-	l_ptr->flags4 &= r_ptr->flags4;
-	l_ptr->flags5 &= r_ptr->flags5;
-	l_ptr->flags6 &= r_ptr->flags6;
+	for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
+		l_ptr->flags[i] &= r_ptr->flags[i];
 }
 
 

@@ -296,7 +296,7 @@ static void regen_monsters(void)
 			if (!frac) frac = 1;
 
 			/* Hack -- Some monsters regenerate quickly */
-			if (r_ptr->flags2 & (RF2_REGENERATE)) frac *= 2;
+			if (r_ptr->flags[1] & (RF2_REGENERATE)) frac *= 2;
 
 			/* Hack -- Regenerate */
 			m_ptr->hp += frac;
@@ -973,12 +973,7 @@ static void process_player_aux(void)
 
 	static int old_monster_race_idx = 0;
 
-	static u32b	old_flags1 = 0L;
-	static u32b	old_flags2 = 0L;
-	static u32b	old_flags3 = 0L;
-	static u32b	old_flags4 = 0L;
-	static u32b	old_flags5 = 0L;
-	static u32b	old_flags6 = 0L;
+	static u32b old_flags[RACE_FLAG_STRICT_UB] = {0L, 0L, 0L, 0L, 0L, 0L };
 
 	static byte old_blows[MONSTER_BLOW_MAX];
 
@@ -1004,12 +999,7 @@ static void process_player_aux(void)
 		/* Check for change of any kind */
 		if (changed ||
 		    (old_monster_race_idx != p_ptr->monster_race_idx) ||
-		    (old_flags1 != l_ptr->flags1) ||
-		    (old_flags2 != l_ptr->flags2) ||
-		    (old_flags3 != l_ptr->flags3) ||
-		    (old_flags4 != l_ptr->flags4) ||
-		    (old_flags5 != l_ptr->flags5) ||
-		    (old_flags6 != l_ptr->flags6) ||
+		    race_flags_differ(old_flags, l_ptr->flags) ||
 		    (old_cast_innate != l_ptr->cast_innate) ||
 		    (old_cast_spell != l_ptr->cast_spell))
 		{
@@ -1017,16 +1007,10 @@ static void process_player_aux(void)
 			old_monster_race_idx = p_ptr->monster_race_idx;
 
 			/* Memorize flags */
-			old_flags1 = l_ptr->flags1;
-			old_flags2 = l_ptr->flags2;
-			old_flags3 = l_ptr->flags3;
-			old_flags4 = l_ptr->flags4;
-			old_flags5 = l_ptr->flags5;
-			old_flags6 = l_ptr->flags6;
+			race_flags_assign(old_flags, l_ptr->flags);
 
 			/* Memorize blows */
-			for (i = 0; i < MONSTER_BLOW_MAX; i++)
-				old_blows[i] = l_ptr->blows[i];
+			memmove(old_blows, l_ptr->blows, sizeof(byte)*MONSTER_BLOW_MAX);
 
 			/* Memorize castings */
 			old_cast_innate = l_ptr->cast_innate;
@@ -1305,7 +1289,7 @@ static void process_player(void)
 					r_ptr = &r_info[m_ptr->r_idx];
 
 					/* Skip non-multi-hued monsters */
-					if (!(r_ptr->flags1 & (RF1_ATTR_MULTI))) continue;
+					if (!(r_ptr->flags[0] & (RF1_ATTR_MULTI))) continue;
 
 					/* Reset the flag */
 					shimmer_monsters = TRUE;

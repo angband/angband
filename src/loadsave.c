@@ -23,6 +23,16 @@
 
 u16b sf_saves = 0;
 
+/* flag keyname enumeration */
+const char* const flag_names[] =
+	{	"flags1",
+		"flags2",
+		"flags3",
+		"flags4",
+		"flags5",
+		"flags6"
+	};
+
 smap_t *serialize_player();
 smap_t *serialize_cave();
 smap_t *serialize_object(object_type *o_ptr);
@@ -1398,12 +1408,8 @@ smap_t *serialize_lore(monster_race *r_ptr, monster_lore *l_ptr)
 		smap_put_byte(s, nb, l_ptr->blows[i]);
 	}
 
-	smap_put_u32b(s, "flags1", l_ptr->flags1);
-	smap_put_u32b(s, "flags2", l_ptr->flags2);
-	smap_put_u32b(s, "flags3", l_ptr->flags3);
-	smap_put_u32b(s, "flags4", l_ptr->flags4);
-	smap_put_u32b(s, "flags5", l_ptr->flags5);
-	smap_put_u32b(s, "flags6", l_ptr->flags6);
+	for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
+		smap_put_u32b(s, flag_names[i], l_ptr->flags[i]);
 
 	smap_put_byte(s, "max_num", r_ptr->max_num);
 
@@ -1436,12 +1442,8 @@ void deserialize_lore(monster_race *r_ptr, monster_lore *l_ptr, smap_t *s)
 	}
 
 	/* Load and "repair" the flags */
-	l_ptr->flags1 = smap_get_u32b(s, "flags1") & r_ptr->flags1;
-	l_ptr->flags2 = smap_get_u32b(s, "flags2") & r_ptr->flags2;
-	l_ptr->flags3 = smap_get_u32b(s, "flags3") & r_ptr->flags3;
-	l_ptr->flags4 = smap_get_u32b(s, "flags4") & r_ptr->flags4;
-	l_ptr->flags5 = smap_get_u32b(s, "flags5") & r_ptr->flags5;
-	l_ptr->flags6 = smap_get_u32b(s, "flags6") & r_ptr->flags6;
+	for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
+		l_ptr->flags[i] = smap_get_u32b(s, flag_names[i]) & r_ptr->flags[i];
 
 	/* This should be stored elsewhere. */
 	r_ptr->max_num = smap_get_byte(s, "max_num");

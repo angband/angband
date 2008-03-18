@@ -1928,6 +1928,18 @@ enum
 #define MFLAG_SHOW	0x40	/* Monster is recently memorized */
 #define MFLAG_MARK	0x80	/* Monster is currently memorized */
 
+/*
+ * number of 32-bit bitmaps used for monster race
+ * actual RF flags are in raceflag.h
+ */
+#define RACE_FLAG_STRICT_UB 6
+#define RACE_FLAG_SPELL_START 3
+#define RACE_FLAG_SPELL_STRICT_UB (RACE_FLAG_STRICT_UB-RACE_FLAG_SPELL_START)
+
+#define race_flags_differ(A,B) (0 != memcmp((A), (B), sizeof(u32b)*RACE_FLAG_STRICT_UB))
+#define race_flags_assign(A,B) memmove((A), (B), sizeof(u32b)*RACE_FLAG_STRICT_UB)
+#define race_flags_assign_nonspell(A, B) memmove((A), (B), sizeof(u32b)*RACE_FLAG_SPELL_START)
+#define race_flags_assign_spell(A, B) memmove((A), (B), sizeof(u32b)*RACE_FLAG_SPELL_STRICT_UB)
 
 /*
  * New monster race bit flags

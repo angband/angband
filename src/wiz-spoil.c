@@ -592,11 +592,11 @@ static void spoil_mon_desc(cptr fname)
 		cptr name = (r_name + r_ptr->name);
 
 		/* Get the "name" */
-		if (r_ptr->flags1 & (RF1_QUESTOR))
+		if (r_ptr->flags[0] & (RF1_QUESTOR))
 		{
 			strnfmt(nam, sizeof(nam), "[Q] %s", name);
 		}
-		else if (r_ptr->flags1 & (RF1_UNIQUE))
+		else if (r_ptr->flags[0] & (RF1_UNIQUE))
 		{
 			strnfmt(nam, sizeof(nam), "[U] %s", name);
 		}
@@ -723,11 +723,11 @@ static void spoil_mon_info(cptr fname)
 		monster_race *r_ptr = &r_info[r_idx];
 
 		/* Prefix */
-		if (r_ptr->flags1 & RF1_QUESTOR)
+		if (r_ptr->flags[0] & RF1_QUESTOR)
 		{
 			text_out("[Q] ");
 		}
-		else if (r_ptr->flags1 & RF1_UNIQUE)
+		else if (r_ptr->flags[0] & RF1_UNIQUE)
 		{
 			text_out("[U] ");
 		}

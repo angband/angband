@@ -47,13 +47,14 @@ cmd5.o: cmd5.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   option.h types.h ui.h z-type.h object.h externs.h
 cmd6.o: cmd6.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h object.h externs.h cmds.h effects.h
+  option.h types.h ui.h z-type.h object.h externs.h cmds.h effects.h \
+  list-effects.h
 cmd-obj.o: cmd-obj.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
   defines.h option.h types.h ui.h z-type.h object.h externs.h cmds.h
 death.o: death.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h object.h externs.h ui-menu.h
+  option.h types.h ui.h z-type.h object.h externs.h ui-menu.h cmds.h
 debug.o: debug.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
   option.h types.h ui.h z-type.h object.h externs.h debug.h
@@ -62,7 +63,8 @@ dungeon.o: dungeon.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   defines.h option.h types.h ui.h z-type.h object.h externs.h cmds.h
 effects.o: effects.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h object.h externs.h effects.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h effects.h \
+  list-effects.h
 files.o: files.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
   option.h types.h ui.h z-type.h object.h externs.h ui-menu.h cmds.h
@@ -78,7 +80,8 @@ history.o: history.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   defines.h option.h types.h ui.h z-type.h object.h externs.h
 init1.o: init1.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h object.h externs.h effects.h init.h
+  option.h types.h ui.h z-type.h object.h externs.h effects.h \
+  list-effects.h init.h
 init2.o: init2.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
   option.h types.h ui.h z-type.h object.h externs.h init.h cmds.h \
@@ -95,7 +98,7 @@ melee1.o: melee1.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   defines.h option.h types.h ui.h z-type.h object.h externs.h
 melee2.o: melee2.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h object.h externs.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h bitflag.h
 monster1.o: monster1.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
   defines.h option.h types.h ui.h z-type.h object.h externs.h
@@ -108,7 +111,7 @@ obj-desc.o: obj-desc.c angband.h h-basic.h z-file.h z-form.h z-util.h \
 obj-info.o: obj-info.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
   defines.h option.h types.h ui.h z-type.h object.h externs.h effects.h \
-  cmds.h
+  list-effects.h cmds.h
 obj-make.o: obj-make.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
   defines.h option.h types.h ui.h z-type.h object.h externs.h
@@ -158,7 +161,7 @@ tables.o: tables.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   defines.h option.h types.h ui.h z-type.h object.h externs.h
 target.o: target.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h object.h externs.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h cmds.h
 trap.o: trap.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
   option.h types.h ui.h z-type.h object.h externs.h
