@@ -97,7 +97,6 @@ bool heal_player(int perc, int min)
  */
 void warding_glyph(void)
 {
-	object_type *o_ptr;
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
@@ -109,15 +108,6 @@ void warding_glyph(void)
 
 	/* Create a glyph */
 	cave_set_feat(py, px, FEAT_GLYPH);
-
-	/* Shift any objects to further away */
-	for (o_ptr = get_first_object(py, px); o_ptr; o_ptr = get_next_object(o_ptr))
-	{
-		drop_near(o_ptr, 0, py, px);
-	}
-
-	/* Delete the "moved" objects from their original position */
-	delete_object(py, px);
 }
 
 

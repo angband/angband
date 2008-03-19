@@ -119,6 +119,7 @@ void do_cmd_use(object_type *o_ptr, int item, int snd, use_type use)
 	bool ident = FALSE, used;
 	bool was_aware = object_aware_p(o_ptr);
 	int dir = 5;
+	int px = p_ptr->px, py = p_ptr->py;
 
 	/* Figure out effect to use */
 	if (o_ptr->name1)
@@ -196,12 +197,8 @@ void do_cmd_use(object_type *o_ptr, int item, int snd, use_type use)
 		object_tried(o_ptr);
 	}
 
-
-	/* Some uses are "free" */
-	if (!used) return;
-
 	/* Chargeables act differently to single-used items when not used up */
-	if (use == USE_CHARGE)
+	if (used && use == USE_CHARGE)
 	{
 		/* Use a single charge */
 		o_ptr->pval--;
@@ -212,7 +209,7 @@ void do_cmd_use(object_type *o_ptr, int item, int snd, use_type use)
 		else
 			floor_item_charges(0 - item);
 	}
-	else if (use == USE_TIMEOUT)
+	else if (used && use == USE_TIMEOUT)
 	{
 		/* Artifacts use their own special field */
 		if (o_ptr->name1)
@@ -226,7 +223,7 @@ void do_cmd_use(object_type *o_ptr, int item, int snd, use_type use)
 			o_ptr->timeout += k_ptr->time_base + damroll(k_ptr->time_dice, k_ptr->time_sides);
 		}
 	}
-	else if (use == USE_SINGLE)
+	else if (used && use == USE_SINGLE)
 	{
 		/* Destroy a potion in the pack */
 		if (item >= 0)
@@ -244,4 +241,19 @@ void do_cmd_use(object_type *o_ptr, int item, int snd, use_type use)
 			floor_item_optimize(0 - item);
 		}
 	}
+	
+	/* Hack to make Glyph of Warding work properly */
+	if (cave_feat[py][px] == FEAT_GLYPH)
+	{
+		/* Shift any objects to further away */
+		for (o_ptr = get_first_object(py, px); o_ptr; o_ptr = get_next_object(o_ptr))
+		{
+			drop_near(o_ptr, 0, py, px);
+		}
+		
+		/* Delete the "moved" objects from their original position */
+		delete_object(py, px);
+	}
+
+	
 }
