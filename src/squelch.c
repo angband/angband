@@ -89,7 +89,6 @@ static int type_tvals[][2] =
 	{ TYPE_ARMOR,	TV_HELM },
 	{ TYPE_ARMOR,	TV_GLOVES },
 	{ TYPE_ARMOR,	TV_BOOTS },
-	{ TYPE_ARMOR,	TV_DRAG_ARMOR },
 	{ TYPE_ARMOR,	TV_HARD_ARMOR },
 	{ TYPE_ARMOR,	TV_SOFT_ARMOR },
 	{ TYPE_ARMOR,	TV_CLOAK },
@@ -155,6 +154,7 @@ static tval_desc sval_dependent[] =
 	{ TV_SPIKE,			"Spikes" },
 	{ TV_LITE,			"Lights" },
 	{ TV_FLASK,			"Flasks of oil" },
+	{ TV_DRAG_ARMOR,	"Dragon Mail Armor" },
 };
 
 
