@@ -500,6 +500,7 @@ static void special_lighting_floor(byte *a, char *c, enum grid_light_level light
 				case GRAPHICS_PSEUDO:
 					/* Use "gray" */
 					if (*a == TERM_WHITE) *a = TERM_SLATE;
+					else if (*a == TERM_L_GREEN) *a = TERM_GREEN;
 					break;
 				case GRAPHICS_ADAM_BOLT:
 				case GRAPHICS_DAVID_GERVAIS:
@@ -576,6 +577,24 @@ static void special_wall_display(byte *a, char *c, bool in_view, int feat)
 }
 
 
+/* 
+ * Checks if a square is at the (inner) edge of a trap detect area 
+ */ 
+static bool dtrap_edge(int y, int x) 
+{ 
+	/* Check if the square is a dtrap in the first place */ 
+ 	if (!cave_info2[y][x] & CAVE2_DTRAP) return FALSE; 
+
+ 	/* Check for non-dtrap adjacent grids */ 
+ 	if (in_bounds(y + 1, x    ) && (!cave_info2[y + 1][x    ] & CAVE2_DTRAP)) return TRUE; 
+ 	if (in_bounds(y    , x + 1) && (!cave_info2[y    ][x + 1] & CAVE2_DTRAP)) return TRUE; 
+ 	if (in_bounds(y - 1, x    ) && (!cave_info2[y - 1][x    ] & CAVE2_DTRAP)) return TRUE; 
+ 	if (in_bounds(y    , x - 1) && (!cave_info2[y    ][x - 1] & CAVE2_DTRAP)) return TRUE; 
+
+	return FALSE; 
+} 
+
+
 /*
  * This function takes a pointer to a grid info struct describing the 
  * contents of a grid location (as obtained through the function map_info)
@@ -622,6 +641,9 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 	a = f_ptr->x_attr;
 	c = f_ptr->x_char;
 
+	/* Check for trap detection boundaries */
+	if (g->trapborder && g->f_idx == FEAT_FLOOR) a = TERM_L_GREEN;
+
 	/* Special lighting effects */
 	if (g->f_idx <= FEAT_INVIS && view_special_lite)
 		special_lighting_floor(&a, &c, g->lighting, g->in_view);
@@ -629,7 +651,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 	/* Special lighting effects (walls only) */
 	if (g->f_idx > FEAT_INVIS && view_granite_lite) 
 		special_wall_display(&a, &c, g->in_view, g->f_idx);
-
+		
 	/* Save the terrain info for the transparency effects */
 	(*tap) = a;
 	(*tcp) = c;
@@ -808,6 +830,8 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 }
 
 
+
+
 /*
  * This function takes a grid location (x, y) and extracts information the
  * player is allowed to know about it, filling in the grid_data structure
@@ -858,12 +882,13 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 void map_info(unsigned y, unsigned x, grid_data *g)
 {
 	object_type *o_ptr;
-	byte info;
+	byte info, info2;
 
 	assert(x < DUNGEON_WID);
 	assert(y < DUNGEON_HGT);
 
 	info = cave_info[y][x];
+	info2 = cave_info2[y][x];
 	
 	/* Default "clear" values, others will be set later where appropriate. */
 	g->first_k_idx = 0;
@@ -876,6 +901,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	g->is_player = (cave_m_idx[y][x] < 0) ? TRUE : FALSE;
 	g->m_idx = (g->is_player) ? 0 : cave_m_idx[y][x];
 	g->hallucinate = p_ptr->timed[TMD_IMAGE] ? TRUE : FALSE;
+	g->trapborder = (dtrap_edge(y, x)) ? TRUE : FALSE;
 
 	/* If the grid is memorised or can currently be seen */
 	if ((info & CAVE_MARK) || (info & CAVE_SEEN))
@@ -3882,7 +3908,6 @@ bool is_quest(int level)
 	/* Nope */
 	return (FALSE);
 }
-
 
 
 

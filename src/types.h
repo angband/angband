@@ -1098,6 +1098,7 @@ typedef struct
 	bool in_view; /* TRUE when the player can currently see the grid. */
 	bool is_player;
 	bool hallucinate;
+	bool trapborder;
 } grid_data;
 
 

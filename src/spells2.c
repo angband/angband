@@ -1044,9 +1044,6 @@ bool detect_traps(bool aware)
 				/* Hack -- Memorize */
 				cave_info[y][x] |= (CAVE_MARK);
 
-				/* Redraw */
-				lite_spot(y, x);
-
 				/* We found something to detect */
 				detect = TRUE;
 			}
@@ -1055,6 +1052,19 @@ bool detect_traps(bool aware)
 			cave_info2[y][x] |= (CAVE2_DTRAP);
 		}
 	}
+
+	/* Rescan the map for the new dtrap edge */ 
+	for (y = y1-1; y < y2+1; y++) 
+	{ 
+		for (x = x1-1; x < x2+1; x++) 
+		{ 
+			if (!in_bounds_fully(y, x)) continue; 
+ 		 
+			/* Redraw */ 
+			lite_spot(y, x); 
+		} 
+	} 
+ 		 
 
 	/* Describe */
 	if (detect)
