@@ -2,18 +2,17 @@
  * File: stats.c
  * Purpose: Statistics collection on dungeon generation
  *
- * Copyright (c) 2007 Angband Contributors
+ * Copyright (c) 2008 Andrew Sidwell
  *
- * This work is free software; you can redistribute it and/or modify it
- * under the terms of either:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
- * a) the GNU General Public License as published by the Free Software
- *    Foundation, version 2, or
+ *  * Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
  *
- * b) the "Angband licence":
- *    This software may be copied and distributed for educational, research,
- *    and not for profit purposes provided that this copyright and statement
- *    are included in all such copies.  Other copyrights may also apply.
+ *  * Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
  */
 #include "angband.h"
 #include "wizard.h"
@@ -65,6 +64,30 @@ void results_print_csv(void)
 	size_t i;
 	for (i = 0; i < no_results; i++)
 		printf("%s,", results[i].value);
+
+	printf("\n");
+}
+
+void results_print_csv_pair(const char *field1, const char *field2)
+{
+	size_t i;
+	for (i = 0; i < no_results; i++)
+	{
+		if (strcmp(results[i].key, field1) == 0)
+		{
+			printf("%s,", results[i].value);
+			break;
+		}
+	}
+
+	for (i = 0; i < no_results; i++)
+	{
+		if (strcmp(results[i].key, field2) == 0)
+		{
+			printf("%s,", results[i].value);
+			break;
+		}
+	}
 
 	printf("\n");
 }
@@ -130,18 +153,18 @@ inline static void stats_print_m(void)
 
 void stats_monster(const monster_type *m_ptr)
 {
-	u32b f1 = r_info[m_ptr->r_idx].flags1;
+	u32b f1 = r_info[m_ptr->r_idx].flags[0];
 	float prob = 0.0;
 
 	bool gold_ok = (!(f1 & (RF1_ONLY_ITEM)));
 	bool item_ok = (!(f1 & (RF1_ONLY_GOLD)));
 
-	if (f1 & RF1_DROP_60)  prob +=  0.6;
-	if (f1 & RF1_DROP_90)  prob +=  0.9;
-	if (f1 & RF1_DROP_1D2) prob +=  1.5;
-	if (f1 & RF1_DROP_2D2) prob +=  3.0;
-	if (f1 & RF1_DROP_3D2) prob +=  4.5;
-	if (f1 & RF1_DROP_4D2) prob +=  6.0;
+	if (f1 & RF1_DROP_60)  prob += 0.6/* 0.4*/;
+	if (f1 & RF1_DROP_90)  prob += 0.9/* 0.6*/;
+	if (f1 & RF1_DROP_1D2) prob += 1.5/* 1.0*/;
+	if (f1 & RF1_DROP_2D2) prob += 3.0/* 2.0*/;
+	if (f1 & RF1_DROP_3D2) prob += 4.5/* 3.0*/;
+	if (f1 & RF1_DROP_4D2) prob += 6.0/* 4.0*/;
 
 	if (gold_ok && item_ok)
 	{
@@ -214,10 +237,12 @@ void stats_collect2(void)
 
 	if (first)
 	{
+		/* printf("level,mon-drops"); */
 		results_print_csv_titles();
 		first = FALSE;
 	}
 
+	/* results_print_csv_pair("level", "mon-drops"); */
 	results_print_csv();
 
 	do_cmd_redraw();
@@ -229,7 +254,7 @@ void stats_collect(void)
 {
 	int depth;
 
-	for (depth = 0; depth < 40; depth += 5)
+	for (depth = 0; depth < 101; depth += 5)
 	{
 		p_ptr->depth = depth;
 		if (p_ptr->depth == 0) p_ptr->depth = 1;
