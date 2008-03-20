@@ -298,19 +298,19 @@ static void py_pickup_aux(int o_idx, bool msg)
  *
  * Called with pickup:
  * 0 to act according to the player's settings
- * 1 to quickly pickup single objects and present a menu for more
+ * 1 to quickly pickup single objects or present a menu for more
  * 2 to force a menu for any number of objects
  *
- * Scan the list of objects in that floor grid.   Pick up gold automatically.
- * Pick up objects automatically until pile or backpack space is full if
- * auto-pickup option is on, carry_query_floor option is not, and menus are
- * not forced (which the "get" command does). Otherwise, store objects on
+ * Scan the list of objects in that floor grid. Pick up gold automatically.
+ * Pick up objects automatically until backpack space is full if
+ * auto-pickup option is on, Otherwise, store objects on
  * floor in an array, and tally both how many there are and can be picked up.
  *
  * If not picking up anything, indicate objects on the floor.  Show more
  * details if the "pickup_detail" option is set.  Do the same thing if we
  * don't have room for anything.
  *
+ * [This paragraph is not true, intentional?]
  * If we are picking up objects automatically, and have room for at least
  * one, allow the "pickup_detail" option to display information about objects
  * and prompt the player.  Otherwise, automatically pick up a single object
@@ -328,7 +328,7 @@ static void py_pickup_aux(int o_idx, bool msg)
  * Note the lack of chance for the character to be disturbed by unmarked
  * objects.  They are truly "unknown".
  */
-byte py_pickup(int pickup, bool pickup_okay)
+byte py_pickup(int pickup)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -379,7 +379,7 @@ byte py_pickup(int pickup, bool pickup_okay)
 
 
 		/* Automatically pick up items into the backpack */
-		if (pickup_okay && auto_pickup_okay(o_ptr))
+		if (auto_pickup_okay(o_ptr))
 		{
 			/* Pick up the object with message */
 			py_pickup_aux(this_o_idx, TRUE);
@@ -531,7 +531,7 @@ byte py_pickup(int pickup, bool pickup_okay)
 	 * If requested, call this function recursively.  Count objects picked
 	 * up.  Force the display of a menu in all cases.
 	 */
-	if (call_function_again) objs_picked_up += py_pickup(2, pickup_okay);
+	if (call_function_again) objs_picked_up += py_pickup(2);
 
 	/* Indicate how many objects have been picked up. */
 	return (objs_picked_up);
@@ -540,14 +540,14 @@ byte py_pickup(int pickup, bool pickup_okay)
 
 
 /*
- * Move player in the given direction, with the given "pickup" flag.
+ * Move player in the given direction.
  *
  * This routine should only be called when energy has been expended.
  *
  * Note that this routine handles monsters in the destination grid,
  * and also handles attempting to move into walls/doors/rubble/etc.
  */
-void move_player(int dir, bool pickup_okay)
+void move_player(int dir)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -708,9 +708,6 @@ void move_player(int dir, bool pickup_okay)
 
 			/* Hack -- Enter store */
 			p_ptr->command_new = '_';
-
-			/* Handle objects now.  XXX */
-			p_ptr->energy_use = py_pickup(2, pickup_okay) * 10;
 		}
 
 

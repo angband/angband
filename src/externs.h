@@ -312,8 +312,8 @@ extern bool is_quest(int level);
 
 /* cmd1.c */
 extern void search(void);
-extern byte py_pickup(int pickup, bool pickup_okay);
-extern void move_player(int dir, bool pickup);
+extern byte py_pickup(int pickup);
+extern void move_player(int dir);
 
 /* cmd5.c */
 s16b spell_chance(int spell);
