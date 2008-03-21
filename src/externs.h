@@ -309,6 +309,7 @@ extern void monster_race_track(int r_idx);
 extern void object_kind_track(int k_idx);
 extern void disturb(int stop_search, int unused_flag);
 extern bool is_quest(int level);
+extern bool dtrap_edge(int y, int x);
 
 /* cmd1.c */
 extern void search(void);
