@@ -1839,15 +1839,16 @@ N:234:Charisma
 G:!:d
 I:75:53:0
 W:20:0:4:1000
-A:80:25 to 90
+A:80:15 to 90
 F:EASY_KNOW
 E:GAIN_CHR
 
+# Potion of Pleasing removed for now (No 'a'llocation line) #
 N:235:Pleasing
 G:!:d
 I:75:21:0
 W:20:0:4:1000
-A:20:10 to 20
+# A:20:10 to 20
 F:EASY_KNOW
 E:PLEASING
 
@@ -1855,7 +1856,7 @@ N:236:Restore Charisma
 G:!:d
 I:75:47:0
 W:20:0:4:300
-A:75:20 to 60
+A:75:10 to 60
 F:EASY_KNOW
 E:RESTORE_CHR
 
