@@ -419,8 +419,11 @@ static s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 	int greed = ot_ptr->inflate;
 
 
-	/* Get the value of the given quantity of items */
-	price = object_value(o_ptr, qty);
+	/* Get the value of the stack of wands, or a single item */
+	if ((o_ptr->tval == TV_WAND) || (o_ptr->tval == TV_STAFF))
+		price = object_value(o_ptr, qty);
+	else
+		price = object_value(o_ptr, 1);
 
 	/* Worthless items */
 	if (price <= 0) return (0L);
@@ -461,6 +464,10 @@ static s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 
 	/* Compute the final price (with rounding) */
 	price = (price * adjust + 50L) / 100L;
+
+	/* Now convert price to total price for non-wands */
+	if (!(o_ptr->tval == TV_WAND) && !(o_ptr->tval == TV_STAFF))
+		price *= qty;
 
 	/* Now limit the price to the purse limit */
 	if (store_buying && (price > ot_ptr->max_cost * qty))
