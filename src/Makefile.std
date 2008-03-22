@@ -16,8 +16,7 @@
 # What systems to try.
 #
 # By default, this tries to compile both the X11 and "curses" terminal mode
-# ports in the same executable.  On Linux only, it also builds the lfb 'console' 
-# module.
+# ports in the same executable.
 
 
 # Recent, known-to-work ports
@@ -117,7 +116,7 @@ docs: doc/index.html
 # Clean up old junk
 clean:
 	-rm -f *.o gtk/*.o $(EXE)
-	-rm ../lib/data/*.raw
+	-rm -f ../lib/data/*.raw
 
 # make a distribution
 DIRS = lib/apex lib/bone lib/data lib/edit lib/file lib/help lib/info \
