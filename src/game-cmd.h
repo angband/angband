@@ -10,8 +10,22 @@ typedef enum cmd_code
 	CMD_QUIT,
 	CMD_OPTIONS,
 
+	/* Splash screen commands */
 	CMD_LOADFILE,
-	CMD_NEWGAME
+	CMD_NEWGAME,
+
+	/* Birth commands */
+	CMD_BIRTH_BACK,
+	CMD_BIRTH_RESTART,
+	CMD_BIRTH_CHOICE,
+	CMD_BUY_STAT,
+	CMD_SELL_STAT,
+	CMD_AUTOROLL,
+	CMD_ROLL,
+	CMD_PREV_STATS,
+	CMD_ACCEPT_STATS,
+	CMD_NAME_CHOICE,
+	CMD_ACCEPT_CHARACTER
 } cmd_code;
 
 
@@ -35,23 +49,44 @@ typedef struct game_command
 	 */
 	int repeat; 
 
-	/* Various parameters - which ones are used depends on the command. */
-	object_type *object_manipulated;
-
-	const char *string;
-
 	union 
 	{
-		object_type *object;
+		const char *string;
+		int choice;
 
-		struct
+		int direction;
+
+		struct 
 		{
 			int x;
 			int y;
 		} point;
-	} target;
 
-	int direction;
+		struct
+		{
+			int idx;
+			int minimum;
+		} stat_min;
+
+		struct
+		{
+			object_type *object_used;
+			union 
+			{
+				object_type *object;
+				
+				struct
+				{
+					int x;
+					int y;
+				} point;
+				
+				int direction;
+			} target;
+		} object;
+
+		int stat_limits[A_MAX];
+	} params;
 } game_command;
 
 

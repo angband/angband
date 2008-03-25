@@ -380,7 +380,7 @@ static void death_history(void *unused, const char *title)
  * Menu structures for the death menu.
  */
 static menu_type death_menu;
-static const menu_action death_actions[] =
+static menu_action death_actions[] =
 {
 	{ 'i', "Information",   death_info,     NULL },
 	{ 'm', "Messages",      death_messages, NULL },

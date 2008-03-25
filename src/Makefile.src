@@ -105,6 +105,7 @@ ANGFILES = \
 	target.o \
 	trap.o \
 	ui.o \
+        ui-birth.o \
 	ui-event.o \
 	ui-menu.o \
 	util.o  \

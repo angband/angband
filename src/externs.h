@@ -262,7 +262,7 @@ extern void do_cmd_fire(void);
 extern void do_cmd_throw(void);
 
 /* birth.c */
-extern void player_birth(void);
+extern void player_birth(bool quickstart_allowed);
 
 /* button.c */
 int button_add_text(const char *label, unsigned char keypress);
@@ -342,11 +342,13 @@ extern errr process_pref_file_command(char *buf);
 extern errr process_pref_file(cptr name);
 extern void player_flags(u32b *f1, u32b *f2, u32b *f3);
 extern void display_player(int mode);
+extern void display_player_stat_info(void);
+extern void display_player_xtra_info(void);
 extern errr file_character(cptr name, bool full);
 extern bool show_file(cptr name, cptr what, int line, int mode);
 extern void do_cmd_help(void);
 extern void process_player_name(bool sf);
-extern bool get_name(bool sf);
+extern bool get_name(char *buf, size_t buflen);
 extern void do_cmd_suicide(void);
 extern void do_cmd_save_game(void);
 extern void close_game(void);

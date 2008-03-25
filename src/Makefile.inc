@@ -18,7 +18,8 @@ attack.o: attack.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   defines.h option.h types.h ui.h z-type.h object.h externs.h
 birth.o: birth.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h object.h externs.h cmds.h ui-menu.h
+  option.h types.h ui.h z-type.h object.h externs.h cmds.h game-event.h \
+  game-cmd.h ui-menu.h
 button.o: button.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
   defines.h option.h types.h ui.h z-type.h object.h externs.h
@@ -168,6 +169,10 @@ trap.o: trap.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
 ui.o: ui.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
   option.h types.h ui.h z-type.h object.h externs.h
+ui-birth.o: ui-birth.c angband.h h-basic.h z-file.h z-form.h z-util.h \
+  z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
+  defines.h option.h types.h ui.h z-type.h object.h externs.h ui-menu.h \
+  game-event.h game-cmd.h
 ui-event.o: ui-event.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
   defines.h option.h types.h ui.h z-type.h object.h externs.h

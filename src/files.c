@@ -1248,7 +1248,7 @@ static void display_player_flag_info(void)
 /*
  * Special display, part 2b
  */
-static void display_player_stat_info(void)
+void display_player_stat_info(void)
 {
 	int i, row, col;
 
@@ -1673,7 +1673,7 @@ int get_panel(int oid, data_panel *panel, size_t size)
 	return 0;
 }
 
-static void display_player_xtra_info(void)
+void display_player_xtra_info(void)
 {
 	int i;
 	int panels [] = { 1, 2, 3, 4, 5};

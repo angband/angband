@@ -240,7 +240,7 @@ struct menu_type
 	int *filter_list;       /* optional filter (view) of menu objects */
 
 	int count;              /* number of rows in underlying data set */
-	const void *menu_data;  /* the data used to access rows. */
+	void *menu_data;  /* the data used to access rows. */
 
   	/* auxiliary browser help function */
 	void (*browse_hook)(int oid, void *db, const region *loc);

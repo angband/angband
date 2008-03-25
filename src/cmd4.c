@@ -1974,7 +1974,17 @@ void do_cmd_change_name(void)
 		/* Change name */
 		if ((ke.key == 'c') || ((ke.key == '\xff') && (ke.mousey == 2) && (ke.mousex < 26)))
 		{
-			get_name(FALSE);
+			char namebuf[32] = "";
+
+			if (get_name(namebuf, sizeof namebuf))
+			{
+				/* Set player name */
+				my_strcpy(op_ptr->full_name, namebuf,
+						  sizeof(op_ptr->full_name));
+
+				/* Don't change savefile name. */
+				process_player_name(FALSE);
+			}
 		}
 
 		/* File dump */

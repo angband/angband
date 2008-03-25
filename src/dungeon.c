@@ -18,7 +18,7 @@
 #include "angband.h"
 #include "z-file.h"
 #include "cmds.h"
-
+#include "game-event.h"
 
 
 /*
@@ -1706,8 +1706,6 @@ void play_game(void)
 	/* Initialize */
 	bool new_game = init_angband();
 
-
-
 	/*** Do horrible, hacky things, to start the game off ***/
 
 	/* Hack -- Increase "icky" depth */
@@ -1811,8 +1809,8 @@ void play_game(void)
 		/* Hack -- seed for random artifacts */
 		seed_randart = rand_int(0x10000000);
 
-		/* Roll up a new character */
-		player_birth();
+		/* Roll up a new character. Quickstart is allowed if ht_birth is set */
+		player_birth(p_ptr->ht_birth ? TRUE : FALSE);
 
 		/* Randomize the artifacts */
 		if (adult_randarts)
@@ -1828,7 +1826,7 @@ void play_game(void)
 	else
 		process_player_name(TRUE);
 
-
+#if 0        
 	/* Check if we're overwriting a savefile */
 	while (new_game && !existing_dead_save)
 	{
@@ -1837,6 +1835,7 @@ void play_game(void)
 		if (overwrite) break;
 		get_name(TRUE);
 	}
+#endif
 
 	/* Stop the player being quite so dead */
 	p_ptr->is_dead = FALSE;
@@ -1850,13 +1849,14 @@ void play_game(void)
 	/* Flush the message */
 	Term_fresh();
 
-
 	/* Flavor the objects */
 	flavor_init();
 
 	/* Reset visuals */
 	reset_visuals(TRUE);
 
+	/* Tell the UI we've started. */
+	event_signal(EVENT_ENTER_GAME);
 
 	/* Redraw stuff */
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MESSAGE);
@@ -1998,6 +1998,9 @@ void play_game(void)
 		/* Make a new level */
 		generate_cave();
 	}
+
+	/* Tell the UI we're done with the game state */
+	event_signal(EVENT_LEAVE_GAME);
 
 	/* Close stuff */
 	close_game();

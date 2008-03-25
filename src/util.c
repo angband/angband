@@ -2397,10 +2397,9 @@ bool get_name_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, char
  *
  * What a horrible name for a global function.  XXX XXX XXX
  */
-bool get_name(bool sf)
+bool get_name(char *buf, size_t buflen)
 {
 	bool res;
-	char tmp[32];
 
 	/* Paranoia XXX XXX XXX */
 	message_flush();
@@ -2409,21 +2408,18 @@ bool get_name(bool sf)
 	prt("Enter a name for your character (* for a random name): ", 0, 0);
 
 	/* Save the player name */
-	my_strcpy(tmp, op_ptr->full_name, sizeof(tmp));
+	my_strcpy(buf, op_ptr->full_name, buflen);
 
 	/* Ask the user for a string */
-	res = askfor_aux(tmp, sizeof(tmp), get_name_keypress);
+	res = askfor_aux(buf, buflen, get_name_keypress);
 
 	/* Clear prompt */
 	prt("", 0, 0);
 
-	if (res)
+	/* Revert to the old name if the player doesn't pick a new one. */
+	if (!res)
 	{
-		/* Use the name */
-		my_strcpy(op_ptr->full_name, tmp, sizeof(op_ptr->full_name));
-
-		/* Process the player name */
-		process_player_name(sf);
+		my_strcpy(buf, op_ptr->full_name, buflen);
 	}
 
 	return res;

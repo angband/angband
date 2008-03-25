@@ -21,6 +21,7 @@
 #include "angband.h"
 #include "game-event.h"
 
+#include "ui-birth.h"
 
 /* 
  * There are a few functions installed to be triggered by several 
@@ -1553,10 +1554,26 @@ static void check_panel(game_event_type type, game_event_data *data, void *user)
 	verify_panel();
 }
 
+extern game_event_handler ui_enter_birthscreen;
+
 /* ------------------------------------------------------------------------
  * Initialising
  * ------------------------------------------------------------------------ */
-void init_display(void)
+static void ui_enter_init(game_event_type type, game_event_data *data, void *user)
+{
+	show_splashscreen(type, data, user);
+
+	/* Set up our splashscreen handlers */
+	event_add_handler(EVENT_INITSTATUS, splashscreen_note, NULL);
+}
+
+static void ui_leave_init(game_event_type type, game_event_data *data, void *user)
+{
+	/* Remove our splashscreen handlers */
+	event_remove_handler(EVENT_INITSTATUS, splashscreen_note, NULL);
+}
+
+static void ui_enter_game(game_event_type type, game_event_data *data, void *user)
 {
 	/* Because of the "flexible" sidebar, all these things trigger
 	   the same function. */
@@ -1578,9 +1595,39 @@ void init_display(void)
 #endif
 	/* Check if the panel should shift when the player's moved */
 	event_add_handler(EVENT_PLAYERMOVED, check_panel, NULL);
+}
 
+static void ui_leave_game(game_event_type type, game_event_data *data, void *user)
+{
+	/* Because of the "flexible" sidebar, all these things trigger
+	   the same function. */
+	event_remove_handler_set(player_events, N_ELEMENTS(player_events),
+			      update_sidebar, NULL);
 
-	/* Set up our splashscreen handlers */
-	event_add_handler(EVENT_ENTER_INIT, show_splashscreen, NULL);
-	event_add_handler(EVENT_INITSTATUS, splashscreen_note, NULL);
+	/* The flexible statusbar has similar requirements, so is
+	   also trigger by a large set of events. */
+	event_remove_handler_set(statusline_events, N_ELEMENTS(statusline_events),
+			      update_statusline, NULL);
+
+	/* Player HP can optionally change the colour of the '@' now. */
+	event_remove_handler(EVENT_HP, hp_colour_change, NULL);
+
+	/* Simplest way to keep the map up to date - will do for now */
+	event_remove_handler(EVENT_MAP, update_maps, angband_term[0]);
+#if 0
+	event_remove_handler(EVENT_MAP, trace_map_updates, angband_term[0]);
+#endif
+	/* Check if the panel should shift when the player's moved */
+	event_remove_handler(EVENT_PLAYERMOVED, check_panel, NULL);
+}
+
+void init_display(void)
+{
+	event_add_handler(EVENT_ENTER_INIT, ui_enter_init, NULL);
+	event_add_handler(EVENT_ENTER_INIT, ui_leave_init, NULL);
+
+	event_add_handler(EVENT_ENTER_GAME, ui_enter_game, NULL);
+	event_add_handler(EVENT_ENTER_GAME, ui_leave_game, NULL);
+
+	ui_init_birthstate_handlers();
 }

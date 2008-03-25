@@ -1519,6 +1519,8 @@ bool init_angband(void)
 			   path here. */
 			return FALSE;
 	}
+
+	event_signal(EVENT_LEAVE_INIT);
 }
 
 
