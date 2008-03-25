@@ -1889,6 +1889,20 @@ int target_dir(char ch)
 }
 
 
+int dir_transitions[10][10] = 
+{
+	/* 0-> */ { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 },
+	/* 1-> */ { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+	/* 2-> */ { 0, 0, 2, 0, 1, 0, 3, 0, 5, 0 }, 
+	/* 3-> */ { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+	/* 4-> */ { 0, 0, 1, 0, 4, 0, 5, 0, 7, 0 }, 
+	/* 5-> */ { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+	/* 6-> */ { 0, 0, 3, 0, 5, 0, 6, 0, 9, 0 }, 
+	/* 7-> */ { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+	/* 8-> */ { 0, 0, 5, 0, 7, 0, 9, 0, 8, 0 }, 
+	/* 9-> */ { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+};
+
 
 /*
  * Get an "aiming direction" (1,2,3,4,6,7,8,9 or 5) from the user.
@@ -1983,8 +1997,33 @@ bool get_aim_dir(int *dp)
 			/* Possible direction */
 			default:
 			{
-				dir = target_dir(ke.key);
-				break;
+				int keypresses_handled = 0;
+				
+				while (ke.key != 0)
+				{
+					int this_dir;
+					
+					/* XXX Ideally show and move the cursor here to indicate 
+					   the currently "Pending" direction. XXX */
+					this_dir = target_dir(ke.key);
+					
+					if (this_dir)
+					{
+						dir = dir_transitions[dir][this_dir];
+					}
+					else
+					{
+						break;
+					}
+					
+					if (lazymove_delay == 0 || ++keypresses_handled > 1)
+						break;
+				
+					/* See if there's a second keypress within the defined
+					   period of time. */
+					inkey_scan = lazymove_delay; 
+					ke = inkey_ex();
+				}
 			}
 		}
 
@@ -2022,7 +2061,6 @@ bool get_aim_dir(int *dp)
 }
 
 
-
 /*
  * Request a "movement" direction (1,2,3,4,6,7,8,9) from the user.
  *
@@ -2044,8 +2082,6 @@ bool get_rep_dir(int *dp)
 
 	ui_event_data ke;
 
-	cptr p;
-
 	if (repeat_pull(dp))
 	{
 		return (TRUE);
@@ -2060,11 +2096,22 @@ bool get_rep_dir(int *dp)
 	/* Get a direction */
 	while (!dir)
 	{
-		/* Choose a prompt */
-		p = "Direction or <click> (Escape to cancel)? ";
+		/* Paranoia XXX XXX XXX */
+		message_flush();
 
-		/* Get a command (or Cancel) */
-		if (!get_com_ex(p, &ke)) break;
+		/* Get first keypress - the first test is to avoid displaying the
+		   prompt for direction if there's already a keypress queued up
+		   and waiting - this just avoids a flickering prompt if there is
+		   a "lazy" movement delay. */
+		inkey_scan = SCAN_INSTANT;
+		ke = inkey_ex();
+		inkey_scan = SCAN_OFF;
+
+		if (ke.key != '\xff' && target_dir(ke.key) == 0)
+		{
+			prt("Direction or <click> (Escape to cancel)? ", 0, 0);
+			ke = inkey_ex();
+		}
 
 		/* Check mouse coordinates */
 		if (ke.key == '\xff')
@@ -2088,15 +2135,57 @@ bool get_rep_dir(int *dp)
 				else if (angle < 168) dir = 3;
 				else dir = 6;
 			}
-			/* else continue; */
 		}
 
-		/* Convert keypress into a direction */
-		else dir = target_dir(ke.key);
+		/* Get other keypresses until a direction is chosen. */
+		else 
+		{
+			int keypresses_handled = 0;
+
+			while (ke.key != 0)
+			{
+				int this_dir;
+
+				if (ke.key == ESCAPE) 
+				{
+					/* Clear the prompt */
+					prt("", 0, 0);
+
+					return (FALSE);
+				}
+
+				/* XXX Ideally show and move the cursor here to indicate 
+				   the currently "Pending" direction. XXX */
+				this_dir = target_dir(ke.key);
+
+				if (this_dir)
+				{
+					dir = dir_transitions[dir][this_dir];
+				}
+
+				if (lazymove_delay == 0 || ++keypresses_handled > 1)
+					break;
+
+				inkey_scan = lazymove_delay; 
+				ke = inkey_ex();
+			}
+
+			/* 5 is equivalent to "escape" */
+			if (dir == 5)
+			{
+				/* Clear the prompt */
+				prt("", 0, 0);
+
+				return (FALSE);
+			}
+		}
 
 		/* Oops */
 		if (!dir) bell("Illegal repeatable direction!");
 	}
+
+	/* Clear the prompt */
+	prt("", 0, 0);
 
 	/* Aborted */
 	if (!dir) return (FALSE);

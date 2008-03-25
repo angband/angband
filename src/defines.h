@@ -2650,3 +2650,8 @@ enum
 #define NOSCORE_BORG		0x0010
 
 #endif /* !INCLUDED_DEFINES_H */
+
+
+#define SCAN_INSTANT ((u32b) -1)
+#define SCAN_OFF 0
+#define SCAN_MACRO 45

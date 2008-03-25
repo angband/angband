@@ -881,8 +881,9 @@ static void rd_options(void)
 	rd_byte(&b);
 	op_ptr->hitpoint_warn = b;
 
-	/* Old cheating options */
+	/* Read lazy movement delay */
 	rd_u16b(&tmp16u);
+	lazymove_delay = (tmp16u < 1000) ? tmp16u : 0;
 
 
 	/*** Normal Options ***/

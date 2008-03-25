@@ -321,7 +321,8 @@ static void wr_options(void)
 	/* Write "hitpoint_warn" */
 	wr_byte(op_ptr->hitpoint_warn);
 
-	wr_u16b(0);	/* oops */
+	/* Write movement delay */
+	wr_u16b(lazymove_delay);
 
 
 	/*** Normal options ***/

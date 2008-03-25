@@ -733,7 +733,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 			if ((i < 100) || (i % 100 == 0))
 			{
 				/* Do not wait */
-				inkey_scan = TRUE;
+				inkey_scan = SCAN_INSTANT;
 
 				/* Allow interupt */
 				if (inkey())

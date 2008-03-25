@@ -789,7 +789,7 @@ static bool parse_under = FALSE;
  * macro trigger, 500 milliseconds must pass before the key sequence is
  * known not to be that macro trigger.  XXX XXX XXX
  */
-static ui_event_data inkey_aux(void)
+static ui_event_data inkey_aux(int scan_cutoff)
 {
 	int k = 0, n, p = 0, w = 0;
 	
@@ -799,17 +799,43 @@ static ui_event_data inkey_aux(void)
 	cptr pat, act;
 	
 	char buf[1024];
-	
+
 	/* Initialize the no return */
-	ke0.type = EVT_KBRD;
+	ke0.type = EVT_NONE;
 	ke0.key = 0;
 	ke0.index = 0; /* To fix GCC warnings on X11 */
 	ke0.mousey = 0;
 	ke0.mousex = 0;
  
 	/* Wait for a keypress */
-	(void)(Term_inkey(&ke, TRUE, TRUE));
-	ch = ke.key;
+	if (scan_cutoff == SCAN_OFF)
+	{
+		(void)(Term_inkey(&ke, TRUE, TRUE));
+		ch = ke.key;
+	}
+	else
+	{
+		w = 0;
+
+		/* Wait only as long as macro activation would wait*/
+		while (Term_inkey(&ke, FALSE, TRUE) != 0)
+		{
+			/* Increase "wait" */
+			w++;
+
+			/* Excessive delay */
+			if (w >= scan_cutoff)
+			{
+				ke0.type = EVT_KBRD;
+				return ke0;
+			}
+
+			/* Delay */
+			Term_xtra(TERM_XTRA_DELAY, 10);
+		}
+		ch = ke.key;
+	}
+
 	
 	/* End "macro action" */
 	if ((ch == 30) || (ch == '\xff'))
@@ -861,13 +887,13 @@ static ui_event_data inkey_aux(void)
 		else
 		{
 			/* Increase "wait" */
-			w += 10;
+			w ++;
 		
 			/* Excessive delay */
-			if (w >= 100) break;
+			if (w >= SCAN_MACRO) break;
 		
 			/* Delay */
-			Term_xtra(TERM_XTRA_DELAY, w);
+			Term_xtra(TERM_XTRA_DELAY, 10);
 		}
 	}
 	
@@ -1039,13 +1065,14 @@ ui_event_data inkey_ex(void)
 	
 	/* Initialise keypress */
 	ke.key = 0;
-	ke.type = EVT_KBRD;
+	ke.type = EVT_NONE;
 	
 	/* Hack -- Use the "inkey_next" pointer */
 	if (inkey_next && *inkey_next && !inkey_xtra)
 	{
 		/* Get next character, and advance */
 		ke.key = *inkey_next++;
+		ke.type = EVT_KBRD;
 		
 		/* Cancel the various "global parameters" */
 		inkey_base = inkey_xtra = inkey_flag = inkey_scan = FALSE;
@@ -1079,7 +1106,6 @@ ui_event_data inkey_ex(void)
 	{
 		/* End "macro action" */
 		parse_macro = FALSE;
-		ke.type = EVT_KBRD;
 		
 		/* End "macro trigger" */
 		parse_under = FALSE;
@@ -1105,12 +1131,13 @@ ui_event_data inkey_ex(void)
 	
 	
 	/* Get a key */
-	while (!ke.key)
+	while (ke.type == EVT_NONE)
 	{
-		/* Hack -- Handle "inkey_scan" */
-		if (!inkey_base && inkey_scan &&
+		/* Hack -- Handle "inkey_scan == SCAN_INSTANT */
+		if (!inkey_base && inkey_scan == SCAN_INSTANT &&
 		   (0 != Term_inkey(&kk, FALSE, FALSE)))
 		{
+			ke.type = EVT_KBRD;
 			break;
 		}
 		
@@ -1151,6 +1178,7 @@ ui_event_data inkey_ex(void)
 				if (0 == Term_inkey(&ke, TRUE, TRUE))
 				{
 					/* Done */
+					ke.type = EVT_KBRD;
 					break;
 				}
 
@@ -1165,6 +1193,7 @@ ui_event_data inkey_ex(void)
 				if (0 == Term_inkey(&ke, FALSE, TRUE))
 				{
 					/* Done */
+					ke.type = EVT_KBRD;
 					break;
 				}
 
@@ -1172,13 +1201,13 @@ ui_event_data inkey_ex(void)
 				else
 				{
 					/* Increase "wait" */
-					w += 10;
+					w ++;
 
 					/* Excessive delay */
-					if (w >= 100) break;
+					if (w >= SCAN_MACRO) break;
 
 					/* Delay */
-					Term_xtra(TERM_XTRA_DELAY, w);
+					Term_xtra(TERM_XTRA_DELAY, 10);
 
 				}
 			}
@@ -1189,7 +1218,7 @@ ui_event_data inkey_ex(void)
 		}
 
 		/* Get a key (see above) */
-		ke = inkey_aux();
+		ke = inkey_aux(inkey_scan);
 
 		/* Handle mouse buttons */
 		if ((ke.type == EVT_MOUSE) && (mouse_buttons))
@@ -1217,7 +1246,7 @@ ui_event_data inkey_ex(void)
 		if (ke.key == 29)
 		{
 			/* Strip this key */
-			ke.key = 0;
+			ke.type = EVT_NONE;
 
 			/* Continue */
 			continue;
@@ -1229,9 +1258,10 @@ ui_event_data inkey_ex(void)
 		
 		
 		/* End "macro trigger" */
-		if (parse_under && (ke.key <= 32))
+		if (parse_under && (ke.key >=0 && ke.key <= 32))
 		{
 			/* Strip this key */
+			ke.type = EVT_NONE;
 			ke.key = 0;
 		
 			/* End "macro trigger" */
@@ -1242,6 +1272,7 @@ ui_event_data inkey_ex(void)
 		if (ke.key == 30)
 		{
 			/* Strip this key */
+			ke.type = EVT_NONE;
 			ke.key = 0;
 		}
 
@@ -1249,6 +1280,7 @@ ui_event_data inkey_ex(void)
 		else if (ke.key == 31)
 		{
 			/* Strip this key */
+			ke.type = EVT_NONE;
 			ke.key = 0;
 
 			/* Begin "macro trigger" */
@@ -1259,6 +1291,7 @@ ui_event_data inkey_ex(void)
     	else if (parse_under)
 		{
 			/* Strip this key */
+			ke.type = EVT_NONE;
 			ke.key = 0;
 		}
 	}
@@ -2830,7 +2863,6 @@ void request_command(void)
 			}
 		}
 
-
 		/* Special case for the arrow keys */
 		if (isarrow(ke.key))
 		{
@@ -2842,7 +2874,6 @@ void request_command(void)
 				case ARROW_UP:      ke.key = '8'; break;
 			}
 		}
-
 
 		/* Allow "keymaps" to be bypassed */
 		if (ke.key == '\\')

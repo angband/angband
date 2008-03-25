@@ -1086,7 +1086,7 @@ static void process_player(void)
 	    (p_ptr->resting && !(turn & 0x7F)))
 	{
 		/* Do not wait */
-		inkey_scan = TRUE;
+		inkey_scan = SCAN_INSTANT;
 
 		/* Check for a key */
 		if (inkey())

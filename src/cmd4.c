@@ -2908,7 +2908,7 @@ static void do_cmd_macro_aux(char *buf)
 		inkey_base = TRUE;
 
 		/* Do not wait for keys */
-		inkey_scan = TRUE;
+		inkey_scan = SCAN_INSTANT;
 
 		/* Attempt to read a key */
 		ch = inkey();
@@ -3915,6 +3915,62 @@ static void do_cmd_hp_warn(void)
 }
 
 
+bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *len, char keypress, bool firsttime)
+{
+	switch (keypress)
+	{
+		case ESCAPE:
+		case '\n':
+		case '\r':
+		case ARROW_LEFT:
+		case ARROW_RIGHT:
+		case 0x7F:
+		case '\010':
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+			return askfor_aux_keypress(buf, buflen, curs, len, keypress, firsttime);
+	}
+
+	return FALSE;
+}
+
+/*
+ * Set "lazy-movement" delay
+ */
+static void do_cmd_lazymove_delay(void)
+{
+	bool res;
+	char tmp[4] = "";
+
+	strnfmt(tmp, sizeof(tmp), "%i", lazymove_delay);
+
+	/* Prompt */
+	prt("Command: Movement Delay Factor", 20, 0);
+
+	prt(format("Current movement delay: %d (%d msec)",
+			   lazymove_delay, lazymove_delay * 10), 22, 0);
+	prt("New movement delay: ", 21, 0);
+
+	/* Ask the user for a string */
+	res = askfor_aux(tmp, sizeof(tmp), askfor_aux_numbers);
+
+	/* Process input */
+	if (res)
+        {
+		lazymove_delay = (u16b) strtoul(tmp, NULL, 0);
+	}
+}
+
+
+
 /*
  * Ask for a "user pref file" and process it.
  *
@@ -3985,7 +4041,7 @@ static menu_action option_actions [] =
 	{'s', "Item squelch settings", (action_f) do_cmd_options_item, 0}, 
 	{'d', "Set base delay factor", (action_f) do_cmd_delay, 0}, 
 	{'h', "Set hitpoint warning", (action_f) do_cmd_hp_warn, 0}, 
-	{0, 0, 0, 0}, /* Special choices */
+	{'i', "Set movement delay", (action_f) do_cmd_lazymove_delay, 0}, 
 	{'l', "Load a user pref file", (action_f) do_cmd_pref_file_hack, (void*)20},
 	{'o', "Dump options", do_dump_options, 0}, 
 	{0, 0, 0, 0}, /* Interact with */	

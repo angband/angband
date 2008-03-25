@@ -115,7 +115,7 @@ extern s16b signal_count;
 extern bool msg_flag;
 extern bool inkey_base;
 extern bool inkey_xtra;
-extern bool inkey_scan;
+extern u32b inkey_scan;
 extern bool inkey_flag;
 extern s16b coin_type;
 extern bool opening_chest;
@@ -695,3 +695,6 @@ extern void do_cmd_borg(void);
 extern bool new_save;
 
 #endif /* !INCLUDED_EXTERNS_H */
+
+
+extern u16b lazymove_delay;

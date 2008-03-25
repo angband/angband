@@ -102,7 +102,7 @@ bool msg_flag;			/* Player has pending message */
 
 bool inkey_base;		/* See the "inkey()" function */
 bool inkey_xtra;		/* See the "inkey()" function */
-bool inkey_scan;		/* See the "inkey()" function */
+u32b inkey_scan;		/* See the "inkey()" function */
 bool inkey_flag;		/* See the "inkey()" function */
 
 s16b coin_type;			/* Hack -- force coin type */
@@ -785,3 +785,7 @@ u16b inscriptions_count = 0;
 /* Use new-type savefiles */
 bool new_save;
 
+
+/* Delay in centiseconds before moving to allow another keypress */
+/* Zero means normal instant movement. */
+u16b lazymove_delay = 0;
