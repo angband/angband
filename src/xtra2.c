@@ -1960,7 +1960,7 @@ bool get_aim_dir(int *dp)
 		}
 		else
 		{
-			p = "Direction ('5' or <click> for target, '*' to re-target, Escape to cancel)? ";
+			p = "Direction ('5' for target, '*' or <click> to re-target, Escape to cancel)? ";
 		}
 
 		/* Get a command (or Cancel) */
@@ -1972,15 +1972,16 @@ bool get_aim_dir(int *dp)
 			/* Mouse aiming */
 			case '\xff':
 			{
-				target_set_location(ke.mousey + Term->offset_y, ke.mousex + Term->offset_x);
-				dir = 5;
+				if (target_set_interactive(TARGET_KILL, KEY_GRID_X(ke), KEY_GRID_Y(ke)))
+					dir = 5;
+
 				break;
 			}
 
 			/* Set new target, use target if legal */
 			case '*':
 			{
-				if (target_set_interactive(TARGET_KILL)) dir = 5;
+				if (target_set_interactive(TARGET_KILL, -1, -1)) dir = 5;
 				break;
 			}
 

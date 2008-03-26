@@ -488,7 +488,7 @@ void refuel_torch(object_type *j_ptr, object_type *o_ptr, int item)
 void do_cmd_target(void)
 {
 	/* Target set */
-	if (target_set_interactive(TARGET_KILL))
+	if (target_set_interactive(TARGET_KILL, -1, -1))
 	{
 		msg_print("Target Selected.");
 	}
@@ -508,7 +508,7 @@ void do_cmd_target(void)
 void do_cmd_look(void)
 {
 	/* Look around */
-	if (target_set_interactive(TARGET_LOOK))
+	if (target_set_interactive(TARGET_LOOK, -1, -1))
 	{
 		msg_print("Target Selected.");
 	}

@@ -495,7 +495,6 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 
 	char out_val[256];
 
-
 	/* Repeat forever */
 	while (1)
 	{
@@ -919,16 +918,16 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
  *
  * This command will cancel any old target, even if used from
  * inside the "look" command.
+ *
+ *
+ * 'mode' is one of TARGET_LOOK or TARGET_KILL.
+ * 'x' and 'y' are the initial position of the target to be highlighted,
+ * or -1 if no location is specified.
+ * Returns TRUE if a target has been successfully set, FALSE otherwise.
  */
-bool target_set_interactive(int mode)
+bool target_set_interactive(int mode, int x, int y)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
-
 	int i, d, m, t, bd;
-
-	int y = py;
-	int x = px;
 
 	bool done = FALSE;
 
@@ -938,6 +937,19 @@ bool target_set_interactive(int mode)
 
 	char info[80];
 
+	/* If we haven't been given an initial location, start on the
+	   player. */
+	if (x == -1 || y == -1)
+	{
+		x = p_ptr->px;
+		y = p_ptr->py;
+	}
+    /* If we /have/ been given an initial location, make sure we
+	   honour it by going into "free targetting" mode. */
+	else
+	{
+		flag = FALSE;
+	}
 
 	/* Cancel target */
 	target_set_monster(0);
@@ -1026,8 +1038,8 @@ bool target_set_interactive(int mode)
 					/* Handle stuff */
 					handle_stuff();
 
-					y = py;
-					x = px;
+					y = p_ptr->py;
+					x = p_ptr->px;
 				}
 
 				case 'o':
@@ -1041,12 +1053,14 @@ bool target_set_interactive(int mode)
 					break;
 				}
 
+				/* If we click, move the target location to the click and
+				   switch to "free targetting" mode by unsetting 'flag'.
+				   This means we get some info about wherever we've picked. */
 				case '\xff':
 				{
-					x = query.mousex + Term->offset_x;
-					y = query.mousey + Term->offset_y;
-					target_set_location(y, x);
-					done = TRUE;
+					x = KEY_GRID_X(query);
+					y = KEY_GRID_Y(query);
+					flag = FALSE;
 					break;
 				}
 				case 't':
@@ -1170,8 +1184,8 @@ bool target_set_interactive(int mode)
 					/* Handle stuff */
 					handle_stuff();
 
-					y = py;
-					x = px;
+					y = p_ptr->py;
+					x = p_ptr->px;
 				}
 
 				case 'o':
@@ -1207,8 +1221,38 @@ bool target_set_interactive(int mode)
 
 				case '\xff':
 				{
-					x = query.mousex + Term->offset_x;
-					y = query.mousey + Term->offset_y;
+					/* We only target if we click somewhere where the cursor
+					   is already (i.e. a double-click without a time limit) */
+					if (KEY_GRID_X(query) == x && KEY_GRID_Y(query) == y)
+					{
+						/* Make an attempt to target the monster on the given
+						   square rather than the square itself (it seems this
+						   is the more likely intention of clicking on a 
+						   monster). */
+						int m_idx = cave_m_idx[y][x];
+
+						if ((m_idx > 0) && target_able(m_idx))
+						{
+							health_track(m_idx);
+							target_set_monster(m_idx);
+						}
+						else
+						{
+							/* There is no monster, or it isn't targettable,
+							   so target the location instead. */
+							target_set_location(y, x);
+						}
+
+						done = TRUE;
+					}
+					else
+					{
+						/* Just move the cursor for now - another click will
+						   target. */
+						x = KEY_GRID_X(query);
+						y = KEY_GRID_Y(query);
+					}
+					break;
 				}
 				case 't':
 				case '5':
