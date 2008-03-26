@@ -28,7 +28,7 @@ struct event_handler_entry
 	void *user;
 };
 
-struct event_handler_entry *event_handlers[N_GAME_EVENTS+1];
+struct event_handler_entry *event_handlers[N_GAME_EVENTS];
 
 static void game_event_dispatch(game_event_type type, game_event_data *data)
 {

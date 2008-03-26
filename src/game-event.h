@@ -20,7 +20,7 @@ enum birth_stage
 /* The various events we can send signals about. */
 typedef enum game_event_type
 {
-	EVENT_MAP,		/* Some part of the map has changed. */
+	EVENT_MAP = 0,		/* Some part of the map has changed. */
 
 	EVENT_STATS,  		/* One or more of the stats. */
 	EVENT_HP,	   	/* HP or MaxHP. */
@@ -70,7 +70,7 @@ typedef enum game_event_type
 	EVENT_END  /* Can be sent at the end of a series of events */
 } game_event_type;
 
-#define  N_GAME_EVENTS EVENT_END
+#define  N_GAME_EVENTS EVENT_END + 1
 
 typedef union
 {
