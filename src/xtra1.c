@@ -311,7 +311,7 @@ static void calc_mana(void)
 	msp = (long)adj_mag_mana[p_ptr->stat_ind[cp_ptr->spell_stat]] * levels / 100;
 
 	/* Hack -- usually add one mana */
-	if (msp) msp++;
+	if (levels) msp++;
 
 	/* Process gloves for those disturbed by them */
 	if (cp_ptr->flags & CF_CUMBER_GLOVE)
