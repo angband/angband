@@ -1609,7 +1609,7 @@ static void desc_obj_fake(int k_idx)
 
 	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
 	(void)anykey();
-      
+
 	screen_load();
 }
 
@@ -1628,11 +1628,11 @@ static int o_cmp_tval(const void *a, const void *b)
 	c = k_a->aware - k_b->aware;
 	if (c) return -c; /* aware has low sort weight */
 
-	c = k_a->tried - k_b->tried;
-	if (c) return -c;
-
 	if (!k_a->aware)
 	{
+		c = k_a->tried - k_b->tried;
+		if (c) return -c;
+
 		return strcmp(flavor_text + flavor_info[k_a->flavor].text,
 		              flavor_text + flavor_info[k_b->flavor].text);
 	}
