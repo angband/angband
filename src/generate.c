@@ -1489,7 +1489,7 @@ static bool vault_aux_jelly(int r_idx)
 	monster_race *r_ptr = &r_info[r_idx];
 
 	/* Decline unique monsters */
-	if (r_ptr->flags[0] & (RF1_UNIQUE)) return (FALSE);
+	if (r_ptr->flags[0] & (RF0_UNIQUE)) return (FALSE);
 
 	/* Require icky thing, jelly, mold, or mushroom */
 	if (!strchr("ijm,", r_ptr->d_char)) return (FALSE);
@@ -1507,10 +1507,10 @@ static bool vault_aux_animal(int r_idx)
 	monster_race *r_ptr = &r_info[r_idx];
 
 	/* Decline unique monsters */
-	if (r_ptr->flags[0] & (RF1_UNIQUE)) return (FALSE);
+	if (r_ptr->flags[0] & (RF0_UNIQUE)) return (FALSE);
 
 	/* Require "animal" flag */
-	if (!(r_ptr->flags[2] & (RF3_ANIMAL))) return (FALSE);
+	if (!(r_ptr->flags[2] & (RF2_ANIMAL))) return (FALSE);
 
 	/* Okay */
 	return (TRUE);
@@ -1525,10 +1525,10 @@ static bool vault_aux_undead(int r_idx)
 	monster_race *r_ptr = &r_info[r_idx];
 
 	/* Decline unique monsters */
-	if (r_ptr->flags[0] & (RF1_UNIQUE)) return (FALSE);
+	if (r_ptr->flags[0] & (RF0_UNIQUE)) return (FALSE);
 
 	/* Require Undead */
-	if (!(r_ptr->flags[2] & (RF3_UNDEAD))) return (FALSE);
+	if (!(r_ptr->flags[2] & (RF2_UNDEAD))) return (FALSE);
 
 	/* Okay */
 	return (TRUE);
@@ -1543,7 +1543,7 @@ static bool vault_aux_orc(int r_idx)
 	monster_race *r_ptr = &r_info[r_idx];
 
 	/* Decline unique monsters */
-	if (r_ptr->flags[0] & (RF1_UNIQUE)) return (FALSE);
+	if (r_ptr->flags[0] & (RF0_UNIQUE)) return (FALSE);
 
 	/* Hack -- Require "o" monsters */
 	if (!strchr("o", r_ptr->d_char)) return (FALSE);
@@ -1561,7 +1561,7 @@ static bool vault_aux_troll(int r_idx)
 	monster_race *r_ptr = &r_info[r_idx];
 
 	/* Decline unique monsters */
-	if (r_ptr->flags[0] & (RF1_UNIQUE)) return (FALSE);
+	if (r_ptr->flags[0] & (RF0_UNIQUE)) return (FALSE);
 
 	/* Hack -- Require "T" monsters */
 	if (!strchr("T", r_ptr->d_char)) return (FALSE);
@@ -1579,7 +1579,7 @@ static bool vault_aux_giant(int r_idx)
 	monster_race *r_ptr = &r_info[r_idx];
 
 	/* Decline unique monsters */
-	if (r_ptr->flags[0] & (RF1_UNIQUE)) return (FALSE);
+	if (r_ptr->flags[0] & (RF0_UNIQUE)) return (FALSE);
 
 	/* Hack -- Require "P" monsters */
 	if (!strchr("P", r_ptr->d_char)) return (FALSE);
@@ -1592,7 +1592,7 @@ static bool vault_aux_giant(int r_idx)
 /*
  * Hack -- breath type for "vault_aux_dragon()"
  */
-static u32b vault_aux_dragon_mask4;
+static u32b vault_aux_dragon_mask3;
 
 
 /*
@@ -1603,13 +1603,13 @@ static bool vault_aux_dragon(int r_idx)
 	monster_race *r_ptr = &r_info[r_idx];
 
 	/* Decline unique monsters */
-	if (r_ptr->flags[0] & (RF1_UNIQUE)) return (FALSE);
+	if (r_ptr->flags[0] & (RF0_UNIQUE)) return (FALSE);
 
 	/* Hack -- Require "d" or "D" monsters */
 	if (!strchr("Dd", r_ptr->d_char)) return (FALSE);
 
 	/* Hack -- Require correct "breath attack" */
-	if (r_ptr->flags[3] != vault_aux_dragon_mask4) return (FALSE);
+	if (r_ptr->flags[3] != vault_aux_dragon_mask3) return (FALSE);
 
 	/* Okay */
 	return (TRUE);
@@ -1624,7 +1624,7 @@ static bool vault_aux_demon(int r_idx)
 	monster_race *r_ptr = &r_info[r_idx];
 
 	/* Decline unique monsters */
-	if (r_ptr->flags[0] & (RF1_UNIQUE)) return (FALSE);
+	if (r_ptr->flags[0] & (RF0_UNIQUE)) return (FALSE);
 
 	/* Hack -- Require "U" monsters */
 	if (!strchr("U", r_ptr->d_char)) return (FALSE);
@@ -1929,7 +1929,7 @@ static void build_type6(int y0, int x0)
 				name = "acid dragon";
 
 				/* Restrict dragon breath type */
-				vault_aux_dragon_mask4 = RF4_BR_ACID;
+				vault_aux_dragon_mask3 = RF3_BR_ACID;
 
 				/* Done */
 				break;
@@ -1942,7 +1942,7 @@ static void build_type6(int y0, int x0)
 				name = "electric dragon";
 
 				/* Restrict dragon breath type */
-				vault_aux_dragon_mask4 = RF4_BR_ELEC;
+				vault_aux_dragon_mask3 = RF3_BR_ELEC;
 
 				/* Done */
 				break;
@@ -1955,7 +1955,7 @@ static void build_type6(int y0, int x0)
 				name = "fire dragon";
 
 				/* Restrict dragon breath type */
-				vault_aux_dragon_mask4 = RF4_BR_FIRE;
+				vault_aux_dragon_mask3 = RF3_BR_FIRE;
 
 				/* Done */
 				break;
@@ -1968,7 +1968,7 @@ static void build_type6(int y0, int x0)
 				name = "cold dragon";
 
 				/* Restrict dragon breath type */
-				vault_aux_dragon_mask4 = RF4_BR_COLD;
+				vault_aux_dragon_mask3 = RF3_BR_COLD;
 
 				/* Done */
 				break;
@@ -1981,7 +1981,7 @@ static void build_type6(int y0, int x0)
 				name = "poison dragon";
 
 				/* Restrict dragon breath type */
-				vault_aux_dragon_mask4 = RF4_BR_POIS;
+				vault_aux_dragon_mask3 = RF3_BR_POIS;
 
 				/* Done */
 				break;
@@ -1994,9 +1994,9 @@ static void build_type6(int y0, int x0)
 				name = "multi-hued dragon";
 
 				/* Restrict dragon breath type */
-				vault_aux_dragon_mask4 = (RF4_BR_ACID | RF4_BR_ELEC |
-				                          RF4_BR_FIRE | RF4_BR_COLD |
-				                          RF4_BR_POIS);
+				vault_aux_dragon_mask3 = (RF3_BR_ACID | RF3_BR_ELEC |
+				                          RF3_BR_FIRE | RF3_BR_COLD |
+				                          RF3_BR_POIS);
 
 				/* Done */
 				break;
@@ -3061,7 +3061,7 @@ static void cave_gen(void)
 			monster_race *r_ptr = &r_info[i];
 
 			/* Ensure quest monsters */
-			if ((r_ptr->flags[0] & (RF1_QUESTOR)) &&
+			if ((r_ptr->flags[0] & (RF0_QUESTOR)) &&
 			    (r_ptr->level == p_ptr->depth) &&
 			    (r_ptr->cur_num <= 0))
 			{

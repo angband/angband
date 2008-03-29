@@ -153,18 +153,18 @@ inline static void stats_print_m(void)
 
 void stats_monster(const monster_type *m_ptr)
 {
-	u32b f1 = r_info[m_ptr->r_idx].flags[0];
+	u32b f0 = r_info[m_ptr->r_idx].flags[0];
 	float prob = 0.0;
 
-	bool gold_ok = (!(f1 & (RF1_ONLY_ITEM)));
-	bool item_ok = (!(f1 & (RF1_ONLY_GOLD)));
+	bool gold_ok = (!(f0 & (RF0_ONLY_ITEM)));
+	bool item_ok = (!(f0 & (RF0_ONLY_GOLD)));
 
-	if (f1 & RF1_DROP_60)  prob += 0.6/* 0.4*/;
-	if (f1 & RF1_DROP_90)  prob += 0.9/* 0.6*/;
-	if (f1 & RF1_DROP_1D2) prob += 1.5/* 1.0*/;
-	if (f1 & RF1_DROP_2D2) prob += 3.0/* 2.0*/;
-	if (f1 & RF1_DROP_3D2) prob += 4.5/* 3.0*/;
-	if (f1 & RF1_DROP_4D2) prob += 6.0/* 4.0*/;
+	if (f0 & RF0_DROP_60)  prob += 0.6/* 0.4*/;
+	if (f0 & RF0_DROP_90)  prob += 0.9/* 0.6*/;
+	if (f0 & RF0_DROP_1D2) prob += 1.5/* 1.0*/;
+	if (f0 & RF0_DROP_2D2) prob += 3.0/* 2.0*/;
+	if (f0 & RF0_DROP_3D2) prob += 4.5/* 3.0*/;
+	if (f0 & RF0_DROP_4D2) prob += 6.0/* 4.0*/;
 
 	if (gold_ok && item_ok)
 	{

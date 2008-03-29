@@ -54,7 +54,7 @@
 static bool int_outof(const monster_race *r_ptr, int prob)
 {
 	/* Non-Smart monsters are half as "smart" */
-	if (!(r_ptr->flags[1] & (RF2_SMART))) prob = prob / 2;
+	if (!(r_ptr->flags[1] & (RF1_SMART))) prob = prob / 2;
 
 	/* Roll the dice */
 	return (rand_int(100) < prob);
@@ -76,7 +76,7 @@ static void remove_bad_spells(int m_idx, u32b* const f)
 
 
 	/* Too stupid to know anything */
-	if (r_ptr->flags[1] & (RF2_STUPID)) return;
+	if (r_ptr->flags[1] & (RF1_STUPID)) return;
 
 
 	/* Must be cheating or learning */
@@ -142,169 +142,169 @@ static void remove_bad_spells(int m_idx, u32b* const f)
 
 	if (smart & (SM_IMM_ACID))
 	{
-		if (int_outof(r_ptr, 100)) f2[0] &= ~(RF4_BR_ACID);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF5_BA_ACID);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF5_BO_ACID);
+		if (int_outof(r_ptr, 100)) f2[0] &= ~(RF3_BR_ACID);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_BA_ACID);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_BO_ACID);
 	}
 	else if ((smart & (SM_OPP_ACID)) && (smart & (SM_RES_ACID)))
 	{
-		if (int_outof(r_ptr, 80)) f2[0] &= ~(RF4_BR_ACID);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF5_BA_ACID);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF5_BO_ACID);
+		if (int_outof(r_ptr, 80)) f2[0] &= ~(RF3_BR_ACID);
+		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF4_BA_ACID);
+		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF4_BO_ACID);
 	}
 	else if ((smart & (SM_OPP_ACID)) || (smart & (SM_RES_ACID)))
 	{
-		if (int_outof(r_ptr, 30)) f2[0] &= ~(RF4_BR_ACID);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF5_BA_ACID);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF5_BO_ACID);
+		if (int_outof(r_ptr, 30)) f2[0] &= ~(RF3_BR_ACID);
+		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF4_BA_ACID);
+		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF4_BO_ACID);
 	}
 
 
 	if (smart & (SM_IMM_ELEC))
 	{
-		if (int_outof(r_ptr, 100)) f2[0] &= ~(RF4_BR_ELEC);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF5_BA_ELEC);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF5_BO_ELEC);
+		if (int_outof(r_ptr, 100)) f2[0] &= ~(RF3_BR_ELEC);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_BA_ELEC);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_BO_ELEC);
 	}
 	else if ((smart & (SM_OPP_ELEC)) && (smart & (SM_RES_ELEC)))
 	{
-		if (int_outof(r_ptr, 80)) f2[0] &= ~(RF4_BR_ELEC);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF5_BA_ELEC);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF5_BO_ELEC);
+		if (int_outof(r_ptr, 80)) f2[0] &= ~(RF3_BR_ELEC);
+		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF4_BA_ELEC);
+		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF4_BO_ELEC);
 	}
 	else if ((smart & (SM_OPP_ELEC)) || (smart & (SM_RES_ELEC)))
 	{
-		if (int_outof(r_ptr, 30)) f2[0] &= ~(RF4_BR_ELEC);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF5_BA_ELEC);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF5_BO_ELEC);
+		if (int_outof(r_ptr, 30)) f2[0] &= ~(RF3_BR_ELEC);
+		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF4_BA_ELEC);
+		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF4_BO_ELEC);
 	}
 
 
 	if (smart & (SM_IMM_FIRE))
 	{
-		if (int_outof(r_ptr, 100)) f2[0] &= ~(RF4_BR_FIRE);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF5_BA_FIRE);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF5_BO_FIRE);
+		if (int_outof(r_ptr, 100)) f2[0] &= ~(RF3_BR_FIRE);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_BA_FIRE);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_BO_FIRE);
 	}
 	else if ((smart & (SM_OPP_FIRE)) && (smart & (SM_RES_FIRE)))
 	{
-		if (int_outof(r_ptr, 80)) f2[0] &= ~(RF4_BR_FIRE);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF5_BA_FIRE);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF5_BO_FIRE);
+		if (int_outof(r_ptr, 80)) f2[0] &= ~(RF3_BR_FIRE);
+		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF4_BA_FIRE);
+		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF4_BO_FIRE);
 	}
 	else if ((smart & (SM_OPP_FIRE)) || (smart & (SM_RES_FIRE)))
 	{
-		if (int_outof(r_ptr, 30)) f2[0] &= ~(RF4_BR_FIRE);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF5_BA_FIRE);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF5_BO_FIRE);
+		if (int_outof(r_ptr, 30)) f2[0] &= ~(RF3_BR_FIRE);
+		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF4_BA_FIRE);
+		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF4_BO_FIRE);
 	}
 
 
 	if (smart & (SM_IMM_COLD))
 	{
-		if (int_outof(r_ptr, 100)) f2[0] &= ~(RF4_BR_COLD);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF5_BA_COLD);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF5_BO_COLD);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF5_BO_ICEE);
+		if (int_outof(r_ptr, 100)) f2[0] &= ~(RF3_BR_COLD);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_BA_COLD);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_BO_COLD);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_BO_ICEE);
 	}
 	else if ((smart & (SM_OPP_COLD)) && (smart & (SM_RES_COLD)))
 	{
-		if (int_outof(r_ptr, 80)) f2[0] &= ~(RF4_BR_COLD);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF5_BA_COLD);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF5_BO_COLD);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF5_BO_ICEE);
+		if (int_outof(r_ptr, 80)) f2[0] &= ~(RF3_BR_COLD);
+		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF4_BA_COLD);
+		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF4_BO_COLD);
+		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF4_BO_ICEE);
 	}
 	else if ((smart & (SM_OPP_COLD)) || (smart & (SM_RES_COLD)))
 	{
-		if (int_outof(r_ptr, 30)) f2[0] &= ~(RF4_BR_COLD);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF5_BA_COLD);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF5_BO_COLD);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF5_BO_ICEE);
+		if (int_outof(r_ptr, 30)) f2[0] &= ~(RF3_BR_COLD);
+		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF4_BA_COLD);
+		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF4_BO_COLD);
+		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF4_BO_ICEE);
 	}
 
 
 	if ((smart & (SM_OPP_POIS)) && (smart & (SM_RES_POIS)))
 	{
-		if (int_outof(r_ptr, 80)) f2[0] &= ~(RF4_BR_POIS);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF5_BA_POIS);
+		if (int_outof(r_ptr, 80)) f2[0] &= ~(RF3_BR_POIS);
+		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF4_BA_POIS);
 	}
 	else if ((smart & (SM_OPP_POIS)) || (smart & (SM_RES_POIS)))
 	{
-		if (int_outof(r_ptr, 30)) f2[0] &= ~(RF4_BR_POIS);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF5_BA_POIS);
+		if (int_outof(r_ptr, 30)) f2[0] &= ~(RF3_BR_POIS);
+		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF4_BA_POIS);
 	}
 
 
 	if (smart & (SM_RES_FEAR))
 	{
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF5_SCARE);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_SCARE);
 	}
 
 	if (smart & (SM_RES_LITE))
 	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF4_BR_LITE);
+		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF3_BR_LITE);
 	}
 
 	if (smart & (SM_RES_DARK))
 	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF4_BR_DARK);
-		if (int_outof(r_ptr, 50)) f2[1] &= ~(RF5_BA_DARK);
+		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF3_BR_DARK);
+		if (int_outof(r_ptr, 50)) f2[1] &= ~(RF4_BA_DARK);
 	}
 
 	if (smart & (SM_RES_BLIND))
 	{
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF5_BLIND);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_BLIND);
 	}
 
 	if (smart & (SM_RES_CONFU))
 	{
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF5_CONF);
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF4_BR_CONF);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_CONF);
+		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF3_BR_CONF);
 	}
 
 	if (smart & (SM_RES_SOUND))
 	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF4_BR_SOUN);
+		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF3_BR_SOUN);
 	}
 
 	if (smart & (SM_RES_SHARD))
 	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF4_BR_SHAR);
+		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF3_BR_SHAR);
 	}
 
 	if (smart & (SM_RES_NEXUS))
 	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF4_BR_NEXU);
-		if (int_outof(r_ptr, 50)) f2[2] &= ~(RF6_TELE_LEVEL);
+		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF3_BR_NEXU);
+		if (int_outof(r_ptr, 50)) f2[2] &= ~(RF5_TELE_LEVEL);
 	}
 
 	if (smart & (SM_RES_NETHR))
 	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF4_BR_NETH);
-		if (int_outof(r_ptr, 50)) f2[1] &= ~(RF5_BA_NETH);
-		if (int_outof(r_ptr, 50)) f2[1] &= ~(RF5_BO_NETH);
+		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF3_BR_NETH);
+		if (int_outof(r_ptr, 50)) f2[1] &= ~(RF4_BA_NETH);
+		if (int_outof(r_ptr, 50)) f2[1] &= ~(RF4_BO_NETH);
 	}
 
 	if (smart & (SM_RES_CHAOS))
 	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF4_BR_CHAO);
+		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF3_BR_CHAO);
 	}
 
 	if (smart & (SM_RES_DISEN))
 	{
-		if (int_outof(r_ptr, 100)) f2[0] &= ~(RF4_BR_DISE);
+		if (int_outof(r_ptr, 100)) f2[0] &= ~(RF3_BR_DISE);
 	}
 
 
 	if (smart & (SM_IMM_FREE))
 	{
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF5_HOLD);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF5_SLOW);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_HOLD);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_SLOW);
 	}
 
 	if (smart & (SM_IMM_MANA))
 	{
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF5_DRAIN_MANA);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_DRAIN_MANA);
 	}
 
 
@@ -423,7 +423,7 @@ static void breath(int m_idx, int typ, int dam_hp)
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	/* Determine the radius of the blast */
-	rad = (r_ptr->flags[1] & (RF2_POWERFUL)) ? 3 : 2;
+	rad = (r_ptr->flags[1] & (RF1_POWERFUL)) ? 3 : 2;
 
 	/* Target the player with a ball attack */
 	(void)project(m_idx, rad, py, px, dam_hp, typ, flg);
@@ -433,9 +433,9 @@ static void breath(int m_idx, int typ, int dam_hp)
 /*
  * Offsets for the spell indices
  */
-#define RF4_OFFSET 32 * 3
-#define RF5_OFFSET 32 * 4
-#define RF6_OFFSET 32 * 5
+#define RF3_OFFSET 32 * 3
+#define RF4_OFFSET 32 * 4
+#define RF5_OFFSET 32 * 5
 
 
 /*
@@ -455,9 +455,9 @@ static int choose_attack_spell(int m_idx, u32b f[RACE_FLAG_SPELL_STRICT_UB])
 	monster_type *m_ptr = &mon_list[m_idx];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
+	u32b f3_mask = 0L;
 	u32b f4_mask = 0L;
 	u32b f5_mask = 0L;
-	u32b f6_mask = 0L;
 
 	int num = 0;
 	byte spells[96];
@@ -469,30 +469,30 @@ static int choose_attack_spell(int m_idx, u32b f[RACE_FLAG_SPELL_STRICT_UB])
 
 
 	/* Smart monsters restrict their spell choices. */
-	if (adult_ai_smart && !(r_ptr->flags[1] & (RF2_STUPID)))
+	if (adult_ai_smart && !(r_ptr->flags[1] & (RF1_STUPID)))
 	{
 		/* What have we got? */
-		has_escape = ((f[0] & (RF4_ESCAPE_MASK)) ||
-		              (f[1] & (RF5_ESCAPE_MASK)) ||
-		              (f[2] & (RF6_ESCAPE_MASK)));
-		has_attack = ((f[0] & (RF4_ATTACK_MASK)) ||
-		              (f[1] & (RF5_ATTACK_MASK)) ||
-		              (f[2] & (RF6_ATTACK_MASK)));
-		has_summon = ((f[0] & (RF4_SUMMON_MASK)) ||
-		              (f[1] & (RF5_SUMMON_MASK)) ||
-		              (f[2] & (RF6_SUMMON_MASK)));
-		has_tactic = ((f[0] & (RF4_TACTIC_MASK)) ||
-		              (f[1] & (RF5_TACTIC_MASK)) ||
-		              (f[2] & (RF6_TACTIC_MASK)));
-		has_annoy = ((f[0] & (RF4_ANNOY_MASK)) ||
-		             (f[1] & (RF5_ANNOY_MASK)) ||
-		             (f[2] & (RF6_ANNOY_MASK)));
-		has_haste = ((f[0] & (RF4_HASTE_MASK)) ||
-		             (f[1] & (RF5_HASTE_MASK)) ||
-		             (f[2] & (RF6_HASTE_MASK)));
-		has_heal = ((f[0] & (RF4_HEAL_MASK)) ||
-		            (f[1] & (RF5_HEAL_MASK)) ||
-		            (f[2] & (RF6_HEAL_MASK)));
+		has_escape = ((f[0] & (RF3_ESCAPE_MASK)) ||
+		              (f[1] & (RF4_ESCAPE_MASK)) ||
+		              (f[2] & (RF5_ESCAPE_MASK)));
+		has_attack = ((f[0] & (RF3_ATTACK_MASK)) ||
+		              (f[1] & (RF4_ATTACK_MASK)) ||
+		              (f[2] & (RF5_ATTACK_MASK)));
+		has_summon = ((f[0] & (RF3_SUMMON_MASK)) ||
+		              (f[1] & (RF4_SUMMON_MASK)) ||
+		              (f[2] & (RF5_SUMMON_MASK)));
+		has_tactic = ((f[0] & (RF3_TACTIC_MASK)) ||
+		              (f[1] & (RF4_TACTIC_MASK)) ||
+		              (f[2] & (RF5_TACTIC_MASK)));
+		has_annoy = ((f[0] & (RF3_ANNOY_MASK)) ||
+		             (f[1] & (RF4_ANNOY_MASK)) ||
+		             (f[2] & (RF5_ANNOY_MASK)));
+		has_haste = ((f[0] & (RF3_HASTE_MASK)) ||
+		             (f[1] & (RF4_HASTE_MASK)) ||
+		             (f[2] & (RF5_HASTE_MASK)));
+		has_heal = ((f[0] & (RF3_HEAL_MASK)) ||
+		            (f[1] & (RF4_HEAL_MASK)) ||
+		            (f[2] & (RF5_HEAL_MASK)));
 
 		/*** Try to pick an appropriate spell type ***/
 
@@ -500,18 +500,18 @@ static int choose_attack_spell(int m_idx, u32b f[RACE_FLAG_SPELL_STRICT_UB])
 		if (has_escape && ((m_ptr->hp < m_ptr->maxhp / 4) || m_ptr->monfear))
 		{
 			/* Choose escape spell */
+			f3_mask = (RF3_ESCAPE_MASK);
 			f4_mask = (RF4_ESCAPE_MASK);
 			f5_mask = (RF5_ESCAPE_MASK);
-			f6_mask = (RF6_ESCAPE_MASK);
 		}
 
 		/* Still hurt badly, couldn't flee, attempt to heal */
 		else if (has_heal && m_ptr->hp < m_ptr->maxhp / 4)
 		{
 			/* Choose heal spell */
+			f3_mask = (RF3_HEAL_MASK);
 			f4_mask = (RF4_HEAL_MASK);
 			f5_mask = (RF5_HEAL_MASK);
-			f6_mask = (RF6_HEAL_MASK);
 		}
 
 		/* Player is close and we have attack spells, blink away */
@@ -519,9 +519,9 @@ static int choose_attack_spell(int m_idx, u32b f[RACE_FLAG_SPELL_STRICT_UB])
 		         has_attack && (rand_int(100) < 75))
 		{
 			/* Choose tactical spell */
+			f3_mask = (RF3_TACTIC_MASK);
 			f4_mask = (RF4_TACTIC_MASK);
 			f5_mask = (RF5_TACTIC_MASK);
-			f6_mask = (RF6_TACTIC_MASK);
 		}
 
 		/* We're hurt (not badly), try to heal */
@@ -529,62 +529,62 @@ static int choose_attack_spell(int m_idx, u32b f[RACE_FLAG_SPELL_STRICT_UB])
 		         (rand_int(100) < 60))
 		{
 			/* Choose heal spell */
+			f3_mask = (RF3_HEAL_MASK);
 			f4_mask = (RF4_HEAL_MASK);
 			f5_mask = (RF5_HEAL_MASK);
-			f6_mask = (RF6_HEAL_MASK);
 		}
 
 		/* Summon if possible (sometimes) */
 		else if (has_summon && (rand_int(100) < 50))
 		{
 			/* Choose summon spell */
+			f3_mask = (RF3_SUMMON_MASK);
 			f4_mask = (RF4_SUMMON_MASK);
 			f5_mask = (RF5_SUMMON_MASK);
-			f6_mask = (RF6_SUMMON_MASK);
 		}
 
 		/* Attack spell (most of the time) */
 		else if (has_attack && (rand_int(100) < 85))
 		{
 			/* Choose attack spell */
+			f3_mask = (RF3_ATTACK_MASK);
 			f4_mask = (RF4_ATTACK_MASK);
 			f5_mask = (RF5_ATTACK_MASK);
-			f6_mask = (RF6_ATTACK_MASK);
 		}
 
 		/* Try another tactical spell (sometimes) */
 		else if (has_tactic && (rand_int(100) < 50))
 		{
 			/* Choose tactic spell */
+			f3_mask = (RF3_TACTIC_MASK);
 			f4_mask = (RF4_TACTIC_MASK);
 			f5_mask = (RF5_TACTIC_MASK);
-			f6_mask = (RF6_TACTIC_MASK);
 		}
 
 		/* Haste self if we aren't already somewhat hasted (rarely) */
 		else if (has_haste && (rand_int(100) < (20 + r_ptr->speed - m_ptr->mspeed)))
 		{
 			/* Choose haste spell */
+			f3_mask = (RF3_HASTE_MASK);
 			f4_mask = (RF4_HASTE_MASK);
 			f5_mask = (RF5_HASTE_MASK);
-			f6_mask = (RF6_HASTE_MASK);
 		}
 
 		/* Annoy player (most of the time) */
 		else if (has_annoy && (rand_int(100) < 85))
 		{
 			/* Choose annoyance spell */
+			f3_mask = (RF3_ANNOY_MASK);
 			f4_mask = (RF4_ANNOY_MASK);
 			f5_mask = (RF5_ANNOY_MASK);
-			f6_mask = (RF6_ANNOY_MASK);
 		}
 
 		/* Else choose no spell (The masks default to this.) */
 
 		/* Keep only the interesting spells */
-		f[0] &= f4_mask;
-		f[1] &= f5_mask;
-		f[2] &= f6_mask;
+		f[0] &= f3_mask;
+		f[1] &= f4_mask;
+		f[2] &= f5_mask;
 
 		/* Anything left? */
 		if (!(f[0] || f[1] || f[2])) return (0);
@@ -724,14 +724,14 @@ bool make_attack_spell(int m_idx)
 
 
 	/* Hack -- allow "desperate" spells */
-	if ((r_ptr->flags[1] & (RF2_SMART)) &&
+	if ((r_ptr->flags[1] & (RF1_SMART)) &&
 	    (m_ptr->hp < m_ptr->maxhp / 10) &&
 	    (rand_int(100) < 50))
 	{
 		/* Require intelligent spells */
-		f[0] &= (RF4_INT_MASK);
-		f[1] &= (RF5_INT_MASK);
-		f[2] &= (RF6_INT_MASK);
+		f[0] &= (RF3_INT_MASK);
+		f[1] &= (RF4_INT_MASK);
+		f[2] &= (RF5_INT_MASK);
 
 		/* No spells left */
 		if (!f[0] && !f[1] && !f[2]) return (FALSE);
@@ -745,27 +745,27 @@ bool make_attack_spell(int m_idx)
 	if (!f[0] && !f[1] && !f[2]) return (FALSE);
 
 	/* Check whether summons and bolts are worth it. */
-	if (adult_ai_smart && !(r_ptr->flags[1] & (RF2_STUPID)))
+	if (adult_ai_smart && !(r_ptr->flags[1] & (RF1_STUPID)))
 	{
 		/* Check for a clean bolt shot */
-		if ((f[0] & (RF4_BOLT_MASK) ||
-			 f[1] & (RF5_BOLT_MASK) ||
-			 f[2] & (RF6_BOLT_MASK)) &&
+		if ((f[0] & (RF3_BOLT_MASK) ||
+			 f[1] & (RF4_BOLT_MASK) ||
+			 f[2] & (RF5_BOLT_MASK)) &&
 			!clean_shot(m_ptr->fy, m_ptr->fx, py, px))
 		{
 			/* Remove spells that will only hurt friends */
-			f[0] &= ~(RF4_BOLT_MASK);
-			f[1] &= ~(RF5_BOLT_MASK);
-			f[2] &= ~(RF6_BOLT_MASK);
+			f[0] &= ~(RF3_BOLT_MASK);
+			f[1] &= ~(RF4_BOLT_MASK);
+			f[2] &= ~(RF5_BOLT_MASK);
 		}
 
 		/* Check for a possible summon */
 		if (!(summon_possible(m_ptr->fy, m_ptr->fx)))
 		{
 			/* Remove summoning spells */
-			f[0] &= ~(RF4_SUMMON_MASK);
-			f[1] &= ~(RF5_SUMMON_MASK);
-			f[2] &= ~(RF6_SUMMON_MASK);
+			f[0] &= ~(RF3_SUMMON_MASK);
+			f[1] &= ~(RF4_SUMMON_MASK);
+			f[2] &= ~(RF5_SUMMON_MASK);
 		}
 
 		/* No spells left */
@@ -796,10 +796,10 @@ bool make_attack_spell(int m_idx)
 	failrate = 25 - (rlev + 3) / 4;
 
 	/* Hack -- Stupid monsters will never fail (for jellies and such) */
-	if (!adult_ai_smart || r_ptr->flags[1] & (RF2_STUPID)) failrate = 0;
+	if (!adult_ai_smart || r_ptr->flags[1] & (RF1_STUPID)) failrate = 0;
 
 	/* Check for spell failure (innate attacks never fail) */
-	if ((thrown_spell >= RF5_OFFSET) && (rand_int(100) < failrate))
+	if ((thrown_spell >= RF4_OFFSET) && (rand_int(100) < failrate))
 	{
 		/* Message */
 		msg_format("%^s tries to cast a spell, but fails.", m_name);
@@ -810,8 +810,8 @@ bool make_attack_spell(int m_idx)
 	/* Cast the spell. */
 	switch (thrown_spell)
 	{
-		/* RF4_SHRIEK */
-		case RF4_OFFSET+0:
+		/* RF3_SHRIEK */
+		case RF3_OFFSET+0:
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -821,26 +821,26 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_XXX2X4 */
-		case RF4_OFFSET+1:
+		/* RF3_XXX2X4 */
+		case RF3_OFFSET+1:
 		{
 			break;
 		}
 
-		/* RF4_XXX3X4 */
-		case RF4_OFFSET+2:
+		/* RF3_XXX3X4 */
+		case RF3_OFFSET+2:
 		{
 			break;
 		}
 
-		/* RF4_XXX4X4 */
-		case RF4_OFFSET+3:
+		/* RF3_XXX4X4 */
+		case RF3_OFFSET+3:
 		{
 			break;
 		}
 
-		/* RF4_ARROW_1 */
-		case RF4_OFFSET+4:
+		/* RF3_ARROW_1 */
+		case RF3_OFFSET+4:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s makes a strange noise.", m_name);
@@ -849,8 +849,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_ARROW_2 */
-		case RF4_OFFSET+5:
+		/* RF3_ARROW_2 */
+		case RF3_OFFSET+5:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s makes a strange noise.", m_name);
@@ -859,8 +859,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_ARROW_3 */
-		case RF4_OFFSET+6:
+		/* RF3_ARROW_3 */
+		case RF3_OFFSET+6:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s makes a strange noise.", m_name);
@@ -869,8 +869,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_ARROW_4 */
-		case RF4_OFFSET+7:
+		/* RF3_ARROW_4 */
+		case RF3_OFFSET+7:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s makes a strange noise.", m_name);
@@ -879,8 +879,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BR_ACID */
-		case RF4_OFFSET+8:
+		/* RF3_BR_ACID */
+		case RF3_OFFSET+8:
 		{
 			disturb(1, 0);
 			sound(MSG_BR_ACID);
@@ -892,8 +892,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BR_ELEC */
-		case RF4_OFFSET+9:
+		/* RF3_BR_ELEC */
+		case RF3_OFFSET+9:
 		{
 			disturb(1, 0);
 			sound(MSG_BR_ELEC);
@@ -905,8 +905,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BR_FIRE */
-		case RF4_OFFSET+10:
+		/* RF3_BR_FIRE */
+		case RF3_OFFSET+10:
 		{
 			disturb(1, 0);
 			sound(MSG_BR_FIRE);
@@ -918,8 +918,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BR_COLD */
-		case RF4_OFFSET+11:
+		/* RF3_BR_COLD */
+		case RF3_OFFSET+11:
 		{
 			disturb(1, 0);
 			sound(MSG_BR_FROST);
@@ -931,8 +931,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BR_POIS */
-		case RF4_OFFSET+12:
+		/* RF3_BR_POIS */
+		case RF3_OFFSET+12:
 		{
 			disturb(1, 0);
 			sound(MSG_BR_GAS);
@@ -944,8 +944,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BR_NETH */
-		case RF4_OFFSET+13:
+		/* RF3_BR_NETH */
+		case RF3_OFFSET+13:
 		{
 			disturb(1, 0);
 			sound(MSG_BR_NETHER);
@@ -957,8 +957,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BR_LITE */
-		case RF4_OFFSET+14:
+		/* RF3_BR_LITE */
+		case RF3_OFFSET+14:
 		{
 			disturb(1, 0);
 			sound(MSG_BR_LIGHT);
@@ -970,8 +970,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BR_DARK */
-		case RF4_OFFSET+15:
+		/* RF3_BR_DARK */
+		case RF3_OFFSET+15:
 		{
 			disturb(1, 0);
 			sound(MSG_BR_DARK);
@@ -983,8 +983,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BR_CONF */
-		case RF4_OFFSET+16:
+		/* RF3_BR_CONF */
+		case RF3_OFFSET+16:
 		{
 			disturb(1, 0);
 			sound(MSG_BR_CONF);
@@ -996,8 +996,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BR_SOUN */
-		case RF4_OFFSET+17:
+		/* RF3_BR_SOUN */
+		case RF3_OFFSET+17:
 		{
 			disturb(1, 0);
 			sound(MSG_BR_SOUND);
@@ -1009,8 +1009,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BR_CHAO */
-		case RF4_OFFSET+18:
+		/* RF3_BR_CHAO */
+		case RF3_OFFSET+18:
 		{
 			disturb(1, 0);
 			sound(MSG_BR_CHAOS);
@@ -1022,8 +1022,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BR_DISE */
-		case RF4_OFFSET+19:
+		/* RF3_BR_DISE */
+		case RF3_OFFSET+19:
 		{
 			disturb(1, 0);
 			sound(MSG_BR_DISENCHANT);
@@ -1035,8 +1035,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BR_NEXU */
-		case RF4_OFFSET+20:
+		/* RF3_BR_NEXU */
+		case RF3_OFFSET+20:
 		{
 			disturb(1, 0);
 			sound(MSG_BR_NEXUS);
@@ -1048,8 +1048,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BR_TIME */
-		case RF4_OFFSET+21:
+		/* RF3_BR_TIME */
+		case RF3_OFFSET+21:
 		{
 			disturb(1, 0);
 			sound(MSG_BR_TIME);
@@ -1060,8 +1060,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BR_INER */
-		case RF4_OFFSET+22:
+		/* RF3_BR_INER */
+		case RF3_OFFSET+22:
 		{
 			disturb(1, 0);
 			sound(MSG_BR_INERTIA);
@@ -1072,8 +1072,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BR_GRAV */
-		case RF4_OFFSET+23:
+		/* RF3_BR_GRAV */
+		case RF3_OFFSET+23:
 		{
 			disturb(1, 0);
 			sound(MSG_BR_GRAVITY);
@@ -1084,8 +1084,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BR_SHAR */
-		case RF4_OFFSET+24:
+		/* RF3_BR_SHAR */
+		case RF3_OFFSET+24:
 		{
 			disturb(1, 0);
 			sound(MSG_BR_SHARDS);
@@ -1097,8 +1097,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BR_PLAS */
-		case RF4_OFFSET+25:
+		/* RF3_BR_PLAS */
+		case RF3_OFFSET+25:
 		{
 			disturb(1, 0);
 			sound(MSG_BR_PLASMA);
@@ -1109,8 +1109,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BR_WALL */
-		case RF4_OFFSET+26:
+		/* RF3_BR_WALL */
+		case RF3_OFFSET+26:
 		{
 			disturb(1, 0);
 			sound(MSG_BR_FORCE);
@@ -1121,33 +1121,33 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BR_MANA */
-		case RF4_OFFSET+27:
+		/* RF3_BR_MANA */
+		case RF3_OFFSET+27:
 		{
 			/* XXX XXX XXX */
 			break;
 		}
 
-		/* RF4_XXX5X4 */
-		case RF4_OFFSET+28:
+		/* RF3_XXX5X4 */
+		case RF3_OFFSET+28:
 		{
 			break;
 		}
 
-		/* RF4_XXX6X4 */
-		case RF4_OFFSET+29:
+		/* RF3_XXX6X4 */
+		case RF3_OFFSET+29:
 		{
 			break;
 		}
 
-		/* RF4_XXX7X4 */
-		case RF4_OFFSET+30:
+		/* RF3_XXX7X4 */
+		case RF3_OFFSET+30:
 		{
 			break;
 		}
 
-		/* RF4_BOULDER */
-		case RF4_OFFSET+31:
+		/* RF3_BOULDER */
+		case RF3_OFFSET+31:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("You hear something grunt with exertion.", m_name);
@@ -1157,8 +1157,8 @@ bool make_attack_spell(int m_idx)
 		}
 
 
-		/* RF5_BA_ACID */
-		case RF5_OFFSET+0:
+		/* RF4_BA_ACID */
+		case RF4_OFFSET+0:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1169,8 +1169,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_BA_ELEC */
-		case RF5_OFFSET+1:
+		/* RF4_BA_ELEC */
+		case RF4_OFFSET+1:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1181,8 +1181,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_BA_FIRE */
-		case RF5_OFFSET+2:
+		/* RF4_BA_FIRE */
+		case RF4_OFFSET+2:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1193,8 +1193,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_BA_COLD */
-		case RF5_OFFSET+3:
+		/* RF4_BA_COLD */
+		case RF4_OFFSET+3:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1205,8 +1205,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_BA_POIS */
-		case RF5_OFFSET+4:
+		/* RF4_BA_POIS */
+		case RF4_OFFSET+4:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1217,8 +1217,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_BA_NETH */
-		case RF5_OFFSET+5:
+		/* RF4_BA_NETH */
+		case RF4_OFFSET+5:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1229,8 +1229,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_BA_WATE */
-		case RF5_OFFSET+6:
+		/* RF4_BA_WATE */
+		case RF4_OFFSET+6:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1241,8 +1241,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_BA_MANA */
-		case RF5_OFFSET+7:
+		/* RF4_BA_MANA */
+		case RF4_OFFSET+7:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles powerfully.", m_name);
@@ -1252,8 +1252,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_BA_DARK */
-		case RF5_OFFSET+8:
+		/* RF4_BA_DARK */
+		case RF4_OFFSET+8:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles powerfully.", m_name);
@@ -1264,8 +1264,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_DRAIN_MANA */
-		case RF5_OFFSET+9:
+		/* RF4_DRAIN_MANA */
+		case RF4_OFFSET+9:
 		{
 			if (!direct) break;
 			if (p_ptr->csp)
@@ -1319,8 +1319,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_MIND_BLAST */
-		case RF5_OFFSET+10:
+		/* RF4_MIND_BLAST */
+		case RF4_OFFSET+10:
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1349,8 +1349,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_BRAIN_SMASH */
-		case RF5_OFFSET+11:
+		/* RF4_BRAIN_SMASH */
+		case RF4_OFFSET+11:
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1387,8 +1387,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_CAUSE_1 */
-		case RF5_OFFSET+12:
+		/* RF4_CAUSE_1 */
+		case RF4_OFFSET+12:
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1405,8 +1405,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_CAUSE_2 */
-		case RF5_OFFSET+13:
+		/* RF4_CAUSE_2 */
+		case RF4_OFFSET+13:
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1423,8 +1423,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_CAUSE_3 */
-		case RF5_OFFSET+14:
+		/* RF4_CAUSE_3 */
+		case RF4_OFFSET+14:
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1441,8 +1441,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_CAUSE_4 */
-		case RF5_OFFSET+15:
+		/* RF4_CAUSE_4 */
+		case RF4_OFFSET+15:
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1460,8 +1460,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_BO_ACID */
-		case RF5_OFFSET+16:
+		/* RF4_BO_ACID */
+		case RF4_OFFSET+16:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1472,8 +1472,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_BO_ELEC */
-		case RF5_OFFSET+17:
+		/* RF4_BO_ELEC */
+		case RF4_OFFSET+17:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1484,8 +1484,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_BO_FIRE */
-		case RF5_OFFSET+18:
+		/* RF4_BO_FIRE */
+		case RF4_OFFSET+18:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1496,8 +1496,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_BO_COLD */
-		case RF5_OFFSET+19:
+		/* RF4_BO_COLD */
+		case RF4_OFFSET+19:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1508,15 +1508,15 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_BO_POIS */
-		case RF5_OFFSET+20:
+		/* RF4_BO_POIS */
+		case RF4_OFFSET+20:
 		{
 			/* XXX XXX XXX */
 			break;
 		}
 
-		/* RF5_BO_NETH */
-		case RF5_OFFSET+21:
+		/* RF4_BO_NETH */
+		case RF4_OFFSET+21:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1527,8 +1527,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_BO_WATE */
-		case RF5_OFFSET+22:
+		/* RF4_BO_WATE */
+		case RF4_OFFSET+22:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1538,8 +1538,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_BO_MANA */
-		case RF5_OFFSET+23:
+		/* RF4_BO_MANA */
+		case RF4_OFFSET+23:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1549,8 +1549,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_BO_PLAS */
-		case RF5_OFFSET+24:
+		/* RF4_BO_PLAS */
+		case RF4_OFFSET+24:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1560,8 +1560,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_BO_ICEE */
-		case RF5_OFFSET+25:
+		/* RF4_BO_ICEE */
+		case RF4_OFFSET+25:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1572,8 +1572,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_MISSILE */
-		case RF5_OFFSET+26:
+		/* RF4_MISSILE */
+		case RF4_OFFSET+26:
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1583,8 +1583,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_SCARE */
-		case RF5_OFFSET+27:
+		/* RF4_SCARE */
+		case RF4_OFFSET+27:
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1607,8 +1607,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_BLIND */
-		case RF5_OFFSET+28:
+		/* RF4_BLIND */
+		case RF4_OFFSET+28:
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1630,8 +1630,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_CONF */
-		case RF5_OFFSET+29:
+		/* RF4_CONF */
+		case RF4_OFFSET+29:
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1653,8 +1653,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_SLOW */
-		case RF5_OFFSET+30:
+		/* RF4_SLOW */
+		case RF4_OFFSET+30:
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1675,8 +1675,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_HOLD */
-		case RF5_OFFSET+31:
+		/* RF4_HOLD */
+		case RF4_OFFSET+31:
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1700,8 +1700,8 @@ bool make_attack_spell(int m_idx)
 
 
 
-		/* RF6_HASTE */
-		case RF6_OFFSET+0:
+		/* RF5_HASTE */
+		case RF5_OFFSET+0:
 		{
 			disturb(1, 0);
 			if (blind)
@@ -1730,14 +1730,14 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_XXX1X6 */
-		case RF6_OFFSET+1:
+		/* RF5_XXX1X6 */
+		case RF5_OFFSET+1:
 		{
 			break;
 		}
 
-		/* RF6_HEAL */
-		case RF6_OFFSET+2:
+		/* RF5_HEAL */
+		case RF5_OFFSET+2:
 		{
 			disturb(1, 0);
 
@@ -1801,14 +1801,14 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_XXX2X6 */
-		case RF6_OFFSET+3:
+		/* RF5_XXX2X6 */
+		case RF5_OFFSET+3:
 		{
 			break;
 		}
 
-		/* RF6_BLINK */
-		case RF6_OFFSET+4:
+		/* RF5_BLINK */
+		case RF5_OFFSET+4:
 		{
 			disturb(1, 0);
 			msg_format("%^s blinks away.", m_name);
@@ -1816,8 +1816,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_TPORT */
-		case RF6_OFFSET+5:
+		/* RF5_TPORT */
+		case RF5_OFFSET+5:
 		{
 			disturb(1, 0);
 			msg_format("%^s teleports away.", m_name);
@@ -1825,20 +1825,20 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_XXX3X6 */
-		case RF6_OFFSET+6:
+		/* RF5_XXX3X6 */
+		case RF5_OFFSET+6:
 		{
 			break;
 		}
 
-		/* RF6_XXX4X6 */
-		case RF6_OFFSET+7:
+		/* RF5_XXX4X6 */
+		case RF5_OFFSET+7:
 		{
 			break;
 		}
 
-		/* RF6_TELE_TO */
-		case RF6_OFFSET+8:
+		/* RF5_TELE_TO */
+		case RF5_OFFSET+8:
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1847,8 +1847,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_TELE_AWAY */
-		case RF6_OFFSET+9:
+		/* RF5_TELE_AWAY */
+		case RF5_OFFSET+9:
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1857,8 +1857,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_TELE_LEVEL */
-		case RF6_OFFSET+10:
+		/* RF5_TELE_LEVEL */
+		case RF5_OFFSET+10:
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1880,14 +1880,14 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_XXX5 */
-		case RF6_OFFSET+11:
+		/* RF5_XXX5 */
+		case RF5_OFFSET+11:
 		{
 			break;
 		}
 
-		/* RF6_DARKNESS */
-		case RF6_OFFSET+12:
+		/* RF5_DARKNESS */
+		case RF5_OFFSET+12:
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1897,8 +1897,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_TRAPS */
-		case RF6_OFFSET+13:
+		/* RF5_TRAPS */
+		case RF5_OFFSET+13:
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1909,8 +1909,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_FORGET */
-		case RF6_OFFSET+14:
+		/* RF5_FORGET */
+		case RF5_OFFSET+14:
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1924,20 +1924,20 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_ANIMAL */
-		case RF6_OFFSET+15:
+		/* RF5_ANIMAL */
+		case RF5_OFFSET+15:
 		{
 			break;
 		}
 
-		/* RF6_S_KIN */
-		case RF6_OFFSET+16:
+		/* RF5_S_KIN */
+		case RF5_OFFSET+16:
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_MONSTER);
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s magically summons %s %s.", m_name, m_poss,
-			                ((r_ptr->flags[0]) & RF1_UNIQUE ?
+			                ((r_ptr->flags[0]) & RF0_UNIQUE ?
 			                 "minions" : "kin"));
 
 			/* Hack -- Set the letter of the monsters to summon */
@@ -1953,8 +1953,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_HI_DEMON */
-		case RF6_OFFSET+17:
+		/* RF5_HI_DEMON */
+		case RF5_OFFSET+17:
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_HI_DEMON);
@@ -1971,8 +1971,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_S_MONSTER */
-		case RF6_OFFSET+18:
+		/* RF5_S_MONSTER */
+		case RF5_OFFSET+18:
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_MONSTER);
@@ -1989,8 +1989,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_S_MONSTERS */
-		case RF6_OFFSET+19:
+		/* RF5_S_MONSTERS */
+		case RF5_OFFSET+19:
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_MONSTER);
@@ -2007,8 +2007,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_S_ANIMAL */
-		case RF6_OFFSET+20:
+		/* RF5_S_ANIMAL */
+		case RF5_OFFSET+20:
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_ANIMAL);
@@ -2025,8 +2025,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_S_SPIDER */
-		case RF6_OFFSET+21:
+		/* RF5_S_SPIDER */
+		case RF5_OFFSET+21:
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_SPIDER);
@@ -2043,8 +2043,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_S_HOUND */
-		case RF6_OFFSET+22:
+		/* RF5_S_HOUND */
+		case RF5_OFFSET+22:
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_HOUND);
@@ -2061,8 +2061,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_S_HYDRA */
-		case RF6_OFFSET+23:
+		/* RF5_S_HYDRA */
+		case RF5_OFFSET+23:
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_HYDRA);
@@ -2079,8 +2079,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_S_ANGEL */
-		case RF6_OFFSET+24:
+		/* RF5_S_ANGEL */
+		case RF5_OFFSET+24:
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_ANGEL);
@@ -2097,8 +2097,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_S_DEMON */
-		case RF6_OFFSET+25:
+		/* RF5_S_DEMON */
+		case RF5_OFFSET+25:
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_DEMON);
@@ -2115,8 +2115,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_S_UNDEAD */
-		case RF6_OFFSET+26:
+		/* RF5_S_UNDEAD */
+		case RF5_OFFSET+26:
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_UNDEAD);
@@ -2133,8 +2133,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_S_DRAGON */
-		case RF6_OFFSET+27:
+		/* RF5_S_DRAGON */
+		case RF5_OFFSET+27:
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_DRAGON);
@@ -2151,8 +2151,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_S_HI_UNDEAD */
-		case RF6_OFFSET+28:
+		/* RF5_S_HI_UNDEAD */
+		case RF5_OFFSET+28:
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_HI_UNDEAD);
@@ -2169,8 +2169,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_S_HI_DRAGON */
-		case RF6_OFFSET+29:
+		/* RF5_S_HI_DRAGON */
+		case RF5_OFFSET+29:
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_HI_DRAGON);
@@ -2187,8 +2187,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_S_WRAITH */
-		case RF6_OFFSET+30:
+		/* RF5_S_WRAITH */
+		case RF5_OFFSET+30:
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_WRAITH);
@@ -2209,8 +2209,8 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF6_S_UNIQUE */
-		case RF6_OFFSET+31:
+		/* RF5_S_UNIQUE */
+		case RF5_OFFSET+31:
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_UNIQUE);
@@ -2369,7 +2369,7 @@ static bool get_moves_aux(int m_idx, int *yp, int *xp)
 	if (!adult_ai_sound) return (FALSE);
 
 	/* Monster can go through rocks */
-	if (r_ptr->flags[1] & (RF2_PASS_WALL | RF2_KILL_WALL)) return (FALSE);
+	if (r_ptr->flags[1] & (RF1_PASS_WALL | RF1_KILL_WALL)) return (FALSE);
 
 	/* Monster location */
 	y1 = m_ptr->fy;
@@ -2862,8 +2862,8 @@ static bool get_moves(int m_idx, int mm[5])
 
 	/* Normal animal packs try to get the player out of corridors. */
 	if (adult_ai_packs &&
-	    (r_ptr->flags[0] & RF1_FRIENDS) && (r_ptr->flags[2] & RF3_ANIMAL) &&
-	    !((r_ptr->flags[1] & (RF2_PASS_WALL | RF2_KILL_WALL))))
+	    (r_ptr->flags[0] & RF0_FRIENDS) && (r_ptr->flags[2] & RF2_ANIMAL) &&
+	    !((r_ptr->flags[1] & (RF1_PASS_WALL | RF1_KILL_WALL))))
 	{
 		int i, open = 0;
 
@@ -2915,7 +2915,7 @@ static bool get_moves(int m_idx, int mm[5])
 
 
 	/* Monster groups try to surround the player */
-	if (!done && adult_ai_packs && (r_ptr->flags[0] & RF1_FRIENDS))
+	if (!done && adult_ai_packs && (r_ptr->flags[0] & RF0_FRIENDS))
 	{
 		int i;
 
@@ -3442,7 +3442,7 @@ static void process_monster(int m_idx)
 
 
 	/* Attempt to "mutiply" if able and allowed */
-	if ((r_ptr->flags[1] & (RF2_MULTIPLY)) && (num_repro < MAX_REPRO))
+	if ((r_ptr->flags[1] & (RF1_MULTIPLY)) && (num_repro < MAX_REPRO))
 	{
 		int k, y, x;
 
@@ -3465,7 +3465,7 @@ static void process_monster(int m_idx)
 				/* Take note if visible */
 				if (m_ptr->ml)
 				{
-					l_ptr->flags[1] |= (RF2_MULTIPLY);
+					l_ptr->flags[1] |= (RF1_MULTIPLY);
 
 					/* Make a sound */
 					sound(MSG_MULTIPLY);
@@ -3493,16 +3493,16 @@ static void process_monster(int m_idx)
 	}
 
 	/* Random movement */
-	else if (r_ptr->flags[0] & (RF1_RAND_50 | RF1_RAND_25))
+	else if (r_ptr->flags[0] & (RF0_RAND_50 | RF0_RAND_25))
 	{
 		/* Random movement (25%) */
-		if (!(r_ptr->flags[0] & (RF1_RAND_50)))
+		if (!(r_ptr->flags[0] & (RF0_RAND_50)))
 		{
 			/* Random */
 			if (rand_int(100) < 25)
 			{
 				/* Memorize flags */
-				if (m_ptr->ml) l_ptr->flags[0] |= (RF1_RAND_25);
+				if (m_ptr->ml) l_ptr->flags[0] |= (RF0_RAND_25);
 
 				/* Stagger */
 				stagger = TRUE;
@@ -3510,13 +3510,13 @@ static void process_monster(int m_idx)
 		}
 
 		/* Random movement (50%) */
-		else if (!(r_ptr->flags[0] & (RF1_RAND_25)))
+		else if (!(r_ptr->flags[0] & (RF0_RAND_25)))
 		{
 			/* Random */
 			if (rand_int(100) < 50)
 			{
 				/* Memorize flags */
-				if (m_ptr->ml) l_ptr->flags[0] |= (RF1_RAND_50);
+				if (m_ptr->ml) l_ptr->flags[0] |= (RF0_RAND_50);
 
 				/* Stagger */
 				stagger = TRUE;
@@ -3530,7 +3530,7 @@ static void process_monster(int m_idx)
 			if (rand_int(100) < 75)
 			{
 				/* Memorize flags */
-				if (m_ptr->ml) l_ptr->flags[0] |= (RF1_RAND_50 | RF1_RAND_25);
+				if (m_ptr->ml) l_ptr->flags[0] |= (RF0_RAND_50 | RF0_RAND_25);
 
 				/* Stagger */
 				stagger = TRUE;
@@ -3587,7 +3587,7 @@ static void process_monster(int m_idx)
 		}
 
 		/* Monster moves through walls (and doors) */
-		else if (r_ptr->flags[1] & (RF2_PASS_WALL))
+		else if (r_ptr->flags[1] & (RF1_PASS_WALL))
 		{
 			/* Pass through walls/doors/rubble */
 			do_move = TRUE;
@@ -3597,7 +3597,7 @@ static void process_monster(int m_idx)
 		}
 
 		/* Monster destroys walls (and doors) */
-		else if (r_ptr->flags[1] & (RF2_KILL_WALL))
+		else if (r_ptr->flags[1] & (RF1_KILL_WALL))
 		{
 			/* Eat through walls/doors/rubble */
 			do_move = TRUE;
@@ -3626,7 +3626,7 @@ static void process_monster(int m_idx)
 			do_turn = TRUE;
 
 			/* Creature can open doors. */
-			if (r_ptr->flags[1] & (RF2_OPEN_DOOR))
+			if (r_ptr->flags[1] & (RF1_OPEN_DOOR))
 			{
 				/* Closed doors and secret doors */
 				if ((cave_feat[ny][nx] == FEAT_DOOR_HEAD) ||
@@ -3660,7 +3660,7 @@ static void process_monster(int m_idx)
 			}
 
 			/* Stuck doors -- attempt to bash them down if allowed */
-			if (may_bash && (r_ptr->flags[1] & (RF2_BASH_DOOR)))
+			if (may_bash && (r_ptr->flags[1] & (RF1_BASH_DOOR)))
 			{
 				int k;
 
@@ -3734,10 +3734,10 @@ static void process_monster(int m_idx)
 
 		/* Some monsters never attack */
 		if (do_move && (cave_m_idx[ny][nx] < 0) &&
-		    (r_ptr->flags[0] & (RF1_NEVER_BLOW)))
+		    (r_ptr->flags[0] & (RF0_NEVER_BLOW)))
 		{
 			/* Hack -- memorize lack of attacks */
-			if (m_ptr->ml) l_ptr->flags[0] |= (RF1_NEVER_BLOW);
+			if (m_ptr->ml) l_ptr->flags[0] |= (RF0_NEVER_BLOW);
 
 			/* Do not move */
 			do_move = FALSE;
@@ -3759,10 +3759,10 @@ static void process_monster(int m_idx)
 
 
 		/* Some monsters never move */
-		if (do_move && (r_ptr->flags[0] & (RF1_NEVER_MOVE)))
+		if (do_move && (r_ptr->flags[0] & (RF0_NEVER_MOVE)))
 		{
 			/* Hack -- memorize lack of attacks */
-			if (m_ptr->ml) l_ptr->flags[0] |= (RF1_NEVER_MOVE);
+			if (m_ptr->ml) l_ptr->flags[0] |= (RF0_NEVER_MOVE);
 
 			/* Do not move */
 			do_move = FALSE;
@@ -3778,7 +3778,7 @@ static void process_monster(int m_idx)
 			do_move = FALSE;
 
 			/* Kill weaker monsters */
-			if ((r_ptr->flags[1] & (RF2_KILL_BODY)) &&
+			if ((r_ptr->flags[1] & (RF1_KILL_BODY)) &&
 			    (compare_monsters(m_ptr, n_ptr) > 0))
 			{
 				/* Allow movement */
@@ -3803,7 +3803,7 @@ static void process_monster(int m_idx)
 			do_move = FALSE;
 
 			/* Push past weaker monsters (unless leaving a wall) */
-			if ((r_ptr->flags[1] & (RF2_MOVE_BODY)) &&
+			if ((r_ptr->flags[1] & (RF1_MOVE_BODY)) &&
 			    (compare_monsters(m_ptr, n_ptr) > 0) &&
 			    (cave_floor_bold(m_ptr->fy, m_ptr->fx)))
 			{
@@ -3855,8 +3855,8 @@ static void process_monster(int m_idx)
 				if (o_ptr->tval == TV_GOLD) continue;
 
 				/* Take or Kill objects on the floor */
-				if ((r_ptr->flags[1] & (RF2_TAKE_ITEM)) ||
-				    (r_ptr->flags[1] & (RF2_KILL_ITEM)))
+				if ((r_ptr->flags[1] & (RF1_TAKE_ITEM)) ||
+				    (r_ptr->flags[1] & (RF1_KILL_ITEM)))
 				{
 					u32b f1, f2, f3;
 
@@ -3875,23 +3875,23 @@ static void process_monster(int m_idx)
 					monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND1);
 
 					/* React to objects that hurt the monster */
-					if (f1 & (TR1_KILL_DRAGON)) flg3 |= (RF3_DRAGON);
-					if (f1 & (TR1_KILL_DEMON)) flg3 |= (RF3_DEMON);
-					if (f1 & (TR1_KILL_UNDEAD)) flg3 |= (RF3_UNDEAD);
-					if (f1 & (TR1_SLAY_DRAGON)) flg3 |= (RF3_DRAGON);
-					if (f1 & (TR1_SLAY_TROLL)) flg3 |= (RF3_TROLL);
-					if (f1 & (TR1_SLAY_GIANT)) flg3 |= (RF3_GIANT);
-					if (f1 & (TR1_SLAY_ORC)) flg3 |= (RF3_ORC);
-					if (f1 & (TR1_SLAY_DEMON)) flg3 |= (RF3_DEMON);
-					if (f1 & (TR1_SLAY_UNDEAD)) flg3 |= (RF3_UNDEAD);
-					if (f1 & (TR1_SLAY_ANIMAL)) flg3 |= (RF3_ANIMAL);
-					if (f1 & (TR1_SLAY_EVIL)) flg3 |= (RF3_EVIL);
+					if (f1 & (TR1_KILL_DRAGON)) flg3 |= (RF2_DRAGON);
+					if (f1 & (TR1_KILL_DEMON)) flg3 |= (RF2_DEMON);
+					if (f1 & (TR1_KILL_UNDEAD)) flg3 |= (RF2_UNDEAD);
+					if (f1 & (TR1_SLAY_DRAGON)) flg3 |= (RF2_DRAGON);
+					if (f1 & (TR1_SLAY_TROLL)) flg3 |= (RF2_TROLL);
+					if (f1 & (TR1_SLAY_GIANT)) flg3 |= (RF2_GIANT);
+					if (f1 & (TR1_SLAY_ORC)) flg3 |= (RF2_ORC);
+					if (f1 & (TR1_SLAY_DEMON)) flg3 |= (RF2_DEMON);
+					if (f1 & (TR1_SLAY_UNDEAD)) flg3 |= (RF2_UNDEAD);
+					if (f1 & (TR1_SLAY_ANIMAL)) flg3 |= (RF2_ANIMAL);
+					if (f1 & (TR1_SLAY_EVIL)) flg3 |= (RF2_EVIL);
 
 					/* The object cannot be picked up by the monster */
 					if (artifact_p(o_ptr) || (r_ptr->flags[2] & flg3))
 					{
 						/* Only give a message for "take_item" */
-						if (r_ptr->flags[1] & (RF2_TAKE_ITEM))
+						if (r_ptr->flags[1] & (RF1_TAKE_ITEM))
 						{
 							/* Take note */
 							did_take_item = TRUE;
@@ -3907,7 +3907,7 @@ static void process_monster(int m_idx)
 					}
 
 					/* Pick up the item */
-					else if (r_ptr->flags[1] & (RF2_TAKE_ITEM))
+					else if (r_ptr->flags[1] & (RF1_TAKE_ITEM))
 					{
 						object_type *i_ptr;
 						object_type object_type_body;
@@ -3982,28 +3982,28 @@ static void process_monster(int m_idx)
 	if (m_ptr->ml)
 	{
 		/* Monster opened a door */
-		if (did_open_door) l_ptr->flags[1] |= (RF2_OPEN_DOOR);
+		if (did_open_door) l_ptr->flags[1] |= (RF1_OPEN_DOOR);
 
 		/* Monster bashed a door */
-		if (did_bash_door) l_ptr->flags[1] |= (RF2_BASH_DOOR);
+		if (did_bash_door) l_ptr->flags[1] |= (RF1_BASH_DOOR);
 
 		/* Monster tried to pick something up */
-		if (did_take_item) l_ptr->flags[1] |= (RF2_TAKE_ITEM);
+		if (did_take_item) l_ptr->flags[1] |= (RF1_TAKE_ITEM);
 
 		/* Monster tried to crush something */
-		if (did_kill_item) l_ptr->flags[1] |= (RF2_KILL_ITEM);
+		if (did_kill_item) l_ptr->flags[1] |= (RF1_KILL_ITEM);
 
 		/* Monster pushed past another monster */
-		if (did_move_body) l_ptr->flags[1] |= (RF2_MOVE_BODY);
+		if (did_move_body) l_ptr->flags[1] |= (RF1_MOVE_BODY);
 
 		/* Monster ate another monster */
-		if (did_kill_body) l_ptr->flags[1] |= (RF2_KILL_BODY);
+		if (did_kill_body) l_ptr->flags[1] |= (RF1_KILL_BODY);
 
 		/* Monster passed through a wall */
-		if (did_pass_wall) l_ptr->flags[1] |= (RF2_PASS_WALL);
+		if (did_pass_wall) l_ptr->flags[1] |= (RF1_PASS_WALL);
 
 		/* Monster destroyed a wall */
-		if (did_kill_wall) l_ptr->flags[1] |= (RF2_KILL_WALL);
+		if (did_kill_wall) l_ptr->flags[1] |= (RF1_KILL_WALL);
 	}
 
 

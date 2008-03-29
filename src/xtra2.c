@@ -1178,13 +1178,13 @@ void monster_death(int m_idx)
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
-	bool visible = (m_ptr->ml || (r_ptr->flags[0] & (RF1_UNIQUE)));
+	bool visible = (m_ptr->ml || (r_ptr->flags[0] & (RF0_UNIQUE)));
 
-	bool good = (r_ptr->flags[0] & (RF1_DROP_GOOD)) ? TRUE : FALSE;
-	bool great = (r_ptr->flags[0] & (RF1_DROP_GREAT)) ? TRUE : FALSE;
+	bool good = (r_ptr->flags[0] & (RF0_DROP_GOOD)) ? TRUE : FALSE;
+	bool great = (r_ptr->flags[0] & (RF0_DROP_GREAT)) ? TRUE : FALSE;
 
-	bool gold_ok = (!(r_ptr->flags[0] & (RF1_ONLY_ITEM)));
-	bool item_ok = (!(r_ptr->flags[0] & (RF1_ONLY_GOLD)));
+	bool gold_ok = (!(r_ptr->flags[0] & (RF0_ONLY_ITEM)));
+	bool item_ok = (!(r_ptr->flags[0] & (RF0_ONLY_GOLD)));
 
 	int force_coin = get_coin_type(r_ptr);
 
@@ -1229,7 +1229,7 @@ void monster_death(int m_idx)
 
 
 	/* Mega-Hack -- drop "winner" treasures */
-	if (r_ptr->flags[0] & (RF1_DROP_CHOSEN))
+	if (r_ptr->flags[0] & (RF0_DROP_CHOSEN))
 	{
 		/* Get local object */
 		i_ptr = &object_type_body;
@@ -1271,12 +1271,12 @@ void monster_death(int m_idx)
 
 
 	/* Determine how much we can drop */
-	if ((r_ptr->flags[0] & (RF1_DROP_60)) && (rand_int(100) < 60)) number++;
-	if ((r_ptr->flags[0] & (RF1_DROP_90)) && (rand_int(100) < 90)) number++;
-	if (r_ptr->flags[0] & (RF1_DROP_1D2)) number += damroll(1, 2);
-	if (r_ptr->flags[0] & (RF1_DROP_2D2)) number += damroll(2, 2);
-	if (r_ptr->flags[0] & (RF1_DROP_3D2)) number += damroll(3, 2);
-	if (r_ptr->flags[0] & (RF1_DROP_4D2)) number += damroll(4, 2);
+	if ((r_ptr->flags[0] & (RF0_DROP_60)) && (rand_int(100) < 60)) number++;
+	if ((r_ptr->flags[0] & (RF0_DROP_90)) && (rand_int(100) < 90)) number++;
+	if (r_ptr->flags[0] & (RF0_DROP_1D2)) number += damroll(1, 2);
+	if (r_ptr->flags[0] & (RF0_DROP_2D2)) number += damroll(2, 2);
+	if (r_ptr->flags[0] & (RF0_DROP_3D2)) number += damroll(3, 2);
+	if (r_ptr->flags[0] & (RF0_DROP_4D2)) number += damroll(4, 2);
 
 	/* Hack -- handle creeping coins */
 	coin_type = force_coin;
@@ -1336,7 +1336,7 @@ void monster_death(int m_idx)
 	p_ptr->redraw |= PR_MONLIST;
 
 	/* Only process "Quest Monsters" */
-	if (!(r_ptr->flags[0] & (RF1_QUESTOR))) return;
+	if (!(r_ptr->flags[0] & (RF0_QUESTOR))) return;
 
 	/* Hack -- Mark quests as complete */
 	for (i = 0; i < MAX_Q_IDX; i++)
@@ -1424,10 +1424,10 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 		int soundfx = MSG_KILL;
 
 		/* Play a special sound if the monster was unique */
-		if (r_ptr->flags[0] & RF1_UNIQUE) 
+		if (r_ptr->flags[0] & RF0_UNIQUE) 
 		{
 			/* Mega-Hack -- Morgoth -- see monster_death() */
-			if (r_ptr->flags[0] & RF1_DROP_CHOSEN)
+			if (r_ptr->flags[0] & RF0_DROP_CHOSEN)
 				soundfx = MSG_KILL_KING;
 			else
 				soundfx = MSG_KILL_UNIQUE;
@@ -1449,8 +1449,8 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 		}
 
 		/* Death by Physical attack -- non-living monster */
-		else if ((r_ptr->flags[2] & (RF3_DEMON | RF3_UNDEAD)) ||
-		         (r_ptr->flags[1] & (RF2_STUPID)) ||
+		else if ((r_ptr->flags[2] & (RF2_DEMON | RF2_UNDEAD)) ||
+		         (r_ptr->flags[1] & (RF1_STUPID)) ||
 		         (strchr("Evg", r_ptr->d_char)))
 		{
 			message_format(soundfx, m_ptr->r_idx, "You have destroyed %s.", m_name);
@@ -1484,7 +1484,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 		}
 
 		/* When the player kills a Unique, it stays dead */
-		if (r_ptr->flags[0] & (RF1_UNIQUE))
+		if (r_ptr->flags[0] & (RF0_UNIQUE))
 		{
 			char unique_name[80];
 			r_ptr->max_num = 0;
@@ -1504,7 +1504,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 		monster_death(m_idx);
 
 		/* Recall even invisible uniques or winners */
-		if (m_ptr->ml || (r_ptr->flags[0] & (RF1_UNIQUE)))
+		if (m_ptr->ml || (r_ptr->flags[0] & (RF0_UNIQUE)))
 		{
 			/* Count kills this life */
 			if (l_ptr->pkills < MAX_SHORT) l_ptr->pkills++;
@@ -1551,7 +1551,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 	}
 
 	/* Sometimes a monster gets scared by damage */
-	if (!m_ptr->monfear && !(r_ptr->flags[2] & (RF3_NO_FEAR)) && (dam > 0))
+	if (!m_ptr->monfear && !(r_ptr->flags[2] & (RF2_NO_FEAR)) && (dam > 0))
 	{
 		int percentage;
 

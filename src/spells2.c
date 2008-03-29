@@ -1375,7 +1375,7 @@ bool detect_monsters_normal(bool aware)
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Detect all non-invisible monsters */
-		if (!(r_ptr->flags[1] & (RF2_INVISIBLE)))
+		if (!(r_ptr->flags[1] & (RF1_INVISIBLE)))
 		{
 			/* Optimize -- Repair flags */
 			repair_mflag_mark = repair_mflag_show = TRUE;
@@ -1439,10 +1439,10 @@ bool detect_monsters_invis(bool aware)
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Detect invisible monsters */
-		if (r_ptr->flags[1] & (RF2_INVISIBLE))
+		if (r_ptr->flags[1] & (RF1_INVISIBLE))
 		{
 			/* Take note that they are invisible */
-			l_ptr->flags[1] |= (RF2_INVISIBLE);
+			l_ptr->flags[1] |= (RF1_INVISIBLE);
 
 			/* Update monster recall window */
 			if (p_ptr->monster_race_idx == m_ptr->r_idx)
@@ -1513,10 +1513,10 @@ bool detect_monsters_evil(bool aware)
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Detect evil monsters */
-		if (r_ptr->flags[2] & (RF3_EVIL))
+		if (r_ptr->flags[2] & (RF2_EVIL))
 		{
 			/* Take note that they are evil */
-			l_ptr->flags[2] |= (RF3_EVIL);
+			l_ptr->flags[2] |= (RF2_EVIL);
 
 			/* Update monster recall window */
 			if (p_ptr->monster_race_idx == m_ptr->r_idx)
@@ -2238,7 +2238,7 @@ bool banishment(void)
 		if (!m_ptr->r_idx) continue;
 
 		/* Hack -- Skip Unique Monsters */
-		if (r_ptr->flags[0] & (RF1_UNIQUE)) continue;
+		if (r_ptr->flags[0] & (RF0_UNIQUE)) continue;
 
 		/* Skip "wrong" monsters */
 		if (r_ptr->d_char != typ) continue;
@@ -2282,7 +2282,7 @@ bool mass_banishment(void)
 		if (!m_ptr->r_idx) continue;
 
 		/* Hack -- Skip unique monsters */
-		if (r_ptr->flags[0] & (RF1_UNIQUE)) continue;
+		if (r_ptr->flags[0] & (RF0_UNIQUE)) continue;
 
 		/* Skip distant monsters */
 		if (m_ptr->cdis > MAX_SIGHT) continue;
@@ -2683,7 +2683,7 @@ void earthquake(int cy, int cx, int r)
 				monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 				/* Most monsters cannot co-exist with rock */
-				if (!(r_ptr->flags[1] & (RF2_KILL_WALL | RF2_PASS_WALL)))
+				if (!(r_ptr->flags[1] & (RF1_KILL_WALL | RF1_PASS_WALL)))
 				{
 					char m_name[80];
 
@@ -2691,7 +2691,7 @@ void earthquake(int cy, int cx, int r)
 					sn = 0;
 
 					/* Monster can move to escape the wall */
-					if (!(r_ptr->flags[0] & (RF1_NEVER_MOVE)))
+					if (!(r_ptr->flags[0] & (RF0_NEVER_MOVE)))
 					{
 						/* Look for safety */
 						for (i = 0; i < 8; i++)
@@ -2895,10 +2895,10 @@ static void cave_temp_room_lite(void)
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 			/* Stupid monsters rarely wake up */
-			if (r_ptr->flags[1] & (RF2_STUPID)) chance = 10;
+			if (r_ptr->flags[1] & (RF1_STUPID)) chance = 10;
 
 			/* Smart monsters always wake up */
-			if (r_ptr->flags[1] & (RF2_SMART)) chance = 100;
+			if (r_ptr->flags[1] & (RF1_SMART)) chance = 100;
 
 			/* Sometimes monsters wake up */
 			if (m_ptr->csleep && (rand_int(100) < chance))

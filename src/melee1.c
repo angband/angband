@@ -145,7 +145,7 @@ bool make_attack_normal(int m_idx)
 
 
 	/* Not allowed to attack */
-	if (r_ptr->flags[0] & (RF1_NEVER_BLOW)) return (FALSE);
+	if (r_ptr->flags[0] & (RF0_NEVER_BLOW)) return (FALSE);
 
 
 	/* Total armor */
@@ -240,14 +240,14 @@ bool make_attack_normal(int m_idx)
 
 			/* Hack -- Apply "protection from evil" */
 			if ((p_ptr->timed[TMD_PROTEVIL] > 0) &&
-			    (r_ptr->flags[2] & (RF3_EVIL)) &&
+			    (r_ptr->flags[2] & (RF2_EVIL)) &&
 			    (p_ptr->lev >= rlev) &&
 			    ((rand_int(100) + p_ptr->lev) > 50))
 			{
 				/* Remember the Evil-ness */
 				if (m_ptr->ml)
 				{
-					l_ptr->flags[2] |= (RF3_EVIL);
+					l_ptr->flags[2] |= (RF2_EVIL);
 				}
 
 				/* Message */

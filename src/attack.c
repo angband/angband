@@ -210,100 +210,100 @@ static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
 
 
 	/* Slay Animal */
-	if ((f1 & TR1_SLAY_ANIMAL) && (r_ptr->flags[2] & RF3_ANIMAL))
+	if ((f1 & TR1_SLAY_ANIMAL) && (r_ptr->flags[2] & RF2_ANIMAL))
 	{
 		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF3_ANIMAL);
+			l_ptr->flags[2] |= (RF2_ANIMAL);
 
 		if (mult < 2) mult = 2;
 	}
 
 	/* Slay Evil */
-	if ((f1 & TR1_SLAY_EVIL) && (r_ptr->flags[2] & RF3_EVIL))
+	if ((f1 & TR1_SLAY_EVIL) && (r_ptr->flags[2] & RF2_EVIL))
 	{
 		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF3_EVIL);
+			l_ptr->flags[2] |= (RF2_EVIL);
 
 		if (mult < 2) mult = 2;
 	}
 
 	/* Slay Undead */
-	if ((f1 & TR1_SLAY_UNDEAD) && (r_ptr->flags[2] & RF3_UNDEAD))
+	if ((f1 & TR1_SLAY_UNDEAD) && (r_ptr->flags[2] & RF2_UNDEAD))
 	{
 		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF3_UNDEAD);
+			l_ptr->flags[2] |= (RF2_UNDEAD);
 
 		if (mult < 3) mult = 3;
 	}
 
 	/* Slay Demon */
-	if ((f1 & TR1_SLAY_DEMON) && (r_ptr->flags[2] & RF3_DEMON))
+	if ((f1 & TR1_SLAY_DEMON) && (r_ptr->flags[2] & RF2_DEMON))
 	{
 		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF3_DEMON);
+			l_ptr->flags[2] |= (RF2_DEMON);
 
 		if (mult < 3) mult = 3;
 	}
 
 	/* Slay Orc */
-	if ((f1 & TR1_SLAY_ORC) && (r_ptr->flags[2] & RF3_ORC))
+	if ((f1 & TR1_SLAY_ORC) && (r_ptr->flags[2] & RF2_ORC))
 	{
 		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF3_ORC);
+			l_ptr->flags[2] |= (RF2_ORC);
 
 		if (mult < 3) mult = 3;
 	}
 
 	/* Slay Troll */
-	if ((f1 & TR1_SLAY_TROLL) && (r_ptr->flags[2] & RF3_TROLL))
+	if ((f1 & TR1_SLAY_TROLL) && (r_ptr->flags[2] & RF2_TROLL))
 	{
 		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF3_TROLL);
+			l_ptr->flags[2] |= (RF2_TROLL);
 
 		if (mult < 3) mult = 3;
 	}
 
 	/* Slay Giant */
-	if ((f1 & TR1_SLAY_GIANT) && (r_ptr->flags[2] & RF3_GIANT))
+	if ((f1 & TR1_SLAY_GIANT) && (r_ptr->flags[2] & RF2_GIANT))
 	{
 		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF3_GIANT);
+			l_ptr->flags[2] |= (RF2_GIANT);
 
 		if (mult < 3) mult = 3;
 	}
 
 	/* Slay Dragon */
-	if ((f1 & TR1_SLAY_DRAGON) && (r_ptr->flags[2] & RF3_DRAGON))
+	if ((f1 & TR1_SLAY_DRAGON) && (r_ptr->flags[2] & RF2_DRAGON))
 	{
 		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF3_DRAGON);
+			l_ptr->flags[2] |= (RF2_DRAGON);
 
 		if (mult < 3) mult = 3;
 	}
 
 	/* Execute Dragon */
-	if ((f1 & TR1_KILL_DRAGON) && (r_ptr->flags[2] & RF3_DRAGON))
+	if ((f1 & TR1_KILL_DRAGON) && (r_ptr->flags[2] & RF2_DRAGON))
 	{
 		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF3_DRAGON);
+			l_ptr->flags[2] |= (RF2_DRAGON);
 
 		if (mult < 5) mult = 5;
 	}
 
 	/* Execute demon */
-	if ((f1 & TR1_KILL_DEMON) && (r_ptr->flags[2] & RF3_DEMON))
+	if ((f1 & TR1_KILL_DEMON) && (r_ptr->flags[2] & RF2_DEMON))
 	{
 		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF3_DEMON);
+			l_ptr->flags[2] |= (RF2_DEMON);
 
 		if (mult < 5) mult = 5;
 	}
 
 	/* Execute undead */
-	if ((f1 & TR1_KILL_UNDEAD) && (r_ptr->flags[2] & RF3_UNDEAD))
+	if ((f1 & TR1_KILL_UNDEAD) && (r_ptr->flags[2] & RF2_UNDEAD))
 	{
 		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF3_UNDEAD);
+			l_ptr->flags[2] |= (RF2_UNDEAD);
 
 		if (mult < 5) mult = 5;
 	}
@@ -312,10 +312,10 @@ static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
 	if (f1 & (TR1_BRAND_ACID))
 	{
 		/* Notice immunity */
-		if (r_ptr->flags[2] & (RF3_IM_ACID))
+		if (r_ptr->flags[2] & (RF2_IM_ACID))
 		{
 			if (m_ptr->ml)
-				l_ptr->flags[2] |= (RF3_IM_ACID);
+				l_ptr->flags[2] |= (RF2_IM_ACID);
 		}
 
 		/* Otherwise, take the damage */
@@ -329,10 +329,10 @@ static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
 	if (f1 & (TR1_BRAND_ELEC))
 	{
 		/* Notice immunity */
-		if (r_ptr->flags[2] & (RF3_IM_ELEC))
+		if (r_ptr->flags[2] & (RF2_IM_ELEC))
 		{
 			if (m_ptr->ml)
-				l_ptr->flags[2] |= (RF3_IM_ELEC);
+				l_ptr->flags[2] |= (RF2_IM_ELEC);
 		}
 
 		/* Otherwise, take the damage */
@@ -346,10 +346,10 @@ static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
 	if (f1 & (TR1_BRAND_FIRE))
 	{
 		/* Notice immunity */
-		if (r_ptr->flags[2] & (RF3_IM_FIRE))
+		if (r_ptr->flags[2] & (RF2_IM_FIRE))
 		{
 			if (m_ptr->ml)
-				l_ptr->flags[2] |= (RF3_IM_FIRE);
+				l_ptr->flags[2] |= (RF2_IM_FIRE);
 		}
 
 		/* Otherwise, take the damage */
@@ -363,10 +363,10 @@ static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
 	if (f1 & (TR1_BRAND_COLD))
 	{
 		/* Notice immunity */
-		if (r_ptr->flags[2] & (RF3_IM_COLD))
+		if (r_ptr->flags[2] & (RF2_IM_COLD))
 		{
 			if (m_ptr->ml)
-				l_ptr->flags[2] |= (RF3_IM_COLD);
+				l_ptr->flags[2] |= (RF2_IM_COLD);
 		}
 
 		/* Otherwise, take the damage */
@@ -380,10 +380,10 @@ static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
 	if (f1 & (TR1_BRAND_POIS))
 	{
 		/* Notice immunity */
-		if (r_ptr->flags[2] & (RF3_IM_POIS))
+		if (r_ptr->flags[2] & (RF2_IM_POIS))
 		{
 			if (m_ptr->ml)
-				l_ptr->flags[2] |= (RF3_IM_POIS);
+				l_ptr->flags[2] |= (RF2_IM_POIS);
 		}
 
 		/* Otherwise, take the damage */
@@ -513,11 +513,11 @@ void py_attack(int y, int x)
 				msg_print("Your hands stop glowing.");
 
 				/* Confuse the monster */
-				if (r_ptr->flags[2] & (RF3_NO_CONF))
+				if (r_ptr->flags[2] & (RF2_NO_CONF))
 				{
 					if (m_ptr->ml)
 					{
-						l_ptr->flags[2] |= (RF3_NO_CONF);
+						l_ptr->flags[2] |= (RF2_NO_CONF);
 					}
 
 					msg_format("%^s is unaffected.", m_name);
@@ -786,9 +786,9 @@ void do_cmd_fire(void)
 				cptr note_dies = " dies.";
 
 				/* Some monsters get "destroyed" */
-				if ((r_ptr->flags[2] & (RF3_DEMON)) ||
-				    (r_ptr->flags[2] & (RF3_UNDEAD)) ||
-				    (r_ptr->flags[1] & (RF2_STUPID)) ||
+				if ((r_ptr->flags[2] & (RF2_DEMON)) ||
+				    (r_ptr->flags[2] & (RF2_UNDEAD)) ||
+				    (r_ptr->flags[1] & (RF1_STUPID)) ||
 				    (strchr("Evg", r_ptr->d_char)))
 				{
 					/* Special note at death */
@@ -1076,9 +1076,9 @@ void do_cmd_throw(void)
 				cptr note_dies = " dies.";
 
 				/* Some monsters get "destroyed" */
-				if ((r_ptr->flags[2] & (RF3_DEMON)) ||
-				    (r_ptr->flags[2] & (RF3_UNDEAD)) ||
-				    (r_ptr->flags[1] & (RF2_STUPID)) ||
+				if ((r_ptr->flags[2] & (RF2_DEMON)) ||
+				    (r_ptr->flags[2] & (RF2_UNDEAD)) ||
+				    (r_ptr->flags[1] & (RF1_STUPID)) ||
 				    (strchr("Evg", r_ptr->d_char)))
 				{
 					/* Special note at death */

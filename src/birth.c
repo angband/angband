@@ -518,7 +518,7 @@ static void player_wipe(void)
 		r_ptr->max_num = 100;
 
 		/* Hack -- Reset the max counter */
-		if (r_ptr->flags[0] & (RF1_UNIQUE)) r_ptr->max_num = 1;
+		if (r_ptr->flags[0] & (RF0_UNIQUE)) r_ptr->max_num = 1;
 
 		/* Clear player kills */
 		l_ptr->pkills = 0;

@@ -721,7 +721,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			}
 			
 			/* Multi-hued monster */
-			else if (r_ptr->flags[0] & (RF1_ATTR_MULTI))
+			else if (r_ptr->flags[0] & (RF0_ATTR_MULTI))
 			{
 				/* Multi-hued attr */
 				a = randint(15);
@@ -731,7 +731,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			}
 			
 			/* Normal monster (not "clear" in any way) */
-			else if (!(r_ptr->flags[0] & (RF1_ATTR_CLEAR | RF1_CHAR_CLEAR)))
+			else if (!(r_ptr->flags[0] & (RF0_ATTR_CLEAR | RF0_CHAR_CLEAR)))
 			{
 				/* Use attr */
 				a = da;
@@ -755,14 +755,14 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			}
 			
 			/* Normal char, Clear attr, monster */
-			else if (!(r_ptr->flags[0] & (RF1_CHAR_CLEAR)))
+			else if (!(r_ptr->flags[0] & (RF0_CHAR_CLEAR)))
 			{
 				/* Normal char */
 				c = dc;
 			}
 				
 			/* Normal attr, Clear char, monster */
-			else if (!(r_ptr->flags[0] & (RF1_ATTR_CLEAR)))
+			else if (!(r_ptr->flags[0] & (RF0_ATTR_CLEAR)))
 			{
 				/* Normal attr */
 					a = da;

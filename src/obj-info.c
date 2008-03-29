@@ -630,7 +630,7 @@ void object_info_header(const object_type *o_ptr)
 		case ORIGIN_DROP:
 		{
 			const char *name = r_name + r_info[o_ptr->origin_xtra].name;
-			bool unique = (r_info[o_ptr->origin_xtra].flags[0] & RF1_UNIQUE) ? TRUE : FALSE;
+			bool unique = (r_info[o_ptr->origin_xtra].flags[0] & RF0_UNIQUE) ? TRUE : FALSE;
 
 			text_out("dropped by ");
 
