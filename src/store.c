@@ -2859,7 +2859,7 @@ void do_cmd_store(void)
 		if (rogue_like_commands)
 		{
 			/* These two can't intersect! */
-			menu.cmd_keys = "\n\x04\x10\r?=CEIPTdegilpswx\x8B\x8C"; /* \x10 = ^p , \x04 = ^D */
+			menu.cmd_keys = "\n\x04\x10\r?={}CEIPTdegilpswx\x8B\x8C"; /* \x10 = ^p , \x04 = ^D */
 			menu.selections = "abcfmnoqrtuvyz13456790ABDFGH";
 		}
 
@@ -2867,7 +2867,7 @@ void do_cmd_store(void)
 		else
 		{
 			/* These two can't intersect! */
-			menu.cmd_keys = "\n\x010\r?=CEIbdegiklpstw\x8B\x8C"; /* \x10 = ^p */
+			menu.cmd_keys = "\n\x010\r?={}CEIbdegiklpstw\x8B\x8C"; /* \x10 = ^p */
 			menu.selections = "acfhmnoqruvxyz13456790ABDFGH";
 		}
 
