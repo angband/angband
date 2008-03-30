@@ -1278,6 +1278,9 @@ void monster_death(int m_idx)
 	if (r_ptr->flags[0] & (RF0_DROP_3D2)) number += damroll(3, 2);
 	if (r_ptr->flags[0] & (RF0_DROP_4D2)) number += damroll(4, 2);
 
+	/* Temporary testing hack - reduce drops by 1/3 */
+	if (number > 1 && item_ok) number = number * 2 / 3;
+
 	/* Hack -- handle creeping coins */
 	coin_type = force_coin;
 
