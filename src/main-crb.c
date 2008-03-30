@@ -1654,8 +1654,7 @@ static void Term_init_mac(term *t)
 	{
 		WindowRef old_win = focus.active;
 
-		TransitionWindow(td->w,
-			kWindowZoomTransitionEffect, kWindowShowTransitionAction, NULL);
+		ShowWindow(td->w);
 
 		activate(td->w);
 		term_data_color(COLOR_BLACK);
@@ -2188,6 +2187,9 @@ static void cf_save_prefs()
 	/* graphics mode */
 	save_pref_short("graf_mode", graf_mode);
 
+	/* text antialiasing */
+	save_pref_short("arg.use_antialiasing", antialias);
+
 
 	/* Windows */
 	for (int i = 0; i < MAX_TERM_DATA; i++)
@@ -2253,17 +2255,32 @@ static void cf_load_prefs()
 		(pref_patch != VERSION_PATCH) ||
 		(pref_extra != VERSION_EXTRA))
 	{
-#if 1 // For 3.0.8 : pref file change!
-		/* Message */
-		mac_warning(
-			format("Ignoring %d.%d.%d.%d preferences.",
-				pref_major, pref_minor, pref_patch, pref_extra));
-
-		/* Ignore */
-		return;
-#else
-		mac_warning(format("Preference file has changed.  If you have display problems, delete %s and restart", ));
-#endif
+		/* Version 3.0.8 rewrote the preference file format - don't attempt to load previous versions. */
+		if ((pref_major < 3) ||
+			((pref_major == 3) && (pref_minor == 0) && (pref_patch < 8)))
+		{
+			
+			/* Message */
+			mac_warning(
+				format("Ignoring %d.%d.%d.%d preferences.",
+					pref_major, pref_minor, pref_patch, pref_extra));
+	
+			/* Ignore */
+			return;
+		}
+		else
+		{
+			FSRef fsRef;
+			char prefpath[1024];
+			CFStringRef bundleid = (CFStringRef)CFBundleGetValueForInfoDictionaryKey(CFBundleGetMainBundle(), kCFBundleIdentifierKey);
+			CFIndex bufferlength = CFStringGetMaximumSizeForEncoding(CFStringGetLength(bundleid), kCFStringEncodingASCII) + 1;
+			char bundlename[bufferlength];
+			
+			CFStringGetCString(bundleid, bundlename, bufferlength, kCFStringEncodingASCII);
+			FSFindFolder(kOnAppropriateDisk, kPreferencesFolderType, kDontCreateFolder, &fsRef);
+			FSRefMakePath(&fsRef, (UInt8 *)prefpath, 1024);
+			mac_warning(format("Preference file has changed.  If you have display problems, delete %s/%s.plist and restart.", prefpath, bundlename));
+		}
 	}
 
 
@@ -2289,6 +2306,10 @@ static void cf_load_prefs()
 	/* double-width tiles */
 	if (load_pref_short("arg.use_bigtile", &pref_tmp))
 		use_bigtile = pref_tmp;
+
+	/* anti-aliasing */
+	if(load_pref_short("arg.use_antialiasing", &pref_tmp))
+		antialias = pref_tmp;
 
 	if(load_pref_short("graf_mode", &pref_tmp))
 		graf_mode = pref_tmp;
