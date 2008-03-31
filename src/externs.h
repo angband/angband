@@ -559,10 +559,11 @@ void squelch_items(void);
 void do_cmd_options_item(void *, cptr);
 
 /* store.c */
-extern void do_cmd_store(void);
-extern void store_shuffle(int which);
-extern void store_maint(int which);
-extern void store_init(void);
+s32b price_item(const object_type *o_ptr, bool store_buying, int qty);
+void store_init(void);
+void store_shuffle(int which);
+bool store_overflow(void);
+void do_cmd_store(void);
 
 /* target.c */
 bool target_able(int m_idx);

@@ -84,7 +84,7 @@ static u16b store_flags;
 /*
  * Return the owner struct for the given store.
  */
-owner_type *store_owner(int st)
+static owner_type *store_owner(int st)
 {
 	store_type *st_ptr = &store[st];
 	return &b_info[(st * z_info->b_max) + st_ptr->owner];
@@ -364,7 +364,7 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 				case TV_SCROLL:
 				case TV_POTION:
 					break;
-				
+
 				default:
 					return (FALSE);
 			}
@@ -407,7 +407,7 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
  * to adjust (by 200) to extract a usable multiplier.  Note that the
  * "greed" value is always something (?).
  */
-static s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
+s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 {
 	int factor;
 	int adjust;
@@ -1170,27 +1170,6 @@ static int store_find(int num, int tval, int sval)
 	return -1;
 }
 
-
-/*
- * Find tval, sval from k_idx.
- * XXX Should be in object2.c; is here for low impact.
- */
-bool lookup_reverse(s16b k_idx, int *tval, int *sval)
-{
-	object_kind *k_ptr;
-
-	/* Validate k_idx */
-	if ((k_idx < 1) || (k_idx > z_info->k_max))
-		return FALSE;
-
-	/* Get pointer */
-	k_ptr = &k_info[k_idx];
-	*tval = k_ptr->tval;
-	*sval = k_ptr->sval;
-
-	/* Done */
-	return TRUE;
-}
 
 /*
  * Get a choice from the store allocation table, in tables.c

@@ -1963,6 +1963,28 @@ s16b lookup_kind(int tval, int sval)
 }
 
 
+/**
+ * Find the tval and sval of object kind `k_idx`, and return via the pointers
+ * `tval` and `sval`.
+ */
+bool lookup_reverse(s16b k_idx, int *tval, int *sval)
+{
+	object_kind *k_ptr;
+
+	/* Validate k_idx */
+	if ((k_idx < 1) || (k_idx > z_info->k_max))
+		return FALSE;
+
+	/* Get pointer */
+	k_ptr = &k_info[k_idx];
+	*tval = k_ptr->tval;
+	*sval = k_ptr->sval;
+
+	/* Done */
+	return TRUE;
+}
+
+
 /*
  * Wipe an object clean.
  */
