@@ -25,35 +25,6 @@ Sidwell.  Please see the "thanks.txt" file for a full listing of credits.
     http://rephial.org/wiki/Compiling
 
 
-
-
-=== Special instructions for certain platforms ===
-
-Make sure you keep all your savefiles in the proper place, and if you load a
-savefile from the wrong place, note that the game may decide to re-save your
-savefile in the proper place when you quit.
-
-
-=== Upgrading from older versions (and/or other platforms) ===
-
-If you have been using an older version of Angband (and/or playing on a
-different platform), you can move to the current Angband, bringing your
-old savefiles, high score list, and other files with you.
-
-To use an old savefile, simply copy it into the "lib/save" directory, changing
-the name of the savefile (if necessary) to satisfy the requirements of the
-platform you are using.  On multi-user systems, the savefile should be named
-"UUU.NNN", where "UUU" is the userid of the player (on multi-user systems),
-and "NNN" is the name of the "character" in the savefile.
-
-Angband uses a platform independant file format for the binary file
-used to store the high score list.  This file is named "scores.raw".  To
-use an old high score list, simply copy it into the "lib/apex" directory.
-
-If you're interested in what else lies in lib/, then please read
-"lib/readme.txt".
-
-
 === NO WARRANTY ===
 
     BECAUSE THE PROGRAM IS LICENSED FREE OF CHARGE, THERE IS NO WARRANTY
@@ -75,6 +46,3 @@ TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY
 YOU OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER
 PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE
 POSSIBILITY OF SUCH DAMAGES.
-
-
---- Ben Harrison, Robert Ruehlmann, and Andrew Sidwell ---
