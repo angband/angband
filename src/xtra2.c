@@ -1180,8 +1180,8 @@ void monster_death(int m_idx)
 
 	bool visible = (m_ptr->ml || (r_ptr->flags[0] & (RF0_UNIQUE)));
 
-	bool good = (r_ptr->flags[0] & (RF0_DROP_GOOD)) ? TRUE : FALSE;
 	bool great = (r_ptr->flags[0] & (RF0_DROP_GREAT)) ? TRUE : FALSE;
+	bool good = ((r_ptr->flags[0] & (RF0_DROP_GOOD)) ? TRUE : FALSE) || great;
 
 	bool gold_ok = (!(r_ptr->flags[0] & (RF0_ONLY_ITEM)));
 	bool item_ok = (!(r_ptr->flags[0] & (RF0_ONLY_GOLD)));
