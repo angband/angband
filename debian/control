@@ -1,5 +1,5 @@
 Source: angband
-Section: unknown
+Section: games
 Priority: extra
 Maintainer: Andrew Sidwell <takkaria@gmail.com>
 Build-Depends: debhelper (>= 5), autotools-dev, libncurses5-dev, libsdl1.2-dev, \

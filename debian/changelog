@@ -1,6 +1,5 @@
-angband (780-1) hardy; urgency=low
+angband (3.0.9b+r$REVISION$-1) hardy; urgency=low
 
-  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+  * Autobuilt package.
 
- -- Andrew Sidwell <takkaria@gmail.com>  Fri, 14 Mar 2008 16:08:41 +0000
-
+ -- Andrew Sidwell <takkaria@gmail.com>  $date -R$
