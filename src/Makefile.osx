@@ -22,7 +22,6 @@ OPT ?= -O2
 NAME =Angband
 APPNAME =$(NAME).app
 EXE =angband
-COPYRIGHT =1995-2008 Contributors
 
 # Some Developer CD tools we need - the standard installation location
 TOOLDIR = /Developer/Tools
