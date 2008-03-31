@@ -234,7 +234,7 @@ static void object_mention(const object_type *o_ptr)
  * If no legal ego item is found, this routine returns 0, resulting in
  * an unenchanted item.
  */
-static int make_ego_item(object_type *o_ptr, int level, bool only_good)
+static int make_ego_item(object_type *o_ptr, int level, bool force_uncursed)
 {
 	int i, j;
 
@@ -280,8 +280,8 @@ static int make_ego_item(object_type *o_ptr, int level, bool only_good)
 		/* Get the actual kind */
 		e_ptr = &e_info[e_idx];
 
-		/* If we force good/great, don't create cursed */
-		if (only_good && (e_ptr->flags3 & TR3_LIGHT_CURSE)) continue;
+		/* Avoid cursed items if specified */
+		if (force_uncursed && (e_ptr->flags3 & TR3_LIGHT_CURSE)) continue;
 
 		/* Test if this is a legal ego-item type for this object */
 		for (j = 0; j < EGO_TVALS_MAX; j++)
@@ -328,6 +328,43 @@ static int make_ego_item(object_type *o_ptr, int level, bool only_good)
 	o_ptr->name2 = e_idx;
 
 	return ((e_info[e_idx].flags3 & TR3_LIGHT_CURSE) ? -2 : 2);
+}
+
+
+/**
+ * Copy artifact data to a normal object, and set various slightly hacky
+ * globals.
+ */
+static void copy_artifact_data(object_type *o_ptr, artifact_type *a_ptr)
+{
+	/* Hack -- Mark the artifact as "created" */
+	a_ptr->cur_num = 1;
+
+	/* Extract the other fields */
+	o_ptr->pval = a_ptr->pval;
+	o_ptr->ac = a_ptr->ac;
+	o_ptr->dd = a_ptr->dd;
+	o_ptr->ds = a_ptr->ds;
+	o_ptr->to_a = a_ptr->to_a;
+	o_ptr->to_h = a_ptr->to_h;
+	o_ptr->to_d = a_ptr->to_d;
+	o_ptr->weight = a_ptr->weight;
+
+	/* Hack -- extract the "cursed" flag */
+	if (a_ptr->flags3 & TR3_LIGHT_CURSE)
+		o_ptr->flags3 |= TR3_LIGHT_CURSE;
+
+	/* Mega-Hack -- increase the rating */
+	rating += 10;
+
+	/* Mega-Hack -- increase the rating again */
+	if (a_ptr->cost > 50000L) rating += 10;
+
+	/* Set the good item flag */
+	good_item_flag = TRUE;
+
+	/* Cheat -- peek at the item */
+	if (cheat_peek) object_mention(o_ptr);
 }
 
 
@@ -400,12 +437,15 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 		/* Mark the item as an artifact */
 		o_ptr->name1 = i;
 
+		/* Copy across all the data from the artifact struct */
+		copy_artifact_data(o_ptr, a_ptr);
+
 		/* Success */
-		return (TRUE);
+		return TRUE;
 	}
 
 	/* Failure */
-	return (FALSE);
+	return FALSE;
 }
 
 
@@ -461,12 +501,13 @@ static bool make_artifact(object_type *o_ptr)
 		/* Mark the item as an artifact */
 		o_ptr->name1 = i;
 
-		/* Success */
-		return (TRUE);
+		/* Copy across all the data from the artifact struct */
+		copy_artifact_data(o_ptr, a_ptr);
+
+		return TRUE;
 	}
 
-	/* Failure */
-	return (FALSE);
+	return FALSE;
 }
 
 
@@ -986,138 +1027,71 @@ static const u32b ego_powers[] =
 
 
 
-/*
- * Complete the "creation" of an object by applying "magic" to the item
+/**
+ * Complete object creation by applying magic to it.
  *
- * This includes not only rolling for random bonuses, but also putting the
- * finishing touches on ego-items and artifacts, giving charges to wands and
- * staffs, giving fuel to lites, and placing traps on chests.
+ * Magic includes rolling for random bonuses, applying flags to ego-items,
+ * charging charged items, fuelling lights, and trapping chests.
  *
- * In particular, note that "Instant Artifacts", if "created" by an external
- * routine, must pass through this function to complete the actual creation.
+ * The `good` argument forces the item to be at least `good`, and the `great`
+ * argument does likewise.  Setting `allow_artifacts` to TRUE allows artifacts
+ * to be created here.
  *
- * The base "chance" of the item being "good" increases with the "level"
- * parameter, which is usually derived from the dungeon level, being equal
- * to the level plus 10, up to a maximum of 75.  If "good" is true, then
- * the object is guaranteed to be "good".  If an object is "good", then
- * the chance that the object will be "great" (ego-item or artifact), also
- * increases with the "level", being equal to half the level, plus 5, up to
- * a maximum of 20.  If "great" is true, then the object is guaranteed to be
- * "great".  At dungeon level 65 and below, 15/100 objects are "great".
- *
- * If the object is not "good", there is a chance it will be "cursed", and
- * if it is "cursed", there is a chance it will be "broken".  These chances
- * are related to the "good" / "great" chances above.
- *
- * Otherwise "normal" rings and amulets will be "good" half the time and
- * "cursed" half the time, unless the ring/amulet is always good or cursed.
- *
- * If "okay" is true, and the object is going to be "great", then there is
- * a chance that an artifact will be created.  This is true even if both the
- * "good" and "great" arguments are false.  Objects which are forced "great"
- * get three extra "attempts" to become an artifact.
+ * If `good` or `great` are not set, then the `lev` argument controls the
+ * quality of item.  See the function itself for the specifics of the
+ * calculations involved.
  */
-void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great)
+void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, bool great)
 {
-	int i, rolls, f1, f2, power;
+	int power = 0;
+
+	/* Chance of being `good` and `great` */
+	int good_chance = MIN(2*lev + 10, 100);
+	int great_chance = MIN(good_chance / 3, 20);
 
 
-	/* Maximum "level" for various things */
+	/* Limit depth */
 	if (lev > MAX_DEPTH - 1) lev = MAX_DEPTH - 1;
 
-
-	/* Base chance of being "good" */
-	f1 = 2*lev + 10;
-
-	/* Maximal chance of being "good" */
-	if (f1 > 100) f1 = 100;
-
-	/* Base chance of being "great" */
-	f2 = f1 / 3;
-
-	/* Maximal chance of being "great" */
-	if (f2 > 20) f2 = 20;
-
-
-	/* Assume normal */
-	power = 0;
-
 	/* Roll for "good" */
-	if (good || (rand_int(100) < f1))
+	if (good || (rand_int(100) < good_chance))
 	{
 		/* Assume "good" */
 		power = 1;
 
 		/* Roll for "great" */
-		if (great || (rand_int(100) < f2)) power = 2;
+		if (great || (rand_int(100) < great_chance)) power = 2;
 	}
 
 	/* Roll for "cursed" */
-	else if (rand_int(100) < f1)
+	else if (rand_int(100) < good_chance)
 	{
 		/* Assume "cursed" */
 		power = -1;
 
 		/* Roll for "broken" */
-		if (rand_int(100) < f2) power = -2;
-	}
-
-	/* Assume no rolls */
-	rolls = 0;
-
-	/* Get one roll if excellent */
-	if (power >= 2) rolls = 1;
-
-	/* Get four rolls if forced great */
-	if (great) rolls = 4;
-
-	/* Get no rolls if not allowed */
-	if (!okay || o_ptr->name1) rolls = 0;
-
-	/* Roll for artifacts if allowed */
-	for (i = 0; i < rolls; i++)
-	{
-		/* Roll for an artifact */
-		if (make_artifact(o_ptr)) break;
+		if (rand_int(100) < great_chance) power = -2;
 	}
 
 
-	/* Hack -- analyze artifacts */
-	if (o_ptr->name1)
+	/* Roll for artifact creation */
+	if (allow_artifacts && !o_ptr->name1)
 	{
-		artifact_type *a_ptr = &a_info[o_ptr->name1];
+		int i;
+		int rolls = 0;
 
-		/* Hack -- Mark the artifact as "created" */
-		a_ptr->cur_num = 1;
+		/* Get one roll if excellent */
+		if (power >= 2) rolls = 1;
 
-		/* Extract the other fields */
-		o_ptr->pval = a_ptr->pval;
-		o_ptr->ac = a_ptr->ac;
-		o_ptr->dd = a_ptr->dd;
-		o_ptr->ds = a_ptr->ds;
-		o_ptr->to_a = a_ptr->to_a;
-		o_ptr->to_h = a_ptr->to_h;
-		o_ptr->to_d = a_ptr->to_d;
-		o_ptr->weight = a_ptr->weight;
+		/* Get four rolls if forced great */
+		if (great) rolls = 4;
 
-		/* Hack -- extract the "cursed" flag */
-		if (a_ptr->flags3 & TR3_LIGHT_CURSE)
-			o_ptr->flags3 |= TR3_LIGHT_CURSE;
-
-		/* Mega-Hack -- increase the rating */
-		rating += 10;
-
-		/* Mega-Hack -- increase the rating again */
-		if (a_ptr->cost > 50000L) rating += 10;
-
-		/* Set the good item flag */
-		good_item_flag = TRUE;
-
-		/* Cheat -- peek at the item */
-		if (cheat_peek) object_mention(o_ptr);
-
-		/* Done */
-		return;
+		/* Roll for artifacts if allowed */
+		for (i = 0; i < rolls; i++)
+		{
+			if (make_artifact(o_ptr))
+				return;
+		}
 	}
 
 
@@ -1133,11 +1107,11 @@ void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great)
 		case TV_ARROW:
 		case TV_BOLT:
 		{
-			if ((power > 1) || (power < -1))
+			if (power == 2 || power == -2)
 			{
 				int ego_power;
 
-				ego_power = make_ego_item(o_ptr, lev, (bool)(good || great));
+				ego_power = make_ego_item(o_ptr, lev, (bool)(power > 0));
 
 				if (ego_power) power = ego_power;
 			}
@@ -1157,11 +1131,11 @@ void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great)
 		case TV_GLOVES:
 		case TV_BOOTS:
 		{
-			if ((power > 1) || (power < -1))
+			if (power == 2 || power == -2)
 			{
 				int ego_power;
 
-				ego_power = make_ego_item(o_ptr, lev, (bool)(good || great));
+				ego_power = make_ego_item(o_ptr, lev, (bool)(power > 0));
 
 				if (ego_power) power = ego_power;
 			}
@@ -1181,10 +1155,8 @@ void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great)
 
 		case TV_LITE:
 		{
-			if ((power > 1) || (power < -1))
-			{
-				make_ego_item(o_ptr, lev, (bool)(good || great));
-			}
+			if (power == 2 || power == -2)
+				make_ego_item(o_ptr, lev, (bool)(power > 0));
 
 			/* Fuel it */
 			a_m_aux_4(o_ptr, lev, power);
@@ -1392,75 +1364,46 @@ static bool kind_is_good(int k_idx)
  */
 bool make_object(object_type *j_ptr, int lev, bool good, bool great)
 {
-	int prob, base;
+	int k_idx, i;
+	int tries = 1;
+
+	int base;
 	object_kind *k_ptr;
 
-
-	/* Chance of "special object" */
-	prob = (good ? 10 : 1000);
+	/* Try to make a special artifact */
+	if (one_in_(good ? 10 : 1000))
+		return make_artifact_special(j_ptr, lev);
 
 	/* Base level for the object */
 	base = (good ? (lev + 10) : lev);
 
+	/* Try multiple times to generate good/great items */
+	if (great)     tries = 5;
+	else if (good) tries = 3;
 
-	/* Generate a special artifact, or a normal object */
-	if ((rand_int(prob) != 0) || !make_artifact_special(j_ptr, lev))
+	for (i = 0; i < tries; i++)
 	{
-		int k_idx, i;
-		int tries = 1;
-
+		/* Pick a random object */
 #if 0
-		/* Good objects */
-		if (good)
-		{
-			/* Activate restriction */
-			get_obj_num_hook = kind_is_good;
-
-			/* Prepare allocation table */
-			get_obj_num_prep();
-		}
+		k_idx = get_obj_num(base, kind_is_good);
+#else
+		k_idx = get_obj_num(base);
 #endif
 
-		if (great)
-		    tries = 5;
-		else if (good)
-		    tries = 3;
-
-		for (i = 0; i < tries; i++)
-		{
-		    /* Pick a random object */
-		    k_idx = get_obj_num(base);
-		    
-		    /* Keep if it's good, or try again */
-		    if (kind_is_good(k_idx)) break;
-		}
-
-#if 0
-		/* Good objects */
-		if (good)
-		{
-			/* Clear restriction */
-			get_obj_num_hook = NULL;
-
-			/* Prepare allocation table */
-			get_obj_num_prep();
-		}
-#endif
-
-		/* Handle failure */
-		if (!k_idx) return (FALSE);
-
-		/* Prepare the object */
-		object_prep(j_ptr, k_idx);
+		/* Keep if it's good, or try again */
+		if (kind_is_good(k_idx)) break;
 	}
+
+	if (!k_idx) return FALSE;
+
+	/* Prepare the object */
+	object_prep(j_ptr, k_idx);
 
 	/* Apply magic (allow artifacts) */
 	apply_magic(j_ptr, lev, TRUE, good, great);
 
 
 	/* Generate multiple items */
-	/* Imported from Steamband and Sangband */
-	/* XXX Will probably not work so well for stacks of potions (yet) */
 	k_ptr = &k_info[j_ptr->k_idx];
 
 	if (k_ptr->gen_mult_prob >= 100 ||
@@ -1480,8 +1423,7 @@ bool make_object(object_type *j_ptr, int lev, bool good, bool great)
 		if (cheat_peek) object_mention(j_ptr);
 	}
 
-	/* Success */
-	return (TRUE);
+	return TRUE;
 }
 
 
