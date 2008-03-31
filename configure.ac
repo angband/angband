@@ -12,7 +12,8 @@ AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of package])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])
 
 AC_ARG_WITH(setgid,       [  --with-setgid=NAME      install angband as group NAME])
-AC_ARG_WITH(private_dirs, [  --with-private-dirs     use private scorefiles/savefiles/datafiles])
+AC_ARG_WITH(private_dirs, [  --with-private-dirs     use private scorefiles/savefiles/datafiles],
+            [], [with_private_dirs=yes])
 AC_ARG_WITH(noinstall,    [  --with-noinstall        don't install globally at all])
 
 if test "x$with_setgid" != "xyes"; then
