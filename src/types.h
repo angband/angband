@@ -1,80 +1,42 @@
-/* File: types.h */
-
-/*
- * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
- *
- * This software may be copied and distributed for educational, research,
- * and not for profit purposes provided that this copyright and statement
- * are included in all such copies.  Other copyrights may also apply.
- */
-
-
-/*
- * Note that "char" may or may not be signed, and that "signed char"
- * may or may not work on all machines.  So always use "s16b" or "s32b"
- * for signed values.  Also, note that unsigned values cause math problems
- * in many cases, so try to only use "u16b" and "u32b" for "bit flags",
- * unless you really need the extra bit of information, or you really
- * need to restrict yourself to a single byte for storage reasons.
- *
- * Also, if possible, attempt to restrict yourself to sub-fields of
- * known size (use "s16b" or "s32b" instead of "int", and "byte" instead
- * of "bool"), and attempt to align all fields along four-byte words, to
- * optimize storage issues on 32-bit machines.  Also, avoid "bit flags"
- * since these increase the code size and slow down execution.  When
- * you need to store bit flags, use one byte per flag, or, where space
- * is an issue, use a "byte" or "u16b" or "u32b", and add special code
- * to access the various bit flags.
- *
- * Many of these structures were developed to reduce the number of global
- * variables, facilitate structured program design, allow the use of ascii
- * template files, simplify access to indexed data, or facilitate efficient
- * clearing of many variables at once.
- *
- * Note that certain data is saved in multiple places for efficient access,
- * and when modifying the data in one place it must also be modified in the
- * other places, to prevent the creation of inconsistant data.
- */
-
 #ifndef INCLUDED_TYPES_H
 #define INCLUDED_TYPES_H
 
+/*
+ * This file contains various defined types used by the game.
+ *
+ * TODO: Most of these should be elsewhere, in their own header files.
+ * For example, the object structs should be in object.h.
+ *
+ * Be careful when creating data structures; most of these are designed
+ * to be serialised to file, so be careful to use exact-size data types
+ * (like u32b and s32b) and not just "int"s.
+ */
 
 /**** Available Types ****/
 
-
-/*
- * An array of 256 byte's
- */
+/** An array of 256 bytes */
 typedef byte byte_256[256];
 
-
-/*
- * An array of DUNGEON_WID byte's
- */
+/** An array of DUNGEON_WID bytes */
 typedef byte byte_wid[DUNGEON_WID];
 
-/*
- * An array of DUNGEON_WID s16b's
- */
+/** An array of DUNGEON_WID s16b's */
 typedef s16b s16b_wid[DUNGEON_WID];
 
 
 
 /** Function hook types **/
 
+/** Function prototype for the UI to provide to create native buttons */
 typedef int (*button_add_f)(const char *, unsigned char);
+
+/** Function prototype for the UI to provide to remove native buttons */
 typedef int (*button_kill_f)(unsigned char);
 
 
 
 /**** Available Structs ****/
 
-
-typedef struct maxima maxima;
-typedef struct feature_type feature_type;
-typedef struct object_kind object_kind;
-typedef struct artifact_type artifact_type;
 typedef struct ego_item_type ego_item_type;
 typedef struct monster_blow monster_blow;
 typedef struct monster_race monster_race;
@@ -100,175 +62,179 @@ typedef struct autoinscription autoinscription;
 typedef struct history_info history_info;
 
 
-/**** Available structs ****/
-
-
-/*
- * Information about maximal indices of certain arrays
- * Actually, these are not the maxima, but the maxima plus one
- */
-struct maxima
-{
-	u32b fake_text_size;
-	u32b fake_name_size;
-
-	u16b f_max;		/* Max size for "f_info[]" */
-	u16b k_max;		/* Max size for "k_info[]" */
-	u16b a_max;		/* Max size for "a_info[]" */
-	u16b e_max;		/* Max size for "e_info[]" */
-	u16b r_max;		/* Max size for "r_info[]" */
-	u16b v_max;		/* Max size for "v_info[]" */
-	u16b p_max;		/* Max size for "p_info[]" */
-	u16b h_max;		/* Max size for "h_info[]" */
-	u16b b_max;		/* Max size per element of "b_info[]" */
-	u16b c_max;		/* Max size for "c_info[]" */
-	u16b flavor_max; /* Max size for "flavor_info[]" */
-	u16b s_max;		/* Max size for "s_info[]" */
-
-	u16b o_max;		/* Max size for "o_list[]" */
-	u16b m_max;		/* Max size for "mon_list[]" */
-};
-
-
-/*
- * Information about terrain "features"
- */
-struct feature_type
-{
-	u32b name;			/* Name (offset) */
-	u32b text;			/* Text (offset) */
-
-	byte mimic;			/* Feature to mimic */
-
-	byte extra;			/* Extra byte (unused) */
-
-	s16b unused;		/* Extra bytes (unused) */
-
-
-	byte d_attr;		/* Default feature attribute */
-	char d_char;		/* Default feature character */
-
-
-	byte x_attr;		/* Desired feature attribute */
-	char x_char;		/* Desired feature character */
-};
-
-
-/*
- * Information about object "kinds", including player knowledge.
+/**
+ * Information about maximal indices of certain arrays.
  *
- * Only "aware" and "tried" are saved in the savefile
+ * These are actually not the maxima, but the maxima plus one, because of
+ * 0-based indexing issues.
  */
-struct object_kind
+typedef struct
 {
-	u32b name;			/* Name (offset) */
-	u32b text;			/* Text (offset) */
+	u32b fake_text_size;  /**< Max size of all descriptions read in from lib/edit/* */
+	u32b fake_name_size;  /**< Max size of all names read in from lib/edit/* */
 
-	byte tval;			/* Object type */
-	byte sval;			/* Object sub type */
+	u16b f_max;       /**< Maximum number of terrain features */
+	u16b k_max;       /**< Maximum number of object base kinds */
+	u16b a_max;       /**< Maximum number of artifact kinds */
+	u16b e_max;       /**< Maximum number of ego-item kinds */
+	u16b r_max;       /**< Maximum number of monster races */
+	u16b v_max;       /**< Maximum number of vault kinds */
+	u16b p_max;       /**< Maximum number of player races */
+	u16b h_max;       /**< Maximum number of chained player history entries */
+	u16b b_max;       /**< Maximum number of shop owners per store kind */
+	u16b c_max;       /**< Maximum number of player classes */
+	u16b flavor_max;  /**< Maximum number of item flavour kinds */
+	u16b s_max;       /**< Maximum number of magic spells */
 
-	s16b pval;			/* Object extra info */
-
-	s16b to_h;			/* Bonus to hit */
-	s16b to_d;			/* Bonus to damage */
-	s16b to_a;			/* Bonus to armor */
-
-	s16b ac;			/* Base armor */
-
-	byte dd, ds;		/* Damage dice/sides */
-
-	s16b weight;		/* Weight */
-
-	s32b cost;			/* Object "base cost" */
-
-	u32b flags1;		/* Flags, set 1 */
-	u32b flags2;		/* Flags, set 2 */
-	u32b flags3;		/* Flags, set 3 */
-
-	byte alloc_prob;	/* Allocation: commonness */
-	byte alloc_min;		/* Highest normal dungeon level */
-	byte alloc_max;		/* Lowest normal dungeon level */
-	byte level;			/* Level */
+	u16b o_max;       /**< Maximum number of objects on a given level */
+	u16b m_max;       /**< Maximum number of monsters on a given level */
+} maxima;
 
 
-	byte d_attr;		/* Default object attribute */
-	char d_char;		/* Default object character */
-
-	byte x_attr;		/* Desired object attribute */
-	char x_char;		/* Desired object character */
-
-
-	u16b effect;		/* Effect this item produces */
-	u16b time_base;		/* Recharge time (if appropriate) */
-	byte time_dice;
-	byte time_sides;
-
-	byte charge_base;	/* Charge base */
-	byte charge_dd;
-	byte charge_ds;	/* Charge dice/sides */
-
-	byte gen_mult_prob;     /* Probability of generating more than one */
-	byte gen_dice;          /* Average number to generate - dice rolled */
-	byte gen_side;          /* Average number to generate - dice sides */
-
-
-	u16b flavor;		/* Special object flavor (or zero) */
-	u16b note;          /* Autoinscription field (later) */
-
-	bool aware;		/* The player is "aware" of the item's effects */
-	bool tried;		/* The player has "tried" one of the items */
-
-	bool squelch;		/* Squelch this item? */
-	bool everseen;		/* Used to despoilify squelch menus */
-};
-
-
-
-/*
- * Information about "artifacts".
+/**
+ * Information about terrain features.
  *
- * Note that the save-file only writes "cur_num" to the savefile.
- *
- * Note that "max_num" is always "1" (if that artifact "exists")
+ * At the moment this isn't very much, but eventually a primitive flag-based
+ * information system will be used here.
  */
-struct artifact_type
+typedef struct
 {
-	u32b name;			/* Name (offset) */
-	u32b text;			/* Text (offset) */
+	u32b name;    /**< (const char *) feature_type::name + f_name = Name */
+	u32b text;    /**< (const char *) feature_type::text + f_text = Description (unused) */
 
-	byte tval;			/* Artifact type */
-	byte sval;			/* Artifact sub type */
+	byte mimic;   /**< Feature to mimic */
 
-	s16b pval;			/* Artifact extra info */
+	byte extra;   /**< Unused */
+	s16b unused;  /**< Unused */
 
-	s16b to_h;			/* Bonus to hit */
-	s16b to_d;			/* Bonus to damage */
-	s16b to_a;			/* Bonus to armor */
+	byte d_attr;  /**< Default feature attribute */
+	char d_char;  /**< Default feature character */
 
-	s16b ac;			/* Base armor */
+	byte x_attr;  /**< Desired feature attribute (set by user/pref file) */
+	char x_char;  /**< Desired feature character (set by user/pref file) */
+} feature_type;
 
-	byte dd, ds;		/* Damage when hits */
 
-	s16b weight;		/* Weight */
+/**
+ * Information about object kinds, including player knowledge.
+ *
+ * TODO: split out the user-changeable bits into a separate struct so this
+ * one can be read-only.
+ */
+typedef struct
+{
+	/** Constants **/
 
-	s32b cost;			/* Artifact "cost" */
+	u32b name;     /**< (const char *) object_kind::name + k_name = Name */
+	u32b text;     /**< (const char *) object_kind::text + k_text = Description  */
 
-	u32b flags1;		/* Artifact Flags, set 1 */
-	u32b flags2;		/* Artifact Flags, set 2 */
-	u32b flags3;		/* Artifact Flags, set 3 */
+	byte tval;     /**< General object type (see TV_ macros) */
+	byte sval;     /**< Object sub-type (see SV_ macros) */
+	s16b pval;     /**< Power for any flags which need it */
 
-	byte level;			/* Artifact level */
-	byte rarity;		/* Artifact rarity */
+	s16b to_h;     /**< Bonus to-hit */
+	s16b to_d;     /**< Bonus to damage */
+	s16b to_a;     /**< Bonus to armor */
+	s16b ac;       /**< Base armor */
 
-	byte cur_num;		/* Number created (0 or 1) */
-	byte max_num;		/* Unused (should be "1") */
+	byte dd;       /**< Damage dice */
+	byte ds;       /**< Damage sides */
+	s16b weight;   /**< Weight, in 1/10lbs */
 
-	u16b effect;		/* Effect this item produces */
-	u32b effect_msg;	/* Effect message (offset) into text */
-	u16b time_base;		/* Recharge time (if appropriate) */
-	byte time_dice;
-	byte time_sides;
-};
+	s32b cost;     /**< Object base cost */
+
+	u32b flags1;   /**< Flags, set 1 (see TR1_ macros) */
+	u32b flags2;   /**< Flags, set 2 (see TR2_ macros) */
+	u32b flags3;   /**< Flags, set 3 (see TR3_ macros) */
+
+	byte d_attr;   /**< Default object attribute */
+	char d_char;   /**< Default object character */
+
+	byte alloc_prob;   /**< Allocation: commonness */
+	byte alloc_min;    /**< Highest normal dungeon level */
+	byte alloc_max;    /**< Lowest normal dungeon level */
+	byte level;        /**< Level */
+
+	u16b effect;       /**< Effect this item produces (effects.c) */
+	u16b time_base;    /**< Recharge time (if appropriate) */
+	byte time_dice;    /**< Randomised recharge time dice */
+	byte time_sides;   /**< Randomised recharge time sides */
+
+	byte charge_base;  /**< Non-random initial charge base */
+	byte charge_dd;    /**< Randomised initial charge dice */
+	byte charge_ds;    /**< Randomised initial charge sides */
+
+	byte gen_mult_prob; /**< Probability of generating more than one */
+	byte gen_dice;      /**< Number to generate dice */
+	byte gen_side;      /**< Number to generate sides */
+
+	u16b flavor;        /**< Special object flavor (or zero) */
+
+
+	/** Game-dependent **/
+
+	byte x_attr;   /**< Desired object attribute (set by user/pref file) */
+	char x_char;   /**< Desired object character (set by user/pref file) */
+
+	/** Also saved in savefile **/
+
+	u16b note;     /**< Autoinscription quark number */
+
+	bool aware;    /**< Set if player is aware of the kind's effects */
+	bool tried;    /**< Set if kind has been tried */
+
+	bool squelch;  /**< Set if kind should be squelched */
+	bool everseen; /**< Set if kind has ever been seen (to despoilify squelch menus) */
+} object_kind;
+
+
+
+/**
+ * Information about artifacts.
+ *
+ * Note that ::cur_num is written to the savefile.
+ *
+ * TODO: Fix this max_num/cur_num crap and just have a big boolean array of
+ * which artifacts have been created and haven't, so this can become read-only.
+ */
+typedef struct
+{
+	u32b name;    /**< (const char *) artifact_type::name + a_name = Name */
+	u32b text;    /**< (const char *) artifact_type::text + a_text = Description  */
+
+	byte tval;    /**< General artifact type (see TV_ macros) */
+	byte sval;    /**< Artifact sub-type (see SV_ macros) */
+	s16b pval;    /**< Power for any flags which need it */
+
+	s16b to_h;    /**< Bonus to hit */
+	s16b to_d;    /**< Bonus to damage */
+	s16b to_a;    /**< Bonus to armor */
+	s16b ac;      /**< Base armor */
+
+	byte dd;      /**< Base damage dice */
+	byte ds;      /**< Base damage sides */
+
+	s16b weight;  /**< Weight in 1/10lbs */
+
+	s32b cost;    /**< Artifact (pseudo-)worth */
+
+	u32b flags1;  /**< Flags, set 1 (see TR1_ macros) */
+	u32b flags2;  /**< Flags, set 2 (see TR2_ macros) */
+	u32b flags3;  /**< Flags, set 3 (see TR3_ macros) */
+
+	byte level;   /**< Minimum depth artifact can appear at */
+	byte rarity;  /**< Artifact rarity */
+
+	byte max_num; /**< Unused (should be "1") */
+	byte cur_num; /**< Number created (0 or 1) */
+
+	u16b effect;     /**< Artifact activation (see effects.c) */
+	u32b effect_msg; /**< (const char *) artifact_type::effect_msg + a_text = Effect message */
+	u16b time_base;  /**< Recharge time (if appropriate) */
+	byte time_dice;  /**< Randomised recharge time dice */
+	byte time_sides; /**< Randomised recharge time sides */
+
+} artifact_type;
 
 
 /*
@@ -358,7 +324,7 @@ struct monster_race
 	s32b mexp;				/* Exp value for kill */
 
 	s16b power;				/* Monster power */
-	
+
 #ifdef ALLOW_TEMPLATES_PROCESS
 
 	s16b highest_threat;	/* Monster highest threat */
@@ -389,7 +355,6 @@ struct monster_race
 
 	byte max_num;			/* Maximum population allowed per level */
 	byte cur_num;			/* Monster population on current level */
-
 };
 
 
@@ -771,7 +736,7 @@ struct player_class
 	u32b sense_base;	/* Base pseudo-id value */
 	u16b sense_div;		/* Pseudo-id divisor */
 
-	start_item start_items[MAX_START_ITEMS];/* The starting inventory */
+	start_item start_items[MAX_START_ITEMS];/**< The starting inventory */
 
 	player_magic spells; /* Magic spells */
 };
