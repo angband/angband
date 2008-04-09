@@ -21,7 +21,6 @@ HEADERS = \
 	$(GTKHEADERS) \
 	h-basic.h \
 	init.h \
-	maid-x11.h \
 	main.h \
 	option.h \
 	randname.h \
@@ -48,7 +47,7 @@ GTKHEADERS = \
 	
 ZFILES = z-file.o z-form.o z-msg.o z-quark.o z-rand.o z-term.o z-type.o \
          z-util.o z-virt.o z-blockfile.o z-smap.o 
-MAINFILES = main.o maid-x11.o main-crb.o main-gcu.o $(GTKMAINFILES) \
+MAINFILES = main.o main-crb.o main-gcu.o $(GTKMAINFILES) \
             main-ros.o main-sdl.o main-win.o main-x11.o snd-sdl.o
 
 GTKMAINFILES = \

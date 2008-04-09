@@ -99,20 +99,47 @@
 
 #ifdef USE_X11
 
-#include "main.h"
-
-#ifndef __MAKEDEPEND__
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/keysymdef.h>
-#endif /* __MAKEDEPEND__ */
+
+#include "main.h"
+
+#ifndef IsModifierKey
+
+/*
+ * Keysym macros, used on Keysyms to test for classes of symbols
+ * These were stolen from one of the X11 header files
+ */
+
+#define IsKeypadKey(keysym) \
+  (((unsigned)(keysym) >= XK_KP_Space) && ((unsigned)(keysym) <= XK_KP_Equal))
+
+#define IsCursorKey(keysym) \
+  (((unsigned)(keysym) >= XK_Home)     && ((unsigned)(keysym) <  XK_Select))
+
+#define IsPFKey(keysym) \
+  (((unsigned)(keysym) >= XK_KP_F1)    && ((unsigned)(keysym) <= XK_KP_F4))
+
+#define IsFunctionKey(keysym) \
+  (((unsigned)(keysym) >= XK_F1)       && ((unsigned)(keysym) <= XK_F35))
+
+#define IsMiscFunctionKey(keysym) \
+  (((unsigned)(keysym) >= XK_Select)   && ((unsigned)(keysym) <  XK_KP_Space))
+
+#define IsModifierKey(keysym) \
+  (((unsigned)(keysym) >= XK_Shift_L)  && ((unsigned)(keysym) <= XK_Hyper_R))
+
+#endif /* IsModifierKey */
 
 
 /*
- * Include some helpful X11 code.
+ * Checks if the keysym is a special key or a normal key
+ * Assume that XK_MISCELLANY keysyms are special
  */
-#include "maid-x11.h"
+#define IsSpecialKey(keysym) \
+  ((unsigned)(keysym) >= 0xFF00)
 
 
 /*
@@ -458,6 +485,108 @@ static infofnt *Infofnt = (infofnt*)(NULL);
  * Actual color table
  */
 static infoclr *clr[MAX_COLORS];
+
+
+
+/**** Code imported from the old maid-x11.c ****/
+
+#ifdef SUPPORT_GAMMA
+static bool gamma_table_ready = FALSE;
+static int gamma_val = 0;
+#endif /* SUPPORT_GAMMA */
+
+
+/*
+ * Hack -- Convert an RGB value to an X11 Pixel, or die.
+ */
+u32b create_pixel(Display *dpy, byte red, byte green, byte blue)
+{
+	Colormap cmap = DefaultColormapOfScreen(DefaultScreenOfDisplay(dpy));
+
+	XColor xcolour;
+
+#ifdef SUPPORT_GAMMA
+
+	if (!gamma_table_ready)
+	{
+		cptr str = getenv("ANGBAND_X11_GAMMA");
+		if (str != NULL) gamma_val = atoi(str);
+
+		gamma_table_ready = TRUE;
+
+		/* Only need to build the table if gamma exists */
+		if (gamma_val) build_gamma_table(gamma_val);
+	}
+
+	/* Hack -- Gamma Correction */
+	if (gamma_val > 0)
+	{
+		red = gamma_table[red];
+		green = gamma_table[green];
+		blue = gamma_table[blue];
+	}
+
+#endif /* SUPPORT_GAMMA */
+
+	/* Build the color */
+
+	xcolour.red = red * 255;
+	xcolour.green = green * 255;
+	xcolour.blue = blue * 255;
+	xcolour.flags = DoRed | DoGreen | DoBlue;
+
+	/* Attempt to Allocate the Parsed color */
+	if (!(XAllocColor(dpy, cmap, &xcolour)))
+	{
+		quit_fmt("Couldn't allocate bitmap color #%04x%04x%04x\n",
+		         xcolour.red, xcolour.green, xcolour.blue);
+	}
+
+	return (xcolour.pixel);
+}
+
+
+/*
+ * Get the name of the default font to use for the term.
+ */
+const char *get_default_font(int term_num)
+{
+	const char *font;
+	char buf[80];
+
+	/* Window specific font name */
+	strnfmt(buf, sizeof(buf), "ANGBAND_X11_FONT_%d", term_num);
+
+	/* Check environment for that font */
+	font = getenv(buf);
+	if (font) return font;
+
+	/* Check environment for "base" font */
+	font = getenv("ANGBAND_X11_FONT");
+	if (font) return font;
+
+	switch (term_num)
+	{
+		case 0:
+			return DEFAULT_X11_FONT_0;
+		case 1:
+			return DEFAULT_X11_FONT_1;
+		case 2:
+			return DEFAULT_X11_FONT_2;
+		case 3:
+			return DEFAULT_X11_FONT_3;
+		case 4:
+			return DEFAULT_X11_FONT_4;
+		case 5:
+			return DEFAULT_X11_FONT_5;
+		case 6:
+			return DEFAULT_X11_FONT_6;
+		case 7:
+			return DEFAULT_X11_FONT_7;
+	}
+
+	return DEFAULT_X11_FONT;
+}
 
 
 

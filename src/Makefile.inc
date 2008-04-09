@@ -61,7 +61,8 @@ debug.o: debug.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   option.h types.h ui.h z-type.h object.h externs.h debug.h
 dungeon.o: dungeon.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h object.h externs.h cmds.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h cmds.h \
+  game-event.h
 effects.o: effects.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
   defines.h option.h types.h ui.h z-type.h object.h externs.h effects.h \
@@ -206,7 +207,8 @@ xtra2.o: xtra2.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   option.h types.h ui.h z-type.h object.h externs.h cmds.h
 xtra3.o: xtra3.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h object.h externs.h game-event.h
+  option.h types.h ui.h z-type.h object.h externs.h game-event.h \
+  ui-birth.h
 z-file.o: z-file.c z-file.h h-basic.h z-virt.h z-util.h z-form.h
 z-form.o: z-form.c z-form.h h-basic.h z-type.h z-util.h z-virt.h
 z-msg.o: z-msg.c z-virt.h h-basic.h z-term.h ui-event.h z-msg.h

@@ -78,9 +78,8 @@ LIBS += $(patsubst -D%,,$(patsubst -I%,, $(MODULES)))
 
 
 # Object definitions
-X11OBJS = maid-x11.o main-x11.o
 GTKOBJS = gtk/main-gtk.o gtk/cairo-utils.o
-MAINOBJS = main.o main-gcu.o main-sdl.o snd-sdl.o $(X11OBJS) $(GTKOBJS)
+MAINOBJS = main.o main-gcu.o main-x11.o main-sdl.o snd-sdl.o $(GTKOBJS)
 OBJS = $(BASEOBJS) $(MAINOBJS)
 
 
@@ -158,7 +157,7 @@ depend:
 	$(CC) $(CFLAGS) -o $@ -c $<
 
 # X11 dependencies
-$(X11OBJS) : $(HEADERS) maid-x11.h main.h
+main-x11.o: $(HEADERS) main.h
 
 # Basic dependencies for main-xxx.c, main.c
 $(MAINOBJS) : main.h $(HEADERS)
