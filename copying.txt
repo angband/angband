@@ -9,9 +9,6 @@ exceptions:
 
    - Ron Anderson (Mac port)
    - Ross E Becker (Windows port)
-   - Kieron Dunbar (X11 copy and paste support)
-   - Torbjorn Lindgren (XAW port)
-   - Denis Eropkin (X11+XAW support code)
 
    Any information on the contact details for these people, whether online or
    otherwise, would be much appreciated.  Note that as a result of these
