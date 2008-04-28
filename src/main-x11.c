@@ -94,7 +94,8 @@
 
 #include "angband.h"
 
-#define uint unsigned int
+
+typedef unsigned int uint;
 
 
 #ifdef USE_X11
