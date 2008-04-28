@@ -70,8 +70,8 @@ typedef struct history_info history_info;
  */
 typedef struct
 {
-	u32b fake_text_size;  /**< Max size of all descriptions read in from lib/edit/* */
-	u32b fake_name_size;  /**< Max size of all names read in from lib/edit/* */
+	u32b fake_text_size;  /**< Max size of all descriptions read in from lib/edit */
+	u32b fake_name_size;  /**< Max size of all names read in from lib/edit */
 
 	u16b f_max;       /**< Maximum number of terrain features */
 	u16b k_max;       /**< Maximum number of object base kinds */
