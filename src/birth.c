@@ -90,15 +90,15 @@ static void save_roller_data(birther *player)
 	player->race = p_ptr->prace;
 	player->class = p_ptr->pclass;
 	player->age = p_ptr->age;
-	player->wt = p_ptr->wt;
-	player->ht = p_ptr->ht;
+	player->wt = p_ptr->wt_birth;
+	player->ht = p_ptr->ht_birth;
 	player->sc = p_ptr->sc;
-	player->au = p_ptr->au;
+	player->au = p_ptr->au_birth;
 
 	/* Save the stats */
 	for (i = 0; i < A_MAX; i++)
 	{
-		player->stat[i] = p_ptr->stat_max[i];
+		player->stat[i] = p_ptr->stat_birth[i];
 	}
 
 	/* Save the history */
@@ -1136,6 +1136,7 @@ void player_birth(bool quickstart_allowed)
 				/* Either way, move on to the next relevant stage. */
 				if (cmd.command == CMD_BIRTH_CHOICE)
 				{
+					/* Quickstart chosen. */
 					if (cmd.params.choice)
 					{
 						/* Get the things not loaded with the roller data 
