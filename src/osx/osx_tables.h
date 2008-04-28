@@ -18,7 +18,9 @@ enum MenuID {
 	kSpecialMenu	= 106,
 
 	kTileWidMenu	= 107,
-	kTileHgtMenu	= 108
+	kTileHgtMenu	= 108,
+	
+	kOpenRecentMenu = 109
 };
 
 // Edit menu
@@ -32,10 +34,11 @@ enum {
 enum {
 	kNew			= 1,	/* N, 'new' */
 	kOpen			= 2,	/* O, 'open' */
-	kImport			= 3,	/* I, 'impo' */
+	kOpenRecent		= 3,
+	kImport			= 4,	/* I, 'impo' */
 	/* \-p */
-	kSave 			= 5,	/* S, 'save' */
-	kClose			= 6,	/* W, 'clos' */
+	kSave 			= 6,	/* S, 'save' */
+	kClose			= 7,	/* W, 'clos' */
 	/* \-p 
 	 setup
 	  print 
@@ -45,13 +48,12 @@ enum {
 
 // Window menu
 enum {
-	kZoomWindow 		= 1, /* Not used */
-	kMinimize			= 2, /* Not used */
-	kMinimizeAll		= 3, /* Not used */
-	kAngbandTerm		= 5,
-	kTerminal1			= 6,  /* Terminal ids are relative to Terminal 1 */
+	kMinimize			= 1, /* Not used */
+	kMinimizeAll		= 2, /* Not used */
+	kAngbandTerm		= 4,
+	kTerminal1			= 5,  /* Terminal ids are relative to Terminal 1 */
 	/* ... */
-	kBringToFront 		= 14
+	kBringToFront 		= 13
 };
 
 // Special Menu
@@ -84,6 +86,11 @@ enum {
 	kWINDOW = -1
 };
 
+
+/* References to HIViews in the dialog window */
+static const HIViewID aboutDialogIcon = { 'DLOG', 1 };
+static const HIViewID aboutDialogName = { 'DLOG', 2 };
+static const HIViewID aboutDialogCopyright = { 'DLOG', 4 };
 
 /* Opcodes for various events (OS X specific) */
 
@@ -136,8 +143,9 @@ HANDLERDEF(ToggleCommand);				HANDLERDEF(TerminalCommand);
 HANDLERDEF(GraphicsCommand);			HANDLERDEF(KeyboardCommand);
 HANDLERDEF(MouseCommand);				HANDLERDEF(ResizeCommand);
 HANDLERDEF(UpdateCommand);				HANDLERDEF(AboutCommand);
-HANDLERDEF(ValidateMenuCommand);		HANDLERDEF(ResumeCommand);
-HANDLERDEF(CommandCommand);				HANDLERDEF(AngbandGame);
+HANDLERDEF(ValidateMenuCommand);		HANDLERDEF(OpenRecentCommand);
+HANDLERDEF(ResumeCommand);				HANDLERDEF(CommandCommand);
+HANDLERDEF(AngbandGame);
 
 
 
@@ -155,6 +163,7 @@ const CommandDef event_defs [] =
 
 	{ 'cmds', HICOM,	AboutCommand,	 kAngbandMenu, NULL},
 	{ 'cmds', HICOM,	PrintCommand,	 kEditMenu, "Cheaters never win!"},
+	{ 'cmds', HICOM,	OpenRecentCommand, kOpenRecentMenu, NULL },
 	{ 'cmds', HICOM,	TerminalCommand, kWindowMenu, NULL }, // Open a window
 	{ 'cmds', HICOM,	ToggleCommand,	 kSpecialMenu, NULL}, // Toggle a bool
 	{ 'cmds', HICOM,	ToggleCommand,	 kStyleMenu, NULL},
