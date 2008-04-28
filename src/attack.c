@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "tvals.h"
 
 
 /*
@@ -587,7 +588,7 @@ void do_cmd_fire(void)
 	int dir, item;
 	int i, j, y, x;
 	s16b ty, tx;
-	int tdam, tdis, thits, tmul;
+	int tdam, tdis, thits;
 	int bonus, chance;
 
 	object_type *o_ptr;
@@ -689,14 +690,8 @@ void do_cmd_fire(void)
 	bonus = (p_ptr->to_h + i_ptr->to_h + j_ptr->to_h);
 	chance = (p_ptr->skills[SKILL_TO_HIT_BOW] + (bonus * BTH_PLUS_ADJ));
 
-	/* Base damage from thrown object plus launcher bonus */
-	tdam = damroll(i_ptr->dd, i_ptr->ds);
-
-	/* Assume a base multiplier */
-	tmul = p_ptr->ammo_mult;
-
 	/* Base range XXX XXX */
-	tdis = 10 + 5 * tmul;
+	tdis = 10 + 5 * p_ptr->ammo_mult;
 
 
 	/* Take a (partial) turn */
@@ -822,9 +817,10 @@ void do_cmd_fire(void)
 				}
 
 				/* Apply damage: multiplier, slays, criticals, bonuses */
-				tdam *= MAX(ammo_mult, shoot_mult);
+				tdam = damroll(i_ptr->dd, i_ptr->ds);
+				tdam *= p_ptr->ammo_mult;
 				tdam += i_ptr->to_d + j_ptr->to_d;
-				tdam *= tmul;
+				tdam *= MAX(ammo_mult, shoot_mult);
 				tdam = critical_shot(i_ptr->weight, i_ptr->to_h, tdam);
 
 				/* No negative damage */
