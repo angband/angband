@@ -41,6 +41,26 @@ void pick_trap(int y, int x)
 {
 	int feat;
 
+	const static int min_level[] =
+	{
+		2,		/* Trap door */
+		2,		/* Open pit */
+		2,		/* Spiked pit */
+		2,		/* Poison pit */
+		3,		/* Summoning rune */
+		1,		/* Teleport rune */
+		2,		/* Fire rune */
+		2,		/* Acid rune */
+		2,		/* Slow rune */
+		6,		/* Strength dart */
+		6,		/* Dexterity dart */
+		6,		/* Constitution dart */
+		2,		/* Gas blind */
+		1,		/* Gas confuse */
+		2,		/* Gas poison */
+		2,		/* Gas sleep */
+	};
+
 	/* Paranoia */
 	if (cave_feat[y][x] != FEAT_INVIS) return;
 
@@ -49,6 +69,9 @@ void pick_trap(int y, int x)
 	{
 		/* Hack -- pick a trap */
 		feat = FEAT_TRAP_HEAD + rand_int(16);
+
+		/* Check against minimum depth */
+		if (min_level[feat - FEAT_TRAP_HEAD] > p_ptr->depth) continue;
 
 		/* Hack -- no trap doors on quest levels */
 		if ((feat == FEAT_TRAP_HEAD + 0x00) && is_quest(p_ptr->depth)) continue;
