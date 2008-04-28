@@ -26,6 +26,9 @@ void display_panel(const data_panel *panel, int count, bool left_adj, const regi
 	int row = bounds->row;
 	int w = bounds->width;
 	int offset = 0;
+
+	region_erase(bounds);
+
 	if (left_adj)
 	{
 		for (i = 0; i < count; i++)
