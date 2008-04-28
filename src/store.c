@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cmds.h"
 #include "ui-menu.h"
+#include "game-event.h"
 
 /*** Constants and definitions ***/
 
@@ -2781,6 +2782,10 @@ void do_cmd_store(void)
 		return;
 	}
 
+	/* Shut down the normal game view - it won't be updated - and start
+	   up the store state. */
+	event_signal(EVENT_LEAVE_GAME);
+	event_signal(EVENT_ENTER_STORE);
 
 	/* Forget the view */
 	forget_view();
@@ -2912,6 +2917,10 @@ void do_cmd_store(void)
 	}
 
 	}
+
+	/* Switch back to the normal game view. */
+	event_signal(EVENT_LEAVE_STORE);
+	event_signal(EVENT_ENTER_GAME);
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;

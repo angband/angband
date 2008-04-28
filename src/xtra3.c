@@ -1624,10 +1624,10 @@ static void ui_leave_game(game_event_type type, game_event_data *data, void *use
 void init_display(void)
 {
 	event_add_handler(EVENT_ENTER_INIT, ui_enter_init, NULL);
-	event_add_handler(EVENT_ENTER_INIT, ui_leave_init, NULL);
+	event_add_handler(EVENT_LEAVE_INIT, ui_leave_init, NULL);
 
 	event_add_handler(EVENT_ENTER_GAME, ui_enter_game, NULL);
-	event_add_handler(EVENT_ENTER_GAME, ui_leave_game, NULL);
+	event_add_handler(EVENT_LEAVE_GAME, ui_leave_game, NULL);
 
 	ui_init_birthstate_handlers();
 }
