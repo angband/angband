@@ -2317,7 +2317,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ)
 				dam = 0;
 				if (seen) l_ptr->flags[2] |= (RF2_UNDEAD);
 			}
-			else if (r_ptr->flags[3] & (RF3_BR_NETH))
+			else if (r_ptr->spell_flags[0] & (RSF0_BR_NETH))
 			{
 				note = " resists.";
 				dam *= 3; dam /= (randint(6)+6);
@@ -2350,7 +2350,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ)
 			if (seen) obvious = TRUE;
 			do_poly = TRUE;
 			do_conf = (5 + randint(11) + r) / (r + 1);
-			if (r_ptr->flags[3] & (RF3_BR_CHAO))
+			if (r_ptr->spell_flags[0] & (RSF0_BR_CHAO))
 			{
 				note = " resists.";
 				dam *= 3; dam /= (randint(6)+6);
@@ -2363,7 +2363,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ)
 		case GF_SHARD:
 		{
 			if (seen) obvious = TRUE;
-			if (r_ptr->flags[3] & (RF3_BR_SHAR))
+			if (r_ptr->spell_flags[0] & (RSF0_BR_SHAR))
 			{
 				note = " resists.";
 				dam *= 3; dam /= (randint(6)+6);
@@ -2376,7 +2376,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ)
 		{
 			if (seen) obvious = TRUE;
 			do_stun = (10 + randint(15) + r) / (r + 1);
-			if (r_ptr->flags[3] & (RF3_BR_SOUN))
+			if (r_ptr->spell_flags[0] & (RSF0_BR_SOUN))
 			{
 				note = " resists.";
 				dam *= 2; dam /= (randint(6)+6);
@@ -2389,7 +2389,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ)
 		{
 			if (seen) obvious = TRUE;
 			do_conf = (10 + randint(15) + r) / (r + 1);
-			if (r_ptr->flags[3] & (RF3_BR_CONF))
+			if (r_ptr->spell_flags[0] & (RSF0_BR_CONF))
 			{
 				note = " resists.";
 				dam *= 2; dam /= (randint(6)+6);
@@ -2433,7 +2433,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ)
 		{
 			if (seen) obvious = TRUE;
 			do_stun = (randint(15) + r) / (r + 1);
-			if (r_ptr->flags[3] & (RF3_BR_WALL))
+			if (r_ptr->spell_flags[0] & (RSF0_BR_WALL))
 			{
 				note = " resists.";
 				dam *= 3; dam /= (randint(6)+6);
@@ -2445,7 +2445,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ)
 		case GF_INERTIA:
 		{
 			if (seen) obvious = TRUE;
-			if (r_ptr->flags[3] & (RF3_BR_INER))
+			if (r_ptr->spell_flags[0] & (RSF0_BR_INER))
 			{
 				note = " resists.";
 				dam *= 3; dam /= (randint(6)+6);
@@ -2457,7 +2457,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ)
 		case GF_TIME:
 		{
 			if (seen) obvious = TRUE;
-			if (r_ptr->flags[3] & (RF3_BR_TIME))
+			if (r_ptr->spell_flags[0] & (RSF0_BR_TIME))
 			{
 				note = " resists.";
 				dam *= 3; dam /= (randint(6)+6);
@@ -2474,7 +2474,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ)
 			if (randint(127) > r_ptr->level)
 				do_dist = 10;
 
-			if (r_ptr->flags[3] & (RF3_BR_GRAV))
+			if (r_ptr->spell_flags[0] & (RSF0_BR_GRAV))
 			{
 				note = " resists.";
 				dam *= 3; dam /= (randint(6)+6);
@@ -2751,7 +2751,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ)
 		case GF_LITE:
 		{
 			if (seen) obvious = TRUE;
-			if (r_ptr->flags[3] & (RF3_BR_LITE))
+			if (r_ptr->spell_flags[0] & (RSF0_BR_LITE))
 			{
 				note = " resists.";
 				dam *= 2; dam /= (randint(6)+6);
@@ -2771,7 +2771,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ)
 		case GF_DARK:
 		{
 			if (seen) obvious = TRUE;
-			if (r_ptr->flags[3] & (RF3_BR_DARK))
+			if (r_ptr->spell_flags[0] & (RSF0_BR_DARK))
 			{
 				note = " resists.";
 				dam *= 2; dam /= (randint(6)+6);
@@ -3142,7 +3142,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ)
 
 	/* Sound and Impact breathers never stun */
 	else if (do_stun &&
-	         !(r_ptr->flags[3] & (RF3_BR_SOUN | RF3_BR_WALL)))
+	         !(r_ptr->spell_flags[0] & (RSF0_BR_SOUN | RSF0_BR_WALL)))
 	{
 		/* Obvious */
 		if (seen) obvious = TRUE;
@@ -3166,7 +3166,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ)
 	/* Confusion and Chaos breathers (and sleepers) never confuse */
 	else if (do_conf &&
 	         !(r_ptr->flags[2] & (RF2_NO_CONF)) &&
-	         !(r_ptr->flags[3] & (RF3_BR_CONF | RF3_BR_CHAO)))
+	         !(r_ptr->spell_flags[0] & (RSF0_BR_CONF | RSF0_BR_CHAO)))
 	{
 		/* Obvious */
 		if (seen) obvious = TRUE;

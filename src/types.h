@@ -335,12 +335,13 @@ struct monster_race
 	byte freq_spell;		/* Other spell frequency */
 
 	u32b flags[RACE_FLAG_STRICT_UB];	/* Flags */
-		/* Flags 1 (general) */
-		/* Flags 2 (abilities) */
-		/* Flags 3 (race/resist) */
-		/* Flags 4 (innate/breath) */
-		/* Flags 5 (normal spells) */
-		/* Flags 6 (special spells) */
+		/* Flags 0 (general) */
+		/* Flags 1 (abilities) */
+		/* Flags 2 (race/resist) */
+	u32b spell_flags[RACE_FLAG_SPELL_STRICT_UB];	/* Spell flags */
+		/* Flags 3 (innate/breath) */
+		/* Flags 4 (normal spells) */
+		/* Flags 5 (special spells) */
 
 	monster_blow blow[MONSTER_BLOW_MAX]; /* Up to four blows per round */
 
@@ -385,6 +386,7 @@ struct monster_lore
 	byte blows[MONSTER_BLOW_MAX]; /* Number of times each blow type was seen */
 
 	u32b flags[RACE_FLAG_STRICT_UB];	/* Observed racial flags */
+	u32b spell_flags[RACE_FLAG_SPELL_STRICT_UB];	/* Observed racial spell flags */
 };
 
 

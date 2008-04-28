@@ -1592,7 +1592,7 @@ static bool vault_aux_giant(int r_idx)
 /*
  * Hack -- breath type for "vault_aux_dragon()"
  */
-static u32b vault_aux_dragon_mask3;
+static u32b vault_aux_dragon_mask0;
 
 
 /*
@@ -1609,7 +1609,7 @@ static bool vault_aux_dragon(int r_idx)
 	if (!strchr("Dd", r_ptr->d_char)) return (FALSE);
 
 	/* Hack -- Require correct "breath attack" */
-	if (r_ptr->flags[3] != vault_aux_dragon_mask3) return (FALSE);
+	if (r_ptr->spell_flags[0] != vault_aux_dragon_mask0) return (FALSE);
 
 	/* Okay */
 	return (TRUE);
@@ -1929,7 +1929,7 @@ static void build_type6(int y0, int x0)
 				name = "acid dragon";
 
 				/* Restrict dragon breath type */
-				vault_aux_dragon_mask3 = RF3_BR_ACID;
+				vault_aux_dragon_mask0 = RSF0_BR_ACID;
 
 				/* Done */
 				break;
@@ -1942,7 +1942,7 @@ static void build_type6(int y0, int x0)
 				name = "electric dragon";
 
 				/* Restrict dragon breath type */
-				vault_aux_dragon_mask3 = RF3_BR_ELEC;
+				vault_aux_dragon_mask0 = RSF0_BR_ELEC;
 
 				/* Done */
 				break;
@@ -1955,7 +1955,7 @@ static void build_type6(int y0, int x0)
 				name = "fire dragon";
 
 				/* Restrict dragon breath type */
-				vault_aux_dragon_mask3 = RF3_BR_FIRE;
+				vault_aux_dragon_mask0 = RSF0_BR_FIRE;
 
 				/* Done */
 				break;
@@ -1968,7 +1968,7 @@ static void build_type6(int y0, int x0)
 				name = "cold dragon";
 
 				/* Restrict dragon breath type */
-				vault_aux_dragon_mask3 = RF3_BR_COLD;
+				vault_aux_dragon_mask0 = RSF0_BR_COLD;
 
 				/* Done */
 				break;
@@ -1981,7 +1981,7 @@ static void build_type6(int y0, int x0)
 				name = "poison dragon";
 
 				/* Restrict dragon breath type */
-				vault_aux_dragon_mask3 = RF3_BR_POIS;
+				vault_aux_dragon_mask0 = RSF0_BR_POIS;
 
 				/* Done */
 				break;
@@ -1994,9 +1994,9 @@ static void build_type6(int y0, int x0)
 				name = "multi-hued dragon";
 
 				/* Restrict dragon breath type */
-				vault_aux_dragon_mask3 = (RF3_BR_ACID | RF3_BR_ELEC |
-				                          RF3_BR_FIRE | RF3_BR_COLD |
-				                          RF3_BR_POIS);
+				vault_aux_dragon_mask0 = (RSF0_BR_ACID | RSF0_BR_ELEC |
+				                          RSF0_BR_FIRE | RSF0_BR_COLD |
+				                          RSF0_BR_POIS);
 
 				/* Done */
 				break;

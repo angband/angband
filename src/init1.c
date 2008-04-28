@@ -142,7 +142,7 @@ static cptr r_info_blow_effect[] =
 /*
  * Monster race flags
  */
-static cptr r_info_flags1[] =
+static cptr r_info_flags0[] =
 {
 	"UNIQUE",
 	"QUESTOR",
@@ -181,7 +181,7 @@ static cptr r_info_flags1[] =
 /*
  * Monster race flags
  */
-static cptr r_info_flags2[] =
+static cptr r_info_flags1[] =
 {
 	"STUPID",
 	"SMART",
@@ -220,7 +220,7 @@ static cptr r_info_flags2[] =
 /*
  * Monster race flags
  */
-static cptr r_info_flags3[] =
+static cptr r_info_flags2[] =
 {
 	"ORC",
 	"TROLL",
@@ -259,7 +259,7 @@ static cptr r_info_flags3[] =
 /*
  * Monster race flags
  */
-static cptr r_info_flags4[] =
+static cptr r_info_spell_flags0[] =
 {
 	"SHRIEK",
 	"XXX2X4",
@@ -298,7 +298,7 @@ static cptr r_info_flags4[] =
 /*
  * Monster race flags
  */
-static cptr r_info_flags5[] =
+static cptr r_info_spell_flags1[] =
 {
 	"BA_ACID",
 	"BA_ELEC",
@@ -337,7 +337,7 @@ static cptr r_info_flags5[] =
 /*
  * Monster race flags
  */
-static cptr r_info_flags6[] =
+static cptr r_info_spell_flags2[] =
 {
 	"HASTE",
 	"XXX1X6",
@@ -1926,13 +1926,13 @@ errr parse_e_info(char *buf, header *head)
  */
 static errr grab_one_basic_flag(monster_race *r_ptr, cptr what)
 {
-	if (grab_one_flag(&r_ptr->flags[0], r_info_flags1, what) == 0)
+	if (grab_one_flag(&r_ptr->flags[0], r_info_flags0, what) == 0)
 		return (0);
 
-	if (grab_one_flag(&r_ptr->flags[1], r_info_flags2, what) == 0)
+	if (grab_one_flag(&r_ptr->flags[1], r_info_flags1, what) == 0)
 		return (0);
 
-	if (grab_one_flag(&r_ptr->flags[2], r_info_flags3, what) == 0)
+	if (grab_one_flag(&r_ptr->flags[2], r_info_flags2, what) == 0)
 		return (0);
 
 	/* Oops */
@@ -1948,13 +1948,13 @@ static errr grab_one_basic_flag(monster_race *r_ptr, cptr what)
  */
 static errr grab_one_spell_flag(monster_race *r_ptr, cptr what)
 {
-	if (grab_one_flag(&r_ptr->flags[3], r_info_flags4, what) == 0)
+	if (grab_one_flag(&r_ptr->spell_flags[0], r_info_spell_flags0, what) == 0)
 		return (0);
 
-	if (grab_one_flag(&r_ptr->flags[4], r_info_flags5, what) == 0)
+	if (grab_one_flag(&r_ptr->spell_flags[1], r_info_spell_flags1, what) == 0)
 		return (0);
 
-	if (grab_one_flag(&r_ptr->flags[5], r_info_flags6, what) == 0)
+	if (grab_one_flag(&r_ptr->spell_flags[2], r_info_spell_flags2, what) == 0)
 		return (0);
 
 	/* Oops */

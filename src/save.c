@@ -208,6 +208,8 @@ static void wr_lore(int r_idx)
 	/* Memorize flags */
 	for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
 		wr_u32b(l_ptr->flags[i]);
+	for (i = 0; i < RACE_FLAG_SPELL_STRICT_UB; i++)
+		wr_u32b(l_ptr->spell_flags[i]);
 
 
 	/* Monster limit per level */

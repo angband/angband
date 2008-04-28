@@ -876,7 +876,7 @@ void lore_do_probe(int m_idx)
 
 
 	/* Hack -- Memorize some flags */
-	race_flags_assign_nonspell(l_ptr->flags, r_ptr->flags);
+	race_flags_assign(l_ptr->flags, r_ptr->flags);
 
 	/* Update monster recall window */
 	if (p_ptr->monster_race_idx == m_ptr->r_idx)

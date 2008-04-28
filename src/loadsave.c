@@ -1410,6 +1410,8 @@ smap_t *serialize_lore(monster_race *r_ptr, monster_lore *l_ptr)
 
 	for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
 		smap_put_u32b(s, flag_names[i], l_ptr->flags[i]);
+	for (i = 0; i < RACE_FLAG_SPELL_STRICT_UB; i++)
+		smap_put_u32b(s, flag_names[i+RACE_FLAG_STRICT_UB], l_ptr->spell_flags[i]);
 
 	smap_put_byte(s, "max_num", r_ptr->max_num);
 
@@ -1444,6 +1446,8 @@ void deserialize_lore(monster_race *r_ptr, monster_lore *l_ptr, smap_t *s)
 	/* Load and "repair" the flags */
 	for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
 		l_ptr->flags[i] = smap_get_u32b(s, flag_names[i]) & r_ptr->flags[i];
+	for (i = 0; i < RACE_FLAG_SPELL_STRICT_UB; i++)
+		l_ptr->spell_flags[i] = smap_get_u32b(s, flag_names[i+RACE_FLAG_STRICT_UB]) & r_ptr->spell_flags[i];
 
 	/* This should be stored elsewhere. */
 	r_ptr->max_num = smap_get_byte(s, "max_num");

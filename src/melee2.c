@@ -142,169 +142,169 @@ static void remove_bad_spells(int m_idx, u32b* const f)
 
 	if (smart & (SM_IMM_ACID))
 	{
-		if (int_outof(r_ptr, 100)) f2[0] &= ~(RF3_BR_ACID);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_BA_ACID);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_BO_ACID);
+		if (int_outof(r_ptr, 100)) f2[0] &= ~(RSF0_BR_ACID);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BA_ACID);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BO_ACID);
 	}
 	else if ((smart & (SM_OPP_ACID)) && (smart & (SM_RES_ACID)))
 	{
-		if (int_outof(r_ptr, 80)) f2[0] &= ~(RF3_BR_ACID);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF4_BA_ACID);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF4_BO_ACID);
+		if (int_outof(r_ptr, 80)) f2[0] &= ~(RSF0_BR_ACID);
+		if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BA_ACID);
+		if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BO_ACID);
 	}
 	else if ((smart & (SM_OPP_ACID)) || (smart & (SM_RES_ACID)))
 	{
-		if (int_outof(r_ptr, 30)) f2[0] &= ~(RF3_BR_ACID);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF4_BA_ACID);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF4_BO_ACID);
+		if (int_outof(r_ptr, 30)) f2[0] &= ~(RSF0_BR_ACID);
+		if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BA_ACID);
+		if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BO_ACID);
 	}
 
 
 	if (smart & (SM_IMM_ELEC))
 	{
-		if (int_outof(r_ptr, 100)) f2[0] &= ~(RF3_BR_ELEC);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_BA_ELEC);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_BO_ELEC);
+		if (int_outof(r_ptr, 100)) f2[0] &= ~(RSF0_BR_ELEC);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BA_ELEC);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BO_ELEC);
 	}
 	else if ((smart & (SM_OPP_ELEC)) && (smart & (SM_RES_ELEC)))
 	{
-		if (int_outof(r_ptr, 80)) f2[0] &= ~(RF3_BR_ELEC);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF4_BA_ELEC);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF4_BO_ELEC);
+		if (int_outof(r_ptr, 80)) f2[0] &= ~(RSF0_BR_ELEC);
+		if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BA_ELEC);
+		if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BO_ELEC);
 	}
 	else if ((smart & (SM_OPP_ELEC)) || (smart & (SM_RES_ELEC)))
 	{
-		if (int_outof(r_ptr, 30)) f2[0] &= ~(RF3_BR_ELEC);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF4_BA_ELEC);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF4_BO_ELEC);
+		if (int_outof(r_ptr, 30)) f2[0] &= ~(RSF0_BR_ELEC);
+		if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BA_ELEC);
+		if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BO_ELEC);
 	}
 
 
 	if (smart & (SM_IMM_FIRE))
 	{
-		if (int_outof(r_ptr, 100)) f2[0] &= ~(RF3_BR_FIRE);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_BA_FIRE);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_BO_FIRE);
+		if (int_outof(r_ptr, 100)) f2[0] &= ~(RSF0_BR_FIRE);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BA_FIRE);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BO_FIRE);
 	}
 	else if ((smart & (SM_OPP_FIRE)) && (smart & (SM_RES_FIRE)))
 	{
-		if (int_outof(r_ptr, 80)) f2[0] &= ~(RF3_BR_FIRE);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF4_BA_FIRE);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF4_BO_FIRE);
+		if (int_outof(r_ptr, 80)) f2[0] &= ~(RSF0_BR_FIRE);
+		if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BA_FIRE);
+		if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BO_FIRE);
 	}
 	else if ((smart & (SM_OPP_FIRE)) || (smart & (SM_RES_FIRE)))
 	{
-		if (int_outof(r_ptr, 30)) f2[0] &= ~(RF3_BR_FIRE);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF4_BA_FIRE);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF4_BO_FIRE);
+		if (int_outof(r_ptr, 30)) f2[0] &= ~(RSF0_BR_FIRE);
+		if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BA_FIRE);
+		if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BO_FIRE);
 	}
 
 
 	if (smart & (SM_IMM_COLD))
 	{
-		if (int_outof(r_ptr, 100)) f2[0] &= ~(RF3_BR_COLD);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_BA_COLD);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_BO_COLD);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_BO_ICEE);
+		if (int_outof(r_ptr, 100)) f2[0] &= ~(RSF0_BR_COLD);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BA_COLD);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BO_COLD);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BO_ICEE);
 	}
 	else if ((smart & (SM_OPP_COLD)) && (smart & (SM_RES_COLD)))
 	{
-		if (int_outof(r_ptr, 80)) f2[0] &= ~(RF3_BR_COLD);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF4_BA_COLD);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF4_BO_COLD);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF4_BO_ICEE);
+		if (int_outof(r_ptr, 80)) f2[0] &= ~(RSF0_BR_COLD);
+		if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BA_COLD);
+		if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BO_COLD);
+		if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BO_ICEE);
 	}
 	else if ((smart & (SM_OPP_COLD)) || (smart & (SM_RES_COLD)))
 	{
-		if (int_outof(r_ptr, 30)) f2[0] &= ~(RF3_BR_COLD);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF4_BA_COLD);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF4_BO_COLD);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF4_BO_ICEE);
+		if (int_outof(r_ptr, 30)) f2[0] &= ~(RSF0_BR_COLD);
+		if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BA_COLD);
+		if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BO_COLD);
+		if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BO_ICEE);
 	}
 
 
 	if ((smart & (SM_OPP_POIS)) && (smart & (SM_RES_POIS)))
 	{
-		if (int_outof(r_ptr, 80)) f2[0] &= ~(RF3_BR_POIS);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RF4_BA_POIS);
+		if (int_outof(r_ptr, 80)) f2[0] &= ~(RSF0_BR_POIS);
+		if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BA_POIS);
 	}
 	else if ((smart & (SM_OPP_POIS)) || (smart & (SM_RES_POIS)))
 	{
-		if (int_outof(r_ptr, 30)) f2[0] &= ~(RF3_BR_POIS);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RF4_BA_POIS);
+		if (int_outof(r_ptr, 30)) f2[0] &= ~(RSF0_BR_POIS);
+		if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BA_POIS);
 	}
 
 
 	if (smart & (SM_RES_FEAR))
 	{
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_SCARE);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_SCARE);
 	}
 
 	if (smart & (SM_RES_LITE))
 	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF3_BR_LITE);
+		if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_LITE);
 	}
 
 	if (smart & (SM_RES_DARK))
 	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF3_BR_DARK);
-		if (int_outof(r_ptr, 50)) f2[1] &= ~(RF4_BA_DARK);
+		if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_DARK);
+		if (int_outof(r_ptr, 50)) f2[1] &= ~(RSF1_BA_DARK);
 	}
 
 	if (smart & (SM_RES_BLIND))
 	{
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_BLIND);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BLIND);
 	}
 
 	if (smart & (SM_RES_CONFU))
 	{
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_CONF);
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF3_BR_CONF);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_CONF);
+		if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_CONF);
 	}
 
 	if (smart & (SM_RES_SOUND))
 	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF3_BR_SOUN);
+		if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_SOUN);
 	}
 
 	if (smart & (SM_RES_SHARD))
 	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF3_BR_SHAR);
+		if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_SHAR);
 	}
 
 	if (smart & (SM_RES_NEXUS))
 	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF3_BR_NEXU);
-		if (int_outof(r_ptr, 50)) f2[2] &= ~(RF5_TELE_LEVEL);
+		if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_NEXU);
+		if (int_outof(r_ptr, 50)) f2[2] &= ~(RSF2_TELE_LEVEL);
 	}
 
 	if (smart & (SM_RES_NETHR))
 	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF3_BR_NETH);
-		if (int_outof(r_ptr, 50)) f2[1] &= ~(RF4_BA_NETH);
-		if (int_outof(r_ptr, 50)) f2[1] &= ~(RF4_BO_NETH);
+		if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_NETH);
+		if (int_outof(r_ptr, 50)) f2[1] &= ~(RSF1_BA_NETH);
+		if (int_outof(r_ptr, 50)) f2[1] &= ~(RSF1_BO_NETH);
 	}
 
 	if (smart & (SM_RES_CHAOS))
 	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RF3_BR_CHAO);
+		if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_CHAO);
 	}
 
 	if (smart & (SM_RES_DISEN))
 	{
-		if (int_outof(r_ptr, 100)) f2[0] &= ~(RF3_BR_DISE);
+		if (int_outof(r_ptr, 100)) f2[0] &= ~(RSF0_BR_DISE);
 	}
 
 
 	if (smart & (SM_IMM_FREE))
 	{
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_HOLD);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_SLOW);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_HOLD);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_SLOW);
 	}
 
 	if (smart & (SM_IMM_MANA))
 	{
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RF4_DRAIN_MANA);
+		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_DRAIN_MANA);
 	}
 
 
@@ -472,27 +472,27 @@ static int choose_attack_spell(int m_idx, u32b f[RACE_FLAG_SPELL_STRICT_UB])
 	if (adult_ai_smart && !(r_ptr->flags[1] & (RF1_STUPID)))
 	{
 		/* What have we got? */
-		has_escape = ((f[0] & (RF3_ESCAPE_MASK)) ||
-		              (f[1] & (RF4_ESCAPE_MASK)) ||
-		              (f[2] & (RF5_ESCAPE_MASK)));
-		has_attack = ((f[0] & (RF3_ATTACK_MASK)) ||
-		              (f[1] & (RF4_ATTACK_MASK)) ||
-		              (f[2] & (RF5_ATTACK_MASK)));
-		has_summon = ((f[0] & (RF3_SUMMON_MASK)) ||
-		              (f[1] & (RF4_SUMMON_MASK)) ||
-		              (f[2] & (RF5_SUMMON_MASK)));
-		has_tactic = ((f[0] & (RF3_TACTIC_MASK)) ||
-		              (f[1] & (RF4_TACTIC_MASK)) ||
-		              (f[2] & (RF5_TACTIC_MASK)));
-		has_annoy = ((f[0] & (RF3_ANNOY_MASK)) ||
-		             (f[1] & (RF4_ANNOY_MASK)) ||
-		             (f[2] & (RF5_ANNOY_MASK)));
-		has_haste = ((f[0] & (RF3_HASTE_MASK)) ||
-		             (f[1] & (RF4_HASTE_MASK)) ||
-		             (f[2] & (RF5_HASTE_MASK)));
-		has_heal = ((f[0] & (RF3_HEAL_MASK)) ||
-		            (f[1] & (RF4_HEAL_MASK)) ||
-		            (f[2] & (RF5_HEAL_MASK)));
+		has_escape = ((f[0] & (RSF0_ESCAPE_MASK)) ||
+		              (f[1] & (RSF1_ESCAPE_MASK)) ||
+		              (f[2] & (RSF2_ESCAPE_MASK)));
+		has_attack = ((f[0] & (RSF0_ATTACK_MASK)) ||
+		              (f[1] & (RSF1_ATTACK_MASK)) ||
+		              (f[2] & (RSF2_ATTACK_MASK)));
+		has_summon = ((f[0] & (RSF0_SUMMON_MASK)) ||
+		              (f[1] & (RSF1_SUMMON_MASK)) ||
+		              (f[2] & (RSF2_SUMMON_MASK)));
+		has_tactic = ((f[0] & (RSF0_TACTIC_MASK)) ||
+		              (f[1] & (RSF1_TACTIC_MASK)) ||
+		              (f[2] & (RSF2_TACTIC_MASK)));
+		has_annoy = ((f[0] & (RSF0_ANNOY_MASK)) ||
+		             (f[1] & (RSF1_ANNOY_MASK)) ||
+		             (f[2] & (RSF2_ANNOY_MASK)));
+		has_haste = ((f[0] & (RSF0_HASTE_MASK)) ||
+		             (f[1] & (RSF1_HASTE_MASK)) ||
+		             (f[2] & (RSF2_HASTE_MASK)));
+		has_heal = ((f[0] & (RSF0_HEAL_MASK)) ||
+		            (f[1] & (RSF1_HEAL_MASK)) ||
+		            (f[2] & (RSF2_HEAL_MASK)));
 
 		/*** Try to pick an appropriate spell type ***/
 
@@ -500,18 +500,18 @@ static int choose_attack_spell(int m_idx, u32b f[RACE_FLAG_SPELL_STRICT_UB])
 		if (has_escape && ((m_ptr->hp < m_ptr->maxhp / 4) || m_ptr->monfear))
 		{
 			/* Choose escape spell */
-			f3_mask = (RF3_ESCAPE_MASK);
-			f4_mask = (RF4_ESCAPE_MASK);
-			f5_mask = (RF5_ESCAPE_MASK);
+			f3_mask = (RSF0_ESCAPE_MASK);
+			f4_mask = (RSF1_ESCAPE_MASK);
+			f5_mask = (RSF2_ESCAPE_MASK);
 		}
 
 		/* Still hurt badly, couldn't flee, attempt to heal */
 		else if (has_heal && m_ptr->hp < m_ptr->maxhp / 4)
 		{
 			/* Choose heal spell */
-			f3_mask = (RF3_HEAL_MASK);
-			f4_mask = (RF4_HEAL_MASK);
-			f5_mask = (RF5_HEAL_MASK);
+			f3_mask = (RSF0_HEAL_MASK);
+			f4_mask = (RSF1_HEAL_MASK);
+			f5_mask = (RSF2_HEAL_MASK);
 		}
 
 		/* Player is close and we have attack spells, blink away */
@@ -519,9 +519,9 @@ static int choose_attack_spell(int m_idx, u32b f[RACE_FLAG_SPELL_STRICT_UB])
 		         has_attack && (rand_int(100) < 75))
 		{
 			/* Choose tactical spell */
-			f3_mask = (RF3_TACTIC_MASK);
-			f4_mask = (RF4_TACTIC_MASK);
-			f5_mask = (RF5_TACTIC_MASK);
+			f3_mask = (RSF0_TACTIC_MASK);
+			f4_mask = (RSF1_TACTIC_MASK);
+			f5_mask = (RSF2_TACTIC_MASK);
 		}
 
 		/* We're hurt (not badly), try to heal */
@@ -529,54 +529,54 @@ static int choose_attack_spell(int m_idx, u32b f[RACE_FLAG_SPELL_STRICT_UB])
 		         (rand_int(100) < 60))
 		{
 			/* Choose heal spell */
-			f3_mask = (RF3_HEAL_MASK);
-			f4_mask = (RF4_HEAL_MASK);
-			f5_mask = (RF5_HEAL_MASK);
+			f3_mask = (RSF0_HEAL_MASK);
+			f4_mask = (RSF1_HEAL_MASK);
+			f5_mask = (RSF2_HEAL_MASK);
 		}
 
 		/* Summon if possible (sometimes) */
 		else if (has_summon && (rand_int(100) < 50))
 		{
 			/* Choose summon spell */
-			f3_mask = (RF3_SUMMON_MASK);
-			f4_mask = (RF4_SUMMON_MASK);
-			f5_mask = (RF5_SUMMON_MASK);
+			f3_mask = (RSF0_SUMMON_MASK);
+			f4_mask = (RSF1_SUMMON_MASK);
+			f5_mask = (RSF2_SUMMON_MASK);
 		}
 
 		/* Attack spell (most of the time) */
 		else if (has_attack && (rand_int(100) < 85))
 		{
 			/* Choose attack spell */
-			f3_mask = (RF3_ATTACK_MASK);
-			f4_mask = (RF4_ATTACK_MASK);
-			f5_mask = (RF5_ATTACK_MASK);
+			f3_mask = (RSF0_ATTACK_MASK);
+			f4_mask = (RSF1_ATTACK_MASK);
+			f5_mask = (RSF2_ATTACK_MASK);
 		}
 
 		/* Try another tactical spell (sometimes) */
 		else if (has_tactic && (rand_int(100) < 50))
 		{
 			/* Choose tactic spell */
-			f3_mask = (RF3_TACTIC_MASK);
-			f4_mask = (RF4_TACTIC_MASK);
-			f5_mask = (RF5_TACTIC_MASK);
+			f3_mask = (RSF0_TACTIC_MASK);
+			f4_mask = (RSF1_TACTIC_MASK);
+			f5_mask = (RSF2_TACTIC_MASK);
 		}
 
 		/* Haste self if we aren't already somewhat hasted (rarely) */
 		else if (has_haste && (rand_int(100) < (20 + r_ptr->speed - m_ptr->mspeed)))
 		{
 			/* Choose haste spell */
-			f3_mask = (RF3_HASTE_MASK);
-			f4_mask = (RF4_HASTE_MASK);
-			f5_mask = (RF5_HASTE_MASK);
+			f3_mask = (RSF0_HASTE_MASK);
+			f4_mask = (RSF1_HASTE_MASK);
+			f5_mask = (RSF2_HASTE_MASK);
 		}
 
 		/* Annoy player (most of the time) */
 		else if (has_annoy && (rand_int(100) < 85))
 		{
 			/* Choose annoyance spell */
-			f3_mask = (RF3_ANNOY_MASK);
-			f4_mask = (RF4_ANNOY_MASK);
-			f5_mask = (RF5_ANNOY_MASK);
+			f3_mask = (RSF0_ANNOY_MASK);
+			f4_mask = (RSF1_ANNOY_MASK);
+			f5_mask = (RSF2_ANNOY_MASK);
 		}
 
 		/* Else choose no spell (The masks default to this.) */
@@ -593,7 +593,7 @@ static int choose_attack_spell(int m_idx, u32b f[RACE_FLAG_SPELL_STRICT_UB])
 	/* Extract all spells: "innate", "normal", "bizarre" */
 	for (i = 0; i < 32*RACE_FLAG_SPELL_STRICT_UB; i++)
 	{
-		if (TEST_FLAG(f, i)) spells[num++] = i + 32*RACE_FLAG_SPELL_START;
+		if (TEST_FLAG(f, i)) spells[num++] = i + 32*RACE_FLAG_STRICT_UB;
 	}
 
 	/* Paranoia */
@@ -720,7 +720,7 @@ bool make_attack_spell(int m_idx)
 
 
 	/* Extract the racial spell flags */
-	race_flags_assign_spell(f, r_ptr->flags+RACE_FLAG_SPELL_START);
+	race_flags_assign_spell(f, r_ptr->spell_flags);
 
 
 	/* Hack -- allow "desperate" spells */
@@ -729,9 +729,9 @@ bool make_attack_spell(int m_idx)
 	    (rand_int(100) < 50))
 	{
 		/* Require intelligent spells */
-		f[0] &= (RF3_INT_MASK);
-		f[1] &= (RF4_INT_MASK);
-		f[2] &= (RF5_INT_MASK);
+		f[0] &= (RSF0_INT_MASK);
+		f[1] &= (RSF1_INT_MASK);
+		f[2] &= (RSF2_INT_MASK);
 
 		/* No spells left */
 		if (!f[0] && !f[1] && !f[2]) return (FALSE);
@@ -748,24 +748,24 @@ bool make_attack_spell(int m_idx)
 	if (adult_ai_smart && !(r_ptr->flags[1] & (RF1_STUPID)))
 	{
 		/* Check for a clean bolt shot */
-		if ((f[0] & (RF3_BOLT_MASK) ||
-			 f[1] & (RF4_BOLT_MASK) ||
-			 f[2] & (RF5_BOLT_MASK)) &&
+		if ((f[0] & (RSF0_BOLT_MASK) ||
+			 f[1] & (RSF1_BOLT_MASK) ||
+			 f[2] & (RSF2_BOLT_MASK)) &&
 			!clean_shot(m_ptr->fy, m_ptr->fx, py, px))
 		{
 			/* Remove spells that will only hurt friends */
-			f[0] &= ~(RF3_BOLT_MASK);
-			f[1] &= ~(RF4_BOLT_MASK);
-			f[2] &= ~(RF5_BOLT_MASK);
+			f[0] &= ~(RSF0_BOLT_MASK);
+			f[1] &= ~(RSF1_BOLT_MASK);
+			f[2] &= ~(RSF2_BOLT_MASK);
 		}
 
 		/* Check for a possible summon */
 		if (!(summon_possible(m_ptr->fy, m_ptr->fx)))
 		{
 			/* Remove summoning spells */
-			f[0] &= ~(RF3_SUMMON_MASK);
-			f[1] &= ~(RF4_SUMMON_MASK);
-			f[2] &= ~(RF5_SUMMON_MASK);
+			f[0] &= ~(RSF0_SUMMON_MASK);
+			f[1] &= ~(RSF1_SUMMON_MASK);
+			f[2] &= ~(RSF2_SUMMON_MASK);
 		}
 
 		/* No spells left */
@@ -810,7 +810,7 @@ bool make_attack_spell(int m_idx)
 	/* Cast the spell. */
 	switch (thrown_spell)
 	{
-		/* RF3_SHRIEK */
+		/* RSF0_SHRIEK */
 		case RF3_OFFSET+0:
 		{
 			if (!direct) break;
@@ -821,25 +821,25 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_XXX2X4 */
+		/* RSF0_XXX2X4 */
 		case RF3_OFFSET+1:
 		{
 			break;
 		}
 
-		/* RF3_XXX3X4 */
+		/* RSF0_XXX3X4 */
 		case RF3_OFFSET+2:
 		{
 			break;
 		}
 
-		/* RF3_XXX4X4 */
+		/* RSF0_XXX4X4 */
 		case RF3_OFFSET+3:
 		{
 			break;
 		}
 
-		/* RF3_ARROW_1 */
+		/* RSF0_ARROW_1 */
 		case RF3_OFFSET+4:
 		{
 			disturb(1, 0);
@@ -849,7 +849,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_ARROW_2 */
+		/* RSF0_ARROW_2 */
 		case RF3_OFFSET+5:
 		{
 			disturb(1, 0);
@@ -859,7 +859,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_ARROW_3 */
+		/* RSF0_ARROW_3 */
 		case RF3_OFFSET+6:
 		{
 			disturb(1, 0);
@@ -869,7 +869,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_ARROW_4 */
+		/* RSF0_ARROW_4 */
 		case RF3_OFFSET+7:
 		{
 			disturb(1, 0);
@@ -879,7 +879,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_BR_ACID */
+		/* RSF0_BR_ACID */
 		case RF3_OFFSET+8:
 		{
 			disturb(1, 0);
@@ -892,7 +892,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_BR_ELEC */
+		/* RSF0_BR_ELEC */
 		case RF3_OFFSET+9:
 		{
 			disturb(1, 0);
@@ -905,7 +905,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_BR_FIRE */
+		/* RSF0_BR_FIRE */
 		case RF3_OFFSET+10:
 		{
 			disturb(1, 0);
@@ -918,7 +918,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_BR_COLD */
+		/* RSF0_BR_COLD */
 		case RF3_OFFSET+11:
 		{
 			disturb(1, 0);
@@ -931,7 +931,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_BR_POIS */
+		/* RSF0_BR_POIS */
 		case RF3_OFFSET+12:
 		{
 			disturb(1, 0);
@@ -944,7 +944,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_BR_NETH */
+		/* RSF0_BR_NETH */
 		case RF3_OFFSET+13:
 		{
 			disturb(1, 0);
@@ -957,7 +957,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_BR_LITE */
+		/* RSF0_BR_LITE */
 		case RF3_OFFSET+14:
 		{
 			disturb(1, 0);
@@ -970,7 +970,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_BR_DARK */
+		/* RSF0_BR_DARK */
 		case RF3_OFFSET+15:
 		{
 			disturb(1, 0);
@@ -983,7 +983,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_BR_CONF */
+		/* RSF0_BR_CONF */
 		case RF3_OFFSET+16:
 		{
 			disturb(1, 0);
@@ -996,7 +996,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_BR_SOUN */
+		/* RSF0_BR_SOUN */
 		case RF3_OFFSET+17:
 		{
 			disturb(1, 0);
@@ -1009,7 +1009,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_BR_CHAO */
+		/* RSF0_BR_CHAO */
 		case RF3_OFFSET+18:
 		{
 			disturb(1, 0);
@@ -1022,7 +1022,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_BR_DISE */
+		/* RSF0_BR_DISE */
 		case RF3_OFFSET+19:
 		{
 			disturb(1, 0);
@@ -1035,7 +1035,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_BR_NEXU */
+		/* RSF0_BR_NEXU */
 		case RF3_OFFSET+20:
 		{
 			disturb(1, 0);
@@ -1048,7 +1048,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_BR_TIME */
+		/* RSF0_BR_TIME */
 		case RF3_OFFSET+21:
 		{
 			disturb(1, 0);
@@ -1060,7 +1060,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_BR_INER */
+		/* RSF0_BR_INER */
 		case RF3_OFFSET+22:
 		{
 			disturb(1, 0);
@@ -1072,7 +1072,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_BR_GRAV */
+		/* RSF0_BR_GRAV */
 		case RF3_OFFSET+23:
 		{
 			disturb(1, 0);
@@ -1084,7 +1084,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_BR_SHAR */
+		/* RSF0_BR_SHAR */
 		case RF3_OFFSET+24:
 		{
 			disturb(1, 0);
@@ -1097,7 +1097,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_BR_PLAS */
+		/* RSF0_BR_PLAS */
 		case RF3_OFFSET+25:
 		{
 			disturb(1, 0);
@@ -1109,7 +1109,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_BR_WALL */
+		/* RSF0_BR_WALL */
 		case RF3_OFFSET+26:
 		{
 			disturb(1, 0);
@@ -1121,32 +1121,32 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF3_BR_MANA */
+		/* RSF0_BR_MANA */
 		case RF3_OFFSET+27:
 		{
 			/* XXX XXX XXX */
 			break;
 		}
 
-		/* RF3_XXX5X4 */
+		/* RSF0_XXX5X4 */
 		case RF3_OFFSET+28:
 		{
 			break;
 		}
 
-		/* RF3_XXX6X4 */
+		/* RSF0_XXX6X4 */
 		case RF3_OFFSET+29:
 		{
 			break;
 		}
 
-		/* RF3_XXX7X4 */
+		/* RSF0_XXX7X4 */
 		case RF3_OFFSET+30:
 		{
 			break;
 		}
 
-		/* RF3_BOULDER */
+		/* RSF0_BOULDER */
 		case RF3_OFFSET+31:
 		{
 			disturb(1, 0);
@@ -1157,7 +1157,7 @@ bool make_attack_spell(int m_idx)
 		}
 
 
-		/* RF4_BA_ACID */
+		/* RSF1_BA_ACID */
 		case RF4_OFFSET+0:
 		{
 			disturb(1, 0);
@@ -1169,7 +1169,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BA_ELEC */
+		/* RSF1_BA_ELEC */
 		case RF4_OFFSET+1:
 		{
 			disturb(1, 0);
@@ -1181,7 +1181,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BA_FIRE */
+		/* RSF1_BA_FIRE */
 		case RF4_OFFSET+2:
 		{
 			disturb(1, 0);
@@ -1193,7 +1193,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BA_COLD */
+		/* RSF1_BA_COLD */
 		case RF4_OFFSET+3:
 		{
 			disturb(1, 0);
@@ -1205,7 +1205,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BA_POIS */
+		/* RSF1_BA_POIS */
 		case RF4_OFFSET+4:
 		{
 			disturb(1, 0);
@@ -1217,7 +1217,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BA_NETH */
+		/* RSF1_BA_NETH */
 		case RF4_OFFSET+5:
 		{
 			disturb(1, 0);
@@ -1229,7 +1229,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BA_WATE */
+		/* RSF1_BA_WATE */
 		case RF4_OFFSET+6:
 		{
 			disturb(1, 0);
@@ -1241,7 +1241,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BA_MANA */
+		/* RSF1_BA_MANA */
 		case RF4_OFFSET+7:
 		{
 			disturb(1, 0);
@@ -1252,7 +1252,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BA_DARK */
+		/* RSF1_BA_DARK */
 		case RF4_OFFSET+8:
 		{
 			disturb(1, 0);
@@ -1264,7 +1264,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_DRAIN_MANA */
+		/* RSF1_DRAIN_MANA */
 		case RF4_OFFSET+9:
 		{
 			if (!direct) break;
@@ -1319,7 +1319,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_MIND_BLAST */
+		/* RSF1_MIND_BLAST */
 		case RF4_OFFSET+10:
 		{
 			if (!direct) break;
@@ -1349,7 +1349,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BRAIN_SMASH */
+		/* RSF1_BRAIN_SMASH */
 		case RF4_OFFSET+11:
 		{
 			if (!direct) break;
@@ -1387,7 +1387,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_CAUSE_1 */
+		/* RSF1_CAUSE_1 */
 		case RF4_OFFSET+12:
 		{
 			if (!direct) break;
@@ -1405,7 +1405,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_CAUSE_2 */
+		/* RSF1_CAUSE_2 */
 		case RF4_OFFSET+13:
 		{
 			if (!direct) break;
@@ -1423,7 +1423,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_CAUSE_3 */
+		/* RSF1_CAUSE_3 */
 		case RF4_OFFSET+14:
 		{
 			if (!direct) break;
@@ -1441,7 +1441,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_CAUSE_4 */
+		/* RSF1_CAUSE_4 */
 		case RF4_OFFSET+15:
 		{
 			if (!direct) break;
@@ -1460,7 +1460,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BO_ACID */
+		/* RSF1_BO_ACID */
 		case RF4_OFFSET+16:
 		{
 			disturb(1, 0);
@@ -1472,7 +1472,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BO_ELEC */
+		/* RSF1_BO_ELEC */
 		case RF4_OFFSET+17:
 		{
 			disturb(1, 0);
@@ -1484,7 +1484,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BO_FIRE */
+		/* RSF1_BO_FIRE */
 		case RF4_OFFSET+18:
 		{
 			disturb(1, 0);
@@ -1496,7 +1496,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BO_COLD */
+		/* RSF1_BO_COLD */
 		case RF4_OFFSET+19:
 		{
 			disturb(1, 0);
@@ -1508,14 +1508,14 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BO_POIS */
+		/* RSF1_BO_POIS */
 		case RF4_OFFSET+20:
 		{
 			/* XXX XXX XXX */
 			break;
 		}
 
-		/* RF4_BO_NETH */
+		/* RSF1_BO_NETH */
 		case RF4_OFFSET+21:
 		{
 			disturb(1, 0);
@@ -1527,7 +1527,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BO_WATE */
+		/* RSF1_BO_WATE */
 		case RF4_OFFSET+22:
 		{
 			disturb(1, 0);
@@ -1538,7 +1538,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BO_MANA */
+		/* RSF1_BO_MANA */
 		case RF4_OFFSET+23:
 		{
 			disturb(1, 0);
@@ -1549,7 +1549,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BO_PLAS */
+		/* RSF1_BO_PLAS */
 		case RF4_OFFSET+24:
 		{
 			disturb(1, 0);
@@ -1560,7 +1560,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BO_ICEE */
+		/* RSF1_BO_ICEE */
 		case RF4_OFFSET+25:
 		{
 			disturb(1, 0);
@@ -1572,7 +1572,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_MISSILE */
+		/* RSF1_MISSILE */
 		case RF4_OFFSET+26:
 		{
 			disturb(1, 0);
@@ -1583,7 +1583,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_SCARE */
+		/* RSF1_SCARE */
 		case RF4_OFFSET+27:
 		{
 			if (!direct) break;
@@ -1607,7 +1607,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_BLIND */
+		/* RSF1_BLIND */
 		case RF4_OFFSET+28:
 		{
 			if (!direct) break;
@@ -1630,7 +1630,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_CONF */
+		/* RSF1_CONF */
 		case RF4_OFFSET+29:
 		{
 			if (!direct) break;
@@ -1653,7 +1653,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_SLOW */
+		/* RSF1_SLOW */
 		case RF4_OFFSET+30:
 		{
 			if (!direct) break;
@@ -1675,7 +1675,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF4_HOLD */
+		/* RSF1_HOLD */
 		case RF4_OFFSET+31:
 		{
 			if (!direct) break;
@@ -1700,7 +1700,7 @@ bool make_attack_spell(int m_idx)
 
 
 
-		/* RF5_HASTE */
+		/* RSF2_HASTE */
 		case RF5_OFFSET+0:
 		{
 			disturb(1, 0);
@@ -1730,13 +1730,13 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_XXX1X6 */
+		/* RSF2_XXX1X6 */
 		case RF5_OFFSET+1:
 		{
 			break;
 		}
 
-		/* RF5_HEAL */
+		/* RSF2_HEAL */
 		case RF5_OFFSET+2:
 		{
 			disturb(1, 0);
@@ -1801,13 +1801,13 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_XXX2X6 */
+		/* RSF2_XXX2X6 */
 		case RF5_OFFSET+3:
 		{
 			break;
 		}
 
-		/* RF5_BLINK */
+		/* RSF2_BLINK */
 		case RF5_OFFSET+4:
 		{
 			disturb(1, 0);
@@ -1816,7 +1816,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_TPORT */
+		/* RSF2_TPORT */
 		case RF5_OFFSET+5:
 		{
 			disturb(1, 0);
@@ -1825,19 +1825,19 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_XXX3X6 */
+		/* RSF2_XXX3X6 */
 		case RF5_OFFSET+6:
 		{
 			break;
 		}
 
-		/* RF5_XXX4X6 */
+		/* RSF2_XXX4X6 */
 		case RF5_OFFSET+7:
 		{
 			break;
 		}
 
-		/* RF5_TELE_TO */
+		/* RSF2_TELE_TO */
 		case RF5_OFFSET+8:
 		{
 			if (!direct) break;
@@ -1847,7 +1847,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_TELE_AWAY */
+		/* RSF2_TELE_AWAY */
 		case RF5_OFFSET+9:
 		{
 			if (!direct) break;
@@ -1857,7 +1857,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_TELE_LEVEL */
+		/* RSF2_TELE_LEVEL */
 		case RF5_OFFSET+10:
 		{
 			if (!direct) break;
@@ -1880,13 +1880,13 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_XXX5 */
+		/* RSF2_XXX5 */
 		case RF5_OFFSET+11:
 		{
 			break;
 		}
 
-		/* RF5_DARKNESS */
+		/* RSF2_DARKNESS */
 		case RF5_OFFSET+12:
 		{
 			if (!direct) break;
@@ -1897,7 +1897,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_TRAPS */
+		/* RSF2_TRAPS */
 		case RF5_OFFSET+13:
 		{
 			if (!direct) break;
@@ -1909,7 +1909,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_FORGET */
+		/* RSF2_FORGET */
 		case RF5_OFFSET+14:
 		{
 			if (!direct) break;
@@ -1924,13 +1924,13 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_ANIMAL */
+		/* RSF2_ANIMAL */
 		case RF5_OFFSET+15:
 		{
 			break;
 		}
 
-		/* RF5_S_KIN */
+		/* RSF2_S_KIN */
 		case RF5_OFFSET+16:
 		{
 			disturb(1, 0);
@@ -1953,7 +1953,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_HI_DEMON */
+		/* RSF2_HI_DEMON */
 		case RF5_OFFSET+17:
 		{
 			disturb(1, 0);
@@ -1971,7 +1971,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_S_MONSTER */
+		/* RSF2_S_MONSTER */
 		case RF5_OFFSET+18:
 		{
 			disturb(1, 0);
@@ -1989,7 +1989,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_S_MONSTERS */
+		/* RSF2_S_MONSTERS */
 		case RF5_OFFSET+19:
 		{
 			disturb(1, 0);
@@ -2007,7 +2007,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_S_ANIMAL */
+		/* RSF2_S_ANIMAL */
 		case RF5_OFFSET+20:
 		{
 			disturb(1, 0);
@@ -2025,7 +2025,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_S_SPIDER */
+		/* RSF2_S_SPIDER */
 		case RF5_OFFSET+21:
 		{
 			disturb(1, 0);
@@ -2043,7 +2043,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_S_HOUND */
+		/* RSF2_S_HOUND */
 		case RF5_OFFSET+22:
 		{
 			disturb(1, 0);
@@ -2061,7 +2061,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_S_HYDRA */
+		/* RSF2_S_HYDRA */
 		case RF5_OFFSET+23:
 		{
 			disturb(1, 0);
@@ -2079,7 +2079,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_S_ANGEL */
+		/* RSF2_S_ANGEL */
 		case RF5_OFFSET+24:
 		{
 			disturb(1, 0);
@@ -2097,7 +2097,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_S_DEMON */
+		/* RSF2_S_DEMON */
 		case RF5_OFFSET+25:
 		{
 			disturb(1, 0);
@@ -2115,7 +2115,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_S_UNDEAD */
+		/* RSF2_S_UNDEAD */
 		case RF5_OFFSET+26:
 		{
 			disturb(1, 0);
@@ -2133,7 +2133,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_S_DRAGON */
+		/* RSF2_S_DRAGON */
 		case RF5_OFFSET+27:
 		{
 			disturb(1, 0);
@@ -2151,7 +2151,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_S_HI_UNDEAD */
+		/* RSF2_S_HI_UNDEAD */
 		case RF5_OFFSET+28:
 		{
 			disturb(1, 0);
@@ -2169,7 +2169,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_S_HI_DRAGON */
+		/* RSF2_S_HI_DRAGON */
 		case RF5_OFFSET+29:
 		{
 			disturb(1, 0);
@@ -2187,7 +2187,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_S_WRAITH */
+		/* RSF2_S_WRAITH */
 		case RF5_OFFSET+30:
 		{
 			disturb(1, 0);
@@ -2209,7 +2209,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RF5_S_UNIQUE */
+		/* RSF2_S_UNIQUE */
 		case RF5_OFFSET+31:
 		{
 			disturb(1, 0);
@@ -2236,16 +2236,16 @@ bool make_attack_spell(int m_idx)
 	/* Remember what the monster did to us */
 	if (seen)
 	{
-		SET_FLAG(l_ptr->flags, thrown_spell);
+		SET_FLAG(l_ptr->spell_flags, thrown_spell-32*RACE_FLAG_STRICT_UB);
 
 		/* Innate spell */
-		if (thrown_spell < 32*(RACE_FLAG_SPELL_START + 1))
+		if (thrown_spell < 32*(RACE_FLAG_STRICT_UB + 1))
 		{
 			if (l_ptr->cast_innate < MAX_UCHAR) l_ptr->cast_innate++;
 		}
 
 		/* Bolt or Ball, or Special spell */
-		else if (thrown_spell < 32*RACE_FLAG_STRICT_UB)
+		else if (thrown_spell < 32*(RACE_FLAG_STRICT_UB+RACE_FLAG_SPELL_STRICT_UB))
 		{
 			if (l_ptr->cast_spell < MAX_UCHAR) l_ptr->cast_spell++;
 		}
