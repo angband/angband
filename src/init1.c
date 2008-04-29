@@ -2971,7 +2971,7 @@ errr parse_b_info(char *buf, header *head)
 		if (!ot_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Scan for the values */
-		if (3 != sscanf(buf+2, "%d:%d",
+		if (2 != sscanf(buf+2, "%d:%d",
 			            &idx, &gld)) return (PARSE_ERROR_GENERIC);
 
 		/* Save the values */
