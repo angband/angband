@@ -575,10 +575,7 @@ struct quest
 struct owner_type
 {
 	u32b owner_name;	/* Name (offset) */
-
 	s32b max_cost;		/* Purse limit */
-
-	byte owner_race;	/* Owner race */
 };
 
 

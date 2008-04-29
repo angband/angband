@@ -2965,18 +2965,16 @@ errr parse_b_info(char *buf, header *head)
 	/* Process 'I' for "Info" (one line only) */
 	else if (buf[0] == 'I')
 	{
-		int idx, gld, inflate;
+		int purse;
 
 		/* There better be a current ot_ptr */
 		if (!ot_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Scan for the values */
-		if (2 != sscanf(buf+2, "%d:%d",
-			            &idx, &gld)) return (PARSE_ERROR_GENERIC);
+		if (1 != sscanf(buf+2, "%d", &purse)) return (PARSE_ERROR_GENERIC);
 
 		/* Save the values */
-		ot_ptr->owner_race = idx;
-		ot_ptr->max_cost = gld;
+		ot_ptr->max_cost = purse;
 	}
 	else
 	{

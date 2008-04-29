@@ -1695,13 +1695,11 @@ static void store_display_frame(void)
 	/* Normal stores */
 	else
 	{
-		cptr store_name = (f_name + f_info[FEAT_SHOP_HEAD + store_current].name);
-		cptr owner_name = &(b_name[ot_ptr->owner_name]);
-		cptr race_name = p_name + p_info[ot_ptr->owner_race].name;
+		const char *store_name = (f_name + f_info[FEAT_SHOP_HEAD + store_current].name);
+		const char *owner_name = &b_name[ot_ptr->owner_name];
 
-		/* Put the owner name and race */
-		strnfmt(buf, sizeof(buf), "%s (%s)", owner_name, race_name);
-		put_str(buf, scr_places_y[LOC_OWNER], 1);
+		/* Put the owner name */
+		put_str(owner_name, scr_places_y[LOC_OWNER], 1);
 
 		/* Show the max price in the store (above prices) */
 		strnfmt(buf, sizeof(buf), "%s (%ld)", store_name, (long)(ot_ptr->max_cost));
