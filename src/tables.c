@@ -1035,10 +1035,11 @@ const int adj_con_mhp[] =
  *
  *    Warrior --> num = 6; mul = 5; div = MAX(30, weapon_weight);
  *    Mage    --> num = 4; mul = 2; div = MAX(40, weapon_weight);
- *    Priest  --> num = 5; mul = 3; div = MAX(35, weapon_weight);
- *    Rogue   --> num = 5; mul = 3; div = MAX(30, weapon_weight);
+ *    Priest  --> num = 4; mul = 3; div = MAX(35, weapon_weight);
+ *    Rogue   --> num = 5; mul = 4; div = MAX(30, weapon_weight);
  *    Ranger  --> num = 5; mul = 4; div = MAX(35, weapon_weight);
- *    Paladin --> num = 5; mul = 4; div = MAX(30, weapon_weight);
+ *    Paladin --> num = 5; mul = 5; div = MAX(30, weapon_weight);
+ * (all specified in p_class.txt now)
  *
  * To get "P", we look up the relevant "adj_str_blow[]" (see above),
  * multiply it by "mul", and then divide it by "div", rounding down.
