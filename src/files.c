@@ -1129,15 +1129,17 @@ static void display_player_equippy(int y, int x)
 }
 
 /*
- * 'Database' of resistances and abilities to display
+ * List of resistances and abilities to display
  */
 #define RES_ROWS 8
-struct player_flag_record {
+struct player_flag_record
+{
 	const char name[7];		/* Name of resistance/ability */
 	byte set;				/* Which field this resistance is in { 1 2 3 } */
 	u32b res_flag;			/* resistance flag bit */
 	u32b im_flag;			/* corresponding immunity bit, if any. */
 };
+
 static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 {
 	{ " Acid",	2, TR2_RES_ACID,	TR2_IM_ACID },
@@ -1783,7 +1785,7 @@ errr file_character(cptr name, bool full)
 		strnfmt(out_val, sizeof(out_val), "Replace existing file %s? ", buf);
 
 		/* Ask */
-		if (get_check(out_val))
+		if (!get_check(out_val))
 			return -1;
 	}
 
