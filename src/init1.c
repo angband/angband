@@ -2901,80 +2901,50 @@ errr parse_h_info(char *buf, header *head)
  */
 errr parse_b_info(char *buf, header *head)
 {
-	int i, j;
-
-	char *s, *t;
-
-	/* Current entry */
-	static owner_type *ot_ptr = NULL;
-
+	static int shop_idx = 0;
+	static int owner_idx = 0;
 
 	/* Process 'N' for "New/Number/Name" */
 	if (buf[0] == 'N')
 	{
-		/* Find the colon before the subindex */
-		s = strchr(buf+2, ':');
-
-		/* Verify that colon */
-		if (!s) return (PARSE_ERROR_GENERIC);
-
-		/* Nuke the colon, advance to the subindex */
-		*s++ = '\0';
+		/* Confirm the colon */
+		if (buf[1] != ':') return PARSE_ERROR_GENERIC;
 
 		/* Get the index */
-		i = atoi(buf+2);
+		shop_idx = atoi(buf+2);
+		owner_idx = 0;
 
-		/* Find the colon before the name */
-		t = strchr(s, ':');
-
-		/* Verify that colon */
-		if (!t) return (PARSE_ERROR_GENERIC);
-
-		/* Nuke the colon, advance to the name */
-		*t++ = '\0';
-
-		/* Paranoia -- require a name */
-		if (!*t) return (PARSE_ERROR_GENERIC);
-
-		/* Get the subindex */
-		j = atoi(s);
-
-		/* Verify information */
-		if (j >= z_info->b_max) return (PARSE_ERROR_TOO_MANY_ENTRIES);
-
-		/* Get the *real* index */
-		i = (i * z_info->b_max) + j;
-
-		/* Verify information */
-		if (i <= error_idx) return (PARSE_ERROR_NON_SEQUENTIAL_RECORDS);
-
-		/* Verify information */
-		if (i >= head->info_num) return (PARSE_ERROR_TOO_MANY_ENTRIES);
-
-		/* Save the index */
-		error_idx = i;
-
-		/* Point at the "info" */
-		ot_ptr = (owner_type*)head->info_ptr + i;
-
-		/* Store the name */
-		if ((ot_ptr->owner_name = add_name(head, t)) == 0)
-			return (PARSE_ERROR_OUT_OF_MEMORY);
+		return 0;
 	}
 
-	/* Process 'I' for "Info" (one line only) */
-	else if (buf[0] == 'I')
+	/* Process 'S' for "Owner" */
+	else if (buf[0] == 'S')
 	{
+		owner_type *ot_ptr;
+		char *s;
 		int purse;
 
-		/* There better be a current ot_ptr */
-		if (!ot_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
+		if (owner_idx >= z_info->b_max)
+			return PARSE_ERROR_TOO_MANY_ENTRIES;
+		if ((shop_idx * z_info->b_max) + owner_idx >= head->info_num)
+			return PARSE_ERROR_TOO_MANY_ENTRIES;
 
-		/* Scan for the values */
-		if (1 != sscanf(buf+2, "%d", &purse)) return (PARSE_ERROR_GENERIC);
+		ot_ptr = (owner_type *)head->info_ptr + (shop_idx * z_info->b_max) + owner_idx;
+		if (!ot_ptr) return PARSE_ERROR_GENERIC;
 
-		/* Save the values */
+		/* Extract the purse */
+		if (1 != sscanf(buf+2, "%d", &purse)) return PARSE_ERROR_GENERIC;
 		ot_ptr->max_cost = purse;
+
+		s = strchr(buf+2, ':');
+		if (!s || s[1] == 0) return PARSE_ERROR_GENERIC;
+
+		ot_ptr->owner_name = add_name(head, s+1);
+		if (!ot_ptr->owner_name)
+			return PARSE_ERROR_OUT_OF_MEMORY;
+
+		owner_idx++;
+		return 0;
 	}
 	else
 	{
