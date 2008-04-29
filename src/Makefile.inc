@@ -157,7 +157,8 @@ squelch.o: squelch.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   ui-menu.h
 store.o: store.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
-  option.h types.h ui.h z-type.h object.h externs.h cmds.h ui-menu.h
+  option.h types.h ui.h z-type.h object.h externs.h cmds.h ui-menu.h \
+  game-event.h
 tables.o: tables.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
   defines.h option.h types.h ui.h z-type.h object.h externs.h
