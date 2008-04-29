@@ -578,8 +578,6 @@ struct owner_type
 
 	s32b max_cost;		/* Purse limit */
 
-	byte inflate;		/* Inflation */
-
 	byte owner_race;	/* Owner race */
 };
 

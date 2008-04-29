@@ -2971,13 +2971,12 @@ errr parse_b_info(char *buf, header *head)
 		if (!ot_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Scan for the values */
-		if (3 != sscanf(buf+2, "%d:%d:%d",
-			            &idx, &gld, &inflate)) return (PARSE_ERROR_GENERIC);
+		if (3 != sscanf(buf+2, "%d:%d",
+			            &idx, &gld)) return (PARSE_ERROR_GENERIC);
 
 		/* Save the values */
 		ot_ptr->owner_race = idx;
 		ot_ptr->max_cost = gld;
-		ot_ptr->inflate = inflate;
 	}
 	else
 	{
@@ -2990,75 +2989,6 @@ errr parse_b_info(char *buf, header *head)
 }
 
 
-
-
-/*
- * Initialize the "g_info" array, by parsing an ascii "template" file
- */
-errr parse_g_info(char *buf, header *head)
-{
-	int i, j;
-
-	char *s;
-
-	/* Current entry */
-	static byte *g_ptr;
-
-
-	/* Process 'A' for "Adjustments" */
-	if (buf[0] == 'A')
-	{
-		int adj;
-
-		/* Start the string */
-		s = buf+1;
-
-		/* Initialize the counter to max races */
-		j = z_info->p_max;
-
-		/* Repeat */
-		while (j-- > 0)
-		{
-			/* Hack - get the index */
-			i = error_idx + 1;
-
-			/* Verify information */
-			if (i <= error_idx) return (PARSE_ERROR_NON_SEQUENTIAL_RECORDS);
-
-			/* Verify information */
-			if (i >= head->info_num) return (PARSE_ERROR_TOO_MANY_ENTRIES);
-
-			/* Save the index */
-			error_idx = i;
-
-			/* Point at the "info" */
-			g_ptr = (byte*)head->info_ptr + i;
-
-			/* Find the colon before the subindex */
-			s = strchr(s, ':');
-
-			/* Verify that colon */
-			if (!s) return (PARSE_ERROR_GENERIC);
-
-			/* Nuke the colon, advance to the subindex */
-			*s++ = '\0';
-
-			/* Get the value */
-			adj = atoi(s);
-
-			/* Save the value */
-			*g_ptr = adj;
-		}
-	}
-	else
-	{
-		/* Oops */
-		return (PARSE_ERROR_UNDEFINED_DIRECTIVE);
-	}
-
-	/* Success */
-	return (0);
-}
 
 
 /*

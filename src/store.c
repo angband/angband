@@ -392,32 +392,20 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
  *  store_buying == TRUE  means the shop is buying, player selling
  *               == FALSE means the shop is selling, player buying
  *
- * This function takes into account the player's charisma, and the
- * shop-keepers friendliness, and the shop-keeper's base greed, but
+ * This function takes into account the player's charisma, but
  * never lets a shop-keeper lose money in a transaction.
  *
  * The "greed" value should exceed 100 when the player is "buying" the
  * object, and should be less than 100 when the player is "selling" it.
  *
  * Hack -- the black market always charges twice as much as it should.
- *
- * Charisma adjustment runs from 80 to 130
- * Racial adjustment runs from 95 to 130
- *
- * Since greed/charisma/racial adjustments are centered at 100, we need
- * to adjust (by 200) to extract a usable multiplier.  Note that the
- * "greed" value is always something (?).
  */
 s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 {
-	int factor;
 	int adjust;
 	s32b price;
 
 	owner_type *ot_ptr = store_owner(store_current);
-
-	/* The greed value is always of the current store's owner */
-	int greed = ot_ptr->inflate;
 
 
 	/* Get the value of the stack of wands, or a single item */
@@ -430,20 +418,18 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 	if (price <= 0) return (0L);
 
 
-	/* Compute the racial factor */
-	factor = g_info[(ot_ptr->owner_race * z_info->p_max) + p_ptr->prace];
-
 	/* Add in the charisma factor */
-	factor += adj_chr_gold[p_ptr->stat_ind[A_CHR]];
+	if (store_current == STORE_B_MARKET)
+		adjust = 150;
+	else
+		adjust = adj_chr_gold[p_ptr->stat_ind[A_CHR]];
 
 
 	/* Shop is buying */
 	if (store_buying)
 	{
-		/* Adjust for greed */
-		adjust = 100 + (300 - (greed + factor));
-
-		/* Never get "silly" */
+		/* Set the factor */
+		adjust = 100 + (100 - adjust);
 		if (adjust > 100) adjust = 100;
 
 		/* Mega-Hack -- Black market sucks */
@@ -453,10 +439,7 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 	/* Shop is selling */
 	else
 	{
-		/* Adjust for greed */
-		adjust = 100 + ((greed + factor) - 300);
-
-		/* Never get "silly" */
+		/* Fix the factor */
 		if (adjust < 100) adjust = 100;
 
 		/* Mega-Hack -- Black market sucks */

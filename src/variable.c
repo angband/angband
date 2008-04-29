@@ -639,14 +639,6 @@ char *b_name;
 char *b_text;
 
 /*
- * The racial price adjustment arrays
- */
-byte *g_info;
-char *g_name;
-char *g_text;
-
-
-/*
  * The object flavor arrays
  */
 flavor_type *flavor_info;
