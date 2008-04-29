@@ -999,10 +999,6 @@ static const u32b ego_sustains[] =
 
 static const u32b ego_resists[] =
 {
-	TR2_RES_ACID,
-	TR2_RES_ELEC,
-	TR2_RES_FIRE,
-	TR2_RES_COLD,
 	TR2_RES_POIS,
 	TR2_RES_FEAR,
 	TR2_RES_LITE,
@@ -1011,6 +1007,10 @@ static const u32b ego_resists[] =
 	TR2_RES_CONFU,
 	TR2_RES_SOUND,
 	TR2_RES_SHARD,
+	TR2_RES_NEXUS,
+	TR2_RES_NETHR,
+	TR2_RES_CHAOS,
+	TR2_RES_DISEN,
 };
 
 static const u32b ego_powers[] =
