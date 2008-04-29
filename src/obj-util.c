@@ -1940,52 +1940,6 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 
 
 /*
- * Find the index of the object_kind with the given tval and sval
- */
-s16b lookup_kind(int tval, int sval)
-{
-	int k;
-
-	/* Look for it */
-	for (k = 1; k < z_info->k_max; k++)
-	{
-		object_kind *k_ptr = &k_info[k];
-
-		/* Found a match */
-		if ((k_ptr->tval == tval) && (k_ptr->sval == sval)) return (k);
-	}
-
-	/* Oops */
-	msg_format("No object (%d,%d)", tval, sval);
-
-	/* Oops */
-	return (0);
-}
-
-
-/**
- * Find the tval and sval of object kind `k_idx`, and return via the pointers
- * `tval` and `sval`.
- */
-bool lookup_reverse(s16b k_idx, int *tval, int *sval)
-{
-	object_kind *k_ptr;
-
-	/* Validate k_idx */
-	if ((k_idx < 1) || (k_idx > z_info->k_max))
-		return FALSE;
-
-	/* Get pointer */
-	k_ptr = &k_info[k_idx];
-	*tval = k_ptr->tval;
-	*sval = k_ptr->sval;
-
-	/* Done */
-	return TRUE;
-}
-
-
-/*
  * Wipe an object clean.
  */
 void object_wipe(object_type *o_ptr)
@@ -3403,3 +3357,154 @@ unsigned check_for_inscrip(const object_type *o_ptr, const char *inscrip)
 
 	return i;
 }
+
+/*** Object kind lookup functions ***/
+
+/**
+ * Return the k_idx of the object kind with the given `tval` and `sval`, or 0.
+ */
+int lookup_kind(int tval, int sval)
+{
+	int k;
+
+	/* Look for it */
+	for (k = 1; k < z_info->k_max; k++)
+	{
+		object_kind *k_ptr = &k_info[k];
+
+		/* Found a match */
+		if ((k_ptr->tval == tval) && (k_ptr->sval == sval)) return (k);
+	}
+
+	/* Failure */
+	msg_format("No object (%s,%d)", tval_find_name(tval), tval, sval);
+	return 0;
+}
+
+
+/**
+ * Find the tval and sval of object kind `k_idx`, and return via the pointers
+ * `tval` and `sval`.
+ */
+bool lookup_reverse(s16b k_idx, int *tval, int *sval)
+{
+	object_kind *k_ptr;
+
+	/* Validate k_idx */
+	if ((k_idx < 1) || (k_idx > z_info->k_max))
+		return FALSE;
+
+	/* Get pointer */
+	k_ptr = &k_info[k_idx];
+	*tval = k_ptr->tval;
+	*sval = k_ptr->sval;
+
+	/* Done */
+	return TRUE;
+}
+
+
+/*** Textual<->numeric conversion ***/
+
+/**
+ * List of { tval, name } pairs.
+ */
+static const grouper tval_names[] =
+{
+	{ TV_SKELETON,    "skeleton" },
+	{ TV_BOTTLE,      "bottle" },
+	{ TV_JUNK,        "junk" },
+	{ TV_SPIKE,       "spike" },
+	{ TV_CHEST,       "chest" },
+	{ TV_SHOT,        "shot" },
+	{ TV_ARROW,       "arrow" },
+	{ TV_BOLT,        "bolt" },
+	{ TV_BOW,         "bow" },
+	{ TV_DIGGING,     "digger" },
+	{ TV_HAFTED,      "hafted" },
+	{ TV_POLEARM,     "polearm" },
+	{ TV_SWORD,       "sword" },
+	{ TV_BOOTS,       "boots" },
+	{ TV_GLOVES,      "gloves" },
+	{ TV_HELM,        "helm" },
+	{ TV_CROWN,       "crown" },
+	{ TV_SHIELD,      "shield" },
+	{ TV_CLOAK,       "cloak" },
+	{ TV_SOFT_ARMOR,  "soft armor" },
+	{ TV_SOFT_ARMOR,  "soft armour" },
+	{ TV_HARD_ARMOR,  "hard armor" },
+	{ TV_HARD_ARMOR,  "hard armour" },
+	{ TV_DRAG_ARMOR,  "dragon armor" },
+	{ TV_DRAG_ARMOR,  "dragon armour" },
+	{ TV_LITE,        "light" },
+	{ TV_AMULET,      "amulet" },
+	{ TV_RING,        "ring" },
+	{ TV_STAFF,       "staff" },
+	{ TV_WAND,        "wand" },
+	{ TV_ROD,         "rod" },
+	{ TV_SCROLL,      "scroll" },
+	{ TV_POTION,      "potion" },
+	{ TV_FLASK,       "flask" },
+	{ TV_FOOD,        "food" },
+	{ TV_MAGIC_BOOK,  "magic book" },
+	{ TV_PRAYER_BOOK, "prayer book" },
+	{ TV_GOLD,        "gold" },
+};
+
+/**
+ * Return the k_idx of the object kind with the given `tval` and name `name`.
+ */
+int lookup_name(int tval, const char *name)
+{
+	int k;
+
+	/* Look for it */
+	for (k = 1; k < z_info->k_max; k++)
+	{
+		object_kind *k_ptr = &k_info[k];
+		const char *nm = k_name + k_ptr->name;
+
+		if (*nm == '&' && *(nm+1))
+			nm += 2;
+
+		/* Found a match */
+		if (k_ptr->tval == tval && !strcmp(name, nm))
+			return k;
+	}
+
+	msg_format("No object (\"%s\",\"%s\")", tval_find_name(tval), name);
+	return 0;
+}
+
+/**
+ * Returns the numeric equivalent tval of the textual tval `name`.
+ */
+int tval_find_idx(const char *name)
+{
+	size_t i = 0;
+
+	for (i = 0; i < N_ELEMENTS(tval_names); i++)
+	{
+		if (!my_stricmp(name, tval_names[i].name))
+			return tval_names[i].tval;
+	}
+
+	return -1;
+}
+
+/**
+ * Returns the textual equivalent tval of the numeric tval `name`.
+ */
+const char *tval_find_name(int tval)
+{
+	size_t i = 0;
+
+	for (i = 0; i < N_ELEMENTS(tval_names); i++)
+	{
+		if (tval == tval_names[i].tval)
+			return tval_names[i].name;
+	}
+
+	return "unknown";
+}
+

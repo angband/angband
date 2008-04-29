@@ -106,8 +106,6 @@ bool is_blessed(const object_type *o_ptr);
 s32b object_value(const object_type *o_ptr, int qty);
 bool object_similar(const object_type *o_ptr, const object_type *j_ptr);
 void object_absorb(object_type *o_ptr, const object_type *j_ptr);
-s16b lookup_kind(int tval, int sval);
-bool lookup_reverse(s16b k_idx, int *tval, int *sval);
 void object_wipe(object_type *o_ptr);
 void object_copy(object_type *o_ptr, const object_type *j_ptr);
 void object_prep(object_type *o_ptr, int k_idx);
@@ -137,5 +135,10 @@ void reorder_pack(void);
 void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt);
 void reduce_charges(object_type *o_ptr, int amt);
 unsigned check_for_inscrip(const object_type *o_ptr, const char *inscrip);
+int lookup_kind(int tval, int sval);
+bool lookup_reverse(s16b k_idx, int *tval, int *sval);
+int lookup_name(int tval, const char *name);
+int tval_find_idx(const char *name);
+const char *tval_find_name(int tval);
 
 #endif /* !INCLUDED_OBJECT_H */
