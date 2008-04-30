@@ -244,7 +244,6 @@ bool menu_layout(menu_type *menu, const region *loc);
 /* accessor & utility functions */
 void menu_set_filter(menu_type *menu, const int object_list[], int n);
 void menu_release_filter(menu_type *menu);
-void menu_set_id(menu_type *menu, int id);
 
 
 /* Find a menu iterator struct */

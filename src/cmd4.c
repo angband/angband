@@ -52,12 +52,6 @@ static void do_cmd_pref_file_hack(long row);
 #define MOD_COL		121
 #define RESET_VIS	122
 
-#define OPTION_MENU 140
-#define VISUAL_MENU 141
-#define COLOR_MENU	142
-#define KNOWLEDGE_MENU 143
-#define MACRO_MENU	144
-
 
 #define INFO_SCREENS 2 /* Number of screens in character info mode */
 
@@ -4214,7 +4208,6 @@ void init_cmd4_c(void)
 	/* options screen selection menu */
 	menu = &option_menu;
 	WIPE(menu, menu_type);
-	menu_set_id(menu, OPTION_MENU);
 	menu->title = "Options Menu";
 	menu->menu_data = option_actions;
 	menu->flags = MN_CASELESS_TAGS;
@@ -4235,7 +4228,6 @@ void init_cmd4_c(void)
 	/* macro menu */
 	menu = &macro_menu;
 	WIPE(menu, menu_type);
-	menu_set_id(menu, MACRO_MENU);
 	menu->title = "Interact with macros";
 	menu->cmd_keys = cmd_keys;
 	menu->selections = lower_case;
@@ -4246,7 +4238,6 @@ void init_cmd4_c(void)
 	/* visuals menu */
 	menu = &visual_menu;
 	WIPE(menu, menu_type);
-	menu_set_id(menu, VISUAL_MENU);
 	menu->title = "Interact with visuals";
 	menu->cmd_keys = cmd_keys;
 	menu->selections = lower_case;
@@ -4257,7 +4248,6 @@ void init_cmd4_c(void)
 	/* colors menu */
 	menu = &color_menu;
 	WIPE(menu, menu_type);
-	menu_set_id(menu, COLOR_MENU);
 	menu->title = "Interact with colors";
 	menu->cmd_keys = cmd_keys;
 	menu->selections = lower_case;
@@ -4268,7 +4258,6 @@ void init_cmd4_c(void)
 	/* knowledge menu */
 	menu = &knowledge_menu;
 	WIPE(menu, menu_type);
-	menu_set_id(menu, KNOWLEDGE_MENU);
 	menu->title = "Display current knowledge";
 	menu->menu_data = knowledge_actions;
 	menu->count = N_ELEMENTS(knowledge_actions),

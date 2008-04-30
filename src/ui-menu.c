@@ -37,12 +37,12 @@ static void display_menu_row(menu_type *menu, int pos, int top,
 /* ------------------------------------------------------------------------
  * MN_ACTIONS HELPER FUNCTIONS
  *
- * MN_ACTIONS is the type of menu iterator that displays a simple list of 
+ * MN_ACTIONS is the type of menu iterator that displays a simple list of
  * menu_actions.
  * ------------------------------------------------------------------------ */
 
 /* Display an event, with possible preference overrides */
-static void display_action_aux(menu_action *act, int menu_id, byte color, int row, int col, int wid)
+static void display_action_aux(menu_action *act, byte color, int row, int col, int wid)
 {
 	/* TODO: add preference support */
 	/* TODO: wizard mode should show more data */
@@ -57,8 +57,7 @@ static void display_action(menu_type *menu, int oid, bool cursor, int row, int c
 	menu_action *acts = (menu_action *) menu->menu_data;
 	byte color = curs_attrs[CURS_KNOWN][0 != cursor];
 
-	display_action_aux(&acts[oid], menu->target.object_id, color, 
-			   row, col, width);
+	display_action_aux(&acts[oid], color, row, col, width);
 }
 
 /* act on selection only */
@@ -115,8 +114,7 @@ static void display_menu_item(menu_type *menu, int oid, bool cursor, int row, in
 	menu_item *items = (menu_item *)menu->menu_data;
 	byte color = curs_attrs[!(items[oid].flags & (MN_GRAYED))][0 != cursor];
 
-	display_action_aux(&items[oid].act, menu->target.object_id, color,
-			   row, col, width);
+	display_action_aux(&items[oid].act, color, row, col, width);
 }
 
 /* act on selection only */
@@ -835,11 +833,6 @@ void menu_release_filter(menu_type *menu)
 	menu->filter_count = menu->count;
 }
 
-void menu_set_id(menu_type *menu, int id)
-{
-	menu->target.object_id = id;
-}
-
 /* ======================== MENU INITIALIZATION ==================== */
 
 /* This is extremely primitive, barely sufficient to the job done */
@@ -903,7 +896,6 @@ bool menu_init(menu_type *menu, skin_id skin_id, const menu_iter *iter, const re
 	assert(loc && "no screen location specified!");
 
 	/* Stuff for the event listener (see ui-event.h) */
-	menu->target.object_id = 0;
 	menu->target.handler = menu_handle_event;
 	menu->target.release = NULL;
 	menu->target.object = menu;

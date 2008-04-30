@@ -464,7 +464,6 @@ void death_screen(void)
 	/* Initialize the menu */
 	menu = &death_menu;
 	WIPE(menu, menu_type);
-	menu_set_id(menu, 1);
 	menu->menu_data = death_actions;
 	menu->flags = MN_CASELESS_TAGS;
 	menu->cmd_keys = cmd_keys;

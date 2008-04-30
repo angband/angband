@@ -53,7 +53,6 @@ typedef void (*release_f)(void *object);
 /* Base class for event listener */
 typedef struct
 {
-	int object_id;      /* Identifier used for macros, etc */
 	handler_f handler;  /* The handler function to call */
 	release_f release;  /* Frees any owned resources */
 	void *object;       /* Self-pointer */
