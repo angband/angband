@@ -39,27 +39,6 @@ typedef struct menu_skin menu_skin;
 typedef struct menu_iter menu_iter;
 
 
-/* ================= PANEL ============ */
-typedef struct panel_type panel_type;
-
-/*
- * An event target bound to a particular screen area.
- * A Panel is a (rectangular) (sub)region, possibly containing a set of event
- * listeners, and responsible for maintaining its own internal layout and
- * dispatching.  A Panel has ownership of a Region, is a Container for 
- * Event Listeners, and an Event Target for mouse events).
- * Potential examples include: 
- *  - menu
- *  - window
- *  - map
- */
-struct panel_type
-{
-	event_target target;
-	void (*refresh)(menu_type *);
-	region boundary;
-};
-
 /* ================== MENUS ================= */
 
 /*
@@ -206,7 +185,7 @@ struct menu_iter
 struct menu_type
 {
 	/* menu inherits from panel */
-	event_target target;
+	event_listener target;
 	void (*refresh)();
 	region boundary;
 

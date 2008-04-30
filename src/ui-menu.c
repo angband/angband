@@ -57,7 +57,7 @@ static void display_action(menu_type *menu, int oid, bool cursor, int row, int c
 	menu_action *acts = (menu_action *) menu->menu_data;
 	byte color = curs_attrs[CURS_KNOWN][0 != cursor];
 
-	display_action_aux(&acts[oid], menu->target.self.object_id, color, 
+	display_action_aux(&acts[oid], menu->target.object_id, color, 
 			   row, col, width);
 }
 
@@ -115,7 +115,7 @@ static void display_menu_item(menu_type *menu, int oid, bool cursor, int row, in
 	menu_item *items = (menu_item *)menu->menu_data;
 	byte color = curs_attrs[!(items[oid].flags & (MN_GRAYED))][0 != cursor];
 
-	display_action_aux(&items[oid].act, menu->target.self.object_id, color,
+	display_action_aux(&items[oid].act, menu->target.object_id, color,
 			   row, col, width);
 }
 
@@ -486,26 +486,6 @@ static bool menu_handle_event(void *object, const ui_event_data *in)
 
 	out.key = '\xff';
 
-	if (menu->target.observers)
-	{
-		/* TODO: need a panel dispatcher here, not a generic target */
-		event_target t = { { 0, 0, 0, 0, { 0 } }, FALSE, 0 /* menu->target.observers */};
-		t.observers = menu->target.observers;
-		out = run_event_loop(&t, FALSE, in);
-
-		if (out.type != EVT_AGAIN)
-		{
-			if (out.type == EVT_SELECT)
-			{
-				/* HACK: can't return selection event from submenu (no ID) */
-				out.type = EVT_REFRESH;
-				Term_event_push(&out);
-			}
-
-			return TRUE;
-		}
-	}
-
 	switch (in->type)
 	{
 		case EVT_MOUSE:
@@ -857,7 +837,7 @@ void menu_release_filter(menu_type *menu)
 
 void menu_set_id(menu_type *menu, int id)
 {
-	menu->target.self.object_id = id;
+	menu->target.object_id = id;
 }
 
 /* ======================== MENU INITIALIZATION ==================== */
@@ -923,14 +903,11 @@ bool menu_init(menu_type *menu, skin_id skin_id, const menu_iter *iter, const re
 	assert(loc && "no screen location specified!");
 
 	/* Stuff for the event listener (see ui-event.h) */
-	menu->target.self.object_id = 0;
-	menu->target.self.handler = menu_handle_event;
-	menu->target.self.release = NULL;
-	menu->target.self.object = menu;
-	menu->target.self.events.evt_flags = (EVT_KBRD | EVT_MOUSE | EVT_REFRESH);
-
-	/* "Panel" stuff. */
-	menu->target.is_modal = TRUE;
+	menu->target.object_id = 0;
+	menu->target.handler = menu_handle_event;
+	menu->target.release = NULL;
+	menu->target.object = menu;
+	menu->target.event_flags = (EVT_KBRD | EVT_MOUSE | EVT_REFRESH);
 
 	/* Menu-specific initialisation */
 	menu->refresh = menu_refresh;
@@ -940,7 +917,7 @@ bool menu_init(menu_type *menu, skin_id skin_id, const menu_iter *iter, const re
 
 	/* We rely on filter_count containing the number of items we're
 	   selecting from. */
-	if (menu->count && !menu->filter_list) 
+	if (menu->count && !menu->filter_list)
 		menu->filter_count = menu->count;
 
 	/* Do an initial layout calculation so we're ready to display. */

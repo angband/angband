@@ -35,25 +35,12 @@
  *
  * The event_listener observer for key events
  *
- * The event_target   The registrar for event_listeners.
+ * The event_listener   The registrar for event_listeners.
  * For convenience, the event target is also an event_listener.
  */
 
-/* List of event listeners--Helper class for event_target and the event loop */
-struct listener_list
-{
-	event_listener *listener;
-	struct listener_list *next;
-};
 
 
-void stop_event_loop()
-{
-	ui_event_data stop = { EVT_STOP, 0, 0, 0, 0 };
-
-	/* Stop right away! */
-	Term_event_push(&stop);
-}
 
 /*
  * Primitive event loop.
@@ -68,14 +55,13 @@ void stop_event_loop()
  *    EVT_AGAIN - start was not handled, and forever is false
  *    The first unhandled event - forever is false.
  */
-ui_event_data run_event_loop(event_target *target, bool forever, const ui_event_data *start)
+ui_event_data run_event_loop(event_listener *target, bool forever, const ui_event_data *start)
 {
 	ui_event_data ke = EVENT_EMPTY;
 	bool handled = TRUE;
 
 	while (forever || handled)
 	{
-		listener_list *list = target->observers;
 		handled = FALSE;
 
 		if (start) ke = *start;
@@ -84,19 +70,8 @@ ui_event_data run_event_loop(event_target *target, bool forever, const ui_event_
 		if (ke.type == EVT_STOP)
 			break;
 
-		if (ke.type & target->self.events.evt_flags)
-			handled = target->self.handler(target->self.object, &ke);
-
-		if (!target->is_modal)
-		{
-			while (list && !handled)
-			{
-				if (ke.type & list->listener->events.evt_flags)
-					handled = list->listener->handler(list->listener->object, &ke);
-
-				list = list->next;
-			}
-		}
+		if (ke.type & target->event_flags)
+			handled = target->handler(target->object, &ke);
 
 		if (handled) start = NULL;
 	}
@@ -109,33 +84,3 @@ ui_event_data run_event_loop(event_target *target, bool forever, const ui_event_
 
 	return ke;
 }
-
-void add_listener(event_target *target, event_listener *observer)
-{
-	listener_list *link;
-
-	link = ZNEW(listener_list);
-	link->listener = observer;
-	link->next = target->observers;
-	target->observers = link;
-}
-
-void remove_listener(event_target *target, event_listener *observer)
-{
-	listener_list *cur = target->observers;
-	listener_list **prev = &target->observers;
-
-	while (cur)
-	{
-		if (cur->listener == observer)
-		{
-			*prev = cur->next;
-			FREE(cur);
-			break;
-		}
-	}
-
-	bell("remove_listener: no such observer");
-}
-
-
