@@ -474,7 +474,7 @@ void menu_refresh(menu_type *menu)
 	menu->skin->display_list(menu, menu->cursor, &menu->top, &menu->active);
 }
 
-/* The menu event loop, called as a handler from run_event_loop */
+/* The menu event loop, called as a handler from the event loop */
 static bool menu_handle_event(void *object, const ui_event_data *in)
 {
 	menu_type *menu = object;
@@ -721,7 +721,7 @@ ui_event_data menu_select(menu_type *menu, int *cursor, int no_handle)
 		menu->filter_count = menu->count;
 
 	ke.type = EVT_REFRESH;
-	(void)run_event_loop(&menu->target, FALSE, &ke);
+	(void)run_event_loop(&menu->target, &ke);
 
 	/* Check for command flag */
 	if (p_ptr->command_new)
@@ -733,7 +733,7 @@ ui_event_data menu_select(menu_type *menu, int *cursor, int no_handle)
 	/* Stop on first unhandled event. */
 	while (!(ke.type & no_handle))
 	{
-		ke = run_event_loop(&menu->target, FALSE, 0);
+		ke = run_event_loop(&menu->target, NULL);
 
 		switch (ke.type)
 		{

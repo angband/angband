@@ -614,7 +614,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			}
 		}
 
-		ke0 = run_event_loop(&active_menu->target, 0, &ke);
+		ke0 = run_event_loop(&active_menu->target, &ke);
 		if (ke0.type != EVT_AGAIN) ke = ke0;
 
 		switch (ke.type)

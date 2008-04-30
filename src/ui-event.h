@@ -56,7 +56,7 @@ typedef struct
 } event_listener;
 
 
-ui_event_data run_event_loop(event_listener *parent, bool forever, const ui_event_data *start);
+ui_event_data run_event_loop(event_listener *parent, const ui_event_data *start);
 
 
 #endif /* INCLUDED_UI_EVENT_H */

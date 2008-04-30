@@ -46,21 +46,19 @@
  * Primitive event loop.
  *
  *  - target = the event target
- *  - forever - if false, stop at first unhandled event. Otherwise, stop only
- *    for STOP events
  *  - start - optional initial event that allows you to prime the loop without
  *    pushing the event queue.
  *  Returns:
  *    EVT_STOP - the loop was halted.
- *    EVT_AGAIN - start was not handled, and forever is false
- *    The first unhandled event - forever is false.
+ *    EVT_AGAIN - start was not handled
+ *    The first unhandled event.
  */
-ui_event_data run_event_loop(event_listener *target, bool forever, const ui_event_data *start)
+ui_event_data run_event_loop(event_listener *target, const ui_event_data *start)
 {
 	ui_event_data ke = EVENT_EMPTY;
 	bool handled = TRUE;
 
-	while (forever || handled)
+	while (handled)
 	{
 		handled = FALSE;
 
