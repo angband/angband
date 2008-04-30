@@ -2793,7 +2793,7 @@ void do_cmd_store(void)
 	{
 
 	static region items_region = { 1, 4, -1, -1 };
-	static const menu_iter store_menu = { 0, 0, 0, store_display_entry, store_process_command };
+	static const menu_iter store_menu = { NULL, NULL, store_display_entry, store_process_command };
 	const menu_iter *cur_menu = &store_menu;
 
 	menu_type menu;

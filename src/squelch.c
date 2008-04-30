@@ -610,7 +610,7 @@ static bool quality_subaction(char cmd, void *db, int oid)
 static bool quality_action(char cmd, void *db, int oid)
 {
 	menu_type menu;
-	menu_iter menu_f = { 0, 0, 0, quality_subdisplay, quality_subaction };
+	menu_iter menu_f = { NULL, NULL, quality_subdisplay, quality_subaction };
 	region area = { 24, 5, 26, SQUELCH_MAX };
 	ui_event_data evt;
 	int cursor;
@@ -649,7 +649,7 @@ static bool quality_action(char cmd, void *db, int oid)
 static void quality_menu(void *unused, const char *also_unused)
 {
 	menu_type menu;
-	menu_iter menu_f = { 0, 0, 0, quality_display, quality_action };
+	menu_iter menu_f = { NULL, NULL, quality_display, quality_action };
 	region area = { 1, 5, -1, -1 };
 	ui_event_data evt = EVENT_EMPTY;
 	int cursor = 0;
@@ -730,7 +730,7 @@ static bool sval_action(char cmd, void *db, int oid)
 static bool sval_menu(int tval, const char *desc)
 {
 	menu_type menu;
-	menu_iter menu_f = { 0, 0, 0, sval_display, sval_action };
+	menu_iter menu_f = { NULL, NULL, sval_display, sval_action };
 	region area = { 1, 5, -1, -1 };
 	ui_event_data evt = { EVT_NONE, 0, 0, 0, 0 };
 	int cursor = 0;
@@ -901,7 +901,7 @@ static void display_options_item(menu_type *menu, int oid, bool cursor, int row,
 		byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
 
 		line = line - N_ELEMENTS(sval_dependent) - 1;
-    
+
 		if (line < N_ELEMENTS(extra_item_options))
 			c_prt(attr, extra_item_options[line].name, row, col);
 	}
@@ -910,7 +910,6 @@ static void display_options_item(menu_type *menu, int oid, bool cursor, int row,
 
 static const menu_iter options_item_iter =
 {
-	0,
 	tag_options_item,
 	valid_options_item,
 	display_options_item,

@@ -409,7 +409,6 @@ static void death_menu_display(menu_type *menu, int oid, bool cursor, int row, i
 
 static const menu_iter death_iter =
 {
-	0,
 	death_menu_tag,
 	NULL,
 	death_menu_display,

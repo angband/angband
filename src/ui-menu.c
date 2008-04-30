@@ -85,7 +85,6 @@ static int valid_menu_action(menu_type *menu, int oid)
 /* Virtual function table for action_events */
 const menu_iter menu_iter_actions =
 {
-	MN_ACTIONS,               /* id */
 	NULL,                     /* get_tag() */
 	valid_menu_action,        /* valid_row() */
 	display_action,           /* display_row() */
@@ -151,7 +150,6 @@ static int valid_menu_item(menu_type *menu, int oid)
 /* Virtual function table for menu items */
 const menu_iter menu_iter_items =
 {
-	MN_ITEMS,            /* id */
 	tag_menu_item,       /* get_tag() */
 	valid_menu_item,     /* valid_row() */
 	display_menu_item,   /* display_row() */
@@ -175,7 +173,6 @@ static void display_string(menu_type *menu, int oid, bool cursor,
 /* Virtual function table for displaying arrays of strings */
 const menu_iter menu_iter_strings =
 { 
-	MN_STRINGS,        /* id */
 	NULL,              /* get_tag() */
 	NULL,              /* valid_row() */
 	display_string,    /* display_row() */
@@ -818,44 +815,24 @@ ui_event_data menu_select(menu_type *menu, int *cursor, int no_handle)
 
 /* ================== MENU ACCESSORS ================ */
 
-/*
- * The menu row-iterator registry.
- * Note that there's no need to register "anonymous" row iterators, that is,
- * iterators always accessed by address, and not available in pref files.
+/**
+ * Return the menu iter struct for a given iter ID.
  */
-static menu_iter const *menu_iter_reg[] =
-{
-	&menu_iter_actions,
-	&menu_iter_items,
-	&menu_iter_strings,
-	0
-};
-
-
 const menu_iter *find_menu_iter(menu_iter_id id)
 {
-	size_t i;
-	for (i = 0; i < N_ELEMENTS(menu_iter_reg) && menu_iter_reg[i]; i++)
+	switch (id)
 	{
-		if (menu_iter_reg[i]->id == id)
-			return menu_iter_reg[i];
+		case MN_ITER_ACTIONS:
+			return &menu_iter_actions;
+
+		case MN_ITER_ITEMS:
+			return &menu_iter_items;
+
+		case MN_ITER_STRINGS:
+			return &menu_iter_strings;
 	}
+
 	return NULL;
-}
-
-
-void add_menu_iter(const menu_iter * iter, menu_iter_id id)
-{
-	size_t i;
-
-	assert(iter->id == id);
-	for (i = 0; i < N_ELEMENTS(menu_iter_reg) && menu_iter_reg[i]; i++)
-		assert(iter->id != menu_iter_reg[id]->id);
-
-	if (i == N_ELEMENTS(menu_iter_reg))
-		quit("too many registered iters!");
-
-	menu_iter_reg[i] = iter;
 }
 
 /*

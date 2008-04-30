@@ -479,7 +479,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 	o_funcs.is_visual = FALSE;
 
-	menu_init(&group_menu, MN_SKIN_SCROLL, find_menu_iter(MN_STRINGS), &group_region);
+	menu_init(&group_menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_STRINGS), &group_region);
 	menu_init(&object_menu, MN_SKIN_SCROLL, &object_iter, &object_region);
 
 
@@ -2319,7 +2319,6 @@ static bool update_option(char key, void *pgdb, int oid)
 
 static const menu_iter options_toggle_iter =
 {
-	MN_NULL,
 	NULL,
 	NULL,
 	display_option,		/* label */
@@ -4079,7 +4078,6 @@ static void display_opt_main(menu_type *menu, int oid, bool cursor, int row, int
 
 static const menu_iter options_iter =
 {
-	0,
 	tag_opt_main,
 	valid_opt_main,
 	display_opt_main,
@@ -4243,7 +4241,7 @@ void init_cmd4_c(void)
 	menu->selections = lower_case;
 	menu->menu_data = macro_actions;
 	menu->count = N_ELEMENTS(macro_actions);
-	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ACTIONS), &SCREEN_REGION);
+	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ACTIONS), &SCREEN_REGION);
 
 	/* visuals menu */
 	menu = &visual_menu;
@@ -4254,7 +4252,7 @@ void init_cmd4_c(void)
 	menu->selections = lower_case;
 	menu->menu_data = visual_menu_items;
 	menu->count = N_ELEMENTS(visual_menu_items);
-	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ACTIONS), &SCREEN_REGION);
+	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ACTIONS), &SCREEN_REGION);
 
 	/* colors menu */
 	menu = &color_menu;
@@ -4265,7 +4263,7 @@ void init_cmd4_c(void)
 	menu->selections = lower_case;
 	menu->menu_data = color_events;
 	menu->count = N_ELEMENTS(color_events);
-	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ACTIONS), &SCREEN_REGION);
+	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ACTIONS), &SCREEN_REGION);
 
 	/* knowledge menu */
 	menu = &knowledge_menu;
@@ -4274,7 +4272,7 @@ void init_cmd4_c(void)
 	menu->title = "Display current knowledge";
 	menu->menu_data = knowledge_actions;
 	menu->count = N_ELEMENTS(knowledge_actions),
-	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITEMS), &SCREEN_REGION);
+	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ITEMS), &SCREEN_REGION);
 
 	/* initialize other static variables */
 	if (!obj_group_order)

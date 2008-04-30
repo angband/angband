@@ -237,7 +237,7 @@ static bool birthmenu_handler(char cmd, void *db, int oid)
 /* Our custom menu iterator, only really needed to allow us to override
    the default handling of "commands" in the standard iterators (hence
    only defining the display and handler parts). */
-static const menu_iter birth_iter = { 0, 0, 0, birthmenu_display, birthmenu_handler };
+static const menu_iter birth_iter = { NULL, NULL, birthmenu_display, birthmenu_handler };
 
 /* Cleans up our stored menu info when we've finished with it. */
 static void free_birth_menu(menu_type *menu)

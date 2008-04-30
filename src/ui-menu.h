@@ -173,29 +173,24 @@ struct menu_skin
 /* Identifiers for canned row iterator implementations */
 typedef enum
 {
-	/* An empty slate */
-	MN_NULL	= 0x0,
-
 	/* A simple list of actions with an associated name and id.
 	   An array of menu_action */
-	MN_ACTIONS  = 0x1, 
+	MN_ITER_ACTIONS = 1,
 
-	/* Slightly more sophisticated, a list of menu items that also 
+	/* Slightly more sophisticated, a list of menu items that also
 	   allows per-item flags and a "selection" character to be specified.
 	   An array of menu_item */
-	MN_ITEMS   = 0x2,
+	MN_ITER_ITEMS   = 2,
 
 	/* A list of strings to be selected from - no associated actions.
 	   An array of const char * */
-	MN_STRINGS = 0x3
+	MN_ITER_STRINGS = 3
 } menu_iter_id;
 
 
 /* Class functions for menu row-level accessor functions */
-struct menu_iter 
+struct menu_iter
 {
-	/* Type identifier from above set */
-	menu_iter_id id;
 	/* Optional selection tag function */
 	char (*get_tag)(menu_type *menu, int oid);
 	/* Optional validity checker.  All rows are assumed valid if not present. */
@@ -276,15 +271,15 @@ void menu_release_filter(menu_type *menu);
 void menu_set_id(menu_type *menu, int id);
 
 
+/* Find a menu iterator struct */
+const menu_iter *find_menu_iter(menu_iter_id iter_id);
+
 /* Initialize a menu given skin ID and an iterator */
 bool menu_init(menu_type *menu, skin_id skin, const menu_iter *iter, const region *loc);
 
-
+/* Refresh the menu */
 void menu_refresh(menu_type *menu);
 
-/* Menu VTAB registry */
-const menu_iter *find_menu_iter(menu_iter_id iter_id);
-void add_menu_iter(const menu_iter *skin, menu_iter_id id);
 
 #endif /* INCLUDED_UI_MENU_H */
 
