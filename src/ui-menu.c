@@ -243,7 +243,6 @@ static char scroll_get_tag(menu_type *menu, int pos)
 /* Virtual function table for scrollable menu skin */
 const menu_skin menu_skin_scroll =
 {
-	MN_SCROLL,
 	scrolling_get_cursor,
 	display_scrolling,
 	scroll_get_tag
@@ -303,7 +302,6 @@ static char column_get_tag(menu_type *menu, int pos)
 /* Virtual function table for multi-column menu skin */
 static const menu_skin menu_skin_column =
 {
-	MN_COLUMNS,
 	columns_get_cursor,
 	display_columns,
 	column_get_tag
@@ -322,9 +320,9 @@ static int no_cursor(int row, int col, int n, int top, region *loc)
 
 static const menu_skin menu_skin_key_select =
 {
-	MN_KEY_ONLY,
 	no_cursor,
 	display_nothing,
+	NULL,
 };
 
 
@@ -821,23 +819,11 @@ ui_event_data menu_select(menu_type *menu, int *cursor, int no_handle)
 /* ================== MENU ACCESSORS ================ */
 
 /*
- * The menu skin registry.  In the unlikely event you need to register
- * more skins, make the array bigger.
- */
-static menu_skin const *menu_skin_reg[20] =
-{
-	&menu_skin_scroll,
-	&menu_skin_column,
-	&menu_skin_key_select,
-	0
-};
-
-/* 
  * The menu row-iterator registry.
  * Note that there's no need to register "anonymous" row iterators, that is,
  * iterators always accessed by address, and not available in pref files.
  */
-static menu_iter const *menu_iter_reg[20] =
+static menu_iter const *menu_iter_reg[] =
 {
 	&menu_iter_actions,
 	&menu_iter_items,
@@ -857,30 +843,6 @@ const menu_iter *find_menu_iter(menu_iter_id id)
 	return NULL;
 }
 
-const menu_skin *find_menu_skin(skin_id id)
-{
-	size_t i;
-	for (i = 0; i < N_ELEMENTS(menu_skin_reg) && menu_skin_reg[i]; i++)
-	{
-		if (menu_skin_reg[i]->id == id)
-			return menu_skin_reg[i];
-	}
-	return NULL;
-}
-
-void add_menu_skin(const menu_skin *skin, skin_id id)
-{
-	size_t i;
-
-	assert(skin->id == id);
-	for (i = 0; i < N_ELEMENTS(menu_skin_reg) && menu_skin_reg[i]; i++)
-		assert(skin->id != menu_skin_reg[id]->id);
-
-	if (i == N_ELEMENTS(menu_skin_reg))
-		quit("too many registered skins!");
-
-	menu_skin_reg[i] = skin;
-}
 
 void add_menu_iter(const menu_iter * iter, menu_iter_id id)
 {
@@ -895,6 +857,27 @@ void add_menu_iter(const menu_iter * iter, menu_iter_id id)
 
 	menu_iter_reg[i] = iter;
 }
+
+/*
+ * Return the skin behaviour struct for a given skin ID.
+ */
+static const menu_skin *find_menu_skin(skin_id id)
+{
+	switch (id)
+	{
+		case MN_SKIN_SCROLL:
+			return &menu_skin_scroll;
+
+		case MN_SKIN_COLUMNS:
+			return &menu_skin_column;
+
+		case MN_SKIN_KEY_ONLY:
+			return &menu_skin_key_select;
+	}
+
+	return NULL;
+}
+
 
 /*
  * Set the filter to a new value.
@@ -965,15 +948,18 @@ bool menu_layout(menu_type *menu, const region *loc)
 }
 
 
-/* 
+/*
  * Correctly initialise the menu block at 'menu' so that it's ready to use.
  * Use the display skin given in 'skin' and the iterator in 'iter', and set
- * up to use the region of the window given in 'loc' 
+ * up to use the region of the window given in 'loc'
  *
  * Returns FALSE if something goes wrong, and TRUE otherwise (i.e. always).
 */
-bool menu_init2(menu_type *menu, const menu_skin *skin, const menu_iter *iter, const region *loc)
+bool menu_init2(menu_type *menu, skin_id skin_id, const menu_iter *iter, const region *loc)
 {
+	const menu_skin *skin = find_menu_skin(skin_id);
+	assert(skin && "menu skin not found!");
+
 	/* Default value for the parameter, effectively. */
 	if (!loc) loc = &SCREEN_REGION;
 
@@ -1008,15 +994,14 @@ bool menu_init2(menu_type *menu, const menu_skin *skin, const menu_iter *iter, c
 
 bool menu_init(menu_type *menu, skin_id skin_id, menu_iter_id iter_id, const region *loc)
 {
-	const menu_skin *skin = find_menu_skin(skin_id);
 	const menu_iter *iter = find_menu_iter(iter_id);
 
-	if (!iter || !skin)
+	if (!iter)
 	{
-		msg_format("could not find menu VTAB (%d, %d)!", skin_id, iter_id);
+		msg_format("could not find menu VTAB (%d, %d)!", iter_id);
 		return FALSE;
 	}
 
-	return menu_init2(menu, skin, iter, loc);
+	return menu_init2(menu, skin_id, iter, loc);
 }
 

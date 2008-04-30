@@ -473,7 +473,7 @@ static bool cmd_menu(command_list *list, void *selection_p)
 	menu.cmd_keys = "\x8B\x8C\n\r";
 	menu.count = list->len;
 	menu.menu_data = list->list;
-	menu_init2(&menu, find_menu_skin(MN_SCROLL), &commands_menu, &area);
+	menu_init2(&menu, MN_SKIN_SCROLL, &commands_menu, &area);
 
 	/* Set up the screen */
 	screen_save();
@@ -538,7 +538,7 @@ static void do_cmd_menu(void)
 	menu.cmd_keys = "\x8B\x8C\n\r";
 	menu.count = N_ELEMENTS(cmds_all) - 1;
 	menu.menu_data = &chosen_command;
-	menu_init2(&menu, find_menu_skin(MN_SCROLL), &commands_menu, &area);
+	menu_init2(&menu, MN_SKIN_SCROLL, &commands_menu, &area);
 
 	/* Set up the screen */
 	screen_save();

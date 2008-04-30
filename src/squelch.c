@@ -629,7 +629,7 @@ static bool quality_action(char cmd, void *db, int oid)
 	if (oid == TYPE_JEWELRY)
 		menu.count = area.page_rows = SQUELCH_BAD + 1;
 
-	menu_init2(&menu, find_menu_skin(MN_SCROLL), &menu_f, &area);
+	menu_init2(&menu, MN_SKIN_SCROLL, &menu_f, &area);
 	window_make(area.col - 2, area.row - 1, area.col + area.width + 2, area.row + area.page_rows);
 
 	evt = menu_select(&menu, &cursor, 0);
@@ -668,7 +668,7 @@ static void quality_menu(void *unused, const char *also_unused)
 	WIPE(&menu, menu);
 	menu.cmd_keys = " \n\r";
 	menu.count = TYPE_MAX;
-	menu_init2(&menu, find_menu_skin(MN_SCROLL), &menu_f, &area);
+	menu_init2(&menu, MN_SKIN_SCROLL, &menu_f, &area);
 
 	/* Select an entry */
 	while (evt.key != ESCAPE)
@@ -796,7 +796,7 @@ static bool sval_menu(int tval, const char *desc)
 	menu.cmd_keys = " \n\r";
 	menu.count = num;
 	menu.menu_data = choice;
-	menu_init2(&menu, find_menu_skin(MN_SCROLL), &menu_f, &area);
+	menu_init2(&menu, MN_SKIN_SCROLL, &menu_f, &area);
 
 	/* Select an entry */
 	while (evt.key != ESCAPE)
@@ -933,7 +933,7 @@ void do_cmd_options_item(void *unused, cptr title)
 	menu.title = title;
         menu.cmd_keys = cmd_keys;
 	menu.count = N_ELEMENTS(sval_dependent) + N_ELEMENTS(extra_item_options) + 1;
-	menu_init2(&menu, find_menu_skin(MN_SCROLL), &options_item_iter, &SCREEN_REGION);
+	menu_init2(&menu, MN_SKIN_SCROLL, &options_item_iter, &SCREEN_REGION);
 
 	menu_layout(&menu, &SCREEN_REGION);
 

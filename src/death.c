@@ -471,7 +471,7 @@ void death_screen(void)
 	menu->cmd_keys = cmd_keys;
 	menu->count = N_ELEMENTS(death_actions);
 
-	menu_init2(menu, find_menu_skin(MN_SCROLL), &death_iter, &area);
+	menu_init2(menu, MN_SKIN_SCROLL, &death_iter, &area);
 
 	while (TRUE)
 	{

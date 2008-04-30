@@ -2843,7 +2843,7 @@ void do_cmd_store(void)
 		items_region.page_rows = scr_places_y[LOC_MORE] - scr_places_y[LOC_ITEMS_START];
 
 		/* Init the menu structure */
-		menu_init2(&menu, find_menu_skin(MN_SCROLL), cur_menu, &items_region);
+		menu_init2(&menu, MN_SKIN_SCROLL, cur_menu, &items_region);
 
 		if (menu.count > items_region.page_rows)
 			menu.prompt = "  -more-";

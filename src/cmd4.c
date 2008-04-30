@@ -479,8 +479,8 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 	o_funcs.is_visual = FALSE;
 
-	menu_init(&group_menu, MN_SCROLL, MN_STRINGS, &group_region);
-	menu_init2(&object_menu, find_menu_skin(MN_SCROLL), &object_iter, &object_region);
+	menu_init(&group_menu, MN_SKIN_SCROLL, MN_STRINGS, &group_region);
+	menu_init2(&object_menu, MN_SKIN_SCROLL, &object_iter, &object_region);
 
 
 	/* This is the event loop for a multi-region panel */
@@ -4222,7 +4222,7 @@ void init_cmd4_c(void)
 	menu->flags = MN_CASELESS_TAGS;
 	menu->cmd_keys = cmd_keys;
 	menu->count = N_ELEMENTS(option_actions);
-	menu_init2(menu, find_menu_skin(MN_SCROLL), &options_iter, &SCREEN_REGION);
+	menu_init2(menu, MN_SKIN_SCROLL, &options_iter, &SCREEN_REGION);
 
 	/* Initialize the options toggle menu */
 	menu = &option_toggle_menu;
@@ -4232,7 +4232,7 @@ void init_cmd4_c(void)
 	menu->selections = "abcdefghijklmopqrsuvwxz";
 	menu->count = OPT_PAGE_PER;
 	menu->flags = MN_DBL_TAP;
-	menu_init2(menu, find_menu_skin(MN_SCROLL), &options_toggle_iter, &SCREEN_REGION);
+	menu_init2(menu, MN_SKIN_SCROLL, &options_toggle_iter, &SCREEN_REGION);
 
 	/* macro menu */
 	menu = &macro_menu;
@@ -4243,7 +4243,7 @@ void init_cmd4_c(void)
 	menu->selections = lower_case;
 	menu->menu_data = macro_actions;
 	menu->count = N_ELEMENTS(macro_actions);
-	menu_init(menu, MN_SCROLL, MN_ACTIONS, &SCREEN_REGION);
+	menu_init(menu, MN_SKIN_SCROLL, MN_ACTIONS, &SCREEN_REGION);
 
 	/* visuals menu */
 	menu = &visual_menu;
@@ -4254,7 +4254,7 @@ void init_cmd4_c(void)
 	menu->selections = lower_case;
 	menu->menu_data = visual_menu_items;
 	menu->count = N_ELEMENTS(visual_menu_items);
-	menu_init(menu, MN_SCROLL, MN_ACTIONS, &SCREEN_REGION);
+	menu_init(menu, MN_SKIN_SCROLL, MN_ACTIONS, &SCREEN_REGION);
 
 	/* colors menu */
 	menu = &color_menu;
@@ -4265,7 +4265,7 @@ void init_cmd4_c(void)
 	menu->selections = lower_case;
 	menu->menu_data = color_events;
 	menu->count = N_ELEMENTS(color_events);
-	menu_init(menu, MN_SCROLL, MN_ACTIONS, &SCREEN_REGION);
+	menu_init(menu, MN_SKIN_SCROLL, MN_ACTIONS, &SCREEN_REGION);
 
 	/* knowledge menu */
 	menu = &knowledge_menu;
@@ -4274,7 +4274,7 @@ void init_cmd4_c(void)
 	menu->title = "Display current knowledge";
 	menu->menu_data = knowledge_actions;
 	menu->count = N_ELEMENTS(knowledge_actions),
-	menu_init(menu, MN_SCROLL, MN_ITEMS, &SCREEN_REGION);
+	menu_init(menu, MN_SKIN_SCROLL, MN_ITEMS, &SCREEN_REGION);
 
 	/* initialize other static variables */
 	if (!obj_group_order)

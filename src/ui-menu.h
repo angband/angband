@@ -148,30 +148,25 @@ struct menu_item
 #define MN_HIDDEN     0x1000000 /* Row is hidden, but may be selected via */
                                 /* key-binding.  */
 
-/* Identifier for the type of menu layout to use */
+
+/** Identifier for the type of menu layout to use */
 typedef enum
 {
-	/* Skins */
-	MN_SCROLL       = 0x0000, /* Ordinary scrollable single-column list */
-	MN_COLUMNS      = 0x0002, /* multicolumn view */
-	MN_NATIVE       = 0x0003, /* Not implemented -- OS menu */
-	MN_KEY_ONLY     = 0x0004, /* No display */
-	MN_USER	        = 0x0005  /* Anonymous, user defined. */
+	MN_SKIN_SCROLL = 1,   /**< Ordinary scrollable single-column list */
+	MN_SKIN_COLUMNS = 2,  /**< Multicolumn view */
+	MN_SKIN_KEY_ONLY = 3, /**< No display */
 } skin_id;
 
+
 /* Class functions for menu layout */
-struct menu_skin 
+struct menu_skin
 {
-	/* Identifier from the above list */
-	skin_id id;
 	/* Determines the cursor index given a (mouse) location */
 	int (*get_cursor)(int row, int col, int n, int top, region *loc);
 	/* Displays the current list of visible menu items */
 	display_list_f display_list;
 	/* Specifies the relative menu item given the state of the menu */
 	char (*get_tag)(menu_type *menu, int pos);
-	/* Superclass pointer. Not currently used */
-	const menu_skin *super;
 };
 
 
@@ -281,9 +276,8 @@ void menu_release_filter(menu_type *menu);
 void menu_set_id(menu_type *menu, int id);
 
 
-/* Initialize a menu given a pointer to a skin and an iterator */
-bool menu_init2(menu_type *menu, const menu_skin *skin,
-	       const menu_iter *iter, const region *loc);
+/* Initialize a menu given skin ID and an iterator */
+bool menu_init2(menu_type *menu, skin_id skin, const menu_iter *iter, const region *loc);
 
 /* Initialise a menu block given skin and iterator IDs */
 bool menu_init(menu_type *menu, skin_id skin, menu_iter_id iter, const region *loc);
@@ -293,9 +287,6 @@ void menu_refresh(menu_type *menu);
 
 /* Menu VTAB registry */
 const menu_iter *find_menu_iter(menu_iter_id iter_id);
-const menu_skin *find_menu_skin(skin_id skin_id);
-
-void add_menu_skin(const menu_skin *skin, skin_id id);
 void add_menu_iter(const menu_iter *skin, menu_iter_id id);
 
 #endif /* INCLUDED_UI_MENU_H */
