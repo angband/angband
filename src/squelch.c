@@ -934,8 +934,6 @@ void do_cmd_options_item(void *unused, cptr title)
 	menu.count = N_ELEMENTS(sval_dependent) + N_ELEMENTS(extra_item_options) + 1;
 	menu_init(&menu, MN_SKIN_SCROLL, &options_item_iter, &SCREEN_REGION);
 
-	menu_layout(&menu, &SCREEN_REGION);
-
 	/* Save and clear screen */
 	screen_save();
 	clear_from(0);
