@@ -19,12 +19,16 @@
 #include "ui-event.h"
 #include "ui-menu.h"
 
+/* Cursor colours */
+const byte curs_attrs[2][2] =
+{
+	{ TERM_SLATE, TERM_BLUE },      /* Greyed row */
+	{ TERM_WHITE, TERM_L_BLUE }     /* Valid row */
+};
+
 /* Some useful constants */
 const char lower_case[] = "abcdefghijklmnopqrstuvwxyz";
 const char upper_case[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-int jumpscroll = 0;
-int menu_width = 23;
 
 /* forward declarations */
 static void display_menu_row(menu_type *menu, int pos, int top,
@@ -207,11 +211,11 @@ static void display_scrolling(menu_type *menu, int cursor, int *top, region *loc
 
 	/* Keep a certain distance from the top when possible */
 	if ((cursor <= *top) && (*top > 0))
-		*top = cursor - jumpscroll - 1;
+		*top = cursor - 1;
 
 	/* Keep a certain distance from the bottom when possible */
 	if (cursor >= *top + (rows_per_page - 1))
-		*top = cursor - (rows_per_page - 1) + 1 + jumpscroll;
+		*top = cursor - (rows_per_page - 1) + 1;
 
 	/* Limit the top to legal places */
 	*top = MIN(*top, n - rows_per_page);
@@ -269,7 +273,7 @@ void display_columns(menu_type *menu, int cursor, int *top, region *loc)
 	int row = loc->row;
 	int rows_per_page = loc->page_rows;
 	int cols = (n + rows_per_page - 1) / rows_per_page;
-	int colw = menu_width;
+	int colw = 23;
 
 	Term_get_size(&w, &h);
 

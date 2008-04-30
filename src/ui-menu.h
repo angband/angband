@@ -12,18 +12,16 @@
 /* ============= Constants ============ */
 
 /* Colors for interactive menus */
-enum {
+enum
+{
 	CURS_UNKNOWN = 0,		/* Use gray; dark blue for cursor */
 	CURS_KNOWN = 1			/* Use white; light blue for cursor */
 };
-static const byte curs_attrs[2][2] =
-{
-	{TERM_SLATE, TERM_BLUE},		/* Greyed row */
-	{TERM_WHITE, TERM_L_BLUE}		/* Valid row */
-};
+
+/* Cursor colours for different states */
+extern const byte curs_attrs[2][2];
 
 /* Standard menu orderings */
-extern const char default_choice[];		/* 1234567890A-Za-z */
 extern const char lower_case[];			/* abc..z */
 extern const char upper_case[];			/* ABC..Z */
 
