@@ -887,7 +887,7 @@ bool menu_layout(menu_type *menu, const region *loc)
  * up to use the region of the window given in 'loc'
  *
  * Returns FALSE if something goes wrong, and TRUE otherwise (i.e. always).
-*/
+ */
 bool menu_init(menu_type *menu, skin_id skin_id, const menu_iter *iter, const region *loc)
 {
 	const menu_skin *skin = find_menu_skin(skin_id);
@@ -897,7 +897,6 @@ bool menu_init(menu_type *menu, skin_id skin_id, const menu_iter *iter, const re
 
 	/* Stuff for the event listener (see ui-event.h) */
 	menu->target.handler = menu_handle_event;
-	menu->target.release = NULL;
 	menu->target.object = menu;
 	menu->target.event_flags = (EVT_KBRD | EVT_MOUSE | EVT_REFRESH);
 

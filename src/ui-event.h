@@ -46,15 +46,11 @@ typedef struct
 /* An event handler member function */
 typedef bool (*handler_f)(void *object, const ui_event_data *in);
 
-/* Frees the resources for an owned event listener */
-typedef void (*release_f)(void *object);
-
 
 /* Base class for event listener */
 typedef struct
 {
 	handler_f handler;  /* The handler function to call */
-	release_f release;  /* Frees any owned resources */
 	void *object;       /* Self-pointer */
 	int event_flags;    /* Set of events to which this listener has subscribed */
 } event_listener;
