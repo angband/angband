@@ -153,8 +153,7 @@ struct menu_item
 typedef enum
 {
 	MN_SKIN_SCROLL = 1,   /**< Ordinary scrollable single-column list */
-	MN_SKIN_COLUMNS = 2,  /**< Multicolumn view */
-	MN_SKIN_KEY_ONLY = 3, /**< No display */
+	MN_SKIN_COLUMNS = 2   /**< Multicolumn view */
 } skin_id;
 
 

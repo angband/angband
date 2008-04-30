@@ -304,24 +304,6 @@ static const menu_skin menu_skin_column =
 	column_get_tag
 };
 
-/* ================== IMPLICIT MENU FOR KEY SELECTION ================== */
-
-static void display_nothing(menu_type *menu, int cursor, int *top, region *loc)
-{
-}
-
-static int no_cursor(int row, int col, int n, int top, region *loc)
-{
-	return -1;
-}
-
-static const menu_skin menu_skin_key_select =
-{
-	no_cursor,
-	display_nothing,
-	NULL,
-};
-
 
 /* ================== GENERIC HELPER FUNCTIONS ============== */
 
@@ -847,9 +829,6 @@ static const menu_skin *find_menu_skin(skin_id id)
 
 		case MN_SKIN_COLUMNS:
 			return &menu_skin_column;
-
-		case MN_SKIN_KEY_ONLY:
-			return &menu_skin_key_select;
 	}
 
 	return NULL;
