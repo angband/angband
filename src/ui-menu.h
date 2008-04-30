@@ -277,10 +277,7 @@ void menu_set_id(menu_type *menu, int id);
 
 
 /* Initialize a menu given skin ID and an iterator */
-bool menu_init2(menu_type *menu, skin_id skin, const menu_iter *iter, const region *loc);
-
-/* Initialise a menu block given skin and iterator IDs */
-bool menu_init(menu_type *menu, skin_id skin, menu_iter_id iter, const region *loc);
+bool menu_init(menu_type *menu, skin_id skin, const menu_iter *iter, const region *loc);
 
 
 void menu_refresh(menu_type *menu);

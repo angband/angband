@@ -955,13 +955,12 @@ bool menu_layout(menu_type *menu, const region *loc)
  *
  * Returns FALSE if something goes wrong, and TRUE otherwise (i.e. always).
 */
-bool menu_init2(menu_type *menu, skin_id skin_id, const menu_iter *iter, const region *loc)
+bool menu_init(menu_type *menu, skin_id skin_id, const menu_iter *iter, const region *loc)
 {
 	const menu_skin *skin = find_menu_skin(skin_id);
 	assert(skin && "menu skin not found!");
-
-	/* Default value for the parameter, effectively. */
-	if (!loc) loc = &SCREEN_REGION;
+	assert(iter && "menu iter not found!");
+	assert(loc && "no screen location specified!");
 
 	/* Stuff for the event listener (see ui-event.h) */
 	menu->target.self.object_id = 0;
@@ -990,18 +989,3 @@ bool menu_init2(menu_type *menu, skin_id skin_id, const menu_iter *iter, const r
 	/* TODO:  Check for collisions in selections & command keys here */
 	return TRUE;
 }
-
-
-bool menu_init(menu_type *menu, skin_id skin_id, menu_iter_id iter_id, const region *loc)
-{
-	const menu_iter *iter = find_menu_iter(iter_id);
-
-	if (!iter)
-	{
-		msg_format("could not find menu VTAB (%d, %d)!", iter_id);
-		return FALSE;
-	}
-
-	return menu_init2(menu, skin_id, iter, loc);
-}
-

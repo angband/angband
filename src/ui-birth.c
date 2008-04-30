@@ -349,7 +349,7 @@ static void init_birth_menu(menu_type *menu, game_event_data *data, const region
 
 	/* Get ui-menu to initialise whatever it wants to to give us a scrollable
 	   menu. */
-	menu_init2(menu, MN_SKIN_SCROLL, &birth_iter, reg);
+	menu_init(menu, MN_SKIN_SCROLL, &birth_iter, reg);
 }
 
 /* ------------------------------------------------------------------------
