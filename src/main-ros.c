@@ -295,8 +295,7 @@
 extern void core(cptr str);
 #endif
 
-/* V, post3.0.7, has conflicting types for these we have to #define around */
-#undef menu_flags
+/* V, post3.0.7, has a conflicting type for this we have to #define around */
 #undef menu_item
 
 /* Constants, etc. ---------------------------------------------------------*/

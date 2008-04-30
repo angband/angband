@@ -30,10 +30,9 @@ extern const char upper_case[];			/* ABC..Z */
 
 
 /* Forward declare */
-/* RISC OS already has a menu_item and menu_flags in system library */
+/* RISC OS already has a menu_item in system library */
 #ifdef RISCOS
 #define menu_item ang_menu_item
-#define menu_flags ang_menu_flags
 #endif
 
 typedef struct menu_item menu_item;
