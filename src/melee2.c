@@ -17,6 +17,7 @@
  */
 #include "angband.h"
 #include "bitflag.h"
+#include "tvals.h"
 
 /*
  * And now for Intelligent monster attacks (including spells).
@@ -745,7 +746,7 @@ bool make_attack_spell(int m_idx)
 	if (!f[0] && !f[1] && !f[2]) return (FALSE);
 
 	/* Check whether summons and bolts are worth it. */
-	if (adult_ai_smart && !(r_ptr->flags[1] & (RF1_STUPID)))
+	if (!(r_ptr->flags[1] & RF1_STUPID))
 	{
 		/* Check for a clean bolt shot */
 		if ((f[0] & (RSF0_BOLT_MASK) ||
