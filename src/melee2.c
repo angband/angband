@@ -17,7 +17,6 @@
  */
 #include "angband.h"
 #include "bitflag.h"
-#include "tvals.h"
 
 /*
  * And now for Intelligent monster attacks (including spells).
