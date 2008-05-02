@@ -2218,7 +2218,7 @@ static void handle_equip(game_event_type type, game_event_data *data, void *user
 static void handle_mons_list(game_event_type type, game_event_data *data, void *user)
 {
 	xtra_win_data *xd = &xdata[3];
-	int i, max;
+	int i;
 	int line = 1, x = 0;
 	int cur_x;
 	unsigned total_count = 0, disp_count = 0;
@@ -2275,7 +2275,7 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 	text_view_print(xd, str, 1);
 	
 	/* Go over in reverse order (so we show harder monsters first) */
-	for (i = z_info->r_max - 1; (i > 0) && (line < max); i--)
+for (i = 1; i < z_info->r_max; i++)
 	{
 		monster_lore *l_ptr = &l_list[i];
 
@@ -2313,103 +2313,6 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 	/* Free the race counters */
 	FREE(race_count);
 }
-#ifdef Old_version
-static void handle_mons_list(game_event_type type, game_event_data *data, void *user)
-{
-	xtra_win_data *xd = &xdata[3];
-	int i;
-	int line = 1, x = 0;
-	int cur_x;
-	unsigned total_count = 0, disp_count = 0;
-
-	byte attr;
-
-	char *m_name;
-	char buf[80];
-	char str[80];
-
-	monster_type *m_ptr;
-	monster_race *r_ptr;
-
-	u16b *race_count;
-	
-
-	if (!xd) return;
-
-
-	xd->buf = gtk_text_buffer_new(NULL);
-	gtk_text_view_set_buffer(GTK_TEXT_VIEW (xd->text_view), xd->buf);
-	
-	init_color_tags(xd);
-
-	/* Allocate the array */
-	race_count = C_ZNEW(z_info->r_max, u16b);
-
-	/* Scan the monster list */
-	for (i = 1; i < mon_max; i++)
-	{
-		m_ptr = &mon_list[i];
-
-		/* Only visible monsters */
-		if (!m_ptr->ml) continue;
-
-		/* Bump the count for this race, and the total count */
-		race_count[m_ptr->r_idx]++;
-		total_count++;
-	}
-
-	/* Note no visible monsters */
-	if (!total_count)
-	{
-		strnfmt(str, sizeof(str), "You see no monsters.");
-		text_view_print(xd, str, TERM_SLATE);
-
-		/* Free up memory */
-		FREE(race_count);
-
-		/* Done */
-		return;
-	}
-	
-	strnfmt(str, sizeof(str), "You can see %d monster%s:", total_count, PLURAL(total_count));
-	text_view_print(xd, str, 1);
-	
-	/* Go over */
-	for (i = 1; i < z_info->r_max; i++)
-	{
-		/* No monsters of this race are visible */
-		if (!race_count[i]) continue;
-
-		/* Reset position */
-		cur_x = x;
-
-		/* Note that these have been displayed */
-		disp_count += race_count[i];
-
-		/* Get monster race and name */
-		r_ptr = &r_info[i];
-		m_name = r_name + r_ptr->name;
-
-		/* Display uniques in a special colour */
-		if (r_ptr->flags[0] & RF1_UNIQUE)
-			attr = TERM_VIOLET;
-		else
-			attr = TERM_WHITE;
-
-		/* Build the monster name */
-		if (race_count[i] == 1)
-			my_strcpy(buf, m_name, sizeof(buf));
-		else
-			strnfmt(buf, sizeof(buf), "%s (x%d) ", m_name, race_count[i]);
-
-		text_view_print(xd, buf, attr);
-		line++;
-	}
-
-	/* Free the race counters */
-	FREE(race_count);
-}
-#endif
 static byte monst_color(const monster_type *m_ptr)
 {
 	byte attr = TERM_WHITE;
