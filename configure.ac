@@ -19,9 +19,15 @@ AC_ARG_WITH(noinstall,    [  --with-noinstall        don't install globally at a
 if test "x$with_setgid" != "xyes"; then
 	if test "x$with_setgid" != "x"; then
 		wsetgid=yes
+		with_private_dirs=
 	fi
 fi
-
+if test "x$with_noinstall" == "xyes"; then
+	with_private_dirs=
+fi
+#if test "x$with_segtid" == "xyes"; then
+#	with_private_dirs=
+#fi
 if test "x$wsetgid$with_private_dirs$with_noinstall" != "xyes";  then
 
 	echo "Please run ./configure with one of:
