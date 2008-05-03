@@ -3039,11 +3039,14 @@ int color_text_to_attr(cptr name)
 	if (my_stricmp(name, "dark")       == 0) return TERM_DARK;
 	if (my_stricmp(name, "white")      == 0) return TERM_WHITE;
 	if (my_stricmp(name, "slate")      == 0) return TERM_SLATE;
+	if (my_stricmp(name, "gray")       == 0) return TERM_SLATE;
+	if (my_stricmp(name, "grey")       == 0) return TERM_SLATE;
 	if (my_stricmp(name, "orange")     == 0) return TERM_ORANGE;
 	if (my_stricmp(name, "red")        == 0) return TERM_RED;
 	if (my_stricmp(name, "green")      == 0) return TERM_GREEN;
 	if (my_stricmp(name, "blue")       == 0) return TERM_BLUE;
 	if (my_stricmp(name, "umber")      == 0) return TERM_UMBER;
+	if (my_stricmp(name, "brown")      == 0) return TERM_UMBER;
 	if (my_stricmp(name, "violet")     == 0) return TERM_VIOLET;
 	if (my_stricmp(name, "yellow")     == 0) return TERM_YELLOW;
 	if (my_stricmp(name, "lightdark")  == 0) return TERM_L_DARK;
@@ -3052,6 +3055,7 @@ int color_text_to_attr(cptr name)
 	if (my_stricmp(name, "lightgreen") == 0) return TERM_L_GREEN;
 	if (my_stricmp(name, "lightblue")  == 0) return TERM_L_BLUE;
 	if (my_stricmp(name, "lightumber") == 0) return TERM_L_UMBER;
+	if (my_stricmp(name, "lightbrown") == 0) return TERM_L_UMBER;
 
 	/* Oops */
 	return -1;
