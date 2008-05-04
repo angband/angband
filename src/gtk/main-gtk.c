@@ -1721,7 +1721,7 @@ static void init_gtk_windows(void)
 		exit(0);
 	}
 			
-	path_build(logo, sizeof(logo), ANGBAND_DIR_XTRA, "graf/mr_att.png");
+	path_build(logo, sizeof(logo), ANGBAND_DIR_XTRA, "icon/att-256.png");
 	err = gtk_window_set_default_icon_from_file(logo, NULL);
 	
 	for (i = 0; i < num_term; i++)
