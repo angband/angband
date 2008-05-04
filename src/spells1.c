@@ -2001,7 +2001,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 						object_known(o_ptr);
 
 						/* Notice */
-						if (o_ptr->marked)
+						if (o_ptr->marked && !squelch_hide_item(o_ptr))
 						{
 							msg_print("Click!");
 							obvious = TRUE;
@@ -2018,7 +2018,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 		if (do_kill)
 		{
 			/* Effect "observed" */
-			if (o_ptr->marked)
+			if (o_ptr->marked && !squelch_hide_item(o_ptr))
 			{
 				obvious = TRUE;
 				object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
@@ -2028,7 +2028,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 			if (is_art || ignore)
 			{
 				/* Observe the resist */
-				if (o_ptr->marked)
+				if (o_ptr->marked && !squelch_hide_item(o_ptr))
 				{
 					msg_format("The %s %s unaffected!",
 					           o_name, (plural ? "are" : "is"));
@@ -2039,7 +2039,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 			else
 			{
 				/* Describe if needed */
-				if (o_ptr->marked && note_kill)
+				if (o_ptr->marked && note_kill && !squelch_hide_item(o_ptr))
 				{
 					message_format(MSG_DESTROY, 0, "The %s%s", o_name, note_kill);
 				}
