@@ -663,7 +663,7 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 	return end;
 }
 
-static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, size_t end)
+static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, size_t end, bool in_store)
 {
 	const char *u = NULL, *v = NULL;
 
@@ -678,7 +678,7 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 		v = "cursed";
 	else if ((o_ptr->ident & IDENT_EMPTY) && !object_known_p(o_ptr))
 		v = "empty";
-	else if (!object_aware_p(o_ptr) && object_tried_p(o_ptr))
+	else if (!in_store && !object_aware_p(o_ptr) && object_tried_p(o_ptr))
 		v = "tried";
 
 	if (u && v)
@@ -778,7 +778,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix,
 		end = obj_desc_charges(o_ptr, buf, max, end);
 	}
 
-	end = obj_desc_inscrip(o_ptr, buf, max, end);
+	end = obj_desc_inscrip(o_ptr, buf, max, end, (mode == ODESC_STORE));
 
 
 	/* Add squelch marker  */
