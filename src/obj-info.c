@@ -367,7 +367,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	}
 	else
 	{
-		int tdis = 10 + 5 * p_ptr->ammo_mult;
+		int tdis = 6 + 2 * p_ptr->ammo_mult;
 
 		/* Calculate damage */
 		dam = ((o_ptr->ds + 1) * o_ptr->dd * 5);

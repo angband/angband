@@ -691,7 +691,7 @@ void do_cmd_fire(void)
 	chance = (p_ptr->skills[SKILL_TO_HIT_BOW] + (bonus * BTH_PLUS_ADJ));
 
 	/* Base range XXX XXX */
-	tdis = 10 + 5 * p_ptr->ammo_mult;
+	tdis = 6 + 2 * p_ptr->ammo_mult;
 
 
 	/* Take a (partial) turn */
