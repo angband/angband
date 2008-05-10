@@ -303,15 +303,16 @@ static void calc_mana(void)
 
 	/* Extract "effective" player level */
 	levels = (p_ptr->lev - cp_ptr->spell_first) + 1;
-
-	/* Hack -- no negative mana */
-	if (levels < 0) levels = 0;
-
-	/* Extract total mana */
-	msp = (long)adj_mag_mana[p_ptr->stat_ind[cp_ptr->spell_stat]] * levels / 100;
-
-	/* Hack -- usually add one mana */
-	if (levels) msp++;
+	if (levels > 0)
+	{
+		msp = 1;
+		msp += adj_mag_mana[p_ptr->stat_ind[cp_ptr->spell_stat]] * levels / 100;
+	}
+	else
+	{
+		levels = 0;
+		msp = 0;
+	}
 
 	/* Process gloves for those disturbed by them */
 	if (cp_ptr->flags & CF_CUMBER_GLOVE)
