@@ -754,7 +754,7 @@ static void recalculate_stats(int *stats, int points_left)
 	}
 	
 	/* Gold is inversely proportional to cost */
-	p_ptr->au = p_ptr->au_birth = (50 * points_left) + 100;
+	p_ptr->au = p_ptr->au_birth = (50 * points_left) + 200;
 
 	/* Update bonuses, hp, etc. */
 	get_bonuses();
