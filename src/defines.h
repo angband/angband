@@ -229,7 +229,6 @@
  * Store constants
  *
  * STORE_MAX_KEEP must be < STORE_INVEN_MAX.
- *
  */
 #define STORE_INVEN_MAX	24		/* Max number of discrete objs in inven */
 #define STORE_TURNS		1000	/* Number of turns between turnovers */
@@ -435,7 +434,7 @@ enum
 	TMD_AFRAID, TMD_IMAGE, TMD_POISONED, TMD_CUT, TMD_STUN, TMD_PROTEVIL,
 	TMD_INVULN, TMD_HERO, TMD_SHERO, TMD_SHIELD, TMD_BLESSED, TMD_SINVIS,
 	TMD_SINFRA, TMD_OPP_ACID, TMD_OPP_ELEC, TMD_OPP_FIRE, TMD_OPP_COLD,
-	TMD_OPP_POIS, TMD_AMNESIA, TMD_TELEPATHY,
+	TMD_OPP_POIS, TMD_OPP_CONF, TMD_AMNESIA, TMD_TELEPATHY,
 
 	TMD_MAX
 };
@@ -1809,6 +1808,7 @@ enum
 	 ((k_info[(T)->k_idx].flags3 & TR3_EASY_KNOW) && \
 	  k_info[(T)->k_idx].aware))
 
+
 /*
  * Determine if the attr and char should consider the item's flavor
  *
@@ -1874,7 +1874,6 @@ enum
 	((k_info[(T)->k_idx].flavor) ? \
 	 (flavor_info[k_info[(T)->k_idx].flavor].d_char) : \
 	 (k_info[(T)->k_idx].d_char))
-
 
 /*
  * Artifacts use the "name1" field

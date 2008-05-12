@@ -32,6 +32,7 @@ static bool set_oppose_acid(int v);
 static bool set_oppose_elec(int v);
 static bool set_oppose_fire(int v);
 static bool set_oppose_cold(int v);
+static bool set_oppose_conf(int v);
 static bool set_stun(int v);
 static bool set_cut(int v);
 
@@ -67,6 +68,7 @@ static timed_effect effects[] =
 	{ "", "", 0, 0, 0 },  /* elec -- handled seperately */
 	{ "", "", 0, 0, 0 },  /* fire -- handled seperately */
 	{ "", "", 0, 0, 0 },  /* cold -- handled seperately */
+	{ "", "", 0, 0, 0 },  /* conf -- handled seperately */
 	{ "You feel resistant to poison!", "You feel less resistant to poison.", 0, 0, MSG_RES_POIS },
 	{ "You feel your memories fade.", "Your memories come flooding back.", 0, 0, MSG_GENERIC },
 	{ "Your mind expands.", "Your horizons are once more limited.", 0, PU_BONUS, MSG_GENERIC },
@@ -91,6 +93,7 @@ bool set_timed(int idx, int v)
 	else if (idx == TMD_OPP_ELEC) return set_oppose_elec(v);
 	else if (idx == TMD_OPP_FIRE) return set_oppose_fire(v);
 	else if (idx == TMD_OPP_COLD) return set_oppose_cold(v);
+	else if (idx == TMD_OPP_CONF) return set_oppose_conf(v);
 
 	/* Find the effect */
 	effect = &effects[idx];
@@ -353,6 +356,57 @@ static bool set_oppose_cold(int v)
 	if (disturb_state) disturb(0, 0);
 
 	/* Redraw */
+	p_ptr->redraw |= PR_STATUS;
+
+	/* Handle stuff */
+	handle_stuff();
+
+	/* Result */
+	return (TRUE);
+}
+
+
+/*
+ * Set "p_ptr->timed[TMD_OPP_CONF]", notice observable changes
+ */
+static bool set_oppose_conf(int v)
+{
+	bool notice = FALSE;
+
+	/* Hack -- Force good values */
+	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
+
+	/* Open */
+	if (v)
+	{
+		if (!p_ptr->timed[TMD_OPP_CONF] && !p_ptr->resist_confu)
+		{
+			message(MSG_RES_ELEC, 0, "You feel remarkably clear-headed!");
+			notice = TRUE;
+		}
+	}
+
+	/* Shut */
+	else
+	{
+		if (p_ptr->timed[TMD_OPP_CONF] && !p_ptr->resist_confu)
+		{
+			message(MSG_RECOVER, 0, "You feel less clear-headed.");
+			notice = TRUE;
+		}
+	}
+
+	/* Use the value */
+	p_ptr->timed[TMD_OPP_CONF] = v;
+
+	/* Nothing to notice */
+	if (!notice) return (FALSE);
+
+	/* Disturb */
+	if (disturb_state) disturb(0, 0);
+
+	/* Redraw */
+	p_ptr->update |= PU_BONUS;
 	p_ptr->redraw |= PR_STATUS;
 
 	/* Handle stuff */

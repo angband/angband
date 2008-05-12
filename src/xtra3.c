@@ -1,6 +1,6 @@
 /*
  * File: xtra3.c
- * Purpose: Handles the setting up updating, and cleaning up of the various 
+ * Purpose: Handles the setting up updating, and cleaning up of the various
  *          things that are displayed by the game.
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
@@ -23,7 +23,6 @@
 #include "ui-birth.h"
 
 #include "tvalsval.h"
-
 
 /* 
  * There are a few functions installed to be triggered by several 
@@ -667,6 +666,7 @@ static const struct state_info effects[] =
 	{ TMD_OPP_FIRE,  S("RFire"),      TERM_RED },
 	{ TMD_OPP_COLD,  S("RCold"),      TERM_WHITE },
 	{ TMD_OPP_POIS,  S("RPois"),      TERM_GREEN },
+	{ TMD_OPP_CONF,  S("RConf"),      TERM_VIOLET },
 	{ TMD_AMNESIA,   S("Amnesiac"),   TERM_ORANGE },
 };
 

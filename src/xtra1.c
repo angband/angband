@@ -1119,6 +1119,10 @@ static void calc_bonuses(void)
 	if (p_ptr->timed[TMD_TELEPATHY])
 		p_ptr->telepathy = TRUE;
 
+	/* Temporary resist confusion */
+	if (p_ptr->timed[TMD_OPP_CONF])
+		p_ptr->resist_confu = TRUE;
+
 
 
 	/*** Analyze weight ***/
