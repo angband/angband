@@ -567,7 +567,7 @@ errr init_info_txt(ang_file *fp, char *buf, header *head,
 		if (!buf[0] || (buf[0] == '#')) continue;
 
 		/* Verify correct "colon" format */
-		if (buf[1] != ':') return (PARSE_ERROR_GENERIC);
+		if (buf[1] != ':') return (PARSE_ERROR_MISSING_COLON);
 
 
 		/* Hack -- Process 'V' for "Version" */
@@ -817,7 +817,7 @@ errr parse_z_info(char *buf, header *head)
 		int max;
 
 		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_GENERIC);
+		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
 
 		/* Save the value */
 		z_info->f_max = max;
@@ -829,7 +829,7 @@ errr parse_z_info(char *buf, header *head)
 		int max;
 
 		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_GENERIC);
+		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
 
 		/* Save the value */
 		z_info->k_max = max;
@@ -841,7 +841,7 @@ errr parse_z_info(char *buf, header *head)
 		int max;
 
 		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_GENERIC);
+		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
 
 		/* Save the value */
 		z_info->a_max = max;
@@ -853,7 +853,7 @@ errr parse_z_info(char *buf, header *head)
 		int max;
 
 		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_GENERIC);
+		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
 
 		/* Save the value */
 		z_info->e_max = max;
@@ -865,7 +865,7 @@ errr parse_z_info(char *buf, header *head)
 		int max;
 
 		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_GENERIC);
+		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
 
 		/* Save the value */
 		z_info->r_max = max;
@@ -878,7 +878,7 @@ errr parse_z_info(char *buf, header *head)
 		int max;
 
 		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_GENERIC);
+		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
 
 		/* Save the value */
 		z_info->v_max = max;
@@ -891,7 +891,7 @@ errr parse_z_info(char *buf, header *head)
 		int max;
 
 		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_GENERIC);
+		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
 
 		/* Save the value */
 		z_info->p_max = max;
@@ -903,7 +903,7 @@ errr parse_z_info(char *buf, header *head)
 		int max;
 
 		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_GENERIC);
+		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
 
 		/* Save the value */
 		z_info->c_max = max;
@@ -915,7 +915,7 @@ errr parse_z_info(char *buf, header *head)
 		int max;
 
 		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_GENERIC);
+		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
 
 		/* Save the value */
 		z_info->h_max = max;
@@ -927,7 +927,7 @@ errr parse_z_info(char *buf, header *head)
 		int max;
 
 		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_GENERIC);
+		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
 
 		/* Save the value */
 		z_info->b_max = max;
@@ -939,7 +939,7 @@ errr parse_z_info(char *buf, header *head)
 		int max;
 
 		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_GENERIC);
+		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
 
 		/* Save the value */
 		z_info->flavor_max = max;
@@ -951,7 +951,7 @@ errr parse_z_info(char *buf, header *head)
 		int max;
 
 		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_GENERIC);
+		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
 
 		/* Save the value */
 		z_info->s_max = max;
@@ -963,7 +963,7 @@ errr parse_z_info(char *buf, header *head)
 		int max;
 
 		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_GENERIC);
+		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
 
 		/* Save the value */
 		z_info->o_max = max;
@@ -975,7 +975,7 @@ errr parse_z_info(char *buf, header *head)
 		int max;
 
 		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_GENERIC);
+		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
 
 		/* Save the value */
 		z_info->m_max = max;
@@ -987,7 +987,7 @@ errr parse_z_info(char *buf, header *head)
 		long max;
 
 		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%ld", &max)) return (PARSE_ERROR_GENERIC);
+		if (1 != sscanf(buf+4, "%ld", &max)) return (PARSE_ERROR_NOT_NUMBER);
 
 		/* Save the value */
 		z_info->fake_name_size = max;
@@ -999,7 +999,7 @@ errr parse_z_info(char *buf, header *head)
 		long max;
 
 		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%ld", &max)) return (PARSE_ERROR_GENERIC);
+		if (1 != sscanf(buf+4, "%ld", &max)) return (PARSE_ERROR_NOT_NUMBER);
 
 		/* Save the value */
 		z_info->fake_text_size = max;
@@ -1035,7 +1035,7 @@ errr parse_v_info(char *buf, header *head)
 		s = strchr(buf+2, ':');
 
 		/* Verify that colon */
-		if (!s) return (PARSE_ERROR_GENERIC);
+		if (!s) return (PARSE_ERROR_MISSING_COLON);
 
 		/* Nuke the colon, advance to the name */
 		*s++ = '\0';
@@ -1134,7 +1134,7 @@ errr parse_f_info(char *buf, header *head)
 		s = strchr(buf+2, ':');
 
 		/* Verify that colon */
-		if (!s) return (PARSE_ERROR_GENERIC);
+		if (!s) return (PARSE_ERROR_MISSING_COLON);
 
 		/* Nuke the colon, advance to the name */
 		*s++ = '\0';
@@ -1175,7 +1175,7 @@ errr parse_f_info(char *buf, header *head)
 
 		/* Scan for the values */
 		if (1 != sscanf(buf+2, "%d",
-			            &mimic)) return (PARSE_ERROR_GENERIC);
+			            &mimic)) return (PARSE_ERROR_NOT_NUMBER);
 
 		/* Save the values */
 		f_ptr->mimic = mimic;
@@ -1270,7 +1270,7 @@ static errr grab_one_kind_flag(object_kind *k_ptr, cptr what)
 	msg_format("Unknown object flag '%s'.", what);
 
 	/* Error */
-	return (PARSE_ERROR_GENERIC);
+	return (PARSE_ERROR_INVALID_FLAG);
 }
 
 
@@ -1317,7 +1317,7 @@ errr parse_k_info(char *buf, header *head)
 		s = strchr(buf+2, ':');
 
 		/* Verify that colon */
-		if (!s) return (PARSE_ERROR_GENERIC);
+		if (!s) return (PARSE_ERROR_MISSING_COLON);
 
 		/* Nuke the colon, advance to the name */
 		*s++ = '\0';
@@ -1532,7 +1532,8 @@ errr parse_k_info(char *buf, header *head)
 			}
 
 			/* Parse this entry */
-			if (0 != grab_one_kind_flag(k_ptr, s)) return (PARSE_ERROR_INVALID_FLAG);
+			if (0 != grab_one_kind_flag(k_ptr, s))
+				return (PARSE_ERROR_INVALID_FLAG);
 
 			/* Start the next entry */
 			s = t;
@@ -1624,7 +1625,7 @@ static errr grab_one_artifact_flag(artifact_type *a_ptr, cptr what)
 	msg_format("Unknown artifact flag '%s'.", what);
 
 	/* Error */
-	return (PARSE_ERROR_GENERIC);
+	return (PARSE_ERROR_INVALID_FLAG);
 }
 
 
@@ -1648,7 +1649,7 @@ errr parse_a_info(char *buf, header *head)
 		s = strchr(buf+2, ':');
 
 		/* Verify that colon */
-		if (!s) return (PARSE_ERROR_GENERIC);
+		if (!s) return (PARSE_ERROR_MISSING_COLON);
 
 		/* Nuke the colon, advance to the name */
 		*s++ = '\0';
@@ -1751,7 +1752,8 @@ errr parse_a_info(char *buf, header *head)
 			}
 
 			/* Parse this entry */
-			if (0 != grab_one_artifact_flag(a_ptr, s)) return (PARSE_ERROR_INVALID_FLAG);
+			if (0 != grab_one_artifact_flag(a_ptr, s))
+				return (PARSE_ERROR_INVALID_FLAG);
 
 			/* Start the next entry */
 			s = t;
@@ -1765,7 +1767,7 @@ errr parse_a_info(char *buf, header *head)
 
 		/* Find the colon after the name */
 		s = strchr(buf + 2, ':');
-		if (!s) return (PARSE_ERROR_GENERIC);
+		if (!s) return (PARSE_ERROR_MISSING_COLON);
 
 		/* Nuke the colon, advance to the name */
 		*s++ = '\0';
@@ -1853,7 +1855,7 @@ static bool grab_one_ego_item_flag(ego_item_type *e_ptr, cptr what)
 	msg_format("Unknown ego-item flag '%s'.", what);
 
 	/* Error */
-	return (PARSE_ERROR_GENERIC);
+	return (PARSE_ERROR_INVALID_FLAG);
 }
 
 
@@ -1881,7 +1883,7 @@ errr parse_e_info(char *buf, header *head)
 		s = strchr(buf+2, ':');
 
 		/* Verify that colon */
-		if (!s) return (PARSE_ERROR_GENERIC);
+		if (!s) return (PARSE_ERROR_MISSING_COLON);
 
 		/* Nuke the colon, advance to the name */
 		*s++ = '\0';
@@ -2011,7 +2013,8 @@ errr parse_e_info(char *buf, header *head)
 			}
 
 			/* Parse this entry */
-			if (0 != grab_one_ego_item_flag(e_ptr, s)) return (PARSE_ERROR_INVALID_FLAG);
+			if (0 != grab_one_ego_item_flag(e_ptr, s))
+				return (PARSE_ERROR_INVALID_FLAG);
 
 			/* Start the next entry */
 			s = t;
@@ -2061,7 +2064,7 @@ static errr grab_one_basic_flag(monster_race *r_ptr, cptr what)
 	msg_format("Unknown monster flag '%s'.", what);
 
 	/* Failure */
-	return (PARSE_ERROR_GENERIC);
+	return (PARSE_ERROR_INVALID_FLAG);
 }
 
 
@@ -2083,7 +2086,7 @@ static errr grab_one_spell_flag(monster_race *r_ptr, cptr what)
 	msg_format("Unknown monster flag '%s'.", what);
 
 	/* Failure */
-	return (PARSE_ERROR_GENERIC);
+	return (PARSE_ERROR_INVALID_FLAG);
 }
 
 
@@ -2109,7 +2112,7 @@ errr parse_r_info(char *buf, header *head)
 		s = strchr(buf+2, ':');
 
 		/* Verify that colon */
-		if (!s) return (PARSE_ERROR_GENERIC);
+		if (!s) return (PARSE_ERROR_MISSING_COLON);
 
 		/* Nuke the colon, advance to the name */
 		*s++ = '\0';
@@ -2230,7 +2233,8 @@ errr parse_r_info(char *buf, header *head)
 		for (i = 0; i < MONSTER_BLOW_MAX; i++) if (!r_ptr->blow[i].method) break;
 
 		/* Oops, no more slots */
-		if (i == MONSTER_BLOW_MAX) return (PARSE_ERROR_GENERIC);
+		if (i == MONSTER_BLOW_MAX)
+			return (PARSE_ERROR_TOO_MANY_ENTRIES);
 
 		/* Analyze the first field */
 		for (s = t = buf+2; *t && (*t != ':'); t++) /* loop */;
@@ -2245,7 +2249,7 @@ errr parse_r_info(char *buf, header *head)
 		}
 
 		/* Invalid method */
-		if (!r_info_blow_method[n1]) return (PARSE_ERROR_GENERIC);
+		if (!r_info_blow_method[n1]) return (PARSE_ERROR_UNRECOGNISED_BLOW);
 
 		/* Analyze the second field */
 		for (s = t; *t && (*t != ':'); t++) /* loop */;
@@ -2260,7 +2264,7 @@ errr parse_r_info(char *buf, header *head)
 		}
 
 		/* Invalid effect */
-		if (!r_info_blow_effect[n2]) return (PARSE_ERROR_GENERIC);
+		if (!r_info_blow_effect[n2]) return (PARSE_ERROR_UNRECOGNISED_BLOW);
 
 		/* Analyze the third field */
 		for (s = t; *t && (*t != 'd'); t++) /* loop */;
@@ -2296,7 +2300,8 @@ errr parse_r_info(char *buf, header *head)
 			}
 
 			/* Parse this entry */
-			if (0 != grab_one_basic_flag(r_ptr, s)) return (PARSE_ERROR_INVALID_FLAG);
+			if (0 != grab_one_basic_flag(r_ptr, s))
+				return (PARSE_ERROR_INVALID_FLAG);
 
 			/* Start the next entry */
 			s = t;
@@ -2374,7 +2379,7 @@ static errr grab_one_racial_flag(player_race *pr_ptr, cptr what)
 	msg_format("Unknown player flag '%s'.", what);
 
 	/* Error */
-	return (PARSE_ERROR_GENERIC);
+	return (PARSE_ERROR_INVALID_FLAG);
 }
 
 /*
@@ -2423,13 +2428,13 @@ errr parse_p_info(char *buf, header *head)
 		s = strchr(buf+2, ':');
 
 		/* Verify that colon */
-		if (!s) return (PARSE_ERROR_GENERIC);
+		if (!s) return (PARSE_ERROR_MISSING_COLON);
 
 		/* Nuke the colon, advance to the name */
 		*s++ = '\0';
 
 		/* Paranoia -- require a name */
-		if (!*s) return (PARSE_ERROR_GENERIC);
+		if (!*s) return (PARSE_ERROR_MISSING_FIELD);
 
 		/* Get the index */
 		i = atoi(buf+2);
@@ -2469,7 +2474,7 @@ errr parse_p_info(char *buf, header *head)
 			s = strchr(s, ':');
 
 			/* Verify that colon */
-			if (!s) return (PARSE_ERROR_GENERIC);
+			if (!s) return (PARSE_ERROR_MISSING_COLON);
 
 			/* Nuke the colon, advance to the subindex */
 			*s++ = '\0';
@@ -2492,7 +2497,7 @@ errr parse_p_info(char *buf, header *head)
 		if (!pr_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Verify text */
-		if (!buf[1] || !buf[2]) return (PARSE_ERROR_GENERIC);
+		if (!buf[1] || !buf[2]) return (PARSE_ERROR_MISSING_FIELD);
 
 		/* Scan and save the values */
 		if (!parse_skills(pr_ptr->r_skills, buf+2)) return (PARSE_ERROR_GENERIC);
@@ -2589,7 +2594,8 @@ errr parse_p_info(char *buf, header *head)
 			}
 
 			/* Parse this entry */
-			if (0 != grab_one_racial_flag(pr_ptr, s)) return (PARSE_ERROR_INVALID_FLAG);
+			if (0 != grab_one_racial_flag(pr_ptr, s))
+				return (PARSE_ERROR_INVALID_FLAG);
 
 			/* Start the next entry */
 			s = t;
@@ -2645,7 +2651,7 @@ static errr grab_one_class_flag(player_class *pc_ptr, cptr what)
 	msg_format("Unknown player class flag '%s'.", what);
 
 	/* Error */
-	return (PARSE_ERROR_GENERIC);
+	return (PARSE_ERROR_INVALID_FLAG);
 }
 
 
@@ -2672,13 +2678,13 @@ errr parse_c_info(char *buf, header *head)
 		s = strchr(buf+2, ':');
 
 		/* Verify that colon */
-		if (!s) return (PARSE_ERROR_GENERIC);
+		if (!s) return (PARSE_ERROR_MISSING_COLON);
 
 		/* Nuke the colon, advance to the name */
 		*s++ = '\0';
 
 		/* Paranoia -- require a name */
-		if (!*s) return (PARSE_ERROR_GENERIC);
+		if (!*s) return (PARSE_ERROR_MISSING_FIELD);
 
 		/* Get the index */
 		i = atoi(buf+2);
@@ -2722,7 +2728,7 @@ errr parse_c_info(char *buf, header *head)
 			s = strchr(s, ':');
 
 			/* Verify that colon */
-			if (!s) return (PARSE_ERROR_GENERIC);
+			if (!s) return (PARSE_ERROR_MISSING_COLON);
 
 			/* Nuke the colon, advance to the subindex */
 			*s++ = '\0';
@@ -2745,7 +2751,7 @@ errr parse_c_info(char *buf, header *head)
 		if (!pc_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Verify text */
-		if (!buf[1] || !buf[2]) return (PARSE_ERROR_GENERIC);
+		if (!buf[1] || !buf[2]) return (PARSE_ERROR_MISSING_FIELD);
 
 		/* Scan and save the values */
 		if (!parse_skills(pc_ptr->c_skills, buf+2)) return (PARSE_ERROR_GENERIC);
@@ -2758,7 +2764,7 @@ errr parse_c_info(char *buf, header *head)
 		if (!pc_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Verify text */
-		if (!buf[1] || !buf[2]) return (PARSE_ERROR_GENERIC);
+		if (!buf[1] || !buf[2]) return (PARSE_ERROR_MISSING_FIELD);
 
 		/* Scan and save the values */
 		if (!parse_skills(pc_ptr->x_skills, buf+2)) return (PARSE_ERROR_GENERIC);
@@ -3030,7 +3036,7 @@ errr parse_b_info(char *buf, header *head)
 	if (buf[0] == 'N')
 	{
 		/* Confirm the colon */
-		if (buf[1] != ':') return PARSE_ERROR_GENERIC;
+		if (buf[1] != ':') return PARSE_ERROR_MISSING_COLON;
 
 		/* Get the index */
 		shop_idx = atoi(buf+2);
@@ -3139,7 +3145,7 @@ errr parse_flavor_info(char *buf, header *head)
 		if (!flavor_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Paranoia */
-		if (!buf[2]) return (PARSE_ERROR_GENERIC);
+		if (!buf[2]) return (PARSE_ERROR_MISSING_FIELD);
 		if (!buf[3]) return (PARSE_ERROR_GENERIC);
 		if (!buf[4]) return (PARSE_ERROR_GENERIC);
 
@@ -3176,8 +3182,8 @@ errr parse_flavor_info(char *buf, header *head)
 		if (!flavor_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Paranoia */
-		if (!buf[1]) return (PARSE_ERROR_GENERIC);
-		if (!buf[2]) return (PARSE_ERROR_GENERIC);
+		if (!buf[1]) return (PARSE_ERROR_MISSING_FIELD);
+		if (!buf[2]) return (PARSE_ERROR_MISSING_FIELD);
 
 		/* Store the text */
 		if (!add_text(&flavor_ptr->text, head, buf + 2))
@@ -3215,7 +3221,7 @@ errr parse_s_info(char *buf, header *head)
 		s = strchr(buf+2, ':');
 
 		/* Verify that colon */
-		if (!s) return (PARSE_ERROR_GENERIC);
+		if (!s) return (PARSE_ERROR_MISSING_COLON);
 
 		/* Nuke the colon, advance to the name */
 		*s++ = '\0';
