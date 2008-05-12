@@ -16,6 +16,8 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "tvalsval.h"
+
 
 static u32b obj_total[MAX_DEPTH];
 static byte *obj_alloc;

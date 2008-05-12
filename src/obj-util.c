@@ -17,7 +17,7 @@
  */
 #include "angband.h"
 #include "randname.h"
-
+#include "tvalsval.h"
 
 
 /*

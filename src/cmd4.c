@@ -17,6 +17,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "tvalsval.h"
 #include "option.h"
 #include "ui.h"
 #include "externs.h"

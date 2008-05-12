@@ -18,6 +18,8 @@
  */
 #include "angband.h"
 #include "game-event.h"
+#include "tvalsval.h"
+
 
 struct flag_event_trigger
 {

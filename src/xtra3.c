@@ -17,11 +17,13 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-
 #include "angband.h"
 #include "game-event.h"
 
 #include "ui-birth.h"
+
+#include "tvalsval.h"
+
 
 /* 
  * There are a few functions installed to be triggered by several 

@@ -18,6 +18,8 @@
 #include "angband.h"
 #include "z-file.h"
 #include "cmds.h"
+#include "tvalsval.h"
+
 
 #ifdef ALLOW_SPOILERS
 

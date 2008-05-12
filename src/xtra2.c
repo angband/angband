@@ -18,7 +18,7 @@
  */
 #include "angband.h"
 #include "cmds.h"
-
+#include "tvalsval.h"
 
 /*** Timed effects ***/
 

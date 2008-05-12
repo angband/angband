@@ -18,6 +18,7 @@
 #include "angband.h"
 #include "effects.h"
 #include "cmds.h"
+#include "tvalsval.h"
 
 /*
  * Describes a flag-name pair.
