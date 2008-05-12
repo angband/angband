@@ -3472,7 +3472,32 @@ int lookup_name(int tval, const char *name)
 	}
 
 	msg_format("No object (\"%s\",\"%s\")", tval_find_name(tval), name);
-	return 0;
+	return -1;
+}
+
+/**
+ * Return the numeric sval of the object kind with the given `tval` and name `name`.
+ */
+int lookup_sval(int tval, const char *name)
+{
+	int k;
+
+	/* Look for it */
+	for (k = 1; k < z_info->k_max; k++)
+	{
+		object_kind *k_ptr = &k_info[k];
+		const char *nm = k_name + k_ptr->name;
+
+		if (*nm == '&' && *(nm+1))
+			nm += 2;
+
+		/* Found a match */
+		if (k_ptr->tval == tval && !strcmp(name, nm))
+			return k_ptr->sval;
+	}
+
+	msg_format("No object (\"%s\",\"%s\")", tval_find_name(tval), name);
+	return -1;
 }
 
 /**

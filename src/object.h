@@ -138,6 +138,7 @@ unsigned check_for_inscrip(const object_type *o_ptr, const char *inscrip);
 int lookup_kind(int tval, int sval);
 bool lookup_reverse(s16b k_idx, int *tval, int *sval);
 int lookup_name(int tval, const char *name);
+int lookup_sval(int tval, const char *name);
 int tval_find_idx(const char *name);
 const char *tval_find_name(int tval);
 

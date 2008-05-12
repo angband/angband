@@ -1689,11 +1689,44 @@ errr parse_a_info(char *buf, header *head)
 	/* Process 'I' for "Info" (one line only) */
 	else if (buf[0] == 'I')
 	{
+		char *tval_s, *sval_s, *pval_s;
 		int tval, sval, pval;
 
-		/* Scan for the values */
-		if (3 != sscanf(buf+2, "%d:%d:%d",
-			            &tval, &sval, &pval)) return (PARSE_ERROR_GENERIC);
+		/* Find the beginning of the tval field */
+		tval_s = strchr(buf, ':');
+		if (!tval_s) return PARSE_ERROR_MISSING_COLON;
+		*tval_s++ = '\0';
+		if (!*tval_s) return PARSE_ERROR_MISSING_FIELD;
+
+		/* Now find the beginning of the sval field */
+		sval_s = strchr(tval_s, ':');
+		if (!sval_s) return PARSE_ERROR_MISSING_COLON;
+		*sval_s++ = '\0';
+		if (!*sval_s) return PARSE_ERROR_MISSING_FIELD;
+
+		/* Now find the beginning of the pval field */
+		pval_s = strchr(sval_s, ':');
+		if (!pval_s) return PARSE_ERROR_MISSING_COLON;
+		*pval_s++ = '\0';
+		if (!*pval_s) return PARSE_ERROR_MISSING_FIELD;
+
+		/* Now convert the tval into its numeric equivalent */
+		if (1 != sscanf(tval_s, "%d", &tval))
+		{
+			tval = tval_find_idx(tval_s);
+			if (tval == -1) return PARSE_ERROR_UNRECOGNISED_TVAL;
+		}
+
+		/* Now find the sval */
+		if (1 != sscanf(sval_s, "%d", &sval))
+		{
+			sval = lookup_sval(tval, sval_s);
+			if (sval == -1) return PARSE_ERROR_UNRECOGNISED_SVAL;
+		}
+
+		/* Now extract the pval */
+		if (1 != sscanf(pval_s, "%d", &pval))
+			return PARSE_ERROR_NOT_NUMBER;
 
 		/* Save the values */
 		a_ptr->tval = tval;
