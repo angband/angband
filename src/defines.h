@@ -234,7 +234,6 @@
 #define STORE_INVEN_MAX	24		/* Max number of discrete objs in inven */
 #define STORE_TURNS		1000	/* Number of turns between turnovers */
 #define STORE_SHUFFLE	25		/* 1/Chance (per day) of an owner changing */
-#define STORE_CHOICES	32		/* Number of choices in the store selection table */
 
 
 /*

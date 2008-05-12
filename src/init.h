@@ -17,23 +17,29 @@
 /*
  * Parse errors
  */
-#define PARSE_ERROR_GENERIC                  1
-#define PARSE_ERROR_OBSOLETE_FILE            2
-#define PARSE_ERROR_MISSING_RECORD_HEADER    3
-#define PARSE_ERROR_NON_SEQUENTIAL_RECORDS   4
-#define PARSE_ERROR_INVALID_FLAG             5
-#define PARSE_ERROR_UNDEFINED_DIRECTIVE      6
-#define PARSE_ERROR_OUT_OF_MEMORY            7
-#define PARSE_ERROR_OUT_OF_BOUNDS            8
-#define PARSE_ERROR_TOO_FEW_ARGUMENTS        9
-#define PARSE_ERROR_TOO_MANY_ARGUMENTS      10
-#define PARSE_ERROR_TOO_MANY_ALLOCATIONS    11
-#define PARSE_ERROR_INVALID_SPELL_FREQ      12
-#define PARSE_ERROR_INVALID_ITEM_NUMBER     13
-#define PARSE_ERROR_TOO_MANY_ENTRIES        14
-#define PARSE_ERROR_VAULT_TOO_BIG           15
+enum
+{
+	PARSE_ERROR_GENERIC = 1,
+	PARSE_ERROR_INVALID_FLAG,
+	PARSE_ERROR_INVALID_ITEM_NUMBER,
+	PARSE_ERROR_INVALID_SPELL_FREQ,
+	PARSE_ERROR_MISSING_COLON,
+	PARSE_ERROR_MISSING_FIELD,
+	PARSE_ERROR_MISSING_RECORD_HEADER,
+	PARSE_ERROR_NON_SEQUENTIAL_RECORDS,
+	PARSE_ERROR_OBSOLETE_FILE,
+	PARSE_ERROR_OUT_OF_BOUNDS,
+	PARSE_ERROR_OUT_OF_MEMORY,
+	PARSE_ERROR_TOO_MANY_ARGUMENTS,
+	PARSE_ERROR_TOO_FEW_ENTRIES,
+	PARSE_ERROR_TOO_MANY_ENTRIES,
+	PARSE_ERROR_UNDEFINED_DIRECTIVE,
+	PARSE_ERROR_UNRECOGNISED_TVAL,
+	PARSE_ERROR_UNRECOGNISED_SVAL,
+	PARSE_ERROR_VAULT_TOO_BIG,
 
-#define PARSE_ERROR_MAX                     16
+	PARSE_ERROR_MAX
+};
 
 
 typedef struct header header;
@@ -104,6 +110,7 @@ struct header
 
 extern errr init_info_txt(ang_file *fp, char *buf, header *head,
                           parse_info_txt_func parse_info_txt_line);
+extern errr init_store_txt(ang_file *fp, char *buf);
 
 extern errr eval_info(eval_info_power_func eval_info_process, header *head);
 

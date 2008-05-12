@@ -216,8 +216,6 @@ void create_user_dirs(void)
 
 
 
-#ifdef ALLOW_TEMPLATES
-
 
 /*
  * Hack -- help give useful error messages
@@ -233,24 +231,24 @@ static cptr err_str[PARSE_ERROR_MAX] =
 {
 	NULL,
 	"parse error",
-	"obsolete file",
+	"invalid flag specification",
+	"invalid number of items (0-99)",
+	"invalid spell frequency",
+	"missing colon",
+	"missing field",
 	"missing record header",
 	"non-sequential records",
-	"invalid flag specification",
-	"undefined directive",
-	"out of memory",
+	"obsolete file",
 	"value out of bounds",
-	"too few arguments",
+	"out of memory",
 	"too many arguments",
-	"too many allocation entries",
-	"invalid spell frequency",
-	"invalid number of items (0-99)",
+	"too few entries",
 	"too many entries",
+	"undefined directive",
+	"unrecognised tval name",
+	"unrecognised sval name",
 	"vault too big",
 };
-
-
-#endif /* ALLOW_TEMPLATES */
 
 
 /*
@@ -357,8 +355,6 @@ static void init_header(header *head, int num, int len)
 }
 
 
-#ifdef ALLOW_TEMPLATES
-
 /*
  * Display a parser error message.
  */
@@ -378,8 +374,6 @@ static void display_parse_error(cptr filename, errr err, cptr buf)
 	/* Quit */
 	quit_fmt("Error in '%s.txt' file.", filename);
 }
-
-#endif /* ALLOW_TEMPLATES */
 
 
 /*
@@ -962,6 +956,34 @@ static void init_books(void)
 	}
 }
 
+
+/*
+ * Initialise stores, from the edit file.
+ */
+static void init_stores(void)
+{
+	errr err;
+	char filename[1024];
+	char buf[1024];
+	ang_file *fh;
+
+	path_build(filename, sizeof(filename), ANGBAND_DIR_EDIT, "store.txt");
+
+	/* Open the file */
+	fh = file_open(filename, MODE_READ, -1);
+	if (!fh) quit("Cannot open 'store.txt' file.");
+
+	/* Parse the file */
+	err = init_store_txt(fh, buf);
+	file_close(fh);
+
+	/* Errors */
+	if (err) display_parse_error("store", err, buf);
+
+	return;
+}
+
+
 /*** Initialize others ***/
 
 static void autoinscribe_init(void)
@@ -1066,60 +1088,6 @@ static errr init_other(void)
 	/* Allocate it */
 	inventory = C_ZNEW(INVEN_TOTAL, object_type);
 
-
-	/*** Prepare the stores ***/
-
-	/* Allocate the stores */
-	store = C_ZNEW(MAX_STORES, store_type);
-
-	/* Fill in each store */
-	for (i = 0; i < MAX_STORES; i++)
-	{
-		int k;
-
-		/* Get the store */
-		store_type *st_ptr = &store[i];
-
-		/* Assume full stock */
-		st_ptr->stock_size = STORE_INVEN_MAX;
-
-		/* Allocate the stock */
-		st_ptr->stock = C_ZNEW(st_ptr->stock_size, object_type);
-
-		/* No table for the black market or home */
-		if ((i == STORE_B_MARKET) || (i == STORE_HOME)) continue;
-
-		/* Assume full table */
-		st_ptr->table_size = STORE_CHOICES;
-
-		/* Allocate the stock */
-		st_ptr->table = C_ZNEW(st_ptr->table_size, s16b);
-
-		/* Scan the choices */
-		for (k = 0; k < STORE_CHOICES; k++)
-		{
-			int k_idx;
-
-			/* Extract the tval/sval codes */
-			int tv = store_choices[i][k][0];
-			int sv = store_choices[i][k][1];
-
-			/* Look for it */
-			for (k_idx = 1; k_idx < z_info->k_max; k_idx++)
-			{
-				object_kind *k_ptr = &k_info[k_idx];
-
-				/* Found a match */
-				if ((k_ptr->tval == tv) && (k_ptr->sval == sv)) break;
-			}
-
-			/* Catch errors */
-			if (k_idx == z_info->k_max) continue;
-
-			/* Add that item index to the table */
-			st_ptr->table[st_ptr->table_num++] = k_idx;
-		}
-	}
 
 
 	/*** Prepare the options ***/
@@ -1390,7 +1358,8 @@ bool init_angband(void)
 	/* Initialize the menus */
 	/* This must occur before preference files are read(?) */
 	init_cmd4_c();
-	
+
+
 	/*** Initialize some arrays ***/
 
 	/* Initialize size info */
@@ -1440,7 +1409,7 @@ bool init_angband(void)
 	/* Initialize flavor info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (flavors)");
 	if (init_flavor_info()) quit("Cannot initialize flavors");
-	
+
 	/* Initialize spell info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (spells)");
 	if (init_s_info()) quit("Cannot initialize spells");
@@ -1448,6 +1417,10 @@ bool init_angband(void)
 	/* Initialize spellbook info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (spellbooks)");
 	init_books();
+
+	/* Initialise store stocking data */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (store stocks)");
+	init_stores();
 
 	/* Initialize some other arrays */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (other)");
