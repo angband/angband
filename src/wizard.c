@@ -1244,7 +1244,7 @@ static void do_cmd_rerate(void)
 		/* Collect values */
 		for (i = 1; i < PY_MAX_LEVEL; i++)
 		{
-			p_ptr->player_hp[i] = randint(p_ptr->hitdie);
+			p_ptr->player_hp[i] = randint1(p_ptr->hitdie);
 			p_ptr->player_hp[i] += p_ptr->player_hp[i - 1];
 		}
 

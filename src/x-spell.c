@@ -419,7 +419,7 @@ static void spell_wonder(int dir)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 	int plev = p_ptr->lev;
-	int die = randint(100) + plev / 5;
+	int die = randint1(100) + plev / 5;
 	int beam = beam_chance();
 
 	if (die > 100)
@@ -799,13 +799,13 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_RESIST_FIRE:
 		{
-			(void)inc_timed(TMD_OPP_FIRE, randint(20) + 20);
+			(void)inc_timed(TMD_OPP_FIRE, randint1(20) + 20);
 			break;
 		}
 
 		case SPELL_RESIST_COLD:
 		{
-			(void)inc_timed(TMD_OPP_COLD, randint(20) + 20);
+			(void)inc_timed(TMD_OPP_COLD, randint1(20) + 20);
 			break;
 		}
 
@@ -816,13 +816,13 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_RESIST_POISON:
 		{
-			(void)inc_timed(TMD_OPP_POIS, randint(20) + 20);
+			(void)inc_timed(TMD_OPP_POIS, randint1(20) + 20);
 			break;
 		}
 
 		case SPELL_RESISTANCE:
 		{
-			int time = randint(20) + 20;
+			int time = randint1(20) + 20;
 			(void)inc_timed(TMD_OPP_ACID, time);
 			(void)inc_timed(TMD_OPP_ELEC, time);
 			(void)inc_timed(TMD_OPP_FIRE, time);
@@ -834,21 +834,21 @@ static bool cast_mage_spell(int spell)
 		case SPELL_HEROISM:
 		{
 			(void)hp_player(10);
-			(void)inc_timed(TMD_HERO, randint(25) + 25);
+			(void)inc_timed(TMD_HERO, randint1(25) + 25);
 			(void)clear_timed(TMD_AFRAID);
 			break;
 		}
 
 		case SPELL_SHIELD:
 		{
-			(void)inc_timed(TMD_SHIELD, randint(20) + 30);
+			(void)inc_timed(TMD_SHIELD, randint1(20) + 30);
 			break;
 		}
 
 		case SPELL_BERSERKER:
 		{
 			(void)hp_player(30);
-			(void)inc_timed(TMD_SHERO, randint(25) + 25);
+			(void)inc_timed(TMD_SHERO, randint1(25) + 25);
 			(void)clear_timed(TMD_AFRAID);
 			break;
 		}
@@ -857,11 +857,11 @@ static bool cast_mage_spell(int spell)
 		{
 			if (!p_ptr->timed[TMD_FAST])
 			{
-				(void)set_timed(TMD_FAST, randint(20) + plev);
+				(void)set_timed(TMD_FAST, randint1(20) + plev);
 			}
 			else
 			{
-				(void)inc_timed(TMD_FAST, randint(5));
+				(void)inc_timed(TMD_FAST, randint1(5));
 			}
 			break;
 		}
@@ -895,13 +895,13 @@ static bool cast_mage_spell(int spell)
 
 		case SPELL_ENCHANT_ARMOR: /* enchant armor */
 		{
-			return enchant_spell(0, 0, rand_int(3) + plev / 20);
+			return enchant_spell(0, 0, randint0(3) + plev / 20);
 		}
 
 		case SPELL_ENCHANT_WEAPON: /* enchant weapon */
 		{
-			return enchant_spell(rand_int(4) + plev / 20,
-			                     rand_int(4) + plev / 20, 0);
+			return enchant_spell(randint0(4) + plev / 20,
+			                     randint0(4) + plev / 20, 0);
 		}
 	}
 
@@ -936,7 +936,7 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_BLESS:
 		{
-			(void)inc_timed(TMD_BLESSED, randint(12) + 12);
+			(void)inc_timed(TMD_BLESSED, randint1(12) + 12);
 			break;
 		}
 
@@ -992,7 +992,7 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_CHANT:
 		{
-			(void)inc_timed(TMD_BLESSED, randint(24) + 24);
+			(void)inc_timed(TMD_BLESSED, randint1(24) + 24);
 			break;
 		}
 
@@ -1016,8 +1016,8 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_RESIST_HEAT_COLD:
 		{
-			(void)inc_timed(TMD_OPP_FIRE, randint(10) + 10);
-			(void)inc_timed(TMD_OPP_COLD, randint(10) + 10);
+			(void)inc_timed(TMD_OPP_FIRE, randint1(10) + 10);
+			(void)inc_timed(TMD_OPP_COLD, randint1(10) + 10);
 			break;
 		}
 
@@ -1047,13 +1047,13 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_SENSE_INVISIBLE:
 		{
-			(void)inc_timed(TMD_SINVIS, randint(24) + 24);
+			(void)inc_timed(TMD_SINVIS, randint1(24) + 24);
 			break;
 		}
 
 		case PRAYER_PROTECTION_FROM_EVIL:
 		{
-			(void)inc_timed(TMD_PROTEVIL, randint(25) + 3 * p_ptr->lev);
+			(void)inc_timed(TMD_PROTEVIL, randint1(25) + 3 * p_ptr->lev);
 			break;
 		}
 
@@ -1085,13 +1085,13 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_PRAYER:
 		{
-			(void)inc_timed(TMD_BLESSED, randint(48) + 48);
+			(void)inc_timed(TMD_BLESSED, randint1(48) + 48);
 			break;
 		}
 
 		case PRAYER_DISPEL_UNDEAD:
 		{
-			(void)dispel_undead(randint(plev * 3));
+			(void)dispel_undead(randint1(plev * 3));
 			break;
 		}
 
@@ -1105,7 +1105,7 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_DISPEL_EVIL:
 		{
-			(void)dispel_evil(randint(plev * 3));
+			(void)dispel_evil(randint1(plev * 3));
 			break;
 		}
 
@@ -1117,7 +1117,7 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_HOLY_WORD:
 		{
-			(void)dispel_evil(randint(plev * 4));
+			(void)dispel_evil(randint1(plev * 4));
 			(void)hp_player(1000);
 			(void)clear_timed(TMD_AFRAID);
 			(void)clear_timed(TMD_POISONED);
@@ -1197,13 +1197,13 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_DISPEL_UNDEAD2:
 		{
-			(void)dispel_undead(randint(plev * 4));
+			(void)dispel_undead(randint1(plev * 4));
 			break;
 		}
 
 		case PRAYER_DISPEL_EVIL2:
 		{
-			(void)dispel_evil(randint(plev * 4));
+			(void)dispel_evil(randint1(plev * 4));
 			break;
 		}
 
@@ -1248,12 +1248,12 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_ENCHANT_WEAPON:
 		{
-			return enchant_spell(rand_int(4) + 1, rand_int(4) + 1, 0);
+			return enchant_spell(randint0(4) + 1, randint0(4) + 1, 0);
 		}
 
 		case PRAYER_ENCHANT_ARMOUR:
 		{
-			return enchant_spell(0, 0, rand_int(3) + 2);
+			return enchant_spell(0, 0, randint0(3) + 2);
 		}
 
 		case PRAYER_ELEMENTAL_BRAND:

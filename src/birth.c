@@ -190,11 +190,11 @@ static int adjust_stat(int value, int amount, int auto_roll)
 			}
 			else if (value < 18+70)
 			{
-				value += ((auto_roll ? 15 : randint(15)) + 5);
+				value += ((auto_roll ? 15 : randint1(15)) + 5);
 			}
 			else if (value < 18+90)
 			{
-				value += ((auto_roll ? 6 : randint(6)) + 2);
+				value += ((auto_roll ? 6 : randint1(6)) + 2);
 			}
 			else if (value < 18+100)
 			{
@@ -231,7 +231,7 @@ static void get_stats(int stat_use[A_MAX])
 		for (j = i = 0; i < 18; i++)
 		{
 			/* Roll the dice */
-			dice[i] = randint(3 + i % 3);
+			dice[i] = randint1(3 + i % 3);
 
 			/* Collect the maximum */
 			j += dice[i];
@@ -314,7 +314,7 @@ static void get_extra(void)
 		/* Roll the hitpoint values */
 		for (i = 1; i < PY_MAX_LEVEL; i++)
 		{
-			j = randint(p_ptr->hitdie);
+			j = randint1(p_ptr->hitdie);
 			p_ptr->player_hp[i] = p_ptr->player_hp[i-1] + j;
 		}
 
@@ -359,7 +359,7 @@ static void get_history(void)
 
 
 	/* Initial social class */
-	social_class = randint(4);
+	social_class = randint1(4);
 
 	/* Starting place */
 	chart = rp_ptr->hist;
@@ -372,7 +372,7 @@ static void get_history(void)
 		i = 0;
 
 		/* Roll for nobility */
-		roll = randint(100);
+		roll = randint1(100);
 
 		/* Get the proper entry in the table */
 		while ((chart != h_info[i].chart) || (roll > h_info[i].roll)) i++;
@@ -404,7 +404,7 @@ static void get_history(void)
 static void get_ahw(void)
 {
 	/* Calculate the age */
-	p_ptr->age = rp_ptr->b_age + randint(rp_ptr->m_age);
+	p_ptr->age = rp_ptr->b_age + randint1(rp_ptr->m_age);
 
 	/* Calculate the height/weight for males */
 	if (p_ptr->psex == SEX_MALE)
@@ -434,7 +434,7 @@ static void get_money(int stat_use[A_MAX])
 	int gold;
 
 	/* Social Class determines starting gold */
-	gold = (p_ptr->sc * 6) + randint(100) + 300;
+	gold = (p_ptr->sc * 6) + randint1(100) + 300;
 
 	/* Process the stats */
 	for (i = 0; i < A_MAX; i++)

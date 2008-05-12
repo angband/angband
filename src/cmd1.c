@@ -49,7 +49,7 @@ void search(void)
 		for (x = (px - 1); x <= (px + 1); x++)
 		{
 			/* Sometimes, notice things */
-			if (rand_int(100) < chance)
+			if (randint0(100) < chance)
 			{
 				/* Invisible trap */
 				if (cave_feat[y][x] == FEAT_INVIS)

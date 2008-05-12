@@ -351,7 +351,7 @@ static u16b hallucinatory_monster(void)
 	while (1)
 	{
 		/* Select a random monster */
-		r_ptr = &r_info[rand_int(z_info->r_max)];
+		r_ptr = &r_info[randint0(z_info->r_max)];
 		
 		/* Skip non-entries */
 		if (!r_ptr->name) continue;
@@ -379,7 +379,7 @@ static u16b hallucinatory_object(void)
 	while (1)
 	{
 		/* Select a random object */
-		k_ptr = &k_info[rand_int(z_info->k_max - 1) + 1];
+		k_ptr = &k_info[randint0(z_info->k_max - 1) + 1];
 		
 		/* Skip non-entries */
 		if (!k_ptr->name) continue;
@@ -725,7 +725,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			else if (r_ptr->flags[0] & (RF0_ATTR_MULTI))
 			{
 				/* Multi-hued attr */
-				a = randint(15);
+				a = randint1(15);
 				
 				/* Normal char */
 				c = dc;
@@ -975,7 +975,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 		if (one_in_(256) && (g->f_idx < FEAT_PERM_SOLID))
 		{
 			/* Normally, make an imaginary monster */
-			if (rand_int(100) < 75)
+			if (randint0(100) < 75)
 			{
 				g->m_idx = 1;
 			}

@@ -1271,8 +1271,8 @@ void monster_death(int m_idx)
 
 
 	/* Determine how much we can drop */
-	if ((r_ptr->flags[0] & (RF0_DROP_60)) && (rand_int(100) < 60)) number++;
-	if ((r_ptr->flags[0] & (RF0_DROP_90)) && (rand_int(100) < 90)) number++;
+	if ((r_ptr->flags[0] & (RF0_DROP_60)) && (randint0(100) < 60)) number++;
+	if ((r_ptr->flags[0] & (RF0_DROP_90)) && (randint0(100) < 90)) number++;
 	if (r_ptr->flags[0] & (RF0_DROP_1D2)) number += damroll(1, 2);
 	if (r_ptr->flags[0] & (RF0_DROP_2D2)) number += damroll(2, 2);
 	if (r_ptr->flags[0] & (RF0_DROP_3D2)) number += damroll(3, 2);
@@ -1297,7 +1297,7 @@ void monster_death(int m_idx)
 		object_wipe(i_ptr);
 
 		/* Make Gold */
-		if (gold_ok && (!item_ok || (rand_int(100) < 50)))
+		if (gold_ok && (!item_ok || (randint0(100) < 50)))
 		{
 			/* Make some gold */
 			make_gold(i_ptr, level);
@@ -1529,7 +1529,7 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 	/* Mega-Hack -- Pain cancels fear */
 	if (m_ptr->monfear && (dam > 0))
 	{
-		int tmp = randint(dam);
+		int tmp = randint1(dam);
 
 		/* Cure a little fear */
 		if (tmp < m_ptr->monfear)
@@ -1561,14 +1561,14 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 		 * Run (sometimes) if at 10% or less of max hit points,
 		 * or (usually) when hit for half its current hit points
 		 */
-		if ((randint(10) >= percentage) ||
-		    ((dam >= m_ptr->hp) && (rand_int(100) < 80)))
+		if ((randint1(10) >= percentage) ||
+		    ((dam >= m_ptr->hp) && (randint0(100) < 80)))
 		{
 			/* Hack -- note fear */
 			(*fear) = TRUE;
 
 			/* Hack -- Add some timed fear */
-			m_ptr->monfear = (randint(10) +
+			m_ptr->monfear = (randint1(10) +
 			                  (((dam >= m_ptr->hp) && (percentage > 7)) ?
 			                   20 : ((11 - percentage) * 5)));
 		}
@@ -2041,7 +2041,7 @@ bool get_aim_dir(int *dp)
 	if (p_ptr->timed[TMD_CONFUSED])
 	{
 		/* Random direction */
-		dir = ddd[rand_int(8)];
+		dir = ddd[randint0(8)];
 	}
 
 	/* Notice confusion */
@@ -2219,10 +2219,10 @@ bool confuse_dir(int *dp)
 	if (p_ptr->timed[TMD_CONFUSED])
 	{
 		/* Apply confusion XXX XXX XXX */
-		if ((dir == 5) || (rand_int(100) < 75))
+		if ((dir == 5) || (randint0(100) < 75))
 		{
 			/* Random direction */
-			dir = ddd[rand_int(8)];
+			dir = ddd[randint0(8)];
 		}
 	}
 

@@ -419,7 +419,7 @@ static void choose_item(int a_idx)
 	 * bell curve are based on the target level; the distribution of
 	 * kinds versus the bell curve is hand-tweaked. :-(
 	 */
-	r = rand_int(100);
+	r = randint0(100);
 
 	if (r < 5)
 	{
@@ -629,10 +629,10 @@ static void choose_item(int a_idx)
 		case TV_HAFTED:
 		case TV_SWORD:
 		case TV_POLEARM:
-			a_ptr->to_h += (s16b)(a_ptr->level / 10 + rand_int(4) +
-			                      rand_int(4));
-			a_ptr->to_d += (s16b)(a_ptr->level / 10 + rand_int(4));
-			a_ptr->to_d += (s16b)(rand_int((a_ptr->dd * a_ptr->ds) / 2 + 1));
+			a_ptr->to_h += (s16b)(a_ptr->level / 10 + randint0(4) +
+			                      randint0(4));
+			a_ptr->to_d += (s16b)(a_ptr->level / 10 + randint0(4));
+			a_ptr->to_d += (s16b)(randint0((a_ptr->dd * a_ptr->ds) / 2 + 1));
 			break;
 		case TV_BOOTS:
 		case TV_GLOVES:
@@ -643,10 +643,10 @@ static void choose_item(int a_idx)
 		case TV_SOFT_ARMOR:
 		case TV_HARD_ARMOR:
 			a_ptr->to_a += (s16b)(a_ptr->level / 10 + a_ptr->ac / 3 +
-			                      rand_int(8));
+			                      randint0(8));
 
 			if (a_ptr->to_a < 10)
-				a_ptr->to_a += (s16b)(2 + rand_int(4) + rand_int(4));
+				a_ptr->to_a += (s16b)(2 + randint0(4) + randint0(4));
 
 				/*
 			 * Make sure armor gets some resists!  Hard body armor
@@ -674,7 +674,7 @@ static void choose_item(int a_idx)
  */
 static void do_pval(artifact_type *a_ptr)
 {
-	if (a_ptr->pval == 0) a_ptr->pval = (s16b)(1 + rand_int(3));
+	if (a_ptr->pval == 0) a_ptr->pval = (s16b)(1 + randint0(3));
 	else if (a_ptr->pval < 0)
 	{
 		if (one_in_(2)) a_ptr->pval--;
@@ -720,10 +720,10 @@ static void add_ability(artifact_type *a_ptr)
 {
 	int r;
 
-	r = rand_int(10);
+	r = randint0(10);
 	if (r < 5)		/* Pick something dependent on item type. */
 	{
-		r = rand_int(100);
+		r = randint0(100);
 		switch (a_ptr->tval)
 		{
 			case TV_BOW:
@@ -738,8 +738,8 @@ static void add_ability(artifact_type *a_ptr)
 					a_ptr->flags1 |= TR1_MIGHT;
 					do_pval(a_ptr);
 				}
-				else if (r < 65) a_ptr->to_h += (s16b)(2 + rand_int(2));
-				else a_ptr->to_d += (s16b)(2 + rand_int(3));
+				else if (r < 65) a_ptr->to_h += (s16b)(2 + randint0(2));
+				else a_ptr->to_d += (s16b)(2 + randint0(3));
 
 				break;
 			}
@@ -779,7 +779,7 @@ static void add_ability(artifact_type *a_ptr)
 				}
 				else if (r < 28)
 				{
-					a_ptr->dd += (byte)(1 + rand_int(2) + rand_int(2));
+					a_ptr->dd += (byte)(1 + randint0(2) + randint0(2));
 					if (a_ptr->dd > 9) a_ptr->dd = 9;
 				}
 				else if (r < 31) a_ptr->flags1 |= TR1_KILL_DRAGON;
@@ -824,10 +824,10 @@ static void add_ability(artifact_type *a_ptr)
 				}
 				else if (r < 89)
 				{
-					a_ptr->to_d += (s16b)(3 + rand_int(4));
-					a_ptr->to_h += (s16b)(3 + rand_int(4));
+					a_ptr->to_d += (s16b)(3 + randint0(4));
+					a_ptr->to_h += (s16b)(3 + randint0(4));
 				}
-				else if (r < 92) a_ptr->to_a += (s16b)(3 + rand_int(3));
+				else if (r < 92) a_ptr->to_a += (s16b)(3 + randint0(3));
 				else if (r < 98)
 					a_ptr->weight = (a_ptr->weight * 9) / 10;
 				else
@@ -847,7 +847,7 @@ static void add_ability(artifact_type *a_ptr)
 				}
 				else if (r < 50)
 				{
-					a_ptr->to_a += (s16b)(2 + rand_int(4));
+					a_ptr->to_a += (s16b)(2 + randint0(4));
 				}
 				else if (r < 80)
 				{
@@ -861,7 +861,7 @@ static void add_ability(artifact_type *a_ptr)
 					if (a_ptr->pval < 0) break;
 
 					if (a_ptr->pval == 0)
-						a_ptr->pval = (s16b)(3 + rand_int(8));
+						a_ptr->pval = (s16b)(3 + randint0(8));
 					else if (one_in_(2))
 						a_ptr->pval++;
 				}
@@ -879,11 +879,11 @@ static void add_ability(artifact_type *a_ptr)
 					a_ptr->flags1 |= TR1_DEX;
 					do_pval(a_ptr);
 				}
-				else if (r < 75) a_ptr->to_a += (s16b)(3 + rand_int(3));
+				else if (r < 75) a_ptr->to_a += (s16b)(3 + randint0(3));
 				else
 				{
-					a_ptr->to_h += (s16b)(2 + rand_int(3));
-					a_ptr->to_d += (s16b)(2 + rand_int(3));
+					a_ptr->to_h += (s16b)(2 + randint0(3));
+					a_ptr->to_d += (s16b)(2 + randint0(3));
 					a_ptr->flags3 |= TR3_SHOW_MODS;
 				}
 				break;
@@ -904,7 +904,7 @@ static void add_ability(artifact_type *a_ptr)
 					a_ptr->flags1 |= TR1_INT;
 					do_pval(a_ptr);
 				}
-				else a_ptr->to_a += (s16b)(3 + rand_int(3));
+				else a_ptr->to_a += (s16b)(3 + randint0(3));
 				break;
 			}
 			case TV_SHIELD:
@@ -913,7 +913,7 @@ static void add_ability(artifact_type *a_ptr)
 				else if (r < 40) a_ptr->flags2 |= TR2_RES_ELEC;
 				else if (r < 60) a_ptr->flags2 |= TR2_RES_FIRE;
 				else if (r < 80) a_ptr->flags2 |= TR2_RES_COLD;
-				else a_ptr->to_a += (s16b)(3 + rand_int(3));
+				else a_ptr->to_a += (s16b)(3 + randint0(3));
 				break;
 			}
 			case TV_CLOAK:
@@ -923,7 +923,7 @@ static void add_ability(artifact_type *a_ptr)
 					a_ptr->flags1 |= TR1_STEALTH;
 					do_pval(a_ptr);
 				}
-				else a_ptr->to_a += (s16b)(3 + rand_int(3));
+				else a_ptr->to_a += (s16b)(3 + randint0(3));
 				break;
 			}
 			case TV_SOFT_ARMOR:
@@ -948,14 +948,14 @@ static void add_ability(artifact_type *a_ptr)
 				else if (r < 70) a_ptr->flags2 |= TR2_RES_COLD;
 				else if (r < 80)
 					a_ptr->weight = (a_ptr->weight * 9) / 10;
-				else a_ptr->to_a += (s16b)(3 + rand_int(3));
+				else a_ptr->to_a += (s16b)(3 + randint0(3));
 				break;
 			}
 		}
 	}
 	else			/* Pick something universally useful. */
 	{
-		r = rand_int(43);
+		r = randint0(43);
 		switch (r)
 		{
 			case 0:
@@ -1005,7 +1005,7 @@ static void add_ability(artifact_type *a_ptr)
 				break;
 			case 9:
 				a_ptr->flags1 |= TR1_SPEED;
-				if (a_ptr->pval == 0) a_ptr->pval = (s16b)(3 + rand_int(3));
+				if (a_ptr->pval == 0) a_ptr->pval = (s16b)(3 + randint0(3));
 				else do_pval(a_ptr);
 				break;
 
@@ -1184,7 +1184,7 @@ static void scramble_artifact(int a_idx)
 	/* Really powerful items should aggravate. */
 	if (power > 100)
 	{
-		if (rand_int(100) < (power - 100) * 3)
+		if (randint0(100) < (power - 100) * 3)
 			aggravate_me = TRUE;
 	}
 

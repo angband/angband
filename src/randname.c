@@ -337,7 +337,7 @@ size_t randname_make(randname_type name_type, size_t min, size_t max, char *word
 		{
 			/* Pick the next letter based on a simple weighting
 			  of which letters can follow the previous two */
-			int r = rand_int(lprobs[c_prev][c_cur][TOTAL]);
+			int r = randint0(lprobs[c_prev][c_cur][TOTAL]);
 			int c_next = 0;
 
 			while (r >= lprobs[c_prev][c_cur][c_next])

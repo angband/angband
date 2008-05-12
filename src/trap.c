@@ -68,7 +68,7 @@ void pick_trap(int y, int x)
 	while (1)
 	{
 		/* Hack -- pick a trap */
-		feat = FEAT_TRAP_HEAD + rand_int(16);
+		feat = FEAT_TRAP_HEAD + randint0(16);
 
 		/* Check against minimum depth */
 		if (min_level[feat - FEAT_TRAP_HEAD] > p_ptr->depth) continue;
@@ -191,7 +191,7 @@ void hit_trap(int y, int x)
 					msg_print("You are impaled!");
 
 					dam = dam * 2;
-					(void)inc_timed(TMD_CUT, randint(dam));
+					(void)inc_timed(TMD_CUT, randint1(dam));
 				}
 
 				/* Take the damage */
@@ -221,7 +221,7 @@ void hit_trap(int y, int x)
 					msg_print("You are impaled on poisonous spikes!");
 
 					dam = dam * 2;
-					(void)inc_timed(TMD_CUT, randint(dam));
+					(void)inc_timed(TMD_CUT, randint1(dam));
 
 					if (p_ptr->resist_pois || p_ptr->timed[TMD_OPP_POIS])
 					{
@@ -230,7 +230,7 @@ void hit_trap(int y, int x)
 					else
 					{
 						dam = dam * 2;
-						(void)inc_timed(TMD_POISONED, randint(dam));
+						(void)inc_timed(TMD_POISONED, randint1(dam));
 					}
 				}
 
@@ -247,7 +247,7 @@ void hit_trap(int y, int x)
 			msg_print("You are enveloped in a cloud of smoke!");
 			cave_info[y][x] &= ~(CAVE_MARK);
 			cave_set_feat(y, x, FEAT_FLOOR);
-			num = 2 + randint(3);
+			num = 2 + randint1(3);
 			for (i = 0; i < num; i++)
 			{
 				(void)summon_specific(y, x, p_ptr->depth, 0);
@@ -285,7 +285,7 @@ void hit_trap(int y, int x)
 				msg_print("A small dart hits you!");
 				dam = damroll(1, 4);
 				take_hit(dam, name);
-				(void)inc_timed(TMD_SLOW, rand_int(20) + 20);
+				(void)inc_timed(TMD_SLOW, randint0(20) + 20);
 			}
 			else
 			{
@@ -347,7 +347,7 @@ void hit_trap(int y, int x)
 			msg_print("You are surrounded by a black gas!");
 			if (!p_ptr->resist_blind)
 			{
-				(void)inc_timed(TMD_BLIND, rand_int(50) + 25);
+				(void)inc_timed(TMD_BLIND, randint0(50) + 25);
 			}
 			break;
 		}
@@ -357,7 +357,7 @@ void hit_trap(int y, int x)
 			msg_print("You are surrounded by a gas of scintillating colors!");
 			if (!p_ptr->resist_confu)
 			{
-				(void)inc_timed(TMD_CONFUSED, rand_int(20) + 10);
+				(void)inc_timed(TMD_CONFUSED, randint0(20) + 10);
 			}
 			break;
 		}
@@ -367,7 +367,7 @@ void hit_trap(int y, int x)
 			msg_print("You are surrounded by a pungent green gas!");
 			if (!p_ptr->resist_pois && !p_ptr->timed[TMD_OPP_POIS])
 			{
-				(void)inc_timed(TMD_POISONED, rand_int(20) + 10);
+				(void)inc_timed(TMD_POISONED, randint0(20) + 10);
 			}
 			break;
 		}
@@ -377,7 +377,7 @@ void hit_trap(int y, int x)
 			msg_print("You are surrounded by a strange white mist!");
 			if (!p_ptr->free_act)
 			{
-				(void)inc_timed(TMD_PARALYZED, rand_int(10) + 5);
+				(void)inc_timed(TMD_PARALYZED, randint0(10) + 5);
 			}
 			break;
 		}

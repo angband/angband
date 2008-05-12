@@ -214,7 +214,7 @@ void compact_monsters(int size)
 			if (r_ptr->flags[0] & (RF0_UNIQUE)) chance = 99;
 
 			/* All monsters get a saving throw */
-			if (rand_int(100) < chance) continue;
+			if (randint0(100) < chance) continue;
 
 			/* Delete the monster */
 			delete_monster_idx(i);
@@ -486,7 +486,7 @@ s16b get_mon_num(int level)
 
 
 	/* Pick a monster */
-	value = rand_int(total);
+	value = randint0(total);
 
 	/* Find the monster */
 	for (i = 0; i < alloc_race_size; i++)
@@ -500,7 +500,7 @@ s16b get_mon_num(int level)
 
 
 	/* Power boost */
-	p = rand_int(100);
+	p = randint0(100);
 
 	/* Try for a "harder" monster once (50%) or twice (10%) */
 	if (p < 60)
@@ -509,7 +509,7 @@ s16b get_mon_num(int level)
 		j = i;
 
 		/* Pick a monster */
-		value = rand_int(total);
+		value = randint0(total);
 
 		/* Find the monster */
 		for (i = 0; i < alloc_race_size; i++)
@@ -532,7 +532,7 @@ s16b get_mon_num(int level)
 		j = i;
 
 		/* Pick a monster */
-		value = rand_int(total);
+		value = randint0(total);
 
 		/* Find the monster */
 		for (i = 0; i < alloc_race_size; i++)
@@ -1602,7 +1602,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 	if (slp && r_ptr->sleep)
 	{
 		int val = r_ptr->sleep;
-		n_ptr->csleep = ((val * 2) + randint(val * 10));
+		n_ptr->csleep = ((val * 2) + randint1(val * 10));
 	}
 
 
@@ -1637,7 +1637,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 
 
 	/* Give a random starting energy */
-	n_ptr->energy = (byte)rand_int(100);
+	n_ptr->energy = (byte)randint0(100);
 
 	/* Force monster to wait for player */
 	if (r_ptr->flags[0] & (RF0_FORCE_SLEEP))
@@ -1680,20 +1680,20 @@ static bool place_monster_group(int y, int x, int r_idx, bool slp)
 
 
 	/* Pick a group size */
-	total = randint(13);
+	total = randint1(13);
 
 	/* Hard monsters, small groups */
 	if (r_ptr->level > p_ptr->depth)
 	{
 		extra = r_ptr->level - p_ptr->depth;
-		extra = 0 - randint(extra);
+		extra = 0 - randint1(extra);
 	}
 
 	/* Easy monsters, large groups */
 	else if (r_ptr->level < p_ptr->depth)
 	{
 		extra = p_ptr->depth - r_ptr->level;
-		extra = randint(extra);
+		extra = randint1(extra);
 	}
 
 	/* Hack -- limit group reduction */
@@ -1986,8 +1986,8 @@ bool alloc_monster(int dis, bool slp, int depth)
 	while (--attempts_left)
 	{
 		/* Pick a location */
-		y = rand_int(DUNGEON_HGT);
-		x = rand_int(DUNGEON_WID);
+		y = randint0(DUNGEON_HGT);
+		x = randint0(DUNGEON_WID);
 
 		/* Require "naked" floor grid */
 		if (!cave_naked_bold(y, x)) continue;
@@ -2397,7 +2397,7 @@ void update_smart_learn(int m_idx, int what)
 	if (r_ptr->flags[1] & (RF1_STUPID)) return;
 
 	/* Not intelligent, only learn sometimes */
-	if (!(r_ptr->flags[1] & (RF1_SMART)) && (rand_int(100) < 50)) return;
+	if (!(r_ptr->flags[1] & (RF1_SMART)) && (randint0(100) < 50)) return;
 
 
 	/* XXX XXX XXX */

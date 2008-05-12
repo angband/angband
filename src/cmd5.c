@@ -540,7 +540,7 @@ int spell_choose_new(const object_type *o_ptr)
 		if (!spell_okay(spell, FALSE, FALSE)) continue;
 
 		/* Apply the randomizer */
-		if ((++k > 1) && (rand_int(k) != 0)) continue;
+		if ((++k > 1) && (randint0(k) != 0)) continue;
 
 		/* Track it */
 		gift = spell;
@@ -627,7 +627,7 @@ bool spell_cast(int spell)
 	chance = spell_chance(spell);
 
 	/* Failed spell */
-	if (rand_int(100) < chance)
+	if (randint0(100) < chance)
 	{
 		if (flush_failure) flush();
 		msg_print("You failed to concentrate hard enough!");
@@ -676,18 +676,18 @@ bool spell_cast(int spell)
 		msg_print("You faint from the effort!");
 
 		/* Hack -- Bypass free action */
-		(void)inc_timed(TMD_PARALYZED, randint(5 * oops + 1));
+		(void)inc_timed(TMD_PARALYZED, randint1(5 * oops + 1));
 
 		/* Damage CON (possibly permanently) */
-		if (rand_int(100) < 50)
+		if (randint0(100) < 50)
 		{
-			bool perm = (rand_int(100) < 25);
+			bool perm = (randint0(100) < 25);
 
 			/* Message */
 			msg_print("You have damaged your health!");
 
 			/* Reduce constitution */
-			(void)dec_stat(A_CON, 15 + randint(10), perm);
+			(void)dec_stat(A_CON, 15 + randint1(10), perm);
 		}
 	}
 

@@ -33,7 +33,7 @@ static int monster_critical(int dice, int sides, int dam)
 	if (dam < total * 19 / 20) return (0);
 
 	/* Weak blows rarely work */
-	if ((dam < 20) && (rand_int(100) >= dam)) return (0);
+	if ((dam < 20) && (randint0(100) >= dam)) return (0);
 
 	/* Perfect damage */
 	if (dam == total) max++;
@@ -41,7 +41,7 @@ static int monster_critical(int dice, int sides, int dam)
 	/* Super-charge */
 	if (dam >= 20)
 	{
-		while (rand_int(100) < 2) max++;
+		while (randint0(100) < 2) max++;
 	}
 
 	/* Critical damage */
@@ -242,7 +242,7 @@ bool make_attack_normal(int m_idx)
 			if ((p_ptr->timed[TMD_PROTEVIL] > 0) &&
 			    (r_ptr->flags[2] & (RF2_EVIL)) &&
 			    (p_ptr->lev >= rlev) &&
-			    ((rand_int(100) + p_ptr->lev) > 50))
+			    ((randint0(100) + p_ptr->lev) > 50))
 			{
 				/* Remember the Evil-ness */
 				if (m_ptr->ml)
@@ -419,14 +419,14 @@ bool make_attack_normal(int m_idx)
 
 				case RBM_INSULT:
 				{
-					act = desc_insult[rand_int(MAX_DESC_INSULT)];
+					act = desc_insult[randint0(MAX_DESC_INSULT)];
 					sound_msg = MSG_MON_INSULT; 
 					break;
 				}
 
 				case RBM_MOAN:
 				{
-					act = desc_moan[rand_int(MAX_DESC_MOAN)];
+					act = desc_moan[randint0(MAX_DESC_MOAN)];
 					sound_msg = MSG_MON_MOAN; 
 					break;
 				}
@@ -487,7 +487,7 @@ bool make_attack_normal(int m_idx)
 					/* Take "poison" effect */
 					if (!(p_ptr->resist_pois || p_ptr->timed[TMD_OPP_POIS]))
 					{
-						if (inc_timed(TMD_POISONED, randint(rlev) + 5))
+						if (inc_timed(TMD_POISONED, randint1(rlev) + 5))
 						{
 							obvious = TRUE;
 						}
@@ -528,7 +528,7 @@ bool make_attack_normal(int m_idx)
 					for (k = 0; k < 10; k++)
 					{
 						/* Pick an item */
-						i = rand_int(INVEN_PACK);
+						i = randint0(INVEN_PACK);
 
 						/* Obtain the item */
 						o_ptr = &inventory[i];
@@ -592,22 +592,22 @@ bool make_attack_normal(int m_idx)
 
 					/* Saving throw (unless paralyzed) based on dex and level */
 					if (!p_ptr->timed[TMD_PARALYZED] &&
-					    (rand_int(100) < (adj_dex_safe[p_ptr->stat_ind[A_DEX]] +
+					    (randint0(100) < (adj_dex_safe[p_ptr->stat_ind[A_DEX]] +
 					                      p_ptr->lev)))
 					{
 						/* Saving throw message */
 						msg_print("You quickly protect your money pouch!");
 
 						/* Occasional blink anyway */
-						if (rand_int(3)) blinked = TRUE;
+						if (randint0(3)) blinked = TRUE;
 					}
 
 					/* Eat gold */
 					else
 					{
-						gold = (p_ptr->au / 10) + randint(25);
+						gold = (p_ptr->au / 10) + randint1(25);
 						if (gold < 2) gold = 2;
-						if (gold > 5000) gold = (p_ptr->au / 20) + randint(3000);
+						if (gold > 5000) gold = (p_ptr->au / 20) + randint1(3000);
 						if (gold > p_ptr->au) gold = p_ptr->au;
 						p_ptr->au -= gold;
 						if (gold <= 0)
@@ -642,7 +642,7 @@ bool make_attack_normal(int m_idx)
 
 					/* Saving throw (unless paralyzed) based on dex and level */
 					if (!p_ptr->timed[TMD_PARALYZED] &&
-					    (rand_int(100) < (adj_dex_safe[p_ptr->stat_ind[A_DEX]] +
+					    (randint0(100) < (adj_dex_safe[p_ptr->stat_ind[A_DEX]] +
 					                      p_ptr->lev)))
 					{
 						/* Saving throw message */
@@ -665,7 +665,7 @@ bool make_attack_normal(int m_idx)
 						object_type object_type_body;
 
 						/* Pick an item */
-						i = rand_int(INVEN_PACK);
+						i = randint0(INVEN_PACK);
 
 						/* Obtain the item */
 						o_ptr = &inventory[i];
@@ -728,7 +728,7 @@ bool make_attack_normal(int m_idx)
 					for (k = 0; k < 10; k++)
 					{
 						/* Pick an item from the pack */
-						i = rand_int(INVEN_PACK);
+						i = randint0(INVEN_PACK);
 
 						/* Get the item */
 						o_ptr = &inventory[i];
@@ -776,7 +776,7 @@ bool make_attack_normal(int m_idx)
 					if (!(f3 & TR3_NO_FUEL) && (o_ptr->timeout > 0))
 					{
 						/* Reduce fuel */
-						o_ptr->timeout -= (250 + randint(250));
+						o_ptr->timeout -= (250 + randint1(250));
 						if (o_ptr->timeout < 1) o_ptr->timeout = 1;
 
 						/* Notice */
@@ -869,7 +869,7 @@ bool make_attack_normal(int m_idx)
 					/* Increase "blind" */
 					if (!p_ptr->resist_blind)
 					{
-						if (inc_timed(TMD_BLIND, 10 + randint(rlev)))
+						if (inc_timed(TMD_BLIND, 10 + randint1(rlev)))
 						{
 							obvious = TRUE;
 						}
@@ -889,7 +889,7 @@ bool make_attack_normal(int m_idx)
 					/* Increase "confused" */
 					if (!p_ptr->resist_confu)
 					{
-						if (inc_timed(TMD_CONFUSED, 3 + randint(rlev)))
+						if (inc_timed(TMD_CONFUSED, 3 + randint1(rlev)))
 						{
 							obvious = TRUE;
 						}
@@ -912,14 +912,14 @@ bool make_attack_normal(int m_idx)
 						msg_print("You stand your ground!");
 						obvious = TRUE;
 					}
-					else if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
+					else if (randint0(100) < p_ptr->skills[SKILL_SAVE])
 					{
 						msg_print("You stand your ground!");
 						obvious = TRUE;
 					}
 					else
 					{
-						if (inc_timed(TMD_AFRAID, 3 + randint(rlev)))
+						if (inc_timed(TMD_AFRAID, 3 + randint1(rlev)))
 						{
 							obvious = TRUE;
 						}
@@ -945,14 +945,14 @@ bool make_attack_normal(int m_idx)
 						msg_print("You are unaffected!");
 						obvious = TRUE;
 					}
-					else if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
+					else if (randint0(100) < p_ptr->skills[SKILL_SAVE])
 					{
 						msg_print("You resist the effects!");
 						obvious = TRUE;
 					}
 					else
 					{
-						if (inc_timed(TMD_PARALYZED, 3 + randint(rlev)))
+						if (inc_timed(TMD_PARALYZED, 3 + randint1(rlev)))
 						{
 							obvious = TRUE;
 						}
@@ -1081,7 +1081,7 @@ bool make_attack_normal(int m_idx)
 					/* Take damage */
 					take_hit(damage, ddesc);
 
-					if (p_ptr->hold_life && (rand_int(100) < 95))
+					if (p_ptr->hold_life && (randint0(100) < 95))
 					{
 						msg_print("You keep hold of your life force!");
 					}
@@ -1110,7 +1110,7 @@ bool make_attack_normal(int m_idx)
 					/* Take damage */
 					take_hit(damage, ddesc);
 
-					if (p_ptr->hold_life && (rand_int(100) < 90))
+					if (p_ptr->hold_life && (randint0(100) < 90))
 					{
 						msg_print("You keep hold of your life force!");
 					}
@@ -1140,7 +1140,7 @@ bool make_attack_normal(int m_idx)
 					/* Take damage */
 					take_hit(damage, ddesc);
 
-					if (p_ptr->hold_life && (rand_int(100) < 75))
+					if (p_ptr->hold_life && (randint0(100) < 75))
 					{
 						msg_print("You keep hold of your life force!");
 					}
@@ -1170,7 +1170,7 @@ bool make_attack_normal(int m_idx)
 					/* Take damage */
 					take_hit(damage, ddesc);
 
-					if (p_ptr->hold_life && (rand_int(100) < 50))
+					if (p_ptr->hold_life && (randint0(100) < 50))
 					{
 						msg_print("You keep hold of your life force!");
 					}
@@ -1200,7 +1200,7 @@ bool make_attack_normal(int m_idx)
 					/* Increase "image" */
 					if (!p_ptr->resist_chaos)
 					{
-						if (inc_timed(TMD_IMAGE, 3 + randint(rlev / 2)))
+						if (inc_timed(TMD_IMAGE, 3 + randint1(rlev / 2)))
 						{
 							obvious = TRUE;
 						}
@@ -1218,7 +1218,7 @@ bool make_attack_normal(int m_idx)
 			if (do_cut && do_stun)
 			{
 				/* Cancel cut */
-				if (rand_int(100) < 50)
+				if (randint0(100) < 50)
 				{
 					do_cut = 0;
 				}
@@ -1242,11 +1242,11 @@ bool make_attack_normal(int m_idx)
 				switch (tmp)
 				{
 					case 0: k = 0; break;
-					case 1: k = randint(5); break;
-					case 2: k = randint(5) + 5; break;
-					case 3: k = randint(20) + 20; break;
-					case 4: k = randint(50) + 50; break;
-					case 5: k = randint(100) + 100; break;
+					case 1: k = randint1(5); break;
+					case 2: k = randint1(5) + 5; break;
+					case 3: k = randint1(20) + 20; break;
+					case 4: k = randint1(50) + 50; break;
+					case 5: k = randint1(100) + 100; break;
 					case 6: k = 300; break;
 					default: k = 500; break;
 				}
@@ -1267,11 +1267,11 @@ bool make_attack_normal(int m_idx)
 				switch (tmp)
 				{
 					case 0: k = 0; break;
-					case 1: k = randint(5); break;
-					case 2: k = randint(10) + 10; break;
-					case 3: k = randint(20) + 20; break;
-					case 4: k = randint(30) + 30; break;
-					case 5: k = randint(40) + 40; break;
+					case 1: k = randint1(5); break;
+					case 2: k = randint1(10) + 10; break;
+					case 3: k = randint1(20) + 20; break;
+					case 4: k = randint1(30) + 30; break;
+					case 5: k = randint1(40) + 40; break;
 					case 6: k = 100; break;
 					default: k = 200; break;
 				}

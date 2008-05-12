@@ -282,7 +282,7 @@ static void correct_dir(int *rdir, int *cdir, int y1, int x1, int y2, int x2)
 	/* Never move diagonally */
 	if (*rdir && *cdir)
 	{
-		if (rand_int(100) < 50)
+		if (randint0(100) < 50)
 		{
 			*rdir = 0;
 		}
@@ -300,7 +300,7 @@ static void correct_dir(int *rdir, int *cdir, int y1, int x1, int y2, int x2)
 static void rand_dir(int *rdir, int *cdir)
 {
 	/* Pick a random direction */
-	int i = rand_int(4);
+	int i = randint0(4);
 
 	/* Extract the dy/dx components */
 	*rdir = ddy_ddd[i];
@@ -418,7 +418,7 @@ static void place_random_stairs(int y, int x)
 	{
 		place_up_stairs(y, x);
 	}
-	else if (rand_int(100) < 50)
+	else if (randint0(100) < 50)
 	{
 		place_down_stairs(y, x);
 	}
@@ -447,8 +447,8 @@ static void alloc_stairs(int feat, int num, int walls)
 			for (j = 0; !flag && j <= 3000; j++)
 			{
 				/* Pick a random grid */
-				y = rand_int(DUNGEON_HGT);
-				x = rand_int(DUNGEON_WID);
+				y = randint0(DUNGEON_HGT);
+				x = randint0(DUNGEON_WID);
 
 				/* Require "naked" floor grid */
 				if (!cave_naked_bold(y, x)) continue;
@@ -505,8 +505,8 @@ static void alloc_object(int set, int typ, int num, int depth)
 			bool room;
 
 			/* Location */
-			y = rand_int(DUNGEON_HGT);
-			x = rand_int(DUNGEON_WID);
+			y = randint0(DUNGEON_HGT);
+			x = randint0(DUNGEON_WID);
 
 			/* Require "naked" floor grid */
 			if (!cave_naked_bold(y, x)) continue;
@@ -575,7 +575,7 @@ static void build_streamer(int feat, int chance)
 	x = rand_spread(DUNGEON_WID / 2, 15);
 
 	/* Choose a random compass direction */
-	dir = ddd[rand_int(8)];
+	dir = ddd[randint0(8)];
 
 	/* Place streamer into dungeon */
 	while (TRUE)
@@ -627,7 +627,7 @@ static void destroy_level(void)
 	if (cheat_room) msg_print("Destroyed Level");
 
 	/* Drop a few epi-centers (usually about two) */
-	for (n = 0; n < randint(5); n++)
+	for (n = 0; n < randint1(5); n++)
 	{
 		/* Pick an epi-center */
 		x1 = rand_range(5, DUNGEON_WID-1 - 5);
@@ -657,7 +657,7 @@ static void destroy_level(void)
 					delete_object(y, x);
 
 					/* Wall (or floor) type */
-					t = rand_int(200);
+					t = randint0(200);
 
 					/* Granite */
 					if (t < 20)
@@ -727,7 +727,7 @@ static void vault_objects(int y, int x, int depth, int num)
 			if (!cave_clean_bold(j, k)) continue;
 
 			/* Place an item */
-			if (rand_int(100) < 75)
+			if (randint0(100) < 75)
 			{
 				place_object(j, k, depth, FALSE, FALSE);
 			}
@@ -932,7 +932,7 @@ static void generate_hole(int y1, int x1, int y2, int x2, int feat)
 	x0 = (x1 + x2) / 2;
 
 	/* Open random side */
-	switch (rand_int(4))
+	switch (randint0(4))
 	{
 		case 0:
 		{
@@ -986,14 +986,14 @@ static void build_type1(int y0, int x0)
 
 
 	/* Occasional light */
-	if (p_ptr->depth <= randint(25)) light = TRUE;
+	if (p_ptr->depth <= randint1(25)) light = TRUE;
 
 
 	/* Pick a room size */
-	y1 = y0 - randint(4);
-	x1 = x0 - randint(11);
-	y2 = y0 + randint(3);
-	x2 = x0 + randint(11);
+	y1 = y0 - randint1(4);
+	x1 = x0 - randint1(11);
+	y2 = y0 + randint1(3);
+	x2 = x0 + randint1(11);
 
 
 	/* Generate new room */
@@ -1048,21 +1048,21 @@ static void build_type2(int y0, int x0)
 
 
 	/* Occasional light */
-	if (p_ptr->depth <= randint(25)) light = TRUE;
+	if (p_ptr->depth <= randint1(25)) light = TRUE;
 
 
 	/* Determine extents of room (a) */
-	y1a = y0 - randint(4);
-	x1a = x0 - randint(11);
-	y2a = y0 + randint(3);
-	x2a = x0 + randint(10);
+	y1a = y0 - randint1(4);
+	x1a = x0 - randint1(11);
+	y2a = y0 + randint1(3);
+	x2a = x0 + randint1(10);
 
 
 	/* Determine extents of room (b) */
-	y1b = y0 - randint(3);
-	x1b = x0 - randint(10);
-	y2b = y0 + randint(4);
-	x2b = x0 + randint(11);
+	y1b = y0 - randint1(3);
+	x1b = x0 - randint1(10);
+	y2b = y0 + randint1(4);
+	x2b = x0 + randint1(11);
 
 
 	/* Generate new room (a) */
@@ -1109,7 +1109,7 @@ static void build_type3(int y0, int x0)
 
 
 	/* Occasional light */
-	if (p_ptr->depth <= randint(25)) light = TRUE;
+	if (p_ptr->depth <= randint1(25)) light = TRUE;
 
 
 	/* Pick inner dimension */
@@ -1154,7 +1154,7 @@ static void build_type3(int y0, int x0)
 
 
 	/* Special features */
-	switch (randint(4))
+	switch (randint1(4))
 	{
 		/* Nothing */
 		case 1:
@@ -1184,10 +1184,10 @@ static void build_type3(int y0, int x0)
 			place_object(y0, x0, p_ptr->depth, FALSE, FALSE);
 
 			/* Let's guard the treasure well */
-			vault_monsters(y0, x0, p_ptr->depth + 2, rand_int(2) + 3);
+			vault_monsters(y0, x0, p_ptr->depth + 2, randint0(2) + 3);
 
 			/* Traps naturally */
-			vault_traps(y0, x0, 4, 4, rand_int(3) + 2);
+			vault_traps(y0, x0, 4, 4, randint0(3) + 2);
 
 			break;
 		}
@@ -1257,7 +1257,7 @@ static void build_type4(int y0, int x0)
 
 
 	/* Occasional light */
-	if (p_ptr->depth <= randint(25)) light = TRUE;
+	if (p_ptr->depth <= randint1(25)) light = TRUE;
 
 
 	/* Large room */
@@ -1288,7 +1288,7 @@ static void build_type4(int y0, int x0)
 
 
 	/* Inner room variations */
-	switch (randint(5))
+	switch (randint1(5))
 	{
 		/* An inner room */
 		case 1:
@@ -1313,13 +1313,13 @@ static void build_type4(int y0, int x0)
 			generate_draw(y0-1, x0-1, y0+1, x0+1, FEAT_WALL_INNER);
 
 			/* Open the inner room with a locked door */
-			generate_hole(y0-1, x0-1, y0+1, x0+1, FEAT_DOOR_HEAD + randint(7));
+			generate_hole(y0-1, x0-1, y0+1, x0+1, FEAT_DOOR_HEAD + randint1(7));
 
 			/* Monsters to guard the treasure */
-			vault_monsters(y0, x0, p_ptr->depth + 2, randint(3) + 2);
+			vault_monsters(y0, x0, p_ptr->depth + 2, randint1(3) + 2);
 
 			/* Object (80%) */
-			if (rand_int(100) < 80)
+			if (randint0(100) < 80)
 			{
 				place_object(y0, x0, p_ptr->depth, FALSE, FALSE);
 			}
@@ -1331,7 +1331,7 @@ static void build_type4(int y0, int x0)
 			}
 
 			/* Traps to protect the treasure */
-			vault_traps(y0, x0, 4, 10, 2 + randint(3));
+			vault_traps(y0, x0, 4, 10, 2 + randint1(3));
 
 			break;
 		}
@@ -1377,12 +1377,12 @@ static void build_type4(int y0, int x0)
 				generate_draw(y0-1, x0-5, y0+1, x0+5, FEAT_WALL_INNER);
 
 				/* Secret doors (random top/bottom) */
-				place_secret_door(y0 - 3 + (randint(2) * 2), x0 - 3);
-				place_secret_door(y0 - 3 + (randint(2) * 2), x0 + 3);
+				place_secret_door(y0 - 3 + (randint1(2) * 2), x0 - 3);
+				place_secret_door(y0 - 3 + (randint1(2) * 2), x0 + 3);
 
 				/* Monsters */
-				vault_monsters(y0, x0 - 2, p_ptr->depth + 2, randint(2));
-				vault_monsters(y0, x0 + 2, p_ptr->depth + 2, randint(2));
+				vault_monsters(y0, x0 - 2, p_ptr->depth + 2, randint1(2));
+				vault_monsters(y0, x0 + 2, p_ptr->depth + 2, randint1(2));
 
 				/* Objects */
 				if (one_in_(3)) place_object(y0, x0 - 2, p_ptr->depth, FALSE, FALSE);
@@ -1412,12 +1412,12 @@ static void build_type4(int y0, int x0)
 			}
 
 			/* Monsters just love mazes. */
-			vault_monsters(y0, x0 - 5, p_ptr->depth + 2, randint(3));
-			vault_monsters(y0, x0 + 5, p_ptr->depth + 2, randint(3));
+			vault_monsters(y0, x0 - 5, p_ptr->depth + 2, randint1(3));
+			vault_monsters(y0, x0 + 5, p_ptr->depth + 2, randint1(3));
 
 			/* Traps make them entertaining. */
-			vault_traps(y0, x0 - 3, 2, 8, randint(3));
-			vault_traps(y0, x0 + 3, 2, 8, randint(3));
+			vault_traps(y0, x0 - 3, 2, 8, randint1(3));
+			vault_traps(y0, x0 + 3, 2, 8, randint1(3));
 
 			/* Mazes should have some treasure too. */
 			vault_objects(y0, x0, p_ptr->depth, 3);
@@ -1433,9 +1433,9 @@ static void build_type4(int y0, int x0)
 			generate_plus(y1, x1, y2, x2, FEAT_WALL_INNER);
 
 			/* Doors into the rooms */
-			if (rand_int(100) < 50)
+			if (randint0(100) < 50)
 			{
-				int i = randint(10);
+				int i = randint1(10);
 				place_secret_door(y1 - 1, x0 - i);
 				place_secret_door(y1 - 1, x0 + i);
 				place_secret_door(y2 + 1, x0 - i);
@@ -1443,7 +1443,7 @@ static void build_type4(int y0, int x0)
 			}
 			else
 			{
-				int i = randint(3);
+				int i = randint1(3);
 				place_secret_door(y0 + i, x1 - 1);
 				place_secret_door(y0 - i, x1 - 1);
 				place_secret_door(y0 + i, x2 + 1);
@@ -1451,13 +1451,13 @@ static void build_type4(int y0, int x0)
 			}
 
 			/* Treasure, centered at the center of the cross */
-			vault_objects(y0, x0, p_ptr->depth, 2 + randint(2));
+			vault_objects(y0, x0, p_ptr->depth, 2 + randint1(2));
 
 			/* Gotta have some monsters */
-			vault_monsters(y0 + 1, x0 - 4, p_ptr->depth + 2, randint(4));
-			vault_monsters(y0 + 1, x0 + 4, p_ptr->depth + 2, randint(4));
-			vault_monsters(y0 - 1, x0 - 4, p_ptr->depth + 2, randint(4));
-			vault_monsters(y0 - 1, x0 + 4, p_ptr->depth + 2, randint(4)); 
+			vault_monsters(y0 + 1, x0 - 4, p_ptr->depth + 2, randint1(4));
+			vault_monsters(y0 + 1, x0 + 4, p_ptr->depth + 2, randint1(4));
+			vault_monsters(y0 - 1, x0 - 4, p_ptr->depth + 2, randint1(4));
+			vault_monsters(y0 - 1, x0 + 4, p_ptr->depth + 2, randint1(4)); 
 
 			break;
 		}
@@ -1705,7 +1705,7 @@ static void build_type5(int y0, int x0)
 
 
 	/* Hack -- Choose a nest type */
-	tmp = randint(p_ptr->depth);
+	tmp = randint1(p_ptr->depth);
 
 	/* Monster nest (jelly) */
 	if (tmp < 30)
@@ -1776,7 +1776,7 @@ static void build_type5(int y0, int x0)
 
 	/* (Sometimes) Cause a "special feeling" (for "Monster Nests") */
 	if ((p_ptr->depth <= 40) &&
-	    (randint(p_ptr->depth * p_ptr->depth + 1) < 300))
+	    (randint1(p_ptr->depth * p_ptr->depth + 1) < 300))
 	{
 		good_item_flag = TRUE;
 	}
@@ -1787,7 +1787,7 @@ static void build_type5(int y0, int x0)
 	{
 		for (x = x0 - 9; x <= x0 + 9; x++)
 		{
-			int r_idx = what[rand_int(64)];
+			int r_idx = what[randint0(64)];
 
 			/* Place that "random" monster (no groups) */
 			(void)place_monster_aux(y, x, r_idx, FALSE, FALSE);
@@ -1884,7 +1884,7 @@ static void build_type6(int y0, int x0)
 
 
 	/* Choose a pit type */
-	tmp = randint(p_ptr->depth);
+	tmp = randint1(p_ptr->depth);
 
 	/* Orc pit */
 	if (tmp < 20)
@@ -1920,7 +1920,7 @@ static void build_type6(int y0, int x0)
 	else if (tmp < 80)
 	{
 		/* Pick dragon type */
-		switch (rand_int(6))
+		switch (randint0(6))
 		{
 			/* Black */
 			case 0:
@@ -2087,7 +2087,7 @@ static void build_type6(int y0, int x0)
 
 	/* (Sometimes) Cause a "special feeling" (for "Monster Pits") */
 	if ((p_ptr->depth <= 40) &&
-	    (randint(p_ptr->depth * p_ptr->depth + 1) < 300))
+	    (randint1(p_ptr->depth * p_ptr->depth + 1) < 300))
 	{
 		good_item_flag = TRUE;
 	}
@@ -2200,7 +2200,7 @@ static void build_vault(int y0, int x0, int ymax, int xmax, cptr data)
 				/* Treasure/trap */
 				case '*':
 				{
-					if (rand_int(100) < 75)
+					if (randint0(100) < 75)
 					{
 						place_object(y, x, p_ptr->depth, FALSE, FALSE);
 					}
@@ -2277,10 +2277,10 @@ static void build_vault(int y0, int x0, int ymax, int xmax, cptr data)
 				/* Monster and/or object */
 				case ',':
 				{
-					if (rand_int(100) < 50)
+					if (randint0(100) < 50)
 						place_monster(y, x, p_ptr->depth + 3, TRUE, TRUE);
 
-					if (rand_int(100) < 50)
+					if (randint0(100) < 50)
 						place_object(y, x, p_ptr->depth + 7, FALSE, FALSE);
 
 					break;
@@ -2303,7 +2303,7 @@ static void build_type7(int y0, int x0)
 	while (TRUE)
 	{
 		/* Get a random vault record */
-		v_ptr = &v_info[rand_int(z_info->v_max)];
+		v_ptr = &v_info[randint0(z_info->v_max)];
 
 		/* Accept the first lesser vault */
 		if (v_ptr->typ == 6) break;
@@ -2317,7 +2317,7 @@ static void build_type7(int y0, int x0)
 
 	/* (Sometimes) Cause a special feeling */
 	if ((p_ptr->depth <= 50) ||
-	    (randint((p_ptr->depth-40) * (p_ptr->depth-40) + 1) < 400))
+	    (randint1((p_ptr->depth-40) * (p_ptr->depth-40) + 1) < 400))
 	{
 		good_item_flag = TRUE;
 	}
@@ -2339,7 +2339,7 @@ static void build_type8(int y0, int x0)
 	while (TRUE)
 	{
 		/* Get a random vault record */
-		v_ptr = &v_info[rand_int(z_info->v_max)];
+		v_ptr = &v_info[randint0(z_info->v_max)];
 
 		/* Accept the first greater vault */
 		if (v_ptr->typ == 7) break;
@@ -2353,7 +2353,7 @@ static void build_type8(int y0, int x0)
 
 	/* (Sometimes) Cause a special feeling */
 	if ((p_ptr->depth <= 50) ||
-	    (randint((p_ptr->depth-40) * (p_ptr->depth-40) + 1) < 400))
+	    (randint1((p_ptr->depth-40) * (p_ptr->depth-40) + 1) < 400))
 	{
 		good_item_flag = TRUE;
 	}
@@ -2428,13 +2428,13 @@ static void build_tunnel(int row1, int col1, int row2, int col2)
 		if (main_loop_count++ > 2000) break;
 
 		/* Allow bends in the tunnel */
-		if (rand_int(100) < DUN_TUN_CHG)
+		if (randint0(100) < DUN_TUN_CHG)
 		{
 			/* Get the correct direction */
 			correct_dir(&row_dir, &col_dir, row1, col1, row2, col2);
 
 			/* Random direction */
-			if (rand_int(100) < DUN_TUN_RND)
+			if (randint0(100) < DUN_TUN_RND)
 			{
 				rand_dir(&row_dir, &col_dir);
 			}
@@ -2452,7 +2452,7 @@ static void build_tunnel(int row1, int col1, int row2, int col2)
 			correct_dir(&row_dir, &col_dir, row1, col1, row2, col2);
 
 			/* Random direction */
-			if (rand_int(100) < DUN_TUN_RND)
+			if (randint0(100) < DUN_TUN_RND)
 			{
 				rand_dir(&row_dir, &col_dir);
 			}
@@ -2564,7 +2564,7 @@ static void build_tunnel(int row1, int col1, int row2, int col2)
 			}
 
 			/* Hack -- allow pre-emptive tunnel termination */
-			if (rand_int(100) >= DUN_TUN_CON)
+			if (randint0(100) >= DUN_TUN_CON)
 			{
 				/* Distance between row1 and start_row */
 				tmp_row = row1 - start_row;
@@ -2604,7 +2604,7 @@ static void build_tunnel(int row1, int col1, int row2, int col2)
 		cave_set_feat(y, x, FEAT_FLOOR);
 
 		/* Occasional doorway */
-		if (rand_int(100) < DUN_TUN_PEN)
+		if (randint0(100) < DUN_TUN_PEN)
 		{
 			/* Place a random door */
 			place_random_door(y, x);
@@ -2700,7 +2700,7 @@ static void try_door(int y, int x)
 	if (cave_info[y][x] & (CAVE_ROOM)) return;
 
 	/* Occasional door (if allowed) */
-	if ((rand_int(100) < DUN_TUN_JCT) && possible_doorway(y, x))
+	if ((randint0(100) < DUN_TUN_JCT) && possible_doorway(y, x))
 	{
 		/* Place a door */
 		place_random_door(y, x);
@@ -2860,8 +2860,8 @@ static void cave_gen(void)
 	for (i = 0; i < DUN_ROOMS; i++)
 	{
 		/* Pick a block for the room */
-		by = rand_int(dun->row_rooms);
-		bx = rand_int(dun->col_rooms);
+		by = randint0(dun->row_rooms);
+		bx = randint0(dun->col_rooms);
 
 #if 0
 		/* Align dungeon rooms */
@@ -2886,13 +2886,13 @@ static void cave_gen(void)
 		}
 
 		/* Attempt an "unusual" room */
-		if (rand_int(DUN_UNUSUAL) < p_ptr->depth)
+		if (randint0(DUN_UNUSUAL) < p_ptr->depth)
 		{
 			/* Roll for room type */
-			k = rand_int(100);
+			k = randint0(100);
 
 			/* Attempt a very unusual room */
-			if (rand_int(DUN_UNUSUAL) < p_ptr->depth)
+			if (randint0(DUN_UNUSUAL) < p_ptr->depth)
 			{
 				/* Type 8 -- Greater vault (10%) */
 				if ((k < 10) && room_build(by, bx, 8)) continue;
@@ -2962,8 +2962,8 @@ static void cave_gen(void)
 	/* Hack -- Scramble the room order */
 	for (i = 0; i < dun->cent_n; i++)
 	{
-		int pick1 = rand_int(dun->cent_n);
-		int pick2 = rand_int(dun->cent_n);
+		int pick1 = randint0(dun->cent_n);
+		int pick2 = randint0(dun->cent_n);
 		y1 = dun->cent[pick1].y;
 		x1 = dun->cent[pick1].x;
 		dun->cent[pick1].y = dun->cent[pick2].y;
@@ -3035,16 +3035,16 @@ static void cave_gen(void)
 	if (k < 2) k = 2;
 
 	/* Put some rubble in corridors */
-	alloc_object(ALLOC_SET_CORR, ALLOC_TYP_RUBBLE, randint(k), p_ptr->depth);
+	alloc_object(ALLOC_SET_CORR, ALLOC_TYP_RUBBLE, randint1(k), p_ptr->depth);
 
 	/* Place some traps in the dungeon */
-	alloc_object(ALLOC_SET_BOTH, ALLOC_TYP_TRAP, randint(k), p_ptr->depth);
+	alloc_object(ALLOC_SET_BOTH, ALLOC_TYP_TRAP, randint1(k), p_ptr->depth);
 
 	/* Determine the character location */
 	new_player_spot();
 
 	/* Pick a base number of monsters */
-	i = MIN_M_ALLOC_LEVEL + randint(8);
+	i = MIN_M_ALLOC_LEVEL + randint1(8);
 
 	/* Put some monsters in the dungeon */
 	for (i = i + k; i > 0; i--)
@@ -3070,8 +3070,8 @@ static void cave_gen(void)
 				/* Pick a location */
 				while (1)
 				{
-					y = rand_int(DUNGEON_HGT);
-					x = rand_int(DUNGEON_WID);
+					y = randint0(DUNGEON_HGT);
+					x = randint0(DUNGEON_WID);
 
 					if (cave_naked_bold(y, x)) break;
 				}
@@ -3124,10 +3124,10 @@ static void build_store(int n, int yy, int xx)
 	x0 = xx * 14 + 12;
 
 	/* Determine the store boundaries */
-	y1 = y0 - randint((yy == 0) ? 3 : 2);
-	y2 = y0 + randint((yy == 1) ? 3 : 2);
-	x1 = x0 - randint(5);
-	x2 = x0 + randint(5);
+	y1 = y0 - randint1((yy == 0) ? 3 : 2);
+	y2 = y0 + randint1((yy == 1) ? 3 : 2);
+	x1 = x0 - randint1(5);
+	x2 = x0 + randint1(5);
 
 	/* Build an invulnerable rectangular building */
 	for (y = y1; y <= y2; y++)
@@ -3140,7 +3140,7 @@ static void build_store(int n, int yy, int xx)
 	}
 
 	/* Pick a door direction (S,N,E,W) */
-	tmp = rand_int(4);
+	tmp = randint0(4);
 
 	/* Re-roll "annoying" doors */
 	if (((tmp == 0) && (yy == 1)) ||
@@ -3149,7 +3149,7 @@ static void build_store(int n, int yy, int xx)
 	    ((tmp == 3) && (xx == 0)))
 	{
 		/* Pick a new direction */
-		tmp = rand_int(4);
+		tmp = randint0(4);
 	}
 
 	/* Extract a "door location" */
@@ -3226,7 +3226,7 @@ static void town_gen_hack(void)
 		for (x = 0; x < 4; x++)
 		{
 			/* Pick a random unplaced store */
-			k = ((n <= 1) ? 0 : rand_int(n));
+			k = ((n <= 1) ? 0 : randint0(n));
 
 			/* Build that store at the proper location */
 			build_store(rooms[k], y, x);

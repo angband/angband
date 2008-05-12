@@ -58,7 +58,7 @@ static bool int_outof(const monster_race *r_ptr, int prob)
 	if (!(r_ptr->flags[1] & (RF1_SMART))) prob = prob / 2;
 
 	/* Roll the dice */
-	return (rand_int(100) < prob);
+	return (randint0(100) < prob);
 }
 
 
@@ -90,7 +90,7 @@ static void remove_bad_spells(int m_idx, u32b* const f)
 	if (adult_ai_learn)
 	{
 		/* Hack -- Occasionally forget player status */
-		if (m_ptr->smart && (rand_int(100) < 1)) m_ptr->smart = 0L;
+		if (m_ptr->smart && (randint0(100) < 1)) m_ptr->smart = 0L;
 
 		/* Use the memorized flags */
 		smart = m_ptr->smart;
@@ -517,7 +517,7 @@ static int choose_attack_spell(int m_idx, u32b f[RACE_FLAG_SPELL_STRICT_UB])
 
 		/* Player is close and we have attack spells, blink away */
 		else if (has_tactic && (distance(py, px, m_ptr->fy, m_ptr->fx) < 4) &&
-		         has_attack && (rand_int(100) < 75))
+		         has_attack && (randint0(100) < 75))
 		{
 			/* Choose tactical spell */
 			f3_mask = (RSF0_TACTIC_MASK);
@@ -527,7 +527,7 @@ static int choose_attack_spell(int m_idx, u32b f[RACE_FLAG_SPELL_STRICT_UB])
 
 		/* We're hurt (not badly), try to heal */
 		else if (has_heal && (m_ptr->hp < m_ptr->maxhp * 3 / 4) &&
-		         (rand_int(100) < 60))
+		         (randint0(100) < 60))
 		{
 			/* Choose heal spell */
 			f3_mask = (RSF0_HEAL_MASK);
@@ -536,7 +536,7 @@ static int choose_attack_spell(int m_idx, u32b f[RACE_FLAG_SPELL_STRICT_UB])
 		}
 
 		/* Summon if possible (sometimes) */
-		else if (has_summon && (rand_int(100) < 50))
+		else if (has_summon && (randint0(100) < 50))
 		{
 			/* Choose summon spell */
 			f3_mask = (RSF0_SUMMON_MASK);
@@ -545,7 +545,7 @@ static int choose_attack_spell(int m_idx, u32b f[RACE_FLAG_SPELL_STRICT_UB])
 		}
 
 		/* Attack spell (most of the time) */
-		else if (has_attack && (rand_int(100) < 85))
+		else if (has_attack && (randint0(100) < 85))
 		{
 			/* Choose attack spell */
 			f3_mask = (RSF0_ATTACK_MASK);
@@ -554,7 +554,7 @@ static int choose_attack_spell(int m_idx, u32b f[RACE_FLAG_SPELL_STRICT_UB])
 		}
 
 		/* Try another tactical spell (sometimes) */
-		else if (has_tactic && (rand_int(100) < 50))
+		else if (has_tactic && (randint0(100) < 50))
 		{
 			/* Choose tactic spell */
 			f3_mask = (RSF0_TACTIC_MASK);
@@ -563,7 +563,7 @@ static int choose_attack_spell(int m_idx, u32b f[RACE_FLAG_SPELL_STRICT_UB])
 		}
 
 		/* Haste self if we aren't already somewhat hasted (rarely) */
-		else if (has_haste && (rand_int(100) < (20 + r_ptr->speed - m_ptr->mspeed)))
+		else if (has_haste && (randint0(100) < (20 + r_ptr->speed - m_ptr->mspeed)))
 		{
 			/* Choose haste spell */
 			f3_mask = (RSF0_HASTE_MASK);
@@ -572,7 +572,7 @@ static int choose_attack_spell(int m_idx, u32b f[RACE_FLAG_SPELL_STRICT_UB])
 		}
 
 		/* Annoy player (most of the time) */
-		else if (has_annoy && (rand_int(100) < 85))
+		else if (has_annoy && (randint0(100) < 85))
 		{
 			/* Choose annoyance spell */
 			f3_mask = (RSF0_ANNOY_MASK);
@@ -601,7 +601,7 @@ static int choose_attack_spell(int m_idx, u32b f[RACE_FLAG_SPELL_STRICT_UB])
 	if (num == 0) return 0;
 
 	/* Pick at random */
-	return (spells[rand_int(num)]);
+	return (spells[randint0(num)]);
 }
 
 
@@ -702,7 +702,7 @@ bool make_attack_spell(int m_idx)
 
 
 	/* Only do spells occasionally */
-	if (rand_int(100) >= chance) return (FALSE);
+	if (randint0(100) >= chance) return (FALSE);
 
 
 	/* Hack -- require projectable player */
@@ -727,7 +727,7 @@ bool make_attack_spell(int m_idx)
 	/* Hack -- allow "desperate" spells */
 	if ((r_ptr->flags[1] & (RF1_SMART)) &&
 	    (m_ptr->hp < m_ptr->maxhp / 10) &&
-	    (rand_int(100) < 50))
+	    (randint0(100) < 50))
 	{
 		/* Require intelligent spells */
 		f[0] &= (RSF0_INT_MASK);
@@ -800,7 +800,7 @@ bool make_attack_spell(int m_idx)
 	if (!adult_ai_smart || r_ptr->flags[1] & (RF1_STUPID)) failrate = 0;
 
 	/* Check for spell failure (innate attacks never fail) */
-	if ((thrown_spell >= RF4_OFFSET) && (rand_int(100) < failrate))
+	if ((thrown_spell >= RF4_OFFSET) && (randint0(100) < failrate))
 	{
 		/* Message */
 		msg_format("%^s tries to cast a spell, but fails.", m_name);
@@ -1165,7 +1165,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts an acid ball.", m_name);
 			breath(m_idx, GF_ACID,
-			       randint(rlev * 3) + 15);
+			       randint1(rlev * 3) + 15);
 			update_smart_learn(m_idx, DRS_RES_ACID);
 			break;
 		}
@@ -1177,7 +1177,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts a lightning ball.", m_name);
 			breath(m_idx, GF_ELEC,
-			       randint(rlev * 3 / 2) + 8);
+			       randint1(rlev * 3 / 2) + 8);
 			update_smart_learn(m_idx, DRS_RES_ELEC);
 			break;
 		}
@@ -1189,7 +1189,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts a fire ball.", m_name);
 			breath(m_idx, GF_FIRE,
-			       randint(rlev * 7 / 2) + 10);
+			       randint1(rlev * 7 / 2) + 10);
 			update_smart_learn(m_idx, DRS_RES_FIRE);
 			break;
 		}
@@ -1201,7 +1201,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts a frost ball.", m_name);
 			breath(m_idx, GF_COLD,
-			       randint(rlev * 3 / 2) + 10);
+			       randint1(rlev * 3 / 2) + 10);
 			update_smart_learn(m_idx, DRS_RES_COLD);
 			break;
 		}
@@ -1238,7 +1238,7 @@ bool make_attack_spell(int m_idx)
 			else msg_format("%^s gestures fluidly.", m_name);
 			msg_print("You are engulfed in a whirlpool.");
 			breath(m_idx, GF_WATER,
-			       randint(rlev * 5 / 2) + 50);
+			       randint1(rlev * 5 / 2) + 50);
 			break;
 		}
 
@@ -1280,7 +1280,7 @@ bool make_attack_spell(int m_idx)
 				msg_format("%^s draws psychic energy from you!", m_name);
 
 				/* Attack power */
-				r1 = (randint(rlev) / 2) + 1;
+				r1 = (randint1(rlev) / 2) + 1;
 
 				/* Full drain */
 				if (r1 >= p_ptr->csp)
@@ -1334,7 +1334,7 @@ bool make_attack_spell(int m_idx)
 				msg_format("%^s gazes deep into your eyes.", m_name);
 			}
 
-			if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
+			if (randint0(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1343,7 +1343,7 @@ bool make_attack_spell(int m_idx)
 				msg_print("Your mind is blasted by psionic energy.");
 				if (!p_ptr->resist_confu)
 				{
-					(void)inc_timed(TMD_CONFUSED, rand_int(4) + 4);
+					(void)inc_timed(TMD_CONFUSED, randint0(4) + 4);
 				}
 				take_hit(damroll(8, 8), ddesc);
 			}
@@ -1363,7 +1363,7 @@ bool make_attack_spell(int m_idx)
 			{
 				msg_format("%^s looks deep into your eyes.", m_name);
 			}
-			if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
+			if (randint0(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1373,17 +1373,17 @@ bool make_attack_spell(int m_idx)
 				take_hit(damroll(12, 15), ddesc);
 				if (!p_ptr->resist_blind)
 				{
-					(void)inc_timed(TMD_BLIND, 8 + rand_int(8));
+					(void)inc_timed(TMD_BLIND, 8 + randint0(8));
 				}
 				if (!p_ptr->resist_confu)
 				{
-					(void)inc_timed(TMD_CONFUSED, rand_int(4) + 4);
+					(void)inc_timed(TMD_CONFUSED, randint0(4) + 4);
 				}
 				if (!p_ptr->free_act)
 				{
-					(void)inc_timed(TMD_PARALYZED, rand_int(4) + 4);
+					(void)inc_timed(TMD_PARALYZED, randint0(4) + 4);
 				}
-				(void)inc_timed(TMD_SLOW, rand_int(4) + 4);
+				(void)inc_timed(TMD_SLOW, randint0(4) + 4);
 			}
 			break;
 		}
@@ -1395,7 +1395,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s points at you and curses.", m_name);
-			if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
+			if (randint0(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1413,7 +1413,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s points at you and curses horribly.", m_name);
-			if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
+			if (randint0(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1431,7 +1431,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles loudly.", m_name);
 			else msg_format("%^s points at you, incanting terribly!", m_name);
-			if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
+			if (randint0(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1449,7 +1449,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg_format("%^s screams the word 'DIE!'", m_name);
 			else msg_format("%^s points at you, screaming the word DIE!", m_name);
-			if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
+			if (randint0(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1546,7 +1546,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts a mana bolt.", m_name);
 			bolt(m_idx, GF_MANA,
-			     randint(rlev * 7 / 2) + 50);
+			     randint1(rlev * 7 / 2) + 50);
 			break;
 		}
 
@@ -1596,13 +1596,13 @@ bool make_attack_spell(int m_idx)
 			{
 				msg_print("You refuse to be frightened.");
 			}
-			else if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
+			else if (randint0(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You refuse to be frightened.");
 			}
 			else
 			{
-				(void)inc_timed(TMD_AFRAID, rand_int(4) + 4);
+				(void)inc_timed(TMD_AFRAID, randint0(4) + 4);
 			}
 			update_smart_learn(m_idx, DRS_RES_FEAR);
 			break;
@@ -1619,13 +1619,13 @@ bool make_attack_spell(int m_idx)
 			{
 				msg_print("You are unaffected!");
 			}
-			else if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
+			else if (randint0(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
 			else
 			{
-				(void)set_timed(TMD_BLIND, 12 + rand_int(4));
+				(void)set_timed(TMD_BLIND, 12 + randint0(4));
 			}
 			update_smart_learn(m_idx, DRS_RES_BLIND);
 			break;
@@ -1642,13 +1642,13 @@ bool make_attack_spell(int m_idx)
 			{
 				msg_print("You disbelieve the feeble spell.");
 			}
-			else if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
+			else if (randint0(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You disbelieve the feeble spell.");
 			}
 			else
 			{
-				(void)inc_timed(TMD_CONFUSED, rand_int(4) + 4);
+				(void)inc_timed(TMD_CONFUSED, randint0(4) + 4);
 			}
 			update_smart_learn(m_idx, DRS_RES_CONFU);
 			break;
@@ -1664,13 +1664,13 @@ bool make_attack_spell(int m_idx)
 			{
 				msg_print("You are unaffected!");
 			}
-			else if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
+			else if (randint0(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
 			else
 			{
-				(void)inc_timed(TMD_SLOW, rand_int(4) + 4);
+				(void)inc_timed(TMD_SLOW, randint0(4) + 4);
 			}
 			update_smart_learn(m_idx, DRS_FREE);
 			break;
@@ -1687,13 +1687,13 @@ bool make_attack_spell(int m_idx)
 			{
 				msg_print("You are unaffected!");
 			}
-			else if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
+			else if (randint0(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_format("You resist the effects!");
 			}
 			else
 			{
-				(void)inc_timed(TMD_PARALYZED, rand_int(4) + 4);
+				(void)inc_timed(TMD_PARALYZED, randint0(4) + 4);
 			}
 			update_smart_learn(m_idx, DRS_FREE);
 			break;
@@ -1869,7 +1869,7 @@ bool make_attack_spell(int m_idx)
 			{
 				msg_print("You are unaffected!");
 			}
-			else if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
+			else if (randint0(100) < p_ptr->skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1917,7 +1917,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			msg_format("%^s tries to blank your mind.", m_name);
 
-			if (rand_int(100) < p_ptr->skills[SKILL_SAVE])
+			if (randint0(100) < p_ptr->skills[SKILL_SAVE])
 				msg_print("You resist the effects!");
 			else
 				inc_timed(TMD_AMNESIA, 3);
@@ -3255,7 +3255,7 @@ static void process_monster(int m_idx)
 		}
 
 		/* Anti-stealth */
-		notice = rand_int(1024);
+		notice = randint0(1024);
 
 		/* Hack -- See if monster "notices" player */
 		if ((notice * notice * notice) <= p_ptr->noise)
@@ -3322,7 +3322,7 @@ static void process_monster(int m_idx)
 		int d = 1;
 
 		/* Make a "saving throw" against stun */
-		if (rand_int(5000) <= r_ptr->level * r_ptr->level)
+		if (randint0(5000) <= r_ptr->level * r_ptr->level)
 		{
 			/* Recover fully */
 			d = m_ptr->stunned;
@@ -3365,7 +3365,7 @@ static void process_monster(int m_idx)
 	/* Handle confusion */
 	if (m_ptr->confused)
 	{
-		int d = randint(r_ptr->level / 10 + 1);
+		int d = randint1(r_ptr->level / 10 + 1);
 
 		/* Still confused */
 		if (m_ptr->confused > d)
@@ -3402,7 +3402,7 @@ static void process_monster(int m_idx)
 	if (m_ptr->monfear)
 	{
 		/* Amount of "boldness" */
-		int d = randint(r_ptr->level / 10 + 1);
+		int d = randint1(r_ptr->level / 10 + 1);
 
 		/* Still afraid */
 		if (m_ptr->monfear > d)
@@ -3500,7 +3500,7 @@ static void process_monster(int m_idx)
 		if (!(r_ptr->flags[0] & (RF0_RAND_50)))
 		{
 			/* Random */
-			if (rand_int(100) < 25)
+			if (randint0(100) < 25)
 			{
 				/* Memorize flags */
 				if (m_ptr->ml) l_ptr->flags[0] |= (RF0_RAND_25);
@@ -3514,7 +3514,7 @@ static void process_monster(int m_idx)
 		else if (!(r_ptr->flags[0] & (RF0_RAND_25)))
 		{
 			/* Random */
-			if (rand_int(100) < 50)
+			if (randint0(100) < 50)
 			{
 				/* Memorize flags */
 				if (m_ptr->ml) l_ptr->flags[0] |= (RF0_RAND_50);
@@ -3528,7 +3528,7 @@ static void process_monster(int m_idx)
 		else
 		{
 			/* Random */
-			if (rand_int(100) < 75)
+			if (randint0(100) < 75)
 			{
 				/* Memorize flags */
 				if (m_ptr->ml) l_ptr->flags[0] |= (RF0_RAND_50 | RF0_RAND_25);
@@ -3567,7 +3567,7 @@ static void process_monster(int m_idx)
 	for (i = 0; i < 5; i++)
 	{
 		/* Get the direction (or stagger) */
-		d = (stagger ? ddd[rand_int(8)] : mm[i]);
+		d = (stagger ? ddd[randint0(8)] : mm[i]);
 
 		/* Get the destination */
 		ny = oy + ddy[d];
@@ -3649,7 +3649,7 @@ static void process_monster(int m_idx)
 					k = ((cave_feat[ny][nx] - FEAT_DOOR_HEAD) & 0x07);
 
 					/* Try to unlock it XXX XXX XXX */
-					if (rand_int(m_ptr->hp / 10) > k)
+					if (randint0(m_ptr->hp / 10) > k)
 					{
 						/* Unlock the door */
 						cave_set_feat(ny, nx, FEAT_DOOR_HEAD + 0x00);
@@ -3669,7 +3669,7 @@ static void process_monster(int m_idx)
 				k = ((cave_feat[ny][nx] - FEAT_DOOR_HEAD) & 0x07);
 
 				/* Attempt to Bash XXX XXX XXX */
-				if (rand_int(m_ptr->hp / 10) > k)
+				if (randint0(m_ptr->hp / 10) > k)
 				{
 					/* Message */
 					msg_print("You hear a door burst open!");
@@ -3690,7 +3690,7 @@ static void process_monster(int m_idx)
 			if (did_open_door || did_bash_door)
 			{
 				/* Break down the door */
-				if (did_bash_door && (rand_int(100) < 50))
+				if (did_bash_door && (randint0(100) < 50))
 				{
 					cave_set_feat(ny, nx, FEAT_BROKEN);
 				}
@@ -3714,7 +3714,7 @@ static void process_monster(int m_idx)
 			do_move = FALSE;
 
 			/* Break the ward */
-			if (randint(BREAK_GLYPH) < r_ptr->level)
+			if (randint1(BREAK_GLYPH) < r_ptr->level)
 			{
 				/* Describe observable breakage */
 				if (cave_info[ny][nx] & (CAVE_MARK))

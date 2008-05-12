@@ -278,7 +278,7 @@ static void play_sound(int event)
 	if (!samples[event].num) return;
 
 	/* Choose a random event */
-	s = rand_int(samples[event].num);
+	s = randint0(samples[event].num);
 	wave = samples[event].wavs[s];
 
 	/* Try loading it, if it's not cached */

@@ -177,7 +177,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_SCARE:
 		{
-			if (!p_ptr->resist_fear && inc_timed(TMD_AFRAID, rand_int(10) + 10))
+			if (!p_ptr->resist_fear && inc_timed(TMD_AFRAID, randint0(10) + 10))
 				*ident = TRUE;
 
 			return TRUE;
@@ -193,7 +193,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_HALLUC:
 		{
-			if (!p_ptr->resist_chaos && inc_timed(TMD_IMAGE, rand_int(250) + 250))
+			if (!p_ptr->resist_chaos && inc_timed(TMD_IMAGE, randint0(250) + 250))
 				*ident = TRUE;
 
 			return TRUE;
@@ -201,7 +201,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_PARALYZE:
 		{
-			if (!p_ptr->free_act && inc_timed(TMD_PARALYZED, rand_int(5) + 5))
+			if (!p_ptr->free_act && inc_timed(TMD_PARALYZED, randint0(5) + 5))
 				*ident = TRUE;
 
 			return TRUE;
@@ -209,7 +209,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_SLOW:
 		{
-			if (inc_timed(TMD_SLOW, randint(25) + 15)) *ident = TRUE;
+			if (inc_timed(TMD_SLOW, randint1(25) + 15)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -413,7 +413,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		case EF_BRAWN:
 		{
 			/* Pick a random stat to decrease other than strength */
-			int stat = rand_int(A_MAX-1) + 1;
+			int stat = randint0(A_MAX-1) + 1;
 			
 			if (!do_dec_stat(stat, TRUE)) return FALSE;
 			if (do_inc_stat(A_STR)) *ident = TRUE;
@@ -423,7 +423,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		case EF_INTELLECT:
 		{
 			/* Pick a random stat to decrease other than intelligence */
-			int stat = rand_int(A_MAX-1);
+			int stat = randint0(A_MAX-1);
 			if (stat >= A_INT) stat++;
 			
 			if (!do_dec_stat(stat, TRUE)) return FALSE;
@@ -434,7 +434,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		case EF_CONTEMPLATION:
 		{
 			/* Pick a random stat to decrease other than wisdom */
-			int stat = rand_int(A_MAX-1);
+			int stat = randint0(A_MAX-1);
 			if (stat >= A_WIS) stat++;
 			
 			if (!do_dec_stat(stat, TRUE)) return FALSE;
@@ -445,7 +445,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		case EF_TOUGHNESS:
 		{
 			/* Pick a random stat to decrease other than constitution */
-			int stat = rand_int(A_MAX-1);
+			int stat = randint0(A_MAX-1);
 			if (stat >= A_CON) stat++;
 			
 			if (!do_dec_stat(stat, TRUE)) return FALSE;
@@ -456,7 +456,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		case EF_NIMBLENESS:
 		{
 			/* Pick a random stat to decrease other than dexterity */
-			int stat = rand_int(A_MAX-1);
+			int stat = randint0(A_MAX-1);
 			if (stat >= A_DEX) stat++;
 			
 			if (!do_dec_stat(stat, TRUE)) return FALSE;
@@ -467,7 +467,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		case EF_PLEASING:
 		{
 			/* Pick a random stat to decrease other than charisma */
-			int stat = rand_int(A_MAX-1);
+			int stat = randint0(A_MAX-1);
 			
 			if (!do_dec_stat(stat, TRUE)) return FALSE;
 			if (do_inc_stat(A_CHR)) *ident = TRUE;
@@ -617,7 +617,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			if (hp_player(10)) *ident = TRUE;
 			if (clear_timed(TMD_AFRAID)) *ident = TRUE;
-			if (inc_timed(TMD_HERO, randint(25) + 25)) *ident = TRUE;
+			if (inc_timed(TMD_HERO, randint1(25) + 25)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -625,7 +625,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			if (hp_player(30)) *ident = TRUE;
 			if (clear_timed(TMD_AFRAID)) *ident = TRUE;
-			if (inc_timed(TMD_SHERO, randint(25) + 25)) *ident = TRUE;
+			if (inc_timed(TMD_SHERO, randint1(25) + 25)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -667,11 +667,11 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_RESIST_ALL:
 		{
-			if (inc_timed(TMD_OPP_ACID, randint(20) + 20)) *ident = TRUE;
-			if (inc_timed(TMD_OPP_ELEC, randint(20) + 20)) *ident = TRUE;
-			if (inc_timed(TMD_OPP_FIRE, randint(20) + 20)) *ident = TRUE;
-			if (inc_timed(TMD_OPP_COLD, randint(20) + 20)) *ident = TRUE;
-			if (inc_timed(TMD_OPP_POIS, randint(20) + 20)) *ident = TRUE;
+			if (inc_timed(TMD_OPP_ACID, randint1(20) + 20)) *ident = TRUE;
+			if (inc_timed(TMD_OPP_ELEC, randint1(20) + 20)) *ident = TRUE;
+			if (inc_timed(TMD_OPP_FIRE, randint1(20) + 20)) *ident = TRUE;
+			if (inc_timed(TMD_OPP_COLD, randint1(20) + 20)) *ident = TRUE;
+			if (inc_timed(TMD_OPP_POIS, randint1(20) + 20)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -729,7 +729,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		case EF_ENCHANT_WEAPON:
 		{
 			*ident = TRUE;
-			if (!enchant_spell(randint(3), randint(3), 0)) return FALSE;
+			if (!enchant_spell(randint1(3), randint1(3), 0)) return FALSE;
 			return TRUE;
 		}
 
@@ -743,7 +743,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		case EF_ENCHANT_ARMOR2:
 		{
 			*ident = TRUE;
-			if (!enchant_spell(0, 0, randint(3) + 2)) return FALSE;
+			if (!enchant_spell(0, 0, randint1(3) + 2)) return FALSE;
 			return TRUE;
 		}
 
@@ -786,7 +786,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			int i;
 			sound(MSG_SUM_MONSTER);
 
-			for (i = 0; i < randint(3); i++)
+			for (i = 0; i < randint1(3); i++)
 			{
 				if (summon_specific(py, px, p_ptr->depth, 0))
 					*ident = TRUE;
@@ -799,7 +799,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			int i;
 			sound(MSG_SUM_UNDEAD);
 
-			for (i = 0; i < randint(3); i++)
+			for (i = 0; i < randint1(3); i++)
 			{
 				if (summon_specific(py, px, p_ptr->depth, SUMMON_UNDEAD))
 					*ident = TRUE;
@@ -862,7 +862,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_ACQUIRE2:
 		{
-			acquirement(py, px, p_ptr->depth, randint(2) + 1, TRUE);
+			acquirement(py, px, p_ptr->depth, randint1(2) + 1, TRUE);
 			*ident = TRUE;
 			return TRUE;
 		}
@@ -905,7 +905,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			if (!p_ptr->resist_blind)
 			{
-				(void)inc_timed(TMD_BLIND, 3 + randint(5));
+				(void)inc_timed(TMD_BLIND, 3 + randint1(5));
 			}
 			if (unlite_area(10, 3)) *ident = TRUE;
 			return TRUE;
@@ -913,7 +913,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_PROTEVIL:
 		{
-			if (inc_timed(TMD_PROTEVIL, randint(25) + 3 * p_ptr->lev)) *ident = TRUE;
+			if (inc_timed(TMD_PROTEVIL, randint1(25) + 3 * p_ptr->lev)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -937,19 +937,19 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_BLESSING:
 		{
-			if (inc_timed(TMD_BLESSED, randint(12) + 6)) *ident = TRUE;
+			if (inc_timed(TMD_BLESSED, randint1(12) + 6)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_BLESSING2:
 		{
-			if (inc_timed(TMD_BLESSED, randint(24) + 12)) *ident = TRUE;
+			if (inc_timed(TMD_BLESSED, randint1(24) + 12)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_BLESSING3:
 		{
-			if (inc_timed(TMD_BLESSED, randint(48) + 24)) *ident = TRUE;
+			if (inc_timed(TMD_BLESSED, randint1(48) + 24)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1057,13 +1057,13 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			*ident = TRUE;
 			(void)hp_player(30);
 			(void)clear_timed(TMD_AFRAID);
-			(void)inc_timed(TMD_SHERO, randint(50) + 50);
-			(void)inc_timed(TMD_BLESSED, randint(50) + 50);
-			(void)inc_timed(TMD_OPP_ACID, randint(50) + 50);
-			(void)inc_timed(TMD_OPP_ELEC, randint(50) + 50);
-			(void)inc_timed(TMD_OPP_FIRE, randint(50) + 50);
-			(void)inc_timed(TMD_OPP_COLD, randint(50) + 50);
-			(void)inc_timed(TMD_OPP_POIS, randint(50) + 50);
+			(void)inc_timed(TMD_SHERO, randint1(50) + 50);
+			(void)inc_timed(TMD_BLESSED, randint1(50) + 50);
+			(void)inc_timed(TMD_OPP_ACID, randint1(50) + 50);
+			(void)inc_timed(TMD_OPP_ELEC, randint1(50) + 50);
+			(void)inc_timed(TMD_OPP_FIRE, randint1(50) + 50);
+			(void)inc_timed(TMD_OPP_COLD, randint1(50) + 50);
+			(void)inc_timed(TMD_OPP_POIS, randint1(50) + 50);
 			return TRUE;
 		}
 
@@ -1131,7 +1131,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			if (!p_ptr->timed[TMD_FAST])
 			{
-				if (set_timed(TMD_FAST, randint(20) + 20)) *ident = TRUE;
+				if (set_timed(TMD_FAST, randint1(20) + 20)) *ident = TRUE;
 			}
 			else
 			{
@@ -1145,7 +1145,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			if (!p_ptr->timed[TMD_FAST])
 			{
-				if (set_timed(TMD_FAST, randint(75) + 75)) *ident = TRUE;
+				if (set_timed(TMD_FAST, randint1(75) + 75)) *ident = TRUE;
 			}
 			else
 			{
@@ -1453,14 +1453,14 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_BERSERKER:
 		{
-			if (inc_timed(TMD_SHERO, randint(50) + 50)) *ident = TRUE;
+			if (inc_timed(TMD_SHERO, randint1(50) + 50)) *ident = TRUE;
 			return TRUE;
 		}
 
 
 		case EF_WONDER:
 		{
-			if (spell_wonder(dir, randint(100) + p_ptr->lev / 5, beam)) *ident = TRUE;
+			if (spell_wonder(dir, randint1(100) + p_ptr->lev / 5, beam)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1477,7 +1477,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 				GF_POIS, 120
 			};
 			/* pick a random (type, damage) tuple in the table */
-			int which = 2 * rand_int(sizeof(breath_types) / (2 * sizeof(int)));
+			int which = 2 * randint0(sizeof(breath_types) / (2 * sizeof(int)));
 			if (fire_ball(breath_types[which], dir, breath_types[which + 1], 3))
 				*ident = TRUE;
 			return TRUE;
@@ -1500,7 +1500,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		case EF_STAFF_HOLY:
 		{
 			if (dispel_evil(120)) *ident = TRUE;
-			if (inc_timed(TMD_PROTEVIL, randint(25) + 3 * p_ptr->lev)) *ident = TRUE;
+			if (inc_timed(TMD_PROTEVIL, randint1(25) + 3 * p_ptr->lev)) *ident = TRUE;
 			if (clear_timed(TMD_POISONED)) *ident = TRUE;
 			if (clear_timed(TMD_AFRAID)) *ident = TRUE;
 			if (hp_player(50)) *ident = TRUE;
@@ -1578,7 +1578,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			*ident = TRUE;
 			fire_ball(GF_ACID, dir, 70, 2);
-			inc_timed(TMD_OPP_ACID, randint(20) + 20);
+			inc_timed(TMD_OPP_ACID, randint1(20) + 20);
 			return TRUE;
 		}
 
@@ -1586,7 +1586,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			*ident = TRUE;
 			fire_ball(GF_FIRE, dir, 80, 2);
-			inc_timed(TMD_OPP_FIRE, randint(20) + 20);
+			inc_timed(TMD_OPP_FIRE, randint1(20) + 20);
 			return TRUE;
 		}
 
@@ -1594,7 +1594,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			*ident = TRUE;
 			fire_ball(GF_COLD, dir, 75, 2);
-			inc_timed(TMD_OPP_COLD, randint(20) + 20);
+			inc_timed(TMD_OPP_COLD, randint1(20) + 20);
 			return TRUE;
 		}
 
@@ -1602,7 +1602,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			*ident = TRUE;
 			fire_ball(GF_ELEC, dir, 85, 2);
-			inc_timed(TMD_OPP_ELEC, randint(20) + 20);
+			inc_timed(TMD_OPP_ELEC, randint1(20) + 20);
 			return TRUE;
 		}
 
@@ -1646,7 +1646,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 				{ MSG_BR_FIRE,  "fire",       GF_FIRE }
 			};
 
-			int chance = randint(5);
+			int chance = randint0(5);
 			sound(mh[chance].sound);
 			msg_format("You breathe %s.", mh[chance].msg);
 			fire_ball(mh[chance].typ, dir, 250, 2);
@@ -1671,7 +1671,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_DRAGON_CHAOS:
 		{
-			int chance = rand_int(2);
+			int chance = randint0(2);
 			sound(((chance == 1 ? MSG_BR_CHAOS : MSG_BR_DISENCHANT)));
 			msg_format("You breathe %s.",
 			           ((chance == 1 ? "chaos" : "disenchantment")));
@@ -1682,7 +1682,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_DRAGON_LAW:
 		{
-			int chance = rand_int(2);
+			int chance = randint0(2);
 			sound(((chance == 1 ? MSG_BR_SOUND : MSG_BR_SHARDS)));
 			msg_format("You breathe %s.",
 			           ((chance == 1 ? "sound" : "shards")));
@@ -1693,7 +1693,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_DRAGON_BALANCE:
 		{
-			int chance = rand_int(4);
+			int chance = randint0(4);
 			msg_format("You breathe %s.",
 			           ((chance == 1) ? "chaos" :
 			            ((chance == 2) ? "disenchantment" :
@@ -1707,7 +1707,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_DRAGON_SHINING:
 		{
-			int chance = rand_int(2);
+			int chance = randint0(2);
 			sound(((chance == 0 ? MSG_BR_LIGHT : MSG_BR_DARK)));
 			msg_format("You breathe %s.",
 			           ((chance == 0 ? "light" : "darkness")));

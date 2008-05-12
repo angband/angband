@@ -228,7 +228,7 @@ static void chest_death(int y, int x, s16b o_idx)
 		object_wipe(i_ptr);
 
 		/* Small chests often drop gold */
-		if (tiny && (rand_int(100) < 75))
+		if (tiny && (randint0(100) < 75))
 			make_gold(i_ptr, value);
 
 		/* Otherwise drop an item */
@@ -294,7 +294,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 		msg_print("A puff of green gas surrounds you!");
 		if (!(p_ptr->resist_pois || p_ptr->timed[TMD_OPP_POIS]))
 		{
-			(void)inc_timed(TMD_POISONED, 10 + randint(20));
+			(void)inc_timed(TMD_POISONED, 10 + randint1(20));
 		}
 	}
 
@@ -304,14 +304,14 @@ static void chest_trap(int y, int x, s16b o_idx)
 		msg_print("A puff of yellow gas surrounds you!");
 		if (!p_ptr->free_act)
 		{
-			(void)inc_timed(TMD_PARALYZED, 10 + randint(20));
+			(void)inc_timed(TMD_PARALYZED, 10 + randint1(20));
 		}
 	}
 
 	/* Summon monsters */
 	if (trap & (CHEST_SUMMON))
 	{
-		int num = 2 + randint(3);
+		int num = 2 + randint1(3);
 		msg_print("You are enveloped in a cloud of smoke!");
 		sound(MSG_SUM_MONSTER);
 		for (i = 0; i < num; i++)
@@ -369,7 +369,7 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		if (j < 2) j = 2;
 
 		/* Success -- May still have traps */
-		if (rand_int(100) < j)
+		if (randint0(100) < j)
 		{
 			message(MSG_LOCKPICK, 0, "You have picked the lock.");
 			gain_exp(1);
@@ -455,7 +455,7 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	}
 
 	/* Success (get a lot of experience) */
-	else if (rand_int(100) < j)
+	else if (randint0(100) < j)
 	{
 		message(MSG_DISARM, 0, "You have disarmed the chest.");
 		gain_exp(o_ptr->pval);
@@ -463,7 +463,7 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	}
 
 	/* Failure -- Keep trying */
-	else if ((i > 5) && (randint(i) > 5))
+	else if ((i > 5) && (randint1(i) > 5))
 	{
 		/* We may keep trying */
 		more = TRUE;
@@ -690,7 +690,7 @@ static bool do_cmd_open_aux(int y, int x)
 		if (j < 2) j = 2;
 
 		/* Success */
-		if (rand_int(100) < j)
+		if (randint0(100) < j)
 		{
 			/* Message */
 			message(MSG_LOCKPICK, 0, "You have picked the lock.");
@@ -1090,7 +1090,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	else if (cave_feat[y][x] >= FEAT_WALL_EXTRA)
 	{
 		/* Tunnel */
-		if ((p_ptr->skills[SKILL_DIGGING] > 40 + rand_int(1600)) && twall(y, x))
+		if ((p_ptr->skills[SKILL_DIGGING] > 40 + randint0(1600)) && twall(y, x))
 		{
 			msg_print("You have finished the tunnel.");
 		}
@@ -1126,13 +1126,13 @@ static bool do_cmd_tunnel_aux(int y, int x)
 		/* Quartz */
 		if (hard)
 		{
-			okay = (p_ptr->skills[SKILL_DIGGING] > 20 + rand_int(800));
+			okay = (p_ptr->skills[SKILL_DIGGING] > 20 + randint0(800));
 		}
 
 		/* Magma */
 		else
 		{
-			okay = (p_ptr->skills[SKILL_DIGGING] > 10 + rand_int(400));
+			okay = (p_ptr->skills[SKILL_DIGGING] > 10 + randint0(400));
 		}
 
 		/* Success */
@@ -1177,13 +1177,13 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	else if (cave_feat[y][x] == FEAT_RUBBLE)
 	{
 		/* Remove the rubble */
-		if ((p_ptr->skills[SKILL_DIGGING] > rand_int(200)) && twall(y, x))
+		if ((p_ptr->skills[SKILL_DIGGING] > randint0(200)) && twall(y, x))
 		{
 			/* Message */
 			msg_print("You have removed the rubble.");
 
 			/* Hack -- place an object */
-			if (rand_int(100) < 10)
+			if (randint0(100) < 10)
 			{
 				/* Create a simple object */
 				place_object(y, x, p_ptr->depth, FALSE, FALSE);
@@ -1209,7 +1209,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	else if (cave_feat[y][x] >= FEAT_SECRET)
 	{
 		/* Tunnel */
-		if ((p_ptr->skills[SKILL_DIGGING] > 30 + rand_int(1200)) && twall(y, x))
+		if ((p_ptr->skills[SKILL_DIGGING] > 30 + randint0(1200)) && twall(y, x))
 		{
 			msg_print("You have finished the tunnel.");
 		}
@@ -1222,7 +1222,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 			more = TRUE;
 
 			/* Occasional Search XXX XXX */
-			if (rand_int(100) < 25) search();
+			if (randint0(100) < 25) search();
 		}
 	}
 
@@ -1230,7 +1230,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	else
 	{
 		/* Tunnel */
-		if ((p_ptr->skills[SKILL_DIGGING] > 30 + rand_int(1200)) && twall(y, x))
+		if ((p_ptr->skills[SKILL_DIGGING] > 30 + randint0(1200)) && twall(y, x))
 		{
 			msg_print("You have finished the tunnel.");
 		}
@@ -1394,7 +1394,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 	if (j < 2) j = 2;
 
 	/* Success */
-	if (rand_int(100) < j)
+	if (randint0(100) < j)
 	{
 		/* Message */
 		message_format(MSG_DISARM, 0, "You have disarmed the %s.", name);
@@ -1410,7 +1410,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 	}
 
 	/* Failure -- Keep trying */
-	else if ((i > 5) && (randint(i) > 5))
+	else if ((i > 5) && (randint1(i) > 5))
 	{
 		/* Failure */
 		if (flush_failure) flush();
@@ -1606,10 +1606,10 @@ static bool do_cmd_bash_aux(int y, int x)
 	if (temp < 1) temp = 1;
 
 	/* Hack -- attempt to bash down the door */
-	if (rand_int(100) < temp)
+	if (randint0(100) < temp)
 	{
 		/* Break down the door */
-		if (rand_int(100) < 50)
+		if (randint0(100) < 50)
 		{
 			cave_set_feat(y, x, FEAT_BROKEN);
 		}
@@ -1628,7 +1628,7 @@ static bool do_cmd_bash_aux(int y, int x)
 	}
 
 	/* Saving throw against stun */
-	else if (rand_int(100) < adj_dex_safe[p_ptr->stat_ind[A_DEX]] +
+	else if (randint0(100) < adj_dex_safe[p_ptr->stat_ind[A_DEX]] +
 	         p_ptr->lev)
 	{
 		/* Message */
@@ -1645,7 +1645,7 @@ static bool do_cmd_bash_aux(int y, int x)
 		msg_print("You are off-balance.");
 
 		/* Hack -- Lose balance ala paralysis */
-		(void)inc_timed(TMD_PARALYZED, 2 + rand_int(2));
+		(void)inc_timed(TMD_PARALYZED, 2 + randint0(2));
 	}
 
 	/* Result */

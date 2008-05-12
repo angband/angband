@@ -82,7 +82,7 @@ static void flavor_assign_random(byte tval)
 		if (!flavor_count) quit_fmt("Not enough flavors for tval %d.", tval);
 
 		/* Select a flavor */
-		choice = rand_int(flavor_count);
+		choice = randint0(flavor_count);
 	
 		/* Find and store the flavor */
 		for (j = 0; j < z_info->flavor_max; j++)
@@ -1059,7 +1059,7 @@ void compact_objects(int size)
 				x = m_ptr->fx;
 
 				/* Monsters protect their objects */
-				if ((rand_int(100) < 90) && !k_ptr->squelch)
+				if ((randint0(100) < 90) && !k_ptr->squelch)
 					continue;
 			}
 
@@ -1083,7 +1083,7 @@ void compact_objects(int size)
 			if (artifact_p(o_ptr) && (cnt < 1000)) chance = 100;
 
 			/* Apply the saving throw */
-			if (rand_int(100) < chance) continue;
+			if (randint0(100) < chance) continue;
 
 			/* Delete the object */
 			delete_object_idx(i);
@@ -2125,7 +2125,7 @@ void drop_near(object_type *j_ptr, int chance, int y, int x)
 
 
 	/* Handle normal "breakage" */
-	if (!artifact_p(j_ptr) && (rand_int(100) < chance))
+	if (!artifact_p(j_ptr) && (randint0(100) < chance))
 	{
 		/* Message */
 		msg_format("The %s break%s.", o_name, PLURAL(plural));
@@ -2208,7 +2208,7 @@ void drop_near(object_type *j_ptr, int chance, int y, int x)
 			if (s > bs) bn = 0;
 
 			/* Apply the randomizer to equivalent values */
-			if ((++bn >= 2) && (rand_int(bn) != 0)) continue;
+			if ((++bn >= 2) && (randint0(bn) != 0)) continue;
 
 			/* Keep score */
 			bs = s;
@@ -2250,8 +2250,8 @@ void drop_near(object_type *j_ptr, int chance, int y, int x)
 		/* Random locations */
 		else
 		{
-			ty = rand_int(DUNGEON_HGT);
-			tx = rand_int(DUNGEON_WID);
+			ty = randint0(DUNGEON_HGT);
+			tx = randint0(DUNGEON_WID);
 		}
 
 		/* Require floor space */
@@ -2410,7 +2410,7 @@ void place_closed_door(int y, int x)
 	int tmp;
 
 	/* Choose an object */
-	tmp = rand_int(400);
+	tmp = randint0(400);
 
 	/* Closed doors (300/400) */
 	if (tmp < 300)
@@ -2423,14 +2423,14 @@ void place_closed_door(int y, int x)
 	else if (tmp < 399)
 	{
 		/* Create locked door */
-		cave_set_feat(y, x, FEAT_DOOR_HEAD + randint(7));
+		cave_set_feat(y, x, FEAT_DOOR_HEAD + randint1(7));
 	}
 
 	/* Stuck doors (1/400) */
 	else
 	{
 		/* Create jammed door */
-		cave_set_feat(y, x, FEAT_DOOR_HEAD + 0x08 + rand_int(8));
+		cave_set_feat(y, x, FEAT_DOOR_HEAD + 0x08 + randint0(8));
 	}
 }
 
@@ -2443,7 +2443,7 @@ void place_random_door(int y, int x)
 	int tmp;
 
 	/* Choose an object */
-	tmp = rand_int(1000);
+	tmp = randint0(1000);
 
 	/* Open doors (300/1000) */
 	if (tmp < 300)

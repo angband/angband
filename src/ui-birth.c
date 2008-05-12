@@ -197,7 +197,7 @@ game_command menu_question()
 		else if (cx.key == '*' && menu_data->allow_random) 
 		{
 			cmd.command = CMD_BIRTH_CHOICE;
-			current_menu->cursor = rand_int(current_menu->count);
+			current_menu->cursor = randint0(current_menu->count);
 			cmd.params.choice = current_menu->cursor;
 			menu_refresh(current_menu);
 		}

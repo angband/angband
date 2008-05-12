@@ -78,7 +78,7 @@ bool test_hit(int chance, int ac, int vis)
 	int k;
 
 	/* Percentile dice */
-	k = rand_int(100);
+	k = randint0(100);
 
 	/* Hack -- Instant miss or hit */
 	if (k < 10) return (k < 5);
@@ -87,7 +87,7 @@ bool test_hit(int chance, int ac, int vis)
 	if (!vis) chance = chance / 2;
 
 	/* Power competes against armor */
-	if ((chance > 0) && (rand_int(chance) >= (ac * 3 / 4))) return (TRUE);
+	if ((chance > 0) && (randint0(chance) >= (ac * 3 / 4))) return (TRUE);
 
 	/* Assume miss */
 	return (FALSE);
@@ -107,9 +107,9 @@ static int critical_shot(int weight, int plus, int dam)
 	i = (weight + ((p_ptr->to_h + plus) * 4) + (p_ptr->lev * 2));
 
 	/* Critical hit */
-	if (randint(5000) <= i)
+	if (randint1(5000) <= i)
 	{
-		k = weight + randint(500);
+		k = weight + randint1(500);
 
 		if (k < 500)
 		{
@@ -146,9 +146,9 @@ static int critical_norm(int weight, int plus, int dam)
 	i = (weight + ((p_ptr->to_h + plus) * 5) + (p_ptr->lev * 3));
 
 	/* Chance */
-	if (randint(5000) <= i)
+	if (randint1(5000) <= i)
 	{
-		k = weight + randint(650);
+		k = weight + randint1(650);
 
 		if (k < 400)
 		{
@@ -523,14 +523,14 @@ void py_attack(int y, int x)
 
 					msg_format("%^s is unaffected.", m_name);
 				}
-				else if (rand_int(100) < r_ptr->level)
+				else if (randint0(100) < r_ptr->level)
 				{
 					msg_format("%^s is unaffected.", m_name);
 				}
 				else
 				{
 					msg_format("%^s appears confused.", m_name);
-					m_ptr->confused += 10 + rand_int(p_ptr->lev) / 5;
+					m_ptr->confused += 10 + randint0(p_ptr->lev) / 5;
 				}
 			}
 		}

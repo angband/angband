@@ -64,7 +64,7 @@ static int check_devices(object_type *o_ptr)
 	}
 
 	/* Roll for usage */
-	if ((chance < USE_DEVICE) || (randint(chance) < USE_DEVICE))
+	if ((chance < USE_DEVICE) || (randint1(chance) < USE_DEVICE))
 	{
 		if (flush_failure) flush();
 		msg_format("You failed to %s properly.", msg);

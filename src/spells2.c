@@ -918,7 +918,7 @@ void set_recall(void)
 				p_ptr->max_depth = p_ptr->depth;
 		}
 
-		p_ptr->word_recall = rand_int(20) + 15;
+		p_ptr->word_recall = randint0(20) + 15;
 		msg_print("The air about you becomes charged...");
 	}
 
@@ -1594,7 +1594,7 @@ void stair_creation(void)
 	{
 		cave_set_feat(py, px, FEAT_LESS);
 	}
-	else if (rand_int(100) < 50)
+	else if (randint0(100) < 50)
 	{
 		cave_set_feat(py, px, FEAT_MORE);
 	}
@@ -1709,7 +1709,7 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 	for (i=0; i<n; i++)
 	{
 		/* Hack -- Roll for pile resistance */
-		if ((prob > 100) && (rand_int(prob) >= 100)) continue;
+		if ((prob > 100) && (randint0(prob) >= 100)) continue;
 
 		/* Enchant to hit */
 		if (eflag & (ENCH_TOHIT))
@@ -1719,7 +1719,7 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 			else chance = enchant_table[o_ptr->to_h];
 
 			/* Attempt to enchant */
-			if ((randint(1000) > chance) && (!a || (rand_int(100) < 50)))
+			if ((randint1(1000) > chance) && (!a || (randint0(100) < 50)))
 			{
 				res = TRUE;
 
@@ -1729,7 +1729,7 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 				/* Break curse */
 				if (cursed_p(o_ptr) &&
 				    (!(f3 & (TR3_PERMA_CURSE))) &&
-				    (o_ptr->to_h >= 0) && (rand_int(100) < 25))
+				    (o_ptr->to_h >= 0) && (randint0(100) < 25))
 				{
 					msg_print("The curse is broken!");
 
@@ -1747,7 +1747,7 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 			else chance = enchant_table[o_ptr->to_d];
 
 			/* Attempt to enchant */
-			if ((randint(1000) > chance) && (!a || (rand_int(100) < 50)))
+			if ((randint1(1000) > chance) && (!a || (randint0(100) < 50)))
 			{
 				res = TRUE;
 
@@ -1757,7 +1757,7 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 				/* Break curse */
 				if (cursed_p(o_ptr) &&
 				    (!(f3 & (TR3_PERMA_CURSE))) &&
-				    (o_ptr->to_d >= 0) && (rand_int(100) < 25))
+				    (o_ptr->to_d >= 0) && (randint0(100) < 25))
 				{
 					msg_print("The curse is broken!");
 
@@ -1775,7 +1775,7 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 			else chance = enchant_table[o_ptr->to_a];
 
 			/* Attempt to enchant */
-			if ((randint(1000) > chance) && (!a || (rand_int(100) < 50)))
+			if ((randint1(1000) > chance) && (!a || (randint0(100) < 50)))
 			{
 				res = TRUE;
 
@@ -1785,7 +1785,7 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 				/* Break curse */
 				if (cursed_p(o_ptr) &&
 				    (!(f3 & (TR3_PERMA_CURSE))) &&
-				    (o_ptr->to_a >= 0) && (rand_int(100) < 25))
+				    (o_ptr->to_a >= 0) && (randint0(100) < 25))
 				{
 					msg_print("The curse is broken!");
 
@@ -2025,7 +2025,7 @@ bool recharge(int num)
 		t = (num / (lev + 2)) + 1;
 
 		/* Recharge based on the power */
-		if (t > 0) o_ptr->pval += 2 + randint(t);
+		if (t > 0) o_ptr->pval += 2 + randint1(t);
 
 		/* We no longer think the item is empty */
 		o_ptr->ident &= ~(IDENT_EMPTY);
@@ -2245,7 +2245,7 @@ bool banishment(void)
 		delete_monster_idx(i);
 
 		/* Take some damage */
-		dam += randint(4);
+		dam += randint1(4);
 	}
 
 	/* Hurt the player */
@@ -2289,7 +2289,7 @@ bool mass_banishment(void)
 		delete_monster_idx(i);
 
 		/* Take some damage */
-		dam += randint(3);
+		dam += randint1(3);
 	}
 
 	/* Hurt the player */
@@ -2433,7 +2433,7 @@ void destroy_area(int y1, int x1, int r, bool full)
 				delete_object(y, x);
 
 				/* Wall (or floor) type */
-				t = rand_int(200);
+				t = randint0(200);
 
 				/* Granite */
 				if (t < 20)
@@ -2473,7 +2473,7 @@ void destroy_area(int y1, int x1, int r, bool full)
 		if (!p_ptr->resist_blind && !p_ptr->resist_lite)
 		{
 			/* Become blind */
-			(void)inc_timed(TMD_BLIND, 10 + randint(10));
+			(void)inc_timed(TMD_BLIND, 10 + randint1(10));
 		}
 	}
 
@@ -2563,7 +2563,7 @@ void earthquake(int cy, int cx, int r)
 			if (!dx && !dy) continue;
 
 			/* Skip most grids */
-			if (rand_int(100) < 85) continue;
+			if (randint0(100) < 85) continue;
 
 			/* Damage this grid */
 			map[16+yy-cy][16+xx-cx] = TRUE;
@@ -2590,14 +2590,14 @@ void earthquake(int cy, int cx, int r)
 			if (map[16+y-cy][16+x-cx]) continue;
 
 			/* Count "safe" grids, apply the randomizer */
-			if ((++sn > 1) && (rand_int(sn) != 0)) continue;
+			if ((++sn > 1) && (randint0(sn) != 0)) continue;
 
 			/* Save the safe location */
 			sy = y; sx = x;
 		}
 
 		/* Random message */
-		switch (randint(3))
+		switch (randint1(3))
 		{
 			case 1:
 			{
@@ -2629,7 +2629,7 @@ void earthquake(int cy, int cx, int r)
 		else
 		{
 			/* Calculate results */
-			switch (randint(3))
+			switch (randint1(3))
 			{
 				case 1:
 				{
@@ -2641,14 +2641,14 @@ void earthquake(int cy, int cx, int r)
 				{
 					msg_print("You are bashed by rubble!");
 					damage = damroll(10, 4);
-					(void)inc_timed(TMD_STUN, randint(50));
+					(void)inc_timed(TMD_STUN, randint1(50));
 					break;
 				}
 				case 3:
 				{
 					msg_print("You are crushed between the floor and ceiling!");
 					damage = damroll(10, 4);
-					(void)inc_timed(TMD_STUN, randint(50));
+					(void)inc_timed(TMD_STUN, randint1(50));
 					break;
 				}
 			}
@@ -2708,7 +2708,7 @@ void earthquake(int cy, int cx, int r)
 							if (map[16+y-cy][16+x-cx]) continue;
 
 							/* Count "safe" grids, apply the randomizer */
-							if ((++sn > 1) && (rand_int(sn) != 0)) continue;
+							if ((++sn > 1) && (randint0(sn) != 0)) continue;
 
 							/* Save the safe grid */
 							sy = y;
@@ -2792,7 +2792,7 @@ void earthquake(int cy, int cx, int r)
 				delete_object(yy, xx);
 
 				/* Wall (or floor) type */
-				t = (floor ? rand_int(100) : 200);
+				t = (floor ? randint0(100) : 200);
 
 				/* Granite */
 				if (t < 20)
@@ -2899,7 +2899,7 @@ static void cave_temp_room_lite(void)
 			if (r_ptr->flags[1] & (RF1_SMART)) chance = 100;
 
 			/* Sometimes monsters wake up */
-			if (m_ptr->csleep && (rand_int(100) < chance))
+			if (m_ptr->csleep && (randint0(100) < chance))
 			{
 				/* Wake up! */
 				m_ptr->csleep = 0;
@@ -3257,7 +3257,7 @@ bool fire_beam(int typ, int dir, int dam)
  */
 bool fire_bolt_or_beam(int prob, int typ, int dir, int dam)
 {
-	if (rand_int(100) < prob)
+	if (randint0(100) < prob)
 	{
 		return (fire_beam(typ, dir, dam));
 	}
@@ -3293,7 +3293,7 @@ bool drain_life(int dir, int dam)
 bool wall_to_mud(int dir)
 {
 	int flg = PROJECT_BEAM | PROJECT_GRID | PROJECT_ITEM | PROJECT_KILL;
-	return (project_hook(GF_KILL_WALL, dir, 20 + randint(30), flg));
+	return (project_hook(GF_KILL_WALL, dir, 20 + randint1(30), flg));
 }
 
 bool destroy_door(int dir)
@@ -3426,7 +3426,7 @@ bool curse_armor(void)
 	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_FULL);
 
 	/* Attempt a saving throw for artifacts */
-	if (artifact_p(o_ptr) && (rand_int(100) < 50))
+	if (artifact_p(o_ptr) && (randint0(100) < 50))
 	{
 		/* Cool */
 		msg_format("A %s tries to %s, but your %s resists the effects!",
@@ -3442,7 +3442,7 @@ bool curse_armor(void)
 		/* Blast the armor */
 		o_ptr->name1 = 0;
 		o_ptr->name2 = EGO_BLASTED;
-		o_ptr->to_a = 0 - randint(5) - randint(5);
+		o_ptr->to_a = 0 - randint1(5) - randint1(5);
 		o_ptr->to_h = 0;
 		o_ptr->to_d = 0;
 		o_ptr->ac = 0;
@@ -3487,7 +3487,7 @@ bool curse_weapon(void)
 	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_FULL);
 
 	/* Attempt a saving throw */
-	if (artifact_p(o_ptr) && (rand_int(100) < 50))
+	if (artifact_p(o_ptr) && (randint0(100) < 50))
 	{
 		/* Cool */
 		msg_format("A %s tries to %s, but your %s resists the effects!",
@@ -3503,8 +3503,8 @@ bool curse_weapon(void)
 		/* Shatter the weapon */
 		o_ptr->name1 = 0;
 		o_ptr->name2 = EGO_SHATTERED;
-		o_ptr->to_h = 0 - randint(5) - randint(5);
-		o_ptr->to_d = 0 - randint(5) - randint(5);
+		o_ptr->to_h = 0 - randint1(5) - randint1(5);
+		o_ptr->to_d = 0 - randint1(5) - randint1(5);
 		o_ptr->to_a = 0;
 		o_ptr->ac = 0;
 		o_ptr->dd = 0;
@@ -3574,7 +3574,7 @@ void brand_object(object_type *o_ptr, byte brand_type)
 		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 
 		/* Enchant */
-		enchant(o_ptr, rand_int(3) + 4, ENCH_TOHIT | ENCH_TODAM);
+		enchant(o_ptr, randint0(3) + 4, ENCH_TOHIT | ENCH_TODAM);
 	}
 	else
 	{
@@ -3595,7 +3595,7 @@ void brand_weapon(void)
 	o_ptr = &inventory[INVEN_WIELD];
 
 	/* Select a brand */
-	if (rand_int(100) < 25)
+	if (randint0(100) < 25)
 		brand_type = EGO_BRAND_FIRE;
 	else
 		brand_type = EGO_BRAND_COLD;
@@ -3655,7 +3655,7 @@ bool brand_ammo(void)
 		o_ptr = &o_list[0 - item];
 	}
 
-	r = rand_int(100);
+	r = randint0(100);
 
 	/* Select the brand */
 	if (r < 33)
@@ -3717,7 +3717,7 @@ bool brand_bolts(void)
 void ring_of_power(int dir)
 {
 	/* Pick a random effect */
-	switch (randint(10))
+	switch (randint1(10))
 	{
 		case 1:
 		case 2:

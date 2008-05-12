@@ -21,7 +21,6 @@
  *
  * The integer X falls along a uniform distribution.
  */
-#define rand_int(M)		((s32b) Rand_div(M))
 #define randint0(M)		((s32b) Rand_div(M))
 
 
@@ -30,8 +29,6 @@
  *
  * The integer X falls along a uniform distribution.
  */
-#define randint(M)		((s32b) Rand_div(M) + 1)
-#define rand_die(M)		((s32b) Rand_div(M) + 1)
 #define randint1(M)		((s32b) Rand_div(M) + 1)
 
 /**
@@ -40,13 +37,13 @@
  *
  * The integer X falls along a uniform distribution.
  */
-#define rand_spread(A,D)	((A) + (rand_int(1+(D)+(D))) - (D))
+#define rand_spread(A,D)	((A) + (randint0(1+(D)+(D))) - (D))
 
 
 /**
  * Return TRUE one time in `x`.
  */
-#define one_in_(x)		(!rand_int(x))
+#define one_in_(x)		(!randint0(x))
 
 /**** Available Variables ****/
 
@@ -93,7 +90,7 @@ int damroll(int num, int sides);
 
 /**
  * Generates a random signed long integer X where "A <= X <= B"
- * Note that "rand_range(0, N-1)" == "rand_int(N)"
+ * Note that "rand_range(0, N-1)" == "randint0(N)"
  *
  * The integer X falls along a uniform distribution.
  */

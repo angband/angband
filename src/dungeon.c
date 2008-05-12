@@ -655,7 +655,7 @@ static void process_world(void)
 				/* Pick a random shop (except home) */
 				while (1)
 				{
-					n = rand_int(MAX_STORES);
+					n = randint0(MAX_STORES);
 					if (n != STORE_HOME) break;
 				}
 
@@ -784,7 +784,7 @@ static void process_world(void)
 				disturb(1, 0);
 
 				/* Hack -- faint (bypass free action) */
-				(void)inc_timed(TMD_PARALYZED, 1 + rand_int(5));
+				(void)inc_timed(TMD_PARALYZED, 1 + randint0(5));
 			}
 		}
 	}
@@ -1802,13 +1802,13 @@ void play_game(void)
 		p_ptr->depth = 0;
 
 		/* Hack -- seed for flavors */
-		seed_flavor = rand_int(0x10000000);
+		seed_flavor = randint0(0x10000000);
 
 		/* Hack -- seed for town layout */
-		seed_town = rand_int(0x10000000);
+		seed_town = randint0(0x10000000);
 
 		/* Hack -- seed for random artifacts */
-		seed_randart = rand_int(0x10000000);
+		seed_randart = randint0(0x10000000);
 
 		/* Roll up a new character. Quickstart is allowed if ht_birth is set */
 		player_birth(p_ptr->ht_birth ? TRUE : FALSE);

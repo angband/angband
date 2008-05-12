@@ -95,7 +95,7 @@ static owner_type *store_owner(int st)
 
 
 /* Randomly select one of the entries in an array */
-#define ONE_OF(x)	x[rand_int(N_ELEMENTS(x))]
+#define ONE_OF(x)	x[randint0(N_ELEMENTS(x))]
 
 
 
@@ -206,8 +206,8 @@ static void prt_welcome(const owner_type *ot_ptr)
 
 
 		/* Get a title for the character */
-		if ((i % 2) && rand_int(2)) player_name = c_text + cp_ptr->title[(p_ptr->lev - 1) / 5];
-		else if (rand_int(2))       player_name = op_ptr->full_name;
+		if ((i % 2) && randint0(2)) player_name = c_text + cp_ptr->title[(p_ptr->lev - 1) / 5];
+		else if (randint0(2))       player_name = op_ptr->full_name;
 		else                        player_name = (p_ptr->psex == SEX_MALE ? "sir" : "lady");
 
 		/* Balthazar says "Welcome" */
@@ -477,7 +477,7 @@ static int mass_roll(int times, int max)
 	assert(max > 1);
 
 	for (i = 0; i < max; i++)
-		t += rand_int(max);
+		t += randint0(max);
 
 	return (t);
 }
@@ -546,11 +546,11 @@ static void mass_produce(object_type *o_ptr)
 		case TV_BOLT:
 		{
 			if (cost <= 5L)
-				size = rand_die(3) * 20;         /* 20-60 in 20s */
+				size = randint1(3) * 20;         /* 20-60 in 20s */
 			else if (cost > 5L && cost <= 50L)
-				size = rand_die(4) * 10;         /* 10-40 in 10s */
+				size = randint1(4) * 10;         /* 10-40 in 10s */
 			else if (cost > 50 && cost <= 500L)
-				size = rand_die(4) * 5;          /* 5-20 in 5s */
+				size = randint1(4) * 5;          /* 5-20 in 5s */
 			else
 				size = 1;
 
@@ -1008,7 +1008,7 @@ static void store_delete_item(int st)
 	if (st_ptr->stock_num <= 0) return;
 
 	/* Pick a random slot */
-	what = rand_int(st_ptr->stock_num);
+	what = randint0(st_ptr->stock_num);
 
 	/* Get the object */
 	o_ptr = &st_ptr->stock[what];
@@ -1030,7 +1030,7 @@ static void store_delete_item(int st)
 				int cur_num = num;
 
 				/* Sometimes take things to the nearest increment of 5 */
-				if (rand_int(100) < 50) break;
+				if (randint0(100) < 50) break;
 
 				/* Keep things to increments of 5 */
 				if (num % 5)
@@ -1041,10 +1041,10 @@ static void store_delete_item(int st)
 				else
 				{
 					/* Maybe decrement some more */
-					if (rand_int(100) < 75) break;
+					if (randint0(100) < 75) break;
 
 					/* Decrement by a random factor of 5 */
-					num = rand_die(cur_num) * 5;
+					num = randint1(cur_num) * 5;
 				}
 
 				break;
@@ -1053,10 +1053,10 @@ static void store_delete_item(int st)
 			default:
 			{
 				/* Sometimes destroy a single object */
-				if (rand_int(100) < 50) num = 1;
+				if (randint0(100) < 50) num = 1;
 
 				/* Sometimes destroy half the objects */
-				else if (rand_int(100) < 50) num = (num + 1) / 2;
+				else if (randint0(100) < 50) num = (num + 1) / 2;
 
 
 				/* Hack -- decrement the maximum timeouts and total charges of rods and wands. */
@@ -1166,7 +1166,7 @@ static s16b store_get_choice(int st)
 	store_type *st_ptr = &store[st];
 
 	/* Choose a random entry from the store's table */
-	r = rand_int(st_ptr->table_num);
+	r = randint0(st_ptr->table_num);
 
 	/* Return it */
 	return st_ptr->table[r];
@@ -1437,7 +1437,7 @@ void store_maint(int which)
 
 	/* Sell a few items */
 	stock = st_ptr->stock_num;
-	stock -= randint(STORE_TURNOVER);
+	stock -= randint1(STORE_TURNOVER);
 
 	/* Keep stock between STORE_MAX_KEEP and STORE_MIN_KEEP slots */
 	if (stock > STORE_MAX_KEEP) stock = STORE_MAX_KEEP;
@@ -1451,7 +1451,7 @@ void store_maint(int which)
 
 	/* Buy a few items */
 	stock = st_ptr->stock_num;
-	stock += randint(STORE_TURNOVER);
+	stock += randint1(STORE_TURNOVER);
 
 	/* Keep stock between STORE_MAX_KEEP and STORE_MIN_KEEP slots */
 	if (stock > STORE_MAX_KEEP) stock = STORE_MAX_KEEP;
@@ -1484,7 +1484,7 @@ void store_init(void)
 
 
 		/* Pick an owner */
-		st_ptr->owner = (byte)rand_int(z_info->b_max);
+		st_ptr->owner = (byte)randint0(z_info->b_max);
 
 		/* Nothing in stock */
 		st_ptr->stock_num = 0;
@@ -1522,7 +1522,7 @@ void store_shuffle(int which)
 	i = st_ptr->owner;
 
 	while (i == st_ptr->owner)
-	    i = rand_int(z_info->b_max);
+	    i = randint0(z_info->b_max);
 
 	st_ptr->owner = i;
 }
