@@ -3583,93 +3583,47 @@ D:It can be shot with a crossbow.
 
 N:480:copper
 G:$:u
+I:100:0:0
+
+N:481:silver
+G:$:s
 I:100:1:0
-W:1:0:0:3
 
-N:481:copper
-G:$:u
+N:482:garnets
+G:$:r
 I:100:2:0
-W:1:0:0:4
 
-N:482:copper
-G:$:u
+N:483:gold
+G:$:y
 I:100:3:0
-W:1:0:0:5
 
-N:483:silver
-G:$:s
-I:100:4:0
-W:1:0:0:6
-
-N:484:silver
-G:$:s
-I:100:5:0
-W:1:0:0:7
-
-N:485:silver
-G:$:s
-I:100:6:0
-W:1:0:0:8
-
-N:486:garnets
-G:$:r
-I:100:7:0
-W:1:0:0:9
-
-N:487:garnets
-G:$:r
-I:100:8:0
-W:1:0:0:10
-
-N:488:gold
-G:$:y
-I:100:9:0
-W:1:0:0:12
-
-N:489:gold
-G:$:y
-I:100:10:0
-W:1:0:0:14
-
-N:490:gold
-G:$:y
-I:100:11:0
-W:1:0:0:16
-
-N:491:opals
+N:484:opals
 G:$:W
-I:100:12:0
-W:1:0:0:18
+I:100:4:0
 
-N:492:sapphires
+N:485:sapphires
 G:$:b
-I:100:13:0
-W:1:0:0:20
+I:100:5:0
 
-N:493:rubies
+N:486:rubies
 G:$:r
-I:100:14:0
-W:1:0:0:24
+I:100:6:0
 
-N:494:diamonds
+N:487:diamonds
 G:$:w
-I:100:15:0
-W:1:0:0:28
+I:100:7:0
 
-N:495:emeralds
+N:488:emeralds
 G:$:g
-I:100:16:0
-W:1:0:0:32
+I:100:8:0
 
-N:496:mithril
+N:489:mithril
 G:$:B
-I:100:17:0
-W:1:0:0:38
+I:100:9:0
 
-N:497:adamantite
+N:490:adamantite
 G:$:G
-I:100:18:0
-W:1:0:0:46
+I:100:10:0
 
 
 ##### Objects 498 and 499 are the "Morgoth Artifacts" #####

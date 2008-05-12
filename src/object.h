@@ -65,7 +65,7 @@ bool init_obj_alloc(void);
 s16b get_obj_num(int level);
 void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great);
 bool make_object(object_type *j_ptr, int lev, bool good, bool great);
-bool make_gold(object_type *j_ptr, int lev);
+void make_gold(object_type *j_ptr, int lev);
 int object_pseudo_heavy(const object_type *o_ptr);
 int object_pseudo_light(const object_type *o_ptr);
 

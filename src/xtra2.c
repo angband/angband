@@ -1092,18 +1092,18 @@ static int get_coin_type(const monster_race *r_ptr)
 	if (r_ptr->d_char == '$')
 	{
 		/* Look for textual clues */
-		if (strstr(name, " copper ")) return (3);
-		if (strstr(name, " silver ")) return (6);
-		if (strstr(name, " gold ")) return (11);
-		if (strstr(name, " mithril ")) return (17);
-		if (strstr(name, " adamantite ")) return (18);
+		if (strstr(name, " copper ")) return (SV_COPPER);
+		if (strstr(name, " silver ")) return (SV_SILVER);
+		if (strstr(name, " gold ")) return (SV_GOLD);
+		if (strstr(name, " mithril ")) return (SV_MITHRIL);
+		if (strstr(name, " adamantite ")) return (SV_ADAMANTITE);
 
 		/* Look for textual clues */
-		if (strstr(name, "Copper ")) return (3);
-		if (strstr(name, "Silver ")) return (6);
-		if (strstr(name, "Gold ")) return (11);
-		if (strstr(name, "Mithril ")) return (17);
-		if (strstr(name, "Adamantite ")) return (18);
+		if (strstr(name, "Copper ")) return (SV_COPPER);
+		if (strstr(name, "Silver ")) return (SV_SILVER);
+		if (strstr(name, "Gold ")) return (SV_GOLD);
+		if (strstr(name, "Mithril ")) return (SV_MITHRIL);
+		if (strstr(name, "Adamantite ")) return (SV_ADAMANTITE);
 	}
 
 	/* Assume nothing */
@@ -1300,9 +1300,7 @@ void monster_death(int m_idx)
 		if (gold_ok && (!item_ok || (rand_int(100) < 50)))
 		{
 			/* Make some gold */
-			if (!make_gold(i_ptr, level)) continue;
-
-			/* Assume seen XXX XXX XXX */
+			make_gold(i_ptr, level);
 			dump_gold++;
 		}
 
@@ -1311,8 +1309,6 @@ void monster_death(int m_idx)
 		{
 			/* Make an object */
 			if (!make_object(i_ptr, level, good, great)) continue;
-
-			/* Assume seen XXX XXX XXX */
 			dump_item++;
 		}
 

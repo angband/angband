@@ -1430,51 +1430,37 @@ bool make_object(object_type *j_ptr, int lev, bool good, bool great)
 
 
 
-/*
- * XXX XXX XXX Do not use these hard-coded values.
- */
-#define MAX_GOLD	18	/* Number of "gold" entries */
+/* The largest possible average gold drop at max depth with biggest spread */
+#define MAX_GOLD_DROP     (3*MAX_DEPTH + 30)
+
 
 /*
- * Make a treasure object
- *
- * The location must be a legal, clean, floor grid.
+ * Make a money object
  */
-bool make_gold(object_type *j_ptr, int lev)
+void make_gold(object_type *j_ptr, int lev)
 {
 	int sval;
 	int k_idx;
-	s32b base;
 
+	/* This average is 20 at dlev0, 105 at dlev40, 220 at dlev100. */
+	/* Follows the formula: y=2x+20 */
+	s32b avg = 2*lev + 20;
+	s32b spread = lev + 10;
+	s32b value = rand_spread(avg, spread);
 
-	/* Hack -- Pick a Treasure variety */
-	sval = ((randint(lev + 2) + 2) / 2);
+	/* Pick a treasure variety scaled by level, or force a type */
+	if (coin_type)
+		sval = coin_type;
+	else
+		sval = (((value * 100) / MAX_GOLD_DROP) * SV_GOLD_MAX) / 100;
 
-	/* Apply "extra" magic */
-	if (one_in_(GREAT_OBJ))
-	{
-		sval += randint(lev + 1);
-	}
-
-	/* Hack -- Creeping Coins only generate "themselves" */
-	if (coin_type) sval = coin_type;
-
-	/* Do not create "illegal" Treasure Types */
-	if (sval > MAX_GOLD) sval = MAX_GOLD;
-
-	k_idx = lookup_kind(TV_GOLD, sval);
+	/* Do not create illegal treasure types */
+	if (sval > SV_GOLD_MAX) sval = SV_GOLD_MAX;
 
 	/* Prepare a gold object */
+	k_idx = lookup_kind(TV_GOLD, sval);
 	object_prep(j_ptr, k_idx);
-
-	/* Hack -- Base coin cost */
-	base = k_info[k_idx].cost;
-
-	/* Determine how much the treasure is "worth" */
-	j_ptr->pval = (base + (8L * randint(base)) + randint(8));
-
-	/* Success */
-	return (TRUE);
+	j_ptr->pval = value;
 }
 
 

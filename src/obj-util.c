@@ -2383,11 +2383,10 @@ void place_gold(int y, int x, int level)
 	object_wipe(i_ptr);
 
 	/* Make some gold */
-	if (make_gold(i_ptr, level))
-	{
-		/* Give it to the floor */
-		(void)floor_carry(y, x, i_ptr);
-	}
+	make_gold(i_ptr, level);
+
+	/* Give it to the floor */
+	(void)floor_carry(y, x, i_ptr);
 }
 
 

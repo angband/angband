@@ -509,27 +509,22 @@
 #define SV_FOOD_WAYBREAD		37
 
 /* The "sval" codes for TV_GOLD */
-#define SV_COPPER1                        1
-#define SV_COPPER2                        2
-#define SV_COPPER3                        3
-#define SV_SILVER1                        4
-#define SV_SILVER2                        5
-#define SV_SILVER3                        6
-#define SV_GARNETS1                       7
-#define SV_GARNETS2                       8
-#define SV_GOLD1                          9
-#define SV_GOLD2                         10
-#define SV_GOLD3                         11
-#define SV_OPALS                         12
-#define SV_SAPPHIRES                     13
-#define SV_RUBIES                        14
-#define SV_DIAMONDS                      15
-#define SV_EMERALDS                      16
-#define SV_MITHRIL                       17
-#define SV_ADAMANTITE                    18
+enum
+{
+	SV_COPPER = 0,
+	SV_SILVER = 1,
+	SV_GARNETS = 2,
+	SV_GOLD = 3,
+	SV_OPALS = 4,
+	SV_SAPPHIRES = 5,
+	SV_RUBIES = 6,
+	SV_DIAMONDS = 7,
+	SV_EMERALDS = 8,
+	SV_MITHRIL = 9,
+	SV_ADAMANTITE = 10,
 
-#define SV_GOLD_MAX                      19
-
+	SV_GOLD_MAX = 10
+};
 
 
 /*

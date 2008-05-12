@@ -195,6 +195,13 @@ void convert_kind(byte *tval, byte *sval)
 {
 	switch (*tval)
 	{
+		case TV_GOLD:
+		{
+			if (*sval > SV_GOLD_MAX)
+				*sval = SV_GOLD_MAX;
+			return;
+		}
+
 		case TV_FOOD:
 		{
 			/* Cure Paranoia + Cure Confusion -> Clear Mind */

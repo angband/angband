@@ -134,8 +134,6 @@ static void py_pickup_gold(void)
 	/* Pick up all the ordinary gold objects */
 	for (this_o_idx = cave_o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
 	{
-		int gold_type;
-
 		/* Get the object */
 		o_ptr = &o_list[this_o_idx];
 
@@ -146,19 +144,8 @@ static void py_pickup_gold(void)
 		if ((o_ptr->tval != TV_GOLD) ||
 		    (o_ptr->sval >= SV_GOLD_MAX)) continue;
 
-		/* Hack -- adjust treasure type (to avoid picking up "gold, gold, and gold") */
-		gold_type = o_ptr->sval;
-		if ((gold_type == SV_COPPER2) || (gold_type == SV_COPPER3))
-			gold_type = SV_COPPER1;
-		if ((gold_type == SV_SILVER2) || (gold_type == SV_SILVER3))
-			gold_type = SV_SILVER1;
-		if ((gold_type == SV_GOLD2)   || (gold_type == SV_GOLD3))
-			gold_type = SV_GOLD1;
-		if (gold_type == SV_GARNETS2)
-			gold_type = SV_GARNETS1;
-
 		/* Note that we have this kind of treasure */
-		treasure[gold_type]++;
+		treasure[o_ptr->sval]++;
 
 		/* Increment total value */
 		total_gold += (s32b)o_ptr->pval;

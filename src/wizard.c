@@ -1034,11 +1034,9 @@ static void wiz_create_item(void)
 
 	if (k_info[k_idx].tval == TV_GOLD)
 	{
-		/* Hack -- Base coin cost */
-		s32b base = k_info[k_idx].cost;
-
-		/* Determine how much the treasure is "worth" */
-		i_ptr->pval = (base + (8L * randint(base)) + randint(8));
+		coin_type = k_info[k_idx].sval;
+		make_gold(i_ptr, p_ptr->depth);
+		coin_type = 0;
 	}
 
 	/* Drop the object from heaven */
