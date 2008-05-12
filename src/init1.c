@@ -2872,7 +2872,7 @@ errr parse_c_info(char *buf, header *head)
 
 		/* Limit number of titles */
 		if (cur_title > PY_MAX_LEVEL / 5)
-			return (PARSE_ERROR_TOO_MANY_ARGUMENTS);
+			return (PARSE_ERROR_TOO_MANY_ENTRIES);
 	}
 
 	/* Process 'E' for "Starting Equipment" */

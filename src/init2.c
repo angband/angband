@@ -241,7 +241,6 @@ static cptr err_str[PARSE_ERROR_MAX] =
 	"obsolete file",
 	"value out of bounds",
 	"out of memory",
-	"too many arguments",
 	"too few entries",
 	"too many entries",
 	"undefined directive",
