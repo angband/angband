@@ -16,6 +16,7 @@
  */
 #include "angband.h"
 #include "wizard.h"
+#include "tvalsval.h"
 
 
 #ifdef WITH_STATS
