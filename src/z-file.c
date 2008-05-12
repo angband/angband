@@ -29,6 +29,10 @@
 # include <io.h>
 #endif
 
+#ifdef MACH_O_CARBON
+# include <SystemConfiguration/SCDynamicStoreCopySpecific.h>
+#endif
+
 #ifdef HAVE_FCNTL_H
 # include <fcntl.h>
 #endif
@@ -148,9 +152,18 @@ static void path_process(char *buf, size_t len, size_t *cur_len, const char *pat
 			username = getlogin();
 
 		/* Look up a user (or "current" user) */
+#ifndef MACH_O_CARBON
 		if (username) pw = getpwnam(username);
 		else          pw = getpwuid(getuid());
 
+#else /* MACH_O_CARBON */
+
+		/* On Macs look up the console user to avoid problems with invalid root detection */
+		uid_t uid;
+		SCDynamicStoreCopyConsoleUser(NULL, &uid, NULL);
+		pw = getpwuid(uid);
+#endif /* !MACH_O_CARBON */
+		
 		if (!pw) return;
 
 		/* Copy across */
