@@ -1017,12 +1017,16 @@ struct flavor_type
 	char x_char;    /* Desired flavor character */
 };
 
-/* ============= Defines a visual grouping ============ */
+
+/**
+ * Defines a (value, name) pairing.  Variable names used are historical.
+ */
 typedef struct
 {
 	byte tval;
-	cptr name;
+	const char *name;
 } grouper;
+
 
 /* Information for object auto-inscribe */
 struct autoinscription
@@ -1041,6 +1045,7 @@ struct history_info
 	s32b turn;			/* Turn this item was recorded on */
 	char event[80];	/* The text of the item */
 };
+
 
 enum grid_light_level
 {
