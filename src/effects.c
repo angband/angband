@@ -1656,15 +1656,29 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			(void)do_dec_stat(stat, FALSE);
 
 			*ident = TRUE;
+			return TRUE;
 		}
 
 #if 0
-		case EF_SHROOM_MANIA:
+		case EF_SHROOM_SPRINTING:
 		{
-EFFECT(SHROOM_MANIA,     FALSE, "makes you subject to manic fits")
-			of mania (see Sangband)
+			/*
+			+10 speed boost.
+			if player already fast, double current duration and add bad effect
+			otherwise 2*!Speed duration, then bad effect
+			*/
+			return TRUE;
 		}
 #endif
+
+		case EF_SHROOM_PURGING:
+		{
+			(void)set_food(PY_FOOD_FAINT - 1);
+			if (do_res_stat(A_STR)) *ident = TRUE;
+			if (do_res_stat(A_CON)) *ident = TRUE;
+			if (clear_timed(TMD_POISONED)) *ident = TRUE;
+			return TRUE;
+		}
 
 		case EF_RING_ACID:
 		{
