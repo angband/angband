@@ -958,6 +958,7 @@ struct player_type
 	bool see_inv;		/* See invisible */
 	bool free_act;		/* Free action */
 	bool hold_life;		/* Hold life */
+	bool afraid; 		/* Afraid */
 
 	bool impact;		/* Earthquake blows */
 	bool aggravate;		/* Aggravate monsters */

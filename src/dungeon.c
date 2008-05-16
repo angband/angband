@@ -1072,6 +1072,7 @@ static void process_player(void)
 			    (p_ptr->csp == p_ptr->msp) &&
 			    !p_ptr->timed[TMD_BLIND] && !p_ptr->timed[TMD_CONFUSED] &&
 			    !p_ptr->timed[TMD_POISONED] && !p_ptr->timed[TMD_AFRAID] &&
+			    !p_ptr->timed[TMD_TERROR] &&
 			    !p_ptr->timed[TMD_STUN] && !p_ptr->timed[TMD_CUT] &&
 			    !p_ptr->timed[TMD_SLOW] && !p_ptr->timed[TMD_PARALYZED] &&
 			    !p_ptr->timed[TMD_IMAGE] && !p_ptr->word_recall)

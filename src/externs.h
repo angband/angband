@@ -492,6 +492,7 @@ extern bool ident_spell(void);
 extern bool recharge(int num);
 extern bool speed_monsters(void);
 extern bool slow_monsters(void);
+extern bool confuse_monsters(void);
 extern bool sleep_monsters(void);
 extern bool banish_evil(int dist);
 extern bool turn_undead(void);

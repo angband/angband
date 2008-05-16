@@ -466,6 +466,10 @@ void self_knowledge(bool spoil)
 	{
 		info[i++] = "You are terrified.";
 	}
+	if (p_ptr->timed[TMD_TERROR])
+	{
+		info[i++] = "You are terrified and feel the need to run away.";
+	}
 	if (p_ptr->timed[TMD_CUT])
 	{
 		info[i++] = "You are bleeding.";
@@ -2108,6 +2112,14 @@ bool slow_monsters(void)
 bool sleep_monsters(void)
 {
 	return (project_los(GF_OLD_SLEEP, p_ptr->lev));
+}
+
+/*
+ * Confuse monsters
+ */
+bool confuse_monsters(void)
+{
+	return (project_los(GF_OLD_CONF, p_ptr->lev));
 }
 
 

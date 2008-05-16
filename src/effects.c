@@ -241,6 +241,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			if (clear_timed(TMD_CONFUSED)) *ident = TRUE;
 			if (clear_timed(TMD_AFRAID)) *ident = TRUE;
+			if (clear_timed(TMD_IMAGE)) *ident = TRUE;
+			if (!p_ptr->resist_confu && inc_timed(TMD_OPP_CONF, damroll(4, 10)))
 			return TRUE;
 		}
 
@@ -266,7 +268,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_CURE_SERIOUS:
 		{
-			if (heal_player(25, 25)) *ident = TRUE;
+			if (heal_player(20, 25)) *ident = TRUE;
 			if (clear_timed(TMD_CUT)) *ident = TRUE;
 			if (clear_timed(TMD_BLIND)) *ident = TRUE;
 			if (clear_timed(TMD_CONFUSED)) *ident = TRUE;
@@ -276,7 +278,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_CURE_CRITICAL:
 		{
-			if (heal_player(33, 33)) *ident = TRUE;
+			if (heal_player(25, 30)) *ident = TRUE;
 			if (clear_timed(TMD_BLIND)) *ident = TRUE;
 			if (clear_timed(TMD_CONFUSED)) *ident = TRUE;
 			if (clear_timed(TMD_POISONED)) *ident = TRUE;
@@ -960,6 +962,40 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			return TRUE;
 		}
 
+		case EF_DEEP_DESCENT:
+		{
+			int i = 2;
+			int new_max = p_ptr->max_depth;
+
+			do
+			{
+				if (is_quest(new_max)) continue;
+				if (new_max >= MAX_DEPTH-1) continue;
+				new_max++;
+			} while (--i);
+
+			if (new_max == p_ptr->max_depth)
+				return TRUE;
+
+			p_ptr->max_depth = new_max;
+			*ident = TRUE;
+
+			if (p_ptr->depth == 0)
+			{
+				set_recall();
+				msg_print("The lower reaches of the dungeon beckon.");
+			}
+			else
+			{
+				message(MSG_TPLEVEL, 0, "You sink through the floor...");
+				p_ptr->depth = p_ptr->max_depth;
+				p_ptr->leaving = TRUE;
+			}
+
+			*ident = TRUE;
+			return TRUE;
+		}
+
 		case EF_LOSHASTE:
 		{
 			if (speed_monsters()) *ident = TRUE;
@@ -975,6 +1011,12 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		case EF_LOSSLOW:
 		{
 			if (slow_monsters()) *ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_LOSCONF:
+		{
+			if (confuse_monsters()) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1573,6 +1615,56 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			*ident = TRUE;
 			return TRUE;
 		}
+
+		case EF_SHROOM_EMERGENCY:
+		{
+			(void)set_timed(TMD_IMAGE, rand_spread(250, 50));
+			(void)set_timed(TMD_OPP_FIRE, rand_spread(30, 10));
+			(void)set_timed(TMD_OPP_COLD, rand_spread(30, 10));
+			(void)hp_player(200);
+			*ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_SHROOM_TERROR:
+		{
+			if (set_timed(TMD_TERROR, rand_spread(100, 20)))
+				*ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_SHROOM_STONE:
+		{
+			if (set_timed(TMD_STONESKIN, rand_spread(80, 20)))
+				*ident = TRUE;
+			return TRUE;
+		}
+
+		case EF_SHROOM_DEBILITY:
+		{
+			int stat = one_in_(2) ? A_STR : A_CON;
+
+			if (p_ptr->csp < p_ptr->msp)
+			{
+				p_ptr->csp = p_ptr->msp;
+				p_ptr->csp_frac = 0;
+				msg_print("Your feel your head clear.");
+				p_ptr->redraw |= (PR_MANA);
+				*ident = TRUE;
+			}
+
+			(void)do_dec_stat(stat, FALSE);
+
+			*ident = TRUE;
+		}
+
+#if 0
+		case EF_SHROOM_MANIA:
+		{
+EFFECT(SHROOM_MANIA,     FALSE, "makes you subject to manic fits")
+			of mania (see Sangband)
+		}
+#endif
 
 		case EF_RING_ACID:
 		{

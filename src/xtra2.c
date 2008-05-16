@@ -72,6 +72,8 @@ static timed_effect effects[] =
 	{ "You feel resistant to poison!", "You feel less resistant to poison.", 0, 0, MSG_RES_POIS },
 	{ "You feel your memories fade.", "Your memories come flooding back.", 0, 0, MSG_GENERIC },
 	{ "Your mind expands.", "Your horizons are once more limited.", 0, PU_BONUS, MSG_GENERIC },
+	{ "Your skin turns to stone.", "A fleshy shade returns to your skin.", 0, PU_BONUS, MSG_GENERIC },
+	{ "You feel the need to run away, and fast!", "The urge to run dissipates.", 0, PU_BONUS, MSG_AFRAID },
 };
 
 /*

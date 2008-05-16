@@ -768,6 +768,7 @@ static void calc_bonuses(void)
 	p_ptr->regenerate = FALSE;
 	p_ptr->ffall = FALSE;
 	p_ptr->hold_life = FALSE;
+	p_ptr->afraid = FALSE;
 	p_ptr->telepathy = FALSE;
 	p_ptr->sustain_str = FALSE;
 	p_ptr->sustain_int = FALSE;
@@ -1080,6 +1081,14 @@ static void calc_bonuses(void)
 		p_ptr->dis_to_a += 50;
 	}
 
+	/* Temporary stoneskin */
+	if (p_ptr->timed[TMD_STONESKIN])
+	{
+		p_ptr->to_a += 40;
+		p_ptr->dis_to_a += 40;
+		p_ptr->pspeed -= 5;
+	}
+
 	/* Temporary "Hero" */
 	if (p_ptr->timed[TMD_HERO])
 	{
@@ -1123,6 +1132,12 @@ static void calc_bonuses(void)
 	if (p_ptr->timed[TMD_OPP_CONF])
 		p_ptr->resist_confu = TRUE;
 
+	/* Fear */
+	if (p_ptr->timed[TMD_AFRAID] || p_ptr->timed[TMD_TERROR])
+		p_ptr->afraid = TRUE;
+
+	if (p_ptr->timed[TMD_TERROR])
+		p_ptr->pspeed += 5;
 
 
 	/*** Analyze weight ***/
