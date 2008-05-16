@@ -765,6 +765,8 @@ static void calc_bonuses(void)
 	p_ptr->see_inv = FALSE;
 	p_ptr->free_act = FALSE;
 	p_ptr->slow_digest = FALSE;
+	p_ptr->impair_hp = FALSE;
+	p_ptr->impair_mana = FALSE;
 	p_ptr->regenerate = FALSE;
 	p_ptr->ffall = FALSE;
 	p_ptr->hold_life = FALSE;
@@ -837,6 +839,8 @@ static void calc_bonuses(void)
 	if (f3 & (TR3_AGGRAVATE)) p_ptr->aggravate = TRUE;
 	if (f3 & (TR3_TELEPORT)) p_ptr->teleport = TRUE;
 	if (f3 & (TR3_DRAIN_EXP)) p_ptr->exp_drain = TRUE;
+	if (f3 & (TR3_IMPAIR_HP)) p_ptr->impair_hp = TRUE;
+	if (f3 & (TR3_IMPAIR_MANA)) p_ptr->impair_mana = TRUE;
 
 	/* Immunity flags */
 	if (f2 & (TR2_IM_FIRE)) p_ptr->immune_fire = TRUE;
@@ -936,6 +940,8 @@ static void calc_bonuses(void)
 		if (f3 & (TR3_AGGRAVATE)) p_ptr->aggravate = TRUE;
 		if (f3 & (TR3_TELEPORT)) p_ptr->teleport = TRUE;
 		if (f3 & (TR3_DRAIN_EXP)) p_ptr->exp_drain = TRUE;
+		if (f3 & (TR3_IMPAIR_HP)) p_ptr->impair_hp = TRUE;
+		if (f3 & (TR3_IMPAIR_MANA)) p_ptr->impair_mana = TRUE;
 
 		/* Immunity flags */
 		if (f2 & (TR2_IM_FIRE)) p_ptr->immune_fire = TRUE;

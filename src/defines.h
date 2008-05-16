@@ -1270,8 +1270,8 @@ enum
 #define TR3_FREE_ACT        0x00000040L /* Free action */
 #define TR3_HOLD_LIFE       0x00000080L /* Hold life */
 #define TR3_NO_FUEL         0x00000100L /* Light source uses no fuel */
-#define TR3_XXX2            0x00000200L
-#define TR3_XXX3            0x00000400L
+#define TR3_IMPAIR_HP       0x00000200L /* Impair HP recovery */
+#define TR3_IMPAIR_MANA     0x00000400L /* Impair MP recovery */
 #define TR3_XXX4            0x00000800L
 #define TR3_IMPACT          0x00001000L /* Earthquake blows */
 #define TR3_TELEPORT        0x00002000L /* Random teleportation */

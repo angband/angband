@@ -743,6 +743,22 @@ static void process_world(void)
 		(void)set_food(p_ptr->food - 100);
 	}
 
+	/* Getting Faint */
+	if (p_ptr->food < PY_FOOD_FAINT)
+	{
+		/* Faint occasionally */
+		if (!p_ptr->timed[TMD_PARALYZED] && one_in_(10))
+		{
+			/* Message */
+			msg_print("You faint from the lack of food.");
+			disturb(1, 0);
+
+			/* Hack -- faint (bypass free action) */
+			(void)inc_timed(TMD_PARALYZED, 1 + randint0(5));
+		}
+	}
+
+
 	/* Starve to death (slowly) */
 	if (p_ptr->food < PY_FOOD_STARVE)
 	{
@@ -753,61 +769,29 @@ static void process_world(void)
 		take_hit(i, "starvation");
 	}
 
+	/** Regenerate HP **/
+
 	/* Default regeneration */
-	regen_amount = PY_REGEN_NORMAL;
+	if (p_ptr->food >= PY_FOOD_WEAK)
+		regen_amount = PY_REGEN_NORMAL;
+	else if (p_ptr->food < PY_FOOD_STARVE)
+		regen_amount = 0;
+	else if (p_ptr->food < PY_FOOD_FAINT)
+		regen_amount = PY_REGEN_FAINT;
+	else /* if (p_ptr->food < PY_FOOD_WEAK) */
+		regen_amount = PY_REGEN_WEAK;
 
-	/* Getting Weak */
-	if (p_ptr->food < PY_FOOD_WEAK)
-	{
-		/* Lower regeneration */
-		if (p_ptr->food < PY_FOOD_STARVE)
-		{
-			regen_amount = 0;
-		}
-		else if (p_ptr->food < PY_FOOD_FAINT)
-		{
-			regen_amount = PY_REGEN_FAINT;
-		}
-		else
-		{
-			regen_amount = PY_REGEN_WEAK;
-		}
-
-		/* Getting Faint */
-		if (p_ptr->food < PY_FOOD_FAINT)
-		{
-			/* Faint occasionally */
-			if (!p_ptr->timed[TMD_PARALYZED] && one_in_(10))
-			{
-				/* Message */
-				msg_print("You faint from the lack of food.");
-				disturb(1, 0);
-
-				/* Hack -- faint (bypass free action) */
-				(void)inc_timed(TMD_PARALYZED, 1 + randint0(5));
-			}
-		}
-	}
-
-	/* Regeneration ability */
+	/* Various things speed up regeneration */
 	if (p_ptr->regenerate)
-	{
-		regen_amount = regen_amount * 2;
-	}
-
-	/* Searching or Resting */
+		regen_amount *= 2;
 	if (p_ptr->searching || p_ptr->resting)
-	{
-		regen_amount = regen_amount * 2;
-	}
+		regen_amount *= 2;
 
-	/* Regenerate the mana */
-	if (p_ptr->csp < p_ptr->msp)
-	{
-		regenmana(regen_amount);
-	}
+	/* Some things slow it down */
+	if (p_ptr->impair_hp)
+		regen_amount /= 2;
 
-	/* Various things interfere with healing */
+	/* Various things interfere with physical healing */
 	if (p_ptr->timed[TMD_PARALYZED]) regen_amount = 0;
 	if (p_ptr->timed[TMD_POISONED]) regen_amount = 0;
 	if (p_ptr->timed[TMD_STUN]) regen_amount = 0;
@@ -815,9 +799,28 @@ static void process_world(void)
 
 	/* Regenerate Hit Points if needed */
 	if (p_ptr->chp < p_ptr->mhp)
-	{
 		regenhp(regen_amount);
-	}
+
+
+	/** Regenerate SP **/
+
+	/* Default regeneration */
+	regen_amount = PY_REGEN_NORMAL;
+
+	/* Various things speed up regeneration */
+	if (p_ptr->regenerate)
+		regen_amount *= 2;
+	if (p_ptr->searching || p_ptr->resting)
+		regen_amount *= 2;
+
+	/* Some things slow it down */
+	if (p_ptr->impair_mana)
+		regen_amount /= 2;
+
+	/* Regenerate mana */
+	if (p_ptr->csp < p_ptr->msp)
+		regenmana(regen_amount);
+
 
 
 	/*** Timeout Various Things ***/
