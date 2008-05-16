@@ -469,7 +469,7 @@ static cptr k_info_flags3[] =
 	"NO_FUEL",
 	"IMPAIR_HP",
 	"IMPAIR_MANA",
-	"XXX4",
+	"AFRAID",
 	"IMPACT",
 	"TELEPORT",
 	"AGGRAVATE",

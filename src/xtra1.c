@@ -845,6 +845,7 @@ static void calc_bonuses(void)
 	if (f3 & (TR3_DRAIN_EXP)) p_ptr->exp_drain = TRUE;
 	if (f3 & (TR3_IMPAIR_HP)) p_ptr->impair_hp = TRUE;
 	if (f3 & (TR3_IMPAIR_MANA)) p_ptr->impair_mana = TRUE;
+	if (f3 & (TR3_AFRAID)) p_ptr->afraid = TRUE;
 
 	/* Vulnerability flags */
 	if (f2 & (TR2_VULN_FIRE)) p_ptr->vuln_fire = TRUE;
@@ -952,6 +953,7 @@ static void calc_bonuses(void)
 		if (f3 & (TR3_DRAIN_EXP)) p_ptr->exp_drain = TRUE;
 		if (f3 & (TR3_IMPAIR_HP)) p_ptr->impair_hp = TRUE;
 		if (f3 & (TR3_IMPAIR_MANA)) p_ptr->impair_mana = TRUE;
+		if (f3 & (TR3_AFRAID)) p_ptr->afraid = TRUE;
 
 		/* Vulnerability flags */
 		if (f2 & (TR2_VULN_FIRE)) p_ptr->vuln_fire = TRUE;

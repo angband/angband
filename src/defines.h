@@ -1272,7 +1272,7 @@ enum
 #define TR3_NO_FUEL         0x00000100L /* Light source uses no fuel */
 #define TR3_IMPAIR_HP       0x00000200L /* Impair HP recovery */
 #define TR3_IMPAIR_MANA     0x00000400L /* Impair MP recovery */
-#define TR3_XXX4            0x00000800L
+#define TR3_AFRAID          0x00000800L
 #define TR3_IMPACT          0x00001000L /* Earthquake blows */
 #define TR3_TELEPORT        0x00002000L /* Random teleportation */
 #define TR3_AGGRAVATE       0x00004000L /* Aggravate monsters */
