@@ -1325,30 +1325,6 @@ static bool kind_is_good(int k_idx)
 			if (k_ptr->sval == SV_AMULET_TRICKERY) return (TRUE);
 			return (FALSE);
 		}
-
-		/* Potions -- Potions of life, healing, *healing* are good,
-		 * restore mana for spell casters are good,
-		 * as are stat potions, when the stat is not maximised,
-		 * as is augmentation (acts as a potion of 'restoration' if all
-		 * stats are maximised).
-		 *
-		 * XXX If we make too many useful items 'good' we may want to
-		 * consider limiting the total number of good drops to uniques
-		 * and truely nasty monsters.
-		 */
-		case TV_POTION:
-		{
-			if (k_ptr->sval == SV_POTION_HEALING) return (TRUE);
-			if (k_ptr->sval == SV_POTION_STAR_HEALING) return (TRUE);
-			if (k_ptr->sval == SV_POTION_LIFE) return (TRUE);
-			if ((k_ptr->sval == SV_POTION_RESTORE_MANA) && (p_ptr->msp > 0)) return (TRUE);
-			if ((k_ptr->sval >= SV_POTION_INC_STR) && (k_ptr->sval <= SV_POTION_INC_CHR))
-			{
-				if (p_ptr->stat_cur[k_ptr->sval - SV_POTION_INC_STR] < 18+100) return (TRUE);
-			}
-			if (k_ptr->sval == SV_POTION_AUGMENTATION) return (TRUE);
-			return (FALSE);
-		}
 	}
 
 	/* Assume not good */
