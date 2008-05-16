@@ -798,6 +798,10 @@ static void calc_bonuses(void)
 	p_ptr->immune_elec = FALSE;
 	p_ptr->immune_fire = FALSE;
 	p_ptr->immune_cold = FALSE;
+	p_ptr->vuln_acid = FALSE;
+	p_ptr->vuln_elec = FALSE;
+	p_ptr->vuln_fire = FALSE;
+	p_ptr->vuln_cold = FALSE;
 
 
 	/*** Extract race/class info ***/
@@ -841,6 +845,12 @@ static void calc_bonuses(void)
 	if (f3 & (TR3_DRAIN_EXP)) p_ptr->exp_drain = TRUE;
 	if (f3 & (TR3_IMPAIR_HP)) p_ptr->impair_hp = TRUE;
 	if (f3 & (TR3_IMPAIR_MANA)) p_ptr->impair_mana = TRUE;
+
+	/* Vulnerability flags */
+	if (f2 & (TR2_VULN_FIRE)) p_ptr->vuln_fire = TRUE;
+	if (f2 & (TR2_VULN_ACID)) p_ptr->vuln_acid = TRUE;
+	if (f2 & (TR2_VULN_COLD)) p_ptr->vuln_cold = TRUE;
+	if (f2 & (TR2_VULN_ELEC)) p_ptr->vuln_elec = TRUE;
 
 	/* Immunity flags */
 	if (f2 & (TR2_IM_FIRE)) p_ptr->immune_fire = TRUE;
@@ -942,6 +952,12 @@ static void calc_bonuses(void)
 		if (f3 & (TR3_DRAIN_EXP)) p_ptr->exp_drain = TRUE;
 		if (f3 & (TR3_IMPAIR_HP)) p_ptr->impair_hp = TRUE;
 		if (f3 & (TR3_IMPAIR_MANA)) p_ptr->impair_mana = TRUE;
+
+		/* Vulnerability flags */
+		if (f2 & (TR2_VULN_FIRE)) p_ptr->vuln_fire = TRUE;
+		if (f2 & (TR2_VULN_ACID)) p_ptr->vuln_acid = TRUE;
+		if (f2 & (TR2_VULN_COLD)) p_ptr->vuln_cold = TRUE;
+		if (f2 & (TR2_VULN_ELEC)) p_ptr->vuln_elec = TRUE;
 
 		/* Immunity flags */
 		if (f2 & (TR2_IM_FIRE)) p_ptr->immune_fire = TRUE;

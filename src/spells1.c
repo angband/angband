@@ -975,14 +975,24 @@ static int minus_ac(void)
  */
 void acid_dam(int dam, cptr kb_str)
 {
+	int n;
 	int inv = (dam < 30) ? 1 : (dam < 60) ? 2 : 3;
 
-	/* Total Immunity */
-	if (p_ptr->immune_acid || (dam <= 0)) return;
+	if (dam <= 0) return;
 
 	/* Resist the damage */
-	if (p_ptr->resist_acid) dam = (dam + 2) / 3;
-	if (p_ptr->timed[TMD_OPP_ACID]) dam = (dam + 2) / 3;
+	if (p_ptr->immune_acid) n = 3;
+	else if (p_ptr->resist_acid) n = 1;
+	else n = 0;
+
+	if (p_ptr->vuln_acid) n--;
+	if (p_ptr->timed[TMD_OPP_ACID]) n++;
+
+	/* Change damage */
+	if (n == 3) return;
+	else if (n == 2) dam = (dam + 5) / 6;
+	else if (n == 1) dam = (dam + 2) / 3;
+	else if (n == -1) dam = (dam * 4) / 3;
 
 	/* If any armor gets hit, defend the player */
 	if (minus_ac()) dam = (dam + 1) / 2;
@@ -1000,14 +1010,24 @@ void acid_dam(int dam, cptr kb_str)
  */
 void elec_dam(int dam, cptr kb_str)
 {
+	int n;
 	int inv = (dam < 30) ? 1 : (dam < 60) ? 2 : 3;
 
-	/* Total immunity */
-	if (p_ptr->immune_elec || (dam <= 0)) return;
+	if (dam <= 0) return;
 
 	/* Resist the damage */
-	if (p_ptr->timed[TMD_OPP_ELEC]) dam = (dam + 2) / 3;
-	if (p_ptr->resist_elec) dam = (dam + 2) / 3;
+	if (p_ptr->immune_elec) n = 3;
+	else if (p_ptr->resist_elec) n = 1;
+	else n = 0;
+
+	if (p_ptr->vuln_elec) n--;
+	if (p_ptr->timed[TMD_OPP_ELEC]) n++;
+
+	/* Change damage */
+	if (n == 3) return;
+	else if (n == 2) dam = (dam + 5) / 6;
+	else if (n == 1) dam = (dam + 2) / 3;
+	else if (n == -1) dam = (dam * 4) / 3;
 
 	/* Take damage */
 	take_hit(dam, kb_str);
@@ -1024,14 +1044,24 @@ void elec_dam(int dam, cptr kb_str)
  */
 void fire_dam(int dam, cptr kb_str)
 {
+	int n;
 	int inv = (dam < 30) ? 1 : (dam < 60) ? 2 : 3;
 
-	/* Totally immune */
-	if (p_ptr->immune_fire || (dam <= 0)) return;
+	if (dam <= 0) return;
 
 	/* Resist the damage */
-	if (p_ptr->resist_fire) dam = (dam + 2) / 3;
-	if (p_ptr->timed[TMD_OPP_FIRE]) dam = (dam + 2) / 3;
+	if (p_ptr->immune_fire) n = 3;
+	else if (p_ptr->resist_fire) n = 1;
+	else n = 0;
+
+	if (p_ptr->vuln_fire) n--;
+	if (p_ptr->timed[TMD_OPP_FIRE]) n++;
+
+	/* Change damage */
+	if (n == 3) return;
+	else if (n == 2) dam = (dam + 5) / 6;
+	else if (n == 1) dam = (dam + 2) / 3;
+	else if (n == -1) dam = (dam * 4) / 3;
 
 	/* Take damage */
 	take_hit(dam, kb_str);
@@ -1046,14 +1076,24 @@ void fire_dam(int dam, cptr kb_str)
  */
 void cold_dam(int dam, cptr kb_str)
 {
+	int n;
 	int inv = (dam < 30) ? 1 : (dam < 60) ? 2 : 3;
 
-	/* Total immunity */
-	if (p_ptr->immune_cold || (dam <= 0)) return;
+	if (dam <= 0) return;
 
 	/* Resist the damage */
-	if (p_ptr->resist_cold) dam = (dam + 2) / 3;
-	if (p_ptr->timed[TMD_OPP_COLD]) dam = (dam + 2) / 3;
+	if (p_ptr->immune_cold) n = 3;
+	else if (p_ptr->resist_cold) n = 1;
+	else n = 0;
+
+	if (p_ptr->vuln_cold) n--;
+	if (p_ptr->timed[TMD_OPP_COLD]) n++;
+
+	/* Change damage */
+	if (n == 3) return;
+	else if (n == 2) dam = (dam + 5) / 6;
+	else if (n == 1) dam = (dam + 2) / 3;
+	else if (n == -1) dam = (dam * 4) / 3;
 
 	/* Take damage */
 	take_hit(dam, kb_str);

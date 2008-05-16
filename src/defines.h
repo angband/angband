@@ -1234,11 +1234,11 @@ enum
 #define TR2_SUST_DEX        0x00000008L /* Sustain DEX */
 #define TR2_SUST_CON        0x00000010L /* Sustain CON */
 #define TR2_SUST_CHR        0x00000020L /* Sustain CHR */
-#define TR2_XXX1            0x00000040L /* (reserved) */
-#define TR2_XXX2            0x00000080L /* (reserved) */
-#define TR2_XXX3            0x00000100L /* (reserved) */
-#define TR2_XXX4            0x00000200L /* (reserved) */
-#define TR2_XXX5            0x00000400L /* (reserved) */
+#define TR2_VULN_ACID       0x00000040L /* Vulnerable to acid */
+#define TR2_VULN_ELEC       0x00000080L /* Vulnerable to elec */
+#define TR2_VULN_FIRE       0x00000100L /* Vulnerable to fire */
+#define TR2_VULN_COLD       0x00000200L /* Vulnerable to cold */
+#define TR2_XXX7            0x00000400L /* (reserved) */
 #define TR2_XXX6            0x00000800L /* (reserved) */
 #define TR2_IM_ACID         0x00001000L /* Immunity to acid */
 #define TR2_IM_ELEC         0x00002000L /* Immunity to elec */

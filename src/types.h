@@ -921,6 +921,11 @@ struct player_type
 	s16b stat_add[A_MAX];	/* Equipment stat bonuses */
 	s16b stat_ind[A_MAX];	/* Indexes into stat tables */
 
+	bool vuln_acid;
+	bool vuln_elec;
+	bool vuln_fire;
+	bool vuln_cold;
+
 	bool immune_acid;	/* Immunity to acid */
 	bool immune_elec;	/* Immunity to lightning */
 	bool immune_fire;	/* Immunity to fire */
