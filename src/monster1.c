@@ -859,50 +859,46 @@ static void describe_monster_exp(int r_idx, const monster_lore *l_ptr)
 
 	char buf[20] = "";
 
-	/* Describe experience if known */
-	if (l_ptr->tkills)
-	{
-		/* Introduction */
-		if (l_ptr->flags[0] & RF0_UNIQUE)
-			text_out("Killing");
-		else
-			text_out("A kill of");
+	/* Introduction */
+	if (l_ptr->flags[0] & RF0_UNIQUE)
+		text_out("Killing");
+	else
+		text_out("A kill of");
 
-		text_out(" this creature");
+	text_out(" this creature");
 
-		/* calculate the integer exp part */
-		i = (long)r_ptr->mexp * r_ptr->level / p_ptr->lev;
+	/* calculate the integer exp part */
+	i = (long)r_ptr->mexp * r_ptr->level / p_ptr->lev;
 
-		/* calculate the fractional exp part scaled by 100, */
-		/* must use long arithmetic to avoid overflow */
-		j = ((((long)r_ptr->mexp * r_ptr->level % p_ptr->lev) *
-			  (long)1000 / p_ptr->lev + 5) / 10);
+	/* calculate the fractional exp part scaled by 100, */
+	/* must use long arithmetic to avoid overflow */
+	j = ((((long)r_ptr->mexp * r_ptr->level % p_ptr->lev) *
+		  (long)1000 / p_ptr->lev + 5) / 10);
 
-		/* Calculate textual representation */
-		strnfmt(buf, sizeof(buf), "%ld", (long)i);
-		if (j) my_strcat(buf, format(".%02ld", (long)j), sizeof(buf));
+	/* Calculate textual representation */
+	strnfmt(buf, sizeof(buf), "%ld", (long)i);
+	if (j) my_strcat(buf, format(".%02ld", (long)j), sizeof(buf));
 
-		/* Mention the experience */
-		text_out(" is worth ");
-		text_out_c(TERM_ORANGE, buf);
-		text_out(" point%s", PLURAL((i == 1) && (j == 0)));
+	/* Mention the experience */
+	text_out(" is worth ");
+	text_out_c(TERM_ORANGE, buf);
+	text_out(" point%s", PLURAL((i == 1) && (j == 0)));
 
-		/* Take account of annoying English */
-		p = "th";
-		i = p_ptr->lev % 10;
-		if ((p_ptr->lev / 10) == 1) /* nothing */;
-		else if (i == 1) p = "st";
-		else if (i == 2) p = "nd";
-		else if (i == 3) p = "rd";
+	/* Take account of annoying English */
+	p = "th";
+	i = p_ptr->lev % 10;
+	if ((p_ptr->lev / 10) == 1) /* nothing */;
+	else if (i == 1) p = "st";
+	else if (i == 2) p = "nd";
+	else if (i == 3) p = "rd";
 
-		/* Take account of "leading vowels" in numbers */
-		q = "";
-		i = p_ptr->lev;
-		if ((i == 8) || (i == 11) || (i == 18)) q = "n";
+	/* Take account of "leading vowels" in numbers */
+	q = "";
+	i = p_ptr->lev;
+	if ((i == 8) || (i == 11) || (i == 18)) q = "n";
 
-		/* Mention the dependance on the player's level */
-		text_out(" for a%s %lu%s level character.  ", q, (long)i, p);
-	}
+	/* Mention the dependance on the player's level */
+	text_out(" for a%s %lu%s level character.  ", q, (long)i, p);
 }
 
 
@@ -932,7 +928,7 @@ static void describe_monster_movement(int r_idx, const monster_lore *l_ptr)
 		text_out(" lives in the town");
 		old = TRUE;
 	}
-	else if (l_ptr->tkills)
+	else
 	{
 		byte colour = (r_ptr->level > p_ptr->max_depth) ? TERM_RED : TERM_L_GREEN;
 
@@ -940,7 +936,7 @@ static void describe_monster_movement(int r_idx, const monster_lore *l_ptr)
 			text_out(" is found ");
 		else
 			text_out(" is normally found ");
-		
+
 		text_out("at depths of ");
 		text_out_c(colour, "%d", r_ptr->level * 50);
 		text_out(" feet (level ");
