@@ -23,7 +23,7 @@
  * Always miss 5% of the time, Always hit 5% of the time.
  * Otherwise, match trap power against player armor.
  */
-static bool check_hit(int power)
+static bool trap_check_hit(int power)
 {
 	return test_hit(power, p_ptr->ac + p_ptr->to_a, TRUE);
 }
@@ -41,7 +41,7 @@ void pick_trap(int y, int x)
 {
 	int feat;
 
-	const static int min_level[] =
+	static const int min_level[] =
 	{
 		2,		/* Trap door */
 		2,		/* Open pit */
@@ -280,7 +280,7 @@ void hit_trap(int y, int x)
 
 		case FEAT_TRAP_HEAD + 0x08:
 		{
-			if (check_hit(125))
+			if (trap_check_hit(125))
 			{
 				msg_print("A small dart hits you!");
 				dam = damroll(1, 4);
@@ -296,7 +296,7 @@ void hit_trap(int y, int x)
 
 		case FEAT_TRAP_HEAD + 0x09:
 		{
-			if (check_hit(125))
+			if (trap_check_hit(125))
 			{
 				msg_print("A small dart hits you!");
 				dam = damroll(1, 4);
@@ -312,7 +312,7 @@ void hit_trap(int y, int x)
 
 		case FEAT_TRAP_HEAD + 0x0A:
 		{
-			if (check_hit(125))
+			if (trap_check_hit(125))
 			{
 				msg_print("A small dart hits you!");
 				dam = damroll(1, 4);
@@ -328,7 +328,7 @@ void hit_trap(int y, int x)
 
 		case FEAT_TRAP_HEAD + 0x0B:
 		{
-			if (check_hit(125))
+			if (trap_check_hit(125))
 			{
 				msg_print("A small dart hits you!");
 				dam = damroll(1, 4);
