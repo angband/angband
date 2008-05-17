@@ -2432,7 +2432,7 @@ static void do_cmd_options_win(void)
 	while (1)
 	{
 		/* Prompt */
-		prt("Window flags (<dir> to move, 't' to toggle, or ESC)", 0, 0);
+		prt("Window flags (<dir> to move, 't'/Enter to toggle, or ESC)", 0, 0);
 
 		/* Display the windows */
 		for (j = 0; j < ANGBAND_TERM_MAX; j++)
@@ -3869,67 +3869,6 @@ void do_cmd_colors(void)
 
 /*** Non-complex menu actions ***/
 
-/*
- * Set base delay factor
- */
-static void do_cmd_delay(void)
-{
-	/* Prompt */
-	prt("Command: Base Delay Factor", 20, 0);
-
-	/* Get a new value */
-	while (1)
-	{
-		char cx;
-		int msec = op_ptr->delay_factor * op_ptr->delay_factor;
-		prt(format("Current base delay factor: %d (%d msec)",
-					   op_ptr->delay_factor, msec), 22, 0);
-		prt("New base delay factor (0-9 or ESC to accept): ", 21, 0);
-
-		/* Get input */
-		cx = inkey();
-
-		/* Process input */
-		if (cx == ESCAPE)
-			break;
-		if (isdigit((unsigned char) cx))
-			op_ptr->delay_factor = D2I(cx);
-		else
-			bell("Illegal delay factor!");
-	}
-}
-
-
-/*
- * Set hitpoint warning level
- */
-static void do_cmd_hp_warn(void)
-{
-	/* Prompt */
-	prt("Command: Hitpoint Warning", 20, 0);
-
-	/* Get a new value */
-	while (1)
-	{
-		char cx;
-		prt(format("Current hitpoint warning: %2d%%",
-			   op_ptr->hitpoint_warn * 10), 22, 0);
-		prt("New hitpoint warning (0-9 or ESC to accept): ", 21, 0);
-
-		/* Get input */
-		cx = inkey();
-
-		/* Process input */
-		if (cx == ESCAPE)
-			break;
-		if (isdigit((unsigned char) cx))
-			op_ptr->hitpoint_warn = D2I(cx);
-		else
-			bell("Illegal hitpoint warning!");
-	}
-}
-
-
 bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *len, char keypress, bool firsttime)
 {
 	switch (keypress)
@@ -3957,6 +3896,64 @@ bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *len, cha
 	return FALSE;
 }
 
+
+/*
+ * Set base delay factor
+ */
+static void do_cmd_delay(void)
+{
+	bool res;
+	char tmp[4] = "";
+	int msec = op_ptr->delay_factor * op_ptr->delay_factor;
+
+	strnfmt(tmp, sizeof(tmp), "%i", op_ptr->delay_factor);
+
+	/* Prompt */
+	prt("Command: Base Delay Factor", 20, 0);
+
+	prt(format("Current base delay factor: %d (%d msec)",
+			   op_ptr->delay_factor, msec), 22, 0);
+	prt("New movement delay (0-9): ", 21, 0);
+
+	/* Ask the user for a string */
+	res = askfor_aux(tmp, sizeof(tmp), askfor_aux_numbers);
+
+	/* Process input */
+	if (res)
+	{
+		op_ptr->delay_factor = (u16b) strtoul(tmp, NULL, 0);
+	}
+}
+
+
+/*
+ * Set hitpoint warning level
+ */
+static void do_cmd_hp_warn(void)
+{
+	bool res;
+	char tmp[4] = "";
+
+	strnfmt(tmp, sizeof(tmp), "%i", op_ptr->hitpoint_warn);
+
+	/* Prompt */
+	prt("Command: Hitpoint Warning", 20, 0);
+
+	prt(format("Current base delay factor: %d (%d%%)",
+			   op_ptr->hitpoint_warn, op_ptr->hitpoint_warn * 10), 22, 0);
+	prt("New hitpoint warning delay (0-9): ", 21, 0);
+
+	/* Ask the user for a string */
+	res = askfor_aux(tmp, sizeof(tmp), askfor_aux_numbers);
+
+	/* Process input */
+	if (res)
+	{
+		op_ptr->hitpoint_warn = (u16b) strtoul(tmp, NULL, 0);
+	}
+}
+
+
 /*
  * Set "lazy-movement" delay
  */
@@ -3979,7 +3976,7 @@ static void do_cmd_lazymove_delay(void)
 
 	/* Process input */
 	if (res)
-        {
+	{
 		lazymove_delay = (u16b) strtoul(tmp, NULL, 0);
 	}
 }
