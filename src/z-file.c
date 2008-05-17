@@ -30,7 +30,7 @@
 #endif
 
 #ifdef MACH_O_CARBON
-# include <SystemConfiguration/SCDynamicStoreCopySpecific.h>
+# include <Carbon/Carbon.h>
 #endif
 
 #ifdef HAVE_FCNTL_H
@@ -147,23 +147,29 @@ static void path_process(char *buf, size_t len, size_t *cur_len, const char *pat
 			username = user;
 		}
 
+#ifndef MACH_O_CARBON
+
 		/* Fallback -- try the "current" user */
 		if (username[0] == '\0')
 			username = getlogin();
 
 		/* Look up a user (or "current" user) */
-#ifndef MACH_O_CARBON
 		if (username) pw = getpwnam(username);
 		else          pw = getpwuid(getuid());
-
 #else /* MACH_O_CARBON */
 
-		/* On Macs look up the console user to avoid problems with invalid root detection */
-		uid_t uid;
-		SCDynamicStoreCopyConsoleUser(NULL, &uid, NULL);
-		pw = getpwuid(uid);
+		/* On Macs getlogin() can incorrectly return root, so get the username via system frameworks */
+		CFStringRef cfusername = CSCopyUserName(TRUE);
+		CFIndex cfbufferlength = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfusername), kCFStringEncodingUTF8) + 1;
+		char *macusername = mem_alloc(cfbufferlength);
+		CFStringGetCString(cfusername, macusername, cfbufferlength, kCFStringEncodingUTF8);
+		CFRelease(cfusername);
+
+		/* Look up the user */
+		pw = getpwnam(macusername);
+		mem_free(macusername);
 #endif /* !MACH_O_CARBON */
-		
+
 		if (!pw) return;
 
 		/* Copy across */

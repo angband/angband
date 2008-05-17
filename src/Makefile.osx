@@ -31,7 +31,7 @@ CFLAGS = \
 	-Wall -std=gnu99 $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
 	-DPRIVATE_USER_PATH=\"~/Library/Preferences\" -DUSE_PRIVATE_PATHS \
 	-arch ppc -arch i386 -mmacosx-version-min=10.0
-LIBS = -framework CoreFoundation -framework QuickTime -framework Carbon -framework SystemConfiguration
+LIBS = -framework CoreFoundation -framework QuickTime -framework Carbon
 
 #
 # Provide a CFLAGS override so that older versions of OS X can continue to
