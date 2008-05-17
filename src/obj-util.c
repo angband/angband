@@ -76,7 +76,7 @@ static void flavor_assign_random(byte tval)
 		if (k_info[i].flavor != 0) continue;
 
 		/* HACK - Ordinary food is "boring" */
-		if ((tval == TV_FOOD) && (k_info[i].sval >= SV_FOOD_MIN_FOOD))
+		if ((tval == TV_FOOD) && (k_info[i].sval < SV_FOOD_MIN_SHROOM))
 			continue;
 
 		if (!flavor_count) quit_fmt("Not enough flavors for tval %d.", tval);

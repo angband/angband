@@ -680,10 +680,10 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 			switch (o_ptr->sval)
 			{
 				/* Strength, Constitution, Dexterity, Intelligence */
-				case SV_RING_STR:
-				case SV_RING_CON:
-				case SV_RING_DEX:
-				case SV_RING_INT:
+				case SV_RING_STRENGTH:
+				case SV_RING_CONSTITUTION:
+				case SV_RING_DEXTERITY:
+				case SV_RING_INTELLIGENCE:
 				{
 					/* Stat bonus */
 					o_ptr->pval = 1 + m_bonus(5, level);
@@ -735,6 +735,16 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					break;
 				}
 
+				/* Light, Dark */
+				case SV_RING_LIGHT:
+				case SV_RING_DARK:
+				{
+					/* Searching bonus */
+					o_ptr->pval = 1 + m_bonus(5, level);
+
+					break;
+				}
+
 				/* Flames, Acid, Ice, Lightning */
 				case SV_RING_FLAMES:
 				case SV_RING_ACID:
@@ -743,6 +753,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 				{
 					/* Bonus to armor class */
 					o_ptr->to_a = 5 + randint1(5) + m_bonus(10, level);
+
 					break;
 				}
 
@@ -798,6 +809,35 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 						o_ptr->to_h = -o_ptr->to_h;
 						o_ptr->to_d = -o_ptr->to_d;
 					}
+
+					break;
+				}
+
+				case SV_RING_RECKLESS_ATTACKS:
+				{
+					int amt = rand_range(3, 5);
+
+					o_ptr->to_d = o_ptr->to_h = amt;
+					o_ptr->to_a = -4 * amt;
+
+					break;
+				}
+
+				case SV_RING_OF_THE_MOUSE:
+				{
+					int amt = randint1(4);
+
+					/* Dex bonus, dam penalty */
+					o_ptr->pval = amt;
+					o_ptr->to_d = -3 * amt;
+
+					break;
+				}
+
+				case SV_RING_DELVING:
+				{
+					/* Digging bonus */
+					o_ptr->pval = rand_range(3, 5);
 
 					break;
 				}
@@ -900,19 +940,6 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 
 					/* Mention the item */
 					if (cheat_peek) object_mention(o_ptr);
-
-					break;
-				}
-
-				/* Amulet of Doom -- always cursed */
-				case SV_AMULET_DOOM:
-				{
-					/* Cursed */
-					o_ptr->flags3 |= TR3_LIGHT_CURSE;
-
-					/* Penalize */
-					o_ptr->pval = 0 - (randint1(5) + m_bonus(5, level));
-					o_ptr->to_a = 0 - (randint1(5) + m_bonus(5, level));
 
 					break;
 				}

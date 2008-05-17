@@ -437,12 +437,9 @@ static void choose_item(int a_idx)
 		/* Create a digging tool. */
 		tval = TV_DIGGING;
 		r2 = Rand_normal(target_level * 2, target_level);
-		if (r2 < 15) sval = SV_SHOVEL;
-		else if (r2 < 30) sval = SV_PICK;
-		else if (r2 < 60) sval = SV_GNOMISH_SHOVEL;
-		else if (r2 < 90) sval = SV_ORCISH_PICK;
-		else if (r2 < 120) sval = SV_DWARVEN_SHOVEL;
-		else sval = SV_DWARVEN_PICK;
+		if (r2 < 20) sval = SV_SHOVEL;
+		else if (r2 < 50) sval = SV_PICK;
+		else sval = SV_MATTOCK;
 	}
 	else if (r < 19)
 	{
@@ -453,12 +450,13 @@ static void choose_item(int a_idx)
 		else if (r2 < 12) sval = SV_MACE;
 		else if (r2 < 20) sval = SV_WAR_HAMMER;
 		else if (r2 < 30) sval = SV_QUARTERSTAFF;
-		else if (r2 < 34) sval = SV_LUCERN_HAMMER;
 		else if (r2 < 38) sval = SV_MORNING_STAR;
 		else if (r2 < 45) sval = SV_FLAIL;
 		else if (r2 < 55) sval = SV_LEAD_FILLED_MACE;
 		else if (r2 < 80) sval = SV_BALL_AND_CHAIN;
-		else if (r2 < 120) sval = SV_TWO_HANDED_FLAIL;
+		else if (r2 < 100) sval = SV_GREAT_HAMMER;
+		else if (r2 < 110) sval = SV_MAUL;
+		else if (r2 < 140) sval = SV_TWO_HANDED_GREAT_FLAIL;
 		else sval = SV_MACE_OF_DISRUPTION;
 	}
 	else if (r < 33)
@@ -466,22 +464,17 @@ static void choose_item(int a_idx)
 		/* Create a long, sharp-edged weapon. */
 		tval = TV_SWORD;
 		r2 = Rand_normal(target_level * 2, target_level);
-		if (r2 < 0) sval = SV_BROKEN_DAGGER;
-		else if (r2 < 1) sval = SV_BROKEN_SWORD;
-		else if (r2 < 5) sval = SV_DAGGER;
+		if (r2 < 5) sval = SV_DAGGER;
 		else if (r2 < 9) sval = SV_MAIN_GAUCHE;
-		else if (r2 < 10) sval = SV_RAPIER;	/* or at least pointy ;-) */
-		else if (r2 < 12) sval = SV_SMALL_SWORD;
+		else if (r2 < 10) sval = SV_RAPIER;
 		else if (r2 < 14) sval = SV_SHORT_SWORD;
-		else if (r2 < 16) sval = SV_SABRE;
-		else if (r2 < 18) sval = SV_CUTLASS;
 		else if (r2 < 20) sval = SV_TULWAR;
 		else if (r2 < 23) sval = SV_BROAD_SWORD;
 		else if (r2 < 26) sval = SV_LONG_SWORD;
 		else if (r2 < 30) sval = SV_SCIMITAR;
 		else if (r2 < 45) sval = SV_BASTARD_SWORD;
 		else if (r2 < 60) sval = SV_KATANA;
-		else if (r2 < 90) sval = SV_TWO_HANDED_SWORD;
+		else if (r2 < 90) sval = SV_ZWEIHANDER;
 		else if (r2 < 120) sval = SV_EXECUTIONERS_SWORD;
 		else sval = SV_BLADE_OF_CHAOS;
 	}
@@ -499,6 +492,7 @@ static void choose_item(int a_idx)
 		else if (r2 < 55) sval = SV_BROAD_AXE;
 		else if (r2 < 60) sval = SV_BATTLE_AXE;
 		else if (r2 < 65) sval = SV_GLAIVE;
+		else if (r2 < 72) sval = SV_LUCERNE_HAMMER;
 		else if (r2 < 80) sval = SV_HALBERD;
 		else if (r2 < 120) sval = SV_GREAT_AXE;
 		else if (r2 < 128) sval = SV_SCYTHE;
@@ -512,21 +506,17 @@ static void choose_item(int a_idx)
 		if (r2 < 45) tval = TV_SOFT_ARMOR; else tval = TV_HARD_ARMOR;
 
 		/* Soft stuff. */
-		if (r2 < 0) sval = SV_FILTHY_RAG;
-		else if (r2 < 5) sval = SV_ROBE;
-		else if (r2 < 10) sval = SV_SOFT_LEATHER_ARMOR;
-		else if (r2 < 15) sval = SV_SOFT_STUDDED_LEATHER;
-		else if (r2 < 20) sval = SV_HARD_LEATHER_ARMOR;
-		else if (r2 < 30) sval = SV_HARD_STUDDED_LEATHER;
+		if (r2 < 0) sval = SV_ROBE;
+		else if (r2 < 10) sval = SV_SOFT_LEATHER_ARMOUR;
+		else if (r2 < 20) sval = SV_STUDDED_LEATHER_ARMOUR;
+		else if (r2 < 30) sval = SV_HARD_LEATHER_ARMOUR;
 		else if (r2 < 45) sval = SV_LEATHER_SCALE_MAIL;
 
 		/* Hard stuff. */
-		else if (r2 < 55) sval = SV_RUSTY_CHAIN_MAIL;
-		else if (r2 < 65) sval = SV_METAL_SCALE_MAIL;
+		else if (r2 < 60) sval = SV_METAL_SCALE_MAIL;
 		else if (r2 < 75) sval = SV_CHAIN_MAIL;
 		else if (r2 < 85) sval = SV_AUGMENTED_CHAIN_MAIL;
-		else if (r2 < 90) sval = SV_DOUBLE_CHAIN_MAIL;
-		else if (r2 < 97) sval = SV_BAR_CHAIN_MAIL;
+		else if (r2 < 95) sval = SV_BAR_CHAIN_MAIL;
 		else if (r2 < 105) sval = SV_METAL_BRIGANDINE_ARMOUR;
 		else if (r2 < 115) sval = SV_PARTIAL_PLATE_ARMOUR;
 		else if (r2 < 125) sval = SV_METAL_LAMELLAR_ARMOUR;
@@ -541,9 +531,12 @@ static void choose_item(int a_idx)
 		/* Make shoes. */
 		tval = TV_BOOTS;
 		r2 = Rand_normal(target_level * 2, target_level);
-		if (r2 < 9) sval = SV_PAIR_OF_SOFT_LEATHER_BOOTS;
-		else if (r2 < 15) sval = SV_PAIR_OF_HARD_LEATHER_BOOTS;
-		else sval = SV_PAIR_OF_METAL_SHOD_BOOTS;
+		if (r2 < 4) sval = SV_PAIR_OF_LEATHER_SANDALS;
+		if (r2 < 10) sval = SV_PAIR_OF_LEATHER_BOOTS;
+		else if (r2 < 24) sval = SV_PAIR_OF_IRON_SHOD_BOOTS;
+		/* else if (r2 < ??) sval = SV_PAIR_OF_STEEL_SHOD_BOOTS; */
+		/* else if (r2 < ??) sval = SV_PAIR_OF_ETHEREAL_BOOTS; */
+		else sval = SV_PAIR_OF_STEEL_SHOD_BOOTS;
 	}
 	else if (r < 78)
 	{
@@ -551,8 +544,10 @@ static void choose_item(int a_idx)
 		tval = TV_GLOVES;
 		r2 = Rand_normal(target_level * 2, target_level);
 		if (r2 < 10) sval = SV_SET_OF_LEATHER_GLOVES;
-		else if (r2 < 30) sval = SV_SET_OF_GAUNTLETS;
-		else sval = SV_SET_OF_CESTI;
+		else if (r2 < 40) sval = SV_SET_OF_GAUNTLETS;
+		else if (r2 < 50) sval = SV_SET_OF_MITHRIL_GAUNTLETS;
+		else if (r2 < 53) sval = SV_SET_OF_ALCHEMISTS_GLOVES;
+		else sval = SV_SET_OF_CAESTUS;
 	}
 	else if (r < 87)
 	{
@@ -567,26 +562,29 @@ static void choose_item(int a_idx)
 
 		else if (r2 < 60) sval = SV_IRON_CROWN;
 		else if (r2 < 90) sval = SV_GOLDEN_CROWN;
-		else sval = SV_JEWELED_CROWN;
+		else sval = SV_JEWEL_ENCRUSTED_CROWN;
 	}
 	else if (r < 94)
 	{
 		/* Make a shield. */
 		tval = TV_SHIELD;
 		r2 = Rand_normal(target_level * 2, target_level);
-		if (r2 < 9) sval = SV_SMALL_LEATHER_SHIELD;
+		/* if (r2 < 9) sval = SV_BUCKLER; */
+		if (r2 < 9) sval = SV_WICKER_SHIELD;
 		else if (r2 < 20) sval = SV_SMALL_METAL_SHIELD;
-		else if (r2 < 40) sval = SV_LARGE_LEATHER_SHIELD;
+		else if (r2 < 40) sval = SV_LEATHER_SHIELD;
 		else if (r2 < 60) sval = SV_LARGE_METAL_SHIELD;
-		else sval = SV_SHIELD_OF_DEFLECTION;
+		else sval = SV_MITHRIL_SHIELD;
 	}
 	else
 	{
 		/* Make a cloak. */
 		tval = TV_CLOAK;
 		r2 = Rand_normal(target_level * 2, target_level);
-		if (r2 < 90) sval = SV_CLOAK;
-		else sval = SV_SHADOW_CLOAK;
+		if (r2 < 40) sval = SV_CLOAK;
+		if (r2 < 90) sval = SV_FUR_CLOAK;
+		if (r2 < 120) sval = SV_ETHEREAL_CLOAK;
+		else sval = SV_ELVEN_CLOAK;
 	}
 
 	k_idx = lookup_kind(tval, sval);

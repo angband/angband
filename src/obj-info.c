@@ -98,6 +98,14 @@ static const flag_type f2_immunity[] =
 	{ TR2_IM_COLD, "cold" },
 };
 
+static const flag_type f2_vuln[] =
+{
+	{ TR2_VULN_ACID, "acid" },
+	{ TR2_VULN_ELEC, "electricity" },
+	{ TR2_VULN_FIRE, "fire" },
+	{ TR2_VULN_COLD, "cold" },
+};
+
 static const flag_type f2_resist[] =
 {
 	{ TR2_RES_ACID,  "acid" },
@@ -138,17 +146,20 @@ static const flag_type f2_sustains[] =
 
 static const flag_type f3_misc[] =
 {
-	{ TR3_BLESSED,     "Blessed by the gods" },
+	{ TR3_BLESSED, "Blessed by the gods" },
 	{ TR3_SLOW_DIGEST, "Slows your metabolism" },
-	{ TR3_FEATHER,     "Feather Falling" },
-	{ TR3_REGEN,       "Speeds regeneration" },
-	{ TR3_FREE_ACT,    "Prevents paralysis" },
-	{ TR3_HOLD_LIFE,   "Stops experience drain" },
-	{ TR3_TELEPATHY,   "Grants telepathy" },
-	{ TR3_SEE_INVIS,   "Grants the ability to see invisible things" },
-	{ TR3_AGGRAVATE,   "Aggravates creatures nearby" },
-	{ TR3_DRAIN_EXP,   "Drains experience" },
-	{ TR3_TELEPORT,    "Induces random teleportation" },
+	{ TR3_IMPAIR_HP, "Impairs hitpoint recovery" },
+	{ TR3_IMPAIR_MANA, "Impairs mana recovery" },
+	{ TR3_AFRAID, "Makes you unable to hit foes" },
+	{ TR3_FEATHER, "Feather Falling" },
+	{ TR3_REGEN, "Speeds regeneration" },
+	{ TR3_FREE_ACT, "Prevents paralysis" },
+	{ TR3_HOLD_LIFE, "Stops experience drain" },
+	{ TR3_TELEPATHY, "Grants telepathy" },
+	{ TR3_SEE_INVIS, "Grants the ability to see invisible things" },
+	{ TR3_AGGRAVATE, "Aggravates creatures nearby" },
+	{ TR3_DRAIN_EXP, "Drains experience" },
+	{ TR3_TELEPORT, "Induces random teleportation" },
 };
 
 
@@ -198,6 +209,15 @@ static bool describe_immune(u32b f2)
 	if (count)
 	{
 		text_out("Provides resistance to ");
+		info_out_list(descs, count);
+		prev = TRUE;
+	}
+
+	/* Resistances */
+	count = info_collect(f2_vuln, N_ELEMENTS(f2_vuln), f2, descs);
+	if (count)
+	{
+		text_out("Makes you vulnerable to ");
 		info_out_list(descs, count);
 		prev = TRUE;
 	}

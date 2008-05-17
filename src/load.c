@@ -190,64 +190,6 @@ static bool wearable_p(const object_type *o_ptr)
 }
 
 
-/* A wonderful savefile conversion function. Temporary only. */
-void convert_kind(byte *tval, byte *sval)
-{
-	switch (*tval)
-	{
-		case TV_GOLD:
-		{
-			if (*sval > SV_GOLD_MAX)
-				*sval = SV_GOLD_MAX;
-			return;
-		}
-
-		case TV_FOOD:
-		{
-			/* Cure Paranoia + Cure Confusion -> Clear Mind */
-			if (*sval == 15) *sval = 16;
-
-			/* Sickness -> Weakness */
-			if (*sval == 7) *sval = 6;
-
-			/* LoseWis -> Stupidity */
-			if (*sval == 9) *sval = 8;
-
-			/* Paralysis -> Poison */
-			if (*sval == 5) *sval = 0;
-
-			/* Disease -> Unhealth */
-			if (*sval == 11) *sval = 10;
-
-			break;
-		}
-
-		/* Some staffs removed, replace with rods */
-		case TV_STAFF:
-		{
-			int new_sval = *sval;
-
-			/* Treasure location */
-			if (*sval == 10) new_sval = 28;
-
-			/* Object location */
-			if (*sval == 11) new_sval = 29;
-
-			/* Door/stair location */
-			if (*sval == 13) new_sval = 1;
-
-			/* Probing */
-			if (*sval == 23) new_sval = 7;
-
-			if (new_sval != *sval)
-			{
-				*tval = TV_ROD;
-				*sval = new_sval;
-			}
-		}
-	}
-}
-
 
 /*
  * The following functions are used to load the basic building blocks
@@ -409,80 +351,21 @@ static errr rd_item(object_type *o_ptr)
 	rd_byte(&o_ptr->origin_depth);
 	rd_u16b(&o_ptr->origin_xtra);
 
-	/* Old flags */
-	if (older_than(3, 0, 12))
-	{
-		strip_bytes(8);
-	}
-	else
-	{
-		rd_u32b(&o_ptr->flags1);
-		rd_u32b(&o_ptr->flags2);
-		rd_u32b(&o_ptr->flags3);
-	}
+	rd_u32b(&o_ptr->flags1);
+	rd_u32b(&o_ptr->flags2);
+	rd_u32b(&o_ptr->flags3);
 
 	/* Monster holding object */
 	rd_s16b(&o_ptr->held_m_idx);
 
-	/* (Old) special powers */
-	if (older_than(3, 0, 12))
-	{
-		byte xtra1;
-		byte xtra2;
-		ego_item_type *e_ptr = NULL;
-
-		if (o_ptr->name2) e_ptr = &e_info[o_ptr->name2];
-
-		rd_byte(&xtra1);
-		rd_byte(&xtra2);
-
-		/* Extra powers */
-		switch (xtra1)
-		{
-			case OBJECT_XTRA_TYPE_SUSTAIN:
-			{
-				o_ptr->flags2 |= ego_sustains[xtra2];
-				break;
-			}
-
-			case OBJECT_XTRA_TYPE_RESIST:
-			{
-				o_ptr->flags2 |= ego_resists[xtra2];
-				break;
-			}
-
-			case OBJECT_XTRA_TYPE_POWER:
-			{
-				o_ptr->flags3 |= ego_powers[xtra2];
-				break;
-			}
-		}
-	}
-
-	/* Inscription */
 	rd_string(buf, sizeof(buf));
 
 	/* Save the inscription */
 	if (buf[0]) o_ptr->note = quark_add(buf);
 
 
-	/* Convert tval/sval */
-	convert_kind(&o_ptr->tval, &o_ptr->sval);
-
 	/* Lookup item kind */
 	o_ptr->k_idx = lookup_kind(o_ptr->tval, o_ptr->sval);
-
-	switch (o_ptr->k_idx)
-	{
-		case 158:
-			o_ptr->k_idx = 157;
-			break;
-
-		case 159:
-		case 160:
-			o_ptr->k_idx = 156;
-			break;
-	}
 
 	k_ptr = &k_info[o_ptr->k_idx];
 
@@ -494,33 +377,6 @@ static errr rd_item(object_type *o_ptr)
 	}
 
 
-
-	/*
-	 * Ensure that rods and wands get the appropriate pvals,
-	 * and transfer rod charges to timeout.
-	 * this test should only be passed once, the first
-	 * time the file is open with ROD/WAND stacking code
-	 * It could change the timeout improperly if the PVAL (time a rod
-	 * takes to charge after use) is changed in object.txt.
-	 * But this is nothing a little resting won't solve.
-	 *
-	 * -JG-
-	 */
-	if ((o_ptr->tval == TV_ROD) &&
-	    (o_ptr->pval - (k_ptr->pval * o_ptr->number) != 0))
-	{
-		o_ptr->timeout = o_ptr->pval;
-		o_ptr->pval = k_ptr->pval * o_ptr->number;
-	}
-
-	if (older_than(3, 0, 4))
-	{
-		/* Recalculate charges of stacked wands and staves */
-		if ((o_ptr->tval == TV_WAND) || (o_ptr->tval == TV_STAFF))
-		{
-			o_ptr->pval = o_ptr->pval * o_ptr->number;
-		}
-	}
 
 	/* Repair non "wearable" items */
 	if (!wearable_p(o_ptr))
@@ -643,16 +499,6 @@ static errr rd_item(object_type *o_ptr)
 		}
 	}
 
-	if (older_than(3, 0, 9) &&
-	    o_ptr->tval == TV_LITE &&
-	    !artifact_p(o_ptr) &&
-	    !ego_item_p(o_ptr) &&
-	    o_ptr->pval)
-	{
-		o_ptr->timeout = o_ptr->pval;
-		o_ptr->pval = 0;
-	}
-
 
 	/* Success */
 	return (0);
@@ -710,8 +556,6 @@ static void rd_lore(int r_idx)
 	/* Count wakes and ignores */
 	rd_byte(&l_ptr->wake);
 	rd_byte(&l_ptr->ignore);
-
-	if (older_than(3, 0, 12)) strip_bytes(2);
 
 	/* Count drops */
 	rd_byte(&l_ptr->drop_gold);
@@ -798,12 +642,6 @@ static errr rd_store(int n)
 		{
 			note("Error reading item");
 			return (-1);
-		}
-
-		/* Pre-3.0.2 objects in store inventories need to be marked */
-		if (older_than(3, 0, 2))
-		{
-			if (n != STORE_HOME) i_ptr->ident |= IDENT_STORE;
 		}
 
 		/* Accept any valid items */
@@ -925,50 +763,6 @@ static void rd_options(void)
 		}
 	}
 
-	/* Load savefiles pre-reorganisation */
-	if (older_than(3, 0, 8))
-	{
-		/* 
-		 * Slot	Old layout:	New layout:
-		 * 0	xxx			maximise
-		 * 1	xxx			randarts
-		 * 2	maximise	xxx
-		 * 3	preserve	ironman
-		 * 4	ironman		no_stores
-		 * 5	no_stores	no_artifacts
-		 * 6	no_artifats	no_stacking
-		 * 7	randarts	no_preserve
-		 * 8	no_stacking	no_stairs
-		 */
-
-		/* We #define this so it's obvious what we're doing */
-		#define OLD_OPT(n)	op_ptr->opt[n]
-
-		bool old_birth[9];
-		for (i = 0; i <= 8; i++)
-			old_birth[i] = OLD_OPT(OPT_BIRTH + i);
-
-		if (arg_fiddle) note("Loading pre-3.0.7 options...");
-
-		birth_maximize = adult_maximize = old_birth[2];
-		birth_no_preserve = adult_no_preserve = !old_birth[3];
-		birth_ironman = adult_ironman = old_birth[4];
-		birth_no_stores = adult_no_stores = old_birth[5];
-		birth_no_artifacts = adult_no_artifacts = old_birth[6];
-		birth_randarts = adult_randarts = old_birth[7];
-		birth_no_stacking = adult_no_stacking = old_birth[8];
-
-		birth_no_stairs = adult_no_stairs = !OLD_OPT(41);
-		birth_ai_sound = adult_ai_sound = OLD_OPT(42);
-		birth_ai_smell = adult_ai_smell = OLD_OPT(43);
-		birth_ai_packs = adult_ai_packs = OLD_OPT(73);
-		birth_ai_learn = adult_ai_learn = OLD_OPT(46);
-		birth_ai_cheat = adult_ai_cheat = OLD_OPT(47);
-		birth_ai_smart = adult_ai_smart = OLD_OPT(72);
-
-		#undef OLD_OPT
-	}
-
 	/*** Window Options ***/
 
 	/* Read the window flags */
@@ -1072,14 +866,8 @@ static int rd_squelch(void)
 	int i;
 	byte tmp8u = 24;
 
-	/* Handle old versions, and Pete Mack's patch */
-	if (older_than(3, 0, 6))
-		return 0;
-
-
 	/* Read how many squelch bytes we have */
-	if (!older_than(3, 0, 9))
-		rd_byte(&tmp8u);
+	rd_byte(&tmp8u);
 
 	/* Check against current number */
 	if (tmp8u != SQUELCH_BYTES)
@@ -1140,6 +928,8 @@ static int rd_squelch(void)
 static errr rd_extra(void)
 {
 	int i;
+
+	byte num;
 
 	byte tmp8u;
 	u16b tmp16u;
@@ -1232,82 +1022,35 @@ static errr rd_extra(void)
 	strip_bytes(2);
 
 	/* Read the flags */
-	if (older_than(3, 0, 7))
-	{
-		strip_bytes(2);	/* Old "rest" */
-		rd_s16b(&p_ptr->timed[TMD_BLIND]);
-		rd_s16b(&p_ptr->timed[TMD_PARALYZED]);
-		rd_s16b(&p_ptr->timed[TMD_CONFUSED]);
-		rd_s16b(&p_ptr->food);
-		strip_bytes(4);	/* Old "food_digested" / "protection" */
-		rd_s16b(&p_ptr->energy);
-		rd_s16b(&p_ptr->timed[TMD_FAST]);
-		rd_s16b(&p_ptr->timed[TMD_SLOW]);
-		rd_s16b(&p_ptr->timed[TMD_AFRAID]);
-		rd_s16b(&p_ptr->timed[TMD_CUT]);
-		rd_s16b(&p_ptr->timed[TMD_STUN]);
-		rd_s16b(&p_ptr->timed[TMD_POISONED]);
-		rd_s16b(&p_ptr->timed[TMD_IMAGE]);
-		rd_s16b(&p_ptr->timed[TMD_PROTEVIL]);
-		rd_s16b(&p_ptr->timed[TMD_INVULN]);
-		rd_s16b(&p_ptr->timed[TMD_HERO]);
-		rd_s16b(&p_ptr->timed[TMD_SHERO]);
-		rd_s16b(&p_ptr->timed[TMD_SHIELD]);
-		rd_s16b(&p_ptr->timed[TMD_BLESSED]);
-		rd_s16b(&p_ptr->timed[TMD_SINVIS]);
-		rd_s16b(&p_ptr->word_recall);
-		rd_s16b(&p_ptr->see_infra);
-		rd_s16b(&p_ptr->timed[TMD_SINFRA]);
-		rd_s16b(&p_ptr->timed[TMD_OPP_FIRE]);
-		rd_s16b(&p_ptr->timed[TMD_OPP_COLD]);
-		rd_s16b(&p_ptr->timed[TMD_OPP_ACID]);
-		rd_s16b(&p_ptr->timed[TMD_OPP_ELEC]);
-		rd_s16b(&p_ptr->timed[TMD_OPP_POIS]);
+	rd_s16b(&p_ptr->food);
+	rd_s16b(&p_ptr->energy);
+	rd_s16b(&p_ptr->word_recall);
+	rd_s16b(&p_ptr->see_infra);
+	rd_byte(&p_ptr->confusing);
+	rd_byte(&p_ptr->searching);
 
-		rd_byte(&p_ptr->confusing);
-		rd_byte(&tmp8u);	/* oops */
-		rd_byte(&tmp8u);	/* oops */
-		rd_byte(&tmp8u);	/* oops */
-		rd_byte(&p_ptr->searching);
-		rd_byte(&tmp8u);	/* oops */
-		rd_byte(&tmp8u);	/* oops */
-		rd_byte(&tmp8u);	/* oops */
+	/* Find the number of timed effects */
+	rd_byte(&num);
+
+	if (num <= TMD_MAX)
+	{
+		/* Read all the effects */
+		for (i = 0; i < num; i++)
+			rd_s16b(&p_ptr->timed[i]);
+
+		/* Initialize any entries not read */
+		if (num < TMD_MAX)
+			C_WIPE(p_ptr->timed + num, TMD_MAX - num, s16b);
 	}
 	else
 	{
-		byte num;
-		int i;
+		/* Probably in trouble anyway */
+		for (i = 0; i < TMD_MAX; i++)
+			rd_s16b(&p_ptr->timed[i]);
 
-		rd_s16b(&p_ptr->food);
-		rd_s16b(&p_ptr->energy);
-		rd_s16b(&p_ptr->word_recall);
-		rd_s16b(&p_ptr->see_infra);
-		rd_byte(&p_ptr->confusing);
-		rd_byte(&p_ptr->searching);
-
-		/* Find the number of timed effects */
-		rd_byte(&num);
-
-		if (num <= TMD_MAX)
-		{
-			/* Read all the effects */
-			for (i = 0; i < num; i++)
-				rd_s16b(&p_ptr->timed[i]);
-
-			/* Initialize any entries not read */
-			if (num < TMD_MAX)
-				C_WIPE(p_ptr->timed + num, TMD_MAX - num, s16b);
-		}
-		else
-		{
-			/* Probably in trouble anyway */
-			for (i = 0; i < TMD_MAX; i++)
-				rd_s16b(&p_ptr->timed[i]);
-
-			/* Discard unused entries */
-			strip_bytes(2 * (num - TMD_MAX));
-			note("Discarded unsupported timed effects");
-		}
+		/* Discard unused entries */
+		strip_bytes(2 * (num - TMD_MAX));
+		note("Discarded unsupported timed effects");
 	}
 
 	/* Future use */
@@ -1389,7 +1132,7 @@ static errr rd_randarts(void)
 	u32b tmp32u;
 
 
-	if (older_than(3, 0, 11))
+	if (older_than(3, 0, 14))
 	{
 		/*
 		 * XXX XXX XXX
@@ -1729,7 +1472,7 @@ static errr rd_dungeon(void)
 	}
 
 	/* Load the dungeon data */
-	if (!older_than(3, 0, 11)) for (x = y = 0; y < DUNGEON_HGT; )
+	for (x = y = 0; y < DUNGEON_HGT; )
 	{
 		/* Grab RLE info */
 		rd_byte(&count);
@@ -2060,17 +1803,6 @@ static errr rd_savefile_new_aux(void)
 		k_ptr->tried = (tmp8u & 0x02) ? TRUE : FALSE;
 		k_ptr->squelch = (tmp8u & 0x04) ? TRUE : FALSE;
 		k_ptr->everseen = (tmp8u & 0x08) ? TRUE : FALSE;
-
-		/* Read the (old) squelch bit */
-		if (older_than(3, 0, 9) && !older_than(3, 0, 6))
-		{
-			rd_byte(&tmp8u);
-
-			if (tmp8u == 3)
-				k_ptr->squelch = TRUE;
-			else
-				k_ptr->squelch = FALSE;
-		}
 	}
 
 	if (arg_fiddle) note("Loaded Object Memory");
@@ -2333,6 +2065,7 @@ bool old_load(void)
 		{
 			err = -1;
 			what = "Savefile is too old";
+			goto end;
 		}
 		else if (!older_than(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH + 1))
 		{
@@ -2384,7 +2117,7 @@ bool old_load(void)
 		return (TRUE);
 	}
 
-
+end:
 	/* Message */
 	msg_format("Error (%s) reading %d.%d.%d savefile.",
 	           what, sf_major, sf_minor, sf_patch);

@@ -7,38 +7,35 @@
 # V:3.1.0
 
 # Armoury
-S:2:32
-I:2:boots:Pair~ of Soft Leather Boots
-I:2:boots:Pair~ of Hard Leather Boots
+S:2:33
+I:2:boots:Pair~ of Leather Sandals
+I:2:boots:Pair~ of Leather Boots
+I:1:boots:Pair~ of Iron Shod Boots
 I:2:helm:Hard Leather Cap~
 I:1:helm:Metal Cap~
 I:1:helm:Iron Helm~
 I:2:soft armour:Robe~
-I:2:soft armour:Soft Leather Armour~
-I:2:soft armour:Hard Leather Armour~
-I:2:soft armour:Hard Studded Leather~
+I:4:soft armour:Soft Leather Armour~
+I:2:soft armour:Studded Leather Armour~
 I:2:soft armour:Leather Scale Mail~
 I:1:hard armour:Metal Scale Mail~
 I:2:hard armour:Chain Mail~
-I:1:hard armour:Augmented Chain Mail~
+I:2:hard armour:Augmented Chain Mail~
 I:1:hard armour:Bar Chain Mail~
-I:1:hard armour:Double Chain Mail~
 I:1:hard armour:Metal Brigandine Armour~
 I:2:gloves:Set~ of Leather Gloves
 I:1:gloves:Set~ of Gauntlets
-I:2:shield:Small Leather Shield~
-I:1:shield:Large Leather Shield~
+I:1:shield:Wicker Shield~
 I:1:shield:Small Metal Shield~
+I:2:shield:Leather Shield~
 
 # Weaponsmith
-S:3:32
+S:3:33
 I:1:sword:Dagger~
 I:1:sword:Main Gauche~
 I:1:sword:Rapier~
-I:1:sword:Small Sword~
-I:1:sword:Short Sword~
-I:1:sword:Sabre~
-I:1:sword:Cutlass~
+I:2:sword:Short Sword~
+I:2:sword:Cutlass~
 I:1:sword:Tulwar~
 I:1:sword:Broad Sword~
 I:1:sword:Long Sword~
@@ -51,8 +48,9 @@ I:1:polearm:Trident~
 I:1:polearm:Pike~
 I:1:polearm:Beaked Axe~
 I:1:polearm:Broad Axe~
-I:1:polearm:Lance~
 I:1:polearm:Battle Axe~
+I:1:polearm:Lance~
+I:1:polearm:Lucerne Hammer~
 I:1:hafted:Whip~
 I:1:bow:Sling~
 I:1:bow:Short Bow~
@@ -63,13 +61,12 @@ I:2:arrow:Arrow~
 I:2:bolt:Bolt~
 
 # Temple
-S:4:32
+S:4:36
 I:1:hafted:Whip~
 I:1:hafted:Quarterstaff~
 I:2:hafted:Mace~
 I:1:hafted:Ball-and-Chain~
 I:1:hafted:War Hammer~
-I:1:hafted:Lucerne Hammer~
 I:1:hafted:Morning Star~
 I:2:hafted:Flail~
 I:1:hafted:Lead-Filled Mace~
@@ -79,7 +76,8 @@ I:1:scroll:Holy Chant
 I:1:potion:Boldness
 I:1:potion:Heroism
 I:2:potion:Cure Light Wounds
-I:3:potion:Cure Serious Wounds
+I:4:potion:Cure Serious Wounds
+I:4:potion:Cure Critical Wounds
 I:3:potion:Restore Life Levels
 I:3:prayer book:[Beginners Handbook]
 I:2:prayer book:[Words of Wisdom]
@@ -88,12 +86,13 @@ I:1:prayer book:[Exorcism and Dispelling]
 
 # Alchemist
 S:5:32
+I:4:scroll:Word of Recall
+I:4:scroll:Identify
+I:3:scroll:Phase Door
 I:1:scroll:Enchant Weapon To-Hit
 I:1:scroll:Enchant Weapon To-Dam
 I:1:scroll:Enchant Armor
-I:4:scroll:Identify
 I:1:scroll:Light
-I:3:scroll:Phase Door
 I:1:scroll:Monster Confusion
 I:1:scroll:Magic Mapping
 I:2:scroll:Treasure Detection
@@ -102,7 +101,6 @@ I:1:scroll:Door/Stair Location
 I:1:scroll:Detect Invisible
 I:1:scroll:Recharging
 I:1:scroll:Satisfy Hunger
-I:4:scroll:Word of Recall
 I:1:potion:Resist Heat
 I:1:potion:Resist Cold
 I:1:potion:Restore Strength
@@ -120,21 +118,21 @@ I:1:ring:Protection
 I:1:amulet:Charisma
 I:1:amulet:Slow Digestion
 I:1:amulet:Resist Acid
+#I:1:rod:Trap Location
+#I:1:rod:Door/Stair Location
+#I:2:rod:Treasure Location
 I:1:wand:Slow Monster
 I:1:wand:Confuse Monster
 I:1:wand:Sleep Monster
 I:1:wand:Magic Missile
 I:1:wand:Stinking Cloud
 I:1:wand:Wonder
-I:1:staff:Light
-I:1:staff:Mapping
-#I:1:rod:Trap Location
-#I:1:rod:Door/Stair Location
-#I:2:rod:Treasure Location
-I:1:staff:Detect Invisible
-I:1:staff:Detect Evil
 I:2:staff:Teleportation
 I:2:staff:Identify
+I:1:staff:Light
+I:1:staff:Mapping
+I:1:staff:Detect Invisible
+I:1:staff:Detect Evil
 I:3:magic book:[Magic for Beginners]
 I:2:magic book:[Conjurings and Tricks]
 I:2:magic book:[Incantations and Illusions]

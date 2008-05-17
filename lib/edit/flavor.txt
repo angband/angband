@@ -12,6 +12,14 @@
 # G:<char>:<attr>
 # D:<text>
 
+# To see how many items are in here vs. those required by the number of
+# objects in object.txt, the following bash script may be useful:
+#  for i in 40 45 55 65 66 70 75 80; do
+#    X=`grep "I:$i" object.txt|wc -l`
+#    Y=`grep $i\$ flavor.txt | wc -l`
+#    echo "tval $i: in object, $X, in flavor, $Y"
+#  done
+
 # Version stamp (required)
 
 V:3.0.11
@@ -1199,46 +1207,3 @@ G:?:w
 
 N:302:70
 G:?:w
-
-
-### More Rods (from Un) ###
-
-N:303:66
-G:-:w
-D:Ceremonial
-
-N:304:66
-G:-:D
-D:Black
-
-N:305:66
-G:-:r
-D:Red
-
-N:306:66
-G:-:g
-D:Green
-
-N:307:66
-G:-:b
-D:Blue
-
-N:308:66
-G:-:D
-D:Divining
-
-N:309:66
-G:-:w
-D:White
-
-N:310:66
-G:-:w
-D:Lightning
-
-N:311:66
-G:-:w
-D:Switch
-
-N:312:66
-G:-:w
-D:Transparent
