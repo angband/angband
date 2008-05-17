@@ -1284,7 +1284,7 @@ smap_t *serialize_object(object_type *o_ptr)
 	smap_put_u32b(s, "flags3", o_ptr->flags3);
 
 	if (o_ptr->note)
-		smap_put_str(s, "note", (char*)quark_str(o_ptr->note));
+		smap_put_str(s, "note", quark_str(o_ptr->note));
 
 	return s;
 }

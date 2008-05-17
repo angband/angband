@@ -1375,6 +1375,7 @@ enum
 #define RACE_FLAG_SPELL_STRICT_UB 3
 
 #define race_flags_differ(A,B) (0 != memcmp((A), (B), sizeof(u32b)*RACE_FLAG_STRICT_UB))
+#define race_flags_differ_spell(A,B) (0 != memcmp((A), (B), sizeof(u32b)*RACE_FLAG_SPELL_STRICT_UB))
 #define race_flags_assign(A,B) memmove((A), (B), sizeof(u32b)*RACE_FLAG_STRICT_UB)
 #define race_flags_assign_spell(A, B) memmove((A), (B), sizeof(u32b)*RACE_FLAG_SPELL_STRICT_UB)
 

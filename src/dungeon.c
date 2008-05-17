@@ -977,7 +977,8 @@ static void process_player_aux(void)
 
 	static int old_monster_race_idx = 0;
 
-	static u32b old_flags[RACE_FLAG_STRICT_UB] = {0L, 0L, 0L, 0L, 0L, 0L };
+	static u32b old_flags[RACE_FLAG_STRICT_UB] = { 0L, 0L, 0L };
+	static u32b old_spell_flags[RACE_FLAG_SPELL_STRICT_UB] = { 0L, 0L, 0L };
 
 	static byte old_blows[MONSTER_BLOW_MAX];
 
@@ -999,11 +1000,12 @@ static void process_player_aux(void)
 				break;
 			}
 		}
-		
+
 		/* Check for change of any kind */
 		if (changed ||
 		    (old_monster_race_idx != p_ptr->monster_race_idx) ||
 		    race_flags_differ(old_flags, l_ptr->flags) ||
+		    race_flags_differ_spell(old_spell_flags, l_ptr->spell_flags) ||
 		    (old_cast_innate != l_ptr->cast_innate) ||
 		    (old_cast_spell != l_ptr->cast_spell))
 		{
@@ -1012,6 +1014,7 @@ static void process_player_aux(void)
 
 			/* Memorize flags */
 			race_flags_assign(old_flags, l_ptr->flags);
+			race_flags_assign_spell(old_spell_flags, l_ptr->spell_flags);
 
 			/* Memorize blows */
 			memmove(old_blows, l_ptr->blows, sizeof(byte)*MONSTER_BLOW_MAX);

@@ -563,6 +563,7 @@ void do_cmd_options_item(void *, cptr);
 s32b price_item(const object_type *o_ptr, bool store_buying, int qty);
 void store_init(void);
 void store_shuffle(int which);
+void store_maint(int which);
 bool store_overflow(void);
 void do_cmd_store(void);
 
