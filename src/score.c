@@ -418,7 +418,7 @@ errr enter_score(time_t *death_time)
 	high_score the_score;
 
 	/* Wizard-mode pre-empts scoring */
-	if (p_ptr->noscore & NOSCORE_WIZARD)
+	if (p_ptr->noscore & (NOSCORE_WIZARD | NOSCORE_DEBUG))
 	{
 		msg_print("Score not registered for wizards.");
 		message_flush();
