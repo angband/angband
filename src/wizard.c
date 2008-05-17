@@ -1458,6 +1458,48 @@ static void do_cmd_wiz_query(void)
 	prt_map();
 }
 
+/*
+ * Create lots of items.
+ */
+static void wiz_test_kind(int tval)
+{
+	int py = p_ptr->py;
+	int px = p_ptr->px;
+	int sval;
+
+	object_type object_type_body;
+	object_type *i_ptr = &object_type_body;
+
+	for (sval = 0; sval < 255; sval++)
+	{
+		int k_idx = lookup_kind(tval, sval);
+
+		if (k_idx)
+		{
+			/* Create the item */
+			object_prep(i_ptr, k_idx);
+
+			/* Apply magic (no messages, no artifacts) */
+			apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
+
+			/* Mark as cheat, and where created */
+			i_ptr->origin = ORIGIN_CHEAT;
+			i_ptr->origin_depth = p_ptr->depth;
+
+			if (k_info[k_idx].tval == TV_GOLD)
+			{
+				coin_type = sval;
+				make_gold(i_ptr, p_ptr->depth);
+				coin_type = 0;
+			}
+
+			/* Drop the object from heaven */
+			drop_near(i_ptr, -1, py, px);
+		}
+	}
+
+	msg_print("Done.");
+}
 
 /*
  * Ask for and parse a "debug command"
@@ -1667,6 +1709,11 @@ void do_cmd_debug(void)
 			if (p_ptr->command_arg <= 0) p_ptr->command_arg = 1;
 			acquirement(py, px, p_ptr->depth, p_ptr->command_arg, TRUE);
 			break;
+		}
+
+		case 'V':
+		{
+			wiz_test_kind(p_ptr->command_arg);
 		}
 
 		/* Wizard Light the Level */
