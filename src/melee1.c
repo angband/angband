@@ -60,7 +60,7 @@ static int monster_critical(int dice, int sides, int dam)
 /*
  * Determine if a monster attack against the player succeeds.
  */
-static bool check_hit(int power, int level)
+bool check_hit(int power, int level)
 {
 	int chance, ac;
 

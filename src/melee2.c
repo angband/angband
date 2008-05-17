@@ -863,37 +863,65 @@ bool make_attack_spell(int m_idx)
 
 		case SPELL(0,RSF0_ARROW_1):
 		{
+			bool hits = check_hit(40, rlev);
+			int dam = damroll(1, 6);
 			disturb(1, 0);
+
 			if (blind) msg_format("%^s makes a strange noise.", m_name);
-			else msg_format("%^s fires an arrow.", m_name);
-			bolt(m_idx, GF_ARROW, damroll(1, 6));
+			else if (hits) msg_format("%^s fires an arrow!", m_name);
+			else msg_format("%^s fires an arrow, but misses.", m_name);
+
+			/* dam -= (dam * ((p_ptr->ac < 150) ? p_ptr->ac : 150) / 250); */
+			if (hits) bolt(m_idx, GF_ARROW, dam);
+
 			break;
 		}
 
 		case SPELL(0,RSF0_ARROW_2):
 		{
+			bool hits = check_hit(40, rlev);
+			int dam = damroll(3, 6);
 			disturb(1, 0);
+
 			if (blind) msg_format("%^s makes a strange noise.", m_name);
-			else msg_format("%^s fires an arrow!", m_name);
-			bolt(m_idx, GF_ARROW, damroll(3, 6));
+			else if (hits) msg_format("%^s fires an arrow!", m_name);
+			else msg_format("%^s fires an arrow, but misses.", m_name);
+
+			/* dam -= (dam * ((p_ptr->ac < 150) ? p_ptr->ac : 150) / 250); */
+			if (hits) bolt(m_idx, GF_ARROW, dam);
+
 			break;
 		}
 
 		case SPELL(0,RSF0_ARROW_3):
 		{
+			bool hits = check_hit(50, rlev);
+			int dam = damroll(5, 6);
 			disturb(1, 0);
+
 			if (blind) msg_format("%^s makes a strange noise.", m_name);
-			else msg_format("%^s fires a missile.", m_name);
-			bolt(m_idx, GF_ARROW, damroll(5, 6));
+			else if (hits) msg_format("%^s fires a missile!", m_name);
+			else msg_format("%^s fires a missile, but misses.", m_name);
+
+			/* dam -= (dam * ((p_ptr->ac < 150) ? p_ptr->ac : 150) / 250); */
+			if (hits) bolt(m_idx, GF_ARROW, dam);
+
 			break;
 		}
 
 		case SPELL(0,RSF0_ARROW_4):
 		{
+			bool hits = check_hit(50, rlev);
+			int dam = damroll(7, 6);
 			disturb(1, 0);
+
 			if (blind) msg_format("%^s makes a strange noise.", m_name);
-			else msg_format("%^s fires a missile!", m_name);
-			bolt(m_idx, GF_ARROW, damroll(7, 6));
+			else if (hits) msg_format("%^s fires a missile!", m_name);
+			else msg_format("%^s fires a missile, but misses.", m_name);
+
+			/* dam -= (dam * ((p_ptr->ac < 150) ? p_ptr->ac : 150) / 250); */
+			if (hits) bolt(m_idx, GF_ARROW, dam);
+
 			break;
 		}
 
@@ -1143,10 +1171,17 @@ bool make_attack_spell(int m_idx)
 
 		case SPELL(0,RSF0_BOULDER):
 		{
+			bool hits = check_hit(60, rlev);
+			int dam = damroll(1 + r_ptr->level / 7, 12);
 			disturb(1, 0);
+
 			if (blind) msg_format("You hear something grunt with exertion.", m_name);
-			else msg_format("%^s hurls a boulder at you!", m_name);
-			bolt(m_idx, GF_ARROW, damroll(1 + r_ptr->level / 7, 12));
+			else if (hits) msg_format("%^s hurls a boulder at you!", m_name);
+			else if (hits) msg_format("%^s hurls a boulder at you, but misses.", m_name);
+
+			/* dam -= (dam * ((p_ptr->ac < 150) ? p_ptr->ac : 150) / 250); */
+			if (hits) bolt(m_idx, GF_ARROW, dam);
+
 			break;
 		}
 

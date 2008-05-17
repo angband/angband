@@ -380,7 +380,8 @@ bool save(char *filename);
 bool load(char *filename);
 
 /* melee1.c */
-extern bool make_attack_normal(int m_idx);
+bool check_hit(int power, int level);
+bool make_attack_normal(int m_idx);
 
 /* melee2.c */
 extern bool make_attack_spell(int m_idx);
