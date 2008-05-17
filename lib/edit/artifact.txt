@@ -746,7 +746,7 @@ D:being who ever knew death.
 
 N:50:of Tuor
 I:cloak:Ethereal Cloak~:4
-W:40:40:5:35000
+W:40:40:0:35000
 P:6:0d0:0:0:12
 F:STEALTH | DEX | HIDE_TYPE | 
 F:FREE_ACT | IM_ACID | RES_ACID | SEE_INVIS
@@ -1180,7 +1180,7 @@ D:A slender, tapered needle of ice that coldly grips its impaled prey.
 
 N:87:'Careth Asdriag'
 I:sword:Rapier~:1
-W:15:8:50:25000
+W:15:8:40:25000
 P:0:1d6:6:9:0
 F:BLOWS | HIDE_TYPE | 
 F:SLAY_DRAGON | SLAY_ANIMAL | SLAY_TROLL | SLAY_GIANT | 
