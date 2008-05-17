@@ -434,10 +434,35 @@ static void breath(int m_idx, int typ, int dam_hp)
 /*
  * Offsets for the spell indices
  */
-#define RF3_OFFSET 32 * 3
-#define RF4_OFFSET 32 * 4
-#define RF5_OFFSET 32 * 5
+#define BASE2_LOG_HACK_FRAGMENT(A,B) ((((A)>>(B)) & 1)*(B))
 
+/** Unfortunately, this macro only works for an isolated bitflag 
+ * (exactly one bit set, all others reset).  It also only works for at most 
+ * 32 bits. 
+ */
+#define BASE2_LOG_HACK(A)	\
+	(BASE2_LOG_HACK_FRAGMENT(A,31)+BASE2_LOG_HACK_FRAGMENT(A,30)+ \
+	 BASE2_LOG_HACK_FRAGMENT(A,29)+BASE2_LOG_HACK_FRAGMENT(A,28)+ \
+	 BASE2_LOG_HACK_FRAGMENT(A,27)+BASE2_LOG_HACK_FRAGMENT(A,26)+ \
+	 BASE2_LOG_HACK_FRAGMENT(A,25)+BASE2_LOG_HACK_FRAGMENT(A,24)+ \
+	 BASE2_LOG_HACK_FRAGMENT(A,23)+BASE2_LOG_HACK_FRAGMENT(A,22)+ \
+	 BASE2_LOG_HACK_FRAGMENT(A,21)+BASE2_LOG_HACK_FRAGMENT(A,20)+ \
+	 BASE2_LOG_HACK_FRAGMENT(A,19)+BASE2_LOG_HACK_FRAGMENT(A,18)+ \
+	 BASE2_LOG_HACK_FRAGMENT(A,17)+BASE2_LOG_HACK_FRAGMENT(A,16)+ \
+	 BASE2_LOG_HACK_FRAGMENT(A,15)+BASE2_LOG_HACK_FRAGMENT(A,14)+ \
+	 BASE2_LOG_HACK_FRAGMENT(A,13)+BASE2_LOG_HACK_FRAGMENT(A,12)+ \
+	 BASE2_LOG_HACK_FRAGMENT(A,11)+BASE2_LOG_HACK_FRAGMENT(A,10)+ \
+	 BASE2_LOG_HACK_FRAGMENT(A,9)+BASE2_LOG_HACK_FRAGMENT(A,8)+ \
+	 BASE2_LOG_HACK_FRAGMENT(A,7)+BASE2_LOG_HACK_FRAGMENT(A,6)+ \
+	 BASE2_LOG_HACK_FRAGMENT(A,5)+BASE2_LOG_HACK_FRAGMENT(A,4)+ \
+	 BASE2_LOG_HACK_FRAGMENT(A,3)+BASE2_LOG_HACK_FRAGMENT(A,2)+ \
+	 BASE2_LOG_HACK_FRAGMENT(A,1))
+
+#define SPELL_ORIGIN 1
+#define MIN_NONINNATE_SPELL (SPELL_ORIGIN+32)
+
+/** converts spell flag into an index value for the case statement */
+#define SPELL(A,B) SPELL_ORIGIN+(A)*32+BASE2_LOG_HACK(B)
 
 /*
  * Have a monster choose a spell to cast.
@@ -594,7 +619,7 @@ static int choose_attack_spell(int m_idx, u32b f[RACE_FLAG_SPELL_STRICT_UB])
 	/* Extract all spells: "innate", "normal", "bizarre" */
 	for (i = 0; i < 32*RACE_FLAG_SPELL_STRICT_UB; i++)
 	{
-		if (TEST_FLAG(f, i)) spells[num++] = i + 32*RACE_FLAG_STRICT_UB;
+		if (TEST_FLAG(f, i)) spells[num++] = i + SPELL_ORIGIN;
 	}
 
 	/* Paranoia */
@@ -800,7 +825,7 @@ bool make_attack_spell(int m_idx)
 	if (!adult_ai_smart || r_ptr->flags[1] & (RF1_STUPID)) failrate = 0;
 
 	/* Check for spell failure (innate attacks never fail) */
-	if ((thrown_spell >= RF4_OFFSET) && (randint0(100) < failrate))
+	if ((thrown_spell >= MIN_NONINNATE_SPELL) && (randint0(100) < failrate))
 	{
 		/* Message */
 		msg_format("%^s tries to cast a spell, but fails.", m_name);
@@ -811,8 +836,7 @@ bool make_attack_spell(int m_idx)
 	/* Cast the spell. */
 	switch (thrown_spell)
 	{
-		/* RSF0_SHRIEK */
-		case RF3_OFFSET+0:
+		case SPELL(0,RSF0_SHRIEK):
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -822,26 +846,22 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_XXX2X4 */
-		case RF3_OFFSET+1:
+		case SPELL(0,RSF0_XXX2):
 		{
 			break;
 		}
 
-		/* RSF0_XXX3X4 */
-		case RF3_OFFSET+2:
+		case SPELL(0,RSF0_XXX3):
 		{
 			break;
 		}
 
-		/* RSF0_XXX4X4 */
-		case RF3_OFFSET+3:
+		case SPELL(0,RSF0_XXX4):
 		{
 			break;
 		}
 
-		/* RSF0_ARROW_1 */
-		case RF3_OFFSET+4:
+		case SPELL(0,RSF0_ARROW_1):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s makes a strange noise.", m_name);
@@ -850,8 +870,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_ARROW_2 */
-		case RF3_OFFSET+5:
+		case SPELL(0,RSF0_ARROW_2):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s makes a strange noise.", m_name);
@@ -860,8 +879,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_ARROW_3 */
-		case RF3_OFFSET+6:
+		case SPELL(0,RSF0_ARROW_3):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s makes a strange noise.", m_name);
@@ -870,8 +888,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_ARROW_4 */
-		case RF3_OFFSET+7:
+		case SPELL(0,RSF0_ARROW_4):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s makes a strange noise.", m_name);
@@ -880,8 +897,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_BR_ACID */
-		case RF3_OFFSET+8:
+		case SPELL(0,RSF0_BR_ACID):
 		{
 			disturb(1, 0);
 			sound(MSG_BR_ACID);
@@ -893,8 +909,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_BR_ELEC */
-		case RF3_OFFSET+9:
+		case SPELL(0,RSF0_BR_ELEC):
 		{
 			disturb(1, 0);
 			sound(MSG_BR_ELEC);
@@ -906,8 +921,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_BR_FIRE */
-		case RF3_OFFSET+10:
+		case SPELL(0,RSF0_BR_FIRE):
 		{
 			disturb(1, 0);
 			sound(MSG_BR_FIRE);
@@ -919,8 +933,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_BR_COLD */
-		case RF3_OFFSET+11:
+		case SPELL(0,RSF0_BR_COLD):
 		{
 			disturb(1, 0);
 			sound(MSG_BR_FROST);
@@ -932,8 +945,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_BR_POIS */
-		case RF3_OFFSET+12:
+		case SPELL(0,RSF0_BR_POIS):
 		{
 			disturb(1, 0);
 			sound(MSG_BR_GAS);
@@ -945,8 +957,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_BR_NETH */
-		case RF3_OFFSET+13:
+		case SPELL(0,RSF0_BR_NETH):
 		{
 			disturb(1, 0);
 			sound(MSG_BR_NETHER);
@@ -958,8 +969,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_BR_LITE */
-		case RF3_OFFSET+14:
+		case SPELL(0,RSF0_BR_LITE):
 		{
 			disturb(1, 0);
 			sound(MSG_BR_LIGHT);
@@ -971,8 +981,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_BR_DARK */
-		case RF3_OFFSET+15:
+		case SPELL(0,RSF0_BR_DARK):
 		{
 			disturb(1, 0);
 			sound(MSG_BR_DARK);
@@ -984,8 +993,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_BR_CONF */
-		case RF3_OFFSET+16:
+		case SPELL(0,RSF0_BR_CONF):
 		{
 			disturb(1, 0);
 			sound(MSG_BR_CONF);
@@ -997,8 +1005,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_BR_SOUN */
-		case RF3_OFFSET+17:
+		case SPELL(0,RSF0_BR_SOUN):
 		{
 			disturb(1, 0);
 			sound(MSG_BR_SOUND);
@@ -1010,8 +1017,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_BR_CHAO */
-		case RF3_OFFSET+18:
+		case SPELL(0,RSF0_BR_CHAO):
 		{
 			disturb(1, 0);
 			sound(MSG_BR_CHAOS);
@@ -1023,8 +1029,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_BR_DISE */
-		case RF3_OFFSET+19:
+		case SPELL(0,RSF0_BR_DISE):
 		{
 			disturb(1, 0);
 			sound(MSG_BR_DISENCHANT);
@@ -1036,8 +1041,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_BR_NEXU */
-		case RF3_OFFSET+20:
+		case SPELL(0,RSF0_BR_NEXU):
 		{
 			disturb(1, 0);
 			sound(MSG_BR_NEXUS);
@@ -1049,8 +1053,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_BR_TIME */
-		case RF3_OFFSET+21:
+		case SPELL(0,RSF0_BR_TIME):
 		{
 			disturb(1, 0);
 			sound(MSG_BR_TIME);
@@ -1061,8 +1064,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_BR_INER */
-		case RF3_OFFSET+22:
+		case SPELL(0,RSF0_BR_INER):
 		{
 			disturb(1, 0);
 			sound(MSG_BR_INERTIA);
@@ -1073,8 +1075,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_BR_GRAV */
-		case RF3_OFFSET+23:
+		case SPELL(0,RSF0_BR_GRAV):
 		{
 			disturb(1, 0);
 			sound(MSG_BR_GRAVITY);
@@ -1085,8 +1086,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_BR_SHAR */
-		case RF3_OFFSET+24:
+		case SPELL(0,RSF0_BR_SHAR):
 		{
 			disturb(1, 0);
 			sound(MSG_BR_SHARDS);
@@ -1098,8 +1098,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_BR_PLAS */
-		case RF3_OFFSET+25:
+		case SPELL(0,RSF0_BR_PLAS):
 		{
 			disturb(1, 0);
 			sound(MSG_BR_PLASMA);
@@ -1110,8 +1109,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_BR_WALL */
-		case RF3_OFFSET+26:
+		case SPELL(0,RSF0_BR_WALL):
 		{
 			disturb(1, 0);
 			sound(MSG_BR_FORCE);
@@ -1122,33 +1120,28 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF0_BR_MANA */
-		case RF3_OFFSET+27:
+		case SPELL(0,RSF0_BR_MANA):
 		{
 			/* XXX XXX XXX */
 			break;
 		}
 
-		/* RSF0_XXX5X4 */
-		case RF3_OFFSET+28:
+		case SPELL(0,RSF0_XXX5):
 		{
 			break;
 		}
 
-		/* RSF0_XXX6X4 */
-		case RF3_OFFSET+29:
+		case SPELL(0,RSF0_XXX6):
 		{
 			break;
 		}
 
-		/* RSF0_XXX7X4 */
-		case RF3_OFFSET+30:
+		case SPELL(0,RSF0_XXX7):
 		{
 			break;
 		}
 
-		/* RSF0_BOULDER */
-		case RF3_OFFSET+31:
+		case SPELL(0,RSF0_BOULDER):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("You hear something grunt with exertion.", m_name);
@@ -1158,8 +1151,7 @@ bool make_attack_spell(int m_idx)
 		}
 
 
-		/* RSF1_BA_ACID */
-		case RF4_OFFSET+0:
+		case SPELL(1,RSF1_BA_ACID):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1170,8 +1162,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_BA_ELEC */
-		case RF4_OFFSET+1:
+		case SPELL(1,RSF1_BA_ELEC):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1182,8 +1173,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_BA_FIRE */
-		case RF4_OFFSET+2:
+		case SPELL(1,RSF1_BA_FIRE):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1194,8 +1184,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_BA_COLD */
-		case RF4_OFFSET+3:
+		case SPELL(1,RSF1_BA_COLD):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1206,8 +1195,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_BA_POIS */
-		case RF4_OFFSET+4:
+		case SPELL(1,RSF1_BA_POIS):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1218,8 +1206,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_BA_NETH */
-		case RF4_OFFSET+5:
+		case SPELL(1,RSF1_BA_NETH):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1230,8 +1217,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_BA_WATE */
-		case RF4_OFFSET+6:
+		case SPELL(1,RSF1_BA_WATE):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1242,8 +1228,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_BA_MANA */
-		case RF4_OFFSET+7:
+		case SPELL(1,RSF1_BA_MANA):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles powerfully.", m_name);
@@ -1253,8 +1238,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_BA_DARK */
-		case RF4_OFFSET+8:
+		case SPELL(1,RSF1_BA_DARK):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles powerfully.", m_name);
@@ -1265,8 +1249,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_DRAIN_MANA */
-		case RF4_OFFSET+9:
+		case SPELL(1,RSF1_DRAIN_MANA):
 		{
 			if (!direct) break;
 			if (p_ptr->csp)
@@ -1320,8 +1303,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_MIND_BLAST */
-		case RF4_OFFSET+10:
+		case SPELL(1,RSF1_MIND_BLAST):
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1350,8 +1332,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_BRAIN_SMASH */
-		case RF4_OFFSET+11:
+		case SPELL(1,RSF1_BRAIN_SMASH):
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1388,8 +1369,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_CAUSE_1 */
-		case RF4_OFFSET+12:
+		case SPELL(1,RSF1_CAUSE_1):
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1406,8 +1386,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_CAUSE_2 */
-		case RF4_OFFSET+13:
+		case SPELL(1,RSF1_CAUSE_2):
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1424,8 +1403,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_CAUSE_3 */
-		case RF4_OFFSET+14:
+		case SPELL(1,RSF1_CAUSE_3):
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1442,8 +1420,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_CAUSE_4 */
-		case RF4_OFFSET+15:
+		case SPELL(1,RSF1_CAUSE_4):
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1461,8 +1438,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_BO_ACID */
-		case RF4_OFFSET+16:
+		case SPELL(1,RSF1_BO_ACID):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1473,8 +1449,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_BO_ELEC */
-		case RF4_OFFSET+17:
+		case SPELL(1,RSF1_BO_ELEC):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1485,8 +1460,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_BO_FIRE */
-		case RF4_OFFSET+18:
+		case SPELL(1,RSF1_BO_FIRE):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1497,8 +1471,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_BO_COLD */
-		case RF4_OFFSET+19:
+		case SPELL(1,RSF1_BO_COLD):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1509,15 +1482,13 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_BO_POIS */
-		case RF4_OFFSET+20:
+		case SPELL(1,RSF1_BO_POIS):
 		{
 			/* XXX XXX XXX */
 			break;
 		}
 
-		/* RSF1_BO_NETH */
-		case RF4_OFFSET+21:
+		case SPELL(1,RSF1_BO_NETH):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1528,8 +1499,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_BO_WATE */
-		case RF4_OFFSET+22:
+		case SPELL(1,RSF1_BO_WATE):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1539,8 +1509,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_BO_MANA */
-		case RF4_OFFSET+23:
+		case SPELL(1,RSF1_BO_MANA):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1550,8 +1519,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_BO_PLAS */
-		case RF4_OFFSET+24:
+		case SPELL(1,RSF1_BO_PLAS):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1561,8 +1529,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_BO_ICEE */
-		case RF4_OFFSET+25:
+		case SPELL(1,RSF1_BO_ICEE):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1573,8 +1540,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_MISSILE */
-		case RF4_OFFSET+26:
+		case SPELL(1,RSF1_MISSILE):
 		{
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
@@ -1584,8 +1550,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_SCARE */
-		case RF4_OFFSET+27:
+		case SPELL(1,RSF1_SCARE):
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1608,8 +1573,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_BLIND */
-		case RF4_OFFSET+28:
+		case SPELL(1,RSF1_BLIND):
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1631,8 +1595,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_CONF */
-		case RF4_OFFSET+29:
+		case SPELL(1,RSF1_CONF):
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1654,8 +1617,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_SLOW */
-		case RF4_OFFSET+30:
+		case SPELL(1,RSF1_SLOW):
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1676,8 +1638,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF1_HOLD */
-		case RF4_OFFSET+31:
+		case SPELL(1,RSF1_HOLD):
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1700,9 +1661,7 @@ bool make_attack_spell(int m_idx)
 		}
 
 
-
-		/* RSF2_HASTE */
-		case RF5_OFFSET+0:
+		case SPELL(2,RSF2_HASTE):
 		{
 			disturb(1, 0);
 			if (blind)
@@ -1731,14 +1690,12 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_XXX1X6 */
-		case RF5_OFFSET+1:
+		case SPELL(2,RSF2_XXX1):
 		{
 			break;
 		}
 
-		/* RSF2_HEAL */
-		case RF5_OFFSET+2:
+		case SPELL(2,RSF2_HEAL):
 		{
 			disturb(1, 0);
 
@@ -1802,14 +1759,12 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_XXX2X6 */
-		case RF5_OFFSET+3:
+		case SPELL(2,RSF2_XXX2):
 		{
 			break;
 		}
 
-		/* RSF2_BLINK */
-		case RF5_OFFSET+4:
+		case SPELL(2,RSF2_BLINK):
 		{
 			disturb(1, 0);
 			msg_format("%^s blinks away.", m_name);
@@ -1817,8 +1772,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_TPORT */
-		case RF5_OFFSET+5:
+		case SPELL(2,RSF2_TPORT):
 		{
 			disturb(1, 0);
 			msg_format("%^s teleports away.", m_name);
@@ -1826,20 +1780,17 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_XXX3X6 */
-		case RF5_OFFSET+6:
+		case SPELL(2,RSF2_XXX3):
 		{
 			break;
 		}
 
-		/* RSF2_XXX4X6 */
-		case RF5_OFFSET+7:
+		case SPELL(2,RSF2_XXX4):
 		{
 			break;
 		}
 
-		/* RSF2_TELE_TO */
-		case RF5_OFFSET+8:
+		case SPELL(2,RSF2_TELE_TO):
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1848,8 +1799,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_TELE_AWAY */
-		case RF5_OFFSET+9:
+		case SPELL(2,RSF2_TELE_AWAY):
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1858,8 +1808,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_TELE_LEVEL */
-		case RF5_OFFSET+10:
+		case SPELL(2,RSF2_TELE_LEVEL):
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1881,14 +1830,12 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_XXX5 */
-		case RF5_OFFSET+11:
+		case SPELL(2,RSF2_XXX5):
 		{
 			break;
 		}
 
-		/* RSF2_DARKNESS */
-		case RF5_OFFSET+12:
+		case SPELL(2,RSF2_DARKNESS):
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1898,8 +1845,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_TRAPS */
-		case RF5_OFFSET+13:
+		case SPELL(2,RSF2_TRAPS):
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1910,8 +1856,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_FORGET */
-		case RF5_OFFSET+14:
+		case SPELL(2,RSF2_FORGET):
 		{
 			if (!direct) break;
 			disturb(1, 0);
@@ -1925,14 +1870,12 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_ANIMAL */
-		case RF5_OFFSET+15:
+		case SPELL(2,RSF2_XXX6):
 		{
 			break;
 		}
 
-		/* RSF2_S_KIN */
-		case RF5_OFFSET+16:
+		case SPELL(2,RSF2_S_KIN):
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_MONSTER);
@@ -1954,8 +1897,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_HI_DEMON */
-		case RF5_OFFSET+17:
+		case SPELL(2,RSF2_S_HI_DEMON):
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_HI_DEMON);
@@ -1972,8 +1914,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_S_MONSTER */
-		case RF5_OFFSET+18:
+		case SPELL(2,RSF2_S_MONSTER):
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_MONSTER);
@@ -1990,8 +1931,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_S_MONSTERS */
-		case RF5_OFFSET+19:
+		case SPELL(2,RSF2_S_MONSTERS):
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_MONSTER);
@@ -2008,8 +1948,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_S_ANIMAL */
-		case RF5_OFFSET+20:
+		case SPELL(2,RSF2_S_ANIMAL):
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_ANIMAL);
@@ -2026,8 +1965,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_S_SPIDER */
-		case RF5_OFFSET+21:
+		case SPELL(2,RSF2_S_SPIDER):
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_SPIDER);
@@ -2044,8 +1982,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_S_HOUND */
-		case RF5_OFFSET+22:
+		case SPELL(2,RSF2_S_HOUND):
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_HOUND);
@@ -2062,8 +1999,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_S_HYDRA */
-		case RF5_OFFSET+23:
+		case SPELL(2,RSF2_S_HYDRA):
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_HYDRA);
@@ -2080,8 +2016,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_S_ANGEL */
-		case RF5_OFFSET+24:
+		case SPELL(2,RSF2_S_ANGEL):
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_ANGEL);
@@ -2098,8 +2033,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_S_DEMON */
-		case RF5_OFFSET+25:
+		case SPELL(2,RSF2_S_DEMON):
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_DEMON);
@@ -2116,8 +2050,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_S_UNDEAD */
-		case RF5_OFFSET+26:
+		case SPELL(2,RSF2_S_UNDEAD):
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_UNDEAD);
@@ -2134,8 +2067,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_S_DRAGON */
-		case RF5_OFFSET+27:
+		case SPELL(2,RSF2_S_DRAGON):
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_DRAGON);
@@ -2152,8 +2084,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_S_HI_UNDEAD */
-		case RF5_OFFSET+28:
+		case SPELL(2,RSF2_S_HI_UNDEAD):
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_HI_UNDEAD);
@@ -2170,8 +2101,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_S_HI_DRAGON */
-		case RF5_OFFSET+29:
+		case SPELL(2,RSF2_S_HI_DRAGON):
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_HI_DRAGON);
@@ -2188,8 +2118,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_S_WRAITH */
-		case RF5_OFFSET+30:
+		case SPELL(2,RSF2_S_WRAITH):
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_WRAITH);
@@ -2210,8 +2139,7 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		/* RSF2_S_UNIQUE */
-		case RF5_OFFSET+31:
+		case SPELL(2,RSF2_S_UNIQUE):
 		{
 			disturb(1, 0);
 			sound(MSG_SUM_UNIQUE);
@@ -2237,16 +2165,16 @@ bool make_attack_spell(int m_idx)
 	/* Remember what the monster did to us */
 	if (seen)
 	{
-		SET_FLAG(l_ptr->spell_flags, thrown_spell-32*RACE_FLAG_STRICT_UB);
+		SET_FLAG(l_ptr->spell_flags, thrown_spell-SPELL_ORIGIN);
 
 		/* Innate spell */
-		if (thrown_spell < 32*(RACE_FLAG_STRICT_UB + 1))
+		if (thrown_spell < SPELL_ORIGIN+32)
 		{
 			if (l_ptr->cast_innate < MAX_UCHAR) l_ptr->cast_innate++;
 		}
 
 		/* Bolt or Ball, or Special spell */
-		else if (thrown_spell < 32*(RACE_FLAG_STRICT_UB+RACE_FLAG_SPELL_STRICT_UB))
+		else if (thrown_spell < SPELL_ORIGIN+32*(RACE_FLAG_SPELL_STRICT_UB))
 		{
 			if (l_ptr->cast_spell < MAX_UCHAR) l_ptr->cast_spell++;
 		}
@@ -4088,7 +4016,6 @@ void process_monsters(byte minimum_energy)
 
 	monster_type *m_ptr;
 	monster_race *r_ptr;
-
 
 	/* Process the monsters (backwards) */
 	for (i = mon_max - 1; i >= 1; i--)
