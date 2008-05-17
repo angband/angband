@@ -1305,8 +1305,8 @@ ui_event_data inkey_ex(void)
 
 
 	/* Cancel the various "global parameters" */
-	inkey_base = inkey_xtra = inkey_flag = inkey_scan = FALSE;
-
+	inkey_base = inkey_xtra = inkey_flag = FALSE;
+	inkey_scan = 0;
 
 	/* Return the keypress */
 	return (ke);
