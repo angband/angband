@@ -894,9 +894,9 @@ F:SLAY_ANIMAL
 N:113:of Slay Evil
 X:10:0
 W:0:6:0:20
-T:16:0:2
-T:17:0:2
-T:18:0:2
+T:16:0:99
+T:17:0:99
+T:18:0:99
 F:SLAY_EVIL
 
 N:114:of Slay Undead
@@ -960,9 +960,9 @@ F:IGNORE_FIRE | IGNORE_ACID
 N:121:of Venom
 X:10:0
 W:0:6:0:40
-T:16:0:2
-T:17:0:2
-T:18:0:2
+T:16:0:99
+T:17:0:99
+T:18:0:99
 F:BRAND_POIS
 
 N:122:of Flame
