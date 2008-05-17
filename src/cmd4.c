@@ -321,6 +321,8 @@ static void display_group_member(menu_type *menu, int oid,
 	const member_funcs *o_funcs = menu->menu_data;
 	byte attr = curs_attrs[CURS_KNOWN][cursor == oid];
 
+	(void)wid;
+
 	/* Print the interesting part */
 	o_funcs->display_member(col, row, cursor, oid);
 
@@ -340,6 +342,7 @@ static void display_group_member(menu_type *menu, int oid,
 
 static const char *recall_prompt(int oid)
 {
+	(void)oid;
 	return ", 'r' to recall";
 }
 
@@ -1031,12 +1034,12 @@ static void display_monster(int col, int row, bool cursor, int oid)
 
 static int m_cmp_race(const void *a, const void *b)
 {
-	monster_race *r_a = &r_info[default_join[*(int*)a].oid];
-	monster_race *r_b = &r_info[default_join[*(int*)b].oid];
-	int gid = default_join[*(int*)a].gid;
+	const monster_race *r_a = &r_info[default_join[*(const int *)a].oid];
+	const monster_race *r_b = &r_info[default_join[*(const int *)b].oid];
+	int gid = default_join[*(const int *)a].gid;
 
 	/* Group by */
-	int c = gid - default_join[*(int*)b].gid;
+	int c = gid - default_join[*(const int *)b].gid;
 	if (c) return c;
 
 	/* Order results */
@@ -1058,8 +1061,8 @@ static char *m_xchar(int oid) { return &r_info[default_join[oid].oid].x_char; }
 static byte *m_xattr(int oid) { return &r_info[default_join[oid].oid].x_attr; }
 static const char *race_name(int gid) { return monster_group[gid].name; }
 
-static void mon_lore(int oid) 
-{ 
+static void mon_lore(int oid)
+{
 	/* Save the screen */
 	screen_save();
 
@@ -1084,7 +1087,6 @@ static void mon_summary(int gid, const int *object_list, int n, int top, int row
 	int kills = 0;
 
 	/* Access the race */
-	
 	for (i = 0; i < n; i++)
 	{
 		int oid = default_join[object_list[i+top]].oid;
@@ -1142,11 +1144,13 @@ static void do_cmd_knowledge_monsters(void *obj, const char *name)
 
 	member_funcs m_funcs = {display_monster, mon_lore, m_xchar, m_xattr, recall_prompt, 0, 0};
 
-	
 	int *monsters;
 	int m_count = 0;
 	int i;
 	size_t j;
+
+	(void)obj;
+	(void)name;
 
 	for (i = 0; i < z_info->r_max; i++)
 	{
@@ -1263,8 +1267,9 @@ static void desc_art_fake(int a_idx)
 
 static int a_cmp_tval(const void *a, const void *b)
 {
-	artifact_type *a_a = &a_info[*(int*)a];
-	artifact_type *a_b = &a_info[*(int*)b];
+	const artifact_type *a_a = &a_info[*(const int *)a];
+	const artifact_type *a_b = &a_info[*(const int *)b];
+
 	/*group by */
 	int ta = obj_group_order[a_a->tval];
 	int tb = obj_group_order[a_b->tval];
@@ -1359,6 +1364,9 @@ static void do_cmd_knowledge_artifacts(void *obj, const char *name)
 	int *artifacts;
 	int a_count = 0;
 
+	(void)obj;
+	(void)name;
+
 	artifacts = C_ZNEW(z_info->a_max, int);
 
 	/* Collect valid artifacts */
@@ -1449,11 +1457,11 @@ static void desc_ego_fake(int oid)
 /* TODO? Currently ego items will order by e_idx */
 static int e_cmp_tval(const void *a, const void *b)
 {
-	ego_item_type *ea = &e_info[default_join[*(int*)a].oid];
-	ego_item_type *eb = &e_info[default_join[*(int*)b].oid];
+	const ego_item_type *ea = &e_info[default_join[*(const int *)a].oid];
+	const ego_item_type *eb = &e_info[default_join[*(const int *)b].oid];
 
 	/* Group by */
-	int c = default_join[*(int*)a].gid - default_join[*(int*)b].gid;
+	int c = default_join[*(const int *)a].gid - default_join[*(const int *)b].gid;
 	if (c) return c;
 
 	/* Order by */
@@ -1473,6 +1481,9 @@ static void do_cmd_knowledge_ego_items(void *obj, const char *name)
 	int *egoitems;
 	int e_count = 0;
 	int i, j;
+
+	(void)obj;
+	(void)name;
 
 	/* HACK: currently no more than 3 tvals for one ego type */
 	egoitems = C_ZNEW(z_info->e_max * EGO_TVALS_MAX, int);
@@ -1536,7 +1547,7 @@ static int get_artifact_from_kind(object_kind *k_ptr)
 static void display_object(int col, int row, bool cursor, int oid)
 {
 	int k_idx = oid;
-	
+
 	object_kind *k_ptr = &k_info[k_idx];
 	const char *inscrip = get_autoinscription(oid);
 
@@ -1631,8 +1642,8 @@ static void desc_obj_fake(int k_idx)
 
 static int o_cmp_tval(const void *a, const void *b)
 {
-	object_kind *k_a = &k_info[*(int*)a];
-	object_kind *k_b = &k_info[*(int*)b];
+	const object_kind *k_a = &k_info[*(const int *)a];
+	const object_kind *k_b = &k_info[*(const int *)b];
 
 	/* Group by */
 	int ta = obj_group_order[k_a->tval];
@@ -1769,6 +1780,9 @@ void do_cmd_knowledge_objects(void *obj, const char *name)
 	int o_count = 0;
 	int i;
 
+	(void)obj;
+	(void)name;
+
 	objects = C_ZNEW(z_info->k_max, int);
 
 	for (i = 0; i < z_info->k_max; i++)
@@ -1819,11 +1833,13 @@ static void display_feature(int col, int row, bool cursor, int oid )
 
 static int f_cmp_fkind(const void *a, const void *b)
 {
-	feature_type *fa = &f_info[*(int*)a];
-	feature_type *fb = &f_info[*(int*)b];
+	const feature_type *fa = &f_info[*(const int *)a];
+	const feature_type *fb = &f_info[*(const int *)b];
+
 	/* group by */
-	int c = feat_order(*(int*)a) - feat_order(*(int*)b);
+	int c = feat_order(*(const int *)a) - feat_order(*(const int *)b);
 	if (c) return c;
+
 	/* order by feature name */
 	return strcmp(f_name + fa->name, f_name + fb->name);
 }
@@ -1831,7 +1847,7 @@ static int f_cmp_fkind(const void *a, const void *b)
 static const char *fkind_name(int gid) { return feature_group_text[gid]; }
 static byte *f_xattr(int oid) { return &f_info[oid].x_attr; }
 static char *f_xchar(int oid) { return &f_info[oid].x_char; }
-static void feat_lore(int oid) { /* noop */ }
+static void feat_lore(int oid) { (void)oid; /* noop */ }
 
 /*
  * Interact with feature visuals.
@@ -1846,6 +1862,9 @@ static void do_cmd_knowledge_features(void *obj, const char *name)
 	int *features;
 	int f_count = 0;
 	int i;
+
+	(void)obj;
+	(void)name;
 
 	features = C_ZNEW(z_info->f_max, int);
 
@@ -2287,6 +2306,8 @@ static void display_option(menu_type *menu, int oid,
 							bool cursor, int row, int col, int width)
 {
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
+	(void)menu;
+	(void)width;
 
 	c_prt(attr, format("%-45s: %s  (%s)", option_desc(oid),
 	                   op_ptr->opt[oid] ? "yes" : "no ", option_name(oid)),
@@ -2298,6 +2319,8 @@ static void display_option(menu_type *menu, int oid,
  */
 static bool update_option(char key, void *pgdb, int oid)
 {
+	(void)pgdb;
+
 	/* Ignore arrow events */
 	if (key == ARROW_LEFT || key == ARROW_RIGHT)
 		return TRUE;
@@ -3023,20 +3046,19 @@ static void keymap_dump(ang_file *fff)
  * Could use some helpful instructions on this page.  XXX XXX XXX
  * CLEANUP
  */
-
 static menu_action macro_actions[] =
 {
-	{LOAD_PREF, "Load a user pref file", 0},
+	{ LOAD_PREF,  "Load a user pref file",    0, 0 },
 #ifdef ALLOW_MACROS
-	{APP_MACRO, "Append macros to a file", 0},
-	{ASK_MACRO, "Query a macro", 0},
-	{NEW_MACRO, "Create a macro", 0},
-	{DEL_MACRO, "Remove a macro", 0},
-	{APP_KEYMAP, "Append keymaps to a file", 0},
-	{ASK_KEYMAP, "Query a keymap", 0},
-	{NEW_KEYMAP, "Create a keymap", 0},
-	{DEL_KEYMAP, "Remove a keymap", 0},
-	{ENTER_ACT, "Enter a new action", 0}
+	{ APP_MACRO,  "Append macros to a file",  0, 0 },
+	{ ASK_MACRO,  "Query a macro",            0, 0 },
+	{ NEW_MACRO,  "Create a macro",           0, 0 },
+	{ DEL_MACRO,  "Remove a macro",           0, 0 },
+	{ APP_KEYMAP, "Append keymaps to a file", 0, 0 },
+	{ ASK_KEYMAP, "Query a keymap",           0, 0 },
+	{ NEW_KEYMAP, "Create a keymap",          0, 0 },
+	{ DEL_KEYMAP, "Remove a keymap",          0, 0 },
+	{ ENTER_ACT,  "Enter a new action",       0, 0 },
 #endif /* ALLOW_MACROS */
 };
 
@@ -4028,6 +4050,7 @@ static void do_cmd_pref_file_hack(long row)
  */
 static void do_dump_options(void *unused, const char *title)
 {
+	(void)unused;
 	dump_pref_file(option_dump, title, 20);
 }
 
@@ -4066,6 +4089,7 @@ static menu_type option_menu;
 
 static char tag_opt_main(menu_type *menu, int oid)
 {
+	(void)menu;
 	if (option_actions[oid].id)
 		return option_actions[oid].id;
 
@@ -4074,6 +4098,7 @@ static char tag_opt_main(menu_type *menu, int oid)
 
 static int valid_opt_main(menu_type *menu, int oid)
 {
+	(void)menu;
 	if (option_actions[oid].name)
 		return 1;
 
@@ -4084,6 +4109,8 @@ static void display_opt_main(menu_type *menu, int oid, bool cursor, int row, int
 {
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
 
+	(void)menu;
+	(void)width;
 	if (option_actions[oid].name)
 		c_prt(attr, option_actions[oid].name, row, col);
 }
@@ -4128,17 +4155,24 @@ void do_cmd_options(void)
 
 static void do_cmd_self_knowledge(void *obj, const char *name)
 {
+	(void)obj;
+	(void)name;
+
 	/* display self knowledge we already know about. */
 	self_knowledge(FALSE);
 }
 
 static void do_cmd_knowledge_scores(void *obj, const char *name)
 {
+	(void)obj;
+	(void)name;
 	show_scores();
 }
 
 static void do_cmd_knowledge_history(void *obj, const char *name)
 {
+	(void)obj;
+	(void)name;
 	history_display();
 }
 
