@@ -390,7 +390,7 @@ static void get_history(void)
 
 
 	/* Verify social class */
-	if (social_class > 100) social_class = 100;
+	if (social_class > 75) social_class = 75;
 	else if (social_class < 1) social_class = 1;
 
 	/* Save the social class */

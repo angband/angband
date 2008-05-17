@@ -998,7 +998,6 @@ errr process_pref_file(cptr name)
 	return (err);
 }
 
-
 /*
  * Returns a "rating" of x depending on y, and sets "attr" to the
  * corresponding "attribute".
@@ -1470,13 +1469,13 @@ static void display_player_sust_info(void)
 
 static const region boundaries [] =
 {
-	{ 0,	0,		0,		0 },
-	{ 1,	2,		40,		8 }, /* Name, Class, ... */
-	{ 1,	10,		22,		8 }, /* Cur Exp, Max Exp, ... */
-	{ 26,	10,		17,		8 }, /* AC, melee, ... */
-	{ 48, 	10,		24,		8 }, /* skills */
-	{ 26,	3,		13,		5 }, /* Age, ht, wt, ... */
-
+	/* x   y     width, rows */
+	{ 0,   0,		0,		0 },
+	{ 1,   2,		40,		8 }, /* Name, Class, ... */
+	{ 1,  10,		22,		8 }, /* Cur Exp, Max Exp, ... */
+	{ 26, 10,		17,		8 }, /* AC, melee, ... */
+	{ 48, 10,		24,		8 }, /* skills */
+	{ 21,  3,		18,		5 }, /* Age, ht, wt, ... */
 };
 
 
@@ -1562,6 +1561,55 @@ static const char *show_missile_weapon(const object_type *o_ptr)
 static byte max_color(int val, int max)
 {
 	return val < max ? TERM_YELLOW : TERM_L_GREEN;
+}
+
+
+static const char *show_status(void)
+{
+	int sc = p_ptr->sc;
+	sc /= 10;
+
+	switch (sc)
+	{
+		case 0:
+		case 1:
+			return "Pariah";
+
+		case 2:
+			return "Outcast";
+
+		case 3:
+		case 4:
+			return "Unknown";
+
+		case 5:
+			return "Known";
+
+		case 6:
+		/* Maximum status by birth 75 = 7 */
+		case 7:
+			return "Liked";
+
+		case 8:
+			return "Well-liked";
+
+		case 9:
+		case 10:
+			return "Respected";
+
+		case 11:
+		case 12:
+			return "Role model";
+
+		case 13:
+			return "Feared";
+
+		case 14:
+		case 15:
+			return "Lordly";
+	}
+
+	return format("%d", sc);
 }
 
 /* data_panel array element initializer, for ansi compliance */
@@ -1662,7 +1710,7 @@ int get_panel(int oid, data_panel *panel, size_t size)
 	P_I(TERM_L_BLUE, "Age",			"%y",	i2u(p_ptr->age), END );
 	P_I(TERM_L_BLUE, "Height",		"%y",	i2u(p_ptr->ht), END  );
 	P_I(TERM_L_BLUE, "Weight",		"%y",	i2u(p_ptr->wt), END  );
-	P_I(TERM_L_BLUE, "Status",		"%y",	i2u(p_ptr->sc), END  );
+	P_I(TERM_L_BLUE, "Social",		"%y",	s2u(show_status()), END  );
 	P_I(TERM_L_BLUE, "Maximize",	"%y",	c2u(adult_maximize ? 'Y' : 'N'), END);
 #if 0
 	/* Preserve mode deleted */
