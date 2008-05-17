@@ -1057,79 +1057,78 @@ ui_event_data inkey_ex(void)
 	bool cursor_state;
 	ui_event_data kk;
 	ui_event_data ke;
-	
+
 	bool done = FALSE;
-	
+
 	term *old = Term;
-	
-	
+
 	/* Initialise keypress */
 	ke.key = 0;
 	ke.type = EVT_NONE;
-	
+
 	/* Hack -- Use the "inkey_next" pointer */
 	if (inkey_next && *inkey_next && !inkey_xtra)
 	{
 		/* Get next character, and advance */
 		ke.key = *inkey_next++;
 		ke.type = EVT_KBRD;
-		
+
 		/* Cancel the various "global parameters" */
-		inkey_base = inkey_xtra = inkey_flag = inkey_scan = FALSE;
-		
+		inkey_base = inkey_xtra = inkey_flag = FALSE;
+		inkey_scan = 0;
+
 		/* Accept result */
 		return (ke);
 	}
-	
+
 	/* Forget pointer */
 	inkey_next = NULL;
-	
-	
+
 #ifdef ALLOW_BORG
-	
+
 	/* Mega-Hack -- Use the special hook */
 	if (inkey_hack && ((ch = (*inkey_hack)(inkey_xtra)) != 0))
 	{
 		/* Cancel the various "global parameters" */
-		inkey_base = inkey_xtra = inkey_flag = inkey_scan = FALSE;
+		inkey_base = inkey_xtra = inkey_flag = FALSE;
+		inkey_scan = 0;
 		ke.type = EVT_KBRD;
-		
+
 		/* Accept result */
 		return (ke);
 	}
-	
+
 #endif /* ALLOW_BORG */
-	
-	
+
 	/* Hack -- handle delayed "flush()" */
 	if (inkey_xtra)
 	{
 		/* End "macro action" */
 		parse_macro = FALSE;
-		
+
 		/* End "macro trigger" */
 		parse_under = FALSE;
-		
+
 		/* Forget old keypresses */
 		Term_flush();
 	}
-	
-	
+
+
 	/* Get the cursor state */
 	(void)Term_get_cursor(&cursor_state);
-	
+
 	/* Show the cursor if waiting, except sometimes in "command" mode */
 	if (!inkey_scan && (!inkey_flag || hilite_player || character_icky))
 	{
 		/* Show the cursor */
 		(void)Term_set_cursor(TRUE);
 	}
-	
-	
+
+
 	/* Hack -- Activate main screen */
 	Term_activate(term_screen);
-	
-	
+
+
 	/* Get a key */
 	while (ke.type == EVT_NONE)
 	{
@@ -1140,7 +1139,7 @@ ui_event_data inkey_ex(void)
 			ke.type = EVT_KBRD;
 			break;
 		}
-		
+
 
 		/* Hack -- Flush output once when no key ready */
 		if (!done && (0 != Term_inkey(&kk, FALSE, FALSE)))
@@ -1157,15 +1156,15 @@ ui_event_data inkey_ex(void)
 
 			/* Mega-Hack -- reset saved flag */
 			character_saved = FALSE;
-		
+
 			/* Mega-Hack -- reset signal counter */
 			signal_count = 0;
-		
+
 			/* Only once */
 			done = TRUE;
 		}
-		
-		
+
+
 		/* Hack -- Handle "inkey_base" */
 		if (inkey_base)
 		{
@@ -1251,19 +1250,19 @@ ui_event_data inkey_ex(void)
 			/* Continue */
 			continue;
 		}
-		
-		
+
+
 		/* Treat back-quote as escape */
 		if (ke.key == '`') ke.key = ESCAPE;
-		
-		
+
+
 		/* End "macro trigger" */
 		if (parse_under && (ke.key >=0 && ke.key <= 32))
 		{
 			/* Strip this key */
 			ke.type = EVT_NONE;
 			ke.key = 0;
-		
+
 			/* End "macro trigger" */
 			parse_under = FALSE;
 		}
@@ -1295,20 +1294,20 @@ ui_event_data inkey_ex(void)
 			ke.key = 0;
 		}
 	}
-	
-	
+
+
 	/* Hack -- restore the term */
 	Term_activate(old);
-	
-	
+
+
 	/* Restore the cursor */
 	Term_set_cursor(cursor_state);
-	
-	
+
+
 	/* Cancel the various "global parameters" */
 	inkey_base = inkey_xtra = inkey_flag = inkey_scan = FALSE;
-	
-	
+
+
 	/* Return the keypress */
 	return (ke);
 }
