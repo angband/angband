@@ -679,6 +679,27 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 				break;
 			}
 
+			/* Jump down a page */
+			case '3':
+			{
+				*active_cursor += browser_rows;
+
+				if (g_cur >= grp_cnt) g_cur = grp_cnt - 1;
+				else if (o_cur >= g_o_count) o_cur = g_o_count - 1;
+
+				break;
+			}
+
+			/* Jump up a page */
+			case '9':
+			{
+				*active_cursor -= browser_rows;
+
+				if (*active_cursor < 0) *active_cursor = 0;
+
+				break;
+			}
+
 			default:
 			{
 				int d = target_dir(ke.key);
@@ -689,8 +710,8 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 					/* Silly hack -- diagonal arithmetic */
 					*inactive_cursor += ddy[d];
 					if (*inactive_cursor < 0) *inactive_cursor = 0;
-					else if (g_cur >= grp_cnt) g_cur = grp_cnt -1;
-					else if (o_cur >= g_o_count) o_cur = g_o_count-1;
+					else if (g_cur >= grp_cnt) g_cur = grp_cnt - 1;
+					else if (o_cur >= g_o_count) o_cur = g_o_count - 1;
 					do_swap = TRUE;
 				}
 				else if (o_funcs.xtra_act)
