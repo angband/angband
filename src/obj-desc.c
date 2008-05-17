@@ -39,7 +39,7 @@ void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know)
 		{
 			strnfmt(buf, max, "\"%s\"", scroll_adj[k_ptr->sval]);
 		}
-		else if (k_ptr->tval == TV_FOOD && k_ptr->sval < SV_FOOD_MIN_FOOD)
+		else if (k_ptr->tval == TV_FOOD && k_ptr->sval > SV_FOOD_MIN_SHROOM)
 		{
 			strnfmt(buf, max, "%s Mushroom", flavor_text + flavor_info[k_ptr->flavor].text);
 		}
@@ -55,7 +55,7 @@ void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know)
 	{
 		cptr str = (k_name + k_ptr->name);
 
-		if (k_ptr->tval == TV_FOOD && k_ptr->sval < SV_FOOD_MIN_FOOD)
+		if (k_ptr->tval == TV_FOOD && k_ptr->sval > SV_FOOD_MIN_SHROOM)
 		{
 			my_strcpy(buf, "Mushroom of ", max);
 			max -= strlen(buf);
@@ -201,7 +201,7 @@ static const char *obj_desc_get_basename(const object_type *o_ptr)
 			return "& Holy Book~ of Prayers #";
 
 		case TV_FOOD:
-			if (o_ptr->sval < SV_FOOD_MIN_FOOD)
+			if (o_ptr->sval > SV_FOOD_MIN_SHROOM)
 				return (show_flavor ? "& # Mushroom~" : "& Mushroom~");
 			else
 				return (k_name + k_ptr->name);
