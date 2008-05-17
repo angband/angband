@@ -429,6 +429,8 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 	char modestr[3] = "__";
 	char buf[1024];
 
+	(void)ftype;
+
 	/* Get the system-specific path */
 	path_parse(buf, sizeof(buf), fname);
 
@@ -443,8 +445,8 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 			modestr[1] = 'b';
 			break;
 		case MODE_APPEND:
-			modestr[0] = 'w';
-			modestr[1] = 'a';
+			modestr[0] = 'a';
+			modestr[1] = '+';
 			break;
 		default:
 			break;
