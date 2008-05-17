@@ -1015,6 +1015,8 @@ bool detect_traps(bool aware)
 
 	bool detect = FALSE;
 
+	(void)aware;
+
 	/* Pick an area to map */
 	y1 = p_ptr->py - DETECT_DIST_Y;
 	y2 = p_ptr->py + DETECT_DIST_Y;
@@ -1055,24 +1057,25 @@ bool detect_traps(bool aware)
 		}
 	}
 
-	/* Rescan the map for the new dtrap edge */ 
-	for (y = y1-1; y < y2+1; y++) 
-	{ 
-		for (x = x1-1; x < x2+1; x++) 
-		{ 
-			if (!in_bounds_fully(y, x)) continue; 
- 		 
-			/* Redraw */ 
-			lite_spot(y, x); 
-		} 
-	} 
- 		 
+	/* Rescan the map for the new dtrap edge */
+	for (y = y1 - 1; y < y2 + 1; y++)
+	{
+		for (x = x1 - 1; x < x2 + 1; x++)
+		{
+			if (!in_bounds_fully(y, x)) continue;
+
+			/* Redraw */
+			lite_spot(y, x);
+		}
+	}
+
 
 	/* Describe */
 	if (detect)
 		msg_print("You sense the presence of traps!");
+
+	/* Trap detection always makes you aware, even if no traps are present */
 	else
-		/* Trap detection always makes you aware, even if no traps are present */
 		msg_print("You sense no traps.");
 
 	/* Mark the redraw flag */

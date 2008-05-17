@@ -2240,7 +2240,7 @@ struct vinfo_hack {
  */
 static bool ang_sort_comp_hook_longs(const void *u, const void *v, int a, int b)
 {
-	long *x = (long*)(u);
+	long *x = (const long *)(u);
 
 	/* Unused parameter */
 	(void)v;

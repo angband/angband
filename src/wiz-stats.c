@@ -15,6 +15,7 @@
  *    and/or other materials provided with the distribution.
  */
 #include "angband.h"
+#include "cmds.h"
 #include "wizard.h"
 #include "tvalsval.h"
 

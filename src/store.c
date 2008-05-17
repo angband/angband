@@ -476,7 +476,7 @@ static int mass_roll(int times, int max)
 
 	assert(max > 1);
 
-	for (i = 0; i < max; i++)
+	for (i = 0; i < times; i++)
 		t += randint0(max);
 
 	return (t);

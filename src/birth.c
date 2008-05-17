@@ -118,11 +118,12 @@ static void save_roller_data(birther *player)
 static void load_roller_data(birther *player, birther *prev_player)
 {
 	int i;
-	
+
     /* The initialisation is just paranoia - structure assignment is
 	   (perhaps) not strictly defined to work with uninitialised parts
 	   of structures. */
-	birther temp = { 0 };
+	birther temp;
+	WIPE(&temp, birther);
 
 	/*** Save the current data if we'll need it later ***/
 	if (prev_player)

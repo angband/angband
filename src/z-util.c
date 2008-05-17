@@ -89,7 +89,8 @@ int my_strnicmp(cptr a, cptr b, int n)
  */
 char *my_stristr(const char *string, const char *pattern)
 {
-      char *pptr, *sptr, *start;
+      const char *pptr, *sptr;
+      char *start;
 
       for (start = (char *)string; *start != 0; start++)
       {
@@ -100,8 +101,8 @@ char *my_stristr(const char *string, const char *pattern)
             if (*start == 0)
                   return NULL;
 
-            pptr = (char *)pattern;
-            sptr = (char *)start;
+            pptr = (const char *)pattern;
+            sptr = (const char *)start;
 
             while (toupper((unsigned char)*sptr) == toupper((unsigned char)*pptr))
             {

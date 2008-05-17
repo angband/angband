@@ -419,6 +419,8 @@ static void cmd_sub_entry(menu_type *menu, int oid, bool cursor, int row, int co
 	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
 	const command_type *commands = menu->menu_data;
 
+	(void)width;
+
 	/* Write the description */
 	Term_putstr(col, row, -1, attr, commands[oid].desc);
 
@@ -444,15 +446,14 @@ static void cmd_sub_entry(menu_type *menu, int oid, bool cursor, int row, int co
 /* Handle user input from a command menu */
 static bool cmd_sub_action(char cmd, void *db, int oid)
 {
+	(void)db;
+	(void)oid;
+
 	/* Only handle enter */
 	if (cmd == '\n' || cmd == '\r')
-	{
 		return TRUE;
-	}
 	else
-	{
 		return FALSE;
-	}
 }
 
 /*
@@ -517,6 +518,8 @@ static bool cmd_list_action(char cmd, void *db, int oid)
 static void cmd_list_entry(menu_type *menu, int oid, bool cursor, int row, int col, int width)
 {
 	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
+	(void)menu;
+	(void)width;
 	Term_putstr(col, row, -1, attr, cmds_all[oid].name);
 }
 

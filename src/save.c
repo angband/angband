@@ -814,6 +814,8 @@ static void wr_savefile_new(void)
 	u16b tmp16u;
 	u32b tmp32u;
 
+	u32b tmp32v;
+
 	/* Guess at the current time */
 	now = time((time_t *)0);
 
@@ -1000,14 +1002,14 @@ static void wr_savefile_new(void)
 	wr_u32b(tmp32u);
 
 	/* Dump the history entries one-by-one */
-	for (i = 0; i < tmp32u; i++)
+	for (tmp32v = 0; tmp32v < tmp32u; tmp32v++)
 	{
-		wr_u16b(history_list[i].type);
-		wr_s32b(history_list[i].turn);
-		wr_s16b(history_list[i].dlev);
-		wr_s16b(history_list[i].clev);
-		wr_byte(history_list[i].a_idx);
-		wr_string(history_list[i].event);
+		wr_u16b(history_list[tmp32v].type);
+		wr_s32b(history_list[tmp32v].turn);
+		wr_s16b(history_list[tmp32v].dlev);
+		wr_s16b(history_list[tmp32v].clev);
+		wr_byte(history_list[tmp32v].a_idx);
+		wr_string(history_list[tmp32v].event);
 	}
 
 

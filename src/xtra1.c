@@ -1695,8 +1695,8 @@ static const struct flag_event_trigger redraw_events[] =
  */
 void redraw_stuff(void)
 {
-	int i;
-	
+	size_t i;
+
 	/* Redraw stuff */
 	if (!p_ptr->redraw) return;
 
@@ -1724,16 +1724,16 @@ void redraw_stuff(void)
 
 	p_ptr->redraw = 0;
 
-	/* 
+	/*
 	 * Do any plotting, etc. delayed from earlier - this set of updates
-	 * is over. 
+	 * is over.
 	 */
 	event_signal(EVENT_END);
 }
 
 
 /*
- * Handle "p_ptr->update" and "p_ptr->redraw" 
+ * Handle "p_ptr->update" and "p_ptr->redraw"
  */
 void handle_stuff(void)
 {

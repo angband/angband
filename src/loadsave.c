@@ -1236,7 +1236,7 @@ void deserialize_cave(smap_t *s)
 	for (i = 0; i < DUNGEON_HGT; i++)
 	{
 		for (j = 0; j < DUNGEON_WID; j++)
-			cave_set_feat(i, j, *((byte *)(buf + (i * DUNGEON_WID) + j)));
+			cave_set_feat(i, j, *((const byte *)(buf + (i * DUNGEON_WID) + j)));
 	}
 
 	player_place(p_ptr->py, p_ptr->px);

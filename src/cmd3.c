@@ -713,9 +713,8 @@ static cptr ident_info[] =
  */
 bool ang_sort_comp_hook(const void *u, const void *v, int a, int b)
 {
-	u16b *who = (u16b*)(u);
-
-	u16b *why = (u16b*)(v);
+	u16b *who = (const u16b *)(u);
+	u16b *why = (const u16b *)(v);
 
 	int w1 = who[a];
 	int w2 = who[b];
