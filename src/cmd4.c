@@ -4139,7 +4139,7 @@ static void do_cmd_knowledge_scores(void *obj, const char *name)
 
 static void do_cmd_knowledge_history(void *obj, const char *name)
 {
-	history_display();	
+	history_display();
 }
 
 
@@ -4148,14 +4148,14 @@ static void do_cmd_knowledge_history(void *obj, const char *name)
  */
 static menu_item knowledge_actions[] =
 {
-	{{0, "Display object knowledge", do_cmd_knowledge_objects, 0}, 'a'},
-	{{0, "Display artifact knowledge", do_cmd_knowledge_artifacts, 0}, 'b'},
-	{{0, "Display ego item knowledge", do_cmd_knowledge_ego_items, 0}, 'c'},
-	{{0, "Display monster knowledge", do_cmd_knowledge_monsters, 0}, 'd'},
-	{{0, "Display feature knowledge", do_cmd_knowledge_features, 0}, 'e'},
-	{{0, "Display self-knowledge", do_cmd_self_knowledge, 0}, 'f'},
-	{{0, "Display hall of fame", do_cmd_knowledge_scores, 0}, 'g'},
-	{{0, "Display character history", do_cmd_knowledge_history, 0}, 'h'},
+	{ {0, "Display object knowledge",   do_cmd_knowledge_objects,   0}, 'a', 0 },
+	{ {0, "Display artifact knowledge", do_cmd_knowledge_artifacts, 0}, 'b', 0 },
+	{ {0, "Display ego item knowledge", do_cmd_knowledge_ego_items, 0}, 'c', 0 },
+	{ {0, "Display monster knowledge",  do_cmd_knowledge_monsters,  0}, 'd', 0 },
+	{ {0, "Display feature knowledge",  do_cmd_knowledge_features,  0}, 'e', 0 },
+	{ {0, "Display self-knowledge",     do_cmd_self_knowledge,      0}, 'f', 0 },
+	{ {0, "Display hall of fame",       do_cmd_knowledge_scores,    0}, 'g', 0 },
+	{ {0, "Display character history",  do_cmd_knowledge_history,   0}, 'h', 0 },
 };
 
 static menu_type knowledge_menu;
