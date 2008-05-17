@@ -927,6 +927,7 @@ static void update_statusline(game_event_type type, game_event_data *data, void 
 /* ------------------------------------------------------------------------
  * Map redraw.
  * ------------------------------------------------------------------------ */
+#if 0
 static void trace_map_updates(game_event_type type, game_event_data *data, void *user)
 {
 	if (data->point.x == -1 && data->point.y == -1)
@@ -938,6 +939,7 @@ static void trace_map_updates(game_event_type type, game_event_data *data, void 
 		printf("Redraw (%i, %i)\n", data->point.x, data->point.y);
 	}
 }
+#endif
 
 static void update_maps(game_event_type type, game_event_data *data, void *user)
 {
