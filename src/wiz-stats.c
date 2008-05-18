@@ -161,12 +161,13 @@ void stats_monster(const monster_type *m_ptr)
 	bool gold_ok = (!(f0 & (RF0_ONLY_ITEM)));
 	bool item_ok = (!(f0 & (RF0_ONLY_GOLD)));
 
-	if (f0 & RF0_DROP_60)  prob += 0.6/* 0.4*/;
-	if (f0 & RF0_DROP_90)  prob += 0.9/* 0.6*/;
-	if (f0 & RF0_DROP_1D2) prob += 1.5/* 1.0*/;
-	if (f0 & RF0_DROP_2D2) prob += 3.0/* 2.0*/;
-	if (f0 & RF0_DROP_3D2) prob += 4.5/* 3.0*/;
-	if (f0 & RF0_DROP_4D2) prob += 6.0/* 4.0*/;
+	if (f0 & RF0_DROP_60)  prob += /*0.6*/ 0.4;
+	if (f0 & RF0_DROP_90)  prob += /*0.9*/ 0.6;
+
+	if (f0 & RF0_DROP_4D2) prob += /*6.0*/ 4.0;
+	else if (f0 & RF0_DROP_3D2) prob += /*4.5*/ 3.0;
+	else if (f0 & RF0_DROP_2D2) prob += /*3.0*/ 2.0;
+	else if (f0 & RF0_DROP_1D2) prob += /*1.5*/ 1.0;
 
 	if (gold_ok && item_ok)
 	{
