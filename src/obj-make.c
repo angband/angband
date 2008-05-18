@@ -1440,7 +1440,7 @@ bool make_object(object_type *j_ptr, int lev, bool good, bool great)
 /*
  * Make a money object
  */
-void make_gold(object_type *j_ptr, int lev)
+void make_gold(object_type *j_ptr, int lev, int coin_type)
 {
 	int sval;
 	int k_idx;
@@ -1452,7 +1452,7 @@ void make_gold(object_type *j_ptr, int lev)
 	s32b value = rand_spread(avg, spread);
 
 	/* Pick a treasure variety scaled by level, or force a type */
-	if (coin_type)
+	if (coin_type != SV_GOLD_ANY)
 		sval = coin_type;
 	else
 		sval = (((value * 100) / MAX_GOLD_DROP) * SV_GOLD_MAX) / 100;

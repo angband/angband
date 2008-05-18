@@ -327,6 +327,7 @@ enum sval_food /* tval 80 */
 
 enum sval_gold /* tval 100 */
 {
+	SV_GOLD_ANY = -1,
 	SV_COPPER = 0,
 	SV_SILVER = 1,
 	SV_GARNETS = 2,

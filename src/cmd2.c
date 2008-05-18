@@ -229,7 +229,7 @@ static void chest_death(int y, int x, s16b o_idx)
 
 		/* Small chests often drop gold */
 		if (tiny && (randint0(100) < 75))
-			make_gold(i_ptr, value);
+			make_gold(i_ptr, value, SV_GOLD_ANY);
 
 		/* Otherwise drop an item */
 		else

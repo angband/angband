@@ -105,8 +105,6 @@ bool inkey_xtra;		/* See the "inkey()" function */
 u32b inkey_scan;		/* See the "inkey()" function */
 bool inkey_flag;		/* See the "inkey()" function */
 
-s16b coin_type;			/* Hack -- force coin type */
-
 bool opening_chest;		/* Hack -- prevent chest generation */
 
 bool shimmer_monsters;	/* Hack -- optimize multi-hued monsters */

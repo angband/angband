@@ -1166,7 +1166,7 @@ static int get_coin_type(const monster_race *r_ptr)
 	}
 
 	/* Assume nothing */
-	return (0);
+	return (SV_GOLD_ANY);
 }
 
 
@@ -1338,9 +1338,6 @@ void monster_death(int m_idx)
 	else if (r_ptr->flags[0] & RF0_DROP_2D2) number += rand_range(1, 3);
 	else if (r_ptr->flags[0] & RF0_DROP_1D2) number += 1;
 
-	/* Hack -- handle creeping coins */
-	coin_type = force_coin;
-
 	/* Average monster level and current depth */
 	level = (p_ptr->depth + r_ptr->level) / 2;
 
@@ -1357,7 +1354,7 @@ void monster_death(int m_idx)
 		if (gold_ok && (!item_ok || (randint0(100) < 50)))
 		{
 			/* Make some gold */
-			make_gold(i_ptr, level);
+			make_gold(i_ptr, level, force_coin);
 			dump_gold++;
 		}
 
@@ -1377,9 +1374,6 @@ void monster_death(int m_idx)
 		/* Drop it in the dungeon */
 		drop_near(i_ptr, -1, y, x);
 	}
-
-	/* Reset "coin" type */
-	coin_type = 0;
 
 	/* Take note of any dropped treasure */
 	if (visible && (dump_item || dump_gold))

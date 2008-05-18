@@ -2383,7 +2383,7 @@ void place_gold(int y, int x, int level)
 	object_wipe(i_ptr);
 
 	/* Make some gold */
-	make_gold(i_ptr, level);
+	make_gold(i_ptr, level, SV_GOLD_ANY);
 
 	/* Give it to the floor */
 	(void)floor_carry(y, x, i_ptr);

@@ -1033,11 +1033,7 @@ static void wiz_create_item(void)
 	i_ptr->origin_depth = p_ptr->depth;
 
 	if (k_info[k_idx].tval == TV_GOLD)
-	{
-		coin_type = k_info[k_idx].sval;
-		make_gold(i_ptr, p_ptr->depth);
-		coin_type = 0;
-	}
+		make_gold(i_ptr, p_ptr->depth, k_info[k_idx].sval);
 
 	/* Drop the object from heaven */
 	drop_near(i_ptr, -1, py, px);
@@ -1487,11 +1483,7 @@ static void wiz_test_kind(int tval)
 			i_ptr->origin_depth = p_ptr->depth;
 
 			if (k_info[k_idx].tval == TV_GOLD)
-			{
-				coin_type = sval;
-				make_gold(i_ptr, p_ptr->depth);
-				coin_type = 0;
-			}
+				make_gold(i_ptr, p_ptr->depth, sval);
 
 			/* Drop the object from heaven */
 			drop_near(i_ptr, -1, py, px);
