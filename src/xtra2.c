@@ -1336,7 +1336,7 @@ void monster_death(int m_idx)
 	if (r_ptr->flags[0] & RF0_DROP_4D2) number += rand_range(2, 6);
 	else if (r_ptr->flags[0] & RF0_DROP_3D2) number += rand_range(2, 4);
 	else if (r_ptr->flags[0] & RF0_DROP_2D2) number += rand_range(1, 3);
-	else if (r_ptr->flags[0] & RF0_DROP_1D2)) number += 1;
+	else if (r_ptr->flags[0] & RF0_DROP_1D2) number += 1;
 
 	/* Hack -- handle creeping coins */
 	coin_type = force_coin;
