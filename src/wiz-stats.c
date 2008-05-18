@@ -104,7 +104,7 @@ void results_print_csv_pair(const char *field1, const char *field2)
  * terrain are being generated.  The results are very useful for balancing.
  */
 
-#define TRIES	10000
+#define TRIES	5000
 size_t o_count[TRIES];
 size_t gold_count[TRIES];
 
@@ -125,32 +125,15 @@ inline static void stats_print_o(void)
 }
 
 
-float avg_drop_by_level[] =
-{
-	/* 0   1      2      3      4      5      6      7      8      9   */
-	10.7,  11.11, 11.53, 11.94, 12.35, 12.76, 13.18, 13.59, 14,    14.41,
-	14.83, 15.24, 15.65, 16.06, 16.48, 16.89, 17.3,  17.71, 18.13, 18.54,
-	18.95, 19.36, 19.78, 20.38, 21.2,  22.03, 22.85, 23.68, 24.5,  25.33,
-	26.15, 26.98, 27.8,  28.63, 29.45, 30.28, 31.1,  31.93, 32.75, 33.58,
-	34.4,  35.45, 37.1,  38.75, 40.4,  42.05, 43.7,  45.35, 47,    48.65,
-	50.3,  51.95, 54.2,  57.5,  60.8,  64.1,  77,    93.5,  110,   125
-};
-
-
 double mon_drop;
 double mon_gold;
 
 inline static void stats_print_m(void)
 {
-	float gold_per_drop;
-
-	if ((unsigned)p_ptr->depth >= N_ELEMENTS(avg_drop_by_level))
-		gold_per_drop = avg_drop_by_level[N_ELEMENTS(avg_drop_by_level)-1];
-	else
-		gold_per_drop = avg_drop_by_level[p_ptr->depth];
+	float level_avg = 2*p_ptr->depth + 20;
 
 	result_add("mon-drops", format("%f", mon_drop / TRIES));
-	result_add("mon-gold", format("%f", (mon_gold * gold_per_drop) / TRIES));
+	result_add("mon-gold", format("%f", mon_gold * level_avg / TRIES));
 }
 
 void stats_monster(const monster_type *m_ptr)
@@ -165,9 +148,9 @@ void stats_monster(const monster_type *m_ptr)
 	if (f0 & RF0_DROP_60)  prob += /*0.9*/ 0.6;
 
 	if (f0 & RF0_DROP_4) prob += /*6.0*/ 4.0;
-	else if (f0 & RF0_DROP_3) prob += /*4.5*/ 3.0;
-	else if (f0 & RF0_DROP_2) prob += /*3.0*/ 2.0;
-	else if (f0 & RF0_DROP_1) prob += /*1.5*/ 1.0;
+	if (f0 & RF0_DROP_3) prob += /*4.5*/ 3.0;
+	if (f0 & RF0_DROP_2) prob += /*3.0*/ 2.0;
+	if (f0 & RF0_DROP_1) prob += /*1.5*/ 1.0;
 
 	if (gold_ok && item_ok)
 	{
