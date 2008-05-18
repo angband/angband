@@ -1073,15 +1073,24 @@ bool old_save(void)
 	/* Attempt to save the player */
 	if (save_player_aux(new_savefile))
 	{
+		bool err = FALSE;
+
 		safe_setuid_grab();
 
-		file_move(savefile, old_savefile);
-		file_move(new_savefile, savefile);
-		file_delete(old_savefile);
+		err = !file_move(savefile, old_savefile);
+
+		if (!err)
+		{
+			err = !file_move(new_savefile, savefile);
+			if (err)
+				file_move(old_savefile, savefile);
+			else
+				file_delete(old_savefile);
+		}
 
 		safe_setuid_drop();
 
-		return TRUE;
+		return err ? FALSE : TRUE;
 	}
 
 	/* Delete temp file */
