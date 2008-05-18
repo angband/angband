@@ -1077,11 +1077,14 @@ bool old_save(void)
 
 		safe_setuid_grab();
 
-		err = !file_move(savefile, old_savefile);
+		if (file_exists(savefile) && !file_move(savefile, old_savefile))
+			err = TRUE;
 
 		if (!err)
 		{
-			err = !file_move(new_savefile, savefile);
+			if (!file_move(new_savefile, savefile))
+				err = TRUE;
+
 			if (err)
 				file_move(old_savefile, savefile);
 			else
