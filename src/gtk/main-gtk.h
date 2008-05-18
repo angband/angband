@@ -18,6 +18,8 @@
  
 #include "angband.h"
 
+#include "tvalsval.h"
+
 #ifndef INCLUDED_MAIN_GTK_H 
 #define INCLUDED_MAIN_GTK_H 
 
