@@ -1330,13 +1330,13 @@ void monster_death(int m_idx)
 
 
 	/* Determine how much we can drop */
-	if ((r_ptr->flags[0] & RF0_DROP_60) && (randint0(100) < 40)) number++;
-	if ((r_ptr->flags[0] & RF0_DROP_90) && (randint0(100) < 60)) number++;
+	if ((r_ptr->flags[0] & RF0_DROP_40) && (randint0(100) < 40)) number++;
+	if ((r_ptr->flags[0] & RF0_DROP_60) && (randint0(100) < 60)) number++;
 
-	if (r_ptr->flags[0] & RF0_DROP_4D2) number += rand_range(2, 6);
-	else if (r_ptr->flags[0] & RF0_DROP_3D2) number += rand_range(2, 4);
-	else if (r_ptr->flags[0] & RF0_DROP_2D2) number += rand_range(1, 3);
-	else if (r_ptr->flags[0] & RF0_DROP_1D2) number += 1;
+	if (r_ptr->flags[0] & RF0_DROP_4) number += rand_range(2, 6);
+	else if (r_ptr->flags[0] & RF0_DROP_3) number += rand_range(2, 4);
+	else if (r_ptr->flags[0] & RF0_DROP_2) number += rand_range(1, 3);
+	else if (r_ptr->flags[0] & RF0_DROP_1) number++;
 
 	/* Average monster level and current depth */
 	level = (p_ptr->depth + r_ptr->level) / 2;

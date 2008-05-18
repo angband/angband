@@ -1404,12 +1404,12 @@ enum
 #define RF0_RAND_50			0x00080000	/* Moves randomly (50%) */
 #define RF0_ONLY_GOLD		0x00100000	/* Drop only gold */
 #define RF0_ONLY_ITEM		0x00200000	/* Drop only items */
-#define RF0_DROP_60			0x00400000	/* Drop an item/gold (60%) */
-#define RF0_DROP_90			0x00800000	/* Drop an item/gold (90%) */
-#define RF0_DROP_1D2		0x01000000	/* Drop 1d2 items/gold */
-#define RF0_DROP_2D2		0x02000000	/* Drop 2d2 items/gold */
-#define RF0_DROP_3D2		0x04000000	/* Drop 3d2 items/gold */
-#define RF0_DROP_4D2		0x08000000	/* Drop 4d2 items/gold */
+#define RF0_DROP_40			0x00400000	/* Drop an item/gold (40%) */
+#define RF0_DROP_60			0x00800000	/* Drop an item/gold (60%) */
+#define RF0_DROP_1		0x01000000	/* Drop 1 item/gold */
+#define RF0_DROP_2		0x02000000	/* Drop 2 items/gold */
+#define RF0_DROP_3		0x04000000	/* Drop 3 items/gold */
+#define RF0_DROP_4		0x08000000	/* Drop 4 items/gold */
 #define RF0_DROP_GOOD		0x10000000	/* Drop good items */
 #define RF0_DROP_GREAT		0x20000000	/* Drop great items */
 #define RF0_DROP_USEFUL		0x40000000	/* Drop "useful" items */

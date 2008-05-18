@@ -1025,13 +1025,21 @@ static void cheat_monster_lore(int r_idx, monster_lore *l_ptr)
 	}
 
 	/* Hack -- maximal drops */
-	l_ptr->drop_gold = l_ptr->drop_item =
-	(((r_ptr->flags[0] & RF0_DROP_4D2) ? 8 : 0) +
-	 ((r_ptr->flags[0] & RF0_DROP_3D2) ? 6 : 0) +
-	 ((r_ptr->flags[0] & RF0_DROP_2D2) ? 4 : 0) +
-	 ((r_ptr->flags[0] & RF0_DROP_1D2) ? 2 : 0) +
-	 ((r_ptr->flags[0] & RF0_DROP_90)  ? 1 : 0) +
-	 ((r_ptr->flags[0] & RF0_DROP_60)  ? 1 : 0));
+	if (r_ptr->flags[0] & RF0_DROP_4)
+		l_ptr->drop_item = 6;
+	else if (r_ptr->flags[0] & RF0_DROP_3)
+		l_ptr->drop_item = 4;
+	else if (r_ptr->flags[0] & RF0_DROP_2)
+		l_ptr->drop_item = 3;
+	else if (r_ptr->flags[0] & RF0_DROP_1)
+		l_ptr->drop_item = 3;
+
+	if (r_ptr->flags[0] & RF0_DROP_40)
+		l_ptr->drop_item++;
+	if (r_ptr->flags[0] & RF0_DROP_60)
+		l_ptr->drop_item++;
+
+	l_ptr->drop_gold = l_ptr->drop_item;
 
 	/* Hack -- but only "valid" drops */
 	if (r_ptr->flags[0] & RF0_ONLY_GOLD) l_ptr->drop_item = 0;
