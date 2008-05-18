@@ -2905,7 +2905,7 @@ errr parse_c_info(char *buf, header *head)
 		/* Store the text */
 		if (!add_text(&pc_ptr->title[cur_title], head, s))
 			return (PARSE_ERROR_OUT_OF_MEMORY);
-		
+
 		/* Next title */
 		cur_title++;
 
@@ -2917,7 +2917,9 @@ errr parse_c_info(char *buf, header *head)
 	/* Process 'E' for "Starting Equipment" */
 	else if (buf[0] == 'E')
 	{
-		int tval, sval, min, max;
+		char *tval_s, *sval_s, *end_s;
+		int tval, sval;
+		int min, max;
 
 		start_item *e_ptr;
 
@@ -2927,9 +2929,41 @@ errr parse_c_info(char *buf, header *head)
 		/* Access the item */
 		e_ptr = &pc_ptr->start_items[cur_equip];
 
+		/* Find the beginning of the tval field */
+		tval_s = strchr(buf, ':');
+		if (!tval_s) return PARSE_ERROR_MISSING_COLON;
+		*tval_s++ = '\0';
+		if (!*tval_s) return PARSE_ERROR_MISSING_FIELD;
+
+		/* Now find the beginning of the sval field */
+		sval_s = strchr(tval_s, ':');
+		if (!sval_s) return PARSE_ERROR_MISSING_COLON;
+		*sval_s++ = '\0';
+		if (!*sval_s) return PARSE_ERROR_MISSING_FIELD;
+
+		/* Now find the beginning of the pval field */
+		end_s = strchr(sval_s, ':');
+		if (!end_s) return PARSE_ERROR_MISSING_COLON;
+		*end_s++ = '\0';
+		if (!*end_s) return PARSE_ERROR_MISSING_FIELD;
+
+		/* Now convert the tval into its numeric equivalent */
+		if (1 != sscanf(tval_s, "%d", &tval))
+		{
+			tval = tval_find_idx(tval_s);
+			if (tval == -1) return PARSE_ERROR_UNRECOGNISED_TVAL;
+		}
+
+		/* Now find the sval */
+		if (1 != sscanf(sval_s, "%d", &sval))
+		{
+			sval = lookup_sval(tval, sval_s);
+			if (sval == -1) return PARSE_ERROR_UNRECOGNISED_SVAL;
+		}
+
+
 		/* Scan for the values */
-		if (4 != sscanf(buf+2, "%d:%d:%d:%d",
-			            &tval, &sval, &min, &max)) return (PARSE_ERROR_GENERIC);
+		if (2 != sscanf(end_s, "%d:%d", &min, &max)) return (PARSE_ERROR_GENERIC);
 
 		if ((min < 0) || (max < 0) || (min > 99) || (max > 99))
 			return (PARSE_ERROR_INVALID_ITEM_NUMBER);
@@ -2945,7 +2979,7 @@ errr parse_c_info(char *buf, header *head)
 
 		/* Limit number of starting items */
 		if (cur_equip > MAX_START_ITEMS)
-			return (PARSE_ERROR_GENERIC);
+			return (PARSE_ERROR_TOO_MANY_ENTRIES);
 	}
 
 	/* Process 'F' for flags */
