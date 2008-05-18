@@ -1335,9 +1335,9 @@ void monster_death(int m_idx)
 	if ((r_ptr->flags[0] & RF0_DROP_60) && (randint0(100) < 60)) number++;
 
 	if (r_ptr->flags[0] & RF0_DROP_4) number += rand_range(2, 6);
-	else if (r_ptr->flags[0] & RF0_DROP_3) number += rand_range(2, 4);
-	else if (r_ptr->flags[0] & RF0_DROP_2) number += rand_range(1, 3);
-	else if (r_ptr->flags[0] & RF0_DROP_1) number++;
+	if (r_ptr->flags[0] & RF0_DROP_3) number += rand_range(2, 4);
+	if (r_ptr->flags[0] & RF0_DROP_2) number += rand_range(1, 3);
+	if (r_ptr->flags[0] & RF0_DROP_1) number++;
 
 	/* Average monster level and current depth */
 	level = (p_ptr->depth + r_ptr->level) / 2;
