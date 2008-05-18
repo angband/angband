@@ -1330,6 +1330,7 @@ void monster_death(int m_idx)
 
 
 	/* Determine how much we can drop */
+	if ((r_ptr->flags[0] & RF0_DROP_20) && (randint0(100) < 20)) number++;
 	if ((r_ptr->flags[0] & RF0_DROP_40) && (randint0(100) < 40)) number++;
 	if ((r_ptr->flags[0] & RF0_DROP_60) && (randint0(100) < 60)) number++;
 

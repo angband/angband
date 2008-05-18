@@ -175,7 +175,7 @@ static cptr r_info_flags0[] =
 	"DROP_4",
 	"DROP_GOOD",
 	"DROP_GREAT",
-	"DROP_USEFUL",
+	"DROP_20",
 	"DROP_CHOSEN"
 };
 

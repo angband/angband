@@ -1412,7 +1412,7 @@ enum
 #define RF0_DROP_4		0x08000000	/* Drop 4 items/gold */
 #define RF0_DROP_GOOD		0x10000000	/* Drop good items */
 #define RF0_DROP_GREAT		0x20000000	/* Drop great items */
-#define RF0_DROP_USEFUL		0x40000000	/* Drop "useful" items */
+#define RF0_DROP_20		0x40000000	/* Drop an item/gold (20%) */
 #define RF0_DROP_CHOSEN		0x80000000	/* Drop "chosen" items */
 
 /*
