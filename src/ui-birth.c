@@ -62,7 +62,6 @@ static game_command quickstart_question()
 		}
 		else if (strchr("Yy", ch))
 		{
-			printf("QUICK");
 			cmd.command = CMD_BIRTH_CHOICE;
 			cmd.params.choice = 1; /* FIXME */
 		}
