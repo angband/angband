@@ -2229,6 +2229,7 @@ static void store_sell(void)
 		item_tester_hook = store_will_buy_tester;
 
 	/* Get an item */
+	p_ptr->command_wrk = USE_INVEN;
 	if (!get_item(&item, prompt, reject, (USE_EQUIP | USE_INVEN | USE_FLOOR)))
 	{
 		store_flags |= STORE_KEEP_PROMPT;
