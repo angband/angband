@@ -293,7 +293,7 @@ static bool describe_misc_magic(u32b f3)
 /*
  * list[] and mult[] must be > 11 in size
  */
-static int collect_slays(cptr desc[], int mult[], u32b f1)
+static int collect_slays(const char *desc[], int mult[], u32b f1)
 {
 	int cnt = 0;
 
@@ -328,8 +328,8 @@ static int collect_slays(cptr desc[], int mult[], u32b f1)
  */
 static bool describe_combat(const object_type *o_ptr, bool full)
 {
-	cptr desc[15];
-	int mult[15];
+	const char *desc[16];
+	int mult[16];
 	int cnt, dam;
 	int xtra_dam = 0;
 	object_type *j_ptr = &inventory[INVEN_BOW];
@@ -362,7 +362,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	{
 		int blows = calc_blows(o_ptr);
 		int extra_blows = 0;
-		
+
 		if (f1 & (TR1_BLOWS)) extra_blows += o_ptr->pval;
 		blows += extra_blows;
 
@@ -378,7 +378,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 			text_out_c(TERM_L_RED, "You are too weak to use this weapon effectively!\n");
 			blows = 1;
 		}
-	
+
 	    text_out("With this weapon, you would currently get ");
 	    text_out_c(TERM_L_GREEN, format("%d ", blows));
 	    if (blows > 1)
@@ -389,13 +389,17 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	else
 	{
 		int tdis = 6 + 2 * p_ptr->ammo_mult;
+		u32b f[3];
 
 		/* Calculate damage */
 		dam = ((o_ptr->ds + 1) * o_ptr->dd * 5);
-		if (object_known_p(o_ptr)) xtra_dam += (o_ptr->to_d * 10);
-		if (object_known_p(j_ptr)) xtra_dam += (j_ptr->to_d * 10);
-		xtra_dam *= p_ptr->ammo_mult;
-		xtra_dam += (dam * 2);
+		dam *= p_ptr->ammo_mult;
+		if (object_known_p(o_ptr)) dam += (o_ptr->to_d * 10);
+		if (object_known_p(j_ptr)) dam += (j_ptr->to_d * 10);
+
+		/* Apply brands from the shooter to the ammo */
+		object_flags(j_ptr, &f[0], &f[1], &f[2]);
+		f1 |= f[0];
 
 		text_out("Fired from your current missile launcher, this arrow will hit targets up to ");
 		text_out_c(TERM_L_GREEN, format("%d", tdis * 10));
