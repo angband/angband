@@ -47,46 +47,6 @@
 
 
 
-/* XXX Taken from object2.c */
-static const u32b ego_sustains[] =
-{
-	TR2_SUST_STR,
-	TR2_SUST_INT,
-	TR2_SUST_WIS,
-	TR2_SUST_DEX,
-	TR2_SUST_CON,
-	TR2_SUST_CHR,
-};
-
-static const u32b ego_resists[] =
-{
-	TR2_RES_ACID,
-	TR2_RES_ELEC,
-	TR2_RES_FIRE,
-	TR2_RES_COLD,
-	TR2_RES_POIS,
-	TR2_RES_FEAR,
-	TR2_RES_LITE,
-	TR2_RES_DARK,
-	TR2_RES_BLIND,
-	TR2_RES_CONFU,
-	TR2_RES_SOUND,
-	TR2_RES_SHARD,
-};
-
-static const u32b ego_powers[] =
-{
-	TR3_SLOW_DIGEST,
-	TR3_FEATHER,
-	TR3_LITE,
-	TR3_REGEN,
-	TR3_TELEPATHY,
-	TR3_SEE_INVIS,
-	TR3_FREE_ACT,
-	TR3_HOLD_LIFE,
-};
-
-
 
 /*
  * Local "savefile" pointer
