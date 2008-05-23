@@ -86,6 +86,7 @@ void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
 char index_to_label(int i);
 s16b label_to_inven(int c);
 s16b label_to_equip(int c);
+bool wearable_p(const object_type *o_ptr);
 s16b wield_slot(const object_type *o_ptr);
 const char *mention_use(int slot);
 cptr describe_use(int i);
