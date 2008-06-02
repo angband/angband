@@ -822,7 +822,7 @@ static const menu_skin *find_menu_skin(skin_id id)
  */
 void menu_set_filter(menu_type *menu, const int filter_list[], int n)
 {
-	menu->filter_list = (int *)filter_list;
+	menu->filter_list = filter_list;
 	menu->filter_count = n;
 }
 

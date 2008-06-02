@@ -233,8 +233,8 @@ static bool ang_sort_comp_distance(const void *u, const void *v, int a, int b)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	byte *x = (byte*)(u);
-	byte *y = (byte*)(v);
+	const byte *x = u;
+	const byte *y = v;
 
 	int da, db, kx, ky;
 

@@ -202,7 +202,7 @@ struct menu_type
 
 	int flags;              /* Flags specifying the behavior of this menu. */
 	int filter_count;       /* number of rows in current view */
-	int *filter_list;       /* optional filter (view) of menu objects */
+	const int *filter_list;       /* optional filter (view) of menu objects */
 
 	int count;              /* number of rows in underlying data set */
 	void *menu_data;  /* the data used to access rows. */
