@@ -12,7 +12,6 @@ install-posthook:
 		printf "%10s %s*.raw\n" TOUCH ${DATA_PATH}/data/; \
 		if [ "x$(DRY)" = "x" ]; then \
 			touch ${DATA_PATH}/data/artifact.raw; \
-			touch ${DATA_PATH}/data/cost_adj.raw; \
 			touch ${DATA_PATH}/data/ego_item.raw; \
 			touch ${DATA_PATH}/data/flavor.raw; \
 			touch ${DATA_PATH}/data/limits.raw; \
