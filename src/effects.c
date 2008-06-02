@@ -1551,6 +1551,20 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			return TRUE;
 		}
 
+		case EF_DRINK_BREATHE:
+		{
+			const int breath_types[] =
+			{
+				GF_FIRE, 80,
+				GF_COLD, 80,
+			};
+
+			int which = 2 * randint0(N_ELEMENTS(breath_types) / 2);
+			fire_ball(breath_types[which], dir, breath_types[which + 1], 2);
+			*ident = TRUE;
+			return TRUE;
+		}
+
 		case EF_DRINK_GOOD:
 		{
 			msg_print("You feel less thirsty.");
