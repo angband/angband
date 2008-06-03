@@ -181,7 +181,7 @@ D:of far places - at a cost, for those espied upon are aware of it.
 # The Ring of Barahir
 
 N:8:of Barahir
-I:ring:32:1
+I:ring:50:1
 W:50:25:2:65000
 F:STR | INT | WIS | DEX | CON | CHR | STEALTH | HIDE_TYPE | 
 F:RES_POIS | RES_DARK
@@ -193,7 +193,7 @@ D:a crown of flowers, an ancient treasure of Isildur's house.
 # The Ring of Tulkas
 
 N:9:of Tulkas
-I:ring:33:4
+I:ring:51:4
 W:70:50:2:150000
 F:STR | DEX | CON | HIDE_TYPE | RES_FEAR | 
 F:ACTIVATE | 
@@ -206,7 +206,7 @@ D:The treasure of Tulkas, most fleet and wrathful of the Valar.
 # The Ring of Power 'Narya'
 
 N:10:of Power 'Narya'
-I:ring:34:1
+I:ring:52:1
 W:70:50:2:100000
 P:0:0d0:6:6:0
 F:STR | INT | WIS | DEX | CON | CHR | SPEED | HIDE_TYPE | 
@@ -225,7 +225,7 @@ D:Sauron.
 # The Ring of Power 'Nenya'
 
 N:11:of Power 'Nenya'
-I:ring:35:2
+I:ring:53:2
 W:80:50:2:200000
 P:0:0d0:8:8:0
 F:STR | INT | WIS | DEX | CON | CHR | SPEED | HIDE_TYPE | 
@@ -244,7 +244,7 @@ D:Sauron.
 # The Ring of Power 'Vilya'
 
 N:12:of Power 'Vilya'
-I:ring:36:3
+I:ring:54:3
 W:90:80:2:300000
 P:0:0d0:10:10:0
 F:STR | INT | WIS | DEX | CON | CHR | SPEED | HIDE_TYPE | 
@@ -264,7 +264,7 @@ D:from Sauron.
 # The Ring of Power 'The One Ring'
 
 N:13:of Power 'The One Ring'
-I:ring:37:5
+I:ring:55:5
 W:100:100:2:5000000
 P:0:0d0:15:15:0
 # F: DRAIN_MANA | DRAIN_HP | 
