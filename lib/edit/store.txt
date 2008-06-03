@@ -91,7 +91,7 @@ I:4:scroll:Identify
 I:3:scroll:Phase Door
 I:1:scroll:Enchant Weapon To-Hit
 I:1:scroll:Enchant Weapon To-Dam
-I:1:scroll:Enchant Armor
+I:1:scroll:Enchant Armour
 I:1:scroll:Light
 I:1:scroll:Monster Confusion
 I:1:scroll:Magic Mapping
