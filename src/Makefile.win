@@ -14,7 +14,7 @@
 
 # Executable name and default target
 EXE = angband.exe
-default: ../$(EXE)
+all: ../$(EXE)
 
 ifneq (,$(findstring \system32,$(PATH)))
   CP = copy
