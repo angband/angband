@@ -1,61 +1,30 @@
 /*
- * Copyright (c) 1997-2006 Ben Harrison, Keith Randall, Peter Ammon,
- * Ron Anderson, and others
+ * File: main-crb.c
+ * Purpose: Provide support for OS X, version 10.3 and later.
  *
- * This software may be copied and distributed for educational, research,
- * and not for profit purposes provided that this copyright and statement
- * are included in all such copies.
+ * Copyright (c) 2003 pelpel
+ * Copyright (c) 2003,2004,2005 Robert Ruehlmann
+ * Copyright (c) 2007,2008 pete mack
+ * Copyright (c) 2008 Rowan Beentje
+ *
+ * Some excerpts quoted under fair use from works by Ben Harrison,
+ * Keith Randall, Peter Ammon, and Ron Anderson.
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
  */
+#include "angband.h"
+
 
 /*
- * Update 2006 - pete mack
- * This update works exclusively with Apple computers running OS X,
- * versions 10.3 and later.  The still-usable old version uses QuickDraw
- * Graphics, "deprecated" as of 10.4
- *
- * Support for legacy Macs and pre-10.3 OSX has been removed.
- * The old carbon code is still available in main-crb.c, 
- * Angband version 3.0.6; pre-carboniferous code in angband main-mac.c
- */
-
-/*
- * Use 
- * make -f Makefile.osx 
- * You must have XCode installed to compile.
- * 
- * Initial framework (and most code) by Ben Harrison (benh@phial.com).
- * Some code adapted from "MacAngband 2.6.1" by Keith Randall
- * Initial PowerMac port by Maarten Hazewinkel (mmhazewi@cs.ruu.nl).
- * Most Apple Event code provided by Steve Linberg (slinberg@crocker.com).
- * Carbon code adapted from works by Peter Ammon and Ron Anderson.
- * Much modernization and graphics/sound improvement done by pelpel.
- *
- *
- * Graphics code originally adapted from an extremely minimal subset of
- * "Sprite World II" <http://www.spriteworld.org/>, which is under the
- * following licence:
- *
- *    This software is provided 'as-is', without any express or implied
- *    warranty. In no event will the authors be held liable for any damages
- *    arising from the use of this software.
- *
- *    Permission is granted to anyone to use this software for any purpose,
- *    including commercial applications, and to alter it and redistribute it
- *    freely, subject to the following restrictions:
- *
- *       1. The origin of this software must not be misrepresented; you must not
- *       claim that you wrote the original software. If you use this software
- *       in a product, an acknowledgment in the product documentation would be
- *       appreciated but is not required.
- *
- *       2. Altered source versions must be plainly marked as such, and must not be
- *       misrepresented as being the original software.
- *
- *       3. This notice may not be removed or altered from any source
- *       distribution.
- * (end of licence)
- *
- *
  * Notes:
  *
  * (pelpel) Characters in the ASCII mode are clipped by their bounding
@@ -123,10 +92,6 @@
  * while keeping vertical and horizontal scaling factor to 100% (<- VERY
  * important), when you convert tiles in any formats to PNG.  This means
  * that the real size of an image must shrink or grow when you change it's dpi.
- *
- * Sound (.wav) files should be stored in .../lib/xtra/sound
- * Graphics files should be stored in .../lib/xtra/images
- * as is standard on other unix builds.
  * Graphics files must be of type png, because OSX 10.3 doesn't do
  * a good job with composited images.
  *
@@ -160,7 +125,6 @@
 
 #ifdef MACH_O_CARBON
 
-#include "angband.h"
 
 #include <Cocoa/Cocoa.h>
 #include <Carbon/Carbon.h>
