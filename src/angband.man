@@ -78,14 +78,8 @@ Print out a usage message.
 .BR \-n
 Start a new character
 .TP
-.BR \-f
-Request fiddle mode (no high score entry)
-.TP
 .BR \-w
 Request wizard mode (no high score entry)
-.TP
-.BR \-v
-Request sound mode
 .TP
 .BR \-g
 Request graphics mode

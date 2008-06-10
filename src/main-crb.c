@@ -162,6 +162,7 @@
 
 #include "angband.h"
 
+#include <Cocoa/Cocoa.h>
 #include <Carbon/Carbon.h>
 #include <QuickTime/QuickTime.h>
 #include <CoreServices/CoreServices.h>
@@ -297,7 +298,7 @@ inline static void term_data_color(int a);
 static void install_handlers(WindowRef w);
 static void graphics_tiles_nuke(void);
 static void play_sound(int num);
-
+static void redrawRecentItemsMenu();
 /*
  * Available values for 'wait'
  */
@@ -318,13 +319,6 @@ bool open_when_ready = FALSE;
 bool quit_when_ready = FALSE;
 
 static long mac_os_version;
-
-
-/*
- * Hack -- game in progress
- */
-static bool game_in_progress = FALSE;
-
 
 
 /* Out-of-band color identifiers */
@@ -1258,347 +1252,200 @@ static errr graphics_nuke(void)
 	}
 
 	/* Flush events */
-	FlushEventQueue(GetMainEventQueue());
+	if (initialized) FlushEventQueue(GetMainEventQueue());
 
 	/* Success */
 	return (0);
 }
 
 
-/*
- * How many sound channels will be pooled
- */
-#define MAX_CHANNELS		8
+/* Arbitary limit on number of possible samples per event */
+#define MAX_SAMPLES			8
+
+/* Struct representing all data for a set of event samples */
+typedef struct
+{
+	int num;		/* Number of available samples for this event */
+	NSSound *sound[MAX_SAMPLES];
+} sound_sample_list;
+
+/* Array of event sound structs */
+static sound_sample_list samples[MSG_MAX];
 
 /*
- * A pool of sound channels
- */
-static SndChannelPtr channels[MAX_CHANNELS];
-
-/*
- * Status of the channel pool
- */
-static bool channel_initialised = FALSE;
-
-/*
- * Data handles containing sound samples
- */
-static SndListHandle samples[MSG_MAX];
-
-/*
- * Reference counts of sound samples
- */
-static SInt16 sample_refs[MSG_MAX];
-
-#define SOUND_VOLUME_MIN	0	/* Default minimum sound volume */
-#define SOUND_VOLUME_MAX	255	/* Default maximum sound volume */
-#define VOLUME_MIN			0	/* Minimum sound volume in % */
-#define VOLUME_MAX			100	/* Maximum sound volume in % */
-#define VOLUME_INC			5	/* Increment sound volume in % */
-
-/*
- * I'm just too lazy to write a panel for this XXX XXX
- */
-static SInt16 sound_volume = SOUND_VOLUME_MAX;
-
-
-
-/*
- * QuickTime sound, by Ron Anderson
- *
- * I didn't choose to use Windows-style .ini files (Ron wrote a parser
- * for it, but...), nor did I use lib/xtra directory, hoping someone
- * would code plist-based configuration code in the future -- pelpel
- */
-
-/*
- * (QuickTime)
- * Load sound effects from data-fork resources.  They are wav files
- * with the same names as angband_sound_name[] (variable.c)
- *
- * Globals referenced: angband_sound_name[]
- * Globals updated: samples[] (they can be *huge*)
+ * Load sound effects based on sound.cfg within the xtra/sound directory;
+ * bridge to Cocoa to use NSSound for simple loading and playback, avoiding
+ * I/O latency by cacheing all sounds at the start.  Inherits full sound
+ * format support from Quicktime base/plugins.
+ * pelpel favoured a plist-based parser for the future but .cfg support
+ * improves cross-platform compatibility.
  */
 static void load_sounds(void)
 {
-	/* Start QuickTime */
-	OSErr err = EnterMovies();
+	char path[2048];
+	char buffer[2048];
+	char *ANGBAND_DIR_XTRA_SOUND;
+	ang_file *fff;
 
-	/* Error */
-	if (err != noErr) return;
+	/* Build the "sound" path */
+	path_build(path, sizeof(path), ANGBAND_DIR_XTRA, "sound");
+	ANGBAND_DIR_XTRA_SOUND = string_make(path);
+
+	/* Find and open the config file */
+	path_build(path, sizeof(path), ANGBAND_DIR_XTRA_SOUND, "sound.cfg");
+	fff = file_open(path, MODE_READ, -1);
+
+	/* Handle errors */
+	if (!fff)
+	{
+		mac_warning("The sound configuration file could not be opened.");
+		return;
+	}
+	
+	/* Instantiate an autorelease pool for use by NSSound */
+	NSAutoreleasePool *autorelease_pool;
+	autorelease_pool = [[NSAutoreleasePool alloc] init];
 
 	/*
 	 * This loop may take a while depending on the count and size of samples
 	 * to load.
-	 *
-	 * We should use a progress dialog for this.
 	 */
-	char path[1024];
-	locate_lib(path, sizeof(path));
-	char *tail = path+strlen(path);
-	strncpy(tail, "/xtra/sound/", path+1024-tail);
-	tail = tail+strlen(tail);
-	for (int i = 1; i < MSG_MAX; i++)
+
+	/* Parse the file */
+	/* Lines are always of the form "name = sample [sample ...]" */
+	while (file_getl(fff, buffer, sizeof(buffer)))
 	{
-		/* Apple APIs always give me headache :( */
-		/* Me too :( */
-		FSSpec spec;
-		SInt16 file_id;
-		SInt16 res_id;
-		Str255 movie_name;
-		Movie movie;
-		Track track;
-		Handle h;
+		char *msg_name;
+		char *cfg_sample_list;
+		char *search;
+		char *cur_token;
+		char *next_token;
+		int event;
 
-		sprintf(tail, "%s.wav", angband_sound_name[i]);
-		err = path_to_spec(path, &spec);
-		if(err != noErr) continue;
+		/* Skip anything not beginning with an alphabetic character */
+		if (!buffer[0] || !isalpha((unsigned char)buffer[0])) continue;
 
-		/* Open the sound file */
-		err = OpenMovieFile(&spec, &file_id, fsRdPerm);
+		/* Split the line into two: message name, and the rest */
+		search = strchr(buffer, ' ');
+        cfg_sample_list = strchr(search + 1, ' ');
+		if (!search) continue;
+        if (!cfg_sample_list) continue;
 
-		/* Error */
-		if (err != noErr) continue;
+		/* Set the message name, and terminate at first space */
+		msg_name = buffer;
+		search[0] = '\0';
 
-		/* Create Movie from the file */
-		err = NewMovieFromFile(&movie, file_id, &res_id, movie_name,
-			newMovieActive, NULL);
-
-		/* Error */
-		if (err != noErr) goto close_file;
-
-		/* Get the first track of the movie */
-		track = GetMovieIndTrackType(movie, 1, AudioMediaCharacteristic,
-			movieTrackCharacteristic | movieTrackEnabledOnly );
-
-		/* Error */
-		if (track == NULL) goto close_movie;
-
-		/* Allocate a handle to store sample */
-		h = NewHandle(0);
-
-		/* Error */
-		if (h == NULL) goto close_track;
-
-		/* Dump the sample into the handle */
-		err = PutMovieIntoTypedHandle(movie, track, soundListRsrc, h, 0,
-			GetTrackDuration(track), 0L, NULL);
-
-		/* Success */
-		if (err == noErr)
+		/* Make sure this is a valid event name */
+		for (event = MSG_MAX - 1; event >= 0; event--)
 		{
-			/* Store the handle in the sample list */
-			samples[i] = (SndListHandle)h;
+			if (strcmp(msg_name, angband_sound_name[event]) == 0)
+			    break;
 		}
+        if (event < 0) continue;
 
-		/* Failure */
+		/* Advance the sample list pointer so it's at the beginning of text */
+		cfg_sample_list++;
+		if (!cfg_sample_list[0]) continue;
+
+		/* Terminate the current token */
+		cur_token = cfg_sample_list;
+		search = strchr(cur_token, ' ');
+		if (search)
+		{
+			search[0] = '\0';
+			next_token = search + 1;
+		}
 		else
 		{
-			/* Free unused handle */
-			DisposeHandle(h);
+			next_token = NULL;
 		}
 
-		/* Free the track */
-close_track: DisposeMovieTrack(track);
+        /*
+         * Now we find all the sample names and add them one by one
+         */
+        while (cur_token)
+        {
+            int num = samples[event].num;
 
-		/* Free the movie */
-close_movie: DisposeMovie(movie);
+			/* Don't allow too many samples */
+			if (num >= MAX_SAMPLES) break;
 
-		/* Close the movie file */
-close_file: CloseMovieFile(file_id);
+			/* Build the path to the sample */
+			path_build(path, sizeof(path), ANGBAND_DIR_XTRA_SOUND, cur_token);
+			if (file_exists(path)) {
+				
+				/* Load the sound into memory */
+				samples[event].sound[num] = [[NSSound alloc] initWithContentsOfFile:[NSString stringWithUTF8String:path] byReference:NO];
+				if (samples[event].sound[num] != nil) {
+				
+					/* Imcrement the sample count */
+					samples[event].num++;
+				}
+			}
+
+			/* Figure out next token */
+			cur_token = next_token;
+			if (next_token)
+			{
+				/* Try to find a space */
+				search = strchr(cur_token, ' ');
+
+				/* If we can find one, terminate, and set new "next" */
+				if (search)
+				{
+					search[0] = '\0';
+					next_token = search + 1;
+				}
+				else
+				{
+					/* Otherwise prevent infinite looping */
+					next_token = NULL;
+				}
+			}
+		}
 	}
 
-	/* Stop QuickTime */
-	ExitMovies();
+	/* Release the autorelease pool */
+	[autorelease_pool release];
+
+	/* Close the file */
+	file_close(fff);
 
 	/* Register the sound hook */
 	sound_hook = play_sound;
 }
 
-/*
- * Return a handle of 'snd ' resource given Angband sound event number,
- * or NULL if it isn't found.
- *
- * Globals referenced: angband_sound_name[] (variable.c)
- */
-static SndListHandle get_sound_resource(int num)
-{
-	SndListHandle h = samples[num];
-
-	if(++sample_refs[num] > 1) {
-		return h;
-	}
-	if(!h) {
-		sample_refs[num]--;
-		return 0;
-	}
-	HLockHi((Handle)h);
-	return h;
-}
-
-void release_sound_resource(int num)
-{
-	if(sample_refs[num] == 0)
-		return;
-
-	/* Decrease refcount */
-	if(--sample_refs[num] > 0)
-		return;
-
-	/* We can free it now */
-	/* Unlock */
-	HUnlock((Handle)samples[num]);
-
-}
-
-/*
- * Clean up sound support - to be called when the game exits.
- *
- * Globals referenced: channels[], samples[], sample_refs[].
- */
-static void cleanup_sound(void)
-{
-	/* No need to clean it up */
-	if (!channel_initialised) return;
-
-	/* Dispose channels */
-	for (int i = 0; i < MAX_CHANNELS; i++)
-	{
-		/* Drain sound commands and free the channel */
-		SndDisposeChannel(channels[i], TRUE);
-	}
-
-	/* Free sound data */
-	for (int i = 1; i < MSG_MAX; i++)
-	{
-		while(sample_refs[i] > 0)
-		{
-			release_sound_resource(i);
-		}
-	}
-}
 
 
 /*
- * Play sound effects asynchronously -- pelpel
- *
- * I don't believe those who first started using the previous implementations
- * imagined this is *much* more complicated as it may seem.  Anyway, 
- * introduced round-robin scheduling of channels and made it much more
- * paranoid about HLock/HUnlock.
- *
- * XXX XXX de-refcounting, HUnlock and ReleaseResource should be done
- * using channel's callback procedures, which set global flags, and
- * a procedure hooked into CheckEvents does housekeeping.  On the other
- * hand, this lazy reclaiming strategy keeps things simple (no interrupt
- * time code) and provides a sort of cache for sound data.
- *
- * Globals referenced: channel_initialised, channels[], samples[],
- *   sample_refs[], sound_volume.
- * Globals updated: channel_initialised, channels[], sample_refs[].
+ * Play sound effects asynchronously.  Select a sound from any available
+ * for the required event, and bridge to Cocoa to play it.
  */
 
-static void play_sound(int num)
+static void play_sound(int event)
 {
-	OSErr err;
-	int prev_num;
-	SndListHandle h;
-	SndChannelPtr chan;
-	SCStatus status;
-
-	static int next_chan;
-	static SInt16 channel_occupants[MAX_CHANNELS];
-	static SndCommand volume_cmd, quiet_cmd;
-
-	SInt16 vol = sound_volume;
-
-	/* Initialise sound channels */
-	if (!channel_initialised)
-	{
-		for (int i = 0; i < MAX_CHANNELS; i++)
-		{
-			/* Paranoia - Clear occupant table */
-			/* channel_occupants[i] = 0; */
-
-			/* Create sound channel for all sounds to play from */
-			err = SndNewChannel(&channels[i], sampledSynth, initMono, NULL);
-
-			/* Free channels */
-			if(err != noErr) {
-				while (--i >= 0)
-				{
-					SndDisposeChannel(channels[i], TRUE);
-				}
-	
-				/* Notify error */
-				plog("Cannot initialise sound channels!");
-
-				/* Cancel request */
-				use_sound = arg_sound = FALSE;
-	
-				/* Failure */
-				return;
-			}
-		}
-
-		/* First channel to use */
-		next_chan = 0;
-
-		/* Prepare volume command */
-		volume_cmd.cmd = volumeCmd;
-		volume_cmd.param1 = 0;
-		volume_cmd.param2 = 0;
-
-		/* Prepare quiet command */
-		quiet_cmd.cmd = quietCmd;
-		quiet_cmd.param1 = 0;
-		quiet_cmd.param2 = 0;
-
-		/* Initialisation complete */
-		channel_initialised = TRUE;
-	}
-
 	/* Paranoia */
-	if ((num <= 0) || (num >= MSG_MAX)) return;
+	if (event < 0 || event >= MSG_MAX) return;
 
-	/* Prepare volume command */
-	volume_cmd.param2 = ((SInt32)vol << 16) | vol;
+	/* Check there are samples for this event */
+	if (!samples[event].num) return;
 
-	/* Channel to use (round robin) */
-	chan = channels[next_chan];
+	/* Instantiate an autorelease pool for use by NSSound */
+	NSAutoreleasePool *autorelease_pool;
+	autorelease_pool = [[NSAutoreleasePool alloc] init];
 
-	/* Attempt to get a new sound "resource" */
-	h = get_sound_resource(num);
-	if (h == NULL) return;
+	/* Choose a random event */
+	int s = randint0(samples[event].num);
+	
+	/* Stop the sound if it's currently playing */
+	if ([samples[event].sound[s] isPlaying])
+		[samples[event].sound[s] stop];
 
-	/* Poll the channel */
-	err = SndChannelStatus(chan, sizeof(SCStatus), &status);
+	/* Play the sound */
+	[samples[event].sound[s] play];
 
-	/* It isn't available */
-	if ((err != noErr) || status.scChannelBusy)
-	{
-		/* Shut it down */
-		SndDoImmediate(chan, &quiet_cmd);
-	}
-
-	/* Process previously played sound */
-	if ((prev_num = channel_occupants[next_chan]) != 0)
-	{
-		release_sound_resource(prev_num);
-	}
-
-	/* Remember this sound as the current occupant of the channel */
-	channel_occupants[next_chan] = num;
-
-	/* Set up volume for channel */
-	SndDoImmediate(chan, &volume_cmd);
-
-	/* Play new sound asynchronously */
-	SndPlay(chan, h, TRUE);
-
-	/* Schedule next channel (round robin) */
-	next_chan++;
-	if (next_chan >= MAX_CHANNELS) next_chan = 0;
+	/* Release the autorelease pool */
+	[autorelease_pool release];
 }
 
 
@@ -1739,10 +1586,11 @@ static errr Term_xtra_mac(int n, int v)
 			return (0);
 		}
 
-		/* Flush all pending events (if any) */
+		/* Flush all pending input events (if any) */
 		case TERM_XTRA_FLUSH:
 		{
-			FlushEventQueue(GetMainEventQueue());
+			FlushEventsMatchingListFromQueue(GetMainEventQueue(),
+				N_ELEMENTS(input_event_types), input_event_types);
 
 			/* Success */
 			return (0);
@@ -2183,9 +2031,6 @@ static void cf_save_prefs()
 	save_pref_short("version.extra", VERSION_EXTRA);
 
 	/* Gfx settings */
-	/* sound */
-	save_pref_short("arg.arg_sound", arg_sound);
-
 	/* double-width tiles */
 	save_pref_short("arg.use_bigtile", use_bigtile);
 
@@ -2312,10 +2157,6 @@ static void cf_load_prefs()
 	/* Gfx settings */
 	short pref_tmp;
 
-	/* sound */
-	if (load_pref_short("arg.arg_sound", &pref_tmp))
-		arg_sound = pref_tmp;
-
 	/* double-width tiles */
 	if (load_pref_short("arg.use_bigtile", &pref_tmp))
 		use_bigtile = pref_tmp;
@@ -2366,7 +2207,10 @@ static void cf_load_prefs()
 		CFSTR("recent_items"),
 		kCFPreferencesCurrentApplication);
 	if (recentItemsLoaded != NULL)
+	{
 		recentItemsArrayRef = CFArrayCreateMutableCopy(kCFAllocatorDefault, 0, recentItemsLoaded);
+		redrawRecentItemsMenu();
+	}
 }
 
 
@@ -2721,8 +2565,10 @@ static void install_handlers(WindowRef w)
 static int funcGTE(int a, int b) { return a >= b; }
 static int funcConst(int a, int c) {return c; }
 
-/* This initializes all the menus with values that change unpredictably. */
-/* Menus that change rarely are done at the time of change */
+/* This initializes all the menus with values that change unpredictably.
+ * This function is called on every menu draw and therefore should be kept
+ * light and fast; menus that change rarely are done at the time of change
+ */
 static void validate_menus(void)
 {
 	WindowRef w = FrontWindow();
@@ -2760,28 +2606,43 @@ static void validate_menus(void)
 			if(funcs[i].cmp(value, funcs[i].limit)) {
 				EnableMenuItem(m, j);
 			}
-			else {
+			else
+			{
 				DisableMenuItem(m, j);
 			}
 		}
 	}
 
-	m = MyGetMenuHandle(kFileMenu);
-	if(inkey_flag && character_generated)
+	if(cmd.command != CMD_NULL && character_generated)
 	{
 		EnableMenuItem(MyGetMenuHandle(kFileMenu), kSave);
+		EnableMenuItem(MyGetMenuHandle(kSpecialMenu), kSound);
 	}
 	else
 	{
 		DisableMenuItem(MyGetMenuHandle(kFileMenu), kSave);
+		DisableMenuItem(MyGetMenuHandle(kSpecialMenu), kSound);
 	}
+	
+	/* Keep the sound menu up-to-date */
+	CheckMenuItem(MyGetMenuHandle(kSpecialMenu), kSound, use_sound);
 
 	for(int i = 0; i < N_ELEMENTS(toggle_defs); i++) {
 		m = MyGetMenuHandle(toggle_defs[i].menuID);
 		CheckMenuItem(m, toggle_defs[i].menuItem, *(toggle_defs[i].var));
 	}
-	
-	/* Populate the recent items menu */
+}
+
+static OSStatus ValidateMenuCommand(EventHandlerCallRef inCallRef,
+									EventRef inEvent, void *inUserData )
+{
+	validate_menus();
+	return noErr;
+}
+
+/* Populate the recent items menu */
+static void redrawRecentItemsMenu()
+{
 	DeleteMenuItems(MyGetMenuHandle(kOpenRecentMenu), 1, CountMenuItems(MyGetMenuHandle(kOpenRecentMenu)));
 	if (!recentItemsArrayRef || CFArrayGetCount(recentItemsArrayRef) == 0)
 	{
@@ -2814,13 +2675,6 @@ static void validate_menus(void)
 		AppendMenuItemTextWithCFString(MyGetMenuHandle(kOpenRecentMenu), CFSTR("-"), kMenuItemAttrSeparator, -1, NULL);
 		AppendMenuItemTextWithCFString(MyGetMenuHandle(kOpenRecentMenu), CFSTR("Clear menu"), 0, -1, NULL);
 	}
-}
-
-static OSStatus ValidateMenuCommand(EventHandlerCallRef inCallRef,
-									EventRef inEvent, void *inUserData )
-{
-	validate_menus();
-	return noErr;
 }
 
 /* Add a savefile to the recent items list, or update its existing status */
@@ -2879,6 +2733,9 @@ static void updateRecentItems(char *savefile)
 	/* Limit to ten items */
 	if (CFArrayGetCount(recentItemsArrayRef) > 10)
 		CFArrayRemoveValueAtIndex(recentItemsArrayRef, 10);
+
+	/* Redraw the menu */
+	redrawRecentItemsMenu();
 }
 
 /* Handle a selection in the recent items menu */
@@ -2916,6 +2773,9 @@ static OSStatus OpenRecentCommand(EventHandlerCallRef inCallRef,
 		
 		cmd.command = CMD_LOADFILE;
 	}
+
+	/* Redraw the menu */
+	redrawRecentItemsMenu();
 
 	return noErr;
 }
@@ -3001,7 +2861,6 @@ static game_command get_init_cmd()
 	}
 		
 	/* A game is starting - update status and tracking as appropriate. */ 
-	game_in_progress = TRUE; 
 	term_data *td0 = &data[0];
 	ChangeWindowAttributes(td0->w, kWindowNoAttributes, kWindowCloseBoxAttribute);
 	DisableMenuItem(MyGetMenuHandle(kFileMenu), kClose);
@@ -3014,8 +2873,11 @@ static game_command get_init_cmd()
 			
 	/* If supplied with a savefile, update the Recent Items list */
 	if (savefile[0])
+	{
 		updateRecentItems(savefile);
-
+		redrawRecentItemsMenu();
+	}
+	
 	return cmd; 
 } 
 
@@ -3023,7 +2885,7 @@ static game_command get_init_cmd()
 static OSStatus QuitCommand(EventHandlerCallRef inCallRef,
 							EventRef inEvent, void *inUserData )
 {
-	if (!game_in_progress && !character_generated)
+	if (cmd.command == CMD_NULL && !character_generated)
 		quit(0);	
 	else Term_key_push(KTRL('x'));
 	return noErr;
@@ -3043,7 +2905,7 @@ static OSStatus CommandCommand(EventHandlerCallRef inCallRef,
 	default:
 		return eventNotHandledErr;
 	case 'save':
-		if(game_in_progress && character_generated)
+		if(cmd.command != CMD_NULL && character_generated)
 			Term_key_push(KTRL('S'));
 		break;
 	case 'open':
@@ -3081,7 +2943,7 @@ static OSStatus CloseCommand(EventHandlerCallRef inCallRef,
 
 	td = (term_data*) GetWRefCon(w);
 
-	if(!game_in_progress && !character_generated && td == &data[0])
+	if(cmd.command == CMD_NULL && !character_generated && td == &data[0])
 		quit(0);
 
 	hibernate();
@@ -3224,7 +3086,7 @@ static void graphics_aux(int op)
 		use_transparency = false;
 	}
 	/* Reset visuals, without updating the screen */
-	if (initialized && game_in_progress)
+	if (initialized && cmd.command != CMD_NULL)
 	{
 		reset_visuals(TRUE);
 	}
@@ -3387,6 +3249,22 @@ static OSStatus UpdateCommand(EventHandlerCallRef inCallRef,
 
 	return noErr;
 }
+
+/* Handle toggling sound via the menu option */
+/* Handle a selection in the recent items menu */
+static OSStatus SoundCommand(EventHandlerCallRef inCallRef,
+							EventRef inEvent, void *inUserData )
+{
+	HICommand command;
+	GetEventParameter( inEvent, kEventParamDirectObject, typeHICommand,
+							NULL, sizeof(command), NULL, &command);
+	if (command.menu.menuItemIndex == kSound)
+	{
+		use_sound = !use_sound;
+	}
+	return noErr;
+}
+
 
 static OSStatus ToggleCommand(EventHandlerCallRef inCallRef,
 								EventRef inEvent, void *inUserData )
@@ -3628,13 +3506,6 @@ static OSStatus KeyboardCommand ( EventHandlerCallRef inCallRef,
 	return noErr;
 }
 
-static OSStatus PrintCommand(EventHandlerCallRef inCallRef, EventRef inEvent,
-	void *inUserData )
-{
-	mac_warning((const char*) inUserData);
-	return noErr;
-}
-
 /* About angband... */
 static OSStatus AboutCommand(EventHandlerCallRef inCallRef, EventRef inEvent,
 	void *inUserData )
@@ -3683,17 +3554,23 @@ static OSStatus AboutCommand(EventHandlerCallRef inCallRef, EventRef inEvent,
 static OSStatus ResumeCommand (EventHandlerCallRef inCallRef,
 								EventRef inEvent, void *inUserData )
 {
-	WindowRef w = FrontWindow();
-	term_data *td = (term_data *)GetWRefCon(w);
-	if(!td) return noErr;
+	term_data *td;
 
 	hibernate();
 	Cursor tempCursor;
-	SetPort(GetWindowPort(w));
 	SetCursor(GetQDGlobalsArrow(&tempCursor));
 
-	/* Synchronise term */
-	term_data_redraw(td);
+	/* Redraw all visible terms */
+	for (int i = 0; i < MAX_TERM_DATA; i++ )
+	{
+		/* Obtain */
+		td = &data[i];
+
+		/* Redraw if mapped */
+		if (td->mapped)
+			term_data_redraw(td);
+	}
+
 	return noErr;
 }
 
@@ -3752,7 +3629,7 @@ static OSErr AEH_Open(const AppleEvent *theAppleEvent, AppleEvent* reply,
 static void quit_calmly(void)
 {
 	/* Quit immediately if game's not started */
-	if (!game_in_progress || !character_generated) quit(NULL);
+	if (cmd.command == CMD_NULL || !character_generated) quit(NULL);
 
 	/* Save the game and Quit (if it's safe) */
 	if (inkey_flag)
@@ -3912,9 +3789,6 @@ static void hook_quit(cptr str)
 	/* Warning if needed */
 	if (str) mac_warning(str);
 
-	/* Clean up sound support */
-	cleanup_sound();
-
 	/* Update the Recent Items list - inserts newly created characters */
 	if (savefile[0])
 		updateRecentItems(savefile);
@@ -3980,6 +3854,9 @@ int main(void)
 	 */
 	(void)Gestalt(gestaltSystemVersion, &mac_os_version);
 
+	/* Initiliases Cocoa */
+	NSApplicationLoad();
+	
 	/* Hooks in some "z-util.c" hooks */
 	plog_aux = hook_plog;
 	quit_aux = hook_quit;
@@ -3990,9 +3867,10 @@ int main(void)
 	/* Show the "watch" cursor */
 	SetCursor(*(GetCursor(watchCursor)));
 
-	/* Ensure that the recent items array is always an array */
+	/* Ensure that the recent items array is always an array and start with an empty menu */
 	recentItemsArrayRef = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
-	
+	redrawRecentItemsMenu();
+
 	/* Prepare the menubar */
 	init_menubar();
 
@@ -4013,10 +3891,6 @@ int main(void)
 	/* Install menu and application handlers */
 	install_handlers(0);
 
-	/* Hack -- process all events */
-	FlushEventQueue(GetMainEventQueue());
-
-
 	/* Reset the cursor */
 	Cursor tempCursor;
 	SetCursor(GetQDGlobalsArrow(&tempCursor));
@@ -4029,12 +3903,12 @@ int main(void)
 	/* Note the "system" */
 	ANGBAND_SYS = "mac";
 
-
 	/* Validate the contents of the main window */
 	validate_main_window();
 
-	/* Reset event queue */
-	FlushEventQueue(GetMainEventQueue());
+	/* Flush input commands from the event queue */
+	FlushEventsMatchingListFromQueue(GetMainEventQueue(),
+		N_ELEMENTS(input_event_types), input_event_types);
 
 	/* Set command hook */ 
 	get_game_command = get_init_cmd; 
@@ -4042,12 +3916,12 @@ int main(void)
 	/* Set up the display handlers and things. */
 	init_display();
 
+	if(graf_mode) graphics_aux(graf_mode);
+
 	/* We are now initialized */
 	initialized = TRUE;
 
 	validate_menus();
-
-	if(graf_mode) graphics_aux(graf_mode);
 
 	/* Start playing! */
 	EventRef newGameEvent = nil;

@@ -1671,18 +1671,12 @@ static errr rd_savefile_new_aux(void)
 
 	/* Read RNG state */
 	rd_randomizer();
-	if (arg_fiddle) note("Loaded Randomizer Info");
-
 
 	/* Then the options */
 	rd_options();
-	if (arg_fiddle) note("Loaded Option Flags");
-
 
 	/* Then the "messages" */
 	rd_messages();
-	if (arg_fiddle) note("Loaded Messages");
-
 
 	/* Monster Memory */
 	rd_u16b(&tmp16u);
@@ -1700,8 +1694,6 @@ static errr rd_savefile_new_aux(void)
 		/* Read the lore */
 		rd_lore(i);
 	}
-	if (arg_fiddle) note("Loaded Monster Memory");
-
 
 	/* Object Memory */
 	rd_u16b(&tmp16u);
@@ -1727,8 +1719,6 @@ static errr rd_savefile_new_aux(void)
 		k_ptr->everseen = (tmp8u & 0x08) ? TRUE : FALSE;
 	}
 
-	if (arg_fiddle) note("Loaded Object Memory");
-
 
 	/* Load the Quests */
 	rd_u16b(&tmp16u);
@@ -1749,8 +1739,6 @@ static errr rd_savefile_new_aux(void)
 		rd_byte(&tmp8u);
 		rd_byte(&tmp8u);
 	}
-	if (arg_fiddle) note("Loaded Quests");
-
 
 	/* Load the Artifacts */
 	rd_u16b(&tmp16u);
@@ -1771,19 +1759,14 @@ static errr rd_savefile_new_aux(void)
 		rd_byte(&tmp8u);
 		rd_byte(&tmp8u);
 	}
-	if (arg_fiddle) note("Loaded Artifacts");
-
 
 	/* Read the extra stuff */
 	if (rd_extra()) return (-1);
-	if (arg_fiddle) note("Loaded extra information");
-
 
 	/* Read random artifacts */
 	if (adult_randarts)
 	{
 		if (rd_randarts()) return (-1);
-		if (arg_fiddle) note("Loaded Random Artifacts");
 	}
 
 

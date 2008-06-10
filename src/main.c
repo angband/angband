@@ -299,24 +299,10 @@ int main(int argc, char *argv[])
 				break;
 			}
 
-			case 'F':
-			case 'f':
-			{
-				arg_fiddle = TRUE;
-				break;
-			}
-
 			case 'W':
 			case 'w':
 			{
 				arg_wizard = TRUE;
-				break;
-			}
-
-			case 'V':
-			case 'v':
-			{
-				arg_sound = TRUE;
 				break;
 			}
 
@@ -370,8 +356,6 @@ int main(int argc, char *argv[])
 				puts("  -n             Start a new character");
 				puts("  -L             Load a new-format save file");
 				puts("  -w             Resurrect dead character (marks savefile)");
-				puts("  -f             Request fiddle (verbose) mode");
-				puts("  -v             Request sound mode");
 				puts("  -g             Request graphics mode");
 				puts("  -u<who>        Use your <who> savefile");
 				puts("  -d<path>       Store pref files and screendumps in <path>");

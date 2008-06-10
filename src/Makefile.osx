@@ -31,7 +31,8 @@ CFLAGS = \
 	-Wall -std=gnu99 $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
 	-DPRIVATE_USER_PATH=\"~/Library/Preferences\" -DUSE_PRIVATE_PATHS \
 	-arch ppc -arch i386 -mmacosx-version-min=10.0
-LIBS = -framework CoreFoundation -framework QuickTime -framework Carbon
+LIBS = -framework CoreFoundation -framework QuickTime -framework Carbon \
+	-framework Cocoa
 
 #
 # Provide a CFLAGS override so that older versions of OS X can continue to
@@ -99,6 +100,8 @@ clean:
 # Basic build rules and dependencies
 #
 
+main-crb.o : main-crb.c
+	CC $(CFLAGS) -x objective-c -c -o $@ $<
 %.o : %.c
 	CC $(CFLAGS) -c -o $@ $<
 
@@ -169,6 +172,7 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 	# 'optionally' install sound and graphics tiles, if present
 	-cp $(TILES) $(APPRES)/lib/xtra/graf
 	-cp ../lib/xtra/sound/*.wav $(APPRES)/lib/xtra/sound
+	-cp ../lib/xtra/sound/sound.cfg $(APPRES)/lib/xtra/sound
 
 	install -m 755 $(EXE) $(APPBIN)
 	install -m 644 $(ICONFILES) $(APPRES)
@@ -192,7 +196,7 @@ PACKAGE_NAME = $(NAME)-$(VERSION)
 # In the unlikely event that tar+zip isn't enough...
 
 dist: install
-	@rm -rf disttemp
+	@rm -rf disttemp*
 	mkdir -p disttemp/Docs
 	cp ../readme.txt ../changes.txt disttemp/Docs
 	cp -R -p "$(APPBNDL)" disttemp
@@ -200,6 +204,7 @@ dist: install
 
 	@-rm ../"$(PACKAGE_NAME)-osx.dmg"
 
-	hdiutil create -fs HFS+ -volname $(PACKAGE_NAME) -srcfolder disttemp ../"$(PACKAGE_NAME)-osx.dmg"
+	hdiutil create -quiet -fs HFS+ -volname $(PACKAGE_NAME) -srcfolder disttemp disttemp.dmg
+	hdiutil convert disttemp.dmg -quiet -format UDZO -imagekey zlib-level=6 -o ../"$(PACKAGE_NAME)-osx.dmg"
 
-	rm -rf disttemp
+	rm -rf disttemp*

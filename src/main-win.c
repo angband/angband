@@ -998,9 +998,6 @@ static void load_prefs(void)
 	/* Extract the "use_bigtile" flag */
 	use_bigtile = GetPrivateProfileInt("Angband", "Bigtile", FALSE, ini_file);
 
-	/* Extract the "arg_fiddle" flag */
-	arg_fiddle = (GetPrivateProfileInt("Angband", "Fiddle", 0, ini_file) != 0);
-
 	/* Extract the "arg_wizard" flag */
 	arg_wizard = (GetPrivateProfileInt("Angband", "Wizard", 0, ini_file) != 0);
 
@@ -1732,21 +1729,14 @@ static errr Term_xtra_win_react(void)
 
 #ifdef USE_SOUND
 
-	/* Handle "arg_sound" */
-	if (use_sound != arg_sound)
+	/* Initialize sound (if needed) */
+	if (use_sound && !init_sound())
 	{
-		/* Initialize (if needed) */
-		if (use_sound && !init_sound())
-		{
-			/* Warning */
-			plog("Cannot initialize sound!");
+		/* Warning */
+		plog("Cannot initialize sound!");
 
-			/* Cannot enable */
-			use_sound = FALSE;
-		}
-
-		/* Change setting */
-		arg_sound = use_sound;
+		/* Cannot enable */
+		use_sound = FALSE;
 	}
 
 #endif /* USE_SOUND */
