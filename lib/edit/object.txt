@@ -1306,7 +1306,7 @@ D:It increases your armor class.
 N:216:Teleportation
 G:=:d
 I:45:27:2
-W:5:0:2:400
+W:5:0:2:0
 A:100:5 to 100
 F:TELEPORT | SPEED | EASY_KNOW
 
@@ -1328,7 +1328,7 @@ E:CURE_SERIOUS:10+5d8
 N:219:Escaping
 G:=:d
 I:45:30:4
-W:30:0:2:500
+W:30:0:2:0
 A:100:15 to 100
 F:AFRAID | SPEED | EASY_KNOW
 
