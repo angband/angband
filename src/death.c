@@ -324,7 +324,7 @@ static void death_scores(void *unused, const char *title)
 	(void)title;
 
 	screen_save();
-	top_twenty();
+	show_scores();
 	screen_load();
 }
 

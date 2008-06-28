@@ -121,12 +121,7 @@ static void handle_signal_simple(int sig)
 		/* Mark the savefile */
 		my_strcpy(p_ptr->died_from, "Abortion", sizeof(p_ptr->died_from));
 
-		/* HACK - Skip the tombscreen if it is already displayed */
-		if (score_idx == -1)
-		{
-			/* Close stuff */
-			close_game();
-		}
+		close_game();
 
 		/* Quit */
 		quit("interrupt");
