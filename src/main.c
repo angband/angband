@@ -293,12 +293,6 @@ int main(int argc, char *argv[])
 				break;
 			}
 
-			case 'L':
-			{
-				new_save = TRUE;
-				break;
-			}
-
 			case 'W':
 			case 'w':
 			{

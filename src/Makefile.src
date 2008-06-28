@@ -11,7 +11,6 @@ COPYRIGHT = (c) 1995-2008 Angband contributors
 HEADERS = \
 	angband.h \
 	cmds.h \
-	compress.h \
 	config.h \
 	defines.h \
 	effects.h \
@@ -29,13 +28,11 @@ HEADERS = \
 	ui.h \
 	ui-menu.h \
 	wizard.h \
-	z-blockfile.h \
 	z-file.h \
 	z-form.h \
 	z-msg.h \
 	z-quark.h \
 	z-rand.h \
-	z-smap.h \
 	z-term.h \
 	z-type.h \
 	z-util.h \
@@ -46,7 +43,7 @@ GTKHEADERS = \
 	gtk/main-gtk.h \
 	
 ZFILES = z-file.o z-form.o z-msg.o z-quark.o z-rand.o z-term.o z-type.o \
-         z-util.o z-virt.o z-blockfile.o z-smap.o 
+         z-util.o z-virt.o
 MAINFILES = main.o main-crb.o main-gcu.o $(GTKMAINFILES) \
             main-ros.o main-sdl.o main-win.o main-x11.o snd-sdl.o
 
@@ -59,7 +56,6 @@ ANGFILES = \
 	birth.o \
 	button.o \
 	cave.o \
-	compress.o \
 	cmd0.o \
 	cmd1.o \
 	cmd2.o \
@@ -80,7 +76,6 @@ ANGFILES = \
 	init1.o \
 	init2.o \
 	load.o \
-	loadsave.o \
 	melee1.o \
 	melee2.o \
 	monster1.o \

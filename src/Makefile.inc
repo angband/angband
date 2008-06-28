@@ -27,7 +27,6 @@ cave.o: cave.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
   option.h types.h ui.h z-type.h object.h externs.h tvalsval.h \
   game-event.h
-compress.o: compress.c compress.h h-basic.h
 cmd0.o: cmd0.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
   option.h types.h ui.h z-type.h object.h externs.h wizard.h cmds.h \
@@ -94,10 +93,6 @@ init2.o: init2.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
 load.o: load.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
   option.h types.h ui.h z-type.h object.h externs.h tvalsval.h
-loadsave.o: loadsave.c angband.h h-basic.h z-file.h z-form.h z-util.h \
-  z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h object.h externs.h \
-  z-blockfile.h z-smap.h
 melee1.o: melee1.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
   defines.h option.h types.h ui.h z-type.h object.h externs.h tvalsval.h
@@ -198,7 +193,8 @@ wiz-spoil.o: wiz-spoil.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   tvalsval.h
 wiz-stats.o: wiz-stats.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h ui.h z-type.h object.h externs.h wizard.h
+  defines.h option.h types.h ui.h z-type.h object.h externs.h cmds.h \
+  wizard.h tvalsval.h
 wizard.o: wizard.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
   defines.h option.h types.h ui.h z-type.h object.h externs.h wizard.h \
@@ -226,5 +222,3 @@ z-term.o: z-term.c z-term.h h-basic.h ui-event.h z-virt.h
 z-type.o: z-type.c h-basic.h z-form.h z-term.h ui-event.h ui.h z-type.h
 z-util.o: z-util.c z-util.h h-basic.h
 z-virt.o: z-virt.c z-virt.h h-basic.h z-util.h
-z-blockfile.o: z-blockfile.c z-virt.h h-basic.h z-blockfile.h z-file.h
-z-smap.o: z-smap.c z-virt.h h-basic.h z-file.h z-smap.h

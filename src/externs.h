@@ -369,10 +369,6 @@ extern void cleanup_angband(void);
 /* load.c */
 extern bool old_load(void);
 
-/* loadsave.c */
-bool save(char *filename);
-bool load(char *filename);
-
 /* melee1.c */
 bool check_hit(int power, int level);
 bool make_attack_normal(int m_idx);
@@ -686,10 +682,9 @@ bool make_fake_artifact(object_type *o_ptr, byte name1);
 extern void do_cmd_borg(void);
 #endif /* ALLOW_BORG */
 
-/* Testing Hacks XXX */
-extern bool new_save;
+
+extern u16b lazymove_delay;
+
 
 #endif /* !INCLUDED_EXTERNS_H */
 
-
-extern u16b lazymove_delay;

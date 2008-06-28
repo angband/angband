@@ -1740,7 +1740,7 @@ void play_game(void)
 
 	if (savefile[0] && file_exists(savefile))
 	{
-		bool ok = new_save ? load(savefile) : old_load();
+		bool ok = old_load();
 		if (!ok) quit("broken savefile");
 
 		if (p_ptr->is_dead && arg_wizard)

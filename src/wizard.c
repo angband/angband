@@ -1674,12 +1674,6 @@ void do_cmd_debug(void)
 			break;
 		}
 
-		case 'S':
-		{
-			save("savefile.new");
-			break;
-		}
-	
 		/* Teleport */
 		case 't':
 		{

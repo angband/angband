@@ -770,9 +770,6 @@ void (*sound_hook)(int sound);
 autoinscription *inscriptions = 0;
 u16b inscriptions_count = 0;
 
-/* Use new-type savefiles */
-bool new_save;
-
 
 /* Delay in centiseconds before moving to allow another keypress */
 /* Zero means normal instant movement. */
