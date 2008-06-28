@@ -1411,62 +1411,8 @@ static void term_remove_font(const char *name)
 	return;
 }
 
-/**
- * Recover term with target font if possible
- */
-static errr term_find_font_in_use(const char *new_font_file)
-{
-	if (new_font_file)
-	{
-		int i;
 
-		/* Scan windows */
-		for (i = 0; i < MAX_TERM_DATA; i++)
-		{
-			/* Check "screen" */
-			if ((data[i].font_file) &&
-		    	(streq(data[i].font_file, new_font_file)))
-				return i;
-		}
-	}
-	return -1;
-}
-
-/**
- * Coordinate forgetting all relevant font information.
- */
-static void term_forget_font(term_data *td)
-{
-	/* Forget old font */
-	if (td->font_file)
-	{
-		char* tmp_font_file = td->font_file;	/* back up font name */
-		td->font_file = NULL;						/* forget it */
-
-		{
-		errr term_using = term_find_font_in_use(tmp_font_file);
-
-		if (-1 == term_using)
-		{
-			/* forget the old font if needed */
-			if (td->font_id) DeleteObject(td->font_id);
-
-			/* Remove unused font resources */
-		 	term_remove_font(tmp_font_file);
-		}
-
-		/* Free the old name */
-		string_free(tmp_font_file);
-
-		/* going out of scope, so commented out */
-		/* tmp_font_file = NULL */
-		}
-	}
-
-	td->font_id = 0;
-}
-
-/**
+/*
  * Force the use of a new "font file" for a term_data
  *
  * This function may be called before the "window" is ready
@@ -1477,14 +1423,50 @@ static void term_forget_font(term_data *td)
  */
 static errr term_force_font(term_data *td, cptr path)
 {
+	int i;
+
 	int wid, hgt;
-	errr term_using;
-	HFONT tmp_font_id;
+
 	char *base;
+
 	char buf[1024];
+
 
 	/* Check we have a path */
 	if (!path) return (1);
+
+
+	/* Forget the old font (if needed) */
+	if (td->font_id) DeleteObject(td->font_id);
+
+	/* Forget old font */
+	if (td->font_file)
+	{
+		bool used = FALSE;
+
+		/* Scan windows */
+		for (i = 0; i < MAX_TERM_DATA; i++)
+		{
+			/* Check "screen" */
+			if ((td != &data[i]) &&
+			    (data[i].font_file) &&
+			    (streq(data[i].font_file, td->font_file)))
+			{
+				used = TRUE;
+			}
+		}
+
+		/* Remove unused font resources */
+		if (!used) term_remove_font(td->font_file);
+
+		/* Free the old name */
+		string_free(td->font_file);
+
+		/* Forget it */
+		td->font_file = NULL;
+	}
+
+
 
 	/* Local copy */
 	my_strcpy(buf, path, sizeof(buf));
@@ -1493,29 +1475,10 @@ static errr term_force_font(term_data *td, cptr path)
 	base = analyze_font(buf, &wid, &hgt);
 
 	/* Verify suffix */
-	if (!suffix(base, ".FON")) return 1;
+	if (!suffix(base, ".FON")) return (1);
 
 	/* Verify file */
-	if (!file_exists(buf)) return 1;
-
-	/* see if we're already using this font */
-	if (td->font_file && streq(td->font_file, base)) return 0;	/* same font as before */
-	term_using = term_find_font_in_use(base);
-	if (-1 != term_using)
-	{	/* some other term is using this font already */
-		/* Free the old name */
-		string_free(td->font_file);
-
-		/* Save new font name */
-		td->font_file = string_make(base);
-
-		/* recover font information from the other terminal */
-		td->font_id = data[term_using].font_id;		/* font id */
-		td->font_wid = data[term_using].font_wid;	/* size */
-		td->font_hgt = data[term_using].font_hgt;
-
-		return 0;	/* success */
-	}	
+	if (!file_exists(buf)) return (1);
 
 	/* Load the new font */
 	if (!AddFontResource(buf)) return (1);
@@ -1530,27 +1493,10 @@ static errr term_force_font(term_data *td, cptr path)
 	base[strlen(base)-4] = '\0';
 
 	/* Create the font (using the 'base' of the font file name!) */
-	tmp_font_id = CreateFont(hgt, wid, 0, 0, FW_DONTCARE, 0, 0, 0,
+	td->font_id = CreateFont(hgt, wid, 0, 0, FW_DONTCARE, 0, 0, 0,
 	                         ANSI_CHARSET, OUT_DEFAULT_PRECIS,
 	                         CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
 	                         FIXED_PITCH | FF_DONTCARE, base);
-
-	/* Restore the "suffix" */
-	base[strlen(base)] = '.';	
-
-	if (!tmp_font_id)
-	{	/* oops, CreateFont failed */
-		RemoveFontResource(buf);
-		return 1;	
-	}
-
-	/* Forget font information */
-	term_forget_font(td);
-
-	td->font_id = tmp_font_id;
-
-	/* Save new font name */
-	td->font_file = string_make(base);
 
 	/* Hack -- Unknown size */
 	if (!wid || !hgt)
@@ -4539,7 +4485,8 @@ static void hook_quit(cptr str)
 	for (i = MAX_TERM_DATA - 1; i >= 0; --i)
 	{
 		/* Remove all fonts from the system, free resources */
-		term_forget_font(data+i);
+		if (data[i].font_file) term_remove_font(data[i].font_file);
+		if (data[i].font_id) DeleteObject(data[i].font_id);
 		if (data[i].font_want) string_free(data[i].font_want);
 
 		/* Kill the window */
