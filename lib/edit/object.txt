@@ -235,13 +235,13 @@ F:EASY_KNOW
 E:SHROOM_STONE
 D:Its poison turns your skin to stone, albeit briefly.
 
-#N:23:Turbulence
-#G:,:d
-#I:80:13:500
-#W:0:0:1:0
+N:23:Turbulence
+G:,:d
+I:80:13:500
+W:0:0:1:0
 #A:10:1 to 100
-#M:70:1d4
-#F:EASY_KNOW
+M:70:1d4
+F:EASY_KNOW
 #E:SHROOM_TURB
 
 N:24:Debility
@@ -367,7 +367,6 @@ W:30:0:200:700
 A:100:30 to 100
 P:0:3d6:0:0:0
 D:A sword requring two hands to wield.
-
 
 N:42:& Executioner's Sword~
 G:|:r

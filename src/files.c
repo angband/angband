@@ -110,30 +110,11 @@ s16b tokenize(char *buf, s16b num, char **tokens)
 		/* Scan the string */
 		for (t = s; *t; t++)
 		{
-			/* Found a delimiter */
-			if ((*t == ':') || (*t == '/')) break;
-
-			/* Handle single quotes */
-			if (*t == '\'')
-			{
-				/* Advance */
-				t++;
-
-				/* Handle backslash */
-				if (*t == '\\') t++;
-
-				/* Require a character */
-				if (!*t) break;
-
-				/* Advance */
-				t++;
-
-				/* Hack -- Require a close quote */
-				if (*t != '\'') *t = '\'';
-			}
-
-			/* Handle back-slash */
+			/* Allow pseudo-escaping */
 			if (*t == '\\') t++;
+
+			/* Found a delimiter */
+			else if (*t == ':') break;
 		}
 
 		/* Nothing left */
@@ -311,19 +292,45 @@ errr process_pref_file_command(char *buf)
 		}
 	}
 
-	/* Process "K:<num>:<a>/<c>"  -- attr/char for object kinds */
+	/* Process "K:<tval>:<sval>:<a>/<c>"  -- attr/char for object kinds */
 	else if (buf[0] == 'K')
 	{
-		if (tokenize(buf+2, 3, zz) == 3)
+		if (tokenize(buf+2, 4, zz) == 4)
 		{
 			object_kind *k_ptr;
-			i = strtol(zz[0], NULL, 0);
-			n1 = strtol(zz[1], NULL, 0);
-			n2 = strtol(zz[2], NULL, 0);
+
+			int tval, sval;
+			const char *tval_s = zz[0];
+			const char *sval_s = zz[1];
+
+			n1 = strtol(zz[2], NULL, 0);
+			n2 = strtol(zz[3], NULL, 0);
+
+			printf("..%s.. ..%s..\n", tval_s, sval_s);
+
+			/* Now convert the tval into its numeric equivalent */
+			if (1 != sscanf(tval_s, "%d", &tval))
+			{
+				tval = tval_find_idx(tval_s);
+				if (tval == -1) return 1;
+			}
+
+			/* Now find the sval */
+			if (1 != sscanf(sval_s, "%d", &sval))
+			{
+				sval = lookup_sval(tval, sval_s);
+				if (sval == -1) return 1;
+			}
+
+			i = lookup_kind(tval, sval);
+
 			if ((i < 0) || (i >= (long)z_info->k_max)) return (1);
+
 			k_ptr = &k_info[i];
+
 			if (n1) k_ptr->x_attr = (byte)n1;
 			if (n2) k_ptr->x_char = (char)n2;
+
 			return (0);
 		}
 	}
