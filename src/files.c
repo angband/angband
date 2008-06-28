@@ -1970,8 +1970,8 @@ errr file_character(cptr name, bool full)
 			object_desc(o_name, sizeof(o_name), &inventory[i], TRUE, ODESC_FULL);
 
 			file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
-			if (inventory[i].k_idx && object_info_known(&inventory[i]))
-				file_putf(fp, "\n");
+			if (inventory[i].k_idx)
+				object_info_chardump(&inventory[i]);
 		}
 		file_putf(fp, "\n\n");
 	}
@@ -1985,7 +1985,7 @@ errr file_character(cptr name, bool full)
 		object_desc(o_name, sizeof(o_name), &inventory[i], TRUE, ODESC_FULL);
 
 		file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
-		object_info_known(&inventory[i]);
+		object_info_chardump(&inventory[i]);
 	}
 	file_putf(fp, "\n\n");
 

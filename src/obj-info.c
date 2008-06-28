@@ -450,7 +450,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 /*
  * Describe things that look like lights.
  */
-static bool describe_light(const object_type *o_ptr, u32b f3)
+static bool describe_light(const object_type *o_ptr, u32b f3, bool terse)
 {
 	int rad = 0;
 
@@ -477,7 +477,7 @@ static bool describe_light(const object_type *o_ptr, u32b f3)
 		text_out (" light");
 	text_out(".");
 
-	if (is_lite && !artifact)
+	if (!terse && is_lite && !artifact)
 	{
 		const char *name = (o_ptr->sval == SV_LITE_TORCH) ? "torch" : "lantern";
 		int turns = (o_ptr->sval == SV_LITE_TORCH) ? FUEL_TORCH : FUEL_LAMP;
@@ -495,7 +495,7 @@ static bool describe_light(const object_type *o_ptr, u32b f3)
 /*
  * Describe an object's activation, if any.
  */
-static bool describe_activation(const object_type *o_ptr, u32b f3, bool full)
+static bool describe_activation(const object_type *o_ptr, u32b f3, bool full, bool all)
 {
 	const object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	const char *desc;
@@ -529,7 +529,10 @@ static bool describe_activation(const object_type *o_ptr, u32b f3, bool full)
 	desc = effect_desc(effect);
 	if (!desc) return FALSE;
 
+	if (all == FALSE && !(f3 & TR3_ACTIVATE)) return FALSE;
+
 	text_out("When ");
+	text_out(" (all = %d, %d) ", all, (f3 & TR3_ACTIVATE) ? 1 : 0);
 
 	if (f3 & TR3_ACTIVATE)
 		text_out("activated");
@@ -614,8 +617,8 @@ static bool object_info_out(const object_type *o_ptr, bool full)
 
 	if (something) text_out("\n");
 
-	if (describe_activation(o_ptr, f3, full)) something = TRUE;
-	if (describe_light(o_ptr, f3)) something = TRUE;
+	if (describe_activation(o_ptr, f3, full, TRUE)) something = TRUE;
+	if (describe_light(o_ptr, f3, FALSE)) something = TRUE;
 
 	return something;
 }
@@ -725,6 +728,40 @@ void object_info_header(const object_type *o_ptr)
 	return;
 }
 
+
+bool object_info_chardump(const object_type *o_ptr)
+{
+	u32b f1, f2, f3;
+	bool something = FALSE;
+
+	/* Grab the object flags */
+	object_flags_known(o_ptr, &f1, &f2, &f3);
+
+
+	if (cursed_p(o_ptr))
+	{
+		if (f3 & TR3_PERMA_CURSE)
+			text_out_c(TERM_L_RED, "Permanently cursed.\n");
+		else if (f3 & TR3_HEAVY_CURSE)
+			text_out_c(TERM_L_RED, "Heavily cursed.\n");
+		else if (object_known_p(o_ptr))
+			text_out_c(TERM_L_RED, "Cursed.\n");
+	}
+
+	if (describe_stats(f1, o_ptr->pval)) something = TRUE;
+	if (describe_immune(f2)) something = TRUE;
+	if (describe_ignores(f3)) something = TRUE;
+	if (describe_sustains(f2)) something = TRUE;
+	if (describe_misc_magic(f3)) something = TRUE;
+
+	if (describe_activation(o_ptr, f3, FALSE, FALSE)) something = TRUE;
+	if (describe_light(o_ptr, f3, TRUE)) something = TRUE;
+
+	/* Describe combat bits */
+	if (describe_combat(o_ptr, FALSE)) something = TRUE;
+
+	return something;
+}
 
 bool object_info_known(const object_type *o_ptr)
 {
