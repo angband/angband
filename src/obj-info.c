@@ -423,7 +423,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 
 	/* Include bonus damage in stated average */
 	dam += xtra_dam;
-    if (dam < 0)
+    if (dam <= 0)
 		text_out_c(TERM_L_RED, "%d", 0);
 	else if (dam % 10)
 		text_out_c(TERM_L_GREEN, "%d.%d", dam / 10, dam % 10);
