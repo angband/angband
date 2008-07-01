@@ -330,7 +330,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 {
 	const char *desc[16];
 	int mult[16];
-	int cnt, dam;
+	int cnt, dam, total_dam;
 	int xtra_dam = 0;
 	object_type *j_ptr = &inventory[INVEN_BOW];
 
@@ -414,7 +414,17 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 
 		for (i = 0; i < cnt; i++)
 		{
-			text_out_c(TERM_L_GREEN, "%d", ((dam * mult[i]) + xtra_dam) / 10);
+			/* Include bonus damage and slay in stated average */
+			total_dam = dam * mult[i] + xtra_dam;
+
+			if (total_dam <= 0)
+				text_out_c(TERM_L_RED, "%d", 0);
+			else if (total_dam % 10)
+				text_out_c(TERM_L_GREEN, "%d.%d", 
+						   total_dam / 10, total_dam % 10);
+			else
+				text_out_c(TERM_L_GREEN, "%d", total_dam / 10);
+
 			text_out(" against %s, ", desc[i]);
 		}
 
@@ -422,13 +432,15 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	}
 
 	/* Include bonus damage in stated average */
-	dam += xtra_dam;
-    if (dam <= 0)
+	total_dam = dam + xtra_dam;
+
+    if (total_dam <= 0)
 		text_out_c(TERM_L_RED, "%d", 0);
-	else if (dam % 10)
-		text_out_c(TERM_L_GREEN, "%d.%d", dam / 10, dam % 10);
+	else if (total_dam % 10)
+		text_out_c(TERM_L_GREEN, "%d.%d", 
+				   total_dam / 10, total_dam % 10);
     else
-		text_out_c(TERM_L_GREEN, "%d", dam / 10);
+		text_out_c(TERM_L_GREEN, "%d", total_dam / 10);
 
 	text_out(" against normal creatures.\n");
 
