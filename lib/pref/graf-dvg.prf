@@ -2090,18 +2090,7 @@ K:food:Piece~ of Elvish Waybread:0x82:0x86
 
 
 ### The shrooms, an interesting collection ###
-
-# K:food:Second Sight:0x00:0x2C
-# K:food:Fast Recovery:0x00:0x2C
-# K:food:Vigor:0x00:0x2C
-# K:food:Clear Mind:0x00:0x2C
-# K:food:Emergency:0x00:0x2C
-# K:food:Terror:0x00:0x2C
-# K:food:Stoneskin:0x00:0x2C
-# K:food:Turbulence:0x00:0x2C
-# K:food:Debility:0x00:0x2C
-# K:food:Sprinting:0x00:0x2C
-# K:food:Purging:0x00:0x2C
+# Graphics are sourced from flavor entries in flvr-dvg.prf
 
 
 
@@ -2270,8 +2259,8 @@ K:gloves:Set~ of Alchemist's Gloves:0x80:0x99
 
 ### The shields ###
 
-#K:shield:Buckler~:0x80:0xDA
 #K:shield:Buckler~:0x80:0x9C
+K:shield:Wicker Shield~:0x80:0x9C
 K:shield:Small Metal Shield~:0x80:0x9E
 K:shield:Leather Shield~:0x80:0x9D
 K:shield:Large Metal Shield~:0x80:0x9F
@@ -2281,112 +2270,13 @@ K:shield:Mithril Shield~:0x80:0xA0
 
 
 ##### Rings #####
-
-### Stat rings ###
-
-# K:ring:Strength:0x00:0x3D
-# K:ring:Intelligence:0x00:0x3D
-# K:ring:Dexterity:0x00:0x3D
-# K:ring:Constitution:0x00:0x3D
-# K:ring:Speed:0x00:0x3D
-# K:ring:Searching:0x00:0x3D
-
-
-### Stat sustain rings ###
-
-# K:ring:Bodykeeping:0x00:0x3D
-# K:ring:Soulkeeping:0x00:0x3D
-# K:ring:Sustain Charisma:0x00:0x3D
-
-
-### Resistance rings ###
-
-# K:ring:Resist Poison:0x00:0x3D
-# K:ring:Resist Fire:0x00:0x3D
-# K:ring:Resist Cold:0x00:0x3D
-
-
-### Elemental rings ###
-
-# K:ring:Light:0x00:0x3D
-# K:ring:Dark:0x00:0x3D
-# K:ring:Flames:0x00:0x3D
-# K:ring:Acid:0x00:0x3D
-# K:ring:Ice:0x00:0x3D
-# K:ring:Lightning:0x7f:0x80
-
-
-### Combat rings ###
-
-# K:ring:Damage:0x00:0x3D
-# K:ring:Accuracy:0x00:0x3D
-# K:ring:Slaying:0x00:0x3D
-# K:ring:Protection:0x00:0x3D
-
-
-### Mixed blessings ###
-
-# K:ring:Teleportation:0x00:0x3D
-# K:ring:Reckless Attacks:0x00:0x3D
-# K:ring:Open Wounds:0x00:0x3D
-# K:ring:Escaping:0x00:0x3D
-# K:ring:the Mouse:0x00:0x3D
-# K:ring:the Dog:0x00:0x3D
-
-
-### Misc rings ###
-
-# K:ring:Slow Digestion:0x00:0x3D
-# K:ring:Feather Falling:0x00:0x3D
-# K:ring:Free Action:0x00:0x3D
-# K:ring:See Invisible:0x00:0x3D
-# K:ring:Delving:0x00:0x3D
+# Graphics are sourced from flavor entries in flvr-dvg.prf
 
 
 
 
 ##### Amulets #####
-
-### Stat boosts ###
-
-# K:amulet:Wisdom:0x00:0x22
-# K:amulet:Charisma:0x00:0x22
-
-
-### Resistances ###
-
-# K:amulet:Resist Lightning:0x7f:0x80
-# K:amulet:Resist Acid:0x00:0x22
-# K:amulet:Resistance:0x7f:0x80
-
-
-### JLE amulets ###
-
-# K:amulet:Sustenance:0x7f:0x80
-# K:amulet:the Magi:0x00:0x22
-# K:amulet:ESP:0x7f:0x80
-# K:amulet:Devotion:0x7f:0x80
-# K:amulet:Weaponmastery:0x7f:0x80
-# K:amulet:Trickery:0x7f:0x80
-
-
-### Ability boosts ###
-
-# K:amulet:Regeneration:0x7f:0x80
-# K:amulet:Infravision:0x7f:0x80
-# K:amulet:Searching:0x00:0x22
-
-
-### Powers ###
-
-# K:amulet:Teleportation:0x00:0x22
-# K:amulet:Slow Digestion:0x00:0x22
-# K:amulet:Adornment:0x00:0x22
-
-
-### Mixed ###
-
-# K:amulet:Inertia:0x00:0x22
+# Graphics are sourced from flavor entries in flvr-dvg.prf
 
 
 
@@ -2473,255 +2363,25 @@ K:scroll:Trap Creation:0x87:0xE1
 
 
 ##### Potions #####
-
-### Statgain ###
-
-# K:potion:Strength:0x00:0x21
-# K:potion:Intelligence:0x00:0x21
-# K:potion:Wisdom:0x00:0x21
-# K:potion:Dexterity:0x00:0x21
-# K:potion:Constitution:0x00:0x21
-# K:potion:Charisma:0x00:0x21
-# K:potion:Augmentation:0x00:0x21
-# K:potion:Experience:0x00:0x21
-
-
-### Healings ###
-
-# K:potion:Cure Light Wounds:0x00:0x21
-# K:potion:Cure Serious Wounds:0x00:0x21
-# K:potion:Cure Critical Wounds:0x00:0x21
-# K:potion:Healing:0x00:0x21
-# K:potion:*Healing*:0x00:0x21
-# K:potion:Life:0x00:0x21
-# K:potion:Neutralize Poison:0x00:0x21
-# K:potion:Restore Mana:0x00:0x21
-
-
-### Stat restore ###
-
-# K:potion:Restore Strength:0x00:0x21
-# K:potion:Restore Intelligence:0x00:0x21
-# K:potion:Restore Wisdom:0x00:0x21
-# K:potion:Restore Dexterity:0x00:0x21
-# K:potion:Restore Constitution:0x00:0x21
-# K:potion:Restore Charisma:0x00:0x21
-# K:potion:Restore Life Levels:0x00:0x21
-
-
-### Gain one/lose one potions ###
-
-# K:potion:Brawn:0x00:0x21
-# K:potion:Intellect:0x00:0x21
-# K:potion:Contemplation:0x00:0x21
-# K:potion:Nimbleness:0x00:0x21
-# K:potion:Toughness:0x00:0x21
-
-
-### Knowledge ###
-
-# K:potion:Self Knowledge:0x00:0x21
-# K:potion:Enlightenment:0x00:0x21
-# K:potion:*Enlightenment*:0x00:0x21
-
-
-### Buffs ###
-
-# K:potion:Speed:0x00:0x21
-# K:potion:Heroism:0x00:0x21
-# K:potion:Berserk Strength:0x00:0x21
-# K:potion:Boldness:0x00:0x21
-# K:potion:Resist Heat:0x00:0x21
-# K:potion:Resist Cold:0x00:0x21
-# K:potion:Resist Poison:0x00:0x21
-# K:potion:True Seeing:0x00:0x21
-# K:potion:Infravision:0x00:0x21
-
-
-### Useless buggers ###
-
-# K:potion:Slime Mold Juice:0x00:0x21
-# K:potion:Sleep:0x00:0x21
-# K:potion:Blindness:0x00:0x21
-# K:potion:Confusion:0x00:0x21
-# K:potion:Poison:0x00:0x21
-# K:potion:Slowness:0x00:0x21
-# K:potion:Lose Memories:0x00:0x21
-# K:potion:Salt Water:0x00:0x21
+# Graphics are sourced from flavor entries in flvr-dvg.prf
 
 
 
 
 ##### Wands #####
-
-### Bolts ###
-
-# K:wand:Magic Missile:0x00:0x2D
-# K:wand:Lightning Bolts:0x00:0x2D
-# K:wand:Frost Bolts:0x00:0x2D
-# K:wand:Fire Bolts:0x00:0x2D
-# K:wand:Acid Bolts:0x00:0x2D
-
-
-### Balls ###
-
-# K:wand:Stinking Cloud:0x00:0x2D
-# K:wand:Lightning Balls:0x00:0x2D
-# K:wand:Cold Balls:0x00:0x2D
-# K:wand:Fire Balls:0x00:0x2D
-# K:wand:Acid Balls:0x00:0x2D
-
-
-### Monster status changing ###
-
-# K:wand:Slow Monster:0x00:0x2D
-# K:wand:Confuse Monster:0x00:0x2D
-# K:wand:Sleep Monster:0x00:0x2D
-# K:wand:Scare Monster:0x00:0x2D
-
-
-### Utility ###
-
-# K:wand:Light:0x00:0x2D
-# K:wand:Stone to Mud:0x00:0x2D
-# K:wand:Polymorph:0x00:0x2D
-# K:wand:Trap/Door Destruction:0x00:0x2D
-# K:wand:Clone Monster:0x00:0x2D
-# K:wand:Teleport Other:0x00:0x2D
-# K:wand:Disarming:0x00:0x2D
-# K:wand:Wonder:0x00:0x2D
-
-
-### Dragons' wands ###
-
-# K:wand:Dragon's Flame:0x00:0x2D
-# K:wand:Dragon's Frost:0x00:0x2D
-# K:wand:Dragon's Breath:0x00:0x2D
-
-
-### Drain lifes ###
-
-# K:wand:Drain Life:0x00:0x2D
-# K:wand:Annihilation:0x00:0x2D
-
-
-### Rubbish ###
-
-# K:wand:Heal Monster:0x00:0x2D
-# K:wand:Haste Monster:0x00:0x2D
+# Graphics are sourced from flavor entries in flvr-dvg.prf
 
 
 
 
 ##### Staffs #####
-
-### Bad staffs ###
-
-# K:staff:Summoning:0x00:0x5F
-# K:staff:Haste Monsters:0x00:0x5F
-# K:staff:Darkness:0x00:0x5F
-
-
-### Destruction ###
-
-# K:staff:Earthquakes:0x00:0x5F
-# K:staff:*Destruction*:0x00:0x5F
-
-
-### Monster-affecting ###
-
-# K:staff:Confuse Monsters:0x00:0x5F
-# K:staff:Slow Monsters:0x00:0x5F
-# K:staff:Sleep Monsters:0x00:0x5F
-
-
-### Detect ###
-
-# K:staff:Detect Invisible:0x00:0x5F
-# K:staff:Detect Evil:0x00:0x5F
-# K:staff:Mapping:0x00:0x5F
-
-
-### Healing ###
-
-# K:staff:Curing:0x00:0x5F
-# K:staff:Cure Light Wounds:0x00:0x5F
-# K:staff:Healing:0x00:0x5F
-
-
-### Killing staffs ###
-
-# K:staff:Dispel Evil:0x00:0x5F
-# K:staff:Banishment:0x00:0x5F
-# K:staff:Power:0x00:0x5F
-# K:staff:Holiness:0x00:0x5F
-
-
-### Utility ###
-
-# K:staff:Light:0x00:0x5F
-# K:staff:Starlight:0x00:0x5F
-# K:staff:Teleportation:0x00:0x5F
-# K:staff:Speed:0x00:0x5F
-# K:staff:Remove Curse:0x00:0x5F
-# K:staff:the Magi:0x00:0x5F
-# K:staff:Identify:0x00:0x5F
+# Graphics are sourced from flavor entries in flvr-dvg.prf
 
 
 
 
 ##### Rods #####
-
-### Detection ###
-
-# K:rod:Treasure Location:0x00:0x2D
-# K:rod:Door/Stair Location:0x00:0x2D
-# K:rod:Trap Location:0x00:0x2D
-# K:rod:Detection:0x00:0x2D
-# K:rod:Magic Mapping:0x00:0x2D
-# K:rod:Probing:0x00:0x2D
-
-
-### Bolts ###
-
-# K:rod:Fire Bolts:0x00:0x2D
-# K:rod:Frost Bolts:0x00:0x2D
-# K:rod:Lightning Bolts:0x00:0x2D
-# K:rod:Acid Bolts:0x00:0x2D
-
-
-### Balls ###
-
-# K:rod:Fire Balls:0x00:0x2D
-# K:rod:Cold Balls:0x00:0x2D
-# K:rod:Lightning Balls:0x00:0x2D
-# K:rod:Acid Balls:0x00:0x2D
-
-
-### Status-affecting ###
-
-# K:rod:Slow Monster:0x00:0x2D
-# K:rod:Sleep Monster:0x00:0x2D
-
-
-### Healing ###
-
-# K:rod:Curing:0x00:0x2D
-# K:rod:Healing:0x00:0x2D
-# K:rod:Restoration:0x00:0x2D
-
-
-### Other ###
-
-# K:rod:Polymorph:0x00:0x2D
-# K:rod:Drain Life:0x00:0x2D
-# K:rod:Teleport Other:0x00:0x2D
-# K:rod:Disarming:0x00:0x2D
-# K:rod:Light:0x00:0x2D
-# K:rod:Illumination:0x00:0x2D
-# K:rod:Recall:0x00:0x2D
-# K:rod:Identify:0x00:0x2D
-# K:rod:Speed:0x00:0x2D
+# Graphics are sourced from flavor entries in flvr-dvg.prf
 
 
 
@@ -2830,22 +2490,52 @@ K:crown:Massive Iron Crown~:0x80:0x92
 
 
 ##### "Special Artifacts" #####
+# These artifacts use numeric SVALs to ensure unique matches
 
-K:light:Phial~:0x87:0xB3
-K:light:Star~:0x87:0xB4
-K:light:Arkenstone~:0x87:0xB5
-K:amulet:Amulet~:0x85:0xA6
-K:amulet:Amulet~:0x85:0x9F
-K:amulet:Necklace~:0x85:0xA5
-K:ring:Ring~:0x85:0x95
-K:ring:Ring~:0x85:0x95
-K:ring:Ring~:0x85:0x96
-K:ring:Ring~:0x85:0x93
-K:ring:Ring~:0x85:0x94
-K:ring:Ring~:0x85:0x97
-K:light:Palantir~:0x85:0xAA
-K:amulet:Elfstone~:0x85:0xA9
-K:amulet:Jewel~:0x85:0xA8
+# The Phial of Galadriel
+K:light:4:0x87:0xB3
+
+# The Star of Elendil
+K:light:5:0x87:0xB4
+
+# The Arkenstone of Thrain
+K:light:6:0x87:0xB5
+
+# The Amulet of Carlammas
+K:amulet:50:0x85:0xA6
+
+# The Amulet of Ingwe
+K:amulet:51:0x85:0x9F
+
+# The Necklace of the Dwarves
+K:amulet:52:0x85:0xA5
+
+# The Ring of Barahir
+K:ring:50:0x85:0x95
+
+# The Ring of Tulkas
+K:ring:51:0x85:0x95
+
+# The Ring of Power 'Narya'
+K:ring:52:0x85:0x96
+
+# The Ring of Power 'Nenya'
+K:ring:53:0x85:0x93
+
+# The Ring of Power 'Vilya'
+K:ring:54:0x85:0x94
+
+# The Ring of Power 'The One Ring'
+K:ring:55:0x85:0x97
+
+# The Palantir of Westernesse
+K:light:7:0x85:0xAA
+
+# The Elfstone 'Elessar'
+K:amulet:53:0x85:0xA9
+
+# The Jewel 'Evenstar'
+K:amulet:54:0x85:0xA8
 
 
 
