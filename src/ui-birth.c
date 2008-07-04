@@ -33,7 +33,7 @@ static game_command quickstart_question()
 {
 	char ch;
 	ui_event_data ke;
-	game_command cmd = { CMD_NULL, 0 };
+	game_command cmd = { CMD_NULL, 0, {0}};
 
 	/* Prompt */
 	while (cmd.command == CMD_NULL)
@@ -165,7 +165,7 @@ game_command menu_question()
 	/* Note: the const here is just to quell a compiler warning. */
 	struct birthmenu_data *menu_data = current_menu->menu_data;
 	int cursor = menu_data->selection;
-	game_command cmd = { CMD_NULL };
+	game_command cmd = { CMD_NULL, 0, {0}};
 	ui_event_data cx;
 	
 	/* Print the question currently being asked. */
@@ -429,7 +429,7 @@ game_command autoroller_command()
 	int i, v;
 	char inp[80];
 
-	game_command cmd = { CMD_NULL, 0 };
+	game_command cmd = { CMD_NULL, 0, {0} };
 
 	/* Input the minimum stats */
 	for (i = 0; i < A_MAX; i++)
@@ -579,7 +579,7 @@ static void roller_start()
 
 static game_command roller_command()
 {
-	game_command cmd = { CMD_NULL };
+	game_command cmd = { CMD_NULL, 0, {0} };
 	ui_event_data ke;
 	char ch;
 
@@ -737,7 +737,7 @@ static void point_based_stop()
 
 static game_command point_based_command()
 {
-	game_command cmd = { CMD_NULL };
+	game_command cmd = { CMD_NULL, 0, {0} };
 	static int stat = 0;
 	char ch;
 
@@ -897,6 +897,10 @@ static void birth_stage_changed(game_event_type type, game_event_data *data, voi
 			roller_stop();
 			break;
 		}
+		default:
+		{
+			/* Nothing to see here. */
+		}
 	}
 
 	/* Do any initialisation or display changes we need to make on
@@ -992,6 +996,10 @@ static void birth_stage_changed(game_event_type type, game_event_data *data, voi
 			display_player(0);
 			break;
 		}
+		case BIRTH_COMPLETE:
+		{
+			/* We are done. */
+		}
 	}
 
 	/* Finally update what we consider the "current" stage - this mostly 
@@ -1039,7 +1047,7 @@ static game_command ui_get_birth_command()
 
 		default:
 		{
-			game_command null_cmd = { CMD_QUIT, 0 };
+			game_command null_cmd = { CMD_QUIT, 0, {0} };
 			return null_cmd;
 		}
 	}

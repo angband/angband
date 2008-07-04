@@ -694,7 +694,7 @@ static void player_outfit(void)
  */
 static game_command get_birth_command()
 {
-	game_command cmd = { CMD_NULL };
+	game_command cmd = { CMD_NULL, 0, {0} };
 
 	while (cmd.command == CMD_NULL)
 	{
@@ -777,7 +777,7 @@ static void recalculate_stats(int *stats, int points_left)
  */
 static enum birth_stage do_point_based(bool reset)
 {
-	game_command cmd = { CMD_NULL };
+	game_command cmd = { CMD_NULL, 0, {0} };
 	
 	int i, j;
 	int stats[A_MAX];
@@ -905,6 +905,10 @@ static enum birth_stage do_point_based(bool reset)
 				next_stage = BIRTH_NAME_CHOICE;
 				break;
 			}
+			default:
+			{
+				/* This state shouldn't be reached. */
+			}
 		}
 	}
 
@@ -946,7 +950,7 @@ enum birth_rollers
 void player_birth(bool quickstart_allowed)
 {
 	int i;
-	game_command cmd = { CMD_NULL, 0 };
+	game_command cmd = { CMD_NULL, 0, {0} };
 
 
    /*
@@ -954,14 +958,14 @@ void player_birth(bool quickstart_allowed)
 	* We rely on prev.age being zero to determine whether there is a stored
 	* character or not, so initialise it here.
 	*/
-	birther prev = { 0 };
+	birther prev = { 0, 0, 0, 0, 0, 0, 0, 0, {0}, "" };
 
 	/* 
 	 * If quickstart is allowed, we store the old character in this,
 	 * to allow for it to be reloaded if we step back that far in the
 	 * birth process.
 	 */
-	birther quickstart_prev = { 0 };
+	birther quickstart_prev = {0, 0, 0, 0, 0, 0, 0, 0, {0}, "" };
 
 	enum birth_stage next_stage = BIRTH_METHOD_CHOICE;
 	enum birth_stage stage = BIRTH_METHOD_CHOICE;
@@ -1548,6 +1552,10 @@ void player_birth(bool quickstart_allowed)
 							next_stage = BIRTH_METHOD_CHOICE;
 							break;
 						}
+						default:
+						{
+							/* This should not be reached. */
+						}
 					}
 				}
 				
@@ -1615,6 +1623,10 @@ void player_birth(bool quickstart_allowed)
 				{
 					next_stage = BIRTH_COMPLETE;
 				}
+			}
+			case BIRTH_COMPLETE:
+			{
+				/* End of the line - Exit the while loop. */
 			}
 		}
 
