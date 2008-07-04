@@ -288,10 +288,10 @@ gboolean xtra_configure_event_handler(GtkWidget *widget, GdkEventConfigure *even
 	t = xtra_window_from_widget(widget);
 	if (t != -1)
 	{
-		xd = &xdata[t];
-	
 		int x = 0, y = 0, w = 0, h = 0;
 		GdkRectangle r;
+		
+		xd = &xdata[t];
 	
 		if (GTK_WIDGET_VISIBLE(xd->win))
 		{
@@ -640,7 +640,7 @@ static void load_font_by_name(term_data *td, cptr font_name)
 	int old_font_width = td->font.w;
 	PangoFontDescription *temp_font;
 	char buf[80];
-	int i, j = 0;
+	unsigned int i, j = 0;
 
 	my_strcpy(td->font.name, font_name, sizeof(td->font.name));
 
@@ -714,6 +714,7 @@ void set_xtra_font(GtkFontButton *widget, gpointer user_data)
 {
 	const char *temp, *s;
 	int i, t = 0;
+	xtra_win_data *xd;
 	
 	s = gtk_widget_get_name(GTK_WIDGET(widget));
 	
@@ -723,7 +724,7 @@ void set_xtra_font(GtkFontButton *widget, gpointer user_data)
 		if (s == xd->font_button_name) t = i;
 	}
 	
-	xtra_win_data *xd=&xdata[t];
+	xd=&xdata[t];
 	
 	temp = gtk_font_button_get_font_name(widget);
 	my_strcpy(xd->font.name, temp, sizeof(xd->font.name));
@@ -762,6 +763,7 @@ static gboolean file_open_filter(const GtkFileFilterInfo *filter_info, gpointer 
  */
 static bool save_dialog_box(bool save)
 {
+	GtkFileFilter *filter;
 	GtkWidget *selector_wid;
 	GtkFileChooser *selector;
 	bool accepted;
@@ -817,7 +819,6 @@ static bool save_dialog_box(bool save)
 	gtk_file_chooser_set_current_folder(selector, buf);
 
 	/* Restrict the showing of pointless files */
-	GtkFileFilter *filter;
 	filter = gtk_file_filter_new();
 	gtk_file_filter_add_custom(filter, GTK_FILE_FILTER_DISPLAY_NAME, file_open_filter, NULL, NULL);
 	gtk_file_chooser_set_filter(selector, filter);
@@ -1212,12 +1213,11 @@ static void load_term_prefs()
 static void load_prefs()
 {
 	int i;
-	ang_file *fff;
-	
+	  
 	#ifdef GTK_DEBUG
 	glog( "Loading Prefs.");
 	#endif
-	load_term_prefs(fff);
+	load_term_prefs();
 	
 	for (i = 0; i < num_term; i++)
 	{
@@ -1231,7 +1231,7 @@ static void load_prefs()
 		td->initialized = FALSE;
 		
 		if ((td->location.x <= 0) && (td->location.y <= 0)) td->location.x = td->location.y = 100;
-		if ((td->font.name == "") || (strlen(td->font.name)<2)) 
+		if ((td->font.name == NULL) || (strlen(td->font.name)<2)) 
 			my_strcpy(td->font.name, "Monospace 12", sizeof(td->font.name));
 		
 		load_font_by_name(td, td->font.name);
@@ -1254,7 +1254,7 @@ static void load_prefs()
 	{
 		xtra_win_data *xd = &xdata[i];
 		
-		if ((xd->font.name == "") || (strlen(xd->font.name)<2)) 
+		if ((xd->font.name == NULL) || (strlen(xd->font.name)<2)) 
 			my_strcpy(xd->font.name, "Monospace 10", sizeof(xd->font.name));
 
 		get_font_size(&xd->font);
@@ -2395,8 +2395,8 @@ static void cr_print_equippy(xtra_win_data *xd, int y)
 
 	object_type *o_ptr;
 
-	/* No equippy chars if  we're in bigtile mode */
-	if ((use_bigtile) || (arg_graphics != 0))
+	/* No equippy chars if  we're in bigtile mode or creating a char */
+	if ((use_bigtile) || (arg_graphics != 0) || (!character_generated))
 	{
 		return;
 	}

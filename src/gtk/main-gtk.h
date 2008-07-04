@@ -160,7 +160,7 @@ static game_event_type my_player_events[] =
 
 	EVENT_MONSTERHEALTH,
 
-	EVENT_PLAYERSPEED,
+	EVENT_PLAYERSPEED, 
 	EVENT_DUNGEONLEVEL,
 };
 
@@ -183,7 +183,7 @@ const char help_gtk[] = "GTK for X11, subopts -n<windows>, -i to ignore prefs, a
 
 /*  Path to the Gtk settings file */
 static char settings[1024];
-static game_command cmd = { CMD_NULL, 0 }; 
+static game_command cmd = { CMD_NULL, 0, {0} }; 
 
 /* Abstracted out for future changes */
 static int max_win_width(term_data *td);

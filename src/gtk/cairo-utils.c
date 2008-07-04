@@ -300,13 +300,14 @@ void draw_text(cairo_surface_t *surface, font_info *font, measurements *actual, 
 	
 	if (surface != NULL)
 	{
+	cairo_rectangle_t r;
+	PangoLayout *layout;
+	PangoFontDescription *temp_font;
+		
 	cr = cairo_create(surface);
 	#ifndef USE_PANGO
 	draw_toy_text(cr, font, actual, x, y, n, a, s);
 	#else
-	cairo_rectangle_t r;
-	PangoLayout *layout;
-	PangoFontDescription *temp_font;
 	
 	if (cr !=NULL)
 	{
@@ -369,7 +370,7 @@ void get_toy_font_size(font_info *font)
 }
 void draw_toy_text(cairo_t *cr, font_info *font, measurements *actual, int x, int y, int n, byte a, cptr s)
 {
-	char str[n];
+	char str[255];
 	cairo_rectangle_t r;
 	
 	set_cairo_font_size(cr, font);
