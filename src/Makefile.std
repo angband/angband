@@ -48,7 +48,7 @@ SYS_sdl = -DUSE_SDL $(shell sdl-config --cflags) $(shell sdl-config --libs) -lSD
 
 # Basic compiler stuff
 CC = gcc
-CFLAGS = -Wall -O2 -Wno-unused-parameter
+CFLAGS = -O2 -W -Wall -Wno-unused-parameter
 
 
 # Add additional search directives here

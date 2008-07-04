@@ -254,7 +254,7 @@ static WindowRef aboutDialog;
 
 
 static bool CheckEvents(int wait);
-static OSStatus RevalidateGraphics(term_data *td, EventRef inEvent);
+static OSStatus RevalidateGraphics(term_data *td, bool reset_tilesize);
 static char *locate_lib(char *buf, size_t size);
 static void graphics_aux(int op);
 static void Term_wipe_mac_aux(int x, int y, int n);
@@ -780,25 +780,25 @@ static void term_data_check_size(term_data *td)
 	if (td == &data[0])
 	{
 
-		/* Enforce minimal size */
+		/* Enforce minimal size for the main game window */
 		if (td->cols < 80) td->cols = 80;
 		if (td->rows < 24) td->rows = 24;
 
 	}
-
-	/* Information windows can be much smaller */
 	else
 	{
-		if (td->cols < 5) td->cols = 10;
-		if (td->rows < 10) td->rows = 5;
+
+		/* Information windows can be much smaller */
+		if (td->cols < 10) td->cols = 10;
+		if (td->rows < 5) td->rows = 5;
 	}
 
 	/* Enforce maximal sizes */
 	if (td->cols > 255) td->cols = 255;
 	if (td->rows > 255) td->rows = 255;
 
-	bool dirty = false;
 	/* Minimal tile size */
+	bool dirty = false;
 	if (td->tile_wid < td->font_wid) {
 		td->tile_wid = td->font_wid;
 		dirty = true;
@@ -856,7 +856,7 @@ static void term_data_check_size(term_data *td)
 		/* Draw every character */
 		td->t->always_pict = TRUE;
 	}
-	else if (use_graphics && (td == &data[0]))
+	else if (use_graphics)
 	{
 		/* Use higher pict whenever possible */
 		td->t->higher_pict = TRUE;
@@ -1190,7 +1190,7 @@ static errr graphics_init(void)
 static void graphics_tiles_nuke(void)
 {
 	if(frame.tile_images) {
-		for(int i = frame.rows*frame.cols; --i > 0; ) {
+		for(int i = frame.rows*frame.cols; --i >= 0; ) {
 			if(frame.tile_images[i]) CGImageRelease(frame.tile_images[i]);
 			frame.tile_images[i] = 0;
 		}
@@ -1443,7 +1443,11 @@ static void Term_init_mac(term *t)
 	Rect tmpR;
 	GetWindowBounds((WindowRef)td->w, kWindowTitleBarRgn, &tmpR);
 	int trueTop = td->r.top - (tmpR.bottom-tmpR.top);
-	MoveWindow((WindowRef)td->w, td->r.left, trueTop, FALSE);
+
+	/* Enforce a minimum y position to avoid windows positioned vertically off screen */
+	if (trueTop < GetMBarHeight()) trueTop = GetMBarHeight();
+	
+	MoveWindowStructure((WindowRef)td->w, td->r.left, trueTop);
 	
 
 	install_handlers(td->w);
@@ -2102,6 +2106,7 @@ static void cf_load_prefs()
 			FSFindFolder(kOnAppropriateDisk, kPreferencesFolderType, kDontCreateFolder, &fsRef);
 			FSRefMakePath(&fsRef, (UInt8 *)prefpath, 1024);
 			mac_warning(format("Preference file has changed.  If you have display problems, delete %s/%s.plist and restart.", prefpath, bundlename));
+			CFRelease(bundleid);
 		}
 	}
 
@@ -2172,7 +2177,9 @@ static void cf_load_prefs()
 		kCFPreferencesCurrentApplication);
 	if (recentItemsLoaded != NULL)
 	{
+		CFRelease(recentItemsArrayRef);
 		recentItemsArrayRef = CFArrayCreateMutableCopy(kCFAllocatorDefault, 0, recentItemsLoaded);
+		CFRelease(recentItemsLoaded);
 		redrawRecentItemsMenu();
 	}
 }
@@ -2297,12 +2304,14 @@ static void init_aboutdialogcontent()
 										strlen(applicationName), kCFStringEncodingASCII, false);
 	HIViewFindByID(HIViewGetRoot(aboutDialog), aboutDialogName, &aboutDialogViewRef);
 	HIViewSetText(aboutDialogViewRef, cfstr_applicationName);
+	CFRelease(cfstr_applicationName);
 	
 	/* Set the application copyright as set up in variable.c */
 	HIViewFindByID(HIViewGetRoot(aboutDialog), aboutDialogCopyright, &aboutDialogViewRef);
 	CFStringRef cfstr_applicationCopyright = CFStringCreateWithBytes(NULL, (byte *)copyright,
 										strlen(copyright), kCFStringEncodingASCII, false);
 	HIViewSetText(aboutDialogViewRef, cfstr_applicationCopyright);
+	CFRelease(cfstr_applicationCopyright);
 
 	/* Use a small font for the copyright text */
 	TXNObject txnObject = HITextViewGetTXNObject(aboutDialogViewRef);
@@ -2494,6 +2503,7 @@ static void init_menubar(void)
 									strlen(buf), kCFStringEncodingASCII, false);
 			AppendMenuItemTextWithCFString(m, cfstr, 0, j, NULL);
 			SetMenuItemRefCon(m, i-MIN_FONT+1, i);
+			CFRelease(cfstr);
 		}
 	}
 }
@@ -2635,6 +2645,7 @@ static void redrawRecentItemsMenu()
 			
 			CFStringRef cfstr = CFStringCreateWithCharacters(kCFAllocatorDefault, recentFileName.unicode, recentFileName.length);
 			AppendMenuItemTextWithCFString(MyGetMenuHandle(kOpenRecentMenu), cfstr, 0, i, NULL);
+			CFRelease(cfstr);
 		}
 		AppendMenuItemTextWithCFString(MyGetMenuHandle(kOpenRecentMenu), CFSTR("-"), kMenuItemAttrSeparator, -1, NULL);
 		AppendMenuItemTextWithCFString(MyGetMenuHandle(kOpenRecentMenu), CFSTR("Clear menu"), 0, -1, NULL);
@@ -2759,7 +2770,7 @@ static OSStatus AngbandGame(EventHandlerCallRef inCallRef,
 	/* Validate graphics, after bootstrapped opening of terminals */
 	for(int i = 0; i < N_ELEMENTS(data); i++) {
 		if(data[i].mapped)
-			RevalidateGraphics(&data[i], 0);
+			RevalidateGraphics(&data[i], FALSE);
 	}
 
 	/* Flush the prompt */
@@ -2969,7 +2980,7 @@ static OSStatus ResizeCommand(EventHandlerCallRef inCallRef,
 	x = tmpR.right - tmpR.left - BORDER_WID * 2;
 
 	/* Ignore drag effects, other than for moving the mouse origin */
-	if(td->rows == y/ td->tile_hgt && td->cols ==x/td->tile_wid)
+	if(td->rows * td->tile_hgt == y && td->cols * td->tile_wid == x)
 		return noErr;
 
 	/* Extract a "close" approximation */
@@ -3054,7 +3065,7 @@ static void graphics_aux(int op)
 	{
 		reset_visuals(TRUE);
 	}
-	RevalidateGraphics(&data[0], 0);
+	RevalidateGraphics(&data[0], FALSE);
 	Term_key_push(KTRL('R'));
 }
 
@@ -3081,7 +3092,7 @@ static OSStatus TileSizeCommand(EventHandlerCallRef inCallRef,
 		return eventNotHandledErr;
 	}
 
-	RevalidateGraphics(td, inEvent);
+	RevalidateGraphics(td, FALSE);
 
 	return noErr;
 }
@@ -3165,28 +3176,27 @@ static OSStatus TerminalCommand(EventHandlerCallRef inCallRef,
 	return noErr;
 }
 
-static OSStatus RevalidateGraphics(term_data *td, EventRef inEvent)
+static OSStatus RevalidateGraphics(term_data *td, bool reset_tilesize)
 {
-	if(!td) return noErr;
+	if (!td) return noErr;
 
-	HICommand command;
-	command.commandID = 0;
-	command.menu.menuRef = 0;
-	if(inEvent) {
-		GetEventParameter( inEvent, kEventParamDirectObject, typeHICommand,
-							NULL, sizeof(command), NULL, &command);
-	}
-
-	// Only rescale graphics when absolutely necessary.
-	if(command.commandID != kTileWidMenu && command.commandID != kTileHgtMenu)
+	/*
+	 * Reset the tilesize on graphics changes; term_data_check_font recalculates
+	 * this after it's been reset.  However, only reset the tilesize for default,
+	 * font, and toggle events (not startup - 'Play' 'Band' - or manual changes)
+	*/
+	if (reset_tilesize)
 	{
-		// Reset tilesize to default when graphics change.
 		td->tile_wid = td->tile_hgt = 0;
 	}
+
+	/* Clear the graphics tile cache. */
+	graphics_tiles_nuke();
 
 	/* Sanity check for rows, columns, tilesize. */
 	term_data_check_font(td);
 	term_data_check_size(td);
+	
 	/* Window size changes */
 	term_data_resize(td);
 	term_data_redraw(td);
@@ -3245,8 +3255,7 @@ static OSStatus ToggleCommand(EventHandlerCallRef inCallRef,
 		{
 			*toggle_defs[i].var = !(*toggle_defs[i].var);
 			if(toggle_defs[i].refresh == true) {
-				RevalidateGraphics(&data[0], inEvent);
-				graphics_tiles_nuke();
+				RevalidateGraphics(&data[0], TRUE);
 				// Force redraw.
 				Term_key_push(KTRL('R'));
 			}
@@ -3304,7 +3313,7 @@ static void FontChanged(UInt32 fontID, float size)
 
 	td->font_id = fontID;
 	td->font_size = size;
-	RevalidateGraphics(td, 0);
+	RevalidateGraphics(td, TRUE);
 }
 
 /*
@@ -3831,12 +3840,12 @@ int main(void)
 	/* Show the "watch" cursor */
 	SetCursor(*(GetCursor(watchCursor)));
 
+	/* Prepare the menubar */
+	init_menubar();
+
 	/* Ensure that the recent items array is always an array and start with an empty menu */
 	recentItemsArrayRef = CFArrayCreateMutable(kCFAllocatorDefault, 0, &kCFTypeArrayCallBacks);
 	redrawRecentItemsMenu();
-
-	/* Prepare the menubar */
-	init_menubar();
 
 	/* Initialize */
 	init_paths();
