@@ -546,7 +546,6 @@ static bool describe_activation(const object_type *o_ptr, u32b f3, bool full, bo
 	if (all == FALSE && !(f3 & TR3_ACTIVATE)) return FALSE;
 
 	text_out("When ");
-	text_out(" (all = %d, %d) ", all, (f3 & TR3_ACTIVATE) ? 1 : 0);
 
 	if (f3 & TR3_ACTIVATE)
 		text_out("activated");
@@ -666,7 +665,8 @@ void object_info_header(const object_type *o_ptr)
 
 		case ORIGIN_FLOOR:
 			text_out("(lying on the floor at %d feet (level %d))\n",
-		         o_ptr->origin_depth * 50, o_ptr->origin_depth);			
+			         o_ptr->origin_depth * 50,
+			         o_ptr->origin_depth);
  			break;
 
 		case ORIGIN_DROP:
@@ -682,7 +682,8 @@ void object_info_header(const object_type *o_ptr)
 				text_out("%s%s", is_a_vowel(name[0]) ? "an " : "a ", name);
 
 			text_out(" at %d feet (level %d)\n",
-		         o_ptr->origin_depth * 50, o_ptr->origin_depth);			
+			         o_ptr->origin_depth * 50,
+			         o_ptr->origin_depth);
 
  			break;
 		}
@@ -701,7 +702,8 @@ void object_info_header(const object_type *o_ptr)
 
 		case ORIGIN_CHEST:
 			text_out("(found in a chest at %d feet (level %d))\n",
-		         o_ptr->origin_depth * 50, o_ptr->origin_depth);			
+			         o_ptr->origin_depth * 50,
+			         o_ptr->origin_depth);
 			break;
 	}
 
