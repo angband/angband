@@ -379,11 +379,11 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 			blows = 1;
 		}
 
-	    text_out("With this weapon, you would currently get ");
-	    text_out_c(TERM_L_GREEN, format("%d ", blows));
-	    if (blows > 1)
+		text_out("With this weapon, you would currently get ");
+		text_out_c(TERM_L_GREEN, format("%d ", blows));
+		if (blows > 1)
 			text_out("blows per round.  Each blow will do an average damage of ");
-	    else
+		else
 			text_out("blow per round, averaging a damage of ");
 	}
 	else
@@ -420,8 +420,8 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 			if (total_dam <= 0)
 				text_out_c(TERM_L_RED, "%d", 0);
 			else if (total_dam % 10)
-				text_out_c(TERM_L_GREEN, "%d.%d", 
-						   total_dam / 10, total_dam % 10);
+				text_out_c(TERM_L_GREEN, "%d.%d",
+				           total_dam / 10, total_dam % 10);
 			else
 				text_out_c(TERM_L_GREEN, "%d", total_dam / 10);
 
@@ -434,12 +434,12 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	/* Include bonus damage in stated average */
 	total_dam = dam + xtra_dam;
 
-    if (total_dam <= 0)
+	if (total_dam <= 0)
 		text_out_c(TERM_L_RED, "%d", 0);
 	else if (total_dam % 10)
-		text_out_c(TERM_L_GREEN, "%d.%d", 
-				   total_dam / 10, total_dam % 10);
-    else
+		text_out_c(TERM_L_GREEN, "%d.%d",
+		           total_dam / 10, total_dam % 10);
+	else
 		text_out_c(TERM_L_GREEN, "%d", total_dam / 10);
 
 	text_out(" against normal creatures.\n");
