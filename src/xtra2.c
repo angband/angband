@@ -74,6 +74,7 @@ static timed_effect effects[] =
 	{ "Your mind expands.", "Your horizons are once more limited.", 0, PU_BONUS, MSG_GENERIC },
 	{ "Your skin turns to stone.", "A fleshy shade returns to your skin.", 0, PU_BONUS, MSG_GENERIC },
 	{ "You feel the need to run away, and fast!", "The urge to run dissipates.", 0, PU_BONUS, MSG_AFRAID },
+	{ "You start sprinting.", "You suddenly stop sprinting.", 0, PU_BONUS, MSG_SPEED },
 };
 
 /*
@@ -117,8 +118,12 @@ bool set_timed(int idx, int v)
 		{
 			message(MSG_RECOVER, 0, effect->on_end);
 			notice = TRUE;
+
+			if (idx == TMD_SPRINT)
+				inc_timed(TMD_SLOW, 100);
 		}
 	}
+
 
 	/* Use the value */
 	p_ptr->timed[idx] = v;

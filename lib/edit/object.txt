@@ -2358,6 +2358,17 @@ F:EASY_KNOW
 E:DRINK_SALT
 
 
+### Weird one ###
+
+N:363:Dragon Breath
+G:!:d
+I:75:58:0
+W:0:0:4:0
+M:100:1d2
+A:10:40 to 100
+F:EASY_KNOW
+E:DRINK_BREATH
+
 
 
 ##### Wands #####

@@ -1369,7 +1369,8 @@ static bool kind_is_good(int k_idx)
  */
 bool make_object(object_type *j_ptr, int lev, bool good, bool great)
 {
-	int k_idx, i;
+	int k_idx = 0;
+	int i;
 	int tries = 1;
 
 	int base;

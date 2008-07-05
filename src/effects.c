@@ -1551,7 +1551,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			return TRUE;
 		}
 
-		case EF_DRINK_BREATHE:
+		case EF_DRINK_BREATH:
 		{
 			const int breath_types[] =
 			{
@@ -1673,17 +1673,11 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			return TRUE;
 		}
 
-#if 0
 		case EF_SHROOM_SPRINTING:
 		{
-			/*
-			+10 speed boost.
-			if player already fast, double current duration and add bad effect
-			otherwise 2*!Speed duration, then bad effect
-			*/
+			if (inc_timed(TMD_SPRINT, 100)) *ident = TRUE;
 			return TRUE;
 		}
-#endif
 
 		case EF_SHROOM_PURGING:
 		{

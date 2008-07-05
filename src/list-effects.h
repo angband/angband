@@ -208,13 +208,12 @@ EFFECT(STARLIGHT2,     FALSE, "fires a line of light in all directions, each one
 EFFECT(BERSERKER,      FALSE, "puts you in a berserker rage for d50+50 turns")
 
 EFFECT(WONDER,         TRUE,  "creates random and unpredictable effects")
-EFFECT(MUTATIONS,      TRUE,  "swaps your stats around randomly")
 
 EFFECT(WAND_BREATH,    TRUE,  "shoots a large ball of one of the base elements for 120-200 damage")
 EFFECT(STAFF_MAGI,     FALSE, "restores both intelligence and manapoints to maximum")
 EFFECT(STAFF_HOLY,     FALSE, "inflicts damage on evil creatures you can see, cures 50 hit points, heals all temporary effects and grants you protection from evil")
 EFFECT(DRINK_GOOD,     FALSE, NULL)
-EFFECT(DRINK_BREATHE,  TRUE,  "causes you to breathe either cold or flames for 80 damage")
+EFFECT(DRINK_BREATH,   TRUE,  "causes you to breathe either cold or flames for 80 damage")
 EFFECT(DRINK_SALT,     FALSE, "induces vomiting and paralysis for 4 turns, resulting in severe hunger but also curing poison")
 EFFECT(DRINK_DEATH,    FALSE, "inflicts 5000 points of damage")
 EFFECT(DRINK_RUIN,     FALSE, "inflicts 10d10 points of damage and decreases all your stats")

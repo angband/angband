@@ -1132,7 +1132,7 @@ static void calc_bonuses(void)
 	}
 
 	/* Temporary "fast" */
-	if (p_ptr->timed[TMD_FAST])
+	if (p_ptr->timed[TMD_FAST] || p_ptr->timed[TMD_SPRINT])
 		p_ptr->pspeed += 10;
 
 	/* Temporary "slow" */
