@@ -50,6 +50,10 @@ WRES = $(CROSS)windres
 CFLAGS += -Wall -W -std=iso9899:199409 -pedantic -O2
 LIBS += -s
 
+ifdef BUILD_ID
+  CFLAGS += -DBUILD_ID="$(BUILD_ID)"
+endif
+
 ifdef CYGWIN
 
   LIBS += -mno-cygwin -e _mainCRTStartup
