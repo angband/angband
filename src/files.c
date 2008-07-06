@@ -306,8 +306,6 @@ errr process_pref_file_command(char *buf)
 			n1 = strtol(zz[2], NULL, 0);
 			n2 = strtol(zz[3], NULL, 0);
 
-			printf("..%s.. ..%s..\n", tval_s, sval_s);
-
 			/* Now convert the tval into its numeric equivalent */
 			if (1 != sscanf(tval_s, "%d", &tval))
 			{
