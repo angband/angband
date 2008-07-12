@@ -125,6 +125,11 @@ char xtra_menu_names[MAX_XTRA_WIN_DATA][20] =
 
 char xtra_font_button_names[MAX_XTRA_WIN_DATA][20] =
 { "message_font", "inv_font", "equip_font", "monst_list_font", "debug_font", "status_font" };
+
+char sidebar_text[24][20] =
+{
+	"","","","","Level:", "XP: ", "Gold:", "", "STR:", "INT:", "WIS:", "DEX:", "CON:", "CHR:", "", "AC:", "HP:", "", "SP:", "", "","", "", "" 
+};
 /*
  * An array of "term_data" structures, one for each "sub-window"
  */
@@ -399,9 +404,6 @@ static void handle_equip(game_event_type type, game_event_data *data, void *user
 /* Print the monster window */
 static void handle_mons_list(game_event_type type, game_event_data *data, void *user);
 
-/* Return the color of the monster bar */
-static byte monst_color(const monster_type *m_ptr);
-
 /* Print the sidebar */
 static void handle_sidebar(game_event_type type, game_event_data *data, void *user);
 static void glog(cptr fmt, ...);
@@ -428,4 +430,9 @@ static void term_data_destroy(term_data *td);
 static void release_memory();
 
 static void force_redraw();
+
+/* From xtra3.h */
+extern byte monster_health_attr();
+extern byte player_sp_attr();
+extern byte player_hp_attr();
 #endif /* INCLUDED_MAIN_GTK_H */ 

@@ -274,6 +274,22 @@ static void prt_ac(int row, int col)
 	c_put_str(TERM_L_GREEN, tmp, row, col + 7);
 }
 
+/*
+ * Calculate the hp color separately, for ports.
+ */
+byte player_hp_attr()
+{
+	byte attr;
+	
+	if (p_ptr->chp >= p_ptr->mhp)
+		attr = TERM_L_GREEN;
+	else if (p_ptr->chp > (p_ptr->mhp * op_ptr->hitpoint_warn) / 10)
+		attr = TERM_YELLOW;
+	else
+		attr = TERM_RED;
+	
+	return attr;
+}
 
 /*
  * Prints Cur hit points
@@ -281,25 +297,34 @@ static void prt_ac(int row, int col)
 static void prt_hp(int row, int col)
 {
 	char cur_hp[32], max_hp[32];
-	byte color;
+	byte color = player_hp_attr();
 
 	put_str("HP ", row, col);
 
 	strnfmt(max_hp, sizeof(max_hp), "%4d", p_ptr->mhp);
 	strnfmt(cur_hp, sizeof(cur_hp), "%4d", p_ptr->chp);
-
-	if (p_ptr->chp >= p_ptr->mhp)
-		color = TERM_L_GREEN;
-	else if (p_ptr->chp > (p_ptr->mhp * op_ptr->hitpoint_warn) / 10)
-		color = TERM_YELLOW;
-	else
-		color = TERM_RED;
-
+	
 	c_put_str(color, cur_hp, row, col + 3);
 	c_put_str(TERM_WHITE, "/", row, col + 7);
 	c_put_str(TERM_L_GREEN, max_hp, row, col + 8);
 }
 
+/*
+ * Calculate the sp color separately, for ports.
+ */
+byte player_sp_attr()
+{
+	byte attr;
+	
+	if (p_ptr->csp >= p_ptr->msp)
+		attr = TERM_L_GREEN;
+	else if (p_ptr->csp > (p_ptr->msp * op_ptr->hitpoint_warn) / 10)
+		attr = TERM_YELLOW;
+	else
+		attr = TERM_RED;
+	
+	return attr;
+}
 
 /*
  * Prints players max/cur spell points
@@ -307,7 +332,7 @@ static void prt_hp(int row, int col)
 static void prt_sp(int row, int col)
 {
 	char cur_sp[32], max_sp[32];
-	byte color;
+	byte color = player_sp_attr();
 
 	/* Do not show mana unless it matters */
 	if (!cp_ptr->spell_book) return;
@@ -317,69 +342,40 @@ static void prt_sp(int row, int col)
 	strnfmt(max_sp, sizeof(max_sp), "%4d", p_ptr->msp);
 	strnfmt(cur_sp, sizeof(cur_sp), "%4d", p_ptr->csp);
 
-	if (p_ptr->csp >= p_ptr->msp)
-		color = TERM_L_GREEN;
-	else if (p_ptr->csp > (p_ptr->msp * op_ptr->hitpoint_warn) / 10)
-		color = TERM_YELLOW;
-	else
-		color = TERM_RED;
-
 	/* Show mana */
 	c_put_str(color, cur_sp, row, col + 3);
 	c_put_str(TERM_WHITE, "/", row, col + 7);
 	c_put_str(TERM_L_GREEN, max_sp, row, col + 8);
 }
 
-
 /*
- * Redraw the "monster health bar"
- *
- * The "monster health bar" provides visual feedback on the "health"
- * of the monster currently being "tracked".  There are several ways
- * to "track" a monster, including targetting it, attacking it, and
- * affecting it (and nobody else) with a ranged attack.  When nothing
- * is being tracked, we clear the health bar.  If the monster being
- * tracked is not currently visible, a special health bar is shown.
+ * Calculate the monster bar color separately, for ports.
  */
-static void prt_health(int row, int col)
+byte monster_health_attr()
 {
+	byte attr = TERM_WHITE;
+	
 	/* Not tracking */
 	if (!p_ptr->health_who)
+		attr = TERM_DARK;
+	
+	/* Tracking an unseen, hallucinatory, or dead monster */
+	else if ((!mon_list[p_ptr->health_who].ml) ||
+		    (p_ptr->timed[TMD_IMAGE]) ||
+		    (!mon_list[p_ptr->health_who].hp < 0))
 	{
-		/* Erase the health bar */
-		Term_erase(col, row, 12);
+		/* The monster health is "unknown" */
+		attr = TERM_WHITE;
 	}
-
-	/* Tracking an unseen monster */
-	else if (!mon_list[p_ptr->health_who].ml)
-	{
-		/* Indicate that the monster health is "unknown" */
-		Term_putstr(col, row, 12, TERM_WHITE, "[----------]");
-	}
-
-	/* Tracking a hallucinatory monster */
-	else if (p_ptr->timed[TMD_IMAGE])
-	{
-		/* Indicate that the monster health is "unknown" */
-		Term_putstr(col, row, 12, TERM_WHITE, "[----------]");
-	}
-
-	/* Tracking a dead monster (?) */
-	else if (!mon_list[p_ptr->health_who].hp < 0)
-	{
-		/* Indicate that the monster health is "unknown" */
-		Term_putstr(col, row, 12, TERM_WHITE, "[----------]");
-	}
-
-	/* Tracking a visible monster */
+	
 	else
 	{
-		int pct, len;
+		int pct;
 
 		monster_type *m_ptr = &mon_list[p_ptr->health_who];
 
 		/* Default to almost dead */
-		byte attr = TERM_RED;
+		attr = TERM_RED;
 
 		/* Extract the "percent" of health */
 		pct = 100L * m_ptr->hp / m_ptr->maxhp;
@@ -407,6 +403,50 @@ static void prt_health(int row, int col)
 
 		/* Asleep */
 		if (m_ptr->csleep) attr = TERM_BLUE;
+	}
+	
+	return attr;
+}
+
+/*
+ * Redraw the "monster health bar"
+ *
+ * The "monster health bar" provides visual feedback on the "health"
+ * of the monster currently being "tracked".  There are several ways
+ * to "track" a monster, including targetting it, attacking it, and
+ * affecting it (and nobody else) with a ranged attack.  When nothing
+ * is being tracked, we clear the health bar.  If the monster being
+ * tracked is not currently visible, a special health bar is shown.
+ */
+static void prt_health(int row, int col)
+{
+	byte attr = monster_health_attr();
+	
+	/* Not tracking */
+	if (!p_ptr->health_who)
+	{
+		/* Erase the health bar */
+		Term_erase(col, row, 12);
+	}
+
+	/* Tracking an unseen, hallucinatory, or dead monster */
+	else if ((!mon_list[p_ptr->health_who].ml) || /* Unseen */
+		    (p_ptr->timed[TMD_IMAGE]) || /* Hallucination */
+		    (!mon_list[p_ptr->health_who].hp < 0)) /* Dead (?) */
+	{
+		/* The monster health is "unknown" */
+		Term_putstr(col, row, 12, attr, "[----------]");
+	}
+
+	/* Tracking a visible monster */
+	else
+	{
+		int pct, len;
+
+		monster_type *m_ptr = &mon_list[p_ptr->health_who];
+
+		/* Extract the "percent" of health */
+		pct = 100L * m_ptr->hp / m_ptr->maxhp;
 
 		/* Convert percent into "health" */
 		len = (pct < 10) ? 1 : (pct < 90) ? (pct / 10 + 1) : 10;

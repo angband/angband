@@ -655,11 +655,7 @@ static bool save_game_gtk(void)
 		msg_flag = FALSE;
 		
 		/* Save the game */
-		#ifdef ZANGBAND
-		do_cmd_save_game(FALSE);
-		#else
 		do_cmd_save_game();
-		#endif 
 	}
 	
 	return(TRUE);
@@ -2415,42 +2411,6 @@ for (i = 1; i < z_info->r_max; i++)
 	/* Free the race counters */
 	FREE(race_count);
 }
-static byte monst_color(const monster_type *m_ptr)
-{
-	byte attr = TERM_WHITE;
-	int pct = 0;
-
-	if (m_ptr->maxhp)
-		pct = (m_ptr->hp * 100) / m_ptr->maxhp;
-
-
-	/* Badly wounded */
-	if (pct >= 10) attr = TERM_L_RED;
-
-	/* Wounded */
-	if (pct >= 25) attr = TERM_ORANGE;
-
-	/* Somewhat Wounded */
-	if (pct >= 60) attr = TERM_YELLOW;
-
-	/* Healthy */
-	if (pct >= 100) attr = TERM_L_GREEN;
-
-
-	/* Afraid */
-	if (m_ptr->monfear) attr = TERM_VIOLET;
-
-	/* Confused */
-	if (m_ptr->confused) attr = TERM_UMBER;
-
-	/* Stunned */
-	if (m_ptr->stunned) attr = TERM_L_BLUE;
-
-	/* Asleep */
-	if (m_ptr->csleep) attr = TERM_BLUE;
-		
-	return attr;
-}
 
 static void draw_xtra_cr_text(xtra_win_data *xd, int x, int y, byte color, cptr str)
 {
@@ -2540,14 +2500,13 @@ static void xtra_drawn_progress_bar(xtra_win_data *xd, int x, int y, float curr,
 
 static void handle_sidebar(game_event_type type, game_event_data *data, void *user)
 {
-	char str[80], str2[80];
-	byte color;
+	char str[80]/*, str2[80]*/;
 	cairo_rectangle_t r;
 	
 	xtra_win_data *xd = &xdata[5];
 	long xp = (long)p_ptr->exp;
 	monster_type *m_ptr = &mon_list[p_ptr->health_who];
-	int sidebar_length = 12;
+	int i = 0, sidebar_length = 12;
 
 	/* Calculate XP for next level */
 	if (p_ptr->lev != 50)
@@ -2576,92 +2535,55 @@ static void handle_sidebar(game_event_type type, game_event_data *data, void *us
 		draw_xtra_cr_text(xd, 0, 3, TERM_L_BLUE, str);
 
 		/* Char Level */
-		strnfmt(str, sizeof(str), "Level:"); 
-		strnfmt(str2, sizeof(str2), "%i", p_ptr->lev);
-		cr_aligned_text_print(xd, 0, 4, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
+		strnfmt(str, sizeof(str), "%i", p_ptr->lev);
+		cr_aligned_text_print(xd, 0, 4, sidebar_text[4], TERM_WHITE, str, TERM_L_GREEN, sidebar_length);
 		
 		/* Char xp */
 		if (p_ptr->lev != 50) 
-			strnfmt(str, sizeof(str), "Next: ");
+			strnfmt(sidebar_text[5], sizeof(str), "Next: ");
 		else 			 
-			strnfmt(str, sizeof(str), "XP: "); 
-		strnfmt(str2, sizeof(str2), "%ld", xp); 
-		cr_aligned_text_print(xd, 0, 5, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
+			strnfmt(sidebar_text[5], sizeof(str), "XP: "); 
+		strnfmt(str, sizeof(str), "%ld", xp); 
+		cr_aligned_text_print(xd, 0, 5, sidebar_text[5], TERM_WHITE, str, TERM_L_GREEN, sidebar_length);
 	
 		/* Char Gold */
-		strnfmt(str, sizeof(str), "Gold:"); 
-		strnfmt(str2, sizeof(str2), "%ld", p_ptr->au); 
-		cr_aligned_text_print(xd, 0, 6, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
+		strnfmt(str, sizeof(str), "%ld", p_ptr->au); 
+		cr_aligned_text_print(xd, 0, 6, sidebar_text[6], TERM_WHITE, str, TERM_L_GREEN, sidebar_length);
 		
 		/* Equippy chars is 0,7 */
 		cr_print_equippy(xd, 7);
 		
 		/* Char Stats */
-		strnfmt(str, sizeof(str), "STR:"); 
-		cnv_stat(p_ptr->stat_use[A_STR], str2, sizeof(str2));
-		cr_aligned_text_print(xd, 0, 8, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
-	
-		strnfmt(str, sizeof(str), "INT:"); 
-		cnv_stat(p_ptr->stat_use[A_INT], str2, sizeof(str2));
-		cr_aligned_text_print(xd, 0, 9, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
-	
-		strnfmt(str, sizeof(str), "WIS:"); 
-		cnv_stat(p_ptr->stat_use[A_WIS], str2, sizeof(str2));
-		cr_aligned_text_print(xd, 0, 10, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
-	
-		strnfmt(str, sizeof(str), "DEX:"); 
-		cnv_stat(p_ptr->stat_use[A_DEX], str2, sizeof(str2));
-		cr_aligned_text_print(xd, 0, 11, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
-	
-		strnfmt(str, sizeof(str), "CON:"); 
-		cnv_stat(p_ptr->stat_use[A_CON], str2, sizeof(str2));
-		cr_aligned_text_print(xd, 0, 12, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
-	
-		strnfmt(str, sizeof(str), "CHR:"); 
-		cnv_stat(p_ptr->stat_use[A_CHR], str2, sizeof(str2));
-		cr_aligned_text_print(xd, 0, 13, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
+		for (i = A_STR; i <= A_CHR; i++)
+		{
+			cnv_stat(p_ptr->stat_use[i], str, sizeof(str));
+			cr_aligned_text_print(xd, 0, i+8, sidebar_text[i+8], TERM_WHITE, str, TERM_L_GREEN, sidebar_length);
+		}
 		
 		/* 14 is a blank row */
 		
 		/* Char AC */
-		strnfmt(str, sizeof(str), "AC:"); 
-		strnfmt(str2, sizeof(str2), "%i", p_ptr->dis_ac + p_ptr->dis_to_a); 
-		cr_aligned_text_print(xd, 0, 15, str, TERM_WHITE, str2, TERM_L_GREEN, sidebar_length);
+		strnfmt(str, sizeof(str), "%i", p_ptr->dis_ac + p_ptr->dis_to_a); 
+		cr_aligned_text_print(xd, 0, 15, sidebar_text[15], TERM_WHITE, str, TERM_L_GREEN, sidebar_length);
 	
 		/* Char HP */
-		strnfmt(str, sizeof(str), "HP:"); 
-		strnfmt(str2, sizeof(str2), "%4d/%4d", p_ptr->chp, p_ptr->mhp); 
-		if (p_ptr->chp >= p_ptr->mhp)
-			color = TERM_L_GREEN;
-		else if (p_ptr->chp > (p_ptr->mhp * op_ptr->hitpoint_warn) / 10)
-			color = TERM_YELLOW;
-		else
-			color = TERM_RED;
-
-		cr_aligned_text_print(xd, 0, 16, str, TERM_WHITE, str2, color, sidebar_length);
-		xtra_drawn_progress_bar(xd, 0, 17, p_ptr->chp, p_ptr->mhp, color, 13);
+		strnfmt(str, sizeof(str), "%4d/%4d", p_ptr->chp, p_ptr->mhp); 
+		cr_aligned_text_print(xd, 0, 16, sidebar_text[16], TERM_WHITE, str, player_hp_attr(), sidebar_length);
+		xtra_drawn_progress_bar(xd, 0, 17, p_ptr->chp, p_ptr->mhp, player_hp_attr(), 13);
 	
 		/* Char MP */
-		strnfmt(str, sizeof(str), "SP:"); 
-		strnfmt(str2, sizeof(str2), "%4d/%4d", p_ptr->csp, p_ptr->msp); 
-		if (p_ptr->csp >= p_ptr->msp)
-			color = TERM_L_GREEN;
-		else if (p_ptr->csp > (p_ptr->msp * op_ptr->hitpoint_warn) / 10)
-			color = TERM_YELLOW;
-		else
-			color = TERM_RED;
-		cr_aligned_text_print(xd, 0, 18, str, TERM_WHITE, str2, color, sidebar_length);
-		
-		xtra_drawn_progress_bar(xd, 0, 19, p_ptr->csp, p_ptr->msp, color, 13);
+		strnfmt(str, sizeof(str), "%4d/%4d", p_ptr->csp, p_ptr->msp); 
+		cr_aligned_text_print(xd, 0, 18,sidebar_text[18], TERM_WHITE, str, player_sp_attr(), sidebar_length);
+		xtra_drawn_progress_bar(xd, 0, 19, p_ptr->csp, p_ptr->msp, player_sp_attr(), 13);
 	
 		/* 20 is blank */
 	
-		xtra_drawn_progress_bar(xd, 0, 21, m_ptr->hp, m_ptr->maxhp, monst_color(m_ptr), 13);
+		xtra_drawn_progress_bar(xd, 0, 21, m_ptr->hp, m_ptr->maxhp, monster_health_attr(), 13);
 
 		/* Print the level */
 		strnfmt(str, sizeof(str), "%d' (L%d)", p_ptr->depth * 50, p_ptr->depth); 
-		strnfmt(str2, sizeof(str2), "%-*s", sidebar_length, str);
-		draw_xtra_cr_text(xd, 0, 22, TERM_WHITE, str2);
+		strnfmt(sidebar_text[22], sizeof(sidebar_text[22]), "%-*s", sidebar_length, str);
+		draw_xtra_cr_text(xd, 0, 22, TERM_WHITE, sidebar_text[22]);
 		
 		invalidate_drawing_area(xd->drawing_area, r);
 	}
