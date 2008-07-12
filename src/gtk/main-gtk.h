@@ -71,7 +71,6 @@ struct term_data
 	measurements tile, actual;
 	
 	cairo_surface_t *surface;
-	/*cairo_t *cr;*/
 	cairo_matrix_t matrix;
 	font_info font;
 	
@@ -184,6 +183,12 @@ const char help_gtk[] = "GTK for X11, subopts -n<windows>, -i to ignore prefs, a
 /*  Path to the Gtk settings file */
 static char settings[1024];
 static game_command cmd = { CMD_NULL, 0, {0} }; 
+bool game_saved;
+
+static GtkWidget *toolbar;
+static GtkWidget *toolbar_items[12];
+static int toolbar_size;
+static unsigned char toolbar_keypress[12];
 
 /* Abstracted out for future changes */
 static int max_win_width(term_data *td);
@@ -421,4 +426,6 @@ errr init_gtk(int argc, char **argv);
 static void xtra_data_destroy(xtra_win_data *xd);
 static void term_data_destroy(term_data *td);
 static void release_memory();
+
+static void force_redraw();
 #endif /* INCLUDED_MAIN_GTK_H */ 
