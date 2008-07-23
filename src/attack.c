@@ -818,8 +818,8 @@ void do_cmd_fire(void)
 
 				/* Apply damage: multiplier, slays, criticals, bonuses */
 				tdam = damroll(i_ptr->dd, i_ptr->ds);
-				tdam *= p_ptr->ammo_mult;
 				tdam += i_ptr->to_d + j_ptr->to_d;
+				tdam *= p_ptr->ammo_mult;
 				tdam *= MAX(ammo_mult, shoot_mult);
 				tdam = critical_shot(i_ptr->weight, i_ptr->to_h, tdam);
 
