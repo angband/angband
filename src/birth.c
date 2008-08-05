@@ -448,7 +448,8 @@ static void get_money(int stat_use[A_MAX])
 	}
 
 	/* Minimum 200 gold */
-	if (gold < 200) gold = 200;
+	if (OPT(birth_money)) gold = MAX(500, gold);
+	else gold = MAX(200, gold);
 
 	/* Save the gold */
 	p_ptr->au = p_ptr->au_birth = gold;
@@ -671,7 +672,7 @@ static void player_outfit(void)
 	/* Hack -- Give the player some torches */
 	object_prep(i_ptr, lookup_kind(TV_LITE, SV_LITE_TORCH));
 	i_ptr->number = (byte)rand_range(3, 7);
-	i_ptr->timeout = FUEL_TORCH / 2;
+	i_ptr->timeout = FUEL_TORCH;
 	i_ptr->origin = ORIGIN_BIRTH;
 	object_aware(i_ptr);
 	object_known(i_ptr);
@@ -756,7 +757,9 @@ static void recalculate_stats(int *stats, int points_left)
 	}
 	
 	/* Gold is inversely proportional to cost */
-	p_ptr->au = p_ptr->au_birth = (50 * points_left) + 200;
+	p_ptr->au = OPT(birth_money) ? 500 : 200;
+	p_ptr->au += (50 * points_left);
+	p_ptr->au_birth = p_ptr->au;
 
 	/* Update bonuses, hp, etc. */
 	get_bonuses();
@@ -1666,7 +1669,7 @@ void player_birth(bool quickstart_allowed)
 	message_add(" ", MSG_GENERIC);
 
 	/* Hack -- outfit the player */
-	player_outfit();
+	if (!OPT(birth_money)) player_outfit();
 
 	/* Initialise the stores */
 	store_init();

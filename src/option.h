@@ -15,7 +15,7 @@ void option_set_defaults(void);
  * Information for "do_cmd_options()".
  */
 #define OPT_PAGE_MAX				5
-#define OPT_PAGE_PER				15
+#define OPT_PAGE_PER				16
 
 /* The option data structures */
 extern const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
@@ -85,6 +85,7 @@ extern const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 
 #define OPT_birth_maximize          (OPT_BIRTH+0)
 #define OPT_birth_randarts          (OPT_BIRTH+1)
+#define OPT_birth_money             (OPT_BIRTH+2)
 #define OPT_birth_ironman           (OPT_BIRTH+3)
 #define OPT_birth_no_stores         (OPT_BIRTH+4)
 #define OPT_birth_no_artifacts      (OPT_BIRTH+5)
@@ -109,6 +110,7 @@ extern const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 
 #define OPT_adult_maximize          (OPT_ADULT+0)
 #define OPT_adult_randarts          (OPT_ADULT+1)
+#define OPT_adult_money             (OPT_ADULT+2)
 #define OPT_adult_ironman           (OPT_ADULT+3)
 #define OPT_adult_no_stores         (OPT_ADULT+4)
 #define OPT_adult_no_artifacts      (OPT_ADULT+5)

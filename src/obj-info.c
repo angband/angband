@@ -361,10 +361,8 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	if (weapon)
 	{
 		int blows = calc_blows(o_ptr);
-		int extra_blows = 0;
 
-		if (f1 & (TR1_BLOWS)) extra_blows += o_ptr->pval;
-		blows += extra_blows;
+		if (f1 & (TR1_BLOWS)) blows += o_ptr->pval;
 
 		dam = ((o_ptr->ds + 1) * o_ptr->dd * 5);
 

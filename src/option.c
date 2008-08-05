@@ -40,6 +40,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_mouse_buttons,
 		OPT_NONE,
 		OPT_NONE,
+		OPT_NONE,
 	},
 
 	/* Display */
@@ -56,6 +57,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_view_special_lite,
 		OPT_view_perma_grids,
 		OPT_view_torch_grids,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
@@ -78,12 +80,14 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
+		OPT_NONE,
 	},
 
 	/* Birth/Difficulty */
 	{
 		OPT_birth_maximize,
 		OPT_birth_randarts,
+		OPT_birth_money,
 		OPT_birth_ai_sound,
 		OPT_birth_ai_smell,
 		OPT_birth_ai_packs,
@@ -107,6 +111,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_cheat_xtra,
 		OPT_cheat_know,
 		OPT_cheat_live,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
@@ -259,7 +264,7 @@ static option_entry options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 127 */
 { "birth_maximize",      "Maximize effect of race/class bonuses",       TRUE },  /* 128 */
 { "birth_randarts",      "Randomize some of the artifacts (alpha)",     FALSE }, /* 129 */
-{ NULL,                  NULL,                                          FALSE }, /* 130 */
+{ "birth_money",         "Start with more money instead of equipment",  FALSE }, /* 130 */
 { "birth_ironman",       "Restrict the use of stairs/recall",           FALSE }, /* 131 */
 { "birth_no_stores",     "Restrict the use of stores/home",             FALSE }, /* 132 */
 { "birth_no_artifacts",  "Restrict creation of artifacts",              FALSE }, /* 133 */

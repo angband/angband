@@ -1261,8 +1261,10 @@ static bool store_create_random(int st)
 		/* Charge lights XXX */
 		if (i_ptr->tval == TV_LITE)
 		{
-			if (i_ptr->sval == SV_LITE_TORCH) i_ptr->timeout = FUEL_TORCH;
-			if (i_ptr->sval == SV_LITE_LANTERN) i_ptr->timeout = FUEL_LAMP / 2;
+			if (i_ptr->sval == SV_LITE_TORCH)
+				i_ptr->timeout = FUEL_TORCH;
+			if (i_ptr->sval == SV_LITE_LANTERN)
+				i_ptr->timeout = FUEL_LAMP / 2;
 		}
 
 		/* Mass produce and/or apply discount */
@@ -1340,8 +1342,10 @@ static int store_create_item(int st, int tval, int sval, create_mode mode)
 	/* Charge lights */
 	if (object.tval == TV_LITE)
 	{
-		if (object.sval == SV_LITE_TORCH)        object.timeout = FUEL_TORCH / 2;
-		else if (object.sval == SV_LITE_LANTERN) object.timeout = FUEL_LAMP / 2;
+		if (object.sval == SV_LITE_TORCH)
+			object.timeout = FUEL_TORCH;
+		else if (object.sval == SV_LITE_LANTERN)
+			object.timeout = FUEL_LAMP / 2;
 	}
 
 	/* Make according to mode */
