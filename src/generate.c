@@ -136,8 +136,8 @@
 /*
  * Dungeon treausre allocation values
  */
-#define DUN_AMT_ROOM	9	/* Amount of objects for rooms */
-#define DUN_AMT_ITEM	3	/* Amount of objects for rooms/corridors */
+#define DUN_AMT_ROOM	7	/* Number of objects for rooms */
+#define DUN_AMT_ITEM	2	/* Number of objects for rooms/corridors */
 #define DUN_AMT_GOLD	3	/* Amount of treasure for rooms/corridors */
 
 /*
