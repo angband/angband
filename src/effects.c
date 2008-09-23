@@ -242,7 +242,9 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			if (clear_timed(TMD_CONFUSED)) *ident = TRUE;
 			if (clear_timed(TMD_AFRAID)) *ident = TRUE;
 			if (clear_timed(TMD_IMAGE)) *ident = TRUE;
-			if (!p_ptr->resist_confu && inc_timed(TMD_OPP_CONF, damroll(4, 10)))
+			if (!p_ptr->resist_confu &&
+					inc_timed(TMD_OPP_CONF, damroll(4, 10)))
+			    	*ident = TRUE;
 			return TRUE;
 		}
 
