@@ -2440,8 +2440,10 @@ static void store_examine(int item)
 	screen_save();
 
 	object_info_header(o_ptr);
-	if (!object_info_store(o_ptr))
-		text_out("\n\nThis item does not seem to possess any special abilities.");
+	
+	/* Show full info in most stores, but normal info in player home */
+	bool info_known = (store_current == STORE_HOME) ? object_info_known(o_ptr) : object_info_store(o_ptr);
+	if (!info_known) text_out("\n\nThis item does not seem to possess any special abilities.");
 
 	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
 	(void)anykey();

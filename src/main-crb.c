@@ -2303,14 +2303,14 @@ static void init_aboutdialogcontent()
 	CFStringRef cfstr_applicationName = CFStringCreateWithBytes(NULL, (byte *)applicationName,
 										strlen(applicationName), kCFStringEncodingASCII, false);
 	HIViewFindByID(HIViewGetRoot(aboutDialog), aboutDialogName, &aboutDialogViewRef);
-	HIViewSetText(aboutDialogViewRef, cfstr_applicationName);
+	SetControlData(aboutDialogViewRef, kControlEntireControl, kControlStaticTextCFStringTag, sizeof(cfstr_applicationName), &cfstr_applicationName);
 	CFRelease(cfstr_applicationName);
 	
 	/* Set the application copyright as set up in variable.c */
 	HIViewFindByID(HIViewGetRoot(aboutDialog), aboutDialogCopyright, &aboutDialogViewRef);
 	CFStringRef cfstr_applicationCopyright = CFStringCreateWithBytes(NULL, (byte *)copyright,
 										strlen(copyright), kCFStringEncodingASCII, false);
-	HIViewSetText(aboutDialogViewRef, cfstr_applicationCopyright);
+	SetControlData(aboutDialogViewRef, kControlEntireControl, kControlStaticTextCFStringTag, sizeof(cfstr_applicationCopyright), &cfstr_applicationCopyright);
 	CFRelease(cfstr_applicationCopyright);
 
 	/* Use a small font for the copyright text */
@@ -2545,21 +2545,20 @@ static int funcConst(int a, int c) {return c; }
  */
 static void validate_menus(void)
 {
-	WindowRef w = FrontWindow();
+	WindowRef w = GetFrontWindowOfClass(kDocumentWindowClass, true);
 	term_data *td;
 	if(!w || !initialized) return;
 	td = (term_data*) GetWRefCon(w);
 	if(!td) return;
 
-	term_data *td0 = &data[0];
 	struct {
 		int menu;				/* Radio-style Menu ID to validate */
 		int cur;				/* Value in use (Compare to RefCon) */
 		int limit;				/* Constraint value */
 		int (*cmp) (int, int);	/* Filter function */
 	} funcs [] = {
-		{ kTileWidMenu, td0->tile_wid, td0->font_wid, funcGTE },
-		{ kTileHgtMenu, td0->tile_hgt, td0->font_hgt, funcGTE },
+		{ kTileWidMenu, td->tile_wid, td->font_wid, funcGTE },
+		{ kTileHgtMenu, td->tile_hgt, td->font_hgt, funcGTE },
 		{ kStyleMenu, graf_mode, 1, funcConst }
 	};
 
@@ -3182,8 +3181,8 @@ static OSStatus RevalidateGraphics(term_data *td, bool reset_tilesize)
 
 	/*
 	 * Reset the tilesize on graphics changes; term_data_check_font recalculates
-	 * this after it's been reset.  However, only reset the tilesize for default,
-	 * font, and toggle events (not startup - 'Play' 'Band' - or manual changes)
+	 * this after it's been reset.  However, only reset the tilesize for default
+	 * and font events (not startup - 'Play' 'Band' - or manual changes)
 	*/
 	if (reset_tilesize)
 	{
@@ -3225,7 +3224,6 @@ static OSStatus UpdateCommand(EventHandlerCallRef inCallRef,
 }
 
 /* Handle toggling sound via the menu option */
-/* Handle a selection in the recent items menu */
 static OSStatus SoundCommand(EventHandlerCallRef inCallRef,
 							EventRef inEvent, void *inUserData )
 {
@@ -3255,7 +3253,7 @@ static OSStatus ToggleCommand(EventHandlerCallRef inCallRef,
 		{
 			*toggle_defs[i].var = !(*toggle_defs[i].var);
 			if(toggle_defs[i].refresh == true) {
-				RevalidateGraphics(&data[0], TRUE);
+				RevalidateGraphics(&data[0], FALSE);
 				// Force redraw.
 				Term_key_push(KTRL('R'));
 			}
