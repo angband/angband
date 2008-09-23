@@ -724,7 +724,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix,
 
 	if (o_ptr->tval == TV_GOLD)
 	{
-		return strnfmt(buf, max, "%d %s pieces worth of gold", o_ptr->pval,
+		return strnfmt(buf, max, "%d gold pieces worth of %s", o_ptr->pval,
 		               k_name + k_ptr->name);
 	}
 

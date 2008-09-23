@@ -340,7 +340,7 @@ enum sval_gold /* tval 100 */
 	SV_MITHRIL = 9,
 	SV_ADAMANTITE = 10,
 
-	SV_GOLD_MAX = 10
+	SV_GOLD_MAX
 };
 
 

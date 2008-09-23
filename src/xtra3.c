@@ -690,7 +690,7 @@ static const struct state_info effects[] =
 	{ TMD_PARALYZED, S("Paralyzed!"), TERM_RED },
 	{ TMD_CONFUSED,  S("Confused"),   TERM_ORANGE },
 	{ TMD_AFRAID,    S("Afraid"),     TERM_ORANGE },
-	{ TMD_AFRAID,    S("Terror"),     TERM_ORANGE },
+	{ TMD_TERROR,    S("Terror"),     TERM_RED },
 	{ TMD_IMAGE,     S("Halluc"),     TERM_ORANGE },
 	{ TMD_POISONED,  S("Poisoned"),   TERM_ORANGE },
 	{ TMD_PROTEVIL,  S("ProtEvil"),   TERM_L_GREEN },
