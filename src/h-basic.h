@@ -31,6 +31,14 @@
 # endif
 
 
+/* Necessary? */
+#ifdef NDS
+# include <fat.h>
+# include <unistd.h>
+# include <reent.h>
+# include <sys/iosupport.h>
+# include <errno.h>
+#endif
 
 /*
  * Using C99, assume we have stdint and stdbool
@@ -67,7 +75,7 @@
  * Basically, SET_UID should *only* be set for "Unix" machines.
  */
 #if !defined(MACH_O_CARBON) && !defined(WINDOWS) && \
-    !defined(RISCOS) && !defined(GAMEBOY)
+    !defined(RISCOS) && !defined(GAMEBOY) && !defined(NDS)
 # define SET_UID
 
 /* Without autoconf, turn on some things */
