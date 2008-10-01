@@ -408,6 +408,8 @@ extern bool summon_specific(int y1, int x1, int lev, int type);
 extern bool multiply_monster(int m_idx);
 extern void message_pain(int m_idx, int dam);
 extern void update_smart_learn(int m_idx, int what);
+void monster_death(int m_idx);
+bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note);
 
 /* pathfind.c */
 extern bool findpath(int y, int x);
@@ -647,8 +649,6 @@ bool set_food(int v);
 void check_experience(void);
 void gain_exp(s32b amount);
 void lose_exp(s32b amount);
-void monster_death(int m_idx);
-bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note);
 bool modify_panel(term *t, int wy, int wx);
 bool adjust_panel(int y, int x);
 bool change_panel(int dir);

@@ -17,6 +17,7 @@
  */
 #include "angband.h"
 
+#include "object/tvalsval.h"
 
 
 /*
@@ -2524,4 +2525,500 @@ void update_smart_learn(int m_idx, int what)
 	}
 }
 
+
+
+/*
+ * Hack -- Return the "automatic coin type" of a monster race
+ * Used to allocate proper treasure when "Creeping coins" die
+ *
+ * Note the use of actual "monster names".  XXX XXX XXX
+ */
+static int get_coin_type(const monster_race *r_ptr)
+{
+	cptr name = (r_name + r_ptr->name);
+
+	/* Analyze "coin" monsters */
+	if (r_ptr->d_char == '$')
+	{
+		/* Look for textual clues */
+		if (strstr(name, " copper ")) return (SV_COPPER);
+		if (strstr(name, " silver ")) return (SV_SILVER);
+		if (strstr(name, " gold ")) return (SV_GOLD);
+		if (strstr(name, " mithril ")) return (SV_MITHRIL);
+		if (strstr(name, " adamantite ")) return (SV_ADAMANTITE);
+
+		/* Look for textual clues */
+		if (strstr(name, "Copper ")) return (SV_COPPER);
+		if (strstr(name, "Silver ")) return (SV_SILVER);
+		if (strstr(name, "Gold ")) return (SV_GOLD);
+		if (strstr(name, "Mithril ")) return (SV_MITHRIL);
+		if (strstr(name, "Adamantite ")) return (SV_ADAMANTITE);
+	}
+
+	/* Assume nothing */
+	return (SV_GOLD_ANY);
+}
+
+
+/*
+ * Create magical stairs after finishing a quest monster.
+ */
+static void build_quest_stairs(int y, int x)
+{
+	int ny, nx;
+
+
+	/* Stagger around */
+	while (!cave_valid_bold(y, x))
+	{
+		int d = 1;
+
+		/* Pick a location */
+		scatter(&ny, &nx, y, x, d, 0);
+
+		/* Stagger */
+		y = ny; x = nx;
+	}
+
+	/* Destroy any objects */
+	delete_object(y, x);
+
+	/* Explain the staircase */
+	msg_print("A magical staircase appears...");
+
+	/* Create stairs down */
+	cave_set_feat(y, x, FEAT_MORE);
+
+	/* Update the visuals */
+	p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
+
+	/* Fully update the flow */
+	p_ptr->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
+}
+
+
+
+/*
+ * Handle the "death" of a monster.
+ *
+ * Disperse treasures centered at the monster location based on the
+ * various flags contained in the monster flags fields.
+ *
+ * Check for "Quest" completion when a quest monster is killed.
+ *
+ * Note that only the player can induce "monster_death()" on Uniques.
+ * Thus (for now) all Quest monsters should be Uniques.
+ *
+ * Note that monsters can now carry objects, and when a monster dies,
+ * it drops all of its objects, which may disappear in crowded rooms.
+ */
+void monster_death(int m_idx)
+{
+	int i, j, y, x, level;
+
+	int dump_item = 0;
+	int dump_gold = 0;
+
+	int number = 0;
+	int total = 0;
+
+	s16b this_o_idx, next_o_idx = 0;
+
+	monster_type *m_ptr = &mon_list[m_idx];
+
+	monster_race *r_ptr = &r_info[m_ptr->r_idx];
+
+	bool visible = (m_ptr->ml || (r_ptr->flags[0] & (RF0_UNIQUE)));
+
+	bool great = (r_ptr->flags[0] & (RF0_DROP_GREAT)) ? TRUE : FALSE;
+	bool good = ((r_ptr->flags[0] & (RF0_DROP_GOOD)) ? TRUE : FALSE) || great;
+
+	bool gold_ok = (!(r_ptr->flags[0] & (RF0_ONLY_ITEM)));
+	bool item_ok = (!(r_ptr->flags[0] & (RF0_ONLY_GOLD)));
+
+	int force_coin = get_coin_type(r_ptr);
+
+	object_type *i_ptr;
+	object_type object_type_body;
+
+
+	/* Get the location */
+	y = m_ptr->fy;
+	x = m_ptr->fx;
+
+
+	/* Drop objects being carried */
+	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx)
+	{
+		object_type *o_ptr;
+
+		/* Get the object */
+		o_ptr = &o_list[this_o_idx];
+
+		/* Get the next object */
+		next_o_idx = o_ptr->next_o_idx;
+
+		/* Paranoia */
+		o_ptr->held_m_idx = 0;
+
+		/* Get local object */
+		i_ptr = &object_type_body;
+
+		/* Copy the object */
+		object_copy(i_ptr, o_ptr);
+
+		/* Delete the object */
+		delete_object_idx(this_o_idx);
+
+		/* Drop it */
+		drop_near(i_ptr, -1, y, x);
+	}
+
+	/* Forget objects */
+	m_ptr->hold_o_idx = 0;
+
+
+	/* Mega-Hack -- drop "winner" treasures */
+	if (r_ptr->flags[0] & (RF0_DROP_CHOSEN))
+	{
+		/* Get local object */
+		i_ptr = &object_type_body;
+
+		/* Mega-Hack -- Prepare to make "Grond" */
+		object_prep(i_ptr, lookup_kind(TV_HAFTED, SV_GROND));
+
+		/* Mega-Hack -- Mark this item as "Grond" */
+		i_ptr->name1 = ART_GROND;
+
+		/* Mega-Hack -- Actually create "Grond" */
+		apply_magic(i_ptr, -1, TRUE, TRUE, TRUE);
+		i_ptr->origin = ORIGIN_DROP;
+		i_ptr->origin_depth = p_ptr->depth;
+		i_ptr->origin_xtra = m_ptr->r_idx;
+
+		/* Drop it in the dungeon */
+		drop_near(i_ptr, -1, y, x);
+
+
+		/* Get local object */
+		i_ptr = &object_type_body;
+
+		/* Mega-Hack -- Prepare to make "Morgoth" */
+		object_prep(i_ptr, lookup_kind(TV_CROWN, SV_MORGOTH));
+		i_ptr->origin = ORIGIN_DROP;
+		i_ptr->origin_depth = p_ptr->depth;
+		i_ptr->origin_xtra = m_ptr->r_idx;
+
+		/* Mega-Hack -- Mark this item as "Morgoth" */
+		i_ptr->name1 = ART_MORGOTH;
+
+		/* Mega-Hack -- Actually create "Morgoth" */
+		apply_magic(i_ptr, -1, TRUE, TRUE, TRUE);
+
+		/* Drop it in the dungeon */
+		drop_near(i_ptr, -1, y, x);
+	}
+
+
+	/* Determine how much we can drop */
+	if ((r_ptr->flags[0] & RF0_DROP_20) && (randint0(100) < 20)) number++;
+	if ((r_ptr->flags[0] & RF0_DROP_40) && (randint0(100) < 40)) number++;
+	if ((r_ptr->flags[0] & RF0_DROP_60) && (randint0(100) < 60)) number++;
+
+	if (r_ptr->flags[0] & RF0_DROP_4) number += rand_range(2, 6);
+	if (r_ptr->flags[0] & RF0_DROP_3) number += rand_range(2, 4);
+	if (r_ptr->flags[0] & RF0_DROP_2) number += rand_range(1, 3);
+	if (r_ptr->flags[0] & RF0_DROP_1) number++;
+
+	/* Average monster level and current depth */
+	level = (p_ptr->depth + r_ptr->level) / 2;
+
+	/* Drop some objects */
+	for (j = 0; j < number; j++)
+	{
+		/* Get local object */
+		i_ptr = &object_type_body;
+
+		/* Wipe the object */
+		object_wipe(i_ptr);
+
+		/* Make Gold */
+		if (gold_ok && (!item_ok || (randint0(100) < 50)))
+		{
+			/* Make some gold */
+			make_gold(i_ptr, level, force_coin);
+			dump_gold++;
+		}
+
+		/* Make Object */
+		else
+		{
+			/* Make an object */
+			if (!make_object(i_ptr, level, good, great)) continue;
+			dump_item++;
+		}
+
+		/* Set origin */
+		i_ptr->origin = visible ? ORIGIN_DROP : ORIGIN_DROP_UNKNOWN;
+		i_ptr->origin_depth = p_ptr->depth;
+		i_ptr->origin_xtra = m_ptr->r_idx;
+
+		/* Drop it in the dungeon */
+		drop_near(i_ptr, -1, y, x);
+	}
+
+	/* Take note of any dropped treasure */
+	if (visible && (dump_item || dump_gold))
+	{
+		/* Take notes on treasure */
+		lore_treasure(m_idx, dump_item, dump_gold);
+	}
+
+	/* Update monster list window */
+	p_ptr->redraw |= PR_MONLIST;
+
+	/* Only process "Quest Monsters" */
+	if (!(r_ptr->flags[0] & (RF0_QUESTOR))) return;
+
+	/* Hack -- Mark quests as complete */
+	for (i = 0; i < MAX_Q_IDX; i++)
+	{
+		/* Hack -- note completed quests */
+		if (q_list[i].level == r_ptr->level) q_list[i].level = 0;
+
+		/* Count incomplete quests */
+		if (q_list[i].level) total++;
+	}
+
+	/* Build magical stairs */
+	build_quest_stairs(y, x);
+
+	/* Nothing left, game over... */
+	if (total == 0)
+	{
+		/* Total winner */
+		p_ptr->total_winner = TRUE;
+
+		/* Redraw the "title" */
+		p_ptr->redraw |= (PR_TITLE);
+
+		/* Congratulations */
+		msg_print("*** CONGRATULATIONS ***");
+		msg_print("You have won the game!");
+		msg_print("You may retire (commit suicide) when you are ready.");
+	}
+}
+
+
+
+
+/*
+ * Decrease a monster's hit points, handle monster death.
+ *
+ * We return TRUE if the monster has been killed (and deleted).
+ *
+ * We announce monster death (using an optional "death message"
+ * if given, and a otherwise a generic killed/destroyed message).
+ *
+ * Only "physical attacks" can induce the "You have slain" message.
+ * Missile and Spell attacks will induce the "dies" message, or
+ * various "specialized" messages.  Note that "You have destroyed"
+ * and "is destroyed" are synonyms for "You have slain" and "dies".
+ *
+ * Invisible monsters induce a special "You have killed it." message.
+ *
+ * Hack -- we "delay" fear messages by passing around a "fear" flag.
+ *
+ * Consider decreasing monster experience over time, say, by using
+ * "(m_exp * m_lev * (m_lev)) / (p_lev * (m_lev + n_killed))" instead
+ * of simply "(m_exp * m_lev) / (p_lev)", to make the first monster
+ * worth more than subsequent monsters.  This would also need to
+ * induce changes in the monster recall code.  XXX XXX XXX
+ */
+bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
+{
+	monster_type *m_ptr = &mon_list[m_idx];
+
+	monster_race *r_ptr = &r_info[m_ptr->r_idx];
+
+	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
+
+	s32b div, new_exp, new_exp_frac;
+
+
+	/* Redraw (later) if needed */
+	if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
+
+
+	/* Wake it up */
+	m_ptr->csleep = 0;
+
+	/* Hurt it */
+	m_ptr->hp -= dam;
+
+	/* It is dead now */
+	if (m_ptr->hp < 0)
+	{
+		char m_name[80];
+		char buf[80];
+
+		/* Assume normal death sound */
+		int soundfx = MSG_KILL;
+
+		/* Play a special sound if the monster was unique */
+		if (r_ptr->flags[0] & RF0_UNIQUE) 
+		{
+			/* Mega-Hack -- Morgoth -- see monster_death() */
+			if (r_ptr->flags[0] & RF0_DROP_CHOSEN)
+				soundfx = MSG_KILL_KING;
+			else
+				soundfx = MSG_KILL_UNIQUE;
+		}
+
+		/* Extract monster name */
+		monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+
+		/* Death by Missile/Spell attack */
+		if (note)
+		{
+			message_format(soundfx, m_ptr->r_idx, "%^s%s", m_name, note);
+		}
+
+		/* Death by physical attack -- invisible monster */
+		else if (!m_ptr->ml)
+		{
+			message_format(soundfx, m_ptr->r_idx, "You have killed %s.", m_name);
+		}
+
+		/* Death by Physical attack -- non-living monster */
+		else if ((r_ptr->flags[2] & (RF2_DEMON | RF2_UNDEAD)) ||
+		         (r_ptr->flags[1] & (RF1_STUPID)) ||
+		         (strchr("Evg", r_ptr->d_char)))
+		{
+			message_format(soundfx, m_ptr->r_idx, "You have destroyed %s.", m_name);
+		}
+
+		/* Death by Physical attack -- living monster */
+		else
+		{
+			message_format(soundfx, m_ptr->r_idx, "You have slain %s.", m_name);
+		}
+
+		/* Player level */
+		div = p_ptr->lev;
+
+		/* Give some experience for the kill */
+		new_exp = ((long)r_ptr->mexp * r_ptr->level) / div;
+
+		/* Handle fractional experience */
+		new_exp_frac = ((((long)r_ptr->mexp * r_ptr->level) % div)
+		                * 0x10000L / div) + p_ptr->exp_frac;
+
+		/* Keep track of experience */
+		if (new_exp_frac >= 0x10000L)
+		{
+			new_exp++;
+			p_ptr->exp_frac = (u16b)(new_exp_frac - 0x10000L);
+		}
+		else
+		{
+			p_ptr->exp_frac = (u16b)new_exp_frac;
+		}
+
+		/* When the player kills a Unique, it stays dead */
+		if (r_ptr->flags[0] & (RF0_UNIQUE))
+		{
+			char unique_name[80];
+			r_ptr->max_num = 0;
+
+			/* This gets the correct name if we slay an invisible unique and don't have See Invisible. */
+			monster_desc(unique_name, sizeof(unique_name), m_ptr, MDESC_SHOW | MDESC_IND2);
+
+			/* Log the slaying of a unique */
+			strnfmt(buf, sizeof(buf), "Killed %s", unique_name);
+			history_add(buf, HISTORY_SLAY_UNIQUE, 0);
+		}
+
+		/* Gain experience */
+		gain_exp(new_exp);
+
+		/* Generate treasure */
+		monster_death(m_idx);
+
+		/* Recall even invisible uniques or winners */
+		if (m_ptr->ml || (r_ptr->flags[0] & (RF0_UNIQUE)))
+		{
+			/* Count kills this life */
+			if (l_ptr->pkills < MAX_SHORT) l_ptr->pkills++;
+
+			/* Count kills in all lives */
+			if (l_ptr->tkills < MAX_SHORT) l_ptr->tkills++;
+
+			/* Hack -- Auto-recall */
+			monster_race_track(m_ptr->r_idx);
+		}
+
+		/* Delete the monster */
+		delete_monster_idx(m_idx);
+
+		/* Not afraid */
+		(*fear) = FALSE;
+
+		/* Monster is dead */
+		return (TRUE);
+	}
+
+
+	/* Mega-Hack -- Pain cancels fear */
+	if (m_ptr->monfear && (dam > 0))
+	{
+		int tmp = randint1(dam);
+
+		/* Cure a little fear */
+		if (tmp < m_ptr->monfear)
+		{
+			/* Reduce fear */
+			m_ptr->monfear -= tmp;
+		}
+
+		/* Cure all the fear */
+		else
+		{
+			/* Cure fear */
+			m_ptr->monfear = 0;
+
+			/* No more fear */
+			(*fear) = FALSE;
+		}
+	}
+
+	/* Sometimes a monster gets scared by damage */
+	if (!m_ptr->monfear && !(r_ptr->flags[2] & (RF2_NO_FEAR)) && (dam > 0))
+	{
+		int percentage;
+
+		/* Percentage of fully healthy */
+		percentage = (100L * m_ptr->hp) / m_ptr->maxhp;
+
+		/*
+		 * Run (sometimes) if at 10% or less of max hit points,
+		 * or (usually) when hit for half its current hit points
+		 */
+		if ((randint1(10) >= percentage) ||
+		    ((dam >= m_ptr->hp) && (randint0(100) < 80)))
+		{
+			/* Hack -- note fear */
+			(*fear) = TRUE;
+
+			/* Hack -- Add some timed fear */
+			m_ptr->monfear = (randint1(10) +
+			                  (((dam >= m_ptr->hp) && (percentage > 7)) ?
+			                   20 : ((11 - percentage) * 5)));
+		}
+	}
+
+
+	/* Not dead yet */
+	return (FALSE);
+}
 
