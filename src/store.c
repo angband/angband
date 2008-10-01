@@ -2190,6 +2190,9 @@ static bool store_purchase(int item)
 		store_item_optimize(store_current, item);
 	}
 
+	event_signal(EVENT_INVENTORY);
+	event_signal(EVENT_EQUIPMENT);
+
 	/* Not kicked out */
 	return TRUE;
 }
@@ -2417,6 +2420,9 @@ static void store_sell(void)
 		/* Let the home carry it */
 		home_carry(i_ptr);
 	}
+
+	event_signal(EVENT_INVENTORY);
+	event_signal(EVENT_EQUIPMENT);
 }
 
 
