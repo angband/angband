@@ -45,8 +45,8 @@ typedef struct
 
 	u16b effect;       /**< Effect this item produces (effects.c) */
 	u16b time_base;    /**< Recharge time (if appropriate) */
-	byte time_dice;    /**< Randomised recharge time dice */
-	byte time_sides;   /**< Randomised recharge time sides */
+	u16b time_dice;    /**< Randomised recharge time dice */
+	u16b time_sides;   /**< Randomised recharge time sides */
 
 	byte charge_base;  /**< Non-random initial charge base */
 	byte charge_dd;    /**< Randomised initial charge dice */
@@ -118,9 +118,10 @@ typedef struct
 
 	u16b effect;     /**< Artifact activation (see effects.c) */
 	u32b effect_msg; /**< (const char *) artifact_type::effect_msg + a_text = Effect message */
+
 	u16b time_base;  /**< Recharge time (if appropriate) */
-	byte time_dice;  /**< Randomised recharge time dice */
-	byte time_sides; /**< Randomised recharge time sides */
+	u16b time_dice;  /**< Randomised recharge time dice */
+	u16b time_sides; /**< Randomised recharge time sides */
 
 } artifact_type;
 
