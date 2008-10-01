@@ -454,7 +454,7 @@ void py_attack(int y, int x)
 	if (p_ptr->state.afraid)
 	{
 		/* Message */
-		msg_format("You are too afraid to attack %s!", m_name);
+		message_format(MSG_AFRAID, 0, "You are too afraid to attack %s!", m_name);
 
 		/* Done */
 		return;

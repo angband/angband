@@ -119,5 +119,8 @@ M:28:w
 # MSG_HITPOINT_WARN
 M:29:o
 
+# MSG_AFRAID
+M:56:o
+
 ?:1
 

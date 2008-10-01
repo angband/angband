@@ -627,9 +627,9 @@ void calc_bonuses(object_type inventory[], player_state *state)
 
 		/* Extract the item flags */
 		object_flags(o_ptr, &f1, &f2, &f3);
-		collect_f1 &= f1;
-		collect_f2 &= f2;
-		collect_f3 &= f3;
+		collect_f1 |= f1;
+		collect_f2 |= f2;
+		collect_f3 |= f3;
 
 		/* Affect stats */
 		if (f1 & (TR1_STR)) state->stat_add[A_STR] += o_ptr->pval;
