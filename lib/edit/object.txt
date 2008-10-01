@@ -2014,7 +2014,7 @@ E:CURE_LIGHT
 
 N:319:Cure Serious Wounds
 G:!:d
-I:75:10:300
+I:75:10:150
 W:3:0:4:70
 A:100:4 to 40
 M:85:2d3
@@ -2023,7 +2023,7 @@ E:CURE_SERIOUS
 
 N:320:Cure Critical Wounds
 G:!:d
-I:75:11:600
+I:75:11:150
 W:5:0:4:200
 A:105:12 to 100
 M:75:2d3
@@ -2032,7 +2032,7 @@ E:CURE_CRITICAL
 
 N:321:Healing
 G:!:d
-I:75:12:800
+I:75:12:200
 W:15:0:4:300
 A:100:15 to 100
 F:EASY_KNOW
@@ -2041,7 +2041,7 @@ E:CURE_FULL
 N:322:*Healing*
 G:!:d
 I:75:13:0
-W:40:0:4:1500
+W:40:0:4:300
 A:35:40 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW
