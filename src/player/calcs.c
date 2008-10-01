@@ -617,62 +617,18 @@ static int weight_limit(void)
  * The "weapon" and "bow" do *not* add to the bonuses to hit or to
  * damage, since that would affect non-combat things.  These values
  * are actually added in later, at the appropriate place.
- *
- * This function induces various "status" messages.
  */
-static void calc_bonuses(void)
+static void calc_bonuses(object_type inventory[])
 {
 	int i, j, hold;
-
-	int old_speed;
-
-	int old_telepathy;
-	int old_see_inv;
-
-	int old_dis_ac;
-	int old_dis_to_a;
 
 	int extra_blows;
 	int extra_shots;
 	int extra_might;
 
-	int old_stat_top[A_MAX];
-	int old_stat_use[A_MAX];
-	int old_stat_ind[A_MAX];
-
-	bool old_heavy_shoot;
-	bool old_heavy_wield;
-	bool old_icky_wield;
-
 	object_type *o_ptr;
 
 	u32b f1, f2, f3;
-
-
-	/*** Memorize ***/
-
-	/* Save the old speed */
-	old_speed = p_ptr->pspeed;
-
-	/* Save the old vision stuff */
-	old_telepathy = p_ptr->telepathy;
-	old_see_inv = p_ptr->see_inv;
-
-	/* Save the old armor class */
-	old_dis_ac = p_ptr->dis_ac;
-	old_dis_to_a = p_ptr->dis_to_a;
-
-	/* Save the old stats */
-	for (i = 0; i < A_MAX; i++)
-	{
-		old_stat_top[i] = p_ptr->stat_top[i];
-		old_stat_use[i] = p_ptr->stat_use[i];
-		old_stat_ind[i] = p_ptr->stat_ind[i];
-	}
-
-	old_heavy_shoot = p_ptr->heavy_shoot;
-	old_heavy_wield = p_ptr->heavy_wield;
-	old_icky_wield = p_ptr->icky_wield;
 
 
 	/*** Reset ***/
@@ -1330,8 +1286,68 @@ static void calc_bonuses(void)
 		p_ptr->icky_wield = TRUE;
 	}
 
+	return;
+}
 
-	/*** Notice changes ***/
+/*
+ * Calculate bonuses, and print various things on changes.
+ */
+void update_bonuses(void)
+{
+	int i;
+
+	int old_speed;
+
+	int old_telepathy;
+	int old_see_inv;
+
+	int old_dis_ac;
+	int old_dis_to_a;
+
+	int old_stat_top[A_MAX];
+	int old_stat_use[A_MAX];
+	int old_stat_ind[A_MAX];
+
+	bool old_heavy_shoot;
+	bool old_heavy_wield;
+	bool old_icky_wield;
+
+
+
+	/*** Memorize ***/
+
+	/* Save the old speed */
+	old_speed = p_ptr->pspeed;
+
+	/* Save the old vision stuff */
+	old_telepathy = p_ptr->telepathy;
+	old_see_inv = p_ptr->see_inv;
+
+	/* Save the old armor class */
+	old_dis_ac = p_ptr->dis_ac;
+	old_dis_to_a = p_ptr->dis_to_a;
+
+	/* Save the old stats */
+	for (i = 0; i < A_MAX; i++)
+	{
+		old_stat_top[i] = p_ptr->stat_top[i];
+		old_stat_use[i] = p_ptr->stat_use[i];
+		old_stat_ind[i] = p_ptr->stat_ind[i];
+	}
+
+	old_heavy_shoot = p_ptr->heavy_shoot;
+	old_heavy_wield = p_ptr->heavy_wield;
+	old_icky_wield = p_ptr->icky_wield;
+
+
+
+	/*** Calculate bonuses ***/
+
+	calc_bonuses(inventory);
+
+
+
+	/* Notice changes */
 
 	/* Analyze stats */
 	for (i = 0; i < A_MAX; i++)
@@ -1378,6 +1394,7 @@ static void calc_bonuses(void)
 			}
 		}
 	}
+
 
 	/* Hack -- Telepathy Change */
 	if (p_ptr->telepathy != old_telepathy)
@@ -1521,7 +1538,7 @@ void update_stuff(void)
 	if (p_ptr->update & (PU_BONUS))
 	{
 		p_ptr->update &= ~(PU_BONUS);
-		calc_bonuses();
+		update_bonuses();
 	}
 
 	if (p_ptr->update & (PU_TORCH))

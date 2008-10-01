@@ -141,10 +141,44 @@ struct player_type
 	s16b stat_use[A_MAX];	/* Current modified stats */
 	s16b stat_top[A_MAX];	/* Maximal modified stats */
 
+
+	/* Generation fields (for quick start) */
+	s32b au_birth;          /* Birth gold */
+	s16b stat_birth[A_MAX]; /* Birth "natural" stat values */
+	s16b ht_birth;          /* Birth Height */
+	s16b wt_birth;          /* Birth Weight */
+
+
 	/*** Extracted fields ***/
+
+	s16b pspeed;		/* Current speed */
+
+	s16b num_blow;		/* Number of blows */
+	s16b num_fire;		/* Number of shots */
+
+	byte ammo_mult;		/* Ammo multiplier */
+	byte ammo_tval;		/* Ammo variety */
 
 	s16b stat_add[A_MAX];	/* Equipment stat bonuses */
 	s16b stat_ind[A_MAX];	/* Indexes into stat tables */
+
+	s16b dis_ac;		/* Known base ac */
+	s16b ac;			/* Base ac */
+
+	s16b dis_to_a;		/* Known bonus to ac */
+	s16b to_a;			/* Bonus to ac */
+
+	s16b to_h;			/* Bonus to hit */
+	s16b dis_to_h;		/* Known bonus to hit */
+
+	s16b to_d;			/* Bonus to dam */
+	s16b dis_to_d;		/* Known bonus to dam */
+
+	s16b see_infra;		/* Infravision range */
+
+	s16b skills[SKILL_MAX];	/* Skills */
+
+	u32b noise;			/* Derived from stealth */
 
 	bool vuln_acid;
 	bool vuln_elec;
@@ -198,38 +232,5 @@ struct player_type
 	bool exp_drain;		/* Experience draining */
 
 	bool bless_blade;	/* Blessed blade */
-
-	s16b dis_to_h;		/* Known bonus to hit */
-	s16b dis_to_d;		/* Known bonus to dam */
-	s16b dis_to_a;		/* Known bonus to ac */
-
-	s16b dis_ac;		/* Known base ac */
-
-	s16b to_h;			/* Bonus to hit */
-	s16b to_d;			/* Bonus to dam */
-	s16b to_a;			/* Bonus to ac */
-
-	s16b ac;			/* Base ac */
-
-	s16b see_infra;		/* Infravision range */
-
-	s16b skills[SKILL_MAX];	/* Skills */
-
-	u32b noise;			/* Derived from stealth */
-
-	s16b num_blow;		/* Number of blows */
-	s16b num_fire;		/* Number of shots */
-
-	byte ammo_mult;		/* Ammo multiplier */
-
-	byte ammo_tval;		/* Ammo variety */
-
-	s16b pspeed;		/* Current speed */
-
-	/* Generation fields (for quick start) */
-	s32b au_birth;          /* Birth gold */
-	s16b stat_birth[A_MAX]; /* Birth "natural" stat values */
-	s16b ht_birth;          /* Birth Height */
-	s16b wt_birth;          /* Birth Weight */
 };
 
