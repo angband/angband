@@ -638,14 +638,6 @@ extern cptr get_spell_name(int tval, int index);
 extern void get_spell_info(int tval, int index, char *buf, size_t len);
 extern bool cast_spell(int tval, int index);
 
-/* xtra1.c */
-s16b modify_stat_value(int value, int amount);
-int calc_blows(const object_type *o_ptr);
-void notice_stuff(void);
-void update_stuff(void);
-void redraw_stuff(void);
-void handle_stuff(void);
-
 /* xtra2.c */
 bool set_timed(int idx, int v);
 bool inc_timed(int idx, int v);

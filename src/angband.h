@@ -38,6 +38,8 @@
 #include "object/types.h"
 #include "object/object.h"
 #include "monster/types.h"
+#include "player/types.h"
+#include "player/player.h"
 #include "store.h"
 
 #include "ui.h"

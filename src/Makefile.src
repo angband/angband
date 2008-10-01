@@ -89,6 +89,8 @@ ANGFILES = \
 	option.o \
 	randname.o \
 	pathfind.o \
+	player/calcs.o \
+	player/util.o \
 	score.o \
 	signals.o \
 	save.o \
@@ -109,6 +111,5 @@ ANGFILES = \
 	wiz-stats.o \
 	wizard.o \
 	x-spell.o \
-	xtra1.o \
 	xtra2.o \
 	xtra3.o
