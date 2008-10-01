@@ -114,7 +114,7 @@ docs: doc/index.html
 
 # Clean up old junk
 clean:
-	-rm -f *.o gtk/*.o $(EXE)
+	-rm -f $(OBJS) $(EXE)
 	-rm -f ../lib/data/*.raw
 
 # make a distribution
