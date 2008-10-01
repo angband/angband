@@ -2528,35 +2528,22 @@ void update_smart_learn(int m_idx, int what)
 
 
 /*
- * Hack -- Return the "automatic coin type" of a monster race
- * Used to allocate proper treasure when "Creeping coins" die
- *
- * Note the use of actual "monster names".  XXX XXX XXX
+ * Return the coin type of a monster race, based on the monster being
+ * killed.
  */
 static int get_coin_type(const monster_race *r_ptr)
 {
-	cptr name = (r_name + r_ptr->name);
+	const char *name = (r_name + r_ptr->name);
 
-	/* Analyze "coin" monsters */
-	if (r_ptr->d_char == '$')
-	{
-		/* Look for textual clues */
-		if (strstr(name, " copper ")) return (SV_COPPER);
-		if (strstr(name, " silver ")) return (SV_SILVER);
-		if (strstr(name, " gold ")) return (SV_GOLD);
-		if (strstr(name, " mithril ")) return (SV_MITHRIL);
-		if (strstr(name, " adamantite ")) return (SV_ADAMANTITE);
-
-		/* Look for textual clues */
-		if (strstr(name, "Copper ")) return (SV_COPPER);
-		if (strstr(name, "Silver ")) return (SV_SILVER);
-		if (strstr(name, "Gold ")) return (SV_GOLD);
-		if (strstr(name, "Mithril ")) return (SV_MITHRIL);
-		if (strstr(name, "Adamantite ")) return (SV_ADAMANTITE);
-	}
+	/* Look for textual clues */
+	if (my_stristr(name, "copper "))	return SV_COPPER;
+	if (my_stristr(name, "silver "))	return SV_SILVER;
+	if (my_stristr(name, "gold "))		return SV_GOLD;
+	if (my_stristr(name, "mithril "))	return SV_MITHRIL;
+	if (my_stristr(name, "adamantite "))	return SV_ADAMANTITE;
 
 	/* Assume nothing */
-	return (SV_GOLD_ANY);
+	return SV_GOLD_ANY;
 }
 
 
