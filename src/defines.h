@@ -945,6 +945,7 @@ enum
 /*
  * Bit flags for the "project()" function
  *
+ *   NONE: No flags
  *   JUMP: Jump directly to the target location (this is a hack)
  *   BEAM: Work as a beam weapon (affect every grid passed through)
  *   THRU: Continue "through" the target (used for "bolts"/"beams")
@@ -954,6 +955,7 @@ enum
  *   KILL: Affect each monster in the "blast area" in some way
  *   HIDE: Hack -- disable "visual" feedback from projection
  */
+#define PROJECT_NONE	0x00
 #define PROJECT_JUMP	0x01
 #define PROJECT_BEAM	0x02
 #define PROJECT_THRU	0x04

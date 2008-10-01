@@ -20,7 +20,7 @@
 #include "cmds.h"
 #include "ui-menu.h"
 #include "game-event.h"
-#include "tvalsval.h"
+#include "object/tvalsval.h"
 
 
 /*** Constants and definitions ***/

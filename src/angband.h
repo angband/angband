@@ -35,9 +35,13 @@
 #include "defines.h"
 #include "option.h"
 #include "types.h"
+#include "object/types.h"
+#include "object/object.h"
+#include "monster/types.h"
+#include "store.h"
+
 #include "ui.h"
 #include "z-type.h"
-#include "object.h"
 #include "externs.h"
 
 

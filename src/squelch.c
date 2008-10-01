@@ -19,7 +19,7 @@
 #include "angband.h"
 #include "cmds.h"
 #include "ui-menu.h"
-#include "tvalsval.h"
+#include "object/tvalsval.h"
 
 /*
  * The squelch code has a long history.  Originally it started out as a simple

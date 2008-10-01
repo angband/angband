@@ -18,7 +18,7 @@
  */
 #include "angband.h"
 #include "game-event.h"
-#include "tvalsval.h"
+#include "object/tvalsval.h"
 
 
 struct flag_event_trigger

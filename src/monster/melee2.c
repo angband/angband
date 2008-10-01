@@ -17,7 +17,15 @@
  */
 #include "angband.h"
 #include "bitflag.h"
-#include "tvalsval.h"
+#include "object/tvalsval.h"
+
+
+/*
+ * Determine if a bolt will arrive, checking that no monsters are in the way
+ */
+#define clean_shot(Y1, X1, Y2, X2) \
+	projectable(Y1, X1, Y2, X2, PROJECT_STOP)
+
 
 /*
  * And now for Intelligent monster attacks (including spells).
@@ -348,43 +356,6 @@ static bool summon_possible(int y1, int x1)
 	}
 
 	return FALSE;
-}
-
-
-
-/*
- * Determine if a bolt spell will hit the player.
- *
- * This is exactly like "projectable", but it will return FALSE if a monster
- * is in the way.
- *
- * Then we should perhaps instead supply a flag to "projectable()".  XXX XXX
- */
-static bool clean_shot(int y1, int x1, int y2, int x2)
-{
-	int y, x;
-
-	int grid_n;
-	u16b grid_g[512];
-
-	/* Check the projection path */
-	grid_n = project_path(grid_g, MAX_RANGE, y1, x1, y2, x2, PROJECT_STOP);
-
-	/* Source and target the same */
-	if (!grid_n) return (FALSE);
-
-	/* Final grid */
-	y = GRID_Y(grid_g[grid_n-1]);
-	x = GRID_X(grid_g[grid_n-1]);
-
-	/* May not end in a wall grid */
-	if (!cave_floor_bold(y, x)) return (FALSE);
-
-	/* May not end in an unrequested grid */
-	if ((y != y2) || (x != x2)) return (FALSE);
-
-	/* Assume okay */
-	return (TRUE);
 }
 
 
@@ -737,7 +708,8 @@ bool make_attack_spell(int m_idx)
 		if (m_ptr->cdis > MAX_RANGE) return (FALSE);
 
 		/* Check path */
-		if (!projectable(m_ptr->fy, m_ptr->fx, py, px)) return (FALSE);
+		if (!projectable(m_ptr->fy, m_ptr->fx, py, px, PROJECT_NONE))
+			return (FALSE);
 	}
 
 

@@ -295,7 +295,7 @@ extern void town_illuminate(bool daytime);
 extern void cave_set_feat(int y, int x, int feat);
 extern int project_path(u16b *gp, int range, \
                          int y1, int x1, int y2, int x2, int flg);
-extern bool projectable(int y1, int x1, int y2, int x2);
+extern bool projectable(int y1, int x1, int y2, int x2, int flg);
 extern void scatter(int *yp, int *xp, int y, int x, int d, int m);
 extern void health_track(int m_idx);
 extern void monster_race_track(int r_idx);

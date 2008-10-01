@@ -76,17 +76,17 @@ ANGFILES = \
 	init1.o \
 	init2.o \
 	load.o \
-	melee1.o \
-	melee2.o \
-	monster1.o \
-	monster2.o \
-	obj-desc.o \
-	obj-info.o \
-	obj-make.o \
-	obj-ui.o \
-	obj-util.o \
+	monster/melee1.o \
+	monster/melee2.o \
+	monster/monster1.o \
+	monster/monster2.o \
+	object/obj-desc.o \
+	object/obj-info.o \
+	object/obj-make.o \
+	object/obj-ui.o \
+	object/obj-util.o \
+	object/randart.o \
 	option.o \
-	randart.o \
 	randname.o \
 	pathfind.o \
 	score.o \

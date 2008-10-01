@@ -18,7 +18,7 @@
 #include "angband.h"
 #include "wizard.h"
 #include "cmds.h"
-#include "tvalsval.h"
+#include "object/tvalsval.h"
 
 
 #ifdef ALLOW_DEBUG

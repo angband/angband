@@ -113,7 +113,8 @@ bool target_able(int m_idx)
 	if (!m_ptr->ml) return (FALSE);
 
 	/* Monster must be projectable */
-	if (!projectable(py, px, m_ptr->fy, m_ptr->fx)) return (FALSE);
+	if (!projectable(py, px, m_ptr->fy, m_ptr->fx, PROJECT_STOP))
+		return (FALSE);
 
 	/* Hack -- no targeting hallucinations */
 	if (p_ptr->timed[TMD_IMAGE]) return (FALSE);

@@ -22,7 +22,7 @@
 
 #include "ui-birth.h"
 
-#include "tvalsval.h"
+#include "object/tvalsval.h"
 
 /* 
  * There are a few functions installed to be triggered by several 

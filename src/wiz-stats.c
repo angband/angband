@@ -17,7 +17,7 @@
 #include "angband.h"
 #include "cmds.h"
 #include "wizard.h"
-#include "tvalsval.h"
+#include "object/tvalsval.h"
 
 
 #ifdef WITH_STATS

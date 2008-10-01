@@ -1,5 +1,5 @@
-#ifndef INCLUDED_TVALSV_H
-#define INCLUDED_TVALSV_H
+#ifndef INCLUDED_OBJECT_TVALSVAL_H
+#define INCLUDED_OBJECT_TVALSVAL_H
 
 
 /*** Object "tval" and "sval" codes ***/
@@ -373,4 +373,4 @@ enum sval_gold /* tval 100 */
 
 
 
-#endif /* INCLUDED_TVALSV_H */
+#endif /* INCLUDED_OBJECT_TVALSVAL_H */
