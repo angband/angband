@@ -4,15 +4,10 @@ Angband 3.1.0
 This is an Angband development version -- it may be buggy, so be warned!
 
 Thanks for this release go to: Eytan Zweig, pelpel, Kenneth Boyd,
-J.D. White, and more
-XXX fill in before release
-
-Leon Marrick's dungeon generator from O was imported briefly, but since
-he wasn't around to answer questions or improve it at all, it's been
-reverted (see revisions 306 and 612).  Also, using the 3.0.x dungeon
-generator makes it much easier to balance the object allocation changes.
-The dungeon generator is scheduled for some attention sometime in the
-3.1.x series, but it's not my main concern right now.
+J.D. White, Eddie Grove, Rowan Beentje, Nick McConnell, Gabriel
+Cunningham, Shanoah Alkire, Alexander Philips, mikon, Antony Sidwell,
+and all the alpha- and beta- testers who downloaded the game,
+sometimes in an extremely shaky state, and played it anyway.
 
 Noticeable up-front UI changes
 ------------------------------
@@ -20,7 +15,8 @@ Noticeable up-front UI changes
  * Add EyAngband-style quickstart option.
  * Notes, like NPP and FA, except with brand new code by J.D. White.
    (#10)
- * Add a trap detection indicator (#19)
+ * Add a trap detection indicator.  Also, colour the edges of trap-
+   detected areas green. (#19)
  * Make status bar display all timed effects, left-to-right, which
    involves moving the dungeon level to the bottom of the left-hand
    display. (#191)
@@ -34,8 +30,8 @@ Noticeable up-front UI changes
    - Track item origin, so every item has a tag telling you where it
      came from (#149)
  * Recolour the monster recall: (part of #152)
-   - Monster's depth is in red if it's beyond maximum depth, light green
-     otherwise.
+   - Monster's depth is in red if it's beyond maximum depth, light
+     green otherwise.
  * Add how many items the player already has when buying something at
    the store.  (closes #151)
  * Allow use of the space bar to advance a screenful in all
@@ -57,22 +53,71 @@ Noticeable up-front UI changes
  * Put {tried} items before untried items in the object browser
  * The monster list display has a little more colour-coding
  * Death menu now uses a scrolly menu.
+ * Preserve mode has a sensible description again.
+ * Try and differentiate the level feelings more.
+ * Add the moderately well-tested "lazy movement" patch which allows a 
+   movement delay to be set, during which it is possible to choose a
+   second direction.  This means that up and left in quick succession
+   can be translated to an actual diagonal.  This may improve some
+   people's laptop playing experience without resorting to the
+   roguelike keyset.
+ * Add bigscreen support to the self-knowledge screen.
+ * Make inscriptions like "!k!k!k" prompt multiple times again.  (#492)
+ * Make monster XP and native depth always known, even without
+   kills.  (#596)
+ * Rejig social status a bit.
 
+Gameplay changes
+----------------
 
-Gameplay
---------
+There are some pretty big gameplay changes.
 
- * Remove autoscum.  (#365)
+The object list has been reworked quite a bit.  It is a bit more
+varied and has less duplication.  Some items have been removed and
+others added.  The new items have had relatively little testing and
+may be gone again next release.
+ - The number of items that monsters drop has been reduced drastically.
+ - Potions tend to appear in stacks now.
+ - The range of food items has been reduced.
+ - Healing heal a proportion of wounds, not just a set value-- this
+   makes all the potions useful.
+ - Add a selection of "gain one, lose one" stat potions to replace the
+   old stat loss potions-- they guarantee a stat to raise and reduce one
+   randomly.
+ - The Elven Rings have a variety of healings, at the suggestion of
+   Timo.  Also, apply some other changes from the TV-patch (r428)
+ - Replace the sustain {stat} rings with sustain mind and sustain body,
+   providing three sustains each.
+ - (#543) Make ammo of slay evil/venom apply to Mithril ammo too.
+
+Gold drops have also been reworked.  By the end of the game, there is
+about 3.6x less gold per drop than in any earlier version or Angband
+or Moria, but the amount per drop at the beginning of the dungeon 
+is quite similar to pre-existing levels.  You may be interested in
+looking at http://rephial.org/research/avg_gold_drop.pdf for an
+illustration.
+
+Magic mapping and detection use the same-sized rectangular area around
+the player regardless of screen size.
+
+Birth:
  * Make point-based points worth less gold.
-
-Detection:
-Try a different approach at detection: make all of magic mapping and
-detect trap/door/stair/monster/item/treasure use the same width and
-height rectangular area around the player.
+ * Minimum starting gold is 200AU.
+ * Add an option to start the character with 500AU but no equipment.
+ * Point-based character generation is now equivalent to best available
+   from the autoroller.  (Eddie Grove)
+ * All characters start with WoR.
 
 Stores:
  * Phase Door is now a staple item.
  * Start stocking deeper items as the character descends.
+ * Rewrite the rules for shopkeepers
+   - Remove individual-shopkeeper and race-based price changes from the
+     store code, to make it easier to balance pricing.
+   - Adjust adj_chr_gold[] values upwards to represent the average-110%
+     inflation usually applied by the individual-shopkeeper greed
+     values.  This should really be applied to the object.txt file
+     instead, though.
 
 ID:
  * Make ID reveal all powers of an object, and remove *ID*.  (#158)
@@ -88,70 +133,18 @@ ID:
  * Stop automatically cursing all bad weaponry
  * Make weak pseudo-id notice the difference between magical and
    excellent
- * Stop making rings of Stupidity, Weakness, and Woe.
  * Allow any/all rings/amulets to be cursed if the game wants to
    generate a "bad" item.  This is liable to be rethought in the future.
 
-
-Combat:
- * On shooters, slays affect rolled damage, not total damage, like
-   combat.  Also, transfer slays and brands from the shooter to
-   ammunition. e.g. Cubragol is firebranded.  This tones down ranged
-   combat quite a bit at the high end.
-
-Monsters:
-
-Monsters have only had one change, but it's not a very noticeable one
-(hopefully): monster HP is specified as an average value around which to
-randomise, instead of using a "12d5"-type calculation.  Uniques always
-have the number of HPs specified in the monster.txt file, like before.
-
-Pack AI for trying to confront the player in rooms was exploitable: it
-was not considering open spaces created by digging creatures or
-stone-to-mud, making it possible for the player to clear "safe" open
-space at the side of a room.  Now the pack AI tries to attack in any
-open space where the player can be surrounded, not just room interiors.
-
-
-Objects:
-#310 #228 #311 #313 #316
-
-There is a new object allocation algorithm, something like the Sangband
-system but not quite the same.  This made it possible to rebalance the
-object rarities with better accuracy and knowledge of how such changes
-would affect the game.
-
-As a result, object rarities have undergone fairly extensive changes,
-especially with regard to consumables and rechargeables.  Some items
-have been removed, some new ones have been added, and most rarities have
-been changed.  There are a few quirks with the allocations as they
-stand, like speed potions being abnormally common on the first few
-dungeon levels.
-
-A selection of the most notable changes appear below:
-
- - Water and Apple Juice are gone.
- - Various potions have a tendency to appear in stacks.
- - Reduce the number of food varities in the game.
- - Add a new timed telepathy effect to some items
- - Make potions of CLW, CSW, CCW heal a proportion of wounds, not just
-   a set value.  In the process, make all the potions more useful, to
-   the point where even CLW can be used usefully; CSW is about as useful
-   as the old CCW, and CCW is now only found in the dungeon -- albeit in
-   piles.  (#313)
- - Add a selection of "gain one, lose one" stat potions to replace the
-   old stat loss potions-- they guarantee a stat to raise and reduce one
-   randomly.
- - Stop Broken Daggers being generated, make Filthy Rags [0,+0], and
-   make Broken Swords (+0,+0) by default.
- - Stop fixing the flavour for slime mold juice.
- - The Elven Rings have a variety of healings, at the suggestion of
-   Timo.  Also, apply some other changes from the TV-patch (r428)
- - Bad potions (confusion and the like) have a more damaging effect than
-   good potions when thrown.  This is like a lazy version of potions
-   actually having the proper effect on monsters they hit.
- - Make torches always be found at 5000 turns, and lanterns at 7500
-   turns
+A small selection of other changes:
+ * Remove autoscum.  (#365) -- really?
+ * Add minimum depths for each kind of trap.  As such, only teleport and
+   confusion traps occur at dlev1.  This should help some people.
+ * Make the rogue slightly better at combat than the ranger, based on Timo's sugges
+   tion.  (Message-ID: <651vknF2cvjl2U1@mid.individual.net>)
+ * Lower the distance missile weapons can fire into the 10-14 grids range.
+ * Make monster arrow attacks sometimes miss.  (#537)
+ * Some improvements to monster AI.
 
 
 Port
@@ -162,14 +155,23 @@ Port
  * GTK2: Continue work; add term windows, graphics, etc. and also some
    special dedicated display windows, like "messages" and "monster
    list". (shanoah)
+ * OS X: the OS X version is now a universal binary, and runs faster,
+   better, quicker, and with more sound than before.  (Rowan Beentje)
 
 
 Code-level
 ----------
 
+Monster HP is now specified as an average value around which to
+randomise, instead of using a "12d5"-type calculation.  Uniques always
+have the number of HPs specified in the monster.txt file, like before.
+This is copied from Ey.
+
 A lot of code-level cleanup has been applied to this release, much of it
 still in flux.  Many new files have been split out of existing files,
-which should now have much more self-explanitory names.
+which should now have much more self-explanitory names.  The player/, 
+monster/ and object/ subdirectories have been created, to aid seperation
+of code.
 
 There is also a new generic effects handler so that all item activations
 and use abilities share the same code; this replaces use-obj.c and a lot
@@ -196,6 +198,17 @@ Additionally, a new file API has been introduced which combines the
 previous mishmash of fd_*() and my_f*() calls into a simpler, better
 documented interface.  (#137)
 
+Store stocking is specified in lib/edit/store.txt now, in a reasonably
+flexible format.
+
+A fair bit of work has gone into allowing item names to be used in the
+edit files rather than the tval/sval numbers.  For example, see the
+new store.txt file; but also the lib/pref/ graphics files, and the
+starting items in the p_class.txt file, amongst others.  This is a
+fairly easy thing to do and is a massive massive usability enhancement.
+It means that invalid item references are caught much sooner, since if
+an item is removed, all references to its name become invalid.
+
 Set up an event system for UI display updates, where the game
 communicates with the UI by sending messages saying that something's
 changed that the UI might be interested in, rather than deciding that
@@ -212,18 +225,6 @@ lot more hackable now.
 The beginnings of an organised code documentation scheme have started,
 using doxygen.  Makefile.std provides an easy mechanism to generate docs
 (try "make docs").
-
-There is some new and preliminary load/save code, which has involved
-creating a host of new files:
- - z-blockfile deals with "tar"-like blocks of data, where each block
-   contains a number of records
- - z-smap is a serialisable map type, used to store values in the
-   blockfile
- - compress is a quick and space-efficient compression algorithm stolen
-   from "liblzf".
-
-The new code is much easier to use and read, but it's not ready for use
-by anyone who cares about their characters yet.
 
 Other assorted changes:
  * Remove a whole load of useless or unused configuration options from
@@ -242,4 +243,7 @@ Other assorted changes:
    though this is barely used at present.  Thanks to Fennec for cleaning
    this up a bit.
  * Introduce the one_in_() notation to the game, for percentile dice.
+ * Move to using randint0() and randint1() for random numbers.
+ * Add proper transparency to the PNG files.  (fixes #270; thanks to Rowan Beentje
+ * Move to using flags[6] for monster flags rather than individual flagsets.
 
