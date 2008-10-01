@@ -25,7 +25,7 @@
  */
 static bool trap_check_hit(int power)
 {
-	return test_hit(power, p_ptr->ac + p_ptr->to_a, TRUE);
+	return test_hit(power, p_ptr->state.ac + p_ptr->state.to_a, TRUE);
 }
 
 
@@ -132,7 +132,7 @@ void hit_trap(int y, int x)
 		case FEAT_TRAP_HEAD + 0x00:
 		{
 			msg_print("You fall through a trap door!");
-			if (p_ptr->ffall)
+			if (p_ptr->state.ffall)
 			{
 				msg_print("You float gently down to the next level.");
 			}
@@ -158,7 +158,7 @@ void hit_trap(int y, int x)
 		case FEAT_TRAP_HEAD + 0x01:
 		{
 			msg_print("You fall into a pit!");
-			if (p_ptr->ffall)
+			if (p_ptr->state.ffall)
 			{
 				msg_print("You float gently to the bottom of the pit.");
 			}
@@ -174,7 +174,7 @@ void hit_trap(int y, int x)
 		{
 			msg_print("You fall into a spiked pit!");
 
-			if (p_ptr->ffall)
+			if (p_ptr->state.ffall)
 			{
 				msg_print("You float gently to the floor of the pit.");
 				msg_print("You carefully avoid touching the spikes.");
@@ -204,7 +204,7 @@ void hit_trap(int y, int x)
 		{
 			msg_print("You fall into a spiked pit!");
 
-			if (p_ptr->ffall)
+			if (p_ptr->state.ffall)
 			{
 				msg_print("You float gently to the floor of the pit.");
 				msg_print("You carefully avoid touching the spikes.");
@@ -223,7 +223,7 @@ void hit_trap(int y, int x)
 					dam = dam * 2;
 					(void)inc_timed(TMD_CUT, randint1(dam));
 
-					if (p_ptr->resist_pois || p_ptr->timed[TMD_OPP_POIS])
+					if (p_ptr->state.resist_pois || p_ptr->timed[TMD_OPP_POIS])
 					{
 						msg_print("The poison does not affect you!");
 					}
@@ -345,7 +345,7 @@ void hit_trap(int y, int x)
 		case FEAT_TRAP_HEAD + 0x0C:
 		{
 			msg_print("You are surrounded by a black gas!");
-			if (!p_ptr->resist_blind)
+			if (!p_ptr->state.resist_blind)
 			{
 				(void)inc_timed(TMD_BLIND, randint0(50) + 25);
 			}
@@ -355,7 +355,7 @@ void hit_trap(int y, int x)
 		case FEAT_TRAP_HEAD + 0x0D:
 		{
 			msg_print("You are surrounded by a gas of scintillating colors!");
-			if (!p_ptr->resist_confu)
+			if (!p_ptr->state.resist_confu)
 			{
 				(void)inc_timed(TMD_CONFUSED, randint0(20) + 10);
 			}
@@ -365,7 +365,7 @@ void hit_trap(int y, int x)
 		case FEAT_TRAP_HEAD + 0x0E:
 		{
 			msg_print("You are surrounded by a pungent green gas!");
-			if (!p_ptr->resist_pois && !p_ptr->timed[TMD_OPP_POIS])
+			if (!p_ptr->state.resist_pois && !p_ptr->timed[TMD_OPP_POIS])
 			{
 				(void)inc_timed(TMD_POISONED, randint0(20) + 10);
 			}
@@ -375,7 +375,7 @@ void hit_trap(int y, int x)
 		case FEAT_TRAP_HEAD + 0x0F:
 		{
 			msg_print("You are surrounded by a strange white mist!");
-			if (!p_ptr->free_act)
+			if (!p_ptr->state.free_act)
 			{
 				(void)inc_timed(TMD_PARALYZED, randint0(10) + 5);
 			}

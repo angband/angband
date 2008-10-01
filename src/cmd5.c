@@ -42,7 +42,7 @@ s16b spell_chance(int spell)
 	chance -= 3 * (p_ptr->lev - s_ptr->slevel);
 
 	/* Reduce failure rate by INT/WIS adjustment */
-	chance -= adj_mag_stat[p_ptr->stat_ind[cp_ptr->spell_stat]];
+	chance -= adj_mag_stat[p_ptr->state.stat_ind[cp_ptr->spell_stat]];
 
 	/* Not enough mana to cast */
 	if (s_ptr->smana > p_ptr->csp)
@@ -51,7 +51,7 @@ s16b spell_chance(int spell)
 	}
 
 	/* Extract the minimum failure rate */
-	minfail = adj_mag_fail[p_ptr->stat_ind[cp_ptr->spell_stat]];
+	minfail = adj_mag_fail[p_ptr->state.stat_ind[cp_ptr->spell_stat]];
 
 	/* Non mage/priest characters never get better than 5 percent */
 	if (!(cp_ptr->flags & CF_ZERO_FAIL))
@@ -60,7 +60,7 @@ s16b spell_chance(int spell)
 	}
 
 	/* Priest prayer penalty for "edged" weapons (before minfail) */
-	if (p_ptr->icky_wield)
+	if (p_ptr->state.icky_wield)
 	{
 		chance += 25;
 	}

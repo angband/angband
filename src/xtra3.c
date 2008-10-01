@@ -109,7 +109,7 @@ static void prt_stat(int stat, int row, int col)
 	if (p_ptr->stat_cur[stat] < p_ptr->stat_max[stat])
 	{
 		put_str(stat_names_reduced[stat], row, col);
-		cnv_stat(p_ptr->stat_use[stat], tmp, sizeof(tmp));
+		cnv_stat(p_ptr->state.stat_use[stat], tmp, sizeof(tmp));
 		c_put_str(TERM_YELLOW, tmp, row, col + 6);
 	}
 
@@ -117,7 +117,7 @@ static void prt_stat(int stat, int row, int col)
 	else
 	{
 		put_str(stat_names[stat], row, col);
-		cnv_stat(p_ptr->stat_use[stat], tmp, sizeof(tmp));
+		cnv_stat(p_ptr->state.stat_use[stat], tmp, sizeof(tmp));
 		c_put_str(TERM_L_GREEN, tmp, row, col + 6);
 	}
 
@@ -270,7 +270,7 @@ static void prt_ac(int row, int col)
 	char tmp[32];
 
 	put_str("Cur AC ", row, col);
-	strnfmt(tmp, sizeof(tmp), "%5d", p_ptr->dis_ac + p_ptr->dis_to_a);
+	strnfmt(tmp, sizeof(tmp), "%5d", p_ptr->state.dis_ac + p_ptr->state.dis_to_a);
 	c_put_str(TERM_L_GREEN, tmp, row, col + 7);
 }
 
@@ -465,7 +465,7 @@ static void prt_health(int row, int col)
  */
 static void prt_speed(int row, int col)
 {
-	int i = p_ptr->pspeed;
+	int i = p_ptr->state.speed;
 
 	byte attr = TERM_WHITE;
 	const char *type = NULL;

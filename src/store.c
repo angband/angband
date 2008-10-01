@@ -424,7 +424,7 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 	if (store_current == STORE_B_MARKET)
 		adjust = 150;
 	else
-		adjust = adj_chr_gold[p_ptr->stat_ind[A_CHR]];
+		adjust = adj_chr_gold[p_ptr->state.stat_ind[A_CHR]];
 
 
 	/* Shop is buying */

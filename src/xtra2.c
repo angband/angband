@@ -186,7 +186,7 @@ static bool set_oppose_acid(int v)
 	/* Open */
 	if (v)
 	{
-		if (!p_ptr->timed[TMD_OPP_ACID] && !p_ptr->immune_acid)
+		if (!p_ptr->timed[TMD_OPP_ACID] && !p_ptr->state.immune_acid)
 		{
 			message(MSG_RES_ACID, 0, "You feel resistant to acid!");
 			notice = TRUE;
@@ -196,7 +196,7 @@ static bool set_oppose_acid(int v)
 	/* Shut */
 	else
 	{
-		if (p_ptr->timed[TMD_OPP_ACID] && !p_ptr->immune_acid)
+		if (p_ptr->timed[TMD_OPP_ACID] && !p_ptr->state.immune_acid)
 		{
 			message(MSG_RECOVER, 0, "You feel less resistant to acid.");
 			notice = TRUE;
@@ -236,7 +236,7 @@ static bool set_oppose_elec(int v)
 	/* Open */
 	if (v)
 	{
-		if (!p_ptr->timed[TMD_OPP_ELEC] && !p_ptr->immune_elec)
+		if (!p_ptr->timed[TMD_OPP_ELEC] && !p_ptr->state.immune_elec)
 		{
 			message(MSG_RES_ELEC, 0, "You feel resistant to electricity!");
 			notice = TRUE;
@@ -246,7 +246,7 @@ static bool set_oppose_elec(int v)
 	/* Shut */
 	else
 	{
-		if (p_ptr->timed[TMD_OPP_ELEC] && !p_ptr->immune_elec)
+		if (p_ptr->timed[TMD_OPP_ELEC] && !p_ptr->state.immune_elec)
 		{
 			message(MSG_RECOVER, 0, "You feel less resistant to electricity.");
 			notice = TRUE;
@@ -286,7 +286,7 @@ static bool set_oppose_fire(int v)
 	/* Open */
 	if (v)
 	{
-		if (!p_ptr->timed[TMD_OPP_FIRE] && !p_ptr->immune_fire)
+		if (!p_ptr->timed[TMD_OPP_FIRE] && !p_ptr->state.immune_fire)
 		{
 			message(MSG_RES_FIRE, 0, "You feel resistant to fire!");
 			notice = TRUE;
@@ -296,7 +296,7 @@ static bool set_oppose_fire(int v)
 	/* Shut */
 	else
 	{
-		if (p_ptr->timed[TMD_OPP_FIRE] && !p_ptr->immune_fire)
+		if (p_ptr->timed[TMD_OPP_FIRE] && !p_ptr->state.immune_fire)
 		{
 			message(MSG_RECOVER, 0, "You feel less resistant to fire.");
 			notice = TRUE;
@@ -336,7 +336,7 @@ static bool set_oppose_cold(int v)
 	/* Open */
 	if (v)
 	{
-		if (!p_ptr->timed[TMD_OPP_COLD] && !p_ptr->immune_cold)
+		if (!p_ptr->timed[TMD_OPP_COLD] && !p_ptr->state.immune_cold)
 		{
 			message(MSG_RES_COLD, 0, "You feel resistant to cold!");
 			notice = TRUE;
@@ -346,7 +346,7 @@ static bool set_oppose_cold(int v)
 	/* Shut */
 	else
 	{
-		if (p_ptr->timed[TMD_OPP_COLD] && !p_ptr->immune_cold)
+		if (p_ptr->timed[TMD_OPP_COLD] && !p_ptr->state.immune_cold)
 		{
 			message(MSG_RECOVER, 0, "You feel less resistant to cold.");
 			notice = TRUE;
@@ -386,7 +386,7 @@ static bool set_oppose_conf(int v)
 	/* Open */
 	if (v)
 	{
-		if (!p_ptr->timed[TMD_OPP_CONF] && !p_ptr->resist_confu)
+		if (!p_ptr->timed[TMD_OPP_CONF] && !p_ptr->state.resist_confu)
 		{
 			message(MSG_RES_ELEC, 0, "You feel remarkably clear-headed!");
 			notice = TRUE;
@@ -396,7 +396,7 @@ static bool set_oppose_conf(int v)
 	/* Shut */
 	else
 	{
-		if (p_ptr->timed[TMD_OPP_CONF] && !p_ptr->resist_confu)
+		if (p_ptr->timed[TMD_OPP_CONF] && !p_ptr->state.resist_confu)
 		{
 			message(MSG_RECOVER, 0, "You feel less clear-headed.");
 			notice = TRUE;

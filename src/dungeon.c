@@ -539,7 +539,7 @@ static void play_ambient_sound(void)
  */
 static void decrease_timeouts(void)
 {
-	int adjust = (adj_con_fix[p_ptr->stat_ind[A_CON]] + 1);
+	int adjust = (adj_con_fix[p_ptr->state.stat_ind[A_CON]] + 1);
 	int i;
 
 	/* Decrement all effects that can be done simply */
@@ -720,13 +720,13 @@ static void process_world(void)
 		if (!(turn % 100))
 		{
 			/* Basic digestion rate based on speed */
-			i = extract_energy[p_ptr->pspeed] * 2;
+			i = extract_energy[p_ptr->state.speed] * 2;
 
 			/* Regeneration takes more food */
-			if (p_ptr->regenerate) i += 30;
+			if (p_ptr->state.regenerate) i += 30;
 
 			/* Slow digestion takes less food */
-			if (p_ptr->slow_digest) i -= 10;
+			if (p_ptr->state.slow_digest) i -= 10;
 
 			/* Minimal digestion */
 			if (i < 1) i = 1;
@@ -782,13 +782,13 @@ static void process_world(void)
 		regen_amount = PY_REGEN_WEAK;
 
 	/* Various things speed up regeneration */
-	if (p_ptr->regenerate)
+	if (p_ptr->state.regenerate)
 		regen_amount *= 2;
 	if (p_ptr->searching || p_ptr->resting)
 		regen_amount *= 2;
 
 	/* Some things slow it down */
-	if (p_ptr->impair_hp)
+	if (p_ptr->state.impair_hp)
 		regen_amount /= 2;
 
 	/* Various things interfere with physical healing */
@@ -808,13 +808,13 @@ static void process_world(void)
 	regen_amount = PY_REGEN_NORMAL;
 
 	/* Various things speed up regeneration */
-	if (p_ptr->regenerate)
+	if (p_ptr->state.regenerate)
 		regen_amount *= 2;
 	if (p_ptr->searching || p_ptr->resting)
 		regen_amount *= 2;
 
 	/* Some things slow it down */
-	if (p_ptr->impair_mana)
+	if (p_ptr->state.impair_mana)
 		regen_amount /= 2;
 
 	/* Regenerate mana */
@@ -894,7 +894,7 @@ static void process_world(void)
 	/*** Process Inventory ***/
 
 	/* Handle experience draining */
-	if (p_ptr->exp_drain)
+	if (p_ptr->state.exp_drain)
 	{
 		if ((p_ptr->exp > 0) && one_in_(10))
 		{
@@ -914,7 +914,7 @@ static void process_world(void)
 	/*** Involuntary Movement ***/
 
 	/* Mega-Hack -- Random teleportation XXX XXX XXX */
-	if ((p_ptr->teleport) && one_in_(100))
+	if ((p_ptr->state.teleport) && one_in_(100))
 	{
 		/* Teleport player */
 		teleport_player(40);
@@ -1639,7 +1639,7 @@ static void dungeon(void)
 		/*** Apply energy ***/
 
 		/* Give the player some energy */
-		p_ptr->energy += extract_energy[p_ptr->pspeed];
+		p_ptr->energy += extract_energy[p_ptr->state.speed];
 
 		/* Give energy to all monsters */
 		for (i = mon_max - 1; i >= 1; i--)

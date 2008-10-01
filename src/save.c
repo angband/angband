@@ -515,7 +515,7 @@ static void wr_extra(void)
 	wr_s16b(p_ptr->food);
 	wr_s16b(p_ptr->energy);
 	wr_s16b(p_ptr->word_recall);
-	wr_s16b(p_ptr->see_infra);
+	wr_s16b(p_ptr->state.see_infra);
 	wr_byte(p_ptr->confusing);
 	wr_byte(p_ptr->searching);
 

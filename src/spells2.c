@@ -149,12 +149,12 @@ bool do_dec_stat(int stat, bool perma)
 	/* Get the "sustain" */
 	switch (stat)
 	{
-		case A_STR: if (p_ptr->sustain_str) sust = TRUE; break;
-		case A_INT: if (p_ptr->sustain_int) sust = TRUE; break;
-		case A_WIS: if (p_ptr->sustain_wis) sust = TRUE; break;
-		case A_DEX: if (p_ptr->sustain_dex) sust = TRUE; break;
-		case A_CON: if (p_ptr->sustain_con) sust = TRUE; break;
-		case A_CHR: if (p_ptr->sustain_chr) sust = TRUE; break;
+		case A_STR: if (p_ptr->state.sustain_str) sust = TRUE; break;
+		case A_INT: if (p_ptr->state.sustain_int) sust = TRUE; break;
+		case A_WIS: if (p_ptr->state.sustain_wis) sust = TRUE; break;
+		case A_DEX: if (p_ptr->state.sustain_dex) sust = TRUE; break;
+		case A_CON: if (p_ptr->state.sustain_con) sust = TRUE; break;
+		case A_CHR: if (p_ptr->state.sustain_chr) sust = TRUE; break;
 	}
 
 	/* Sustain */
@@ -2485,7 +2485,7 @@ void destroy_area(int y1, int x1, int r, bool full)
 		msg_print("There is a searing blast of light!");
 
 		/* Blind the player */
-		if (!p_ptr->resist_blind && !p_ptr->resist_lite)
+		if (!p_ptr->state.resist_blind && !p_ptr->state.resist_lite)
 		{
 			/* Become blind */
 			(void)inc_timed(TMD_BLIND, 10 + randint1(10));

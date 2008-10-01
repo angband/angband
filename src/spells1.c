@@ -981,11 +981,11 @@ void acid_dam(int dam, cptr kb_str)
 	if (dam <= 0) return;
 
 	/* Resist the damage */
-	if (p_ptr->immune_acid) n = 3;
-	else if (p_ptr->resist_acid) n = 1;
+	if (p_ptr->state.immune_acid) n = 3;
+	else if (p_ptr->state.resist_acid) n = 1;
 	else n = 0;
 
-	if (p_ptr->vuln_acid) n--;
+	if (p_ptr->state.vuln_acid) n--;
 	if (p_ptr->timed[TMD_OPP_ACID]) n++;
 
 	/* Change damage */
@@ -1016,11 +1016,11 @@ void elec_dam(int dam, cptr kb_str)
 	if (dam <= 0) return;
 
 	/* Resist the damage */
-	if (p_ptr->immune_elec) n = 3;
-	else if (p_ptr->resist_elec) n = 1;
+	if (p_ptr->state.immune_elec) n = 3;
+	else if (p_ptr->state.resist_elec) n = 1;
 	else n = 0;
 
-	if (p_ptr->vuln_elec) n--;
+	if (p_ptr->state.vuln_elec) n--;
 	if (p_ptr->timed[TMD_OPP_ELEC]) n++;
 
 	/* Change damage */
@@ -1050,11 +1050,11 @@ void fire_dam(int dam, cptr kb_str)
 	if (dam <= 0) return;
 
 	/* Resist the damage */
-	if (p_ptr->immune_fire) n = 3;
-	else if (p_ptr->resist_fire) n = 1;
+	if (p_ptr->state.immune_fire) n = 3;
+	else if (p_ptr->state.resist_fire) n = 1;
 	else n = 0;
 
-	if (p_ptr->vuln_fire) n--;
+	if (p_ptr->state.vuln_fire) n--;
 	if (p_ptr->timed[TMD_OPP_FIRE]) n++;
 
 	/* Change damage */
@@ -1082,11 +1082,11 @@ void cold_dam(int dam, cptr kb_str)
 	if (dam <= 0) return;
 
 	/* Resist the damage */
-	if (p_ptr->immune_cold) n = 3;
-	else if (p_ptr->resist_cold) n = 1;
+	if (p_ptr->state.immune_cold) n = 3;
+	else if (p_ptr->state.resist_cold) n = 1;
 	else n = 0;
 
-	if (p_ptr->vuln_cold) n--;
+	if (p_ptr->state.vuln_cold) n--;
 	if (p_ptr->timed[TMD_OPP_COLD]) n++;
 
 	/* Change damage */
@@ -1433,7 +1433,7 @@ static void apply_nexus(const monster_type *m_ptr)
 
 		case 6:
 		{
-			if (randint0(100) < p_ptr->skills[SKILL_SAVE])
+			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 				break;
@@ -1446,7 +1446,7 @@ static void apply_nexus(const monster_type *m_ptr)
 
 		case 7:
 		{
-			if (randint0(100) < p_ptr->skills[SKILL_SAVE])
+			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 				break;
@@ -3449,10 +3449,10 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 		case GF_POIS:
 		{
 			if (blind) msg_print("You are hit by poison!");
-			if (p_ptr->resist_pois) dam = (dam + 2) / 3;
+			if (p_ptr->state.resist_pois) dam = (dam + 2) / 3;
 			if (p_ptr->timed[TMD_OPP_POIS]) dam = (dam + 2) / 3;
 			take_hit(dam, killer);
-			if (!(p_ptr->resist_pois || p_ptr->timed[TMD_OPP_POIS]))
+			if (!(p_ptr->state.resist_pois || p_ptr->timed[TMD_OPP_POIS]))
 			{
 				(void)inc_timed(TMD_POISONED, randint0(dam) + 10);
 			}
@@ -3489,7 +3489,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 		{
 			if (blind) msg_print("You are hit by something!");
 			take_hit(dam, killer);
-			if (!p_ptr->resist_sound)
+			if (!p_ptr->state.resist_sound)
 			{
 				int k = (randint1((dam > 40) ? 35 : (dam * 3 / 4 + 5)));
 				(void)inc_timed(TMD_STUN, k);
@@ -3501,13 +3501,13 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 		case GF_NETHER:
 		{
 			if (blind) msg_print("You are hit by something strange!");
-			if (p_ptr->resist_nethr)
+			if (p_ptr->state.resist_nethr)
 			{
 				dam *= 6; dam /= (randint1(6) + 6);
 			}
 			else
 			{
-				if (p_ptr->hold_life && (randint0(100) < 75))
+				if (p_ptr->state.hold_life && (randint0(100) < 75))
 				{
 					msg_print("You keep hold of your life force!");
 				}
@@ -3515,7 +3515,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 				{
 					s32b d = 200 + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
 
-					if (p_ptr->hold_life)
+					if (p_ptr->state.hold_life)
 					{
 						msg_print("You feel your life slipping away!");
 						lose_exp(d / 10);
@@ -3535,11 +3535,11 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 		case GF_WATER:
 		{
 			if (blind) msg_print("You are hit by something!");
-			if (!p_ptr->resist_sound)
+			if (!p_ptr->state.resist_sound)
 			{
 				(void)inc_timed(TMD_STUN, randint1(40));
 			}
-			if (!p_ptr->resist_confu)
+			if (!p_ptr->state.resist_confu)
 			{
 				(void)inc_timed(TMD_CONFUSED, randint1(5) + 5);
 			}
@@ -3551,21 +3551,21 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 		case GF_CHAOS:
 		{
 			if (blind) msg_print("You are hit by something strange!");
-			if (p_ptr->resist_chaos)
+			if (p_ptr->state.resist_chaos)
 			{
 				dam *= 6; dam /= (randint1(6) + 6);
 			}
-			if (!p_ptr->resist_confu && !p_ptr->resist_chaos)
+			if (!p_ptr->state.resist_confu && !p_ptr->state.resist_chaos)
 			{
 				(void)inc_timed(TMD_CONFUSED, randint0(20) + 10);
 			}
-			if (!p_ptr->resist_chaos)
+			if (!p_ptr->state.resist_chaos)
 			{
 				(void)inc_timed(TMD_IMAGE, randint1(10));
 			}
-			if (!p_ptr->resist_nethr && !p_ptr->resist_chaos)
+			if (!p_ptr->state.resist_nethr && !p_ptr->state.resist_chaos)
 			{
-				if (p_ptr->hold_life && (randint0(100) < 75))
+				if (p_ptr->state.hold_life && (randint0(100) < 75))
 				{
 					msg_print("You keep hold of your life force!");
 				}
@@ -3573,7 +3573,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 				{
 					s32b d = 5000 + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
 
-					if (p_ptr->hold_life)
+					if (p_ptr->state.hold_life)
 					{
 						msg_print("You feel your life slipping away!");
 						lose_exp(d / 10);
@@ -3593,7 +3593,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 		case GF_SHARD:
 		{
 			if (blind) msg_print("You are hit by something sharp!");
-			if (p_ptr->resist_shard)
+			if (p_ptr->state.resist_shard)
 			{
 				dam *= 6; dam /= (randint1(6) + 6);
 			}
@@ -3609,7 +3609,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 		case GF_SOUND:
 		{
 			if (blind) msg_print("You are hit by something!");
-			if (p_ptr->resist_sound)
+			if (p_ptr->state.resist_sound)
 			{
 				dam *= 5; dam /= (randint1(6) + 6);
 			}
@@ -3626,11 +3626,11 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 		case GF_CONFUSION:
 		{
 			if (blind) msg_print("You are hit by something!");
-			if (p_ptr->resist_confu)
+			if (p_ptr->state.resist_confu)
 			{
 				dam *= 5; dam /= (randint1(6) + 6);
 			}
-			if (!p_ptr->resist_confu)
+			if (!p_ptr->state.resist_confu)
 			{
 				(void)inc_timed(TMD_CONFUSED, randint1(20) + 10);
 			}
@@ -3642,7 +3642,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 		case GF_DISENCHANT:
 		{
 			if (blind) msg_print("You are hit by something strange!");
-			if (p_ptr->resist_disen)
+			if (p_ptr->state.resist_disen)
 			{
 				dam *= 6; dam /= (randint1(6) + 6);
 			}
@@ -3658,7 +3658,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 		case GF_NEXUS:
 		{
 			if (blind) msg_print("You are hit by something strange!");
-			if (p_ptr->resist_nexus)
+			if (p_ptr->state.resist_nexus)
 			{
 				dam *= 6; dam /= (randint1(6) + 6);
 			}
@@ -3674,7 +3674,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 		case GF_FORCE:
 		{
 			if (blind) msg_print("You are hit by something!");
-			if (!p_ptr->resist_sound)
+			if (!p_ptr->state.resist_sound)
 			{
 				(void)inc_timed(TMD_STUN, randint1(20));
 			}
@@ -3695,11 +3695,11 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 		case GF_LITE:
 		{
 			if (blind) msg_print("You are hit by something!");
-			if (p_ptr->resist_lite)
+			if (p_ptr->state.resist_lite)
 			{
 				dam *= 4; dam /= (randint1(6) + 6);
 			}
-			else if (!blind && !p_ptr->resist_blind)
+			else if (!blind && !p_ptr->state.resist_blind)
 			{
 				(void)inc_timed(TMD_BLIND, randint1(5) + 2);
 			}
@@ -3711,11 +3711,11 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 		case GF_DARK:
 		{
 			if (blind) msg_print("You are hit by something!");
-			if (p_ptr->resist_dark)
+			if (p_ptr->state.resist_dark)
 			{
 				dam *= 4; dam /= (randint1(6) + 6);
 			}
-			else if (!blind && !p_ptr->resist_blind)
+			else if (!blind && !p_ptr->state.resist_blind)
 			{
 				(void)inc_timed(TMD_BLIND, randint1(5) + 2);
 			}
@@ -3785,7 +3785,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 				teleport_player(5);
 
 			(void)inc_timed(TMD_SLOW, randint0(4) + 4);
-			if (!p_ptr->resist_sound)
+			if (!p_ptr->state.resist_sound)
 			{
 				int k = (randint1((dam > 90) ? 35 : (dam / 3 + 5)));
 				(void)inc_timed(TMD_STUN, k);
@@ -3815,11 +3815,11 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 		{
 			if (blind) msg_print("You are hit by something sharp!");
 			cold_dam(dam, killer);
-			if (!p_ptr->resist_shard)
+			if (!p_ptr->state.resist_shard)
 			{
 				(void)inc_timed(TMD_CUT, damroll(5, 8));
 			}
-			if (!p_ptr->resist_sound)
+			if (!p_ptr->state.resist_sound)
 			{
 				(void)inc_timed(TMD_STUN, randint1(15));
 			}

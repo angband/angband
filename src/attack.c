@@ -106,7 +106,7 @@ static int critical_shot(int weight, int plus, int dam)
 	int i, k;
 
 	/* Extract "shot" power */
-	i = (weight + ((p_ptr->to_h + plus) * 4) + (p_ptr->lev * 2));
+	i = (weight + ((p_ptr->state.to_h + plus) * 4) + (p_ptr->lev * 2));
 
 	/* Critical hit */
 	if (randint1(5000) <= i)
@@ -145,7 +145,7 @@ static int critical_norm(int weight, int plus, int dam)
 	int i, k;
 
 	/* Extract "blow" power */
-	i = (weight + ((p_ptr->to_h + plus) * 5) + (p_ptr->lev * 3));
+	i = (weight + ((p_ptr->state.to_h + plus) * 5) + (p_ptr->lev * 3));
 
 	/* Chance */
 	if (randint1(5000) <= i)
@@ -451,7 +451,7 @@ void py_attack(int y, int x)
 
 
 	/* Handle player fear */
-	if (p_ptr->afraid)
+	if (p_ptr->state.afraid)
 	{
 		/* Message */
 		msg_format("You are too afraid to attack %s!", m_name);
@@ -465,12 +465,12 @@ void py_attack(int y, int x)
 	o_ptr = &inventory[INVEN_WIELD];
 
 	/* Calculate the "attack quality" */
-	bonus = p_ptr->to_h + o_ptr->to_h;
-	chance = (p_ptr->skills[SKILL_TO_HIT_MELEE] + (bonus * BTH_PLUS_ADJ));
+	bonus = p_ptr->state.to_h + o_ptr->to_h;
+	chance = (p_ptr->state.skills[SKILL_TO_HIT_MELEE] + (bonus * BTH_PLUS_ADJ));
 
 
 	/* Attack once for each legal blow */
-	while (num++ < p_ptr->num_blow)
+	while (num++ < p_ptr->state.num_blow)
 	{
 		/* Test for hit */
 		if (test_hit(chance, r_ptr->ac, m_ptr->ml))
@@ -486,13 +486,13 @@ void py_attack(int y, int x)
 			{
 				k = damroll(o_ptr->dd, o_ptr->ds);
 				k *= tot_dam_aux(o_ptr, m_ptr);
-				if (p_ptr->impact && (k > 50)) do_quake = TRUE;
+				if (p_ptr->state.impact && (k > 50)) do_quake = TRUE;
 				k += o_ptr->to_d;
 				k = critical_norm(o_ptr->weight, o_ptr->to_h, k);
 			}
 
 			/* Apply the player damage bonuses */
-			k += p_ptr->to_d;
+			k += p_ptr->state.to_d;
 
 			/* No negative damage */
 			if (k < 0) k = 0;
@@ -618,7 +618,7 @@ void do_cmd_fire(void)
 	j_ptr = &inventory[INVEN_BOW];
 
 	/* Require a usable launcher */
-	if (!j_ptr->tval || !p_ptr->ammo_tval)
+	if (!j_ptr->tval || !p_ptr->state.ammo_tval)
 	{
 		msg_print("You have nothing to fire with.");
 		return;
@@ -626,7 +626,7 @@ void do_cmd_fire(void)
 
 
 	/* Require proper missile */
-	item_tester_tval = p_ptr->ammo_tval;
+	item_tester_tval = p_ptr->state.ammo_tval;
 
 	/* Get an item */
 	q = "Fire which item? ";
@@ -686,14 +686,14 @@ void do_cmd_fire(void)
 
 
 	/* Use the proper number of shots */
-	thits = p_ptr->num_fire;
+	thits = p_ptr->state.num_fire;
 
 	/* Actually "fire" the object */
-	bonus = (p_ptr->to_h + i_ptr->to_h + j_ptr->to_h);
-	chance = (p_ptr->skills[SKILL_TO_HIT_BOW] + (bonus * BTH_PLUS_ADJ));
+	bonus = (p_ptr->state.to_h + i_ptr->to_h + j_ptr->to_h);
+	chance = (p_ptr->state.skills[SKILL_TO_HIT_BOW] + (bonus * BTH_PLUS_ADJ));
 
 	/* Base range XXX XXX */
-	tdis = 6 + 2 * p_ptr->ammo_mult;
+	tdis = 6 + 2 * p_ptr->state.ammo_mult;
 
 
 	/* Take a (partial) turn */
@@ -821,7 +821,7 @@ void do_cmd_fire(void)
 				/* Apply damage: multiplier, slays, criticals, bonuses */
 				tdam = damroll(i_ptr->dd, i_ptr->ds);
 				tdam += i_ptr->to_d + j_ptr->to_d;
-				tdam *= p_ptr->ammo_mult;
+				tdam *= p_ptr->state.ammo_mult;
 				tdam *= MAX(ammo_mult, shoot_mult);
 				tdam = critical_shot(i_ptr->weight, i_ptr->to_h, tdam);
 
@@ -976,7 +976,7 @@ void do_cmd_throw(void)
 	div = ((i_ptr->weight > 10) ? i_ptr->weight : 10);
 
 	/* Hack -- Distance -- Reward strength, penalize weight */
-	tdis = (adj_str_blow[p_ptr->stat_ind[A_STR]] + 20) * mul / div;
+	tdis = (adj_str_blow[p_ptr->state.stat_ind[A_STR]] + 20) * mul / div;
 
 	/* Max distance of 10 */
 	if (tdis > 10) tdis = 10;
@@ -987,7 +987,7 @@ void do_cmd_throw(void)
 	tdam += i_ptr->to_d;
 
 	/* Chance of hitting */
-	chance = (p_ptr->skills[SKILL_TO_HIT_THROW] + (p_ptr->to_h * BTH_PLUS_ADJ));
+	chance = (p_ptr->state.skills[SKILL_TO_HIT_THROW] + (p_ptr->state.to_h * BTH_PLUS_ADJ));
 
 
 	/* Take a turn */

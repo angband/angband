@@ -947,7 +947,7 @@ static errr rd_extra(void)
 	rd_s16b(&p_ptr->food);
 	rd_s16b(&p_ptr->energy);
 	rd_s16b(&p_ptr->word_recall);
-	rd_s16b(&p_ptr->see_infra);
+	rd_s16b(&p_ptr->state.see_infra);
 	rd_byte(&p_ptr->confusing);
 	rd_byte(&p_ptr->searching);
 

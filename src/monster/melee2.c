@@ -109,14 +109,14 @@ static void remove_bad_spells(int m_idx, u32b* const f)
 	if (adult_ai_cheat)
 	{
 		/* Know weirdness */
-		if (p_ptr->free_act) smart |= (SM_IMM_FREE);
+		if (p_ptr->state.free_act) smart |= (SM_IMM_FREE);
 		if (!p_ptr->msp) smart |= (SM_IMM_MANA);
 
 		/* Know immunities */
-		if (p_ptr->immune_acid) smart |= (SM_IMM_ACID);
-		if (p_ptr->immune_elec) smart |= (SM_IMM_ELEC);
-		if (p_ptr->immune_fire) smart |= (SM_IMM_FIRE);
-		if (p_ptr->immune_cold) smart |= (SM_IMM_COLD);
+		if (p_ptr->state.immune_acid) smart |= (SM_IMM_ACID);
+		if (p_ptr->state.immune_elec) smart |= (SM_IMM_ELEC);
+		if (p_ptr->state.immune_fire) smart |= (SM_IMM_FIRE);
+		if (p_ptr->state.immune_cold) smart |= (SM_IMM_COLD);
 
 		/* Know oppositions */
 		if (p_ptr->timed[TMD_OPP_ACID]) smart |= (SM_OPP_ACID);
@@ -126,22 +126,22 @@ static void remove_bad_spells(int m_idx, u32b* const f)
 		if (p_ptr->timed[TMD_OPP_POIS]) smart |= (SM_OPP_POIS);
 
 		/* Know resistances */
-		if (p_ptr->resist_acid) smart |= (SM_RES_ACID);
-		if (p_ptr->resist_elec) smart |= (SM_RES_ELEC);
-		if (p_ptr->resist_fire) smart |= (SM_RES_FIRE);
-		if (p_ptr->resist_cold) smart |= (SM_RES_COLD);
-		if (p_ptr->resist_pois) smart |= (SM_RES_POIS);
-		if (p_ptr->resist_fear) smart |= (SM_RES_FEAR);
-		if (p_ptr->resist_lite) smart |= (SM_RES_LITE);
-		if (p_ptr->resist_dark) smart |= (SM_RES_DARK);
-		if (p_ptr->resist_blind) smart |= (SM_RES_BLIND);
-		if (p_ptr->resist_confu) smart |= (SM_RES_CONFU);
-		if (p_ptr->resist_sound) smart |= (SM_RES_SOUND);
-		if (p_ptr->resist_shard) smart |= (SM_RES_SHARD);
-		if (p_ptr->resist_nexus) smart |= (SM_RES_NEXUS);
-		if (p_ptr->resist_nethr) smart |= (SM_RES_NETHR);
-		if (p_ptr->resist_chaos) smart |= (SM_RES_CHAOS);
-		if (p_ptr->resist_disen) smart |= (SM_RES_DISEN);
+		if (p_ptr->state.resist_acid) smart |= (SM_RES_ACID);
+		if (p_ptr->state.resist_elec) smart |= (SM_RES_ELEC);
+		if (p_ptr->state.resist_fire) smart |= (SM_RES_FIRE);
+		if (p_ptr->state.resist_cold) smart |= (SM_RES_COLD);
+		if (p_ptr->state.resist_pois) smart |= (SM_RES_POIS);
+		if (p_ptr->state.resist_fear) smart |= (SM_RES_FEAR);
+		if (p_ptr->state.resist_lite) smart |= (SM_RES_LITE);
+		if (p_ptr->state.resist_dark) smart |= (SM_RES_DARK);
+		if (p_ptr->state.resist_blind) smart |= (SM_RES_BLIND);
+		if (p_ptr->state.resist_confu) smart |= (SM_RES_CONFU);
+		if (p_ptr->state.resist_sound) smart |= (SM_RES_SOUND);
+		if (p_ptr->state.resist_shard) smart |= (SM_RES_SHARD);
+		if (p_ptr->state.resist_nexus) smart |= (SM_RES_NEXUS);
+		if (p_ptr->state.resist_nethr) smart |= (SM_RES_NETHR);
+		if (p_ptr->state.resist_chaos) smart |= (SM_RES_CHAOS);
+		if (p_ptr->state.resist_disen) smart |= (SM_RES_DISEN);
 	}
 
 
@@ -843,7 +843,7 @@ bool make_attack_spell(int m_idx)
 			else if (hits) msg_format("%^s fires an arrow!", m_name);
 			else msg_format("%^s fires an arrow, but misses.", m_name);
 
-			/* dam -= (dam * ((p_ptr->ac < 150) ? p_ptr->ac : 150) / 250); */
+			/* dam -= (dam * ((p_ptr->state.ac < 150) ? p_ptr->state.ac : 150) / 250); */
 			if (hits) bolt(m_idx, GF_ARROW, dam);
 
 			break;
@@ -859,7 +859,7 @@ bool make_attack_spell(int m_idx)
 			else if (hits) msg_format("%^s fires an arrow!", m_name);
 			else msg_format("%^s fires an arrow, but misses.", m_name);
 
-			/* dam -= (dam * ((p_ptr->ac < 150) ? p_ptr->ac : 150) / 250); */
+			/* dam -= (dam * ((p_ptr->state.ac < 150) ? p_ptr->state.ac : 150) / 250); */
 			if (hits) bolt(m_idx, GF_ARROW, dam);
 
 			break;
@@ -875,7 +875,7 @@ bool make_attack_spell(int m_idx)
 			else if (hits) msg_format("%^s fires a missile!", m_name);
 			else msg_format("%^s fires a missile, but misses.", m_name);
 
-			/* dam -= (dam * ((p_ptr->ac < 150) ? p_ptr->ac : 150) / 250); */
+			/* dam -= (dam * ((p_ptr->state.ac < 150) ? p_ptr->state.ac : 150) / 250); */
 			if (hits) bolt(m_idx, GF_ARROW, dam);
 
 			break;
@@ -891,7 +891,7 @@ bool make_attack_spell(int m_idx)
 			else if (hits) msg_format("%^s fires a missile!", m_name);
 			else msg_format("%^s fires a missile, but misses.", m_name);
 
-			/* dam -= (dam * ((p_ptr->ac < 150) ? p_ptr->ac : 150) / 250); */
+			/* dam -= (dam * ((p_ptr->state.ac < 150) ? p_ptr->state.ac : 150) / 250); */
 			if (hits) bolt(m_idx, GF_ARROW, dam);
 
 			break;
@@ -1151,7 +1151,7 @@ bool make_attack_spell(int m_idx)
 			else if (hits) msg_format("%^s hurls a boulder at you!", m_name);
 			else if (hits) msg_format("%^s hurls a boulder at you, but misses.", m_name);
 
-			/* dam -= (dam * ((p_ptr->ac < 150) ? p_ptr->ac : 150) / 250); */
+			/* dam -= (dam * ((p_ptr->state.ac < 150) ? p_ptr->state.ac : 150) / 250); */
 			if (hits) bolt(m_idx, GF_ARROW, dam);
 
 			break;
@@ -1323,14 +1323,14 @@ bool make_attack_spell(int m_idx)
 				msg_format("%^s gazes deep into your eyes.", m_name);
 			}
 
-			if (randint0(100) < p_ptr->skills[SKILL_SAVE])
+			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
 			else
 			{
 				msg_print("Your mind is blasted by psionic energy.");
-				if (!p_ptr->resist_confu)
+				if (!p_ptr->state.resist_confu)
 				{
 					(void)inc_timed(TMD_CONFUSED, randint0(4) + 4);
 				}
@@ -1351,7 +1351,7 @@ bool make_attack_spell(int m_idx)
 			{
 				msg_format("%^s looks deep into your eyes.", m_name);
 			}
-			if (randint0(100) < p_ptr->skills[SKILL_SAVE])
+			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1359,15 +1359,15 @@ bool make_attack_spell(int m_idx)
 			{
 				msg_print("Your mind is blasted by psionic energy.");
 				take_hit(damroll(12, 15), ddesc);
-				if (!p_ptr->resist_blind)
+				if (!p_ptr->state.resist_blind)
 				{
 					(void)inc_timed(TMD_BLIND, 8 + randint0(8));
 				}
-				if (!p_ptr->resist_confu)
+				if (!p_ptr->state.resist_confu)
 				{
 					(void)inc_timed(TMD_CONFUSED, randint0(4) + 4);
 				}
-				if (!p_ptr->free_act)
+				if (!p_ptr->state.free_act)
 				{
 					(void)inc_timed(TMD_PARALYZED, randint0(4) + 4);
 				}
@@ -1382,7 +1382,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s points at you and curses.", m_name);
-			if (randint0(100) < p_ptr->skills[SKILL_SAVE])
+			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1399,7 +1399,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s points at you and curses horribly.", m_name);
-			if (randint0(100) < p_ptr->skills[SKILL_SAVE])
+			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1416,7 +1416,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles loudly.", m_name);
 			else msg_format("%^s points at you, incanting terribly!", m_name);
-			if (randint0(100) < p_ptr->skills[SKILL_SAVE])
+			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1433,7 +1433,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg_format("%^s screams the word 'DIE!'", m_name);
 			else msg_format("%^s points at you, screaming the word DIE!", m_name);
-			if (randint0(100) < p_ptr->skills[SKILL_SAVE])
+			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1564,11 +1564,11 @@ bool make_attack_spell(int m_idx)
 			sound(MSG_CAST_FEAR);
 			if (blind) msg_format("%^s mumbles, and you hear scary noises.", m_name);
 			else msg_format("%^s casts a fearful illusion.", m_name);
-			if (p_ptr->resist_fear)
+			if (p_ptr->state.resist_fear)
 			{
 				msg_print("You refuse to be frightened.");
 			}
-			else if (randint0(100) < p_ptr->skills[SKILL_SAVE])
+			else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
 				msg_print("You refuse to be frightened.");
 			}
@@ -1586,11 +1586,11 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts a spell, burning your eyes!", m_name);
-			if (p_ptr->resist_blind)
+			if (p_ptr->state.resist_blind)
 			{
 				msg_print("You are unaffected!");
 			}
-			else if (randint0(100) < p_ptr->skills[SKILL_SAVE])
+			else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1608,11 +1608,11 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles, and you hear puzzling noises.", m_name);
 			else msg_format("%^s creates a mesmerising illusion.", m_name);
-			if (p_ptr->resist_confu)
+			if (p_ptr->state.resist_confu)
 			{
 				msg_print("You disbelieve the feeble spell.");
 			}
-			else if (randint0(100) < p_ptr->skills[SKILL_SAVE])
+			else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
 				msg_print("You disbelieve the feeble spell.");
 			}
@@ -1629,11 +1629,11 @@ bool make_attack_spell(int m_idx)
 			if (!direct) break;
 			disturb(1, 0);
 			msg_format("%^s drains power from your muscles!", m_name);
-			if (p_ptr->free_act)
+			if (p_ptr->state.free_act)
 			{
 				msg_print("You are unaffected!");
 			}
-			else if (randint0(100) < p_ptr->skills[SKILL_SAVE])
+			else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1651,11 +1651,11 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s stares deep into your eyes!", m_name);
-			if (p_ptr->free_act)
+			if (p_ptr->state.free_act)
 			{
 				msg_print("You are unaffected!");
 			}
-			else if (randint0(100) < p_ptr->skills[SKILL_SAVE])
+			else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
 				msg_format("You resist the effects!");
 			}
@@ -1821,11 +1821,11 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles strangely.", m_name);
 			else msg_format("%^s gestures at your feet.", m_name);
-			if (p_ptr->resist_nexus)
+			if (p_ptr->state.resist_nexus)
 			{
 				msg_print("You are unaffected!");
 			}
-			else if (randint0(100) < p_ptr->skills[SKILL_SAVE])
+			else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
 			}
@@ -1869,7 +1869,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			msg_format("%^s tries to blank your mind.", m_name);
 
-			if (randint0(100) < p_ptr->skills[SKILL_SAVE])
+			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 				msg_print("You resist the effects!");
 			else
 				inc_timed(TMD_AMNESIA, 3);
@@ -3165,7 +3165,7 @@ static void process_monster(int m_idx)
 		u32b notice;
 
 		/* Aggravation */
-		if (p_ptr->aggravate)
+		if (p_ptr->state.aggravate)
 		{
 			/* Reset sleep counter */
 			m_ptr->csleep = 0;
@@ -3193,7 +3193,7 @@ static void process_monster(int m_idx)
 		notice = randint0(1024);
 
 		/* Hack -- See if monster "notices" player */
-		if ((notice * notice * notice) <= p_ptr->noise)
+		if ((notice * notice * notice) <= p_ptr->state.noise)
 		{
 			int d = 1;
 

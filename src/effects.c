@@ -158,7 +158,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 	{
 		case EF_POISON:
 		{
-			if (!(p_ptr->resist_pois || p_ptr->timed[TMD_OPP_POIS]))
+			if (!(p_ptr->state.resist_pois || p_ptr->timed[TMD_OPP_POIS]))
 			{
 				if (inc_timed(TMD_POISONED, damroll(2, 7) + 10))
 					*ident = TRUE;
@@ -169,7 +169,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_BLIND:
 		{
-			if (!p_ptr->resist_blind && inc_timed(TMD_BLIND, damroll(4, 25) + 75))
+			if (!p_ptr->state.resist_blind && inc_timed(TMD_BLIND, damroll(4, 25) + 75))
 				*ident = TRUE;
 
 			return TRUE;
@@ -177,7 +177,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_SCARE:
 		{
-			if (!p_ptr->resist_fear && inc_timed(TMD_AFRAID, randint0(10) + 10))
+			if (!p_ptr->state.resist_fear && inc_timed(TMD_AFRAID, randint0(10) + 10))
 				*ident = TRUE;
 
 			return TRUE;
@@ -185,7 +185,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_CONFUSE:
 		{
-			if (!p_ptr->resist_confu && inc_timed(TMD_CONFUSED, damroll(4, 5) + 10))
+			if (!p_ptr->state.resist_confu && inc_timed(TMD_CONFUSED, damroll(4, 5) + 10))
 				*ident = TRUE;
 
 			return TRUE;
@@ -193,7 +193,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_HALLUC:
 		{
-			if (!p_ptr->resist_chaos && inc_timed(TMD_IMAGE, randint0(250) + 250))
+			if (!p_ptr->state.resist_chaos && inc_timed(TMD_IMAGE, randint0(250) + 250))
 				*ident = TRUE;
 
 			return TRUE;
@@ -201,7 +201,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_PARALYZE:
 		{
-			if (!p_ptr->free_act && inc_timed(TMD_PARALYZED, randint0(5) + 5))
+			if (!p_ptr->state.free_act && inc_timed(TMD_PARALYZED, randint0(5) + 5))
 				*ident = TRUE;
 
 			return TRUE;
@@ -242,7 +242,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			if (clear_timed(TMD_CONFUSED)) *ident = TRUE;
 			if (clear_timed(TMD_AFRAID)) *ident = TRUE;
 			if (clear_timed(TMD_IMAGE)) *ident = TRUE;
-			if (!p_ptr->resist_confu &&
+			if (!p_ptr->state.resist_confu &&
 					inc_timed(TMD_OPP_CONF, damroll(4, 10)))
 			    	*ident = TRUE;
 			return TRUE;
@@ -363,7 +363,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_LOSE_EXP:
 		{
-			if (!p_ptr->hold_life && (p_ptr->exp > 0))
+			if (!p_ptr->state.hold_life && (p_ptr->exp > 0))
 			{
 				msg_print("You feel your memories fade.");
 				lose_exp(p_ptr->exp / 4);
@@ -907,7 +907,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_DARKNESS:
 		{
-			if (!p_ptr->resist_blind)
+			if (!p_ptr->state.resist_blind)
 			{
 				(void)inc_timed(TMD_BLIND, 3 + randint1(5));
 			}

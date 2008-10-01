@@ -68,7 +68,7 @@ bool check_hit(int power, int level)
 	chance = (power + (level * 3));
 
 	/* Total armor */
-	ac = p_ptr->ac + p_ptr->to_a;
+	ac = p_ptr->state.ac + p_ptr->state.to_a;
 
 	/* Check if the player was hit */
 	return test_hit(chance, ac, TRUE);
@@ -149,7 +149,7 @@ bool make_attack_normal(int m_idx)
 
 
 	/* Total armor */
-	ac = p_ptr->ac + p_ptr->to_a;
+	ac = p_ptr->state.ac + p_ptr->state.to_a;
 
 	/* Extract the effective monster level */
 	rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);
@@ -485,7 +485,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Take "poison" effect */
-					if (!(p_ptr->resist_pois || p_ptr->timed[TMD_OPP_POIS]))
+					if (!(p_ptr->state.resist_pois || p_ptr->timed[TMD_OPP_POIS]))
 					{
 						if (inc_timed(TMD_POISONED, randint1(rlev) + 5))
 						{
@@ -505,7 +505,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Allow complete resist */
-					if (!p_ptr->resist_disen)
+					if (!p_ptr->state.resist_disen)
 					{
 						/* Apply disenchantment */
 						if (apply_disenchant(0)) obvious = TRUE;
@@ -592,7 +592,7 @@ bool make_attack_normal(int m_idx)
 
 					/* Saving throw (unless paralyzed) based on dex and level */
 					if (!p_ptr->timed[TMD_PARALYZED] &&
-					    (randint0(100) < (adj_dex_safe[p_ptr->stat_ind[A_DEX]] +
+					    (randint0(100) < (adj_dex_safe[p_ptr->state.stat_ind[A_DEX]] +
 					                      p_ptr->lev)))
 					{
 						/* Saving throw message */
@@ -642,7 +642,7 @@ bool make_attack_normal(int m_idx)
 
 					/* Saving throw (unless paralyzed) based on dex and level */
 					if (!p_ptr->timed[TMD_PARALYZED] &&
-					    (randint0(100) < (adj_dex_safe[p_ptr->stat_ind[A_DEX]] +
+					    (randint0(100) < (adj_dex_safe[p_ptr->state.stat_ind[A_DEX]] +
 					                      p_ptr->lev)))
 					{
 						/* Saving throw message */
@@ -867,7 +867,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "blind" */
-					if (!p_ptr->resist_blind)
+					if (!p_ptr->state.resist_blind)
 					{
 						if (inc_timed(TMD_BLIND, 10 + randint1(rlev)))
 						{
@@ -887,7 +887,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "confused" */
-					if (!p_ptr->resist_confu)
+					if (!p_ptr->state.resist_confu)
 					{
 						if (inc_timed(TMD_CONFUSED, 3 + randint1(rlev)))
 						{
@@ -907,12 +907,12 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "afraid" */
-					if (p_ptr->resist_fear)
+					if (p_ptr->state.resist_fear)
 					{
 						msg_print("You stand your ground!");
 						obvious = TRUE;
 					}
-					else if (randint0(100) < p_ptr->skills[SKILL_SAVE])
+					else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 					{
 						msg_print("You stand your ground!");
 						obvious = TRUE;
@@ -940,12 +940,12 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "paralyzed" */
-					if (p_ptr->free_act)
+					if (p_ptr->state.free_act)
 					{
 						msg_print("You are unaffected!");
 						obvious = TRUE;
 					}
-					else if (randint0(100) < p_ptr->skills[SKILL_SAVE])
+					else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 					{
 						msg_print("You resist the effects!");
 						obvious = TRUE;
@@ -1081,14 +1081,14 @@ bool make_attack_normal(int m_idx)
 					/* Take damage */
 					take_hit(damage, ddesc);
 
-					if (p_ptr->hold_life && (randint0(100) < 95))
+					if (p_ptr->state.hold_life && (randint0(100) < 95))
 					{
 						msg_print("You keep hold of your life force!");
 					}
 					else
 					{
 						s32b d = damroll(10, 6) + (p_ptr->exp/100) * MON_DRAIN_LIFE;
-						if (p_ptr->hold_life)
+						if (p_ptr->state.hold_life)
 						{
 							msg_print("You feel your life slipping away!");
 							lose_exp(d/10);
@@ -1110,7 +1110,7 @@ bool make_attack_normal(int m_idx)
 					/* Take damage */
 					take_hit(damage, ddesc);
 
-					if (p_ptr->hold_life && (randint0(100) < 90))
+					if (p_ptr->state.hold_life && (randint0(100) < 90))
 					{
 						msg_print("You keep hold of your life force!");
 					}
@@ -1118,7 +1118,7 @@ bool make_attack_normal(int m_idx)
 					{
 						s32b d = damroll(20, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
 
-						if (p_ptr->hold_life)
+						if (p_ptr->state.hold_life)
 						{
 							msg_print("You feel your life slipping away!");
 							lose_exp(d / 10);
@@ -1140,7 +1140,7 @@ bool make_attack_normal(int m_idx)
 					/* Take damage */
 					take_hit(damage, ddesc);
 
-					if (p_ptr->hold_life && (randint0(100) < 75))
+					if (p_ptr->state.hold_life && (randint0(100) < 75))
 					{
 						msg_print("You keep hold of your life force!");
 					}
@@ -1148,7 +1148,7 @@ bool make_attack_normal(int m_idx)
 					{
 						s32b d = damroll(40, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
 
-						if (p_ptr->hold_life)
+						if (p_ptr->state.hold_life)
 						{
 							msg_print("You feel your life slipping away!");
 							lose_exp(d / 10);
@@ -1170,7 +1170,7 @@ bool make_attack_normal(int m_idx)
 					/* Take damage */
 					take_hit(damage, ddesc);
 
-					if (p_ptr->hold_life && (randint0(100) < 50))
+					if (p_ptr->state.hold_life && (randint0(100) < 50))
 					{
 						msg_print("You keep hold of your life force!");
 					}
@@ -1178,7 +1178,7 @@ bool make_attack_normal(int m_idx)
 					{
 						s32b d = damroll(80, 6) + (p_ptr->exp / 100) * MON_DRAIN_LIFE;
 
-						if (p_ptr->hold_life)
+						if (p_ptr->state.hold_life)
 						{
 							msg_print("You feel your life slipping away!");
 							lose_exp(d / 10);
@@ -1198,7 +1198,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Increase "image" */
-					if (!p_ptr->resist_chaos)
+					if (!p_ptr->state.resist_chaos)
 					{
 						if (inc_timed(TMD_IMAGE, 3 + randint1(rlev / 2)))
 						{

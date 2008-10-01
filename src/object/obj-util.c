@@ -550,7 +550,7 @@ const char *mention_use(int slot)
 	{
 		case INVEN_WIELD:
 		{
-			if (adj_str_hold[p_ptr->stat_ind[A_STR]] < inventory[slot].weight / 10)
+			if (adj_str_hold[p_ptr->state.stat_ind[A_STR]] < inventory[slot].weight / 10)
 				return "Just lifting";
 			else
 				return "Wielding";
@@ -558,7 +558,7 @@ const char *mention_use(int slot)
 
 		case INVEN_BOW:
 		{
-			if (adj_str_hold[p_ptr->stat_ind[A_STR]] < inventory[slot].weight / 10)
+			if (adj_str_hold[p_ptr->state.stat_ind[A_STR]] < inventory[slot].weight / 10)
 				return "Just holding";
 			else
 				return "Shooting";
@@ -610,7 +610,7 @@ cptr describe_use(int i)
 	{
 		object_type *o_ptr;
 		o_ptr = &inventory[i];
-		if (adj_str_hold[p_ptr->stat_ind[A_STR]] < o_ptr->weight / 10)
+		if (adj_str_hold[p_ptr->state.stat_ind[A_STR]] < o_ptr->weight / 10)
 		{
 			p = "just lifting";
 		}
@@ -621,7 +621,7 @@ cptr describe_use(int i)
 	{
 		object_type *o_ptr;
 		o_ptr = &inventory[i];
-		if (adj_str_hold[p_ptr->stat_ind[A_STR]] < o_ptr->weight / 10)
+		if (adj_str_hold[p_ptr->state.stat_ind[A_STR]] < o_ptr->weight / 10)
 		{
 			p = "just holding";
 		}

@@ -37,13 +37,7 @@ typedef int (*button_kill_f)(unsigned char);
 
 /**** Available Structs ****/
 
-typedef struct ego_item_type ego_item_type;
-typedef struct monster_blow monster_blow;
-typedef struct monster_race monster_race;
-typedef struct monster_lore monster_lore;
 typedef struct vault_type vault_type;
-typedef struct object_type object_type;
-typedef struct monster_type monster_type;
 typedef struct alloc_entry alloc_entry;
 typedef struct quest quest;
 typedef struct owner_type owner_type;
@@ -56,7 +50,6 @@ typedef struct player_race player_race;
 typedef struct player_class player_class;
 typedef struct hist_type hist_type;
 typedef struct player_other player_other;
-typedef struct player_type player_type;
 typedef struct start_item start_item;
 typedef struct autoinscription autoinscription;
 typedef struct history_info history_info;

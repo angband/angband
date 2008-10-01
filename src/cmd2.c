@@ -292,7 +292,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 	if (trap & (CHEST_POISON))
 	{
 		msg_print("A puff of green gas surrounds you!");
-		if (!(p_ptr->resist_pois || p_ptr->timed[TMD_OPP_POIS]))
+		if (!(p_ptr->state.resist_pois || p_ptr->timed[TMD_OPP_POIS]))
 		{
 			(void)inc_timed(TMD_POISONED, 10 + randint1(20));
 		}
@@ -302,7 +302,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 	if (trap & (CHEST_PARALYZE))
 	{
 		msg_print("A puff of yellow gas surrounds you!");
-		if (!p_ptr->free_act)
+		if (!p_ptr->state.free_act)
 		{
 			(void)inc_timed(TMD_PARALYZED, 10 + randint1(20));
 		}
@@ -356,7 +356,7 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		flag = FALSE;
 
 		/* Get the "disarm" factor */
-		i = p_ptr->skills[SKILL_DISARM];
+		i = p_ptr->state.skills[SKILL_DISARM];
 
 		/* Penalize some conditions */
 		if (p_ptr->timed[TMD_BLIND] || no_lite()) i = i / 10;
@@ -424,7 +424,7 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 
 
 	/* Get the "disarm" factor */
-	i = p_ptr->skills[SKILL_DISARM];
+	i = p_ptr->state.skills[SKILL_DISARM];
 
 	/* Penalize some conditions */
 	if (p_ptr->timed[TMD_BLIND] || no_lite()) i = i / 10;
@@ -674,7 +674,7 @@ static bool do_cmd_open_aux(int y, int x)
 	else if (cave_feat[y][x] >= FEAT_DOOR_HEAD + 0x01)
 	{
 		/* Disarm factor */
-		i = p_ptr->skills[SKILL_DISARM];
+		i = p_ptr->state.skills[SKILL_DISARM];
 
 		/* Penalize some conditions */
 		if (p_ptr->timed[TMD_BLIND] || no_lite()) i = i / 10;
@@ -1090,7 +1090,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	else if (cave_feat[y][x] >= FEAT_WALL_EXTRA)
 	{
 		/* Tunnel */
-		if ((p_ptr->skills[SKILL_DIGGING] > 40 + randint0(1600)) && twall(y, x))
+		if ((p_ptr->state.skills[SKILL_DIGGING] > 40 + randint0(1600)) && twall(y, x))
 		{
 			msg_print("You have finished the tunnel.");
 		}
@@ -1126,13 +1126,13 @@ static bool do_cmd_tunnel_aux(int y, int x)
 		/* Quartz */
 		if (hard)
 		{
-			okay = (p_ptr->skills[SKILL_DIGGING] > 20 + randint0(800));
+			okay = (p_ptr->state.skills[SKILL_DIGGING] > 20 + randint0(800));
 		}
 
 		/* Magma */
 		else
 		{
-			okay = (p_ptr->skills[SKILL_DIGGING] > 10 + randint0(400));
+			okay = (p_ptr->state.skills[SKILL_DIGGING] > 10 + randint0(400));
 		}
 
 		/* Success */
@@ -1177,7 +1177,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	else if (cave_feat[y][x] == FEAT_RUBBLE)
 	{
 		/* Remove the rubble */
-		if ((p_ptr->skills[SKILL_DIGGING] > randint0(200)) && twall(y, x))
+		if ((p_ptr->state.skills[SKILL_DIGGING] > randint0(200)) && twall(y, x))
 		{
 			/* Message */
 			msg_print("You have removed the rubble.");
@@ -1209,7 +1209,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	else if (cave_feat[y][x] >= FEAT_SECRET)
 	{
 		/* Tunnel */
-		if ((p_ptr->skills[SKILL_DIGGING] > 30 + randint0(1200)) && twall(y, x))
+		if ((p_ptr->state.skills[SKILL_DIGGING] > 30 + randint0(1200)) && twall(y, x))
 		{
 			msg_print("You have finished the tunnel.");
 		}
@@ -1230,7 +1230,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	else
 	{
 		/* Tunnel */
-		if ((p_ptr->skills[SKILL_DIGGING] > 30 + randint0(1200)) && twall(y, x))
+		if ((p_ptr->state.skills[SKILL_DIGGING] > 30 + randint0(1200)) && twall(y, x))
 		{
 			msg_print("You have finished the tunnel.");
 		}
@@ -1376,7 +1376,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 	name = (f_name + f_info[cave_feat[y][x]].name);
 
 	/* Get the "disarm" factor */
-	i = p_ptr->skills[SKILL_DISARM];
+	i = p_ptr->state.skills[SKILL_DISARM];
 
 	/* Penalize some conditions */
 	if (p_ptr->timed[TMD_BLIND] || no_lite()) i = i / 10;
@@ -1594,7 +1594,7 @@ static bool do_cmd_bash_aux(int y, int x)
 
 	/* Hack -- Bash power based on strength */
 	/* (Ranges from 3 to 20 to 100 to 200) */
-	bash = adj_str_blow[p_ptr->stat_ind[A_STR]];
+	bash = adj_str_blow[p_ptr->state.stat_ind[A_STR]];
 
 	/* Extract door power */
 	temp = ((cave_feat[y][x] - FEAT_DOOR_HEAD) & 0x07);
@@ -1628,7 +1628,7 @@ static bool do_cmd_bash_aux(int y, int x)
 	}
 
 	/* Saving throw against stun */
-	else if (randint0(100) < adj_dex_safe[p_ptr->stat_ind[A_DEX]] +
+	else if (randint0(100) < adj_dex_safe[p_ptr->state.stat_ind[A_DEX]] +
 	         p_ptr->lev)
 	{
 		/* Message */
@@ -2214,8 +2214,8 @@ void do_cmd_hold(void)
 	p_ptr->energy_use = 100;
 
 	/* Spontaneous Searching */
-	if ((p_ptr->skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
-	    one_in_(50 - p_ptr->skills[SKILL_SEARCH_FREQUENCY]))
+	if ((p_ptr->state.skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
+	    one_in_(50 - p_ptr->state.skills[SKILL_SEARCH_FREQUENCY]))
 	{
 		search();
 	}

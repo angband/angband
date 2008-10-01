@@ -337,7 +337,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	u32b f1, f2, f3;
 
 	bool weapon = (wield_slot(o_ptr) == INVEN_WIELD);
-	bool ammo   = (p_ptr->ammo_tval == o_ptr->tval) &&
+	bool ammo   = (p_ptr->state.ammo_tval == o_ptr->tval) &&
 	              (j_ptr->k_idx);
 
 	/* Abort if we've nothing to say */
@@ -366,12 +366,12 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 
 		dam = ((o_ptr->ds + 1) * o_ptr->dd * 5);
 
-		xtra_dam = (p_ptr->to_d * 10);
+		xtra_dam = (p_ptr->state.to_d * 10);
 		if (object_known_p(o_ptr))
 			xtra_dam += (o_ptr->to_d * 10);
 
 		/* Warn about heavy weapons */
-		if (adj_str_hold[p_ptr->stat_ind[A_STR]] < o_ptr->weight / 10)
+		if (adj_str_hold[p_ptr->state.stat_ind[A_STR]] < o_ptr->weight / 10)
 		{
 			text_out_c(TERM_L_RED, "You are too weak to use this weapon effectively!\n");
 			blows = 1;
@@ -386,12 +386,12 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	}
 	else
 	{
-		int tdis = 6 + 2 * p_ptr->ammo_mult;
+		int tdis = 6 + 2 * p_ptr->state.ammo_mult;
 		u32b f[3];
 
 		/* Calculate damage */
 		dam = ((o_ptr->ds + 1) * o_ptr->dd * 5);
-		dam *= p_ptr->ammo_mult;
+		dam *= p_ptr->state.ammo_mult;
 		if (object_known_p(o_ptr)) dam += (o_ptr->to_d * 10);
 		if (object_known_p(j_ptr)) dam += (j_ptr->to_d * 10);
 

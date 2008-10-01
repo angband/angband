@@ -1279,7 +1279,7 @@ void display_player_stat_info(void)
 	for (i = 0; i < A_MAX; i++)
 	{
 		/* Reduced */
-		if (p_ptr->stat_use[i] < p_ptr->stat_top[i])
+		if (p_ptr->state.stat_use[i] < p_ptr->state.stat_top[i])
 		{
 			/* Use lowercase stat name */
 			put_str(stat_names_reduced[i], row+i, col);
@@ -1311,17 +1311,17 @@ void display_player_stat_info(void)
 		c_put_str(TERM_L_BLUE, buf, row+i, col+16);
 
 		/* Equipment Bonus */
-		strnfmt(buf, sizeof(buf), "%+3d", p_ptr->stat_add[i]);
+		strnfmt(buf, sizeof(buf), "%+3d", p_ptr->state.stat_add[i]);
 		c_put_str(TERM_L_BLUE, buf, row+i, col+20);
 
 		/* Resulting "modified" maximum value */
-		cnv_stat(p_ptr->stat_top[i], buf, sizeof(buf));
+		cnv_stat(p_ptr->state.stat_top[i], buf, sizeof(buf));
 		c_put_str(TERM_L_GREEN, buf, row+i, col+24);
 
 		/* Only display stat_use if not maximal */
-		if (p_ptr->stat_use[i] < p_ptr->stat_top[i])
+		if (p_ptr->state.stat_use[i] < p_ptr->state.stat_top[i])
 		{
-			cnv_stat(p_ptr->stat_use[i], buf, sizeof(buf));
+			cnv_stat(p_ptr->state.stat_use[i], buf, sizeof(buf));
 			c_put_str(TERM_YELLOW, buf, row+i, col+31);
 		}
 	}
@@ -1522,7 +1522,7 @@ static const char *show_depth(void)
 static const char *show_speed()
 {
 	static char buffer[10];
-	int tmp = p_ptr->pspeed;
+	int tmp = p_ptr->state.speed;
 	if (p_ptr->timed[TMD_FAST]) tmp -= 10;
 	if (p_ptr->timed[TMD_SLOW]) tmp += 10;
 	if (p_ptr->searching) tmp += 10;
@@ -1534,8 +1534,8 @@ static const char *show_speed()
 static const char *show_melee_weapon(const object_type *o_ptr)
 {
 	static char buffer[12];
-	int hit = p_ptr->dis_to_h;
-	int dam = p_ptr->dis_to_d;
+	int hit = p_ptr->state.dis_to_h;
+	int dam = p_ptr->state.dis_to_d;
 
 	if (object_known_p(o_ptr))
 	{
@@ -1550,7 +1550,7 @@ static const char *show_melee_weapon(const object_type *o_ptr)
 static const char *show_missile_weapon(const object_type *o_ptr)
 {
 	static char buffer[12];
-	int hit = p_ptr->dis_to_h;
+	int hit = p_ptr->state.dis_to_h;
 	int dam = 0;
 
 	if (object_known_p(o_ptr))
@@ -1665,13 +1665,13 @@ int get_panel(int oid, data_panel *panel, size_t size)
 	int i = 0;
 	assert(ret >= boundaries[3].page_rows);
 	ret = boundaries[3].page_rows;
-	P_I(TERM_L_BLUE, "Armor", "[%y,%+y]",	i2u(p_ptr->dis_ac), i2u(p_ptr->dis_to_a)  );
-	P_I(TERM_L_BLUE, "Fight", "(%+y,%+y)",	i2u(p_ptr->dis_to_h), i2u(p_ptr->dis_to_d)  );
+	P_I(TERM_L_BLUE, "Armor", "[%y,%+y]",	i2u(p_ptr->state.dis_ac), i2u(p_ptr->state.dis_to_a)  );
+	P_I(TERM_L_BLUE, "Fight", "(%+y,%+y)",	i2u(p_ptr->state.dis_to_h), i2u(p_ptr->state.dis_to_d)  );
 	P_I(TERM_L_BLUE, "Melee", "%y",			s2u(show_melee_weapon(&inventory[INVEN_WIELD])), END  );
 	P_I(TERM_L_BLUE, "Shoot", "%y",			s2u(show_missile_weapon(&inventory[INVEN_BOW])), END  );
-	P_I(TERM_L_BLUE, "Blows", "%y/turn",	i2u(p_ptr->num_blow), END  );
-	P_I(TERM_L_BLUE, "Shots", "%y/turn",	i2u(p_ptr->num_fire), END  );
-	P_I(TERM_L_BLUE, "Infra", "%y ft",		i2u(p_ptr->see_infra * 10), END  );
+	P_I(TERM_L_BLUE, "Blows", "%y/turn",	i2u(p_ptr->state.num_blow), END  );
+	P_I(TERM_L_BLUE, "Shots", "%y/turn",	i2u(p_ptr->state.num_fire), END  );
+	P_I(TERM_L_BLUE, "Infra", "%y ft",		i2u(p_ptr->state.see_infra * 10), END  );
 	P_I(TERM_L_BLUE, "Speed", "%y",			s2u(show_speed()), END );
 	assert(i == boundaries[3].page_rows);
 	return ret;
@@ -1699,7 +1699,7 @@ int get_panel(int oid, data_panel *panel, size_t size)
 	if ((u32b) ret > size) ret = size;
 	for (i = 0; i < ret; i++)
 	{
-		s16b skill = p_ptr->skills[skills[i].skill];
+		s16b skill = p_ptr->state.skills[skills[i].skill];
 		panel[i].color = TERM_L_BLUE;
 		panel[i].label = skills[i].name;
 		panel[i].fmt = "%y";
