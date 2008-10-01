@@ -12,6 +12,8 @@ VERBOSE ?= $(V)
 VERBOSITY = 0
 SHOW_CFLAGS ?= $(VERBOSE)
 
+DOXYGEN = doxygen
+
 LIBDIR = $(libdir)
 BINDIR = $(bindir)
 INCLUDEDIR = $(pkgincludedir)
@@ -19,6 +21,12 @@ CFLAGS += -DHAVE_CONFIG_H -I/usr/pkg/include -I/usr/pkg/xorg/include
 CXXFLAGS += -DHAVE_CONFIG_H -I/usr/pkg/include -I/usr/pkg/xorg/include
 
 default: build
+
+doc:
+	$(DOXYGEN) src/doc/doxygen.conf
+
+cleandoc:
+	$(RM) -rf doc/
 
 install: build
 	$(MAKE) install-prehook
