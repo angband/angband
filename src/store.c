@@ -2234,6 +2234,7 @@ static void store_sell(void)
 
 	/* Get an item */
 	p_ptr->command_wrk = USE_INVEN;
+	p_ptr->command_cmd = 'd';
 	if (!get_item(&item, prompt, reject, (USE_EQUIP | USE_INVEN | USE_FLOOR)))
 	{
 		store_flags |= STORE_KEEP_PROMPT;
