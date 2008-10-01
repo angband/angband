@@ -989,7 +989,7 @@ void acid_dam(int dam, cptr kb_str)
 	if (p_ptr->timed[TMD_OPP_ACID]) n++;
 
 	/* Change damage */
-	if (n == 3) return;
+	if (n >= 3) return;
 	else if (n == 2) dam = (dam + 5) / 6;
 	else if (n == 1) dam = (dam + 2) / 3;
 	else if (n == -1) dam = (dam * 4) / 3;
@@ -1024,7 +1024,7 @@ void elec_dam(int dam, cptr kb_str)
 	if (p_ptr->timed[TMD_OPP_ELEC]) n++;
 
 	/* Change damage */
-	if (n == 3) return;
+	if (n >= 3) return;
 	else if (n == 2) dam = (dam + 5) / 6;
 	else if (n == 1) dam = (dam + 2) / 3;
 	else if (n == -1) dam = (dam * 4) / 3;
@@ -1058,7 +1058,7 @@ void fire_dam(int dam, cptr kb_str)
 	if (p_ptr->timed[TMD_OPP_FIRE]) n++;
 
 	/* Change damage */
-	if (n == 3) return;
+	if (n >= 3) return;
 	else if (n == 2) dam = (dam + 5) / 6;
 	else if (n == 1) dam = (dam + 2) / 3;
 	else if (n == -1) dam = (dam * 4) / 3;
@@ -1090,7 +1090,7 @@ void cold_dam(int dam, cptr kb_str)
 	if (p_ptr->timed[TMD_OPP_COLD]) n++;
 
 	/* Change damage */
-	if (n == 3) return;
+	if (n >= 3) return;
 	else if (n == 2) dam = (dam + 5) / 6;
 	else if (n == 1) dam = (dam + 2) / 3;
 	else if (n == -1) dam = (dam * 4) / 3;
