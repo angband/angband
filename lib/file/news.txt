@@ -7,7 +7,7 @@
 {yellow}                                |___/                         {/}  
 
                                 Version 3.1.0
-                       Bug reports to <bugs@rephial.org>
+                Bug reports to <http://angband.oook.cz/forum/>
 
    For resources and links to places you can talk about the game, please see:
                   http://rephial.org/ -- the home of Angband
