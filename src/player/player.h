@@ -1,5 +1,5 @@
 /* calcs.c */
-int calc_blows(const object_type *o_ptr);
+void calc_bonuses(object_type inventory[], player_state *state);
 void notice_stuff(void);
 void update_stuff(void);
 void redraw_stuff(void);

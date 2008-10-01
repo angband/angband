@@ -360,26 +360,29 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 
 	if (weapon)
 	{
-		int blows = calc_blows(o_ptr);
+		/*
+		 * Get the player's hypothetical state, were they to be
+		 * wielding this item.
+		 */
+		player_state state;
+		object_type inven[INVEN_TOTAL];
 
-		if (f1 & (TR1_BLOWS)) blows += o_ptr->pval;
+		memcpy(inven, inventory, INVEN_TOTAL * sizeof(object_type));
+		inven[INVEN_WIELD] = *o_ptr;
+
+		calc_bonuses(inven, &state);
+
 
 		dam = ((o_ptr->ds + 1) * o_ptr->dd * 5);
-
-		xtra_dam = (p_ptr->state.to_d * 10);
-		if (object_known_p(o_ptr))
-			xtra_dam += (o_ptr->to_d * 10);
+		xtra_dam = state.dis_to_d * 10;
 
 		/* Warn about heavy weapons */
-		if (adj_str_hold[p_ptr->state.stat_ind[A_STR]] < o_ptr->weight / 10)
-		{
+		if (adj_str_hold[state.stat_ind[A_STR]] < o_ptr->weight / 10)
 			text_out_c(TERM_L_RED, "You are too weak to use this weapon effectively!\n");
-			blows = 1;
-		}
 
 		text_out("With this weapon, you would currently get ");
-		text_out_c(TERM_L_GREEN, format("%d ", blows));
-		if (blows > 1)
+		text_out_c(TERM_L_GREEN, format("%d ", state.num_blow));
+		if (state.num_blow > 1)
 			text_out("blows per round.  Each blow will do an average damage of ");
 		else
 			text_out("blow per round, averaging a damage of ");
