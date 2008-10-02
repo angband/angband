@@ -1075,8 +1075,8 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 	int power = 0;
 
 	/* Chance of being `good` and `great` */
-	int good_chance = MIN(2*lev + 10, 100);
-	int great_chance = MIN(good_chance / 3, 20);
+	int good_chance = 2*lev + 10;
+	int great_chance = lev + 5;
 
 
 	/* Limit depth */
