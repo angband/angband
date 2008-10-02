@@ -1702,8 +1702,17 @@ int get_panel(int oid, data_panel *panel, size_t size)
 		s16b skill = p_ptr->state.skills[skills[i].skill];
 		panel[i].color = TERM_L_BLUE;
 		panel[i].label = skills[i].name;
-		panel[i].fmt = "%y";
-		panel[i].value[0] = s2u(likert(skill, skills[i].div, &panel[i].color));
+		if (i == 0)
+		{
+			panel[i].fmt = "%y%%";
+			panel[i].value[0] = i2u(skill);
+			(void)likert(skill, skills[i].div, &panel[i].color);
+		}
+		else
+		{
+			panel[i].fmt = "%y";
+			panel[i].value[0] = s2u(likert(skill, skills[i].div, &panel[i].color));
+		}
 	}
 	return ret;
   }
