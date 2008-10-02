@@ -1623,6 +1623,14 @@ static const char *show_status(void)
 	 panel[i].value[0] = val1; panel[i].value[1] = val2; \
 	 i++; }
 
+/* colours for table items */
+static const byte colour_table[] =
+{
+	TERM_RED, TERM_RED, TERM_RED, TERM_L_RED, TERM_ORANGE,
+	TERM_YELLOW, TERM_YELLOW, TERM_GREEN, TERM_GREEN, TERM_L_GREEN,
+	TERM_L_BLUE
+};
+
 int get_panel(int oid, data_panel *panel, size_t size)
 {
   int ret = (s32b) size;
@@ -1702,11 +1710,41 @@ int get_panel(int oid, data_panel *panel, size_t size)
 		s16b skill = p_ptr->state.skills[skills[i].skill];
 		panel[i].color = TERM_L_BLUE;
 		panel[i].label = skills[i].name;
-		if (i == 0)
+		if (skills[i].skill == SKILL_SAVE ||
+				skills[i].skill == SKILL_SEARCH)
 		{
+			if (skill > 100) skill = 100;
 			panel[i].fmt = "%y%%";
 			panel[i].value[0] = i2u(skill);
-			(void)likert(skill, skills[i].div, &panel[i].color);
+			panel[i].color = colour_table[skill / 10];
+		}
+		else if (skills[i].skill == SKILL_SEARCH_FREQUENCY)
+		{
+			if (skill <= 0) skill = 1;
+			if (skill >= 50)
+			{
+				panel[i].fmt = "1 in 1";
+				panel[i].color = colour_table[10];
+			}
+			else
+			{
+				/* convert to % chance of searching */
+				skill = 50 - skill;
+				panel[i].fmt = "1 in %y";
+				panel[i].value[0] = i2u(skill);
+				panel[i].color =
+					colour_table[(100 - skill*2) / 10];
+			}
+		}
+		else if (skills[i].skill == SKILL_DISARM)
+		{
+			/* assume disarming a dungeon trap */
+			skill -= 5;
+			if (skill > 100) skill = 100;
+			if (skill < 2) skill = 2;
+			panel[i].fmt = "%y%%";
+			panel[i].value[0] = i2u(skill);
+			panel[i].color = colour_table[skill / 10];
 		}
 		else
 		{
