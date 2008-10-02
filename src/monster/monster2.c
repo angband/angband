@@ -2718,7 +2718,7 @@ void monster_death(int m_idx)
 	if (r_ptr->flags[0] & RF0_DROP_1) number++;
 
 	/* Average monster level and current depth */
-	level = (p_ptr->depth + r_ptr->level) / 2;
+	level = MAX(p_ptr->depth, r_ptr->level);
 
 	/* Drop some objects */
 	for (j = 0; j < number; j++)
