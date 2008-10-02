@@ -65,7 +65,10 @@ Noticeable up-front UI changes
  * Make inscriptions like "!k!k!k" prompt multiple times again.  (#492)
  * Make monster XP and native depth always known, even without
    kills.  (#596)
- * Rejig social status a bit.
+ * Rejig social status a bit -- it rises with level from a certain baseline.
+ * Display various skills numerically on the character sheet, rather than
+   with text.  This is like Eddie's patch, but a bit more polished.
+
 
 Gameplay changes
 ----------------

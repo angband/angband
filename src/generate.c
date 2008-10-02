@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "object/tvalsval.h"
 
 
 /*
@@ -427,6 +428,158 @@ static void place_random_stairs(int y, int x)
 		place_up_stairs(y, x);
 	}
 }
+
+/*
+ * Attempt to place an object (normal or good/great) at the given location.
+ */
+void place_object(int y, int x, int level, bool good, bool great)
+{
+	object_type *i_ptr;
+	object_type object_type_body;
+
+	/* Paranoia */
+	if (!in_bounds(y, x)) return;
+
+	/* Hack -- clean floor space */
+	if (!cave_clean_bold(y, x)) return;
+
+	/* Get local object */
+	i_ptr = &object_type_body;
+
+	/* Wipe the object */
+	object_wipe(i_ptr);
+
+	/* Make an object (if possible) */
+	if (make_object(i_ptr, level, good, great))
+	{
+		i_ptr->origin = ORIGIN_FLOOR;
+		i_ptr->origin_depth = p_ptr->depth;
+
+		/* Give it to the floor */
+		if (!floor_carry(y, x, i_ptr))
+		{
+			/* Hack -- Preserve artifacts */
+			a_info[i_ptr->name1].cur_num = 0;
+		}
+	}
+}
+
+
+/*
+ * Places a treasure (Gold or Gems) at given location
+ */
+void place_gold(int y, int x, int level)
+{
+	object_type *i_ptr;
+	object_type object_type_body;
+
+	/* Paranoia */
+	if (!in_bounds(y, x)) return;
+
+	/* Require clean floor space */
+	if (!cave_clean_bold(y, x)) return;
+
+	/* Get local object */
+	i_ptr = &object_type_body;
+
+	/* Wipe the object */
+	object_wipe(i_ptr);
+
+	/* Make some gold */
+	make_gold(i_ptr, level, SV_GOLD_ANY);
+
+	/* Give it to the floor */
+	(void)floor_carry(y, x, i_ptr);
+}
+
+
+
+
+/*
+ * Place a secret door at the given location
+ */
+void place_secret_door(int y, int x)
+{
+	/* Create secret door */
+	cave_set_feat(y, x, FEAT_SECRET);
+}
+
+
+/*
+ * Place a random type of closed door at the given location.
+ */
+void place_closed_door(int y, int x)
+{
+	int tmp;
+
+	/* Choose an object */
+	tmp = randint0(400);
+
+	/* Closed doors (300/400) */
+	if (tmp < 300)
+	{
+		/* Create closed door */
+		cave_set_feat(y, x, FEAT_DOOR_HEAD + 0x00);
+	}
+
+	/* Locked doors (99/400) */
+	else if (tmp < 399)
+	{
+		/* Create locked door */
+		cave_set_feat(y, x, FEAT_DOOR_HEAD + randint1(7));
+	}
+
+	/* Stuck doors (1/400) */
+	else
+	{
+		/* Create jammed door */
+		cave_set_feat(y, x, FEAT_DOOR_HEAD + 0x08 + randint0(8));
+	}
+}
+
+
+/*
+ * Place a random type of door at the given location.
+ */
+void place_random_door(int y, int x)
+{
+	int tmp;
+
+	/* Choose an object */
+	tmp = randint0(1000);
+
+	/* Open doors (300/1000) */
+	if (tmp < 300)
+	{
+		/* Create open door */
+		cave_set_feat(y, x, FEAT_OPEN);
+	}
+
+	/* Broken doors (100/1000) */
+	else if (tmp < 400)
+	{
+		/* Create broken door */
+		cave_set_feat(y, x, FEAT_BROKEN);
+	}
+
+	/* Secret doors (200/1000) */
+	else if (tmp < 600)
+	{
+		/* Create secret door */
+		cave_set_feat(y, x, FEAT_SECRET);
+	}
+
+	/* Closed, locked, or stuck doors (400/1000) */
+	else
+	{
+		/* Create closed door */
+		place_closed_door(y, x);
+	}
+}
+
+
+
+
 
 
 /*
