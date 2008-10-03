@@ -18,7 +18,7 @@
  
 #include "angband.h"
 
-#include "tvalsval.h"
+#include "object/tvalsval.h"
 
 #ifndef INCLUDED_MAIN_GTK_H 
 #define INCLUDED_MAIN_GTK_H 

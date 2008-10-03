@@ -2556,14 +2556,14 @@ static void handle_sidebar(game_event_type type, game_event_data *data, void *us
 		/* Char Stats */
 		for (i = A_STR; i <= A_CHR; i++)
 		{
-			cnv_stat(p_ptr->stat_use[i], str, sizeof(str));
+			cnv_stat(p_ptr->state.stat_use[i], str, sizeof(str));
 			cr_aligned_text_print(xd, 0, i+8, sidebar_text[i+8], TERM_WHITE, str, TERM_L_GREEN, sidebar_length);
 		}
 		
 		/* 14 is a blank row */
 		
 		/* Char AC */
-		strnfmt(str, sizeof(str), "%i", p_ptr->dis_ac + p_ptr->dis_to_a); 
+		strnfmt(str, sizeof(str), "%i", p_ptr->state.dis_ac + p_ptr->state.dis_to_a); 
 		cr_aligned_text_print(xd, 0, 15, sidebar_text[15], TERM_WHITE, str, TERM_L_GREEN, sidebar_length);
 	
 		/* Char HP */
