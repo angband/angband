@@ -4,8 +4,8 @@
  */
 struct owner_type
 {
-	uint32_t owner_name;	/* Name (offset) */
-	int32_t max_cost;		/* Purse limit */
+	u32b owner_name;	/* Name (offset) */
+	s32b max_cost;		/* Purse limit */
 };
 
 
@@ -17,14 +17,14 @@ struct owner_type
  */
 struct store_type
 {
-	uint8_t owner;				/* Owner index */
+	byte owner;				/* Owner index */
 
-	uint8_t stock_num;			/* Stock -- Number of entries */
-	int16_t stock_size;		/* Stock -- Total Size of Array */
+	byte stock_num;			/* Stock -- Number of entries */
+	s16b stock_size;		/* Stock -- Total Size of Array */
 	object_type *stock;		/* Stock -- Actual stock items */
 
-	int16_t table_num;     /* Table -- Number of entries */
-	int16_t table_size;    /* Table -- Total Size of Array */
-	int16_t *table;        /* Table -- Legal item kinds */
+	s16b table_num;     /* Table -- Number of entries */
+	s16b table_size;    /* Table -- Total Size of Array */
+	s16b *table;        /* Table -- Legal item kinds */
 };
 
