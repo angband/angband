@@ -689,6 +689,14 @@ char *ANGBAND_DIR_PREF;
 char *ANGBAND_DIR_USER;
 char *ANGBAND_DIR_XTRA;
 
+/* 
+ * Various xtra/ subdirectories.
+ */
+char *ANGBAND_DIR_XTRA_FONT;
+char *ANGBAND_DIR_XTRA_GRAF;
+char *ANGBAND_DIR_XTRA_SOUND;
+char *ANGBAND_DIR_XTRA_HELP;
+char *ANGBAND_DIR_XTRA_ICON;
 
 /*
  * Total Hack -- allow all items to be listed (even empty ones)

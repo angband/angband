@@ -128,18 +128,8 @@ static int full_h;
 /* Want fullscreen? */
 static bool fullscreen = FALSE;
 
-/*
- * Directory names
- */
-static char *ANGBAND_DIR_XTRA_FONT;
-static char *ANGBAND_DIR_XTRA_GRAF;
-
 /* XXXXXXXXX */
 static char *ANGBAND_DIR_USER_SDL;
-
-/* Later...
-static cptr ANGBAND_DIR_XTRA_SOUND;
-*/
 
 /*
  * Used as 'system' font

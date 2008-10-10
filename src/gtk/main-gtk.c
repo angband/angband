@@ -1609,7 +1609,7 @@ static void init_graf(int g)
 		case GRAPHICS_ORIGINAL:
 		{
 			ANGBAND_GRAF = "old";
-			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA, "graf/8x8.png");
+			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, "8x8.png");
 			use_transparency = FALSE;
 			td->tile.w = td->tile.h = 8;
 			break;
@@ -1618,7 +1618,7 @@ static void init_graf(int g)
 		case GRAPHICS_ADAM_BOLT:
 		{
 			ANGBAND_GRAF = "new";
-			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA, "graf/16x16.png");
+			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, "16x16.png");
 			use_transparency = TRUE;
 			td->tile.w = td->tile.h =16;
 			break;
@@ -1627,7 +1627,7 @@ static void init_graf(int g)
 		case GRAPHICS_DAVID_GERVAIS:
 		{
 			ANGBAND_GRAF = "david";
-			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA, "graf/32x32.png");
+			path_build(buf, sizeof(buf), ANGBAND_DIR_XTRA_GRAF, "32x32.png");
 			use_transparency = FALSE;
 			td->tile.w = td->tile.h =32;
 			break;
@@ -1797,7 +1797,7 @@ static void init_gtk_windows(void)
 		exit(0);
 	}
 			
-	path_build(logo, sizeof(logo), ANGBAND_DIR_XTRA, "icon/att-256.png");
+	path_build(logo, sizeof(logo), ANGBAND_DIR_XTRA_ICON, "att-256.png");
 	err = gtk_window_set_default_icon_from_file(logo, NULL);
 	
 	for (i = 0; i < num_term; i++)

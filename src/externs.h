@@ -208,8 +208,10 @@ extern spell_type *s_info;
 extern char *s_name;
 extern char *s_text;
 extern s16b spell_list[MAX_REALMS][BOOKS_PER_REALM][SPELLS_PER_BOOK];
+
 extern const char *ANGBAND_SYS;
 extern const char *ANGBAND_GRAF;
+
 extern char *ANGBAND_DIR;
 extern char *ANGBAND_DIR_APEX;
 extern char *ANGBAND_DIR_BONE;
@@ -222,6 +224,13 @@ extern char *ANGBAND_DIR_SAVE;
 extern char *ANGBAND_DIR_PREF;
 extern char *ANGBAND_DIR_USER;
 extern char *ANGBAND_DIR_XTRA;
+
+extern char *ANGBAND_DIR_XTRA_FONT;
+extern char *ANGBAND_DIR_XTRA_GRAF;
+extern char *ANGBAND_DIR_XTRA_SOUND;
+extern char *ANGBAND_DIR_XTRA_HELP;
+extern char *ANGBAND_DIR_XTRA_ICON;
+
 extern bool item_tester_full;
 extern byte item_tester_tval;
 extern bool (*item_tester_hook)(const object_type*);

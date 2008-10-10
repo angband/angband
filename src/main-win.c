@@ -527,14 +527,6 @@ static cptr AppName = VERSION_NAME;
 static cptr AngList = "AngList";
 
 /*
- * Directory names
- */
-static char *ANGBAND_DIR_XTRA_FONT;
-static char *ANGBAND_DIR_XTRA_GRAF;
-static char *ANGBAND_DIR_XTRA_SOUND;
-static char *ANGBAND_DIR_XTRA_HELP;
-
-/*
  * The "complex" color values
  */
 static COLORREF win_clr[MAX_COLORS];

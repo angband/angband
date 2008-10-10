@@ -1248,7 +1248,6 @@ static void load_sounds(void)
 {
 	char path[2048];
 	char buffer[2048];
-	char *ANGBAND_DIR_XTRA_SOUND;
 	ang_file *fff;
 
 	/* Build the "sound" path */

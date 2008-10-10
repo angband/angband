@@ -101,6 +101,11 @@ void init_file_paths(const char *path)
 	string_free(ANGBAND_DIR_USER);
 	string_free(ANGBAND_DIR_XTRA);
 
+	string_free(ANGBAND_DIR_XTRA_FONT);
+	string_free(ANGBAND_DIR_XTRA_GRAF);
+	string_free(ANGBAND_DIR_XTRA_SOUND);
+	string_free(ANGBAND_DIR_XTRA_HELP);
+	string_free(ANGBAND_DIR_XTRA_ICON);
 
 	/*** Prepare the paths ***/
 
@@ -115,7 +120,13 @@ void init_file_paths(const char *path)
 	ANGBAND_DIR_PREF = string_make(format("%spref", path));
 	ANGBAND_DIR_XTRA = string_make(format("%sxtra", path));
 
-
+	/* Build xtra/ paths */
+	ANGBAND_DIR_XTRA_FONT = string_make(format("%s%sfont", ANGBAND_DIR_XTRA, PATH_SEP));
+	ANGBAND_DIR_XTRA_GRAF = string_make(format("%s$sgraf", ANGBAND_DIR_XTRA, PATH_SEP));
+	ANGBAND_DIR_XTRA_SOUND = string_make(format("%s%ssound", ANGBAND_DIR_XTRA, PATH_SEP));
+	ANGBAND_DIR_XTRA_HELP = string_make(format("%s%shelp", ANGBAND_DIR_XTRA, PATH_SEP));
+	ANGBAND_DIR_XTRA_ICON = string_make(format("%s%sicon", ANGBAND_DIR_XTRA, PATH_SEP));
+	
 #ifdef PRIVATE_USER_PATH
 
 	/* Build the path to the user specific directory */
