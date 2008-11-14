@@ -587,8 +587,9 @@ void calc_bonuses(object_type inventory[], player_state *state)
 
 	memset(state, 0, sizeof *state);
 
-	/* Set speed specially */
+	/* Set various defaults */
 	state->speed = 110;
+	state->num_blow = 1;
 
 
 	/*** Extract race/class info ***/
@@ -1100,6 +1101,7 @@ void calc_bonuses(object_type inventory[], player_state *state)
 		/* Boost digging skill by weapon weight */
 		state->skills[SKILL_DIGGING] += (o_ptr->weight / 10);
 	}
+
 
 	/* Assume okay */
 	state->icky_wield = FALSE;
