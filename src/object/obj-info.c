@@ -374,7 +374,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 
 
 		dam = ((o_ptr->ds + 1) * o_ptr->dd * 5);
-		xtra_dam = state.dis_to_d * 10;
+		xtra_dam = (state.dis_to_d + o_ptr->to_d) * 10;
 
 		/* Warn about heavy weapons */
 		if (adj_str_hold[state.stat_ind[A_STR]] < o_ptr->weight / 10)
@@ -487,7 +487,7 @@ static bool describe_light(const object_type *o_ptr, u32b f3, bool terse)
 	if (no_fuel && !artifact)
 		text_out(" light.  No fuel required");
 	else if (is_lite && o_ptr->sval == SV_LITE_TORCH)
-		text_out(" light, reduced when running of out fuel");
+		text_out(" light, reduced when running out of fuel");
 	else
 		text_out (" light");
 	text_out(".");
