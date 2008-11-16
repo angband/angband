@@ -4,8 +4,6 @@ if [ $# -ne 1 ] && [ $# -ne 2 ]; then
 	echo "Simple packaging file for the Windows port.  Only really useful when"
 	echo "cross-compiling, or using Cygwin.  Originally by Robert Ruehlmann."
 	echo ""
-	echo "Requires you have UPX (http://upx.sf.net/) installed."
-	echo ""
 	echo "Use in the root directory of the game, like so:"
 	echo "   scripts/pkg_win <name of of release, e.g. angband-4.0.1> [<output filename>]"
 	echo ""
@@ -78,8 +76,6 @@ cp ../lib/xtra/graf/mask32.bmp lib/xtra/graf
 
 cp ../lib/xtra/sound/sound.cfg lib/xtra/sound
 cp ../lib/xtra/sound/*.wav lib/xtra/sound
-
-upx -9 angband.exe
 
 cd ..
 zip -9 -r $OUT $DIR
