@@ -621,7 +621,7 @@ void display_monlist(void)
 
    	/* Message */
 	prt(format("You can see %d monster%s:",
-	           total_count, (total_count > 1 ? "s" : "")), 0, 0);
+		total_count, (total_count > 1 ? "s" : "")), 0, 0);
 
 
 	/* Go over in reverse order (so we show harder monsters first) */
@@ -664,23 +664,21 @@ void display_monlist(void)
 		/* Print and bump line counter */
 		c_prt(attr, buf, line, cur_x);
 		line++;
-        
-        /* Page wrap */
+
+		/* Page wrap */
 		if (Term == angband_term[0] && (line == max) && disp_count != total_count)
 		{
 			prt("-- more --", line, x);
 			anykey();
 
 			/* Clear the screen */
-			for (line=1; line <= max; line++) {
-                prt("", line, x);
-            }
+			for (line = 1; line <= max; line++)
+				prt("", line, x);
 
-           	/* Reprint Message */
-            prt(format("You can see %d monster%s:",
-                        total_count, (total_count > 1 ? "s" : "")), 0, 0);
+			/* Reprint Message */
+			prt(format("You can see %d monster%s:",
+				total_count, (total_count > 1 ? "s" : "")), 0, 0);
 
-            
 			/* Reset */
 			line = 1;
 		}
