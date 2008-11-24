@@ -496,6 +496,10 @@ Observe an item (I)
         This command lets you observe a previously *identified* item.
         This will tell you things about the special powers of the object.
         Currently, it only makes sense for artifacts and ego-items.
+        
+List visible monsters ([)
+        This command lists all monsters that are visible to you, telling you
+        how many there are of each kind.
 
 --- Message Commands ---
 

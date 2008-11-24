@@ -619,6 +619,11 @@ void display_monlist(void)
 		return;
 	}
 
+   	/* Message */
+	prt(format("You can see %d monster%s:",
+	           total_count, (total_count > 1 ? "s" : "")), 0, 0);
+
+
 	/* Go over in reverse order (so we show harder monsters first) */
 	for (i = z_info->r_max - 1; (i > 0) && (line < max); i--)
 	{
@@ -659,6 +664,26 @@ void display_monlist(void)
 		/* Print and bump line counter */
 		c_prt(attr, buf, line, cur_x);
 		line++;
+        
+        /* Page wrap */
+		if (Term == angband_term[0] && (line == max) && disp_count != total_count)
+		{
+			prt("-- more --", line, x);
+			anykey();
+
+			/* Clear the screen */
+			for (line=1; line <= max; line++) {
+                prt("", line, x);
+            }
+
+           	/* Reprint Message */
+            prt(format("You can see %d monster%s:",
+                        total_count, (total_count > 1 ? "s" : "")), 0, 0);
+
+            
+			/* Reset */
+			line = 1;
+		}
 	}
 
 	/* Print "and others" message if we've run out of space */
@@ -673,10 +698,6 @@ void display_monlist(void)
 	{
 		prt("", line, x);
 	}
-
-	/* Message */
-	prt(format("You can see %d monster%s:",
-	           total_count, (total_count > 1 ? "s" : "")), 0, 0);
 
 	if (Term == angband_term[0])
 		Term_addstr(-1, TERM_WHITE, "  (Press any key to continue.)");
