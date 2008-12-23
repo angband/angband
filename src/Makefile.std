@@ -48,8 +48,8 @@ SYS_sdl = -DUSE_SDL $(shell sdl-config --cflags) $(shell sdl-config --libs) -lSD
 
 # Basic compiler stuff
 CC = gcc
-CFLAGS = -O2 -W -Wall -Wno-unused-parameter
-
+WARNINGS = -W -Wall -Wextra -Wno-unused-parameter -Wold-style-definition -Wdeclaration-after-statement -Wmissing-declarations -Wredundant-decls -Wpointer-arith -Wcast-align -Wwrite-strings -Winline -Wformat-security -Winit-self -Wmissing-include-dirs -Wundef -Wmissing-format-attribute -Wnested-externs
+CFLAGS = -O2 $(WARNINGS)
 
 # Add additional search directives here
 # Example: -I/usr/X11R6/include -I/usr/include/ncurses
@@ -154,7 +154,8 @@ depend:
 
 # Some file dependencies
 %.o: %.c
-	$(CC) $(CFLAGS) -o $@ -c $<
+	@printf "%10s %-20s\n" CC $<
+	@$(CC) $(CFLAGS) -o $@ -c $<
 
 # X11 dependencies
 main-x11.o: $(HEADERS) main.h
