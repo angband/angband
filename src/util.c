@@ -2126,7 +2126,7 @@ void text_out_e(const char *fmt, ...)
 	va_list vp;
 
 	const char *start, *next, *text, *tag;
-	size_t textlen, taglen;
+	size_t textlen, taglen = 0;
 
 	/* Begin the Varargs Stuff */
 	va_start(vp, fmt);
