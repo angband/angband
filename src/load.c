@@ -1130,8 +1130,8 @@ static errr rd_randarts(void)
 
 				rd_u16b(&a_ptr->effect);
 				rd_u16b(&a_ptr->time_base);
-				rd_byte(&a_ptr->time_dice);
-				rd_byte(&a_ptr->time_sides);
+				rd_u16b(&a_ptr->time_dice);
+				rd_u16b(&a_ptr->time_sides);
 			}
 		}
 		else
