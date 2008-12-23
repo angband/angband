@@ -17,6 +17,7 @@
  */
 #include "angband.h"
 #include "ui-menu.h"
+#include "ui-birth.h"
 #include "game-event.h"
 #include "game-cmd.h"
 
@@ -29,7 +30,7 @@ static int autoroller_maxes[A_MAX];
 /* ------------------------------------------------------------------------
  * Quickstart? screen.
  * ------------------------------------------------------------------------ */
-static game_command quickstart_question()
+static game_command quickstart_question(void)
 {
 	char ch;
 	ui_event_data ke;
@@ -138,7 +139,7 @@ static void clear_question(void)
 	"for help, or '{lightgreen}Ctrl-X{/}' to quit."
 
 /* Show the birth instructions on an otherwise blank screen */	
-static void print_menu_instructions()
+static void print_menu_instructions(void)
 {
 	/* Clear screen */
 	Term_clear();
@@ -160,7 +161,7 @@ static void print_menu_instructions()
 /* Allow the user to select from the current menu, and return the 
    corresponding command to the game.  Some actions are handled entirely
    by the UI (displaying help text, for instance). */
-game_command menu_question()
+static game_command menu_question(void)
 {
 	/* Note: the const here is just to quell a compiler warning. */
 	struct birthmenu_data *menu_data = current_menu->menu_data;
@@ -369,7 +370,7 @@ static bool minstat_keypress(char *buf, size_t buflen, size_t *curs, size_t *len
   "Note that stats are not independent, so it is not possible to get " \
   "perfect (or even high) values for all your stats."
 
-void autoroller_start(int stat_maxes[A_MAX])
+static void autoroller_start(int stat_maxes[A_MAX])
 {
 	int i;
 	char inp[80];
@@ -424,7 +425,7 @@ void autoroller_start(int stat_maxes[A_MAX])
 	}
 }
 
-game_command autoroller_command()
+static game_command autoroller_command(void)
 {
 	int i, v;
 	char inp[80];
@@ -568,7 +569,7 @@ static void roller_autoroll(game_event_type type, game_event_data *data, void *u
 	Term_fresh();
 }
 
-static void roller_start()
+static void roller_start(int stat_maxes[A_MAX])
 {
 	prev_roll = FALSE;
 	Term_clear();
@@ -577,7 +578,7 @@ static void roller_start()
 	event_add_handler(EVENT_BIRTHSTATS, roller_newchar, NULL);	
 }
 
-static game_command roller_command()
+static game_command roller_command(void)
 {
 	game_command cmd = { CMD_NULL, 0, {0} };
 	ui_event_data ke;
@@ -657,7 +658,7 @@ static game_command roller_command()
 	return cmd;
 }
 
-static void roller_stop()
+static void roller_stop(void)
 {
 	event_remove_handler(EVENT_BIRTHAUTOROLLER, roller_autoroll, NULL);	
 	event_remove_handler(EVENT_BIRTHSTATS, roller_newchar, NULL);	
@@ -712,7 +713,7 @@ static void point_based_points(game_event_type type, game_event_data *data, void
 }
 
 
-static void point_based_start()
+static void point_based_start(void)
 {
 	/* Clear */
 	Term_clear();
@@ -728,14 +729,14 @@ static void point_based_start()
 	event_add_handler(EVENT_BIRTHSTATS, point_based_points, NULL);	
 }
 
-static void point_based_stop()
+static void point_based_stop(void)
 {
 	event_remove_handler(EVENT_STATS, point_based_stats, NULL);	
 	event_remove_handler(EVENT_GOLD, point_based_misc, NULL);	
 	event_remove_handler(EVENT_BIRTHSTATS, point_based_points, NULL);
 }
 
-static game_command point_based_command()
+static game_command point_based_command(void)
 {
 	game_command cmd = { CMD_NULL, 0, {0} };
 	static int stat = 0;
@@ -799,7 +800,7 @@ static game_command point_based_command()
 /* ------------------------------------------------------------------------
  * Asking for the player's chosen name.
  * ------------------------------------------------------------------------ */
-static game_command get_name_command()
+static game_command get_name_command(void)
 {
 	game_command cmd;
 	char name[32];
@@ -820,7 +821,7 @@ static game_command get_name_command()
 /* ------------------------------------------------------------------------
  * Final confirmation of character.
  * ------------------------------------------------------------------------ */
-static game_command get_confirm_command()
+static game_command get_confirm_command(void)
 {
 	const char *prompt = "['ESC' to step back, 'S' to start over, or any other key to continue]";
 	ui_event_data ke;
@@ -1017,7 +1018,7 @@ static void birth_stage_changed(game_event_type type, game_event_data *data, voi
  * and so we farm out the actions to other functions to handle
  * each substage.
  */
-static game_command ui_get_birth_command()
+static game_command ui_get_birth_command(void)
 {
 	switch (current_stage)
 	{

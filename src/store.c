@@ -2433,6 +2433,7 @@ static void store_examine(int item)
 {
 	store_type *st_ptr = &store[store_current];
 	object_type *o_ptr;
+	bool info_known;
 
 	if (item < 0) return;
 
@@ -2447,9 +2448,9 @@ static void store_examine(int item)
 	screen_save();
 
 	object_info_header(o_ptr);
-	
+
 	/* Show full info in most stores, but normal info in player home */
-	bool info_known = (store_current == STORE_HOME) ? object_info_known(o_ptr) : object_info_store(o_ptr);
+	info_known = (store_current == STORE_HOME) ? object_info_known(o_ptr) : object_info_store(o_ptr);
 	if (!info_known) text_out("\n\nThis item does not seem to possess any special abilities.");
 
 	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");

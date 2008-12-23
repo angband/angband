@@ -2038,7 +2038,7 @@ void text_out_c(byte a, const char *fmt, ...)
  *
  * See text_out_e for an example of its use.
  */
-bool next_section(const char *source, size_t init, const char **text, size_t *len, const char **tag, size_t *taglen, const char **end)
+static bool next_section(const char *source, size_t init, const char **text, size_t *len, const char **tag, size_t *taglen, const char **end)
 {
 	const char *next;	
 
@@ -2395,7 +2395,7 @@ bool askfor_aux(char *buf, size_t len, bool keypress_h(char *, size_t, size_t *,
  * case of '*' for a new random "name" and passes any other "keypress"
  * through to the default "editing" handler.
  */
-bool get_name_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, char keypress, bool firsttime)
+static bool get_name_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, char keypress, bool firsttime)
 {
 	bool result;
 

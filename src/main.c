@@ -194,7 +194,7 @@ static bool new_game;
  * Pass the appropriate "Initialisation screen" command to the game,
  * getting user input if needed.
  */ 
-static game_command get_init_cmd()
+static game_command get_init_cmd(void)
 {
 	game_command cmd;
 

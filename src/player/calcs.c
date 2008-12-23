@@ -1128,7 +1128,7 @@ void calc_bonuses(object_type inventory[], player_state *state)
 /*
  * Calculate bonuses, and print various things on changes.
  */
-void update_bonuses(void)
+static void update_bonuses(void)
 {
 	int i;
 

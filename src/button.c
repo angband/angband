@@ -114,7 +114,7 @@ int button_add_text(const char *label, unsigned char keypress)
 /*
  * Add a button
  */
-int button_add(char *label, unsigned char keypress)
+int button_add(const char *label, unsigned char keypress)
 {
 	if (!button_add_hook)
 		return 0;

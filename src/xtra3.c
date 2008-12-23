@@ -277,7 +277,7 @@ static void prt_ac(int row, int col)
 /*
  * Calculate the hp color separately, for ports.
  */
-byte player_hp_attr()
+byte player_hp_attr(void)
 {
 	byte attr;
 	
@@ -312,7 +312,7 @@ static void prt_hp(int row, int col)
 /*
  * Calculate the sp color separately, for ports.
  */
-byte player_sp_attr()
+byte player_sp_attr(void)
 {
 	byte attr;
 	
@@ -351,7 +351,7 @@ static void prt_sp(int row, int col)
 /*
  * Calculate the monster bar color separately, for ports.
  */
-byte monster_health_attr()
+byte monster_health_attr(void)
 {
 	byte attr = TERM_WHITE;
 	

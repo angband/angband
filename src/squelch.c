@@ -838,7 +838,7 @@ static bool seen_tval(int tval)
 struct
 {
 	char tag;
-	char *name;
+	const char *name;
 	void (*action)(void *unused, const char *also_unused);
 } extra_item_options[] =
 {

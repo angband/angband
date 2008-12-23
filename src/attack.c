@@ -891,7 +891,7 @@ void do_cmd_throw(void)
 	int i, j, y, x;
 	s16b ty, tx;
 	int chance, tdam, tdis;
-	int mul, div;
+	int weight;
 
 	object_type *o_ptr;
 
@@ -969,14 +969,11 @@ void do_cmd_throw(void)
 	missile_char = object_char(i_ptr);
 
 
-	/* Extract a "distance multiplier" */
-	mul = 10;
-
 	/* Enforce a minimum "weight" of one pound */
-	div = ((i_ptr->weight > 10) ? i_ptr->weight : 10);
+	weight = ((i_ptr->weight > 10) ? i_ptr->weight : 10);
 
 	/* Hack -- Distance -- Reward strength, penalize weight */
-	tdis = (adj_str_blow[p_ptr->state.stat_ind[A_STR]] + 20) * mul / div;
+	tdis = (adj_str_blow[p_ptr->state.stat_ind[A_STR]] + 20) * 10 / weight;
 
 	/* Max distance of 10 */
 	if (tdis > 10) tdis = 10;

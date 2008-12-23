@@ -500,7 +500,7 @@ static int gamma_val = 0;
 /*
  * Hack -- Convert an RGB value to an X11 Pixel, or die.
  */
-u32b create_pixel(Display *dpy, byte red, byte green, byte blue)
+static u32b create_pixel(Display *dpy, byte red, byte green, byte blue)
 {
 	Colormap cmap = DefaultColormapOfScreen(DefaultScreenOfDisplay(dpy));
 
@@ -550,7 +550,7 @@ u32b create_pixel(Display *dpy, byte red, byte green, byte blue)
 /*
  * Get the name of the default font to use for the term.
  */
-const char *get_default_font(int term_num)
+static const char *get_default_font(int term_num)
 {
 	const char *font;
 	char buf[80];

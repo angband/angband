@@ -6,7 +6,7 @@ This is an Angband development version -- it may be buggy, so be warned!
 Thanks for this release go to: Eytan Zweig, pelpel, Kenneth Boyd,
 J.D. White, Eddie Grove, Rowan Beentje, Nick McConnell, Gabriel
 Cunningham, Shanoah Alkire, Alexander Philips, mikon, Antony Sidwell,
-and all the alpha- and beta- testers who downloaded the game,
+Joe Buck, and all the alpha- and beta- testers who downloaded the game,
 sometimes in an extremely shaky state, and played it anyway.
 
 Noticeable up-front UI changes

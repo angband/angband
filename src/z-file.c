@@ -239,7 +239,7 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 
 /*** Support for byte-swapping for endian-indepedent files ***/
 
-static bool is_bigendian()
+static bool is_bigendian(void)
 {
 	int i = 1;
 	char *p = (char *)&i;
@@ -337,7 +337,6 @@ bool file_move(const char *fname, const char *newname)
 /*
  * Decide whether a file exists or not.
  */
-bool file_exists(const char *fname);
 
 #if defined(HAVE_STAT)
 
@@ -573,7 +572,6 @@ bool file_writec(ang_file *f, byte b)
 /*
  * Read 'n' bytes from file 'f' into array 'buf'.
  */
-size_t file_read(ang_file *f, char *buf, size_t n);
 
 #ifdef HAVE_READ
 
@@ -617,7 +615,6 @@ size_t file_read(ang_file *f, char *buf, size_t n)
 /*
  * Append 'n' bytes of array 'buf' to file 'f'.
  */
-bool file_write(ang_file *f, const char *buf, size_t n);
 
 #ifdef HAVE_WRITE
 

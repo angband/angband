@@ -39,13 +39,13 @@ static void to_stderr(const char *out)
  * Amongst other things, this should use the z-msg package so that ports can
  * display e.g. a debugging window, or send the output to file.
  */
-void debug(const char *format, ...)
+void debug(const char *fmt, ...)
 {
 	va_list vp;
 	char buffer[1024] = "";
 
-	va_start(vp, format);
-	vstrnfmt(buffer, sizeof(buffer), format, vp);
+	va_start(vp, fmt);
+	vstrnfmt(buffer, sizeof(buffer), fmt, vp);
 	va_end(vp);
 
 	d_out(buffer);

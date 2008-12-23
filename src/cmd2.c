@@ -18,6 +18,8 @@
 #include "angband.h"
 #include "object/tvalsval.h"
 
+#include "cmds.h"
+
 /*
  * Go up one level
  */
@@ -2053,7 +2055,7 @@ static bool do_cmd_walk_test(int y, int x)
 /*
  * Helper function for the "walk" command.
  */
-static void walk()
+static void walk(void)
 {
 	int y, x, dir;
 

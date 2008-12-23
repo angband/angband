@@ -710,8 +710,10 @@ static void sdl_ButtonDraw(sdl_Button *button)
 	
 	if (strlen(button->caption))
 	{
-		int max = button->pos.w / font->width;
-		int n = strlen(button->caption) > max ? max : strlen(button->caption);
+		size_t len = strlen(button->caption);
+
+		unsigned max = button->pos.w / font->width;
+		int n = MIN(len, max);
 		int l = n * font->width / 2;
 		int x = button->pos.x + ((button->pos.w) / 2) - l;
 		
@@ -1107,7 +1109,7 @@ static void hook_quit(cptr str)
 		string_free(FontList[i]);
 }
 
-static void BringToTop()
+static void BringToTop(void)
 {
 	int i, idx;
 	
@@ -1282,7 +1284,7 @@ static void sdl_BlitAll(void)
 	
 }
 
-static void RemovePopUp()
+static void RemovePopUp(void)
 {
 	PopUp.visible = FALSE;
 	popped = FALSE;
@@ -1326,7 +1328,7 @@ static void TermFocus(int idx)
 	
 	SelectedTerm = idx;
 	
-	BringToTop(idx);
+	BringToTop();
 	
 	SetStatusButtons();
 	
@@ -2007,7 +2009,7 @@ static errr load_prefs(void)
 	return (0);
 }
 
-static errr save_prefs()
+static errr save_prefs(void)
 {
 	ang_file *fff;
 	int i;

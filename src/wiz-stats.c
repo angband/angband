@@ -30,10 +30,10 @@ typedef struct
 	char *value;
 } keyv;
 
-keyv results[10];
-size_t no_results = 0;
+static keyv results[10];
+static size_t no_results = 0;
 
-void results_reset(void)
+static void results_reset(void)
 {
 	size_t i;
 	for (i = 0; i < no_results; i++)
@@ -45,14 +45,14 @@ void results_reset(void)
 	no_results = 0;
 }
 
-void result_add(const char *key, const char *value)
+static void result_add(const char *key, const char *value)
 {
 	results[no_results].key = string_make(key);
 	results[no_results].value = string_make(value);
 	no_results++;
 }
 
-void results_print_csv_titles(void)
+static void results_print_csv_titles(void)
 {
 	size_t i;
 	for (i = 0; i < no_results; i++)
@@ -61,7 +61,7 @@ void results_print_csv_titles(void)
 	printf("\n");
 }
 
-void results_print_csv(void)
+static void results_print_csv(void)
 {
 	size_t i;
 	for (i = 0; i < no_results; i++)
@@ -69,8 +69,8 @@ void results_print_csv(void)
 
 	printf("\n");
 }
-
-void results_print_csv_pair(const char *field1, const char *field2)
+#if 0
+static void results_print_csv_pair(const char *field1, const char *field2)
 {
 	size_t i;
 	for (i = 0; i < no_results; i++)
@@ -93,7 +93,7 @@ void results_print_csv_pair(const char *field1, const char *field2)
 
 	printf("\n");
 }
-
+#endif
 
 
 /*** Statsgen ***/
@@ -105,8 +105,8 @@ void results_print_csv_pair(const char *field1, const char *field2)
  */
 
 #define TRIES	5000
-size_t o_count[TRIES];
-size_t gold_count[TRIES];
+static size_t o_count[TRIES];
+static size_t gold_count[TRIES];
 
 
 inline static void stats_print_o(void)
@@ -136,7 +136,7 @@ inline static void stats_print_m(void)
 	result_add("mon-gold", format("%f", mon_gold * level_avg / TRIES));
 }
 
-void stats_monster(const monster_type *m_ptr)
+static void stats_monster(const monster_type *m_ptr)
 {
 	u32b f0 = r_info[m_ptr->r_idx].flags[0];
 	float prob = 0.0;
@@ -172,7 +172,7 @@ void stats_monster(const monster_type *m_ptr)
 /*
  * This is the entry point for generation statistics.
  */
-void stats_collect2(void)
+static void stats_collect_level(void)
 {
 	static bool first = TRUE;
 	size_t i, x, y;
@@ -245,16 +245,17 @@ void stats_collect(void)
 		p_ptr->depth = depth;
 		if (p_ptr->depth == 0) p_ptr->depth = 1;
 
-		stats_collect2();
+		stats_collect_level();
 	}
 }
 
 
+#if 0
 /*
  * Deliberately left unlinked, but useful in e.g. gdb to print the dungeon
  * when debugging, using "call print_dun()".
  */
-void print_dun(void)
+static void print_dun(void)
 {
 	int y, x;
 
@@ -269,6 +270,7 @@ void print_dun(void)
 		printf("\n");
 	}
 }
+#endif
 
 #else /* WITH_STATS */
 

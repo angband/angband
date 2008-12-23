@@ -18,6 +18,7 @@
  */
 #include "angband.h"
 #include "object/tvalsval.h"
+#include "cmds.h"
 #include "option.h"
 #include "ui.h"
 #include "externs.h"
@@ -219,7 +220,7 @@ static byte char_idx = 0;
 /*
  * Return a specific ordering for the features
  */
-int feat_order(int feat)
+static int feat_order(int feat)
 {
 	feature_type *f_ptr = &f_info[feat];
 
@@ -283,35 +284,35 @@ static int actual_height(int height)
 /* From an actual width, return the logical width */
 static int logical_width(int width)
 {
-	int div = 1;
+	int divider = 1;
 
 #ifdef UNANGBAND
-	if (use_trptile) div = 3;
-	else if (use_dbltile) div = 2;
+	if (use_trptile) divider = 3;
+	else if (use_dbltile) divider = 2;
 #endif
 
-	if (use_bigtile) div *= 2;
+	if (use_bigtile) divider *= 2;
 
-	return width / div;
+	return width / divider;
 }
 
 /* From an actual height, return the logical height */
 static int logical_height(int height)
 {
-	int div = 1;
+	int divider = 1;
 
 #ifdef UNANGBAND
 	if (use_trptile)
 	{
 		height *= 2;
-		div = 3;
+		divider = 3;
 	}
-	else if (use_dbltile) div = 2;
+	else if (use_dbltile) divider = 2;
 #endif
 
-	if (use_bigtile) div *= 2;
+	if (use_bigtile) divider *= 2;
 
-	return height / div;
+	return height / divider;
 }
 
 
@@ -1878,15 +1879,6 @@ static void do_cmd_knowledge_features(void *obj, const char *name)
 	FREE(features);
 }
 
-/* =================== HOMES AND STORES ==================================== */
-
-
-
-void do_cmd_knowledge_home() 
-{
-	/* TODO */
-}
-
 
 /* =================== END JOIN DEFINITIONS ================================ */
 
@@ -2149,7 +2141,7 @@ void do_cmd_messages(void)
 			/* Hilite "shower" */
 			if (shower[0])
 			{
-				cptr str = msg;
+				str = msg;
 
 				/* Display matches */
 				while ((str = my_stristr(str, shower)) != NULL)
@@ -2490,9 +2482,9 @@ static void do_cmd_options_win(void)
 			/* Display the windows */
 			for (j = 0; j < ANGBAND_TERM_MAX; j++)
 			{
-				byte a = TERM_WHITE;
-
 				char c = '.';
+
+				a = TERM_WHITE;
 
 				/* Use color */
 				if ((i == y) && (j == x)) a = TERM_L_BLUE;
@@ -3467,7 +3459,7 @@ static void dump_colors(ang_file *fff)
 }
 
 
-int modify_attribute(const char *clazz, int oid, const char *name,
+static int modify_attribute(const char *clazz, int oid, const char *name,
 							byte da, char dc, byte *pca, char *pcc)
 {
 	int cx;
@@ -3891,7 +3883,7 @@ void do_cmd_colors(void)
 
 /*** Non-complex menu actions ***/
 
-bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *len, char keypress, bool firsttime)
+static bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *len, char keypress, bool firsttime)
 {
 	switch (keypress)
 	{
@@ -4549,7 +4541,7 @@ void do_cmd_load_screen(void)
 /*
  * Save a simple text screendump.
  */
-void do_cmd_save_screen_text(void)
+static void do_cmd_save_screen_text(void)
 {
 	int y, x;
 
@@ -4635,7 +4627,7 @@ void do_cmd_save_screen_text(void)
 /*
  * Hack -- save a screen dump to a file in html format
  */
-void do_cmd_save_screen_html(int mode)
+static void do_cmd_save_screen_html(int mode)
 {
 	size_t i;
 

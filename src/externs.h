@@ -268,7 +268,7 @@ extern void player_birth(bool quickstart_allowed);
 
 /* button.c */
 int button_add_text(const char *label, unsigned char keypress);
-int button_add(char *label, unsigned char keypress);
+int button_add(const char *label, unsigned char keypress);
 void button_backup_all(void);
 void button_restore(void);
 int button_kill_text(unsigned char keypress);
@@ -337,8 +337,6 @@ extern int value_check_aux1(const object_type *o_ptr);
 
 /* files.c */
 extern void html_screenshot(cptr name, int mode);
-extern void safe_setuid_drop(void);
-extern void safe_setuid_grab(void);
 extern s16b tokenize(char *buf, s16b num, char **tokens);
 extern errr process_pref_file_command(char *buf);
 extern errr process_pref_file(cptr name);
@@ -586,10 +584,6 @@ extern void hit_trap(int y, int x);
 extern void pick_trap(int y, int x);
 extern void place_trap(int y, int x);
 
-/* typeutils.c */
-void display_panel(const data_panel *panel, int count,
-		   bool left_adj, const region *bounds);
-
 /* util.c */
 extern void text_to_ascii(char *buf, size_t len, cptr str);
 extern void ascii_to_text(char *buf, size_t len, cptr str);
@@ -673,6 +667,9 @@ bool get_rep_dir(int *dp);
 bool confuse_dir(int *dp);
 
 /* xtra3.c */
+byte player_hp_attr(void);
+byte player_sp_attr(void);
+byte monster_health_attr(void);
 void cnv_stat(int val, char *out_val, size_t out_len);
 void toggle_inven_equip(void);
 void subwindows_set_flags(u32b *new_flags, size_t n_subwindows);

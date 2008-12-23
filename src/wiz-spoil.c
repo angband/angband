@@ -17,6 +17,7 @@
  */
 #include "angband.h"
 #include "z-file.h"
+#include "wizard.h"
 #include "cmds.h"
 #include "object/tvalsval.h"
 

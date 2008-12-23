@@ -262,7 +262,7 @@ static int columns_get_cursor(int row, int col, int n, int top, region *loc)
 	return cursor;
 }
 
-void display_columns(menu_type *menu, int cursor, int *top, region *loc)
+static void display_columns(menu_type *menu, int cursor, int *top, region *loc)
 {
 	int c, r;
 	int w, h;

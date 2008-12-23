@@ -331,7 +331,7 @@ static void get_extra(void)
 }
 
 
-static void get_bonuses()
+static void get_bonuses(void)
 {
 	/* Calculate the bonuses and hitpoints */
 	p_ptr->update |= (PU_BONUS | PU_HP);
@@ -693,7 +693,7 @@ static void player_outfit(void)
  * there should be a game help mode rather than it being entirely at
  * the UI level.
  */
-static game_command get_birth_command()
+static game_command get_birth_command(void)
 {
 	game_command cmd = { CMD_NULL, 0, {0} };
 

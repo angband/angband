@@ -293,7 +293,7 @@ static bool history_masked(size_t i)
 /*
  * Finds the index of the last printable (non-masked) item in the history list.
  */
-static int last_printable_item(void)
+static size_t last_printable_item(void)
 {
 	size_t i = history_ctr;
 
@@ -329,8 +329,8 @@ void history_display(void)
 {
 	int row, wid, hgt, page_size;
 	char buf[90];
-	static int first_item = 0;
-	int max_item = last_printable_item();
+	static size_t first_item = 0;
+	size_t max_item = last_printable_item();
 	size_t i;
 
 	Term_get_size(&wid, &hgt);
@@ -375,39 +375,39 @@ void history_display(void)
 
 		if (ch == 'n')
 		{
-			first_item += page_size;
+			size_t scroll_to = first_item + page_size;
 
-			while (history_masked(first_item) && first_item < history_ctr - 1)
-				first_item++;
+			while (history_masked(scroll_to) && scroll_to < history_ctr - 1)
+				scroll_to++;
 
-			LIMITHI(first_item, max_item);
+			first_item = (scroll_to < max_item ? scroll_to : max_item);
 		}
 		else if (ch == 'p')
 		{
-			first_item -= page_size;
+			int scroll_to = first_item - page_size;
 
-			while (history_masked(first_item) && first_item > 0)
-				first_item--;
+			while (history_masked(scroll_to) && scroll_to > 0)
+				scroll_to--;
 
-			LIMITLOW(first_item, 0);
+			first_item = (scroll_to >= 0 ? scroll_to : 0);
 		}
 		else if (ch == ARROW_DOWN)
 		{
-			first_item++;
+			size_t scroll_to = first_item + 1;
 
-			while (history_masked(first_item) && first_item < history_ctr - 1)
-				first_item++;
+			while (history_masked(scroll_to) && scroll_to < history_ctr - 1)
+				scroll_to++;
 
-			LIMITHI(first_item, max_item);
+			first_item = (scroll_to < max_item ? scroll_to : max_item);
 		}
 		else if (ch == ARROW_UP)
 		{
-			first_item--;
+			int scroll_to = first_item - 1;
 
-			while (history_masked(first_item) && first_item > 0)
-				first_item--;
+			while (history_masked(scroll_to) && scroll_to > 0)
+				scroll_to--;
 
-			LIMITLOW(first_item, 0);
+			first_item = (scroll_to >= 0 ? scroll_to : 0);
 		}
 		else if (ch == ESCAPE)
 			break;

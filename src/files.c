@@ -1472,6 +1472,46 @@ static void display_player_sust_info(void)
 }
 
 
+
+static void display_panel(const data_panel *panel, int count, bool left_adj, const region *bounds)
+{
+	int i;
+	char buffer[50];
+	int col = bounds->col;
+	int row = bounds->row;
+	int w = bounds->width;
+	int offset = 0;
+
+	region_erase(bounds);
+
+	if (left_adj)
+	{
+		for (i = 0; i < count; i++)
+		{
+			int len = panel[i].label ? strlen(panel[i].label) : 0;
+			if (offset < len) offset = len;
+		}
+		offset += 2;
+	}
+
+	for (i = 0; i < count; i++, row++)
+	{
+		int len;
+		if (!panel[i].label) continue;
+		Term_putstr(col, row, strlen(panel[i].label), TERM_WHITE, panel[i].label);
+
+		strnfmt(buffer, sizeof(buffer), panel[i].fmt, panel[i].value[0], panel[i].value[1]);
+
+		len = strlen(buffer);
+		len = len < w - offset ? len : w - offset - 1;
+		if (left_adj)
+			Term_putstr(col+offset, row, len, panel[i].color, buffer);
+		else
+			Term_putstr(col+w-len, row, len, panel[i].color, buffer);
+	}
+}
+
+
 static const region boundaries [] =
 {
 	/* x   y     width, rows */
@@ -1519,7 +1559,7 @@ static const char *show_depth(void)
 	return buffer;
 }
 
-static const char *show_speed()
+static const char *show_speed(void)
 {
 	static char buffer[10];
 	int tmp = p_ptr->state.speed;
@@ -1631,11 +1671,11 @@ static const byte colour_table[] =
 	TERM_L_BLUE
 };
 
-int get_panel(int oid, data_panel *panel, size_t size)
+static int get_panel(int oid, data_panel *panel, size_t size)
 {
-  int ret = (s32b) size;
-  switch(oid)
- {
+	int ret = (s32b) size;
+	switch(oid)
+	{
   case 1:
   {
 	int i = 0;

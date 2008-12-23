@@ -18,6 +18,7 @@
 #include "angband.h"
 #include "object/tvalsval.h"
 
+#include "cmds.h"
 
 /*
  * Display inventory
