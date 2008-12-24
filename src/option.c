@@ -333,7 +333,7 @@ static option_entry options[OPT_MAX] =
 { "adult_no_stores",     "Restrict the use of stores/home",             FALSE }, /* 196 */
 { "adult_no_artifacts",  "Restrict creation of artifacts",              FALSE }, /* 197 */
 { "adult_no_stacking",   "Don't stack objects on the floor",            FALSE }, /* 198 */
-{ "adult_no_preserve",   "Don't preserve artifacts when leaving level", FALSE }, /* 199 */
+{ "adult_no_preserve",   "Lose artifacts when leaving level",           FALSE }, /* 199 */
 { "adult_no_stairs",     "Don't generate connected stairs",             FALSE }, /* 200 */
 { NULL,                  NULL,                                          FALSE }, /* 201 */
 { NULL,                  NULL,                                          FALSE }, /* 202 */
