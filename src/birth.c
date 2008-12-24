@@ -430,29 +430,10 @@ static void get_ahw(void)
  */
 static void get_money(int stat_use[A_MAX])
 {
-	int i;
-
-	int gold;
-
-	/* Social Class determines starting gold */
-	gold = (p_ptr->sc * 6) + randint1(100) + 300;
-
-	/* Process the stats */
-	for (i = 0; i < A_MAX; i++)
-	{
-		/* Mega-Hack -- reduce gold for high stats */
-		if (stat_use[i] >= 18+50) gold -= 300;
-		else if (stat_use[i] >= 18+20) gold -= 200;
-		else if (stat_use[i] > 18) gold -= 150;
-		else gold -= (stat_use[i] - 8) * 10;
-	}
-
-	/* Minimum 200 gold */
-	if (OPT(birth_money)) gold = MAX(500, gold);
-	else gold = MAX(200, gold);
-
-	/* Save the gold */
-	p_ptr->au = p_ptr->au_birth = gold;
+	if (OPT(birth_money))
+		p_ptr->au = p_ptr->au_birth = 500;
+	else
+		p_ptr->au = p_ptr->au_birth = 200;
 }
 
 
@@ -757,8 +738,10 @@ static void recalculate_stats(int *stats, int points_left)
 	}
 	
 	/* Gold is inversely proportional to cost */
-	p_ptr->au = OPT(birth_money) ? 500 : 200;
-	p_ptr->au += (50 * points_left);
+	p_ptr->au = 200 + (50 * points_left);
+	if (OPT(birth_money))
+		p_ptr->au = MIN(p_ptr->au, 500);
+
 	p_ptr->au_birth = p_ptr->au;
 
 	/* Update bonuses, hp, etc. */
