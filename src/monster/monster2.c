@@ -1657,7 +1657,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 
 
 	/* Give a random starting energy */
-	n_ptr->energy = (byte)randint0(100);
+	n_ptr->energy = (byte)randint0(50);
 
 	/* Force monster to wait for player */
 	if (r_ptr->flags[0] & (RF0_FORCE_SLEEP))
