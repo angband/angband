@@ -2038,7 +2038,7 @@ errr file_character(cptr name, bool full)
 		{
 			file_putf(fp, "> %s\n", message_str((s16b)i));
 		}
-		file_putf(fp, "\n\n");
+		file_putf(fp, "\nKilled by %s.\n\n", p_ptr->died_from);
 	}
 
 
