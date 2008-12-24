@@ -202,7 +202,7 @@ static void highscore_write(const high_score scores[], size_t sz)
 		return;
 	}
 
-	file_write(scorefile, (const char *)&scores, sizeof(high_score)*n);
+	file_write(scorefile, (const char *)scores, sizeof(high_score)*n);
 	file_close(scorefile);
 
 	/*** Now move things around ***/
@@ -502,20 +502,23 @@ void predict_score(void)
  */
 void show_scores(void)
 {
-	high_score scores[MAX_HISCORES];
-
-	highscore_read(scores, N_ELEMENTS(scores));
-
 	screen_save();
 
 	/* Display the scores */
 	if (character_generated)
+	{
 		predict_score();
+	}
 	else
+	{
+		high_score scores[MAX_HISCORES];
+		highscore_read(scores, N_ELEMENTS(scores));
 		display_scores_aux(scores, 0, MAX_HISCORES, -1);
+	}
 
 	screen_load();
 
 	/* Hack - Flush it */
 	Term_fresh();
 }
+

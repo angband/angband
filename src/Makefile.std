@@ -102,7 +102,7 @@ include Makefile.inc
 
 # Build the "Angband" program
 $(EXE): $(OBJS)
-	@printf "%10s %-20s\n" LINK $<
+	@printf "%10s %-20s\n" LINK $@
 	@$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS)
 
 # Install the game.
