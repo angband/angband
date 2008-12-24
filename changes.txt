@@ -6,8 +6,9 @@ This is an Angband development version -- it may be buggy, so be warned!
 Thanks for this release go to: Eytan Zweig, pelpel, Kenneth Boyd,
 J.D. White, Eddie Grove, Rowan Beentje, Nick McConnell, Gabriel
 Cunningham, Shanoah Alkire, Alexander Philips, mikon, Antony Sidwell,
-Joe Buck, Eric Osheim, and all the alpha- and beta- testers who downloaded
-the game, sometimes in an extremely shaky state, and played it anyway.
+Joe Buck, Eric Osheim, d_m, and all the alpha- and beta- testers who
+downloaded the game, sometimes in an extremely shaky state, and played
+it anyway.
 
 Noticeable up-front UI changes
 ------------------------------
@@ -68,6 +69,8 @@ Noticeable up-front UI changes
  * Rejig social status a bit -- it rises with level from a certain baseline.
  * Display various skills numerically on the character sheet, rather than
    with text.  This is like Eddie's patch, but a bit more polished.
+ * Add a "display item list" command and term window.  (Thanks to Eric
+   Osheim)
 
 
 Gameplay changes
@@ -249,4 +252,4 @@ Other assorted changes:
  * Move to using randint0() and randint1() for random numbers.
  * Add proper transparency to the PNG files.  (fixes #270; thanks to Rowan Beentje
  * Move to using flags[6] for monster flags rather than individual flagsets.
-
+ * Score code moved to score.c and extensively refactored.
