@@ -2818,6 +2818,18 @@ void monster_death(int m_idx)
 }
 
 
+/*
+ * If the monster is asleep, then wake it up. Otherwise, do nothing.
+ * Returns TRUE if the monster just woke up, or FALSE if it was already awake.
+ */
+bool wake_monster(monster_type *m_ptr)
+{
+	if (m_ptr->csleep <= 0)
+		return FALSE;
+
+	m_ptr->csleep = 0;
+	return TRUE;
+}
 
 
 /*
@@ -2857,9 +2869,8 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 	/* Redraw (later) if needed */
 	if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
 
-
 	/* Wake it up */
-	m_ptr->csleep = 0;
+	wake_monster(m_ptr);
 
 	/* Hurt it */
 	m_ptr->hp -= dam;

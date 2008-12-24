@@ -3143,6 +3143,7 @@ static void process_monster(int m_idx)
 
 	int mm[5];
 
+	bool woke_up = FALSE;
 	bool stagger;
 
 	bool do_turn;
@@ -3168,7 +3169,7 @@ static void process_monster(int m_idx)
 		if (p_ptr->state.aggravate)
 		{
 			/* Reset sleep counter */
-			m_ptr->csleep = 0;
+			woke_up = wake_monster(m_ptr);
 
 			/* Notice the "waking up" */
 			if (m_ptr->ml)
@@ -3221,7 +3222,7 @@ static void process_monster(int m_idx)
 			else
 			{
 				/* Reset sleep counter */
-				m_ptr->csleep = 0;
+				woke_up = wake_monster(m_ptr);
 
 				/* Notice the "waking up" */
 				if (m_ptr->ml)
@@ -3250,6 +3251,8 @@ static void process_monster(int m_idx)
 		if (m_ptr->csleep) return;
 	}
 
+	/* If the monster just woke up, then it doesn't act */
+	if (woke_up) return;
 
 	/* Handle "stun" */
 	if (m_ptr->stunned)

@@ -2201,7 +2201,7 @@ void aggravate_monsters(int who)
 			if (m_ptr->csleep)
 			{
 				/* Wake up */
-				m_ptr->csleep = 0;
+				wake_monster(m_ptr);
 				sleep = TRUE;
 			}
 		}
@@ -2741,7 +2741,7 @@ void earthquake(int cy, int cx, int r)
 					damage = (sn ? damroll(4, 8) : (m_ptr->hp + 1));
 
 					/* Monster is certainly awake */
-					m_ptr->csleep = 0;
+					wake_monster(m_ptr);
 
 					/* Apply damage directly */
 					m_ptr->hp -= damage;
@@ -2917,7 +2917,7 @@ static void cave_temp_room_lite(void)
 			if (m_ptr->csleep && (randint0(100) < chance))
 			{
 				/* Wake up! */
-				m_ptr->csleep = 0;
+				wake_monster(m_ptr);
 
 				/* Notice the "waking up" */
 				if (m_ptr->ml)

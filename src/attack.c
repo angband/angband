@@ -436,7 +436,7 @@ void py_attack(int y, int x)
 
 
 	/* Disturb the monster */
-	m_ptr->csleep = 0;
+	wake_monster(m_ptr);
 
 
 	/* Extract monster name (or "it") */

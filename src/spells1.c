@@ -2630,7 +2630,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ)
 			if (seen) obvious = TRUE;
 
 			/* Wake up */
-			m_ptr->csleep = 0;
+			wake_monster(m_ptr);
 
 			/* Heal */
 			m_ptr->hp += dam;
@@ -3248,7 +3248,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ)
 		if (p_ptr->health_who == cave_m_idx[y][x]) p_ptr->redraw |= (PR_HEALTH);
 
 		/* Wake the monster up */
-		m_ptr->csleep = 0;
+		wake_monster(m_ptr);
 
 		/* Hurt the monster */
 		m_ptr->hp -= dam;
