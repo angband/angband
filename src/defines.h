@@ -1321,6 +1321,9 @@ enum
 	(TR3_IGNORE_ACID | TR3_IGNORE_ELEC | TR3_IGNORE_FIRE | \
 	 TR3_IGNORE_COLD )
 
+#define TR3_CURSE_MASK \
+	(TR3_LIGHT_CURSE | TR3_HEAVY_CURSE | TR3_PERMA_CURSE)
+
 /*
  * Hack -- special "xtra" object flag info (type)
  */
@@ -1902,7 +1905,7 @@ enum
  * Cursed items.
  */
 #define cursed_p(T) \
-	((T)->flags3 & (TR3_LIGHT_CURSE))
+	((T)->flags3 & (TR3_CURSE_MASK))
 
 
 /*

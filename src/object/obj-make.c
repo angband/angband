@@ -283,7 +283,7 @@ static int make_ego_item(object_type *o_ptr, int level, bool force_uncursed)
 		e_ptr = &e_info[e_idx];
 
 		/* Avoid cursed items if specified */
-		if (force_uncursed && (e_ptr->flags3 & TR3_LIGHT_CURSE)) continue;
+		if (force_uncursed && cursed_p(e_ptr)) continue;
 
 		/* Test if this is a legal ego-item type for this object */
 		for (j = 0; j < EGO_TVALS_MAX; j++)
@@ -329,7 +329,7 @@ static int make_ego_item(object_type *o_ptr, int level, bool force_uncursed)
 	e_idx = (byte)table[i].index;
 	o_ptr->name2 = e_idx;
 
-	return ((e_info[e_idx].flags3 & TR3_LIGHT_CURSE) ? -2 : 2);
+	return (e_info[e_idx].flags3 & TR3_CURSE_MASK ? -2 : 2);
 }
 
 
@@ -352,9 +352,9 @@ static void copy_artifact_data(object_type *o_ptr, artifact_type *a_ptr)
 	o_ptr->to_d = a_ptr->to_d;
 	o_ptr->weight = a_ptr->weight;
 
-	/* Hack -- extract the "cursed" flag */
-	if (a_ptr->flags3 & TR3_LIGHT_CURSE)
-		o_ptr->flags3 |= TR3_LIGHT_CURSE;
+	/* Hack -- extract the "cursed" flags */
+	if (cursed_p(a_ptr))
+		o_ptr->flags3 |= (a_ptr->flags3 & TR3_CURSE_MASK);
 
 	/* Mega-Hack -- increase the rating */
 	rating += 10;
@@ -1227,9 +1227,9 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 			}
 		}
 
-		/* Hack -- acquire "cursed" flag */
-		if (e_ptr->flags3 & (TR3_LIGHT_CURSE))
-		    o_ptr->flags3 |= TR3_LIGHT_CURSE;
+		/* Hack -- acquire "cursed" flags */
+		if (cursed_p(e_ptr))
+			o_ptr->flags3 |= (e_ptr->flags3 & TR3_CURSE_MASK);
 
 		/* Hack -- apply extra penalties if needed */
 		if (cursed_p(o_ptr))
@@ -1272,8 +1272,8 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 		object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
 		/* Hack -- acquire "cursed" flag */
-		if (k_ptr->flags3 & (TR3_LIGHT_CURSE))
-		    o_ptr->flags3 |= TR3_LIGHT_CURSE;
+		if (cursed_p(k_ptr))
+			o_ptr->flags3 |= (k_ptr->flags3 & TR3_CURSE_MASK);
 	}
 }
 

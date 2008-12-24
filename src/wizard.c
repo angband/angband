@@ -1085,6 +1085,10 @@ static void wiz_create_artifact(int a_idx)
 	i_ptr->to_d = a_ptr->to_d;
 	i_ptr->weight = a_ptr->weight;
 
+	/* Hack -- extract the "cursed" flags */
+	if (cursed_p(a_ptr))
+		i_ptr->flags3 |= (a_ptr->flags3 & TR3_CURSE_MASK);
+
 	/* Mark that the artifact has been created. */
 	a_ptr->cur_num = 1;
 
