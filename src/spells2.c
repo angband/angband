@@ -2500,7 +2500,7 @@ void destroy_area(int y1, int x1, int r, bool full)
 	p_ptr->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
 
 	/* Redraw monster list */
-	p_ptr->redraw |= (PR_MONLIST);
+	p_ptr->redraw |= (PR_MONLIST | PR_ITEMLIST);
 }
 
 
@@ -2847,7 +2847,7 @@ void earthquake(int cy, int cx, int r)
 	p_ptr->redraw |= (PR_HEALTH);
 
 	/* Window stuff */
-	p_ptr->redraw |= (PR_MONLIST);
+	p_ptr->redraw |= (PR_MONLIST | PR_ITEMLIST);
 }
 
 

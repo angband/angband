@@ -1394,6 +1394,9 @@ static void process_player(void)
 				m_ptr->mflag &= ~(MFLAG_SHOW);
 			}
 		}
+		/* HACK: This will redraw the itemlist too frequently, but I'm don't
+		   know all the individual places it should go. */
+		p_ptr->redraw |= PR_ITEMLIST;
 	}
 
 	while (!p_ptr->energy_use && !p_ptr->leaving);
@@ -1503,7 +1506,7 @@ static void dungeon(void)
 	p_ptr->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP);
 
 	/* Redraw "statusy" things */
-	p_ptr->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MONLIST);
+	p_ptr->redraw |= (PR_INVEN | PR_EQUIP | PR_MONSTER | PR_MONLIST | PR_ITEMLIST);
 
 	/* Update stuff */
 	update_stuff();

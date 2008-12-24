@@ -1075,6 +1075,7 @@ enum
 #define PR_OBJECT		0x00800000L /* Display object recall */
 #define PR_MONLIST		0x01000000L /* Display monster list */
 #define PR_BUTTONS              0x02000000L     /* Display mouse buttons */
+#define PR_ITEMLIST        0x04000000L /* Display item list */
 
 /* Display Basic Info */
 #define PR_BASIC \
@@ -1102,6 +1103,7 @@ enum
 #define PW_OBJECT           0x00000200L /* Display object recall */
 #define PW_MONLIST          0x00000400L /* Display monster list */
 #define PW_STATUS           0x00000800L /* Display status */
+#define PW_ITEMLIST         0x00001000L /* Display item list */
 /* xxx */
 #define PW_BORG_1           0x00004000L /* Display borg messages */
 #define PW_BORG_2           0x00008000L /* Display borg status */
@@ -2100,3 +2102,5 @@ enum
 #define SCAN_INSTANT ((u32b) -1)
 #define SCAN_OFF 0
 #define SCAN_MACRO 45
+
+#define MAX_ITEMLIST 256

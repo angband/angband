@@ -1118,6 +1118,21 @@ void toggle_inven_equip(void)
 	flip_inven = !flip_inven;
 }
 
+static void update_itemlist_subwindow(game_event_type type, game_event_data *data, void *user)
+{
+	term *old = Term;
+	term *inv_term = user;
+
+	/* Activate */
+	Term_activate(inv_term);
+
+	display_itemlist();
+	Term_fresh();
+	
+	/* Restore */
+	Term_activate(old);
+}
+
 static void update_monlist_subwindow(game_event_type type, game_event_data *data, void *user)
 {
 	term *old = Term;
@@ -1457,7 +1472,15 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 					       angband_term[win_idx]);
 			break;
 		}
+
+		case PW_ITEMLIST:
+		{
+			register_or_deregister(EVENT_ITEMLIST,
+						   update_itemlist_subwindow,
+						   angband_term[win_idx]);
+			break;
 	}
+}
 }
 
 

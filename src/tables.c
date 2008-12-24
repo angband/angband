@@ -1376,7 +1376,7 @@ const char *window_flag_desc[32] =
 	"Display object recall",
 	"Display monster list",
 	"Display status",
-	NULL,
+	"Display item list",
 	NULL,
 	"Display borg messages",
 	"Display borg status",

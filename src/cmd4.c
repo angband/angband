@@ -1932,7 +1932,7 @@ void do_cmd_redraw(void)
 	/* Redraw everything */
 	p_ptr->redraw |= (PR_BASIC | PR_EXTRA | PR_MAP | PR_INVEN | PR_EQUIP |
 	                  PR_MESSAGE | PR_MONSTER | PR_OBJECT |
-	                  PR_MONLIST);
+					  PR_MONLIST | PR_ITEMLIST);
 
 	/* Clear screen */
 	Term_clear();
