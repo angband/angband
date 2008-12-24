@@ -68,7 +68,9 @@ void cnv_stat(int val, char *out_val, size_t out_len)
 	{
 		int bonus = (val - 18);
 
-		if (bonus >= 100)
+		if (bonus >= 220)
+			strnfmt(out_val, out_len, "18/***");
+		else if (bonus >= 100)
 			strnfmt(out_val, out_len, "18/%03d", bonus);
 		else
 			strnfmt(out_val, out_len, " 18/%02d", bonus);
