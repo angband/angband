@@ -1588,7 +1588,7 @@ E:TELE_LEVEL
 N:263:Magic Mapping
 G:?:w
 I:70:4:0
-W:5:0:5:40
+W:5:0:5:65
 A:100:5 to 100
 M:70:1d3
 F:EASY_KNOW
@@ -1615,7 +1615,7 @@ E:DETECT_TRAP
 N:266:Door/Stair Location
 G:?:w
 I:70:7:0
-W:5:0:5:60
+W:5:0:5:50
 A:100:5 to 100
 M:70:1d3
 F:EASY_KNOW
