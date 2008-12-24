@@ -65,8 +65,9 @@ s16b spell_chance(int spell)
 		chance += 25;
 	}
 
-	/* Minimum failure rate */
+	/* Minimal and maximal failure rate */
 	if (chance < minfail) chance = minfail;
+	if (chance > 50) chance = 50;
 
 	/* Stunning makes spells harder (after minfail) */
 	if (p_ptr->timed[TMD_STUN] > 50) chance += 25;
