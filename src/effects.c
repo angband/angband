@@ -293,7 +293,10 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_CURE_FULL:
 		{
-			if (hp_player(300)) *ident = TRUE;
+			int amt = (p_ptr->max_hp * 100) / 35;
+			if (amt < 300) amt = 300;
+
+			if (hp_player(amt)) *ident = TRUE;
 			if (clear_timed(TMD_BLIND)) *ident = TRUE;
 			if (clear_timed(TMD_CONFUSED)) *ident = TRUE;
 			if (clear_timed(TMD_POISONED)) *ident = TRUE;
