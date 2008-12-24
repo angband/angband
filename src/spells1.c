@@ -1806,14 +1806,14 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ)
 		case GF_DARK_WEAK:
 		case GF_DARK:
 		{
-			/* Turn off the light */
-			cave_info[y][x] &= ~(CAVE_GLOW);
-
-			/* Hack -- Forget "boring" grids */
-			if (cave_feat[y][x] <= FEAT_INVIS)
+			if (p_ptr->depth != 0 && !is_daytime())
 			{
-				/* Forget */
-				cave_info[y][x] &= ~(CAVE_MARK);
+				/* Turn off the light */
+				cave_info[y][x] &= ~(CAVE_GLOW);
+
+				/* Hack -- Forget "boring" grids */
+				if (cave_feat[y][x] <= FEAT_INVIS)
+					cave_info[y][x] &= ~(CAVE_MARK);
 			}
 
 			/* Grid is in line of sight */

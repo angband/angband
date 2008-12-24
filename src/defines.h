@@ -2063,6 +2063,12 @@ enum
 	((cave_info[Y][X] & (CAVE_SEEN)) != 0)
 
 
+/*
+ * Say whether it's daytime or not
+ */
+#define is_daytime() \
+	(((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2)) ? FALSE : TRUE)
+
 
 
 
