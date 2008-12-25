@@ -1871,7 +1871,10 @@ static void do_cmd_knowledge_features(void *obj, const char *name)
 
 	for (i = 0; i < z_info->f_max; i++)
 	{
-		if (f_info[i].name == 0) continue;
+		/* Ignore non-features and mimics */
+		if (f_info[i].name == 0 || f_info[i].mimic != i)
+			continue;
+
 		features[f_count++] = i; /* Currently no filter for features */
 	}
 
