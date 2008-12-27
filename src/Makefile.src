@@ -90,6 +90,7 @@ ANGFILES = \
 	randname.o \
 	pathfind.o \
 	player/calcs.o \
+	player/timed.o \
 	player/util.o \
 	score.o \
 	signals.o \
