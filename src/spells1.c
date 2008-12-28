@@ -3454,7 +3454,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			take_hit(dam, killer);
 			if (!(p_ptr->state.resist_pois || p_ptr->timed[TMD_OPP_POIS]))
 			{
-				(void)inc_timed(TMD_POISONED, randint0(dam) + 10);
+				(void)inc_timed(TMD_POISONED, randint0(dam) + 10, TRUE);
 			}
 			break;
 		}
@@ -3492,7 +3492,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (!p_ptr->state.resist_sound)
 			{
 				int k = (randint1((dam > 40) ? 35 : (dam * 3 / 4 + 5)));
-				(void)inc_timed(TMD_STUN, k);
+				(void)inc_timed(TMD_STUN, k, TRUE);
 			}
 			break;
 		}
@@ -3537,11 +3537,11 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (blind) msg_print("You are hit by something!");
 			if (!p_ptr->state.resist_sound)
 			{
-				(void)inc_timed(TMD_STUN, randint1(40));
+				(void)inc_timed(TMD_STUN, randint1(40), TRUE);
 			}
 			if (!p_ptr->state.resist_confu)
 			{
-				(void)inc_timed(TMD_CONFUSED, randint1(5) + 5);
+				(void)inc_timed(TMD_CONFUSED, randint1(5) + 5, TRUE);
 			}
 			take_hit(dam, killer);
 			break;
@@ -3557,11 +3557,11 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			}
 			if (!p_ptr->state.resist_confu && !p_ptr->state.resist_chaos)
 			{
-				(void)inc_timed(TMD_CONFUSED, randint0(20) + 10);
+				(void)inc_timed(TMD_CONFUSED, randint0(20) + 10, TRUE);
 			}
 			if (!p_ptr->state.resist_chaos)
 			{
-				(void)inc_timed(TMD_IMAGE, randint1(10));
+				(void)inc_timed(TMD_IMAGE, randint1(10), TRUE);
 			}
 			if (!p_ptr->state.resist_nethr && !p_ptr->state.resist_chaos)
 			{
@@ -3599,7 +3599,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			}
 			else
 			{
-				(void)inc_timed(TMD_CUT, dam);
+				(void)inc_timed(TMD_CUT, dam, TRUE);
 			}
 			take_hit(dam, killer);
 			break;
@@ -3616,7 +3616,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			else
 			{
 				int k = (randint1((dam > 90) ? 35 : (dam / 3 + 5)));
-				(void)inc_timed(TMD_STUN, k);
+				(void)inc_timed(TMD_STUN, k, TRUE);
 			}
 			take_hit(dam, killer);
 			break;
@@ -3632,7 +3632,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			}
 			if (!p_ptr->state.resist_confu)
 			{
-				(void)inc_timed(TMD_CONFUSED, randint1(20) + 10);
+				(void)inc_timed(TMD_CONFUSED, randint1(20) + 10, TRUE);
 			}
 			take_hit(dam, killer);
 			break;
@@ -3676,7 +3676,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (blind) msg_print("You are hit by something!");
 			if (!p_ptr->state.resist_sound)
 			{
-				(void)inc_timed(TMD_STUN, randint1(20));
+				(void)inc_timed(TMD_STUN, randint1(20), TRUE);
 			}
 			take_hit(dam, killer);
 			break;
@@ -3686,7 +3686,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 		case GF_INERTIA:
 		{
 			if (blind) msg_print("You are hit by something strange!");
-			(void)inc_timed(TMD_SLOW, randint0(4) + 4);
+			(void)inc_timed(TMD_SLOW, randint0(4) + 4, TRUE);
 			take_hit(dam, killer);
 			break;
 		}
@@ -3701,7 +3701,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			}
 			else if (!blind && !p_ptr->state.resist_blind)
 			{
-				(void)inc_timed(TMD_BLIND, randint1(5) + 2);
+				(void)inc_timed(TMD_BLIND, randint1(5) + 2, TRUE);
 			}
 			take_hit(dam, killer);
 			break;
@@ -3717,7 +3717,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			}
 			else if (!blind && !p_ptr->state.resist_blind)
 			{
-				(void)inc_timed(TMD_BLIND, randint1(5) + 2);
+				(void)inc_timed(TMD_BLIND, randint1(5) + 2, TRUE);
 			}
 			take_hit(dam, killer);
 			break;
@@ -3784,11 +3784,11 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (randint1(127) > p_ptr->lev)
 				teleport_player(5);
 
-			(void)inc_timed(TMD_SLOW, randint0(4) + 4);
+			(void)inc_timed(TMD_SLOW, randint0(4) + 4, TRUE);
 			if (!p_ptr->state.resist_sound)
 			{
 				int k = (randint1((dam > 90) ? 35 : (dam / 3 + 5)));
-				(void)inc_timed(TMD_STUN, k);
+				(void)inc_timed(TMD_STUN, k, TRUE);
 			}
 			take_hit(dam, killer);
 			break;
@@ -3817,11 +3817,11 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			cold_dam(dam, killer);
 			if (!p_ptr->state.resist_shard)
 			{
-				(void)inc_timed(TMD_CUT, damroll(5, 8));
+				(void)inc_timed(TMD_CUT, damroll(5, 8), TRUE);
 			}
 			if (!p_ptr->state.resist_sound)
 			{
-				(void)inc_timed(TMD_STUN, randint1(15));
+				(void)inc_timed(TMD_STUN, randint1(15), TRUE);
 			}
 			break;
 		}

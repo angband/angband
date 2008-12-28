@@ -653,11 +653,6 @@ extern void get_spell_info(int tval, int index, char *buf, size_t len);
 extern bool cast_spell(int tval, int index);
 
 /* xtra2.c */
-bool set_timed(int idx, int v);
-bool inc_timed(int idx, int v);
-bool dec_timed(int idx, int v);
-bool clear_timed(int idx);
-bool set_food(int v);
 void check_experience(void);
 void gain_exp(s32b amount);
 void lose_exp(s32b amount);

@@ -2488,7 +2488,7 @@ void destroy_area(int y1, int x1, int r, bool full)
 		if (!p_ptr->state.resist_blind && !p_ptr->state.resist_lite)
 		{
 			/* Become blind */
-			(void)inc_timed(TMD_BLIND, 10 + randint1(10));
+			(void)inc_timed(TMD_BLIND, 10 + randint1(10), TRUE);
 		}
 	}
 
@@ -2656,14 +2656,14 @@ void earthquake(int cy, int cx, int r)
 				{
 					msg_print("You are bashed by rubble!");
 					damage = damroll(10, 4);
-					(void)inc_timed(TMD_STUN, randint1(50));
+					(void)inc_timed(TMD_STUN, randint1(50), TRUE);
 					break;
 				}
 				case 3:
 				{
 					msg_print("You are crushed between the floor and ceiling!");
 					damage = damroll(10, 4);
-					(void)inc_timed(TMD_STUN, randint1(50));
+					(void)inc_timed(TMD_STUN, randint1(50), TRUE);
 					break;
 				}
 			}

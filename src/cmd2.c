@@ -296,7 +296,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 		msg_print("A puff of green gas surrounds you!");
 		if (!(p_ptr->state.resist_pois || p_ptr->timed[TMD_OPP_POIS]))
 		{
-			(void)inc_timed(TMD_POISONED, 10 + randint1(20));
+			(void)inc_timed(TMD_POISONED, 10 + randint1(20), TRUE);
 		}
 	}
 
@@ -306,7 +306,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 		msg_print("A puff of yellow gas surrounds you!");
 		if (!p_ptr->state.free_act)
 		{
-			(void)inc_timed(TMD_PARALYZED, 10 + randint1(20));
+			(void)inc_timed(TMD_PARALYZED, 10 + randint1(20), TRUE);
 		}
 	}
 
@@ -1647,7 +1647,7 @@ static bool do_cmd_bash_aux(int y, int x)
 		msg_print("You are off-balance.");
 
 		/* Hack -- Lose balance ala paralysis */
-		(void)inc_timed(TMD_PARALYZED, 2 + randint0(2));
+		(void)inc_timed(TMD_PARALYZED, 2 + randint0(2), TRUE);
 	}
 
 	/* Result */

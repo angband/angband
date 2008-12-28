@@ -566,7 +566,7 @@ static void decrease_timeouts(void)
 			}
 		}
 		/* Decrement the effect */
-		dec_timed(i, decr);
+		dec_timed(i, decr, FALSE);
 	}
 
 	return;
@@ -754,7 +754,7 @@ static void process_world(void)
 			disturb(1, 0);
 
 			/* Hack -- faint (bypass free action) */
-			(void)inc_timed(TMD_PARALYZED, 1 + randint0(5));
+			(void)inc_timed(TMD_PARALYZED, 1 + randint0(5), TRUE);
 		}
 	}
 
@@ -1973,14 +1973,14 @@ void play_game(void)
 				p_ptr->csp_frac = 0;
 
 				/* Hack -- Healing */
-				(void)clear_timed(TMD_BLIND);
-				(void)clear_timed(TMD_CONFUSED);
-				(void)clear_timed(TMD_POISONED);
-				(void)clear_timed(TMD_AFRAID);
-				(void)clear_timed(TMD_PARALYZED);
-				(void)clear_timed(TMD_IMAGE);
-				(void)clear_timed(TMD_STUN);
-				(void)clear_timed(TMD_CUT);
+				(void)clear_timed(TMD_BLIND, TRUE);
+				(void)clear_timed(TMD_CONFUSED, TRUE);
+				(void)clear_timed(TMD_POISONED, TRUE);
+				(void)clear_timed(TMD_AFRAID, TRUE);
+				(void)clear_timed(TMD_PARALYZED, TRUE);
+				(void)clear_timed(TMD_IMAGE, TRUE);
+				(void)clear_timed(TMD_STUN, TRUE);
+				(void)clear_timed(TMD_CUT, TRUE);
 
 				/* Hack -- Prevent starvation */
 				(void)set_food(PY_FOOD_MAX - 1);

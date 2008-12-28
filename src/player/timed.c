@@ -21,113 +21,174 @@
 
 
 /*
- * This code replace a lot of virtually identical functions and (ostensibly)
- * is a lot cleaner.  Note that the various "oppose" functions and the "stun"
- * and "cut" statuses need to be handled by special functions of their own,
- * as they are more complex than the ones handled by the generic code.  -AS-
+ * The "stun" and "cut" statuses need to be handled by special functions of
+ * their own, as they are more complex than the ones handled by the generic
+ * code.
  */
-static bool set_oppose_acid(int v);
-static bool set_oppose_elec(int v);
-static bool set_oppose_fire(int v);
-static bool set_oppose_cold(int v);
-static bool set_oppose_conf(int v);
 static bool set_stun(int v);
 static bool set_cut(int v);
 
 
 typedef struct
 {
-  const char *on_begin, *on_end;
+  const char *on_begin;
+  const char *on_end;
+  const char *on_increase;
+  const char *on_decrease;
   u32b flag_redraw, flag_update;
   int msg;
 } timed_effect;
 
 static timed_effect effects[] =
 {
-	{ "You feel yourself moving faster!", "You feel yourself slow down.", 0, PU_BONUS, MSG_SPEED },
-	{ "You feel yourself moving slower!", "You feel yourself speed up.", 0, PU_BONUS, MSG_SLOW },
-	{ "You are blind.", "You can see again.", (PR_MAP), (PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS), MSG_BLIND },
-	{ "You are paralyzed!", "You can move again.", 0, 0, MSG_PARALYZED },
-	{ "You are confused!", "You feel less confused now.", 0, 0, MSG_CONFUSED },
-	{ "You are terrified!", "You feel bolder now.", 0, 0, MSG_AFRAID },
-	{ "You feel drugged!", "You can see clearly again.", (PR_MAP), 0, MSG_DRUGGED },
-	{ "You are poisoned!", "You are no longer poisoned.", 0, 0, MSG_POISONED },
-	{ "", "", 0, 0, 0 },  /* TMD_CUT -- handled seperately */
-	{ "", "", 0, 0, 0 },  /* TMD_STUN -- handled seperately */
-	{ "You feel safe from evil!", "You no longer feel safe from evil.", 0, 0, MSG_PROT_EVIL },
-	{ "You feel invulnerable!", "You feel vulnerable once more.", 0, PU_BONUS, MSG_INVULN },
-	{ "You feel like a hero!", "The heroism wears off.", 0, PU_BONUS, MSG_HERO },
-	{ "You feel like a killing machine!", "You feel less Berserk.", 0, PU_BONUS, MSG_BERSERK },
-	{ "A mystic shield forms around your body!", "Your mystic shield crumbles away.", 0, PU_BONUS, MSG_SHIELD },
-	{ "You feel righteous!", "The prayer has expired.", 0, PU_BONUS, MSG_BLESSED },
-	{ "Your eyes feel very sensitive!", "Your eyes feel less sensitive.", 0, (PU_BONUS | PU_MONSTERS), MSG_SEE_INVIS },
-	{ "Your eyes begin to tingle!", "Your eyes stop tingling.", 0, (PU_BONUS | PU_MONSTERS), MSG_INFRARED },
-	{ "", "", 0, 0, 0 },  /* acid -- handled seperately */
-	{ "", "", 0, 0, 0 },  /* elec -- handled seperately */
-	{ "", "", 0, 0, 0 },  /* fire -- handled seperately */
-	{ "", "", 0, 0, 0 },  /* cold -- handled seperately */
-	{ "", "", 0, 0, 0 },  /* conf -- handled seperately */
-	{ "You feel resistant to poison!", "You feel less resistant to poison.", 0, 0, MSG_RES_POIS },
-	{ "You feel your memories fade.", "Your memories come flooding back.", 0, 0, MSG_GENERIC },
-	{ "Your mind expands.", "Your horizons are once more limited.", 0, PU_BONUS, MSG_GENERIC },
-	{ "Your skin turns to stone.", "A fleshy shade returns to your skin.", 0, PU_BONUS, MSG_GENERIC },
-	{ "You feel the need to run away, and fast!", "The urge to run dissipates.", 0, PU_BONUS, MSG_AFRAID },
-	{ "You start sprinting.", "You suddenly stop sprinting.", 0, PU_BONUS, MSG_SPEED },
+	{ "You feel yourself moving faster!", "You feel yourself slow down.",
+			NULL, NULL,
+			0, PU_BONUS, MSG_SPEED },
+	{ "You feel yourself moving slower!", "You feel yourself speed up.",
+			NULL, NULL,
+			0, PU_BONUS, MSG_SLOW },
+	{ "You are blind.", "You can see again.",
+			NULL, NULL,
+			PR_MAP, PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS, MSG_BLIND },
+	{ "You are paralysed!", "You can move again.",
+			"You are more paralysed!", "You are less paralysed.",
+			0, 0, MSG_PARALYZED },
+	{ "You are confused!", "You are no longer confused.",
+			"You are more confused!", "You feel a little less confused.",
+			0, 0, MSG_CONFUSED },
+	{ "You are terrified!", "You feel bolder now.",
+			"You are more scared!", "You feel a little less scared.",
+			0, 0, MSG_AFRAID },
+	{ "You feel drugged!", "You can see clearly again.",
+			"You feel more drugged!", "You feel less drugged.",
+			PR_MAP, 0, MSG_DRUGGED },
+	{ "You are poisoned!", "You are no longer poisoned.",
+			"You are more poisoned!", "You are less poisoned.",
+			0, 0, MSG_POISONED },
+	{ NULL, NULL, NULL, NULL, 0, 0, 0 },  /* TMD_CUT -- handled seperately */
+	{ NULL, NULL, NULL, NULL, 0, 0, 0 },  /* TMD_STUN -- handled seperately */
+	{ "You feel safe from evil!", "You no longer feel safe from evil.",
+			"You feel even safer from evil!", "You feel less safe from evil.",
+			0, 0, MSG_PROT_EVIL },
+	{ "You feel invulnerable!", "You feel vulnerable once more.",
+			NULL, NULL,
+			0, PU_BONUS, MSG_INVULN },
+	{ "You feel like a hero!", "You no longer feel heroic.",
+			"You feel more like a hero!", "You feel less heroic.",
+			0, PU_BONUS, MSG_HERO },
+	{ "You feel like a killing machine!", "You no longer feel berserk.",
+			"You feel even more berserk!", "You feel less berserk.",
+			0, PU_BONUS, MSG_BERSERK },
+	{ "A mystic shield forms around your body!", "Your mystic shield crumbles away.",
+			"The mystic shield strengthens.", "The mystic shield weakens.",
+			0, PU_BONUS, MSG_SHIELD },
+	{ "You feel righteous!", "The prayer has expired.",
+			"You feel more righteous!", "You feel less righteous.",
+			0, PU_BONUS, MSG_BLESSED },
+	{ "Your eyes feel very sensitive!", "Your no longer feel so sensitive.",
+			"Your eyes feel more sensitive!", "Your eyes feel less sensitive.",
+			0, (PU_BONUS | PU_MONSTERS), MSG_SEE_INVIS },
+	{ "Your eyes begin to tingle!", "Your eyes stop tingling.",
+			"Your eyes' tingling intensifies.", "Your eyes tingle less.",
+			0, (PU_BONUS | PU_MONSTERS), MSG_INFRARED },
+	{ "You feel resistant to acid!", "You are no longer resistant to acid.",
+			"You feel more resistant to acid!", "You feel less resistant to acid.",
+			PR_STATUS, 0, MSG_RES_ACID },
+	{ "You feel resistant to electricity!", "You are no longer resistant to electricity.",
+			"You feel more resistant to electricity!", "You feel less resistant to electricity.",
+			PR_STATUS, 0, MSG_RES_ELEC },
+	{ "You feel resistant to fire!", "You are no longer resistant to fire.",
+			"You feel more resistant to fire!", "You feel less resistant to fire.",
+			PR_STATUS, 0, MSG_RES_FIRE },
+	{ "You feel resistant to cold!", "You are no longer resistant to cold.",
+			"You feel more resistant to cold!", "You feel less resistant to cold.",
+			PR_STATUS, 0, MSG_RES_COLD },
+	{ "You feel resistant to confusion!", "You are no longer resistant to confusion.",
+			"You feel more resistant to confusion!", "You feel less resistant to confusion.",
+			PR_STATUS, PU_BONUS, 0 },
+	{ "You feel resistant to poison!", "You are no longer resistant to poison.",
+			"You feel more resistant to poison!", "You feel less resistant to poison.",
+			0, 0, MSG_RES_POIS },
+	{ "You feel your memories fade.", "Your memories come flooding back.",
+			NULL, NULL,
+			0, 0, MSG_GENERIC },
+	{ "Your mind expands.", "Your horizons are once more limited.",
+			"Your mind expands further.", NULL,
+			0, PU_BONUS, MSG_GENERIC },
+	{ "Your skin turns to stone.", "A fleshy shade returns to your skin.",
+			NULL, NULL,
+			0, PU_BONUS, MSG_GENERIC },
+	{ "You feel the need to run away, and fast!", "The urge to run dissipates.",
+			NULL, NULL,
+			0, PU_BONUS, MSG_AFRAID },
+	{ "You start sprinting.", "You suddenly stop sprinting.",
+			NULL, NULL,
+			0, PU_BONUS, MSG_SPEED },
 };
 
 /*
  * Set a timed event (except timed resists, cutting and stunning).
  */
-bool set_timed(int idx, int v)
+bool set_timed(int idx, int v, bool notify)
 {
-	bool notice = FALSE;
 	timed_effect *effect;
 
 	/* Hack -- Force good values */
 	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
 	if ((idx < 0) || (idx > TMD_MAX)) return FALSE;
 
+	/* No change */
+	if (p_ptr->timed[idx] == v) return FALSE;
+
 	/* Hack -- call other functions */
 	if (idx == TMD_STUN) return set_stun(v);
 	else if (idx == TMD_CUT) return set_cut(v);
-	else if (idx == TMD_OPP_ACID) return set_oppose_acid(v);
-	else if (idx == TMD_OPP_ELEC) return set_oppose_elec(v);
-	else if (idx == TMD_OPP_FIRE) return set_oppose_fire(v);
-	else if (idx == TMD_OPP_COLD) return set_oppose_cold(v);
-	else if (idx == TMD_OPP_CONF) return set_oppose_conf(v);
+
+	/* Don't mention some effects. */
+	if (idx == TMD_OPP_ACID && p_ptr->state.immune_acid) notify = FALSE;
+	else if (idx == TMD_OPP_ELEC && p_ptr->state.immune_elec) notify = FALSE;
+	else if (idx == TMD_OPP_FIRE && p_ptr->state.immune_fire) notify = FALSE;
+	else if (idx == TMD_OPP_COLD && p_ptr->state.immune_cold) notify = FALSE;
+	else if (idx == TMD_OPP_CONF && p_ptr->state.resist_confu) notify = FALSE;
 
 	/* Find the effect */
 	effect = &effects[idx];
 
-	/* Open */
-	if (v)
+	/* Turning off, always mention */
+	if (v == 0)
 	{
-		if (!p_ptr->timed[idx])
-		{
-			message(effect->msg, 0, effect->on_begin);
-			notice = TRUE;
-		}
+		message(MSG_RECOVER, 0, effect->on_end);
+		notify = TRUE;
 	}
 
-	/* Shut */
-	else
+	/* Turning on, always mention */
+	else if (p_ptr->timed[idx] == 0)
 	{
-		if (p_ptr->timed[idx])
-		{
-			message(MSG_RECOVER, 0, effect->on_end);
-			notice = TRUE;
-
-			if (idx == TMD_SPRINT)
-				inc_timed(TMD_SLOW, 100);
-		}
+		message(effect->msg, 0, effect->on_begin);
+		notify = TRUE;
 	}
 
+	else if (notify)
+	{
+		/* Decrementing */
+		if (p_ptr->timed[idx] > v && effect->on_decrease)
+			message(effect->msg, 0, effect->on_decrease);
+
+		/* Incrementing */
+		else if (v > p_ptr->timed[idx] && effect->on_decrease)
+			message(effect->msg, 0, effect->on_increase);
+	}
 
 	/* Use the value */
 	p_ptr->timed[idx] = v;
 
+	/* Sort out the sprint effect */
+	if (idx == TMD_SPRINT && v == 0)
+		inc_timed(TMD_SLOW, 100, TRUE);
+
+
 	/* Nothing to notice */
-	if (!notice) return FALSE;
+	if (!notify) return FALSE;
 
 	/* Disturb */
 	if (disturb_state) disturb(0, 0);
@@ -143,7 +204,10 @@ bool set_timed(int idx, int v)
 	return TRUE;
 }
 
-bool inc_timed(int idx, int v)
+/**
+ * Increase the timed effect `idx` by `v`.  Mention this if `notify` is TRUE.
+ */
+bool inc_timed(int idx, int v, bool notify)
 {
 	/* Check we have a valid effect */
 	if ((idx < 0) || (idx > TMD_MAX)) return FALSE;
@@ -151,10 +215,13 @@ bool inc_timed(int idx, int v)
 	/* Set v */
 	v = v + p_ptr->timed[idx];
 
-	return set_timed(idx, v);
+	return set_timed(idx, v, notify);
 }
 
-bool dec_timed(int idx, int v)
+/**
+ * Decrease the timed effect `idx` by `v`.  Mention this if `notify` is TRUE.
+ */
+bool dec_timed(int idx, int v, bool notify)
 {
 	/* Check we have a valid effect */
 	if ((idx < 0) || (idx > TMD_MAX)) return FALSE;
@@ -162,263 +229,15 @@ bool dec_timed(int idx, int v)
 	/* Set v */
 	v = p_ptr->timed[idx] - v;
 
-	return set_timed(idx, v);
+	return set_timed(idx, v, notify);
 }
 
-bool clear_timed(int idx)
-{
-	return set_timed(idx, 0);
-}
-
-
-/*
- * Set "p_ptr->timed[TMD_OPP_ACID]", notice observable changes
+/**
+ * Clear the timed effect `idx`.  Mention this if `notify` is TRUE.
  */
-static bool set_oppose_acid(int v)
+bool clear_timed(int idx, bool notify)
 {
-	bool notice = FALSE;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Open */
-	if (v)
-	{
-		if (!p_ptr->timed[TMD_OPP_ACID] && !p_ptr->state.immune_acid)
-		{
-			message(MSG_RES_ACID, 0, "You feel resistant to acid!");
-			notice = TRUE;
-		}
-	}
-
-	/* Shut */
-	else
-	{
-		if (p_ptr->timed[TMD_OPP_ACID] && !p_ptr->state.immune_acid)
-		{
-			message(MSG_RECOVER, 0, "You feel less resistant to acid.");
-			notice = TRUE;
-		}
-	}
-
-	/* Use the value */
-	p_ptr->timed[TMD_OPP_ACID] = v;
-
-	/* Nothing to notice */
-	if (!notice) return (FALSE);
-
-	/* Disturb */
-	if (disturb_state) disturb(0, 0);
-
-	/* Redraw */
-	p_ptr->redraw |= PR_STATUS;
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Result */
-	return (TRUE);
-}
-
-
-/*
- * Set "p_ptr->timed[TMD_OPP_ELEC]", notice observable changes
- */
-static bool set_oppose_elec(int v)
-{
-	bool notice = FALSE;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Open */
-	if (v)
-	{
-		if (!p_ptr->timed[TMD_OPP_ELEC] && !p_ptr->state.immune_elec)
-		{
-			message(MSG_RES_ELEC, 0, "You feel resistant to electricity!");
-			notice = TRUE;
-		}
-	}
-
-	/* Shut */
-	else
-	{
-		if (p_ptr->timed[TMD_OPP_ELEC] && !p_ptr->state.immune_elec)
-		{
-			message(MSG_RECOVER, 0, "You feel less resistant to electricity.");
-			notice = TRUE;
-		}
-	}
-
-	/* Use the value */
-	p_ptr->timed[TMD_OPP_ELEC] = v;
-
-	/* Nothing to notice */
-	if (!notice) return (FALSE);
-
-	/* Disturb */
-	if (disturb_state) disturb(0, 0);
-
-	/* Redraw */
-	p_ptr->redraw |= PR_STATUS;
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Result */
-	return (TRUE);
-}
-
-
-/*
- * Set "p_ptr->timed[TMD_OPP_FIRE]", notice observable changes
- */
-static bool set_oppose_fire(int v)
-{
-	bool notice = FALSE;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Open */
-	if (v)
-	{
-		if (!p_ptr->timed[TMD_OPP_FIRE] && !p_ptr->state.immune_fire)
-		{
-			message(MSG_RES_FIRE, 0, "You feel resistant to fire!");
-			notice = TRUE;
-		}
-	}
-
-	/* Shut */
-	else
-	{
-		if (p_ptr->timed[TMD_OPP_FIRE] && !p_ptr->state.immune_fire)
-		{
-			message(MSG_RECOVER, 0, "You feel less resistant to fire.");
-			notice = TRUE;
-		}
-	}
-
-	/* Use the value */
-	p_ptr->timed[TMD_OPP_FIRE] = v;
-
-	/* Nothing to notice */
-	if (!notice) return (FALSE);
-
-	/* Disturb */
-	if (disturb_state) disturb(0, 0);
-
-	/* Redraw */
-	p_ptr->redraw |= PR_STATUS;
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Result */
-	return (TRUE);
-}
-
-
-/*
- * Set "p_ptr->timed[TMD_OPP_COLD]", notice observable changes
- */
-static bool set_oppose_cold(int v)
-{
-	bool notice = FALSE;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Open */
-	if (v)
-	{
-		if (!p_ptr->timed[TMD_OPP_COLD] && !p_ptr->state.immune_cold)
-		{
-			message(MSG_RES_COLD, 0, "You feel resistant to cold!");
-			notice = TRUE;
-		}
-	}
-
-	/* Shut */
-	else
-	{
-		if (p_ptr->timed[TMD_OPP_COLD] && !p_ptr->state.immune_cold)
-		{
-			message(MSG_RECOVER, 0, "You feel less resistant to cold.");
-			notice = TRUE;
-		}
-	}
-
-	/* Use the value */
-	p_ptr->timed[TMD_OPP_COLD] = v;
-
-	/* Nothing to notice */
-	if (!notice) return (FALSE);
-
-	/* Disturb */
-	if (disturb_state) disturb(0, 0);
-
-	/* Redraw */
-	p_ptr->redraw |= PR_STATUS;
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Result */
-	return (TRUE);
-}
-
-
-/*
- * Set "p_ptr->timed[TMD_OPP_CONF]", notice observable changes
- */
-static bool set_oppose_conf(int v)
-{
-	bool notice = FALSE;
-
-	/* Hack -- Force good values */
-	v = (v > 10000) ? 10000 : (v < 0) ? 0 : v;
-
-	/* Open */
-	if (v)
-	{
-		if (!p_ptr->timed[TMD_OPP_CONF] && !p_ptr->state.resist_confu)
-		{
-			message(MSG_RES_ELEC, 0, "You feel remarkably clear-headed!");
-			notice = TRUE;
-		}
-	}
-
-	/* Shut */
-	else
-	{
-		if (p_ptr->timed[TMD_OPP_CONF] && !p_ptr->state.resist_confu)
-		{
-			message(MSG_RECOVER, 0, "You feel less clear-headed.");
-			notice = TRUE;
-		}
-	}
-
-	/* Use the value */
-	p_ptr->timed[TMD_OPP_CONF] = v;
-
-	/* Nothing to notice */
-	if (!notice) return (FALSE);
-
-	/* Disturb */
-	if (disturb_state) disturb(0, 0);
-
-	/* Redraw */
-	p_ptr->update |= PU_BONUS;
-	p_ptr->redraw |= PR_STATUS;
-
-	/* Handle stuff */
-	handle_stuff();
-
-	/* Result */
-	return (TRUE);
+	return set_timed(idx, 0, notify);
 }
 
 
