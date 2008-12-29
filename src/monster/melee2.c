@@ -1332,7 +1332,7 @@ bool make_attack_spell(int m_idx)
 				msg_print("Your mind is blasted by psionic energy.");
 				if (!p_ptr->state.resist_confu)
 				{
-					(void)inc_timed(TMD_CONFUSED, randint0(4) + 4);
+					(void)inc_timed(TMD_CONFUSED, randint0(4) + 4, TRUE);
 				}
 				take_hit(damroll(8, 8), ddesc);
 			}
@@ -1361,17 +1361,17 @@ bool make_attack_spell(int m_idx)
 				take_hit(damroll(12, 15), ddesc);
 				if (!p_ptr->state.resist_blind)
 				{
-					(void)inc_timed(TMD_BLIND, 8 + randint0(8));
+					(void)inc_timed(TMD_BLIND, 8 + randint0(8), TRUE);
 				}
 				if (!p_ptr->state.resist_confu)
 				{
-					(void)inc_timed(TMD_CONFUSED, randint0(4) + 4);
+					(void)inc_timed(TMD_CONFUSED, randint0(4) + 4, TRUE);
 				}
 				if (!p_ptr->state.free_act)
 				{
-					(void)inc_timed(TMD_PARALYZED, randint0(4) + 4);
+					(void)inc_timed(TMD_PARALYZED, randint0(4) + 4, TRUE);
 				}
-				(void)inc_timed(TMD_SLOW, randint0(4) + 4);
+				(void)inc_timed(TMD_SLOW, randint0(4) + 4, TRUE);
 			}
 			break;
 		}
@@ -1440,7 +1440,7 @@ bool make_attack_spell(int m_idx)
 			else
 			{
 				take_hit(damroll(15, 15), ddesc);
-				(void)inc_timed(TMD_CUT, damroll(10, 10));
+				(void)inc_timed(TMD_CUT, damroll(10, 10), TRUE);
 			}
 			break;
 		}
@@ -1574,7 +1574,7 @@ bool make_attack_spell(int m_idx)
 			}
 			else
 			{
-				(void)inc_timed(TMD_AFRAID, randint0(4) + 4);
+				(void)inc_timed(TMD_AFRAID, randint0(4) + 4, TRUE);
 			}
 			update_smart_learn(m_idx, DRS_RES_FEAR);
 			break;
@@ -1596,7 +1596,7 @@ bool make_attack_spell(int m_idx)
 			}
 			else
 			{
-				(void)set_timed(TMD_BLIND, 12 + randint0(4));
+				(void)set_timed(TMD_BLIND, 12 + randint0(4), TRUE);
 			}
 			update_smart_learn(m_idx, DRS_RES_BLIND);
 			break;
@@ -1618,7 +1618,7 @@ bool make_attack_spell(int m_idx)
 			}
 			else
 			{
-				(void)inc_timed(TMD_CONFUSED, randint0(4) + 4);
+				(void)inc_timed(TMD_CONFUSED, randint0(4) + 4, TRUE);
 			}
 			update_smart_learn(m_idx, DRS_RES_CONFU);
 			break;
@@ -1639,7 +1639,7 @@ bool make_attack_spell(int m_idx)
 			}
 			else
 			{
-				(void)inc_timed(TMD_SLOW, randint0(4) + 4);
+				(void)inc_timed(TMD_SLOW, randint0(4) + 4, TRUE);
 			}
 			update_smart_learn(m_idx, DRS_FREE);
 			break;
@@ -1661,7 +1661,7 @@ bool make_attack_spell(int m_idx)
 			}
 			else
 			{
-				(void)inc_timed(TMD_PARALYZED, randint0(4) + 4);
+				(void)inc_timed(TMD_PARALYZED, randint0(4) + 4, TRUE);
 			}
 			update_smart_learn(m_idx, DRS_FREE);
 			break;
@@ -1872,7 +1872,7 @@ bool make_attack_spell(int m_idx)
 			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 				msg_print("You resist the effects!");
 			else
-				inc_timed(TMD_AMNESIA, 3);
+				inc_timed(TMD_AMNESIA, 3, TRUE);
 
 			break;
 		}

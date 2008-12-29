@@ -487,7 +487,7 @@ bool make_attack_normal(int m_idx)
 					/* Take "poison" effect */
 					if (!(p_ptr->state.resist_pois || p_ptr->timed[TMD_OPP_POIS]))
 					{
-						if (inc_timed(TMD_POISONED, randint1(rlev) + 5))
+						if (inc_timed(TMD_POISONED, randint1(rlev) + 5, TRUE))
 						{
 							obvious = TRUE;
 						}
@@ -869,7 +869,7 @@ bool make_attack_normal(int m_idx)
 					/* Increase "blind" */
 					if (!p_ptr->state.resist_blind)
 					{
-						if (inc_timed(TMD_BLIND, 10 + randint1(rlev)))
+						if (inc_timed(TMD_BLIND, 10 + randint1(rlev), TRUE))
 						{
 							obvious = TRUE;
 						}
@@ -889,7 +889,7 @@ bool make_attack_normal(int m_idx)
 					/* Increase "confused" */
 					if (!p_ptr->state.resist_confu)
 					{
-						if (inc_timed(TMD_CONFUSED, 3 + randint1(rlev)))
+						if (inc_timed(TMD_CONFUSED, 3 + randint1(rlev), TRUE))
 						{
 							obvious = TRUE;
 						}
@@ -919,7 +919,7 @@ bool make_attack_normal(int m_idx)
 					}
 					else
 					{
-						if (inc_timed(TMD_AFRAID, 3 + randint1(rlev)))
+						if (inc_timed(TMD_AFRAID, 3 + randint1(rlev), TRUE))
 						{
 							obvious = TRUE;
 						}
@@ -952,7 +952,7 @@ bool make_attack_normal(int m_idx)
 					}
 					else
 					{
-						if (inc_timed(TMD_PARALYZED, 3 + randint1(rlev)))
+						if (inc_timed(TMD_PARALYZED, 3 + randint1(rlev), TRUE))
 						{
 							obvious = TRUE;
 						}
@@ -1200,7 +1200,7 @@ bool make_attack_normal(int m_idx)
 					/* Increase "image" */
 					if (!p_ptr->state.resist_chaos)
 					{
-						if (inc_timed(TMD_IMAGE, 3 + randint1(rlev / 2)))
+						if (inc_timed(TMD_IMAGE, 3 + randint1(rlev / 2), TRUE))
 						{
 							obvious = TRUE;
 						}
@@ -1252,7 +1252,7 @@ bool make_attack_normal(int m_idx)
 				}
 
 				/* Apply the cut */
-				if (k) (void)inc_timed(TMD_CUT, k);
+				if (k) (void)inc_timed(TMD_CUT, k, TRUE);
 			}
 
 			/* Handle stun */
@@ -1277,7 +1277,7 @@ bool make_attack_normal(int m_idx)
 				}
 
 				/* Apply the stun */
-				if (k) (void)inc_timed(TMD_STUN, k);
+				if (k) (void)inc_timed(TMD_STUN, k, TRUE);
 			}
 		}
 
