@@ -211,7 +211,7 @@ if test "$enable_gtk" = "yes"; then
 		[with_gtk=no]
 	)
 
-	if [ "x$SETEGID" != "x"]; then
+	if test "x$SETEGID" != "x"; then
 		enable_gtk=no
 		with_gtk=no
 	fi
