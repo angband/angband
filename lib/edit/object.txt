@@ -2181,7 +2181,7 @@ N:340:Self Knowledge
 G:!:d
 I:75:29:0
 W:40:0:4:2000
-A:100:40 to 100
+A:50:40 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW
 E:SELF_KNOW
