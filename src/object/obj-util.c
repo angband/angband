@@ -1368,10 +1368,11 @@ void object_id_on_wield(object_type *o_ptr)
 	/* Only deal with some slots */
 	int slot = wield_slot(o_ptr);
 	if (slot != INVEN_WIELD && slot != INVEN_BOW &&
-		!(slot >= INVEN_BODY && slot <= INVEN_FEET)) return;
+			!(slot >= INVEN_BODY && slot <= INVEN_FEET))
+		return;
 
-	/* Only deal with un-ID'd, not-already-{excellent} items */
-	if (object_known_p(o_ptr) || o_ptr->pseudo == INSCRIP_EXCELLENT) return;
+	/* Only deal with un-ID'd items */
+	if (object_known_p(o_ptr)) return;
 
 	/* Extract the flags */
 	object_flags(o_ptr, &f1, &f2, &f3);
@@ -1383,7 +1384,16 @@ void object_id_on_wield(object_type *o_ptr)
 	if (!obvious) return;
 
 	/* Mark the item */
-	o_ptr->pseudo = INSCRIP_EXCELLENT;
+	if (artifact_p(o_ptr))
+	{
+		if (o_ptr->pseudo != INSCRIP_TERRIBLE)
+			o_ptr->pseudo = INSCRIP_SPECIAL;
+	}
+	else
+	{
+		o_ptr->pseudo = INSCRIP_EXCELLENT;
+	}
+
 	o_ptr->ident |= IDENT_SENSE;
 }
 
