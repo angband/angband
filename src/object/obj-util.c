@@ -1356,6 +1356,41 @@ void object_tried(object_type *o_ptr)
 }
 
 
+
+/*
+ * Determine whether a weapon or missile weapon is obviously {excellent} when worn.
+ */
+void object_id_on_wield(object_type *o_ptr)
+{
+	u32b f1, f2, f3;
+	bool obvious = FALSE;
+
+	/* Only deal with some slots */
+	int slot = wield_slot(o_ptr);
+	if (slot != INVEN_WIELD && slot != INVEN_BOW &&
+		!(slot >= INVEN_BODY && slot <= INVEN_FEET)) return;
+
+	/* Only deal with un-ID'd, not-already-{excellent} items */
+	if (object_known_p(o_ptr) || o_ptr->pseudo == INSCRIP_EXCELLENT) return;
+
+	/* Extract the flags */
+	object_flags(o_ptr, &f1, &f2, &f3);
+
+	/* Find obvious things */
+	if (f1 & TR1_OBVIOUS_MASK) obvious = TRUE;
+	if (f3 & (TR3_LITE | TR3_TELEPATHY)) obvious = TRUE;
+
+	if (!obvious) return;
+
+	/* Mark the item */
+	o_ptr->pseudo = INSCRIP_EXCELLENT;
+	o_ptr->ident |= IDENT_SENSE;
+}
+
+
+
+
+
 /*
  * Determine if a weapon is 'blessed'
  */

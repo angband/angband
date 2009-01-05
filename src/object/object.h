@@ -104,6 +104,7 @@ object_type *get_next_object(const object_type *o_ptr);
 void object_known(object_type *o_ptr);
 void object_aware(object_type *o_ptr);
 void object_tried(object_type *o_ptr);
+void object_id_on_wield(object_type *o_ptr);
 bool is_blessed(const object_type *o_ptr);
 s32b object_value(const object_type *o_ptr, int qty);
 bool object_similar(const object_type *o_ptr, const object_type *j_ptr);

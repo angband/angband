@@ -6,8 +6,8 @@ This is an Angband development version -- it may be buggy, so be warned!
 Thanks for this release go to: Eytan Zweig, pelpel, Kenneth Boyd,
 J.D. White, Eddie Grove, Rowan Beentje, Nick McConnell, Gabriel
 Cunningham, Shanoah Alkire, Alexander Philips, mikon, Antony Sidwell,
-Joe Buck, Erik Osheim, d_m, and all the alpha- and beta- testers who
-downloaded the game, sometimes in an extremely shaky state, and played
+Joe Buck, Erik Osheim, d_m, Antoine, and all the alpha- and beta- testers
+who downloaded the game, sometimes in an extremely shaky state, and played
 it anyway.
 
 Noticeable up-front UI changes
@@ -133,6 +133,8 @@ ID:
  * Items pseudo-id'd as {average} are automatically ID'd, and thus will
    stack properly
  * Make wands/staffs stack even when un-ID'd
+ * Pseudo-ID obviously excellent items as {excellent} when possible
+   (e.g. brands/slays/obvious stat bonuses).
  * Remove "good" pseudo-ID, replace with "magical" -- for non-cursed
    non-average non-ego non-artifacts
  * Add "strange" pseudo-ID, for when items have mixed blessings

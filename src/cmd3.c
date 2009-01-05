@@ -155,6 +155,9 @@ void wield_item(object_type *o_ptr, int item)
 	/* Increment the equip counter by hand */
 	p_ptr->equip_cnt++;
 
+	/* Do any ID-on-wield */
+	object_id_on_wield(o_ptr);
+
 	/* Where is the item now */
 	if (slot == INVEN_WIELD)
 		act = "You are wielding";

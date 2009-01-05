@@ -1315,6 +1315,15 @@ enum
 	 TR1_SPEED | TR1_BLOWS | TR1_SHOTS | TR1_MIGHT)
 
 /*
+ * Subset of the above that are obvious to the player
+ */
+#define TR1_OBVIOUS_MASK \
+	(TR1_STR | TR1_INT | TR1_WIS | TR1_DEX | \
+	 TR1_CON | TR1_CHR | \
+	 TR1_STEALTH | \
+	 TR1_SPEED | TR1_BLOWS | TR1_SHOTS)
+
+/*
  * Flag set 3 -- mask for "ignore element" flags.
  */
 #define TR3_IGNORE_MASK \

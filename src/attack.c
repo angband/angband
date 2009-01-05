@@ -195,13 +195,15 @@ static int critical_norm(int weight, int plus, int dam)
 
 /*
  * Extract the "multiplier" from a given object hitting a given monster.
+ * If the multiplier is >1, set 'hit_verb' to be a string containing the verb for the hit (i.e. 'burn', 'smite')
  *
  * Most brands and slays are x3, except Slay Animal (x2), Slay Evil (x2),
  * and Kill dragon (x5).
  */
-static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
+static int get_brand_mult(const object_type *o_ptr, const monster_type *m_ptr, const char **hit_verb, bool is_ranged)
 {
 	int mult = 1;
+	bool slay = FALSE;
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
@@ -219,6 +221,7 @@ static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
 			l_ptr->flags[2] |= (RF2_ANIMAL);
 
 		if (mult < 2) mult = 2;
+		slay = TRUE;
 	}
 
 	/* Slay Evil */
@@ -228,6 +231,7 @@ static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
 			l_ptr->flags[2] |= (RF2_EVIL);
 
 		if (mult < 2) mult = 2;
+		slay = TRUE;
 	}
 
 	/* Slay Undead */
@@ -237,6 +241,7 @@ static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
 			l_ptr->flags[2] |= (RF2_UNDEAD);
 
 		if (mult < 3) mult = 3;
+		slay = TRUE;
 	}
 
 	/* Slay Demon */
@@ -246,6 +251,7 @@ static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
 			l_ptr->flags[2] |= (RF2_DEMON);
 
 		if (mult < 3) mult = 3;
+		slay = TRUE;
 	}
 
 	/* Slay Orc */
@@ -255,6 +261,7 @@ static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
 			l_ptr->flags[2] |= (RF2_ORC);
 
 		if (mult < 3) mult = 3;
+		slay = TRUE;
 	}
 
 	/* Slay Troll */
@@ -264,6 +271,7 @@ static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
 			l_ptr->flags[2] |= (RF2_TROLL);
 
 		if (mult < 3) mult = 3;
+		slay = TRUE;
 	}
 
 	/* Slay Giant */
@@ -273,6 +281,7 @@ static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
 			l_ptr->flags[2] |= (RF2_GIANT);
 
 		if (mult < 3) mult = 3;
+		slay = TRUE;
 	}
 
 	/* Slay Dragon */
@@ -282,34 +291,16 @@ static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
 			l_ptr->flags[2] |= (RF2_DRAGON);
 
 		if (mult < 3) mult = 3;
+		slay = TRUE;
 	}
 
-	/* Execute Dragon */
-	if ((f1 & TR1_KILL_DRAGON) && (r_ptr->flags[2] & RF2_DRAGON))
-	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_DRAGON);
 
-		if (mult < 5) mult = 5;
-	}
+	/* If a slay has been applied, then set the hit verb appropriately */
+	if (slay && is_ranged)
+		*hit_verb = "pierces";
+	else if (slay)
+		*hit_verb = "smite";
 
-	/* Execute demon */
-	if ((f1 & TR1_KILL_DEMON) && (r_ptr->flags[2] & RF2_DEMON))
-	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_DEMON);
-
-		if (mult < 5) mult = 5;
-	}
-
-	/* Execute undead */
-	if ((f1 & TR1_KILL_UNDEAD) && (r_ptr->flags[2] & RF2_UNDEAD))
-	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_UNDEAD);
-
-		if (mult < 5) mult = 5;
-	}
 
 	/* Brand (Acid) */
 	if (f1 & (TR1_BRAND_ACID))
@@ -325,6 +316,10 @@ static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
 		else
 		{
 			if (mult < 3) mult = 3;
+			if (is_ranged)
+				*hit_verb = "corrodes";
+			else 
+				*hit_verb = "corrode";
 		}
 	}
 
@@ -342,6 +337,10 @@ static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
 		else
 		{
 			if (mult < 3) mult = 3;
+			if (is_ranged)
+				*hit_verb = "zaps";
+			else 
+				*hit_verb = "zap";
 		}
 	}
 
@@ -359,6 +358,10 @@ static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
 		else
 		{
 			if (mult < 3) mult = 3;
+			if (is_ranged)
+				*hit_verb = "burns";
+			else 
+				*hit_verb = "burn";
 		}
 	}
 
@@ -376,6 +379,10 @@ static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
 		else
 		{
 			if (mult < 3) mult = 3;
+			if (is_ranged)
+				*hit_verb = "freezes";
+			else 
+				*hit_verb = "freeze";
 		}
 	}
 
@@ -393,9 +400,53 @@ static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
 		else
 		{
 			if (mult < 3) mult = 3;
+			if (is_ranged)
+				*hit_verb = "poisons";
+			else 
+				*hit_verb = "poison";
 		}
 	}
 
+	/* Put the Executes last so their hit_verb takes precedence */
+
+	/* Execute Dragon */
+	if ((f1 & TR1_KILL_DRAGON) && (r_ptr->flags[2] & RF2_DRAGON))
+	{
+		if (m_ptr->ml)
+			l_ptr->flags[2] |= (RF2_DRAGON);
+
+		if (mult < 5) mult = 5;
+		if (is_ranged)
+			*hit_verb = "deeply pierces";
+		else 
+			*hit_verb = "fiercely smite";
+	}
+
+	/* Execute demon */
+	if ((f1 & TR1_KILL_DEMON) && (r_ptr->flags[2] & RF2_DEMON))
+	{
+		if (m_ptr->ml)
+			l_ptr->flags[2] |= (RF2_DEMON);
+
+		if (mult < 5) mult = 5;
+		if (is_ranged)
+			*hit_verb = "deeply pierces";
+		else 
+			*hit_verb = "fiercely smite";
+	}
+
+	/* Execute undead */
+	if ((f1 & TR1_KILL_UNDEAD) && (r_ptr->flags[2] & RF2_UNDEAD))
+	{
+		if (m_ptr->ml)
+			l_ptr->flags[2] |= (RF2_UNDEAD);
+
+		if (mult < 5) mult = 5;
+		if (is_ranged)
+			*hit_verb = "deeply pierces";
+		else 
+			*hit_verb = "fiercely smite";
+	}
 
 	/* Return the multiplier */
 	return (mult);
@@ -410,7 +461,7 @@ static int tot_dam_aux(const object_type *o_ptr, const monster_type *m_ptr)
  */
 void py_attack(int y, int x)
 {
-	int num = 0, k, bonus, chance;
+	int num = 0, bonus, chance;
 
 	monster_type *m_ptr;
 	monster_race *r_ptr;
@@ -475,21 +526,35 @@ void py_attack(int y, int x)
 		/* Test for hit */
 		if (test_hit(chance, r_ptr->ac, m_ptr->ml))
 		{
-			/* Message */
-			message_format(MSG_GENERIC, m_ptr->r_idx, "You hit %s.", m_name);
-
-			/* Hack -- bare hands do one damage */
-			k = 1;
+			/* Default to punching for one damage */
+			const char *hit_verb = "punch";
+			int k = 1;
 
 			/* Handle normal weapon */
 			if (o_ptr->k_idx)
 			{
+				int brand_mult;
+
+				hit_verb = "hit";
+				brand_mult = get_brand_mult(o_ptr, m_ptr, &hit_verb, FALSE);
+
 				k = damroll(o_ptr->dd, o_ptr->ds);
-				k *= tot_dam_aux(o_ptr, m_ptr);
+				k *= brand_mult;
 				if (p_ptr->state.impact && (k > 50)) do_quake = TRUE;
 				k += o_ptr->to_d;
 				k = critical_norm(o_ptr->weight, o_ptr->to_h, k);
+
+				/* If it does something obviously good, pseudo it as excellent */
+				if (brand_mult > 1 && !object_known_p(o_ptr))
+				{
+					o_ptr->pseudo = INSCRIP_EXCELLENT;
+					o_ptr->ident |= IDENT_SENSE;
+				}
+
 			}
+
+			/* Message. Need to do this after tot_dam_aux, which sets hit_verb, but before critical_norm, which may print further messages. */
+			message_format(MSG_GENERIC, m_ptr->r_idx, "You %s %s.", hit_verb, m_name);
 
 			/* Apply the player damage bonuses */
 			k += p_ptr->state.to_d;
@@ -499,9 +564,7 @@ void py_attack(int y, int x)
 
 			/* Complex message */
 			if (p_ptr->wizard)
-			{
 				msg_format("You do %d (out of %d) damage.", k, m_ptr->hp);
-			}
 
 			/* Damage, check for fear and death */
 			if (mon_take_hit(cave_m_idx[y][x], k, &fear, NULL)) break;
@@ -765,11 +828,25 @@ void do_cmd_fire(void)
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 			int chance2 = chance - distance(p_ptr->py, p_ptr->px, y, x);
-
 			int visible = m_ptr->ml;
 
-			int ammo_mult = tot_dam_aux(i_ptr, m_ptr);
-			int shoot_mult = tot_dam_aux(j_ptr, m_ptr);
+			const char *hit_verb = "hits";
+
+			int ammo_mult = get_brand_mult(i_ptr, m_ptr, &hit_verb, TRUE);
+			int shoot_mult = get_brand_mult(j_ptr, m_ptr, &hit_verb, TRUE);
+
+			/* If bow or ammo does something obviously good, pseudo it as excellent */
+			if (ammo_mult > 1 && !object_known_p(o_ptr))
+			{
+				i_ptr->pseudo = INSCRIP_EXCELLENT;
+				i_ptr->ident |= (IDENT_SENSE);
+			}			
+
+			if (shoot_mult > 1 && !object_known_p(o_ptr))
+			{
+				j_ptr->pseudo = INSCRIP_EXCELLENT;
+				j_ptr->ident |= (IDENT_SENSE);
+			}
 
 			/* Note the collision */
 			hit_body = TRUE;
@@ -809,7 +886,7 @@ void do_cmd_fire(void)
 					monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 					/* Message */
-					message_format(MSG_SHOOT_HIT, 0, "The %s hits %s.", o_name, m_name);
+					message_format(MSG_SHOOT_HIT, 0, "The %s %s %s.", o_name, hit_verb, m_name);
 
 					/* Hack -- Track this monster race */
 					if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
@@ -1065,6 +1142,7 @@ void do_cmd_throw(void)
 			/* Did we hit it (penalize range) */
 			if (test_hit(chance2, r_ptr->ac, m_ptr->ml))
 			{
+				const char *hit_verb = "hits";
 				bool fear = FALSE;
 
 				/* Assume a default death */
@@ -1080,6 +1158,8 @@ void do_cmd_throw(void)
 					note_dies = " is destroyed.";
 				}
 
+				/* Apply special damage  - brought forward to fill in hit_verb XXX XXX XXX */
+				tdam *= get_brand_mult(i_ptr, m_ptr, &hit_verb, TRUE);
 
 				/* Handle unseen monster */
 				if (!visible)
@@ -1097,7 +1177,7 @@ void do_cmd_throw(void)
 					monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 					/* Message */
-					msg_format("The %s hits %s.", o_name, m_name);
+					msg_format("The %s %s %s.", o_name, hit_verb, m_name);
 
 					/* Hack -- Track this monster race */
 					if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
@@ -1107,7 +1187,6 @@ void do_cmd_throw(void)
 				}
 
 				/* Apply special damage XXX XXX XXX */
-				tdam *= tot_dam_aux(i_ptr, m_ptr);
 				tdam = critical_shot(i_ptr->weight, i_ptr->to_h, tdam);
 
 				/* No negative damage */
