@@ -373,7 +373,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 		calc_bonuses(inven, &state);
 
 		dam = ((o_ptr->ds + 1) * o_ptr->dd * 5);
-		xtra_dam = state.dis_to_d;
+		xtra_dam = state.dis_to_d * 10;
 		if (object_known_p(o_ptr)) xtra_dam += o_ptr->to_d * 10;
 
 		/* Warn about heavy weapons */
