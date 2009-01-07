@@ -3,7 +3,7 @@ Angband 3.1.0
 
 This is an Angband development version -- it may be buggy, so be warned!
 
-Thanks for this release go to: Eytan Zweig, pelpel, Kenneth Boyd,
+Special thanks for this release go to: Eytan Zweig, pelpel, Kenneth Boyd,
 J.D. White, Eddie Grove, Rowan Beentje, Nick McConnell, Gabriel
 Cunningham, Shanoah Alkire, Alexander Philips, mikon, Antony Sidwell,
 Joe Buck, Erik Osheim, d_m, Antoine, and all the alpha- and beta- testers
@@ -30,9 +30,11 @@ Noticeable up-front UI changes
    - Show breakage chance for ammo
    - Track item origin, so every item has a tag telling you where it
      came from (#149)
- * Recolour the monster recall: (part of #152)
+ * Monster recall changes (part of #152)
+   - some colouring removed, some added
    - Monster's depth is in red if it's beyond maximum depth, light
      green otherwise.
+   - more information is known about monsters before they are killed
  * Add how many items the player already has when buying something at
    the store.  (closes #151)
  * Allow use of the space bar to advance a screenful in all
@@ -71,6 +73,13 @@ Noticeable up-front UI changes
    with text.  This is like Eddie's patch, but a bit more polished.
  * Add a "display item list" command and term window.  (Thanks to Eric
    Osheim)
+ * Add method of death to the character dump.  (#501)
+ * Tell the payer when timed effects increase or decrease as the result
+   of effects.  (idea by Eddie Grove)
+ * Windows versions now use hashes and percent signs for walls until
+   there's time to sort out all existing fonts to be Vista-compatible.
+   (#232)
+ * Squelch 'K'ind feature now available in the roguelike keyset. (#339)
 
 
 Gameplay changes
@@ -105,6 +114,11 @@ illustration.
 
 Magic mapping and detection use the same-sized rectangular area around
 the player regardless of screen size.
+
+Fear now carries a to-hit penalty to missile weapons of 20, as well as
+giving an AC bonus of 8.  It also increases the failure chance of
+spells, but spells that cure fear have been made harder to fail to 
+balance this out.
 
 Birth:
  * Make point-based points worth less gold.
