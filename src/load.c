@@ -762,19 +762,11 @@ static errr rd_player_spells(void)
 
 	/* Read the spell flags */
 	for (i = 0; i < tmp16u; i++)
-	{
 		rd_byte(&p_ptr->spell_flags[i]);
-		if (i == 7)
-			p_ptr->spell_flags[i] = 0;
-	}
 
 	/* Read the spell order */
 	for (i = 0, cnt = 0; i < tmp16u; i++, cnt++)
-	{
 		rd_byte(&p_ptr->spell_order[cnt]);
-		if (p_ptr->spell_order[cnt] == 7)
-			cnt--;
-	}
 
 	/* Success */
 	return (0);
