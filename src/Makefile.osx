@@ -93,7 +93,7 @@ borg: $(OBJS) $(BOBJS)
 #
 
 clean:
-	-rm -f *.o $(EXE)
+	-rm -f $(OBJS) $(EXE)
 
 
 #
