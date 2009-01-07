@@ -34,8 +34,8 @@
 ?:[EQU $SYS gtk]
 %:font-gtk.prf
 
-?:[EQU $SYS win]
-%:font-win.prf
+#?:[EQU $SYS win]
+#%:font-win.prf
 
 ?:[EQU $SYS acn]
 %:font-acn.prf
