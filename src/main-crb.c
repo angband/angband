@@ -2628,6 +2628,7 @@ static void redrawRecentItemsMenu()
 			FSRef recentFileRef;
 			CFDataRef recentFileData;
 			Boolean updateAlias = FALSE;
+			MenuItemIndex item;
 
 			recentFileData = CFArrayGetValueAtIndex(recentItemsArrayRef, i);
 			if (CFDataGetTypeID() != CFGetTypeID(recentFileData)) continue;
@@ -2642,7 +2643,15 @@ static void redrawRecentItemsMenu()
 			if (err != noErr) continue;
 			
 			CFStringRef cfstr = CFStringCreateWithCharacters(kCFAllocatorDefault, recentFileName.unicode, recentFileName.length);
-			AppendMenuItemTextWithCFString(MyGetMenuHandle(kOpenRecentMenu), cfstr, 0, i, NULL);
+			AppendMenuItemTextWithCFString(MyGetMenuHandle(kOpenRecentMenu), cfstr, 0, i, &item);
+
+			// Add a shortcut key -- command-alt-number
+			if (i < 9)
+			{
+				SetMenuItemCommandKey(MyGetMenuHandle(kOpenRecentMenu), item, false, 0x31+i);
+				SetMenuItemModifiers(MyGetMenuHandle(kOpenRecentMenu), item, kMenuOptionModifier);
+			}
+
 			CFRelease(cfstr);
 		}
 		AppendMenuItemTextWithCFString(MyGetMenuHandle(kOpenRecentMenu), CFSTR("-"), kMenuItemAttrSeparator, -1, NULL);
