@@ -92,19 +92,25 @@ typedef struct
  */
 typedef struct
 {
-	u32b name;    /**< (const char *) feature_type::name + f_name = Name */
-	u32b text;    /**< (const char *) feature_type::text + f_text = Description (unused) */
+	u32b name;     /**< (const char *) feature_type::name + f_name = Name */
+	u32b text;     /**< (const char *) feature_type::text + f_text = Description (unused) */
 
-	byte mimic;   /**< Feature to mimic */
+	byte mimic;    /**< Feature to mimic */
+	byte priority; /**< Display priority */
 
-	byte extra;   /**< Unused */
-	s16b unused;  /**< Unused */
+	byte locked;   /**< How locked is it? */
+	byte jammed;   /**< How jammed is it? */
+	byte shopnum;  /**< Which shop does it take you to? */
+	byte dig;      /**< How hard is it to dig through? */
 
-	byte d_attr;  /**< Default feature attribute */
-	char d_char;  /**< Default feature character */
+	u32b effect;   /**< Effect on entry to grid */
+	u32b flags;    /**< Terrain flags */
 
-	byte x_attr;  /**< Desired feature attribute (set by user/pref file) */
-	char x_char;  /**< Desired feature character (set by user/pref file) */
+	byte d_attr;   /**< Default feature attribute */
+	char d_char;   /**< Default feature character */
+
+	byte x_attr;   /**< Desired feature attribute (set by user/pref file) */
+	char x_char;   /**< Desired feature character (set by user/pref file) */
 } feature_type;
 
 

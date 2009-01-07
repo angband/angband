@@ -1842,6 +1842,27 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			return TRUE;
 		}
 
+		case EF_TRAP_DOOR:
+		case EF_TRAP_PIT:
+		case EF_TRAP_PIT_SPIKES:
+		case EF_TRAP_PIT_POISON:
+		case EF_TRAP_RUNE_SUMMON:
+		case EF_TRAP_RUNE_TELEPORT:
+		case EF_TRAP_SPOT_FIRE:
+		case EF_TRAP_SPOT_ACID:
+		case EF_TRAP_DART_SLOW:
+		case EF_TRAP_DART_LOSE_STR:
+		case EF_TRAP_DART_LOSE_DEX:
+		case EF_TRAP_DART_LOSE_CON:
+		case EF_TRAP_GAS_BLIND:
+		case EF_TRAP_GAS_CONFUSE:
+		case EF_TRAP_GAS_POISON:
+		case EF_TRAP_GAS_SLEEP:
+		{
+			break;
+		}
+
+
 		case EF_XXX:
 		case EF_MAX:
 			break;

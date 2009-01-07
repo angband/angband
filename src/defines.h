@@ -1377,6 +1377,29 @@ enum
 #define CF_XXX32			0x80000000L
 
 
+/*** Terrain flags ***/
+
+enum
+{
+	FF_PWALK        = 0x00000001,
+	FF_PPASS        = 0x00000002,
+	FF_MWALK        = 0x00000004,
+	FF_MPASS        = 0x00000008,
+	FF_LOOK         = 0x00000010,
+	FF_DIG          = 0x00000020,
+	FF_DOOR         = 0x00000040,
+	FF_EXIT_UP      = 0x00000080,
+	FF_EXIT_DOWN    = 0x00000100,
+	FF_PERM         = 0x00000200,
+	FF_TRAP         = 0x00000400,
+	FF_SHOP         = 0x00000800,
+	FF_HIDDEN       = 0x00001000,
+	FF_BORING       = 0x00002000,
+};
+
+
+
+
 /*** Monster flags ***/
 
 
