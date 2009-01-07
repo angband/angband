@@ -394,9 +394,9 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 
 		/* Calculate damage */
 		dam = ((o_ptr->ds + 1) * o_ptr->dd * 5);
-		dam *= p_ptr->state.ammo_mult;
 		if (object_known_p(o_ptr)) dam += (o_ptr->to_d * 10);
 		if (object_known_p(j_ptr)) dam += (j_ptr->to_d * 10);
+		dam *= p_ptr->state.ammo_mult;
 
 		/* Apply brands from the shooter to the ammo */
 		object_flags(j_ptr, &f[0], &f[1], &f[2]);
