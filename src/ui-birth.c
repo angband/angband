@@ -670,7 +670,7 @@ static void roller_stop(void)
  * ------------------------------------------------------------------------ */
 
 /* The locations of the "costs" area on the birth screen. */
-#define COSTS_ROW 3
+#define COSTS_ROW 2
 #define COSTS_COL (42 + 32)
 
 /* This is called whenever a stat changes.  We take the easy road, and just
