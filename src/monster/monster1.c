@@ -911,16 +911,16 @@ static void describe_monster_movement(int r_idx, const monster_lore *l_ptr)
 
 	text_out("This");
 
-	if (l_ptr->flags[2] & RF2_ANIMAL) text_out(" natural");
-	if (l_ptr->flags[2] & RF2_EVIL) text_out(" evil");
-	if (l_ptr->flags[2] & RF2_UNDEAD) text_out(" undead");
-	if (l_ptr->flags[2] & RF2_METAL) text_out(" metal");
+	if (r_ptr->flags[2] & RF2_ANIMAL) text_out(" natural");
+	if (r_ptr->flags[2] & RF2_EVIL) text_out(" evil");
+	if (r_ptr->flags[2] & RF2_UNDEAD) text_out(" undead");
+	if (r_ptr->flags[2] & RF2_METAL) text_out(" metal");
 
-	if (l_ptr->flags[2] & RF2_DRAGON) text_out(" dragon");
-	else if (l_ptr->flags[2] & RF2_DEMON) text_out(" demon");
-	else if (l_ptr->flags[2] & RF2_GIANT) text_out(" giant");
-	else if (l_ptr->flags[2] & RF2_TROLL) text_out(" troll");
-	else if (l_ptr->flags[2] & RF2_ORC) text_out(" orc");
+	if (r_ptr->flags[2] & RF2_DRAGON) text_out(" dragon");
+	else if (r_ptr->flags[2] & RF2_DEMON) text_out(" demon");
+	else if (r_ptr->flags[2] & RF2_GIANT) text_out(" giant");
+	else if (r_ptr->flags[2] & RF2_TROLL) text_out(" troll");
+	else if (r_ptr->flags[2] & RF2_ORC) text_out(" orc");
 	else text_out(" creature");
 
 	/* Describe location */
