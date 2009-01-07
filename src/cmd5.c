@@ -65,6 +65,11 @@ s16b spell_chance(int spell)
 		chance += 25;
 	}
 
+	/* Fear makes spells harder (before minfail) */
+	/* Note that spells that remove fear have a much lower fail rate than
+	 * surrounding spells, to make sure this doesn't cause mega fail */
+	if (p_ptr->state.afraid) chance += 20;
+
 	/* Minimal and maximal failure rate */
 	if (chance < minfail) chance = minfail;
 	if (chance > 50) chance = 50;
@@ -73,7 +78,7 @@ s16b spell_chance(int spell)
 	if (p_ptr->timed[TMD_STUN] > 50) chance += 25;
 	else if (p_ptr->timed[TMD_STUN]) chance += 15;
 
-	/* Amnesia makes spells fail half the time */
+	/* Amnesia doubles failure change */
 	if (p_ptr->timed[TMD_AMNESIA]) chance *= 2;
 
 	/* Always a 5 percent chance of working */

@@ -901,6 +901,16 @@ void calc_bonuses(object_type inventory[], player_state *state)
 		state->speed += 5;
 
 
+	/* Fear can come from item flags too */
+	if (state->afraid)
+	{
+		state->to_h -= 20;
+		state->dis_to_h -= 20;
+		state->to_a += 8;
+		state->dis_to_a += 8;
+	}
+
+
 	/*** Analyze weight ***/
 
 	/* Extract the current weight (in tenth pounds) */

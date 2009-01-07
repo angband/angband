@@ -2217,7 +2217,7 @@ E:HASTE
 N:344:Heroism
 G:!:d
 I:75:33:0
-W:1:0:4:35
+W:1:0:4:25
 A:100:1 to 100
 F:EASY_KNOW
 E:HERO
@@ -2225,7 +2225,7 @@ E:HERO
 N:345:Berserk Strength
 G:!:d
 I:75:34:0
-W:3:0:4:100
+W:3:0:4:00
 A:100:3 to 100
 F:EASY_KNOW
 E:SHERO
@@ -2233,7 +2233,7 @@ E:SHERO
 N:346:Boldness
 G:!:d
 I:75:35:0
-W:1:0:4:10
+W:1:0:4:8
 A:100:1 to 100
 F:EASY_KNOW
 E:CURE_PARANOIA
