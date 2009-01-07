@@ -80,6 +80,7 @@ ANGFILES = \
 	monster/melee2.o \
 	monster/monster1.o \
 	monster/monster2.o \
+	object/identify.o \
 	object/obj-desc.o \
 	object/obj-info.o \
 	object/obj-make.o \
