@@ -19,8 +19,13 @@
 #include "tvalsval.h"
 
 
+static bool kind_is_good(const object_kind *);
+
 static u32b obj_total[MAX_DEPTH];
 static byte *obj_alloc;
+
+static u32b obj_total_great[MAX_DEPTH];
+static byte *obj_alloc_great;
 
 /* Don't worry about probabilities for anything past dlev100 */
 #define MAX_O_DEPTH		100
@@ -31,6 +36,7 @@ static byte *obj_alloc;
 void free_obj_alloc(void)
 {
 	FREE(obj_alloc);
+	FREE(obj_alloc_great);
 }
 
 
@@ -48,15 +54,17 @@ bool init_obj_alloc(void)
 
 	/* Allocate and wipe */
 	obj_alloc = C_ZNEW((MAX_O_DEPTH + 1) * k_max, byte);
+	obj_alloc_great = C_ZNEW((MAX_O_DEPTH + 1) * k_max, byte);
 
 	/* Wipe the totals */
 	C_WIPE(obj_total, MAX_O_DEPTH + 1, u32b);
+	C_WIPE(obj_total_great, MAX_O_DEPTH + 1, u32b);
 
 
 	/* Init allocation data */
 	for (item = 1; item < k_max; item++)
 	{
-		object_kind *k_ptr = &k_info[item];
+		const object_kind *k_ptr = &k_info[item];
 
 		int min = k_ptr->alloc_min;
 		int max = k_ptr->alloc_max;
@@ -72,9 +80,14 @@ bool init_obj_alloc(void)
 			/* Give out-of-depth items a tiny chance at being made */
 			if ((lev < min) || (lev > max)) rarity = 0;
 
-			/* Save the probability */
+			/* Save the probability in the standard table */
 			obj_total[lev] += rarity;
 			obj_alloc[(lev * k_max) + item] = rarity;
+
+			/* Save the probability in the "great" table if relevant */
+			if (!kind_is_good(k_ptr)) continue;
+			obj_total_great[lev] += rarity;
+			obj_alloc_great[(lev * k_max) + item] = rarity;
 		}
 	}
 
@@ -87,7 +100,7 @@ bool init_obj_alloc(void)
 /*
  * Choose an object kind given a dungeon level to choose it for.
  */
-s16b get_obj_num(int level)
+s16b get_obj_num(int level, bool good)
 {
 	/* This is the base index into obj_alloc for this dlev */
 	size_t ind, item;
@@ -106,14 +119,30 @@ s16b get_obj_num(int level)
 
 	/* Pick an object */
 	ind = level * z_info->k_max;
-	value = randint0(obj_total[level]);
-	for (item = 1; item < z_info->k_max; item++)
-	{
-		/* Found it */
-		if (value < obj_alloc[ind + item]) break;
 
-		/* Decrement */
-		value -= obj_alloc[ind + item];
+	if (!good)
+	{
+		value = randint0(obj_total[level]);
+		for (item = 1; item < z_info->k_max; item++)
+		{
+			/* Found it */
+			if (value < obj_alloc[ind + item]) break;
+
+			/* Decrement */
+			value -= obj_alloc[ind + item];
+		}
+	}
+	else
+	{
+		value = randint0(obj_total_great[level]);
+		for (item = 1; item < z_info->k_max; item++)
+		{
+			/* Found it */
+			if (value < obj_alloc_great[ind + item]) break;
+
+			/* Decrement */
+			value -= obj_alloc_great[ind + item];
+		}
 	}
 
 
@@ -1287,10 +1316,8 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
  * the actual object to be cursed.  We do explicitly forbid objects
  * which are known to be boring or which start out somewhat damaged.
  */
-static bool kind_is_good(int k_idx)
+static bool kind_is_good(const object_kind *k_ptr)
 {
-	object_kind *k_ptr = &k_info[k_idx];
-
 	/* Analyze the item type */
 	switch (k_ptr->tval)
 	{
@@ -1369,11 +1396,7 @@ static bool kind_is_good(int k_idx)
  */
 bool make_object(object_type *j_ptr, int lev, bool good, bool great)
 {
-	int k_idx = 0;
-	int i;
-	int tries = 1;
-
-	int base;
+	int k_idx, base;
 	object_kind *k_ptr;
 
 	/* Try to make a special artifact */
@@ -1383,23 +1406,8 @@ bool make_object(object_type *j_ptr, int lev, bool good, bool great)
 	/* Base level for the object */
 	base = (good ? (lev + 10) : lev);
 
-	/* Try multiple times to generate good/great items */
-	if (great)     tries = 5;
-	else if (good) tries = 3;
-
-	for (i = 0; i < tries; i++)
-	{
-		/* Pick a random object */
-#if 0
-		k_idx = get_obj_num(base, kind_is_good);
-#else
-		k_idx = get_obj_num(base);
-#endif
-
-		/* Keep if it's good, or try again */
-		if (kind_is_good(k_idx)) break;
-	}
-
+	/* Get the object */
+	k_idx = get_obj_num(base, good || great);
 	if (!k_idx) return FALSE;
 
 	/* Prepare the object */

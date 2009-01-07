@@ -63,7 +63,7 @@ bool object_info_store(const object_type *o_ptr);
 /* obj-make.c */
 void free_obj_alloc(void);
 bool init_obj_alloc(void);
-s16b get_obj_num(int level);
+s16b get_obj_num(int level, bool good);
 void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great);
 bool make_object(object_type *j_ptr, int lev, bool good, bool great);
 void make_gold(object_type *j_ptr, int lev, int coin_type);

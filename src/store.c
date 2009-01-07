@@ -1210,7 +1210,7 @@ static bool store_create_random(int st)
 
 
 		/* Black Markets have a random object, of a given level */
-		if (st == STORE_B_MARKET) k_idx = get_obj_num(level);
+		if (st == STORE_B_MARKET) k_idx = get_obj_num(level, FALSE);
 
 		/* Normal stores use a big table of choices */
 		else k_idx = store_get_choice(st);
