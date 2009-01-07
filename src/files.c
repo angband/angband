@@ -1136,61 +1136,66 @@ static void display_player_equippy(int y, int x)
 /*
  * List of resistances and abilities to display
  */
-#define RES_ROWS 8
+#define RES_ROWS 9
 struct player_flag_record
 {
 	const char name[7];		/* Name of resistance/ability */
 	byte set;				/* Which field this resistance is in { 1 2 3 } */
 	u32b res_flag;			/* resistance flag bit */
-	u32b im_flag;			/* corresponding immunity bit, if any. */
+	u32b im_flag;			/* corresponding immunity bit, if any */
+	u32b vuln_flag;			/* corresponding vulnerability flag, if any */
 };
 
 static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 {
-	{ " Acid",	2, TR2_RES_ACID,	TR2_IM_ACID },
-	{ " Elec",	2, TR2_RES_ELEC,	TR2_IM_ELEC },
-	{ " Fire",	2, TR2_RES_FIRE,	TR2_IM_FIRE },
-	{ " Cold",	2, TR2_RES_COLD,	TR2_IM_COLD },
-	{ " Pois",	2, TR2_RES_POIS,	0 },	/* TR2_IM_POIS */
-	{ " Fear",	2, TR2_RES_FEAR,	0 },
-	{ " Lite",	2, TR2_RES_LITE,	0 },
-	{ " Dark",	2, TR2_RES_DARK,	0 },
+	{ " Acid",	2, TR2_RES_ACID,	TR2_IM_ACID,	TR2_VULN_ACID },
+	{ " Elec",	2, TR2_RES_ELEC,	TR2_IM_ELEC,	TR2_VULN_ELEC },
+	{ " Fire",	2, TR2_RES_FIRE,	TR2_IM_FIRE,	TR2_VULN_FIRE },
+	{ " Cold",	2, TR2_RES_COLD,	TR2_IM_COLD,	TR2_VULN_COLD },
+	{ " Pois",	2, TR2_RES_POIS,	0, 0 },
+	{ " Fear",	2, TR2_RES_FEAR,	0, 0 },
+	{ " Lite",	2, TR2_RES_LITE,	0, 0 },
+	{ " Dark",	2, TR2_RES_DARK,	0, 0 },
+	{ "Blind",	2, TR2_RES_BLIND,	0, 0 },
 
-	{ "Blind",	2, TR2_RES_BLIND,	0 },
-	{ "Confu",	2, TR2_RES_CONFU,	0 },
-	{ "Sound",	2, TR2_RES_SOUND,	0 },
-	{ "Shard",	2, TR2_RES_SHARD,	0 },
-	{ "Nexus",	2, TR2_RES_NEXUS,	0 },
-	{ "Nethr",	2, TR2_RES_NETHR,	0 },
-	{ "Chaos",	2, TR2_RES_CHAOS,	0 },
-	{ "Disen",	2, TR2_RES_DISEN,	0 },
+	{ "Confu",	2, TR2_RES_CONFU,	0, 0 },
+	{ "Sound",	2, TR2_RES_SOUND,	0, 0 },
+	{ "Shard",	2, TR2_RES_SHARD,	0, 0 },
+	{ "Nexus",	2, TR2_RES_NEXUS,	0, 0 },
+	{ "Nethr",	2, TR2_RES_NETHR,	0, 0 },
+	{ "Chaos",	2, TR2_RES_CHAOS,	0, 0 },
+	{ "Disen",	2, TR2_RES_DISEN,	0, 0 },
+	{ "S.Dig",	3, TR3_SLOW_DIGEST,	0, 0 },
+	{ "Feath",	3, TR3_FEATHER, 	0, 0 },
 
-	{ "S.Dig",	3, TR3_SLOW_DIGEST,	0 },
-	{ "Feath",	3, TR3_FEATHER, 	0 },
-	{ "PLite",	3, TR3_LITE, 		0 },
-	{ "Regen",	3, TR3_REGEN, 		0 },
-	{ "Telep",	3, TR3_TELEPATHY, 	0 },
-	{ "Invis",	3, TR3_SEE_INVIS, 	0 },
-	{ "FrAct",	3, TR3_FREE_ACT, 	0 },
-	{ "HLife",	3, TR3_HOLD_LIFE, 	0 },
+	{ "PLite",	3, TR3_LITE, 		0, 0 },
+	{ "Regen",	3, TR3_REGEN, 		0, 0 },
+	{ "Telep",	3, TR3_TELEPATHY, 	0, 0 },
+	{ "Invis",	3, TR3_SEE_INVIS, 	0, 0 },
+	{ "FrAct",	3, TR3_FREE_ACT, 	0, 0 },
+	{ "HLife",	3, TR3_HOLD_LIFE, 	0, 0 },
+	{ "ImpHP",	3, TR3_IMPAIR_HP,	0, 0 },
+	{ "ImpSP",	3, TR3_IMPAIR_MANA,	0, 0 },
+	{ " Fear",      3, TR3_AFRAID,          0, 0 },
 
-	{ "Stea.",	1, TR1_STEALTH,		0 },
-	{ "Sear.",	1, TR1_SEARCH,		0 },
-	{ "Infra",	1, TR1_INFRA,		0 },
-	{ "Tunn.",	1, TR1_TUNNEL,		0 },
-	{ "Speed",	1, TR1_SPEED,		0 },
-	{ "Blows",	1, TR1_BLOWS,		0 },
-	{ "Shots",	1, TR1_SHOTS,		0 },
-	{ "Might",	1, TR1_MIGHT,		0 },
+	{ "Aggrv",      3, TR3_AGGRAVATE,       0, 0 },
+	{ "Stea.",	1, TR1_STEALTH,		0, 0 },
+	{ "Sear.",	1, TR1_SEARCH,		0, 0 },
+	{ "Infra",	1, TR1_INFRA,		0, 0 },
+	{ "Tunn.",	1, TR1_TUNNEL,		0, 0 },
+	{ "Speed",	1, TR1_SPEED,		0, 0 },
+	{ "Blows",	1, TR1_BLOWS,		0, 0 },
+	{ "Shots",	1, TR1_SHOTS,		0, 0 },
+	{ "Might",	1, TR1_MIGHT,		0, 0 },
 };
 
 #define RES_COLS (5 + 2 + INVEN_TOTAL - INVEN_WIELD)
 static const region resist_region[] =
 {
-	{  0*(RES_COLS+1), 11, RES_COLS, RES_ROWS+2 },
-	{  1*(RES_COLS+1), 11, RES_COLS, RES_ROWS+2 },
-	{  2*(RES_COLS+1), 11, RES_COLS, RES_ROWS+2 },
-	{  3*(RES_COLS+1), 11, RES_COLS, RES_ROWS+2 },
+	{  0*(RES_COLS+1), 10, RES_COLS, RES_ROWS+2 },
+	{  1*(RES_COLS+1), 10, RES_COLS, RES_ROWS+2 },
+	{  2*(RES_COLS+1), 10, RES_COLS, RES_ROWS+2 },
+	{  3*(RES_COLS+1), 10, RES_COLS, RES_ROWS+2 },
 };
 
 static void display_resistance_panel(const struct player_flag_record *resists,
@@ -1208,11 +1213,14 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 		for (j = INVEN_WIELD; j <= INVEN_TOTAL; j++)
 		{
 			object_type *o_ptr = &inventory[j];
-			byte attr = TERM_WHITE | (j % 2) * 8; /* alternating columns */
 			u32b f[4] = {0, 0, 0, 0};
-			bool res, imm;
-			char sym;
-			if(j < INVEN_TOTAL)
+
+			byte attr = TERM_WHITE | (j % 2) * 8; /* alternating columns */
+			char sym = '.';
+
+			bool res, imm, vuln;
+
+			if (j < INVEN_TOTAL)
 				object_flags_known(o_ptr, &f[1], &f[2], &f[3]);
 			else
 			{
@@ -1229,9 +1237,14 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 
 			res = (0 != (f[resists[i].set] & resists[i].res_flag));
 			imm = (0 != (f[resists[i].set] & resists[i].im_flag));
-			if(imm) name_attr = TERM_GREEN;
-			else if(res && name_attr == TERM_WHITE) name_attr = TERM_L_BLUE;
-			sym = imm ? '*' : ( res ? '+' : '.' );
+			vuln = (0 != (f[resists[i].set] & resists[i].vuln_flag));
+
+			if (imm) name_attr = TERM_GREEN;
+			else if (res && name_attr == TERM_WHITE) name_attr = TERM_L_BLUE;
+
+			if (vuln) sym = '-';
+			else if (imm) sym = '*';
+			else if (res) sym = '+';		
 			Term_addch(attr, sym);
 		}
 		Term_putstr(col, row, 6, name_attr, format("%5s:", resists[i].name));
@@ -1263,7 +1276,7 @@ void display_player_stat_info(void)
 
 
 	/* Row */
-	row = 3;
+	row = 2;
 
 	/* Column */
 	col = 42;
@@ -1352,7 +1365,7 @@ static void display_player_sust_info(void)
 
 
 	/* Row */
-	row = 3;
+	row = 2;
 
 	/* Column */
 	col = 26;
@@ -1516,11 +1529,11 @@ static const region boundaries [] =
 {
 	/* x   y     width, rows */
 	{ 0,   0,		0,		0 },
-	{ 1,   2,		40,		8 }, /* Name, Class, ... */
+	{ 1,   1,		40,		8 }, /* Name, Class, ... */
 	{ 1,  10,		22,		8 }, /* Cur Exp, Max Exp, ... */
 	{ 26, 10,		17,		8 }, /* AC, melee, ... */
 	{ 48, 10,		24,		8 }, /* skills */
-	{ 21,  3,		18,		5 }, /* Age, ht, wt, ... */
+	{ 21,  2,		18,		5 }, /* Age, ht, wt, ... */
 };
 
 
