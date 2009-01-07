@@ -627,8 +627,6 @@ void display_monlist(void)
 	/* Go over in reverse order (so we show harder monsters first) */
 	for (i = z_info->r_max - 1; (i > 0) && (line < max); i--)
 	{
-		monster_lore *l_ptr = &l_list[i];
-
 		/* No monsters of this race are visible */
 		if (!race_count[i]) continue;
 
