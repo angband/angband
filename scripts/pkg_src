@@ -19,6 +19,7 @@ fi
 
 svn export . $DIR &&
 	cd $DIR &&
+	rm -rf debian &&
 	./autogen.sh &&
 	rm -rf autogen.sh autom4te.cache &&
 	cd .. &&
