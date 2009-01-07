@@ -58,7 +58,7 @@ static timed_effect effects[] =
 			0, 0, MSG_CONFUSED },
 	{ "You are terrified!", "You feel bolder now.",
 			"You are more scared!", "You feel a little less scared.",
-			0, 0, MSG_AFRAID },
+			0, PU_BONUS, MSG_AFRAID },
 	{ "You feel drugged!", "You can see clearly again.",
 			"You feel more drugged!", "You feel less drugged.",
 			PR_MAP, 0, MSG_DRUGGED },
