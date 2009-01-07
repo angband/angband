@@ -1483,7 +1483,7 @@ enum
 #define RF2_UNDEAD			0x00000020	/* Undead */
 #define RF2_EVIL			0x00000040	/* Evil */
 #define RF2_ANIMAL			0x00000080	/* Animal */
-#define RF2_XXX1			0x00000100	/* (?) */
+#define RF2_METAL			0x00000100	/* Metal */
 #define RF2_XXX2			0x00000200	/* (?) */
 #define RF2_XXX3			0x00000400	/* Non-Vocal (?) */
 #define RF2_XXX4			0x00000800	/* Non-Living (?) */
@@ -1629,7 +1629,7 @@ enum
  */
 #define RF2_RACE_MASK \
 	(RF2_ORC | RF2_TROLL | RF2_GIANT | RF2_DRAGON | \
-	 RF2_DEMON | RF2_UNDEAD | RF2_EVIL | RF2_ANIMAL)
+	 RF2_DEMON | RF2_UNDEAD | RF2_EVIL | RF2_ANIMAL | RF2_METAL)
 
 
 /*

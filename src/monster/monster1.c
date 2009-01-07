@@ -914,6 +914,7 @@ static void describe_monster_movement(int r_idx, const monster_lore *l_ptr)
 	if (l_ptr->flags[2] & RF2_ANIMAL) text_out(" natural");
 	if (l_ptr->flags[2] & RF2_EVIL) text_out(" evil");
 	if (l_ptr->flags[2] & RF2_UNDEAD) text_out(" undead");
+	if (l_ptr->flags[2] & RF2_METAL) text_out(" metal");
 
 	if (l_ptr->flags[2] & RF2_DRAGON) text_out(" dragon");
 	else if (l_ptr->flags[2] & RF2_DEMON) text_out(" demon");

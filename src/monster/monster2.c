@@ -2554,6 +2554,8 @@ static int get_coin_type(const monster_race *r_ptr)
 {
 	const char *name = (r_name + r_ptr->name);
 
+	if (!(r_ptr->flags[2] & RF2_METAL)) return SV_GOLD_ANY;
+
 	/* Look for textual clues */
 	if (my_stristr(name, "copper "))	return SV_COPPER;
 	if (my_stristr(name, "silver "))	return SV_SILVER;
