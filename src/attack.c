@@ -533,19 +533,39 @@ void py_attack(int y, int x)
 			/* Handle normal weapon */
 			if (o_ptr->k_idx)
 			{
-				int brand_mult;
+				int weapon_brand_mult, ring_brand_mult[2];
+				int use_mult = 1;
 
 				hit_verb = "hit";
-				brand_mult = get_brand_mult(o_ptr, m_ptr, &hit_verb, FALSE);
+
+				/* Hack-- put rings first, because they can
+				 * only be brands right now */
+				ring_brand_mult[0] = get_brand_mult(
+						&inventory[INVEN_LEFT],
+						m_ptr, &hit_verb, FALSE);
+				ring_brand_mult[1] = get_brand_mult(
+						&inventory[INVEN_RIGHT],
+						m_ptr, &hit_verb, FALSE);
+				weapon_brand_mult = get_brand_mult(
+						o_ptr, m_ptr, &hit_verb, FALSE);
+
+				if (ring_brand_mult[0] > use_mult)
+					use_mult = ring_brand_mult[0];
+				if (ring_brand_mult[1] > use_mult)
+					use_mult = ring_brand_mult[1];
+				if (weapon_brand_mult > use_mult)
+					use_mult = weapon_brand_mult;
 
 				k = damroll(o_ptr->dd, o_ptr->ds);
-				k *= brand_mult;
-				if (p_ptr->state.impact && (k > 50)) do_quake = TRUE;
+				k *= use_mult;
+				if (p_ptr->state.impact && (k > 50))
+						do_quake = TRUE;
 				k += o_ptr->to_d;
 				k = critical_norm(o_ptr->weight, o_ptr->to_h, k);
 
 				/* If it does something obviously good, pseudo it as excellent */
-				if (brand_mult > 1 && !object_known_p(o_ptr))
+				if (weapon_brand_mult > 1 &&
+						!object_known_p(o_ptr))
 				{
 					o_ptr->pseudo = INSCRIP_EXCELLENT;
 					o_ptr->ident |= IDENT_SENSE;
