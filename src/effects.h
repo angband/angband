@@ -34,5 +34,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam);
 bool effect_aim(effect_type effect);
 const char *effect_desc(effect_type effect);
 bool effect_obvious(effect_type effect);
+bool effect_wonder(int dir, int die, int beam);
 
 #endif /* INCLUDED_EFFECTS_H */

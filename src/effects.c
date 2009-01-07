@@ -73,7 +73,7 @@ bool effect_obvious(effect_type effect)
  *
  * Returns TRUE if the effect is evident.
  */
-static bool spell_wonder(int dir, int die, int beam)
+bool effect_wonder(int dir, int die, int beam)
 {
 /* This spell should become more useful (more
    controlled) as the player gains experience levels.
@@ -1507,7 +1507,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_WONDER:
 		{
-			if (spell_wonder(dir, randint1(100) + p_ptr->lev / 5, beam)) *ident = TRUE;
+			if (effect_wonder(dir, randint1(100) + p_ptr->lev / 5, beam)) *ident = TRUE;
 			return TRUE;
 		}
 

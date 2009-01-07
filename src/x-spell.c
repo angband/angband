@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "effects.h"
 #include "object/tvalsval.h"
 
 
@@ -415,53 +416,7 @@ static void spell_wonder(int dir)
    This eliminates the worst effects later on, while
    keeping the results quite random.  It also allows
    some potent effects only at high level. */
-
-	int py = p_ptr->py;
-	int px = p_ptr->px;
-	int plev = p_ptr->lev;
-	int die = randint1(100) + plev / 5;
-	int beam = beam_chance();
-
-	if (die > 100)
-		msg_print("You feel a surge of power!");
-	if (die < 8) clone_monster(dir);
-	else if (die < 14) speed_monster(dir);
-	else if (die < 26) heal_monster(dir);
-	else if (die < 31) poly_monster(dir);
-	else if (die < 36)
-		fire_bolt_or_beam(beam - 10, GF_MISSILE, dir,
-		                  damroll(3 + ((plev - 1) / 5), 4));
-	else if (die < 41) confuse_monster(dir, plev);
-	else if (die < 46) fire_ball(GF_POIS, dir, 20 + (plev / 2), 3);
-	else if (die < 51) lite_line(dir);
-	else if (die < 56)
-		fire_beam(GF_ELEC, dir, damroll(3+((plev-5)/6), 6));
-	else if (die < 61)
-		fire_bolt_or_beam(beam-10, GF_COLD, dir,
-		                  damroll(5+((plev-5)/4), 8));
-	else if (die < 66)
-		fire_bolt_or_beam(beam, GF_ACID, dir,
-		                  damroll(6+((plev-5)/4), 8));
-	else if (die < 71)
-		fire_bolt_or_beam(beam, GF_FIRE, dir,
-		                  damroll(8+((plev-5)/4), 8));
-	else if (die < 76) drain_life(dir, 75);
-	else if (die < 81) fire_ball(GF_ELEC, dir, 30 + plev / 2, 2);
-	else if (die < 86) fire_ball(GF_ACID, dir, 40 + plev, 2);
-	else if (die < 91) fire_ball(GF_ICE, dir, 70 + plev, 3);
-	else if (die < 96) fire_ball(GF_FIRE, dir, 80 + plev, 3);
-	else if (die < 101) drain_life(dir, 100 + plev);
-	else if (die < 104) earthquake(py, px, 12);
-	else if (die < 106) destroy_area(py, px, 15, TRUE);
-	else if (die < 108) banishment();
-	else if (die < 110) dispel_monsters(120);
-	else /* RARE */
-	{
-		dispel_monsters(150);
-		slow_monsters();
-		sleep_monsters();
-		hp_player(300);
-	}
+	effect_wonder(dir, randint1(100) + p_ptr->lev / 5, beam_chance());
 }
 
 
