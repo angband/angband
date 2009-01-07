@@ -645,7 +645,7 @@ void display_monlist(void)
 		/* Display uniques in a special colour */
 		if (r_ptr->flags[0] & RF0_UNIQUE)
 			attr = TERM_VIOLET;
-		else if (l_ptr->tkills && (r_ptr->level > p_ptr->depth))
+		else if (r_ptr->level > p_ptr->depth)
 			attr = TERM_RED;
 		else
 			attr = TERM_WHITE;
