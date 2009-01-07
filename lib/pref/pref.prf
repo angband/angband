@@ -154,6 +154,10 @@ C:1:^T
 A:k
 C:1:^D
 
+# Allow use of the "squelch item kind" command
+A:K
+C:1:^G
+
 # Locate player on map
 A:L
 C:1:W
