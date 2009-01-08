@@ -2925,6 +2925,7 @@ G:-:d
 I:66:1:0
 W:5:0:15:1000
 A:100:8 to 100
+F:EASY_KNOW
 E:DETECT_TREASURE:50
 
 N:431:Door/Stair Location
