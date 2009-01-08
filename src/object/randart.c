@@ -58,7 +58,7 @@ static errr init_names(void)
 
 	/* Allocate the "names" array */
 	/* ToDo: Make sure the memory is freed correctly in case of errors */
-	names = C_ZNEW(z_info->a_max, cptr);
+	names = C_ZNEW(z_info->a_max, char *);
 
 	for (i = 0; i < z_info->a_max; i++)
 	{

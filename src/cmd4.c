@@ -444,7 +444,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 
 	/* The compact set of group names, in display order */
-	g_names = C_ZNEW(grp_cnt, const char **);
+	g_names = C_ZNEW(grp_cnt, const char *);
 
 	for (i = 0; i < grp_cnt; i++)
 	{

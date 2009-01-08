@@ -56,7 +56,7 @@ const char *quark_str(quark_t q)
 errr quarks_init(void)
 {
 	alloc_quarks = QUARKS_INIT;
-	quarks = C_ZNEW(alloc_quarks, const char *);
+	quarks = C_ZNEW(alloc_quarks, char *);
 
 	return 0;
 }

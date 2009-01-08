@@ -647,10 +647,10 @@ errr macro_add(cptr pat, cptr act)
 errr macro_init(void)
 {
 	/* Macro patterns */
-	macro__pat = C_ZNEW(MACRO_MAX, cptr);
+	macro__pat = C_ZNEW(MACRO_MAX, char *);
 
 	/* Macro actions */
-	macro__act = C_ZNEW(MACRO_MAX, cptr);
+	macro__act = C_ZNEW(MACRO_MAX, char *);
 
 	/* Success */
 	return (0);
