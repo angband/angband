@@ -3,10 +3,6 @@ terms of either the GNU General Public License as published by the Free Software
 Foundation, version 2, or the "Angband licence", shown below, with some 
 exceptions:
 
- * At the time of release, code written by Ross E Becker is only available under
-   the Angband licence, whose code is entirely in main-win.c and as such, the 
-   Windows port is not GPL-clean.
-
  * The SDL runtime libraries (if provided with your copy of the game) are under
    the following licence:
 
