@@ -738,9 +738,10 @@ static void recalculate_stats(int *stats, int points_left)
 	}
 	
 	/* Gold is inversely proportional to cost */
-	p_ptr->au = 200 + (50 * points_left);
 	if (OPT(birth_money))
-		p_ptr->au = MIN(p_ptr->au, 500);
+		p_ptr->au = 500;
+	else
+		p_ptr->au = 200 + (50 * points_left);
 
 	p_ptr->au_birth = p_ptr->au;
 
