@@ -1908,7 +1908,7 @@ void display_player(int mode)
  * XXX XXX XXX Allow the "full" flag to dump additional info,
  * and trigger its usage from various places in the code.
  */
-errr file_character(cptr name, bool full)
+errr file_character(const char *path, bool full)
 {
 	int i, x, y;
 
@@ -1927,24 +1927,9 @@ errr file_character(cptr name, bool full)
 	/* Unused parameter */
 	(void)full;
 
-	/* Build the filename */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, name);
-
-	/* Check if the file currently exists */
-	if (file_exists(buf))
-	{
-		char out_val[160];
-
-		/* Build query */
-		strnfmt(out_val, sizeof(out_val), "Replace existing file %s? ", buf);
-
-		/* Ask */
-		if (!get_check(out_val))
-			return -1;
-	}
 
 	/* Open the file for writing */
-	fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
+	fp = file_open(path, MODE_WRITE, FTYPE_TEXT);
 	if (!fp) return (-1);
 
 

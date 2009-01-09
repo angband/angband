@@ -2020,19 +2020,17 @@ void do_cmd_change_name(void)
 		/* File dump */
 		else if (ke.key == 'f')
 		{
-			char ftmp[80];
+			char buf[1024];
+			char fname[80];
 
-			strnfmt(ftmp, sizeof ftmp, "%s.txt", op_ptr->base_name);
+			strnfmt(fname, sizeof fname, "%s.txt", op_ptr->base_name);
 
-			if (get_string("File name: ", ftmp, 80))
+			if (get_file(fname, buf, sizeof buf))
 			{
-				if (ftmp[0] && (ftmp[0] != ' '))
-				{
-					if (file_character(ftmp, FALSE))
-						msg_print("Character dump failed!");
-					else
-						msg_print("Character dump successful.");
-				}
+				if (file_character(buf, FALSE) != 0)
+					msg_print("Character dump failed!");
+				else
+					msg_print("Character dump successful.");
 			}
 		}
 

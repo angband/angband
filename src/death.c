@@ -179,22 +179,21 @@ static void display_winner(void)
  */
 static void death_file(void *unused, const char *title)
 {
+	char buf[1024];
 	char ftmp[80];
-	strnfmt(ftmp, sizeof(ftmp), "%s.txt", op_ptr->base_name);
 
 	(void)unused;
 	(void)title;
 
-	if (!get_string("File name: ", ftmp, sizeof(ftmp)))
-		return;
+	strnfmt(ftmp, sizeof(ftmp), "%s.txt", op_ptr->base_name);
 
-	if (ftmp[0] && (ftmp[0] != ' '))
+	if (get_file(ftmp, buf, sizeof buf))
 	{
 		errr err;
 
 		/* Dump a character file */
 		screen_save();
-		err = file_character(ftmp, FALSE);
+		err = file_character(buf, FALSE);
 		screen_load();
 
 		/* Check result */

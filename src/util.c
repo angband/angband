@@ -2619,6 +2619,48 @@ bool get_check(cptr prompt)
 }
 
 
+/**
+ * Text-native way of getting a filename.
+ */
+bool get_file_text(const char *suggested_name, char *path, size_t len)
+{
+	char buf[160];
+
+	/* Get filename */
+	my_strcpy(buf, suggested_name, sizeof buf);
+	if (!get_string("File name: ", buf, sizeof buf)) return FALSE;
+
+	/* Make sure it's actually a filename */
+	if (buf[0] == '\0' || buf[0] == ' ') return FALSE;
+
+	/* Build the path */
+	path_build(path, len, ANGBAND_DIR_USER, buf);
+
+	/* Check if it already exists */
+	if (file_exists(buf))
+	{
+		char buf2[160];
+		strnfmt(buf2, sizeof(buf2), "Replace existing file %s?", buf);
+
+		if (get_check(buf2) == FALSE)
+			return FALSE;
+	}
+
+	return TRUE;
+}
+
+
+
+
+/**
+ * Get a pathname to save a file to, given the suggested name.  Returns the
+ * result in "path".
+ */
+bool (*get_file)(const char *suggested_name, char *path, size_t len) = get_file_text;
+
+
+
+
 /*
  * Prompts for a keypress
  *
