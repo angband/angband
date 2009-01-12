@@ -149,13 +149,10 @@ static void path_process(char *buf, size_t len, size_t *cur_len, const char *pat
 
 #ifndef MACH_O_CARBON
 
-		/* Fallback -- try the "current" user */
-		if (username[0] == '\0')
-			username = getlogin();
-
 		/* Look up a user (or "current" user) */
-		if (username) pw = getpwnam(username);
-		else          pw = getpwuid(getuid());
+		if (username[0]) pw = getpwnam(username);
+		else             pw = getpwuid(getuid());
+
 #else /* MACH_O_CARBON */
 
 		/* On Macs getlogin() can incorrectly return root, so get the username via system frameworks */
