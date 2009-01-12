@@ -6,15 +6,12 @@ OBJECTIVE_DATA =	\
 	flvr-new.prf:${DATA_PATH}/pref \
 	flvr-xxx.prf:${DATA_PATH}/pref \
 	font.prf:${DATA_PATH}/pref     \
-	font-dos.prf:${DATA_PATH}/pref \
-	font-ibm.prf:${DATA_PATH}/pref \
 	font-mac.prf:${DATA_PATH}/pref \
 	font-win.prf:${DATA_PATH}/pref \
 	font-x11.prf:${DATA_PATH}/pref \
 	font-xxx.prf:${DATA_PATH}/pref \
 	graf.prf:${DATA_PATH}/pref     \
 	graf-dvg.prf:${DATA_PATH}/pref \
-	graf-gcu.prf:${DATA_PATH}/pref \
 	graf-mac.prf:${DATA_PATH}/pref \
 	graf-new.prf:${DATA_PATH}/pref \
 	graf-win.prf:${DATA_PATH}/pref \
