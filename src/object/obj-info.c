@@ -81,7 +81,6 @@ static const flag_type f1_pval[] =
 	{ TR1_CON,     "constitution" },
 	{ TR1_CHR,     "charisma" },
 	{ TR1_STEALTH, "stealth" },
-	{ TR1_SEARCH,  "searching" },
 	{ TR1_INFRA,   "infravision" },
 	{ TR1_TUNNEL,  "tunneling" },
 	{ TR1_SPEED,   "speed" },
@@ -180,6 +179,12 @@ static bool describe_stats(u32b f1, int pval)
 
 	text_out_c((pval > 0) ? TERM_L_GREEN : TERM_RED, "%+i ", pval);
 	info_out_list(descs, count);
+
+	if (f1 & TR1_SEARCH)
+	{
+		text_out_c((pval > 0) ? TERM_L_GREEN : TERM_RED, "%+i%% ", pval * 5);
+		text_out(" to searching.\n");
+	}
 
 	return TRUE;
 }
