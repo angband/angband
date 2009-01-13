@@ -1971,8 +1971,32 @@ void object_prep(object_type *o_ptr, int k_idx)
 }
 
 
+/**
+ * Find and return the index to the oldest object on the given grid marked as
+ * "squelch".
+ */
+static s16b floor_get_idx_oldest_squelched(int y, int x)
+{
+	s16b squelch_idx = 0;
+	s16b this_o_idx;
+
+	object_type *o_ptr = NULL;
+
+	for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = o_ptr->next_o_idx)
+	{
+		o_ptr = &o_list[this_o_idx];
+
+		if (squelch_hide_item(o_ptr))
+			squelch_idx = this_o_idx;
+	}
+
+	return squelch_idx;
+}
+
+
+
 /*
- * Let the floor carry an object
+ * Let the floor carry an object, deleting old squelched items if necessary
  */
 s16b floor_carry(int y, int x, object_type *j_ptr)
 {
@@ -1986,10 +2010,7 @@ s16b floor_carry(int y, int x, object_type *j_ptr)
 	/* Scan objects in that grid for combination */
 	for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
 	{
-		object_type *o_ptr;
-
-		/* Get the object */
-		o_ptr = &o_list[this_o_idx];
+		object_type *o_ptr = &o_list[this_o_idx];
 
 		/* Get the next object */
 		next_o_idx = o_ptr->next_o_idx;
@@ -2008,11 +2029,21 @@ s16b floor_carry(int y, int x, object_type *j_ptr)
 		n++;
 	}
 
-	/* The stack is already too large */
-	if (n > MAX_FLOOR_STACK) return (0);
-
 	/* Option -- disallow stacking */
 	if (adult_no_stacking && n) return (0);
+
+	/* The stack is already too large */
+	if (n >= MAX_FLOOR_STACK)
+	{
+		/* Squelch the oldest squelched object */
+		s16b squelch_idx = floor_get_idx_oldest_squelched(y, x);
+
+		if (squelch_idx)
+			delete_object_idx(squelch_idx);
+		else
+			return 0;
+	}
+
 
 	/* Make an object */
 	o_idx = o_pop();
@@ -2147,7 +2178,8 @@ void drop_near(object_type *j_ptr, int chance, int y, int x)
 			n = 0;
 
 			/* Scan objects in that grid */
-			for (o_ptr = get_first_object(ty, tx); o_ptr; o_ptr = get_next_object(o_ptr))
+			for (o_ptr = get_first_object(ty, tx); o_ptr;
+					o_ptr = get_next_object(o_ptr))
 			{
 				/* Check for possible combination */
 				if (object_similar(o_ptr, j_ptr)) comb = TRUE;
@@ -2166,7 +2198,8 @@ void drop_near(object_type *j_ptr, int chance, int y, int x)
 			if (adult_no_stacking && (k > 1)) continue;
 			
 			/* Paranoia? */
-			if ((k + n) > MAX_FLOOR_STACK) continue;
+			if ((k + n) > MAX_FLOOR_STACK &&
+					!floor_get_idx_oldest_squelched(ty, tx)) continue;
 
 			/* Calculate score */
 			s = 1000 - (d + k * 5);
