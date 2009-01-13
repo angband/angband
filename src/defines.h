@@ -1394,7 +1394,7 @@ enum
 	FF_TRAP         = 0x00000400,
 	FF_SHOP         = 0x00000800,
 	FF_HIDDEN       = 0x00001000,
-	FF_BORING       = 0x00002000,
+	FF_BORING       = 0x00002000
 };
 
 
