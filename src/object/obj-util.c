@@ -3133,6 +3133,8 @@ void reorder_pack(void)
  */
 void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt)
 {
+	int max_time;
+
 	/*
 	 * Hack -- If rods, staves, or wands are dropped, the total maximum
 	 * timeout or charges need to be allocated between the two stacks.
@@ -3140,29 +3142,30 @@ void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt)
 	 * to leave the original stack's pval alone. -LM-
 	 */
 	if ((o_ptr->tval == TV_WAND) ||
-	    (o_ptr->tval == TV_STAFF) ||
-	    (o_ptr->tval == TV_ROD))
+	    (o_ptr->tval == TV_STAFF))
 	{
 		q_ptr->pval = o_ptr->pval * amt / o_ptr->number;
 
 		if (amt < o_ptr->number) o_ptr->pval -= q_ptr->pval;
+	}
 
-		/*
-		 * Hack -- Rods also need to have their timeouts distributed.
-		 *
-		 * The dropped stack will accept all time remaining to charge up to
-		 * its maximum.
-		 */
-		if ((o_ptr->tval == TV_ROD) && (o_ptr->timeout))
-		{
-			if (q_ptr->pval > o_ptr->timeout)
-				q_ptr->timeout = o_ptr->timeout;
-			else
-				q_ptr->timeout = q_ptr->pval;
+	/*
+	 * Hack -- Rods also need to have their timeouts distributed.
+	 *
+	 * The dropped stack will accept all time remaining to charge up to
+	 * its maximum.
+	 */
+	if (o_ptr->tval == TV_ROD)
+	{
+		max_time = k_info[o_ptr->k_idx].time_base * amt;
 
-			if (amt < o_ptr->number)
-				o_ptr->timeout -= q_ptr->timeout;
-		}
+		if (o_ptr->timeout > max_time)
+			q_ptr->timeout = max_time;
+		else
+			q_ptr->timeout = o_ptr->timeout;
+
+		if (amt < o_ptr->number)
+			o_ptr->timeout -= q_ptr->timeout;
 	}
 }
 
@@ -3175,11 +3178,16 @@ void reduce_charges(object_type *o_ptr, int amt)
 	 * being destroyed. -LM-
 	 */
 	if (((o_ptr->tval == TV_WAND) ||
-	     (o_ptr->tval == TV_STAFF) ||
-	     (o_ptr->tval == TV_ROD)) &&
+	     (o_ptr->tval == TV_STAFF)) &&
 	    (amt < o_ptr->number))
 	{
 		o_ptr->pval -= o_ptr->pval * amt / o_ptr->number;
+	}
+
+	if ((o_ptr->tval == TV_ROD) &&
+	    (amt < o_ptr->number))
+	{
+		o_ptr->timeout -= o_ptr->timeout * amt / o_ptr->number;
 	}
 }
 
