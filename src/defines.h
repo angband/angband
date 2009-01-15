@@ -39,9 +39,9 @@
 #define VERSION_NAME   "Angband"
 
 #ifdef BUILD_ID
-# define VERSION_STRING "3.1.0 dev (" BUILD_ID ")"
+# define VERSION_STRING "3.1.1 dev (" BUILD_ID ")"
 #else
-# define VERSION_STRING "3.1.0 dev"
+# define VERSION_STRING "3.1.1 dev"
 #endif
 
 
