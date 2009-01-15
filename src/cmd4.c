@@ -1656,16 +1656,28 @@ static int o_cmp_tval(const void *a, const void *b)
 	c = k_a->aware - k_b->aware;
 	if (c) return -c; /* aware has low sort weight */
 
-	if (!k_a->aware)
+	switch (k_a->tval)
 	{
-		c = k_a->tried - k_b->tried;
-		if (c) return -c;
+		case TV_LITE:
+		case TV_MAGIC_BOOK:
+		case TV_PRAYER_BOOK:
+		case TV_DRAG_ARMOR:
+			/* leave sorted by sval */
+			break;
 
-		return strcmp(flavor_text + flavor_info[k_a->flavor].text,
-		              flavor_text + flavor_info[k_b->flavor].text);
+		default:
+			if (k_a->aware)
+				return strcmp(k_name + k_a->name, k_name + k_b->name);
+
+			/* Then in tried order */
+			c = k_a->tried - k_b->tried;
+			if (c) return -c;
+
+			return strcmp(flavor_text + flavor_info[k_a->flavor].text,
+			              flavor_text + flavor_info[k_b->flavor].text);
 	}
 
-	return strcmp(k_name + k_a->name, k_name + k_b->name);
+	return k_a->sval - k_b->sval;
 }
 
 static int obj2gid(int oid) { return obj_group_order[k_info[oid].tval]; }
