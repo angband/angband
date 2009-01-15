@@ -96,12 +96,6 @@ void object_id_on_wield(object_type *o_ptr)
 	u32b f1, f2, f3;
 	bool obvious = FALSE;
 
-	/* Only deal with some slots */
-	int slot = wield_slot(o_ptr);
-	if (slot != INVEN_WIELD && slot != INVEN_BOW &&
-			!(slot >= INVEN_BODY && slot <= INVEN_FEET))
-		return;
-
 	/* Only deal with un-ID'd items */
 	if (object_known_p(o_ptr)) return;
 
