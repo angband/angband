@@ -312,7 +312,7 @@ F:RES_DARK | RES_COLD |
 F:ACTIVATE |
 F:INSTA_ART
 A:RESTORE_LIFE:150+d0
-M:Your Cloak glows a deep red...
+M:Your Jewel glows a deep red...
 D:A plain white jewel, given by Queen Arwen to Frodo Baggins before his 
 D:return to the Shire.
 
