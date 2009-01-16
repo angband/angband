@@ -331,10 +331,14 @@ static void new_player_spot(void)
 
 		if (!adult_no_stairs)
 		{
-			if (p_ptr->create_down_stair)
+			if (p_ptr->create_down_stair) {
 				cave_set_feat(y, x, FEAT_MORE);
-			else if (p_ptr->create_up_stair)
+				p_ptr->create_down_stair = FALSE;
+			}
+			else if (p_ptr->create_up_stair) {
 				cave_set_feat(y, x, FEAT_LESS);
+				p_ptr->create_up_stair = FALSE;
+			}
 		}
 
 		/* Done */

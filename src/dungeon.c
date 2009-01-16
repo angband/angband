@@ -945,10 +945,6 @@ static void process_world(void)
 
 				/* Leaving */
 				p_ptr->leaving = TRUE;
-                
-                /* Don't generate connected stairs */
-                p_ptr->create_down_stair = FALSE;
-                p_ptr->create_up_stair = FALSE;
 			}
 			else
 			{
