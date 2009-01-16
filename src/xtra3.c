@@ -845,6 +845,13 @@ static size_t prt_state(int row, int col)
 		{
 			text[5] = text[6] = text[7] = text[8] = text[9] = '&';
 		}
+		
+		/* Rest until HP or SP filled */
+		else if (n == -3)
+		{
+			text[5] = text[6] = text[7] = text[8] = text[9] = '!';
+		}
+
 	}
 
 	/* Repeating */

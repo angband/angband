@@ -1086,6 +1086,17 @@ static void process_player(void)
 				disturb(0, 0);
 			}
 		}
+		
+		/* Rest until HP or SP are filled */
+		else if (p_ptr->resting == -3)
+		{
+			/* Stop resting */
+			if ((p_ptr->chp == p_ptr->mhp) ||
+			    (p_ptr->csp == p_ptr->msp))
+			{
+				disturb(0, 0);
+			}
+		}
 	}
 
 	/* Check for "player abort" */

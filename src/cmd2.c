@@ -2275,7 +2275,7 @@ void do_cmd_rest(void)
 	/* Prompt for time if needed */
 	if (p_ptr->command_arg <= 0)
 	{
-		cptr p = "Rest (0-9999, '*' for HP/SP, '&' as needed): ";
+		cptr p = "Rest (0-9999, '!' for HP or SP, '*' for HP and SP, '&' as needed): ";
 
 		char out_val[5] = "& ";
 
@@ -2294,6 +2294,12 @@ void do_cmd_rest(void)
 			p_ptr->command_arg = (-1);
 		}
 
+		/* Rest until HP or SP filled */
+		else if (out_val[0] == '!')
+		{
+			p_ptr->command_arg = (-3);
+		}
+		
 		/* Rest some */
 		else
 		{
