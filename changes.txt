@@ -20,11 +20,15 @@ Bugs fixed:
 (#694) Fix dropped rods recharging, and any other rod-related oddities.
 (#698) Added '!' to 'R' prompt to rest until mana or hp are full.
 (#721) Searching bonues are now displayed as a % increase to match the character screen.
+(#722) Fix spoilers and wizard mode cheat info not displaying magical abilities
+(#725) *Remove Curse* now removes all curses again.
+(#728) Pseudo-by-use should not downgrade {special} to {excellent}
+(#730) Mention control+[ANU] in mosnter recall '/' prompt.
 (#738) Add messages for unidentified obviouslly {excellent} items.
 (#740, partial #532) Color-code monster melee attacks by how dangerous they are to the current player.
 (#741) Stop generating spurious staircases under the player on recall/teleport.
-(#730) Mention control+[ANU] in mosnter recall '/' prompt.
-(#725) *Remove Curse* now removes all curses again.
+(#747) ui-birth.c needs to handle going directly from character sheet to sex prompt.
+(#748) Allow Rings of Delving to activate.
 Fix bug with rods of treasure location needing ID.
 Fix birth_money so that in point-based it still gives you 500AU.
 
@@ -35,3 +39,5 @@ Commit the beginnings of a flag-based terrain system; note that it does absolute
 Make the z-virt defines cast to the right type so that assignment errors can get caught a bit ealier on.
 Fix autoconf install errors.
 Remove an unnecessary call to getlogin() which was screwing up su'd users.
+Dependancy generator has to add dirnames itself
+

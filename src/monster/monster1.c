@@ -408,6 +408,7 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr)
 	const monster_race *r_ptr = &r_info[r_idx];
 	int m, n, r;
 	u32b f1, f2, f3;
+	bool known;
 
 	int color_special[RBE_MAX+1];
 
@@ -431,21 +432,26 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr)
 		/* Only occupied slots */
 		if (!o_ptr->k_idx) continue;
 
-		object_flags(o_ptr, &f1, &f2, &f3);
+		object_flags_known(o_ptr, &f1, &f2, &f3);
+
+		/* We need to be careful not to reveal the nature of the object
+		 * here.  Assume the player is conservative with unknown items.
+		 */
+		known = object_known_p(o_ptr);
 
 		/* Can only be hurt by disenchantment with an enchanted item */
-		if (m >= INVEN_WIELD && ((o_ptr->to_a >= 0) ||
+		if (m >= INVEN_WIELD && (!known || (o_ptr->to_a >= 0) ||
 				(o_ptr->to_h >= 0) || (o_ptr->to_d >= 0)) &&
 				!p_ptr->state.resist_disen)
 			color_special[RBE_UN_BONUS] = TERM_L_RED;
 
 		/* A charged item is needed for drain charges */
-		if (m < INVEN_PACK && (o_ptr->pval > 0) &&
+		if (m < INVEN_PACK && (!known || o_ptr->pval > 0) &&
 				(o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND))
 			color_special[RBE_UN_POWER] = TERM_L_RED;
 
 		/* Non-artifacts are needed for theft */
-		if (m < INVEN_PACK && !artifact_p(o_ptr))
+		if (m < INVEN_PACK && (!known || !artifact_p(o_ptr)))
 			color_special[RBE_EAT_ITEM] = TERM_L_RED;
 
 		/* Characters without food do not suffer from eat food */
@@ -459,7 +465,7 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr)
 
 		/* With corrodable equipment, acid is much worse */
 		if (m >= INVEN_BODY && m <= INVEN_FEET &&
-				(o_ptr->ac + o_ptr->to_a > 0)
+				(!known || o_ptr->ac + o_ptr->to_a > 0)
 				&& !(f3 & TR3_IGNORE_ACID) && !p_ptr->state.immune_acid)
 			color_special[RBE_ACID] = TERM_L_RED;
 	}
@@ -1185,6 +1191,7 @@ static void cheat_monster_lore(int r_idx, monster_lore *l_ptr)
 
 	/* Hack -- know all the flags */
 	race_flags_assign(l_ptr->flags, r_ptr->flags);
+	race_flags_assign_spell(l_ptr->spell_flags, r_ptr->spell_flags);
 }
 
 

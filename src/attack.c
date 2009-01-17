@@ -563,9 +563,10 @@ void py_attack(int y, int x)
 				k += o_ptr->to_d;
 				k = critical_norm(o_ptr->weight, o_ptr->to_h, k);
 
-				/* If it does something obviously good, pseudo it as excellent */
+				/* If it does something obviously good, pseudo it as at least excellent */
 				if (weapon_brand_mult > 1 &&
-						!object_known_p(o_ptr))
+						!object_known_p(o_ptr) &&
+						o_ptr->pseudo != INSCRIP_SPECIAL)
 				{
 					o_ptr->pseudo = INSCRIP_EXCELLENT;
 					o_ptr->ident |= IDENT_SENSE;

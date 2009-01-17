@@ -916,11 +916,14 @@ static void birth_stage_changed(game_event_type type, game_event_data *data, voi
 
 		case BIRTH_SEX_CHOICE:
 		{
+			if (current_stage > BIRTH_ROLLER_CHOICE)
+				Term_clear();
+
 			/* We only print the generic instructions with the first
 			   menu we show on screen.  Likewise, we only need to erase
 			   the next menu on screen if we're not proceeding in the
-			   usual way. */			  
-			if (current_stage < BIRTH_SEX_CHOICE)
+			   usual way. */
+			if (current_stage < BIRTH_SEX_CHOICE || current_stage > BIRTH_ROLLER_CHOICE)
 				print_menu_instructions();
 			else
 				region_erase(&race_region);

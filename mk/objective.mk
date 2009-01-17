@@ -278,7 +278,9 @@ depend:
 	if [ ! -f .depend-done ]; then \
 		for i in ${SOURCES}; do \
 			echo "[generating dependencies for objective: $$i]"; \
-			${CC} -MM ${PICFLAGS} ${CPPFLAGS} ${CFLAGS} $$i >> .depend; \
+			DIR=`echo ./$$i | sed 's|/[^/]*$$||'`; \
+			${CC} -MM ${PICFLAGS} ${CPPFLAGS} ${CFLAGS} $$i | \
+			sed "s|^\\([^ ]\\)|$$DIR/\\1|" >> .depend; \
 		done; \
 		touch .depend-done; \
 	fi;
