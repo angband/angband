@@ -1,271 +1,37 @@
-Angband 3.1.0
+Angband 3.1.1
 =============
 
 This is an Angband development version -- it may be buggy, so be warned!
+Special thanks to: Eddie Grove, Elly, Stefan O'Rear.
 
-Special thanks for this release go to: Eytan Zweig, pelpel, Kenneth Boyd,
-J.D. White, Eddie Grove, Rowan Beentje, Nick McConnell, Gabriel
-Cunningham, Shanoah Alkire, Alexander Philips, mikon, Antony Sidwell,
-Joe Buck, Erik Osheim, Antoine, and all the alpha- and beta- testers
-who downloaded the game, sometimes in an extremely shaky state, and played
-it anyway.
+Gameplay/UI changes:
+Make the {excellent}-on-wield check work for jewellery too.
+Make the object knowledge list sort some items by sval rather than alphabetically.
+Items trying to be dropped on the floor now attempt to delete the oldest item on that grid that's been squelched.
 
-Noticeable up-front UI changes
-------------------------------
+Bugs fixed:
+(#62) Game is now available entirely under the GPL.
+(#521, #597, #635) Stop the slow launches and occasional non-launches on Windows.
+(#613) Prevent {!*} prompting for harmless actions.
+(#672) Fix Evenstar activation message.
+(#641) Fix Morgoth artifacts.
+(#683) Fix !Berserk Strength being unsellable.
+(#691) Make of Open Wounds similar to ther pval-less rings in that it doesn't need ID.
+(#694) Fix dropped rods recharging, and any other rod-related oddities.
+(#698) Added '!' to 'R' prompt to rest until mana or hp are full.
+(#721) Searching bonues are now displayed as a % increase to match the character screen.
+(#738) Add messages for unidentified obviouslly {excellent} items.
+(#740, partial #532) Color-code monster melee attacks by how dangerous they are to the current player.
+(#741) Stop generating spurious staircases under the player on recall/teleport.
+(#730) Mention control+[ANU] in mosnter recall '/' prompt.
+(#725) *Remove Curse* now removes all curses again.
+Fix bug with rods of treasure location needing ID.
+Fix birth_money so that in point-based it still gives you 500AU.
 
- * Add EyAngband-style quickstart option.
- * Notes, like NPP and FA, except with brand new code by J.D. White.
-   (#10)
- * Add a trap detection indicator.  Also, colour the edges of trap-
-   detected areas green. (#19)
- * Make status bar display all timed effects, left-to-right, which
-   involves moving the dungeon level to the bottom of the left-hand
-   display. (#191)
- * Add show_lists option, which is the same as always_show_lists in
-   Ey. (#25)
- * Auto-wield birth items (#24)
- * Change the object information screen quite a bit: (#214, #26)
-   - Show average damage for weapons and ammo (#26)
-   - Make descriptions a fair bit terser (#399)
-   - Show breakage chance for ammo
-   - Track item origin, so every item has a tag telling you where it
-     came from (#149)
- * Monster recall changes (part of #152)
-   - some colouring removed, some added
-   - Monster's depth is in red if it's beyond maximum depth, light
-     green otherwise.
-   - more information is known about monsters before they are killed
- * Add how many items the player already has when buying something at
-   the store.  (closes #151)
- * Allow use of the space bar to advance a screenful in all
-   menus.  (#244)
- * Make all menus wraparound at the top/bottom.  (#244)
- * Monster recall display now cycles through monsters in level order,
-   not in the order that the monster definition file is written
-   in.  (#302)
- * Add an indication of maximum capacity in the inventory
-   display.  (#358)
- * Menus should use 1234567890 as little as possible for "tags".  (#292)
- * Remove the "depth_in_feet" option, instead displaying both the
-   dungeon level and the depth everywhere.
- * Ensure that store-bought and birth-given torches have the same number
-   of turns for stacking purposes.
- * Death screen now uses scrollable menu. (#416)
- * Drop squelched items
- * Append {tried} to tried items in the object browser (r606)
- * Put {tried} items before untried items in the object browser
- * The monster list display has a little more colour-coding
- * Death menu now uses a scrolly menu.
- * Preserve mode has a sensible description again.
- * Try and differentiate the level feelings more.
- * Add the moderately well-tested "lazy movement" patch which allows a 
-   movement delay to be set, during which it is possible to choose a
-   second direction.  This means that up and left in quick succession
-   can be translated to an actual diagonal.  This may improve some
-   people's laptop playing experience without resorting to the
-   roguelike keyset.
- * Add bigscreen support to the self-knowledge screen.
- * Make inscriptions like "!k!k!k" prompt multiple times again.  (#492)
- * Make monster XP and native depth always known, even without
-   kills.  (#596)
- * Rejig social status a bit -- it rises with level from a certain baseline.
- * Display various skills numerically on the character sheet, rather than
-   with text.  This is like Eddie's patch, but a bit more polished.
- * Add a "display item list" command and term window.  (Thanks to Eric
-   Osheim)
- * Add method of death to the character dump.  (#501)
- * Tell the payer when timed effects increase or decrease as the result
-   of effects.  (idea by Eddie Grove)
- * Windows versions now use hashes and percent signs for walls until
-   there's time to sort out all existing fonts to be Vista-compatible.
-   (#232)
- * Squelch 'K'ind feature now available in the roguelike keyset. (#339)
-
-
-Gameplay changes
-----------------
-
-There are some pretty big gameplay changes.
-
-The object list has been reworked quite a bit.  It is a bit more
-varied and has less duplication.  Some items have been removed and
-others added.  The new items have had relatively little testing and
-may be gone again next release.
- - The number of items that monsters drop has been reduced drastically.
- - Potions tend to appear in stacks now.
- - The range of food items has been reduced.
- - Healing heal a proportion of wounds, not just a set value-- this
-   makes all the potions useful.
- - Add a selection of "gain one, lose one" stat potions to replace the
-   old stat loss potions-- they guarantee a stat to raise and reduce one
-   randomly.
- - The Elven Rings have a variety of healings, at the suggestion of
-   Timo.  Also, apply some other changes from the TV-patch (r428)
- - Replace the sustain {stat} rings with sustain mind and sustain body,
-   providing three sustains each.
- - (#543) Make ammo of slay evil/venom apply to Mithril ammo too.
-
-Gold drops have also been reworked.  By the end of the game, there is
-about 3.6x less gold per drop than in any earlier version or Angband
-or Moria, but the amount per drop at the beginning of the dungeon 
-is quite similar to pre-existing levels.  You may be interested in
-looking at http://rephial.org/research/avg_gold_drop.pdf for an
-illustration.
-
-Magic mapping and detection use the same-sized rectangular area around
-the player regardless of screen size.
-
-Fear now carries a to-hit penalty to missile weapons of 20, as well as
-giving an AC bonus of 8.  It also increases the failure chance of
-spells, but spells that cure fear have been made harder to fail to 
-balance this out.
-
-Birth:
- * Make point-based points worth less gold.
- * Minimum starting gold is 200AU.
- * Add an option to start the character with 500AU but no equipment.
- * Point-based character generation is now equivalent to best available
-   from the autoroller.  (Eddie Grove)
- * All characters start with WoR.
-
-Stores:
- * Phase Door is now a staple item.
- * Start stocking deeper items as the character descends.
- * Rewrite the rules for shopkeepers
-   - Remove individual-shopkeeper and race-based price changes from the
-     store code, to make it easier to balance pricing.
-   - Adjust adj_chr_gold[] values upwards to represent the average-110%
-     inflation usually applied by the individual-shopkeeper greed
-     values.  This should really be applied to the object.txt file
-     instead, though.
-
-ID:
- * Make ID reveal all powers of an object, and remove *ID*.  (#158)
- * Make pseudo-id not occur whilst resting, but also make pseudo-ID
-   lengths shorter (by a little over half) to compensate.
- * Some items, when worn long enough, get automatically ID'd
- * Items pseudo-id'd as {average} are automatically ID'd, and thus will
-   stack properly
- * Make wands/staffs stack even when un-ID'd
- * Pseudo-ID obviously excellent items as {excellent} when possible
-   (e.g. brands/slays/obvious stat bonuses).
- * Remove "good" pseudo-ID, replace with "magical" -- for non-cursed
-   non-average non-ego non-artifacts
- * Add "strange" pseudo-ID, for when items have mixed blessings
- * Stop automatically cursing all bad weaponry
- * Make weak pseudo-id notice the difference between magical and
-   excellent
- * Allow any/all rings/amulets to be cursed if the game wants to
-   generate a "bad" item.  This is liable to be rethought in the future.
-
-A small selection of other changes:
- * Remove autoscum.  (#365) -- really?
- * Add minimum depths for each kind of trap.  As such, only teleport and
-   confusion traps occur at dlev1.  This should help some people.
- * Make the rogue slightly better at combat than the ranger, based on Timo's sugges
-   tion.  (Message-ID: <651vknF2cvjl2U1@mid.individual.net>)
- * Lower the distance missile weapons can fire into the 10-14 grids range.
- * Make monster arrow attacks sometimes miss.  (#537)
- * Some improvements to monster AI.
-
-
-Port
-----
-
- * X11: Add -x commandline option for choosing the location of the
-   settings file (#333, patch by morth)
- * GTK2: Continue work; add term windows, graphics, etc. and also some
-   special dedicated display windows, like "messages" and "monster
-   list". (shanoah)
- * OS X: the OS X version is now a universal binary, and runs faster,
-   better, quicker, and with more sound than before.  (Rowan Beentje)
-
-
-Code-level
-----------
-
-Monster HP is now specified as an average value around which to
-randomise, instead of using a "12d5"-type calculation.  Uniques always
-have the number of HPs specified in the monster.txt file, like before.
-This is copied from Ey.
-
-A lot of code-level cleanup has been applied to this release, much of it
-still in flux.  Many new files have been split out of existing files,
-which should now have much more self-explanitory names.  The player/, 
-monster/ and object/ subdirectories have been created, to aid seperation
-of code.
-
-There is also a new generic effects handler so that all item activations
-and use abilities share the same code; this replaces use-obj.c and a lot
-of descriptions from lib/edit/object.txt. (#234)
-
-Memory handling has been reviewed.  Now, all code should assume that
-allocation will succeed, just like it did already.  There is also a
-realloc()-style function along with its own hook.  string_make() has
-been modified to no longer return a "const char *", and so all the code
-now only uses "const" when it means "const".  Some macros have been
-removed.
-
-"Elly" rewrote the message and quark packages, previously in util.c,
-and in the process split them out into their own z- files.  The z-msg
-package is now much more understandable but marginally less "efficient",
-and certainly less "optimised".
-
-Option definitions have moved to option.h, and the names and
-descriptions for options have moved to option.c.  Option data is now
-stored in a much more visually compact way, much more suitable for
-editing than the old system was. (#64)
-
-Additionally, a new file API has been introduced which combines the
-previous mishmash of fd_*() and my_f*() calls into a simpler, better
-documented interface.  (#137)
-
-Store stocking is specified in lib/edit/store.txt now, in a reasonably
-flexible format.
-
-A fair bit of work has gone into allowing item names to be used in the
-edit files rather than the tval/sval numbers.  For example, see the
-new store.txt file; but also the lib/pref/ graphics files, and the
-starting items in the p_class.txt file, amongst others.  This is a
-fairly easy thing to do and is a massive massive usability enhancement.
-It means that invalid item references are caught much sooner, since if
-an item is removed, all references to its name become invalid.
-
-Set up an event system for UI display updates, where the game
-communicates with the UI by sending messages saying that something's
-changed that the UI might be interested in, rather than deciding that
-specific things should be redraw.  The main screen updates all use this
-system now.  Amongst other things, this system should help things like
-the borg and graphical frontends, because they can hook right into
-changes in state.  (#348)
-
-object1.c and object2.c have been split out into a series of files,
-obj-{desc,make,ui,util}.c.  This makes it much easier to remember what
-is where.  Also, object_desc() has seen a rewrite, so hopefully it's a
-lot more hackable now.
-
-The beginnings of an organised code documentation scheme have started,
-using doxygen.  Makefile.std provides an easy mechanism to generate docs
-(try "make docs").
-
-Other assorted changes:
- * Remove a whole load of useless or unused configuration options from
-   config.h.
- * "make -f Makefile.inc depgen" will output "Makefile.new", which then
-   contains up-to-date dependencies for the project.
- * Add "flags" back to object_type, removing the need for the hacky
-   "xtra" bytes.  This paves the way for e.g. fireproofing scrolls
-   later. (#120)
- * Makefile for MSVC/NMAKE command-line build.  Currently works with
-   MSVC 6+; flags could use tweaking for MSVC 8+.
- * Clean up racial and class skill values into arrays.  (Kenneth Boyd)
- * Use header file guards in all header files, and use a consistent
-   naming scheme for them ("Elly")
- * Add a very basic test harness for "unit testing" of the game's code,
-   though this is barely used at present.  Thanks to Fennec for cleaning
-   this up a bit.
- * Introduce the one_in_() notation to the game, for percentile dice.
- * Move to using randint0() and randint1() for random numbers.
- * Add proper transparency to the PNG files.  (fixes #270; thanks to Rowan Beentje
- * Move to using flags[6] for monster flags rather than individual flagsets.
- * Score code moved to score.c and extensively refactored.
+Invisible code changes:
+(#513) Refactor the code that prompts for character dump filenames so that it can be overriden by platform-native ports.
+Make "make clean" remove all object files in the list, to catch files in subdirectories.
+Commit the beginnings of a flag-based terrain system; note that it does absolutely nothing as yet.
+Make the z-virt defines cast to the right type so that assignment errors can get caught a bit ealier on.
+Fix autoconf install errors.
+Remove an unnecessary call to getlogin() which was screwing up su'd users.
