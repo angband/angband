@@ -498,17 +498,20 @@ typedef struct
 /* All possible item actions */
 static item_act_t item_actions[] =
 {
+	/* Not setting IS_HARMLESS for this one because it could cause a true
+	 * dangerous command to not be prompted, later.
+	 */
 	{ obj_uninscribe, "uninscribe",
 	  "Un-inscribe which item? ", "You have nothing to un-inscribe.",
 	  obj_has_inscrip, (USE_EQUIP | USE_INVEN | USE_FLOOR), NULL },
 
 	{ obj_inscribe, "inscribe",
 	  "Inscribe which item? ", "You have nothing to inscribe.",
-	  NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR), NULL },
+	  NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL },
 
 	{ obj_examine, "examine",
 	  "Examine which item? ", "You have nothing to examine.",
-	  NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR), NULL },
+	  NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL },
 
 	/*** Takeoff/drop/wear ***/
 	{ obj_takeoff, "takeoff",
@@ -530,7 +533,7 @@ static item_act_t item_actions[] =
 	/*** Spellbooks ***/
 	{ obj_browse, "browse",
 	  "Browse which book? ", "You have no books that you can read.",
-	  obj_can_browse, (USE_INVEN | USE_FLOOR), NULL },
+	  obj_can_browse, (USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL },
 
 	{ obj_study, "study",
 	  "Study which book? ", "You have no books that you can read.",

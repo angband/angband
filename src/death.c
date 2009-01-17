@@ -342,7 +342,7 @@ static void death_examine(void *unused, const char *title)
 	q = "Examine which item? ";
 	s = "You have nothing to examine.";
 
-	while (get_item(&item, q, s, (USE_INVEN | USE_EQUIP)))
+	while (get_item(&item, q, s, (USE_INVEN | USE_EQUIP | IS_HARMLESS)))
 	{
 		object_type *o_ptr = &inventory[item];
 

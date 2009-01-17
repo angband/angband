@@ -937,6 +937,7 @@ enum
 #define RBE_EXP_40		27
 #define RBE_EXP_80		28
 #define RBE_HALLU		29
+#define RBE_MAX			RBE_HALLU
 
 
 /*** Function flags ***/
@@ -1008,6 +1009,7 @@ enum
 #define USE_INVEN		0x02	/* Allow inven items */
 #define USE_FLOOR		0x04	/* Allow floor items */
 #define CAN_SQUELCH		0x08	/* Allow selection of all squelched items */
+#define IS_HARMLESS		0x10	/* Ignore generic warning inscriptions */
 
 
 /*** Player flags ***/

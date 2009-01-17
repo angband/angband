@@ -567,7 +567,7 @@ bool verify_item(cptr prompt, int item)
  *
  * The item can be negative to mean "item on floor".
  */
-static bool get_item_allow(int item)
+static bool get_item_allow(int item, bool is_harmless)
 {
 	object_type *o_ptr;
 	char verify_inscrip[] = "!*";
@@ -584,7 +584,11 @@ static bool get_item_allow(int item)
 	verify_inscrip[1] = p_ptr->command_cmd;
 
 	/* Find both sets of inscriptions, add togther, and prompt that number of times */
-	n = check_for_inscrip(o_ptr, "!*") + check_for_inscrip(o_ptr, verify_inscrip);
+	n = check_for_inscrip(o_ptr, verify_inscrip);
+
+	if (!is_harmless)
+		n += check_for_inscrip(o_ptr, "!*");
+
 	while (n--)
 	{
 		if (!verify_item("Really try", item))
@@ -759,6 +763,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	bool use_equip = ((mode & USE_EQUIP) ? TRUE : FALSE);
 	bool use_floor = ((mode & USE_FLOOR) ? TRUE : FALSE);
 	bool can_squelch = ((mode & CAN_SQUELCH) ? TRUE : FALSE);
+	bool is_harmless = ((mode & IS_HARMLESS) ? TRUE : FALSE);
 
 	bool allow_inven = FALSE;
 	bool allow_equip = FALSE;
@@ -1182,7 +1187,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 						k = 0 - floor_list[0];
 
 						/* Allow player to "refuse" certain actions */
-						if (!get_item_allow(k))
+						if (!get_item_allow(k, is_harmless))
 						{
 							done = TRUE;
 							break;
@@ -1260,7 +1265,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 				}
 
 				/* Allow player to "refuse" certain actions */
-				if (!get_item_allow(k))
+				if (!get_item_allow(k, is_harmless))
 				{
 					done = TRUE;
 					break;
@@ -1320,7 +1325,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 				}
 
 				/* Allow player to "refuse" certain actions */
-				if (!get_item_allow(k))
+				if (!get_item_allow(k, is_harmless))
 				{
 					done = TRUE;
 					break;
@@ -1411,7 +1416,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 				}
 
 				/* Allow player to "refuse" certain actions */
-				if (!get_item_allow(k))
+				if (!get_item_allow(k, is_harmless))
 				{
 					done = TRUE;
 					break;

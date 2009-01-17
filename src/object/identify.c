@@ -108,6 +108,35 @@ void object_id_on_wield(object_type *o_ptr)
 
 	if (!obvious) return;
 
+	/* Strange messages for strange properties (this way, we don't have
+	 * to give them when the item is identified).
+	 *
+	 * Perhaps these messages should be in a new edit file?
+	 */
+
+	if (f1 & TR1_STR)
+		msg_format ("You feel strangely %s!", o_ptr->pval > 0 ? "strong" : "weak");
+	if (f1 & TR1_INT)
+		msg_format ("You feel strangely %s!", o_ptr->pval > 0 ? "smart" : "stupid");
+	if (f1 & TR1_WIS)
+		msg_format ("You feel strangely %s!", o_ptr->pval > 0 ? "wise" : "naive");
+	if (f1 & TR1_DEX)
+		msg_format ("You feel strangely %s!", o_ptr->pval > 0 ? "dextrous" : "clumsy");
+	if (f1 & TR1_CON)
+		msg_format ("You feel strangely %s!", o_ptr->pval > 0 ? "healthy" : "sickly");
+	if (f1 & TR1_CHR)
+		msg_format ("You feel strangely %s!", o_ptr->pval > 0 ? "cute" : "ugly");
+	if (f1 & TR1_STEALTH)
+		msg_format ("You feel strangely %s.", o_ptr->pval > 0 ? "stealthy" : "noisy");
+	if (f1 & TR1_SPEED)
+		msg_format ("You feel strangely %s.", o_ptr->pval > 0 ? "quick" : "sluggish");
+	if (f1 & (TR1_BLOWS | TR1_SHOTS))
+		msg_format ("Your hands strangely %s!", o_ptr->pval > 0 ? "tingle!" : "ache.");
+	if (f3 & TR3_LITE)
+		msg_print("It shines strangely!");
+	if (f3 & TR3_TELEPATHY)
+		msg_print("Your mind feels strangely sharper!");
+
 	/* Mark the item */
 	if (artifact_p(o_ptr))
 	{

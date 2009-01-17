@@ -2225,7 +2225,7 @@ E:HERO
 N:345:Berserk Strength
 G:!:d
 I:75:34:0
-W:3:0:4:00
+W:3:0:4:100
 A:100:3 to 100
 F:EASY_KNOW
 E:SHERO

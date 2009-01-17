@@ -836,7 +836,7 @@ void do_cmd_query_symbol(void)
 
 
 	/* Get a character, or abort */
-	if (!get_com("Enter character to be identified: ", &sym)) return;
+	if (!get_com("Enter character to be identified, or control+[ANU]: ", &sym)) return;
 
 	/* Find that character info, and describe it */
 	for (i = 0; ident_info[i]; ++i)

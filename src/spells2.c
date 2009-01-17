@@ -289,7 +289,7 @@ static const int enchant_table[16] =
 static void uncurse_object(object_type *o_ptr)
 {
 	/* Uncurse it */
-	o_ptr->flags3 &= ~(TR3_LIGHT_CURSE);
+	o_ptr->flags3 &= ~(TR3_CURSE_MASK);
 
 	/* Mark as uncursed */
 	o_ptr->pseudo = INSCRIP_UNCURSED;
