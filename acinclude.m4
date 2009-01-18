@@ -11,6 +11,71 @@
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 # PARTICULAR PURPOSE.
 
+AC_DEFUN([_MY_PROG_MAKE_VAR],
+	 [AC_ARG_VAR([MAKE], [Name of a make program to use])dnl
+my_make=${MAKE-make}
+])
+AC_DEFUN([MY_PROG_MAKE_SYSVINC], [
+AC_REQUIRE([_MY_PROG_MAKE_VAR])dnl
+
+AC_CACHE_CHECK([if $my_make supports SysV-style inclusion],
+	[my_cv_make_inclusion_sysv],
+	[my_cv_make_inclusion_sysv=no
+	cat >conftest.inc <<EOF
+conftest.foo:
+	@echo baz
+EOF
+	cat >conftest.mk <<EOF
+inc@&t@lude conftest.inc
+EOF
+	if test x"`$my_make -f conftest.mk conftest.foo | grep baz`" = x"baz"; then
+		my_cv_make_inclusion_sysv=yes
+	else
+		my_cv_make_inclusion_sysv=no
+	fi
+	rm -f conftest.inc conftest.mk])
+
+if test x$my_cv_make_inclusion_sysv = xno ; then
+	AC_MSG_ERROR([A 'make' supporting SysV file inclusion is required.])
+fi])
+
+AC_DEFUN([MY_PROG_MAKE_SINCLUDE], [
+AC_REQUIRE([_MY_PROG_MAKE_VAR])dnl
+AC_CACHE_CHECK([for $my_make silent inc@&t@lude syntax],
+	[my_cv_make_sinc@&t@lude_syntax],
+	[my_cv_make_sinc@&t@lude_syntax=none
+	if test x$my_cv_make_sinc@&t@lude_syntax = xnone ; then
+		cat >conftest.mk <<EOF
+-inc[]lude "conftest.inc"
+conftest.foo:
+EOF
+		if $my_make -f conftest.mk conftest.foo &>/dev/null ; then
+			my_cv_make_sinc@&t@lude_syntax=gnu
+		fi
+		rm conftest.mk
+	fi
+	if test x$my_cv_make_sinc@&t@lude_syntax = xnone ; then
+		cat >conftest.mk <<EOF
+.sinc[]lude "conftest.inc"
+conftest.foo:
+EOF
+		if $my_make -f conftest.mk conftest.foo &>/dev/null ; then
+			my_cv_make_sinc@&t@lude_syntax=bsd
+		fi
+		rm conftest.mk
+	fi])
+
+AC_SUBST([MAKE_SINCLUDE])
+if test x$my_cv_make_sinc@&t@lude_syntax = xgnu ; then
+	MAKE_SINCLUDE=-inc@&t@lude
+else
+	if test x$my_cv_make_sinc@&t@lude_syntax = xbsd ; then
+		MAKE_SINCLUDE=[.sinc@&t@lude]
+	else
+		AC_MSG_ERROR([$my_make does not support a supported silent inc@&t@lude syntax])
+	fi
+fi])
+
 AC_DEFUN([MY_EXPAND_DIR],
 	[$1=$2
 	$1=`(

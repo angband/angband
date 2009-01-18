@@ -288,4 +288,5 @@ depend:
 # compatibility with automake follows
 am--refresh:
 
--include .depend
+FILE := .depend
+include $(MKPATH)sinclude.mk

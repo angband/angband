@@ -1,5 +1,6 @@
-include ../mk/rules.mk
-include ../mk/objective.mk
+MKPATH=../mk/
+include $(MKPATH)rules.mk
+include $(MKPATH)objective.mk
 
 # import source list
 include Makefile.src

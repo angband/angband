@@ -1,5 +1,6 @@
-include ../../mk/rules.mk
-include ../../mk/objective.mk
+MKPATH=../../mk/
+include $(MKPATH)rules.mk
+include $(MKPATH)objective.mk
 
 OBJECTIVE_DATA =	\
 	flvr-dvg.prf:${DATA_PATH}/pref \

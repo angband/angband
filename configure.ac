@@ -68,6 +68,9 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
+MY_PROG_MAKE_SYSVINC
+MY_PROG_MAKE_SINCLUDE
+
 AC_PATH_PROG(RM, rm)
 AC_PATH_PROG(MV, mv)
 AC_PATH_PROG(CP, cp)
@@ -247,7 +250,7 @@ AC_CHECK_FUNCS([setresgid setegid can_change_color stat])
 
 
 
-AC_CONFIG_FILES([mk/rules.mk])
+AC_CONFIG_FILES([mk/rules.mk mk/sinc@&t@lude.mk])
 AC_OUTPUT
 
 

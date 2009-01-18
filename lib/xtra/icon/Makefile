@@ -1,5 +1,6 @@
-include ../../../mk/rules.mk
-include ../../../mk/objective.mk
+MKPATH=../../../mk/
+include $(MKPATH)rules.mk
+include $(MKPATH)objective.mk
 
 OBJECTIVE_DATA = \
 	att-16.png:$(DATA_PATH)/xtra/icon \

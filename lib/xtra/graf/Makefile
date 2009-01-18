@@ -1,5 +1,6 @@
-include ../../../mk/rules.mk
-include ../../../mk/objective.mk
+MKPATH=../../../mk/
+include $(MKPATH)rules.mk
+include $(MKPATH)objective.mk
 
 OBJECTIVE_DATA = \
 	16x16.bmp:${DATA_PATH}/xtra/graf    \

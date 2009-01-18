@@ -1,5 +1,6 @@
-include ../../../mk/rules.mk
-include ../../../mk/objective.mk
+MKPATH=../../../mk/
+include $(MKPATH)rules.mk
+include $(MKPATH)objective.mk
 
 OBJECTIVE_DATA = \
 	sound.cfg:${DATA_PATH}/xtra/sound    \
