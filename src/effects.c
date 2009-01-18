@@ -742,8 +742,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_ENCHANT_ARMOR:
 		{
-			if (!enchant_spell(0, 0, 1)) return FALSE;
 			*ident = TRUE;
+			if (!enchant_spell(0, 0, 1)) return FALSE;
 			return TRUE;
 		}
 
