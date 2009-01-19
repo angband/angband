@@ -990,9 +990,9 @@ void acid_dam(int dam, cptr kb_str)
 
 	/* Change damage */
 	if (n >= 3) return;
-	else if (n == 2) dam = (dam + 5) / 6;
-	else if (n == 1) dam = (dam + 2) / 3;
-	else if (n == -1) dam = (dam * 4) / 3;
+	if (n >= 2) dam = (dam + 2) / 3;
+	if (n >= 1) dam = (dam + 2) / 3;
+	if (n == -1) dam = (dam * 4) / 3;
 
 	/* If any armor gets hit, defend the player */
 	if (minus_ac()) dam = (dam + 1) / 2;
@@ -1025,9 +1025,9 @@ void elec_dam(int dam, cptr kb_str)
 
 	/* Change damage */
 	if (n >= 3) return;
-	else if (n == 2) dam = (dam + 5) / 6;
-	else if (n == 1) dam = (dam + 2) / 3;
-	else if (n == -1) dam = (dam * 4) / 3;
+	if (n == 2) dam = (dam + 2) / 3;
+	if (n == 1) dam = (dam + 2) / 3;
+	if (n == -1) dam = (dam * 4) / 3;
 
 	/* Take damage */
 	take_hit(dam, kb_str);
@@ -1059,9 +1059,9 @@ void fire_dam(int dam, cptr kb_str)
 
 	/* Change damage */
 	if (n >= 3) return;
-	else if (n == 2) dam = (dam + 5) / 6;
-	else if (n == 1) dam = (dam + 2) / 3;
-	else if (n == -1) dam = (dam * 4) / 3;
+	if (n >= 2) dam = (dam + 2) / 3;
+	if (n >= 1) dam = (dam + 2) / 3;
+	if (n == -1) dam = (dam * 4) / 3;
 
 	/* Take damage */
 	take_hit(dam, kb_str);
@@ -1091,9 +1091,9 @@ void cold_dam(int dam, cptr kb_str)
 
 	/* Change damage */
 	if (n >= 3) return;
-	else if (n == 2) dam = (dam + 5) / 6;
-	else if (n == 1) dam = (dam + 2) / 3;
-	else if (n == -1) dam = (dam * 4) / 3;
+	if (n >= 2) dam = (dam + 2) / 3;
+	if (n >= 1) dam = (dam + 2) / 3;
+	if (n == -1) dam = (dam * 4) / 3;
 
 	/* Take damage */
 	take_hit(dam, kb_str);
