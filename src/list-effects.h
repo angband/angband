@@ -85,12 +85,12 @@ EFFECT(RESIST_COLD,    FALSE, "grants temporary resistance to cold for 1d10+10 t
 EFFECT(RESIST_POIS,    FALSE, "grants temporary resistance to poison for 1d10+10 turns")
 EFFECT(RESIST_ALL,     FALSE, "grants temporary resistance to acid, electricity, fire, cold and poison for 1d20+20 turns")
 
-EFFECT(DETECT_TREASURE,   FALSE, "detects all gold and objects on the level")
-EFFECT(DETECT_TRAP,       FALSE, "detects all traps in the surrounding area")
-EFFECT(DETECT_DOORSTAIR,  FALSE, "detects all doors and stairs on the level")
-EFFECT(DETECT_INVIS,      FALSE, "detects all invisible creatures in the surrounding area")
-EFFECT(DETECT_EVIL,       FALSE, "detects all evil creatures in the immediate area")
-EFFECT(DETECT_ALL,        FALSE, "detects treasure, objects, traps, doors, stairs, and all creatures in the surrounding area")
+EFFECT(DETECT_TREASURE,   FALSE, "detects gold and objects nearby")
+EFFECT(DETECT_TRAP,       FALSE, "detects traps nearby")
+EFFECT(DETECT_DOORSTAIR,  FALSE, "detects doors and stairs nearby")
+EFFECT(DETECT_INVIS,      FALSE, "detects invisible creatures nearby")
+EFFECT(DETECT_EVIL,       FALSE, "detects evil creatures nearby")
+EFFECT(DETECT_ALL,        FALSE, "detects treasure, traps, doors, stairs, and all creatures nearby")
 
 EFFECT(ENCHANT_TOHIT,  FALSE, "attempts to magically enhance a weapon's to-hit bonus")
 EFFECT(ENCHANT_TODAM,  FALSE, "attempts to magically enhance a weapon's to-dam bonus")
