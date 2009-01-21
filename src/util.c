@@ -2622,7 +2622,7 @@ bool get_check(cptr prompt)
 /**
  * Text-native way of getting a filename.
  */
-bool get_file_text(const char *suggested_name, char *path, size_t len)
+static bool get_file_text(const char *suggested_name, char *path, size_t len)
 {
 	char buf[160];
 

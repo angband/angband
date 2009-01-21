@@ -625,7 +625,7 @@ extern bool askfor_aux(char *buf, size_t len, bool keypress_h(char *, size_t, si
 extern bool get_string(cptr prompt, char *buf, size_t len);
 extern s16b get_quantity(cptr prompt, int max);
 extern bool get_check(cptr prompt);
-bool (*get_file)(const char *suggested_name, char *path, size_t len);
+extern bool (*get_file)(const char *suggested_name, char *path, size_t len);
 extern bool get_com(cptr prompt, char *command);
 extern bool get_com_ex(cptr prompt, ui_event_data *command);
 extern void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp);
