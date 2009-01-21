@@ -738,6 +738,21 @@ static const struct state_info effects[] =
 
 
 /*
+ * Print recall status.
+ */
+static size_t prt_recall(int row, int col)
+{
+	if (p_ptr->word_recall)
+	{
+		c_put_str(TERM_WHITE, "Recall", row, col);
+		return sizeof "Recall";
+	}
+
+	return 0;
+}
+
+
+/*
  * Print cut indicator.
  */
 static size_t prt_cut(int row, int col)
@@ -952,8 +967,8 @@ static size_t prt_buttons(int row, int col)
 typedef size_t status_f(int row, int col);
 
 status_f *status_handlers[] =
-{ prt_state, prt_cut, prt_stun, prt_hunger, prt_study, prt_tmd, prt_dtrap,
-  prt_buttons };
+{ prt_recall, prt_state, prt_cut, prt_stun, prt_hunger, prt_study, prt_tmd,
+  prt_dtrap, prt_buttons };
 
 
 /*
