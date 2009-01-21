@@ -18,35 +18,6 @@
 #include "angband.h"
 
 
-/*
- * This file provides support for Angband using the Curses library.  To use
- * it, define USE_GCU in your makefile, and if you are using the ncurses
- * library, also add USE_NCURSES.
- *
- *
- * Note that this file is not *intended* to support non-Unix machines, nor is
- * it intended to support VMS or other bizarre setups.  It should, however,
- * work with most versions of "curses" or "ncurses".
- *
- * This package assumes that the underlying "curses" handles both the "nonl()"
- * and "cbreak()" commands correctly, see the "OPTION" below.
- *
- *
- * See also "USE_CAP" and "main-cap.c" for code that bypasses "curses"
- * and uses the "termcap" information directly, or even bypasses the
- * "termcap" information and sends direct vt100 escape sequences.
- *
- * This file provides up to 4 term windows, or alternatively, bigscreen
- * support.
- *
- * This file will attempt to redefine the screen colors to conform to
- * standard Angband colors.  It will only do so if the terminal type
- * indicates that it can do so.
- *
- * Consider the use of "savetty()" and "resetty()".  XXX XXX XXX
- */
-
-
 #ifdef USE_GCU
 
 #include "main.h"
@@ -72,6 +43,8 @@
 #else
 # include <curses.h>
 #endif
+
+#include <term.h>
 
 #undef term
 
@@ -244,6 +217,11 @@ static void keymap_game_prepare(void)
 
 	/* Force "Ctrl-Z" to suspend */
 	game_termios.c_cc[VSUSP] = (char)26;
+
+#ifdef VDSUSP
+	/* Hack -- disable "Ctrl-Y" on *BSD */
+	game_termios.c_cc[VDSUSP] = (char)-1;
+#endif
 
 	/* Hack -- Leave "VSTART/VSTOP" alone */
 
@@ -586,7 +564,6 @@ static errr Term_curs_gcu(int x, int y)
 static errr Term_wipe_gcu(int x, int y, int n)
 {
 	term_data *td = (term_data *)(Term->data);
-	char buf[1024];
 
 	/* Place cursor */
 	wmove(td->win, y, x);
@@ -600,11 +577,7 @@ static errr Term_wipe_gcu(int x, int y, int n)
 	/* Clear some characters */
 	else
 	{
-		/* Format a buffer */
-		strnfmt(buf, sizeof(buf), "%*c", n, ' ');
-
-		/* Output */
-		waddstr(td->win, buf);
+		whline(td->win, ' ', n);
 	}
 
 	/* Success */
@@ -618,7 +591,6 @@ static errr Term_wipe_gcu(int x, int y, int n)
 static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 {
 	term_data *td = (term_data *)(Term->data);
-	char buf[1024];
 
 #ifdef A_COLOR
 	/* Set the color */
@@ -628,11 +600,8 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 	/* Move the cursor */
 	wmove(td->win, y, x);
 
-	/* Format to appropriate size */
-	strnfmt(buf, sizeof(buf), "%.*s", n, s);
-
 	/* Write to screen */
-	waddstr(td->win, buf);
+	waddnstr(td->win, s, n);
 
 #ifdef A_COLOR
 	/* Unset the color */
@@ -762,7 +731,7 @@ errr init_gcu(int argc, char **argv)
 
 	/* Can we change colors? */
 	can_fix_color = (can_use_color && can_change_color() &&
-	                 (COLORS >= 16) && (COLOR_PAIRS > 8));
+	                 orig_colors && (COLORS >= 16) && (COLOR_PAIRS > 8));
 
 #endif
 

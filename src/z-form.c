@@ -545,6 +545,12 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 				cptr arg;
 				char arg2[1024];
 
+				/* XXX There is a big bug here: if one
+				 * passes "%.0s" to strnfmt, then really we
+				 * should not dereference the arg at all.
+				 * But it does.  See bug #666.
+				 */
+
 				/* Get the next argument */
 				arg = tval.t == T_END ? va_arg(vp, cptr) : tval.u.s;
 
