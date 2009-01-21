@@ -236,7 +236,7 @@ struct player_race
 
 	s16b r_adj[A_MAX];	/* Racial stat bonuses */
 
-	s16b r_skills[SKILL_MAX_NO_RACE_CLASS];	/* racial skills */
+	s16b r_skills[SKILL_MAX];	/* racial skills */
 
 	byte r_mhp;			/* Race hit-dice modifier */
 	byte r_exp;			/* Race experience factor */
@@ -289,8 +289,8 @@ struct player_class
 
 	s16b c_adj[A_MAX];	/* Class stat modifier */
 
-	s16b c_skills[SKILL_MAX_NO_RACE_CLASS];	/* class skills */
-	s16b x_skills[SKILL_MAX_NO_RACE_CLASS];	/* extra skills */
+	s16b c_skills[SKILL_MAX];	/* class skills */
+	s16b x_skills[SKILL_MAX];	/* extra skills */
 
 	s16b c_mhp;			/* Class hit-dice adjustment */
 	s16b c_exp;			/* Class experience factor */

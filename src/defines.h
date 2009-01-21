@@ -462,9 +462,6 @@ enum
 	SKILL_DIGGING,			/* Skill: Digging */
 
 	SKILL_MAX,
-
-	/* skills that have racial/class modifiers, scheduled for obviation later */
-	SKILL_MAX_NO_RACE_CLASS = SKILL_MAX - 2
 };
 
 

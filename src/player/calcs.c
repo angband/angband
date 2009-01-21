@@ -598,16 +598,8 @@ void calc_bonuses(object_type inventory[], player_state *state)
 	state->see_infra = rp_ptr->infra;
 
 	/* Base skills */
-	for (i = 0; i < SKILL_MAX_NO_RACE_CLASS; i++)
-	{
+	for (i = 0; i < SKILL_MAX; i++)
 		state->skills[i] = rp_ptr->r_skills[i] + cp_ptr->c_skills[i];
-	}
-
-	/* Base skill -- combat (throwing) */
-	state->skills[SKILL_TO_HIT_THROW] = state->skills[SKILL_TO_HIT_BOW];
-
-	/* Base skill -- digging */
-	state->skills[SKILL_DIGGING] = 0;
 
 
 	/*** Analyze player ***/
@@ -965,14 +957,9 @@ void calc_bonuses(object_type inventory[], player_state *state)
 	/* Affect Skill -- digging (STR) */
 	state->skills[SKILL_DIGGING] += adj_str_dig[state->stat_ind[A_STR]];
 
-	/* Affect Skills (Level, by Class */
-	for (i = 0; i < SKILL_MAX_NO_RACE_CLASS; i++)
-	{
+	/* Affect Skills (Level, by Class) */
+	for (i = 0; i < SKILL_MAX; i++)
 		state->skills[i] += (cp_ptr->x_skills[i] * p_ptr->lev / 10);
-	}
-
-	/* Affect Skill -- combat (throwing) (Level, by Class) */
-	state->skills[SKILL_TO_HIT_THROW] += (cp_ptr->x_skills[SKILL_TO_HIT_BOW] * p_ptr->lev / 10);
 
 	/* Limit Skill -- digging from 1 up */
 	if (state->skills[SKILL_DIGGING] < 1) state->skills[SKILL_DIGGING] = 1;

@@ -2511,12 +2511,13 @@ static errr grab_one_racial_flag(player_race *pr_ptr, cptr what)
  */
 static bool parse_skills(s16b *skills_array, const char *buf)
 {
-	int dis, dev, sav, stl, srh, fos, thn, thb;
+	int dis, dev, sav, stl, srh, fos, thn, thb, throw, dig;
 
 	/* Scan for the values */
-	if (8 != sscanf(buf, "%d:%d:%d:%d:%d:%d:%d:%d",
-			            &dis, &dev, &sav, &stl,
-			            &srh, &fos, &thn, &thb)) return FALSE;
+	if (SKILL_MAX != sscanf(buf, "%d:%d:%d:%d:%d:%d:%d:%d:%d:%d",
+			&dis, &dev, &sav, &stl, &srh,
+			&fos, &thn, &thb, &throw, &dig))
+		return FALSE;
 
 	/* Save the values */
 	skills_array[SKILL_DISARM] = dis;
@@ -2527,6 +2528,8 @@ static bool parse_skills(s16b *skills_array, const char *buf)
 	skills_array[SKILL_SEARCH_FREQUENCY] = fos;
 	skills_array[SKILL_TO_HIT_MELEE] = thn;
 	skills_array[SKILL_TO_HIT_BOW] = thb;
+	skills_array[SKILL_TO_HIT_THROW] = throw;
+	skills_array[SKILL_DIGGING] = dig;
 
 	return TRUE;
 }
