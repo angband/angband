@@ -486,10 +486,6 @@ void py_attack(int y, int x)
 	disturb(0, 0);
 
 
-	/* Disturb the monster */
-	wake_monster(m_ptr);
-
-
 	/* Extract monster name (or "it") */
 	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
@@ -510,6 +506,10 @@ void py_attack(int y, int x)
 		/* Done */
 		return;
 	}
+
+
+	/* Disturb the monster */
+	wake_monster(m_ptr);
 
 
 	/* Get the weapon */
