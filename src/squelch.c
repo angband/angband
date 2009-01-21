@@ -296,7 +296,7 @@ void autoinscribe_pack(void)
 	int i;
 
 	/* Cycle through the inventory */
-	for (i = INVEN_PACK; i > 0; i--)
+	for (i = INVEN_PACK; i >= 0; i--)
 	{
 		/* Skip empty items */
 		if (!inventory[i].k_idx) continue;
