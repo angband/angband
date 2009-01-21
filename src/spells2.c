@@ -3454,18 +3454,11 @@ bool curse_armor(void)
 		/* Oops */
 		msg_format("A terrible black aura blasts your %s!", o_name);
 
-		/* Blast the armor */
-		o_ptr->name1 = 0;
-		o_ptr->name2 = EGO_BLASTED;
-		o_ptr->to_a = 0 - randint1(5) - randint1(5);
-		o_ptr->to_h = 0;
-		o_ptr->to_d = 0;
-		o_ptr->ac = 0;
-		o_ptr->dd = 0;
-		o_ptr->ds = 0;
+		/* Take down bonus a wee bit */
+		o_ptr->to_a -= randint1(3);
 
 		/* Curse it */
-		o_ptr->flags3 |= TR3_LIGHT_CURSE;
+		o_ptr->flags3 |= (TR3_LIGHT_CURSE | TR3_HEAVY_CURSE);
 
 		/* Recalculate bonuses */
 		p_ptr->update |= (PU_BONUS);
@@ -3474,7 +3467,7 @@ bool curse_armor(void)
 		p_ptr->update |= (PU_MANA);
 
 		/* Window stuff */
-		p_ptr->redraw |= (PR_INVEN | PR_EQUIP );
+		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 	}
 
 	return (TRUE);
@@ -3515,18 +3508,12 @@ bool curse_weapon(void)
 		/* Oops */
 		msg_format("A terrible black aura blasts your %s!", o_name);
 
-		/* Shatter the weapon */
-		o_ptr->name1 = 0;
-		o_ptr->name2 = EGO_SHATTERED;
-		o_ptr->to_h = 0 - randint1(5) - randint1(5);
-		o_ptr->to_d = 0 - randint1(5) - randint1(5);
-		o_ptr->to_a = 0;
-		o_ptr->ac = 0;
-		o_ptr->dd = 0;
-		o_ptr->ds = 0;
+		/* Hurt it a bit */
+		o_ptr->to_h = 0 - randint1(3);
+		o_ptr->to_d = 0 - randint1(3);
 
 		/* Curse it */
-		o_ptr->flags3 |= TR3_LIGHT_CURSE;
+		o_ptr->flags3 |= (TR3_LIGHT_CURSE | TR3_HEAVY_CURSE);
 
 		/* Recalculate bonuses */
 		p_ptr->update |= (PU_BONUS);
