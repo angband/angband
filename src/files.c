@@ -1945,7 +1945,7 @@ errr file_character(const char *path, bool full)
 	display_player(0);
 
 	/* Dump part of the screen */
-	for (y = 2; y < 23; y++)
+	for (y = 1; y < 23; y++)
 	{
 		/* Dump each row */
 		for (x = 0; x < 79; x++)
