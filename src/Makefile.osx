@@ -27,8 +27,10 @@ EXE =angband
 TOOLDIR = /Developer/Tools
 SETFILE = $(TOOLDIR)/SetFile
 
+#WARNINGS = -W -Wall -Wextra -Wno-unused-parameter -Wold-style-definition -Wmissing-declarations -Wredundant-decls -Wpointer-arith -Wcast-align -Wwrite-strings -Winline -Wformat-security -Winit-self -Wmissing-include-dirs -Wundef -Wmissing-format-attribute -Wnested-externs
+WARNINGS = -Wall -Wno-unused-parameter
 CFLAGS = \
-	-I. -Wall -std=gnu99 $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
+	-I. $(WARNINGS) -std=gnu99 $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
 	-DPRIVATE_USER_PATH=\"~/Library/Preferences\" -DUSE_PRIVATE_PATHS \
 	-arch ppc -arch i386 -mmacosx-version-min=10.0
 LIBS = -framework CoreFoundation -framework QuickTime -framework Carbon \
@@ -101,9 +103,11 @@ clean:
 #
 
 main-crb.o : main-crb.c
-	CC $(CFLAGS) -x objective-c -c -o $@ $<
+	@printf "%10s %-20s (objective-c)\n" CC $<
+	@CC $(CFLAGS) -x objective-c -c -o $@ $<
 %.o : %.c
-	CC $(CFLAGS) -c -o $@ $<
+	@printf "%10s %-20s\n" CC $<
+	@CC $(CFLAGS) -c -o $@ $<
 
 
 main-crb.o: osx/osx_tables.h
