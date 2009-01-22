@@ -198,12 +198,12 @@ const char *feature_group_text[] =
 
 /* Useful method declarations */
 static void display_visual_list(int col, int row, int height, int width,
-				byte attr_top, char char_left);
+				byte attr_top, byte char_left);
 
 static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr, 
 				int height, int width, 
-				byte *attr_top_ptr, char *char_left_ptr, 
-				byte *cur_attr_ptr, char *cur_char_ptr,
+				byte *attr_top_ptr, byte *char_left_ptr, 
+				byte *cur_attr_ptr, byte *cur_char_ptr,
 				int col, int row, int *delay);
 
 static void place_visual_list_cursor(int col, int row, byte a,
@@ -334,7 +334,7 @@ static void display_group_member(menu_type *menu, int oid,
 	/* Do visual mode */
 	if (o_funcs->is_visual && o_funcs->xattr)
 	{
-		char c = *o_funcs->xchar(oid);
+		byte c = *o_funcs->xchar(oid);
 		byte a = *o_funcs->xattr(oid);
 
 		c_put_str(attr, format((c & 0x80) ? "%02x/%02x" : "%02x/%d", a, c), row, 60);
@@ -381,7 +381,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	/* display state variables */
 	bool visual_list = FALSE;
 	byte attr_top = 0;
-	char char_left = 0;
+	byte char_left = 0;
 
 	int delay = 0;
 
@@ -602,7 +602,8 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 					visual_mode_command(ke, &visual_list,
 					browser_rows-1, wid - (g_name_len + 3),
 					&attr_top, &char_left,
-					o_funcs.xattr(oid), o_funcs.xchar(oid),
+					o_funcs.xattr(oid), (byte*)
+					o_funcs.xchar(oid),
 					g_name_len + 3, 7, &delay))
 		{
 			continue;
@@ -743,7 +744,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 /*
  * Display visuals.
  */
-static void display_visual_list(int col, int row, int height, int width, byte attr_top, char char_left)
+static void display_visual_list(int col, int row, int height, int width, byte attr_top, byte char_left)
 {
 	int i, j;
 
@@ -760,7 +761,7 @@ static void display_visual_list(int col, int row, int height, int width, byte at
 		for (j = 0; j < width; j++)
 		{
 			byte a;
-			char c;
+			unsigned char c;
 			int x = col + actual_width(j);
 			int y = row + actual_width(i);
 			int ia, ic;
@@ -769,7 +770,7 @@ static void display_visual_list(int col, int row, int height, int width, byte at
 			ic = char_left + j;
 
 			a = (byte)ia;
-			c = (char)ic;
+			c = (unsigned char)ic;
 
 			/* Display symbol */
 			big_pad(x, y, a, c);
@@ -799,13 +800,16 @@ static void place_visual_list_cursor(int col, int row, byte a, byte c, byte attr
  */
 static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr, 
 				int height, int width, 
-				byte *attr_top_ptr, char *char_left_ptr, 
-				byte *cur_attr_ptr, char *cur_char_ptr,
+				byte *attr_top_ptr, byte *char_left_ptr, 
+				byte *cur_attr_ptr, byte *cur_char_ptr,
 				int col, int row, int *delay)
 {
 	static byte attr_old = 0;
 	static char char_old = 0;
 
+	/* These are the distance we want to maintain between the
+	 * cursor and borders.
+	 */
 	int frame_left = logical_width(10);
 	int frame_right = logical_width(10);
 	int frame_top = logical_height(4);
@@ -849,7 +853,7 @@ static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
 				*visual_list_ptr = TRUE;
 
 				*attr_top_ptr = (byte)MAX(0, (int)*cur_attr_ptr - frame_top);
-				*char_left_ptr = (char)MAX(-128, (int)*cur_char_ptr - frame_left);
+				*char_left_ptr = (char)MAX(0, (int)*cur_char_ptr - frame_left);
 
 				attr_old = *cur_attr_ptr;
 				char_old = *cur_char_ptr;
@@ -889,7 +893,7 @@ static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
 			{
 				/* Set the char */
 				*cur_char_ptr = char_idx;
-				*char_left_ptr = (char)MAX(-128, (int)*cur_char_ptr - frame_left);
+				*char_left_ptr = (char)MAX(0, (int)*cur_char_ptr - frame_left);
 			}
 
 			return TRUE;
@@ -903,7 +907,7 @@ static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
 				int eff_height = actual_height(height);
 				int d = target_dir(ke.key);
 				byte a = *cur_attr_ptr;
-				char c = *cur_char_ptr;
+				byte c = *cur_char_ptr;
 
 				/* Get mouse movement */
 				if (ke.key == '\xff')
@@ -923,13 +927,13 @@ static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
 						*cur_char_ptr = c = *char_left_ptr + mx;
 
 						/* Move the frame */
-						if (*char_left_ptr > MAX(-128, (int)c - frame_left))
+						if (*char_left_ptr > MAX(0, (int)c - frame_left))
 							(*char_left_ptr)--;
-						if (*char_left_ptr + eff_width < MIN(127, (int)c + frame_right))
+						if (*char_left_ptr + eff_width <= MIN(255, (int)c + frame_right))
 							(*char_left_ptr)++;
 						if (*attr_top_ptr > MAX(0, (int)a - frame_top))
 							(*attr_top_ptr)--;
-						if (*attr_top_ptr + eff_height < MIN(255, (int)a + frame_bottom))
+						if (*attr_top_ptr + eff_height <= MIN(255, (int)a + frame_bottom))
 							(*attr_top_ptr)++;
 
 						/* Delay */
@@ -955,9 +959,9 @@ static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
 				{
 					/* Restrict direction */
 					if ((a == 0) && (ddy[d] < 0)) d = 0;
-					if ((c == (char) -128) && (ddx[d] < 0)) d = 0;
+					if ((c == 0) && (ddx[d] < 0)) d = 0;
 					if ((a == 255) && (ddy[d] > 0)) d = 0;
-					if ((c == 127) && (ddx[d] > 0)) d = 0;
+					if ((c == 255) && (ddx[d] > 0)) d = 0;
 
 					a += ddy[d];
 					c += ddx[d];
@@ -967,19 +971,23 @@ static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
 					*cur_char_ptr = c;
 
 					/* Move the frame */
-					if ((ddx[d] < 0) && *char_left_ptr > MAX(-128, (int)c - frame_left))
+					if ((ddx[d] < 0) && *char_left_ptr > MAX(0, (int)c - frame_left))
 						(*char_left_ptr)--;
-					if ((ddx[d] > 0) && *char_left_ptr + eff_width <
-														MIN(127, (int)c + frame_right))
+					if ((ddx[d] > 0) && *char_left_ptr + eff_width <=
+														MIN(255, (int)c + frame_right))
 					(*char_left_ptr)++;
 
 					if ((ddy[d] < 0) && *attr_top_ptr > MAX(0, (int)a - frame_top))
 						(*attr_top_ptr)--;
-					if ((ddy[d] > 0) && *attr_top_ptr + eff_height <
+					if ((ddy[d] > 0) && *attr_top_ptr + eff_height <=
 													MIN(255, (int)a + frame_bottom))
 						(*attr_top_ptr)++;
 
-					if (d != 0) return TRUE;
+					/* We need to always eat the input even if it is clipped,
+					 * otherwise it will be interpreted as a change object
+					 * selection command with messy results.
+					 */
+					return TRUE;
 				}
 			}
 		}
