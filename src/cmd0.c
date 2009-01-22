@@ -280,7 +280,7 @@ static void do_cmd_try_debug(void)
 /*
  * Verify use of "borg" mode
  */
-static bool do_cmd_try_borg(void)
+static void do_cmd_try_borg(void)
 {
 	/* Ask first time */
 	if (!(p_ptr->noscore & NOSCORE_BORG))
