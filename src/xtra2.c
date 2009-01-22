@@ -500,18 +500,23 @@ int dir_transitions[10][10] =
  */
 bool get_aim_dir(int *dp)
 {
-	int dir;
-
+	/* Global direction */
+	int dir = p_ptr->command_dir;
+	
 	ui_event_data ke;
 
 	cptr p;
+
+	/* Initialize */
+	(*dp) = 0;
 
 	if (repeat_pull(dp))
 	{
 		/* Verify */
 		if (!(*dp == 5 && !target_okay()))
 		{
-			return (TRUE);
+			/* Use the direction */
+			dir = *dp;
 		}
 		else
 		{
@@ -520,14 +525,8 @@ bool get_aim_dir(int *dp)
 		}
 	}
 
-	/* Initialize */
-	(*dp) = 0;
-
-	/* Global direction */
-	dir = p_ptr->command_dir;
-
 	/* Hack -- auto-target if requested */
-	if (use_old_target && target_okay()) dir = 5;
+	if (use_old_target && target_okay() && !dir) dir = 5;
 
 	/* Ask until satisfied */
 	while (!dir)
@@ -631,10 +630,11 @@ bool get_aim_dir(int *dp)
 		msg_print("You are confused.");
 	}
 
+	/* Remember the direction if it is new */
+	if (!repeat_pull(dp)) repeat_push(dir);
+
 	/* Save direction */
 	(*dp) = dir;
-
-	repeat_push(dir);
 
 	/* A "valid" direction was entered */
 	return (TRUE);
