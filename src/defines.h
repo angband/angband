@@ -461,7 +461,7 @@ enum
 	SKILL_TO_HIT_THROW,		/* Skill: To hit (throwing) */
 	SKILL_DIGGING,			/* Skill: Digging */
 
-	SKILL_MAX,
+	SKILL_MAX
 };
 
 
