@@ -156,10 +156,15 @@ static int colortable[BASIC_COLORS];
 /*
  * Lookup table for the "alternate character set".
  *
- * The unsigned is critical, for instance on systems like Linux
- * where some ACS characters have the high bit.
+ * It's worth noting that curses already has this, as an undocumented
+ * (but exported) internal variable named acs_map.  I wish I could use
+ * it.
  */
-static unsigned char acs_table[128];
+static unsigned int acs_table[32] = {
+	0, '*', '#', '?', '?', '?', '?', '\'', '+', '?', '?', '+',
+	'+', '+', '+', '+', '~', '-', '-', '-', '_', '+', '+', '+',
+	'+', '|', '?', '?', '?', '?', '?', '.'
+};
 
 #endif
 
@@ -633,7 +638,7 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 		 */
 
 #ifdef A_ALTCHARSET
-		if (c > 128) c = ((int)acs_table[c - 128]) | A_ALTCHARSET;
+		if (c < 32) c = acs_table[c];
 #endif
 
 		if ((c & 255) < ' ' || (c & 255) == 127) {
@@ -846,19 +851,16 @@ errr init_gcu(int argc, char **argv)
 
 #ifdef A_ALTCHARSET
 	/* Build a quick access table for the "alternate character set". */
-	for (i = 0; i < 128; i++)
-		acs_table[i] = i;
 
-	for (i = 0; acs_chars && acs_chars[i] && acs_chars[i+1]; i += 2)
-	{
-		/* Paranoia -- the first element of an ACS mapping should
-		 * be a printable ASCII character.
-		 */
-		if (acs_chars[i] < ' ' || acs_chars[i] > '~')
-			continue;
-
-		acs_table[(unsigned)acs_chars[i]] = acs_chars[i+1];
-	}
+	acs_table[1] = ACS_DIAMOND;    acs_table[16] = ACS_S1;
+	acs_table[2] = ACS_CKBOARD;    acs_table[18] = ACS_HLINE;
+	acs_table[7] = ACS_DEGREE;     acs_table[20] = ACS_S9;
+	acs_table[8] = ACS_PLMINUS;    acs_table[21] = ACS_LTEE;
+	acs_table[11] = ACS_LRCORNER;  acs_table[22] = ACS_RTEE;
+	acs_table[12] = ACS_URCORNER;  acs_table[23] = ACS_BTEE;
+	acs_table[13] = ACS_ULCORNER;  acs_table[24] = ACS_TTEE;
+	acs_table[14] = ACS_LLCORNER;  acs_table[25] = ACS_VLINE;
+	acs_table[15] = ACS_PLUS;      acs_table[31] = ACS_BULLET;
 #endif
 
 
