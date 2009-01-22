@@ -1589,12 +1589,12 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			msg_print("Your nerves and muscles feel weak and lifeless!");
 			take_hit(damroll(10, 10), "a potion of Ruination");
-			(void)dec_stat(A_DEX, 25, TRUE);
-			(void)dec_stat(A_WIS, 25, TRUE);
-			(void)dec_stat(A_CON, 25, TRUE);
-			(void)dec_stat(A_STR, 25, TRUE);
-			(void)dec_stat(A_CHR, 25, TRUE);
-			(void)dec_stat(A_INT, 25, TRUE);
+			(void)dec_stat(A_DEX, TRUE);
+			(void)dec_stat(A_WIS, TRUE);
+			(void)dec_stat(A_CON, TRUE);
+			(void)dec_stat(A_STR, TRUE);
+			(void)dec_stat(A_CHR, TRUE);
+			(void)dec_stat(A_INT, TRUE);
 			*ident = TRUE;
 			return TRUE;
 		}

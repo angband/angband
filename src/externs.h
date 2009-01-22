@@ -464,7 +464,7 @@ extern void elec_dam(int dam, cptr kb_str);
 extern void fire_dam(int dam, cptr kb_str);
 extern void cold_dam(int dam, cptr kb_str);
 extern bool inc_stat(int stat);
-extern bool dec_stat(int stat, int amount, bool permanent);
+extern bool dec_stat(int stat, bool permanent);
 extern bool res_stat(int stat);
 extern bool apply_disenchant(int mode);
 extern bool project(int who, int rad, int y, int x, int dam, int typ, int flg);

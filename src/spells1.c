@@ -1115,61 +1115,26 @@ void cold_dam(int dam, cptr kb_str)
  */
 bool inc_stat(int stat)
 {
-	int value, gain;
-
-	/* Then augment the current/max stat */
-	value = p_ptr->stat_cur[stat];
+	int value = p_ptr->stat_cur[stat];
 
 	/* Cannot go above 18/100 */
-	if (value < 18+100)
-	{
-		/* Gain one (sometimes two) points */
-		if (value < 18)
-		{
-			gain = ((randint0(100) < 75) ? 1 : 2);
-			value += gain;
-		}
+	if (value >= 18+100) return FALSE;
 
-		/* Gain 1/6 to 1/3 of distance to 18/100 */
-		else if (value < 18+98)
-		{
-			/* Approximate gain value */
-			gain = (((18+100) - value) / 2 + 3) / 2;
+	/* Increase linearly */
+	if (value < 18)
+		p_ptr->stat_cur[stat] += 1;
+	else if (value < 18+90)
+		p_ptr->stat_cur[stat] += 10;
+	else
+		p_ptr->stat_cur[stat] = 18+100;
 
-			/* Paranoia */
-			if (gain < 1) gain = 1;
+	/* Bring up the maximum too */
+	if (p_ptr->stat_cur[stat] > p_ptr->stat_max[stat])
+		p_ptr->stat_max[stat] = p_ptr->stat_cur[stat];
 
-			/* Apply the bonus */
-			value += randint1(gain) + gain / 2;
-
-			/* Maximal value */
-			if (value > 18+99) value = 18 + 99;
-		}
-
-		/* Gain one point at a time */
-		else
-		{
-			value++;
-		}
-
-		/* Save the new value */
-		p_ptr->stat_cur[stat] = value;
-
-		/* Bring up the maximum too */
-		if (value > p_ptr->stat_max[stat])
-		{
-			p_ptr->stat_max[stat] = value;
-		}
-
-		/* Recalculate bonuses */
-		p_ptr->update |= (PU_BONUS);
-
-		/* Success */
-		return (TRUE);
-	}
-
-	/* Nothing to gain */
-	return (FALSE);
+	/* Recalculate bonuses */
+	p_ptr->update |= (PU_BONUS);
+	return TRUE;
 }
 
 
@@ -1183,9 +1148,9 @@ bool inc_stat(int stat)
  * if your stat is already drained, the "max" value will not drop all
  * the way down to the "cur" value.
  */
-bool dec_stat(int stat, int amount, bool permanent)
+bool dec_stat(int stat, bool permanent)
 {
-	int cur, max, loss, same, res = FALSE;
+	int cur, max, same, res = FALSE;
 
 
 	/* Get the current value */
@@ -1195,81 +1160,30 @@ bool dec_stat(int stat, int amount, bool permanent)
 	/* Note when the values are identical */
 	same = (cur == max);
 
-	/* Damage "current" value */
-	if (cur > 3)
-	{
-		/* Handle "low" values */
-		if (cur <= 18)
-		{
-			if (amount > 90) cur--;
-			if (amount > 50) cur--;
-			if (amount > 20) cur--;
-			cur--;
-		}
+	/* Damage current value */
+	if (cur > 18+10)
+		cur -= 10;
+	else if (cur > 18)
+		cur = 18;
+	else if (cur > 3)
+		cur -= 1;
 
-		/* Handle "high" values */
-		else
-		{
-			/* Hack -- Decrement by a random amount between one-quarter */
-			/* and one-half of the stat bonus times the percentage, with a */
-			/* minimum damage of half the percentage. -CWS */
-			loss = (((cur-18) / 2 + 1) / 2 + 1);
+	/* Something happened */
+	if (cur != p_ptr->stat_cur[stat]) res = TRUE;
 
-			/* Paranoia */
-			if (loss < 1) loss = 1;
-
-			/* Randomize the loss */
-			loss = ((randint1(loss) + loss) * amount) / 100;
-
-			/* Maximal loss */
-			if (loss < amount/2) loss = amount/2;
-
-			/* Lose some points */
-			cur = cur - loss;
-
-			/* Hack -- Only reduce stat to 17 sometimes */
-			if (cur < 18) cur = (amount <= 20) ? 18 : 17;
-		}
-
-		/* Prevent illegal values */
-		if (cur < 3) cur = 3;
-
-		/* Something happened */
-		if (cur != p_ptr->stat_cur[stat]) res = TRUE;
-	}
 
 	/* Damage "max" value */
-	if (permanent && (max > 3))
+	if (permanent)
 	{
-		/* Handle "low" values */
-		if (max <= 18)
-		{
-			if (amount > 90) max--;
-			if (amount > 50) max--;
-			if (amount > 20) max--;
-			max--;
-		}
+		if (max > 18+10)
+			max -= 10;
+		else if (cur > 18)
+			max = 18;
+		else if (cur > 3)
+			max -= 1;
 
-		/* Handle "high" values */
-		else
-		{
-			/* Hack -- Decrement by a random amount between one-quarter */
-			/* and one-half of the stat bonus times the percentage, with a */
-			/* minimum damage of half the percentage. -CWS */
-			loss = (((max-18) / 2 + 1) / 2 + 1);
-			if (loss < 1) loss = 1;
-			loss = ((randint1(loss) + loss) * amount) / 100;
-			if (loss < amount/2) loss = amount/2;
-
-			/* Lose some points */
-			max = max - loss;
-
-			/* Hack -- Only reduce stat to 17 sometimes */
-			if (max < 18) max = (amount <= 20) ? 18 : 17;
-		}
-
-		/* Hack -- keep it clean */
-		if (same || (max < cur)) max = cur;
+		/* Lower max and cur together */
+		if (same) max = cur;
 
 		/* Something happened */
 		if (max != p_ptr->stat_max[stat]) res = TRUE;
