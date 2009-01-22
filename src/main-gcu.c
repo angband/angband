@@ -56,6 +56,10 @@
 #define USE_TPOSIX
 
 
+/* Use ACS characters for walls etc */
+/* #define A_ALTCHARSET */
+
+
 /*
  * Hack -- Windows Console mode uses PDCURSES and cannot do any terminal stuff
  * Hack -- Windows needs Sleep(), and I really don't want to pull in all
@@ -148,6 +152,14 @@ static int can_fix_color = FALSE;
  * Simple Angband to Curses color conversion table
  */
 static int colortable[BASIC_COLORS];
+
+/*
+ * Lookup table for the "alternate character set".
+ *
+ * The unsigned is critical, for instance on systems like Linux
+ * where some ACS characters have the high bit.
+ */
+static unsigned char acs_table[128];
 
 #endif
 
@@ -436,6 +448,18 @@ static errr Term_xtra_gcu_event(int v)
 		case KEY_UP:    i = ARROW_UP;    break;
 		case KEY_LEFT:  i = ARROW_LEFT;  break;
 		case KEY_RIGHT: i = ARROW_RIGHT; break;
+		default:
+			if (i < KEY_MIN) break;
+
+			/* Mega-Hack -- Fold, spindle, and mutilate
+			 * the keys to fit in 7 bits.
+			 */
+
+			if (i >= 252) i = KEY_F(63) - (i - 252);
+			if (i >= ARROW_DOWN) i += 4;
+
+			i = 128 + (i & 127);
+			break;
 	}
 #endif
 
@@ -601,11 +625,33 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 	wmove(td->win, y, x);
 
 	/* Write to screen */
-	waddnstr(td->win, s, n);
+	while (n--) {
+		unsigned int c = (unsigned char) *(s++);
 
-#ifdef A_COLOR
+		/* Map high-bit characters down using the $TERM-specific
+		 * alternate character set.
+		 */
+
+#ifdef A_ALTCHARSET
+		if (c > 128) c = ((int)acs_table[c - 128]) | A_ALTCHARSET;
+#endif
+
+		if ((c & 255) < ' ' || (c & 255) == 127) {
+			/* Hack - replace non-ASCII characters to
+			 * avoid display glitches in selectors.
+			 *
+			 * Note that we do this after the ACS mapping,
+			 * because the display glitches we are avoiding
+			 * are in curses itself.
+			 */
+			waddch(td->win, '?');
+		} else
+			waddch(td->win, c);
+	}
+
+#if defined(A_COLOR)
 	/* Unset the color */
-	if (can_use_color) wattrset(td->win, 0);
+	if (can_use_color) wattrset(td->win, A_NORMAL);
 #endif
 
 	/* Success */
@@ -702,9 +748,14 @@ errr init_gcu(int argc, char **argv)
 		plog_fmt("Ignoring option: %s", argv[i]);
 	}
 
-
 	/* Extract the normal keymap */
 	keymap_norm_prepare();
+
+	/* We do it like this to prevent a link error with curseses that
+	 * lack ESCDELAY.
+	 */
+	if (!getenv("ESCDELAY"))
+		putenv("ESCDELAY=20");
 
 	/* Initialize */
 	if (initscr() == NULL) return (-1);
@@ -793,6 +844,23 @@ errr init_gcu(int argc, char **argv)
 
 #endif
 
+#ifdef A_ALTCHARSET
+	/* Build a quick access table for the "alternate character set". */
+	for (i = 0; i < 128; i++)
+		acs_table[i] = i;
+
+	for (i = 0; acs_chars && acs_chars[i] && acs_chars[i+1]; i += 2)
+	{
+		/* Paranoia -- the first element of an ACS mapping should
+		 * be a printable ASCII character.
+		 */
+		if (acs_chars[i] < ' ' || acs_chars[i] > '~')
+			continue;
+
+		acs_table[(unsigned)acs_chars[i]] = acs_chars[i+1];
+	}
+#endif
+
 
 	/*** Low level preparation ***/
 
@@ -804,9 +872,7 @@ errr init_gcu(int argc, char **argv)
 	noecho();
 	nonl();
 
-#ifdef PDCURSES
 	keypad(stdscr, TRUE);
-#endif
 
 	/* Extract the game keymap */
 	keymap_game_prepare();

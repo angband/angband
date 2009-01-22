@@ -1,0 +1,40 @@
+# File: font-gcu.prf
+
+# This file contains definitions allowing Angband to make use of the
+# "alternate character set" on VT100-compatible terminals.
+
+# Terrain features
+
+# open floor
+F:1:0x01:0xFE
+# invisible trap
+F:2:0x01:0xFE
+# magma vein
+F:50:0x08:0xE1
+# quartz vein
+F:51:0x02:0xE1
+# magma vein
+F:52:0x08:0xE1
+# quartz vein
+F:53:0x02:0xE1
+# magma vein with treasure
+F:54:0x03:0xE0
+# quartz vein with treasure
+F:55:0x03:0xE0
+# granite wall
+F:56:0x01:0xE1
+# granite wall
+F:57:0x01:0xE1
+# granite wall
+F:58:0x01:0xE1
+# granite wall
+F:59:0x01:0xE1
+# permanent wall
+F:60:0x01:0xE1
+# permanent wall
+F:61:0x01:0xE1
+# permanent wall
+F:62:0x01:0xE1
+# permanent wall
+F:63:0x01:0xE1
+
