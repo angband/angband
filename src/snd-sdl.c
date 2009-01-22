@@ -2,7 +2,8 @@
  * File: snd-sdl.c
  * Purpose: SDL sound support
  *
- * Copyright (c) 2004-2007 Brendon Oliver, Andrew Sidwell.
+ * Copyright (c) 2004 Brendon Oliver <brendon.oliver@gmail.com>
+ * Copyright (c) 2007 Andi Sidwell <andi@takkaria.org>
  * A large chunk of this file was taken and modified from main-ros.
  *
  * This work is free software; you can redistribute it and/or modify it
