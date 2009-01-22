@@ -1063,8 +1063,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_PROBING:
 		{
-			probing();
-			*ident = TRUE;
+			*ident = probing();
 			return TRUE;
 		}
 
