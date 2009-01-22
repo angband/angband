@@ -932,6 +932,10 @@ void set_recall(void)
 		p_ptr->word_recall = 0;
 		msg_print("A tension leaves the air around you...");
 	}
+
+	/* Redraw status line */
+	p_ptr->redraw = PR_STATUS;
+	handle_stuff();
 }
 
 
