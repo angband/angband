@@ -1608,16 +1608,6 @@ static void store_display_recalc(void)
 	scr_places_y[LOC_HELP_PROMPT] = hgt;
 }
 
-/*
- * Convert a store item index into a one character label
- */
-static s16b store_to_label(int i)
-{
-	/* Assume legal */
-	return (I2A(i));
-}
-
-
 
 /*
  * Redisplay a single store entry
@@ -2105,8 +2095,7 @@ static bool store_purchase(int item)
 
 		/* Message */
 		if (one_in_(3)) message(MSG_STORE5, 0, ONE_OF(comment_accept));
-		msg_format("You bought %s (%c) for %ld gold.", o_name,
-		           store_to_label(item), (long)price);
+		msg_format("You bought %s for %ld gold.", o_name, (long)price);
 
 		/* Erase the inscription */
 		i_ptr->note = 0;
