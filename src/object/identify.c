@@ -152,13 +152,11 @@ void object_id_on_wield(object_type *o_ptr)
 }
 
 
-
-
-
 /*
- * Return a "feeling" (or NULL) about an item.  Method 1 (Heavy).
+ * Given an object, return a short identifier which gives some idea of what
+ * the item is.
  */
-int object_pseudo_heavy(const object_type *o_ptr)
+obj_pseudo_t object_pseudo(const object_type *o_ptr)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
@@ -190,34 +188,3 @@ int object_pseudo_heavy(const object_type *o_ptr)
 
 	return INSCRIP_STRANGE;
 }
-
-
-
-/*
- * Return a "feeling" (or NULL) about an item.  Method 2 (Light).
- */
-int object_pseudo_light(const object_type *o_ptr)
-{
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
-	/* Cursed items (all of them) */
-	if (cursed_p(o_ptr)) return (INSCRIP_CURSED);
-
-	/* Artifacts -- except cursed/broken ones */
-	if (artifact_p(o_ptr)) return (INSCRIP_EXCELLENT);
-
-	/* Ego-Items -- except cursed/broken ones */
-	if (ego_item_p(o_ptr)) return (INSCRIP_EXCELLENT);
-
-	/* Catch anything average */
-	if (o_ptr->to_a == k_ptr->to_a && o_ptr->to_h == k_ptr->to_h && o_ptr->to_d == k_ptr->to_d)
-		return INSCRIP_AVERAGE;
-
-	/* Catch magical things */
-	if (o_ptr->to_a != k_ptr->to_a || o_ptr->to_h != k_ptr->to_h || o_ptr->to_d != k_ptr->to_d)
-		return INSCRIP_MAGICAL;
-
-	/* No feeling */
-	return (0);
-}
-

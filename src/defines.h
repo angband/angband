@@ -1347,9 +1347,9 @@ enum
 #define CF_BLESS_WEAPON		0x00000004L	/* Requires blessed/hafted weapons */
 #define CF_CUMBER_GLOVE		0x00000008L	/* Gloves disturb spellcasting */
 #define CF_ZERO_FAIL		0x00000010L /* Fail rates can reach 0% */
-#define CF_BEAM				0x00000020L /* Higher chance of spells beaming */
+#define CF_BEAM			0x00000020L /* Higher chance of spells beaming */
 #define CF_CHOOSE_SPELLS	0x00000040L	/* Allow choice of spells */
-#define CF_PSEUDO_ID_HEAVY	0x00000080L /* Allow heavy pseudo-id */
+#define CF_XXX9			0x00000080L
 #define CF_PSEUDO_ID_IMPROV	0x00000100L /* Pseudo-id improves quicker with player-level */
 #define CF_XXX10			0x00000200L
 #define CF_XXX11			0x00000400L

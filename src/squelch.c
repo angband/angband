@@ -342,7 +342,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	bool fullid = object_known_p(o_ptr);
 	bool sensed = (o_ptr->ident & IDENT_SENSE) || fullid;
-	byte feel   = fullid ? object_pseudo_heavy(o_ptr) : o_ptr->pseudo;
+	byte feel   = fullid ? object_pseudo(o_ptr) : o_ptr->pseudo;
 
 
 	/* Don't squelch artifacts */

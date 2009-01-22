@@ -504,7 +504,7 @@ static cptr c_info_flags[] =
 	"ZERO_FAIL",
 	"BEAM",
 	"CHOOSE_SPELLS",
-	"PSEUDO_ID_HEAVY",
+	"XXX9",
 	"PSEUDO_ID_IMPROV",
 	"XXX10",
 	"XXX11",

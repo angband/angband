@@ -29,12 +29,6 @@ static void sense_inventory(void)
 {
 	int i;
 
-	int plev = p_ptr->lev;
-
-	int feel;
-
-	object_type *o_ptr;
-
 	char o_name[80];
 
 	unsigned int rate;
@@ -47,9 +41,9 @@ static void sense_inventory(void)
 
 	/* Get improvement rate */
 	if (cp_ptr->flags & CF_PSEUDO_ID_IMPROV)
-		rate = cp_ptr->sense_base / (plev * plev + cp_ptr->sense_div);
+		rate = cp_ptr->sense_base / (p_ptr->lev * p_ptr->lev + cp_ptr->sense_div);
 	else
-		rate = cp_ptr->sense_base / (plev + cp_ptr->sense_div);
+		rate = cp_ptr->sense_base / (p_ptr->lev + cp_ptr->sense_div);
 
 	if (!one_in_(rate)) return;
 
@@ -57,10 +51,10 @@ static void sense_inventory(void)
 	/* Check everything */
 	for (i = 0; i < INVEN_TOTAL; i++)
 	{
-		bool okay = FALSE;
-		bool heavy = ((cp_ptr->flags & CF_PSEUDO_ID_HEAVY) ? TRUE : FALSE);
+		object_type *o_ptr = &inventory[i];
+		obj_pseudo_t feel;
 
-		o_ptr = &inventory[i];
+		bool okay = FALSE;
 
 		/* Skip empty slots */
 		if (!o_ptr->k_idx) continue;
@@ -117,14 +111,8 @@ static void sense_inventory(void)
 		if (o_ptr->pseudo &&
 		    o_ptr->pseudo != INSCRIP_INDESTRUCTIBLE) continue;
 
-		/* Indestructible objects are either excellent or terrible */
-		if (o_ptr->pseudo == INSCRIP_INDESTRUCTIBLE)
-			heavy = TRUE;
-
 		/* Check for a feeling */
-		feel = (heavy ? object_pseudo_heavy(o_ptr) : object_pseudo_light(o_ptr));
-
-		/* Skip non-feelings */
+		feel = object_pseudo(o_ptr);
 		if (!feel) continue;
 
 		/* Stop everything */

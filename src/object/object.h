@@ -67,8 +67,7 @@ s16b get_obj_num(int level, bool good);
 void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great);
 bool make_object(object_type *j_ptr, int lev, bool good, bool great);
 void make_gold(object_type *j_ptr, int lev, int coin_type);
-int object_pseudo_heavy(const object_type *o_ptr);
-int object_pseudo_light(const object_type *o_ptr);
+obj_pseudo_t object_pseudo(const object_type *o_ptr);
 
 /* obj-ui.c */
 void display_inven(void);
