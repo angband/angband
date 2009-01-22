@@ -892,16 +892,17 @@ void lore_do_probe(int m_idx)
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
+	unsigned i;
 
-	/* Hack -- Memorize some flags */
+	/* Know various things */
 	race_flags_assign(l_ptr->flags, r_ptr->flags);
+	race_flags_assign_spell(l_ptr->spell_flags, r_ptr->spell_flags);
+	for (i = 0; i < MONSTER_BLOW_MAX; i++)
+		l_ptr->blows[i] = MAX_UCHAR;
 
 	/* Update monster recall window */
 	if (p_ptr->monster_race_idx == m_ptr->r_idx)
-	{
-		/* Window stuff */
 		p_ptr->redraw |= (PR_MONSTER);
-	}
 }
 
 

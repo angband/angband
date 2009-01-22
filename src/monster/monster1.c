@@ -126,7 +126,7 @@ static bool know_damage(int r_idx, const monster_lore *l_ptr, int i)
 	s32b d = d1 * d2;
 
 	/* Normal monsters */
-	if ((4 + level) * a > 80 * d) return (TRUE);
+	if ((4 + level) * a >= 80 * d) return (TRUE);
 
 	/* Skip non-uniques */
 	if (!(r_ptr->flags[0] & RF0_UNIQUE)) return (FALSE);
