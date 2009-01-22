@@ -1087,7 +1087,7 @@ ui_event_data inkey_ex(void)
 #ifdef ALLOW_BORG
 
 	/* Mega-Hack -- Use the special hook */
-	if (inkey_hack && ((ch = (*inkey_hack)(inkey_xtra)) != 0))
+	if (inkey_hack && ((ke.key = (*inkey_hack)(inkey_xtra)) != 0))
 	{
 		/* Cancel the various "global parameters" */
 		inkey_base = inkey_xtra = inkey_flag = FALSE;
