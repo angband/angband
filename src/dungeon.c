@@ -901,11 +901,11 @@ static void process_world(void)
 
 	/*** Involuntary Movement ***/
 
-	/* Mega-Hack -- Random teleportation XXX XXX XXX */
-	if ((p_ptr->state.teleport) && one_in_(100))
+	/* Random teleportation */
+	if (p_ptr->state.teleport && one_in_(100))
 	{
-		/* Teleport player */
 		teleport_player(40);
+		disturb(0, 0);
 	}
 
 	/* Delayed Word-of-Recall */
