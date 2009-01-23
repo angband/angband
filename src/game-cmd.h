@@ -9,7 +9,6 @@ typedef enum cmd_code
 
 	CMD_QUIT,
 	CMD_OPTIONS,
-	CMD_HELP,
 
 	/* Splash screen commands */
 	CMD_LOADFILE,
@@ -26,7 +25,9 @@ typedef enum cmd_code
 	CMD_PREV_STATS,
 	CMD_ACCEPT_STATS,
 	CMD_NAME_CHOICE,
-	CMD_ACCEPT_CHARACTER
+	CMD_ACCEPT_CHARACTER,
+	
+	CMD_HELP
 } cmd_code;
 
 
