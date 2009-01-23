@@ -549,6 +549,9 @@ void py_attack(int y, int x)
 				weapon_brand_mult = get_brand_mult(
 						o_ptr, m_ptr, &hit_verb, FALSE);
 
+				/* Message. Need to do this after tot_dam_aux, which sets hit_verb, but before critical_norm, which may print further messages. */
+				message_format(MSG_GENERIC, m_ptr->r_idx, "You %s %s.", hit_verb, m_name);
+						
 				if (ring_brand_mult[0] > use_mult)
 					use_mult = ring_brand_mult[0];
 				if (ring_brand_mult[1] > use_mult)
@@ -572,10 +575,9 @@ void py_attack(int y, int x)
 					o_ptr->ident |= IDENT_SENSE;
 				}
 
+			} else {
+				message_format(MSG_GENERIC, m_ptr->r_idx, "You %s %s.", hit_verb, m_name);
 			}
-
-			/* Message. Need to do this after tot_dam_aux, which sets hit_verb, but before critical_norm, which may print further messages. */
-			message_format(MSG_GENERIC, m_ptr->r_idx, "You %s %s.", hit_verb, m_name);
 
 			/* Apply the player damage bonuses */
 			k += p_ptr->state.to_d;
