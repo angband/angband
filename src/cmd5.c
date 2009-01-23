@@ -280,7 +280,12 @@ int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool browse)
 	}
 
 	/* No available spells */
-	if (!okay) return (-2);
+	if (!okay)
+	{
+		msg_format("You cannot learn any %ss in that book.", p);
+		return (-2);
+	}
+
 
 
 	/* Nothing chosen yet */
