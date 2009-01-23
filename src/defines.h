@@ -615,7 +615,7 @@ enum
 
 
 
-/*** Feature Indexes (see "lib/edit/feature.txt") ***/
+/*** Feature Indexes (see "lib/edit/terrain.txt") ***/
 
 /* Nothing */
 #define FEAT_NONE		0x00
