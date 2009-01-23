@@ -107,7 +107,7 @@ EFFECT(TELE_PHASE,     FALSE, "teleports you randomly up to 10 squares away")
 EFFECT(TELE_LONG,      FALSE, "teleports you randomly up to 100 squares away")
 EFFECT(TELE_LEVEL,     FALSE, "teleports you one level up or down")
 EFFECT(CONFUSING,      FALSE, "causes your next attack upon a monster to confuse it")
-EFFECT(MAPPING,        FALSE, "maps the area around you in a 30-radius circle")
+EFFECT(MAPPING,        FALSE, "maps the area around you")
 EFFECT(RUNE,           FALSE, "inscribes a glyph of warding beneath you, which monsters cannot move onto")
 
 EFFECT(ACQUIRE,        FALSE, "creates a good object nearby")
@@ -146,7 +146,7 @@ EFFECT(HASTE2,         FALSE, "hastens you for d75+75 turns")
 
 EFFECT(DISPEL_EVIL,    FALSE, "deals five times your level's damage to all evil creatures that you can see")
 EFFECT(DISPEL_EVIL60,  FALSE, "deals 60 damage to all evil creatures that you can see")
-EFFECT(DISPEL_UNDEAD,  FALSE, "deals 60 damge to all undead creatures that you can see")
+EFFECT(DISPEL_UNDEAD,  FALSE, "deals 60 damage to all undead creatures that you can see")
 EFFECT(DISPEL_ALL,     FALSE, "deals 120 damage to all creatures that you can see")
 
 EFFECT(SLEEPII,        FALSE, "puts to sleep the monsters around you")
