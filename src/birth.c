@@ -695,6 +695,18 @@ static game_command get_birth_command(void)
 			/* We've already handled it, so don't pass it on. */
 			cmd.command = CMD_NULL;
 		}
+		
+		if (cmd.command == CMD_HELP)
+		{
+			char buf[80];
+			strnfmt(buf, sizeof(buf), "birth.txt");
+			screen_save();
+			show_file(buf, NULL, 0, 0);
+			screen_load();
+			
+			/* We've already handled it, so don't pass it on. */
+			cmd.command = CMD_NULL;
+		}
 	}
 
 	/* TODO: Check against list of permitted commands for the given stage. Probably. */

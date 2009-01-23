@@ -209,6 +209,10 @@ static game_command menu_question(void)
 		{
 			cmd.command = CMD_QUIT;
 		}
+		else if (cx.key == '?')
+		{
+			cmd.command = CMD_HELP;
+		}
 	}
 	
 	return cmd;

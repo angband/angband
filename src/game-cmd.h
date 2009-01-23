@@ -9,6 +9,7 @@ typedef enum cmd_code
 
 	CMD_QUIT,
 	CMD_OPTIONS,
+	CMD_HELP,
 
 	/* Splash screen commands */
 	CMD_LOADFILE,
