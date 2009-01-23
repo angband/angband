@@ -2,7 +2,8 @@
  * File: obj-info.c
  * Purpose: Object description code.
  *
- * Copyright (c) 2002-2007 Andrew Sidwell, Robert Ruehlmann
+ * Copyright (c) 2002,2007,2008 Andi Sidwell <andi@takkaria.org>
+ * Copyright (c) 2002,2003,2004 Robert Ruehlmann <rr9@thangorodrim.net>
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
