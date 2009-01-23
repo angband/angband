@@ -857,10 +857,12 @@ void do_cmd_fire(void)
 			int shoot_mult = get_brand_mult(j_ptr, m_ptr, &hit_verb, TRUE);
 
 			/* If bow or ammo does something obviously good, pseudo it as excellent */
-			if (ammo_mult > 1 && !object_known_p(o_ptr))
+			if (ammo_mult > 1 && !object_known_p(i_ptr))
 			{
 				i_ptr->pseudo = INSCRIP_EXCELLENT;
 				i_ptr->ident |= (IDENT_SENSE);
+				o_ptr->pseudo = INSCRIP_EXCELLENT;
+				o_ptr->ident |= (IDENT_SENSE);
 			}			
 
 			if (shoot_mult > 1 && !object_known_p(o_ptr))
