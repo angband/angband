@@ -22,6 +22,7 @@ Bugs fixed:
 (#673) Fix description of dentify scrolls.
 (#676) Fixed character creation help.
 (#683) Fix !Berserk Strength being unsellable.
+(#685) Scrolls of Create Trap now ID on use.
 (#688) Mages once more get a message when they can't learn new spells from a book.
 (#691) Make of Open Wounds similar to ther pval-less rings in that it doesn't need ID.
 (#694) Fix dropped rods recharging, and any other rod-related oddities.

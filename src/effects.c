@@ -884,7 +884,9 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_CREATE_TRAP:
 		{
-			if (trap_creation()) *ident = TRUE;
+			trap_creation();
+			msg_print("You hear a low-pitched whistling sound.");
+			*ident = TRUE;
 			return TRUE;
 		}
 
