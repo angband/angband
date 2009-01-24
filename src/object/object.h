@@ -17,10 +17,14 @@ extern char scroll_adj[MAX_TITLES][16];
  */
 typedef enum
 {
-	ODESC_BASE = 0,   /*!< Only describe the base name */
-	ODESC_COMBAT = 1, /*!< Also show combat bonuses */
-	ODESC_FULL = 3,   /*!< Show entire description */
-	ODESC_STORE = 4   /*!< Also show {squelch} marker */
+	ODESC_BASE   = 0x00,   /*!< Only describe the base name */
+	ODESC_COMBAT = 0x01,   /*!< Also show combat bonuses */
+	ODESC_FULL   = 0x02 | ODESC_COMBAT,
+	                       /*!< Show entire description */
+	ODESC_STORE  = 0x04 | ODESC_FULL,
+	                      /*!< Also show {squelch} marker */
+
+	ODESC_PLURAL = 0x08   /*!< Always pluralise */
 } odesc_detail_t;
 
 

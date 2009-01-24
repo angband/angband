@@ -12,7 +12,6 @@ void do_cmd_observe(void);
 void do_cmd_takeoff(void);
 void do_cmd_wield(void);
 void do_cmd_drop(void);
-void do_cmd_mark_squelch(void);
 void do_cmd_browse(void);
 void do_cmd_study(void);
 void do_cmd_cast(void);

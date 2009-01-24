@@ -167,36 +167,6 @@ static void obj_drop(object_type *o_ptr, int item)
 }
 
 
-/*** Squelch stuff ***/
-
-/* See if one can squelch a given kind of item. */
-static bool obj_can_set_squelch(const object_type *o_ptr)
-{
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
-	if (k_ptr->squelch) return FALSE;
-	if (!squelch_tval(o_ptr->tval)) return FALSE;
-
-	/* Only allow if aware */
-	return object_aware_p(o_ptr);
-}
-
-/*
- * Mark item as "squelch".
- */
-static void obj_set_squelch(object_type *o_ptr, int item)
-{
-	k_info[o_ptr->k_idx].squelch = TRUE;
-
-	/* Hack -- Cannot remove cursed items */
-	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
-		return;
-
-	if (item >= 0)
-		inven_drop(item, o_ptr->number);
-}
-
-
 /*** Casting and browsing ***/
 
 static bool obj_can_browse(const object_type *o_ptr)
@@ -526,10 +496,6 @@ static item_act_t item_actions[] =
 	  "Drop which item? ", "You have nothing to drop.",
 	  NULL, (USE_EQUIP | USE_INVEN), NULL },
 
-	{ obj_set_squelch, "setsquelch",
-	  "Squelch which item kind? ", "You have nothing you can squelch.",
-	  obj_can_set_squelch, (USE_INVEN | USE_FLOOR), NULL },
-
 	/*** Spellbooks ***/
 	{ obj_browse, "browse",
 	  "Browse which book? ", "You have no books that you can read.",
@@ -587,7 +553,6 @@ typedef enum
 	ACTION_TAKEOFF,
 	ACTION_WIELD,
 	ACTION_DROP,
-	ACTION_SET_SQUELCH,
 
 	ACTION_BROWSE,
 	ACTION_STUDY,
@@ -643,7 +608,6 @@ void do_cmd_observe(void) { do_item(ACTION_EXAMINE); }
 void do_cmd_takeoff(void) { do_item(ACTION_TAKEOFF); }
 void do_cmd_wield(void) { do_item(ACTION_WIELD); }
 void do_cmd_drop(void) { do_item(ACTION_DROP); }
-void do_cmd_mark_squelch(void) { do_item(ACTION_SET_SQUELCH); }
 void do_cmd_browse(void) { do_item(ACTION_BROWSE); }
 void do_cmd_study(void) { do_item(ACTION_STUDY); }
 void do_cmd_cast(void) { do_item(ACTION_CAST); }

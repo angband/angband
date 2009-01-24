@@ -219,7 +219,7 @@ static const char *obj_desc_get_basename(const object_type *o_ptr)
  * Copy 'src' into 'buf, replacing '#' with 'modstr' (if found), putting a plural
  * in the place indicated by '~' if required, or using alterate...
  */
-static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type *o_ptr, bool prefix)
+static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type *o_ptr, bool prefix, bool pluralise)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
@@ -228,6 +228,9 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type
 
 	bool known = object_known_p(o_ptr) || (o_ptr->ident & IDENT_STORE);
 	bool aware = object_aware_p(o_ptr) || (o_ptr->ident & IDENT_STORE);
+
+	if (o_ptr->number > 1)
+		pluralise = TRUE;
 
 	/* Add a pseudo-numerical prefix if desired */
 	if (prefix)
@@ -291,7 +294,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type
 		{
 			char prev = *(basename - 1);
 
-			if (o_ptr->number == 1)
+			if (!pluralise)
 			{
 				basename++;
 				continue;
@@ -321,7 +324,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type
 
 			if (!singular || !plural || !endmark) return end;
 
-			if (o_ptr->number == 1)
+			if (!pluralise)
 				strnfcat(buf, max, &end, "%.*s", plural - singular - 1, singular);
 			else
 				strnfcat(buf, max, &end, "%.*s", endmark - plural, plural);
@@ -353,7 +356,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type
 
 					if (!singular || !plural || !endmark) return end;
 
-					if (o_ptr->number == 1)
+					if (!pluralise)
 						strnfcat(buf, max, &end, "%.*s", plural - singular - 1, singular);
 					else
 						strnfcat(buf, max, &end, "%.*s", endmark - plural, plural);
@@ -699,16 +702,18 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
  * indicator of the number of items in the pile.
  *
  * Modes ("prefix" is TRUE):
- *   OD_BASE   -- Chain Mail of Death
- *   OD_COMBAT -- Chain Mail of Death [1,+3]
- *   OD_STORE  -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty}
- *   OD_fULL   -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty} (squelch)
+ *   ODESC_BASE   -- Chain Mail of Death
+ *   ODESC_COMBAT -- Chain Mail of Death [1,+3]
+ *   ODESC_STORE  -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty}
+ *   ODESC_FULL   -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty} (squelch)
  *
  * Modes ("prefix" is FALSE):
- *   OD_BASE   -- Chain Mail of Death
- *   OD_COMBAT -- Chain Mail of Death [1,+3]
- *   OD_STORE  -- Rings of Death [1,+3] (+2 to Stealth) {nifty}
- *   OD_FULL   -- Rings of Death [1,+3] (+2 to Stealth) {nifty} (squelch)
+ *   ODESC_BASE   -- Chain Mail of Death
+ *   ODESC_COMBAT -- Chain Mail of Death [1,+3]
+ *   ODESC_STORE  -- Rings of Death [1,+3] (+2 to Stealth) {nifty}
+ *   ODESC_FULL   -- Rings of Death [1,+3] (+2 to Stealth) {nifty} (squelch)
+ *
+ * ODESC_PLURAL will pluralise regardless of the number in the stack.
  */
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix, odesc_detail_t mode)
 {
@@ -754,7 +759,8 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix,
 	/** Create basic name **/
 
 	/* Copy the base name to the buffer */
-	end = obj_desc_name(buf, max, end, o_ptr, prefix);
+	end = obj_desc_name(buf, max, end, o_ptr, prefix,
+			mode & ODESC_PLURAL ? TRUE : FALSE);
 
 
 	/** Append things depending on mode **/
@@ -769,7 +775,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix,
 
 	end = obj_desc_combat(o_ptr, buf, max, end);
 
-	if (mode == ODESC_COMBAT)
+	if (mode & ODESC_COMBAT)
 		return end;
 
 	if (known)
@@ -778,11 +784,11 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix,
 		end = obj_desc_charges(o_ptr, buf, max, end);
 	}
 
-	end = obj_desc_inscrip(o_ptr, buf, max, end, (mode == ODESC_STORE));
-
+	end = obj_desc_inscrip(o_ptr, buf, max, end,
+			(mode & ODESC_STORE) ? TRUE : FALSE);
 
 	/* Add squelch marker  */
-	if (mode == ODESC_FULL && squelch_item_ok(o_ptr))
+	if ((mode & ODESC_FULL) && squelch_item_ok(o_ptr))
 		strnfcat(buf, max, &end, " (squelch)");
 
 	return end;

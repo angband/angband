@@ -228,28 +228,18 @@ void do_cmd_destroy(void)
 		return;
 	}
 
-	/* Get the item (in the pack) */
-	if (item >= 0)
-	{
+	 if (item >= 0)
 		o_ptr = &inventory[item];
-	}
-
-	/* Get the item (on the floor) */
 	else
-	{
 		o_ptr = &o_list[0 - item];
-	}
 
 	/* Get a quantity */
 	amt = get_quantity(NULL, o_ptr->number);
-
-	/* Allow user abort */
 	if (amt <= 0) return;
+
 
 	/* Get local object */
 	i_ptr = &object_type_body;
-
-	/* Obtain a local object */
 	object_copy(i_ptr, o_ptr);
 
 	if ((o_ptr->tval == TV_WAND) ||
@@ -269,6 +259,7 @@ void do_cmd_destroy(void)
 	/* Verify destruction */
 	strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", o_name);
 	if (!get_check(out_val)) return;
+
 
 	/* Artifacts cannot be destroyed */
 	if (artifact_p(o_ptr))
@@ -310,6 +301,25 @@ void do_cmd_destroy(void)
 	/* Reduce the charges of rods/wands/staves */
 	reduce_charges(o_ptr, amt);
 
+	/* Check for squelching */
+	if (squelch_tval(o_ptr->tval))
+	{
+		char sval_name[30];
+
+		/* Obtain plural form without a quantity */
+		object_desc(sval_name, sizeof sval_name, o_ptr, FALSE,
+				ODESC_BASE | ODESC_PLURAL);
+		strnfmt(out_val, sizeof out_val, "Ignore %s in future? ",
+				sval_name);
+
+		if (get_check(out_val))
+		{
+			/* squelch_set_squelch(tval, sval); */
+			k_info[o_ptr->k_idx].squelch = TRUE;
+			msg_format("Ignoring %s from now on.", sval_name);
+		}		
+	}
+
 	/* Eliminate the item (from the pack) */
 	if (item >= 0)
 	{
@@ -325,21 +335,6 @@ void do_cmd_destroy(void)
 		floor_item_describe(0 - item);
 		floor_item_optimize(0 - item);
 	}
-
-#if 0
-	/*
-	 * We can only re-enable this when it can be made to interact well with
-	 * the repeat code.
-	 */
-
-	/* We have destroyed a floor item, and the floor is not empty */
-	if ((item < 0) && (cave_o_idx[p_ptr->py][p_ptr->px]))
-	{
-		/* Automatically repeat this command (unless disturbed) */
-		p_ptr->command_cmd = 'k';
-		p_ptr->command_rep = 2;
-	}
-#endif
 }
 
 

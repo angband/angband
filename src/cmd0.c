@@ -109,7 +109,6 @@ static command_type cmd_item_manage[]  =
 	{ "Take/unwield off an item",  't', do_cmd_takeoff },
 	{ "Drop an item",              'd', do_cmd_drop },
 	{ "Destroy an item",           'k', do_cmd_destroy },
-	{ "Mark an item as squelch",   'K', do_cmd_mark_squelch },
 	{ "Examine an item",           'I', do_cmd_observe },
 	{ "Inscribe an object",        '{', do_cmd_inscribe },
 	{ "Uninscribe an object",      '}', do_cmd_uninscribe }
