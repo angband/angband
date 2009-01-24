@@ -80,7 +80,7 @@ D:Detects all treasure in the immediate area.
 
 N:8:Identify
 I:90:2:5
-D:Reveals all normal (magical but non-hidden) powers of one object.
+D:Reveals the powers of an object.
 
 N:9:Detect Invisible
 I:90:2:6
@@ -557,9 +557,9 @@ I:91:5:1
 D:Detects all treasure, objects, doors, stairs, traps, and monsters
 D: in the immediate area.
 
-N:97:Perception
+N:97:Identify
 I:91:5:2
-D:Reveals all normal (magical but non-hidden) powers of one object.
+D:Reveals the powers of an object.
 
 N:98:Probing
 I:91:5:3

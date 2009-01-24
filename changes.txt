@@ -19,6 +19,7 @@ Bugs fixed:
 (#613) Prevent {!*} prompting for harmless actions.
 (#641) Fix Morgoth artifacts.
 (#672) Fix Evenstar activation message.
+(#673) Fix description of dentify scrolls.
 (#676) Fixed character creation help.
 (#683) Fix !Berserk Strength being unsellable.
 (#688) Mages once more get a message when they can't learn new spells from a book.
@@ -47,6 +48,7 @@ Bugs fixed:
 Fix bug with rods of treasure location needing ID.
 Fix birth_money so that in point-based it still gives you 500AU.
 Fix double-resist damage.
+Fix pluralisation of 'staves'.
 Add Word of Recall status to the status line.
 Tone down the frequency of {excellent} items somewhat, and tweak {good} frequency.
 Remove the 'K' command and instead put a prompt after the 'destroy' prompt.
