@@ -34,8 +34,7 @@ static void sense_inventory(void)
 	unsigned int rate;
 
 
-	/* No ID when resting or confused */
-	if (p_ptr->resting) return;
+	/* No ID when confused in a bad state */
 	if (p_ptr->timed[TMD_CONFUSED]) return;
 
 

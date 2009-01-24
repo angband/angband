@@ -18,6 +18,7 @@ Bugs fixed:
 (#561) 'n', when used to fire missiles, no longer ignores confusion.
 (#613) Prevent {!*} prompting for harmless actions.
 (#641) Fix Morgoth artifacts.
+(#654) Allow pseudo to work whilst resting.
 (#672) Fix Evenstar activation message.
 (#673) Fix description of dentify scrolls.
 (#676) Fixed character creation help.
