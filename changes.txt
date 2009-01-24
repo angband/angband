@@ -14,6 +14,7 @@ Bugs fixed:
 (#62) Game is now available entirely under the GPL.
 (#521, #597, #635) Stop the slow launches and occasional non-launches on Windows.
 (#352) Probing now reveals attack and spell information.
+(#412) Monster list is no longer hallucination-proof.
 (#599) Above 18, stat drain and gain always works in intervals of 10 points
 (#561) 'n', when used to fire missiles, no longer ignores confusion.
 (#613) Prevent {!*} prompting for harmless actions.

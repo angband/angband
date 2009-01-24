@@ -575,9 +575,21 @@ void display_monlist(void)
 
 	u16b *race_count;
 
+	bool in_term = (Term != angband_term[0]);
+
+	/* Hallucination is weird */
+	if (p_ptr->timed[TMD_IMAGE])
+	{
+		Term_gotoxy(0, 0);
+		text_out_to_screen(TERM_ORANGE,
+			"Your hallucinations are too wild to see things clearly.");
+
+		return;
+	}
+
 
 	/* Clear the term if in a subwindow, set x otherwise */
-	if (Term != angband_term[0])
+	if (in_term)
 	{
 		clear_from(0);
 		max = Term->hgt - 1;
@@ -609,7 +621,7 @@ void display_monlist(void)
 	{
 		/* Clear display and print note */
 		c_prt(TERM_SLATE, "You see no monsters.", 0, 0);
-		if (Term == angband_term[0])
+		if (!in_term)
 		    Term_addstr(-1, TERM_WHITE, "  (Press any key to continue.)");
 
 		/* Free up memory */
@@ -664,7 +676,7 @@ void display_monlist(void)
 		line++;
 
 		/* Page wrap */
-		if (Term == angband_term[0] && (line == max) && disp_count != total_count)
+		if (!in_term && (line == max) && disp_count != total_count)
 		{
 			prt("-- more --", line, x);
 			anykey();
@@ -695,7 +707,7 @@ void display_monlist(void)
 		prt("", line, x);
 	}
 
-	if (Term == angband_term[0])
+	if (!in_term)
 		Term_addstr(-1, TERM_WHITE, "  (Press any key to continue.)");
 
 	/* Free the race counters */
