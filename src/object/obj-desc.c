@@ -180,7 +180,7 @@ static const char *obj_desc_get_basename(const object_type *o_ptr)
 			return (show_flavor ? "& # Ring~" : "& Ring~");
 
 		case TV_STAFF:
-			return (show_flavor ? "& # Staff~" : "& Staff~");
+			return (show_flavor ? "& # Sta|ff|ves|" : "& Sta|ff|ves|");
 
 		case TV_WAND:
 			return (show_flavor ? "& # Wand~" : "& Wand~");
