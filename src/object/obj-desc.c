@@ -775,7 +775,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix,
 
 	end = obj_desc_combat(o_ptr, buf, max, end);
 
-	if (mode & ODESC_COMBAT)
+	if ((mode & ~ODESC_COMBAT) == 0)
 		return end;
 
 	if (known)
