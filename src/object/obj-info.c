@@ -328,6 +328,68 @@ static int collect_slays(const char *desc[], int mult[], u32b f1)
 }
 
 
+/*
+ * Account for criticals in the calculation of melee prowess
+ *
+ * Note -- This relies on the criticals being an affine function
+ * of previous damage, since we are used to transform the mean
+ * of a roll.
+ *
+ * Also note -- rounding error makes this not completely accurate
+ * (but for the big crit weapons like Grond an odd point of damage
+ * won't be missed)
+ *
+ * This code written according to the KISS principle.  650 adds
+ * are cheaper than a FOV call and get the job done fine.
+ */
+static void calculate_melee_crits(player_state *state, int weight,
+		int plus, int *mult, int *add, int *div)
+{
+	int k, to_crit = weight + 5*(state->to_h + plus) + 3*p_ptr->lev;
+	to_crit = MIN(5000, MAX(0, to_crit));
+
+	*mult = *add = 0;
+
+	for (k = weight; k < weight + 650; k++)
+	{
+		if (k <  400) { *mult += 4; *add += 10; continue; }
+		if (k <  700) { *mult += 4; *add += 20; continue; }
+		if (k <  900) { *mult += 6; *add += 30; continue; }
+		if (k < 1300) { *mult += 6; *add += 40; continue; }
+		                *mult += 7; *add += 50;
+	}
+
+	/*
+	 * Scale the output down to a more reasonable size, to prevent
+	 * integer overflow downstream.
+	 */
+	*mult = 100 + to_crit*(*mult - 1300)/(50*1300);
+	*add  = *add * to_crit / (500*50);
+	*div  = 100;
+}
+
+/*
+ * Missile crits follow the same approach as melee crits.
+ */
+static void calculate_missile_crits(player_state *state, int weight,
+		int plus, int *mult, int *add, int *div)
+{
+	int k, to_crit = weight + 4*(state->to_h + plus) + 2*p_ptr->lev;
+	to_crit = MIN(5000, MAX(0, to_crit));
+
+	*mult = *add = 0;
+
+	for (k = weight; k < weight + 500; k++)
+	{
+		if (k <  500) { *mult += 2; *add +=  5; continue; }
+		if (k < 1000) { *mult += 2; *add += 10; continue; }
+		                *mult += 3; *add += 15;
+	}
+
+	*mult = 100 + to_crit*(*mult - 500)/(500*50);
+	*add  = *add * to_crit / (500*50);
+	*div  = 100;
+}
 
 /*
  * Describe combat advantages.
@@ -336,8 +398,9 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 {
 	const char *desc[16];
 	int mult[16];
-	int cnt, dam, total_dam;
-	int xtra_dam = 0;
+	int cnt, dam, total_dam, plus = 0;
+	int xtra_postcrit = 0, xtra_precrit = 0;
+	int crit_mult, crit_div, crit_add;
 	object_type *j_ptr = &inventory[INVEN_BOW];
 
 	u32b f1, f2, f3;
@@ -379,8 +442,13 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 		calc_bonuses(inven, &state, TRUE);
 
 		dam = ((o_ptr->ds + 1) * o_ptr->dd * 5);
-		xtra_dam = state.dis_to_d * 10;
-		if (object_known_p(o_ptr)) xtra_dam += o_ptr->to_d * 10;
+
+		xtra_postcrit = state.dis_to_d * 10;
+		if (object_known_p(o_ptr)) xtra_precrit += o_ptr->to_d * 10;
+		if (object_known_p(o_ptr)) plus += o_ptr->to_h;
+
+		calculate_melee_crits(&state, o_ptr->weight, plus,
+				&crit_mult, &crit_add, &crit_div);
 
 		/* Warn about heavy weapons */
 		if (adj_str_hold[state.stat_ind[A_STR]] < o_ptr->weight / 10)
@@ -397,6 +465,11 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	{
 		int tdis = 6 + 2 * p_ptr->state.ammo_mult;
 		u32b f[3];
+
+		if (object_known_p(o_ptr)) plus += o_ptr->to_h;
+
+		calculate_missile_crits(&p_ptr->state, o_ptr->weight, plus,
+				&crit_mult, &crit_add, &crit_div);
 
 		/* Calculate damage */
 		dam = ((o_ptr->ds + 1) * o_ptr->dd * 5);
@@ -422,7 +495,9 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 		for (i = 0; i < cnt; i++)
 		{
 			/* Include bonus damage and slay in stated average */
-			total_dam = dam * mult[i] + xtra_dam;
+			total_dam = dam * mult[i] + xtra_precrit;
+			total_dam = (total_dam * crit_mult + crit_add) / crit_div;
+			total_dam += xtra_postcrit;
 
 			if (total_dam <= 0)
 				text_out_c(TERM_L_RED, "%d", 0);
@@ -432,6 +507,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 			else
 				text_out_c(TERM_L_GREEN, "%d", total_dam / 10);
 
+
 			text_out(" against %s, ", desc[i]);
 		}
 
@@ -439,7 +515,9 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	}
 
 	/* Include bonus damage in stated average */
-	total_dam = dam + xtra_dam;
+	total_dam = dam + xtra_precrit;
+	total_dam = (total_dam * crit_mult + crit_add) / crit_div +
+		xtra_postcrit;
 
 	if (total_dam <= 0)
 		text_out_c(TERM_L_RED, "%d", 0);
