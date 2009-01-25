@@ -3588,7 +3588,7 @@ D:He is a giant troll with scabrous black skin.
 
 N:279:Troll priest
 G:T:G
-I:110:300:20:50:30   # HP was 30d10 (FORCE_MAXHP)
+I:110:165:20:50:30   # HP was 30d10
 W:26:1:0:120
 B:HIT:HURT:1d8
 B:HIT:HURT:1d8

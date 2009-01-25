@@ -57,10 +57,11 @@ Add Word of Recall status to the status line.
 Tone down the frequency of {excellent} items somewhat, and tweak {good} frequency.
 Remove the 'K' command and instead put a prompt after the 'destroy' prompt.
 Enchant Armour scrolls ID when reading them, not when they are successfully read.
+Tone down Troll Priest HP.
+Include criticals damage in the object description's average display.
 Make Kavlax 'scary dark like Anclagon'.
 Only wake monsters on attack if you're not "too afraid to attack".
 A few fixes to the visual editor on the knowledge screens.
-Make the game a little bit more borg-friendly.
 
 Curses port:
 (#666) Fix out-of-bounds memory access
@@ -82,3 +83,4 @@ Remove an unnecessary call to getlogin() which was screwing up su'd users.
 Dependancy generator has to add dirnames itself
 Remove "uint" from main-x11.c.
 Tweak the OS X makefile to be a little more terse.
+Make the game a little bit more borg-friendly.
