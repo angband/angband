@@ -77,15 +77,13 @@ bool init_obj_alloc(void)
 		{
 			int rarity = k_ptr->alloc_prob;
 
-			/* Give out-of-depth items a tiny chance at being made */
-			if ((lev < min) || (lev > max)) rarity = 0;
-
 			/* Save the probability in the standard table */
+			if ((lev < min) || (lev > max)) rarity = 0;
 			obj_total[lev] += rarity;
 			obj_alloc[(lev * k_max) + item] = rarity;
 
 			/* Save the probability in the "great" table if relevant */
-			if (!kind_is_good(k_ptr)) continue;
+			if (!kind_is_good(k_ptr)) rarity = 0;
 			obj_total_great[lev] += rarity;
 			obj_alloc_great[(lev * k_max) + item] = rarity;
 		}
