@@ -22,10 +22,6 @@
 
 #include "main.h"
 
-/*
- * Hack -- play games with "bool" and "term"
- */
-#undef bool
 
 /* Avoid 'struct term' name conflict with <curses.h> (via <term.h>) on AIX */
 #define term System_term
@@ -54,10 +50,6 @@
  * Use POSIX terminal I/O
  */
 #define USE_TPOSIX
-
-
-/* Use ACS characters for walls etc */
-/* #define A_ALTCHARSET */
 
 
 /*

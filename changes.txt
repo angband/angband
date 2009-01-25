@@ -34,6 +34,7 @@ Bugs fixed:
 (#712) Autoinscribe items in the first inventory slot.
 (#721) Searching bonues are now displayed as a % increase to match the character screen.
 (#722) Fix spoilers and wizard mode cheat info not displaying magical abilities
+(#723) Fix support for playing in the terminal on OS X 10.4.
 (#724) Critical hit messages come after regular hit messages again.
 (#725) *Remove Curse* now removes all curses again.
 (#728) Pseudo-by-use should not downgrade {special} to {excellent}
