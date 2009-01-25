@@ -411,6 +411,9 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr)
 	bool known;
 
 	int color_special[RBE_MAX+1];
+	player_state st;
+
+	calc_bonuses(inventory, &st, TRUE);
 
 	/* Color-code special attacks.  Green is not special or resisted,
 	 * yellow is unresisted attacks that make a monster more dangerous,
@@ -442,7 +445,7 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr)
 		/* Can only be hurt by disenchantment with an enchanted item */
 		if (m >= INVEN_WIELD && (!known || (o_ptr->to_a >= 0) ||
 				(o_ptr->to_h >= 0) || (o_ptr->to_d >= 0)) &&
-				!p_ptr->state.resist_disen)
+				!st.resist_disen)
 			color_special[RBE_UN_BONUS] = TERM_L_RED;
 
 		/* A charged item is needed for drain charges */
@@ -466,7 +469,7 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr)
 		/* With corrodable equipment, acid is much worse */
 		if (m >= INVEN_BODY && m <= INVEN_FEET &&
 				(!known || o_ptr->ac + o_ptr->to_a > 0)
-				&& !(f3 & TR3_IGNORE_ACID) && !p_ptr->state.immune_acid)
+				&& !(f3 & TR3_IGNORE_ACID) && !st.immune_acid)
 			color_special[RBE_ACID] = TERM_L_RED;
 	}
 
@@ -474,13 +477,13 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr)
 	 * less of a problem than long-term equipment damage.
 	 */
 
-	if (!p_ptr->state.resist_pois && !p_ptr->timed[TMD_OPP_POIS])
+	if (!st.resist_pois && !p_ptr->timed[TMD_OPP_POIS])
 		color_special[RBE_POISON] = TERM_YELLOW;
 	if (p_ptr->au)
 		color_special[RBE_EAT_GOLD] = TERM_YELLOW;
 
 	/* Theft has a general resistance */
-	if (p_ptr->lev + adj_dex_safe[p_ptr->state.stat_ind[A_DEX]] >= 100)
+	if (p_ptr->lev + adj_dex_safe[st.stat_ind[A_DEX]] >= 100)
 	{
 		color_special[RBE_EAT_GOLD] = TERM_L_GREEN;
 		color_special[RBE_EAT_ITEM] = TERM_L_GREEN;
@@ -490,18 +493,14 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr)
 	 * the worse.
 	 */
 
-	if (!p_ptr->state.resist_acid && !p_ptr->state.immune_acid &&
-			!p_ptr->timed[TMD_OPP_ACID] &&
+	if (!st.resist_acid && !st.immune_acid && !p_ptr->timed[TMD_OPP_ACID] &&
 			(color_special[RBE_ACID] != TERM_L_RED))
 		color_special[RBE_ACID] = TERM_YELLOW;
-	if (!p_ptr->state.resist_fire && !p_ptr->state.immune_fire &&
-			!p_ptr->timed[TMD_OPP_FIRE])
+	if (!st.resist_fire && !st.immune_fire && !p_ptr->timed[TMD_OPP_FIRE])
 		color_special[RBE_FIRE] = TERM_YELLOW;
-	if (!p_ptr->state.resist_elec && !p_ptr->state.immune_elec &&
-			!p_ptr->timed[TMD_OPP_ELEC])
+	if (!st.resist_elec && !st.immune_elec && !p_ptr->timed[TMD_OPP_ELEC])
 		color_special[RBE_ELEC] = TERM_YELLOW;
-	if (!p_ptr->state.resist_cold && !p_ptr->state.immune_cold &&
-			!p_ptr->timed[TMD_OPP_COLD])
+	if (!st.resist_cold && !st.immune_cold && !p_ptr->timed[TMD_OPP_COLD])
 		color_special[RBE_COLD] = TERM_YELLOW;
 
 	if (!p_ptr->state.resist_blind)
@@ -517,31 +516,31 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr)
 	 * an instakill.
 	 */
 
-	if (!p_ptr->state.free_act && p_ptr->state.skills[SKILL_SAVE] < 100)
+	if (!st.free_act && st.skills[SKILL_SAVE] < 100)
 		color_special[RBE_PARALYZE] = TERM_L_RED;
 
 	/* These types of wounding are expensive to fix */
 
-	if (!p_ptr->state.sustain_str)
+	if (!st.sustain_str)
 		color_special[RBE_LOSE_STR] = TERM_L_RED;
-	if (!p_ptr->state.sustain_int)
+	if (!st.sustain_int)
 		color_special[RBE_LOSE_INT] = TERM_L_RED;
-	if (!p_ptr->state.sustain_wis)
+	if (!st.sustain_wis)
 		color_special[RBE_LOSE_WIS] = TERM_L_RED;
-	if (!p_ptr->state.sustain_dex)
+	if (!st.sustain_dex)
 		color_special[RBE_LOSE_DEX] = TERM_L_RED;
-	if (!p_ptr->state.sustain_con)
+	if (!st.sustain_con)
 		color_special[RBE_LOSE_CON] = TERM_L_RED;
-	if (!p_ptr->state.sustain_chr)
+	if (!st.sustain_chr)
 		color_special[RBE_LOSE_CHR] = TERM_L_RED;
-	if (!p_ptr->state.sustain_str || !p_ptr->state.sustain_int ||
-			!p_ptr->state.sustain_wis || !p_ptr->state.sustain_dex ||
-			!p_ptr->state.sustain_con || !p_ptr->state.sustain_chr)
+	if (!st.sustain_str || !st.sustain_int || !st.sustain_wis ||
+			!st.sustain_dex || !st.sustain_con || !st.sustain_chr)
 		color_special[RBE_LOSE_ALL] = TERM_L_RED;
 
 	/* Hold life isn't 100% effective */
-	color_special[RBE_EXP_10] = color_special[RBE_EXP_20] = color_special[RBE_EXP_40] =
-		color_special[RBE_EXP_80] = p_ptr->state.hold_life ? TERM_YELLOW : TERM_L_RED;
+	color_special[RBE_EXP_10] = color_special[RBE_EXP_20] =
+		color_special[RBE_EXP_40] = color_special[RBE_EXP_80] =
+		st.hold_life ? TERM_YELLOW : TERM_L_RED;
 
 	/* Shatter is always dangerous */
 	color_special[RBE_SHATTER] = TERM_YELLOW;

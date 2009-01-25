@@ -1147,7 +1147,7 @@ enum
  * Special object flags
  */
 #define IDENT_SENSE     0x01	/* Item has been "sensed" */
-/* ... */
+#define IDENT_TRIED     0x02	/* Item has been tried on */
 #define IDENT_EMPTY     0x04	/* Item charges are known */
 #define IDENT_KNOWN     0x08	/* Item abilities are known */
 #define IDENT_STORE     0x10	/* Item is in the inventory of a store */
@@ -1319,8 +1319,13 @@ enum
 #define TR1_OBVIOUS_MASK \
 	(TR1_STR | TR1_INT | TR1_WIS | TR1_DEX | \
 	 TR1_CON | TR1_CHR | \
-	 TR1_STEALTH | \
+	 TR1_STEALTH | TR1_SEARCH | TR1_INFRA | \
 	 TR1_SPEED | TR1_BLOWS | TR1_SHOTS)
+
+/*
+ * Some of the 3s are obvious too
+ */
+#define TR3_OBVIOUS_MASK (TR3_LITE | TR3_TELEPATHY)
 
 /*
  * Flag set 3 -- mask for "ignore element" flags.
@@ -1840,7 +1845,7 @@ enum
  * Determine if a given inventory item is "tried"
  */
 #define object_tried_p(T) \
-	(k_info[(T)->k_idx].tried)
+	((k_info[(T)->k_idx].tried) || ((T)->ident & IDENT_TRIED))
 
 
 /*

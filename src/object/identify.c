@@ -84,6 +84,9 @@ void object_tried(object_type *o_ptr)
 {
 	/* Mark it as tried (even if "aware") */
 	k_info[o_ptr->k_idx].tried = TRUE;
+
+	/* Mark the specific item as tried too */
+	o_ptr->ident |= IDENT_TRIED;
 }
 
 
@@ -104,7 +107,7 @@ void object_id_on_wield(object_type *o_ptr)
 
 	/* Find obvious things */
 	if (f1 & TR1_OBVIOUS_MASK) obvious = TRUE;
-	if (f3 & (TR3_LITE | TR3_TELEPATHY)) obvious = TRUE;
+	if (f3 & TR3_OBVIOUS_MASK) obvious = TRUE;
 
 	if (!obvious) return;
 

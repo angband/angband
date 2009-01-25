@@ -43,6 +43,7 @@ Bugs fixed:
 (#734) Stop displaying the store slot bought when purchasing.
 (#735) Remove weak pseudo-ID.
 (#738) Add messages for unidentified obviouslly {excellent} items.
+(#739) Bonuses for {excellent}/{good} items that have been wielded should show up on character screen and object recall.
 (#740, partial #532) Color-code monster melee attacks by how dangerous they are to the current player.
 (#741) Stop generating spurious staircases under the player on recall/teleport.
 (#747) ui-birth.c needs to handle going directly from character sheet to sex prompt.
@@ -72,6 +73,7 @@ Use curses to parse keys, which is more portable and removes the Escape delay.
 Invisible code changes:
 (#513) Refactor the code that prompts for character dump filenames so that it can be overriden by platform-native ports.
 (#616) Add support for BSDish makes.
+(#749) Add an id_only paramater to calc_bonuses().
 Make "make clean" remove all object files in the list, to catch files in subdirectories.
 Commit the beginnings of a flag-based terrain system; note that it does absolutely nothing as yet.
 Make the z-virt defines cast to the right type so that assignment errors can get caught a bit ealier on.

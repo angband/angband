@@ -376,7 +376,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 		memcpy(inven, inventory, INVEN_TOTAL * sizeof(object_type));
 		inven[INVEN_WIELD] = *o_ptr;
 
-		calc_bonuses(inven, &state);
+		calc_bonuses(inven, &state, TRUE);
 
 		dam = ((o_ptr->ds + 1) * o_ptr->dd * 5);
 		xtra_dam = state.dis_to_d * 10;

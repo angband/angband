@@ -568,8 +568,12 @@ static int weight_limit(player_state *state)
  * The "weapon" and "bow" do *not* add to the bonuses to hit or to
  * damage, since that would affect non-combat things.  These values
  * are actually added in later, at the appropriate place.
+ *
+ * If id_only is true, calc_bonuses() will only use the known
+ * information of objects; thus it returns what the player _knows_
+ * the character state to be.
  */
-void calc_bonuses(object_type inventory[], player_state *state)
+void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 {
 	int i, j, hold;
 
@@ -619,7 +623,11 @@ void calc_bonuses(object_type inventory[], player_state *state)
 		if (!o_ptr->k_idx) continue;
 
 		/* Extract the item flags */
-		object_flags(o_ptr, &f1, &f2, &f3);
+		if (id_only)
+			object_flags_known(o_ptr, &f1, &f2, &f3);
+		else
+			object_flags(o_ptr, &f1, &f2, &f3);
+
 		collect_f1 |= f1;
 		collect_f2 |= f2;
 		collect_f3 |= f3;
@@ -666,7 +674,8 @@ void calc_bonuses(object_type inventory[], player_state *state)
 		state->dis_ac += o_ptr->ac;
 
 		/* Apply the bonuses to armor class */
-		state->to_a += o_ptr->to_a;
+		if (!id_only || object_known_p(o_ptr))
+			state->to_a += o_ptr->to_a;
 
 		/* Apply the mental bonuses to armor class, if known */
 		if (object_known_p(o_ptr)) state->dis_to_a += o_ptr->to_a;
@@ -678,8 +687,11 @@ void calc_bonuses(object_type inventory[], player_state *state)
 		if (i == INVEN_BOW) continue;
 
 		/* Apply the bonuses to hit/damage */
-		state->to_h += o_ptr->to_h;
-		state->to_d += o_ptr->to_d;
+		if (!id_only || object_known_p(o_ptr))
+		{
+			state->to_h += o_ptr->to_h;
+			state->to_d += o_ptr->to_d;
+		}
 
 		/* Apply the mental bonuses tp hit/damage, if known */
 		if (object_known_p(o_ptr)) state->dis_to_h += o_ptr->to_h;
@@ -1135,7 +1147,7 @@ static void update_bonuses(void)
 
 	/*** Calculate bonuses ***/
 
-	calc_bonuses(inventory, &p_ptr->state);
+	calc_bonuses(inventory, &p_ptr->state, FALSE);
 
 
 	/*** Notice changes ***/

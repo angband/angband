@@ -156,6 +156,7 @@ void wield_item(object_type *o_ptr, int item)
 	p_ptr->equip_cnt++;
 
 	/* Do any ID-on-wield */
+	object_tried(o_ptr);
 	object_id_on_wield(o_ptr);
 
 	/* Where is the item now */

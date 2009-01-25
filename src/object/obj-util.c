@@ -352,13 +352,29 @@ void object_flags(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
  */
 void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
 {
+	object_flags(o_ptr, f1, f2, f3);
+
 	if (!object_known_p(o_ptr))
 	{
-		(*f1) = (*f2) = (*f3) = 0L;
-		return;
-	}
+		/*
+		 * If the object is not known, only a subset of flags
+		 * are knowable.  If it has never been tried, none are.
+		 */
+		(*f1) &= TR1_OBVIOUS_MASK;
+		(*f2) = 0;
+		(*f3) &= TR3_OBVIOUS_MASK;
 
-	object_flags(o_ptr, f1, f2, f3);
+		/*
+		 * We don't use object_tried_p here because we care about
+		 * _specific_ trial; knowing that long swords grant no TRx
+		 * tells you nothing about a Long Sword {excellent}.
+		 * FIXME identification needs a redesign
+		 */
+		if (!(o_ptr->ident & IDENT_TRIED))
+		{
+			(*f1) = (*f2) = (*f3) = 0L;
+		}
+	}
 }
 
 
