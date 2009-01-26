@@ -787,7 +787,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix,
 			(mode & ODESC_STORE) ? TRUE : FALSE);
 
 	/* Add squelch marker  */
-	if (~(mode & ODESC_STORE) && squelch_item_ok(o_ptr))
+	if (!(mode & ODESC_STORE) && squelch_item_ok(o_ptr))
 		strnfcat(buf, max, &end, " (squelch)");
 
 	return end;
