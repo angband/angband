@@ -742,7 +742,27 @@ static u32b grab_one_effect(const char *what)
 	return 0;
 }
 
+/**
+ * Parse a timeout figure, in dice+adds format
+ *
+ * Note -- we use temporary variables of type 'int' because ther
+ * is no sscanf identifer for uint16_t.
+ */
+static bool grab_one_timeout(const char *text, u16b *dd, u16b *ds, u16b *base)
+{
+	int t_dd = 0, t_ds = 0, t_base = 0;
 
+	     if (1 == sscanf(text, "d%d",      &t_ds))          { t_dd = 1; }
+	else if (2 == sscanf(text, "%d+d%d",   &t_base, &t_ds)) { t_dd = 1; }
+	else if (2 == sscanf(text, "%dd%d",    &t_dd, &t_ds));
+	else if (3 == sscanf(text, "%d+%dd%d", &t_base, &t_dd, &t_ds));
+	else if (1 == sscanf(text, "%d",       &t_base)) { t_dd = t_ds = 0; }
+	else return FALSE;
+
+	*dd = t_dd; *ds = t_ds; *base = t_base;
+
+	return TRUE;
+}
 
 
 /**
@@ -1634,8 +1654,6 @@ errr parse_k_info(char *buf, header *head)
 	/* Process 'E' for effect */
 	else if (buf[0] == 'E')
 	{
-		int base, ds, dd;
-
 		/* Find the colon after the name, nuke it and advance */
 		s = strchr(buf + 2, ':');
 		if (s) *s++ = '\0';
@@ -1644,39 +1662,9 @@ errr parse_k_info(char *buf, header *head)
 		k_ptr->effect = grab_one_effect(buf + 2);
 		if (!k_ptr->effect) return (PARSE_ERROR_GENERIC);
 
-		if (!s)
-		{
-		}
-		else if (1 == sscanf(s, "d%d", &ds))
-		{
-			k_ptr->time_dice = 1;
-			k_ptr->time_sides = ds;
-		}
-		else if (2 == sscanf(s, "%d+d%d", &base, &ds))
-		{
-			k_ptr->time_base = base;
-			k_ptr->time_dice = 1;
-			k_ptr->time_sides = ds;
-		}
-		else if (2 == sscanf(s, "%dd%d", &dd, &ds))
-		{
-			k_ptr->time_dice = dd;
-			k_ptr->time_sides = ds;
-		}
-		else if (3 == sscanf(s, "%d+%dd%d", &base, &dd, &ds))
-		{
-			k_ptr->time_base = base;
-			k_ptr->time_dice = dd;
-			k_ptr->time_sides = ds;
-		}
-		else if (1 == sscanf(s, "%d", &base))
-		{
-			k_ptr->time_base = base;
-		}
-		else
-		{
+		if (s && !grab_one_timeout(s, &k_ptr->time_dice,
+				&k_ptr->time_sides, &k_ptr->time_base))
 			return (PARSE_ERROR_GENERIC);
-		}
 	}
 
 	/* Process 'D' for "Description" */
@@ -1887,8 +1875,6 @@ errr parse_a_info(char *buf, header *head)
 	/* Process 'A' for "Activation & time" */
 	else if (buf[0] == 'A')
 	{
-		int base, ds, dd;
-
 		/* Find the colon after the name */
 		s = strchr(buf + 2, ':');
 		if (!s) return (PARSE_ERROR_MISSING_COLON);
@@ -1902,36 +1888,9 @@ errr parse_a_info(char *buf, header *head)
 		if (!a_ptr->effect) return (PARSE_ERROR_GENERIC);
 
 		/* Scan for the values */
-		if (1 == sscanf(s, "%d", &base))
-		{
-			a_ptr->time_base = base;
-		}
-		else if (1 == sscanf(s, "d%d", &ds))
-		{
-			a_ptr->time_dice = 1;
-			a_ptr->time_sides = ds;
-		}
-		else if (2 == sscanf(s, "%d+d%d", &base, &ds))
-		{
-			a_ptr->time_base = base;
-			a_ptr->time_dice = 1;
-			a_ptr->time_sides = ds;
-		}
-		else if (2 == sscanf(s, "%dd%d", &dd, &ds))
-		{
-			a_ptr->time_dice = dd;
-			a_ptr->time_sides = ds;
-		}
-		else if (3 == sscanf(s, "%d+%dd%d", &base, &dd, &ds))
-		{
-			a_ptr->time_base = base;
-			a_ptr->time_dice = dd;
-			a_ptr->time_sides = ds;
-		}
-		else
-		{
+		if (!grab_one_timeout(s, &a_ptr->time_dice, &a_ptr->time_sides,
+				&a_ptr->time_base))
 			return (PARSE_ERROR_GENERIC);
-		}
 	}
 
 	/* Process 'M' for "Effect message" */

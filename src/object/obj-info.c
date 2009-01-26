@@ -544,6 +544,83 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	return TRUE;
 }
 
+/*
+ * Describe objects that can be used for digging.
+ */
+static bool describe_digger(const object_type *o_ptr, bool full)
+{
+	player_state st;
+
+	object_type inven[INVEN_TOTAL];
+
+	int sl = wield_slot(o_ptr);
+	int i;
+	u32b f1, f2, f3;
+
+	int chances[4]; /* These are out of 1600 */
+	static const char *names[4] = {
+		"rubble", "magma veins", "quartz veins", "granite"
+	};
+
+	if (full)
+		object_flags(o_ptr, &f1, &f2, &f3);
+	else
+		object_flags_known(o_ptr, &f1, &f2, &f3);
+
+	if (sl < 0 || ((sl != INVEN_WIELD) && !(f1 & TR1_TUNNEL)))
+		return FALSE;
+
+	memcpy(inven, inventory, INVEN_TOTAL * sizeof(object_type));
+
+	/*
+	 * Hack -- if we examine a ring that is worn on the right finger,
+	 * we shouldn't put a copy of it on the left finger before calculating
+	 * digging skills.
+	 */
+	if (o_ptr != &inventory[INVEN_RIGHT])
+		inven[sl] = *o_ptr;
+
+	calc_bonuses(inven, &st, TRUE);
+
+	chances[0] = st.skills[SKILL_DIGGING] * 8;
+	chances[1] = (st.skills[SKILL_DIGGING] - 10) * 4;
+	chances[2] = (st.skills[SKILL_DIGGING] - 20) * 2;
+	chances[3] = (st.skills[SKILL_DIGGING] - 40) * 1;
+
+	text_out("\nWith this item, you can expect to ");
+
+	for (i = 0; i < 4; i++) {
+		int chance = MAX(0, MIN(1600, chances[i]));
+		int decis = chance ? (16000 / chance) : 0;
+
+		if (i == 0 && chance > 0)
+			text_out("clear ");
+		if (i == 3 || (i != 0 && chance == 0))
+			text_out("and ");
+
+		if (chance == 0) {
+			text_out_c(TERM_L_RED, "not affect ");
+			text_out("%s.\n", names[i]);
+			break;
+		}
+
+		text_out("%s in ", names[i]);
+
+		if (chance == 1600) {
+			text_out_c(TERM_L_GREEN, "1 ");
+		} else if (decis < 100) {
+			text_out_c(TERM_GREEN, "%d.%d ", decis/10, decis%10);
+		} else {
+			text_out_c((decis < 1000) ? TERM_YELLOW : TERM_RED,
+			           "%d ", (decis+5)/10);
+		}
+
+		text_out("turn%s%s", decis == 10 ? "" : "s",
+				(i == 3) ? ".\n" : ", ");
+	}
+
+	return TRUE;
+}
 
 
 /*
@@ -658,23 +735,28 @@ static bool describe_activation(const object_type *o_ptr, u32b f3, bool full, bo
 
 	if (base || dice || sides)
 	{
+		int min_time, max_time;
 		/* Some artifacts can be activated */
 		text_out("It takes ");
 
-		/* Output the number of turns */
-		if (dice && dice != 1)
-		    text_out_c(TERM_L_GREEN, "%d", dice);
+		/* Correct for player speed */
 
-		if (sides)
-		    text_out_c(TERM_L_GREEN, "d%d", sides);
+		min_time = (dice*1     + base) *
+			extract_energy[p_ptr->state.speed] / 10;
+		max_time = (dice*sides + base) *
+			extract_energy[p_ptr->state.speed] / 10;
 
-		if (base)
+		text_out_c(TERM_L_GREEN, "%d", min_time);
+
+		if (min_time != max_time)
 		{
-			if (sides) text_out_c(TERM_L_GREEN, "+");
-		    text_out_c(TERM_L_GREEN, "%d", base);
+			text_out(" to ");
+			text_out_c(TERM_L_GREEN, "%d", max_time);
 		}
 
-		text_out(" turns to recharge after use.\n");
+		text_out(" turns to recharge after use%s.\n",
+			p_ptr->state.speed == 110 ? "" :
+			" at your current speed");
 	}
 
 	return TRUE;
@@ -860,6 +942,7 @@ bool object_info_chardump(const object_type *o_ptr)
 
 	/* Describe combat bits */
 	if (describe_combat(o_ptr, FALSE)) something = TRUE;
+	if (describe_digger(o_ptr, FALSE)) something = TRUE;
 
 	return something;
 }
@@ -888,6 +971,7 @@ bool object_info_known(const object_type *o_ptr)
 
 	/* Describe combat bits */
 	if (describe_combat(o_ptr, FALSE)) has_info = TRUE;
+	if (describe_digger(o_ptr, FALSE)) has_info = TRUE;
 
 	return has_info;
 }
@@ -914,6 +998,7 @@ bool object_info_store(const object_type *o_ptr)
 	}
 
 	if (describe_combat(o_ptr, TRUE)) has_info = TRUE;
+	if (describe_digger(o_ptr, TRUE)) has_info = TRUE;
 
 	return has_info;
 }
