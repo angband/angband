@@ -21,10 +21,9 @@ typedef enum
 	ODESC_COMBAT = 0x01,   /*!< Also show combat bonuses */
 	ODESC_FULL   = 0x02 | ODESC_COMBAT,
 	                       /*!< Show entire description */
-	ODESC_STORE  = 0x04 | ODESC_FULL,
-	                      /*!< Also show {squelch} marker */
 
-	ODESC_PLURAL = 0x08   /*!< Always pluralise */
+	ODESC_STORE  = 0x04,   /*!< This is an in-store description */
+	ODESC_PLURAL = 0x08    /*!< Always pluralise */
 } odesc_detail_t;
 
 

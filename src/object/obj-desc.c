@@ -704,16 +704,15 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
  * Modes ("prefix" is TRUE):
  *   ODESC_BASE   -- Chain Mail of Death
  *   ODESC_COMBAT -- Chain Mail of Death [1,+3]
- *   ODESC_STORE  -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty}
- *   ODESC_FULL   -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty} (squelch)
+ *   ODESC_FULL   -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty}
  *
  * Modes ("prefix" is FALSE):
  *   ODESC_BASE   -- Chain Mail of Death
  *   ODESC_COMBAT -- Chain Mail of Death [1,+3]
- *   ODESC_STORE  -- Rings of Death [1,+3] (+2 to Stealth) {nifty}
- *   ODESC_FULL   -- Rings of Death [1,+3] (+2 to Stealth) {nifty} (squelch)
+ *   ODESC_FULL   -- Rings of Death [1,+3] (+2 to Stealth) {nifty}
  *
  * ODESC_PLURAL will pluralise regardless of the number in the stack.
+ * ODESC_STORE turns off squelch markers, for in-store display.
  */
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix, odesc_detail_t mode)
 {
@@ -788,7 +787,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix,
 			(mode & ODESC_STORE) ? TRUE : FALSE);
 
 	/* Add squelch marker  */
-	if ((mode & ODESC_FULL) && squelch_item_ok(o_ptr))
+	if (~(mode & ODESC_STORE) && squelch_item_ok(o_ptr))
 		strnfcat(buf, max, &end, " (squelch)");
 
 	return end;
