@@ -762,6 +762,9 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix,
 			mode & ODESC_PLURAL ? TRUE : FALSE);
 
 
+	/* Remove the plural bit */
+	mode &= ~(ODESC_PLURAL);
+			
 	/** Append things depending on mode **/
 
 	if (mode == ODESC_BASE)
