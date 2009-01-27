@@ -1808,7 +1808,8 @@ void do_cmd_knowledge_objects(void *obj, const char *name)
 
 	for (i = 0; i < z_info->k_max; i++)
 	{
-		if (k_info[i].everseen || k_info[i].flavor || cheat_xtra)
+		if ((k_info[i].everseen || k_info[i].flavor || cheat_xtra) &&
+				!(k_info[i].flags3 & TR3_INSTA_ART))
 		{
 			int c = obj_group_order[k_info[i].tval];
 			if (c >= 0) objects[o_count++] = i;

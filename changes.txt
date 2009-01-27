@@ -61,6 +61,7 @@ Tone down the frequency of {excellent} items somewhat, and tweak {good} frequenc
 Remove the 'K' command and instead put a prompt after the 'destroy' prompt.
 Enchant Armour scrolls ID when reading them, not when they are successfully read.
 Fix artifact recharge times.
+Fix displaying the special rings in the object knowledge viewer.
 Tone down Troll Priest HP.
 Include criticals damage in the object description's average display.
 Make Kavlax 'scary dark like Anclagon'.
