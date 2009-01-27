@@ -165,11 +165,13 @@ static void kind_info(char *buf, size_t buf_len,
 
 	/* Description (too brief) */
 	if (buf)
-		object_desc_spoil(buf, buf_len, i_ptr, FALSE, ODESC_BASE);
+		object_desc(buf, buf_len, i_ptr, FALSE,
+				ODESC_BASE | ODESC_SPOIL);
 
 	/* Weight */
 	if (wgt)
-		strnfmt(wgt, wgt_len, "%3d.%d", i_ptr->weight / 10, i_ptr->weight % 10);
+		strnfmt(wgt, wgt_len, "%3d.%d",
+				i_ptr->weight / 10, i_ptr->weight % 10);
 
 	/* Hack */
 	if (!dam)
@@ -489,7 +491,8 @@ static void spoil_artifact(cptr fname)
 			if (!make_fake_artifact(i_ptr, (byte)j)) continue;
 
 			/* Grab artifact name */
-			object_desc_spoil(buf, sizeof(buf), i_ptr, TRUE, ODESC_COMBAT);
+			object_desc(buf, sizeof(buf), i_ptr, TRUE,
+					ODESC_COMBAT | ODESC_SPOIL);
 
 			/* Print name and underline */
 			spoiler_underline(buf, '-');

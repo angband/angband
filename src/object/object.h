@@ -19,11 +19,14 @@ typedef enum
 {
 	ODESC_BASE   = 0x00,   /*!< Only describe the base name */
 	ODESC_COMBAT = 0x01,   /*!< Also show combat bonuses */
-	ODESC_FULL   = 0x02 | ODESC_COMBAT,
+	ODESC_EXTRA  = 0x02,   /*!< Show charges/inscriptions/pvals */
+
+	ODESC_FULL   = ODESC_COMBAT | ODESC_EXTRA,
 	                       /*!< Show entire description */
 
 	ODESC_STORE  = 0x04,   /*!< This is an in-store description */
-	ODESC_PLURAL = 0x08    /*!< Always pluralise */
+	ODESC_PLURAL = 0x08,   /*!< Always pluralise */
+	ODESC_SPOIL  = 0x10    /*!< Display regardless of player knowledge */
 } odesc_detail_t;
 
 
@@ -54,7 +57,6 @@ typedef enum
 /* obj-desc.c */
 void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know);
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix, odesc_detail_t mode);
-void object_desc_spoil(char *buf, size_t max, const object_type *o_ptr, int pref, odesc_detail_t mode);
 
 /* obj-info.c */
 void object_info_header(const object_type *o_ptr);

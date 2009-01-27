@@ -666,7 +666,7 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 	return end;
 }
 
-static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, size_t end, bool in_store)
+static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, size_t end)
 {
 	const char *u = NULL, *v = NULL;
 
@@ -681,7 +681,7 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 		v = "cursed";
 	else if ((o_ptr->ident & IDENT_EMPTY) && !object_known_p(o_ptr))
 		v = "empty";
-	else if (!in_store && !object_aware_p(o_ptr) && object_tried_p(o_ptr))
+	else if (!object_aware_p(o_ptr) && object_tried_p(o_ptr))
 		v = "tried";
 
 	if (u && v)
@@ -691,6 +691,9 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 	else if (v)
 		strnfcat(buf, max, &end, " {%s}", v);
 
+	if (squelch_item_ok(o_ptr))
+		strnfcat(buf, max, &end, " (squelch)");
+
 	return end;
 }
 
@@ -698,28 +701,27 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 /**
  * Describes item `o_ptr` into buffer `buf` of size `max`.
  *
- * If `prefix` is TRUE, then the name will be prefixed with a pseudo-numeric
- * indicator of the number of items in the pile.
- *
- * Modes ("prefix" is TRUE):
- *   ODESC_BASE   -- Chain Mail of Death
- *   ODESC_COMBAT -- Chain Mail of Death [1,+3]
- *   ODESC_FULL   -- 5 Rings of Death [1,+3] (+2 to Stealth) {nifty}
- *
- * Modes ("prefix" is FALSE):
- *   ODESC_BASE   -- Chain Mail of Death
- *   ODESC_COMBAT -- Chain Mail of Death [1,+3]
- *   ODESC_FULL   -- Rings of Death [1,+3] (+2 to Stealth) {nifty}
- *
+ * ODESC_BASE results in a base description.
+ * ODESC_COMBAT will add to-hit, to-dam and AC info.
+ * ODESC_EXTRA will add pval/charge/inscription/squelch info.
  * ODESC_PLURAL will pluralise regardless of the number in the stack.
  * ODESC_STORE turns off squelch markers, for in-store display.
+ * ODESC_SPOIL treats the object as fully identified.
+ *
+ * Setting 'prefix' to TRUE prepends a 'the', 'a' or the number in the stack,
+ * respectively.
+ *
+ * \returns The number of bytes used of the buffer.
  */
-size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix, odesc_detail_t mode)
+size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
+		bool prefix, odesc_detail_t mode)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
-	bool aware = object_aware_p(o_ptr) || (o_ptr->ident & IDENT_STORE);
-	bool known = object_known_p(o_ptr) || (o_ptr->ident & IDENT_STORE);
+	bool aware = object_aware_p(o_ptr) ||
+			(o_ptr->ident & IDENT_STORE) || (mode & ODESC_SPOIL);
+	bool known = object_known_p(o_ptr) ||
+			(o_ptr->ident & IDENT_STORE) || (mode & ODESC_SPOIL);
 
 	size_t end = 0;
 
@@ -727,15 +729,10 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix,
 	/*** Some things get really simple descriptions ***/
 
 	if (o_ptr->tval == TV_GOLD)
-	{
-		return strnfmt(buf, max, "%d gold pieces worth of %s", o_ptr->pval,
-		               k_name + k_ptr->name);
-	}
-
+		return strnfmt(buf, max, "%d gold pieces worth of %s",
+				o_ptr->pval, k_name + k_ptr->name);
 	else if (!o_ptr->tval)
-	{
 		return strnfmt(buf, max, "(nothing)");
-	}
 
 
 	/** Horrible, horrible squelch **/
@@ -755,65 +752,33 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix,
 	if (known && o_ptr->name2) e_info[o_ptr->name2].everseen = TRUE;
 
 
-	/** Create basic name **/
+	/** Construct the name **/
 
 	/* Copy the base name to the buffer */
 	end = obj_desc_name(buf, max, end, o_ptr, prefix,
 			mode & ODESC_PLURAL ? TRUE : FALSE);
 
-
-	/* Remove the plural bit */
-	mode &= ~(ODESC_PLURAL);
-			
-	/** Append things depending on mode **/
-
-	if (mode == ODESC_BASE)
-		return end;
-
-	if (o_ptr->tval == TV_CHEST)
-		end = obj_desc_chest(o_ptr, buf, max, end);
-	else if (o_ptr->tval == TV_LITE)
-		end = obj_desc_light(o_ptr, buf, max, end);
-
-	end = obj_desc_combat(o_ptr, buf, max, end);
-
-	if ((mode & ~ODESC_COMBAT) == 0)
-		return end;
-
-	if (known)
+	if (mode & ODESC_COMBAT)
 	{
-		end = obj_desc_pval(o_ptr, buf, max, end);
-		end = obj_desc_charges(o_ptr, buf, max, end);
+		if (o_ptr->tval == TV_CHEST)
+			end = obj_desc_chest(o_ptr, buf, max, end);
+		else if (o_ptr->tval == TV_LITE)
+			end = obj_desc_light(o_ptr, buf, max, end);
+
+		end = obj_desc_combat(o_ptr, buf, max, end);
 	}
 
-	end = obj_desc_inscrip(o_ptr, buf, max, end,
-			(mode & ODESC_STORE) ? TRUE : FALSE);
+	if (mode & ODESC_EXTRA)
+	{
+		if (known)
+		{
+			end = obj_desc_pval(o_ptr, buf, max, end);
+			end = obj_desc_charges(o_ptr, buf, max, end);
+		}
 
-	/* Add squelch marker  */
-	if (!(mode & ODESC_STORE) && squelch_item_ok(o_ptr))
-		strnfcat(buf, max, &end, " (squelch)");
+		if (!(mode & ODESC_STORE))
+			end = obj_desc_inscrip(o_ptr, buf, max, end);
+	}
 
 	return end;
-}
-
-
-/**
- * Describes item `o_ptr` fully into buffer `buf` of size `max`.
- *
- * This differs from object_desc() only in that it can provide information the
- * player isn't meant to know.
- */
-void object_desc_spoil(char *buf, size_t max, const object_type *o_ptr, int pref, odesc_detail_t mode)
-{
-	object_type object_type_body;
-	object_type *i_ptr = &object_type_body;
-
-	/* Make a backup */
-	object_copy(i_ptr, o_ptr);
-
-	/* HACK - Pretend the object is in a store inventory */
-	i_ptr->ident |= IDENT_STORE;
-
-	/* Describe */
-	object_desc(buf, max, i_ptr, pref, mode);
 }
