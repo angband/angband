@@ -1498,6 +1498,18 @@ static void wiz_test_kind(int tval)
 }
 
 /*
+ * Display the debug commands help file.
+ */
+void do_cmd_wiz_help(void) 
+{
+	char buf[80];
+	strnfmt(buf, sizeof(buf), "debug.txt");
+	screen_save();
+	show_file(buf, NULL, 0, 0);
+	screen_load();
+}
+
+/*
  * Ask for and parse a "debug command"
  *
  * The "p_ptr->command_arg" may have been set.
@@ -1540,7 +1552,7 @@ void do_cmd_debug(void)
 		/* Hack -- Help */
 		case '?':
 		{
-			do_cmd_help();
+			do_cmd_wiz_help();
 			break;
 		}
 
@@ -1704,6 +1716,7 @@ void do_cmd_debug(void)
 		case 'V':
 		{
 			wiz_test_kind(p_ptr->command_arg);
+			break;
 		}
 
 		/* Wizard Light the Level */
