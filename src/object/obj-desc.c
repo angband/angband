@@ -128,7 +128,7 @@ static const char *obj_desc_get_modstr(const object_type *o_ptr)
 	return "";
 }
 
-static const char *obj_desc_get_basename(const object_type *o_ptr)
+static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
@@ -136,12 +136,12 @@ static const char *obj_desc_get_basename(const object_type *o_ptr)
 
 
 	if (o_ptr->ident & IDENT_STORE) show_flavor = FALSE;
-	if (object_aware_p(o_ptr) && !OPT(show_flavors)) show_flavor = FALSE;
+	if (aware && !OPT(show_flavors)) show_flavor = FALSE;
 
 
 
 	/* Known artifacts get special treatment */
-	if (artifact_p(o_ptr) && object_aware_p(o_ptr))
+	if (artifact_p(o_ptr) && aware)
 		return (k_name + k_ptr->name);
 
 	/* Analyze the object */
@@ -219,15 +219,15 @@ static const char *obj_desc_get_basename(const object_type *o_ptr)
  * Copy 'src' into 'buf, replacing '#' with 'modstr' (if found), putting a plural
  * in the place indicated by '~' if required, or using alterate...
  */
-static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type *o_ptr, bool prefix, bool pluralise)
+static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type *o_ptr, bool prefix, bool pluralise, bool spoil)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
-	const char *basename = obj_desc_get_basename(o_ptr);
-	const char *modstr = obj_desc_get_modstr(o_ptr);
+	bool known = object_known_p(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
+	bool aware = object_aware_p(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
 
-	bool known = object_known_p(o_ptr) || (o_ptr->ident & IDENT_STORE);
-	bool aware = object_aware_p(o_ptr) || (o_ptr->ident & IDENT_STORE);
+	const char *basename = obj_desc_get_basename(o_ptr, aware);
+	const char *modstr = obj_desc_get_modstr(o_ptr);
 
 	if (o_ptr->number > 1)
 		pluralise = TRUE;
@@ -756,7 +756,8 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 
 	/* Copy the base name to the buffer */
 	end = obj_desc_name(buf, max, end, o_ptr, prefix,
-			mode & ODESC_PLURAL ? TRUE : FALSE);
+			mode & ODESC_PLURAL ? TRUE : FALSE,
+			mode & ODESC_SPOIL ? TRUE : FALSE);
 
 	if (mode & ODESC_COMBAT)
 	{
