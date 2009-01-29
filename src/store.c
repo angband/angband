@@ -2532,6 +2532,7 @@ bool store_overflow(void)
 static bool store_process_command(char cmd, void *db, int oid)
 {
 	bool equip_toggle = FALSE;
+	bool redraw = FALSE;
 
 	/* Parse the command */
 	switch (cmd)
@@ -2589,6 +2590,8 @@ static bool store_process_command(char cmd, void *db, int oid)
 		case 'w':
 		{
 			do_cmd_wield();
+			redraw = TRUE;
+			
 			break;
 		}
 
@@ -2597,6 +2600,8 @@ static bool store_process_command(char cmd, void *db, int oid)
 		case 't':
 		{
 			do_cmd_takeoff();
+			redraw = TRUE;
+			
 			break;
 		}
 
@@ -2605,6 +2610,8 @@ static bool store_process_command(char cmd, void *db, int oid)
 		case 'k':
 		{
 			do_cmd_destroy();
+			redraw = TRUE;
+			
 			break;
 		}
 
@@ -2669,6 +2676,8 @@ static bool store_process_command(char cmd, void *db, int oid)
 		case '{':
 		{
 			do_cmd_inscribe();
+			redraw = TRUE;
+			
 			break;
 		}
 
@@ -2676,6 +2685,8 @@ static bool store_process_command(char cmd, void *db, int oid)
 		case '}':
 		{
 			do_cmd_uninscribe();
+			redraw = TRUE;
+			
 			break;
 		}
 
@@ -2709,6 +2720,8 @@ static bool store_process_command(char cmd, void *db, int oid)
 		case '=':
 		{
 			do_cmd_options();
+			redraw = TRUE;
+			
 			break;
 		}
 
@@ -2738,6 +2751,12 @@ static bool store_process_command(char cmd, void *db, int oid)
 		}
 	}
 
+	if (redraw)
+	{
+		event_signal(EVENT_INVENTORY);
+		event_signal(EVENT_EQUIPMENT);
+	}
+	
 	return TRUE;
 }
 
