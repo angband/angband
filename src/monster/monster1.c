@@ -426,9 +426,8 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr)
 		color_special[m] = TERM_L_GREEN;
 
 	/* If you have an item that can be affected, item affecting attacks
-	 * are bad.
-	 */
-	for (m = 0; m <= INVEN_TOTAL; m++)
+	 * are bad. */
+	for (m = 0; m < INVEN_TOTAL; m++)
 	{
 		object_type *o_ptr = &inventory[m];
 
