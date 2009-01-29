@@ -1580,7 +1580,37 @@ void do_cmd_debug(void)
 		/* Create an artifact */
 		case 'C':
 		{
-			wiz_create_artifact(p_ptr->command_arg);
+			if (p_ptr->command_arg > 0)
+			{
+				wiz_create_artifact(p_ptr->command_arg);
+			}
+			else
+			{
+				char name[80] = "";
+				int a_idx = -1;
+
+				/* Avoid the prompt getting in the way */
+				screen_save();
+
+				/* Prompt */
+				prt("Create which artifact? ", 0, 0);
+
+				/* Get the name */
+				if (askfor_aux(name, sizeof(name), NULL))
+				{
+					/* Find the artifact with that name */
+					a_idx = lookup_artifact_name(name); 
+					
+					/* Did we find a valid artifact? */
+					if (a_idx != -1)
+					{
+						wiz_create_artifact(a_idx);
+					}
+				}
+				
+				/* Reload the screen */
+				screen_load();
+			}
 			break;
 		}
 

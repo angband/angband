@@ -3354,6 +3354,29 @@ int lookup_name(int tval, const char *name)
 }
 
 /**
+ * Return the a_idx of the artifact with the given name
+ */
+int lookup_artifact_name(const char *name)
+{
+	int i;
+	
+	/* Look for it */
+	for (i = 1; i < z_info->a_max; i++)
+	{
+		artifact_type *a_ptr = &a_info[i];
+		const char *nm = a_name + a_ptr->name;
+		
+		/* Found a match */
+		if (streq(name, nm))
+			return i;
+		
+	} 
+	
+	return -1;
+}
+
+
+/**
  * Return the numeric sval of the object kind with the given `tval` and name `name`.
  */
 int lookup_sval(int tval, const char *name)
