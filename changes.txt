@@ -15,6 +15,9 @@ Bugs fixed:
 (#521, #597, #635) Stop the slow launches and occasional non-launches on Windows.
 (#352) Probing now reveals attack and spell information.
 (#412) Monster list is no longer hallucination-proof.
+(#451) Fix inventory/equipment and message update in store.
+(#496) Give wands and staves EASY_KNOW, so they no longer need ID.
+(#562) Ego-items are now never squelched as "bad" or "average".
 (#599) Above 18, stat drain and gain always works in intervals of 10 points
 (#561) 'n', when used to fire missiles, no longer ignores confusion.
 (#613) Prevent {!*} prompting for harmless actions.
@@ -52,6 +55,7 @@ Bugs fixed:
 (#747) ui-birth.c needs to handle going directly from character sheet to sex prompt.
 (#748) Allow Rings of Delving to activate.
 (#755) Fix pseudo-id of branded ammo, so already-known ammo doesn't get pseudo-ID'd.
+(#766) Scrolls of trap creation now longer crash in town.
 Fix bug with rods of treasure location needing ID.
 Fix birth_money so that in point-based it still gives you 500AU.
 Fix double-resist damage.
@@ -89,3 +93,8 @@ Dependancy generator has to add dirnames itself
 Remove "uint" from main-x11.c.
 Tweak the OS X makefile to be a little more terse.
 Make the game a little bit more borg-friendly.
+
+Debug mode:
+Add help file documenting debug mode.
+Add a prompt for artifact name when using ^AC with no command count,
+Add a prompt for monster name when using ^An with no command count.
