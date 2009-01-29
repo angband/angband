@@ -884,6 +884,10 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_CREATE_TRAP:
 		{
+			/* Hack -- no traps in the town */
+			if (p_ptr->depth == 0)
+				return TRUE;
+
 			trap_creation();
 			msg_print("You hear a low-pitched whistling sound.");
 			*ident = TRUE;
