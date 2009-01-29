@@ -396,6 +396,9 @@ bool squelch_item_ok(const object_type *o_ptr)
 			{
 				return TRUE;
 			}
+			
+			if ((feel == INSCRIP_SPECIAL) || (feel == INSCRIP_EXCELLENT))
+				return FALSE;
 
 			if ((feel != INSCRIP_AVERAGE) && fullid &&
 				 (o_ptr->to_a <= 0 && o_ptr->to_h <= 0 && o_ptr->to_d <= 0))
@@ -413,7 +416,10 @@ bool squelch_item_ok(const object_type *o_ptr)
 				return TRUE;
 			}
 
-			if ((feel != INSCRIP_AVERAGE) && fullid &&
+			if ((feel == INSCRIP_SPECIAL) || (feel == INSCRIP_EXCELLENT))
+				return FALSE;
+
+			if (fullid &&
 				 (o_ptr->to_a <= 0 && o_ptr->to_h <= 0 && o_ptr->to_d <= 0))
 				return TRUE;
 
@@ -440,7 +446,8 @@ bool squelch_item_ok(const object_type *o_ptr)
 		{
 			if ((feel == INSCRIP_TERRIBLE) ||
 			    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED) ||
-			    (feel == INSCRIP_AVERAGE) || (feel == INSCRIP_EXCELLENT))
+			    (feel == INSCRIP_AVERAGE) || (feel == INSCRIP_EXCELLENT) ||
+				(feel == INSCRIP_MAGICAL))
 			{
 				return TRUE;
 			}
