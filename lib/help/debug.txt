@@ -7,8 +7,10 @@ Create an object (c)
 		floor.
 		
 Create an artifact (C)
-		Requires a command-count. Creates the artifact with number equal to
-		the command-count.
+		Prompts you for the name of an artifact, then drops that artifact
+		nearby. You must give the name exactly as in artifact.txt. You may
+		optionally give a command-count, in which case this command drops the
+		artifact with that number nearby instead of prompting you for a name.
 		
 Create a good object (g)
 		Creates a good object and places it nearby. If you provide a command-
