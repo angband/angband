@@ -1687,7 +1687,37 @@ void do_cmd_debug(void)
 		/* Summon Named Monster */
 		case 'n':
 		{
-			do_cmd_wiz_named(p_ptr->command_arg, TRUE);
+			if (p_ptr->command_arg > 0)
+			{
+				do_cmd_wiz_named(p_ptr->command_arg, TRUE);
+			}
+			else
+			{
+				char name[80] = "";
+				int r_idx = -1;
+
+				/* Avoid the prompt getting in the way */
+				screen_save();
+
+				/* Prompt */
+				prt("Summon which monster? ", 0, 0);
+
+				/* Get the name */
+				if (askfor_aux(name, sizeof(name), NULL))
+				{
+					/* Find the monster with that name */
+					r_idx = lookup_monster(name); 
+					
+					/* Reload the screen */
+					screen_load();
+					
+					/* Did we find a valid monster? */
+					if (r_idx != -1)
+					{
+						do_cmd_wiz_named(r_idx, TRUE);
+					}
+				}
+			}
 			break;
 		}
 

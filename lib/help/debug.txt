@@ -91,8 +91,10 @@ Rerate hitpoints (h)
 --- Monsters ---
 		
 Summon monster (n)
-		Requires a command-count. Summons a monster next to you whose index
-		is the command-count.
+		Prompts you for the name of a monster, then summons that monster
+		nearby. You must give the name exactly as in monster.txt. You may
+		optionally give a command-count, in which case this command summons the
+		monster with that number nearby instead of prompting you for a name.
 		
 Summon random monster (s)
 		Summons a random monster next to you. If given a command-count,

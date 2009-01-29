@@ -1363,3 +1363,31 @@ void display_roff(int r_idx)
 	/* Describe monster */
 	roff_top(r_idx);
 }
+
+
+/*
+ * Return the r_idx of the monster with the given name.
+ *
+ * Note: on the rare occasions where two different entries have
+ * the same name (such as novice mages), we return the index of the
+ * first entry that matches. It would probably be a good idea in the
+ * future to make sure all monsters have distinct names.
+ */
+int lookup_monster(const char *name)
+{
+	int i;
+	
+	/* Look for it */
+	for (i = 1; i < z_info->r_max; i++)
+	{
+		monster_race *r_ptr = &r_info[i];
+		const char *nm = r_name + r_ptr->name;
+		
+		/* Found a match */
+		if (streq(name, nm))
+			return i;
+		
+	} 
+	
+	return -1;
+}

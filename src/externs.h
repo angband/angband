@@ -394,6 +394,7 @@ extern void describe_monster(int r_idx, bool spoilers);
 extern void roff_top(int r_idx);
 extern void screen_roff(int r_idx);
 extern void display_roff(int r_idx);
+extern int lookup_monster(const char *name);
 
 /* monster2.c */
 extern bool wake_monster(monster_type *m_ptr);
