@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "game-event.h"
 #include "randname.h"
 
 
@@ -1548,6 +1549,9 @@ static void msg_print_aux(u16b type, cptr msg)
 
 	/* Remember the position */
 	message_column += n + 1;
+
+	/* Send refresh event */
+	event_signal(EVENT_MESSAGE);
 }
 
 
