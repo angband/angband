@@ -696,9 +696,6 @@ static void a_m_aux_2(object_type *o_ptr, int level, int power)
  */
 static void a_m_aux_3(object_type *o_ptr, int level, int power)
 {
-	if (power < 0)
-		o_ptr->flags3 |= TR3_LIGHT_CURSE;
-
 	/* Apply magic (good or bad) according to type */
 	switch (o_ptr->tval)
 	{
@@ -976,6 +973,10 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 			break;
 		}
 	}
+
+	/* Just for now */
+	if (o_ptr->pval < 0)
+		o_ptr->flags3 |= TR3_LIGHT_CURSE;
 }
 
 
