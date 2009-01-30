@@ -24,7 +24,7 @@ Bugs fixed:
 (#641) Fix Morgoth artifacts.
 (#654) Allow pseudo to work whilst resting.
 (#672) Fix Evenstar activation message.
-(#673) Fix description of dentify scrolls.
+(#673) Fix description of Identify scrolls.
 (#676) Fixed character creation help.
 (#683) Fix !Berserk Strength being unsellable.
 (#685) Scrolls of Create Trap now ID on use.
@@ -56,6 +56,7 @@ Bugs fixed:
 (#748) Allow Rings of Delving to activate.
 (#755) Fix pseudo-id of branded ammo, so already-known ammo doesn't get pseudo-ID'd.
 (#766) Scrolls of trap creation now longer crash in town.
+(#773) General Store now restocks like other stores (e.g. more food will appear without you having to buy out all the food).
 Fix bug with rods of treasure location needing ID.
 Fix birth_money so that in point-based it still gives you 500AU.
 Fix double-resist damage.

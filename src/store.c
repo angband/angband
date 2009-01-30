@@ -1195,8 +1195,8 @@ static bool store_create_random(int st)
 	}
 	else
 	{
-		min_level = 1 + MAX(p_ptr->max_depth - 10, 0);
-		max_level = STORE_OBJ_LEVEL + MAX(p_ptr->max_depth - 10, 0);
+		min_level = 1;
+		max_level = STORE_OBJ_LEVEL + MAX(p_ptr->max_depth - 20, 0);
 	}
 
 	if (min_level > 55) min_level = 55;
@@ -1311,7 +1311,7 @@ static struct staple_type
  * Helper function: create an item with the given tval,sval pair, add it to the
  * store st.  Return the slot in the inventory.
  */
-static int store_create_item(int st, int tval, int sval, create_mode mode)
+static int store_create_item(int st, int tval, int sval)
 {
 	object_type object;
 	int k_idx;
@@ -1348,21 +1348,6 @@ static int store_create_item(int st, int tval, int sval, create_mode mode)
 			object.timeout = FUEL_LAMP / 2;
 	}
 
-	/* Make according to mode */
-	switch (mode)
-	{
-		case MAKE_SINGLE:
-			break;
-
-		case MAKE_NORMAL:
-			mass_produce(&object);
-			break;
-
-		case MAKE_MAX:
-			object.number = 99;
-			break;
-	}
-
 	/* Attempt to carry the object */
 	return store_carry(st, &object);
 }
@@ -1371,8 +1356,6 @@ static int store_create_item(int st, int tval, int sval, create_mode mode)
 
 /*
  * Create all staple items.
- *
- * XXX should ensure that entries marked as "max" stay in stock
  */
 static void store_create_staples(void)
 {
@@ -1381,11 +1364,33 @@ static void store_create_staples(void)
 	/* Iterate through staples */
 	for (i = 0; i < N_ELEMENTS(staples); i++)
 	{
-		struct staple_type *s = &staples[i];
+		struct staple_type *staple = &staples[i];
+		object_type *o_ptr;
+
+		int idx = store_find(STORE_GENERAL, staple->tval, staple->sval);
 
 		/* Look for the item, and if it isn't there, create it */
-		if (store_find(STORE_GENERAL, s->tval, s->sval) == -1)
-			store_create_item(STORE_GENERAL, s->tval, s->sval, s->mode);
+		if (idx == -1)
+			idx = store_create_item(STORE_GENERAL,
+					staple->tval, staple->sval);
+
+		o_ptr = &store[STORE_GENERAL].stock[idx];
+
+		/* Stock appropriate amounts */
+		switch (staple->mode)
+		{
+			case MAKE_SINGLE:
+				o_ptr->number = 1;
+				break;
+
+			case MAKE_NORMAL:
+				mass_produce(o_ptr);
+				break;
+
+			case MAKE_MAX:
+				o_ptr->number = 99;
+				break;
+		}
 	}
 }
 
