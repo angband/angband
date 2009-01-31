@@ -65,6 +65,7 @@ Add Word of Recall status to the status line.
 Tone down the frequency of {excellent} items somewhat, and tweak {good} frequency.
 Tone down detection area a wee bit.
 Remove the 'K' command and instead put a prompt after the 'destroy' prompt.
+Weaken PDSM just a tad.
 Enchant Armour scrolls ID when reading them, not when they are successfully read.
 Fix artifact recharge times.
 Fix displaying the special rings in the object knowledge viewer.
