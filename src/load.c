@@ -1759,20 +1759,8 @@ static errr rd_savefile_new_aux(void)
 	x_check = 0L;
 
 
-	/* Operating system info */
-	rd_u32b(&sf_xtra);
-
-	/* Time of savefile creation */
-	rd_u32b(&sf_when);
-
-	/* Number of resurrections */
-	rd_u16b(&sf_lives);
-
-	/* Number of times played */
-	rd_u16b(&sf_saves);
-
-
-	strip_bytes(8);
+	/* Strip old data */
+	strip_bytes(20);
 
 
 	if (rd_randomizer()) return -1;

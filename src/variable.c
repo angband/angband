@@ -53,14 +53,6 @@ byte sf_patch;			/* Savefile's "version_patch" */
 byte sf_extra;			/* Savefile's "version_extra" */
 
 /*
- * Savefile information
- */
-u32b sf_xtra;			/* Operating system info */
-u32b sf_when;			/* Time when savefile created */
-u16b sf_lives;			/* Number of past "lives" with this file */
-u16b sf_saves;			/* Number of "saves" during this life */
-
-/*
  * Run-time arguments
  */
 bool arg_wizard;			/* Command arg -- Request wizard mode */

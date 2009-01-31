@@ -962,24 +962,6 @@ void wr_history(void)
  */
 static void wr_savefile_new(void)
 {
-	u32b now;
-
-	/* Guess at the current time */
-	now = time((time_t *)0);
-
-
-	/* Note the operating system */
-	sf_xtra = 0L;
-
-	/* Note when the file was saved */
-	sf_when = now;
-
-	/* Note the number of saves */
-	sf_saves++;
-
-
-	/*** Actually write the file ***/
-
 	/* Dump the file header */
 	xor_byte = 0;
 	wr_byte(VERSION_MAJOR);
@@ -990,31 +972,17 @@ static void wr_savefile_new(void)
 	xor_byte = 0;
 	wr_byte(VERSION_EXTRA);
 
-
 	/* Reset the checksum */
 	v_stamp = 0L;
 	x_stamp = 0L;
 
-
-	/* Operating system */
-	wr_u32b(sf_xtra);
-
-
-	/* Time file last saved */
-	wr_u32b(sf_when);
-
-	/* Number of past lives */
-	wr_u16b(sf_lives);
-
-	/* Number of times saved */
-	wr_u16b(sf_saves);
-
-
-	/* Space */
+	wr_u32b(0L);
+	wr_u32b(0L);
+	wr_u32b(0L);
 	wr_u32b(0L);
 	wr_u32b(0L);
 
-
+	/* Write actual data */
 	wr_randomizer();
 	wr_options();
 	wr_messages();
@@ -1022,11 +990,8 @@ static void wr_savefile_new(void)
 	wr_object_memory();
 	wr_quests();
 	wr_artifacts();
-
 	wr_extra();
-
 	if (adult_randarts) wr_randarts();
-
 	wr_inventory();
 	wr_stores();
 
@@ -1038,10 +1003,9 @@ static void wr_savefile_new(void)
 
 	wr_history();
 
-	/* Write the "value check-sum" */
-	wr_u32b(v_stamp);
 
-	/* Write the "encoded checksum" */
+	/* Write the checksums */
+	wr_u32b(v_stamp);
 	wr_u32b(x_stamp);
 }
 
