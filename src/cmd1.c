@@ -39,6 +39,9 @@ void search(void)
 	/* Start with base search ability */
 	chance = p_ptr->state.skills[SKILL_SEARCH];
 
+	/* Notice object flags */
+	object_notice_flag(1, TR1_SEARCH);
+
 	/* Penalize various conditions */
 	if (p_ptr->timed[TMD_BLIND] || no_lite()) chance = chance / 10;
 	if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) chance = chance / 10;

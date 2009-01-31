@@ -157,7 +157,7 @@ void wield_item(object_type *o_ptr, int item)
 
 	/* Do any ID-on-wield */
 	object_tried(o_ptr);
-	object_id_on_wield(o_ptr);
+	object_notice_on_wield(o_ptr);
 
 	/* Where is the item now */
 	if (slot == INVEN_WIELD)

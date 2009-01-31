@@ -21,52 +21,43 @@
 #include "object/tvalsval.h"
 
 
-/*
- * Determines the odds of an object breaking when thrown at a monster
+/**
+ * Determines how likely an object is to break on throwing or shooting.
  *
- * Note that artifacts never break, see the "drop_near()" function.
+ * \returns percentage change of breaking
  */
 int breakage_chance(const object_type *o_ptr)
 {
-	/* Examine the item type */
+	/* Artifacts never break */
+	if (artifact_p(o_ptr))
+		return 0;
+
 	switch (o_ptr->tval)
 	{
-		/* Always break */
 		case TV_FLASK:
 		case TV_POTION:
 		case TV_BOTTLE:
 		case TV_FOOD:
 		case TV_JUNK:
-		{
-			return (100);
-		}
+			return 100;
 
-		/* Often break */
 		case TV_LITE:
 		case TV_SCROLL:
 		case TV_SKELETON:
-		{
-			return (50);
-		}
+			return 50;
 
-		/* Sometimes break */
 		case TV_ARROW:
-		{
-			return (35);
-		}
+			return 35;
 
-		/* Sometimes break */
 		case TV_WAND:
 		case TV_SHOT:
 		case TV_BOLT:
 		case TV_SPIKE:
-		{
-			return (25);
-		}
-	}
+			return 25;
 
-	/* Rarely break */
-	return (10);
+		default:
+			return 10;
+	}
 }
 
 
@@ -193,14 +184,23 @@ static int critical_norm(int weight, int plus, int dam)
 
 
 
-/*
- * Extract the "multiplier" from a given object hitting a given monster.
- * If the multiplier is >1, set 'hit_verb' to be a string containing the verb for the hit (i.e. 'burn', 'smite')
+/**
+ * Extract the multiplier from a given object hitting a given monster.
  *
- * Most brands and slays are x3, except Slay Animal (x2), Slay Evil (x2),
- * and Kill dragon (x5).
+ * If there is a slay or brand in effect, change the verb for hitting
+ * to something interesting ('burn', 'smite', etc.).  Also, note which
+ * flags had an effect for identification purposes.
+ *
+ * \param o_ptr is the object being used to attack
+ * \param m_ptr is the monster being attacked
+ * \param hit_verb is where a new verb is returned
+ * \param known_f1 is where new flags are returned
+ * \param is_ranged should be true for ranged attacks
+ *
+ * \returns attack multiplier
  */
-static int get_brand_mult(const object_type *o_ptr, const monster_type *m_ptr, const char **hit_verb, bool is_ranged)
+static int get_brand_mult(const object_type *o_ptr, const monster_type *m_ptr,
+		const char **hit_verb, u32b *known_f1, bool is_ranged)
 {
 	int mult = 1;
 	bool slay = FALSE;
@@ -214,83 +214,69 @@ static int get_brand_mult(const object_type *o_ptr, const monster_type *m_ptr, c
 	object_flags(o_ptr, &f1, &f2, &f3);
 
 
-	/* Slay Animal */
+	/** Slays **/
+
 	if ((f1 & TR1_SLAY_ANIMAL) && (r_ptr->flags[2] & RF2_ANIMAL))
 	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_ANIMAL);
-
+		if (m_ptr->ml) l_ptr->flags[2] |= (RF2_ANIMAL);
 		if (mult < 2) mult = 2;
+		*known_f1 |= TR1_SLAY_ANIMAL;
 		slay = TRUE;
 	}
 
-	/* Slay Evil */
 	if ((f1 & TR1_SLAY_EVIL) && (r_ptr->flags[2] & RF2_EVIL))
 	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_EVIL);
-
+		if (m_ptr->ml) l_ptr->flags[2] |= (RF2_EVIL);
 		if (mult < 2) mult = 2;
+		*known_f1 |= TR1_SLAY_EVIL;
 		slay = TRUE;
 	}
 
-	/* Slay Undead */
 	if ((f1 & TR1_SLAY_UNDEAD) && (r_ptr->flags[2] & RF2_UNDEAD))
 	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_UNDEAD);
-
+		if (m_ptr->ml) l_ptr->flags[2] |= (RF2_UNDEAD);
 		if (mult < 3) mult = 3;
+		*known_f1 |= TR1_SLAY_UNDEAD;
 		slay = TRUE;
 	}
 
-	/* Slay Demon */
 	if ((f1 & TR1_SLAY_DEMON) && (r_ptr->flags[2] & RF2_DEMON))
 	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_DEMON);
-
+		if (m_ptr->ml) l_ptr->flags[2] |= (RF2_DEMON);
 		if (mult < 3) mult = 3;
+		*known_f1 |= TR1_SLAY_DEMON;
 		slay = TRUE;
 	}
 
-	/* Slay Orc */
 	if ((f1 & TR1_SLAY_ORC) && (r_ptr->flags[2] & RF2_ORC))
 	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_ORC);
-
+		if (m_ptr->ml) l_ptr->flags[2] |= (RF2_ORC);
 		if (mult < 3) mult = 3;
+		*known_f1 |= TR1_SLAY_ORC;
 		slay = TRUE;
 	}
 
-	/* Slay Troll */
 	if ((f1 & TR1_SLAY_TROLL) && (r_ptr->flags[2] & RF2_TROLL))
 	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_TROLL);
-
+		if (m_ptr->ml) l_ptr->flags[2] |= (RF2_TROLL);
 		if (mult < 3) mult = 3;
+		*known_f1 |= TR1_SLAY_TROLL;
 		slay = TRUE;
 	}
 
-	/* Slay Giant */
 	if ((f1 & TR1_SLAY_GIANT) && (r_ptr->flags[2] & RF2_GIANT))
 	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_GIANT);
-
+		if (m_ptr->ml) l_ptr->flags[2] |= (RF2_GIANT);
 		if (mult < 3) mult = 3;
+		*known_f1 |= TR1_SLAY_GIANT;
 		slay = TRUE;
 	}
 
-	/* Slay Dragon */
 	if ((f1 & TR1_SLAY_DRAGON) && (r_ptr->flags[2] & RF2_DRAGON))
 	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_DRAGON);
-
+		if (m_ptr->ml) l_ptr->flags[2] |= (RF2_DRAGON);
 		if (mult < 3) mult = 3;
+		*known_f1 |= TR1_SLAY_DRAGON;
 		slay = TRUE;
 	}
 
@@ -302,154 +288,130 @@ static int get_brand_mult(const object_type *o_ptr, const monster_type *m_ptr, c
 		*hit_verb = "smite";
 
 
-	/* Brand (Acid) */
-	if (f1 & (TR1_BRAND_ACID))
+	/** Brands **/
+
+	if (f1 & TR1_BRAND_ACID)
 	{
-		/* Notice immunity */
-		if (r_ptr->flags[2] & (RF2_IM_ACID))
+		if (r_ptr->flags[2] & RF2_IM_ACID)
 		{
 			if (m_ptr->ml)
-				l_ptr->flags[2] |= (RF2_IM_ACID);
+				l_ptr->flags[2] |= RF2_IM_ACID;
 		}
-
-		/* Otherwise, take the damage */
 		else
 		{
 			if (mult < 3) mult = 3;
-			if (is_ranged)
-				*hit_verb = "corrodes";
-			else 
-				*hit_verb = "corrode";
+			*known_f1 |= TR1_BRAND_ACID;
+
+			if (is_ranged) *hit_verb = "corrodes";
+			else           *hit_verb = "corrode";
 		}
 	}
 
-	/* Brand (Elec) */
-	if (f1 & (TR1_BRAND_ELEC))
+	if (f1 & TR1_BRAND_ELEC)
 	{
-		/* Notice immunity */
-		if (r_ptr->flags[2] & (RF2_IM_ELEC))
+		if (r_ptr->flags[2] & RF2_IM_ELEC)
 		{
 			if (m_ptr->ml)
-				l_ptr->flags[2] |= (RF2_IM_ELEC);
+				l_ptr->flags[2] |= RF2_IM_ELEC;
 		}
-
-		/* Otherwise, take the damage */
 		else
 		{
 			if (mult < 3) mult = 3;
-			if (is_ranged)
-				*hit_verb = "zaps";
-			else 
-				*hit_verb = "zap";
+			*known_f1 |= TR1_BRAND_ELEC;
+
+			if (is_ranged) *hit_verb = "zaps";
+			else           *hit_verb = "zap";
 		}
 	}
 
-	/* Brand (Fire) */
-	if (f1 & (TR1_BRAND_FIRE))
+	if (f1 & TR1_BRAND_FIRE)
 	{
-		/* Notice immunity */
-		if (r_ptr->flags[2] & (RF2_IM_FIRE))
+		if (r_ptr->flags[2] & RF2_IM_FIRE)
 		{
 			if (m_ptr->ml)
-				l_ptr->flags[2] |= (RF2_IM_FIRE);
+				l_ptr->flags[2] |= RF2_IM_FIRE;
 		}
-
-		/* Otherwise, take the damage */
 		else
 		{
 			if (mult < 3) mult = 3;
-			if (is_ranged)
-				*hit_verb = "burns";
-			else 
-				*hit_verb = "burn";
+			*known_f1 |= TR1_BRAND_FIRE;
+
+			if (is_ranged) *hit_verb = "burns";
+			else           *hit_verb = "burn";
 		}
 	}
 
-	/* Brand (Cold) */
-	if (f1 & (TR1_BRAND_COLD))
+	if (f1 & TR1_BRAND_COLD)
 	{
-		/* Notice immunity */
-		if (r_ptr->flags[2] & (RF2_IM_COLD))
+		if (r_ptr->flags[2] & RF2_IM_COLD)
 		{
 			if (m_ptr->ml)
-				l_ptr->flags[2] |= (RF2_IM_COLD);
+				l_ptr->flags[2] |= RF2_IM_COLD;
 		}
-
-		/* Otherwise, take the damage */
 		else
 		{
 			if (mult < 3) mult = 3;
-			if (is_ranged)
-				*hit_verb = "freezes";
-			else 
-				*hit_verb = "freeze";
+			*known_f1 |= TR1_BRAND_COLD;
+
+			if (is_ranged) *hit_verb = "freezes";
+			else           *hit_verb = "freeze";
 		}
 	}
 
-	/* Brand (Poison) */
-	if (f1 & (TR1_BRAND_POIS))
+	if (f1 & TR1_BRAND_POIS)
 	{
-		/* Notice immunity */
-		if (r_ptr->flags[2] & (RF2_IM_POIS))
+		if (r_ptr->flags[2] & RF2_IM_POIS)
 		{
 			if (m_ptr->ml)
-				l_ptr->flags[2] |= (RF2_IM_POIS);
+				l_ptr->flags[2] |= RF2_IM_POIS;
 		}
-
-		/* Otherwise, take the damage */
 		else
 		{
 			if (mult < 3) mult = 3;
-			if (is_ranged)
-				*hit_verb = "poisons";
-			else 
-				*hit_verb = "poison";
+			*known_f1 |= TR1_BRAND_POIS;
+
+			if (is_ranged) *hit_verb = "poisons";
+			else           *hit_verb = "poison";
 		}
 	}
 
-	/* Put the Executes last so their hit_verb takes precedence */
+	/** Executes **/
+	/* Put last so their hit_verb takes precedence */
 
-	/* Execute Dragon */
 	if ((f1 & TR1_KILL_DRAGON) && (r_ptr->flags[2] & RF2_DRAGON))
 	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_DRAGON);
+		if (m_ptr->ml) l_ptr->flags[2] |= RF2_DRAGON;
 
 		if (mult < 5) mult = 5;
-		if (is_ranged)
-			*hit_verb = "deeply pierces";
-		else 
-			*hit_verb = "fiercely smite";
+		*known_f1 |= TR1_KILL_DRAGON;
+
+		if (is_ranged) *hit_verb = "deeply pierces";
+		else           *hit_verb = "fiercely smite";
 	}
 
-	/* Execute demon */
 	if ((f1 & TR1_KILL_DEMON) && (r_ptr->flags[2] & RF2_DEMON))
 	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_DEMON);
+		if (m_ptr->ml) l_ptr->flags[2] |= RF2_DEMON;
 
 		if (mult < 5) mult = 5;
-		if (is_ranged)
-			*hit_verb = "deeply pierces";
-		else 
-			*hit_verb = "fiercely smite";
+		*known_f1 |= TR1_KILL_DRAGON;
+
+		if (is_ranged) *hit_verb = "deeply pierces";
+		else           *hit_verb = "fiercely smite";
 	}
 
-	/* Execute undead */
 	if ((f1 & TR1_KILL_UNDEAD) && (r_ptr->flags[2] & RF2_UNDEAD))
 	{
-		if (m_ptr->ml)
-			l_ptr->flags[2] |= (RF2_UNDEAD);
+		if (m_ptr->ml) l_ptr->flags[2] |= RF2_UNDEAD;
 
 		if (mult < 5) mult = 5;
-		if (is_ranged)
-			*hit_verb = "deeply pierces";
-		else 
-			*hit_verb = "fiercely smite";
+		*known_f1 |= TR1_KILL_UNDEAD;
+
+		if (is_ranged) *hit_verb = "deeply pierces";
+		else           *hit_verb = "fiercely smite";
 	}
 
-	/* Return the multiplier */
-	return (mult);
+	return mult;
 }
 
 
@@ -535,6 +497,7 @@ void py_attack(int y, int x)
 			{
 				int weapon_brand_mult, ring_brand_mult[2];
 				int use_mult = 1;
+				u32b known_f1 = 0;
 
 				hit_verb = "hit";
 
@@ -542,12 +505,12 @@ void py_attack(int y, int x)
 				 * only be brands right now */
 				ring_brand_mult[0] = get_brand_mult(
 						&inventory[INVEN_LEFT],
-						m_ptr, &hit_verb, FALSE);
+						m_ptr, &hit_verb, &known_f1, FALSE);
 				ring_brand_mult[1] = get_brand_mult(
 						&inventory[INVEN_RIGHT],
-						m_ptr, &hit_verb, FALSE);
+						m_ptr, &hit_verb, &known_f1, FALSE);
 				weapon_brand_mult = get_brand_mult(
-						o_ptr, m_ptr, &hit_verb, FALSE);
+						o_ptr, m_ptr, &hit_verb, &known_f1, FALSE);
 
 				/* Message. Need to do this after tot_dam_aux, which sets hit_verb, but before critical_norm, which may print further messages. */
 				message_format(MSG_GENERIC, m_ptr->r_idx, "You %s %s.", hit_verb, m_name);
@@ -561,12 +524,20 @@ void py_attack(int y, int x)
 
 				k = damroll(o_ptr->dd, o_ptr->ds);
 				k *= use_mult;
+
 				if (p_ptr->state.impact && (k > 50))
-						do_quake = TRUE;
+					do_quake = TRUE;
+
 				k += o_ptr->to_d;
 				k = critical_norm(o_ptr->weight, o_ptr->to_h, k);
 
-				/* If it does something obviously good, pseudo it as at least excellent */
+				/* Hook for learning by use */
+				object_notice_on_attack();
+				object_notice_slays(known_f1, -1);
+				if (do_quake)
+					object_notice_flag(3, TR3_IMPACT);
+
+ 				/* If it does something obviously good, pseudo it as at least excellent */
 				if (weapon_brand_mult > 1 &&
 						!object_known_p(o_ptr) &&
 						o_ptr->pseudo != INSCRIP_SPECIAL)
@@ -855,8 +826,10 @@ void do_cmd_fire(void)
 
 			const char *hit_verb = "hits";
 
-			int ammo_mult = get_brand_mult(i_ptr, m_ptr, &hit_verb, TRUE);
-			int shoot_mult = get_brand_mult(j_ptr, m_ptr, &hit_verb, TRUE);
+			u32b known_f1 = 0;
+
+			int ammo_mult = get_brand_mult(i_ptr, m_ptr, &hit_verb, &known_f1, TRUE);
+			int shoot_mult = get_brand_mult(j_ptr, m_ptr, &hit_verb, &known_f1, TRUE);
 
 			/* If bow or ammo does something obviously good, pseudo it as excellent */
 			if (ammo_mult > 1 && !object_known_p(i_ptr))
@@ -1169,6 +1142,7 @@ void do_cmd_throw(void)
 			{
 				const char *hit_verb = "hits";
 				bool fear = FALSE;
+				u32b known_f1 = 0;
 
 				/* Assume a default death */
 				cptr note_dies = " dies.";
@@ -1184,7 +1158,7 @@ void do_cmd_throw(void)
 				}
 
 				/* Apply special damage  - brought forward to fill in hit_verb XXX XXX XXX */
-				tdam *= get_brand_mult(i_ptr, m_ptr, &hit_verb, TRUE);
+				tdam *= get_brand_mult(i_ptr, m_ptr, &hit_verb, &known_f1, TRUE);
 
 				/* Handle unseen monster */
 				if (!visible)

@@ -23,148 +23,6 @@
 
 
 /*
- * Sense the inventory
- */
-static void sense_inventory(void)
-{
-	int i;
-
-	char o_name[80];
-
-	unsigned int rate;
-
-
-	/* No ID when confused in a bad state */
-	if (p_ptr->timed[TMD_CONFUSED]) return;
-
-
-	/* Get improvement rate */
-	if (cp_ptr->flags & CF_PSEUDO_ID_IMPROV)
-		rate = cp_ptr->sense_base / (p_ptr->lev * p_ptr->lev + cp_ptr->sense_div);
-	else
-		rate = cp_ptr->sense_base / (p_ptr->lev + cp_ptr->sense_div);
-
-	if (!one_in_(rate)) return;
-
-
-	/* Check everything */
-	for (i = 0; i < INVEN_TOTAL; i++)
-	{
-		object_type *o_ptr = &inventory[i];
-		obj_pseudo_t feel;
-
-		bool okay = FALSE;
-
-		/* Skip empty slots */
-		if (!o_ptr->k_idx) continue;
-
-		/* Valid "tval" codes */
-		switch (o_ptr->tval)
-		{
-			case TV_SHOT:
-			case TV_ARROW:
-			case TV_BOLT:
-			case TV_BOW:
-			case TV_DIGGING:
-			case TV_HAFTED:
-			case TV_POLEARM:
-			case TV_SWORD:
-			case TV_BOOTS:
-			case TV_GLOVES:
-			case TV_HELM:
-			case TV_CROWN:
-			case TV_SHIELD:
-			case TV_CLOAK:
-			case TV_SOFT_ARMOR:
-			case TV_HARD_ARMOR:
-			case TV_DRAG_ARMOR:
-			{
-				okay = TRUE;
-				break;
-			}
-		}
-
-		/* Skip non-sense machines */
-		if (!okay) continue;
-
-		/* It is known, no information needed */
-		if (object_known_p(o_ptr)) continue;
-
-
-		/* It has already been sensed, do not sense it again */
-		if (o_ptr->ident & IDENT_SENSE)
-		{
-			/* Small chance of wielded, sensed items getting complete ID */
-			if (!o_ptr->name1 && (i >= INVEN_WIELD) && one_in_(1000))
-				do_ident_item(i, o_ptr);
-
-			continue;
-		}
-
-		/* Occasional failure on inventory items */
-		if ((i < INVEN_WIELD) && one_in_(5)) continue;
-
-
-
-		/* It's already been pseudo-ID'd */
-		if (o_ptr->pseudo &&
-		    o_ptr->pseudo != INSCRIP_INDESTRUCTIBLE) continue;
-
-		/* Check for a feeling */
-		feel = object_pseudo(o_ptr);
-		if (!feel) continue;
-
-		/* Stop everything */
-		disturb(0, 0);
-
-		/* Average pseudo-ID means full ID */
-		if (feel == INSCRIP_AVERAGE)
-		{
-			do_ident_item(i, o_ptr);
-		}
-		else
-		{
-			object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
-
-			if (i >= INVEN_WIELD)
-			{
-				message_format(MSG_PSEUDOID, 0, "You feel the %s (%c) you are %s %s %s...",
-				           o_name, index_to_label(i), describe_use(i),
-				           ((o_ptr->number == 1) ? "is" : "are"),
-				           inscrip_text[feel - INSCRIP_NULL]);
-			}
-			else
-			{
-				message_format(MSG_PSEUDOID, 0, "You feel the %s (%c) in your pack %s %s...",
-				           o_name, index_to_label(i),
-				           ((o_ptr->number == 1) ? "is" : "are"),
-				           inscrip_text[feel - INSCRIP_NULL]);
-			}
-
-			/* Sense the object */
-			o_ptr->pseudo = feel;
-
-			/* The object has been "sensed" */
-			o_ptr->ident |= (IDENT_SENSE);
-		}
-
-
-		/* Set squelch flag as appropriate */
-		if (i < INVEN_WIELD)
-			p_ptr->notice |= PN_SQUELCH;
-
-
-		/* Combine / Reorder the pack (later) */
-		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
-
-		/* Redraw stuff */
-		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
-	}
-}
-
-
-
-/*
  * Regenerate hit points
  */
 static void regenhp(int percent)
@@ -889,6 +747,8 @@ static void process_world(void)
 			p_ptr->max_exp--;
 			check_experience();
 		}
+
+		object_notice_flag(3, TR3_DRAIN_EXP);
 	}
 
 	/* Recharge activatable objects and rods */
@@ -905,6 +765,7 @@ static void process_world(void)
 	{
 		teleport_player(40);
 		disturb(0, 0);
+		object_notice_flag(3, TR3_TELEPORT);
 	}
 
 	/* Delayed Word-of-Recall */

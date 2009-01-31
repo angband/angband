@@ -1314,20 +1314,6 @@ enum
 	 TR1_SPEED | TR1_BLOWS | TR1_SHOTS | TR1_MIGHT)
 
 /*
- * Subset of the above that are obvious to the player
- */
-#define TR1_OBVIOUS_MASK \
-	(TR1_STR | TR1_INT | TR1_WIS | TR1_DEX | \
-	 TR1_CON | TR1_CHR | \
-	 TR1_STEALTH | TR1_SEARCH | TR1_INFRA | \
-	 TR1_SPEED | TR1_BLOWS | TR1_SHOTS)
-
-/*
- * Some of the 3s are obvious too
- */
-#define TR3_OBVIOUS_MASK (TR3_LITE | TR3_TELEPATHY)
-
-/*
  * Flag set 3 -- mask for "ignore element" flags.
  */
 #define TR3_IGNORE_MASK \
@@ -1336,6 +1322,26 @@ enum
 
 #define TR3_CURSE_MASK \
 	(TR3_LIGHT_CURSE | TR3_HEAVY_CURSE | TR3_PERMA_CURSE)
+
+
+/*
+ * Subset of the above that are obvious to the player on wield
+ */
+#define TR1_OBVIOUS_MASK \
+	(TR1_STR | TR1_INT | TR1_WIS | TR1_DEX | \
+	 TR1_CON | TR1_CHR | \
+	 TR1_INFRA | TR1_TUNNEL | TR1_SPEED | \
+	 TR1_BLOWS | TR1_SHOTS | TR1_MIGHT | \
+	 TR1_BRAND_POIS | TR1_BRAND_ELEC | \
+	 TR1_BRAND_FIRE | TR1_BRAND_COLD | TR1_BRAND_ACID)
+
+#define TR2_OBVIOUS_MARK \
+	(0)
+
+#define TR3_OBVIOUS_MASK \
+	(TR3_LITE | TR3_SEE_INVIS | TR3_TELEPATHY | TR3_NO_FUEL | \
+	 TR3_BLESSED | TR3_CURSE_MASK | TR3_AFRAID)
+
 
 /*
  * Hack -- special "xtra" object flag info (type)

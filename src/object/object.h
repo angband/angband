@@ -54,6 +54,19 @@ typedef enum
 
 /*** Functions ***/
 
+/* identify.c */
+extern s32b object_last_wield;
+
+void object_known(object_type *o_ptr);
+void object_aware(object_type *o_ptr);
+void object_tried(object_type *o_ptr);
+void object_notice_on_attack(void);
+void object_notice_slays(u32b known_f1, int inven_idx);
+void object_notice_flag(int flagset, u32b flag);
+void object_notice_on_wield(object_type *o_ptr);
+obj_pseudo_t object_pseudo(const object_type *o_ptr);
+void sense_inventory(void);
+
 /* obj-desc.c */
 void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know);
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix, odesc_detail_t mode);
@@ -72,7 +85,6 @@ s16b get_obj_num(int level, bool good);
 void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great);
 bool make_object(object_type *j_ptr, int lev, bool good, bool great);
 void make_gold(object_type *j_ptr, int lev, int coin_type);
-obj_pseudo_t object_pseudo(const object_type *o_ptr);
 
 /* obj-ui.c */
 void display_inven(void);
@@ -105,10 +117,6 @@ void wipe_o_list(void);
 s16b o_pop(void);
 object_type *get_first_object(int y, int x);
 object_type *get_next_object(const object_type *o_ptr);
-void object_known(object_type *o_ptr);
-void object_aware(object_type *o_ptr);
-void object_tried(object_type *o_ptr);
-void object_id_on_wield(object_type *o_ptr);
 bool is_blessed(const object_type *o_ptr);
 s32b object_value(const object_type *o_ptr, int qty);
 bool object_similar(const object_type *o_ptr, const object_type *j_ptr);
