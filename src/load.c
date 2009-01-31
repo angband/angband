@@ -576,7 +576,7 @@ static errr rd_store(int n)
 /*
  * Read RNG state
  */
-static void rd_randomizer(void)
+static int rd_randomizer(void)
 {
 	int i;
 
@@ -597,6 +597,8 @@ static void rd_randomizer(void)
 
 	/* Accept */
 	Rand_quick = FALSE;
+
+	return 0;
 }
 
 
@@ -613,7 +615,7 @@ static void rd_randomizer(void)
  * The window options are stored in the same way, but note that each
  * window gets 32 options, and their order is fixed by certain defines.
  */
-static void rd_options(void)
+static int rd_options(void)
 {
 	int i, n;
 
@@ -709,6 +711,8 @@ static void rd_options(void)
 
 	/* Set up the subwindows */
 	subwindows_set_flags(window_flag, ANGBAND_TERM_MAX);
+
+	return 0;
 }
 
 
@@ -1252,7 +1256,7 @@ static errr rd_inventory(void)
 /*
  * Read the saved messages
  */
-static void rd_messages(void)
+static int rd_messages(void)
 {
 	int i;
 	char buf[128];
@@ -1275,6 +1279,8 @@ static void rd_messages(void)
 		/* Save the message */
 		message_add(buf, tmp16u);
 	}
+
+	return 0;
 }
 
 
@@ -1598,6 +1604,123 @@ static errr rd_dungeon(void)
 }
 
 
+int rd_monster_memory(void)
+{
+	int i;
+	u16b tmp16u;
+
+	/* Monster Memory */
+	rd_u16b(&tmp16u);
+	
+	/* Incompatible save files */
+	if (tmp16u > z_info->r_max)
+	{
+		note(format("Too many (%u) monster races!", tmp16u));
+		return (-1);
+	}
+	
+	/* Read the available records */
+	for (i = 0; i < tmp16u; i++)
+		rd_lore(i);
+
+	return 0;
+}
+	
+
+int rd_object_memory(void)
+{
+	int i;
+	u16b tmp16u;
+
+	/* Object Memory */
+	rd_u16b(&tmp16u);
+	
+	/* Incompatible save files */
+	if (tmp16u > z_info->k_max)
+	{
+		note(format("Too many (%u) object kinds!", tmp16u));
+		return (-1);
+	}
+	
+	/* Read the object memory */
+	for (i = 0; i < tmp16u; i++)
+	{
+		byte tmp8u;
+		object_kind *k_ptr = &k_info[i];
+		
+		rd_byte(&tmp8u);
+		
+		k_ptr->aware = (tmp8u & 0x01) ? TRUE : FALSE;
+		k_ptr->tried = (tmp8u & 0x02) ? TRUE : FALSE;
+		k_ptr->squelch = (tmp8u & 0x04) ? TRUE : FALSE;
+		k_ptr->everseen = (tmp8u & 0x08) ? TRUE : FALSE;
+	}
+
+	return 0;
+}
+
+
+int rd_quests(void)
+{
+	int i;
+	u16b tmp16u;
+
+	/* Load the Quests */
+	rd_u16b(&tmp16u);
+	
+	/* Incompatible save files */
+	if (tmp16u > MAX_Q_IDX)
+	{
+		note(format("Too many (%u) quests!", tmp16u));
+		return (-1);
+	}
+	
+	/* Load the Quests */
+	for (i = 0; i < tmp16u; i++)
+	{
+		byte tmp8u;
+
+		rd_byte(&tmp8u);
+		q_list[i].level = tmp8u;
+		rd_byte(&tmp8u);
+		rd_byte(&tmp8u);
+		rd_byte(&tmp8u);
+	}
+
+	return 0;
+}
+
+
+int rd_artifacts(void)
+{
+	int i;
+	u16b tmp16u;
+
+	/* Load the Artifacts */
+	rd_u16b(&tmp16u);
+	
+	/* Incompatible save files */
+	if (tmp16u > z_info->a_max)
+	{
+		note(format("Too many (%u) artifacts!", tmp16u));
+		return (-1);
+	}
+	
+	/* Read the artifact flags */
+	for (i = 0; i < tmp16u; i++)
+	{
+		byte tmp8u;
+
+		rd_byte(&tmp8u);
+		a_info[i].cur_num = tmp8u;
+		rd_byte(&tmp8u);
+		rd_byte(&tmp8u);
+		rd_byte(&tmp8u);
+	}
+
+	return 0;
+}
+
 
 /*
  * Actually read the savefile
@@ -1606,7 +1729,6 @@ static errr rd_savefile_new_aux(void)
 {
 	int i;
 
-	byte tmp8u;
 	u16b tmp16u;
 	u32b tmp32u;
 
@@ -1644,106 +1766,18 @@ static errr rd_savefile_new_aux(void)
 	rd_u16b(&sf_saves);
 
 
-	/* Later use (always zero) */
-	rd_u32b(&tmp32u);
-
-	/* Later use (always zero) */
-	rd_u32b(&tmp32u);
+	strip_bytes(8);
 
 
-	/* Read RNG state */
-	rd_randomizer();
+	if (rd_randomizer()) return -1;
+	if (rd_options()) return -1;
+	if (rd_messages()) return -1;
+	if (rd_monster_memory()) return -1;
+	if (rd_object_memory()) return -1;
+	if (rd_quests()) return -1;
+	if (rd_artifacts()) return -1;
 
-	/* Then the options */
-	rd_options();
-
-	/* Then the "messages" */
-	rd_messages();
-
-	/* Monster Memory */
-	rd_u16b(&tmp16u);
-
-	/* Incompatible save files */
-	if (tmp16u > z_info->r_max)
-	{
-		note(format("Too many (%u) monster races!", tmp16u));
-		return (-1);
-	}
-
-	/* Read the available records */
-	for (i = 0; i < tmp16u; i++)
-	{
-		/* Read the lore */
-		rd_lore(i);
-	}
-
-	/* Object Memory */
-	rd_u16b(&tmp16u);
-
-	/* Incompatible save files */
-	if (tmp16u > z_info->k_max)
-	{
-		note(format("Too many (%u) object kinds!", tmp16u));
-		return (-1);
-	}
-
-	/* Read the object memory */
-	for (i = 0; i < tmp16u; i++)
-	{
-		byte tmp8u;
-		object_kind *k_ptr = &k_info[i];
-
-		rd_byte(&tmp8u);
-
-		k_ptr->aware = (tmp8u & 0x01) ? TRUE : FALSE;
-		k_ptr->tried = (tmp8u & 0x02) ? TRUE : FALSE;
-		k_ptr->squelch = (tmp8u & 0x04) ? TRUE : FALSE;
-		k_ptr->everseen = (tmp8u & 0x08) ? TRUE : FALSE;
-	}
-
-
-	/* Load the Quests */
-	rd_u16b(&tmp16u);
-
-	/* Incompatible save files */
-	if (tmp16u > MAX_Q_IDX)
-	{
-		note(format("Too many (%u) quests!", tmp16u));
-		return (-1);
-	}
-
-	/* Load the Quests */
-	for (i = 0; i < tmp16u; i++)
-	{
-		rd_byte(&tmp8u);
-		q_list[i].level = tmp8u;
-		rd_byte(&tmp8u);
-		rd_byte(&tmp8u);
-		rd_byte(&tmp8u);
-	}
-
-	/* Load the Artifacts */
-	rd_u16b(&tmp16u);
-
-	/* Incompatible save files */
-	if (tmp16u > z_info->a_max)
-	{
-		note(format("Too many (%u) artifacts!", tmp16u));
-		return (-1);
-	}
-
-	/* Read the artifact flags */
-	for (i = 0; i < tmp16u; i++)
-	{
-		rd_byte(&tmp8u);
-		a_info[i].cur_num = tmp8u;
-		rd_byte(&tmp8u);
-		rd_byte(&tmp8u);
-		rd_byte(&tmp8u);
-	}
-
-	/* Read the extra stuff */
-	if (rd_extra()) return (-1);
+	if (rd_extra()) return -1;
 
 	/* Read random artifacts */
 	if (adult_randarts)

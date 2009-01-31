@@ -452,6 +452,7 @@ static void wr_squelch(void)
 static void wr_extra(void)
 {
 	int i;
+	u16b tmp16u;
 
 	wr_string(op_ptr->full_name);
 
@@ -565,7 +566,30 @@ static void wr_extra(void)
 	wr_s32b(old_turn);
 
 	/* Current turn */
-	wr_s32b(turn);
+	wr_s32b(turn);	
+	
+	/* Dump the "player hp" entries */
+	tmp16u = PY_MAX_LEVEL;
+	wr_u16b(tmp16u);
+	for (i = 0; i < tmp16u; i++)
+	{
+		wr_s16b(p_ptr->player_hp[i]);
+	}
+	
+	
+	/* Write spell data */
+	wr_u16b(PY_MAX_SPELLS);
+	
+	for (i = 0; i < PY_MAX_SPELLS; i++)
+	{
+		wr_byte(p_ptr->spell_flags[i]);
+	}
+	
+	/* Dump the ordered spells */
+	for (i = 0; i < PY_MAX_SPELLS; i++)
+	{
+		wr_byte(p_ptr->spell_order[i]);
+	}
 }
 
 
@@ -801,6 +825,85 @@ static void wr_dungeon(void)
 }
 
 
+void wr_messages(void)
+{
+	int i;
+	u16b tmp16u;
+
+	/* Dump the number of "messages" */
+	tmp16u = messages_num();
+	if (tmp16u > 80) tmp16u = 80;
+	wr_u16b(tmp16u);
+	
+	/* Dump the messages (oldest first!) */
+	for (i = tmp16u - 1; i >= 0; i--)
+	{
+		wr_string(message_str((s16b)i));
+		wr_u16b(message_type((s16b)i));
+	}	
+}
+
+
+void wr_monster_memory(void)
+{
+	int i;
+	u16b tmp16u;
+
+	/* Dump the monster lore */
+	tmp16u = z_info->r_max;
+	wr_u16b(tmp16u);
+	for (i = 0; i < tmp16u; i++) wr_lore(i);
+}
+
+void wr_object_memory(void)
+{
+	int i;
+	u16b tmp16u;
+
+	/* Dump the object memory */
+	tmp16u = z_info->k_max;
+	wr_u16b(tmp16u);
+	for (i = 0; i < tmp16u; i++) wr_xtra(i);
+}
+
+void wr_quests(void)
+{
+	int i;
+	u16b tmp16u;
+
+	/* Hack -- Dump the quests */
+	tmp16u = MAX_Q_IDX;
+	wr_u16b(tmp16u);
+	for (i = 0; i < tmp16u; i++)
+	{
+		wr_byte(q_list[i].level);
+		wr_byte(0);
+		wr_byte(0);
+		wr_byte(0);
+	}
+}
+
+
+
+void wr_artifacts(void)
+{
+	int i;
+	u16b tmp16u;
+
+	/* Hack -- Dump the artifacts */
+	tmp16u = z_info->a_max;
+	wr_u16b(tmp16u);
+	for (i = 0; i < tmp16u; i++)
+	{
+		artifact_type *a_ptr = &a_info[i];
+		wr_byte(a_ptr->cur_num);
+		wr_byte(0);
+		wr_byte(0);
+		wr_byte(0);
+	}
+}
+
+
 
 /*
  * Actually write a save-file
@@ -867,96 +970,18 @@ static void wr_savefile_new(void)
 	wr_u32b(0L);
 
 
-	/* Write the RNG state */
 	wr_randomizer();
-
-
-	/* Write the boolean "options" */
 	wr_options();
+	wr_messages();
+	wr_monster_memory();
+	wr_object_memory();
+	wr_quests();
+	wr_artifacts();
 
-
-	/* Dump the number of "messages" */
-	tmp16u = messages_num();
-	if (tmp16u > 80) tmp16u = 80;
-	wr_u16b(tmp16u);
-
-	/* Dump the messages (oldest first!) */
-	for (i = tmp16u - 1; i >= 0; i--)
-	{
-		wr_string(message_str((s16b)i));
-		wr_u16b(message_type((s16b)i));
-	}
-
-
-	/* Dump the monster lore */
-	tmp16u = z_info->r_max;
-	wr_u16b(tmp16u);
-	for (i = 0; i < tmp16u; i++) wr_lore(i);
-
-
-	/* Dump the object memory */
-	tmp16u = z_info->k_max;
-	wr_u16b(tmp16u);
-	for (i = 0; i < tmp16u; i++) wr_xtra(i);
-
-
-	/* Hack -- Dump the quests */
-	tmp16u = MAX_Q_IDX;
-	wr_u16b(tmp16u);
-	for (i = 0; i < tmp16u; i++)
-	{
-		wr_byte(q_list[i].level);
-		wr_byte(0);
-		wr_byte(0);
-		wr_byte(0);
-	}
-
-	/* Hack -- Dump the artifacts */
-	tmp16u = z_info->a_max;
-	wr_u16b(tmp16u);
-	for (i = 0; i < tmp16u; i++)
-	{
-		artifact_type *a_ptr = &a_info[i];
-		wr_byte(a_ptr->cur_num);
-		wr_byte(0);
-		wr_byte(0);
-		wr_byte(0);
-	}
-
-
-	/* Write the "extra" information */
 	wr_extra();
 
-
-	/* Dump the "player hp" entries */
-	tmp16u = PY_MAX_LEVEL;
-	wr_u16b(tmp16u);
-	for (i = 0; i < tmp16u; i++)
-	{
-		wr_s16b(p_ptr->player_hp[i]);
-	}
-
-
-	/* Write spell data */
-	wr_u16b(PY_MAX_SPELLS);
-
-	for (i = 0; i < PY_MAX_SPELLS; i++)
-	{
-		wr_byte(p_ptr->spell_flags[i]);
-	}
-
-	/* Dump the ordered spells */
-	for (i = 0; i < PY_MAX_SPELLS; i++)
-	{
-		wr_byte(p_ptr->spell_order[i]);
-	}
-
-
-	/* Write randart information */
 	if (adult_randarts)
-	{
 		wr_randarts();
-	}
 
 
 	/* Write the inventory */
