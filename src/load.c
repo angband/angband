@@ -676,22 +676,153 @@ static int rd_options(void)
 
 
 
-
-
 /*
- * Hack -- strip the "ghost" info
- *
- * XXX XXX XXX This is such a nasty hack it hurts.
+ * Read the saved messages
  */
-static void rd_ghost(void)
+static int rd_messages(void)
 {
-	char buf[64];
+	int i;
+	char buf[128];
+	u16b tmp16u;
+	
+	s16b num;
+	
+	/* Total */
+	rd_s16b(&num);
+	
+	/* Read the messages */
+	for (i = 0; i < num; i++)
+	{
+		/* Read the message */
+		rd_string(buf, sizeof(buf));
+		
+		/* Read the message type */
+		rd_u16b(&tmp16u);
+		
+		/* Save the message */
+		message_add(buf, tmp16u);
+	}
+	
+	return 0;
+}
 
-	/* Strip name */
-	rd_string(buf, 64);
 
-	/* Strip old data */
-	strip_bytes(60);
+
+int rd_monster_memory(void)
+{
+	int i;
+	u16b tmp16u;
+	
+	/* Monster Memory */
+	rd_u16b(&tmp16u);
+	
+	/* Incompatible save files */
+	if (tmp16u > z_info->r_max)
+	{
+		note(format("Too many (%u) monster races!", tmp16u));
+		return (-1);
+	}
+	
+	/* Read the available records */
+	for (i = 0; i < tmp16u; i++)
+		rd_lore(i);
+	
+	return 0;
+}
+
+
+int rd_object_memory(void)
+{
+	int i;
+	u16b tmp16u;
+	
+	/* Object Memory */
+	rd_u16b(&tmp16u);
+	
+	/* Incompatible save files */
+	if (tmp16u > z_info->k_max)
+	{
+		note(format("Too many (%u) object kinds!", tmp16u));
+		return (-1);
+	}
+	
+	/* Read the object memory */
+	for (i = 0; i < tmp16u; i++)
+	{
+		byte tmp8u;
+		object_kind *k_ptr = &k_info[i];
+		
+		rd_byte(&tmp8u);
+		
+		k_ptr->aware = (tmp8u & 0x01) ? TRUE : FALSE;
+		k_ptr->tried = (tmp8u & 0x02) ? TRUE : FALSE;
+		k_ptr->squelch = (tmp8u & 0x04) ? TRUE : FALSE;
+		k_ptr->everseen = (tmp8u & 0x08) ? TRUE : FALSE;
+	}
+	
+	return 0;
+}
+
+
+int rd_quests(void)
+{
+	int i;
+	u16b tmp16u;
+	
+	/* Load the Quests */
+	rd_u16b(&tmp16u);
+	
+	/* Incompatible save files */
+	if (tmp16u > MAX_Q_IDX)
+	{
+		note(format("Too many (%u) quests!", tmp16u));
+		return (-1);
+	}
+	
+	/* Load the Quests */
+	for (i = 0; i < tmp16u; i++)
+	{
+		byte tmp8u;
+		
+		rd_byte(&tmp8u);
+		q_list[i].level = tmp8u;
+		rd_byte(&tmp8u);
+		rd_byte(&tmp8u);
+		rd_byte(&tmp8u);
+	}
+	
+	return 0;
+}
+
+
+int rd_artifacts(void)
+{
+	int i;
+	u16b tmp16u;
+	
+	/* Load the Artifacts */
+	rd_u16b(&tmp16u);
+	
+	/* Incompatible save files */
+	if (tmp16u > z_info->a_max)
+	{
+		note(format("Too many (%u) artifacts!", tmp16u));
+		return (-1);
+	}
+	
+	/* Read the artifact flags */
+	for (i = 0; i < tmp16u; i++)
+	{
+		byte tmp8u;
+		
+		rd_byte(&tmp8u);
+		a_info[i].cur_num = tmp8u;
+		rd_byte(&tmp8u);
+		rd_byte(&tmp8u);
+		rd_byte(&tmp8u);
+	}
+	
+	return 0;
 }
 
 
@@ -1135,6 +1266,8 @@ static errr rd_randarts(void)
 
 
 
+
+
 /*
  * Read the player inventory
  *
@@ -1223,35 +1356,22 @@ static errr rd_inventory(void)
 
 
 
-/*
- * Read the saved messages
- */
-static int rd_messages(void)
+
+int rd_stores(void)
 {
 	int i;
-	char buf[128];
 	u16b tmp16u;
-
-	s16b num;
-
-	/* Total */
-	rd_s16b(&num);
-
-	/* Read the messages */
-	for (i = 0; i < num; i++)
+	
+	/* Read the stores */
+	rd_u16b(&tmp16u);
+	for (i = 0; i < tmp16u; i++)
 	{
-		/* Read the message */
-		rd_string(buf, sizeof(buf));
-
-		/* Read the message type */
-		rd_u16b(&tmp16u);
-
-		/* Save the message */
-		message_add(buf, tmp16u);
+		if (rd_store(i)) return (-1);
 	}
-
 	return 0;
 }
+
+
 
 
 /*
@@ -1574,138 +1694,22 @@ static errr rd_dungeon(void)
 }
 
 
-int rd_monster_memory(void)
+/*
+ * Hack -- strip the "ghost" info
+ *
+ * XXX XXX XXX This is such a nasty hack it hurts.
+ */
+static void rd_ghost(void)
 {
-	int i;
-	u16b tmp16u;
-
-	/* Monster Memory */
-	rd_u16b(&tmp16u);
+	char buf[64];
 	
-	/* Incompatible save files */
-	if (tmp16u > z_info->r_max)
-	{
-		note(format("Too many (%u) monster races!", tmp16u));
-		return (-1);
-	}
+	/* Strip name */
+	rd_string(buf, 64);
 	
-	/* Read the available records */
-	for (i = 0; i < tmp16u; i++)
-		rd_lore(i);
-
-	return 0;
-}
-	
-
-int rd_object_memory(void)
-{
-	int i;
-	u16b tmp16u;
-
-	/* Object Memory */
-	rd_u16b(&tmp16u);
-	
-	/* Incompatible save files */
-	if (tmp16u > z_info->k_max)
-	{
-		note(format("Too many (%u) object kinds!", tmp16u));
-		return (-1);
-	}
-	
-	/* Read the object memory */
-	for (i = 0; i < tmp16u; i++)
-	{
-		byte tmp8u;
-		object_kind *k_ptr = &k_info[i];
-		
-		rd_byte(&tmp8u);
-		
-		k_ptr->aware = (tmp8u & 0x01) ? TRUE : FALSE;
-		k_ptr->tried = (tmp8u & 0x02) ? TRUE : FALSE;
-		k_ptr->squelch = (tmp8u & 0x04) ? TRUE : FALSE;
-		k_ptr->everseen = (tmp8u & 0x08) ? TRUE : FALSE;
-	}
-
-	return 0;
+	/* Strip old data */
+	strip_bytes(60);
 }
 
-
-int rd_quests(void)
-{
-	int i;
-	u16b tmp16u;
-
-	/* Load the Quests */
-	rd_u16b(&tmp16u);
-	
-	/* Incompatible save files */
-	if (tmp16u > MAX_Q_IDX)
-	{
-		note(format("Too many (%u) quests!", tmp16u));
-		return (-1);
-	}
-	
-	/* Load the Quests */
-	for (i = 0; i < tmp16u; i++)
-	{
-		byte tmp8u;
-
-		rd_byte(&tmp8u);
-		q_list[i].level = tmp8u;
-		rd_byte(&tmp8u);
-		rd_byte(&tmp8u);
-		rd_byte(&tmp8u);
-	}
-
-	return 0;
-}
-
-
-int rd_artifacts(void)
-{
-	int i;
-	u16b tmp16u;
-
-	/* Load the Artifacts */
-	rd_u16b(&tmp16u);
-	
-	/* Incompatible save files */
-	if (tmp16u > z_info->a_max)
-	{
-		note(format("Too many (%u) artifacts!", tmp16u));
-		return (-1);
-	}
-	
-	/* Read the artifact flags */
-	for (i = 0; i < tmp16u; i++)
-	{
-		byte tmp8u;
-
-		rd_byte(&tmp8u);
-		a_info[i].cur_num = tmp8u;
-		rd_byte(&tmp8u);
-		rd_byte(&tmp8u);
-		rd_byte(&tmp8u);
-	}
-
-	return 0;
-}
-
-
-
-int rd_stores(void)
-{
-	int i;
-	u16b tmp16u;
-
-	/* Read the stores */
-	rd_u16b(&tmp16u);
-	for (i = 0; i < tmp16u; i++)
-	{
-		if (rd_store(i)) return (-1);
-	}
-	return 0;
-}
 
 void rd_history(void)
 {
