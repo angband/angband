@@ -415,7 +415,6 @@ static void wr_squelch(void)
 static void wr_extra(void)
 {
 	int i;
-	u16b tmp16u;
 	
 	wr_string(op_ptr->full_name);
 	
@@ -530,18 +529,25 @@ static void wr_extra(void)
 	
 	/* Current turn */
 	wr_s32b(turn);	
-	
-	/* Dump the "player hp" entries */
-	tmp16u = PY_MAX_LEVEL;
-	wr_u16b(tmp16u);
-	for (i = 0; i < tmp16u; i++)
-	{
+}
+
+
+static void wr_player_hp(void)
+{
+	int i;
+
+	wr_u16b(PY_MAX_LEVEL);
+	for (i = 0; i < PY_MAX_LEVEL; i++)
 		wr_s16b(p_ptr->player_hp[i]);
-	}
-	
-	
-	/* Write spell data */
+}
+
+
+static void wr_player_spells(void)
+{	
+	int i;
+
 	wr_u16b(PY_MAX_SPELLS);
+
 	for (i = 0; i < PY_MAX_SPELLS; i++)
 		wr_byte(p_ptr->spell_flags[i]);
 	
@@ -920,6 +926,8 @@ static void wr_savefile_new(void)
 	wr_quests();
 	wr_artifacts();
 	wr_extra();
+	wr_player_hp();
+	wr_player_spells();
 	if (adult_randarts) wr_randarts();
 	wr_inventory();
 	wr_stores();

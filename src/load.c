@@ -719,34 +719,6 @@ int rd_artifacts(void)
 
 static u32b randart_version;
 
-
-static errr rd_player_spells(void)
-{
-	int i;
-	u16b tmp16u;
-
-	int cnt;
-
-	/* Read the number of spells */
-	rd_u16b(&tmp16u);
-	if (tmp16u > PY_MAX_SPELLS)
-	{
-		note(format("Too many player spells (%d).", tmp16u));
-		return (-1);
-	}
-
-	/* Read the spell flags */
-	for (i = 0; i < tmp16u; i++)
-		rd_byte(&p_ptr->spell_flags[i]);
-
-	/* Read the spell order */
-	for (i = 0, cnt = 0; i < tmp16u; i++, cnt++)
-		rd_byte(&p_ptr->spell_order[cnt]);
-
-	/* Success */
-	return (0);
-}
-
 /*
  * Read squelch and autoinscription submenu for all known objects
  */
@@ -821,7 +793,6 @@ static errr rd_extra(void)
 	byte num;
 
 	byte tmp8u;
-	u16b tmp16u;
 
 
 	rd_string(op_ptr->full_name, sizeof(op_ptr->full_name));
@@ -837,6 +808,7 @@ static errr rd_extra(void)
 		note(format("Invalid player race (%d).", p_ptr->prace));
 		return (-1);
 	}
+	rp_ptr = &p_info[p_ptr->prace];
 
 	/* Player class */
 	rd_byte(&p_ptr->pclass);
@@ -847,9 +819,13 @@ static errr rd_extra(void)
 		note(format("Invalid player class (%d).", p_ptr->pclass));
 		return (-1);
 	}
+	cp_ptr = &c_info[p_ptr->pclass];
+	mp_ptr = &cp_ptr->spells;
+
 
 	/* Player gender */
 	rd_byte(&p_ptr->psex);
+	sp_ptr = &sex_info[p_ptr->psex];
 
 	strip_bytes(1);
 
@@ -948,6 +924,7 @@ static errr rd_extra(void)
 	/* Read item-quality squelch sub-menu */
 	if (rd_squelch()) return -1;
 
+	
 	/* Read the randart version */
 	rd_u32b(&randart_version);
 
@@ -983,6 +960,13 @@ static errr rd_extra(void)
 	/* Current turn */
 	rd_s32b(&turn);
 
+	return 0;
+}
+
+static int rd_player_hp(void)
+{
+	int i;
+	u16b tmp16u;
 
 	/* Read the player_hp array */
 	rd_u16b(&tmp16u);
@@ -996,24 +980,36 @@ static errr rd_extra(void)
 
 	/* Read the player_hp array */
 	for (i = 0; i < tmp16u; i++)
-	{
 		rd_s16b(&p_ptr->player_hp[i]);
+
+	return 0;
+}
+
+
+static errr rd_player_spells(void)
+{
+	int i;
+	u16b tmp16u;
+	
+	int cnt;
+	
+	/* Read the number of spells */
+	rd_u16b(&tmp16u);
+	if (tmp16u > PY_MAX_SPELLS)
+	{
+		note(format("Too many player spells (%d).", tmp16u));
+		return (-1);
 	}
-
-	/* Read the player spells */
-	if (rd_player_spells()) return (-1);
-
 	
-	/* Important -- Initialize the sex */
-	sp_ptr = &sex_info[p_ptr->psex];
+	/* Read the spell flags */
+	for (i = 0; i < tmp16u; i++)
+		rd_byte(&p_ptr->spell_flags[i]);
 	
-	/* Important -- Initialize the race/class */
-	rp_ptr = &p_info[p_ptr->prace];
-	cp_ptr = &c_info[p_ptr->pclass];
+	/* Read the spell order */
+	for (i = 0, cnt = 0; i < tmp16u; i++, cnt++)
+		rd_byte(&p_ptr->spell_order[cnt]);
 	
-	/* Important -- Initialize the magic */
-	mp_ptr = &cp_ptr->spells;
-	
+	/* Success */
 	return (0);
 }
 
@@ -1727,6 +1723,8 @@ static errr rd_savefile_new_aux(void)
 	if (rd_artifacts()) return -1;
 
 	if (rd_extra()) return -1;
+	if (rd_player_hp()) return (-1);
+	if (rd_player_spells()) return (-1);
 
 	if (adult_randarts && rd_randarts()) return -1;
 	if (rd_inventory()) return -1;
