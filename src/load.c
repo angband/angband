@@ -719,80 +719,15 @@ int rd_artifacts(void)
 
 static u32b randart_version;
 
-/*
- * Read squelch and autoinscription submenu for all known objects
- */
-static int rd_squelch(void)
-{
-	int i;
-	byte tmp8u = 24;
-
-	/* Read how many squelch bytes we have */
-	rd_byte(&tmp8u);
-
-	/* Check against current number */
-	if (tmp8u != SQUELCH_BYTES)
-	{
-		strip_bytes(tmp8u);
-	}
-	else
-	{
-		for (i = 0; i < SQUELCH_BYTES; i++)
-			rd_byte(&squelch_level[i]);
-	}
-
-	/* Handle ego-item squelch */
-	if ((sf_major == 3) && (sf_minor == 0) && (sf_patch != 9))
-	{
-		u16b file_e_max;
-
-		/* Read the number of saved ego-item */
-		rd_u16b(&file_e_max);
-
-		for (i = 0; i < file_e_max; i++)
-		{
-			if (i < z_info->e_max)
-			{
-				byte flags;
-
-				/* Read and extract the flag */
-				rd_byte(&flags);
-				e_info[i].everseen |= (flags & 0x02);
-			}
-		}
-	}
-	else
-	{
-	}
-
-	/* Read the current number of auto-inscriptions */
-	rd_u16b(&inscriptions_count);
-
-	/* Write the autoinscriptions array*/
-	for (i = 0; i < inscriptions_count; i++)
-	{
-		char tmp[80];
-
-		rd_s16b(&inscriptions[i].kind_idx);
-		rd_string(tmp, sizeof(tmp));
-
-		inscriptions[i].inscription_idx = quark_add(tmp);
-	}
-
-	return 0;
-}
-
 
 /*
  * Read the "extra" information
  */
-static errr rd_extra(void)
+static errr rd_player(void)
 {
 	int i;
 
 	byte num;
-
-	byte tmp8u;
 
 
 	rd_string(op_ptr->full_name, sizeof(op_ptr->full_name));
@@ -921,9 +856,77 @@ static errr rd_extra(void)
 	/* Future use */
 	strip_bytes(40);
 
-	/* Read item-quality squelch sub-menu */
-	if (rd_squelch()) return -1;
+	return 0;
+}
 
+
+/*
+ * Read squelch and autoinscription submenu for all known objects
+ */
+static int rd_squelch(void)
+{
+	int i;
+	byte tmp8u = 24;
+	
+	/* Read how many squelch bytes we have */
+	rd_byte(&tmp8u);
+	
+	/* Check against current number */
+	if (tmp8u != SQUELCH_BYTES)
+	{
+		strip_bytes(tmp8u);
+	}
+	else
+	{
+		for (i = 0; i < SQUELCH_BYTES; i++)
+			rd_byte(&squelch_level[i]);
+	}
+	
+	/* Handle ego-item squelch */
+	if ((sf_major == 3) && (sf_minor == 0) && (sf_patch != 9))
+	{
+		u16b file_e_max;
+		
+		/* Read the number of saved ego-item */
+		rd_u16b(&file_e_max);
+		
+		for (i = 0; i < file_e_max; i++)
+		{
+			if (i < z_info->e_max)
+			{
+				byte flags;
+				
+				/* Read and extract the flag */
+				rd_byte(&flags);
+				e_info[i].everseen |= (flags & 0x02);
+			}
+		}
+	}
+	else
+	{
+	}
+	
+	/* Read the current number of auto-inscriptions */
+	rd_u16b(&inscriptions_count);
+	
+	/* Write the autoinscriptions array*/
+	for (i = 0; i < inscriptions_count; i++)
+	{
+		char tmp[80];
+		
+		rd_s16b(&inscriptions[i].kind_idx);
+		rd_string(tmp, sizeof(tmp));
+		
+		inscriptions[i].inscription_idx = quark_add(tmp);
+	}
+	
+	return 0;
+}
+
+
+static int rd_misc(void)
+{
+	byte tmp8u;
 	
 	/* Read the randart version */
 	rd_u32b(&randart_version);
@@ -1722,9 +1725,11 @@ static errr rd_savefile_new_aux(void)
 	if (rd_quests()) return -1;
 	if (rd_artifacts()) return -1;
 
-	if (rd_extra()) return -1;
-	if (rd_player_hp()) return (-1);
-	if (rd_player_spells()) return (-1);
+	if (rd_player()) return -1;
+	if (rd_squelch()) return -1;
+	if (rd_misc()) return -1;	
+	if (rd_player_hp()) return -1;
+	if (rd_player_spells()) return -1;
 
 	if (adult_randarts && rd_randarts()) return -1;
 	if (rd_inventory()) return -1;

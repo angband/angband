@@ -378,41 +378,7 @@ void wr_artifacts(void)
 }
 
 
-static void wr_squelch(void)
-{
-	int i;
-	
-	/* Write number of squelch bytes */
-	wr_byte(SQUELCH_BYTES);
-	for (i = 0; i < SQUELCH_BYTES; i++)
-		wr_byte(squelch_level[i]);
-	
-	/* Write ego-item squelch bits */
-	wr_u16b(z_info->e_max);
-	for (i = 0; i < z_info->e_max; i++)
-	{
-		byte flags = 0;
-		
-		/* Figure out and write the everseen flag */
-		if (e_info[i].everseen) flags |= 0x02;
-		wr_byte(flags);
-	}
-	
-	/* Write the current number of auto-inscriptions */
-	wr_u16b(inscriptions_count);
-	
-	/* Write the autoinscriptions array */
-	for (i = 0; i < inscriptions_count; i++)
-	{
-		wr_s16b(inscriptions[i].kind_idx);
-		wr_string(quark_str(inscriptions[i].inscription_idx));
-	}
-	
-	return;
-}
-
-
-static void wr_extra(void)
+static void wr_player(void)
 {
 	int i;
 	
@@ -491,9 +457,46 @@ static void wr_extra(void)
 	
 	/* Future use */
 	for (i = 0; i < 10; i++) wr_u32b(0L);
+}
+
+
+static void wr_squelch(void)
+{
+	int i;
 	
-	wr_squelch();
+	/* Write number of squelch bytes */
+	wr_byte(SQUELCH_BYTES);
+	for (i = 0; i < SQUELCH_BYTES; i++)
+		wr_byte(squelch_level[i]);
 	
+	/* Write ego-item squelch bits */
+	wr_u16b(z_info->e_max);
+	for (i = 0; i < z_info->e_max; i++)
+	{
+		byte flags = 0;
+		
+		/* Figure out and write the everseen flag */
+		if (e_info[i].everseen) flags |= 0x02;
+		wr_byte(flags);
+	}
+	
+	/* Write the current number of auto-inscriptions */
+	wr_u16b(inscriptions_count);
+	
+	/* Write the autoinscriptions array */
+	for (i = 0; i < inscriptions_count; i++)
+	{
+		wr_s16b(inscriptions[i].kind_idx);
+		wr_string(quark_str(inscriptions[i].inscription_idx));
+	}
+	
+	return;
+}
+
+
+static void wr_misc(void)
+{
+
 	/* Random artifact version */
 	wr_u32b(RANDART_VERSION);
 	
@@ -925,7 +928,9 @@ static void wr_savefile_new(void)
 	wr_object_memory();
 	wr_quests();
 	wr_artifacts();
-	wr_extra();
+	wr_player();
+	wr_squelch();
+	wr_misc();
 	wr_player_hp();
 	wr_player_spells();
 	if (adult_randarts) wr_randarts();
