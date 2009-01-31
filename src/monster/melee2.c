@@ -18,7 +18,7 @@
 #include "angband.h"
 #include "bitflag.h"
 #include "object/tvalsval.h"
-
+#include "monster/constants.h"
 
 /*
  * Determine if a bolt will arrive, checking that no monsters are in the way
@@ -835,8 +835,8 @@ bool make_attack_spell(int m_idx)
 
 		case SPELL(0,RSF0_ARROW_1):
 		{
-			bool hits = check_hit(40, rlev);
-			int dam = damroll(1, 6);
+			bool hits = check_hit(ARROW1_HIT, rlev);
+			int dam = ARROW1_DMG;
 			disturb(1, 0);
 
 			if (blind) msg_format("%^s makes a strange noise.", m_name);
@@ -851,8 +851,8 @@ bool make_attack_spell(int m_idx)
 
 		case SPELL(0,RSF0_ARROW_2):
 		{
-			bool hits = check_hit(40, rlev);
-			int dam = damroll(3, 6);
+			bool hits = check_hit(ARROW2_HIT, rlev);
+			int dam = ARROW2_DMG;
 			disturb(1, 0);
 
 			if (blind) msg_format("%^s makes a strange noise.", m_name);
@@ -867,8 +867,8 @@ bool make_attack_spell(int m_idx)
 
 		case SPELL(0,RSF0_ARROW_3):
 		{
-			bool hits = check_hit(50, rlev);
-			int dam = damroll(5, 6);
+			bool hits = check_hit(ARROW3_HIT, rlev);
+			int dam = ARROW3_DMG;
 			disturb(1, 0);
 
 			if (blind) msg_format("%^s makes a strange noise.", m_name);
@@ -883,8 +883,8 @@ bool make_attack_spell(int m_idx)
 
 		case SPELL(0,RSF0_ARROW_4):
 		{
-			bool hits = check_hit(50, rlev);
-			int dam = damroll(7, 6);
+			bool hits = check_hit(ARROW4_HIT, rlev);
+			int dam = ARROW4_DMG);
 			disturb(1, 0);
 
 			if (blind) msg_format("%^s makes a strange noise.", m_name);
@@ -904,7 +904,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s breathes.", m_name);
 			else msg_format("%^s breathes acid.", m_name);
 			breath(m_idx, GF_ACID,
-			       ((m_ptr->hp / 3) > 1600 ? 1600 : (m_ptr->hp / 3)));
+			       ((m_ptr->hp / BR_ACID_DIVISOR) > BR_ACID_MAX ? BR_ACID_MAX : (m_ptr->hp / BR_ACID_DIVISOR)));
 			update_smart_learn(m_idx, DRS_RES_ACID);
 			break;
 		}
@@ -916,7 +916,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s breathes.", m_name);
 			else msg_format("%^s breathes lightning.", m_name);
 			breath(m_idx, GF_ELEC,
-			       ((m_ptr->hp / 3) > 1600 ? 1600 : (m_ptr->hp / 3)));
+			       ((m_ptr->hp / BR_ELEC_DIVISOR) > BR_ELEC_MAX ? BR_ELEC_MAX : (m_ptr->hp / BR_ELEC_DIVISOR)));
 			update_smart_learn(m_idx, DRS_RES_ELEC);
 			break;
 		}
@@ -928,7 +928,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s breathes.", m_name);
 			else msg_format("%^s breathes fire.", m_name);
 			breath(m_idx, GF_FIRE,
-			       ((m_ptr->hp / 3) > 1600 ? 1600 : (m_ptr->hp / 3)));
+			       ((m_ptr->hp / BR_FIRE_DIVISOR) > BR_FIRE_MAX ? BR_FIRE_MAX : (m_ptr->hp / BR_FIRE_DIVISOR)));
 			update_smart_learn(m_idx, DRS_RES_FIRE);
 			break;
 		}
@@ -940,7 +940,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s breathes.", m_name);
 			else msg_format("%^s breathes frost.", m_name);
 			breath(m_idx, GF_COLD,
-			       ((m_ptr->hp / 3) > 1600 ? 1600 : (m_ptr->hp / 3)));
+			       ((m_ptr->hp / BR_COLD_DIVISOR) > BR_COLD_MAX ? BR_COLD_MAX : (m_ptr->hp / BR_COLD_DIVISOR)));
 			update_smart_learn(m_idx, DRS_RES_COLD);
 			break;
 		}
@@ -952,7 +952,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s breathes.", m_name);
 			else msg_format("%^s breathes gas.", m_name);
 			breath(m_idx, GF_POIS,
-			       ((m_ptr->hp / 3) > 800 ? 800 : (m_ptr->hp / 3)));
+			       ((m_ptr->hp / BR_POIS_DIVISOR) > BR_POIS_MAX ? BR_POIS_MAX : (m_ptr->hp / BR_POIS_DIVISOR)));
 			update_smart_learn(m_idx, DRS_RES_POIS);
 			break;
 		}
@@ -964,7 +964,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s breathes.", m_name);
 			else msg_format("%^s breathes nether.", m_name);
 			breath(m_idx, GF_NETHER,
-			       ((m_ptr->hp / 6) > 550 ? 550 : (m_ptr->hp / 6)));
+			       ((m_ptr->hp / BR_NETH_DIVISOR) > BR_NETH_MAX ? BR_NETH_MAX : (m_ptr->hp / BR_NETH_DIVISOR)));
 			update_smart_learn(m_idx, DRS_RES_NETHR);
 			break;
 		}
@@ -976,7 +976,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s breathes.", m_name);
 			else msg_format("%^s breathes light.", m_name);
 			breath(m_idx, GF_LITE,
-			       ((m_ptr->hp / 6) > 400 ? 400 : (m_ptr->hp / 6)));
+			       ((m_ptr->hp / BR_LITE_DIVISOR) > BR_LITE_MAX ? BR_LITE_MAX : (m_ptr->hp / BR_LITE_DIVISOR)));
 			update_smart_learn(m_idx, DRS_RES_LITE);
 			break;
 		}
@@ -988,7 +988,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s breathes.", m_name);
 			else msg_format("%^s breathes darkness.", m_name);
 			breath(m_idx, GF_DARK,
-			       ((m_ptr->hp / 6) > 400 ? 400 : (m_ptr->hp / 6)));
+			       ((m_ptr->hp / BR_DARK_DIVISOR) > BR_DARK_MAX ? BR_DARK_MAX : (m_ptr->hp / BR_DARK_DIVISOR)));
 			update_smart_learn(m_idx, DRS_RES_DARK);
 			break;
 		}
@@ -1000,7 +1000,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s breathes.", m_name);
 			else msg_format("%^s breathes confusion.", m_name);
 			breath(m_idx, GF_CONFUSION,
-			       ((m_ptr->hp / 6) > 400 ? 400 : (m_ptr->hp / 6)));
+			       ((m_ptr->hp / BR_CONF_DIVISOR) > BR_CONF_MAX ? BR_CONF_MAX : (m_ptr->hp / BR_CONF_DIVISOR)));
 			update_smart_learn(m_idx, DRS_RES_CONFU);
 			break;
 		}
@@ -1012,7 +1012,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s breathes.", m_name);
 			else msg_format("%^s breathes sound.", m_name);
 			breath(m_idx, GF_SOUND,
-			       ((m_ptr->hp / 6) > 500 ? 500 : (m_ptr->hp / 6)));
+			       ((m_ptr->hp / BR_SOUN_DIVISOR) > BR_SOUN_MAX ? BR_SOUN_MAX : (m_ptr->hp / BR_SOUN_DIVISOR)));
 			update_smart_learn(m_idx, DRS_RES_SOUND);
 			break;
 		}
@@ -1024,7 +1024,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s breathes.", m_name);
 			else msg_format("%^s breathes chaos.", m_name);
 			breath(m_idx, GF_CHAOS,
-			       ((m_ptr->hp / 6) > 500 ? 500 : (m_ptr->hp / 6)));
+			       ((m_ptr->hp / BR_CHAO_DIVISOR) > BR_CHAO_MAX ? BR_CHAO_MAX : (m_ptr->hp / BR_CHAO_DIVISOR)));
 			update_smart_learn(m_idx, DRS_RES_CHAOS);
 			break;
 		}
@@ -1036,7 +1036,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s breathes.", m_name);
 			else msg_format("%^s breathes disenchantment.", m_name);
 			breath(m_idx, GF_DISENCHANT,
-			       ((m_ptr->hp / 6) > 500 ? 500 : (m_ptr->hp / 6)));
+			       ((m_ptr->hp / BR_DISE_DIVISOR) > BR_DISE_MAX ? BR_DISE_MAX : (m_ptr->hp / BR_DISE_DIVISOR)));
 			update_smart_learn(m_idx, DRS_RES_DISEN);
 			break;
 		}
@@ -1048,7 +1048,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s breathes.", m_name);
 			else msg_format("%^s breathes nexus.", m_name);
 			breath(m_idx, GF_NEXUS,
-			       ((m_ptr->hp / 6) > 400 ? 400 : (m_ptr->hp / 6)));
+			       ((m_ptr->hp / BR_NEXU_DIVISOR) > BR_NEXU_MAX ? BR_NEXU_MAX : (m_ptr->hp / BR_NEXU_DIVISOR)));
 			update_smart_learn(m_idx, DRS_RES_NEXUS);
 			break;
 		}
@@ -1060,7 +1060,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s breathes.", m_name);
 			else msg_format("%^s breathes time.", m_name);
 			breath(m_idx, GF_TIME,
-			       ((m_ptr->hp / 3) > 150 ? 150 : (m_ptr->hp / 3)));
+			       ((m_ptr->hp / BR_TIME_DIVISOR) > BR_TIME_MAX ? BR_TIME_MAX : (m_ptr->hp / BR_TIME_DIVISOR)));
 			break;
 		}
 
@@ -1071,7 +1071,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s breathes.", m_name);
 			else msg_format("%^s breathes inertia.", m_name);
 			breath(m_idx, GF_INERTIA,
-			       ((m_ptr->hp / 6) > 200 ? 200 : (m_ptr->hp / 6)));
+			       ((m_ptr->hp / BR_INER_DIVISOR) > BR_INER_MAX ? BR_INER_MAX : (m_ptr->hp / BR_INER_DIVISOR)));
 			break;
 		}
 
@@ -1082,7 +1082,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s breathes.", m_name);
 			else msg_format("%^s breathes gravity.", m_name);
 			breath(m_idx, GF_GRAVITY,
-			       ((m_ptr->hp / 3) > 200 ? 200 : (m_ptr->hp / 3)));
+			       ((m_ptr->hp / BR_GRAV_DIVISOR) > BR_GRAV_MAX ? BR_GRAV_MAX : (m_ptr->hp / BR_GRAV_DIVISOR)));
 			break;
 		}
 
@@ -1093,7 +1093,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s breathes.", m_name);
 			else msg_format("%^s breathes shards.", m_name);
 			breath(m_idx, GF_SHARD,
-			       ((m_ptr->hp / 6) > 500 ? 500 : (m_ptr->hp / 6)));
+			       ((m_ptr->hp / BR_SHAR_DIVISOR) > BR_SHAR_MAX ? BR_SHAR_MAX : (m_ptr->hp / BR_SHAR_DIVISOR)));
 			update_smart_learn(m_idx, DRS_RES_SHARD);
 			break;
 		}
@@ -1105,7 +1105,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s breathes.", m_name);
 			else msg_format("%^s breathes plasma.", m_name);
 			breath(m_idx, GF_PLASMA,
-			       ((m_ptr->hp / 6) > 150 ? 150 : (m_ptr->hp / 6)));
+			       ((m_ptr->hp / BR_PLAS_DIVISOR) > BR_PLAS_MAX ? BR_PLAS_MAX : (m_ptr->hp / BR_PLAS_DIVISOR)));
 			break;
 		}
 
@@ -1116,7 +1116,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s breathes.", m_name);
 			else msg_format("%^s breathes force.", m_name);
 			breath(m_idx, GF_FORCE,
-			       ((m_ptr->hp / 6) > 200 ? 200 : (m_ptr->hp / 6)));
+			       ((m_ptr->hp / BR_FORC_DIVISOR) > BR_FORC_MAX ? BR_FORC_MAX : (m_ptr->hp / BR_FORC_DIVISOR)));
 			break;
 		}
 
@@ -1143,8 +1143,8 @@ bool make_attack_spell(int m_idx)
 
 		case SPELL(0,RSF0_BOULDER):
 		{
-			bool hits = check_hit(60, rlev);
-			int dam = damroll(1 + r_ptr->level / 7, 12);
+			bool hits = check_hit(BOULDER_HIT, rlev);
+			int dam = BOULDER_DMG;
 			disturb(1, 0);
 
 			if (blind) msg_format("You hear something grunt with exertion.", m_name);
@@ -1164,7 +1164,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts an acid ball.", m_name);
 			breath(m_idx, GF_ACID,
-			       randint1(rlev * 3) + 15);
+			       BA_ACID_DMG);
 			update_smart_learn(m_idx, DRS_RES_ACID);
 			break;
 		}
@@ -1175,7 +1175,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts a lightning ball.", m_name);
 			breath(m_idx, GF_ELEC,
-			       randint1(rlev * 3 / 2) + 8);
+			       BA_ELEC_DMG);
 			update_smart_learn(m_idx, DRS_RES_ELEC);
 			break;
 		}
@@ -1186,7 +1186,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts a fire ball.", m_name);
 			breath(m_idx, GF_FIRE,
-			       randint1(rlev * 7 / 2) + 10);
+			       BA_FIRE_DMG);
 			update_smart_learn(m_idx, DRS_RES_FIRE);
 			break;
 		}
@@ -1197,7 +1197,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts a frost ball.", m_name);
 			breath(m_idx, GF_COLD,
-			       randint1(rlev * 3 / 2) + 10);
+			       BA_COLD_DMG);
 			update_smart_learn(m_idx, DRS_RES_COLD);
 			break;
 		}
@@ -1208,7 +1208,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts a stinking cloud.", m_name);
 			breath(m_idx, GF_POIS,
-			       damroll(12, 2));
+			       BA_POIS_DMG);
 			update_smart_learn(m_idx, DRS_RES_POIS);
 			break;
 		}
@@ -1219,7 +1219,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts a nether ball.", m_name);
 			breath(m_idx, GF_NETHER,
-			       (50 + damroll(10, 10) + rlev));
+			       BA_NETH_DMG);
 			update_smart_learn(m_idx, DRS_RES_NETHR);
 			break;
 		}
@@ -1231,7 +1231,7 @@ bool make_attack_spell(int m_idx)
 			else msg_format("%^s gestures fluidly.", m_name);
 			msg_print("You are engulfed in a whirlpool.");
 			breath(m_idx, GF_WATER,
-			       randint1(rlev * 5 / 2) + 50);
+			       BA_WATE_DMG);
 			break;
 		}
 
@@ -1241,7 +1241,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles powerfully.", m_name);
 			else msg_format("%^s invokes a mana storm.", m_name);
 			breath(m_idx, GF_MANA,
-			       (rlev * 5) + damroll(10, 10));
+			       BA_MANA_DMG);
 			break;
 		}
 
@@ -1251,7 +1251,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles powerfully.", m_name);
 			else msg_format("%^s invokes a darkness storm.", m_name);
 			breath(m_idx, GF_DARK,
-			       (rlev * 5) + damroll(10, 10));
+			       BA_DARK_DMG);
 			update_smart_learn(m_idx, DRS_RES_DARK);
 			break;
 		}
@@ -1334,7 +1334,7 @@ bool make_attack_spell(int m_idx)
 				{
 					(void)inc_timed(TMD_CONFUSED, randint0(4) + 4, TRUE);
 				}
-				take_hit(damroll(8, 8), ddesc);
+				take_hit(MIND_BLAST_DMG, ddesc);
 			}
 			break;
 		}
@@ -1358,7 +1358,7 @@ bool make_attack_spell(int m_idx)
 			else
 			{
 				msg_print("Your mind is blasted by psionic energy.");
-				take_hit(damroll(12, 15), ddesc);
+				take_hit(BRAIN_SMASH_DMG, ddesc);
 				if (!p_ptr->state.resist_blind)
 				{
 					(void)inc_timed(TMD_BLIND, 8 + randint0(8), TRUE);
@@ -1388,7 +1388,7 @@ bool make_attack_spell(int m_idx)
 			}
 			else
 			{
-				take_hit(damroll(3, 8), ddesc);
+				take_hit(CAUSE1_DMG, ddesc);
 			}
 			break;
 		}
@@ -1405,7 +1405,7 @@ bool make_attack_spell(int m_idx)
 			}
 			else
 			{
-				take_hit(damroll(8, 8), ddesc);
+				take_hit(CAUSE2_DMG, ddesc);
 			}
 			break;
 		}
@@ -1422,7 +1422,7 @@ bool make_attack_spell(int m_idx)
 			}
 			else
 			{
-				take_hit(damroll(10, 15), ddesc);
+				take_hit(CAUSE3_DMG, ddesc);
 			}
 			break;
 		}
@@ -1439,8 +1439,8 @@ bool make_attack_spell(int m_idx)
 			}
 			else
 			{
-				take_hit(damroll(15, 15), ddesc);
-				(void)inc_timed(TMD_CUT, damroll(10, 10), TRUE);
+				take_hit(CAUSE4_DMG, ddesc);
+				(void)inc_timed(TMD_CUT, CAUSE4_CUT, TRUE);
 			}
 			break;
 		}
@@ -1451,7 +1451,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts a acid bolt.", m_name);
 			bolt(m_idx, GF_ACID,
-			     damroll(7, 8) + (rlev / 3));
+			     BO_ACID_DMG);
 			update_smart_learn(m_idx, DRS_RES_ACID);
 			break;
 		}
@@ -1462,7 +1462,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts a lightning bolt.", m_name);
 			bolt(m_idx, GF_ELEC,
-			     damroll(4, 8) + (rlev / 3));
+			     BO_ELEC_DMG);
 			update_smart_learn(m_idx, DRS_RES_ELEC);
 			break;
 		}
@@ -1473,7 +1473,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts a fire bolt.", m_name);
 			bolt(m_idx, GF_FIRE,
-			     damroll(9, 8) + (rlev / 3));
+			     BO_FIRE_DMG);
 			update_smart_learn(m_idx, DRS_RES_FIRE);
 			break;
 		}
@@ -1484,7 +1484,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts a frost bolt.", m_name);
 			bolt(m_idx, GF_COLD,
-			     damroll(6, 8) + (rlev / 3));
+			     BO_COLD_DMG);
 			update_smart_learn(m_idx, DRS_RES_COLD);
 			break;
 		}
@@ -1501,7 +1501,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts a nether bolt.", m_name);
 			bolt(m_idx, GF_NETHER,
-			     30 + damroll(5, 5) + (rlev * 3) / 2);
+			     BO_NETH_DMG);
 			update_smart_learn(m_idx, DRS_RES_NETHR);
 			break;
 		}
@@ -1512,7 +1512,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts a water bolt.", m_name);
 			bolt(m_idx, GF_WATER,
-			     damroll(10, 10) + (rlev));
+			     BO_WATE_DMG);
 			break;
 		}
 
@@ -1522,7 +1522,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts a mana bolt.", m_name);
 			bolt(m_idx, GF_MANA,
-			     randint1(rlev * 7 / 2) + 50);
+			     BO_MANA_DMG);
 			break;
 		}
 
@@ -1532,7 +1532,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts a plasma bolt.", m_name);
 			bolt(m_idx, GF_PLASMA,
-			     10 + damroll(8, 7) + (rlev));
+			     BO_PLAS_DMG);
 			break;
 		}
 
@@ -1542,7 +1542,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts an ice bolt.", m_name);
 			bolt(m_idx, GF_ICE,
-			     damroll(6, 6) + (rlev));
+			     BO_ICEE_DMG);
 			update_smart_learn(m_idx, DRS_RES_COLD);
 			break;
 		}
@@ -1553,7 +1553,7 @@ bool make_attack_spell(int m_idx)
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts a magic missile.", m_name);
 			bolt(m_idx, GF_MISSILE,
-			     damroll(2, 6) + (rlev / 3));
+			     MISSILE_DMG);
 			break;
 		}
 
