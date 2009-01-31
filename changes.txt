@@ -63,6 +63,7 @@ Fix double-resist damage.
 Fix pluralisation of 'staves'.
 Add Word of Recall status to the status line.
 Tone down the frequency of {excellent} items somewhat, and tweak {good} frequency.
+Tone down detection area a wee bit.
 Remove the 'K' command and instead put a prompt after the 'destroy' prompt.
 Enchant Armour scrolls ID when reading them, not when they are successfully read.
 Fix artifact recharge times.
