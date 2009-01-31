@@ -511,7 +511,7 @@ D:gates of the Dark Tower, and with whom came light even to Gorgoroth.
 N:30:of Thorin
 I:shield:Small Metal Shield~:4
 W:40:6:65:60000
-P:3:1d2:0:0:25
+P:4:1d2:0:0:25
 F:STR | CON | HIDE_TYPE | RES_FEAR |
 F:FREE_ACT | IM_ACID | RES_SOUND | RES_CHAOS
 D:Invoking the strength and endurance of Thorin, King under the Mountain, 
