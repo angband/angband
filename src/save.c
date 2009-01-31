@@ -661,7 +661,7 @@ void wr_stores(void)
  */
 static void wr_dungeon(void)
 {
-	int i, y, x;
+	int y, x;
 
 	byte tmp8u;
 
@@ -805,9 +805,12 @@ static void wr_dungeon(void)
 
 	/* Compact the monsters */
 	compact_monsters(0);
+}
 
 
-	/*** Dump objects ***/
+static void wr_objects(void)
+{
+	int i;
 
 	/* Total objects */
 	wr_u16b(o_max);
@@ -820,9 +823,12 @@ static void wr_dungeon(void)
 		/* Dump it */
 		wr_item(o_ptr);
 	}
+}
 
 
-	/*** Dump the monsters ***/
+static void wr_monsters(void)
+{
+	int i;
 
 	/* Total monsters */
 	wr_u16b(mon_max);
@@ -921,6 +927,8 @@ static void wr_savefile_new(void)
 	if (!p_ptr->is_dead)
 	{
 		wr_dungeon();
+		wr_objects();
+		wr_monsters();
 		wr_ghost();
 	}
 

@@ -376,162 +376,6 @@ static errr rd_item(object_type *o_ptr)
 }
 
 
-
-
-/*
- * Read a monster
- */
-static void rd_monster(monster_type *m_ptr)
-{
-	byte tmp8u;
-
-	/* Read the monster race */
-	rd_s16b(&m_ptr->r_idx);
-
-	/* Read the other information */
-	rd_byte(&m_ptr->fy);
-	rd_byte(&m_ptr->fx);
-	rd_s16b(&m_ptr->hp);
-	rd_s16b(&m_ptr->maxhp);
-	rd_s16b(&m_ptr->csleep);
-	rd_byte(&m_ptr->mspeed);
-	rd_byte(&m_ptr->energy);
-	rd_byte(&m_ptr->stunned);
-	rd_byte(&m_ptr->confused);
-	rd_byte(&m_ptr->monfear);
-	rd_byte(&tmp8u);
-}
-
-
-
-
-
-/*
- * Read the monster lore
- */
-static void rd_lore(int r_idx)
-{
-	int i;
-	byte tmp8u;
-
-	monster_race *r_ptr = &r_info[r_idx];
-	monster_lore *l_ptr = &l_list[r_idx];
-
-
-	/* Count sights/deaths/kills */
-	rd_s16b(&l_ptr->sights);
-	rd_s16b(&l_ptr->deaths);
-	rd_s16b(&l_ptr->pkills);
-	rd_s16b(&l_ptr->tkills);
-
-	/* Count wakes and ignores */
-	rd_byte(&l_ptr->wake);
-	rd_byte(&l_ptr->ignore);
-
-	/* Count drops */
-	rd_byte(&l_ptr->drop_gold);
-	rd_byte(&l_ptr->drop_item);
-
-	/* Count spells */
-	rd_byte(&l_ptr->cast_innate);
-	rd_byte(&l_ptr->cast_spell);
-
-	/* Count blows of each type */
-	for (i = 0; i < MONSTER_BLOW_MAX; i++)
-		rd_byte(&l_ptr->blows[i]);
-
-	/* Memorize flags */
-	for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
-		rd_u32b(&l_ptr->flags[i]);
-	for (i = 0; i < RACE_FLAG_SPELL_STRICT_UB; i++)
-		rd_u32b(&l_ptr->spell_flags[i]);
-
-
-	/* Read the "Racial" monster limit per level */
-	rd_byte(&r_ptr->max_num);
-
-	/* Later (?) */
-	rd_byte(&tmp8u);
-	rd_byte(&tmp8u);
-	rd_byte(&tmp8u);
-
-
-	/* Repair the lore flags */
-	for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
-		l_ptr->flags[i] &= r_ptr->flags[i];
-	for (i = 0; i < RACE_FLAG_SPELL_STRICT_UB; i++)
-		l_ptr->spell_flags[i] &= r_ptr->spell_flags[i];
-}
-
-
-
-
-/*
- * Read a store
- */
-static errr rd_store(int n)
-{
-	store_type *st_ptr = &store[n];
-
-	int j;
-
-	byte own, num;
-
-	/* XXX Old values */
-	strip_bytes(6);
-
-	/* Read the basic info */
-	rd_byte(&own);
-	rd_byte(&num);
-
-	/* XXX Old values */
-	strip_bytes(4);
-
-	/* Paranoia */
-	if (own >= z_info->b_max)
-	{
-		note("Illegal store owner!");
-		return (-1);
-	}
-
-	st_ptr->owner = own;
-
-	/* Read the items */
-	for (j = 0; j < num; j++)
-	{
-		object_type *i_ptr;
-		object_type object_type_body;
-
-		/* Get local object */
-		i_ptr = &object_type_body;
-
-		/* Wipe the object */
-		object_wipe(i_ptr);
-
-		/* Read the item */
-		if (rd_item(i_ptr))
-		{
-			note("Error reading item");
-			return (-1);
-		}
-
-		/* Accept any valid items */
-		if ((st_ptr->stock_num < STORE_INVEN_MAX) &&
-		    (i_ptr->k_idx))
-		{
-			int k = st_ptr->stock_num++;
-
-			/* Accept the item */
-			object_copy(&st_ptr->stock[k], i_ptr);
-		}
-	}
-
-	/* Success */
-	return (0);
-}
-
-
-
 /*
  * Read RNG state
  */
@@ -710,7 +554,7 @@ static int rd_messages(void)
 
 int rd_monster_memory(void)
 {
-	int i;
+	int r_idx;
 	u16b tmp16u;
 	
 	/* Monster Memory */
@@ -724,8 +568,55 @@ int rd_monster_memory(void)
 	}
 	
 	/* Read the available records */
-	for (i = 0; i < tmp16u; i++)
-		rd_lore(i);
+	for (r_idx = 0; r_idx < tmp16u; r_idx++)
+	{
+		int i;
+
+		monster_race *r_ptr = &r_info[r_idx];
+		monster_lore *l_ptr = &l_list[r_idx];
+			
+			
+		/* Count sights/deaths/kills */
+		rd_s16b(&l_ptr->sights);
+		rd_s16b(&l_ptr->deaths);
+		rd_s16b(&l_ptr->pkills);
+		rd_s16b(&l_ptr->tkills);
+		
+		/* Count wakes and ignores */
+		rd_byte(&l_ptr->wake);
+		rd_byte(&l_ptr->ignore);
+			
+		/* Count drops */
+		rd_byte(&l_ptr->drop_gold);
+		rd_byte(&l_ptr->drop_item);
+
+		/* Count spells */
+		rd_byte(&l_ptr->cast_innate);
+		rd_byte(&l_ptr->cast_spell);
+
+		/* Count blows of each type */
+		for (i = 0; i < MONSTER_BLOW_MAX; i++)
+			rd_byte(&l_ptr->blows[i]);
+
+		/* Memorize flags */
+		for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
+			rd_u32b(&l_ptr->flags[i]);
+		for (i = 0; i < RACE_FLAG_SPELL_STRICT_UB; i++)
+			rd_u32b(&l_ptr->spell_flags[i]);
+			
+			
+		/* Read the "Racial" monster limit per level */
+		rd_byte(&r_ptr->max_num);
+			
+		/* XXX */
+		strip_bytes(3);
+
+		/* Repair the lore flags */
+		for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
+			l_ptr->flags[i] &= r_ptr->flags[i];
+		for (i = 0; i < RACE_FLAG_SPELL_STRICT_UB; i++)
+			l_ptr->spell_flags[i] &= r_ptr->spell_flags[i];
+	}
 	
 	return 0;
 }
@@ -1366,8 +1257,61 @@ int rd_stores(void)
 	rd_u16b(&tmp16u);
 	for (i = 0; i < tmp16u; i++)
 	{
-		if (rd_store(i)) return (-1);
+		store_type *st_ptr = &store[i];
+
+		int j;		
+		byte own, num;
+		
+		/* XXX */
+		strip_bytes(6);
+		
+		/* Read the basic info */
+		rd_byte(&own);
+		rd_byte(&num);
+		
+		/* XXs */
+		strip_bytes(4);
+		
+		/* Paranoia */
+		if (own >= z_info->b_max)
+		{
+			note("Illegal store owner!");
+			return (-1);
+		}
+		
+		st_ptr->owner = own;
+		
+		/* Read the items */
+		for (j = 0; j < num; j++)
+		{
+			object_type *i_ptr;
+			object_type object_type_body;
+			
+			/* Get local object */
+			i_ptr = &object_type_body;
+			
+			/* Wipe the object */
+			object_wipe(i_ptr);
+			
+			/* Read the item */
+			if (rd_item(i_ptr))
+			{
+				note("Error reading item");
+				return (-1);
+			}
+			
+			/* Accept any valid items */
+			if ((st_ptr->stock_num < STORE_INVEN_MAX) &&
+				(i_ptr->k_idx))
+			{
+				int k = st_ptr->stock_num++;
+				
+				/* Accept the item */
+				object_copy(&st_ptr->stock[k], i_ptr);
+			}
+		}	
 	}
+
 	return 0;
 }
 
@@ -1403,8 +1347,6 @@ static errr rd_dungeon(void)
 	byte count;
 	byte tmp8u;
 	u16b tmp16u;
-
-	u16b limit;
 
 
 	/*** Basic info ***/
@@ -1538,9 +1480,25 @@ static errr rd_dungeon(void)
 		return (-1);
 	}
 
+	/*** Success ***/
+	
+	/* The dungeon is ready */
+	character_dungeon = TRUE;
+	
+#if 0
+	/* Regenerate town in old versions */
+	if (p_ptr->depth == 0)
+		character_dungeon = FALSE;
+#endif
+	
+	return 0;
+}
 
-	/*** Objects ***/
-
+static int rd_objects(void)
+{
+	int i;
+	u16b limit;
+	
 	/* Read the item count */
 	rd_u16b(&limit);
 
@@ -1606,8 +1564,14 @@ static errr rd_dungeon(void)
 		}
 	}
 
+	return 0;
+}
 
-	/*** Monsters ***/
+
+static int rd_monsters(void)
+{
+	int i;
+	u16b limit;
 
 	/* Read the monster count */
 	rd_u16b(&limit);
@@ -1622,36 +1586,39 @@ static errr rd_dungeon(void)
 	/* Read the monsters */
 	for (i = 1; i < limit; i++)
 	{
-		monster_type *n_ptr;
+		monster_type *m_ptr;
 		monster_type monster_type_body;
 
-
 		/* Get local monster */
-		n_ptr = &monster_type_body;
+		m_ptr = &monster_type_body;
+		WIPE(m_ptr, monster_type);
 
-		/* Clear the monster */
-		(void)WIPE(n_ptr, monster_type);
-
-		/* Read the monster */
-		rd_monster(n_ptr);
-
+		/* Read in record */
+		rd_s16b(&m_ptr->r_idx);
+		rd_byte(&m_ptr->fy);
+		rd_byte(&m_ptr->fx);
+		rd_s16b(&m_ptr->hp);
+		rd_s16b(&m_ptr->maxhp);
+		rd_s16b(&m_ptr->csleep);
+		rd_byte(&m_ptr->mspeed);
+		rd_byte(&m_ptr->energy);
+		rd_byte(&m_ptr->stunned);
+		rd_byte(&m_ptr->confused);
+		rd_byte(&m_ptr->monfear);
+		strip_bytes(1);
 
 		/* Place monster in dungeon */
-		if (monster_place(n_ptr->fy, n_ptr->fx, n_ptr) != i)
+		if (monster_place(m_ptr->fy, m_ptr->fx, m_ptr) != i)
 		{
 			note(format("Cannot place monster %d", i));
 			return (-1);
 		}
 	}
 
-
-	/*** Holding ***/
-
 	/* Reacquire objects */
 	for (i = 1; i < o_max; ++i)
 	{
 		object_type *o_ptr;
-
 		monster_type *m_ptr;
 
 		/* Get the object */
@@ -1677,31 +1644,15 @@ static errr rd_dungeon(void)
 		m_ptr->hold_o_idx = i;
 	}
 
-
-	/*** Success ***/
-
-	/* The dungeon is ready */
-	character_dungeon = TRUE;
-
-#if 0
-	/* Regenerate town in old versions */
-	if (p_ptr->depth == 0)
-		character_dungeon = FALSE;
-#endif
-
-	/* Success */
-	return (0);
+	return 0;
 }
 
 
-/*
- * Hack -- strip the "ghost" info
- *
- * XXX XXX XXX This is such a nasty hack it hurts.
- */
 static void rd_ghost(void)
 {
 	char buf[64];
+
+	/* XXX */
 	
 	/* Strip name */
 	rd_string(buf, 64);
@@ -1784,6 +1735,8 @@ static errr rd_savefile_new_aux(void)
 	if (!p_ptr->is_dead)
 	{
 		if (rd_dungeon()) return -1;
+		if (rd_objects()) return -1;
+		if (rd_monsters()) return -1;
 		rd_ghost();
 	}
 
