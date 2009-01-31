@@ -905,19 +905,64 @@ void wr_artifacts(void)
 
 
 
+void wr_inventory(void)
+{
+	int i;
+
+	/* Write the inventory */
+	for (i = 0; i < INVEN_TOTAL; i++)
+	{
+		object_type *o_ptr = &inventory[i];
+		
+		/* Skip non-objects */
+		if (!o_ptr->k_idx) continue;
+		
+		/* Dump index */
+		wr_u16b((u16b)i);
+		
+		/* Dump object */
+		wr_item(o_ptr);
+	}
+	
+	/* Add a sentinel */
+	wr_u16b(0xFFFF);
+}
+
+
+void wr_stores(void)
+{
+	int i;
+
+	wr_u16b(MAX_STORES);
+	for (i = 0; i < MAX_STORES; i++)
+		wr_store(&store[i]);
+}
+
+
+void wr_history(void)
+{
+	int i;
+	u32b tmp32u = history_get_num();
+
+	wr_u32b(tmp32u);
+	for (i = 0; i < tmp32u; i++)
+	{
+		wr_u16b(history_list[i].type);
+		wr_s32b(history_list[i].turn);
+		wr_s16b(history_list[i].dlev);
+		wr_s16b(history_list[i].clev);
+		wr_byte(history_list[i].a_idx);
+		wr_string(history_list[i].event);
+	}
+}
+
+
 /*
  * Actually write a save-file
  */
 static void wr_savefile_new(void)
 {
-	int i;
-
 	u32b now;
-
-	u16b tmp16u;
-	u32b tmp32u;
-
-	u32b tmp32v;
 
 	/* Guess at the current time */
 	now = time((time_t *)0);
@@ -980,63 +1025,18 @@ static void wr_savefile_new(void)
 
 	wr_extra();
 
-	if (adult_randarts)
-		wr_randarts();
+	if (adult_randarts) wr_randarts();
 
+	wr_inventory();
+	wr_stores();
 
-	/* Write the inventory */
-	for (i = 0; i < INVEN_TOTAL; i++)
-	{
-		object_type *o_ptr = &inventory[i];
-
-		/* Skip non-objects */
-		if (!o_ptr->k_idx) continue;
-
-		/* Dump index */
-		wr_u16b((u16b)i);
-
-		/* Dump object */
-		wr_item(o_ptr);
-	}
-
-	/* Add a sentinel */
-	wr_u16b(0xFFFF);
-
-
-	/* Note the stores */
-	tmp16u = MAX_STORES;
-	wr_u16b(tmp16u);
-
-	/* Dump the stores */
-	for (i = 0; i < tmp16u; i++) wr_store(&store[i]);
-
-
-	/* Player is not dead, write the dungeon */
 	if (!p_ptr->is_dead)
 	{
-		/* Dump the dungeon */
 		wr_dungeon();
-
-		/* Dump the ghost */
 		wr_ghost();
 	}
 
-	/* NEW (jdw): dumping history entries */
-	/* Dump the number of history entries */
-	tmp32u = history_get_num();
-	wr_u32b(tmp32u);
-
-	/* Dump the history entries one-by-one */
-	for (tmp32v = 0; tmp32v < tmp32u; tmp32v++)
-	{
-		wr_u16b(history_list[tmp32v].type);
-		wr_s32b(history_list[tmp32v].turn);
-		wr_s16b(history_list[tmp32v].dlev);
-		wr_s16b(history_list[tmp32v].clev);
-		wr_byte(history_list[tmp32v].a_idx);
-		wr_string(history_list[tmp32v].event);
-	}
-
+	wr_history();
 
 	/* Write the "value check-sum" */
 	wr_u32b(v_stamp);

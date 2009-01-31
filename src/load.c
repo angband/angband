@@ -19,53 +19,12 @@
 #include "object/tvalsval.h"
 
 
-/*
- * This file loads savefiles from Angband 2.9.X.
- *
- * We attempt to prevent corrupt savefiles from inducing memory errors.
- *
- * Note that this file should not use the random number generator, the
- * object flavors, the visual attr/char mappings, or anything else which
- * is initialized *after* or *during* the "load character" function.
- *
- * This file assumes that the monster/object records are initialized
- * to zero, and the race/kind tables have been loaded correctly.  The
- * order of object stacks is currently not saved in the savefiles, but
- * the "next" pointers are saved, so all necessary knowledge is present.
- *
- * We should implement simple "savefile extenders" using some form of
- * "sized" chunks of bytes, with a {size,type,data} format, so everyone
- * can know the size, interested people can know the type, and the actual
- * data is available to the parsing routines that acknowledge the type.
- *
- * Consider changing the "globe of invulnerability" code so that it
- * takes some form of "maximum damage to protect from" in addition to
- * the existing "number of turns to protect for", and where each hit
- * by a monster will reduce the shield by that amount.  XXX XXX XXX
- */
 
-
-
-
-
-/*
- * Local "savefile" pointer
- */
 static ang_file *fff;
 
-/*
- * Hack -- old "encryption" byte
- */
+
 static byte	xor_byte;
-
-/*
- * Hack -- simple "checksum" on the actual values
- */
 static u32b	v_check = 0L;
-
-/*
- * Hack -- simple "checksum" on the encoded bytes
- */
 static u32b	x_check = 0L;
 
 
@@ -1022,6 +981,17 @@ static errr rd_extra(void)
 	/* Read the player spells */
 	if (rd_player_spells()) return (-1);
 
+	
+	/* Important -- Initialize the sex */
+	sp_ptr = &sex_info[p_ptr->psex];
+	
+	/* Important -- Initialize the race/class */
+	rp_ptr = &p_info[p_ptr->prace];
+	cp_ptr = &c_info[p_ptr->pclass];
+	
+	/* Important -- Initialize the magic */
+	mp_ptr = &cp_ptr->spells;
+	
 	return (0);
 }
 
@@ -1722,20 +1692,56 @@ int rd_artifacts(void)
 }
 
 
+
+int rd_stores(void)
+{
+	int i;
+	u16b tmp16u;
+
+	/* Read the stores */
+	rd_u16b(&tmp16u);
+	for (i = 0; i < tmp16u; i++)
+	{
+		if (rd_store(i)) return (-1);
+	}
+	return 0;
+}
+
+void rd_history(void)
+{
+	u32b tmp32u;
+	size_t i;
+	
+	history_clear();
+	
+	rd_u32b(&tmp32u);
+	for (i = 0; i < tmp32u; i++)
+	{
+		s32b turn;
+		s16b dlev, clev;
+		u16b type;
+		byte art_name;
+		char text[80];
+		
+		rd_u16b(&type);
+		rd_s32b(&turn);
+		rd_s16b(&dlev);
+		rd_s16b(&clev);
+		rd_byte(&art_name);
+		rd_string(text, sizeof(text));
+		
+		history_add_full(type, art_name, dlev, clev, turn, text);
+	}
+}
+
+
 /*
  * Actually read the savefile
  */
 static errr rd_savefile_new_aux(void)
 {
-	int i;
-
-	u16b tmp16u;
-	u32b tmp32u;
-
 	u32b n_x_check, n_v_check;
 	u32b o_x_check, o_v_check;
-
-	char buf[80];
 
 	/* Mention the savefile version */
 	note(format("Loading a %d.%d.%d savefile...",
@@ -1779,94 +1785,18 @@ static errr rd_savefile_new_aux(void)
 
 	if (rd_extra()) return -1;
 
-	/* Read random artifacts */
-	if (adult_randarts)
-	{
-		if (rd_randarts()) return (-1);
-	}
-
-
-	/* Important -- Initialize the sex */
-	sp_ptr = &sex_info[p_ptr->psex];
-
-	/* Important -- Initialize the race/class */
-	rp_ptr = &p_info[p_ptr->prace];
-	cp_ptr = &c_info[p_ptr->pclass];
-
-	/* Important -- Initialize the magic */
-	mp_ptr = &cp_ptr->spells;
-
-
-	/* Read the inventory */
-	if (rd_inventory())
-	{
-		note("Unable to read inventory");
-		return (-1);
-	}
-
-
-	/* Read the stores */
-	rd_u16b(&tmp16u);
-	for (i = 0; i < tmp16u; i++)
-	{
-		if (rd_store(i)) return (-1);
-	}
-
-
-	/* I'm not dead yet... */
+	if (adult_randarts && rd_randarts()) return -1;
+	if (rd_inventory()) return -1;
+	if (rd_stores()) return -1;
+	
 	if (!p_ptr->is_dead)
 	{
-		/* Dead players have no dungeon */
-		note("Restoring Dungeon...");
-		if (rd_dungeon())
-		{
-			note("Error reading dungeon data");
-			return (-1);
-		}
-
-		/* Read the ghost info */
+		if (rd_dungeon()) return -1;
 		rd_ghost();
 	}
 
-	/* Read in the history list if the savefile is new enough */
-	if (!older_than(3, 0, 13))
-	{
-		size_t i;
+	rd_history();
 
-		history_clear();
-
-		rd_u32b(&tmp32u);
-		for (i = 0; i < tmp32u; i++)
-		{
-			s32b turn;
-			s16b dlev, clev;
-			u16b type;
-			byte art_name;
-			char text[80];
-
-			rd_u16b(&type);
-			rd_s32b(&turn);
-			rd_s16b(&dlev);
-			rd_s16b(&clev);
-			rd_byte(&art_name);
-			rd_string(text, sizeof(text));
-
-			history_add_full(type, art_name, dlev, clev, turn, text);
-		}
-	}
-
-	/*
-	 * Savefile is from an older version:
-	 * Still have to initialize the variables correctly.
-	 * Then the game should correctly log future history entries.
-	 */
-	else
-	{
-		history_clear();
-		strnfmt(buf, sizeof(buf), "Imported an Angband %d.%d.%d savefile",
-			sf_major, sf_minor, sf_patch);
-		history_add(buf, HISTORY_SAVEFILE_IMPORT, 0);
-	}
 
 	/* Save the checksum */
 	n_v_check = v_check;
