@@ -2870,6 +2870,8 @@ s16b inven_takeoff(int item, int amt)
 	sound(MSG_WIELD);
 	msg_format("%s %s (%c).", act, o_name, index_to_label(slot));
 
+	p_ptr->notice |= PN_SQUELCH;
+
 	/* Return slot */
 	return (slot);
 }

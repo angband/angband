@@ -968,5 +968,7 @@ void do_cmd_options_item(void *unused, cptr title)
 
 	/* Load screen and finish */
 	screen_load();
+	p_ptr->notice |= PN_SQUELCH;
+
 	return;
 }

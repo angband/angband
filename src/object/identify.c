@@ -73,6 +73,9 @@ void object_aware(object_type *o_ptr)
 			lite_spot(floor_o_ptr->iy, floor_o_ptr->ix);
 		}
 	}
+
+	p_ptr->notice |= PN_SQUELCH;
+	apply_autoinscription(o_ptr);
 }
 
 
