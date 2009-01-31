@@ -487,6 +487,18 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	}
 
 	/* Collect slays */
+	/* Melee weapons get slays from rings now */
+	if (weapon)
+	{
+		u32b g1, g2, g3, h1, h2, h3;
+		
+		object_flags_known(&inventory[INVEN_LEFT], &g1, &g2, &g3);
+		object_flags_known(&inventory[INVEN_RIGHT], &h1, &h2, &h3);
+
+		f1 |= (g1 | h1);
+	}
+	
+	
 	cnt = collect_slays(desc, mult, f1);
 	if (object_known_p(o_ptr) && cnt)
 	{
