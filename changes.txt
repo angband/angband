@@ -3,7 +3,7 @@ Angband 3.1.1
 
 This is an Angband development version -- it may be buggy, so be warned!
 Special thanks to: Eddie Grove, Elly, Stefan O'Rear, Mango Juice, Gabriel
-Cunningham
+Cunningham, Chris Carr, Chris Robertson
 
 Gameplay/UI changes:
 Make the {excellent}-on-wield check work for jewellery too.
