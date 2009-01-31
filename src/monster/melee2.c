@@ -884,7 +884,7 @@ bool make_attack_spell(int m_idx)
 		case SPELL(0,RSF0_ARROW_4):
 		{
 			bool hits = check_hit(ARROW4_HIT, rlev);
-			int dam = ARROW4_DMG);
+			int dam = ARROW4_DMG;
 			disturb(1, 0);
 
 			if (blind) msg_format("%^s makes a strange noise.", m_name);
