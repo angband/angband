@@ -55,10 +55,10 @@ in the vein of
 and 
 .I moria.
 .B Angband 
-2.8.3 is a stable official release incorporating all the changes
+3.1.0beta is an official beta release incorporating all the changes
 and improvements added since the last official release (
 .B Angband 
-2.7.8).
+3.0.9b).
 .PP
 This version of
 .B Angband
@@ -84,11 +84,8 @@ Request wizard mode (no high score entry)
 .BR \-g
 Request graphics mode
 .TP
-.BR \-o
-Request original keyset
-.TP
 .BR \-r
-Request rogue-like keyset
+-Rebalance monsters (only if lib/data/monster.raw does not exist)
 .TP
 .BR \-s<num>  
 Show <num> high scores
@@ -97,7 +94,7 @@ Show <num> high scores
 Use your <who> savefile
 .TP
 .BR \-m<sys>  
-Force 'main-<sys>.c' usage
+Use <sys> core code (e.g. gcu for console mode, x11 or sdl for graphics)
 .TP
 .BR \-d<lib>=<path>  
 Define a 'lib' dir sub-path. Valid values of lib are help info user
