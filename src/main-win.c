@@ -994,6 +994,9 @@ static void load_prefs(void)
 	/* Extract the "arg_wizard" flag */
 	arg_wizard = (GetPrivateProfileInt("Angband", "Wizard", 0, ini_file) != 0);
 
+	/* Extract the "arg_rebalance" flag */
+	arg_rebalance = (GetPrivateProfileInt("Angband", "Rebalance", FALSE, ini_file);
+
 #ifdef SUPPORT_GAMMA
 
 	/* Extract the gamma correction */

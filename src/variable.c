@@ -56,6 +56,7 @@ byte sf_extra;			/* Savefile's "version_extra" */
  * Run-time arguments
  */
 bool arg_wizard;			/* Command arg -- Request wizard mode */
+bool arg_rebalance;			/* Command arg -- Rebalance monsters */
 int arg_graphics;			/* Command arg -- Request graphics mode */
 
 /*

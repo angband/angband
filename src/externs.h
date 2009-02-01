@@ -85,6 +85,7 @@ extern byte sf_minor;
 extern byte sf_patch;
 extern byte sf_extra;
 extern bool arg_wizard;
+extern bool arg_rebalance;
 extern int arg_graphics;
 extern bool character_generated;
 extern bool character_existed;

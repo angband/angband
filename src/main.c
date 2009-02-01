@@ -298,6 +298,13 @@ int main(int argc, char *argv[])
 				break;
 			}
 
+			case 'R':
+			case 'r':
+			{
+				arg_rebalance = TRUE;
+				break;
+			}
+
 			case 'G':
 			case 'g':
 			{
@@ -348,6 +355,7 @@ int main(int argc, char *argv[])
 				puts("  -n             Start a new character");
 				puts("  -L             Load a new-format save file");
 				puts("  -w             Resurrect dead character (marks savefile)");
+				puts("  -r             Rebalance monsters if monster.raw is absent");
 				puts("  -g             Request graphics mode");
 				puts("  -u<who>        Use your <who> savefile");
 				puts("  -d<path>       Store pref files and screendumps in <path>");

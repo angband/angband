@@ -4128,29 +4128,35 @@ for (iteration = 0; iteration < 3; iteration ++)
 						j))), 99);
 
 				/* Set level */
-				r_ptr->level = lvl;
+				if (arg_rebalance)
+					r_ptr->level = lvl;
 			}
 
-			/* Hack -- for Ungoliant */
-			if (hp > 10000) r_ptr->mexp = (hp / 25) * (dam / lvl);
-			else r_ptr->mexp = (hp * dam) / (lvl * 25);
-
-			/* Round to 2 significant figures */
-			if (r_ptr->mexp > 100)
+			if (arg_rebalance)
 			{
-				if (r_ptr->mexp < 1000) { r_ptr->mexp = (r_ptr->mexp + 5) / 10; r_ptr->mexp *= 10; }
-				else if (r_ptr->mexp < 10000) { r_ptr->mexp = (r_ptr->mexp + 50) / 100; r_ptr->mexp *= 100; }
-				else if (r_ptr->mexp < 100000) { r_ptr->mexp = (r_ptr->mexp + 500) / 1000; r_ptr->mexp *= 1000; }
-				else if (r_ptr->mexp < 1000000) { r_ptr->mexp = (r_ptr->mexp + 5000) / 10000; r_ptr->mexp *= 10000; }
-				else if (r_ptr->mexp < 10000000) { r_ptr->mexp = (r_ptr->mexp + 50000) / 100000; r_ptr->mexp *= 100000; }
+				/* Hack -- for Ungoliant */
+				if (hp > 10000) r_ptr->mexp = (hp / 25) * (dam / lvl);
+				else r_ptr->mexp = (hp * dam) / (lvl * 25);
+
+				/* Round to 2 significant figures */
+				if (r_ptr->mexp > 100)
+				{
+					if (r_ptr->mexp < 1000) { r_ptr->mexp = (r_ptr->mexp + 5) / 10; r_ptr->mexp *= 10; }
+					else if (r_ptr->mexp < 10000) { r_ptr->mexp = (r_ptr->mexp + 50) / 100; r_ptr->mexp *= 100; }
+					else if (r_ptr->mexp < 100000) { r_ptr->mexp = (r_ptr->mexp + 500) / 1000; r_ptr->mexp *= 1000; }
+					else if (r_ptr->mexp < 1000000) { r_ptr->mexp = (r_ptr->mexp + 5000) / 10000; r_ptr->mexp *= 10000; }
+					else if (r_ptr->mexp < 10000000) { r_ptr->mexp = (r_ptr->mexp + 50000) / 100000; r_ptr->mexp *= 100000; }
+				}
 			}
 		}
 
+		/* If we're rebalancing, this is a nop, if not, we restore the orig value */
+		lvl = r_ptr->level;
 		if ((lvl) && (r_ptr->mexp < 1L)) r_ptr->mexp = 1L;
 
 		/*
 		 * Hack - We have to use an adjustment factor to prevent overflow.
-                 */
+		 */
 		if (lvl >= 90)
 		{
 			hp /= 1000;
@@ -4309,7 +4315,8 @@ for (iteration = 0; iteration < 3; iteration ++)
 			for (j = 1; new_power > j; new_power -= j * j, j++);
 
 			/* Set rarity */
-			r_ptr->rarity = j;
+			if (arg_rebalance)
+				r_ptr->rarity = j;
 		}
 	}
 
