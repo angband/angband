@@ -17,7 +17,7 @@
  */
 #include "angband.h"
 #include "object/tvalsval.h"
-
+#include "monster/constants.h"
 
 /*
  * Helper function -- return a "nearby" race for polymorphing
@@ -990,9 +990,9 @@ void acid_dam(int dam, cptr kb_str)
 
 	/* Change damage */
 	if (n >= 3) return;
-	if (n >= 2) dam = (dam + 2) / 3;
-	if (n >= 1) dam = (dam + 2) / 3;
-	if (n == -1) dam = (dam * 4) / 3;
+	else if (n >= 2) dam = DBLRES_ACID_ADJ(dam, NOT_USED);
+	else if (n == 1) dam = RES_ACID_ADJ(dam, NOT_USED);
+	else if (n == -1) dam = VULN_ACID_ADJ(dam, NOT_USED);
 
 	/* If any armor gets hit, defend the player */
 	if (minus_ac()) dam = (dam + 1) / 2;
@@ -1003,6 +1003,8 @@ void acid_dam(int dam, cptr kb_str)
 	/* Inventory damage */
 	inven_damage(set_acid_destroy, inv);
 }
+
+
 
 
 /*
@@ -1025,9 +1027,9 @@ void elec_dam(int dam, cptr kb_str)
 
 	/* Change damage */
 	if (n >= 3) return;
-	if (n == 2) dam = (dam + 2) / 3;
-	if (n == 1) dam = (dam + 2) / 3;
-	if (n == -1) dam = (dam * 4) / 3;
+	else if (n >= 2) dam = DBLRES_ELEC_ADJ(dam, NOT_USED);
+	else if (n == 1) dam = RES_ELEC_ADJ(dam, NOT_USED);
+	else if (n == -1) dam = VULN_ELEC_ADJ(dam, NOT_USED);
 
 	/* Take damage */
 	take_hit(dam, kb_str);
@@ -1059,9 +1061,9 @@ void fire_dam(int dam, cptr kb_str)
 
 	/* Change damage */
 	if (n >= 3) return;
-	if (n >= 2) dam = (dam + 2) / 3;
-	if (n >= 1) dam = (dam + 2) / 3;
-	if (n == -1) dam = (dam * 4) / 3;
+	else if (n >= 2) dam = DBLRES_FIRE_ADJ(dam, NOT_USED);
+	else if (n == 1) dam = RES_FIRE_ADJ(dam, NOT_USED);
+	else if (n == -1) dam = VULN_FIRE_ADJ(dam, NOT_USED);
 
 	/* Take damage */
 	take_hit(dam, kb_str);
@@ -1069,6 +1071,8 @@ void fire_dam(int dam, cptr kb_str)
 	/* Inventory damage */
 	inven_damage(set_fire_destroy, inv);
 }
+
+
 
 
 /*
@@ -1091,9 +1095,9 @@ void cold_dam(int dam, cptr kb_str)
 
 	/* Change damage */
 	if (n >= 3) return;
-	if (n >= 2) dam = (dam + 2) / 3;
-	if (n >= 1) dam = (dam + 2) / 3;
-	if (n == -1) dam = (dam * 4) / 3;
+	else if (n >= 2) dam = DBLRES_COLD_ADJ(dam, NOT_USED);
+	else if (n == 1) dam = RES_COLD_ADJ(dam, NOT_USED);
+	else if (n == -1) dam = VULN_COLD_ADJ(dam, NOT_USED);
 
 	/* Take damage */
 	take_hit(dam, kb_str);
@@ -3363,8 +3367,8 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 		case GF_POIS:
 		{
 			if (blind) msg_print("You are hit by poison!");
-			if (p_ptr->state.resist_pois) dam = (dam + 2) / 3;
-			if (p_ptr->timed[TMD_OPP_POIS]) dam = (dam + 2) / 3;
+			if (p_ptr->state.resist_pois) dam = RES_POIS_ADJ(dam, NOT_USED);
+			if (p_ptr->timed[TMD_OPP_POIS]) dam = RES_POIS_ADJ(dam, NOT_USED);
 			take_hit(dam, killer);
 			if (!(p_ptr->state.resist_pois || p_ptr->timed[TMD_OPP_POIS]))
 			{
@@ -3417,7 +3421,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (blind) msg_print("You are hit by something strange!");
 			if (p_ptr->state.resist_nethr)
 			{
-				dam *= 6; dam /= (randint1(6) + 6);
+				dam = RES_NETH_ADJ(dam, RANDOMISE);
 			}
 			else
 			{
@@ -3467,7 +3471,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (blind) msg_print("You are hit by something strange!");
 			if (p_ptr->state.resist_chaos)
 			{
-				dam *= 6; dam /= (randint1(6) + 6);
+				dam = RES_CHAO_ADJ(dam, RANDOMISE);
 			}
 			if (!p_ptr->state.resist_confu && !p_ptr->state.resist_chaos)
 			{
@@ -3509,7 +3513,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (blind) msg_print("You are hit by something sharp!");
 			if (p_ptr->state.resist_shard)
 			{
-				dam *= 6; dam /= (randint1(6) + 6);
+				dam = RES_SHAR_ADJ(dam, RANDOMISE);
 			}
 			else
 			{
@@ -3525,7 +3529,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (blind) msg_print("You are hit by something!");
 			if (p_ptr->state.resist_sound)
 			{
-				dam *= 5; dam /= (randint1(6) + 6);
+				dam = RES_SOUN_ADJ(dam, RANDOMISE);
 			}
 			else
 			{
@@ -3542,7 +3546,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (blind) msg_print("You are hit by something!");
 			if (p_ptr->state.resist_confu)
 			{
-				dam *= 5; dam /= (randint1(6) + 6);
+				dam = RES_CONF_ADJ(dam, RANDOMISE);
 			}
 			if (!p_ptr->state.resist_confu)
 			{
@@ -3558,7 +3562,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (blind) msg_print("You are hit by something strange!");
 			if (p_ptr->state.resist_disen)
 			{
-				dam *= 6; dam /= (randint1(6) + 6);
+				dam = RES_DISE_ADJ(dam, RANDOMISE);
 			}
 			else
 			{
@@ -3574,7 +3578,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (blind) msg_print("You are hit by something strange!");
 			if (p_ptr->state.resist_nexus)
 			{
-				dam *= 6; dam /= (randint1(6) + 6);
+				dam = RES_NEXU_ADJ(dam, RANDOMISE);
 			}
 			else
 			{
@@ -3611,7 +3615,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (blind) msg_print("You are hit by something!");
 			if (p_ptr->state.resist_lite)
 			{
-				dam *= 4; dam /= (randint1(6) + 6);
+				dam = RES_LITE_ADJ(dam, RANDOMISE);
 			}
 			else if (!blind && !p_ptr->state.resist_blind)
 			{
@@ -3627,7 +3631,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (blind) msg_print("You are hit by something!");
 			if (p_ptr->state.resist_dark)
 			{
-				dam *= 4; dam /= (randint1(6) + 6);
+				dam = RES_DARK_ADJ(dam, RANDOMISE);
 			}
 			else if (!blind && !p_ptr->state.resist_blind)
 			{

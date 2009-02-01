@@ -133,10 +133,8 @@ extern errr parse_b_info(char *buf, header *head);
 extern errr parse_g_info(char *buf, header *head);
 extern errr parse_flavor_info(char *buf, header *head);
 extern errr parse_s_info(char *buf, header *head);
-
-#ifdef ALLOW_TEMPLATES_PROCESS
 extern errr eval_r_power(header *head);
-#endif
+
 
 #ifdef ALLOW_TEMPLATES_OUTPUT
 extern errr emit_r_info_index(ang_file *fp, header *head, int i);

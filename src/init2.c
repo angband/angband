@@ -714,10 +714,8 @@ static errr init_r_info(void)
 	/* Save a pointer to the parsing function */
 	r_head.parse_info_txt = parse_r_info;
 
-#ifdef ALLOW_TEMPLATES_PROCESS
 	/* Save a pointer to the evaluate power function*/
 	r_head.eval_info_power = eval_r_power;
-#endif
 
 #ifdef ALLOW_TEMPLATES_OUTPUT
 

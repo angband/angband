@@ -94,16 +94,6 @@
 
 
 
-/*** Things useful for debugging compiles ***/
-
-/*
- * OPTION: Allow processing of template files once parsed.
- * This 'evaluates' the contents of the files. It is is currently used for
- * balancing the monster list (monster.txt).
- */
-/* #define ALLOW_TEMPLATES_PROCESS */
-
-
 /*
  * OPTION: Allow output of 'parsable' ascii template files.
  * This can be used to help change the ascii template format, and to make

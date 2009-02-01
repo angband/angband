@@ -47,8 +47,9 @@
  * program, but that feels a little silly, especially considering some
  * of the platforms that we currently support.
  */
-#include "angband.h"
+
 #include "effects.h"
+#include "monster/constants.h"
 
 #ifdef ALLOW_TEMPLATES
 
@@ -3424,13 +3425,40 @@ errr eval_info(eval_info_power_func eval_info_process, header *head)
 	return(err);
 }
 
-#ifdef ALLOW_TEMPLATES_PROCESS
 
 /*
  * Total monster power
  */
 static s32b tot_mon_power;
 
+
+/*
+ * Damage calculation - we want max damage for power evaluation,
+ * but random damage for combat. See full explanation in monster/constants.h
+ */
+int damcalc(int dice, int sides, aspect dam_aspect)
+{
+	int num = 0;
+	switch (dam_aspect)
+	{
+		case MAXIMISE:
+		{
+			num = dice * sides;
+			break;
+		}
+		case RANDOMISE:
+		{
+			num = damroll(dice, sides);
+			break;
+		}
+		case MINIMISE:
+		{
+			num = dice;
+			break;
+		}
+	}
+	return (num);
+}
 
 static long eval_blow_effect(int effect, int atk_dam, int rlev)
 {
@@ -3496,12 +3524,16 @@ static long eval_blow_effect(int effect, int atk_dam, int rlev)
 		case RBE_EXP_20:
 		{
 			atk_dam += 1000 / (rlev + 1);
+/* change inspired by Eddie because exp is infinite
+			atk_dam += 5; */
 			break;
 		}
 		case RBE_EXP_40:
 		case RBE_EXP_80:
 		{
 			atk_dam += 2000 / (rlev + 1);
+/* as above
+			atk_dam += 10; */
 			break;
 		}
 		/*Earthquakes*/
@@ -3544,112 +3576,145 @@ static long eval_max_dam(monster_race *r_ptr)
 	/* Extract the monster level, force 1 for town monsters */
 	rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);
 
-	/* Note the following code for average damage depends on
-	 * a lot of "magic numbers" in melee2.c.  This is
-	 * unavoidable.  Any change to the damage calculations
-	 * in melee2.c may render the following inaccurate or
-	 * obsolete.
-	 *
-	 * To do: (perhaps) change melee2.c to work with #define
-	 * statements or separate methods that can be called from
-	 * here, eliminating the need for duplication.
-	 */
-
 	/* Assume single resist for the elemental attacks */
-	breath_dam = ((hp / 3) > 1600 ? 533 : (hp / 9));
-	if ((r_ptr->spell_flags[0] & RSF0_BR_ACID) && spell_dam < breath_dam) spell_dam = breath_dam + 20;
-	if ((r_ptr->spell_flags[0] & RSF0_BR_ELEC) && spell_dam < breath_dam) spell_dam = breath_dam + 10;
-	if ((r_ptr->spell_flags[0] & RSF0_BR_FIRE) && spell_dam < breath_dam) spell_dam = breath_dam + 10;
-	if ((r_ptr->spell_flags[0] & RSF0_BR_COLD) && spell_dam < breath_dam) spell_dam = breath_dam + 10;
+	if (r_ptr->spell_flags[0] & RSF0_BR_ACID) {
+		breath_dam = ((hp / BR_ACID_DIVISOR) > BR_ACID_MAX ? (RES_ACID_ADJ(BR_ACID_MAX, MINIMISE)) : (RES_ACID_ADJ((hp / BR_ACID_DIVISOR), MINIMISE)));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 20;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_ELEC) {
+		breath_dam = ((hp / BR_ELEC_DIVISOR) > BR_ELEC_MAX ? (RES_ELEC_ADJ(BR_ELEC_MAX, MINIMISE)) : (RES_ELEC_ADJ((hp / BR_ELEC_DIVISOR), MINIMISE)));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_FIRE) {
+		breath_dam = ((hp / BR_FIRE_DIVISOR) > BR_FIRE_MAX ? (RES_FIRE_ADJ(BR_FIRE_MAX, MINIMISE)) : (RES_FIRE_ADJ((hp / BR_FIRE_DIVISOR), MINIMISE)));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_COLD) {
+		breath_dam = ((hp / BR_COLD_DIVISOR) > BR_COLD_MAX ? (RES_COLD_ADJ(BR_COLD_MAX, MINIMISE)) : (RES_COLD_ADJ((hp / BR_COLD_DIVISOR), MINIMISE)));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
+		}
 	/* Same for poison, but lower damage cap */
-	breath_dam = ((hp / 3) > 800 ? 266 : (hp / 9));
-	if ((r_ptr->spell_flags[0] & RSF0_BR_POIS) && spell_dam < breath_dam) spell_dam = (breath_dam * 5 / 4) + rlev;
+	if (r_ptr->spell_flags[0] & RSF0_BR_POIS) {
+		breath_dam = ((hp / BR_POIS_DIVISOR) > BR_POIS_MAX ? (RES_POIS_ADJ(BR_POIS_MAX, MINIMISE)) : (RES_POIS_ADJ((hp / BR_POIS_DIVISOR), MINIMISE)));
+		if (spell_dam < breath_dam) spell_dam = (breath_dam * 5 / 4) + rlev;
+		}
 	/*
-	 * Different formulae for the high resist attacks
-	 * (remember, we are assuming maximum resisted damage)
-	 * See also: melee2.c, spells1.c
+	 * Same formula for the high resist attacks
+	 * (remember, we are assuming maximum resisted damage
+	 * so we *minimise* the resistance)
+	 * See also: melee2.c, spells1.c, constants.h
 	 */
-	breath_dam = ((hp / 6) > 550 ? 471 : ((hp * 6) / 42));
-	if ((r_ptr->spell_flags[0] & RSF0_BR_NETH) && spell_dam < breath_dam) spell_dam = breath_dam + 2000 / (rlev + 1);
-	breath_dam = ((hp / 6) > 500 ? 428 : ((hp * 6) / 42));
-	if ((r_ptr->spell_flags[0] & RSF0_BR_CHAO) && spell_dam < breath_dam) spell_dam = breath_dam + 2000 / (rlev + 1);
-	if ((r_ptr->spell_flags[0] & RSF0_BR_DISE) && spell_dam < breath_dam) spell_dam = breath_dam + 50;
-	if ((r_ptr->spell_flags[0] & RSF0_BR_SHAR) && spell_dam < breath_dam) spell_dam = (breath_dam * 5 / 4) + 5;
-	breath_dam = ((hp / 6) > 400 ? 228 : ((hp * 4) / 42));
-	if ((r_ptr->spell_flags[0] & RSF0_BR_LITE) && spell_dam < breath_dam) spell_dam = breath_dam + 10;
-	if ((r_ptr->spell_flags[0] & RSF0_BR_DARK) && spell_dam < breath_dam) spell_dam = breath_dam + 10;
-	breath_dam = ((hp / 6) > 400 ? 285 : ((hp * 5) / 42));
-	if ((r_ptr->spell_flags[0] & RSF0_BR_CONF) && spell_dam < breath_dam) spell_dam = breath_dam + 20;
-	breath_dam = ((hp / 6) > 500 ? 357 : ((hp * 5) / 42));
-	if ((r_ptr->spell_flags[0] & RSF0_BR_SOUN) && spell_dam < breath_dam) spell_dam = breath_dam + 20;
-	breath_dam = ((hp / 6) > 400 ? 342 : ((hp * 6) / 42));
-	if ((r_ptr->spell_flags[0] & RSF0_BR_NEXU) && spell_dam < breath_dam) spell_dam = breath_dam + 20;
-	breath_dam = ((hp / 3) > 150 ? 150 : (hp / 9));
-	if ((r_ptr->spell_flags[0] & RSF0_BR_TIME) && spell_dam < breath_dam) spell_dam = breath_dam + 2000 / (rlev + 1);
-	breath_dam = ((hp / 6) > 200 ? 200 : (hp / 6));
-	if ((r_ptr->spell_flags[0] & RSF0_BR_INER) && spell_dam < breath_dam) spell_dam = breath_dam + 30;
-	breath_dam = ((hp / 3) > 200 ? 200 : (hp / 3));
-	if ((r_ptr->spell_flags[0] & RSF0_BR_GRAV) && spell_dam < breath_dam) spell_dam = breath_dam + 30;
-	breath_dam = ((hp / 6) > 150 ? 150 : (hp / 6));
-	if ((r_ptr->spell_flags[0] & RSF0_BR_PLAS) && spell_dam < breath_dam) spell_dam = breath_dam + 30;
-	breath_dam = ((hp / 6) > 200 ? 200 : (hp / 6));
-	if ((r_ptr->spell_flags[0] & RSF0_BR_WALL) && spell_dam < breath_dam) spell_dam = breath_dam + 30;
-
-	/* Handle the attack spells, again assuming single resists */
-	if ((r_ptr->spell_flags[1] & RSF1_BA_ACID) && spell_dam < (rlev * 3 + 15) / 3 + 20)
-		spell_dam = (rlev * 3 + 15) / 3 + 20;
-	if ((r_ptr->spell_flags[1] & RSF1_BA_ELEC) && spell_dam < ((rlev * 3 / 2) + 8) / 3 + 10)
-		spell_dam = ((rlev * 3 / 2) + 8) / 3 + 10;
-	if ((r_ptr->spell_flags[1] & RSF1_BA_FIRE) && spell_dam < ((rlev * 7 / 2) + 10) / 3 + 10)
-		spell_dam = ((rlev * 7 / 2) + 10) / 3 + 10;
-	if ((r_ptr->spell_flags[1] & RSF1_BA_COLD) && spell_dam < ((rlev * 3 / 2) + 10) / 3 + 10)
-		spell_dam = ((rlev * 3 / 2) + 10) / 3 + 10;
+	if (r_ptr->spell_flags[0] & RSF0_BR_NETH) {
+		breath_dam = ((hp / BR_NETH_DIVISOR) > BR_NETH_MAX ? (RES_NETH_ADJ(BR_NETH_MAX, MINIMISE)) : (RES_NETH_ADJ((hp / BR_NETH_DIVISOR), MINIMISE)));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 2000 / (rlev + 1);
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_CHAO) {
+		breath_dam = ((hp / BR_CHAO_DIVISOR) > BR_CHAO_MAX ? (RES_CHAO_ADJ(BR_CHAO_MAX, MINIMISE)) : (RES_CHAO_ADJ((hp / BR_CHAO_DIVISOR), MINIMISE)));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 2000 / (rlev + 1);
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_DISE) {
+		breath_dam = ((hp / BR_DISE_DIVISOR) > BR_DISE_MAX ? (RES_DISE_ADJ(BR_DISE_MAX, MINIMISE)) : (RES_DISE_ADJ((hp / BR_DISE_DIVISOR), MINIMISE)));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 50;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_SHAR) {
+		breath_dam = ((hp / BR_SHAR_DIVISOR) > BR_SHAR_MAX ? (RES_SHAR_ADJ(BR_SHAR_MAX, MINIMISE)) : (RES_SHAR_ADJ((hp / BR_SHAR_DIVISOR), MINIMISE)));
+		if (spell_dam < breath_dam) spell_dam = (breath_dam * 5 / 4) + 5;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_LITE) {
+		breath_dam = ((hp / BR_LITE_DIVISOR) > BR_LITE_MAX ? (RES_LITE_ADJ(BR_LITE_MAX, MINIMISE)) : (RES_LITE_ADJ((hp / BR_LITE_DIVISOR), MINIMISE)));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_DARK) {
+		breath_dam = ((hp / BR_DARK_DIVISOR) > BR_DARK_MAX ? (RES_DARK_ADJ(BR_DARK_MAX, MINIMISE)) : (RES_DARK_ADJ((hp / BR_DARK_DIVISOR), MINIMISE)));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_CONF) {
+		breath_dam = ((hp / BR_CONF_DIVISOR) > BR_CONF_MAX ? (RES_CONF_ADJ(BR_CONF_MAX, MINIMISE)) : (RES_CONF_ADJ((hp / BR_CONF_DIVISOR), MINIMISE)));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 20;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_SOUN) {
+		breath_dam = ((hp / BR_SOUN_DIVISOR) > BR_SOUN_MAX ? (RES_SOUN_ADJ(BR_SOUN_MAX, MINIMISE)) : (RES_SOUN_ADJ((hp / BR_SOUN_DIVISOR), MINIMISE)));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 20;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_NEXU) {
+		breath_dam = ((hp / BR_NEXU_DIVISOR) > BR_NEXU_MAX ? (RES_NEXU_ADJ(BR_NEXU_MAX, MINIMISE)) : (RES_NEXU_ADJ((hp / BR_NEXU_DIVISOR), MINIMISE)));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 20;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_TIME) {
+		breath_dam = ((hp / BR_TIME_DIVISOR) > BR_TIME_MAX ? BR_TIME_MAX : (hp / BR_TIME_DIVISOR));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 2000 / (rlev + 1);
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_INER) {
+		breath_dam = ((hp / BR_INER_DIVISOR) > BR_INER_MAX ? BR_INER_MAX : (hp / BR_INER_DIVISOR));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 30;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_GRAV) {
+		breath_dam = ((hp / BR_GRAV_DIVISOR) > BR_GRAV_MAX ? BR_GRAV_MAX : (hp / BR_GRAV_DIVISOR));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 30;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_PLAS) {
+		breath_dam = ((hp / BR_PLAS_DIVISOR) > BR_PLAS_MAX ? BR_PLAS_MAX : (hp / BR_PLAS_DIVISOR));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 30;
+		}
+	if (r_ptr->spell_flags[0] & RSF0_BR_WALL) {
+		breath_dam = ((hp / BR_FORC_DIVISOR) > BR_FORC_MAX ? BR_FORC_MAX : (hp / BR_FORC_DIVISOR));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 30;
+		}
+	/* Handle the attack spells, again assuming minimised single resists for max damage */
+	if ((r_ptr->spell_flags[1] & RSF1_BA_ACID) && spell_dam < (RES_ACID_ADJ(BA_ACID_DMG(rlev, MAXIMISE), MINIMISE) + 20))
+		spell_dam = (RES_ACID_ADJ(BA_ACID_DMG(rlev, MAXIMISE), MINIMISE) + 20);
+	if ((r_ptr->spell_flags[1] & RSF1_BA_ELEC) && spell_dam < (RES_ELEC_ADJ(BA_ELEC_DMG(rlev, MAXIMISE), MINIMISE) + 10))
+		spell_dam = (RES_ELEC_ADJ(BA_ELEC_DMG(rlev, MAXIMISE), MINIMISE) + 10);
+	if ((r_ptr->spell_flags[1] & RSF1_BA_FIRE) && spell_dam < (RES_FIRE_ADJ(BA_FIRE_DMG(rlev, MAXIMISE), MINIMISE) + 10))
+		spell_dam = (RES_FIRE_ADJ(BA_FIRE_DMG(rlev, MAXIMISE), MINIMISE) + 10);
+	if ((r_ptr->spell_flags[1] & RSF1_BA_COLD) && spell_dam < (RES_COLD_ADJ(BA_COLD_DMG(rlev, MAXIMISE), MINIMISE) + 10))
+		spell_dam = (RES_COLD_ADJ(BA_COLD_DMG(rlev, MAXIMISE), MINIMISE) + 10);
 	if ((r_ptr->spell_flags[1] & RSF1_BA_POIS) && spell_dam < 8)
 		spell_dam = 8;
-	if ((r_ptr->spell_flags[1] & RSF1_BA_NETH) && spell_dam < ((rlev + 150) * 6) / 7 + 2000 / (rlev + 1))
-		spell_dam = ((rlev + 150) * 6) / 7 + 2000 / (rlev + 1);
-	if ((r_ptr->spell_flags[1] & RSF1_BA_WATE) && spell_dam < ((rlev * 5) / 2) + 50 + 20)
-		spell_dam = ((rlev * 5) / 2) + 50 + 20;
-	if ((r_ptr->spell_flags[1] & RSF1_BA_MANA) && spell_dam < rlev * 5 + 100)
-		spell_dam = rlev * 5 + 100;
-	if ((r_ptr->spell_flags[1] & RSF1_BA_DARK) && spell_dam < ((rlev * 5 + 100) * 4) / 7 + 10)
-		spell_dam = (rlev * 20 + 400) / 7 + 10;
+	if ((r_ptr->spell_flags[1] & RSF1_BA_NETH) && spell_dam < (RES_NETH_ADJ(BA_NETH_DMG(rlev, MAXIMISE), MINIMISE) + 2000 / (rlev + 1)))
+		spell_dam = (RES_NETH_ADJ(BA_NETH_DMG(rlev, MAXIMISE), MINIMISE) + 2000 / (rlev + 1));
+	if ((r_ptr->spell_flags[1] & RSF1_BA_WATE) && spell_dam < (BA_WATE_DMG(rlev, MAXIMISE) + 20))
+		spell_dam = (BA_WATE_DMG(rlev, MAXIMISE) + 20);
+	if ((r_ptr->spell_flags[1] & RSF1_BA_MANA) && spell_dam < (BA_MANA_DMG(rlev, MAXIMISE) + 100))
+		spell_dam = (BA_MANA_DMG(rlev, MAXIMISE) + 100);
+	if ((r_ptr->spell_flags[1] & RSF1_BA_DARK) && spell_dam < (RES_DARK_ADJ(BA_DARK_DMG(rlev, MAXIMISE), MINIMISE) + 10))
+		spell_dam = (RES_DARK_ADJ(BA_DARK_DMG(rlev, MAXIMISE), MINIMISE) + 10);
 	/* Small annoyance value */
 	if ((r_ptr->spell_flags[1] & RSF1_DRAIN_MANA) && spell_dam < 5)
 		spell_dam = 5;
 	/* For all attack forms the player can save against, spell_damage is halved */
-	if ((r_ptr->spell_flags[1] & RSF1_MIND_BLAST) && spell_dam < 32)
-		spell_dam = 32;
-	if ((r_ptr->spell_flags[1] & RSF1_BRAIN_SMASH) && spell_dam < 90)
-		spell_dam = 90;
-	if ((r_ptr->spell_flags[1] & RSF1_CAUSE_1) && spell_dam < 12)
-		spell_dam = 12;
-	if ((r_ptr->spell_flags[1] & RSF1_CAUSE_2) && spell_dam < 32)
-		spell_dam = 32;
-	if ((r_ptr->spell_flags[1] & RSF1_CAUSE_3) && spell_dam < 75)
-		spell_dam = 75;
-	if ((r_ptr->spell_flags[1] & RSF1_CAUSE_4) && spell_dam < 112)
-		spell_dam = 112;
-	if ((r_ptr->spell_flags[1] & RSF1_BO_ACID) && spell_dam < ((rlev / 3) + 56) / 3 + 20)
-		spell_dam = ((rlev / 3) + 56) / 3 + 20;
-	if ((r_ptr->spell_flags[1] & RSF1_BO_ELEC) && spell_dam < ((rlev / 3) + 32) / 3 + 10)
-		spell_dam = ((rlev / 3) + 32) / 3 + 10;
-	if ((r_ptr->spell_flags[1] & RSF1_BO_FIRE) && spell_dam < ((rlev / 3) + 72) / 3 + 10)
-		spell_dam = ((rlev / 3) + 72) / 3 + 10;
-	if ((r_ptr->spell_flags[1] & RSF1_BO_COLD) && spell_dam < ((rlev / 3) + 48) / 3 + 10)
-		spell_dam = ((rlev / 3) + 48) / 3 + 10;
-	if ((r_ptr->spell_flags[1] & RSF1_BO_NETH) && spell_dam < ((rlev * 18) / 2 + 330) / 7  + 2000 / (rlev + 1))
-		spell_dam = ((rlev * 18) / 2 + 330) / 7;
-	if ((r_ptr->spell_flags[1] & RSF1_BO_WATE) && spell_dam < rlev + 100 + 20)
-		spell_dam = rlev + 100;
-	if ((r_ptr->spell_flags[1] & RSF1_BO_MANA) && spell_dam < (rlev * 7) / 2 + 50)
-		spell_dam = (rlev * 7) / 2 + 50;
-	if ((r_ptr->spell_flags[1] & RSF1_BO_PLAS) && spell_dam < rlev + 66)
-		spell_dam = rlev + 66;
-	if ((r_ptr->spell_flags[1] & RSF1_BO_ICEE) && spell_dam < (rlev + 36) / 3)
-		spell_dam = (rlev + 36) / 3;
-	if ((r_ptr->spell_flags[1] & RSF1_MISSILE) && spell_dam < rlev / 3 + 12)
-		spell_dam = rlev / 3 + 12;
+	if ((r_ptr->spell_flags[1] & RSF1_MIND_BLAST) && spell_dam < (MIND_BLAST_DMG(rlev, MAXIMISE) / 2))
+		spell_dam = (MIND_BLAST_DMG(rlev, MAXIMISE) / 2);
+	if ((r_ptr->spell_flags[1] & RSF1_BRAIN_SMASH) && spell_dam < (BRAIN_SMASH_DMG(rlev, MAXIMISE) / 2))
+		spell_dam = (BRAIN_SMASH_DMG(rlev, MAXIMISE) / 2);
+	if ((r_ptr->spell_flags[1] & RSF1_CAUSE_1) && spell_dam < (CAUSE1_DMG(rlev, MAXIMISE) / 2))
+		spell_dam = (CAUSE1_DMG(rlev, MAXIMISE) / 2);
+	if ((r_ptr->spell_flags[1] & RSF1_CAUSE_2) && spell_dam < (CAUSE2_DMG(rlev, MAXIMISE) / 2))
+		spell_dam = (CAUSE2_DMG(rlev, MAXIMISE) / 2);
+	if ((r_ptr->spell_flags[1] & RSF1_CAUSE_3) && spell_dam < (CAUSE3_DMG(rlev, MAXIMISE) / 2))
+		spell_dam = (CAUSE3_DMG(rlev, MAXIMISE) / 2);
+	if ((r_ptr->spell_flags[1] & RSF1_CAUSE_4) && spell_dam < (CAUSE4_DMG(rlev, MAXIMISE) / 2))
+		spell_dam = (CAUSE4_DMG(rlev, MAXIMISE) / 2);
+	if ((r_ptr->spell_flags[1] & RSF1_BO_ACID) && spell_dam < (RES_ACID_ADJ(BO_ACID_DMG(rlev, MAXIMISE), MINIMISE) + 20))
+		spell_dam = (RES_ACID_ADJ(BO_ACID_DMG(rlev, MAXIMISE), MINIMISE) + 20);
+	if ((r_ptr->spell_flags[1] & RSF1_BO_ELEC) && spell_dam < (RES_ELEC_ADJ(BO_ELEC_DMG(rlev, MAXIMISE), MINIMISE) + 10))
+		spell_dam = (RES_ELEC_ADJ(BO_ELEC_DMG(rlev, MAXIMISE), MINIMISE) + 10);
+	if ((r_ptr->spell_flags[1] & RSF1_BO_FIRE) && spell_dam < (RES_FIRE_ADJ(BO_FIRE_DMG(rlev, MAXIMISE), MINIMISE) + 10))
+		spell_dam = (RES_FIRE_ADJ(BO_FIRE_DMG(rlev, MAXIMISE), MINIMISE) + 10);
+	if ((r_ptr->spell_flags[1] & RSF1_BO_COLD) && spell_dam < (RES_COLD_ADJ(BO_COLD_DMG(rlev, MAXIMISE), MINIMISE) + 10))
+		spell_dam = (RES_COLD_ADJ(BO_COLD_DMG(rlev, MAXIMISE), MINIMISE) + 10);
+	if ((r_ptr->spell_flags[1] & RSF1_BO_NETH) && spell_dam < (RES_NETH_ADJ(BO_NETH_DMG(rlev, MAXIMISE), MINIMISE) + 2000 / (rlev + 1)))
+		spell_dam = (RES_NETH_ADJ(BO_NETH_DMG(rlev, MAXIMISE), MINIMISE) + 2000 / (rlev + 1));
+	if ((r_ptr->spell_flags[1] & RSF1_BO_WATE) && spell_dam < (BO_WATE_DMG(rlev, MAXIMISE) + 20))
+		spell_dam = (BO_WATE_DMG(rlev, MAXIMISE) + 20);
+	if ((r_ptr->spell_flags[1] & RSF1_BO_MANA) && spell_dam < (BO_MANA_DMG(rlev, MAXIMISE)))
+		spell_dam = (BO_MANA_DMG(rlev, MAXIMISE));
+	if ((r_ptr->spell_flags[1] & RSF1_BO_PLAS) && spell_dam < (BO_PLAS_DMG(rlev, MAXIMISE)))
+		spell_dam = (BO_PLAS_DMG(rlev, MAXIMISE));
+	if ((r_ptr->spell_flags[1] & RSF1_BO_ICEE) && spell_dam < (RES_COLD_ADJ(BO_ICEE_DMG(rlev, MAXIMISE), MINIMISE)))
+		spell_dam = (RES_COLD_ADJ(BO_ICEE_DMG(rlev, MAXIMISE), MINIMISE));
+	if ((r_ptr->spell_flags[1] & RSF1_MISSILE) && spell_dam < (MISSILE_DMG(rlev, MAXIMISE)))
+		spell_dam = (MISSILE_DMG(rlev, MAXIMISE));
 	/* Small annoyance value */
 	if ((r_ptr->spell_flags[1] & RSF1_SCARE) && spell_dam < 5)
 		spell_dam = 5;
@@ -4257,7 +4322,6 @@ for (iteration = 0; iteration < 3; iteration ++)
 	return(0);
 }
 
-#endif /* ALLOW_TEMPLATES_PROCESS */
 
 #ifdef ALLOW_TEMPLATES_OUTPUT
 
