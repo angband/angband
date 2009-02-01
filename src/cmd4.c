@@ -171,6 +171,7 @@ static struct
 	{ "W",		"Wights/Wraiths" },
 	{ "w",		"Worms/Worm Masses" },
 	{ "X",		"Xorns/Xarens" },
+	{ "y",		"Yeeks" },
 	{ "Y",		"Yeti" },
 	{ "Z",		"Zephyr Hounds" },
 	{ "z",		"Zombies" },
