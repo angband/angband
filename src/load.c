@@ -552,7 +552,7 @@ static int rd_messages(void)
 
 
 
-int rd_monster_memory(void)
+static int rd_monster_memory(void)
 {
 	int r_idx;
 	u16b tmp16u;
@@ -622,7 +622,7 @@ int rd_monster_memory(void)
 }
 
 
-int rd_object_memory(void)
+static int rd_object_memory(void)
 {
 	int i;
 	u16b tmp16u;
@@ -655,7 +655,7 @@ int rd_object_memory(void)
 }
 
 
-int rd_quests(void)
+static int rd_quests(void)
 {
 	int i;
 	u16b tmp16u;
@@ -686,7 +686,7 @@ int rd_quests(void)
 }
 
 
-int rd_artifacts(void)
+static int rd_artifacts(void)
 {
 	int i;
 	u16b tmp16u;
@@ -1245,9 +1245,7 @@ static errr rd_inventory(void)
 }
 
 
-
-
-int rd_stores(void)
+static int rd_stores(void)
 {
 	int i;
 	u16b tmp16u;
@@ -1661,7 +1659,7 @@ static void rd_ghost(void)
 }
 
 
-void rd_history(void)
+static void rd_history(void)
 {
 	u32b tmp32u;
 	size_t i;

@@ -254,7 +254,7 @@ static void wr_options(void)
 }
 
 
-void wr_messages(void)
+static void wr_messages(void)
 {
 	s16b i;
 	u16b num;
@@ -272,7 +272,7 @@ void wr_messages(void)
 }
 
 
-void wr_monster_memory(void)
+static void wr_monster_memory(void)
 {
 	int i, r_idx;
 	
@@ -321,7 +321,7 @@ void wr_monster_memory(void)
 }
 
 
-void wr_object_memory(void)
+static void wr_object_memory(void)
 {
 	int k_idx;
 	
@@ -341,7 +341,7 @@ void wr_object_memory(void)
 }
 
 
-void wr_quests(void)
+static void wr_quests(void)
 {
 	int i;
 	u16b tmp16u;
@@ -359,7 +359,7 @@ void wr_quests(void)
 }
 
 
-void wr_artifacts(void)
+static void wr_artifacts(void)
 {
 	int i;
 	u16b tmp16u;
@@ -603,7 +603,7 @@ static void wr_randarts(void)
 }
 
 
-void wr_inventory(void)
+static void wr_inventory(void)
 {
 	int i;
 	
@@ -627,7 +627,7 @@ void wr_inventory(void)
 }
 
 
-void wr_stores(void)
+static void wr_stores(void)
 {
 	int i;
 	
@@ -877,9 +877,9 @@ static void wr_ghost(void)
 }
 
 
-void wr_history(void)
+static void wr_history(void)
 {
-	int i;
+	size_t i;
 	u32b tmp32u = history_get_num();
 
 	wr_u32b(tmp32u);

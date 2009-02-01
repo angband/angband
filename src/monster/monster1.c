@@ -410,6 +410,8 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr)
 	u32b f1, f2, f3;
 	bool known;
 
+	int msex = 0;
+
 	int color_special[RBE_MAX+1];
 	player_state st;
 
@@ -543,8 +545,6 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr)
 
 	/* Shatter is always dangerous */
 	color_special[RBE_SHATTER] = TERM_YELLOW;
-
-	int msex = 0;
 
 	/* Extract a gender (if applicable) */
 	if (r_ptr->flags[0] & RF0_FEMALE) msex = 2;

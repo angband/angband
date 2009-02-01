@@ -767,9 +767,6 @@ bool get_rep_dir(int *dp)
 	/* Clear the prompt */
 	prt("", 0, 0);
 
-	/* Aborted */
-	if (!dir) return (FALSE);
-
 	/* Save desired direction */
 	p_ptr->command_dir = dir;
 

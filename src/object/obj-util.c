@@ -3053,9 +3053,6 @@ void reorder_pack(void)
 	/* Re-order the pack (forwards) */
 	for (i = 0; i < INVEN_PACK; i++)
 	{
-		/* Mega-Hack -- allow "proper" over-flow */
-		if ((i == INVEN_PACK) && (p_ptr->inven_cnt == INVEN_PACK)) break;
-
 		/* Get the item */
 		o_ptr = &inventory[i];
 

@@ -49,9 +49,6 @@ static size_t history_size;
  */
 static void history_init(size_t entries)
 {
-	if (history_list)
-		FREE(history_list);
-
 	history_ctr = 0;
 	history_size = entries;
 	history_list = C_ZNEW(history_size, history_info);

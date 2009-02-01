@@ -127,11 +127,9 @@ static void init_stuff(void)
 {
 	char path[1024];
 
-	cptr tail = NULL;
-
 
 	/* Use the angband_path, or a default */
-	my_strcpy(path, tail ? tail : DEFAULT_PATH, sizeof(path));
+	my_strcpy(path, DEFAULT_PATH, sizeof(path));
 
 	/* Make sure it's terminated */
 	path[511] = '\0';

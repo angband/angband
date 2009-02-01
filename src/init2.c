@@ -1462,18 +1462,22 @@ bool init_angband(void)
 		game_command command_req = get_game_command();
 
 		if (command_req.command == CMD_QUIT)
+		{
 			quit(NULL);
-
+		}
 		else if (command_req.command == CMD_NEWGAME)
+		{
+			event_signal(EVENT_LEAVE_INIT);
 			return TRUE;
-
+		}
 		else if (command_req.command == CMD_LOADFILE)
+		{
+			event_signal(EVENT_LEAVE_INIT);
 			/* In future we might want to pass back or set the savefile
 			   path here. */
 			return FALSE;
+		}
 	}
-
-	event_signal(EVENT_LEAVE_INIT);
 }
 
 

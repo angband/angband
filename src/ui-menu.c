@@ -398,7 +398,8 @@ static bool handle_menu_key(char cmd, menu_type *menu, int cursor)
 	if (flags & MN_NO_ACT) return FALSE;
 
 	if (cmd == ESCAPE) return FALSE;
-	if (!cmd == '\xff' && (!menu->cmd_keys || !strchr(menu->cmd_keys, cmd)))
+	if (!(cmd == '\xff') &&
+			(!menu->cmd_keys || !strchr(menu->cmd_keys, cmd)))
 		return FALSE;
 
 	if (menu->row_funcs->row_handler &&

@@ -110,7 +110,7 @@ void object_notice_flag(int flagset, u32b flag)
 /**
  * Notice things about an object that would be noticed in time.
  */
-void object_notice_after_time(void)
+static void object_notice_after_time(void)
 {
 	/* Notice: */
 	/* SLOW_DIGEST, REGEN, IMPAIR_HP, IMPAIR_SP, AGGRAVATE, STEALTH */

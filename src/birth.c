@@ -558,18 +558,8 @@ static void wield_all(void)
 		i_ptr->number = 1;
 
 		/* Decrease the item (from the pack) */
-		if (item >= 0)
-		{
-			inven_item_increase(item, -1);
-			inven_item_optimize(item);
-		}
-
-		/* Decrease the item (from the floor) */
-		else
-		{
-			floor_item_increase(0 - item, -1);
-			floor_item_optimize(0 - item);
-		}
+		inven_item_increase(item, -1);
+		inven_item_optimize(item);
 
 		/* Get the wield slot */
 		o_ptr = &inventory[slot];

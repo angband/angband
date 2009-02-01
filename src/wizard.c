@@ -1500,7 +1500,7 @@ static void wiz_test_kind(int tval)
 /*
  * Display the debug commands help file.
  */
-void do_cmd_wiz_help(void) 
+static void do_cmd_wiz_help(void) 
 {
 	char buf[80];
 	strnfmt(buf, sizeof(buf), "debug.txt");

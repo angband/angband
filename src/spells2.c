@@ -1177,7 +1177,6 @@ bool detect_treasure(bool aware)
 	int x1, x2, y1, y2;
 
 	bool gold_buried = FALSE;
-	bool gold_object = FALSE;
 	bool objects = FALSE;
 
 
@@ -1251,19 +1250,16 @@ bool detect_treasure(bool aware)
 			objects = TRUE;
 	}
 
-	if (gold_object)
-		msg_print("You sense the presence of treasure!");
-
 	if (gold_buried)
 		msg_print("You sense the presence of buried treasure!");
 
 	if (objects)
 		msg_print("You sense the presence of objects!");
 
-	if (aware && !gold_object && !gold_buried && !objects)
+	if (aware && !gold_buried && !objects)
 		msg_print("You sense no treasure or objects.");
 
-	return (gold_object || gold_buried || objects);
+	return gold_buried || objects;
 }
 
 

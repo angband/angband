@@ -3194,14 +3194,9 @@ errr parse_b_info(char *buf, header *head)
 		owner_idx++;
 		return 0;
 	}
-	else
-	{
-		/* Oops */
-		return (PARSE_ERROR_UNDEFINED_DIRECTIVE);
-	}
 
-	/* Success */
-	return (0);
+	/* Oops */
+	return (PARSE_ERROR_UNDEFINED_DIRECTIVE);
 }
 
 

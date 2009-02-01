@@ -1149,7 +1149,7 @@ bool make_attack_spell(int m_idx)
 
 			if (blind) msg_format("You hear something grunt with exertion.", m_name);
 			else if (hits) msg_format("%^s hurls a boulder at you!", m_name);
-			else if (hits) msg_format("%^s hurls a boulder at you, but misses.", m_name);
+			else msg_format("%^s hurls a boulder at you, but misses.", m_name);
 
 			/* dam -= (dam * ((p_ptr->state.ac < 150) ? p_ptr->state.ac : 150) / 250); */
 			if (hits) bolt(m_idx, GF_ARROW, dam);

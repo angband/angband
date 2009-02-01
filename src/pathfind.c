@@ -101,13 +101,6 @@ bool findpath(int y, int x)
 		return (FALSE);
 	}
 
-	if (terrain[y - oy][x - ox] == -1)
-	{
-		bell("Target space forbidden");
-		return (FALSE);
-	}
-
-
 	/* 
 	 * And now starts the very naive and very 
 	 * inefficient pathfinding algorithm

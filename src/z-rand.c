@@ -375,9 +375,7 @@ int damroll(int num, int sides)
 int rand_range(int A, int B)
 {
 	if (A == B) return A;
-
 	assert(A < B);
-	assert(B > A);
 
 	return A + (s32b)Rand_div(1 + B - A);
 }
