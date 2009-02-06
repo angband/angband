@@ -34,7 +34,6 @@ than (e.g.) redistributing Adam Bolt's tiles under the GPL, or choosing to make
 a variant which is only under one of the Angband or GPL licences.  This allows
 easier sharing of changes between variants.
 
-
 ------------------------------------------------------------------------------
 
 The Angband Licence is:
