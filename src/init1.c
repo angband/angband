@@ -3427,12 +3427,6 @@ errr eval_info(eval_info_power_func eval_info_process, header *head)
 
 
 /*
- * Total monster power
- */
-static s32b tot_mon_power;
-
-
-/*
  * Damage calculation - we want max damage for power evaluation,
  * but random damage for combat. See full explanation in monster/constants.h
  */

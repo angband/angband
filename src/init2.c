@@ -731,6 +731,12 @@ static errr init_r_info(void)
 	r_info = r_head.info_ptr;
 	r_name = r_head.name_ptr;
 	r_text = r_head.text_ptr;
+	tot_mon_power = 0;
+	int i;
+	for (i = 0; i < z_info->r_max; i++) 
+	{
+		tot_mon_power += r_info[i].power;
+	} 
 
 	return (err);
 }
@@ -1384,10 +1390,6 @@ bool init_angband(void)
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (objects)");
 	if (init_k_info()) quit("Cannot initialize objects");
 
-	/* Initialize artifact info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (artifacts)");
-	if (init_a_info()) quit("Cannot initialize artifacts");
-
 	/* Initialize ego-item info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (ego-items");
 	if (init_e_info()) quit("Cannot initialize ego-items");
@@ -1395,6 +1397,10 @@ bool init_angband(void)
 	/* Initialize monster info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monsters)");
 	if (init_r_info()) quit("Cannot initialize monsters");
+
+	/* Initialize artifact info */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (artifacts)");
+	if (init_a_info()) quit("Cannot initialize artifacts");
 
 	/* Initialize feature info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (vaults)");

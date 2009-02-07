@@ -147,6 +147,7 @@ extern byte (*cave_when)[DUNGEON_WID];
 extern maxima *z_info;
 extern object_type *o_list;
 extern monster_type *mon_list;
+extern s32b tot_mon_power;
 extern monster_lore *l_list;
 extern quest *q_list;
 extern store_type *store;

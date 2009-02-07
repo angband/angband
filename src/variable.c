@@ -446,6 +446,10 @@ object_type *o_list;
  */
 monster_type *mon_list;
 
+/*
+ * Total monster power
+ */
+s32b tot_mon_power;
 
 /*
  * Array[z_info->r_max] of monster lore
