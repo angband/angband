@@ -162,6 +162,33 @@ static const flag_type f3_misc[] =
 	{ TR3_TELEPORT, "Induces random teleportation" },
 };
 
+static const flag_type f1_slay[] =
+{
+	{ TR1_SLAY_ANIMAL, "animals" },
+	{ TR1_SLAY_EVIL, "evil creatures" },
+	{ TR1_SLAY_ORC, "orcs" },
+	{ TR1_SLAY_TROLL, "trolls" },
+	{ TR1_SLAY_GIANT, "giants" },
+	{ TR1_SLAY_DRAGON, "dragons" },
+	{ TR1_SLAY_DEMON, "demons" },
+	{ TR1_SLAY_UNDEAD, "undead" },
+};
+
+static const flag_type f1_brand[] =
+{
+	{ TR1_BRAND_ACID, "acid" },
+	{ TR1_BRAND_ELEC, "lightning" },
+	{ TR1_BRAND_FIRE, "flames" },
+	{ TR1_BRAND_COLD, "frost" },
+	{ TR1_BRAND_POIS, "venom" },
+};
+
+static const flag_type f1_kill[] =
+{
+	{ TR1_KILL_DRAGON, "dragons" },
+	{ TR1_KILL_DEMON, "demons" },
+	{ TR1_KILL_UNDEAD, "undead" },
+};
 
 /*** Code that makes use of the data tables ***/
 
@@ -287,12 +314,45 @@ static bool describe_misc_magic(u32b f3)
 }
 
 
+/*
+ * Describe slays and brands on weapons
+ */
 
+static bool describe_slays(u32b f1)
+{
+	const char *descs[N_ELEMENTS(f1_slay)];
+	size_t count;
 
+	bool printed = FALSE;
 
+	/* Slays */
+	count = info_collect(f1_slay, N_ELEMENTS(f1_slay), f1, descs);
+	if (count)
+	{
+		text_out("It is especially deadly to ");
+		info_out_list(descs, count);
+		printed = TRUE;
+	}
 
+	/* Kills */
+	count = info_collect(f1_kill, N_ELEMENTS(f1_kill), f1, descs);
+	if (count)
+	{
+		text_out("It is a great bane of ");
+		info_out_list(descs, count);
+		printed = TRUE;
+	}
 
-
+	/* Brands */
+	count = info_collect(f1_brand, N_ELEMENTS(f1_brand), f1, descs);
+	if (count)
+	{
+		text_out("It is branded with ");
+		info_out_list(descs, count);
+		printed = TRUE;
+	}
+	return printed;
+}
 
 
 
@@ -326,6 +386,7 @@ static int collect_slays(const char *desc[], int mult[], u32b f1)
 
 	return cnt;
 }
+
 
 
 /*
@@ -802,6 +863,7 @@ static bool object_info_out(const object_type *o_ptr, bool full)
 	}
 
 	if (describe_stats(f1, o_ptr->pval)) something = TRUE;
+	if (describe_slays(f1)) something = TRUE;
 	if (describe_immune(f2)) something = TRUE;
 	if (describe_ignores(f3)) something = TRUE;
 	if (describe_sustains(f2)) something = TRUE;

@@ -514,9 +514,11 @@ static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, si
 	return end;
 }
 
-static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max, size_t end)
+static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max, 
+		size_t end, bool spoil)
 {
-	bool known = object_known_p(o_ptr) || (o_ptr->ident & IDENT_STORE);
+	bool known = object_known_p(o_ptr) || (o_ptr->ident & IDENT_STORE) 
+		|| spoil;
 
 	/* Dump base weapon info */
 	switch (o_ptr->tval)
@@ -718,10 +720,11 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
+	bool spoil = (mode & ODESC_SPOIL);
 	bool aware = object_aware_p(o_ptr) ||
-			(o_ptr->ident & IDENT_STORE) || (mode & ODESC_SPOIL);
+			(o_ptr->ident & IDENT_STORE) || spoil;
 	bool known = object_known_p(o_ptr) ||
-			(o_ptr->ident & IDENT_STORE) || (mode & ODESC_SPOIL);
+			(o_ptr->ident & IDENT_STORE) || spoil;
 
 	size_t end = 0;
 
@@ -757,7 +760,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 	/* Copy the base name to the buffer */
 	end = obj_desc_name(buf, max, end, o_ptr, prefix,
 			mode & ODESC_PLURAL ? TRUE : FALSE,
-			mode & ODESC_SPOIL ? TRUE : FALSE);
+			spoil);
 
 	if (mode & ODESC_COMBAT)
 	{
@@ -766,7 +769,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 		else if (o_ptr->tval == TV_LITE)
 			end = obj_desc_light(o_ptr, buf, max, end);
 
-		end = obj_desc_combat(o_ptr, buf, max, end);
+		end = obj_desc_combat(o_ptr, buf, max, end, spoil);
 	}
 
 	if (mode & ODESC_EXTRA)

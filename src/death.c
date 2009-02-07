@@ -18,7 +18,7 @@
 #include "angband.h"
 #include "ui-menu.h"
 #include "cmds.h"
-
+#include "wizard.h"
 
 /*
  * Hack - save the time of death
@@ -374,9 +374,20 @@ static void death_history(void *unused, const char *title)
 	history_display();
 }
 
+/*
+ * Menu command: allow spoiler generation (mainly for randarts).
+ */
+static void death_spoilers(void *unused, const char *title)
+{
+	(void)unused;
+	(void)title;
+
+	do_cmd_spoilers();
+}
 
 /*
- * Menu structures for the death menu.
+ * Menu structures for the death menu. Note that Quit must always be the
+ * last option, due to a hard-coded check in death_screen
  */
 static menu_type death_menu;
 static menu_action death_actions[] =
@@ -387,6 +398,7 @@ static menu_action death_actions[] =
 	{ 'v', "View scores",   death_scores,   NULL },
 	{ 'x', "Examine items", death_examine,  NULL },
 	{ 'h', "History",       death_history,  NULL },
+	{ 's', "Spoilers",	death_spoilers,	NULL },
 	{ 'q', "Quit",          death_examine,  NULL },
 };
 
@@ -424,7 +436,6 @@ void death_screen(void)
 {
 	menu_type *menu;
 	const char cmd_keys[] = { ARROW_LEFT, ARROW_RIGHT, '\0' };
-	const region area = { 51, 2, 0, 7 };
 
 	int cursor = 0;
 	ui_event_data c = EVENT_EMPTY;
@@ -467,6 +478,7 @@ void death_screen(void)
 	menu->flags = MN_CASELESS_TAGS;
 	menu->cmd_keys = cmd_keys;
 	menu->count = N_ELEMENTS(death_actions);
+	const region area = { 51, 2, 0, menu->count };
 
 	menu_init(menu, MN_SKIN_SCROLL, &death_iter, &area);
 
@@ -474,7 +486,7 @@ void death_screen(void)
 	{
 		c = menu_select(&death_menu, &cursor, 0);
 
-		if (c.key == ESCAPE || cursor == 6)
+		if (c.key == ESCAPE || cursor == (menu->count -1))
 		{
 			if (get_check("Do you want to quit? "))
 				break;
