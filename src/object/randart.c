@@ -1366,7 +1366,7 @@ static s16b choose_item(int a_idx)
 		break;
 
 	case TV_SHIELD:
-		if (r2 < 15) sval = sval = SV_WICKER_SHIELD;
+		if (r2 < 15) sval = SV_WICKER_SHIELD;
 		else if (r2 < 40) sval = SV_SMALL_METAL_SHIELD;
 		else if (r2 < 70) sval = SV_LEATHER_SHIELD;
 		else if (r2 < 95) sval = SV_LARGE_METAL_SHIELD;
