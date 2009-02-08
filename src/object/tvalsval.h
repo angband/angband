@@ -188,7 +188,7 @@ enum sval_crown /* tval 33 */
 
 enum sval_shield /* tval 34 */
 {
-	SV_BUCKLER = 1,
+/*	SV_BUCKLER = 1, */
 	SV_WICKER_SHIELD = 2,
 	SV_SMALL_METAL_SHIELD = 3,
 	SV_LEATHER_SHIELD = 4,

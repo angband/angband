@@ -20,20 +20,21 @@
 #include "object/tvalsval.h"
 #include "init.h"
 #include "randname.h"
+#include "z-file.h"
 
 #define LOG_PRINT(string) \
 	do { if (randart_verbose) \
-		fprintf(randart_log, (string)); \
+		file_putf(randart_log, (string)); \
 	} while (0);
 
 #define LOG_PRINT1(string, value) \
 	do { if (randart_verbose) \
-		fprintf(randart_log, (string), (value)); \
+		file_putf(randart_log, (string), (value)); \
 	} while (0);
 
 #define LOG_PRINT2(string, val1, val2) \
 	do { if (randart_verbose) \
-		fprintf(randart_log, (string), (val1), (val2)); \
+		file_putf(randart_log, (string), (val1), (val2)); \
 	} while (0);
 
 /*
@@ -285,7 +286,7 @@ static s16b mean_ac_increment = 5;
  * Pointer for logging file
  */
 
-static FILE *randart_log;
+static ang_file *randart_log = NULL;
 
 /*
  * Cache the results of lookup_kind(), which is expensive and would
@@ -530,31 +531,31 @@ static s32b slay_power(int a_idx)
 	if (randart_verbose)
 	{
 		/* Write info about the slay combination and multiplier */
-		fprintf(randart_log,"Slay multiplier for:");
+		file_putf(randart_log,"Slay multiplier for:");
 
-		if (a_ptr->flags1 & TR1_SLAY_EVIL) fprintf(randart_log,"Evl ");
-		if (a_ptr->flags1 & TR1_KILL_DRAGON) fprintf(randart_log,"XDr ");
-		if (a_ptr->flags1 & TR1_KILL_DEMON) fprintf(randart_log,"XDm ");
-		if (a_ptr->flags1 & TR1_KILL_UNDEAD) fprintf(randart_log,"XUn ");
-		if (a_ptr->flags1 & TR1_SLAY_ANIMAL) fprintf(randart_log,"Ani ");
-		if (a_ptr->flags1 & TR1_SLAY_UNDEAD) fprintf(randart_log,"Und ");
-		if (a_ptr->flags1 & TR1_SLAY_DRAGON) fprintf(randart_log,"Drg ");
-		if (a_ptr->flags1 & TR1_SLAY_DEMON) fprintf(randart_log,"Dmn ");
-		if (a_ptr->flags1 & TR1_SLAY_TROLL) fprintf(randart_log,"Tro ");
-		if (a_ptr->flags1 & TR1_SLAY_ORC) fprintf(randart_log,"Orc ");
-		if (a_ptr->flags1 & TR1_SLAY_GIANT) fprintf(randart_log,"Gia ");
+		if (a_ptr->flags1 & TR1_SLAY_EVIL) file_putf(randart_log,"Evl ");
+		if (a_ptr->flags1 & TR1_KILL_DRAGON) file_putf(randart_log,"XDr ");
+		if (a_ptr->flags1 & TR1_KILL_DEMON) file_putf(randart_log,"XDm ");
+		if (a_ptr->flags1 & TR1_KILL_UNDEAD) file_putf(randart_log,"XUn ");
+		if (a_ptr->flags1 & TR1_SLAY_ANIMAL) file_putf(randart_log,"Ani ");
+		if (a_ptr->flags1 & TR1_SLAY_UNDEAD) file_putf(randart_log,"Und ");
+		if (a_ptr->flags1 & TR1_SLAY_DRAGON) file_putf(randart_log,"Drg ");
+		if (a_ptr->flags1 & TR1_SLAY_DEMON) file_putf(randart_log,"Dmn ");
+		if (a_ptr->flags1 & TR1_SLAY_TROLL) file_putf(randart_log,"Tro ");
+		if (a_ptr->flags1 & TR1_SLAY_ORC) file_putf(randart_log,"Orc ");
+		if (a_ptr->flags1 & TR1_SLAY_GIANT) file_putf(randart_log,"Gia ");
 
-		if (a_ptr->flags1 & TR1_BRAND_ACID) fprintf(randart_log,"Acd ");
-		if (a_ptr->flags1 & TR1_BRAND_ELEC) fprintf(randart_log,"Elc ");
-		if (a_ptr->flags1 & TR1_BRAND_FIRE) fprintf(randart_log,"Fir ");
-		if (a_ptr->flags1 & TR1_BRAND_COLD) fprintf(randart_log,"Cld ");
-		if (a_ptr->flags1 & TR1_BRAND_POIS) fprintf(randart_log,"Poi ");
+		if (a_ptr->flags1 & TR1_BRAND_ACID) file_putf(randart_log,"Acd ");
+		if (a_ptr->flags1 & TR1_BRAND_ELEC) file_putf(randart_log,"Elc ");
+		if (a_ptr->flags1 & TR1_BRAND_FIRE) file_putf(randart_log,"Fir ");
+		if (a_ptr->flags1 & TR1_BRAND_COLD) file_putf(randart_log,"Cld ");
+		if (a_ptr->flags1 & TR1_BRAND_POIS) file_putf(randart_log,"Poi ");
 
-		fprintf(randart_log,"sv is: %d\n", sv);
-		fprintf(randart_log," and t_m_p is: %d \n", tot_mon_power);
+		file_putf(randart_log,"sv is: %d\n", sv);
+		file_putf(randart_log," and t_m_p is: %d \n", tot_mon_power);
 
-		fprintf(randart_log,"times 1000 is: %d\n", (1000 * sv) / tot_mon_power);
-		fflush(randart_log);
+		file_putf(randart_log,"times 1000 is: %d\n", (1000 * sv) / tot_mon_power);
+/*		fflush(randart_log); */
 	}
 
 	/* Add to the cache */
@@ -1059,22 +1060,22 @@ static s32b artifact_power(int a_idx)
 	}
 	if (a_ptr->flags3 & TR3_DRAIN_EXP)
 	{
-		p -= 20;
+		p -= 15;
 		LOG_PRINT1("Subtracting power for drain experience, total is %d\n", p);
 	}
 	if (a_ptr->flags3 & TR3_AGGRAVATE)
 	{
-		p -= 15;
+		p -= 30;
 		LOG_PRINT1("Subtracting power for aggravation, total is %d\n", p);
 	}
 	if (a_ptr->flags3 & TR3_LIGHT_CURSE)
 	{
-		p -= 1;
+		p -= 3;
 		LOG_PRINT1("Subtracting power for light curse, total is %d\n", p);
 	}
 	if (a_ptr->flags3 & TR3_HEAVY_CURSE)
 	{
-		p -= 4;
+		p -= 10;
 		LOG_PRINT1("Subtracting power for heavy curse, total is %d\n", p);
 	}
 
@@ -1365,9 +1366,8 @@ static s16b choose_item(int a_idx)
 		break;
 
 	case TV_SHIELD:
-		if (r2 < 9) sval = SV_BUCKLER;
-		else if (r2 < 20) sval = SV_WICKER_SHIELD;
-		else if (r2 < 45) sval = SV_SMALL_METAL_SHIELD;
+		if (r2 < 15) sval = sval = SV_WICKER_SHIELD;
+		else if (r2 < 40) sval = SV_SMALL_METAL_SHIELD;
 		else if (r2 < 70) sval = SV_LEATHER_SHIELD;
 		else if (r2 < 95) sval = SV_LARGE_METAL_SHIELD;
 		else sval = SV_MITHRIL_SHIELD;
@@ -1380,11 +1380,13 @@ static s16b choose_item(int a_idx)
 		else sval = SV_ETHEREAL_CLOAK;
 		break;
 	}
-
+/* CC debug hacks */
+	LOG_PRINT2("tval is %d, sval is %d\n", tval, sval);
 	k_idx = lookup_kind(tval, sval);
 	k_ptr = &k_info[k_idx];
 	kinds[a_idx] = k_idx;
-
+	LOG_PRINT2("k_idx is %d, k_ptr->alloc_prob is %d\n", k_idx, k_ptr->alloc_prob);
+/* CC end */
 	a_ptr->tval = k_ptr->tval;
 	a_ptr->sval = k_ptr->sval;
 	a_ptr->pval = k_ptr->pval;
@@ -2448,7 +2450,7 @@ static void parse_frequencies(void)
 	/* Print out some of the abilities, to make sure that everything's fine */
 		for(i=0; i<ART_IDX_TOTAL; i++)
 		{
-			fprintf(randart_log, "Frequency of ability %d: %d\n", i, artprobs[i]);
+			file_putf(randart_log, "Frequency of ability %d: %d\n", i, artprobs[i]);
 		}
 	}
 
@@ -3963,7 +3965,12 @@ static void scramble_artifact(int a_idx)
 			 * to preserve the 'effective rarity' which is equal to the
 			 * artifact rarity multiplied by the base item rarity.
 			 */
+
+/* CC bugfix hacking */
+			LOG_PRINT2("rarity old is %d, base is %d\n", rarity_old, base_rarity_old);
 			k_ptr = &k_info[k_idx];
+			LOG_PRINT1("k_ptr->alloc_prob is %d\n", k_ptr->alloc_prob);
+/* end CC */
 			rarity_new = ( (s16b) rarity_old * (s16b) base_rarity_old ) /
 			             (s16b) k_ptr->alloc_prob;
 
@@ -4256,9 +4263,13 @@ errr do_randart(u32b randart_seed, bool full)
 		/* Open the log file for writing */
 		if (randart_verbose)
 		{
-			if ((randart_log = fopen("randart.log", "w")) == NULL)
+			char buf[1024];
+			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, 
+				"randart.log");
+			randart_log = file_open(buf, MODE_WRITE, FTYPE_TEXT);
+			if (!randart_log)
 			{
-				msg_format("Error - can't open randart.log for writing.");
+				msg_print("Error - can't open randart.log for writing.");
 				exit(1);
 			}
 		}
@@ -4284,9 +4295,9 @@ errr do_randart(u32b randart_seed, bool full)
 		/* Close the log file */
 		if (randart_verbose)
 		{
-			if (fclose(randart_log) != 0)
+			if (!file_close(randart_log))
 			{
-				msg_format("Error - can't close randart.log file.");
+				msg_print("Error - can't close randart.log file.");
 				exit(1);
 			}
 		}
