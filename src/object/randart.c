@@ -4095,6 +4095,7 @@ static void scramble_artifact(int a_idx)
 
 	/* Restore some flags */
 	if (activates) a_ptr->flags3 |= TR3_ACTIVATE;
+	if (a_ptr->tval == TV_LITE) a_ptr->flags3 |= TR3_NO_FUEL;
 	if (a_idx < ART_MIN_NORMAL) a_ptr->flags3 |= TR3_INSTA_ART;
 
 	/*
