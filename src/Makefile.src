@@ -76,6 +76,7 @@ ANGFILES = \
 	init1.o \
 	init2.o \
 	load.o \
+	load-old.o \
 	monster/melee1.o \
 	monster/melee2.o \
 	monster/monster1.o \

@@ -1,6 +1,9 @@
 #ifndef INCLUDED_SAVEFILE_H
 #define INCLUDED_SAVEFILE_H
 
+/* load-old.c */
+int rd_savefile_old(void);
+
 /* savefile.c */
 typedef struct
 {
@@ -15,6 +18,10 @@ typedef struct
 extern savefile_block_t savefile_blocks[N_SAVEFILE_BLOCKS];
 
 
+/* Utility */
+void note(cptr msg);
+bool older_than(int x, int y, int z);
+
 /* Writing bits */
 void wr_byte(byte v);
 void wr_u16b(u16b v);
@@ -22,6 +29,15 @@ void wr_s16b(s16b v);
 void wr_u32b(u32b v);
 void wr_s32b(s32b v);
 void wr_string(cptr str);
+
+/* Reading bits */
+void rd_byte(byte *ip);
+void rd_u16b(u16b *ip);
+void rd_s16b(s16b *ip);
+void rd_u32b(u32b *ip);
+void rd_s32b(s32b *ip);
+void rd_string(char *str, int max);
+void strip_bytes(int n);
 
 
 

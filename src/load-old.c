@@ -17,7 +17,8 @@
  */
 #include "angband.h"
 #include "object/tvalsval.h"
-#include "savefile.h"
+
+
 
 
 static ang_file *fff;
@@ -379,7 +380,7 @@ static int rd_item(object_type *o_ptr)
 /*
  * Read RNG state
  */
-int rd_randomizer(void)
+static int rd_randomizer(void)
 {
 	int i;
 
@@ -418,7 +419,7 @@ int rd_randomizer(void)
  * The window options are stored in the same way, but note that each
  * window gets 32 options, and their order is fixed by certain defines.
  */
-int rd_options(void)
+static int rd_options(void)
 {
 	int i, n;
 
@@ -523,7 +524,7 @@ int rd_options(void)
 /*
  * Read the saved messages
  */
-int rd_messages(void)
+static int rd_messages(void)
 {
 	int i;
 	char buf[128];
@@ -552,7 +553,7 @@ int rd_messages(void)
 
 
 
-int rd_monster_memory(void)
+static int rd_monster_memory(void)
 {
 	int r_idx;
 	u16b tmp16u;
@@ -622,7 +623,7 @@ int rd_monster_memory(void)
 }
 
 
-int rd_object_memory(void)
+static int rd_object_memory(void)
 {
 	int i;
 	u16b tmp16u;
@@ -655,7 +656,7 @@ int rd_object_memory(void)
 }
 
 
-int rd_quests(void)
+static int rd_quests(void)
 {
 	int i;
 	u16b tmp16u;
@@ -686,7 +687,7 @@ int rd_quests(void)
 }
 
 
-int rd_artifacts(void)
+static int rd_artifacts(void)
 {
 	int i;
 	u16b tmp16u;
@@ -723,7 +724,7 @@ static u32b randart_version;
 /*
  * Read the "extra" information
  */
-int rd_player(void)
+static int rd_player(void)
 {
 	int i;
 
@@ -863,7 +864,7 @@ int rd_player(void)
 /*
  * Read squelch and autoinscription submenu for all known objects
  */
-int rd_squelch(void)
+static int rd_squelch(void)
 {
 	int i;
 	byte tmp8u = 24;
@@ -924,7 +925,7 @@ int rd_squelch(void)
 }
 
 
-int rd_misc(void)
+static int rd_misc(void)
 {
 	byte tmp8u;
 	
@@ -966,7 +967,7 @@ int rd_misc(void)
 	return 0;
 }
 
-int rd_player_hp(void)
+static int rd_player_hp(void)
 {
 	int i;
 	u16b tmp16u;
@@ -989,7 +990,7 @@ int rd_player_hp(void)
 }
 
 
-int rd_player_spells(void)
+static int rd_player_spells(void)
 {
 	int i;
 	u16b tmp16u;
@@ -1020,7 +1021,7 @@ int rd_player_spells(void)
 /*
  * Read the random artifacts
  */
-int rd_randarts(void)
+static int rd_randarts(void)
 {
 	int i;
 	byte tmp8u;
@@ -1165,7 +1166,7 @@ int rd_randarts(void)
  *
  * Note that the inventory is "re-sorted" later by "dungeon()".
  */
-int rd_inventory(void)
+static int rd_inventory(void)
 {
 	int slot = 0;
 
@@ -1247,7 +1248,7 @@ int rd_inventory(void)
 }
 
 
-int rd_stores(void)
+static int rd_stores(void)
 {
 	int i;
 	u16b tmp16u;
@@ -1335,7 +1336,7 @@ int rd_stores(void)
  * After loading the monsters, the objects being held by monsters are
  * linked directly into those monsters.
  */
-int rd_dungeon(void)
+static int rd_dungeon(void)
 {
 	int i, y, x;
 
@@ -1496,7 +1497,7 @@ int rd_dungeon(void)
 	return 0;
 }
 
-int rd_objects(void)
+static int rd_objects(void)
 {
 	int i;
 	u16b limit;
@@ -1574,7 +1575,7 @@ int rd_objects(void)
 }
 
 
-int rd_monsters(void)
+static int rd_monsters(void)
 {
 	int i;
 	u16b limit;
@@ -1658,7 +1659,7 @@ int rd_monsters(void)
 }
 
 
-int rd_ghost(void)
+static int rd_ghost(void)
 {
 	char buf[64];
 
@@ -1678,7 +1679,7 @@ int rd_ghost(void)
 }
 
 
-int rd_history(void)
+static int rd_history(void)
 {
 	u32b tmp32u;
 	size_t i;
@@ -1740,8 +1741,31 @@ static int rd_savefile_new_aux(void)
 	strip_bytes(20);
 
 
-	for (i = 0; i < N_SAVEFILE_BLOCKS; i++)
-		if (savefile_blocks[i].loader()) return -1;
+
+        if (rd_randomizer()) return -1;
+        if (rd_options()) return -1;
+        if (rd_messages()) return -1;
+        if (rd_monster_memory()) return -1;
+        if (rd_object_memory()) return -1;
+        if (rd_quests()) return -1;
+        if (rd_artifacts()) return -1;
+
+        if (rd_player()) return -1;
+        if (rd_squelch()) return -1;
+        if (rd_misc()) return -1;       
+        if (rd_player_hp()) return -1;
+        if (rd_player_spells()) return -1;
+
+        if (rd_randarts()) return -1;
+        if (rd_inventory()) return -1;
+        if (rd_stores()) return -1;
+        
+        if (rd_dungeon()) return -1;
+        if (rd_objects()) return -1;
+        if (rd_monsters()) return -1;
+        if (rd_ghost()) return -1;
+
+        if (rd_history()) return -1;
 
 
 	/* Save the checksum */
@@ -1783,7 +1807,7 @@ static int rd_savefile_new_aux(void)
 /*
  * Actually read the savefile
  */
-static int rd_savefile(void)
+int rd_savefile_old(void)
 {
 	errr err;
 
@@ -1803,113 +1827,4 @@ static int rd_savefile(void)
 
 	/* Result */
 	return (err);
-}
-
-
-/*
- * Attempt to Load a "savefile"
- *
- * On multi-user systems, you may only "read" a savefile if you will be
- * allowed to "write" it later, this prevents painful situations in which
- * the player loads a savefile belonging to someone else, and then is not
- * allowed to save his game when he quits.
- *
- * We return "TRUE" if the savefile was usable, and we set the
- * flag "character_loaded" if a real, living, character was loaded.
- *
- * Note that we always try to load the "current" savefile, even if
- * there is no such file, so we must check for "empty" savefile names.
- */
-bool old_load(void)
-{
-	ang_file *fh;
-	cptr what = "generic";
-
-	errr err = 0;
-
-	fh = file_open(savefile, MODE_READ, -1);
-
-
-	/* No file */
-	if (!fh)
-	{
-		err = -1;
-		what = "Cannot open savefile";
-	}
-
-	/* Process file */
-	if (!err)
-	{
-		/* Extract version */
-		err = file_readc(fh, &sf_major) ? 0 : -1;
-		if (!err) err = file_readc(fh, &sf_minor) ? 0 : -1;
-		if (!err) err = file_readc(fh, &sf_patch) ? 0 : -1;
-		if (!err) err = file_readc(fh, &sf_extra) ? 0 : -1;
-
-		if (err)
-			what = "Cannot read savefile";
-
-		file_close(fh);
-	}
-
-	/* Process file */
-	if (!err)
-	{
-		/* Clear screen */
-		Term_clear();
-
-		if (older_than(OLD_VERSION_MAJOR, OLD_VERSION_MINOR, OLD_VERSION_PATCH))
-		{
-			err = -1;
-			what = "Savefile is too old";
-			goto end;
-		}
-		else if (!older_than(VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH + 1))
-		{
-			err = -1;
-			what = "Savefile is from the future";
-		}
-		else
-		{
-			/* Attempt to load */
-			err = rd_savefile();
-
-			/* Message (below) */
-			if (err) what = "Cannot parse savefile";
-		}
-	}
-
-	/* Paranoia */
-	if (!err)
-	{
-		/* Invalid turn */
-		if (!turn) err = -1;
-
-		/* Message (below) */
-		if (err) what = "Broken savefile";
-	}
-
-
-	/* Okay */
-	if (!err)
-	{
-		/* Still alive */
-		if (p_ptr->chp >= 0)
-		{
-			/* Reset cause of death */
-			my_strcpy(p_ptr->died_from, "(alive and well)", sizeof(p_ptr->died_from));
-		}
-
-		/* Success */
-		return (TRUE);
-	}
-
-end:
-	/* Message */
-	msg_format("Error (%s) reading %d.%d.%d savefile.",
-	           what, sf_major, sf_minor, sf_patch);
-	message_flush();
-
-	/* Oops */
-	return (FALSE);
 }
