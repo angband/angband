@@ -1939,7 +1939,7 @@ N:310:Strength
 G:!:d
 I:75:1:0
 W:30:0:4:8000
-A:80:30 to 100
+A:90:30 to 100
 F:EASY_KNOW
 E:GAIN_STR
 
@@ -1947,7 +1947,7 @@ N:311:Intelligence
 G:!:d
 I:75:2:0
 W:30:0:4:8000
-A:80:30 to 100
+A:90:30 to 100
 F:EASY_KNOW
 E:GAIN_INT
 
@@ -1955,7 +1955,7 @@ N:312:Wisdom
 G:!:d
 I:75:3:0
 W:30:0:4:8000
-A:80:30 to 100
+A:90:30 to 100
 F:EASY_KNOW
 E:GAIN_WIS
 
@@ -1963,7 +1963,7 @@ N:313:Dexterity
 G:!:d
 I:75:4:0
 W:30:0:4:8000
-A:80:30 to 100
+A:90:30 to 100
 F:EASY_KNOW
 E:GAIN_DEX
 
@@ -1971,7 +1971,7 @@ N:314:Constitution
 G:!:d
 I:75:5:0
 W:30:0:4:8000
-A:80:30 to 100
+A:90:30 to 100
 F:EASY_KNOW
 E:GAIN_CON
 
@@ -1979,7 +1979,7 @@ N:315:Charisma
 G:!:d
 I:75:6:0
 W:20:0:4:1000
-A:80:15 to 100
+A:90:15 to 100
 F:EASY_KNOW
 E:GAIN_CHR
 
@@ -1987,7 +1987,7 @@ N:316:Augmentation
 G:!:d
 I:75:7:0
 W:40:0:4:60000
-A:15:40 to 100
+A:20:40 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW
 E:GAIN_ALL
