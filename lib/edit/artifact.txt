@@ -296,7 +296,7 @@ F:STR | WIS | CHR | SPEED |
 F:RES_FEAR | RES_FIRE | RES_POIS | HIDE_TYPE | 
 F:ACTIVATE |
 F:INSTA_ART
-A:HEAL1:200+d0
+A:HEAL1:200
 M:Your feel a warm tingling inside...
 D:A green stone, imbued with the power of Elvendom and fit to be borne by 
 D:a true King of Men, one such as brings healing after victory in battle.
@@ -311,7 +311,7 @@ F:HOLD_LIFE | SUST_CON | SUST_WIS | SUST_INT |
 F:RES_DARK | RES_COLD | 
 F:ACTIVATE |
 F:INSTA_ART
-A:RESTORE_LIFE:150+d0
+A:RESTORE_LIFE:150
 M:Your Jewel glows a deep red...
 D:A plain white jewel, given by Queen Arwen to Frodo Baggins before his 
 D:return to the Shire.
