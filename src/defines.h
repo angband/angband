@@ -689,7 +689,7 @@ enum
 #define ART_POWER			13
 #define ART_MORGOTH			34
 #define ART_GROND			111
-
+#define ART_PALANTIR			7
 
 /*
  * Hack -- first "normal" artifact in the artifact list.  All of

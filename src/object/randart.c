@@ -39,7 +39,7 @@
 
 /*
  * Original random artifact generator (randart) by Greg Wooledge.
- * Updated by Chris Carr / Chris Robertson in 2001.
+ * Updated by Chris Carr / Chris Robertson 2001-2009.
  */
 
 #define MAX_TRIES 200
@@ -59,19 +59,40 @@
 /*
  * Average damage for good ego ammo of various types, used for balance
  * The current values assume normal (non-seeker) ammo enchanted to +9
+ * Also a fudge factor for melee damage boosts from STR/rings/etc., and
+ * a base power for light sources
  */
 
 #define AVG_SLING_AMMO_DAMAGE 11
 #define AVG_BOW_AMMO_DAMAGE 12
 #define AVG_XBOW_AMMO_DAMAGE 12
+#define MELEE_DAMAGE_BOOST 5
+#define BASE_LITE_POWER 5
 
-/* Inhibiting factors for large bonus values */
-#define INHIBIT_STRONG 6
-#define INHIBIT_WEAK 2
+/* Inhibiting factors for large bonus values 
+ * "HIGH" values use INHIBIT_WEAK 
+ * "VERYHIGH" values use INHIBIT_STRONG 
+ */
+#define INHIBIT_STRONG	(one_in_(6))
+#define INHIBIT_WEAK	(one_in_(2))
+#define INHIBIT_BLOWS	4
+#define INHIBIT_MIGHT	4
+#define INHIBIT_SHOTS	4
+#define IMMUNITY_POWER	15	/* for each immunity after the first */
+#define INHIBIT_IMMUNITIES 4
+#define INHIBIT_POWER	20000
+#define HIGH_TO_AC	21
+#define VERYHIGH_TO_AC	31
+#define INHIBIT_AC	41
+#define HIGH_TO_HIT	16
+#define VERYHIGH_TO_HIT	26
+#define HIGH_TO_DAM	16
+#define VERYHIGH_TO_DAM 26
 
 /*
  * Numerical index values for the different learned probabilities
  * These are to make the code more readable.
+ * ToDo: turn these into an enum
  */
 
 #define ART_IDX_BOW_SHOTS 0
@@ -161,15 +182,17 @@
 #define ART_IDX_BOW_SHOTS_SUPER 71
 #define ART_IDX_BOW_MIGHT_SUPER 72
 #define ART_IDX_GEN_SPEED_SUPER 73
+#define ART_IDX_MELEE_BLOWS_SUPER 77
 
 /* Aggravation - weapon and nonweapon */
 #define ART_IDX_WEAPON_AGGR 74
 #define ART_IDX_NONWEAPON_AGGR 75
 
 /* Total of abilities */
-#define ART_IDX_TOTAL 77
+#define ART_IDX_TOTAL 78
 
 /* Tallies of different ability types */
+/* ToDo: use N_ELEMENTS for these */
 #define ART_IDX_BOW_COUNT 2
 #define ART_IDX_WEAPON_COUNT 3
 #define ART_IDX_NONWEAPON_COUNT 4
@@ -233,7 +256,7 @@ static s16b art_idx_high_resist[] =
 
 /*
  * Table giving speed power ratings
- * We go up to +20 here, but in practice it will never get above +15
+ * We go up to +20 here, but in practice it will never get there
  */
 
 static s16b speed_power[21] =
@@ -243,6 +266,7 @@ static s16b speed_power[21] =
 /*
  * Boost ratings for combinations of ability bonuses
  * We go up to +24 here - anything higher is inhibited
+ * N.B. Not all stats count equally towards this total
  */
 
 static s16b ability_power[25] =
@@ -277,8 +301,8 @@ static s16b art_freq[ART_IDX_TOTAL];
 
 static s16b mean_hit_increment = 3;
 static s16b mean_dam_increment = 3;
-static s16b mean_hit_startval = 8;
-static s16b mean_dam_startval = 8;
+static s16b mean_hit_startval = 10;
+static s16b mean_dam_startval = 10;
 static s16b mean_ac_startval = 15;
 static s16b mean_ac_increment = 5;
 
@@ -307,7 +331,7 @@ static byte *base_item_level;
 /*
  * Store the original base item rarities
  */
-static byte *base_item_rarity;
+static byte *base_item_prob;
 
 /*
  * Store the original artifact rarities
@@ -405,6 +429,7 @@ static errr init_names(void)
 
 /*
  * Calculate the rating for a given slay combination
+ * ToDo: rewrite to use an external structure for slays
  */
 
 static s32b slay_power(int a_idx)
@@ -555,7 +580,7 @@ static s32b slay_power(int a_idx)
 		file_putf(randart_log," and t_m_p is: %d \n", tot_mon_power);
 
 		file_putf(randart_log,"times 1000 is: %d\n", (1000 * sv) / tot_mon_power);
-/*		fflush(randart_log); */
+/*		fflush(randart_log); - need to convert from ang_file type */
 	}
 
 	/* Add to the cache */
@@ -567,24 +592,14 @@ static s32b slay_power(int a_idx)
 
 /*
  * Calculate the multiplier we'll get with a given bow type.
+ * Note that this relies on the multiplier being the 2nd digit of the bow's sval.
+ * We assume that sval has already been checked for legitimacy before it gets here.
  */
 static int bow_multiplier(int sval)
 {
-	switch (sval)
-	{
-		case SV_SLING:
-		case SV_SHORT_BOW:
-			return (2);
-		case SV_LONG_BOW:
-		case SV_LIGHT_XBOW:
-			return (3);
-		case SV_HEAVY_XBOW:
-			return (4);
-		default:
-			msg_format("Illegal bow sval %s", sval);
-	}
-
-	return (0);
+	int mult = 0;
+	mult = sval - 10 * (sval / 10);
+	return mult;
 }
 
 
@@ -599,6 +614,7 @@ static s32b artifact_power(int a_idx)
 	object_kind *k_ptr;
 	int immunities = 0;
 	int extra_stat_bonus = 0;
+	int i;
 
 	LOG_PRINT("********** ENTERING EVAL POWER ********\n");
 	LOG_PRINT1("Artifact index is %d\n", a_idx);
@@ -618,15 +634,11 @@ static s32b artifact_power(int a_idx)
 		if (!k_idx)
 		{
 			quit_fmt("Illegal tval/sval value for artifact %d!", a_idx);
+/* check this - was not printing on buckler crash - did lookup_kind return 0? */
 		}
 	}
 
 	k_ptr = &k_info[k_idx];
-
-	if (a_idx >= ART_MIN_NORMAL)
-	{
-		LOG_PRINT1("Initial power level is %d\n", p);
-	}
 
 	/* Evaluate certain abilities based on type of object. */
 	switch (a_ptr->tval)
@@ -641,6 +653,7 @@ static s32b artifact_power(int a_idx)
 			 * than hits (note, however, that the multipliers are applied
 			 * afterwards in the bow calculation, not before as for melee
 			 * weapons, which tends to bring these numbers back into line).
+			 * ToDo: rework evaluation of negative pvals
 			 */
 
 			if (a_ptr->to_d < 9)
@@ -657,6 +670,7 @@ static s32b artifact_power(int a_idx)
 			/*
 			 * Add the average damage of fully enchanted (good) ammo for this
 			 * weapon.  Could make this dynamic based on k_info if desired.
+			 * ToDo: precisely that.
 			 */
 
 			if (a_ptr->sval == SV_SLING)
@@ -677,14 +691,16 @@ static s32b artifact_power(int a_idx)
 			LOG_PRINT1("Adding power from ammo, total is %d\n", p);
 
 			mult = bow_multiplier(a_ptr->sval);
+
 			LOG_PRINT1("Base multiplier for this weapon is %d\n", mult);
 
 			if (a_ptr->flags1 & TR1_MIGHT)
 			{
-				if (a_ptr->pval > 3 || a_ptr->pval < 0)
+				if (a_ptr->pval >= INHIBIT_MIGHT || a_ptr->pval < 0)
 				{
-					p += 20000;	/* inhibit */
+					p += INHIBIT_POWER;	/* inhibit */
 					mult = 1;	/* don't overflow */
+					LOG_PRINT("INHIBITING - too much extra might\n");
 				}
 				else
 				{
@@ -697,32 +713,18 @@ static s32b artifact_power(int a_idx)
 
 			if (a_ptr->flags1 & TR1_SHOTS)
 			{
-				/*
-				 * Extra shots are calculated differently for bows than for
-				 * slings or crossbows, because of rangers ... not any more CC 13/8/01
-				 */
-
 				LOG_PRINT1("Extra shots: %d\n", a_ptr->pval);
 
-				if (a_ptr->pval > 3 || a_ptr->pval < 0)
+				if (a_ptr->pval >= INHIBIT_SHOTS || a_ptr->pval < 0)
 				{
-					p += 20000;	/* inhibit */
-					LOG_PRINT("INHIBITING - more than 3 extra shots\n");
+					p += INHIBIT_POWER;	/* inhibit */
+					LOG_PRINT("INHIBITING - too many extra shots\n");
 				}
 				else if (a_ptr->pval > 0)
 				{
-					if (a_ptr->sval == SV_SHORT_BOW ||
-						a_ptr->sval == SV_LONG_BOW)
-					{
-						p = (p * (1 + a_ptr->pval));
-					}
-					else
-					{
-						p = (p * (1 + a_ptr->pval));
-					}
+					p = (p * (1 + a_ptr->pval));
 					LOG_PRINT2("Multiplying power by 1 + %d, total is %d\n", a_ptr->pval, p);
 				}
-
 			}
 			p += sign(a_ptr->to_h) * (ABS(a_ptr->to_h) / 3);
 			LOG_PRINT1("Adding power from to_hit, total is %d\n", p);
@@ -738,21 +740,10 @@ static s32b artifact_power(int a_idx)
 			 * We multiply all missile weapons by 1.5 in order to compare damage.
 			 * (CR 11/20/01 - changed this to 1.25).
 			 * Melee weapons assume 5 attacks per turn, so we must also divide
-			 * by 5 to get equal ratings.
+			 * by 5 to get equal ratings. 1.25 / 5 = 0.25
 			 */
-
-			if (a_ptr->sval == SV_SHORT_BOW ||
-				a_ptr->sval == SV_LONG_BOW)
-			{
-				p = sign(p) * (ABS(p) / 4);
-				LOG_PRINT1("Rescaling bow power, total is %d\n", p);
-			}
-			else
-			{
-				p = sign(p) * (ABS(p) / 4);
-				LOG_PRINT1("Rescaling xbow/sling power, total is %d\n", p);
-			}
-
+			p = sign(p) * (ABS(p) / 4);
+			LOG_PRINT1("Rescaling bow power, total is %d\n", p);
 			break;
 		}
 		case TV_DIGGING:
@@ -783,17 +774,16 @@ static s32b artifact_power(int a_idx)
 			if (a_ptr->flags1 & TR1_BLOWS)
 			{
 				LOG_PRINT1("Extra blows: %d\n", a_ptr->pval);
-				if (a_ptr->pval > 3 || a_ptr->pval < 0)
+				if (a_ptr->pval >= INHIBIT_BLOWS || a_ptr->pval < 0)
 				{
-					p += 20000;	/* inhibit */
-					LOG_PRINT("INHIBITING, more than 3 extra blows or a negative number\n");
+					p += INHIBIT_POWER;	/* inhibit */
+					LOG_PRINT("INHIBITING, too many extra blows or a negative number\n");
 				}
 				else if (a_ptr->pval > 0)
 				{
 					p = sign(p) * ((ABS(p) * (5 + a_ptr->pval)) / 5);
-					/* Add an extra +5 per blow to account for damage rings */
-					/* (The +5 figure is a compromise here - could be adjusted) */
-					p += 5 * a_ptr->pval;
+					/* Add an extra amount per blow to account for damage rings */
+					p += MELEE_DAMAGE_BOOST * a_ptr->pval;
 					LOG_PRINT1("Adding power for blows, total is %d\n", p);
 				}
 			}
@@ -803,13 +793,11 @@ static s32b artifact_power(int a_idx)
 
 
 			/* Remember, weight is in 0.1 lb. units. */
-			if (a_ptr->weight != k_ptr->weight)
+			if (a_ptr->weight < k_ptr->weight)
 			{
-			/*	p += (k_ptr->weight - a_ptr->weight) / 20; */
+				p += (k_ptr->weight - a_ptr->weight) / 20; 
 				LOG_PRINT1("Adding power for low weight, total is %d\n", p);
 			}
-
-
 			break;
 		}
 		case TV_BOOTS:
@@ -840,8 +828,8 @@ static s32b artifact_power(int a_idx)
 		}
 		case TV_LITE:
 		{
-			p += 5;
-			LOG_PRINT("Artifact light source, adding 5 as base\n");
+			p += BASE_LITE_POWER;
+			LOG_PRINT("Artifact light source, adding base power\n");
 
 			p += sign(a_ptr->to_h) * ((ABS(a_ptr->to_h) * 2) / 3);
 			LOG_PRINT1("Adding power for to_hit, total is %d\n", p);
@@ -870,19 +858,19 @@ static s32b artifact_power(int a_idx)
 	p += sign(a_ptr->to_a) * (ABS(a_ptr->to_a) / 2);
 	LOG_PRINT2("Adding power for to_ac of %d, total is %d\n", a_ptr->to_a, p);
 
-	if (a_ptr->to_a > 20)
+	if (a_ptr->to_a > HIGH_TO_AC)
 	{
-		p += (a_ptr->to_a - 19);
+		p += (a_ptr->to_a - (HIGH_TO_AC - 1));
 		LOG_PRINT1("Adding power for high to_ac value, total is %d\n", p);
 	}
-	if (a_ptr->to_a > 30)
+	if (a_ptr->to_a > VERYHIGH_TO_AC)
 	{
-		p += (a_ptr->to_a - 29);
+		p += (a_ptr->to_a - (VERYHIGH_TO_AC -1));
 		LOG_PRINT1("Adding power for very high to_ac value, total is %d\n", p);
 	}
-	if (a_ptr->to_a > 40)
+	if (a_ptr->to_a >= INHIBIT_AC)
 	{
-		p += 20000;	/* inhibit */
+		p += INHIBIT_POWER;	/* inhibit */
 		LOG_PRINT("INHIBITING: AC bonus too high\n");
 	}
 
@@ -901,27 +889,28 @@ static s32b artifact_power(int a_idx)
 		if (a_ptr->flags1 & TR1_WIS)
 		{
 			p += 2 * a_ptr->pval;
-			LOG_PRINT2("Adding power for STR bonus %d, total is %d\n", a_ptr->pval, p);
+			LOG_PRINT2("Adding power for WIS bonus %d, total is %d\n", a_ptr->pval, p);
 		}
 		if (a_ptr->flags1 & TR1_DEX)
 		{
 			p += 3 * a_ptr->pval;
-			LOG_PRINT2("Adding power for STR bonus %d, total is %d\n", a_ptr->pval, p);
+			LOG_PRINT2("Adding power for DEX bonus %d, total is %d\n", a_ptr->pval, p);
 		}
 		if (a_ptr->flags1 & TR1_CON)
 		{
 			p += 4 * a_ptr->pval;
-			LOG_PRINT2("Adding power for STR bonus %d, total is %d\n", a_ptr->pval, p);
+			LOG_PRINT2("Adding power for CON bonus %d, total is %d\n", a_ptr->pval, p);
 		}
 		if (a_ptr->flags1 & TR1_STEALTH)
 		{
 			p += a_ptr->pval;
-			LOG_PRINT2("Adding power for STR bonus %d, total is %d\n", a_ptr->pval, p);
+			LOG_PRINT2("Adding power for Stealth bonus %d, total is %d\n", a_ptr->pval, p);
 		}
 		/* For now add very small amount for searching */
 		if (a_ptr->flags1 & TR1_SEARCH)
 		{
-			p += a_ptr->pval / 6;
+			if (!(a_ptr->pval / 4)) p++;
+			p += a_ptr->pval / 4;
 			LOG_PRINT2("Adding power for searching bonus %d, total is %d\n", a_ptr->pval , p);
 		}
 		/* Add extra power term if there are a lot of ability bonuses */
@@ -954,7 +943,7 @@ static s32b artifact_power(int a_idx)
 			{
 				/* Inhibit */
 				LOG_PRINT1("Inhibiting!  (Total ability bonus of %d is too high)\n", extra_stat_bonus);
-				p += 20000;
+				p += INHIBIT_POWER;
 			}
 			else
 			{
@@ -1004,54 +993,48 @@ static s32b artifact_power(int a_idx)
 	ADD_POWER("sustain CON",         3, TR2_SUST_CON, 2,);
 	ADD_POWER("sustain CHR",         0, TR2_SUST_CHR, 2,);
 
-	ADD_POWER("acid immunity",      17, TR2_IM_ACID, 2, immunities++);
-	ADD_POWER("elec immunity",      14, TR2_IM_ELEC, 2, immunities++);
-	ADD_POWER("fire immunity",      22, TR2_IM_FIRE, 2, immunities++);
-	ADD_POWER("cold immunity",      17, TR2_IM_COLD, 2, immunities++);
+	ADD_POWER("acid immunity",      17, TR2_IM_ACID,  2, immunities++);
+	ADD_POWER("elec immunity",      14, TR2_IM_ELEC,  2, immunities++);
+	ADD_POWER("fire immunity",      22, TR2_IM_FIRE,  2, immunities++);
+	ADD_POWER("cold immunity",      17, TR2_IM_COLD,  2, immunities++);
 
-	if (immunities > 1)
+	for (i = 2; i <= immunities; i++)
 	{
-		p += 15;
+		p += IMMUNITY_POWER;
 		LOG_PRINT1("Adding power for multiple immunities, total is %d\n", p);
-	}
-	if (immunities > 2)
-	{
-		p += 15;
-		LOG_PRINT1("Adding power for three or more immunities, total is %d\n", p);
-	}
-	if (immunities > 3)
-	{
-		p += 20000;             /* inhibit */
-		LOG_PRINT("INHIBITING: Too many immunities\n");
+		if (immunities >= INHIBIT_IMMUNITIES)
+		{
+			p += INHIBIT_POWER;             /* inhibit */
+			LOG_PRINT("INHIBITING: Too many immunities\n");
+		}
 	}
 
-	ADD_POWER("free action",         7, TR3_FREE_ACT, 3,);
-	ADD_POWER("hold life",           6, TR3_HOLD_LIFE, 3,);
-	ADD_POWER("feather fall",        0, TR3_FEATHER, 3,); /* was 2 */
-	ADD_POWER("permanent light",     1, TR3_LITE, 3,); /* was 2 */
-	ADD_POWER("see invisible",       5, TR3_SEE_INVIS, 3,);
-	ADD_POWER("telepathy",          15, TR3_TELEPATHY, 3,);
-	ADD_POWER("slow digestion",      1, TR3_SLOW_DIGEST, 3,);
+	ADD_POWER("free action",		 7, TR3_FREE_ACT,    3,);
+	ADD_POWER("hold life",			 6, TR3_HOLD_LIFE,   3,);
+	ADD_POWER("feather fall",		 1, TR3_FEATHER,     3,);
+	ADD_POWER("permanent light",		 1, TR3_LITE,	     3,);
+	ADD_POWER("see invisible",		 5, TR3_SEE_INVIS,   3,);
+	ADD_POWER("telepathy",			15, TR3_TELEPATHY,   3,);
+	ADD_POWER("slow digestion",		 1, TR3_SLOW_DIGEST, 3,);
 	/* Digging moved to general section since it can be on anything now */
-	ADD_POWER("tunnelling",  a_ptr->pval, TR1_TUNNEL, 1,);
-	ADD_POWER("resist acid",         2, TR2_RES_ACID, 2,);
-	ADD_POWER("resist elec",         3, TR2_RES_ELEC, 2,);
-	ADD_POWER("resist fire",         3, TR2_RES_FIRE, 2,);
-	ADD_POWER("resist cold",         3, TR2_RES_COLD, 2,);
-	ADD_POWER("resist poison",      14, TR2_RES_POIS, 2,);
-	ADD_POWER("resist light",        3, TR2_RES_LITE, 2,);
-	ADD_POWER("resist dark",         8, TR2_RES_DARK, 2,);
-	ADD_POWER("resist blindness",    8, TR2_RES_BLIND, 2,);
-	ADD_POWER("resist confusion",   12, TR2_RES_CONFU, 2,);
-	ADD_POWER("resist sound",        7, TR2_RES_SOUND, 2,);
-	ADD_POWER("resist shards",       4, TR2_RES_SHARD, 2,);
-	ADD_POWER("resist nexus",        5, TR2_RES_NEXUS, 2,);
-	ADD_POWER("resist nether",      10, TR2_RES_NETHR, 2,);
-	ADD_POWER("resist chaos",       10, TR2_RES_CHAOS, 2,);
-	ADD_POWER("resist disenchantment", 10, TR2_RES_DISEN, 2,);
-
-	ADD_POWER("regeneration",        4, TR3_REGEN, 3,);
-	ADD_POWER("blessed",             1, TR3_BLESSED, 3,);
+	ADD_POWER("tunnelling",	       a_ptr->pval, TR1_TUNNEL,      1,);
+	ADD_POWER("resist acid",		 2, TR2_RES_ACID,    2,);
+	ADD_POWER("resist elec",		 3, TR2_RES_ELEC,    2,);
+	ADD_POWER("resist fire",		 3, TR2_RES_FIRE,    2,);
+	ADD_POWER("resist cold",		 3, TR2_RES_COLD,    2,);
+	ADD_POWER("resist poison",		14, TR2_RES_POIS,    2,);
+	ADD_POWER("resist light",		 3, TR2_RES_LITE,    2,);
+	ADD_POWER("resist dark",		 8, TR2_RES_DARK,    2,);
+	ADD_POWER("resist blindness",		 8, TR2_RES_BLIND,   2,);
+	ADD_POWER("resist confusion",		12, TR2_RES_CONFU,   2,);
+	ADD_POWER("resist sound",		 7, TR2_RES_SOUND,   2,);
+	ADD_POWER("resist shards",		 4, TR2_RES_SHARD,   2,);
+	ADD_POWER("resist nexus",		 5, TR2_RES_NEXUS,   2,);
+	ADD_POWER("resist nether",		10, TR2_RES_NETHR,   2,);
+	ADD_POWER("resist chaos",		10, TR2_RES_CHAOS,   2,);
+	ADD_POWER("resist disenchantment",	10, TR2_RES_DISEN,   2,);
+	ADD_POWER("regeneration",		 4, TR3_REGEN,	     3,);
+	ADD_POWER("blessed",			 1, TR3_BLESSED,     3,);
 
 	if (a_ptr->flags3 & TR3_TELEPORT)
 	{
@@ -1108,12 +1091,12 @@ static void store_base_power (void)
 		k_ptr = &k_info[k_idx];
 		a_ptr = &a_info[i];
 		base_item_level[i] = k_ptr->level;
-		base_item_rarity[i] = k_ptr->alloc_prob;
+		base_item_prob[i] = k_ptr->alloc_prob;
 		base_art_rarity[i] = a_ptr->rarity;
 	}
 
 	/* Store the number of different types, for use later */
-
+	/* ToDo: replace this with base item freq parsing */
 	for (i = 0; i < z_info->a_max; i++)
 	{
 		switch (a_info[i].tval)
@@ -1173,6 +1156,8 @@ static struct item_choice {
  * The return value gives the index of the new item type.  The method is
  * passed a pointer to a rarity value in order to return the rarity of the
  * new item.
+ *
+ * ToDo: complete rewrite removing the hard-coded tables above and below
  */
 static s16b choose_item(int a_idx)
 {
@@ -1193,10 +1178,7 @@ static s16b choose_item(int a_idx)
 	LOG_PRINT1("Base item level is: %d\n", target_level);
 
 	/*
-	 * If the artifact level is higher then we use that instead.  Note that
-	 * we can get away with reusing the artifact rarities here since we
-	 * don't change them.  If artifact rarities are changed then the
-	 * original values will need to be stored, as for base items.
+	 * If the artifact level is higher then we use that instead.
 	 */
 
 	if(a_ptr->level > target_level) target_level = a_ptr->level;
@@ -1208,7 +1190,6 @@ static s16b choose_item(int a_idx)
 	 * roll should be a bell curve.  The mean and standard variation of the
 	 * bell curve are based on the target level; the distribution of
 	 * kinds versus the bell curve is hand-tweaked. :-(
-	 * CR 8/11/01 - reworked some of these lists
 	 */
 	r = randint0(100);
 	r2 = Rand_normal(target_level * 2, target_level);
@@ -1340,8 +1321,8 @@ static s16b choose_item(int a_idx)
 		else if (r2 < 30) sval = SV_PAIR_OF_LEATHER_BOOTS;
 		else if (r2 < 50) sval = SV_PAIR_OF_IRON_SHOD_BOOTS;
 		else if (r2 < 70) sval = SV_PAIR_OF_STEEL_SHOD_BOOTS; 
-		else if (r2 < 90) sval = SV_PAIR_OF_ETHEREAL_SLIPPERS; 
-		else sval = SV_PAIR_OF_MITHRIL_SHOD_BOOTS;
+		else if (r2 < 90) sval = SV_PAIR_OF_MITHRIL_SHOD_BOOTS; 
+		else sval = SV_PAIR_OF_ETHEREAL_SLIPPERS;
 		break;
 
 	case TV_GLOVES:
@@ -1387,7 +1368,7 @@ static s16b choose_item(int a_idx)
 	k_ptr = &k_info[k_idx];
 	kinds[a_idx] = k_idx;
 	LOG_PRINT2("k_idx is %d, k_ptr->alloc_prob is %d\n", k_idx, k_ptr->alloc_prob);
-/* CC end */
+/* CC end - but need a flush here */
 	a_ptr->tval = k_ptr->tval;
 	a_ptr->sval = k_ptr->sval;
 	a_ptr->pval = k_ptr->pval;
@@ -1407,10 +1388,10 @@ static s16b choose_item(int a_idx)
 	 * code doesn't support standard DSM activations for artifacts very
 	 * well.  If it gets an activation from the base artifact it will be
 	 * reset later.
+	 * ToDo: proper random activations
 	 */
 	if (a_ptr->tval == TV_DRAG_ARMOR)
 		a_ptr->flags3 &= ~TR3_ACTIVATE;
-
 
 	/* Artifacts ignore everything */
 	a_ptr->flags3 |= TR3_IGNORE_MASK;
@@ -1475,7 +1456,7 @@ static void do_pval(artifact_type *a_ptr)
 		{
 			a_ptr->pval = (s16b)randint1(2);
 			/* Give it a shot at +3 */
-			if (one_in_(INHIBIT_STRONG)) a_ptr->pval = 3;
+			if (INHIBIT_STRONG) a_ptr->pval = 3;
 		}
 		else a_ptr->pval = (s16b)randint1(4);
 		LOG_PRINT1("Assigned initial pval, value is: %d\n", a_ptr->pval);
@@ -1556,8 +1537,10 @@ static void adjust_freqs()
 		artprobs[ART_IDX_BOW_SHOTS_SUPER] = 5;
 	if (artprobs[ART_IDX_BOW_MIGHT_SUPER] < 5)
 		artprobs[ART_IDX_BOW_MIGHT_SUPER] = 5;
-	if (artprobs[ART_IDX_GEN_SPEED_SUPER] < 2)
-		artprobs[ART_IDX_GEN_SPEED_SUPER] = 2;
+	if (artprobs[ART_IDX_MELEE_BLOWS_SUPER] < 5)
+		artprobs[ART_IDX_MELEE_BLOWS_SUPER] = 5;
+	if (artprobs[ART_IDX_GEN_SPEED_SUPER] < 3)
+		artprobs[ART_IDX_GEN_SPEED_SUPER] = 3;
 	if (artprobs[ART_IDX_GEN_AC] < 5)
 		artprobs[ART_IDX_GEN_AC] = 5;
 	if (artprobs[ART_IDX_GEN_TUNN] < 5)
@@ -1815,11 +1798,18 @@ static void parse_frequencies(void)
 			/* Does this weapon have extra blows? */
 			if (a_ptr->flags1 & TR1_BLOWS)
 			{
-				LOG_PRINT("Adding 1 for extra blows\n");
-
-				(artprobs[ART_IDX_MELEE_BLOWS])++;
+				/* Do we have 3 or more extra blows? (Unlikely) */
+				if(a_ptr->pval > 2)
+				{
+					LOG_PRINT("Adding 1 for supercharged blows (3 or more!)\n");
+					(artprobs[ART_IDX_MELEE_BLOWS_SUPER])++;
+				}
+				else {
+					LOG_PRINT("Adding 1 for extra blows\n");
+					(artprobs[ART_IDX_MELEE_BLOWS])++;
+				}
 			}
-
+			
 			/* Does this weapon have an unusual bonus to AC? */
 			if ( (a_ptr->to_a - k_ptr->to_a) > 0)
 			{
@@ -1937,6 +1927,7 @@ static void parse_frequencies(void)
 			a_ptr->tval == TV_DRAG_ARMOR)
 		{
 			/* Check weight - is it different from normal? */
+			/* ToDo: count higher and lower separately */
 			if (a_ptr->weight != k_ptr->weight)
 			{
 				LOG_PRINT("Adding 1 for unusual weight.\n");
@@ -2107,7 +2098,7 @@ static void parse_frequencies(void)
 			 * small bonuses around +3 or so without unbalancing things.
 			 */
 
-			if (a_ptr->pval > 6)
+			if (a_ptr->pval > 7)
 			{
 				/* Supercharge case */
 				LOG_PRINT("Adding 1 for supercharged speed bonus!\n");
@@ -3208,7 +3199,7 @@ static void add_slay(artifact_type *a_ptr)
 static void add_bless_weapon(artifact_type *a_ptr)
 {
 	a_ptr->flags3 |= TR3_BLESSED;
-	LOG_PRINT("Adding ability: blessed blade\n");
+	LOG_PRINT("Adding ability: blessed weapon\n");
 }
 
 static void add_damage_dice(artifact_type *a_ptr)
@@ -3223,23 +3214,21 @@ static void add_damage_dice(artifact_type *a_ptr)
 static void add_to_hit(artifact_type *a_ptr, int fixed, int random)
 {
 	/* Inhibit above certain threshholds */
-	if (a_ptr->to_h > 25)
+	if (a_ptr->to_h > VERYHIGH_TO_HIT)
 	{
-		/* Strongly inhibit */
-		if (!one_in_(INHIBIT_STRONG))
+		if (!INHIBIT_STRONG)
 		{
 			LOG_PRINT1("Failed to add to-hit, value of %d is too high\n", a_ptr->to_h);
+			return;
 		}
-		return;
 	}
-	else if (a_ptr->to_h > 15)
+	else if (a_ptr->to_h > HIGH_TO_HIT)
 	{
-		/* Weakly inhibit */
-		if (!one_in_(INHIBIT_WEAK))
+		if (!INHIBIT_WEAK)
 		{
 			LOG_PRINT1("Failed to add to-hit, value of %d is too high\n", a_ptr->to_h);
+			return;
 		}
-		return;
 	}
 	a_ptr->to_h += (s16b)(fixed + randint0(random));
 	if (a_ptr->to_h > 0) a_ptr->flags3 |= TR3_SHOW_MODS;
@@ -3249,23 +3238,21 @@ static void add_to_hit(artifact_type *a_ptr, int fixed, int random)
 static void add_to_dam(artifact_type *a_ptr, int fixed, int random)
 {
 	/* Inhibit above certain threshholds */
-	if (a_ptr->to_d > 25)
+	if (a_ptr->to_d > VERYHIGH_TO_DAM)
 	{
-		/* Strongly inhibit */
-		if (!one_in_(INHIBIT_STRONG))
+		if (!INHIBIT_STRONG)
 		{
 			LOG_PRINT1("Failed to add to-dam, value of %d is too high\n", a_ptr->to_d);
+			return;
 		}
-		return;
 	}
-	else if (a_ptr->to_h > 15)
+	else if (a_ptr->to_h > HIGH_TO_DAM)
 	{
-		/* Weakly inhibit */
-		if (!one_in_(INHIBIT_WEAK))
+		if (!INHIBIT_WEAK)
 		{
 			LOG_PRINT1("Failed to add to-dam, value of %d is too high\n", a_ptr->to_d);
+			return;
 		}
-		return;
 	}
 	a_ptr->to_d += (s16b)(fixed + randint0(random));
 	if (a_ptr->to_d > 0) a_ptr->flags3 |= TR3_SHOW_MODS;
@@ -3281,23 +3268,21 @@ static void add_aggravation(artifact_type *a_ptr)
 static void add_to_AC(artifact_type *a_ptr, int fixed, int random)
 {
 	/* Inhibit above certain threshholds */
-	if (a_ptr->to_a > 35)
+	if (a_ptr->to_a > VERYHIGH_TO_AC)
 	{
-		/* Strongly inhibit */
-		if (!one_in_(INHIBIT_STRONG))
+		if (!INHIBIT_STRONG)
 		{
 			LOG_PRINT1("Failed to add to-AC, value of %d is too high\n", a_ptr->to_a);
+			return;
 		}
-		return;
 	}
-	else if (a_ptr->to_h > 25)
+	else if (a_ptr->to_h > HIGH_TO_AC)
 	{
-		/* Weakly inhibit */
-		if (!one_in_(INHIBIT_WEAK))
+		if (!INHIBIT_WEAK)
 		{
 			LOG_PRINT1("Failed to add to-AC, value of %d is too high\n", a_ptr->to_a);
+			return;
 		}
-		return;
 	}
 	a_ptr->to_a += (s16b)(fixed + randint0(random));
 	LOG_PRINT1("Adding ability: AC bonus (new bonus is %+d)\n", a_ptr->to_a);
@@ -3312,6 +3297,7 @@ static void add_weight_mod(artifact_type *a_ptr)
 /*
  * Add a random immunity to this artifact
  * ASSUMPTION: All immunities are equally likely.
+ * ToDo: replace with lookup once immunities are abstracted
  */
 static void add_immunity(artifact_type *a_ptr)
 {
@@ -3758,7 +3744,6 @@ static void add_ability_aux(artifact_type *a_ptr, int r)
 
 /*
  * Randomly select an extra ability to be added to the artifact in question.
- * XXX - This function is way too large.
  */
 static void add_ability(artifact_type *a_ptr)
 {
@@ -3788,7 +3773,7 @@ static void add_ability(artifact_type *a_ptr)
  */
 static void try_supercharge(artifact_type *a_ptr)
 {
-	/* Huge damage dice - melee weapon only */
+	/* Huge damage dice or +3 blows - melee weapon only */
 	if (a_ptr->tval == TV_DIGGING || a_ptr->tval == TV_HAFTED ||
 		a_ptr->tval == TV_POLEARM || a_ptr->tval == TV_SWORD)
 	{
@@ -3797,6 +3782,12 @@ static void try_supercharge(artifact_type *a_ptr)
 			a_ptr->dd += 3 + randint0(4);
 			if (a_ptr->dd > 9) a_ptr->dd = 9;
 			LOG_PRINT1("Supercharging damage dice!  (Now %d dice)\n", a_ptr->dd);
+		}
+		else if (randint0(z_info->a_max) < artprobs[ART_IDX_MELEE_BLOWS_SUPER])
+		{
+			a_ptr->flags1 |= TR1_BLOWS;
+			a_ptr->pval = 3;
+			LOG_PRINT("Supercharging melee blows! (+3 blows)\n");
 		}
 	}
 
@@ -3821,7 +3812,8 @@ static void try_supercharge(artifact_type *a_ptr)
 	if (randint0(z_info->a_max) < artprobs[ART_IDX_GEN_SPEED_SUPER])
 	{
 		a_ptr->flags1 |= TR1_SPEED;
-		a_ptr->pval = 6 + randint0(4);
+		a_ptr->pval = 7 + randint0(6); 
+		if (one_in_(4)) a_ptr->pval += randint1(4);
 		LOG_PRINT1("Supercharging speed for this item!  (New speed bonus is %d)\n", a_ptr->pval);
 	}
 	/* Aggravation */
@@ -3850,9 +3842,9 @@ static void try_supercharge(artifact_type *a_ptr)
  */
 static void do_curse(artifact_type *a_ptr)
 {
-	if (one_in_(3))
+	if (one_in_(7))
 		a_ptr->flags3 |= TR3_AGGRAVATE;
-	if (one_in_(5))
+	if (one_in_(4))
 		a_ptr->flags3 |= TR3_DRAIN_EXP;
 	if (one_in_(7))
 		a_ptr->flags3 |= TR3_TELEPORT;
@@ -3909,7 +3901,7 @@ static void scramble_artifact(int a_idx)
 	power = base_power[a_idx];
 
 	/* If it has a restricted ability then don't randomize it. */
-	if (power > 10000)
+	if (power > INHIBIT_POWER)
 	{
 		LOG_PRINT1("Skipping artifact number %d - too powerful to randomize!", a_idx);
 		return;
@@ -3939,10 +3931,12 @@ static void scramble_artifact(int a_idx)
 		 * more than 20 below the target power
 		 */
 		int count = 0;
+		int smeg = 0;
 		s32b ap2;
 
 		/* Capture the rarity of the original base item and artifact */
-		base_rarity_old = base_item_rarity[a_idx];
+		base_rarity_old = 100 / base_item_prob[a_idx];
+		if (base_rarity_old < 1) base_rarity_old = 1; 
 		rarity_old = base_art_rarity[a_idx];
 		do
 		{
@@ -3970,10 +3964,12 @@ static void scramble_artifact(int a_idx)
 /* CC bugfix hacking */
 			LOG_PRINT2("rarity old is %d, base is %d\n", rarity_old, base_rarity_old);
 			k_ptr = &k_info[k_idx];
+			smeg = 100 / k_ptr->alloc_prob;
+			if (smeg < 1) smeg = 1;
 			LOG_PRINT1("k_ptr->alloc_prob is %d\n", k_ptr->alloc_prob);
 /* end CC */
 			rarity_new = ( (s16b) rarity_old * (s16b) base_rarity_old ) /
-			             (s16b) k_ptr->alloc_prob;
+			             smeg;
 
 			if (rarity_new > 255) rarity_new = 255;
 			if (rarity_new < 1) rarity_new = 1;
@@ -4032,7 +4028,7 @@ static void scramble_artifact(int a_idx)
 			remove_contradictory(a_ptr);
 			ap = artifact_power(a_idx);
 			/* Accept if it doesn't have any inhibited abilities */
-			if (ap < 10000) success = TRUE;
+			if (ap < INHIBIT_POWER) success = TRUE;
 			/* Otherwise go back and try again */
 			else
 			{
@@ -4066,6 +4062,14 @@ static void scramble_artifact(int a_idx)
 			}
 			else if (ap >= (power * 19) / 20)	/* just right */
 			{
+			/* CC 11/02/09 - add rescue for crappy weapons */
+				if ((a_ptr->tval == TV_DIGGING || a_ptr->tval == TV_HAFTED ||
+					a_ptr->tval == TV_POLEARM || a_ptr->tval == TV_SWORD
+					|| a_ptr->tval == TV_BOW) && (a_ptr->to_d < 10))
+				{
+					a_ptr->to_d += randint0(6);
+					LOG_PRINT1("Redeeming crappy weapon: +dam now %d\n", a_ptr->to_d);
+				}
 				break;
 			}
 
@@ -4256,7 +4260,7 @@ errr do_randart(u32b randart_seed, bool full)
 		/* Allocate the various "original powers" arrays */
 		base_power = C_ZNEW(z_info->a_max, s32b);
 		base_item_level = C_ZNEW(z_info->a_max, byte);
-		base_item_rarity = C_ZNEW(z_info->a_max, byte);
+		base_item_prob = C_ZNEW(z_info->a_max, byte);
 		base_art_rarity = C_ZNEW(z_info->a_max, byte);
 
 		/* Allocate the "slay values" array */
@@ -4310,7 +4314,8 @@ errr do_randart(u32b randart_seed, bool full)
 		/* Free the "original powers" arrays */
 		FREE(base_power);
 		FREE(base_item_level);
-		FREE(base_item_rarity);
+		FREE(base_item_prob);
+		FREE(base_art_rarity);
 
 		/* Free the "slay values" array */
 		FREE(slays);
