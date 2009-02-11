@@ -96,6 +96,7 @@ ANGFILES = \
 	score.o \
 	signals.o \
 	save.o \
+	savefile.o \
 	spells1.o \
 	spells2.o \
 	squelch.o \
