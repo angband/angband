@@ -11,6 +11,8 @@ Make the object knowledge list sort some items by sval rather than alphabeticall
 Items trying to be dropped on the floor now attempt to delete the oldest item on that grid that's been squelched.
 
 Bugs fixed:
+(#30) Now using a new savefile format (no user-visible change)
+(#48) Improve the randart code a lot.
 (#62) Game is now available entirely under the GPL.
 (#521, #597, #635) Stop the slow launches and occasional non-launches on Windows.
 (#352) Probing now reveals attack and spell information.
@@ -69,12 +71,17 @@ Weaken PDSM just a tad.
 Enchant Armour scrolls ID when reading them, not when they are successfully read.
 Fix artifact recharge times.
 Fix displaying the special rings in the object knowledge viewer.
+Fix randart saving/loading.
 Tone down Troll Priest HP.
 Include criticals damage in the object description's average display.
 Make Kavlax 'scary dark like Anclagon'.
 Curses on jewelry only happen with negative-pval items.  (temporary)
 Only wake monsters on attack if you're not "too afraid to attack".
 A few fixes to the visual editor on the knowledge screens.
+Add yeeks to the monster knowledge browser.
+
+Unix ports:
+Update angband man page.
 
 Curses port:
 (#666) Fix out-of-bounds memory access
