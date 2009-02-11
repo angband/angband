@@ -22,7 +22,7 @@
 /**
  * Big list of all savefile block types.
  */
-savefile_block_t savefile_blocks[] =
+savefile_block_t savefile_blocks[N_SAVEFILE_BLOCKS] =
 {
 	{ "rng", rd_randomizer, wr_randomizer, 1, 1 },
 	{ "options", rd_options, wr_options, 1, 1 },
@@ -34,8 +34,8 @@ savefile_block_t savefile_blocks[] =
 	{ "player", rd_player, wr_player, 1, 1 },
 	{ "squelch", rd_squelch, wr_squelch, 1, 1 },
 	{ "misc", rd_misc, wr_misc, 1, 1 },
-	{ "player_hp", rd_player_hp, wr_player_hp, 1, 1 },
-	{ "player_spells", rd_player_spells, wr_player_spells, 1, 1 },
+	{ "player hp", rd_player_hp, wr_player_hp, 1, 1 },
+	{ "player spells", rd_player_spells, wr_player_spells, 1, 1 },
 	{ "randarts", rd_randarts, wr_randarts, 1, 1 },
 	{ "inventory", rd_inventory, wr_inventory, 1, 1 },
 	{ "stores", rd_stores, wr_stores, 1, 1 },
@@ -45,4 +45,3 @@ savefile_block_t savefile_blocks[] =
 	{ "ghost", rd_ghost, wr_ghost, 1, 1 },
 	{ "history", rd_history, wr_history, 1, 1 },
 };
-

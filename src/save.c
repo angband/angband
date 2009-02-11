@@ -915,6 +915,8 @@ void wr_history(void)
  */
 static void wr_savefile_new(void)
 {
+	size_t i;
+
 	/* Dump the file header */
 	xor_byte = 0;
 	wr_byte(VERSION_MAJOR);
@@ -935,29 +937,8 @@ static void wr_savefile_new(void)
 	wr_u32b(0L);
 	wr_u32b(0L);
 
-
-	wr_randomizer();
-	wr_options();
-	wr_messages();
-	wr_monster_memory();
-	wr_object_memory();
-	wr_quests();
-	wr_artifacts();
-	wr_player();
-	wr_squelch();
-	wr_misc();
-	wr_player_hp();
-	wr_player_spells();
-	wr_randarts();
-	wr_inventory();
-	wr_stores();
-
-	wr_dungeon();
-	wr_objects();
-	wr_monsters();
-	wr_ghost();
-
-	wr_history();
+	for (i = 0; i < N_SAVEFILE_BLOCKS; i++)
+		savefile_blocks[i].saver();
 
 
 	/* Write the checksums */

@@ -1708,11 +1708,15 @@ int rd_history(void)
 }
 
 
+
+
 /*
  * Actually read the savefile
  */
 static int rd_savefile_new_aux(void)
 {
+	size_t i;
+
 	u32b n_x_check, n_v_check;
 	u32b o_x_check, o_v_check;
 
@@ -1736,30 +1740,8 @@ static int rd_savefile_new_aux(void)
 	strip_bytes(20);
 
 
-	if (rd_randomizer()) return -1;
-	if (rd_options()) return -1;
-	if (rd_messages()) return -1;
-	if (rd_monster_memory()) return -1;
-	if (rd_object_memory()) return -1;
-	if (rd_quests()) return -1;
-	if (rd_artifacts()) return -1;
-
-	if (rd_player()) return -1;
-	if (rd_squelch()) return -1;
-	if (rd_misc()) return -1;	
-	if (rd_player_hp()) return -1;
-	if (rd_player_spells()) return -1;
-
-	if (rd_randarts()) return -1;
-	if (rd_inventory()) return -1;
-	if (rd_stores()) return -1;
-	
-	if (rd_dungeon()) return -1;
-	if (rd_objects()) return -1;
-	if (rd_monsters()) return -1;
-	if (rd_ghost()) return -1;
-
-	if (rd_history()) return -1;
+	for (i = 0; i < N_SAVEFILE_BLOCKS; i++)
+		if (savefile_blocks[i].loader()) return -1;
 
 
 	/* Save the checksum */

@@ -11,7 +11,8 @@ typedef struct
 	u32b oldest_ver;
 } savefile_block_t;
 
-extern savefile_block_t savefile_blocks[];
+#define N_SAVEFILE_BLOCKS	20
+extern savefile_block_t savefile_blocks[N_SAVEFILE_BLOCKS];
 
 
 /* load.c */
