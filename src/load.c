@@ -235,7 +235,7 @@ static int rd_item(object_type *o_ptr)
 /*
  * Read RNG state
  */
-int rd_randomizer(void)
+int rd_randomizer(u32b version)
 {
 	int i;
 
@@ -274,7 +274,7 @@ int rd_randomizer(void)
  * The window options are stored in the same way, but note that each
  * window gets 32 options, and their order is fixed by certain defines.
  */
-int rd_options(void)
+int rd_options(u32b version)
 {
 	int i, n;
 
@@ -379,7 +379,7 @@ int rd_options(void)
 /*
  * Read the saved messages
  */
-int rd_messages(void)
+int rd_messages(u32b version)
 {
 	int i;
 	char buf[128];
@@ -408,7 +408,7 @@ int rd_messages(void)
 
 
 
-int rd_monster_memory(void)
+int rd_monster_memory(u32b version)
 {
 	int r_idx;
 	u16b tmp16u;
@@ -478,7 +478,7 @@ int rd_monster_memory(void)
 }
 
 
-int rd_object_memory(void)
+int rd_object_memory(u32b version)
 {
 	int i;
 	u16b tmp16u;
@@ -511,7 +511,7 @@ int rd_object_memory(void)
 }
 
 
-int rd_quests(void)
+int rd_quests(u32b version)
 {
 	int i;
 	u16b tmp16u;
@@ -542,7 +542,7 @@ int rd_quests(void)
 }
 
 
-int rd_artifacts(void)
+int rd_artifacts(u32b version)
 {
 	int i;
 	u16b tmp16u;
@@ -579,7 +579,7 @@ static u32b randart_version;
 /*
  * Read the "extra" information
  */
-int rd_player(void)
+int rd_player(u32b version)
 {
 	int i;
 
@@ -719,7 +719,7 @@ int rd_player(void)
 /*
  * Read squelch and autoinscription submenu for all known objects
  */
-int rd_squelch(void)
+int rd_squelch(u32b version)
 {
 	int i;
 	byte tmp8u = 24;
@@ -772,7 +772,7 @@ int rd_squelch(void)
 }
 
 
-int rd_misc(void)
+int rd_misc(u32b version)
 {
 	byte tmp8u;
 	
@@ -814,7 +814,7 @@ int rd_misc(void)
 	return 0;
 }
 
-int rd_player_hp(void)
+int rd_player_hp(u32b version)
 {
 	int i;
 	u16b tmp16u;
@@ -837,7 +837,7 @@ int rd_player_hp(void)
 }
 
 
-int rd_player_spells(void)
+int rd_player_spells(u32b version)
 {
 	int i;
 	u16b tmp16u;
@@ -868,7 +868,7 @@ int rd_player_spells(void)
 /*
  * Read the random artifacts
  */
-int rd_randarts(void)
+int rd_randarts(u32b version)
 {
 	int i;
 	byte tmp8u;
@@ -1013,7 +1013,7 @@ int rd_randarts(void)
  *
  * Note that the inventory is "re-sorted" later by "dungeon()".
  */
-int rd_inventory(void)
+int rd_inventory(u32b version)
 {
 	int slot = 0;
 
@@ -1095,7 +1095,7 @@ int rd_inventory(void)
 }
 
 
-int rd_stores(void)
+int rd_stores(u32b version)
 {
 	int i;
 	u16b tmp16u;
@@ -1183,7 +1183,7 @@ int rd_stores(void)
  * After loading the monsters, the objects being held by monsters are
  * linked directly into those monsters.
  */
-int rd_dungeon(void)
+int rd_dungeon(u32b version)
 {
 	int i, y, x;
 
@@ -1344,7 +1344,7 @@ int rd_dungeon(void)
 	return 0;
 }
 
-int rd_objects(void)
+int rd_objects(u32b version)
 {
 	int i;
 	u16b limit;
@@ -1422,7 +1422,7 @@ int rd_objects(void)
 }
 
 
-int rd_monsters(void)
+int rd_monsters(u32b version)
 {
 	int i;
 	u16b limit;
@@ -1506,7 +1506,7 @@ int rd_monsters(void)
 }
 
 
-int rd_ghost(void)
+int rd_ghost(u32b version)
 {
 	char buf[64];
 
@@ -1526,7 +1526,7 @@ int rd_ghost(void)
 }
 
 
-int rd_history(void)
+int rd_history(u32b version)
 {
 	u32b tmp32u;
 	size_t i;

@@ -31,7 +31,7 @@ static const byte savefile_name[4] = SAVEFILE_NAME;
 static const struct
 {
 	char name[16];
-	int (*loader)(void);
+	int (*loader)(u32b version);
 	void (*saver)(void);
 	u32b cur_ver;
 	u32b oldest_ver;
@@ -229,7 +229,8 @@ void strip_bytes(int n)
 
 static bool try_save(ang_file *file)
 {
-	size_t i;
+	byte savefile_head[SAVEFILE_HEAD_SIZE];
+	size_t i, pos;
 
 	/* Start off the buffer */
 	buffer = mem_alloc(BUFFER_INITIAL_SIZE);
@@ -237,16 +238,10 @@ static bool try_save(ang_file *file)
 
 	for (i = 0; i < N_ELEMENTS(savefile_blocks); i++)
 	{
-		size_t pos;
-		byte savefile_head[SAVEFILE_HEAD_SIZE];
-
-		printf("in block %s\n", savefile_blocks[i].name);
-
 		buffer_pos = 0;
 		buffer_check = 0;
 
 		savefile_blocks[i].saver();
-
 
 		/* 16-byte block name */
 		pos = my_strcpy((char *)savefile_head,
@@ -273,12 +268,12 @@ static bool try_save(ang_file *file)
 		savefile_head[pos++] = ((buffer_check >> 16) & 0xFF);
 		savefile_head[pos++] = ((buffer_check >> 24) & 0xFF);
 
-		printf("version %d, size %d, checksum %d\n", 1, buffer_pos, buffer_check);
-
 		assert(pos == SAVEFILE_HEAD_SIZE);
 		
 		file_write(file, (char *)savefile_head, SAVEFILE_HEAD_SIZE);
 		file_write(file, (char *)buffer, buffer_pos);
+
+		/* pad to 4 byte multiples */
 		if (buffer_pos % 4)
 			file_write(file, "xxx", 4 - (buffer_pos % 4));
 	}
@@ -301,11 +296,16 @@ static bool try_load(ang_file *file)
 
 		/* Load in the next header */
 		size = file_read(file, (char *)savefile_head, SAVEFILE_HEAD_SIZE);
+
+		/* If nothing was read, that's the end of the file */
 		if (size == 0) break;
+
 		assert(size == SAVEFILE_HEAD_SIZE);
 		
-		/* 16-byte block name */
+		/* 16-byte block name, null-terminated */
 		assert(savefile_head[15] == '\0');
+
+		/* Determine the block ID */
 		for (i = 0; i < N_ELEMENTS(savefile_blocks); i++)
 		{
 			if (strncmp((char *) savefile_head,
@@ -314,8 +314,6 @@ static bool try_load(ang_file *file)
 				break;
 		}
 		assert(i < N_ELEMENTS(savefile_blocks));
-		
-		printf("in block %s\n", savefile_blocks[i].name);
 
 		
 		/* 4-byte block version */
@@ -339,28 +337,26 @@ static bool try_load(ang_file *file)
 		/* pad to 4 bytes */
 		if (block_size % 4)
 			block_size += 4 - (block_size % 4);
-		
-		printf("version %d, size %d, checksum %d\n", block_version, block_size, block_checksum);
 
+		/* Read stuff in */
 		buffer = mem_alloc(block_size);
 		buffer_size = block_size;
 		buffer_pos = 0;
 		buffer_check = 0;
 
-		file_read(file, (char *) buffer, block_size);
-		if (savefile_blocks[i].loader()) return -1;
+		size = file_read(file, (char *) buffer, block_size);
+		assert(size == block_size);
 
-		printf("pos %d\n", buffer_pos);
+		/* Try loading */
+		if (savefile_blocks[i].loader(block_version))
+			return -1;
+
 /*		assert(buffer_check == block_checksum); */
-
 		mem_free(buffer);
 	}
 	
 	return 0;
 }
-
-
-
 
 
 
