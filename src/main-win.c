@@ -499,7 +499,7 @@ static DIBINIT infMask;
 /*
  * Flag set once "sound" has been initialized
  */
-static bool can_OPT(use_sound) = FALSE;
+static bool can_use_sound = FALSE;
 
 #define SAMPLE_MAX 16
 
@@ -1355,17 +1355,17 @@ static bool init_graphics(void)
 static bool init_sound(void)
 {
 	/* Initialize once */
-	if (!can_OPT(use_sound))
+	if (!can_use_sound)
 	{
 		/* Load the prefs */
 		load_sound_prefs();
 
 		/* Sound available */
-		can_OPT(use_sound) = TRUE;
+		can_use_sound = TRUE;
 	}
 
 	/* Result */
-	return (can_OPT(use_sound));
+	return (can_use_sound);
 }
 #endif /* USE_SOUND */
 
