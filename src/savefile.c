@@ -44,7 +44,7 @@ static const struct
 	{ "object memory", rd_object_memory, wr_object_memory, 1, 1 },
 	{ "quests", rd_quests, wr_quests, 1, 1 },
 	{ "artifacts", rd_artifacts, wr_artifacts, 1, 1 },
-	{ "player", rd_player, wr_player, 1, 1 },
+	{ "player", rd_player, wr_player, 2, 1 },
 	{ "squelch", rd_squelch, wr_squelch, 1, 1 },
 	{ "misc", rd_misc, wr_misc, 1, 1 },
 	{ "player hp", rd_player_hp, wr_player_hp, 1, 1 },

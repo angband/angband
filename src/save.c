@@ -334,6 +334,7 @@ void wr_player(void)
 	
 	wr_s16b(p_ptr->ht_birth);
 	wr_s16b(p_ptr->wt_birth);
+	wr_s16b(p_ptr->sc_birth);
 	wr_u32b(p_ptr->au_birth);
 	
 	/* Padding */

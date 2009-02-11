@@ -23,6 +23,7 @@ Bugs fixed:
 (#599) Above 18, stat drain and gain always works in intervals of 10 points
 (#561) 'n', when used to fire missiles, no longer ignores confusion.
 (#613) Prevent {!*} prompting for harmless actions.
+(#639) Reset social status to original value with quickstart
 (#641) Fix Morgoth artifacts.
 (#654) Allow pseudo to work whilst resting.
 (#672) Fix Evenstar activation message.

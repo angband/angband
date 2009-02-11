@@ -235,6 +235,7 @@ typedef struct
 	s16b stat_birth[A_MAX]; /* Birth "natural" stat values */
 	s16b ht_birth;          /* Birth Height */
 	s16b wt_birth;          /* Birth Weight */
+	s16b sc_birth;		/* Birth social class */
 
 	/* Variable and calculatable player state */
 	player_state	state;

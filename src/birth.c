@@ -93,7 +93,7 @@ static void save_roller_data(birther *player)
 	player->age = p_ptr->age;
 	player->wt = p_ptr->wt_birth;
 	player->ht = p_ptr->ht_birth;
-	player->sc = p_ptr->sc;
+	player->sc = p_ptr->sc_birth;
 	player->au = p_ptr->au_birth;
 
 	/* Save the stats */
@@ -138,7 +138,7 @@ static void load_roller_data(birther *player, birther *prev_player)
 	p_ptr->age = player->age;
 	p_ptr->wt = p_ptr->wt_birth = player->wt;
 	p_ptr->ht = p_ptr->ht_birth = player->ht;
-	p_ptr->sc = player->sc;
+	p_ptr->sc = p_ptr->sc_birth = player->sc;
 	p_ptr->au = p_ptr->au_birth = player->au;
 
 	/* Load the stats */
@@ -395,7 +395,7 @@ static void get_history(void)
 	else if (social_class < 1) social_class = 1;
 
 	/* Save the social class */
-	p_ptr->sc = social_class;
+	p_ptr->sc = p_ptr->sc_birth = social_class;
 }
 
 
