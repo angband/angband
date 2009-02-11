@@ -106,8 +106,8 @@ static void sf_put(byte v)
 
 	if (buffer_size == buffer_pos)
 	{
-		buffer = mem_realloc(buffer, buffer_size + BUFFER_BLOCK_INCREMENT);
 		buffer_size += BUFFER_BLOCK_INCREMENT;
+		buffer = mem_realloc(buffer, buffer_size);
 	}
 	
 	assert(buffer_pos < buffer_size);
@@ -295,7 +295,8 @@ static bool try_load(ang_file *file)
 		size_t size;
 
 		/* Load in the next header */
-		size = file_read(file, (char *)savefile_head, SAVEFILE_HEAD_SIZE);
+		size = file_read(file,
+				(char *)savefile_head, SAVEFILE_HEAD_SIZE);
 
 		/* If nothing was read, that's the end of the file */
 		if (size == 0) break;
