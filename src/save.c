@@ -565,7 +565,10 @@ static void wr_player_spells(void)
 static void wr_randarts(void)
 {
 	int i;
-	
+
+	if (!adult_randarts) 
+		return;
+
 	wr_u16b(z_info->a_max);
 	
 	for (i = 0; i < z_info->a_max; i++)
@@ -677,6 +680,9 @@ static void wr_dungeon(void)
 	byte count;
 	byte prev_char;
 
+
+	if (p_ptr->is_dead)
+		return;
 
 	/*** Basic info ***/
 
@@ -821,6 +827,9 @@ static void wr_objects(void)
 {
 	int i;
 
+	if (p_ptr->is_dead)
+		return;
+	
 	/* Total objects */
 	wr_u16b(o_max);
 
@@ -838,6 +847,9 @@ static void wr_objects(void)
 static void wr_monsters(void)
 {
 	int i;
+
+	if (p_ptr->is_dead)
+		return;
 
 	/* Total monsters */
 	wr_u16b(mon_max);
@@ -866,7 +878,10 @@ static void wr_monsters(void)
 static void wr_ghost(void)
 {
 	int i;
-	
+
+	if (p_ptr->is_dead)
+		return;
+
 	/* XXX */
 	
 	/* Name */
@@ -920,7 +935,7 @@ static void wr_savefile_new(void)
 	wr_u32b(0L);
 	wr_u32b(0L);
 
-	/* Write actual data */
+
 	wr_randomizer();
 	wr_options();
 	wr_messages();
@@ -933,17 +948,14 @@ static void wr_savefile_new(void)
 	wr_misc();
 	wr_player_hp();
 	wr_player_spells();
-	if (adult_randarts) wr_randarts();
+	wr_randarts();
 	wr_inventory();
 	wr_stores();
 
-	if (!p_ptr->is_dead)
-	{
-		wr_dungeon();
-		wr_objects();
-		wr_monsters();
-		wr_ghost();
-	}
+	wr_dungeon();
+	wr_objects();
+	wr_monsters();
+	wr_ghost();
 
 	wr_history();
 

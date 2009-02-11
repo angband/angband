@@ -1030,6 +1030,8 @@ static errr rd_randarts(void)
 	s32b tmp32s;
 	u32b tmp32u;
 
+	if (!adult_randarts)
+		return 0;
 
 	if (older_than(3, 0, 14))
 	{
@@ -1345,6 +1347,9 @@ static errr rd_dungeon(void)
 	byte tmp8u;
 	u16b tmp16u;
 
+	/* Only if the player's alive */
+	if (p_ptr->is_dead)
+		return 0;
 
 	/*** Basic info ***/
 
@@ -1495,7 +1500,11 @@ static int rd_objects(void)
 {
 	int i;
 	u16b limit;
-	
+
+	/* Only if the player's alive */
+	if (p_ptr->is_dead)
+		return 0;
+
 	/* Read the item count */
 	rd_u16b(&limit);
 
@@ -1570,6 +1579,10 @@ static int rd_monsters(void)
 	int i;
 	u16b limit;
 
+	/* Only if the player's alive */
+	if (p_ptr->is_dead)
+		return 0;
+	
 	/* Read the monster count */
 	rd_u16b(&limit);
 
@@ -1645,9 +1658,13 @@ static int rd_monsters(void)
 }
 
 
-static void rd_ghost(void)
+static int rd_ghost(void)
 {
 	char buf[64];
+
+	/* Only if the player's alive */
+	if (p_ptr->is_dead)
+		return 0;	
 
 	/* XXX */
 	
@@ -1656,10 +1673,12 @@ static void rd_ghost(void)
 	
 	/* Strip old data */
 	strip_bytes(60);
+
+	return 0;
 }
 
 
-static void rd_history(void)
+static int rd_history(void)
 {
 	u32b tmp32u;
 	size_t i;
@@ -1684,6 +1703,8 @@ static void rd_history(void)
 		
 		history_add_full(type, art_name, dlev, clev, turn, text);
 	}
+
+	return 0;
 }
 
 
@@ -1729,19 +1750,16 @@ static errr rd_savefile_new_aux(void)
 	if (rd_player_hp()) return -1;
 	if (rd_player_spells()) return -1;
 
-	if (adult_randarts && rd_randarts()) return -1;
+	if (rd_randarts()) return -1;
 	if (rd_inventory()) return -1;
 	if (rd_stores()) return -1;
 	
-	if (!p_ptr->is_dead)
-	{
-		if (rd_dungeon()) return -1;
-		if (rd_objects()) return -1;
-		if (rd_monsters()) return -1;
-		rd_ghost();
-	}
+	if (rd_dungeon()) return -1;
+	if (rd_objects()) return -1;
+	if (rd_monsters()) return -1;
+	if (rd_ghost()) return -1;
 
-	rd_history();
+	if (rd_history()) return -1;
 
 
 	/* Save the checksum */
