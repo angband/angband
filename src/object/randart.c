@@ -1177,7 +1177,8 @@ static struct item_choice {
 static s16b choose_item(int a_idx)
 {
 	artifact_type *a_ptr = &a_info[a_idx];
-	int tval, sval;
+	int tval;
+	int sval = 0;
 	object_kind *k_ptr;
 	int r, i;
 	s16b k_idx, r2;
@@ -3887,7 +3888,7 @@ static void scramble_artifact(int a_idx)
 	object_kind *k_ptr;
 	u32b activates = a_ptr->flags3 & TR3_ACTIVATE;
 	s32b power;
-	int tries;
+	int tries = 0;
 	s16b k_idx;
 	byte rarity_old, base_rarity_old;
 	s16b rarity_new;
