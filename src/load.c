@@ -878,7 +878,7 @@ int rd_randarts(u32b version)
 	s32b tmp32s;
 	u32b tmp32u;
 
-	if (!adult_randarts)
+	if (!OPT(adult_randarts))
 		return 0;
 
 	if (FALSE)

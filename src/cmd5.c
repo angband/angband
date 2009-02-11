@@ -640,7 +640,7 @@ bool spell_cast(int spell)
 	/* Failed spell */
 	if (randint0(100) < chance)
 	{
-		if (flush_failure) flush();
+		if (OPT(flush_failure)) flush();
 		msg_print("You failed to concentrate hard enough!");
 	}
 

@@ -172,7 +172,7 @@ static void load_roller_data(birther *player, birther *prev_player)
 static int adjust_stat(int value, int amount, int auto_roll)
 {
 	/* Negative amounts or maximize mode */
-	if ((amount < 0) || adult_maximize)
+	if ((amount < 0) || OPT(adult_maximize))
 	{
 		return (modify_stat_value(value, amount));
 	}
@@ -255,7 +255,7 @@ static void get_stats(int stat_use[A_MAX])
 		bonus = rp_ptr->r_adj[i] + cp_ptr->c_adj[i];
 
 		/* Variable stat maxes */
-		if (adult_maximize)
+		if (OPT(adult_maximize))
 		{
 			/* Start fully healed */
 			p_ptr->stat_cur[i] = p_ptr->stat_max[i];
@@ -721,7 +721,7 @@ static void recalculate_stats(int *stats, int points_left)
 	for (i = 0; i < A_MAX; i++)
 	{
 		/* Variable stat maxes */
-		if (adult_maximize)
+		if (OPT(adult_maximize))
 		{
 			/* Reset stats */
 			p_ptr->stat_cur[i] = p_ptr->stat_max[i] = p_ptr->stat_birth[i] = stats[i];

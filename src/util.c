@@ -748,11 +748,11 @@ void flush(void)
 
 
 /*
- * Flush all pending input if the flush_failure option is set.
+ * Flush all pending input if the OPT(flush_failure) option is set.
  */
 void flush_fail(void)
 {
-	if (flush_failure) flush();
+	if (OPT(flush_failure)) flush();
 }
 
 
@@ -1015,7 +1015,7 @@ char (*inkey_hack)(int flush_first) = NULL;
  * triggers.  The "inkey_base" flag is extremely dangerous!
  *
  * If "inkey_flag" is TRUE, then we will assume that we are waiting for a
- * normal command, and we will only show the cursor if "hilite_player" is
+ * normal command, and we will only show the cursor if "OPT(hilite_player)" is
  * TRUE (or if the player is in a store), instead of always showing the
  * cursor.  The various "main-xxx.c" files should avoid saving the game
  * in response to a "menu item" request unless "inkey_flag" is TRUE, to
@@ -1119,7 +1119,7 @@ ui_event_data inkey_ex(void)
 	(void)Term_get_cursor(&cursor_state);
 
 	/* Show the cursor if waiting, except sometimes in "command" mode */
-	if (!inkey_scan && (!inkey_flag || hilite_player || character_icky))
+	if (!inkey_scan && (!inkey_flag || OPT(hilite_player) || character_icky))
 	{
 		/* Show the cursor */
 		(void)Term_set_cursor(TRUE);
@@ -1221,7 +1221,7 @@ ui_event_data inkey_ex(void)
 		ke = inkey_aux(inkey_scan);
 
 		/* Handle mouse buttons */
-		if ((ke.type == EVT_MOUSE) && (mouse_buttons))
+		if ((ke.type == EVT_MOUSE) && (OPT(mouse_buttons)))
 		{
 			/* Check to see if we've hit a button */
 			/* Assuming text buttons here for now - this would have to
@@ -1369,7 +1369,7 @@ void bell(cptr reason)
 	}
 
 	/* Make a bell noise (if allowed) */
-	if (ring_bell) Term_xtra(TERM_XTRA_NOISE, 0);
+	if (OPT(ring_bell)) Term_xtra(TERM_XTRA_NOISE, 0);
 
 	/* Flush the input (later!) */
 	flush();
@@ -1383,7 +1383,7 @@ void bell(cptr reason)
 void sound(int val)
 {
 	/* No sound */
-	if (!use_sound || !sound_hook) return;
+	if (!OPT(use_sound) || !sound_hook) return;
 
 	sound_hook(val);
 }
@@ -1400,14 +1400,14 @@ static void msg_flush(int x)
 	/* Pause for response */
 	Term_putstr(x, 0, -1, a, "-more-");
 
-	if (!auto_more)
+	if (!OPT(auto_more))
 	{
 		/* Get an acceptable keypress */
 		while (1)
 		{
 			char ch;
 			ch = inkey();
-			if (quick_messages) break;
+			if (OPT(quick_messages)) break;
 			if ((ch == ESCAPE) || (ch == ' ')) break;
 			if ((ch == '\n') || (ch == '\r')) break;
 			bell("Illegal response to a 'more' prompt!");
@@ -2598,7 +2598,7 @@ bool get_check(cptr prompt)
 	while (TRUE)
 	{
 		ke = inkey_ex();
-		if (quick_messages) break;
+		if (OPT(quick_messages)) break;
 		if (ke.key == ESCAPE) break;
 		if (strchr("YyNn", ke.key)) break;
 		bell("Illegal response to a 'yes/no' question!");
@@ -2761,7 +2761,7 @@ void request_command(void)
 	cptr act;
 
 
-	if (rogue_like_commands)
+	if (OPT(rogue_like_commands))
 		mode = KEYMAP_MODE_ROGUE;
 	else
 		mode = KEYMAP_MODE_ORIG;

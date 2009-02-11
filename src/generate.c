@@ -329,7 +329,7 @@ static void new_player_spot(void)
 		/* Refuse to start on anti-teleport grids */
 		if (cave_info[y][x] & (CAVE_ICKY)) continue;
 
-		if (!adult_no_stairs)
+		if (!OPT(adult_no_stairs))
 		{
 			if (p_ptr->create_down_stair) {
 				cave_set_feat(y, x, FEAT_MORE);
@@ -781,7 +781,7 @@ static void destroy_level(void)
 
 
 	/* Note destroyed levels */
-	if (cheat_room) msg_print("Destroyed Level");
+	if (OPT(cheat_room)) msg_print("Destroyed Level");
 
 	/* Drop a few epi-centers (usually about two) */
 	for (n = 0; n < randint1(5); n++)
@@ -1921,7 +1921,7 @@ static void build_type5(int y0, int x0)
 
 
 	/* Describe */
-	if (cheat_room)
+	if (OPT(cheat_room))
 	{
 		/* Room type */
 		msg_format("Monster nest (%s)", name);
@@ -2232,7 +2232,7 @@ static void build_type6(int y0, int x0)
 
 
 	/* Message */
-	if (cheat_room)
+	if (OPT(cheat_room))
 	{
 		/* Room type */
 		msg_format("Monster pit (%s)", name);
@@ -2467,7 +2467,7 @@ static void build_type7(int y0, int x0)
 	}
 
 	/* Message */
-	if (cheat_room) msg_format("Lesser vault (%s)", v_name + v_ptr->name);
+	if (OPT(cheat_room)) msg_format("Lesser vault (%s)", v_name + v_ptr->name);
 
 	/* Boost the rating */
 	rating += v_ptr->rat;
@@ -2503,7 +2503,7 @@ static void build_type8(int y0, int x0)
 	}
 
 	/* Message */
-	if (cheat_room) msg_format("Greater vault (%s)", v_name + v_ptr->name);
+	if (OPT(cheat_room)) msg_format("Greater vault (%s)", v_name + v_ptr->name);
 
 	/* Boost the rating */
 	rating += v_ptr->rat;

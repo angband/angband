@@ -479,7 +479,7 @@ static void process_world(void)
 			int n;
 
 			/* Message */
-			if (cheat_xtra) msg_print("Updating Shops...");
+			if (OPT(cheat_xtra)) msg_print("Updating Shops...");
 
 			/* Maintain each shop (except home) */
 			for (n = 0; n < MAX_STORES; n++)
@@ -495,7 +495,7 @@ static void process_world(void)
 			if (one_in_(STORE_SHUFFLE))
 			{
 				/* Message */
-				if (cheat_xtra) msg_print("Shuffling a Shopkeeper...");
+				if (OPT(cheat_xtra)) msg_print("Shuffling a Shopkeeper...");
 
 				/* Pick a random shop (except home) */
 				while (1)
@@ -509,7 +509,7 @@ static void process_world(void)
 			}
 
 			/* Message */
-			if (cheat_xtra) msg_print("Done.");
+			if (OPT(cheat_xtra)) msg_print("Done.");
 		}
 	}
 
@@ -1683,7 +1683,7 @@ void play_game(void)
 		player_birth(p_ptr->ht_birth ? TRUE : FALSE);
 
 		/* Randomize the artifacts */
-		if (adult_randarts)
+		if (OPT(adult_randarts))
 			do_randart(seed_randart, TRUE);
 	}
 
@@ -1801,7 +1801,7 @@ void play_game(void)
 		if (p_ptr->playing && p_ptr->is_dead)
 		{
 			/* Mega-Hack -- Allow player to cheat death */
-			if ((p_ptr->wizard || cheat_live) && !get_check("Die? "))
+			if ((p_ptr->wizard || OPT(cheat_live)) && !get_check("Die? "))
 			{
 				/* Mark social class, reset age, if needed */
 				if (p_ptr->sc) p_ptr->sc = p_ptr->age = 0;

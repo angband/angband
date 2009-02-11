@@ -279,7 +279,7 @@ void teleport_player_to(int ny, int nx)
  */
 void teleport_player_level(void)
 {
-	if (adult_ironman)
+	if (OPT(adult_ironman))
 	{
 		msg_print("Nothing happens.");
 		return;

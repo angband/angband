@@ -66,7 +66,7 @@ static int check_devices(object_type *o_ptr)
 	/* Roll for usage */
 	if ((chance < USE_DEVICE) || (randint1(chance) < USE_DEVICE))
 	{
-		if (flush_failure) flush();
+		if (OPT(flush_failure)) flush();
 		msg_format("You failed to %s properly.", msg);
 		return FALSE;
 	}
@@ -74,7 +74,7 @@ static int check_devices(object_type *o_ptr)
 	/* Notice empty staffs */
 	if (what && o_ptr->pval <= 0)
 	{
-		if (flush_failure) flush();
+		if (OPT(flush_failure)) flush();
 		msg_format("The %s has no charges left.", what);
 		o_ptr->ident |= (IDENT_EMPTY);
 		return FALSE;

@@ -408,7 +408,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	int i;
 	int prev_g = -1;
 
-	int omode = rogue_like_commands;
+	int omode = OPT(rogue_like_commands);
 
 
 	/* Get size */
@@ -416,7 +416,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	browser_rows = hgt - 8;
 
 	/* Disable the roguelike commands for the duration */
-	rogue_like_commands = FALSE;
+	OPT(rogue_like_commands) = FALSE;
 
 
 
@@ -731,7 +731,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	}
 
 	/* Restore roguelike option */
-	rogue_like_commands = omode;
+	OPT(rogue_like_commands) = omode;
 
 	/* Prompt */
 	if (!grp_cnt)
@@ -1129,7 +1129,7 @@ static int count_known_monsters(void)
 	for (i = 0; i < z_info->r_max; i++)
 	{
 		monster_race *r_ptr = &r_info[i];
-		if (!cheat_know && !l_list[i].sights) continue;
+		if (!OPT(cheat_know) && !l_list[i].sights) continue;
 		if (!r_ptr->name) continue;
 
 		if (r_ptr->flags[0] & RF0_UNIQUE) m_count++;
@@ -1165,7 +1165,7 @@ static void do_cmd_knowledge_monsters(void *obj, const char *name)
 	for (i = 0; i < z_info->r_max; i++)
 	{
 		monster_race *r_ptr = &r_info[i];
-		if (!cheat_know && !l_list[i].sights) continue;
+		if (!OPT(cheat_know) && !l_list[i].sights) continue;
 		if (!r_ptr->name) continue;
 
 		if (r_ptr->flags[0] & RF0_UNIQUE) m_count++;
@@ -1184,7 +1184,7 @@ static void do_cmd_knowledge_monsters(void *obj, const char *name)
 	for (i = 0; i < z_info->r_max; i++)
 	{
 		monster_race *r_ptr = &r_info[i];
-		if (!cheat_know && !l_list[i].sights) continue;
+		if (!OPT(cheat_know) && !l_list[i].sights) continue;
 		if (!r_ptr->name) continue;
 	
 		for (j = 0; j < N_ELEMENTS(monster_group)-1; j++)
@@ -1350,7 +1350,7 @@ static int collect_known_artifacts(int *artifacts, size_t artifacts_len)
 		/* Artifact doesn't exist */
 		if (!a_info[j].name) continue;
 
-		if (cheat_xtra || artifact_is_known(j))
+		if (OPT(cheat_xtra) || artifact_is_known(j))
 		{
 			if (artifacts)
 				artifacts[a_count++] = j;
@@ -1501,7 +1501,7 @@ static void do_cmd_knowledge_ego_items(void *obj, const char *name)
 
 	for (i = 0; i < z_info->e_max; i++)
 	{
-		if (e_info[i].everseen || cheat_xtra)
+		if (e_info[i].everseen || OPT(cheat_xtra))
 		{
 			for (j = 0; j < EGO_TVALS_MAX && e_info[i].tval[j]; j++)
 			{
@@ -1580,7 +1580,7 @@ static void display_object(int col, int row, bool cursor, int oid)
 	}
 	else
 	{
- 		object_kind_name(o_name, sizeof(o_name), k_idx, cheat_know);
+ 		object_kind_name(o_name, sizeof(o_name), k_idx, OPT(cheat_know));
 	}
 
 	/* If the type is "tried", display that */
@@ -1809,7 +1809,7 @@ void do_cmd_knowledge_objects(void *obj, const char *name)
 
 	for (i = 0; i < z_info->k_max; i++)
 	{
-		if ((k_info[i].everseen || k_info[i].flavor || cheat_xtra) &&
+		if ((k_info[i].everseen || k_info[i].flavor || OPT(cheat_xtra)) &&
 				!(k_info[i].flags3 & TR3_INSTA_ART))
 		{
 			int c = obj_group_order[k_info[i].tval];
@@ -3015,7 +3015,7 @@ static void keymap_dump(ang_file *fff)
 	int mode;
 	char buf[1024];
 
-	if (rogue_like_commands)
+	if (OPT(rogue_like_commands))
 		mode = KEYMAP_MODE_ROGUE;
 	else
 		mode = KEYMAP_MODE_ORIG;
@@ -3092,7 +3092,7 @@ void do_cmd_macros(void)
 
 	region loc = {0, 0, 0, 12};
 
-	if (rogue_like_commands)
+	if (OPT(rogue_like_commands))
 		mode = KEYMAP_MODE_ROGUE;
 	else
 		mode = KEYMAP_MODE_ORIG;
@@ -4229,7 +4229,7 @@ void do_cmd_knowledge(void)
 	knowledge_actions[2].flags = MN_GREYED;
 	for (i = 0; i < z_info->e_max; i++)
 	{
-		if (e_info[i].everseen || cheat_xtra)
+		if (e_info[i].everseen || OPT(cheat_xtra))
 		{
 			knowledge_actions[2].flags = 0;
 			break;

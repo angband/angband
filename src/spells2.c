@@ -902,7 +902,7 @@ void self_knowledge(bool spoil)
 void set_recall(void)
 {
 	/* Ironman */
-	if (adult_ironman && !p_ptr->total_winner)
+	if (OPT(adult_ironman) && !p_ptr->total_winner)
 	{
 		msg_print("Nothing happens.");
 		return;
@@ -1879,7 +1879,7 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 	if (!okay)
 	{
 		/* Flush */
-		if (flush_failure) flush();
+		if (OPT(flush_failure)) flush();
 
 		/* Message */
 		msg_print("The enchantment failed.");
@@ -3580,7 +3580,7 @@ void brand_object(object_type *o_ptr, byte brand_type)
 	}
 	else
 	{
-		if (flush_failure) flush();
+		if (OPT(flush_failure)) flush();
 		msg_print("The Branding failed.");
 	}
 }

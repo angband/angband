@@ -1232,7 +1232,7 @@ void describe_monster(int r_idx, bool spoilers)
 	}
 
 	/* Cheat -- know everything */
-	if (cheat_know || spoilers) cheat_monster_lore(r_idx, &lore);
+	if (OPT(cheat_know) || spoilers) cheat_monster_lore(r_idx, &lore);
 
 	/* Show kills of monster vs. player(s) */
 	if (!spoilers) describe_monster_kills(r_idx, &lore);

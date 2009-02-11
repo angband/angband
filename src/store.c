@@ -1739,7 +1739,7 @@ static void store_display_help(void)
 	text_out_c(TERM_L_GREEN, "Space");
 	text_out(" to advance to the next page. '");
 
-	if (rogue_like_commands)
+	if (OPT(rogue_like_commands))
 		text_out_c(TERM_L_GREEN, "x");
 	else
 		text_out_c(TERM_L_GREEN, "l");
@@ -2787,7 +2787,7 @@ void do_cmd_store(void)
 
 
 	/* Check if we can enter the store */
-	if (adult_no_stores)
+	if (OPT(adult_no_stores))
 	{
 		msg_print("The doors are locked.");
 		return;
@@ -2851,7 +2851,7 @@ void do_cmd_store(void)
 		menu.count = st_ptr->stock_num;
 
 		/* Roguelike */
-		if (rogue_like_commands)
+		if (OPT(rogue_like_commands))
 		{
 			/* These two can't intersect! */
 			menu.cmd_keys = "\n\x04\x10\r?={}~CEIPTdegilpswx\x8B\x8C"; /* \x10 = ^p , \x04 = ^D */

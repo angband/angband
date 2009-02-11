@@ -1031,7 +1031,7 @@ static int rd_randarts(void)
 	s32b tmp32s;
 	u32b tmp32u;
 
-	if (!adult_randarts)
+	if (!OPT(adult_randarts))
 		return 0;
 
 	if (older_than(3, 0, 14))

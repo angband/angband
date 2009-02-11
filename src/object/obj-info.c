@@ -948,7 +948,7 @@ void object_info_header(const object_type *o_ptr)
 	text_out("\n");
 
 	/* Display the known artifact description */
-	if (!adult_randarts && o_ptr->name1 &&
+	if (!OPT(adult_randarts) && o_ptr->name1 &&
 	    object_known_p(o_ptr) && a_info[o_ptr->name1].text)
 	{
 		text_out(a_text + a_info[o_ptr->name1].text);

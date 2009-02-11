@@ -308,7 +308,7 @@ bool change_panel(int dir)
  * panel, the map scrolls one panel in that direction so that the player
  * is no longer so close to the edge.
  *
- * The "center_player" option allows the current panel to always be centered
+ * The "OPT(center_player)" option allows the current panel to always be centered
  * around the player, which is very expensive, and also has some interesting
  * gameplay ramifications.
  */
@@ -349,7 +349,7 @@ void verify_panel(void)
 
 
 		/* Scroll screen vertically when off-center */
-		if (center_player && !p_ptr->running && (py != wy + panel_hgt))
+		if (OPT(center_player) && !p_ptr->running && (py != wy + panel_hgt))
 			wy = py - panel_hgt;
 
 		/* Scroll screen vertically when 3 grids from top/bottom edge */
@@ -358,7 +358,7 @@ void verify_panel(void)
 
 
 		/* Scroll screen horizontally when off-center */
-		if (center_player && !p_ptr->running && (px != wx + panel_wid))
+		if (OPT(center_player) && !p_ptr->running && (px != wx + panel_wid))
 			wx = px - panel_wid;
 
 		/* Scroll screen horizontally when 3 grids from left/right edge */
@@ -434,7 +434,7 @@ int target_dir(char ch)
 	else
 	{
 		/* Roguelike */
-		if (rogue_like_commands)
+		if (OPT(rogue_like_commands))
 		{
 			mode = KEYMAP_MODE_ROGUE;
 		}
@@ -526,7 +526,7 @@ bool get_aim_dir(int *dp)
 	}
 
 	/* Hack -- auto-target if requested */
-	if (use_old_target && target_okay() && !dir) dir = 5;
+	if (OPT(use_old_target) && target_okay() && !dir) dir = 5;
 
 	/* Ask until satisfied */
 	while (!dir)

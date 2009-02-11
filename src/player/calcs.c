@@ -773,7 +773,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		add = state->stat_add[i];
 
 		/* Maximize mode */
-		if (adult_maximize)
+		if (OPT(adult_maximize))
 		{
 			/* Modify the stats for race/class */
 			add += (rp_ptr->r_adj[i] + cp_ptr->c_adj[i]);
@@ -1311,7 +1311,7 @@ void notice_stuff(void)
 	if (p_ptr->notice & PN_SQUELCH)
 	{
 		p_ptr->notice &= ~(PN_SQUELCH);
-		if (hide_squelchable) squelch_drop();
+		if (OPT(hide_squelchable)) squelch_drop();
 	}
 
 	/* Combine the pack */

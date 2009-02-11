@@ -492,7 +492,7 @@ void wr_randarts(void)
 {
 	int i;
 
-	if (!adult_randarts) 
+	if (!OPT(adult_randarts)) 
 		return;
 
 	wr_u16b(z_info->a_max);

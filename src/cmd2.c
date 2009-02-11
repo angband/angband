@@ -33,7 +33,7 @@ void do_cmd_go_up(void)
 	}
 
 	/* Ironman */
-	if (adult_ironman)
+	if (OPT(adult_ironman))
 	{
 		msg_print("Nothing happens!");
 		return;
@@ -383,7 +383,7 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		{
 			/* We may continue repeating */
 			more = TRUE;
-			if (flush_failure) flush();
+			if (OPT(flush_failure)) flush();
 			message(MSG_LOCKPICK_FAIL, 0, "You failed to pick the lock.");
 		}
 	}
@@ -469,7 +469,7 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	{
 		/* We may keep trying */
 		more = TRUE;
-		if (flush_failure) flush();
+		if (OPT(flush_failure)) flush();
 		msg_print("You failed to disarm the chest.");
 	}
 
@@ -711,7 +711,7 @@ static bool do_cmd_open_aux(int y, int x)
 		else
 		{
 			/* Failure */
-			if (flush_failure) flush();
+			if (OPT(flush_failure)) flush();
 
 			/* Message */
 			message(MSG_LOCKPICK_FAIL, 0, "You failed to pick the lock.");
@@ -755,7 +755,7 @@ void do_cmd_open(void)
 
 
 	/* Easy Open */
-	if (easy_open)
+	if (OPT(easy_open))
 	{
 		int num_doors, num_chests;
 
@@ -927,7 +927,7 @@ void do_cmd_close(void)
 
 
 	/* Easy Close */
-	if (easy_open)
+	if (OPT(easy_open))
 	{
 		/* Count open doors */
 		if (count_feats(&y, &x, is_open, FALSE) == 1)
@@ -1415,7 +1415,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 	else if ((i > 5) && (randint1(i) > 5))
 	{
 		/* Failure */
-		if (flush_failure) flush();
+		if (OPT(flush_failure)) flush();
 
 		/* Message */
 		msg_format("You failed to disarm the %s.", name);
@@ -1452,7 +1452,7 @@ void do_cmd_disarm(void)
 
 
 	/* Easy Disarm */
-	if (easy_open)
+	if (OPT(easy_open))
 	{
 		int num_traps, num_chests;
 
@@ -2029,8 +2029,8 @@ static bool do_cmd_walk_test(int y, int x)
 		/* Door */
 		else if (cave_feat[y][x] < FEAT_SECRET)
 		{
-			/* Hack -- Handle "easy_alter" */
-			if (easy_alter) return (TRUE);
+			/* Hack -- Handle "OPT(easy_alter)" */
+			if (OPT(easy_alter)) return (TRUE);
 
 			/* Message */
 			message(MSG_HITWALL, 0, "There is a door in the way!");
@@ -2121,14 +2121,14 @@ void do_cmd_jump(void)
 {
 	bool old_easy_alter;
 
-	/* easy_alter can be turned off (don't disarm traps) */
-	old_easy_alter = easy_alter;
-	easy_alter = FALSE;
+	/* OPT(easy_alter) can be turned off (don't disarm traps) */
+	old_easy_alter = OPT(easy_alter);
+	OPT(easy_alter) = FALSE;
 
 	walk();
 
-	/* Restore easy_alter */
-	easy_alter = old_easy_alter;
+	/* Restore OPT(easy_alter) */
+	OPT(easy_alter) = old_easy_alter;
 }
 
 

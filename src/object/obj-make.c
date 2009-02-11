@@ -394,7 +394,7 @@ static void copy_artifact_data(object_type *o_ptr, artifact_type *a_ptr)
 	good_item_flag = TRUE;
 
 	/* Cheat -- peek at the item */
-	if (cheat_peek) object_mention(o_ptr);
+	if (OPT(cheat_peek)) object_mention(o_ptr);
 }
 
 
@@ -419,7 +419,7 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 
 
 	/* No artifacts, do nothing */
-	if (adult_no_artifacts) return (FALSE);
+	if (OPT(adult_no_artifacts)) return (FALSE);
 
 	/* No artifacts in the town */
 	if (!p_ptr->depth) return (FALSE);
@@ -492,7 +492,7 @@ static bool make_artifact(object_type *o_ptr)
 
 
 	/* No artifacts, do nothing */
-	if (adult_no_artifacts) return (FALSE);
+	if (OPT(adult_no_artifacts)) return (FALSE);
 
 	/* No artifacts in the town */
 	if (!p_ptr->depth) return (FALSE);
@@ -677,7 +677,7 @@ static void a_m_aux_2(object_type *o_ptr, int level, int power)
 			rating += 30;
 
 			/* Mention the item */
-			if (cheat_peek) object_mention(o_ptr);
+			if (OPT(cheat_peek)) object_mention(o_ptr);
 
 			break;
 		}
@@ -741,7 +741,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 						rating += 25;
 
 						/* Mention the item */
-						if (cheat_peek) object_mention(o_ptr);
+						if (OPT(cheat_peek)) object_mention(o_ptr);
 					}
 
 					break;
@@ -920,7 +920,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					rating += 25;
 
 					/* Mention the item */
-					if (cheat_peek) object_mention(o_ptr);
+					if (OPT(cheat_peek)) object_mention(o_ptr);
 
 					break;
 				}
@@ -934,7 +934,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					rating += 25;
 
 					/* Mention the item */
-					if (cheat_peek) object_mention(o_ptr);
+					if (OPT(cheat_peek)) object_mention(o_ptr);
 
 					break;
 				}
@@ -950,7 +950,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					rating += 25;
 
 					/* Mention the item */
-					if (cheat_peek) object_mention(o_ptr);
+					if (OPT(cheat_peek)) object_mention(o_ptr);
 
 					break;
 				}
@@ -964,7 +964,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					rating += 25;
 
 					/* Mention the item */
-					if (cheat_peek) object_mention(o_ptr);
+					if (OPT(cheat_peek)) object_mention(o_ptr);
 
 					break;
 				}
@@ -1288,7 +1288,7 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 		rating += e_ptr->rating;
 
 		/* Cheat -- describe the item */
-		if (cheat_peek) object_mention(o_ptr);
+		if (OPT(cheat_peek)) object_mention(o_ptr);
 
 		/* Done */
 		return;
@@ -1434,7 +1434,7 @@ bool make_object(object_type *j_ptr, int lev, bool good, bool great)
 		rating += (k_info[j_ptr->k_idx].level - p_ptr->depth);
 
 		/* Cheat -- peek at items */
-		if (cheat_peek) object_mention(j_ptr);
+		if (OPT(cheat_peek)) object_mention(j_ptr);
 	}
 
 	return TRUE;

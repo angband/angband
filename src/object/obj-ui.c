@@ -155,7 +155,7 @@ void display_equip(void)
 		Term_erase(3+n, i - INVEN_WIELD, 255);
 
 		/* Display the slot description (if needed) */
-		if (show_labels)
+		if (OPT(show_labels))
 		{
 			Term_putstr(61, i - INVEN_WIELD, -1, TERM_WHITE, "<--");
 			Term_putstr(65, i - INVEN_WIELD, -1, TERM_WHITE, mention_use(i));
@@ -165,7 +165,7 @@ void display_equip(void)
 		if (o_ptr->weight)
 		{
 			int wgt = o_ptr->weight * o_ptr->number;
-			int col = (show_labels ? 52 : 71);
+			int col = (OPT(show_labels) ? 52 : 71);
 			strnfmt(tmp_val, sizeof(tmp_val), "%3d.%1d lb", wgt / 10, wgt % 10);
 			Term_putstr(col, i - INVEN_WIELD, -1, TERM_WHITE, tmp_val);
 		}
@@ -321,7 +321,7 @@ void show_equip(void)
 	lim = 79 - 3;
 
 	/* Require space for labels (if needed) */
-	if (show_labels) lim -= (14 + 2);
+	if (OPT(show_labels)) lim -= (14 + 2);
 
 	/* Require space for weight */
 	lim -= 9;
@@ -353,7 +353,7 @@ void show_equip(void)
 		l = strlen(out_desc[k]) + (2 + 3);
 
 		/* Increase length for labels (if needed) */
-		if (show_labels) l += (14 + 2);
+		if (OPT(show_labels)) l += (14 + 2);
 
 		/* Increase length for weight */
 		l += 9;
@@ -389,7 +389,7 @@ void show_equip(void)
 		put_str(tmp_val, j+1, col);
 
 		/* Use labels */
-		if (show_labels)
+		if (OPT(show_labels))
 		{
 			/* Mention the use */
 			strnfmt(tmp_val, sizeof(tmp_val), "%-14s: ", mention_use(i));

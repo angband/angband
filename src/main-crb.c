@@ -2597,7 +2597,7 @@ static void validate_menus(void)
 	}
 	
 	/* Keep the sound menu up-to-date */
-	CheckMenuItem(MyGetMenuHandle(kSpecialMenu), kSound, use_sound);
+	CheckMenuItem(MyGetMenuHandle(kSpecialMenu), kSound, OPT(use_sound));
 
 	for(int i = 0; i < N_ELEMENTS(toggle_defs); i++) {
 		m = MyGetMenuHandle(toggle_defs[i].menuID);
@@ -3240,7 +3240,7 @@ static OSStatus SoundCommand(EventHandlerCallRef inCallRef,
 							NULL, sizeof(command), NULL, &command);
 	if (command.menu.menuItemIndex == kSound)
 	{
-		use_sound = !use_sound;
+		OPT(use_sound) = !OPT(use_sound);
 	}
 	return noErr;
 }

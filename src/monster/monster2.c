@@ -1011,8 +1011,8 @@ void lore_treasure(int m_idx, int num_item, int num_gold)
  * or viewed directly, but old targets will remain set.  XXX XXX
  *
  * The player can choose to be disturbed by several things, including
- * "disturb_move" (monster which is viewable moves in some way), and
- * "disturb_near" (monster which is "easily" viewable moves in some
+ * "OPT(disturb_move)" (monster which is viewable moves in some way), and
+ * "OPT(disturb_near)" (monster which is "easily" viewable moves in some
  * way).  Note that "moves" includes "appears" and "disappears".
  */
 void update_mon(int m_idx, bool full)
@@ -1190,7 +1190,7 @@ void update_mon(int m_idx, bool full)
 			if (l_ptr->sights < MAX_SHORT) l_ptr->sights++;
 
 			/* Disturb on appearance */
-			if (disturb_move) disturb(1, 0);
+			if (OPT(disturb_move)) disturb(1, 0);
 
 			/* Window stuff */
 			p_ptr->redraw |= PR_MONLIST;
@@ -1213,7 +1213,7 @@ void update_mon(int m_idx, bool full)
 			if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
 
 			/* Disturb on disappearance */
-			if (disturb_move) disturb(1, 0);
+			if (OPT(disturb_move)) disturb(1, 0);
 
 			/* Window stuff */
 			p_ptr->redraw |= PR_MONLIST;
@@ -1231,7 +1231,7 @@ void update_mon(int m_idx, bool full)
 			m_ptr->mflag |= (MFLAG_VIEW);
 
 			/* Disturb on appearance */
-			if (disturb_near) disturb(1, 0);
+			if (OPT(disturb_near)) disturb(1, 0);
 		}
 	}
 
@@ -1245,7 +1245,7 @@ void update_mon(int m_idx, bool full)
 			m_ptr->mflag &= ~(MFLAG_VIEW);
 
 			/* Disturb on disappearance */
-			if (disturb_near) disturb(1, 0);
+			if (OPT(disturb_near)) disturb(1, 0);
 		}
 	}
 }
@@ -1593,7 +1593,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 		if (r_ptr->flags[0] & (RF0_UNIQUE))
 		{
 			/* Message for cheaters */
-			if (cheat_hear) msg_format("Deep Unique (%s).", name);
+			if (OPT(cheat_hear)) msg_format("Deep Unique (%s).", name);
 
 			/* Boost rating by twice delta-depth */
 			rating += (r_ptr->level - p_ptr->depth) * 2;
@@ -1603,7 +1603,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 		else
 		{
 			/* Message for cheaters */
-			if (cheat_hear) msg_format("Deep Monster (%s).", name);
+			if (OPT(cheat_hear)) msg_format("Deep Monster (%s).", name);
 
 			/* Boost rating by delta-depth */
 			rating += (r_ptr->level - p_ptr->depth);
@@ -1614,7 +1614,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 	else if (r_ptr->flags[0] & (RF0_UNIQUE))
 	{
 		/* Unique monsters induce message */
-		if (cheat_hear) msg_format("Unique (%s).", name);
+		if (OPT(cheat_hear)) msg_format("Unique (%s).", name);
 	}
 
 
@@ -2029,7 +2029,7 @@ bool alloc_monster(int dis, bool slp, int depth)
 
 	if (!attempts_left)
 	{
-		if (cheat_xtra || cheat_hear)
+		if (OPT(cheat_xtra) || OPT(cheat_hear))
 		{
 			msg_print("Warning! Could not allocate a new monster.");
 		}
@@ -2422,7 +2422,7 @@ void update_smart_learn(int m_idx, int what)
 
 
 	/* Not allowed to learn */
-	if (!adult_ai_learn) return;
+	if (!OPT(adult_ai_learn)) return;
 
 	/* Too stupid to learn anything */
 	if (r_ptr->flags[1] & (RF1_STUPID)) return;

@@ -499,7 +499,7 @@ static DIBINIT infMask;
 /*
  * Flag set once "sound" has been initialized
  */
-static bool can_use_sound = FALSE;
+static bool can_OPT(use_sound) = FALSE;
 
 #define SAMPLE_MAX 16
 
@@ -1355,17 +1355,17 @@ static bool init_graphics(void)
 static bool init_sound(void)
 {
 	/* Initialize once */
-	if (!can_use_sound)
+	if (!can_OPT(use_sound))
 	{
 		/* Load the prefs */
 		load_sound_prefs();
 
 		/* Sound available */
-		can_use_sound = TRUE;
+		can_OPT(use_sound) = TRUE;
 	}
 
 	/* Result */
-	return (can_use_sound);
+	return (can_OPT(use_sound));
 }
 #endif /* USE_SOUND */
 
@@ -1726,13 +1726,13 @@ static errr Term_xtra_win_react(void)
 #ifdef USE_SOUND
 
 	/* Initialize sound (if needed) */
-	if (use_sound && !init_sound())
+	if (OPT(use_sound) && !init_sound())
 	{
 		/* Warning */
 		plog("Cannot initialize sound!");
 
 		/* Cannot enable */
-		use_sound = FALSE;
+		OPT(use_sound) = FALSE;
 	}
 
 #endif /* USE_SOUND */
@@ -3064,16 +3064,16 @@ static void start_screensaver(void)
 	p_ptr->noscore |= (NOSCORE_BORG);
 
 	/*
-	 * Make sure the "cheat_live" option is set, so that the Borg can
+	 * Make sure the "OPT(cheat_live)" option is set, so that the Borg can
 	 * automatically restart.
 	 */
 	screensaver_inkey_hack_buffer[j++] = '5'; /* Cheat options */
 
 	/* Cursor down to "cheat live" */
-	for (i = 0; i < OPT_cheat_live - OPT_CHEAT; i++)
+	for (i = 0; i < OPT_OPT(cheat_live) - OPT_CHEAT; i++)
 		screensaver_inkey_hack_buffer[j++] = '2';
 
-	screensaver_inkey_hack_buffer[j++] = 'y'; /* Switch on "cheat_live" */
+	screensaver_inkey_hack_buffer[j++] = 'y'; /* Switch on "OPT(cheat_live)" */
 	screensaver_inkey_hack_buffer[j++] = ESCAPE; /* Leave cheat options */
 	screensaver_inkey_hack_buffer[j++] = ESCAPE; /* Leave options */
 

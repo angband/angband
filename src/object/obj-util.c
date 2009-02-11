@@ -1176,7 +1176,7 @@ void wipe_o_list(void)
 		if (!o_ptr->k_idx) continue;
 
 		/* Preserve artifacts */
-		if (!character_dungeon || !adult_no_preserve)
+		if (!character_dungeon || !OPT(adult_no_preserve))
 		{
 			/* Preserve only unknown artifacts */
 			if (artifact_p(o_ptr) && !object_known_p(o_ptr))
@@ -2046,7 +2046,7 @@ s16b floor_carry(int y, int x, object_type *j_ptr)
 	}
 
 	/* Option -- disallow stacking */
-	if (adult_no_stacking && n) return (0);
+	if (OPT(adult_no_stacking) && n) return (0);
 
 	/* The stack is already too large */
 	if (n >= MAX_FLOOR_STACK)
@@ -2211,7 +2211,7 @@ void drop_near(object_type *j_ptr, int chance, int y, int x)
 			if (!comb) k++;
 
 			/* Option -- disallow stacking */
-			if (adult_no_stacking && (k > 1)) continue;
+			if (OPT(adult_no_stacking) && (k > 1)) continue;
 			
 			/* Paranoia? */
 			if ((k + n) > MAX_FLOOR_STACK &&

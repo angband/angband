@@ -298,12 +298,12 @@ static void py_pickup_aux(int o_idx, bool msg)
  * floor in an array, and tally both how many there are and can be picked up.
  *
  * If not picking up anything, indicate objects on the floor.  Show more
- * details if the "pickup_detail" option is set.  Do the same thing if we
+ * details if the "OPT(pickup_detail)" option is set.  Do the same thing if we
  * don't have room for anything.
  *
  * [This paragraph is not true, intentional?]
  * If we are picking up objects automatically, and have room for at least
- * one, allow the "pickup_detail" option to display information about objects
+ * one, allow the "OPT(pickup_detail)" option to display information about objects
  * and prompt the player.  Otherwise, automatically pick up a single object
  * or use a menu for more than one.
  *
@@ -428,7 +428,7 @@ byte py_pickup(int pickup)
 		else
 		{
 			/* Optionally, display more information about floor items */
-			if (pickup_detail)
+			if (OPT(pickup_detail))
 			{
 				if (!can_pickup)	p = "have no room for the following objects";
 				else if (blind)     p = "feel something on the floor";
@@ -446,7 +446,7 @@ byte py_pickup(int pickup)
 				prt(format("You %s: ", p), 0, 0);
 
 				/* Move cursor back to character, if needed */
-				if (hilite_player) move_cursor_relative(p_ptr->py, p_ptr->px);
+				if (OPT(hilite_player)) move_cursor_relative(p_ptr->py, p_ptr->px);
 
 				/* Wait for it.  Use key as next command. */
 				p_ptr->command_new = inkey();
@@ -562,7 +562,7 @@ void move_player(int dir)
 	}
 
 	/* Optionally alter known traps/doors on movement */
-	else if (easy_alter &&
+	else if (OPT(easy_alter) &&
 	         (cave_info[y][x] & (CAVE_MARK)) &&
 	         (cave_feat[y][x] >= FEAT_TRAP_HEAD) &&
 	         (cave_feat[y][x] <= FEAT_DOOR_TAIL))
@@ -657,7 +657,7 @@ void move_player(int dir)
 		if (old_dtrap != new_dtrap) p_ptr->redraw |= (PR_DTRAP);
 
 		/* Disturb player if the player is about to leave the detect area XXX */
-		if (disturb_detect && p_ptr->running && old_dtrap && !new_dtrap)
+		if (OPT(disturb_detect) && p_ptr->running && old_dtrap && !new_dtrap)
 		{
 			/* Disturb the player */
 			disturb(0, 0);

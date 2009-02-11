@@ -1816,7 +1816,7 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 	P_I(TERM_L_BLUE, "Height",		"%y",	i2u(p_ptr->ht), END  );
 	P_I(TERM_L_BLUE, "Weight",		"%y",	i2u(p_ptr->wt), END  );
 	P_I(TERM_L_BLUE, "Social",		"%y",	s2u(show_status()), END  );
-	P_I(TERM_L_BLUE, "Maximize",	"%y",	c2u(adult_maximize ? 'Y' : 'N'), END);
+	P_I(TERM_L_BLUE, "Maximize",	"%y",	c2u(OPT(adult_maximize) ? 'Y' : 'N'), END);
 #if 0
 	/* Preserve mode deleted */
 	P_I(TERM_L_BLUE, "Preserve",	"%y",	c2u(adult_preserve ? 'Y' : 'N'), END);

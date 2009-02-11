@@ -554,7 +554,7 @@ void do_cmd_locate(void)
 		        (y2 / PANEL_HGT), (x2 / PANEL_WID), tmp_val);
 
 		/* More detail */
-		if (center_player)
+		if (OPT(center_player))
 		{
 			strnfmt(out_val, sizeof(out_val),
 		        	"Map sector [%d(%02d),%d(%02d)], which is%s your sector.  Direction?",
@@ -879,7 +879,7 @@ void do_cmd_query_symbol(void)
 		monster_lore *l_ptr = &l_list[i];
 
 		/* Nothing to recall */
-		if (!cheat_know && !l_ptr->sights) continue;
+		if (!OPT(cheat_know) && !l_ptr->sights) continue;
 
 		/* Require non-unique monsters if needed */
 		if (norm && (r_ptr->flags[0] & (RF0_UNIQUE))) continue;

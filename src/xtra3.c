@@ -628,7 +628,7 @@ static void hp_colour_change(game_event_type type, game_event_data *data, void *
 	 * using this command when graphics mode is on
 	 * causes the character to be a black square.
 	 */
-	if ((hp_changes_color) && (arg_graphics == GRAPHICS_NONE))
+	if ((OPT(hp_changes_color)) && (arg_graphics == GRAPHICS_NONE))
 	{
 		lite_spot(p_ptr->py, p_ptr->px);
 	}
@@ -956,7 +956,7 @@ static size_t prt_tmd(int row, int col)
  */
 static size_t prt_buttons(int row, int col)
 {
-	if (mouse_buttons)
+	if (OPT(mouse_buttons))
 		return button_print(row, col);
 
 	return 0;
