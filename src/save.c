@@ -33,6 +33,21 @@ static u32b	v_stamp = 0L;	/* A simple "checksum" on the actual values */
 static u32b	x_stamp = 0L;	/* A simple "checksum" on the encoded bytes */
 
 
+/* Buffer bits */
+static byte *buffer;
+static u32b buffer_size;
+static u32b buffer_pos;
+
+#define BUFFER_INITIAL_SIZE		1024
+#define BUFFER_BLOCK_INCREMENT	1024
+
+
+void wr_block(void)
+{
+	file_write(fff, (char *)buffer, buffer_pos);
+	buffer_pos = 0;
+}
+
 
 /*
  * These functions place information into a savefile a byte at a time
@@ -40,9 +55,25 @@ static u32b	x_stamp = 0L;	/* A simple "checksum" on the encoded bytes */
 
 static void sf_put(byte v)
 {
+	if (!buffer)
+	{
+		buffer = mem_alloc(BUFFER_INITIAL_SIZE);
+		buffer_size = BUFFER_INITIAL_SIZE;
+		buffer_pos = 0;
+	}
+
+	if (buffer_size == buffer_pos)
+	{
+		buffer = mem_realloc(buffer, buffer_size + BUFFER_BLOCK_INCREMENT);
+		buffer_size += BUFFER_BLOCK_INCREMENT;
+		printf("new size = %d\n", buffer_size);
+	}
+
 	/* Encode the value, write a character */
 	xor_byte ^= v;
-	file_writec(fff, xor_byte);
+
+	assert(buffer_pos < buffer_size);
+	buffer[buffer_pos++] = xor_byte;
 
 	/* Maintain the checksum info */
 	v_stamp += v;
@@ -937,13 +968,21 @@ static void wr_savefile_new(void)
 	wr_u32b(0L);
 	wr_u32b(0L);
 
+	/* Hack -- for now */
+	wr_block();
+
 	for (i = 0; i < N_SAVEFILE_BLOCKS; i++)
+	{
+		printf("in block %s\n", savefile_blocks[i].name);
 		savefile_blocks[i].saver();
+		wr_block();
+	}
 
 
 	/* Write the checksums */
 	wr_u32b(v_stamp);
 	wr_u32b(x_stamp);
+	wr_block();				/* hack for now */
 }
 
 
