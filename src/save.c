@@ -17,7 +17,7 @@
  */
 #include "angband.h"
 #include "option.h"
-
+#include "savefile.h"
 
 
 
@@ -156,7 +156,7 @@ static void wr_item(const object_type *o_ptr)
 /*
  * Write RNG state
  */
-static void wr_randomizer(void)
+void wr_randomizer(void)
 {
 	int i;
 
@@ -170,7 +170,7 @@ static void wr_randomizer(void)
 /*
  * Write the "options"
  */
-static void wr_options(void)
+void wr_options(void)
 {
 	int i, k;
 
@@ -254,7 +254,7 @@ static void wr_options(void)
 }
 
 
-static void wr_messages(void)
+void wr_messages(void)
 {
 	s16b i;
 	u16b num;
@@ -272,7 +272,7 @@ static void wr_messages(void)
 }
 
 
-static void wr_monster_memory(void)
+void wr_monster_memory(void)
 {
 	int i, r_idx;
 	
@@ -321,7 +321,7 @@ static void wr_monster_memory(void)
 }
 
 
-static void wr_object_memory(void)
+void wr_object_memory(void)
 {
 	int k_idx;
 	
@@ -341,7 +341,7 @@ static void wr_object_memory(void)
 }
 
 
-static void wr_quests(void)
+void wr_quests(void)
 {
 	int i;
 	u16b tmp16u;
@@ -359,7 +359,7 @@ static void wr_quests(void)
 }
 
 
-static void wr_artifacts(void)
+void wr_artifacts(void)
 {
 	int i;
 	u16b tmp16u;
@@ -378,7 +378,7 @@ static void wr_artifacts(void)
 }
 
 
-static void wr_player(void)
+void wr_player(void)
 {
 	int i;
 	
@@ -460,7 +460,7 @@ static void wr_player(void)
 }
 
 
-static void wr_squelch(void)
+void wr_squelch(void)
 {
 	int i;
 	
@@ -494,7 +494,7 @@ static void wr_squelch(void)
 }
 
 
-static void wr_misc(void)
+void wr_misc(void)
 {
 
 	/* Random artifact version */
@@ -535,7 +535,7 @@ static void wr_misc(void)
 }
 
 
-static void wr_player_hp(void)
+void wr_player_hp(void)
 {
 	int i;
 
@@ -545,7 +545,7 @@ static void wr_player_hp(void)
 }
 
 
-static void wr_player_spells(void)
+void wr_player_spells(void)
 {	
 	int i;
 
@@ -562,7 +562,7 @@ static void wr_player_spells(void)
 /*
  * Dump the random artifacts
  */
-static void wr_randarts(void)
+void wr_randarts(void)
 {
 	int i;
 
@@ -606,7 +606,7 @@ static void wr_randarts(void)
 }
 
 
-static void wr_inventory(void)
+void wr_inventory(void)
 {
 	int i;
 	
@@ -630,7 +630,7 @@ static void wr_inventory(void)
 }
 
 
-static void wr_stores(void)
+void wr_stores(void)
 {
 	int i;
 	
@@ -671,7 +671,7 @@ static void wr_stores(void)
 /*
  * Write the current dungeon
  */
-static void wr_dungeon(void)
+void wr_dungeon(void)
 {
 	int y, x;
 
@@ -823,7 +823,7 @@ static void wr_dungeon(void)
 }
 
 
-static void wr_objects(void)
+void wr_objects(void)
 {
 	int i;
 
@@ -844,7 +844,7 @@ static void wr_objects(void)
 }
 
 
-static void wr_monsters(void)
+void wr_monsters(void)
 {
 	int i;
 
@@ -875,7 +875,7 @@ static void wr_monsters(void)
 }
 
 
-static void wr_ghost(void)
+void wr_ghost(void)
 {
 	int i;
 
@@ -892,7 +892,7 @@ static void wr_ghost(void)
 }
 
 
-static void wr_history(void)
+void wr_history(void)
 {
 	size_t i;
 	u32b tmp32u = history_get_num();

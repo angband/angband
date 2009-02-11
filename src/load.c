@@ -17,7 +17,7 @@
  */
 #include "angband.h"
 #include "object/tvalsval.h"
-
+#include "savefile.h"
 
 
 static ang_file *fff;
@@ -170,7 +170,7 @@ static void strip_bytes(int n)
  * This function attempts to "repair" old savefiles, and to extract
  * the most up to date values for various object fields.
  */
-static errr rd_item(object_type *o_ptr)
+static int rd_item(object_type *o_ptr)
 {
 	byte old_dd;
 	byte old_ds;
@@ -379,7 +379,7 @@ static errr rd_item(object_type *o_ptr)
 /*
  * Read RNG state
  */
-static int rd_randomizer(void)
+int rd_randomizer(void)
 {
 	int i;
 
@@ -418,7 +418,7 @@ static int rd_randomizer(void)
  * The window options are stored in the same way, but note that each
  * window gets 32 options, and their order is fixed by certain defines.
  */
-static int rd_options(void)
+int rd_options(void)
 {
 	int i, n;
 
@@ -523,7 +523,7 @@ static int rd_options(void)
 /*
  * Read the saved messages
  */
-static int rd_messages(void)
+int rd_messages(void)
 {
 	int i;
 	char buf[128];
@@ -552,7 +552,7 @@ static int rd_messages(void)
 
 
 
-static int rd_monster_memory(void)
+int rd_monster_memory(void)
 {
 	int r_idx;
 	u16b tmp16u;
@@ -622,7 +622,7 @@ static int rd_monster_memory(void)
 }
 
 
-static int rd_object_memory(void)
+int rd_object_memory(void)
 {
 	int i;
 	u16b tmp16u;
@@ -655,7 +655,7 @@ static int rd_object_memory(void)
 }
 
 
-static int rd_quests(void)
+int rd_quests(void)
 {
 	int i;
 	u16b tmp16u;
@@ -686,7 +686,7 @@ static int rd_quests(void)
 }
 
 
-static int rd_artifacts(void)
+int rd_artifacts(void)
 {
 	int i;
 	u16b tmp16u;
@@ -723,7 +723,7 @@ static u32b randart_version;
 /*
  * Read the "extra" information
  */
-static errr rd_player(void)
+int rd_player(void)
 {
 	int i;
 
@@ -863,7 +863,7 @@ static errr rd_player(void)
 /*
  * Read squelch and autoinscription submenu for all known objects
  */
-static int rd_squelch(void)
+int rd_squelch(void)
 {
 	int i;
 	byte tmp8u = 24;
@@ -924,7 +924,7 @@ static int rd_squelch(void)
 }
 
 
-static int rd_misc(void)
+int rd_misc(void)
 {
 	byte tmp8u;
 	
@@ -966,7 +966,7 @@ static int rd_misc(void)
 	return 0;
 }
 
-static int rd_player_hp(void)
+int rd_player_hp(void)
 {
 	int i;
 	u16b tmp16u;
@@ -989,7 +989,7 @@ static int rd_player_hp(void)
 }
 
 
-static errr rd_player_spells(void)
+int rd_player_spells(void)
 {
 	int i;
 	u16b tmp16u;
@@ -1020,7 +1020,7 @@ static errr rd_player_spells(void)
 /*
  * Read the random artifacts
  */
-static errr rd_randarts(void)
+int rd_randarts(void)
 {
 	int i;
 	byte tmp8u;
@@ -1165,7 +1165,7 @@ static errr rd_randarts(void)
  *
  * Note that the inventory is "re-sorted" later by "dungeon()".
  */
-static errr rd_inventory(void)
+int rd_inventory(void)
 {
 	int slot = 0;
 
@@ -1247,7 +1247,7 @@ static errr rd_inventory(void)
 }
 
 
-static int rd_stores(void)
+int rd_stores(void)
 {
 	int i;
 	u16b tmp16u;
@@ -1335,7 +1335,7 @@ static int rd_stores(void)
  * After loading the monsters, the objects being held by monsters are
  * linked directly into those monsters.
  */
-static errr rd_dungeon(void)
+int rd_dungeon(void)
 {
 	int i, y, x;
 
@@ -1496,7 +1496,7 @@ static errr rd_dungeon(void)
 	return 0;
 }
 
-static int rd_objects(void)
+int rd_objects(void)
 {
 	int i;
 	u16b limit;
@@ -1574,7 +1574,7 @@ static int rd_objects(void)
 }
 
 
-static int rd_monsters(void)
+int rd_monsters(void)
 {
 	int i;
 	u16b limit;
@@ -1658,7 +1658,7 @@ static int rd_monsters(void)
 }
 
 
-static int rd_ghost(void)
+int rd_ghost(void)
 {
 	char buf[64];
 
@@ -1678,7 +1678,7 @@ static int rd_ghost(void)
 }
 
 
-static int rd_history(void)
+int rd_history(void)
 {
 	u32b tmp32u;
 	size_t i;
@@ -1711,7 +1711,7 @@ static int rd_history(void)
 /*
  * Actually read the savefile
  */
-static errr rd_savefile_new_aux(void)
+static int rd_savefile_new_aux(void)
 {
 	u32b n_x_check, n_v_check;
 	u32b o_x_check, o_v_check;
@@ -1801,7 +1801,7 @@ static errr rd_savefile_new_aux(void)
 /*
  * Actually read the savefile
  */
-static errr rd_savefile(void)
+static int rd_savefile(void)
 {
 	errr err;
 
