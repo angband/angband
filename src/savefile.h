@@ -15,6 +15,16 @@ typedef struct
 extern savefile_block_t savefile_blocks[N_SAVEFILE_BLOCKS];
 
 
+/* Writing bits */
+void wr_byte(byte v);
+void wr_u16b(u16b v);
+void wr_s16b(s16b v);
+void wr_u32b(u32b v);
+void wr_s32b(s32b v);
+void wr_string(cptr str);
+
+
+
 /* load.c */
 int rd_randomizer(void);
 int rd_options(void);
