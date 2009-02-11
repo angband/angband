@@ -458,6 +458,7 @@ static void calculate_missile_crits(player_state *state, int weight,
 static bool describe_combat(const object_type *o_ptr, bool full)
 {
 	const char *desc[16];
+	int i;
 	int mult[16];
 	int cnt, dam, total_dam, plus = 0;
 	int xtra_postcrit = 0, xtra_precrit = 0;
@@ -561,31 +562,27 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	
 	
 	cnt = collect_slays(desc, mult, f1);
-	if (object_known_p(o_ptr) && cnt)
+	for (i = 0; i < cnt; i++)
 	{
-		int i;
+		/* Include bonus damage and slay in stated average */
+		total_dam = dam * mult[i] + xtra_precrit;
+		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
+		total_dam += xtra_postcrit;
 
-		for (i = 0; i < cnt; i++)
-		{
-			/* Include bonus damage and slay in stated average */
-			total_dam = dam * mult[i] + xtra_precrit;
-			total_dam = (total_dam * crit_mult + crit_add) / crit_div;
-			total_dam += xtra_postcrit;
-
-			if (total_dam <= 0)
-				text_out_c(TERM_L_RED, "%d", 0);
-			else if (total_dam % 10)
-				text_out_c(TERM_L_GREEN, "%d.%d",
-				           total_dam / 10, total_dam % 10);
-			else
-				text_out_c(TERM_L_GREEN, "%d", total_dam / 10);
+		if (total_dam <= 0)
+			text_out_c(TERM_L_RED, "%d", 0);
+		else if (total_dam % 10)
+			text_out_c(TERM_L_GREEN, "%d.%d",
+			           total_dam / 10, total_dam % 10);
+		else
+			text_out_c(TERM_L_GREEN, "%d", total_dam / 10);
 
 
-			text_out(" against %s, ", desc[i]);
-		}
-
-		text_out("and ");
+		text_out(" against %s, ", desc[i]);
 	}
+
+	if (cnt) text_out("and ");
+
 
 	/* Include bonus damage in stated average */
 	total_dam = dam + xtra_precrit;
@@ -596,7 +593,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 		text_out_c(TERM_L_RED, "%d", 0);
 	else if (total_dam % 10)
 		text_out_c(TERM_L_GREEN, "%d.%d",
-		           total_dam / 10, total_dam % 10);
+				total_dam / 10, total_dam % 10);
 	else
 		text_out_c(TERM_L_GREEN, "%d", total_dam / 10);
 
