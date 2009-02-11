@@ -41,6 +41,7 @@ Bugs fixed:
 (#696) Put character name back onto the dump.
 (#711, #764) Fix descriptions of area-of-effect detection.
 (#712) Autoinscribe items in the first inventory slot.
+(#717) Make stat potions just a little bit more common.
 (#721) Searching bonues are now displayed as a % increase to match the character screen.
 (#722) Fix spoilers and wizard mode cheat info not displaying magical abilities
 (#723) Fix support for playing in the terminal on OS X 10.4.
