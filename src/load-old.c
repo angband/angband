@@ -1716,8 +1716,6 @@ static int rd_history(void)
  */
 static int rd_savefile_new_aux(void)
 {
-	size_t i;
-
 	u32b n_x_check, n_v_check;
 	u32b o_x_check, o_v_check;
 
