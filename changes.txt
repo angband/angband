@@ -63,6 +63,7 @@ Bugs fixed:
 (#755) Fix pseudo-id of branded ammo, so already-known ammo doesn't get pseudo-ID'd.
 (#766) Scrolls of trap creation now longer crash in town.
 (#773) General Store now restocks like other stores (e.g. more food will appear without you having to buy out all the food).
+(#781) Remove the cap on potions of experience -- they always give 100k XP now.
 Fix bug with rods of treasure location needing ID.
 Fix birth_money so that in point-based it still gives you 500AU.
 Fix double-resist damage.
