@@ -26,6 +26,7 @@ Bugs fixed:
 (#639) Reset social status to original value with quickstart
 (#641) Fix Morgoth artifacts.
 (#654) Allow pseudo to work whilst resting.
+(#661) Prompt for how many items to buy in a store now doesn't get the number in your pack wrong when there's > 99
 (#672) Fix Evenstar activation message.
 (#673) Fix description of Identify scrolls.
 (#676) Fixed character creation help.

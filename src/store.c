@@ -1821,6 +1821,7 @@ static bool store_get_check(const char *prompt)
 static int find_inven(const object_type *o_ptr)
 {
 	int j;
+	int num = 0;
 
 	/* Similar slot? */
 	for (j = 0; j < INVEN_PACK; j++)
@@ -1951,14 +1952,11 @@ static int find_inven(const object_type *o_ptr)
 			o_ptr->flags3 != j_ptr->flags3)
 			continue;
 
-
-		/* They match, so they must be similar */
-		return j_ptr->number;
-
+		/* They match, so add up */
+		num += j_ptr->number;
 	}
 
-	/* No matches found */
-	return 0;
+	return num;
 }
 
 
