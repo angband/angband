@@ -36,6 +36,11 @@ CFLAGS = \
 LIBS = -framework CoreFoundation -framework QuickTime -framework Carbon \
 	-framework Cocoa
 
+# Import user prefs
+# If you don't want to edit this file, put your module redefinitions
+# and build flags in "./config"
+-include config
+
 #
 # Provide a CFLAGS override so that older versions of OS X can continue to
 # compile their own builds.  The default CFLAGS provide a backwards-compatible
