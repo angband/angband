@@ -480,7 +480,11 @@ void predict_score(void)
 	/* Read scores, place current score */
 	highscore_read(scores, N_ELEMENTS(scores));
 	build_score(&the_score, "nobody (yet!)", NULL);
-	j = highscore_add(&the_score, scores, N_ELEMENTS(scores));
+
+	if (p_ptr->is_dead)
+		j = highscore_where(&the_score, scores, N_ELEMENTS(scores));
+	else
+		j = highscore_add(&the_score, scores, N_ELEMENTS(scores));
 
 	/* Hack -- Display the top fifteen scores */
 	if (j < 10)
