@@ -15,14 +15,27 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+#include <errno.h>
 #include "angband.h"
 #include "savefile.h"
+
+
+/** Magic bits at beginning of savefile */
+static const byte savefile_magic[4] = { 83, 97, 118, 101 };
+static const byte savefile_name[4] = SAVEFILE_NAME;
 
 
 /**
  * Big list of all savefile block types.
  */
-savefile_block_t savefile_blocks[N_SAVEFILE_BLOCKS] =
+static const struct
+{
+	char name[16];
+	int (*loader)(void);
+	void (*saver)(void);
+	u32b cur_ver;
+	u32b oldest_ver;
+} savefile_blocks[] =
 {
 	{ "rng", rd_randomizer, wr_randomizer, 1, 1 },
 	{ "options", rd_options, wr_options, 1, 1 },
@@ -47,67 +60,75 @@ savefile_block_t savefile_blocks[N_SAVEFILE_BLOCKS] =
 };
 
 
-
-
-
-
-static ang_file *fff;		/* Current save "file" */
-
-static byte	xor_byte;	/* Simple encryption */
-
-static u32b	v_stamp = 0L;	/* A simple "checksum" on the actual values */
-static u32b	x_stamp = 0L;	/* A simple "checksum" on the encoded bytes */
-
-static u32b	v_check = 0L;	/* A simple "checksum" on the actual values */
-static u32b	x_check = 0L;	/* A simple "checksum" on the encoded bytes */
-
-
 /* Buffer bits */
 static byte *buffer;
 static u32b buffer_size;
 static u32b buffer_pos;
+static u32b buffer_check;
 
 #define BUFFER_INITIAL_SIZE		1024
 #define BUFFER_BLOCK_INCREMENT	1024
 
+#define SAVEFILE_HEAD_SIZE		28
 
-static void wr_block(void)
-{
-	file_write(fff, (char *)buffer, buffer_pos);
-	buffer_pos = 0;
-}
+
+/** Utility **/
 
 
 /*
- * These functions place information into a savefile a byte at a time
+ * Hack -- Show information on the screen, one line at a time.
+ *
+ * Avoid the top two lines, to avoid interference with "msg_print()".
  */
+void note(cptr msg)
+{
+	static int y = 2;
+	
+	/* Draw the message */
+	prt(msg, y, 0);
+	
+	/* Advance one line (wrap if needed) */
+	if (++y >= 24) y = 2;
+	
+	/* Flush it */
+	Term_fresh();
+}
+
+
+
+
+/** Base put/get **/
 
 static void sf_put(byte v)
 {
-	if (!buffer)
-	{
-		buffer = mem_alloc(BUFFER_INITIAL_SIZE);
-		buffer_size = BUFFER_INITIAL_SIZE;
-		buffer_pos = 0;
-	}
-	
+	assert(buffer != NULL);
+	assert(buffer_size > 0);
+
 	if (buffer_size == buffer_pos)
 	{
 		buffer = mem_realloc(buffer, buffer_size + BUFFER_BLOCK_INCREMENT);
 		buffer_size += BUFFER_BLOCK_INCREMENT;
-		printf("new size = %d\n", buffer_size);
 	}
 	
-	/* Encode the value, write a character */
-	xor_byte ^= v;
-	
 	assert(buffer_pos < buffer_size);
-	buffer[buffer_pos++] = xor_byte;
-	
-	/* Maintain the checksum info */
-	v_stamp += v;
-	x_stamp += xor_byte;
+
+	buffer[buffer_pos++] = v;
+	buffer_check += v;
 }
+
+static byte sf_get(void)
+{
+	assert(buffer != NULL);
+	assert(buffer_size > 0);
+	assert(buffer_pos < buffer_size);
+
+	buffer_check += buffer[buffer_pos];
+
+	return buffer[buffer_pos++];
+}
+
+
+/* accessor */
 
 void wr_byte(byte v)
 {
@@ -149,93 +170,208 @@ void wr_string(cptr str)
 }
 
 
+void rd_byte(byte *ip)
+{
+	*ip = sf_get();
+}
+
+void rd_u16b(u16b *ip)
+{
+	(*ip) = sf_get();
+	(*ip) |= ((u16b)(sf_get()) << 8);
+}
+
+void rd_s16b(s16b *ip)
+{
+	rd_u16b((u16b*)ip);
+}
+
+void rd_u32b(u32b *ip)
+{
+	(*ip) = sf_get();
+	(*ip) |= ((u32b)(sf_get()) << 8);
+	(*ip) |= ((u32b)(sf_get()) << 16);
+	(*ip) |= ((u32b)(sf_get()) << 24);
+}
+
+void rd_s32b(s32b *ip)
+{
+	rd_u32b((u32b*)ip);
+}
+
+void rd_string(char *str, int max)
+{
+	byte tmp8u;
+	int i = 0;
+
+	do
+	{
+		rd_byte(&tmp8u);
+
+		if (i < max) str[i] = tmp8u;
+		if (!tmp8u) break;
+	} while (++i);
+
+	str[max - 1] = '\0';
+}
+
+void strip_bytes(int n)
+{
+	byte tmp8u;
+	while (n--) rd_byte(&tmp8u);
+}
 
 
 
 
+/*** ****/
 
 
-/*
- * Actually write a save-file
- */
-static void wr_savefile_new(void)
+static bool try_save(ang_file *file)
 {
 	size_t i;
-	
-	/* Dump the file header */
-	xor_byte = 0;
-	wr_byte(VERSION_MAJOR);
-	xor_byte = 0;
-	wr_byte(VERSION_MINOR);
-	xor_byte = 0;
-	wr_byte(VERSION_PATCH);
-	xor_byte = 0;
-	wr_byte(VERSION_EXTRA);
-	
-	/* Reset the checksum */
-	v_stamp = 0L;
-	x_stamp = 0L;
-	
-	wr_u32b(0L);
-	wr_u32b(0L);
-	wr_u32b(0L);
-	wr_u32b(0L);
-	wr_u32b(0L);
-	
-	/* Hack -- for now */
-	wr_block();
-	
-	for (i = 0; i < N_SAVEFILE_BLOCKS; i++)
+
+	/* Start off the buffer */
+	buffer = mem_alloc(BUFFER_INITIAL_SIZE);
+	buffer_size = BUFFER_INITIAL_SIZE;
+
+	for (i = 0; i < N_ELEMENTS(savefile_blocks); i++)
 	{
+		size_t pos;
+		byte savefile_head[SAVEFILE_HEAD_SIZE];
+
 		printf("in block %s\n", savefile_blocks[i].name);
+
+		buffer_pos = 0;
+		buffer_check = 0;
+
 		savefile_blocks[i].saver();
-		wr_block();
+
+
+		/* 16-byte block name */
+		pos = my_strcpy((char *)savefile_head,
+				savefile_blocks[i].name,
+				sizeof savefile_head);
+		while (pos < 16)
+			savefile_head[pos++] = 0;
+		
+		/* 4-byte block version */
+		savefile_head[pos++] = (savefile_blocks[i].cur_ver & 0xFF);
+		savefile_head[pos++] = ((savefile_blocks[i].cur_ver >> 8) & 0xFF);
+		savefile_head[pos++] = ((savefile_blocks[i].cur_ver >> 16) & 0xFF);
+		savefile_head[pos++] = ((savefile_blocks[i].cur_ver >> 24) & 0xFF);
+		
+		/* 4-byte block size */
+		savefile_head[pos++] = (buffer_pos & 0xFF);
+		savefile_head[pos++] = ((buffer_pos >> 8) & 0xFF);
+		savefile_head[pos++] = ((buffer_pos >> 16) & 0xFF);
+		savefile_head[pos++] = ((buffer_pos >> 24) & 0xFF);
+		
+		/* 4-byte block checksum */
+		savefile_head[pos++] = (buffer_check & 0xFF);
+		savefile_head[pos++] = ((buffer_check >> 8) & 0xFF);
+		savefile_head[pos++] = ((buffer_check >> 16) & 0xFF);
+		savefile_head[pos++] = ((buffer_check >> 24) & 0xFF);
+
+		printf("version %d, size %d, checksum %d\n", 1, buffer_pos, buffer_check);
+
+		assert(pos == SAVEFILE_HEAD_SIZE);
+		
+		file_write(file, (char *)savefile_head, SAVEFILE_HEAD_SIZE);
+		file_write(file, (char *)buffer, buffer_pos);
+		if (buffer_pos % 4)
+			file_write(file, "xxx", 4 - (buffer_pos % 4));
+	}
+
+	mem_free(buffer);
+	
+	return TRUE;
+}
+
+
+static bool try_load(ang_file *file)
+{
+	byte savefile_head[SAVEFILE_HEAD_SIZE];
+	u32b block_version, block_size, block_checksum;
+	
+	while (TRUE)
+	{
+		size_t i;
+		size_t size;
+
+		/* Load in the next header */
+		size = file_read(file, (char *)savefile_head, SAVEFILE_HEAD_SIZE);
+		if (size == 0) break;
+		assert(size == SAVEFILE_HEAD_SIZE);
+		
+		/* 16-byte block name */
+		assert(savefile_head[15] == '\0');
+		for (i = 0; i < N_ELEMENTS(savefile_blocks); i++)
+		{
+			if (strncmp((char *) savefile_head,
+					savefile_blocks[i].name,
+					sizeof savefile_blocks[i].name) == 0)
+				break;
+		}
+		assert(i < N_ELEMENTS(savefile_blocks));
+		
+		printf("in block %s\n", savefile_blocks[i].name);
+
+		
+		/* 4-byte block version */
+		block_version = ((u32b) savefile_head[16]) |
+				((u32b) savefile_head[17] << 8) |
+				((u32b) savefile_head[18] << 16) |
+				((u32b) savefile_head[19] << 24);
+		
+		/* 4-byte block size */
+		block_size = ((u32b) savefile_head[20]) |
+				((u32b) savefile_head[21] << 8) |
+				((u32b) savefile_head[22] << 16) |
+				((u32b) savefile_head[23] << 24);
+		
+		/* 4-byte block checksum */
+		block_checksum = ((u32b) savefile_head[24]) |
+				((u32b) savefile_head[25] << 8) |
+				((u32b) savefile_head[26] << 16) |
+				((u32b) savefile_head[27] << 24);
+
+		/* pad to 4 bytes */
+		if (block_size % 4)
+			block_size += 4 - (block_size % 4);
+		
+		printf("version %d, size %d, checksum %d\n", block_version, block_size, block_checksum);
+
+		buffer = mem_alloc(block_size);
+		buffer_size = block_size;
+		buffer_pos = 0;
+		buffer_check = 0;
+
+		file_read(file, (char *) buffer, block_size);
+		if (savefile_blocks[i].loader()) return -1;
+
+		printf("pos %d\n", buffer_pos);
+/*		assert(buffer_check == block_checksum); */
+
+		mem_free(buffer);
 	}
 	
-	
-	/* Write the checksums */
-	wr_u32b(v_stamp);
-	wr_u32b(x_stamp);
-	wr_block();				/* hack for now */
+	return 0;
 }
 
 
-/*
- * Medium level player saver
- */
-static bool save_player_aux(cptr name)
-{
-	bool ok = TRUE;
-	
-	/* No file yet */
-	fff = NULL;
-	
-	/* Open the savefile */
-	safe_setuid_grab();
-	fff = file_open(name, MODE_WRITE, FTYPE_SAVE);
-	safe_setuid_drop();
-	
-	/* Successful open */
-	if (fff) wr_savefile_new();
-	else ok = FALSE;
-	
-	/* Attempt to close it */
-	if (ok && !file_close(fff)) ok = FALSE;
-	
-	
-	if (ok)
-		character_saved = TRUE;
-	
-	return ok;
-}
 
-#include <errno.h>
+
+
+
 
 /*
  * Attempt to save the player in a savefile
  */
 bool old_save(void)
 {
+	ang_file *file;
+
 	char new_savefile[1024];
 	char old_savefile[1024];
 	
@@ -249,8 +385,21 @@ bool old_save(void)
 	file_delete(old_savefile);
 	safe_setuid_drop();
 	
-	/* Attempt to save the player */
-	if (save_player_aux(new_savefile))
+	/* Open the savefile */
+	safe_setuid_grab();
+	file = file_open(new_savefile, MODE_WRITE, FTYPE_SAVE);
+	safe_setuid_drop();
+
+	if (file)
+	{
+		file_write(file, (char *) &savefile_magic, 4);
+		file_write(file, (char *) &savefile_name, 4);
+
+		character_saved = try_save(file);
+		file_close(file);
+	}
+
+	if (character_saved)
 	{
 		bool err = FALSE;
 		
@@ -285,250 +434,6 @@ bool old_save(void)
 
 
 
-
-
-
-
-
-/****** LOADING *******/
-
-
-
-/*
- * Hack -- Show information on the screen, one line at a time.
- *
- * Avoid the top two lines, to avoid interference with "msg_print()".
- */
-void note(cptr msg)
-{
-	static int y = 2;
-	
-	/* Draw the message */
-	prt(msg, y, 0);
-	
-	/* Advance one line (wrap if needed) */
-	if (++y >= 24) y = 2;
-	
-	/* Flush it */
-	Term_fresh();
-}
-
-
-/*
- * This function determines if the version of the savefile
- * currently being read is older than version "x.y.z".
- */
-bool older_than(int x, int y, int z)
-{
-	/* Much older, or much more recent */
-	if (sf_major < x) return (TRUE);
-	if (sf_major > x) return (FALSE);
-	
-	/* Distinctly older, or distinctly more recent */
-	if (sf_minor < y) return (TRUE);
-	if (sf_minor > y) return (FALSE);
-	
-	/* Barely older, or barely more recent */
-	if (sf_patch < z) return (TRUE);
-	if (sf_patch > z) return (FALSE);
-	
-	/* Identical versions */
-	return (FALSE);
-}
-
-
-
-/*
- * The following functions are used to load the basic building blocks
- * of savefiles.  They also maintain the "checksum" info.
- */
-
-static byte sf_get(void)
-{
-	byte c, v;
-	
-	/* Get a character, decode the value */
-	file_readc(fff, &c);
-	c &= 0xFF;
-	v = c ^ xor_byte;
-	xor_byte = c;
-	
-	/* Maintain the checksum info */
-	v_check += v;
-	x_check += xor_byte;
-	
-	/* Return the value */
-	return (v);
-}
-
-void rd_byte(byte *ip)
-{
-	*ip = sf_get();
-}
-
-void rd_u16b(u16b *ip)
-{
-	(*ip) = sf_get();
-	(*ip) |= ((u16b)(sf_get()) << 8);
-}
-
-void rd_s16b(s16b *ip)
-{
-	rd_u16b((u16b*)ip);
-}
-
-void rd_u32b(u32b *ip)
-{
-	(*ip) = sf_get();
-	(*ip) |= ((u32b)(sf_get()) << 8);
-	(*ip) |= ((u32b)(sf_get()) << 16);
-	(*ip) |= ((u32b)(sf_get()) << 24);
-}
-
-void rd_s32b(s32b *ip)
-{
-	rd_u32b((u32b*)ip);
-}
-
-
-/*
- * Hack -- read a string
- */
-void rd_string(char *str, int max)
-{
-	int i;
-	
-	/* Read the string */
-	for (i = 0; TRUE; i++)
-	{
-		byte tmp8u;
-		
-		/* Read a byte */
-		rd_byte(&tmp8u);
-		
-		/* Collect string while legal */
-		if (i < max) str[i] = tmp8u;
-		
-		/* End of string */
-		if (!tmp8u) break;
-	}
-	
-	/* Terminate */
-	str[max-1] = '\0';
-}
-
-
-/*
- * Hack -- strip some bytes
- */
-void strip_bytes(int n)
-{
-	byte tmp8u;
-	
-	/* Strip the bytes */
-	while (n--) rd_byte(&tmp8u);
-}
-
-
-
-
-/*
- * Actually read the savefile
- */
-static int rd_savefile_new_aux(void)
-{
-	size_t i;
-	
-	u32b n_x_check, n_v_check;
-	u32b o_x_check, o_v_check;
-	
-	/* Mention the savefile version */
-	note(format("Loading a %d.%d.%d savefile...",
-	            sf_major, sf_minor, sf_patch));
-	
-	/* Strip the version bytes */
-	strip_bytes(4);
-	
-	/* Hack -- decrypt */
-	xor_byte = sf_extra;
-	
-	
-	/* Clear the checksums */
-	v_check = 0L;
-	x_check = 0L;
-	
-	
-	/* Strip old data */
-	strip_bytes(20);
-	
-	
-	for (i = 0; i < N_SAVEFILE_BLOCKS; i++)
-		if (savefile_blocks[i].loader()) return -1;
-	
-	
-	/* Save the checksum */
-	n_v_check = v_check;
-	
-	/* Read the old checksum */
-	rd_u32b(&o_v_check);
-	
-	/* Verify */
-	if (o_v_check != n_v_check)
-	{
-		note("Invalid checksum");
-		return (-1);
-	}
-	
-	/* Save the encoded checksum */
-	n_x_check = x_check;
-	
-	/* Read the checksum */
-	rd_u32b(&o_x_check);
-	
-	/* Verify */
-	if (o_x_check != n_x_check)
-	{
-		note("Invalid encoded checksum");
-		return (-1);
-	}
-	
-	
-	/* Hack -- no ghosts */
-	r_info[z_info->r_max-1].max_num = 0;
-	
-	
-	/* Success */
-	return (0);
-}
-
-
-
-/*
- * Actually read the savefile
- */
-static int rd_savefile(void)
-{
-	errr err;
-	
-	/* Open savefile */
-	safe_setuid_grab();
-	fff = file_open(savefile, MODE_READ, -1);
-	safe_setuid_drop();
-	
-	/* Paranoia */
-	if (!fff) return (-1);
-	
-	/* Call the sub-function */
-	err = rd_savefile_new_aux();
-	
-	/* Close the file */
-	file_close(fff);
-	
-	/* Result */
-	return (err);
-}
-
-
 /*
  * Attempt to Load a "savefile"
  *
@@ -546,8 +451,9 @@ static int rd_savefile(void)
 bool old_load(void)
 {
 	ang_file *fh;
-	cptr what = "generic";
+	byte head[8];
 	
+	cptr what = "generic";
 	errr err = 0;
 
 	/* Clear screen */
@@ -564,30 +470,44 @@ bool old_load(void)
 	/* Process file */
 	if (!err)
 	{
-		/* Extract version */
-		err = file_readc(fh, &sf_major) ? 0 : -1;
-		if (!err) err = file_readc(fh, &sf_minor) ? 0 : -1;
-		if (!err) err = file_readc(fh, &sf_patch) ? 0 : -1;
-		if (!err) err = file_readc(fh, &sf_extra) ? 0 : -1;
-		
-		if (err)
+
+		/* Read version / ID marker */
+		if (file_read(fh, (char *) &head, 8) != 8)
+		{
+			file_close(fh);
+
 			what = "Cannot read savefile";
-		
-		file_close(fh);
+			err = -1;
+		}
+
+		sf_major = head[0];
+		sf_minor = head[1];
+		sf_patch = head[2];
+		sf_extra = head[3];
 	}
 
 	/* Process file */
 	if (!err)
 	{
-		if (sf_major == 83 && sf_minor == 97 &&
-				sf_patch == 118 && sf_extra == 101)
+		if (sf_major == savefile_magic[0] && sf_minor == savefile_magic[1] &&
+				sf_patch == savefile_magic[2] && sf_extra == savefile_magic[3])
 		{
-			err = rd_savefile();
-			if (!err) what = "cannot read savefile";
+			if (strncmp((char *) &head[4], SAVEFILE_NAME, 4) != 0)
+			{
+				err = -1;
+				what = "Savefile from different variant";
+			}
+			else
+			{
+				err = try_load(fh);
+				file_close(fh);
+				if (!err) what = "cannot read savefile";
+			}
 		}
 		else if (sf_major == 3 && sf_minor == 0 &&
 				sf_patch == 14 && sf_extra == 0)
 		{
+			file_close(fh);
 			err = rd_savefile_old();
 			if (err) what = "Cannot parse savefile";
 		}
@@ -622,8 +542,7 @@ bool old_load(void)
 		/* Success */
 		return (TRUE);
 	}
-	
-end:
+
 	/* Message */
 	msg_format("Error (%s) reading %d.%d.%d savefile.",
 	           what, sf_major, sf_minor, sf_patch);
@@ -632,5 +551,3 @@ end:
 	/* Oops */
 	return (FALSE);
 }
-
-

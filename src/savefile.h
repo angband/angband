@@ -4,19 +4,6 @@
 /* load-old.c */
 int rd_savefile_old(void);
 
-/* savefile.c */
-typedef struct
-{
-	char name[16];
-	int (*loader)(void);
-	void (*saver)(void);
-	u32b cur_ver;
-	u32b oldest_ver;
-} savefile_block_t;
-
-#define N_SAVEFILE_BLOCKS	20
-extern savefile_block_t savefile_blocks[N_SAVEFILE_BLOCKS];
-
 
 /* Utility */
 void note(cptr msg);

@@ -398,7 +398,7 @@ int rd_messages(void)
 		
 		/* Read the message type */
 		rd_u16b(&tmp16u);
-		
+
 		/* Save the message */
 		message_add(buf, tmp16u);
 	}
@@ -723,6 +723,7 @@ int rd_squelch(void)
 {
 	int i;
 	byte tmp8u = 24;
+	u16b file_e_max;
 	
 	/* Read how many squelch bytes we have */
 	rd_byte(&tmp8u);
@@ -737,29 +738,20 @@ int rd_squelch(void)
 		for (i = 0; i < SQUELCH_BYTES; i++)
 			rd_byte(&squelch_level[i]);
 	}
-	
-	/* Handle ego-item squelch */
-	if ((sf_major == 3) && (sf_minor == 0) && (sf_patch != 9))
+		
+	/* Read the number of saved ego-item */
+	rd_u16b(&file_e_max);
+		
+	for (i = 0; i < file_e_max; i++)
 	{
-		u16b file_e_max;
-		
-		/* Read the number of saved ego-item */
-		rd_u16b(&file_e_max);
-		
-		for (i = 0; i < file_e_max; i++)
+		if (i < z_info->e_max)
 		{
-			if (i < z_info->e_max)
-			{
-				byte flags;
-				
-				/* Read and extract the flag */
-				rd_byte(&flags);
-				e_info[i].everseen |= (flags & 0x02);
-			}
+			byte flags;
+			
+			/* Read and extract the flag */
+			rd_byte(&flags);
+			e_info[i].everseen |= (flags & 0x02);
 		}
-	}
-	else
-	{
 	}
 	
 	/* Read the current number of auto-inscriptions */
@@ -889,7 +881,7 @@ int rd_randarts(void)
 	if (!adult_randarts)
 		return 0;
 
-	if (older_than(3, 0, 14))
+	if (FALSE)
 	{
 		/*
 		 * XXX XXX XXX

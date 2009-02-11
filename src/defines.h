@@ -37,6 +37,7 @@
  * Name of the version/variant and its version string
  */
 #define VERSION_NAME   "Angband"
+#define SAVEFILE_NAME  "VNLA"
 
 #ifdef BUILD_ID
 # define VERSION_STRING "3.1.1 dev (" BUILD_ID ")"
