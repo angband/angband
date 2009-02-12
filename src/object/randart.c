@@ -1357,8 +1357,8 @@ static s16b choose_item(int a_idx)
 
 	case TV_CLOAK:
 		if (r2 < 40) sval = SV_CLOAK;
-		if (r2 < 70) sval = SV_FUR_CLOAK;
-		if (r2 < 100) sval = SV_ELVEN_CLOAK;
+		else if (r2 < 70) sval = SV_FUR_CLOAK;
+		else if (r2 < 100) sval = SV_ELVEN_CLOAK;
 		else sval = SV_ETHEREAL_CLOAK;
 		break;
 	}
