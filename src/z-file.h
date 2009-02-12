@@ -188,12 +188,10 @@ bool file_putf(ang_file *f, const char *fmt, ...);
 bool file_seek(ang_file *f, u32b pos);
 
 /**
- * Reads `n` bytes from the file represented by `f` into the buffer `buf`.
- * Do not mix with calls to file_readc().
- *
- * Returns the number of bytes read. 
+ * Reads n bytes from file 'f' info buffer 'buf'.
+ * \returns Number of bytes read; -1 on error
  */
-size_t file_read(ang_file *f, char *buf, size_t n);
+int file_read(ang_file *f, char *buf, size_t n);
 
 /**
  * Write the first `n` bytes following the pointer `buf` to the file represented

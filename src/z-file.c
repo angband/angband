@@ -576,16 +576,23 @@ bool file_writec(ang_file *f, byte b)
 # define READ_BUF_SIZE 16384
 #endif
 
-size_t file_read(ang_file *f, char *buf, size_t n)
+int file_read(ang_file *f, char *buf, size_t n)
 {
 	int fd = fileno(f->fh);
+	int ret;
+	int n_read = 0;
 
 #ifndef SET_UID
 
 	while (n >= READ_BUF_SIZE)
 	{
-		if (read(fd, buf, READ_BUF_SIZE) != READ_BUF_SIZE)
-			return FALSE;
+		ret = read(fd, buf, READ_BUF_SIZE);
+		n_read += ret;
+
+		if (ret == -1)
+			return -1;
+		else if (ret != READ_BUF_SIZE)
+			return n_read;
 
 		buf += READ_BUF_SIZE;
 		n -= READ_BUF_SIZE;
@@ -593,17 +600,25 @@ size_t file_read(ang_file *f, char *buf, size_t n)
 
 #endif /* !SET_UID */
 
-	if (read(fd, buf, n) != (int)n)
-		return FALSE;
+	ret = read(fd, buf, n);
+	n_read += ret;
 
-	return TRUE;
+	if (ret == -1)
+		return -1;
+	else
+		return n_read;
 }
 
 #else
 
-size_t file_read(ang_file *f, char *buf, size_t n)
+int file_read(ang_file *f, char *buf, size_t n)
 {
-	return fread(buf, 1, n, f->fh);
+	size_t read = fread(buf, 1, n, f->fh);
+
+	if (read == 0 && ferror(f->fh))
+		return -1;
+	else
+		return m;
 }
 
 #endif

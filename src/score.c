@@ -85,7 +85,8 @@ static size_t highscore_read(high_score scores[], size_t sz)
 	if (!scorefile) return TRUE;
 
 	for (i = 0; i < sz &&
-	            file_read(scorefile, (char *)&scores[i], sizeof(high_score)); i++)
+			file_read(scorefile, (char *)&scores[i], sizeof(high_score)) > 0;
+			i++)
 		;
 
 	file_close(scorefile);
