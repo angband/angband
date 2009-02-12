@@ -321,7 +321,7 @@ void object_flags(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
 
 	(*f1) = k_ptr->flags1;
 	(*f2) = k_ptr->flags2;
-	(*f3) = k_ptr->flags3;
+	(*f3) = (k_ptr->flags3 & ~TR3_CURSE_MASK);
 
 	if (o_ptr->name1)
 	{
@@ -329,7 +329,7 @@ void object_flags(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
 
 		(*f1) = a_ptr->flags1;
 		(*f2) = a_ptr->flags2;
-		(*f3) = a_ptr->flags3;
+		(*f3) = (a_ptr->flags3 & ~TR3_CURSE_MASK);
 	}
 
 	if (o_ptr->name2)
@@ -338,7 +338,7 @@ void object_flags(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
 
 		(*f1) |= e_ptr->flags1;
 		(*f2) |= e_ptr->flags2;
-		(*f3) |= e_ptr->flags3;
+		(*f3) |= (e_ptr->flags3 & ~TR3_CURSE_MASK);
 	}
 
 	(*f1) |= o_ptr->flags1;
