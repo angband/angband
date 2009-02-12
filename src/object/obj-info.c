@@ -203,10 +203,11 @@ static bool describe_stats(u32b f1, int pval)
 	if (!pval) return FALSE;
 
 	count = info_collect(f1_pval, N_ELEMENTS(f1_pval), f1, descs);
-	if (!count) return FALSE;
-
-	text_out_c((pval > 0) ? TERM_L_GREEN : TERM_RED, "%+i ", pval);
-	info_out_list(descs, count);
+	if (count)
+	{
+		text_out_c((pval > 0) ? TERM_L_GREEN : TERM_RED, "%+i ", pval);
+		info_out_list(descs, count);
+	}
 
 	if (f1 & TR1_SEARCH)
 	{

@@ -63,6 +63,7 @@ Bugs fixed:
 (#755) Fix pseudo-id of branded ammo, so already-known ammo doesn't get pseudo-ID'd.
 (#766) Scrolls of trap creation now longer crash in town.
 (#767) Hitpoint warning now accepts only numbers from 0-9.
+(#772) Display searching bonuses for rings of searching in object descriptions again
 (#773) General Store now restocks like other stores (e.g. more food will appear without you having to buy out all the food).
 (#781) Remove the cap on potions of experience -- they always give 100k XP now.
 (#799) Elessar and Evenstar now show the right recharge times.
