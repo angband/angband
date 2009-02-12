@@ -3950,7 +3950,7 @@ static void do_cmd_delay(void)
 
 	prt(format("Current base delay factor: %d (%d msec)",
 			   op_ptr->delay_factor, msec), 22, 0);
-	prt("New movement delay (0-9): ", 21, 0);
+	prt("New base delay factor (0-255): ", 21, 0);
 
 	/* Ask the user for a string */
 	res = askfor_aux(tmp, sizeof(tmp), askfor_aux_numbers);
@@ -3970,15 +3970,16 @@ static void do_cmd_hp_warn(void)
 {
 	bool res;
 	char tmp[4] = "";
+	u16b warn;
 
 	strnfmt(tmp, sizeof(tmp), "%i", op_ptr->hitpoint_warn);
 
 	/* Prompt */
 	prt("Command: Hitpoint Warning", 20, 0);
 
-	prt(format("Current base delay factor: %d (%d%%)",
+	prt(format("Current hitpoint warning: %d (%d%%)",
 			   op_ptr->hitpoint_warn, op_ptr->hitpoint_warn * 10), 22, 0);
-	prt("New hitpoint warning delay (0-9): ", 21, 0);
+	prt("New hitpoint warning (0-9): ", 21, 0);
 
 	/* Ask the user for a string */
 	res = askfor_aux(tmp, sizeof(tmp), askfor_aux_numbers);
@@ -3986,7 +3987,13 @@ static void do_cmd_hp_warn(void)
 	/* Process input */
 	if (res)
 	{
-		op_ptr->hitpoint_warn = (u16b) strtoul(tmp, NULL, 0);
+		warn = (u16b) strtoul(tmp, NULL, 0);
+		
+		/* Reset nonsensical warnings */
+		if (warn > 9)
+			warn = 0;
+
+		op_ptr->hitpoint_warn = warn;
 	}
 }
 
