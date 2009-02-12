@@ -2790,6 +2790,9 @@ void earthquake(int cy, int cx, int r)
 			yy = cy + dy;
 			xx = cx + dx;
 
+			/* ignore invalid grids */
+			if (!in_bounds_fully(yy, xx)) continue;
+
 			/* Note unaffected grids for light changes, etc. */
 			if (!map[16+yy-cy][16+xx-cx])
 			{
