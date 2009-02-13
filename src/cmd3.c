@@ -305,7 +305,7 @@ void do_cmd_destroy(void)
 	/* Check for squelching */
 	if (squelch_tval(o_ptr->tval))
 	{
-		char sval_name[30];
+		char sval_name[50];
 
 		/* Obtain plural form without a quantity */
 		object_desc(sval_name, sizeof sval_name, o_ptr, FALSE,
