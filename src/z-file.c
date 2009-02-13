@@ -618,7 +618,7 @@ int file_read(ang_file *f, char *buf, size_t n)
 	if (read == 0 && ferror(f->fh))
 		return -1;
 	else
-		return m;
+		return read;
 }
 
 #endif
