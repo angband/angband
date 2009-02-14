@@ -47,7 +47,7 @@ static timed_effect effects[] =
 	{ "You feel yourself moving slower!", "You feel yourself speed up.",
 			NULL, NULL,
 			0, PU_BONUS, MSG_SLOW },
-	{ "You are blind.", "You can see again.",
+	{ "You are blind.", "You blink and your eyes clear.",
 			NULL, NULL,
 			PR_MAP, PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS, MSG_BLIND },
 	{ "You are paralysed!", "You can move again.",
