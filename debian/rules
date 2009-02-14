@@ -1,67 +1,63 @@
-#!/usr/bin/make -f
+#! /usr/bin/make -f
+############################ -*- Mode: Makefile; coding: utf-8 -*- ###########################
+## rules --- 
+## Author           : Manoj Srivastava ( srivasta@glaurung.green-gryphon.com ) 
+## Created On       : Fri Nov 14 12:33:34 2003
+## Created On Node  : glaurung.green-gryphon.com
+## Last Modified By : Manoj Srivastava
+## Last Modified On : Tue Nov 18 17:46:22 2003
+## Last Machine Used: glaurung.green-gryphon.com
+## Update Count     : 70
+## Status           : Unknown, Use with caution!
+## HISTORY          : 
+## Description      : 
+## 
+## arch-tag: 9a5063f4-1e20-4fff-b22a-de94c1e3d954
+## 
+## This program is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; either version 2 of the License, or
+## (at your option) any later version.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program; if not, write to the Free Software
+## Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+##
+###############################################################################
 
-export DH_VERBOSE=1
+# Include dpkg-architecture generated variables
+include debian/common/archvars.mk
 
-build: build-stamp
-build-stamp:
-	dh_testdir
-	./configure --prefix=/usr --mandir=\$${prefix}/share/man \
-	            CFLAGS="$(CFLAGS)" LDFLAGS="-Wl,-z,defs" \
-	            --disable-x11 --enable-sdl --enable-sdl-mixer \
-	            --disable-gtk --with-private-dirs
-	$(MAKE)
-	touch $@
+# Set variables with information extracted from control and changelog files
+include debian/common/pkgvars.mk
 
-clean:
-	dh_testdir
-	dh_testroot
-	$(MAKE) distclean
-	rm -f build-stamp
-	dh_clean 
+# variables useful for perl packages
+include debian/common/perlvars.mk
 
-install: build
-	dh_testdir
-	dh_testroot
-	dh_clean -k 
+# Install commands
+include debian/common/install_cmds.mk
 
-	# Add here commands to install the package into debian/angband.
-	$(MAKE) DESTDIR=$(CURDIR)/debian/angband/ install
+include debian/local-vars.mk
+
+include debian/common/copt.mk
+
+include debian/common/automake.mk
 
 
-# Build architecture-independent files here.
-binary-indep: build install
-# We have nothing to do by default.
 
-# Build architecture-dependent files here.
-binary-arch: build install
-	dh_testdir
-	dh_testroot
-	dh_installchangelogs changes.txt
-	dh_installdocs
-	dh_installexamples
-#	dh_install
-#	dh_installmenu
-#	dh_installdebconf	
-#	dh_installlogrotate
-#	dh_installemacsen
-#	dh_installpam
-#	dh_installmime
-#	dh_python
-#	dh_installinit
-#	dh_installcron
-#	dh_installinfo
-	dh_installman
-	dh_link
-#	dh_strip
-	dh_compress
-	dh_fixperms
-#	dh_perl
-#	dh_makeshlibs
-	dh_installdeb
-	dh_shlibdeps
-	dh_gencontrol
-	dh_md5sums
-	dh_builddeb
+all:
+	@echo nothing to be done
 
-binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install 
+include debian/common/targets.mk
+
+include debian/local.mk
+
+
+#Local variables:
+#mode: makefile
+#End:

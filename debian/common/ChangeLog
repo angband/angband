@@ -1,0 +1,59 @@
+2008-02-06  Manoj Srivastava  <srivasta@debian.org>
+
+	* copt.mk:
+		  srivasta@debian.org--lenny/skeleton-make-rules--main--0.1--patch-4
+		  The cross building support in Debian has been rewritten
+		  to stop overriding the CC  variable to $(MAKE) in order
+		  to correctly support those packages that build internal
+		  tools with the native compiler during the build. This
+		  means that other packages that assume that CC will be
+		  overridden by the cross-compiling build scripts now fail
+		  to build. The patch is simply to set CC to
+		  $(DEB_HOST_GNU_TYPE)-gcc only if a cross-build is
+		  detected.
+
+2007-10-09  Manoj Srivastava  <srivasta@debian.org>
+
+	* targets.mk:
+		  srivasta@debian.org--lenny/skeleton-make-rules--main--0.1--patch-1
+		  fix dependency tree for targets, allow  parralel
+		  compilatoin.  Many changes, thanks to dot.
+
+2007-09-20  Manoj Srivastava  <srivasta@debian.org>
+
+	* targets.mk (stamp-clean):
+		  srivasta@debian.org--lenny/skeleton-make-rules--main--0.1--base-0
+		  make clean not remove zero sized files. removed the part
+		  that cleaned out zero sized files; since there are uses
+		  for zero sized files (like, to nuke out files in
+		  upstream sources and not inflate the diff. Any zero
+		  sized files can still be nuked in the local.mk file.
+
+2006-10-02  Manoj Srivastava  <srivasta@debian.org>
+
+	* checklibs:
+		  srivasta@debian.org--etch/skeleton-make-rules--main--0.1--patch-15
+		  New file, to detect if there are unneeded library
+		  dependencies
+
+2006-10-01  Manoj Srivastava  <srivasta@debian.org>
+
+	* archvars.mk (doit):
+		  srivasta@debian.org--etch/skeleton-make-rules--main--0.1--patch-14
+		  Add a macro to execute $(shell ...) macos verbosely to
+		  help debugging.
+
+2006-09-15  Manoj Srivastava  <srivasta@debian.org>
+
+	* targets.mk (stamp-clean):
+		  srivasta@debian.org--etch/skeleton-make-rules--main--0.1--patch-13
+		  Exclude version control directories from the generic
+		  clean command.
+
+
+2006-08-23  Manoj Srivastava  <srivasta@debian.org>
+
+	* pkgvars.mk (DEB_DISTRIBUTION):
+		  srivasta@debian.org--etch/skeleton-make-rules--main--0.1--patch-6
+		  Add variable that contains the distribution information 
+
