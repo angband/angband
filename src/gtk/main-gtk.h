@@ -30,6 +30,7 @@
 #include "cairo-utils.h"
 #include "game-cmd.h" 
 #include "game-event.h" 
+#include "option.h"
 
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
