@@ -236,7 +236,12 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type
 	if (prefix)
 	{
 		if (o_ptr->number <= 0)
+		{
 			strnfcat(buf, max, &end, "no more ");
+			
+			/* Pluralise for grammatical correctness */
+			pluralise = TRUE;
+		}
 		else if (o_ptr->number > 1)
 			strnfcat(buf, max, &end, "%d ", o_ptr->number);
 		else if (known && artifact_p(o_ptr))
