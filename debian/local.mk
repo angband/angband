@@ -41,7 +41,7 @@ debian/stamp/conf/angband:
                      --datadir=$(R_LIBDIR) --mandir=$(R_MANDIR)         \
                      --infodir=$(R_INFODIR) --sysconfdir=/etc           \
                      --with-setgid=games    --with-libpath=$(R_LIBDIR)/ \
-		     --with-x $(confflags) 
+		     --with-x --enable-sdl $(confflags) 
 	@echo done > $@
 
 debian/stamp/build/angband:
