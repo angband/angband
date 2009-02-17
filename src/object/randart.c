@@ -1023,6 +1023,7 @@ static s32b artifact_power(int a_idx)
 	ADD_POWER("resist fire",		 3, TR2_RES_FIRE,    2,);
 	ADD_POWER("resist cold",		 3, TR2_RES_COLD,    2,);
 	ADD_POWER("resist poison",		14, TR2_RES_POIS,    2,);
+	ADD_POWER("resist fear",		 3, TR2_RES_FEAR,    2,);
 	ADD_POWER("resist light",		 3, TR2_RES_LITE,    2,);
 	ADD_POWER("resist dark",		 8, TR2_RES_DARK,    2,);
 	ADD_POWER("resist blindness",		 8, TR2_RES_BLIND,   2,);
