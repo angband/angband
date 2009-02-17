@@ -151,7 +151,7 @@ EFFECT(DISPEL_ALL,     FALSE, "deals 120 damage to all creatures that you can se
 
 EFFECT(SLEEPII,        FALSE, "puts to sleep the monsters around you")
 EFFECT(STAR_BALL,      FALSE, "fires a ball of electricity in all directions, each one causing 150 damage")
-EFFECT(RAGE_BLESS_RESIST, FALSE, "beserk rage, bless, and resistance")
+EFFECT(RAGE_BLESS_RESIST, FALSE, "bestows upon you berserk rage, bless, and resistance")
 EFFECT(RESTORE_LIFE,   FALSE, "restores your experience to full")
 EFFECT(REM_FEAR_POIS,  FALSE, "cures you of fear and poison")
 EFFECT(FIREBRAND,      FALSE, "brands bolts with fire, in an unbalanced fashion")
@@ -183,7 +183,7 @@ EFFECT(DRAIN_LIFE3,    TRUE,  "drains up to 150 hit points of life from a target
 EFFECT(DRAIN_LIFE4,    TRUE,  "drains up to 250 hit points of life from a target creature")
 EFFECT(MISSILE,        TRUE,  "fires a magic missile with damage 3d4")
 EFFECT(MANA_BOLT,      TRUE,  "fires a mana bolt with damage 12d8")
-EFFECT(BIZARRE,        TRUE,  "does bizarre things.")
+EFFECT(BIZARRE,        TRUE,  "does bizarre things")
 EFFECT(ARROW,          TRUE,  "fires a magical arrow with damage 150")
 EFFECT(STINKING_CLOUD, TRUE,  "fires a stinking cloud with damage 12")
 EFFECT(STONE_TO_MUD,   TRUE,  "turns rock into mud")
