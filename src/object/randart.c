@@ -1002,7 +1002,7 @@ static s32b artifact_power(int a_idx)
 	{
 		p += IMMUNITY_POWER;
 		LOG_PRINT1("Adding power for multiple immunities, total is %d\n", p);
-		if (immunities >= INHIBIT_IMMUNITIES)
+		if (i >= INHIBIT_IMMUNITIES)
 		{
 			p += INHIBIT_POWER;             /* inhibit */
 			LOG_PRINT("INHIBITING: Too many immunities\n");
