@@ -436,6 +436,7 @@ void death_screen(void)
 {
 	menu_type *menu;
 	const char cmd_keys[] = { ARROW_LEFT, ARROW_RIGHT, '\0' };
+	const region area = { 51, 2, 0, N_ELEMENTS(death_actions) };
 
 	int cursor = 0;
 	ui_event_data c = EVENT_EMPTY;
@@ -478,7 +479,6 @@ void death_screen(void)
 	menu->flags = MN_CASELESS_TAGS;
 	menu->cmd_keys = cmd_keys;
 	menu->count = N_ELEMENTS(death_actions);
-	const region area = { 51, 2, 0, menu->count };
 
 	menu_init(menu, MN_SKIN_SCROLL, &death_iter, &area);
 
