@@ -704,6 +704,7 @@ static errr init_e_info(void)
  */
 static errr init_r_info(void)
 {
+	int i;
 	errr err;
 
 	/* Init the header */
@@ -732,7 +733,6 @@ static errr init_r_info(void)
 	r_name = r_head.name_ptr;
 	r_text = r_head.text_ptr;
 	tot_mon_power = 0;
-	int i;
 	for (i = 0; i < z_info->r_max; i++) 
 	{
 		tot_mon_power += r_info[i].power;
