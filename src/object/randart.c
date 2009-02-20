@@ -3516,7 +3516,7 @@ static int choose_ability (s16b *freq_table)
  * been done already.
  */
 
-static void add_ability_aux(artifact_type *a_ptr, int r)
+static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 {
 	switch(r)
 	{
@@ -3545,7 +3545,10 @@ static void add_ability_aux(artifact_type *a_ptr, int r)
 
 		case ART_IDX_WEAPON_AGGR:
 		case ART_IDX_NONWEAPON_AGGR:
-			add_aggravation(a_ptr);
+			if (target_power > 90)
+			{
+				add_aggravation(a_ptr);
+			}
 			break;
 
 		case ART_IDX_MELEE_BLESS:
@@ -3746,7 +3749,7 @@ static void add_ability_aux(artifact_type *a_ptr, int r)
 /*
  * Randomly select an extra ability to be added to the artifact in question.
  */
-static void add_ability(artifact_type *a_ptr)
+static void add_ability(artifact_type *a_ptr, s32b target_power)
 {
 	int r;
 
@@ -3754,7 +3757,7 @@ static void add_ability(artifact_type *a_ptr)
 	r = choose_ability(art_freq);
 
 	/* Add the appropriate ability */
-	add_ability_aux(a_ptr, r);
+	add_ability_aux(a_ptr, r, target_power);
 
 	/* Now remove contradictory or redundant powers. */
 	remove_contradictory(a_ptr);
@@ -3772,7 +3775,7 @@ static void add_ability(artifact_type *a_ptr)
  * abilities and attempting to add each in turn.  An artifact only gets one
  * chance at each of these up front (if applicable).
  */
-static void try_supercharge(artifact_type *a_ptr)
+static void try_supercharge(artifact_type *a_ptr, s32b target_power)
 {
 	/* Huge damage dice or +3 blows - melee weapon only */
 	if (a_ptr->tval == TV_DIGGING || a_ptr->tval == TV_HAFTED ||
@@ -3822,7 +3825,8 @@ static void try_supercharge(artifact_type *a_ptr)
 		a_ptr->tval == TV_HAFTED || a_ptr->tval == TV_POLEARM ||
 		a_ptr->tval == TV_SWORD)
 	{
-		if (randint0(z_info->a_max) < artprobs[ART_IDX_WEAPON_AGGR])
+		if ((randint0(z_info->a_max) < artprobs[ART_IDX_WEAPON_AGGR]) &&
+		    (target_power > 90))
 		{
 			a_ptr->flags3 |= TR3_AGGRAVATE;
 			LOG_PRINT("Adding aggravation\n");
@@ -3830,7 +3834,8 @@ static void try_supercharge(artifact_type *a_ptr)
 	}
 	else
 	{
-		if (randint0(z_info->a_max) < artprobs[ART_IDX_NONWEAPON_AGGR])
+		if ((randint0(z_info->a_max) < artprobs[ART_IDX_NONWEAPON_AGGR]) &&
+		    (target_power > 90))
 		{
 			a_ptr->flags3 |= TR3_AGGRAVATE;
 			LOG_PRINT("Adding aggravation\n");
@@ -4005,7 +4010,7 @@ static void scramble_artifact(int a_idx)
 	a_old = *a_ptr;
 
 	/* Give this artifact a shot at being supercharged */
-	try_supercharge(a_ptr);
+	try_supercharge(a_ptr, power);
 	ap = artifact_power(a_idx);
 	if (ap > (power * 23) / 20 + 1)
 	{
@@ -4021,8 +4026,8 @@ static void scramble_artifact(int a_idx)
 		a_old = *a_ptr;
 		do
 		{
-			add_ability(a_ptr);
-			add_ability(a_ptr);
+			add_ability(a_ptr, power);
+			add_ability(a_ptr, power);
 			do_curse(a_ptr);
 			do_curse(a_ptr);
 			do_curse(a_ptr);
@@ -4050,7 +4055,7 @@ static void scramble_artifact(int a_idx)
 		{
 			/* Copy artifact info temporarily. */
 			a_old = *a_ptr;
-			add_ability(a_ptr);
+			add_ability(a_ptr, power);
 			ap = artifact_power(a_idx);
 
 			/* CR 11/14/01 - pushed both limits up by about 5% */
