@@ -1150,7 +1150,7 @@ static errr init_alloc(void)
 	/*** Initialize object allocation info ***/
 
 	init_obj_alloc();
-
+	init_obj_power();
 
 
 	/*** Analyze monster allocation info ***/
@@ -1497,6 +1497,7 @@ void cleanup_angband(void)
 	macro_trigger_free();
 
 	/* Free the allocation tables */
+	free_obj_power();
 	free_obj_alloc();
 	FREE(alloc_ego_table);
 	FREE(alloc_race_table);

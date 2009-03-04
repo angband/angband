@@ -85,6 +85,7 @@ ANGFILES = \
 	object/obj-desc.o \
 	object/obj-info.o \
 	object/obj-make.o \
+	object/obj-power.o \
 	object/obj-ui.o \
 	object/obj-util.o \
 	object/randart.o \

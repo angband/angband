@@ -153,4 +153,51 @@ int lookup_sval(int tval, const char *name);
 int tval_find_idx(const char *name);
 const char *tval_find_name(int tval);
 
+/* obj-power.c and randart.c */
+void free_obj_power(void);
+bool init_obj_power(void);
+s32b artifact_power(int a_idx, int verbose, ang_file *log);
+/*
+ * Average damage for good ego ammo of various types, used for balance
+ * The current values assume normal (non-seeker) ammo enchanted to +9
+ * Also a fudge factor for melee damage boosts from STR/rings/etc., and
+ * a base power for light sources
+ */
+#define AVG_SLING_AMMO_DAMAGE 11
+#define AVG_BOW_AMMO_DAMAGE 12
+#define AVG_XBOW_AMMO_DAMAGE 12
+#define MELEE_DAMAGE_BOOST 5
+#define BASE_LITE_POWER 5
+
+#define INHIBIT_BLOWS   4
+#define INHIBIT_MIGHT   4
+#define INHIBIT_SHOTS   4
+#define IMMUNITY_POWER  15      /* for each immunity after the first */
+#define INHIBIT_IMMUNITIES 4
+#define INHIBIT_POWER   20000
+#define HIGH_TO_AC      21
+#define VERYHIGH_TO_AC  31
+#define INHIBIT_AC      41
+#define HIGH_TO_HIT     16
+#define VERYHIGH_TO_HIT 26
+#define HIGH_TO_DAM     16
+#define VERYHIGH_TO_DAM 26
+
+#define sign(x) ((x) > 0 ? 1 : ((x) < 0 ? -1 : 0))
+
+#define LOG_PRINT(string) \
+        do { if (randart_verbose) \
+                file_putf(randart_log, (string)); \
+        } while (0);
+
+#define LOG_PRINT1(string, value) \
+        do { if (randart_verbose) \
+                file_putf(randart_log, (string), (value)); \
+        } while (0);
+
+#define LOG_PRINT2(string, val1, val2) \
+        do { if (randart_verbose) \
+                file_putf(randart_log, (string), (val1), (val2)); \
+        } while (0);
+	
 #endif /* !INCLUDED_OBJECT_H */
