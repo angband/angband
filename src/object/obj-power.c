@@ -28,8 +28,8 @@
  * We go up to +20 here, but in practice it will never get there
  */
 static s16b speed_power[21] =
-	{0, 1, 3, 6, 9, 13, 17, 22, 27, 33, 39,
-	46, 53, 61, 69, 77, 85, 93, 101, 109, 117};
+	{0, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66,
+	76, 85, 93, 100, 106, 112, 118, 124, 130, 136};
 
 /*
  * Boost ratings for combinations of ability bonuses
