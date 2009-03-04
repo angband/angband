@@ -156,7 +156,7 @@ const char *tval_find_name(int tval);
 /* obj-power.c and randart.c */
 void free_obj_power(void);
 bool init_obj_power(void);
-s32b artifact_power(int a_idx, int verbose, ang_file *log);
+s32b object_power(const object_type *o_ptr, int verbose, ang_file *log);
 /*
  * Average damage for good ego ammo of various types, used for balance
  * The current values assume normal (non-seeker) ammo enchanted to +9

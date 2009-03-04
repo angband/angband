@@ -346,6 +346,26 @@ static errr init_names(void)
 }
 
 /*
+ * Return the artifact power, by generating a "fake" object based on the
+ * artifact, and calling the common object_power function
+ */ 
+static s32b artifact_power(int a_idx)
+{
+	object_type obj;
+	
+	LOG_PRINT("********** ENTERING EVAL POWER ********\n");
+	LOG_PRINT1("Artifact index is %d\n", a_idx);
+	
+	if(!make_fake_artifact(&obj, a_idx))
+	{
+		return 0;
+	}
+
+	return object_power(&obj, randart_verbose, randart_log);
+}
+
+
+/*
  * Store the original artifact power ratings as a baseline
  */
 static void store_base_power (void)
@@ -357,7 +377,7 @@ static void store_base_power (void)
 
 	for(i = 0; i < z_info->a_max; i++)
 	{
-		base_power[i] = artifact_power(i, randart_verbose, randart_log);
+		base_power[i] = artifact_power(i);
 	}
 
 	for(i = 0; i < z_info->a_max; i++)
@@ -3233,7 +3253,7 @@ static void scramble_artifact(int a_idx)
 				LOG_PRINT("Cursing base item to help get a match.\n");
 				do_curse(a_ptr);
 			}
-			ap2 = artifact_power(a_idx, randart_verbose, randart_log);
+			ap2 = artifact_power(a_idx);
 			count++;
 			/*
 			 * Calculate the proper rarity based on the new type.  We attempt
@@ -3285,7 +3305,7 @@ static void scramble_artifact(int a_idx)
 
 	/* Give this artifact a shot at being supercharged */
 	try_supercharge(a_ptr, power);
-	ap = artifact_power(a_idx, randart_verbose, randart_log);
+	ap = artifact_power(a_idx);
 	if (ap > (power * 23) / 20 + 1)
 	{
 		/* too powerful -- put it back */
@@ -3306,7 +3326,7 @@ static void scramble_artifact(int a_idx)
 			do_curse(a_ptr);
 			do_curse(a_ptr);
 			remove_contradictory(a_ptr);
-			ap = artifact_power(a_idx, randart_verbose, randart_log);
+			ap = artifact_power(a_idx);
 			/* Accept if it doesn't have any inhibited abilities */
 			if (ap < INHIBIT_POWER) success = TRUE;
 			/* Otherwise go back and try again */
@@ -3330,7 +3350,7 @@ static void scramble_artifact(int a_idx)
 			/* Copy artifact info temporarily. */
 			a_old = *a_ptr;
 			add_ability(a_ptr, power);
-			ap = artifact_power(a_idx, randart_verbose, randart_log);
+			ap = artifact_power(a_idx);
 
 			/* CR 11/14/01 - pushed both limits up by about 5% */
 			if (ap > (power * 23) / 20 + 1)

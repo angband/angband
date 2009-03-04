@@ -365,11 +365,8 @@ static int make_ego_item(object_type *o_ptr, int level, bool force_uncursed)
  * Copy artifact data to a normal object, and set various slightly hacky
  * globals.
  */
-static void copy_artifact_data(object_type *o_ptr, artifact_type *a_ptr)
+static void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 {
-	/* Hack -- Mark the artifact as "created" */
-	a_ptr->cur_num = 1;
-
 	/* Extract the other fields */
 	o_ptr->pval = a_ptr->pval;
 	o_ptr->ac = a_ptr->ac;
@@ -470,6 +467,9 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 		/* Copy across all the data from the artifact struct */
 		copy_artifact_data(o_ptr, a_ptr);
 
+		/* Hack -- Mark the artifact as "created" */
+		a_ptr->cur_num = 1;
+
 		/* Success */
 		return TRUE;
 	}
@@ -533,6 +533,9 @@ static bool make_artifact(object_type *o_ptr)
 
 		/* Copy across all the data from the artifact struct */
 		copy_artifact_data(o_ptr, a_ptr);
+
+		/* Hack -- Mark the artifact as "created" */
+		a_ptr->cur_num = 1;
 
 		return TRUE;
 	}
