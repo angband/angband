@@ -1,8 +1,9 @@
 /*
  * File: obj-power.c
- * Purpose: calculation of object power (for pricing and randart generation)
+ * Purpose: calculation of object power
  *
  * Copyright (c) 2001 Chris Carr, Chris Robertson
+ * Revised in 2009 by Chris Carr, Peter Denison
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -20,6 +21,7 @@
 #include "init.h"
 
 /* Total number of different slay types used
+ * ToDo: look this up once slays are abstracted
  */
 #define SLAY_MAX 0x00010000L
 
@@ -248,7 +250,7 @@ static int bow_multiplier(int sval)
 
 
 /*
- * Evaluate the artifact's overall power level.
+ * Evaluate the object's overall power level.
  */
 s32b object_power(const object_type* o_ptr, int randart_verbose, ang_file *randart_log)
 {
@@ -280,17 +282,9 @@ s32b object_power(const object_type* o_ptr, int randart_verbose, ang_file *randa
 			 * ToDo: rework evaluation of negative pvals
 			 */
 
-			if (o_ptr->to_d < 9)
-			{
-				/* Could enchant this up - just use to_d value of 9 */
-				p += 9;
-				LOG_PRINT("Damage too low, adding 9\n");
-			}
-			else
-			{
-				p += (o_ptr->to_d);
-				LOG_PRINT1("Adding power from to_dam, total is %d\n", p);
-			}
+			p += (o_ptr->to_d);
+			LOG_PRINT1("Adding power from to_dam, total is %d\n", p);
+
 			/*
 			 * Add the average damage of fully enchanted (good) ammo for this
 			 * weapon.  Could make this dynamic based on k_info if desired.
@@ -383,17 +377,8 @@ s32b object_power(const object_type* o_ptr, int randart_verbose, ang_file *randa
 			p = (p * slay_power(o_ptr, randart_verbose, randart_log)) / tot_mon_power;
 			LOG_PRINT1("Adjusted for slay power, total is %d\n", p);
 
-			if (o_ptr->to_d < 9)
-			{
-				/* This could be enchanted up, so just assume to_d of +9 */
-				p += 9;
-				LOG_PRINT("Base damage too low, increasing to +9\n");
-			}
-			else
-			{
-				p += o_ptr->to_d;
-				LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
-			}
+			p += o_ptr->to_d;
+			LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
 
 			if (f1 & TR1_BLOWS)
 			{
