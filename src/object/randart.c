@@ -240,7 +240,7 @@ static s16b mean_ac_increment = 5;
 /*
  * Pointer for logging file
  */
-static ang_file *randart_log = NULL;
+static ang_file *log_file = NULL;
 
 /*
  * Store the original artifact power ratings
@@ -263,7 +263,7 @@ static byte *base_item_prob;
 static byte *base_art_rarity;
 
 /* Global just for convenience. */
-static int randart_verbose = 1;
+static int verbose = 1;
 
 /*
  * Use W. Sheldon Simms' random name generator.
@@ -361,7 +361,7 @@ static s32b artifact_power(int a_idx)
 		return 0;
 	}
 
-	return object_power(&obj, randart_verbose, randart_log);
+	return object_power(&obj, verbose, log_file);
 }
 
 
@@ -1732,12 +1732,12 @@ static void parse_frequencies(void)
 	}
 	/* End for loop */
 
-	if(randart_verbose)
+	if(verbose)
 	{
 	/* Print out some of the abilities, to make sure that everything's fine */
 		for(i=0; i<ART_IDX_TOTAL; i++)
 		{
-			file_putf(randart_log, "Frequency of ability %d: %d\n", i, artprobs[i]);
+			file_putf(log_file, "Frequency of ability %d: %d\n", i, artprobs[i]);
 		}
 	}
 
@@ -3384,7 +3384,7 @@ static void scramble_artifact(int a_idx)
 			*/
 		}		/* end of power selection */
 
-		if (randart_verbose && tries >= MAX_TRIES)
+		if (verbose && tries >= MAX_TRIES)
 		{
 			/*
 			 * We couldn't generate an artifact within the number of permitted
@@ -3473,7 +3473,7 @@ static bool artifacts_acceptable(void)
 	    bodies > 0 || shields > 0 || cloaks > 0 || hats > 0 ||
 	    gloves > 0 || boots > 0)
 	{
-		if (randart_verbose)
+		if (verbose)
 		{
 			char types[256];
 			sprintf(types, "%s%s%s%s%s%s%s%s%s%s",
@@ -3561,13 +3561,13 @@ errr do_randart(u32b randart_seed, bool full)
 		base_art_rarity = C_ZNEW(z_info->a_max, byte);
 
 		/* Open the log file for writing */
-		if (randart_verbose)
+		if (verbose)
 		{
 			char buf[1024];
 			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, 
 				"randart.log");
-			randart_log = file_open(buf, MODE_WRITE, FTYPE_TEXT);
-			if (!randart_log)
+			log_file = file_open(buf, MODE_WRITE, FTYPE_TEXT);
+			if (!log_file)
 			{
 				msg_print("Error - can't open randart.log for writing.");
 				exit(1);
@@ -3593,9 +3593,9 @@ errr do_randart(u32b randart_seed, bool full)
 		parse_frequencies();
 
 		/* Close the log file */
-		if (randart_verbose)
+		if (verbose)
 		{
-			if (!file_close(randart_log))
+			if (!file_close(log_file))
 			{
 				msg_print("Error - can't close randart.log file.");
 				exit(1);

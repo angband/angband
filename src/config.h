@@ -104,7 +104,13 @@
 /* #define ALLOW_TEMPLATES_OUTPUT */
 
 
-
+/*
+ * OPTION: use "power" rating algorithm to determine prices of wearable
+ * items (weapons, armour, jewelry, light sources, ammo). If this option is
+ * used, only wearable items will be priced this way - consumables will still
+ * use prices from text files.
+ */
+/* #define POWER_PRICING */
 
 
 /*** X11 settings ***/

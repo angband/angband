@@ -1393,6 +1393,56 @@ static s32b object_value_real(const object_type *o_ptr, int qty)
 
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
+#ifdef POWER_PRICING
+	s32b power;
+	int a = 2;
+	int b = 3;
+
+	if (wearable_p(o_ptr))
+	{
+ 		char buf[1024];
+		int verbose = 1;
+		ang_file *log_file = NULL;
+
+		if (verbose)
+		{                
+			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, 					"pricing.log");
+                	log_file = file_open(buf, MODE_APPEND, FTYPE_TEXT);
+                	if (!log_file)
+                	{
+                		msg_print("Error - can't open pricing.log for writing.");
+                	        exit(1);
+                	}
+		}
+
+		LOG_PRINT1("object is %s", k_name + k_ptr->name);
+		power = object_power(o_ptr, verbose, log_file);
+		value = (a * power * power) + (b * power);
+
+		if ( (o_ptr->tval == TV_SHOT) || (o_ptr->tval == TV_ARROW) ||
+  			(o_ptr->tval == TV_BOLT) || ((o_ptr->tval == TV_LITE) 				&& (o_ptr->sval == SV_LITE_TORCH)) )
+		{
+			value = value / AMMO_RESCALER;
+			if (value < 1) value = 1;
+		}
+
+		LOG_PRINT2("a is %d and b is %d\n", a, b);
+		LOG_PRINT1("value is %d\n", value);
+		total_value = value * qty;
+
+                if (verbose)
+                {
+                        if (!file_close(log_file))
+                        {
+                                msg_print("Error - can't close pricing.log file.");
+                                exit(1);
+                        }
+                }
+		if (total_value < 0) total_value = 0;
+
+		return (total_value);
+	}
+#endif /* POWER_PRICING */
 
 	/* Hack -- "worthless" items */
 	if (!k_ptr->cost) return (0L);

@@ -21,17 +21,67 @@
 #include "init.h"
 
 /* Total number of different slay types used
- * ToDo: look this up once slays are abstracted
+ * ToDo: reduce this to cache only the slays found in ego-item.txt
  */
 #define SLAY_MAX 0x00010000L
+
+/*
+ * Constants for the power algorithm:
+ * - ammo damage for calculating launcher power
+ * (the current values assume normal (non-seeker) ammo enchanted to +9)
+ * - launcher multipliers for calculating ammo power
+ * (these are halved in the algorithm)
+ * - fudge factor for extra damage from rings etc. (used if extra blows)
+ * - base power for light sources (additional power for NFUEL is added later)
+ * - power per point of damage
+ * - power per point of +to_hit
+ * - power per point of base AC
+ * - power per point of +to_ac
+ * (these four are all halved in the algorithm)
+ * - assumed max blows
+ * - fudge factor for rescaling missile power 
+ * (shots are currently set to be 1.25x as powerful as blows)
+ * - inhibiting values for +blows/might/shots/immunities (max is one less)
+ * - power per unit pval for each pval ability (except speed)
+ * (there is an extra term for multiple pval bonuses)
+ */
+#define AVG_SLING_AMMO_DAMAGE  11
+#define AVG_BOW_AMMO_DAMAGE    12
+#define AVG_XBOW_AMMO_DAMAGE   13
+#define AVG_SLING_MULT          4 /* i.e. 2 */
+#define AVG_BOW_MULT            5 /* i.e. 2.5 */
+#define AVG_XBOW_MULT           7 /* i.e. 3.5 */
+#define MELEE_DAMAGE_BOOST      5
+#define BASE_LITE_POWER         6
+#define DAMAGE_POWER            4 /* i.e. 2 */
+#define TO_HIT_POWER            2 /* i.e. 1 */
+#define BASE_AC_POWER           3 /* i.e. 1.5 */
+#define TO_AC_POWER             2 /* i.e. 1 */
+#define MAX_BLOWS               5
+#define BOW_RESCALER            4
+#define INHIBIT_BLOWS           4
+#define INHIBIT_MIGHT           4
+#define INHIBIT_SHOTS           4
+#define IMMUNITY_POWER         25 /* for each immunity after the first */
+#define INHIBIT_IMMUNITIES      4
+#define STR_POWER	        6
+#define INT_POWER	        4
+#define WIS_POWER	        4
+#define DEX_POWER		6
+#define CON_POWER		8
+#define CHR_POWER		1
+#define STEALTH_POWER		4
+#define SEARCH_POWER		2
+#define INFRA_POWER		2
+#define TUNN_POWER		2
 
 /*
  * Table giving speed power ratings
  * We go up to +20 here, but in practice it will never get there
  */
 static s16b speed_power[21] =
-	{0, 3, 6, 10, 15, 21, 28, 36, 45, 55, 66,
-	76, 85, 93, 100, 106, 112, 118, 124, 130, 136};
+	{0, 6, 12, 20, 30, 42, 56, 72, 90, 110, 132,
+	152, 170, 186, 200, 212, 224, 236, 248, 260, 272};
 
 /*
  * Boost ratings for combinations of ability bonuses
@@ -39,9 +89,9 @@ static s16b speed_power[21] =
  * N.B. Not all stats count equally towards this total
  */
 static s16b ability_power[25] =
-	{0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4,
-	6, 8, 10, 12, 15, 18, 21, 24, 28, 32,
-	37, 42, 48, 55};
+	{0, 0, 0, 0, 0, 0, 0, 2, 4, 6, 8,
+	12, 16, 20, 24, 30, 36, 42, 48, 56, 64,
+	74, 84, 96, 110};
 
 /*
  * Cache the results of slay_value(), which is expensive and would
@@ -74,7 +124,7 @@ bool init_obj_power(void)
  * ToDo: rewrite to use an external structure for slays
  */
 
-static s32b slay_power(const object_type *o_ptr, int randart_verbose, ang_file* randart_log)
+static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file)
 {
 	s32b s_index = 0;
 	s32b sv;
@@ -198,34 +248,34 @@ static s32b slay_power(const object_type *o_ptr, int randart_verbose, ang_file* 
 	 * total number of monsters.
 	 */
 
-	if (randart_verbose)
+	if (verbose)
 	{
 		/* Write info about the slay combination and multiplier */
-		file_putf(randart_log,"Slay multiplier for:");
+		file_putf(log_file,"Slay multiplier for:");
 
-		if (f1 & TR1_SLAY_EVIL) file_putf(randart_log,"Evl ");
-		if (f1 & TR1_KILL_DRAGON) file_putf(randart_log,"XDr ");
-		if (f1 & TR1_KILL_DEMON) file_putf(randart_log,"XDm ");
-		if (f1 & TR1_KILL_UNDEAD) file_putf(randart_log,"XUn ");
-		if (f1 & TR1_SLAY_ANIMAL) file_putf(randart_log,"Ani ");
-		if (f1 & TR1_SLAY_UNDEAD) file_putf(randart_log,"Und ");
-		if (f1 & TR1_SLAY_DRAGON) file_putf(randart_log,"Drg ");
-		if (f1 & TR1_SLAY_DEMON) file_putf(randart_log,"Dmn ");
-		if (f1 & TR1_SLAY_TROLL) file_putf(randart_log,"Tro ");
-		if (f1 & TR1_SLAY_ORC) file_putf(randart_log,"Orc ");
-		if (f1 & TR1_SLAY_GIANT) file_putf(randart_log,"Gia ");
+		if (f1 & TR1_SLAY_EVIL) file_putf(log_file,"Evl ");
+		if (f1 & TR1_KILL_DRAGON) file_putf(log_file,"XDr ");
+		if (f1 & TR1_KILL_DEMON) file_putf(log_file,"XDm ");
+		if (f1 & TR1_KILL_UNDEAD) file_putf(log_file,"XUn ");
+		if (f1 & TR1_SLAY_ANIMAL) file_putf(log_file,"Ani ");
+		if (f1 & TR1_SLAY_UNDEAD) file_putf(log_file,"Und ");
+		if (f1 & TR1_SLAY_DRAGON) file_putf(log_file,"Drg ");
+		if (f1 & TR1_SLAY_DEMON) file_putf(log_file,"Dmn ");
+		if (f1 & TR1_SLAY_TROLL) file_putf(log_file,"Tro ");
+		if (f1 & TR1_SLAY_ORC) file_putf(log_file,"Orc ");
+		if (f1 & TR1_SLAY_GIANT) file_putf(log_file,"Gia ");
 
-		if (f1 & TR1_BRAND_ACID) file_putf(randart_log,"Acd ");
-		if (f1 & TR1_BRAND_ELEC) file_putf(randart_log,"Elc ");
-		if (f1 & TR1_BRAND_FIRE) file_putf(randart_log,"Fir ");
-		if (f1 & TR1_BRAND_COLD) file_putf(randart_log,"Cld ");
-		if (f1 & TR1_BRAND_POIS) file_putf(randart_log,"Poi ");
+		if (f1 & TR1_BRAND_ACID) file_putf(log_file,"Acd ");
+		if (f1 & TR1_BRAND_ELEC) file_putf(log_file,"Elc ");
+		if (f1 & TR1_BRAND_FIRE) file_putf(log_file,"Fir ");
+		if (f1 & TR1_BRAND_COLD) file_putf(log_file,"Cld ");
+		if (f1 & TR1_BRAND_POIS) file_putf(log_file,"Poi ");
 
-		file_putf(randart_log,"sv is: %d\n", sv);
-		file_putf(randart_log," and t_m_p is: %d \n", tot_mon_power);
+		file_putf(log_file,"sv is: %d\n", sv);
+		file_putf(log_file," and t_m_p is: %d \n", tot_mon_power);
 
-		file_putf(randart_log,"times 1000 is: %d\n", (1000 * sv) / tot_mon_power);
-/*		fflush(randart_log); - need to convert from ang_file type */
+		file_putf(log_file,"times 1000 is: %d\n", (1000 * sv) / tot_mon_power);
+/*		fflush(log_file); - need to convert from ang_file type */
 	}
 
 	/* Add to the cache */
@@ -252,7 +302,7 @@ static int bow_multiplier(int sval)
 /*
  * Evaluate the object's overall power level.
  */
-s32b object_power(const object_type* o_ptr, int randart_verbose, ang_file *randart_log)
+s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 {
 	s32b p = 0;
 	object_kind *k_ptr;
@@ -282,7 +332,7 @@ s32b object_power(const object_type* o_ptr, int randart_verbose, ang_file *randa
 			 * ToDo: rework evaluation of negative pvals
 			 */
 
-			p += (o_ptr->to_d);
+			p += (o_ptr->to_d * DAMAGE_POWER / 2);
 			LOG_PRINT1("Adding power from to_dam, total is %d\n", p);
 
 			/*
@@ -293,17 +343,17 @@ s32b object_power(const object_type* o_ptr, int randart_verbose, ang_file *randa
 
 			if (o_ptr->sval == SV_SLING)
 			{
-				p += AVG_SLING_AMMO_DAMAGE;
+				p += (AVG_SLING_AMMO_DAMAGE * DAMAGE_POWER / 2);
 			}
 			else if (o_ptr->sval == SV_SHORT_BOW ||
 				o_ptr->sval == SV_LONG_BOW)
 			{
-				p += AVG_BOW_AMMO_DAMAGE;
+				p += (AVG_BOW_AMMO_DAMAGE * DAMAGE_POWER / 2);
 			}
 			else if (o_ptr->sval == SV_LIGHT_XBOW ||
 				o_ptr->sval == SV_HEAVY_XBOW)
 			{
-				p += AVG_XBOW_AMMO_DAMAGE;
+				p += (AVG_XBOW_AMMO_DAMAGE * DAMAGE_POWER / 2);
 			}
 
 			LOG_PRINT1("Adding power from ammo, total is %d\n", p);
@@ -344,8 +394,6 @@ s32b object_power(const object_type* o_ptr, int randart_verbose, ang_file *randa
 					LOG_PRINT2("Multiplying power by 1 + %d, total is %d\n", o_ptr->pval, p);
 				}
 			}
-			p += sign(o_ptr->to_h) * (ABS(o_ptr->to_h) / 3);
-			LOG_PRINT1("Adding power from to_hit, total is %d\n", p);
 
 			if (o_ptr->weight < k_ptr->weight)
 			{
@@ -360,24 +408,31 @@ s32b object_power(const object_type* o_ptr, int randart_verbose, ang_file *randa
 			 * Melee weapons assume 5 attacks per turn, so we must also divide
 			 * by 5 to get equal ratings. 1.25 / 5 = 0.25
 			 */
-			p = sign(p) * (ABS(p) / 4);
+			p = sign(p) * (ABS(p) / BOW_RESCALER);
 			LOG_PRINT1("Rescaling bow power, total is %d\n", p);
+
+			p += sign(o_ptr->to_h) * (ABS(o_ptr->to_h) * TO_HIT_POWER / 2);
+			LOG_PRINT1("Adding power from to_hit, total is %d\n", p);
+
 			break;
 		}
+		case TV_SHOT:
+		case TV_ARROW:
+		case TV_BOLT:
 		case TV_DIGGING:
 		case TV_HAFTED:
 		case TV_POLEARM:
 		case TV_SWORD:
 		{
-			p += o_ptr->dd * (o_ptr->ds + 1) / 2;
+			p += (o_ptr->dd * (o_ptr->ds + 1) * DAMAGE_POWER / 4);
 			LOG_PRINT1("Adding power for dam dice, total is %d\n", p);
 
 			/* Apply the correct slay multiplier */
 
-			p = (p * slay_power(o_ptr, randart_verbose, randart_log)) / tot_mon_power;
+			p = (p * slay_power(o_ptr, verbose, log_file)) / tot_mon_power;
 			LOG_PRINT1("Adjusted for slay power, total is %d\n", p);
 
-			p += o_ptr->to_d;
+			p += (o_ptr->to_d * DAMAGE_POWER / 2);
 			LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
 
 			if (f1 & TR1_BLOWS)
@@ -390,16 +445,21 @@ s32b object_power(const object_type* o_ptr, int randart_verbose, ang_file *randa
 				}
 				else if (o_ptr->pval > 0)
 				{
-					p = sign(p) * ((ABS(p) * (5 + o_ptr->pval)) / 5);
-					/* Add an extra amount per blow to account for damage rings */
-					p += MELEE_DAMAGE_BOOST * o_ptr->pval;
+					p = sign(p) * ((ABS(p) * (MAX_BLOWS + o_ptr->pval)) 
+						/ MAX_BLOWS);
+					/* Add an extra amount per blow to account for damage 						rings */
+					p += (MELEE_DAMAGE_BOOST * o_ptr->pval * DAMAGE_POWER / 2);
 					LOG_PRINT1("Adding power for blows, total is %d\n", p);
 				}
 			}
 
-			p += sign(o_ptr->to_h) * (ABS(o_ptr->to_h) / 3);
+			if (o_ptr->tval == TV_SHOT)  p = p * AVG_SLING_MULT / (2 * BOW_RESCALER);
+			if (o_ptr->tval == TV_ARROW) p = p * AVG_BOW_MULT / (2 * BOW_RESCALER);
+			if (o_ptr->tval == TV_BOLT)  p = p * AVG_XBOW_MULT / (2 * BOW_RESCALER);
+			LOG_PRINT1("After multiplying ammo and rescaling, power is %d\n", p);
+			
+			p += sign(o_ptr->to_h) * (ABS(o_ptr->to_h) * TO_HIT_POWER / 2);
 			LOG_PRINT1("Adding power for to hit, total is %d\n", p);
-
 
 			/* Remember, weight is in 0.1 lb. units. */
 			if (o_ptr->weight < k_ptr->weight)
@@ -407,6 +467,7 @@ s32b object_power(const object_type* o_ptr, int randart_verbose, ang_file *randa
 				p += (k_ptr->weight - o_ptr->weight) / 20; 
 				LOG_PRINT1("Adding power for low weight, total is %d\n", p);
 			}
+
 			break;
 		}
 		case TV_BOOTS:
@@ -419,13 +480,13 @@ s32b object_power(const object_type* o_ptr, int randart_verbose, ang_file *randa
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
 		{
-			p += sign(o_ptr->ac) * ((ABS(o_ptr->ac) * 2) / 3);
+			p += sign(o_ptr->ac) * ((ABS(o_ptr->ac) * BASE_AC_POWER) / 2);
 			LOG_PRINT1("Adding power for base AC value, total is %d\n", p);
 
-			p += sign(o_ptr->to_h) * ((ABS(o_ptr->to_h) * 2) / 3);
+			p += sign(o_ptr->to_h) * (ABS(o_ptr->to_h) * TO_HIT_POWER);
 			LOG_PRINT1("Adding power for to_hit, total is %d\n", p);
 
-			p += o_ptr->to_d * 2;
+			p += o_ptr->to_d * DAMAGE_POWER;
 			LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
 
 			if (o_ptr->weight < k_ptr->weight)
@@ -440,10 +501,10 @@ s32b object_power(const object_type* o_ptr, int randart_verbose, ang_file *randa
 			p += BASE_LITE_POWER;
 			LOG_PRINT("Artifact light source, adding base power\n");
 
-			p += sign(o_ptr->to_h) * ((ABS(o_ptr->to_h) * 2) / 3);
+			p += sign(o_ptr->to_h) * (ABS(o_ptr->to_h) * TO_HIT_POWER);
 			LOG_PRINT1("Adding power for to_hit, total is %d\n", p);
 
-			p += o_ptr->to_d * 2;
+			p += o_ptr->to_d * DAMAGE_POWER;
 			LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
 
 			break;
@@ -451,12 +512,12 @@ s32b object_power(const object_type* o_ptr, int randart_verbose, ang_file *randa
 		case TV_RING:
 		case TV_AMULET:
 		{
-			LOG_PRINT("Artifact jewellery, adding 0 as base\n");
+			LOG_PRINT("Jewellery - adding 0 as base\n");
 
-			p += sign(o_ptr->to_h) * ((ABS(o_ptr->to_h) * 2) / 3);
+			p += sign(o_ptr->to_h) * (ABS(o_ptr->to_h) * TO_HIT_POWER);
 			LOG_PRINT1("Adding power for to_hit, total is %d\n", p);
 
-			p += o_ptr->to_d * 2;
+			p += o_ptr->to_d * DAMAGE_POWER;
 			LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
 
 			break;
@@ -464,17 +525,17 @@ s32b object_power(const object_type* o_ptr, int randart_verbose, ang_file *randa
 	}
 
 	/* Other abilities are evaluated independent of the object type. */
-	p += sign(o_ptr->to_a) * (ABS(o_ptr->to_a) / 2);
+	p += sign(o_ptr->to_a) * (ABS(o_ptr->to_a) * TO_AC_POWER / 2);
 	LOG_PRINT2("Adding power for to_ac of %d, total is %d\n", o_ptr->to_a, p);
 
 	if (o_ptr->to_a > HIGH_TO_AC)
 	{
-		p += (o_ptr->to_a - (HIGH_TO_AC - 1));
+		p += ((o_ptr->to_a - (HIGH_TO_AC - 1)) * TO_AC_POWER / 2);
 		LOG_PRINT1("Adding power for high to_ac value, total is %d\n", p);
 	}
 	if (o_ptr->to_a > VERYHIGH_TO_AC)
 	{
-		p += (o_ptr->to_a - (VERYHIGH_TO_AC -1));
+		p += ((o_ptr->to_a - (VERYHIGH_TO_AC -1)) * TO_AC_POWER / 2);
 		LOG_PRINT1("Adding power for very high to_ac value, total is %d\n", p);
 	}
 	if (o_ptr->to_a >= INHIBIT_AC)
@@ -487,49 +548,47 @@ s32b object_power(const object_type* o_ptr, int randart_verbose, ang_file *randa
 	{
 		if (f1 & TR1_STR)
 		{
-			p += 3 * o_ptr->pval;
+			p += STR_POWER * o_ptr->pval;
 			LOG_PRINT2("Adding power for STR bonus %d, total is %d\n", o_ptr->pval, p);
 		}
 		if (f1 & TR1_INT)
 		{
-			p += 2 * o_ptr->pval;
+			p += INT_POWER * o_ptr->pval;
 			LOG_PRINT2("Adding power for INT bonus %d, total is %d\n", o_ptr->pval, p);
 		}
 		if (f1 & TR1_WIS)
 		{
-			p += 2 * o_ptr->pval;
+			p += WIS_POWER * o_ptr->pval;
 			LOG_PRINT2("Adding power for WIS bonus %d, total is %d\n", o_ptr->pval, p);
 		}
 		if (f1 & TR1_DEX)
 		{
-			p += 3 * o_ptr->pval;
+			p += DEX_POWER * o_ptr->pval;
 			LOG_PRINT2("Adding power for DEX bonus %d, total is %d\n", o_ptr->pval, p);
 		}
 		if (f1 & TR1_CON)
 		{
-			p += 4 * o_ptr->pval;
+			p += CON_POWER * o_ptr->pval;
 			LOG_PRINT2("Adding power for CON bonus %d, total is %d\n", o_ptr->pval, p);
 		}
 		if (f1 & TR1_STEALTH)
 		{
-			p += o_ptr->pval;
+			p += STEALTH_POWER * o_ptr->pval;
 			LOG_PRINT2("Adding power for Stealth bonus %d, total is %d\n", o_ptr->pval, p);
 		}
-		/* For now add very small amount for searching */
 		if (f1 & TR1_SEARCH)
 		{
-			if (!(o_ptr->pval / 4)) p++;
-			p += o_ptr->pval / 4;
+			p += SEARCH_POWER * o_ptr->pval;
 			LOG_PRINT2("Adding power for searching bonus %d, total is %d\n", o_ptr->pval , p);
 		}
 		/* Add extra power term if there are a lot of ability bonuses */
 		if (o_ptr->pval > 0)
 		{
-			extra_stat_bonus += ( (f1 & TR1_STR) ? o_ptr->pval: 0);
+			extra_stat_bonus += ( (f1 & TR1_STR) ? 1 * o_ptr->pval: 0);
 			extra_stat_bonus += ( (f1 & TR1_INT) ? 3 * o_ptr->pval / 4: 0);
 			extra_stat_bonus += ( (f1 & TR1_WIS) ? 3 * o_ptr->pval / 4: 0);
-			extra_stat_bonus += ( (f1 & TR1_DEX) ? o_ptr->pval: 0);
-			extra_stat_bonus += ( (f1 & TR1_CON) ? o_ptr->pval: 0);
+			extra_stat_bonus += ( (f1 & TR1_DEX) ? 1 * o_ptr->pval: 0);
+			extra_stat_bonus += ( (f1 & TR1_CON) ? 1 * o_ptr->pval: 0);
 			extra_stat_bonus += ( (f1 & TR1_CHR) ? 0 * o_ptr->pval: 0);
 			extra_stat_bonus += ( (f1 & TR1_STEALTH) ? 3 * o_ptr->pval / 4: 0);
 			extra_stat_bonus += ( (f1 & TR1_INFRA) ? 0 * o_ptr->pval: 0);
@@ -574,13 +633,18 @@ s32b object_power(const object_type* o_ptr, int randart_verbose, ang_file *randa
 	}
 	if (f1 & TR1_CHR)
 	{
-		p += o_ptr->pval;
+		p += CHR_POWER * o_ptr->pval;
 		LOG_PRINT2("Adding power for CHR bonus/penalty %d, total is %d\n", o_ptr->pval, p);
 	}
 	if (f1 & TR1_INFRA)
 	{
-		p += o_ptr->pval;
+		p += INFRA_POWER * o_ptr->pval;
 		LOG_PRINT2("Adding power for infra bonus/penalty %d, total is %d\n", o_ptr->pval, p);
+	}
+	if (f1 & TR1_TUNNEL)
+	{
+		p += TUNN_POWER * o_ptr->pval;
+		LOG_PRINT2("Adding power for tunnelling bonus/penalty %d, total is %d\n", o_ptr->pval, p);
 	}
 	if (f1 & TR1_SPEED)
 	{
@@ -595,17 +659,17 @@ s32b object_power(const object_type* o_ptr, int randart_verbose, ang_file *randa
 		LOG_PRINT1("Adding power for " string ", total is %d\n", p); \
 	}
 
-	ADD_POWER("sustain STR",         5, TR2_SUST_STR, 2,);
-	ADD_POWER("sustain INT",         2, TR2_SUST_INT, 2,);
-	ADD_POWER("sustain WIS",         2, TR2_SUST_WIS, 2,);
-	ADD_POWER("sustain DEX",         4, TR2_SUST_DEX, 2,);
-	ADD_POWER("sustain CON",         3, TR2_SUST_CON, 2,);
-	ADD_POWER("sustain CHR",         0, TR2_SUST_CHR, 2,);
+	ADD_POWER("sustain STR",        10, TR2_SUST_STR, 2,);
+	ADD_POWER("sustain INT",         5, TR2_SUST_INT, 2,);
+	ADD_POWER("sustain WIS",         5, TR2_SUST_WIS, 2,);
+	ADD_POWER("sustain DEX",         8, TR2_SUST_DEX, 2,);
+	ADD_POWER("sustain CON",         8, TR2_SUST_CON, 2,);
+	ADD_POWER("sustain CHR",         1, TR2_SUST_CHR, 2,);
 
-	ADD_POWER("acid immunity",      17, TR2_IM_ACID,  2, immunities++);
-	ADD_POWER("elec immunity",      14, TR2_IM_ELEC,  2, immunities++);
-	ADD_POWER("fire immunity",      22, TR2_IM_FIRE,  2, immunities++);
-	ADD_POWER("cold immunity",      17, TR2_IM_COLD,  2, immunities++);
+	ADD_POWER("acid immunity",      38, TR2_IM_ACID,  2, immunities++);
+	ADD_POWER("elec immunity",      35, TR2_IM_ELEC,  2, immunities++);
+	ADD_POWER("fire immunity",      40, TR2_IM_FIRE,  2, immunities++);
+	ADD_POWER("cold immunity",      37, TR2_IM_COLD,  2, immunities++);
 
 	for (i = 2; i <= immunities; i++)
 	{
@@ -618,57 +682,56 @@ s32b object_power(const object_type* o_ptr, int randart_verbose, ang_file *randa
 		}
 	}
 
-	ADD_POWER("free action",		 7, TR3_FREE_ACT,    3,);
-	ADD_POWER("hold life",			 6, TR3_HOLD_LIFE,   3,);
+	ADD_POWER("free action",		14, TR3_FREE_ACT,    3,);
+	ADD_POWER("hold life",			12, TR3_HOLD_LIFE,   3,);
 	ADD_POWER("feather fall",		 1, TR3_FEATHER,     3,);
-	ADD_POWER("permanent light",		 1, TR3_LITE,	     3,);
-	ADD_POWER("see invisible",		 5, TR3_SEE_INVIS,   3,);
-	ADD_POWER("telepathy",			15, TR3_TELEPATHY,   3,);
-	ADD_POWER("slow digestion",		 1, TR3_SLOW_DIGEST, 3,);
-	/* Digging moved to general section since it can be on anything now */
-	ADD_POWER("tunnelling",	       o_ptr->pval, TR1_TUNNEL,      1,);
-	ADD_POWER("resist acid",		 2, TR2_RES_ACID,    2,);
-	ADD_POWER("resist elec",		 3, TR2_RES_ELEC,    2,);
-	ADD_POWER("resist fire",		 3, TR2_RES_FIRE,    2,);
-	ADD_POWER("resist cold",		 3, TR2_RES_COLD,    2,);
-	ADD_POWER("resist poison",		14, TR2_RES_POIS,    2,);
-	ADD_POWER("resist fear",		 3, TR2_RES_FEAR,    2,);
-	ADD_POWER("resist light",		 3, TR2_RES_LITE,    2,);
-	ADD_POWER("resist dark",		 8, TR2_RES_DARK,    2,);
-	ADD_POWER("resist blindness",		 8, TR2_RES_BLIND,   2,);
-	ADD_POWER("resist confusion",		12, TR2_RES_CONFU,   2,);
-	ADD_POWER("resist sound",		 7, TR2_RES_SOUND,   2,);
-	ADD_POWER("resist shards",		 4, TR2_RES_SHARD,   2,);
-	ADD_POWER("resist nexus",		 5, TR2_RES_NEXUS,   2,);
-	ADD_POWER("resist nether",		10, TR2_RES_NETHR,   2,);
-	ADD_POWER("resist chaos",		10, TR2_RES_CHAOS,   2,);
-	ADD_POWER("resist disenchantment",	10, TR2_RES_DISEN,   2,);
-	ADD_POWER("regeneration",		 4, TR3_REGEN,	     3,);
+	ADD_POWER("permanent light",		 2, TR3_LITE,	     3,);
+	ADD_POWER("see invisible",		10, TR3_SEE_INVIS,   3,);
+	ADD_POWER("telepathy",			40, TR3_TELEPATHY,   3,);
+	ADD_POWER("slow digestion",		 2, TR3_SLOW_DIGEST, 3,);
+	ADD_POWER("resist acid",		 5, TR2_RES_ACID,    2,);
+	ADD_POWER("resist elec",		 6, TR2_RES_ELEC,    2,);
+	ADD_POWER("resist fire",		 6, TR2_RES_FIRE,    2,);
+	ADD_POWER("resist cold",		 6, TR2_RES_COLD,    2,);
+	ADD_POWER("resist poison",		28, TR2_RES_POIS,    2,);
+	ADD_POWER("resist fear",		 6, TR2_RES_FEAR,    2,);
+	ADD_POWER("resist light",		 6, TR2_RES_LITE,    2,);
+	ADD_POWER("resist dark",		16, TR2_RES_DARK,    2,);
+	ADD_POWER("resist blindness",		16, TR2_RES_BLIND,   2,);
+	ADD_POWER("resist confusion",		24, TR2_RES_CONFU,   2,);
+	ADD_POWER("resist sound",		14, TR2_RES_SOUND,   2,);
+	ADD_POWER("resist shards",		 8, TR2_RES_SHARD,   2,);
+	ADD_POWER("resist nexus",		10, TR2_RES_NEXUS,   2,);
+	ADD_POWER("resist nether",		20, TR2_RES_NETHR,   2,);
+	ADD_POWER("resist chaos",		20, TR2_RES_CHAOS,   2,);
+	ADD_POWER("resist disenchantment",	20, TR2_RES_DISEN,   2,);
+	ADD_POWER("regeneration",		 9, TR3_REGEN,	     3,);
 	ADD_POWER("blessed",			 1, TR3_BLESSED,     3,);
+	ADD_POWER("no fuel",			 5, TR3_NO_FUEL,     3,);
 
 	if (f3 & TR3_TELEPORT)
 	{
-		p -= 40;
+		p -= 80;
 		LOG_PRINT1("Subtracting power for teleportation, total is %d\n", p);
 	}
 	if (f3 & TR3_DRAIN_EXP)
 	{
-		p -= 15;
+		p -= 30;
 		LOG_PRINT1("Subtracting power for drain experience, total is %d\n", p);
 	}
 	if (f3 & TR3_AGGRAVATE)
 	{
-		p -= 30;
+		p -= 60;
 		LOG_PRINT1("Subtracting power for aggravation, total is %d\n", p);
 	}
 	if (f3 & TR3_LIGHT_CURSE)
 	{
-		p -= 3;
+		p -= 6;
 		LOG_PRINT1("Subtracting power for light curse, total is %d\n", p);
 	}
 	if (f3 & TR3_HEAVY_CURSE)
 	{
-		p -= 10;
+		p -= 20;
 		LOG_PRINT1("Subtracting power for heavy curse, total is %d\n", p);
 	}
 
