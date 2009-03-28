@@ -1051,29 +1051,21 @@ static void parse_frequencies(void)
 			 * nothing at all
 			 */
 
-			if (a_ptr->flags1 & 0xFFFF0000)
+			if (a_ptr->flags1 & (TR1_SLAY_MASK | TR1_BRAND_MASK | TR1_KILL_MASK))
 			{
 				/* We have some brands or slays - count them */
-
 				temp = 0;
 				temp2 = 0;
-				if (a_ptr->flags1 & TR1_SLAY_EVIL) temp++;
-				if (a_ptr->flags1 & TR1_KILL_DRAGON) temp++;
-				if (a_ptr->flags1 & TR1_KILL_DEMON) temp++;
-				if (a_ptr->flags1 & TR1_KILL_UNDEAD) temp++;
-				if (a_ptr->flags1 & TR1_SLAY_ANIMAL) temp++;
-				if (a_ptr->flags1 & TR1_SLAY_UNDEAD) temp++;
-				if (a_ptr->flags1 & TR1_SLAY_DRAGON) temp++;
-				if (a_ptr->flags1 & TR1_SLAY_DEMON) temp++;
-				if (a_ptr->flags1 & TR1_SLAY_TROLL) temp++;
-				if (a_ptr->flags1 & TR1_SLAY_ORC) temp++;
-				if (a_ptr->flags1 & TR1_SLAY_GIANT) temp++;
-				if (a_ptr->flags1 & TR1_BRAND_ACID) temp2++;
-				if (a_ptr->flags1 & TR1_BRAND_ELEC) temp2++;
-				if (a_ptr->flags1 & TR1_BRAND_FIRE) temp2++;
-				if (a_ptr->flags1 & TR1_BRAND_COLD) temp2++;
-				if (a_ptr->flags1 & TR1_BRAND_POIS) temp2++;
+				const slay_t *s_ptr;
 
+				for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++ )
+				{
+					if (a_ptr->flags1 & s_ptr->slay_flag)
+					{
+						if (s_ptr->slay_flag & (TR1_SLAY_MASK | TR1_KILL_MASK)) temp++;
+						if (s_ptr->slay_flag & TR1_BRAND_MASK) temp2++;
+					}
+				}
 				LOG_PRINT1("Adding %d for slays\n", temp);
 				LOG_PRINT1("Adding %d for brands\n", temp2);
 
