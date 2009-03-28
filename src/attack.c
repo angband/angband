@@ -203,7 +203,7 @@ static int get_brand_mult(const object_type *o_ptr, const monster_type *m_ptr,
 		const char **hit_verb, u32b *known_f1, bool is_ranged)
 {
 	int mult = 1;
-	bool slay = FALSE;
+	const slay_t *s_ptr;
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
@@ -213,204 +213,35 @@ static int get_brand_mult(const object_type *o_ptr, const monster_type *m_ptr,
 	/* Extract the flags */
 	object_flags(o_ptr, &f1, &f2, &f3);
 
-
-	/** Slays **/
-
-	if ((f1 & TR1_SLAY_ANIMAL) && (r_ptr->flags[2] & RF2_ANIMAL))
+	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
 	{
-		if (m_ptr->ml) l_ptr->flags[2] |= (RF2_ANIMAL);
-		if (mult < 2) mult = 2;
-		*known_f1 |= TR1_SLAY_ANIMAL;
-		slay = TRUE;
-	}
-
-	if ((f1 & TR1_SLAY_EVIL) && (r_ptr->flags[2] & RF2_EVIL))
-	{
-		if (m_ptr->ml) l_ptr->flags[2] |= (RF2_EVIL);
-		if (mult < 2) mult = 2;
-		*known_f1 |= TR1_SLAY_EVIL;
-		slay = TRUE;
-	}
-
-	if ((f1 & TR1_SLAY_UNDEAD) && (r_ptr->flags[2] & RF2_UNDEAD))
-	{
-		if (m_ptr->ml) l_ptr->flags[2] |= (RF2_UNDEAD);
-		if (mult < 3) mult = 3;
-		*known_f1 |= TR1_SLAY_UNDEAD;
-		slay = TRUE;
-	}
-
-	if ((f1 & TR1_SLAY_DEMON) && (r_ptr->flags[2] & RF2_DEMON))
-	{
-		if (m_ptr->ml) l_ptr->flags[2] |= (RF2_DEMON);
-		if (mult < 3) mult = 3;
-		*known_f1 |= TR1_SLAY_DEMON;
-		slay = TRUE;
-	}
-
-	if ((f1 & TR1_SLAY_ORC) && (r_ptr->flags[2] & RF2_ORC))
-	{
-		if (m_ptr->ml) l_ptr->flags[2] |= (RF2_ORC);
-		if (mult < 3) mult = 3;
-		*known_f1 |= TR1_SLAY_ORC;
-		slay = TRUE;
-	}
-
-	if ((f1 & TR1_SLAY_TROLL) && (r_ptr->flags[2] & RF2_TROLL))
-	{
-		if (m_ptr->ml) l_ptr->flags[2] |= (RF2_TROLL);
-		if (mult < 3) mult = 3;
-		*known_f1 |= TR1_SLAY_TROLL;
-		slay = TRUE;
-	}
-
-	if ((f1 & TR1_SLAY_GIANT) && (r_ptr->flags[2] & RF2_GIANT))
-	{
-		if (m_ptr->ml) l_ptr->flags[2] |= (RF2_GIANT);
-		if (mult < 3) mult = 3;
-		*known_f1 |= TR1_SLAY_GIANT;
-		slay = TRUE;
-	}
-
-	if ((f1 & TR1_SLAY_DRAGON) && (r_ptr->flags[2] & RF2_DRAGON))
-	{
-		if (m_ptr->ml) l_ptr->flags[2] |= (RF2_DRAGON);
-		if (mult < 3) mult = 3;
-		*known_f1 |= TR1_SLAY_DRAGON;
-		slay = TRUE;
-	}
-
-
-	/* If a slay has been applied, then set the hit verb appropriately */
-	if (slay && is_ranged)
-		*hit_verb = "pierces";
-	else if (slay)
-		*hit_verb = "smite";
-
-
-	/** Brands **/
-
-	if (f1 & TR1_BRAND_ACID)
-	{
-		if (r_ptr->flags[2] & RF2_IM_ACID)
+		if (f1 & s_ptr->slay_flag)
 		{
-			if (m_ptr->ml)
-				l_ptr->flags[2] |= RF2_IM_ACID;
-		}
-		else
-		{
-			if (mult < 3) mult = 3;
-			*known_f1 |= TR1_BRAND_ACID;
-
-			if (is_ranged) *hit_verb = "corrodes";
-			else           *hit_verb = "corrode";
+			/* If the monster doesn't resist OR the monster 
+			   flag matches */
+			if (!(r_ptr->flags[2] & s_ptr->resist_flag) || 
+				(r_ptr->flags[2] & s_ptr->monster_flag))
+			{
+				if (m_ptr->ml) l_ptr->flags[2] |= 
+					s_ptr->monster_flag;
+				if (mult < s_ptr->mult) mult = s_ptr->mult;
+				*known_f1 |= s_ptr->slay_flag;
+				/* If a slay/brand has been applied, then 
+				   set the hit verb appropriately */
+				if (is_ranged)
+					*hit_verb = s_ptr->range_verb;
+				else
+					*hit_verb = s_ptr->melee_verb;
+			}
+			/* If the monster resisted, add to the monster lore */
+			if (r_ptr->flags[2] & s_ptr->resist_flag)
+			{
+				if (m_ptr->ml) l_ptr->flags[2] |= 
+					s_ptr->resist_flag;
+			}
 		}
 	}
-
-	if (f1 & TR1_BRAND_ELEC)
-	{
-		if (r_ptr->flags[2] & RF2_IM_ELEC)
-		{
-			if (m_ptr->ml)
-				l_ptr->flags[2] |= RF2_IM_ELEC;
-		}
-		else
-		{
-			if (mult < 3) mult = 3;
-			*known_f1 |= TR1_BRAND_ELEC;
-
-			if (is_ranged) *hit_verb = "zaps";
-			else           *hit_verb = "zap";
-		}
-	}
-
-	if (f1 & TR1_BRAND_FIRE)
-	{
-		if (r_ptr->flags[2] & RF2_IM_FIRE)
-		{
-			if (m_ptr->ml)
-				l_ptr->flags[2] |= RF2_IM_FIRE;
-		}
-		else
-		{
-			if (mult < 3) mult = 3;
-			*known_f1 |= TR1_BRAND_FIRE;
-
-			if (is_ranged) *hit_verb = "burns";
-			else           *hit_verb = "burn";
-		}
-	}
-
-	if (f1 & TR1_BRAND_COLD)
-	{
-		if (r_ptr->flags[2] & RF2_IM_COLD)
-		{
-			if (m_ptr->ml)
-				l_ptr->flags[2] |= RF2_IM_COLD;
-		}
-		else
-		{
-			if (mult < 3) mult = 3;
-			*known_f1 |= TR1_BRAND_COLD;
-
-			if (is_ranged) *hit_verb = "freezes";
-			else           *hit_verb = "freeze";
-		}
-	}
-
-	if (f1 & TR1_BRAND_POIS)
-	{
-		if (r_ptr->flags[2] & RF2_IM_POIS)
-		{
-			if (m_ptr->ml)
-				l_ptr->flags[2] |= RF2_IM_POIS;
-		}
-		else
-		{
-			if (mult < 3) mult = 3;
-			*known_f1 |= TR1_BRAND_POIS;
-
-			if (is_ranged) *hit_verb = "poisons";
-			else           *hit_verb = "poison";
-		}
-	}
-
-	/** Executes **/
-	/* Put last so their hit_verb takes precedence */
-
-	if ((f1 & TR1_KILL_DRAGON) && (r_ptr->flags[2] & RF2_DRAGON))
-	{
-		if (m_ptr->ml) l_ptr->flags[2] |= RF2_DRAGON;
-
-		if (mult < 5) mult = 5;
-		*known_f1 |= TR1_KILL_DRAGON;
-
-		if (is_ranged) *hit_verb = "deeply pierces";
-		else           *hit_verb = "fiercely smite";
-	}
-
-	if ((f1 & TR1_KILL_DEMON) && (r_ptr->flags[2] & RF2_DEMON))
-	{
-		if (m_ptr->ml) l_ptr->flags[2] |= RF2_DEMON;
-
-		if (mult < 5) mult = 5;
-		*known_f1 |= TR1_KILL_DRAGON;
-
-		if (is_ranged) *hit_verb = "deeply pierces";
-		else           *hit_verb = "fiercely smite";
-	}
-
-	if ((f1 & TR1_KILL_UNDEAD) && (r_ptr->flags[2] & RF2_UNDEAD))
-	{
-		if (m_ptr->ml) l_ptr->flags[2] |= RF2_UNDEAD;
-
-		if (mult < 5) mult = 5;
-		*known_f1 |= TR1_KILL_UNDEAD;
-
-		if (is_ranged) *hit_verb = "deeply pierces";
-		else           *hit_verb = "fiercely smite";
-	}
-
+	
 	return mult;
 }
 

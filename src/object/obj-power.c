@@ -131,6 +131,7 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 	int i;
 	int mult;
 	monster_race *r_ptr;
+	const slay_t *s_ptr;
 	u32b f1, f2, f3;
 
 	/* Extract the flags */
@@ -183,58 +184,14 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 		 * Do the following in ascending order so that the best
 		 * multiple is retained
 		 */
-		if ( (r_ptr->flags[2] & RF2_ANIMAL)
-		     && (f1 & TR1_SLAY_ANIMAL) )
-			mult = 2;
-		if ( (r_ptr->flags[2] & RF2_EVIL)
-			 && (f1 & TR1_SLAY_EVIL) )
-			mult = 2;
-		if ( (r_ptr->flags[2] & RF2_UNDEAD)
-			 && (f1 & TR1_SLAY_UNDEAD) )
-			mult = 3;
-		if ( (r_ptr->flags[2] & RF2_DEMON)
-			 && (f1 & TR1_SLAY_DEMON) )
-			mult = 3;
-		if ( (r_ptr->flags[2] & RF2_ORC)
-			 && (f1 & TR1_SLAY_ORC) )
-			mult = 3;
-		if ( (r_ptr->flags[2] & RF2_TROLL)
-			 && (f1 & TR1_SLAY_TROLL) )
-			mult = 3;
-		if ( (r_ptr->flags[2] & RF2_GIANT)
-			 && (f1 & TR1_SLAY_GIANT) )
-			mult = 3;
-		if ( (r_ptr->flags[2] & RF2_DRAGON)
-			 && (f1 & TR1_SLAY_DRAGON) )
-			mult = 3;
-
-		/* Brands get the multiple if monster is NOT resistant */
-		if ( !(r_ptr->flags[2] & RF2_IM_ACID)
-		     && (f1 & TR1_BRAND_ACID) )
-			mult = 3;
-		if ( !(r_ptr->flags[2] & RF2_IM_FIRE)
-		     && (f1 & TR1_BRAND_FIRE) )
-			mult = 3;
-		if ( !(r_ptr->flags[2] & RF2_IM_COLD)
-			 && (f1 & TR1_BRAND_COLD) )
-			mult = 3;
-		if ( !(r_ptr->flags[2] & RF2_IM_ELEC)
-			 && (f1 & TR1_BRAND_ELEC) )
-			mult = 3;
-		if ( !(r_ptr->flags[2] & RF2_IM_POIS)
-		     && (f1 & TR1_BRAND_POIS) )
-			mult = 3;
-
-		/* Do kill flags last since they have the highest multiplier */
-		if ( (r_ptr->flags[2] & RF2_DRAGON)
-		      && (f1 & TR1_KILL_DRAGON) )
-			mult = 5;
-		if ( (r_ptr->flags[2] & RF2_DEMON)
-		      && (f1 & TR1_KILL_DEMON) )
-			mult = 5;
-		if ( (r_ptr->flags[2] & RF2_UNDEAD)
-		      && (f1 & TR1_KILL_UNDEAD) )
-			mult = 5;
+		for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++) {
+			if ((f1 & s_ptr->slay_flag) &&
+			    ( (r_ptr->flags[2] & s_ptr->monster_flag) || 
+				!(r_ptr->flags[2] & s_ptr->resist_flag)) )
+			{
+			    mult = s_ptr->mult;
+			}
+		}
 
 		/* Add the multiple to sv */
 		sv += mult * r_ptr->power;

@@ -251,5 +251,14 @@ typedef struct
 	char x_char;    /* Desired flavor character */
 } flavor_type;
 
+typedef struct slay_s {
+	u32b slay_flag;		/* Object flag for the slay */
+	u32b monster_flag;	/* Which monster flag(s) make it vulnerable */
+	u32b resist_flag;	/* Which monster flag(s) make it resist */
+	int	mult;		/* Slay multiplier */
+	const char *range_verb;	/* attack verb for ranged hits */
+	const char *melee_verb; /* attack verb for melee hits */
+	const char *desc;	/* description of vulnerable creatures */
+} slay_t;
 
 #endif /* INCLUDED_OBJECT_TYPES_H */

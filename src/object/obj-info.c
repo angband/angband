@@ -190,6 +190,32 @@ static const flag_type f1_kill[] =
 	{ TR1_KILL_UNDEAD, "undead" },
 };
 
+/** Slays **/
+const slay_t slay_table[] =
+/* Entries in this table should be an ascending order of multiplier, to 
+ * ensure that the highest one takes precedence 
+ * object flag, vulnerable flag, resist_flag, multiplier, ranged verb, 
+ * melee verb, description of vulnerable creature 
+ */
+{ { TR1_SLAY_ANIMAL, RF2_ANIMAL, 0, 2, "pierces",  "smite",   "animals"},
+  { TR1_SLAY_EVIL,   RF2_EVIL,   0, 2, "pierces",  "smite",   "evil creatures"},
+  { TR1_SLAY_UNDEAD, RF2_UNDEAD, 0, 3, "pierces",  "smite",   "undead"},
+  { TR1_SLAY_DEMON,  RF2_DEMON,  0, 3, "pierces",  "smite",   "demons"},
+  { TR1_SLAY_ORC,    RF2_ORC,    0, 3, "pierces",  "smite",   "orcs"},
+  { TR1_SLAY_TROLL,  RF2_TROLL,  0, 3, "pierces",  "smite",   "trolls"},
+  { TR1_SLAY_GIANT,  RF2_GIANT,  0, 3, "pierces",  "smite",   "giants"},
+  { TR1_SLAY_DRAGON, RF2_DRAGON, 0, 3, "pierces",  "smite",   "dragons"},
+  { TR1_BRAND_ACID, 0, RF2_IM_ACID, 3, "corrodes", "corrode", "acid-vulnerable creatures"},
+  { TR1_BRAND_ELEC, 0, RF2_IM_ELEC, 3, "zaps",     "zap",     "electricity-vulnerable creatures"},
+  { TR1_BRAND_FIRE, 0, RF2_IM_FIRE, 3, "burns",    "burn",    "fire-vulnerable creatures"},
+  { TR1_BRAND_COLD, 0, RF2_IM_COLD, 3, "freezes",  "freeze",  "cold-vulnerable creatures"},
+  { TR1_BRAND_POIS, 0, RF2_IM_POIS, 3, "poisons",  "poison",  "poison-vulnerable creatures"},
+  { TR1_KILL_DRAGON, RF2_DRAGON, 0, 5, "deeply pierces", "fiercely smite", "dragons"},
+  { TR1_KILL_DEMON,  RF2_DEMON,  0, 5, "deeply pierces", "fiercely smite", "demons"},
+  { TR1_KILL_UNDEAD, RF2_UNDEAD, 0, 5, "deeply pierces", "fiercely smite", "undead"},
+  { 0, }
+};
+
 /*** Code that makes use of the data tables ***/
 
 /*
@@ -358,32 +384,21 @@ static bool describe_slays(u32b f1)
 
 
 /*
- * list[] and mult[] must be > 11 in size
+ * list[] and mult[] must be > 16 in size
  */
 static int collect_slays(const char *desc[], int mult[], u32b f1)
 {
 	int cnt = 0;
+	const slay_t *s_ptr;
 
 	/* Collect slays */
-	if (f1 & TR1_SLAY_ANIMAL) { mult[cnt] = 2; desc[cnt++] = "animals"; }
-	if (f1 & TR1_SLAY_EVIL)   { mult[cnt] = 2; desc[cnt++] = "evil creatures"; }
-
-	if (f1 & TR1_SLAY_ORC)    { mult[cnt] = 3; desc[cnt++] = "orcs"; }
-	if (f1 & TR1_SLAY_TROLL)  { mult[cnt] = 3; desc[cnt++] = "trolls"; }
-	if (f1 & TR1_SLAY_GIANT)  { mult[cnt] = 3; desc[cnt++] = "giants"; }
-	if (f1 & TR1_SLAY_DRAGON) { mult[cnt] = 3; desc[cnt++] = "dragons"; }
-	if (f1 & TR1_SLAY_DEMON)  { mult[cnt] = 3; desc[cnt++] = "demons"; }
-	if (f1 & TR1_SLAY_UNDEAD) { mult[cnt] = 3; desc[cnt++] = "undead"; }
-
-	if (f1 & TR1_BRAND_ACID)  { mult[cnt] = 3; desc[cnt++] = "acid-vulnerable creatures"; }
-	if (f1 & TR1_BRAND_ELEC)  { mult[cnt] = 3; desc[cnt++] = "electricity-vulnerable creatures"; }
-	if (f1 & TR1_BRAND_FIRE)  { mult[cnt] = 3; desc[cnt++] = "fire-vulnerable creatures"; }
-	if (f1 & TR1_BRAND_COLD)  { mult[cnt] = 3; desc[cnt++] = "frost-vulnerable creatures"; }
-	if (f1 & TR1_BRAND_POIS)  { mult[cnt] = 3; desc[cnt++] = "poison-vulnerable creatures"; }
-
-	if (f1 & TR1_KILL_DRAGON) { mult[cnt] = 5; desc[cnt++] = "dragons"; }
-	if (f1 & TR1_KILL_DEMON)  { mult[cnt] = 5; desc[cnt++] = "demons"; }
-	if (f1 & TR1_KILL_UNDEAD) { mult[cnt] = 5; desc[cnt++] = "undead"; }
+	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
+	{
+		if (f1 & s_ptr->slay_flag)
+		{
+			mult[cnt] = s_ptr->mult; desc[cnt++] = s_ptr->desc;
+		}
+	}
 
 	return cnt;
 }
