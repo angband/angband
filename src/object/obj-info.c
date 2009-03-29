@@ -192,7 +192,7 @@ static const flag_type f1_kill[] =
 
 /** Slays **/
 /*
- * Entries in this table should be an ascending order of multiplier, to 
+ * Entries in this table should be in ascending order of multiplier, to 
  * ensure that the highest one takes precedence 
  * object flag, vulnerable flag, resist_flag, multiplier, ranged verb, 
  * melee verb, description of vulnerable creature 
