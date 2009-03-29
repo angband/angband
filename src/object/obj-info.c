@@ -162,61 +162,35 @@ static const flag_type f3_misc[] =
 	{ TR3_TELEPORT, "Induces random teleportation" },
 };
 
-static const flag_type f1_slay[] =
-{
-	{ TR1_SLAY_ANIMAL, "animals" },
-	{ TR1_SLAY_EVIL, "evil creatures" },
-	{ TR1_SLAY_ORC, "orcs" },
-	{ TR1_SLAY_TROLL, "trolls" },
-	{ TR1_SLAY_GIANT, "giants" },
-	{ TR1_SLAY_DRAGON, "dragons" },
-	{ TR1_SLAY_DEMON, "demons" },
-	{ TR1_SLAY_UNDEAD, "undead" },
-};
-
-static const flag_type f1_brand[] =
-{
-	{ TR1_BRAND_ACID, "acid" },
-	{ TR1_BRAND_ELEC, "lightning" },
-	{ TR1_BRAND_FIRE, "flames" },
-	{ TR1_BRAND_COLD, "frost" },
-	{ TR1_BRAND_POIS, "venom" },
-};
-
-static const flag_type f1_kill[] =
-{
-	{ TR1_KILL_DRAGON, "dragons" },
-	{ TR1_KILL_DEMON, "demons" },
-	{ TR1_KILL_UNDEAD, "undead" },
-};
 
 /** Slays **/
 /*
  * Entries in this table should be in ascending order of multiplier, to 
  * ensure that the highest one takes precedence 
- * object flag, vulnerable flag, resist_flag, multiplier, ranged verb, 
- * melee verb, description of vulnerable creature 
+ * object flag, vulnerable flag, resist flag, multiplier, ranged verb, 
+ * melee verb, description of affected creatures, brand
  */
 const slay_t slay_table[] =
 {
-	{ TR1_SLAY_ANIMAL, RF2_ANIMAL, 0, 2, "pierces",  "smite",   "animals"},
-	{ TR1_SLAY_EVIL,   RF2_EVIL,   0, 2, "pierces",  "smite",   "evil creatures"},
-	{ TR1_SLAY_UNDEAD, RF2_UNDEAD, 0, 3, "pierces",  "smite",   "undead"},
-	{ TR1_SLAY_DEMON,  RF2_DEMON,  0, 3, "pierces",  "smite",   "demons"},
-	{ TR1_SLAY_ORC,    RF2_ORC,    0, 3, "pierces",  "smite",   "orcs"},
-	{ TR1_SLAY_TROLL,  RF2_TROLL,  0, 3, "pierces",  "smite",   "trolls"},
-	{ TR1_SLAY_GIANT,  RF2_GIANT,  0, 3, "pierces",  "smite",   "giants"},
-	{ TR1_SLAY_DRAGON, RF2_DRAGON, 0, 3, "pierces",  "smite",   "dragons"},
-	{ TR1_BRAND_ACID, 0, RF2_IM_ACID, 3, "corrodes", "corrode", "acid-vulnerable creatures"},
-	{ TR1_BRAND_ELEC, 0, RF2_IM_ELEC, 3, "zaps",     "zap",     "electricity-vulnerable creatures"},
-	{ TR1_BRAND_FIRE, 0, RF2_IM_FIRE, 3, "burns",    "burn",    "fire-vulnerable creatures"},
-	{ TR1_BRAND_COLD, 0, RF2_IM_COLD, 3, "freezes",  "freeze",  "cold-vulnerable creatures"},
-	{ TR1_BRAND_POIS, 0, RF2_IM_POIS, 3, "poisons",  "poison",  "poison-vulnerable creatures"},
-	{ TR1_KILL_DRAGON, RF2_DRAGON, 0, 5, "deeply pierces", "fiercely smite", "dragons"},
-	{ TR1_KILL_DEMON,  RF2_DEMON,  0, 5, "deeply pierces", "fiercely smite", "demons"},
-	{ TR1_KILL_UNDEAD, RF2_UNDEAD, 0, 5, "deeply pierces", "fiercely smite", "undead"},
+	{ TR1_SLAY_ANIMAL, RF2_ANIMAL, 0, 2, "pierces",  "smite",   "animals",                                NULL},
+	{ TR1_SLAY_EVIL,   RF2_EVIL,   0, 2, "pierces",  "smite",   "evil creatures",                         NULL},
+	{ TR1_SLAY_UNDEAD, RF2_UNDEAD, 0, 3, "pierces",  "smite",   "undead",                                 NULL},
+	{ TR1_SLAY_DEMON,  RF2_DEMON,  0, 3, "pierces",  "smite",   "demons",                                 NULL},
+	{ TR1_SLAY_ORC,    RF2_ORC,    0, 3, "pierces",  "smite",   "orcs",                                   NULL},
+	{ TR1_SLAY_TROLL,  RF2_TROLL,  0, 3, "pierces",  "smite",   "trolls",                                 NULL},
+	{ TR1_SLAY_GIANT,  RF2_GIANT,  0, 3, "pierces",  "smite",   "giants",                                 NULL},
+	{ TR1_SLAY_DRAGON, RF2_DRAGON, 0, 3, "pierces",  "smite",   "dragons",                                NULL},
+	{ TR1_BRAND_ACID, 0, RF2_IM_ACID, 3, "corrodes", "corrode", "creatures not resistant to acid",        "acid"},
+	{ TR1_BRAND_ELEC, 0, RF2_IM_ELEC, 3, "zaps",     "zap",     "creatures not resistant to electricity", "lightning"},
+	{ TR1_BRAND_FIRE, 0, RF2_IM_FIRE, 3, "burns",    "burn",    "creatures not resistant to fire",        "flames"},
+	{ TR1_BRAND_COLD, 0, RF2_IM_COLD, 3, "freezes",  "freeze",  "creatures not resistant to cold",        "frost"},
+	{ TR1_BRAND_POIS, 0, RF2_IM_POIS, 3, "poisons",  "poison",  "creatures not resistant to poison",      "venom"},
+	{ TR1_KILL_DRAGON, RF2_DRAGON, 0, 5, "deeply pierces", "fiercely smite", "dragons",                   NULL},
+	{ TR1_KILL_DEMON,  RF2_DEMON,  0, 5, "deeply pierces", "fiercely smite", "demons",                    NULL},
+	{ TR1_KILL_UNDEAD, RF2_UNDEAD, 0, 5, "deeply pierces", "fiercely smite", "undead",                    NULL},
 	{ 0, }
 };
+
 
 /*** Code that makes use of the data tables ***/
 
@@ -349,13 +323,41 @@ static bool describe_misc_magic(u32b f3)
 
 static bool describe_slays(u32b f1)
 {
-	const char *descs[N_ELEMENTS(f1_slay)];
 	size_t count;
 
 	bool printed = FALSE;
 
+	flag_type f1_slay[N_ELEMENTS(slay_table)];
+	flag_type f1_kill[N_ELEMENTS(slay_table)];
+	flag_type f1_brand[N_ELEMENTS(slay_table)];
+	const slay_t *s_ptr;
+	int x = 0;
+	int y = 0;
+	int z = 0;
+
+	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
+	{
+		if (s_ptr->slay_flag & TR1_SLAY_MASK)
+		{
+			f1_slay[x].flag = s_ptr->slay_flag;
+			f1_slay[x++].name = s_ptr->desc;
+		}
+		else if (s_ptr->slay_flag & TR1_KILL_MASK)
+		{
+			f1_kill[y].flag = s_ptr->slay_flag;
+			f1_kill[y++].name = s_ptr->desc;
+		}
+		else if (s_ptr->slay_flag & TR1_BRAND_MASK)
+		{
+			f1_brand[z].flag = s_ptr->slay_flag;
+			f1_brand[z++].name = s_ptr->brand;
+		}
+	}
+
+	const char *descs[MAX(x, MAX(y, z))];
+
 	/* Slays */
-	count = info_collect(f1_slay, N_ELEMENTS(f1_slay), f1, descs);
+	count = info_collect(f1_slay, x, f1, descs);
 	if (count)
 	{
 		text_out("It is especially deadly to ");
@@ -364,7 +366,7 @@ static bool describe_slays(u32b f1)
 	}
 
 	/* Kills */
-	count = info_collect(f1_kill, N_ELEMENTS(f1_kill), f1, descs);
+	count = info_collect(f1_kill, y, f1, descs);
 	if (count)
 	{
 		text_out("It is a great bane of ");
@@ -373,7 +375,7 @@ static bool describe_slays(u32b f1)
 	}
 
 	/* Brands */
-	count = info_collect(f1_brand, N_ELEMENTS(f1_brand), f1, descs);
+	count = info_collect(f1_brand, z, f1, descs);
 	if (count)
 	{
 		text_out("It is branded with ");

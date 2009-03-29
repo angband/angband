@@ -263,6 +263,7 @@ typedef struct
 	const char *range_verb;	/* attack verb for ranged hits */
 	const char *melee_verb; /* attack verb for melee hits */
 	const char *desc;	/* description of vulnerable creatures */
+	const char *brand;	/* name of brand */
 } slay_t;
 
 #endif /* INCLUDED_OBJECT_TYPES_H */
