@@ -1058,7 +1058,7 @@ static void parse_frequencies(void)
 				temp2 = 0;
 				const slay_t *s_ptr;
 
-				for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++ )
+				for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
 				{
 					if (a_ptr->flags1 & s_ptr->slay_flag)
 					{

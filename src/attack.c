@@ -222,10 +222,14 @@ static int get_brand_mult(const object_type *o_ptr, const monster_type *m_ptr,
 			if (!(r_ptr->flags[2] & s_ptr->resist_flag) || 
 				(r_ptr->flags[2] & s_ptr->monster_flag))
 			{
-				if (m_ptr->ml) l_ptr->flags[2] |= 
-					s_ptr->monster_flag;
-				if (mult < s_ptr->mult) mult = s_ptr->mult;
+				/* Learn the flag */
+				if (m_ptr->ml)
+					l_ptr->flags[2] |= s_ptr->monster_flag;
+
+				if (mult < s_ptr->mult)
+					mult = s_ptr->mult;
 				*known_f1 |= s_ptr->slay_flag;
+
 				/* If a slay/brand has been applied, then 
 				   set the hit verb appropriately */
 				if (is_ranged)
@@ -233,11 +237,12 @@ static int get_brand_mult(const object_type *o_ptr, const monster_type *m_ptr,
 				else
 					*hit_verb = s_ptr->melee_verb;
 			}
+
 			/* If the monster resisted, add to the monster lore */
 			if (r_ptr->flags[2] & s_ptr->resist_flag)
 			{
-				if (m_ptr->ml) l_ptr->flags[2] |= 
-					s_ptr->resist_flag;
+				if (m_ptr->ml)
+					l_ptr->flags[2] |= s_ptr->resist_flag;
 			}
 		}
 	}

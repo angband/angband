@@ -130,7 +130,6 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 	s32b sv;
 	int i;
 	int mult;
-	monster_race *r_ptr;
 	const slay_t *s_ptr;
 	u32b f1, f2, f3;
 
@@ -166,7 +165,7 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 
 	/* If it's cached, return its value */
 
-	if(sv) return slays[s_index];
+	if (sv) return slays[s_index];
 
 	/* Otherwise we need to calculate the expected average multiplier
 	 * for this combination (multiplied by the total number of
@@ -175,19 +174,20 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 
 	sv = 0;
 
-	for(i = 0; i < z_info->r_max; i++) {
+	for (i = 0; i < z_info->r_max; i++)
+	{
+		monster_race *r_ptr = &r_info[i];
 		mult = 1;
-
-		r_ptr = &r_info[i];
 
 		/*
 		 * Do the following in ascending order so that the best
 		 * multiple is retained
 		 */
-		for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++) {
+		for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
+		{
 			if ((f1 & s_ptr->slay_flag) &&
-			    ( (r_ptr->flags[2] & s_ptr->monster_flag) || 
-				!(r_ptr->flags[2] & s_ptr->resist_flag)) )
+				( (r_ptr->flags[2] & s_ptr->monster_flag) || 
+				 !(r_ptr->flags[2] & s_ptr->resist_flag)) )
 			{
 			    mult = s_ptr->mult;
 			}
@@ -195,8 +195,6 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 
 		/* Add the multiple to sv */
 		sv += mult * r_ptr->power;
-
-		/* End loop */
 	}
 
 	/*
@@ -204,7 +202,6 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 	 * average damage from base dice by sv, and divide by the
 	 * total number of monsters.
 	 */
-
 	if (verbose)
 	{
 		/* Write info about the slay combination and multiplier */
@@ -239,7 +236,6 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 	slays[s_index] = sv;
 
 	return sv;
-	/* End method */
 }
 
 /*
