@@ -768,87 +768,50 @@ void self_knowledge(bool spoil)
 	if (o_ptr->k_idx)
 	{
 		/* Special "Attack Bonuses" */
-		if (f1 & (TR1_BRAND_ACID))
-		{
+		if (f1 & TR1_BRAND_ACID)
 			info[i++] = "Your weapon melts your foes.";
-		}
-		if (f1 & (TR1_BRAND_ELEC))
-		{
+		if (f1 & TR1_BRAND_ELEC)
 			info[i++] = "Your weapon shocks your foes.";
-		}
-		if (f1 & (TR1_BRAND_FIRE))
-		{
+		if (f1 & TR1_BRAND_FIRE)
 			info[i++] = "Your weapon burns your foes.";
-		}
-		if (f1 & (TR1_BRAND_COLD))
-		{
+		if (f1 & TR1_BRAND_COLD)
 			info[i++] = "Your weapon freezes your foes.";
-		}
-		if (f1 & (TR1_BRAND_POIS))
-		{
+		if (f1 & TR1_BRAND_POIS)
 			info[i++] = "Your weapon poisons your foes.";
-		}
 
 		/* Special "slay" flags */
-		if (f1 & (TR1_SLAY_ANIMAL))
-		{
+		if (f1 & TR1_SLAY_ANIMAL)
 			info[i++] = "Your weapon strikes at animals with extra force.";
-		}
-		if (f1 & (TR1_SLAY_EVIL))
-		{
+		if (f1 & TR1_SLAY_EVIL)
 			info[i++] = "Your weapon strikes at evil with extra force.";
-		}
-		if (f1 & (TR1_SLAY_UNDEAD))
-		{
+		if (f1 & TR1_SLAY_UNDEAD)
 			info[i++] = "Your weapon strikes at undead with holy wrath.";
-		}
-		if (f1 & (TR1_SLAY_DEMON))
-		{
+		if (f1 & TR1_SLAY_DEMON)
 			info[i++] = "Your weapon strikes at demons with holy wrath.";
-		}
-		if (f1 & (TR1_SLAY_ORC))
-		{
+		if (f1 & TR1_SLAY_ORC)
 			info[i++] = "Your weapon is especially deadly against orcs.";
-		}
-		if (f1 & (TR1_SLAY_TROLL))
-		{
+		if (f1 & TR1_SLAY_TROLL)
 			info[i++] = "Your weapon is especially deadly against trolls.";
-		}
-		if (f1 & (TR1_SLAY_GIANT))
-		{
+		if (f1 & TR1_SLAY_GIANT)
 			info[i++] = "Your weapon is especially deadly against giants.";
-		}
-		if (f1 & (TR1_SLAY_DRAGON))
-		{
+		if (f1 & TR1_SLAY_DRAGON)
 			info[i++] = "Your weapon is especially deadly against dragons.";
-		}
 
 		/* Special "kill" flags */
-		if (f1 & (TR1_KILL_DRAGON))
-		{
+		if (f1 & TR1_KILL_DRAGON)
 			info[i++] = "Your weapon is a great bane of dragons.";
-		}
-		if (f1 & (TR1_KILL_DEMON))
-		{
+		if (f1 & TR1_KILL_DEMON)
 			info[i++] = "Your weapon is a great bane of demons.";
-		}
-		if (f1 & (TR1_KILL_UNDEAD))
-		{
+		if (f1 & TR1_KILL_UNDEAD)
 			info[i++] = "Your weapon is a great bane of undead.";
-		}
-
 
 		/* Indicate Blessing */
-		if (f3 & (TR3_BLESSED))
-		{
+		if (f3 & TR3_BLESSED)
 			info[i++] = "Your weapon has been blessed by the gods.";
-		}
 
 		/* Hack */
-		if (f3 & (TR3_IMPACT))
-		{
+		if (f3 & TR3_IMPACT)
 			info[i++] = "Your weapon can induce earthquakes.";
-		}
 	}
 
 
