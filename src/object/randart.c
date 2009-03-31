@@ -2334,7 +2334,7 @@ static void add_slay(artifact_type *a_ptr, bool brand)
 				return;
 			}
 		}
-		if (!s_ptr->brand && !(a_ptr->flags1 & s_ptr->slay_flag))
+		else if (!s_ptr->brand && !(a_ptr->flags1 & s_ptr->slay_flag))
 		{
 			a_ptr->flags1 |= s_ptr->slay_flag;
 			LOG_PRINT1("Adding slay: %s\n", s_ptr->desc);
