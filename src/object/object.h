@@ -73,6 +73,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix,
 
 /* obj-info.c */
 extern const slay_t slay_table[];
+size_t num_slays(void);
 void object_info_header(const object_type *o_ptr);
 bool object_info_known(const object_type *o_ptr);
 bool object_info_chardump(const object_type *o_ptr);

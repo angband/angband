@@ -191,6 +191,14 @@ const slay_t slay_table[] =
 	{ 0, }
 };
 
+/*
+ * Helper function to externalise N_ELEMENTS(slay_table), which itself is not
+ * available outside this compilation unit
+ */
+inline size_t num_slays(void)
+{
+	return N_ELEMENTS(slay_table);
+}
 
 /*** Code that makes use of the data tables ***/
 

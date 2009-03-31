@@ -43,6 +43,13 @@
 #define INHIBIT_WEAK    (one_in_(2))
 
 /*
+ * Power rating below which uncursed randarts cannot aggravate
+ * (so that aggravate is found only on endgame-quality items or 
+ * cursed items)
+ */
+#define AGGR_POWER 180
+
+/*
  * Numerical index values for the different learned probabilities
  * These are to make the code more readable.
  * ToDo: turn these into an enum
@@ -2307,180 +2314,34 @@ static void add_hold_life(artifact_type *a_ptr)
 	LOG_PRINT("Adding ability: hold life\n");
 }
 
-static bool add_slay_animal(artifact_type *a_ptr)
+static void add_slay(artifact_type *a_ptr, bool brand)
 {
-	if (a_ptr->flags1 & TR1_SLAY_ANIMAL) return FALSE;
-	a_ptr->flags1 |= TR1_SLAY_ANIMAL;
-	LOG_PRINT("Adding ability: slay animal\n");
-	return TRUE;
-}
-
-static bool add_slay_evil(artifact_type *a_ptr)
-{
-	if (a_ptr->flags1 & TR1_SLAY_EVIL) return FALSE;
-	a_ptr->flags1 |= TR1_SLAY_EVIL;
-	LOG_PRINT("Adding ability: slay evil\n");
-	return TRUE;
-}
-
-static bool add_slay_orc(artifact_type *a_ptr)
-{
-	if (a_ptr->flags1 & TR1_SLAY_ORC) return FALSE;
-	a_ptr->flags1 |= TR1_SLAY_ORC;
-	LOG_PRINT("Adding ability: slay orc\n");
-	return TRUE;
-}
-
-static bool add_slay_troll(artifact_type *a_ptr)
-{
-	if (a_ptr->flags1 & TR1_SLAY_TROLL) return FALSE;
-	a_ptr->flags1 |= TR1_SLAY_TROLL;
-	LOG_PRINT("Adding ability: slay troll \n");
-	return TRUE;
-}
-
-static bool add_slay_giant(artifact_type *a_ptr)
-{
-	if (a_ptr->flags1 & TR1_SLAY_GIANT) return FALSE;
-	a_ptr->flags1 |= TR1_SLAY_GIANT;
-	LOG_PRINT("Adding ability: slay giant\n");
-	return TRUE;
-}
-
-static bool add_slay_demon(artifact_type *a_ptr)
-{
-	if (a_ptr->flags1 & TR1_SLAY_DEMON) return FALSE;
-	a_ptr->flags1 |= TR1_SLAY_DEMON;
-	LOG_PRINT("Adding ability: slay demon\n");
-	return TRUE;
-}
-
-static bool add_slay_undead(artifact_type *a_ptr)
-{
-	if (a_ptr->flags1 & TR1_SLAY_UNDEAD) return FALSE;
-	a_ptr->flags1 |= TR1_SLAY_UNDEAD;
-	LOG_PRINT("Adding ability: slay undead\n");
-	return TRUE;
-}
-
-static bool add_slay_dragon(artifact_type *a_ptr)
-{
-	if (a_ptr->flags1 & TR1_SLAY_DRAGON) return FALSE;
-	a_ptr->flags1 |= TR1_SLAY_DRAGON;
-	LOG_PRINT("Adding ability: slay dragon\n");
-	return TRUE;
-}
-
-static bool add_kill_demon(artifact_type *a_ptr)
-{
-	if (a_ptr->flags1 & TR1_KILL_DEMON) return FALSE;
-	a_ptr->flags1 |= TR1_KILL_DEMON;
-	LOG_PRINT("Adding ability: kill demon\n");
-	return TRUE;
-}
-
-static bool add_kill_undead(artifact_type *a_ptr)
-{
-	if (a_ptr->flags1 & TR1_KILL_UNDEAD) return FALSE;
-	a_ptr->flags1 |= TR1_KILL_UNDEAD;
-	LOG_PRINT("Adding ability: kill undead\n");
-	return TRUE;
-}
-
-static bool add_kill_dragon(artifact_type *a_ptr)
-{
-	if (a_ptr->flags1 & TR1_KILL_DRAGON) return FALSE;
-	a_ptr->flags1 |= TR1_KILL_DRAGON;
-	LOG_PRINT("Adding ability: kill dragon\n");
-	return TRUE;
-}
-
-static bool add_acid_brand(artifact_type *a_ptr)
-{
-	if (a_ptr->flags1 & TR1_BRAND_ACID) return FALSE;
-	a_ptr->flags1 |= TR1_BRAND_ACID;
-	LOG_PRINT("Adding ability: acid brand\n");
-	return TRUE;
-}
-
-static bool add_lightning_brand(artifact_type *a_ptr)
-{
-	if (a_ptr->flags1 & TR1_BRAND_ELEC) return FALSE;
-	a_ptr->flags1 |= TR1_BRAND_ELEC;
-	LOG_PRINT("Adding ability: lightning brand\n");
-	return TRUE;
-}
-
-static bool add_fire_brand(artifact_type *a_ptr)
-{
-	if (a_ptr->flags1 & TR1_BRAND_FIRE) return FALSE;
-	a_ptr->flags1 |= TR1_BRAND_FIRE;
-	LOG_PRINT("Adding ability: fire brand\n");
-	return TRUE;
-}
-
-static bool add_frost_brand(artifact_type *a_ptr)
-{
-	if (a_ptr->flags1 & TR1_BRAND_COLD) return FALSE;
-	a_ptr->flags1 |= TR1_BRAND_COLD;
-	LOG_PRINT("Adding ability: frost brand\n");
-	return TRUE;
-}
-
-static bool add_poison_brand(artifact_type *a_ptr)
-{
-	if (a_ptr->flags1 & TR1_BRAND_POIS) return FALSE;
-	a_ptr->flags1 |= TR1_BRAND_POIS;
-	LOG_PRINT("Adding ability: poison brand\n");
-	return TRUE;
-}
-
-static void add_brand(artifact_type *a_ptr)
-{
-	/* Pick a brand at random */
-
-	int r;
+	int x;
 	int count = 0;
-	bool success = FALSE;
-
-	while ( (!success) & (count < MAX_TRIES) )
+	
+	while (count < MAX_TRIES)
 	{
-		r = randint0(5);
-		if (r == 0) success = add_fire_brand(a_ptr);
-		else if (r == 1) success = add_frost_brand(a_ptr);
-		else if (r == 2) success = add_poison_brand(a_ptr);
-		else if (r == 3) success = add_acid_brand(a_ptr);
-		else if (r == 4) success = add_lightning_brand(a_ptr);
+		x = randint0(num_slays());
+		const slay_t *s_ptr = &slay_table[x];
 
+		if (brand)
+		{
+			if (s_ptr->brand && 
+				!(a_ptr->flags1 & s_ptr->slay_flag))
+			{
+				a_ptr->flags1 |= s_ptr->slay_flag;
+				LOG_PRINT1("Adding brand: %s\n", s_ptr->brand);
+				return;
+			}
+		}
+		if (!s_ptr->brand && !(a_ptr->flags1 & s_ptr->slay_flag))
+		{
+			a_ptr->flags1 |= s_ptr->slay_flag;
+			LOG_PRINT1("Adding slay: %s\n", s_ptr->desc);
+			return;
+		}
 		count++;
-	}
-}
-
-static void add_slay(artifact_type *a_ptr)
-{
-	/* Pick a slay at random */
-
-	int r;
-	int count = 0;
-	bool success = FALSE;
-
-	while ( (!success) & (count < MAX_TRIES) )
-	{
-		r = randint0(11);
-		if (r == 0) success = add_slay_evil(a_ptr);
-		else if (r == 1) success = add_kill_dragon(a_ptr);
-		else if (r == 2) success = add_slay_animal(a_ptr);
-		else if (r == 3) success = add_slay_undead(a_ptr);
-		else if (r == 4) success = add_slay_dragon(a_ptr);
-		else if (r == 5) success = add_slay_demon(a_ptr);
-		else if (r == 6) success = add_slay_troll(a_ptr);
-		else if (r == 7) success = add_slay_orc(a_ptr);
-		else if (r == 8) success = add_slay_giant(a_ptr);
-		else if (r == 9) success = add_kill_demon(a_ptr);
-		else if (r == 10) success = add_kill_undead(a_ptr);
-
-		count++;
-	}
+	}			
 }
 
 static void add_bless_weapon(artifact_type *a_ptr)
@@ -2831,7 +2692,7 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 
 		case ART_IDX_WEAPON_AGGR:
 		case ART_IDX_NONWEAPON_AGGR:
-			if (target_power > 90)
+			if (target_power > AGGR_POWER)
 			{
 				add_aggravation(a_ptr);
 			}
@@ -2842,11 +2703,11 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			break;
 
 		case ART_IDX_MELEE_BRAND:
-			add_brand(a_ptr);
+			add_slay(a_ptr, TRUE);
 			break;
 
 		case ART_IDX_MELEE_SLAY:
-			add_slay(a_ptr);
+			add_slay(a_ptr, FALSE);
 			break;
 
 		case ART_IDX_MELEE_SINV:
@@ -3112,7 +2973,7 @@ static void try_supercharge(artifact_type *a_ptr, s32b target_power)
 		a_ptr->tval == TV_SWORD)
 	{
 		if ((randint0(z_info->a_max) < artprobs[ART_IDX_WEAPON_AGGR]) &&
-		    (target_power > 90))
+		    (target_power > AGGR_POWER))
 		{
 			a_ptr->flags3 |= TR3_AGGRAVATE;
 			LOG_PRINT("Adding aggravation\n");
@@ -3121,7 +2982,7 @@ static void try_supercharge(artifact_type *a_ptr, s32b target_power)
 	else
 	{
 		if ((randint0(z_info->a_max) < artprobs[ART_IDX_NONWEAPON_AGGR]) &&
-		    (target_power > 90))
+		    (target_power > AGGR_POWER))
 		{
 			a_ptr->flags3 |= TR3_AGGRAVATE;
 			LOG_PRINT("Adding aggravation\n");
