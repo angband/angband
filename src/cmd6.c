@@ -106,7 +106,7 @@ typedef enum {
 	ART_TAG_VERB_IS 
 } art_tag_t;
 
-art_tag_t art_tag_lookup(const char *tag)
+static art_tag_t art_tag_lookup(const char *tag)
 {
 	if (strncmp(tag, "name", 4) == 0)
 		return ART_TAG_NAME;
@@ -132,7 +132,7 @@ art_tag_t art_tag_lookup(const char *tag)
  * always singular in the current code (gloves are "Set of" and boots
  * are "Pair of")
  */
-void activation_message(object_type *o_ptr, const char *message)
+static void activation_message(object_type *o_ptr, const char *message)
 {
 	char buf[1024] = "\0";
 	const char *next;

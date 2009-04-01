@@ -188,7 +188,7 @@ const slay_t slay_table[] =
 	{ TR1_KILL_DRAGON, RF2_DRAGON, 0, 5, "deeply pierces", "fiercely smite", "dragons",                   NULL},
 	{ TR1_KILL_DEMON,  RF2_DEMON,  0, 5, "deeply pierces", "fiercely smite", "demons",                    NULL},
 	{ TR1_KILL_UNDEAD, RF2_UNDEAD, 0, 5, "deeply pierces", "fiercely smite", "undead",                    NULL},
-	{ 0, }
+	{ 0, 0, 0, 0, NULL, NULL, NULL, NULL }
 };
 
 /*

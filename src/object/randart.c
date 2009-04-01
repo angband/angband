@@ -437,7 +437,7 @@ static void store_base_power (void)
 static struct item_choice {
 	int threshold;
 	int tval;
-	char *report;
+	const char *report;
 } item_choices[] = {
 	{  7, TV_BOW,           "a missile weapon"},
 	{ 10, TV_DIGGING,       "a digger"},
@@ -818,7 +818,7 @@ static void remove_contradictory(artifact_type *a_ptr)
  * scaling.
  */
 
-static void adjust_freqs()
+static void adjust_freqs(void)
 {
 	/*
 	 * Enforce minimum values for any frequencies that might potentially
@@ -1060,10 +1060,11 @@ static void parse_frequencies(void)
 
 			if (a_ptr->flags1 & (TR1_SLAY_MASK | TR1_BRAND_MASK | TR1_KILL_MASK))
 			{
+				const slay_t *s_ptr;
+
 				/* We have some brands or slays - count them */
 				temp = 0;
 				temp2 = 0;
-				const slay_t *s_ptr;
 
 				for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
 				{
@@ -2318,16 +2319,16 @@ static void add_slay(artifact_type *a_ptr, bool brand)
 {
 	int x;
 	int count = 0;
+	const slay_t *s_ptr;
 	
 	while (count < MAX_TRIES)
 	{
 		x = randint0(num_slays());
-		const slay_t *s_ptr = &slay_table[x];
+		s_ptr = &slay_table[x];
 
 		if (brand)
 		{
-			if (s_ptr->brand && 
-				!(a_ptr->flags1 & s_ptr->slay_flag))
+			if (s_ptr->brand && !(a_ptr->flags1 & s_ptr->slay_flag))
 			{
 				a_ptr->flags1 |= s_ptr->slay_flag;
 				LOG_PRINT1("Adding brand: %s\n", s_ptr->brand);
