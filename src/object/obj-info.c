@@ -331,63 +331,53 @@ static bool describe_misc_magic(u32b f3)
 
 static bool describe_slays(u32b f1)
 {
-	size_t count;
-
 	bool printed = FALSE;
 
-	flag_type f1_slay[N_ELEMENTS(slay_table)];
-	flag_type f1_kill[N_ELEMENTS(slay_table)];
-	flag_type f1_brand[N_ELEMENTS(slay_table)];
+	const char *slay_descs[num_slays()];
+	const char *kill_descs[num_slays()];
+	const char *brand_descs[num_slays()];
 	const slay_t *s_ptr;
-	int x = 0;
-	int y = 0;
-	int z = 0;
+	size_t x = 0;
+	size_t y = 0;
+	size_t z = 0;
 
 	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
 	{
-		if (s_ptr->slay_flag & TR1_SLAY_MASK)
+		if (f1 & (s_ptr->slay_flag & TR1_SLAY_MASK))
 		{
-			f1_slay[x].flag = s_ptr->slay_flag;
-			f1_slay[x++].name = s_ptr->desc;
+			slay_descs[x++] = s_ptr->desc;
 		}
-		else if (s_ptr->slay_flag & TR1_KILL_MASK)
+		else if (f1 & (s_ptr->slay_flag & TR1_KILL_MASK))
 		{
-			f1_kill[y].flag = s_ptr->slay_flag;
-			f1_kill[y++].name = s_ptr->desc;
+			kill_descs[y++] = s_ptr->desc;
 		}
-		else if (s_ptr->slay_flag & TR1_BRAND_MASK)
+		else if (f1 & (s_ptr->slay_flag & TR1_BRAND_MASK))
 		{
-			f1_brand[z].flag = s_ptr->slay_flag;
-			f1_brand[z++].name = s_ptr->brand;
+			brand_descs[z++] = s_ptr->brand;
 		}
 	}
 
-	const char *descs[MAX(x, MAX(y, z))];
-
 	/* Slays */
-	count = info_collect(f1_slay, x, f1, descs);
-	if (count)
+	if (x)
 	{
 		text_out("It is especially deadly to ");
-		info_out_list(descs, count);
+		info_out_list(slay_descs, x);
 		printed = TRUE;
 	}
 
 	/* Kills */
-	count = info_collect(f1_kill, y, f1, descs);
-	if (count)
+	if (y)
 	{
 		text_out("It is a great bane of ");
-		info_out_list(descs, count);
+		info_out_list(kill_descs, y);
 		printed = TRUE;
 	}
 
 	/* Brands */
-	count = info_collect(f1_brand, z, f1, descs);
-	if (count)
+	if (z)
 	{
 		text_out("It is branded with ");
-		info_out_list(descs, count);
+		info_out_list(brand_descs, z);
 		printed = TRUE;
 	}
 	return printed;
