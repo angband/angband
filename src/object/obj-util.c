@@ -1396,7 +1396,7 @@ static s32b object_value_real(const object_type *o_ptr, int qty)
 #ifdef POWER_PRICING
 	s32b power;
 	int a = 2;
-	int b = 3;
+	int b = 1;
 
 	if (wearable_p(o_ptr))
 	{
@@ -1417,7 +1417,7 @@ static s32b object_value_real(const object_type *o_ptr, int qty)
 
 		LOG_PRINT1("object is %s", k_name + k_ptr->name);
 		power = object_power(o_ptr, verbose, log_file);
-		value = (a * power * power) + (b * power);
+		value = sign(power) * ((a * power * power) + (b * power));
 
 		if ( (o_ptr->tval == TV_SHOT) || (o_ptr->tval == TV_ARROW) ||
   			(o_ptr->tval == TV_BOLT) || ((o_ptr->tval == TV_LITE) 				&& (o_ptr->sval == SV_LITE_TORCH)) )

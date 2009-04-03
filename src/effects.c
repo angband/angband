@@ -293,7 +293,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_CURE_FULL:
 		{
-			int amt = (p_ptr->mhp * 100) / 35;
+			int amt = (p_ptr->mhp * 35) / 100;
 			if (amt < 300) amt = 300;
 
 			if (hp_player(amt)) *ident = TRUE;
