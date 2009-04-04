@@ -219,7 +219,7 @@ static int get_brand_mult(const object_type *o_ptr, const monster_type *m_ptr,
 		{
 			/* If the monster doesn't resist OR the monster 
 			   flag matches */
-			if (!(r_ptr->flags[2] & s_ptr->resist_flag) || 
+			if ((s_ptr->brand && !(r_ptr->flags[2] & s_ptr->resist_flag)) || 
 				(r_ptr->flags[2] & s_ptr->monster_flag))
 			{
 				/* Learn the flag */
