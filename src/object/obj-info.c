@@ -195,7 +195,7 @@ const slay_t slay_table[] =
  * Helper function to externalise N_ELEMENTS(slay_table), which itself is not
  * available outside this compilation unit
  */
-inline size_t num_slays(void)
+size_t num_slays(void)
 {
 	return N_ELEMENTS(slay_table);
 }
@@ -333,9 +333,9 @@ static bool describe_slays(u32b f1)
 {
 	bool printed = FALSE;
 
-	const char *slay_descs[num_slays()];
-	const char *kill_descs[num_slays()];
-	const char *brand_descs[num_slays()];
+	const char *slay_descs[N_ELEMENTS(slay_table)];
+	const char *kill_descs[N_ELEMENTS(slay_table)];
+	const char *brand_descs[N_ELEMENTS(slay_table)];
 	const slay_t *s_ptr;
 	size_t x = 0;
 	size_t y = 0;
