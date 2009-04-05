@@ -110,7 +110,7 @@
  * used, only wearable items will be priced this way - consumables will still
  * use prices from text files.
  */
-/* #define POWER_PRICING */
+#define POWER_PRICING
 
 
 /*** X11 settings ***/
