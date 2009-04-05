@@ -25,7 +25,6 @@
    and command requests from the game proper. Probably not strictly necessary,
    but they reduce code complexity a bit. */
 static enum birth_stage current_stage = BIRTH_METHOD_CHOICE;
-static int autoroller_maxes[A_MAX];
 
 /* ------------------------------------------------------------------------
  * Quickstart? screen.
@@ -357,141 +356,7 @@ static void init_birth_menu(menu_type *menu, game_event_data *data, const region
 }
 
 /* ------------------------------------------------------------------------
- * Autoroller-based stat allocation. 
- * ------------------------------------------------------------------------ */
-
-static bool minstat_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, char keypress, bool firsttime)
-{
-	if (keypress == KTRL('x'))
-		quit(NULL);
-
-	return askfor_aux_keypress(buf, buflen, curs, len, keypress, firsttime);
-}
-
-#define AUTOROLLER_HELPTEXT \
-  "The auto-roller will automatically ignore characters which do not " \
-  "meet the minimum values for any stats specified below.\n" \
-  "Note that stats are not independent, so it is not possible to get " \
-  "perfect (or even high) values for all your stats."
-
-static void autoroller_start(int stat_maxes[A_MAX])
-{
-	int i;
-	char inp[80];
-	char buf[80];
-
-	/* Clear */
-	Term_clear();
-
-	/* Output to the screen */
-	text_out_hook = text_out_to_screen;
-	
-	/* Indent output */
-	text_out_indent = 5;
-	text_out_wrap = 75;
-
-	Term_gotoxy(5, 10);	
-	text_out_e("%s", AUTOROLLER_HELPTEXT);	
-
-	/* Reset text_out() indentation */
-	text_out_indent = 0;
-	text_out_wrap = 0;
-
-	/* Prompt for the minimum stats */
-	put_str("Enter minimum value for: ", 15, 2);
-	
-	/* Output the maximum stats */
-	for (i = 0; i < A_MAX; i++)
-	{
-		int m = stat_maxes[i];
-		autoroller_maxes[i] = stat_maxes[i];
-
-		/* Extract a textual format */
-		/* cnv_stat(m, inp, sizeof(buf); */
-		
-		/* Above 18 */
-		if (m > 18)
-		{
-			strnfmt(inp, sizeof(inp), "(Max of 18/%02d):", (m - 18));
-		}
-		
-		/* From 3 to 18 */
-		else
-		{
-			strnfmt(inp, sizeof(inp), "(Max of %2d):", m);
-		}
-		
-		/* Prepare a prompt */
-		strnfmt(buf, sizeof(buf), "%-5s%-20s", stat_names[i], inp);
-		
-		/* Dump the prompt */
-		put_str(buf, 16 + i, 5);
-	}
-}
-
-static game_command autoroller_command(void)
-{
-	int i, v;
-	char inp[80];
-
-	game_command cmd = { CMD_NULL, 0, {0} };
-
-	/* Input the minimum stats */
-	for (i = 0; i < A_MAX; i++)
-	{
-		/* Get a minimum stat */
-		while (TRUE)
-		{
-			char *s;
-			
-			/* Move the cursor */
-			put_str("", 16 + i, 30);
-			
-			/* Default */
-			inp[0] = '\0';
-			
-			/* Get a response (or escape) */
-			if (!askfor_aux(inp, 9, minstat_keypress)) 
-			{
-				if (i == 0) 
-				{
-					/* Back a step */
-					cmd.command = CMD_BIRTH_BACK;
-					return cmd;
-				}
-				else 
-				{
-					/* Repeat this step */
-					return cmd;
-				}
-			}
-			
-			/* Hack -- add a fake slash */
-			my_strcat(inp, "/", sizeof(inp));
-			
-			/* Hack -- look for the "slash" */
-			s = strchr(inp, '/');
-			
-			/* Hack -- Nuke the slash */
-			*s++ = '\0';
-			
-			/* Hack -- Extract an input */
-			v = atoi(inp) + atoi(s);
-			
-			/* Break on valid input */
-			if (v <= autoroller_maxes[i]) break;
-		}
-		
-		/* Save the minimum stat */
-		cmd.params.stat_limits[i] = (v > 0) ? v : 0;
-	}
-
-	cmd.command = CMD_AUTOROLL;
-	return cmd;
-}
-
-/* ------------------------------------------------------------------------
- * The rolling bit of the autoroller/simple roller.
+ * The rolling bit of the roller.
  * ------------------------------------------------------------------------ */
 #define ROLLERCOL 42
 static bool prev_roll = FALSE;
@@ -507,78 +372,11 @@ static void roller_newchar(game_event_type type, game_event_data *data, void *us
 	Term_fresh();
 }
 
-/* 
-   Handles the event we get when the autoroller is looking for a suitable
-   character but hasn't found one yet.
-*/
-static void roller_autoroll(game_event_type type, game_event_data *data, void *user)
-{
-	int col = ROLLERCOL;
-	int i;
-	char buf[80];
-
-	/* Label */
-	put_str(" Limit", 2, col+5);
-	
-	/* Label */
-	put_str("  Freq", 2, col+13);
-	
-	/* Label */
-	put_str("  Roll", 2, col+24);
-
-	/* Put the minimal stats */
-	for (i = 0; i < A_MAX; i++)
-	{
-		/* Label stats */
-		put_str(stat_names[i], 3+i, col);
-		
-		/* Put the stat */
-		cnv_stat(data->birthautoroll.limits[i], buf, sizeof(buf));
-		c_put_str(TERM_L_BLUE, buf, 3+i, col+5);
-	}
-
-	/* Label count */
-	put_str("Round:", 9, col+13);
-	
-	/* You can't currently interrupt the autoroller */
-/*	put_str("(Hit ESC to stop)", 12, col+13); */
-
-	/* Put the stats (and percents) */
-	for (i = 0; i < A_MAX; i++)
-	{
-		/* Put the stat */
-		cnv_stat(data->birthautoroll.current[i], buf, sizeof(buf));
-		c_put_str(TERM_L_GREEN, buf, 3+i, col+24);
-		
-		/* Put the percent */
-		if (data->birthautoroll.matches[i])
-		{
-			int p = 1000L * data->birthautoroll.matches[i] / data->birthautoroll.round;
-			byte attr = (p < 100) ? TERM_YELLOW : TERM_L_GREEN;
-			strnfmt(buf, sizeof(buf), "%3d.%d%%", p/10, p%10);
-			c_put_str(attr, buf, 3+i, col+13);
-		}
-		
-		/* Never happened */
-		else
-		{
-			c_put_str(TERM_RED, "(NONE)", 3+i, col+13);
-		}
-	}
-	
-	/* Dump round */
-	put_str(format("%10ld", data->birthautoroll.round), 9, col+20);
-	
-	/* Make sure they see everything */
-	Term_fresh();
-}
-
 static void roller_start(int stat_maxes[A_MAX])
 {
 	prev_roll = FALSE;
 	Term_clear();
 
-	event_add_handler(EVENT_BIRTHAUTOROLLER, roller_autoroll, NULL);	
 	event_add_handler(EVENT_BIRTHSTATS, roller_newchar, NULL);	
 }
 
@@ -649,7 +447,7 @@ static game_command roller_command(void)
 		if (ch == '?')
 			do_cmd_help();
 		else
-			bell("Illegal auto-roller command!");
+			bell("Illegal roller command!");
 	}
 
 	/* Kill buttons */
@@ -664,7 +462,6 @@ static game_command roller_command(void)
 
 static void roller_stop(void)
 {
-	event_remove_handler(EVENT_BIRTHAUTOROLLER, roller_autoroll, NULL);	
 	event_remove_handler(EVENT_BIRTHSTATS, roller_newchar, NULL);	
 }
 
@@ -986,12 +783,6 @@ static void birth_stage_changed(game_event_type type, game_event_data *data, voi
 			break;
 		}
 
-		case BIRTH_AUTOROLLER:
-		{
-			autoroller_start(data->birthstage.xtra);
-			break;
-		}
-
 		case BIRTH_ROLLER:
 		{
 			roller_start(data->birthstage.xtra);
@@ -1040,9 +831,6 @@ static game_command ui_get_birth_command(void)
 
 		case BIRTH_POINTBASED:
 			return point_based_command();
-
-		case BIRTH_AUTOROLLER:
-			return autoroller_command();
 
 		case BIRTH_ROLLER:
 			return roller_command();

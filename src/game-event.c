@@ -168,15 +168,3 @@ void event_signal_birthstats(int stats[6], int remaining)
 	game_event_dispatch(EVENT_BIRTHSTATS, &data);
 }
 
-
-void event_signal_birthautoroller(int limits[6], int matches[6], int current[6], unsigned long round)
-{
-	game_event_data data;
-
-	data.birthautoroll.limits = limits;
-	data.birthautoroll.matches = matches;
-	data.birthautoroll.current = current;
-	data.birthautoroll.round = round;
-
-	game_event_dispatch(EVENT_BIRTHAUTOROLLER, &data);
-}

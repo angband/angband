@@ -32,16 +32,14 @@
  * 
  * Player (in the Angband sense of character) birth is a series of 
  * steps which must be carried out in a specified order, with choices
- * in one step affecting those further along (e.g. race and class 
- * choices determine maximum values for stats in the autoroller).
+ * in one step affecting those further along.
  *
  * We implement this through a system of "birth stages".  As the 
  * game enters each birth stage, we typically do some minor
  * housekeeping before sending a signal to the UI so that it can update 
  * its display, or do whatever else it deems fit.  Then we send other
- * messages (such as updates of the progress of the autoroller) or
- * request a command (such as buying a stat, or stepping back in the
- * process).  This file simply responds to such commands by stepping
+ * messages or request a command (such as buying a stat, or stepping back 
+ * in the process).  This file simply responds to such commands by stepping
  * back and forth through the birth sequence, updating values, and so on,
  * until a suitable character has been chosen.  It then does more
  * housekeeping to ensure the "player" is ready to start the game 
@@ -162,14 +160,9 @@ static void load_roller_data(birther *player, birther *prev_player)
  *
  * This just uses "modify_stat_value()" unless "maximize" mode is false,
  * and a positive bonus is being applied, in which case, a special hack
- * is used, with the "auto_roll" flag affecting the result.
- *
- * The "auto_roll" flag selects "maximal" changes for use with the
- * auto-roller initialization code.  Otherwise, if "maximize" mode
- * is being used, the changes are fixed.  Otherwise, semi-random
- * changes will occur, with larger changes at lower values.
+ * is used.
  */
-static int adjust_stat(int value, int amount, int auto_roll)
+static int adjust_stat(int value, int amount)
 {
 	/* Negative amounts or maximize mode */
 	if ((amount < 0) || OPT(adult_maximize))
@@ -191,11 +184,11 @@ static int adjust_stat(int value, int amount, int auto_roll)
 			}
 			else if (value < 18+70)
 			{
-				value += ((auto_roll ? 15 : randint1(15)) + 5);
+				value += randint1(15) + 5;
 			}
 			else if (value < 18+90)
 			{
-				value += ((auto_roll ? 6 : randint1(6)) + 2);
+				value += randint1(6) + 2;
 			}
 			else if (value < 18+100)
 			{
@@ -268,7 +261,7 @@ static void get_stats(int stat_use[A_MAX])
 		else
 		{
 			/* Apply the bonus to the stat (somewhat randomly) */
-			stat_use[i] = adjust_stat(p_ptr->stat_max[i], bonus, FALSE);
+			stat_use[i] = adjust_stat(p_ptr->stat_max[i], bonus);
 
 			/* Save the resulting stat maximum */
 			p_ptr->stat_cur[i] = p_ptr->stat_max[i] = stat_use[i];
@@ -709,7 +702,7 @@ static game_command get_birth_command(void)
  */
 static const int birth_stat_costs[18 + 1] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 4 };
 
-/* It is feasible to get base 17 in 3 stats with the autoroller */
+/* It was feasible to get base 17 in 3 stats with the autoroller */
 #define MAX_BIRTH_POINTS 24 /* 3 * (1+1+1+1+1+1+2) */
 
 
@@ -925,7 +918,6 @@ enum birth_methods
 enum birth_rollers
 {
 	BR_POINTBASED = 0,
-	BR_AUTOROLLER,
 	BR_NORMAL,
 	MAX_BIRTH_ROLLERS
 };
@@ -980,7 +972,6 @@ void player_birth(bool quickstart_allowed)
 
 	const char *roller_choices[MAX_BIRTH_ROLLERS] = { 
 		"Point-based", 
-		"Autoroller", 
 		"Standard roller" 
 	};
 
@@ -1261,9 +1252,7 @@ void player_birth(bool quickstart_allowed)
 				   the process then roller_choice will already have
 				   been set.  We change the initial choice to match
 				   the user's previous choice. */
-				if (roller_choice == BIRTH_AUTOROLLER)
-					init_choice = BR_AUTOROLLER;
-				else if (roller_choice == BIRTH_ROLLER)
+				if (roller_choice == BIRTH_ROLLER)
 					init_choice = BR_NORMAL;
 				else
 					init_choice = BR_POINTBASED;
@@ -1284,18 +1273,6 @@ void player_birth(bool quickstart_allowed)
 						case BR_POINTBASED:
 						{
 							roller_choice = next_stage = BIRTH_POINTBASED;
-							break;
-						}
-
-						case BR_AUTOROLLER:
-						{
-							/* roller_mins are the user-chosen minima for
-							   stats rolled up - reset to zero here for
-							   safety. */
-							for (i = 0; i < A_MAX; i++)
-								roller_mins[i] = 0;
-
-							roller_choice = next_stage = BIRTH_AUTOROLLER;
 							break;
 						}
 
@@ -1345,55 +1322,7 @@ void player_birth(bool quickstart_allowed)
 				break;
 			}
 
-			/* 
-			 * The autoroller stage merely allows the user to select
-			 * the minimum values for stats - the actual rolling happens
-			 * in BIRTH_ROLLER.  As such, all we do here is calculate the
-			 * maxima based on the race/class selections, tell the UI about
-			 * them, and then wait for the UI to return the minimum values
-			 * the player wants (or to go back, or quit, etc). 
-			 */
-			case BIRTH_AUTOROLLER:
-			{
-				int maxes[A_MAX];
-
-				/* Calculate maximum possible values for stats */
-				for (i = 0; i < A_MAX; i++)
-				{
-					/* Race/Class bonus */
-					int j = rp_ptr->r_adj[i] + cp_ptr->c_adj[i];
-		
-					/* Obtain the "maximal" stat */
-					maxes[i] = adjust_stat(17, j, TRUE);
-				}
-
-				event_signal_birthstage(BIRTH_AUTOROLLER, maxes);
-				
-				cmd = get_birth_command();
-
-				if (cmd.command == CMD_BIRTH_RESTART)
-				{
-					next_stage = BIRTH_METHOD_CHOICE;
-				}
-				else if (cmd.command == CMD_BIRTH_BACK)
-				{
-					next_stage = BIRTH_ROLLER_CHOICE;
-				}
-				else if (cmd.command == CMD_AUTOROLL)
-				{
-					for (i = 0; i < A_MAX; i++)
-						roller_mins[i] = cmd.params.stat_limits[i];
-					
-					next_stage = BIRTH_ROLLER;
-				}
-
-				break;
-			}
-
 			/*
-			 * The roller stage is common to both the simple "one roll,
-			 * one character" roller and the autoroller.
-			 *
 			 * We simply provide a rolled character where stats are at
 			 * least as large as those in roller_mins (set up before entering
 			 * this stage), and allow the user to accept the stats, roll new
@@ -1401,17 +1330,11 @@ void player_birth(bool quickstart_allowed)
 			 */
 			case BIRTH_ROLLER:
 			{
-				/* Used to give limited stats about the autoroller. */
 				int stat_use[A_MAX] = { 0 };
-				int stat_match[A_MAX] = { 0 };
-
-				/* Used to enforce a million-roll limit on the autoroller. */
-				long unsigned auto_round = 0;
 
 				/* Only do an initial roll if we're coming from earlier
 				   in the birth process. */
-				if (last_stage == BIRTH_ROLLER_CHOICE || 
-					last_stage == BIRTH_AUTOROLLER)
+				if (last_stage == BIRTH_ROLLER_CHOICE)
 				{
 					/* Reset our saved "swap" character marker, too. */
 					prev.age = 0;
@@ -1427,57 +1350,11 @@ void player_birth(bool quickstart_allowed)
 				/* Roll until the user wants to move back or accept stats */
 				while (next_stage == BIRTH_ROLLER)
 				{
-					long unsigned last_round = auto_round;
-
 					if (cmd.command == CMD_ROLL)
 					{
-						/* Roll until we get a character that meets the minimum
-						   stats, or we've done a million rolls (in total,
-						   across all rolled characters).	*/
-						while (TRUE)
-						{
-							bool accept = TRUE;
+						/* Get a new character */
+						get_stats(stat_use);
 							
-							/* Get a new character */
-							get_stats(stat_use);
-							
-							/* If we're above the million round limit, just
-							   use the rolled character. */
-							if (auto_round >= 1000000L) break;
-							
-							/* Advance the round */
-							auto_round++;
-							
-							/* Check and count acceptable stats */
-							for (i = 0; i < A_MAX; i++)
-							{
-								/* This stat is okay */
-								if (stat_use[i] >= roller_mins[i])
-								{
-									stat_match[i]++;
-								}
-								/* This stat is not okay */
-								else
-								{
-									accept = FALSE;
-								}
-							}
-							
-							/* Break if "happy" */
-							if (accept) break;
-							
-							/* Update display every round for the first
-							   100, then every 25 rounds. */
-							if ((auto_round < last_round + 100) ||
-								(auto_round % 25L) == 0)
-							{
-								event_signal_birthautoroller(roller_mins,
-															 stat_match,
-															 stat_use,
-															 auto_round);
-							}
-						}
-						
 						/* Roll for base hitpoints */
 						get_extra();
 						
@@ -1529,18 +1406,16 @@ void player_birth(bool quickstart_allowed)
 
 						case CMD_BIRTH_BACK:
 						{
-							if (roller_choice == BIRTH_AUTOROLLER)
-								next_stage = BIRTH_AUTOROLLER;
-							else
-								next_stage = BIRTH_ROLLER_CHOICE;
-
+							next_stage = BIRTH_ROLLER_CHOICE;
 							break;
 						}
+
 						case CMD_BIRTH_RESTART:
 						{
 							next_stage = BIRTH_METHOD_CHOICE;
 							break;
 						}
+
 						default:
 						{
 							/* This should not be reached. */
@@ -1577,8 +1452,7 @@ void player_birth(bool quickstart_allowed)
 				{
 					if (roller_choice == BIRTH_POINTBASED)
 						next_stage = BIRTH_POINTBASED;
-					else if (roller_choice == BIRTH_AUTOROLLER ||
-							 roller_choice == BIRTH_ROLLER)
+					else if (roller_choice == BIRTH_ROLLER)
 						next_stage = BIRTH_ROLLER;
 					else
 						next_stage = BIRTH_METHOD_CHOICE;

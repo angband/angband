@@ -10,7 +10,6 @@ enum birth_stage
 	BIRTH_CLASS_CHOICE,
 	BIRTH_ROLLER_CHOICE,
 	BIRTH_POINTBASED,
-	BIRTH_AUTOROLLER,
 	BIRTH_ROLLER,
 	BIRTH_NAME_CHOICE,
 	BIRTH_FINAL_CONFIRM,
@@ -54,7 +53,6 @@ typedef enum game_event_type
 
 	EVENT_BIRTHSTAGE,	/* Change the point we're up to in birth */
 	EVENT_BIRTHSTATS,	/* Change in the birth points */
-	EVENT_BIRTHAUTOROLLER,  /* Autoroller updates. */
 
 	/* Changing of the game state/context. */
 	EVENT_ENTER_INIT,
@@ -101,14 +99,6 @@ typedef union
 		int remaining;
 	} birthstats;
 
-	struct
-	{
-		int *limits;
-		int *matches;
-		int *current;
-		unsigned long round;
-	} birthautoroll;
-
 } game_event_data;
 
 
@@ -128,7 +118,6 @@ void event_remove_handler_set(game_event_type *type, size_t n_types, game_event_
 void event_signal_birthstage_question(enum birth_stage stage, const char *hint, int n_choices, int initial_choice, const char *choices[], const char *helptexts[]);
 void event_signal_birthstage(enum birth_stage stage, void *xtra);
 void event_signal_birthstats(int stats[6], int remaining);
-void event_signal_birthautoroller(int limits[6], int matches[6], int current[6], unsigned long round);
 
 void event_signal_point(game_event_type, int x, int y);
 void event_signal_string(game_event_type, const char *s);
