@@ -1249,7 +1249,9 @@ static void update_minimap_subwindow(game_event_type type, game_event_data *data
 
 	if (type == EVENT_MAP)
 	{
-		flags->needs_redraw = TRUE;
+		/* Set flag if whole-map redraw. */
+		if (data->point.x == -1 && data->point.y == -1)
+			flags->needs_redraw = TRUE;
 	}
 	else if (type == EVENT_END)
 	{
@@ -1258,7 +1260,11 @@ static void update_minimap_subwindow(game_event_type type, game_event_data *data
 		
 		/* Activate */
 		Term_activate(t);
-		
+
+		/* If whole-map redraw, clear window first. */
+		if (flags->needs_redraw)
+			Term_clear();
+
 		/* Redraw map */
 		display_map(NULL, NULL);
 		Term_fresh();
