@@ -554,46 +554,35 @@ void move_player(int dir)
 	x = px + ddx[dir];
 
 
-	/* Hack -- attack monsters */
+	/* Attack monsters */
 	if (cave_m_idx[y][x] > 0)
-	{
-		/* Attack */
 		py_attack(y, x);
-	}
 
 	/* Optionally alter known traps/doors on movement */
-	else if (OPT(easy_alter) &&
-	         (cave_info[y][x] & (CAVE_MARK)) &&
-	         (cave_feat[y][x] >= FEAT_TRAP_HEAD) &&
-	         (cave_feat[y][x] <= FEAT_DOOR_TAIL))
+	else if (OPT(easy_alter) && (cave_info[y][x] & CAVE_MARK) &&
+			(cave_feat[y][x] >= FEAT_TRAP_HEAD) &&
+			(cave_feat[y][x] <= FEAT_DOOR_TAIL))
 	{
-		/*
-		 * There should always be an explicit confirmation made before fiddling
-		 * with traps.  XXX XXX
-		 */
-
 		/* Auto-repeat if not already repeating */
 		if (!p_ptr->command_rep && (p_ptr->command_arg <= 0))
 		{
-			/* Repeat 99 times */
 			p_ptr->command_rep = 99;
 
 			/* Reset the command count */
 			p_ptr->command_arg = 0;
 		}
 
-		/* Alter */
 		do_cmd_alter();
 	}
 
-	/* Player can not walk through "walls" */
+	/* Cannot walk through walls */
 	else if (!cave_floor_bold(y, x))
 	{
 		/* Disturb the player */
 		disturb(0, 0);
 
 		/* Notice unknown obstacles */
-		if (!(cave_info[y][x] & (CAVE_MARK)))
+		if (!(cave_info[y][x] & CAVE_MARK))
 		{
 			/* Rubble */
 			if (cave_feat[y][x] == FEAT_RUBBLE)
@@ -623,23 +612,12 @@ void move_player(int dir)
 		/* Mention known obstacles */
 		else
 		{
-			/* Rubble */
 			if (cave_feat[y][x] == FEAT_RUBBLE)
-			{
 				message(MSG_HITWALL, 0, "There is a pile of rubble blocking your way.");
-			}
-
-			/* Closed door */
 			else if (cave_feat[y][x] < FEAT_SECRET)
-			{
 				message(MSG_HITWALL, 0, "There is a door blocking your way.");
-			}
-
-			/* Wall (or secret door) */
 			else
-			{
 				message(MSG_HITWALL, 0, "There is a wall blocking your way.");
-			}
 		}
 	}
 
@@ -656,13 +634,11 @@ void move_player(int dir)
 		/* Note the change in the detect status */
 		if (old_dtrap != new_dtrap) p_ptr->redraw |= (PR_DTRAP);
 
-		/* Disturb player if the player is about to leave the detect area XXX */
-		if (OPT(disturb_detect) && p_ptr->running && old_dtrap && !new_dtrap)
+		/* Disturb player if the player is about to leave the area */
+		if (OPT(disturb_detect) &&
+				p_ptr->running && old_dtrap && !new_dtrap)
 		{
-			/* Disturb the player */
 			disturb(0, 0);
-
-			/* Done XXX */
 			return;
 		}
 
