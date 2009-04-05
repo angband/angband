@@ -1140,6 +1140,10 @@ static void update_equip_subwindow(game_event_type type, game_event_data *data,
 void toggle_inven_equip(void)
 {
 	flip_inven = !flip_inven;
+
+	/* Slightly hackish way to force a redraw. */
+	event_signal(EVENT_INVENTORY);
+	event_signal(EVENT_EQUIPMENT);
 }
 
 static void update_itemlist_subwindow(game_event_type type, game_event_data *data, void *user)
