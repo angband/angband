@@ -3,7 +3,7 @@ Angband 3.1.1
 
 This is an Angband development version -- it may be buggy, so be warned!
 Special thanks to: Eddie Grove, Elly, Stefan O'Rear, Mango Juice, Gabriel
-Cunningham, Chris Carr, Chris Robertson
+Cunningham, Chris Carr, Chris Robertson, Peter Denison
 
 Gameplay/UI changes:
 Make the {excellent}-on-wield check work for jewellery too.
@@ -39,6 +39,7 @@ Bugs fixed:
 (#694) Fix dropped rods recharging, and any other rod-related oddities.
 (#698) Added '!' to 'R' prompt to rest until mana or hp are full.
 (#696) Put character name back onto the dump.
+(#705) Randart activation messages no longer reference the original artifact.
 (#711, #764) Fix descriptions of area-of-effect detection.
 (#712) Autoinscribe items in the first inventory slot.
 (#717) Make stat potions just a little bit more common.
@@ -60,6 +61,7 @@ Bugs fixed:
 (#742) Mention tunnelling ability in item descriptions.
 (#747) ui-birth.c needs to handle going directly from character sheet to sex prompt.
 (#748) Allow Rings of Delving to activate.
+(#754) Have a go at using a slightly cleverer pricing algorithm for combat gear.
 (#755) Fix pseudo-id of branded ammo, so already-known ammo doesn't get pseudo-ID'd.
 (#766) Scrolls of trap creation now longer crash in town.
 (#767) Hitpoint warning now accepts only numbers from 0-9.
@@ -67,6 +69,7 @@ Bugs fixed:
 (#773) General Store now restocks like other stores (e.g. more food will appear without you having to buy out all the food).
 (#781) Remove the cap on potions of experience -- they always give 100k XP now.
 (#799) Elessar and Evenstar now show the right recharge times.
+(#813) Potions of Healing now do what the description says they do, not something much more powerful.
 Fix bug with rods of treasure location needing ID.
 Fix birth_money so that in point-based it still gives you 500AU.
 Fix double-resist damage.
@@ -90,6 +93,7 @@ Add yeeks to the monster knowledge browser.
 
 Unix ports:
 Update angband man page.
+Get debian packaging stuff working.
 
 Curses port:
 (#666) Fix out-of-bounds memory access
@@ -102,6 +106,7 @@ Use curses to parse keys, which is more portable and removes the Escape delay.
 Invisible code changes:
 (#513) Refactor the code that prompts for character dump filenames so that it can be overriden by platform-native ports.
 (#616) Add support for BSDish makes.
+(#664) Refactor brands and slays so they're defined in one place and referenced elsewhere.
 (#749) Add an id_only paramater to calc_bonuses().
 Make "make clean" remove all object files in the list, to catch files in subdirectories.
 Commit the beginnings of a flag-based terrain system; note that it does absolutely nothing as yet.
