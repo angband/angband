@@ -1107,7 +1107,6 @@ static void update_inven_subwindow(game_event_type type, game_event_data *data,
 	else
 		display_equip();
 
-
 	Term_fresh();
 	
 	/* Restore */
@@ -1139,11 +1138,38 @@ static void update_equip_subwindow(game_event_type type, game_event_data *data,
  */
 void toggle_inven_equip(void)
 {
+	term *old = Term;
+	int i;
+
+	/* Change the actual setting */
 	flip_inven = !flip_inven;
 
-	/* Slightly hackish way to force a redraw. */
-	event_signal(EVENT_INVENTORY);
-	event_signal(EVENT_EQUIPMENT);
+	/* Redraw any subwindows showing the inventory/equipment lists */
+	for (i = 0; i < ANGBAND_TERM_MAX; i++)
+	{
+		Term_activate(angband_term[i]); 
+
+		if (op_ptr->window_flag[i] & PW_INVEN)
+		{
+			if (!flip_inven)
+				display_inven();
+			else
+				display_equip();
+			
+			Term_fresh();
+		}
+		else if (op_ptr->window_flag[i] & PW_EQUIP)
+		{
+			if (!flip_inven)
+				display_equip();
+			else
+				display_inven();
+			
+			Term_fresh();
+		}
+	}
+
+	Term_activate(old);
 }
 
 static void update_itemlist_subwindow(game_event_type type, game_event_data *data, void *user)
