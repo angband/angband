@@ -342,7 +342,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type
 		{
 			const char *basename = modstr;
 
-			while (basename && *basename)
+			while (basename && *basename && (end < max - 1))
 			{
 				/* Special plurals */
 				if (*basename == '|')
