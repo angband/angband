@@ -209,41 +209,36 @@ static int get_brand_mult(const object_type *o_ptr, const monster_type *m_ptr,
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
 	u32b f1, f2, f3;
-
-	/* Extract the flags */
 	object_flags(o_ptr, &f1, &f2, &f3);
 
 	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
 	{
-		if (f1 & s_ptr->slay_flag)
+		if (!(f1 & s_ptr->slay_flag)) continue;
+
+		/* If the monster doesn't match or the slay flag does */
+		if ((s_ptr->brand && !(r_ptr->flags[2] & s_ptr->resist_flag)) || 
+			(r_ptr->flags[2] & s_ptr->monster_flag))
 		{
-			/* If the monster doesn't resist OR the monster 
-			   flag matches */
-			if ((s_ptr->brand && !(r_ptr->flags[2] & s_ptr->resist_flag)) || 
-				(r_ptr->flags[2] & s_ptr->monster_flag))
-			{
-				/* Learn the flag */
-				if (m_ptr->ml)
-					l_ptr->flags[2] |= s_ptr->monster_flag;
+			/* Learn the flag */
+			if (m_ptr->ml)
+				l_ptr->flags[2] |= s_ptr->monster_flag;
 
-				if (mult < s_ptr->mult)
-					mult = s_ptr->mult;
-				*known_f1 |= s_ptr->slay_flag;
+			if (mult < s_ptr->mult)
+				mult = s_ptr->mult;
+			*known_f1 |= s_ptr->slay_flag;
 
-				/* If a slay/brand has been applied, then 
-				   set the hit verb appropriately */
-				if (is_ranged)
-					*hit_verb = s_ptr->range_verb;
-				else
-					*hit_verb = s_ptr->melee_verb;
-			}
+			/* Set the hit verb appropriately */
+			if (is_ranged)
+				*hit_verb = s_ptr->range_verb;
+			else
+				*hit_verb = s_ptr->melee_verb;
+		}
 
-			/* If the monster resisted, add to the monster lore */
-			if (r_ptr->flags[2] & s_ptr->resist_flag)
-			{
-				if (m_ptr->ml)
-					l_ptr->flags[2] |= s_ptr->resist_flag;
-			}
+		/* If the monster resisted, add to the monster lore */
+		if (r_ptr->flags[2] & s_ptr->resist_flag)
+		{
+			if (m_ptr->ml)
+				l_ptr->flags[2] |= s_ptr->resist_flag;
 		}
 	}
 	
