@@ -522,8 +522,8 @@ static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, si
 static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max, 
 		size_t end, bool spoil)
 {
-	bool known = object_known_p(o_ptr) || (o_ptr->ident & IDENT_STORE) 
-		|| spoil;
+	bool known = object_known_p(o_ptr) || (o_ptr->ident & IDENT_STORE) ||
+			spoil;
 
 	/* Dump base weapon info */
 	switch (o_ptr->tval)
@@ -538,19 +538,6 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 		case TV_DIGGING:
 		{
 			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->dd, o_ptr->ds);
-#if 0
-			strnfcat(buf, max, &end, " (");
-
-			if (known && o_ptr->to_h)
-				strnfcat(buf, max, &end, "%+d,", o_ptr->to_h);
-			else if (!known)
-				strnfcat(buf, max, &end, "?,");
-
-			if (known && o_ptr->to_d)
-				strnfcat(buf, max, &end, "%d+", o_ptr->to_d);
-
-			strnfcat(buf, max, &end, "%dd%d)", o_ptr->dd, o_ptr->ds);
-#endif
 			break;
 		}
 
@@ -564,7 +551,7 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 
 
 	/* Show weapon bonuses */
-	if (known)
+	if (known || o_ptr->ident & IDENT_ATTACK)
 	{
 		if (obj_desc_show_weapon(o_ptr) || o_ptr->to_d)
 			strnfcat(buf, max, &end, " (%+d,%+d)", o_ptr->to_h, o_ptr->to_d);
@@ -574,7 +561,7 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 
 
 	/* Show armor bonuses */
-	if (known)
+	if (known || o_ptr->ident & IDENT_DEFENCE)
 	{
 		if (obj_desc_show_armor(o_ptr))
 			strnfcat(buf, max, &end, " [%d,%+d]", o_ptr->ac, o_ptr->to_a);

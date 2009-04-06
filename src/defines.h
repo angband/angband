@@ -1147,12 +1147,14 @@ enum
 /*
  * Special object flags
  */
-#define IDENT_SENSE     0x01	/* Item has been "sensed" */
-#define IDENT_TRIED     0x02	/* Item has been tried on */
-#define IDENT_EMPTY     0x04	/* Item charges are known */
-#define IDENT_KNOWN     0x08	/* Item abilities are known */
+#define IDENT_SENSE     0x01	/* Has been "sensed" */
+#define IDENT_TRIED     0x02	/* Has been tried on */
+#define IDENT_EMPTY     0x04	/* Know how many charges an item has */
+#define IDENT_KNOWN     0x08	/* Fully known */
 #define IDENT_STORE     0x10	/* Item is in the inventory of a store */
-/* ... */
+#define IDENT_ATTACK	0x20	/* Know combat dice/ac/bonuses */
+#define IDENT_DEFENCE	0x40	/* Know AC/etc bonuses */
+#define IDENT_EFFECT	0x80	/* Know item activation/effect */
 
 
 /*

@@ -678,7 +678,8 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 			state->to_a += o_ptr->to_a;
 
 		/* Apply the mental bonuses to armor class, if known */
-		if (object_known_p(o_ptr)) state->dis_to_a += o_ptr->to_a;
+		if (object_known_p(o_ptr) || o_ptr->ident & IDENT_DEFENCE)
+			state->dis_to_a += o_ptr->to_a;
 
 		/* Hack -- do not apply "weapon" bonuses */
 		if (i == INVEN_WIELD) continue;
@@ -694,8 +695,11 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		}
 
 		/* Apply the mental bonuses tp hit/damage, if known */
-		if (object_known_p(o_ptr)) state->dis_to_h += o_ptr->to_h;
-		if (object_known_p(o_ptr)) state->dis_to_d += o_ptr->to_d;
+		if (object_known_p(o_ptr) || (o_ptr->ident & IDENT_ATTACK))
+		{
+			state->dis_to_h += o_ptr->to_h;
+			state->dis_to_d += o_ptr->to_d;
+		}
 	}
 
 

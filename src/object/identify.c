@@ -122,9 +122,17 @@ static void object_notice_after_time(void)
  */
 void object_notice_on_attack(void)
 {
-	/* Notice: */
-	/* (for ammo) damage and hit bonuses */
-	/* non-warrior types: damage dice and bonuses for weapons */
+	int i;
+
+	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+	{
+		object_type *o_ptr = &inventory[i];
+
+		o_ptr->ident |= IDENT_ATTACK;
+	}
+
+	/* XXX print message? */
+	/* XXX do we need to do more about ammo? */
 
 	return;
 }
