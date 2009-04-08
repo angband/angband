@@ -3450,6 +3450,11 @@ int damcalc(int dice, int sides, aspect dam_aspect)
 			num = dice;
 			break;
 		}
+		case AVERAGE:
+		{
+			num = dice * (sides + 1) / 2;
+			break;
+		}
 	}
 	return (num);
 }
@@ -3517,17 +3522,15 @@ static long eval_blow_effect(int effect, int atk_dam, int rlev)
 		case RBE_EXP_10:
 		case RBE_EXP_20:
 		{
-			atk_dam += 1000 / (rlev + 1);
-/* change inspired by Eddie because exp is infinite
-			atk_dam += 5; */
+			/* change inspired by Eddie because exp is infinite */
+			atk_dam += 5;
 			break;
 		}
 		case RBE_EXP_40:
 		case RBE_EXP_80:
 		{
-			atk_dam += 2000 / (rlev + 1);
-/* as above
-			atk_dam += 10; */
+			/* as above */
+			atk_dam += 10;
 			break;
 		}
 		/*Earthquakes*/
@@ -3571,26 +3574,37 @@ static long eval_max_dam(monster_race *r_ptr)
 	rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);
 
 	/* Assume single resist for the elemental attacks */
-	if (r_ptr->spell_flags[0] & RSF0_BR_ACID) {
-		breath_dam = ((hp / BR_ACID_DIVISOR) > BR_ACID_MAX ? (RES_ACID_ADJ(BR_ACID_MAX, MINIMISE)) : (RES_ACID_ADJ((hp / BR_ACID_DIVISOR), MINIMISE)));
+	if (r_ptr->spell_flags[0] & RSF0_BR_ACID)
+		{
+		breath_dam = (RES_ACID_ADJ(MIN(BR_ACID_MAX,
+			(hp / BR_ACID_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 20;
 		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_ELEC) {
-		breath_dam = ((hp / BR_ELEC_DIVISOR) > BR_ELEC_MAX ? (RES_ELEC_ADJ(BR_ELEC_MAX, MINIMISE)) : (RES_ELEC_ADJ((hp / BR_ELEC_DIVISOR), MINIMISE)));
+	if (r_ptr->spell_flags[0] & RSF0_BR_ELEC)
+		{
+		breath_dam = (RES_ELEC_ADJ(MIN(BR_ELEC_MAX, 
+			(hp / BR_ELEC_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
 		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_FIRE) {
-		breath_dam = ((hp / BR_FIRE_DIVISOR) > BR_FIRE_MAX ? (RES_FIRE_ADJ(BR_FIRE_MAX, MINIMISE)) : (RES_FIRE_ADJ((hp / BR_FIRE_DIVISOR), MINIMISE)));
+	if (r_ptr->spell_flags[0] & RSF0_BR_FIRE)
+		{
+		breath_dam = (RES_FIRE_ADJ(MIN(BR_FIRE_MAX,
+			(hp / BR_FIRE_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
 		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_COLD) {
-		breath_dam = ((hp / BR_COLD_DIVISOR) > BR_COLD_MAX ? (RES_COLD_ADJ(BR_COLD_MAX, MINIMISE)) : (RES_COLD_ADJ((hp / BR_COLD_DIVISOR), MINIMISE)));
+	if (r_ptr->spell_flags[0] & RSF0_BR_COLD)
+		{
+		breath_dam = (RES_COLD_ADJ(MIN(BR_COLD_MAX,
+			(hp / BR_COLD_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
 		}
 	/* Same for poison, but lower damage cap */
-	if (r_ptr->spell_flags[0] & RSF0_BR_POIS) {
-		breath_dam = ((hp / BR_POIS_DIVISOR) > BR_POIS_MAX ? (RES_POIS_ADJ(BR_POIS_MAX, MINIMISE)) : (RES_POIS_ADJ((hp / BR_POIS_DIVISOR), MINIMISE)));
-		if (spell_dam < breath_dam) spell_dam = (breath_dam * 5 / 4) + rlev;
+	if (r_ptr->spell_flags[0] & RSF0_BR_POIS)
+		{
+		breath_dam = (RES_POIS_ADJ(MIN(BR_POIS_MAX,
+			(hp / BR_POIS_DIVISOR)), MINIMISE));
+		if (spell_dam < breath_dam) spell_dam = (breath_dam * 5 / 4)
+			+ rlev;
 		}
 	/*
 	 * Same formula for the high resist attacks
@@ -3598,60 +3612,87 @@ static long eval_max_dam(monster_race *r_ptr)
 	 * so we *minimise* the resistance)
 	 * See also: melee2.c, spells1.c, constants.h
 	 */
-	if (r_ptr->spell_flags[0] & RSF0_BR_NETH) {
-		breath_dam = ((hp / BR_NETH_DIVISOR) > BR_NETH_MAX ? (RES_NETH_ADJ(BR_NETH_MAX, MINIMISE)) : (RES_NETH_ADJ((hp / BR_NETH_DIVISOR), MINIMISE)));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 2000 / (rlev + 1);
+	if (r_ptr->spell_flags[0] & RSF0_BR_NETH)
+		{
+		breath_dam = (RES_NETH_ADJ(MIN(BR_NETH_MAX,
+			(hp / BR_NETH_DIVISOR)), MINIMISE));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 2000
+			/ (rlev + 1);
 		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_CHAO) {
-		breath_dam = ((hp / BR_CHAO_DIVISOR) > BR_CHAO_MAX ? (RES_CHAO_ADJ(BR_CHAO_MAX, MINIMISE)) : (RES_CHAO_ADJ((hp / BR_CHAO_DIVISOR), MINIMISE)));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 2000 / (rlev + 1);
+	if (r_ptr->spell_flags[0] & RSF0_BR_CHAO)
+		{
+		breath_dam = (RES_CHAO_ADJ(MIN(BR_CHAO_MAX,
+			(hp / BR_CHAO_DIVISOR)), MINIMISE));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 2000
+			/ (rlev + 1);
 		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_DISE) {
-		breath_dam = ((hp / BR_DISE_DIVISOR) > BR_DISE_MAX ? (RES_DISE_ADJ(BR_DISE_MAX, MINIMISE)) : (RES_DISE_ADJ((hp / BR_DISE_DIVISOR), MINIMISE)));
+	if (r_ptr->spell_flags[0] & RSF0_BR_DISE)
+		{
+		breath_dam = (RES_DISE_ADJ(MIN(BR_DISE_MAX,
+			(hp / BR_DISE_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 50;
 		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_SHAR) {
-		breath_dam = ((hp / BR_SHAR_DIVISOR) > BR_SHAR_MAX ? (RES_SHAR_ADJ(BR_SHAR_MAX, MINIMISE)) : (RES_SHAR_ADJ((hp / BR_SHAR_DIVISOR), MINIMISE)));
-		if (spell_dam < breath_dam) spell_dam = (breath_dam * 5 / 4) + 5;
+	if (r_ptr->spell_flags[0] & RSF0_BR_SHAR)
+		{
+		breath_dam = (RES_SHAR_ADJ(MIN(BR_SHAR_MAX,
+			(hp / BR_SHAR_DIVISOR)), MINIMISE));
+		if (spell_dam < breath_dam) spell_dam = (breath_dam * 5 / 4)
+			+ 5;
 		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_LITE) {
-		breath_dam = ((hp / BR_LITE_DIVISOR) > BR_LITE_MAX ? (RES_LITE_ADJ(BR_LITE_MAX, MINIMISE)) : (RES_LITE_ADJ((hp / BR_LITE_DIVISOR), MINIMISE)));
+	if (r_ptr->spell_flags[0] & RSF0_BR_LITE)
+		{
+		breath_dam = (RES_LITE_ADJ(MIN(BR_LITE_MAX,
+			(hp / BR_LITE_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
 		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_DARK) {
-		breath_dam = ((hp / BR_DARK_DIVISOR) > BR_DARK_MAX ? (RES_DARK_ADJ(BR_DARK_MAX, MINIMISE)) : (RES_DARK_ADJ((hp / BR_DARK_DIVISOR), MINIMISE)));
+	if (r_ptr->spell_flags[0] & RSF0_BR_DARK)
+		{
+		breath_dam = (RES_DARK_ADJ(MIN(BR_DARK_MAX,
+			(hp / BR_DARK_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
 		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_CONF) {
-		breath_dam = ((hp / BR_CONF_DIVISOR) > BR_CONF_MAX ? (RES_CONF_ADJ(BR_CONF_MAX, MINIMISE)) : (RES_CONF_ADJ((hp / BR_CONF_DIVISOR), MINIMISE)));
+	if (r_ptr->spell_flags[0] & RSF0_BR_CONF)
+		{
+		breath_dam = (RES_CONF_ADJ(MIN(BR_CONF_MAX,
+			(hp / BR_CONF_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 20;
 		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_SOUN) {
-		breath_dam = ((hp / BR_SOUN_DIVISOR) > BR_SOUN_MAX ? (RES_SOUN_ADJ(BR_SOUN_MAX, MINIMISE)) : (RES_SOUN_ADJ((hp / BR_SOUN_DIVISOR), MINIMISE)));
+	if (r_ptr->spell_flags[0] & RSF0_BR_SOUN)
+		{
+		breath_dam = (RES_SOUN_ADJ(MIN(BR_SOUN_MAX,
+			(hp / BR_SOUN_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 20;
 		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_NEXU) {
-		breath_dam = ((hp / BR_NEXU_DIVISOR) > BR_NEXU_MAX ? (RES_NEXU_ADJ(BR_NEXU_MAX, MINIMISE)) : (RES_NEXU_ADJ((hp / BR_NEXU_DIVISOR), MINIMISE)));
+	if (r_ptr->spell_flags[0] & RSF0_BR_NEXU)
+		{
+		breath_dam = (RES_NEXU_ADJ(MIN(BR_NEXU_MAX,
+			(hp / BR_NEXU_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 20;
 		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_TIME) {
-		breath_dam = ((hp / BR_TIME_DIVISOR) > BR_TIME_MAX ? BR_TIME_MAX : (hp / BR_TIME_DIVISOR));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 2000 / (rlev + 1);
+	if (r_ptr->spell_flags[0] & RSF0_BR_TIME)
+		{
+		breath_dam = MIN(BR_TIME_MAX, (hp / BR_TIME_DIVISOR));
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 2000
+			/ (rlev + 1);
 		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_INER) {
-		breath_dam = ((hp / BR_INER_DIVISOR) > BR_INER_MAX ? BR_INER_MAX : (hp / BR_INER_DIVISOR));
+	if (r_ptr->spell_flags[0] & RSF0_BR_INER)
+		{
+		breath_dam = MIN(BR_INER_MAX, (hp / BR_INER_DIVISOR));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 30;
 		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_GRAV) {
-		breath_dam = ((hp / BR_GRAV_DIVISOR) > BR_GRAV_MAX ? BR_GRAV_MAX : (hp / BR_GRAV_DIVISOR));
+	if (r_ptr->spell_flags[0] & RSF0_BR_GRAV)
+		{
+		breath_dam = MIN(BR_GRAV_MAX, (hp / BR_GRAV_DIVISOR));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 30;
 		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_PLAS) {
-		breath_dam = ((hp / BR_PLAS_DIVISOR) > BR_PLAS_MAX ? BR_PLAS_MAX : (hp / BR_PLAS_DIVISOR));
+	if (r_ptr->spell_flags[0] & RSF0_BR_PLAS)
+		{
+		breath_dam = MIN(BR_PLAS_MAX, (hp / BR_PLAS_DIVISOR));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 30;
 		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_WALL) {
-		breath_dam = ((hp / BR_FORC_DIVISOR) > BR_FORC_MAX ? BR_FORC_MAX : (hp / BR_FORC_DIVISOR));
+	if (r_ptr->spell_flags[0] & RSF0_BR_WALL)
+		{
+		breath_dam = MIN(BR_FORC_MAX, (hp / BR_FORC_DIVISOR));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 30;
 		}
 	/* Handle the attack spells, again assuming minimised single resists for max damage */

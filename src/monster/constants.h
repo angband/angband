@@ -42,7 +42,8 @@ typedef enum
 {
 	MAXIMISE,
 	RANDOMISE,
-	MINIMISE
+	MINIMISE,
+	AVERAGE
 } aspect;
 
 int damcalc(int dice, int sides, aspect dam_aspect);
