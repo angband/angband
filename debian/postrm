@@ -129,6 +129,12 @@ case "$1" in
 	    if [ -d /var/games/angband/info ]; then
 		rm -rf /var/games/angband/info
 	    fi
+	    if [ -d /var/games/angband/data ]; then
+		rm -rf /var/games/angband/data
+	    fi
+	    if [ -e /etc/angband/edit/cost_adj.txt ]; then
+		rm /etc/angband/edit/cost_adj.txt
+	    fi
 	    rmdir /var/games/angband 
 	fi	
     ;;

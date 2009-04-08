@@ -98,7 +98,7 @@ debian/stamp/install/angband:
                              ln -s /etc/$(package)/file . ;                 \
                              ln -s /etc/$(package)/pref . ;     )
 	(cd $(GAMEDIR);   mv script help $(LIBDIR)/$(package);    \
-                             ln -s /usr/lib/$(package)/script . ;   \
+#                             ln -s /usr/lib/$(package)/script . ;   \
                              ln -s /usr/lib/$(package)/help   . ;   )
 	for i in bone/delete.me save/delete.me ; do \
             chmod 0644 $(GAMEDIR)/$$i;            \

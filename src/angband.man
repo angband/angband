@@ -106,7 +106,7 @@ save file with the file name
 .I /var/games/angband/save/<UID>Test. 
 The best place to get help is the program itself; help is reached by
 the command
-.B \?
+.B ?
 and presents a menu of choices.
 .PP
 Program options can be set  using the = command. To see what the
