@@ -1,7 +1,7 @@
 Source: angband
 VCS-Git: git://git.debian.org/~srivasta/debian/angband.git
 VCS-Browser: http://git.debian.org/git/users/srivasta/debian/angband.git
-Section: main/games
+Section: games
 Priority: optional
 Maintainer: Manoj Srivastava <srivasta@debian.org>
 Build-Depends: libncurses5-dev | libncurses-dev | ncurses-dev,

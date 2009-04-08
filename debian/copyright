@@ -3,7 +3,7 @@ Fri, 14 Mar 2008 16:08:41 +0000.
 
 It was downloaded from Subversion.
 
-Upstream Author(s): 
+Upstream Author: 
 
 	Andrew Sidwell <takkaria@gmail.com>
 
@@ -38,5 +38,5 @@ License:
      * the font files are under the licences noted in lib/xtra/font/copying.txt,
        all of which are OSI-compliant.
 
-The Debian packaging is (C) 2008, Andrew Sidwell <takkaria@gmail.com> and
+The Debian packaging is Copyright (c) 2008, Andrew Sidwell <takkaria@gmail.com> and
 is licensed under the BSD licence, see `/usr/share/common-licenses/BSD'.

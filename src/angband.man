@@ -85,7 +85,7 @@ Request wizard mode (no high score entry)
 Request graphics mode
 .TP
 .BR \-r
--Rebalance monsters (only if lib/data/monster.raw does not exist)
+Rebalance monsters (only if lib/data/monster.raw does not exist)
 .TP
 .BR \-s<num>  
 Show <num> high scores
@@ -97,11 +97,11 @@ Use your <who> savefile
 Use <sys> core code (e.g. gcu for console mode, x11 or sdl for graphics)
 .TP
 .BR \-d<lib>=<path>  
-Define a 'lib' dir sub-path. Valid values of lib are help info user
+Define a \'lib\' dir sub-path. Valid values of lib are help info user
 bone save data apex xtra edit file
 .PD
 .SH "GETTING STARTED"
-To start with, you can just say angband -uTest, and that creates a
+To start with, you can just say angband \-uTest, and that creates a
 save file with the file name 
 .I /var/games/angband/save/<UID>Test. 
 The best place to get help is the program itself; help is reached by
