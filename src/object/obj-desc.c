@@ -736,7 +736,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 	if (aware && !k_ptr->everseen)
 	{
 		k_ptr->everseen = TRUE;
-		if (OPT(squelch_worthless) && object_value(o_ptr, 1) == 0)
+		if (OPT(squelch_worthless) && k_ptr->cost == 0)
 		{
 			k_ptr->squelch = TRUE;
 			p_ptr->notice |= PN_SQUELCH;
