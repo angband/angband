@@ -93,6 +93,7 @@ ANGFILES = \
 	option.o \
 	randname.o \
 	pathfind.o \
+	prefs.o \
 	player/calcs.o \
 	player/timed.o \
 	player/util.o \

@@ -229,6 +229,10 @@ depgen:
   defines.h option.h types.h object/types.h object/object.h \
   monster/types.h player/types.h player/player.h store.h ui.h z-type.h \
   externs.h
+./prefs.o: prefs.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
+  z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
+  option.h types.h object/types.h object/object.h monster/types.h \
+  player/types.h player/player.h store.h ui.h z-type.h externs.h
 ./player/calcs.o: player/calcs.c angband.h h-basic.h z-file.h h-basic.h z-form.h \
   h-basic.h z-util.h h-basic.h z-virt.h h-basic.h z-rand.h h-basic.h \
   z-term.h h-basic.h ui-event.h z-quark.h z-msg.h h-basic.h config.h \

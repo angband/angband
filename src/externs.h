@@ -1,22 +1,5 @@
-/* File: externs.h */
-
 #ifndef INCLUDED_EXTERNS_H
 #define INCLUDED_EXTERNS_H
-
-/*
- * Copyright (c) 1997 Ben Harrison
- *
- * This software may be copied and distributed for educational, research,
- * and not for profit purposes provided that this copyright and statement
- * are included in all such copies.
- */
-
-
-/*
- * Note that some files have their own header files
- * (z-virt.h, z-util.h, z-form.h, z-term.h, z-rand.h)
- */
-
 
 /*
  * Automatically generated "variable" declarations
@@ -433,6 +416,19 @@ extern int get_angle_to_target(int y0, int x0, int y1, int x1, int dir);
 extern void get_grid_using_angle(int angle, int y0, int x0,
 	int *ty, int *tx);
 extern void run_step(int dir);
+
+/* prefs.c */
+void autoinsc_dump(ang_file *fff);
+void squelch_dump(ang_file *fff);
+void option_dump(ang_file *fff);
+void macro_dump(ang_file *fff);
+void keymap_dump(ang_file *fff);
+void dump_monsters(ang_file *fff);
+void dump_objects(ang_file *fff);
+void dump_features(ang_file *fff);
+void dump_flavors(ang_file *fff);
+void dump_colors(ang_file *fff);
+bool prefs_save(const char *path, void (*dump)(ang_file *), const char *title);
 
 /* randart.c */
 extern errr do_randart(u32b randart_seed, bool full);
