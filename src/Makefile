@@ -8,7 +8,7 @@ HEADERS = $(HDRS) $(INCS)
 OBJECTS = $(ANGFILES) $(MAINFILES) $(ZFILES)
 SOURCES = ${OBJECTS:.o=.c}
 
-SUBDIRS = gtk
+SUBDIRS = gtk monster object player
 
 OBJECTIVE_BINS = angband
 
