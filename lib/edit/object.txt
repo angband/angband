@@ -176,7 +176,7 @@ D: thin cakes are wrapped in leaves and keep their tastiness for months.
 N:16:Second Sight
 G:,:d
 I:80:6:200
-W:0:0:1:0
+W:0:0:1:200
 A:10:1 to 100
 F:EASY_KNOW
 E:TMD_ESP
@@ -184,7 +184,7 @@ E:TMD_ESP
 N:17:Fast Recovery
 G:,:d
 I:80:7:500
-W:0:0:1:0
+W:0:0:1:200
 A:10:1 to 100
 M:70:1d4
 F:EASY_KNOW
@@ -193,7 +193,7 @@ E:CURE_BODY
 N:18:Vigor
 G:,:d
 I:80:8:500
-W:0:0:1:0
+W:0:0:1:200
 A:10:1 to 100
 F:EASY_KNOW
 E:RESTORE_ALL
@@ -201,7 +201,7 @@ E:RESTORE_ALL
 N:19:Clear Mind
 G:,:d
 I:80:9:500
-W:0:0:1:0
+W:0:0:1:200
 A:10:1 to 100
 M:100:1d4
 F:EASY_KNOW
@@ -210,7 +210,7 @@ E:CURE_MIND
 N:20:Emergency
 G:,:d
 I:80:10:500
-W:0:0:1:0
+W:0:0:1:60
 A:10:1 to 100
 M:100:1d4
 F:EASY_KNOW
@@ -219,7 +219,7 @@ E:SHROOM_EMERGENCY
 N:21:Terror
 G:,:d
 I:80:11:500
-W:0:0:1:0
+W:0:0:1:60
 A:10:1 to 100
 M:100:1d4
 F:EASY_KNOW
@@ -228,7 +228,7 @@ E:SHROOM_TERROR
 N:22:Stoneskin
 G:,:d
 I:80:12:500
-W:0:0:1:0
+W:0:0:1:60
 A:10:1 to 100
 M:70:1d4
 F:EASY_KNOW
@@ -238,7 +238,7 @@ D:Its poison turns your skin to stone, albeit briefly.
 N:23:Turbulence
 G:,:d
 I:80:13:500
-W:0:0:1:0
+W:0:0:1:60
 #A:10:1 to 100
 M:70:1d4
 F:EASY_KNOW
@@ -247,7 +247,7 @@ F:EASY_KNOW
 N:24:Debility
 G:,:d
 I:80:14:500
-W:0:0:1:0
+W:0:0:1:20
 A:10:1 to 100
 M:70:1d4
 F:EASY_KNOW
@@ -256,7 +256,7 @@ E:SHROOM_DEBILITY
 N:25:Sprinting
 G:,:d
 I:80:15:500
-W:0:0:1:0
+W:0:0:1:100
 A:1:10 to 100
 M:70:1d4
 F:EASY_KNOW
@@ -265,7 +265,7 @@ E:SHROOM_SPRINTING
 N:26:Purging
 G:,:d
 I:80:16:0
-W:0:0:1:0
+W:0:0:1:60
 A:1:10 to 100
 M:70:1d4
 F:EASY_KNOW
