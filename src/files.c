@@ -1105,7 +1105,7 @@ errr file_character(const char *path, bool full)
 			object_desc(o_name, sizeof(o_name), &st_ptr->stock[i], TRUE, ODESC_FULL);
 			file_putf(fp, "%c) %s\n", I2A(i), o_name);
 
-			object_info_known(&st_ptr->stock[i]);
+			object_info_chardump(&st_ptr->stock[i]);
 		}
 
 		/* Add an empty line */
@@ -1158,18 +1158,9 @@ static void string_lower(char *buf)
  *
  * Return FALSE on "?", otherwise TRUE.
  *
- * Process various special text in the input file, including the "menu"
- * structures used by the "help file" system.
- *
  * This function could be made much more efficient with the use of "seek"
  * functionality, especially when moving backwards through a file, or
  * forwards through a file by less than a page at a time.  XXX XXX XXX
- *
- * Consider using a temporary file, in which special lines do not appear,
- * and which could be pre-padded to 80 characters per line, to allow the
- * use of perfect seeking.  XXX XXX XXX
- *
- * Allow the user to "save" the current file.  XXX XXX XXX
  */
 bool show_file(cptr name, cptr what, int line, int mode)
 {

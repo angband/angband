@@ -71,7 +71,7 @@ static void obj_examine(object_type *o_ptr, int item)
 	screen_save();
 
 	object_info_header(o_ptr);
-	if (!object_info_known(o_ptr))
+	if (!object_info(o_ptr, FALSE))
 		text_out("\n\nThis item does not seem to possess any special abilities.");
 
 	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");

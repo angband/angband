@@ -75,10 +75,10 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix,
 extern const slay_t slay_table[];
 size_t num_slays(void);
 void object_info_header(const object_type *o_ptr);
-bool object_info_known(const object_type *o_ptr);
+
+bool object_info(const object_type *o_ptr, bool full);
 bool object_info_chardump(const object_type *o_ptr);
-bool object_info_full(const object_type *o_ptr);
-bool object_info_store(const object_type *o_ptr);
+bool object_info_spoil(const object_type *o_ptr);
 
 /* obj-make.c */
 void free_obj_alloc(void);

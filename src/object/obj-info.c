@@ -203,6 +203,29 @@ size_t num_slays(void)
 /*** Code that makes use of the data tables ***/
 
 /*
+ * Describe an item's curses.
+ */
+static bool describe_curses(const object_type *o_ptr, u32b f3)
+{
+	if (cursed_p(o_ptr))
+	{
+		if (f3 & TR3_PERMA_CURSE)
+			text_out_c(TERM_L_RED, "Permanently cursed.\n");
+		else if (f3 & TR3_HEAVY_CURSE)
+			text_out_c(TERM_L_RED, "Heavily cursed.\n");
+		else if (object_known_p(o_ptr))
+			text_out_c(TERM_L_RED, "Cursed.\n");
+		else
+			return FALSE;
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+
+/*
  * Describe stat modifications.
  */
 static bool describe_stats(u32b f1, int pval)
@@ -222,7 +245,7 @@ static bool describe_stats(u32b f1, int pval)
 	if (f1 & TR1_SEARCH)
 	{
 		text_out_c((pval > 0) ? TERM_L_GREEN : TERM_RED, "%+i%% ", pval * 5);
-		text_out(" to searching.\n");
+		text_out("to searching.\n");
 	}
 
 	return TRUE;
@@ -328,7 +351,6 @@ static bool describe_misc_magic(u32b f3)
 /*
  * Describe slays and brands on weapons
  */
-
 static bool describe_slays(u32b f1)
 {
 	bool printed = FALSE;
@@ -337,6 +359,7 @@ static bool describe_slays(u32b f1)
 	const char *kill_descs[N_ELEMENTS(slay_table)];
 	const char *brand_descs[N_ELEMENTS(slay_table)];
 	const slay_t *s_ptr;
+
 	size_t x = 0;
 	size_t y = 0;
 	size_t z = 0;
@@ -344,23 +367,17 @@ static bool describe_slays(u32b f1)
 	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
 	{
 		if (f1 & (s_ptr->slay_flag & TR1_SLAY_MASK))
-		{
 			slay_descs[x++] = s_ptr->desc;
-		}
 		else if (f1 & (s_ptr->slay_flag & TR1_KILL_MASK))
-		{
 			kill_descs[y++] = s_ptr->desc;
-		}
 		else if (f1 & (s_ptr->slay_flag & TR1_BRAND_MASK))
-		{
 			brand_descs[z++] = s_ptr->brand;
-		}
 	}
 
 	/* Slays */
 	if (x)
 	{
-		text_out("It is especially deadly to ");
+		text_out("Slays ");
 		info_out_list(slay_descs, x);
 		printed = TRUE;
 	}
@@ -368,7 +385,7 @@ static bool describe_slays(u32b f1)
 	/* Kills */
 	if (y)
 	{
-		text_out("It is a great bane of ");
+		text_out("*Slays* ");
 		info_out_list(kill_descs, y);
 		printed = TRUE;
 	}
@@ -376,10 +393,11 @@ static bool describe_slays(u32b f1)
 	/* Brands */
 	if (z)
 	{
-		text_out("It is branded with ");
+		text_out("Branded with ");
 		info_out_list(brand_descs, z);
 		printed = TRUE;
 	}
+
 	return printed;
 }
 
@@ -507,6 +525,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	else
 		object_flags_known(o_ptr, &f1, &f2, &f3);
 
+	text_out_c(TERM_L_WHITE, "Combat info:\n");
 
 	if (weapon)
 	{
@@ -536,14 +555,10 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 
 		/* Warn about heavy weapons */
 		if (adj_str_hold[state.stat_ind[A_STR]] < o_ptr->weight / 10)
-			text_out_c(TERM_L_RED, "You are too weak to use this weapon effectively!\n");
+			text_out_c(TERM_L_RED, "You are too weak to use this weapon.\n");
 
-		text_out("With this weapon, you would currently get ");
-		text_out_c(TERM_L_GREEN, format("%d ", state.num_blow));
-		if (state.num_blow > 1)
-			text_out("blows per round.  Each blow will do an average damage of ");
-		else
-			text_out("blow per round, averaging a damage of ");
+		text_out_c(TERM_L_GREEN, "%d ", state.num_blow);
+		text_out("blow%s/round.\n", (state.num_blow > 1) ? "s" : "");
 	}
 	else
 	{
@@ -565,9 +580,9 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 		object_flags(j_ptr, &f[0], &f[1], &f[2]);
 		f1 |= f[0];
 
-		text_out("Fired from your current missile launcher, this arrow will hit targets up to ");
+		text_out("Hits targets up to ");
 		text_out_c(TERM_L_GREEN, format("%d", tdis * 10));
-		text_out(" feet away, inflicting an average damage of ");
+		text_out(" feet away.\n");
 	}
 
 	/* Collect slays */
@@ -581,7 +596,8 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 
 		f1 |= (g1 | h1);
 	}
-	
+
+	text_out("Average damage/round: ");
 	
 	cnt = collect_slays(desc, mult, f1);
 	for (i = 0; i < cnt; i++)
@@ -600,11 +616,10 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 			text_out_c(TERM_L_GREEN, "%d", total_dam / 10);
 
 
-		text_out(" against %s, ", desc[i]);
+		text_out(" vs. %s, ", desc[i]);
 	}
 
 	if (cnt) text_out("and ");
-
 
 	/* Include bonus damage in stated average */
 	total_dam = dam + xtra_precrit;
@@ -619,8 +634,9 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	else
 		text_out_c(TERM_L_GREEN, "%d", total_dam / 10);
 
-	text_out(" against normal creatures.\n");
-
+	if (cnt) text_out(" vs. others");
+	text_out(".\n");
+	
 	/* Note the impact flag */
 	if (f3 & TR3_IMPACT)
 		text_out("Sometimes creates earthquakes on impact.\n");
@@ -650,9 +666,7 @@ static bool describe_digger(const object_type *o_ptr, bool full)
 	u32b f1, f2, f3;
 
 	int chances[4]; /* These are out of 1600 */
-	static const char *names[4] = {
-		"rubble", "magma veins", "quartz veins", "granite"
-	};
+	static const char *names[4] = { "rubble", "magma veins", "quartz veins", "granite" };
 
 	if (full)
 		object_flags(o_ptr, &f1, &f2, &f3);
@@ -679,19 +693,19 @@ static bool describe_digger(const object_type *o_ptr, bool full)
 	chances[2] = (st.skills[SKILL_DIGGING] - 20) * 2;
 	chances[3] = (st.skills[SKILL_DIGGING] - 40) * 1;
 
-	text_out("\nWith this item, you can expect to ");
-
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < 4; i++)
+	{
 		int chance = MAX(0, MIN(1600, chances[i]));
 		int decis = chance ? (16000 / chance) : 0;
 
 		if (i == 0 && chance > 0)
-			text_out("clear ");
+			text_out("Clears ");
 		if (i == 3 || (i != 0 && chance == 0))
 			text_out("and ");
 
-		if (chance == 0) {
-			text_out_c(TERM_L_RED, "not affect ");
+		if (chance == 0)
+		{
+			text_out_c(TERM_L_RED, "doesn't affect ");
 			text_out("%s.\n", names[i]);
 			break;
 		}
@@ -712,6 +726,27 @@ static bool describe_digger(const object_type *o_ptr, bool full)
 	}
 
 	return TRUE;
+}
+
+
+static bool describe_food(const object_type *o_ptr, bool subjective)
+{
+	/* Describe boring bits */
+	if ((o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION) &&
+		o_ptr->pval)
+	{
+		/* Sometimes adjust for player speed */
+		int multiplier = extract_energy[p_ptr->state.speed];
+		if (!subjective) multiplier = 10;
+
+		text_out("Nourishes for around ");
+		text_out_c(TERM_L_GREEN, "%d", (o_ptr->pval / 2) * multiplier / 10);
+		text_out(" turns.\n");
+
+		return TRUE;
+	}
+
+	return FALSE;
 }
 
 
@@ -738,19 +773,18 @@ static bool describe_light(const object_type *o_ptr, u32b f3, bool terse)
 	text_out("Radius ");
 	text_out_c(TERM_L_GREEN, format("%d", rad));
 	if (no_fuel && !artifact)
-		text_out(" light.  No fuel required");
+		text_out(" light.  No fuel required.");
 	else if (is_lite && o_ptr->sval == SV_LITE_TORCH)
-		text_out(" light, reduced when running out of fuel");
+		text_out(" light, reduced when running out of fuel.");
 	else
-		text_out (" light");
-	text_out(".");
+		text_out (" light.");
 
 	if (!terse && is_lite && !artifact)
 	{
-		const char *name = (o_ptr->sval == SV_LITE_TORCH) ? "torch" : "lantern";
+		const char *name = (o_ptr->sval == SV_LITE_TORCH) ? "torches" : "lanterns";
 		int turns = (o_ptr->sval == SV_LITE_TORCH) ? FUEL_TORCH : FUEL_LAMP;
 
-		text_out("  Can refill another %s, up to %d turns of fuel.", name, turns);
+		text_out("  Refills other %s up to %d turns of fuel.", name, turns);
 	}
 
 	text_out("\n");
@@ -763,7 +797,8 @@ static bool describe_light(const object_type *o_ptr, u32b f3, bool terse)
 /*
  * Describe an object's activation, if any.
  */
-static bool describe_activation(const object_type *o_ptr, u32b f3, bool full, bool all)
+static bool describe_activation(const object_type *o_ptr, u32b f3, bool full,
+		bool only_artifacts, bool subjective)
 {
 	const object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	const char *desc;
@@ -797,22 +832,22 @@ static bool describe_activation(const object_type *o_ptr, u32b f3, bool full, bo
 	desc = effect_desc(effect);
 	if (!desc) return FALSE;
 
-	if (all == FALSE && !(f3 & TR3_ACTIVATE)) return FALSE;
-
-	text_out("When ");
+	/* Sometimes only print artifact activation info */
+	if (only_artifacts == TRUE && !(f3 & TR3_ACTIVATE))
+		return FALSE;
 
 	if (f3 & TR3_ACTIVATE)
-		text_out("activated");
+		text_out("When activated, it ");
 	else if (effect_aim(effect))
-		text_out("aimed");
-	else if (o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION)
-		text_out("ingested");
+		text_out("When aimed, it ");
+	else if (o_ptr->tval == TV_FOOD)
+		text_out("When eaten, it ");
+	else if (o_ptr->tval == TV_POTION)
+		text_out("When drunk, it ");
 	else if (o_ptr->tval == TV_SCROLL)
-	    text_out("read");
+	    text_out("When read, it ");
 	else
-	    text_out("used");
-
-	text_out(", it ");
+	    text_out("When used, it ");
 
 	/* Print a colourised description */
 	do
@@ -828,15 +863,16 @@ static bool describe_activation(const object_type *o_ptr, u32b f3, bool full, bo
 	if (base || dice || sides)
 	{
 		int min_time, max_time;
-		/* Some artifacts can be activated */
-		text_out("It takes ");
+
+		/* Sometimes adjust for player speed */
+		int multiplier = extract_energy[p_ptr->state.speed];
+		if (!subjective) multiplier = 10;
+
+		text_out("Takes ");
 
 		/* Correct for player speed */
-
-		min_time = (dice*1     + base) *
-			extract_energy[p_ptr->state.speed] / 10;
-		max_time = (dice*sides + base) *
-			extract_energy[p_ptr->state.speed] / 10;
+		min_time = (dice*1     + base) * multiplier / 10;
+		max_time = (dice*sides + base) * multiplier / 10;
 
 		text_out_c(TERM_L_GREEN, "%d", min_time);
 
@@ -846,55 +882,18 @@ static bool describe_activation(const object_type *o_ptr, u32b f3, bool full, bo
 			text_out_c(TERM_L_GREEN, "%d", max_time);
 		}
 
-		text_out(" turns to recharge after use%s.\n",
-			p_ptr->state.speed == 110 ? "" :
-			" at your current speed");
+		text_out(" turns to recharge");
+		if (subjective && p_ptr->state.speed != 110)
+			text_out(" at your current speed");
+
+		text_out(".\n");
 	}
 
 	return TRUE;
 }
 
 
-
-/*
- * Output object information
- */
-static bool object_info_out(const object_type *o_ptr, bool full)
-{
-	u32b f1, f2, f3;
-	bool something = FALSE;
-
-	/* Grab the object flags */
-	if (full)
-		object_flags(o_ptr, &f1, &f2, &f3);
-	else
-		object_flags_known(o_ptr, &f1, &f2, &f3);
-
-
-	if (cursed_p(o_ptr))
-	{
-		if (f3 & TR3_PERMA_CURSE)
-			text_out_c(TERM_L_RED, "Permanently cursed.\n");
-		else if (f3 & TR3_HEAVY_CURSE)
-			text_out_c(TERM_L_RED, "Heavily cursed.\n");
-		else if (object_known_p(o_ptr))
-			text_out_c(TERM_L_RED, "Cursed.\n");
-	}
-
-	if (describe_stats(f1, o_ptr->pval)) something = TRUE;
-	if (describe_slays(f1)) something = TRUE;
-	if (describe_immune(f2)) something = TRUE;
-	if (describe_ignores(f3)) something = TRUE;
-	if (describe_sustains(f2)) something = TRUE;
-	if (describe_misc_magic(f3)) something = TRUE;
-
-	if (something) text_out("\n");
-
-	if (describe_activation(o_ptr, f3, full, TRUE)) something = TRUE;
-	if (describe_light(o_ptr, f3, FALSE)) something = TRUE;
-
-	return something;
-}
+/*** Different ways to present the data ***/
 
 
 /*
@@ -1005,93 +1004,89 @@ void object_info_header(const object_type *o_ptr)
 }
 
 
-bool object_info_chardump(const object_type *o_ptr)
+
+
+/*
+ * Output object information
+ */
+static bool object_info_out(const object_type *o_ptr, bool full, bool terse, bool subjective)
 {
 	u32b f1, f2, f3;
 	bool something = FALSE;
-
+	bool known = object_known_p(o_ptr);
+	
 	/* Grab the object flags */
-	object_flags_known(o_ptr, &f1, &f2, &f3);
+	if (full)
+		object_flags(o_ptr, &f1, &f2, &f3);
+	else
+		object_flags_known(o_ptr, &f1, &f2, &f3);
 
-
-	if (cursed_p(o_ptr))
+	if (!full && !known)
 	{
-		if (f3 & TR3_PERMA_CURSE)
-			text_out_c(TERM_L_RED, "Permanently cursed.\n");
-		else if (f3 & TR3_HEAVY_CURSE)
-			text_out_c(TERM_L_RED, "Heavily cursed.\n");
-		else if (object_known_p(o_ptr))
-			text_out_c(TERM_L_RED, "Cursed.\n");
-	}
-
+		text_out("You do not know the full extent of this item's powers.\n");
+		something = TRUE;
+	}	
+	
+	if (describe_curses(o_ptr, f3)) something = TRUE;
 	if (describe_stats(f1, o_ptr->pval)) something = TRUE;
+	if (describe_slays(f1)) something = TRUE;
 	if (describe_immune(f2)) something = TRUE;
 	if (describe_ignores(f3)) something = TRUE;
 	if (describe_sustains(f2)) something = TRUE;
 	if (describe_misc_magic(f3)) something = TRUE;
+	if (something) text_out("\n");
+	
+	if (describe_activation(o_ptr, f3, full, terse, subjective))
+	{
+		something = TRUE;
+		text_out("\n");
+	}
 
-	if (describe_activation(o_ptr, f3, FALSE, FALSE)) something = TRUE;
-	if (describe_light(o_ptr, f3, TRUE)) something = TRUE;
+	if (subjective && describe_combat(o_ptr, full))
+	{
+		something = TRUE;
+		text_out("\n");
+	}
 
-	/* Describe combat bits */
-	if (describe_combat(o_ptr, FALSE)) something = TRUE;
-	if (describe_digger(o_ptr, FALSE)) something = TRUE;
+	if (!terse && describe_food(o_ptr, subjective)) something = TRUE;
+	if (describe_light(o_ptr, f3, terse)) something = TRUE;
+	if (!terse && subjective && describe_digger(o_ptr, full)) something = TRUE;
 
 	return something;
 }
 
-bool object_info_known(const object_type *o_ptr)
+
+/**
+ * Provide information on an item, including how it would affect the current player's state.
+ * 
+ * \param full should be set if actual player knowledge should be ignored in favour of
+ *              full knowledge.
+ *
+ * \returns TRUE if anything is printed.
+ */
+bool object_info(const object_type *o_ptr, bool full)
 {
-	bool has_info = FALSE;
-
-	has_info = object_info_out(o_ptr, FALSE);
-
-	/* Describe boring bits */
-	if ((o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION) &&
-		o_ptr->pval)
-	{
-		text_out("Provides nourishment for about ");
-		text_out_c(TERM_L_GREEN, "%d", o_ptr->pval / 2);
-		text_out(" turns under normal conditions.\n");
-		has_info = TRUE;
-	}
-
-	if (!object_known_p(o_ptr))
-	{
-		text_out("You do not know the full extent of this item's powers.\n");
-		has_info = TRUE;
-	}
-
-	/* Describe combat bits */
-	if (describe_combat(o_ptr, FALSE)) has_info = TRUE;
-	if (describe_digger(o_ptr, FALSE)) has_info = TRUE;
-
-	return has_info;
+	return object_info_out(o_ptr, full, FALSE, TRUE);
 }
 
-bool object_info_full(const object_type *o_ptr)
+
+/**
+ * Provide information on an item suitable for writing to the character dump - keep it brief.
+ */
+bool object_info_chardump(const object_type *o_ptr)
 {
-	return object_info_out(o_ptr, TRUE);
+	return object_info_out(o_ptr, FALSE, TRUE, TRUE);
 }
 
-bool object_info_store(const object_type *o_ptr)
+
+/**
+ * Provide spoiler information on an item.
+ *
+ * Practically, this means that we should not print anything which relies upon the player's
+ * current state, since that is not suitable for spoiler material.
+ */
+bool object_info_spoil(const object_type *o_ptr)
 {
-	bool has_info = FALSE;
-
-	has_info = object_info_out(o_ptr, TRUE);
-
-	/* Describe boring bits */
-	if ((o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION) &&
-		o_ptr->pval)
-	{
-		text_out("Provides nourishment for about ");
-		text_out_c(TERM_L_GREEN, "%d", o_ptr->pval / 2);
-		text_out(" turns under normal conditions.\n");
-		has_info = TRUE;
-	}
-
-	if (describe_combat(o_ptr, TRUE)) has_info = TRUE;
-	if (describe_digger(o_ptr, TRUE)) has_info = TRUE;
-
-	return has_info;
+	return object_info_out(o_ptr, TRUE, FALSE, FALSE);
 }
+

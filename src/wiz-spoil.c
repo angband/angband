@@ -498,7 +498,7 @@ static void spoil_artifact(cptr fname)
 			spoiler_underline(buf, '-');
 
 			/* Write out the artifact description to the spoiler file */
-			object_info_full(i_ptr);
+			object_info_spoil(i_ptr);
 
 			/*
 			 * Determine the minimum depth an artifact can appear, its rarity,

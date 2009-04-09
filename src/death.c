@@ -352,7 +352,7 @@ static void death_examine(void *unused, const char *title)
 		Term_gotoxy(0, 0);
 
 		object_info_header(o_ptr);
-		if (!object_info_known(o_ptr))
+		if (!object_info(o_ptr, TRUE))
 			text_out("This item does not possess any special abilities.");
 
 		text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
