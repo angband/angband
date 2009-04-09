@@ -32,7 +32,9 @@
  * - launcher multipliers for calculating ammo power
  * (these are halved in the algorithm)
  * - fudge factor for extra damage from rings etc. (used if extra blows)
+ * - assumed damage for ring brands
  * - base power for light sources (additional power for NFUEL is added later)
+ * - base power for jewelry
  * - power per point of damage
  * - power per point of +to_hit
  * - power per point of base AC
@@ -52,6 +54,7 @@
 #define AVG_BOW_MULT            5 /* i.e. 2.5 */
 #define AVG_XBOW_MULT           7 /* i.e. 3.5 */
 #define MELEE_DAMAGE_BOOST      5
+#define RING_BRAND_DMG		9 /* i.e. 3d5 weapon */
 #define BASE_LITE_POWER         6
 #define BASE_JEWELRY_POWER	3
 #define DAMAGE_POWER            4 /* i.e. 2 */
@@ -187,8 +190,9 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 		for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
 		{
 			if ((f1 & s_ptr->slay_flag) &&
-				( (r_ptr->flags[2] & s_ptr->monster_flag) || 
-				 !(r_ptr->flags[2] & s_ptr->resist_flag)) )
+				((r_ptr->flags[2] & s_ptr->monster_flag) || 
+				(s_ptr->brand && !(r_ptr->flags[2] & 
+				s_ptr->resist_flag))))
 			{
 			    mult = s_ptr->mult;
 			}
@@ -349,6 +353,10 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 				}
 			}
 
+			/* Apply the correct slay multiplier */
+			p = (p * slay_power(o_ptr, verbose, log_file)) / tot_mon_power;
+			LOG_PRINT1("Adjusted for slay power, total is %d\n", p);
+
 			if (o_ptr->weight < k_ptr->weight)
 			{
 				p++;
@@ -382,7 +390,6 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 			LOG_PRINT1("Adding power for dam dice, total is %d\n", p);
 
 			/* Apply the correct slay multiplier */
-
 			p = (p * slay_power(o_ptr, verbose, log_file)) / tot_mon_power;
 			LOG_PRINT1("Adjusted for slay power, total is %d\n", p);
 
@@ -474,6 +481,12 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 
 			p += o_ptr->to_d * DAMAGE_POWER;
 			LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
+
+			/* Apply the correct brand multiplier */
+			p += ((o_ptr->to_d + RING_BRAND_DMG)
+				* ((slay_power(o_ptr, verbose, log_file)
+				/ tot_mon_power) - 1));
+			LOG_PRINT1("Adjusted for brand power, total is %d\n", p);
 
 			break;
 		}
