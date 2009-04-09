@@ -21,32 +21,6 @@
 #include "ui-menu.h"
 #include "object/tvalsval.h"
 
-/*
- * The squelch code has a long history.  Originally it started out as a simple
- * sval-dependent item destroyer, but then ego-item and quality squelch was
- * added too, and then squelched items on the dungeon floor were marked by
- * purple dots, and by this time the code was quite unmaintainable and pretty
- * much impossible to work with.
- *
- * Luckily, though, it's been cleaned up.  There is now only sval-dependent
- * squelch and quality-based squelch, and the two don't interact -- quality-based
- * is for items that get pseudo-id'd and sval-dependent is for potions and the
- * like.
- *
- * The squelch code figures most things out itself.  Simply do:
- *     p_ptr->notice |= PN_SQUELCH;
- * whenever you want to make the game check for squelched items.
- *
- * The quality-dependent squelch is much reduced in scope from how it used to
- * be.  If less "general" settings are desired, they can be added easily enough
- * by changing entries in type_tvals[][], adding more TYPE_* constants, and
- * updating type_names.  Savefile compatibility is automatically ensured.
- *
- *
- * The UI code is much cleaner than it was before, but the interface itself
- * still needs some design.  XXX
- */
-
 
 /*
  * List of kinds of item, for pseudo-id squelch.
