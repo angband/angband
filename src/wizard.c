@@ -864,6 +864,29 @@ static void wiz_quantity_item(object_type *o_ptr, bool carried)
 }
 
 
+/**
+ * Tweak the cursed status of an object.
+ *
+ * \param o_ptr is the object to curse or decurse
+ */
+static void wiz_tweak_curse(object_type *o_ptr)
+{
+	if (cursed_p(o_ptr))
+	{
+		msg_print("Resetting existing curses.");
+		o_ptr->flags3 &= ~TR3_CURSE_MASK;
+	}
+
+	if (get_check("Set light curse? "))
+		o_ptr->flags3 |= TR3_LIGHT_CURSE;
+	else if (get_check("Set heavy curse? "))
+		o_ptr->flags3 |= (TR3_LIGHT_CURSE | TR3_HEAVY_CURSE);
+	else if (get_check("Set permanent curse? "))
+		o_ptr->flags3 |= (TR3_LIGHT_CURSE | TR3_HEAVY_CURSE | TR3_PERMA_CURSE);
+}
+
+
+
 
 /*
  * Play with an item. Options include:
@@ -924,7 +947,7 @@ static void do_cmd_wiz_play(void)
 		wiz_display_item(i_ptr);
 
 		/* Get choice */
-		if (!get_com("[a]ccept [s]tatistics [r]eroll [t]weak [q]uantity? ", &ch))
+		if (!get_com("[a]ccept [s]tatistics [r]eroll [t]weak [c]urse [q]uantity? ", &ch))
 			break;
 
 		if (ch == 'A' || ch == 'a')
@@ -932,23 +955,15 @@ static void do_cmd_wiz_play(void)
 			changed = TRUE;
 			break;
 		}
-
-		if (ch == 's' || ch == 'S')
-		{
+		else if (ch == 'c' || ch == 'C')
+			wiz_tweak_curse(i_ptr);
+		else if (ch == 's' || ch == 'S')
 			wiz_statistics(i_ptr, p_ptr->depth);
-		}
-
-		if (ch == 'r' || ch == 'r')
-		{
+		else if (ch == 'r' || ch == 'r')
 			wiz_reroll_item(i_ptr);
-		}
-
-		if (ch == 't' || ch == 'T')
-		{
+		else if (ch == 't' || ch == 'T')
 			wiz_tweak_item(i_ptr);
-		}
-
-		if (ch == 'q' || ch == 'Q')
+		else if (ch == 'q' || ch == 'Q')
 		{
 			bool carried = (item >= 0) ? TRUE : FALSE;
 			wiz_quantity_item(i_ptr, carried);

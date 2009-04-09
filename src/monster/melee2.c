@@ -2853,7 +2853,7 @@ static bool get_moves(int m_idx, int mm[5])
 	/* Monster groups try to surround the player */
 	if (!done && OPT(adult_ai_packs) && (r_ptr->flags[0] & RF0_FRIENDS))
 	{
-		int i, tmp;
+		int i;
 
 		/* If we are not already adjacent */
 		if (m_ptr->cdis > 1)
