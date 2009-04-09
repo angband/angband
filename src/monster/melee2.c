@@ -2853,32 +2853,26 @@ static bool get_moves(int m_idx, int mm[5])
 	/* Monster groups try to surround the player */
 	if (!done && OPT(adult_ai_packs) && (r_ptr->flags[0] & RF0_FRIENDS))
 	{
-		int i;
+		int i, tmp;
 
-		/* Find an empty square near the player to fill */
-		for (i = 0; i < 8; i++)
+		/* If we are not already adjacent */
+		if (m_ptr->cdis > 1)
 		{
-			/* Pick squares near player (semi-randomly) */
-			y2 = py + ddy_ddd[(m_idx + i) & 7];
-			x2 = px + ddx_ddd[(m_idx + i) & 7];
-
-			/* Already there? */
-			if ((m_ptr->fy == y2) && (m_ptr->fx == x2))
+			/* Find an empty square near the player to fill */
+			int tmp = randint0(8);
+			for (i = 0; i < 8; i++)
 			{
-				/* Attack the player */
-				y2 = py;
-				x2 = px;
-
+				/* Pick squares near player (pseudo-randomly) */
+				y2 = py + ddy_ddd[(tmp + i) & 7];
+				x2 = px + ddx_ddd[(tmp + i) & 7];
+				
+				/* Ignore filled grids */
+				if (!cave_empty_bold(y2, x2)) continue;
+				
+				/* Try to fill this hole */
 				break;
 			}
-
-			/* Ignore filled grids */
-			if (!cave_empty_bold(y2, x2)) continue;
-
-			/* Try to fill this hole */
-			break;
 		}
-
 		/* Extract the new "pseudo-direction" */
 		y = m_ptr->fy - y2;
 		x = m_ptr->fx - x2;
