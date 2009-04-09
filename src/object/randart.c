@@ -57,11 +57,15 @@
 
 #define ART_IDX_BOW_SHOTS 0
 #define ART_IDX_BOW_MIGHT 1
+#define ART_IDX_BOW_BRAND 80 
+#define ART_IDX_BOW_SLAY 81
 #define ART_IDX_WEAPON_HIT 2
 #define ART_IDX_WEAPON_DAM 3
 #define ART_IDX_NONWEAPON_HIT 4
 #define ART_IDX_NONWEAPON_DAM 5
 #define ART_IDX_NONWEAPON_HIT_DAM 6
+#define ART_IDX_NONWEAPON_BRAND 78
+#define ART_IDX_NONWEAPON_SLAY 79
 
 #define ART_IDX_MELEE_BLESS 7
 #define ART_IDX_MELEE_BRAND 8
@@ -149,13 +153,13 @@
 #define ART_IDX_NONWEAPON_AGGR 75
 
 /* Total of abilities */
-#define ART_IDX_TOTAL 78
+#define ART_IDX_TOTAL 82
 
 /* Tallies of different ability types */
 /* ToDo: use N_ELEMENTS for these */
-#define ART_IDX_BOW_COUNT 2
+#define ART_IDX_BOW_COUNT 4
 #define ART_IDX_WEAPON_COUNT 3
-#define ART_IDX_NONWEAPON_COUNT 4
+#define ART_IDX_NONWEAPON_COUNT 6
 #define ART_IDX_MELEE_COUNT 9
 #define ART_IDX_ALLARMOR_COUNT 1
 #define ART_IDX_BOOT_COUNT 4
@@ -170,14 +174,14 @@
 /* Arrays of indices by item type, used in frequency generation */
 
 static s16b art_idx_bow[] =
-	{ART_IDX_BOW_SHOTS, ART_IDX_BOW_MIGHT};
+	{ART_IDX_BOW_SHOTS, ART_IDX_BOW_MIGHT, ART_IDX_BOW_BRAND, ART_IDX_BOW_SLAY};
 static s16b art_idx_weapon[] =
 	{ART_IDX_WEAPON_HIT, ART_IDX_WEAPON_DAM, ART_IDX_WEAPON_AGGR};
 static s16b art_idx_nonweapon[] =
 	{ART_IDX_NONWEAPON_HIT, ART_IDX_NONWEAPON_DAM, ART_IDX_NONWEAPON_HIT_DAM,
-	ART_IDX_NONWEAPON_AGGR};
+	ART_IDX_NONWEAPON_AGGR, ART_IDX_NONWEAPON_BRAND, ART_IDX_NONWEAPON_SLAY};
 static s16b art_idx_melee[] =
-	{ART_IDX_MELEE_BLESS, ART_IDX_MELEE_BRAND, ART_IDX_MELEE_SLAY, ART_IDX_MELEE_SINV,
+	{ART_IDX_MELEE_BLESS, ART_IDX_MELEE_SINV, ART_IDX_MELEE_BRAND, ART_IDX_MELEE_SLAY,
 	ART_IDX_MELEE_BLOWS, ART_IDX_MELEE_AC, ART_IDX_MELEE_DICE,
 	ART_IDX_MELEE_WEIGHT, ART_IDX_MELEE_TUNN};
 static s16b art_idx_allarmor[] =
@@ -841,12 +845,18 @@ static void adjust_freqs(void)
 		artprobs[ART_IDX_BOW_MIGHT_SUPER] = 5;
 	if (artprobs[ART_IDX_MELEE_BLOWS_SUPER] < 5)
 		artprobs[ART_IDX_MELEE_BLOWS_SUPER] = 5;
-	if (artprobs[ART_IDX_GEN_SPEED_SUPER] < 3)
-		artprobs[ART_IDX_GEN_SPEED_SUPER] = 3;
+	if (artprobs[ART_IDX_GEN_SPEED_SUPER] < 5)
+		artprobs[ART_IDX_GEN_SPEED_SUPER] = 5;
 	if (artprobs[ART_IDX_GEN_AC] < 5)
 		artprobs[ART_IDX_GEN_AC] = 5;
 	if (artprobs[ART_IDX_GEN_TUNN] < 5)
 		artprobs[ART_IDX_GEN_TUNN] = 5;
+	if (artprobs[ART_IDX_NONWEAPON_BRAND] < 3)
+		artprobs[ART_IDX_NONWEAPON_BRAND] = 3;
+	if (artprobs[ART_IDX_BOW_BRAND] < 3)
+		artprobs[ART_IDX_BOW_BRAND] = 3;
+	if (artprobs[ART_IDX_BOW_SLAY] < 3)
+		artprobs[ART_IDX_BOW_SLAY] = 3;
 
 	/* Cut aggravation frequencies in half since they're used twice */
 	artprobs[ART_IDX_NONWEAPON_AGGR] /= 2;
@@ -929,6 +939,31 @@ static void parse_frequencies(void)
 
 					(artprobs[ART_IDX_BOW_MIGHT])++;
 				}
+			}
+
+			/* Brands or slays - count all together */
+			if (a_ptr->flags1 & (TR1_SLAY_MASK | TR1_BRAND_MASK | TR1_KILL_MASK))
+			{
+				const slay_t *s_ptr;
+
+				/* We have some brands or slays - count them */
+				temp = 0;
+				temp2 = 0;
+
+				for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
+				{
+					if (a_ptr->flags1 & s_ptr->slay_flag)
+					{
+						if (s_ptr->slay_flag & (TR1_SLAY_MASK | TR1_KILL_MASK)) temp++;
+						if (s_ptr->slay_flag & TR1_BRAND_MASK) temp2++;
+					}
+				}
+				LOG_PRINT1("Adding %d for slays\n", temp);
+				LOG_PRINT1("Adding %d for brands\n", temp2);
+
+				/* Add these to the frequency count */
+				artprobs[ART_IDX_BOW_BRAND] += temp2;
+				artprobs[ART_IDX_BOW_SLAY] += temp;
 			}
 		}
 
@@ -1037,26 +1072,8 @@ static void parse_frequencies(void)
 				LOG_PRINT("Adding 1 for aggravation - nonweapon\n");
 				(artprobs[ART_IDX_NONWEAPON_AGGR])++;
 			}
-
-		}
-
-		if (a_ptr->tval == TV_DIGGING || a_ptr->tval == TV_HAFTED ||
-			a_ptr->tval == TV_POLEARM || a_ptr->tval == TV_SWORD)
-		{
-			/* Blessed weapon Y/N */
-
-			if(a_ptr->flags3 & TR3_BLESSED)
-			{
-				LOG_PRINT("Adding 1 for blessed weapon\n");
-
-				(artprobs[ART_IDX_MELEE_BLESS])++;
-			}
-
-			/*
-			 * Brands or slays - count all together
-			 * We will need to add something here unless the weapon has
-			 * nothing at all
-			 */
+			
+			/* Brands or slays - count all together */
 
 			if (a_ptr->flags1 & (TR1_SLAY_MASK | TR1_BRAND_MASK | TR1_KILL_MASK))
 			{
@@ -1078,8 +1095,22 @@ static void parse_frequencies(void)
 				LOG_PRINT1("Adding %d for brands\n", temp2);
 
 				/* Add these to the frequency count */
-				artprobs[ART_IDX_MELEE_BRAND] += temp2;
-				artprobs[ART_IDX_MELEE_SLAY] += temp;
+				artprobs[ART_IDX_NONWEAPON_BRAND] += temp2;
+				artprobs[ART_IDX_NONWEAPON_SLAY] += temp;
+			}
+
+		}
+
+		if (a_ptr->tval == TV_DIGGING || a_ptr->tval == TV_HAFTED ||
+			a_ptr->tval == TV_POLEARM || a_ptr->tval == TV_SWORD)
+		{
+			/* Blessed weapon Y/N */
+
+			if(a_ptr->flags3 & TR3_BLESSED)
+			{
+				LOG_PRINT("Adding 1 for blessed weapon\n");
+
+				(artprobs[ART_IDX_MELEE_BLESS])++;
 			}
 
 			/* See invisible? */
@@ -1151,6 +1182,31 @@ static void parse_frequencies(void)
 				(artprobs[ART_IDX_MELEE_TUNN])++;
 			}
 
+			/* Brands or slays - count all together */
+			if (a_ptr->flags1 & (TR1_SLAY_MASK | TR1_BRAND_MASK | TR1_KILL_MASK))
+			{
+				const slay_t *s_ptr;
+
+				/* We have some brands or slays - count them */
+				temp = 0;
+				temp2 = 0;
+
+				for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
+				{
+					if (a_ptr->flags1 & s_ptr->slay_flag)
+					{
+						if (s_ptr->slay_flag & (TR1_SLAY_MASK | TR1_KILL_MASK)) temp++;
+						if (s_ptr->slay_flag & TR1_BRAND_MASK) temp2++;
+					}
+				}
+				LOG_PRINT1("Adding %d for slays\n", temp);
+				LOG_PRINT1("Adding %d for brands\n", temp2);
+
+				/* Add these to the frequency count */
+				artprobs[ART_IDX_MELEE_BRAND] += temp2;
+				artprobs[ART_IDX_MELEE_SLAY] += temp;
+			}
+
 			/* End of weapon-specific stuff */
 		}
 		else
@@ -1163,6 +1219,7 @@ static void parse_frequencies(void)
 				(artprobs[ART_IDX_GEN_TUNN])++;
 			}
 		}
+		
 		/*
 		 * Count up extra AC bonus values.
 		 * Could also add logic to subtract for lower values here, but it's
@@ -2703,11 +2760,15 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			add_bless_weapon(a_ptr);
 			break;
 
+		case ART_IDX_BOW_BRAND:
 		case ART_IDX_MELEE_BRAND:
+		case ART_IDX_NONWEAPON_BRAND:
 			add_slay(a_ptr, TRUE);
 			break;
 
+		case ART_IDX_BOW_SLAY:
 		case ART_IDX_MELEE_SLAY:
+		case ART_IDX_NONWEAPON_SLAY:
 			add_slay(a_ptr, FALSE);
 			break;
 
