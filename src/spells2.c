@@ -292,56 +292,42 @@ static void uncurse_object(object_type *o_ptr)
 	o_ptr->flags3 &= ~(TR3_CURSE_MASK);
 
 	/* Mark as uncursed */
-	o_ptr->pseudo = INSCRIP_UNCURSED;
+	o_ptr->pseudo = INSCRIP_NULL;
 
 	/* The object has been "sensed" */
-	o_ptr->ident |= (IDENT_SENSE);
+	o_ptr->ident |= IDENT_SENSE;
 }
 
 
 /*
  * Removes curses from items in inventory.
  *
- * Note that Items which are "Perma-Cursed" (The One Ring,
- * The Crown of Morgoth) can NEVER be uncursed.
+ * \param heavy removes heavy curses if true
  *
- * Note that if "all" is FALSE, then Items which are
- * "Heavy-Cursed" (Mormegil, Calris, and Weapons of Morgul)
- * will not be uncursed.
+ * \returns number of items uncursed
  */
-static int remove_curse_aux(int all)
+static int remove_curse_aux(bool heavy)
 {
 	int i, cnt = 0;
 
 	/* Attempt to uncurse items being worn */
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
-		u32b f1, f2, f3;
-
 		object_type *o_ptr = &inventory[i];
 
-		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
-
-		/* Uncursed already */
 		if (!cursed_p(o_ptr)) continue;
 
-		/* Extract the flags */
-		object_flags(o_ptr, &f1, &f2, &f3);
+		/* Heavily cursed items need a special spell */
+		if ((o_ptr->flags3 & TR3_HEAVY_CURSE) && !heavy) continue;
 
-		/* Heavily Cursed Items need a special spell */
-		if (!all && (f3 & (TR3_HEAVY_CURSE))) continue;
+		/* Perma-cursed items can never be removed */
+		if (o_ptr->flags3 & TR3_PERMA_CURSE) continue;
 
-		/* Perma-Cursed Items can NEVER be uncursed */
-		if (f3 & (TR3_PERMA_CURSE)) continue;
-
-		/* Uncurse the object */
+		/* Uncurse, and update things */
 		uncurse_object(o_ptr);
 
-		/* Recalculate the bonuses */
 		p_ptr->update |= (PU_BONUS);
-
-		/* Redraw stuff */
 		p_ptr->redraw |= (PR_EQUIP);
 
 		/* Count the uncursings */

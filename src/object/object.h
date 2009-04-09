@@ -44,7 +44,7 @@ typedef enum
 	INSCRIP_MAGICAL = 6,         /*!< Item with combat bonuses */
 	INSCRIP_EXCELLENT = 7,       /*!< Ego-item */
 	INSCRIP_SPECIAL = 8,         /*!< Artifact */
-	INSCRIP_UNCURSED = 9,        /*!< Item previous cursed, now uncursed */
+	INSCRIP_UNCURSED = 9,        /*!< XXX No longer used */
 	INSCRIP_INDESTRUCTIBLE = 10, /*!< Artifact that was tried to be destroyed */
 
 	INSCRIP_MAX                  /*!< Maximum number of pseudo-ID markers */
