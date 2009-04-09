@@ -53,6 +53,7 @@
 #define AVG_XBOW_MULT           7 /* i.e. 3.5 */
 #define MELEE_DAMAGE_BOOST      5
 #define BASE_LITE_POWER         6
+#define BASE_JEWELRY_POWER	3
 #define DAMAGE_POWER            4 /* i.e. 2 */
 #define TO_HIT_POWER            2 /* i.e. 1 */
 #define BASE_AC_POWER           3 /* i.e. 1.5 */
@@ -465,7 +466,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 		case TV_RING:
 		case TV_AMULET:
 		{
-			LOG_PRINT("Jewellery - adding 0 as base\n");
+			p += BASE_JEWELRY_POWER;
+			LOG_PRINT("Jewellery - adding base power\n");
 
 			p += sign(o_ptr->to_h) * (ABS(o_ptr->to_h) * TO_HIT_POWER);
 			LOG_PRINT1("Adding power for to_hit, total is %d\n", p);
