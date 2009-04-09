@@ -57,9 +57,9 @@ static int rd_item(object_type *o_ptr)
 	/* Pseudo-ID bit */
 	rd_byte(&o_ptr->pseudo);
 
-	/* Fix the field */
-	if (o_ptr->pseudo > 99)
-	    o_ptr->pseudo -= 100;
+	/* 3.1.1 */
+	if (o_ptr->pseudo == INSCRIP_UNCURSED)
+		o_ptr->pseudo = INSCRIP_NULL;
 
 	rd_byte(&o_ptr->number);
 	rd_s16b(&o_ptr->weight);
