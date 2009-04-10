@@ -451,9 +451,9 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 			LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
 
 			/* Apply the correct brand multiplier */
-			p += ((o_ptr->to_d + RING_BRAND_DMG)
-				* ((slay_power(o_ptr, verbose, log_file)
-				/ tot_mon_power) - 1));
+			p += ((((o_ptr->to_d + RING_BRAND_DMG)
+				* slay_power(o_ptr, verbose, log_file))
+				/ tot_mon_power) - (o_ptr->to_d + RING_BRAND_DMG));
 			LOG_PRINT1("Adjusted for brand power, total is %d\n", p);
 
 			if (o_ptr->weight < k_ptr->weight)
@@ -475,9 +475,9 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 			LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
 
 			/* Apply the correct brand multiplier */
-			p += ((o_ptr->to_d + RING_BRAND_DMG)
-				* ((slay_power(o_ptr, verbose, log_file)
-				/ tot_mon_power) - 1));
+			p += ((((o_ptr->to_d + RING_BRAND_DMG)
+				* slay_power(o_ptr, verbose, log_file))
+				/ tot_mon_power) - (o_ptr->to_d + RING_BRAND_DMG));
 			LOG_PRINT1("Adjusted for brand power, total is %d\n", p);
 
 			break;
@@ -495,9 +495,9 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 			LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
 
 			/* Apply the correct brand multiplier */
-			p += ((o_ptr->to_d + RING_BRAND_DMG)
-				* ((slay_power(o_ptr, verbose, log_file)
-				/ tot_mon_power) - 1));
+			p += ((((o_ptr->to_d + RING_BRAND_DMG)
+				* slay_power(o_ptr, verbose, log_file))
+				/ tot_mon_power) - (o_ptr->to_d + RING_BRAND_DMG));
 			LOG_PRINT1("Adjusted for brand power, total is %d\n", p);
 
 			break;
