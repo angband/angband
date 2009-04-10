@@ -57,7 +57,7 @@
 #define AVG_BOW_MULT            5 /* i.e. 2.5 */
 #define AVG_XBOW_MULT           7 /* i.e. 3.5 */
 #define MELEE_DAMAGE_BOOST      5
-#define RING_BRAND_DMG		9 /* i.e. 3d5 weapon */
+#define RING_BRAND_DMG	        9 /* i.e. 3d5 weapon */
 #define BASE_LITE_POWER         6
 #define BASE_JEWELRY_POWER	3
 #define DAMAGE_POWER            4 /* i.e. 2 */
@@ -460,9 +460,9 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 			LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
 
 			/* Apply the correct brand multiplier */
-			p += ((((o_ptr->to_d + RING_BRAND_DMG)
+			p += (((2 * (o_ptr->to_d + RING_BRAND_DMG)
 				* slay_power(o_ptr, verbose, log_file))
-				/ tot_mon_power) - (o_ptr->to_d + RING_BRAND_DMG));
+				/ tot_mon_power) - (2 * (o_ptr->to_d + RING_BRAND_DMG)));
 			LOG_PRINT1("Adjusted for brand power, total is %d\n", p);
 
 			if (o_ptr->weight < k_ptr->weight)
@@ -484,9 +484,9 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 			LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
 
 			/* Apply the correct brand multiplier */
-			p += ((((o_ptr->to_d + RING_BRAND_DMG)
+			p += (((2 * (o_ptr->to_d + RING_BRAND_DMG)
 				* slay_power(o_ptr, verbose, log_file))
-				/ tot_mon_power) - (o_ptr->to_d + RING_BRAND_DMG));
+				/ tot_mon_power) - (2 * (o_ptr->to_d + RING_BRAND_DMG)));
 			LOG_PRINT1("Adjusted for brand power, total is %d\n", p);
 
 			break;
@@ -504,9 +504,9 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 			LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
 
 			/* Apply the correct brand multiplier */
-			p += ((((o_ptr->to_d + RING_BRAND_DMG)
+			p += (((2 * (o_ptr->to_d + RING_BRAND_DMG)
 				* slay_power(o_ptr, verbose, log_file))
-				/ tot_mon_power) - (o_ptr->to_d + RING_BRAND_DMG));
+				/ tot_mon_power) - (2 * (o_ptr->to_d + RING_BRAND_DMG)));
 			LOG_PRINT1("Adjusted for brand power, total is %d\n", p);
 
 			break;
