@@ -594,6 +594,8 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 		object_flags_known(&inventory[INVEN_LEFT], &g1, &g2, &g3);
 		object_flags_known(&inventory[INVEN_RIGHT], &h1, &h2, &h3);
 
+		if (!(f1 == (f1 | g1 | h1))) text_out("Your weapon benefits from a ring brand.\n");
+
 		f1 |= (g1 | h1);
 	}
 
