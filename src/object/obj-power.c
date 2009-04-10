@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "object/tvalsval.h"
 #include "init.h"
+#include "effects.h"
 
 /* Total number of different slay types used
  * ToDo: reduce this to cache only the slays found in ego-item.txt
@@ -717,7 +718,25 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 
 	/*	if (f3 & TR3_PERMA_CURSE) p -= 40; */
 
-	LOG_PRINT1("FINAL POWER IS %d\n", p);
+	/* add power for effect */
+	if (o_ptr->name1)
+	{
+		p += effect_power(a_info[o_ptr->name1].effect);
+		LOG_PRINT1("Adding power for artifact activation, total is %d\n", p);
+	}
+	else
+	{
+		p += effect_power(k_info[o_ptr->k_idx].effect);
+		LOG_PRINT1("Adding power for item activation, total is %d\n", p);
+	}
+
+	/* add tiny amounts for ignore flags */
+	if (f3 & TR3_IGNORE_ACID) p++;
+	if (f3 & TR3_IGNORE_FIRE) p++;
+	if (f3 & TR3_IGNORE_COLD) p++;
+	if (f3 & TR3_IGNORE_ELEC) p++;
+	
+	LOG_PRINT1("After ignore flags, FINAL POWER IS %d\n", p);
 
 	return (p);
 }

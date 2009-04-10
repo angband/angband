@@ -26,6 +26,7 @@ typedef struct
 {
 	u16b index;          /* Effect index */
 	bool aim;            /* Whether the effect requires aiming */
+	u16b power;	     /* Power rating for obj-power.c */
 	const char *desc;    /* Effect description */
 } info_entry;
 
@@ -34,7 +35,7 @@ typedef struct
  */
 static const info_entry effects[] =
 {
-	#define EFFECT(x, y, z)    { EF_##x, y, z },
+	#define EFFECT(x, y, r, z)    { EF_##x, y, r, z },
 	#include "list-effects.h"
 	#undef EFFECT
 };
@@ -49,6 +50,14 @@ bool effect_aim(effect_type effect)
 		return FALSE;
 
 	return effects[effect].aim;
+}
+
+const int effect_power(effect_type effect)
+{
+	if (effect < 1 || effect > EF_MAX)
+		return FALSE;
+
+	return effects[effect].power;
 }
 
 const char *effect_desc(effect_type effect)
