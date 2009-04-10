@@ -47,10 +47,12 @@
  * - inhibiting values for +blows/might/shots/immunities (max is one less)
  * - power per unit pval for each pval ability (except speed)
  * (there is an extra term for multiple pval bonuses)
+ * - additional power for full rbase set (on top of arithmetic progression)
+ * - additional power for full sustain set (ditto)
  */
-#define AVG_SLING_AMMO_DAMAGE  11
-#define AVG_BOW_AMMO_DAMAGE    12
-#define AVG_XBOW_AMMO_DAMAGE   13
+#define AVG_SLING_AMMO_DAMAGE  10
+#define AVG_BOW_AMMO_DAMAGE    11
+#define AVG_XBOW_AMMO_DAMAGE   12
 #define AVG_SLING_MULT          4 /* i.e. 2 */
 #define AVG_BOW_MULT            5 /* i.e. 2.5 */
 #define AVG_XBOW_MULT           7 /* i.e. 3.5 */
@@ -79,6 +81,8 @@
 #define SEARCH_POWER		2
 #define INFRA_POWER		2
 #define TUNN_POWER		2
+#define RBASE_POWER		5 
+#define SUST_POWER		5
 
 /*
  * Table giving speed power ratings
@@ -266,6 +270,10 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 	s32b p = 0;
 	object_kind *k_ptr;
 	int immunities = 0;
+	int misc = 0;
+	int lowres = 0;
+	int highres = 0;
+	int sustains = 0;
 	int extra_stat_bonus = 0;
 	int i;
 	u32b f1, f2, f3;
@@ -640,13 +648,24 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 		LOG_PRINT1("Adding power for " string ", total is %d\n", p); \
 	}
 
-	ADD_POWER("sustain STR",        10, TR2_SUST_STR, 2,);
-	ADD_POWER("sustain INT",         5, TR2_SUST_INT, 2,);
-	ADD_POWER("sustain WIS",         5, TR2_SUST_WIS, 2,);
-	ADD_POWER("sustain DEX",         8, TR2_SUST_DEX, 2,);
-	ADD_POWER("sustain CON",         8, TR2_SUST_CON, 2,);
+	ADD_POWER("sustain STR",         9, TR2_SUST_STR, 2, sustains++);
+	ADD_POWER("sustain INT",         4, TR2_SUST_INT, 2, sustains++);
+	ADD_POWER("sustain WIS",         4, TR2_SUST_WIS, 2, sustains++);
+	ADD_POWER("sustain DEX",         7, TR2_SUST_DEX, 2, sustains++);
+	ADD_POWER("sustain CON",         8, TR2_SUST_CON, 2, sustains++);
 	ADD_POWER("sustain CHR",         1, TR2_SUST_CHR, 2,);
 
+	for (i = 2; i <= sustains; i++)
+	{
+		p += i;
+		LOG_PRINT1("Adding power for multiple sustains, total is %d\n", p);
+		if (i == 5)
+		{
+			p += SUST_POWER;
+			LOG_PRINT1("Adding power for full set of sustains, total is %d\n", p);
+		}
+	}
+	
 	ADD_POWER("acid immunity",      38, TR2_IM_ACID,  2, immunities++);
 	ADD_POWER("elec immunity",      35, TR2_IM_ELEC,  2, immunities++);
 	ADD_POWER("fire immunity",      40, TR2_IM_FIRE,  2, immunities++);
@@ -663,32 +682,55 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 		}
 	}
 
-	ADD_POWER("free action",		14, TR3_FREE_ACT,    3,);
-	ADD_POWER("hold life",			12, TR3_HOLD_LIFE,   3,);
+	ADD_POWER("free action",		14, TR3_FREE_ACT,    3, misc++);
+	ADD_POWER("hold life",			12, TR3_HOLD_LIFE,   3, misc++);
 	ADD_POWER("feather fall",		 1, TR3_FEATHER,     3,);
-	ADD_POWER("permanent light",		 2, TR3_LITE,	     3,);
-	ADD_POWER("see invisible",		10, TR3_SEE_INVIS,   3,);
-	ADD_POWER("telepathy",			40, TR3_TELEPATHY,   3,);
-	ADD_POWER("slow digestion",		 2, TR3_SLOW_DIGEST, 3,);
-	ADD_POWER("resist acid",		 5, TR2_RES_ACID,    2,);
-	ADD_POWER("resist elec",		 6, TR2_RES_ELEC,    2,);
-	ADD_POWER("resist fire",		 6, TR2_RES_FIRE,    2,);
-	ADD_POWER("resist cold",		 6, TR2_RES_COLD,    2,);
-	ADD_POWER("resist poison",		28, TR2_RES_POIS,    2,);
-	ADD_POWER("resist fear",		 6, TR2_RES_FEAR,    2,);
-	ADD_POWER("resist light",		 6, TR2_RES_LITE,    2,);
-	ADD_POWER("resist dark",		16, TR2_RES_DARK,    2,);
-	ADD_POWER("resist blindness",		16, TR2_RES_BLIND,   2,);
-	ADD_POWER("resist confusion",		24, TR2_RES_CONFU,   2,);
-	ADD_POWER("resist sound",		14, TR2_RES_SOUND,   2,);
-	ADD_POWER("resist shards",		 8, TR2_RES_SHARD,   2,);
-	ADD_POWER("resist nexus",		10, TR2_RES_NEXUS,   2,);
-	ADD_POWER("resist nether",		20, TR2_RES_NETHR,   2,);
-	ADD_POWER("resist chaos",		20, TR2_RES_CHAOS,   2,);
-	ADD_POWER("resist disenchantment",	20, TR2_RES_DISEN,   2,);
-	ADD_POWER("regeneration",		 9, TR3_REGEN,	     3,);
+	ADD_POWER("permanent light",		 2, TR3_LITE,	     3, misc++);
+	ADD_POWER("see invisible",		10, TR3_SEE_INVIS,   3, misc++);
+	ADD_POWER("telepathy",			40, TR3_TELEPATHY,   3, misc++);
+	ADD_POWER("slow digestion",		 2, TR3_SLOW_DIGEST, 3, misc++);
+	ADD_POWER("resist acid",		 5, TR2_RES_ACID,    2, lowres++);
+	ADD_POWER("resist elec",		 6, TR2_RES_ELEC,    2, lowres++);
+	ADD_POWER("resist fire",		 6, TR2_RES_FIRE,    2, lowres++);
+	ADD_POWER("resist cold",		 6, TR2_RES_COLD,    2, lowres++);
+	ADD_POWER("resist poison",		28, TR2_RES_POIS,    2, highres++);
+	ADD_POWER("resist fear",		 6, TR2_RES_FEAR,    2, highres++);
+	ADD_POWER("resist light",		 6, TR2_RES_LITE,    2, highres++);
+	ADD_POWER("resist dark",		16, TR2_RES_DARK,    2, highres++);
+	ADD_POWER("resist blindness",		16, TR2_RES_BLIND,   2, highres++);
+	ADD_POWER("resist confusion",		24, TR2_RES_CONFU,   2, highres++);
+	ADD_POWER("resist sound",		14, TR2_RES_SOUND,   2, highres++);
+	ADD_POWER("resist shards",		 8, TR2_RES_SHARD,   2, highres++);
+	ADD_POWER("resist nexus",		10, TR2_RES_NEXUS,   2, highres++);
+	ADD_POWER("resist nether",		20, TR2_RES_NETHR,   2, highres++);
+	ADD_POWER("resist chaos",		20, TR2_RES_CHAOS,   2, highres++);
+	ADD_POWER("resist disenchantment",	20, TR2_RES_DISEN,   2, highres++);
+	ADD_POWER("regeneration",		 9, TR3_REGEN,	     3, misc++);
 	ADD_POWER("blessed",			 1, TR3_BLESSED,     3,);
 	ADD_POWER("no fuel",			 5, TR3_NO_FUEL,     3,);
+
+	for (i = 2; i <= misc; i++)
+	{
+		p += i;
+		LOG_PRINT1("Adding power for multiple misc abilites, total is %d\n", p);
+	}
+
+	for (i = 2; i <= lowres; i++)
+	{
+		p += i;
+		LOG_PRINT1("Adding power for multiple low resists, total is %d\n", p);
+		if (i == 4)
+		{
+			p += RBASE_POWER;
+			LOG_PRINT1("Adding power for full rbase set, total is %d\n", p);
+		}
+	}
+
+	for (i = 2; i <= highres; i++)
+	{
+		p += (i * 2);
+		LOG_PRINT1("Adding power for multiple high resists, total is %d\n", p);
+	}
 
 	if (f3 & TR3_TELEPORT)
 	{
