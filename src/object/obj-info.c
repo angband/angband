@@ -596,7 +596,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 
 		if (!((f1 & TR1_BRAND_MASK) ==
 			((f1 | g1 | h1) & TR1_BRAND_MASK)))
-			text_out("Your weapon benefits from a ring brand.\n");
+			text_out("This weapon benefits from one or more ring brands.\n");
 
 		f1 |= (g1 | h1);
 	}
