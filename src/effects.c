@@ -52,7 +52,7 @@ bool effect_aim(effect_type effect)
 	return effects[effect].aim;
 }
 
-const int effect_power(effect_type effect)
+int effect_power(effect_type effect)
 {
 	if (effect < 1 || effect > EF_MAX)
 		return FALSE;
