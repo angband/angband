@@ -1,0 +1,198 @@
+#! /bin/sh
+#                               -*- Mode: Sh -*- 
+# postrm --- 
+# Author           : Manoj Srivastava ( srivasta@glaurung.green-gryphon.com ) 
+# Created On       : Fri Nov 14 12:22:20 2003
+# Created On Node  : glaurung.green-gryphon.com
+# Last Modified By : Manoj Srivastava
+# Last Modified On : Mon Feb 16 22:57:44 2004
+# Last Machine Used: glaurung.internal.golden-gryphon.com
+# Update Count     : 9
+# Status           : Unknown, Use with caution!
+# HISTORY          : 
+# Description      : 
+# 
+# arch-tag: 56802d51-d980-4822-85c0-28fce19ed430
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+# 
+
+
+# Abort if any command returns an error value
+set -e
+
+package_name=angband
+
+if [ -z "$package_name" ]; then
+    print >&2 "Internal Error. Please report a bug."
+    exit 1;
+fi
+
+# This script is called twice during the removal of the package; once
+# after the removal of the package's files from the system, and as
+# the final step in the removal of this package, after the package's
+# conffiles have been removed.
+# summary of how this script can be called:
+#        * <postrm> `remove'
+#        * <postrm> `purge'
+#        * <old-postrm> `upgrade' <new-version>
+#        * <new-postrm> `failed-upgrade' <old-version>
+#        * <new-postrm> `abort-install'
+#        * <new-postrm> `abort-install' <old-version>
+#        * <new-postrm> `abort-upgrade' <old-version>
+#        * <disappearer's-postrm> `disappear' <r>overwrit>r> <new-version>
+# for details, see http://www.debian.org/doc/debian-policy/ or
+# the debian-policy package
+
+# Ensure the menu system is updated
+[ ! -x /usr/bin/update-menus ] || /usr/bin/update-menus
+
+case "$1" in
+  remove)
+    # This package is being removed, but its configuration has not yet
+    # been purged.
+    :
+
+    # Remove diversion
+    ##: dpkg-divert --package ${package_name} --remove --rename \
+    ##:             --divert /usr/bin/other.real /usr/bin/other
+
+    # ldconfig is NOT needed during removal of a library, only during
+    # installation
+
+    ;;
+  purge)
+    # This package has previously been removed and is now having
+    # its configuration purged from the system.
+    :
+
+    # we mimic dpkg as closely as possible, so we remove configuration
+    # files with dpkg backup extensions too:
+    ### Some of the following is from Tore Anderson:
+    ##: for ext in '~' '%' .bak .dpkg-tmp .dpkg-new .dpkg-old .dpkg-dist;  do
+    ##:     rm -f /etc/${package_name}.conf$ext
+    ##: done
+ 
+    # remove the configuration file itself
+    ##: rm -f /etc/${package_name}.conf
+
+    # and finally clear it out from the ucf database
+    ##: ucf --purge /etc/${package_name}.conf
+
+    # Remove symlinks from /etc/rc?.d
+    ##: update-rc.d ${package_name} remove >/dev/null
+
+    ##: if [ -e /usr/share/debconf/confmodule ]; then
+    ##:     # Purge this package's data from the debconf database.
+    ##:     . /usr/share/debconf/confmodule
+    ##:     db_purge
+    ##: fi
+
+    # This package has previously been removed and is now having
+    # its configuration purged from the system. 
+    ##: for flavour in emacs20 emacs21; do
+    ##:     STARTDIR=/etc/$flavour/site-start.d;
+    ##:     STARTFILE="${package_name}-init.el";
+    ##:     if [ -e "$STARTDIR/20$STARTFILE" ]; then
+    ##:         rm -f "$STARTDIR/20$STARTFILE"
+    ##:     fi
+    ##: done
+
+	if [ -d /var/lib/games/angband/ ]; then
+	    rm -rf /var/lib/games/angband/
+	fi
+	if [ -d /var/games/angband ]; then
+	    if [ -e /var/games/angband/apex/scores.old ]; then
+		rm /var/games/angband/apex/scores.old
+	    fi
+	    if [ -e /var/games/angband/apex/scores.raw ]; then
+		rm /var/games/angband/apex/scores.raw
+	    fi
+	    if [ -d /var/games/angband/apex ]; then
+		rmdir /var/games/angband/apex
+	    fi
+	    if [ -d /var/games/angband/save ]; then
+		rm -rf /var/games/angband/save
+	    fi
+	    if [ -d /var/games/angband/info ]; then
+		rm -rf /var/games/angband/info
+	    fi
+	    if [ -d /var/games/angband/data ]; then
+		rm -rf /var/games/angband/data
+	    fi
+	    if [ -e /etc/angband/edit/cost_adj.txt ]; then
+		rm /etc/angband/edit/cost_adj.txt
+	    fi
+	    rmdir /var/games/angband 
+	fi	
+    ;;
+  disappear)
+    if test "$2" != overwriter; then
+      echo "$0: undocumented call to \`postrm $*'" 1>&2
+      exit 0
+    fi
+    # This package has been completely overwritten by package $3
+    # (version $4).  All our files are already gone from the system.
+    # This is a special case: neither "prerm remove" nor "postrm remove"
+    # have been called, because dpkg didn't know that this package would
+    # disappear until this stage.
+    :
+
+    ;;
+  upgrade)
+    # About to upgrade FROM THIS VERSION to version $2 of this package.
+    # "prerm upgrade" has been called for this version, and "preinst
+    # upgrade" has been called for the new version.  Last chance to
+    # clean up.
+    :
+
+    ;;
+  failed-upgrade)
+    # About to upgrade from version $2 of this package TO THIS VERSION.
+    # "prerm upgrade" has been called for the old version, and "preinst
+    # upgrade" has been called for this version.  This is only used if
+    # the previous version's "postrm upgrade" couldn't handle it and
+    # returned non-zero. (Fix old postrm bugs here.)
+    :
+
+    ;;
+  abort-install)
+    # Back out of an attempt to install this package.  Undo the effects of
+    # "preinst install...".  There are two sub-cases.
+    :
+
+    if test "${2+set}" = set; then
+      # When the install was attempted, version $2's configuration
+      # files were still on the system.  Undo the effects of "preinst
+      # install $2".
+      :
+
+    else
+      # We were being installed from scratch.  Undo the effects of
+      # "preinst install".
+      :
+
+    fi ;;
+  abort-upgrade)
+    # Back out of an attempt to upgrade this package from version $2
+    # TO THIS VERSION.  Undo the effects of "preinst upgrade $2".
+    :
+
+    ;;
+  *) echo "$0: didn't understand being called with \`$1'" 1>&2
+     exit 0;;
+esac
+
+exit 0

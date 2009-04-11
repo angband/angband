@@ -1,0 +1,454 @@
+=== Playing the Game ===
+
+    Most of your interaction with Angband will take the form of "commands".
+Every Angband command consists of an "underlying command" plus a variety of
+optional or required arguments, such as a repeat count, a direction, or the
+index of an inventory object.  Commands are normally specified by typing a
+series of keypresses, from which the underlying command is extracted, along
+with any encoded arguments.  You may choose how the standard "keyboard keys"
+are mapped to the "underlying commands" by choosing one of the two standard
+"keysets", the "original" keyset or the "roguelike" keyset.
+
+    The original keyset is very similar to the "underlying" command set,
+with a few additions (such as the ability to use the numeric "directions" to
+"walk" or the "5" key to "stay still").  The roguelike keyset provides similar
+additions, and also allows the use of the h/j/k/l/y/u/b/n keys to "walk" (or,
+in combination with the shift or control keys, to run or alter), which thus
+requires a variety of key mappings to allow access to the underlying commands
+used for walking/running/altering.  In particular, the "roguelike" keyset
+includes many more "capital" and "control" keys, as shown below.
+
+    Note that any keys that are not required for access to the underlying
+command set may be used by the user to extend the "keyset" which is being
+used, by defining new "keymaps".  To avoid the use of any "keymaps", press
+backslash ("\") plus the "underlying command" key.  This is normally only
+used in "macro" definitions.  You may enter "control-keys" as a caret ("^")
+plus the key (so "^" + "p" yields "^P").
+
+    Some commands allow an optional "repeat count", which allows you to tell
+the game that you wish to do the command multiple times, unless you press a
+key or are otherwise disturbed.  To enter a "repeat count", type '0', followed
+by the numerical count, followed by the command.  You must type "space" before
+entering certain commands.  Skipping the numerical count yields a count of 99.
+An option allows certain commands (open, disarm, alter, etc) to auto-repeat.
+
+    Some commands will prompt for extra information, such as a direction, an
+inventory or equipment item, a spell, a textual inscription, the symbol of a
+monster race, a sub-command, a verification, an amount of time, a quantity,
+a file name, or various other things.  Normally you can hit return to choose
+the "default" response, or escape to cancel the command entirely.
+
+    Some commands will prompt for a spell or an inventory item.  Pressing
+space (or '*') will give you a list of choices.  Pressing "-" (minus) selects
+the item on the floor.  Pressing a lowercase letter selects the given item.
+Pressing a capital letter selects the given item after verification.  Pressing
+a numeric digit '#' selects the first item (if any) whose inscription contains
+"@#" or "@x#", where "x" is the current "underlying command".  You may only
+specify items which are "legal" for the command.  Whenever an item inscription
+contains "!*" or "!x" (with "x" as above) you must verify its selection.
+
+    Some commands will prompt for a direction.  You may enter a "compass"
+direction using any of the "direction keys" shown below.  Sometimes, you may
+specify that you wish to use the current "target", by pressing "t" or "5", or
+that you wish to select a new target, by pressing "*" (see "Target" below).
+
+        Original Keyset Directions       Roguelike Keyset Directions
+
+                 7  8  9                           y  k  u
+                 4     6                           h     l
+                 1  2  3                           b  j  n
+
+
+    Each of the standard keysets provides some short-cuts over the "underlying
+commands".  For example, both keysets allow you to "walk" by simply pressing
+an "original" direction key (or a "roguelike" direction key if you are using
+the roguelike keyset), instead of using the "walk" command plus a direction.
+The roguelike keyset allows you to "run" or "alter" by simply holding the
+shift or control modifier key down while pressing a "roguelike" direction key,
+instead of using the "run" or "alter" command plus a direction.  Both keysets
+allow the use of the "5" key to "stand still", which is most convenient when
+using the original keyset.
+
+    Note that on many systems, it is possible to define "macros" to various
+keys, or key combinations, so that it is often possible to make macros which,
+for example, allow the use of the shift and/or control modifier keys, plus a
+numeric keypad key, to specify the "run" or "alter" command, with the given
+direction, regardless of any keymap definitions, by using the fact that you
+can always, for example, use "\" + "." + "6", to specify "run east".
+
+
+
+=== Original Keyset Command Summary ===
+
+ a  Aim a wand                           A  Activate an artifact
+ b  Browse a book                        B  Bash a door
+ c  Close a door                         C  Character description
+ d  Drop an item                         D  Disarm a trap
+ e  Equipment list                       E  Eat some food
+ f  Fire an item                         F  Fuel your lantern/torch
+ g  Get objects on floor                 G  Gain new spells/prayers
+ h  (unused)                             H  (unused)
+ i  Inventory list                       I  Observe an item
+ j  Jam a door                           J  (unused)
+ k  Destroy an item                      K  (unused)
+ l  Look around                          L  Locate player on map
+ m  Cast a spell                         M  Full dungeon map
+ n  (unused)                             N  (unused)
+ o  Open a door or chest                 O  (unused)
+ p  Pray a prayer                        P  (unused)
+ q  Quaff a potion                       Q  Quit (commit suicide)
+ r  Read a scroll                        R  Rest for a period
+ s  Search for traps/doors               S  Toggle search mode
+ t  Take off equipment                   T  Dig a tunnel
+ u  Use a staff                          U  (unused)
+ v  Throw an item                        V  Version info
+ w  Wear/wield equipment                 W  (unused)
+ x  (unused)                             X  (unused)
+ y  (unused)                             Y  (unused)
+ z  Zap a rod                            Z  (unused)
+ !  Interact with system                ^A  (special - debug command)
+ @  (unused)                            ^B  (unused)
+ #  (unused)                            ^C  (special - break)
+ $  (unused)                            ^D  (unused)
+ %  (unused)                            ^E  Toggle choice window
+ ^  (special - control key)             ^F  Repeat level feeling
+ &  (unused)                            ^G  (unused)
+ *  Target monster or location          ^H  (unused)
+ (  Load screen dump                    ^I  (special - tab)
+ )  Dump screen dump                    ^J  (special - linefeed)
+ {  Inscribe an object                  ^K  (unused)
+ }  Uninscribe an object                ^L  (unused)
+ [  Display visible monster list        ^M  (special - return)
+ ]  Display visible object list         ^N  (unused)
+ -  Walk (flip pickup)                  ^O  (unused)
+ _  Enter store                         ^P  Show previous messages
+ +  Alter grid                          ^Q  (unused)
+ =  Set options                         ^R  Redraw the screen
+ ;  Walk (with pickup)                  ^S  Save and don't quit
+ :  Take notes                          ^T  (unused)
+ '  (unused)                            ^U  (unused)
+ "  Enter a user pref command           ^V  Repeat last command
+ ,  Stay still (with pickup)            ^W  (special - wizard mode)
+ <  Go up staircase                     ^X  Save and quit
+ .  Run                                 ^Y  (unused)
+ >  Go down staircase                   ^Z  (special - borg command)
+ \  (special - bypass keymap)            |  (unused)
+ `  (special - escape)                   ~  Check knowledge
+ /  Identify symbol                      ?  Help
+
+
+
+=== Roguelike Keyset Command Summary ===
+
+ a  Zap a rod (Activate)                 A  Activate an artifact
+ b  (walk - south west)                  B  (run - south west)
+ c  Close a door                         C  Character description
+ d  Drop an item                         D  Disarm a trap or chest
+ e  Equipment list                       E  Eat some food
+ f  Bash a door (force)                  F  Fuel your lantern/torch
+ g  Get objects on floor                 G  Gain new spells/prayers
+ h  (walk - west)                        H  (run - west)
+ i  Inventory list                       I  Observe an item
+ j  (walk - south)                       J  (run - south)
+ k  (walk - north)                       K  (run - north)
+ l  (walk - east)                        L  (run - east)
+ m  Cast a spell                         M  Full dungeon map
+ n  (walk - south east)                  N  (run - south east)
+ o  Open a door or chest                 O  (unused)
+ p  Pray a prayer                        P  Browse a book
+ q  Quaff a potion                       Q  Quit (commit suicide)
+ r  Read a scroll                        R  Rest for a period
+ s  Search for traps/doors               S  Jam a door (Spike)
+ t  Fire an item                         T  Take off equipment
+ u  (walk - north east)                  U  (run - north east)
+ v  Throw an item                        V  Version info
+ w  Wear/wield equipment                 W  Locate player on map (Where)
+ x  Look around                          X  (unused)
+ y  (walk - north west)                  Y  (run - north west)
+ z  Aim a wand (Zap)                     Z  Use a staff (Zap)
+ !  Interact with system                ^A  (special - debug command)
+ @  (unused)                            ^B  (alter - south west)
+ #  Toggle search mode                  ^C  (special - break)
+ $  (unused)                            ^D  Destroy item
+ %  (unused)                            ^E  Toggle choice window
+ ^  (special - control key)             ^F  Repeat level feeling
+ &  (unused)                            ^G  (unused)
+ *  Target monster or location          ^H  (alter - west)
+ (  Load screen dump                    ^I  (special - tab)
+ )  Dump screen dump                    ^J  alter - south)
+ {  Inscribe an object                  ^K  (alter - north)
+ }  Uninscribe an object                ^L  (alter - east)
+ [  Display visible monster list        ^M  (special - return)
+ ]  Display visible object list         ^N  (alter - south east)
+ -  Walk (flip pickup)                  ^O  (unused)
+ _  Enter store                         ^P  Show previous messages
+ +  Alter grid                          ^Q  (unused)
+ =  Set options                         ^R  Redraw the screen
+ ;  Walk (with pickup)                  ^S  Save and don't quit
+ :  Take notes                          ^T  Dig a Tunnel
+ '  (unused)                            ^U  (alter - north east)
+ "  Enter a user pref command           ^V  Repeat last command
+ ,  Run                                 ^W  (special - wizard mode)
+ <  Go up staircase                     ^X  Save and quit
+ .  Stay still (with pickup)            ^Y  (alter - north west)
+ >  Go down staircase                   ^Z  (special - borg command)
+ \  (special - bypass keymap)            |  (unused)
+ `  (special - escape)                   ~  Check knowledge
+ /  Identify symbol                      ?  Help
+
+
+
+=== Special Keys ===
+ 
+        Certain special keys may be intercepted by the operating system or
+the host machine, causing unexpected results.  In general, these special keys
+are control keys, and often, you can disable their special effects.
+
+        If you are playing on a UNIX or similar system, then Ctrl-C will
+interrupt Angband.  The second and third interrupt will induce a warning
+bell, and the fourth will induce both a warning bell and a special message,
+since the fifth will quit the game, after killing your character.  Also,
+Ctrl-Z will suspend the game, and return you to the original command shell,
+until you resume the game with the "fg" command.  There is now a compilation
+option to force the game to prevent the "double ctrl-z escape death trick".
+The Ctrl-\ and Ctrl-D and Ctrl-S keys should not be intercepted.
+ 
+        It is often possible to specify "control-keys" without actually
+pressing the control key, by typing a caret ("^") followed by the key.
+This is useful for specifying control-key commands which might be caught
+by the operating system as explained above.
+
+        Pressing backslash ("\") before a command will bypass all keymaps,
+and the next keypress will be interpreted as an "underlying command" key,
+unless it is a caret ("^"), in which case the keypress after that will be
+turned into a control-key and interpreted as a command in the underlying
+angband keyset.  The backslash key is useful for creating macro actions
+which are not affected by any keymap definitions that may be in force, for
+example, the sequence "\" + "." + "6" will always mean "run east", even if
+the "." key has been mapped to a different underlying command.
+
+        The "0" and "^" and "\" keys all have special meaning when entered
+at the command prompt, and there is no "useful" way to specify any of them
+as an "underlying command", which is okay, since they would have no effect.
+
+        For many input requests or queries, the special character ESCAPE
+will abort the command.  The "[y/n]" prompts may be answered with "y" or
+"n", or escape.  The "-more-" message prompts may be cleared (after reading
+the displayed message) by pressing ESCAPE, SPACE, RETURN, LINEFEED, or by
+any keypress, if the "quick_messages" option is turned on.
+ 
+
+=== Command Counts ===
+ 
+        Some commands can be executed a fixed number of times by preceding
+them with a count.  Counted commands will execute until the count expires,
+until you type any character, or until something significant happens, such
+as being attacked.  Thus, a counted command doesn't work to attack another
+creature.  While the command is being repeated, the number of times left
+to be repeated will flash by on the line at the bottom of the screen.
+
+        To give a count to a command, type 0, the repeat count, and then
+the command.  If you want to give a movement command and you are using the
+original command set (where the movement commands are digits), press space
+after the count and you will be prompted for the command.
+ 
+        Counted commands are very useful for time consuming commands, as
+they automatically terminate on success, or if you are attacked.  You may
+also terminate any counted command (or resting or running), by typing any
+character.  This character is ignored, but it is safest to use a SPACE or
+ESCAPE which are always ignored as commands in case you type the command
+just after the count expires.
+
+        You can tell Angband to automatically use a repeat count of 99
+with commands you normally want to repeat (open, disarm, tunnel, bash,
+alter, etc) by setting the "always_repeat" option.
+ 
+ 
+=== Selection of Objects ===
+ 
+        Many commands will also prompt for a particular object to be used.
+For example, the command to read a scroll will ask you which of the
+scrolls that you are carrying that you wish to read.  In such cases, the
+selection is made by typing a letter of the alphabet.  The prompt will
+indicate the possible letters, and will also allow you to type the key
+"*", which causes all of the available options to be described.  The list
+of choices will also be shown in the Choice window, if you are using a
+windows environment and windows are turned on.  Often you will be able to
+press "/" to select an object from your equipment instead of your
+inventory.  Pressing space once will have the same effect as "*", and
+the second time will cancel the command and run the "i" or "e" command.
+ 
+        The particular object may be selected by an upper case or a lower
+case letter.  If lower case is used, the selection takes place
+immediately.  If upper case is used, then the particular option is
+described, and you are given the option of confirming or retracting that
+choice.  Upper case selection is thus safer, but requires an extra key
+stroke.  Also see the "!*" and "!x" inscriptions, below.
+
+        For many commands, you can also use "-" to select an object on the
+floor where you are standing.  This lets you read scrolls or quaff
+potions, for example, off the dungeon floor without picking them up.
+
+        If you enter a number between 0 and 9, the first item engraved
+with "@#" where "#" is the number you entered will be selected.  For example,
+if you have a shovel engraved with "@0" and you type "w" (for wield) and
+then 0, you will wield the shovel.  This is very useful for macros (see
+below), since you can use this to select an object regardless of its
+location in your pack.  For example, Angband automatically defines a macro
+for the key "X" to do "w0".  If you then engrave both your digging
+instrument and your primary weapon with @0, pressing X will wield
+whichever one is not being currently wielded (letting you quickly switch
+between them).  Multiple numbers can be engraved on the same object; for
+example, if a sword is engraved with @1@0, then either "w1" or "w0" will
+wield it.  Normally, you inscribe "@1@0" on your primary weapon, and
+"@2@0" on your digger or secondary weapon.  Note that an inscription
+containing "@x#" will act like "@#" but only when the current "Angband
+command" is "x".  Thus you can put "@z4" on a rod and "@u4" on a staff,
+and then use both "z4" and "u4" as desired.
+
+        Note that any object containing "!x" in its inscription, where
+"x" is the current "angband command" (or containing "!*" ever) will induce
+"verification" whenever that object is "selected".  Thus, inscribing, say,
+"!f!k!d" on an object will greatly reduce the odds of you "losing" it by
+accident, and inscribing "!*" on an object will allow you to be very paranoid
+about the object.  Note that "selling" and "dropping" both use the "d" command.
+
+
+=== User Pref Files ===
+
+        Angband allows you to change various aspects of the game to suit
+your tastes.  You may define keymaps (changing the way Angband maps your
+keypresses to underlying commands), create macros (allowing you to map a
+single keypress to a series of keypresses), modify the visuals (allowing
+you to change the appearance of monsters, objects, or terrain features),
+change the colors (allowing you to make a given color brighter, darker,
+or even completely different), or set options (turning them off or on).
+
+        Angband stores your preferences in files called "user pref files",
+which contain comments and "user pref commands", which are simple strings
+describing one aspect of the system about which the user has a preference.
+There are many ways to load a user pref file, and in fact, some of these
+files are automatically loaded for you by the game.  All of the files are
+kept in the "lib/user/" directory, though you may have to use one of the
+command line arguments to redirect this directory, especially on multiuser
+systems.  You may also enter single user pref commands directly, using the
+special "Enter a user pref command" command, activated by "double quote".
+You may have to use the "redraw" command (^R) after changing certain of
+the aspects of the game, to allow Angband to adapt to your changes.
+
+        When the game starts up, after you have loaded an old character,
+or created a new character, some user pref files are loaded automatically.
+First, the "pref.prf" file is loaded.  This file contains some user pref
+commands which will work on all platforms.  Then one of "font-xxx.prf"
+(for normal usage) or "graf-xxx.prf" (for bitmap usage) is loaded.  These
+files contain attr/char changes to allow the monsters, objects, and/or
+terrain features to look "better" on your system.  Then the "pref-xxx.prf"
+file is loaded.  This file contains pre-defined system specific stuff
+(macros, color definitions, etc).  Then, the "user-xxx.prf" file is loaded.
+This file contains user-defined system specific stuff.  The "user-xxx.prf"
+file is used as the "default" user pref file in many places.  The "xxx" is
+the "system suffix" for your system, taken from the "main-xxx.c" file which
+was used to generate your executable.  Finally, the "Race.prf", "Class.prf",
+and "Name.prf" files are loaded, where "Race", "Class", and "Name" are
+replaced by the actual race, class, and name of the current character.
+
+        Several commands allow you to both load existing user pref files,
+create new user pref files, append information to existing user pref files,
+and/or interact with various of the user preferences in a more intuitive
+way than the user pref commands allow.  The commands include "Interact with
+macros" (@), "Interact with visuals" (%), and "Interact with colors" (&),
+described below.
+
+--- User Pref Files (Macros) ---
+
+        The "Interact with macros" command allows you to define or remove
+"macros", which are mappings from a single logical keypress to a sequence
+of keypresses, allowing you to use special keys on the keyboard, such as
+function keys or keypad keys, possibly in conjunction with modifier keys,
+to "automate" repetitive multi-keypress commands that you use a lot.
+
+        Since macros represent keypress sequences, and not all keypresses
+have a printable representation, macro triggers and actions must often be
+"encoded" into a human readible form.  This is done using several types
+of encoding, including "\xHH" for character number HH in hexidecimal, "\e"
+for the "escape" code, "\n" for the "newline" code, "\r" for the "return"
+code, "\s" for the "space" code, "\\" for backslash, "\^" for caret, and
+"^X" for the code for any "control" key "ctrl-X".  Note that the "action"
+of a macro will not be checked against other macro triggers (unless the
+macro action contains a "control-backslash"), so you cannot make infinite
+loops.  You may specify extremely long macros, but you are limited in
+length by the underlying input mechanisms, which in general limit you
+to about 1024 keys in both triggers and actions.
+
+        The special "\" command (which must be encoded in macros as "\\")
+is very useful in macros, since it bypasses all keymaps and allows the next
+keystroke to be considered a command in the underlying Angband command set.
+For a list of the Angband command set, see the "command.txt" help file.
+For example, a macro which maps Shift-KP6 to "\" + "." + "6" will induce
+the "run east" behavior, regardless of what keyset the user has chosen, and
+regardless of what keymaps have been defined.
+
+	Macros can be specified in user pref files as a pair of lines, one
+of the form "A:<str>", which defines the encoded macro action, and one of
+the form "P:<str>", which defines the encoded macro trigger.
+
+--- User Pref Files (Keymaps) ---
+
+        The "Interact with macros" command also allows you to define
+"keymaps", which are vaguely related to macros.  A keymap maps a single
+keypress to a series of keypresses, which bypass both other keymaps and
+any macros.  Angband uses keymaps to map the original and the roguelike
+keysets to the underlying command set, and allows the user to modify or
+add keymaps of their own.  Note that all keymap actions must be specified
+using underlying commands, not keypresses from the original or roguelike
+keysets.  The original keyset is almost identical to the underlying keyset,
+except that "numbers" are mapped to ";" plus a direction, "5" is mapped to
+",", and a few control-keys are mapped to various things.  See "command.txt"
+for the full set of underlying commands.  Some uses for keymaps include the
+ability to "disable" a command by mapping it to "\x00", 
+
+	Keymaps can be specified in user pref files as line of the form
+"M:<T> <key> <str>", where <T> is the keyset (0/1 for original/roguelike),
+<key> is the encoded trigger key, and <str> is the encoded keymap action.
+
+--- User Pref Files (Visuals) ---
+
+        You can use the "Interact with visuals" command to change various
+visual information, currently including the choice of what attr/char values
+are used to represent various monsters, objects, or terrain features.  Note
+that in combination appropriate support in "main-xxx.c", and with the use of
+the "use_graphics" flag, you may be able to specify that "graphic bitmaps"
+should be used instead of normal "colored characters" for various things.
+
+        When interactively modifying the attr/char values for monsters,
+objects, or terrain features, pressing "n" or "N" will change which entry
+you are changing, pressing "a" or "A" will rotate through the available
+attr values, and pressing "c" or "C" will rotate though the available char
+values.  Note that attr/char values with the "high bit" set may induce the
+display of special "graphic" pictures if the "use_graphics" flag is set,
+and your system supports the "use_graphics" flag.
+
+        Note that this command can be abused in various ways, and if you
+must do so, remember that you are only cheating yourself.
+
+	Keymaps can be specified in user pref files as line of the form
+"R:<N>:<A>/<C>" or "K:<N>:<A>/<C>" or "F:<N>:<A>/<C>" or "U:<N>:<A>/<C>".
+
+--- User Pref Files (Colors) ---
+
+        The "Interact with colors" command allows you to change the actual
+internal values used to display various colors.  This command may or may
+not have any effect on your machine.  Advanced machines may allow you to
+change the actual RGB values used to represent each of the 16 colors used
+by Angband, and perhaps even allow you to define new colors which are not
+currently used by Angband.
+
+	Colors can be specified in user pref files as line of the form
+"V:<N>:<V>:<R>:<G>:<B>".
+
+--- User Pref Files (Options) ---
+
+        The "Interact with options" command allows you to turn options
+on or off.  You may turn options off or on using the user pref commands
+of the form "X:<option>" or "Y:<option>" respectively.
+

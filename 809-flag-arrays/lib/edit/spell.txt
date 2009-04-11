@@ -1,0 +1,688 @@
+# File: spell.txt
+
+
+# This file is used to initialize the "lib/data/spell.raw" file, which is
+# used to initialize the "spell" information for the Angband game.
+
+# Do not modify this file unless you know exactly what you are doing,
+# unless you wish to risk possible system crashes and broken savefiles.
+# After modifying this file, delete the "lib/data/ego_item.raw" file.
+
+# The spell indexes are defined in "x-spell.c", and must not be changed
+# or savefile compatibility will be lost.
+
+# Note that several "spell" types may share the same "textual name".
+# For example, the spell "Detect Monsters" appears in both a mage
+# book and a priest book; some curing spells appear in two seperate
+# priest books (and might not even have the exact same effect!)
+
+# === Understanding spell.txt ===
+
+# N: serial number : spell name
+# I: tval : sval : snum
+# D: description
+
+# 'N' indicates the beginning of an entry. The serial number must
+# increase for each new spell.
+
+# 'I' is for basic information. The tval identifies the type of
+# the spell- or prayerbook. The sval identifies the book number,
+# and the snum is the spell number within the book.
+
+# 'D' is for description. As many D: lines may be used as are needed
+# to describe the spell. Note that lines will need spaces at their
+# ends or the beginning of the next line to prevent words from running
+# together.
+
+
+# Version stamp (required)
+
+V:3.0.11
+
+
+# Mage spells 0 through 63
+
+N:0:Magic Missile
+I:90:0:0
+D:Fires a magic missile that always hits its target and does
+D: unresistable damage.
+D:  Sometimes a beam is fired instead that hurts each monster
+D: in its path.
+D:  The chance to get a beam goes up with your character level.
+
+N:1:Detect Monsters
+I:90:0:1
+D:Detects all non-invisible monsters in the immediate area,
+D: for one turn only.
+
+N:2:Phase Door
+I:90:0:2
+D:Teleports you randomly up to 10 squares away.
+
+# Damage should probably be displayed on screen
+N:3:Light Area
+I:90:0:3
+D:Lights up all squares in a level-dependant area, and hurts
+D: all light-sensitive monsters in the area of effect.
+D:  If you are in a room, the entire room will be lit up as well.
+
+N:4:Find Hidden Traps/Doors
+I:90:0:7
+D:Detects all traps, doors, and stairs in the immediate area.
+
+N:5:Cure Light Wounds
+I:90:0:5
+D:Cures 2d8 points of damage and heals 15 points worth of cuts.
+
+N:6:Detect Treasure
+I:90:0:4
+D:Detects all treasure in the immediate area.
+
+N:8:Identify
+I:90:2:5
+D:Reveals the powers of an object.
+
+N:9:Detect Invisible
+I:90:2:6
+D:Detects all invisible monsters in the immediate area,
+D: for one turn only.
+
+N:10:Detect Enchantment
+I:90:3:5
+D:Detects all enchanted objects in the immediate area.
+D:  Enchanted objects include artifacts, ego items, amulets, rings,
+D: staffs, wands, rods, scrolls, potions, spellbooks, and all items
+D: that give a bonus to-hit, to-dam, or to AC.
+
+N:11:Stinking Cloud
+I:90:0:8
+D:Shoots a radius-2 poison ball.
+
+N:12:Lightning Bolt
+I:90:1:1
+D:Fires a lightning beam that hurts each monster in its path.
+
+N:13:Confuse Monster
+I:90:1:0
+D:Attempts to confuse a single monster for a level-dependant duration.
+D:  Uniques and monsters that resist confusion are not affected.
+
+N:14:Sleep Monster
+I:90:1:4
+D:Attempts to put to sleep a single monster.
+D:  Uniques and monsters that resist confusion are not affected.
+
+N:15:Wonder
+I:90:1:8
+D:Invokes a random spell effect.
+
+N:16:Frost Bolt
+I:90:1:7
+D:Fires a frost bolt that always hits its target.
+D:  Sometimes a beam is fired instead that hurts each monster
+D: in its path.
+D:  The chance to get a beam goes up with your character level.
+
+N:17:Acid Bolt
+I:90:2:7
+D:Fires an acid bolt that always hits its target.
+D:  Sometimes a beam is fired instead that hurts each monster
+D: in its path.
+D:  The chance to get a beam goes up with your character level.
+
+N:18:Fire Bolt
+I:90:2:3
+D:Fires a fire bolt that always hits its target.
+D:  Sometimes a beam is fired instead that hurts each monster
+D: in its path.
+D:  The chance to get a beam goes up with your character level.
+
+N:19:Trap/Door Destruction
+I:90:1:2
+D:Destroys all traps and doors within a 1-square radius of you.
+
+N:20:Spear of Light
+I:90:1:6
+D:Fires a beam that lights up each square and hurts each
+D: light-sensitive monster in its path.
+
+N:21:Turn Stone to Mud
+I:90:2:2
+D:Produces a beam that destroys the first section of wall it hits,
+D: unless it is a permanent wall.  Each monster caught in the beam that
+D: is susceptible to rock remover takes 20+1d30 points of damage.
+
+N:22:Door Creation
+I:90:6:0
+D:A door is created on each empty floor space that is directly
+D: adjacent to you.  These doors are closed, but not locked
+
+N:23:Earthquake
+I:90:8:0
+D:Causes a 10-square radius earthquake around you.
+D:  Earthquakes may damage monsters and destroy items in some
+D: squares in the area of effect.
+D:  Artifacts will not be destroyed by this spell.
+D:  This spell has no effect when used in the town.
+
+N:24:Stair Creation
+I:90:6:1
+D:A stair (going up or down, chosen at random) is created on the space
+D: where you are standing.  This will destroy any terrain feature that
+D: was there before.  It will also destroy all items currently on the
+D: floor where the spell is cast.
+
+N:25:Cure Poison
+I:90:1:3
+D:Neutralizes poison.
+
+N:26:Satisfy Hunger
+I:90:2:0
+D:Magically renders you well-fed (but not satiated).
+D:  This will also cure a bloated stomach.
+
+N:27:Heroism
+I:90:7:0
+D:Cures 10 points of damage, removes fear and grants you heroism
+D: (resistance to fear, and a bonus of +12 to-hit) for 25+1d25 turns.
+
+N:28:Berserker
+I:90:7:1
+D:Cures 30 points of damage, removes fear, and grants you berserk
+D: strength (resistance to fear, a bonus of +12 to-hit, and a penalty
+D: of -10 to AC) for 25+1d25 turns.
+
+N:29:Haste Self
+I:90:3:2
+D:Hastes you (+10 to speed) for a level-dependant duration.
+
+N:30:Teleport Self
+I:90:1:5
+D:Teleports you randomly within the current level.
+
+N:31:Slow Monster
+I:90:2:8
+D:Attempts to slow a single monster.
+D:  Uniques are not affected.
+
+N:32:Teleport Other
+I:90:3:1
+D:Produces a beam that teleports each monster in its path
+D: up to 100 squares away.
+
+N:33:Teleport Level
+I:90:6:2
+D:Teleports you 1 level up or 1 level down (chosen at random).
+D:  This spell has no effect when the option to restrict the use of
+D: stairs and recall is set.
+
+N:34:Word of Recall
+I:90:6:3
+D:Teleports you from the dungeon to the town or from the town to the
+D: deepest level you have visited in the dungeon.
+
+D:  The recall effect is not immediate; it is delayed by 14+1d20 turns.
+D:  During that delay, the spell can be canceled by invoking the spell
+D: of recall again.
+D:  This spell has no effect when the option to restrict the use of
+D: stairs and recall is set, unless Morgoth is dead.
+
+N:35:Polymorph Other
+I:90:2:4
+D:Attempts to polymorph a single monster.
+D:  Uniques are not affected.
+
+N:36:Shock Wave
+I:90:5:0
+D:Shoots a radius-2 sound ball.
+D:  Apart from doing sound damage, this also has a chance to stun
+D: each monster in the area of effect.
+
+N:37:Explosion
+I:90:5:1
+D:Shoots a radius-2 shards ball.
+
+N:38:Cloudkill
+I:90:5:2
+D:Shoots a radius-3 poison ball.
+
+N:39:Mass Sleep
+I:90:3:3
+D:Attempts to put to sleep each monster within line of sight.
+D:  Uniques and monsters that resist confusion are not affected.
+
+N:40:Bedlam
+I:90:8:1
+D:Shoots a radius-4 confusion ball that doesn't cause physical
+D: damage but has a chance to confuse each monster in the area of effect.
+D:  Uniques or monsters that resist confusion are not affected.
+
+N:41:Rend Soul
+I:90:8:2
+D:Fires a nether bolt that always hits its target.
+D:  Sometimes a beam is fired instead that hurts each monster
+D: in its path.
+D:  The chance to get a beam goes up with your character level.
+
+N:42:Word of Destruction
+I:90:8:4
+D:Destroys everything in a 15-square radius circle around you.
+D:  All monsters, objects, and terrain features in the area of
+D: effect are destroyed, except stairs, permanent walls and
+D: artifacts.
+D:  You will also be blinded for 10+1d10 turns, unless you
+D: have resistance to blindness or light.
+D:  This spell has no effect when used in the town.
+
+N:43:Chaos Strike
+I:90:8:6
+D:Fires a chaos bolt that always hits its target.
+D:  Sometimes a beam is fired instead that hurts each monster
+D: in its path.
+D:  The chance to get a beam goes up with your character level.
+
+N:44:Resist Cold
+I:90:4:0
+D:Grants you resistance to cold for 20+1d20 turns.
+
+N:45:Resist Fire
+I:90:4:1
+D:Grants you resistance to fire for 20+1d20 turns.
+
+N:46:Resist Poison
+I:90:4:2
+D:Grants you resistance to poison for 20+1d20 turns.
+
+N:47:Resistance
+I:90:4:3
+D:Grants you resistance to acid, cold, fire, lightning, and poison for
+D: 20+1d20 turns.  
+
+N:48:Shield
+I:90:4:4
+D:Grants you +50 to AC for 30+1d20 turns.
+
+N:49:Rune of Protection
+I:90:6:4
+D:Inscribes a glyph of warding beneath you.
+D:  Summoned monsters can't appear on the glyph.
+D:  If a monster attempts to move onto the glyph or melee you while you
+D: are standing on the glyph, it must first succeed in breaking the glyph.
+D:  Higher level monsters are more likely to break the glyph.
+D:  The glyph will remain where it is, until a monster succeeds in
+D: breaking it, or until you leave the level.
+
+N:50:Lesser Recharging
+I:90:2:1
+D:Adds charges to a stack of wands or staves.
+D:  Chance of success and number of charges gained increase with your
+D: level and decrease with level of wand or staff and number of charges.
+D:  A failed attempt to recharge destroys one wand or staff from the stack.
+
+N:51:Enchant Armor
+I:90:7:2
+D:Attempts to improve the armour class bonus of a piece of armour.
+
+N:52:Enchant Weapon
+I:90:7:3
+D:Attempts to improve the to-hit bonus and the to-dam bonus of a weapon.
+
+N:53:Greater Recharging
+I:90:7:4
+D:Adds charges to a stack of wands or staves.
+D:  Chance of success and number of charges gained increase with your
+D: level and decrease with level of wand or staff and number of charges,
+D: but are overall much better than for the spell Lesser Recharging.
+D:  A failed attempt to recharge destroys one wand or staff from the stack.
+
+N:54:Elemental Brand
+I:90:7:5
+D:Brands one stack of ammunition with fire, cold, or poison
+D: (selected at random) and at the same time attempts to improve
+D: the to-hit bonus and the to-dam bonus of the same ammunition.
+D:  The spell has no effect if the ammunition is already branded, has a
+D: slay, is broken, or is cursed.
+
+N:55:Frost Ball
+I:90:3:0
+D:Shoots a radius-2 frost ball.
+
+N:56:Acid Ball
+I:90:5:3
+D:Shoots a radius-2 acid ball.
+
+N:57:Fire Ball
+I:90:3:4
+D:Shoots a radius-2 fire ball.
+
+N:58:Ice Storm
+I:90:5:4
+D:Shoots a radius-3 cold ball.
+
+N:59:Banishment
+I:90:8:3
+D:Removes all monsters represented by a chosen symbol from the level.
+D:  Uniques are not affected.
+D:  You take 1d4 points of damage for every monster removed.
+
+N:60:Meteor Swarm
+I:90:5:5
+D:Shoots a swarm of 3 or 4 meteors.
+D:  Meteors will travel until hitting a wall, a monster,
+D: or reaching the target location.
+D:  Meteors will explode as a radius-1 ball that does unresistable
+D: damage to each monster in its area of effect.
+D:  If this kills the monster that blocked the path to the target
+D: location, the next meteor may continue to find another target.
+
+N:61:Mass Banishment
+I:90:8:5
+D:Removes all monsters within 20 squares of you.
+D:  Uniques are not affected.
+D:  You take 1d3 points of damage for every monster removed.
+
+N:62:Rift
+I:90:5:6
+D:Fires a gravity beam that hurts each monster in its path
+D: and has a chance of teleporting it away.
+
+N:63:Mana Storm
+I:90:8:7
+D:Shoots a radius-3 mana ball that does unresistable
+D: damage to each monster in its area of effect.
+
+
+# Priest prayers 0 through 57 - numbered 64 through 121 here
+
+N:64:Detect Evil
+I:91:0:0
+D:Detects all evil monsters in the immediate area,
+D: for one turn only.
+
+N:65:Cure Light Wounds
+I:91:0:1
+D:Cures 2d10 points of damage and heals 10 points worth of cuts.
+
+N:66:Bless
+I:91:0:2
+D:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 12+1d12 turns.
+
+N:67:Remove Fear
+I:91:0:3
+D:Removes fear.
+
+# Damage should probably be displayed on screen
+N:68:Call Light
+I:91:0:4
+D:Lights up all squares in a level-dependant area, and hurts
+D: all light-sensitive monsters in the area of effect.
+D:  If you are in a room, the entire room will be lit up as well.
+
+N:69:Find Traps
+I:91:0:5
+D:Detects all traps in the immediate area.
+
+N:70:Detect Doors/Stairs
+I:91:0:6
+D:Detects all doors, and stairs in the immediate area.
+
+N:71:Slow Poison
+I:91:0:7
+D:Halves the remaining duration of any current poisoning.
+
+N:72:Scare Monster
+I:91:1:0
+D:Attempts to scare a single monster for a level-dependant duration.
+D:  Uniques and monsters that resist fear are not affected.
+
+N:73:Portal
+I:91:1:1
+D:Teleports you randomly over a short distance.
+
+N:74:Cure Serious Wounds
+I:91:1:2
+D:Cures 4d10 points of damage and heals half of all cut damage plus
+D: another 20 points.
+
+N:75:Chant
+I:91:1:3
+D:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 24+1d24
+D: turns.
+
+N:76:Sanctuary
+I:91:1:4
+D:Attempts to put to sleep each monster directly adjacent to you.
+D:  Uniques and monsters that resist sleep are not affected.
+
+N:77:Satisfy Hunger
+I:91:1:5
+D:Magically renders you well-fed (but not satiated).
+D:  This will also cure a bloated stomach.
+
+N:78:Remove Curse
+I:91:1:6
+D:Removes all ordinary curses from all equipped items.
+D:  Heavy or permanent curses are not affected.
+
+N:79:Resist Heat and Cold
+I:91:1:7
+D:Gives you temporary resistance to cold and fire, for 10+1d10 turns each.
+
+N:80:Neutralize Poison
+I:91:2:0
+D:Neutralizes poison.
+
+N:81:Orb of Draining
+I:91:2:1
+D:Shoots a radius-2 or radius-3 ball that does unresistable
+D: damage to each monster in its area of effect.
+D:  Evil monsters take double damage.
+D:  All cursed items in the area of effect are destroyed.
+D:  The bigger area of effect is attained at character level 30.
+
+N:82:Cure Critical Wounds
+I:91:2:2
+D:Cures 6d10 points of damage and heals all cut damage.
+
+N:83:Sense Invisible
+I:91:2:3
+D:Enables you to see invisible monsters for 24+1d24 turns.
+
+N:84:Protection from Evil
+I:91:2:4
+D:Protects you from evil for a level-dependant duration:
+D: all melee attacks by evil monsters have a chance to be repelled,
+D: unless the monster's level is higher than your character level.
+
+N:85:Earthquake
+I:91:2:5
+D:Causes a 10-square radius earthquake around you.
+D:  Earthquakes may damage monsters and destroy items in some
+D: squares in the area of effect.
+D:  Artifacts will not be destroyed by this prayer.
+D:  This prayer has no effect when used in the town.
+
+N:86:Sense Surroundings
+I:91:2:6
+D:Maps out a portion of the level around you.
+
+N:87:Cure Mortal Wounds
+I:91:2:7
+D:Cures 8d10 points of damage, cures all stunning and heals all cut damage.
+
+N:88:Turn Undead
+I:91:2:8
+D:Attempts to scare each undead monster within line of sight,
+D: causing it to flee in terror for a level-dependant duration.
+
+N:89:Prayer
+I:91:3:0
+D:Blesses you, giving a bonus of +5 to AC and +10 to-hit, for 48+1d48 turns.
+
+N:90:Dispel Undead
+I:91:3:1
+D:Inflicts unresistable damage on each undead monster within line of sight.
+
+N:91:Heal
+I:91:3:2
+D:Cures 300 points of damage, cures all stunning and heals all cut damage.
+
+N:92:Dispel Evil
+I:91:3:3
+D:Inflicts unresistable damage on each evil monster within line of sight.
+
+N:93:Glyph of Warding
+I:91:3:4
+D:Inscribes a glyph of warding beneath you.
+D:  Summoned monsters can't appear on the glyph.
+D:  If a monster attempts to move onto the glyph or melee you while you
+D: are standing on the glyph, it must first succeed in breaking the glyph.
+D:  Higher level monsters are more likely to break the glyph.
+D:  The glyph will remain where it is, until a monster succeeds in
+D: breaking it, or until you leave the level.
+
+N:94:Holy Word
+I:91:3:5
+D:Inflicts unresistable damage on each evil monster within line of sight,
+D: cures 1000 points of damage, cures all stunning, heals all cut damage,
+D: neutralizes poison, and removes fear.
+
+N:95:Detect Monsters
+I:91:5:0
+D:Detects all non-invisible monsters in the immediate area,
+D: for one turn only.
+
+N:96:Detection
+I:91:5:1
+D:Detects all treasure, objects, doors, stairs, traps, and monsters
+D: in the immediate area.
+
+N:97:Identify
+I:91:5:2
+D:Reveals the powers of an object.
+
+N:98:Probing
+I:91:5:3
+D:Probes each monster within line of sight, giving information on the
+D: current hit points of the monster and many of its characteristics
+D: and abilities (excluding its melee, spellcasting, and breath attacks).
+
+N:99:Clairvoyance
+I:91:5:4
+D:Lights up, maps out, and detects all objects on the complete current
+D: dungeon level.
+
+N:100:Cure Serious Wounds
+I:91:6:0
+D:Cures 4d10 points of damage and heals all cut damage.
+
+N:101:Cure Mortal Wounds
+I:91:6:1
+D:Cures 8d10 points of damage, cures all stunning and heals all cut damage.
+
+N:102:Healing
+I:91:6:2
+D:Cures 2000 points of damage, cures all stunning and heals all cut damage.
+
+N:103:Restoration
+I:91:6:3
+D:Restores to maximum all stats that are currently below maximum.
+
+N:104:Remembrance
+I:91:6:4
+D:Restores experience points to maximum if it is currently below maximum.
+
+N:105:Dispel Undead
+I:91:8:0
+D:Inflicts unresistable damage on each undead monster within line of sight.
+
+N:106:Dispel Evil
+I:91:8:1
+D:Inflicts unresistable damage on each evil monster within line of sight.
+
+N:107:Banish Evil
+I:91:8:2
+D:Teleports away each evil monster within line of sight.
+
+N:108:Word of Destruction
+I:91:8:3
+D:Destroys everything in a 15-square radius circle around you.
+D:  All monsters, objects, and terrain features in the area of
+D: effect are destroyed, except stairs, permanent walls and
+D: artifacts.
+D:  You will also be blinded for 10+1d10 turns, unless you
+D: have resistance to blindness or light.
+D:  This prayer has no effect when used in the town.
+
+N:109:Annihilation
+I:91:8:4
+D:Inflicts 200 points of damage on a single monster that is not
+D: undead, a demon, an elemental, a golem, or a vortex.
+
+N:110:Unbarring Ways
+I:91:7:0
+D:Destroys all traps and doors within a 1-square radius of you.
+
+N:111:Recharging
+I:91:7:1
+D:Adds charges to a stack of wands or staves.
+D:  Chance of success and number of charges gained increase with your
+D: level and decrease with level of wand or staff and number of charges.
+D:  A failed attempt to recharge destroys one wand or staff from the stack.
+
+N:112:Dispel Curse
+I:91:7:2
+D:Removes all ordinary and heavy curses from all equipped objects.
+D:  Permanent curses are not affected.
+
+N:113:Enchant Weapon
+I:91:7:3
+D:Attempts to improve the to-hit bonus and the to-dam bonus of a weapon.
+
+N:114:Enchant Armour
+I:91:7:4
+D:Attempts to improve the armour class bonus of a piece of armour.
+
+N:115:Elemental Brand
+I:91:7:5
+D:Brands the currently wielded melee weapon with fire (25%) or cold (75%),
+D: and at the same time attempts to improve the to-hit bonus and the
+D: to-dam bonus of the same weapon.
+D:  The prayer has no effect if the weapon is an artifact or ego item,
+D: is already branded, has a slay, is broken, or is cursed.
+
+N:116:Blink
+I:91:4:0
+D:Teleports you randomly up to 10 squares away.
+
+N:117:Teleport Self
+I:91:4:1
+D:Teleports you randomly within the current level.
+
+N:118:Teleport Other
+I:91:4:2
+D:Produces a beam that teleports each monster in its path
+D: up to 100 squares away.
+
+N:119:Teleport Level
+I:91:4:3
+D:Teleports you 1 level up or 1 level down (chosen at random).
+D:  This prayer has no effect when the option to restrict the use of
+D: stairs and recall is set.
+
+N:120:Word of Recall
+I:91:4:4
+D:Teleports you from the dungeon to the town or from the town to the
+D: deepest level you have visited in the dungeon.
+D:  The recall effect is not immediate; it is delayed by 14+1d20 turns.
+D:  During that delay, the spell can be canceled by invoking the prayer
+D: of recall again.
+D:  This prayer has no effect when the option to restrict the use of
+D: stairs and recall is set, unless Morgoth is dead.
+
+N:121:Alter Reality
+I:91:4:5
+D:The current level will be discarded and a new dungeon level (on the
+D: same dungeon depth) will be generated.  This has exactly the same
+D: side effects as leaving and re-entering the level through a stair,
+D: except that you won't start on a square with a stair.

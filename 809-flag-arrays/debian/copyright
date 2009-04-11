@@ -1,0 +1,42 @@
+This package was debianized by Andrew Sidwell <takkaria@gmail.com> on
+Fri, 14 Mar 2008 16:08:41 +0000.
+
+It was downloaded from Subversion.
+
+Upstream Author: 
+
+	Andrew Sidwell <takkaria@gmail.com>
+
+Copyright: 
+
+	Copyright (c) 1989-2008 Angband contributors
+
+License:
+
+    Angband is free software; you can redistribute it and/or modify it under the 
+    terms of either the GNU General Public License as published by the Free Software 
+    Foundation, version 2, or the "Angband licence", shown below, with some exceptions,
+    as shown below:
+
+       Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
+
+       This software may be copied and distributed for educational, research,
+       and not for profit purposes provided that this copyright and statement
+       are included in all such copies.  Other copyrights may also apply.
+
+    The exceptions to this licence are:
+
+     * Adam Bolt's (16x16) graphics may be redistributed and used for any purpose, 
+       with or without modification.
+
+     * David Gervais' (32x32) graphics may be redistributed, modified, and used
+       only under the terms of the Creative Commons Attribution 3.0 licence:
+       http://creativecommons.org/licenses/by/3.0/
+
+     * the sounds are freeware, whatever that means.
+
+     * the font files are under the licences noted in lib/xtra/font/copying.txt,
+       all of which are OSI-compliant.
+
+The Debian packaging is Copyright (c) 2008, Andrew Sidwell <takkaria@gmail.com> and
+is licensed under the BSD licence, see `/usr/share/common-licenses/BSD'.

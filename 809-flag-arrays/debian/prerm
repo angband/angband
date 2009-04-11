@@ -1,0 +1,129 @@
+#! /bin/sh
+#                               -*- Mode: Sh -*- 
+# prerm --- 
+# Author           : Manoj Srivastava ( srivasta@glaurung.green-gryphon.com ) 
+# Created On       : Fri Nov 14 12:16:39 2003
+# Created On Node  : glaurung.green-gryphon.com
+# Last Modified By : Manoj Srivastava
+# Last Modified On : Sun Mar 14 12:02:16 2004
+# Last Machine Used: glaurung.internal.golden-gryphon.com
+# Update Count     : 10
+# Status           : Unknown, Use with caution!
+# HISTORY          : 
+# Description      : 
+#
+# arch-tag: a4c1a888-137d-4800-98f8-93d0365422d8 
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# 
+
+# Abort if any command returns an error value
+set -e
+
+package_name=angband
+
+if [ -z "$package_name" ]; then
+    print >&2 "Internal Error. Please report a bug."
+    exit 1;
+fi
+
+
+# This script is called as the first step in removing the package from
+# the system.  This includes cases where the user explicitly asked for
+# the package to be removed, upgrade, automatic removal due to conflicts,
+# and deconfiguration due to temporary removal of a depended-on package.
+
+# Info files should be uninstalled from the dir file in any case.
+##: install-info --quiet --remove /usr/info/${package_name}.info
+
+case "$1" in
+  remove)
+    # This package about to be removed.
+    :
+
+    # Remove package-specific directories from /usr/local.  Don't try
+    # to remove standard directories such as /usr/local/lib.
+    ##: if test -d /usr/local/lib/${package_name}; then
+    ##:   rmdir /usr/local/lib/${package_name} || true
+    ##: fi
+
+    # Deactivate menu-methods script.
+    ##: chmod a-x /etc/menu-methods/${package_name}
+
+    # Withdraw our version of a program.
+    ##: update-alternatives --remove program /usr/bin/alternative
+
+    # Get rid of the installed docs
+    ##: if which install-docs >/dev/null 2>&1; then
+    ##:     install-docs -r $package_name
+    ##: fi
+    
+    # Get rid of the byte compiled files
+    ##: if [ -x /usr/lib/emacsen-common/emacs-package-remove ]; then
+    ##:      /usr/lib/emacsen-common/emacs-package-remove $package_name
+    ##: fi
+
+    if [ -L /usr/doc/$package_name ]; then
+        rm -f /usr/doc/$package_name
+    fi
+
+    # There are two sub-cases:
+    if test "${2+set}" = set; then
+      if test "$2" != in-favour; then
+        echo "$0: undocumented call to \`prerm $*'" 1>&2
+        exit 0
+      fi
+      # We are being removed because of a conflict with package $3
+      # (version $4), which is now being installed.
+      :
+
+    else
+      # The package is being removed in its own right.
+      :
+
+    fi ;;
+  deconfigure)
+    if test "$2" != in-favour || test  "$5" != removing; then
+      echo "$0: undocumented call to \`prerm $*'" 1>&2
+      exit 0
+    fi
+    # Package $6 (version $7) which we depend on is being removed due
+    # to a conflict with package $3 (version $4), and this package is
+    # being deconfigured until $6 can be reinstalled.
+    :
+
+    ;;
+  upgrade)
+    # Prepare to upgrade FROM THIS VERSION of this package to version $2.
+    :
+
+    if [ -L /usr/doc/$package_name ]; then
+        rm -f /usr/doc/$package_name
+    fi
+
+    ;;
+  failed-upgrade)
+    # Prepare to upgrade from version $2 of this package TO THIS VERSION.
+    # This is only used if the old version's prerm couldn't handle it,
+    # and returned non-zero.  (Fix old prerm bugs here.)
+    :
+
+    ;;
+  *) echo "$0: didn't understand being called with \`$1'" 1>&2
+     exit 0;;
+esac
+
+exit 0

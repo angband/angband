@@ -1,0 +1,227 @@
+The fonts in this directory are either public domain or have been included
+with the kind permission of the author(s).  This file contains copyright notices
+for the non-public domain fonts.
+
+Each font is listed below and followed by the authors name and/or a number.
+The number refers to the numbered licences below.
+
+Thanks to Simon Tatham, author of "dewinfont", which made it much easier to 
+extract font information. <http://www.chiark.greenend.org.uk/~sgtatham/fonts/>
+Also, thanks for his "mkwinfont" program, which made it possible to automate
+conversion of the old DOS fonts to the .fon format.
+
+
+Font        Copyright holder                                  Licence
+----------- ------------------------------------------------- ------------
+   5x8      (c) 1989 Cognition Corp                           [1]
+   6x10     Public Domain
+   6x12     Public Domain
+   6x13     Public Domain
+   6x13b    Public Domain
+   7x13     Public Domain
+   7x13b    Public Domain
+   8x13     Public Domain
+   8x13b    Public Domain
+   8x13c    (c) 1989 Dale Schumacher                          [4]
+   8x16     (c) 1989 Dale Schumacher                          [4]
+   8x16b    (c) 1989 Dale Schumacher                          [4]
+   9x15     Public Domain
+   9x15b    Public Domain
+  10x17     (c) 1989 Massachusetts Institute of Technology    [5]
+  10x17b    (c) 1989 Massachusetts Institute of Technology    [5]
+  10x20     (c) 1989 Network Computing Devices, Inc           [2]
+  12x20     (c) 1989 Massachusetts Institute of Technology    [5]
+  12x20b    (c) 1989 Massachusetts Institute of Technology    [5]
+  12x24     (c) 1987, 1988 Sony Corp.                         [3]
+  16x25     (c) 1989 Massachusetts Institute of Technology    [5]
+  16x25b    (c) 1989 Massachusetts Institute of Technology    [5]
+
+
+
+Licences
+========
+
+[1]
+
+ Copyright 1989 Cognition Corp.
+ 
+ Permission to use, copy, modify, and distribute this software and its
+ documentation for any purpose and without fee is hereby granted,
+ provided that the above copyright notice appear in all copies and that
+ both that copyright notice and this permission notice appear in
+ supporting documentation, and that the name of Cognition Corp. not be
+ used in advertising or publicity pertaining to distribution of the
+ software without specific, written prior permission.  Cognition Corp.
+ makes no representations about the suitability of this software for any
+ purpose.  It is provided "as is" without express or implied warranty.
+ 
+ COGNITION CORP. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+ EVENT SHALL COGNITION CORP.  BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+ USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+ PERFORMANCE OF THIS SOFTWARE.
+
+[2]
+
+ Copyright 1989-1991 Network Computing Devices, Inc.
+ NCD is a registered trademark of Network Computing Devices, Inc.
+
+ Permission to use, copy, modify, and distribute this software and
+ its documentation for any purpose and without fee is hereby
+ granted, provided that the above copyright notice appear in all
+ copies and that both that copyright notice and this permission
+ notice appear in supporting documentation, and that the name of
+ NCD may not be used in advertising or publicity pertaining to
+ distribution of the software without specific, written prior
+ permission.  NCD makes no representations about the
+ suitability of this software for any purpose.  It is provided ``as
+ is'' without express or implied warranty.
+
+ NCD DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN
+ NO EVENT SHALL NCD BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+ CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
+ OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+ NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+[3]
+
+ Copyright 1989 by Sony Corp.
+
+ Permission to use, copy, modify, and distribute this software and
+ its documentation for any purpose and without fee is hereby granted,
+ provided that the above copyright notices appear in all copies and
+ that both those copyright notices and this permission notice appear
+ in supporting documentation, and that the name of Sony Corp.
+ not be used in advertising or publicity pertaining to distribution
+ of the software without specific, written prior permission.  Sony
+ Corp. makes no representations about the suitability of this
+ software for any purpose.  It is provided "as is" without express or
+ implied warranty.
+
+ SONY DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
+ SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+ FITNESS, IN NO EVENT SHALL SONY BE LIABLE FOR ANY
+ SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
+ CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+[4]
+
+ Copyright 1989 Dale Schumacher, dal@syntel.mn.org
+                399 Beacon Ave.
+                St. Paul, MN  55104-3527
+ Permission to use, copy, modify, and distribute this software and
+ its documentation for any purpose and without fee is hereby
+ granted, provided that the above copyright notice appear in all
+ copies and that both that copyright notice and this permission
+ notice appear in supporting documentation, and that the name of
+ Dale Schumacher not be used in advertising or publicity pertaining to
+ distribution of the software without specific, written prior
+ permission.  Dale Schumacher makes no representations about the
+ suitability of this software for any purpose.  It is provided "as
+ is" without express or implied warranty.
+
+[5]
+
+ Software in this distribution of the X Window System is covered by copyrights;
+ see the file LABELS in this directory for a list.
+
+ The MIT distribution of the X Window System is publicly available, but is NOT
+ in the public domain.  The difference is that copyrights granting rights for
+ unrestricted use and redistribution have been placed on all of the software to
+ identify its authors.  You are allowed and encouraged to take this software and
+ build commerical products.
+
+ Individuals or organizations wishing to contribute software to the public
+ releases should use a copyright notice that is no more restrictive than
+ the sample given below.  In particular,
+
+     o  Do not place any restictions on what can be done with this software
+    (this includes using the GNU "copyleft").
+
+     o  Do not include the words "All rights reserved" unless you have had a
+    lawyer verify that you have also explicitly given away all of the
+    necessary rights shown in the samples.
+
+     o  Spell out the word "Copyright"; the phrase "(c)" is NOT a legal
+    alternative to the c-in-circle symbol.
+
+     o  Put at least a one-line copyright at the top of EVERY source file, if
+    not the full copyright.  Also, the copyright line or full notice MUST
+    physically appear in each file.  Using the preprocessor to #include the
+    copyright from some other file has no legal meaning (it can be used to
+    incorporate common strings into the binary, but has no effect on the
+    status of the source code).
+
+     o  Things that are copyrighted are, by definition, not in the public
+    domain.
+
+ A copyright notice similar to the following is strongly recommended (replacing
+ MIT with your organization's name and putting your name and address at the
+ bottom).
+
+ /*
+  * Copyright 1989 Massachusetts Institute of Technology
+  *
+  * Permission to use, copy, modify, distribute, and sell this software and its
+  * documentation for any purpose is hereby granted without fee, provided that
+  * the above copyright notice appear in all copies and that both that
+  * copyright notice and this permission notice appear in supporting
+  * documentation, and that the name of M.I.T. not be used in advertising or
+  * publicity pertaining to distribution of the software without specific,
+  * written prior permission.  M.I.T. makes no representations about the
+  * suitability of this software for any purpose.  It is provided "as is"
+  * without express or implied warranty.
+  *
+  * M.I.T. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE, INCLUDING ALL
+  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT SHALL M.I.T.
+  * BE LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+  *
+  * Author:  Your Name, Name of your organization
+  */
+
+
+         X Window System, Version 11
+                  Release 4
+
+            contents copyrighted by
+
+
+     Massachusetts Institute of Technology
+          Adobe Systems, Inc.
+         Apollo Computer Inc.
+         Apple Computer, Inc.
+          AT&T, Inc.
+          Don Bennett
+           Bigelow & Holmes
+        Bitstream, Inc.
+         Adam de Boor
+        Cognition Corp.
+     Digital Equipment Corporation
+    Evans & Sutherland Computer Corporation
+           Franz Inc
+        Hewlett-Packard Company
+        IBM Corporation
+    Network Computing Devices, Inc.
+     O'Reilly and Associates, Inc.
+        Dale Schumacher
+        Marvin Solomon
+          Sony Corp.
+              SRI
+        Sun Microsystems, Inc.
+        Tektronix, Inc.
+    Texas Instruments Incorporated
+        UniSoft Systems
+  The Regents of the University of California
+        University of Wisconsin
+          Larry Wall
+         Wyse Technology, Inc.
+

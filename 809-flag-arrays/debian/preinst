@@ -1,0 +1,138 @@
+#! /bin/sh
+#                               -*- Mode: Sh -*- 
+# preinst --- 
+# Author           : Manoj Srivastava ( srivasta@glaurung.green-gryphon.com ) 
+# Created On       : Fri Nov 14 12:12:04 2003
+# Created On Node  : glaurung.green-gryphon.com
+# Last Modified By : Manoj Srivastava
+# Last Modified On : Thu Feb  7 19:16:28 2008
+# Last Machine Used: anzu.internal.golden-gryphon.com
+# Update Count     : 9
+# Status           : Unknown, Use with caution!
+# HISTORY          : 
+# Description      : 
+# 
+# arch-tag: d6a3672d-acb3-4f6c-9984-bad17d8ce0aa
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+#
+# 
+
+
+# Abort if any command returns an error value
+set -e
+
+package_name=angband
+
+if [ -z "$package_name" ]; then
+    print >&2 "Internal Error. Please report a bug."
+    exit 1;
+fi
+
+
+
+# This script is called before this version of this package is installed.
+# When this script is called, the package's files have not been unpacked
+# yet.
+
+case "$1" in
+  install)
+    # About to install this package.
+    :
+
+    if [ -L /var/games/angband/data ]; then
+	rm /var/games/angband/data
+    fi
+
+    if [ -d /usr/lib/angband/data ]; then
+	rm -rf /usr/lib/angband/data
+    fi
+    # Add a diversion.  This is one of the few things which may be done
+    # before installing any files from the package.
+    : dpkg-divert --package foo --add --rename \
+    :             --divert /usr/bin/other.real /usr/bin/other
+
+    # There are two sub-cases:
+    if test "${2+set}" = set; then
+      # The configuration files from version $2 of this package are
+      # still on the system.
+        # Recover old save and scores files
+        if [ -d /var/lib/games/angband ]; then
+            for dir in apex bone save user; do
+                if [ -d /var/lib/games/angband/$dir ]; then
+                    test -d /var/games/angband/$dir || mkdir -p /var/games/angband/$dir
+		    if ls /var/games/angband/$dir | grep . >/dev/null ; then
+			for file in /var/lib/games/angband/$dir/*; do
+			    basefile=$(basename $file)
+			    if [ "X$basefile" = "Xdelete.me" ]; then
+				continue;
+			    fi
+			    test -e /var/games/angband/$dir/$basefile ||                \
+				cp -f /var/lib/games/angband/$dir/$basefile             \
+				/var/games/angband/$dir/$basefile
+			done
+		    fi
+                fi
+            done
+        fi
+    else
+      # There is no existing configuration; install from scratch.
+      :
+
+    fi ;;
+  upgrade)
+    # About to upgrade this package from version $2 TO THIS VERSION.
+    # "prerm upgrade" has already been called for the old version of
+    # this package.
+    :
+    if [ -L /var/games/angband/data ]; then
+	rm /var/games/angband/data
+    fi
+
+    if [ -d /usr/lib/angband/data ]; then
+	rm -rf /usr/lib/angband/data
+    fi
+        # Recover old save and scores files
+    if [ -d /var/lib/games/angband ]; then
+        for dir in apex bone save user; do
+            if [ -d /var/lib/games/angband/$dir ]; then
+                test -d /var/games/angband/$dir || mkdir -p /var/games/angband/$dir
+                for file in /var/lib/games/angband/$dir/*; do
+                    if [ -n "$file" ] && [ -e "$file" ]; then
+                        basefile=$(basename $file)
+                        if [ "X$basefile" = "Xdelete.me" ]; then
+                            continue;
+                        fi
+                        test -e /var/games/angband/$dir/"$basefile" ||       \
+                            cp -f /var/lib/games/angband/$dir/"$basefile"    \
+                            /var/games/angband/$dir/"$basefile"  
+                    fi                    
+                done
+            fi
+        done
+    fi
+
+    ;;
+  abort-upgrade)
+    # Back out of an attempt to upgrade this package FROM THIS VERSION to
+    # version $2.  Undo the effects of "postrm upgrade $2".
+    :
+
+    ;;
+  *) echo "$0: didn't understand being called with \`$1'" 1>&2
+     exit 0;;
+esac
+
+exit 0

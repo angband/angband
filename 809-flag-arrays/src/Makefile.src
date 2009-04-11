@@ -1,0 +1,122 @@
+#
+# File: Makefile.src
+#
+# A makefile which includes the current object files, hopefully includable
+# across a range of different makefiles, to cut down on maintenance.
+#
+
+VERSION = 3.1.0
+COPYRIGHT = (c) 1995-2008 Angband contributors
+
+HEADERS = \
+	angband.h \
+	cmds.h \
+	config.h \
+	defines.h \
+	effects.h \
+	externs.h \
+	game-cmd.h \
+	game-event.h \
+	$(GTKHEADERS) \
+	h-basic.h \
+	init.h \
+	main.h \
+	option.h \
+	randname.h \
+	types.h \
+	ui-event.h \
+	ui.h \
+	ui-menu.h \
+	wizard.h \
+	z-file.h \
+	z-form.h \
+	z-msg.h \
+	z-quark.h \
+	z-rand.h \
+	z-term.h \
+	z-type.h \
+	z-util.h \
+	z-virt.h
+
+GTKHEADERS = \
+	gtk/cairo-utils.h \
+	gtk/main-gtk.h \
+	
+ZFILES = z-file.o z-form.o z-msg.o z-quark.o z-rand.o z-term.o z-type.o \
+         z-util.o z-virt.o
+MAINFILES = main.o main-crb.o main-gcu.o $(GTKMAINFILES) \
+            main-ros.o main-sdl.o main-win.o main-x11.o snd-sdl.o
+
+GTKMAINFILES = \
+	gtk/main-gtk.o \
+	gtk/cairo-utils.o 
+	
+ANGFILES = \
+	attack.o \
+	birth.o \
+	button.o \
+	cave.o \
+	cmd0.o \
+	cmd1.o \
+	cmd2.o \
+	cmd3.o \
+	cmd4.o \
+	cmd5.o \
+	cmd6.o \
+	cmd-know.o \
+	cmd-obj.o \
+	death.o \
+	debug.o \
+	dungeon.o \
+	effects.o \
+	files.o \
+	game-cmd.o \
+	game-event.o \
+	generate.o \
+	history.o \
+	init1.o \
+	init2.o \
+	load.o \
+	load-old.o \
+	monster/melee1.o \
+	monster/melee2.o \
+	monster/monster1.o \
+	monster/monster2.o \
+	object/identify.o \
+	object/obj-desc.o \
+	object/obj-info.o \
+	object/obj-make.o \
+	object/obj-power.o \
+	object/obj-ui.o \
+	object/obj-util.o \
+	object/randart.o \
+	option.o \
+	randname.o \
+	pathfind.o \
+	prefs.o \
+	player/calcs.o \
+	player/timed.o \
+	player/util.o \
+	score.o \
+	signals.o \
+	save.o \
+	savefile.o \
+	spells1.o \
+	spells2.o \
+	squelch.o \
+	store.o \
+	tables.o \
+	target.o \
+	trap.o \
+	ui.o \
+        ui-birth.o \
+	ui-event.o \
+	ui-menu.o \
+	util.o  \
+	variable.o \
+	wiz-spoil.o \
+	wiz-stats.o \
+	wizard.o \
+	x-spell.o \
+	xtra2.o \
+	xtra3.o

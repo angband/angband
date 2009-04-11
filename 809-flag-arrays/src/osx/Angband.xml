@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0">
+  <dict>
+    <key>CFBundleName</key><string>$NAME$</string>
+    <key>CFBundleDisplayName</key><string>$NAME$ (OS X)</string>
+    <key>CFBundleExecutable</key><string>$EXECUTABLE$</string>
+    <key>CFBundlePackageType</key><string>APPL</string>
+    <key>CFBundleSignature</key><string>A271</string>
+    <key>CFBundleVersion</key><string>$VERSION$</string>
+    <key>CFBundleShortVersionString</key><string>$VERSION$</string>
+    <key>CFBundleIconFile</key><string>$NAME$</string>
+    <key>CFBundleIdentifier</key><string>net.thangorodrim.$NAME$</string>
+    <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+    <key>CFBundleLongVersionString</key>
+    <string>$VERSION$, Copyright $COPYRIGHT$</string>
+    <key>NSHumanReadableCopyright</key>
+    <string>Copyright © $COPYRIGHT$</string>
+    <key>CFBundleGetInfoString</key>
+    <string>$VERSION$, © $COPYRIGHT$</string>
+
+
+    <key>CFBundleDocumentTypes</key>
+      <array>
+        <dict>
+          <key>CFBundleTypeExtensions</key><array><string>*</string></array>
+          <key>CFBundleTypeIconFile</key><string>Save</string>
+          <key>CFBundleTypeName</key><string>Angband saved game</string>
+          <key>CFBundleTypeOSTypes</key><array><string>SAVE</string></array>
+          <key>CFBundleTypeRole</key><string>Editor</string>
+        </dict>
+        <dict>
+          <key>CFBundleTypeExtensions</key><array><string>*</string></array>
+          <key>CFBundleTypeIconFile</key><string>Edit</string>
+          <key>CFBundleTypeName</key><string>Angband game data</string>
+          <key>CFBundleTypeOSTypes</key><array><string>TEXT</string></array>
+          <key>CFBundleTypeRole</key><string>Editor</string>
+        </dict>
+        <dict>
+          <key>CFBundleTypeExtensions</key><array><string>*</string></array>
+          <key>CFBundleTypeIconFile</key><string>Data</string>
+          <key>CFBundleTypeName</key><string>Angband game data</string>
+          <key>CFBundleTypeOSTypes</key><array><string>DATA</string></array>
+          <key>CFBundleTypeRole</key><string>Editor</string>
+        </dict>
+      </array>
+  </dict>
+</plist>

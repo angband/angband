@@ -1,0 +1,40 @@
+Source: angband
+VCS-Git: git://git.debian.org/~srivasta/debian/angband.git
+VCS-Browser: http://git.debian.org/git/users/srivasta/debian/angband.git
+Section: games
+Priority: optional
+Maintainer: Manoj Srivastava <srivasta@debian.org>
+Build-Depends: libncurses5-dev | libncurses-dev | ncurses-dev,
+ libsdl1.2-dev | libsdl-dev, libsdl-mixer1.2-dev,
+ libsdl-gfx1.2-dev, libsdl-image1.2-dev, libsdl-ttf2.0-dev,
+ libsdl-net1.2-dev
+Standards-Version: 3.8.0.0
+
+Package: angband
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: A single-player, text-based, dungeon simulation game.
+ Angband is a single-player, text-based, dungeon simulation derived
+ from the game Moria, which was in turn based on Rogue. It is
+ often described as a "roguelike" game because the look and feel of
+ the game is still quite similar to Rogue.
+ .
+ Angband features many enhancements over Moria: unique foes, artifacts,
+ monster pits and vaults to name a few. Many of these new creatures
+ and objects are drawn from the writings of J.R.R Tolkien, although
+ some of the monsters come straight from classical mythology, Dungeons
+ & Dragons, Rolemaster, or the minds of the original Angband coders.
+ .
+ The ultimate goal of the game is to develop a character strong enough
+ to defeat Morgoth, who resides on dungeon level 100. Upon doing so,
+ you will receive the exalted status of "winner" and your character may
+ retire.
+ .
+ Angband is a reference to Morgoth's "prison of iron."
+ .
+ Morgoth was 'the Dark Enemy of Middle-Earth' during its First Age. He
+ was banished by the Valar (offspring of Eru, "god" of J.R.R.
+ Tolkien's world) at the end of the First Age and thus never appears
+ in The Lord of the Rings, set during the Third Age. Sauron, who does
+ figure into those tales, was the most powerful of his servants. Read
+ Tolkien's 'The Silmarillion' for more on the legends of Middle-Earth.
