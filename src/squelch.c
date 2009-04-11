@@ -311,7 +311,7 @@ bool squelch_tval(int tval)
 bool squelch_item_ok(const object_type *o_ptr)
 {
 	size_t i;
-	int num = -1;
+	int type = -1;
 
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	bool fullid = object_known_p(o_ptr);
@@ -346,36 +346,51 @@ bool squelch_item_ok(const object_type *o_ptr)
 
 
 	/* Find the appropriate squelch group */
-	for (i = 0; i < N_ELEMENTS(type_tvals); i++)
+	for (i = 0; i < N_ELEMENTS(type_tvals) && (type == -1); i++)
 	{
 		if (type_tvals[i][1] == o_ptr->tval)
-		{
-			num = type_tvals[i][0];
-			break;
-		}
+			type = type_tvals[i][0];
 	}
 
 	/* Never squelched */
-	if (num == -1)
+	if (type == -1)
+		return FALSE;
+
+
+	/* Never autosquelch arts */
+	if (feel == INSCRIP_TERRIBLE ||
+			feel == INSCRIP_SPECIAL ||
+			feel == INSCRIP_INDESTRUCTIBLE)
 		return FALSE;
 
 
 	/* Get result based on the feeling and the squelch_level */
-	switch (squelch_level[num])
+	switch (squelch_level[type])
 	{
 		case SQUELCH_BAD:
 		{
-			if ((feel == INSCRIP_TERRIBLE) ||
-			    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED))
+			/* Deal with jewelry specially */
+			if (type == TYPE_JEWELRY)
 			{
-				return TRUE;
+				if (fullid && o_ptr->pval < 0)
+					return TRUE;
+				else
+					return FALSE;
 			}
-			
-			if ((feel == INSCRIP_SPECIAL) || (feel == INSCRIP_EXCELLENT))
+
+			if (feel == INSCRIP_AVERAGE ||
+					feel == INSCRIP_EXCELLENT)
 				return FALSE;
 
-			if ((feel != INSCRIP_AVERAGE) && fullid &&
-				 (o_ptr->to_a <= 0 && o_ptr->to_h <= 0 && o_ptr->to_d <= 0))
+			if (feel == INSCRIP_WORTHLESS)
+				return TRUE;
+
+			if ((fullid || o_ptr->ident & IDENT_ATTACK) &&
+					o_ptr->to_h < 0 && o_ptr->to_d < 0)
+				return TRUE;
+
+			if ((fullid || o_ptr->ident & IDENT_DEFENCE) &&
+					o_ptr->to_a < 0)
 				return TRUE;
 
 			break;
@@ -383,18 +398,19 @@ bool squelch_item_ok(const object_type *o_ptr)
 
 		case SQUELCH_AVERAGE:
 		{
-			if ((feel == INSCRIP_TERRIBLE) ||
-			    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED) ||
-			    (feel == INSCRIP_AVERAGE))
-			{
-				return TRUE;
-			}
-
-			if ((feel == INSCRIP_SPECIAL) || (feel == INSCRIP_EXCELLENT))
+			if (feel == INSCRIP_EXCELLENT)
 				return FALSE;
 
-			if (fullid &&
-				 (o_ptr->to_a <= 0 && o_ptr->to_h <= 0 && o_ptr->to_d <= 0))
+			if (feel == INSCRIP_WORTHLESS ||
+					feel == INSCRIP_AVERAGE)
+				return TRUE;
+
+			if ((fullid || o_ptr->ident & IDENT_ATTACK) &&
+					o_ptr->to_h <= 0 && o_ptr->to_d <= 0)
+				return TRUE;
+
+			if ((fullid || o_ptr->ident & IDENT_DEFENCE) &&
+					o_ptr->to_a <= 0)
 				return TRUE;
 
 			break;
@@ -402,39 +418,25 @@ bool squelch_item_ok(const object_type *o_ptr)
 
 		case SQUELCH_GOOD:
 		{
-			if ((feel == INSCRIP_TERRIBLE) ||
-			    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED) ||
-			    (feel == INSCRIP_AVERAGE) || (feel == INSCRIP_MAGICAL))
-			{
-				return TRUE;
-			}
+			if (feel == INSCRIP_EXCELLENT)
+				return FALSE;
 
-			if (fullid && !o_ptr->name2 && !o_ptr->name1 &&
-				 (o_ptr->to_a >= 0 && o_ptr->to_h >= 0 && o_ptr->to_d >= 0))
+			if (feel == INSCRIP_WORTHLESS ||
+					feel == INSCRIP_AVERAGE ||
+					feel == INSCRIP_MAGICAL)
 				return TRUE;
 
 			break;
 		}
 
 		case SQUELCH_EXCELLENT:
-		{
-			if ((feel == INSCRIP_TERRIBLE) ||
-			    (feel == INSCRIP_WORTHLESS) || (feel == INSCRIP_CURSED) ||
-			    (feel == INSCRIP_AVERAGE) || (feel == INSCRIP_EXCELLENT) ||
-				(feel == INSCRIP_MAGICAL))
-			{
-				return TRUE;
-			}
-		}
-
 		case SQUELCH_ALL:
 		{
 			return TRUE;
-			break;
 		}
 	}
 
-	/* Failure */
+	/* Default to not squelching */
 	return FALSE;
 }
 

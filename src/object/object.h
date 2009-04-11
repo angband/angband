@@ -37,7 +37,7 @@ typedef enum
 {
 	INSCRIP_NULL = 0,            /*!< No pseudo-ID status */
 	INSCRIP_TERRIBLE = 1,        /*!< Cursed artifact */
-	INSCRIP_WORTHLESS = 2,       /*!< Worthless item */
+	INSCRIP_WORTHLESS = 2,       /*!< Cursed ego-item */
 	INSCRIP_CURSED = 3,          /*!< Cursed normal item */
 	INSCRIP_STRANGE = 4,         /*!< Item that has mixed combat bonuses */
 	INSCRIP_AVERAGE = 5,         /*!< Item with no interesting features */
