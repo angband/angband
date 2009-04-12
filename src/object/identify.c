@@ -139,6 +139,7 @@ static const flag_message_t msgs[] =
 void object_notice_flag(int flagset, u32b flag)
 {
 	int i;
+	size_t j;
 
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
@@ -156,7 +157,7 @@ void object_notice_flag(int flagset, u32b flag)
 			/* Notice flags */
 			o_ptr->known_flags[flagset] |= flag;
 
-			for (size_t j = 0; j < N_ELEMENTS(msgs); j++)
+			for (j = 0; j < N_ELEMENTS(msgs); j++)
 			{
 				if (msgs[j].flagset == flagset &&
 						(msgs[j].flag & flag))
