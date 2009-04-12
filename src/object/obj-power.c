@@ -57,9 +57,9 @@
 #define AVG_BOW_MULT            5 /* i.e. 2.5 */
 #define AVG_XBOW_MULT           7 /* i.e. 3.5 */
 #define MELEE_DAMAGE_BOOST      5
-#define RING_BRAND_DMG	        9 /* i.e. 3d5 weapon */
+#define RING_BRAND_DMG	        9 /* i.e. 3d5 or 2d8 weapon */
 #define BASE_LITE_POWER         6
-#define BASE_JEWELRY_POWER	3
+#define BASE_JEWELRY_POWER	4
 #define DAMAGE_POWER            4 /* i.e. 2 */
 #define TO_HIT_POWER            2 /* i.e. 1 */
 #define BASE_AC_POWER           3 /* i.e. 1.5 */
@@ -76,7 +76,7 @@
 #define WIS_POWER	        4
 #define DEX_POWER		6
 #define CON_POWER		8
-#define CHR_POWER		1
+#define CHR_POWER		2
 #define STEALTH_POWER		4
 #define SEARCH_POWER		2
 #define INFRA_POWER		2
