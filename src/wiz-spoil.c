@@ -327,7 +327,7 @@ static void spoil_obj_desc(cptr fname)
 			if (k_ptr->tval != group_item[i].tval) continue;
 
 			/* Hack -- Skip instant-artifacts */
-			if (k_ptr->flags3 & (TR3_INSTA_ART)) continue;
+			if (k_ptr->flags[2] & (TR2_INSTA_ART)) continue;
 
 			/* Save the index */
 			who[n++] = k;
@@ -421,8 +421,8 @@ bool make_fake_artifact(object_type *o_ptr, byte name1)
 	o_ptr->weight = a_ptr->weight;
 
 	/* Hack -- extract the "cursed" flag */
-	if (a_ptr->flags3 & (TR3_LIGHT_CURSE))
-		o_ptr->flags3 |= TR3_LIGHT_CURSE;
+	if (a_ptr->flags[2] & (TR2_LIGHT_CURSE))
+		o_ptr->flags[2] |= TR2_LIGHT_CURSE;
 
 	/* Success */
 	return (TRUE);

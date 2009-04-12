@@ -357,7 +357,7 @@ static int make_ego_item(object_type *o_ptr, int level, bool force_uncursed)
 	e_idx = (byte)table[i].index;
 	o_ptr->name2 = e_idx;
 
-	return (e_info[e_idx].flags3 & TR3_CURSE_MASK ? -2 : 2);
+	return (e_info[e_idx].flags[2] & TR2_CURSE_MASK ? -2 : 2);
 }
 
 
@@ -379,7 +379,7 @@ static void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 
 	/* Hack -- extract the "cursed" flags */
 	if (cursed_p(a_ptr))
-		o_ptr->flags3 |= (a_ptr->flags3 & TR3_CURSE_MASK);
+		o_ptr->flags[2] |= (a_ptr->flags[2] & TR2_CURSE_MASK);
 
 	/* Mega-Hack -- increase the rating */
 	rating += 10;
@@ -979,7 +979,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 
 	/* Just for now */
 	if (o_ptr->pval < 0)
-		o_ptr->flags3 |= TR3_LIGHT_CURSE;
+		o_ptr->flags[2] |= TR2_LIGHT_CURSE;
 }
 
 
@@ -1050,40 +1050,40 @@ static void a_m_aux_4(object_type *o_ptr, int level, int power)
 
 static const u32b ego_sustains[] =
 {
-	TR2_SUST_STR,
-	TR2_SUST_INT,
-	TR2_SUST_WIS,
-	TR2_SUST_DEX,
-	TR2_SUST_CON,
-	TR2_SUST_CHR,
+	TR1_SUST_STR,
+	TR1_SUST_INT,
+	TR1_SUST_WIS,
+	TR1_SUST_DEX,
+	TR1_SUST_CON,
+	TR1_SUST_CHR,
 };
 
 static const u32b ego_resists[] =
 {
-	TR2_RES_POIS,
-	TR2_RES_FEAR,
-	TR2_RES_LITE,
-	TR2_RES_DARK,
-	TR2_RES_BLIND,
-	TR2_RES_CONFU,
-	TR2_RES_SOUND,
-	TR2_RES_SHARD,
-	TR2_RES_NEXUS,
-	TR2_RES_NETHR,
-	TR2_RES_CHAOS,
-	TR2_RES_DISEN,
+	TR1_RES_POIS,
+	TR1_RES_FEAR,
+	TR1_RES_LITE,
+	TR1_RES_DARK,
+	TR1_RES_BLIND,
+	TR1_RES_CONFU,
+	TR1_RES_SOUND,
+	TR1_RES_SHARD,
+	TR1_RES_NEXUS,
+	TR1_RES_NETHR,
+	TR1_RES_CHAOS,
+	TR1_RES_DISEN,
 };
 
 static const u32b ego_powers[] =
 {
-	TR3_SLOW_DIGEST,
-	TR3_FEATHER,
-	TR3_LITE,
-	TR3_REGEN,
-	TR3_TELEPATHY,
-	TR3_SEE_INVIS,
-	TR3_FREE_ACT,
-	TR3_HOLD_LIFE,
+	TR2_SLOW_DIGEST,
+	TR2_FEATHER,
+	TR2_LITE,
+	TR2_REGEN,
+	TR2_TELEPATHY,
+	TR2_SEE_INVIS,
+	TR2_FREE_ACT,
+	TR2_HOLD_LIFE,
 };
 
 
@@ -1242,26 +1242,26 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 		{
 			case OBJECT_XTRA_TYPE_SUSTAIN:
 			{
-				o_ptr->flags2 |= ego_sustains[randint0(N_ELEMENTS(ego_sustains))];
+				o_ptr->flags[1] |= ego_sustains[randint0(N_ELEMENTS(ego_sustains))];
 				break;
 			}
 
 			case OBJECT_XTRA_TYPE_RESIST:
 			{
-				o_ptr->flags2 |= ego_resists[randint0(N_ELEMENTS(ego_resists))];
+				o_ptr->flags[1] |= ego_resists[randint0(N_ELEMENTS(ego_resists))];
 				break;
 			}
 
 			case OBJECT_XTRA_TYPE_POWER:
 			{
-				o_ptr->flags3 |= ego_powers[randint0(N_ELEMENTS(ego_powers))];
+				o_ptr->flags[2] |= ego_powers[randint0(N_ELEMENTS(ego_powers))];
 				break;
 			}
 		}
 
 		/* Hack -- acquire "cursed" flags */
 		if (cursed_p(e_ptr))
-			o_ptr->flags3 |= (e_ptr->flags3 & TR3_CURSE_MASK);
+			o_ptr->flags[2] |= (e_ptr->flags[2] & TR2_CURSE_MASK);
 
 		/* Hack -- apply extra penalties if needed */
 		if (cursed_p(o_ptr))
@@ -1305,7 +1305,7 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 
 		/* Hack -- acquire "cursed" flag */
 		if (cursed_p(k_ptr))
-			o_ptr->flags3 |= (k_ptr->flags3 & TR3_CURSE_MASK);
+			o_ptr->flags[2] |= (k_ptr->flags[2] & TR2_CURSE_MASK);
 	}
 }
 

@@ -622,9 +622,9 @@ static bool store_object_similar(const object_type *o_ptr, const object_type *j_
 	if (o_ptr->tval == TV_CHEST) return (0);
 
 	/* Different flags */
-	if (o_ptr->flags1 != j_ptr->flags1 ||
-		o_ptr->flags2 != j_ptr->flags2 ||
-		o_ptr->flags3 != j_ptr->flags3) return FALSE;
+	if (o_ptr->flags[0] != j_ptr->flags[0] ||
+		o_ptr->flags[1] != j_ptr->flags[1] ||
+		o_ptr->flags[2] != j_ptr->flags[2]) return FALSE;
 
 	/* They match, so they must be similar */
 	return (TRUE);
@@ -869,7 +869,6 @@ static int store_carry(int st, object_type *o_ptr)
 
 	/* Erase the inscription & pseudo-ID bit */
 	o_ptr->note = 0;
-	o_ptr->pseudo = 0;
 
 	/* Check each existing object (try to combine) */
 	for (slot = 0; slot < st_ptr->stock_num; slot++)
@@ -1942,14 +1941,10 @@ static int find_inven(const object_type *o_ptr)
 		}
 
 
-		/* Different pseudo-ID statuses preclude combination */
-		if (o_ptr->pseudo != j_ptr->pseudo) continue;
-
-
 		/* Different flags */
-		if (o_ptr->flags1 != j_ptr->flags1 ||
-			o_ptr->flags2 != j_ptr->flags2 ||
-			o_ptr->flags3 != j_ptr->flags3)
+		if (o_ptr->flags[0] != j_ptr->flags[0] ||
+			o_ptr->flags[1] != j_ptr->flags[1] ||
+			o_ptr->flags[2] != j_ptr->flags[2])
 			continue;
 
 		/* They match, so add up */

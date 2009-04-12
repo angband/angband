@@ -75,91 +75,91 @@ static size_t info_collect(const flag_type list[], size_t max, u32b flag, const 
 
 static const flag_type f1_pval[] =
 {
-	{ TR1_STR,     "strength" },
-	{ TR1_INT,     "intelligence" },
-	{ TR1_WIS,     "wisdom" },
-	{ TR1_DEX,     "dexterity" },
-	{ TR1_CON,     "constitution" },
-	{ TR1_CHR,     "charisma" },
-	{ TR1_STEALTH, "stealth" },
-	{ TR1_INFRA,   "infravision" },
-	{ TR1_TUNNEL,  "tunneling" },
-	{ TR1_SPEED,   "speed" },
-	{ TR1_BLOWS,   "attack speed" },
-	{ TR1_SHOTS,   "shooting speed" },
-	{ TR1_MIGHT,   "shooting power" },
+	{ TR0_STR,     "strength" },
+	{ TR0_INT,     "intelligence" },
+	{ TR0_WIS,     "wisdom" },
+	{ TR0_DEX,     "dexterity" },
+	{ TR0_CON,     "constitution" },
+	{ TR0_CHR,     "charisma" },
+	{ TR0_STEALTH, "stealth" },
+	{ TR0_INFRA,   "infravision" },
+	{ TR0_TUNNEL,  "tunneling" },
+	{ TR0_SPEED,   "speed" },
+	{ TR0_BLOWS,   "attack speed" },
+	{ TR0_SHOTS,   "shooting speed" },
+	{ TR0_MIGHT,   "shooting power" },
 };
 
 static const flag_type f2_immunity[] =
 {
-	{ TR2_IM_ACID, "acid" },
-	{ TR2_IM_ELEC, "lightning" },
-	{ TR2_IM_FIRE, "fire" },
-	{ TR2_IM_COLD, "cold" },
+	{ TR1_IM_ACID, "acid" },
+	{ TR1_IM_ELEC, "lightning" },
+	{ TR1_IM_FIRE, "fire" },
+	{ TR1_IM_COLD, "cold" },
 };
 
 static const flag_type f2_vuln[] =
 {
-	{ TR2_VULN_ACID, "acid" },
-	{ TR2_VULN_ELEC, "electricity" },
-	{ TR2_VULN_FIRE, "fire" },
-	{ TR2_VULN_COLD, "cold" },
+	{ TR1_VULN_ACID, "acid" },
+	{ TR1_VULN_ELEC, "electricity" },
+	{ TR1_VULN_FIRE, "fire" },
+	{ TR1_VULN_COLD, "cold" },
 };
 
 static const flag_type f2_resist[] =
 {
-	{ TR2_RES_ACID,  "acid" },
-	{ TR2_RES_ELEC,  "lightning" },
-	{ TR2_RES_FIRE,  "fire" },
-	{ TR2_RES_COLD,  "cold" },
-	{ TR2_RES_POIS,  "poison" },
-	{ TR2_RES_FEAR,  "fear" },
-	{ TR2_RES_LITE,  "light" },
-	{ TR2_RES_DARK,  "dark" },
-	{ TR2_RES_BLIND, "blindness" },
-	{ TR2_RES_CONFU, "confusion" },
-	{ TR2_RES_SOUND, "sound" },
-	{ TR2_RES_SHARD, "shards" },
-	{ TR2_RES_NEXUS, "nexus"  },
-	{ TR2_RES_NETHR, "nether" },
-	{ TR2_RES_CHAOS, "chaos" },
-	{ TR2_RES_DISEN, "disenchantment" },
+	{ TR1_RES_ACID,  "acid" },
+	{ TR1_RES_ELEC,  "lightning" },
+	{ TR1_RES_FIRE,  "fire" },
+	{ TR1_RES_COLD,  "cold" },
+	{ TR1_RES_POIS,  "poison" },
+	{ TR1_RES_FEAR,  "fear" },
+	{ TR1_RES_LITE,  "light" },
+	{ TR1_RES_DARK,  "dark" },
+	{ TR1_RES_BLIND, "blindness" },
+	{ TR1_RES_CONFU, "confusion" },
+	{ TR1_RES_SOUND, "sound" },
+	{ TR1_RES_SHARD, "shards" },
+	{ TR1_RES_NEXUS, "nexus"  },
+	{ TR1_RES_NETHR, "nether" },
+	{ TR1_RES_CHAOS, "chaos" },
+	{ TR1_RES_DISEN, "disenchantment" },
 };
 
 static const flag_type f3_ignore[] =
 {
-	{ TR3_IGNORE_ACID, "acid" },
-	{ TR3_IGNORE_ELEC, "electricity" },
-	{ TR3_IGNORE_FIRE, "fire" },
-	{ TR3_IGNORE_COLD, "cold" },
+	{ TR2_IGNORE_ACID, "acid" },
+	{ TR2_IGNORE_ELEC, "electricity" },
+	{ TR2_IGNORE_FIRE, "fire" },
+	{ TR2_IGNORE_COLD, "cold" },
 };
 
 static const flag_type f2_sustains[] =
 {
-	{ TR2_SUST_STR, "strength" },
-	{ TR2_SUST_INT, "intelligence" },
-	{ TR2_SUST_WIS, "wisdom" },
-	{ TR2_SUST_DEX, "dexterity" },
-	{ TR2_SUST_CON, "constitution" },
-	{ TR2_SUST_CHR, "charisma" },
+	{ TR1_SUST_STR, "strength" },
+	{ TR1_SUST_INT, "intelligence" },
+	{ TR1_SUST_WIS, "wisdom" },
+	{ TR1_SUST_DEX, "dexterity" },
+	{ TR1_SUST_CON, "constitution" },
+	{ TR1_SUST_CHR, "charisma" },
 };
 
 static const flag_type f3_misc[] =
 {
-	{ TR3_BLESSED, "Blessed by the gods" },
-	{ TR3_SLOW_DIGEST, "Slows your metabolism" },
-	{ TR3_IMPAIR_HP, "Impairs hitpoint recovery" },
-	{ TR3_IMPAIR_MANA, "Impairs mana recovery" },
-	{ TR3_AFRAID, "Makes you unable to hit foes" },
-	{ TR3_FEATHER, "Feather Falling" },
-	{ TR3_REGEN, "Speeds regeneration" },
-	{ TR3_FREE_ACT, "Prevents paralysis" },
-	{ TR3_HOLD_LIFE, "Stops experience drain" },
-	{ TR3_TELEPATHY, "Grants telepathy" },
-	{ TR3_SEE_INVIS, "Grants the ability to see invisible things" },
-	{ TR3_AGGRAVATE, "Aggravates creatures nearby" },
-	{ TR3_DRAIN_EXP, "Drains experience" },
-	{ TR3_TELEPORT, "Induces random teleportation" },
+	{ TR2_BLESSED, "Blessed by the gods" },
+	{ TR2_SLOW_DIGEST, "Slows your metabolism" },
+	{ TR2_IMPAIR_HP, "Impairs hitpoint recovery" },
+	{ TR2_IMPAIR_MANA, "Impairs mana recovery" },
+	{ TR2_AFRAID, "Makes you unable to hit foes" },
+	{ TR2_FEATHER, "Feather Falling" },
+	{ TR2_REGEN, "Speeds regeneration" },
+	{ TR2_FREE_ACT, "Prevents paralysis" },
+	{ TR2_HOLD_LIFE, "Stops experience drain" },
+	{ TR2_TELEPATHY, "Grants telepathy" },
+	{ TR2_SEE_INVIS, "Grants the ability to see invisible things" },
+	{ TR2_AGGRAVATE, "Aggravates creatures nearby" },
+	{ TR2_DRAIN_EXP, "Drains experience" },
+	{ TR2_TELEPORT, "Induces random teleportation" },
 };
 
 
@@ -172,22 +172,22 @@ static const flag_type f3_misc[] =
  */
 const slay_t slay_table[] =
 {
-	{ TR1_SLAY_ANIMAL, RF2_ANIMAL, 0, 2, "pierces",  "smite",   "animals",                                NULL},
-	{ TR1_SLAY_EVIL,   RF2_EVIL,   0, 2, "pierces",  "smite",   "evil creatures",                         NULL},
-	{ TR1_SLAY_UNDEAD, RF2_UNDEAD, 0, 3, "pierces",  "smite",   "undead",                                 NULL},
-	{ TR1_SLAY_DEMON,  RF2_DEMON,  0, 3, "pierces",  "smite",   "demons",                                 NULL},
-	{ TR1_SLAY_ORC,    RF2_ORC,    0, 3, "pierces",  "smite",   "orcs",                                   NULL},
-	{ TR1_SLAY_TROLL,  RF2_TROLL,  0, 3, "pierces",  "smite",   "trolls",                                 NULL},
-	{ TR1_SLAY_GIANT,  RF2_GIANT,  0, 3, "pierces",  "smite",   "giants",                                 NULL},
-	{ TR1_SLAY_DRAGON, RF2_DRAGON, 0, 3, "pierces",  "smite",   "dragons",                                NULL},
-	{ TR1_BRAND_ACID, 0, RF2_IM_ACID, 3, "corrodes", "corrode", "creatures not resistant to acid",        "acid"},
-	{ TR1_BRAND_ELEC, 0, RF2_IM_ELEC, 3, "zaps",     "zap",     "creatures not resistant to electricity", "lightning"},
-	{ TR1_BRAND_FIRE, 0, RF2_IM_FIRE, 3, "burns",    "burn",    "creatures not resistant to fire",        "flames"},
-	{ TR1_BRAND_COLD, 0, RF2_IM_COLD, 3, "freezes",  "freeze",  "creatures not resistant to cold",        "frost"},
-	{ TR1_BRAND_POIS, 0, RF2_IM_POIS, 3, "poisons",  "poison",  "creatures not resistant to poison",      "venom"},
-	{ TR1_KILL_DRAGON, RF2_DRAGON, 0, 5, "deeply pierces", "fiercely smite", "dragons",                   NULL},
-	{ TR1_KILL_DEMON,  RF2_DEMON,  0, 5, "deeply pierces", "fiercely smite", "demons",                    NULL},
-	{ TR1_KILL_UNDEAD, RF2_UNDEAD, 0, 5, "deeply pierces", "fiercely smite", "undead",                    NULL},
+	{ TR0_SLAY_ANIMAL, RF2_ANIMAL, 0, 2, "pierces",  "smite",   "animals",                                NULL},
+	{ TR0_SLAY_EVIL,   RF2_EVIL,   0, 2, "pierces",  "smite",   "evil creatures",                         NULL},
+	{ TR0_SLAY_UNDEAD, RF2_UNDEAD, 0, 3, "pierces",  "smite",   "undead",                                 NULL},
+	{ TR0_SLAY_DEMON,  RF2_DEMON,  0, 3, "pierces",  "smite",   "demons",                                 NULL},
+	{ TR0_SLAY_ORC,    RF2_ORC,    0, 3, "pierces",  "smite",   "orcs",                                   NULL},
+	{ TR0_SLAY_TROLL,  RF2_TROLL,  0, 3, "pierces",  "smite",   "trolls",                                 NULL},
+	{ TR0_SLAY_GIANT,  RF2_GIANT,  0, 3, "pierces",  "smite",   "giants",                                 NULL},
+	{ TR0_SLAY_DRAGON, RF2_DRAGON, 0, 3, "pierces",  "smite",   "dragons",                                NULL},
+	{ TR0_BRAND_ACID, 0, RF2_IM_ACID, 3, "corrodes", "corrode", "creatures not resistant to acid",        "acid"},
+	{ TR0_BRAND_ELEC, 0, RF2_IM_ELEC, 3, "zaps",     "zap",     "creatures not resistant to electricity", "lightning"},
+	{ TR0_BRAND_FIRE, 0, RF2_IM_FIRE, 3, "burns",    "burn",    "creatures not resistant to fire",        "flames"},
+	{ TR0_BRAND_COLD, 0, RF2_IM_COLD, 3, "freezes",  "freeze",  "creatures not resistant to cold",        "frost"},
+	{ TR0_BRAND_POIS, 0, RF2_IM_POIS, 3, "poisons",  "poison",  "creatures not resistant to poison",      "venom"},
+	{ TR0_KILL_DRAGON, RF2_DRAGON, 0, 5, "deeply pierces", "fiercely smite", "dragons",                   NULL},
+	{ TR0_KILL_DEMON,  RF2_DEMON,  0, 5, "deeply pierces", "fiercely smite", "demons",                    NULL},
+	{ TR0_KILL_UNDEAD, RF2_UNDEAD, 0, 5, "deeply pierces", "fiercely smite", "undead",                    NULL},
 	{ 0, 0, 0, 0, NULL, NULL, NULL, NULL }
 };
 
@@ -209,9 +209,9 @@ static bool describe_curses(const object_type *o_ptr, u32b f3)
 {
 	if (cursed_p(o_ptr))
 	{
-		if (f3 & TR3_PERMA_CURSE)
+		if (f3 & TR2_PERMA_CURSE)
 			text_out_c(TERM_L_RED, "Permanently cursed.\n");
-		else if (f3 & TR3_HEAVY_CURSE)
+		else if (f3 & TR2_HEAVY_CURSE)
 			text_out_c(TERM_L_RED, "Heavily cursed.\n");
 		else if (object_known_p(o_ptr))
 			text_out_c(TERM_L_RED, "Cursed.\n");
@@ -242,7 +242,7 @@ static bool describe_stats(u32b f1, int pval)
 		info_out_list(descs, count);
 	}
 
-	if (f1 & TR1_SEARCH)
+	if (f1 & TR0_SEARCH)
 	{
 		text_out_c((pval > 0) ? TERM_L_GREEN : TERM_RED, "%+i%% ", pval * 5);
 		text_out("to searching.\n");
@@ -366,11 +366,11 @@ static bool describe_slays(u32b f1)
 
 	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
 	{
-		if (f1 & (s_ptr->slay_flag & TR1_SLAY_MASK))
+		if (f1 & (s_ptr->slay_flag & TR0_SLAY_MASK))
 			slay_descs[x++] = s_ptr->desc;
-		else if (f1 & (s_ptr->slay_flag & TR1_KILL_MASK))
+		else if (f1 & (s_ptr->slay_flag & TR0_KILL_MASK))
 			kill_descs[y++] = s_ptr->desc;
-		else if (f1 & (s_ptr->slay_flag & TR1_BRAND_MASK))
+		else if (f1 & (s_ptr->slay_flag & TR0_BRAND_MASK))
 			brand_descs[z++] = s_ptr->brand;
 	}
 
@@ -502,7 +502,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	int crit_mult, crit_div, crit_add;
 	object_type *j_ptr = &inventory[INVEN_BOW];
 
-	u32b f1, f2, f3;
+	u32b f[OBJ_FLAG_N];
 
 	bool weapon = (wield_slot(o_ptr) == INVEN_WIELD);
 	bool ammo   = (p_ptr->state.ammo_tval == o_ptr->tval) &&
@@ -521,9 +521,9 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	}
 
 	if (full)
-		object_flags(o_ptr, &f1, &f2, &f3);
+		object_flags(o_ptr, f);
 	else
-		object_flags_known(o_ptr, &f1, &f2, &f3);
+		object_flags_known(o_ptr, f);
 
 	text_out_c(TERM_L_WHITE, "Combat info:\n");
 
@@ -563,7 +563,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	else
 	{
 		int tdis = 6 + 2 * p_ptr->state.ammo_mult;
-		u32b f[3];
+		u32b g[OBJ_FLAG_N];
 
 		if (object_known_p(o_ptr)) plus += o_ptr->to_h;
 
@@ -577,8 +577,8 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 		dam *= p_ptr->state.ammo_mult;
 
 		/* Apply brands from the shooter to the ammo */
-		object_flags(j_ptr, &f[0], &f[1], &f[2]);
-		f1 |= f[0];
+		object_flags(j_ptr, g);
+		f[0] |= g[0];
 
 		text_out("Hits targets up to ");
 		text_out_c(TERM_L_GREEN, format("%d", tdis * 10));
@@ -589,21 +589,22 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	/* Melee weapons get slays from rings now */
 	if (weapon)
 	{
-		u32b g1, g2, g3, h1, h2, h3;
+		u32b g[OBJ_FLAG_N];
+		u32b h[OBJ_FLAG_N];
 		
-		object_flags_known(&inventory[INVEN_LEFT], &g1, &g2, &g3);
-		object_flags_known(&inventory[INVEN_RIGHT], &h1, &h2, &h3);
+		object_flags_known(&inventory[INVEN_LEFT], g);
+		object_flags_known(&inventory[INVEN_RIGHT], h);
 
-		if (!((f1 & TR1_BRAND_MASK) ==
-			((f1 | g1 | h1) & TR1_BRAND_MASK)))
+		if (!((f[0] & TR0_BRAND_MASK) ==
+			((f[0] | g[0] | h[0]) & TR0_BRAND_MASK)))
 			text_out("This weapon benefits from one or more ring brands.\n");
 
-		f1 |= (g1 | h1);
+		f[0] |= (g[0] | h[0]);
 	}
 
 	text_out("Average damage/round: ");
 	
-	cnt = collect_slays(desc, mult, f1);
+	cnt = collect_slays(desc, mult, f[0]);
 	for (i = 0; i < cnt; i++)
 	{
 		/* Include bonus damage and slay in stated average */
@@ -627,8 +628,8 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 
 	/* Include bonus damage in stated average */
 	total_dam = dam + xtra_precrit;
-	total_dam = (total_dam * crit_mult + crit_add) / crit_div +
-		xtra_postcrit;
+	total_dam = (total_dam * crit_mult + crit_add) / crit_div;
+	total_dam += xtra_postcrit;
 
 	if (total_dam <= 0)
 		text_out_c(TERM_L_RED, "%d", 0);
@@ -642,7 +643,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	text_out(".\n");
 	
 	/* Note the impact flag */
-	if (f3 & TR3_IMPACT)
+	if (f[2] & TR2_IMPACT)
 		text_out("Sometimes creates earthquakes on impact.\n");
 
 	/* Add breakage chance */
@@ -667,17 +668,18 @@ static bool describe_digger(const object_type *o_ptr, bool full)
 
 	int sl = wield_slot(o_ptr);
 	int i;
-	u32b f1, f2, f3;
+
+	u32b f[OBJ_FLAG_N];
 
 	int chances[4]; /* These are out of 1600 */
 	static const char *names[4] = { "rubble", "magma veins", "quartz veins", "granite" };
 
 	if (full)
-		object_flags(o_ptr, &f1, &f2, &f3);
+		object_flags(o_ptr, f);
 	else
-		object_flags_known(o_ptr, &f1, &f2, &f3);
+		object_flags_known(o_ptr, f);
 
-	if (sl < 0 || ((sl != INVEN_WIELD) && !(f1 & TR1_TUNNEL)))
+	if (sl < 0 || ((sl != INVEN_WIELD) && !(f[0] & TR0_TUNNEL)))
 		return FALSE;
 
 	memcpy(inven, inventory, INVEN_TOTAL * sizeof(object_type));
@@ -762,16 +764,16 @@ static bool describe_light(const object_type *o_ptr, u32b f3, bool terse)
 	int rad = 0;
 
 	bool artifact = artifact_p(o_ptr);
-	bool no_fuel = (f3 & TR3_NO_FUEL) ? TRUE : FALSE;
+	bool no_fuel = (f3 & TR2_NO_FUEL) ? TRUE : FALSE;
 	bool is_lite = (o_ptr->tval == TV_LITE) ? TRUE : FALSE;
 
-	if ((o_ptr->tval != TV_LITE) && !(f3 & TR3_LITE))
+	if ((o_ptr->tval != TV_LITE) && !(f3 & TR2_LITE))
 		return FALSE;
 
 	/* Work out radius */
 	if (artifact && is_lite) rad = 3;
 	else if (is_lite)  rad = 2;
-	if (f3 & TR3_LITE) rad++;
+	if (f3 & TR2_LITE) rad++;
 
 	/* Describe here */
 	text_out("Radius ");
@@ -837,10 +839,10 @@ static bool describe_activation(const object_type *o_ptr, u32b f3, bool full,
 	if (!desc) return FALSE;
 
 	/* Sometimes only print artifact activation info */
-	if (only_artifacts == TRUE && !(f3 & TR3_ACTIVATE))
+	if (only_artifacts == TRUE && !(f3 & TR2_ACTIVATE))
 		return FALSE;
 
-	if (f3 & TR3_ACTIVATE)
+	if (f3 & TR2_ACTIVATE)
 		text_out("When activated, it ");
 	else if (effect_aim(effect))
 		text_out("When aimed, it ");
@@ -1015,15 +1017,15 @@ void object_info_header(const object_type *o_ptr)
  */
 static bool object_info_out(const object_type *o_ptr, bool full, bool terse, bool subjective)
 {
-	u32b f1, f2, f3;
+	u32b f[OBJ_FLAG_N];
 	bool something = FALSE;
 	bool known = object_known_p(o_ptr);
 	
 	/* Grab the object flags */
 	if (full)
-		object_flags(o_ptr, &f1, &f2, &f3);
+		object_flags(o_ptr, f);
 	else
-		object_flags_known(o_ptr, &f1, &f2, &f3);
+		object_flags_known(o_ptr, f);
 
 	if (!full && !known)
 	{
@@ -1031,16 +1033,16 @@ static bool object_info_out(const object_type *o_ptr, bool full, bool terse, boo
 		something = TRUE;
 	}	
 	
-	if (describe_curses(o_ptr, f3)) something = TRUE;
-	if (describe_stats(f1, o_ptr->pval)) something = TRUE;
-	if (describe_slays(f1)) something = TRUE;
-	if (describe_immune(f2)) something = TRUE;
-	if (describe_ignores(f3)) something = TRUE;
-	if (describe_sustains(f2)) something = TRUE;
-	if (describe_misc_magic(f3)) something = TRUE;
+	if (describe_curses(o_ptr, f[2])) something = TRUE;
+	if (describe_stats(f[0], o_ptr->pval)) something = TRUE;
+	if (describe_slays(f[0])) something = TRUE;
+	if (describe_immune(f[1])) something = TRUE;
+	if (describe_ignores(f[2])) something = TRUE;
+	if (describe_sustains(f[1])) something = TRUE;
+	if (describe_misc_magic(f[2])) something = TRUE;
 	if (something) text_out("\n");
 	
-	if (describe_activation(o_ptr, f3, full, terse, subjective))
+	if (describe_activation(o_ptr, f[2], full, terse, subjective))
 	{
 		something = TRUE;
 		text_out("\n");
@@ -1053,7 +1055,7 @@ static bool object_info_out(const object_type *o_ptr, bool full, bool terse, boo
 	}
 
 	if (!terse && describe_food(o_ptr, subjective)) something = TRUE;
-	if (describe_light(o_ptr, f3, terse)) something = TRUE;
+	if (describe_light(o_ptr, f[2], terse)) something = TRUE;
 	if (!terse && subjective && describe_digger(o_ptr, full)) something = TRUE;
 
 	return something;

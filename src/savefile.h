@@ -1,6 +1,8 @@
 #ifndef INCLUDED_SAVEFILE_H
 #define INCLUDED_SAVEFILE_H
 
+#define ITEM_VERSION	4
+
 /* load-old.c */
 int rd_savefile_old(void);
 

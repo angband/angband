@@ -315,66 +315,44 @@ void reset_visuals(bool unused)
 /*
  * Obtain the "flags" for an item
  */
-void object_flags(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
+void object_flags(const object_type *o_ptr, u32b flags[OBJ_FLAG_N])
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
-	(*f1) = k_ptr->flags1;
-	(*f2) = k_ptr->flags2;
-	(*f3) = (k_ptr->flags3 & ~TR3_CURSE_MASK);
+	flags[0] = k_ptr->flags[0];
+	flags[1] = k_ptr->flags[1];
+	flags[2] = (k_ptr->flags[2] & ~TR2_CURSE_MASK);
 
 	if (o_ptr->name1)
 	{
 		artifact_type *a_ptr = &a_info[o_ptr->name1];
 
-		(*f1) = a_ptr->flags1;
-		(*f2) = a_ptr->flags2;
-		(*f3) = (a_ptr->flags3 & ~TR3_CURSE_MASK);
+		flags[0] = a_ptr->flags[0];
+		flags[1] = a_ptr->flags[1];
+		flags[2] = (a_ptr->flags[2] & ~TR2_CURSE_MASK);
 	}
 
 	if (o_ptr->name2)
 	{
 		ego_item_type *e_ptr = &e_info[o_ptr->name2];
 
-		(*f1) |= e_ptr->flags1;
-		(*f2) |= e_ptr->flags2;
-		(*f3) |= (e_ptr->flags3 & ~TR3_CURSE_MASK);
+		flags[0] |= e_ptr->flags[0];
+		flags[1] |= e_ptr->flags[1];
+		flags[2] |= (e_ptr->flags[2] & ~TR2_CURSE_MASK);
 	}
 
-	(*f1) |= o_ptr->flags1;
-	(*f2) |= o_ptr->flags2;
-	(*f3) |= o_ptr->flags3;
+	flags[0] |= o_ptr->flags[0];
+	flags[1] |= o_ptr->flags[1];
+	flags[2] |= o_ptr->flags[2];
 }
 
 
 /*
  * Obtain the "flags" for an item which are known to the player
  */
-void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3)
+void object_flags_known(const object_type *o_ptr, u32b flags[])
 {
-	object_flags(o_ptr, f1, f2, f3);
-
-	if (!object_known_p(o_ptr))
-	{
-		/*
-		 * If the object is not known, only a subset of flags
-		 * are knowable.  If it has never been tried, none are.
-		 */
-		(*f1) &= TR1_OBVIOUS_MASK;
-		(*f2) = 0;
-		(*f3) &= TR3_OBVIOUS_MASK;
-
-		/*
-		 * We don't use object_tried_p here because we care about
-		 * _specific_ trial; knowing that long swords grant no TRx
-		 * tells you nothing about a Long Sword {excellent}.
-		 * FIXME identification needs a redesign
-		 */
-		if (!(o_ptr->ident & IDENT_TRIED))
-		{
-			(*f1) = (*f2) = (*f3) = 0L;
-		}
-	}
+	memcpy(flags, o_ptr->known_flags, sizeof(o_ptr->known_flags));
 }
 
 
@@ -1310,13 +1288,13 @@ object_type *get_next_object(const object_type *o_ptr)
  */
 bool is_blessed(const object_type *o_ptr)
 {
-	u32b f1, f2, f3;
+	u32b f[OBJ_FLAG_N];
 
 	/* Get the flags */
-	object_flags(o_ptr, &f1, &f2, &f3);
+	object_flags(o_ptr, f);
 
 	/* Is the object blessed? */
-	return ((f3 & TR3_BLESSED) ? TRUE : FALSE);
+	return ((f[2] & TR2_BLESSED) ? TRUE : FALSE);
 }
 
 
@@ -1389,7 +1367,7 @@ static s32b object_value_real(const object_type *o_ptr, int qty)
 {
 	s32b value, total_value;
 
-	u32b f1, f2, f3;
+	u32b f[OBJ_FLAG_N];
 
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
@@ -1452,7 +1430,7 @@ static s32b object_value_real(const object_type *o_ptr, int qty)
 
 
 	/* Extract some flags */
-	object_flags(o_ptr, &f1, &f2, &f3);
+	object_flags(o_ptr, f);
 
 
 	/* Artifact */
@@ -1511,26 +1489,26 @@ static s32b object_value_real(const object_type *o_ptr, int qty)
 			if (!o_ptr->pval) break;
 
 			/* Give credit for stat bonuses */
-			if (f1 & (TR1_STR)) value += (o_ptr->pval * 200L);
-			if (f1 & (TR1_INT)) value += (o_ptr->pval * 200L);
-			if (f1 & (TR1_WIS)) value += (o_ptr->pval * 200L);
-			if (f1 & (TR1_DEX)) value += (o_ptr->pval * 200L);
-			if (f1 & (TR1_CON)) value += (o_ptr->pval * 200L);
-			if (f1 & (TR1_CHR)) value += (o_ptr->pval * 200L);
+			if (f[0] & (TR0_STR)) value += (o_ptr->pval * 200L);
+			if (f[0] & (TR0_INT)) value += (o_ptr->pval * 200L);
+			if (f[0] & (TR0_WIS)) value += (o_ptr->pval * 200L);
+			if (f[0] & (TR0_DEX)) value += (o_ptr->pval * 200L);
+			if (f[0] & (TR0_CON)) value += (o_ptr->pval * 200L);
+			if (f[0] & (TR0_CHR)) value += (o_ptr->pval * 200L);
 
 			/* Give credit for stealth and searching */
-			if (f1 & (TR1_STEALTH)) value += (o_ptr->pval * 100L);
-			if (f1 & (TR1_SEARCH)) value += (o_ptr->pval * 100L);
+			if (f[0] & (TR0_STEALTH)) value += (o_ptr->pval * 100L);
+			if (f[0] & (TR0_SEARCH)) value += (o_ptr->pval * 100L);
 
 			/* Give credit for infra-vision and tunneling */
-			if (f1 & (TR1_INFRA)) value += (o_ptr->pval * 50L);
-			if (f1 & (TR1_TUNNEL)) value += (o_ptr->pval * 50L);
+			if (f[0] & (TR0_INFRA)) value += (o_ptr->pval * 50L);
+			if (f[0] & (TR0_TUNNEL)) value += (o_ptr->pval * 50L);
 
 			/* Give credit for extra attacks */
-			if (f1 & (TR1_BLOWS)) value += (o_ptr->pval * 2000L);
+			if (f[0] & (TR0_BLOWS)) value += (o_ptr->pval * 2000L);
 
 			/* Give credit for speed bonus */
-			if (f1 & (TR1_SPEED)) value += (o_ptr->pval * 30000L);
+			if (f[0] & (TR0_SPEED)) value += (o_ptr->pval * 30000L);
 
 			break;
 		}
@@ -1861,15 +1839,10 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 	}
 
 
-	/* Different pseudo-ID statuses preclude combination */
-	if (o_ptr->pseudo != j_ptr->pseudo)
-		return (0);
-
-
 	/* Different flags */
-	if (o_ptr->flags1 != j_ptr->flags1 ||
-		o_ptr->flags2 != j_ptr->flags2 ||
-		o_ptr->flags3 != j_ptr->flags3)
+	if (o_ptr->flags[0] != j_ptr->flags[0] ||
+		o_ptr->flags[1] != j_ptr->flags[1] ||
+		o_ptr->flags[2] != j_ptr->flags[2])
 		return FALSE;
 
 
@@ -1915,9 +1888,6 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 
 	/* Hack -- Blend "notes" */
 	if (j_ptr->note != 0) o_ptr->note = j_ptr->note;
-
-	/* Mega-Hack -- Blend "discounts" */
-	o_ptr->pseudo = j_ptr->pseudo;
 
 	/*
 	 * Hack -- if rods are stacking, re-calculate the
@@ -2032,8 +2002,8 @@ void object_prep(object_type *o_ptr, int k_idx)
 	o_ptr->ds = k_ptr->ds;
 
 	/* Hack -- cursed items are always "cursed" */
-	if (k_ptr->flags3 & (TR3_LIGHT_CURSE))
-	    o_ptr->flags3 |= TR3_LIGHT_CURSE;
+	if (k_ptr->flags[2] & TR2_LIGHT_CURSE)
+	    o_ptr->flags[2] |= TR2_LIGHT_CURSE;
 }
 
 

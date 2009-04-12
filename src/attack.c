@@ -194,13 +194,13 @@ static int critical_norm(int weight, int plus, int dam)
  * \param o_ptr is the object being used to attack
  * \param m_ptr is the monster being attacked
  * \param hit_verb is where a new verb is returned
- * \param known_f1 is where new flags are returned
+ * \param known_f0 is where new flags are returned
  * \param is_ranged should be true for ranged attacks
  *
  * \returns attack multiplier
  */
 static int get_brand_mult(const object_type *o_ptr, const monster_type *m_ptr,
-		const char **hit_verb, u32b *known_f1, bool is_ranged)
+		const char **hit_verb, u32b *known_f0, bool is_ranged)
 {
 	int mult = 1;
 	const slay_t *s_ptr;
@@ -208,12 +208,12 @@ static int get_brand_mult(const object_type *o_ptr, const monster_type *m_ptr,
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
-	u32b f1, f2, f3;
-	object_flags(o_ptr, &f1, &f2, &f3);
+	u32b f[OBJ_FLAG_N];
+	object_flags(o_ptr, f);
 
 	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
 	{
-		if (!(f1 & s_ptr->slay_flag)) continue;
+		if (!(f[0] & s_ptr->slay_flag)) continue;
 
 		/* If the monster doesn't match or the slay flag does */
 		if ((s_ptr->brand && !(r_ptr->flags[2] & s_ptr->resist_flag)) || 
@@ -225,7 +225,7 @@ static int get_brand_mult(const object_type *o_ptr, const monster_type *m_ptr,
 
 			if (mult < s_ptr->mult)
 				mult = s_ptr->mult;
-			*known_f1 |= s_ptr->slay_flag;
+			*known_f0 |= s_ptr->slay_flag;
 
 			/* Set the hit verb appropriately */
 			if (is_ranged)
@@ -328,7 +328,7 @@ void py_attack(int y, int x)
 			{
 				int weapon_brand_mult, ring_brand_mult[2];
 				int use_mult = 1;
-				u32b known_f1 = 0;
+				u32b known_f0 = 0;
 
 				hit_verb = "hit";
 
@@ -336,12 +336,12 @@ void py_attack(int y, int x)
 				 * only be brands right now */
 				ring_brand_mult[0] = get_brand_mult(
 						&inventory[INVEN_LEFT],
-						m_ptr, &hit_verb, &known_f1, FALSE);
+						m_ptr, &hit_verb, &known_f0, FALSE);
 				ring_brand_mult[1] = get_brand_mult(
 						&inventory[INVEN_RIGHT],
-						m_ptr, &hit_verb, &known_f1, FALSE);
+						m_ptr, &hit_verb, &known_f0, FALSE);
 				weapon_brand_mult = get_brand_mult(
-						o_ptr, m_ptr, &hit_verb, &known_f1, FALSE);
+						o_ptr, m_ptr, &hit_verb, &known_f0, FALSE);
 
 				/* Message. Need to do this after tot_dam_aux, which sets hit_verb, but before critical_norm, which may print further messages. */
 				message_format(MSG_GENERIC, m_ptr->r_idx, "You %s %s.", hit_verb, m_name);
@@ -362,22 +362,14 @@ void py_attack(int y, int x)
 				k += o_ptr->to_d;
 				k = critical_norm(o_ptr->weight, o_ptr->to_h, k);
 
-				/* Hook for learning by use */
+				/* Learn by use */
 				object_notice_on_attack();
-				object_notice_slays(known_f1, -1);
+				object_notice_slays(known_f0, -1);
 				if (do_quake)
-					object_notice_flag(3, TR3_IMPACT);
-
- 				/* If it does something obviously good, pseudo it as at least excellent */
-				if (weapon_brand_mult > 1 &&
-						!object_known_p(o_ptr) &&
-						o_ptr->pseudo != INSCRIP_SPECIAL)
-				{
-					o_ptr->pseudo = INSCRIP_EXCELLENT;
-					o_ptr->ident |= IDENT_SENSE;
-				}
-
-			} else {
+					object_notice_flag(2, TR2_IMPACT);
+			}
+			else
+			{
 				message_format(MSG_GENERIC, m_ptr->r_idx, "You %s %s.", hit_verb, m_name);
 			}
 
@@ -657,11 +649,12 @@ void do_cmd_fire(void)
 
 			const char *hit_verb = "hits";
 
-			u32b known_f1 = 0;
+			u32b known_f0 = 0;
 
-			int ammo_mult = get_brand_mult(i_ptr, m_ptr, &hit_verb, &known_f1, TRUE);
-			int shoot_mult = get_brand_mult(j_ptr, m_ptr, &hit_verb, &known_f1, TRUE);
+			int ammo_mult = get_brand_mult(i_ptr, m_ptr, &hit_verb, &known_f0, TRUE);
+			int shoot_mult = get_brand_mult(j_ptr, m_ptr, &hit_verb, &known_f0, TRUE);
 
+#if 0
 			/* If bow or ammo does something obviously good, pseudo it as excellent */
 			if (ammo_mult > 1 && !object_known_p(i_ptr))
 			{
@@ -676,6 +669,7 @@ void do_cmd_fire(void)
 				j_ptr->pseudo = INSCRIP_EXCELLENT;
 				j_ptr->ident |= (IDENT_SENSE);
 			}
+#endif
 
 			/* Note the collision */
 			hit_body = TRUE;
@@ -973,7 +967,7 @@ void do_cmd_throw(void)
 			{
 				const char *hit_verb = "hits";
 				bool fear = FALSE;
-				u32b known_f1 = 0;
+				u32b known_f0 = 0;
 
 				/* Assume a default death */
 				cptr note_dies = " dies.";
@@ -989,7 +983,7 @@ void do_cmd_throw(void)
 				}
 
 				/* Apply special damage  - brought forward to fill in hit_verb XXX XXX XXX */
-				tdam *= get_brand_mult(i_ptr, m_ptr, &hit_verb, &known_f1, TRUE);
+				tdam *= get_brand_mult(i_ptr, m_ptr, &hit_verb, &known_f0, TRUE);
 
 				/* Handle unseen monster */
 				if (!visible)

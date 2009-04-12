@@ -31,14 +31,17 @@ s32b object_last_wield;
  */
 void object_known(object_type *o_ptr)
 {
-	/* Remove pseudo marker -- no longer required */
-	if (o_ptr->pseudo) o_ptr->pseudo = 0;
+	u32b flags[OBJ_FLAG_N];
 
 	/* The object is not sensed, or "empty" */
 	o_ptr->ident &= ~(IDENT_SENSE | IDENT_EMPTY);
 
 	/* Mark as known */
 	o_ptr->ident |= IDENT_KNOWN;
+
+	/* Know all flags there are to be known */
+	object_flags(o_ptr, flags);
+	memcpy(o_ptr->known_flags, flags, sizeof(flags));
 }
 
 
@@ -86,11 +89,22 @@ void object_tried(object_type *o_ptr)
 /**
  * Notice slays on wielded items, and additionally one kind of ammo.
  *
- * \param known_f1 is the list of flags to notice
+ * \param known_f0 is the list of flags to notice
  * \param inven_idx is the index of the inventory item to notice, or -1
  */
-void object_notice_slays(u32b known_f1, int inven_idx)
+void object_notice_slays(u32b known_f0, int inven_idx)
 {
+	int i;
+
+	/* XXX pay attention to inven_idx */
+
+	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+	{
+		object_type *o_ptr = &inventory[i];
+
+		o_ptr->known_flags[0] |= known_f0;
+	}	
+
 	return;
 }
 
@@ -104,6 +118,27 @@ void object_notice_slays(u32b known_f1, int inven_idx)
 void object_notice_flag(int flagset, u32b flag)
 {
 	return;
+}
+
+
+/**
+ * Notice curses on an object.
+ *
+ * \param o_ptr is the object to notice curses on
+ */
+bool object_notice_curses(object_type *o_ptr)
+{
+	u32b f[OBJ_FLAG_N];
+	object_flags(o_ptr, f);
+
+	u32b curses = (f[2] & TR2_CURSE_MASK);
+
+	/* Know whatever curse flags there are to know */
+	o_ptr->known_flags[2] |= curses;
+
+	p_ptr->notice |= PN_SQUELCH;
+
+	return (curses ? TRUE : FALSE);
 }
 
 
@@ -143,7 +178,7 @@ void object_notice_on_attack(void)
  */
 void object_notice_on_wield(object_type *o_ptr)
 {
-	u32b f1, f2, f3;
+	u32b f[OBJ_FLAG_N];
 	bool obvious = FALSE;
 
 	/* Save time of wield for later */
@@ -158,11 +193,11 @@ void object_notice_on_wield(object_type *o_ptr)
 	if (object_known_p(o_ptr)) return;
 
 	/* Extract the flags */
-	object_flags(o_ptr, &f1, &f2, &f3);
+	object_flags(o_ptr, f);
 
 	/* Find obvious things */
-	if (f1 & TR1_OBVIOUS_MASK) obvious = TRUE;
-	if (f3 & TR3_OBVIOUS_MASK) obvious = TRUE;
+	if (f[0] & TR0_OBVIOUS_MASK) obvious = TRUE;
+	if (f[2] & TR2_OBVIOUS_MASK) obvious = TRUE;
 
 	if (!obvious) return;
 
@@ -172,41 +207,32 @@ void object_notice_on_wield(object_type *o_ptr)
 	 * Perhaps these messages should be in a new edit file?
 	 */
 
-	if (f1 & TR1_STR)
+	if (f[0] & TR0_STR)
 		msg_format ("You feel strangely %s!", o_ptr->pval > 0 ? "strong" : "weak");
-	if (f1 & TR1_INT)
+	if (f[0] & TR0_INT)
 		msg_format ("You feel strangely %s!", o_ptr->pval > 0 ? "smart" : "stupid");
-	if (f1 & TR1_WIS)
+	if (f[0] & TR0_WIS)
 		msg_format ("You feel strangely %s!", o_ptr->pval > 0 ? "wise" : "naive");
-	if (f1 & TR1_DEX)
+	if (f[0] & TR0_DEX)
 		msg_format ("You feel strangely %s!", o_ptr->pval > 0 ? "dextrous" : "clumsy");
-	if (f1 & TR1_CON)
+	if (f[0] & TR0_CON)
 		msg_format ("You feel strangely %s!", o_ptr->pval > 0 ? "healthy" : "sickly");
-	if (f1 & TR1_CHR)
+	if (f[0] & TR0_CHR)
 		msg_format ("You feel strangely %s!", o_ptr->pval > 0 ? "cute" : "ugly");
-	if (f1 & TR1_STEALTH)
+	if (f[0] & TR0_STEALTH)
 		msg_format ("You feel strangely %s.", o_ptr->pval > 0 ? "stealthy" : "noisy");
-	if (f1 & TR1_SPEED)
+	if (f[0] & TR0_SPEED)
 		msg_format ("You feel strangely %s.", o_ptr->pval > 0 ? "quick" : "sluggish");
-	if (f1 & (TR1_BLOWS | TR1_SHOTS))
+	if (f[0] & (TR0_BLOWS | TR0_SHOTS))
 		msg_format ("Your hands strangely %s!", o_ptr->pval > 0 ? "tingle!" : "ache.");
-	if (f3 & TR3_LITE)
+	if (f[2] & TR2_LITE)
 		msg_print("It shines strangely!");
-	if (f3 & TR3_TELEPATHY)
+	if (f[2] & TR2_TELEPATHY)
 		msg_print("Your mind feels strangely sharper!");
 
-	/* Mark the item */
-	if (artifact_p(o_ptr))
-	{
-		if (o_ptr->pseudo != INSCRIP_TERRIBLE)
-			o_ptr->pseudo = INSCRIP_SPECIAL;
-	}
-	else
-	{
-		o_ptr->pseudo = INSCRIP_EXCELLENT;
-	}
-
-	o_ptr->ident |= IDENT_SENSE;
+	/* Remember the flags */
+	o_ptr->known_flags[0] |= (f[0] & TR0_OBVIOUS_MASK);
+	o_ptr->known_flags[2] |= (f[2] & TR2_OBVIOUS_MASK);
 }
 
 
@@ -218,30 +244,25 @@ obj_pseudo_t object_pseudo(const object_type *o_ptr)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
-	if (artifact_p(o_ptr))
-	{
-		if (cursed_p(o_ptr))
-			return INSCRIP_TERRIBLE;
-		else
-			return INSCRIP_SPECIAL;
-	}
-
-	if (ego_item_p(o_ptr))
-	{
-		if (cursed_p(o_ptr))
-			return INSCRIP_WORTHLESS;
-		else
-			return INSCRIP_EXCELLENT;
-	}
-
-	if (cursed_p(o_ptr))
-		return INSCRIP_CURSED;
-
-	else if (o_ptr->to_a == k_ptr->to_a && o_ptr->to_h == k_ptr->to_h && o_ptr->to_d == k_ptr->to_d)
+	if ((o_ptr->known_flags[0] & TR0_OBVIOUS_MASK) ||
+			(o_ptr->known_flags[2] & TR2_OBVIOUS_MASK))
+		return INSCRIP_SPLENDID;
+	else if (o_ptr->ident & IDENT_INDESTRUCT)
+		return INSCRIP_SPECIAL;
+	else if (!(o_ptr->ident & IDENT_SENSE))
+		return INSCRIP_NULL;
+	else if (artifact_p(o_ptr))
+		return INSCRIP_SPECIAL;
+	else if (ego_item_p(o_ptr))
+		return INSCRIP_EXCELLENT;
+	else if (o_ptr->to_a == k_ptr->to_a && o_ptr->to_h == k_ptr->to_h &&
+			o_ptr->to_d == k_ptr->to_d)
 		return INSCRIP_AVERAGE;
-	else if (o_ptr->to_a >= k_ptr->to_a && o_ptr->to_h >= k_ptr->to_h && o_ptr->to_d >= k_ptr->to_d)
+	else if (o_ptr->to_a >= k_ptr->to_a && o_ptr->to_h >= k_ptr->to_h &&
+			o_ptr->to_d >= k_ptr->to_d)
 		return INSCRIP_MAGICAL;
-	else if (o_ptr->to_a <= k_ptr->to_a && o_ptr->to_h <= k_ptr->to_h && o_ptr->to_d <= k_ptr->to_d)
+	else if (o_ptr->to_a <= k_ptr->to_a && o_ptr->to_h <= k_ptr->to_h &&
+			o_ptr->to_d <= k_ptr->to_d)
 		return INSCRIP_MAGICAL;
 
 	return INSCRIP_STRANGE;
@@ -284,8 +305,11 @@ void sense_inventory(void)
 	/* Check everything */
 	for (i = 0; i < INVEN_TOTAL; i++)
 	{
+		const char *text = NULL;
+
 		object_type *o_ptr = &inventory[i];
 		obj_pseudo_t feel;
+		bool cursed;
 		
 		bool okay = FALSE;
 		
@@ -334,23 +358,26 @@ void sense_inventory(void)
 			
 			continue;
 		}
-		
+
 		/* Occasional failure on inventory items */
 		if ((i < INVEN_WIELD) && one_in_(5)) continue;
-		
-		
-		
-		/* It's already been pseudo-ID'd */
-		if (o_ptr->pseudo &&
-		    o_ptr->pseudo != INSCRIP_INDESTRUCTIBLE) continue;
-		
-		/* Check for a feeling */
+
+
+		/* Sense the object */
+		o_ptr->ident |= IDENT_SENSE;
+		cursed = object_notice_curses(o_ptr);
+
+		/* Get the feeling */
 		feel = object_pseudo(o_ptr);
-		if (!feel) continue;
-		
+
 		/* Stop everything */
 		disturb(0, 0);
-		
+
+		if (cursed)
+			text = "cursed";
+		else
+			text = inscrip_text[feel];
+
 		/* Average pseudo-ID means full ID */
 		if (feel == INSCRIP_AVERAGE)
 		{
@@ -359,27 +386,21 @@ void sense_inventory(void)
 		else
 		{
 			object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
-			
+
 			if (i >= INVEN_WIELD)
 			{
 				message_format(MSG_PSEUDOID, 0, "You feel the %s (%c) you are %s %s %s...",
 							   o_name, index_to_label(i), describe_use(i),
 							   ((o_ptr->number == 1) ? "is" : "are"),
-							   inscrip_text[feel - INSCRIP_NULL]);
+				                           text);
 			}
 			else
 			{
 				message_format(MSG_PSEUDOID, 0, "You feel the %s (%c) in your pack %s %s...",
 							   o_name, index_to_label(i),
 							   ((o_ptr->number == 1) ? "is" : "are"),
-							   inscrip_text[feel - INSCRIP_NULL]);
+				                           text);
 			}
-			
-			/* Sense the object */
-			o_ptr->pseudo = feel;
-			
-			/* The object has been "sensed" */
-			o_ptr->ident |= (IDENT_SENSE);
 		}
 		
 		

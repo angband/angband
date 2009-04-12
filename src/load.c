@@ -30,16 +30,23 @@ static int rd_item(object_type *o_ptr)
 {
 	byte old_dd;
 	byte old_ds;
-
-	u32b f1, f2, f3;
+	byte tmp8u;
 
 	object_kind *k_ptr;
 
 	char buf[128];
 
+	byte ver = 1;
 
 	/* Kind */
 	rd_s16b(&o_ptr->k_idx);
+
+	/* horrible hack */
+	if (o_ptr->k_idx == (s16b) 0xffff)
+	{
+		rd_byte(&ver);
+		rd_s16b(&o_ptr->k_idx);
+	}
 
 	/* Paranoia */
 	if ((o_ptr->k_idx < 0) || (o_ptr->k_idx >= z_info->k_max))
@@ -55,11 +62,7 @@ static int rd_item(object_type *o_ptr)
 	rd_s16b(&o_ptr->pval);
 
 	/* Pseudo-ID bit */
-	rd_byte(&o_ptr->pseudo);
-
-	/* 3.1.1 */
-	if (o_ptr->pseudo == INSCRIP_UNCURSED)
-		o_ptr->pseudo = INSCRIP_NULL;
+	rd_byte(&tmp8u);
 
 	rd_byte(&o_ptr->number);
 	rd_s16b(&o_ptr->weight);
@@ -78,9 +81,17 @@ static int rd_item(object_type *o_ptr)
 	rd_byte(&old_dd);
 	rd_byte(&old_ds);
 
-	rd_byte(&o_ptr->ident);
-	if (o_ptr->ident & 0x40)
-		o_ptr->flags3 |= TR3_LIGHT_CURSE;
+	/* 3.1.0 beta compat */
+	if (ver == 1)
+	{
+		byte old_ident;
+		rd_byte(&old_ident);
+		o_ptr->ident = old_ident;
+	}
+	else
+	{
+		rd_u16b(&o_ptr->ident);
+	}
 
 	rd_byte(&o_ptr->marked);
 
@@ -88,9 +99,46 @@ static int rd_item(object_type *o_ptr)
 	rd_byte(&o_ptr->origin_depth);
 	rd_u16b(&o_ptr->origin_xtra);
 
-	rd_u32b(&o_ptr->flags1);
-	rd_u32b(&o_ptr->flags2);
-	rd_u32b(&o_ptr->flags3);
+	rd_u32b(&o_ptr->flags[0]);
+	rd_u32b(&o_ptr->flags[1]);
+	rd_u32b(&o_ptr->flags[2]);
+
+	if (ver > 2)
+	{
+		rd_u32b(&o_ptr->known_flags[0]);
+		rd_u32b(&o_ptr->known_flags[1]);
+		rd_u32b(&o_ptr->known_flags[2]);
+
+		/* tmp8u is the old pseudo marker, 1-3 are the old cursed markers */
+		if (ver == 3 && (tmp8u >= 1 && tmp8u <= 3))
+		{
+			u32b f[OBJ_FLAG_N];
+			object_flags(o_ptr, f);
+ 
+			/* Know whatever curse flags there are to know */
+			o_ptr->known_flags[2] |= (f[2] & TR2_CURSE_MASK);
+		}
+	}
+	else
+	{
+		u32b f[OBJ_FLAG_N];
+		object_flags(o_ptr, f);
+
+		memset(&o_ptr->known_flags, 0, sizeof(o_ptr->known_flags));
+
+		if (object_known_p(o_ptr))
+		{
+			memcpy(&o_ptr->known_flags, f, sizeof(f));
+		}
+		else if (o_ptr->ident & IDENT_TRIED)
+		{
+			o_ptr->known_flags[0] =
+					(f[0] & TR0_OBVIOUS_MASK);
+			o_ptr->known_flags[2] =
+					(f[2] & TR2_OBVIOUS_MASK);
+		}
+	}	
+
 
 	/* Monster holding object */
 	rd_s16b(&o_ptr->held_m_idx);
@@ -138,9 +186,6 @@ static int rd_item(object_type *o_ptr)
 		return (0);
 	}
 
-
-	/* Extract the flags */
-	object_flags(o_ptr, &f1, &f2, &f3);
 
 
 	/* Paranoia */
@@ -219,7 +264,7 @@ static int rd_item(object_type *o_ptr)
 		}
 
 		/* Hack -- enforce legal pval */
-		if (e_ptr->flags1 & (TR1_PVAL_MASK))
+		if (e_ptr->flags[0] & (TR0_PVAL_MASK))
 		{
 			/* Force a meaningful pval */
 			if (!o_ptr->pval) o_ptr->pval = 1;
@@ -950,9 +995,9 @@ int rd_randarts(u32b version)
 
 				rd_s32b(&a_ptr->cost);
 
-				rd_u32b(&a_ptr->flags1);
-				rd_u32b(&a_ptr->flags2);
-				rd_u32b(&a_ptr->flags3);
+				rd_u32b(&a_ptr->flags[0]);
+				rd_u32b(&a_ptr->flags[1]);
+				rd_u32b(&a_ptr->flags[2]);
 
 				rd_byte(&a_ptr->level);
 				rd_byte(&a_ptr->rarity);

@@ -316,7 +316,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	bool fullid = object_known_p(o_ptr);
 	bool sensed = (o_ptr->ident & IDENT_SENSE) || fullid;
-	byte feel   = fullid ? object_pseudo(o_ptr) : o_ptr->pseudo;
+	byte feel   = object_pseudo(o_ptr);
 
 
 	/* Don't squelch artifacts */
@@ -358,9 +358,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 
 
 	/* Never autosquelch arts */
-	if (feel == INSCRIP_TERRIBLE ||
-			feel == INSCRIP_SPECIAL ||
-			feel == INSCRIP_INDESTRUCTIBLE)
+	if (feel == INSCRIP_SPECIAL)
 		return FALSE;
 
 
@@ -382,9 +380,6 @@ bool squelch_item_ok(const object_type *o_ptr)
 					feel == INSCRIP_EXCELLENT)
 				return FALSE;
 
-			if (feel == INSCRIP_WORTHLESS)
-				return TRUE;
-
 			if ((fullid || o_ptr->ident & IDENT_ATTACK) &&
 					o_ptr->to_h < 0 && o_ptr->to_d < 0)
 				return TRUE;
@@ -401,8 +396,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 			if (feel == INSCRIP_EXCELLENT)
 				return FALSE;
 
-			if (feel == INSCRIP_WORTHLESS ||
-					feel == INSCRIP_AVERAGE)
+			if (feel == INSCRIP_AVERAGE)
 				return TRUE;
 
 			if ((fullid || o_ptr->ident & IDENT_ATTACK) &&
@@ -421,8 +415,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 			if (feel == INSCRIP_EXCELLENT)
 				return FALSE;
 
-			if (feel == INSCRIP_WORTHLESS ||
-					feel == INSCRIP_AVERAGE ||
+			if (feel == INSCRIP_AVERAGE ||
 					feel == INSCRIP_MAGICAL)
 				return TRUE;
 

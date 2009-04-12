@@ -688,10 +688,10 @@ static bool hates_cold(const object_type *o_ptr)
  */
 static int set_acid_destroy(const object_type *o_ptr)
 {
-	u32b f1, f2, f3;
+	u32b f[OBJ_FLAG_N];
 	if (!hates_acid(o_ptr)) return (FALSE);
-	object_flags(o_ptr, &f1, &f2, &f3);
-	if (f3 & (TR3_IGNORE_ACID)) return (FALSE);
+	object_flags(o_ptr, f);
+	if (f[2] & TR2_IGNORE_ACID) return (FALSE);
 	return (TRUE);
 }
 
@@ -701,10 +701,10 @@ static int set_acid_destroy(const object_type *o_ptr)
  */
 static int set_elec_destroy(const object_type *o_ptr)
 {
-	u32b f1, f2, f3;
+	u32b f[OBJ_FLAG_N];
 	if (!hates_elec(o_ptr)) return (FALSE);
-	object_flags(o_ptr, &f1, &f2, &f3);
-	if (f3 & (TR3_IGNORE_ELEC)) return (FALSE);
+	object_flags(o_ptr, f);
+	if (f[2] & TR2_IGNORE_ELEC) return (FALSE);
 	return (TRUE);
 }
 
@@ -714,10 +714,10 @@ static int set_elec_destroy(const object_type *o_ptr)
  */
 static int set_fire_destroy(const object_type *o_ptr)
 {
-	u32b f1, f2, f3;
+	u32b f[OBJ_FLAG_N];
 	if (!hates_fire(o_ptr)) return (FALSE);
-	object_flags(o_ptr, &f1, &f2, &f3);
-	if (f3 & (TR3_IGNORE_FIRE)) return (FALSE);
+	object_flags(o_ptr, f);
+	if (f[2] & TR2_IGNORE_FIRE) return (FALSE);
 	return (TRUE);
 }
 
@@ -727,10 +727,10 @@ static int set_fire_destroy(const object_type *o_ptr)
  */
 static int set_cold_destroy(const object_type *o_ptr)
 {
-	u32b f1, f2, f3;
+	u32b f[OBJ_FLAG_N];
 	if (!hates_cold(o_ptr)) return (FALSE);
-	object_flags(o_ptr, &f1, &f2, &f3);
-	if (f3 & (TR3_IGNORE_COLD)) return (FALSE);
+	object_flags(o_ptr, f);
+	if (f[2] & TR2_IGNORE_COLD) return (FALSE);
 	return (TRUE);
 }
 
@@ -916,7 +916,7 @@ static int minus_ac(void)
 {
 	object_type *o_ptr = NULL;
 
-	u32b f1, f2, f3;
+	u32b f[OBJ_FLAG_N];
 
 	char o_name[80];
 
@@ -943,10 +943,10 @@ static int minus_ac(void)
 	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
 
 	/* Extract the flags */
-	object_flags(o_ptr, &f1, &f2, &f3);
+	object_flags(o_ptr, f);
 
 	/* Object resists */
-	if (f3 & (TR3_IGNORE_ACID))
+	if (f[2] & TR2_IGNORE_ACID)
 	{
 		msg_format("Your %s is unaffected!", o_name);
 
@@ -1777,7 +1777,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 
 	bool obvious = FALSE;
 
-	u32b f1, f2, f3;
+	u32b f[OBJ_FLAG_N];
 
 	char o_name[80];
 
@@ -1812,7 +1812,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Extract the flags */
-		object_flags(o_ptr, &f1, &f2, &f3);
+		object_flags(o_ptr, f);
 
 		/* Get the "plural"-ness */
 		if (o_ptr->number > 1) plural = TRUE;
@@ -1830,7 +1830,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 				{
 					do_kill = TRUE;
 					note_kill = (plural ? " melt!" : " melts!");
-					if (f3 & (TR3_IGNORE_ACID)) ignore = TRUE;
+					if (f[2] & (TR2_IGNORE_ACID)) ignore = TRUE;
 				}
 				break;
 			}
@@ -1842,7 +1842,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 				{
 					do_kill = TRUE;
 					note_kill = (plural ? " are destroyed!" : " is destroyed!");
-					if (f3 & (TR3_IGNORE_ELEC)) ignore = TRUE;
+					if (f[2] & (TR2_IGNORE_ELEC)) ignore = TRUE;
 				}
 				break;
 			}
@@ -1854,7 +1854,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 				{
 					do_kill = TRUE;
 					note_kill = (plural ? " burn up!" : " burns up!");
-					if (f3 & (TR3_IGNORE_FIRE)) ignore = TRUE;
+					if (f[2] & (TR2_IGNORE_FIRE)) ignore = TRUE;
 				}
 				break;
 			}
@@ -1866,7 +1866,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 				{
 					note_kill = (plural ? " shatter!" : " shatters!");
 					do_kill = TRUE;
-					if (f3 & (TR3_IGNORE_COLD)) ignore = TRUE;
+					if (f[2] & (TR2_IGNORE_COLD)) ignore = TRUE;
 				}
 				break;
 			}
@@ -1878,14 +1878,14 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 				{
 					do_kill = TRUE;
 					note_kill = (plural ? " burn up!" : " burns up!");
-					if (f3 & (TR3_IGNORE_FIRE)) ignore = TRUE;
+					if (f[2] & (TR2_IGNORE_FIRE)) ignore = TRUE;
 				}
 				if (hates_elec(o_ptr))
 				{
 					ignore = FALSE;
 					do_kill = TRUE;
 					note_kill = (plural ? " are destroyed!" : " is destroyed!");
-					if (f3 & (TR3_IGNORE_ELEC)) ignore = TRUE;
+					if (f[2] & (TR2_IGNORE_ELEC)) ignore = TRUE;
 				}
 				break;
 			}
@@ -1897,14 +1897,14 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 				{
 					do_kill = TRUE;
 					note_kill = (plural ? " burn up!" : " burns up!");
-					if (f3 & (TR3_IGNORE_FIRE)) ignore = TRUE;
+					if (f[2] & (TR2_IGNORE_FIRE)) ignore = TRUE;
 				}
 				if (hates_cold(o_ptr))
 				{
 					ignore = FALSE;
 					do_kill = TRUE;
 					note_kill = (plural ? " shatter!" : " shatters!");
-					if (f3 & (TR3_IGNORE_COLD)) ignore = TRUE;
+					if (f[2] & (TR2_IGNORE_COLD)) ignore = TRUE;
 				}
 				break;
 			}

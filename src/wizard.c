@@ -296,13 +296,13 @@ static void wiz_display_item(const object_type *o_ptr)
 {
 	int j = 0;
 
-	u32b f1, f2, f3;
+	u32b f[OBJ_FLAG_N];
 
 	char buf[256];
 
 
 	/* Extract the flags */
-	object_flags(o_ptr, &f1, &f2, &f3);
+	object_flags(o_ptr, f);
 
 	/* Clear screen */
 	Term_clear();
@@ -329,23 +329,23 @@ static void wiz_display_item(const object_type *o_ptr)
 	prt(format("ident = %04x  timeout = %-d",
 	           o_ptr->ident, o_ptr->timeout), 8, j);
 
-	prt("+------------FLAGS1------------+", 10, j);
+	prt("+------------FLAGS0------------+", 10, j);
 	prt("AFFECT..........SLAY.......BRAND", 11, j);
 	prt("                ae      xxxpaefc", 12, j);
 	prt("siwdcc  ssidsasmnvudotgddduoclio", 13, j);
 	prt("tnieoh  trnipthgiinmrrnrrmniierl", 14, j);
 	prt("rtsxna..lcfgdkttmldncltggndsdced", 15, j);
-	prt_binary(f1, 16, j);
+	prt_binary(f[0], 16, j);
 
-	prt("+------------FLAGS2------------+", 17, j);
+	prt("+------------FLAGS1------------+", 17, j);
 	prt("SUST........IMM.RESIST.........", 18, j);
 	prt("            afecaefcpfldbc s n  ", 19, j);
 	prt("siwdcc      cilocliooeialoshnecd", 20, j);
 	prt("tnieoh      irelierliatrnnnrethi", 21, j);
 	prt("rtsxna......decddcedsrekdfddxhss", 22, j);
-	prt_binary(f2, 23, j);
+	prt_binary(f[1], 23, j);
 
-	prt("+------------FLAGS3------------+", 10, j+32);
+	prt("+------------FLAGS2------------+", 10, j+32);
 	prt("s   ts hn    tadiiii   aiehs  hp", 11, j+32);
 	prt("lf  eefoo    egrgggg  bcnaih  vr", 12, j+32);
 	prt("we  lerlf   ilgannnn  ltssdo  ym", 13, j+32);
@@ -354,7 +354,7 @@ static void wiz_display_item(const object_type *o_ptr)
 	prt("ghigavail   aoveclio  saanyo rrr", 16, j+32);
 	prt("seteticf    craxierl  etropd sss", 17, j+32);
 	prt("trenhste    tttpdced  detwes eee", 18, j+32);
-	prt_binary(f3, 19, j+32);
+	prt_binary(f[2], 19, j+32);
 }
 
 
@@ -480,7 +480,7 @@ static int wiz_create_itemtype(void)
 		if (k_ptr->tval == tval)
 		{
 			/* Hack -- Skip instant artifacts */
-			if (k_ptr->flags3 & (TR3_INSTA_ART)) continue;
+			if (k_ptr->flags[2] & (TR2_INSTA_ART)) continue;
 
 			/* Prepare it */
 			row = 2 + (num % 20);
@@ -874,15 +874,15 @@ static void wiz_tweak_curse(object_type *o_ptr)
 	if (cursed_p(o_ptr))
 	{
 		msg_print("Resetting existing curses.");
-		o_ptr->flags3 &= ~TR3_CURSE_MASK;
+		o_ptr->flags[2] &= ~TR2_CURSE_MASK;
 	}
 
 	if (get_check("Set light curse? "))
-		o_ptr->flags3 |= TR3_LIGHT_CURSE;
+		o_ptr->flags[2] |= TR2_LIGHT_CURSE;
 	else if (get_check("Set heavy curse? "))
-		o_ptr->flags3 |= (TR3_LIGHT_CURSE | TR3_HEAVY_CURSE);
+		o_ptr->flags[2] |= (TR2_LIGHT_CURSE | TR2_HEAVY_CURSE);
 	else if (get_check("Set permanent curse? "))
-		o_ptr->flags3 |= (TR3_LIGHT_CURSE | TR3_HEAVY_CURSE | TR3_PERMA_CURSE);
+		o_ptr->flags[2] |= (TR2_LIGHT_CURSE | TR2_HEAVY_CURSE | TR2_PERMA_CURSE);
 }
 
 
@@ -1102,7 +1102,7 @@ static void wiz_create_artifact(int a_idx)
 
 	/* Hack -- extract the "cursed" flags */
 	if (cursed_p(a_ptr))
-		i_ptr->flags3 |= (a_ptr->flags3 & TR3_CURSE_MASK);
+		i_ptr->flags[2] |= (a_ptr->flags[2] & TR2_CURSE_MASK);
 
 	/* Mark that the artifact has been created. */
 	a_ptr->cur_num = 1;

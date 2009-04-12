@@ -117,7 +117,7 @@ void player_flags(u32b *f1, u32b *f2, u32b *f3)
 	/* Some classes become immune to fear at a certain plevel */
 	if (cp_ptr->flags & CF_BRAVERY_30)
 	{
-		if (p_ptr->lev >= 30) (*f2) |= (TR2_RES_FEAR);
+		if (p_ptr->lev >= 30) (*f2) |= (TR1_RES_FEAR);
 	}
 }
 
@@ -168,45 +168,45 @@ struct player_flag_record
 
 static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 {
-	{ " Acid",	2, TR2_RES_ACID,	TR2_IM_ACID,	TR2_VULN_ACID },
-	{ " Elec",	2, TR2_RES_ELEC,	TR2_IM_ELEC,	TR2_VULN_ELEC },
-	{ " Fire",	2, TR2_RES_FIRE,	TR2_IM_FIRE,	TR2_VULN_FIRE },
-	{ " Cold",	2, TR2_RES_COLD,	TR2_IM_COLD,	TR2_VULN_COLD },
-	{ " Pois",	2, TR2_RES_POIS,	0, 0 },
-	{ " Fear",	2, TR2_RES_FEAR,	0, 0 },
-	{ " Lite",	2, TR2_RES_LITE,	0, 0 },
-	{ " Dark",	2, TR2_RES_DARK,	0, 0 },
-	{ "Blind",	2, TR2_RES_BLIND,	0, 0 },
+	{ " Acid",	1, TR1_RES_ACID,	TR1_IM_ACID,	TR1_VULN_ACID },
+	{ " Elec",	1, TR1_RES_ELEC,	TR1_IM_ELEC,	TR1_VULN_ELEC },
+	{ " Fire",	1, TR1_RES_FIRE,	TR1_IM_FIRE,	TR1_VULN_FIRE },
+	{ " Cold",	1, TR1_RES_COLD,	TR1_IM_COLD,	TR1_VULN_COLD },
+	{ " Pois",	1, TR1_RES_POIS,	0, 0 },
+	{ " Fear",	1, TR1_RES_FEAR,	0, 0 },
+	{ " Lite",	1, TR1_RES_LITE,	0, 0 },
+	{ " Dark",	1, TR1_RES_DARK,	0, 0 },
+	{ "Blind",	1, TR1_RES_BLIND,	0, 0 },
 
-	{ "Confu",	2, TR2_RES_CONFU,	0, 0 },
-	{ "Sound",	2, TR2_RES_SOUND,	0, 0 },
-	{ "Shard",	2, TR2_RES_SHARD,	0, 0 },
-	{ "Nexus",	2, TR2_RES_NEXUS,	0, 0 },
-	{ "Nethr",	2, TR2_RES_NETHR,	0, 0 },
-	{ "Chaos",	2, TR2_RES_CHAOS,	0, 0 },
-	{ "Disen",	2, TR2_RES_DISEN,	0, 0 },
-	{ "S.Dig",	3, TR3_SLOW_DIGEST,	0, 0 },
-	{ "Feath",	3, TR3_FEATHER, 	0, 0 },
+	{ "Confu",	1, TR1_RES_CONFU,	0, 0 },
+	{ "Sound",	1, TR1_RES_SOUND,	0, 0 },
+	{ "Shard",	1, TR1_RES_SHARD,	0, 0 },
+	{ "Nexus",	1, TR1_RES_NEXUS,	0, 0 },
+	{ "Nethr",	1, TR1_RES_NETHR,	0, 0 },
+	{ "Chaos",	1, TR1_RES_CHAOS,	0, 0 },
+	{ "Disen",	1, TR1_RES_DISEN,	0, 0 },
+	{ "S.Dig",	2, TR2_SLOW_DIGEST,	0, 0 },
+	{ "Feath",	2, TR2_FEATHER, 	0, 0 },
 
-	{ "PLite",	3, TR3_LITE, 		0, 0 },
-	{ "Regen",	3, TR3_REGEN, 		0, 0 },
-	{ "Telep",	3, TR3_TELEPATHY, 	0, 0 },
-	{ "Invis",	3, TR3_SEE_INVIS, 	0, 0 },
-	{ "FrAct",	3, TR3_FREE_ACT, 	0, 0 },
-	{ "HLife",	3, TR3_HOLD_LIFE, 	0, 0 },
-	{ "ImpHP",	3, TR3_IMPAIR_HP,	0, 0 },
-	{ "ImpSP",	3, TR3_IMPAIR_MANA,	0, 0 },
-	{ " Fear",      3, TR3_AFRAID,          0, 0 },
+	{ "PLite",	2, TR2_LITE, 		0, 0 },
+	{ "Regen",	2, TR2_REGEN, 		0, 0 },
+	{ "Telep",	2, TR2_TELEPATHY, 	0, 0 },
+	{ "Invis",	2, TR2_SEE_INVIS, 	0, 0 },
+	{ "FrAct",	2, TR2_FREE_ACT, 	0, 0 },
+	{ "HLife",	2, TR2_HOLD_LIFE, 	0, 0 },
+	{ "ImpHP",	2, TR2_IMPAIR_HP,	0, 0 },
+	{ "ImpSP",	2, TR2_IMPAIR_MANA,	0, 0 },
+	{ " Fear",      2, TR2_AFRAID,          0, 0 },
 
-	{ "Aggrv",      3, TR3_AGGRAVATE,       0, 0 },
-	{ "Stea.",	1, TR1_STEALTH,		0, 0 },
-	{ "Sear.",	1, TR1_SEARCH,		0, 0 },
-	{ "Infra",	1, TR1_INFRA,		0, 0 },
-	{ "Tunn.",	1, TR1_TUNNEL,		0, 0 },
-	{ "Speed",	1, TR1_SPEED,		0, 0 },
-	{ "Blows",	1, TR1_BLOWS,		0, 0 },
-	{ "Shots",	1, TR1_SHOTS,		0, 0 },
-	{ "Might",	1, TR1_MIGHT,		0, 0 },
+	{ "Aggrv",      2, TR2_AGGRAVATE,       0, 0 },
+	{ "Stea.",	0, TR0_STEALTH,		0, 0 },
+	{ "Sear.",	0, TR0_SEARCH,		0, 0 },
+	{ "Infra",	0, TR0_INFRA,		0, 0 },
+	{ "Tunn.",	0, TR0_TUNNEL,		0, 0 },
+	{ "Speed",	0, TR0_SPEED,		0, 0 },
+	{ "Blows",	0, TR0_BLOWS,		0, 0 },
+	{ "Shots",	0, TR0_SHOTS,		0, 0 },
+	{ "Might",	0, TR0_MIGHT,		0, 0 },
 };
 
 #define RES_COLS (5 + 2 + INVEN_TOTAL - INVEN_WIELD)
@@ -233,7 +233,7 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 		for (j = INVEN_WIELD; j <= INVEN_TOTAL; j++)
 		{
 			object_type *o_ptr = &inventory[j];
-			u32b f[4] = {0, 0, 0, 0};
+			u32b f[OBJ_FLAG_N];
 
 			byte attr = TERM_WHITE | (j % 2) * 8; /* alternating columns */
 			char sym = '.';
@@ -241,17 +241,17 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 			bool res, imm, vuln;
 
 			if (j < INVEN_TOTAL)
-				object_flags_known(o_ptr, &f[1], &f[2], &f[3]);
+				object_flags_known(o_ptr, f);
 			else
 			{
-				player_flags(&f[1], &f[2], &f[3]);
+				player_flags(&f[0], &f[1], &f[2]);
 
 				/* If the race has innate infravision, force the corresponding flag
 				   here.  If we set it in player_flags(), then all callers of that
 				   function will think the infravision is caused by equipment. */
 				if (rp_ptr->infra > 0)
 				{
-					f[1] |= (TR1_INFRA);
+					f[0] |= (TR0_INFRA);
 				}
 			}
 
@@ -264,7 +264,7 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 
 			if (vuln) sym = '-';
 			else if (imm) sym = '*';
-			else if (res) sym = '+';		
+			else if (res) sym = '+';
 			Term_addch(attr, sym);
 		}
 		Term_putstr(col, row, 6, name_attr, format("%5s:", resists[i].name));
@@ -377,8 +377,7 @@ static void display_player_sust_info(void)
 	int i, row, col, stat;
 
 	object_type *o_ptr;
-	u32b f1, f2, f3;
-	u32b ignore_f2, ignore_f3;
+	u32b f[OBJ_FLAG_N];
 
 	byte a;
 	char c;
@@ -391,19 +390,19 @@ static void display_player_sust_info(void)
 	col = 26;
 
 	/* low-level dependencies */
-	assert(TR1_STR == (1<<A_STR));
-	assert(TR1_INT == (1<<A_INT));
-	assert(TR1_WIS == (1<<A_WIS));
-	assert(TR1_DEX == (1<<A_DEX));
-	assert(TR1_CON == (1<<A_CON));
-	assert(TR1_CHR == (1<<A_CHR));
+	assert(TR0_STR == (1<<A_STR));
+	assert(TR0_INT == (1<<A_INT));
+	assert(TR0_WIS == (1<<A_WIS));
+	assert(TR0_DEX == (1<<A_DEX));
+	assert(TR0_CON == (1<<A_CON));
+	assert(TR0_CHR == (1<<A_CHR));
 
-	assert(TR2_SUST_STR == (1<<A_STR));
-	assert(TR2_SUST_INT == (1<<A_INT));
-	assert(TR2_SUST_WIS == (1<<A_WIS));
-	assert(TR2_SUST_DEX == (1<<A_DEX));
-	assert(TR2_SUST_CON == (1<<A_CON));
-	assert(TR2_SUST_CHR == (1<<A_CHR));
+	assert(TR1_SUST_STR == (1<<A_STR));
+	assert(TR1_SUST_INT == (1<<A_INT));
+	assert(TR1_SUST_WIS == (1<<A_WIS));
+	assert(TR1_SUST_DEX == (1<<A_DEX));
+	assert(TR1_SUST_CON == (1<<A_CON));
+	assert(TR1_SUST_CHR == (1<<A_CHR));
 
 	/* Header */
 	c_put_str(TERM_WHITE, "abcdefghijkl@", row-1, col);
@@ -415,10 +414,7 @@ static void display_player_sust_info(void)
 		o_ptr = &inventory[i];
 
 		/* Get the "known" flags */
-		object_flags_known(o_ptr, &f1, &f2, &f3);
-
-		/* Hack -- assume stat modifiers are known */
-		object_flags(o_ptr, &f1, &ignore_f2, &ignore_f3);
+		object_flags_known(o_ptr, f);
 
 		/* Initialize color based of sign of pval. */
 		for (stat = 0; stat < A_MAX; stat++)
@@ -428,7 +424,7 @@ static void display_player_sust_info(void)
 			c = '.';
 
 			/* Boost */
-			if (f1 & (1<<stat))
+			if (f[0] & (1<<stat))
 			{
 				/* Default */
 				c = '*';
@@ -455,7 +451,7 @@ static void display_player_sust_info(void)
 			}
 
 			/* Sustain */
-			if (f2 & (1<<stat))
+			if (f[1] & (1<<stat))
 			{
 				/* Dark green */
 				a = TERM_GREEN;
@@ -473,7 +469,7 @@ static void display_player_sust_info(void)
 	}
 
 	/* Player flags */
-	player_flags(&f1, &f2, &f3);
+	player_flags(&f[0], &f[1], &f[2]);
 
 	/* Check stats */
 	for (stat = 0; stat < A_MAX; ++stat)
@@ -483,7 +479,7 @@ static void display_player_sust_info(void)
 		c = '.';
 
 		/* Sustain */
-		if (f2 & (1<<stat))
+		if (f[1] & (1<<stat))
 		{
 			/* Dark green "s" */
 			a = TERM_GREEN;

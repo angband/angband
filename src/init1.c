@@ -1391,13 +1391,13 @@ errr parse_f_info(char *buf, header *head)
  */
 static errr grab_one_kind_flag(object_kind *k_ptr, cptr what)
 {
-	if (grab_one_flag(&k_ptr->flags1, k_info_flags1, what) == 0)
+	if (grab_one_flag(&k_ptr->flags[0], k_info_flags1, what) == 0)
 		return (0);
 
-	if (grab_one_flag(&k_ptr->flags2, k_info_flags2, what) == 0)
+	if (grab_one_flag(&k_ptr->flags[1], k_info_flags2, what) == 0)
 		return (0);
 
-	if (grab_one_flag(&k_ptr->flags3, k_info_flags3, what) == 0)
+	if (grab_one_flag(&k_ptr->flags[2], k_info_flags3, what) == 0)
 		return (0);
 
 	/* Oops */
@@ -1692,13 +1692,13 @@ errr parse_k_info(char *buf, header *head)
  */
 static errr grab_one_artifact_flag(artifact_type *a_ptr, cptr what)
 {
-	if (grab_one_flag(&a_ptr->flags1, k_info_flags1, what) == 0)
+	if (grab_one_flag(&a_ptr->flags[0], k_info_flags1, what) == 0)
 		return (0);
 
-	if (grab_one_flag(&a_ptr->flags2, k_info_flags2, what) == 0)
+	if (grab_one_flag(&a_ptr->flags[1], k_info_flags2, what) == 0)
 		return (0);
 
-	if (grab_one_flag(&a_ptr->flags3, k_info_flags3, what) == 0)
+	if (grab_one_flag(&a_ptr->flags[2], k_info_flags3, what) == 0)
 		return (0);
 
 	/* Oops */
@@ -1757,7 +1757,7 @@ errr parse_a_info(char *buf, header *head)
 			return (PARSE_ERROR_OUT_OF_MEMORY);
 
 		/* Ignore everything */
-		a_ptr->flags3 |= (TR3_IGNORE_MASK);
+		a_ptr->flags[2] |= (TR2_IGNORE_MASK);
 
 		/* Return early */
 		return (0);
@@ -1926,13 +1926,13 @@ errr parse_a_info(char *buf, header *head)
  */
 static bool grab_one_ego_item_flag(ego_item_type *e_ptr, cptr what)
 {
-	if (grab_one_flag(&e_ptr->flags1, k_info_flags1, what) == 0)
+	if (grab_one_flag(&e_ptr->flags[0], k_info_flags1, what) == 0)
 		return (0);
 
-	if (grab_one_flag(&e_ptr->flags2, k_info_flags2, what) == 0)
+	if (grab_one_flag(&e_ptr->flags[1], k_info_flags2, what) == 0)
 		return (0);
 
-	if (grab_one_flag(&e_ptr->flags3, k_info_flags3, what) == 0)
+	if (grab_one_flag(&e_ptr->flags[2], k_info_flags3, what) == 0)
 		return (0);
 
 	/* Oops */

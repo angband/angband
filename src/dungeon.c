@@ -682,18 +682,18 @@ static void process_world(void)
 	/* Burn some fuel in the current lite */
 	if (o_ptr->tval == TV_LITE)
 	{
-		u32b f1, f2, f3;
+		u32b f[OBJ_FLAG_N];
 		bool burn_fuel = TRUE;
 
 		/* Get the object flags */
-		object_flags(o_ptr, &f1, &f2, &f3);
+		object_flags(o_ptr, f);
 
 		/* Turn off the wanton burning of light during the day in the town */
 		if (!p_ptr->depth && ((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2)))
 			burn_fuel = FALSE;
 
 		/* If the light has the NO_FUEL flag, well... */
-		if (f3 & TR3_NO_FUEL)
+		if (f[2] & TR2_NO_FUEL)
 		    burn_fuel = FALSE;
 
 		/* Use some fuel (except on artifacts, or during the day) */
@@ -748,7 +748,7 @@ static void process_world(void)
 			check_experience();
 		}
 
-		object_notice_flag(3, TR3_DRAIN_EXP);
+		object_notice_flag(3, TR2_DRAIN_EXP);
 	}
 
 	/* Recharge activatable objects and rods */
@@ -765,7 +765,7 @@ static void process_world(void)
 	{
 		teleport_player(40);
 		disturb(0, 0);
-		object_notice_flag(3, TR3_TELEPORT);
+		object_notice_flag(3, TR2_TELEPORT);
 	}
 
 	/* Delayed Word-of-Recall */

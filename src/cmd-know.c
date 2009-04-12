@@ -1376,7 +1376,7 @@ static void desc_ego_fake(int oid)
 	/* Hack: dereference the join */
 	const char *cursed[] = { "permanently cursed", "heavily cursed", "cursed" };
 	const char *xtra[] = { "sustain", "higher resistance", "ability" };
-	u32b f3, i;
+	u32b f2, i;
 
 	int e_idx = default_join[oid].oid;
 	ego_item_type *e_ptr = &e_info[e_idx];
@@ -1413,9 +1413,9 @@ static void desc_ego_fake(int oid)
 	if (e_ptr->xtra)
 		text_out(format("It provides one random %s.", xtra[e_ptr->xtra - 1]));
 
-	for (i = 0, f3 = TR3_PERMA_CURSE; i < 3 ; f3 >>= 1, i++)
+	for (i = 0, f2 = TR2_PERMA_CURSE; i < 3 ; f2 >>= 1, i++)
 	{
-		if (e_ptr->flags3 & f3)
+		if (e_ptr->flags[2] & f2)
 		{
 			text_out_c(TERM_RED, format("It is %s.", cursed[i]));
 			break;
@@ -1499,7 +1499,7 @@ static int get_artifact_from_kind(object_kind *k_ptr)
 {
 	int i;
 
-	assert(k_ptr->flags3 & TR3_INSTA_ART);
+	assert(k_ptr->flags[2] & TR2_INSTA_ART);
 
 	/* Look for the corresponding artifact */
 	for (i = 0; i < z_info->a_max; i++)
@@ -1538,7 +1538,7 @@ static void display_object(int col, int row, bool cursor, int oid)
 	byte c = use_flavour ? flavor_info[k_ptr->flavor].x_char : k_ptr->x_char;
 
 	/* Display known artifacts differently */
-	if ((k_ptr->flags3 & TR3_INSTA_ART) && artifact_is_known(get_artifact_from_kind(k_ptr)))
+	if ((k_ptr->flags[2] & TR2_INSTA_ART) && artifact_is_known(get_artifact_from_kind(k_ptr)))
 	{
 		get_artifact_display_name(o_name, sizeof(o_name), get_artifact_from_kind(k_ptr));
 	}
@@ -1578,7 +1578,7 @@ static void desc_obj_fake(int k_idx)
 	object_type *o_ptr = &object_type_body;
 
 	/* Check for known artifacts, display them as artifacts */
-	if ((k_ptr->flags3 & TR3_INSTA_ART) && artifact_is_known(get_artifact_from_kind(k_ptr)))
+	if ((k_ptr->flags[2] & TR2_INSTA_ART) && artifact_is_known(get_artifact_from_kind(k_ptr)))
 	{
 		desc_art_fake(get_artifact_from_kind(k_ptr));
 		return;
@@ -1774,7 +1774,7 @@ void do_cmd_knowledge_objects(void *obj, const char *name)
 	for (i = 0; i < z_info->k_max; i++)
 	{
 		if ((k_info[i].everseen || k_info[i].flavor || OPT(cheat_xtra)) &&
-				!(k_info[i].flags3 & TR3_INSTA_ART))
+				!(k_info[i].flags[2] & TR2_INSTA_ART))
 		{
 			int c = obj_group_order[k_info[i].tval];
 			if (c >= 0) objects[o_count++] = i;

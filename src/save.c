@@ -25,6 +25,9 @@
  */
 static void wr_item(const object_type *o_ptr)
 {
+	wr_u16b(0xffff);
+	wr_byte(ITEM_VERSION);
+
 	wr_s16b(o_ptr->k_idx);
 
 	/* Location */
@@ -35,7 +38,7 @@ static void wr_item(const object_type *o_ptr)
 	wr_byte(o_ptr->sval);
 	wr_s16b(o_ptr->pval);
 
-	wr_byte(o_ptr->pseudo);
+	wr_byte(0);
 
 	wr_byte(o_ptr->number);
 	wr_s16b(o_ptr->weight);
@@ -52,7 +55,7 @@ static void wr_item(const object_type *o_ptr)
 	wr_byte(o_ptr->dd);
 	wr_byte(o_ptr->ds);
 
-	wr_byte(o_ptr->ident);
+	wr_u16b(o_ptr->ident);
 
 	wr_byte(o_ptr->marked);
 
@@ -60,9 +63,13 @@ static void wr_item(const object_type *o_ptr)
 	wr_byte(o_ptr->origin_depth);
 	wr_u16b(o_ptr->origin_xtra);
 
-	wr_u32b(o_ptr->flags1);
-	wr_u32b(o_ptr->flags2);
-	wr_u32b(o_ptr->flags3);
+	wr_u32b(o_ptr->flags[0]);
+	wr_u32b(o_ptr->flags[1]);
+	wr_u32b(o_ptr->flags[2]);
+
+	wr_u32b(o_ptr->known_flags[0]);
+	wr_u32b(o_ptr->known_flags[1]);
+	wr_u32b(o_ptr->known_flags[2]);
 
 	/* Held by monster index */
 	wr_s16b(o_ptr->held_m_idx);
@@ -518,9 +525,9 @@ void wr_randarts(void)
 		
 		wr_s32b(a_ptr->cost);
 		
-		wr_u32b(a_ptr->flags1);
-		wr_u32b(a_ptr->flags2);
-		wr_u32b(a_ptr->flags3);
+		wr_u32b(a_ptr->flags[0]);
+		wr_u32b(a_ptr->flags[1]);
+		wr_u32b(a_ptr->flags[2]);
 		
 		wr_byte(a_ptr->level);
 		wr_byte(a_ptr->rarity);

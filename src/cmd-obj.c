@@ -321,7 +321,7 @@ static bool obj_can_zap(const object_type *o_ptr)
 /* Determine if an object is activatable */
 static bool obj_can_activate(const object_type *o_ptr)
 {
-	u32b f1, f2, f3;
+	u32b f[OBJ_FLAG_N];
 
 	/* Not known */
 	if (!object_known_p(o_ptr)) return (FALSE);
@@ -330,10 +330,10 @@ static bool obj_can_activate(const object_type *o_ptr)
 	if (o_ptr->timeout) return (FALSE);
 
 	/* Extract the flags */
-	object_flags(o_ptr, &f1, &f2, &f3);
+	object_flags(o_ptr, f);
 
 	/* Check activation flag */
-	return (f3 & TR3_ACTIVATE) ? TRUE : FALSE;
+	return (f[2] & TR2_ACTIVATE) ? TRUE : FALSE;
 }
 
 
@@ -384,10 +384,10 @@ static void obj_use_scroll(object_type *o_ptr, int item)
 static bool obj_refill_pre(void)
 {
    	object_type *o_ptr;
-	u32b f1, f2, f3;
+	u32b f[OBJ_FLAG_N];
 
 	o_ptr = &inventory[INVEN_LITE];
-	object_flags(o_ptr, &f1, &f2, &f3);
+	object_flags(o_ptr, f);
 
 	if (o_ptr->tval != TV_LITE)
 	{
@@ -395,7 +395,7 @@ static bool obj_refill_pre(void)
 		return FALSE;
 	}
 
-	else if (f3 & TR3_NO_FUEL)
+	else if (f[2] & TR2_NO_FUEL)
 	{
 		msg_print("Your light cannot be refilled.");
 		return FALSE;
@@ -406,11 +406,11 @@ static bool obj_refill_pre(void)
 
 static bool obj_can_refill(const object_type *o_ptr)
 {
-	u32b f1, f2, f3;
+	u32b f[OBJ_FLAG_N];
 	const object_type *j_ptr = &inventory[INVEN_LITE];
 
 	/* Get flags */
-	object_flags(o_ptr, &f1, &f2, &f3);
+	object_flags(o_ptr, f);
 
 	if (j_ptr->sval == SV_LITE_LANTERN)
 	{
@@ -422,7 +422,7 @@ static bool obj_can_refill(const object_type *o_ptr)
 	if ((o_ptr->tval == TV_LITE) &&
 	    (o_ptr->sval == j_ptr->sval) &&
 	    (o_ptr->timeout > 0) &&
-		!(f3 & TR3_NO_FUEL))
+		!(f[2] & TR2_NO_FUEL))
 	{
 		return (TRUE);
 	}

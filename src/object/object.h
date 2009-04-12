@@ -36,16 +36,12 @@ typedef enum
 typedef enum
 {
 	INSCRIP_NULL = 0,            /*!< No pseudo-ID status */
-	INSCRIP_TERRIBLE = 1,        /*!< Cursed artifact */
-	INSCRIP_WORTHLESS = 2,       /*!< Cursed ego-item */
-	INSCRIP_CURSED = 3,          /*!< Cursed normal item */
-	INSCRIP_STRANGE = 4,         /*!< Item that has mixed combat bonuses */
-	INSCRIP_AVERAGE = 5,         /*!< Item with no interesting features */
-	INSCRIP_MAGICAL = 6,         /*!< Item with combat bonuses */
-	INSCRIP_EXCELLENT = 7,       /*!< Ego-item */
-	INSCRIP_SPECIAL = 8,         /*!< Artifact */
-	INSCRIP_UNCURSED = 9,        /*!< XXX No longer used */
-	INSCRIP_INDESTRUCTIBLE = 10, /*!< Artifact that was tried to be destroyed */
+	INSCRIP_STRANGE = 1,         /*!< Item that has mixed combat bonuses */
+	INSCRIP_AVERAGE = 2,         /*!< Item with no interesting features */
+	INSCRIP_MAGICAL = 3,         /*!< Item with combat bonuses */
+	INSCRIP_SPLENDID = 4,        /*!< Obviously good item */
+	INSCRIP_EXCELLENT = 5,       /*!< Ego-item */
+	INSCRIP_SPECIAL = 6,         /*!< Artifact */
 
 	INSCRIP_MAX                  /*!< Maximum number of pseudo-ID markers */
 } obj_pseudo_t;
@@ -63,6 +59,7 @@ void object_tried(object_type *o_ptr);
 void object_notice_on_attack(void);
 void object_notice_slays(u32b known_f1, int inven_idx);
 void object_notice_flag(int flagset, u32b flag);
+bool object_notice_curses(object_type *o_ptr);
 void object_notice_on_wield(object_type *o_ptr);
 obj_pseudo_t object_pseudo(const object_type *o_ptr);
 void sense_inventory(void);
@@ -100,8 +97,8 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode);
 /* obj-util.c */
 void flavor_init(void);
 void reset_visuals(bool unused);
-void object_flags(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
-void object_flags_known(const object_type *o_ptr, u32b *f1, u32b *f2, u32b *f3);
+void object_flags(const object_type *o_ptr, u32b flags[OBJ_FLAG_N]);
+void object_flags_known(const object_type *o_ptr, u32b flags[OBJ_FLAG_N]);
 char index_to_label(int i);
 s16b label_to_inven(int c);
 s16b label_to_equip(int c);

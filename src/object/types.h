@@ -31,9 +31,7 @@ typedef struct
 
 	s32b cost;     /**< Object base cost */
 
-	u32b flags1;   /**< Flags, set 1 (see TR1_ macros) */
-	u32b flags2;   /**< Flags, set 2 (see TR2_ macros) */
-	u32b flags3;   /**< Flags, set 3 (see TR3_ macros) */
+	u32b flags[OBJ_FLAG_N];		/**< Flags */
 
 	byte d_attr;   /**< Default object attribute */
 	char d_char;   /**< Default object character */
@@ -106,9 +104,7 @@ typedef struct
 
 	s32b cost;    /**< Artifact (pseudo-)worth */
 
-	u32b flags1;  /**< Flags, set 1 (see TR1_ macros) */
-	u32b flags2;  /**< Flags, set 2 (see TR2_ macros) */
-	u32b flags3;  /**< Flags, set 3 (see TR3_ macros) */
+	u32b flags[OBJ_FLAG_N];		/**< Flags */
 
 	byte level;   /**< Minimum depth artifact can appear at */
 	byte rarity;  /**< Artifact rarity */
@@ -136,9 +132,7 @@ typedef struct
 
 	s32b cost;			/* Ego-item "cost" */
 
-	u32b flags1;		/* Ego-Item Flags, set 1 */
-	u32b flags2;		/* Ego-Item Flags, set 2 */
-	u32b flags3;		/* Ego-Item Flags, set 3 */
+	u32b flags[OBJ_FLAG_N];		/**< Flags */
 
 	byte level;			/* Minimum level */
 	byte rarity;		/* Object rarity */
@@ -204,9 +198,9 @@ typedef struct
 	byte name1;			/* Artifact type, if any */
 	byte name2;			/* Ego-Item type, if any */
 
-	u32b flags1;		/* Flags, set 1 */
-	u32b flags2;		/* Flags, set 2 */
-	u32b flags3;		/* Flags, set 3 */
+	u32b flags[OBJ_FLAG_N];		/**< Flags */
+	u32b known_flags[OBJ_FLAG_N];	/**< Player-known flags */
+	u16b ident;			/* Special flags */
 
 	s16b ac;			/* Normal AC */
 	s16b to_a;			/* Plusses to AC */
@@ -218,9 +212,6 @@ typedef struct
 	s16b timeout;		/* Timeout Counter */
 
 	byte number;		/* Number of items */
-
-	byte pseudo;		/* Pseudo-ID marker */
-	byte ident;			/* Special flags */
 	byte marked;		/* Object is marked */
 
 	s16b next_o_idx;	/* Next object in stack (if any) */

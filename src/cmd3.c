@@ -184,13 +184,7 @@ void wield_item(object_type *o_ptr, int item)
 		msg_print("Oops! It feels deathly cold!");
 
 		/* Sense the object */
-		o_ptr->pseudo = INSCRIP_CURSED;
-
-		/* The object has been "sensed" */
-		o_ptr->ident |= (IDENT_SENSE);
-
-		/* Set squelched status */
-		p_ptr->notice |= PN_SQUELCH;
+		object_notice_curses(o_ptr);
 	}
 
 	/* Recalculate bonuses, torch, mana */
@@ -267,24 +261,7 @@ void do_cmd_destroy(void)
 	{
 		/* Message */
 		msg_format("You cannot destroy %s.", o_name);
-
-		/* Don't mark id'ed objects */
-		if (object_known_p(o_ptr)) return;
-
-		/* It has already been sensed */
-		if (o_ptr->ident & (IDENT_SENSE))
-		{
-			/* Already sensed objects always get improved feelings */
-			if (cursed_p(o_ptr))
-				o_ptr->pseudo = INSCRIP_TERRIBLE;
-			else
-				o_ptr->pseudo = INSCRIP_SPECIAL;
-		}
-		else
-		{
-			/* Mark the object as indestructible */
-			o_ptr->pseudo = INSCRIP_INDESTRUCTIBLE;
-		}
+		o_ptr->ident |= IDENT_INDESTRUCT;
 
 		/* Combine the pack */
 		p_ptr->notice |= (PN_COMBINE);

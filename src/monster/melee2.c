@@ -3791,15 +3791,15 @@ static void process_monster(int m_idx)
 				if ((r_ptr->flags[1] & (RF1_TAKE_ITEM)) ||
 				    (r_ptr->flags[1] & (RF1_KILL_ITEM)))
 				{
-					u32b f1, f2, f3;
+					u32b f[OBJ_FLAG_N];
 
-					u32b flg3 = 0L;
+					u32b flg2 = 0L;
 
 					char m_name[80];
 					char o_name[80];
 
 					/* Extract some flags */
-					object_flags(o_ptr, &f1, &f2, &f3);
+					object_flags(o_ptr, f);
 
 					/* Get the object name */
 					object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
@@ -3808,20 +3808,20 @@ static void process_monster(int m_idx)
 					monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND1);
 
 					/* React to objects that hurt the monster */
-					if (f1 & (TR1_KILL_DRAGON)) flg3 |= (RF2_DRAGON);
-					if (f1 & (TR1_KILL_DEMON)) flg3 |= (RF2_DEMON);
-					if (f1 & (TR1_KILL_UNDEAD)) flg3 |= (RF2_UNDEAD);
-					if (f1 & (TR1_SLAY_DRAGON)) flg3 |= (RF2_DRAGON);
-					if (f1 & (TR1_SLAY_TROLL)) flg3 |= (RF2_TROLL);
-					if (f1 & (TR1_SLAY_GIANT)) flg3 |= (RF2_GIANT);
-					if (f1 & (TR1_SLAY_ORC)) flg3 |= (RF2_ORC);
-					if (f1 & (TR1_SLAY_DEMON)) flg3 |= (RF2_DEMON);
-					if (f1 & (TR1_SLAY_UNDEAD)) flg3 |= (RF2_UNDEAD);
-					if (f1 & (TR1_SLAY_ANIMAL)) flg3 |= (RF2_ANIMAL);
-					if (f1 & (TR1_SLAY_EVIL)) flg3 |= (RF2_EVIL);
+					if (f[0] & (TR0_KILL_DRAGON)) flg2 |= (RF2_DRAGON);
+					if (f[0] & (TR0_KILL_DEMON)) flg2 |= (RF2_DEMON);
+					if (f[0] & (TR0_KILL_UNDEAD)) flg2 |= (RF2_UNDEAD);
+					if (f[0] & (TR0_SLAY_DRAGON)) flg2 |= (RF2_DRAGON);
+					if (f[0] & (TR0_SLAY_TROLL)) flg2 |= (RF2_TROLL);
+					if (f[0] & (TR0_SLAY_GIANT)) flg2 |= (RF2_GIANT);
+					if (f[0] & (TR0_SLAY_ORC)) flg2 |= (RF2_ORC);
+					if (f[0] & (TR0_SLAY_DEMON)) flg2 |= (RF2_DEMON);
+					if (f[0] & (TR0_SLAY_UNDEAD)) flg2 |= (RF2_UNDEAD);
+					if (f[0] & (TR0_SLAY_ANIMAL)) flg2 |= (RF2_ANIMAL);
+					if (f[0] & (TR0_SLAY_EVIL)) flg2 |= (RF2_EVIL);
 
 					/* The object cannot be picked up by the monster */
-					if (artifact_p(o_ptr) || (r_ptr->flags[2] & flg3))
+					if (artifact_p(o_ptr) || (r_ptr->flags[2] & flg2))
 					{
 						/* Only give a message for "take_item" */
 						if (r_ptr->flags[1] & (RF1_TAKE_ITEM))

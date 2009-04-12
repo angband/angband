@@ -405,10 +405,10 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type
  */
 static bool obj_desc_show_weapon(const object_type *o_ptr)
 {
-	u32b f1, f2, f3;
-	object_flags(o_ptr, &f1, &f2, &f3);
+	u32b f[OBJ_FLAG_N];
+	object_flags(o_ptr, f);
 
-	if (f3 & TR3_SHOW_MODS) return TRUE;
+	if (f[2] & TR2_SHOW_MODS) return TRUE;
 	if (o_ptr->to_h && o_ptr->to_d) return TRUE;
 
 	switch (o_ptr->tval)
@@ -578,11 +578,11 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 
 static size_t obj_desc_light(const object_type *o_ptr, char *buf, size_t max, size_t end)
 {
-	u32b f1, f2, f3;
-	object_flags(o_ptr, &f1, &f2, &f3);
+	u32b f[OBJ_FLAG_N];
+	object_flags(o_ptr, f);
 
 	/* Fuelled light sources get number of remaining turns appended */
-	if ((o_ptr->tval == TV_LITE) && !(f3 & TR3_NO_FUEL))
+	if ((o_ptr->tval == TV_LITE) && !(f[2] & TR2_NO_FUEL))
 		strnfcat(buf, max, &end, " (%d turns)", o_ptr->timeout);
 
 	return end;
@@ -590,12 +590,12 @@ static size_t obj_desc_light(const object_type *o_ptr, char *buf, size_t max, si
 
 static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max, size_t end)
 {
-	u32b f1, f2, f3;
-	object_flags(o_ptr, &f1, &f2, &f3);
+	u32b f[OBJ_FLAG_N];
+	object_flags(o_ptr, f);
 
-	if (!(f1 & TR1_PVAL_MASK)) return end;
+	if (!(f[0] & TR0_PVAL_MASK)) return end;
 
-	if (f3 & TR3_HIDE_TYPE)
+	if (f[2] & TR2_HIDE_TYPE)
 	{
 		strnfcat(buf, max, &end, " (%+d)", o_ptr->pval);
 		return end;
@@ -603,15 +603,15 @@ static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max, siz
 
 	strnfcat(buf, max, &end, " (%+d", o_ptr->pval);
 
-	if (f1 & TR1_STEALTH)
+	if (f[0] & TR0_STEALTH)
 		strnfcat(buf, max, &end, " stealth");
-	else if (f1 & TR1_SEARCH)
+	else if (f[0] & TR0_SEARCH)
 		strnfcat(buf, max, &end, " searching");
-	else if (f1 & TR1_INFRA)
+	else if (f[0] & TR0_INFRA)
 		strnfcat(buf, max, &end, " infravision");
-	else if (f1 & TR1_SPEED)
+	else if (f[0] & TR0_SPEED)
 		strnfcat(buf, max, &end, " speed");
-	else if (f1 & TR1_BLOWS)
+	else if (f[0] & TR0_BLOWS)
 		strnfcat(buf, max, &end, " attack%s", PLURAL(o_ptr->pval));
 
 	strnfcat(buf, max, &end, ")");
@@ -662,31 +662,44 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 
 static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, size_t end)
 {
-	const char *u = NULL, *v = NULL;
+	const char *u[4] = { 0, 0, 0, 0 };
+	int n = 0;
+	int feel = object_pseudo(o_ptr);
 
 	/* Get inscription */
 	if (o_ptr->note)
-		u = quark_str(o_ptr->note);
+		u[n++] = quark_str(o_ptr->note);
 
 	/* Use special inscription, if any */
-	if (o_ptr->pseudo)
-		v = inscrip_text[o_ptr->pseudo];
-	else if (object_known_p(o_ptr) && cursed_p(o_ptr))
-		v = "cursed";
+	if (!object_known_p(o_ptr) && feel)
+		u[n++] = inscrip_text[feel];
 	else if ((o_ptr->ident & IDENT_EMPTY) && !object_known_p(o_ptr))
-		v = "empty";
+		u[n++] = "empty";
 	else if (!object_aware_p(o_ptr) && object_tried_p(o_ptr))
-		v = "tried";
+		u[n++] = "tried";
 
-	if (u && v)
-		strnfcat(buf, max, &end, " {%s, %s}", u, v);
-	else if (u)
-		strnfcat(buf, max, &end, " {%s}", u);
-	else if (v)
-		strnfcat(buf, max, &end, " {%s}", v);
+	/* Note curses */
+	if (o_ptr->known_flags[2] & TR2_CURSE_MASK)
+		u[n++] = "cursed";
 
+	/* Note squelch */
 	if (squelch_item_ok(o_ptr))
-		strnfcat(buf, max, &end, " (squelch)");
+		u[n++] = "squelch";
+
+	if (n)
+	{
+		int i;
+		for (i = 0; i < n; i++)
+		{
+			if (i == 0)
+				strnfcat(buf, max, &end, " {");
+			strnfcat(buf, max, &end, "%s", u[i]);
+			if (i < n-1)
+				strnfcat(buf, max, &end, ", ");
+		}
+
+		strnfcat(buf, max, &end, "}");
+	}
 
 	return end;
 }
