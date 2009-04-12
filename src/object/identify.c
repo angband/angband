@@ -109,6 +109,26 @@ void object_notice_slays(u32b known_f0, int inven_idx)
 }
 
 
+typedef struct
+{
+	int flagset;
+	u32b flag;
+	const char *msg;
+} flag_message_t;
+
+static const flag_message_t msgs[] =
+{
+	{ 0, TR0_SEARCH,	"Your %s assists your searching." },
+	{ 1, 0xffffffff,	"Your %s glows." },
+	{ 2, TR2_FREE_ACT,	"Your %s glows." },
+	{ 2, TR2_HOLD_LIFE,	"Your %s glows." },
+	{ 2, TR2_DRAIN_EXP,	"You feel your %s drain your life." },
+	{ 2, TR2_FEATHER,	"Your %s slows your fall." },
+	{ 2, TR2_IMPACT,	"Your %s causes an earthquake!" },
+	{ 2, TR2_TELEPORT,	"Your %s teleports you." },
+};
+
+
 
 /**
  * Notice a given special flag on wielded items.
@@ -136,16 +156,12 @@ void object_notice_flag(int flagset, u32b flag)
 			/* Notice flags */
 			o_ptr->known_flags[flagset] |= flag;
 
-			if (flagset == 0 && (f[0] & TR0_SEARCH))
-				msg_format("Your %s assists your searching.", o_name);
-			else if (flagset == 2 && (f[2] & TR2_DRAIN_EXP))
-				msg_format("You feel your %s drain your life.", o_name);
-			else if (flagset == 2 && (f[2] & TR2_FEATHER))
-				msg_format("Your %s slows your fall.", o_name);
-			else if (flagset == 2 && (f[2] & TR2_IMPACT))
-				msg_format("Your %s causes an earthquake!", o_name);
-			else if (flagset == 2 && (f[2] & TR2_TELEPORT))
-				msg_format("Your %s teleports you.", o_name);
+			for (size_t j = 0; j < N_ELEMENTS(msgs); j++)
+			{
+				if (msgs[j].flagset == flagset &&
+						(msgs[j].flag & flag))
+					msg_format(msgs[j].msg, o_name);
+			}
 		}
 	}	
 
@@ -160,10 +176,11 @@ void object_notice_flag(int flagset, u32b flag)
  */
 bool object_notice_curses(object_type *o_ptr)
 {
+	u32b curses;
 	u32b f[OBJ_FLAG_N];
 	object_flags(o_ptr, f);
 
-	u32b curses = (f[2] & TR2_CURSE_MASK);
+	curses = (f[2] & TR2_CURSE_MASK);
 
 	/* Know whatever curse flags there are to know */
 	o_ptr->known_flags[2] |= curses;
@@ -174,12 +191,8 @@ bool object_notice_curses(object_type *o_ptr)
 }
 
 
-static const struct
-{
-	int flagset;
-	u32b flag;
-	const char *msg;
-} notice_msgs[] =
+
+static const flag_message_t notice_msgs[] =
 {
 	{ 0, TR0_STEALTH,	"You feel your %s affect your stealth." },
 	{ 2, TR2_SLOW_DIGEST,	"You feel your %s slow your metabolism." },
