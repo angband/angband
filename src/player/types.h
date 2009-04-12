@@ -38,6 +38,13 @@ typedef struct
 	bool heavy_shoot;	/* Heavy shooter */
 	bool icky_wield;	/* Icky weapon */
 
+	bool sustain_str;	/* Keep strength */
+	bool sustain_int;	/* Keep intelligence */
+	bool sustain_wis;	/* Keep wisdom */
+	bool sustain_dex;	/* Keep dexterity */
+	bool sustain_con;	/* Keep constitution */
+	bool sustain_chr;	/* Keep charisma */
+
 	bool vuln_acid;
 	bool vuln_elec;
 	bool vuln_fire;
@@ -65,13 +72,6 @@ typedef struct
 	bool resist_nethr;	/* Resist nether */
 	bool resist_chaos;	/* Resist chaos */
 	bool resist_disen;	/* Resist disenchant */
-
-	bool sustain_str;	/* Keep strength */
-	bool sustain_int;	/* Keep intelligence */
-	bool sustain_wis;	/* Keep wisdom */
-	bool sustain_dex;	/* Keep dexterity */
-	bool sustain_con;	/* Keep constitution */
-	bool sustain_chr;	/* Keep charisma */
 
 	bool slow_digest;	/* Slower digestion */
 	bool impair_hp;   /* Slow HP regeneration */

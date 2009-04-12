@@ -287,6 +287,10 @@ static void calc_mana(void)
 			/* Reduce mana */
 			msp = (3 * msp) / 4;
 		}
+		else if (f[2] & TR2_FREE_ACT)
+		{
+			o_ptr->known_flags[2] |= TR2_FREE_ACT;
+		}
 	}
 
 

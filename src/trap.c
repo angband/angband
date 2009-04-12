@@ -230,6 +230,9 @@ void hit_trap(int y, int x)
 						dam = dam * 2;
 						(void)inc_timed(TMD_POISONED, randint1(dam), TRUE);
 					}
+
+					if (p_ptr->state.resist_pois)
+						object_notice_flag(1, TR1_RES_POIS);
 				}
 
 				/* Take the damage */
@@ -344,9 +347,10 @@ void hit_trap(int y, int x)
 		{
 			msg_print("You are surrounded by a black gas!");
 			if (!p_ptr->state.resist_blind)
-			{
 				(void)inc_timed(TMD_BLIND, randint0(50) + 25, TRUE);
-			}
+			else
+				object_notice_flag(1, TR1_RES_BLIND);
+
 			break;
 		}
 
@@ -354,9 +358,10 @@ void hit_trap(int y, int x)
 		{
 			msg_print("You are surrounded by a gas of scintillating colors!");
 			if (!p_ptr->state.resist_confu)
-			{
 				(void)inc_timed(TMD_CONFUSED, randint0(20) + 10, TRUE);
-			}
+			else
+				object_notice_flag(1, TR1_RES_CONFU);
+
 			break;
 		}
 
@@ -364,9 +369,10 @@ void hit_trap(int y, int x)
 		{
 			msg_print("You are surrounded by a pungent green gas!");
 			if (!p_ptr->state.resist_pois && !p_ptr->timed[TMD_OPP_POIS])
-			{
 				(void)inc_timed(TMD_POISONED, randint0(20) + 10, TRUE);
-			}
+			else if (p_ptr->state.resist_pois)
+				object_notice_flag(1, TR1_RES_POIS);
+
 			break;
 		}
 
@@ -374,9 +380,10 @@ void hit_trap(int y, int x)
 		{
 			msg_print("You are surrounded by a strange white mist!");
 			if (!p_ptr->state.free_act)
-			{
 				(void)inc_timed(TMD_PARALYZED, randint0(10) + 5, TRUE);
-			}
+			else
+				object_notice_flag(2, TR2_FREE_ACT);
+
 			break;
 		}
 	}

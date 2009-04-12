@@ -1331,9 +1331,10 @@ bool make_attack_spell(int m_idx)
 			{
 				msg_print("Your mind is blasted by psionic energy.");
 				if (!p_ptr->state.resist_confu)
-				{
 					(void)inc_timed(TMD_CONFUSED, randint0(4) + 4, TRUE);
-				}
+				else
+					object_notice_flag(1, TR1_RES_CONFU);
+
 				take_hit(MIND_BLAST_DMG(rlev, RANDOMISE), ddesc);
 			}
 			break;
@@ -1344,13 +1345,10 @@ bool make_attack_spell(int m_idx)
 			if (!direct) break;
 			disturb(1, 0);
 			if (!seen)
-			{
 				msg_print("You feel something focusing on your mind.");
-			}
 			else
-			{
 				msg_format("%^s looks deep into your eyes.", m_name);
-			}
+
 			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
 				msg_print("You resist the effects!");
@@ -1360,17 +1358,20 @@ bool make_attack_spell(int m_idx)
 				msg_print("Your mind is blasted by psionic energy.");
 				take_hit(BRAIN_SMASH_DMG(rlev, RANDOMISE), ddesc);
 				if (!p_ptr->state.resist_blind)
-				{
 					(void)inc_timed(TMD_BLIND, 8 + randint0(8), TRUE);
-				}
+				else
+					object_notice_flag(1, TR1_RES_BLIND);
+
 				if (!p_ptr->state.resist_confu)
-				{
 					(void)inc_timed(TMD_CONFUSED, randint0(4) + 4, TRUE);
-				}
+				else
+					object_notice_flag(1, TR1_RES_CONFU);
+
 				if (!p_ptr->state.free_act)
-				{
 					(void)inc_timed(TMD_PARALYZED, randint0(4) + 4, TRUE);
-				}
+				else
+					object_notice_flag(2, TR2_FREE_ACT);
+
 				(void)inc_timed(TMD_SLOW, randint0(4) + 4, TRUE);
 			}
 			break;
@@ -1552,8 +1553,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s casts a magic missile.", m_name);
-			bolt(m_idx, GF_MISSILE,
-			     MISSILE_DMG(rlev, RANDOMISE));
+			bolt(m_idx, GF_MISSILE, MISSILE_DMG(rlev, RANDOMISE));
 			break;
 		}
 
@@ -1567,6 +1567,7 @@ bool make_attack_spell(int m_idx)
 			if (p_ptr->state.resist_fear)
 			{
 				msg_print("You refuse to be frightened.");
+				object_notice_flag(1, TR1_RES_FEAR);
 			}
 			else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
@@ -1589,6 +1590,7 @@ bool make_attack_spell(int m_idx)
 			if (p_ptr->state.resist_blind)
 			{
 				msg_print("You are unaffected!");
+				object_notice_flag(1, TR1_RES_BLIND);
 			}
 			else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
@@ -1611,6 +1613,7 @@ bool make_attack_spell(int m_idx)
 			if (p_ptr->state.resist_confu)
 			{
 				msg_print("You disbelieve the feeble spell.");
+				object_notice_flag(1, TR1_RES_CONFU);
 			}
 			else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
@@ -1632,6 +1635,7 @@ bool make_attack_spell(int m_idx)
 			if (p_ptr->state.free_act)
 			{
 				msg_print("You are unaffected!");
+				object_notice_flag(2, TR2_FREE_ACT);
 			}
 			else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
@@ -1654,6 +1658,7 @@ bool make_attack_spell(int m_idx)
 			if (p_ptr->state.free_act)
 			{
 				msg_print("You are unaffected!");
+				object_notice_flag(2, TR2_FREE_ACT);
 			}
 			else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
@@ -1824,6 +1829,7 @@ bool make_attack_spell(int m_idx)
 			if (p_ptr->state.resist_nexus)
 			{
 				msg_print("You are unaffected!");
+				object_notice_flag(1, TR1_RES_NEXUS);
 			}
 			else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{

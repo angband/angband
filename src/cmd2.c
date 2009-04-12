@@ -295,9 +295,9 @@ static void chest_trap(int y, int x, s16b o_idx)
 	{
 		msg_print("A puff of green gas surrounds you!");
 		if (!(p_ptr->state.resist_pois || p_ptr->timed[TMD_OPP_POIS]))
-		{
 			(void)inc_timed(TMD_POISONED, 10 + randint1(20), TRUE);
-		}
+		else if (p_ptr->state.resist_pois)
+			object_notice_flag(1, TR1_RES_POIS);
 	}
 
 	/* Paralyze */
@@ -305,9 +305,9 @@ static void chest_trap(int y, int x, s16b o_idx)
 	{
 		msg_print("A puff of yellow gas surrounds you!");
 		if (!p_ptr->state.free_act)
-		{
 			(void)inc_timed(TMD_PARALYZED, 10 + randint1(20), TRUE);
-		}
+		else
+			object_notice_flag(2, TR2_FREE_ACT);
 	}
 
 	/* Summon monsters */

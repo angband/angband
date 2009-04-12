@@ -492,6 +492,10 @@ bool make_attack_normal(int m_idx)
 							obvious = TRUE;
 						}
 					}
+					else if (p_ptr->state.resist_pois)
+					{
+						object_notice_flag(1, TR1_RES_POIS);
+					}
 
 					/* Learn about the player */
 					update_smart_learn(m_idx, DRS_RES_POIS);
@@ -509,6 +513,10 @@ bool make_attack_normal(int m_idx)
 					{
 						/* Apply disenchantment */
 						if (apply_disenchant(0)) obvious = TRUE;
+					}
+					else
+					{
+						object_notice_flag(1, TR1_RES_DISEN);
 					}
 
 					/* Learn about the player */
@@ -874,6 +882,10 @@ bool make_attack_normal(int m_idx)
 							obvious = TRUE;
 						}
 					}
+					else
+					{
+						object_notice_flag(1, TR1_RES_BLIND);
+					}
 
 					/* Learn about the player */
 					update_smart_learn(m_idx, DRS_RES_BLIND);
@@ -894,6 +906,10 @@ bool make_attack_normal(int m_idx)
 							obvious = TRUE;
 						}
 					}
+					else
+					{
+						object_notice_flag(1, TR1_RES_CONFU);
+					}
 
 					/* Learn about the player */
 					update_smart_learn(m_idx, DRS_RES_CONFU);
@@ -910,6 +926,7 @@ bool make_attack_normal(int m_idx)
 					if (p_ptr->state.resist_fear)
 					{
 						msg_print("You stand your ground!");
+						object_notice_flag(1, TR1_RES_FEAR);
 						obvious = TRUE;
 					}
 					else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
@@ -920,9 +937,7 @@ bool make_attack_normal(int m_idx)
 					else
 					{
 						if (inc_timed(TMD_AFRAID, 3 + randint1(rlev), TRUE))
-						{
 							obvious = TRUE;
-						}
 					}
 
 					/* Learn about the player */
@@ -943,6 +958,7 @@ bool make_attack_normal(int m_idx)
 					if (p_ptr->state.free_act)
 					{
 						msg_print("You are unaffected!");
+						object_notice_flag(2, TR2_FREE_ACT);
 						obvious = TRUE;
 					}
 					else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
@@ -953,9 +969,7 @@ bool make_attack_normal(int m_idx)
 					else
 					{
 						if (inc_timed(TMD_PARALYZED, 3 + randint1(rlev), TRUE))
-						{
 							obvious = TRUE;
-						}
 					}
 
 					/* Learn about the player */
@@ -1084,6 +1098,7 @@ bool make_attack_normal(int m_idx)
 					if (p_ptr->state.hold_life && (randint0(100) < 95))
 					{
 						msg_print("You keep hold of your life force!");
+						object_notice_flag(2, TR2_HOLD_LIFE);
 					}
 					else
 					{
@@ -1092,6 +1107,7 @@ bool make_attack_normal(int m_idx)
 						{
 							msg_print("You feel your life slipping away!");
 							lose_exp(d/10);
+							object_notice_flag(2, TR2_HOLD_LIFE);
 						}
 						else
 						{
@@ -1113,6 +1129,7 @@ bool make_attack_normal(int m_idx)
 					if (p_ptr->state.hold_life && (randint0(100) < 90))
 					{
 						msg_print("You keep hold of your life force!");
+						object_notice_flag(2, TR2_HOLD_LIFE);
 					}
 					else
 					{
@@ -1122,6 +1139,7 @@ bool make_attack_normal(int m_idx)
 						{
 							msg_print("You feel your life slipping away!");
 							lose_exp(d / 10);
+							object_notice_flag(2, TR2_HOLD_LIFE);
 						}
 						else
 						{
@@ -1143,6 +1161,7 @@ bool make_attack_normal(int m_idx)
 					if (p_ptr->state.hold_life && (randint0(100) < 75))
 					{
 						msg_print("You keep hold of your life force!");
+						object_notice_flag(2, TR2_HOLD_LIFE);
 					}
 					else
 					{
@@ -1152,6 +1171,7 @@ bool make_attack_normal(int m_idx)
 						{
 							msg_print("You feel your life slipping away!");
 							lose_exp(d / 10);
+							object_notice_flag(2, TR2_HOLD_LIFE);
 						}
 						else
 						{
@@ -1173,6 +1193,7 @@ bool make_attack_normal(int m_idx)
 					if (p_ptr->state.hold_life && (randint0(100) < 50))
 					{
 						msg_print("You keep hold of your life force!");
+						object_notice_flag(2, TR2_HOLD_LIFE);
 					}
 					else
 					{
@@ -1182,6 +1203,7 @@ bool make_attack_normal(int m_idx)
 						{
 							msg_print("You feel your life slipping away!");
 							lose_exp(d / 10);
+							object_notice_flag(2, TR2_HOLD_LIFE);
 						}
 						else
 						{
@@ -1204,6 +1226,10 @@ bool make_attack_normal(int m_idx)
 						{
 							obvious = TRUE;
 						}
+					}
+					else
+					{
+						object_notice_flag(1, TR1_RES_CHAOS);
 					}
 
 					/* Learn about the player */
