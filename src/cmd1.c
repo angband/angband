@@ -40,7 +40,7 @@ void search(void)
 	chance = p_ptr->state.skills[SKILL_SEARCH];
 
 	/* Notice object flags */
-	object_notice_flag(1, TR0_SEARCH);
+	object_notice_flag(0, TR0_SEARCH);
 
 	/* Penalize various conditions */
 	if (p_ptr->timed[TMD_BLIND] || no_lite()) chance = chance / 10;

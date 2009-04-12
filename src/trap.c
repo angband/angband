@@ -135,7 +135,7 @@ void hit_trap(int y, int x)
 			if (p_ptr->state.ffall)
 			{
 				msg_print("You float gently down to the next level.");
-				object_notice_flag(3, TR2_FEATHER);
+				object_notice_flag(2, TR2_FEATHER);
 			}
 			else
 			{
@@ -158,7 +158,7 @@ void hit_trap(int y, int x)
 			if (p_ptr->state.ffall)
 			{
 				msg_print("You float gently to the bottom of the pit.");
-				object_notice_flag(3, TR2_FEATHER);
+				object_notice_flag(2, TR2_FEATHER);
 			}
 			else
 			{
@@ -176,7 +176,7 @@ void hit_trap(int y, int x)
 			{
 				msg_print("You float gently to the floor of the pit.");
 				msg_print("You carefully avoid touching the spikes.");
-				object_notice_flag(3, TR2_FEATHER);
+				object_notice_flag(2, TR2_FEATHER);
 			}
 			else
 			{
@@ -206,7 +206,7 @@ void hit_trap(int y, int x)
 			{
 				msg_print("You float gently to the floor of the pit.");
 				msg_print("You carefully avoid touching the spikes.");
-				object_notice_flag(3, TR2_FEATHER);
+				object_notice_flag(2, TR2_FEATHER);
 			}
 			else
 			{

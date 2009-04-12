@@ -748,7 +748,7 @@ static void process_world(void)
 			check_experience();
 		}
 
-		object_notice_flag(3, TR2_DRAIN_EXP);
+		object_notice_flag(2, TR2_DRAIN_EXP);
 	}
 
 	/* Recharge activatable objects and rods */
@@ -763,9 +763,9 @@ static void process_world(void)
 	/* Random teleportation */
 	if (p_ptr->state.teleport && one_in_(100))
 	{
+		object_notice_flag(2, TR2_TELEPORT);
 		teleport_player(40);
 		disturb(0, 0);
-		object_notice_flag(3, TR2_TELEPORT);
 	}
 
 	/* Delayed Word-of-Recall */
