@@ -189,18 +189,17 @@ static int critical_norm(int weight, int plus, int dam)
  *
  * If there is a slay or brand in effect, change the verb for hitting
  * to something interesting ('burn', 'smite', etc.).  Also, note which
- * flags had an effect for identification purposes.
+ * flags had an effect in o_ptr->known_flags[].
  *
  * \param o_ptr is the object being used to attack
  * \param m_ptr is the monster being attacked
  * \param hit_verb is where a new verb is returned
- * \param known_f0 is where new flags are returned
  * \param is_ranged should be true for ranged attacks
  *
  * \returns attack multiplier
  */
-static int get_brand_mult(const object_type *o_ptr, const monster_type *m_ptr,
-		const char **hit_verb, u32b *known_f0, bool is_ranged)
+static int get_brand_mult(object_type *o_ptr, const monster_type *m_ptr,
+		const char **hit_verb, bool is_ranged)
 {
 	int mult = 1;
 	const slay_t *s_ptr;
@@ -225,13 +224,15 @@ static int get_brand_mult(const object_type *o_ptr, const monster_type *m_ptr,
 
 			if (mult < s_ptr->mult)
 				mult = s_ptr->mult;
-			*known_f0 |= s_ptr->slay_flag;
 
 			/* Set the hit verb appropriately */
 			if (is_ranged)
 				*hit_verb = s_ptr->range_verb;
 			else
 				*hit_verb = s_ptr->melee_verb;
+
+			/* Do something a bit cleverer here */
+			o_ptr->known_flags[0] |= s_ptr->slay_flag;
 		}
 
 		/* If the monster resisted, add to the monster lore */
@@ -328,7 +329,6 @@ void py_attack(int y, int x)
 			{
 				int weapon_brand_mult, ring_brand_mult[2];
 				int use_mult = 1;
-				u32b known_f0 = 0;
 
 				hit_verb = "hit";
 
@@ -336,12 +336,12 @@ void py_attack(int y, int x)
 				 * only be brands right now */
 				ring_brand_mult[0] = get_brand_mult(
 						&inventory[INVEN_LEFT],
-						m_ptr, &hit_verb, &known_f0, FALSE);
+						m_ptr, &hit_verb, FALSE);
 				ring_brand_mult[1] = get_brand_mult(
 						&inventory[INVEN_RIGHT],
-						m_ptr, &hit_verb, &known_f0, FALSE);
+						m_ptr, &hit_verb, FALSE);
 				weapon_brand_mult = get_brand_mult(
-						o_ptr, m_ptr, &hit_verb, &known_f0, FALSE);
+						o_ptr, m_ptr, &hit_verb, FALSE);
 
 				/* Message. Need to do this after tot_dam_aux, which sets hit_verb, but before critical_norm, which may print further messages. */
 				message_format(MSG_GENERIC, m_ptr->r_idx, "You %s %s.", hit_verb, m_name);
@@ -364,7 +364,6 @@ void py_attack(int y, int x)
 
 				/* Learn by use */
 				object_notice_on_attack();
-				object_notice_slays(known_f0, -1);
 				if (do_quake)
 					object_notice_flag(2, TR2_IMPACT);
 			}
@@ -649,10 +648,8 @@ void do_cmd_fire(void)
 
 			const char *hit_verb = "hits";
 
-			u32b known_f0 = 0;
-
-			int ammo_mult = get_brand_mult(i_ptr, m_ptr, &hit_verb, &known_f0, TRUE);
-			int shoot_mult = get_brand_mult(j_ptr, m_ptr, &hit_verb, &known_f0, TRUE);
+			int ammo_mult = get_brand_mult(i_ptr, m_ptr, &hit_verb, TRUE);
+			int shoot_mult = get_brand_mult(j_ptr, m_ptr, &hit_verb, TRUE);
 
 #if 0
 			/* If bow or ammo does something obviously good, pseudo it as excellent */
@@ -967,7 +964,6 @@ void do_cmd_throw(void)
 			{
 				const char *hit_verb = "hits";
 				bool fear = FALSE;
-				u32b known_f0 = 0;
 
 				/* Assume a default death */
 				cptr note_dies = " dies.";
@@ -983,7 +979,7 @@ void do_cmd_throw(void)
 				}
 
 				/* Apply special damage  - brought forward to fill in hit_verb XXX XXX XXX */
-				tdam *= get_brand_mult(i_ptr, m_ptr, &hit_verb, &known_f0, TRUE);
+				tdam *= get_brand_mult(i_ptr, m_ptr, &hit_verb, TRUE);
 
 				/* Handle unseen monster */
 				if (!visible)
