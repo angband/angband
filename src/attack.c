@@ -199,7 +199,7 @@ static int critical_norm(int weight, int plus, int dam)
  * \returns attack multiplier
  */
 static int get_brand_mult(object_type *o_ptr, const monster_type *m_ptr,
-		const char **hit_verb, bool is_ranged)
+		const char **hit_verb, bool is_ranged, bool secondary)
 {
 	int mult = 1;
 	const slay_t *s_ptr;
@@ -233,6 +233,16 @@ static int get_brand_mult(object_type *o_ptr, const monster_type *m_ptr,
 
 			/* Do something a bit cleverer here */
 			o_ptr->known_flags[0] |= s_ptr->slay_flag;
+
+			/* Print a cool message for branded rings et al */
+			if (s_ptr->active_verb && secondary)
+			{
+				char o_name[40];
+				object_desc(o_name, sizeof(o_name), o_ptr,
+						FALSE, ODESC_BASE);
+				msg_format("Your %s %s!", o_name,
+						s_ptr->active_verb);
+			}
 		}
 
 		/* If the monster resisted, add to the monster lore */
@@ -336,12 +346,13 @@ void py_attack(int y, int x)
 				 * only be brands right now */
 				ring_brand_mult[0] = get_brand_mult(
 						&inventory[INVEN_LEFT],
-						m_ptr, &hit_verb, FALSE);
+						m_ptr, &hit_verb, FALSE, TRUE);
 				ring_brand_mult[1] = get_brand_mult(
 						&inventory[INVEN_RIGHT],
-						m_ptr, &hit_verb, FALSE);
+						m_ptr, &hit_verb, FALSE, TRUE);
 				weapon_brand_mult = get_brand_mult(
-						o_ptr, m_ptr, &hit_verb, FALSE);
+						o_ptr,
+						m_ptr, &hit_verb, FALSE, FALSE);
 
 				/* Message. Need to do this after tot_dam_aux, which sets hit_verb, but before critical_norm, which may print further messages. */
 				message_format(MSG_GENERIC, m_ptr->r_idx, "You %s %s.", hit_verb, m_name);
@@ -623,8 +634,10 @@ void do_cmd_fire(void)
 
 			const char *hit_verb = "hits";
 
-			int ammo_mult = get_brand_mult(o_ptr, m_ptr, &hit_verb, TRUE);
-			int shoot_mult = get_brand_mult(j_ptr, m_ptr, &hit_verb, TRUE);
+			int ammo_mult = get_brand_mult(o_ptr, m_ptr,
+					&hit_verb, TRUE, FALSE);
+			int shoot_mult = get_brand_mult(j_ptr, m_ptr,
+					&hit_verb, TRUE, FALSE);
 
 			/* Note the collision */
 			hit_body = TRUE;
@@ -965,7 +978,8 @@ void do_cmd_throw(void)
 				}
 
 				/* Apply special damage  - brought forward to fill in hit_verb XXX XXX XXX */
-				tdam *= get_brand_mult(i_ptr, m_ptr, &hit_verb, TRUE);
+				tdam *= get_brand_mult(i_ptr, m_ptr,
+						&hit_verb, TRUE, FALSE);
 
 				/* Handle unseen monster */
 				if (!visible)

@@ -253,6 +253,7 @@ typedef struct
 	int mult;		/* Slay multiplier */
 	const char *range_verb;	/* attack verb for ranged hits */
 	const char *melee_verb; /* attack verb for melee hits */
+	const char *active_verb; /* verb for when the object is active */
 	const char *desc;	/* description of vulnerable creatures */
 	const char *brand;	/* name of brand */
 } slay_t;

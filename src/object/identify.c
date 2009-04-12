@@ -287,16 +287,19 @@ void object_notice_on_wield(object_type *o_ptr)
 	if (!obvious) return;
 
 	/* Messages */
-	if (f[0] & TR0_BRAND_POIS)
-		msg_print("It seethes with poison!");
-	if (f[0] & TR0_BRAND_ELEC)
-		msg_print("It crackles with electricity!");
-	if (f[0] & TR0_BRAND_FIRE)
-		msg_print("It flares with fire!");
-	if (f[0] & TR0_BRAND_COLD)
-		msg_print("It coats itself in ice!");
-	if (f[0] & TR0_BRAND_ACID)
-		msg_print("It starts spitting acid!");
+	if (wield_slot(o_ptr) == INVEN_WIELD)
+	{
+		if (f[0] & TR0_BRAND_POIS)
+			msg_print("It seethes with poison!");
+		if (f[0] & TR0_BRAND_ELEC)
+			msg_print("It crackles with electricity!");
+		if (f[0] & TR0_BRAND_FIRE)
+			msg_print("It flares with fire!");
+		if (f[0] & TR0_BRAND_COLD)
+			msg_print("It coats itself in ice!");
+		if (f[0] & TR0_BRAND_ACID)
+			msg_print("It starts spitting acid!");
+	}
 
 	if (f[0] & TR0_STR)
 		msg_format("You feel %s!", o_ptr->pval > 0 ? "stronger" : "weaker");
