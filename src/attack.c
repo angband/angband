@@ -526,50 +526,25 @@ void do_cmd_fire(void)
 	/* Get a direction (or cancel) */
 	if (!get_aim_dir(&dir)) return;
 
-
-	/* Get local object */
-	i_ptr = &object_type_body;
-
-	/* Obtain a local object */
-	object_copy(i_ptr, o_ptr);
-
-	/* Single object */
-	i_ptr->number = 1;
-
-	/* Reduce and describe inventory */
-	if (item >= 0)
-	{
-		inven_item_increase(item, -1);
-		inven_item_describe(item);
-		inven_item_optimize(item);
-	}
-
-	/* Reduce and describe floor item */
-	else
-	{
-		floor_item_increase(0 - item, -1);
-		floor_item_optimize(0 - item);
-	}
-
-
 	/* Sound */
 	sound(MSG_SHOOT);
 
-
 	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), i_ptr, FALSE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), o_ptr, FALSE,
+			ODESC_FULL | ODESC_SINGULAR);
 
 	/* Find the color and symbol for the object for throwing */
-	missile_attr = object_attr(i_ptr);
-	missile_char = object_char(i_ptr);
+	missile_attr = object_attr(o_ptr);
+	missile_char = object_char(o_ptr);
 
 
 	/* Use the proper number of shots */
 	thits = p_ptr->state.num_fire;
 
 	/* Actually "fire" the object */
-	bonus = (p_ptr->state.to_h + i_ptr->to_h + j_ptr->to_h);
-	chance = (p_ptr->state.skills[SKILL_TO_HIT_BOW] + (bonus * BTH_PLUS_ADJ));
+	bonus = (p_ptr->state.to_h + o_ptr->to_h + j_ptr->to_h);
+	chance = p_ptr->state.skills[SKILL_TO_HIT_BOW] +
+			(bonus * BTH_PLUS_ADJ);
 
 	/* Base range XXX XXX */
 	tdis = 6 + 2 * p_ptr->state.ammo_mult;
@@ -648,25 +623,8 @@ void do_cmd_fire(void)
 
 			const char *hit_verb = "hits";
 
-			int ammo_mult = get_brand_mult(i_ptr, m_ptr, &hit_verb, TRUE);
+			int ammo_mult = get_brand_mult(o_ptr, m_ptr, &hit_verb, TRUE);
 			int shoot_mult = get_brand_mult(j_ptr, m_ptr, &hit_verb, TRUE);
-
-#if 0
-			/* If bow or ammo does something obviously good, pseudo it as excellent */
-			if (ammo_mult > 1 && !object_known_p(i_ptr))
-			{
-				i_ptr->pseudo = INSCRIP_EXCELLENT;
-				i_ptr->ident |= (IDENT_SENSE);
-				o_ptr->pseudo = INSCRIP_EXCELLENT;
-				o_ptr->ident |= (IDENT_SENSE);
-			}			
-
-			if (shoot_mult > 1 && !object_known_p(o_ptr))
-			{
-				j_ptr->pseudo = INSCRIP_EXCELLENT;
-				j_ptr->ident |= (IDENT_SENSE);
-			}
-#endif
 
 			/* Note the collision */
 			hit_body = TRUE;
@@ -680,10 +638,10 @@ void do_cmd_fire(void)
 				cptr note_dies = " dies.";
 
 				/* Some monsters get "destroyed" */
-				if ((r_ptr->flags[2] & (RF2_DEMON)) ||
-				    (r_ptr->flags[2] & (RF2_UNDEAD)) ||
-				    (r_ptr->flags[1] & (RF1_STUPID)) ||
-				    (strchr("Evg", r_ptr->d_char)))
+				if ((r_ptr->flags[2] & RF2_DEMON) ||
+						(r_ptr->flags[2] & RF2_UNDEAD) ||
+						(r_ptr->flags[1] & RF1_STUPID) ||
+						strchr("Evg", r_ptr->d_char))
 				{
 					/* Special note at death */
 					note_dies = " is destroyed.";
@@ -716,11 +674,11 @@ void do_cmd_fire(void)
 				}
 
 				/* Apply damage: multiplier, slays, criticals, bonuses */
-				tdam = damroll(i_ptr->dd, i_ptr->ds);
-				tdam += i_ptr->to_d + j_ptr->to_d;
+				tdam = damroll(o_ptr->dd, o_ptr->ds);
+				tdam += o_ptr->to_d + j_ptr->to_d;
 				tdam *= p_ptr->state.ammo_mult;
 				tdam *= MAX(ammo_mult, shoot_mult);
-				tdam = critical_shot(i_ptr->weight, i_ptr->to_h, tdam);
+				tdam = critical_shot(o_ptr->weight, o_ptr->to_h, tdam);
 
 				/* No negative damage */
 				if (tdam < 0) tdam = 0;
@@ -763,6 +721,34 @@ void do_cmd_fire(void)
 			break;
 		}
 	}
+
+
+
+	/* Get local object */
+	i_ptr = &object_type_body;
+
+	/* Obtain a local object */
+	object_copy(i_ptr, o_ptr);
+
+	/* Single object */
+	i_ptr->number = 1;
+
+
+	/* Reduce and describe inventory */
+	if (item >= 0)
+	{
+		inven_item_increase(item, -1);
+		inven_item_describe(item);
+		inven_item_optimize(item);
+	}
+
+	/* Reduce and describe floor item */
+	else
+	{
+		floor_item_increase(0 - item, -1);
+		floor_item_optimize(0 - item);
+	}
+
 
 	/* Chance of breakage (during attacks) */
 	j = (hit_body ? breakage_chance(i_ptr) : 0);

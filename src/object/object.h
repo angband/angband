@@ -26,7 +26,8 @@ typedef enum
 
 	ODESC_STORE  = 0x04,   /*!< This is an in-store description */
 	ODESC_PLURAL = 0x08,   /*!< Always pluralise */
-	ODESC_SPOIL  = 0x10    /*!< Display regardless of player knowledge */
+	ODESC_SINGULAR	= 0x10,	/*!< Always singular */
+	ODESC_SPOIL  = 0x20    /*!< Display regardless of player knowledge */
 } odesc_detail_t;
 
 

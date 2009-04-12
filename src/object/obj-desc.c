@@ -219,7 +219,9 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
  * Copy 'src' into 'buf, replacing '#' with 'modstr' (if found), putting a plural
  * in the place indicated by '~' if required, or using alterate...
  */
-static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type *o_ptr, bool prefix, bool pluralise, bool spoil)
+static size_t obj_desc_name(char *buf, size_t max, size_t end,
+		const object_type *o_ptr, bool prefix, odesc_detail_t mode,
+		bool spoil)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
@@ -229,8 +231,12 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end, const object_type
 	const char *basename = obj_desc_get_basename(o_ptr, aware);
 	const char *modstr = obj_desc_get_modstr(o_ptr);
 
+	bool pluralise = (mode & ODESC_PLURAL) ? TRUE : FALSE;
+
 	if (o_ptr->number > 1)
 		pluralise = TRUE;
+	if (mode & ODESC_SINGULAR)
+		pluralise = FALSE;
 
 	/* Add a pseudo-numerical prefix if desired */
 	if (prefix)
@@ -763,9 +769,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 	/** Construct the name **/
 
 	/* Copy the base name to the buffer */
-	end = obj_desc_name(buf, max, end, o_ptr, prefix,
-			mode & ODESC_PLURAL ? TRUE : FALSE,
-			spoil);
+	end = obj_desc_name(buf, max, end, o_ptr, prefix, mode, spoil);
 
 	if (mode & ODESC_COMBAT)
 	{
