@@ -109,6 +109,7 @@ void object_notice_slays(u32b known_f0, int inven_idx)
 }
 
 
+
 /**
  * Notice a given special flag on wielded items.
  *
@@ -117,6 +118,37 @@ void object_notice_slays(u32b known_f0, int inven_idx)
  */
 void object_notice_flag(int flagset, u32b flag)
 {
+	int i;
+
+	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+	{
+		object_type *o_ptr = &inventory[i];
+		u32b f[OBJ_FLAG_N];
+
+		object_flags(o_ptr, f);
+		if ((f[flagset] & flag) &&
+				!(o_ptr->known_flags[flagset] & flag))
+		{
+			char o_name[80];
+			object_desc(o_name, sizeof(o_name), o_ptr, FALSE,
+					ODESC_BASE);
+
+			/* Notice flags */
+			o_ptr->known_flags[flagset] |= flag;
+
+			if (flagset == 0 && (f[0] & TR0_SEARCH))
+				msg_format("Your %s assists your searching.", o_name);
+			else if (flagset == 2 && (f[2] & TR2_DRAIN_EXP))
+				msg_format("You feel your %s drain your life.", o_name);
+			else if (flagset == 2 && (f[2] & TR2_FEATHER))
+				msg_format("Your %s slows your fall.", o_name);
+			else if (flagset == 2 && (f[2] & TR2_IMPACT))
+				msg_format("Your %s causes an earthquake!", o_name);
+			else if (flagset == 2 && (f[2] & TR2_TELEPORT))
+				msg_format("Your %s teleports you.", o_name);
+		}
+	}	
+
 	return;
 }
 
@@ -142,13 +174,54 @@ bool object_notice_curses(object_type *o_ptr)
 }
 
 
+static const struct
+{
+	int flagset;
+	u32b flag;
+	const char *msg;
+} notice_msgs[] =
+{
+	{ 0, TR0_STEALTH,	"You feel your %s affect your stealth." },
+	{ 2, TR2_SLOW_DIGEST,	"You feel your %s slow your metabolism." },
+	{ 2, TR2_REGEN,		"You feel your %s speed up your recovery." },
+	{ 2, TR2_AGGRAVATE,	"You feel your %s aggravate things around you." },
+	{ 2, TR2_IMPAIR_HP,	"You feel your %s slow your recovery." },
+	{ 2, TR2_IMPAIR_MANA,	"You feel your %s slow your mana recovery." },
+};
+
+
 /**
  * Notice things about an object that would be noticed in time.
  */
 static void object_notice_after_time(void)
 {
-	/* Notice: */
-	/* SLOW_DIGEST, REGEN, IMPAIR_HP, IMPAIR_SP, AGGRAVATE, STEALTH */
+	int i, j;
+
+	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+	{
+		object_type *o_ptr = &inventory[i];
+		char o_name[80];
+		u32b f[OBJ_FLAG_N];
+
+		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
+		object_flags(o_ptr, f);
+
+		for (j = 0; j < N_ELEMENTS(notice_msgs); j++)
+		{
+			int set = notice_msgs[j].flagset;
+			u32b flag = notice_msgs[j].flag;
+
+			if ((f[set] & flag) &&
+					!(o_ptr->known_flags[set] & flag))
+			{
+				/* Notice the flag */
+				o_ptr->known_flags[set] |= flag;
+
+				/* Message */
+				msg_format(notice_msgs[j].msg, o_name);
+			}
+		}
+	}	
 }
 
 
@@ -198,39 +271,46 @@ void object_notice_on_wield(object_type *o_ptr)
 	/* Find obvious things */
 	if (f[0] & TR0_OBVIOUS_MASK) obvious = TRUE;
 	if (f[2] & TR2_OBVIOUS_MASK) obvious = TRUE;
-
 	if (!obvious) return;
 
-	/* Strange messages for strange properties (this way, we don't have
-	 * to give them when the item is identified).
-	 *
-	 * Perhaps these messages should be in a new edit file?
-	 */
+	/* Messages */
+	if (f[0] & TR0_BRAND_POIS)
+		msg_print("It seethes with poison!");
+	if (f[0] & TR0_BRAND_ELEC)
+		msg_print("It crackles with electricity!");
+	if (f[0] & TR0_BRAND_FIRE)
+		msg_print("It flares with fire!");
+	if (f[0] & TR0_BRAND_COLD)
+		msg_print("It coats itself in ice!");
+	if (f[0] & TR0_BRAND_ACID)
+		msg_print("It starts spitting acid!");
 
 	if (f[0] & TR0_STR)
-		msg_format ("You feel strangely %s!", o_ptr->pval > 0 ? "strong" : "weak");
+		msg_format("You feel %s!", o_ptr->pval > 0 ? "stronger" : "weaker");
 	if (f[0] & TR0_INT)
-		msg_format ("You feel strangely %s!", o_ptr->pval > 0 ? "smart" : "stupid");
+		msg_format("You feel %s!", o_ptr->pval > 0 ? "smarter" : "more stupid");
 	if (f[0] & TR0_WIS)
-		msg_format ("You feel strangely %s!", o_ptr->pval > 0 ? "wise" : "naive");
+		msg_format("You feel %s!", o_ptr->pval > 0 ? "wiser" : "more naive");
 	if (f[0] & TR0_DEX)
-		msg_format ("You feel strangely %s!", o_ptr->pval > 0 ? "dextrous" : "clumsy");
+		msg_format("You feel %s!", o_ptr->pval > 0 ? "more dextrous" : "clumsier");
 	if (f[0] & TR0_CON)
-		msg_format ("You feel strangely %s!", o_ptr->pval > 0 ? "healthy" : "sickly");
+		msg_format("You feel %s!", o_ptr->pval > 0 ? "healthier" : "sicklier");
 	if (f[0] & TR0_CHR)
-		msg_format ("You feel strangely %s!", o_ptr->pval > 0 ? "cute" : "ugly");
-	if (f[0] & TR0_STEALTH)
-		msg_format ("You feel strangely %s.", o_ptr->pval > 0 ? "stealthy" : "noisy");
+		msg_format("You feel %s!", o_ptr->pval > 0 ? "cuter" : "uglier");
 	if (f[0] & TR0_SPEED)
-		msg_format ("You feel strangely %s.", o_ptr->pval > 0 ? "quick" : "sluggish");
+		msg_format("You feel strangely %s.", o_ptr->pval > 0 ? "quick" : "sluggish");
 	if (f[0] & (TR0_BLOWS | TR0_SHOTS))
-		msg_format ("Your hands strangely %s!", o_ptr->pval > 0 ? "tingle!" : "ache.");
+		msg_format("Your hands %s", o_ptr->pval > 0 ? "tingle!" : "ache.");
+	if (f[0] & TR0_INFRA)
+		msg_format("Your eyes tingle.");
+
 	if (f[2] & TR2_LITE)
-		msg_print("It shines strangely!");
+		msg_print("It glows!");
 	if (f[2] & TR2_TELEPATHY)
 		msg_print("Your mind feels strangely sharper!");
 
 	/* Remember the flags */
+	o_ptr->ident |= IDENT_SENSE;
 	o_ptr->known_flags[0] |= (f[0] & TR0_OBVIOUS_MASK);
 	o_ptr->known_flags[2] |= (f[2] & TR2_OBVIOUS_MASK);
 }
