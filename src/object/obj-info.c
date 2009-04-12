@@ -186,7 +186,7 @@ const slay_t slay_table[] =
 	{ TR0_SLAY_TROLL,  RF2_TROLL,  0, 3, "pierces",  "smite", NULL,
 	  "trolls",                                 NULL },
 	{ TR0_SLAY_GIANT,  RF2_GIANT,  0, 3, "pierces",  "smite", NULL,
-	 "giants",                                 NULL },
+	 "giants",                                  NULL },
 	{ TR0_SLAY_DRAGON, RF2_DRAGON, 0, 3, "pierces",  "smite", NULL,
 	  "dragons",                                NULL },
 	{ TR0_BRAND_ACID, 0, RF2_IM_ACID, 3, "corrodes", "corrode", "spits",
@@ -199,12 +199,12 @@ const slay_t slay_table[] =
 	  "creatures not resistant to cold",        "frost" },
 	{ TR0_BRAND_POIS, 0, RF2_IM_POIS, 3, "poisons",  "poison", "seethes",
 	  "creatures not resistant to poison",      "venom" },
-	{ TR0_KILL_DRAGON, RF2_DRAGON, 0, 5, "deeply pierces", NULL,
-	 "fiercely smite", "dragons",                   NULL },
-	{ TR0_KILL_DEMON,  RF2_DEMON,  0, 5, "deeply pierces", NULL,
-	 "fiercely smite", "demons",                    NULL },
-	{ TR0_KILL_UNDEAD, RF2_UNDEAD, 0, 5, "deeply pierces", NULL,
-	 "fiercely smite", "undead",                    NULL },
+	{ TR0_KILL_DRAGON, RF2_DRAGON, 0, 5, "deeply pierces",
+	 "fiercely smite", NULL, "dragons",         NULL },
+	{ TR0_KILL_DEMON,  RF2_DEMON,  0, 5, "deeply pierces",
+	 "fiercely smite", NULL, "demons",          NULL },
+	{ TR0_KILL_UNDEAD, RF2_UNDEAD, 0, 5, "deeply pierces",
+	 "fiercely smite", NULL, "undead",          NULL },
 	{ 0, 0, 0, 0, NULL, NULL, NULL, NULL }
 };
 
