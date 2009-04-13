@@ -687,7 +687,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 	ADD_POWER("feather fall",		 1, TR2_FEATHER,     2,);
 	ADD_POWER("permanent light",		 2, TR2_LITE,	     2, misc++);
 	ADD_POWER("see invisible",		10, TR2_SEE_INVIS,   2, misc++);
-	ADD_POWER("telepathy",			40, TR2_TELEPATHY,   2, misc++);
+	ADD_POWER("telepathy",			60, TR2_TELEPATHY,   2, misc++);
 	ADD_POWER("slow digestion",		 2, TR2_SLOW_DIGEST, 2, misc++);
 	ADD_POWER("resist acid",		 5, TR1_RES_ACID,    1, lowres++);
 	ADD_POWER("resist elec",		 6, TR1_RES_ELEC,    1, lowres++);
@@ -701,7 +701,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 	ADD_POWER("resist confusion",		24, TR1_RES_CONFU,   1, highres++);
 	ADD_POWER("resist sound",		14, TR1_RES_SOUND,   1, highres++);
 	ADD_POWER("resist shards",		 8, TR1_RES_SHARD,   1, highres++);
-	ADD_POWER("resist nexus",		10, TR1_RES_NEXUS,   1, highres++);
+	ADD_POWER("resist nexus",		15, TR1_RES_NEXUS,   1, highres++);
 	ADD_POWER("resist nether",		20, TR1_RES_NETHR,   1, highres++);
 	ADD_POWER("resist chaos",		20, TR1_RES_CHAOS,   1, highres++);
 	ADD_POWER("resist disenchantment",	20, TR1_RES_DISEN,   1, highres++);
