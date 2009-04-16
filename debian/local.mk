@@ -3,9 +3,9 @@
 ## Author           : Manoj Srivastava ( srivasta@glaurung.green-gryphon.com ) 
 ## Created On       : Sat Nov 15 10:42:10 2003
 ## Created On Node  : glaurung.green-gryphon.com
-## Last Modified By : Manoj Srivastava
-## Last Modified On : Thu Feb  7 23:45:17 2008
-## Last Machine Used: anzu.internal.golden-gryphon.com
+## Last Modified By : Chris Carr
+## Last Modified On : Thu Apr 16 21:59:17 2009
+## Last Machine Used: xaphod.dbass.homelinux.com
 ## Update Count     : 27
 ## Status           : Unknown, Use with caution!
 ## HISTORY          : 
@@ -36,7 +36,7 @@ CLEAN/angband::
 debian/stamp/conf/angband:
 	$(checkdir)
 	$(REASON)
-	@test -d debian/stamp/conf || mkdir debian/stamp/conf
+	@test -d debian/stamp/conf || mkdir -p debian/stamp/conf
 	./configure  --verbose --prefix=$(PREFIX)                       \
                      --datadir=$(R_LIBDIR) --mandir=$(R_MANDIR)         \
                      --infodir=$(R_INFODIR) --sysconfdir=/etc           \
@@ -47,7 +47,7 @@ debian/stamp/conf/angband:
 debian/stamp/build/angband:
 	$(checkdir)
 	$(REASON)
-	@test -d debian/stamp/build || mkdir debian/stamp/build
+	@test -d debian/stamp/build || mkdir -p debian/stamp/build
 	$(MAKE)
 	dpkg -l gcc 'libc*' binutils ldso make dpkg-dev | \
           awk '$$1 == "ii" { printf("%s-%s\n", $$2, $$3) }' > \
@@ -118,7 +118,7 @@ ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
                                 --remove-section=.note \
                                 $(TMPTOP)/usr/games/angband
 endif
-	@test -d debian/stamp/install || mkdir debian/stamp/install
+	@test -d debian/stamp/install || mkdir -p debian/stamp/install
 	@echo done > $@
 
 debian/stamp/binary/angband:
@@ -142,5 +142,5 @@ debian/stamp/binary/angband:
 	chmod 0775           $(GAMEDIR)/apex $(GAMEDIR)/data
 	chmod 0070           $(GAMEDIR)/bone $(GAMEDIR)/save 
 	dpkg --build         $(TMPTOP) ..
-	@test -d debian/stamp/binary || mkdir debian/stamp/binary
+	@test -d debian/stamp/binary || mkdir -p debian/stamp/binary
 	@echo done > $@

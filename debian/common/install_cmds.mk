@@ -30,10 +30,14 @@
 ###############################################################################
 
 # install commands
-install_file   = install -p    -o root -g root -m 644
-install_script = install -p    -o root -g root -m 755
-install_program= install -p    -o root -g root -m 755
-make_directory = install -p -d -o root -g root -m 755
+INSTALL = install
+ifeq (,$(filter nostrip,$(DEB_BUILD_OPTIONS)))
+    INSTALL_PROGRAM += -s
+endif
+install_file    = $(INSTALL) -p    -o root -g root  -m  644
+install_program = $(INSTALL) -p    -o root -g root  -m  755
+install_script  = $(INSTALL) -p    -o root -g root  -m  755
+make_directory  = $(INSTALL) -p -d -o root -g root  -m  755
 
 define create_md5sum
     create_md5sums_fn () {                                         \

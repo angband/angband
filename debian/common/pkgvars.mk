@@ -89,6 +89,11 @@ DEB_ARCH_PACKAGES := $(shell perl -e '                                          
 # This package is what we get after removing the psuedo dirs we use in rules
 package = $(notdir $@)
 
+ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+    NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+    MAKEFLAGS += -j$(NUMJOBS)
+endif
+
 #Local variables:
 #mode: makefile
 #End:

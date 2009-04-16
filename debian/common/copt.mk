@@ -15,6 +15,7 @@
 ## 
 ###############################################################################
 
+PREFIX    := /usr
 # set CC to $(DEB_HOST_GNU_TYPE)-gcc only if a cross-build is detected
 ifneq ($(DEB_HOST_GNU_TYPE),$(DEB_BUILD_GNU_TYPE))
   CC=$(DEB_HOST_GNU_TYPE)-gcc
@@ -22,17 +23,20 @@ else
   CC = cc
 endif
 
-CFLAGS = -O2
-PREFIX    := /usr
-
 # Policy 10.1 says to make this the default
-CFLAGS += -g
+CFLAGS = -Wall -g
+
+ifneq (,$(filter noopt,$(DEB_BUILD_OPTIONS)))
+    CFLAGS += -O0
+else
+    CFLAGS += -O2
+endif
 
 ## ifneq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
 ## endif
 
 ifeq (,$(findstring nostrip,$(DEB_BUILD_OPTIONS)))
-  STRIP += -s
+  STRIP   += -s
   LDFLAGS += -s
   INT_INSTALL_TARGET = install 
 else

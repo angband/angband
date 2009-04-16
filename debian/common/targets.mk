@@ -84,20 +84,20 @@ prebuild:
 # Just a dummy target to make sure that the stamp directory exists
 debian/stamp/dummy-config-common:
 	$(REASON)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 
 # Configuration tasks common to arch and arch indep packages go here
 debian/stamp/pre-config-common: debian/stamp/dummy-config-common
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 # Do not add dependencies to this rule
 debian/stamp/do-pre-config-common: debian/stamp/dummy-config-common
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	$(MAKE) -f debian/rules debian/stamp/pre-config-common
 	@echo done > $@
 
@@ -105,13 +105,13 @@ debian/stamp/do-pre-config-common: debian/stamp/dummy-config-common
 debian/stamp/pre-config-arch:	debian/stamp/do-pre-config-common
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 # Do not add dependencies to this rule
 debian/stamp/do-pre-config-arch:	debian/stamp/do-pre-config-common
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	$(MAKE) -f debian/rules debian/stamp/pre-config-arch
 	@echo done > $@
 
@@ -119,13 +119,13 @@ debian/stamp/do-pre-config-arch:	debian/stamp/do-pre-config-common
 debian/stamp/pre-config-indep: debian/stamp/do-pre-config-common
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 # Do not add dependencies to this rule
 debian/stamp/do-pre-config-indep: debian/stamp/do-pre-config-common
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	$(MAKE) -f debian/rules debian/stamp/pre-config-indep
 	@echo done > $@
 
@@ -138,29 +138,29 @@ $(patsubst %,debian/stamp/CONFIG/%,$(DEB_ARCH_PACKAGES))  : debian/stamp/CONFIG/
 $(patsubst %,debian/stamp/CONFIG/%,$(DEB_INDEP_PACKAGES)) : debian/stamp/CONFIG/% : debian/stamp/do-pre-config-indep
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp/CONFIG || mkdir debian/stamp/CONFIG
+	@test -d debian/stamp/CONFIG || mkdir -p debian/stamp/CONFIG
 	@echo done > $@
 
 # Do not add dependencies to this rule
 debian/stamp/dep-configure-arch: debian/stamp/do-pre-config-arch $(patsubst %,debian/stamp/CONFIG/%,$(DEB_ARCH_PACKAGES)) 
 	$(REASON)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 
 # Do not add dependencies to this rule
 debian/stamp/dep-configure-indep: debian/stamp/do-pre-config-indep $(patsubst %,debian/stamp/CONFIG/%,$(DEB_INDEP_PACKAGES))
 	$(REASON)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 
 debian/stamp/do-configure-arch: debian/stamp/do-pre-config-arch
 	$(REASON)
-	@test -d debian/stamp/CONFIG || mkdir debian/stamp/CONFIG
+	@test -d debian/stamp/CONFIG || mkdir -p debian/stamp/CONFIG
 	$(MAKE) -f debian/rules debian/stamp/dep-configure-arch
 	@echo done > $@
 debian/stamp/do-configure-indep: debian/stamp/do-pre-config-indep
 	$(REASON)
-	@test -d debian/stamp/CONFIG || mkdir debian/stamp/CONFIG
+	@test -d debian/stamp/CONFIG || mkdir -p debian/stamp/CONFIG
 	$(MAKE) -f debian/rules debian/stamp/dep-configure-indep
 	@echo done > $@
 
@@ -181,19 +181,19 @@ configure: debian/stamp/do-configure-arch debian/stamp/do-configure-indep
 debian/stamp/pre-build-common:
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 
 # Arch specific and arch independent tasks go here
 debian/stamp/pre-build-arch:  debian/stamp/do-configure-arch
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 debian/stamp/do-pre-build-arch:  debian/stamp/do-configure-arch
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@test -e debian/stamp/pre-build-common || $(MAKE) -f debian/rules debian/stamp/pre-build-common
 	$(MAKE) -f debian/rules debian/stamp/pre-build-arch
 	@echo done > $@
@@ -201,12 +201,12 @@ debian/stamp/do-pre-build-arch:  debian/stamp/do-configure-arch
 debian/stamp/pre-build-indep: debian/stamp/do-configure-indep
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 debian/stamp/do-pre-build-indep: debian/stamp/do-configure-indep
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@test -e debian/stamp/pre-build-common || $(MAKE) -f debian/rules debian/stamp/pre-build-common
 	$(MAKE) -f debian/rules debian/stamp/pre-build-indep
 	@echo done > $@
@@ -230,12 +230,12 @@ $(patsubst %,debian/stamp/BUILD/%,$(DEB_INDEP_PACKAGES)) : debian/stamp/BUILD/% 
 # package target dependencies are run.
 debian/stamp/dep-build-arch: debian/stamp/do-pre-build-arch $(patsubst %,debian/stamp/BUILD/%,$(DEB_ARCH_PACKAGES)) 
 	$(REASON)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 
 debian/stamp/dep-build-indep: debian/stamp/do-pre-build-indep $(patsubst %,debian/stamp/BUILD/%,$(DEB_INDEP_PACKAGES))
 	$(REASON)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 
 debian/stamp/do-build-arch: debian/stamp/do-pre-build-arch
@@ -262,21 +262,21 @@ build: debian/stamp/do-build-arch debian/stamp/do-build-indep
 # Work here
 debian/stamp/post-build-arch: debian/stamp/do-build-arch
 	$(REASON)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 debian/stamp/do-post-build-arch: debian/stamp/do-build-arch
 	$(REASON)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	$(MAKE) -f debian/rules debian/stamp/post-build-arch
 	@echo done > $@
 
 debian/stamp/post-build-indep: debian/stamp/do-build-indep
 	$(REASON)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 debian/stamp/do-post-build-indep: debian/stamp/do-build-indep
 	$(REASON)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	$(MAKE) -f debian/rules debian/stamp/post-build-indep
 	@echo done > $@
 
@@ -289,19 +289,19 @@ debian/stamp/do-post-build-indep: debian/stamp/do-build-indep
 debian/stamp/pre-inst-common:
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 
 # Arch specific and arch independent tasks go here
 debian/stamp/pre-inst-arch:  debian/stamp/do-post-build-arch
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 debian/stamp/do-pre-inst-arch:  debian/stamp/do-post-build-arch
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@test -e debian/stamp/INST-common || $(MAKE) -f debian/rules debian/stamp/pre-inst-common
 	$(MAKE) -f debian/rules debian/stamp/pre-inst-arch
 	@echo done > $@
@@ -309,12 +309,12 @@ debian/stamp/do-pre-inst-arch:  debian/stamp/do-post-build-arch
 debian/stamp/pre-inst-indep: debian/stamp/do-post-build-indep
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 debian/stamp/do-pre-inst-indep: debian/stamp/do-post-build-indep
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@test -e debian/stamp/INST-common || $(MAKE) -f debian/rules debian/stamp/pre-inst-common
 	$(MAKE) -f debian/rules debian/stamp/pre-inst-indep
 	@echo done > $@
@@ -324,12 +324,12 @@ debian/stamp/do-pre-inst-indep: debian/stamp/do-post-build-indep
 $(patsubst %,debian/stamp/INST/%,$(DEB_ARCH_PACKAGES))	: debian/stamp/INST/% : debian/stamp/do-pre-inst-arch
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp/INST || mkdir debian/stamp/INST
+	@test -d debian/stamp/INST || mkdir -p debian/stamp/INST
 	@echo done > $@
 $(patsubst %,debian/stamp/INST/%,$(DEB_INDEP_PACKAGES)) : debian/stamp/INST/% : debian/stamp/do-pre-inst-indep
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp/INST || mkdir debian/stamp/INST
+	@test -d debian/stamp/INST || mkdir -p debian/stamp/INST
 	@echo done > $@
 
 # These do targeta make sure all the per package configuration is
@@ -338,25 +338,25 @@ $(patsubst %,debian/stamp/INST/%,$(DEB_INDEP_PACKAGES)) : debian/stamp/INST/% : 
 # package target dependencies are run.
 debian/stamp/dep-install-arch: debian/stamp/do-pre-inst-arch $(patsubst %,debian/stamp/INST/%,$(DEB_ARCH_PACKAGES))
 	$(REASON)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 
 debian/stamp/dep-install-indep: debian/stamp/do-pre-inst-indep $(patsubst %,debian/stamp/INST/%,$(DEB_INDEP_PACKAGES))
 	$(REASON)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 
 
 debian/stamp/do-install-arch: debian/stamp/do-pre-inst-arch
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	$(MAKE) -f debian/rules debian/stamp/dep-install-arch
 	@echo done > $@
 debian/stamp/do-install-indep:  debian/stamp/do-pre-inst-indep
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	$(MAKE) -f debian/rules debian/stamp/dep-install-indep
 	@echo done > $@
 
@@ -380,19 +380,19 @@ install: debian/stamp/do-install-arch debian/stamp/do-install-indep
 debian/stamp/pre-bin-common:
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 
 # Arch specific and arch independent tasks go here
 debian/stamp/pre-bin-arch:  debian/stamp/do-install-arch
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 debian/stamp/do-pre-bin-arch:  debian/stamp/do-install-arch
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@test -e debian/stamp/BIN-common || $(MAKE) -f debian/rules debian/stamp/pre-bin-common
 	$(MAKE) -f debian/rules debian/stamp/pre-bin-arch
 	@echo done > $@
@@ -400,12 +400,12 @@ debian/stamp/do-pre-bin-arch:  debian/stamp/do-install-arch
 debian/stamp/pre-bin-indep: debian/stamp/do-install-indep
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 debian/stamp/do-pre-bin-indep: debian/stamp/do-install-indep
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@test -e debian/stamp/BIN-common || $(MAKE) -f debian/rules debian/stamp/pre-bin-common
 	$(MAKE) -f debian/rules debian/stamp/pre-bin-indep
 	@echo done > $@
@@ -414,13 +414,13 @@ debian/stamp/do-pre-bin-indep: debian/stamp/do-install-indep
 $(patsubst %,debian/stamp/BIN/%,$(DEB_ARCH_PACKAGES))  : debian/stamp/BIN/% : debian/stamp/do-pre-bin-arch
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp/BIN || mkdir debian/stamp/BIN
+	@test -d debian/stamp/BIN || mkdir -p debian/stamp/BIN
 	@echo done > $@
 
 $(patsubst %,debian/stamp/BIN/%,$(DEB_INDEP_PACKAGES)) : debian/stamp/BIN/% : debian/stamp/do-pre-bin-indep
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp/BIN || mkdir debian/stamp/BIN
+	@test -d debian/stamp/BIN || mkdir -p debian/stamp/BIN
 	@echo done > $@
 
 # These do targeta make sure all the per package work is done, but is
@@ -429,24 +429,24 @@ $(patsubst %,debian/stamp/BIN/%,$(DEB_INDEP_PACKAGES)) : debian/stamp/BIN/% : de
 # target dependencies are run.
 debian/stamp/dep-binary-arch: debian/stamp/pre-bin-arch $(patsubst %,debian/stamp/BIN/%,$(DEB_ARCH_PACKAGES))
 	$(REASON)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 
 debian/stamp/dep-binary-indep: debian/stamp/pre-bin-indep $(patsubst %,debian/stamp/BIN/%,$(DEB_INDEP_PACKAGES))
 	$(REASON)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	@echo done > $@
 
 debian/stamp/do-binary-arch:  debian/stamp/do-pre-bin-arch 
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	$(MAKE) -f debian/rules debian/stamp/dep-binary-arch
 	@echo done > $@
 debian/stamp/do-binary-indep: debian/stamp/do-pre-bin-indep 
 	$(REASON)
 	$(checkdir)
-	@test -d debian/stamp || mkdir debian/stamp
+	@test -d debian/stamp || mkdir -p debian/stamp
 	$(MAKE) -f debian/rules debian/stamp/dep-binary-indep
 	@echo done > $@
 # required
