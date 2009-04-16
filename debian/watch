@@ -1,0 +1,9 @@
+# format version number, currently 2; this line is compulsory!
+version=3
+opts=dversionmangle=s/\-src$// \
+http://rephial.org/downloads/3.1/angband-([0-9]\.[0-9]\.[0-9][a-z]?)\-src\.tar\.gz
+
+
+##ftp://ftp.sunet.se/pub/games/Angband/Source/angband-([0-9]\.[0-9]\.[0-9])\.tar\.gz
+#ftp://ftp.thangorodrim.net/pub/angband/Source/angband-([0-9]\.[0-9]\.[0-9])\.tar\.gz
+
