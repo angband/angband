@@ -1,7 +1,5 @@
-This package was debianized by Andrew Sidwell <takkaria@gmail.com> on
-Fri, 14 Mar 2008 16:08:41 +0000.
-
-It was downloaded from Subversion.
+This is the Debian package for angband, and it was built from sources
+obtained from: svn://rephial.org/angband/trunk
 
 Upstream Author: 
 
@@ -9,7 +7,7 @@ Upstream Author:
 
 Copyright: 
 
-	Copyright (c) 1989-2008 Angband contributors
+	Copyright (c) 1989-2009 Angband contributors
 
 License:
 
@@ -38,5 +36,21 @@ License:
      * the font files are under the licences noted in lib/xtra/font/copying.txt,
        all of which are OSI-compliant.
 
-The Debian packaging is Copyright (c) 2008, Andrew Sidwell <takkaria@gmail.com> and
-is licensed under the BSD licence, see `/usr/share/common-licenses/BSD'.
+This package is maintained by Manoj Srivastava <srivasta@debian.org>.
+
+The Debian specific changes are © 1995, 1996, 1997, 1998, 1999, 2000, 
+2001, 2002, 2003, 2004, 2005, 2006, 2008 Manoj Srivastava 
+<srivasta@debian.org> and © 2009 Chris Carr (rantingman@gmail.com) and 
+distributed under the terms of the GNU General Public License, version 
+2.
+
+On Debian GNU/Linux systems, the complete text of the GNU General
+Public License can be found in `/usr/share/common-licenses/GPL'. 
+
+    A copy of the GNU General Public License is also available at
+    <URL:http://www.gnu.org/copyleft/gpl.html>.  You may also obtain
+    it by writing to the Free Software Foundation, Inc., 51 Franklin
+    St, Fifth Floor, Boston, MA 02110-1301 USA.
+
+Manoj Srivastava <srivasta@debian.org>
+arch-tag: d4250e44-a0e0-4ee0-adb9-2bd74f6eeb27
