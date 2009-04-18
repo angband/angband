@@ -23,6 +23,16 @@
 
 #ifdef ALLOW_DEBUG
 
+/*
+ * This is a nice utility function; it determines if a (NULL-terminated)
+ * string consists of only digits (starting with a non-zero digit).
+ */
+s16b get_idx_from_name(char *s)
+{
+	char *endptr = NULL;
+	long l = strtol(s, &endptr, 10);
+	return *endptr == '\0' ? (s16b)l : 0;
+}
 
 /*
  * Hack -- quick debugging hook
@@ -1613,14 +1623,16 @@ void do_cmd_debug(void)
 				/* Get the name */
 				if (askfor_aux(name, sizeof(name), NULL))
 				{
-					/* Find the artifact with that name */
-					a_idx = lookup_artifact_name(name); 
+					/* See if an a_idx was entered */
+					a_idx = get_idx_from_name(name);
+					
+					/* If not, find the artifact with that name */
+					if (a_idx < 1)
+						a_idx = lookup_artifact_name(name); 
 					
 					/* Did we find a valid artifact? */
 					if (a_idx != -1)
-					{
 						wiz_create_artifact(a_idx);
-					}
 				}
 				
 				/* Reload the screen */
@@ -1709,7 +1721,7 @@ void do_cmd_debug(void)
 			else
 			{
 				char name[80] = "";
-				int r_idx = -1;
+				s16b r_idx;
 
 				/* Avoid the prompt getting in the way */
 				screen_save();
@@ -1720,19 +1732,22 @@ void do_cmd_debug(void)
 				/* Get the name */
 				if (askfor_aux(name, sizeof(name), NULL))
 				{
-					/* Find the monster with that name */
-					r_idx = lookup_monster(name); 
+					/* See if a r_idx was entered */
+					r_idx = get_idx_from_name(name);
 					
-					/* Reload the screen */
-					screen_load();
+					/* If not, find the monster with that name */
+					if (r_idx < 1)
+						r_idx = lookup_monster(name); 
 					
 					/* Did we find a valid monster? */
 					if (r_idx != -1)
-					{
 						do_cmd_wiz_named(r_idx, TRUE);
-					}
 				}
+
+				/* Reload the screen */
+				screen_load();
 			}
+
 			break;
 		}
 
@@ -1838,7 +1853,6 @@ void do_cmd_debug(void)
 		}
 	}
 }
-
 
 #endif
 
