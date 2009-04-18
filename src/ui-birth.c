@@ -321,7 +321,7 @@ static void setup_menus()
 	mdata->hint = "Your 'class' determines various intrinsic abilities and bonuses";
 		
 	/* Roller menu straightforward again */
-	init_birth_menu(&roller_menu, MAX_BIRTH_ROLLERS, 0, &roller_region, TRUE, NULL);
+	init_birth_menu(&roller_menu, MAX_BIRTH_ROLLERS, 0, &roller_region, FALSE, NULL);
 	mdata = roller_menu.menu_data;
 	for (i = 0; i < MAX_BIRTH_ROLLERS; i++)
 	{	
