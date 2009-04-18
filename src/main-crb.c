@@ -2824,7 +2824,7 @@ static OSStatus openGame(int op)
 /*
  *	Run the event loop and return a gameplay status to init_angband
  */
-static game_command get_init_cmd() 
+static errr get_cmd_init()
 { 
 	EventTargetRef target = GetEventDispatcherTarget();
 	OSStatus err;
@@ -2841,6 +2841,9 @@ static game_command get_init_cmd()
 			ReleaseEvent(event);
 		}
 	}
+
+	/* Push the command to the game. */
+	cmd_insert_s(&cmd);
 		
 	/* A game is starting - update status and tracking as appropriate. */ 
 	term_data *td0 = &data[0];
@@ -2860,9 +2863,16 @@ static game_command get_init_cmd()
 		redrawRecentItemsMenu();
 	}
 	
-	return cmd; 
+	return 0; 
 } 
 
+static errr crb_get_cmd(cmd_context context, bool wait)
+{
+	if (context == CMD_INIT) 
+		return get_cmd_init();
+	else 
+		return textui_get_cmd(context, wait);
+}
 
 static OSStatus QuitCommand(EventHandlerCallRef inCallRef,
 							EventRef inEvent, void *inUserData )
@@ -3890,7 +3900,7 @@ int main(void)
 		N_ELEMENTS(input_event_types), input_event_types);
 
 	/* Set command hook */ 
-	get_game_command = get_init_cmd; 
+	cmd_get_hook = crb_get_cmd; 
 
 	/* Set up the display handlers and things. */
 	init_display();

@@ -4535,7 +4535,7 @@ static void hook_quit(cptr str)
 }
 
 
-static game_command get_init_cmd()
+static errr get_init_cmd()
 {
 	MSG msg;
 
@@ -4553,9 +4553,21 @@ static game_command get_init_cmd()
 	/* Bit of a hack, we'll do this when we leave the INIT context in future. */
 	game_in_progress = TRUE;
 
-	return cmd;
+	/* Push command into the queue. */
+	cmd_insert_s(&cmd);
+
+	/* Everything's OK. */
+	return 0;
 }
 
+/* Command dispatcher for windows build */
+static errr default_get_cmd(cmd_context context, bool wait)
+{
+	if (context == CMD_INIT) 
+		return get_init_cmd();
+	else 
+		return textui_get_cmd(context, wait);
+}
 
 
 /*** Initialize ***/
@@ -4864,7 +4876,7 @@ int FAR PASCAL WinMain(HINSTANCE hInst, HINSTANCE hPrevInst,
 	check_for_save_file(lpCmdLine);
 
 	/* Set command hook */
-	get_game_command = get_init_cmd;
+	cmd_get_hook = win_get_cmd;
 
 	/* Set up the display handlers and things. */
 	init_display();

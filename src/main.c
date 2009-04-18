@@ -192,20 +192,28 @@ static bool new_game;
  * Pass the appropriate "Initialisation screen" command to the game,
  * getting user input if needed.
  */ 
-static game_command get_init_cmd(void)
+static errr get_init_cmd()
 {
-	game_command cmd;
-
 	/* Wait for response */
 	pause_line(Term->hgt - 1);
 
 	if (new_game)
-		cmd.command = CMD_NEWGAME;
+		cmd_insert(CMD_NEWGAME);
 	else
 		/* This might be modified to supply the filename in future. */
-		cmd.command = CMD_LOADFILE;
+		cmd_insert(CMD_LOADFILE);
 
-	return cmd;
+	/* Everything's OK. */
+	return 0;
+}
+
+/* Command dispatcher for curses, etc builds */
+static errr default_get_cmd(cmd_context context, bool wait)
+{
+	if (context == CMD_INIT) 
+		return get_init_cmd();
+	else 
+		return textui_get_cmd(context, wait);
 }
 
 
@@ -423,9 +431,8 @@ int main(int argc, char *argv[])
 	/* Catch nasty signals */
 	signals_init();
 
-	/* Set up the command hooks */
-	if (get_game_command == NULL)
-		get_game_command = get_init_cmd;
+	/* Set up the command hook */
+	cmd_get_hook = default_get_cmd;
 
 	/* Set up the display handlers and things. */
 	init_display();

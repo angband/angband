@@ -1787,6 +1787,13 @@ void do_cmd_debug(void)
 			break;
 		}
 
+		/* Create a trap */
+		case 'T':
+		{
+			cave_set_feat(p_ptr->py, p_ptr->px, FEAT_INVIS);
+			break;
+		}
+
 		/* Un-hide all monsters */
 		case 'u':
 		{

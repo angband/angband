@@ -1,4 +1,5 @@
 
+
 /*
  * All valid game commands.  Not all implemented yet.
  */
@@ -15,20 +16,29 @@ typedef enum cmd_code
 	CMD_NEWGAME,
 
 	/* Birth commands */
-	CMD_BIRTH_BACK,
-	CMD_BIRTH_RESTART,
-	CMD_BIRTH_CHOICE,
+	CMD_BIRTH_RESET,
+	CMD_CHOOSE_SEX,
+	CMD_CHOOSE_RACE,
+	CMD_CHOOSE_CLASS,
 	CMD_BUY_STAT,
 	CMD_SELL_STAT,
-	CMD_AUTOROLL,
-	CMD_ROLL,
+	CMD_RESET_STATS,
+	CMD_ROLL_STATS,
 	CMD_PREV_STATS,
-	CMD_ACCEPT_STATS,
 	CMD_NAME_CHOICE,
 	CMD_ACCEPT_CHARACTER,
 	
 	CMD_HELP
 } cmd_code;
+
+typedef enum cmd_context
+{
+	CMD_INIT,
+	CMD_BIRTH,
+	CMD_MAP,
+	CMD_STORE,
+	CMD_DEATH
+} cmd_context;
 
 
 /*
@@ -94,6 +104,20 @@ typedef struct game_command
 
 /*
  * A function called by the game to get a command from the UI.
- * Just a hook, with the real function supplied by the UI.
  */
-extern game_command (*get_game_command)(void);
+extern errr (*cmd_get_hook)(cmd_context c, bool wait);
+
+/* Inserts a command in the queue to be carried out. */
+errr cmd_insert_s(game_command *cmd);
+
+/* 
+ * Convenience function.
+ * Inserts a command with params in the queue to be carried out. 
+ */
+errr cmd_insert(cmd_code c, ...);
+
+/* Gets the next command from the queue, optionally waiting to allow
+   the UI time to process user input, etc. if wait is TRUE */
+errr cmd_get(cmd_context c,game_command *cmd, bool wait);
+
+

@@ -19,6 +19,7 @@
  */
 #include "angband.h"
 #include "game-event.h"
+#include "game-cmd.h"
 
 #include "ui-birth.h"
 
@@ -1750,6 +1751,13 @@ static void ui_leave_game(game_event_type type, game_event_data *data, void *use
 	/* Check if the panel should shift when the player's moved */
 	event_remove_handler(EVENT_PLAYERMOVED, check_panel, NULL);
 }
+
+errr textui_get_cmd(cmd_context context, bool wait)
+{
+	if (context == CMD_BIRTH)
+		return get_birth_command(wait);
+}
+
 
 void init_display(void)
 {

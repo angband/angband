@@ -1463,7 +1463,9 @@ bool init_angband(void)
 	/* Ask for a "command" until we get one we like. */
 	while (1)
 	{
-		game_command command_req = get_game_command();
+		game_command command_req;
+
+		cmd_get(CMD_INIT, &command_req, TRUE);
 
 		if (command_req.command == CMD_QUIT)
 		{

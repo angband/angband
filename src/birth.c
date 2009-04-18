@@ -30,21 +30,22 @@
  * the file - that is the only external entry point to the functions
  * defined here.
  * 
- * Player (in the Angband sense of character) birth is a series of 
- * steps which must be carried out in a specified order, with choices
- * in one step affecting those further along.
+ * Player (in the Angband sense of character) birth is modelled as a
+ * a series of commands from the UI to the game to manipulate the
+ * character and corresponding events to inform the UI of the outcomes
+ * of these changes.
  *
- * We implement this through a system of "birth stages".  As the 
- * game enters each birth stage, we typically do some minor
- * housekeeping before sending a signal to the UI so that it can update 
- * its display, or do whatever else it deems fit.  Then we send other
- * messages or request a command (such as buying a stat, or stepping back 
- * in the process).  This file simply responds to such commands by stepping
- * back and forth through the birth sequence, updating values, and so on,
- * until a suitable character has been chosen.  It then does more
- * housekeeping to ensure the "player" is ready to start the game 
- * (clearing the history log, making sure options are set, etc) before 
- * returning contrl to the game proper.
+ * The current aim of this section is that after any birth command
+ * is carried out, the character should be left in a playable state.
+ * In particular, this means that if a savefile is supplied, the 
+ * character will be set up according to the "quickstart" rules until
+ * another race or class is chosen, or until the stats are reset by
+ * the UI.
+ *
+ * Once the UI signals that the player is happy with the character, the 
+ * game does housekeeping to ensure the character is ready to start the 
+ * game (clearing the history log, making sure options are set, etc) 
+ * before returning control to the game proper.
  */
 
 
@@ -272,24 +273,9 @@ static void get_stats(int stat_use[A_MAX])
 }
 
 
-/*
- * Roll for some info that the auto-roller ignores
- */
-static void get_extra(void)
+static void roll_hp(void)
 {
 	int i, j, min_value, max_value;
-
-	/* Level one */
-	p_ptr->max_lev = p_ptr->lev = 1;
-
-	/* Experience factor */
-	p_ptr->expfact = rp_ptr->r_exp + cp_ptr->c_exp;
-
-	/* Hitdice */
-	p_ptr->hitdie = rp_ptr->r_mhp + cp_ptr->c_mhp;
-
-	/* Initial hitpoints */
-	p_ptr->mhp = p_ptr->hitdie;
 
 	/* Minimum hitpoints at highest level */
 	min_value = (PY_MAX_LEVEL * (p_ptr->hitdie - 1) * 3) / 8;
@@ -298,9 +284,6 @@ static void get_extra(void)
 	/* Maximum hitpoints at highest level */
 	max_value = (PY_MAX_LEVEL * (p_ptr->hitdie - 1) * 5) / 8;
 	max_value += PY_MAX_LEVEL;
-
-	/* Pre-calculate level 1 hitdice */
-	p_ptr->player_hp[0] = p_ptr->hitdie;
 
 	/* Roll out the hitpoints */
 	while (TRUE)
@@ -650,61 +633,12 @@ static void player_outfit(void)
 
 
 /*
- * Get a command for the birth process, handling the command cases here 
- * (i.e. quitting and options.
- *
- * NOTE: We would also handle help here if it was eventually decided
- * there should be a game help mode rather than it being entirely at
- * the UI level.
- */
-static game_command get_birth_command(void)
-{
-	game_command cmd = { CMD_NULL, 0, {0} };
-
-	while (cmd.command == CMD_NULL)
-	{
-		cmd = get_game_command();
-
-		if (cmd.command == CMD_QUIT) 
-			quit(NULL);
-
-		if (cmd.command == CMD_OPTIONS) 
-		{
-			/* TODO: Change this to use whatever sort of message passing
-			   system we eventually decide on for options.  That might
-			   still be calling do_cmd_option. :) */
-			do_cmd_options();
-
-			/* We've already handled it, so don't pass it on. */
-			cmd.command = CMD_NULL;
-		}
-		
-		if (cmd.command == CMD_HELP)
-		{
-			char buf[80];
-			strnfmt(buf, sizeof(buf), "birth.txt");
-			screen_save();
-			show_file(buf, NULL, 0, 0);
-			screen_load();
-			
-			/* We've already handled it, so don't pass it on. */
-			cmd.command = CMD_NULL;
-		}
-	}
-
-	/* TODO: Check against list of permitted commands for the given stage. Probably. */
-
-	return cmd;
-}
-
-/*
  * Cost of each "point" of a stat.
  */
 static const int birth_stat_costs[18 + 1] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 2, 4 };
 
 /* It was feasible to get base 17 in 3 stats with the autoroller */
 #define MAX_BIRTH_POINTS 24 /* 3 * (1+1+1+1+1+1+2) */
-
 
 static void recalculate_stats(int *stats, int points_left)
 {
@@ -750,177 +684,294 @@ static void recalculate_stats(int *stats, int points_left)
 	event_signal(EVENT_STATS);
 }
 
-
-/*
- * Due to its relative complexity, point based birth has been split off into
- * this function.  'reset' is TRUE if we're entering from earlier in the
- * birth process - i.e. we want to start a character from scratch rather 
- * than having another go at one already chosen.
- */
-static enum birth_stage do_point_based(bool reset)
+static void reset_stats(int stats[A_MAX], int points_spent[A_MAX], int *points_left)
 {
-	game_command cmd = { CMD_NULL, 0, {0} };
-	
-	int i, j;
-	int stats[A_MAX];
+	int i;
 
-	int points_spent[A_MAX];
-	int points_left;
-
-	/* If the first command is BIRTH_BACK, we step back a stage, so this
-	   is a reasonable default. */
-	enum birth_stage next_stage = BIRTH_ROLLER_CHOICE;
-
-	if (reset)
-	{
-		/* Roll for base hitpoints, age/height/weight and social class */
-		get_extra();
-		get_ahw();
-		get_history();
-	}
-
-	/* Signal that we're entering the point based birth arena. */
-	event_signal_birthstage(BIRTH_POINTBASED, NULL);
-	
 	/* Calculate and signal initial stats and points totals. */
-	points_left = MAX_BIRTH_POINTS;
+	*points_left = MAX_BIRTH_POINTS;
 
 	for (i = 0; i < A_MAX; i++)
 	{
-		/* Initial stats are all 10 and costs or zero */
+		/* Initial stats are all 10 and costs are zero */
 		stats[i] = 10;
 		points_spent[i] = 0;
-
-		/* If not resetting, we use the stored stat values from p_ptr
-		   to simulate buying the stats, just using the same method as
-		   when the BUY_STAT command is received. */
-		if (!reset)
-		{
-			for (j = 10; j < p_ptr->stat_birth[i]; j++)
-			{
-				int stat_cost = birth_stat_costs[j + 1];
-				stats[i]++;
-				points_spent[i] += stat_cost;
-				points_left -= stat_cost;
-			}
-		}
 	}
 
 	/* Use the new "birth stat" values to work out the "other"
 	   stat values (i.e. after modifiers) and tell the UI things have 
 	   changed. */
-	recalculate_stats(stats, points_left);
-	event_signal_birthstats(points_spent, points_left);	
-	
-	/* Then on to the interactive part - two ways to leave */
-	while (cmd.command != CMD_ACCEPT_STATS && 
-		   cmd.command != CMD_BIRTH_BACK)
-	{		
-		cmd = get_birth_command();
+	recalculate_stats(stats, *points_left);
+	event_signal_birthpoints(points_spent, *points_left);	
+}
+
+static bool buy_stat(int choice, int stats[A_MAX], int points_spent[A_MAX], int *points_left)
+{
+	/* Must be a valid stat, and have a "base" of below 18 to be adjusted */
+	if (!(choice >= A_MAX || choice < 0) &&	(stats[choice] < 18))
+	{
+		/* Get the cost of buying the extra point (beyond what
+		   it has already cost to get this far). */
+		int stat_cost = birth_stat_costs[stats[choice] + 1];
 		
-		/* If BIRTH_BACK isn't the first command, or we didn't start
-		   by resetting the stats, we redo this stage rather than actually
-		   stepping back. */
-		if (cmd.command != CMD_BIRTH_BACK || !reset)
-			next_stage = BIRTH_POINTBASED;
-
-		switch (cmd.command)
+		if (stat_cost <= *points_left)
 		{
-			case CMD_BUY_STAT:
+			stats[choice]++;
+			points_spent[choice] += stat_cost;
+			*points_left -= stat_cost;
+			
+			/* Tell the UI the new points situation. */
+			event_signal_birthpoints(points_spent, *points_left);
+			
+			/* Recalculate everything that's changed because
+			   the stat has changed, and inform the UI. */
+			recalculate_stats(stats, *points_left);
+			
+			return TRUE;
+		}		
+	}
+
+	/* Didn't adjust stat. */
+	return FALSE;
+}
+
+
+static bool sell_stat(int choice, int stats[A_MAX], int points_spent[A_MAX], 
+					  int *points_left)
+{
+	/* Must be a valid stat, and we can't "sell" stats below the base of 10. */
+	if (!(choice >= A_MAX || choice < 0) && (stats[choice] > 10))
+	{
+		int stat_cost = birth_stat_costs[stats[choice]];
+		
+		stats[choice]--;
+		points_spent[choice] -= stat_cost;
+		*points_left += stat_cost;
+		
+		/* Tell the UI the new points situation. */
+		event_signal_birthpoints(points_spent, *points_left);
+		
+		/* Recalculate everything that's changed because
+		   the stat has changed, and inform the UI. */
+		recalculate_stats(stats, *points_left);
+
+		return TRUE;
+	}				
+
+	/* Didn't adjust stat. */
+	return FALSE;
+}
+
+
+/*
+ * This picks some reasonable starting values for stats based on the
+ * current race/class combo, etc.  For now I'm disregarding concerns
+ * about role-playing, etc, and using the simple outline from
+ * http://angband.oook.cz/forum/showpost.php?p=17588&postcount=6:
+ *
+ * 0. buy base STR 17
+ * 1. if possible buy adj DEX of 18/10
+ * 2. spend up to half remaining points on each of spell-stat and con, 
+ *    but only up to max base of 16 unless a pure class 
+ *    [mage or priest or warrior]
+ * 3. If there are any points left, spend as much as possible in order 
+ *    on DEX, non-spell-stat, CHR. 
+ */
+static void generate_stats(int stats[A_MAX], int points_spent[A_MAX], 
+						   int *points_left)
+{
+	int step = 0;
+	int maxed[A_MAX] = { 0 };
+	bool pure = FALSE;
+
+	/* Determine whether the class is "pure" */
+	if (cp_ptr->spell_stat == 0 || cp_ptr-> max_attacks < 5)
+	{
+		pure = TRUE;
+	}
+
+	while (*points_left && step >= 0)
+	{
+		switch (step)
+		{
+			/* Buy base STR 17 */
+			case 0:				
 			{
-				/* The choice is the index of the stat in the list to "buy" */
-				int choice = cmd.params.choice;
-				if (choice >= A_MAX || choice < 0) continue;
-
-				/* Can't increase stats past a "base" of 18 */
-				if (stats[choice] < 18)
+				if (!maxed[A_STR] && stats[A_STR] < 17)
 				{
-					/* Get the cost of buying the extra point (beyond what
-					   it has already cost to get this far). */
-					int stat_cost = birth_stat_costs[stats[choice] + 1];
-
-					if (stat_cost <= points_left)
-					{
-						stats[choice]++;
-						points_spent[choice] += stat_cost;
-						points_left -= stat_cost;
-				
-						/* Tell the UI the new points situation. */
-						event_signal_birthstats(points_spent, points_left);
-
-						/* Recalculate everything that's changed because
-						   the stat has changed, and inform the UI. */
-						recalculate_stats(stats, points_left);
-					}
+					if (!buy_stat(A_STR, stats, points_spent, points_left))
+						maxed[A_STR] = TRUE;
+				}
+				else
+				{
+					step++;
 				}
 
 				break;
 			}
-			
-			case CMD_SELL_STAT:
-			{
-				/* The choice is the index of the stat in the list to "sell" */
-				int choice = cmd.params.choice;
-				if (choice >= A_MAX || choice < 0) continue;
 
-				/* We can't "sell" stats below the base of 10. */
-				if (stats[choice] > 10)
+			/* If possible buy adj DEX of 18/10 */
+			case 1:
+			{
+				if (!maxed[A_DEX] && p_ptr->state.stat_top[A_DEX] < 18+10)
 				{
-					int stat_cost = birth_stat_costs[stats[choice]];
-					
-					stats[choice]--;
-					points_spent[choice] -= stat_cost;
-					points_left += stat_cost;
-					
-					/* Tell the UI the new points situation. */
-					event_signal_birthstats(points_spent, points_left);
+					if (!buy_stat(A_DEX, stats, points_spent, points_left))
+						maxed[A_DEX] = TRUE;
+				}
+				else
+				{
+					step++;
+				}
 
-					/* Recalculate everything that's changed because
-					   the stat has changed, and inform the UI. */
-					recalculate_stats(stats, points_left);
-				}				
 				break;
 			}
 
-			case CMD_ACCEPT_STATS:
+			/* 
+			 * Spend up to half remaining points on each of spell-stat and 
+			 * con, but only up to max base of 16 unless a pure class 
+			 * [mage or priest or warrior]
+			 */
+			case 2:
 			{
-				next_stage = BIRTH_NAME_CHOICE;
+				int points_trigger = *points_left / 2;
+
+				if (cp_ptr->spell_stat)
+				{
+					while (!maxed[cp_ptr->spell_stat] &&
+						   (pure || stats[cp_ptr->spell_stat] < 16) &&
+						   points_spent[cp_ptr->spell_stat] < points_trigger)
+					{						
+						if (!buy_stat(cp_ptr->spell_stat, stats, points_spent,
+									  points_left))
+						{
+							maxed[cp_ptr->spell_stat] = TRUE;
+						}
+
+						if (points_spent[cp_ptr->spell_stat] > points_trigger)
+						{
+							sell_stat(cp_ptr->spell_stat, stats, points_spent, 
+									  points_left);
+							maxed[cp_ptr->spell_stat] = TRUE;
+						}
+					}
+				}
+
+				while (!maxed[A_CON] &&
+					   (pure || stats[A_CON] < 16) &&
+					   points_spent[A_CON] < points_trigger)
+				{						
+					if (!buy_stat(A_CON, stats, points_spent,points_left))
+					{
+						maxed[A_CON] = TRUE;
+					}
+					
+					if (points_spent[A_CON] > points_trigger)
+					{
+						sell_stat(A_CON, stats, points_spent, points_left);
+						maxed[A_CON] = TRUE;
+					}
+				}
+				
+				step++;
 				break;
 			}
+
+			/* 
+			 * If there are any points left, spend as much as possible in 
+			 * order on DEX, non-spell-stat, CHR. 
+			 */
+			case 3:
+			{				
+				int next_stat;
+
+				if (!maxed[A_DEX])
+				{
+					next_stat = A_DEX;
+				}
+				else if (!maxed[A_INT] && cp_ptr->spell_stat != A_INT)
+				{
+					next_stat = A_INT;
+				}
+				else if (!maxed[A_WIS] && cp_ptr->spell_stat != A_WIS)
+				{
+					next_stat = A_WIS;
+				}
+				else if (!maxed[A_CHR])
+				{
+					next_stat = A_CHR;
+				}
+				else
+				{
+					step++;
+					break;
+				}
+
+				/* Buy until we can't buy any more. */
+				while (buy_stat(next_stat, stats, points_spent, points_left));
+				maxed[next_stat] = TRUE;
+
+				break;
+			}
+
 			default:
 			{
-				/* This state shouldn't be reached. */
+				step = -1;
+				break;
 			}
 		}
 	}
-
-	return next_stage;
 }
-	
 
-enum birth_questions
+/*
+ * This fleshes out a full player based on the choices currently made,
+ * and so is called whenever things like race or class are chosen.
+ */
+static void generate_player()
 {
-	BQ_METHOD = 0,
-	BQ_SEX,
-	BQ_RACE,
-	BQ_CLASS,
-	BQ_ROLLER,
-	MAX_BIRTH_QUESTIONS
-};
+	/* Set sex according to p_ptr->sex */
+	sp_ptr = &sex_info[p_ptr->psex];
 
-enum birth_methods
-{
-	BM_NORMAL_BIRTH = 0,
-	BM_QUICKSTART,
-	MAX_BIRTH_METHODS
-};
+	/* Set class according to p_ptr->class */
+	cp_ptr = &c_info[p_ptr->pclass];
+	mp_ptr = &cp_ptr->spells;
 
-enum birth_rollers
+	/* Set race according to p_ptr->race */
+	rp_ptr = &p_info[p_ptr->prace];
+
+	/* Level 1 */
+	p_ptr->max_lev = p_ptr->lev = 1;
+
+	/* Experience factor */
+	p_ptr->expfact = rp_ptr->r_exp + cp_ptr->c_exp;
+
+	/* Hitdice */
+	p_ptr->hitdie = rp_ptr->r_mhp + cp_ptr->c_mhp;
+
+	/* Initial hitpoints */
+	p_ptr->mhp = p_ptr->hitdie;
+
+	/* Pre-calculate level 1 hitdice */
+	p_ptr->player_hp[0] = p_ptr->hitdie;
+
+	/* Roll for age/height/weight */
+	get_ahw();					
+
+	get_history();
+}
+
+
+/* Reset everything back to how it would be on loading the game. */
+static void do_birth_reset(bool use_quickstart, birther *quickstart_prev)
 {
-	BR_POINTBASED = 0,
-	BR_NORMAL,
-	MAX_BIRTH_ROLLERS
-};
+	player_wipe();
+
+	/* If there's quickstart data, we use it to set default
+	   character choices. */
+	if (use_quickstart && quickstart_prev)
+		load_roller_data(quickstart_prev, NULL);
+
+	generate_player();
+}
 
 /*
  * Create a new character.
@@ -933,12 +984,17 @@ void player_birth(bool quickstart_allowed)
 	int i;
 	game_command cmd = { CMD_NULL, 0, {0} };
 
+	int stats[A_MAX];
+	int points_spent[A_MAX];
+	int points_left;
 
-   /*
-	* The last character displayed, to allow the user to flick between two.
-	* We rely on prev.age being zero to determine whether there is a stored
-	* character or not, so initialise it here.
-	*/
+	bool rolled_stats = FALSE;
+
+	/*
+	 * The last character displayed, to allow the user to flick between two.
+	 * We rely on prev.age being zero to determine whether there is a stored
+	 * character or not, so initialise it here.
+	 */
 	birther prev = { 0, 0, 0, 0, 0, 0, 0, 0, {0}, "" };
 
 	/* 
@@ -948,555 +1004,165 @@ void player_birth(bool quickstart_allowed)
 	 */
 	birther quickstart_prev = {0, 0, 0, 0, 0, 0, 0, 0, {0}, "" };
 
-	enum birth_stage next_stage = BIRTH_METHOD_CHOICE;
-	enum birth_stage stage = BIRTH_METHOD_CHOICE;
-	enum birth_stage last_stage = BIRTH_METHOD_CHOICE;
-	enum birth_stage roller_choice = BIRTH_METHOD_CHOICE;
-
-	int roller_mins[A_MAX];
-
-	/* Set up our "hints" for each birth question */
-	const char *hints[MAX_BIRTH_QUESTIONS] = {
-		"Quickstart lets you make a new character based on your old one.",
-		"Your 'sex' does not have any significant gameplay effects.",
-		"Your 'race' determines various intrinsic factors and bonuses.",
-		"Your 'class' determines various intrinsic abilities and bonuses",
-		"Your choice of character generation.  Point-based is recommended."
-	};
-
-	/* Set up the list of choices for each birth question. */
-	const char *quickstart_choices[MAX_BIRTH_METHODS] = { 
-		"Normal birth process", 
-		"Quickstart" 
-	};
-
-	const char *roller_choices[MAX_BIRTH_ROLLERS] = { 
-		"Point-based", 
-		"Standard roller" 
-	};
-
-	/* These require setting up in a loop later, so just allocate memory for
-	   arrays of char * for now */
-	const char *sex_choices[MAX_SEXES];
-
-	const char **race_choices = mem_alloc(z_info->p_max * sizeof *race_choices);
-	const char **class_choices = mem_alloc(z_info->c_max * sizeof *class_choices);
-
-	/* For a couple of the options we have extra "help text" as well as the
-	   hints, */
-	const char **race_help = mem_alloc(z_info->p_max * sizeof *race_help);
-	const char **class_help = mem_alloc(z_info->c_max * sizeof *class_help);
-
-
-	/* Set up the choices for sex, race and class questions. */
-	for (i = 0; i < MAX_SEXES; i++)
-		sex_choices[i] = sex_info[i].title;
-
-	for (i = 0; i < z_info->p_max; i++)
-		race_choices[i] = p_name + p_info[i].name;
-
-	for (i = 0; i < z_info->c_max; i++)
-		class_choices[i] = c_name + c_info[i].name;
-
-	/* Set up extra help text for race and class questions (basically just
-	   lists of various bonuses you get for each race or class). */
-	for (i = 0; i < z_info->p_max; i++)
-	{
-		int j;
-		char *s;
-		size_t end; 
-
-		/* Race help text consists of: */
-		int bufsize = 
-			sizeof "STR: xx\n" * A_MAX + 
-			sizeof "Hit die: xx\n" +
-			sizeof "Experience: xxx%\n" +
-			sizeof "Infravision: xx ft\0";
-
-		/* Allocate enough memory to hold that text for this race choice */
-		race_help[i] = mem_alloc(bufsize * sizeof *race_help[i]);
-
-		/* Set 's' up as a shorthand for race_choices[i] to make later lines
-		   readable, and make sure it is an empty string. Note we cast away
-		   the "constness" of rece_help[i] while we build the string,
-		   safe because we know where it points (writable memory). */
-		s = (char *) race_help[i];
-		s[0] = '\0'; end = 0;
-
-		/* For each stat, concatanate a "STR: xx" type sequence to the
-		   end of the help string. */
-		for (j = 0; j < A_MAX; j++) 
-		{  
-			strnfcat(s, bufsize, &end, "%s%+d\n", 
-					 stat_names_reduced[j], p_info[i].r_adj[j]); 
-		}
-
-		/* Concatenate all other bonuses to the end of the help string. */
-		strnfcat(s, bufsize, &end, "Hit die: %d\n", p_info[i].r_mhp);
-		strnfcat(s, bufsize, &end, "Experience: %d%%\n", p_info[i].r_exp);
-		strnfcat(s, bufsize, &end, "Infravision: %d ft", p_info[i].infra * 10);
-	}
-
-	for (i = 0; i < z_info->c_max; i++)
-	{
-		int j;
-		char *s;
-		size_t end;
-
-		/* Class help text consists of: */
-		int bufsize = 
-			sizeof "STR: xx\n" * A_MAX + 
-			sizeof "Hit die: xx\n" +
-			sizeof "Experience: xxx%\n";
-
-		/* Allocate enough memory to hold that text for this race choice */
-		class_help[i] = mem_alloc(bufsize * sizeof *class_help[i]);
-
-		/* Set 's' up as a shorthand for race_choices[i] to make later lines
-		   readable, and make sure it is an empty string. Note we cast away
-		   the "constness" of rece_help[i] while we build the string,
-		   safe because we know where it points (writable memory). */
-		s = (char *) class_help[i];
-		s[0] = '\0'; end = 0;
-
-		/* For each stat, concatanate a "STR: xx" type sequence to the
-		   end of the help string. */
-		for (j = 0; j < A_MAX; j++) 
-		{  
-			strnfcat(s, bufsize, &end, "%s%+d\n", 
-					 stat_names_reduced[j], c_info[i].c_adj[j]); 
-		}
-
-		/* Concatenate all other bonuses to the end of the help string. */
-		strnfcat(s, bufsize, &end, "Hit die: %d\n", c_info[i].c_mhp);   
-		strnfcat(s, bufsize, &end, "Experience: %d%%", c_info[i].c_exp);
-	}
-
-	/* If there's a quickstart character, store it here. */
+	/* If there's a quickstart character, store it for later use. */
 	if (quickstart_allowed)
 		save_roller_data(&quickstart_prev);
 
-	/* Now we're ready to start the interactive birth process. */
+	do_birth_reset(quickstart_allowed, &quickstart_prev);
+	reset_stats(stats, points_spent, &points_left);
+
+	/* We're ready to start the interactive birth process. */
 	event_signal(EVENT_ENTER_BIRTH);
 
-	/* "stage" just keeps track of where we're up to in the (somewhat tortuous)
-	   process - the stages are laid out in approximately the right order in 
-	   the switch statement below. */
-	stage = BIRTH_METHOD_CHOICE;
-
-	/* There are two ways to leave - with a working character or by quitting */
-	while (stage != BIRTH_COMPLETE)
+	/* 
+	 * Loop around until the UI tells us we have an acceptable character.
+	 * Note that it is possible to quit from inside this loop.
+	 */
+	while (cmd.command != CMD_ACCEPT_CHARACTER)
 	{
-		switch (stage)
+		/* Grab a command from the queue - we're happy to wait for it. */
+		if (cmd_get(CMD_BIRTH, &cmd, TRUE) != 0) continue;
+
+		if (cmd.command == CMD_BIRTH_RESET)
 		{
-			/* 
-			 * First stage is to determine the birth method - currently
-			 * simply whether to use quickstart or do the full birth 
-			 * process.
-			 */
-			case BIRTH_METHOD_CHOICE:
-			{
-				/* Set up a default command to use to proceed. */
-				cmd.command = CMD_BIRTH_CHOICE;
-				cmd.params.choice = BM_NORMAL_BIRTH;
-
-				/* We're at the beginning, so wipe the player clean */
-				player_wipe();
-
-				/* If there's a choice to be made, offer it. */
-				if (quickstart_allowed)
-				{
-					/* If there's quickstart data, we use it to set default
-					   character choices even if quickstart isn't chosen. */
-					load_roller_data(&quickstart_prev, NULL);
-
-					event_signal_birthstage_question(BIRTH_METHOD_CHOICE,
-													 hints[BQ_METHOD],
-													 MAX_BIRTH_METHODS, 
-													 BM_NORMAL_BIRTH,
-													 quickstart_choices,
-													 NULL);
-					cmd = get_birth_command();
-				}
-				
-				/* Either way, move on to the next relevant stage. */
-				if (cmd.command == CMD_BIRTH_CHOICE)
-				{
-					/* Quickstart chosen. */
-					if (cmd.params.choice)
-					{
-						/* Get the things not loaded with the roller data 
-						   (hitdice, exp bonuses) */
-						get_extra();
-
-						/* Update bonuses, hp, etc. */
-						get_bonuses();
-
-						/* Set the roller choice so we end up back in the
-						   right place. */
-						roller_choice = BIRTH_METHOD_CHOICE;
-						next_stage = BIRTH_NAME_CHOICE;
-					}
-					else
-					{
-						next_stage = BIRTH_SEX_CHOICE;
-					}
-				}		
-	
-				break;
-			}
-
-			/*
-			 * Ask the user to choose a sex from the supplied list.
-			 */
-			case BIRTH_SEX_CHOICE:
-			{
-				event_signal_birthstage_question(BIRTH_SEX_CHOICE, 
-												 hints[BQ_SEX],
-												 MAX_SEXES, 
-												 p_ptr->psex,
-												 sex_choices,
-												 NULL);
-
-				cmd = get_birth_command();
-
-				if (cmd.command == CMD_BIRTH_CHOICE)
-				{					
-					p_ptr->psex = cmd.params.choice; 
-					sp_ptr = &sex_info[p_ptr->psex];
-					next_stage = BIRTH_RACE_CHOICE;
-				}
-				/* At this point there's only one backwards step. */
-				else if (cmd.command == CMD_BIRTH_RESTART ||
-						 cmd.command == CMD_BIRTH_BACK)
-				{
-					next_stage = BIRTH_METHOD_CHOICE;
-				}
-				
-				break;
-			}
-
-			/*
-			 * Ask the user to choose a race from the supplied list.
-			 */
-			case BIRTH_RACE_CHOICE:
-			{
-				event_signal_birthstage_question(BIRTH_RACE_CHOICE, 
-												 hints[BQ_RACE],
-												 z_info->p_max, 
-												 p_ptr->prace,
-												 race_choices,
-												 race_help);
-
-				cmd = get_birth_command();
-
-				if (cmd.command == CMD_BIRTH_CHOICE)
-				{					
-					p_ptr->prace = cmd.params.choice;
-					rp_ptr = &p_info[p_ptr->prace];
-					next_stage = BIRTH_CLASS_CHOICE;
-				}
-				else if (cmd.command == CMD_BIRTH_RESTART)
-				{
-					next_stage = BIRTH_METHOD_CHOICE;
-				}
-				else if (cmd.command == CMD_BIRTH_BACK)
-				{
-					next_stage = BIRTH_SEX_CHOICE;
-				}
-
-				break;
-			}
-
-			/*
-			 * Ask the user to choose a class from the supplied list.
-			 */
-			case BIRTH_CLASS_CHOICE:
-			{
-				event_signal_birthstage_question(BIRTH_CLASS_CHOICE, 
-												 hints[BQ_CLASS],
-												 z_info->c_max, 
-												 p_ptr->pclass,
-												 class_choices,
-												 class_help);
-
-				cmd = get_birth_command();
-
-				if (cmd.command == CMD_BIRTH_CHOICE)
-				{
-					p_ptr->pclass = cmd.params.choice;
-					cp_ptr = &c_info[p_ptr->pclass];
-					mp_ptr = &cp_ptr->spells;
-					next_stage = BIRTH_ROLLER_CHOICE;
-				}
-				else if (cmd.command == CMD_BIRTH_RESTART)
-				{
-					next_stage = BIRTH_METHOD_CHOICE;
-				}
-				else if (cmd.command == CMD_BIRTH_BACK)
-				{
-					next_stage = BIRTH_RACE_CHOICE;
-				}
-
-				break;
-			}
-
-			/*
-			 * Ask the user to choose a roller from the supplied list.
-			 */
-			case BIRTH_ROLLER_CHOICE:
-			{
-				int init_choice;
-
-				/* If we're coming at this stage from further on in 
-				   the process then roller_choice will already have
-				   been set.  We change the initial choice to match
-				   the user's previous choice. */
-				if (roller_choice == BIRTH_ROLLER)
-					init_choice = BR_NORMAL;
-				else
-					init_choice = BR_POINTBASED;
-
-				event_signal_birthstage_question(BIRTH_ROLLER_CHOICE, 
-												 hints[BQ_ROLLER],
-												 MAX_BIRTH_ROLLERS, 
-												 init_choice,
-												 roller_choices,
-												 NULL);
-
-				cmd = get_birth_command();
-
-				if (cmd.command == CMD_BIRTH_CHOICE)
-				{
-					switch (cmd.params.choice)
-					{
-						case BR_POINTBASED:
-						{
-							roller_choice = next_stage = BIRTH_POINTBASED;
-							break;
-						}
-
-						case BR_NORMAL:
-						{
-							/* roller_mins are the user-chosen minima for
-							   stats rolled up - reset to zero here because
-							   we'll accept any roll in the "normal" roller.*/
-							for (i = 0; i < A_MAX; i++)
-								roller_mins[i] = 0;
-
-							roller_choice = next_stage = BIRTH_ROLLER;
-							break;
-						}
-					}
-				}
-				else if (cmd.command == CMD_BIRTH_RESTART)
-					next_stage = BIRTH_METHOD_CHOICE;
-				else if (cmd.command == CMD_BIRTH_BACK)
-					next_stage = BIRTH_CLASS_CHOICE;
-				
-				break;
-			}
-
-
-			/*
-			 * The point-based birth system is sufficiently complicated
-			 * to warrant being split off into another function.  This
-			 * will return the next stage (either forward or back,
-			 * essentially.
-			 */
-			case BIRTH_POINTBASED:
-			{
-				/* Go to the point-based roller, but only reset the
-				   stats if we're coming from an earlier point in the
-				   process. */
-				if (last_stage == BIRTH_POINTBASED ||
-					last_stage == BIRTH_ROLLER_CHOICE)
-				{
-					next_stage = do_point_based(TRUE);
-				}
-				else
-				{
-					next_stage = do_point_based(FALSE);
-				}
-
-				break;
-			}
-
-			/*
-			 * We simply provide a rolled character where stats are at
-			 * least as large as those in roller_mins (set up before entering
-			 * this stage), and allow the user to accept the stats, roll new
-			 * ones, or switch back to the previous set.
-			 */
-			case BIRTH_ROLLER:
-			{
-				int stat_use[A_MAX] = { 0 };
-
-				/* Only do an initial roll if we're coming from earlier
-				   in the birth process. */
-				if (last_stage == BIRTH_ROLLER_CHOICE)
-				{
-					/* Reset our saved "swap" character marker, too. */
-					prev.age = 0;
-					cmd.command = CMD_ROLL;
-				}
-				else
-				{
-					cmd.command = CMD_NULL;
-				}
-
-				event_signal_birthstage(BIRTH_ROLLER, NULL);
-
-				/* Roll until the user wants to move back or accept stats */
-				while (next_stage == BIRTH_ROLLER)
-				{
-					if (cmd.command == CMD_ROLL)
-					{
-						/* Get a new character */
-						get_stats(stat_use);
-							
-						/* Roll for base hitpoints */
-						get_extra();
-						
-						/* Roll for age/height/weight */
-						get_ahw();
-						
-						/* Roll for social class */
-						get_history();
-						
-						/* Roll for gold */
-						get_money(stat_use);
-
-						/* Update bonuses, hp, etc. */
-						get_bonuses();
-					}
-					
-					/* Present the character to the UI - prev.age is
-					   only != 0 if we've got a previous character */
-					event_signal_birthstats(stat_use, prev.age);
-
-					/* Get the user's opinion on this character. */
-					cmd = get_birth_command();
-					
-					switch (cmd.command)
-					{
-						case CMD_ROLL:
-						{
-							/* Before rolling, save this character as
-							   the "previous" one to allow the user the
-							   choice of two. */
-							save_roller_data(&prev);
-							break;
-						}
-						
-						case CMD_PREV_STATS:
-						{
-							/* Only switch to the stored "previous"
-							   character if we've actually got one to load. */
-							if (prev.age)
-								load_roller_data(&prev, &prev);
-							break;
-						}
-						
-						case CMD_ACCEPT_STATS:
-						{
-							next_stage = BIRTH_NAME_CHOICE;
-							break;
-						}
-
-						case CMD_BIRTH_BACK:
-						{
-							next_stage = BIRTH_ROLLER_CHOICE;
-							break;
-						}
-
-						case CMD_BIRTH_RESTART:
-						{
-							next_stage = BIRTH_METHOD_CHOICE;
-							break;
-						}
-
-						default:
-						{
-							/* This should not be reached. */
-						}
-					}
-				}
-				
-				break;
-			}
-
-			/*
-			 * Get a character name from the user.
-			 */
-			case BIRTH_NAME_CHOICE:
-			{
-				event_signal_birthstage(BIRTH_NAME_CHOICE, NULL);
-				cmd = get_birth_command();
-
-				if (cmd.command == CMD_NAME_CHOICE)
-				{
-					/* Set player name */
-					my_strcpy(op_ptr->full_name, cmd.params.string, 
-							  sizeof(op_ptr->full_name));
-
-					string_free((void *) cmd.params.string);
-					
-					/* Don't change savefile name.  If the UI
-					   wants it changed, they can do it. XXX (Good idea?) */
-					process_player_name(FALSE);
-					
-					next_stage = BIRTH_FINAL_CONFIRM;
-				}
-				else if (cmd.command == CMD_BIRTH_BACK)
-				{
-					if (roller_choice == BIRTH_POINTBASED)
-						next_stage = BIRTH_POINTBASED;
-					else if (roller_choice == BIRTH_ROLLER)
-						next_stage = BIRTH_ROLLER;
-					else
-						next_stage = BIRTH_METHOD_CHOICE;
-				} 
-				else if (cmd.command == CMD_BIRTH_RESTART)
-				{
-					next_stage = BIRTH_METHOD_CHOICE;
-				}
-
-				break;
-			}
-
-			/* 
-			 * Here we give the user one last chance to refuse the
-			 * character - nothing fancy.
-			 */
-			case BIRTH_FINAL_CONFIRM:
-			{
-				event_signal_birthstage(BIRTH_FINAL_CONFIRM, NULL);
-				cmd = get_birth_command();
-				
-				if (cmd.command == CMD_BIRTH_BACK)
-				{
-					next_stage = BIRTH_NAME_CHOICE;
-				}
-				else if (cmd.command == CMD_BIRTH_RESTART)
-				{
-					next_stage = BIRTH_METHOD_CHOICE;
-				}
-				else if (cmd.command == CMD_ACCEPT_CHARACTER)
-				{
-					next_stage = BIRTH_COMPLETE;
-				}
-			}
-			case BIRTH_COMPLETE:
-			{
-				/* End of the line - Exit the while loop. */
-			}
+			do_birth_reset(quickstart_allowed, &quickstart_prev);
+			generate_player();
+			reset_stats(stats, points_spent, &points_left);
+			rolled_stats = FALSE;
 		}
+		else if (cmd.command == CMD_CHOOSE_SEX)
+		{
+			p_ptr->psex = cmd.params.choice; 
+			generate_player();
+		}
+		else if (cmd.command == CMD_CHOOSE_RACE)
+		{
+			p_ptr->prace = cmd.params.choice;
+			generate_player();
 
-		last_stage = stage;
-		stage = next_stage;
+			reset_stats(stats, points_spent, &points_left);
+			generate_stats(stats, points_spent, &points_left);
+			rolled_stats = FALSE;
+		}
+		else if (cmd.command == CMD_CHOOSE_CLASS)
+		{
+			p_ptr->pclass = cmd.params.choice;
+			generate_player();
+
+			reset_stats(stats, points_spent, &points_left);
+			generate_stats(stats, points_spent, &points_left);
+			rolled_stats = FALSE;
+		}
+		else if (cmd.command == CMD_BUY_STAT)
+		{
+			/* .choice is the stat to buy */
+			if (!rolled_stats)
+				buy_stat(cmd.params.choice, stats, points_spent, &points_left);
+		}
+		else if (cmd.command == CMD_SELL_STAT)
+		{
+			/* .choice is the stat to sell */
+			if (!rolled_stats)
+				sell_stat(cmd.params.choice, stats, points_spent, &points_left);
+		}
+		else if (cmd.command == CMD_RESET_STATS)
+		{
+			/* .choice is whether to regen stats */
+			reset_stats(stats, points_spent, &points_left);
+
+			if (cmd.params.choice)
+				generate_stats(stats, points_spent, &points_left);
+
+			rolled_stats = FALSE;
+		}
+		else if (cmd.command == CMD_ROLL_STATS)
+		{
+			int i;
+
+			save_roller_data(&prev);
+
+			/* Get a new character */
+			get_stats(stats);
+			
+			/* Roll for gold */
+			get_money(stats);
+
+			/* Update stats with bonuses, etc. */
+			get_bonuses();
+
+			/* There's no real need to do this here, but it's tradition. */
+			get_ahw();
+			get_history();
+
+			event_signal(EVENT_GOLD);
+			event_signal(EVENT_AC);
+			event_signal(EVENT_HP);
+			event_signal(EVENT_STATS);
+
+			/* Give the UI some dummy info about the points situation. */
+			points_left = 0;
+			for (i = 0; i < A_MAX; i++)
+			{
+				points_spent[i] = 0;
+			}
+
+			event_signal_birthpoints(points_spent, points_left);
+
+			/* Lock out buying and selling of stats based on rolled stats. */
+			rolled_stats = TRUE;
+		}
+		else if (cmd.command == CMD_PREV_STATS)
+		{
+			/* Only switch to the stored "previous"
+			   character if we've actually got one to load. */
+			if (prev.age)
+			{
+				load_roller_data(&prev, &prev);
+				get_bonuses();
+			}
+
+			event_signal(EVENT_GOLD);
+			event_signal(EVENT_AC);
+			event_signal(EVENT_HP);
+			event_signal(EVENT_STATS);
+		}
+		else if (cmd.command == CMD_NAME_CHOICE)
+		{
+			/* Set player name */
+			my_strcpy(op_ptr->full_name, cmd.params.string, 
+					  sizeof(op_ptr->full_name));
+			
+			string_free((void *) cmd.params.string);
+			
+			/* Don't change savefile name.  If the UI
+			   wants it changed, they can do it. XXX (Good idea?) */
+			process_player_name(FALSE);
+		}
+		/* Various not-specific-to-birth commands. */
+		else if (cmd.command == CMD_OPTIONS) 
+		{
+			/* TODO: Change this to use whatever sort of message passing
+			   system we eventually decide on for options.  That might
+			   still be calling do_cmd_option. :) */
+			do_cmd_options();
+		}
+		else if (cmd.command == CMD_HELP)
+		{
+			char buf[80];
+			
+			strnfmt(buf, sizeof(buf), "birth.txt");
+			screen_save();
+			show_file(buf, NULL, 0, 0);
+			screen_load();
+		}
+		else if (cmd.command == CMD_QUIT) 
+		{
+			quit(NULL);
+		}
 	}
-	
+
+	roll_hp();
+
 	/* Set adult options from birth options */
 	for (i = OPT_BIRTH; i < OPT_CHEAT; i++)
 	{
@@ -1533,23 +1199,6 @@ void player_birth(bool quickstart_allowed)
 
 	/* Initialise the stores */
 	store_init();
-
-	/* Tell the UI we're done. */
-	event_signal_birthstage(BIRTH_COMPLETE, NULL);
-
-	/* Don't need these any more - the UI has been given fair warning. */
-	mem_free(race_choices);
-	mem_free(class_choices);
-
-	for (i = 0; i < z_info->p_max; i++)
-		mem_free((char *) race_help[i]);
-
-	mem_free(race_help);
-
-	for (i = 0; i < z_info->c_max; i++)
-		mem_free((char *) class_help[i]);
-
-	mem_free(class_help);
 
 	/* Now we're really done.. */
 	event_signal(EVENT_LEAVE_BIRTH);
