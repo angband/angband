@@ -668,7 +668,6 @@ byte monster_health_attr(void);
 void cnv_stat(int val, char *out_val, size_t out_len);
 void toggle_inven_equip(void);
 void subwindows_set_flags(u32b *new_flags, size_t n_subwindows);
-void init_display(void);
 
 /* wiz-spoil.c */
 bool make_fake_artifact(object_type *o_ptr, byte name1);

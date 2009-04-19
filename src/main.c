@@ -29,7 +29,7 @@
     || defined(USE_SDL)
 
 #include "main.h"
-#include "game-cmd.h"
+#include "textui.h"
 
 /*
  * List of the available modules in the order they are tried.

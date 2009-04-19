@@ -1,4 +1,5 @@
-
+#ifndef INCLUDED_GAME_CMD_H
+#define INCLUDED_GAME_CMD_H
 
 /*
  * All valid game commands.  Not all implemented yet.
@@ -121,3 +122,4 @@ errr cmd_insert(cmd_code c, ...);
 errr cmd_get(cmd_context c,game_command *cmd, bool wait);
 
 
+#endif

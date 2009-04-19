@@ -819,7 +819,7 @@ errr get_birth_command(bool wait)
 	static enum birth_stage current_stage = BIRTH_METHOD_CHOICE;
 	static enum birth_stage prev;
 	static enum birth_stage roller = BIRTH_METHOD_CHOICE;
-	enum birth_stage next;
+	enum birth_stage next = current_stage;
 
 	switch (current_stage)
 	{

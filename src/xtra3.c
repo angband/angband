@@ -18,9 +18,11 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+
 #include "game-event.h"
 #include "game-cmd.h"
 
+#include "textui.h"
 #include "ui-birth.h"
 
 #include "object/tvalsval.h"
@@ -1756,6 +1758,9 @@ errr textui_get_cmd(cmd_context context, bool wait)
 {
 	if (context == CMD_BIRTH)
 		return get_birth_command(wait);
+
+	/* If we've reached here, we haven't got a command. */
+	return 1;
 }
 
 

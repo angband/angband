@@ -327,7 +327,7 @@ CFMutableArrayRef recentItemsArrayRef = NULL;
 /*
  * Support the improved game command handling
  */
-#include "game-cmd.h"
+#include "textui.h"
 static game_command cmd = { CMD_NULL, 0 };
 
 
