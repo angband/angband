@@ -4561,7 +4561,7 @@ static errr get_init_cmd()
 }
 
 /* Command dispatcher for windows build */
-static errr default_get_cmd(cmd_context context, bool wait)
+static errr win_get_cmd(cmd_context context, bool wait)
 {
 	if (context == CMD_INIT) 
 		return get_init_cmd();
