@@ -3415,7 +3415,7 @@ errr parse_s_info(char *buf, header *head)
 /*
  * Initialise the info
  */
-errr eval_info(eval_info_power_func eval_info_process, header *head)
+errr eval_info(eval_info_post_func eval_info_process, header *head)
 {
 	int err;
 

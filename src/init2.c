@@ -359,7 +359,7 @@ static void init_header(header *head, int num, int len)
 	head->info_size = head->info_num * head->info_len;
 
 	/* Clear post-parsing evaluation function */
-	head->eval_info_power = NULL;
+	head->eval_info_post = NULL;
 	
 	/* Clear the template emission functions */
 	head->emit_info_txt_index = NULL;
@@ -449,7 +449,7 @@ static errr init_info(cptr filename, header *head)
 	if (err) display_parse_error(filename, err, buf);
 
 	/* Post processing the data */
-	if (head->eval_info_power) eval_info(head->eval_info_power, head);
+	if (head->eval_info_post) eval_info(head->eval_info_post, head);
 
 #ifdef ALLOW_TEMPLATES_OUTPUT
 
@@ -716,7 +716,7 @@ static errr init_r_info(void)
 	r_head.parse_info_txt = parse_r_info;
 
 	/* Save a pointer to the evaluate power function*/
-	r_head.eval_info_power = eval_r_power;
+	r_head.eval_info_post = eval_r_power;
 
 #ifdef ALLOW_TEMPLATES_OUTPUT
 
