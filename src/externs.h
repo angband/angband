@@ -226,6 +226,8 @@ extern void (*sound_hook)(int);
 extern autoinscription *inscriptions;
 extern u16b inscriptions_count;
 
+extern flag_cache *slay_cache;
+
 /* history.c */
 extern history_info *history_list;
 

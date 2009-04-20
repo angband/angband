@@ -258,4 +258,13 @@ typedef struct
 	const char *brand;	/* name of brand */
 } slay_t;
 
+/*
+ * Slay cache. Used for looking up slay values in obj-power.c
+ */
+typedef struct
+{
+	u32b flags;		/* Combination of slays and brands */
+	s32b value;		/* Value of this combination */
+} flag_cache;
+
 #endif /* INCLUDED_OBJECT_TYPES_H */

@@ -942,7 +942,7 @@ static void parse_frequencies(void)
 			}
 
 			/* Brands or slays - count all together */
-			if (a_ptr->flags[0] & (TR0_SLAY_MASK | TR0_BRAND_MASK | TR0_KILL_MASK))
+			if (a_ptr->flags[0] & TR0_ALL_SLAYS)
 			{
 				const slay_t *s_ptr;
 
@@ -1075,7 +1075,7 @@ static void parse_frequencies(void)
 			
 			/* Brands or slays - count all together */
 
-			if (a_ptr->flags[0] & (TR0_SLAY_MASK | TR0_BRAND_MASK | TR0_KILL_MASK))
+			if (a_ptr->flags[0] & TR0_ALL_SLAYS)
 			{
 				const slay_t *s_ptr;
 
@@ -1183,7 +1183,7 @@ static void parse_frequencies(void)
 			}
 
 			/* Brands or slays - count all together */
-			if (a_ptr->flags[0] & (TR0_SLAY_MASK | TR0_BRAND_MASK | TR0_KILL_MASK))
+			if (a_ptr->flags[0] & TR0_ALL_SLAYS)
 			{
 				const slay_t *s_ptr;
 

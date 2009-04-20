@@ -21,11 +21,6 @@
 #include "init.h"
 #include "effects.h"
 
-/* Total number of different slay types used
- * ToDo: reduce this to cache only the slays found in ego-item.txt
- */
-#define SLAY_MAX 0x00010000L
-
 /*
  * Constants for the power algorithm:
  * - ammo damage for calculating launcher power
@@ -103,40 +98,13 @@ static s16b ability_power[25] =
 	74, 84, 96, 110};
 
 /*
- * Cache the results of slay_value(), which is expensive and would
- * otherwise be called much too often.
- */
-static s32b *slays;
-
-/*
- * Free object power info.
- */
-void free_obj_power(void)
-{
-	FREE(slays);
-}
-
-/*
- * Initialise the arrays used in working out object (ego and artifact)
- * power.
- */
-bool init_obj_power(void)
-{
-	/* Allocate the "slay values" array */
-	slays = C_ZNEW(SLAY_MAX, s32b);
-	
-	return TRUE;
-}
-
-/*
  * Calculate the rating for a given slay combination
  * ToDo: rewrite to use an external structure for slays
  */
-
 static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file)
 {
-	s32b s_index = 0;
-	s32b sv;
+	u32b s_index = 0;
+	s32b sv = 0;
 	int i;
 	int mult;
 	const slay_t *s_ptr;
@@ -145,42 +113,25 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 	/* Extract the flags */
 	object_flags(o_ptr, f);
 
-	/* Combine the slay bytes into an index value
-	 * For now we do not support the two undefined slays (XXX),
-	 * but this could be added
-	 */
-
-	if (f[0] & TR0_SLAY_ANIMAL) s_index |= 0x0001;
-	if (f[0] & TR0_SLAY_EVIL) s_index |= 0x0002;
-	if (f[0] & TR0_SLAY_UNDEAD) s_index |= 0x0004;
-	if (f[0] & TR0_SLAY_DEMON) s_index |= 0x0008;
-	if (f[0] & TR0_SLAY_ORC) s_index |= 0x0010;
-	if (f[0] & TR0_SLAY_TROLL) s_index |= 0x0020;
-	if (f[0] & TR0_SLAY_GIANT) s_index |= 0x0040;
-	if (f[0] & TR0_SLAY_DRAGON) s_index |= 0x0080;
-	if (f[0] & TR0_KILL_DRAGON) s_index |= 0x0100;
-	if (f[0] & TR0_KILL_DEMON) s_index |= 0x0200;
-	if (f[0] & TR0_KILL_UNDEAD) s_index |= 0x0400;
-
-	if (f[0] & TR0_BRAND_POIS) s_index |= 0x0800;
-	if (f[0] & TR0_BRAND_ACID) s_index |= 0x1000;
-	if (f[0] & TR0_BRAND_ELEC) s_index |= 0x2000;
-	if (f[0] & TR0_BRAND_FIRE) s_index |= 0x4000;
-	if (f[0] & TR0_BRAND_COLD) s_index |= 0x8000;
+	/* Combine the slay bytes into an index value */
+	s_index = f[0] & TR0_ALL_SLAYS;
 
 	/* Look in the cache to see if we know this one yet */
-
-	sv = slays[s_index];
+	for (i = 0; i < N_ELEMENTS(slay_cache); i++)
+	{
+		if (slay_cache[i].flags == s_index) 
+		{
+			sv = slay_cache[i].value;
+		}
+	}
 
 	/* If it's cached, return its value */
-
-	if (sv) return slays[s_index];
+	if (sv) return sv;
 
 	/* Otherwise we need to calculate the expected average multiplier
 	 * for this combination (multiplied by the total number of
 	 * monsters, which we'll divide out later).
 	 */
-
 	sv = 0;
 
 	for (i = 0; i < z_info->r_max; i++)
@@ -243,7 +194,13 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 	}
 
 	/* Add to the cache */
-	slays[s_index] = sv;
+	for (i = 0; i < N_ELEMENTS(slay_cache); i++)
+	{
+		if (slay_cache[i].flags == s_index)
+		{
+			slay_cache[i].value = sv;
+		}
+	}
 
 	return sv;
 }

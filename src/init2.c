@@ -685,6 +685,9 @@ static errr init_e_info(void)
 	/* Save a pointer to the parsing function */
 	e_head.parse_info_txt = parse_e_info;
 
+	/* Save a pointer to the slay cache function */
+	e_head.eval_info_post = eval_e_slays;
+
 #endif /* ALLOW_TEMPLATES */
 
 	err = init_info("ego_item", &e_head);
@@ -1148,10 +1151,7 @@ static errr init_alloc(void)
 
 
 	/*** Initialize object allocation info ***/
-
 	init_obj_alloc();
-	init_obj_power();
-
 
 	/*** Analyze monster allocation info ***/
 
@@ -1499,7 +1499,6 @@ void cleanup_angband(void)
 	macro_trigger_free();
 
 	/* Free the allocation tables */
-	free_obj_power();
 	free_obj_alloc();
 	FREE(alloc_ego_table);
 	FREE(alloc_race_table);

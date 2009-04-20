@@ -4364,6 +4364,46 @@ for (iteration = 0; iteration < 3; iteration ++)
 	return(0);
 }
 
+/* 
+ * Create the slay cache by determining the number of different slay 
+ * combinations available to ego items
+ */
+errr eval_e_slays(header *head)
+{
+	int i;
+	int count = 0;
+	u32b cacheme;
+	ego_item_type *e_ptr;
+	
+	for (i = 0; i < z_info->e_max; i++)
+	{
+		e_ptr = (ego_item_type*)head->info_ptr + i;
+		
+		if (e_ptr->flags[0] & TR0_ALL_SLAYS)	
+		{
+			count++;
+		}
+	}
+
+	slay_cache = C_ZNEW(count, flag_cache);
+	count = 0;
+
+	for (i = 0; i < z_info->e_max; i++)
+	{
+		e_ptr = (ego_item_type*)head->info_ptr + i;
+		cacheme = (e_ptr->flags[0] & TR0_ALL_SLAYS);
+
+		if (cacheme)
+		{
+			slay_cache[count].flags = cacheme;
+			slay_cache[count].value = 0;
+			count++;
+		}
+	}
+	
+	/* Success */
+	return 0;
+}
 
 #ifdef ALLOW_TEMPLATES_OUTPUT
 
