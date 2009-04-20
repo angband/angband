@@ -181,6 +181,8 @@ typedef struct
 
 	bool leaving;			/* True if player is leaving */
 
+	bool autosave;          /* True if autosave is pending */
+
 	bool create_up_stair;	/* Create up stair on next level */
 	bool create_down_stair;	/* Create down stair on next level */
 

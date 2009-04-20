@@ -144,10 +144,7 @@ void hit_trap(int y, int x)
 			}
 
 			/* New depth */
-			p_ptr->depth++;
-
-			/* Leaving */
-			p_ptr->leaving = TRUE;
+			dungeon_change_level(p_ptr->depth + 1);
 			
 			break;
 		}

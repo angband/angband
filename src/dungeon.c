@@ -23,6 +23,22 @@
 
 
 /*
+ * Change dungeon level - e.g. by going up stairs or with WoR.
+ */
+void dungeon_change_level(int dlev)
+{
+	/* New depth */
+	p_ptr->depth = dlev;
+	
+	/* Leaving */
+	p_ptr->leaving = TRUE;
+
+	/* Save the game when we arrive on the new level. */
+	p_ptr->autosave = TRUE;
+}
+
+
+/*
  * Regenerate hit points
  */
 static void regenhp(int percent)
@@ -787,23 +803,14 @@ static void process_world(void)
 			if (p_ptr->depth)
 			{
 				msg_print("You feel yourself yanked upwards!");
-
-				/* New depth */
-				p_ptr->depth = 0;
-
-				/* Leaving */
-				p_ptr->leaving = TRUE;
+				dungeon_change_level(0);
 			}
 			else
 			{
 				msg_print("You feel yourself yanked downwards!");
 
-				/* New depth */
-				p_ptr->depth = p_ptr->max_depth;
-				if (p_ptr->depth < 1) p_ptr->depth = 1;
-
-				/* Leaving */
-				p_ptr->leaving = TRUE;
+				/* New depth - back to max depth or 1, whichever is deeper */
+				dungeon_change_level(p_ptr->max_depth < 1 ? 1: p_ptr->max_depth);
 			}
 		}
 	}
@@ -1323,6 +1330,12 @@ static void dungeon(void)
 		p_ptr->max_depth = p_ptr->depth;
 	}
 
+	/* If autosave is pending, do it now. */
+	if (p_ptr->autosave)
+	{
+		do_cmd_save_game();
+		p_ptr->autosave = FALSE;
+	}
 
 
 	/* Choose panel */
@@ -1755,6 +1768,9 @@ void play_game(void)
 
 	/* Start playing */
 	p_ptr->playing = TRUE;
+
+	/* Save not required yet. */
+	p_ptr->autosave = FALSE;
 
 	/* Hack -- Enforce "delayed death" */
 	if (p_ptr->chp < 0) p_ptr->is_dead = TRUE;

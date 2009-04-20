@@ -49,11 +49,8 @@ void do_cmd_go_up(void)
 	p_ptr->create_up_stair = FALSE;
 	p_ptr->create_down_stair = TRUE;
 
-	/* New depth */
-	p_ptr->depth--;
-
-	/* Leaving */
-	p_ptr->leaving = TRUE;
+	/* Change level */
+	dungeon_change_level(p_ptr->depth - 1);
 }
 
 
@@ -79,11 +76,8 @@ void do_cmd_go_down(void)
 	p_ptr->create_up_stair = TRUE;
 	p_ptr->create_down_stair = FALSE;
 
-	/* New level */
-	p_ptr->depth++;
-
-	/* Leaving */
-	p_ptr->leaving = TRUE;
+	/* Change level */
+	dungeon_change_level(p_ptr->depth + 1);
 }
 
 

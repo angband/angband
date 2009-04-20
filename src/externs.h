@@ -313,6 +313,7 @@ void do_cmd_browse_aux(const object_type *o_ptr);
 void death_screen(void);
 
 /* dungeon.c */
+extern void dungeon_change_level(int dlev);
 extern void play_game(void);
 extern int value_check_aux1(const object_type *o_ptr);
 

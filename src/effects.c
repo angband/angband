@@ -1051,8 +1051,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			else
 			{
 				message(MSG_TPLEVEL, 0, "You sink through the floor...");
-				p_ptr->depth = p_ptr->max_depth;
-				p_ptr->leaving = TRUE;
+				dungeon_change_level(p_ptr->max_depth);
 			}
 
 			*ident = TRUE;
