@@ -1375,6 +1375,7 @@ static s32b object_value_real(const object_type *o_ptr, int qty)
 	s32b power;
 	int a = 2;
 	int b = 1;
+	static file_mode pricing_mode = MODE_WRITE;
 
 	if (wearable_p(o_ptr))
 	{
@@ -1385,12 +1386,13 @@ static s32b object_value_real(const object_type *o_ptr, int qty)
 		if (verbose)
 		{                
 			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, 					"pricing.log");
-                	log_file = file_open(buf, MODE_APPEND, FTYPE_TEXT);
+                	log_file = file_open(buf, pricing_mode, FTYPE_TEXT);
                 	if (!log_file)
                 	{
                 		msg_print("Error - can't open pricing.log for writing.");
                 	        exit(1);
                 	}
+			pricing_mode = MODE_APPEND;
 		}
 
 		LOG_PRINT1("object is %s", k_name + k_ptr->name);
