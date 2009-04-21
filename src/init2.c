@@ -417,6 +417,8 @@ static errr init_info(cptr filename, header *head)
 	if (file_newer(raw_file, txt_file) &&
 	    init_info_raw(raw_file, head))
 	{
+		/* Post processing the data */
+		if (head->eval_info_post) eval_info(head->eval_info_post, head);
 		return 0;
 	}
 
@@ -1391,7 +1393,7 @@ bool init_angband(void)
 	if (init_k_info()) quit("Cannot initialize objects");
 
 	/* Initialize ego-item info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (ego-items");
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (ego-items)");
 	if (init_e_info()) quit("Cannot initialize ego-items");
 
 	/* Initialize monster info */

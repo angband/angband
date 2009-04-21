@@ -4106,6 +4106,15 @@ errr eval_r_power(header *head)
 
 	int iteration;
 
+	/* If we came here from the .raw file, the monster power data is already done */
+	/* Hack - use Morgy (#547) as the test case */
+	r_ptr = (monster_race*)head->info_ptr + 547;
+	if (r_ptr->power)
+	{
+	     /*	msg_print("Monster power array already filled - returning."); */
+		return 0;
+	}
+
 	/* Allocate space for power */
 	power = C_ZNEW(z_info->r_max, long);
 
@@ -4371,17 +4380,32 @@ for (iteration = 0; iteration < 3; iteration ++)
 errr eval_e_slays(header *head)
 {
 	int i;
+	int j;
 	int count = 0;
 	u32b cacheme;
+	u32b dupcheck[z_info->e_max];
+	bool duplicate;
 	ego_item_type *e_ptr;
 	
 	for (i = 0; i < z_info->e_max; i++)
 	{
+		dupcheck[i] = 0;
+		duplicate = FALSE;
 		e_ptr = (ego_item_type*)head->info_ptr + i;
-		
-		if (e_ptr->flags[0] & TR0_ALL_SLAYS)	
+		cacheme = (e_ptr->flags[0] & TR0_ALL_SLAYS);
+
+		if (cacheme)
 		{
-			count++;
+			for (j = 0; j < i; j++)
+			{
+				if (dupcheck[j] == cacheme) duplicate = TRUE;
+			}
+			if (!duplicate)
+			{
+				count++;
+				dupcheck[i] = cacheme;
+			     /*	msg_print("Found a new slay combo on an ego item"); */
+			}
 		}
 	}
 
@@ -4390,16 +4414,28 @@ errr eval_e_slays(header *head)
 
 	for (i = 0; i < z_info->e_max; i++)
 	{
+		duplicate = FALSE;
 		e_ptr = (ego_item_type*)head->info_ptr + i;
 		cacheme = (e_ptr->flags[0] & TR0_ALL_SLAYS);
 
 		if (cacheme)
 		{
-			slay_cache[count].flags = cacheme;
-			slay_cache[count].value = 0;
-			count++;
+			for (j = 0; j < count; j++)
+			{
+				if (slay_cache[j].flags == cacheme) duplicate = TRUE;
+			}
+			if (!duplicate)
+			{
+				slay_cache[count].flags = cacheme;
+				slay_cache[count].value = 0;
+				count++;
+			     /*	msg_print("Cached a slay combination"); */
+			}
 		}
 	}
+
+	/* add a null element to enable looping over the array */
+	slay_cache[count].flags = 0;
 	
 	/* Success */
 	return 0;

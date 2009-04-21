@@ -154,8 +154,6 @@ int tval_find_idx(const char *name);
 const char *tval_find_name(int tval);
 
 /* obj-power.c and randart.c */
-void free_obj_power(void);
-bool init_obj_power(void);
 s32b object_power(const object_type *o_ptr, int verbose, ang_file *log_file);
 /*
  * Some constants used in randart generation and power calculation

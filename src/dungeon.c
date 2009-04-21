@@ -17,7 +17,6 @@
  */
 #include "angband.h"
 #include "object/tvalsval.h"
-#include "z-file.h"
 #include "cmds.h"
 #include "game-event.h"
 

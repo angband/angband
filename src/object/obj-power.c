@@ -99,7 +99,6 @@ static s16b ability_power[25] =
 
 /*
  * Calculate the rating for a given slay combination
- * ToDo: rewrite to use an external structure for slays
  */
 static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file)
 {
@@ -117,23 +116,23 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 	s_index = f[0] & TR0_ALL_SLAYS;
 
 	/* Look in the cache to see if we know this one yet */
-	for (i = 0; i < N_ELEMENTS(slay_cache); i++)
+	for (i = 0; slay_cache[i].flags; i++)
 	{
 		if (slay_cache[i].flags == s_index) 
 		{
 			sv = slay_cache[i].value;
+			LOG_PRINT("Slay cache hit\n");
 		}
 	}
 
 	/* If it's cached, return its value */
 	if (sv) return sv;
 
-	/* Otherwise we need to calculate the expected average multiplier
+	/*
+	 * Otherwise we need to calculate the expected average multiplier
 	 * for this combination (multiplied by the total number of
 	 * monsters, which we'll divide out later).
 	 */
-	sv = 0;
-
 	for (i = 0; i < z_info->r_max; i++)
 	{
 		monster_race *r_ptr = &r_info[i];
@@ -190,15 +189,17 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 		file_putf(log_file," and t_m_p is: %d \n", tot_mon_power);
 
 		file_putf(log_file,"times 1000 is: %d\n", (1000 * sv) / tot_mon_power);
-/*		fflush(log_file); - need to convert from ang_file type */
 	}
 
 	/* Add to the cache */
-	for (i = 0; i < N_ELEMENTS(slay_cache); i++)
+     /*	LOG_PRINT1("s_index is %d\n", s_index); */
+	for (i = 0; slay_cache[i].flags; i++)
 	{
+	     /*	LOG_PRINT2("i is %d and flag is %d\n", i, slay_cache[i].flags); */
 		if (slay_cache[i].flags == s_index)
 		{
 			slay_cache[i].value = sv;
+			LOG_PRINT("Added to slay cache\n");
 		}
 	}
 
