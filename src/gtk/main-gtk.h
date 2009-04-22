@@ -188,7 +188,6 @@ const char help_gtk[] = "GTK for X11, subopts -n<windows>, -i to ignore prefs, a
 
 /*  Path to the Gtk settings file */
 static char settings[1024];
-static game_command cmd = { CMD_NULL, 0, {0} }; 
 bool game_saved;
 
 static GtkWidget *toolbar;
@@ -367,9 +366,6 @@ static void show_windows();
 /* Init the term window data */
 static errr term_data_init(term_data *td, int i);
 
-/* Handle commands */
- static game_command get_init_cmd();
- 
  /* Stubs */
  static void handle_map(game_event_type type, game_event_data *data, void *user);
  static void handle_moved(game_event_type type, game_event_data *data, void *user);
