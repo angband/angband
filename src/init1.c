@@ -4383,9 +4383,11 @@ errr eval_e_slays(header *head)
 	int j;
 	int count = 0;
 	u32b cacheme;
-	u32b dupcheck[z_info->e_max];
+	u32b *dupcheck;
 	bool duplicate;
 	ego_item_type *e_ptr;
+
+	dupcheck = C_ZNEW(z_info->e_max, u32b);
 	
 	for (i = 0; i < z_info->e_max; i++)
 	{
@@ -4409,7 +4411,7 @@ errr eval_e_slays(header *head)
 		}
 	}
 
-	slay_cache = C_ZNEW(count, flag_cache);
+	slay_cache = C_ZNEW((count + 1), flag_cache);
 	count = 0;
 
 	for (i = 0; i < z_info->e_max; i++)
@@ -4436,6 +4438,8 @@ errr eval_e_slays(header *head)
 
 	/* add a null element to enable looping over the array */
 	slay_cache[count].flags = 0;
+
+	FREE(dupcheck);
 	
 	/* Success */
 	return 0;
