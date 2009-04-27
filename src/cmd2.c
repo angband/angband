@@ -88,18 +88,8 @@ void do_cmd_go_down(void)
 void do_cmd_search(void)
 {
 	/* Allow repeated command */
-	if (p_ptr->command_arg)
-	{
-		/* Set repeat count */
-		p_ptr->command_rep = p_ptr->command_arg - 1;
-
-		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
-
-		/* Cancel the arg */
-		p_ptr->command_arg = 0;
-	}
-
+	allow_repeated_command();
+	
 	/* Take a turn */
 	p_ptr->energy_use = 100;
 
@@ -797,17 +787,7 @@ void do_cmd_open(void)
 
 
 	/* Allow repeated command */
-	if (p_ptr->command_arg)
-	{
-		/* Set repeat count */
-		p_ptr->command_rep = p_ptr->command_arg - 1;
-
-		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
-
-		/* Cancel the arg */
-		p_ptr->command_arg = 0;
-	}
+	allow_repeated_command();
 
 	/* Monster */
 	if (cave_m_idx[y][x] > 0)
@@ -955,17 +935,7 @@ void do_cmd_close(void)
 
 
 	/* Allow repeated command */
-	if (p_ptr->command_arg)
-	{
-		/* Set repeat count */
-		p_ptr->command_rep = p_ptr->command_arg - 1;
-
-		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
-
-		/* Cancel the arg */
-		p_ptr->command_arg = 0;
-	}
+	allow_repeated_command();
 
 	/* Monster */
 	if (cave_m_idx[y][x] > 0)
@@ -1283,17 +1253,7 @@ void do_cmd_tunnel(void)
 
 
 	/* Allow repeated command */
-	if (p_ptr->command_arg)
-	{
-		/* Set repeat count */
-		p_ptr->command_rep = p_ptr->command_arg - 1;
-
-		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
-
-		/* Cancel the arg */
-		p_ptr->command_arg = 0;
-	}
+	allow_repeated_command();
 
 	/* Monster */
 	if (cave_m_idx[y][x] > 0)
@@ -1495,17 +1455,7 @@ void do_cmd_disarm(void)
 
 
 	/* Allow repeated command */
-	if (p_ptr->command_arg)
-	{
-		/* Set repeat count */
-		p_ptr->command_rep = p_ptr->command_arg - 1;
-
-		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
-
-		/* Cancel the arg */
-		p_ptr->command_arg = 0;
-	}
+	allow_repeated_command();
 
 	/* Monster */
 	if (cave_m_idx[y][x] > 0)
@@ -1693,17 +1643,7 @@ void do_cmd_bash(void)
 
 
 	/* Allow repeated command */
-	if (p_ptr->command_arg)
-	{
-		/* Set repeat count */
-		p_ptr->command_rep = p_ptr->command_arg - 1;
-
-		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
-
-		/* Cancel the arg */
-		p_ptr->command_arg = 0;
-	}
+	allow_repeated_command();
 
 	/* Monster */
 	if (cave_m_idx[y][x] > 0)
@@ -1777,17 +1717,7 @@ void do_cmd_alter(void)
 
 
 	/* Allow repeated command */
-	if (p_ptr->command_arg)
-	{
-		/* Set repeat count */
-		p_ptr->command_rep = p_ptr->command_arg - 1;
-
-		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
-
-		/* Cancel the arg */
-		p_ptr->command_arg = 0;
-	}
+	allow_repeated_command();
 
 	/* Attack monsters */
 	if (cave_m_idx[y][x] > 0)
@@ -2082,17 +2012,7 @@ static void walk(void)
 
 
 	/* Allow repeated command */
-	if (p_ptr->command_arg)
-	{
-		/* Set repeat count */
-		p_ptr->command_rep = p_ptr->command_arg - 1;
-
-		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
-
-		/* Cancel the arg */
-		p_ptr->command_arg = 0;
-	}
+	allow_repeated_command();
 
 	/* Move the player */
 	move_player(dir);
@@ -2194,17 +2114,7 @@ void do_cmd_pathfind(int y, int x)
 void do_cmd_hold(void)
 {
 	/* Allow repeated command */
-	if (p_ptr->command_arg)
-	{
-		/* Set repeat count */
-		p_ptr->command_rep = p_ptr->command_arg - 1;
-
-		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
-
-		/* Cancel the arg */
-		p_ptr->command_arg = 0;
-	}
+	allow_repeated_command();
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;

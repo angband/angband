@@ -2731,6 +2731,29 @@ static char request_command_buffer[256];
 
 
 /*
+ * Mark a command as "allowed to be repeated".
+ *
+ * When a command is executed, the user has the option to request that
+ * it be repeated by the UI setting p_ptr->command_arg.  If the command
+ * permits repetition, then it calls this function to set 
+ * p_ptr->command_rep to make it repeat until an interruption.
+ */
+void allow_repeated_command(void)
+{
+	if (p_ptr->command_arg)
+	{
+		/* Set repeat count */
+		p_ptr->command_rep = p_ptr->command_arg - 1;
+		
+		/* Redraw the state */
+		p_ptr->redraw |= (PR_STATE);
+		
+		/* Cancel the arg */
+		p_ptr->command_arg = 0;
+	}
+}
+
+/*
  * Request a command from the user.
  *
  * Sets p_ptr->command_cmd, p_ptr->command_dir, p_ptr->command_rep,
