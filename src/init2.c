@@ -312,9 +312,13 @@ static bool init_info_raw(const char *fname, header *head)
 	}
 
 
-	/* Accept the header */
-	COPY(head, &test, header);
-
+	/* 
+	 * Accept the header - these are the only parts we need to copy
+	 * from the saved structure, as the rest is either identical (see
+	 * above test), or not restorable (function hooks, data pointers).
+	 */
+	head->name_size = test.name_size;
+	head->text_size = test.text_size;
 
 	/* Allocate and read the "*_info" array */
 	head->info_ptr = C_RNEW(head->info_size, char);
