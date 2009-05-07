@@ -1131,6 +1131,9 @@ static int rd_randarts(void)
 				rd_u16b(&a_ptr->time_dice);
 				rd_u16b(&a_ptr->time_sides);
 			}
+		
+		/* Initialize only the randart names */
+		do_randart(seed_randart, FALSE);
 		}
 		else
 		{
@@ -1166,15 +1169,10 @@ static int rd_randarts(void)
 				rd_u16b(&tmp16u); /* a_ptr->time_sides */
 			}
 		}
-
-		/* Initialize only the randart names */
-		do_randart(seed_randart, FALSE);
 	}
 
 	return (0);
 }
-
-
 
 
 

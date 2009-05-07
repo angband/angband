@@ -1007,6 +1007,9 @@ int rd_randarts(u32b version)
 				rd_u16b(&a_ptr->time_dice);
 				rd_u16b(&a_ptr->time_sides);
 			}
+
+		/* Initialize only the randart names */
+		do_randart(seed_randart, FALSE);
 		}
 		else
 		{
@@ -1042,16 +1045,10 @@ int rd_randarts(u32b version)
 				rd_u16b(&tmp16u); /* a_ptr->time_sides */
 			}
 		}
-
-		/* Initialize only the randart names */
-		do_randart(seed_randart, FALSE);
 	}
 
 	return (0);
 }
-
-
-
 
 
 
