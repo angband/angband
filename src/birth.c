@@ -971,6 +971,9 @@ static void do_birth_reset(bool use_quickstart, birther *quickstart_prev)
 		load_roller_data(quickstart_prev, NULL);
 
 	generate_player();
+
+	/* Update stats with bonuses, etc. */
+	get_bonuses();
 }
 
 /*
@@ -1008,8 +1011,8 @@ void player_birth(bool quickstart_allowed)
 	if (quickstart_allowed)
 		save_roller_data(&quickstart_prev);
 
-	do_birth_reset(quickstart_allowed, &quickstart_prev);
 	reset_stats(stats, points_spent, &points_left);
+	do_birth_reset(quickstart_allowed, &quickstart_prev);
 
 	/* We're ready to start the interactive birth process. */
 	event_signal(EVENT_ENTER_BIRTH);
@@ -1025,9 +1028,8 @@ void player_birth(bool quickstart_allowed)
 
 		if (cmd.command == CMD_BIRTH_RESET)
 		{
-			do_birth_reset(quickstart_allowed, &quickstart_prev);
-			generate_player();
 			reset_stats(stats, points_spent, &points_left);
+			do_birth_reset(quickstart_allowed, &quickstart_prev);
 			rolled_stats = FALSE;
 		}
 		else if (cmd.command == CMD_CHOOSE_SEX)
