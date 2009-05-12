@@ -1970,8 +1970,6 @@ void do_cmd_knowledge(void)
 	int i;
 	ui_event_data c = EVENT_EMPTY;
 	region knowledge_region = { 0, 0, -1, 11 };
-
-	init_cmd_know();
 	
 	/* Grey out menu items that won't display anything */
 	if (collect_known_artifacts(NULL, 0) > 0)
