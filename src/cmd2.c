@@ -1931,14 +1931,32 @@ void do_cmd_spike(void)
  */
 static bool do_cmd_walk_test(int y, int x)
 {
-	/* Hack -- walking obtains knowledge XXX XXX */
-	if (!(cave_info[y][x] & (CAVE_MARK))) return (TRUE);
-
-	/* Allow attack on visible monsters */
+	/* Allow attack on visible monsters if unafraid */
 	if ((cave_m_idx[y][x] > 0) && (mon_list[cave_m_idx[y][x]].ml))
 	{
-		return TRUE;
+		/* Handle player fear */
+		if(p_ptr->state.afraid)
+		{
+			/* Extract monster name (or "it") */
+			char m_name[80];
+			monster_type *m_ptr;
+
+			m_ptr = &mon_list[cave_m_idx[y][x]];
+			monster_desc(m_name, sizeof(m_name), m_ptr, 0);
+
+			/* Message */
+			message_format(MSG_AFRAID, 0,
+				"You are too afraid to attack %s!", m_name);
+
+			/* Nope */
+			return (FALSE);
+		}
+		
+		return (TRUE);
 	}
+
+	/* Hack -- walking obtains knowledge XXX XXX */
+	if (!(cave_info[y][x] & (CAVE_MARK))) return (TRUE);
 
 	/* Require open space */
 	if (!cave_floor_bold(y, x))
