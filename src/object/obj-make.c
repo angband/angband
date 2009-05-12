@@ -1105,6 +1105,8 @@ static const u32b ego_powers[] =
 void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, bool great)
 {
 	int power = 0;
+	u32b xtra = 0;
+	bool new = FALSE;
 
 	/* Chance of being `good` and `great` */
 	int good_chance = (lev+2) * 3;
@@ -1242,19 +1244,43 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 		{
 			case OBJECT_XTRA_TYPE_SUSTAIN:
 			{
-				o_ptr->flags[1] |= ego_sustains[randint0(N_ELEMENTS(ego_sustains))];
+				while (!new)
+				{
+					xtra = ego_sustains[randint0(N_ELEMENTS(ego_sustains))];
+					if ((o_ptr->flags[1] | xtra) != o_ptr->flags[1])
+					{
+						o_ptr->flags[1] |= xtra;
+						new = TRUE;
+					}
+				}
 				break;
 			}
 
 			case OBJECT_XTRA_TYPE_RESIST:
 			{
-				o_ptr->flags[1] |= ego_resists[randint0(N_ELEMENTS(ego_resists))];
+				while (!new)
+				{
+					xtra = ego_resists[randint0(N_ELEMENTS(ego_resists))];
+					if ((o_ptr->flags[1] | xtra) != o_ptr->flags[1])
+					{
+						o_ptr->flags[1] |= xtra;
+						new = TRUE;
+					}
+				}
 				break;
 			}
 
 			case OBJECT_XTRA_TYPE_POWER:
 			{
-				o_ptr->flags[2] |= ego_powers[randint0(N_ELEMENTS(ego_powers))];
+				while (!new)
+				{
+					xtra = ego_powers[randint0(N_ELEMENTS(ego_powers))];
+					if ((o_ptr->flags[2] | xtra) != o_ptr->flags[2])
+					{
+						o_ptr->flags[2] |= xtra;
+						new = TRUE;
+					}
+				}
 				break;
 			}
 		}
