@@ -522,9 +522,30 @@ void do_cmd_fire(void)
 		o_ptr = &o_list[0 - item];
 	}
 
-
 	/* Get a direction (or cancel) */
 	if (!get_aim_dir(&dir)) return;
+
+	/* Base range XXX XXX */
+	tdis = 6 + 2 * p_ptr->state.ammo_mult;
+
+	/* Start at the player */
+	x = p_ptr->px;
+	y = p_ptr->py;
+
+	/* Predict the "target" location */
+	ty = y + 99 * ddy[dir];
+	tx = x + 99 * ddx[dir];
+
+	/* Check for target validity */
+	if ((dir == 5) && target_okay())
+	{
+		target_get(&tx, &ty);
+		if (distance(y, x, ty, tx) > tdis)
+		{
+			msg_print("Target out of range");
+			return;
+		}
+	}
 
 	/* Sound */
 	sound(MSG_SHOOT);
@@ -537,7 +558,6 @@ void do_cmd_fire(void)
 	missile_attr = object_attr(o_ptr);
 	missile_char = object_char(o_ptr);
 
-
 	/* Use the proper number of shots */
 	thits = p_ptr->state.num_fire;
 
@@ -546,31 +566,11 @@ void do_cmd_fire(void)
 	chance = p_ptr->state.skills[SKILL_TO_HIT_BOW] +
 			(bonus * BTH_PLUS_ADJ);
 
-	/* Base range XXX XXX */
-	tdis = 6 + 2 * p_ptr->state.ammo_mult;
-
-
 	/* Take a (partial) turn */
 	p_ptr->energy_use = (100 / thits);
 
-
-	/* Start at the player */
-	y = p_ptr->py;
-	x = p_ptr->px;
-
-	/* Predict the "target" location */
-	ty = p_ptr->py + 99 * ddy[dir];
-	tx = p_ptr->px + 99 * ddx[dir];
-
-	/* Check for "target request" */
-	if ((dir == 5) && target_okay())
-	{
-		target_get(&tx, &ty);
-	}
-
 	/* Calculate the path */
-	path_n = project_path(path_g, tdis, p_ptr->py, p_ptr->px, ty, tx, 0);
-
+	path_n = project_path(path_g, tdis, y, x, ty, tx, 0);
 
 	/* Hack -- Handle stuff */
 	handle_stuff();
