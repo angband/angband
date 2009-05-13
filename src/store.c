@@ -1620,6 +1620,7 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 {
 	object_type *o_ptr;
 	s32b x;
+	odesc_detail_t desc;
 
 	char o_name[80];
 	char out_val[160];
@@ -1634,8 +1635,10 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 	/* Get the object */
 	o_ptr = &st_ptr->stock[oid];
 
-	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL | ODESC_STORE);
+	/* Describe the object - preserving insriptions in the home */
+	if (store_current == STORE_HOME) desc = ODESC_FULL;
+	else desc = ODESC_FULL | ODESC_STORE;
+	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, desc);
 
 	/* Display the object */
 	c_put_str(tval_to_attr[o_ptr->tval & 0x7F], o_name, row, col);
