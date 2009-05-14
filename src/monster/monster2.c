@@ -2064,8 +2064,13 @@ static bool summon_specific_okay(int r_idx)
 
 
 	/* Hack -- no specific type specified */
-	if (!summon_specific_type) return (TRUE);
-
+	if (!summon_specific_type) 
+	{
+		okay = (!(r_ptr->flags[0] & (RF0_FRIEND)) &&
+			!(r_ptr->flags[0] & (RF0_FRIENDS)) &&
+			!(r_ptr->flags[0] & (RF0_ESCORT)));
+		return (okay);
+	}
 
 	/* Check our requirements */
 	switch (summon_specific_type)
@@ -2101,28 +2106,40 @@ static bool summon_specific_okay(int r_idx)
 		case SUMMON_ANGEL:
 		{
 			okay = ((r_ptr->d_char == 'A') &&
-			        !(r_ptr->flags[0] & (RF0_UNIQUE)));
+			        !(r_ptr->flags[0] & (RF0_UNIQUE)) &&
+				!(r_ptr->flags[0] & (RF0_FRIEND)) &&
+				!(r_ptr->flags[0] & (RF0_FRIENDS)) &&
+				!(r_ptr->flags[0] & (RF0_ESCORT)));
 			break;
 		}
 
 		case SUMMON_DEMON:
 		{
 			okay = ((r_ptr->flags[2] & (RF2_DEMON)) &&
-			        !(r_ptr->flags[0] & (RF0_UNIQUE)));
+			        !(r_ptr->flags[0] & (RF0_UNIQUE)) &&
+				!(r_ptr->flags[0] & (RF0_FRIEND)) &&
+				!(r_ptr->flags[0] & (RF0_FRIENDS)) &&
+				!(r_ptr->flags[0] & (RF0_ESCORT)));
 			break;
 		}
 
 		case SUMMON_UNDEAD:
 		{
 			okay = ((r_ptr->flags[2] & (RF2_UNDEAD)) &&
-			        !(r_ptr->flags[0] & (RF0_UNIQUE)));
+			        !(r_ptr->flags[0] & (RF0_UNIQUE)) &&
+				!(r_ptr->flags[0] & (RF0_FRIEND)) &&
+				!(r_ptr->flags[0] & (RF0_FRIENDS)) &&
+				!(r_ptr->flags[0] & (RF0_ESCORT)));
 			break;
 		}
 
 		case SUMMON_DRAGON:
 		{
 			okay = ((r_ptr->flags[2] & (RF2_DRAGON)) &&
-			        !(r_ptr->flags[0] & (RF0_UNIQUE)));
+			        !(r_ptr->flags[0] & (RF0_UNIQUE)) &&
+				!(r_ptr->flags[0] & (RF0_FRIEND)) &&
+				!(r_ptr->flags[0] & (RF0_FRIENDS)) &&
+				!(r_ptr->flags[0] & (RF0_ESCORT)));
 			break;
 		}
 
