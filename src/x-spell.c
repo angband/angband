@@ -224,7 +224,7 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 			strnfmt(p, len, " dam 2d%d", (plev / 2));
 			break; 
 		case SPELL_CURE_LIGHT_WOUNDS:
-			strnfmt(p, len, " heal 2d8");
+			strnfmt(p, len, " heal 15%");
 			break;
 		case SPELL_STINKING_CLOUD:
 			strnfmt(p, len, " dam %d", 10 + (plev / 2));
@@ -319,7 +319,7 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 		switch (spell)
 		{
 			case PRAYER_CURE_LIGHT_WOUNDS:
-				my_strcpy(p, " heal 2d10", len);
+				my_strcpy(p, " heal 15%", len);
 				break;
 			case PRAYER_BLESS:
 				my_strcpy(p, " dur 12+d12", len);
@@ -331,7 +331,7 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 				strnfmt(p, len, " range %d", 3 * plev);
 				break;
 			case PRAYER_CURE_SERIOUS_WOUNDS:
-				my_strcpy(p, " heal 4d10", len);
+				my_strcpy(p, " heal 20%", len);
 				break;
 			case PRAYER_CHANT:
 				my_strcpy(p, " dur 24+d24", len);
@@ -344,7 +344,7 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 				        (plev / ((cp_ptr->flags & CF_BLESS_WEAPON) ? 2 : 4)));
 				break;
 			case PRAYER_CURE_CRITICAL_WOUNDS:
-				my_strcpy(p, " heal 6d10", len);
+				my_strcpy(p, " heal 25%", len);
 				break;
 			case PRAYER_SENSE_INVISIBLE:
 				my_strcpy(p, " dur 24+d24", len);
@@ -353,7 +353,7 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 				strnfmt(p, len, " dur %d+d25", 3 * plev);
 				break;
 			case PRAYER_CURE_MORTAL_WOUNDS:
-				my_strcpy(p, " heal 8d10", len);
+				my_strcpy(p, " heal 30%", len);
 				break;
 			case PRAYER_PRAYER:
 				my_strcpy(p, " dur 48+d48", len);
@@ -362,7 +362,7 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 				strnfmt(p, len, " dam d%d", 3 * plev);
 				break;
 			case PRAYER_HEAL:
-				my_strcpy(p, " heal 300", len);
+				my_strcpy(p, " heal 35%", len);
 				break;
 			case PRAYER_DISPEL_EVIL:
 				strnfmt(p, len, " dam d%d", 3 * plev);
@@ -371,10 +371,10 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 				my_strcpy(p, " heal 1000", len);
 				break;
 			case PRAYER_CURE_SERIOUS_WOUNDS2:
-				my_strcpy(p, " heal 4d10", len);
+				my_strcpy(p, " heal 20%", len);
 				break;
 			case PRAYER_CURE_MORTAL_WOUNDS2:
-				my_strcpy(p, " heal 8d10", len);
+				my_strcpy(p, " heal 30%", len);
 				break;
 			case PRAYER_HEALING:
 				my_strcpy(p, " heal 2000", len);
@@ -471,8 +471,10 @@ static bool cast_mage_spell(int spell)
 		case SPELL_CURE_LIGHT_WOUNDS:
 		{
 
-			(void)hp_player(damroll(2, 8));
-			(void)dec_timed(TMD_CUT, 15, TRUE);
+			(void)heal_player(15, 15);
+			(void)dec_timed(TMD_CUT, 20, TRUE);
+			(void)dec_timed(TMD_CONFUSED, 20, TRUE);
+			(void)clear_timed(TMD_BLIND, TRUE);
 			break;
 		}
 
@@ -874,6 +876,8 @@ static bool cast_priest_spell(int spell)
 
 	int plev = p_ptr->lev;
 
+	int amt;
+
 	switch (spell)
 	{
 		case PRAYER_DETECT_EVIL:
@@ -884,8 +888,10 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_CURE_LIGHT_WOUNDS:
 		{
-			(void)hp_player(damroll(2, 10));
-			(void)dec_timed(TMD_CUT, 10, TRUE);
+			(void)heal_player(15, 15);
+			(void)dec_timed(TMD_CUT, 20, TRUE);
+			(void)dec_timed(TMD_CONFUSED, 20, TRUE);
+			(void)clear_timed(TMD_BLIND, TRUE);
 			break;
 		}
 
@@ -940,8 +946,10 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_CURE_SERIOUS_WOUNDS:
 		{
-			(void)hp_player(damroll(4, 10));
-			(void)set_timed(TMD_CUT, (p_ptr->timed[TMD_CUT] / 2) - 20, TRUE);
+			(void)heal_player(20, 25);
+			(void)clear_timed(TMD_CUT, TRUE);
+			(void)clear_timed(TMD_CONFUSED, TRUE);
+			(void)clear_timed(TMD_BLIND, TRUE);
 			break;
 		}
 
@@ -994,9 +1002,13 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_CURE_CRITICAL_WOUNDS:
 		{
-			(void)hp_player(damroll(6, 10));
+			(void)heal_player(25, 30);
 			(void)clear_timed(TMD_CUT, TRUE);
 			(void)clear_timed(TMD_AMNESIA, TRUE);
+			(void)clear_timed(TMD_CONFUSED, TRUE);
+			(void)clear_timed(TMD_BLIND, TRUE);
+			(void)clear_timed(TMD_POISONED, TRUE);
+			(void)clear_timed(TMD_STUN, TRUE);
 			break;
 		}
 
@@ -1026,9 +1038,13 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_CURE_MORTAL_WOUNDS:
 		{
-			(void)hp_player(damroll(8, 10));
-			(void)clear_timed(TMD_STUN, TRUE);
+			(void)heal_player(30, 50);
 			(void)clear_timed(TMD_CUT, TRUE);
+			(void)clear_timed(TMD_AMNESIA, TRUE);
+			(void)clear_timed(TMD_CONFUSED, TRUE);
+			(void)clear_timed(TMD_BLIND, TRUE);
+			(void)clear_timed(TMD_POISONED, TRUE);
+			(void)clear_timed(TMD_STUN, TRUE);
 			break;
 		}
 
@@ -1052,9 +1068,16 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_HEAL:
 		{
-			(void)hp_player(300);
-			(void)clear_timed(TMD_STUN, TRUE);
+			amt = (p_ptr->mhp * 35) / 100;
+                        if (amt < 300) amt = 300;
+			
+			(void)hp_player(amt);
 			(void)clear_timed(TMD_CUT, TRUE);
+			(void)clear_timed(TMD_AMNESIA, TRUE);
+			(void)clear_timed(TMD_CONFUSED, TRUE);
+			(void)clear_timed(TMD_BLIND, TRUE);
+			(void)clear_timed(TMD_POISONED, TRUE);
+			(void)clear_timed(TMD_STUN, TRUE);
 			break;
 		}
 
@@ -1112,16 +1135,22 @@ static bool cast_priest_spell(int spell)
 
 		case PRAYER_CURE_SERIOUS_WOUNDS2:
 		{
-			(void)hp_player(damroll(4, 10));
+			(void)heal_player(20, 25);
 			(void)clear_timed(TMD_CUT, TRUE);
+			(void)clear_timed(TMD_CONFUSED, TRUE);
+			(void)clear_timed(TMD_BLIND, TRUE);
 			break;
 		}
 
 		case PRAYER_CURE_MORTAL_WOUNDS2:
 		{
-			(void)hp_player(damroll(8, 10));
-			(void)clear_timed(TMD_STUN, TRUE);
+			(void)heal_player(30, 50);
 			(void)clear_timed(TMD_CUT, TRUE);
+			(void)clear_timed(TMD_AMNESIA, TRUE);
+			(void)clear_timed(TMD_CONFUSED, TRUE);
+			(void)clear_timed(TMD_BLIND, TRUE);
+			(void)clear_timed(TMD_POISONED, TRUE);
+			(void)clear_timed(TMD_STUN, TRUE);
 			break;
 		}
 
