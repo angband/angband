@@ -368,7 +368,7 @@ static bool describe_misc_magic(u32b f3)
 /*
  * Describe slays and brands on weapons
  */
-static bool describe_slays(u32b f1)
+static bool describe_slays(u32b f1, int tval)
 {
 	bool printed = FALSE;
 
@@ -380,6 +380,13 @@ static bool describe_slays(u32b f1)
 	size_t x = 0;
 	size_t y = 0;
 	size_t z = 0;
+
+	bool fulldesc;
+
+	if ((tval == TV_SWORD) || (tval == TV_HAFTED) || (tval == TV_POLEARM) ||
+		(tval == TV_DIGGING ) || (tval == TV_BOW) || (tval == TV_SHOT) ||
+		(tval == TV_ARROW) || (tval == TV_BOLT)) fulldesc = FALSE;
+	else fulldesc = TRUE;
 
 	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
 	{
@@ -394,7 +401,8 @@ static bool describe_slays(u32b f1)
 	/* Slays */
 	if (x)
 	{
-		text_out("Slays ");
+		if (fulldesc) text_out("It causes your melee attacks to slay ");
+		else text_out("Slays ");
 		info_out_list(slay_descs, x);
 		printed = TRUE;
 	}
@@ -402,7 +410,8 @@ static bool describe_slays(u32b f1)
 	/* Kills */
 	if (y)
 	{
-		text_out("*Slays* ");
+		if (fulldesc) text_out("It causes your melee attacks to *slay* ");
+		else text_out("*Slays* ");
 		info_out_list(kill_descs, y);
 		printed = TRUE;
 	}
@@ -410,7 +419,8 @@ static bool describe_slays(u32b f1)
 	/* Brands */
 	if (z)
 	{
-		text_out("Branded with ");
+		if (fulldesc) text_out("It brands your melee attacks with ");
+		else text_out("Branded with ");
 		info_out_list(brand_descs, z);
 		printed = TRUE;
 	}
@@ -1052,7 +1062,7 @@ static bool object_info_out(const object_type *o_ptr, bool full, bool terse, boo
 	
 	if (describe_curses(o_ptr, f[2])) something = TRUE;
 	if (describe_stats(f[0], o_ptr->pval)) something = TRUE;
-	if (describe_slays(f[0])) something = TRUE;
+	if (describe_slays(f[0], o_ptr->tval)) something = TRUE;
 	if (describe_immune(f[1])) something = TRUE;
 	if (describe_ignores(f[2])) something = TRUE;
 	if (describe_sustains(f[1])) something = TRUE;
