@@ -619,7 +619,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 		f[0] |= (g[0] | h[0]);
 	}
 
-	text_out("Average damage/round: ");
+	text_out("Average damage/hit: ");
 	
 	cnt = collect_slays(desc, mult, f[0]);
 	for (i = 0; i < cnt; i++)
