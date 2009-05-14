@@ -1495,7 +1495,7 @@ D:An orc dressed in skins who gestures wildly.
 
 N:127:Baby blue dragon
 G:d:b
-I:110:100:20:30:70   # HP was 10d10 (FORCE_MAXHP)
+I:110:88:20:30:70   # HP was 10d10 (FORCE_MAXHP)
 W:9:2:0:35
 B:CLAW:HURT:1d3
 B:CLAW:HURT:1d3
@@ -1512,7 +1512,7 @@ D: scales a pale blue.
 
 N:128:Baby white dragon
 G:d:w
-I:110:100:20:30:70   # HP was 10d10 (FORCE_MAXHP)
+I:110:88:20:30:70   # HP was 10d10 (FORCE_MAXHP)
 W:9:2:0:35
 B:CLAW:HURT:1d3
 B:CLAW:HURT:1d3
@@ -1529,7 +1529,7 @@ D: scales a pale white.
 
 N:129:Baby green dragon
 G:d:g
-I:110:100:20:30:70   # HP was 10d10 (FORCE_MAXHP)
+I:110:88:20:30:70   # HP was 10d10 (FORCE_MAXHP)
 W:9:2:0:35
 B:CLAW:HURT:1d3
 B:CLAW:HURT:1d3
@@ -1546,7 +1546,7 @@ D: scales a sickly green.
 
 N:130:Baby black dragon
 G:d:s
-I:110:100:20:30:70   # HP was 10d10 (FORCE_MAXHP)
+I:110:88:20:30:70   # HP was 10d10 (FORCE_MAXHP)
 W:9:2:0:35
 B:CLAW:HURT:1d3
 B:CLAW:HURT:1d3
@@ -1563,7 +1563,7 @@ D: scales a dull black.
 
 N:131:Baby red dragon
 G:d:r
-I:110:100:20:30:70   # HP was 10d10 (FORCE_MAXHP)
+I:110:88:20:30:70   # HP was 10d10 (FORCE_MAXHP)
 W:9:2:0:35
 B:CLAW:HURT:1d3
 B:CLAW:HURT:1d3
@@ -1733,7 +1733,7 @@ D:It is a strange glowing growth on the dungeon floor.
 
 N:144:Pseudo-dragon
 G:d:o
-I:110:200:20:30:70   # HP was 20d10 (FORCE_MAXHP)
+I:110:176:20:30:70   # HP was 20d10 (FORCE_MAXHP)
 W:10:2:0:150
 B:CLAW:HURT:1d3
 B:CLAW:HURT:1d3
@@ -1816,7 +1816,7 @@ D:He is eyeing your backpack.
 
 N:151:Baby multi-hued dragon
 G:d:v
-I:110:130:20:30:70   # HP was 13d10 (FORCE_MAXHP)
+I:110:114:20:30:70   # HP was 13d10 (FORCE_MAXHP)
 W:11:2:0:45
 B:CLAW:HURT:1d4
 B:CLAW:HURT:1d4
@@ -2292,7 +2292,7 @@ D:It makes you itch just to look at it.
 
 N:188:Lurker
 G:.:w
-I:110:200:30:25:10   # HP was 20d10 (FORCE_MAXHP)
+I:110:176:30:25:10   # HP was 20d10 (FORCE_MAXHP)
 W:14:3:0:80
 B:HIT:HURT:1d8
 B:HIT:HURT:1d8
@@ -2551,7 +2551,7 @@ D:An armoured orc with an air of authority.
 
 N:207:Gelatinous cube
 G:j:G
-I:110:360:12:18:1   # HP was 36d10 (FORCE_MAXHP)
+I:110:316:12:18:1   # HP was 36d10 (FORCE_MAXHP)
 W:16:4:0:80
 B:TOUCH:ACID:1d10
 B:TOUCH:ACID:1d10
@@ -2825,7 +2825,7 @@ D: in front of your very eyes.
 
 N:226:Uruk
 G:o:B
-I:110:80:20:50:20   # HP was 8d10 (FORCE_MAXHP)
+I:110:70:20:50:20   # HP was 8d10 (FORCE_MAXHP)
 W:16:1:0:60
 B:HIT:HURT:3d5
 B:HIT:HURT:3d5
@@ -3713,7 +3713,7 @@ D:It is a tangible but ghostly form made of white fog.
 
 N:289:Angel
 G:A:o
-I:110:300:30:60:255   # HP was 30d10 (FORCE_MAXHP)
+I:110:264:30:60:255   # HP was 30d10 (FORCE_MAXHP)
 W:26:4:0:220
 B:HIT:HURT:3d4
 B:HIT:HURT:3d4
@@ -3993,7 +3993,7 @@ D:A mage of some power - you can tell by the size of his hat.
 
 N:306:Mind flayer
 G:h:v
-I:110:150:20:60:10   # HP was 15d10 (FORCE_MAXHP)
+I:110:132:20:60:10   # HP was 15d10 (FORCE_MAXHP)
 W:28:1:0:200
 B:GAZE:LOSE_INT:2d6
 B:GAZE:LOSE_WIS:2d6
@@ -4076,7 +4076,7 @@ D: poison.
 
 N:311:Archangel
 G:A:B
-I:110:600:30:68:255   # HP was 60d10 (FORCE_MAXHP)
+I:110:528:30:68:255   # HP was 60d10 (FORCE_MAXHP)
 W:34:4:0:1000
 B:HIT:HURT:3d5
 B:HIT:HURT:3d5
@@ -4130,7 +4130,7 @@ D: unsuspecting adventurers within reach of its venomous claws.
 
 N:314:Young blue dragon
 G:d:b
-I:110:270:20:50:70   # HP was 27d10 (FORCE_MAXHP)
+I:110:237:20:50:70   # HP was 27d10 (FORCE_MAXHP)
 W:29:1:0:500
 B:CLAW:HURT:2d4
 B:CLAW:HURT:2d4
@@ -4148,7 +4148,7 @@ D: blue in hue.  Sparks crackle along its length.
 
 N:315:Young white dragon
 G:d:w
-I:110:270:20:50:70   # HP was 27d10 (FORCE_MAXHP)
+I:110:237:20:50:70   # HP was 27d10 (FORCE_MAXHP)
 W:29:1:0:500
 B:CLAW:HURT:2d4
 B:CLAW:HURT:2d4
@@ -4166,7 +4166,7 @@ D: white in hue.  Icy blasts of cold air come from it as it breathes.
 
 N:316:Young green dragon
 G:d:g
-I:110:270:20:50:70   # HP was 27d10 (FORCE_MAXHP)
+I:110:237:20:50:70   # HP was 27d10 (FORCE_MAXHP)
 W:29:1:0:500
 B:CLAW:HURT:2d4
 B:CLAW:HURT:2d4
@@ -4184,7 +4184,7 @@ D: green in hue.  Foul gas seeps through its scales.
 
 N:317:Young bronze dragon
 G:d:U
-I:110:270:20:50:70   # HP was 27d10 (FORCE_MAXHP)
+I:110:237:20:50:70   # HP was 27d10 (FORCE_MAXHP)
 W:29:1:0:500
 B:CLAW:HURT:2d4
 B:CLAW:HURT:2d4
@@ -4220,7 +4220,7 @@ D:It is a massive statue of purest mithril.  It looks expensive!
 
 N:319:Shadow drake
 G:d:G
-I:110:300:20:70:70   # HP was 30d10 (FORCE_MAXHP)
+I:110:264:20:70:70   # HP was 30d10 (FORCE_MAXHP)
 W:33:3:0:1100
 B:CLAW:HURT:2d4
 B:CLAW:HURT:2d4
@@ -4253,7 +4253,7 @@ D:It is a troll skeleton animated by dark dweomers.
 
 N:321:Manticore
 G:H:y
-I:120:250:12:15:10   # HP was 25d10 (FORCE_MAXHP)
+I:120:220:12:15:10   # HP was 25d10 (FORCE_MAXHP)
 W:30:2:0:300
 B:HIT:HURT:3d4
 B:HIT:HURT:3d4
@@ -4432,7 +4432,7 @@ D:A mass of green vegetation.  You don't remember seeing anything like it before
 
 N:333:Storm giant
 G:P:B
-I:120:800:20:60:40   # HP was 40d20 (FORCE_MAXHP)
+I:120:700:20:60:40   # HP was 40d20 (FORCE_MAXHP)
 W:40:1:0:1000
 B:HIT:ELEC:10d8
 B:HIT:ELEC:10d8
@@ -4481,7 +4481,7 @@ D:A huge, ugly, half-human in search of plunder.
 
 N:336:Mystic
 G:p:o
-I:120:350:30:50:5   # HP was 35d10 (FORCE_MAXHP)
+I:120:308:30:50:5   # HP was 35d10 (FORCE_MAXHP)
 W:33:3:0:500
 B:KICK:HURT:10d2
 B:KICK:HURT:10d2
@@ -4516,7 +4516,7 @@ D:It is a ghostly nightmare of a entity.
 
 N:338:Skeleton ettin
 G:s:w
-I:110:450:20:50:20   # HP was 45d10 (FORCE_MAXHP)
+I:110:396:20:50:20   # HP was 45d10 (FORCE_MAXHP)
 W:33:1:0:325
 B:HIT:HURT:1d9
 B:HIT:HURT:1d9
@@ -4529,7 +4529,7 @@ D:It is the animated form of a massive two-headed troll.
 
 N:339:Chaos drake
 G:d:v
-I:110:500:20:70:70   # HP was 50d10 (FORCE_MAXHP)
+I:110:440:20:70:70   # HP was 50d10 (FORCE_MAXHP)
 W:33:3:0:1400
 B:CLAW:HURT:2d4
 B:CLAW:HURT:2d4
@@ -4547,7 +4547,7 @@ D: its form shimmers and changes in front of your eyes.
 
 N:340:Law drake
 G:d:B
-I:110:500:20:70:70   # HP was 50d10 (FORCE_MAXHP)
+I:110:440:20:70:70   # HP was 50d10 (FORCE_MAXHP)
 W:33:3:0:1400
 B:CLAW:HURT:2d4
 B:CLAW:HURT:2d4
@@ -4565,7 +4565,7 @@ D: it.
 
 N:341:Balance drake
 G:d:v
-I:110:600:20:70:70   # HP was 60d10 (FORCE_MAXHP)
+I:110:528:20:70:70   # HP was 60d10 (FORCE_MAXHP)
 W:33:3:0:1600
 B:CLAW:HURT:2d4
 B:CLAW:HURT:2d4
@@ -4583,7 +4583,7 @@ D: despises your feeble efforts to destroy evil.
 
 N:342:Ethereal drake
 G:d:o
-I:110:400:20:70:70   # HP was 40d10 (FORCE_MAXHP)
+I:110:352:20:70:70   # HP was 40d10 (FORCE_MAXHP)
 W:33:3:0:1200
 B:CLAW:HURT:2d4
 B:CLAW:HURT:2d4
@@ -4691,7 +4691,7 @@ D: deep within your body.
 
 N:348:Water troll
 G:T:B
-I:110:360:20:50:50   # HP was 36d10 (FORCE_MAXHP)
+I:110:316:20:50:50   # HP was 36d10 (FORCE_MAXHP)
 W:35:1:0:420
 B:HIT:HURT:1d9
 B:HIT:HURT:1d9
@@ -4723,7 +4723,7 @@ D:It is a towering inferno of flames.
 
 N:350:Cherub
 G:A:G
-I:120:1000:30:68:255   # HP was 100d10 (FORCE_MAXHP)
+I:120:880:30:68:255   # HP was 100d10 (FORCE_MAXHP)
 W:39:6:0:2700
 B:HIT:HURT:4d3
 B:HIT:HURT:3d8
@@ -4820,7 +4820,7 @@ D: Morgoth.
 
 N:356:Lich
 G:L:o
-I:110:300:20:60:60   # HP was 30d10 (FORCE_MAXHP)
+I:110:264:20:60:60   # HP was 30d10 (FORCE_MAXHP)
 W:34:2:0:1000
 B:TOUCH:EXP_40
 B:TOUCH:UN_POWER
@@ -4840,7 +4840,7 @@ D:It is a skeletal form dressed in robes.  It radiates vastly evil power.
 
 N:357:Master vampire
 G:V:g
-I:110:340:20:60:10   # HP was 34d10 (FORCE_MAXHP)
+I:110:299:20:60:10   # HP was 34d10 (FORCE_MAXHP)
 W:36:1:0:750
 B:HIT:HURT:2d6
 B:HIT:HURT:2d6
@@ -4904,7 +4904,7 @@ D:It is a towering tornado of winds.
 
 N:361:Hellhound
 G:C:r
-I:120:400:25:80:30   # HP was 40d10 (FORCE_MAXHP)
+I:120:352:25:80:30   # HP was 40d10 (FORCE_MAXHP)
 W:35:3:0:600
 B:BITE:FIRE:3d12
 B:BITE:FIRE:3d12
@@ -4939,7 +4939,7 @@ D: now.
 
 N:363:Olog
 G:T:y
-I:110:420:20:50:50   # HP was 42d10 (FORCE_MAXHP)
+I:110:369:20:50:50   # HP was 42d10 (FORCE_MAXHP)
 W:36:1:0:450
 B:HIT:HURT:1d12
 B:HIT:HURT:1d12
@@ -4987,7 +4987,7 @@ D: less solid as you see gravity warp all round the monsters.
 
 N:366:Acidic cytoplasm
 G:j:s
-I:120:400:12:18:1   # HP was 40d10 (FORCE_MAXHP)
+I:120:352:12:18:1   # HP was 40d10 (FORCE_MAXHP)
 W:35:5:0:180
 B:TOUCH:ACID:1d10
 B:TOUCH:ACID:1d10
@@ -5088,7 +5088,7 @@ D:It is a towering blackened form, crackling with heat.
 
 N:372:Young black dragon
 G:d:s
-I:110:300:20:60:70   # HP was 30d10 (FORCE_MAXHP)
+I:110:264:20:60:70   # HP was 30d10 (FORCE_MAXHP)
 W:31:1:0:700
 B:CLAW:HURT:2d6
 B:CLAW:HURT:2d6
@@ -5119,7 +5119,7 @@ D:A massive elephantine form with eyes twisted by madness.
 
 N:374:Giant fire ant
 G:a:R
-I:110:200:14:49:40   # HP was 20d10 (FORCE_MAXHP)
+I:110:176:14:49:40   # HP was 20d10 (FORCE_MAXHP)
 W:35:1:0:350
 B:BITE:FIRE:3d12
 B:BITE:FIRE:3d12
@@ -5132,7 +5132,7 @@ D:A giant ant covered in shaggy fur.  Its powerful jaws glow with heat.
 
 N:375:Mature white dragon
 G:d:w
-I:110:400:20:70:70   # HP was 40d10 (FORCE_MAXHP)
+I:110:352:20:70:70   # HP was 40d10 (FORCE_MAXHP)
 W:34:1:0:1200
 B:CLAW:HURT:2d8
 B:CLAW:HURT:2d8
@@ -5151,7 +5151,7 @@ D:A large dragon, scales gleaming bright white.
 
 N:376:Xorn
 G:X:u
-I:110:160:20:80:10   # HP was 16d10 (FORCE_MAXHP)
+I:110:140:20:80:10   # HP was 16d10 (FORCE_MAXHP)
 W:36:2:0:650
 B:HIT:HURT:1d6
 B:HIT:HURT:1d6
@@ -5202,7 +5202,7 @@ D: your very soul.
 
 N:379:Grey wraith
 G:W:s
-I:110:190:20:50:10   # HP was 19d10 (FORCE_MAXHP)
+I:110:167:20:50:10   # HP was 19d10 (FORCE_MAXHP)
 W:36:1:0:700
 B:HIT:HURT:1d10
 B:HIT:HURT:1d10
@@ -5221,7 +5221,7 @@ D: cold.
 
 N:380:Young multi-hued dragon
 G:d:v
-I:110:320:20:60:70   # HP was 32d10 (FORCE_MAXHP)
+I:110:281:20:60:70   # HP was 32d10 (FORCE_MAXHP)
 W:32:1:0:900
 B:CLAW:HURT:2d6
 B:CLAW:HURT:2d6
@@ -5241,7 +5241,7 @@ D: magical colours cover it.
 
 N:381:Colossus
 G:g:G
-I:100:3000:12:150:10   # HP was 30d100 (FORCE_MAXHP)
+I:100:2640:12:150:10   # HP was 30d100 (FORCE_MAXHP)
 W:36:4:0:850
 B:HIT:HURT:10d10
 B:HIT:HURT:10d10
@@ -5257,7 +5257,7 @@ D: purposefully towards you, swinging its slow fists with earth-shattering power
 
 N:382:Young gold dragon
 G:d:y
-I:110:300:20:60:70   # HP was 30d10 (FORCE_MAXHP)
+I:110:264:20:60:70   # HP was 30d10 (FORCE_MAXHP)
 W:31:1:0:700
 B:CLAW:HURT:2d6
 B:CLAW:HURT:2d6
@@ -5295,7 +5295,7 @@ D: muscular frame.  Despite his bulk, he strikes with stunning speed.
 
 N:384:Mature blue dragon
 G:d:b
-I:110:400:20:70:70   # HP was 40d10 (FORCE_MAXHP)
+I:110:352:20:70:70   # HP was 40d10 (FORCE_MAXHP)
 W:34:1:0:1200
 B:CLAW:HURT:2d8
 B:CLAW:HURT:2d8
@@ -5312,7 +5312,7 @@ D:A large dragon, scales tinted deep blue.
 
 N:385:Mature green dragon
 G:d:g
-I:110:400:20:70:70   # HP was 40d10 (FORCE_MAXHP)
+I:110:352:20:70:70   # HP was 40d10 (FORCE_MAXHP)
 W:34:1:0:1200
 B:CLAW:HURT:2d8
 B:CLAW:HURT:2d8
@@ -5329,7 +5329,7 @@ D:A large dragon, scales tinted deep green.
 
 N:386:Mature bronze dragon
 G:d:U
-I:110:400:20:70:70   # HP was 40d10 (FORCE_MAXHP)
+I:110:352:20:70:70   # HP was 40d10 (FORCE_MAXHP)
 W:34:1:0:1200
 B:CLAW:HURT:2d8
 B:CLAW:HURT:2d8
@@ -5348,7 +5348,7 @@ D:A large dragon with scales of rich bronze.
 
 N:387:Young red dragon
 G:d:r
-I:110:300:20:60:70   # HP was 30d10 (FORCE_MAXHP)
+I:110:264:20:60:70   # HP was 30d10 (FORCE_MAXHP)
 W:31:1:0:700
 B:CLAW:HURT:2d6
 B:CLAW:HURT:2d6
@@ -5368,7 +5368,7 @@ D: red hue.  Heat radiates from its form.
 
 N:388:Trapper
 G:.:w
-I:120:600:30:75:10   # HP was 60d10 (FORCE_MAXHP)
+I:120:528:30:75:10   # HP was 60d10 (FORCE_MAXHP)
 W:36:3:0:580
 B:HIT:HURT:3d8
 B:HIT:HURT:3d8
@@ -5418,7 +5418,7 @@ D:It is a towering glacier of ice.
 
 N:391:Necromancer
 G:p:R
-I:110:280:20:50:10   # HP was 28d10 (FORCE_MAXHP)
+I:110:246:20:50:10   # HP was 28d10 (FORCE_MAXHP)
 W:36:2:0:630
 B:HIT:HURT:2d6
 B:HIT:HURT:2d6
@@ -5452,7 +5452,7 @@ D:A mighty warrior from the east, Lorgan hates everything that he cannot control
 
 N:393:Demonologist
 G:p:R
-I:120:280:20:50:10   # HP was 28d10 (FORCE_MAXHP)
+I:120:246:20:50:10   # HP was 28d10 (FORCE_MAXHP)
 W:36:2:0:700
 B:HIT:HURT:2d6
 B:HIT:HURT:2d6
@@ -5470,7 +5470,7 @@ D:A figure twisted by evil standing in robes of deepest crimson.
 
 N:394:Mummified troll
 G:z:w
-I:110:190:20:50:50   # HP was 19d10 (FORCE_MAXHP)
+I:110:167:20:50:50   # HP was 19d10 (FORCE_MAXHP)
 W:37:1:0:420
 B:HIT:HURT:2d6
 B:HIT:HURT:2d6
@@ -5502,7 +5502,7 @@ D:She's upset because you hurt her children.
 
 N:396:Will o' the wisp
 G:E:W
-I:130:200:30:150:0   # HP was 20d10 (FORCE_MAXHP)
+I:130:176:30:150:0   # HP was 20d10 (FORCE_MAXHP)
 W:38:4:0:500
 B:HIT:HURT:1d9
 B:HIT:HURT:1d9
@@ -5537,7 +5537,7 @@ D:It is a towering glowing form of molten hate.
 
 N:398:Black pudding
 G:j:D
-I:110:400:12:18:1   # HP was 40d10 (FORCE_MAXHP)
+I:110:352:12:18:1   # HP was 40d10 (FORCE_MAXHP)
 W:37:5:0:50
 B:TOUCH:ACID:1d10
 B:TOUCH:ACID:1d10
@@ -5552,7 +5552,7 @@ D:A lump of rotting black flesh that slurrrrrrrps across the dungeon floor.
 
 N:399:Killer iridescent beetle
 G:K:v
-I:110:375:16:60:30   # HP was 25d15 (FORCE_MAXHP)
+I:110:330:16:60:30   # HP was 25d15 (FORCE_MAXHP)
 W:37:2:0:850
 B:CLAW:ELEC:1d12
 B:CLAW:ELEC:1d12
@@ -5594,7 +5594,7 @@ D:A whirlpool of intense flame, charring the stones at your feet.
 
 N:402:Mature red dragon
 G:d:r
-I:110:500:20:80:70   # HP was 50d10 (FORCE_MAXHP)
+I:110:440:20:80:70   # HP was 50d10 (FORCE_MAXHP)
 W:36:1:0:1500
 B:CLAW:HURT:2d10
 B:CLAW:HURT:2d10
@@ -5611,7 +5611,7 @@ D:A large dragon, scales tinted deep red.
 
 N:403:Mature gold dragon
 G:d:y
-I:110:500:20:80:70   # HP was 50d10 (FORCE_MAXHP)
+I:110:440:20:80:70   # HP was 50d10 (FORCE_MAXHP)
 W:36:1:0:1500
 B:CLAW:HURT:2d10
 B:CLAW:HURT:2d10
@@ -5630,7 +5630,7 @@ D:A large dragon with scales of gleaming gold.
 
 N:404:Crystal drake
 G:d:u
-I:110:450:20:70:70   # HP was 45d10 (FORCE_MAXHP)
+I:110:396:20:70:70   # HP was 45d10 (FORCE_MAXHP)
 W:33:3:0:1350
 B:CLAW:HURT:2d4
 B:CLAW:HURT:2d4
@@ -5650,7 +5650,7 @@ D: eyes with spectrums of colour.
 
 N:405:Mature black dragon
 G:d:s
-I:110:500:20:80:70   # HP was 50d10 (FORCE_MAXHP)
+I:110:440:20:80:70   # HP was 50d10 (FORCE_MAXHP)
 W:36:1:0:1500
 B:CLAW:HURT:2d10
 B:CLAW:HURT:2d10
@@ -5669,7 +5669,7 @@ D:A large dragon, with scales of deepest black.
 
 N:406:Mature multi-hued dragon
 G:d:v
-I:110:600:20:80:70   # HP was 60d10 (FORCE_MAXHP)
+I:110:528:20:80:70   # HP was 60d10 (FORCE_MAXHP)
 W:38:1:0:1800
 B:CLAW:HURT:2d12
 B:CLAW:HURT:2d12
@@ -5686,7 +5686,7 @@ D:A large dragon, scales shimmering many colours.
 
 N:407:Death knight
 G:p:D
-I:120:600:20:100:10   # HP was 60d10 (FORCE_MAXHP)
+I:120:528:20:100:10   # HP was 60d10 (FORCE_MAXHP)
 W:38:1:0:1000
 B:HIT:HURT:6d6
 B:HIT:HURT:5d5
@@ -5753,7 +5753,7 @@ D: waking monsters from their slumber.
 
 N:411:Ancient blue dragon
 G:D:b
-I:120:720:20:90:80   # HP was 72d10 (FORCE_MAXHP)
+I:120:633:20:90:80   # HP was 72d10 (FORCE_MAXHP)
 W:40:1:0:2000
 B:CLAW:HURT:4d8
 B:CLAW:HURT:4d8
@@ -5770,7 +5770,7 @@ D:A huge draconic form.  Lightning crackles along its length.
 
 N:412:Ancient bronze dragon
 G:D:U
-I:120:720:20:90:80   # HP was 72d10 (FORCE_MAXHP)
+I:120:633:20:90:80   # HP was 72d10 (FORCE_MAXHP)
 W:40:1:0:2000
 B:CLAW:HURT:4d8
 B:CLAW:HURT:4d8
@@ -5787,7 +5787,7 @@ D:A huge draconic form enveloped in a cascade of colour.
 
 N:413:Beholder
 G:e:U
-I:120:1600:30:80:10   # HP was 16d100 (FORCE_MAXHP)
+I:120:1400:30:80:10   # HP was 16d100 (FORCE_MAXHP)
 W:40:3:0:6000
 B:GAZE:EXP_20:2d6
 B:GAZE:UN_POWER:2d6
@@ -5807,7 +5807,7 @@ D: huge mouth filled with sharp teeth.
 
 N:414:Emperor wight
 G:W:r
-I:120:380:20:40:10   # HP was 38d10 (FORCE_MAXHP)
+I:120:334:20:40:10   # HP was 38d10 (FORCE_MAXHP)
 W:38:2:0:1600
 B:HIT:HURT:1d12
 B:HIT:HURT:1d12
@@ -5827,7 +5827,7 @@ D: approaches.
 
 N:415:Seraph
 G:A:r
-I:120:1500:30:68:255   # HP was 150d10 (FORCE_MAXHP)
+I:120:1320:30:68:255   # HP was 150d10 (FORCE_MAXHP)
 W:45:6:0:5000
 B:HIT:HURT:4d6
 B:HIT:HURT:5d5
@@ -5867,7 +5867,7 @@ D:A towering fire elemental, Vargo burns everything beyond recognition.
 
 N:417:Black wraith
 G:W:D
-I:120:500:20:55:10   # HP was 50d10 (FORCE_MAXHP)
+I:120:440:20:55:10   # HP was 50d10 (FORCE_MAXHP)
 W:38:2:0:1700
 B:HIT:HURT:1d12
 B:HIT:HURT:1d12
@@ -5885,7 +5885,7 @@ D: shadow.  It reaches out at you.
 
 N:418:Erinyes
 G:U:u
-I:110:240:20:50:80   # HP was 24d10 (FORCE_MAXHP)
+I:110:210:20:50:80   # HP was 24d10 (FORCE_MAXHP)
 W:38:2:0:1000
 B:HIT:HURT:3d4
 B:TOUCH:LOSE_STR:1d5
@@ -5903,7 +5903,7 @@ D: true colours.
 
 N:419:Nether wraith
 G:W:G
-I:120:480:20:55:10   # HP was 48d10 (FORCE_MAXHP)
+I:120:420:20:55:10   # HP was 48d10 (FORCE_MAXHP)
 W:39:2:0:1700
 B:HIT:HURT:1d12
 B:HIT:HURT:1d12
@@ -5923,7 +5923,7 @@ D: a coldness saps your soul.
 
 N:420:Eldrak
 G:T:r
-I:110:750:20:80:50   # HP was 75d10 (FORCE_MAXHP)
+I:110:660:20:80:50   # HP was 75d10 (FORCE_MAXHP)
 W:37:3:0:800
 B:HIT:HURT:3d4
 B:HIT:HURT:3d4
@@ -5938,7 +5938,7 @@ D:A massive troll, larger and stronger than many men together.
 
 N:421:Ettin
 G:T:b
-I:110:1500:20:100:30   # HP was 15d100 (FORCE_MAXHP)
+I:110:1320:20:100:30   # HP was 15d100 (FORCE_MAXHP)
 W:38:3:0:1000
 B:HIT:HURT:3d6
 B:HIT:HURT:3d6
@@ -5995,7 +5995,7 @@ D: for prey, but each with its own deadly breath weapon.
 
 N:424:Ancient white dragon
 G:D:w
-I:120:720:20:90:80   # HP was 72d10 (FORCE_MAXHP)
+I:120:633:20:90:80   # HP was 72d10 (FORCE_MAXHP)
 W:40:1:0:2000
 B:CLAW:HURT:4d8
 B:CLAW:HURT:4d8
@@ -6012,7 +6012,7 @@ D:A huge draconic form.  Frost covers it from head to tail.
 
 N:425:Ancient green dragon
 G:D:g
-I:120:720:20:90:80   # HP was 72d10 (FORCE_MAXHP)
+I:120:633:20:90:80   # HP was 72d10 (FORCE_MAXHP)
 W:40:1:0:2000
 B:CLAW:HURT:4d8
 B:CLAW:HURT:4d8
@@ -6049,7 +6049,7 @@ D:A strange reptilian hybrid with seven heads dripping venom.
 
 N:427:Night mare
 G:q:G
-I:120:1500:30:85:0   # HP was 15d100 (FORCE_MAXHP)
+I:120:1320:30:85:0   # HP was 15d100 (FORCE_MAXHP)
 W:39:3:0:2900
 B:BITE:EXP_80:2d6
 B:HIT:HURT:3d8
@@ -6066,7 +6066,7 @@ D: than a hatred of all that lives.
 
 N:428:Vampire lord
 G:V:b
-I:120:1600:20:70:10   # HP was 16d100 (FORCE_MAXHP)
+I:120:1400:20:70:10   # HP was 16d100 (FORCE_MAXHP)
 W:42:1:0:1800
 B:HIT:HURT:3d6
 B:HIT:HURT:3d6
@@ -6086,7 +6086,7 @@ D:A foul wind chills your bones as this ghastly figure approaches.
 
 N:429:Ancient black dragon
 G:D:s
-I:120:1000:20:90:80   # HP was 10d100 (FORCE_MAXHP)
+I:120:880:20:90:80   # HP was 10d100 (FORCE_MAXHP)
 W:41:1:0:2500
 B:CLAW:HURT:4d9
 B:CLAW:HURT:4d9
@@ -6119,7 +6119,7 @@ D: disgusting form.
 
 N:431:Rotting quylthulg
 G:Q:u
-I:120:480:20:1:0   # HP was 48d10 (FORCE_MAXHP)
+I:120:420:20:1:0   # HP was 48d10 (FORCE_MAXHP)
 W:45:1:0:3000
 F:ANIMAL | EMPTY_MIND | INVISIBLE
 F:NEVER_BLOW | NEVER_MOVE
@@ -6134,7 +6134,7 @@ D:It is a pulsing flesh mound that reeks of death and putrefaction.
 
 N:432:Spirit troll
 G:G:G
-I:110:1000:20:90:5   # HP was 10d100 (FORCE_MAXHP)
+I:110:880:20:90:5   # HP was 10d100 (FORCE_MAXHP)
 W:40:3:0:900
 B:HIT:HURT:3d6
 B:HIT:HURT:3d6
@@ -6149,7 +6149,7 @@ D:A weird ghostly troll-like being from the ethereal plane.
 
 N:433:Lesser titan
 G:P:y
-I:120:2400:30:80:15   # HP was 24d100 (FORCE_MAXHP)
+I:120:2100:30:80:15   # HP was 24d100 (FORCE_MAXHP)
 W:56:3:0:6000
 B:HIT:CONFUSE:9d9
 B:HIT:CONFUSE:9d9
@@ -6187,7 +6187,7 @@ D:A strange reptilian hybrid with nine smouldering heads.
 
 N:435:Enchantress
 G:p:R
-I:130:520:20:60:10   # HP was 52d10 (FORCE_MAXHP)
+I:130:457:20:60:10   # HP was 52d10 (FORCE_MAXHP)
 W:40:4:0:2100
 B:HIT:HURT:2d6
 B:HIT:HURT:2d6
@@ -6207,7 +6207,7 @@ D: rarely fights without.
 
 N:436:Knight Templar
 G:p:w
-I:120:1200:20:60:10   # HP was 60d20 (FORCE_MAXHP)
+I:120:1056:20:60:10   # HP was 60d20 (FORCE_MAXHP)
 W:44:2:0:2000
 B:HIT:HURT:5d5
 B:HIT:HURT:5d5
@@ -6230,7 +6230,7 @@ D: each other.
 
 N:437:Sorcerer
 G:p:R
-I:130:520:20:60:10   # HP was 52d10 (FORCE_MAXHP)
+I:130:457:20:60:10   # HP was 52d10 (FORCE_MAXHP)
 W:40:2:0:2150
 B:HIT:HURT:2d8
 B:HIT:HURT:2d8
@@ -6249,7 +6249,7 @@ D: are ablur with spell casting.
 
 N:438:Xaren
 G:X:s
-I:120:320:20:80:10   # HP was 32d10 (FORCE_MAXHP)
+I:120:280:20:80:10   # HP was 32d10 (FORCE_MAXHP)
 W:40:1:0:1200
 B:HIT:HURT:3d4
 B:HIT:HURT:3d4
@@ -6325,7 +6325,7 @@ D: mouth.
 
 N:443:Death drake
 G:D:G
-I:120:2100:25:100:80   # HP was 21d100 (FORCE_MAXHP)
+I:120:1848:25:100:80   # HP was 21d100 (FORCE_MAXHP)
 W:45:2:0:10000
 B:CLAW:HURT:4d10
 B:CLAW:HURT:4d10
@@ -6345,7 +6345,7 @@ D: form but you sense its evil.
 
 N:444:Ancient red dragon
 G:D:r
-I:120:1000:20:90:80   # HP was 10d100 (FORCE_MAXHP)
+I:120:880:20:90:80   # HP was 10d100 (FORCE_MAXHP)
 W:41:1:0:2500
 B:CLAW:HURT:4d9
 B:CLAW:HURT:4d9
@@ -6363,7 +6363,7 @@ D: heat surrounding it makes you gasp for breath.
 
 N:445:Ancient gold dragon
 G:D:y
-I:120:1000:20:90:80   # HP was 10d100 (FORCE_MAXHP)
+I:120:880:20:90:80   # HP was 10d100 (FORCE_MAXHP)
 W:41:1:0:2500
 B:CLAW:HURT:4d9
 B:CLAW:HURT:4d9
@@ -6383,7 +6383,7 @@ D: you.
 
 N:446:Great crystal drake
 G:D:u
-I:120:2100:25:100:80   # HP was 21d100 (FORCE_MAXHP)
+I:120:1848:25:100:80   # HP was 21d100 (FORCE_MAXHP)
 W:45:2:0:10000
 B:CLAW:HURT:4d10
 B:CLAW:HURT:4d10
@@ -6403,7 +6403,7 @@ D: razor sharp.  Strange colours ripple through it as it moves in the light.
 
 N:447:Vrock
 G:U:s
-I:110:400:20:50:80   # HP was 40d10 (FORCE_MAXHP)
+I:110:352:20:50:80   # HP was 40d10 (FORCE_MAXHP)
 W:40:2:0:2000
 B:HIT:HURT:3d4
 B:CRUSH:HURT:8d12
@@ -6419,7 +6419,7 @@ D:It is a demon with a long neck and raking claws.
 
 N:448:Death quasit
 G:u:D
-I:130:440:20:80:0   # HP was 44d10 (FORCE_MAXHP)
+I:130:387:20:80:0   # HP was 44d10 (FORCE_MAXHP)
 W:40:3:0:1000
 B:BITE:LOSE_DEX:3d6
 B:CLAW:HURT:3d3
@@ -6461,7 +6461,7 @@ D: of the rings.
 
 N:450:Dark elven sorcerer
 G:h:R
-I:130:800:20:70:10   # HP was 80d10 (FORCE_MAXHP)
+I:130:700:20:70:10   # HP was 80d10 (FORCE_MAXHP)
 W:41:2:0:3000
 B:HIT:HURT:2d8
 B:HIT:HURT:2d8
@@ -6480,7 +6480,7 @@ D: slender frame.
 
 N:451:Master lich
 G:L:r
-I:120:1800:20:80:50   # HP was 18d100 (FORCE_MAXHP)
+I:120:1584:20:80:50   # HP was 18d100 (FORCE_MAXHP)
 W:41:2:0:10000
 B:TOUCH:EXP_80
 B:TOUCH:UN_POWER
@@ -6500,7 +6500,7 @@ D: fingers.
 
 N:452:Hezrou
 G:U:g
-I:110:520:20:40:80   # HP was 52d10 (FORCE_MAXHP)
+I:110:457:20:40:80   # HP was 52d10 (FORCE_MAXHP)
 W:41:3:0:2500
 B:HIT:HURT:3d4
 B:HIT:HURT:3d4
@@ -6586,7 +6586,7 @@ D: fewer still live to tell the tale after attacking one.
 
 N:456:Glabrezu
 G:U:U
-I:110:700:20:40:80   # HP was 70d10 (FORCE_MAXHP)
+I:110:616:20:40:80   # HP was 70d10 (FORCE_MAXHP)
 W:43:2:0:3000
 B:HIT:HURT:3d4
 B:HIT:HURT:3d4
@@ -6626,7 +6626,7 @@ D: family, and he never recovered.
 
 N:458:Nalfeshnee
 G:U:r
-I:110:900:20:50:80   # HP was 90d10 (FORCE_MAXHP)
+I:110:792:20:50:80   # HP was 90d10 (FORCE_MAXHP)
 W:45:2:0:5000
 B:HIT:HURT:3d4
 B:HIT:HURT:3d4
@@ -6645,7 +6645,7 @@ D: length.
 
 N:459:Undead beholder
 G:e:u
-I:120:2700:30:100:10   # HP was 27d100 (FORCE_MAXHP)
+I:120:2376:30:100:10   # HP was 27d100 (FORCE_MAXHP)
 W:45:3:0:8000
 B:GAZE:EXP_40:3d6
 B:GAZE:UN_POWER:3d6
@@ -6699,7 +6699,7 @@ D:A massive elephantine form with eyes twisted by madness.
 
 N:462:Ancient multi-hued dragon
 G:D:v
-I:120:2100:25:100:80   # HP was 21d100 (FORCE_MAXHP)
+I:120:1848:25:100:80   # HP was 21d100 (FORCE_MAXHP)
 W:43:1:0:13000
 B:CLAW:HURT:4d10
 B:CLAW:HURT:4d10
@@ -6719,7 +6719,7 @@ D: see another.
 
 N:463:Ethereal dragon
 G:D:o
-I:120:2100:25:100:80   # HP was 21d100 (FORCE_MAXHP)
+I:120:1848:25:100:80   # HP was 21d100 (FORCE_MAXHP)
 W:45:2:0:10000
 B:CLAW:HURT:4d10
 B:CLAW:HURT:4d10
@@ -6762,7 +6762,7 @@ D: power.
 
 N:465:Marilith
 G:U:y
-I:120:1400:20:75:80   # HP was 20d70 (FORCE_MAXHP)
+I:120:1232:20:75:80   # HP was 20d70 (FORCE_MAXHP)
 W:47:2:0:7000
 B:HIT:HURT:4d6
 B:HIT:HURT:4d6
@@ -6802,7 +6802,7 @@ D: reduced to rubble as Quaker advances.
 
 N:467:Lesser Balrog
 G:U:v
-I:120:2000:20:50:80   # HP was 20d100 (FORCE_MAXHP)
+I:120:1760:20:50:80   # HP was 20d100 (FORCE_MAXHP)
 W:49:2:0:10000
 B:HIT:FIRE:4d12
 B:HIT:FIRE:4d12
@@ -6862,7 +6862,7 @@ D:A strange reptilian hybrid with eleven smouldering heads.
 
 N:470:Patriarch
 G:p:G
-I:120:520:20:60:10   # HP was 52d10 (FORCE_MAXHP)
+I:120:457:20:60:10   # HP was 52d10 (FORCE_MAXHP)
 W:40:2:0:1800
 B:HIT:HURT:3d4
 B:HIT:HURT:3d4
@@ -6883,7 +6883,7 @@ D: frame.
 
 N:471:Dreadmaster
 G:G:y
-I:120:1200:20:100:10   # HP was 12d100 (FORCE_MAXHP)
+I:120:1056:20:100:10   # HP was 12d100 (FORCE_MAXHP)
 W:44:2:0:8000
 B:HIT:HURT:6d6
 B:HIT:HURT:6d6
@@ -6903,7 +6903,7 @@ D: black, crush rock and flesh with ease.
 
 N:472:Drolem
 G:g:g
-I:120:2500:25:130:30   # HP was 25d100 (FORCE_MAXHP)
+I:120:2200:25:130:30   # HP was 25d100 (FORCE_MAXHP)
 W:44:3:0:12000
 B:CLAW:HURT:3d10
 B:CLAW:HURT:3d10
@@ -6990,7 +6990,7 @@ D: dragon still surviving into the Third Age.
 
 N:476:Dracolich
 G:D:G
-I:120:3500:25:120:80   # HP was 35d100 (FORCE_MAXHP)
+I:120:3080:25:120:80   # HP was 35d100 (FORCE_MAXHP)
 W:55:2:0:18000
 B:CLAW:HURT:4d12
 B:CLAW:HURT:4d12
@@ -7011,7 +7011,7 @@ D: hunger.
 
 N:477:Greater titan
 G:P:o
-I:120:3800:30:125:15   # HP was 38d100 (FORCE_MAXHP)
+I:120:3344:30:125:15   # HP was 38d100 (FORCE_MAXHP)
 W:66:3:0:23500
 B:HIT:CONFUSE:12d12
 B:HIT:CONFUSE:12d12
@@ -7032,7 +7032,7 @@ D: defiance.
 
 N:478:Dracolisk
 G:D:R
-I:120:3500:25:120:80   # HP was 35d100 (FORCE_MAXHP)
+I:120:3080:25:120:80   # HP was 35d100 (FORCE_MAXHP)
 W:55:2:0:14000
 B:BITE:HURT:4d12
 B:BITE:HURT:4d12
@@ -7115,7 +7115,7 @@ D: definition of dragonfire.
 
 N:482:Master mystic
 G:p:o
-I:130:1100:30:60:5   # HP was 11d100 (FORCE_MAXHP)
+I:130:968:30:60:5   # HP was 11d100 (FORCE_MAXHP)
 W:50:3:0:6000
 B:KICK:HURT:10d2
 B:KICK:HURT:10d2
@@ -7236,7 +7236,7 @@ D: trouble.
 
 N:488:Demonic quylthulg
 G:Q:r
-I:120:480:20:1:0   # HP was 48d10 (FORCE_MAXHP)
+I:120:420:20:1:0   # HP was 48d10 (FORCE_MAXHP)
 W:45:1:0:3000
 F:ANIMAL | EMPTY_MIND | INVISIBLE
 F:NEVER_BLOW | NEVER_MOVE
@@ -7252,7 +7252,7 @@ D: itself seems to cry out against it.
 
 N:489:Great Storm Wyrm
 G:D:b
-I:120:3500:30:150:80   # HP was 35d100 (FORCE_MAXHP)
+I:120:3080:30:150:80   # HP was 35d100 (FORCE_MAXHP)
 W:63:2:0:20000
 B:CLAW:HURT:4d12
 B:CLAW:HURT:4d12
@@ -7337,7 +7337,7 @@ D: an unlife of everlasting torment.
 
 N:493:Grand master mystic
 G:p:o
-I:130:2200:30:80:5   # HP was 22d100 (FORCE_MAXHP)
+I:130:1936:30:80:5   # HP was 22d100 (FORCE_MAXHP)
 W:57:3:0:15000
 B:KICK:HURT:20d2
 B:KICK:HURT:10d2
@@ -7400,7 +7400,7 @@ D: internal organs best left to the imagination.
 
 N:496:Great Ice Wyrm
 G:D:w
-I:120:3500:30:150:80   # HP was 35d100 (FORCE_MAXHP)
+I:120:3080:30:150:80   # HP was 35d100 (FORCE_MAXHP)
 W:63:2:0:20000
 B:CLAW:HURT:4d12
 B:CLAW:HURT:4d12
@@ -7468,7 +7468,7 @@ D: spine as you face it.
 
 N:499:Hand druj
 G:s:y
-I:130:600:20:110:10   # HP was 60d10 (FORCE_MAXHP)
+I:130:528:20:110:10   # HP was 60d10 (FORCE_MAXHP)
 W:57:2:0:12000
 F:UNDEAD | EVIL | COLD_BLOOD | SMART
 F:NEVER_BLOW | NEVER_MOVE
@@ -7483,7 +7483,7 @@ D:A skeletal hand floating in the air, motionless except for its flexing fingers
 
 N:500:Eye druj
 G:s:r
-I:130:1000:20:90:10   # HP was 10d100 (FORCE_MAXHP)
+I:130:880:20:90:10   # HP was 10d100 (FORCE_MAXHP)
 W:58:2:0:15000
 F:UNDEAD | EVIL | COLD_BLOOD | SMART
 F:NEVER_BLOW | NEVER_MOVE
@@ -7499,7 +7499,7 @@ D: harmless.
 
 N:501:Skull druj
 G:s:o
-I:130:1400:20:120:10   # HP was 14d100 (FORCE_MAXHP)
+I:130:1232:20:120:10   # HP was 14d100 (FORCE_MAXHP)
 W:59:2:0:18000
 F:UNDEAD | EVIL | COLD_BLOOD | SMART
 F:NEVER_BLOW | NEVER_MOVE
@@ -7599,7 +7599,7 @@ D: give away her true form.
 
 N:506:Great Hell Wyrm
 G:D:r
-I:120:3800:30:150:80   # HP was 38d100 (FORCE_MAXHP)
+I:120:3344:30:150:80   # HP was 38d100 (FORCE_MAXHP)
 W:67:2:0:23000
 B:CLAW:HURT:4d12
 B:CLAW:HURT:4d12
@@ -7621,7 +7621,7 @@ D: realize how insignificant you are.
 
 N:507:Draconic quylthulg
 G:Q:g
-I:120:480:20:1:0   # HP was 48d10 (FORCE_MAXHP)
+I:120:420:20:1:0   # HP was 48d10 (FORCE_MAXHP)
 W:45:1:0:3000
 F:ANIMAL | EMPTY_MIND | INVISIBLE
 F:NEVER_BLOW | NEVER_MOVE
@@ -7798,7 +7798,7 @@ D: forever for the One Ring, to become a mighty Sorcerer-King of the world.
 
 N:515:Dreadlord
 G:G:r
-I:120:3000:20:150:10   # HP was 30d100 (FORCE_MAXHP)
+I:120:2640:20:150:10   # HP was 30d100 (FORCE_MAXHP)
 W:62:2:0:20000
 B:HIT:EXP_40:6d6
 B:HIT:EXP_40:6d6
@@ -7842,7 +7842,7 @@ D:Master of all things feline, the Cat Lord moves with unsurpassed stealth.
 
 N:517:Jabberwock
 G:H:v
-I:130:3200:35:125:255   # HP was 32d100 (FORCE_MAXHP)
+I:130:2816:35:125:255   # HP was 32d100 (FORCE_MAXHP)
 W:68:3:0:19000
 B:CLAW:HURT:10d10
 B:CLAW:HURT:10d10
@@ -7882,7 +7882,7 @@ D: relish for combat.  You suspect all may not be as it seems.
 
 N:519:Great Wyrm of Chaos
 G:D:v
-I:120:4500:40:170:100   # HP was 45d100 (FORCE_MAXHP)
+I:120:3960:40:170:100   # HP was 45d100 (FORCE_MAXHP)
 W:75:2:0:29000
 B:CLAW:HURT:5d12
 B:CLAW:HURT:5d12
@@ -7903,7 +7903,7 @@ D: Its very existence distorts the universe around it.
 
 N:520:Great Wyrm of Law
 G:D:B
-I:120:4500:40:170:100   # HP was 45d100 (FORCE_MAXHP)
+I:120:3960:40:170:100   # HP was 45d100 (FORCE_MAXHP)
 W:75:2:0:29000
 B:CLAW:HURT:5d12
 B:CLAW:HURT:5d12
@@ -7926,7 +7926,7 @@ D: crushed underfoot.
 
 N:521:Great Wyrm of Balance
 G:D:v
-I:120:5000:40:170:100   # HP was 50d100 (FORCE_MAXHP)
+I:120:4400:40:170:100   # HP was 50d100 (FORCE_MAXHP)
 W:79:2:0:31000
 B:CLAW:HURT:5d12
 B:CLAW:HURT:5d12
@@ -7974,7 +7974,7 @@ D: in his path to your soul!
 
 N:523:Great Wyrm of Many Colours
 G:D:v
-I:120:5000:40:170:100   # HP was 50d100 (FORCE_MAXHP)
+I:120:4400:40:170:100   # HP was 50d100 (FORCE_MAXHP)
 W:79:2:0:31000
 B:CLAW:HURT:5d12
 B:CLAW:HURT:5d12
@@ -7995,7 +7995,7 @@ D:A gigantic dragon whose scales shimmer in myriad hues.
 
 N:524:Black reaver
 G:L:D
-I:120:4500:20:170:50   # HP was 45d100 (FORCE_MAXHP)
+I:120:3960:20:170:50   # HP was 45d100 (FORCE_MAXHP)
 W:74:3:0:23000
 B:HIT:UN_BONUS:6d8
 B:HIT:UN_BONUS:6d8
@@ -8017,7 +8017,7 @@ D: very rock of the dungeon cannot prevent it reaching you.
 
 N:525:Greater demonic quylthulg
 G:Q:R
-I:120:1500:20:1:0   # HP was 15d100 (FORCE_MAXHP)
+I:120:1320:20:1:0   # HP was 15d100 (FORCE_MAXHP)
 W:71:2:0:10500
 F:ANIMAL | EMPTY_MIND | INVISIBLE
 F:NEVER_BLOW | NEVER_MOVE
@@ -8030,7 +8030,7 @@ D:A massive pulsating mound of flesh, glowing with a hellish light.
 
 N:526:Greater draconic quylthulg
 G:Q:G
-I:120:1500:20:1:0   # HP was 15d100 (FORCE_MAXHP)
+I:120:1320:20:1:0   # HP was 15d100 (FORCE_MAXHP)
 W:71:2:0:10500
 F:ANIMAL | EMPTY_MIND | INVISIBLE
 F:NEVER_BLOW | NEVER_MOVE
@@ -8043,7 +8043,7 @@ D:A massive mound of scaled flesh, throbbing and pulsating with multi-hued light
 
 N:527:Greater rotting quylthulg
 G:Q:U
-I:120:1500:20:1:0   # HP was 15d100 (FORCE_MAXHP)
+I:120:1320:20:1:0   # HP was 15d100 (FORCE_MAXHP)
 W:71:2:0:10500
 F:ANIMAL | EMPTY_MIND | INVISIBLE
 F:NEVER_BLOW | NEVER_MOVE
@@ -8174,7 +8174,7 @@ D: unshakably that he is unbeatable and laughs as he weaves his awesome spells.
 
 N:533:Master quylthulg
 G:Q:B
-I:120:3000:30:1:0   # HP was 30d100 (FORCE_MAXHP)
+I:120:2640:30:1:0   # HP was 30d100 (FORCE_MAXHP)
 W:76:2:0:15000
 F:ANIMAL | EMPTY_MIND | INVISIBLE
 F:NEVER_BLOW | NEVER_MOVE
@@ -8252,7 +8252,7 @@ D: as he decides your fate.
 
 N:537:Hellhound
 G:C:r
-I:120:400:25:80:30   # HP was 40d10 (FORCE_MAXHP)
+I:120:352:25:80:30   # HP was 40d10 (FORCE_MAXHP)
 W:78:2:0:600
 B:BITE:FIRE:3d12
 B:BITE:FIRE:3d12
@@ -8628,7 +8628,7 @@ D: hand...
 
 N:557:Demilich
 G:L:U
-I:120:3200:20:100:50   # HP was 32d100 (FORCE_MAXHP)
+I:120:2816:20:100:50   # HP was 32d100 (FORCE_MAXHP)
 W:54:2:0:12500
 B:TOUCH:EXP_80
 B:TOUCH:UN_POWER
@@ -8649,7 +8649,7 @@ D:A lich who is partially immaterial, on its way to a new, ethereal form.
 
 N:558:Archlich
 G:L:B
-I:120:4000:20:120:50   # HP was 40d100 (FORCE_MAXHP)
+I:120:3520:20:120:50   # HP was 40d100 (FORCE_MAXHP)
 W:64:2:0:20000
 B:TOUCH:EXP_80
 B:TOUCH:UN_POWER
@@ -8792,7 +8792,7 @@ D: and still less when in bear's shape, as he is now.
 
 N:567:Barbazu
 G:U:G
-I:120:800:25:60:80   # HP was 80d10 (FORCE_MAXHP)
+I:120:700:25:60:80   # HP was 80d10 (FORCE_MAXHP)
 W:55:4:0:3000
 B:HIT:HURT:4d10
 B:HIT:HURT:4d10
@@ -8814,7 +8814,7 @@ D: capable of a terrifying berserk fury.
 
 N:568:Bile Demon
 G:U:R
-I:120:2800:40:90:80   # HP was 28d100 (FORCE_MAXHP)
+I:120:2464:40:90:80   # HP was 28d100 (FORCE_MAXHP)
 W:61:2:0:12000
 B:HIT:HURT:8d8
 B:HIT:HURT:8d8
@@ -8837,7 +8837,7 @@ D: experienced.
 
 N:569:Osyluth
 G:U:W
-I:130:2600:20:75:80   # HP was 26d100 (FORCE_MAXHP)
+I:130:2288:20:75:80   # HP was 26d100 (FORCE_MAXHP)
 W:65:2:0:13000
 B:HIT:LOSE_CHR:6d6
 B:HIT:LOSE_CHR:6d6
@@ -8859,7 +8859,7 @@ D: decay and rot.  They are despised even in the hells.
 
 N:570:Gelugon
 G:U:w
-I:130:3500:20:100:80   # HP was 35d100 (FORCE_MAXHP)
+I:130:3080:20:100:80   # HP was 35d100 (FORCE_MAXHP)
 W:69:3:0:14000
 B:CLAW:COLD:6d8
 B:CLAW:COLD:6d8
@@ -8883,7 +8883,7 @@ D: multi-faceted eyes.  Its tail is covered with razor-sharp spikes.
 
 N:571:Horned Reaper
 G:U:B
-I:130:3800:40:120:80   # HP was 38d100 (FORCE_MAXHP)
+I:130:3344:40:120:80   # HP was 38d100 (FORCE_MAXHP)
 W:72:3:0:18000
 B:HIT:HURT:11d11
 B:HIT:HURT:11d11
@@ -8906,7 +8906,7 @@ D: minions it has just summoned.
 
 N:572:Pit Fiend
 G:U:o
-I:130:4000:30:120:75   # HP was 40d100 (FORCE_MAXHP)
+I:130:3520:30:120:75   # HP was 40d100 (FORCE_MAXHP)
 W:77:3:0:22000
 B:CLAW:FIRE:6d10
 B:CLAW:FIRE:6d10
@@ -8930,7 +8930,7 @@ D: demon armies.
 
 N:573:Greater Balrog
 G:U:v
-I:130:5000:40:140:80   # HP was 50d100 (FORCE_MAXHP)
+I:130:4400:40:140:80   # HP was 50d100 (FORCE_MAXHP)
 W:79:3:0:25000
 B:HIT:FIRE:8d12
 B:HIT:FIRE:8d12
@@ -8953,7 +8953,7 @@ D: servants.  With its flaming whip and sword it seeks to destroy you.
 
 N:574:Baby bronze dragon
 G:d:U
-I:110:100:20:30:70   # HP was 10d10 (FORCE_MAXHP)
+I:110:88:20:30:70   # HP was 10d10 (FORCE_MAXHP)
 W:9:2:0:35
 B:CLAW:HURT:1d3
 B:CLAW:HURT:1d3
@@ -8970,7 +8970,7 @@ D: scales a dull bronze.
 
 N:575:Baby gold dragon
 G:d:y
-I:110:100:20:30:70   # HP was 10d10 (FORCE_MAXHP)
+I:110:88:20:30:70   # HP was 10d10 (FORCE_MAXHP)
 W:9:2:0:35
 B:CLAW:HURT:1d3
 B:CLAW:HURT:1d3
@@ -8988,7 +8988,7 @@ D: scales a pale gold.
 
 N:576:Great Swamp Wyrm
 G:D:g
-I:120:3500:30:150:80   # HP was 35d100 (FORCE_MAXHP)
+I:120:3080:30:150:80   # HP was 35d100 (FORCE_MAXHP)
 W:63:2:0:20000
 B:CLAW:HURT:4d12
 B:CLAW:HURT:4d12
@@ -9008,7 +9008,7 @@ D: fight it, it sees no reason to do likewise.
 
 N:577:Great Wyrm of Perplexity
 G:D:U
-I:120:3500:30:150:80   # HP was 35d100 (FORCE_MAXHP)
+I:120:3080:30:150:80   # HP was 35d100 (FORCE_MAXHP)
 W:63:2:0:20000
 B:CLAW:HURT:4d12
 B:CLAW:HURT:4d12
@@ -9030,7 +9030,7 @@ D: the job of fighting for your life.
 
 N:578:Great Bile Wyrm
 G:D:s
-I:120:3500:30:150:80   # HP was 35d100 (FORCE_MAXHP)
+I:120:3080:30:150:80   # HP was 35d100 (FORCE_MAXHP)
 W:67:2:0:23000
 B:CLAW:HURT:4d12
 B:CLAW:HURT:4d12
@@ -9050,7 +9050,7 @@ D: stones of the dungeon - what could it do to you?
 
 N:579:Great Wyrm of Thunder
 G:D:y
-I:120:3500:30:150:80   # HP was 35d100 (FORCE_MAXHP)
+I:120:3080:30:150:80   # HP was 35d100 (FORCE_MAXHP)
 W:67:2:0:23000
 B:CLAW:HURT:4d12
 B:CLAW:HURT:4d12
@@ -9103,7 +9103,7 @@ D: rivalry even between the various gods of Good, so he is your enemy.
 
 N:582:Ranger Chieftain
 G:p:W
-I:120:1000:20:60:10   # HP was 50d20 (FORCE_MAXHP)
+I:120:880:20:60:10   # HP was 50d20 (FORCE_MAXHP)
 W:41:2:0:1600
 B:HIT:HURT:5d5
 B:HIT:HURT:5d5
@@ -9125,7 +9125,7 @@ D: magically enhanced seeing to spot him.
 
 N:583:Berserker
 G:p:u
-I:120:1500:20:80:10   # HP was 60d25 (FORCE_MAXHP)
+I:120:1320:20:80:10   # HP was 60d25 (FORCE_MAXHP)
 W:45:2:0:2500
 B:HIT:HURT:6d6
 B:HIT:HURT:6d6
@@ -9144,7 +9144,7 @@ D: battle-cry strikes terror into his foes.
 
 N:584:Cyclops
 G:P:u
-I:120:1200:20:120:20   # HP was 60d20 (FORCE_MAXHP)
+I:120:1050:20:120:20   # HP was 60d20 (FORCE_MAXHP)
 W:45:2:0:1500
 B:HIT:HURT:9d9
 B:HIT:HURT:9d9
@@ -9241,7 +9241,7 @@ D: except approach it in horrified fascination.
 
 N:589:Spectator
 G:e:B
-I:110:195:30:1:5   # HP was 15d13 (FORCE_MAXHP)
+I:110:171:30:1:5   # HP was 15d13 (FORCE_MAXHP)
 W:28:2:0:150
 B:GAZE:PARALYZE:1d4
 B:GAZE:CONFUSE:1d4
@@ -9258,7 +9258,7 @@ D: its body.
 
 N:590:Gauth
 G:e:D
-I:110:300:20:50:20   # HP was 15d20 (FORCE_MAXHP)
+I:110:264:20:50:20   # HP was 15d20 (FORCE_MAXHP)
 W:36:2:0:600
 B:GAZE:UN_BONUS:5d2
 B:GAZE:UN_BONUS:5d2
@@ -9275,7 +9275,7 @@ D:Another lesser relative of the beholder, this six-eyed creature feeds on magic
 
 N:591:Beholder hive-mother
 G:e:b
-I:120:3500:30:80:10   # HP was 35d100 (FORCE_MAXHP)
+I:120:3080:30:80:10   # HP was 35d100 (FORCE_MAXHP)
 W:67:3:0:17000
 B:BITE:EXP_80:6d6
 B:GAZE:PARALYZE:5d5
@@ -9368,7 +9368,7 @@ D: greatest servants answer to his call.
 
 N:596:Elder vampire
 G:V:r
-I:120:3000:20:90:10   # HP was 30d100 (FORCE_MAXHP)
+I:120:2640:20:90:10   # HP was 30d100 (FORCE_MAXHP)
 W:54:3:0:4500
 B:HIT:HURT:4d6
 B:HIT:HURT:4d6
@@ -9478,7 +9478,7 @@ D:A large basilisk, whose shape resembles that of a great wyrm.
 
 N:602:Aranea
 G:S:R
-I:110:300:20:45:50   # HP was 30d10 (FORCE_MAXHP)
+I:110:264:20:45:50   # HP was 30d10 (FORCE_MAXHP)
 W:38:3:0:250
 B:CLAW:POISON:2d8
 B:CLAW:POISON:2d8
@@ -9496,7 +9496,7 @@ D:An intelligent arachnid whose hairy legs weave spells in the air.
 
 N:603:Elder aranea
 G:S:r
-I:120:1200:20:65:50   # HP was 60d20 (FORCE_MAXHP)
+I:120:1050:20:65:50   # HP was 60d20 (FORCE_MAXHP)
 W:48:5:0:2500
 B:CLAW:POISON:5d8
 B:CLAW:POISON:5d8
@@ -9566,7 +9566,7 @@ D: flickering bright red flames.
 
 N:607:Wolf chieftain
 G:C:D
-I:120:484:20:20:5   # HP was 22d22 (FORCE_MAXHP)
+I:120:422:20:20:5   # HP was 22d22 (FORCE_MAXHP)
 W:26:5:0:120
 B:CLAW:HURT:2d6
 B:CLAW:HURT:2d6
@@ -9584,7 +9584,7 @@ D: howls strike fear into even the boldest heart.
 
 N:608:Bone golem
 G:g:D
-I:120:3500:20:170:50   # HP was 35d100 (FORCE_MAXHP)
+I:120:3080:20:170:50   # HP was 35d100 (FORCE_MAXHP)
 W:68:3:0:23000
 B:HIT:UN_BONUS:8d8
 B:HIT:UN_BONUS:8d8
@@ -9604,7 +9604,7 @@ D: victims.
 
 N:609:Bronze golem
 G:g:o
-I:120:4000:20:170:50   # HP was 40d100 (FORCE_MAXHP)
+I:120:3520:20:170:50   # HP was 40d100 (FORCE_MAXHP)
 W:75:3:0:26000
 B:HIT:HURT:10d10
 B:HIT:HURT:10d10
@@ -9664,7 +9664,7 @@ D: condemned Numenor to oblivion.
 
 N:612:Troll chieftain
 G:T:v
-I:120:900:30:50:20   # HP was 30d30 (FORCE_MAXHP)
+I:120:792:30:50:20   # HP was 30d30 (FORCE_MAXHP)
 W:40:5:0:3000
 B:HIT:HURT:2d12
 B:HIT:HURT:2d12
@@ -9714,7 +9714,7 @@ D: enchantments from everything it touches.
 
 N:615:Greater mummy
 G:z:y
-I:110:340:30:68:255   # HP was 34d10 (FORCE_MAXHP)
+I:110:299:30:68:255   # HP was 34d10 (FORCE_MAXHP)
 W:36:5:0:800
 B:CLAW:LOSE_CON:3d6
 B:CLAW:LOSE_CON:3d6
