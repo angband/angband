@@ -1414,13 +1414,14 @@ static void dungeon(void)
 	/* Refresh */
 	Term_fresh();
 
-
 	/* Handle delayed death */
 	if (p_ptr->is_dead) return;
 
-
 	/* Announce (or repeat) the feeling */
 	if (p_ptr->depth) do_cmd_feeling();
+
+	/* Player gets to go first */
+	p_ptr->energy = 100;
 
 
 	/*** Process this dungeon level ***/
