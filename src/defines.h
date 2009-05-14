@@ -512,6 +512,9 @@ enum
 #define SUMMON_WRAITH       31
 #define SUMMON_UNIQUE       32
 #define SUMMON_KIN          33
+/* xxx */
+#define SUMMON_MONSTER      41
+#define SUMMON_MONSTERS     42
 
 
 /*

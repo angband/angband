@@ -1935,7 +1935,7 @@ bool make_attack_spell(int m_idx)
 			else msg_format("%^s magically summons help!", m_name);
 			for (k = 0; k < 1; k++)
 			{
-				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, 0);
+				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_MONSTER);
 			}
 			if (blind && count)
 			{
@@ -1952,7 +1952,7 @@ bool make_attack_spell(int m_idx)
 			else msg_format("%^s magically summons monsters!", m_name);
 			for (k = 0; k < 8; k++)
 			{
-				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, 0);
+				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_MONSTERS);
 			}
 			if (blind && count)
 			{

@@ -2062,15 +2062,8 @@ static bool summon_specific_okay(int r_idx)
 
 	bool okay = FALSE;
 
-
 	/* Hack -- no specific type specified */
-	if (!summon_specific_type) 
-	{
-		okay = (!(r_ptr->flags[0] & (RF0_FRIEND)) &&
-			!(r_ptr->flags[0] & (RF0_FRIENDS)) &&
-			!(r_ptr->flags[0] & (RF0_ESCORT)));
-		return (okay);
-	}
+	if (!summon_specific_type) return (TRUE);
 
 	/* Check our requirements */
 	switch (summon_specific_type)
@@ -2109,7 +2102,8 @@ static bool summon_specific_okay(int r_idx)
 			        !(r_ptr->flags[0] & (RF0_UNIQUE)) &&
 				!(r_ptr->flags[0] & (RF0_FRIEND)) &&
 				!(r_ptr->flags[0] & (RF0_FRIENDS)) &&
-				!(r_ptr->flags[0] & (RF0_ESCORT)));
+				!(r_ptr->flags[0] & (RF0_ESCORT)) &&
+				!(r_ptr->flags[0] & (RF0_ESCORTS)));
 			break;
 		}
 
@@ -2119,7 +2113,8 @@ static bool summon_specific_okay(int r_idx)
 			        !(r_ptr->flags[0] & (RF0_UNIQUE)) &&
 				!(r_ptr->flags[0] & (RF0_FRIEND)) &&
 				!(r_ptr->flags[0] & (RF0_FRIENDS)) &&
-				!(r_ptr->flags[0] & (RF0_ESCORT)));
+				!(r_ptr->flags[0] & (RF0_ESCORT)) &&
+				!(r_ptr->flags[0] & (RF0_ESCORTS)));
 			break;
 		}
 
@@ -2129,7 +2124,8 @@ static bool summon_specific_okay(int r_idx)
 			        !(r_ptr->flags[0] & (RF0_UNIQUE)) &&
 				!(r_ptr->flags[0] & (RF0_FRIEND)) &&
 				!(r_ptr->flags[0] & (RF0_FRIENDS)) &&
-				!(r_ptr->flags[0] & (RF0_ESCORT)));
+				!(r_ptr->flags[0] & (RF0_ESCORT)) &&
+				!(r_ptr->flags[0] & (RF0_ESCORTS)));
 			break;
 		}
 
@@ -2139,7 +2135,8 @@ static bool summon_specific_okay(int r_idx)
 			        !(r_ptr->flags[0] & (RF0_UNIQUE)) &&
 				!(r_ptr->flags[0] & (RF0_FRIEND)) &&
 				!(r_ptr->flags[0] & (RF0_FRIENDS)) &&
-				!(r_ptr->flags[0] & (RF0_ESCORT)));
+				!(r_ptr->flags[0] & (RF0_ESCORT)) &&
+				!(r_ptr->flags[0] & (RF0_ESCORTS)));
 			break;
 		}
 
@@ -2180,6 +2177,22 @@ static bool summon_specific_okay(int r_idx)
 		case SUMMON_UNIQUE:
 		{
 			okay = (r_ptr->flags[0] & (RF0_UNIQUE)) ? TRUE : FALSE;
+			break;
+		}
+
+		case SUMMON_MONSTER:
+		{
+			okay = (!(r_ptr->flags[0] & (RF0_UNIQUE)) &&
+				!(r_ptr->flags[0] & (RF0_FRIEND)) &&
+				!(r_ptr->flags[0] & (RF0_FRIENDS)) &&
+				!(r_ptr->flags[0] & (RF0_ESCORT)) &&
+				!(r_ptr->flags[0] & (RF0_ESCORTS)));
+			break;
+		}
+
+		case SUMMON_MONSTERS:
+		{
+			okay = (!(r_ptr->flags[0] & (RF0_UNIQUE)));
 			break;
 		}
 	}
