@@ -1665,24 +1665,28 @@ s32b object_value(const object_type *o_ptr, int qty)
 	s32b value;
 
 
-	/* Unknown items -- acquire a base value */
 	if (object_known_p(o_ptr))
 	{
-		/* Cursed items -- worthless */
 		if (cursed_p(o_ptr)) return (0L);
 
-		/* Real value (see above) */
 		value = object_value_real(o_ptr, qty);
 	}
-
-	/* Known items -- acquire the actual value */
 	else
 	{
-		/* Hack -- Felt cursed items */
-		if ((o_ptr->ident & (IDENT_SENSE)) && cursed_p(o_ptr)) return (0L);
+		object_type object_type_body;
+		object_type *j_ptr = &object_type_body;
 
-		/* Base value (see above) */
-		value = object_value_base(o_ptr) * qty;
+		/* Hack -- Felt cursed items */
+		if ((o_ptr->ident & IDENT_SENSE) && cursed_p(o_ptr)) return (0L);
+
+		memcpy(j_ptr, o_ptr, sizeof(object_type));
+		memcpy(j_ptr->flags, j_ptr->known_flags, sizeof(j_ptr->flags));
+		if (!(o_ptr->ident & IDENT_ATTACK))
+			j_ptr->to_h = j_ptr->to_d = 0;
+		else if (!(o_ptr->ident * IDENT_DEFENCE))
+			j_ptr->to_a = 0;
+
+		value = object_value_real(j_ptr, qty);
 	}
 
 
