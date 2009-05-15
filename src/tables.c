@@ -1408,6 +1408,7 @@ const char *inscrip_text[] =
 	"splendid",
 	"excellent",
 	"special",
+	"unknown"
 };
 
 const grouper object_text_order[] =
