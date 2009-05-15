@@ -234,53 +234,6 @@ size_t path_build(char *buf, size_t len, const char *base, const char *leaf)
 
 
 
-/*** Support for byte-swapping for endian-indepedent files ***/
-
-static bool is_bigendian(void)
-{
-	int i = 1;
-	char *p = (char *)&i;
-
-	if (p[0] != 1)
-		return TRUE;
-
-	return FALSE;
-}
-
-u16b flip_u16b(u16b arg)
-{
-	u16b ret;
-	char *in = (char *)&arg;
-	char *out = (char *)&ret;
-
-	if (is_bigendian())
-		return arg;
-
-	out[0] = in[1];
-	out[1] = in[0];
-
-	return ret;
-}
-
-u32b flip_u32b(u32b arg)
-{
-	u32b ret;
-	char *in = (char *)&arg;
-	char *out = (char *)&ret;
-
-	if (is_bigendian())
-		return arg;
-
-	out[0] = in[3];
-	out[1] = in[2];
-	out[2] = in[1];
-	out[3] = in[0];
-
-	return ret;
-}
-
-
-
 /*** File-handling API ***/
 
 /* On Windows, fwrite() and fread() are broken. */
