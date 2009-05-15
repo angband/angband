@@ -1371,7 +1371,6 @@ static s32b object_value_real(const object_type *o_ptr, int qty)
 
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
-#ifdef POWER_PRICING
 	s32b power;
 	int a = 2;
 	int b = 1;
@@ -1422,7 +1421,6 @@ static s32b object_value_real(const object_type *o_ptr, int qty)
 
 		return (total_value);
 	}
-#endif /* POWER_PRICING */
 
 	/* Hack -- "worthless" items */
 	if (!k_ptr->cost) return (0L);
