@@ -363,7 +363,7 @@ obj_pseudo_t object_pseudo(const object_type *o_ptr)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
-	else if ((o_ptr->known_flags[0] & TR0_OBVIOUS_MASK) ||
+	if ((o_ptr->known_flags[0] & TR0_OBVIOUS_MASK) ||
 			(o_ptr->known_flags[2] & TR2_OBVIOUS_MASK))
 		return INSCRIP_SPLENDID;
 	else if (o_ptr->ident & IDENT_INDESTRUCT)
