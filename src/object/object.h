@@ -43,6 +43,7 @@ typedef enum
 	INSCRIP_SPLENDID = 4,        /*!< Obviously good item */
 	INSCRIP_EXCELLENT = 5,       /*!< Ego-item */
 	INSCRIP_SPECIAL = 6,         /*!< Artifact */
+	INSCRIP_UNKNOWN = 7,
 
 	INSCRIP_MAX                  /*!< Maximum number of pseudo-ID markers */
 } obj_pseudo_t;

@@ -44,7 +44,6 @@ void object_known(object_type *o_ptr)
 	memcpy(o_ptr->known_flags, flags, sizeof(flags));
 }
 
-
 /**
  * Mark an object as "aware".
  *
@@ -69,6 +68,23 @@ void object_aware(object_type *o_ptr)
 		if (!floor_o_ptr->held_m_idx &&
 				floor_o_ptr->k_idx == o_ptr->k_idx)
 			lite_spot(floor_o_ptr->iy, floor_o_ptr->ix);
+	}
+}
+
+/**
+ * Set the ID flag on an object if known and actual flags are the same.
+ */
+static void tweak_id(object_type *o_ptr)
+{
+	u32b f[OBJ_FLAG_N];
+
+	object_flags(o_ptr, f);
+	o_ptr->known_flags[2] |= (f[2] & TR2_EASY_KNOW);
+
+	if (memcmp(f, o_ptr->known_flags, sizeof(f)) == 0)
+	{
+		object_aware(o_ptr);
+		object_known(o_ptr);
 	}
 }
 
@@ -103,6 +119,7 @@ void object_notice_slays(u32b known_f0, int inven_idx)
 		object_type *o_ptr = &inventory[i];
 
 		o_ptr->known_flags[0] |= known_f0;
+		tweak_id(o_ptr);
 	}	
 
 	return;
@@ -156,6 +173,7 @@ void object_notice_flag(int flagset, u32b flag)
 
 			/* Notice flags */
 			o_ptr->known_flags[flagset] |= flag;
+			tweak_id(o_ptr);
 
 			for (j = 0; j < N_ELEMENTS(msgs); j++)
 			{
@@ -185,6 +203,7 @@ bool object_notice_curses(object_type *o_ptr)
 
 	/* Know whatever curse flags there are to know */
 	o_ptr->known_flags[2] |= curses;
+	tweak_id(o_ptr);
 
 	p_ptr->notice |= PN_SQUELCH;
 
@@ -230,6 +249,7 @@ static void object_notice_after_time(void)
 			{
 				/* Notice the flag */
 				o_ptr->known_flags[set] |= flag;
+				tweak_id(o_ptr);
 
 				/* Message */
 				msg_format(notice_msgs[j].msg, o_name);
@@ -251,6 +271,7 @@ void object_notice_on_attack(void)
 		object_type *o_ptr = &inventory[i];
 
 		o_ptr->ident |= IDENT_ATTACK;
+		tweak_id(o_ptr);
 	}
 
 	/* XXX print message? */
@@ -330,6 +351,7 @@ void object_notice_on_wield(object_type *o_ptr)
 	o_ptr->ident |= IDENT_SENSE;
 	o_ptr->known_flags[0] |= (f[0] & TR0_OBVIOUS_MASK);
 	o_ptr->known_flags[2] |= (f[2] & TR2_OBVIOUS_MASK);
+	tweak_id(o_ptr);
 }
 
 
@@ -341,13 +363,15 @@ obj_pseudo_t object_pseudo(const object_type *o_ptr)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
-	if ((o_ptr->known_flags[0] & TR0_OBVIOUS_MASK) ||
+	if (object_known_p(o_ptr))
+		return INSCRIP_NULL;
+	else if ((o_ptr->known_flags[0] & TR0_OBVIOUS_MASK) ||
 			(o_ptr->known_flags[2] & TR2_OBVIOUS_MASK))
 		return INSCRIP_SPLENDID;
 	else if (o_ptr->ident & IDENT_INDESTRUCT)
 		return INSCRIP_SPECIAL;
 	else if (!(o_ptr->ident & IDENT_SENSE))
-		return INSCRIP_NULL;
+		return INSCRIP_UNKNOWN;
 	else if (artifact_p(o_ptr))
 		return INSCRIP_SPECIAL;
 	else if (ego_item_p(o_ptr))
