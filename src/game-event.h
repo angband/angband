@@ -65,6 +65,8 @@ typedef union
 		
 	const char *string;
 
+	bool flag;
+
 	struct
 	{
 		bool reset;
@@ -102,6 +104,7 @@ void event_signal_birthpoints(int stats[6], int remaining);
 
 void event_signal_point(game_event_type, int x, int y);
 void event_signal_string(game_event_type, const char *s);
+void event_signal_flag(game_event_type type, bool flag);
 void event_signal(game_event_type);
 
 #endif /* INCLUDED_GAME_EVENT_H */

@@ -77,6 +77,7 @@ enum birth_rollers
 
 
 static void point_based_start(void);
+static bool quickstart_allowed = FALSE;
 
 /* ------------------------------------------------------------------------
  * Quickstart? screen.
@@ -827,7 +828,12 @@ errr get_birth_command(bool wait)
 		{
 			cmd_insert(CMD_BIRTH_RESET);
 			roller = BIRTH_METHOD_CHOICE;
-			next = quickstart_question();
+			
+			if (quickstart_allowed)
+				next = quickstart_question();
+			else
+				next = BIRTH_SEX_CHOICE;
+
 			break;
 		}
 
@@ -941,6 +947,9 @@ errr get_birth_command(bool wait)
  */
 static void ui_enter_birthscreen(game_event_type type, game_event_data *data, void *user)
 {
+	/* Set the ugly static global that tells us if quickstart's available. */
+	quickstart_allowed = data->flag;
+
 	setup_menus();
 }
 

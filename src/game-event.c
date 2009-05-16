@@ -114,6 +114,14 @@ void event_signal(game_event_type type)
 	game_event_dispatch(type, NULL);
 }
 
+void event_signal_flag(game_event_type type, bool flag)
+{
+	game_event_data data;
+	data.flag = flag;
+
+	game_event_dispatch(type, &data);
+}
+
 
 void event_signal_point(game_event_type type, int x, int y)
 {

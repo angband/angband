@@ -810,7 +810,7 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 				break;
 			}
 
-			/* If possible buy adj DEX of 18/10 */
+			/* Try and buy adj DEX of 18/10 */
 			case 1:
 			{
 				if (!maxed[A_DEX] && p_ptr->state.stat_top[A_DEX] < 18+10)
@@ -826,12 +826,26 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 				break;
 			}
 
+			/* If we can't get 18/10 dex, sell it back. */
+			case 2:
+			{
+				if (p_ptr->state.stat_top[A_DEX] < 18+10)
+				{
+					while (stats[A_DEX] > 10)
+						sell_stat(A_DEX, stats, points_spent, points_left);
+
+					maxed[A_DEX] = FALSE;
+				}
+				
+				step++;
+			}
+
 			/* 
 			 * Spend up to half remaining points on each of spell-stat and 
 			 * con, but only up to max base of 16 unless a pure class 
 			 * [mage or priest or warrior]
 			 */
-			case 2:
+			case 3:
 			{
 				int points_trigger = *points_left / 2;
 
@@ -880,7 +894,7 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
 			 * If there are any points left, spend as much as possible in 
 			 * order on DEX, non-spell-stat, CHR. 
 			 */
-			case 3:
+			case 4:
 			{				
 				int next_stat;
 
@@ -976,6 +990,7 @@ static void do_birth_reset(bool use_quickstart, birther *quickstart_prev)
 	get_bonuses();
 }
 
+
 /*
  * Create a new character.
  *
@@ -1007,15 +1022,25 @@ void player_birth(bool quickstart_allowed)
 	 */
 	birther quickstart_prev = {0, 0, 0, 0, 0, 0, 0, 0, {0}, "" };
 
-	/* If there's a quickstart character, store it for later use. */
+	/* 
+	 * If there's a quickstart character, store it for later use. 
+	 * If not, default to whatever the first of the choices is.
+	 */
 	if (quickstart_allowed)
 		save_roller_data(&quickstart_prev);
+	else
+	{
+		p_ptr->psex = 0;
+		p_ptr->pclass = 0;
+		p_ptr->prace = 0;
+		generate_player();
+	}
 
 	reset_stats(stats, points_spent, &points_left);
 	do_birth_reset(quickstart_allowed, &quickstart_prev);
 
 	/* We're ready to start the interactive birth process. */
-	event_signal(EVENT_ENTER_BIRTH);
+	event_signal_flag(EVENT_ENTER_BIRTH, quickstart_allowed);
 
 	/* 
 	 * Loop around until the UI tells us we have an acceptable character.
