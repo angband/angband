@@ -45,7 +45,8 @@
 enum birth_stage
 {
 	BIRTH_BACK = -1,
-	BIRTH_METHOD_CHOICE = 0,
+	BIRTH_RESET = 0,
+	BIRTH_QUICKSTART,
 	BIRTH_SEX_CHOICE,
 	BIRTH_RACE_CHOICE,
 	BIRTH_CLASS_CHOICE,
@@ -82,52 +83,59 @@ static bool quickstart_allowed = FALSE;
 /* ------------------------------------------------------------------------
  * Quickstart? screen.
  * ------------------------------------------------------------------------ */
-static enum birth_stage quickstart_question(void)
+static enum birth_stage get_quickstart_command(void)
 {
-	char ch;
+	const char *prompt = "['Y' to use this character, 'N' to start afresh, 'C' to change name]";
 	ui_event_data ke;
-	enum birth_stage next = BIRTH_METHOD_CHOICE;
 
-	Term_clear();
+	enum birth_stage next = BIRTH_QUICKSTART;
 
-	/* Prompt */
-	while (next == BIRTH_METHOD_CHOICE)
+	/* Prompt for it */
+	prt("New character based on previous one:", 0, 0);
+	prt(prompt, Term->hgt - 1, Term->wid / 2 - strlen(prompt) / 2);
+	
+	/* Buttons */
+	button_kill_all();
+	button_add("[Y]", 'y');
+	button_add("[N]", 'n');
+	button_add("[C]", 'c');
+	redraw_stuff();
+	
+	do
 	{
-		put_str("Quick-start character based on previous one (y/n)? ", 2, 2);
-
-		/* Buttons */
-		button_kill_all();
-		button_add("[Exit]", KTRL('X'));
-		button_add("[ESC]", ESCAPE);
-		button_add("[y]", 'y');
-		button_add("[n]", 'n');
-		button_add("[Help]", '?');
-		
+		/* Get a key */
 		ke = inkey_ex();
-		ch = ke.key;
 		
-		if (ch == KTRL('X'))
+		if (ke.key == 'N' || ke.key == 'n')
+		{
+			cmd_insert(CMD_BIRTH_RESET, TRUE);
+			next = BIRTH_SEX_CHOICE;
+		}
+		else if (ke.key == KTRL('X'))
 		{
 			cmd_insert(CMD_QUIT);
 			next = BIRTH_COMPLETE;
 		}
-		else if (strchr("Nn\r\n", ch))
-		{
-			next = BIRTH_SEX_CHOICE;
-		}
-		else if (strchr("Yy", ch))
+		else if (ke.key == 'C' || ke.key == 'c')
 		{
 			next = BIRTH_NAME_CHOICE;
 		}
-		else if (ch == '?')
-			(void)show_file("birth.hlp", NULL, 0, 0);
-		else
-			bell("Illegal answer!");
-	}
+		else if (ke.key == 'Y' || ke.key == 'y')
+		{
+			cmd_insert(CMD_ACCEPT_CHARACTER);
+			next = BIRTH_COMPLETE;
+		}
+	} while (next == BIRTH_QUICKSTART);
+	
+	/* Buttons */
+	button_kill_all();
+	redraw_stuff();
+
+	/* Clear prompt */
+	clear_from(23);
 
 	return next;
 }
-
 
 /* ------------------------------------------------------------------------
  * The various "menu" bits of the birth process - namely choice of sex,
@@ -404,7 +412,7 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 	int cursor = current_menu->cursor;
 	ui_event_data cx;
 
-	enum birth_stage next = BIRTH_METHOD_CHOICE;
+	enum birth_stage next = BIRTH_RESET;
 	
 	/* Print the question currently being asked. */
 	clear_question();
@@ -412,7 +420,7 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 
 	current_menu->cmd_keys = "?=*\r\n\x18";	 /* ?, ,= *, \n, <ctl-X> */
 
-	while (next == BIRTH_METHOD_CHOICE)
+	while (next == BIRTH_RESET)
 	{
 		/* Display the menu, wait for a selection of some sort to be made. */
 		cx = menu_select(current_menu, &cursor, EVT_CMD);
@@ -769,8 +777,7 @@ static enum birth_stage get_confirm_command(void)
 	/* Start over */
 	if (ke.key == 'S' || ke.key == 's')
 	{
-		cmd_insert(CMD_BIRTH_RESET, TRUE);
-		next = BIRTH_METHOD_CHOICE;
+		next = BIRTH_RESET;
 	}
 	else if (ke.key == KTRL('X'))
 	{
@@ -817,23 +824,30 @@ static enum birth_stage get_confirm_command(void)
  */
 errr get_birth_command(bool wait)
 {
-	static enum birth_stage current_stage = BIRTH_METHOD_CHOICE;
+	static enum birth_stage current_stage = BIRTH_RESET;
 	static enum birth_stage prev;
-	static enum birth_stage roller = BIRTH_METHOD_CHOICE;
+	static enum birth_stage roller = BIRTH_RESET;
 	enum birth_stage next = current_stage;
 
 	switch (current_stage)
 	{
-		case BIRTH_METHOD_CHOICE:
+		case BIRTH_RESET:
 		{
-			cmd_insert(CMD_BIRTH_RESET);
-			roller = BIRTH_METHOD_CHOICE;
+			cmd_insert(CMD_BIRTH_RESET, TRUE);
+			roller = BIRTH_RESET;
 			
 			if (quickstart_allowed)
-				next = quickstart_question();
+				next = BIRTH_QUICKSTART;
 			else
 				next = BIRTH_SEX_CHOICE;
 
+			break;
+		}
+
+		case BIRTH_QUICKSTART:
+		{
+			display_player(0);
+			next = get_quickstart_command();
 			break;
 		}
 
@@ -873,6 +887,10 @@ errr get_birth_command(bool wait)
 
 			if (next == BIRTH_BACK)
 				next = current_stage - 1;
+
+			/* Make sure that the character gets reset before quickstarting */
+			if (next == BIRTH_QUICKSTART) 
+				next = BIRTH_RESET;
 
 			break;
 		}
