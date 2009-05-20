@@ -196,8 +196,8 @@ static void calc_spells(void)
 		/* Get the spell */
 		s_ptr = &mp_ptr->info[j];
 
-		/* Skip spells we cannot remember */
-		if (s_ptr->slevel > p_ptr->lev) continue;
+		/* Skip spells we cannot remember or don't exist */
+		if (s_ptr->slevel > p_ptr->lev || s_ptr->slevel == 0) continue;
 
 		/* Skip spells we already know */
 		if (p_ptr->spell_flags[j] & PY_SPELL_LEARNED)
