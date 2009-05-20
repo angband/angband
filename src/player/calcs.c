@@ -522,14 +522,14 @@ static int calc_blows(const object_type *o_ptr, player_state *state)
 	div = ((o_ptr->weight < cp_ptr->min_weight) ? cp_ptr->min_weight : o_ptr->weight);
 
 	/* Get the strength vs weight */
-	str_index = adj_str_blow[p_ptr->state.stat_ind[A_STR]] *
+	str_index = adj_str_blow[state->stat_ind[A_STR]] *
 			cp_ptr->att_multiply / div;
 
 	/* Maximal value */
 	if (str_index > 11) str_index = 11;
 
 	/* Index by dexterity */
-	dex_index = MIN(adj_dex_blow[p_ptr->state.stat_ind[A_DEX]], 11);
+	dex_index = MIN(adj_dex_blow[state->stat_ind[A_DEX]], 11);
 
 	/* Use the blows table */
 	blows = MIN(blows_table[str_index][dex_index], cp_ptr->max_attacks);
