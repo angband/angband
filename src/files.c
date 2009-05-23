@@ -460,7 +460,7 @@ static void display_player_sust_info(void)
 	}
 
 	/* Player flags */
-	player_flags(&f);
+	player_flags(f);
 
 	/* Check stats */
 	for (stat = 0; stat < A_MAX; ++stat)

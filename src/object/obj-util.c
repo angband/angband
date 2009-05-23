@@ -1348,20 +1348,9 @@ static s32b object_value_base(const object_type *o_ptr)
  *
  * Wand and staffs get cost for each charge.
  *
- * Armor is worth an extra 100 gold per bonus point to armor class.
- *
- * Weapons are worth an extra 100 gold per bonus point (AC,TH,TD).
- *
- * Missiles are only worth 5 gold per bonus point, since they
- * usually appear in groups of 20, and we want the player to get
- * the same amount of cash for any "equivalent" item.  Note that
- * missiles never have any of the "pval" flags, and in fact, they
- * only have a few of the available flags, primarily of the "slay"
- * and "brand" and "ignore" variety.
- *
- * Weapons with negative hit+damage bonuses are worthless.
- *
- * Every wearable item with a "pval" bonus is worth extra (see below).
+ * Wearable items (weapons, launchers, jewelry, lights, armour) and ammo
+ * are priced according to their power rating. All ammo, and normal (non-ego)
+ * torches are scaled down by AMMO_RESCALER to reflect their impermanence.
  */
 static s32b object_value_real(const object_type *o_ptr, int qty)
 {
@@ -1399,7 +1388,8 @@ static s32b object_value_real(const object_type *o_ptr, int qty)
 		value = sign(power) * ((a * power * power) + (b * power));
 
 		if ( (o_ptr->tval == TV_SHOT) || (o_ptr->tval == TV_ARROW) ||
-  			(o_ptr->tval == TV_BOLT) || ((o_ptr->tval == TV_LITE) 				&& (o_ptr->sval == SV_LITE_TORCH)) )
+  			(o_ptr->tval == TV_BOLT) || ((o_ptr->tval == TV_LITE)
+			&& (o_ptr->sval == SV_LITE_TORCH) && !o_ptr->name2) )
 		{
 			value = value / AMMO_RESCALER;
 			if (value < 1) value = 1;
@@ -1428,92 +1418,8 @@ static s32b object_value_real(const object_type *o_ptr, int qty)
 	/* Base cost */
 	value = k_ptr->cost;
 
-
 	/* Extract some flags */
 	object_flags(o_ptr, f);
-
-
-	/* Artifact */
-	if (o_ptr->name1)
-	{
-		artifact_type *a_ptr = &a_info[o_ptr->name1];
-
-		/* Hack -- "worthless" artifacts */
-		if (!a_ptr->cost) return (0L);
-
-		/* Hack -- Use the artifact cost instead */
-		value = a_ptr->cost;
-	}
-
-	/* Ego-Item */
-	else if (o_ptr->name2)
-	{
-		ego_item_type *e_ptr = &e_info[o_ptr->name2];
-
-		/* Hack -- "worthless" ego-items */
-		if (!e_ptr->cost) return (0L);
-
-		/* Hack -- Reward the ego-item with a bonus */
-		value += e_ptr->cost;
-	}
-
-
-	/* Analyze pval bonus */
-	switch (o_ptr->tval)
-	{
-		case TV_SHOT:
-		case TV_ARROW:
-		case TV_BOLT:
-		case TV_BOW:
-		case TV_DIGGING:
-		case TV_HAFTED:
-		case TV_POLEARM:
-		case TV_SWORD:
-		case TV_BOOTS:
-		case TV_GLOVES:
-		case TV_HELM:
-		case TV_CROWN:
-		case TV_SHIELD:
-		case TV_CLOAK:
-		case TV_SOFT_ARMOR:
-		case TV_HARD_ARMOR:
-		case TV_DRAG_ARMOR:
-		case TV_LITE:
-		case TV_AMULET:
-		case TV_RING:
-		{
-			/* Hack -- Negative "pval" is always bad */
-			if (o_ptr->pval < 0) return (0L);
-
-			/* No pval */
-			if (!o_ptr->pval) break;
-
-			/* Give credit for stat bonuses */
-			if (f[0] & (TR0_STR)) value += (o_ptr->pval * 200L);
-			if (f[0] & (TR0_INT)) value += (o_ptr->pval * 200L);
-			if (f[0] & (TR0_WIS)) value += (o_ptr->pval * 200L);
-			if (f[0] & (TR0_DEX)) value += (o_ptr->pval * 200L);
-			if (f[0] & (TR0_CON)) value += (o_ptr->pval * 200L);
-			if (f[0] & (TR0_CHR)) value += (o_ptr->pval * 200L);
-
-			/* Give credit for stealth and searching */
-			if (f[0] & (TR0_STEALTH)) value += (o_ptr->pval * 100L);
-			if (f[0] & (TR0_SEARCH)) value += (o_ptr->pval * 100L);
-
-			/* Give credit for infra-vision and tunneling */
-			if (f[0] & (TR0_INFRA)) value += (o_ptr->pval * 50L);
-			if (f[0] & (TR0_TUNNEL)) value += (o_ptr->pval * 50L);
-
-			/* Give credit for extra attacks */
-			if (f[0] & (TR0_BLOWS)) value += (o_ptr->pval * 2000L);
-
-			/* Give credit for speed bonus */
-			if (f[0] & (TR0_SPEED)) value += (o_ptr->pval * 30000L);
-
-			break;
-		}
-	}
-
 
 	/* Analyze the item type and quantity*/
 	switch (o_ptr->tval)
@@ -1537,102 +1443,6 @@ static s32b object_value_real(const object_type *o_ptr, int qty)
 			break;
 		}
 
-		/* Rings/Amulets, Lites */
-		case TV_RING:
-		case TV_AMULET:
-		{
-			/* Hack -- negative bonuses are bad */
-			if (o_ptr->to_a < 0) return (0L);
-			if (o_ptr->to_h < 0) return (0L);
-			if (o_ptr->to_d < 0) return (0L);
-
-			/* Give credit for bonuses */
-			value += ((o_ptr->to_h + o_ptr->to_d + o_ptr->to_a) * 100L);
-
-			/* Calculate total value */
-			total_value = value * qty;
-
-			/* Done */
-			break;
-		}
-
-		/* Armor */
-		case TV_BOOTS:
-		case TV_GLOVES:
-		case TV_CLOAK:
-		case TV_CROWN:
-		case TV_HELM:
-		case TV_SHIELD:
-		case TV_SOFT_ARMOR:
-		case TV_HARD_ARMOR:
-		case TV_DRAG_ARMOR:
-		{
-			/* Give credit for hit bonus */
-			value += ((o_ptr->to_h - k_ptr->to_h) * 100L);
-
-			/* Give credit for damage bonus */
-			value += ((o_ptr->to_d - k_ptr->to_d) * 100L);
-
-			/* Give credit for armor bonus */
-			value += (o_ptr->to_a * 100L);
-
-			/* Calculate total value */
-			total_value = value * qty;
-
-			/* Done */
-			break;
-		}
-
-		/* Bows/Weapons */
-		case TV_BOW:
-		case TV_DIGGING:
-		case TV_HAFTED:
-		case TV_SWORD:
-		case TV_POLEARM:
-		{
-			/* Hack -- negative hit/damage bonuses */
-			if (o_ptr->to_h + o_ptr->to_d < 0) return (0L);
-
-			/* Factor in the bonuses */
-			value += ((o_ptr->to_h + o_ptr->to_d + o_ptr->to_a) * 100L);
-
-			/* Hack -- Factor in extra damage dice */
-			if ((o_ptr->dd > k_ptr->dd) && (o_ptr->ds == k_ptr->ds))
-			{
-				value += (o_ptr->dd - k_ptr->dd) * o_ptr->ds * 100L;
-			}
-
-			/* Calculate total value */
-			total_value = value * qty;
-
-			/* Done */
-			break;
-		}
-
-		/* Ammo */
-		case TV_SHOT:
-		case TV_ARROW:
-		case TV_BOLT:
-		{
-			/* Hack -- negative hit/damage bonuses */
-			if (o_ptr->to_h + o_ptr->to_d < 0) return (0L);
-
-			/* Factor in the bonuses */
-			value += ((o_ptr->to_h + o_ptr->to_d) * 5L);
-
-			/* Hack -- Factor in extra damage dice */
-			if ((o_ptr->dd > k_ptr->dd) && (o_ptr->ds == k_ptr->ds))
-			{
-				value += (o_ptr->dd - k_ptr->dd) * o_ptr->ds * 5L;
-			}
-
-			/* Calculate total value */
-			total_value = value * qty;
-
-			/* Done */
-			break;
-		}
-		
 		default:
 		{
 			total_value = value * qty;
