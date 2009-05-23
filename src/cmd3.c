@@ -294,6 +294,7 @@ void do_cmd_destroy(void)
 		{
 			/* squelch_set_squelch(tval, sval); */
 			k_info[o_ptr->k_idx].squelch = TRUE;
+			p_ptr->notice |= PN_SQUELCH;
 			msg_format("Ignoring %s from now on.", sval_name);
 		}		
 	}
