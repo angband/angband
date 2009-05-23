@@ -1389,15 +1389,11 @@ errr parse_f_info(char *buf, header *head)
 /*
  * Grab one flag in an object_kind from a textual string
  */
-static errr grab_one_kind_flag(object_kind *k_ptr, cptr what)
+static errr grab_one_object_flag(u32b flags[OBJ_FLAG_N], cptr what)
 {
-	if (grab_one_flag(&k_ptr->flags[0], k_info_flags1, what) == 0)
-		return (0);
-
-	if (grab_one_flag(&k_ptr->flags[1], k_info_flags2, what) == 0)
-		return (0);
-
-	if (grab_one_flag(&k_ptr->flags[2], k_info_flags3, what) == 0)
+	if (grab_one_flag(&flags[0], k_info_flags1, what) == 0 &&
+			grab_one_flag(&flags[1], k_info_flags2, what) == 0 &&
+			grab_one_flag(&flags[2], k_info_flags3, what) == 0)
 		return (0);
 
 	/* Oops */
@@ -1644,7 +1640,7 @@ errr parse_k_info(char *buf, header *head)
 			}
 
 			/* Parse this entry */
-			if (0 != grab_one_kind_flag(k_ptr, s))
+			if (0 != grab_one_object_flag(k_ptr->flags, s))
 				return (PARSE_ERROR_INVALID_FLAG);
 
 			/* Start the next entry */
@@ -1686,27 +1682,6 @@ errr parse_k_info(char *buf, header *head)
 	return (0);
 }
 
-
-/*
- * Grab one flag in an artifact_type from a textual string
- */
-static errr grab_one_artifact_flag(artifact_type *a_ptr, cptr what)
-{
-	if (grab_one_flag(&a_ptr->flags[0], k_info_flags1, what) == 0)
-		return (0);
-
-	if (grab_one_flag(&a_ptr->flags[1], k_info_flags2, what) == 0)
-		return (0);
-
-	if (grab_one_flag(&a_ptr->flags[2], k_info_flags3, what) == 0)
-		return (0);
-
-	/* Oops */
-	msg_format("Unknown artifact flag '%s'.", what);
-
-	/* Error */
-	return (PARSE_ERROR_INVALID_FLAG);
-}
 
 
 /*
@@ -1865,7 +1840,7 @@ errr parse_a_info(char *buf, header *head)
 			}
 
 			/* Parse this entry */
-			if (0 != grab_one_artifact_flag(a_ptr, s))
+			if (0 != grab_one_object_flag(a_ptr->flags, s))
 				return (PARSE_ERROR_INVALID_FLAG);
 
 			/* Start the next entry */
@@ -1919,29 +1894,6 @@ errr parse_a_info(char *buf, header *head)
 	/* Success */
 	return (0);
 }
-
-
-/*
- * Grab one flag in a ego-item_type from a textual string
- */
-static bool grab_one_ego_item_flag(ego_item_type *e_ptr, cptr what)
-{
-	if (grab_one_flag(&e_ptr->flags[0], k_info_flags1, what) == 0)
-		return (0);
-
-	if (grab_one_flag(&e_ptr->flags[1], k_info_flags2, what) == 0)
-		return (0);
-
-	if (grab_one_flag(&e_ptr->flags[2], k_info_flags3, what) == 0)
-		return (0);
-
-	/* Oops */
-	msg_format("Unknown ego-item flag '%s'.", what);
-
-	/* Error */
-	return (PARSE_ERROR_INVALID_FLAG);
-}
-
 
 
 
@@ -2097,7 +2049,7 @@ errr parse_e_info(char *buf, header *head)
 			}
 
 			/* Parse this entry */
-			if (0 != grab_one_ego_item_flag(e_ptr, s))
+			if (0 != grab_one_object_flag(e_ptr->flags, s))
 				return (PARSE_ERROR_INVALID_FLAG);
 
 			/* Start the next entry */
@@ -2446,27 +2398,6 @@ errr parse_r_info(char *buf, header *head)
 
 
 /*
- * Grab one flag in a player_race from a textual string
- */
-static errr grab_one_racial_flag(player_race *pr_ptr, cptr what)
-{
-	if (grab_one_flag(&pr_ptr->flags1, k_info_flags1, what) == 0)
-		return (0);
-
-	if (grab_one_flag(&pr_ptr->flags2, k_info_flags2, what) == 0)
-		return (0);
-
-	if (grab_one_flag(&pr_ptr->flags3, k_info_flags3, what) == 0)
-		return (0);
-
-	/* Oops */
-	msg_format("Unknown player flag '%s'.", what);
-
-	/* Error */
-	return (PARSE_ERROR_INVALID_FLAG);
-}
-
-/*
  * Helper function for reading a list of skills
  */
 static bool parse_skills(s16b *skills_array, const char *buf)
@@ -2681,7 +2612,7 @@ errr parse_p_info(char *buf, header *head)
 			}
 
 			/* Parse this entry */
-			if (0 != grab_one_racial_flag(pr_ptr, s))
+			if (0 != grab_one_object_flag(pr_ptr->flags, s))
 				return (PARSE_ERROR_INVALID_FLAG);
 
 			/* Start the next entry */

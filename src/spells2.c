@@ -430,7 +430,7 @@ void self_knowledge(bool spoil)
 	}
 
 	/* And flags from the player */
-	player_flags(&t[0], &t[1], &t[2]);
+	player_flags(t);
 
 	/* Extract flags */
 	f1 |= t[0];

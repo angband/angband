@@ -612,7 +612,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	/*** Analyze player ***/
 
 	/* Extract the player flags */
-	player_flags(&collect_f[0], &collect_f[1], &collect_f[2]);
+	player_flags(collect_f);
 
 
 	/*** Analyze equipment ***/

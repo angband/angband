@@ -244,4 +244,163 @@ typedef struct
 
 } player_type;
 
+
+
+
+/*
+ * Player sex info
+ */
+typedef struct
+{
+	cptr title;			/* Type of sex */
+	cptr winner;		/* Name of winner */
+} player_sex;
+
+
+/*
+ * Player racial info
+ */
+typedef struct
+{
+	u32b name;			/* Name (offset) */
+	u32b text;			/* Text (offset) */
+	
+	s16b r_adj[A_MAX];	/* Racial stat bonuses */
+	
+	s16b r_skills[SKILL_MAX];	/* racial skills */
+	
+	byte r_mhp;			/* Race hit-dice modifier */
+	byte r_exp;			/* Race experience factor */
+	
+	byte b_age;			/* base age */
+	byte m_age;			/* mod age */
+	
+	byte m_b_ht;		/* base height (males) */
+	byte m_m_ht;		/* mod height (males) */
+	byte m_b_wt;		/* base weight (males) */
+	byte m_m_wt;		/* mod weight (males) */
+	
+	byte f_b_ht;		/* base height (females) */
+	byte f_m_ht;		/* mod height (females) */
+	byte f_b_wt;		/* base weight (females) */
+	byte f_m_wt;		/* mod weight (females) */
+	
+	byte infra;			/* Infra-vision	range */
+	
+	byte choice;		/* Legal class choices */
+	
+	s16b hist;			/* Starting history index */
+	
+	u32b flags[OBJ_FLAG_N];	/* Racial flags */
+} player_race;
+
+
+/*
+ * Starting equipment entry
+ */
+typedef struct
+{
+	byte tval;	/* Item's tval */
+	byte sval;	/* Item's sval */
+	byte min;	/* Minimum starting amount */
+	byte max;	/* Maximum starting amount */
+} start_item;
+
+
+/*
+ * A structure to hold class-dependent information on spells.
+ */
+typedef struct
+{
+	byte slevel;		/* Required level (to learn) */
+	byte smana;			/* Required mana (to cast) */
+	byte sfail;			/* Minimum chance of failure */
+	byte sexp;			/* Encoded experience bonus */
+} magic_type;
+
+
+/*
+ * Information about the player's "magic"
+ *
+ * Note that a player with a "spell_book" of "zero" is illiterate.
+ */
+typedef struct
+{
+	magic_type info[PY_MAX_SPELLS];	/* The available spells */
+} player_magic;
+
+
+/*
+ * Player class info
+ */
+typedef struct
+{
+	u32b name;			/* Name (offset) */
+	
+	u32b title[10];		/* Titles - offset */
+	
+	s16b c_adj[A_MAX];	/* Class stat modifier */
+	
+	s16b c_skills[SKILL_MAX];	/* class skills */
+	s16b x_skills[SKILL_MAX];	/* extra skills */
+	
+	s16b c_mhp;			/* Class hit-dice adjustment */
+	s16b c_exp;			/* Class experience factor */
+	
+	u32b flags;			/* Class Flags */
+	
+	u16b max_attacks;	/* Maximum possible attacks */
+	u16b min_weight;	/* Minimum weapon weight for calculations */
+	u16b att_multiply;	/* Multiplier for attack calculations */
+	
+	byte spell_book;	/* Tval of spell books (if any) */
+	u16b spell_stat;	/* Stat for spells (if any) */
+	u16b spell_first;	/* Level of first spell */
+	u16b spell_weight;	/* Weight that hurts spells */
+	
+	u32b sense_base;	/* Base pseudo-id value */
+	u16b sense_div;		/* Pseudo-id divisor */
+	
+	start_item start_items[MAX_START_ITEMS];/**< The starting inventory */
+	
+	player_magic spells; /* Magic spells */
+} player_class;
+
+
+/*
+ * Player background information
+ */
+typedef struct
+{
+	u32b text;			    /* Text (offset) */
+	
+	byte roll;			    /* Frequency of this entry */
+	byte chart;			    /* Chart index */
+	byte next;			    /* Next chart index */
+	byte bonus;			    /* Social Class Bonus + 50 */
+} hist_type;
+
+
+
+/*
+ * Some more player information
+ *
+ * This information is retained across player lives
+ */
+typedef struct
+{
+	char full_name[32];		/* Full name */
+	char base_name[32];		/* Base name */
+	
+	bool opt[OPT_MAX];		/* Options */
+	
+	u32b window_flag[ANGBAND_TERM_MAX];	/* Window flags */
+	
+	byte hitpoint_warn;		/* Hitpoint warning (0 to 9) */
+	
+	byte delay_factor;		/* Delay factor (0 to 9) */
+} player_other;
+
+
+
 #endif /* INCLUDED_PLAYER_TYPES_H */

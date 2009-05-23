@@ -321,7 +321,7 @@ extern int value_check_aux1(const object_type *o_ptr);
 
 /* files.c */
 extern void html_screenshot(cptr name, int mode);
-extern void player_flags(u32b *f1, u32b *f2, u32b *f3);
+extern void player_flags(u32b f[OBJ_FLAG_N]);
 extern void display_player(int mode);
 extern void display_player_stat_info(void);
 extern void display_player_xtra_info(void);

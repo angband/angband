@@ -42,15 +42,7 @@ typedef struct alloc_entry alloc_entry;
 typedef struct quest quest;
 typedef struct owner_type owner_type;
 typedef struct store_type store_type;
-typedef struct magic_type magic_type;
-typedef struct player_magic player_magic;
 typedef struct spell_type spell_type;
-typedef struct player_sex player_sex;
-typedef struct player_race player_race;
-typedef struct player_class player_class;
-typedef struct hist_type hist_type;
-typedef struct player_other player_other;
-typedef struct start_item start_item;
 typedef struct autoinscription autoinscription;
 typedef struct history_info history_info;
 
@@ -174,30 +166,6 @@ struct quest
 };
 
 
-
-/*
- * A structure to hold class-dependent information on spells.
- */
-struct magic_type
-{
-	byte slevel;		/* Required level (to learn) */
-	byte smana;			/* Required mana (to cast) */
-	byte sfail;			/* Minimum chance of failure */
-	byte sexp;			/* Encoded experience bonus */
-};
-
-
-/*
- * Information about the player's "magic"
- *
- * Note that a player with a "spell_book" of "zero" is illiterate.
- */
-struct player_magic
-{
-	magic_type info[PY_MAX_SPELLS];	/* The available spells */
-};
-
-
 /*
  * And here's the structure for the "fixed" spell information
  */
@@ -212,141 +180,6 @@ struct spell_type
 	byte snum;			/* Position of spell within book */
 
 	byte spell_index;	/* Index into player_magic array */
-};
-
-
-/*
- * Player sex info
- */
-struct player_sex
-{
-	cptr title;			/* Type of sex */
-
-	cptr winner;		/* Name of winner */
-};
-
-
-/*
- * Player racial info
- */
-struct player_race
-{
-	u32b name;			/* Name (offset) */
-	u32b text;			/* Text (offset) */
-
-	s16b r_adj[A_MAX];	/* Racial stat bonuses */
-
-	s16b r_skills[SKILL_MAX];	/* racial skills */
-
-	byte r_mhp;			/* Race hit-dice modifier */
-	byte r_exp;			/* Race experience factor */
-
-	byte b_age;			/* base age */
-	byte m_age;			/* mod age */
-
-	byte m_b_ht;		/* base height (males) */
-	byte m_m_ht;		/* mod height (males) */
-	byte m_b_wt;		/* base weight (males) */
-	byte m_m_wt;		/* mod weight (males) */
-
-	byte f_b_ht;		/* base height (females) */
-	byte f_m_ht;		/* mod height (females) */
-	byte f_b_wt;		/* base weight (females) */
-	byte f_m_wt;		/* mod weight (females) */
-
-	byte infra;			/* Infra-vision	range */
-
-	byte choice;		/* Legal class choices */
-
-	s16b hist;			/* Starting history index */
-
-	u32b flags1;		/* Racial Flags, set 1 */
-	u32b flags2;		/* Racial Flags, set 2 */
-	u32b flags3;		/* Racial Flags, set 3 */
-};
-
-
-/*
- * Starting equipment entry
- */
-struct start_item
-{
-	byte tval;	/* Item's tval */
-	byte sval;	/* Item's sval */
-	byte min;	/* Minimum starting amount */
-	byte max;	/* Maximum starting amount */
-};
-
-
-/*
- * Player class info
- */
-struct player_class
-{
-	u32b name;			/* Name (offset) */
-
-	u32b title[10];		/* Titles - offset */
-
-	s16b c_adj[A_MAX];	/* Class stat modifier */
-
-	s16b c_skills[SKILL_MAX];	/* class skills */
-	s16b x_skills[SKILL_MAX];	/* extra skills */
-
-	s16b c_mhp;			/* Class hit-dice adjustment */
-	s16b c_exp;			/* Class experience factor */
-
-	u32b flags;			/* Class Flags */
-
-	u16b max_attacks;	/* Maximum possible attacks */
-	u16b min_weight;	/* Minimum weapon weight for calculations */
-	u16b att_multiply;	/* Multiplier for attack calculations */
-
-	byte spell_book;	/* Tval of spell books (if any) */
-	u16b spell_stat;	/* Stat for spells (if any) */
-	u16b spell_first;	/* Level of first spell */
-	u16b spell_weight;	/* Weight that hurts spells */
-
-	u32b sense_base;	/* Base pseudo-id value */
-	u16b sense_div;		/* Pseudo-id divisor */
-
-	start_item start_items[MAX_START_ITEMS];/**< The starting inventory */
-
-	player_magic spells; /* Magic spells */
-};
-
-
-/*
- * Player background information
- */
-struct hist_type
-{
-	u32b text;			    /* Text (offset) */
-
-	byte roll;			    /* Frequency of this entry */
-	byte chart;			    /* Chart index */
-	byte next;			    /* Next chart index */
-	byte bonus;			    /* Social Class Bonus + 50 */
-};
-
-
-
-/*
- * Some more player information
- *
- * This information is retained across player lives
- */
-struct player_other
-{
-	char full_name[32];		/* Full name */
-	char base_name[32];		/* Base name */
-
-	bool opt[OPT_MAX];		/* Options */
-
-	u32b window_flag[ANGBAND_TERM_MAX];	/* Window flags */
-
-	byte hitpoint_warn;		/* Hitpoint warning (0 to 9) */
-
-	byte delay_factor;		/* Delay factor (0 to 9) */
 };
 
 

@@ -104,21 +104,14 @@ static cptr likert(int x, int y, byte *attr)
 /*
  * Obtain the "flags" for the player as if he was an item
  */
-void player_flags(u32b *f1, u32b *f2, u32b *f3)
+void player_flags(u32b f[OBJ_FLAG_N])
 {
-	/* Clear */
-	(*f1) = (*f2) = (*f3) = 0L;
-
 	/* Add racial flags */
-	(*f1) |= rp_ptr->flags1;
-	(*f2) |= rp_ptr->flags2;
-	(*f3) |= rp_ptr->flags3;
+	memcpy(f, rp_ptr->flags, sizeof(rp_ptr->flags));
 
 	/* Some classes become immune to fear at a certain plevel */
-	if (cp_ptr->flags & CF_BRAVERY_30)
-	{
-		if (p_ptr->lev >= 30) (*f2) |= (TR1_RES_FEAR);
-	}
+	if ((cp_ptr->flags & CF_BRAVERY_30) && p_ptr->lev >= 30)
+		f[1] |= TR1_RES_FEAR;
 }
 
 
@@ -244,15 +237,13 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 				object_flags_known(o_ptr, f);
 			else
 			{
-				player_flags(&f[0], &f[1], &f[2]);
+				player_flags(f);
 
 				/* If the race has innate infravision, force the corresponding flag
 				   here.  If we set it in player_flags(), then all callers of that
 				   function will think the infravision is caused by equipment. */
 				if (rp_ptr->infra > 0)
-				{
 					f[0] |= (TR0_INFRA);
-				}
 			}
 
 			res = (0 != (f[resists[i].set] & resists[i].res_flag));
@@ -469,7 +460,7 @@ static void display_player_sust_info(void)
 	}
 
 	/* Player flags */
-	player_flags(&f[0], &f[1], &f[2]);
+	player_flags(&f);
 
 	/* Check stats */
 	for (stat = 0; stat < A_MAX; ++stat)
