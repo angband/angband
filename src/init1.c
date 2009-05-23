@@ -1391,8 +1391,8 @@ errr parse_f_info(char *buf, header *head)
  */
 static errr grab_one_object_flag(u32b flags[OBJ_FLAG_N], cptr what)
 {
-	if (grab_one_flag(&flags[0], k_info_flags1, what) == 0 &&
-			grab_one_flag(&flags[1], k_info_flags2, what) == 0 &&
+	if (grab_one_flag(&flags[0], k_info_flags1, what) == 0 ||
+			grab_one_flag(&flags[1], k_info_flags2, what) == 0 ||
 			grab_one_flag(&flags[2], k_info_flags3, what) == 0)
 		return (0);
 
