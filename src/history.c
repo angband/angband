@@ -415,3 +415,36 @@ void history_display(void)
 
 	return;
 }
+
+
+/* Dump character history to a file, which we assume is already open. */
+void dump_history(ang_file *file)
+{
+	int i;
+	char buf[90];
+
+        file_putf(file, "============================================================\n");
+        file_putf(file, "                   CHAR.\n");
+        file_putf(file, "|   TURN  | DEPTH |LEVEL| EVENT\n");
+        file_putf(file, "============================================================\n");
+
+	for (i = 0; i < (last_printable_item() + 1); i++)
+	{
+		/* Skip not-yet-IDd artifacts */
+		if (history_masked(i)) continue;
+
+                strnfmt(buf, sizeof(buf), "%10d%7d\'%5d   %s",
+                                history_list[i].turn,
+                                history_list[i].dlev * 50,
+                                history_list[i].clev,
+                                history_list[i].event);
+
+                if (history_list[i].type & HISTORY_ARTIFACT_LOST)
+                                my_strcat(buf, " (LOST)", sizeof(buf));
+
+		file_putf(file, buf);
+		file_putf(file, "\n");
+	}
+
+	return;
+}

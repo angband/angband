@@ -352,6 +352,7 @@ bool history_add_artifact(byte a_idx, bool known);
 void history_unmask_unknown(void);
 bool history_lose_artifact(byte a_idx);
 void history_display(void);
+void dump_history(ang_file *file);
 
 /* init2.c */
 extern void init_file_paths(const char *path);

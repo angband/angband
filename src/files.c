@@ -1101,6 +1101,9 @@ errr file_character(const char *path, bool full)
 
 	text_out_indent = text_out_wrap = 0;
 
+	/* Dump character history */
+	dump_history(fp);
+	file_putf(fp, "\n\n");
 
 	/* Dump options */
 	file_putf(fp, "  [Options]\n\n");
