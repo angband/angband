@@ -150,7 +150,7 @@ static const flag_type f3_misc[] =
 	{ TR2_SLOW_DIGEST, "Slows your metabolism" },
 	{ TR2_IMPAIR_HP, "Impairs hitpoint recovery" },
 	{ TR2_IMPAIR_MANA, "Impairs mana recovery" },
-	{ TR2_AFRAID, "Makes you unable to hit foes" },
+	{ TR2_AFRAID, "Makes you afraid of melee, and worse at shooting and casting spells" },
 	{ TR2_FEATHER, "Feather Falling" },
 	{ TR2_REGEN, "Speeds regeneration" },
 	{ TR2_FREE_ACT, "Prevents paralysis" },
