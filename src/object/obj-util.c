@@ -1479,7 +1479,7 @@ s32b object_value(const object_type *o_ptr, int qty)
 
 		value = object_value_real(o_ptr, qty);
 	}
-	else
+	else if (wearable_p(o_ptr))
 	{
 		object_type object_type_body;
 		object_type *j_ptr = &object_type_body;
@@ -1496,14 +1496,12 @@ s32b object_value(const object_type *o_ptr, int qty)
 
 		value = object_value_real(j_ptr, qty);
 	}
+	else value = object_value_base(o_ptr) * qty;
 
 
 	/* Return the final value */
 	return (value);
 }
-
-
-
 
 
 /*
