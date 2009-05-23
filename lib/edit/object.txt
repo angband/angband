@@ -2179,15 +2179,6 @@ E:TOUGHNESS
 
 ### Knowledge ###
 
-N:340:Self Knowledge
-G:!:d
-I:75:29:0
-W:40:0:4:2000
-A:50:40 to 100
-P:0:1d1:0:0:0
-F:EASY_KNOW
-E:SELF_KNOW
-
 N:341:Enlightenment
 G:!:d
 I:75:30:0
