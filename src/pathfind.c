@@ -867,6 +867,26 @@ static bool run_test(void)
 	}
 
 
+	/* Look at every soon to be newly adjacent square. */
+	for (i = -max; i <= max; i++)
+	{		
+		/* New direction */
+		new_dir = cycle[chome[prev_dir] + i];
+		
+		/* New location */
+		row = py + ddy[prev_dir] + ddy[new_dir];
+		col = px + ddx[prev_dir] + ddx[new_dir];
+		
+		/* Visible monsters abort running */
+		if (cave_m_idx[row][col] > 0)
+		{
+			monster_type *m_ptr = &mon_list[cave_m_idx[row][col]];
+			
+			/* Visible monster */
+			if (m_ptr->ml) return (TRUE);			
+		}
+	}
+
 	/* Looking for open area */
 	if (p_ptr->run_open_area)
 	{
