@@ -178,8 +178,8 @@ int apply_autoinscription(object_type *o_ptr)
 	if (!note || !object_aware_p(o_ptr))
 		return 0;
 
-	/* Don't re-inscribe if it's already correctly inscribed */
-	if (existing_inscription && streq(note, existing_inscription))
+	/* Don't re-inscribe if it's already inscribed */
+	if (existing_inscription)
 		return 0;
 
 	/* Get an object description */
