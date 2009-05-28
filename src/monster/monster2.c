@@ -560,10 +560,10 @@ s16b get_mon_num(int level)
  */
 void display_monlist(void)
 {
-	int i, max;
+	int i, j, k, max;
 	int line = 1, x = 0;
 	int cur_x;
-	unsigned total_count = 0, disp_count = 0;
+	unsigned total_count = 0, disp_count = 0, type_count = 0;
 
 	byte attr;
 
@@ -572,8 +572,10 @@ void display_monlist(void)
 
 	monster_type *m_ptr;
 	monster_race *r_ptr;
+	monster_race *r2_ptr;
 
 	u16b *race_count;
+	u16b *order;
 
 	bool in_term = (Term != angband_term[0]);
 
@@ -600,7 +602,7 @@ void display_monlist(void)
 		max = Term->hgt - 2;
 	}
 
-	/* Allocate the array */
+	/* Allocate the primary array */
 	race_count = C_ZNEW(z_info->r_max, u16b);
 
 	/* Scan the monster list */
@@ -611,6 +613,9 @@ void display_monlist(void)
 		/* Only visible monsters */
 		if (!m_ptr->ml) continue;
 
+		/* If this is the first one of this type, count the type */
+		if (!race_count[m_ptr->r_idx]) type_count++;
+		
 		/* Bump the count for this race, and the total count */
 		race_count[m_ptr->r_idx]++;
 		total_count++;
@@ -635,21 +640,57 @@ void display_monlist(void)
 	prt(format("You can see %d monster%s:",
 		total_count, (total_count > 1 ? "s" : "")), 0, 0);
 
+	/* Allocate the secondary array */
+	order = C_ZNEW(type_count, u16b);
 
-	/* Go over in reverse order (so we show harder monsters first) */
-	for (i = z_info->r_max - 1; (i > 0) && (line < max); i--)
+
+	/* Sort, because we cannot rely on monster.txt being ordered */
+
+	/* Populate the ordered array, starting at 1 to ignore @ */
+	for (i = 1; i < z_info->r_max; i++)
 	{
 		/* No monsters of this race are visible */
 		if (!race_count[i]) continue;
 
+		/* Get the monster info */
+		r_ptr = &r_info[i];
+
+		/* Fit this monster into the sorted array */
+		for (j = 0; j < type_count; j++)
+		{
+			r2_ptr = &r_info[order[j]];
+
+			/* Monsters are sorted by depth */
+			/* Monsters of same depth are sorted by power */
+			if ((r_ptr->level > r2_ptr->level) ||
+				((r_ptr->level == r2_ptr->level) &&
+				(r_ptr->power > r2_ptr->power)))
+			{
+				/* Move weaker monsters down the array */
+				for (k = type_count - 1; k > j; k--)
+				{
+					order[k] = order[k - 1];
+				}
+
+				/* Put current monster in the right place */
+				order[j] = i;
+				break;
+			}
+		}
+	}
+		
+
+	/* Print them out in descending order */
+	for (i = 0; (i < type_count) && (line < max); i++)
+	{
 		/* Reset position */
 		cur_x = x;
 
 		/* Note that these have been displayed */
-		disp_count += race_count[i];
+		disp_count += race_count[order[i]];
 
 		/* Get monster race and name */
-		r_ptr = &r_info[i];
+		r_ptr = &r_info[order[i]];
 		m_name = r_name + r_ptr->name;
 
 		/* Display uniques in a special colour */
@@ -661,10 +702,11 @@ void display_monlist(void)
 			attr = TERM_WHITE;
 
 		/* Build the monster name */
-		if (race_count[i] == 1)
+		if (race_count[order[i]] == 1)
 			my_strcpy(buf, m_name, sizeof(buf));
 		else
-			strnfmt(buf, sizeof(buf), "%s (x%d) ", m_name, race_count[i]);
+			strnfmt(buf, sizeof(buf), "%s (x%d) ", m_name, 
+				race_count[order[i]]);
 
 		/* Display the pict */
 		Term_putch(cur_x++, line, r_ptr->x_attr, r_ptr->x_char);
@@ -710,8 +752,9 @@ void display_monlist(void)
 	if (!in_term)
 		Term_addstr(-1, TERM_WHITE, "  (Press any key to continue.)");
 
-	/* Free the race counters */
+	/* Free the arrays */
 	FREE(race_count);
+	FREE(order);
 }
 
 
