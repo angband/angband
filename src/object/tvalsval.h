@@ -350,11 +350,6 @@ enum sval_gold /* tval 100 */
 #define SV_FOOD_MIN_SHROOM   5
 
 /*
- * Special "sval" limit -- first "aimed" rod
- */
-#define SV_ROD_MIN_DIRECTION	12
-
-/*
  * Special "sval" limit -- first "large" chest
  */
 #define SV_CHEST_MIN_LARGE	4
