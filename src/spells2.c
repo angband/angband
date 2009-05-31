@@ -1796,17 +1796,7 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 	s = "You have nothing to enchant.";
 	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
 
-	/* Get the item (in the pack) */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-
-	/* Get the item (on the floor) */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
+	o_ptr = object_from_item_idx(item);
 
 
 	/* Description */
@@ -1858,17 +1848,7 @@ bool ident_spell(void)
 	s = "You have nothing to identify.";
 	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
 
-	/* Get the item (in the pack) */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-
-	/* Get the item (on the floor) */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
+	o_ptr = object_from_item_idx(item);
 
 
 	/* Identify the object */
@@ -1928,17 +1908,7 @@ bool recharge(int num)
 	s = "You have nothing to recharge.";
 	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return (FALSE);
 
-	/* Get the item (in the pack) */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-
-	/* Get the item (on the floor) */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
+	o_ptr = object_from_item_idx(item);
 
 
 	/* Extract the object "level" */
@@ -3595,17 +3565,7 @@ bool brand_ammo(void)
 	s = "You have nothing to brand.";
 	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
 
-	/* Get the item (in the pack) */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-
-	/* Get the item (on the floor) */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
+	o_ptr = object_from_item_idx(item);
 
 	r = randint0(100);
 
@@ -3643,17 +3603,7 @@ bool brand_bolts(void)
 	s = "You have no bolts to brand.";
 	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return (FALSE);
 
-	/* Get the item (in the pack) */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-
-	/* Get the item (on the floor) */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
+	o_ptr = object_from_item_idx(item);
 
 	/* Brand the bolts */
 	brand_object(o_ptr, EGO_FLAME);

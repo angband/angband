@@ -62,7 +62,6 @@ ANGFILES = \
 	cmd3.o \
 	cmd4.o \
 	cmd5.o \
-	cmd6.o \
 	cmd-know.o \
 	cmd-obj.o \
 	death.o \

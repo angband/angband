@@ -1332,7 +1332,7 @@ static void dungeon(void)
 	/* If autosave is pending, do it now. */
 	if (p_ptr->autosave)
 	{
-		do_cmd_save_game();
+		save_game();
 		p_ptr->autosave = FALSE;
 	}
 

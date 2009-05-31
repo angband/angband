@@ -2234,11 +2234,8 @@ static void store_sell(void)
 		return;
 	}
 
-	/* Get the item (in the pack) */
-	if (item >= 0)
-		o_ptr = &inventory[item];
- 	else
-		o_ptr = &o_list[0 - item];
+	/* Get the item */
+	o_ptr = object_from_item_idx(item);
 
 	/* Hack -- Cannot remove cursed objects */
 	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
@@ -2593,7 +2590,7 @@ static bool store_process_command(char cmd, void *db, int oid)
 		/* Wear/wield equipment */
 		case 'w':
 		{
-			do_cmd_wield();
+			textui_cmd_wield();
 			redraw = TRUE;
 			
 			break;
@@ -2603,7 +2600,7 @@ static bool store_process_command(char cmd, void *db, int oid)
 		case 'T':
 		case 't':
 		{
-			do_cmd_takeoff();
+			textui_cmd_takeoff();
 			redraw = TRUE;
 			
 			break;
@@ -2613,7 +2610,7 @@ static bool store_process_command(char cmd, void *db, int oid)
 		case KTRL('D'):
 		case 'k':
 		{
-			do_cmd_destroy();
+			textui_cmd_destroy();
 			redraw = TRUE;
 			
 			break;
@@ -2679,7 +2676,7 @@ static bool store_process_command(char cmd, void *db, int oid)
 		/* Inscribe an object */
 		case '{':
 		{
-			do_cmd_inscribe();
+			textui_cmd_inscribe();
 			redraw = TRUE;
 			
 			break;
@@ -2688,7 +2685,7 @@ static bool store_process_command(char cmd, void *db, int oid)
 		/* Uninscribe an object */
 		case '}':
 		{
-			do_cmd_uninscribe();
+			textui_cmd_uninscribe();
 			redraw = TRUE;
 			
 			break;
@@ -2755,6 +2752,9 @@ static bool store_process_command(char cmd, void *db, int oid)
 		}
 	}
 
+	/* Let the game handle any core commands (equipping, etc) */
+	process_command(TRUE);
+
 	if (redraw)
 	{
 		event_signal(EVENT_INVENTORY);
@@ -2769,7 +2769,7 @@ static bool store_process_command(char cmd, void *db, int oid)
 /*
  * Enter a store, and interact with it.
  */
-void do_cmd_store(void)
+void do_cmd_store(cmd_code code, cmd_arg args[])
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;

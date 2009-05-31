@@ -197,7 +197,7 @@ void wield_item(object_type *o_ptr, int item)
 /*
  * Destroy an item
  */
-void do_cmd_destroy(void)
+void do_cmd_destroy(cmd_code code, cmd_arg args[])
 {
 	int item, amt;
 
@@ -207,31 +207,18 @@ void do_cmd_destroy(void)
 	object_type object_type_body;
 
 	char o_name[120];
-	char out_val[160];
 
-	cptr q, s;
+	item = args[0].item;
+	amt = args[1].number;
 
-	/* Get an item */
-	q = "Destroy which item? ";
-	s = "You have nothing to destroy.";
-	if (!get_item(&item, q, s, (USE_INVEN | USE_EQUIP | USE_FLOOR | CAN_SQUELCH))) return;
-
-	/* Deal with squelched items */
+	/* Destroying squelched items is easy. */
 	if (item == ALL_SQUELCHED)
 	{
 		squelch_items();
 		return;
 	}
 
-	 if (item >= 0)
-		o_ptr = &inventory[item];
-	else
-		o_ptr = &o_list[0 - item];
-
-	/* Get a quantity */
-	amt = get_quantity(NULL, o_ptr->number);
-	if (amt <= 0) return;
-
+	o_ptr = object_from_item_idx(item);
 
 	/* Get local object */
 	i_ptr = &object_type_body;
@@ -250,11 +237,6 @@ void do_cmd_destroy(void)
 
 	/* Describe the destroyed object */
 	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
-
-	/* Verify destruction */
-	strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", o_name);
-	if (!get_check(out_val)) return;
-
 
 	/* Artifacts cannot be destroyed */
 	if (artifact_p(o_ptr))
@@ -279,6 +261,81 @@ void do_cmd_destroy(void)
 	/* Reduce the charges of rods/wands/staves */
 	reduce_charges(o_ptr, amt);
 
+	/* Eliminate the item (from the pack) */
+	if (item >= 0)
+	{
+		inven_item_increase(item, -amt);
+		inven_item_describe(item);
+		inven_item_optimize(item);
+	}
+
+	/* Eliminate the item (from the floor) */
+	else
+	{
+		floor_item_increase(0 - item, -amt);
+		floor_item_describe(0 - item);
+		floor_item_optimize(0 - item);
+	}
+}
+
+
+void textui_cmd_destroy(void)
+{
+	int item, amt;
+
+	object_type *o_ptr;
+
+	object_type *i_ptr;
+	object_type object_type_body;
+
+	char o_name[120];
+	char out_val[160];
+
+	cptr q, s;
+
+	/* Get an item */
+	q = "Destroy which item? ";
+	s = "You have nothing to destroy.";
+	if (!get_item(&item, q, s, (USE_INVEN | USE_EQUIP | USE_FLOOR | CAN_SQUELCH))) return;
+
+	/* Deal with squelched items */
+	if (item == ALL_SQUELCHED)
+	{
+		cmd_insert(CMD_DESTROY, item, 0);
+		return;
+	}
+	
+	o_ptr = object_from_item_idx(item);
+
+	/* Get a quantity */
+	amt = get_quantity(NULL, o_ptr->number);
+	if (amt <= 0) return;
+
+	/* Get local object */
+	i_ptr = &object_type_body;
+	object_copy(i_ptr, o_ptr);
+
+	if ((o_ptr->tval == TV_WAND) ||
+	    (o_ptr->tval == TV_STAFF) ||
+	    (o_ptr->tval == TV_ROD))
+	{
+		/* Calculate the amount of destroyed charges */
+		i_ptr->pval = o_ptr->pval * amt / o_ptr->number;
+	}
+
+	/* Set quantity */
+	i_ptr->number = amt;
+
+	/* Describe the destroyed object */
+	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
+
+	/* Verify destruction */
+	strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", o_name);
+	if (!get_check(out_val)) return;
+
+	/* Tell the game to destroy the item. */
+	cmd_insert(CMD_DESTROY, item, amt);
+
 	/* Check for squelching */
 	if (squelch_tval(o_ptr->tval))
 	{
@@ -298,26 +355,7 @@ void do_cmd_destroy(void)
 			msg_format("Ignoring %s from now on.", sval_name);
 		}		
 	}
-
-	/* Eliminate the item (from the pack) */
-	if (item >= 0)
-	{
-		inven_item_increase(item, -amt);
-		inven_item_describe(item);
-		inven_item_optimize(item);
-	}
-
-	/* Eliminate the item (from the floor) */
-	else
-	{
-		floor_item_increase(0 - item, -amt);
-		floor_item_describe(0 - item);
-		floor_item_optimize(0 - item);
-	}
 }
-
-
-
 
 void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 {

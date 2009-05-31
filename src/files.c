@@ -18,6 +18,7 @@
 #include "angband.h"
 #include "object/tvalsval.h"
 #include "ui-menu.h"
+#include "game-cmd.h"
 #include "cmds.h"
 #include "option.h"
 
@@ -1674,55 +1675,9 @@ void process_player_name(bool sf)
 
 
 /*
- * Hack -- commit suicide
- */
-void do_cmd_suicide(void)
-{
-	/* Flush input */
-	flush();
-
-	/* Verify Retirement */
-	if (p_ptr->total_winner)
-	{
-		/* Verify */
-		if (!get_check("Do you want to retire? ")) return;
-	}
-
-	/* Verify Suicide */
-	else
-	{
-		char ch;
-
-		/* Verify */
-		if (!get_check("Do you really want to commit suicide? ")) return;
-
-		/* Special Verification for suicide */
-		prt("Please verify SUICIDE by typing the '@' sign: ", 0, 0);
-		flush();
-		ch = inkey();
-		prt("", 0, 0);
-		if (ch != '@') return;
-	}
-
-	/* Commit suicide */
-	p_ptr->is_dead = TRUE;
-
-	/* Stop playing */
-	p_ptr->playing = FALSE;
-
-	/* Leaving */
-	p_ptr->leaving = TRUE;
-
-	/* Cause of death */
-	my_strcpy(p_ptr->died_from, "Quitting", sizeof(p_ptr->died_from));
-}
-
-
-
-/*
  * Save the game
  */
-void do_cmd_save_game(void)
+void save_game(void)
 {
 	/* Disturb the player */
 	disturb(1, 0);
@@ -1807,7 +1762,7 @@ void close_game(void)
 	else
 	{
 		/* Save the game */
-		do_cmd_save_game();
+		save_game();
 
 		if (Term->mapped_flag)
 		{

@@ -19,7 +19,7 @@
 #include "wizard.h"
 #include "cmds.h"
 #include "ui-menu.h"
-
+#include "game-cmd.h"
 
 /*
  * This file contains (several) big lists of commands, so that they can be
@@ -39,7 +39,7 @@ typedef void do_cmd_type(void);
 
 /* Forward declare these, because they're really defined later */
 static do_cmd_type do_cmd_wizard, do_cmd_try_debug,
-            do_cmd_quit, do_cmd_mouseclick, do_cmd_port,
+            do_cmd_mouseclick, do_cmd_port,
 			do_cmd_xxx_options, do_cmd_menu, do_cmd_monlist, do_cmd_itemlist;
 
 #ifdef ALLOW_BORG
@@ -47,129 +47,131 @@ static do_cmd_type do_cmd_try_borg;
 #endif
 
 /*
- * Holds a generic command.
+ * Holds a generic command - if cmd is set to other than CMD_NULL 
+ * it simply pushes that command to the game, otherwise the hook 
+ * function will be called.
  */
 typedef struct
 {
 	const char *desc;
 	unsigned char key;
+	cmd_code cmd;
 	do_cmd_type *hook;
 } command_type;
-
 
 /* Magic use */
 static command_type cmd_magic[] =
 {
-	{ "Gain new spells or prayers", 'G', do_cmd_study },
-	{ "Browse a book",              'b', do_cmd_browse },
-	{ "Cast a spell",               'm', do_cmd_cast },
-	{ "Pray a prayer",              'p', do_cmd_pray }
+	{ "Gain new spells or prayers", 'G', CMD_NULL, textui_cmd_study },
+	{ "Browse a book",              'b', CMD_NULL, do_cmd_browse },
+	{ "Cast a spell",               'm', CMD_NULL, textui_cmd_cast },
+	{ "Pray a prayer",              'p', CMD_NULL, textui_cmd_pray }
 };
 
 /* General actions */
 static command_type cmd_action[] =
 {
-	{ "Search for traps/doors",     's', do_cmd_search },
-	{ "Disarm a trap or chest",     'D', do_cmd_disarm },
-	{ "Rest for a while",           'R', do_cmd_rest },
-	{ "Look around",                'l', do_cmd_look },
-	{ "Target monster or location", '*', do_cmd_target },
-	{ "Dig a tunnel",               'T', do_cmd_tunnel },
-	{ "Go up staircase",            '<', do_cmd_go_up },
-	{ "Go down staircase",          '>', do_cmd_go_down },
-	{ "Toggle search mode",         'S', do_cmd_toggle_search },
-	{ "Open a door or a chest",     'o', do_cmd_open },
-	{ "Close a door",               'c', do_cmd_close },
-	{ "Jam a door shut",            'j', do_cmd_spike },
-	{ "Bash a door open",           'B', do_cmd_bash }
+	{ "Search for traps/doors",     's', CMD_SEARCH, NULL },
+	{ "Disarm a trap or chest",     'D', CMD_NULL, textui_cmd_disarm },
+	{ "Rest for a while",           'R', CMD_NULL, textui_cmd_rest },
+	{ "Look around",                'l', CMD_NULL, do_cmd_look },
+	{ "Target monster or location", '*', CMD_NULL, do_cmd_target },
+	{ "Dig a tunnel",               'T', CMD_NULL, textui_cmd_tunnel },
+	{ "Go up staircase",            '<', CMD_GO_UP, NULL },
+	{ "Go down staircase",          '>', CMD_GO_DOWN, NULL },
+	{ "Toggle search mode",         'S', CMD_TOGGLE_SEARCH, NULL },
+	{ "Open a door or a chest",     'o', CMD_NULL, textui_cmd_open },
+	{ "Close a door",               'c', CMD_NULL, textui_cmd_close },
+	{ "Jam a door shut",            'j', CMD_NULL, textui_cmd_spike },
+	{ "Bash a door open",           'B', CMD_NULL, textui_cmd_bash }
 };
 
 /* Item use commands */
 static command_type cmd_item_use[] =
 {
-	{ "Read a scroll",            'r', do_cmd_read_scroll },
-	{ "Quaff a potion",           'q', do_cmd_quaff_potion },
-	{ "Use a staff",              'u', do_cmd_use_staff },
-	{ "Aim a wand",               'a', do_cmd_aim_wand },
-	{ "Zap a rod",                'z', do_cmd_zap_rod },
-	{ "Activate an object",       'A', do_cmd_activate },
-	{ "Eat some food",            'E', do_cmd_eat_food },
-	{ "Fuel your light source",   'F', do_cmd_refill },
-	{ "Fire your missile weapon", 'f', do_cmd_fire },
-	{ "Throw an item",            'v', do_cmd_throw }
+	{ "Read a scroll",            'r', CMD_NULL, textui_cmd_read_scroll },
+	{ "Quaff a potion",           'q', CMD_NULL, textui_cmd_quaff_potion },
+	{ "Use a staff",              'u', CMD_NULL, textui_cmd_use_staff },
+	{ "Aim a wand",               'a', CMD_NULL, textui_cmd_aim_wand },
+	{ "Zap a rod",                'z', CMD_NULL, textui_cmd_zap_rod },
+	{ "Activate an object",       'A', CMD_NULL, textui_cmd_activate },
+	{ "Eat some food",            'E', CMD_NULL, textui_cmd_eat_food },
+	{ "Fuel your light source",   'F', CMD_NULL, textui_cmd_refill },
+	{ "Fire your missile weapon", 'f', CMD_NULL, textui_cmd_fire },
+	{ "Throw an item",            'v', CMD_NULL, textui_cmd_throw }
 };
 
 /* Item management commands */
-static command_type cmd_item_manage[]  =
+static command_type cmd_item_manage[] =
 {
-	{ "Display equipment listing", 'e', do_cmd_equip },
-	{ "Display inventory listing", 'i', do_cmd_inven },
-	{ "Pick up objects",           'g', do_cmd_pickup },
-	{ "Wear/wield an item",        'w', do_cmd_wield },
-	{ "Take/unwield off an item",  't', do_cmd_takeoff },
-	{ "Drop an item",              'd', do_cmd_drop },
-	{ "Destroy an item",           'k', do_cmd_destroy },
-	{ "Examine an item",           'I', do_cmd_observe },
-	{ "Inscribe an object",        '{', do_cmd_inscribe },
-	{ "Uninscribe an object",      '}', do_cmd_uninscribe }
+	{ "Display equipment listing", 'e', CMD_NULL, do_cmd_equip },
+	{ "Display inventory listing", 'i', CMD_NULL, do_cmd_inven },
+	{ "Pick up objects",           'g', CMD_PICKUP, NULL },
+	{ "Wear/wield an item",        'w', CMD_NULL, textui_cmd_wield },
+	{ "Take/unwield off an item",  't', CMD_NULL, textui_cmd_takeoff },
+	{ "Drop an item",              'd', CMD_NULL, textui_cmd_drop },
+	{ "Destroy an item",           'k', CMD_NULL, textui_cmd_destroy },
+	{ "Examine an item",           'I', CMD_NULL, do_cmd_observe },
+	{ "Inscribe an object",        '{', CMD_NULL, textui_cmd_inscribe },
+	{ "Uninscribe an object",      '}', CMD_NULL, textui_cmd_uninscribe }
 };
 
 /* Information access commands */
 static command_type cmd_info[] =
 {
-	{ "Full dungeon map",             'M', do_cmd_view_map },
-	{ "Display visible item list",    ']', do_cmd_itemlist },
-	{ "Display visible monster list", '[', do_cmd_monlist },
-	{ "Locate player on map",         'L', do_cmd_locate },
-	{ "Help",                         '?', do_cmd_help },
-	{ "Identify symbol",              '/', do_cmd_query_symbol },
-	{ "Character description",        'C', do_cmd_change_name },
-	{ "Check knowledge",              '~', do_cmd_knowledge },
-	{ "Repeat level feeling",   KTRL('F'), do_cmd_feeling },
-	{ "Show previous message",  KTRL('O'), do_cmd_message_one },
-	{ "Show previous messages", KTRL('P'), do_cmd_messages }
+	{ "Full dungeon map",             'M', CMD_NULL, do_cmd_view_map },
+	{ "Display visible item list",    ']', CMD_NULL, do_cmd_itemlist },
+	{ "Display visible monster list", '[', CMD_NULL, do_cmd_monlist },
+	{ "Locate player on map",         'L', CMD_NULL, do_cmd_locate },
+	{ "Help",                         '?', CMD_NULL, do_cmd_help },
+	{ "Identify symbol",              '/', CMD_NULL, do_cmd_query_symbol },
+	{ "Character description",        'C', CMD_NULL, do_cmd_change_name },
+	{ "Check knowledge",              '~', CMD_NULL, do_cmd_knowledge },
+	{ "Repeat level feeling",   KTRL('F'), CMD_NULL, do_cmd_feeling },
+	{ "Show previous message",  KTRL('O'), CMD_NULL, do_cmd_message_one },
+	{ "Show previous messages", KTRL('P'), CMD_NULL, do_cmd_messages }
 };
 
 /* Utility/assorted commands */
 static command_type cmd_util[] =
 {
-	{ "Interact with options",        '=', do_cmd_xxx_options },
-	{ "Port-specific preferences",    '!', do_cmd_port },
+	{ "Interact with options",        '=', CMD_NULL, do_cmd_xxx_options },
+	{ "Port-specific preferences",    '!', CMD_NULL, do_cmd_port },
 
-	{ "Save and don't quit",  KTRL('S'), do_cmd_save_game },
-	{ "Save and quit",        KTRL('X'), do_cmd_quit },
-	{ "Quit (commit suicide)",      'Q', do_cmd_suicide },
-	{ "Redraw the screen",    KTRL('R'), do_cmd_redraw },
+	{ "Save and don't quit",  KTRL('S'), CMD_SAVE, NULL },
+	{ "Save and quit",        KTRL('X'), CMD_QUIT, NULL },
+	{ "Quit (commit suicide)",      'Q', CMD_NULL, textui_cmd_suicide },
+	{ "Redraw the screen",    KTRL('R'), CMD_NULL, do_cmd_redraw },
 
-	{ "Load \"screen dump\"",       '(', do_cmd_load_screen },
-	{ "Save \"screen dump\"",       ')', do_cmd_save_screen }
+	{ "Load \"screen dump\"",       '(', CMD_NULL, do_cmd_load_screen },
+	{ "Save \"screen dump\"",       ')', CMD_NULL, do_cmd_save_screen }
 };
 
 /* Commands that shouldn't be shown to the user */ 
 static command_type cmd_hidden[] =
 {
-	{ "Take notes",               ':', do_cmd_note },
-	{ "Version info",             'V', do_cmd_version },
-	{ "Load a single pref line",  '"', do_cmd_pref },
-	{ "Mouse click",           '\xff', do_cmd_mouseclick },
-	{ "Enter a store",            '_', do_cmd_store },
-	{ "Toggle windows",     KTRL('E'), toggle_inven_equip }, /* XXX */
-	{ "Alter a grid",             '+', do_cmd_alter },
-	{ "Walk",                     ';', do_cmd_walk },
-	{ "Jump into a trap",         '-', do_cmd_jump },
-	{ "Start running",            '.', do_cmd_run },
-	{ "Stand still",              ',', do_cmd_hold },
-	{ "Check knowledge",          '|', do_cmd_knowledge },
-	{ "Display menu of actions", '\n', do_cmd_menu },
-	{ "Display menu of actions", '\r', do_cmd_menu },
+	{ "Take notes",               ':', CMD_NULL, do_cmd_note },
+	{ "Version info",             'V', CMD_NULL, do_cmd_version },
+	{ "Load a single pref line",  '"', CMD_NULL, do_cmd_pref },
+	{ "Mouse click",           '\xff', CMD_NULL, do_cmd_mouseclick },
+	{ "Enter a store",            '_', CMD_ENTER_STORE, NULL },
+	{ "Toggle windows",     KTRL('E'), CMD_NULL, toggle_inven_equip }, /* XXX */
+	{ "Alter a grid",             '+', CMD_NULL, textui_cmd_alter },
+	{ "Walk",                     ';', CMD_NULL, textui_cmd_walk },
+	{ "Jump into a trap",         '-', CMD_NULL, textui_cmd_jump },
+	{ "Start running",            '.', CMD_NULL, textui_cmd_run },
+	{ "Stand still",              ',', CMD_HOLD, NULL },
+	{ "Check knowledge",          '|', CMD_NULL, do_cmd_knowledge },
+	{ "Display menu of actions", '\n', CMD_NULL, do_cmd_menu },
+	{ "Display menu of actions", '\r', CMD_NULL, do_cmd_menu },
 
-	{ "Toggle wizard mode",  KTRL('W'), do_cmd_wizard },
+	{ "Toggle wizard mode",  KTRL('W'), CMD_NULL, do_cmd_wizard },
 
 #ifdef ALLOW_DEBUG
-	{ "Debug mode commands", KTRL('A'), do_cmd_try_debug },
+	{ "Debug mode commands", KTRL('A'), CMD_NULL, do_cmd_try_debug },
 #endif
 #ifdef ALLOW_BORG
-	{ "Borg commands",       KTRL('Z'), do_cmd_try_borg }
+	{ "Borg commands",       KTRL('Z'), CMD_NULL, do_cmd_try_borg }
 #endif
 };
 
@@ -307,7 +309,7 @@ static void do_cmd_try_borg(void)
 /*
  * Quit the game.
  */
-static void do_cmd_quit(void)
+void do_cmd_quit(cmd_code code, cmd_arg args[])
 {
 	/* Stop playing */
 	p_ptr->playing = FALSE;
@@ -335,17 +337,17 @@ static void do_cmd_mouseclick(void)
 	/* XXX We could try various things here like going up/down stairs */
 	if ((p_ptr->py == y) && (p_ptr->px == x) /* && (p_ptr->command_cmd_ex.mousebutton) */)
 	{
-		do_cmd_rest();
+		textui_cmd_rest();
 	}
 	else /* if (p_ptr->command_cmd_ex.mousebutton == 1) */
 	{
 		if (p_ptr->timed[TMD_CONFUSED])
 		{
-			do_cmd_walk();
+			cmd_insert(CMD_WALK, DIR_UNKNOWN);
 		}
 		else
 		{
-			do_cmd_pathfind(y, x);
+			cmd_insert(CMD_PATHFIND, y, x);
 		}
 	}
 	/*
@@ -425,7 +427,10 @@ static void do_cmd_unknown(void)
 
 
 /* List indexed by char */
-do_cmd_type *converted_list[UCHAR_MAX+1];
+struct {
+	do_cmd_type *hook;
+	cmd_code cmd;
+} converted_list[UCHAR_MAX+1];
 
 
 /*** Menu functions ***/
@@ -551,7 +556,7 @@ static void do_cmd_menu(void)
 
 	ui_event_data evt;
 	int cursor = 0;
-	command_type chosen_command = { NULL, 0, NULL };
+	command_type chosen_command = { NULL };
 
 	/* Set up the menu */
 	WIPE(&menu, menu);
@@ -571,7 +576,11 @@ static void do_cmd_menu(void)
 	screen_load();
 
 	/* If a command was chosen, do it. */
-	if (chosen_command.hook)
+	if (chosen_command.cmd != CMD_NULL)
+	{
+		cmd_insert(chosen_command.cmd);
+	}
+	else if (chosen_command.hook)
 	{
 		chosen_command.hook();
 	}
@@ -599,7 +608,8 @@ void cmd_init(void)
 
 			/* Note: at present converted_list is UCHAR_MAX + 1 
 			   large, so 'key' is always a valid index. */
-			converted_list[key] = commands[i].hook;
+			converted_list[key].hook = commands[i].hook;
+			converted_list[key].cmd = commands[i].cmd;
 		}
 	}
 
@@ -618,8 +628,11 @@ void cmd_init(void)
 
 			default:
 			{
-				if (!converted_list[i])
-					converted_list[i] = do_cmd_unknown;
+				if (!converted_list[i].hook && !converted_list[i].cmd)
+				{
+					converted_list[i].hook = do_cmd_unknown;
+					converted_list[i].cmd = CMD_NULL;
+				}
 			}
 		}		
 	}
@@ -630,7 +643,7 @@ void cmd_init(void)
  * Parse and execute the current command
  * Give "Warning" on illegal commands.
  */
-void process_command(bool no_request)
+void textui_process_command(bool no_request)
 {
 	if (!no_request)
 		request_command();
@@ -647,9 +660,11 @@ void process_command(bool no_request)
 	{
 		/* Within these boundaries, the cast to unsigned char will have the desired effect */
 		assert(p_ptr->command_cmd >= CHAR_MIN && p_ptr->command_cmd <= CHAR_MAX);
-
 		/* Execute the command */
-		if (converted_list[(unsigned char) p_ptr->command_cmd])
-			converted_list[(unsigned char) p_ptr->command_cmd]();
+		if (converted_list[(unsigned char) p_ptr->command_cmd].cmd != CMD_NULL)
+			cmd_insert(converted_list[(unsigned char) p_ptr->command_cmd].cmd);
+
+		else if (converted_list[(unsigned char) p_ptr->command_cmd].hook)
+			converted_list[(unsigned char) p_ptr->command_cmd].hook();
 	}
 }

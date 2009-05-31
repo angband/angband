@@ -19,7 +19,7 @@
 
 #include "object/object.h"
 #include "object/tvalsval.h"
-
+#include "game-cmd.h"
 
 /**
  * Determines how likely an object is to break on throwing or shooting.
@@ -464,7 +464,7 @@ void py_attack(int y, int x)
  * Note that Bows of "Extra Might" get extra range and an extra bonus
  * for the damage multiplier.
  */
-void do_cmd_fire(void)
+void do_cmd_fire(cmd_code code, cmd_arg args[])
 {
 	int dir, item;
 	int i, j, y, x;
@@ -488,42 +488,17 @@ void do_cmd_fire(void)
 	int path_n;
 	u16b path_g[256];
 
-	cptr q, s;
-
 	int msec = op_ptr->delay_factor * op_ptr->delay_factor;
 
+	/* Get item to fire and direction to fire in. */
+	item = args[0].item;
+	dir = args[1].direction;
 
-	/* Get the "bow" (if any) */
+	/* Get the object for the ammo */
+	o_ptr = object_from_item_idx(item);
+
+	/* Get the "bow" */
 	j_ptr = &inventory[INVEN_BOW];
-
-	/* Require a usable launcher */
-	if (!j_ptr->tval || !p_ptr->state.ammo_tval)
-	{
-		msg_print("You have nothing to fire with.");
-		return;
-	}
-
-
-	/* Require proper missile */
-	item_tester_tval = p_ptr->state.ammo_tval;
-
-	/* Get an item */
-	q = "Fire which item? ";
-	s = "You have nothing to fire.";
-	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
-
-	/* Get the object */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
-
-	/* Get a direction (or cancel) */
-	if (!get_aim_dir(&dir)) return;
 
 	/* Base range XXX XXX */
 	tdis = 6 + 2 * p_ptr->state.ammo_mult;
@@ -759,7 +734,40 @@ void do_cmd_fire(void)
 	drop_near(i_ptr, j, y, x);
 }
 
+void textui_cmd_fire(void)
+{
+	object_type *j_ptr, *o_ptr;
+	int item;
+	int dir;
+	cptr q, s;
 
+
+	/* Get the "bow" (if any) */
+	j_ptr = &inventory[INVEN_BOW];
+
+	/* Require a usable launcher */
+	if (!j_ptr->tval || !p_ptr->state.ammo_tval)
+	{
+		msg_print("You have nothing to fire with.");
+		return;
+	}
+
+	/* Require proper missile */
+	item_tester_tval = p_ptr->state.ammo_tval;
+
+	/* Get an item */
+	q = "Fire which item? ";
+	s = "You have nothing to fire.";
+	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
+
+	/* Get the object */
+	o_ptr = object_from_item_idx(item);
+
+	/* Get a direction (or cancel) */
+	if (!get_aim_dir(&dir)) return;
+
+	cmd_insert(CMD_FIRE, item, dir);
+}
 
 /*
  * Throw an object from the pack or floor.
@@ -770,7 +778,7 @@ void do_cmd_fire(void)
  * to hit bonus of the weapon to have an effect?  Should it ever cause
  * the item to be destroyed?  Should it do any damage at all?
  */
-void do_cmd_throw(void)
+void do_cmd_throw(cmd_code code, cmd_arg args[])
 {
 	int dir, item;
 	int i, j, y, x;
@@ -793,30 +801,14 @@ void do_cmd_throw(void)
 	int path_n;
 	u16b path_g[256];
 
-	cptr q, s;
-
 	int msec = op_ptr->delay_factor * op_ptr->delay_factor;
 
-
-	/* Get an item */
-	q = "Throw which item? ";
-	s = "You have nothing to throw.";
-	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
+	/* Get item to throw and direction in which to throw it. */
+	item = args[0].item;
+	dir = args[1].direction;
 
 	/* Get the object */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
-
-
-	/* Get a direction (or cancel) */
-	if (!get_aim_dir(&dir)) return;
-
+	o_ptr = object_from_item_idx(item);
 
 	/* Get local object */
 	i_ptr = &object_type_body;
@@ -1045,4 +1037,20 @@ void do_cmd_throw(void)
 
 	/* Drop (or break) near that location */
 	drop_near(i_ptr, j, y, x);
+}
+
+void textui_cmd_throw(void)
+{
+	int item, dir;
+	cptr q, s;
+
+	/* Get an item */
+	q = "Throw which item? ";
+	s = "You have nothing to throw.";
+	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
+
+	/* Get a direction (or cancel) */
+	if (!get_aim_dir(&dir)) return;
+
+	cmd_insert(CMD_THROW, item, dir);
 }

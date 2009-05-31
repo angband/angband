@@ -20,6 +20,7 @@
 #include "ui-birth.h"
 #include "game-event.h"
 #include "game-cmd.h"
+#include "cmds.h"
 
 /*
  * Overview
@@ -473,7 +474,7 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 		}
 		else if (cx.key == '=') 
 		{
-			cmd_insert(CMD_OPTIONS);
+			do_cmd_options();
 			next = current;
 		}
 		else if (cx.key == KTRL('X')) 
@@ -740,7 +741,7 @@ static enum birth_stage get_name_command(void)
 
 	if (get_name(name, sizeof(name)))
 	{	
-		cmd_insert(CMD_NAME_CHOICE, string_make(name));
+		cmd_insert(CMD_NAME_CHOICE, name);
 		next = BIRTH_FINAL_CONFIRM;
 	}
 	else

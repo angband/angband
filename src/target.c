@@ -16,7 +16,8 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-#include "cmds.h"
+#include "game-cmd.h"
+/*#include "cmds.h"*/
 
 
 /*** File-wide variables ***/
@@ -1086,7 +1087,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 				case 'g':
 				{
-					do_cmd_pathfind(y, x);
+					cmd_insert(CMD_PATHFIND, y, x);
 					done = TRUE;
 					break;
 				}
@@ -1267,7 +1268,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 				case 'g':
 				{
-					do_cmd_pathfind(y,x);
+					cmd_insert(CMD_PATHFIND, y, x);
 					done = TRUE;
 					break;
 				}

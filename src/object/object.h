@@ -153,6 +153,21 @@ int lookup_artifact_name(const char *name);
 int lookup_sval(int tval, const char *name);
 int tval_find_idx(const char *name);
 const char *tval_find_name(int tval);
+bool obj_is_staff(const object_type *o_ptr);
+bool obj_is_wand(const object_type *o_ptr);
+bool obj_is_rod(const object_type *o_ptr);
+bool obj_is_potion(const object_type *o_ptr);
+bool obj_is_scroll(const object_type *o_ptr);
+bool obj_is_food(const object_type *o_ptr);
+bool obj_can_zap(const object_type *o_ptr);
+bool obj_can_activate(const object_type *o_ptr);
+bool obj_can_refill(const object_type *o_ptr);
+bool obj_can_browse(const object_type *o_ptr);
+bool obj_can_takeoff(const object_type *o_ptr);
+bool obj_can_wear(const object_type *o_ptr);
+bool obj_has_inscrip(const object_type *o_ptr);
+object_type *object_from_item_idx(int item);
+bool obj_needs_aim(object_type *o_ptr);
 
 /* obj-power.c and randart.c */
 s32b object_power(const object_type *o_ptr, int verbose, ang_file *log_file);

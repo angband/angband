@@ -243,8 +243,6 @@ extern byte squelch_level[SQUELCH_BYTES];
 extern int breakage_chance(const object_type *o_ptr);
 extern bool test_hit(int chance, int ac, int vis);
 extern void py_attack(int y, int x);
-extern void do_cmd_fire(void);
-extern void do_cmd_throw(void);
 
 /* birth.c */
 extern void player_birth(bool quickstart_allowed);
@@ -304,7 +302,6 @@ extern void move_player(int dir);
 /* cmd5.c */
 s16b spell_chance(int spell);
 bool spell_okay(int spell, bool known, bool browse);
-int spell_choose_new(const object_type *o_ptr);
 bool spell_cast(int spell);
 void spell_learn(int spell);
 
@@ -330,8 +327,7 @@ extern bool show_file(cptr name, cptr what, int line, int mode);
 extern void do_cmd_help(void);
 extern void process_player_name(bool sf);
 extern bool get_name(char *buf, size_t buflen);
-extern void do_cmd_suicide(void);
-extern void do_cmd_save_game(void);
+extern void save_game(void);
 extern void close_game(void);
 extern void exit_game_panic(void);
 
@@ -570,7 +566,6 @@ void store_init(void);
 void store_shuffle(int which);
 void store_maint(int which);
 bool store_overflow(void);
-void do_cmd_store(void);
 
 /* target.c */
 bool target_able(int m_idx);

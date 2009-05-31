@@ -572,7 +572,7 @@ void move_player(int dir)
 			p_ptr->command_arg = 0;
 		}
 
-		do_cmd_alter();
+		do_cmd_alter_aux(dir);
 	}
 
 	/* Cannot walk through walls */
@@ -672,9 +672,7 @@ void move_player(int dir)
 		{
 			/* Disturb */
 			disturb(0, 0);
-
-			/* Hack -- Enter store */
-			p_ptr->command_new = '_';
+			cmd_insert(CMD_ENTER_STORE);
 		}
 
 

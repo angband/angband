@@ -3628,7 +3628,7 @@ static void quit_calmly(void)
 
 		/* Save the game */
 #ifndef ZANG_AUTO_SAVE
-		do_cmd_save_game();
+		save_game();
 #else
 		do_cmd_save_game(FALSE);
 #endif /* !ZANG_AUTO_SAVE */

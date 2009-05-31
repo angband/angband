@@ -1758,6 +1758,8 @@ errr textui_get_cmd(cmd_context context, bool wait)
 {
 	if (context == CMD_BIRTH)
 		return get_birth_command(wait);
+	else if (context == CMD_GAME)
+		textui_process_command(!wait);
 
 	/* If we've reached here, we haven't got a command. */
 	return 1;

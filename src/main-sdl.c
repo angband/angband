@@ -2528,7 +2528,7 @@ static errr sdl_HandleEvent(SDL_Event *event)
 				msg_flag = FALSE;
 				
 				/* Save the game */
-				do_cmd_save_game();
+				save_game();
 			}
 			
 			save_prefs();

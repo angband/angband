@@ -656,7 +656,7 @@ static bool save_game_gtk(void)
 		msg_flag = FALSE;
 		
 		/* Save the game */
-		do_cmd_save_game();
+		save_game();
 	}
 	
 	return(TRUE);
@@ -935,7 +935,7 @@ gboolean save_event_handler(GtkWidget *widget, GdkEvent *event, gpointer user_da
 	bool accepted;
 	
 	if (game_saved)
-		do_cmd_save_game();
+		save_game();
 	else
 	{
 		accepted = save_dialog_box(TRUE);

@@ -17,7 +17,7 @@
  */
 #include "angband.h"
 #include "object/tvalsval.h"
-
+#include "game-cmd.h"
 
 /*
  * Returns chance of failure for a spell
@@ -525,44 +525,53 @@ void do_cmd_browse_aux(const object_type *o_ptr)
 }
 
 
-/*
- * Choose a new spell from the book.
- */
-int spell_choose_new(const object_type *o_ptr)
+/* Gain a specific spell, specified by spell number (for mages). */
+void do_cmd_study_spell(cmd_code code, cmd_arg args[])
 {
-	int i, k = 0;
-	int gift = -1;
-	
-	cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	int spell = args[0].choice;
 
-	/* Mage -- Learn a selected spell */
-	if (cp_ptr->flags & CF_CHOOSE_SPELLS)
-	{
-		return get_spell(o_ptr, "study", FALSE, FALSE);
-	}
+	spell_learn(spell);
+	p_ptr->energy_use = 100;
+}
+
+/* Gain a random spell from the given book (for priests) */
+void do_cmd_study_book(cmd_code code, cmd_arg args[])
+{
+	int book = args[0].item;
+	object_type *o_ptr = object_from_item_idx(book);
+
+	int spell = -1;
+	int i, k = 0;
+
+	cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	/* Extract spells */
 	for (i = 0; i < SPELLS_PER_BOOK; i++)
 	{
-		int spell = get_spell_index(o_ptr, i);
-
+		int s = get_spell_index(o_ptr, i);
+		
 		/* Skip non-OK spells */
-		if (spell == -1) continue;
-		if (!spell_okay(spell, FALSE, FALSE)) continue;
-
+		if (s == -1) continue;
+		if (!spell_okay(s, FALSE, FALSE)) continue;
+		
 		/* Apply the randomizer */
 		if ((++k > 1) && (randint0(k) != 0)) continue;
-
+		
 		/* Track it */
-		gift = spell;
+		spell = s;
 	}
 
-	/* Nothing to study */
-	if (gift < 0)
+	if (spell < 0)
+	{
 		msg_format("You cannot learn any %ss in that book.", p);
-
-	return gift;
+	}
+	else
+	{
+		spell_learn(spell);
+		p_ptr->energy_use = 100;	
+	}
 }
+
 
 /*
  * Learn the specified spell.

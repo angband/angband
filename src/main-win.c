@@ -3190,7 +3190,7 @@ static void process_menus(WORD wCmd)
 				msg_flag = FALSE;
 
 				/* Save the game */
-				do_cmd_save_game();
+				save_game();
 			}
 			else
 			{
@@ -3216,7 +3216,7 @@ static void process_menus(WORD wCmd)
 				msg_flag = FALSE;
 
 				/* Save the game */
-				do_cmd_save_game();
+				save_game();
 			}
 			quit(NULL);
 			break;
@@ -3877,7 +3877,7 @@ static LRESULT FAR PASCAL AngbandWndProc(HWND hWnd, UINT uMsg,
 				msg_flag = FALSE;
 
 				/* Save the game */
-				do_cmd_save_game();
+				save_game();
 			}
 			quit(NULL);
 			return 0;

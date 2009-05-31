@@ -18,7 +18,7 @@
 #include "angband.h"
 #include "randname.h"
 #include "tvalsval.h"
-
+#include "effects.h"
 
 /*
  * Hold the titles of scrolls, 6 to 14 characters each.
@@ -3515,3 +3515,137 @@ void display_itemlist(void)
 	if (Term == angband_term[0])
 		Term_addstr(-1, TERM_WHITE, "  (Press any key to continue.)");
 }
+
+
+/* Basic tval testers */
+bool obj_is_staff(const object_type *o_ptr)  { return o_ptr->tval == TV_STAFF; }
+bool obj_is_wand(const object_type *o_ptr)   { return o_ptr->tval == TV_WAND; }
+bool obj_is_rod(const object_type *o_ptr)    { return o_ptr->tval == TV_ROD; }
+bool obj_is_potion(const object_type *o_ptr) { return o_ptr->tval == TV_POTION; }
+bool obj_is_scroll(const object_type *o_ptr) { return o_ptr->tval == TV_SCROLL; }
+bool obj_is_food(const object_type *o_ptr)   { return o_ptr->tval == TV_FOOD; }
+
+/* Determine if an object is zappable */
+bool obj_can_zap(const object_type *o_ptr)
+{
+	const object_kind *k_ptr = &k_info[o_ptr->k_idx];
+	if (o_ptr->tval != TV_ROD) return FALSE;
+
+	/* All still charging? */
+	if (o_ptr->number <= (o_ptr->timeout + (k_ptr->time_base - 1)) / k_ptr->time_base) return FALSE;
+
+	/* Otherwise OK */
+	return TRUE;
+}
+
+/* Determine if an object is activatable */
+bool obj_can_activate(const object_type *o_ptr)
+{
+	u32b f[OBJ_FLAG_N];
+
+	/* Not known */
+	if (!object_known_p(o_ptr)) return (FALSE);
+
+	/* Check the recharge */
+	if (o_ptr->timeout) return (FALSE);
+
+	/* Extract the flags */
+	object_flags(o_ptr, f);
+
+	/* Check activation flag */
+	return (f[2] & TR2_ACTIVATE) ? TRUE : FALSE;
+}
+
+bool obj_can_refill(const object_type *o_ptr)
+{
+	u32b f[OBJ_FLAG_N];
+	const object_type *j_ptr = &inventory[INVEN_LITE];
+
+	/* Get flags */
+	object_flags(o_ptr, f);
+
+	if (j_ptr->sval == SV_LITE_LANTERN)
+	{
+		/* Flasks of oil are okay */
+		if (o_ptr->tval == TV_FLASK) return (TRUE);
+	}
+
+	/* Non-empty, non-everburning sources are okay */
+	if ((o_ptr->tval == TV_LITE) &&
+	    (o_ptr->sval == j_ptr->sval) &&
+	    (o_ptr->timeout > 0) &&
+		!(f[2] & TR2_NO_FUEL))
+	{
+		return (TRUE);
+	}
+
+	/* Assume not okay */
+	return (FALSE);
+}
+
+
+bool obj_can_browse(const object_type *o_ptr)
+{
+	if (o_ptr->tval != cp_ptr->spell_book) return FALSE;
+	return TRUE;
+}
+
+
+
+/* Can only take off non-cursed items */
+bool obj_can_takeoff(const object_type *o_ptr)
+{
+	return !cursed_p(o_ptr);
+}
+
+/* Can only put on wieldable items */
+bool obj_can_wear(const object_type *o_ptr)
+{
+	return (wield_slot(o_ptr) >= INVEN_WIELD);
+}
+
+/* Can has inscrip pls */
+bool obj_has_inscrip(const object_type *o_ptr)
+{
+	return (o_ptr->note ? TRUE : FALSE);
+}
+
+/*** Generic utility functions ***/
+
+/* Get an o_ptr from an item number */
+object_type *object_from_item_idx(int item)
+{
+	if (item >= 0)
+		return &inventory[item];
+	else
+		return &o_list[0 - item];
+}
+
+
+/*
+ * Does the given object need to be aimed?
+ */ 
+bool obj_needs_aim(object_type *o_ptr)
+{
+	int effect;
+
+	/* Figure out effect the object would use */
+	if (o_ptr->name1)
+		effect = a_info[o_ptr->name1].effect;
+	else
+		effect = k_info[o_ptr->k_idx].effect;
+
+	/* If the effect needs aiming, or if the object type needs
+	   aiming, this object needs aiming. */
+	if (effect_aim(effect) ||
+	    (o_ptr->tval == TV_WAND) ||
+	    (o_ptr->tval == TV_ROD && !object_aware_p(o_ptr)))
+	{
+		return TRUE;
+	}
+	else
+	{
+		return FALSE;
+	}
+}
+
