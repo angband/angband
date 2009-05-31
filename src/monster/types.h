@@ -154,4 +154,15 @@ typedef struct
 	u32b smart;			/* Field for "adult_ai_learn" */
 } monster_type;
 
+/* 
+ * Monster data for the visible monster list 
+ */
+typedef struct
+{
+	u16b count;		/* total number of this type visible */
+	u16b awake;		/* number awake */
+	u16b los;		/* number in LOS */
+	u16b los_awake;		/* number awake and in LOS */
+} monster_vis; 
+
 #endif /* INCLUDED_MONSTER_TYPES_H */

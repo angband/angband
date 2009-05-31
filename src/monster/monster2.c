@@ -563,7 +563,7 @@ void display_monlist(void)
 	int i, j, k, max;
 	int line = 1, x = 0;
 	int cur_x;
-	unsigned total_count = 0, disp_count = 0, type_count = 0;
+	unsigned total_count = 0, disp_count = 0, type_count = 0, los_count = 0;
 
 	byte attr;
 
@@ -574,7 +574,8 @@ void display_monlist(void)
 	monster_race *r_ptr;
 	monster_race *r2_ptr;
 
-	u16b *race_count;
+	monster_vis *list;
+	
 	u16b *order;
 
 	bool in_term = (Term != angband_term[0]);
@@ -603,25 +604,40 @@ void display_monlist(void)
 	}
 
 	/* Allocate the primary array */
-	race_count = C_ZNEW(z_info->r_max, u16b);
+	list = C_ZNEW(z_info->r_max, monster_vis);
 
-	/* Scan the monster list */
+	/* Scan the list of monsters on the level */
 	for (i = 1; i < mon_max; i++)
 	{
 		m_ptr = &mon_list[i];
 
-		/* Only visible monsters */
+		/* Only consider visible monsters */
 		if (!m_ptr->ml) continue;
 
 		/* If this is the first one of this type, count the type */
-		if (!race_count[m_ptr->r_idx]) type_count++;
+		if (!list[m_ptr->r_idx].count) type_count++;
 		
+		/* Check for LOS */
+		if (player_has_los_bold(m_ptr->fy, m_ptr->fx))
+		{
+			/* Increment the total number of in-LOS monsters */
+			los_count++;
+
+			/* Increment the LOS count for this monster type */
+			list[m_ptr->r_idx].los++;
+			
+			/* Check if awake and increment accordingly */
+			if (!m_ptr->csleep) list[m_ptr->r_idx].los_awake++;
+		}
+		/* Not in LOS so increment if awake */
+		else if (!m_ptr->csleep) list[m_ptr->r_idx].awake++;
+
 		/* Bump the count for this race, and the total count */
-		race_count[m_ptr->r_idx]++;
+		list[m_ptr->r_idx].count++;
 		total_count++;
 	}
 
-	/* Note no visible monsters */
+	/* Note no visible monsters at all */
 	if (!total_count)
 	{
 		/* Clear display and print note */
@@ -630,19 +646,14 @@ void display_monlist(void)
 		    Term_addstr(-1, TERM_WHITE, "  (Press any key to continue.)");
 
 		/* Free up memory */
-		FREE(race_count);
+		FREE(list);
 
 		/* Done */
 		return;
 	}
 
-   	/* Message */
-	prt(format("You can see %d monster%s:",
-		total_count, (total_count > 1 ? "s" : "")), 0, 0);
-
 	/* Allocate the secondary array */
 	order = C_ZNEW(type_count, u16b);
-
 
 	/* Sort, because we cannot rely on monster.txt being ordered */
 
@@ -650,7 +661,7 @@ void display_monlist(void)
 	for (i = 1; i < z_info->r_max; i++)
 	{
 		/* No monsters of this race are visible */
-		if (!race_count[i]) continue;
+		if (!list[i].count) continue;
 
 		/* Get the monster info */
 		r_ptr = &r_info[i];
@@ -658,6 +669,14 @@ void display_monlist(void)
 		/* Fit this monster into the sorted array */
 		for (j = 0; j < type_count; j++)
 		{
+			/* If we get to the end of the list, put this one in */
+			if (!order[j])
+			{
+				order[j] = i;
+				break;
+			}
+
+			/* Get the monster info for comparison */
 			r2_ptr = &r_info[order[j]];
 
 			/* Monsters are sorted by depth */
@@ -678,16 +697,22 @@ void display_monlist(void)
 			}
 		}
 	}
-		
 
-	/* Print them out in descending order */
+   	/* Message for monsters in LOS */
+	prt(format("You can see %d monster%s", los_count, 
+		(los_count > 0 ? (los_count == 1 ? ":" : "s:") : "s.")), 0, 0);
+
+	/* Print out in-LOS monsters in descending order */
 	for (i = 0; (i < type_count) && (line < max); i++)
 	{
+		/* Skip if there are none of these in LOS */
+		if (!list[order[i]].los) continue;
+
 		/* Reset position */
 		cur_x = x;
 
 		/* Note that these have been displayed */
-		disp_count += race_count[order[i]];
+		disp_count += list[order[i]].los;
 
 		/* Get monster race and name */
 		r_ptr = &r_info[order[i]];
@@ -702,11 +727,11 @@ void display_monlist(void)
 			attr = TERM_WHITE;
 
 		/* Build the monster name */
-		if (race_count[order[i]] == 1)
-			my_strcpy(buf, m_name, sizeof(buf));
-		else
-			strnfmt(buf, sizeof(buf), "%s (x%d) ", m_name, 
-				race_count[order[i]]);
+		if (list[order[i]].los == 1)
+			strnfmt(buf, sizeof(buf), (list[order[i]].los_awake ==
+			1 ? "%s (awake) " : "%s (asleep) "), m_name);
+		else strnfmt(buf, sizeof(buf), "%s (x%d, %d awake) ", m_name, 
+			list[order[i]].los, list[order[i]].los_awake);
 
 		/* Display the pict */
 		Term_putch(cur_x++, line, r_ptr->x_attr, r_ptr->x_char);
@@ -728,13 +753,84 @@ void display_monlist(void)
 				prt("", line, x);
 
 			/* Reprint Message */
-			prt(format("You can see %d monster%s:",
-				total_count, (total_count > 1 ? "s" : "")), 0, 0);
+			prt(format("You can see %d monster%s",
+				los_count, (los_count > 0 ? (los_count == 1 ?
+				":" : "s:") : "s.")), 0, 0);
 
 			/* Reset */
 			line = 1;
 		}
 	}
+
+   	/* Message for monsters outside LOS */
+	prt(format("You are aware of %d %smonster%s", 
+		(total_count - los_count), (los_count > 0 ? "other " : ""), 
+		((total_count - los_count) > 0 ? ((total_count - los_count) ==
+		1 ? ":" : "s:") : "s.")), line++, 0);
+
+	/* Print out non-LOS monsters in descending order */
+	for (i = 0; (i < type_count) && (line < max); i++)
+	{
+		/* Skip if there are none of these out of LOS */
+		if (list[order[i]].count == list[order[i]].los) continue;
+
+		/* Reset position */
+		cur_x = x;
+
+		/* Note that these have been displayed */
+		disp_count += (list[order[i]].count - list[order[i]].los);
+
+		/* Get monster race and name */
+		r_ptr = &r_info[order[i]];
+		m_name = r_name + r_ptr->name;
+
+		/* Display uniques in a special colour */
+		if (r_ptr->flags[0] & RF0_UNIQUE)
+			attr = TERM_VIOLET;
+		else if (r_ptr->level > p_ptr->depth)
+			attr = TERM_RED;
+		else
+			attr = TERM_WHITE;
+
+		/* Build the monster name */
+		if ((list[order[i]].count - list[order[i]].los) == 1)
+			strnfmt(buf, sizeof(buf), (list[order[i]].awake ==
+			1 ? "%s (awake) " : "%s (asleep) "), m_name);
+		else strnfmt(buf, sizeof(buf), "%s (x%d, %d awake) ", m_name, 
+			(list[order[i]].count - list[order[i]].los),
+			list[order[i]].awake);
+
+		/* Display the pict */
+		Term_putch(cur_x++, line, r_ptr->x_attr, r_ptr->x_char);
+		if (use_bigtile) Term_putch(cur_x++, line, 255, -1);
+		Term_putch(cur_x++, line, TERM_WHITE, ' ');
+
+		/* Print and bump line counter */
+		c_prt(attr, buf, line, cur_x);
+		line++;
+
+		/* Page wrap */
+		if (!in_term && (line == max) && disp_count != total_count)
+		{
+			prt("-- more --", line, x);
+			anykey();
+
+			/* Clear the screen */
+			for (line = 1; line <= max; line++)
+				prt("", line, x);
+
+			/* Reprint Message */
+			prt(format("You can see %d %smonster%s",
+				(total_count - los_count), (los_count > 0 ?
+				"other " : ""), ((total_count - los_count) > 0
+				? ((total_count - los_count) == 1 ? ":" : "s:")
+				: "s.")), 0, 0);
+
+			/* Reset */
+			line = 1;
+		}
+	}
+
 
 	/* Print "and others" message if we've run out of space */
 	if (disp_count != total_count)
@@ -753,7 +849,7 @@ void display_monlist(void)
 		Term_addstr(-1, TERM_WHITE, "  (Press any key to continue.)");
 
 	/* Free the arrays */
-	FREE(race_count);
+	FREE(list);
 	FREE(order);
 }
 
