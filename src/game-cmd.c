@@ -274,13 +274,13 @@ static struct
  * Request a game command from the uI and carry out whatever actions
  * go along with it.
  */
-void process_command(bool no_request)
+void process_command(cmd_context ctx, bool no_request)
 {
 	int i;
 	game_command cmd;
 
 	/* If we've got a command to process, do it. */
-	if (cmd_get(CMD_GAME, &cmd, !no_request) == 0)
+	if (cmd_get(ctx, &cmd, !no_request) == 0)
 	{
 		/* Obviously inefficient - can tune later if needed. */
 		for (i = 0; i < N_ELEMENTS(game_cmds); i++)

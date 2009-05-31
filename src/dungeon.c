@@ -1098,7 +1098,7 @@ static void process_player(void)
 			prt("", 0, 0);
 
 			/* Process the command */
-			process_command(TRUE);
+			process_command(CMD_GAME, TRUE);
 
 			/* Count this execution */
 			if (p_ptr->command_rep)
@@ -1121,7 +1121,7 @@ static void process_player(void)
 			move_cursor_relative(p_ptr->py, p_ptr->px);
 
 			/* Get and process a command */
-			process_command(FALSE);
+			process_command(CMD_GAME, FALSE);
 		}
 
 

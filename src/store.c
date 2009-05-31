@@ -2753,7 +2753,7 @@ static bool store_process_command(char cmd, void *db, int oid)
 	}
 
 	/* Let the game handle any core commands (equipping, etc) */
-	process_command(TRUE);
+	process_command(CMD_STORE, TRUE);
 
 	if (redraw)
 	{

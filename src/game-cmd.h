@@ -164,6 +164,6 @@ errr cmd_insert(cmd_code c, ...);
 errr cmd_get(cmd_context c,game_command *cmd, bool wait);
 
 /* Called by the game engine to get the player's next action. */
-void process_command(bool no_request);
+void process_command(cmd_context c, bool no_request);
 
 #endif
