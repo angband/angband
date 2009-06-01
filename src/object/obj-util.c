@@ -3712,8 +3712,8 @@ int scan_items(int *item_list, size_t item_list_max, int mode)
 
 		for (i = 0; i < floor_num && item_list_num < item_list_max; i++)
 		{
-			if (get_item_okay(i))
-				item_list[item_list_num++] = i;
+			if (get_item_okay(-floor_list[i]))
+				item_list[item_list_num++] = -floor_list[i];
 		}
 	}
 
