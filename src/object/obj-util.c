@@ -3721,4 +3721,28 @@ int scan_items(int *item_list, size_t item_list_max, int mode)
 }
 
 
+/* 
+ * Check if the given item is available for the player to use. 
+ *
+ * 'mode' defines which areas we should look at, a la scan_items().
+ */
+bool item_is_available(int item, bool (*tester)(const object_type *), int mode)
+{
+	int item_list[INVEN_TOTAL + MAX_FLOOR_STACK];
+	int item_num;
+	int i;
+
+	item_tester_hook = tester;
+	item_tester_tval = 0;
+	item_num = scan_items(item_list, N_ELEMENTS(item_list), mode);
+
+	for (i = 0; i < item_num; i++)
+	{
+		if (item_list[i] == item)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
 

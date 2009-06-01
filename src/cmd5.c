@@ -578,24 +578,6 @@ void do_cmd_study_spell(cmd_code code, cmd_arg args[])
 	}
 }
 
-/* Check if the given item is available for the player to use. */
-static bool item_is_available(int item, int mode)
-{
-	int item_list[INVEN_TOTAL + MAX_FLOOR_STACK];
-	int item_num;
-	int i;
-
-	item_num = scan_items(item_list, N_ELEMENTS(item_list), mode);
-
-	for (i = 0; i < item_num; i++)
-	{
-		if (item_list[i] == item)
-			return TRUE;
-	}
-
-	return FALSE;
-}
-
 /* Gain a random spell from the given book (for priests) */
 void do_cmd_study_book(cmd_code code, cmd_arg args[])
 {
@@ -612,8 +594,7 @@ void do_cmd_study_book(cmd_code code, cmd_arg args[])
 		return;
 
 	/* Check that the player has access to the nominated spell book. */
-	item_tester_hook = obj_can_browse;
-	if (!item_is_available(book, (USE_INVEN | USE_FLOOR)))
+	if (!item_is_available(book, obj_can_browse, (USE_INVEN | USE_FLOOR)))
 	{
 		msg_format("That item is not within your reach.");
 		return;

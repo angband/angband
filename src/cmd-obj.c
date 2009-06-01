@@ -428,42 +428,61 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	int px = p_ptr->px, py = p_ptr->py;
 	int snd;
 	use_type use;
+	int items_allowed = 0;
 
 	/* Determine how this item is used. */
 	if (obj_is_rod(o_ptr))
 	{
 		use = USE_TIMEOUT;
 		snd = MSG_ZAP_ROD;
+		items_allowed = USE_INVEN | USE_FLOOR;
 	}
 	else if (obj_is_wand(o_ptr))
 	{
 		use = USE_CHARGE;
 		snd = MSG_ZAP_ROD;
+		items_allowed = USE_INVEN | USE_FLOOR;
 	}
 	else if (obj_is_staff(o_ptr))
 	{	
 		use = USE_CHARGE;
 		snd = MSG_ZAP_ROD;
+		items_allowed = USE_INVEN | USE_FLOOR;
 	}
 	else if (obj_is_food(o_ptr))
 	{
 		use = USE_SINGLE;
 		snd = MSG_EAT;		
+		items_allowed = USE_INVEN | USE_FLOOR;
 	}
 	else if (obj_is_potion(o_ptr))
 	{
 		use = USE_SINGLE;
 		snd = MSG_QUAFF;		
+		items_allowed = USE_INVEN | USE_FLOOR;
 	}
 	else if (obj_is_scroll(o_ptr))
 	{
+		/* Check player can use scroll */
+		if (!player_can_read())
+			return;
+
 		use = USE_SINGLE;
 		snd = MSG_GENERIC;		
+		items_allowed = USE_INVEN | USE_FLOOR;
 	}
 	else if (obj_can_activate(o_ptr))
 	{
 		use = USE_TIMEOUT;
-		snd = MSG_ACT_ARTIFACT;		
+		snd = MSG_ACT_ARTIFACT;
+		items_allowed = USE_EQUIP;
+	}
+
+	/* Check if item is within player's reach. */
+	if (items_allowed == 0 || !item_is_available(item, NULL, items_allowed))
+	{
+		msg_print("You cannot use that item from its current location.");
+		return;
 	}
 
 	/* Figure out effect to use */
@@ -475,9 +494,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	/* If the item requires a direction, get one (allow cancelling) */	
 	if (obj_needs_aim(o_ptr))
 	{
-		/* Get a direction, allow cancel */
-		if (!get_aim_dir(&dir))
-			return;
+		dir = args[1].direction;
 	}
 
 	/* Use energy regardless of failure */
@@ -794,8 +811,10 @@ static void do_item(item_act act)
 
 	if (item_actions[act].action != NULL)
 		item_actions[act].action(o_ptr, item);
+	else if (obj_needs_aim(o_ptr))
+		cmd_insert(item_actions[act].command, item, DIR_UNKNOWN);
 	else
-		cmd_insert(item_actions[act].command, item);		
+		cmd_insert(item_actions[act].command, item);
 }
 
 /* Wrappers */
