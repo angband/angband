@@ -339,46 +339,6 @@ void do_cmd_drop(cmd_code code, cmd_arg args[])
 
 /*** Casting and browsing ***/
 
-static bool obj_cast_pre(void)
-{
-	if (!cp_ptr->spell_book)
-	{
-		msg_print("You cannot pray or produce magics.");
-		return FALSE;
-	}
-
-	if (p_ptr->timed[TMD_BLIND] || no_lite())
-	{
-		msg_print("You cannot see!");
-		return FALSE;
-	}
-
-	if (p_ptr->timed[TMD_CONFUSED])
-	{
-		msg_print("You are too confused!");
-		return FALSE;
-	}
-
-	return TRUE;
-}
-
-/* A prerequisite to studying */
-static bool obj_study_pre(void)
-{
-	if (!obj_cast_pre())
-		return FALSE;
-
-	if (!p_ptr->new_spells)
-	{
-		cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
-		msg_format("You cannot learn any new %ss!", p);
-		return FALSE;
-	}
-
-	return TRUE;
-}
-
-
 /* Peruse spells in a book */
 static void obj_browse(object_type *o_ptr, int item)
 {
@@ -440,37 +400,6 @@ static void obj_cast(object_type *o_ptr, int item)
 
 
 /*** Using items the traditional way ***/
-
-/* Determine if the player can read scrolls. */
-static bool obj_read_pre(void)
-{
-	if (p_ptr->timed[TMD_BLIND])
-	{
-		msg_print("You can't see anything.");
-		return FALSE;
-	}
-
-	if (no_lite())
-	{
-		msg_print("You have no light to read by.");
-		return FALSE;
-	}
-
-	if (p_ptr->timed[TMD_CONFUSED])
-	{
-		msg_print("You are too confused to read!");
-		return FALSE;
-	}
-
-	if (p_ptr->timed[TMD_AMNESIA])
-	{
-		msg_print("You can't remember how to read!");
-		return FALSE;
-	}
-
-	return TRUE;
-}
-
 
 /*
  * Use an object the right way.
@@ -771,11 +700,11 @@ static item_act_t item_actions[] =
 
 	{ obj_study, CMD_NULL, "study",
 	  "Study which book? ", "You have no books that you can read.",
-	  obj_can_browse, (USE_INVEN | USE_FLOOR), obj_study_pre },
+	  obj_can_browse, (USE_INVEN | USE_FLOOR), player_can_study },
 
 	{ obj_cast, CMD_NULL, "cast",
 	  "Use which book? ", "You have no books that you can read.",
-	  obj_can_browse, (USE_INVEN | USE_FLOOR), obj_cast_pre },
+	  obj_can_browse, (USE_INVEN | USE_FLOOR), player_can_cast },
 
 	/*** Item usage ***/
 	{ NULL, CMD_USE_STAFF, "use",
@@ -804,7 +733,7 @@ static item_act_t item_actions[] =
 
 	{ NULL, CMD_READ_SCROLL, "read",
       "Read which scroll? ", "You have no scrolls to read.",
-	  obj_is_scroll, (USE_INVEN | USE_FLOOR), obj_read_pre },
+	  obj_is_scroll, (USE_INVEN | USE_FLOOR), player_can_read },
 
 	{ NULL, CMD_REFILL, "refill",
       "Refuel with what fuel source? ", "You have nothing to refuel with.",

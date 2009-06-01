@@ -600,32 +600,6 @@ static bool get_item_allow(int item, bool is_harmless)
 }
 
 
-/*
- * Verify the "okayness" of a given item.
- *
- * The item can be negative to mean "item on floor".
- */
-static bool get_item_okay(int item)
-{
-	object_type *o_ptr;
-
-	/* Inventory */
-	if (item >= 0)
-	{
-		o_ptr = &inventory[item];
-	}
-
-	/* Floor */
-	else
-	{
-		o_ptr = &o_list[0 - item];
-	}
-
-	/* Verify the item */
-	return (item_tester_okay(o_ptr));
-}
-
-
 
 /*
  * Find the "first" inventory object with the given "tag".

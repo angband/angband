@@ -524,14 +524,76 @@ void do_cmd_browse_aux(const object_type *o_ptr)
 	}
 }
 
+/* Check if the given spell is in the given book. */
+static bool spell_in_book(int spell, int book)
+{
+	int i;
+	object_type *o_ptr = object_from_item_idx(book);
+
+	for (i = 0; i < SPELLS_PER_BOOK; i++)
+	{
+		if (spell == get_spell_index(o_ptr, i))
+			return TRUE;
+	}
+
+	return FALSE;
+}
 
 /* Gain a specific spell, specified by spell number (for mages). */
 void do_cmd_study_spell(cmd_code code, cmd_arg args[])
 {
 	int spell = args[0].choice;
 
-	spell_learn(spell);
-	p_ptr->energy_use = 100;
+	int item_list[INVEN_TOTAL + MAX_FLOOR_STACK];
+	int item_num;
+	int i;
+
+	/* Check the player can study at all atm */
+	if (!player_can_study())
+		return;
+
+	/* Check that the player can actually learn the nominated spell. */
+	item_tester_hook = obj_can_browse;
+	item_num = scan_items(item_list, N_ELEMENTS(item_list), (USE_INVEN | USE_FLOOR));
+
+	/* Check through all available books */
+	for (i = 0; i < item_num; i++)
+	{
+		if (spell_in_book(spell, item_list[i]))
+		{
+			if (spell_okay(spell, FALSE, FALSE))
+			{
+				/* Spell is in an available book, and player is capable. */
+				spell_learn(spell);
+				p_ptr->energy_use = 100;
+			}
+			else
+			{
+				/* Spell is present, but player incapable. */
+				msg_format("You cannot learn that spell.");
+			}
+
+			return;
+		}
+	}
+}
+
+/* Check if the given item is available for the player to use. */
+static bool item_is_available(int item, int mode)
+{
+	int item_list[INVEN_TOTAL + MAX_FLOOR_STACK];
+	int item_num;
+	int i;
+
+	item_num = scan_items(item_list, N_ELEMENTS(item_list), mode);
+
+	for (i = 0; i < item_num; i++)
+	{
+		if (item_list[i] == item)
+			return TRUE;
+	}
+
+	return FALSE;
 }
 
 /* Gain a random spell from the given book (for priests) */
@@ -544,6 +606,18 @@ void do_cmd_study_book(cmd_code code, cmd_arg args[])
 	int i, k = 0;
 
 	cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+
+	/* Check the player can study at all atm */
+	if (!player_can_study())
+		return;
+
+	/* Check that the player has access to the nominated spell book. */
+	item_tester_hook = obj_can_browse;
+	if (!item_is_available(book, (USE_INVEN | USE_FLOOR)))
+	{
+		msg_format("That item is not within your reach.");
+		return;
+	}
 
 	/* Extract spells */
 	for (i = 0; i < SPELLS_PER_BOOK; i++)

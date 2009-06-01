@@ -168,6 +168,8 @@ bool obj_can_wear(const object_type *o_ptr);
 bool obj_has_inscrip(const object_type *o_ptr);
 object_type *object_from_item_idx(int item);
 bool obj_needs_aim(object_type *o_ptr);
+bool get_item_okay(int item);
+int scan_items(int *item_list, size_t item_list_max, int mode);
 
 /* obj-power.c and randart.c */
 s32b object_power(const object_type *o_ptr, int verbose, ang_file *log_file);

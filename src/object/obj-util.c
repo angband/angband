@@ -3649,3 +3649,76 @@ bool obj_needs_aim(object_type *o_ptr)
 	}
 }
 
+
+/*
+ * Verify the "okayness" of a given item.
+ *
+ * The item can be negative to mean "item on floor".
+ */
+bool get_item_okay(int item)
+{
+	/* Verify the item */
+	return (item_tester_okay(object_from_item_idx(item)));
+}
+
+
+/*
+ * Get a list of "valid" item indexes.
+ *
+ * Fills item_list[] with items that are "okay" as defined by the
+ * current item_tester_hook, etc.  mode determines what combination of
+ * inventory, equipment and player's floor location should be used
+ * when drawing up the list.
+ *
+ * Returns the number of items placed into the list.
+ *
+ * Maximum space that can be used is [INVEN_TOTAL + MAX_FLOOR_STACK],
+ * though practically speaking much smaller numbers are likely.
+ */
+int scan_items(int *item_list, size_t item_list_max, int mode)
+{
+	bool use_inven = ((mode & USE_INVEN) ? TRUE : FALSE);
+	bool use_equip = ((mode & USE_EQUIP) ? TRUE : FALSE);
+	bool use_floor = ((mode & USE_FLOOR) ? TRUE : FALSE);
+
+	int floor_list[MAX_FLOOR_STACK];
+	int floor_num;
+
+	int i;
+	int item_list_num = 0;
+
+	if (use_inven)
+	{
+		for (i = 0; i < INVEN_PACK && item_list_num < item_list_max; i++)
+		{
+			if (get_item_okay(i))
+				item_list[item_list_num++] = i;
+		}
+	}
+
+	if (use_equip)
+	{
+		for (i = INVEN_WIELD; i < INVEN_TOTAL && item_list_num < item_list_max; i++)
+		{
+			if (get_item_okay(i))
+				item_list[item_list_num++] = i;
+		}
+	}
+
+	/* Scan all non-gold objects in the grid */
+	if (use_floor)
+	{
+		floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), p_ptr->py, p_ptr->px, 0x03);
+
+		for (i = 0; i < floor_num && item_list_num < item_list_max; i++)
+		{
+			if (get_item_okay(i))
+				item_list[item_list_num++] = i;
+		}
+	}
+
+	return item_list_num;
+}
+
+
+
