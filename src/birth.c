@@ -1207,6 +1207,9 @@ void player_birth(bool quickstart_allowed)
 	history_clear();
 	history_add("Began the quest to destroy Morgoth.", HISTORY_PLAYER_BIRTH, 0);
 
+	/* Reset message prompt (i.e. no extraneous -more-s) */
+	msg_flag = TRUE;
+
 	/* Note player birth in the message recall */
 	message_add(" ", MSG_GENERIC);
 	message_add("  ", MSG_GENERIC);
