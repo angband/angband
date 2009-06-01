@@ -626,11 +626,11 @@ void display_monlist(void)
 			/* Increment the LOS count for this monster type */
 			list[m_ptr->r_idx].los++;
 			
-			/* Check if awake and increment accordingly */
-			if (!m_ptr->csleep) list[m_ptr->r_idx].los_awake++;
+			/* Check if asleep and increment accordingly */
+			if (m_ptr->csleep) list[m_ptr->r_idx].los_asleep++;
 		}
-		/* Not in LOS so increment if awake */
-		else if (!m_ptr->csleep) list[m_ptr->r_idx].awake++;
+		/* Not in LOS so increment if asleep */
+		else if (m_ptr->csleep) list[m_ptr->r_idx].asleep++;
 
 		/* Bump the count for this race, and the total count */
 		list[m_ptr->r_idx].count++;
@@ -698,9 +698,10 @@ void display_monlist(void)
 		}
 	}
 
-   	/* Message for monsters in LOS */
-	prt(format("You can see %d monster%s", los_count, 
-		(los_count > 0 ? (los_count == 1 ? ":" : "s:") : "s.")), 0, 0);
+   	/* Message for monsters in LOS - even if there are none */
+	if (!los_count) prt(format("You can see no monsters."), 0, 0);
+	else prt(format("You can see %d monster%s", los_count, (los_count == 1
+		? ":" : "s:")), 0, 0);
 
 	/* Print out in-LOS monsters in descending order */
 	for (i = 0; (i < type_count) && (line < max); i++)
@@ -728,10 +729,11 @@ void display_monlist(void)
 
 		/* Build the monster name */
 		if (list[order[i]].los == 1)
-			strnfmt(buf, sizeof(buf), (list[order[i]].los_awake ==
-			1 ? "%s (awake) " : "%s (asleep) "), m_name);
-		else strnfmt(buf, sizeof(buf), "%s (x%d, %d awake) ", m_name, 
-			list[order[i]].los, list[order[i]].los_awake);
+			strnfmt(buf, sizeof(buf), (list[order[i]].los_asleep ==
+			1 ? "%s (asleep) " : "%s "), m_name);
+		else strnfmt(buf, sizeof(buf), (list[order[i]].los_asleep > 0 ?
+			"%s (x%d, %d asleep) " : "%s (x%d)"), m_name, 
+			list[order[i]].los, list[order[i]].los_asleep);
 
 		/* Display the pict */
 		Term_putch(cur_x++, line, r_ptr->x_attr, r_ptr->x_char);
@@ -750,7 +752,7 @@ void display_monlist(void)
 
 			/* Clear the screen */
 			for (line = 1; line <= max; line++)
-				prt("", line, x);
+				prt("", line, 0);
 
 			/* Reprint Message */
 			prt(format("You can see %d monster%s",
@@ -762,11 +764,16 @@ void display_monlist(void)
 		}
 	}
 
-   	/* Message for monsters outside LOS */
-	prt(format("You are aware of %d %smonster%s", 
+   	/* Message for monsters outside LOS, if there are any */
+	if (total_count > los_count)
+	{
+		/* Leave a blank line */
+		line++;
+		
+		prt(format("You are aware of %d %smonster%s", 
 		(total_count - los_count), (los_count > 0 ? "other " : ""), 
-		((total_count - los_count) > 0 ? ((total_count - los_count) ==
-		1 ? ":" : "s:") : "s.")), line++, 0);
+		((total_count - los_count) == 1 ? ":" : "s:")), line++, 0);
+	}
 
 	/* Print out non-LOS monsters in descending order */
 	for (i = 0; (i < type_count) && (line < max); i++)
@@ -794,11 +801,12 @@ void display_monlist(void)
 
 		/* Build the monster name */
 		if ((list[order[i]].count - list[order[i]].los) == 1)
-			strnfmt(buf, sizeof(buf), (list[order[i]].awake ==
-			1 ? "%s (awake) " : "%s (asleep) "), m_name);
-		else strnfmt(buf, sizeof(buf), "%s (x%d, %d awake) ", m_name, 
+			strnfmt(buf, sizeof(buf), (list[order[i]].asleep ==
+			1 ? "%s (asleep) " : "%s "), m_name);
+		else strnfmt(buf, sizeof(buf), (list[order[i]].asleep > 0 ? 
+			"%s (x%d, %d asleep) " : "%s (x%d) "), m_name, 
 			(list[order[i]].count - list[order[i]].los),
-			list[order[i]].awake);
+			list[order[i]].asleep);
 
 		/* Display the pict */
 		Term_putch(cur_x++, line, r_ptr->x_attr, r_ptr->x_char);
@@ -817,10 +825,10 @@ void display_monlist(void)
 
 			/* Clear the screen */
 			for (line = 1; line <= max; line++)
-				prt("", line, x);
+				prt("", line, 0);
 
 			/* Reprint Message */
-			prt(format("You can see %d %smonster%s",
+			prt(format("You are aware of %d %smonster%s",
 				(total_count - los_count), (los_count > 0 ?
 				"other " : ""), ((total_count - los_count) > 0
 				? ((total_count - los_count) == 1 ? ":" : "s:")

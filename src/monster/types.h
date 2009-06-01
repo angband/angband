@@ -160,9 +160,9 @@ typedef struct
 typedef struct
 {
 	u16b count;		/* total number of this type visible */
-	u16b awake;		/* number awake */
+	u16b asleep;		/* number asleep (not in LOS) */
 	u16b los;		/* number in LOS */
-	u16b los_awake;		/* number awake and in LOS */
+	u16b los_asleep;	/* number asleep and in LOS */
 } monster_vis; 
 
 #endif /* INCLUDED_MONSTER_TYPES_H */
