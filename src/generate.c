@@ -3526,11 +3526,13 @@ static void clear_cave(void)
 			/* No flow */
 			cave_cost[y][x] = 0;
 			cave_when[y][x] = 0;
+
+			/* Clear any left-over monsters (should be none) and the player. */
+			cave_m_idx[y][x] = 0;
 		}
 	}
 
 	/* Mega-Hack -- no player in dungeon yet */
-	cave_m_idx[p_ptr->py][p_ptr->px] = 0;
 	p_ptr->px = p_ptr->py = 0;
 
 	/* Hack -- illegal panel */
