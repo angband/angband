@@ -200,8 +200,10 @@ void do_cmd_uninscribe(cmd_code code, cmd_arg args[])
 {
 	object_type *o_ptr = object_from_item_idx(args[0].item);
 
+	if (obj_has_inscrip(o_ptr))
+		msg_print("Inscription removed.");
+
 	o_ptr->note = 0;
-	msg_print("Inscription removed.");
 
 	p_ptr->notice |= (PN_COMBINE | PN_SQUELCH);
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
@@ -264,6 +266,18 @@ void do_cmd_takeoff(cmd_code code, cmd_arg args[])
 {
 	int item = args[0].item;
 
+	if (!item_is_available(item, NULL, USE_EQUIP))
+	{
+		msg_print("You are not wielding that item.");
+		return;
+	}
+
+	if (!obj_can_takeoff(object_from_item_idx(item)))
+	{
+		msg_print("You cannot take off that item.");
+		return;
+	}
+
 	(void)inven_takeoff(item, 255);
 	p_ptr->energy_use = 50;
 }
@@ -279,8 +293,13 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 	unsigned n;
 	
 	int item = args[0].item;
-	
 	object_type *o_ptr = object_from_item_idx(item);
+
+	if (!item_is_available(item, NULL, USE_INVEN | USE_FLOOR))
+	{
+		msg_print("You do not have that item to wield.");
+		return;
+	}	
 
 	/* Check the slot */
 	slot = wield_slot(o_ptr);
@@ -621,37 +640,36 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	
 }
 
-/*** Refuelling ***/
 
-static bool obj_refill_pre(void)
+/*** Refuelling ***/
+void do_cmd_refill(cmd_code code, cmd_arg args[])
 {
-   	object_type *o_ptr;
+	object_type *j_ptr = &inventory[INVEN_LITE];
 	u32b f[OBJ_FLAG_N];
 
-	o_ptr = &inventory[INVEN_LITE];
-	object_flags(o_ptr, f);
+	int item = args[0].item;
+	object_type *o_ptr = object_from_item_idx(item);
 
-	if (o_ptr->tval != TV_LITE)
+	if (!item_is_available(item, NULL, USE_INVEN | USE_FLOOR))
+	{
+		msg_print("You do not have that item to refill with it.");
+		return;
+	}
+
+	/* Check what we're wielding. */
+	object_flags(j_ptr, f);
+
+	if (j_ptr->tval != TV_LITE)
 	{
 		msg_print("You are not wielding a light.");
-		return FALSE;
+		return;
 	}
 
 	else if (f[2] & TR2_NO_FUEL)
 	{
 		msg_print("Your light cannot be refilled.");
-		return FALSE;
+		return;
 	}
-
-	return TRUE;
-}
-
-void do_cmd_refill(cmd_code code, cmd_arg args[])
-{
-	object_type *j_ptr = &inventory[INVEN_LITE];
-	int item = args[0].item;
-	object_type *o_ptr = object_from_item_idx(item);
-	p_ptr->energy_use = 50;
 
 	/* It's a lamp */
 	if (j_ptr->sval == SV_LITE_LANTERN)
@@ -661,6 +679,7 @@ void do_cmd_refill(cmd_code code, cmd_arg args[])
 	else if (j_ptr->sval == SV_LITE_TORCH)
 		refuel_torch(j_ptr, o_ptr, item);
 
+	p_ptr->energy_use = 50;
 }
 
 
@@ -758,7 +777,7 @@ static item_act_t item_actions[] =
 
 	{ NULL, CMD_REFILL, "refill",
       "Refuel with what fuel source? ", "You have nothing to refuel with.",
-	  obj_can_refill, (USE_INVEN | USE_FLOOR), obj_refill_pre },
+	  obj_can_refill, (USE_INVEN | USE_FLOOR), NULL },
 };
 
 

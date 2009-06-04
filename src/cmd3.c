@@ -218,6 +218,12 @@ void do_cmd_destroy(cmd_code code, cmd_arg args[])
 		return;
 	}
 
+	if (!item_is_available(item, NULL, USE_INVEN | USE_EQUIP | USE_FLOOR))
+	{
+		msg_print("You do not have that item to destroy it.");
+		return;
+	}
+
 	o_ptr = object_from_item_idx(item);
 
 	/* Get local object */
