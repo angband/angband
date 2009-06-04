@@ -3717,6 +3717,10 @@ int scan_items(int *item_list, size_t item_list_max, int mode)
 		}
 	}
 
+	/* Forget the item_tester_tval and item_tester_hook  restrictions */
+	item_tester_tval = 0;
+	item_tester_hook = NULL;
+
 	return item_list_num;
 }
 
