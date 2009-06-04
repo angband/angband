@@ -226,6 +226,13 @@ void do_cmd_destroy(cmd_code code, cmd_arg args[])
 
 	o_ptr = object_from_item_idx(item);
 
+	/* Can't destroy cursed items we're wielding. */
+	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
+	{
+		msg_print("You cannot destroy the cursed item.");
+		return;
+	}	
+
 	/* Get local object */
 	i_ptr = &object_type_body;
 	object_copy(i_ptr, o_ptr);
