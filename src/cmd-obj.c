@@ -320,10 +320,13 @@ void do_cmd_drop(cmd_code code, cmd_arg args[])
 {
 	int item = args[0].item;
 	object_type *o_ptr = object_from_item_idx(item);
-	int amt;
+	int amt = args[1].number;
 
-	amt = get_quantity(NULL, o_ptr->number);
-	if (amt <= 0) return;
+	if (!item_is_available(item, NULL, USE_INVEN | USE_EQUIP))
+	{
+		msg_print("You do not have that item to drop it.");
+		return;
+	}
 
 	/* Hack -- Cannot remove cursed items */
 	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
@@ -334,6 +337,16 @@ void do_cmd_drop(cmd_code code, cmd_arg args[])
 
 	inven_drop(item, amt);
 	p_ptr->energy_use = 50;
+}
+
+static void obj_drop(object_type *o_ptr, int item)
+{
+	int amt;
+
+	amt = get_quantity(NULL, o_ptr->number);
+	if (amt <= 0) return;
+
+	cmd_insert(CMD_DROP, item, amt);
 }
 
 
@@ -697,7 +710,7 @@ static item_act_t item_actions[] =
 	  "Wear/Wield which item? ", "You have nothing you can wear or wield.",
 	  obj_can_wear, (USE_INVEN | USE_FLOOR), NULL },
 
-	{ NULL, CMD_DROP, "drop",
+	{ obj_drop, CMD_NULL, "drop",
 	  "Drop which item? ", "You have nothing to drop.",
 	  NULL, (USE_EQUIP | USE_INVEN), NULL },
 

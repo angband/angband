@@ -156,7 +156,6 @@ errr cmd_insert(cmd_code c, ...)
 		case CMD_UNINSCRIBE:
 		case CMD_WIELD:
 		case CMD_TAKEOFF:
-		case CMD_DROP:
 		case CMD_REFILL:
 		case CMD_STUDY_BOOK:
 		/* Note that if the effects change for the following, they 
@@ -195,9 +194,11 @@ errr cmd_insert(cmd_code c, ...)
 			break;
 		}
 
-		/* This takes an item number and a number of those items to destroy. */
+		/* These take an item number and a number of those items to process. */
+		case CMD_DROP:
 		case CMD_DESTROY:
 		{
+			/* TODO: Number should probably be replaced by 'repeat'ing */
 			cmd.args[0].item = va_arg(vp, int);
 			cmd.args[1].number = va_arg(vp, int);
 			break;
