@@ -578,6 +578,49 @@ void do_cmd_study_spell(cmd_code code, cmd_arg args[])
 	}
 }
 
+/* Cast a spell from a book */
+void do_cmd_cast(cmd_code code, cmd_arg args[])
+{
+	int spell = args[0].choice;
+
+	int item_list[INVEN_TOTAL + MAX_FLOOR_STACK];
+	int item_num;
+	int i;
+
+	cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+
+	/* Check the player can cast spells at all */
+	if (!player_can_cast())
+		return;
+
+	/* Check spell is in a book they can access */
+	item_tester_hook = obj_can_browse;
+	item_num = scan_items(item_list, N_ELEMENTS(item_list), (USE_INVEN | USE_FLOOR));
+
+	/* Check through all available books */
+	for (i = 0; i < item_num; i++)
+	{
+		if (spell_in_book(spell, item_list[i]))
+		{
+			if (spell_okay(spell, TRUE, FALSE))
+			{
+				/* Cast a spell */
+				if (spell_cast(spell))
+					p_ptr->energy_use = 100;
+			}
+			else
+			{
+				/* Spell is present, but player incapable. */
+				msg_format("You cannot cast that %p.", p);
+			}
+
+			return;
+		}
+	}
+
+}
+
+
 /* Gain a random spell from the given book (for priests) */
 void do_cmd_study_book(cmd_code code, cmd_arg args[])
 {

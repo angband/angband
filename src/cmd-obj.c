@@ -366,16 +366,6 @@ static void obj_study(object_type *o_ptr, int item)
 	}
 }
 
-/* Cast a spell from a book */
-void do_cmd_cast(cmd_code code, cmd_arg args[])
-{
-	int spell = args[0].choice;
-
-	/* Cast a spell */
-	if (spell_cast(spell))
-	    p_ptr->energy_use = 100;
-}
-
 static void obj_cast(object_type *o_ptr, int item)
 {
 	int spell;
@@ -657,6 +647,7 @@ void do_cmd_refill(cmd_code code, cmd_arg args[])
 	/* It's a torch */
 	else if (j_ptr->sval == SV_LITE_TORCH)
 		refuel_torch(j_ptr, o_ptr, item);
+
 }
 
 
