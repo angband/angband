@@ -401,7 +401,10 @@ static void obj_study(object_type *o_ptr, int item)
 static void obj_cast(object_type *o_ptr, int item)
 {
 	int spell;
+	const magic_type *s_ptr;
+
 	cptr verb = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
+    cptr noun = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	/* Track the object kind */
 	object_kind_track(o_ptr->k_idx);
@@ -411,13 +414,27 @@ static void obj_cast(object_type *o_ptr, int item)
 	spell = get_spell(o_ptr, verb, TRUE, FALSE);
 	if (spell < 0)
 	{
-		cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
-
-		if (spell == -2) msg_format("You don't know any %ss in that book.", p);
+		if (spell == -2) msg_format("You don't know any %ss in that book.", noun);
 		return;
 	}
 
-	cmd_insert(CMD_CAST, spell);
+	/* Get the spell */
+	s_ptr = &mp_ptr->info[spell];
+	
+	/* Verify "dangerous" spells */
+	if (s_ptr->smana > p_ptr->csp)
+	{
+		/* Warning */
+		msg_format("You do not have enough mana to %s this %s.", verb, noun);
+		
+		/* Flush input */
+		flush();
+		
+		/* Verify */
+		if (!get_check("Attempt it anyway? ")) return;
+	}
+
+	cmd_insert(CMD_CAST, spell, DIR_UNKNOWN);
 }
 
 

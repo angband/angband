@@ -98,7 +98,6 @@ errr cmd_insert(cmd_code c, ...)
 		case CMD_RESET_STATS:
 		case CMD_REST:
 		case CMD_STUDY_SPELL:
-		case CMD_CAST:
 		{
 			cmd.args[0].choice = va_arg(vp, int);
 			break;
@@ -186,6 +185,22 @@ errr cmd_insert(cmd_code c, ...)
 
 			if (cmd.args[1].direction == DIR_UNKNOWN && 
 				obj_needs_aim(object_from_item_idx(cmd.args[0].choice)))
+			{
+				if (!get_aim_dir(&cmd.args[1].direction))
+					return 1;
+			}
+
+			break;
+		}
+
+		/* This takes a choice and a direction. */
+		case CMD_CAST:
+		{
+			cmd.args[0].choice = va_arg(vp, int);
+			cmd.args[1].direction = va_arg(vp, int);
+
+			if (cmd.args[1].direction == DIR_UNKNOWN && 
+				spell_needs_aim(cp_ptr->spell_book, cmd.args[0].choice))
 			{
 				if (!get_aim_dir(&cmd.args[1].direction))
 					return 1;

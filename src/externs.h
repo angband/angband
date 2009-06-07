@@ -302,7 +302,7 @@ extern void move_player(int dir);
 /* cmd5.c */
 s16b spell_chance(int spell);
 bool spell_okay(int spell, bool known, bool browse);
-bool spell_cast(int spell);
+bool spell_cast(int spell, int dir);
 void spell_learn(int spell);
 
 int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool browse);
@@ -646,7 +646,8 @@ extern void repeat_check(void);
 extern int get_spell_index(const object_type *o_ptr, int index);
 extern cptr get_spell_name(int tval, int index);
 extern void get_spell_info(int tval, int index, char *buf, size_t len);
-extern bool cast_spell(int tval, int index);
+extern bool cast_spell(int tval, int index, int dir);
+extern bool spell_needs_aim(int tval, int spell);
 
 /* xtra2.c */
 void check_experience(void);

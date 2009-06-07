@@ -582,6 +582,7 @@ void do_cmd_study_spell(cmd_code code, cmd_arg args[])
 void do_cmd_cast(cmd_code code, cmd_arg args[])
 {
 	int spell = args[0].choice;
+	int dir = args[1].direction;
 
 	int item_list[INVEN_TOTAL + MAX_FLOOR_STACK];
 	int item_num;
@@ -605,7 +606,7 @@ void do_cmd_cast(cmd_code code, cmd_arg args[])
 			if (spell_okay(spell, TRUE, FALSE))
 			{
 				/* Cast a spell */
-				if (spell_cast(spell))
+				if (spell_cast(spell, dir))
 					p_ptr->energy_use = 100;
 			}
 			else
@@ -713,33 +714,10 @@ void spell_learn(int spell)
 
 
 /* Cas the specified spell */
-bool spell_cast(int spell)
+bool spell_cast(int spell, int dir)
 {
 	int chance;
 	const magic_type *s_ptr;
-
-    cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ?
-	          "cast this spell" :
-	          "recite this prayer");
-
-
-	/* Get the spell */
-	s_ptr = &mp_ptr->info[spell];
-
-
-	/* Verify "dangerous" spells */
-	if (s_ptr->smana > p_ptr->csp)
-	{
-		/* Warning */
-		msg_format("You do not have enough mana to %s.", p);
-
-		/* Flush input */
-		flush();
-
-		/* Verify */
-		if (!get_check("Attempt it anyway? ")) return FALSE;
-	}
-
 
 	/* Spell failure chance */
 	chance = spell_chance(spell);
@@ -755,7 +733,7 @@ bool spell_cast(int spell)
 	else
 	{
 		/* Cast the spell */
-		if (!cast_spell(cp_ptr->spell_book, spell)) return FALSE;
+		if (!cast_spell(cp_ptr->spell_book, spell, dir)) return FALSE;
 
 		/* A spell was cast */
 		sound(MSG_SPELL);
