@@ -468,7 +468,105 @@ void ascii_to_text(char *buf, size_t len, cptr str)
 	*s = '\0';
 }
 
+static char *roman_order[] = {"", "a", "aa", "aaa", "ab", "b", "ba", "baa", "baaa", "ac"};
 
+/*
+ * Fill in buf (up to size len) with the roman digits corresponding to the
+ * input digit, based on the radix string specified. This will be the
+ * characters of the current decimal position, e.g. IVX for digits, XLC for
+ * tens, CDM for hundreds.
+ * 
+ * Returns number of chars put in the string.
+ */
+static size_t roman_digits(char *buf, size_t len, int digit, char *radix)
+{
+	char *template = roman_order[digit];
+	size_t radix_len = strlen(radix);
+	size_t added = 0;
+	
+	while (*template && len) {
+		int offset = *template - 'a';
+		if (offset < radix_len)
+		{
+			*buf = radix[offset];
+		}
+		else
+		{
+			*buf = '?';
+		}
+		++buf;
+		++template;
+		++added;
+		--len;
+	}
+	return added;
+}
+
+/*
+ * Convert a number into a string in roman numerals
+ * Ignores any value over a thousand, on the grounds that it's hard to 
+ * print characters with bars on top in ASCII...
+ */
+void romanify(int in, char *buf, size_t len)
+{
+	int hundreds = (in / 100) % 10;
+	int tens = (in / 10) % 10;
+	int ones = in % 10;
+	size_t ret;
+	
+	if (hundreds)
+	{
+		ret = roman_digits(buf, len, hundreds, "CDM");
+		buf += ret;
+		len -= ret;
+	}
+	if (tens)
+	{
+		ret = roman_digits(buf, len, tens, "XLC");
+		buf += ret;
+		len -= ret;
+	}
+	if (ones)
+	{
+		ret = roman_digits(buf, len, ones, "IVX");
+		buf += ret;
+		len -= ret;
+	}
+	if (len)
+	{
+		*buf = '\0';
+	}
+}
+
+/*
+ * Find the start of a possible Roman numerals suffix by going back from the
+ * end of the string to a space, then checking that all the remaining chars
+ * are valid Roman numerals.
+ * 
+ * Return the start position, or NULL if there isn't a valid suffix. 
+ */
+char *find_roman_suffix_start(cptr buf)
+{
+	const char *start = strrchr(buf, ' ');
+	const char *p;
+	
+	if (start)
+	{
+		start++;
+		p = start;
+		while (*p)
+		{
+			if (*p != 'I' && *p != 'V' && *p != 'X' && *p != 'L' &&
+			    *p != 'C' && *p != 'D' && *p != 'M')
+			{
+				start = NULL;
+				break;
+			}
+			++p;			    
+		}
+	}
+	return (char *)start;
+}
 
 /*
  * The "macro" package

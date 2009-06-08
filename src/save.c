@@ -325,7 +325,7 @@ void wr_player(void)
 	wr_byte(p_ptr->prace);
 	wr_byte(p_ptr->pclass);
 	wr_byte(p_ptr->psex);
-	wr_byte(0);	/* oops */
+	wr_byte(op_ptr->name_suffix);
 	
 	wr_byte(p_ptr->hitdie);
 	wr_byte(p_ptr->expfact);

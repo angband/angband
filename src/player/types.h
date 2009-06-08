@@ -399,6 +399,8 @@ typedef struct
 	byte hitpoint_warn;		/* Hitpoint warning (0 to 9) */
 	
 	byte delay_factor;		/* Delay factor (0 to 9) */
+	
+	byte name_suffix;		/* numeric suffix for player name */
 } player_other;
 
 

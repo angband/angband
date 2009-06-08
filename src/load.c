@@ -663,7 +663,8 @@ int rd_player(u32b version)
 	rd_byte(&p_ptr->psex);
 	sp_ptr = &sex_info[p_ptr->psex];
 
-	strip_bytes(1);
+	/* Numeric name suffix */
+	rd_byte(&op_ptr->name_suffix);
 
 	/* Special Race/Class info */
 	rd_byte(&p_ptr->hitdie);

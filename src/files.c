@@ -1613,11 +1613,29 @@ void do_cmd_help(void)
  * Some platforms (Windows, Macintosh, Amiga) leave the "savefile" empty
  * when a new character is created, and then when the character is done
  * being created, they call this function to choose a new savefile name.
+ *
+ * This also now handles the turning on and off of the automatic
+ * sequential numbering of character names with Roman numerals.  
  */
 void process_player_name(bool sf)
 {
 	int i;
 
+	/* If the selected name ends in " I", i.e. "the first", then we're using
+	 * Roman numerals style suffices, so set the savefile flag.
+	 * Equally if there's no roman numerals at all, switch off suffices.*/
+	char *buf = find_roman_suffix_start(op_ptr->full_name);
+	if (!buf)
+	{
+		op_ptr->name_suffix = 0;
+	}
+	else
+	{
+		if (buf[0] == 'I' && buf[1] == '\0')
+		{
+			op_ptr->name_suffix = 1;
+		} 
+	}
 
 	/* Process the player name */
 	for (i = 0; op_ptr->full_name[i]; i++)

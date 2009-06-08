@@ -1005,6 +1005,7 @@ void player_birth(bool quickstart_allowed)
 	int stats[A_MAX];
 	int points_spent[A_MAX];
 	int points_left;
+	char *buf;
 
 	bool rolled_stats = FALSE;
 
@@ -1038,6 +1039,18 @@ void player_birth(bool quickstart_allowed)
 
 	reset_stats(stats, points_spent, &points_left);
 	do_birth_reset(quickstart_allowed, &quickstart_prev);
+
+	/* Handle incrementing name suffix */
+	if (op_ptr->name_suffix)
+	{
+		++op_ptr->name_suffix;
+		buf = find_roman_suffix_start(op_ptr->full_name);
+		if (buf)
+		{
+			romanify(op_ptr->name_suffix, buf,
+			         sizeof(op_ptr->full_name) - (buf - (char *)&op_ptr->full_name));
+		}
+	}
 
 	/* We're ready to start the interactive birth process. */
 	event_signal_flag(EVENT_ENTER_BIRTH, quickstart_allowed);
