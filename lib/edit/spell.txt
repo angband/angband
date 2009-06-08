@@ -72,7 +72,7 @@ D:Detects all traps, doors, and stairs in the immediate area.
 
 N:5:Cure Light Wounds
 I:90:0:5
-D:Cures 2d8 points of damage and heals 15 points worth of cuts.
+D:Cures 15% of your wounds (min 15hp) and heals 20 points worth of cuts.
 
 N:6:Detect Treasure
 I:90:0:4
@@ -401,7 +401,7 @@ D: for one turn only.
 
 N:65:Cure Light Wounds
 I:91:0:1
-D:Cures 2d10 points of damage and heals 10 points worth of cuts.
+D:Cures 15% of your wounds (min 15hp) and heals 20 points worth of cuts.
 
 N:66:Bless
 I:91:0:2
@@ -441,8 +441,7 @@ D:Teleports you randomly over a short distance.
 
 N:74:Cure Serious Wounds
 I:91:1:2
-D:Cures 4d10 points of damage and heals half of all cut damage plus
-D: another 20 points.
+D:Cures 20% of your wounds (min 25hp) and heals all cut damage.
 
 N:75:Chant
 I:91:1:3
@@ -482,7 +481,8 @@ D:  The bigger area of effect is attained at character level 30.
 
 N:82:Cure Critical Wounds
 I:91:2:2
-D:Cures 6d10 points of damage and heals all cut damage.
+D:Cures 25% of your wounds (min 30hp) and heals all cut damage, poison,
+D: amnesia and stunning.
 
 N:83:Sense Invisible
 I:91:2:3
@@ -508,7 +508,8 @@ D:Maps out a portion of the level around you.
 
 N:87:Cure Mortal Wounds
 I:91:2:7
-D:Cures 8d10 points of damage, cures all stunning and heals all cut damage.
+D:Cures 30% of your wounds (min 50hp), cures all stunning and heals all
+D: cut damage, poison and amnesia.
 
 N:88:Turn Undead
 I:91:2:8
@@ -525,7 +526,8 @@ D:Inflicts unresistable damage on each undead monster within line of sight.
 
 N:91:Heal
 I:91:3:2
-D:Cures 300 points of damage, cures all stunning and heals all cut damage.
+D:Cures 35% of your max hp (min 300), cures all stunning and heals all cut
+D: damage, poison and amnesia.
 
 N:92:Dispel Evil
 I:91:3:3
@@ -574,11 +576,12 @@ D: dungeon level.
 
 N:100:Cure Serious Wounds
 I:91:6:0
-D:Cures 4d10 points of damage and heals all cut damage.
+D:Cures 20% of your wounds (min 25hp) and heals all cut damage.
 
 N:101:Cure Mortal Wounds
 I:91:6:1
-D:Cures 8d10 points of damage, cures all stunning and heals all cut damage.
+D:Cures 30% of your wounds (min 50hp), cures all stunning and heals all cut
+D: damage, poison and amnesia.
 
 N:102:Healing
 I:91:6:2
