@@ -717,7 +717,9 @@ void spell_learn(int spell)
 bool spell_cast(int spell, int dir)
 {
 	int chance;
-	const magic_type *s_ptr;
+
+	/* Get the spell */
+	const magic_type *s_ptr = &mp_ptr->info[spell];	
 
 	/* Spell failure chance */
 	chance = spell_chance(spell);
@@ -737,6 +739,7 @@ bool spell_cast(int spell, int dir)
 
 		/* A spell was cast */
 		sound(MSG_SPELL);
+
 		if (!(p_ptr->spell_flags[spell] & PY_SPELL_WORKED))
 		{
 			int e = s_ptr->sexp;
