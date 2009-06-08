@@ -1776,6 +1776,24 @@ void object_copy(object_type *o_ptr, const object_type *j_ptr)
 	COPY(o_ptr, j_ptr, object_type);
 }
 
+/*
+ * Prepare an object `dst` representing `amt` objects,  based on an existing 
+ * object `src` representing at least `amt` objects.
+ *
+ * Takes care of the charge redistribution concerns of stacked items.
+ */
+void object_copy_amt(object_type *dst, object_type *src, int amt)
+{
+	/* Get a copy of the object */
+	object_copy(dst, src);
+
+	/* Modify quantity */
+	dst->number = amt;
+	
+	/* If the item has charges, set them to the correct level too */
+	reduce_charges(dst, src->number - amt);
+}
+
 
 /*
  * Prepare an object based on an object kind.

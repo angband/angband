@@ -73,9 +73,6 @@ static unsigned int scr_places_y[LOC_MAX];
 
 /** Variables to maintain state XXX ***/
 
-/* Current store number */
-static int store_current;
-
 /* Flags for the display */
 static u16b store_flags;
 
@@ -383,6 +380,17 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 }
 
 
+#define STORE_NONE -1
+
+/* Get the current store number, or STORE_NONE if not in a store */
+static int current_store()
+{
+	if ((cave_feat[p_ptr->py][p_ptr->px] >= FEAT_SHOP_HEAD) &&
+		(cave_feat[p_ptr->py][p_ptr->px] <= FEAT_SHOP_TAIL))
+		return (cave_feat[p_ptr->py][p_ptr->px] - FEAT_SHOP_HEAD);
+
+	return STORE_NONE;
+}
 
 
 
@@ -406,8 +414,12 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 {
 	int adjust;
 	s32b price;
+	int this_store = current_store();
+	owner_type *ot_ptr;
 
-	owner_type *ot_ptr = store_owner(store_current);
+	if (this_store == STORE_NONE) return 0L;
+
+	ot_ptr = store_owner(this_store);
 
 
 	/* Get the value of the stack of wands, or a single item */
@@ -421,7 +433,7 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 
 
 	/* Add in the charisma factor */
-	if (store_current == STORE_B_MARKET)
+	if (this_store == STORE_B_MARKET)
 		adjust = 150;
 	else
 		adjust = adj_chr_gold[p_ptr->state.stat_ind[A_CHR]];
@@ -435,7 +447,7 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 		if (adjust > 100) adjust = 100;
 
 		/* Mega-Hack -- Black market sucks */
-		if (store_current == STORE_B_MARKET) price = price / 2;
+		if (this_store == STORE_B_MARKET) price = price / 2;
 	}
 
 	/* Shop is selling */
@@ -445,7 +457,7 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 		if (adjust < 100) adjust = 100;
 
 		/* Mega-Hack -- Black market sucks */
-		if (store_current == STORE_B_MARKET) price = price * 2;
+		if (this_store == STORE_B_MARKET) price = price * 2;
 	}
 
 	/* Compute the final price (with rounding) */
@@ -1584,7 +1596,7 @@ static void store_display_recalc(void)
 	scr_places_x[LOC_WEIGHT] = wid - 14;
 
 	/* Add space for for prices */
-	if (store_current != STORE_HOME)
+	if (current_store() != STORE_HOME)
 		scr_places_x[LOC_WEIGHT] -= 10;
 
 	/* Then Y */
@@ -1626,7 +1638,8 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 	char out_val[160];
 	byte colour;
 
-	store_type *st_ptr = &store[store_current];
+	int this_store = current_store(); 
+	store_type *st_ptr = &store[this_store];
 
 	(void)menu;
 	(void)cursor;
@@ -1636,7 +1649,7 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 	o_ptr = &st_ptr->stock[oid];
 
 	/* Describe the object - preserving insriptions in the home */
-	if (store_current == STORE_HOME) desc = ODESC_FULL;
+	if (this_store == STORE_HOME) desc = ODESC_FULL;
 	else desc = ODESC_FULL | ODESC_STORE;
 	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, desc);
 
@@ -1649,7 +1662,7 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 	c_put_str(colour, out_val, row, scr_places_x[LOC_WEIGHT]);
 
 	/* Describe an object (fully) in a store */
-	if (store_current != STORE_HOME)
+	if (this_store != STORE_HOME)
 	{
 		/* Extract the "minimum" price */
 		x = price_item(o_ptr, FALSE, 1);
@@ -1676,14 +1689,15 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 static void store_display_frame(void)
 {
 	char buf[80];
+	int this_store = current_store();
 
-	owner_type *ot_ptr = store_owner(store_current);
+	owner_type *ot_ptr = store_owner(this_store);
 
 	/* Clear screen */
 	Term_clear();
 
 	/* The "Home" is special */
-	if (store_current == STORE_HOME)
+	if (this_store == STORE_HOME)
 	{
 		/* Put the owner name */
 		put_str("Your Home", scr_places_y[LOC_OWNER], 1);
@@ -1698,7 +1712,7 @@ static void store_display_frame(void)
 	/* Normal stores */
 	else
 	{
-		const char *store_name = (f_name + f_info[FEAT_SHOP_HEAD + store_current].name);
+		const char *store_name = (f_name + f_info[FEAT_SHOP_HEAD + this_store].name);
 		const char *owner_name = &b_name[ot_ptr->owner_name];
 
 		/* Put the owner name */
@@ -1749,13 +1763,13 @@ static void store_display_help(void)
 	text_out("' examines and '");
 	text_out_c(TERM_L_GREEN, "p");
 
-	if (store_current == STORE_HOME) text_out("' picks up");
+	if (current_store() == STORE_HOME) text_out("' picks up");
 	else text_out("' purchases");
 
 	text_out(" the selected item. '");
 
 	text_out_c(TERM_L_GREEN, "d");
-	if (store_current == STORE_HOME) text_out("' drops");
+	if (current_store() == STORE_HOME) text_out("' drops");
 	else text_out("' sells");
 
 	text_out(" an item from your inventory. ");
@@ -1959,22 +1973,223 @@ static int find_inven(const object_type *o_ptr)
 
 
 /*
+ * Buy the item with the given index from the current store's inventory.
+ */
+void do_cmd_buy(cmd_code code, cmd_arg args[])
+{
+	int item = args[0].item;
+	int amt = args[1].number;
+
+	object_type *o_ptr;	
+	object_type object_type_body;
+	object_type *i_ptr = &object_type_body;
+
+	char o_name[80];
+	int price, item_new;
+
+	store_type *st_ptr;
+	int this_store = current_store();
+
+	if (this_store == STORE_NONE)
+	{
+		msg_print("You cannot purchase items when not in a store.");
+		return;
+	}
+
+	st_ptr = &store[this_store];
+
+	/* Get the actual object */
+	o_ptr = &st_ptr->stock[item];
+
+	/* Get desired object */
+	object_copy_amt(i_ptr, o_ptr, amt);
+
+	/* Ensure we have room */
+	if (!inven_carry_okay(i_ptr))
+	{
+		msg_print("You cannot carry that many items.");
+		return;
+	}
+
+	/* Describe the object (fully) */
+	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
+
+	/* Extract the price for the entire stack */
+	price = price_item(i_ptr, FALSE, i_ptr->number);
+
+	if (price > p_ptr->au)
+	{
+		msg_print("You cannot afford that purchase.");
+		return;
+	}
+
+	/* Spend the money */
+	p_ptr->au -= price;
+
+	/* Update the display */
+	store_flags |= STORE_GOLD_CHANGE;
+
+	/* Buying an object makes you aware of it */
+	object_aware(i_ptr);
+
+	/* Combine / Reorder the pack (later) */
+	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+
+	/* The object no longer belongs to the store */
+	i_ptr->ident &= ~(IDENT_STORE);
+
+	/* Message */
+	if (one_in_(3)) message(MSG_STORE5, 0, ONE_OF(comment_accept));
+	msg_format("You bought %s for %ld gold.", o_name, (long)price);
+
+	/* Erase the inscription */
+	i_ptr->note = 0;
+
+	/* Give it to the player */
+	item_new = inven_carry(i_ptr);
+
+	/* Message */
+	object_desc(o_name, sizeof(o_name), &inventory[item_new], TRUE, ODESC_FULL);
+	msg_format("You have %s (%c).", o_name, index_to_label(item_new));
+
+	/* Now, reduce the original stack's pval */
+	if ((o_ptr->tval == TV_ROD) ||
+		(o_ptr->tval == TV_WAND) ||
+		(o_ptr->tval == TV_STAFF))
+	{
+		o_ptr->pval -= i_ptr->pval;
+	}
+
+	/* Handle stuff */
+	handle_stuff();
+
+	/* Remove the bought objects from the store */
+	store_item_increase(this_store, item, -amt);
+	store_item_optimize(this_store, item);
+
+	/* Store is empty */
+	if (st_ptr->stock_num == 0)
+	{
+		int i;
+
+		/* Shuffle */
+		if (one_in_(STORE_SHUFFLE))
+		{
+			/* Message */
+			msg_print("The shopkeeper retires.");
+
+			/* Shuffle the store */
+			store_shuffle(this_store);
+			store_flags |= STORE_FRAME_CHANGE;
+		}
+
+		/* Maintain */
+		else
+		{
+			/* Message */
+			msg_print("The shopkeeper brings out some new stock.");
+		}
+
+		/* New inventory */
+		for (i = 0; i < 10; ++i)
+		{
+			/* Maintain the store */
+			store_maint(this_store);
+		}
+	}
+
+	event_signal(EVENT_INVENTORY);
+	event_signal(EVENT_EQUIPMENT);
+}
+
+/*
+ * Retrieve the item with the given index from the home's inventory.
+ */
+void do_cmd_retrieve(cmd_code code, cmd_arg args[])
+{
+	int item = args[0].item;
+	int amt = args[1].number;
+
+	object_type *o_ptr;	
+	object_type picked_item;
+	char o_name[80];
+	int item_new;
+
+	store_type *st_ptr;
+
+	if (current_store() != STORE_HOME)
+	{
+		msg_print("You are not currently at home.");
+		return;
+	}
+
+	st_ptr = &store[STORE_HOME];
+
+	/* Get the actual object */
+	o_ptr = &st_ptr->stock[item];
+
+	/* Get desired object */
+	object_copy_amt(&picked_item, o_ptr, amt);
+
+	/* Ensure we have room */
+	if (!inven_carry_okay(&picked_item))
+	{
+		msg_print("You cannot carry that many items.");
+		return;
+	}
+
+	/* Distribute charges of wands, staves, or rods */
+	distribute_charges(o_ptr, &picked_item, amt);
+	
+	/* Give it to the player */
+	item_new = inven_carry(&picked_item);
+
+	printf("%i, %i\n", amt, picked_item.number);
+	
+	/* Describe just the result */
+	object_desc(o_name, sizeof(o_name), &inventory[item_new], TRUE, ODESC_FULL);
+	
+	/* Message */
+	msg_format("You have %s (%c).", o_name, index_to_label(item_new));
+	
+	/* Handle stuff */
+	handle_stuff();
+	
+	/* Remove the items from the home */
+	store_item_increase(STORE_HOME, item, -amt);
+	store_item_optimize(STORE_HOME, item);
+	
+	event_signal(EVENT_INVENTORY);
+	event_signal(EVENT_EQUIPMENT);
+}
+
+/*
  * Buy an object from a store
  */
 static bool store_purchase(int item)
 {
-	int amt, item_new, num;
-
-	store_type *st_ptr = &store[store_current];
+	int amt, num;
 
 	object_type *o_ptr;
 
-	object_type *i_ptr;
 	object_type object_type_body;
+	object_type *i_ptr = &object_type_body;
 
 	char o_name[80];
 
 	s32b price;
+
+	int this_store = current_store();
+
+	store_type *st_ptr;
+
+	if (this_store == STORE_NONE)
+	{
+		msg_print("You cannot purchase items when not in a store.");
+		return FALSE;
+	}
+
+	st_ptr = &store[this_store];
 
 	/* Get the actual object */
 	o_ptr = &st_ptr->stock[item];
@@ -1984,7 +2199,7 @@ static bool store_purchase(int item)
 	msg_flag = FALSE;
 	prt("", 0, 0);
 
-	if (store_current == STORE_HOME)
+	if (this_store == STORE_HOME)
 	{
 		amt = o_ptr->number;
 	}
@@ -2021,7 +2236,7 @@ static bool store_purchase(int item)
 		num = find_inven(o_ptr);
 
 	strnfmt(o_name, sizeof o_name, "%s how many%s? (max %d) ",
-	        (store_current == STORE_HOME) ? "Take" : "Buy",
+	        (this_store == STORE_HOME) ? "Take" : "Buy",
 	        num ? format(" (you have %d)", num) : "", amt);
 
 	/* Get a quantity */
@@ -2030,21 +2245,8 @@ static bool store_purchase(int item)
 	/* Allow user abort */
 	if (amt <= 0) return FALSE;
 
-	/* Get local object */
-	i_ptr = &object_type_body;
-
 	/* Get desired object */
-	object_copy(i_ptr, o_ptr);
-
-	/*
-	 * XXX Stacking
-	 * If a rod or wand, allocate total maximum timeouts or charges
-	 * between those purchased and left on the shelf.
-	 */
-	reduce_charges(i_ptr, i_ptr->number - amt);
-
-	/* Modify quantity */
-	i_ptr->number = amt;
+	object_copy_amt(i_ptr, o_ptr, amt);
 
 	/* Ensure we have room */
 	if (!inven_carry_okay(i_ptr))
@@ -2058,7 +2260,7 @@ static bool store_purchase(int item)
 	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
 
 	/* Attempt to buy it */
-	if (store_current != STORE_HOME)
+	if (this_store != STORE_HOME)
 	{
 		u32b price;
 		bool response;
@@ -2078,110 +2280,16 @@ static bool store_purchase(int item)
 		/* Negative response, so give up */
 		if (!response) return FALSE;
 
-
-		/* Spend the money */
-		p_ptr->au -= price;
-
-		/* Update the display */
-		store_flags |= STORE_GOLD_CHANGE;
-
-		/* Buying an object makes you aware of it */
-		object_aware(i_ptr);
-
-		/* Combine / Reorder the pack (later) */
-		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
-
-		/* The object no longer belongs to the store */
-		i_ptr->ident &= ~(IDENT_STORE);
-
-		/* Message */
-		if (one_in_(3)) message(MSG_STORE5, 0, ONE_OF(comment_accept));
-		msg_format("You bought %s for %ld gold.", o_name, (long)price);
-
-		/* Erase the inscription */
-		i_ptr->note = 0;
-
-		/* Give it to the player */
-		item_new = inven_carry(i_ptr);
-
-		/* Message */
-		object_desc(o_name, sizeof(o_name), &inventory[item_new], TRUE, ODESC_FULL);
-		msg_format("You have %s (%c).", o_name, index_to_label(item_new));
+		cmd_insert(CMD_BUY, item, amt);
 		store_flags |= STORE_KEEP_PROMPT;
-
-		/* Now, reduce the original stack's pval */
-		if ((o_ptr->tval == TV_ROD) ||
-		    (o_ptr->tval == TV_WAND) ||
-		    (o_ptr->tval == TV_STAFF))
-		{
-			o_ptr->pval -= i_ptr->pval;
-		}
-
-		/* Handle stuff */
-		handle_stuff();
-
-		/* Remove the bought objects from the store */
-		store_item_increase(store_current, item, -amt);
-		store_item_optimize(store_current, item);
-
-		/* Store is empty */
-		if (st_ptr->stock_num == 0)
-		{
-			int i;
-
-			/* Shuffle */
-			if (one_in_(STORE_SHUFFLE))
-			{
-				/* Message */
-				msg_print("The shopkeeper retires.");
-
-				/* Shuffle the store */
-				store_shuffle(store_current);
-				store_flags |= STORE_FRAME_CHANGE;
-			}
-
-			/* Maintain */
-			else
-			{
-				/* Message */
-				msg_print("The shopkeeper brings out some new stock.");
-			}
-
-			/* New inventory */
-			for (i = 0; i < 10; ++i)
-			{
-				/* Maintain the store */
-				store_maint(store_current);
-			}
-		}
 	}
 
 	/* Home is much easier */
 	else
 	{
-		/* Distribute charges of wands, staves, or rods */
-		distribute_charges(o_ptr, i_ptr, amt);
-
-		/* Give it to the player */
-		item_new = inven_carry(i_ptr);
-
-		/* Describe just the result */
-		object_desc(o_name, sizeof(o_name), &inventory[item_new], TRUE, ODESC_FULL);
-
-		/* Message */
-		msg_format("You have %s (%c).", o_name, index_to_label(item_new));
+		cmd_insert(CMD_RETRIEVE, item, amt);
 		store_flags |= STORE_KEEP_PROMPT;
-
-		/* Handle stuff */
-		handle_stuff();
-
-		/* Remove the items from the home */
-		store_item_increase(store_current, item, -amt);
-		store_item_optimize(store_current, item);
 	}
-
-	event_signal(EVENT_INVENTORY);
-	event_signal(EVENT_EQUIPMENT);
 
 	/* Not kicked out */
 	return TRUE;
@@ -2194,9 +2302,178 @@ static bool store_purchase(int item)
  */
 static bool store_will_buy_tester(const object_type *o_ptr)
 {
-	return store_will_buy(store_current, o_ptr);
+	int this_store = current_store();
+	
+	if (this_store == STORE_NONE) return FALSE;
+
+	return store_will_buy(this_store, o_ptr);
 }
 
+/*
+ * Sell an item to the current store.
+ */
+void do_cmd_sell(cmd_code code, cmd_arg args[])
+{
+	int item = args[0].item;
+	int amt = args[1].number;
+	object_type sold_item;
+	int price, dummy, value;
+	char o_name[120];
+	
+	/* Get the item */
+	object_type *o_ptr = object_from_item_idx(item);
+	
+	/* Cannot remove cursed objects */
+	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
+	{
+		msg_print("Hmmm, it seems to be cursed.");
+		return;
+	}	
+	
+	/* Check we are somewhere we can sell the items. */
+	if (current_store() == STORE_NONE)
+	{
+		msg_print("You cannot sell items when not in a store.");
+		return;
+	}
+	
+	/* Check the store wants the items being sold */
+	if (!store_will_buy(current_store(), o_ptr))
+	{
+		msg_print("I do not wish to purchase this item.");
+		return;
+	}
+	
+	/* Get a copy of the object representing the number being sold */
+	object_copy_amt(&sold_item, o_ptr, amt);
+	
+	/* Check if the store has space for the items */
+	if (!store_check_num(STORE_HOME, &sold_item))
+	{
+		msg_print("I have not the room in my store to keep it.");
+		return;
+	}
+	
+	price = price_item(&sold_item, TRUE, amt);
+	
+	/* Get some money */
+	p_ptr->au += price;
+	
+	/* Update the display */
+	store_flags |= STORE_GOLD_CHANGE;
+	
+	/* Identify original object */
+	object_aware(o_ptr);
+	object_known(o_ptr);
+	
+	/* Update the auto-history if selling an artifact that was previously un-IDed. (Ouch!) */
+	if (artifact_p(o_ptr))
+		history_add_artifact(o_ptr->name1, TRUE);
+	
+	/* Combine / Reorder the pack (later) */
+	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+	
+	/* Redraw stuff */
+	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
+	
+	/* The object belongs to the store now */
+	sold_item.ident |= IDENT_STORE;
+	
+	/* Get the "apparent" value */
+	dummy = object_value(&sold_item, amt);
+	
+	/* Take a new copy of the now known-about object. */
+	object_copy_amt(&sold_item, o_ptr, amt);
+	   
+	/*
+	* Hack -- Allocate charges between those wands, staves, or rods
+	* sold and retained, unless all are being sold.
+	 */
+	distribute_charges(o_ptr, &sold_item, amt);
+	
+	/* Get the "actual" value */
+	value = object_value(&sold_item, amt);
+	
+	/* Get the description all over again */
+	object_desc(o_name, sizeof(o_name), &sold_item, TRUE, ODESC_FULL);
+	
+	/* Describe the result (in message buffer) */
+	msg_format("You sold %s (%c) for %ld gold.",
+			   o_name, index_to_label(item), (long)price);
+	
+	/* Analyze the prices (and comment verbally) */
+	purchase_analyze(price, value, dummy);
+	
+	/* Set squelch flag */
+	p_ptr->notice |= PN_SQUELCH;
+	
+	/* Take the object from the player */
+	inven_item_increase(item, -amt);
+	inven_item_optimize(item);
+	
+	/* Handle stuff */
+	handle_stuff();
+	
+	/* The store gets that (known) object */
+	store_carry(current_store(), &sold_item);
+
+	event_signal(EVENT_INVENTORY);
+	event_signal(EVENT_EQUIPMENT);
+}
+
+/*
+ * Stash an item in the home.
+ */
+void do_cmd_stash(cmd_code code, cmd_arg args[])
+{
+	int item = args[0].item;
+	int amt = args[1].number;
+	object_type dropped_item;
+	object_type *o_ptr = object_from_item_idx(item);
+	char o_name[120];
+
+	/* Check we are somewhere we can stash items. */
+	if (current_store() != STORE_HOME)
+	{
+		msg_print("You are not in your home.");
+		return;
+	}
+
+	/* Cannot remove cursed objects */
+	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
+	{
+		msg_print("Hmmm, it seems to be cursed.");
+		return;
+	}	
+
+	/* Get a copy of the object representing the number being sold */
+	object_copy_amt(&dropped_item, o_ptr, amt);
+
+	if (!store_check_num(STORE_HOME, &dropped_item))
+	{
+		msg_print("Your home is full.");
+		return;
+	}
+
+	/* Distribute charges of wands/staves/rods */
+	distribute_charges(o_ptr, &dropped_item, amt);
+	
+	/* Describe */
+	msg_format("You drop %s (%c).", o_name, index_to_label(item));
+	
+	/* Take it from the players inventory */
+	inven_item_increase(item, -amt);
+	inven_item_optimize(item);
+	
+	/* Handle stuff */
+	handle_stuff();
+	
+	/* Let the home carry it */
+	home_carry(&dropped_item);
+
+	event_signal(EVENT_INVENTORY);
+	event_signal(EVENT_EQUIPMENT);
+}
 
 /*
  * Sell an object, or drop if it we're in the home.
@@ -2207,8 +2484,8 @@ static void store_sell(void)
 	int item;
 
 	object_type *o_ptr;
-	object_type *i_ptr;
 	object_type object_type_body;
+	object_type *i_ptr = &object_type_body;
 
 	char o_name[120];
 
@@ -2216,11 +2493,19 @@ static void store_sell(void)
 	const char *reject = "You have nothing that I want. ";
 	const char *prompt = "Sell which item? ";
 
+	int this_store = current_store();
+
+	if (this_store == STORE_NONE)
+	{
+		msg_print("You cannot sell items when not in a store.");
+		return;
+	}
+
 	/* Clear all current messages */
 	msg_flag = FALSE;
 	prt("", 0, 0);
 
-	if (store_current == STORE_HOME)
+	if (this_store == STORE_HOME)
 		prompt = "Drop which item? ";
 	else
 		item_tester_hook = store_will_buy_tester;
@@ -2254,39 +2539,14 @@ static void store_sell(void)
 	/* Allow user abort */
 	if (amt <= 0) return;
 
+	/* Get a copy of the object representing the number being sold */
+	object_copy_amt(i_ptr, object_from_item_idx(item), amt);
 
-	/* Get local object */
-	i_ptr = &object_type_body;
-
-	/* Get a copy of the object */
-	object_copy(i_ptr, o_ptr);
-
-	/* Modify quantity */
-	i_ptr->number = amt;
-
-
-	/*
-	 * XXX Stacking
-	 * If a rod, wand, or staff, allocate total maximum timeouts or charges
-	 * to those being sold.
-	 */
-	if ((o_ptr->tval == TV_ROD) ||
-	    (o_ptr->tval == TV_WAND) ||
-	    (o_ptr->tval == TV_STAFF))
-	{
-		i_ptr->pval = o_ptr->pval * amt / o_ptr->number;
-	}
-
-	/* Get a full description */
-	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
-
-
-	/* Is there room in the store (or the home?) */
-	if (!store_check_num(store_current, i_ptr))
+	if (!store_check_num(this_store, i_ptr))
 	{
 		store_flags |= STORE_KEEP_PROMPT;
 
-		if (store_current == STORE_HOME)
+		if (this_store == STORE_HOME)
 			msg_print("Your home is full.");
 
 		else
@@ -2295,14 +2555,14 @@ static void store_sell(void)
 		return;
 	}
 
+	/* Get a full description */
+	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
 
 	/* Real store */
-	if (store_current != STORE_HOME)
+	if (this_store != STORE_HOME)
 	{
-		u32b price, dummy, value;
-
 		/* Extract the value of the items */
-		price = price_item(i_ptr, TRUE, amt);
+		u32b price = price_item(i_ptr, TRUE, amt);
 
 		screen_save();
 
@@ -2318,98 +2578,16 @@ static void store_sell(void)
 
 		screen_load();
 
-		/* Get some money */
-		p_ptr->au += price;
+		cmd_insert(CMD_SELL, item, amt);
 
-		/* Update the display */
-		store_flags |= STORE_GOLD_CHANGE;
-
-		/* Identify original object */
-		object_aware(o_ptr);
-		object_known(o_ptr);
-
-		/* Update the auto-history if selling an artifact that was previously un-IDed. (Ouch!) */
-		if (artifact_p(o_ptr))
-			history_add_artifact(o_ptr->name1, TRUE);
-
-		/* Combine / Reorder the pack (later) */
-		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
-
-		/* Redraw stuff */
-		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
-
-		/* The object belongs to the store now */
-		i_ptr->ident |= IDENT_STORE;
-
-		/* Get the "apparent" value */
-		dummy = object_value(i_ptr, i_ptr->number);
-
-		/* Get local object */
-		i_ptr = &object_type_body;
-
-		/* Get a copy of the object */
-		object_copy(i_ptr, o_ptr);
-
-		/* Modify quantity */
-		i_ptr->number = amt;
-
-		/*
-		 * Hack -- Allocate charges between those wands, staves, or rods
-		 * sold and retained, unless all are being sold.
-		 */
-		distribute_charges(o_ptr, i_ptr, amt);
-
-		/* Get the "actual" value */
-		value = object_value(i_ptr, i_ptr->number);
-
-		/* Get the description all over again */
-		object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
-
-		/* Describe the result (in message buffer) */
-		msg_format("You sold %s (%c) for %ld gold.",
-		           o_name, index_to_label(item), (long)price);
 		store_flags |= STORE_KEEP_PROMPT;
-
-		/* Analyze the prices (and comment verbally) */
-		purchase_analyze(price, value, dummy);
-
-		/* Set squelch flag */
-		p_ptr->notice |= PN_SQUELCH;
-
-		/* Take the object from the player */
-		inven_item_increase(item, -amt);
-		inven_item_optimize(item);
-
-		/* Handle stuff */
-		handle_stuff();
-
-		/* The store gets that (known) object */
-		store_carry(store_current, i_ptr);
 	}
 
 	/* Player is at home */
 	else
 	{
-		/* Distribute charges of wands/staves/rods */
-		distribute_charges(o_ptr, i_ptr, amt);
-
-		/* Describe */
-		msg_format("You drop %s (%c).", o_name, index_to_label(item));
-		store_flags |= STORE_KEEP_PROMPT;
-
-		/* Take it from the players inventory */
-		inven_item_increase(item, -amt);
-		inven_item_optimize(item);
-
-		/* Handle stuff */
-		handle_stuff();
-
-		/* Let the home carry it */
-		home_carry(i_ptr);
+		cmd_insert(CMD_STASH, item, amt);
 	}
-
-	event_signal(EVENT_INVENTORY);
-	event_signal(EVENT_EQUIPMENT);
 }
 
 
@@ -2418,7 +2596,7 @@ static void store_sell(void)
  */
 static void store_examine(int item)
 {
-	store_type *st_ptr = &store[store_current];
+	store_type *st_ptr = &store[current_store()];
 	object_type *o_ptr;
 	bool info_known;
 
@@ -2438,7 +2616,7 @@ static void store_examine(int item)
 
 	/* Show full info in most stores, but normal info in player home */
 	info_known = object_info(o_ptr,
-			(store_current != STORE_HOME) ? TRUE : FALSE);
+			(current_store() != STORE_HOME) ? TRUE : FALSE);
 
 	if (!info_known)
 		text_out("\n\nThis item does not seem to possess any special abilities.");
@@ -2460,14 +2638,14 @@ static void store_examine(int item)
 /*
  * Flee the store when it overflows.
  */
-bool store_overflow(void)
+static bool store_overflow(void)
 {
 	int item = INVEN_PACK;
 
 	object_type *o_ptr = &inventory[item];
 
 	/* Flee from the store */
-	if (store_current != STORE_HOME)
+	if (current_store() != STORE_HOME)
 	{
 		/* Leave */
 		msg_print("Your pack is so full that you flee the store...");
@@ -2475,7 +2653,7 @@ bool store_overflow(void)
 	}
 
 	/* Flee from the home */
-	else if (!store_check_num(store_current, o_ptr))
+	else if (!store_check_num(current_store(), o_ptr))
 	{
 		/* Leave */
 		msg_print("Your pack is so full that you flee your home...");
@@ -2534,6 +2712,7 @@ static bool store_process_command(char cmd, void *db, int oid)
 {
 	bool equip_toggle = FALSE;
 	bool redraw = FALSE;
+	bool command_processed = FALSE;
 
 	/* Parse the command */
 	switch (cmd)
@@ -2541,7 +2720,7 @@ static bool store_process_command(char cmd, void *db, int oid)
 		/* Leave */
 		case ESCAPE:
 		{
-			return TRUE;
+			command_processed = TRUE;
 			break;
 		}
 
@@ -2550,7 +2729,8 @@ static bool store_process_command(char cmd, void *db, int oid)
 		case 'd':
 		{
 			store_sell();
-			return TRUE;
+			command_processed = TRUE;
+			break;
 		}
 
 		/* Buy */
@@ -2558,9 +2738,7 @@ static bool store_process_command(char cmd, void *db, int oid)
 		case 'g':
 		{
 			/* On successful purchase, redraw */
-			if (store_purchase(oid))
-				return TRUE;
-
+			command_processed = store_purchase(oid);
 			break;
 		}
 
@@ -2578,8 +2756,7 @@ static bool store_process_command(char cmd, void *db, int oid)
 		{
 			Term_clear();
 			store_flags |= (STORE_FRAME_CHANGE | STORE_GOLD_CHANGE);
-			return TRUE;
-
+			command_processed = TRUE;
 			break;
 		}
 
@@ -2712,7 +2889,8 @@ static bool store_process_command(char cmd, void *db, int oid)
 			/* Redisplay */
 			store_flags |= STORE_INIT_CHANGE;
 
-			return TRUE;
+			command_processed = TRUE;
+			break;
 		}
 
 		/*** System Commands ***/
@@ -2761,9 +2939,8 @@ static bool store_process_command(char cmd, void *db, int oid)
 		event_signal(EVENT_EQUIPMENT);
 	}
 	
-	return TRUE;
+	return command_processed;
 }
-
 
 
 /*
@@ -2771,19 +2948,17 @@ static bool store_process_command(char cmd, void *db, int oid)
  */
 void do_cmd_store(cmd_code code, cmd_arg args[])
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
-
 	bool leave = FALSE;
 
+	/* Take note of the store number from the terrain feature */
+	int this_store = current_store();
+
 	/* Verify that there is a store */
-	if (!((cave_feat[py][px] >= FEAT_SHOP_HEAD) &&
-	      (cave_feat[py][px] <= FEAT_SHOP_TAIL)))
+	if (this_store == STORE_NONE)
 	{
 		msg_print("You see no store here.");
 		return;
 	}
-
 
 	/* Check if we can enter the store */
 	if (OPT(adult_no_stores))
@@ -2806,11 +2981,6 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 	p_ptr->command_new = 0;
 
 
-	/*** Set up state ***/
-
-	/* XXX Take note of the store number from the terrain feature */
-	store_current = (cave_feat[py][px] - FEAT_SHOP_HEAD);
-
 
 
 	/*** Display ***/
@@ -2829,7 +2999,7 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 	ui_event_data evt = EVENT_EMPTY;
 	int cursor = 0;
 
-	store_type *st_ptr = &store[store_current];
+	store_type *st_ptr = &store[this_store];
 
 	/* Wipe the menu and set it up */
 	WIPE(&menu, menu);
@@ -2841,7 +3011,8 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 	store_redraw();
 
 	/* Say a friendly hello. */
-	if (store_current != STORE_HOME) prt_welcome(store_owner(store_current));
+	if (this_store != STORE_HOME) 
+		prt_welcome(store_owner(this_store));
 
 	/* Loop */
 	while (!leave)

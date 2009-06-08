@@ -131,6 +131,10 @@ extern void textui_cmd_throw(void);
 
 /* store.c */
 extern void do_cmd_store(cmd_code code, cmd_arg args[]);
+extern void do_cmd_sell(cmd_code code, cmd_arg args[]);
+extern void do_cmd_stash(cmd_code code, cmd_arg args[]);
+extern void do_cmd_buy(cmd_code code, cmd_arg args[]);
+extern void do_cmd_retrieve(cmd_code code, cmd_arg args[]);
 
 /* Types of item use */
 typedef enum

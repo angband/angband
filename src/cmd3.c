@@ -203,8 +203,7 @@ void do_cmd_destroy(cmd_code code, cmd_arg args[])
 
 	object_type *o_ptr;
 
-	object_type *i_ptr;
-	object_type object_type_body;
+	object_type destroyed_obj;
 
 	char o_name[120];
 
@@ -233,23 +232,9 @@ void do_cmd_destroy(cmd_code code, cmd_arg args[])
 		return;
 	}	
 
-	/* Get local object */
-	i_ptr = &object_type_body;
-	object_copy(i_ptr, o_ptr);
-
-	if ((o_ptr->tval == TV_WAND) ||
-	    (o_ptr->tval == TV_STAFF) ||
-	    (o_ptr->tval == TV_ROD))
-	{
-		/* Calculate the amount of destroyed charges */
-		i_ptr->pval = o_ptr->pval * amt / o_ptr->number;
-	}
-
-	/* Set quantity */
-	i_ptr->number = amt;
-
-	/* Describe the destroyed object */
-	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
+	/* Describe the destroyed object by taking a copy with the right "amt" */
+	object_copy_amt(&destroyed_obj, o_ptr, amt);
+	object_desc(o_name, sizeof(o_name), &destroyed_obj, TRUE, ODESC_FULL);
 
 	/* Artifacts cannot be destroyed */
 	if (artifact_p(o_ptr))
@@ -298,8 +283,7 @@ void textui_cmd_destroy(void)
 
 	object_type *o_ptr;
 
-	object_type *i_ptr;
-	object_type object_type_body;
+	object_type obj_to_destroy;
 
 	char o_name[120];
 	char out_val[160];
@@ -324,23 +308,9 @@ void textui_cmd_destroy(void)
 	amt = get_quantity(NULL, o_ptr->number);
 	if (amt <= 0) return;
 
-	/* Get local object */
-	i_ptr = &object_type_body;
-	object_copy(i_ptr, o_ptr);
-
-	if ((o_ptr->tval == TV_WAND) ||
-	    (o_ptr->tval == TV_STAFF) ||
-	    (o_ptr->tval == TV_ROD))
-	{
-		/* Calculate the amount of destroyed charges */
-		i_ptr->pval = o_ptr->pval * amt / o_ptr->number;
-	}
-
-	/* Set quantity */
-	i_ptr->number = amt;
-
-	/* Describe the destroyed object */
-	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
+	/* Describe the destroyed object by taking a copy with the right "amt" */
+	object_copy_amt(&obj_to_destroy, o_ptr, amt);
+	object_desc(o_name, sizeof(o_name), &obj_to_destroy, TRUE, ODESC_FULL);
 
 	/* Verify destruction */
 	strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", o_name);

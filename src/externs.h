@@ -565,7 +565,6 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty);
 void store_init(void);
 void store_shuffle(int which);
 void store_maint(int which);
-bool store_overflow(void);
 
 /* target.c */
 bool target_able(int m_idx);

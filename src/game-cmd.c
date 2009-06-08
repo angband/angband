@@ -212,6 +212,10 @@ errr cmd_insert(cmd_code c, ...)
 		/* These take an item number and a number of those items to process. */
 		case CMD_DROP:
 		case CMD_DESTROY:
+		case CMD_SELL:
+		case CMD_BUY:
+		case CMD_STASH:
+		case CMD_RETRIEVE:
 		{
 			/* TODO: Number should probably be replaced by 'repeat'ing */
 			cmd.args[0].item = va_arg(vp, int);
@@ -283,6 +287,10 @@ static struct
 	{ CMD_STUDY_SPELL, do_cmd_study_spell },
 	{ CMD_STUDY_BOOK, do_cmd_study_book },
 	{ CMD_CAST, do_cmd_cast },
+	{ CMD_SELL, do_cmd_sell },
+	{ CMD_STASH, do_cmd_stash },
+	{ CMD_BUY, do_cmd_buy },
+	{ CMD_RETRIEVE, do_cmd_retrieve },
 };
 
 
