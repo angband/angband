@@ -86,7 +86,8 @@ typedef enum cmd_code
 
 /*	CMD_OPTIONS, -- probably won't be a command in this sense*/
 	CMD_QUIT,
-	CMD_HELP
+	CMD_HELP,
+	CMD_REPEAT
 }
 cmd_code;
 

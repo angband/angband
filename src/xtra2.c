@@ -510,21 +510,6 @@ bool get_aim_dir(int *dp)
 	/* Initialize */
 	(*dp) = 0;
 
-	if (repeat_pull(dp))
-	{
-		/* Verify */
-		if (!(*dp == 5 && !target_okay()))
-		{
-			/* Use the direction */
-			dir = *dp;
-		}
-		else
-		{
-			/* Invalid repeat - reset it */
-			repeat_clear();
-		}
-	}
-
 	/* Hack -- auto-target if requested */
 	if (OPT(use_old_target) && target_okay() && !dir) dir = 5;
 
@@ -630,9 +615,6 @@ bool get_aim_dir(int *dp)
 		msg_print("You are confused.");
 	}
 
-	/* Remember the direction if it is new */
-	if (!repeat_pull(dp)) repeat_push(dir);
-
 	/* Save direction */
 	(*dp) = dir;
 
@@ -661,11 +643,6 @@ bool get_rep_dir(int *dp)
 	int dir;
 
 	ui_event_data ke;
-
-	if (repeat_pull(dp))
-	{
-		return (TRUE);
-	}
 
 	/* Initialize */
 	(*dp) = 0;
@@ -772,8 +749,6 @@ bool get_rep_dir(int *dp)
 
 	/* Save direction */
 	(*dp) = dir;
-
-	repeat_push(dir);
 
 	/* Success */
 	return (TRUE);

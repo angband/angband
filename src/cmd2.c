@@ -88,9 +88,6 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
  */
 void do_cmd_search(cmd_code code, cmd_arg args[])
 {
-	/* Allow repeated command */
-	allow_repeated_command();
-	
 	/* Take a turn */
 	p_ptr->energy_use = 100;
 
@@ -767,9 +764,6 @@ void do_cmd_open(cmd_code code, cmd_arg args[])
 	}
 
 
-	/* Allow repeated command */
-	allow_repeated_command();
-
 	/* Monster */
 	if (cave_m_idx[y][x] > 0)
 	{
@@ -923,9 +917,6 @@ void do_cmd_close(cmd_code code, cmd_arg args[])
 		x = p_ptr->px + ddx[dir];
 	}
 
-
-	/* Allow repeated command */
-	allow_repeated_command();
 
 	/* Monster */
 	if (cave_m_idx[y][x] > 0)
@@ -1255,9 +1246,6 @@ void do_cmd_tunnel(cmd_code code, cmd_arg args[])
 	}
 
 
-	/* Allow repeated command */
-	allow_repeated_command();
-
 	/* Monster */
 	if (cave_m_idx[y][x] > 0)
 	{
@@ -1440,9 +1428,6 @@ void do_cmd_disarm(cmd_code code, cmd_arg args[])
 		o_idx = chest_check(y, x);
 	}
 
-
-	/* Allow repeated command */
-	allow_repeated_command();
 
 	/* Monster */
 	if (cave_m_idx[y][x] > 0)
@@ -1654,9 +1639,6 @@ void do_cmd_bash(cmd_code code, cmd_arg args[])
 	}
 
 
-	/* Allow repeated command */
-	allow_repeated_command();
-
 	/* Monster */
 	if (cave_m_idx[y][x] > 0)
 	{
@@ -1728,9 +1710,6 @@ void do_cmd_alter_aux(int dir)
 		x = p_ptr->px + ddx[dir];
 	}
 
-
-	/* Allow repeated command */
-	allow_repeated_command();
 
 	/* Attack monsters */
 	if (cave_m_idx[y][x] > 0)
@@ -2051,9 +2030,6 @@ void do_cmd_walk(cmd_code code, cmd_arg args[])
 	if (!do_cmd_walk_test(y, x)) return;
 
 
-	/* Allow repeated command */
-	allow_repeated_command();
-
 	/* Move the player */
 	move_player(dir);
 }
@@ -2161,9 +2137,6 @@ void do_cmd_pathfind(cmd_code code, cmd_arg args[])
  */
 void do_cmd_hold(cmd_code code, cmd_arg args[])
 {
-	/* Allow repeated command */
-	allow_repeated_command();
-
 	/* Take a turn */
 	p_ptr->energy_use = 100;
 

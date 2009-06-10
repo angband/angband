@@ -166,6 +166,7 @@ static command_type cmd_hidden[] =
 	{ "Display menu of actions", '\r', CMD_NULL, do_cmd_menu },
 
 	{ "Toggle wizard mode",  KTRL('W'), CMD_NULL, do_cmd_wizard },
+	{ "Repeat previous command",  KTRL('V'), CMD_REPEAT, NULL },
 
 #ifdef ALLOW_DEBUG
 	{ "Debug mode commands", KTRL('A'), CMD_NULL, do_cmd_try_debug },
@@ -649,7 +650,7 @@ void textui_process_command(bool no_request)
 		request_command();
 
 	/* Handle repeating the last command */
-	repeat_check();
+	/* repeat_check();*/
 
 	/* Handle resize events XXX */
 	if (p_ptr->command_cmd_ex.type == EVT_RESIZE)

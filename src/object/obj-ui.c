@@ -754,29 +754,6 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	bool show_list = OPT(show_lists) ? TRUE : FALSE;
 
 
-	/* Get the item index */
-	if (repeat_pull(cp))
-	{
-		/* Verify the item */
-		if (get_item_okay(*cp))
-		{
-			/* Forget the item_tester_tval restriction */
-			item_tester_tval = 0;
-
-			/* Forget the item_tester_hook restriction */
-			item_tester_hook = NULL;
-
-			/* Success */
-			return (TRUE);
-		}
-		else
-		{
-			/* Invalid repeat - reset it */
-			repeat_clear();
-		}
-	}
-
-
 	/* Paranoia XXX XXX XXX */
 	message_flush();
 
@@ -1444,9 +1421,6 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 	/* Warning if needed */
 	if (oops && str) msg_print(str);
-
-	/* Save item if available */
-	if (item) repeat_push(*cp);
 
 	/* Result */
 	return (item);

@@ -2611,12 +2611,6 @@ s16b get_quantity(cptr prompt, int max)
 		p_ptr->command_arg = 0;
 	}
 
-	/* Get the item index */
-	else if ((max != 1) && repeat_pull(&amt))
-	{
-		/* nothing */
-	}
-
 	/* Prompt if needed */
 	else if ((max != 1))
 	{
@@ -2652,8 +2646,6 @@ s16b get_quantity(cptr prompt, int max)
 
 	/* Enforce the minimum */
 	if (amt < 0) amt = 0;
-
-	if (amt) repeat_push(amt);
 
 	/* Return the result */
 	return (amt);
@@ -2828,28 +2820,6 @@ void pause_line(int row)
 static char request_command_buffer[256];
 
 
-/*
- * Mark a command as "allowed to be repeated".
- *
- * When a command is executed, the user has the option to request that
- * it be repeated by the UI setting p_ptr->command_arg.  If the command
- * permits repetition, then it calls this function to set 
- * p_ptr->command_rep to make it repeat until an interruption.
- */
-void allow_repeated_command(void)
-{
-	if (p_ptr->command_arg)
-	{
-		/* Set repeat count */
-		p_ptr->command_rep = p_ptr->command_arg - 1;
-		
-		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
-		
-		/* Cancel the arg */
-		p_ptr->command_arg = 0;
-	}
-}
 
 /*
  * Request a command from the user.
@@ -3255,108 +3225,6 @@ cptr attr_to_text(byte a)
 
 	/* Oops */
 	return "Icky";
-}
-
-
-
-#define REPEAT_MAX 20
-
-/* Number of chars saved */
-static int repeat__cnt = 0;
-
-/* Current index */
-static int repeat__idx = 0;
-
-/* Saved "stuff" */
-static int repeat__key[REPEAT_MAX];
-
-
-/*
- * Push data.
- */
-void repeat_push(int what)
-{
-	/* Too many keys */
-	if (repeat__cnt == REPEAT_MAX) return;
-
-	/* Push the "stuff" */
-	repeat__key[repeat__cnt++] = what;
-
-	/* Prevents us from pulling keys */
-	++repeat__idx;
-}
-
-
-/*
- * Pull data.
- */
-bool repeat_pull(int *what)
-{
-	/* All out of keys */
-	if (repeat__idx == repeat__cnt) return (FALSE);
-
-	/* Grab the next key, advance */
-	*what = repeat__key[repeat__idx++];
-
-	/* Success */
-	return (TRUE);
-}
-
-
-void repeat_clear(void)
-{
-	/* Start over from the failed pull */
-	if (repeat__idx)
-		repeat__cnt = --repeat__idx;
-
-	/* Paranoia */
-	else
-		repeat__cnt = repeat__idx;
-
-	return;
-}
-
-
-/*
- * Repeat previous command, or begin memorizing new command.
- */
-void repeat_check(void)
-{
-	int what;
-
-	/* Ignore some commands */
-	if (p_ptr->command_cmd == ESCAPE) return;
-	if (p_ptr->command_cmd == ' ') return;
-	if (p_ptr->command_cmd == '\n') return;
-	if (p_ptr->command_cmd == '\r') return;
-
-	/* Repeat Last Command */
-	if (p_ptr->command_cmd == KTRL('V'))
-	{
-		/* Reset */
-		repeat__idx = 0;
-
-		/* Get the command */
-		if (repeat_pull(&what))
-		{
-			/* Save the command */
-			p_ptr->command_cmd = what;
-		}
-	}
-
-	/* Start saving new command */
-	else
-	{
-		/* Reset */
-		repeat__cnt = 0;
-		repeat__idx = 0;
-
-		/* Get the current command */
-		what = p_ptr->command_cmd;
-
-		/* Save this command */
-		repeat_push(what);
-	}
 }
 
 

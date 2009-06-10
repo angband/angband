@@ -625,7 +625,6 @@ extern bool get_com(cptr prompt, char *command);
 extern bool get_com_ex(cptr prompt, ui_event_data *command);
 extern void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp);
 extern void pause_line(int row);
-extern void allow_repeated_command(void);
 extern void request_command(void);
 extern bool is_a_vowel(int ch);
 extern int color_char_to_attr(char c);
@@ -636,12 +635,6 @@ extern cptr attr_to_text(byte a);
 extern void build_gamma_table(int gamma);
 extern byte gamma_table[256];
 #endif /* SUPPORT_GAMMA */
-
-/* util.c */
-extern void repeat_push(int what);
-extern bool repeat_pull(int *what);
-extern void repeat_clear(void);
-extern void repeat_check(void);
 
 /* x-spell.c */
 extern int get_spell_index(const object_type *o_ptr, int index);

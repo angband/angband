@@ -242,24 +242,6 @@ int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool browse)
 
 	cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
-	int result;
-
-	/* Get the spell, if available */
-	if (repeat_pull(&result))
-	{
-		/* Verify the spell */
-		if (spell_okay(result, known, browse))
-		{
-			/* Success */
-			return (result);
-		}
-		else
-		{
-			/* Invalid repeat - reset it */
-			repeat_clear();
-		}
-	}
-
 	/* Extract spells */
 	for (i = 0; i < SPELLS_PER_BOOK; i++)
 	{
@@ -405,8 +387,6 @@ int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool browse)
 
 	/* Abort if needed */
 	if (!flag) return (-1);
-
-	repeat_push(spell);
 
 	/* Success */
 	return (spell);
