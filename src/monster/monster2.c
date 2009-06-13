@@ -3021,6 +3021,10 @@ bool wake_monster(monster_type *m_ptr)
 		return FALSE;
 
 	m_ptr->csleep = 0;
+
+	/* If it just woke up, update the monster list */
+	p_ptr->redraw |= PR_MONLIST;
+	
 	return TRUE;
 }
 
