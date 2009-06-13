@@ -618,7 +618,7 @@ void display_monlist(void)
 		if (!list[m_ptr->r_idx].count) type_count++;
 		
 		/* Check for LOS */
-		if (player_has_los_bold(m_ptr->fy, m_ptr->fx))
+		if (player_can_see_bold(m_ptr->fy, m_ptr->fx))
 		{
 			/* Increment the total number of in-LOS monsters */
 			los_count++;
