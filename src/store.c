@@ -2348,7 +2348,7 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 	object_copy_amt(&sold_item, o_ptr, amt);
 	
 	/* Check if the store has space for the items */
-	if (!store_check_num(STORE_HOME, &sold_item))
+	if (!store_check_num(current_store(), &sold_item))
 	{
 		msg_print("I have not the room in my store to keep it.");
 		return;
