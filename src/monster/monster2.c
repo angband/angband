@@ -617,8 +617,13 @@ void display_monlist(void)
 		/* If this is the first one of this type, count the type */
 		if (!list[m_ptr->r_idx].count) type_count++;
 		
-		/* Check for LOS */
-		if (m_ptr->mflag & (MFLAG_VIEW))
+		/* Check for LOS
+		 * Hack - we should use (m_ptr->mflag & (MFLAG_VIEW)) here,
+		 * but this does not catch monsters detected by ESP which are
+		 * targetable, so we cheat and use projectable() instead 
+		 */
+		if (projectable(p_ptr->py, p_ptr->px, m_ptr->fy, m_ptr->fx,
+			PROJECT_NONE))
 		{
 			/* Increment the total number of in-LOS monsters */
 			los_count++;
