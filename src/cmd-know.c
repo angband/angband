@@ -1401,7 +1401,7 @@ static void desc_ego_fake(int oid)
 	if (e_ptr->text)
 	{
 		int x, y;
-		text_out(e_text + e_ptr->text);
+		text_out("%s", e_text + e_ptr->text);
 		Term_locate(&x, &y);
 		Term_gotoxy(0, y+1);
 	}

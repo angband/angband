@@ -1,5 +1,5 @@
 /*
- * File: wizard1.c
+ * File: wiz-spoil.c
  * Purpose: Spoiler generation
  *
  * Copyright (c) 1997 Ben Harrison, and others
@@ -52,7 +52,7 @@ static void spoiler_blanklines(int n)
  */
 static void spoiler_underline(cptr str, char c)
 {
-	text_out(str);
+	text_out("%s", str);
 	text_out("\n");
 	spoiler_out_n_chars(strlen(str), c);
 	text_out("\n");
@@ -504,9 +504,9 @@ static void spoil_artifact(cptr fname)
 			 * Determine the minimum depth an artifact can appear, its rarity,
 			 * its weight, and its value in gold pieces.
 			 */
-			text_out(format("\nLevel %u, Rarity %u, %d.%d lbs, %ld AU\n",
-			                a_ptr->level, a_ptr->rarity, (a_ptr->weight / 10),
-			                (a_ptr->weight % 10), ((long)a_ptr->cost)));
+			text_out("\nLevel %u, Rarity %u, %d.%d lbs, %ld AU\n",
+					 a_ptr->level, a_ptr->rarity, (a_ptr->weight / 10),
+					 (a_ptr->weight % 10), ((long)a_ptr->cost));
 
 			/* Terminate the entry */
 			spoiler_blanklines(2);
@@ -696,9 +696,8 @@ static void spoil_mon_info(cptr fname)
 	text_out_file = fh;
 
 	/* Dump the header */
-	strnfmt(buf, sizeof(buf), "Monster Spoilers for %s Version %s\n",
+	text_out("Monster Spoilers for %s Version %s\n",
 	        VERSION_NAME, VERSION_STRING);
-	text_out(buf);
 	text_out("------------------------------------------\n\n");
 
 	/* Allocate the "who" array */
@@ -743,54 +742,45 @@ static void spoil_mon_info(cptr fname)
 		}
 
 		/* Name */
-		strnfmt(buf, sizeof(buf), "%s  (", (r_name + r_ptr->name));	/* ---)--- */
-		text_out(buf);
+		text_out("%s  (", (r_name + r_ptr->name));	/* ---)--- */
 
 		/* Color */
 		text_out(attr_to_text(r_ptr->d_attr));
 
 		/* Symbol --(-- */
-		strnfmt(buf, sizeof(buf), " '%c')\n", r_ptr->d_char);
-		text_out(buf);
+		text_out(" '%c')\n", r_ptr->d_char);
 
 
 		/* Indent */
 		text_out("=== ");
 
 		/* Number */
-		strnfmt(buf, sizeof(buf), "Num:%d  ", r_idx);
-		text_out(buf);
+		text_out("Num:%d  ", r_idx);
 
 		/* Level */
-		strnfmt(buf, sizeof(buf), "Lev:%d  ", r_ptr->level);
-		text_out(buf);
+		text_out("Lev:%d  ", r_ptr->level);
 
 		/* Rarity */
-		strnfmt(buf, sizeof(buf), "Rar:%d  ", r_ptr->rarity);
-		text_out(buf);
+		text_out("Rar:%d  ", r_ptr->rarity);
 
 		/* Speed */
 		if (r_ptr->speed >= 110)
 		{
-			strnfmt(buf, sizeof(buf), "Spd:+%d  ", (r_ptr->speed - 110));
+			text_out("Spd:+%d  ", (r_ptr->speed - 110));
 		}
 		else
 		{
-			strnfmt(buf, sizeof(buf), "Spd:-%d  ", (110 - r_ptr->speed));
+			text_out("Spd:-%d  ", (110 - r_ptr->speed));
 		}
-		text_out(buf);
 
 		/* Hitpoints */
-		strnfmt(buf, sizeof(buf), "Hp:%d  ", r_ptr->avg_hp);
-		text_out(buf);
+		text_out("Hp:%d  ", r_ptr->avg_hp);
 
 		/* Armor Class */
-		strnfmt(buf, sizeof(buf), "Ac:%d  ", r_ptr->ac);
-		text_out(buf);
+		text_out("Ac:%d  ", r_ptr->ac);
 
 		/* Experience */
-		strnfmt(buf, sizeof(buf), "Exp:%ld\n", (long)(r_ptr->mexp));
-		text_out(buf);
+		text_out("Exp:%ld\n", (long)(r_ptr->mexp));
 
 		/* Describe */
 		describe_monster(r_idx, TRUE);

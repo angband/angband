@@ -1667,7 +1667,7 @@ static void show_splashscreen(game_event_type type, game_event_data *data, void 
 		/* Dump the file to the screen */
 		while (file_getl(fp, buf, sizeof(buf)))
 		{
-			text_out_e(buf);
+			text_out_e("%s", buf);
 			text_out("\n");
 		}
 
