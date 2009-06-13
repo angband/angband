@@ -618,7 +618,7 @@ void display_monlist(void)
 		if (!list[m_ptr->r_idx].count) type_count++;
 		
 		/* Check for LOS */
-		if (player_can_see_bold(m_ptr->fy, m_ptr->fx))
+		if (m_ptr->mflag & (MFLAG_VIEW))
 		{
 			/* Increment the total number of in-LOS monsters */
 			los_count++;
@@ -1237,6 +1237,9 @@ void update_mon(int m_idx, bool full)
 					/* Detectable */
 					flag = TRUE;
 
+					/* Check for LOS so that MFLAG_VIEW is set later */
+					if (player_has_los_bold(fy, fx)) easy = TRUE;
+
 					/* Memorize flags */
 					l_ptr->flags[1] |= (RF1_WEIRD_MIND);
 
@@ -1251,6 +1254,9 @@ void update_mon(int m_idx, bool full)
 			{
 				/* Detectable */
 				flag = TRUE;
+
+				/* Check for LOS to that MFLAG_VIEW is set later */
+				if (player_has_los_bold(fy, fx)) easy = TRUE;
 
 				/* Hack -- Memorize mental flags */
 				if (r_ptr->flags[1] & (RF1_SMART)) l_ptr->flags[1] |= (RF1_SMART);
