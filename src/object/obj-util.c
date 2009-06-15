@@ -1789,9 +1789,25 @@ void object_copy_amt(object_type *dst, object_type *src, int amt)
 
 	/* Modify quantity */
 	dst->number = amt;
-	
-	/* If the item has charges, set them to the correct level too */
-	reduce_charges(dst, src->number - amt);
+
+	/* 
+	 * If the item has charges/timeouts, set them to the correct level 
+	 * too. We split off the same amount as distribute_charges.
+	 */
+	if (src->tval == TV_WAND || src->tval == TV_STAFF)
+	{
+		dst->pval = src->pval * amt / src->number;
+	}
+
+	if (src->tval == TV_ROD)
+	{
+		int max_time = k_info[src->k_idx].time_base * amt;
+
+		if (src->timeout > max_time)
+			dst->timeout = max_time;
+		else
+			dst->timeout = src->timeout;
+	}
 }
 
 
