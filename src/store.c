@@ -2144,8 +2144,6 @@ void do_cmd_retrieve(cmd_code code, cmd_arg args[])
 	/* Give it to the player */
 	item_new = inven_carry(&picked_item);
 
-	printf("%i, %i\n", amt, picked_item.number);
-	
 	/* Describe just the result */
 	object_desc(o_name, sizeof(o_name), &inventory[item_new], TRUE, ODESC_FULL);
 	
