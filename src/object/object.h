@@ -161,6 +161,7 @@ bool obj_is_potion(const object_type *o_ptr);
 bool obj_is_scroll(const object_type *o_ptr);
 bool obj_is_food(const object_type *o_ptr);
 bool obj_can_zap(const object_type *o_ptr);
+bool obj_is_activatable(const object_type *o_ptr);
 bool obj_can_activate(const object_type *o_ptr);
 bool obj_can_refill(const object_type *o_ptr);
 bool obj_can_browse(const object_type *o_ptr);

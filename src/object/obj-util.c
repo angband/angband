@@ -3573,21 +3573,30 @@ bool obj_can_zap(const object_type *o_ptr)
 }
 
 /* Determine if an object is activatable */
-bool obj_can_activate(const object_type *o_ptr)
+bool obj_is_activatable(const object_type *o_ptr)
 {
 	u32b f[OBJ_FLAG_N];
 
 	/* Not known */
 	if (!object_known_p(o_ptr)) return (FALSE);
 
-	/* Check the recharge */
-	if (o_ptr->timeout) return (FALSE);
-
 	/* Extract the flags */
 	object_flags(o_ptr, f);
 
 	/* Check activation flag */
 	return (f[2] & TR2_ACTIVATE) ? TRUE : FALSE;
+}
+
+/* Determine if an object can be activated now */
+bool obj_can_activate(const object_type *o_ptr)
+{
+	if (obj_is_activatable(o_ptr))
+	{
+		/* Check the recharge */
+		if (!o_ptr->timeout) return TRUE;
+	}
+
+	return FALSE;
 }
 
 bool obj_can_refill(const object_type *o_ptr)

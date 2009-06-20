@@ -472,6 +472,12 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	/* Determine how this item is used. */
 	if (obj_is_rod(o_ptr))
 	{
+		if (!obj_can_zap(o_ptr))
+		{
+			msg_print("The rod is not yet recharged.");
+			return;
+		}
+
 		use = USE_TIMEOUT;
 		snd = MSG_ZAP_ROD;
 		items_allowed = USE_INVEN | USE_FLOOR;
@@ -510,11 +516,21 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		snd = MSG_GENERIC;		
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
-	else if (obj_can_activate(o_ptr))
+	else if (obj_is_activatable(o_ptr))
 	{
+		if (!obj_can_activate(o_ptr))
+		{
+			msg_print("The item is not ready to activate");
+			return;
+		}
+		
 		use = USE_TIMEOUT;
 		snd = MSG_ACT_ARTIFACT;
 		items_allowed = USE_EQUIP;
+	}
+	else
+	{
+		msg_print("The item cannot be used at the moment");
 	}
 
 	/* Check if item is within player's reach. */
