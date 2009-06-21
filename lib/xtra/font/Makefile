@@ -1,28 +1,8 @@
 MKPATH=../../../mk/
-include $(MKPATH)rules.mk
-include $(MKPATH)objective.mk
+include $(MKPATH)buildsys.mk
 
-OBJECTIVE_DATA = \
-	copying.txt:${DATA_PATH}/xtra/font  \
-	5x8.fon:${DATA_PATH}/xtra/font      \
-	6x10.fon:${DATA_PATH}/xtra/font     \
-	6x12.fon:${DATA_PATH}/xtra/font     \
-	6x13b.fon:${DATA_PATH}/xtra/font    \
-	6x13.fon:${DATA_PATH}/xtra/font     \
-	7x13b.fon:${DATA_PATH}/xtra/font    \
-	7x13.fon:${DATA_PATH}/xtra/font     \
-	8x13b.fon:${DATA_PATH}/xtra/font    \
-	8x13c.fon:${DATA_PATH}/xtra/font    \
-	8x13.fon:${DATA_PATH}/xtra/font     \
-	8x16b.fon:${DATA_PATH}/xtra/font    \
-	8x16.fon:${DATA_PATH}/xtra/font     \
-	9x15b.fon:${DATA_PATH}/xtra/font    \
-	9x15.fon:${DATA_PATH}/xtra/font     \
-	10x17b.fon:${DATA_PATH}/xtra/font   \
-	10x17.fon:${DATA_PATH}/xtra/font    \
-	10x20.fon:${DATA_PATH}/xtra/font    \
-	12x20b.fon:${DATA_PATH}/xtra/font   \
-	12x20.fon:${DATA_PATH}/xtra/font    \
-	12x24.fon:${DATA_PATH}/xtra/font    \
-	16x25b.fon:${DATA_PATH}/xtra/font   \
-	16x25.fon:${DATA_PATH}/xtra/font
+DATA = copying.txt 5x8.fon 6x10.fon 6x12.fon 6x13b.fon 6x13.fon 7x13b.fon \
+       7x13b.fon 7x13.fon 8x13b.fon 8x13c.fon 8x13.fon 8x16b.fon 8x16.fon \
+       9x15b.fon 9x15.fon 10x17b.fon 10x17.fon 10x20.fon 12x20b.fon 12x20.fon \
+       12x24.fon 16x25b.fon 16x25.fon
+PACKAGE = ${PACKAGE_NAME}/xtra/font

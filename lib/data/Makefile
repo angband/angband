@@ -1,32 +1,15 @@
 MKPATH=../../mk/
-include $(MKPATH)rules.mk
-include $(MKPATH)objective.mk
+include $(MKPATH)buildsys.mk
 
-OBJECTIVE_DATA = \
-	delete.me:${DATA_PATH}/data
+PACKAGE = ${PACKAGE_NAME}/data
+DATA_ = artifact ego_item flavor limits monster object p_class p_hist p_race prices shop_own spells terrain vault
 
-clean-posthook:
-	-$(RM) *.raw
-
-install-posthook:
+install-extra:
 	if [ "x$(SETEGID)" != "x" ]; then \
-		printf "%10s %s*.raw\n" TOUCH ${DATA_PATH}/data/; \
-		if [ "x$(DRY)" = "x" ]; then \
-			touch ${DATA_PATH}/data/artifact.raw; \
-			touch ${DATA_PATH}/data/ego_item.raw; \
-			touch ${DATA_PATH}/data/flavor.raw; \
-			touch ${DATA_PATH}/data/limits.raw; \
-			touch ${DATA_PATH}/data/monster.raw; \
-			touch ${DATA_PATH}/data/object.raw; \
-			touch ${DATA_PATH}/data/p_class.raw; \
-			touch ${DATA_PATH}/data/p_hist.raw; \
-			touch ${DATA_PATH}/data/p_race.raw; \
-			touch ${DATA_PATH}/data/prices.raw; \
-			touch ${DATA_PATH}/data/shop_own.raw; \
-			touch ${DATA_PATH}/data/spells.raw; \
-			touch ${DATA_PATH}/data/terrain.raw; \
-			touch ${DATA_PATH}/data/vault.raw; \
-			chown -R root:${SETEGID} ${DATA_PATH}/data; \
-			chmod -R g+w ${DATA_PATH}/data; \
-		fi; \
+		${MKDIR_P} ${DESTDIR}${datadir}/$(PACKAGE); \
+		for i in ${DATA_}; do \
+			touch ${DESTDIR}${datadir}/$(PACKAGE)/$${i}.raw; \
+		done; \
+		chown -R root:${SETEGID} ${DESTDIR}${datadir}/$(PACKAGE); \
+		chmod -R g+w ${DESTDIR}${datadir}/$(PACKAGE); \
 	fi

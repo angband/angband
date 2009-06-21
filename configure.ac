@@ -1,34 +1,28 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([Angband], [3.0.9], [bugs@rephial.org], [angband])
-AC_PREREQ([2.50])
+AC_INIT([Angband], [3.1.x], [bugs@rephial.org], [angband])
+AC_PREREQ([2.59])
 
 AC_CONFIG_HEADER(src/autoconf.h)
+AC_CONFIG_SRCDIR([configure.ac])
 
-dnl OMK bootstrap
 AC_SUBST([PACKAGE], [AC_PACKAGE_TARNAME])
 AC_SUBST([VERSION], [AC_PACKAGE_VERSION])
 
 AC_DEFINE_UNQUOTED(PACKAGE, "$PACKAGE", [Name of package])
 AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])
 
-AC_ARG_WITH(setgid,       [  --with-setgid=NAME      install angband as group NAME])
-AC_ARG_WITH(private_dirs, [  --with-private-dirs     use private scorefiles/savefiles/datafiles],
-            [], [with_private_dirs=yes])
-AC_ARG_WITH(noinstall,    [  --with-noinstall        don't install globally at all])
+AC_ARG_WITH(setgid,
+	[  --with-setgid=NAME      install angband as group NAME],
+	[wsetgid=yes],
+	[with_private_dirs=yes])
+AC_ARG_WITH(private_dirs,
+	[  --with-private-dirs     use private scorefiles/savefiles/datafiles])
 
-if test "x$with_setgid" != "xyes"; then
-	if test "x$with_setgid" != "x"; then
-		wsetgid=yes
-		with_private_dirs=
-	fi
+if test "x$with_setgid" = "xyes"; then
+	AC_MSG_ERROR([Please specify a group to install as.])
 fi
-if test "x$with_noinstall" == "xyes"; then
-	with_private_dirs=
-fi
-#if test "x$with_segtid" == "xyes"; then
-#	with_private_dirs=
-#fi
-if test "x$wsetgid$with_private_dirs$with_noinstall" != "xyes";  then
+
+if test "x$wsetgid$with_private_dirs" != "xyes";  then
 
 	echo "Please run ./configure with one of:
 
@@ -44,43 +38,41 @@ if test "x$wsetgid$with_private_dirs$with_noinstall" != "xyes";  then
     This configures the game to store savefiles and scorefiles for each user
     in that user's home directory.  The game requires no special privileges if
     you do this, and should be used for most installations of the game.
-
---with-noinstall
-    This configures the game to store savefiles and scorefiles in the "lib"
-    directory that the game uses.  This is useful if you don't want to install
-    system-wide at all; \"make install\" will just move the executable to the
-    directory above \"src\" if you choose this option.  This option is
-    recommended for developers.
 "
 
 	AC_MSG_ERROR([Please specify an installation method.])
 fi
 
-
-dnl Check for C compiler
-AC_LANG([C])
 AC_PROG_CC
-
-test "$GCC" = "yes" && CFLAGS="$CFLAGS -fno-strength-reduce -Wall"
-
-dnl Checks for various programs
-AC_PROG_INSTALL
-AC_PROG_LN_S
 AC_PROG_MAKE_SET
-
-MY_PROG_MAKE_SYSVINC
-MY_PROG_MAKE_SINCLUDE
+AC_PROG_LN_S
+AC_PROG_INSTALL
+AC_PROG_MKDIR_P
 
 AC_PATH_PROG(RM, rm)
 AC_PATH_PROG(MV, mv)
 AC_PATH_PROG(CP, cp)
 
+AC_HEADER_DIRENT
+AC_CHECK_HEADERS([fcntl.h stdint.h])
+AC_HEADER_STDBOOL
+AC_C_CONST
+AC_TYPE_SIGNAL
+AC_CHECK_FUNCS([setresgid setegid can_change_color stat])
+
+dnl needed because h-basic.h checks for this define for autoconf support.
+CFLAGS="$CFLAGS -DHAVE_CONFIG_H"
+CPPFLAGS="$CPPFLAGS -I." 
+
+test "$GCC" = "yes" && CFLAGS="$CFLAGS -fno-strength-reduce -Wall"
+
+MY_PROG_MAKE_SYSVINC
+MY_PROG_MAKE_SINCLUDE
+
 dnl Work around an autoconf bug.
 if test "$prefix" = "NONE"; then
 	prefix="${ac_default_prefix}"
 fi
-
-
 
 if test "x$with_private_dirs" != "x"; then
 	AC_DEFINE(USE_PRIVATE_PATHS, 1, [Define to use private user paths.])
@@ -239,26 +231,19 @@ if test "$enable_sdl_mixer" = "yes"; then
 	fi
 fi
 
-
-
-dnl Check for headers, types, functions
-AC_CHECK_HEADERS([fcntl.h stdint.h dirent.h])
-AC_HEADER_STDBOOL
-AC_C_CONST
-AC_TYPE_SIGNAL
-AC_CHECK_FUNCS([setresgid setegid can_change_color stat])
-
-
-
-AC_CONFIG_FILES([mk/rules.mk mk/sinc@&t@lude.mk])
+AC_CONFIG_FILES([mk/extra.mk mk/sinc@&t@lude.mk])
 AC_OUTPUT
-
 
 echo
 echo "Configuration:"
 echo
 echo "  Install path:                           ${prefix}"
 echo "  lib/ path:                              ${game_datadir}"
+if test "$wsetgid" = "yes"; then
+	echo "  (as group ${SETEGID})"
+else
+	echo "  (with private user files in ~/.angband/)"
+fi
 echo
 echo "-- Frontends --"
 if test "$enable_curses" = "yes"; then

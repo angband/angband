@@ -1,14 +1,14 @@
 MKPATH=../../mk/
-include $(MKPATH)rules.mk
-include $(MKPATH)objective.mk
+include $(MKPATH)buildsys.mk
 
-OBJECTIVE_DATA = \
-	delete.me:${DATA_PATH}/save
+DATA = delete.me
+PACKAGE = ${PACKAGE_NAME}/save
 
-install-posthook:
+install-extra:
 	if [ "x$(SETEGID)" != "x" ]; then \
 		if [ "x$(DRY)" = "x" ]; then \
-			chown root:${SETEGID} ${DATA_PATH}/save; \
-			chmod 070 ${DATA_PATH}/save; \
+			${MKDIR_P} ${DESTDIR}$game_datadir/${PACKAGE}; \
+			chown root:${SETEGID} ${DESTDIR}$game_datadir/${PACKAGE}; \
+			chmod 070 ${DESTDIR}$game_datadir/${PACKAGE}; \
 		fi; \
 	fi

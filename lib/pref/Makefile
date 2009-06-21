@@ -1,32 +1,12 @@
 MKPATH=../../mk/
-include $(MKPATH)rules.mk
-include $(MKPATH)objective.mk
+include $(MKPATH)buildsys.mk
 
-OBJECTIVE_DATA =	\
-	flvr-dvg.prf:${DATA_PATH}/pref \
-	flvr-new.prf:${DATA_PATH}/pref \
-	flvr-xxx.prf:${DATA_PATH}/pref \
-	font.prf:${DATA_PATH}/pref     \
-	font-mac.prf:${DATA_PATH}/pref \
-	font-win.prf:${DATA_PATH}/pref \
-	font-x11.prf:${DATA_PATH}/pref \
-	font-xxx.prf:${DATA_PATH}/pref \
-	graf.prf:${DATA_PATH}/pref     \
-	graf-dvg.prf:${DATA_PATH}/pref \
-	graf-mac.prf:${DATA_PATH}/pref \
-	graf-new.prf:${DATA_PATH}/pref \
-	graf-win.prf:${DATA_PATH}/pref \
-	graf-x11.prf:${DATA_PATH}/pref \
-	graf-xxx.prf:${DATA_PATH}/pref \
-	message.prf:${DATA_PATH}/pref  \
-	pref.prf:${DATA_PATH}/pref     \
-	pref-acn.prf:${DATA_PATH}/pref \
-	pref-gcu.prf:${DATA_PATH}/pref \
-	pref-mac.prf:${DATA_PATH}/pref \
-	pref-sdl.prf:${DATA_PATH}/pref \
-	pref-x11.prf:${DATA_PATH}/pref \
-	user.prf:${DATA_PATH}/pref     \
-	user-mac.prf:${DATA_PATH}/pref \
-	xtra-dvg.prf:${DATA_PATH}/pref \
-	xtra-new.prf:${DATA_PATH}/pref \
-	xtra-xxx.prf:${DATA_PATH}/pref \
+DATA = flvr-dvg.prf font-gtk.prf font-win.prf graf-gtk.prf graf-sdl.prf \
+       pref-mac.prf pref-x11.prf xtra-new.prf flvr-new.prf font-mac.prf \
+       font-x11.prf graf-mac.prf graf-win.prf message.prf pref.prf      \
+       user-mac.prf xtra-xxx.prf flvr-xxx.prf font.prf font-xxx.prf     \
+       graf-new.prf graf-x11.prf pref-acn.prf pref-sdl.prf user.prf     \
+       font-gcu.prf font-sdl.prf graf-dvg.prf graf.prf graf-xxx.prf     \
+       pref-gcu.prf pref-win.prf xtra-dvg.prf
+PACKAGE = ${PACKAGE_NAME}/pref
+

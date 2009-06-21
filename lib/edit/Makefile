@@ -1,19 +1,6 @@
 MKPATH=../../mk/
-include $(MKPATH)rules.mk
-include $(MKPATH)objective.mk
+include $(MKPATH)buildsys.mk
 
-OBJECTIVE_DATA =	                \
-	artifact.txt:$(DATA_PATH)/edit  \
-	ego_item.txt:${DATA_PATH}/edit  \
-	flavor.txt:${DATA_PATH}/edit    \
-	limits.txt:${DATA_PATH}/edit    \
-	monster.txt:${DATA_PATH}/edit   \
-	object.txt:${DATA_PATH}/edit    \
-	p_class.txt:${DATA_PATH}/edit   \
-	p_hist.txt:${DATA_PATH}/edit    \
-	p_race.txt:${DATA_PATH}/edit    \
-	shop_own.txt:${DATA_PATH}/edit  \
-	store.txt:$(DATA_PATH)/edit     \
-	spell.txt:${DATA_PATH}/edit     \
-	terrain.txt:${DATA_PATH}/edit   \
-	vault.txt:${DATA_PATH}/edit
+DATA = artifact.txt ego_item.txt flavor.txt limits.txt monster.txt object.txt p_class.txt p_hist.txt p_race.txt shop_own.txt spell.txt store.txt terrain.txt vault.txt
+PACKAGE = ${PACKAGE_NAME}/edit
+
