@@ -19,6 +19,7 @@
 #include "randname.h"
 #include "tvalsval.h"
 #include "effects.h"
+#include "game-cmd.h"
 
 /*
  * Hold the titles of scrolls, 6 to 14 characters each.
@@ -3000,8 +3001,13 @@ void reorder_pack(void)
 		p_ptr->redraw |= (PR_INVEN);
 	}
 
-	/* Message */
-	if (flag) msg_print("You reorder some items in your pack.");
+	if (flag) 
+	{
+		msg_print("You reorder some items in your pack.");
+
+		/* Stop "repeat last command" from working. */
+		cmd_disable_repeat();
+	}
 }
 
 

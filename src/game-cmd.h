@@ -101,6 +101,7 @@ typedef enum cmd_context
 } cmd_context;
 
 #define DIR_UNKNOWN 0
+#define DIR_TARGET 5
 
 enum 
 {
@@ -171,5 +172,7 @@ errr cmd_get(cmd_context c,game_command *cmd, bool wait);
 
 /* Called by the game engine to get the player's next action. */
 void process_command(cmd_context c, bool no_request);
+
+void cmd_disable_repeat(void);
 
 #endif

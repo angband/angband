@@ -402,6 +402,7 @@ static void obj_cast(object_type *o_ptr, int item)
 {
 	int spell;
 	const magic_type *s_ptr;
+	int dir;
 
 	cptr verb = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
     cptr noun = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
@@ -434,7 +435,10 @@ static void obj_cast(object_type *o_ptr, int item)
 		if (!get_check("Attempt it anyway? ")) return;
 	}
 
-	cmd_insert(CMD_CAST, spell, DIR_UNKNOWN);
+	if (!get_aim_dir(&dir))
+		return;
+
+	cmd_insert(CMD_CAST, spell, dir);
 }
 
 
@@ -868,7 +872,13 @@ static void do_item(item_act act)
 	if (item_actions[act].action != NULL)
 		item_actions[act].action(o_ptr, item);
 	else if (obj_needs_aim(o_ptr))
-		cmd_insert(item_actions[act].command, item, DIR_UNKNOWN);
+	{
+		int dir;
+		if (!get_aim_dir(&dir))
+			return;
+
+		cmd_insert(item_actions[act].command, item, dir);
+	}
 	else
 		cmd_insert(item_actions[act].command, item);
 }

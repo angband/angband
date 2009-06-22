@@ -952,6 +952,11 @@ void textui_cmd_close(void)
 			dir = coords_to_dir(y, x);
 		}
 	}
+	else
+	{
+		if (!get_rep_dir(&dir))
+			return;
+	}
 
 	cmd_insert(CMD_CLOSE, dir);
 }
@@ -1269,7 +1274,9 @@ void do_cmd_tunnel(cmd_code code, cmd_arg args[])
 
 void textui_cmd_tunnel(void)
 {
-	cmd_insert(CMD_TUNNEL, DIR_UNKNOWN);
+	int dir;
+	if (!get_rep_dir(&dir)) return;
+	cmd_insert(CMD_TUNNEL, dir);
 }
 
 
@@ -1481,6 +1488,11 @@ void textui_cmd_disarm(void)
 				dir = coords_to_dir(y, x);
 		}
 	}
+	else
+	{
+		if (!get_rep_dir(&dir))
+			return;
+	}
 
 	cmd_insert(CMD_DISARM, dir);
 }
@@ -1663,7 +1675,11 @@ void do_cmd_bash(cmd_code code, cmd_arg args[])
 
 void textui_cmd_bash(void)
 {
-	cmd_insert(CMD_BASH, DIR_UNKNOWN);
+	int dir;
+	if (!get_rep_dir(&dir))
+		return;
+
+	cmd_insert(CMD_BASH, dir);
 }
 
 
@@ -1775,7 +1791,12 @@ void do_cmd_alter(cmd_code code, cmd_arg args[])
 
 void textui_cmd_alter(void)
 {
-	cmd_insert(CMD_ALTER, DIR_UNKNOWN);
+	int dir;
+
+	if (!get_rep_dir(&dir))
+		return;
+
+	cmd_insert(CMD_ALTER, dir);
 }
 
 /*
@@ -1924,7 +1945,11 @@ void do_cmd_spike(cmd_code code, cmd_arg args[])
 
 void textui_cmd_spike(void)
 {
-	cmd_insert(CMD_JAM, DIR_UNKNOWN);
+	int dir;
+	if (!get_rep_dir(&dir))
+		return;
+
+	cmd_insert(CMD_JAM, dir);
 }
 
 
@@ -2040,7 +2065,11 @@ void do_cmd_walk(cmd_code code, cmd_arg args[])
  */
 void textui_cmd_walk(void)
 {
-	cmd_insert(CMD_WALK, DIR_UNKNOWN);
+	int dir;
+	if (!get_rep_dir(&dir))
+		return;
+
+	cmd_insert(CMD_WALK, dir);
 }
 
 
@@ -2065,7 +2094,11 @@ void do_cmd_jump(cmd_code code, cmd_arg args[])
 
 void textui_cmd_jump(void)
 {
-	cmd_insert(CMD_JUMP, DIR_UNKNOWN);
+	int dir;
+	if (!get_rep_dir(&dir))
+		return;
+
+	cmd_insert(CMD_JUMP, dir);
 }
 
 
@@ -2102,7 +2135,11 @@ void do_cmd_run(cmd_code code, cmd_arg args[])
 
 void textui_cmd_run(void)
 {
-	cmd_insert(CMD_RUN, DIR_UNKNOWN);
+	int dir;
+	if (!get_rep_dir(&dir))
+		return;
+
+	cmd_insert(CMD_RUN, dir);
 }
 
 /*
