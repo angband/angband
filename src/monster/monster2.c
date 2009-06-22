@@ -1390,6 +1390,9 @@ void update_mon(int m_idx, bool full)
 
 			/* Disturb on appearance */
 			if (OPT(disturb_near)) disturb(1, 0);
+
+			/* Re-draw monster window */
+			p_ptr->redraw |= PR_MONLIST;
 		}
 	}
 
@@ -1404,6 +1407,9 @@ void update_mon(int m_idx, bool full)
 
 			/* Disturb on disappearance */
 			if (OPT(disturb_near)) disturb(1, 0);
+
+			/* Re-draw monster list window */
+			p_ptr->redraw |= PR_MONLIST;
 		}
 	}
 }
