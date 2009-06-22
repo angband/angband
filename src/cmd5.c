@@ -568,7 +568,8 @@ void do_cmd_cast(cmd_code code, cmd_arg args[])
 	int item_num;
 	int i;
 
-	cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+	cptr verb = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
+    cptr noun = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	/* Check the player can cast spells at all */
 	if (!player_can_cast())
@@ -585,6 +586,22 @@ void do_cmd_cast(cmd_code code, cmd_arg args[])
 		{
 			if (spell_okay(spell, TRUE, FALSE))
 			{
+				/* Get the spell */
+				const magic_type *s_ptr = &mp_ptr->info[spell];	
+				
+				/* Verify "dangerous" spells */
+				if (s_ptr->smana > p_ptr->csp)
+				{
+					/* Warning */
+					msg_format("You do not have enough mana to %s this %s.", verb, noun);
+					
+					/* Flush input */
+					flush();
+					
+					/* Verify */
+					if (!get_check("Attempt it anyway? ")) return;
+				}
+
 				/* Cast a spell */
 				if (spell_cast(spell, dir))
 					p_ptr->energy_use = 100;
@@ -592,7 +609,7 @@ void do_cmd_cast(cmd_code code, cmd_arg args[])
 			else
 			{
 				/* Spell is present, but player incapable. */
-				msg_format("You cannot cast that %p.", p);
+				msg_format("You cannot %s that %s.", verb, noun);
 			}
 
 			return;
