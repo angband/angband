@@ -400,7 +400,7 @@ static void obj_study(object_type *o_ptr, int item)
 
 static void obj_cast(object_type *o_ptr, int item)
 {
-	int spell, dir;
+	int spell, dir = DIR_UNKNOWN;
 
 	cptr verb = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
 	cptr noun = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
@@ -417,7 +417,7 @@ static void obj_cast(object_type *o_ptr, int item)
 		return;
 	}
 
-	if (!get_aim_dir(&dir))
+	if (spell_needs_aim(cp_ptr->spell_book, spell) && !get_aim_dir(&dir))
 		return;
 
 	cmd_insert(CMD_CAST, spell, dir);
