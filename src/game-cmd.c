@@ -1,4 +1,20 @@
-
+/*
+ * File: game-cmd.c
+ * Purpose: Handles the queueing of game commands.
+ *
+ * Copyright (c) 2008-9 Antony Sidwell
+ *
+ * This work is free software; you can redistribute it and/or modify it
+ * under the terms of either:
+ *
+ * a) the GNU General Public License as published by the Free Software
+ *    Foundation, version 2, or
+ *
+ * b) the "Angband licence":
+ *    This software may be copied and distributed for educational, research,
+ *    and not for profit purposes provided that this copyright and statement
+ *    are included in all such copies.  Other copyrights may also apply.
+ */
 #include "angband.h"
 #include "game-cmd.h"
 #include "object/object.h"
@@ -68,7 +84,7 @@ static struct
 	{ CMD_PICKUP, { arg_ITEM, arg_END }, do_cmd_pickup, FALSE },
 	{ CMD_WIELD, { arg_ITEM, arg_END }, do_cmd_wield, FALSE },
 	{ CMD_TAKEOFF, { arg_ITEM, arg_END }, do_cmd_takeoff, FALSE },
-	{ CMD_DROP, { arg_ITEM, arg_END }, do_cmd_drop, FALSE },
+	{ CMD_DROP, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_drop, FALSE },
 	{ CMD_UNINSCRIBE, { arg_ITEM, arg_END }, do_cmd_uninscribe, FALSE },
 	{ CMD_EAT, { arg_ITEM, arg_END }, do_cmd_use, FALSE },
 	{ CMD_QUAFF, { arg_ITEM, arg_TARGET, arg_END }, do_cmd_use, FALSE },
