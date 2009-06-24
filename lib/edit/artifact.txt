@@ -785,7 +785,7 @@ P:1:0d0:0:0:10
 F:FREE_ACT | RES_LITE | SUST_CON | LITE | ACTIVATE
 A:MISSILE:2
 M:{name} glows very brightly...
-D:These gloves glow so brightly as to light the way for the player and cast 
+D:These gloves glow so brightly as to light the way for the wearer and cast 
 D:magical bolts with great frequency.
 
 
