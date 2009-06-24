@@ -89,7 +89,7 @@ static struct
 	{ CMD_EAT, { arg_ITEM, arg_END }, do_cmd_use, FALSE },
 	{ CMD_QUAFF, { arg_ITEM, arg_TARGET, arg_END }, do_cmd_use, FALSE },
 	{ CMD_USE_ROD, { arg_ITEM, arg_TARGET, arg_END }, do_cmd_use, FALSE },
-	{ CMD_USE_STAFF, { arg_ITEM }, do_cmd_use, FALSE },
+	{ CMD_USE_STAFF, { arg_ITEM, arg_END }, do_cmd_use, FALSE },
 	{ CMD_USE_WAND, { arg_ITEM, arg_TARGET, arg_END }, do_cmd_use, FALSE },
 	{ CMD_READ_SCROLL, { arg_ITEM, arg_TARGET, arg_END }, do_cmd_use, FALSE },
 	{ CMD_ACTIVATE, { arg_ITEM, arg_TARGET, arg_END }, do_cmd_use, FALSE },
