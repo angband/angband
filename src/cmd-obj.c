@@ -833,6 +833,7 @@ static void do_item(item_act act)
 {
 	int item;
 	object_type *o_ptr;
+	bool cmd_needs_aim = FALSE;
 
 	cptr q, s;
 
@@ -851,9 +852,20 @@ static void do_item(item_act act)
 	/* Get the item */
 	o_ptr = object_from_item_idx(item);
 
+	/* These commands need an aim */
+	if (item_actions[act].command == CMD_QUAFF ||
+		item_actions[act].command == CMD_ACTIVATE ||
+		item_actions[act].command == CMD_USE_WAND ||
+		item_actions[act].command == CMD_USE_ROD ||
+		item_actions[act].command == CMD_USE_STAFF ||
+		item_actions[act].command == CMD_READ_SCROLL)
+	{
+		cmd_needs_aim = TRUE;
+	}
+
 	if (item_actions[act].action != NULL)
 		item_actions[act].action(o_ptr, item);
-	else if (obj_needs_aim(o_ptr))
+	else if (cmd_needs_aim && obj_needs_aim(o_ptr))
 	{
 		int dir;
 		if (!get_aim_dir(&dir))
