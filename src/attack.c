@@ -490,15 +490,36 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 
 	int msec = op_ptr->delay_factor * op_ptr->delay_factor;
 
+	/* Get the "bow" */
+	j_ptr = &inventory[INVEN_BOW];
+
+	/* Require a usable launcher */
+	if (!j_ptr->tval || !p_ptr->state.ammo_tval)
+	{
+		msg_print("You have nothing to fire with.");
+		return;
+	}
+
 	/* Get item to fire and direction to fire in. */
 	item = args[0].item;
 	dir = args[1].direction;
 
+	/* Check the item being fired is usable by the player. */
+	if (!item_is_available(item, NULL, (USE_INVEN | USE_FLOOR)))
+	{
+		msg_format("That item is not within your reach.");
+		return;
+	}
+
 	/* Get the object for the ammo */
 	o_ptr = object_from_item_idx(item);
 
-	/* Get the "bow" */
-	j_ptr = &inventory[INVEN_BOW];
+	/* Check the ammo can be used with the launcher */
+	if (o_ptr->tval != p_ptr->state.ammo_tval)
+	{
+		msg_format("That ammo cannot be fired by your current weapon.");
+		return;
+	}
 
 	/* Base range XXX XXX */
 	tdis = 6 + 2 * p_ptr->state.ammo_mult;
@@ -806,6 +827,13 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 	/* Get item to throw and direction in which to throw it. */
 	item = args[0].item;
 	dir = args[1].direction;
+
+	/* Check the item being thrown is usable by the player. */
+	if (!item_is_available(item, NULL, (USE_INVEN | USE_FLOOR)))
+	{
+		msg_format("That item is not within your reach.");
+		return;
+	}
 
 	/* Get the object */
 	o_ptr = object_from_item_idx(item);

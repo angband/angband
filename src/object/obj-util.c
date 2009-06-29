@@ -2333,6 +2333,9 @@ void inven_item_optimize(int item)
 
 		/* Redraw stuff */
 		p_ptr->redraw |= (PR_INVEN);
+
+		/* Inventory has changed, repeated command may use the wrong item */ 
+		cmd_disable_repeat();		
 	}
 
 	/* The item is being wielded */
@@ -2892,7 +2895,13 @@ void combine_pack(void)
 	}
 
 	/* Message */
-	if (flag) msg_print("You combine some items in your pack.");
+	if (flag)
+	{
+		msg_print("You combine some items in your pack.");
+
+		/* Stop "repeat last command" from working. */
+		cmd_disable_repeat();
+	}
 }
 
 
