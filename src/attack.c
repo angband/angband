@@ -365,7 +365,7 @@ void py_attack(int y, int x)
 				/* Learn by use */
 				object_notice_on_attack();
 				if (do_quake)
-					object_notice_flag(2, TR2_IMPACT);
+					wieldeds_notice_flag(2, TR2_IMPACT);
 			}
 			else
 			{

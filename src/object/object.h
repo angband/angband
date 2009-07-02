@@ -60,7 +60,7 @@ void object_aware(object_type *o_ptr);
 void object_tried(object_type *o_ptr);
 void object_notice_on_attack(void);
 void object_notice_slays(u32b known_f1, int inven_idx);
-void object_notice_flag(int flagset, u32b flag);
+void wieldeds_notice_flag(int flagset, u32b flag);
 bool object_notice_curses(object_type *o_ptr);
 void object_notice_on_wield(object_type *o_ptr);
 obj_pseudo_t object_pseudo(const object_type *o_ptr);

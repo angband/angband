@@ -153,7 +153,7 @@ static const flag_message_t msgs[] =
  * \param flagset is the set the flag is in
  * \param flag is teh flag to notice
  */
-void object_notice_flag(int flagset, u32b flag)
+void wieldeds_notice_flag(int flagset, u32b flag)
 {
 	int i;
 	size_t j;

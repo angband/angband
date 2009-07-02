@@ -989,9 +989,9 @@ void acid_dam(int dam, cptr kb_str)
 	if (p_ptr->timed[TMD_OPP_ACID]) n++;
 
 	/* Notice flags */
-	object_notice_flag(1, TR1_IM_ACID);
-	object_notice_flag(1, TR1_RES_ACID);
-	object_notice_flag(1, TR1_VULN_ACID);
+	wieldeds_notice_flag(1, TR1_IM_ACID);
+	wieldeds_notice_flag(1, TR1_RES_ACID);
+	wieldeds_notice_flag(1, TR1_VULN_ACID);
 
 	/* Change damage */
 	if (n >= 3) return;
@@ -1031,9 +1031,9 @@ void elec_dam(int dam, cptr kb_str)
 	if (p_ptr->timed[TMD_OPP_ELEC]) n++;
 
 	/* Notice flags */
-	object_notice_flag(1, TR1_IM_ELEC);
-	object_notice_flag(1, TR1_RES_ELEC);
-	object_notice_flag(1, TR1_VULN_ELEC);
+	wieldeds_notice_flag(1, TR1_IM_ELEC);
+	wieldeds_notice_flag(1, TR1_RES_ELEC);
+	wieldeds_notice_flag(1, TR1_VULN_ELEC);
 
 	/* Change damage */
 	if (n >= 3) return;
@@ -1070,9 +1070,9 @@ void fire_dam(int dam, cptr kb_str)
 	if (p_ptr->timed[TMD_OPP_FIRE]) n++;
 
 	/* Notice flags */
-	object_notice_flag(1, TR1_IM_FIRE);
-	object_notice_flag(1, TR1_RES_FIRE);
-	object_notice_flag(1, TR1_VULN_FIRE);
+	wieldeds_notice_flag(1, TR1_IM_FIRE);
+	wieldeds_notice_flag(1, TR1_RES_FIRE);
+	wieldeds_notice_flag(1, TR1_VULN_FIRE);
 
 	/* Change damage */
 	if (n >= 3) return;
@@ -1109,9 +1109,9 @@ void cold_dam(int dam, cptr kb_str)
 	if (p_ptr->timed[TMD_OPP_COLD]) n++;
 
 	/* Notice flags */
-	object_notice_flag(1, TR1_IM_COLD);
-	object_notice_flag(1, TR1_RES_COLD);
-	object_notice_flag(1, TR1_VULN_COLD);
+	wieldeds_notice_flag(1, TR1_IM_COLD);
+	wieldeds_notice_flag(1, TR1_RES_COLD);
+	wieldeds_notice_flag(1, TR1_VULN_COLD);
 
 	/* Change damage */
 	if (n >= 3) return;
@@ -3390,7 +3390,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (p_ptr->state.resist_pois)
 			{
 				dam = RES_POIS_ADJ(dam, NOT_USED);
-				object_notice_flag(1, TR1_RES_POIS);
+				wieldeds_notice_flag(1, TR1_RES_POIS);
 			}
 
 			if (p_ptr->timed[TMD_OPP_POIS])
@@ -3441,7 +3441,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			}
 			else
 			{
-				object_notice_flag(1, TR1_RES_SOUND);
+				wieldeds_notice_flag(1, TR1_RES_SOUND);
 			}
 			break;
 		}
@@ -3453,14 +3453,14 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (p_ptr->state.resist_nethr)
 			{
 				dam = RES_NETH_ADJ(dam, RANDOMISE);
-				object_notice_flag(1, TR1_RES_NETHR);
+				wieldeds_notice_flag(1, TR1_RES_NETHR);
 			}
 			else
 			{
 				if (p_ptr->state.hold_life && (randint0(100) < 75))
 				{
 					msg_print("You keep hold of your life force!");
-					object_notice_flag(2, TR2_HOLD_LIFE);
+					wieldeds_notice_flag(2, TR2_HOLD_LIFE);
 				}
 				else
 				{
@@ -3470,7 +3470,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 					{
 						msg_print("You feel your life slipping away!");
 						lose_exp(d / 10);
-						object_notice_flag(2, TR2_HOLD_LIFE);
+						wieldeds_notice_flag(2, TR2_HOLD_LIFE);
 					}
 					else
 					{
@@ -3490,12 +3490,12 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (!p_ptr->state.resist_sound)
 				(void)inc_timed(TMD_STUN, randint1(40), TRUE);
 			else
-				object_notice_flag(1, TR1_RES_SOUND);
+				wieldeds_notice_flag(1, TR1_RES_SOUND);
 
 			if (!p_ptr->state.resist_confu)
 				(void)inc_timed(TMD_CONFUSED, randint1(5) + 5, TRUE);
 			else
-				object_notice_flag(1, TR1_RES_CONFU);
+				wieldeds_notice_flag(1, TR1_RES_CONFU);
 
 			take_hit(dam, killer);
 			break;
@@ -3508,7 +3508,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (p_ptr->state.resist_chaos)
 			{
 				dam = RES_CHAO_ADJ(dam, RANDOMISE);
-				object_notice_flag(1, TR1_RES_CHAOS);
+				wieldeds_notice_flag(1, TR1_RES_CHAOS);
 			}
 			if (!p_ptr->state.resist_confu && !p_ptr->state.resist_chaos)
 			{
@@ -3518,14 +3518,14 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (!p_ptr->state.resist_chaos)
 				(void)inc_timed(TMD_IMAGE, randint1(10), TRUE);
 			else
-				object_notice_flag(1, TR1_RES_CHAOS);
+				wieldeds_notice_flag(1, TR1_RES_CHAOS);
 
 			if (!p_ptr->state.resist_nethr && !p_ptr->state.resist_chaos)
 			{
 				if (p_ptr->state.hold_life && (randint0(100) < 75))
 				{
 					msg_print("You keep hold of your life force!");
-					object_notice_flag(2, TR2_HOLD_LIFE);
+					wieldeds_notice_flag(2, TR2_HOLD_LIFE);
 				}
 				else
 				{
@@ -3535,7 +3535,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 					{
 						msg_print("You feel your life slipping away!");
 						lose_exp(d / 10);
-						object_notice_flag(2, TR2_HOLD_LIFE);
+						wieldeds_notice_flag(2, TR2_HOLD_LIFE);
 					}
 					else
 					{
@@ -3546,8 +3546,8 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			}
 			else
 			{
-				object_notice_flag(1, TR1_RES_NETHR);
-				object_notice_flag(1, TR1_RES_CHAOS);
+				wieldeds_notice_flag(1, TR1_RES_NETHR);
+				wieldeds_notice_flag(1, TR1_RES_CHAOS);
 			}
 
 			take_hit(dam, killer);
@@ -3561,7 +3561,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (p_ptr->state.resist_shard)
 			{
 				dam = RES_SHAR_ADJ(dam, RANDOMISE);
-				object_notice_flag(1, TR1_RES_SHARD);
+				wieldeds_notice_flag(1, TR1_RES_SHARD);
 			}
 			else
 			{
@@ -3578,7 +3578,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (p_ptr->state.resist_sound)
 			{
 				dam = RES_SOUN_ADJ(dam, RANDOMISE);
-				object_notice_flag(1, TR1_RES_SOUND);
+				wieldeds_notice_flag(1, TR1_RES_SOUND);
 			}
 			else
 			{
@@ -3596,7 +3596,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (p_ptr->state.resist_confu)
 			{
 				dam = RES_CONF_ADJ(dam, RANDOMISE);
-				object_notice_flag(1, TR1_RES_CONFU);
+				wieldeds_notice_flag(1, TR1_RES_CONFU);
 			}
 			else
 			{
@@ -3613,7 +3613,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (p_ptr->state.resist_disen)
 			{
 				dam = RES_DISE_ADJ(dam, RANDOMISE);
-				object_notice_flag(1, TR1_RES_DISEN);
+				wieldeds_notice_flag(1, TR1_RES_DISEN);
 			}
 			else
 			{
@@ -3630,7 +3630,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (p_ptr->state.resist_nexus)
 			{
 				dam = RES_NEXU_ADJ(dam, RANDOMISE);
-				object_notice_flag(1, TR1_RES_NEXUS);
+				wieldeds_notice_flag(1, TR1_RES_NEXUS);
 			}
 			else
 			{
@@ -3647,7 +3647,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (!p_ptr->state.resist_sound)
 				(void)inc_timed(TMD_STUN, randint1(20), TRUE);
 			else
-				object_notice_flag(1, TR1_RES_SOUND);
+				wieldeds_notice_flag(1, TR1_RES_SOUND);
 
 			take_hit(dam, killer);
 			break;
@@ -3669,7 +3669,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (p_ptr->state.resist_lite)
 			{
 				dam = RES_LITE_ADJ(dam, RANDOMISE);
-				object_notice_flag(1, TR1_RES_LITE);
+				wieldeds_notice_flag(1, TR1_RES_LITE);
 			}
 			else if (!blind && !p_ptr->state.resist_blind)
 			{
@@ -3677,7 +3677,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			}
 			else if (p_ptr->state.resist_blind)
 			{
-				object_notice_flag(1, TR1_RES_BLIND);
+				wieldeds_notice_flag(1, TR1_RES_BLIND);
 			}
 			take_hit(dam, killer);
 			break;
@@ -3690,7 +3690,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (p_ptr->state.resist_dark)
 			{
 				dam = RES_DARK_ADJ(dam, RANDOMISE);
-				object_notice_flag(1, TR1_RES_DARK);
+				wieldeds_notice_flag(1, TR1_RES_DARK);
 			}
 			else if (!blind && !p_ptr->state.resist_blind)
 			{
@@ -3698,7 +3698,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			}
 			else if (p_ptr->state.resist_blind)
 			{
-				object_notice_flag(1, TR1_RES_BLIND);
+				wieldeds_notice_flag(1, TR1_RES_BLIND);
 			}
 			take_hit(dam, killer);
 			break;
@@ -3773,7 +3773,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			}
 			else
 			{
-				object_notice_flag(1, TR1_RES_SOUND);
+				wieldeds_notice_flag(1, TR1_RES_SOUND);
 			}
 			take_hit(dam, killer);
 			break;
@@ -3804,12 +3804,12 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ)
 			if (!p_ptr->state.resist_shard)
 				(void)inc_timed(TMD_CUT, damroll(5, 8), TRUE);
 			else
-				object_notice_flag(1, TR1_RES_SHARD);
+				wieldeds_notice_flag(1, TR1_RES_SHARD);
 
 			if (!p_ptr->state.resist_sound)
 				(void)inc_timed(TMD_STUN, randint1(15), TRUE);
 			else
-				object_notice_flag(1, TR1_RES_SOUND);
+				wieldeds_notice_flag(1, TR1_RES_SOUND);
 
 			break;
 		}

@@ -175,7 +175,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			}
 			else
 			{
-				object_notice_flag(1, TR1_RES_POIS);
+				wieldeds_notice_flag(1, TR1_RES_POIS);
 			}
 
 			return TRUE;
@@ -190,7 +190,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			}
 			else
 			{
-				object_notice_flag(1, TR1_RES_BLIND);
+				wieldeds_notice_flag(1, TR1_RES_BLIND);
 			}
 
 			return TRUE;
@@ -205,7 +205,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			}
 			else
 			{
-				object_notice_flag(1, TR1_RES_FEAR);
+				wieldeds_notice_flag(1, TR1_RES_FEAR);
 			}
 
 			return TRUE;
@@ -220,7 +220,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			}
 			else
 			{
-				object_notice_flag(1, TR1_RES_CONFU);
+				wieldeds_notice_flag(1, TR1_RES_CONFU);
 			}
 
 			return TRUE;
@@ -235,7 +235,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			}
 			else
 			{
-				object_notice_flag(1, TR1_RES_CHAOS);
+				wieldeds_notice_flag(1, TR1_RES_CHAOS);
 			}
 
 			return TRUE;
@@ -250,7 +250,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			}
 			else
 			{
-				object_notice_flag(2, TR2_FREE_ACT);
+				wieldeds_notice_flag(2, TR2_FREE_ACT);
 			}
 
 			return TRUE;
@@ -421,7 +421,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			}
 			else
 			{
-				object_notice_flag(2, TR2_HOLD_LIFE);
+				wieldeds_notice_flag(2, TR2_HOLD_LIFE);
 			}
 			return TRUE;
 		}
@@ -970,7 +970,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			if (!p_ptr->state.resist_blind)
 				(void)inc_timed(TMD_BLIND, 3 + randint1(5), TRUE);
 			else
-				object_notice_flag(1, TR1_RES_BLIND);
+				wieldeds_notice_flag(1, TR1_RES_BLIND);
 
 			if (unlite_area(10, 3)) *ident = TRUE;
 			return TRUE;

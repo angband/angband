@@ -165,7 +165,7 @@ bool do_dec_stat(int stat, bool perma)
 		           desc_stat_neg[stat]);
 
 		assert(TR1_SUST_STR == (1<<A_STR));
-		object_notice_flag(1, 1<<stat);
+		wieldeds_notice_flag(1, 1<<stat);
 
 		/* Notice effect */
 		return (TRUE);
