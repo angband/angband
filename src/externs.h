@@ -545,6 +545,7 @@ extern bool brand_bolts(void);
 extern void ring_of_power(int dir);
 
 /* squelch.c */
+void squelch_birth_init(void);
 int get_autoinscription_index(s16b k_idx);
 const char *get_autoinscription(s16b kind_idx);
 int apply_autoinscription(object_type *o_ptr);

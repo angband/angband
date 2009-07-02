@@ -1208,13 +1208,7 @@ void player_birth(bool quickstart_allowed)
 		op_ptr->opt[OPT_SCORE + (i - OPT_CHEAT)] = op_ptr->opt[i];
 	}
 
-	/* Reset squelch bits */
-	for (i = 0; i < z_info->k_max; i++)
-		k_info[i].squelch = FALSE;
-
-	/* Clear the squelch bytes */
-	for (i = 0; i < SQUELCH_BYTES; i++)
-		squelch_level[i] = 0;
+	squelch_birth_init();
 
 	/* Clear old messages, add new starting message */
 	history_clear();

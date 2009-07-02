@@ -106,6 +106,24 @@ static const char *quality_names[SQUELCH_MAX] =
 };
 
 
+/*
+ * Reset the player's squelch choices for a new game.
+ */
+void squelch_birth_init(void)
+{
+	int i;
+
+	/* Reset squelch bits */
+	for (i = 0; i < z_info->k_max; i++)
+		k_info[i].squelch = FALSE;
+
+	/* Clear the squelch bytes */
+	for (i = 0; i < SQUELCH_BYTES; i++)
+		squelch_level[i] = 0;
+}
+
+
+
 /* Structure to describe tval/description pairings. */
 typedef struct
 {
