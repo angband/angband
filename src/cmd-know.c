@@ -463,7 +463,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			prt("Name", 4, g_name_len + 3);
 
 			if (otherfields)
-				prt(otherfields, 4, 55);
+				prt(otherfields, 4, 46);
 
 
 			/* Print dividers: horizontal and vertical */
@@ -1166,7 +1166,7 @@ static void do_cmd_knowledge_monsters(void *obj, const char *name)
 	}
 
 	display_knowledge("monsters", monsters, m_count, r_funcs, m_funcs,
-						"          Sym  Kills");
+			"                   Sym  Kills");
 	FREE(default_join);
 	FREE(monsters);
 }
@@ -1346,7 +1346,7 @@ static void do_cmd_knowledge_artifacts(void *obj, const char *name)
 	/* Collect valid artifacts */
 	a_count = collect_known_artifacts(artifacts, z_info->a_max);
 
-	display_knowledge("artifacts", artifacts, a_count, obj_f, art_f, 0);
+	display_knowledge("artifacts", artifacts, a_count, obj_f, art_f, NULL);
 	FREE(artifacts);
 }
 
@@ -1481,7 +1481,7 @@ static void do_cmd_knowledge_ego_items(void *obj, const char *name)
 		}
 	}
 
-	display_knowledge("ego items", egoitems, e_count, obj_f, ego_f, "");
+	display_knowledge("ego items", egoitems, e_count, obj_f, ego_f, NULL);
 
 	FREE(default_join);
 	FREE(egoitems);
@@ -1553,6 +1553,10 @@ static void display_object(int col, int row, bool cursor, int oid)
 
 	/* Display the name */
 	c_prt(attr, o_name, row, col);
+
+	/* Show squelch status */
+	if (k_ptr->squelch)
+		c_put_str(attr, "Yes", row, 46);
 
 	/* Show autoinscription if around */
 	if (aware && inscrip)
@@ -1683,8 +1687,8 @@ static const char *o_xtra_prompt(int oid)
 	object_kind *k_ptr = &k_info[oid];
 	s16b idx = get_autoinscription_index(oid);
 
-	const char *no_insc = ", 'r' to recall, '{'";
-	const char *with_insc = ", 'r' to recall, '{', '}'";
+	const char *no_insc = ", 's' to toggle squelch, 'r'ecall, '{'";
+	const char *with_insc = ", 's' to toggle squelch, 'r'ecall, '{', '}'";
 
 
 	/* Forget it if we've never seen the thing */
@@ -1705,6 +1709,14 @@ static void o_xtra_act(char ch, int oid)
 {
 	object_kind *k_ptr = &k_info[oid];
 	s16b idx = get_autoinscription_index(oid);
+
+	/* Toggle squelch */
+	if (ch == 's' || ch == 'S')
+	{
+		if (squelch_tval(k_ptr->tval))
+			k_ptr->squelch = !k_ptr->squelch;
+		return;
+	}
 
 	/* Forget it if we've never seen the thing */
 	if (k_ptr->flavor && !k_ptr->aware)
@@ -1781,7 +1793,7 @@ void do_cmd_knowledge_objects(void *obj, const char *name)
 		}
 	}
 
-	display_knowledge("known objects", objects, o_count, kind_f, obj_f, "Inscribed          Sym");
+	display_knowledge("known objects", objects, o_count, kind_f, obj_f, "Squelch  Inscribed          Sym");
 
 	FREE(objects);
 }
@@ -1864,7 +1876,8 @@ static void do_cmd_knowledge_features(void *obj, const char *name)
 		features[f_count++] = i; /* Currently no filter for features */
 	}
 
-	display_knowledge("features", features, f_count, fkind_f, feat_f, "           Sym");
+	display_knowledge("features", features, f_count, fkind_f, feat_f,
+		"                    Sym");
 	FREE(features);
 }
 
