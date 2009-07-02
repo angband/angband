@@ -77,6 +77,8 @@ static void regenhp(int percent)
 	{
 		/* Redraw */
 		p_ptr->redraw |= (PR_HP);
+		wieldeds_notice_flag(2, TR2_REGEN);
+		wieldeds_notice_flag(2, TR2_IMPAIR_HP);
 	}
 }
 
@@ -120,6 +122,8 @@ static void regenmana(int percent)
 	{
 		/* Redraw */
 		p_ptr->redraw |= (PR_MANA);
+		wieldeds_notice_flag(2, TR2_REGEN);
+		wieldeds_notice_flag(2, TR2_IMPAIR_MANA);
 	}
 }
 
