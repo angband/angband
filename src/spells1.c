@@ -279,30 +279,30 @@ void teleport_player_to(int ny, int nx)
  */
 void teleport_player_level(void)
 {
-	if (OPT(adult_ironman))
-	{
-		msg_print("Nothing happens.");
-		return;
-	}
 
-
-	if (!p_ptr->depth)
+	if (is_quest(p_ptr->depth) || (p_ptr->depth >= MAX_DEPTH-1))
 	{
-		message(MSG_TPLEVEL, 0, "You sink through the floor.");
+		if (OPT(adult_ironman))
+		{
+			msg_print("Nothing happens.");
+			return;
+		}
+
+		message(MSG_TPLEVEL, 0, "You rise up through the ceiling.");
 
 		/* New depth */
-		p_ptr->depth++;
+		p_ptr->depth--;
 
 		/* Leaving */
 		p_ptr->leaving = TRUE;
 	}
 
-	else if (is_quest(p_ptr->depth) || (p_ptr->depth >= MAX_DEPTH-1))
+	else if ((!p_ptr->depth) || (OPT(adult_ironman)))
 	{
-		message(MSG_TPLEVEL, 0, "You rise up through the ceiling.");
+		message(MSG_TPLEVEL, 0, "You sink through the floor.");
 
 		/* New depth */
-		p_ptr->depth--;
+		p_ptr->depth++;
 
 		/* Leaving */
 		p_ptr->leaving = TRUE;
