@@ -20,7 +20,14 @@
 #include "cmds.h"
 #include "ui-menu.h"
 #include "object/tvalsval.h"
-#include "squelch.h"
+
+
+
+/*
+ * Squelch flags
+ */
+#define SQUELCH_IF_AWARE	0x01
+#define SQUELCH_IF_UNAWARE	0x02
 
 
 /*
