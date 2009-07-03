@@ -1522,6 +1522,7 @@ s32b object_value(const object_type *o_ptr, int qty)
  */
 bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 {
+	int i;
 	int total = o_ptr->number + j_ptr->number;
 
 
@@ -1563,7 +1564,7 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 			break;
 		}
 
-		/* Weapons and Armor */
+		/* Weaponsm, armour and jewelery */
 		case TV_BOW:
 		case TV_DIGGING:
 		case TV_HAFTED:
@@ -1578,18 +1579,10 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 		case TV_SOFT_ARMOR:
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
-		{
-			/* Fall through */
-		}
-
-		/* Rings, Amulets, Lites */
 		case TV_RING:
 		case TV_AMULET:
 		case TV_LITE:
 		{
-			/* Require both items to be known */
-			if (!object_known_p(o_ptr) || !object_known_p(j_ptr)) return (0);
-
 			/* Fall through */
 		}
 
@@ -1598,9 +1591,6 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 		case TV_ARROW:
 		case TV_SHOT:
 		{
-			/* Require identical knowledge of both items */
-			if (object_known_p(o_ptr) != object_known_p(j_ptr)) return (0);
-
 			/* Require identical "bonuses" */
 			if (o_ptr->to_h != j_ptr->to_h) return (FALSE);
 			if (o_ptr->to_d != j_ptr->to_d) return (FALSE);
@@ -1635,9 +1625,6 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 		/* Various */
 		default:
 		{
-			/* Require knowledge */
-			if (!object_known_p(o_ptr) || !object_known_p(j_ptr)) return (0);
-
 			/* Probably okay */
 			break;
 		}
@@ -1653,10 +1640,9 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 
 
 	/* Different flags */
-	if (o_ptr->flags[0] != j_ptr->flags[0] ||
-		o_ptr->flags[1] != j_ptr->flags[1] ||
-		o_ptr->flags[2] != j_ptr->flags[2])
-		return FALSE;
+	for (i = 0; i < OBJ_FLAG_N; i++)
+		if (o_ptr->flags[i] != j_ptr->flags[1])
+			return FALSE;
 
 
 	/* Maximal "stacking" limit */
@@ -1688,16 +1674,16 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
+	int i;
 	int total = o_ptr->number + j_ptr->number;
 
 	/* Add together the item counts */
 	o_ptr->number = ((total < MAX_STACK_SIZE) ? total : (MAX_STACK_SIZE - 1));
 
-	/* Hack -- Blend "known" status */
-	if (object_known_p(j_ptr)) object_known(o_ptr);
-
-	/* Hack -- Blend store status */
-	if (j_ptr->ident & (IDENT_STORE)) o_ptr->ident |= (IDENT_STORE);
+	/* Blend all knowledge */
+	o_ptr->ident |= (j_ptr->ident & ~IDENT_EMPTY);
+	for (i = 0; i < OBJ_FLAG_N; i++)
+		o_ptr->known_flags[i] |= j_ptr->known_flags[i];
 
 	/* Hack -- Blend "notes" */
 	if (j_ptr->note != 0) o_ptr->note = j_ptr->note;
@@ -3591,9 +3577,6 @@ bool obj_can_zap(const object_type *o_ptr)
 bool obj_is_activatable(const object_type *o_ptr)
 {
 	u32b f[OBJ_FLAG_N];
-
-	/* Not known */
-	if (!object_known_p(o_ptr)) return (FALSE);
 
 	/* Extract the flags */
 	object_flags(o_ptr, f);
