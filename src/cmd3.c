@@ -156,7 +156,6 @@ void wield_item(object_type *o_ptr, int item)
 	p_ptr->equip_cnt++;
 
 	/* Do any ID-on-wield */
-	object_tried(o_ptr);
 	object_notice_on_wield(o_ptr);
 
 	/* Where is the item now */
@@ -304,6 +303,13 @@ void textui_cmd_destroy(void)
 	
 	o_ptr = object_from_item_idx(item);
 
+	/* Ask if player would prefer squelching instead of destruction */
+	if (squelch_interactive(o_ptr))
+	{
+		p_ptr->notice |= PN_SQUELCH;
+		return;
+	}
+
 	/* Get a quantity */
 	amt = get_quantity(NULL, o_ptr->number);
 	if (amt <= 0) return;
@@ -319,24 +325,14 @@ void textui_cmd_destroy(void)
 	/* Tell the game to destroy the item. */
 	cmd_insert(CMD_DESTROY, item, amt);
 
-	/* Check for squelching */
-	if (squelch_tval(o_ptr->tval))
+	/* Check squelch setting */
+	if (o_ptr->ident & IDENT_INDESTRUCT)
 	{
-		char sval_name[50];
-
-		/* Obtain plural form without a quantity */
-		object_desc(sval_name, sizeof sval_name, o_ptr, FALSE,
-				ODESC_BASE | ODESC_PLURAL);
-		strnfmt(out_val, sizeof out_val, "Ignore %s in future? ",
-				sval_name);
-
-		if (get_check(out_val))
+		if (get_check("Ignore this artifact for the rest of the game?"))
 		{
-			/* squelch_set_squelch(tval, sval); */
-			k_info[o_ptr->k_idx].squelch = TRUE;
+			ignore_artifact(o_ptr);
 			p_ptr->notice |= PN_SQUELCH;
-			msg_format("Ignoring %s from now on.", sval_name);
-		}		
+		}
 	}
 }
 

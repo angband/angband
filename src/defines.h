@@ -856,12 +856,6 @@ enum
 
 
 
-/*** Squelch stuff ***/
-
-/* Number of bytes used in squelch sub-quality array */
-#define SQUELCH_BYTES    6
-
-
 
 /*** Monster AI stuff ***/
 
@@ -1974,6 +1968,12 @@ enum
  */
 #define cursed_p(T) \
 	((T)->flags[2] & (TR2_CURSE_MASK))
+
+ /*
+ * Rings and Amulets
+ */
+#define object_is_jewelry(T) \
+	(((T)->tval == TV_RING) || ((T)->tval == TV_AMULET))
 
 
 /*

@@ -40,6 +40,55 @@ static bool easy_know(const object_type *o_ptr)
 }
 
 
+/*
+ * Recall if item has ever been worn.  Alternative to "tried".
+ */
+bool object_was_worn(const object_type *o_ptr)
+{
+	if (o_ptr->ident & IDENT_WORN)
+		return TRUE;
+	else
+		return FALSE;
+}
+
+
+/*
+ * Whether an object has known pseudo value.
+ */
+bool object_was_sensed(const object_type *o_ptr)
+{
+	/* XXX Eddie must consider whether ident sets IDENT_SENSE and whether to repair it, then first test goes away */
+	if (object_known_p(o_ptr))
+		return TRUE;
+
+	if (o_ptr->ident & IDENT_SENSE)
+		return TRUE;
+	else
+		return FALSE;
+}
+
+/*
+ * Whether it is possible an object has a high resist, given the knowledge so far
+ */
+bool object_high_resist_is_possible(const object_type *o_ptr)
+{
+#if 0
+	u32b flags[OBJ_FLAG_N];
+	object_flags(o_ptr, flags);
+
+	if (flags[1] & o_ptr->known_flags[1] & TR1_HIGH_RESIST_MASK)
+		return TRUE;
+	else if ((o_ptr->known_flags[1] & TR1_HIGH_RESIST_MASK) == TR1_HIGH_RESIST_MASK)
+		return FALSE;
+	else
+		return TRUE;
+#endif
+
+	/* XXX for now */
+	return TRUE;
+}
+
+
 /**
  * Mark as object as fully known, a.k.a identified. 
  *
@@ -177,6 +226,20 @@ bool object_activation_is_visible(const object_type *o_ptr)
 bool object_effect_is_known(const object_type *o_ptr)
 {
 	if (easy_know(o_ptr) || o_ptr->ident & IDENT_EFFECT)
+		return TRUE;
+	else
+		return FALSE;
+}
+
+bool object_pval_is_visible(const object_type *o_ptr)
+{
+	u32b f[OBJ_FLAG_N];
+	object_flags(o_ptr, f);
+
+	if (o_ptr->ident & IDENT_STORE)
+		return TRUE;
+
+	if (f[0] & TR0_PVAL_MASK & o_ptr->known_flags[0])
 		return TRUE;
 	else
 		return FALSE;

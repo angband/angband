@@ -232,7 +232,8 @@ extern flag_cache *slay_cache;
 extern history_info *history_list;
 
 /* squelch.c */
-extern byte squelch_level[SQUELCH_BYTES];
+extern byte squelch_level[];
+const size_t squelch_size;
 
 
 /*
@@ -553,6 +554,9 @@ int remove_autoinscription(s16b kind);
 int add_autoinscription(s16b kind, cptr inscription);
 void autoinscribe_ground(void);
 void autoinscribe_pack(void);
+
+bool squelch_interactive(const object_type *o_ptr);
+void ignore_artifact(const object_type *o_ptr);
 
 bool squelch_tval(int tval);
 bool squelch_item_ok(const object_type *o_ptr);

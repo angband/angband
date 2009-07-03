@@ -20,109 +20,99 @@
 #include "cmds.h"
 #include "ui-menu.h"
 #include "object/tvalsval.h"
+#include "squelch.h"
 
 
 /*
  * List of kinds of item, for pseudo-id squelch.
  */
-enum
+typedef enum
 {
-	TYPE_WEAPON,
+	TYPE_WEAPON_POINTY,
+	TYPE_WEAPON_BLUNT,
 	TYPE_SHOOTER,
-	TYPE_MISSILE,
-	TYPE_ARMOR,
-	TYPE_JEWELRY,
+	TYPE_MISSILE_SLING,
+	TYPE_MISSILE_BOW,
+	TYPE_MISSILE_XBOW,
+	TYPE_ARMOR_ROBE,
+	TYPE_ARMOR_BODY,
+	TYPE_ARMOR_CLOAK,
+	TYPE_ARMOR_ELVEN_CLOAK,
+	TYPE_ARMOR_SHIELD,
+	TYPE_ARMOR_HEAD,
+	TYPE_ARMOR_HANDS,
+	TYPE_ARMOR_FEET,
 	TYPE_DIGGER,
+	TYPE_RING,
+	TYPE_AMULET,
 
 	TYPE_MAX
-};
+} squelch_type_t;
 
-/*
- * Names of categories.
- */
-static const char *type_names[TYPE_MAX] =
+typedef struct
 {
-	"Melee weapons",
-	"Missile weapons",
-	"Ammunition",
-	"Armor",
-	"Jewelry",
-	"Diggers",
-};
+	squelch_type_t squelch_type;
+	int tval;
+	int min_sval;
+	int max_sval;
+} quality_squelch_struct;
 
-/* Mapping of tval -> type */
-static int type_tvals[][2] =
+static quality_squelch_struct quality_mapping[] =
 {
-	{ TYPE_WEAPON,	TV_SWORD },
-	{ TYPE_WEAPON,	TV_POLEARM },
-	{ TYPE_WEAPON,	TV_HAFTED },
-	{ TYPE_SHOOTER,	TV_BOW },
-	{ TYPE_MISSILE, TV_ARROW },
-	{ TYPE_MISSILE,	TV_BOLT },
-	{ TYPE_MISSILE,	TV_SHOT },
-	{ TYPE_ARMOR,	TV_SHIELD },
-	{ TYPE_ARMOR,	TV_HELM },
-	{ TYPE_ARMOR,	TV_GLOVES },
-	{ TYPE_ARMOR,	TV_BOOTS },
-	{ TYPE_ARMOR,	TV_HARD_ARMOR },
-	{ TYPE_ARMOR,	TV_SOFT_ARMOR },
-	{ TYPE_ARMOR,	TV_CLOAK },
-	{ TYPE_ARMOR,	TV_CROWN },
-	{ TYPE_JEWELRY,	TV_RING },
-	{ TYPE_JEWELRY,	TV_AMULET },
-	{ TYPE_DIGGER,	TV_DIGGING },
-};
-
-byte squelch_level[TYPE_MAX];
-size_t squelch_size = TYPE_MAX;
-
-
-/*
- * The different kinds of quality squelch
- */
-enum
-{
-	SQUELCH_NONE,
-	SQUELCH_BAD,
-	SQUELCH_AVERAGE,
-	SQUELCH_GOOD,
-	SQUELCH_EXCELLENT,
-	SQUELCH_ALL,
-
-	SQUELCH_MAX
-};
-
-/*
- * The names for the various kinds of quality
- */
-static const char *quality_names[SQUELCH_MAX] =
-{
-	"none",                        /* SQUELCH_NONE */
-	"bad",                         /* SQUELCH_BAD */
-	"average",                     /* SQUELCH_AVERAGE */
-	"good",                        /* SQUELCH_GOOD */
-	"excellent",                   /* SQUELCH_EXCELLENT */
-	"everything except artifacts", /* SQUELCH_ALL */
+	{ TYPE_WEAPON_POINTY,	TV_SWORD,	0,		SV_UNKNOWN },
+	{ TYPE_WEAPON_POINTY,	TV_POLEARM,	0,		SV_UNKNOWN },
+	{ TYPE_WEAPON_BLUNT,	TV_HAFTED,	0,		SV_UNKNOWN },
+	{ TYPE_SHOOTER,		TV_BOW,		0,		SV_UNKNOWN },
+	{ TYPE_MISSILE_SLING,	TV_SHOT,	0,		SV_UNKNOWN },
+	{ TYPE_MISSILE_BOW,	TV_ARROW,	0,		SV_UNKNOWN },
+	{ TYPE_MISSILE_XBOW,	TV_BOLT,	0,		SV_UNKNOWN },
+	{ TYPE_ARMOR_ROBE,	TV_SOFT_ARMOR,	SV_ROBE,	SV_ROBE },
+	/* do not want to squelch dragon armor like other armor
+	{ TYPE_ARMOR_BODY,	TV_DRAG_ARMOR,	0,		SV_UNKNOWN },
+	*/
+	{ TYPE_ARMOR_BODY,	TV_HARD_ARMOR,	0,		SV_UNKNOWN },
+	{ TYPE_ARMOR_BODY,	TV_SOFT_ARMOR,	0,		SV_UNKNOWN },
+	{ TYPE_ARMOR_CLOAK,	TV_CLOAK,	SV_CLOAK, 	SV_FUR_CLOAK },
+	{ TYPE_ARMOR_CLOAK,	TV_CLOAK,	SV_ETHEREAL_CLOAK, 	SV_ETHEREAL_CLOAK },
+/* XXX Eddie need to assert SV_CLOAK < SV_FUR_CLOAK < SV_ELVEN_CLOAK */
+	{ TYPE_ARMOR_ELVEN_CLOAK,	TV_CLOAK,	SV_ELVEN_CLOAK, 	SV_ELVEN_CLOAK },
+	{ TYPE_ARMOR_SHIELD,	TV_SHIELD,	0,		SV_UNKNOWN },
+	{ TYPE_ARMOR_HEAD,	TV_HELM,	0,		SV_UNKNOWN },
+	{ TYPE_ARMOR_HEAD,	TV_CROWN,	0,		SV_UNKNOWN },
+	{ TYPE_ARMOR_HANDS,	TV_GLOVES,	0,		SV_UNKNOWN },
+	{ TYPE_ARMOR_FEET,	TV_BOOTS,	0,		SV_UNKNOWN },
+	{ TYPE_DIGGER,		TV_DIGGING,	0,		SV_UNKNOWN },
+	{ TYPE_RING,		TV_RING,	0,		SV_UNKNOWN },
+	{ TYPE_AMULET,		TV_AMULET,	0,		SV_UNKNOWN },
 };
 
 
-/*
- * Reset the player's squelch choices for a new game.
- */
-void squelch_birth_init(void)
+typedef struct
 {
-	int i;
+	int enum_val;
+	const char *name;
+} quality_name_struct;
 
-	/* Reset squelch bits */
-	for (i = 0; i < z_info->k_max; i++)
-		k_info[i].squelch = FALSE;
-
-	/* Clear the squelch bytes */
-	for (i = 0; i < SQUELCH_BYTES; i++)
-		squelch_level[i] = 0;
-}
-
-
+static quality_name_struct quality_choices[TYPE_MAX] =
+{
+	{ TYPE_WEAPON_POINTY,	"Pointy Melee Weapons" },
+	{ TYPE_WEAPON_BLUNT,	"Blunt Melee Weapons" },
+	{ TYPE_SHOOTER,		"Missile weapons" },
+	{ TYPE_MISSILE_SLING,	"Shots and Pebbles" },
+	{ TYPE_MISSILE_BOW,	"Arrows" },
+	{ TYPE_MISSILE_XBOW,	"Bolts" },
+	{ TYPE_ARMOR_ROBE,	"Robes" },
+	{ TYPE_ARMOR_BODY,	"Body Armor" },
+	{ TYPE_ARMOR_CLOAK,	"Cloaks" },
+	{ TYPE_ARMOR_ELVEN_CLOAK,	"Elven Cloaks" },
+	{ TYPE_ARMOR_SHIELD,	"Shields" },
+	{ TYPE_ARMOR_HEAD,	"Headgear" },
+	{ TYPE_ARMOR_HANDS,	"Handgear" },
+	{ TYPE_ARMOR_FEET,	"Footgear" },
+	{ TYPE_DIGGER,		"Diggers" },
+	{ TYPE_RING,		"Rings" },
+	{ TYPE_AMULET,		"Amulets" },
+};
 
 /* Structure to describe tval/description pairings. */
 typedef struct
@@ -149,6 +139,122 @@ static tval_desc sval_dependent[] =
 	{ TV_FLASK,			"Flasks of oil" },
 	{ TV_DRAG_ARMOR,	"Dragon Mail Armor" },
 };
+
+byte squelch_level[TYPE_MAX];
+const size_t squelch_size = TYPE_MAX;
+
+
+/*
+ * The different kinds of quality squelch
+ */
+enum
+{
+	SQUELCH_NONE,
+	SQUELCH_BAD,
+	SQUELCH_AVERAGE,
+	SQUELCH_GOOD,
+	SQUELCH_EXCELLENT_NO_HI,
+	SQUELCH_EXCELLENT_NO_SPL,
+	SQUELCH_ALL,
+
+	SQUELCH_MAX
+};
+
+/*
+ * The names for the various kinds of quality
+ */
+static quality_name_struct quality_values[SQUELCH_MAX] =
+{
+	{ SQUELCH_NONE,		"none" },
+	{ SQUELCH_BAD,		"bad" },
+	{ SQUELCH_AVERAGE,	"average" },
+	{ SQUELCH_GOOD,		"good" },
+	{ SQUELCH_EXCELLENT_NO_HI,	"excellent with no high resists" },
+	{ SQUELCH_EXCELLENT_NO_SPL,	"excellent but not splendid" },
+	{ SQUELCH_ALL,		"everything except artifacts" },
+};
+
+/*
+ * menu struct for differentiating aware from unaware squelch
+ */
+typedef struct
+{
+	s16b idx;
+	bool aware;
+} squelch_choice;
+
+
+/*
+ * Sort by name in squelch menus.
+ */
+static void ang_sort_swap_hook_squelch_choices(void *u, void *v, int a, int b)
+{
+	squelch_choice temp;
+	squelch_choice *x = (squelch_choice *) u;
+
+	(void)v; /* unused */
+
+	temp = x[a];
+	x[a] = x[b];
+	x[b] = temp;
+}
+
+
+/*
+ * Ordering function for squelch choices.
+ * Aware comes before unaware, and then sort alphabetically.
+ */
+static bool ang_sort_comp_hook_squelch_choices(const void *u, const void *v,
+		int a, int b)
+{
+	char bufa[80];
+	char bufb[80];
+	squelch_choice *x = (squelch_choice *) u;
+	(void)v; /* unused */
+
+	if (x[a].aware && !x[b].aware)
+		return TRUE;
+	if (!x[a].aware && x[b].aware)
+		return FALSE;
+
+	object_kind_name(bufa, sizeof(bufa), x[a].idx, x[a].aware);
+	object_kind_name(bufb, sizeof(bufb), x[b].idx, x[b].aware);
+
+	/* the = is crucial, inf loop in sort if use < rather than <= */
+	return strcmp(bufa, bufb) <= 0;
+}
+
+
+/*
+ * Initialise the squelch package (currently just asserts).
+ */
+void squelch_init(void)
+{
+	int i;
+
+	for (i = 0; i < TYPE_MAX; i++)
+		assert(quality_choices[i].enum_val == i);
+	for (i = 0; i < SQUELCH_MAX; i++)
+		assert(quality_values[i].enum_val == i);
+}
+
+
+/*
+ * Reset the player's squelch choices for a new game.
+ */
+void squelch_birth_init(void)
+{
+	int i;
+
+	/* Reset squelch bits */
+	for (i = 0; i < z_info->k_max; i++)
+		k_info[i].squelch = FALSE;
+
+	/* Clear the squelch bytes */
+	for (i = 0; i < TYPE_MAX; i++)
+		squelch_level[i] = 0;
+}
+
 
 
 /*** Autoinscription stuff ***/
@@ -323,132 +429,219 @@ bool squelch_tval(int tval)
 }
 
 
+/* 
+ * The header file for a_info says that max_num is not used and is 1 but it
+ * appears to be 0 in reality.  This hack is no worse than the existence of
+ * cur_num in a_info.  In other words, a nasty but not totally obscene hack.
+ */
+
+/*
+ * The value for a_ptr->cur_num that means an artifact is being ignored a la
+ * squelch
+ */
+#define ARTIFACT_IGNORE_HACK 2
+
+
+/*
+ * Mark an artifact as one to ignore for the rest of the game.
+ */
+void ignore_artifact(const object_type *o_ptr)
+{
+	assert(artifact_p(o_ptr));
+	a_info[o_ptr->name1].cur_num = ARTIFACT_IGNORE_HACK;
+}
+
+
+/*
+ * Determines whether an artifact is specifically set to ignore in a_info
+ */
+bool artifact_is_ignored(const object_type *o_ptr)
+{
+	if (!artifact_p(o_ptr))
+		return FALSE;
+
+	if (a_info[o_ptr->name1].cur_num == ARTIFACT_IGNORE_HACK)
+		return TRUE;
+	else
+		return FALSE;
+}
+
+
+/*
+ * Squelch the flavor of an object
+ */
+static void object_squelch_flavor_of(const object_type *o_ptr)
+{
+	assert(squelch_tval(o_ptr->tval));
+	if (object_aware_p(o_ptr))
+		k_info[o_ptr->k_idx].squelch |= SQUELCH_IF_AWARE;
+	else
+		k_info[o_ptr->k_idx].squelch |= SQUELCH_IF_UNAWARE;
+}
+
+
+/*
+ * Find the squelch type of the object, or TYPE_MAX if none
+ */
+squelch_type_t squelch_type_of(const object_type *o_ptr)
+{
+	size_t i;
+
+	/* Find the appropriate squelch group */
+	for (i = 0; i < N_ELEMENTS(quality_mapping); i++)
+	{
+		if ((quality_mapping[i].tval == o_ptr->tval) && (quality_mapping[i].min_sval <= o_ptr->sval) && (quality_mapping[i].max_sval >= o_ptr->sval))
+			return quality_mapping[i].squelch_type;
+	}
+
+	return TYPE_MAX;
+}
+
+
+/*
+ * Determine the squelch level of an object, which is similar to its pseudo.
+ *
+ * The main point is when the value is undetermined given current info,
+ * return the maximum possible value.
+ */
+byte squelch_level_of(const object_type *o_ptr)
+{
+	object_kind *k_ptr = &k_info[o_ptr->k_idx];
+	byte value;
+
+	if ((object_pval_is_visible(o_ptr)) && (o_ptr->pval < 0))
+		return SQUELCH_BAD;
+
+	/* Deal with jewelry specially. */
+	if (object_is_jewelry(o_ptr))
+	{
+		if ((object_pval_is_visible(o_ptr)) && (o_ptr->pval > 0))
+			return SQUELCH_AVERAGE;
+		if ((o_ptr->to_h > 0) || (o_ptr->to_d > 0) || (o_ptr->to_a > 0))
+			return SQUELCH_AVERAGE;
+		if ((o_ptr->to_h < 0) || (o_ptr->to_d < 0) || (o_ptr->to_a < 0))
+			return SQUELCH_BAD;
+
+		return SQUELCH_AVERAGE;
+	}
+
+	if (object_was_sensed(o_ptr))
+	{
+		obj_pseudo_t pseudo = object_pseudo(o_ptr);
+
+		switch (pseudo)
+		{
+			case INSCRIP_AVERAGE:
+				value = SQUELCH_AVERAGE;
+				break;
+
+			case INSCRIP_EXCELLENT:
+				/* have to assume splendid until you have tested it */
+				if (object_was_worn(o_ptr))
+				{
+					if (object_high_resist_is_possible(o_ptr))
+						value = SQUELCH_EXCELLENT_NO_SPL;
+					else
+						value = SQUELCH_EXCELLENT_NO_HI;
+				}
+				else
+				{
+					value = SQUELCH_ALL;
+				}
+				break;
+
+			case INSCRIP_STRANGE: /* XXX Eddie perhaps some strange count as something else */
+			case INSCRIP_SPLENDID:
+				value = SQUELCH_ALL;
+				break;
+			case INSCRIP_NULL:
+			case INSCRIP_SPECIAL:
+				value = SQUELCH_MAX;
+				break;
+
+			/* This is the interesting case */
+			case INSCRIP_MAGICAL:
+				value = SQUELCH_GOOD;
+				if ((object_attack_plusses_are_visible(o_ptr) || (o_ptr->to_h == k_ptr->to_h && o_ptr->to_d == k_ptr->to_d)) &&
+				    (object_defence_plusses_are_visible(o_ptr) || (o_ptr->to_a == k_ptr->to_a)) &&
+				    (o_ptr->to_h <= k_ptr->to_h) && (o_ptr->to_d <= k_ptr->to_d) && (o_ptr->to_a <= k_ptr->to_a))
+					value = SQUELCH_BAD;
+				break;
+
+
+			default:
+				/* do not handle any other possible pseudo values */
+				assert(0);
+		}
+	}
+	else
+	{
+		if (object_was_worn(o_ptr))
+			value = SQUELCH_EXCELLENT_NO_SPL; /* object would be sensed if it were splendid */
+		else
+			value = SQUELCH_ALL;
+	}
+
+	return value;
+}
+
+/*
+ * Remove any squelching of a particular flavor
+ */
+void kind_squelch_clear(object_kind *k_ptr)
+{
+	k_ptr->squelch = 0;
+}
+
+/* XXX Eddie should use this consistently throughout file */
+bool kind_is_squelched_aware(const object_kind *k_ptr)
+{
+	return (k_ptr->squelch & SQUELCH_IF_AWARE) ? TRUE : FALSE;
+}
+
+/* XXX Eddie should use this consistently throughout file */
+bool kind_is_squelched_unaware(const object_kind *k_ptr)
+{
+	return (k_ptr->squelch & SQUELCH_IF_UNAWARE) ? TRUE : FALSE;
+}
+
 /*
  * Determines if an object is eligable for squelching.
  */
 bool squelch_item_ok(const object_type *o_ptr)
 {
-	size_t i;
-	int type = -1;
-
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
-	bool fullid = object_known_p(o_ptr);
-	bool sensed = (o_ptr->ident & IDENT_SENSE) || fullid;
-	byte feel   = object_pseudo(o_ptr);
+	byte type;
 
+	/* Don't squelch artifacts unless marked to be squelched */
+	if (artifact_p(o_ptr))
+		return artifact_is_ignored(o_ptr);
 
-	/* Don't squelch artifacts */
-	if (artifact_p(o_ptr)) return FALSE;
 
 	/* Don't squelch stuff inscribed not to be destroyed (!k) */
 	if (check_for_inscrip(o_ptr, "!k") || check_for_inscrip(o_ptr, "!*"))
-	{
 		return FALSE;
-	}
 
 	/* Auto-squelch dead chests */
 	if (o_ptr->tval == TV_CHEST && o_ptr->pval == 0)
 		return TRUE;
 
-	/* Do squelching by sval, if we 'know' the flavour. */
-	if (k_ptr->squelch && (k_ptr->flavor == 0 || k_ptr->aware))
-	{
-		if (squelch_tval(k_info[o_ptr->k_idx].tval))
-			return TRUE;
-	}
+	/* Do squelching by kind */
+	if (object_aware_p(o_ptr) ?
+			kind_is_squelched_aware(k_ptr) :
+			kind_is_squelched_unaware(k_ptr))
+		return TRUE;
 
 
-	/* Don't check pseudo-ID for nonsensed things */
-	if (!sensed) return FALSE;
-
-
-
-	/* Find the appropriate squelch group */
-	for (i = 0; i < N_ELEMENTS(type_tvals) && (type == -1); i++)
-	{
-		if (type_tvals[i][1] == o_ptr->tval)
-			type = type_tvals[i][0];
-	}
-
-	/* Never squelched */
-	if (type == -1)
+	type = squelch_type_of(o_ptr);
+	if (type == TYPE_MAX)
 		return FALSE;
-
-
-	/* Never autosquelch arts */
-	if (feel == INSCRIP_SPECIAL)
-		return FALSE;
-
 
 	/* Get result based on the feeling and the squelch_level */
-	switch (squelch_level[type])
-	{
-		case SQUELCH_BAD:
-		{
-			/* Deal with jewelry specially */
-			if (type == TYPE_JEWELRY)
-			{
-				if (fullid && o_ptr->pval < 0)
-					return TRUE;
-				else
-					return FALSE;
-			}
-
-			if (feel == INSCRIP_AVERAGE ||
-					feel == INSCRIP_EXCELLENT)
-				return FALSE;
-
-			if ((fullid || o_ptr->ident & IDENT_ATTACK) &&
-					o_ptr->to_h < 0 && o_ptr->to_d < 0)
-				return TRUE;
-
-			if ((fullid || o_ptr->ident & IDENT_DEFENCE) &&
-					o_ptr->to_a < 0)
-				return TRUE;
-
-			break;
-		}
-
-		case SQUELCH_AVERAGE:
-		{
-			if (feel == INSCRIP_EXCELLENT)
-				return FALSE;
-
-			if (feel == INSCRIP_AVERAGE)
-				return TRUE;
-
-			if ((fullid || o_ptr->ident & IDENT_ATTACK) &&
-					o_ptr->to_h <= 0 && o_ptr->to_d <= 0)
-				return TRUE;
-
-			if ((fullid || o_ptr->ident & IDENT_DEFENCE) &&
-					o_ptr->to_a <= 0)
-				return TRUE;
-
-			break;
-		}
-
-		case SQUELCH_GOOD:
-		{
-			if (feel == INSCRIP_EXCELLENT)
-				return FALSE;
-
-			if (feel == INSCRIP_AVERAGE ||
-					feel == INSCRIP_MAGICAL)
-				return TRUE;
-
-			break;
-		}
-
-		case SQUELCH_EXCELLENT:
-		case SQUELCH_ALL:
-		{
-			return TRUE;
-		}
-	}
-
-	/* Default to not squelching */
-	return FALSE;
+	if (squelch_level_of(o_ptr) <= squelch_level[type])
+		return TRUE;
+	else
+		return FALSE;
 }
 
 
@@ -567,10 +760,10 @@ void squelch_drop(void)
  */
 static void quality_display(menu_type *menu, int oid, bool cursor, int row, int col, int width)
 {
-	const char *name = type_names[oid];
+	const char *name = quality_choices[oid].name;
 
 	byte level = squelch_level[oid];
-	const char *level_name = quality_names[level];
+	const char *level_name = quality_values[level].name;
 
 	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
 
@@ -584,7 +777,7 @@ static void quality_display(menu_type *menu, int oid, bool cursor, int row, int 
  */
 static void quality_subdisplay(menu_type *menu, int oid, bool cursor, int row, int col, int width)
 {
-	const char *name = quality_names[oid];
+	const char *name = quality_values[oid].name;
 	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
 
 	c_put_str(attr, name, row, col);
@@ -621,7 +814,7 @@ static bool quality_action(char cmd, void *db, int oid)
 	WIPE(&menu, menu);
 	menu.cmd_keys = "\n\r";
 	menu.count = SQUELCH_MAX;
-	if (oid == TYPE_JEWELRY)
+	if ((oid == TYPE_RING) || (oid == TYPE_AMULET))
 		menu.count = area.page_rows = SQUELCH_BAD + 1;
 
 	menu_init(&menu, MN_SKIN_SCROLL, &menu_f, &area);
@@ -684,18 +877,19 @@ static void quality_menu(void *unused, const char *also_unused)
 static void sval_display(menu_type *menu, int oid, bool cursor, int row, int col, int width)
 {
 	char buf[80];
-	const u16b *choice = menu->menu_data;
-	int idx = choice[oid];
+	const squelch_choice *choice = (const squelch_choice *) menu->menu_data;
+	int idx = choice[oid].idx;
 
 	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
 
 
 	/* Acquire the "name" of object "i" */
-	object_kind_name(buf, sizeof(buf), idx, TRUE);
+	object_kind_name(buf, sizeof(buf), idx, choice[oid].aware);
 
 	/* Print it */
 	c_put_str(attr, format("[ ] %s", buf), row, col);
-	if (k_info[idx].squelch)
+	if ((choice[oid].aware && (k_info[idx].squelch & SQUELCH_IF_AWARE)) ||
+	    ((!choice[oid].aware) && (k_info[idx].squelch & SQUELCH_IF_UNAWARE)))
 		c_put_str(TERM_L_RED, "*", row, col + 1);
 }
 
@@ -704,13 +898,18 @@ static void sval_display(menu_type *menu, int oid, bool cursor, int row, int col
  */
 static bool sval_action(char cmd, void *db, int oid)
 {
-	u16b *choice = db;
+	const squelch_choice *choice = (const squelch_choice *) db;
 
 	/* Toggle */
 	if (cmd == '\n' || cmd == '\r')
 	{
-		int idx = choice[oid];
-		k_info[idx].squelch = !k_info[idx].squelch;
+		int idx = choice[oid].idx;
+
+		/* Toggle the appropriate flag */
+		if (choice[oid].aware)
+			k_info[idx].squelch ^= SQUELCH_IF_AWARE;
+		else
+			k_info[idx].squelch ^= SQUELCH_IF_UNAWARE;
 
 		return TRUE;
 	}
@@ -733,11 +932,11 @@ static bool sval_menu(int tval, const char *desc)
 	int num = 0;
 	size_t i;
 
-	u16b *choice;
+	squelch_choice *choice;
 
 
-	/* Create the array */
-	choice = C_ZNEW(z_info->k_max, u16b);
+	/* Create the array, with entries both for aware and unaware squelch */
+	choice = C_ZNEW(2 * z_info->k_max, squelch_choice);
 
 	/* Iterate over all possible object kinds, finding ones which can be squelched */
 	for (i = 1; i < z_info->k_max; i++)
@@ -746,11 +945,25 @@ static bool sval_menu(int tval, const char *desc)
 
 		/* Skip empty objects, unseen objects, and incorrect tvals */
 		if (!k_ptr->name) continue;
-		if (!k_ptr->everseen) continue;
 		if (k_ptr->tval != tval) continue;
 
-		/* Add this item to our possibles list */
-		choice[num++] = i;
+		/* can unaware squelch anything */
+		/* XXX Eddie should it be required that unaware squelched flavors have been seen this game, if so, how to save that info? */
+		if (!k_ptr->aware)
+		{
+			choice[num].idx = i;
+			choice[num].aware = FALSE;
+			num++;
+		}
+
+		/* aware squelch requires everseen */
+		/* do not require awareness for aware squelch, so people can set at game start */
+		if (k_ptr->everseen)
+		{
+			choice[num].idx = i;
+			choice[num].aware = TRUE;
+			num++;
+		}
 	}
 
 	/* Return here if there are no objects */
@@ -759,6 +972,23 @@ static bool sval_menu(int tval, const char *desc)
 		FREE(choice);
 		return FALSE;
 	}
+
+        /* sort by name in squelch menus except for categories of items that are aware from the start */
+        switch(tval)
+        {
+                case TV_LITE:
+                case TV_MAGIC_BOOK:
+                case TV_PRAYER_BOOK:
+                case TV_DRAG_ARMOR:
+		case TV_GOLD:
+                        /* leave sorted by sval */
+                        break;
+                default:
+                        /* sort by name */
+                        ang_sort_comp = ang_sort_comp_hook_squelch_choices;
+                        ang_sort_swap = ang_sort_swap_hook_squelch_choices;
+                        ang_sort((void*)choice, NULL, num);
+        }
 
 
 	/* Save the screen and clear it */
@@ -958,4 +1188,62 @@ void do_cmd_options_item(void *unused, cptr title)
 	p_ptr->notice |= PN_SQUELCH;
 
 	return;
+}
+
+
+/*
+ * Inquire whether the player wishes to squelch items similar to an object
+ *
+ * Returns whether the item is now squelched.
+ */
+bool squelch_interactive(const object_type *o_ptr)
+{
+	char out_val[70];
+
+	if (squelch_tval(o_ptr->tval))
+	{
+		char sval_name[50];
+
+		/* Obtain plural form without a quantity */
+		object_desc(sval_name, sizeof sval_name, o_ptr, FALSE,
+				ODESC_BASE | ODESC_PLURAL);
+		/* XXX Eddie while correct in a sense, to squelch all torches on torch of brightness you get the message "Ignore Wooden Torches of Brightness in future? " */
+		strnfmt(out_val, sizeof out_val, "Ignore %s in future? ",
+				sval_name);
+
+		if (!artifact_p(o_ptr) || !object_aware_p(o_ptr))
+		{
+			if (get_check(out_val))
+			{
+				object_squelch_flavor_of(o_ptr);
+				msg_format("Ignoring %s from now on.", sval_name);
+				return TRUE;
+			}		
+		}
+		/* XXX Eddie need to add generalized squelching, e.g. con rings with pval < 3 */
+		if (!object_is_jewelry(o_ptr) || (squelch_level_of(o_ptr) != SQUELCH_BAD))
+			return FALSE;
+	}
+
+	if (object_was_sensed(o_ptr) || object_was_worn(o_ptr))
+	{
+		byte value = squelch_level_of(o_ptr);
+		int type = squelch_type_of(o_ptr);
+
+/* XXX Eddie on pseudoed cursed artifact, only showed {cursed}, asked to ignore artifacts */
+		if ((value != SQUELCH_MAX) && ((value == SQUELCH_BAD) || !object_is_jewelry(o_ptr)))
+		{
+
+			strnfmt(out_val, sizeof out_val, "Ignore all %s that are %s in future? ",
+				quality_choices[type].name, quality_values[value].name);
+
+			if (get_check(out_val))
+			{
+				squelch_level[type] = value;
+				return TRUE;
+			}
+		}
+
+	}
+	return FALSE;
 }

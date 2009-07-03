@@ -777,13 +777,13 @@ int rd_squelch(u32b version)
 	rd_byte(&tmp8u);
 	
 	/* Check against current number */
-	if (tmp8u != SQUELCH_BYTES)
+	if (tmp8u != squelch_size)
 	{
 		strip_bytes(tmp8u);
 	}
 	else
 	{
-		for (i = 0; i < SQUELCH_BYTES; i++)
+		for (i = 0; i < squelch_size; i++)
 			rd_byte(&squelch_level[i]);
 	}
 		
