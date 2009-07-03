@@ -25,6 +25,22 @@ s32b object_last_wield;
 
 
 /**
+ * Whether an object counts as "known" due to EASY_KNOW status
+ */
+/* XXX Eddie should have a different name */
+static bool easy_know(const object_type *o_ptr)
+{
+	object_kind *k_ptr = &k_info[o_ptr->k_idx];
+
+	/* XXX Eddie should I really access k_ptr->aware directly? */
+	if (k_ptr->aware && k_ptr->flags[2] & TR2_EASY_KNOW)
+		return TRUE;
+	else
+		return FALSE;
+}
+
+
+/**
  * Mark as object as fully known, a.k.a identified. 
  *
  * \param o_ptr is the object to mark as identified
@@ -125,6 +141,57 @@ void object_notice_slays(u32b known_f0, int inven_idx)
 	return;
 }
 
+
+bool object_activation_is_visible(const object_type *o_ptr)
+{
+	if (!obj_can_wear(o_ptr))
+	{
+		/* XXX Eddie need function _if_charges ? or maybe the activation code should use something else */
+		switch(o_ptr->tval)
+		{
+			case TV_WAND:
+			case TV_STAFF:
+			case TV_ROD:
+				break;
+			default:
+				return FALSE;
+		}
+
+		if (object_aware_p(o_ptr))
+			return TRUE;
+		/* This would work now, but could fail if we add artifact rods
+		else
+			return FALSE;
+		*/
+	}
+
+	u32b f[OBJ_FLAG_N];
+	object_flags(o_ptr, f);
+
+	if ((f[2] & TR2_ACTIVATE) && (easy_know(o_ptr) || o_ptr->known_flags[2] & TR2_ACTIVATE))
+		return TRUE;
+	else
+		return FALSE;
+}
+
+bool object_effect_is_known(const object_type *o_ptr)
+{
+	if (easy_know(o_ptr) || o_ptr->ident & IDENT_EFFECT)
+		return TRUE;
+	else
+		return FALSE;
+}
+
+bool object_ego_is_visible(const object_type *o_ptr)
+{
+	if ((o_ptr->tval == TV_LITE) && (ego_item_p(o_ptr)))
+		return TRUE;
+	if (((o_ptr->ident & IDENT_KNOWN) && ego_item_p(o_ptr)) || /* XXX Eddie this should go, but necessary to use savefiles with IDENT_KNOWN before IDENT_EGO was added */
+			((o_ptr->ident & IDENT_STORE) && ego_item_p(o_ptr)))
+		return TRUE;
+	else
+		return FALSE;
+}
 
 bool object_attack_plusses_are_visible(const object_type *o_ptr)
 {

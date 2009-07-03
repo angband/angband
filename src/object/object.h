@@ -55,8 +55,12 @@ typedef enum
 /* identify.c */
 extern s32b object_last_wield;
 
+bool object_activation_is_visible(const object_type *o_ptr);
+bool object_effect_is_known(const object_type *o_ptr);
+bool object_ego_is_visible(const object_type *o_ptr);
 bool object_attack_plusses_are_visible(const object_type *o_ptr);
 bool object_defence_plusses_are_visible(const object_type *o_ptr);
+
 void object_known(object_type *o_ptr);
 void object_aware(object_type *o_ptr);
 void object_tried(object_type *o_ptr);

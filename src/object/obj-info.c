@@ -830,32 +830,46 @@ static bool describe_light(const object_type *o_ptr, u32b f3, bool terse)
 /*
  * Describe an object's activation, if any.
  */
-static bool describe_activation(const object_type *o_ptr, u32b f3, bool full,
+static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 		bool only_artifacts, bool subjective)
 {
 	const object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	const char *desc;
 
-	int effect, base, dice, sides;
+	int effect = 0, base, dice, sides;
 
 	if (o_ptr->name1)
 	{
 		const artifact_type *a_ptr = &a_info[o_ptr->name1];
-		if (!object_known_p(o_ptr) && !full) return FALSE;
+		if (!object_activation_is_visible(o_ptr) && !full) return FALSE;
 
-		effect = a_ptr->effect;
-		base = a_ptr->time_base;
-		dice = a_ptr->time_dice;
-		sides = a_ptr->time_sides;
+		if (object_effect_is_known(o_ptr) || full)
+		{
+			effect = a_ptr->effect;
+			base = a_ptr->time_base;
+			dice = a_ptr->time_dice;
+			sides = a_ptr->time_sides;
+		}
+		else
+		{
+			text_out("It can be activated.\n");
+			return TRUE;
+		}
 	}
 	else
 	{
-		if (!object_aware_p(o_ptr) && !full) return FALSE;
-
-		effect = k_ptr->effect;
-		base = k_ptr->time_base;
-		dice = k_ptr->time_dice;
-		sides = k_ptr->time_sides;
+		if (object_effect_is_known(o_ptr) || full)
+		{
+			effect = k_ptr->effect;
+			base = k_ptr->time_base;
+			dice = k_ptr->time_dice;
+			sides = k_ptr->time_sides;
+		}
+		else if (object_activation_is_visible(o_ptr))
+		{
+			text_out("It can be activated.\n");
+			return TRUE;
+		}
 	}
 
 	/* Forget it without an effect */
@@ -1021,7 +1035,7 @@ void object_info_header(const object_type *o_ptr)
 		}
 
 		/* Display an additional ego-item description */
-		if (o_ptr->name2 && object_known_p(o_ptr) && e_info[o_ptr->name2].text)
+		if (object_ego_is_visible(o_ptr) && e_info[o_ptr->name2].text)
 		{
 			if (did_desc) text_out("  ");
 			text_out(e_text + e_info[o_ptr->name2].text);
@@ -1069,7 +1083,7 @@ static bool object_info_out(const object_type *o_ptr, bool full, bool terse, boo
 	if (describe_misc_magic(f[2])) something = TRUE;
 	if (something) text_out("\n");
 	
-	if (describe_activation(o_ptr, f[2], full, terse, subjective))
+	if (describe_effect(o_ptr, f[2], full, terse, subjective))
 	{
 		something = TRUE;
 		text_out("\n");
