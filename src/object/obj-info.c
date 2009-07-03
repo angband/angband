@@ -571,7 +571,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 		dam = ((o_ptr->ds + 1) * o_ptr->dd * 5);
 
 		xtra_postcrit = state.dis_to_d * 10;
-		if (object_known_p(o_ptr) || o_ptr->ident & IDENT_ATTACK)
+		if (object_attack_plusses_are_visible(o_ptr))
 		{
 			xtra_precrit += o_ptr->to_d * 10;
 			plus += o_ptr->to_h;

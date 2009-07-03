@@ -126,6 +126,28 @@ void object_notice_slays(u32b known_f0, int inven_idx)
 }
 
 
+bool object_attack_plusses_are_visible(const object_type *o_ptr)
+{
+	/* XXX Eddie next ref to IDENT_STORE not clearly correct -- perhaps should guarantee store items have IDENT_ATTACK set */
+	if (object_known_p(o_ptr) ||
+			(o_ptr->ident & IDENT_ATTACK) || (o_ptr->ident & IDENT_STORE))
+		return TRUE;
+	else
+		return FALSE;
+}
+
+
+bool object_defence_plusses_are_visible(const object_type *o_ptr)
+{
+	/* XXX Eddie next IDENT_STORE not clear -- perhaps should guarantee store items have IDENT_DEFENCE set */
+	if (object_known_p(o_ptr) ||
+			(o_ptr->ident & IDENT_DEFENCE) || (o_ptr->ident & IDENT_STORE))
+		return TRUE;
+	else
+		return FALSE;
+}
+
+
 typedef struct
 {
 	int flagset;

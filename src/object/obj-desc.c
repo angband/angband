@@ -528,9 +528,6 @@ static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, si
 static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max, 
 		size_t end, bool spoil)
 {
-	bool known = object_known_p(o_ptr) || (o_ptr->ident & IDENT_STORE) ||
-			spoil;
-
 	/* Dump base weapon info */
 	switch (o_ptr->tval)
 	{
@@ -557,7 +554,7 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 
 
 	/* Show weapon bonuses */
-	if (known || o_ptr->ident & IDENT_ATTACK)
+	if (spoil || object_attack_plusses_are_visible(o_ptr))
 	{
 		if (obj_desc_show_weapon(o_ptr) || o_ptr->to_d)
 			strnfcat(buf, max, &end, " (%+d,%+d)", o_ptr->to_h, o_ptr->to_d);
@@ -567,7 +564,7 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 
 
 	/* Show armor bonuses */
-	if (known || o_ptr->ident & IDENT_DEFENCE)
+	if (spoil || object_defence_plusses_are_visible(o_ptr))
 	{
 		if (obj_desc_show_armor(o_ptr))
 			strnfcat(buf, max, &end, " [%d,%+d]", o_ptr->ac, o_ptr->to_a);

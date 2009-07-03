@@ -1490,9 +1490,9 @@ s32b object_value(const object_type *o_ptr, int qty)
 
 		memcpy(j_ptr, o_ptr, sizeof(object_type));
 		memcpy(j_ptr->flags, j_ptr->known_flags, sizeof(j_ptr->flags));
-		if (!(o_ptr->ident & IDENT_ATTACK))
+		if (!object_attack_plusses_are_visible(o_ptr))
 			j_ptr->to_h = j_ptr->to_d = 0;
-		else if (!(o_ptr->ident & IDENT_DEFENCE))
+		else if (!object_defence_plusses_are_visible(o_ptr))
 			j_ptr->to_a = 0;
 
 		value = object_value_real(j_ptr, qty);

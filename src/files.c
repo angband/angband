@@ -598,7 +598,7 @@ static const char *show_melee_weapon(const object_type *o_ptr)
 	int hit = p_ptr->state.dis_to_h;
 	int dam = p_ptr->state.dis_to_d;
 
-	if (object_known_p(o_ptr))
+	if (object_attack_plusses_are_visible(o_ptr))
 	{
 		hit += o_ptr->to_h;
 		dam += o_ptr->to_d;
@@ -614,7 +614,7 @@ static const char *show_missile_weapon(const object_type *o_ptr)
 	int hit = p_ptr->state.dis_to_h;
 	int dam = 0;
 
-	if (object_known_p(o_ptr))
+	if (object_attack_plusses_are_visible(o_ptr))
 	{
 		hit += o_ptr->to_h;
 		dam += o_ptr->to_d;
