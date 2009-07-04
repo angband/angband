@@ -455,6 +455,25 @@ void object_notice_on_attack(void)
 	return;
 }
 
+/**
+ * Notice things which happen on attacking.
+ */
+void object_notice_on_defend(void)
+{
+	int i;
+
+	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+	{
+		object_type *o_ptr = &inventory[i];
+		o_ptr->ident |= IDENT_DEFENCE;
+		tweak_id(o_ptr);
+	}
+
+	/* XXX print message? */
+
+	return;
+}
+
 
 /*
  * Determine whether a weapon or missile weapon is obviously {excellent} when worn.
