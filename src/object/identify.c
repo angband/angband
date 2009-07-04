@@ -67,6 +67,30 @@ bool object_was_sensed(const object_type *o_ptr)
 		return FALSE;
 }
 
+
+/*
+ * Whether the flavor of an object was tried.  A new ring can be tried without having been worn.
+ */
+bool object_flavor_was_tried(const object_type *o_ptr)
+{
+	return k_info[o_ptr->k_idx].tried;
+}
+
+
+/*
+ * Whether the player knows the value of an object flag,
+ * is TRUE when the player knows a flag is not present as well as knowing it is present
+ */
+bool object_flag_is_known(const object_type *o_ptr, int idx, u32b flag)
+{
+	assert ((idx >= 0) && (idx < OBJ_FLAG_N));
+	if (easy_know(o_ptr) || (o_ptr->known_flags[idx] & flag))
+		return TRUE;
+	else
+		return FALSE;
+}
+
+
 /*
  * Whether it is possible an object has a high resist, given the knowledge so far
  */
@@ -163,7 +187,6 @@ static void tweak_id(object_type *o_ptr)
 void object_tried(object_type *o_ptr)
 {
 	k_info[o_ptr->k_idx].tried = TRUE;
-	o_ptr->ident |= IDENT_TRIED;
 }
 
 

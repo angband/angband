@@ -678,7 +678,7 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 		u[n++] = inscrip_text[feel];
 	else if ((o_ptr->ident & IDENT_EMPTY) && !object_known_p(o_ptr))
 		u[n++] = "empty";
-	else if (!object_aware_p(o_ptr) && object_tried_p(o_ptr))
+	else if (!object_aware_p(o_ptr) && object_flavor_was_tried(o_ptr))
 		u[n++] = "tried";
 
 	/* Note curses */
@@ -737,15 +737,6 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 	size_t end = 0;
 
 
-	/*** Some things get really simple descriptions ***/
-
-	if (o_ptr->tval == TV_GOLD)
-		return strnfmt(buf, max, "%d gold pieces worth of %s",
-				o_ptr->pval, k_name + k_ptr->name);
-	else if (!o_ptr->tval)
-		return strnfmt(buf, max, "(nothing)");
-
-
 	/** Horrible, horrible squelch **/
 
 	/* Hack -- mark-to-squelch worthless items XXX */
@@ -761,6 +752,15 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 
 	/* We've seen it at least once now we're aware of it */
 	if (known && o_ptr->name2) e_info[o_ptr->name2].everseen = TRUE;
+
+
+	/*** Some things get really simple descriptions ***/
+
+	if (o_ptr->tval == TV_GOLD)
+		return strnfmt(buf, max, "%d gold pieces worth of %s",
+				o_ptr->pval, k_name + k_ptr->name);
+	else if (!o_ptr->tval)
+		return strnfmt(buf, max, "(nothing)");
 
 
 	/** Construct the name **/
@@ -780,11 +780,10 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 
 	if (mode & ODESC_EXTRA)
 	{
-		if (known)
-		{
+		if (object_pval_is_visible(o_ptr))
 			end = obj_desc_pval(o_ptr, buf, max, end);
-			end = obj_desc_charges(o_ptr, buf, max, end);
-		}
+
+		end = obj_desc_charges(o_ptr, buf, max, end);
 
 		if (!(mode & ODESC_STORE))
 			end = obj_desc_inscrip(o_ptr, buf, max, end);

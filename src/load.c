@@ -130,7 +130,7 @@ static int rd_item(object_type *o_ptr)
 		{
 			memcpy(&o_ptr->known_flags, f, sizeof(f));
 		}
-		else if (o_ptr->ident & IDENT_TRIED)
+		else if (object_was_worn(o_ptr))
 		{
 			o_ptr->known_flags[0] =
 					(f[0] & TR0_OBVIOUS_MASK);

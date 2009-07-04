@@ -1145,7 +1145,7 @@ enum
  * Special object flags
  */
 #define IDENT_SENSE     0x0001	/* Has been "sensed" */
-#define IDENT_TRIED     0x0002	/* Has been tried on */
+/* xxx */
 #define IDENT_EMPTY     0x0004	/* Is known to be empty */
 #define IDENT_KNOWN     0x0008	/* Fully known */
 #define IDENT_STORE     0x0010	/* Item is in the inventory of a store */
@@ -1866,12 +1866,6 @@ enum
 
 #define object_aware_p(T) \
 	(object_kind_aware_p((T)->k_idx))
-
-/*
- * Determine if a given inventory item is "tried"
- */
-#define object_tried_p(T) \
-	((k_info[(T)->k_idx].tried) || ((T)->ident & IDENT_TRIED))
 
 
 /*

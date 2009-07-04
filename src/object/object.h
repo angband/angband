@@ -63,6 +63,8 @@ bool object_effect_is_known(const object_type *o_ptr);
 bool object_ego_is_visible(const object_type *o_ptr);
 bool object_attack_plusses_are_visible(const object_type *o_ptr);
 bool object_defence_plusses_are_visible(const object_type *o_ptr);
+bool object_flavor_was_tried(const object_type *o_ptr);
+bool object_flag_is_known(const object_type *o_ptr, int idx, u32b flag);
 bool object_high_resist_is_possible(const object_type *o_ptr);
 
 void object_known(object_type *o_ptr);
