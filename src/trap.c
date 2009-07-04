@@ -135,13 +135,13 @@ void hit_trap(int y, int x)
 			if (p_ptr->state.ffall)
 			{
 				msg_print("You float gently down to the next level.");
-				wieldeds_notice_flag(2, TR2_FEATHER);
 			}
 			else
 			{
 				dam = damroll(2, 8);
 				take_hit(dam, name);
 			}
+			wieldeds_notice_flag(2, TR2_FEATHER);
 
 			/* New depth */
 			dungeon_change_level(p_ptr->depth + 1);
@@ -155,13 +155,13 @@ void hit_trap(int y, int x)
 			if (p_ptr->state.ffall)
 			{
 				msg_print("You float gently to the bottom of the pit.");
-				wieldeds_notice_flag(2, TR2_FEATHER);
 			}
 			else
 			{
 				dam = damroll(2, 6);
 				take_hit(dam, name);
 			}
+			wieldeds_notice_flag(2, TR2_FEATHER);
 			break;
 		}
 
@@ -173,7 +173,6 @@ void hit_trap(int y, int x)
 			{
 				msg_print("You float gently to the floor of the pit.");
 				msg_print("You carefully avoid touching the spikes.");
-				wieldeds_notice_flag(2, TR2_FEATHER);
 			}
 			else
 			{
@@ -192,6 +191,7 @@ void hit_trap(int y, int x)
 				/* Take the damage */
 				take_hit(dam, name);
 			}
+			wieldeds_notice_flag(2, TR2_FEATHER);
 			break;
 		}
 
@@ -203,7 +203,6 @@ void hit_trap(int y, int x)
 			{
 				msg_print("You float gently to the floor of the pit.");
 				msg_print("You carefully avoid touching the spikes.");
-				wieldeds_notice_flag(2, TR2_FEATHER);
 			}
 			else
 			{
@@ -228,13 +227,13 @@ void hit_trap(int y, int x)
 						(void)inc_timed(TMD_POISONED, randint1(dam), TRUE);
 					}
 
-					if (p_ptr->state.resist_pois)
-						wieldeds_notice_flag(1, TR1_RES_POIS);
+					wieldeds_notice_flag(1, TR1_RES_POIS);
 				}
 
 				/* Take the damage */
 				take_hit(dam, name);
 			}
+			wieldeds_notice_flag(2, TR2_FEATHER);
 
 			break;
 		}
@@ -345,8 +344,7 @@ void hit_trap(int y, int x)
 			msg_print("You are surrounded by a black gas!");
 			if (!p_ptr->state.resist_blind)
 				(void)inc_timed(TMD_BLIND, randint0(50) + 25, TRUE);
-			else
-				wieldeds_notice_flag(1, TR1_RES_BLIND);
+			wieldeds_notice_flag(1, TR1_RES_BLIND);
 
 			break;
 		}
@@ -356,8 +354,7 @@ void hit_trap(int y, int x)
 			msg_print("You are surrounded by a gas of scintillating colors!");
 			if (!p_ptr->state.resist_confu)
 				(void)inc_timed(TMD_CONFUSED, randint0(20) + 10, TRUE);
-			else
-				wieldeds_notice_flag(1, TR1_RES_CONFU);
+			wieldeds_notice_flag(1, TR1_RES_CONFU);
 
 			break;
 		}
@@ -367,8 +364,7 @@ void hit_trap(int y, int x)
 			msg_print("You are surrounded by a pungent green gas!");
 			if (!p_ptr->state.resist_pois && !p_ptr->timed[TMD_OPP_POIS])
 				(void)inc_timed(TMD_POISONED, randint0(20) + 10, TRUE);
-			else if (p_ptr->state.resist_pois)
-				wieldeds_notice_flag(1, TR1_RES_POIS);
+			wieldeds_notice_flag(1, TR1_RES_POIS);
 
 			break;
 		}
@@ -378,8 +374,7 @@ void hit_trap(int y, int x)
 			msg_print("You are surrounded by a strange white mist!");
 			if (!p_ptr->state.free_act)
 				(void)inc_timed(TMD_PARALYZED, randint0(10) + 5, TRUE);
-			else
-				wieldeds_notice_flag(2, TR2_FREE_ACT);
+			wieldeds_notice_flag(2, TR2_FREE_ACT);
 
 			break;
 		}
