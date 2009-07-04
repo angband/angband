@@ -1041,6 +1041,7 @@ static errr init_other(void)
 
 	/* Initialize squelch things */
 	autoinscribe_init();
+	squelch_init();
 	init_cmd_know();
 
 	/* Initialize the "message" package */
