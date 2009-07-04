@@ -266,9 +266,10 @@ void wr_object_memory(void)
 		
 		if (k_ptr->aware) tmp8u |= 0x01;
 		if (k_ptr->tried) tmp8u |= 0x02;
-		if (k_ptr->squelch) tmp8u |= 0x04;
+		if (kind_is_squelched_aware(k_ptr)) tmp8u |= 0x04;
 		if (k_ptr->everseen) tmp8u |= 0x08;
-		
+		if (kind_is_squelched_unaware(k_ptr)) tmp8u |= 0x04;
+
 		wr_byte(tmp8u);
 	}
 }

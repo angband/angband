@@ -548,8 +548,10 @@ int rd_object_memory(u32b version)
 		
 		k_ptr->aware = (tmp8u & 0x01) ? TRUE : FALSE;
 		k_ptr->tried = (tmp8u & 0x02) ? TRUE : FALSE;
-		k_ptr->squelch = (tmp8u & 0x04) ? TRUE : FALSE;
 		k_ptr->everseen = (tmp8u & 0x08) ? TRUE : FALSE;
+
+		if (tmp8u & 0x04) kind_squelch_when_aware(k_ptr);
+		if (tmp8u & 0x10) kind_squelch_when_unaware(k_ptr);
 	}
 	
 	return 0;

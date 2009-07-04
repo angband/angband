@@ -612,6 +612,18 @@ bool kind_is_squelched_unaware(const object_kind *k_ptr)
 	return (k_ptr->squelch & SQUELCH_IF_UNAWARE) ? TRUE : FALSE;
 }
 
+void kind_squelch_when_aware(object_kind *k_ptr)
+{
+	k_ptr->squelch |= SQUELCH_IF_AWARE;
+}
+
+void kind_squelch_when_unaware(object_kind *k_ptr)
+{
+	k_ptr->squelch |= SQUELCH_IF_UNAWARE;
+}
+
+
+
 /*
  * Determines if an object is eligable for squelching.
  */
