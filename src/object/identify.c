@@ -184,7 +184,7 @@ static void tweak_id(object_type *o_ptr)
  *
  * \param o_ptr is the object to mark
  */
-void object_tried(object_type *o_ptr)
+void object_flavor_tried(object_type *o_ptr)
 {
 	k_info[o_ptr->k_idx].tried = TRUE;
 }

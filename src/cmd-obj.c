@@ -595,7 +595,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	}
 	else
 	{
-		object_tried(o_ptr);
+		object_flavor_tried(o_ptr);
 	}
 
 	/* Chargeables act differently to single-used items when not used up */

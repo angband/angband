@@ -69,7 +69,7 @@ bool object_high_resist_is_possible(const object_type *o_ptr);
 
 void object_known(object_type *o_ptr);
 void object_aware(object_type *o_ptr);
-void object_tried(object_type *o_ptr);
+void object_flavor_tried(object_type *o_ptr);
 void object_notice_on_attack(void);
 void object_notice_on_defend(void);
 void object_notice_slays(u32b known_f1, int inven_idx);
