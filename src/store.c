@@ -1252,6 +1252,41 @@ static bool store_create_random(int st)
 		/* Apply some "low-level" magic (no artifacts) */
 		apply_magic(i_ptr, level, FALSE, FALSE, FALSE);
 
+		/* Reject if item is 'damaged' (i.e. negative mods) */
+		switch (i_ptr->tval)
+		{
+			case TV_DIGGING:
+			case TV_HAFTED:
+			case TV_POLEARM:
+			case TV_SWORD:
+			case TV_BOW:
+			case TV_SHOT:
+			case TV_ARROW:
+			case TV_BOLT:
+			{
+				if ((i_ptr->to_h < 0) || (i_ptr->to_d < 0)) 
+					continue;
+			}
+
+			case TV_DRAG_ARMOR:
+			case TV_HARD_ARMOR:
+			case TV_SOFT_ARMOR:
+			case TV_SHIELD:
+			case TV_HELM:
+			case TV_CROWN:
+			case TV_CLOAK:
+			case TV_GLOVES:
+			case TV_BOOTS:
+			{
+				if (i_ptr->to_a < 0) continue;
+			}
+
+			default:
+			{
+				/* nothing to do */
+			}
+		}
+
 		/* The object is "known" and belongs to a store */
 		object_known(i_ptr);
 		i_ptr->ident |= IDENT_STORE;
