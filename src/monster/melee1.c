@@ -70,6 +70,10 @@ bool check_hit(int power, int level)
 	/* Total armor */
 	ac = p_ptr->state.ac + p_ptr->state.to_a;
 
+	/* if the monster checks vs ac, the player learns ac bonuses */
+	/* XXX Eddie should you only learn +ac on miss, -ac on hit?  who knows */
+	object_notice_on_defend();
+
 	/* Check if the player was hit */
 	return test_hit(chance, ac, TRUE);
 }
@@ -492,10 +496,6 @@ bool make_attack_normal(int m_idx)
 							obvious = TRUE;
 						}
 					}
-					else if (p_ptr->state.resist_pois)
-					{
-						wieldeds_notice_flag(1, TR1_RES_POIS);
-					}
 
 					/* Learn about the player */
 					update_smart_learn(m_idx, DRS_RES_POIS);
@@ -513,10 +513,6 @@ bool make_attack_normal(int m_idx)
 					{
 						/* Apply disenchantment */
 						if (apply_disenchant(0)) obvious = TRUE;
-					}
-					else
-					{
-						wieldeds_notice_flag(1, TR1_RES_DISEN);
 					}
 
 					/* Learn about the player */
@@ -882,10 +878,6 @@ bool make_attack_normal(int m_idx)
 							obvious = TRUE;
 						}
 					}
-					else
-					{
-						wieldeds_notice_flag(1, TR1_RES_BLIND);
-					}
 
 					/* Learn about the player */
 					update_smart_learn(m_idx, DRS_RES_BLIND);
@@ -906,10 +898,6 @@ bool make_attack_normal(int m_idx)
 							obvious = TRUE;
 						}
 					}
-					else
-					{
-						wieldeds_notice_flag(1, TR1_RES_CONFU);
-					}
 
 					/* Learn about the player */
 					update_smart_learn(m_idx, DRS_RES_CONFU);
@@ -926,7 +914,6 @@ bool make_attack_normal(int m_idx)
 					if (p_ptr->state.resist_fear)
 					{
 						msg_print("You stand your ground!");
-						wieldeds_notice_flag(1, TR1_RES_FEAR);
 						obvious = TRUE;
 					}
 					else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
@@ -958,7 +945,6 @@ bool make_attack_normal(int m_idx)
 					if (p_ptr->state.free_act)
 					{
 						msg_print("You are unaffected!");
-						wieldeds_notice_flag(2, TR2_FREE_ACT);
 						obvious = TRUE;
 					}
 					else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
@@ -1095,10 +1081,12 @@ bool make_attack_normal(int m_idx)
 					/* Take damage */
 					take_hit(damage, ddesc);
 
+					/* XXX Eddie need a DRS for HOLD_LIFE */
+					wieldeds_notice_flag(2, TR2_HOLD_LIFE);
+
 					if (p_ptr->state.hold_life && (randint0(100) < 95))
 					{
 						msg_print("You keep hold of your life force!");
-						wieldeds_notice_flag(2, TR2_HOLD_LIFE);
 					}
 					else
 					{
@@ -1107,7 +1095,6 @@ bool make_attack_normal(int m_idx)
 						{
 							msg_print("You feel your life slipping away!");
 							lose_exp(d/10);
-							wieldeds_notice_flag(2, TR2_HOLD_LIFE);
 						}
 						else
 						{
@@ -1126,10 +1113,11 @@ bool make_attack_normal(int m_idx)
 					/* Take damage */
 					take_hit(damage, ddesc);
 
+					wieldeds_notice_flag(2, TR2_HOLD_LIFE);
+
 					if (p_ptr->state.hold_life && (randint0(100) < 90))
 					{
 						msg_print("You keep hold of your life force!");
-						wieldeds_notice_flag(2, TR2_HOLD_LIFE);
 					}
 					else
 					{
@@ -1139,7 +1127,6 @@ bool make_attack_normal(int m_idx)
 						{
 							msg_print("You feel your life slipping away!");
 							lose_exp(d / 10);
-							wieldeds_notice_flag(2, TR2_HOLD_LIFE);
 						}
 						else
 						{
@@ -1158,10 +1145,11 @@ bool make_attack_normal(int m_idx)
 					/* Take damage */
 					take_hit(damage, ddesc);
 
+					wieldeds_notice_flag(2, TR2_HOLD_LIFE);
+
 					if (p_ptr->state.hold_life && (randint0(100) < 75))
 					{
 						msg_print("You keep hold of your life force!");
-						wieldeds_notice_flag(2, TR2_HOLD_LIFE);
 					}
 					else
 					{
@@ -1171,7 +1159,6 @@ bool make_attack_normal(int m_idx)
 						{
 							msg_print("You feel your life slipping away!");
 							lose_exp(d / 10);
-							wieldeds_notice_flag(2, TR2_HOLD_LIFE);
 						}
 						else
 						{
@@ -1190,10 +1177,11 @@ bool make_attack_normal(int m_idx)
 					/* Take damage */
 					take_hit(damage, ddesc);
 
+					wieldeds_notice_flag(2, TR2_HOLD_LIFE);
+
 					if (p_ptr->state.hold_life && (randint0(100) < 50))
 					{
 						msg_print("You keep hold of your life force!");
-						wieldeds_notice_flag(2, TR2_HOLD_LIFE);
 					}
 					else
 					{
@@ -1203,7 +1191,6 @@ bool make_attack_normal(int m_idx)
 						{
 							msg_print("You feel your life slipping away!");
 							lose_exp(d / 10);
-							wieldeds_notice_flag(2, TR2_HOLD_LIFE);
 						}
 						else
 						{
@@ -1226,10 +1213,6 @@ bool make_attack_normal(int m_idx)
 						{
 							obvious = TRUE;
 						}
-					}
-					else
-					{
-						wieldeds_notice_flag(1, TR1_RES_CHAOS);
 					}
 
 					/* Learn about the player */
