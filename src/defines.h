@@ -1145,15 +1145,16 @@ enum
  * Special object flags
  */
 #define IDENT_SENSE     0x0001	/* Has been "sensed" */
-/* xxx */
+#define IDENT_WORN      0x0004	/* Has been tried on */
 #define IDENT_EMPTY     0x0004	/* Is known to be empty */
 #define IDENT_KNOWN     0x0008	/* Fully known */
 #define IDENT_STORE     0x0010	/* Item is in the inventory of a store */
 #define IDENT_ATTACK	0x0020	/* Know combat dice/ac/bonuses */
 #define IDENT_DEFENCE	0x0040	/* Know AC/etc bonuses */
 #define IDENT_EFFECT	0x0080	/* Know item activation/effect */
-#define IDENT_WORN	0x0100	/* Has been worn */
+/* xxx */
 #define IDENT_INDESTRUCT	0x0200	/* Tried to destroy it and failed */
+#define IDENT_EGO	0x0400	/* Know the ego */
 /* ... */
 
 
@@ -1318,6 +1319,15 @@ enum
 	 TR0_SPEED | TR0_BLOWS | TR0_SHOTS | TR0_MIGHT)
 
 /*
+ * flag set for high resists
+ */
+#define TR1_HIGH_RESIST_MASK \
+	(TR1_RES_POIS | TR1_RES_FEAR | TR1_RES_LITE | \
+	 TR1_RES_DARK | TR1_RES_BLIND | TR1_RES_CONFU | \
+	 TR1_RES_SOUND | TR1_RES_SHARD | TR1_RES_NEXUS | \
+	 TR1_RES_NETHR | TR1_RES_CHAOS | TR1_RES_DISEN)
+
+/*
  * Flag set 3 -- mask for "ignore element" flags.
  */
 #define TR2_IGNORE_MASK \
@@ -1333,7 +1343,7 @@ enum
  */
 #define TR0_OBVIOUS_MASK \
 	(TR0_STR | TR0_INT | TR0_WIS | TR0_DEX | \
-	 TR0_CON | TR0_CHR | \
+	 TR0_CON | TR0_CHR | TR0_STEALTH | \
 	 TR0_INFRA | TR0_TUNNEL | TR0_SPEED | \
 	 TR0_BLOWS | TR0_SHOTS | TR0_MIGHT | \
 	 TR0_BRAND_POIS | TR0_BRAND_ELEC | \
@@ -1344,7 +1354,7 @@ enum
 
 #define TR2_OBVIOUS_MASK \
 	(TR2_LITE | TR2_SEE_INVIS | TR2_TELEPATHY | TR2_NO_FUEL | \
-	 TR2_BLESSED | TR2_CURSE_MASK | TR2_AFRAID)
+	 TR2_BLESSED | TR2_ACTIVATE | TR2_CURSE_MASK | TR2_AFRAID)
 
 /*
  * Flag set 1 - masks for slays and brands
@@ -1366,6 +1376,7 @@ enum
 /*
  * Hack -- special "xtra" object flag info (type)
  */
+#define OBJECT_XTRA_TYPE_NONE		0
 #define OBJECT_XTRA_TYPE_SUSTAIN	1
 #define OBJECT_XTRA_TYPE_RESIST		2
 #define OBJECT_XTRA_TYPE_POWER		3
@@ -1971,6 +1982,13 @@ enum
 
 
 /*
+ * Rings and Amulets
+ */
+#define object_is_jewelry(T) \
+	(((T)->tval == TV_RING) || ((T)->tval == TV_AMULET))
+
+
+/*
  * Convert an "attr"/"char" pair into a "pict" (P)
  */
 #define PICT(A,C) \
@@ -2175,3 +2193,4 @@ enum
 #define SCAN_MACRO 45
 
 #define MAX_ITEMLIST 256
+
