@@ -132,7 +132,7 @@ s16b o_pop(void);
 object_type *get_first_object(int y, int x);
 object_type *get_next_object(const object_type *o_ptr);
 bool is_blessed(const object_type *o_ptr);
-s32b object_value(const object_type *o_ptr, int qty);
+s32b object_value(const object_type *o_ptr, int qty, int verbose);
 bool object_similar(const object_type *o_ptr, const object_type *j_ptr);
 void object_absorb(object_type *o_ptr, const object_type *j_ptr);
 void object_wipe(object_type *o_ptr);

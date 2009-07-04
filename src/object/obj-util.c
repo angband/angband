@@ -1353,7 +1353,7 @@ static s32b object_value_base(const object_type *o_ptr)
  * are priced according to their power rating. All ammo, and normal (non-ego)
  * torches are scaled down by AMMO_RESCALER to reflect their impermanence.
  */
-static s32b object_value_real(const object_type *o_ptr, int qty)
+static s32b object_value_real(const object_type *o_ptr, int qty, int verbose)
 {
 	s32b value, total_value;
 
@@ -1369,7 +1369,6 @@ static s32b object_value_real(const object_type *o_ptr, int qty)
 	if (wearable_p(o_ptr))
 	{
  		char buf[1024];
-		int verbose = 1;
 		ang_file *log_file = NULL;
 
 		if (verbose)
@@ -1400,14 +1399,14 @@ static s32b object_value_real(const object_type *o_ptr, int qty)
 		LOG_PRINT1("value is %d\n", value);
 		total_value = value * qty;
 
-                if (verbose)
-                {
-                        if (!file_close(log_file))
-                        {
-                                msg_print("Error - can't close pricing.log file.");
-                                exit(1);
-                        }
-                }
+		if (verbose)
+		{
+			if (!file_close(log_file))
+			{
+				msg_print("Error - can't close pricing.log file.");
+				exit(1);
+			}
+		}
 		if (total_value < 0) total_value = 0;
 
 		return (total_value);
@@ -1469,7 +1468,7 @@ static s32b object_value_real(const object_type *o_ptr, int qty)
  *
  * Note that discounted items stay discounted forever.
  */
-s32b object_value(const object_type *o_ptr, int qty)
+s32b object_value(const object_type *o_ptr, int qty, int verbose)
 {
 	s32b value;
 
@@ -1478,7 +1477,7 @@ s32b object_value(const object_type *o_ptr, int qty)
 	{
 		if (cursed_p(o_ptr)) return (0L);
 
-		value = object_value_real(o_ptr, qty);
+		value = object_value_real(o_ptr, qty, verbose);
 	}
 	else if (wearable_p(o_ptr))
 	{
@@ -1495,7 +1494,7 @@ s32b object_value(const object_type *o_ptr, int qty)
 		else if (!object_defence_plusses_are_visible(o_ptr))
 			j_ptr->to_a = 0;
 
-		value = object_value_real(j_ptr, qty);
+		value = object_value_real(j_ptr, qty, verbose);
 	}
 	else value = object_value_base(o_ptr) * qty;
 
@@ -2546,7 +2545,7 @@ s16b inven_carry(object_type *o_ptr)
 		s32b o_value, j_value;
 
 		/* Get the "value" of the item */
-		o_value = object_value(o_ptr, 1);
+		o_value = object_value(o_ptr, 1, FALSE);
 
 		/* Scan every occupied slot */
 		for (j = 0; j < INVEN_PACK; j++)
@@ -2586,7 +2585,7 @@ s16b inven_carry(object_type *o_ptr)
 			}
 
 			/* Determine the "value" of the pack item */
-			j_value = object_value(j_ptr, 1);
+			j_value = object_value(j_ptr, 1, FALSE);
 
 			/* Objects sort by decreasing value */
 			if (o_value > j_value) break;
@@ -2922,7 +2921,7 @@ void reorder_pack(void)
 		if (!o_ptr->k_idx) continue;
 
 		/* Get the "value" of the item */
-		o_value = object_value(o_ptr, 1);
+		o_value = object_value(o_ptr, 1, FALSE);
 
 		/* Scan every occupied slot */
 		for (j = 0; j < INVEN_PACK; j++)
@@ -2963,7 +2962,7 @@ void reorder_pack(void)
 			}
 
 			/* Determine the "value" of the pack item */
-			j_value = object_value(j_ptr, 1);
+			j_value = object_value(j_ptr, 1, FALSE);
 
 			/* Objects sort by decreasing value */
 			if (o_value > j_value) break;
@@ -3316,7 +3315,7 @@ static int compare_types(const object_type *o1, const object_type *o2)
 
 /* some handy macros for sorting */
 #define object_is_known_artifact(o) (artifact_p(o) && object_known_p(o))
-#define object_is_worthless(o) (object_value(o, 1) == 0)
+#define object_is_worthless(o) (object_value(o, 1, FALSE) <= 0)
 
 /**
  * Sort comparator for objects
@@ -3515,7 +3514,7 @@ void display_itemlist(void)
 		else if (!object_aware_p(o_ptr))
 			/* unaware of kind */
 			attr = TERM_RED;
-		else if (object_value(o_ptr, 1) == 0)
+		else if (object_is_worthless(o_ptr))
 			/* worthless */
 			attr = TERM_SLATE;
 		else

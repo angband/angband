@@ -373,7 +373,7 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 	}
 
 	/* Ignore "worthless" items XXX XXX XXX */
-	if (object_value(o_ptr, 1) <= 0) return (FALSE);
+	if (object_value(o_ptr, 1, FALSE) <= 0) return (FALSE);
 
 	/* Assume okay */
 	return (TRUE);
@@ -424,9 +424,9 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 
 	/* Get the value of the stack of wands, or a single item */
 	if ((o_ptr->tval == TV_WAND) || (o_ptr->tval == TV_STAFF))
-		price = object_value(o_ptr, qty);
+		price = object_value(o_ptr, qty, TRUE);
 	else
-		price = object_value(o_ptr, 1);
+		price = object_value(o_ptr, 1, TRUE);
 
 	/* Worthless items */
 	if (price <= 0) return (0L);
@@ -501,7 +501,7 @@ static int mass_roll(int times, int max)
 static void mass_produce(object_type *o_ptr)
 {
 	int size = 1;
-	s32b cost = object_value(o_ptr, 1);
+	s32b cost = object_value(o_ptr, 1, TRUE);
 
 	/* Analyze the type */
 	switch (o_ptr->tval)
@@ -799,7 +799,7 @@ static int home_carry(object_type *o_ptr)
 
 
 	/* Determine the "value" of the object */
-	value = object_value(o_ptr, 1);
+	value = object_value(o_ptr, 1, TRUE);
 
 	/* Check existing slots to see if we must "slide" */
 	for (slot = 0; slot < st_ptr->stock_num; slot++)
@@ -830,7 +830,7 @@ static int home_carry(object_type *o_ptr)
 		if (!object_known_p(j_ptr)) break;
 
 		/* Objects sort by decreasing value */
-		j_value = object_value(j_ptr, 1);
+		j_value = object_value(j_ptr, 1, TRUE);
 		if (value > j_value) break;
 		if (value < j_value) continue;
 	}
@@ -874,7 +874,7 @@ static int store_carry(int st, object_type *o_ptr)
 	store_type *st_ptr = &store[st];
 
 	/* Evaluate the object */
-	value = object_value(o_ptr, 1);
+	value = object_value(o_ptr, 1, TRUE);
 
 	/* Cursed/Worthless items "disappear" when sold */
 	if (value <= 0) return (-1);
@@ -918,7 +918,7 @@ static int store_carry(int st, object_type *o_ptr)
 		if (o_ptr->sval > j_ptr->sval) continue;
 
 		/* Evaluate that slot */
-		j_value = object_value(j_ptr, 1);
+		j_value = object_value(j_ptr, 1, TRUE);
 
 		/* Objects sort by decreasing value */
 		if (value > j_value) break;
@@ -1113,7 +1113,7 @@ static bool black_market_ok(const object_type *o_ptr)
 
 
 	/* No cheap items */
-	if (object_value(o_ptr, 1) < 10) return (FALSE);
+	if (object_value(o_ptr, 1, TRUE) < 10) return (FALSE);
 
 	/* Check the other stores */
 	for (i = 0; i < MAX_STORES; i++)
@@ -1265,7 +1265,7 @@ static bool store_create_random(int st)
 			continue;
 
 		/* No "worthless" items */
-		if (object_value(i_ptr, 1) < 1) continue;
+		if (object_value(i_ptr, 1, TRUE) < 1) continue;
 
 
 
@@ -2378,7 +2378,7 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 	sold_item.ident |= IDENT_STORE;
 	
 	/* Get the "apparent" value */
-	dummy = object_value(&sold_item, amt);
+	dummy = object_value(&sold_item, amt, TRUE);
 	
 	/* Take a new copy of the now known-about object. */
 	object_copy_amt(&sold_item, o_ptr, amt);
@@ -2390,7 +2390,7 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 	distribute_charges(o_ptr, &sold_item, amt);
 	
 	/* Get the "actual" value */
-	value = object_value(&sold_item, amt);
+	value = object_value(&sold_item, amt, TRUE);
 	
 	/* Get the description all over again */
 	object_desc(o_name, sizeof(o_name), &sold_item, TRUE, ODESC_FULL);

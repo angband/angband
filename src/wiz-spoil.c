@@ -159,7 +159,7 @@ static void kind_info(char *buf, size_t buf_len,
 	i_ptr->ident |= (IDENT_KNOWN);
 
 	/* Value */
-	(*val) = object_value(i_ptr, 1);
+	(*val) = object_value(i_ptr, 1, FALSE);
 
 
 

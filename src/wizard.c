@@ -334,7 +334,7 @@ static void wiz_display_item(const object_type *o_ptr)
 	           o_ptr->pval, o_ptr->to_a, o_ptr->to_h, o_ptr->to_d), 6, j);
 
 	prt(format("name1 = %-4d  name2 = %-4d  cost = %ld",
-	           o_ptr->name1, o_ptr->name2, (long)object_value(o_ptr, 1)), 7, j);
+	           o_ptr->name1, o_ptr->name2, (long)object_value(o_ptr, 1, FALSE)), 7, j);
 
 	prt(format("ident = %04x  timeout = %-d",
 	           o_ptr->ident, o_ptr->timeout), 8, j);
