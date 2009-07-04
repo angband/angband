@@ -2604,7 +2604,50 @@ void message_pain(int m_idx, int dam)
 }
 
 
+/* XXX Eddie This is ghastly.  The monster should have known_flags similar to in the object_type structure. */
+typedef struct {
+	int idx;
+	int flagset; /* this flagset stuff has got to go :( */
+	u32b flag;
+} learn_attack_struct;
 
+static learn_attack_struct attack_table[] = {
+	/* first 14 unused */
+	{ 0, 0, 0 },
+	{ 1, 0, 0 },
+	{ 2, 0, 0 },
+	{ 3, 0, 0 },
+	{ 4, 0, 0 },
+	{ 5, 0, 0 },
+	{ 6, 0, 0 },
+	{ 7, 0, 0 },
+	{ 8, 0, 0 },
+	{ 9, 0, 0 },
+	{ 10, 0, 0 },
+	{ 11, 0, 0 },
+	{ 12, 0, 0 },
+	{ 13, 0, 0 },
+	{ DRS_FREE, 2, TR2_FREE_ACT },
+	{ DRS_MANA, 0, 0 },
+	{ DRS_RES_ACID, 1, TR1_RES_ACID },
+	{ DRS_RES_ELEC, 1, TR1_RES_ELEC },
+	{ DRS_RES_FIRE, 1, TR1_RES_FIRE },
+	{ DRS_RES_COLD, 1, TR1_RES_COLD },
+	{ DRS_RES_POIS, 1, TR1_RES_POIS },
+	{ DRS_RES_FEAR, 1, TR1_RES_FEAR },
+	{ DRS_RES_LITE, 1, TR1_RES_LITE },
+	{ DRS_RES_DARK, 1, TR1_RES_DARK },
+	{ DRS_RES_BLIND, 1, TR1_RES_BLIND },
+	{ DRS_RES_CONFU, 1, TR1_RES_CONFU },
+	{ DRS_RES_SOUND, 1, TR1_RES_SOUND },
+	{ DRS_RES_SHARD, 1, TR1_RES_SHARD },
+	{ DRS_RES_NEXUS, 1, TR1_RES_NEXUS },
+	{ DRS_RES_NETHR, 1, TR1_RES_NETHR },
+	{ DRS_RES_CHAOS, 1, TR1_RES_CHAOS },
+	{ DRS_RES_DISEN, 1, TR1_RES_DISEN },
+};
+
+/* XXX Eddie this ought to be as simple as testing visibility and/or intelligence, then or-ing a flag into m_ptr->known_flags */
 /*
  * Learn about an "observed" resistance.
  */
@@ -2614,6 +2657,12 @@ void update_smart_learn(int m_idx, int what)
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
+
+	/* anything a monster might learn, the player should learn */
+	assert(what >= 0);
+	assert(what < N_ELEMENTS(attack_table));
+	assert (attack_table[what].idx == what);
+	wieldeds_notice_flag(attack_table[what].flagset, attack_table[what].flag);
 
 	/* Not allowed to learn */
 	if (!OPT(adult_ai_learn)) return;
