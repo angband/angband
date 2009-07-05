@@ -31,6 +31,7 @@
  * - assumed damage for ring brands
  * - base power for light sources (additional power for NFUEL is added later)
  * - base power for jewelry
+ * - base power for armour items (for halving acid damage)
  * - power per point of damage
  * - power per point of +to_hit
  * - power per point of base AC
@@ -43,7 +44,7 @@
  * - power per unit pval for each pval ability (except speed)
  * (there is an extra term for multiple pval bonuses)
  * - additional power for full rbase set (on top of arithmetic progression)
- * - additional power for full sustain set (ditto)
+ * - additional power for full sustain set (ditto, excludes susCHR)
  */
 #define AVG_SLING_AMMO_DAMAGE  10
 #define AVG_BOW_AMMO_DAMAGE    11
@@ -55,6 +56,7 @@
 #define RING_BRAND_DMG	        9 /* i.e. 3d5 or 2d8 weapon */
 #define BASE_LITE_POWER         6
 #define BASE_JEWELRY_POWER	4
+#define BASE_ARMOUR_POWER	2
 #define DAMAGE_POWER            4 /* i.e. 2 */
 #define TO_HIT_POWER            2 /* i.e. 1 */
 #define BASE_AC_POWER           3 /* i.e. 1.5 */
@@ -66,15 +68,15 @@
 #define INHIBIT_SHOTS           4
 #define IMMUNITY_POWER         25 /* for each immunity after the first */
 #define INHIBIT_IMMUNITIES      4
-#define STR_POWER	        6
-#define INT_POWER	        4
-#define WIS_POWER	        4
+#define STR_POWER	        9
+#define INT_POWER	        5
+#define WIS_POWER	        5
 #define DEX_POWER		6
-#define CON_POWER		8
+#define CON_POWER	       12
 #define CHR_POWER		2
-#define STEALTH_POWER		4
+#define STEALTH_POWER		8
 #define SEARCH_POWER		2
-#define INFRA_POWER		2
+#define INFRA_POWER		4
 #define TUNN_POWER		2
 #define RBASE_POWER		5 
 #define SUST_POWER		5
@@ -84,8 +86,8 @@
  * We go up to +20 here, but in practice it will never get there
  */
 static s16b speed_power[21] =
-	{0, 6, 12, 20, 30, 42, 56, 72, 90, 110, 132,
-	152, 170, 186, 200, 212, 224, 236, 248, 260, 272};
+	{0, 10, 21, 33, 46, 60, 75, 91, 108, 126, 145,
+	163, 180, 196, 211, 225, 238, 250, 261, 271, 280};
 
 /*
  * Boost ratings for combinations of ability bonuses
@@ -375,7 +377,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 				{
 					p = sign(p) * ((ABS(p) * (MAX_BLOWS + o_ptr->pval)) 
 						/ MAX_BLOWS);
-					/* Add an extra amount per blow to account for damage 						rings */
+					/* Add an extra amount per blow to account for damage rings */
 					p += (MELEE_DAMAGE_BOOST * o_ptr->pval * DAMAGE_POWER / 2);
 					LOG_PRINT1("Adding power for blows, total is %d\n", p);
 				}
@@ -408,6 +410,9 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
 		{
+			p += BASE_ARMOUR_POWER;
+			LOG_PRINT1("Armour item, base power is %d", p);
+			
 			p += sign(o_ptr->ac) * ((ABS(o_ptr->ac) * BASE_AC_POWER) / 2);
 			LOG_PRINT1("Adding power for base AC value, total is %d\n", p);
 
@@ -446,6 +451,12 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 				* slay_power(o_ptr, verbose, log_file))
 				/ tot_mon_power) - (2 * (o_ptr->to_d + RING_BRAND_DMG)));
 			LOG_PRINT1("Adjusted for brand power, total is %d\n", p);
+
+			/* 
+			 * Big boost for extra light radius 
+			 * n.b. Another few points are added below 
+			 */
+			if (f[2] & TR2_LITE) p += 30;
 
 			break;
 		}
@@ -537,7 +548,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 			extra_stat_bonus += ( (f[0] & TR0_DEX) ? 1 * o_ptr->pval: 0);
 			extra_stat_bonus += ( (f[0] & TR0_CON) ? 1 * o_ptr->pval: 0);
 			extra_stat_bonus += ( (f[0] & TR0_CHR) ? 0 * o_ptr->pval: 0);
-			extra_stat_bonus += ( (f[0] & TR0_STEALTH) ? 3 * o_ptr->pval / 4: 0);
+			extra_stat_bonus += ( (f[0] & TR0_STEALTH) ? 1 * o_ptr->pval: 0);
 			extra_stat_bonus += ( (f[0] & TR0_INFRA) ? 0 * o_ptr->pval: 0);
 			extra_stat_bonus += ( (f[0] & TR0_TUNNEL) ? 0 * o_ptr->pval: 0);
 			extra_stat_bonus += ( (f[0] & TR0_SEARCH) ? 0 * o_ptr->pval: 0);
@@ -643,9 +654,9 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 	ADD_POWER("free action",		14, TR2_FREE_ACT,    2, misc++);
 	ADD_POWER("hold life",			12, TR2_HOLD_LIFE,   2, misc++);
 	ADD_POWER("feather fall",		 1, TR2_FEATHER,     2,);
-	ADD_POWER("permanent light",		 2, TR2_LITE,	     2, misc++);
+	ADD_POWER("permanent light",		 3, TR2_LITE,	     2, misc++);
 	ADD_POWER("see invisible",		10, TR2_SEE_INVIS,   2, misc++);
-	ADD_POWER("telepathy",			60, TR2_TELEPATHY,   2, misc++);
+	ADD_POWER("telepathy",			70, TR2_TELEPATHY,   2, misc++);
 	ADD_POWER("slow digestion",		 2, TR2_SLOW_DIGEST, 2, misc++);
 	ADD_POWER("resist acid",		 5, TR1_RES_ACID,    1, lowres++);
 	ADD_POWER("resist elec",		 6, TR1_RES_ELEC,    1, lowres++);
@@ -690,29 +701,30 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 		LOG_PRINT1("Adding power for multiple high resists, total is %d\n", p);
 	}
 
+	/* Note: the following code is irrelevant until curses are reworked */
 	if (f[2] & TR2_TELEPORT)
 	{
-		p -= 80;
+		p -= 1;
 		LOG_PRINT1("Subtracting power for teleportation, total is %d\n", p);
 	}
 	if (f[2] & TR2_DRAIN_EXP)
 	{
-		p -= 30;
+		p -= 1;
 		LOG_PRINT1("Subtracting power for drain experience, total is %d\n", p);
 	}
 	if (f[2] & TR2_AGGRAVATE)
 	{
-		p -= 60;
+		p -= 1;
 		LOG_PRINT1("Subtracting power for aggravation, total is %d\n", p);
 	}
 	if (f[2] & TR2_LIGHT_CURSE)
 	{
-		p -= 6;
+		p -= 1;
 		LOG_PRINT1("Subtracting power for light curse, total is %d\n", p);
 	}
 	if (f[2] & TR2_HEAVY_CURSE)
 	{
-		p -= 20;
+		p -= 1;
 		LOG_PRINT1("Subtracting power for heavy curse, total is %d\n", p);
 	}
 
