@@ -1145,7 +1145,7 @@ enum
  * Special object flags
  */
 #define IDENT_SENSE     0x0001	/* Has been "sensed" */
-#define IDENT_WORN      0x0004	/* Has been tried on */
+#define IDENT_WORN      0x0002	/* Has been tried on */
 #define IDENT_EMPTY     0x0004	/* Is known to be empty */
 #define IDENT_KNOWN     0x0008	/* Fully known */
 #define IDENT_STORE     0x0010	/* Item is in the inventory of a store */
