@@ -109,6 +109,7 @@ Remove the 'K' command and instead put a prompt after the 'destroy' prompt.
 Weaken PDSM just a tad.
 Enchant Armour scrolls ID when reading them, not when they are successfully read.
 Tone down Troll Priest HP.
+Turn off show_flavors by default.
 Include criticals damage in the object description's average display.
 Make Kavlax 'scary dark like Anclagon'.
 Curses on jewelry only happen with negative-pval items.  (temporary)

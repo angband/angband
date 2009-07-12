@@ -149,7 +149,7 @@ static option_entry options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 12 */
 { NULL,                  NULL,                                          FALSE }, /* 13 */
 { "ring_bell",           "Audible bell (on errors, etc)",               TRUE },  /* 14 */
-{ "show_flavors",        "Show flavors in object descriptions",         TRUE },  /* 15 */
+{ "show_flavors",        "Show flavors in object descriptions",         FASLE },  /* 15 */
 { NULL,                  NULL,                                          FALSE }, /* 16 */
 { NULL,                  NULL,                                          FALSE }, /* 17 */
 { NULL,                  NULL,                                          FALSE }, /* 18 */
