@@ -2545,7 +2545,7 @@ s16b inven_carry(object_type *o_ptr)
 		s32b o_value, j_value;
 
 		/* Get the "value" of the item */
-		o_value = object_value(o_ptr, 1, FALSE);
+		o_value = k_info[o_ptr->k_idx].cost;
 
 		/* Scan every occupied slot */
 		for (j = 0; j < INVEN_PACK; j++)
@@ -2585,7 +2585,7 @@ s16b inven_carry(object_type *o_ptr)
 			}
 
 			/* Determine the "value" of the pack item */
-			j_value = object_value(j_ptr, 1, FALSE);
+			j_value = k_info[j_ptr->k_idx].cost;
 
 			/* Objects sort by decreasing value */
 			if (o_value > j_value) break;
@@ -2921,7 +2921,7 @@ void reorder_pack(void)
 		if (!o_ptr->k_idx) continue;
 
 		/* Get the "value" of the item */
-		o_value = object_value(o_ptr, 1, FALSE);
+		o_value = k_info[o_ptr->k_idx].cost;
 
 		/* Scan every occupied slot */
 		for (j = 0; j < INVEN_PACK; j++)
@@ -2962,7 +2962,7 @@ void reorder_pack(void)
 			}
 
 			/* Determine the "value" of the pack item */
-			j_value = object_value(j_ptr, 1, FALSE);
+			j_value = k_info[j_ptr->k_idx].cost;
 
 			/* Objects sort by decreasing value */
 			if (o_value > j_value) break;
@@ -3315,7 +3315,7 @@ static int compare_types(const object_type *o1, const object_type *o2)
 
 /* some handy macros for sorting */
 #define object_is_known_artifact(o) (artifact_p(o) && object_known_p(o))
-#define object_is_worthless(o) (object_value(o, 1, FALSE) <= 0)
+#define object_is_worthless(o) (k_info[o->k_idx].cost == 0)
 
 /**
  * Sort comparator for objects
