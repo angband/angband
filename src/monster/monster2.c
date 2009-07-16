@@ -583,8 +583,8 @@ void display_monlist(void)
 	/* Hallucination is weird */
 	if (p_ptr->timed[TMD_IMAGE])
 	{
-		if(in_term)
-			clear_from(0)
+		if (in_term)
+			clear_from(0);
 		Term_gotoxy(0, 0);
 		text_out_to_screen(TERM_ORANGE,
 			"Your hallucinations are too wild to see things clearly.");
