@@ -61,7 +61,7 @@ static timed_effect effects[] =
 			0, PU_BONUS, MSG_AFRAID },
 	{ "You feel drugged!", "You can see clearly again.",
 			"You feel more drugged!", "You feel less drugged.",
-			PR_MAP, 0, MSG_DRUGGED },
+			PR_MAP | PR_MONLIST | PR_ITEMLIST, 0, MSG_DRUGGED },
 	{ "You are poisoned!", "You are no longer poisoned.",
 			"You are more poisoned!", "You are less poisoned.",
 			0, 0, MSG_POISONED },
