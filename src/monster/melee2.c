@@ -3726,7 +3726,12 @@ static void process_monster(int m_idx)
 				/* Monster ate another monster */
 				did_kill_body = TRUE;
 
-				/* Message XXX XXX XXX */
+				/* Message about what happened */
+				char m_name[80];
+				char n_name[80];
+				monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND1);
+				monster_desc(n_name, sizeof(n_name), n_ptr, MDESC_IND1);
+				msg_format("%^s tramples over %s.", m_name, n_name);
 
 				/* Kill the monster */
 				delete_monster(ny, nx);
@@ -3752,7 +3757,12 @@ static void process_monster(int m_idx)
 				/* Monster pushed past another monster */
 				did_move_body = TRUE;
 
-				/* XXX XXX XXX Message */
+				/* Message about what happened */
+				char m_name[80];
+				char n_name[80];
+				monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND1);
+				monster_desc(n_name, sizeof(n_name), n_ptr, MDESC_IND1);
+				msg_format("%^s pushes past %s.", m_name, n_name);
 			}
 		}
 
