@@ -3717,55 +3717,38 @@ static void process_monster(int m_idx)
 			do_move = FALSE;
 
 			/* Kill weaker monsters */
-			if ((r_ptr->flags[1] & (RF1_KILL_BODY)) &&
-			    (compare_monsters(m_ptr, n_ptr) > 0))
+			int kill_ok = (r_ptr->flags[1] & RF1_KILL_BODY);
+
+			/* Move weaker monsters if they can swap places */
+			/* (not in a wall) */
+			int move_ok = (r_ptr->flags[1] & RF1_MOVE_BODY &&
+						   cave_floor_bold(m_ptr->fy, m_ptr->fx));
+
+			if ((compare_monsters(m_ptr, n_ptr) > 0) && (kill_ok || move_ok))
 			{
 				/* Allow movement */
 				do_move = TRUE;
+
+				/* Get the names of the monsters involved */
+				char m_name[80];
+				char n_name[80];
+				monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND1);
+				monster_desc(n_name, sizeof(n_name), n_ptr, MDESC_IND1);
 
 				/* Monster ate another monster */
-				did_kill_body = TRUE;
-
-				/* Message about what happened */
-				char m_name[80];
-				char n_name[80];
-				monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND1);
-				monster_desc(n_name, sizeof(n_name), n_ptr, MDESC_IND1);
-				msg_format("%^s tramples over %s.", m_name, n_name);
-
-				/* Kill the monster */
-				delete_monster(ny, nx);
+				if (kill_ok)
+				{
+					msg_format("%^s tramples over %s.", m_name, n_name);
+					did_kill_body = TRUE;
+					delete_monster(ny, nx);
+				}
+				else
+				{
+					msg_format("%^s pushes past %s.", m_name, n_name);
+					did_move_body = TRUE;
+				}
 			}
 		}
-
-		/* A monster is in the way */
-		if (do_move && (cave_m_idx[ny][nx] > 0))
-		{
-			monster_type *n_ptr = &mon_list[cave_m_idx[ny][nx]];
-
-			/* Assume no movement */
-			do_move = FALSE;
-
-			/* Push past weaker monsters (unless leaving a wall) */
-			if ((r_ptr->flags[1] & (RF1_MOVE_BODY)) &&
-			    (compare_monsters(m_ptr, n_ptr) > 0) &&
-			    (cave_floor_bold(m_ptr->fy, m_ptr->fx)))
-			{
-				/* Allow movement */
-				do_move = TRUE;
-
-				/* Monster pushed past another monster */
-				did_move_body = TRUE;
-
-				/* Message about what happened */
-				char m_name[80];
-				char n_name[80];
-				monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND1);
-				monster_desc(n_name, sizeof(n_name), n_ptr, MDESC_IND1);
-				msg_format("%^s pushes past %s.", m_name, n_name);
-			}
-		}
-
 
 		/* Creature has been allowed move */
 		if (do_move)
