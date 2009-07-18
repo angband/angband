@@ -617,16 +617,31 @@ bool make_attack_normal(int m_idx)
 						if (gold <= 0)
 						{
 							msg_print("Nothing was stolen.");
+							break;
 						}
-						else if (p_ptr->au)
-						{
-							msg_print("Your purse feels lighter.");
+
+						/* Let the player know they were robbed */
+						msg_print("Your purse feels lighter.");
+						if (p_ptr->au)
 							msg_format("%ld coins were stolen!", (long)gold);
-						}
 						else
-						{
-							msg_print("Your purse feels lighter.");
 							msg_print("All of your coins were stolen!");
+
+						/* While we have gold, put it in objects */
+						while (gold > 0)
+						{
+							/* Create a new temporary object */
+							object_type o;
+							object_wipe(&o);
+							object_prep(&o, lookup_kind(TV_GOLD, SV_GOLD));
+
+							/* Amount of gold to put in this object */
+							int amt = gold > MAX_PVAL ? MAX_PVAL : gold;
+							o.pval = amt;
+							gold -= amt;
+
+							/* Give the gold to the monster */
+							monster_carry(m_idx, &o);
 						}
 
 						/* Redraw gold */
