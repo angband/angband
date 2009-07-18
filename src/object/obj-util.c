@@ -1539,6 +1539,13 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 			return (0);
 		}
 
+		/* Gold */
+		case TV_GOLD:
+		{
+			/* Too much gold for one object_type */
+			if(o_ptr->pval + j_ptr->pval > MAX_PVAL) return 0;
+		}
+
 		/* Food and Potions and Scrolls */
 		case TV_FOOD:
 		case TV_POTION:
@@ -1552,8 +1559,8 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 		case TV_STAFF:
 		case TV_WAND:
 		{
-			/* Assume okay */
-			break;
+			/* Too many charges for one object_type */
+			if(o_ptr->pval + j_ptr->pval > MAX_PVAL) return 0;
 		}
 
 		/* Rods */
@@ -1698,9 +1705,12 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 	}
 
 	/* Hack -- if wands or staves are stacking, combine the charges */
-	if ((o_ptr->tval == TV_WAND) || (o_ptr->tval == TV_STAFF))
+	/* If gold is stacking combine the amount */
+	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF ||
+		o_ptr->tval == TV_GOLD)
 	{
-		o_ptr->pval += j_ptr->pval;
+		int total = o_ptr->pval + j_ptr->pval;
+		o_ptr->pval = total >= MAX_PVAL ? MAX_PVAL : total;
 	}
 
 	if ((o_ptr->origin != j_ptr->origin) ||
