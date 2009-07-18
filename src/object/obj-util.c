@@ -1543,7 +1543,7 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 		case TV_GOLD:
 		{
 			/* Too much gold for one object_type */
-			if(o_ptr->pval + j_ptr->pval > MAX_PVAL) return 0;
+			if (o_ptr->pval + j_ptr->pval > MAX_PVAL) return 0;
 		}
 
 		/* Food and Potions and Scrolls */
@@ -1560,7 +1560,7 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 		case TV_WAND:
 		{
 			/* Too many charges for one object_type */
-			if(o_ptr->pval + j_ptr->pval > MAX_PVAL) return 0;
+			if (o_ptr->pval + j_ptr->pval > MAX_PVAL) return 0;
 		}
 
 		/* Rods */
