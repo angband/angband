@@ -417,7 +417,14 @@
 /*
  * A "stack" of items is limited to less than 100 items (hard-coded).
  */
-#define MAX_STACK_SIZE			100
+#define MAX_STACK_SIZE 100
+
+
+/*
+ * An item's pval (for charges, amount of gold, etc) is limited to s16b
+ */
+#define MAX_PVAL  32767
+#define MIN_PVAL -32768
 
 
 /*
