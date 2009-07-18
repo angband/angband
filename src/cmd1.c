@@ -231,9 +231,6 @@ static void py_pickup_gold(void)
  */
 static bool auto_pickup_okay(const object_type *o_ptr)
 {
-	/* Bad wounds prelude autopickup */
-	if (p_ptr->chp < (p_ptr->mhp * op_ptr->hitpoint_warn / 10)) return FALSE;
-
 	if (!inven_carry_okay(o_ptr)) return FALSE;
 
 	if (OPT(pickup_inven) && inven_stack_okay(o_ptr)) return TRUE;
