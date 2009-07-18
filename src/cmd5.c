@@ -480,15 +480,13 @@ static void browse_spell(int spell)
 }
 
 
-void do_cmd_browse_aux(const object_type *o_ptr)
+void do_cmd_browse_aux(const object_type *o_ptr, int item)
 {
 	int spell;
 
 
 	/* Track the object kind */
-	object_kind_track(o_ptr->k_idx);
-
-	/* Hack -- Handle stuff */
+	track_object(item);
 	handle_stuff();
 
 

@@ -1037,6 +1037,10 @@ static const char *race_name(int gid) { return monster_group[gid].name; }
 
 static void mon_lore(int oid)
 {
+	/* Update the monster recall window */
+	monster_race_track(default_join[oid].oid);
+	handle_stuff();
+
 	/* Save the screen */
 	screen_save();
 
@@ -1587,6 +1591,10 @@ static void desc_obj_fake(int k_idx)
 		desc_art_fake(get_artifact_from_kind(k_ptr));
 		return;
 	}
+
+	/* Update the object recall window */
+	track_object_kind(k_idx);
+	handle_stuff();
 
 	/* Wipe the object */
 	object_wipe(o_ptr);

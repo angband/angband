@@ -244,6 +244,8 @@ static void obj_inscribe(object_type *o_ptr, int item)
 /*** Examination ***/
 static void obj_examine(object_type *o_ptr, int item)
 {
+	track_object(item);
+
 	text_out_hook = text_out_to_screen;
 	screen_save();
 
@@ -374,15 +376,14 @@ static void obj_drop(object_type *o_ptr, int item)
 /* Peruse spells in a book */
 static void obj_browse(object_type *o_ptr, int item)
 {
-	do_cmd_browse_aux(o_ptr);
+	do_cmd_browse_aux(o_ptr, item);
 }
 
 /* Study a book to gain a new spell */
 static void obj_study(object_type *o_ptr, int item)
 {
 	/* Track the object kind */
-	object_kind_track(o_ptr->k_idx);
-	handle_stuff();
+	track_object(item);
 
 	/* Mage -- Choose a spell to study */
 	if (cp_ptr->flags & CF_CHOOSE_SPELLS)
@@ -406,8 +407,7 @@ static void obj_cast(object_type *o_ptr, int item)
 	cptr noun = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	/* Track the object kind */
-	object_kind_track(o_ptr->k_idx);
-	handle_stuff();
+	track_object(item);
 
 	/* Ask for a spell */
 	spell = get_spell(o_ptr, verb, TRUE, FALSE);
@@ -526,6 +526,9 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		return;
 	}
 
+	/* track the object used */
+	track_object(item);
+
 	/* Figure out effect to use */
 	if (o_ptr->name1)
 		effect = a_info[o_ptr->name1].effect;
@@ -575,8 +578,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 
 	/* Mark as tried and redisplay */
 	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
-	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
-
+	p_ptr->redraw |= (PR_INVEN | PR_EQUIP | PR_OBJECT);
 
 	/*
 	 * If the player becomes aware of the item's function, then mark it as

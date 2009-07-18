@@ -3349,6 +3349,49 @@ static int compare_items(const object_type *o1, const object_type *o2)
 }
 
 
+/**
+ * Helper to draw the Object Recall subwindow; this actually does the work.
+ */
+void display_object_recall(object_type *o_ptr)
+{
+	clear_from(0);
+	prt("", 0, 0);
+	object_info_header(o_ptr);
+	if (!object_info(o_ptr, FALSE))
+		text_out("This item does not seem to possess any special abilities.");
+}
+
+
+/**
+ * This draws the Object Recall subwindow when displaying a particular object
+ * (e.g. a helmet in the backpack, or a scroll on the ground)
+ */
+void display_object_idx_recall(s16b item)
+{
+	object_type *o_ptr = object_from_item_idx(item);
+	display_object_recall(o_ptr);
+}
+
+
+/**
+ * This draws the Object Recall subwindow when displaying a recalled item kind
+ * (e.g. a generic ring of acid or a generic blade of chaos)
+ */
+void display_object_kind_recall(s16b k_idx)
+{
+	/* Initialize and prepare a fake object; it will be deallocated when we */
+	/* leave the function. */
+	object_type object;
+	object_type *o_ptr = &object;
+	object_wipe(o_ptr);
+	object_prep(o_ptr, k_idx);
+	if (k_info[k_idx].aware) o_ptr->ident |= (IDENT_STORE);
+	if (!k_info[k_idx].flavor) object_known(o_ptr);
+
+	/* draw it */
+	display_object_recall(o_ptr);
+}
+
 /*
  * Display visible items, similar to display_monlist
  */

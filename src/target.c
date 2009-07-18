@@ -720,6 +720,9 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 			/* Not boring */
 			boring = FALSE;
 
+			track_object(-floor_list[0]);
+			handle_stuff();
+
 			/* If there is more than one item... */
 			if (floor_num > 1) while (1)
 			{
@@ -746,6 +749,10 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 				/* Display objects */
 				if (query.key == 'r')
 				{
+
+					int rdone = 0;
+					while(!rdone)
+					{
 					/* Save screen */
 					screen_save();
 
@@ -759,8 +766,19 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 					/* Load screen */
 					screen_load();
 
-					/* Continue on 'r' only */
-					if (query.key == 'r') continue;
+						int pos = query.key - 'a';
+						if (0 <= pos && pos < floor_num)
+						{
+							track_object(-floor_list[pos]);
+							handle_stuff();
+							continue;
+				}
+						rdone = 1;
+					}
+
+					/* Now that the user's done with the display loop, let's */
+					/* the outer loop over again */
+					continue;
 				}
 
 				/* Done */

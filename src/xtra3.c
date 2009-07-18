@@ -1225,6 +1225,25 @@ static void update_monster_subwindow(game_event_type type, game_event_data *data
 }
 
 
+static void update_object_subwindow(game_event_type type, game_event_data *data, void *user)
+{
+	term *old = Term;
+	term *inv_term = user;
+	
+	/* Activate */
+	Term_activate(inv_term);
+	
+	if (p_ptr->object_idx)
+		display_object_idx_recall(p_ptr->object_idx);
+	else if(p_ptr->object_kind_idx)
+		display_object_kind_recall(p_ptr->object_kind_idx);
+	Term_fresh();
+	
+	/* Restore */
+	Term_activate(old);
+}
+
+
 static void update_messages_subwindow(game_event_type type, game_event_data *data, void *user)
 {
 	term *old = Term;
@@ -1525,6 +1544,14 @@ static void subwindow_flag_changed(int win_idx, u32b flag, bool new_state)
 			register_or_deregister(EVENT_MONSTERTARGET,
 					       update_monster_subwindow,
 					       angband_term[win_idx]);
+			break;
+		}
+
+		case PW_OBJECT:
+		{
+			register_or_deregister(EVENT_OBJECTTARGET,
+						   update_object_subwindow,
+						   angband_term[win_idx]);
 			break;
 		}
 

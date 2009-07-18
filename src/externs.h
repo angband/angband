@@ -290,7 +290,8 @@ extern bool projectable(int y1, int x1, int y2, int x2, int flg);
 extern void scatter(int *yp, int *xp, int y, int x, int d, int m);
 extern void health_track(int m_idx);
 extern void monster_race_track(int r_idx);
-extern void object_kind_track(int k_idx);
+extern void track_object(int item);
+extern void track_object_kind(int k_idx);
 extern void disturb(int stop_search, int unused_flag);
 extern bool is_quest(int level);
 extern bool dtrap_edge(int y, int x);
@@ -307,7 +308,7 @@ bool spell_cast(int spell, int dir);
 void spell_learn(int spell);
 
 int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool browse);
-void do_cmd_browse_aux(const object_type *o_ptr);
+void do_cmd_browse_aux(const object_type *o_ptr, int item);
 
 /* death.c */
 void death_screen(void);
@@ -406,6 +407,8 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note);
 
 /* obj-util.c */
 extern void display_itemlist(void);
+extern void display_object_idx_recall(s16b o_idx);
+extern void display_object_kind_recall(s16b k_idx);
 
 /* pathfind.c */
 extern bool findpath(int y, int x);

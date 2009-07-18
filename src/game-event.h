@@ -33,6 +33,7 @@ typedef enum game_event_type
 	EVENT_ITEMLIST,
 	EVENT_MONSTERLIST,
 	EVENT_MONSTERTARGET,
+	EVENT_OBJECTTARGET,
 	EVENT_MESSAGE,
 
 	EVENT_INITSTATUS,	/* New status message for initialisation */

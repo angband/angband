@@ -1469,6 +1469,7 @@ static const struct flag_event_trigger redraw_events[] =
 	{ PR_MONLIST, EVENT_MONSTERLIST },
 	{ PR_ITEMLIST, EVENT_ITEMLIST },
 	{ PR_MONSTER, EVENT_MONSTERTARGET },
+	{ PR_OBJECT, EVENT_OBJECTTARGET },
 	{ PR_MESSAGE, EVENT_MESSAGE },
 };
 

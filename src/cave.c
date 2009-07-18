@@ -3808,16 +3808,19 @@ void monster_race_track(int r_idx)
 /*
  * Hack -- track the given object kind
  */
-void object_kind_track(int k_idx)
+void track_object(int item)
 {
-	/* Save this object ID */
-	p_ptr->object_kind_idx = k_idx;
-
-	/* Window stuff */
+	p_ptr->object_idx = item;
+	p_ptr->object_kind_idx = 0;
 	p_ptr->redraw |= (PR_OBJECT);
 }
 
-
+void track_object_kind(int k_idx)
+{
+	p_ptr->object_idx = 0;
+	p_ptr->object_kind_idx = k_idx;
+	p_ptr->redraw |= (PR_OBJECT);
+}
 
 /*
  * Something has happened to disturb the player.

@@ -2663,7 +2663,7 @@ static void store_examine(int item)
 	if (o_ptr->tval == cp_ptr->spell_book)
 	{
 		/* Call the aux function */
-		do_cmd_browse_aux(o_ptr);
+		do_cmd_browse_aux(o_ptr, item);
 	}
 }
 
