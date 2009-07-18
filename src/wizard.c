@@ -1733,6 +1733,8 @@ void do_cmd_debug(void)
 						do_cmd_wiz_named(r_idx, TRUE);
 				}
 
+				p_ptr->redraw |= (PR_MAP | PR_MONLIST);
+
 				/* Reload the screen */
 				screen_load();
 			}
