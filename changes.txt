@@ -15,12 +15,14 @@ Another major change that most players will notice is the significantly differen
 
 
 Other stuff:
+(#29) Gold stolen by monsters is now stored in their inventory.
 (#30) Now using a new savefile format (no user-visible change)
 (#33) Add BRAND_FIRE to oil flasks and torches.
 (#48) Improve the randart code a lot.
 (#62) Game is now available entirely under the GPL.
 (#63) Dynastic character numbering support 
-(#343) Add autosave on level change
+(#328) 'lore' functions now write to subwindows when appropriate.
+(#343) Add autosave on level change.
 (#352) Probing now reveals attack and spell information.
 (#412) Monster list is no longer hallucination-proof.
 (#448) Heal spells now identical to potions of same name
@@ -31,10 +33,12 @@ Other stuff:
 (#562) Ego-items are now never squelched as "bad" or "average".
 (#599) Above 18, stat drain and gain always works in intervals of 10 points
 (#613) Prevent {!*} prompting for harmless actions.
+(#637) Print messages when monsters crush or push past each other.
 (#639) Reset social status to original value with quickstart
 (#641) Fix Morgoth artifacts.
 (#654) Allow pseudo to work whilst resting.
 (#661) Prompt for how many items to buy in a store now doesn't get the number in your pack wrong when there's > 99
+(#663) Numbers of summoned monsters now match singular/plural message text
 (#672) Fix Evenstar activation message.
 (#673) Fix description of Identify scrolls.
 (#676) Fixed character creation help.
@@ -51,20 +55,20 @@ Other stuff:
 (#696) Put character name back onto the dump.
 (#698) Added '!' to 'R' prompt to rest until mana or hp are full.
 (#700) Stop running one square away from already-visible monsters
-(#705) Randart activation messages no longer reference the original artifact.
+(#705) Randart activation messages no longer refer to the original artifact.
 (#706) Number of blows on 'I'nspection screen should be correct now
 (#711, #764) Fix descriptions of area-of-effect detection.
 (#712) Autoinscribe items in the first inventory slot.
 (#717) Make stat potions just a little bit more common.
-(#721) Searching bonues are now displayed as a % increase to match the character screen.
+(#721) Searching bonuses are now displayed as a % increase to match the character screen.
 (#722) Fix spoilers and wizard mode cheat info not displaying magical abilities
 (#723) Fix support for playing in the terminal on OS X 10.4.
 (#724) Critical hit messages come after regular hit messages again.
 (#725) *Remove Curse* now removes all curses again.
 (#727) Targetting warns when out-of-range
 (#729) Random teleportation disturbs the player.
-(#730) Mention control+[ANU] in mosnter recall '/' prompt.
-(#733) Curse Weapon/Amrour no longer blast your objects completely, they just curse them a bit.
+(#730) Mention control+[ANU] in monster recall '/' prompt.
+(#733) Curse Weapon/Armour no longer blast your objects completely, they just curse them a bit.
 (#734) Stop displaying the store slot bought when purchasing.
 (#735) Remove weak pseudo-ID.
 (#740, partial #532) Color-code monster melee attacks by how dangerous they are to the current player.
@@ -85,14 +89,17 @@ Other stuff:
 (#784) Stop dumping squelch settings with other options.
 (#792) Arriving on new levels is guaranteed to be safe
 (#799) Elessar and Evenstar now show the right recharge times.
+(#801) Inscriptions now shown properly in the home.
 (#813) Potions of Healing now do what the description says they do, not something much more powerful.
 (#814) Don't allow attacking when scared (rather than wasting a turn)
+(#830) Fix knowledge menu crash by initialising knowledge commands earlier
 (#839) Remove 12% of HP for ex-FORCE_MAXHP non-uniques
 (#848) Monster list shows in/out of LOS and asleep/awake
-(#849) Drop squelch items after ignoring them
+(#849) Drop squelched items after ignoring them
 (#864) Stop autoinscriptions from overwriting manual inscriptions
 (#868) Rings of Escaping have more accurate description
 (#874) Update monster list when monsters wake up
+(#893) Auto-pickup is no longer disabled when hitpoints are low
 Fix bug with rods of treasure location needing ID.
 Fix birth_money so that in point-based it still gives you 500AU.
 Fix double-resist damage.
@@ -110,8 +117,8 @@ Weaken PDSM just a tad.
 Enchant Armour scrolls ID when reading them, not when they are successfully read.
 Tone down Troll Priest HP.
 Turn off show_flavors by default.
-Include criticals damage in the object description's average display.
-Make Kavlax 'scary dark like Anclagon'.
+Include critical damage in the object description's average display.
+Make Kavlax 'scary dark like Ancalagon'.
 Curses on jewelry only happen with negative-pval items.  (temporary)
 Only wake monsters on attack if you're not "too afraid to attack".
 A few fixes to the visual editor on the knowledge screens.
@@ -143,7 +150,7 @@ Commit the beginnings of a flag-based terrain system; note that it does absolute
 Make the z-virt defines cast to the right type so that assignment errors can get caught a bit ealier on.
 Fix autoconf install errors.
 Remove an unnecessary call to getlogin() which was screwing up su'd users.
-Dependancy generator has to add dirnames itself
+Dependency generator has to add dirnames itself
 Remove "uint" from main-x11.c.
 Tweak the OS X makefile to be a little more terse.
 Make the game a little bit more borg-friendly.
