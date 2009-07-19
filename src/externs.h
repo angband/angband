@@ -598,8 +598,9 @@ extern void place_trap(int y, int x);
 /* util.c */
 extern void text_to_ascii(char *buf, size_t len, cptr str);
 extern void ascii_to_text(char *buf, size_t len, cptr str);
-extern void romanify(int in, char *buf, size_t len);
 extern char *find_roman_suffix_start(cptr buf);
+extern int roman_to_int(const char *roman);
+extern int int_to_roman(int n, char *roman, size_t bufsize);
 extern int macro_find_exact(cptr pat);
 extern errr macro_add(cptr pat, cptr act);
 extern errr macro_init(void);

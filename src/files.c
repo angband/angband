@@ -1621,22 +1621,6 @@ void process_player_name(bool sf)
 {
 	int i;
 
-	/* If the selected name ends in " I", i.e. "the first", then we're using
-	 * Roman numerals style suffices, so set the savefile flag.
-	 * Equally if there's no roman numerals at all, switch off suffices.*/
-	char *buf = find_roman_suffix_start(op_ptr->full_name);
-	if (!buf)
-	{
-		op_ptr->name_suffix = 0;
-	}
-	else
-	{
-		if (buf[0] == 'I' && buf[1] == '\0')
-		{
-			op_ptr->name_suffix = 1;
-		} 
-	}
-
 	/* Process the player name */
 	for (i = 0; op_ptr->full_name[i]; i++)
 	{

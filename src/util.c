@@ -468,75 +468,6 @@ void ascii_to_text(char *buf, size_t len, cptr str)
 	*s = '\0';
 }
 
-static char *roman_order[] = {"", "a", "aa", "aaa", "ab", "b", "ba", "baa", "baaa", "ac"};
-
-/*
- * Fill in buf (up to size len) with the roman digits corresponding to the
- * input digit, based on the radix string specified. This will be the
- * characters of the current decimal position, e.g. IVX for digits, XLC for
- * tens, CDM for hundreds.
- * 
- * Returns number of chars put in the string.
- */
-static size_t roman_digits(char *buf, size_t len, int digit, char *radix)
-{
-	char *template = roman_order[digit];
-	size_t radix_len = strlen(radix);
-	size_t added = 0;
-	
-	while (*template && len) {
-		int offset = *template - 'a';
-		if (offset < radix_len)
-		{
-			*buf = radix[offset];
-		}
-		else
-		{
-			*buf = '?';
-		}
-		++buf;
-		++template;
-		++added;
-		--len;
-	}
-	return added;
-}
-
-/*
- * Convert a number into a string in roman numerals
- * Ignores any value over a thousand, on the grounds that it's hard to 
- * print characters with bars on top in ASCII...
- */
-void romanify(int in, char *buf, size_t len)
-{
-	int hundreds = (in / 100) % 10;
-	int tens = (in / 10) % 10;
-	int ones = in % 10;
-	size_t ret;
-	
-	if (hundreds)
-	{
-		ret = roman_digits(buf, len, hundreds, "CDM");
-		buf += ret;
-		len -= ret;
-	}
-	if (tens)
-	{
-		ret = roman_digits(buf, len, tens, "XLC");
-		buf += ret;
-		len -= ret;
-	}
-	if (ones)
-	{
-		ret = roman_digits(buf, len, ones, "IVX");
-		buf += ret;
-		len -= ret;
-	}
-	if (len)
-	{
-		*buf = '\0';
-	}
-}
 
 /*
  * Find the start of a possible Roman numerals suffix by going back from the
@@ -567,6 +498,143 @@ char *find_roman_suffix_start(cptr buf)
 	}
 	return (char *)start;
 }
+
+/*----- Roman numeral functions  ------*/
+
+/*
+ * Converts an arabic numeral (int) to a roman numeral (char *).
+ *
+ * An arabic numeral is accepted in parameter `n`, and the corresponding
+ * upper-case roman numeral is placed in the parameter `roman`.  The
+ * length of the buffer must be passed in the `bufsize` parameter.  When
+ * there is insufficient room in the buffer, or a roman numeral does not
+ * exist (e.g. non-positive integers) a value of 0 is returned and the
+ * `roman` buffer will be the empty string.  On success, a value of 1 is
+ * returned and the zero-terminated roman numeral is placed in the
+ * parameter `roman`.
+ */
+int int_to_roman(int n, char *roman, size_t bufsize)
+{
+	/* Roman symbols */
+	char roman_symbol_labels[13][3] =
+		{"M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX",
+		 "V", "IV", "I"};
+	int  roman_symbol_values[13] =
+		{1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
+
+	/* Clear the roman numeral buffer */
+	roman[0] = '\0';
+
+	/* Roman numerals have no zero or negative numbers */
+	if (n < 1)
+		return 0;
+
+	/* Build the roman numeral in the buffer */
+	while (n > 0)
+	{
+		int i = 0;
+
+		/* Find the largest possible roman symbol */
+		while (n < roman_symbol_values[i])
+			i++;
+
+		/* No room in buffer, so abort */
+		if (strlen(roman) + strlen(roman_symbol_labels[i]) + 1
+			> bufsize)
+			break;
+
+		/* Add the roman symbol to the buffer */
+		my_strcat(roman, roman_symbol_labels[i], bufsize);
+
+		/* Decrease the value of the arabic numeral */
+		n -= roman_symbol_values[i];
+	}
+
+	/* Ran out of space and aborted */
+	if (n > 0)
+	{
+		/* Clean up and return */
+		roman[0] = '\0';
+
+		return 0;
+	}
+
+	return 1;
+}
+
+
+/*
+ * Converts a roman numeral (char *) to an arabic numeral (int).
+ *
+ * The null-terminated roman numeral is accepted in the `roman`
+ * parameter and the corresponding integer arabic numeral is returned.
+ * Only upper-case values are considered. When the `roman` parameter
+ * is empty or does not resemble a roman numeral, a value of -1 is
+ * returned.
+ *
+ * XXX This function will parse certain non-sense strings as roman
+ *     numerals, such as IVXCCCVIII
+ */
+int roman_to_int(const char *roman)
+{
+	int i;
+	int n = 0;
+	char *p;
+
+	char roman_token_chr1[] = "MDCLXVI";
+	char* roman_token_chr2[] = {0, 0, "DM", 0, "LC", 0, "VX"};
+
+	int roman_token_vals[7][3] = {{1000},
+	                              {500},
+	                              {100, 400, 900},
+	                              {50},
+	                              {10, 40, 90},
+	                              {5},
+	                              {1, 4, 9}};
+
+	if (strlen(roman) == 0)
+		return -1;
+
+	/* Check each character for a roman token, and look ahead to the
+	   character after this one to check for subtraction */
+	for (i = 0; i < strlen(roman); i++)
+	{
+		char c1, c2;
+		int c1i, c2i;
+
+		/* Get the first and second chars of the next roman token */
+		c1 = roman[i];
+		c2 = roman[i + 1];
+
+		/* Find the index for the first character */
+		p = strchr(roman_token_chr1, c1);
+		if (p)
+		{
+			c1i = p - roman_token_chr1;
+		} else {
+			return -1;
+		}
+
+		/* Find the index for the second character */
+		c2i = 0;
+		if (roman_token_chr2[c1i] && c2)
+		{
+			p = strchr(roman_token_chr2[c1i], c2);
+			if (p)
+			{
+				c2i = (p - roman_token_chr2[c1i]) + 1;
+				/* Two-digit token, so skip a char on the next pass */
+				i++;
+			}
+		}
+
+		/* Increase the arabic numeral */
+		n += roman_token_vals[c1i][c2i];
+	}
+
+	return n;
+}
+
 
 /*
  * The "macro" package
