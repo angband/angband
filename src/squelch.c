@@ -636,6 +636,11 @@ bool squelch_item_ok(const object_type *o_ptr)
 	if (artifact_p(o_ptr))
 		return artifact_is_ignored(o_ptr);
 
+	/* HACK: Don't squelch gold */
+	/* Some prefs seem to have gold set to squelched. Need to figure out where
+	 * that is loaded to so we can disable that and remove this hack. */
+	if (o_ptr->tval == TV_GOLD)
+		return FALSE;
 
 	/* Don't squelch stuff inscribed not to be destroyed (!k) */
 	if (check_for_inscrip(o_ptr, "!k") || check_for_inscrip(o_ptr, "!*"))
