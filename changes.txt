@@ -3,7 +3,8 @@ Angband 3.1.1
 
 This is an Angband development version -- it may be buggy, so be warned!
 Special thanks to: Eddie Grove, Elly, Stefan O'Rear, Mango Juice, Gabriel
-Cunningham, Chris Carr, Chris Robertson, and Peter Denison.
+Cunningham, Chris Carr, Chris Robertson, Peter Denison, Joe Buck, Eric Osheim,
+tigen, and rhinocesaurus.
 
 Significant changes in this version:
 
