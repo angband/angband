@@ -138,7 +138,11 @@ static void load_roller_data(birther *player, birther *prev_player)
 	p_ptr->wt = p_ptr->wt_birth = player->wt;
 	p_ptr->ht = p_ptr->ht_birth = player->ht;
 	p_ptr->sc = p_ptr->sc_birth = player->sc;
-	p_ptr->au = p_ptr->au_birth = player->au;
+	p_ptr->au_birth = player->au;
+	if (OPT(birth_money))
+		p_ptr->au = 500;
+	else
+		p_ptr->au = p_ptr->au_birth;
 
 	/* Load the stats */
 	for (i = 0; i < A_MAX; i++)
@@ -407,9 +411,14 @@ static void get_ahw(void)
 static void get_money(int stat_use[A_MAX])
 {
 	if (OPT(birth_money))
-		p_ptr->au = p_ptr->au_birth = 500;
+	{
+		p_ptr->au_birth = 200;
+		p_ptr->au = 500;
+	}
 	else
+	{
 		p_ptr->au = p_ptr->au_birth = 200;
+	}
 }
 
 
@@ -672,7 +681,7 @@ static void recalculate_stats(int *stats, int points_left)
 	else
 		p_ptr->au = 200 + (50 * points_left);
 
-	p_ptr->au_birth = p_ptr->au;
+	p_ptr->au_birth = 200 + (50 * points_left);
 
 	/* Update bonuses, hp, etc. */
 	get_bonuses();

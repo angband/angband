@@ -234,7 +234,7 @@ typedef struct
 
 
 	/* Generation fields (for quick start) */
-	s32b au_birth;          /* Birth gold */
+	s32b au_birth;          /* Birth gold when option birth_money is false */
 	s16b stat_birth[A_MAX]; /* Birth "natural" stat values */
 	s16b ht_birth;          /* Birth Height */
 	s16b wt_birth;          /* Birth Weight */
