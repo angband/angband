@@ -341,7 +341,9 @@ void process_command(cmd_context ctx, bool no_request)
 			{
 				bool get_target = FALSE;
 
-				if (obj_needs_aim(object_from_item_idx(cmd.args[0].choice)))
+				if (cmd.command == CMD_FIRE ||
+					cmd.command == CMD_THROW ||
+					obj_needs_aim(object_from_item_idx(cmd.args[0].choice)))
 				{
 					if (cmd.args[1].direction == DIR_UNKNOWN)
 						get_target = TRUE;
