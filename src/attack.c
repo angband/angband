@@ -305,6 +305,16 @@ void py_attack(int y, int x)
 	if (m_ptr->ml) health_track(cave_m_idx[y][x]);
 
 
+	/* Handle player fear (only for invisible monsters) */
+	if (p_ptr->state.afraid)
+	{
+		message_format(MSG_AFRAID, 0,
+				"You are too afraid to attack %s!",
+				m_name);
+		return;
+	}
+
+
 	/* Disturb the monster */
 	wake_monster(m_ptr);
 
