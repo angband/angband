@@ -643,7 +643,10 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 	c = f_ptr->x_char;
 
 	/* Check for trap detection boundaries */
-	if (g->trapborder && g->f_idx == FEAT_FLOOR) a = TERM_L_GREEN;
+	if (g->trapborder && g->f_idx == FEAT_FLOOR &&
+			(use_graphics == GRAPHICS_NONE ||
+				use_graphics == GRAPHICS_PSEUDO))
+		a = TERM_L_GREEN;
 
 	/* Special lighting effects */
 	if (g->f_idx <= FEAT_INVIS && OPT(view_special_lite))
