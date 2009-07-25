@@ -560,7 +560,6 @@ void autoinscribe_ground(void);
 void autoinscribe_pack(void);
 
 bool squelch_interactive(const object_type *o_ptr);
-void ignore_artifact(const object_type *o_ptr);
 
 void kind_squelch_when_aware(object_kind *k_ptr);
 void kind_squelch_when_unaware(object_kind *k_ptr);

@@ -437,35 +437,6 @@ bool squelch_tval(int tval)
 
 
 /*
- * Mark an artifact as one to ignore for the rest of the game.
- */
-void ignore_artifact(const object_type *o_ptr)
-{
-#if 0
-	assert(artifact_p(o_ptr));
-	a_info[o_ptr->name1].cur_num = ARTIFACT_IGNORE_HACK;
-#endif
-}
-
-
-/*
- * Determines whether an artifact is specifically set to ignore in a_info
- */
-bool artifact_is_ignored(const object_type *o_ptr)
-{
-#if 0
-	if (!artifact_p(o_ptr))
-		return FALSE;
-
-	if (a_info[o_ptr->name1].cur_num == ARTIFACT_IGNORE_HACK)
-		return TRUE;
-	else
-#endif
-		return FALSE;
-}
-
-
-/*
  * Squelch the flavor of an object
  */
 static void object_squelch_flavor_of(const object_type *o_ptr)
@@ -625,7 +596,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 
 	/* Don't squelch artifacts unless marked to be squelched */
 	if (artifact_p(o_ptr))
-		return artifact_is_ignored(o_ptr);
+		return FALSE;
 
 	/* HACK: Don't squelch gold */
 	/* Some prefs seem to have gold set to squelched. Need to figure out where

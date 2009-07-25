@@ -322,16 +322,6 @@ void textui_cmd_destroy(void)
 
 	/* Tell the game to destroy the item. */
 	cmd_insert(CMD_DESTROY, item, amt);
-
-	/* Check squelch setting */
-	if (object_is_known_artifact(o_ptr))
-	{
-		if (get_check("Ignore this artifact for the rest of the game?"))
-		{
-			ignore_artifact(o_ptr);
-			p_ptr->notice |= PN_SQUELCH;
-		}
-	}
 }
 
 void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
