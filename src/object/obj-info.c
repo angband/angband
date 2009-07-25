@@ -356,10 +356,12 @@ static bool describe_misc_magic(u32b f3)
 	{
 		if (f3 & f3_misc[i].flag)
 		{
-			text_out("%s.\n", f3_misc[i].name);
+			text_out("%s.  ", f3_misc[i].name);
 			printed = TRUE;
 		}
 	}
+
+	if (printed) text_out("\n");
 
 	return printed;
 }
