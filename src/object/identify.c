@@ -116,7 +116,9 @@ bool object_pval_is_visible(const object_type *o_ptr)
 		return FALSE;
 }
 
-
+/**
+ * \returns whether both the object is both an ego and the player knows it is
+ */
 bool object_ego_is_visible(const object_type *o_ptr)
 {
 	if ((o_ptr->tval == TV_LITE) && (ego_item_p(o_ptr)))
@@ -129,7 +131,9 @@ bool object_ego_is_visible(const object_type *o_ptr)
 		return FALSE;
 }
 
-
+/**
+ * \returns whether the object's attack plusses are known
+ */
 bool object_attack_plusses_are_visible(const object_type *o_ptr)
 {
 	if ((o_ptr->ident & IDENT_ATTACK) || (o_ptr->ident & IDENT_STORE))
@@ -138,7 +142,9 @@ bool object_attack_plusses_are_visible(const object_type *o_ptr)
 		return FALSE;
 }
 
-
+/**
+ * \returns whether the object's defence bonuses are known
+ */
 bool object_defence_plusses_are_visible(const object_type *o_ptr)
 {
 	if ((o_ptr->ident & IDENT_DEFENCE) || (o_ptr->ident & IDENT_STORE))
@@ -149,8 +155,7 @@ bool object_defence_plusses_are_visible(const object_type *o_ptr)
 
 
 /*
- * Whether the player knows the value of an object flag,
- * is TRUE when the player knows a flag is not present as well as knowing it is present
+ * \returns whether the player knows whether an object has a given flag
  */
 bool object_flag_is_known(const object_type *o_ptr, int idx, u32b flag)
 {
@@ -163,7 +168,8 @@ bool object_flag_is_known(const object_type *o_ptr, int idx, u32b flag)
 
 
 /*
- * Whether it is possible an object has a high resist, given the knowledge so far
+ * \returns whether it is possible an object has a high resist given the
+ *          player's current knowledge
  */
 bool object_high_resist_is_possible(const object_type *o_ptr)
 {
@@ -172,7 +178,8 @@ bool object_high_resist_is_possible(const object_type *o_ptr)
 
 	if (flags[1] & o_ptr->known_flags[1] & TR1_HIGH_RESIST_MASK)
 		return TRUE;
-	else if ((o_ptr->known_flags[1] & TR1_HIGH_RESIST_MASK) == TR1_HIGH_RESIST_MASK)
+	else if ((o_ptr->known_flags[1] & TR1_HIGH_RESIST_MASK)
+						== TR1_HIGH_RESIST_MASK)
 		return FALSE;
 	else
 		return TRUE;
@@ -182,9 +189,9 @@ bool object_high_resist_is_possible(const object_type *o_ptr)
 
 
 /*
- * Check for additional knowledge implied by what you already know.
+ * Checks for additional knowledge implied by what the player already knows.
  *
- * \param o_ptr is the object to mark
+ * \param o_ptr is the object to check
  */
 static void object_check_for_ident(object_type *o_ptr)
 {
@@ -220,17 +227,15 @@ static void object_check_for_ident(object_type *o_ptr)
 
 
 /**
- * Mark an object as "aware".
+ * Mark an object's flavour as as one the player is aware of.
  *
- * \param o_ptr is the object to become aware of
+ * \param o_ptr is the object whose flavour should be marked as aware
  */
 void object_flavor_aware(object_type *o_ptr)
 {
 	int i;
 
 	if (k_info[o_ptr->k_idx].aware) return;
-
-	printf("setting object kind %d to aware\n", o_ptr->k_idx);
 	k_info[o_ptr->k_idx].aware = TRUE;
 
 	/* Fix squelch/autoinscribe */
@@ -251,9 +256,9 @@ void object_flavor_aware(object_type *o_ptr)
 
 
 /**
- * Mark an object flavour as "tried".
+ * Mark an object's flavour as tried.
  *
- * \param o_ptr is the object to mark
+ * \param o_ptr is the object whose flavour should be marked
  */
 void object_flavor_tried(object_type *o_ptr)
 {
@@ -264,7 +269,11 @@ void object_flavor_tried(object_type *o_ptr)
 	k_info[o_ptr->k_idx].tried = TRUE;
 }
 
-
+/**
+ * Make the player aware of all of an object's flags.
+ *
+ * \param o_ptr is the object to mark
+ */
 void object_know_all_flags(object_type *o_ptr)
 {
 	memset(o_ptr->known_flags, 0xff, sizeof(o_ptr->known_flags));
@@ -301,8 +310,8 @@ void object_notice_everything(object_type *o_ptr)
 }
 
 
-/*
- *
+/**
+ * Notice that an object is indestructible.
  */
 void object_notice_indestructible(object_type *o_ptr)
 {
@@ -317,15 +326,18 @@ void object_notice_ego(object_type *o_ptr)
 {
 	if (o_ptr->name2)
 	{
+		ego_item_type *e_ptr = &e_info[o_ptr->name2];
+
 		/* XXX Eddie print a message on notice ego if not already noticed? */
 		/* XXX Eddie should we do something about everseen of egos here? */
 
 		/* learn all flags except random abilities */
 		u32b learned_flags[OBJ_FLAG_N];
 		int i;
+
 		for (i = 0; i < OBJ_FLAG_N; i++)
 			learned_flags[i] = (u32b) -1;
-		ego_item_type *e_ptr = &e_info[o_ptr->name2];
+
 		switch (e_ptr->xtra)
 		{
 			case OBJECT_XTRA_TYPE_NONE:
@@ -342,8 +354,10 @@ void object_notice_ego(object_type *o_ptr)
 			default:
 				assert(0);
 		}
+
 		for (i = 0; i < OBJ_FLAG_N; i++)
-			o_ptr->known_flags[i] |= learned_flags[i] | e_ptr->flags[i];
+			o_ptr->known_flags[i] |=
+					(learned_flags[i] | e_ptr->flags[i]);
 
 		/* XXX Eddie should check for ident be allowed if repairing?  For now, only repair is things currently IDENT_KNOWN in savefile, but in future if something changes might need to repair based upon arbitrary player knowledge */
 		if (!(o_ptr->ident & IDENT_EGO))
