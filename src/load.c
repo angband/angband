@@ -1224,6 +1224,8 @@ int rd_stores(u32b version)
 				note("Error reading item");
 				return (-1);
 			}
+
+			i_ptr->ident |= IDENT_STORE;
 			
 			/* Accept any valid items */
 			if ((st_ptr->stock_num < STORE_INVEN_MAX) &&
