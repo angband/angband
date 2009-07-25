@@ -306,7 +306,7 @@ void wr_artifacts(void)
 		artifact_type *a_ptr = &a_info[i];
 		wr_byte(a_ptr->created);
 		wr_byte(a_ptr->seen);
-		wr_byte(0);
+		wr_byte(a_ptr->everseen);
 		wr_byte(0);
 	}
 }

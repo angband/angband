@@ -445,6 +445,7 @@ static void player_wipe(void)
 	{
 		artifact_type *a_ptr = &a_info[i];
 		a_ptr->created = FALSE;
+		a_ptr->seen = FALSE;
 	}
 
 

@@ -592,6 +592,7 @@ int rd_artifacts(u32b version)
 		rd_byte(&tmp8u);
 		a_info[i].seen = tmp8u;
 		rd_byte(&tmp8u);
+		a_info[i].everseen = tmp8u;
 		rd_byte(&tmp8u);
 	}
 

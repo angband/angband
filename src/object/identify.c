@@ -299,7 +299,7 @@ void object_notice_everything(object_type *o_ptr)
 
 	/* Artifact has now been seen */
 	if (a_ptr)
-		a_ptr->seen = TRUE;
+		a_ptr->seen = a_ptr->everseen = TRUE;
 
 	/* Mark ego as known */
 	if (ego_item_p(o_ptr))
@@ -378,7 +378,7 @@ void object_notice_sensing(object_type *o_ptr)
 	if (!object_was_sensed(o_ptr))
 	{
 		artifact_type *a_ptr = artifact_of(o_ptr);
-		if (a_ptr) a_ptr->seen = TRUE;
+		if (a_ptr) a_ptr->seen = a_ptr->everseen = TRUE;
 
 		o_ptr->ident |= IDENT_SENSE;
 		object_check_for_ident(o_ptr);

@@ -109,8 +109,9 @@ typedef struct
 	byte level;   /**< Minimum depth artifact can appear at */
 	byte rarity;  /**< Artifact rarity */
 
-	byte created;	/**< Whether this artifact has been created */
-	byte seen;	/**< Whether this artifact has been seen as an artifact */
+	bool created;	/**< Whether this artifact has been created */
+	bool seen;	/**< Whether this artifact has been seen as an artifact */
+	bool everseen;	/**< Whether this artifact has ever been seen (this game or previous) */
 
 	u16b effect;     /**< Artifact activation (see effects.c) */
 	u32b effect_msg; /**< (const char *) artifact_type::effect_msg + a_text = Effect message */
