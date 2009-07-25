@@ -224,7 +224,7 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 			strnfmt(p, len, " dam 2d%d", (plev / 2));
 			break; 
 		case SPELL_CURE_LIGHT_WOUNDS:
-			strnfmt(p, len, " heal 15%");
+			strnfmt(p, len, " heal 15%%");
 			break;
 		case SPELL_STINKING_CLOUD:
 			strnfmt(p, len, " dam %d", 10 + (plev / 2));

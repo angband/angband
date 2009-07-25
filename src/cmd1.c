@@ -165,7 +165,7 @@ static void py_pickup_gold(void)
 		int i, count, total, k_idx;
 
 		/* Build a message */
-		(void)strnfmt(buf, sizeof(buf), "You have found %ld gold pieces worth of ",  total_gold);
+		(void)strnfmt(buf, sizeof(buf), "You have found %ld gold pieces worth of ", (long)total_gold);
 
 		/* Count the types of treasure present */
 		for (total = 0, i = 0; i < SV_GOLD_MAX; i++)
