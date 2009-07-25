@@ -453,7 +453,7 @@ static void display_player_sust_info(void)
 				if (c == '.') c = 's';
 			}
 
-			if ((c == '.') && !object_flag_is_known(o_ptr, 1, (1 << stat)))
+			if ((c == '.') && o_ptr->k_idx && !object_flag_is_known(o_ptr, 1, (1 << stat)))
 				c = '?';
 
 			/* Dump proper character */
