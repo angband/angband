@@ -377,6 +377,17 @@ static void obj_drop(object_type *o_ptr, int item)
 static void obj_wield(object_type *o_ptr, int item)
 {
 	int slot = wield_slot(o_ptr);
+
+	if (o_ptr->tval == TV_RING &&
+		(inventory[INVEN_LEFT].k_idx && inventory[INVEN_RIGHT].k_idx))
+	{
+		cptr q = "Replace which ring? ";
+		cptr s = "Error in obj_wield, please report";
+
+		item_tester_hook = obj_is_ring;
+		if (!get_item(&slot, q, s, USE_EQUIP)) return;
+	}
+
 	cmd_insert(CMD_WIELD, item, slot);
 }
 

@@ -547,8 +547,16 @@ s16b wield_slot(const object_type *o_ptr)
 }
 
 
+/*
+ * \returns whether item o_ptr will fit in slot 'slot'
+ */
 bool slot_can_wield_item(int slot, const object_type *o_ptr)
 {
+	/* XXX This is nasty, but is there a better way? */
+	if (o_ptr->tval == TV_RING &&
+			(slot == INVEN_LEFT || slot == INVEN_RIGHT))
+		return TRUE;
+
 	if (wield_slot(o_ptr) == slot)
 		return TRUE;
 	else
@@ -3645,6 +3653,7 @@ bool obj_is_potion(const object_type *o_ptr) { return o_ptr->tval == TV_POTION; 
 bool obj_is_scroll(const object_type *o_ptr) { return o_ptr->tval == TV_SCROLL; }
 bool obj_is_food(const object_type *o_ptr)   { return o_ptr->tval == TV_FOOD; }
 bool obj_is_lite(const object_type *o_ptr)   { return o_ptr->tval == TV_LITE; }
+bool obj_is_ring(const object_type *o_ptr)   { return o_ptr->tval == TV_RING; }
 
 
 /**
