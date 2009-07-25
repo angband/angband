@@ -64,7 +64,7 @@ dnl needed because h-basic.h checks for this define for autoconf support.
 CFLAGS="$CFLAGS -DHAVE_CONFIG_H"
 CPPFLAGS="$CPPFLAGS -I." 
 
-test "$GCC" = "yes" && CFLAGS="$CFLAGS -fno-strength-reduce -Wall -W -std=iso9899:199409 -pedantic"
+test "$GCC" = "yes" && CFLAGS="$CFLAGS -fno-strength-reduce -W -Wall -Wno-unused-parameter -Wno-missing-field-initializers -pedantic"
 
 MY_PROG_MAKE_SYSVINC
 MY_PROG_MAKE_SINCLUDE
