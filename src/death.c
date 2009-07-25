@@ -113,8 +113,8 @@ static void death_knowledge(void)
 		o_ptr = &inventory[i];
 		if (!o_ptr->k_idx) continue;
 
-		object_aware(o_ptr);
-		object_known(o_ptr);
+		object_flavor_aware(o_ptr);
+		object_notice_everything(o_ptr);
 	}
 
 	for (i = 0; i < st_ptr->stock_num; i++)
@@ -122,8 +122,8 @@ static void death_knowledge(void)
 		o_ptr = &st_ptr->stock[i];
 		if (!o_ptr->k_idx) continue;
 
-		object_aware(o_ptr);
-		object_known(o_ptr);
+		object_flavor_aware(o_ptr);
+		object_notice_everything(o_ptr);
 	}
 
 	/* Hack -- Recalculate bonuses */

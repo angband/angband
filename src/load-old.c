@@ -218,9 +218,7 @@ static int rd_item(object_type *o_ptr)
 	rd_byte(&old_dd);
 	rd_byte(&old_ds);
 
-	{ byte old_ident;
-	rd_byte(&old_ident);
-	o_ptr->ident = old_ident; }
+	rd_byte(&tmp8u);
 
 	rd_byte(&o_ptr->marked);
 
@@ -231,32 +229,6 @@ static int rd_item(object_type *o_ptr)
 	rd_u32b(&o_ptr->flags[0]);
 	rd_u32b(&o_ptr->flags[1]);
 	rd_u32b(&o_ptr->flags[2]);
-
-	{
-                u32b f[OBJ_FLAG_N];
-                object_flags(o_ptr, f);
-        
-                memset(&o_ptr->known_flags, 0, sizeof(o_ptr->known_flags));
-        
-                if (object_known_p(o_ptr))
-                {
-                        memcpy(&o_ptr->known_flags, f, sizeof(f));
-                }
-                else if (object_was_worn(o_ptr))
-                {
-                        o_ptr->known_flags[0] =
-                                        (f[0] & TR0_OBVIOUS_MASK);
-                        o_ptr->known_flags[2] =
-                                        (f[2] & TR2_OBVIOUS_MASK);
-                }
-
-                /* tmp8u is the old pseudo marker, 1-3 are the old cursed markers */
-                if (tmp8u >= 1 && tmp8u <= 3)
-                {
-                        /* Know whatever curse flags there are to know */
-                        o_ptr->known_flags[2] |= (f[2] & TR2_CURSE_MASK);
-                }
-	}
 
 	/* Monster holding object */
 	rd_s16b(&o_ptr->held_m_idx);
@@ -728,12 +700,66 @@ static int rd_artifacts(void)
 		byte tmp8u;
 		
 		rd_byte(&tmp8u);
-		a_info[i].cur_num = tmp8u;
+		a_info[i].created = tmp8u;
 		rd_byte(&tmp8u);
 		rd_byte(&tmp8u);
 		rd_byte(&tmp8u);
 	}
+
+
+
+	/* For old versions, we need to go through objects and update */
+	{
+		size_t i;
+		object_type *o_ptr = NULL;
+
+		bool *anywhere;
+		anywhere = C_ZNEW(z_info->a_max, bool);
+
+		/* All inventory/home artifacts need to be marked as seen */
+		for (i = 0; i < INVEN_TOTAL; i++)
+		{
+			o_ptr = &o_list[i];
+			if (object_is_known_artifact(o_ptr))
+				artifact_of(o_ptr)->seen = TRUE;
+			anywhere[o_ptr->name1] = TRUE;
+		}
+
+		for (i = 0; i < o_max; i++)
+		{
+			o_ptr = &o_list[i];
+			if (object_is_known_artifact(o_ptr))
+				artifact_of(o_ptr)->seen = TRUE;
+			anywhere[o_ptr->name1] = TRUE;
+		}
+
+		for (i = 0; i < MAX_STORES; i++)
+		{
+			int j = 0;
+			for (j = 0; j < store[i].stock_num; j++)
+			{
+				o_ptr = &store[i].stock[j];
+				if (object_is_known_artifact(o_ptr))
+					artifact_of(o_ptr)->seen = TRUE;
+				anywhere[o_ptr->name1] = TRUE;
+			}
+		}
+
+		/* Now update the seen flags correctly */
+		for (i = 0; i < z_info->a_max; i++)
+		{
+			artifact_type *a_ptr = &a_info[i];
+
+			/* If it isn't present anywhere, but has been created,
+			 * then it has been lost, and thus seen */
+			if (a_ptr->created && !anywhere[i])
+				a_ptr->seen = TRUE;
+		}
+
+		FREE(anywhere);
+	}
 	
+
 	return 0;
 }
 
@@ -1756,6 +1782,10 @@ static int rd_savefile_new_aux(void)
 
 	/* Strip old data */
 	strip_bytes(20);
+
+
+	if (!get_check("If you import this savefile, object memory will be lost.  Is that OK? [y/n]"))
+		return -1;
 
 
 

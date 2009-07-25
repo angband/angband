@@ -162,17 +162,17 @@ struct player_flag_record
 
 static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 {
-	{ " Acid",	1, TR1_RES_ACID,	TR1_IM_ACID,	TR1_VULN_ACID },
-	{ " Elec",	1, TR1_RES_ELEC,	TR1_IM_ELEC,	TR1_VULN_ELEC },
-	{ " Fire",	1, TR1_RES_FIRE,	TR1_IM_FIRE,	TR1_VULN_FIRE },
-	{ " Cold",	1, TR1_RES_COLD,	TR1_IM_COLD,	TR1_VULN_COLD },
-	{ " Pois",	1, TR1_RES_POIS,	0, 0 },
-	{ " Fear",	1, TR1_RES_FEAR,	0, 0 },
-	{ " Lite",	1, TR1_RES_LITE,	0, 0 },
-	{ " Dark",	1, TR1_RES_DARK,	0, 0 },
-	{ "Blind",	1, TR1_RES_BLIND,	0, 0 },
+	{ "rAcid",	1, TR1_RES_ACID,	TR1_IM_ACID,	TR1_VULN_ACID },
+	{ "rElec",	1, TR1_RES_ELEC,	TR1_IM_ELEC,	TR1_VULN_ELEC },
+	{ "rFire",	1, TR1_RES_FIRE,	TR1_IM_FIRE,	TR1_VULN_FIRE },
+	{ "rCold",	1, TR1_RES_COLD,	TR1_IM_COLD,	TR1_VULN_COLD },
+	{ "rPois",	1, TR1_RES_POIS,	0, 0 },
+	{ "rFear",	1, TR1_RES_FEAR,	0, 0 },
+	{ "rLite",	1, TR1_RES_LITE,	0, 0 },
+	{ "rDark",	1, TR1_RES_DARK,	0, 0 },
+	{ "rBlnd",	1, TR1_RES_BLIND,	0, 0 },
 
-	{ "Confu",	1, TR1_RES_CONFU,	0, 0 },
+	{ "rConf",	1, TR1_RES_CONFU,	0, 0 },
 	{ "Sound",	1, TR1_RES_SOUND,	0, 0 },
 	{ "Shard",	1, TR1_RES_SHARD,	0, 0 },
 	{ "Nexus",	1, TR1_RES_NEXUS,	0, 0 },
@@ -184,7 +184,7 @@ static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 
 	{ "PLite",	2, TR2_LITE, 		0, 0 },
 	{ "Regen",	2, TR2_REGEN, 		0, 0 },
-	{ "Telep",	2, TR2_TELEPATHY, 	0, 0 },
+	{ "  ESP",	2, TR2_TELEPATHY, 	0, 0 },
 	{ "Invis",	2, TR2_SEE_INVIS, 	0, 0 },
 	{ "FrAct",	2, TR2_FREE_ACT, 	0, 0 },
 	{ "HLife",	2, TR2_HOLD_LIFE, 	0, 0 },
@@ -257,6 +257,7 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 			if (vuln) sym = '-';
 			else if (imm) sym = '*';
 			else if (res) sym = '+';
+			else if ((!object_flag_is_known(o_ptr, resists[i].set, resists[i].res_flag)) && (j < INVEN_TOTAL) && (o_ptr->k_idx)) sym = '?';
 			Term_addch(attr, sym);
 		}
 		Term_putstr(col, row, 6, name_attr, format("%5s:", resists[i].name));
@@ -451,6 +452,9 @@ static void display_player_sust_info(void)
 				/* Convert '.' to 's' */
 				if (c == '.') c = 's';
 			}
+
+			if ((c == '.') && !object_flag_is_known(o_ptr, 1, (1 << stat)))
+				c = '?';
 
 			/* Dump proper character */
 			Term_putch(col, row+stat, a, c);

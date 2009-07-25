@@ -240,7 +240,7 @@ void do_cmd_destroy(cmd_code code, cmd_arg args[])
 	{
 		/* Message */
 		msg_format("You cannot destroy %s.", o_name);
-		o_ptr->ident |= IDENT_INDESTRUCT;
+		object_notice_indestructible(o_ptr);
 
 		/* Combine the pack */
 		p_ptr->notice |= (PN_COMBINE);
@@ -326,7 +326,7 @@ void textui_cmd_destroy(void)
 	cmd_insert(CMD_DESTROY, item, amt);
 
 	/* Check squelch setting */
-	if (o_ptr->ident & IDENT_INDESTRUCT)
+	if (object_is_known_artifact(o_ptr))
 	{
 		if (get_check("Ignore this artifact for the rest of the game?"))
 		{

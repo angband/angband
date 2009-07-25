@@ -260,7 +260,7 @@ void identify_pack(void)
 		if (!o_ptr->k_idx) continue;
 
 		/* Aware and Known */
-		if (object_known_p(o_ptr)) continue;
+		if (object_is_known(o_ptr)) continue;
 
 		/* Identify it */
 		do_ident_item(i, o_ptr);
@@ -294,7 +294,6 @@ static void uncurse_object(object_type *o_ptr)
 {
 	/* Uncurse it */
 	o_ptr->flags[2] &= ~(TR2_CURSE_MASK);
-	o_ptr->known_flags[2] &= ~(TR2_CURSE_MASK);
 }
 
 
@@ -1613,7 +1612,7 @@ static bool item_tester_hook_armour(const object_type *o_ptr)
 
 static bool item_tester_unknown(const object_type *o_ptr)
 {
-	if (object_known_p(o_ptr))
+	if (object_is_known(o_ptr))
 		return FALSE;
 	else
 		return TRUE;
@@ -3691,8 +3690,8 @@ void do_ident_item(int item, object_type *o_ptr)
 	char o_name[80];
 
 	/* Identify it */
-	object_aware(o_ptr);
-	object_known(o_ptr);
+	object_flavor_aware(o_ptr);
+	object_notice_everything(o_ptr);
 
 	/* Apply an autoinscription, if necessary */
 	apply_autoinscription(o_ptr);

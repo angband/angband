@@ -1224,7 +1224,7 @@ static void desc_art_fake(int a_idx)
 
 	/* Make fake artifact */
 	make_fake_artifact(o_ptr, a_idx);
-	o_ptr->ident |= (IDENT_STORE | IDENT_KNOWN);
+	o_ptr->ident |= IDENT_STORE;
 
 	/* Hack -- Handle stuff */
 	handle_stuff();
@@ -1268,8 +1268,10 @@ static bool artifact_is_known(int a_idx)
 {
 	int i;
 
+	if (p_ptr->wizard) return TRUE;
+
 	/* Artifact doesn't exist at all, or not created yet */
-	if (!a_info[a_idx].name || a_info[a_idx].cur_num == 0) return FALSE;
+	if (!a_info[a_idx].name || a_info[a_idx].created == FALSE) return FALSE;
 
 	/* Check all objects to see if it exists but hasn't been IDed */
 	for (i = 0; i < z_info->o_max; i++)
@@ -1277,7 +1279,7 @@ static bool artifact_is_known(int a_idx)
 		int a = o_list[i].name1;
 
 		/* If we haven't actually identified the artifact yet */
-		if (a && a == a_idx && !object_known_p(&o_list[i]))
+		if (a && a == a_idx && !object_is_known(&o_list[i]))
 		{
 			return FALSE;
 		}
@@ -1293,7 +1295,7 @@ static bool artifact_is_known(int a_idx)
 
 
 		if (o_ptr->name1 && o_ptr->name1 == a_idx && 
-		    !object_known_p(o_ptr))
+		    !object_is_known(o_ptr))
 		{
 			return FALSE;
 		}
@@ -1606,7 +1608,7 @@ static void desc_obj_fake(int k_idx)
 	if (k_info[k_idx].aware) o_ptr->ident |= (IDENT_STORE);
 
 	/* It's fully know */
-	if (!k_info[k_idx].flavor) object_known(o_ptr);
+	if (!k_info[k_idx].flavor) object_notice_everything(o_ptr);
 
 	/* Hack -- Handle stuff */
 	handle_stuff();
@@ -1719,10 +1721,23 @@ static void o_xtra_act(char ch, int oid)
 	s16b idx = get_autoinscription_index(oid);
 
 	/* Toggle squelch */
-	if (ch == 's' || ch == 'S')
+	if (squelch_tval(k_ptr->tval) && (ch == 's' || ch == 'S'))
 	{
-		if (squelch_tval(k_ptr->tval))
-			k_ptr->squelch = !k_ptr->squelch;
+		if (k_ptr->aware)
+		{
+			if (kind_is_squelched_aware(k_ptr))
+				kind_squelch_clear(k_ptr);
+			else
+				kind_squelch_when_aware(k_ptr);
+		}
+		else
+		{
+			if (kind_is_squelched_unaware(k_ptr))
+				kind_squelch_clear(k_ptr);
+			else
+				kind_squelch_when_unaware(k_ptr);
+		}
+
 		return;
 	}
 

@@ -435,7 +435,7 @@ static void player_wipe(void)
 	for (i = 0; i < z_info->a_max; i++)
 	{
 		artifact_type *a_ptr = &a_info[i];
-		a_ptr->cur_num = 0;
+		a_ptr->created = FALSE;
 	}
 
 
@@ -590,8 +590,8 @@ static void player_outfit(void)
 			i_ptr->number = (byte)rand_range(e_ptr->min, e_ptr->max);
 			i_ptr->origin = ORIGIN_BIRTH;
 
-			object_aware(i_ptr);
-			object_known(i_ptr);
+			object_flavor_aware(i_ptr);
+			object_notice_everything(i_ptr);
 			(void)inven_carry(i_ptr);
 			k_info[k_idx].everseen = TRUE;
 		}
@@ -607,8 +607,8 @@ static void player_outfit(void)
 	object_prep(i_ptr, lookup_kind(TV_FOOD, SV_FOOD_RATION));
 	i_ptr->number = (byte)rand_range(3, 7);
 	i_ptr->origin = ORIGIN_BIRTH;
-	object_aware(i_ptr);
-	object_known(i_ptr);
+	object_flavor_aware(i_ptr);
+	object_notice_everything(i_ptr);
 	k_info[i_ptr->k_idx].everseen = TRUE;
 	(void)inven_carry(i_ptr);
 
@@ -621,8 +621,8 @@ static void player_outfit(void)
 	i_ptr->number = (byte)rand_range(3, 7);
 	i_ptr->timeout = FUEL_TORCH;
 	i_ptr->origin = ORIGIN_BIRTH;
-	object_aware(i_ptr);
-	object_known(i_ptr);
+	object_flavor_aware(i_ptr);
+	object_notice_everything(i_ptr);
         k_info[i_ptr->k_idx].everseen = TRUE;
 	(void)inven_carry(i_ptr);
 

@@ -214,6 +214,13 @@ static int get_brand_mult(object_type *o_ptr, const monster_type *m_ptr,
 	{
 		if (!(f[0] & s_ptr->slay_flag)) continue;
 
+		/* notice any brand or slay that would affect the monster */
+		if ((s_ptr->resist_flag) || (r_ptr->flags[2] & s_ptr->monster_flag))
+		{
+			object_notice_slays(o_ptr, s_ptr->slay_flag);
+			wieldeds_notice_slays(s_ptr->slay_flag);
+		}
+
 		/* If the monster doesn't match or the slay flag does */
 		if ((s_ptr->brand && !(r_ptr->flags[2] & s_ptr->resist_flag)) || 
 			(r_ptr->flags[2] & s_ptr->monster_flag))
@@ -230,9 +237,6 @@ static int get_brand_mult(object_type *o_ptr, const monster_type *m_ptr,
 				*hit_verb = s_ptr->range_verb;
 			else
 				*hit_verb = s_ptr->melee_verb;
-
-			/* Do something a bit cleverer here */
-			o_ptr->known_flags[0] |= s_ptr->slay_flag;
 
 			/* Print a cool message for branded rings et al */
 			if (s_ptr->active_verb && secondary)
@@ -363,7 +367,9 @@ void py_attack(int y, int x)
 				k = critical_norm(o_ptr->weight, o_ptr->to_h, k);
 
 				/* Learn by use */
-				object_notice_on_attack();
+				object_notice_attack_plusses(o_ptr);
+				wieldeds_notice_on_attack();
+
 				if (do_quake)
 					wieldeds_notice_flag(2, TR2_IMPACT);
 			}
@@ -436,8 +442,6 @@ void py_attack(int y, int x)
 	/* Mega-Hack -- apply earthquake brand */
 	if (do_quake) earthquake(p_ptr->py, p_ptr->px, 10);
 }
-
-
 
 
 
@@ -538,8 +542,8 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 		target_get(&tx, &ty);
 		if (distance(y, x, ty, tx) > tdis)
 		{
-			msg_print("Target out of range");
-			return;
+			if (!get_check("Target out of range.  Fire anyway? "))
+				return;
 		}
 	}
 
@@ -677,6 +681,9 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 				tdam *= p_ptr->state.ammo_mult;
 				tdam *= MAX(ammo_mult, shoot_mult);
 				tdam = critical_shot(o_ptr->weight, o_ptr->to_h, tdam);
+
+				object_notice_attack_plusses(o_ptr);
+				object_notice_attack_plusses(&inventory[INVEN_BOW]);
 
 				/* No negative damage */
 				if (tdam < 0) tdam = 0;
@@ -1020,6 +1027,13 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 
 				/* No negative damage */
 				if (tdam < 0) tdam = 0;
+
+				/* Learn the bonuses */
+				/* XXX Eddie This is messed up, better done for firing, should use that method [split last] instead */
+				/* check if inven_optimize removed what o_ptr referenced */
+				if (object_similar(i_ptr, o_ptr))
+					object_notice_attack_plusses(o_ptr);
+				object_notice_attack_plusses(i_ptr);
 
 				/* Complex message */
 				if (p_ptr->wizard)

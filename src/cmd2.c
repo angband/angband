@@ -233,7 +233,7 @@ static void chest_death(int y, int x, s16b o_idx)
 	o_ptr->pval = 0;
 
 	/* Known */
-	object_known(o_ptr);
+	object_notice_everything(o_ptr);
 }
 
 
@@ -421,7 +421,7 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	if (j < 2) j = 2;
 
 	/* Must find the trap first. */
-	if (!object_known_p(o_ptr))
+	if (!object_is_known(o_ptr))
 	{
 		msg_print("I don't see any traps.");
 	}
@@ -568,7 +568,7 @@ static int count_chests(int *y, int *x, bool trapped)
 
 		/* No (known) traps here */
 		if (trapped &&
-		    (!object_known_p(o_ptr) ||
+		    (!object_is_known(o_ptr) ||
 		     (o_ptr->pval < 0) ||
 		     !chest_traps[o_ptr->pval]))
 		{

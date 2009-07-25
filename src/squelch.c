@@ -306,7 +306,7 @@ int apply_autoinscription(object_type *o_ptr)
 	cptr existing_inscription = quark_str(o_ptr->note);
 
 	/* Don't inscribe unaware objects */
-	if (!note || !object_aware_p(o_ptr))
+	if (!note || !object_flavor_is_aware(o_ptr))
 		return 0;
 
 	/* Don't re-inscribe if it's already inscribed */
@@ -436,26 +436,15 @@ bool squelch_tval(int tval)
 }
 
 
-/* 
- * The header file for a_info says that max_num is not used and is 1 but it
- * appears to be 0 in reality.  This hack is no worse than the existence of
- * cur_num in a_info.  In other words, a nasty but not totally obscene hack.
- */
-
-/*
- * The value for a_ptr->cur_num that means an artifact is being ignored a la
- * squelch
- */
-#define ARTIFACT_IGNORE_HACK 2
-
-
 /*
  * Mark an artifact as one to ignore for the rest of the game.
  */
 void ignore_artifact(const object_type *o_ptr)
 {
+#if 0
 	assert(artifact_p(o_ptr));
 	a_info[o_ptr->name1].cur_num = ARTIFACT_IGNORE_HACK;
+#endif
 }
 
 
@@ -464,12 +453,14 @@ void ignore_artifact(const object_type *o_ptr)
  */
 bool artifact_is_ignored(const object_type *o_ptr)
 {
+#if 0
 	if (!artifact_p(o_ptr))
 		return FALSE;
 
 	if (a_info[o_ptr->name1].cur_num == ARTIFACT_IGNORE_HACK)
 		return TRUE;
 	else
+#endif
 		return FALSE;
 }
 
@@ -480,7 +471,7 @@ bool artifact_is_ignored(const object_type *o_ptr)
 static void object_squelch_flavor_of(const object_type *o_ptr)
 {
 	assert(squelch_tval(o_ptr->tval));
-	if (object_aware_p(o_ptr))
+	if (object_flavor_is_aware(o_ptr))
 		k_info[o_ptr->k_idx].squelch |= SQUELCH_IF_AWARE;
 	else
 		k_info[o_ptr->k_idx].squelch |= SQUELCH_IF_UNAWARE;
@@ -586,7 +577,7 @@ byte squelch_level_of(const object_type *o_ptr)
 		if (object_was_worn(o_ptr))
 			value = SQUELCH_EXCELLENT_NO_SPL; /* object would be sensed if it were splendid */
 		else
-			value = SQUELCH_ALL;
+			value = SQUELCH_MAX;
 	}
 
 	return value;
@@ -651,7 +642,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 		return TRUE;
 
 	/* Do squelching by kind */
-	if (object_aware_p(o_ptr) ?
+	if (object_flavor_is_aware(o_ptr) ?
 			kind_is_squelched_aware(k_ptr) :
 			kind_is_squelched_unaware(k_ptr))
 		return TRUE;
@@ -1235,7 +1226,7 @@ bool squelch_interactive(const object_type *o_ptr)
 		strnfmt(out_val, sizeof out_val, "Ignore %s in future? ",
 				sval_name);
 
-		if (!artifact_p(o_ptr) || !object_aware_p(o_ptr))
+		if (!artifact_p(o_ptr) || !object_flavor_is_aware(o_ptr))
 		{
 			if (get_check(out_val))
 			{

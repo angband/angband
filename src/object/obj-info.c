@@ -230,7 +230,7 @@ static bool describe_curses(const object_type *o_ptr, u32b f3)
 			text_out_c(TERM_L_RED, "Permanently cursed.\n");
 		else if (f3 & TR2_HEAVY_CURSE)
 			text_out_c(TERM_L_RED, "Heavily cursed.\n");
-		else if (object_known_p(o_ptr))
+		else if (object_is_known(o_ptr))
 			text_out_c(TERM_L_RED, "Cursed.\n");
 		else
 			return FALSE;
@@ -541,7 +541,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 		/* Potions can have special text */
 		if (o_ptr->tval != TV_POTION) return FALSE;
 		if (!o_ptr->dd || !o_ptr->ds) return FALSE;
-		if (!object_known_p(o_ptr)) return FALSE;
+		if (!object_is_known(o_ptr)) return FALSE;
 
 		text_out("It can be thrown at creatures with damaging effect.\n");
 		return TRUE;
@@ -592,15 +592,15 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 		int tdis = 6 + 2 * p_ptr->state.ammo_mult;
 		u32b g[OBJ_FLAG_N];
 
-		if (object_known_p(o_ptr)) plus += o_ptr->to_h;
+		if (object_is_known(o_ptr)) plus += o_ptr->to_h;
 
 		calculate_missile_crits(&p_ptr->state, o_ptr->weight, plus,
 				&crit_mult, &crit_add, &crit_div);
 
 		/* Calculate damage */
 		dam = ((o_ptr->ds + 1) * o_ptr->dd * 5);
-		if (object_known_p(o_ptr)) dam += (o_ptr->to_d * 10);
-		if (object_known_p(j_ptr)) dam += (j_ptr->to_d * 10);
+		if (object_is_known(o_ptr)) dam += (o_ptr->to_d * 10);
+		if (object_is_known(j_ptr)) dam += (j_ptr->to_d * 10);
 		dam *= p_ptr->state.ammo_mult;
 
 		/* Apply brands from the shooter to the ammo */
@@ -828,7 +828,7 @@ static bool describe_light(const object_type *o_ptr, u32b f3, bool terse)
 
 
 /*
- * Describe an object's activation, if any.
+ * Describe an object's effect, if any.
  */
 static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 		bool only_artifacts, bool subjective)
@@ -841,7 +841,6 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 	if (o_ptr->name1)
 	{
 		const artifact_type *a_ptr = &a_info[o_ptr->name1];
-		if (!object_activation_is_visible(o_ptr) && !full) return FALSE;
 
 		if (object_effect_is_known(o_ptr) || full)
 		{
@@ -850,7 +849,7 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 			dice = a_ptr->time_dice;
 			sides = a_ptr->time_sides;
 		}
-		else
+		else if (object_effect(o_ptr))
 		{
 			text_out("It can be activated.\n");
 			return TRUE;
@@ -865,7 +864,7 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 			dice = k_ptr->time_dice;
 			sides = k_ptr->time_sides;
 		}
-		else if (object_activation_is_visible(o_ptr))
+		else if (object_effect(o_ptr) != 0)
 		{
 			text_out("It can be activated.\n");
 			return TRUE;
@@ -880,12 +879,11 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 	if (!desc) return FALSE;
 
 	/* Sometimes only print artifact activation info */
-	if (only_artifacts == TRUE && !(f3 & TR2_ACTIVATE))
+	if (only_artifacts == TRUE &&
+			o_ptr->name1 && a_info[o_ptr->name1].effect)
 		return FALSE;
 
-	if (f3 & TR2_ACTIVATE)
-		text_out("When activated, it ");
-	else if (effect_aim(effect))
+	if (effect_aim(effect))
 		text_out("When aimed, it ");
 	else if (o_ptr->tval == TV_FOOD)
 		text_out("When eaten, it ");
@@ -894,7 +892,7 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 	else if (o_ptr->tval == TV_SCROLL)
 	    text_out("When read, it ");
 	else
-	    text_out("When used, it ");
+	    text_out("When activated, it ");
 
 	/* Print a colourised description */
 	do
@@ -1017,14 +1015,14 @@ void object_info_header(const object_type *o_ptr)
 
 	/* Display the known artifact description */
 	if (!OPT(adult_randarts) && o_ptr->name1 &&
-	    object_known_p(o_ptr) && a_info[o_ptr->name1].text)
+	    object_is_known(o_ptr) && a_info[o_ptr->name1].text)
 	{
 		text_out(a_text + a_info[o_ptr->name1].text);
 		text_out("\n\n");
 	}
 
 	/* Display the known object description */
-	else if (object_aware_p(o_ptr) || object_known_p(o_ptr))
+	else if (object_flavor_is_aware(o_ptr) || object_is_known(o_ptr))
 	{
 		bool did_desc = FALSE;
 
@@ -1060,7 +1058,7 @@ static bool object_info_out(const object_type *o_ptr, bool full, bool terse, boo
 {
 	u32b f[OBJ_FLAG_N];
 	bool something = FALSE;
-	bool known = object_known_p(o_ptr);
+	bool known = object_is_known(o_ptr);
 	
 	/* Grab the object flags */
 	if (full)

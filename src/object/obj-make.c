@@ -430,7 +430,7 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 		if (!a_ptr->name) continue;
 
 		/* Cannot make an artifact twice */
-		if (a_ptr->cur_num) continue;
+		if (a_ptr->created) continue;
 
 		/* Enforce minimum "depth" (loosely) */
 		if (a_ptr->level > p_ptr->depth)
@@ -467,8 +467,8 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 		/* Copy across all the data from the artifact struct */
 		copy_artifact_data(o_ptr, a_ptr);
 
-		/* Hack -- Mark the artifact as "created" */
-		a_ptr->cur_num = 1;
+		/* Mark the artifact as "created" */
+		a_ptr->created = 1;
 
 		/* Success */
 		return TRUE;
@@ -509,7 +509,7 @@ static bool make_artifact(object_type *o_ptr)
 		if (!a_ptr->name) continue;
 
 		/* Cannot make an artifact twice */
-		if (a_ptr->cur_num) continue;
+		if (a_ptr->created) continue;
 
 		/* Must have the correct fields */
 		if (a_ptr->tval != o_ptr->tval) continue;
@@ -535,7 +535,7 @@ static bool make_artifact(object_type *o_ptr)
 		copy_artifact_data(o_ptr, a_ptr);
 
 		/* Hack -- Mark the artifact as "created" */
-		a_ptr->cur_num = 1;
+		a_ptr->created = 1;
 
 		return TRUE;
 	}
@@ -1058,6 +1058,24 @@ static const u32b ego_sustains[] =
 	TR1_SUST_CHR,
 };
 
+/*
+ * Which TR? flags have the sustains
+ */
+unsigned ego_xtra_sustain_idx(void)
+{
+	return 1;
+}
+
+u32b ego_xtra_sustain_list(void)
+{
+	u32b ret = 0;
+
+	int i;
+	for (i = 0; i < N_ELEMENTS(ego_sustains); i++)
+		ret |= ego_sustains[i];
+	return ret;
+}
+
 static const u32b ego_resists[] =
 {
 	TR1_RES_POIS,
@@ -1074,6 +1092,24 @@ static const u32b ego_resists[] =
 	TR1_RES_DISEN,
 };
 
+/*
+ * Which TR? flags have the random resists
+ */
+unsigned ego_xtra_resist_idx(void)
+{
+	return 1;
+}
+
+u32b ego_xtra_resist_list(void)
+{
+	u32b ret = 0;
+
+	int i;
+	for (i = 0; i < N_ELEMENTS(ego_resists); i++)
+		ret |= ego_resists[i];
+	return ret;
+}
+
 static const u32b ego_powers[] =
 {
 	TR2_SLOW_DIGEST,
@@ -1085,6 +1121,24 @@ static const u32b ego_powers[] =
 	TR2_FREE_ACT,
 	TR2_HOLD_LIFE,
 };
+
+/*
+ * Which TR? flags have the random powers
+ */
+unsigned ego_xtra_power_idx(void)
+{
+	return 2;
+}
+
+u32b ego_xtra_power_list(void)
+{
+	u32b ret = 0;
+
+	int i;
+	for (i = 0; i < N_ELEMENTS(ego_powers); i++)
+		ret |= ego_powers[i];
+	return ret;
+}
 
 
 

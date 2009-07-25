@@ -93,13 +93,13 @@ void search(void)
 					if (!chest_traps[o_ptr->pval]) continue;
 
 					/* Identify once */
-					if (!object_known_p(o_ptr))
+					if (!object_is_known(o_ptr))
 					{
 						/* Message */
 						msg_print("You have discovered a trap on the chest!");
 
 						/* Know the trap */
-						object_known(o_ptr);
+						object_notice_everything(o_ptr);
 
 						/* Notice it */
 						disturb(0, 0);
@@ -274,7 +274,7 @@ static void py_pickup_aux(int o_idx, bool msg)
 
 	/* Log if picking up an artifact. */
 	if (artifact_p(o_ptr))
-		history_add_artifact(o_ptr->name1, object_known_p(o_ptr));
+		history_add_artifact(o_ptr->name1, object_is_known(o_ptr));
 
 	/* Delete the object */
 	delete_object_idx(o_idx);

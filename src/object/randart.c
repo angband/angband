@@ -697,7 +697,7 @@ static s16b choose_item(int a_idx)
 	 * ToDo: proper random activations
 	 */
 	if (a_ptr->tval == TV_DRAG_ARMOR)
-		a_ptr->flags[2] &= ~TR2_ACTIVATE;
+		a_ptr->effect = 0;
 
 	/* Artifacts ignore everything */
 	a_ptr->flags[2] |= TR2_IGNORE_MASK;
@@ -3099,7 +3099,6 @@ static void scramble_artifact(int a_idx)
 	artifact_type *a_ptr = &a_info[a_idx];
 	artifact_type a_old;
 	object_kind *k_ptr;
-	u32b activates = a_ptr->flags[2] & TR2_ACTIVATE;
 	s32b power;
 	int tries = 0;
 	s16b k_idx;
@@ -3320,7 +3319,6 @@ static void scramble_artifact(int a_idx)
 	if (a_ptr->cost < 0) a_ptr->cost = 0;
 
 	/* Restore some flags */
-	if (activates) a_ptr->flags[2] |= TR2_ACTIVATE;
 	if (a_ptr->tval == TV_LITE) a_ptr->flags[2] |= TR2_NO_FUEL;
 	if (a_idx < ART_MIN_NORMAL) a_ptr->flags[2] |= TR2_INSTA_ART;
 

@@ -462,8 +462,8 @@ void place_object(int y, int x, int level, bool good, bool great)
 		/* Give it to the floor */
 		if (!floor_carry(y, x, i_ptr))
 		{
-			/* Hack -- Preserve artifacts */
-			a_info[i_ptr->name1].cur_num = 0;
+			/* XXX Should this be done in floor_carry? */
+			a_info[i_ptr->name1].created = FALSE;
 		}
 	}
 }

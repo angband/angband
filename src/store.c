@@ -324,7 +324,7 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 				case TV_SWORD:
 				{
 					/* Known blessed blades are accepted too */
-					if (is_blessed(o_ptr) && object_known_p(o_ptr)) break;
+					if (is_blessed(o_ptr) && object_is_known(o_ptr)) break;
 				}
 
 				default:
@@ -818,16 +818,16 @@ static int home_carry(object_type *o_ptr)
 		if (o_ptr->tval < j_ptr->tval) continue;
 
 		/* Can happen in the home */
-		if (!object_aware_p(o_ptr)) continue;
-		if (!object_aware_p(j_ptr)) break;
+		if (!object_flavor_is_aware(o_ptr)) continue;
+		if (!object_flavor_is_aware(j_ptr)) break;
 
 		/* Objects sort by increasing sval */
 		if (o_ptr->sval < j_ptr->sval) break;
 		if (o_ptr->sval > j_ptr->sval) continue;
 
 		/* Objects in the home can be unknown */
-		if (!object_known_p(o_ptr)) continue;
-		if (!object_known_p(j_ptr)) break;
+		if (!object_is_known(o_ptr)) continue;
+		if (!object_is_known(j_ptr)) break;
 
 		/* Objects sort by decreasing value */
 		j_value = object_value(j_ptr, 1, TRUE);
@@ -1288,7 +1288,6 @@ static bool store_create_random(int st)
 		}
 
 		/* The object is "known" and belongs to a store */
-		object_known(i_ptr);
 		i_ptr->ident |= IDENT_STORE;
 		i_ptr->origin = ORIGIN_STORE;
 
@@ -1377,9 +1376,6 @@ static int store_create_item(int st, int tval, int sval)
 
 	/* Create a new object of the chosen kind */
 	object_prep(&object, k_idx);
-
-	/* The object is "known" */
-	object_known(&object);
 
 	/* Item belongs to a store */
 	object.ident |= IDENT_STORE;
@@ -1941,7 +1937,7 @@ static int find_inven(const object_type *o_ptr)
 			case TV_LITE:
 			{
 				/* Require both items to be known */
-				if (!object_known_p(o_ptr) || !object_known_p(j_ptr)) continue;
+				if (!object_is_known(o_ptr) || !object_is_known(j_ptr)) continue;
 
 				/* Fall through */
 			}
@@ -1952,7 +1948,7 @@ static int find_inven(const object_type *o_ptr)
 			case TV_SHOT:
 			{
 				/* Require identical knowledge of both items */
-				if (object_known_p(o_ptr) != object_known_p(j_ptr)) continue;
+				if (object_is_known(o_ptr) != object_is_known(j_ptr)) continue;
 
 				/* Require identical "bonuses" */
 				if (o_ptr->to_h != j_ptr->to_h) continue;
@@ -1985,7 +1981,7 @@ static int find_inven(const object_type *o_ptr)
 			default:
 			{
 				/* Require knowledge */
-				if (!object_known_p(o_ptr) || !object_known_p(j_ptr)) continue;
+				if (!object_is_known(o_ptr) || !object_is_known(j_ptr)) continue;
 
 				/* Probably okay */
 				break;
@@ -2064,8 +2060,8 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 	/* Update the display */
 	store_flags |= STORE_GOLD_CHANGE;
 
-	/* Buying an object makes you aware of it */
-	object_aware(i_ptr);
+	/* ID objects on buy */
+	object_notice_everything(i_ptr);
 
 	/* Combine / Reorder the pack (later) */
 	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
@@ -2263,7 +2259,7 @@ static bool store_purchase(int item)
 	}
 
 	/* Find the number of this item in the inventory */
-	if (!object_aware_p(o_ptr))
+	if (!object_flavor_is_aware(o_ptr))
 		num = 0;
 	else
 		num = find_inven(o_ptr);
@@ -2396,8 +2392,8 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 	store_flags |= STORE_GOLD_CHANGE;
 	
 	/* Identify original object */
-	object_aware(o_ptr);
-	object_known(o_ptr);
+	object_flavor_aware(o_ptr);
+	object_notice_everything(o_ptr);
 	
 	/* Update the auto-history if selling an artifact that was previously un-IDed. (Ouch!) */
 	if (artifact_p(o_ptr))

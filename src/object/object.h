@@ -55,29 +55,39 @@ typedef enum
 /* identify.c */
 extern s32b object_last_wield;
 
+bool object_is_known(const object_type *o_ptr);
+bool object_is_known_artifact(const object_type *o_ptr);
 bool object_was_worn(const object_type *o_ptr);
 bool object_was_sensed(const object_type *o_ptr);
-bool object_pval_is_visible(const object_type *o_ptr);
-bool object_activation_is_visible(const object_type *o_ptr);
+bool object_flavor_is_aware(const object_type *o_ptr);
+bool object_flavor_was_tried(const object_type *o_ptr);
 bool object_effect_is_known(const object_type *o_ptr);
+bool object_pval_is_visible(const object_type *o_ptr);
 bool object_ego_is_visible(const object_type *o_ptr);
 bool object_attack_plusses_are_visible(const object_type *o_ptr);
 bool object_defence_plusses_are_visible(const object_type *o_ptr);
-bool object_flavor_was_tried(const object_type *o_ptr);
 bool object_flag_is_known(const object_type *o_ptr, int idx, u32b flag);
 bool object_high_resist_is_possible(const object_type *o_ptr);
-
-void object_known(object_type *o_ptr);
-void object_aware(object_type *o_ptr);
+void object_flavor_aware(object_type *o_ptr);
 void object_flavor_tried(object_type *o_ptr);
-void object_notice_on_attack(void);
-void object_notice_on_defend(void);
-void object_notice_slays(u32b known_f1, int inven_idx);
-void wieldeds_notice_flag(int flagset, u32b flag);
+void object_notice_everything(object_type *o_ptr);
+void object_notice_indestructible(object_type *o_ptr);
+void object_notice_ego(object_type *o_ptr);
+void object_notice_sensing(object_type *o_ptr);
+void object_notice_effect(object_type *o_ptr);
+void object_notice_slays(object_type *o_ptr, u32b known_f0);
+void object_notice_attack_plusses(object_type *o_ptr);
+void object_notice_flags(object_type *o_ptr, int flagset, u32b flags);
 bool object_notice_curses(object_type *o_ptr);
+void object_notice_on_defend(void);
 void object_notice_on_wield(object_type *o_ptr);
+void wieldeds_notice_flag(int flagset, u32b flag);
+void wieldeds_notice_on_attack(void);
+void wieldeds_notice_slays(u32b known_f0);
+void object_repair_knowledge(object_type *o_ptr);
 obj_pseudo_t object_pseudo(const object_type *o_ptr);
 void sense_inventory(void);
+
 
 /* obj-desc.c */
 void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know);
@@ -99,6 +109,14 @@ s16b get_obj_num(int level, bool good);
 void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great);
 bool make_object(object_type *j_ptr, int lev, bool good, bool great);
 void make_gold(object_type *j_ptr, int lev, int coin_type);
+
+unsigned ego_xtra_sustain_idx(void);
+u32b ego_xtra_sustain_list(void);
+unsigned ego_xtra_resist_idx(void);
+u32b ego_xtra_resist_list(void);
+unsigned ego_xtra_power_idx(void);
+u32b ego_xtra_power_list(void);
+
 
 /* obj-ui.c */
 void display_inven(void);
@@ -167,12 +185,16 @@ int lookup_artifact_name(const char *name);
 int lookup_sval(int tval, const char *name);
 int tval_find_idx(const char *name);
 const char *tval_find_name(int tval);
+artifact_type *artifact_of(const object_type *o_ptr);
+object_kind *object_kind_of(const object_type *o_ptr);
 bool obj_is_staff(const object_type *o_ptr);
 bool obj_is_wand(const object_type *o_ptr);
 bool obj_is_rod(const object_type *o_ptr);
 bool obj_is_potion(const object_type *o_ptr);
 bool obj_is_scroll(const object_type *o_ptr);
 bool obj_is_food(const object_type *o_ptr);
+bool obj_is_lite(const object_type *o_ptr);
+bool obj_is_ammo(const object_type *o_ptr);
 bool obj_can_zap(const object_type *o_ptr);
 bool obj_is_activatable(const object_type *o_ptr);
 bool obj_can_activate(const object_type *o_ptr);
@@ -181,11 +203,14 @@ bool obj_can_browse(const object_type *o_ptr);
 bool obj_can_takeoff(const object_type *o_ptr);
 bool obj_can_wear(const object_type *o_ptr);
 bool obj_has_inscrip(const object_type *o_ptr);
+u16b object_effect(const object_type *o_ptr);
 object_type *object_from_item_idx(int item);
 bool obj_needs_aim(object_type *o_ptr);
 bool get_item_okay(int item);
 int scan_items(int *item_list, size_t item_list_max, int mode);
 bool item_is_available(int item, bool (*tester)(const object_type *), int mode);
+extern void display_itemlist(void);
+
 
 /* obj-power.c and randart.c */
 s32b object_power(const object_type *o_ptr, int verbose, ang_file *log_file);

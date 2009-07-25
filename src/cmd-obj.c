@@ -448,7 +448,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	object_type *o_ptr = object_from_item_idx(item);
 	int effect;
 	bool ident = FALSE, used;
-	bool was_aware = object_aware_p(o_ptr);
+	bool was_aware = object_flavor_is_aware(o_ptr);
 	int dir = 5;
 	int px = p_ptr->px, py = p_ptr->py;
 	int snd;
@@ -530,16 +530,11 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	track_object(item);
 
 	/* Figure out effect to use */
-	if (o_ptr->name1)
-		effect = a_info[o_ptr->name1].effect;
-	else
-		effect = k_info[o_ptr->k_idx].effect;
+	effect = object_effect(o_ptr);
 
 	/* If the item requires a direction, get one (allow cancelling) */	
 	if (obj_needs_aim(o_ptr))
-	{
 		dir = args[1].direction;
-	}
 
 	/* Use energy regardless of failure */
 	p_ptr->energy_use = 100;
@@ -565,10 +560,11 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 
 	/* A bit of a hack to make ID work better.
 	   -- Check for "obvious" effects beforehand. */
-	if (effect_obvious(effect)) object_aware(o_ptr);
+	if (effect_obvious(effect)) object_flavor_aware(o_ptr);
 
 	/* Do effect */
 	used = effect_do(effect, &ident, was_aware, dir, beam_chance(o_ptr->tval));
+	if (ident) object_notice_effect(o_ptr);
 
 	/* Food feeds the player */
 	if (o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION)
@@ -590,8 +586,8 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		/* Object level */
 		int lev = k_info[o_ptr->k_idx].level;
 
-		object_aware(o_ptr);
-		if (o_ptr->tval == TV_ROD) object_known(o_ptr);
+		object_flavor_aware(o_ptr);
+		if (o_ptr->tval == TV_ROD) object_notice_everything(o_ptr);
 		gain_exp((lev + (p_ptr->lev / 2)) / p_ptr->lev);
 		p_ptr->notice |= PN_SQUELCH;
 	}

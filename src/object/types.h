@@ -69,7 +69,7 @@ typedef struct
 	bool aware;    /**< Set if player is aware of the kind's effects */
 	bool tried;    /**< Set if kind has been tried */
 
-	bool squelch;  /**< Set if kind should be squelched */
+	byte squelch;  /**< Squelch settings */
 	bool everseen; /**< Set if kind has ever been seen (to despoilify squelch menus) */
 } object_kind;
 
@@ -109,8 +109,8 @@ typedef struct
 	byte level;   /**< Minimum depth artifact can appear at */
 	byte rarity;  /**< Artifact rarity */
 
-	byte max_num; /**< Unused (should be "1") */
-	byte cur_num; /**< Number created (0 or 1) */
+	byte created;	/**< Whether this artifact has been created */
+	byte seen;	/**< Whether this artifact has been seen as an artifact */
 
 	u16b effect;     /**< Artifact activation (see effects.c) */
 	u32b effect_msg; /**< (const char *) artifact_type::effect_msg + a_text = Effect message */

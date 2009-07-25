@@ -687,8 +687,10 @@ static void wiz_statistics(object_type *o_ptr, int level)
 	cptr q = "Rolls: %ld, Matches: %ld, Better: %ld, Worse: %ld, Other: %ld";
 
 
-	/* Mega-Hack -- allow multiple artifacts XXX XXX XXX */
-	if (artifact_p(o_ptr)) a_info[o_ptr->name1].cur_num = 0;
+	artifact_type *a_ptr = artifact_of(o_ptr);
+
+	/* Allow multiple artifacts, because breaking the game is fine here */
+	if (a_ptr) a_ptr->created = FALSE;
 
 
 	/* Interact */
@@ -771,10 +773,9 @@ static void wiz_statistics(object_type *o_ptr, int level)
 			/* Create an object */
 			make_object(i_ptr, level, good, great);
 
-
-			/* Mega-Hack -- allow multiple artifacts XXX XXX XXX */
-			if (artifact_p(i_ptr)) a_info[i_ptr->name1].cur_num = 0;
-
+			/* Allow multiple artifacts, because breaking the game is fine here */
+			a_ptr = artifact_of(o_ptr);
+			if (a_ptr) a_ptr->created = FALSE;
 
 			/* Test for the same tval and sval. */
 			if ((o_ptr->tval) != (i_ptr->tval)) continue;
@@ -821,7 +822,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 
 
 	/* Hack -- Normally only make a single artifact */
-	if (artifact_p(o_ptr)) a_info[o_ptr->name1].cur_num = 1;
+	if (artifact_p(o_ptr)) a_info[o_ptr->name1].created = TRUE;
 }
 
 
@@ -1104,7 +1105,7 @@ static void wiz_create_artifact(int a_idx)
 		i_ptr->flags[2] |= (a_ptr->flags[2] & TR2_CURSE_MASK);
 
 	/* Mark that the artifact has been created. */
-	a_ptr->cur_num = 1;
+	a_ptr->created = TRUE;
 
 	/* Mark as cheat */
 	i_ptr->origin = ORIGIN_CHEAT;
@@ -1231,7 +1232,7 @@ static void do_cmd_wiz_learn(void)
 			object_prep(i_ptr, i);
 
 			/* Awareness */
-			object_aware(i_ptr);
+			object_flavor_aware(i_ptr);
 		}
 	}
 }

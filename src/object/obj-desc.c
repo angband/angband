@@ -225,8 +225,8 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
-	bool known = object_known_p(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
-	bool aware = object_aware_p(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
+	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
+	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
 
 	const char *basename = obj_desc_get_basename(o_ptr, aware);
 	const char *modstr = obj_desc_get_modstr(o_ptr);
@@ -400,7 +400,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 	else if ((spoil && o_ptr->name2) || object_ego_is_visible(o_ptr))
 		strnfcat(buf, max, &end, " %s", e_name + e_info[o_ptr->name2].name);
 
-	else if (aware && (k_ptr->flavor || k_ptr->tval == TV_SCROLL))
+	else if (aware && !artifact_p(o_ptr) && (k_ptr->flavor || k_ptr->tval == TV_SCROLL))
 		strnfcat(buf, max, &end, " of %s", k_name + k_ptr->name);
 
 	return end;
@@ -416,6 +416,9 @@ static bool obj_desc_show_weapon(const object_type *o_ptr)
 
 	if (f[2] & TR2_SHOW_MODS) return TRUE;
 	if (o_ptr->to_h && o_ptr->to_d) return TRUE;
+
+	/* You need to list both to_h and to_d for things like unaware rings of accuracy and damage e.g. to differentiate (+8) */
+	if ((o_ptr->to_h || o_ptr->to_d) && !object_flavor_is_aware(o_ptr)) return TRUE;
 
 	switch (o_ptr->tval)
 	{
@@ -464,7 +467,7 @@ static bool obj_desc_show_armor(const object_type *o_ptr)
 
 static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, size_t end)
 {
-	bool known = object_known_p(o_ptr) || (o_ptr->ident & IDENT_STORE);
+	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE);
 
 	if (o_ptr->tval != TV_CHEST) return end;
 	if (!known) return end;
@@ -626,8 +629,10 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
+	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE);
+
 	/* Wands and Staffs have charges */
-	if (o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND)
+	if (aware && (o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND))
 		strnfcat(buf, max, &end, " (%d charge%s)", o_ptr->pval, PLURAL(o_ptr->pval));
 
 	/* Charging things */
@@ -674,15 +679,25 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 		u[n++] = quark_str(o_ptr->note);
 
 	/* Use special inscription, if any */
-	if (!object_known_p(o_ptr) && feel)
-		u[n++] = inscrip_text[feel];
-	else if ((o_ptr->ident & IDENT_EMPTY) && !object_known_p(o_ptr))
+	if (!object_is_known(o_ptr) && feel)
+	{
+		/* cannot tell excellent vs strange vs splendid until wield */
+		if (!object_was_worn(o_ptr) && ego_item_p(o_ptr))
+			u[n++] = "ego";
+		else
+			u[n++] = inscrip_text[feel];
+	}
+	else if ((o_ptr->ident & IDENT_EMPTY) && !object_is_known(o_ptr))
 		u[n++] = "empty";
-	else if (!object_aware_p(o_ptr) && object_flavor_was_tried(o_ptr))
+	else if (!object_is_known(o_ptr) && object_was_worn(o_ptr))
+		u[n++] = "wielded";
+	else if (!object_flavor_is_aware(o_ptr) && object_flavor_was_tried(o_ptr))
 		u[n++] = "tried";
 
+	u32b flags[OBJ_FLAG_N];
+	object_flags(o_ptr, flags);
 	/* Note curses */
-	if (o_ptr->known_flags[2] & TR2_CURSE_MASK)
+	if (o_ptr->known_flags[2] & flags[2] & TR2_CURSE_MASK)
 		u[n++] = "cursed";
 
 	/* Note squelch */
@@ -729,9 +744,9 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
 	bool spoil = (mode & ODESC_SPOIL);
-	bool aware = object_aware_p(o_ptr) ||
+	bool aware = object_flavor_is_aware(o_ptr) ||
 			(o_ptr->ident & IDENT_STORE) || spoil;
-	bool known = object_known_p(o_ptr) ||
+	bool known = object_is_known(o_ptr) ||
 			(o_ptr->ident & IDENT_STORE) || spoil;
 
 	size_t end = 0;
@@ -780,7 +795,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 
 	if (mode & ODESC_EXTRA)
 	{
-		if (object_pval_is_visible(o_ptr))
+		if (spoil || object_pval_is_visible(o_ptr))
 			end = obj_desc_pval(o_ptr, buf, max, end);
 
 		end = obj_desc_charges(o_ptr, buf, max, end);

@@ -288,9 +288,12 @@ static void calc_mana(void)
 			/* Reduce mana */
 			msp = (3 * msp) / 4;
 		}
-		else if (f[2] & TR2_FREE_ACT)
+
+		/* XXX Eddie this will have to change with alchemist's gloves */
+		if (!(f[0] & TR0_DEX))
 		{
-			o_ptr->known_flags[2] |= TR2_FREE_ACT;
+			/* If no dex bonus, know whether gloves provide FA */
+			object_notice_flags(o_ptr, 2, TR2_FREE_ACT);
 		}
 	}
 
@@ -677,7 +680,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->dis_ac += o_ptr->ac;
 
 		/* Apply the bonuses to armor class */
-		if (!id_only || object_known_p(o_ptr))
+		if (!id_only || object_is_known(o_ptr))
 			state->to_a += o_ptr->to_a;
 
 		/* Apply the mental bonuses to armor class, if known */
@@ -691,7 +694,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		if (i == INVEN_BOW) continue;
 
 		/* Apply the bonuses to hit/damage */
-		if (!id_only || object_known_p(o_ptr))
+		if (!id_only || object_is_known(o_ptr))
 		{
 			state->to_h += o_ptr->to_h;
 			state->to_d += o_ptr->to_d;

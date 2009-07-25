@@ -156,7 +156,7 @@ static void kind_info(char *buf, size_t buf_len,
 	(*lev) = k_ptr->level;
 
 	/* Make known */
-	i_ptr->ident |= (IDENT_KNOWN);
+	object_notice_everything(i_ptr);
 
 	/* Value */
 	(*val) = object_value(i_ptr, 1, FALSE);

@@ -441,7 +441,7 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr)
 		/* We need to be careful not to reveal the nature of the object
 		 * here.  Assume the player is conservative with unknown items.
 		 */
-		known = object_known_p(o_ptr);
+		known = object_is_known(o_ptr);
 
 		/* Can only be hurt by disenchantment with an enchanted item */
 		if (m >= INVEN_WIELD && (!known || (o_ptr->to_a >= 0) ||

@@ -1976,7 +1976,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ)
 						o_ptr->pval = (0 - o_ptr->pval);
 
 						/* Identify */
-						object_known(o_ptr);
+						object_notice_everything(o_ptr);
 
 						/* Notice */
 						if (o_ptr->marked && !squelch_hide_item(o_ptr))

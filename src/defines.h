@@ -134,6 +134,8 @@
 #define ANGBAND_TERM_MAX 8
 
 
+/* XXX Should be enums */
+
 /*
  * Total number of stores (see "store.c", etc)
  */
@@ -1304,7 +1306,7 @@ enum
 #define TR2_XXX5            0x00100000L /* (reserved) */
 #define TR2_XXX6            0x00200000L /* (reserved) */
 #define TR2_BLESSED         0x00400000L /* Item has been blessed */
-#define TR2_ACTIVATE        0x00800000L /* Item can be activated */
+#define TR2_XXX8            0x00800000L /* (was: activatable) */
 #define TR2_INSTA_ART       0x01000000L /* Item makes an artifact */
 #define TR2_EASY_KNOW       0x02000000L /* Item is known if aware */
 #define TR2_HIDE_TYPE       0x04000000L /* Item hides description */
@@ -1361,7 +1363,7 @@ enum
 
 #define TR2_OBVIOUS_MASK \
 	(TR2_LITE | TR2_SEE_INVIS | TR2_TELEPATHY | TR2_NO_FUEL | \
-	 TR2_BLESSED | TR2_ACTIVATE | TR2_CURSE_MASK | TR2_AFRAID)
+	 TR2_BLESSED | TR2_CURSE_MASK | TR2_AFRAID)
 
 /*
  * Flag set 1 - masks for slays and brands
@@ -1877,34 +1879,13 @@ enum
 
 
 /*
- * Determine if a given inventory item is "aware"
- */
-#define object_kind_aware_p(K) \
-	(k_info[(K)].aware)
-
-#define object_aware_p(T) \
-	(object_kind_aware_p((T)->k_idx))
-
-
-/*
- * Determine if a given inventory item is "known"
- * Test One -- Check for special "known" tag
- * Test Two -- Check for "Easy Know" + "Aware"
- */
-#define object_known_p(T) \
-	(((T)->ident & IDENT_KNOWN) || \
-	 ((k_info[(T)->k_idx].flags[2] & TR2_EASY_KNOW) && \
-	  k_info[(T)->k_idx].aware))
-
-
-/*
  * Determine if the attr and char should consider the item's flavor
  *
  * Identified scrolls should use their own tile.
  */
 #define use_flavor_glyph(K) \
 	((k_info[(K)].flavor) && \
-	 !((k_info[(K)].tval == TV_SCROLL) && object_kind_aware_p(K)))
+	 !((k_info[(K)].tval == TV_SCROLL) && k_info[(K)].aware))
 
 /*
  * Return the "attr" for a given item kind.
@@ -2201,3 +2182,5 @@ enum
 
 #define MAX_ITEMLIST 256
 
+/* Whether to learn egos and flavors with less than complete information */
+#define EASY_LEARN 1

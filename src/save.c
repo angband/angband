@@ -304,8 +304,8 @@ void wr_artifacts(void)
 	for (i = 0; i < tmp16u; i++)
 	{
 		artifact_type *a_ptr = &a_info[i];
-		wr_byte(a_ptr->cur_num);
-		wr_byte(0);
+		wr_byte(a_ptr->created);
+		wr_byte(a_ptr->seen);
 		wr_byte(0);
 		wr_byte(0);
 	}
