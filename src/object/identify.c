@@ -356,13 +356,16 @@ void object_notice_ego(object_type *o_ptr)
 
 
 /*
- *
+ * Mark an object as sensed.
  */
 void object_notice_sensing(object_type *o_ptr)
 {
 	/* XXX Eddie can be called to repair knowledge, should print messages only if IDENT_SENSE prev not set */
 	if (!object_was_sensed(o_ptr))
 	{
+		artifact_type *a_ptr = artifact_of(o_ptr);
+		if (a_ptr) a_ptr->seen = TRUE;
+
 		o_ptr->ident |= IDENT_SENSE;
 		object_check_for_ident(o_ptr);
 	}
@@ -983,6 +986,8 @@ void sense_inventory(void)
 		else
 			text = inscrip_text[feel];
 
+		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
+
 		/* Average pseudo-ID means full ID */
 		if (feel == INSCRIP_AVERAGE)
 		{
@@ -995,8 +1000,6 @@ void sense_inventory(void)
 		}
 		else
 		{
-			object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
-
 			if (i >= INVEN_WIELD)
 			{
 				message_format(MSG_PSEUDOID, 0, "You feel the %s (%c) you are %s %s %s...",
@@ -1026,4 +1029,5 @@ void sense_inventory(void)
 		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 	}
 }
+
 
