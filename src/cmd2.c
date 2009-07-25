@@ -2190,8 +2190,8 @@ void do_cmd_hold(cmd_code code, cmd_arg args[])
 		search();
 	}
 
-	/* Handle objects now.  XXX XXX XXX */
-	p_ptr->energy_use += py_pickup(0) * 10;
+	/* Pick things up, not using extra energy */
+	(void)py_pickup(0);
 
 	/* Hack -- enter a store if we are on one */
 	if ((cave_feat[p_ptr->py][p_ptr->px] >= FEAT_SHOP_HEAD) &&
