@@ -137,6 +137,7 @@ s16b label_to_inven(int c);
 s16b label_to_equip(int c);
 bool wearable_p(const object_type *o_ptr);
 s16b wield_slot(const object_type *o_ptr);
+bool slot_can_wield_item(int slot, const object_type *o_ptr);
 const char *mention_use(int slot);
 cptr describe_use(int i);
 bool item_tester_okay(const object_type *o_ptr);

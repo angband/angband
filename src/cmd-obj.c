@@ -287,14 +287,13 @@ void do_cmd_takeoff(cmd_code code, cmd_arg args[])
 /* Wield or wear an item */
 void do_cmd_wield(cmd_code code, cmd_arg args[])
 {
-	int slot;
 	object_type *equip_o_ptr;
-
 	char o_name[80];
 
 	unsigned n;
-	
+
 	int item = args[0].item;
+	int slot = args[1].number;
 	object_type *o_ptr = object_from_item_idx(item);
 
 	if (!item_is_available(item, NULL, USE_INVEN | USE_FLOOR))
@@ -304,7 +303,12 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 	}	
 
 	/* Check the slot */
-	slot = wield_slot(o_ptr);
+	if (!slot_can_wield_item(slot, o_ptr))
+	{
+		msg_print("You cannot wield that item there.");
+		return;
+	}
+
 	equip_o_ptr = &inventory[slot];
 
 	/* Check for existing wielded item */
@@ -333,7 +337,7 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 		}
 	}
 
-	wield_item(o_ptr, item);
+	wield_item(o_ptr, item, slot);
 }
 
 /* Drop an item */
@@ -368,6 +372,12 @@ static void obj_drop(object_type *o_ptr, int item)
 	if (amt <= 0) return;
 
 	cmd_insert(CMD_DROP, item, amt);
+}
+
+static void obj_wield(object_type *o_ptr, int item)
+{
+	int slot = wield_slot(o_ptr);
+	cmd_insert(CMD_WIELD, item, slot);
 }
 
 
@@ -742,7 +752,7 @@ static item_act_t item_actions[] =
 	  "Take off which item? ", "You are not wearing anything you can take off.",
 	  obj_can_takeoff, USE_EQUIP, NULL },
 
-	{ NULL, CMD_WIELD, "wield",
+	{ obj_wield, CMD_WIELD, "wield",
 	  "Wear/Wield which item? ", "You have nothing you can wear or wield.",
 	  obj_can_wear, (USE_INVEN | USE_FLOOR), NULL },
 

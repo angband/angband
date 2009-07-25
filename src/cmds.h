@@ -84,7 +84,7 @@ void textui_cmd_suicide(void);
 /* cmd3.c */
 void do_cmd_inven(void);
 void do_cmd_equip(void);
-void wield_item(object_type *o_ptr, int item);
+void wield_item(object_type *o_ptr, int item, int slot);
 void do_cmd_destroy(cmd_code code, cmd_arg args[]);
 void textui_cmd_destroy(void);
 void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item);

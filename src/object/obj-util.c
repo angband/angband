@@ -468,7 +468,6 @@ bool wearable_p(const object_type *o_ptr)
 	return (FALSE);
 }
 
-
 /*
  * Determine which equipment slot (if any) an item likes
  */
@@ -545,6 +544,15 @@ s16b wield_slot(const object_type *o_ptr)
 
 	/* No slot available */
 	return (-1);
+}
+
+
+bool slot_can_wield_item(int slot, const object_type *o_ptr)
+{
+	if (wield_slot(o_ptr) == slot)
+		return TRUE;
+	else
+		return FALSE;
 }
 
 

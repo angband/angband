@@ -103,15 +103,13 @@ void do_cmd_equip(void)
 /*
  * Wield or wear a single item from the pack or floor
  */
-void wield_item(object_type *o_ptr, int item)
+void wield_item(object_type *o_ptr, int item, int slot)
 {
 	object_type object_type_body;
 	object_type *i_ptr = &object_type_body;
 
 	cptr act;
 	char o_name[80];
-
-	int slot = wield_slot(o_ptr);
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
