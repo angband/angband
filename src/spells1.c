@@ -1148,7 +1148,21 @@ bool inc_stat(int stat)
 	if (value < 18)
 		p_ptr->stat_cur[stat] += 1;
 	else if (value < 18+90)
-		p_ptr->stat_cur[stat] += 10;
+	{
+		int gain;
+
+                /* Approximate gain value */ 
+                gain = (((18+100) - value) / 2 + 3) / 2; 
+ 
+                /* Paranoia */ 
+                if (gain < 1) gain = 1; 
+ 
+                /* Apply the bonus */ 
+                value += randint1(gain) + gain / 2; 
+ 
+                /* Maximal value */ 
+                if (value > 18+99) value = 18 + 99;
+	}
 	else
 		p_ptr->stat_cur[stat] = 18+100;
 
