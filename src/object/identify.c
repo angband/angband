@@ -411,16 +411,22 @@ static void object_notice_defence_plusses(object_type *o_ptr)
 {
 	char o_name[80];
 
+	if (!o_ptr->k_idx) return;
 	if (o_ptr->ident & IDENT_DEFENCE)
 		return;
 
 	o_ptr->ident |= IDENT_DEFENCE;
 	object_check_for_ident(o_ptr);
 
-	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
-	message_format(MSG_PSEUDOID, 0,
-			"You feel your better know the %s you are wearing.",
-			o_name);
+#if 0
+	if (o_ptr->ac || o_ptr->to_a)
+	{
+		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
+		message_format(MSG_PSEUDOID, 0,
+				"You feel your better know the %s you are wearing.",
+				o_name);
+	}
+#endif
 }
 
 
@@ -428,16 +434,22 @@ void object_notice_attack_plusses(object_type *o_ptr)
 {
 	char o_name[80];
 
+	if (!o_ptr->k_idx) return;
 	if (o_ptr->ident & IDENT_ATTACK)
 		return;
 
 	o_ptr->ident |= IDENT_ATTACK;
 	object_check_for_ident(o_ptr);
 
-	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
-	message_format(MSG_PSEUDOID, 0,
-			"You feel your better know the %s you are attacking with.",
-			o_name);
+#if 0
+	if (o_ptr->to_h || o_ptr->to_d)
+	{
+		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
+		message_format(MSG_PSEUDOID, 0,
+				"You feel your better know the %s you are attacking with.",
+				o_name);
+	}
+#endif
 }
 
 
