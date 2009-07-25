@@ -17,12 +17,14 @@ AC_ARG_WITH(setgid,
 	[with_private_dirs=yes])
 AC_ARG_WITH(private_dirs,
 	[  --with-private-dirs     use private scorefiles/savefiles/datafiles])
+AC_ARG_WITH(no_install,
+	[  --with-no-install      don't install, just run in-place])
 
 if test "x$with_setgid" = "xyes"; then
 	AC_MSG_ERROR([Please specify a group to install as.])
 fi
 
-if test "x$wsetgid$with_private_dirs" != "xyes";  then
+if test "x$wsetgid$with_private_dirs$no_install" != "xyes";  then
 
 	echo "Please run ./configure with one of:
 
@@ -82,7 +84,7 @@ AC_ARG_WITH(libpath, [  --with-libpath=PATH     use PATH as the path to the Angb
 
 if test "$with_libpath" != ""; then
 	libpath="${with_libpath}"
-elif test "$with_noinstall" != ""; then
+elif test "$with_no_install" != ""; then
 	libpath="./lib/"
 	bindir=".."
 else
