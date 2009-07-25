@@ -725,7 +725,7 @@ static int rd_artifacts(void)
 			anywhere[o_ptr->name1] = TRUE;
 		}
 
-		for (i = 0; i < o_max; i++)
+		for (i = 0; i < (size_t)o_max; i++)
 		{
 			o_ptr = &o_list[i];
 			if (object_is_known_artifact(o_ptr))
@@ -913,7 +913,7 @@ static int rd_player(void)
  */
 static int rd_squelch(void)
 {
-	int i;
+	size_t i;
 	byte tmp8u = 24;
 	
 	/* Read how many squelch bytes we have */

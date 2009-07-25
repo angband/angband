@@ -1069,10 +1069,11 @@ unsigned ego_xtra_sustain_idx(void)
 u32b ego_xtra_sustain_list(void)
 {
 	u32b ret = 0;
+	size_t i;
 
-	int i;
 	for (i = 0; i < N_ELEMENTS(ego_sustains); i++)
 		ret |= ego_sustains[i];
+
 	return ret;
 }
 
@@ -1103,10 +1104,11 @@ unsigned ego_xtra_resist_idx(void)
 u32b ego_xtra_resist_list(void)
 {
 	u32b ret = 0;
+	size_t i;
 
-	int i;
 	for (i = 0; i < N_ELEMENTS(ego_resists); i++)
 		ret |= ego_resists[i];
+
 	return ret;
 }
 
@@ -1133,10 +1135,11 @@ unsigned ego_xtra_power_idx(void)
 u32b ego_xtra_power_list(void)
 {
 	u32b ret = 0;
+	size_t i;
 
-	int i;
 	for (i = 0; i < N_ELEMENTS(ego_powers); i++)
 		ret |= ego_powers[i];
+
 	return ret;
 }
 

@@ -577,7 +577,7 @@ int int_to_roman(int n, char *roman, size_t bufsize)
  */
 int roman_to_int(const char *roman)
 {
-	int i;
+	size_t i;
 	int n = 0;
 	char *p;
 

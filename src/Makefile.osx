@@ -28,7 +28,8 @@ TOOLDIR = /Developer/Tools
 SETFILE = $(TOOLDIR)/SetFile
 
 #WARNINGS = -W -Wall -Wextra -Wno-unused-parameter -Wold-style-definition -Wmissing-declarations -Wredundant-decls -Wpointer-arith -Wcast-align -Wwrite-strings -Winline -Wformat-security -Winit-self -Wmissing-include-dirs -Wundef -Wmissing-format-attribute -Wnested-externs
-WARNINGS = -Wall -Wno-unused-parameter
+WARNINGS = -Wall -Wno-unused-parameter -Wno-missing-field-initializers
+JUST_C = -W -pedantic
 CFLAGS = \
 	-I. $(WARNINGS) -std=gnu99 $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
 	-DPRIVATE_USER_PATH=\"~/Library/Preferences\" -DUSE_PRIVATE_PATHS \
@@ -112,7 +113,7 @@ main-crb.o : main-crb.c
 	@CC $(CFLAGS) -x objective-c -c -o $@ $<
 %.o : %.c
 	@printf "%10s %-20s\n" CC $<
-	@CC $(CFLAGS) -c -o $@ $<
+	@CC $(CFLAGS) $(JUST_C) -c -o $@ $<
 
 
 main-crb.o: osx/osx_tables.h

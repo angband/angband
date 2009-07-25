@@ -426,8 +426,6 @@ void object_notice_slays(object_type *o_ptr, u32b known_f0)
 
 static void object_notice_defence_plusses(object_type *o_ptr)
 {
-	char o_name[80];
-
 	if (!o_ptr->k_idx) return;
 	if (o_ptr->ident & IDENT_DEFENCE)
 		return;
@@ -438,6 +436,8 @@ static void object_notice_defence_plusses(object_type *o_ptr)
 #if 0
 	if (o_ptr->ac || o_ptr->to_a)
 	{
+		char o_name[80];
+
 		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
 		message_format(MSG_PSEUDOID, 0,
 				"You feel your better know the %s you are wearing.",
@@ -449,8 +449,6 @@ static void object_notice_defence_plusses(object_type *o_ptr)
 
 void object_notice_attack_plusses(object_type *o_ptr)
 {
-	char o_name[80];
-
 	if (!o_ptr->k_idx) return;
 	if (o_ptr->ident & IDENT_ATTACK)
 		return;
@@ -461,6 +459,8 @@ void object_notice_attack_plusses(object_type *o_ptr)
 #if 0
 	if (o_ptr->to_h || o_ptr->to_d)
 	{
+		char o_name[80];
+
 		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
 		message_format(MSG_PSEUDOID, 0,
 				"You feel your better know the %s you are attacking with.",
@@ -700,7 +700,8 @@ static const flag_message_t notice_msgs[] =
  */
 static void object_notice_after_time(void)
 {
-	int i, j;
+	int i;
+	size_t j;
 
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{

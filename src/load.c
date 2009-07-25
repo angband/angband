@@ -614,7 +614,7 @@ int rd_artifacts(u32b version)
 			anywhere[o_ptr->name1] = TRUE;
 		}
 
-		for (i = 0; i < o_max; i++)
+		for (i = 0; i < (size_t)o_max; i++)
 		{
 			o_ptr = &o_list[i];
 			if (object_is_known_artifact(o_ptr))
@@ -803,7 +803,7 @@ int rd_player(u32b version)
  */
 int rd_squelch(u32b version)
 {
-	int i;
+	size_t i;
 	byte tmp8u = 24;
 	u16b file_e_max;
 	

@@ -560,7 +560,8 @@ s16b get_mon_num(int level)
  */
 void display_monlist(void)
 {
-	int i, j, k, max;
+	size_t i, j, k;
+	int max;
 	int line = 1, x = 0;
 	int cur_x;
 	unsigned total_count = 0, disp_count = 0, type_count = 0, los_count = 0;
@@ -609,7 +610,7 @@ void display_monlist(void)
 	list = C_ZNEW(z_info->r_max, monster_vis);
 
 	/* Scan the list of monsters on the level */
-	for (i = 1; i < mon_max; i++)
+	for (i = 1; i < (size_t)mon_max; i++)
 	{
 		m_ptr = &mon_list[i];
 
@@ -2662,7 +2663,7 @@ void update_smart_learn(int m_idx, int what)
 
 	/* anything a monster might learn, the player should learn */
 	assert(what >= 0);
-	assert(what < N_ELEMENTS(attack_table));
+	assert(what < (int)N_ELEMENTS(attack_table));
 	assert (attack_table[what].idx == what);
 	wieldeds_notice_flag(attack_table[what].flagset, attack_table[what].flag);
 

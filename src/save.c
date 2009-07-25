@@ -397,7 +397,7 @@ void wr_player(void)
 
 void wr_squelch(void)
 {
-	int i;
+	size_t i;
 	
 	/* Write number of squelch bytes */
 	wr_byte(squelch_size);

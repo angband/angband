@@ -420,7 +420,7 @@ void history_display(void)
 /* Dump character history to a file, which we assume is already open. */
 void dump_history(ang_file *file)
 {
-	int i;
+	size_t i;
 	char buf[90];
 
         file_putf(file, "============================================================\n");

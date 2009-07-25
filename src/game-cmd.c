@@ -174,7 +174,7 @@ errr cmd_get(cmd_context c, game_command *cmd, bool wait)
 
 int cmd_idx(cmd_code code)
 {
-	int i;
+	size_t i;
 
 	for (i = 0; i < N_ELEMENTS(game_cmds); i++)
 	{
@@ -194,7 +194,7 @@ errr cmd_insert(cmd_code c, ...)
 {
 	game_command cmd = {0};
 	va_list vp;
-	int j = 0;
+	size_t j = 0;
 	int idx = cmd_idx(c);
 
 	if (idx == -1) return 1;

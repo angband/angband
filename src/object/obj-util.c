@@ -3845,7 +3845,7 @@ int scan_items(int *item_list, size_t item_list_max, int mode)
 	int floor_num;
 
 	int i;
-	int item_list_num = 0;
+	size_t item_list_num = 0;
 
 	if (use_inven)
 	{

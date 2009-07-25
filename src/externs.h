@@ -558,20 +558,18 @@ int remove_autoinscription(s16b kind);
 int add_autoinscription(s16b kind, cptr inscription);
 void autoinscribe_ground(void);
 void autoinscribe_pack(void);
-
-bool squelch_interactive(const object_type *o_ptr);
-
-void kind_squelch_when_aware(object_kind *k_ptr);
-void kind_squelch_when_unaware(object_kind *k_ptr);
+bool squelch_tval(int tval);
+void kind_squelch_clear(object_kind *k_ptr);
 bool kind_is_squelched_aware(const object_kind *k_ptr);
 bool kind_is_squelched_unaware(const object_kind *k_ptr);
-
-bool squelch_tval(int tval);
+void kind_squelch_when_aware(object_kind *k_ptr);
+void kind_squelch_when_unaware(object_kind *k_ptr);
 bool squelch_item_ok(const object_type *o_ptr);
 bool squelch_hide_item(object_type *o_ptr);
-void squelch_drop(void);
 void squelch_items(void);
-void do_cmd_options_item(void *, cptr);
+void squelch_drop(void);
+void do_cmd_options_item(void *unused, cptr title);
+bool squelch_interactive(const object_type *o_ptr);
 
 /* store.c */
 s32b price_item(const object_type *o_ptr, bool store_buying, int qty);

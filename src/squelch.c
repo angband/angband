@@ -452,7 +452,7 @@ static void object_squelch_flavor_of(const object_type *o_ptr)
 /*
  * Find the squelch type of the object, or TYPE_MAX if none
  */
-squelch_type_t squelch_type_of(const object_type *o_ptr)
+static squelch_type_t squelch_type_of(const object_type *o_ptr)
 {
 	size_t i;
 
@@ -473,7 +473,7 @@ squelch_type_t squelch_type_of(const object_type *o_ptr)
  * The main point is when the value is undetermined given current info,
  * return the maximum possible value.
  */
-byte squelch_level_of(const object_type *o_ptr)
+static byte squelch_level_of(const object_type *o_ptr)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	byte value;
