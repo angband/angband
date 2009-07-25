@@ -14,7 +14,7 @@
 # Feature attr/char definitions
 
 # <darkness>
-F:0:0x80:0x80
+F:0:0x79:0x79
 
 # open floor
 F:1:0x97:0x81
