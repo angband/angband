@@ -452,7 +452,7 @@ static void process_world(void)
 	if (turn % 10) return;
 
 
-	/*** Check the Time and Load ***/
+	/*** Check the Time ***/
 
 	/* Play an ambient sound at regular intervals. */
 	if (!(turn % ((10L * TOWN_DAWN) / 4)))
