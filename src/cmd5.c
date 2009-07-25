@@ -79,7 +79,7 @@ s16b spell_chance(int spell)
 	else if (p_ptr->timed[TMD_STUN]) chance += 15;
 
 	/* Amnesia doubles failure change */
-	if (p_ptr->timed[TMD_AMNESIA]) chance *= 2;
+	if (p_ptr->timed[TMD_AMNESIA]) chance = 50 + chance / 2;
 
 	/* Always a 5 percent chance of working */
 	if (chance > 95) chance = 95;
