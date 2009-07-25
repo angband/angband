@@ -2964,6 +2964,8 @@ static bool store_process_command(char cmd, void *db, int oid)
 
 	if (redraw)
 	{
+		command_processed = TRUE;
+
 		event_signal(EVENT_INVENTORY);
 		event_signal(EVENT_EQUIPMENT);
 	}
@@ -3082,6 +3084,7 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 		menu_layout(&menu, &menu.boundary);
 
 		evt.type = EVT_MOVE;
+
 		/* Get a selection/action */
 		while (evt.type == EVT_MOVE)
 		{
