@@ -482,7 +482,7 @@ static cptr k_info_flags3[] =
 	"XXX5",
 	"XXX6",
 	"BLESSED",
-	"ACTIVATE",
+	"XXX8",
 	"INSTA_ART",
 	"EASY_KNOW",
 	"HIDE_TYPE",
