@@ -1694,6 +1694,13 @@ static void show_splashscreen(game_event_type type, game_event_data *data, void 
 		/* Dump the file to the screen */
 		while (file_getl(fp, buf, sizeof(buf)))
 		{
+			char *version_marker = strstr(buf, "$VERSION");
+			if (version_marker)
+			{
+				ptrdiff_t pos = version_marker - buf;
+				strnfmt(version_marker, sizeof(buf) - pos, "%-8s", VERSION_STRING);
+			}
+
 			text_out_e("%s", buf);
 			text_out("\n");
 		}
