@@ -2,20 +2,47 @@ Angband 3.1.1
 =============
 
 This is an Angband development version -- it may be buggy, so be warned!
-Special thanks to: Eddie Grove, Elly, Stefan O'Rear, Mango Juice, Gabriel
-Cunningham, Chris Carr, Chris Robertson, Peter Denison, Joe Buck, Eric Osheim,
-tigen, and rhinocesaurus.
+Special thanks in this release go to: Eddie Grove, Elly, Stefan O'Rear,
+Mango Juice, Gabriel Cunningham, Chris Carr, Chris Robertson, Peter Denison,
+Joe Buck, Eric Osheim, Antony Sidwell, tigen, and rhinocesaurus, without whom
+this release would not have happened.
+
 
 Significant changes in this version:
+====================================
 
-The identify system, previously tweaked in 3.1.0, has been overhauled.  The game now allows you to identify items through use instead of using Identify scrolls; this means that you wield unknown items more often and use them for a while until their effects become obvious.  For example, wield an unknown sword and attack foes, and you will soon discover its combat advantages.  If you wear some armour and it increases your intelligence, the game will remember that.  And when you have discovered all of an item's attributes, that kind of item will be automatically known in future.  "Identify" is still in the game, but you will need to use it much less than before, and as a consequence, it is more expensive.  The game is more fun this way, trust me.
+The identify system, previously tweaked in 3.1.0, has been overhauled.  The game
+now allows you to identify items through use instead of using Identify scrolls;
+this means that you wield unknown items more often and use them for a while
+until their effects become obvious.  For example, wield an unknown sword and
+attack foes, and you will soon discover its combat advantages.  If you wear some
+armour and it increases your intelligence, the game will remember that.  And
+when you have discovered all of an item's attributes, that kind of item will be
+automatically known in future.  "Identify" is still in the game, but you will
+need to use it much less than before, and as a consequence, it is more
+expensive.  The game is more fun this way, trust me.
 
-The second change that many will welcome is a reworked squelch system by Eddie Grove, which is quite similar to the one present in his patch of 3.0.9.  It allows squelching of more item types independently of each other, as well as squelching unaware consumables.
+The second change that many will welcome is a reworked squelch system by Eddie
+Grove, which is quite similar to the one present in his patch of 3.0.9.  It
+allows squelching of more item types independently of each other, as well as
+squelching unaware consumables.
 
-Another major change that most players will notice is the significantly different pricing that many items have.  This is because the algorithm that detemines item prices has changed a lot, and hopefully gives more reasonable prices than before, both because it makes things few would buy much cheaper and because it tries to price generally in proportion to usefulness.  This, combined with the two points above, means the emphasis of the game is much less on what you can lug back to stores to sell, and much more on exploration.
+Another major change that most players will notice is the significantly
+different pricing that many items have.  This is because the algorithm that
+detemines item prices has changed a lot, and hopefully gives more reasonable
+prices than before, both because it makes things few would buy much cheaper and
+because it tries to price generally in proportion to usefulness.  This, combined
+with the two points above, means the emphasis of the game is much less on what
+you can lug back to stores to sell, and much more on exploration.
+
+For people who play with randarts, you should now find them more interesting and
+better-balanced.
 
 
-Other stuff:
+
+List of bugs fixed
+==================
+
 (#29) Gold stolen by monsters is now stored in their inventory.
 (#30) Now using a new savefile format (no user-visible change)
 (#33) Add BRAND_FIRE to oil flasks and torches.
@@ -25,6 +52,7 @@ Other stuff:
 (#328) 'lore' functions now write to subwindows when appropriate.
 (#343) Add autosave on level change.
 (#352) Probing now reveals attack and spell information.
+(#367) Prompt for which ring to replace when wearing two
 (#412) Monster list is no longer hallucination-proof.
 (#448) Heal spells now identical to potions of same name
 (#451) Fix inventory/equipment and message update in store.
@@ -32,17 +60,20 @@ Other stuff:
 (#521, #597, #635) Stop the slow launches and occasional non-launches on Windows.
 (#561) 'n', when used to fire missiles, no longer ignores confusion.
 (#562) Ego-items are now never squelched as "bad" or "average".
+(#572) Make ID-by-use more viable by making monsters summoned from player actions have less energy
 (#599) Above 18, stat drain and gain always works in intervals of 10 points
 (#613) Prevent {!*} prompting for harmless actions.
 (#637) Print messages when monsters crush or push past each other.
 (#639) Reset social status to original value with quickstart
 (#641) Fix Morgoth artifacts.
+(#645) Fix fail rate display wrt amnesia
 (#654) Allow pseudo to work whilst resting.
 (#661) Prompt for how many items to buy in a store now doesn't get the number in your pack wrong when there's > 99
 (#663) Numbers of summoned monsters now match singular/plural message text
 (#672) Fix Evenstar activation message.
 (#673) Fix description of Identify scrolls.
 (#676) Fixed character creation help.
+(#675) Fix graphics mode cloak tile bug
 (#677) Character history now in character dump
 (#679) Mages no longer get told they can learn more spells than they can
 (#680) Stop displaying two highscore entries for dead characters.
@@ -58,6 +89,7 @@ Other stuff:
 (#700) Stop running one square away from already-visible monsters
 (#705) Randart activation messages no longer refer to the original artifact.
 (#706) Number of blows on 'I'nspection screen should be correct now
+(#709) Don't display the wrong tile in graphics mode at detection boundaries
 (#711, #764) Fix descriptions of area-of-effect detection.
 (#712) Autoinscribe items in the first inventory slot.
 (#717) Make stat potions just a little bit more common.
@@ -83,6 +115,7 @@ Other stuff:
 (#762) Alchemist's Gloves are now wearable by mages
 (#766) Scrolls of trap creation now longer crash in town.
 (#767) Hitpoint warning now accepts only numbers from 0-9.
+(#770) Fix item pickup energy inconsistencies.
 (#772) Display searching bonuses for rings of searching in object descriptions again
 (#773) General Store now restocks like other stores (e.g. more food will appear without you having to buy out all the food).
 (#774) Ego-items with random powers no longer get duplicate powers
@@ -98,6 +131,7 @@ Other stuff:
 (#848) Monster list shows in/out of LOS and asleep/awake
 (#849) Drop squelched items after ignoring them
 (#864) Stop autoinscriptions from overwriting manual inscriptions
+(#865) Weapon descriptions should no longer be too big for a 80x24 screen
 (#868) Rings of Escaping have more accurate description
 (#874) Update monster list when monsters wake up
 (#893) Auto-pickup is no longer disabled when hitpoints are low
@@ -140,6 +174,7 @@ Use curses to parse keys, which is more portable and removes the Escape delay.
 
 
 Invisible code changes:
+Once again, the game has seen some large-scale reworking.  Mentioned here is only a small subsection of that reworking.
 (#513) Refactor the code that prompts for character dump filenames so that it can be overriden by platform-native ports.
 (#616) Add support for BSDish makes.
 (#664) Refactor brands and slays so they're defined in one place and referenced elsewhere.
