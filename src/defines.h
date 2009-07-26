@@ -40,9 +40,9 @@
 #define SAVEFILE_NAME  "VNLA"
 
 #ifdef BUILD_ID
-# define VERSION_STRING "3.1.1 dev (" BUILD_ID ")"
+# define VERSION_STRING "3.1.2 dev (" BUILD_ID ")"
 #else
-# define VERSION_STRING "3.1.1 dev"
+# define VERSION_STRING "3.1.2 dev"
 #endif
 
 
