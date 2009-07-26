@@ -1158,10 +1158,10 @@ bool inc_stat(int stat)
                 if (gain < 1) gain = 1; 
  
                 /* Apply the bonus */ 
-                value += randint1(gain) + gain / 2; 
+                p_ptr->stat_cur[stat] += randint1(gain) + gain / 2; 
  
                 /* Maximal value */ 
-                if (value > 18+99) value = 18 + 99;
+                if (p_ptr->stat_cur[stat] > 18+99) p_ptr->stat_cur[stat] = 18 + 99;
 	}
 	else
 		p_ptr->stat_cur[stat] = 18+100;
