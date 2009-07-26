@@ -300,7 +300,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 		sound(MSG_SUM_MONSTER);
 		for (i = 0; i < num; i++)
 		{
-			(void)summon_specific(y, x, p_ptr->depth, 0);
+			(void)summon_specific(y, x, p_ptr->depth, 0, 1);
 		}
 	}
 

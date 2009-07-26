@@ -846,7 +846,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 			for (i = 0; i < randint1(3); i++)
 			{
-				if (summon_specific(py, px, p_ptr->depth, 0))
+				if (summon_specific(py, px, p_ptr->depth, 0, 1))
 					*ident = TRUE;
 			}
 			return TRUE;
@@ -859,7 +859,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 			for (i = 0; i < randint1(3); i++)
 			{
-				if (summon_specific(py, px, p_ptr->depth, SUMMON_UNDEAD))
+				if (summon_specific(py, px, p_ptr->depth, SUMMON_UNDEAD, 1))
 					*ident = TRUE;
 			}
 			return TRUE;

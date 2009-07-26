@@ -1901,7 +1901,7 @@ bool make_attack_spell(int m_idx)
 			summon_kin_type = r_ptr->d_char;
 			for (k = 0; k < 6; k++)
 			{
-				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_KIN);
+				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_KIN, 0);
 			}
 			if (blind && count)
 			{
@@ -1918,7 +1918,7 @@ bool make_attack_spell(int m_idx)
 			else msg_format("%^s magically summons greater demons!", m_name);
 			for (k = 0; k < 8; k++)
 			{
-				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_HI_DEMON);
+				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_HI_DEMON, 0);
 			}
 			if (blind && count)
 			{
@@ -1935,7 +1935,7 @@ bool make_attack_spell(int m_idx)
 			else msg_format("%^s magically summons help!", m_name);
 			for (k = 0; k < 1; k++)
 			{
-				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_MONSTER);
+				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_MONSTER, 0);
 			}
 			if (blind && count)
 			{
@@ -1952,7 +1952,7 @@ bool make_attack_spell(int m_idx)
 			else msg_format("%^s magically summons monsters!", m_name);
 			for (k = 0; k < 8; k++)
 			{
-				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_MONSTERS);
+				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_MONSTERS, 0);
 			}
 			if (blind && count)
 			{
@@ -1969,7 +1969,7 @@ bool make_attack_spell(int m_idx)
 			else msg_format("%^s magically summons animals.", m_name);
 			for (k = 0; k < 6; k++)
 			{
-				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_ANIMAL);
+				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_ANIMAL, 0);
 			}
 			if (blind && count)
 			{
@@ -1986,7 +1986,7 @@ bool make_attack_spell(int m_idx)
 			else msg_format("%^s magically summons spiders.", m_name);
 			for (k = 0; k < 6; k++)
 			{
-				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_SPIDER);
+				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_SPIDER, 0);
 			}
 			if (blind && count)
 			{
@@ -2003,7 +2003,7 @@ bool make_attack_spell(int m_idx)
 			else msg_format("%^s magically summons hounds.", m_name);
 			for (k = 0; k < 6; k++)
 			{
-				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_HOUND);
+				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_HOUND, 0);
 			}
 			if (blind && count)
 			{
@@ -2020,7 +2020,7 @@ bool make_attack_spell(int m_idx)
 			else msg_format("%^s magically summons hydras.", m_name);
 			for (k = 0; k < 6; k++)
 			{
-				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_HYDRA);
+				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_HYDRA, 0);
 			}
 			if (blind && count)
 			{
@@ -2037,7 +2037,7 @@ bool make_attack_spell(int m_idx)
 			else msg_format("%^s magically summons an angel!", m_name);
 			for (k = 0; k < 1; k++)
 			{
-				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_ANGEL);
+				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_ANGEL, 0);
 			}
 			if (blind && count)
 			{
@@ -2054,7 +2054,7 @@ bool make_attack_spell(int m_idx)
 			else msg_format("%^s magically summons a hellish adversary!", m_name);
 			for (k = 0; k < 1; k++)
 			{
-				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_DEMON);
+				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_DEMON, 0);
 			}
 			if (blind && count)
 			{
@@ -2071,7 +2071,7 @@ bool make_attack_spell(int m_idx)
 			else msg_format("%^s magically summons an undead adversary!", m_name);
 			for (k = 0; k < 1; k++)
 			{
-				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_UNDEAD);
+				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_UNDEAD, 0);
 			}
 			if (blind && count)
 			{
@@ -2088,7 +2088,7 @@ bool make_attack_spell(int m_idx)
 			else msg_format("%^s magically summons a dragon!", m_name);
 			for (k = 0; k < 1; k++)
 			{
-				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_DRAGON);
+				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_DRAGON, 0);
 			}
 			if (blind && count)
 			{
@@ -2105,7 +2105,7 @@ bool make_attack_spell(int m_idx)
 			else msg_format("%^s magically summons greater undead!", m_name);
 			for (k = 0; k < 8; k++)
 			{
-				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_HI_UNDEAD);
+				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_HI_UNDEAD, 0);
 			}
 			if (blind && count)
 			{
@@ -2122,7 +2122,7 @@ bool make_attack_spell(int m_idx)
 			else msg_format("%^s magically summons ancient dragons!", m_name);
 			for (k = 0; k < 8; k++)
 			{
-				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_HI_DRAGON);
+				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_HI_DRAGON, 0);
 			}
 			if (blind && count)
 			{
@@ -2139,11 +2139,11 @@ bool make_attack_spell(int m_idx)
 			else msg_format("%^s magically summons mighty undead opponents!", m_name);
 			for (k = 0; k < 8; k++)
 			{
-				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_WRAITH);
+				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_WRAITH, 0);
 			}
 			for (k = 0; k < 8; k++)
 			{
-				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_HI_UNDEAD);
+				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_HI_UNDEAD, 0);
 			}
 			if (blind && count)
 			{
@@ -2160,11 +2160,11 @@ bool make_attack_spell(int m_idx)
 			else msg_format("%^s magically summons special opponents!", m_name);
 			for (k = 0; k < 8; k++)
 			{
-				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_UNIQUE);
+				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_UNIQUE, 0);
 			}
 			for (k = 0; k < 8; k++)
 			{
-				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_HI_UNDEAD);
+				count += summon_specific(m_ptr->fy, m_ptr->fx, rlev, SUMMON_HI_UNDEAD, 0);
 			}
 			if (blind && count)
 			{

@@ -247,7 +247,7 @@ void hit_trap(int y, int x)
 			num = 2 + randint1(3);
 			for (i = 0; i < num; i++)
 			{
-				(void)summon_specific(y, x, p_ptr->depth, 0);
+				(void)summon_specific(y, x, p_ptr->depth, 0, 1);
 			}
 			break;
 		}

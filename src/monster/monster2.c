@@ -2393,7 +2393,7 @@ static bool summon_specific_okay(int r_idx)
  *
  * Note that this function may not succeed, though this is very rare.
  */
-bool summon_specific(int y1, int x1, int lev, int type)
+bool summon_specific(int y1, int x1, int lev, int type, int delay)
 {
 	int i, x = 0, y = 0, r_idx;
 
@@ -2448,6 +2448,11 @@ bool summon_specific(int y1, int x1, int lev, int type)
 
 	/* Attempt to place the monster (awake, allow groups) */
 	if (!place_monster_aux(y, x, r_idx, FALSE, TRUE)) return (FALSE);
+
+	/* If delay, try to let the player act before the summoned monsters. */
+	/* NOTE: should really be -100, but energy is currently 0-255. */
+	if (delay)
+		mon_list[cave_m_idx[y][x]].energy = 0;
 
 	/* Success */
 	return (TRUE);
