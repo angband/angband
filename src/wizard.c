@@ -295,7 +295,7 @@ static void do_cmd_wiz_change(void)
 /*
  * Display an item's properties
  */
-static void wiz_display_item(const object_type *o_ptr)
+static void wiz_display_item(const object_type *o_ptr, bool all)
 {
 	int j = 0;
 
@@ -305,7 +305,10 @@ static void wiz_display_item(const object_type *o_ptr)
 
 
 	/* Extract the flags */
-	object_flags(o_ptr, f);
+	if (all)
+		object_flags(o_ptr, f);
+	else
+		object_flags_known(o_ptr, f);
 
 	/* Clear screen */
 	Term_clear();
@@ -546,25 +549,25 @@ static void wiz_tweak_item(object_type *o_ptr)
 	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->pval);
 	if (!get_string(p, tmp_val, 6)) return;
 	o_ptr->pval = atoi(tmp_val);
-	wiz_display_item(o_ptr);
+	wiz_display_item(o_ptr, TRUE);
 
 	p = "Enter new 'to_a' setting: ";
 	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->to_a);
 	if (!get_string(p, tmp_val, 6)) return;
 	o_ptr->to_a = atoi(tmp_val);
-	wiz_display_item(o_ptr);
+	wiz_display_item(o_ptr, TRUE);
 
 	p = "Enter new 'to_h' setting: ";
 	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->to_h);
 	if (!get_string(p, tmp_val, 6)) return;
 	o_ptr->to_h = atoi(tmp_val);
-	wiz_display_item(o_ptr);
+	wiz_display_item(o_ptr, TRUE);
 
 	p = "Enter new 'to_d' setting: ";
 	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->to_d);
 	if (!get_string(p, tmp_val, 6)) return;
 	o_ptr->to_d = atoi(tmp_val);
-	wiz_display_item(o_ptr);
+	wiz_display_item(o_ptr, TRUE);
 }
 
 
@@ -596,7 +599,7 @@ static void wiz_reroll_item(object_type *o_ptr)
 	while (TRUE)
 	{
 		/* Display full item debug information */
-		wiz_display_item(i_ptr);
+		wiz_display_item(i_ptr, TRUE);
 
 		/* Ask wizard what to do. */
 		if (!get_com("[a]ccept, [n]ormal, [g]ood, [e]xcellent? ", &ch))
@@ -702,7 +705,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 		cptr pmt = "Roll for [n]ormal, [g]ood, or [e]xcellent treasure? ";
 
 		/* Display item */
-		wiz_display_item(o_ptr);
+		wiz_display_item(o_ptr, TRUE);
 
 		/* Get choices */
 		if (!get_com(pmt, &ch)) break;
@@ -923,6 +926,7 @@ static void do_cmd_wiz_play(void)
 	cptr q, s;
 
 	bool changed = FALSE;
+	bool all = TRUE;
 
 
 	/* Get an item */
@@ -947,10 +951,10 @@ static void do_cmd_wiz_play(void)
 	while (TRUE)
 	{
 		/* Display the item */
-		wiz_display_item(i_ptr);
+		wiz_display_item(i_ptr, all);
 
 		/* Get choice */
-		if (!get_com("[a]ccept [s]tatistics [r]eroll [t]weak [c]urse [q]uantity? ", &ch))
+		if (!get_com("[a]ccept [s]tatistics [r]eroll [t]weak [c]urse [q]uantity [k]nown? ", &ch))
 			break;
 
 		if (ch == 'A' || ch == 'a')
@@ -966,6 +970,8 @@ static void do_cmd_wiz_play(void)
 			wiz_reroll_item(i_ptr);
 		else if (ch == 't' || ch == 'T')
 			wiz_tweak_item(i_ptr);
+		else if (ch == 'k' || ch == 'K')
+			all = !all;
 		else if (ch == 'q' || ch == 'Q')
 		{
 			bool carried = (item >= 0) ? TRUE : FALSE;
