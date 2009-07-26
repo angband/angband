@@ -6,7 +6,7 @@
 {yellow}                 /_/   \_\_| |_|\__, |_.__/ \__,_|_| |_|\__,_|{/}
 {yellow}                                |___/                         {/}  
 
-                                Version 3.1.0
+                                Version 3.1.1
                 Bug reports to <http://angband.oook.cz/forum/>
 
    For resources and links to places you can talk about the game, please see:
@@ -19,4 +19,5 @@
             2.7.0 - 2.8.5:   Ben Harrison
             2.9.0 - 3.0.6:   Robert Ruehlmann
 
-   Please read the summary of changes available in the "308.txt" help file!
+        The game's documentation is currently out-of-date; be warned.
+
