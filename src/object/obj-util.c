@@ -356,6 +356,7 @@ void object_flags_known(const object_type *o_ptr, u32b flags[])
 	u32b f[OBJ_FLAG_N];
 	int i;
 	bool aware = object_flavor_is_aware(o_ptr);
+	bool easy_know = (object_kind_of(o_ptr)->flags[2] & TR2_EASY_KNOW);
 
 	object_flags(o_ptr, f);
 
@@ -364,6 +365,8 @@ void object_flags_known(const object_type *o_ptr, u32b flags[])
 		flags[i] = o_ptr->known_flags[i] & f[i];
 		if (aware)
 			flags[i] |= k_info[o_ptr->k_idx].flags[i];
+		if (o_ptr->name2 && easy_know)
+			flags[i] |= e_info[o_ptr->name2].flags[i];
 	}
 
 }

@@ -801,7 +801,7 @@ static bool describe_light(const object_type *o_ptr, u32b f3, bool terse)
 
 	/* Work out radius */
 	if (artifact && is_lite) rad = 3;
-	else if (is_lite)  rad = 2;
+	else if (is_lite) rad = 2;
 	if (f3 & TR2_LITE) rad++;
 
 	/* Describe here */
