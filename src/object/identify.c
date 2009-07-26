@@ -18,7 +18,7 @@
  */
 #include "angband.h"
 #include "object/tvalsval.h"
-
+#include "game-event.h"
 
 /** Time last item was wielded */
 s32b object_last_wield;
@@ -439,9 +439,12 @@ static void object_notice_defence_plusses(object_type *o_ptr)
 
 		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
 		message_format(MSG_PSEUDOID, 0,
-				"You feel your better know the %s you are wearing.",
+				"You feel you better know the %s you are wearing.",
 				o_name);
 	}
+
+	event_signal(EVENT_INVENTORY);
+	event_signal(EVENT_EQUIPMENT);
 }
 
 
@@ -460,7 +463,7 @@ void object_notice_attack_plusses(object_type *o_ptr)
 
 		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
 		message_format(MSG_PSEUDOID, 0,
-				"You feel your better know the %s you are attacking with.",
+				"You feel you better know the %s you are attacking with.",
 				o_name);
 	}
 	else if ((o_ptr->to_d || o_ptr->to_h) &&
@@ -471,6 +474,9 @@ void object_notice_attack_plusses(object_type *o_ptr)
 		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
 		message_format(MSG_PSEUDOID, 0, "Your %s glows.", o_name);
 	}
+
+	event_signal(EVENT_INVENTORY);
+	event_signal(EVENT_EQUIPMENT);
 }
 
 
@@ -507,6 +513,9 @@ void object_notice_flags(object_type *o_ptr, int flagset, u32b flags)
 		/* XXX Eddie don't want infinite recursion if object_check_for_ident sets more flags, but maybe this will interfere with savefile repair */
 		object_check_for_ident(o_ptr);
 	}
+
+	event_signal(EVENT_INVENTORY);
+	event_signal(EVENT_EQUIPMENT);
 }
 
 
@@ -543,10 +552,9 @@ void object_notice_on_defend(void)
 	
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 		object_notice_defence_plusses(&inventory[i]);
-	
-	/* XXX Eddie print message? */
-	
-	return;
+
+	event_signal(EVENT_INVENTORY);
+	event_signal(EVENT_EQUIPMENT);
 }
 
 
