@@ -433,7 +433,6 @@ static void object_notice_defence_plusses(object_type *o_ptr)
 	o_ptr->ident |= IDENT_DEFENCE;
 	object_check_for_ident(o_ptr);
 
-#if 0
 	if (o_ptr->ac || o_ptr->to_a)
 	{
 		char o_name[80];
@@ -443,7 +442,6 @@ static void object_notice_defence_plusses(object_type *o_ptr)
 				"You feel your better know the %s you are wearing.",
 				o_name);
 	}
-#endif
 }
 
 
@@ -456,8 +454,7 @@ void object_notice_attack_plusses(object_type *o_ptr)
 	o_ptr->ident |= IDENT_ATTACK;
 	object_check_for_ident(o_ptr);
 
-#if 0
-	if (o_ptr->to_h || o_ptr->to_d)
+	if (wield_slot(o_ptr) == INVEN_WIELD)
 	{
 		char o_name[80];
 
@@ -466,7 +463,14 @@ void object_notice_attack_plusses(object_type *o_ptr)
 				"You feel your better know the %s you are attacking with.",
 				o_name);
 	}
-#endif
+	else if ((o_ptr->to_d || o_ptr->to_h) &&
+			!((o_ptr->tval == TV_HARD_ARMOR || o_ptr->tval == TV_SOFT_ARMOR) && (o_ptr->to_h < 0)))
+	{
+		char o_name[80];
+
+		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
+		message_format(MSG_PSEUDOID, 0, "Your %s glows.", o_name);
+	}
 }
 
 
