@@ -3726,14 +3726,14 @@ static void process_monster(int m_idx)
 
 			if ((compare_monsters(m_ptr, n_ptr) > 0) && (kill_ok || move_ok))
 			{
-				/* Allow movement */
-				do_move = TRUE;
-
 				/* Get the names of the monsters involved */
 				char m_name[80];
 				char n_name[80];
 				monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND1);
 				monster_desc(n_name, sizeof(n_name), n_ptr, MDESC_IND1);
+
+				/* Allow movement */
+				do_move = TRUE;
 
 				/* Monster ate another monster */
 				if (kill_ok)
