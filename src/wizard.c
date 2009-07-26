@@ -103,25 +103,18 @@ static void do_cmd_wiz_hack_ben(void)
 /*
  * Output a long int in binary format.
  */
-static void prt_binary(u32b flags, int row, int col)
+static void prt_binary(u32b flags, int row, int col, char ch, int num)
 {
 	int i;
 	u32b bitmask;
 
 	/* Scan the flags */
-	for (i = bitmask = 1; i <= 32; i++, bitmask *= 2)
+	for (i = bitmask = 1; i <= num; i++, bitmask *= 2)
 	{
-		/* Dump set bits */
 		if (flags & bitmask)
-		{
-			Term_putch(col++, row, TERM_BLUE, '*');
-		}
-
-		/* Dump unset bits */
+			Term_putch(col++, row, TERM_BLUE, ch);
 		else
-		{
 			Term_putch(col++, row, TERM_WHITE, '-');
-		}
 	}
 }
 
@@ -322,49 +315,59 @@ static void wiz_display_item(const object_type *o_ptr)
 
 	prt(buf, 2, j);
 
-	prt(format("kind = %-5d  level = %-4d  tval = %-5d  sval = %-5d",
-	           o_ptr->k_idx, k_info[o_ptr->k_idx].level,
-	           o_ptr->tval, o_ptr->sval), 4, j);
+	prt(format("combat = (%dd%d) (%+d,%+d) [%d,%+d]",
+	           o_ptr->dd, o_ptr->ds, o_ptr->to_h, o_ptr->to_d, o_ptr->ac, o_ptr->to_a), 4, j);
 
-	prt(format("number = %-3d  wgt = %-6d  ac = %-5d    damage = %dd%d",
-	           o_ptr->number, o_ptr->weight,
-	           o_ptr->ac, o_ptr->dd, o_ptr->ds), 5, j);
+	prt(format("kind = %-5d  tval = %-5d  sval = %-5d  wgt = %-3d     timeout = %-d",
+	           o_ptr->k_idx, o_ptr->tval, o_ptr->sval, o_ptr->weight, o_ptr->timeout), 5, j);
 
-	prt(format("pval = %-5d  toac = %-5d  tohit = %-4d  todam = %-4d",
-	           o_ptr->pval, o_ptr->to_a, o_ptr->to_h, o_ptr->to_d), 6, j);
+	prt(format("number = %-3d  pval = %-5d  name1 = %-4d  name2 = %-4d  cost = %ld",
+	           o_ptr->number, o_ptr->pval, o_ptr->name1, o_ptr->name2, (long)object_value(o_ptr, 1, FALSE)), 6, j);
 
-	prt(format("name1 = %-4d  name2 = %-4d  cost = %ld",
-	           o_ptr->name1, o_ptr->name2, (long)object_value(o_ptr, 1, FALSE)), 7, j);
+	prt("+------------FLAGS0------------+", 8, j);
+	prt("AFFECT..........SLAY.......BRAND", 9, j);
+	prt("                ae      xxxpaefc", 10, j);
+	prt("siwdcc  ssidsasmnvudotgddduoclio", 11, j);
+	prt("tnieoh  trnipthgiinmrrnrrmniierl", 12, j);
+	prt("rtsxna..lcfgdkttmldncltggndsdced", 13, j);
+	prt_binary(f[0], 14, j, '*', 32);
+	prt_binary(o_ptr->known_flags[0], 15, j, '+', 32);
 
-	prt(format("ident = %04x  timeout = %-d",
-	           o_ptr->ident, o_ptr->timeout), 8, j);
+	prt("+------------FLAGS1------------+", 16, j);
+	prt("SUST........IMM.RESIST.........", 17, j);
+	prt("            afecaefcpfldbc s n  ", 18, j);
+	prt("siwdcc      cilocliooeialoshnecd", 19, j);
+	prt("tnieoh      irelierliatrnnnrethi", 20, j);
+	prt("rtsxna......decddcedsrekdfddxhss", 21, j);
+	prt_binary(f[1], 22, j, '*', 32);
+	prt_binary(o_ptr->known_flags[1], 23, j, '+', 32);
 
-	prt("+------------FLAGS0------------+", 10, j);
-	prt("AFFECT..........SLAY.......BRAND", 11, j);
-	prt("                ae      xxxpaefc", 12, j);
-	prt("siwdcc  ssidsasmnvudotgddduoclio", 13, j);
-	prt("tnieoh  trnipthgiinmrrnrrmniierl", 14, j);
-	prt("rtsxna..lcfgdkttmldncltggndsdced", 15, j);
-	prt_binary(f[0], 16, j);
+	prt("+------------FLAGS2------------+", 8, j+34);
+	prt("s   ts hn    tadiiii   aiehs  hp", 9, j+34);
+	prt("lf  eefoo    egrgggg  bcnaih  vr", 10, j+34);
+	prt("we  lerlf   ilgannnn  ltssdo  ym", 11, j+34);
+	prt("da reiedu   merirrrr  eityew ccc", 12, j+34);
+	prt("itlepnele   ppanaefc  svaktm uuu", 13, j+34);
+	prt("ghigavail   aoveclio  saanyo rrr", 14, j+34);
+	prt("seteticf    craxierl  etropd sss", 15, j+34);
+	prt("trenhste    tttpdced  detwes eee", 16, j+34);
+	prt_binary(f[2], 17, j+34, '*', 32);
+	prt_binary(o_ptr->known_flags[2], 18, j+34, '+', 32);
 
-	prt("+------------FLAGS1------------+", 17, j);
-	prt("SUST........IMM.RESIST.........", 18, j);
-	prt("            afecaefcpfldbc s n  ", 19, j);
-	prt("siwdcc      cilocliooeialoshnecd", 20, j);
-	prt("tnieoh      irelierliatrnnnrethi", 21, j);
-	prt("rtsxna......decddcedsrekdfddxhss", 22, j);
-	prt_binary(f[1], 23, j);
-
-	prt("+------------FLAGS2------------+", 10, j+32);
-	prt("s   ts hn    tadiiii   aiehs  hp", 11, j+32);
-	prt("lf  eefoo    egrgggg  bcnaih  vr", 12, j+32);
-	prt("we  lerlf   ilgannnn  ltssdo  ym", 13, j+32);
-	prt("da reiedu   merirrrr  eityew ccc", 14, j+32);
-	prt("itlepnele   ppanaefc  svaktm uuu", 15, j+32);
-	prt("ghigavail   aoveclio  saanyo rrr", 16, j+32);
-	prt("seteticf    craxierl  etropd sss", 17, j+32);
-	prt("trenhste    tttpdced  detwes eee", 18, j+32);
-	prt_binary(f[2], 19, j+32);
+	prt("o_ptr->ident:", 20, j+34);
+	prt(format("sense  %c  worn   %c  empty   %c  known   %c",
+		(o_ptr->ident & IDENT_SENSE) ? '+' : ' ',
+		(o_ptr->ident & IDENT_WORN) ? '+' : ' ',
+		(o_ptr->ident & IDENT_EMPTY) ? '+' : ' ',
+		(o_ptr->ident & IDENT_KNOWN) ? '+' : ' '), 21, j+34);
+	prt(format("store  %c  attack %c  defence %c  effect  %c",
+		(o_ptr->ident & IDENT_STORE) ? '+' : ' ',
+		(o_ptr->ident & IDENT_ATTACK) ? '+' : ' ',
+		(o_ptr->ident & IDENT_DEFENCE) ? '+' : ' ',
+		(o_ptr->ident & IDENT_EFFECT) ? '+' : ' '), 22, j+34);
+	prt(format("indest %c  ego    %c",
+		(o_ptr->ident & IDENT_INDESTRUCT) ? '+' : ' ',
+		(o_ptr->ident & IDENT_EGO) ? '+' : ' '), 23, j+34);
 }
 
 
