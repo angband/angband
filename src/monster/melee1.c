@@ -630,13 +630,15 @@ bool make_attack_normal(int m_idx)
 						/* While we have gold, put it in objects */
 						while (gold > 0)
 						{
+							int amt;
+
 							/* Create a new temporary object */
 							object_type o;
 							object_wipe(&o);
 							object_prep(&o, lookup_kind(TV_GOLD, SV_GOLD));
 
 							/* Amount of gold to put in this object */
-							int amt = gold > MAX_PVAL ? MAX_PVAL : gold;
+							amt = gold > MAX_PVAL ? MAX_PVAL : gold;
 							o.pval = amt;
 							gold -= amt;
 

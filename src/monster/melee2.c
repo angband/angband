@@ -3713,9 +3713,6 @@ static void process_monster(int m_idx)
 		{
 			monster_type *n_ptr = &mon_list[cave_m_idx[ny][nx]];
 
-			/* Assume no movement */
-			do_move = FALSE;
-
 			/* Kill weaker monsters */
 			int kill_ok = (r_ptr->flags[1] & RF1_KILL_BODY);
 
@@ -3723,6 +3720,9 @@ static void process_monster(int m_idx)
 			/* (not in a wall) */
 			int move_ok = (r_ptr->flags[1] & RF1_MOVE_BODY &&
 						   cave_floor_bold(m_ptr->fy, m_ptr->fx));
+
+			/* Assume no movement */
+			do_move = FALSE;
 
 			if ((compare_monsters(m_ptr, n_ptr) > 0) && (kill_ok || move_ok))
 			{

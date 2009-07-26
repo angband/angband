@@ -749,30 +749,30 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 				/* Display objects */
 				if (query.key == 'r')
 				{
-
 					int rdone = 0;
-					while(!rdone)
+					int pos;
+					while (!rdone)
 					{
-					/* Save screen */
-					screen_save();
+						/* Save screen */
+						screen_save();
 
-					/* Display */
-					show_floor(floor_list, floor_num, TRUE);
+						/* Display */
+						show_floor(floor_list, floor_num, TRUE);
 
-					/* Describe the pile */
-					prt(out_val, 0, 0);
-					query = inkey_ex();
+						/* Describe the pile */
+						prt(out_val, 0, 0);
+						query = inkey_ex();
 
-					/* Load screen */
-					screen_load();
+						/* Load screen */
+						screen_load();
 
-						int pos = query.key - 'a';
+						pos = query.key - 'a';
 						if (0 <= pos && pos < floor_num)
 						{
 							track_object(-floor_list[pos]);
 							handle_stuff();
 							continue;
-				}
+						}
 						rdone = 1;
 					}
 

@@ -674,6 +674,9 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 	int n = 0;
 	int feel = object_pseudo(o_ptr);
 
+	u32b flags[OBJ_FLAG_N];
+	object_flags(o_ptr, flags);
+
 	/* Get inscription */
 	if (o_ptr->note)
 		u[n++] = quark_str(o_ptr->note);
@@ -694,8 +697,6 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 	else if (!object_flavor_is_aware(o_ptr) && object_flavor_was_tried(o_ptr))
 		u[n++] = "tried";
 
-	u32b flags[OBJ_FLAG_N];
-	object_flags(o_ptr, flags);
 	/* Note curses */
 	if (o_ptr->known_flags[2] & flags[2] & TR2_CURSE_MASK)
 		u[n++] = "cursed";

@@ -195,11 +195,11 @@ bool object_high_resist_is_possible(const object_type *o_ptr)
  */
 static void object_check_for_ident(object_type *o_ptr)
 {
-	u32b flags[OBJ_FLAG_N];
-	object_flags(o_ptr, flags);
-	
 	int i;
+	u32b flags[OBJ_FLAG_N];
 	
+	object_flags(o_ptr, flags);
+
 	/* Some flags are irrelevant or never learned or too hard to learn */
 	flags[2] &= ~(TR2_INSTA_ART | TR2_EASY_KNOW | TR2_HIDE_TYPE | TR2_SHOW_MODS | TR2_IGNORE_ACID | TR2_IGNORE_ELEC | TR2_IGNORE_FIRE | TR2_IGNORE_COLD);
 	
@@ -412,10 +412,10 @@ void object_notice_effect(object_type *o_ptr)
  */
 void object_notice_slays(object_type *o_ptr, u32b known_f0)
 {
-	object_notice_flags(o_ptr, 0, known_f0);
-
 	u32b flags[OBJ_FLAG_N];
 	object_flags(o_ptr, flags);
+
+	object_notice_flags(o_ptr, 0, known_f0);
 
 	/* if you learn a slay, learn the ego */
 	if (EASY_LEARN && (flags[0] & known_f0))
@@ -568,6 +568,8 @@ void object_notice_on_wield(object_type *o_ptr)
 {
 	u32b f[OBJ_FLAG_N];
 	bool obvious = FALSE;
+	bool obvious_without_activate = FALSE;
+	bool to_sense = FALSE;
 
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
@@ -612,12 +614,10 @@ void object_notice_on_wield(object_type *o_ptr)
 	if (f[2] & TR2_OBVIOUS_MASK & ~TR2_CURSE_MASK) obvious = TRUE;
 	
 	/* XXX Eddie this next block should go when learning cascades with flags */
-	bool obvious_without_activate = FALSE;
 	if (f[0] & TR0_OBVIOUS_MASK) obvious_without_activate = TRUE;
 	if (f[2] & TR2_OBVIOUS_MASK & ~TR2_CURSE_MASK)
 		obvious_without_activate = TRUE;
 	
-	bool to_sense = FALSE;
 	if (f[0] & TR0_OBVIOUS_MASK & ~k_ptr->flags[0]) to_sense = TRUE;
 	if (f[2] & TR2_OBVIOUS_MASK & ~k_ptr->flags[2]) to_sense = TRUE;
 	
