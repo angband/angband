@@ -212,6 +212,8 @@ bool get_item_okay(int item);
 int scan_items(int *item_list, size_t item_list_max, int mode);
 bool item_is_available(int item, bool (*tester)(const object_type *), int mode);
 extern void display_itemlist(void);
+extern void display_object_idx_recall(s16b o_idx);
+extern void display_object_kind_recall(s16b k_idx);
 
 
 /* obj-power.c and randart.c */

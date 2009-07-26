@@ -405,11 +405,6 @@ extern void update_smart_learn(int m_idx, int what);
 void monster_death(int m_idx);
 bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note);
 
-/* obj-util.c */
-extern void display_itemlist(void);
-extern void display_object_idx_recall(s16b o_idx);
-extern void display_object_kind_recall(s16b k_idx);
-
 /* pathfind.c */
 extern bool findpath(int y, int x);
 extern byte get_angle_to_grid[41][41];
