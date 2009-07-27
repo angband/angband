@@ -3738,13 +3738,23 @@ static void process_monster(int m_idx)
 				/* Monster ate another monster */
 				if (kill_ok)
 				{
-					msg_format("%^s tramples over %s.", m_name, n_name);
+					/* Note if visible */
+					if (m_ptr->ml)
+					{
+						msg_format("%^s tramples over %s.", m_name, n_name);
+					}
+
 					did_kill_body = TRUE;
 					delete_monster(ny, nx);
 				}
 				else
 				{
-					msg_format("%^s pushes past %s.", m_name, n_name);
+					/* Note if visible */
+					if (m_ptr->ml)
+					{
+						msg_format("%^s pushes past %s.", m_name, n_name);
+					}
+
 					did_move_body = TRUE;
 				}
 			}
