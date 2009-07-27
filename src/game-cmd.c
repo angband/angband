@@ -58,7 +58,7 @@ static struct
 	{ CMD_CHOOSE_CLASS, { arg_CHOICE, arg_END }, NULL, FALSE },
 	{ CMD_BUY_STAT, { arg_CHOICE, arg_END }, NULL, FALSE },
 	{ CMD_SELL_STAT, { arg_CHOICE, arg_END }, NULL, FALSE },
-	{ CMD_RESET_STATS, { arg_END }, NULL, FALSE },
+	{ CMD_RESET_STATS, { arg_CHOICE, arg_END }, NULL, FALSE },
 	{ CMD_ROLL_STATS, { arg_END }, NULL, FALSE },
 	{ CMD_PREV_STATS, { arg_END }, NULL, FALSE },
 	{ CMD_NAME_CHOICE, { arg_STRING, arg_END }, NULL, FALSE },
