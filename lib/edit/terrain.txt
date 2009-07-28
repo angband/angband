@@ -544,14 +544,14 @@ X:0:0:0:4
 # 0x3C --> permanent wall -- basic (perm)
 
 N:60:permanent wall
-G:#:w
+G:#:u
 P:10
 F:PERM
 
 # 0x3D --> permanent wall -- inner (perm)
 
 N:61:permanent wall
-G:#:w
+G:#:u
 P:10
 M:60
 F:PERM
@@ -559,7 +559,7 @@ F:PERM
 # 0x3E --> permanent wall -- outer (perm)
 
 N:62:permanent wall
-G:#:w
+G:#:u
 P:10
 M:60
 F:PERM
@@ -567,7 +567,7 @@ F:PERM
 # 0x3F --> permanent wall -- solid (perm)
 
 N:63:permanent wall
-G:#:w
+G:#:u
 P:10
 M:60
 F:PERM
