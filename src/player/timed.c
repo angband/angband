@@ -51,7 +51,7 @@ static timed_effect effects[] =
 			NULL, NULL,
 			PR_MAP, PU_FORGET_VIEW | PU_UPDATE_VIEW | PU_MONSTERS, MSG_BLIND },
 	{ "You are paralysed!", "You can move again.",
-			"You are more paralysed!", "You are less paralysed.",
+			NULL, NULL,
 			0, 0, MSG_PARALYZED },
 	{ "You are confused!", "You are no longer confused.",
 			"You are more confused!", "You feel a little less confused.",
@@ -211,6 +211,10 @@ bool inc_timed(int idx, int v, bool notify)
 {
 	/* Check we have a valid effect */
 	if ((idx < 0) || (idx > TMD_MAX)) return FALSE;
+
+	/* Paralysis should be non-cumulative */
+	if (idx == TMD_PARALYZED && p_ptr->timed[TMD_PARALYZED] > 0)
+		return FALSE;
 
 	/* Set v */
 	v = v + p_ptr->timed[idx];
