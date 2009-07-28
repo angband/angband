@@ -39,7 +39,7 @@ source diff:
 	@echo >&2 'source and diff are obsolete - use dpkg-source -b'; false
 
 define TESTROOT
-	@test $$(id -u) = 0 || (echo need root priviledges; exit 1)
+	@test $$(id -u) = 0 || (echo need root privileges; exit 1)
 endef
 
 testroot:
