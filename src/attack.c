@@ -131,7 +131,7 @@ static int critical_shot(int weight, int plus, int dam)
  *
  * Factor in weapon weight, total plusses, player level.
  */
-static int critical_norm(int weight, int plus, int dam)
+static int critical_norm(int weight, int plus, int dam, const char **crit_msg)
 {
 	int i, k;
 
@@ -146,31 +146,31 @@ static int critical_norm(int weight, int plus, int dam)
 		if (k < 400)
 		{
 			sound(MSG_HIT_GOOD);
-			msg_print("It was a good hit!");
+			*crit_msg = "It was a good hit!";
 			dam = 2 * dam + 5;
 		}
 		else if (k < 700)
 		{
 			sound(MSG_HIT_GREAT);
-			msg_print("It was a great hit!");
+			*crit_msg = "It was a great hit!";
 			dam = 2 * dam + 10;
 		}
 		else if (k < 900)
 		{
 			sound(MSG_HIT_SUPERB);
-			msg_print("It was a superb hit!");
+			*crit_msg = "It was a superb hit!";
 			dam = 3 * dam + 15;
 		}
 		else if (k < 1300)
 		{
 			sound(MSG_HIT_HI_GREAT);
-			msg_print("It was a *GREAT* hit!");
+			*crit_msg = "It was a *GREAT* hit!";
 			dam = 3 * dam + 20;
 		}
 		else
 		{
 			sound(MSG_HIT_HI_SUPERB);
-			msg_print("It was a *SUPERB* hit!");
+			*crit_msg = "It was a *SUPERB* hit!";
 			dam = ((7 * dam) / 2) + 25;
 		}
 	}
@@ -179,7 +179,7 @@ static int critical_norm(int weight, int plus, int dam)
 		sound(MSG_HIT);
 	}
 
-	return (dam);
+	return dam;
 }
 
 
@@ -283,6 +283,7 @@ void py_attack(int y, int x)
 
 	bool do_quake = FALSE;
 
+	const char *crit_msg = NULL;
 
 	/* Get the monster */
 	m_ptr = &mon_list[cave_m_idx[y][x]];
@@ -357,8 +358,6 @@ void py_attack(int y, int x)
 						o_ptr,
 						m_ptr, &hit_verb, FALSE, FALSE);
 
-				/* Message. Need to do this after tot_dam_aux, which sets hit_verb, but before critical_norm, which may print further messages. */
-				message_format(MSG_GENERIC, m_ptr->r_idx, "You %s %s.", hit_verb, m_name);
 						
 				if (ring_brand_mult[0] > use_mult)
 					use_mult = ring_brand_mult[0];
@@ -374,7 +373,7 @@ void py_attack(int y, int x)
 					do_quake = TRUE;
 
 				k += o_ptr->to_d;
-				k = critical_norm(o_ptr->weight, o_ptr->to_h, k);
+				k = critical_norm(o_ptr->weight, o_ptr->to_h, k, &crit_msg);
 
 				/* Learn by use */
 				object_notice_attack_plusses(o_ptr);
@@ -383,16 +382,20 @@ void py_attack(int y, int x)
 				if (do_quake)
 					wieldeds_notice_flag(2, TR2_IMPACT);
 			}
-			else
-			{
-				message_format(MSG_GENERIC, m_ptr->r_idx, "You %s %s.", hit_verb, m_name);
-			}
 
 			/* Apply the player damage bonuses */
 			k += p_ptr->state.to_d;
 
-			/* No negative damage */
-			if (k < 0) k = 0;
+			/* No negative damage; change verb if no damage done */
+			if (k <= 0)
+			{
+				k = 0;
+				hit_verb = "fail to harm";
+			}
+
+			/* Tell the player what happened */
+			message_format(MSG_GENERIC, m_ptr->r_idx, "You %s %s.", hit_verb, m_name);
+			if (crit_msg) msg_print(crit_msg);
 
 			/* Complex message */
 			if (p_ptr->wizard)
