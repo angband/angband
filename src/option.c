@@ -74,7 +74,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_ring_bell,
 		OPT_flush_failure,
 		OPT_flush_disturb,
-		OPT_NONE,
+		OPT_notify_recharge,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
@@ -213,7 +213,7 @@ static option_entry options[OPT_MAX] =
 { "squelch_worthless",   "Automatically squelch worthless items",       FALSE }, /* 76 */
 { "mouse_movement",      "Allow mouse clicks to move the player",       FALSE }, /* 77 */
 { "mouse_buttons",        "Show mouse status line buttons",             FALSE }, /* 78 */
-{ NULL,                  NULL,                                          FALSE }, /* 79 */
+{ "notify_recharge",     "Notify on object recharge",                   FALSE }, /* 79 */
 { NULL,                  NULL,                                          FALSE }, /* 80 */
 { NULL,                  NULL,                                          FALSE }, /* 81 */
 { NULL,                  NULL,                                          FALSE }, /* 82 */

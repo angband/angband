@@ -180,6 +180,7 @@ static void regen_monsters(void)
  * If player has inscribed the object with "!!", let him know when it's
  * recharged. -LM-
  * Also inform player when first item of a stack has recharged. -HK-
+ * Notify all recharges w/o inscription if notify_recharge option set -WP-
  */
 static void recharged_notice(const object_type *o_ptr, bool all)
 {
@@ -187,47 +188,56 @@ static void recharged_notice(const object_type *o_ptr, bool all)
 
 	cptr s;
 
-	/* No inscription */
-	if (!o_ptr->note) return;
+	bool notify = FALSE;
 
-	/* Find a '!' */
-	s = strchr(quark_str(o_ptr->note), '!');
-
-	/* Process notification request */
-	while (s)
+	if (OPT(notify_recharge))
 	{
-		/* Find another '!' */
-		if (s[1] == '!')
-		{
-			/* Describe (briefly) */
-			object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
-
-			/* Disturb the player */
-			disturb(0, 0);
-
-			/* Notify the player */
-			if (o_ptr->number > 1)
-			{
-				if (all) msg_format("Your %s have recharged.", o_name);
-				else msg_format("One of your %s has recharged.", o_name);
-			}
-
-			/* Artifacts */
-			else if (o_ptr->name1)
-			{
-				msg_format("The %s has recharged.", o_name);
-			}
-
-			/* Single, non-artifact items */
-			else msg_format("Your %s has recharged.", o_name);
-
-			/* Done */
-			return;
-		}
-
-		/* Keep looking for '!'s */
-		s = strchr(s + 1, '!');
+		notify = TRUE;
 	}
+	else if (o_ptr->note)
+	{
+		/* Find a '!' */
+		s = strchr(quark_str(o_ptr->note), '!');
+
+		/* Process notification request */
+		while (s)
+		{
+			/* Find another '!' */
+			if (s[1] == '!')
+			{
+				notify = TRUE;
+				break;
+			}
+
+			/* Keep looking for '!'s */
+			s = strchr(s + 1, '!');
+		}
+	}
+
+	if (!notify) return;
+
+
+	/* Describe (briefly) */
+	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
+
+	/* Disturb the player */
+	disturb(0, 0);
+
+	/* Notify the player */
+	if (o_ptr->number > 1)
+	{
+		if (all) msg_format("Your %s have recharged.", o_name);
+		else msg_format("One of your %s has recharged.", o_name);
+	}
+
+	/* Artifacts */
+	else if (o_ptr->name1)
+	{
+		msg_format("The %s has recharged.", o_name);
+	}
+
+	/* Single, non-artifact items */
+	else msg_format("Your %s has recharged.", o_name);
 }
 
 

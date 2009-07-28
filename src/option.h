@@ -81,6 +81,7 @@ extern const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_squelch_worthless		76
 #define OPT_mouse_movement		77
 #define OPT_mouse_buttons		78
+#define OPT_notify_recharge			79
 
 
 #define OPT_birth_maximize          (OPT_BIRTH+0)
