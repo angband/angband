@@ -57,7 +57,7 @@ fi
 # the debian-policy package
 
 # Ensure the menu system is updated
-[ ! -x /usr/bin/update-menus ] || /usr/bin/update-menus
+[ ! -x /usr/bin/update-menus ] || update-menus
 
 case "$1" in
   remove)

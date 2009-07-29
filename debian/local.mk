@@ -84,6 +84,7 @@ debian/stamp/install/angband:
          AM_MAKEFLAGS="DEFAULT_PATH=$(TMPTOP)/var/games/angband/"; export AM_MAKEFLAGS; \
          $(MAKE)              $(INT_INSTALL_TARGET)    prefix=$(TMPTOP)/usr \
 		       	      infodir=$(INFODIR) mandir=$(MANDIR)       \
+		              datadir=$(DATADIR) \
                              AM_MAKEFLAGS="DEFAULT_PATH=$(GAMEDIR)"       \
                              DEFAULT_PATH=$(GAMEDIR) DATA_PATH=$(GAMEDIR)) 
 	$(install_file)      debian/changelog     $(DOCDIR)/changelog.Debian
@@ -105,8 +106,8 @@ debian/stamp/install/angband:
         done
 	rm -f                   $(GAMEDIR)/apex/scores.raw
 	rm -f                   $(GAMEDIR)/xtra/font/copying.txt
-	rmdir			$(TMPTOP)/usr/include/angband
-	rmdir			$(TMPTOP)/usr/include
+#	rmdir			$(TMPTOP)/usr/include/angband
+#	rmdir			$(TMPTOP)/usr/include
 # Make sure the copyright file is not compressed
 	$(install_file)         debian/copyright     $(DOCDIR)/
 	$(install_file)         debian/menuentry     $(MENUDIR)/$(package)

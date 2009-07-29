@@ -7,9 +7,9 @@ PACKAGE = ${PACKAGE_NAME}/apex
 install-extra:
 	if [ "x$(SETEGID)" != "x" ]; then \
 		if [ "x$(DRY)" = "x" ]; then \
-			${MKDIR_P} ${DESTDIR}$game_datadir/${PACKAGE}; \
-			touch ${DESTDIR}$game_datadir/${PACKAGE}/scores.raw; \
-			chown -R root:${SETEGID} ${DESTDIR}$game_datadir/${PACKAGE}; \
-			chmod -R g+w ${DESTDIR}$game_datadir/${PACKAGE}; \
+			${MKDIR_P} ${DESTDIR}${datadir}/${PACKAGE}; \
+			touch ${DESTDIR}${datadir}/${PACKAGE}/scores.raw; \
+			chown -R root:${SETEGID} ${DESTDIR}${datadir}/${PACKAGE}; \
+			chmod -R g+w ${DESTDIR}${datadir}/${PACKAGE}; \
 		fi; \
 	fi

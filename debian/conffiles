@@ -23,6 +23,12 @@
 /etc/angband/pref/font-win.prf
 /etc/angband/pref/font-x11.prf
 /etc/angband/pref/font-xxx.prf
+/etc/angband/pref/font-gcu.prf
+/etc/angband/pref/font-sdl.prf
+/etc/angband/pref/font-gtk.prf
+/etc/angband/pref/pref-win.prf
+/etc/angband/pref/graf-sdl.prf
+/etc/angband/pref/graf-gtk.prf
 /etc/angband/pref/graf-dvg.prf
 /etc/angband/pref/graf-mac.prf
 /etc/angband/pref/graf-new.prf

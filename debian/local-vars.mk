@@ -34,7 +34,8 @@ DOCBASEDIR = $(TMPTOP)/usr/share/doc-base
 
 BINDIR  = $(TMPTOP)$(PREFIX)/bin
 LIBDIR  = $(TMPTOP)$(PREFIX)/lib
-GAMEDIR = $(TMPTOP)/var/games/$(package)
+DATADIR = $(TMPTOP)/var/games
+GAMEDIR = $(DATADIR)/$(package)
 
 # Man Pages
 MANDIR    = $(TMPTOP)/usr/share/man

@@ -84,7 +84,7 @@ fi
 ##: fi
 
 # Ensure the menu system is updated
-[ ! -x /usr/bin/update-menus ] || /usr/bin/update-menus
+[ ! -x /usr/bin/update-menus ] || update-menus
 
 # Arrange for a daemon to be started at system boot time
 ##: update-rc.d ${package_name} default >/dev/null
