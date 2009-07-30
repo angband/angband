@@ -385,10 +385,10 @@ static bool describe_slays(u32b f1, int tval)
 
 	bool fulldesc;
 
-	if ((tval == TV_SWORD) || (tval == TV_HAFTED) || (tval == TV_POLEARM) ||
-		(tval == TV_DIGGING ) || (tval == TV_BOW) || (tval == TV_SHOT) ||
-		(tval == TV_ARROW) || (tval == TV_BOLT) || (tval == TV_LITE)) 
-		fulldesc = FALSE;		
+	if ((tval == TV_SWORD) || (tval == TV_HAFTED) || (tval == TV_POLEARM)
+		|| (tval == TV_DIGGING ) || (tval == TV_BOW) || (tval == TV_SHOT)
+		|| (tval == TV_ARROW) || (tval == TV_BOLT) || (tval == TV_LITE)
+		|| (tval == TV_FLASK)) fulldesc = FALSE;		
 	else fulldesc = TRUE;
 
 	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
