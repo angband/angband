@@ -37,6 +37,7 @@ debian/stamp/conf/angband:
 	$(checkdir)
 	$(REASON)
 	@test -d debian/stamp/conf || mkdir -p debian/stamp/conf
+	./autogen.sh
 	./configure  --verbose --prefix=$(PREFIX)                       \
                      --datadir=$(R_LIBDIR) --mandir=$(R_MANDIR)         \
                      --infodir=$(R_INFODIR) --sysconfdir=/etc           \
@@ -91,6 +92,10 @@ debian/stamp/install/angband:
 	$(install_file)      debian/README.debian $(DOCDIR)/
 	$(install_file)      debian/Xresources    $(DOCDIR)/
 	$(install_file)      debian/buildinfo     $(DOCDIR)/buildinfo.Debian
+	$(install_file)      changes.txt	  $(DOCDIR)/changelog
+	$(install_file)      faq.txt		  $(DOCDIR)/faq
+	$(install_file)      readme.txt           $(DOCDIR)/readme
+	$(install_file)      thanks.txt		  $(DOCDIR)/thanks
 	$(install_file)      src/angband.man      $(MAN6DIR)/angband.6
 	gzip -9fqr           $(DOCDIR)
 	gzip -9fqr           $(MANDIR)
