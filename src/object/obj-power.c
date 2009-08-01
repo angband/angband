@@ -52,6 +52,7 @@
 #define AVG_SLING_MULT          4 /* i.e. 2 */
 #define AVG_BOW_MULT            5 /* i.e. 2.5 */
 #define AVG_XBOW_MULT           7 /* i.e. 3.5 */
+#define AVG_LAUNCHER_DMG	9
 #define MELEE_DAMAGE_BOOST      5
 #define RING_BRAND_DMG	        9 /* i.e. 3d5 or 2d8 weapon */
 #define BASE_LITE_POWER         6
@@ -383,9 +384,22 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file)
 				}
 			}
 
-			if (o_ptr->tval == TV_SHOT)  p = p * AVG_SLING_MULT / (2 * BOW_RESCALER);
-			if (o_ptr->tval == TV_ARROW) p = p * AVG_BOW_MULT / (2 * BOW_RESCALER);
-			if (o_ptr->tval == TV_BOLT)  p = p * AVG_XBOW_MULT / (2 * BOW_RESCALER);
+			/* add launcher bonus for ego ammo, and multiply */
+			if (o_ptr->tval == TV_SHOT)
+			{
+				if (o_ptr->name2) p += (AVG_LAUNCHER_DMG * DAMAGE_POWER / 2);
+				p = p * AVG_SLING_MULT / (2 * BOW_RESCALER);
+			}
+			if (o_ptr->tval == TV_ARROW)
+			{
+				if (o_ptr->name2) p += (AVG_LAUNCHER_DMG * DAMAGE_POWER / 2);
+				p = p * AVG_BOW_MULT / (2 * BOW_RESCALER);
+			}
+			if (o_ptr->tval == TV_BOLT)
+			{
+				if (o_ptr->name2) p += (AVG_LAUNCHER_DMG * DAMAGE_POWER / 2);
+				p = p * AVG_XBOW_MULT / (2 * BOW_RESCALER);
+			}
 			LOG_PRINT1("After multiplying ammo and rescaling, power is %d\n", p);
 			
 			p += sign(o_ptr->to_h) * (ABS(o_ptr->to_h) * TO_HIT_POWER / 2);
