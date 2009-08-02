@@ -356,7 +356,6 @@ void object_flags_known(const object_type *o_ptr, u32b flags[])
 	u32b f[OBJ_FLAG_N];
 	int i;
 	bool aware = object_flavor_is_aware(o_ptr);
-	bool easy_know = (object_kind_of(o_ptr)->flags[2] & TR2_EASY_KNOW);
 
 	object_flags(o_ptr, f);
 
@@ -365,10 +364,9 @@ void object_flags_known(const object_type *o_ptr, u32b flags[])
 		flags[i] = o_ptr->known_flags[i] & f[i];
 		if (aware)
 			flags[i] |= k_info[o_ptr->k_idx].flags[i];
-		if (o_ptr->name2 && easy_know)
+		if (o_ptr->name2 && easy_know(o_ptr))
 			flags[i] |= e_info[o_ptr->name2].flags[i];
 	}
-
 }
 
 
@@ -1377,7 +1375,8 @@ static s32b object_value_base(const object_type *o_ptr)
  * are priced according to their power rating. All ammo, and normal (non-ego)
  * torches are scaled down by AMMO_RESCALER to reflect their impermanence.
  */
-static s32b object_value_real(const object_type *o_ptr, int qty, int verbose)
+static s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
+	bool known)
 {
 	s32b value, total_value;
 
@@ -1408,7 +1407,7 @@ static s32b object_value_real(const object_type *o_ptr, int qty, int verbose)
 		}
 
 		LOG_PRINT1("object is %s", k_name + k_ptr->name);
-		power = object_power(o_ptr, verbose, log_file);
+		power = object_power(o_ptr, verbose, log_file, known);
 		value = sign(power) * ((a * power * power) + (b * power));
 
 		if ( (o_ptr->tval == TV_SHOT) || (o_ptr->tval == TV_ARROW) ||
@@ -1501,7 +1500,7 @@ s32b object_value(const object_type *o_ptr, int qty, int verbose)
 	{
 		if (cursed_p(o_ptr)) return (0L);
 
-		value = object_value_real(o_ptr, qty, verbose);
+		value = object_value_real(o_ptr, qty, verbose, TRUE);
 	}
 	else if (wearable_p(o_ptr))
 	{
@@ -1518,10 +1517,10 @@ s32b object_value(const object_type *o_ptr, int qty, int verbose)
 
 		if (!object_attack_plusses_are_visible(o_ptr))
 			j_ptr->to_h = j_ptr->to_d = 0;
-		else if (!object_defence_plusses_are_visible(o_ptr))
+		if (!object_defence_plusses_are_visible(o_ptr))
 			j_ptr->to_a = 0;
 
-		value = object_value_real(j_ptr, qty, verbose);
+		value = object_value_real(j_ptr, qty, verbose, FALSE);
 	}
 	else value = object_value_base(o_ptr) * qty;
 

@@ -87,7 +87,7 @@ void wieldeds_notice_slays(u32b known_f0);
 void object_repair_knowledge(object_type *o_ptr);
 obj_pseudo_t object_pseudo(const object_type *o_ptr);
 void sense_inventory(void);
-
+bool easy_know(const object_type *o_ptr);
 
 /* obj-desc.c */
 void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know);
@@ -217,7 +217,7 @@ extern void display_object_kind_recall(s16b k_idx);
 
 
 /* obj-power.c and randart.c */
-s32b object_power(const object_type *o_ptr, int verbose, ang_file *log_file);
+s32b object_power(const object_type *o_ptr, int verbose, ang_file *log_file, bool known);
 /*
  * Some constants used in randart generation and power calculation
  * - thresholds for limiting to_hit, to_dam and to_ac

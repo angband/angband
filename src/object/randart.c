@@ -372,7 +372,7 @@ static s32b artifact_power(int a_idx)
 		return 0;
 	}
 
-	return object_power(&obj, verbose, log_file);
+	return object_power(&obj, verbose, log_file, TRUE);
 }
 
 

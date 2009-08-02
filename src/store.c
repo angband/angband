@@ -501,7 +501,7 @@ static int mass_roll(int times, int max)
 static void mass_produce(object_type *o_ptr)
 {
 	int size = 1;
-	s32b cost = object_value(o_ptr, 1, TRUE);
+	s32b cost = object_value(o_ptr, 1, FALSE);
 
 	/* Analyze the type */
 	switch (o_ptr->tval)
@@ -799,7 +799,7 @@ static int home_carry(object_type *o_ptr)
 
 
 	/* Determine the "value" of the object */
-	value = object_value(o_ptr, 1, TRUE);
+	value = object_value(o_ptr, 1, FALSE);
 
 	/* Check existing slots to see if we must "slide" */
 	for (slot = 0; slot < st_ptr->stock_num; slot++)
@@ -830,7 +830,7 @@ static int home_carry(object_type *o_ptr)
 		if (!object_is_known(j_ptr)) break;
 
 		/* Objects sort by decreasing value */
-		j_value = object_value(j_ptr, 1, TRUE);
+		j_value = object_value(j_ptr, 1, FALSE);
 		if (value > j_value) break;
 		if (value < j_value) continue;
 	}
@@ -874,7 +874,7 @@ static int store_carry(int st, object_type *o_ptr)
 	store_type *st_ptr = &store[st];
 
 	/* Evaluate the object */
-	value = object_value(o_ptr, 1, TRUE);
+	value = object_value(o_ptr, 1, FALSE);
 
 	/* Cursed/Worthless items "disappear" when sold */
 	if (value <= 0) return (-1);
@@ -918,7 +918,7 @@ static int store_carry(int st, object_type *o_ptr)
 		if (o_ptr->sval > j_ptr->sval) continue;
 
 		/* Evaluate that slot */
-		j_value = object_value(j_ptr, 1, TRUE);
+		j_value = object_value(j_ptr, 1, FALSE);
 
 		/* Objects sort by decreasing value */
 		if (value > j_value) break;
@@ -1113,7 +1113,7 @@ static bool black_market_ok(const object_type *o_ptr)
 
 
 	/* No cheap items */
-	if (object_value(o_ptr, 1, TRUE) < 10) return (FALSE);
+	if (object_value(o_ptr, 1, FALSE) < 10) return (FALSE);
 
 	/* Check the other stores */
 	for (i = 0; i < MAX_STORES; i++)
@@ -1299,8 +1299,7 @@ static bool store_create_random(int st)
 			continue;
 
 		/* No "worthless" items */
-		if (object_value(i_ptr, 1, TRUE) < 1) continue;
-
+		if (object_value(i_ptr, 1, FALSE) < 1) continue;
 
 
 		/* Charge lights XXX */
@@ -2391,10 +2390,6 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 	/* Update the display */
 	store_flags |= STORE_GOLD_CHANGE;
 	
-	/* Identify original object */
-	object_flavor_aware(o_ptr);
-	object_notice_everything(o_ptr);
-	
 	/* Update the auto-history if selling an artifact that was previously un-IDed. (Ouch!) */
 	if (artifact_p(o_ptr))
 		history_add_artifact(o_ptr->name1, TRUE);
@@ -2405,14 +2400,18 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 	/* Redraw stuff */
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 	
-	/* The object belongs to the store now */
-	sold_item.ident |= IDENT_STORE;
-	
 	/* Get the "apparent" value */
 	dummy = object_value(&sold_item, amt, TRUE);
+/*	msg_format("Dummy is %d", dummy); */
 	
+	/* Identify original object */
+	object_notice_everything(o_ptr);
+
 	/* Take a new copy of the now known-about object. */
 	object_copy_amt(&sold_item, o_ptr, amt);
+
+	/* The item belongs to the store now */
+	sold_item.ident |= IDENT_STORE;
 	   
 	/*
 	* Hack -- Allocate charges between those wands, staves, or rods
@@ -2422,7 +2421,8 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 	
 	/* Get the "actual" value */
 	value = object_value(&sold_item, amt, TRUE);
-	
+/*	msg_format("Value is %d", value); */
+
 	/* Get the description all over again */
 	object_desc(o_name, sizeof(o_name), &sold_item, TRUE, ODESC_FULL);
 	

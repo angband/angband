@@ -31,7 +31,7 @@ s32b object_last_wield;
 /**
  * \returns whether an object counts as "known" due to EASY_KNOW status
  */
-static bool easy_know(const object_type *o_ptr)
+bool easy_know(const object_type *o_ptr)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
