@@ -10,9 +10,9 @@ if [ $# -ne 1 ] && [ $# -ne 2 ]; then
 	exit 1
 fi
   
-DIR=$1
+DIR=angband-$1
 if [ $# -eq 1 ]; then
-	OUT=$1.tar.gz
+	OUT=../angband_$1.orig.tar.gz
 else
 	OUT=$2
 fi
@@ -20,7 +20,7 @@ fi
 svn export . $DIR &&
 	cd $DIR &&
 	rm -rf debian &&
-#	./autogen.sh &&
-#	rm -rf autogen.sh autom4te.cache &&
 	cd .. &&
-	tar czvf $OUT $DIR
+	tar czvf $OUT $DIR &&
+	rm -rf $DIR
+	dpkg-buildpackage -i -rfakeroot

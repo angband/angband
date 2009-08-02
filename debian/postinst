@@ -4,8 +4,8 @@
 # Author           : Manoj Srivastava ( srivasta@glaurung.green-gryphon.com ) 
 # Created On       : Fri Nov 14 11:25:07 2003
 # Created On Node  : glaurung.green-gryphon.com
-# Last Modified By : Manoj Srivastava
-# Last Modified On : Wed Jun 14 15:19:41 2006
+# Last Modified By : Chris Carr
+# Last Modified On : Sun Aug 02 09:19:41 2009
 # Last Machine Used: glaurung.internal.golden-gryphon.com
 # Update Count     : 15
 # Status           : Unknown, Use with caution!
@@ -197,6 +197,7 @@ case "$1" in
     chmod -R g+w /var/games/angband/user
     chmod -R g+w /var/games/angband/bone
     chmod -R g+w /var/games/angband/save
+    chmod ugo+rx /var/games/angband/save
     chmod -R g+w /var/games/angband/apex
 
  

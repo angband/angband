@@ -3,8 +3,8 @@
 ## Author           : Manoj Srivastava ( srivasta@glaurung.green-gryphon.com ) 
 ## Created On       : Sat Nov 15 10:43:00 2003
 ## Created On Node  : glaurung.green-gryphon.com
-## Last Modified By : Manoj Srivastava
-## Last Modified On : Tue Feb 17 09:41:30 2004
+## Last Modified By : Chris Carr
+## Last Modified On : Sun Aug 02 09:41:30 2009
 ## Last Machine Used: glaurung.internal.golden-gryphon.com
 ## Update Count     : 15
 ## Status           : Unknown, Use with caution!
@@ -16,9 +16,10 @@
 ###############################################################################
 
 FILES_TO_CLEAN  = debian/files debian/buildinfo debian/substvars angband \
-                  config.status config.log
+                  config.status config.log aclocal.m4 \
+		  src/autoconf.h src/autoconf.h.in mk/extra.mk mk/sinclude.mk
 STAMPS_TO_CLEAN = 
-DIRS_TO_CLEAN   = $(TMPTOP) autom4te.cache debian/stamp
+DIRS_TO_CLEAN   = $(TMPTOP) debian/stamp autom4te.cache
 
 PREFIX = /usr
 R_BINDIR = $(PREFIX)/bin

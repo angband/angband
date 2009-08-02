@@ -4,7 +4,7 @@
 ## Created On       : Sat Nov 15 10:42:10 2003
 ## Created On Node  : glaurung.green-gryphon.com
 ## Last Modified By : Chris Carr
-## Last Modified On : Thu Apr 16 21:59:17 2009
+## Last Modified On : Sun Aug 02 09:59:17 2009
 ## Last Machine Used: xaphod.dbass.homelinux.com
 ## Update Count     : 27
 ## Status           : Unknown, Use with caution!
@@ -41,8 +41,8 @@ debian/stamp/conf/angband:
 	./configure  --verbose --prefix=$(PREFIX)                       \
                      --datadir=$(R_LIBDIR) --mandir=$(R_MANDIR)         \
                      --infodir=$(R_INFODIR) --sysconfdir=/etc           \
-                     --with-setgid=games    --with-libpath=$(R_LIBDIR)/ \
-		     --with-x --enable-sdl $(confflags) 
+                     --with-private-dirs    --with-libpath=$(R_LIBDIR)/ \
+		     --with-x --enable-sdl --enable-gtk $(confflags) 
 	@echo done > $@
 
 debian/stamp/build/angband:
