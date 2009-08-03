@@ -763,7 +763,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	/*	if (f[2] & TR2_PERMA_CURSE) p -= 40; */
 
 	/* add power for effect */
-	if (known || (o_ptr->ident & IDENT_EFFECT))
+	if (known || object_effect_is_known(o_ptr))
 	{
 		if (o_ptr->name1)
 		{

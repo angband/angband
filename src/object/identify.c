@@ -96,7 +96,8 @@ bool object_flavor_was_tried(const object_type *o_ptr)
  */
 bool object_effect_is_known(const object_type *o_ptr)
 {
-	return (easy_know(o_ptr) || o_ptr->ident & IDENT_EFFECT) ? TRUE : FALSE;
+	return (easy_know(o_ptr) || (o_ptr->ident & IDENT_EFFECT)
+		|| (o_ptr->ident & IDENT_STORE)) ? TRUE : FALSE;
 }
 
 /**
