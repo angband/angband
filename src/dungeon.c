@@ -1062,6 +1062,19 @@ static void process_player(void)
 		/* Assume free turn */
 		p_ptr->energy_use = 0;
 
+		/* Dwarves detect treasure */
+		if (rp_ptr->new_racial_flags & NRF_SEE_ORE)
+		{
+			/* Only if they are in good shape */
+			if (!p_ptr->timed[TMD_IMAGE] &&
+					!p_ptr->timed[TMD_CONFUSED] &&
+					!p_ptr->timed[TMD_AMNESIA] &&
+					!p_ptr->timed[TMD_STUN] &&
+					!p_ptr->timed[TMD_PARALYZED] &&
+					!p_ptr->timed[TMD_TERROR] &&
+					!p_ptr->timed[TMD_AFRAID])
+				detect_close_buried_treasure();
+		}
 
 		/* Paralyzed or Knocked Out */
 		if ((p_ptr->timed[TMD_PARALYZED]) || (p_ptr->timed[TMD_STUN] >= 100))

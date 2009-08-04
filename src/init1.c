@@ -532,6 +532,44 @@ static cptr c_info_flags[] =
 	"XXX32"
 };
 
+/*
+ * New racial flags
+ */
+static cptr race_info_flags[] =
+{
+	"XXX1",
+	"KNOW_MUSHROOM",
+	"KNOW_ZAPPER",
+	"XXX2",
+	"SEE_ORE",
+	"XXX6",
+	"XXX7",
+	"XXX8",
+	"XXX9",
+	"XXX10",
+	"XXX11",
+	"XXX12",
+	"XXX13",
+	"XXX14",
+	"XXX15",
+	"XXX16",
+	"XXX17",
+	"XXX18",
+	"XXX19",
+	"XXX20",
+	"XXX21",
+	"XXX22",
+	"XXX23",
+	"XXX24",
+	"XXX25",
+	"XXX26",
+	"XXX27",
+	"XXX28",
+	"XXX29",
+	"XXX30",
+	"XXX31",
+	"XXX32"
+};
 
 /*
  * Terrain feature flags
@@ -2397,6 +2435,23 @@ errr parse_r_info(char *buf, header *head)
 }
 
 
+
+/*
+ * Grab one new race-only flag in a player_race from a textual string
+ */
+static errr grab_one_new_racial_flag(player_race *pr_ptr, cptr what)
+{
+	if (grab_one_flag(&pr_ptr->new_racial_flags, race_info_flags, what) == 0)
+		return (0);
+
+	/* Oops */
+	msg_format("Unknown new player flag '%s'.", what);
+
+	/* Error */
+	return (PARSE_ERROR_INVALID_FLAG);
+}
+
+
 /*
  * Helper function for reading a list of skills
  */
@@ -2620,6 +2675,34 @@ errr parse_p_info(char *buf, header *head)
 		}
 	}
 
+	/* Hack -- Process 'Y' for new race-only flags */
+	else if (buf[0] == 'Y')
+	{
+		/* There better be a current pr_ptr */
+		if (!pr_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
+
+		/* Parse every entry textually */
+		for (s = buf + 2; *s; )
+		{
+			/* Find the end of this entry */
+			for (t = s; *t && (*t != ' ') && (*t != '|'); ++t) /* loop */;
+
+			/* Nuke and skip any dividers */
+			if (*t)
+			{
+				*t++ = '\0';
+				while ((*t == ' ') || (*t == '|')) t++;
+			}
+
+			/* Parse this entry */
+			if (0 != grab_one_new_racial_flag(pr_ptr, s))
+				return (PARSE_ERROR_INVALID_FLAG);
+
+			/* Start the next entry */
+			s = t;
+		}
+	}
+	
 	/* Hack -- Process 'C' for class choices */
 	else if (buf[0] == 'C')
 	{

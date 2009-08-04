@@ -480,6 +480,7 @@ extern void set_recall(void);
 extern bool detect_traps(bool aware);
 extern bool detect_doorstairs(bool aware);
 extern bool detect_treasure(bool aware);
+extern bool detect_close_buried_treasure(void);
 extern bool detect_objects_magic(bool aware);
 extern bool detect_monsters_normal(bool aware);
 extern bool detect_monsters_invis(bool aware);

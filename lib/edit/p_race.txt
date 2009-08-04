@@ -32,7 +32,7 @@
 # to hit (bows), to hit (throwing), digging.
 
 # 'X' is for extra info - max. hitpoints gained per level, experience
-# factor in percent, range of infravision in 10 feets.
+# factor in percent, range of infravision in 10 feets, digging bonus.
 
 # 'I' is for info - starting point of the player history, base age,
 # random age modifier.
@@ -43,7 +43,9 @@
 # 'W' is weight info - base weight (males), mod weight (males),
 # base weight (females), mod weight (females).
 
-# 'F' is for racial flags.
+# 'F' is for racial flags (item-style).
+
+# 'Y' is for racial flags (new-style).
 
 # 'C' is for class choices.
 
@@ -74,7 +76,7 @@ C:0|1|2|3|4|5
 
 N:2:Elf
 S:-1:2:-1:1:-2:1
-R:5:6:6:1:8:12:-5:15:15:0
+R:5:6:6:3:8:12:-5:15:15:0
 X:9:120:3
 I:5:75:75
 H:60:4:54:4
@@ -90,26 +92,29 @@ I:10:21:12
 H:36:3:33:3
 W:60:3:50:3
 F:HOLD_LIFE
+Y:MUSHIE
 C:0|3|4
 
 N:4:Gnome
 S:-1:2:0:2:1:-2
-R:10:12:12:3:6:13:-8:12:12:0
+R:10:22:12:3:6:13:-8:12:12:0
 X:8:125:4
 I:13:50:40
 H:42:3:39:3
 W:90:6:75:3
 F:FREE_ACT
+Y:KNOW_ZAPPER
 C:0|1|2|3
 
 N:5:Dwarf
 S:2:-3:2:-2:2:-3
-R:2:9:9:-1:7:10:15:0:0:0
+R:2:9:9:-1:7:10:15:0:0:40
 X:11:120:5
 I:16:35:15
 H:48:3:46:3
 W:150:10:120:10
 F:RES_BLIND
+Y:SEE_ORE
 C:0|2|5
 
 N:6:Half-Orc

@@ -2677,6 +2677,23 @@ s16b inven_carry(object_type *o_ptr)
 	/* Redraw stuff */
 	p_ptr->redraw |= (PR_INVEN);
 
+	/* Hobbits ID mushrooms on pickup, gnomes ID wands and staffs on pickup */
+	if (!object_is_known(j_ptr))
+	{
+		if ((rp_ptr->new_racial_flags & NRF_KNOW_MUSHROOM) &&
+			j_ptr->tval == TV_FOOD)
+		{
+			do_ident_item(i, j_ptr);
+			msg_print("Mushrooms for breakfast!");
+		}
+
+		if ((rp_ptr->new_racial_flags & NRF_KNOW_ZAPPER) &&
+			(j_ptr->tval == TV_WAND || j_ptr->tval == TV_STAFF))
+		{
+			do_ident_item(i, j_ptr);
+		}
+	}
+
 	/* Return the slot */
 	return (i);
 }

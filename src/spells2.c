@@ -553,6 +553,10 @@ void self_knowledge(bool spoil)
 	{
 		info[i++] = "You have a firm hold on your life force.";
 	}
+	if (rp_ptr->r_skills[SKILL_DIGGING])
+	{
+		info[i++] = "You love digging.";
+	}
 
 	if (f2 & TR1_IM_ACID)
 	{
@@ -1209,6 +1213,61 @@ bool detect_treasure(bool aware)
 	return gold_buried || objects;
 }
 
+
+/*
+ * Quietly detect all buried treasure near the player.
+ */
+bool detect_close_buried_treasure(void)
+{
+	int y, x;
+	int x1, x2, y1, y2;
+
+	bool gold_buried = FALSE;
+
+
+	/* Pick a small area to map */
+	y1 = p_ptr->py - 3;
+	y2 = p_ptr->py + 3;
+	x1 = p_ptr->px - 3;
+	x2 = p_ptr->px + 3;
+
+	if (y1 < 0) y1 = 0;
+	if (x1 < 0) x1 = 0;
+
+
+	/* Scan the dungeon */
+	for (y = y1; y < y2; y++)
+	{
+		for (x = x1; x < x2; x++)
+		{
+			if (!in_bounds_fully(y, x)) continue;
+
+			/* Notice embedded gold */
+			if ((cave_feat[y][x] == FEAT_MAGMA_H) ||
+			    (cave_feat[y][x] == FEAT_QUARTZ_H))
+			{
+				/* Expose the gold */
+				cave_feat[y][x] += 0x02;
+			}
+
+			/* Magma/Quartz + Known Gold */
+			if ((cave_feat[y][x] == FEAT_MAGMA_K) ||
+			    (cave_feat[y][x] == FEAT_QUARTZ_K))
+			{
+				/* Hack -- Memorize */
+				cave_info[y][x] |= (CAVE_MARK);
+
+				/* Redraw */
+				lite_spot(y, x);
+
+				/* Detect */
+				gold_buried = TRUE;
+			}
+		}
+	}
+
+	return (gold_buried);
+}
 
 /*
  * Detect "magic" objects around the player.

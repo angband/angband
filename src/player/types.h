@@ -293,6 +293,7 @@ typedef struct
 	s16b hist;			/* Starting history index */
 	
 	u32b flags[OBJ_FLAG_N];	/* Racial flags */
+	u32b new_racial_flags; /* New Racial flags */
 } player_race;
 
 

@@ -240,11 +240,14 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 			{
 				player_flags(f);
 
-				/* If the race has innate infravision, force the corresponding flag
+				/* If the race has innate infravision/digging, force the corresponding flag
 				   here.  If we set it in player_flags(), then all callers of that
 				   function will think the infravision is caused by equipment. */
 				if (rp_ptr->infra > 0)
-					f[0] |= (TR0_INFRA);
+					f[0] |= TR0_INFRA;
+				if (rp_ptr->r_skills[SKILL_DIGGING] > 0)
+					f[0] |= TR0_TUNNEL;
+
 			}
 
 			res = (0 != (f[resists[i].set] & resists[i].res_flag));

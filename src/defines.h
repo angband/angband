@@ -1427,6 +1427,42 @@ enum
 #define CF_XXX32			0x80000000L
 
 
+/*** New racial flags ***/
+
+#define NRF_XXX1		0x00000001L	/* Fast pseudo-id of launchers and ammo */
+#define NRF_KNOW_MUSHROOM	0x00000002L	/* ID mushrooms on pickup */
+#define NRF_KNOW_ZAPPER		0x00000004L	/* ID wands and staffs on pickup */
+#define NRF_XXX2		0x00000008L	/* Fast pseudo-id of hard armor and shields */
+#define NRF_SEE_ORE			0x00000010L /* Detect nearby treasure */
+#define NRF_XXX6			0x00000020L 
+#define NRF_XXX7			0x00000040L	
+#define NRF_XXX8			0x00000080L 
+#define NRF_XXX9			0x00000100L 
+#define NRF_XXX10			0x00000200L
+#define NRF_XXX11			0x00000400L
+#define NRF_XXX12			0x00000800L
+#define NRF_XXX13			0x00001000L
+#define NRF_XXX14			0x00002000L
+#define NRF_XXX15			0x00004000L
+#define NRF_XXX16			0x00008000L
+#define NRF_XXX17			0x00010000L
+#define NRF_XXX18			0x00020000L
+#define NRF_XXX19			0x00040000L
+#define NRF_XXX20			0x00080000L
+#define NRF_XXX21			0x00100000L
+#define NRF_XXX22			0x00200000L
+#define NRF_XXX23			0x00400000L
+#define NRF_XXX24			0x00800000L
+#define NRF_XXX25			0x01000000L
+#define NRF_XXX26			0x02000000L
+#define NRF_XXX27			0x04000000L
+#define NRF_XXX28			0x08000000L
+#define NRF_XXX29			0x10000000L
+#define NRF_XXX30			0x20000000L
+#define NRF_XXX31			0x40000000L
+#define NRF_XXX32			0x80000000L
+
+
 /*** Terrain flags ***/
 
 enum

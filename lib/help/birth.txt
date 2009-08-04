@@ -149,13 +149,11 @@ have intrinsic abilities.
 
 ***** <Elf>
           Elf
-               Elves are better magicians then humans, but not as good at
-               fighting.  They tend to be smarter and faster than either
-               humans or half-elves, but their wisdom and strength are low.  
-               Elves are better at searching, disarming, perception, stealth,
-               bows and magic, but they are not as good at hand weapons.  
-               Elves are creatures more of magic than religion, and may thus 
-               not be priests or paladins: and they are resistant to attacks 
+               Elves are better magicians than humans, but not as good at
+               fighting.  They tend to be smarter and faster than humans, 
+               though not as wise or strong. Elves are better at searching, 
+               disarming, perception, stealth, bows and magic, but they are 
+               not as good at hand weapons. They are resistant to attacks 
                involving bright light, and have their dexterity sustained.
 
 ***** <Hobbit>
@@ -169,6 +167,8 @@ have intrinsic abilities.
                creatures at a distance.  Hobbits may be warriors, rogues or
                rangers.  They have a strong hold on their life force, and  
                are thus intrinsically resistant to life draining.
+               Hobbits are very partial to mushrooms and can usually
+               identify them when found.
 
 ***** <Gnome>
           Gnome
@@ -182,6 +182,8 @@ have intrinsic abilities.
                at a distance.  A gnome may choose between being a warrior,
                mage, priest, or rogue.  Gnomes are intrinsically protected
                against paralysis and some slowing effects.
+               Gnomes are excellent at using magic devices and can often
+               recognise wands and staffs when they pick them up.
 
 ***** <Dwarf>
           Dwarf
@@ -198,6 +200,8 @@ have intrinsic abilities.
                good reason, screaming out challenges at imagined foes.  In
                other words, dwarves have a miserable stealth.  They can never
                be blinded. 
+               Dwarves are excellent at digging, and can sense nearby buried
+               treasure.
 
 ***** <Half-Orc>
           Half-Orc
@@ -240,15 +244,13 @@ have intrinsic abilities.
                time, before the sun and moon were made, and lived in the 
                Blessed Realm for many thousands of years before returning to 
                mortal lands. Because of this, they are far superior in terms 
-               of abilities when compared to their lesser Elven kindred, and 
-               are able to be priests as well as all the other classes that 
-               normal Elves can be. They can also see into the invisible
-               world of ghosts and wraiths. However, they find new experience
-               even harder to come by than Dunedain: and their wisdom is 
-               still a little suspect. And like normal Elves, they resist
-               attacks involving bright light.  High Elves cannot be rogues
-               (for the same reasons as Dunedain cannot be rogues) or paladins,
-               but may be all other classes.
+               of abilities when compared to their lesser Elven kindred. They 
+               can also see into the invisible world of ghosts and wraiths. 
+               However, they find new experience even harder to come by than 
+               Dunedain. And like normal Elves, they resist attacks involving 
+               bright light.  High Elves cannot be rogues (for the same 
+               reasons as Dunedain cannot be rogues) or paladins, but may be 
+               all other classes.
 
 ***** <Kobold>
           Kobold
@@ -597,17 +599,3 @@ your character - you can choose which one to use from the birth screen.
               Angband's traditional stat-rolling system until your creteria
               have been met (or an insanely large number of rolls have been
               made without finding one that matches your choices).
-
-***** <Standard roller>
-          Standard roller
-              The standard roller is the traditional Angband method of
-              determining the starting stats for a character, it simply
-              "rolls" up a single set of starting values, and gives you
-              the choice of asking for another "roll" to be made or 
-              accepting the current outcome.  This can obviously make for
-              harder characters to play than the other two methods as
-              you are less likely to have high values in the stats that might
-              be most useful to you.
-   
-    
-
