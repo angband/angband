@@ -203,22 +203,22 @@ struct term_data
 	WindowRef w;
 	GlyphInfo *ginfo;
 	
-	Rect wr;		// Absolute bounds of window (for save/restore)
-	Rect r;			// Canvas bounds of window (for mouse addressing &c) 
-	CGRect bounds;  // Relative bounds of border-clipped canvas.
+	Rect wr;        /* Absolute bounds of window (for save/restore) */
+	Rect r;            /* Canvas bounds of window (for mouse addressing &c)  */
+	CGRect bounds;  /* Relative bounds of border-clipped canvas. */
 
-	int spacing;  	// Text padding (in pixels) for tiling wider than text
+	int spacing;      /* Text padding (in pixels) for tiling wider than text */
 
-	Str15 title;	// Window title.
+	Str15 title;    /* Window title. */
 
-	s16b mapped;	// Active state.
+	s16b mapped;    /* Active state. */
 
-	s16b rows;		// rows in picture
-	s16b cols;		// columns in picture.
+	s16b rows;        /* rows in picture */
+	s16b cols;        /* columns in picture. */
 
-	char font_name[200]; // Name of font for storage.
+	char font_name[200]; /* Name of font for storage. */
 	ATSUFontID font_id;
-	float font_size;	// Scaled ATSU font size.
+	float font_size;    /* Scaled ATSU font size. */
 
 	s16b font_wid;
 	s16b font_hgt;
@@ -226,8 +226,8 @@ struct term_data
 	s16b tile_wid;
 	s16b tile_hgt;
 
-	s16b size_wid;	// Window size in x.
-	s16b size_hgt;	// Window size in y.
+	s16b size_wid;    /* Window size in x. */
+	s16b size_hgt;    /* Window size in y. */
 };
 
 struct GlyphInfo
@@ -239,7 +239,7 @@ struct GlyphInfo
 	float font_size;
 	ATSUStyle style;
 	ATSUTextLayout layout;
-	float font_wid;  // max character advance.
+	float font_wid;  /* max character advance. */
 	s32b ascent;
 	s32b descent;
 	bool monospace;
@@ -268,7 +268,7 @@ static void redrawRecentItemsMenu();
  */
 
 #define CHECK_EVENTS_DRAIN -1
-#define CHECK_EVENTS_NO_WAIT	0
+#define CHECK_EVENTS_NO_WAIT    0
 #define CHECK_EVENTS_WAIT 1
 
 
@@ -287,9 +287,9 @@ static long mac_os_version;
 
 /* Out-of-band color identifiers */
 /* True black (TERM_BLACK may be altered) */
-#define COLOR_BLACK		(256)
+#define COLOR_BLACK        (256)
 /* No current color */
-#define COLOR_INVALID	(-1)
+#define COLOR_INVALID    (-1)
 
 
 /*
@@ -298,10 +298,10 @@ static long mac_os_version;
  * (It is a parallel structure to the Term variable.)
  */
 struct ActivePort {
-	WindowRef		active;
-	CGContextRef	ctx;
-	int		  		color;   // Current fill colorcode
-	// CGColorRef		color_info[256+1];
+	WindowRef        active;
+	CGContextRef    ctx;
+	int                  color;   /* Current fill colorcode */
+	/* CGColorRef        color_info[256+1]; */
 	float color_info[256+1][3];
 }; 
 
@@ -348,7 +348,7 @@ static MenuRef MyGetMenuHandle_aux(int menuID, bool first)
 	 * First heirarchical call, find and initialize all menu IDs.
 	 * Subsequent misses will attempt to update the menuRefs array.
 	 * This will work for any depth heirarchy, so long as child menus have
-	 * higher IDs than their parents.	
+	 * higher IDs than their parents.    
 	 *
 	 * Invariant: all MenuRefs with ID < MenuID(tmp) have been initialized.
 	 */
@@ -476,10 +476,10 @@ static void activate(WindowRef w)
 		/* and set up the context */
 		QDBeginCGContext(GetWindowPort(w), &focus.ctx);
 
-		// Shift the origin to inside the border, and use inverted y axis.
+		/* Shift the origin to inside the border, and use inverted y axis. */
 		CGAffineTransform m;
 		m = CGAffineTransformMake(BORDER_WID, 0, 0, -1,
-					 			BORDER_WID, BORDER_WID+td->bounds.size.height);
+								 BORDER_WID, BORDER_WID+td->bounds.size.height);
 
 		CGContextConcatCTM (focus.ctx, m); 
 		CGContextClipToRect(focus.ctx, td->bounds);
@@ -487,17 +487,17 @@ static void activate(WindowRef w)
 		CGContextSetShouldAntialias (focus.ctx, antialias); 
 		CGContextSetInterpolationQuality(focus.ctx, kCGInterpolationNone);
 
-		// Invert the text so it's no longer mirrored in y.
-		// Origin is at still at the bottom of the line, so the ascent must
-		// be subtracted at display-time. (Not added, because the coordinate
-		// system is also flipped.)
+		/* Invert the text so it's no longer mirrored in y. */
+		/* Origin is at still at the bottom of the line, so the ascent must */
+		/* be subtracted at display-time. (Not added, because the coordinate */
+		/* system is also flipped.) */
 		m = CGAffineTransformMake(1, 0, 0, -1, 0, 0);
 		CGContextSetTextMatrix(focus.ctx, m);
 
-		// I don't know why this doesn't work.
-		// CGContextSetFont(focus.ctx, td->ginfo->fontRef);
-		// CGContextSetFontSize(focus.ctx, td->font_size);
-		// HACK: use full postscript name.
+		/* I don't know why this doesn't work. */
+		/* CGContextSetFont(focus.ctx, td->ginfo->fontRef); */
+		/* CGContextSetFontSize(focus.ctx, td->font_size); */
+		/* HACK: use full postscript name. */
 		CGContextSelectFont(focus.ctx, td->ginfo->psname, td->font_size,
 														kCGEncodingMacRoman); 
 
@@ -546,7 +546,7 @@ static void mac_warning(cptr warning)
 
 	DialogItemIndex itemIndex;
 	RunStandardAlert(dlg, NULL, &itemIndex);
-	// DisposeDialog(dlg); // NO!
+	/* DisposeDialog(dlg); // NO! */
 	CFRelease(msg);
 }
 
@@ -607,10 +607,10 @@ inline static void term_data_color(int a)
 	if( a == COLOR_INVALID) {
 		focus.color = a;
 	}
-	else if (focus.color != a)  // Assumes the window exists.
+	else if (focus.color != a)  /* Assumes the window exists. */
 	{
 		focus.color = a;
-		// CGContextSetFillColorWithColor(focus.ctx, focus.color_info[a]);
+		/* CGContextSetFillColorWithColor(focus.ctx, focus.color_info[a]); */
 		CGContextSetRGBFillColor(focus.ctx, focus.color_info[a][0],
 							focus.color_info[a][1], focus.color_info[a][2], 1);
 	}
@@ -623,7 +623,7 @@ static GlyphInfo *get_glyph_info(ATSUFontID fid, float size)
 {
 	GlyphInfo *info;
 
-	// One extra, so a term_data can fetch before it frees.
+	/* One extra, so a term_data can fetch before it frees. */
 			
 	for(info = glyph_data; info <= glyph_data+MAX_TERM_DATA; info++)
 	{
@@ -634,7 +634,7 @@ static GlyphInfo *get_glyph_info(ATSUFontID fid, float size)
 		}
 	}
 
-	// One is always available.
+	/* One is always available. */
 	info = glyph_data;
 	for(int c = 0; info->refcount != 0; info++, c++)
 			assert(c <= MAX_TERM_DATA);
@@ -661,7 +661,7 @@ static GlyphInfo *get_glyph_info(ATSUFontID fid, float size)
 	err = ATSUCreateTextLayout(&info->layout);
 	require_noerr(err, CantInitialize);
 
-	// Dummy text, required to initialize run style.
+	/* Dummy text, required to initialize run style. */
 	UniChar text[1] = {'@'};
 	ATSUSetTextPointerLocation(info->layout, text, 0, 1, 1);
 	ATSUSetRunStyle(info->layout, info->style, 0, 1);
@@ -676,7 +676,7 @@ static GlyphInfo *get_glyph_info(ATSUFontID fid, float size)
 		goto CantInitialize;
 
 	info->psname[oCount] = 0;
-	// Is font mono-space?
+	/* Is font mono-space? */
 	err = ATSUCreateTextLayout(&info->layout);
 	require_noerr(err, CantInitialize);
 
@@ -691,7 +691,7 @@ static GlyphInfo *get_glyph_info(ATSUFontID fid, float size)
 		text[0] = i;
 		Fixed start = 0, stop = 0, ascent = 0, descent = 0;
 		ATSUSetTextPointerLocation(info->layout, text, 0, 1, 1);
-		// SetRunStyle doesn't honor runs in layouts of size 0.
+		/* SetRunStyle doesn't honor runs in layouts of size 0. */
 		if(i == 0) ATSUSetRunStyle(info->layout, info->style, 0, 1);
 		err = ATSUGetUnjustifiedBounds(info->layout, 0, 1, &start, &stop,
 														&ascent, &descent);
@@ -872,7 +872,7 @@ static void term_data_check_size(term_data *td)
  */
 static void term_data_resize(term_data *td)
 {
-	// Invalidate the current CGContext.
+	/* Invalidate the current CGContext. */
 	hibernate();
 	/*
 	 * Actually resize the window
@@ -883,7 +883,7 @@ static void term_data_resize(term_data *td)
 	
 	SizeWindow(td->w, td->size_wid, td->size_hgt, 0);
 
-	// Cheat a little -- can't use the active view to redraw its own border.
+	/* Cheat a little -- can't use the active view to redraw its own border. */
 	CGContextRef tmpCtx;
 	QDBeginCGContext(GetWindowPort(td->w), &tmpCtx);
 	CGContextSetRGBStrokeColor(tmpCtx, 1, 1, 1, 1);
@@ -930,10 +930,10 @@ static const char *pict_id = NULL;
  */
 static struct
 {
-	// The reference image at the original scale.
+	/* The reference image at the original scale. */
 	CGImageRef image;
 
- 	// Numbers of rows and columns in a tileset,
+	 /* Numbers of rows and columns in a tileset, */
 	int cols;
 	int rows;
 
@@ -957,7 +957,7 @@ static struct
  */
 static struct 
 {
-	WindowRef focus; // The most recently focused window. (NOT the fontpanel.)
+	WindowRef focus; /* The most recently focused window. (NOT the fontpanel.) */
 } fontInfo;
 
 
@@ -983,9 +983,9 @@ void DrawSubimage (CGContextRef context, CGRect dst,
 
 	CGContextSaveGState (context);
 	CGContextClipToRect (context, dst);
-	// Don't display images upside down. (Works like SetTextMatrix)
+	/* Don't display images upside down. (Works like SetTextMatrix) */
 	HIViewDrawCGImage (context, &drawRect, image); 
-	// CGContextDrawImage (context, &drawRect, image);
+	/* CGContextDrawImage (context, &drawRect, image); */
 	CGContextRestoreGState (context);
 }
 
@@ -995,7 +995,7 @@ void DrawSubimage (CGContextRef context, CGRect dst,
  */
 static CGImageRef GetTileImage(int row, int col, bool has_alpha) 
 {
-	// Cache hit.
+	/* Cache hit. */
 	assert(col < frame.cols && row < frame.rows);
 	if(frame.tile_images[row*frame.cols + col] != 0) {
 		return frame.tile_images[row*frame.cols+col];
@@ -1017,8 +1017,8 @@ static CGImageRef GetTileImage(int row, int col, bool has_alpha)
 	CGAffineTransform m = {1, 0, 0, -1, 0, td->tile_hgt};
 	CGContextConcatCTM(map, m); 
 
-	// Attempt to avoid interpolation across cell boundaries by clipping.
-	// It may be that we need a clip image first.
+	/* Attempt to avoid interpolation across cell boundaries by clipping. */
+	/* It may be that we need a clip image first. */
 	CGRect src_r = {{ graf_width*col, graf_height*row },
 						{ graf_width, graf_height }};
 	CGRect dst_r = {{ 0, 0 }, { tile_wid, td->tile_hgt }};
@@ -1046,7 +1046,7 @@ static CGImageRef GetTileImage(int row, int col, bool has_alpha)
 
 	CGDataProviderRelease(prov);
 	CGContextRelease(map);
-	// free(data); // Duplicate free?
+	/* free(data); // Duplicate free? */
 
 	frame.tile_images[row*frame.cols+col] = timg;
 	return timg; 
@@ -1074,13 +1074,13 @@ static void DrawTile(int x, int y, byte a, byte c, byte ta, byte tc)
 	/* Draw the foreground, if it is distinct from the background */
 	/* Use alpha. Rare, so it shouldn't take much time. */
 	if(use_transparency && (tc != c || ta != a)) {
-		// This doesn't preserve alpha. Don't know how to fix.
+		/* This doesn't preserve alpha. Don't know how to fix. */
 		image = GetTileImage(a, c, true);
 		DrawSubimage(focus.ctx, dst_r, image, src_r);
-		// Use the original source instead. This is SLOW!
-		//src_r = (CGRect) {{ graf_width*c, graf_height*a },
-		//							{ graf_width, graf_height }};
-		// DrawSubimage(focus.ctx, dst_r, frame.image, src_r);
+		/* Use the original source instead. This is SLOW! */
+		/*src_r = (CGRect) {{ graf_width*c, graf_height*a }, */
+		/*                            { graf_width, graf_height }}; */
+		/* DrawSubimage(focus.ctx, dst_r, frame.image, src_r); */
 	}
 }
 
@@ -1096,10 +1096,10 @@ static void ShowTextAt(int x, int y, int color, int n, const char *text )
 	int c = *(unsigned char*) text;
 
 	int xp = x * td->tile_wid + (td->tile_wid - (info->widths[c] + td->spacing))/2;
-	// Only round once.
+	/* Only round once. */
 	int yp = y * td->tile_hgt + info->ascent + (td->tile_hgt - td->font_hgt)/2;
 
- 	CGRect r;
+	 CGRect r;
 	if(use_graphics || !use_overwrite_hack) {
 		r = (CGRect) {{x*td->tile_wid, y*td->tile_hgt},
 											{n*td->tile_wid, td->tile_hgt}};
@@ -1153,7 +1153,7 @@ static errr graphics_init(void)
 	if(noErr != path_to_spec(path, &pict_spec))
 		return -1;
 
- 	/* Attempt to create a CGImage from FSSpec using Quicktime importer */
+	 /* Attempt to create a CGImage from FSSpec using Quicktime importer */
 	GraphicsImportComponent gi;
 	if( (err = GetGraphicsImporterForFile(&pict_spec, &gi)) )
 		return err;
@@ -1168,7 +1168,7 @@ static errr graphics_init(void)
 
 	frame.tile_images = calloc(frame.rows*frame.cols, sizeof(CGImageRef));
 	if(!frame.tile_images) {
-		return -1; // E_NO_MEM
+		return -1; /* E_NO_MEM */
 	}
 
 	CGImageRef tile_img;
@@ -1224,12 +1224,12 @@ static errr graphics_nuke(void)
 
 
 /* Arbitary limit on number of possible samples per event */
-#define MAX_SAMPLES			8
+#define MAX_SAMPLES            8
 
 /* Struct representing all data for a set of event samples */
 typedef struct
 {
-	int num;		/* Number of available samples for this event */
+	int num;        /* Number of available samples for this event */
 	NSSound *sound[MAX_SAMPLES];
 } sound_sample_list;
 
@@ -1290,9 +1290,9 @@ static void load_sounds(void)
 
 		/* Split the line into two: message name, and the rest */
 		search = strchr(buffer, ' ');
-        cfg_sample_list = strchr(search + 1, ' ');
+		cfg_sample_list = strchr(search + 1, ' ');
 		if (!search) continue;
-        if (!cfg_sample_list) continue;
+		if (!cfg_sample_list) continue;
 
 		/* Set the message name, and terminate at first space */
 		msg_name = buffer;
@@ -1302,9 +1302,9 @@ static void load_sounds(void)
 		for (event = MSG_MAX - 1; event >= 0; event--)
 		{
 			if (strcmp(msg_name, angband_sound_name[event]) == 0)
-			    break;
+				break;
 		}
-        if (event < 0) continue;
+		if (event < 0) continue;
 
 		/* Advance the sample list pointer so it's at the beginning of text */
 		cfg_sample_list++;
@@ -1323,12 +1323,12 @@ static void load_sounds(void)
 			next_token = NULL;
 		}
 
-        /*
-         * Now we find all the sample names and add them one by one
-         */
-        while (cur_token)
-        {
-            int num = samples[event].num;
+		/*
+		 * Now we find all the sample names and add them one by one
+		 */
+		while (cur_token)
+		{
+			int num = samples[event].num;
 
 			/* Don't allow too many samples */
 			if (num >= MAX_SAMPLES) break;
@@ -1648,7 +1648,7 @@ static errr Term_curs_mac(int x, int y)
 
 	CGContextSaveGState(focus.ctx);
 
-	// Temporarily set stroke color to yellow
+	/* Temporarily set stroke color to yellow */
 	int a = TERM_YELLOW;
 	CGContextSetRGBStrokeColor(focus.ctx, focus.color_info[a][0],
 							focus.color_info[a][1], focus.color_info[a][2], 1);
@@ -1678,7 +1678,7 @@ static errr Term_curs_mac(int x, int y)
  *
  * Based on suggestion by Julian Lighton
  *
- * Overwrite "n" old characters starting at	(x,y)
+ * Overwrite "n" old characters starting at    (x,y)
  * with the same ones in the background colour
  */
 static void Term_wipe_mac_aux(int x, int y, int n)
@@ -1711,7 +1711,7 @@ static errr Term_wipe_mac(int x, int y, int n)
 
 	term_data *td = (term_data*)(Term->data);
 	int tile_wid = (1+use_bigtile)*td->tile_wid;
- 	CGRect r = {{ x*tile_wid, y*td->tile_hgt },
+	 CGRect r = {{ x*tile_wid, y*td->tile_hgt },
 											{ n*tile_wid, -td->tile_hgt }};
 	CGContextFillRect(focus.ctx, r);
 
@@ -1752,8 +1752,8 @@ static errr Term_pict_mac(int x, int y, int n, const byte *ap, const char *cp,
 		/* Hack -- a filler for double-width tile */
 		if(use_bigtile && (a == 255)) continue;
 
-		// TODO: background should be overridden with neutral color
-		// if unavailable.
+		/* TODO: background should be overridden with neutral color */
+		/* if unavailable. */
 		/* Graphics -- if Available and Needed */
 		if (use_graphics && (a & 0x80) && (c & 0x80))
 		{
@@ -1863,7 +1863,7 @@ static char *locate_lib(char *buf, size_t size)
 	CFRelease(main_url);
 
 	/* Oops */
-	if (!success) return (NULL);	
+	if (!success) return (NULL);    
 
 	/* Append "/Contents/Resources/lib/" */
 	my_strcat(buf, "/Contents/Resources/lib/", size);
@@ -2116,7 +2116,7 @@ static void cf_load_prefs()
 	/* Ignore broken preferences */
 	if (!valid)
 	{
-		// mac_warning("Ignoring broken preferences.");
+		/* mac_warning("Ignoring broken preferences."); */
 
 		/* Ignore */
 		return;
@@ -2485,7 +2485,7 @@ static void init_menubar(void)
 
 	MenuRef m = MyGetMenuHandle(kStyleMenu);
 	for(int i = 1; i <= CountMenuItems(m); i++) {
-		// Invalid entry
+		/* Invalid entry */
 		SetMenuItemRefCon(m, i, -1);
 	}
 	for(int i = 0; i < N_ELEMENTS(graphics_modes); i++) {
@@ -2507,7 +2507,7 @@ static void init_menubar(void)
 	}
 }
 
-// Install the handlers from the Commands table.
+/* Install the handlers from the Commands table. */
 static void install_handlers(WindowRef w)
 {
 	EventHandlerRef prevRef;
@@ -2551,10 +2551,10 @@ static void validate_menus(void)
 	if(!td) return;
 
 	struct {
-		int menu;				/* Radio-style Menu ID to validate */
-		int cur;				/* Value in use (Compare to RefCon) */
-		int limit;				/* Constraint value */
-		int (*cmp) (int, int);	/* Filter function */
+		int menu;                /* Radio-style Menu ID to validate */
+		int cur;                /* Value in use (Compare to RefCon) */
+		int limit;                /* Constraint value */
+		int (*cmp) (int, int);    /* Filter function */
 	} funcs [] = {
 		{ kTileWidMenu, td->tile_wid, td->font_wid, funcGTE },
 		{ kTileHgtMenu, td->tile_hgt, td->font_hgt, funcGTE },
@@ -2645,7 +2645,7 @@ static void redrawRecentItemsMenu()
 			CFStringRef cfstr = CFStringCreateWithCharacters(kCFAllocatorDefault, recentFileName.unicode, recentFileName.length);
 			AppendMenuItemTextWithCFString(MyGetMenuHandle(kOpenRecentMenu), cfstr, 0, i, &item);
 
-			// Add a shortcut key -- command-alt-number
+			/* Add a shortcut key -- command-alt-number */
 			if (i < 9)
 			{
 				SetMenuItemCommandKey(MyGetMenuHandle(kOpenRecentMenu), item, false, 0x31+i);
@@ -2786,7 +2786,7 @@ static OSStatus AngbandGame(EventHandlerCallRef inCallRef,
 
 	play_game();
 	quit(0);
-	// Not reached
+	/* Not reached */
 	return noErr;
 }
 
@@ -2801,7 +2801,7 @@ static OSStatus openGame(int op)
 	/* Let the player to choose savefile */
 	if (op != kNew && 0 == select_savefile(op == kImport))
 	{
-		// Failed to open
+		/* Failed to open */
 		return noErr;
 	}
 
@@ -2822,7 +2822,7 @@ static OSStatus openGame(int op)
 }
 
 /*
- *	Run the event loop and return a gameplay status to init_angband
+ *    Run the event loop and return a gameplay status to init_angband
  */
 static errr get_cmd_init()
 { 
@@ -2878,7 +2878,7 @@ static OSStatus QuitCommand(EventHandlerCallRef inCallRef,
 							EventRef inEvent, void *inUserData )
 {
 	if (cmd.command == CMD_NULL && !character_generated)
-		quit(0);	
+		quit(0);    
 	else Term_key_push(KTRL('x'));
 	return noErr;
 }
@@ -3014,13 +3014,13 @@ static OSStatus ResizeCommand(EventHandlerCallRef inCallRef,
 	Term_resize(td->cols, td->rows);
 	Term_activate(old);
 
-	// Close the old (different size) CGContext
+	/* Close the old (different size) CGContext */
 	hibernate();
 	/* Resize and Redraw */
 	term_data_resize(td);
 
-	// Since we don't know what view needs to be updated, recalculate
-	// and redraw them all. (term_data_redraw() is not sufficient)
+	/* Since we don't know what view needs to be updated, recalculate */
+	/* and redraw them all. (term_data_redraw() is not sufficient) */
 	Term_key_push(KTRL('R'));
 	
 	return eventNotHandledErr;
@@ -3034,13 +3034,13 @@ static OSStatus GraphicsCommand(EventHandlerCallRef inCallRef,
 	GetEventParameter(inEvent, kEventParamDirectObject, typeHICommand,
 							NULL, sizeof(HICommand), NULL, &command);
 
-	// Check for valid input
-	// assert(kStyleMenu == GetMenuID(command.menu.menuRef));
+	/* Check for valid input */
+	/* assert(kStyleMenu == GetMenuID(command.menu.menuRef)); */
 	if (command.commandID != 'graf' ||
 			kStyleMenu != GetMenuID(command.menu.menuRef))
 		return eventNotHandledErr;
 
-	// Index in graphics_modes[]
+	/* Index in graphics_modes[] */
 	UInt32 op;
 	GetMenuItemRefCon(command.menu.menuRef, command.menu.menuItemIndex, &op);
 
@@ -3272,7 +3272,7 @@ static OSStatus ToggleCommand(EventHandlerCallRef inCallRef,
 			*toggle_defs[i].var = !(*toggle_defs[i].var);
 			if(toggle_defs[i].refresh == true) {
 				RevalidateGraphics(&data[0], FALSE);
-				// Force redraw.
+				/* Force redraw. */
 				Term_key_push(KTRL('R'));
 			}
 			return noErr;
@@ -3288,14 +3288,14 @@ static void FontChanged(UInt32 fontID, float size)
 
 	ATSUStyle fontStyle;
 
-	// Font size must be 8 or more.
+	/* Font size must be 8 or more. */
 	if( 8 > size || fontID == 0)
 		return;
 
 	term_data *td = (term_data*) GetWRefCon(fontInfo.focus);
-	if(!td) return; // paranoia
+	if(!td) return; /* paranoia */
 
-	// No change.
+	/* No change. */
 	if(td->font_id == fontID && td->font_size == size)
 		return ;
 
@@ -3309,7 +3309,7 @@ static void FontChanged(UInt32 fontID, float size)
 	ATSUCreateStyle(&fontStyle);
 	ATSUSetAttributes(fontStyle, 2, tags, sizes, values);
 
-	// Reject italics &c
+	/* Reject italics &c */
 	const ATSUAttributeTag badtags[] = {kATSUQDItalicTag, 
 										kATSUQDUnderlineTag,
 										kATSUQDCondensedTag };
@@ -3358,7 +3358,7 @@ static OSStatus FontCommand(EventHandlerCallRef inHandlerCallRef, EventRef inEve
 		WindowRef w = 0;
 		GetEventParameter(inEvent, kEventParamCurrentWindow, typeWindowRef,
 							NULL, sizeof(w), NULL,  &w);
-		if(!GetWRefCon(w)) { //  Window is Font Panel.
+		if(!GetWRefCon(w)) { /*  Window is Font Panel. */
 			w = 0;
 			GetEventParameter(inEvent, kEventParamPreviousWindow,
 								typeWindowRef, NULL, sizeof(w), NULL,  &w);
@@ -3403,9 +3403,9 @@ static OSStatus MouseCommand ( EventHandlerCallRef inCallRef,
 	else if(button == 1 && modifiers & shiftKey)
 		button = 3;
 
-	// X coordinate relative to left side of window exclusive of border.
+	/* X coordinate relative to left side of window exclusive of border. */
 	p.x -= (BORDER_WID+td->r.left);
-	// Y coordinate relative to top of window content region.
+	/* Y coordinate relative to top of window content region. */
 	p.y -= td->r.top;
 
 	Term_mousepress(p.x/td->tile_wid, p.y/td->tile_hgt, button);
@@ -3751,7 +3751,7 @@ static bool CheckEvents(int wait)
 			lastticks = curticks;
 			if(sleep_ticks <= 0) return false;
 		}
-	} while(err != eventNotHandledErr && err); // DurationForever is -1
+	} while(err != eventNotHandledErr && err); /* DurationForever is -1 */
 	return true;
 }
 
