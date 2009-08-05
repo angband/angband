@@ -412,7 +412,10 @@ static void obj_study(object_type *o_ptr, int item)
 		int spell = get_spell(o_ptr, "study", FALSE, FALSE);
 		if (spell >= 0)
 			cmd_insert(CMD_STUDY_SPELL, spell);
+		else if (spell == -2)
+			msg_print("You cannot learn any spells from that book.");
 	}
+
 	/* Priest -- Choose a book to study */
 	else
 	{
