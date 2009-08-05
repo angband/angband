@@ -260,7 +260,7 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 			if (vuln) sym = '-';
 			else if (imm) sym = '*';
 			else if (res) sym = '+';
-			else if ((!object_flag_is_known(o_ptr, resists[i].set, resists[i].res_flag)) && (j < INVEN_TOTAL) && (o_ptr->k_idx)) sym = '?';
+			else if ((j < INVEN_TOTAL) && (!object_flag_is_known(o_ptr, resists[i].set, resists[i].res_flag)) && (o_ptr->k_idx)) sym = '?';
 			Term_addch(attr, sym);
 		}
 		Term_putstr(col, row, 6, name_attr, format("%5s:", resists[i].name));
