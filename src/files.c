@@ -234,9 +234,14 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 
 			bool res, imm, vuln;
 
-			if (j < INVEN_TOTAL)
+			/* Wipe flagset */
+			C_WIPE(f, OBJ_FLAG_N, u32b);
+
+			if (j < INVEN_TOTAL && o_ptr->k_idx)
+			{
 				object_flags_known(o_ptr, f);
-			else
+			}
+			else if (j == INVEN_TOTAL)
 			{
 				player_flags(f);
 
@@ -247,7 +252,6 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 					f[0] |= TR0_INFRA;
 				if (rp_ptr->r_skills[SKILL_DIGGING] > 0)
 					f[0] |= TR0_TUNNEL;
-
 			}
 
 			res = (0 != (f[resists[i].set] & resists[i].res_flag));
@@ -260,7 +264,8 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 			if (vuln) sym = '-';
 			else if (imm) sym = '*';
 			else if (res) sym = '+';
-			else if ((j < INVEN_TOTAL) && (!object_flag_is_known(o_ptr, resists[i].set, resists[i].res_flag)) && (o_ptr->k_idx)) sym = '?';
+			else if ((j < INVEN_TOTAL) && o_ptr->k_idx && 
+				!object_flag_is_known(o_ptr, resists[i].set, resists[i].res_flag)) sym = '?';
 			Term_addch(attr, sym);
 		}
 		Term_putstr(col, row, 6, name_attr, format("%5s:", resists[i].name));
