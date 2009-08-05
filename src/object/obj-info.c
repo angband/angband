@@ -544,7 +544,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 		/* Potions can have special text */
 		if (o_ptr->tval != TV_POTION) return FALSE;
 		if (!o_ptr->dd || !o_ptr->ds) return FALSE;
-		if (!object_is_known(o_ptr)) return FALSE;
+		if (!object_flavor_is_aware(o_ptr)) return FALSE;
 
 		text_out("It can be thrown at creatures with damaging effect.\n");
 		return TRUE;
@@ -595,15 +595,19 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 		int tdis = 6 + 2 * p_ptr->state.ammo_mult;
 		u32b g[OBJ_FLAG_N];
 
-		if (object_is_known(o_ptr)) plus += o_ptr->to_h;
+		if (object_attack_plusses_are_visible(o_ptr))
+			plus += o_ptr->to_h;
 
 		calculate_missile_crits(&p_ptr->state, o_ptr->weight, plus,
 				&crit_mult, &crit_add, &crit_div);
 
 		/* Calculate damage */
 		dam = ((o_ptr->ds + 1) * o_ptr->dd * 5);
-		if (object_is_known(o_ptr)) dam += (o_ptr->to_d * 10);
-		if (object_is_known(j_ptr)) dam += (j_ptr->to_d * 10);
+
+		if (object_attack_plusses_are_visible(o_ptr))
+			dam += (o_ptr->to_d * 10);
+		if (object_attack_plusses_are_visible(j_ptr))
+			dam += (j_ptr->to_d * 10);
 		dam *= p_ptr->state.ammo_mult;
 
 		/* Apply brands from the shooter to the ammo */
