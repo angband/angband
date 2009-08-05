@@ -249,12 +249,12 @@ static void object_check_for_ident(object_type *o_ptr)
  */
 static void object_add_ident_flags(object_type *o_ptr, u32b flags, bool to_check)
 {
-	if ((flags & o_ptr->ident) == flags)
-		to_check = false;
-
-	o_ptr->ident |= flags;
-	if (to_check)
-		object_check_for_ident(o_ptr);
+	if ((o_ptr->ident & flags) != flags)
+	{
+		o_ptr->ident |= flags;
+		if (!to_check)
+			object_check_for_ident(o_ptr);
+	}
 }
 
 
