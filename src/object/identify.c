@@ -26,17 +26,6 @@ s32b object_last_wield;
 
 
 
-/** Prototypes **/
-
-/* Forward declaration, recursion avoided using CHECK_IDENT_NO */
-static void object_add_ident_flags(object_type *o_ptr, u32b flags,
-		bool to_check);
-
-#define CHECK_IDENT_YES TRUE
-#define CHECK_IDENT_NO  FALSE
-
-
-
 
 /*** Knowledge accessor functions ***/
 
@@ -200,6 +189,24 @@ bool object_high_resist_is_possible(const object_type *o_ptr)
 
 
 
+/*
+ * Sets a some IDENT_ flags on an object.
+ *
+ * \param o_ptr is the object to check
+ * \param flags are the ident flags to be added
+ *
+ * \returns whether o_ptr->ident changed
+ */
+static bool object_add_ident_flags(object_type *o_ptr, u32b flags)
+{
+	if ((o_ptr->ident & flags) != flags)
+	{
+		o_ptr->ident |= flags;
+		return TRUE;
+	}
+
+	return FALSE;
+}
 
 
 /*
@@ -235,29 +242,9 @@ static void object_check_for_ident(object_type *o_ptr)
 	/* We still know all the flags, so we still know if it's an ego */
 	else if (ego_item_p(o_ptr))
 	{
-		object_add_ident_flags(o_ptr, IDENT_EGO, CHECK_IDENT_NO);
+		object_add_ident_flags(o_ptr, IDENT_EGO);
 	}
 }
-
-
-/*
- * Sets a set of ident flags, usually checking if the object should then be marked fully known
- *
- * \param o_ptr is the object to check
- * \param flags are the ident flags to be added
- * \param to_check is whether to call check_for_ident
- */
-static void object_add_ident_flags(object_type *o_ptr, u32b flags, bool to_check)
-{
-	if ((o_ptr->ident & flags) != flags)
-	{
-		o_ptr->ident |= flags;
-		if (!to_check)
-			object_check_for_ident(o_ptr);
-	}
-}
-
-
 
 
 /**
@@ -328,7 +315,9 @@ void object_notice_everything(object_type *o_ptr)
 	
 	/* Mark as known */
 	object_flavor_aware(o_ptr);
-	object_add_ident_flags(o_ptr, (IDENT_KNOWN | IDENT_ATTACK | IDENT_DEFENCE | IDENT_SENSE | IDENT_EFFECT | IDENT_WORN), CHECK_IDENT_NO);
+	object_add_ident_flags(o_ptr, IDENT_KNOWN | IDENT_ATTACK |
+			IDENT_DEFENCE | IDENT_SENSE | IDENT_EFFECT |
+			IDENT_WORN);
 
 	/* Artifact has now been seen */
 	if (a_ptr)
@@ -336,7 +325,7 @@ void object_notice_everything(object_type *o_ptr)
 
 	/* Mark ego as known */
 	if (ego_item_p(o_ptr))
-		object_add_ident_flags(o_ptr, IDENT_EGO, CHECK_IDENT_NO);
+		object_add_ident_flags(o_ptr, IDENT_EGO);
 
 	/* Know all flags there are to be known */
 	object_know_all_flags(o_ptr);
@@ -348,7 +337,8 @@ void object_notice_everything(object_type *o_ptr)
  */
 void object_notice_indestructible(object_type *o_ptr)
 {
-	object_add_ident_flags(o_ptr, IDENT_INDESTRUCT, CHECK_IDENT_YES);
+	if (object_add_ident_flags(o_ptr, IDENT_INDESTRUCT))
+		object_check_for_ident(o_ptr);
 }
 
 
@@ -395,7 +385,8 @@ void object_notice_ego(object_type *o_ptr)
 	for (i = 0; i < OBJ_FLAG_N; i++)
 		o_ptr->known_flags[i] |= (learned_flags[i] | e_ptr->flags[i]);
 
-	object_add_ident_flags(o_ptr, IDENT_EGO, CHECK_IDENT_YES);
+	if (object_add_ident_flags(o_ptr, IDENT_EGO))
+		object_check_for_ident(o_ptr);
 }
 
 
@@ -404,14 +395,18 @@ void object_notice_ego(object_type *o_ptr)
  */
 void object_notice_sensing(object_type *o_ptr)
 {
-	if (!object_was_sensed(o_ptr))
-	{
-		artifact_type *a_ptr = artifact_of(o_ptr);
-		if (a_ptr) a_ptr->seen = a_ptr->everseen = TRUE;
+	artifact_type *a_ptr = artifact_of(o_ptr);
 
-		object_notice_curses(o_ptr);
-		object_add_ident_flags(o_ptr, IDENT_SENSE, CHECK_IDENT_YES);
-	}
+	if (object_was_sensed(o_ptr))
+		return;
+
+
+	if (a_ptr)
+		a_ptr->seen = a_ptr->everseen = TRUE;
+
+	object_notice_curses(o_ptr);
+	if (object_add_ident_flags(o_ptr, IDENT_SENSE))
+		object_check_for_ident(o_ptr);
 }
 
 
@@ -423,7 +418,8 @@ void object_notice_sensing(object_type *o_ptr)
  */
 void object_notice_effect(object_type *o_ptr)
 {
-	object_add_ident_flags(o_ptr, IDENT_EFFECT, CHECK_IDENT_YES);
+	if (object_add_ident_flags(o_ptr, IDENT_EFFECT))
+		object_check_for_ident(o_ptr);
 
 	/* noticing an effect gains awareness */
 	if (!object_flavor_is_aware(o_ptr))
@@ -456,7 +452,8 @@ static void object_notice_defence_plusses(object_type *o_ptr)
 	if (object_defence_plusses_are_visible(o_ptr))
 		return;
 
-	object_add_ident_flags(o_ptr, IDENT_DEFENCE, CHECK_IDENT_YES);
+	if (object_add_ident_flags(o_ptr, IDENT_DEFENCE))
+		object_check_for_ident(o_ptr);
 
 	if (o_ptr->ac || o_ptr->to_a)
 	{
@@ -479,7 +476,9 @@ void object_notice_attack_plusses(object_type *o_ptr)
 	if (object_attack_plusses_are_visible(o_ptr))
 		return;
 
-	object_add_ident_flags(o_ptr, IDENT_ATTACK, CHECK_IDENT_YES);
+	if (object_add_ident_flags(o_ptr, IDENT_ATTACK))
+		object_check_for_ident(o_ptr);
+
 
 	if (wield_slot(o_ptr) == INVEN_WIELD)
 	{
@@ -606,7 +605,8 @@ void object_notice_on_wield(object_type *o_ptr)
 
 	/* Wear it */
 	object_flavor_tried(o_ptr);
-	object_add_ident_flags(o_ptr, IDENT_WORN, CHECK_IDENT_YES);
+	if (object_add_ident_flags(o_ptr, IDENT_WORN))
+		object_check_for_ident(o_ptr);
 	
 	if (obj_is_lite(o_ptr) && ego_item_p(o_ptr))
 		object_notice_ego(o_ptr);
