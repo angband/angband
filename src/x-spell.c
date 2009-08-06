@@ -97,8 +97,7 @@
 #define PRAYER_BLESS                    2
 #define PRAYER_REMOVE_FEAR              3
 #define PRAYER_CALL_LIGHT               4
-#define PRAYER_FIND_TRAPS               5
-#define PRAYER_DETECT_DOORS_STAIRS      6
+#define PRAYER_FIND_TRAPS_DOORS         5
 #define PRAYER_SLOW_POISON              7
 
 /* Words of Wisdom */
@@ -936,14 +935,9 @@ static bool cast_priest_spell(int spell, int dir)
 			break;
 		}
 
-		case PRAYER_FIND_TRAPS:
+		case PRAYER_FIND_TRAPS_DOORS:
 		{
 			(void)detect_traps(TRUE);
-			break;
-		}
-
-		case PRAYER_DETECT_DOORS_STAIRS:
-		{
 			(void)detect_doorstairs(TRUE);
 			break;
 		}

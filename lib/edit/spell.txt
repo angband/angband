@@ -418,13 +418,9 @@ D:Lights up all squares in a level-dependant area, and hurts
 D: all light-sensitive monsters in the area of effect.
 D:  If you are in a room, the entire room will be lit up as well.
 
-N:69:Find Traps
+N:69:Find Hidden Traps/Doors
 I:91:0:5
-D:Detects all traps in the immediate area.
-
-N:70:Detect Doors/Stairs
-I:91:0:6
-D:Detects all doors, and stairs in the immediate area.
+D:Detects all traps, doors, and stairs in the immediate area.
 
 N:71:Slow Poison
 I:91:0:7
