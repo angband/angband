@@ -347,7 +347,10 @@ void object_notice_indestructible(object_type *o_ptr)
  */
 void object_notice_ego(object_type *o_ptr)
 {
+	int i;
+
 	ego_item_type *e_ptr;
+	u32b learned_flags[OBJ_FLAG_N];
 
 	if (!o_ptr->name2)
 		return;
@@ -359,9 +362,6 @@ void object_notice_ego(object_type *o_ptr)
 	/* XXX Eddie should we do something about everseen of egos here? */
 
 	/* learn all flags except random abilities */
-	u32b learned_flags[OBJ_FLAG_N];
-	int i;
-
 	for (i = 0; i < OBJ_FLAG_N; i++)
 		learned_flags[i] = (u32b) -1;
 
