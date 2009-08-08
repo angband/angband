@@ -305,7 +305,11 @@ void textui_cmd_destroy(void)
 	if (squelch_interactive(o_ptr))
 	{
 		p_ptr->notice |= PN_SQUELCH;
-		return;
+
+		/* If the item is not equipped, we can rely on it being dropped
+		   and ignored, otherwise we should continue on to check if
+		   we should still destroy it. */
+		if (item < INVEN_WIELD) return;
 	}
 
 	/* Get a quantity */
