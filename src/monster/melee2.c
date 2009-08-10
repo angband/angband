@@ -3739,7 +3739,7 @@ static void process_monster(int m_idx)
 				if (kill_ok)
 				{
 					/* Note if visible */
-					if (m_ptr->ml)
+					if (m_ptr->ml && (m_ptr->mflag & (MFLAG_VIEW)))
 					{
 						msg_format("%^s tramples over %s.", m_name, n_name);
 					}
@@ -3750,7 +3750,7 @@ static void process_monster(int m_idx)
 				else
 				{
 					/* Note if visible */
-					if (m_ptr->ml)
+					if (m_ptr->ml && (m_ptr->mflag & (MFLAG_VIEW)))
 					{
 						msg_format("%^s pushes past %s.", m_name, n_name);
 					}
