@@ -60,7 +60,7 @@ AC_CHECK_HEADERS([fcntl.h stdint.h])
 AC_HEADER_STDBOOL
 AC_C_CONST
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS([setresgid setegid can_change_color stat])
+AC_CHECK_FUNCS([setresgid setegid stat])
 
 dnl needed because h-basic.h checks for this define for autoconf support.
 CFLAGS="$CFLAGS -DHAVE_CONFIG_H"
@@ -163,6 +163,7 @@ if test "$enable_curses" = "yes"; then
 	fi
 fi
 
+AC_CHECK_FUNCS([use_default_colors can_change_color])
 
 dnl X11 checking
 if test "$enable_x11" = "yes"; then

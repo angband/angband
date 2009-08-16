@@ -146,6 +146,11 @@ static int can_fix_color = FALSE;
 static int colortable[BASIC_COLORS];
 
 /*
+ * Background color we should draw with; either BLACK or DEFAULT
+ */
+static int bg_color = COLOR_BLACK;
+
+/*
  * Lookup table for the "alternate character set".
  *
  * It's worth noting that curses already has this, as an undocumented
@@ -468,6 +473,13 @@ static errr Term_xtra_gcu_event(int v)
 }
 
 
+void set_256color_table(int i, int fg)
+{
+	init_pair(16 + i, fg, bg_color);
+	colortable[i] = COLOR_PAIR(16 + i) | A_BRIGHT;
+}
+
+
 /*
  * React to changes
  */
@@ -478,17 +490,38 @@ static errr Term_xtra_gcu_react(void)
 
 	int i;
 
-	/* Cannot handle color redefinition */
-	if (!can_fix_color) return (0);
-
-	/* Set the colors */
-	for (i = 0; i < BASIC_COLORS; i++)
+	if (can_fix_color)
 	{
-		/* Set one color (note scaling) */
-		init_color(i, angband_color_table[i][1] * 1000 / 255,
-		              angband_color_table[i][2] * 1000 / 255,
-		              angband_color_table[i][3] * 1000 / 255);
+		/* Initialize the curses colors to our own RGB definitions */
+		for (i = 0; i < BASIC_COLORS; i++)
+		{
+			/* Set one color (note scaling) */
+			init_color(i, angband_color_table[i][1] * 1000 / 255,
+						  angband_color_table[i][2] * 1000 / 255,
+						  angband_color_table[i][3] * 1000 / 255);
+		}
 	}
+	else if(COLORS == 256)
+	{
+		/* If we have 256 colors, find the best matches */
+		set_256color_table(0, 0);    /* black */
+		set_256color_table(1, 15);   /* white */
+		set_256color_table(2, 246);  /* grey */
+		set_256color_table(3, 208);  /* orange */
+		set_256color_table(4, 1);    /* red */
+		set_256color_table(5, 28);    /* green */
+		set_256color_table(6, 20);    /* blue */
+		set_256color_table(7, 130);  /* umber */
+		set_256color_table(8, 242);  /* dark-grey */
+		set_256color_table(9, 250);  /* light-grey */
+		set_256color_table(10, 91);  /* purple */
+		set_256color_table(11, 11);  /* yellow */
+		set_256color_table(12, 204);   /* light red */
+		set_256color_table(13, 40);  /* light green */
+		set_256color_table(14, 32);  /* light blue */
+		set_256color_table(15, 136); /* light umber */
+	}
+	/* TODO: figure out how 88-color terminals work */
 
 #endif
 
@@ -773,7 +806,15 @@ errr init_gcu(int argc, char **argv)
 
 	/* Do we have color, and enough color, available? */
 	can_use_color = ((start_color() != ERR) && has_colors() &&
-	                 (COLORS >= 8) && (COLOR_PAIRS >= 8));
+					 (COLORS >= 8) && (COLOR_PAIRS >= 8));
+
+#ifdef HAVE_USE_DEFAULT_COLORS
+
+	/* Should we use curses' "default color" */
+	if(use_default_colors() == OK)
+		bg_color = -1;
+
+#endif
 
 #ifdef HAVE_CAN_CHANGE_COLOR
 
@@ -790,7 +831,7 @@ errr init_gcu(int argc, char **argv)
 		for (i = 0; i < (BASIC_COLORS / 2); i++)
 		{
 			/* Reset the color */
-			if (init_pair(i + 1, i, 0) == ERR)
+			if (init_pair(i + 1, i, bg_color) == ERR)
 			{
 				quit("Color pair init failed");
 			}
@@ -812,13 +853,13 @@ errr init_gcu(int argc, char **argv)
 		/* Color-pair 0 is *always* WHITE on BLACK */
 
 		/* Prepare the color pairs */
-		init_pair(1, COLOR_RED,     COLOR_BLACK);
-		init_pair(2, COLOR_GREEN,   COLOR_BLACK);
-		init_pair(3, COLOR_YELLOW,  COLOR_BLACK);
-		init_pair(4, COLOR_BLUE,    COLOR_BLACK);
-		init_pair(5, COLOR_MAGENTA, COLOR_BLACK);
-		init_pair(6, COLOR_CYAN,    COLOR_BLACK);
-		init_pair(7, COLOR_BLACK,   COLOR_BLACK);
+		init_pair(1, COLOR_RED,     bg_color);
+		init_pair(2, COLOR_GREEN,   bg_color);
+		init_pair(3, COLOR_YELLOW,  bg_color);
+		init_pair(4, COLOR_BLUE,    bg_color);
+		init_pair(5, COLOR_MAGENTA, bg_color);
+		init_pair(6, COLOR_CYAN,    bg_color);
+		init_pair(7, COLOR_BLACK,   bg_color);
 
 		/* Prepare the colors */
 		colortable[0] = (COLOR_PAIR(7) | A_NORMAL);	/* Black */
