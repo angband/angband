@@ -780,6 +780,8 @@ errr init_gcu(int argc, char **argv)
 			use_big_screen = TRUE;
 
 #ifdef A_ALTCHARSET
+		else if (prefix(argv[i], "-a"))
+			use_alt_charset = 0;
 		else if (prefix(argv[i], "-g"))
 			use_alt_charset = 1;
 #endif
