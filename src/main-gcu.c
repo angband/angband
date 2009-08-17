@@ -119,6 +119,13 @@ static term_data data[MAX_TERM_DATA];
 static int active = 0;
 
 
+#ifdef A_ALTCHARSET
+
+/* Whether or not to use the special ACS characters */
+static int use_alt_charset = 1;
+
+#endif
+
 
 #ifdef A_COLOR
 
@@ -320,11 +327,11 @@ static errr Term_xtra_gcu_alive(int v)
 }
 
 
-#ifdef USE_NCURSES
-const char help_gcu[] = "NCurses, for terminal console, subopts -b(ig screen)";
-#else /* USE_NCURSES */
-const char help_gcu[] = "Curses, for terminal console, subopts -b(ig screen)";
-#endif /* USE_NCURSES */
+#ifdef A_ALTCHARSET
+const char help_gcu[] = "Text mode, subopts -b(ig screen) -a(scii) -g(raphics)";
+#else
+const char help_gcu[] = "Text mode, subopts -b(ig screen)";
+#endif
 
 
 /*
@@ -770,12 +777,15 @@ errr init_gcu(int argc, char **argv)
 	for (i = 1; i < argc; i++)
 	{
 		if (prefix(argv[i], "-b"))
-		{
 			use_big_screen = TRUE;
-			continue;
-		}
 
-		plog_fmt("Ignoring option: %s", argv[i]);
+#ifdef A_ALTCHARSET
+		else if (prefix(argv[i], "-g"))
+			use_alt_charset = 1;
+#endif
+
+		else
+			plog_fmt("Ignoring option: %s", argv[i]);
 	}
 
 	/* Extract the normal keymap */
@@ -884,16 +894,18 @@ errr init_gcu(int argc, char **argv)
 
 #ifdef A_ALTCHARSET
 	/* Build a quick access table for the "alternate character set". */
-
-	acs_table[1] = ACS_DIAMOND;    acs_table[16] = ACS_S1;
-	acs_table[2] = ACS_CKBOARD;    acs_table[18] = ACS_HLINE;
-	acs_table[7] = ACS_DEGREE;     acs_table[20] = ACS_S9;
-	acs_table[8] = ACS_PLMINUS;    acs_table[21] = ACS_LTEE;
-	acs_table[11] = ACS_LRCORNER;  acs_table[22] = ACS_RTEE;
-	acs_table[12] = ACS_URCORNER;  acs_table[23] = ACS_BTEE;
-	acs_table[13] = ACS_ULCORNER;  acs_table[24] = ACS_TTEE;
-	acs_table[14] = ACS_LLCORNER;  acs_table[25] = ACS_VLINE;
-	acs_table[15] = ACS_PLUS;      acs_table[31] = ACS_BULLET;
+	if(use_alt_charset)
+	{
+		acs_table[1] = ACS_DIAMOND;    acs_table[16] = ACS_S1;
+		acs_table[2] = ACS_CKBOARD;    acs_table[18] = ACS_HLINE;
+		acs_table[7] = ACS_DEGREE;     acs_table[20] = ACS_S9;
+		acs_table[8] = ACS_PLMINUS;    acs_table[21] = ACS_LTEE;
+		acs_table[11] = ACS_LRCORNER;  acs_table[22] = ACS_RTEE;
+		acs_table[12] = ACS_URCORNER;  acs_table[23] = ACS_BTEE;
+		acs_table[13] = ACS_ULCORNER;  acs_table[24] = ACS_TTEE;
+		acs_table[14] = ACS_LLCORNER;  acs_table[25] = ACS_VLINE;
+		acs_table[15] = ACS_PLUS;      acs_table[31] = ACS_BULLET;
+	}
 #endif
 
 
