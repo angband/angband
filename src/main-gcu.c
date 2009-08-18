@@ -99,6 +99,12 @@ static struct termios  game_termios;
 
 #endif
 
+/*
+ * The TERM environment variable; used for terminal capabilities.
+ */
+static char *termtype;
+static bool loaded_terminfo;
+
 
 /*
  * Information about a term
@@ -772,6 +778,12 @@ errr init_gcu(int argc, char **argv)
 
 	bool use_big_screen = FALSE;
 
+	/* Initialize info about terminal capabilities */
+	termtype = getenv("TERM");
+	loaded_terminfo = termtype && tgetent(0, termtype) == 1;
+
+	/* Let's learn about our terminal */
+	use_alt_charset = loaded_terminfo && tgetstr("acs_chars", NULL);
 
 	/* Parse args */
 	for (i = 1; i < argc; i++)
