@@ -479,21 +479,21 @@ static errr Term_xtra_gcu_event(int v)
 		j = getch();
 		switch (j)
 		{
-			case 79: /* O */
+			case 'O':
 			{
 				k = getch();
 				switch (k)
 				{
 					/* PuTTY number pad */
-					case 113 /* q */: i = '1'; break;
-					case 114 /* r */: i = '2'; break;
-					case 115 /* s */: i = '3'; break;
-					case 116 /* t */: i = '4'; break;
-					case 117 /* u */: i = '5'; break;
-					case 118 /* v */: i = '6'; break;
-					case 119 /* w */: i = '7'; break;
-					case 120 /* x */: i = '8'; break;
-					case 121 /* y */: i = '9'; break;
+					case 'q': i = '1'; break;
+					case 'r': i = '2'; break;
+					case 's': i = '3'; break;
+					case 't': i = '4'; break;
+					case 'u': i = '5'; break;
+					case 'v': i = '6'; break;
+					case 'w': i = '7'; break;
+					case 'x': i = '8'; break;
+					case 'y': i = '9'; break;
 
 					/* no match */
 					case ERR: break;
