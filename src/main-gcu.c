@@ -419,7 +419,7 @@ static void Term_nuke_gcu(term *t)
  */
 static errr Term_xtra_gcu_event(int v)
 {
-	int i, k;
+	int i, j, k;
 
 	/* Wait */
 	if (v)
@@ -453,6 +453,60 @@ static errr Term_xtra_gcu_event(int v)
 		/* None ready */
 		if (i == ERR) return (1);
 		if (i == EOF) return (1);
+	}
+
+	/* uncomment to debug keycode issues */
+	#if 0
+	printw("key %d", i);
+	wrefresh(stdscr);
+	#endif
+
+	/* This might be a bad idea, but...
+	 *
+	 * Here we try to second-guess ncurses. In some cases, keypad() mode will
+	 * fail to translate multi-byte escape sequences into things like number-
+	 * pad actions, function keys, etc. So we can hardcode a small list of some
+	 * of the most common sequences here, just in case.
+	 *
+	 * Notice that we turn nodelay() on. This means, that we won't accidentally
+	 * interpret sequences as valid unless all the bytes are immediately
+	 * available; this seems like an acceptable risk to fix problems associated
+	 * with various terminal emulators (I'm looking at you PuTTY).
+	 */
+	if(i == 27) /* ESC */
+	{
+		nodelay(stdscr, TRUE);
+		j = getch();
+		switch (j)
+		{
+			case 79: /* O */
+			{
+				k = getch();
+				switch (k)
+				{
+					/* PuTTY number pad */
+					case 113 /* q */: i = '1'; break;
+					case 114 /* r */: i = '2'; break;
+					case 115 /* s */: i = '3'; break;
+					case 116 /* t */: i = '4'; break;
+					case 117 /* u */: i = '5'; break;
+					case 118 /* v */: i = '6'; break;
+					case 119 /* w */: i = '7'; break;
+					case 120 /* x */: i = '8'; break;
+					case 121 /* y */: i = '9'; break;
+
+					/* no match */
+					case ERR: break;
+					default: ungetch(k); ungetch(j);
+				}
+				break;
+			}
+
+			/* no match */
+			case ERR: break;
+			default: ungetch(j);
+		}
+		nodelay(stdscr, FALSE);
 	}
 
 #ifdef KEY_DOWN
@@ -933,6 +987,7 @@ errr init_gcu(int argc, char **argv)
 	noecho();
 	nonl();
 
+	/* Tell curses to rewrite escape sequences to KEY_UP and friends */
 	keypad(stdscr, TRUE);
 
 	/* Extract the game keymap */
