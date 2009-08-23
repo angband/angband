@@ -272,7 +272,8 @@
  * during the creation of a monsters (see "get_mon_num()" in "monster.c").
  * Lower values yield harder monsters more often.
  */
-#define NASTY_MON	50		/* 1/chance of inflated monster level */
+#define NASTY_MON    50        /* 1/chance of inflated monster level */
+#define MON_OOD_MAX  10        /* maximum out-of-depth amount */
 
 
 

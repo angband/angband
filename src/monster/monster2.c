@@ -426,7 +426,7 @@ s16b get_mon_num(int level)
 			int d = level / 4 + 2;
 
 			/* Boost the level */
-			level += ((d < 5) ? d : 5);
+			level += MIN(d, MON_OOD_MAX);
 		}
 
 		/* Occasional "nasty" monster */
@@ -436,7 +436,7 @@ s16b get_mon_num(int level)
 			int d = level / 4 + 2;
 
 			/* Boost the level */
-			level += ((d < 5) ? d : 5);
+			level += MIN(d, MON_OOD_MAX);
 		}
 	}
 
