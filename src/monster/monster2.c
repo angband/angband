@@ -415,31 +415,9 @@ s16b get_mon_num(int level)
 
 	alloc_entry *table = alloc_race_table;
 
-
-	/* Boost the level */
-	if (level > 0)
-	{
-		/* Occasional "nasty" monster */
-		if (one_in_(NASTY_MON))
-		{
-			/* Pick a level bonus */
-			int d = level / 4 + 2;
-
-			/* Boost the level */
-			level += MIN(d, MON_OOD_MAX);
-		}
-
-		/* Occasional "nasty" monster */
-		if (one_in_(NASTY_MON))
-		{
-			/* Pick a level bonus */
-			int d = level / 4 + 2;
-
-			/* Boost the level */
-			level += MIN(d, MON_OOD_MAX);
-		}
-	}
-
+	/* Occasionally produce a nastier monster in the dungeon */
+	if (level > 0 && one_in_(NASTY_MON))
+		level += MIN(level / 4 + 2, MON_OOD_MAX);
 
 	/* Reset total */
 	total = 0L;
