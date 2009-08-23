@@ -461,7 +461,7 @@ static void object_notice_defence_plusses(object_type *o_ptr)
 
 		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
 		message_format(MSG_PSEUDOID, 0,
-				"You feel you better know the %s you are wearing.",
+				"You know more about the %s you are wearing.",
 				o_name);
 	}
 
@@ -486,7 +486,7 @@ void object_notice_attack_plusses(object_type *o_ptr)
 
 		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
 		message_format(MSG_PSEUDOID, 0,
-				"You feel you better know the %s you are attacking with.",
+				"You know more about the %s you are wielding.",
 				o_name);
 	}
 	else if ((o_ptr->to_d || o_ptr->to_h) &&
