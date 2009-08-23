@@ -864,6 +864,9 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 	}
 	else
 	{
+		/* Sometimes only print artifact activation info */
+		if (only_artifacts == TRUE) return FALSE;
+
 		if (object_effect_is_known(o_ptr) || full)
 		{
 			effect = k_ptr->effect;
@@ -884,11 +887,6 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 	/* Obtain the description */
 	desc = effect_desc(effect);
 	if (!desc) return FALSE;
-
-	/* Sometimes only print artifact activation info */
-	if (only_artifacts == TRUE &&
-			o_ptr->name1 && a_info[o_ptr->name1].effect)
-		return FALSE;
 
 	if (effect_aim(effect))
 		text_out("When aimed, it ");
