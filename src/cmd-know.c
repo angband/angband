@@ -1908,17 +1908,6 @@ static void do_cmd_knowledge_features(void *obj, const char *name)
 /* =================== END JOIN DEFINITIONS ================================ */
 
 
-
-
-static void do_cmd_self_knowledge(void *obj, const char *name)
-{
-	(void)obj;
-	(void)name;
-	
-	/* display self knowledge we already know about. */
-	self_knowledge(FALSE);
-}
-
 static void do_cmd_knowledge_scores(void *obj, const char *name)
 {
 	(void)obj;
@@ -1945,9 +1934,8 @@ static menu_item knowledge_actions[] =
 { {0, "Display ego item knowledge", do_cmd_knowledge_ego_items, 0}, 'c', 0 },
 { {0, "Display monster knowledge",  do_cmd_knowledge_monsters,  0}, 'd', 0 },
 { {0, "Display feature knowledge",  do_cmd_knowledge_features,  0}, 'e', 0 },
-{ {0, "Display self-knowledge",     do_cmd_self_knowledge,      0}, 'f', 0 },
-{ {0, "Display hall of fame",       do_cmd_knowledge_scores,    0}, 'g', 0 },
-{ {0, "Display character history",  do_cmd_knowledge_history,   0}, 'h', 0 },
+{ {0, "Display hall of fame",       do_cmd_knowledge_scores,    0}, 'f', 0 },
+{ {0, "Display character history",  do_cmd_knowledge_history,   0}, 'g', 0 },
 };
 
 static menu_type knowledge_menu;

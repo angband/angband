@@ -1689,13 +1689,6 @@ void do_cmd_debug(void)
 			break;
 		}
 
-		/* Self-Knowledge */
-		case 'k':
-		{
-			self_knowledge(TRUE);
-			break;
-		}
-
 		/* Learn about objects */
 		case 'l':
 		{

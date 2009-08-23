@@ -80,7 +80,6 @@ EFFECT(TMD_ESP,        FALSE,  4,	"cures blindness and gives you telepathy for 6
 
 EFFECT(ENLIGHTENMENT,  FALSE,  9,	"completely lights up and magically maps the level")
 EFFECT(ENLIGHTENMENT2, FALSE, 13,	"increases your intelligence and wisdom, detects and maps everything in the surrounding area, and identifies all items in your pack")
-EFFECT(SELF_KNOW,      FALSE,  3,	"grants knowledge of all special powers that you currently possess")
 
 EFFECT(HERO,           FALSE,  3,	"restores 10 hit points, removes fear and grants you resistance to fear and +12 to-hit for 1d25+25 turns")
 EFFECT(SHERO,          FALSE,  5,	"restores 30 hit points, removes fear and grants you resistance to fear, +24 to-hit, and -10AC for 1d25+25 turns")

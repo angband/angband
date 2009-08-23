@@ -656,20 +656,9 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			(void)detect_doorstairs(TRUE);
 			(void)detect_treasure(TRUE);
 			identify_pack();
-			self_knowledge(TRUE);
 			*ident = TRUE;
 			return TRUE;
 		}
-
-		case EF_SELF_KNOW:
-		{
-			msg_print("You begin to know yourself a little better...");
-			message_flush();
-			self_knowledge(TRUE);
-			*ident = TRUE;
-			return TRUE;
-		}
-
 
 		case EF_HERO:
 		{

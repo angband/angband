@@ -474,7 +474,6 @@ extern void identify_pack(void);
 extern bool remove_curse(void);
 extern bool remove_all_curse(void);
 extern bool restore_level(void);
-extern void self_knowledge(bool spoil);
 extern bool lose_all_info(void);
 extern void set_recall(void);
 extern bool detect_traps(bool aware);
