@@ -2955,6 +2955,19 @@ static bool room_build(int by0, int bx0, int typ)
 
 
 /*
+ * Returns an integer between min and 100, inclusive. A min of 30 will give
+ * the left-half of a bell-curve distribution between 30 and 100, with 100
+ * being the most likely. A min of 1 will give a full bell-curve distribution
+ * between 1 and 100.
+ */
+static int get_weighted_perc(int min)
+{
+	int perc = (100 * min) / (randint1(10) * randint1(10));
+	return perc > 100 ? 100 : perc;
+}
+
+
+/*
  * Generate a new dungeon level
  *
  * Note that "dun_body" adds about 4000 bytes of memory to the stack.
@@ -2962,17 +2975,21 @@ static bool room_build(int by0, int bx0, int typ)
 static void cave_gen(void)
 {
 	int i, k, y, x, y1, x1;
-
 	int by, bx;
 
 	bool destroyed = FALSE;
 
 	dun_data dun_body;
 
+	/* Possibly generate fewer rooms in a smaller area via a scaling factor.
+	 * Since we scale row_rooms and col_rooms by the same amount, DUN_ROOMS
+	 * gives the same "room density" no matter what size the level turns out
+	 * to be. TODO: vary room density slightly? */
+	int size_percent = get_weighted_perc(30);
+	int num_rooms = DUN_ROOMS * size_percent;
 
 	/* Global data */
 	dun = &dun_body;
-
 
 	/* Hack -- Start with basic granite */
 	for (y = 0; y < DUNGEON_HGT; y++)
@@ -2993,8 +3010,8 @@ static void cave_gen(void)
 
 
 	/* Actual maximum number of rooms on this level */
-	dun->row_rooms = DUNGEON_HGT / BLOCK_HGT;
-	dun->col_rooms = DUNGEON_WID / BLOCK_WID;
+	dun->row_rooms = (DUNGEON_HGT * size_percent) / (BLOCK_HGT * 100);
+	dun->col_rooms = (DUNGEON_WID * size_percent) / (BLOCK_WID * 100);
 
 	/* Initialize the room table */
 	for (by = 0; by < dun->row_rooms; by++)
@@ -3014,7 +3031,7 @@ static void cave_gen(void)
 	dun->cent_n = 0;
 
 	/* Build some rooms */
-	for (i = 0; i < DUN_ROOMS; i++)
+	for (i = 0; i < num_rooms; i++)
 	{
 		/* Pick a block for the room */
 		by = randint0(dun->row_rooms);
