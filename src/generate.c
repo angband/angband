@@ -651,15 +651,18 @@ static void alloc_stairs(int feat, int num, int walls)
  */
 static void alloc_object(int set, int typ, int num, int depth)
 {
-	int y, x, k;
+	int y, x, k, tries;
+	bool room;
 
 	/* Place some objects */
 	for (k = 0; k < num; k++)
 	{
+		tries = 0;
+
 		/* Pick a "legal" spot */
-		while (TRUE)
+		while (tries < 1000)
 		{
-			bool room;
+			tries++;
 
 			/* Location */
 			y = randint0(DUNGEON_HGT);
@@ -2985,7 +2988,7 @@ static void cave_gen(void)
 	 * Since we scale row_rooms and col_rooms by the same amount, DUN_ROOMS
 	 * gives the same "room density" no matter what size the level turns out
 	 * to be. TODO: vary room density slightly? */
-	int size_percent = get_weighted_perc(30);
+	int size_percent = get_weighted_perc(40);
 	int num_rooms = DUN_ROOMS * size_percent;
 
 	/* Global data */
@@ -3626,10 +3629,10 @@ static int calculate_feeling(int rating, int depth)
 void generate_cave(void)
 {
 	const char *error = "no generation";
+	int counter = 0;
 
 	/* The dungeon is not ready */
 	character_dungeon = FALSE;
-
 
 	/* Generate */
 	while (error)
@@ -3658,8 +3661,14 @@ void generate_cave(void)
 
 		if (OPT(cheat_room) && error)
 			msg_format("Generation restarted: %s.", error);
-	}
 
+		counter++;
+		if (counter > 100)
+		{
+			msg_format("cave_gen() failed 100 times!");
+			exit_game_panic();
+		}
+	}
 
 	/* The dungeon is ready */
 	character_dungeon = TRUE;
