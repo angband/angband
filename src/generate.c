@@ -2988,8 +2988,8 @@ static void cave_gen(void)
 	 * Since we scale row_rooms and col_rooms by the same amount, DUN_ROOMS
 	 * gives the same "room density" no matter what size the level turns out
 	 * to be. TODO: vary room density slightly? */
-	int size_percent = get_weighted_perc(40);
-	int num_rooms = DUN_ROOMS * size_percent;
+	int size_percent = get_weighted_perc(50);
+	int num_rooms = DUN_ROOMS * size_percent / 100;
 
 	/* Global data */
 	dun = &dun_body;
