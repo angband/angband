@@ -181,6 +181,16 @@
 #define ROOM_MAX	9
 
 
+/*
+ * Height and width for the currently generated level
+ *
+ * This differs from DUNGEON_HGT (and dungeon_hgt) in that it bounds the part
+ * of the level that might actually contain open squares. It will vary from
+ * level to level, unlike the constant.
+ */
+int level_hgt  = DUNGEON_HGT;
+int level_wid  = DUNGEON_WID;
+
 
 /*
  * Simple structure to hold a map location
@@ -320,8 +330,8 @@ static void new_player_spot(void)
 	while (1)
 	{
 		/* Pick a legal spot */
-		y = rand_range(1, DUNGEON_HGT - 2);
-		x = rand_range(1, DUNGEON_WID - 2);
+		y = rand_range(1, level_hgt - 2);
+		x = rand_range(1, level_wid - 2);
 
 		/* Must be a "naked" floor grid */
 		if (!cave_naked_bold(y, x)) continue;
@@ -604,8 +614,8 @@ static void alloc_stairs(int feat, int num, int walls)
 			for (j = 0; !flag && j <= 3000; j++)
 			{
 				/* Pick a random grid */
-				y = randint0(DUNGEON_HGT);
-				x = randint0(DUNGEON_WID);
+				y = randint0(level_hgt);
+				x = randint0(level_wid);
 
 				/* Require "naked" floor grid */
 				if (!cave_naked_bold(y, x)) continue;
@@ -660,13 +670,13 @@ static void alloc_object(int set, int typ, int num, int depth)
 		tries = 0;
 
 		/* Pick a "legal" spot */
-		while (tries < 1000)
+		while (tries < 10000)
 		{
 			tries++;
 
 			/* Location */
-			y = randint0(DUNGEON_HGT);
-			x = randint0(DUNGEON_WID);
+			y = randint0(level_hgt);
+			x = randint0(level_wid);
 
 			/* Require "naked" floor grid */
 			if (!cave_naked_bold(y, x)) continue;
@@ -790,8 +800,8 @@ static void destroy_level(void)
 	for (n = 0; n < randint1(5); n++)
 	{
 		/* Pick an epi-center */
-		x1 = rand_range(5, DUNGEON_WID-1 - 5);
-		y1 = rand_range(5, DUNGEON_HGT-1 - 5);
+		x1 = rand_range(5, level_wid - 1 - 5);
+		y1 = rand_range(5, level_hgt -1 - 5);
 
 		/* Big area of affect */
 		for (y = (y1 - 15); y <= (y1 + 15); y++)
@@ -2979,6 +2989,7 @@ static void cave_gen(void)
 {
 	int i, k, y, x, y1, x1;
 	int by, bx;
+	int num_rooms, size_percent;
 
 	bool destroyed = FALSE;
 
@@ -2988,8 +2999,11 @@ static void cave_gen(void)
 	 * Since we scale row_rooms and col_rooms by the same amount, DUN_ROOMS
 	 * gives the same "room density" no matter what size the level turns out
 	 * to be. TODO: vary room density slightly? */
-	int size_percent = get_weighted_perc(50);
-	int num_rooms = DUN_ROOMS * size_percent / 100;
+	size_percent = get_weighted_perc(50);
+	num_rooms = DUN_ROOMS * size_percent / 100;
+
+	level_hgt = DUNGEON_HGT * size_percent / 100;
+	level_wid  = DUNGEON_WID * size_percent / 100;
 
 	/* Global data */
 	dun = &dun_body;
@@ -3011,10 +3025,9 @@ static void cave_gen(void)
 	/* Hack -- No destroyed "quest" levels */
 	if (is_quest(p_ptr->depth)) destroyed = FALSE;
 
-
 	/* Actual maximum number of rooms on this level */
-	dun->row_rooms = (DUNGEON_HGT * size_percent) / (BLOCK_HGT * 100);
-	dun->col_rooms = (DUNGEON_WID * size_percent) / (BLOCK_WID * 100);
+	dun->row_rooms = level_hgt / BLOCK_HGT;
+	dun->col_rooms = level_wid / BLOCK_WID;
 
 	/* Initialize the room table */
 	for (by = 0; by < dun->row_rooms; by++)
@@ -3098,43 +3111,21 @@ static void cave_gen(void)
 		if (room_build(by, bx, 1)) continue;
 	}
 
-
-	/* Special boundary walls -- Top */
-	for (x = 0; x < DUNGEON_WID; x++)
-	{
-		y = 0;
-
-		/* Clear previous contents, add "solid" perma-wall */
-		cave_set_feat(y, x, FEAT_PERM_SOLID);
-	}
-
 	/* Special boundary walls -- Bottom */
 	for (x = 0; x < DUNGEON_WID; x++)
 	{
-		y = DUNGEON_HGT-1;
-
 		/* Clear previous contents, add "solid" perma-wall */
-		cave_set_feat(y, x, FEAT_PERM_SOLID);
+		cave_set_feat(0, x, FEAT_PERM_SOLID);
+		cave_set_feat(DUNGEON_HGT - 1, x, FEAT_PERM_SOLID);
 	}
 
 	/* Special boundary walls -- Left */
 	for (y = 0; y < DUNGEON_HGT; y++)
 	{
-		x = 0;
-
 		/* Clear previous contents, add "solid" perma-wall */
-		cave_set_feat(y, x, FEAT_PERM_SOLID);
+		cave_set_feat(y, 0, FEAT_PERM_SOLID);
+		cave_set_feat(y, DUNGEON_WID - 1, FEAT_PERM_SOLID);
 	}
-
-	/* Special boundary walls -- Right */
-	for (y = 0; y < DUNGEON_HGT; y++)
-	{
-		x = DUNGEON_WID-1;
-
-		/* Clear previous contents, add "solid" perma-wall */
-		cave_set_feat(y, x, FEAT_PERM_SOLID);
-	}
-
 
 	/* Hack -- Scramble the room order */
 	for (i = 0; i < dun->cent_n; i++)
@@ -3247,8 +3238,8 @@ static void cave_gen(void)
 				/* Pick a location */
 				while (1)
 				{
-					y = randint0(DUNGEON_HGT);
-					x = randint0(DUNGEON_WID);
+					y = randint0(level_hgt);
+					x = randint0(level_wid);
 
 					if (cave_naked_bold(y, x)) break;
 				}
