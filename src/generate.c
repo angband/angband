@@ -2968,28 +2968,17 @@ static bool room_build(int by0, int bx0, int typ)
 
 
 /*
- * Returns an integer between min and 100, inclusive. A min of 30 will give
- * the left-half of a bell-curve distribution between 30 and 100, with 100
- * being the most likely. A min of 1 will give a full bell-curve distribution
- * between 1 and 100.
- */
-static int get_weighted_perc(int min)
-{
-	int perc = (100 * min) / (randint1(10) * randint1(10));
-	return perc > 100 ? 100 : perc;
-}
-
-
-/*
  * Generate a new dungeon level
  *
  * Note that "dun_body" adds about 4000 bytes of memory to the stack.
  */
 static void cave_gen(void)
 {
-	int i, k, y, x, y1, x1;
+	int i, j, k, l, y, x, y1, x1;
 	int by, bx;
 	int num_rooms, size_percent;
+
+	bool blocks_tried[MAX_ROOMS_ROW][MAX_ROOMS_COL];
 
 	bool destroyed = FALSE;
 
@@ -2999,9 +2988,16 @@ static void cave_gen(void)
 	 * Since we scale row_rooms and col_rooms by the same amount, DUN_ROOMS
 	 * gives the same "room density" no matter what size the level turns out
 	 * to be. TODO: vary room density slightly? */
-	size_percent = get_weighted_perc(50);
-	num_rooms = DUN_ROOMS * size_percent / 100;
+	i = randint1(10);
+	if(i < 2) size_percent = 50;
+	else if(i < 3) size_percent = 58;
+	else if(i < 4) size_percent = 65;
+	else if(i < 5) size_percent = 73;
+	else if(i < 6) size_percent = 80;
+	else size_percent = 100;
 
+	/* scale the various generation variables */
+	num_rooms = DUN_ROOMS * size_percent / 100;
 	level_hgt = DUNGEON_HGT * size_percent / 100;
 	level_wid  = DUNGEON_WID * size_percent / 100;
 
@@ -3035,6 +3031,7 @@ static void cave_gen(void)
 		for (bx = 0; bx < dun->col_rooms; bx++)
 		{
 			dun->room_map[by][bx] = FALSE;
+			blocks_tried[by][bx]  = FALSE;
 		}
 	}
 
@@ -3047,11 +3044,36 @@ static void cave_gen(void)
 	dun->cent_n = 0;
 
 	/* Build some rooms */
-	for (i = 0; i < num_rooms; i++)
+	i = 0;
+	while(i < num_rooms)
 	{
-		/* Pick a block for the room */
-		by = randint0(dun->row_rooms);
-		bx = randint0(dun->col_rooms);
+		i++;
+
+		/* Pick a block for the room; j counts blocks we haven't tried */
+		j = 0;
+		for(by=0; by < dun->row_rooms; by++)
+			for(bx=0; bx < dun->col_rooms; bx++)
+				if(!blocks_tried[by][bx]) j++;
+
+		/* If we've tried all blocks we're done */
+		if(j == 0) break;
+
+		/* OK, choose one of the j blocks we haven't tried. Then figure out */
+		/* which one that actually was */
+		k = randint0(j);
+		l = 0;
+		for(by=0; by < dun->row_rooms; by++)
+		{
+			for(bx=0; bx < dun->col_rooms; bx++)
+			{
+				if(blocks_tried[by][bx]) continue;
+				if(l == k) break;
+				l++;
+			}
+			if(l == k) break;
+		}
+		
+		blocks_tried[by][bx] = TRUE;
 
 #if 0
 		/* Align dungeon rooms */
@@ -3068,10 +3090,8 @@ static void cave_gen(void)
 		/* Destroyed levels are boring */
 		if (destroyed)
 		{
-			/* Attempt a "trivial" room */
-			if (room_build(by, bx, 1)) continue;
-
-			/* Never mind */
+			/* Attempt a "trivial" room, then continue */
+			room_build(by, bx, 1);
 			continue;
 		}
 
@@ -3109,6 +3129,9 @@ static void cave_gen(void)
 
 		/* Attempt a trivial room */
 		if (room_build(by, bx, 1)) continue;
+
+		/* We failed to create a room */
+		/*i--;*/
 	}
 
 	/* Special boundary walls -- Bottom */
