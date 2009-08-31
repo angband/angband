@@ -341,11 +341,13 @@ static void new_player_spot(void)
 
 		if (!OPT(adult_no_stairs))
 		{
-			if (p_ptr->create_down_stair) {
+			if (p_ptr->create_down_stair)
+			{
 				cave_set_feat(y, x, FEAT_MORE);
 				p_ptr->create_down_stair = FALSE;
 			}
-			else if (p_ptr->create_up_stair) {
+			else if (p_ptr->create_up_stair)
+			{
 				cave_set_feat(y, x, FEAT_LESS);
 				p_ptr->create_up_stair = FALSE;
 			}
@@ -2989,11 +2991,11 @@ static void cave_gen(void)
 	 * gives the same "room density" no matter what size the level turns out
 	 * to be. TODO: vary room density slightly? */
 	i = randint1(10);
-	if(i < 2) size_percent = 50;
-	else if(i < 3) size_percent = 58;
-	else if(i < 4) size_percent = 65;
-	else if(i < 5) size_percent = 73;
-	else if(i < 6) size_percent = 80;
+	if (i < 2) size_percent = 50;
+	else if (i < 3) size_percent = 58;
+	else if (i < 4) size_percent = 65;
+	else if (i < 5) size_percent = 73;
+	else if (i < 6) size_percent = 80;
 	else size_percent = 100;
 
 	/* scale the various generation variables */
@@ -3053,10 +3055,10 @@ static void cave_gen(void)
 		j = 0;
 		for(by=0; by < dun->row_rooms; by++)
 			for(bx=0; bx < dun->col_rooms; bx++)
-				if(!blocks_tried[by][bx]) j++;
+				if (!blocks_tried[by][bx]) j++;
 
 		/* If we've tried all blocks we're done */
-		if(j == 0) break;
+		if (j == 0) break;
 
 		/* OK, choose one of the j blocks we haven't tried. Then figure out */
 		/* which one that actually was */
@@ -3066,11 +3068,11 @@ static void cave_gen(void)
 		{
 			for(bx=0; bx < dun->col_rooms; bx++)
 			{
-				if(blocks_tried[by][bx]) continue;
-				if(l == k) break;
+				if (blocks_tried[by][bx]) continue;
+				if (l == k) break;
 				l++;
 			}
-			if(l == k) break;
+			if (l == k) break;
 		}
 		
 		blocks_tried[by][bx] = TRUE;
