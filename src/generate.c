@@ -2990,12 +2990,14 @@ static void cave_gen(void)
 	 * Since we scale row_rooms and col_rooms by the same amount, DUN_ROOMS
 	 * gives the same "room density" no matter what size the level turns out
 	 * to be. TODO: vary room density slightly? */
+	/* XXX: Until vault generation is improved, scaling variance is reduced */
 	i = randint1(10);
-	if (i < 2) size_percent = 50;
-	else if (i < 3) size_percent = 58;
-	else if (i < 4) size_percent = 65;
-	else if (i < 5) size_percent = 73;
-	else if (i < 6) size_percent = 80;
+	if (is_quest(p_ptr->depth)) size_percent = 100;
+	else if (i < 2) size_percent = 75;
+	else if (i < 3) size_percent = 80;
+	else if (i < 4) size_percent = 85;
+	else if (i < 5) size_percent = 90;
+	else if (i < 6) size_percent = 95;
 	else size_percent = 100;
 
 	/* scale the various generation variables */
