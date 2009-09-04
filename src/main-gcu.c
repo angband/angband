@@ -105,7 +105,6 @@ static struct termios  game_termios;
 static char *termtype;
 static bool loaded_terminfo;
 
-
 /*
  * Information about a term
  */
@@ -123,7 +122,6 @@ static term_data data[MAX_TERM_DATA];
 
 /* Number of initialized "term" structures */
 static int active = 0;
-
 
 #ifdef A_ALTCHARSET
 
@@ -157,6 +155,9 @@ static int can_fix_color = FALSE;
  * Simple Angband to Curses color conversion table
  */
 static int colortable[BASIC_COLORS];
+
+/* Screen info: use one big Term 0, or other subwindows? */
+static bool use_big_screen;
 
 /*
  * Background color we should draw with; either BLACK or DEFAULT
@@ -412,6 +413,83 @@ static void Term_nuke_gcu(term *t)
 }
 
 
+/*
+ * For a given term number (i) set the upper left corner (x, y) and the
+ * correct dimensions. Terminal layout: 0|2
+ *                                      1|3
+ */
+void get_gcu_term_size(int i, int *rows, int *cols, int *y, int *x)
+{
+	if (use_big_screen && i == 0)
+	{
+		*rows = LINES;
+		*cols = COLS;
+		*y = *x = 0;
+	}
+	else if (use_big_screen)
+	{
+		*rows = *cols = *y = *x = 0;
+	}
+	else if (i == 0)
+	{
+		*rows = 24;
+		*cols = 80;
+		*y = *x = 0;
+	}
+	else if (i == 1)
+	{
+		*rows = LINES - 25;
+		*cols = 80;
+		*y = 25;
+		*x = 0;
+	}
+	else if (i == 2)
+	{
+		*rows = 24;
+		*cols = COLS - 81;
+		*y = 0;
+		*x = 81;
+	}
+	else if (i == 3)
+	{
+		*rows = LINES - 25;
+		*cols = COLS - 81;
+		*y = 25;
+		*x = 81;
+	}
+	else
+	{
+		*rows = *cols = *y = *x = 0;
+	}
+}
+
+
+/*
+ * Query ncurses for new screen size and try to resize the GCU terms.
+ */
+void do_gcu_resize(void)
+{
+	int i, rows, cols, y, x;
+	term *old_t = Term;
+	
+	for (i = 0; i < MAX_TERM_DATA; i++)
+	{
+		/* If we're using a big screen, we only care about Term-0 */
+		if (use_big_screen && i > 0) break;
+		
+		/* Activate the current Term */
+		Term_activate(&data[i].t);
+
+		/* If we can resize the curses window, then resize the Term */
+		get_gcu_term_size(i, &rows, &cols, &y, &x);
+		if(wresize(data[i].win, rows, cols) == OK)
+			Term_resize(cols, rows);
+
+		/* Activate the old term */
+		Term_activate(old_t);
+	}
+
+}
 
 
 /*
@@ -454,6 +532,15 @@ static errr Term_xtra_gcu_event(int v)
 		if (i == ERR) return (1);
 		if (i == EOF) return (1);
 	}
+
+	/* Not sure if this is portable to non-ncurses platforms */
+	#ifdef USE_NCURSES
+	if (i == KEY_RESIZE)
+	{
+		do_gcu_resize();
+		return (1);
+	}
+	#endif
 
 	/* uncomment to debug keycode issues */
 	#if 0
@@ -827,10 +914,8 @@ static void hook_quit(cptr str)
 errr init_gcu(int argc, char **argv)
 {
 	int i;
-
-	int num_term = MAX_TERM_DATA, next_win = 0;
-
-	bool use_big_screen = FALSE;
+	int rows, cols, y, x;
+	int next_win = 0;
 
 	/* Initialize info about terminal capabilities */
 	termtype = getenv("TERM");
@@ -993,89 +1078,27 @@ errr init_gcu(int argc, char **argv)
 	/* Extract the game keymap */
 	keymap_game_prepare();
 
-
 	/*** Now prepare the term(s) ***/
-
-	/* Big screen -- one big term */
-	if (use_big_screen)
+	for (i = 0; i < MAX_TERM_DATA; i++)
 	{
+		if (use_big_screen && i > 0) break;
+
+		/* Get the terminal dimensions; if the user asked for a big screen
+		 * then we'll put the whole screen in term 0; otherwise we'll divide
+		 * it amongst the available terms */
+		get_gcu_term_size(i, &rows, &cols, &y, &x);
+		
+		/* Skip non-existant windows */
+		if (rows <= 0 || cols <= 0) continue;
+		
 		/* Create a term */
-		term_data_init_gcu(&data[0], LINES, COLS, 0, 0);
-
+		term_data_init_gcu(&data[next_win], rows, cols, y, x);
+		
 		/* Remember the term */
-		angband_term[0] = &data[0].t;
-	}
-
-	/* No big screen -- create as many term windows as possible */
-	else
-	{
-		/* Create several terms */
-		for (i = 0; i < num_term; i++)
-		{
-			int rows, cols, y, x;
-
-			/* Decide on size and position */
-			switch (i)
-			{
-				/* Upper left */
-				case 0:
-				{
-					rows = 24;
-					cols = 80;
-					y = x = 0;
-					break;
-				}
-
-				/* Lower left */
-				case 1:
-				{
-					rows = LINES - 25;
-					cols = 80;
-					y = 25;
-					x = 0;
-					break;
-				}
-
-				/* Upper right */
-				case 2:
-				{
-					rows = 24;
-					cols = COLS - 81;
-					y = 0;
-					x = 81;
-					break;
-				}
-
-				/* Lower right */
-				case 3:
-				{
-					rows = LINES - 25;
-					cols = COLS - 81;
-					y = 25;
-					x = 81;
-					break;
-				}
-
-				/* XXX */
-				default:
-				{
-					rows = cols = y = x = 0;
-					break;
-				}
-			}
-
-			/* Skip non-existant windows */
-			if (rows <= 0 || cols <= 0) continue;
-
-			/* Create a term */
-			term_data_init_gcu(&data[next_win], rows, cols, y, x);
-
-			/* Remember the term */
-			angband_term[next_win] = &data[next_win].t;
-
-			/* One more window */
-			next_win++;
-		}
+		angband_term[next_win] = &data[next_win].t;
+		
+		/* One more window */
+		next_win++;
 	}
 
 	/* Activate the "Angband" window screen */
