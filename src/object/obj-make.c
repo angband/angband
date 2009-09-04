@@ -1143,6 +1143,38 @@ u32b ego_xtra_power_list(void)
 	return ret;
 }
 
+/**
+ * This is a safe way to choose a random new flag to add to an object.
+ * It takes the existing flags, an array of new attrs, and the size of
+ * the array, and returns an entry from attrs, or 0 if there are no
+ * new attrs.
+ */
+u32b get_new_attr(u32b flags, const u32b attrs[], int size)
+{
+	int i, j, n;
+
+	/* figure out how many flags are not present */
+	n = 0;
+	for (i = 0; i < size; i++)
+		if (!(flags & attrs[i])) n++;
+
+	/* choose one of the absent flags */
+	j = randint0(n);
+
+	/* find the unused flag we selected earlier */
+	n = 0;
+	for(i = 0; i < size; i++)
+	{
+		if(!(flags & attrs[i]))
+		{
+			if(n == j) return attrs[i];
+			n++;
+		}
+	}
+
+	/* if there was no unused flag, then just return 0 */
+	return 0;
+}
 
 
 /**
@@ -1162,8 +1194,8 @@ u32b ego_xtra_power_list(void)
 void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, bool great)
 {
 	int power = 0;
-	u32b xtra = 0;
-	bool new = FALSE;
+	/*u32b xtra = 0;*/
+	/*bool new = FALSE;*/
 
 	/* Chance of being `good` and `great` */
 	int good_chance = (lev+2) * 3;
@@ -1297,50 +1329,15 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 		ego_item_type *e_ptr = &e_info[o_ptr->name2];
 
 		/* Extra powers */
-		switch (e_ptr->xtra)
-		{
-			case OBJECT_XTRA_TYPE_SUSTAIN:
-			{
-				while (!new)
-				{
-					xtra = ego_sustains[randint0(N_ELEMENTS(ego_sustains))];
-					if ((o_ptr->flags[1] | xtra) != o_ptr->flags[1])
-					{
-						o_ptr->flags[1] |= xtra;
-						new = TRUE;
-					}
-				}
-				break;
-			}
-
-			case OBJECT_XTRA_TYPE_RESIST:
-			{
-				while (!new)
-				{
-					xtra = ego_resists[randint0(N_ELEMENTS(ego_resists))];
-					if ((o_ptr->flags[1] | xtra) != o_ptr->flags[1])
-					{
-						o_ptr->flags[1] |= xtra;
-						new = TRUE;
-					}
-				}
-				break;
-			}
-
-			case OBJECT_XTRA_TYPE_POWER:
-			{
-				while (!new)
-				{
-					xtra = ego_powers[randint0(N_ELEMENTS(ego_powers))];
-					if ((o_ptr->flags[2] | xtra) != o_ptr->flags[2])
-					{
-						o_ptr->flags[2] |= xtra;
-						new = TRUE;
-					}
-				}
-				break;
-			}
-		}
+		if(e_ptr->xtra == OBJECT_XTRA_TYPE_SUSTAIN)
+			o_ptr->flags[1] |= get_new_attr(o_ptr->flags[1], ego_sustains,
+											N_ELEMENTS(ego_sustains));
+		else if(e_ptr->xtra == OBJECT_XTRA_TYPE_RESIST)
+			o_ptr->flags[1] |= get_new_attr(o_ptr->flags[1], ego_resists,
+											N_ELEMENTS(ego_resists));
+		else if(e_ptr->xtra == OBJECT_XTRA_TYPE_POWER)
+			o_ptr->flags[2] |= get_new_attr(o_ptr->flags[2], ego_powers,
+											N_ELEMENTS(ego_powers));
 
 		/* Hack -- acquire "cursed" flags */
 		if (cursed_p(e_ptr))
