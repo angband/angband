@@ -488,7 +488,7 @@ void do_gcu_resize(void)
 		/* Activate the old term */
 		Term_activate(old_t);
 	}
-
+	do_cmd_redraw();
 }
 
 
@@ -537,8 +537,16 @@ static errr Term_xtra_gcu_event(int v)
 	#ifdef USE_NCURSES
 	if (i == KEY_RESIZE)
 	{
+		/* wait until we go one second (10 deci-seconds) before actually
+		 * doing the resizing. users often end up triggering multiple
+		 * KEY_RESIZE events while changing window size. */
+		halfdelay(10);
+		do {
+			i = getch();
+		} while(i == KEY_RESIZE);
+		cbreak();
 		do_gcu_resize();
-		return (1);
+		if (i == ERR) return (1);
 	}
 	#endif
 
