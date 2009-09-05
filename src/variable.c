@@ -469,6 +469,11 @@ quest *q_list;
 store_type *store;
 
 /*
+ * Array[MAX_NAME_SECTIONS][num_names] of random names
+ */
+cptr** name_sections;
+
+/*
  * Array[INVEN_TOTAL] of objects in the player's inventory
  */
 object_type *inventory;

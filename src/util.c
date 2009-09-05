@@ -17,9 +17,6 @@
  */
 #include "angband.h"
 #include "game-event.h"
-#include "randname.h"
-
-
 
 /*
  * Convert a decimal to a single digit hex number

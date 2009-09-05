@@ -923,6 +923,103 @@ errr init_store_txt(ang_file *fp, char *buf)
 }
 
 
+/**
+ * Initialise the random name fragments
+ */
+errr init_names_txt(ang_file *fp, char *buf)
+{
+	int i, name_section;
+	u32b num_names[RANDNAME_NUM_TYPES];
+	char temp[1024];
+	int counter = 0;
+	error_line = 0;
+	memset(num_names, 0, RANDNAME_NUM_TYPES * sizeof(u32b));
+
+	/* 
+	 * Go through the file and count the total number of names in each name 
+	 * section
+	 */
+	while (file_getl(fp, buf, 1024))
+	{
+		error_line++;
+
+		if (!buf[0] || '#' == buf[0])
+			continue;
+
+		else if ('N' == buf[0])
+		{
+			if (1 != sscanf(buf, "N:%d", &name_section))
+				return PARSE_ERROR_GENERIC;
+
+			if (name_section > RANDNAME_NUM_TYPES)
+				return PARSE_ERROR_GENERIC;
+		}
+
+		else if ('D' == buf[0])
+		{
+			num_names[name_section]++;
+		}
+
+		else
+		{
+			return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+		}
+	}
+
+	/* Go back to the start of the file */
+	file_seek(fp, 0);
+
+	/* Allocate some memory for pointers to sections */
+	name_sections = C_ZNEW(RANDNAME_NUM_TYPES, cptr*);
+
+	/* Allocate more memory for pointers to names */
+	/* Add a null element at the end of each array (see randname.c) */
+	for (i = 0; i < RANDNAME_NUM_TYPES; i++)
+	{
+		if (num_names[i])
+		{
+			name_sections[i] = C_ZNEW(num_names[i] + 1, cptr);
+		}
+	} 
+	
+	/* 
+	 * Go through the file again and read each name into the relevant array 
+	 */
+	while (file_getl(fp, buf, 1024))
+	{
+		error_line++;
+
+		if (!buf[0] || '#' == buf[0])
+			continue;
+
+		else if ('N' == buf[0])
+		{
+			if (1 != sscanf(buf, "N:%d", &name_section))
+				return PARSE_ERROR_GENERIC;
+
+			if (name_section > RANDNAME_NUM_TYPES)
+				return PARSE_ERROR_GENERIC;
+
+			counter = 0;
+		}
+
+		else if ('D' == buf[0])
+		{
+			if (1 != sscanf(buf, "D:%s", temp))
+				return PARSE_ERROR_GENERIC;
+
+			name_sections[name_section][counter++] = strdup(temp);
+		}
+
+		else
+		{
+			return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+		}
+	}
+
+	/* No errors */
+	return 0;
+}
 
 
 /*

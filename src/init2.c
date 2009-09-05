@@ -1009,6 +1009,33 @@ static void init_stores(void)
 }
 
 
+/*
+ * Initialise random name fragments, from the edit file.
+ */
+static void init_names(void)
+{
+	errr err;
+	char filename[1024];
+	char buf[1024];
+	ang_file *fh;
+
+	path_build(filename, sizeof(filename), ANGBAND_DIR_EDIT, "names.txt");
+
+	/* Open the file */
+	fh = file_open(filename, MODE_READ, -1);
+	if (!fh) quit("Cannot open 'names.txt' file.");
+
+	/* Parse the file */
+	err = init_names_txt(fh, buf);
+	file_close(fh);
+
+	/* Errors */
+	if (err) display_parse_error("names", err, buf);
+
+	return;
+}
+
+
 /*** Initialize others ***/
 
 static void autoinscribe_init(void)
@@ -1445,6 +1472,10 @@ bool init_angband(void)
 	/* Initialise store stocking data */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (store stocks)");
 	init_stores();
+
+	/* Initialise random name data */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (random names)");
+	init_names();
 
 	/* Initialize some other arrays */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (other)");

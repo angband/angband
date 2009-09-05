@@ -134,6 +134,7 @@ extern s32b tot_mon_power;
 extern monster_lore *l_list;
 extern quest *q_list;
 extern store_type *store;
+extern cptr** name_sections;
 extern object_type *inventory;
 extern s16b alloc_ego_size;
 extern alloc_entry *alloc_ego_table;
@@ -433,6 +434,9 @@ errr process_pref_file(cptr name);
 
 /* randart.c */
 extern errr do_randart(u32b randart_seed, bool full);
+
+/* randname.c */
+extern size_t randname_make(randname_type name_type, size_t min, size_t max, char *word_buf, size_t buflen);
 
 /* score.c */
 extern void enter_score(time_t *death_time);

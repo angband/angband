@@ -253,6 +253,19 @@
 #define MON_DRAIN_LIFE	2		/* Percent of player exp drained per hit */
 #define USE_DEVICE      3		/* x> Harder devices x< Easier devices */
 
+/* 
+ * The different types of name randname.c can generate 
+ * which is also the number of sections in names.txt
+ */
+typedef enum
+{
+  RANDNAME_TOLKIEN = 1,
+  RANDNAME_SCROLL,
+
+  /* End of type marker - not a valid name type */
+  RANDNAME_NUM_TYPES
+} randname_type;
+
 /*
  * There is a 1/20 (5%) chance of inflating the requested object level
  * during the creation of an object (see "get_obj_num()" in "object.c").

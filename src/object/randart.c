@@ -19,7 +19,6 @@
 #include "angband.h"
 #include "object/tvalsval.h"
 #include "init.h"
-#include "randname.h"
 
 /*
  * Original random artifact generator (randart) by Greg Wooledge.

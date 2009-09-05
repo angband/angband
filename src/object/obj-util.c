@@ -16,7 +16,6 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-#include "randname.h"
 #include "tvalsval.h"
 #include "effects.h"
 #include "game-cmd.h"
