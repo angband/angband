@@ -2418,9 +2418,14 @@ static void draw_xtra_cr_text(xtra_win_data *xd, int x, int y, byte color, cptr 
 	measurements size;
 	cairo_rectangle_t r;
 	int n = strlen(str);
+
+	/* Prevent gcc warnings */
+	r.width = 0;
+	r.height = 0;
+	r.x = 0;
+	r.y = 0;
 	
 	/* Set dimensions */
-	
 	size.w = xd->font.w;
 	size.h = xd->font.h;
 	draw_text(xd->surface, &xd->font, &size, x, y, n, color, str);
