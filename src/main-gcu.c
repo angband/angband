@@ -17,6 +17,8 @@
  */
 #include "angband.h"
 
+/* included for redrawing code, to prevent warnings */
+#include "cmds.h"
 
 #ifdef USE_GCU
 
