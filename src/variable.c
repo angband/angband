@@ -469,7 +469,7 @@ quest *q_list;
 store_type *store;
 
 /*
- * Array[MAX_NAME_SECTIONS][num_names] of random names
+ * Array[RANDNAME_NUM_TYPES][num_names] of random names
  */
 cptr** name_sections;
 
