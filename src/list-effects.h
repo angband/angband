@@ -38,7 +38,7 @@ EFFECT(HEAL1,          FALSE,  6,	"heals 500 hit points")
 EFFECT(HEAL2,          FALSE,  9,	"heals 1000 hit points")
 EFFECT(HEAL3,          FALSE,  7,	"heals 500 hit points, heals cut damage, and cures stunning")
 
-EFFECT(GAIN_EXP,       FALSE, INHIBIT_POWER, "grants either 100000 experience points or half the current experience point total plus 10, whichever is less")
+EFFECT(GAIN_EXP,       FALSE, INHIBIT_POWER, "grants 100,000 experience points")
 EFFECT(LOSE_EXP,       FALSE,  0,	"drains a quarter of your experience")
 EFFECT(RESTORE_EXP,    FALSE,  1,	"restores your experience")
 
