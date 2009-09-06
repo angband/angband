@@ -1148,31 +1148,20 @@ u32b ego_xtra_power_list(void)
  * the array, and returns an entry from attrs, or 0 if there are no
  * new attrs.
  */
-u32b get_new_attr(u32b flags, const u32b attrs[], int size)
+u32b get_new_attr(u32b flags, const u32b attrs[])
 {
-	int i, j, n;
-
-	/* figure out how many flags are not present */
-	n = 0;
-	for (i = 0; i < size; i++)
-		if (!(flags & attrs[i])) n++;
-
-	/* choose one of the absent flags */
-	j = randint0(n);
-
-	/* find the unused flag we selected earlier */
-	n = 0;
-	for(i = 0; i < size; i++)
+	int i, options = 0;
+	u32b flag = 0;
+	for (i = 0; i < N_ELEMENTS(attrs); i++)
 	{
-		if(!(flags & attrs[i]))
-		{
-			if(n == j) return attrs[i];
-			n++;
-		}
-	}
+		/* skip this one if the flag is already present */
+		if (flags & attrs[i]) continue;
 
-	/* if there was no unused flag, then just return 0 */
-	return 0;
+		/* each time we find a new possible option, we have a 1-in-N chance of
+		 * choosing it and an (N-1)-in-N chance of keeping a previous one */
+		if (one_in_(++options)) flag = attrs[i];
+	}
+	return flag;
 }
 
 
@@ -1326,17 +1315,16 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 	if (o_ptr->name2)
 	{
 		ego_item_type *e_ptr = &e_info[o_ptr->name2];
+		u32b flags[OBJ_FLAG_N];
+		object_flags(o_ptr, flags);
 
 		/* Extra powers */
 		if(e_ptr->xtra == OBJECT_XTRA_TYPE_SUSTAIN)
-			o_ptr->flags[1] |= get_new_attr(o_ptr->flags[1], ego_sustains,
-											N_ELEMENTS(ego_sustains));
+			o_ptr->flags[1] |= get_new_attr(flags[1], ego_sustains);
 		else if(e_ptr->xtra == OBJECT_XTRA_TYPE_RESIST)
-			o_ptr->flags[1] |= get_new_attr(o_ptr->flags[1], ego_resists,
-											N_ELEMENTS(ego_resists));
+			o_ptr->flags[1] |= get_new_attr(flags[1], ego_resists);
 		else if(e_ptr->xtra == OBJECT_XTRA_TYPE_POWER)
-			o_ptr->flags[2] |= get_new_attr(o_ptr->flags[2], ego_powers,
-											N_ELEMENTS(ego_powers));
+			o_ptr->flags[2] |= get_new_attr(flags[2], ego_powers);
 
 		/* Hack -- acquire "cursed" flags */
 		if (cursed_p(e_ptr))
