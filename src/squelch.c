@@ -314,7 +314,7 @@ int apply_autoinscription(object_type *o_ptr)
 		return 0;
 
 	/* Get an object description */
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	if (note[0] != 0)
 		o_ptr->note = quark_add(note);
@@ -1191,8 +1191,8 @@ bool squelch_interactive(const object_type *o_ptr)
 		char sval_name[50];
 
 		/* Obtain plural form without a quantity */
-		object_desc(sval_name, sizeof sval_name, o_ptr, FALSE,
-				ODESC_BASE | ODESC_PLURAL);
+		object_desc(sval_name, sizeof sval_name, o_ptr,
+					ODESC_BASE | ODESC_PLURAL);
 		/* XXX Eddie while correct in a sense, to squelch all torches on torch of brightness you get the message "Ignore Wooden Torches of Brightness in future? " */
 		strnfmt(out_val, sizeof out_val, "Ignore %s in future? ",
 				sval_name);

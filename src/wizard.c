@@ -314,7 +314,8 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 	Term_clear();
 
 	/* Describe fully */
-	object_desc(buf, sizeof(buf), o_ptr, TRUE, ODESC_FULL | ODESC_SPOIL);
+	object_desc(buf, sizeof(buf), o_ptr,
+				ODESC_PREFIX | ODESC_FULL | ODESC_SPOIL);
 
 	prt(buf, 2, j);
 

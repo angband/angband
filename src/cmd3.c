@@ -167,7 +167,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 		act = "You are wearing";
 
 	/* Describe the result */
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
 	sound(MSG_WIELD);
@@ -231,7 +231,8 @@ void do_cmd_destroy(cmd_code code, cmd_arg args[])
 
 	/* Describe the destroyed object by taking a copy with the right "amt" */
 	object_copy_amt(&destroyed_obj, o_ptr, amt);
-	object_desc(o_name, sizeof(o_name), &destroyed_obj, TRUE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), &destroyed_obj,
+				ODESC_PREFIX | ODESC_FULL);
 
 	/* Artifacts cannot be destroyed */
 	if (artifact_p(o_ptr))
@@ -318,7 +319,8 @@ void textui_cmd_destroy(void)
 
 	/* Describe the destroyed object by taking a copy with the right "amt" */
 	object_copy_amt(&obj_to_destroy, o_ptr, amt);
-	object_desc(o_name, sizeof(o_name), &obj_to_destroy, TRUE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), &obj_to_destroy,
+				ODESC_PREFIX | ODESC_FULL);
 
 	/* Verify destruction */
 	strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", o_name);

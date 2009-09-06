@@ -26,8 +26,9 @@ typedef enum
 
 	ODESC_STORE  = 0x04,   /*!< This is an in-store description */
 	ODESC_PLURAL = 0x08,   /*!< Always pluralise */
-	ODESC_SINGULAR	= 0x10,	/*!< Always singular */
-	ODESC_SPOIL  = 0x20    /*!< Display regardless of player knowledge */
+	ODESC_SINGULAR    = 0x10,    /*!< Always singular */
+	ODESC_SPOIL  = 0x20,    /*!< Display regardless of player knowledge */
+	ODESC_PREFIX = 0x40   /* */
 } odesc_detail_t;
 
 
@@ -91,7 +92,7 @@ bool easy_know(const object_type *o_ptr);
 
 /* obj-desc.c */
 void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know);
-size_t object_desc(char *buf, size_t max, const object_type *o_ptr, bool prefix, odesc_detail_t mode);
+size_t object_desc(char *buf, size_t max, const object_type *o_ptr, odesc_detail_t mode);
 
 /* obj-info.c */
 extern const slay_t slay_table[];

@@ -1189,7 +1189,7 @@ static void get_artifact_display_name(char *o_name, size_t namelen, int a_idx)
 	make_fake_artifact(o_ptr, a_idx);
 
 	/* Get its name */
-	object_desc(o_name, namelen, o_ptr, TRUE, ODESC_BASE | ODESC_SPOIL);
+	object_desc(o_name, namelen, o_ptr, ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);
 }
 
 /*

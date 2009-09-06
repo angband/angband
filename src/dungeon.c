@@ -218,7 +218,7 @@ static void recharged_notice(const object_type *o_ptr, bool all)
 
 
 	/* Describe (briefly) */
-	object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 
 	/* Disturb the player */
 	disturb(0, 0);
@@ -1031,7 +1031,7 @@ static void process_player(void)
 			msg_print("Your pack overflows!");
 
 			/* Describe */
-			object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
+			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 			/* Message */
 			msg_format("You drop %s (%c).", o_name, index_to_label(item));

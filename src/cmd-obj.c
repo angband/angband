@@ -161,7 +161,7 @@ static void activation_message(object_type *o_ptr, const char *message)
 			switch(art_tag_lookup(tag))
 			{
 			case ART_TAG_NAME:
-				end += object_desc(buf, 1024, o_ptr, TRUE, ODESC_BASE); 
+				end += object_desc(buf, 1024, o_ptr, ODESC_PREFIX | ODESC_BASE); 
 				break;
 			case ART_TAG_KIND:
 				object_kind_name(&buf[end], 1024-end, o_ptr->k_idx, TRUE);
@@ -225,7 +225,7 @@ static void obj_inscribe(object_type *o_ptr, int item)
 	char o_name[80];
 	char tmp[80] = "";
 
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 	msg_format("Inscribing %s.", o_name);
 	message_flush();
 
@@ -318,7 +318,7 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 		if (cursed_p(equip_o_ptr))
 		{
 			/* Message */
-			object_desc(o_name, sizeof(o_name), equip_o_ptr, FALSE, ODESC_BASE);
+			object_desc(o_name, sizeof(o_name), equip_o_ptr, ODESC_BASE);
 			msg_format("The %s you are %s appears to be cursed.",
 			           o_name, describe_use(slot));
 
@@ -330,7 +330,8 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 		while (n--)
 		{
 			/* Prompt */
-			object_desc(o_name, sizeof(o_name), equip_o_ptr, TRUE, ODESC_FULL);
+			object_desc(o_name, sizeof(o_name), equip_o_ptr,
+						ODESC_PREFIX | ODESC_FULL);
 
 			/* Forget it */
 			if (!get_check(format("Really take off %s? ", o_name))) return;

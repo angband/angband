@@ -727,6 +727,7 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 /**
  * Describes item `o_ptr` into buffer `buf` of size `max`.
  *
+ * ODESC_PREFIX prepends a 'the', 'a' or number
  * ODESC_BASE results in a base description.
  * ODESC_COMBAT will add to-hit, to-dam and AC info.
  * ODESC_EXTRA will add pval/charge/inscription/squelch info.
@@ -740,10 +741,11 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
  * \returns The number of bytes used of the buffer.
  */
 size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
-		bool prefix, odesc_detail_t mode)
+				   odesc_detail_t mode)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
+	bool prefix = mode & ODESC_PREFIX;
 	bool spoil = (mode & ODESC_SPOIL);
 	bool aware = object_flavor_is_aware(o_ptr) ||
 			(o_ptr->ident & IDENT_STORE) || spoil;

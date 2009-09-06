@@ -2214,7 +2214,7 @@ static void inv_slot(char *str, size_t len, int i, bool equip)
 	if (item_tester_okay(o_ptr) || equip)
 	{
 		/* Obtain an item description */
-		object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 			
 		/* Obtain the length of the description */
 		n = strlen(o_name);

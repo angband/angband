@@ -954,7 +954,7 @@ void object_info_header(const object_type *o_ptr)
 	char o_name[120];
 
 	/* Object name */
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 	text_out_c(TERM_L_BLUE, "%^s\n", o_name);
 
 	/* Display the origin */

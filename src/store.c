@@ -1662,7 +1662,7 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 {
 	object_type *o_ptr;
 	s32b x;
-	odesc_detail_t desc;
+	odesc_detail_t desc = ODESC_PREFIX;
 
 	char o_name[80];
 	char out_val[160];
@@ -1681,7 +1681,7 @@ static void store_display_entry(menu_type *menu, int oid, bool cursor, int row, 
 	/* Describe the object - preserving insriptions in the home */
 	if (this_store == STORE_HOME) desc = ODESC_FULL;
 	else desc = ODESC_FULL | ODESC_STORE;
-	object_desc(o_name, sizeof(o_name), o_ptr, TRUE, desc);
+	object_desc(o_name, sizeof(o_name), o_ptr, desc);
 
 	/* Display the object */
 	c_put_str(tval_to_attr[o_ptr->tval & 0x7F], o_name, row, col);
@@ -2042,7 +2042,7 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 	}
 
 	/* Describe the object (fully) */
-	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	/* Extract the price for the entire stack */
 	price = price_item(i_ptr, FALSE, i_ptr->number);
@@ -2079,7 +2079,8 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 	item_new = inven_carry(i_ptr);
 
 	/* Message */
-	object_desc(o_name, sizeof(o_name), &inventory[item_new], TRUE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), &inventory[item_new],
+				ODESC_PREFIX | ODESC_FULL);
 	msg_format("You have %s (%c).", o_name, index_to_label(item_new));
 
 	/* Now, reduce the original stack's pval */
@@ -2175,7 +2176,8 @@ void do_cmd_retrieve(cmd_code code, cmd_arg args[])
 	item_new = inven_carry(&picked_item);
 
 	/* Describe just the result */
-	object_desc(o_name, sizeof(o_name), &inventory[item_new], TRUE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), &inventory[item_new],
+				ODESC_PREFIX | ODESC_FULL);
 	
 	/* Message */
 	msg_format("You have %s (%c).", o_name, index_to_label(item_new));
@@ -2285,7 +2287,7 @@ static bool store_purchase(int item)
 	}
 
 	/* Describe the object (fully) */
-	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	/* Attempt to buy it */
 	if (this_store != STORE_HOME)
@@ -2424,7 +2426,7 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 /*	msg_format("Value is %d", value); */
 
 	/* Get the description all over again */
-	object_desc(o_name, sizeof(o_name), &sold_item, TRUE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), &sold_item, ODESC_PREFIX | ODESC_FULL);
 	
 	/* Describe the result (in message buffer) */
 	msg_format("You sold %s (%c) for %ld gold.",
@@ -2585,7 +2587,7 @@ static void store_sell(void)
 	}
 
 	/* Get a full description */
-	object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	/* Real store */
 	if (this_store != STORE_HOME)
@@ -2709,7 +2711,7 @@ static bool store_overflow(void)
 		object_copy(i_ptr, o_ptr);
 
 		/* Describe it */
-		object_desc(o_name, sizeof(o_name), i_ptr, TRUE, ODESC_FULL);
+		object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
 
 		/* Message */
 		msg_format("You drop %s (%c).", o_name, index_to_label(item));

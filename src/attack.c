@@ -242,8 +242,7 @@ static int get_brand_mult(object_type *o_ptr, const monster_type *m_ptr,
 			if (s_ptr->active_verb && secondary)
 			{
 				char o_name[40];
-				object_desc(o_name, sizeof(o_name), o_ptr,
-						FALSE, ODESC_BASE);
+				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 				msg_format("Your %s %s!", o_name,
 						s_ptr->active_verb);
 			}
@@ -564,8 +563,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	sound(MSG_SHOOT);
 
 	/* Describe the object */
-	object_desc(o_name, sizeof(o_name), o_ptr, FALSE,
-			ODESC_FULL | ODESC_SINGULAR);
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL | ODESC_SINGULAR);
 
 	/* Find the color and symbol for the object for throwing */
 	missile_attr = object_attr(o_ptr);
@@ -887,7 +885,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 
 
 	/* Description */
-	object_desc(o_name, sizeof(o_name), i_ptr, FALSE, ODESC_FULL);
+	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_FULL);
 
 	/* Find the color and symbol for the object for throwing */
 	missile_attr = object_attr(i_ptr);

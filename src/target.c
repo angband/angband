@@ -670,7 +670,8 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 					next_o_idx = o_ptr->next_o_idx;
 
 					/* Obtain an object description */
-					object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
+					object_desc(o_name, sizeof(o_name), o_ptr,
+								ODESC_PREFIX | ODESC_FULL);
 
 					/* Describe the object */
 					if (p_ptr->wizard)
@@ -797,7 +798,8 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode, cptr inf
 				boring = FALSE;
 
 				/* Obtain an object description */
-				object_desc(o_name, sizeof(o_name), o_ptr, TRUE, ODESC_FULL);
+				object_desc(o_name, sizeof(o_name), o_ptr,
+							ODESC_PREFIX | ODESC_FULL);
 
 				/* Describe the object */
 				if (p_ptr->wizard)

@@ -459,7 +459,7 @@ static void object_notice_defence_plusses(object_type *o_ptr)
 	{
 		char o_name[80];
 
-		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 		message_format(MSG_PSEUDOID, 0,
 				"You know more about the %s you are wearing.",
 				o_name);
@@ -484,7 +484,7 @@ void object_notice_attack_plusses(object_type *o_ptr)
 	{
 		char o_name[80];
 
-		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 		message_format(MSG_PSEUDOID, 0,
 				"You know more about the %s you are wielding.",
 				o_name);
@@ -494,7 +494,7 @@ void object_notice_attack_plusses(object_type *o_ptr)
 	{
 		char o_name[80];
 
-		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 		message_format(MSG_PSEUDOID, 0, "Your %s glows.", o_name);
 	}
 
@@ -745,7 +745,7 @@ static void object_notice_after_time(void)
 		char o_name[80];
 		u32b f[OBJ_FLAG_N];
 
-		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 		object_flags(o_ptr, f);
 
 		for (j = 0; j < N_ELEMENTS(notice_msgs); j++)
@@ -806,8 +806,7 @@ void wieldeds_notice_flag(int flagset, u32b flag)
 			!(o_ptr->known_flags[flagset] & flag))
 		{
 			char o_name[80];
-			object_desc(o_name, sizeof(o_name), o_ptr, FALSE,
-						ODESC_BASE);
+			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 			
 			/* Notice flags */
 			object_notice_flags(o_ptr, flagset, flag);
@@ -1037,7 +1036,7 @@ void sense_inventory(void)
 		else
 			text = inscrip_text[feel];
 
-		object_desc(o_name, sizeof(o_name), o_ptr, FALSE, ODESC_BASE);
+		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 
 		/* Average pseudo-ID means full ID */
 		if (feel == INSCRIP_AVERAGE)
