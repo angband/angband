@@ -232,6 +232,8 @@ typedef struct
 	u32b update;		/* Pending Updates (bit flags) */
 	u32b redraw;		/* Normal Redraws (bit flags) */
 
+	u32b player_turn;	/* Number of player turns (including resting) */
+	u32b resting_turn;	/* Number of player turns spent resting */
 
 	/* Generation fields (for quick start) */
 	s32b au_birth;          /* Birth gold when option birth_money is false */

@@ -389,9 +389,14 @@ void wr_player(void)
 	/* Read all the effects, in a loop */
 	for (i = 0; i < TMD_MAX; i++)
 		wr_s16b(p_ptr->timed[i]);
+
+	/* # of player turns */
+	wr_u32b(p_ptr->player_turn);
+	/* # of turns spent resting */
+	wr_u32b(p_ptr->resting_turn);
 	
 	/* Future use */
-	for (i = 0; i < 10; i++) wr_u32b(0L);
+	for (i = 0; i < 8; i++) wr_u32b(0L);
 }
 
 

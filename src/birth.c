@@ -509,6 +509,8 @@ static void player_wipe(void)
 
 	/* First turn. */
 	turn = old_turn = 1;
+	p_ptr->player_turn = 0;
+	p_ptr->resting_turn = 0;
 }
 
 /*

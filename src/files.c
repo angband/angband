@@ -550,9 +550,9 @@ static const region boundaries [] =
 	/* x   y     width, rows */
 	{ 0,   0,		0,		0 },
 	{ 1,   1,		40,		8 }, /* Name, Class, ... */
-	{ 1,  10,		22,		8 }, /* Cur Exp, Max Exp, ... */
-	{ 26, 10,		17,		8 }, /* AC, melee, ... */
-	{ 48, 10,		24,		8 }, /* skills */
+	{ 1,   9,		22,		9 }, /* Cur Exp, Max Exp, ... */
+	{ 26,  9,		17,		9 }, /* AC, melee, ... */
+	{ 48,  9,		24,		8 }, /* skills */
 	{ 21,  2,		18,		5 }, /* Age, ht, wt, ... */
 };
 
@@ -735,9 +735,10 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 	P_I(TERM_L_GREEN, "Max Exp",	"%y",	i2u(p_ptr->max_exp), END  );
 	P_I(TERM_L_GREEN, "Adv Exp",	"%y",	s2u(show_adv_exp()), END  );
 	P_I(TERM_L_GREEN, "MaxDepth",	"%y",	s2u(show_depth()), END  );
-	P_I(TERM_L_GREEN, "Turns",		"%y",	i2u(turn), END  );
+	P_I(TERM_L_GREEN, "Game Turns",	"%y",	i2u(turn), END  );
+	P_I(TERM_L_GREEN, "Player Turns","%y",	i2u(p_ptr->player_turn), END  );
+	P_I(TERM_L_GREEN, "Active Turns","%y",	i2u(p_ptr->player_turn - p_ptr->resting_turn), END  );
 	P_I(TERM_L_GREEN, "Gold",		"%y",	i2u(p_ptr->au), END  );
-	P_I(TERM_L_GREEN, "Burden",	"%.1y lbs",	f2u(p_ptr->total_weight/10.0), END  );
 	assert(i == boundaries[2].page_rows);
 	return ret;
   }
@@ -754,6 +755,7 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 	P_I(TERM_L_BLUE, "Shots", "%y/turn",	i2u(p_ptr->state.num_fire), END  );
 	P_I(TERM_L_BLUE, "Infra", "%y ft",		i2u(p_ptr->state.see_infra * 10), END  );
 	P_I(TERM_L_BLUE, "Speed", "%y",			s2u(show_speed()), END );
+	P_I(TERM_L_BLUE, "Burden","%.1y lbs",	f2u(p_ptr->total_weight/10.0), END  );
 	assert(i == boundaries[3].page_rows);
 	return ret;
   }
