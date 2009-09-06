@@ -2564,7 +2564,7 @@ F:EASY_KNOW
 E:MON_CLONE
 
 N:389:Teleport Other
-G:=:d
+G:-:d
 I:65:20:0
 W:20:0:10:350
 A:100:20 to 100
