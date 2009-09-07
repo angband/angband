@@ -788,91 +788,6 @@ static void build_streamer(int feat, int chance)
 
 
 /*
- * Build a destroyed level
- */
-static void destroy_level(void)
-{
-	int y1, x1, y, x, k, t, n;
-
-
-	/* Note destroyed levels */
-	if (OPT(cheat_room)) msg_print("Destroyed Level");
-
-	/* Drop a few epi-centers (usually about two) */
-	for (n = 0; n < randint1(5); n++)
-	{
-		/* Pick an epi-center */
-		x1 = rand_range(5, level_wid - 1 - 5);
-		y1 = rand_range(5, level_hgt -1 - 5);
-
-		/* Big area of affect */
-		for (y = (y1 - 15); y <= (y1 + 15); y++)
-		{
-			for (x = (x1 - 15); x <= (x1 + 15); x++)
-			{
-				/* Skip illegal grids */
-				if (!in_bounds_fully(y, x)) continue;
-
-				/* Extract the distance */
-				k = distance(y1, x1, y, x);
-
-				/* Stay in the circle of death */
-				if (k >= 16) continue;
-
-				/* Delete the monster (if any) */
-				delete_monster(y, x);
-
-				/* Destroy valid grids */
-				if (cave_valid_bold(y, x))
-				{
-					/* Delete objects */
-					delete_object(y, x);
-
-					/* Wall (or floor) type */
-					t = randint0(200);
-
-					/* Granite */
-					if (t < 20)
-					{
-						/* Create granite wall */
-						cave_set_feat(y, x, FEAT_WALL_EXTRA);
-					}
-
-					/* Quartz */
-					else if (t < 70)
-					{
-						/* Create quartz vein */
-						cave_set_feat(y, x, FEAT_QUARTZ);
-					}
-
-					/* Magma */
-					else if (t < 100)
-					{
-						/* Create magma vein */
-						cave_set_feat(y, x, FEAT_MAGMA);
-					}
-
-					/* Floor */
-					else
-					{
-						/* Create floor */
-						cave_set_feat(y, x, FEAT_FLOOR);
-					}
-
-					/* No longer part of a room or vault */
-					cave_info[y][x] &= ~(CAVE_ROOM | CAVE_ICKY);
-
-					/* No longer illuminated */
-					cave_info[y][x] &= ~(CAVE_GLOW);
-				}
-			}
-		}
-	}
-}
-
-
-
-/*
  * Create up to "num" objects near the given coordinates
  * Only really called by some of the "vault" routines.
  */
@@ -2982,8 +2897,6 @@ static void cave_gen(void)
 
 	bool blocks_tried[MAX_ROOMS_ROW][MAX_ROOMS_COL];
 
-	bool destroyed = FALSE;
-
 	dun_data dun_body;
 
 	/* Possibly generate fewer rooms in a smaller area via a scaling factor.
@@ -3010,20 +2923,8 @@ static void cave_gen(void)
 
 	/* Hack -- Start with basic granite */
 	for (y = 0; y < DUNGEON_HGT; y++)
-	{
 		for (x = 0; x < DUNGEON_WID; x++)
-		{
-			/* Create granite wall */
 			cave_set_feat(y, x, FEAT_WALL_EXTRA);
-		}
-	}
-
-
-	/* Possible "destroyed" level */
-	if ((p_ptr->depth > 10) && one_in_(DUN_DEST)) destroyed = TRUE;
-
-	/* Hack -- No destroyed "quest" levels */
-	if (is_quest(p_ptr->depth)) destroyed = FALSE;
 
 	/* Actual maximum number of rooms on this level */
 	dun->row_rooms = level_hgt / BLOCK_HGT;
@@ -3079,26 +2980,6 @@ static void cave_gen(void)
 		
 		blocks_tried[by][bx] = TRUE;
 
-#if 0
-		/* Align dungeon rooms */
-		if (dungeon_align)
-		{
-			/* Slide some rooms right */
-			if ((bx % 3) == 0) bx++;
-
-			/* Slide some rooms left */
-			if ((bx % 3) == 2) bx--;
-		}
-#endif
-
-		/* Destroyed levels are boring */
-		if (destroyed)
-		{
-			/* Attempt a "trivial" room, then continue */
-			room_build(by, bx, 1);
-			continue;
-		}
-
 		/* Attempt an "unusual" room */
 		if (randint0(DUN_UNUSUAL) < p_ptr->depth)
 		{
@@ -3133,9 +3014,6 @@ static void cave_gen(void)
 
 		/* Attempt a trivial room */
 		if (room_build(by, bx, 1)) continue;
-
-		/* We failed to create a room */
-		/*i--;*/
 	}
 
 	/* Special boundary walls -- Bottom */
@@ -3211,10 +3089,6 @@ static void cave_gen(void)
 	{
 		build_streamer(FEAT_QUARTZ, DUN_STR_QC);
 	}
-
-
-	/* Destroy the level if necessary */
-	if (destroyed) destroy_level();
 
 
 	/* Place 3 or 4 down stairs near some walls */
