@@ -164,6 +164,7 @@ static command_type cmd_hidden[] =
 	{ "Check knowledge",          '|', CMD_NULL, do_cmd_knowledge },
 	{ "Display menu of actions", '\n', CMD_NULL, do_cmd_menu },
 	{ "Display menu of actions", '\r', CMD_NULL, do_cmd_menu },
+	{ "Center map",              KTRL('L'), CMD_NULL, do_cmd_center_map },
 
 	{ "Toggle wizard mode",  KTRL('W'), CMD_NULL, do_cmd_wizard },
 	{ "Repeat previous command",  KTRL('V'), CMD_REPEAT, NULL },

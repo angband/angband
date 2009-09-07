@@ -95,6 +95,7 @@ void do_cmd_locate(void);
 bool ang_sort_comp_hook(const void *u, const void *v, int a, int b);
 void ang_sort_swap_hook(void *u, void *v, int a, int b);
 void do_cmd_query_symbol(void);
+void do_cmd_center_map(void);
 
 /* cmd4.c */
 extern void do_cmd_redraw(void);

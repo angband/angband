@@ -19,6 +19,8 @@
 #include "cmds.h"
 #include "object/tvalsval.h"
 
+/* Private function that is shared by verify_panel() and center_panel() */
+void verify_panel_int(bool centered);
 
 /*
  * Advance experience levels and print experience
@@ -314,6 +316,16 @@ bool change_panel(int dir)
  */
 void verify_panel(void)
 {
+	verify_panel_int(OPT(center_player));
+}
+
+void center_panel(void)
+{
+	verify_panel_int(TRUE);
+}
+
+void verify_panel_int(bool centered)
+{
 	int wy, wx;
 	int screen_hgt, screen_wid;
 
@@ -349,7 +361,7 @@ void verify_panel(void)
 
 
 		/* Scroll screen vertically when off-center */
-		if (OPT(center_player) && !p_ptr->running && (py != wy + panel_hgt))
+		if (centered && !p_ptr->running && (py != wy + panel_hgt))
 			wy = py - panel_hgt;
 
 		/* Scroll screen vertically when 3 grids from top/bottom edge */
@@ -358,7 +370,7 @@ void verify_panel(void)
 
 
 		/* Scroll screen horizontally when off-center */
-		if (OPT(center_player) && !p_ptr->running && (px != wx + panel_wid))
+		if (centered && !p_ptr->running && (px != wx + panel_wid))
 			wx = px - panel_wid;
 
 		/* Scroll screen horizontally when 3 grids from left/right edge */

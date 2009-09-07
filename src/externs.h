@@ -664,6 +664,7 @@ bool modify_panel(term *t, int wy, int wx);
 bool adjust_panel(int y, int x);
 bool change_panel(int dir);
 void verify_panel(void);
+void center_panel(void);
 int motion_dir(int y1, int x1, int y2, int x2);
 int target_dir(char ch);
 bool get_rep_dir(int *dp);

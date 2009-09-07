@@ -1030,3 +1030,9 @@ void do_cmd_query_symbol(void)
 	/* Free the "who" array */
 	FREE(who);
 }
+
+/* Centers the map on the player */
+void do_cmd_center_map(void)
+{
+	center_panel();
+}
