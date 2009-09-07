@@ -1150,9 +1150,10 @@ u32b ego_xtra_power_list(void)
  */
 u32b get_new_attr(u32b flags, const u32b attrs[])
 {
-	int i, options = 0, n = N_ELEMENTS(attrs);
+	size_t i;
+	int options = 0;
 	u32b flag = 0;
-	for (i = 0; i < n; i++)
+	for (i = 0; i < N_ELEMENTS(attrs); i++)
 	{
 		/* skip this one if the flag is already present */
 		if (flags & attrs[i]) continue;
