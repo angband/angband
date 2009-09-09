@@ -141,69 +141,81 @@ depgen:
   defines.h option.h types.h object/constants.h object/types.h \
   object/object.h monster/types.h player/types.h player/player.h store.h \
   ui.h z-type.h externs.h object/tvalsval.h
-./monster/melee1.o: monster/melee1.c angband.h h-basic.h z-file.h z-form.h z-util.h \
-  z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h object/constants.h object/types.h \
+./monster/melee1.o: monster/melee1.c angband.h h-basic.h z-file.h h-basic.h \
+  z-form.h h-basic.h z-util.h h-basic.h z-virt.h h-basic.h z-rand.h \
+  h-basic.h z-term.h h-basic.h ui-event.h z-quark.h z-msg.h h-basic.h \
+  config.h defines.h option.h types.h object/constants.h object/types.h \
   object/object.h monster/types.h player/types.h player/player.h store.h \
   ui.h z-type.h externs.h object/tvalsval.h
-./monster/melee2.o: monster/melee2.c angband.h h-basic.h z-file.h z-form.h z-util.h \
-  z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
-  defines.h option.h types.h object/constants.h object/types.h \
+./monster/melee2.o: monster/melee2.c angband.h h-basic.h z-file.h h-basic.h \
+  z-form.h h-basic.h z-util.h h-basic.h z-virt.h h-basic.h z-rand.h \
+  h-basic.h z-term.h h-basic.h ui-event.h z-quark.h z-msg.h h-basic.h \
+  config.h defines.h option.h types.h object/constants.h object/types.h \
   object/object.h monster/types.h player/types.h player/player.h store.h \
   ui.h z-type.h externs.h bitflag.h object/tvalsval.h monster/constants.h
-./monster/monster1.o: monster/monster1.c angband.h h-basic.h z-file.h z-form.h \
-  z-util.h z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h \
+./monster/monster1.o: monster/monster1.c angband.h h-basic.h z-file.h h-basic.h \
+  z-form.h h-basic.h z-util.h h-basic.h z-virt.h h-basic.h z-rand.h \
+  h-basic.h z-term.h h-basic.h ui-event.h z-quark.h z-msg.h h-basic.h \
   config.h defines.h option.h types.h object/constants.h object/types.h \
   object/object.h monster/types.h player/types.h player/player.h store.h \
   ui.h z-type.h externs.h object/tvalsval.h
-./monster/monster2.o: monster/monster2.c angband.h h-basic.h z-file.h z-form.h \
-  z-util.h z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h \
+./monster/monster2.o: monster/monster2.c angband.h h-basic.h z-file.h h-basic.h \
+  z-form.h h-basic.h z-util.h h-basic.h z-virt.h h-basic.h z-rand.h \
+  h-basic.h z-term.h h-basic.h ui-event.h z-quark.h z-msg.h h-basic.h \
   config.h defines.h option.h types.h object/constants.h object/types.h \
   object/object.h monster/types.h player/types.h player/player.h store.h \
   ui.h z-type.h externs.h object/tvalsval.h
-./object/identify.o: object/identify.c angband.h h-basic.h z-file.h z-form.h \
-  z-util.h z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h \
+./object/identify.o: object/identify.c angband.h h-basic.h z-file.h h-basic.h \
+  z-form.h h-basic.h z-util.h h-basic.h z-virt.h h-basic.h z-rand.h \
+  h-basic.h z-term.h h-basic.h ui-event.h z-quark.h z-msg.h h-basic.h \
+  config.h defines.h option.h types.h object/constants.h object/types.h \
+  object/object.h monster/types.h player/types.h player/player.h store.h \
+  ui.h z-type.h externs.h object/tvalsval.h game-event.h
+./object/obj-desc.o: object/obj-desc.c angband.h h-basic.h z-file.h h-basic.h \
+  z-form.h h-basic.h z-util.h h-basic.h z-virt.h h-basic.h z-rand.h \
+  h-basic.h z-term.h h-basic.h ui-event.h z-quark.h z-msg.h h-basic.h \
   config.h defines.h option.h types.h object/constants.h object/types.h \
   object/object.h monster/types.h player/types.h player/player.h store.h \
   ui.h z-type.h externs.h object/tvalsval.h
-./object/obj-desc.o: object/obj-desc.c angband.h h-basic.h z-file.h z-form.h \
-  z-util.h z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h \
-  config.h defines.h option.h types.h object/constants.h object/types.h \
-  object/object.h monster/types.h player/types.h player/player.h store.h \
-  ui.h z-type.h externs.h object/tvalsval.h
-./object/obj-info.o: object/obj-info.c angband.h h-basic.h z-file.h z-form.h \
-  z-util.h z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h \
+./object/obj-info.o: object/obj-info.c angband.h h-basic.h z-file.h h-basic.h \
+  z-form.h h-basic.h z-util.h h-basic.h z-virt.h h-basic.h z-rand.h \
+  h-basic.h z-term.h h-basic.h ui-event.h z-quark.h z-msg.h h-basic.h \
   config.h defines.h option.h types.h object/constants.h object/types.h \
   object/object.h monster/types.h player/types.h player/player.h store.h \
   ui.h z-type.h externs.h effects.h list-effects.h cmds.h game-cmd.h \
   object/tvalsval.h
-./object/obj-make.o: object/obj-make.c angband.h h-basic.h z-file.h z-form.h \
-  z-util.h z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h \
+./object/obj-make.o: object/obj-make.c angband.h h-basic.h z-file.h h-basic.h \
+  z-form.h h-basic.h z-util.h h-basic.h z-virt.h h-basic.h z-rand.h \
+  h-basic.h z-term.h h-basic.h ui-event.h z-quark.h z-msg.h h-basic.h \
   config.h defines.h option.h types.h object/constants.h object/types.h \
   object/object.h monster/types.h player/types.h player/player.h store.h \
   ui.h z-type.h externs.h object/tvalsval.h
-./object/obj-power.o: object/obj-power.c angband.h h-basic.h z-file.h z-form.h \
-  z-util.h z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h \
+./object/obj-power.o: object/obj-power.c angband.h h-basic.h z-file.h h-basic.h \
+  z-form.h h-basic.h z-util.h h-basic.h z-virt.h h-basic.h z-rand.h \
+  h-basic.h z-term.h h-basic.h ui-event.h z-quark.h z-msg.h h-basic.h \
   config.h defines.h option.h types.h object/constants.h object/types.h \
   object/object.h monster/types.h player/types.h player/player.h store.h \
-  ui.h z-type.h externs.h object/tvalsval.h init.h effects.h \
+  ui.h z-type.h externs.h object/tvalsval.h init.h h-basic.h effects.h \
   list-effects.h
-./object/obj-ui.o: object/obj-ui.c angband.h h-basic.h z-file.h z-form.h z-util.h \
-  z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
+./object/obj-ui.o: object/obj-ui.c angband.h h-basic.h z-file.h h-basic.h z-form.h \
+  h-basic.h z-util.h h-basic.h z-virt.h h-basic.h z-rand.h h-basic.h \
+  z-term.h h-basic.h ui-event.h z-quark.h z-msg.h h-basic.h config.h \
   defines.h option.h types.h object/constants.h object/types.h \
   object/object.h monster/types.h player/types.h player/player.h store.h \
   ui.h z-type.h externs.h object/tvalsval.h
-./object/obj-util.o: object/obj-util.c angband.h h-basic.h z-file.h z-form.h \
-  z-util.h z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h \
+./object/obj-util.o: object/obj-util.c angband.h h-basic.h z-file.h h-basic.h \
+  z-form.h h-basic.h z-util.h h-basic.h z-virt.h h-basic.h z-rand.h \
+  h-basic.h z-term.h h-basic.h ui-event.h z-quark.h z-msg.h h-basic.h \
   config.h defines.h option.h types.h object/constants.h object/types.h \
   object/object.h monster/types.h player/types.h player/player.h store.h \
-  ui.h z-type.h externs.h randname.h object/tvalsval.h effects.h \
-  list-effects.h
-./object/randart.o: object/randart.c angband.h h-basic.h z-file.h z-form.h \
-  z-util.h z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h \
+  ui.h z-type.h externs.h object/tvalsval.h effects.h list-effects.h \
+  game-cmd.h
+./object/randart.o: object/randart.c angband.h h-basic.h z-file.h h-basic.h \
+  z-form.h h-basic.h z-util.h h-basic.h z-virt.h h-basic.h z-rand.h \
+  h-basic.h z-term.h h-basic.h ui-event.h z-quark.h z-msg.h h-basic.h \
   config.h defines.h option.h types.h object/constants.h object/types.h \
   object/object.h monster/types.h player/types.h player/player.h store.h \
-  ui.h z-type.h externs.h object/tvalsval.h init.h randname.h
+  ui.h z-type.h externs.h object/tvalsval.h init.h h-basic.h
 ./option.o: option.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
   defines.h option.h types.h object/constants.h object/types.h \
@@ -213,7 +225,7 @@ depgen:
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
   defines.h option.h types.h object/constants.h object/types.h \
   object/object.h monster/types.h player/types.h player/player.h store.h \
-  ui.h z-type.h externs.h randname.h
+  ui.h z-type.h externs.h
 ./pathfind.o: pathfind.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
   defines.h option.h types.h object/constants.h object/types.h \
@@ -224,21 +236,24 @@ depgen:
   option.h types.h object/constants.h object/types.h object/object.h \
   monster/types.h player/types.h player/player.h store.h ui.h z-type.h \
   externs.h
-./player/calcs.o: player/calcs.c angband.h h-basic.h z-file.h z-form.h z-util.h \
-  z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
+./player/calcs.o: player/calcs.c angband.h h-basic.h z-file.h h-basic.h z-form.h \
+  h-basic.h z-util.h h-basic.h z-virt.h h-basic.h z-rand.h h-basic.h \
+  z-term.h h-basic.h ui-event.h z-quark.h z-msg.h h-basic.h config.h \
   defines.h option.h types.h object/constants.h object/types.h \
   object/object.h monster/types.h player/types.h player/player.h store.h \
   ui.h z-type.h externs.h game-event.h object/tvalsval.h
-./player/timed.o: player/timed.c angband.h h-basic.h z-file.h z-form.h z-util.h \
-  z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
+./player/timed.o: player/timed.c angband.h h-basic.h z-file.h h-basic.h z-form.h \
+  h-basic.h z-util.h h-basic.h z-virt.h h-basic.h z-rand.h h-basic.h \
+  z-term.h h-basic.h ui-event.h z-quark.h z-msg.h h-basic.h config.h \
   defines.h option.h types.h object/constants.h object/types.h \
   object/object.h monster/types.h player/types.h player/player.h store.h \
   ui.h z-type.h externs.h
-./player/util.o: player/util.c angband.h h-basic.h z-file.h z-form.h z-util.h \
-  z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
+./player/util.o: player/util.c angband.h h-basic.h z-file.h h-basic.h z-form.h \
+  h-basic.h z-util.h h-basic.h z-virt.h h-basic.h z-rand.h h-basic.h \
+  z-term.h h-basic.h ui-event.h z-quark.h z-msg.h h-basic.h config.h \
   defines.h option.h types.h object/constants.h object/types.h \
   object/object.h monster/types.h player/types.h player/player.h store.h \
-  ui.h z-type.h externs.h
+  ui.h z-type.h externs.h object/tvalsval.h
 ./score.o: score.c angband.h h-basic.h z-file.h z-form.h z-util.h z-virt.h \
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
   option.h types.h object/constants.h object/types.h object/object.h \
@@ -319,7 +334,7 @@ depgen:
   z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h defines.h \
   option.h types.h object/constants.h object/types.h object/object.h \
   monster/types.h player/types.h player/player.h store.h ui.h z-type.h \
-  externs.h game-event.h randname.h
+  externs.h game-event.h
 ./variable.o: variable.c angband.h h-basic.h z-file.h z-form.h z-util.h \
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
   defines.h option.h types.h object/constants.h object/types.h \
