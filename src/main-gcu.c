@@ -484,7 +484,7 @@ void do_gcu_resize(void)
 
 		/* If we can resize the curses window, then resize the Term */
 		get_gcu_term_size(i, &rows, &cols, &y, &x);
-		if(wresize(data[i].win, rows, cols) == OK)
+		if (wresize(data[i].win, rows, cols) == OK)
 			Term_resize(cols, rows);
 
 		/* Activate the old term */
@@ -545,7 +545,7 @@ static errr Term_xtra_gcu_event(int v)
 		halfdelay(10);
 		do {
 			i = getch();
-		} while(i == KEY_RESIZE);
+		} while (i == KEY_RESIZE);
 		cbreak();
 		do_gcu_resize();
 		if (i == ERR) return (1);
@@ -570,7 +570,7 @@ static errr Term_xtra_gcu_event(int v)
 	 * available; this seems like an acceptable risk to fix problems associated
 	 * with various terminal emulators (I'm looking at you PuTTY).
 	 */
-	if(i == 27) /* ESC */
+	if (i == 27) /* ESC */
 	{
 		nodelay(stdscr, TRUE);
 		j = getch();
@@ -665,7 +665,7 @@ static errr Term_xtra_gcu_react(void)
 						  angband_color_table[i][3] * 1000 / 255);
 		}
 	}
-	else if(COLORS == 256)
+	else if (COLORS == 256)
 	{
 		/* If we have 256 colors, find the best matches */
 		set_256color_table(0, 0);    /* black */
@@ -984,7 +984,7 @@ errr init_gcu(int argc, char **argv)
 #ifdef HAVE_USE_DEFAULT_COLORS
 
 	/* Should we use curses' "default color" */
-	if(use_default_colors() == OK)
+	if (use_default_colors() == OK)
 		bg_color = -1;
 
 #endif
@@ -1057,7 +1057,7 @@ errr init_gcu(int argc, char **argv)
 
 #ifdef A_ALTCHARSET
 	/* Build a quick access table for the "alternate character set". */
-	if(use_alt_charset)
+	if (use_alt_charset)
 	{
 		acs_table[1] = ACS_DIAMOND;    acs_table[16] = ACS_S1;
 		acs_table[2] = ACS_CKBOARD;    acs_table[18] = ACS_HLINE;
