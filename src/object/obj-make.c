@@ -1320,11 +1320,11 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 		object_flags(o_ptr, flags);
 
 		/* Extra powers */
-		if(e_ptr->xtra == OBJECT_XTRA_TYPE_SUSTAIN)
+		if (e_ptr->xtra == OBJECT_XTRA_TYPE_SUSTAIN)
 			o_ptr->flags[1] |= get_new_attr(flags[1], ego_sustains);
-		else if(e_ptr->xtra == OBJECT_XTRA_TYPE_RESIST)
+		else if (e_ptr->xtra == OBJECT_XTRA_TYPE_RESIST)
 			o_ptr->flags[1] |= get_new_attr(flags[1], ego_resists);
-		else if(e_ptr->xtra == OBJECT_XTRA_TYPE_POWER)
+		else if (e_ptr->xtra == OBJECT_XTRA_TYPE_POWER)
 			o_ptr->flags[2] |= get_new_attr(flags[2], ego_powers);
 
 		/* Hack -- acquire "cursed" flags */
