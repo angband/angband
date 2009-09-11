@@ -22,7 +22,6 @@ HEADERS = \
 	init.h \
 	main.h \
 	option.h \
-	randname.h \
 	types.h \
 	ui-event.h \
 	ui.h \
