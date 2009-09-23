@@ -1148,12 +1148,12 @@ u32b ego_xtra_power_list(void)
  * the array, and returns an entry from attrs, or 0 if there are no
  * new attrs.
  */
-u32b get_new_attr(u32b flags, const u32b attrs[])
+u32b get_new_attr(u32b flags, const u32b attrs[], size_t size)
 {
 	size_t i;
 	int options = 0;
 	u32b flag = 0;
-	for (i = 0; i < N_ELEMENTS(attrs); i++)
+	for (i = 0; i < size; i++)
 	{
 		/* skip this one if the flag is already present */
 		if (flags & attrs[i]) continue;
@@ -1321,11 +1321,14 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 
 		/* Extra powers */
 		if (e_ptr->xtra == OBJECT_XTRA_TYPE_SUSTAIN)
-			o_ptr->flags[1] |= get_new_attr(flags[1], ego_sustains);
+			o_ptr->flags[1] |= get_new_attr(flags[1], ego_sustains,
+											N_ELEMENTS(ego_sustains));
 		else if (e_ptr->xtra == OBJECT_XTRA_TYPE_RESIST)
-			o_ptr->flags[1] |= get_new_attr(flags[1], ego_resists);
+			o_ptr->flags[1] |= get_new_attr(flags[1], ego_resists,
+											N_ELEMENTS(ego_resists));
 		else if (e_ptr->xtra == OBJECT_XTRA_TYPE_POWER)
-			o_ptr->flags[2] |= get_new_attr(flags[2], ego_powers);
+			o_ptr->flags[2] |= get_new_attr(flags[2], ego_powers,
+											N_ELEMENTS(ego_powers));
 
 		/* Hack -- acquire "cursed" flags */
 		if (cursed_p(e_ptr))
