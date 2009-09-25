@@ -366,8 +366,8 @@ byte monster_health_attr(void)
 	
 	/* Tracking an unseen, hallucinatory, or dead monster */
 	else if ((!mon_list[p_ptr->health_who].ml) ||
-		    (p_ptr->timed[TMD_IMAGE]) ||
-		    (!mon_list[p_ptr->health_who].hp < 0))
+			(p_ptr->timed[TMD_IMAGE]) ||
+			(mon_list[p_ptr->health_who].hp < 0))
 	{
 		/* The monster health is "unknown" */
 		attr = TERM_WHITE;
@@ -436,8 +436,8 @@ static void prt_health(int row, int col)
 
 	/* Tracking an unseen, hallucinatory, or dead monster */
 	else if ((!mon_list[p_ptr->health_who].ml) || /* Unseen */
-		    (p_ptr->timed[TMD_IMAGE]) || /* Hallucination */
-		    (!mon_list[p_ptr->health_who].hp < 0)) /* Dead (?) */
+			(p_ptr->timed[TMD_IMAGE]) || /* Hallucination */
+			(mon_list[p_ptr->health_who].hp < 0)) /* Dead (?) */
 	{
 		/* The monster health is "unknown" */
 		Term_putstr(col, row, 12, attr, "[----------]");
