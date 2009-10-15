@@ -2777,6 +2777,75 @@ bool get_check(cptr prompt)
 	return (TRUE);
 }
 
+/* TODO: refactor get_check() in terms of get_char() */
+/*
+ * Ask the user to respond with a character. Options is a constant string,
+ * e.g. "yns"; len is the length of the constant string, and fallback should
+ * be the default answer if the user hits escape or an invalid key.
+ *
+ * Example: get_char("Study? ", "yns", 3, 'n')
+ *     This prompts "Study? [yns]" and defaults to 'n'.
+ *
+ */
+char get_char(cptr prompt, const char *options, size_t len, char fallback)
+{
+	size_t i;
+	char button[4], buf[80], key;
+	bool repeat = FALSE;
+  
+	/* Paranoia XXX XXX XXX */
+	message_flush();
+
+	/* Hack -- Build a "useful" prompt */
+	strnfmt(buf, 78, "%.70s[%s] ", prompt, options);
+
+	/* Hack - kill the repeat button */
+	if (button_kill('n')) repeat = TRUE;
+	
+	/* Make some buttons */
+	for (i=0; i < len; i++)
+	{
+		strnfmt(button, 4, "[%c]", options[i]);
+		button_add(button, options[i]);
+	}
+	redraw_stuff();
+  
+	/* Prompt for it */
+	prt(buf, 0, 0);
+
+	/* Get an acceptable answer */
+	while (TRUE)
+	{
+		key = inkey_ex().key;
+
+		/* Lowercase answer if necessary */
+		if (key >= 'A' && key <= 'Z') key += 32;
+
+		/* See if key is in our options string */
+		if (strchr(options, key)) break;
+
+		/* If we want to escape, return the fallback */
+		if (key == ESCAPE || OPT(quick_messages)) {
+			key = fallback;
+			break;
+		}
+		bell("Illegal response!");
+	}
+
+	/* Kill the buttons */
+	for (i=0; i < len; i++) button_kill(options[i]);
+
+	/* Hack - restore the repeat button */
+	if (repeat) button_add("[Rpt]", 'n');
+	redraw_stuff();
+  
+	/* Erase the prompt */
+	prt("", 0, 0);
+
+	/* Success */
+	return key;
+}
+
 
 /**
  * Text-native way of getting a filename.

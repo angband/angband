@@ -287,21 +287,17 @@ static const room_data room[ROOM_MAX] =
 static void correct_dir(int *rdir, int *cdir, int y1, int x1, int y2, int x2)
 {
 	/* Extract vertical and horizontal directions */
-	*rdir = (y1 == y2) ? 0 : (y1 < y2) ? 1 : -1;
-	*cdir = (x1 == x2) ? 0 : (x1 < x2) ? 1 : -1;
+	*rdir = CMP(y2, y1);
+	*cdir = CMP(x2, x1);
 
-	/* Never move diagonally */
-	if (*rdir && *cdir)
-	{
-		if (randint0(100) < 50)
-		{
-			*rdir = 0;
-		}
-		else
-		{
-			*cdir = 0;
-		}
-	}
+	/* If we only have one direction to go, then we're done */
+	if (!*rdir || !*cdir) return;
+
+	/* If we need to go diagonally, then choose a random direction */
+	if (randint0(100) < 50)
+		*rdir = 0;
+	else
+		*cdir = 0;
 }
 
 
@@ -2912,6 +2908,7 @@ static void cave_gen(void)
 	else if (i < 5) size_percent = 90;
 	else if (i < 6) size_percent = 95;
 	else size_percent = 100;
+	size_percent = 100;
 
 	/* scale the various generation variables */
 	num_rooms = DUN_ROOMS * size_percent / 100;
@@ -2932,14 +2929,8 @@ static void cave_gen(void)
 
 	/* Initialize the room table */
 	for (by = 0; by < dun->row_rooms; by++)
-	{
 		for (bx = 0; bx < dun->col_rooms; bx++)
-		{
-			dun->room_map[by][bx] = FALSE;
-			blocks_tried[by][bx]  = FALSE;
-		}
-	}
-
+			dun->room_map[by][bx] = blocks_tried[by][bx]  = FALSE;
 
 	/* No "crowded" rooms yet */
 	dun->crowded = FALSE;

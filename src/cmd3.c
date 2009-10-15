@@ -283,6 +283,7 @@ void textui_cmd_destroy(void)
 
 	object_type obj_to_destroy;
 
+	char result;
 	char o_name[120];
 	char out_val[160];
 
@@ -303,15 +304,6 @@ void textui_cmd_destroy(void)
 	o_ptr = object_from_item_idx(item);
 
 	/* Ask if player would prefer squelching instead of destruction */
-	if (squelch_interactive(o_ptr))
-	{
-		p_ptr->notice |= PN_SQUELCH;
-
-		/* If the item is not equipped, we can rely on it being dropped
-		   and ignored, otherwise we should continue on to check if
-		   we should still destroy it. */
-		if (item < INVEN_WIELD) return;
-	}
 
 	/* Get a quantity */
 	amt = get_quantity(NULL, o_ptr->number);
@@ -324,10 +316,20 @@ void textui_cmd_destroy(void)
 
 	/* Verify destruction */
 	strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", o_name);
-	if (!get_check(out_val)) return;
+	
+	result = get_char(out_val, "yns", 3, 'n');
 
-	/* Tell the game to destroy the item. */
-	cmd_insert(CMD_DESTROY, item, amt);
+	if (result == 'y')
+		cmd_insert(CMD_DESTROY, item, amt);
+	else if (result == 's' && squelch_interactive(o_ptr))
+	{
+		p_ptr->notice |= PN_SQUELCH;
+		
+		/* If the item is not equipped, we can rely on it being dropped and */
+		/* ignored, otherwise we should continue on to check if we should */
+		/* still destroy it. */
+		if (item < INVEN_WIELD) return;
+	}
 }
 
 void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
