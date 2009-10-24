@@ -4068,7 +4068,7 @@ F:OPEN_DOOR | BASH_DOOR
 F:NO_CONF | NO_SLEEP
 S:1_IN_8
 S:BR_POIS
-D:An evil reptile that preys on unsuspecting travellers.  Its eyes stare deeply
+D:A vile reptile that preys on unsuspecting travellers.  Its eyes stare deeply
 D: at you and your soul starts to wilt!
 
 N:309:Ice troll

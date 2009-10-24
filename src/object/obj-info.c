@@ -154,7 +154,7 @@ static const flag_type f3_misc[] =
 	{ TR2_FEATHER, "Feather Falling" },
 	{ TR2_REGEN, "Speeds regeneration" },
 	{ TR2_FREE_ACT, "Prevents paralysis" },
-	{ TR2_HOLD_LIFE, "Stops experience drain" },
+	{ TR2_HOLD_LIFE, "Sustains your life force" },
 	{ TR2_TELEPATHY, "Grants telepathy" },
 	{ TR2_SEE_INVIS, "Grants the ability to see invisible things" },
 	{ TR2_AGGRAVATE, "Aggravates creatures nearby" },
