@@ -589,6 +589,10 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 
 	/* Do effect */
 	used = effect_do(effect, &ident, was_aware, dir, beam_chance(o_ptr->tval));
+
+	/* If the item is a null pointer or has been wiped, be done now */
+	if (!o_ptr || o_ptr->k_idx <= 1) return;
+
 	if (ident) object_notice_effect(o_ptr);
 
 	/* Food feeds the player */
@@ -620,6 +624,9 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	{
 		object_flavor_tried(o_ptr);
 	}
+
+	/* If there are no more of the item left, then we're done. */
+	if (!o_ptr->number) return;
 
 	/* Chargeables act differently to single-used items when not used up */
 	if (used && use == USE_CHARGE)
