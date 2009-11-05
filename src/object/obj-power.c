@@ -118,16 +118,19 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 	/* Look in the cache to see if we know this one yet */
 	for (i = 0; slay_cache[i].flags; i++)
 	{
-		if (slay_cache[i].flags == s_index) 
-		{
-			sv = slay_cache[i].value;
-			LOG_PRINT("Slay cache hit\n");
-		}
+		if (slay_cache[i].flags == s_index) sv = slay_cache[i].value;
 	}
 
-	/* If it's cached, return its value */
-	if (sv) return sv;
+	/* we know the value of 0 (no slays) is cached at the end of the array */
+	if (s_index == 0) sv = slay_cache[N_ELEMENTS(slay_cache)].value;
 
+	/* If it's cached, return its value */
+	if (sv) 
+	{
+		LOG_PRINT("Slay cache hit\n");
+		return sv;
+	}
+	
 	/*
 	 * Otherwise we need to calculate the expected average multiplier
 	 * for this combination (multiplied by the total number of
@@ -196,12 +199,12 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 	for (i = 0; slay_cache[i].flags; i++)
 	{
 	     /*	LOG_PRINT2("i is %d and flag is %d\n", i, slay_cache[i].flags); */
-		if (slay_cache[i].flags == s_index)
-		{
-			slay_cache[i].value = sv;
-			LOG_PRINT("Added to slay cache\n");
-		}
+		if (slay_cache[i].flags == s_index) slay_cache[i].value = sv;
 	}
+	/* Ensure we cache the value of 0 (no slays) */
+	if (s_index == 0) slay_cache[N_ELEMENTS(slay_cache)].value = sv;
+
+	LOG_PRINT("Added to slay cache\n");
 
 	return sv;
 }

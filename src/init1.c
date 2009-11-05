@@ -4516,6 +4516,7 @@ errr eval_e_slays(header *head)
 
 	/* add a null element to enable looping over the array */
 	slay_cache[count].flags = 0;
+	slay_cache[count].value = 0;
 
 	FREE(dupcheck);
 	
