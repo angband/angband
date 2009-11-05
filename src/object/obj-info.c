@@ -530,6 +530,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	int cnt, dam, total_dam, plus = 0;
 	int xtra_postcrit = 0, xtra_precrit = 0;
 	int crit_mult, crit_div, crit_add;
+	int str_plus, dex_plus, old_blows, new_blows, str_done = -1;
 	object_type *j_ptr = &inventory[INVEN_BOW];
 
 	u32b f[OBJ_FLAG_N];
@@ -589,6 +590,32 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 
 		text_out_c(TERM_L_GREEN, "%d ", state.num_blow);
 		text_out("blow%s/round.\n", (state.num_blow > 1) ? "s" : "");
+
+		/* Check to see if extra STR or DEX would yield extra blows */
+		old_blows = state.num_blow;
+
+		for (dex_plus = 0; dex_plus < 7; dex_plus++)
+		{
+			for (str_plus = 0; str_plus < 7; str_plus++)
+		        {
+				state.stat_ind[A_STR] += str_plus;
+				state.stat_ind[A_DEX] += dex_plus;
+				new_blows = calc_blows(o_ptr, &state);
+				if ((new_blows > old_blows) &&
+					((str_plus < str_done) || 
+					(str_done == -1)))
+				{
+					text_out("With an additional %d strength and %d dex you would get %d blows\n",
+						str_plus, dex_plus, new_blows);
+					state.stat_ind[A_STR] -= str_plus;
+					state.stat_ind[A_DEX] -= dex_plus;
+					str_done = str_plus;
+					break;
+				}
+				state.stat_ind[A_STR] -= str_plus;
+				state.stat_ind[A_DEX] -= dex_plus;
+			}
+		}
 	}
 	else
 	{
