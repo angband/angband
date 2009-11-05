@@ -400,9 +400,6 @@ void py_attack(int y, int x)
 			if (p_ptr->wizard)
 				msg_format("You do %d (out of %d) damage.", k, m_ptr->hp);
 
-			/* Damage, check for fear and death */
-			if (mon_take_hit(cave_m_idx[y][x], k, &fear, NULL)) break;
-
 			/* Confusion attack */
 			if (p_ptr->confusing)
 			{
@@ -432,8 +429,11 @@ void py_attack(int y, int x)
 					m_ptr->confused += 10 + randint0(p_ptr->lev) / 5;
 				}
 			}
-		}
 
+			/* Damage, check for fear and death */
+			if (mon_take_hit(cave_m_idx[y][x], k, &fear, NULL)) break;
+		}
+		
 		/* Player misses */
 		else
 		{
@@ -441,7 +441,6 @@ void py_attack(int y, int x)
 			message_format(MSG_MISS, m_ptr->r_idx, "You miss %s.", m_name);
 		}
 	}
-
 
 	/* Hack -- delay fear messages */
 	if (fear && m_ptr->ml)
