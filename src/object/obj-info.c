@@ -973,7 +973,7 @@ void object_info_header(const object_type *o_ptr)
 			break;
 
 		case ORIGIN_STORE:
-			text_out("(bought in a store)\n");
+			text_out("(from a store)\n");
 			break;
 
 		case ORIGIN_FLOOR:
