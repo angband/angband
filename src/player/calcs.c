@@ -515,7 +515,7 @@ static void calc_torch(void)
 /*
  * Calculate the blows a player would get, in current condition, wielding "o_ptr".
  */
-int calc_blows(object_type *o_ptr, player_state *state)
+int calc_blows(const object_type *o_ptr, player_state *state)
 {
 	int blows;
 	int str_index, dex_index;

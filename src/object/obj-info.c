@@ -594,9 +594,9 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 		/* Check to see if extra STR or DEX would yield extra blows */
 		old_blows = state.num_blow;
 
-		for (dex_plus = 0; dex_plus < 7; dex_plus++)
+		for (dex_plus = 0; dex_plus < 8; dex_plus++)
 		{
-			for (str_plus = 0; str_plus < 7; str_plus++)
+			for (str_plus = 0; str_plus < 8; str_plus++)
 		        {
 				state.stat_ind[A_STR] += str_plus;
 				state.stat_ind[A_DEX] += dex_plus;
