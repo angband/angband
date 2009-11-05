@@ -739,7 +739,11 @@ static bool describe_digger(const object_type *o_ptr, bool full)
 		int decis = chance ? (16000 / chance) : 0;
 
 		if (i == 0 && chance > 0)
-			text_out("Clears ");
+		{
+			if (sl == INVEN_WIELD) text_out("Clears ");
+			else text_out("With this item, your current weapon clears ");
+		}
+
 		if (i == 3 || (i != 0 && chance == 0))
 			text_out("and ");
 

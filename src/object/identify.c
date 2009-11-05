@@ -486,7 +486,7 @@ void object_notice_attack_plusses(object_type *o_ptr)
 
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 		message_format(MSG_PSEUDOID, 0,
-				"You know more about the %s you are wielding.",
+				"You know more about the %s you are using.",
 				o_name);
 	}
 	else if ((o_ptr->to_d || o_ptr->to_h) &&
