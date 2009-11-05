@@ -1561,7 +1561,8 @@ static void display_object(int col, int row, bool cursor, int oid)
 	c_prt(attr, o_name, row, col);
 
 	/* Show squelch status */
-	if (k_ptr->squelch)
+	if ((aware && kind_is_squelched_aware(k_ptr)) || 
+		(!aware && kind_is_squelched_unaware(k_ptr)))
 		c_put_str(attr, "Yes", row, 46);
 
 	/* Show autoinscription if around */
