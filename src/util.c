@@ -2702,8 +2702,8 @@ s16b get_quantity(cptr prompt, int max)
 		/* Extract a number */
 		amt = atoi(buf);
 
-		/* A star or letter means "all" */
-		if ((buf[0] == '*') || isalpha((unsigned char)buf[0])) amt = max;
+		/* A star means "all" */
+		if (buf[0] == '*') amt = max;
 	}
 
 	/* Enforce the maximum */
