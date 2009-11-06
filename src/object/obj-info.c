@@ -245,7 +245,7 @@ static bool describe_curses(const object_type *o_ptr, u32b f3)
 /*
  * Describe stat modifications.
  */
-static bool describe_stats(const object_type *o_ptr, u32b f1)
+static bool describe_stats(const object_type *o_ptr, u32b f1, bool full)
 {
 	cptr descs[N_ELEMENTS(f1_pval)];
 	size_t count;
@@ -255,7 +255,7 @@ static bool describe_stats(const object_type *o_ptr, u32b f1)
 	count = info_collect(f1_pval, N_ELEMENTS(f1_pval), f1, descs);
 	if (count)
 	{
-		if (object_pval_is_visible(o_ptr))
+		if (object_pval_is_visible(o_ptr) || full)
 		{
 			text_out_c((o_ptr->pval > 0) ? TERM_L_GREEN : TERM_RED,
 				 "%+i ", o_ptr->pval);
@@ -271,7 +271,7 @@ static bool describe_stats(const object_type *o_ptr, u32b f1)
 
 	if (f1 & TR0_SEARCH)
 	{
-		if (object_pval_is_visible(o_ptr))
+		if (object_pval_is_visible(o_ptr) || full)
 		{
 			text_out_c((o_ptr->pval > 0) ? TERM_L_GREEN : TERM_RED,
 				"%+i%% ", o_ptr->pval * 5);
@@ -820,7 +820,7 @@ static bool describe_digger(const object_type *o_ptr, bool full)
 }
 
 
-static bool describe_food(const object_type *o_ptr, bool subjective)
+static bool describe_food(const object_type *o_ptr, bool subjective, bool full)
 {
 	/* Describe boring bits */
 	if ((o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION) &&
@@ -830,7 +830,7 @@ static bool describe_food(const object_type *o_ptr, bool subjective)
 		int multiplier = extract_energy[p_ptr->state.speed];
 		if (!subjective) multiplier = 10;
 
-		if (object_pval_is_visible(o_ptr))
+		if (object_pval_is_visible(o_ptr) || full)
 		{
 			text_out("Nourishes for around ");
 			text_out_c(TERM_L_GREEN, "%d", (o_ptr->pval / 2) *
@@ -1134,7 +1134,7 @@ static bool object_info_out(const object_type *o_ptr, bool full, bool terse, boo
 	}	
 	
 	if (describe_curses(o_ptr, f[2])) something = TRUE;
-	if (describe_stats(o_ptr, f[0])) something = TRUE;
+	if (describe_stats(o_ptr, f[0], full)) something = TRUE;
 	if (describe_slays(f[0], o_ptr->tval)) something = TRUE;
 	if (describe_immune(f[1])) something = TRUE;
 	if (describe_ignores(f[2])) something = TRUE;
@@ -1154,7 +1154,7 @@ static bool object_info_out(const object_type *o_ptr, bool full, bool terse, boo
 		text_out("\n");
 	}
 
-	if (!terse && describe_food(o_ptr, subjective)) something = TRUE;
+	if (!terse && describe_food(o_ptr, subjective, full)) something = TRUE;
 	if (describe_light(o_ptr, f[2], terse)) something = TRUE;
 	if (!terse && subjective && describe_digger(o_ptr, full)) something = TRUE;
 
