@@ -245,24 +245,40 @@ static bool describe_curses(const object_type *o_ptr, u32b f3)
 /*
  * Describe stat modifications.
  */
-static bool describe_stats(u32b f1, int pval)
+static bool describe_stats(const object_type *o_ptr, u32b f1)
 {
 	cptr descs[N_ELEMENTS(f1_pval)];
 	size_t count;
 
-	if (!pval) return FALSE;
+	if (!o_ptr->pval) return FALSE;
 
 	count = info_collect(f1_pval, N_ELEMENTS(f1_pval), f1, descs);
 	if (count)
 	{
-		text_out_c((pval > 0) ? TERM_L_GREEN : TERM_RED, "%+i ", pval);
-		info_out_list(descs, count);
+		if (object_pval_is_visible(o_ptr))
+		{
+			text_out_c((o_ptr->pval > 0) ? TERM_L_GREEN : TERM_RED,
+				 "%+i ", o_ptr->pval);
+			info_out_list(descs, count);
+
+		}
+		else
+		{
+			text_out("Affects your ");
+			info_out_list(descs, count);
+		}
 	}
 
 	if (f1 & TR0_SEARCH)
 	{
-		text_out_c((pval > 0) ? TERM_L_GREEN : TERM_RED, "%+i%% ", pval * 5);
-		text_out("to searching.\n");
+		if (object_pval_is_visible(o_ptr))
+		{
+			text_out_c((o_ptr->pval > 0) ? TERM_L_GREEN : TERM_RED,
+				"%+i%% ", o_ptr->pval * 5);
+			text_out("to searching.\n");
+		}
+		else if (count) text_out("Also affects your searching skill.\n");
+		else text_out("Affects your searching skill.\n");
 	}
 
 	return TRUE;
@@ -601,6 +617,10 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 				state.stat_ind[A_STR] += str_plus;
 				state.stat_ind[A_DEX] += dex_plus;
 				new_blows = calc_blows(o_ptr, &state);
+
+				/* Test to make sure that this extra blow is a
+				 * new str/dex combination, not a repeat
+				 */
 				if ((new_blows > old_blows) &&
 					((str_plus < str_done) || 
 					(str_done == -1)))
@@ -810,10 +830,15 @@ static bool describe_food(const object_type *o_ptr, bool subjective)
 		int multiplier = extract_energy[p_ptr->state.speed];
 		if (!subjective) multiplier = 10;
 
-		text_out("Nourishes for around ");
-		text_out_c(TERM_L_GREEN, "%d", (o_ptr->pval / 2) * multiplier / 10);
-		text_out(" turns.\n");
-
+		if (object_pval_is_visible(o_ptr))
+		{
+			text_out("Nourishes for around ");
+			text_out_c(TERM_L_GREEN, "%d", (o_ptr->pval / 2) *
+				multiplier / 10);
+			text_out(" turns.\n");
+		}
+		else text_out("Provides some nourishment.\n");
+		
 		return TRUE;
 	}
 
@@ -1109,7 +1134,7 @@ static bool object_info_out(const object_type *o_ptr, bool full, bool terse, boo
 	}	
 	
 	if (describe_curses(o_ptr, f[2])) something = TRUE;
-	if (describe_stats(f[0], o_ptr->pval)) something = TRUE;
+	if (describe_stats(o_ptr, f[0])) something = TRUE;
 	if (describe_slays(f[0], o_ptr->tval)) something = TRUE;
 	if (describe_immune(f[1])) something = TRUE;
 	if (describe_ignores(f[2])) something = TRUE;
