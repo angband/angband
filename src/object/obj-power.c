@@ -657,7 +657,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	ADD_POWER("sustain WIS",         4, TR1_SUST_WIS, 1, sustains++);
 	ADD_POWER("sustain DEX",         7, TR1_SUST_DEX, 1, sustains++);
 	ADD_POWER("sustain CON",         8, TR1_SUST_CON, 1, sustains++);
-	ADD_POWER("sustain CHR",         1, TR1_SUST_CHR, 1,);
+	ADD_POWER("sustain CHR",         1, TR1_SUST_CHR, 1, 0);
 
 	for (i = 2; i <= sustains; i++)
 	{
@@ -686,32 +686,32 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		}
 	}
 
-	ADD_POWER("free action",		14, TR2_FREE_ACT,    2, misc++);
-	ADD_POWER("hold life",			12, TR2_HOLD_LIFE,   2, misc++);
-	ADD_POWER("feather fall",		 1, TR2_FEATHER,     2,);
-	ADD_POWER("permanent light",		 3, TR2_LITE,	     2, misc++);
-	ADD_POWER("see invisible",		10, TR2_SEE_INVIS,   2, misc++);
-	ADD_POWER("telepathy",			70, TR2_TELEPATHY,   2, misc++);
-	ADD_POWER("slow digestion",		 2, TR2_SLOW_DIGEST, 2, misc++);
-	ADD_POWER("resist acid",		 5, TR1_RES_ACID,    1, lowres++);
-	ADD_POWER("resist elec",		 6, TR1_RES_ELEC,    1, lowres++);
-	ADD_POWER("resist fire",		 6, TR1_RES_FIRE,    1, lowres++);
-	ADD_POWER("resist cold",		 6, TR1_RES_COLD,    1, lowres++);
-	ADD_POWER("resist poison",		28, TR1_RES_POIS,    1, highres++);
-	ADD_POWER("resist fear",		 6, TR1_RES_FEAR,    1, highres++);
-	ADD_POWER("resist light",		 6, TR1_RES_LITE,    1, highres++);
-	ADD_POWER("resist dark",		16, TR1_RES_DARK,    1, highres++);
-	ADD_POWER("resist blindness",		16, TR1_RES_BLIND,   1, highres++);
-	ADD_POWER("resist confusion",		24, TR1_RES_CONFU,   1, highres++);
-	ADD_POWER("resist sound",		14, TR1_RES_SOUND,   1, highres++);
-	ADD_POWER("resist shards",		 8, TR1_RES_SHARD,   1, highres++);
-	ADD_POWER("resist nexus",		15, TR1_RES_NEXUS,   1, highres++);
-	ADD_POWER("resist nether",		20, TR1_RES_NETHR,   1, highres++);
-	ADD_POWER("resist chaos",		20, TR1_RES_CHAOS,   1, highres++);
-	ADD_POWER("resist disenchantment",	20, TR1_RES_DISEN,   1, highres++);
-	ADD_POWER("regeneration",		 9, TR2_REGEN,	     2, misc++);
-	ADD_POWER("blessed",			 1, TR2_BLESSED,     2,);
-	ADD_POWER("no fuel",			 5, TR2_NO_FUEL,     2,);
+	ADD_POWER("free action",        14, TR2_FREE_ACT,    2, misc++);
+	ADD_POWER("hold life",            12, TR2_HOLD_LIFE,   2, misc++);
+	ADD_POWER("feather fall",         1, TR2_FEATHER,     2, 0);
+	ADD_POWER("permanent light",         3, TR2_LITE,         2, misc++);
+	ADD_POWER("see invisible",        10, TR2_SEE_INVIS,   2, misc++);
+	ADD_POWER("telepathy",            70, TR2_TELEPATHY,   2, misc++);
+	ADD_POWER("slow digestion",         2, TR2_SLOW_DIGEST, 2, misc++);
+	ADD_POWER("resist acid",         5, TR1_RES_ACID,    1, lowres++);
+	ADD_POWER("resist elec",         6, TR1_RES_ELEC,    1, lowres++);
+	ADD_POWER("resist fire",         6, TR1_RES_FIRE,    1, lowres++);
+	ADD_POWER("resist cold",         6, TR1_RES_COLD,    1, lowres++);
+	ADD_POWER("resist poison",        28, TR1_RES_POIS,    1, highres++);
+	ADD_POWER("resist fear",         6, TR1_RES_FEAR,    1, highres++);
+	ADD_POWER("resist light",         6, TR1_RES_LITE,    1, highres++);
+	ADD_POWER("resist dark",        16, TR1_RES_DARK,    1, highres++);
+	ADD_POWER("resist blindness",        16, TR1_RES_BLIND,   1, highres++);
+	ADD_POWER("resist confusion",        24, TR1_RES_CONFU,   1, highres++);
+	ADD_POWER("resist sound",        14, TR1_RES_SOUND,   1, highres++);
+	ADD_POWER("resist shards",         8, TR1_RES_SHARD,   1, highres++);
+	ADD_POWER("resist nexus",        15, TR1_RES_NEXUS,   1, highres++);
+	ADD_POWER("resist nether",        20, TR1_RES_NETHR,   1, highres++);
+	ADD_POWER("resist chaos",        20, TR1_RES_CHAOS,   1, highres++);
+	ADD_POWER("resist disenchantment",    20, TR1_RES_DISEN,   1, highres++);
+	ADD_POWER("regeneration",         9, TR2_REGEN,         2, misc++);
+	ADD_POWER("blessed",             1, TR2_BLESSED,     2, 0);
+	ADD_POWER("no fuel",             5, TR2_NO_FUEL,     2, 0);
 
 	for (i = 2; i <= misc; i++)
 	{
