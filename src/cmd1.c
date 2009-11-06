@@ -668,14 +668,13 @@ void move_player(int dir)
 
 
 		/* Handle "store doors" */
-		if ((cave_feat[y][x] >= FEAT_SHOP_HEAD) &&
-		    (cave_feat[y][x] <= FEAT_SHOP_TAIL))
+		if ((cave_feat[p_ptr->py][p_ptr->px] >= FEAT_SHOP_HEAD) &&
+			(cave_feat[p_ptr->py][p_ptr->px] <= FEAT_SHOP_TAIL))
 		{
 			/* Disturb */
 			disturb(0, 0);
 			cmd_insert(CMD_ENTER_STORE);
 		}
-
 
 		/* All other grids (including traps) */
 		else
