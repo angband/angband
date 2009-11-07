@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "object/tvalsval.h"
 #include "init.h"
+#include "effects.h"
 
 /*
  * Original random artifact generator (randart) by Greg Wooledge.
@@ -138,6 +139,7 @@
 #define ART_IDX_GEN_RDISEN 67
 #define ART_IDX_GEN_AC 68
 #define ART_IDX_GEN_TUNN 69
+#define ART_IDX_GEN_ACTIV 82
 
 /* Supercharged abilities - treated differently in algorithm */
 
@@ -152,7 +154,7 @@
 #define ART_IDX_NONWEAPON_AGGR 75
 
 /* Total of abilities */
-#define ART_IDX_TOTAL 82
+#define ART_IDX_TOTAL 83
 
 /* Tallies of different ability types */
 /* ToDo: use N_ELEMENTS for these */
@@ -167,7 +169,7 @@
 #define ART_IDX_SHIELD_COUNT 2
 #define ART_IDX_CLOAK_COUNT 2
 #define ART_IDX_ARMOR_COUNT 7
-#define ART_IDX_GEN_COUNT 30
+#define ART_IDX_GEN_COUNT 31
 #define ART_IDX_HIGH_RESIST_COUNT 12
 
 /* Arrays of indices by item type, used in frequency generation */
@@ -209,7 +211,8 @@ static s16b art_idx_gen[] =
 	ART_IDX_GEN_RLITE, ART_IDX_GEN_RDARK, ART_IDX_GEN_RBLIND,
 	ART_IDX_GEN_RCONF, ART_IDX_GEN_RSOUND, ART_IDX_GEN_RSHARD,
 	ART_IDX_GEN_RNEXUS, ART_IDX_GEN_RNETHER, ART_IDX_GEN_RCHAOS,
-	ART_IDX_GEN_RDISEN, ART_IDX_GEN_AC, ART_IDX_GEN_TUNN};
+	ART_IDX_GEN_RDISEN, ART_IDX_GEN_AC, ART_IDX_GEN_TUNN,
+	ART_IDX_GEN_ACTIV};
 static s16b art_idx_high_resist[] =
 	{ART_IDX_GEN_RPOIS, ART_IDX_GEN_RFEAR,
 	ART_IDX_GEN_RLITE, ART_IDX_GEN_RDARK, ART_IDX_GEN_RBLIND,
@@ -687,16 +690,10 @@ static s16b choose_item(int a_idx)
 	a_ptr->flags[0] = k_ptr->flags[0];
 	a_ptr->flags[1] = k_ptr->flags[1];
 	a_ptr->flags[2] = k_ptr->flags[2];
-
-	/*
-	 * Dragon armor: remove activation flag.  This is because the current
-	 * code doesn't support standard DSM activations for artifacts very
-	 * well.  If it gets an activation from the base artifact it will be
-	 * reset later.
-	 * ToDo: proper random activations
-	 */
-	if (a_ptr->tval == TV_DRAG_ARMOR)
-		a_ptr->effect = 0;
+	a_ptr->effect = k_ptr->effect;
+	a_ptr->time_base = k_ptr->time_base;
+	a_ptr->time_dice = k_ptr->time_dice;
+	a_ptr->time_sides = k_ptr->time_sides;
 
 	/* Artifacts ignore everything */
 	a_ptr->flags[2] |= TR2_IGNORE_MASK;
@@ -1271,7 +1268,7 @@ static void parse_frequencies(void)
 		}
 
 		/* Generic armor abilities */
-		if ( a_ptr->tval == TV_BOOTS || a_ptr->tval == TV_GLOVES ||
+		if (a_ptr->tval == TV_BOOTS || a_ptr->tval == TV_GLOVES ||
 			a_ptr->tval == TV_HELM || a_ptr->tval == TV_CROWN ||
 			a_ptr->tval == TV_SHIELD || a_ptr->tval == TV_CLOAK ||
 			a_ptr->tval == TV_SOFT_ARMOR || a_ptr->tval == TV_HARD_ARMOR ||
@@ -1783,6 +1780,13 @@ static void parse_frequencies(void)
 			LOG_PRINT("Adding 1 for resist disenchantment - general.\n");
 
 			(artprobs[ART_IDX_GEN_RDISEN])++;
+		}
+
+		if (a_ptr->effect)
+		{
+			/* Activation */
+			LOG_PRINT("Adding 1 for activation.\n");
+			(artprobs[ART_IDX_GEN_ACTIV])++;
 		}
 		/* Done with parsing of frequencies for this item */
 	}
@@ -2543,6 +2547,33 @@ static void add_immunity(artifact_type *a_ptr)
 	}
 }
 
+/* Add an activation (called only if neither artifact nor base item has one) */
+static void add_activation(artifact_type *a_ptr)
+{
+	int x;
+	int p;
+	int count = 0;
+
+	while (count < MAX_TRIES)
+	{
+		x = randint0(EF_MAX);
+		p = effect_power(x);
+
+		/* Check that activation is useful but not exploitable */
+		if ((p > 0) && (p < INHIBIT_POWER))
+		{
+			LOG_PRINT1("Adding activation effect %d\n", x);
+			a_ptr->effect = x;
+			a_ptr->time_base = (p * p);
+			a_ptr->time_dice = p;
+			a_ptr->time_sides = p;
+			return;
+		}
+		count++;
+	}
+}
+
+
 /*
  * Build a suitable frequency table for this item, based on the generated
  * frequencies.  The frequencies for any abilities that don't apply for
@@ -2956,6 +2987,10 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 
 		case ART_IDX_GEN_RDISEN:
 			add_resist_disenchantment(a_ptr);
+			break;
+
+		case ART_IDX_GEN_ACTIV:
+			if (!a_ptr->effect) add_activation(a_ptr);
 			break;
 	}
 }
