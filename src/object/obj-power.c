@@ -308,7 +308,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 
 			LOG_PRINT1("Base multiplier for this weapon is %d\n", mult);
 
-			if (f[0] & TR0_MIGHT)
+			if ((f[0] & TR0_MIGHT) && (known ||
+				object_pval_is_visible(o_ptr)))
 			{
 				if (o_ptr->pval >= INHIBIT_MIGHT || o_ptr->pval < 0)
 				{
@@ -325,7 +326,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			p *= mult;
 			LOG_PRINT2("Multiplying power by %d, total is %d\n", mult, p);
 
-			if (f[0] & TR0_SHOTS)
+			if ((f[0] & TR0_SHOTS) && (known ||
+				object_pval_is_visible(o_ptr)))
 			{
 				LOG_PRINT1("Extra shots: %d\n", o_ptr->pval);
 
@@ -337,7 +339,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				else if (o_ptr->pval > 0)
 				{
 					p = (p * (1 + o_ptr->pval));
-					LOG_PRINT2("Multiplying power by 1 + %d, total is %d\n", o_ptr->pval, p);
+					LOG_PRINT2("Multiplying power by 1 + %d, total is %d\n",
+						o_ptr->pval, p);
 				}
 			}
 
@@ -384,7 +387,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			p += (o_ptr->to_d * DAMAGE_POWER / 2);
 			LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
 
-			if (f[0] & TR0_BLOWS)
+			if ((f[0] & TR0_BLOWS) && (known ||
+				object_pval_is_visible(o_ptr)))
 			{
 				LOG_PRINT1("Extra blows: %d\n", o_ptr->pval);
 				if (o_ptr->pval >= INHIBIT_BLOWS || o_ptr->pval < 0)
@@ -537,7 +541,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		LOG_PRINT("INHIBITING: AC bonus too high\n");
 	}
 
-	if (o_ptr->pval > 0)
+	if ((o_ptr->pval > 0) && (known || object_pval_is_visible(o_ptr)))
 	{
 		if (f[0] & TR0_STR)
 		{
@@ -614,7 +618,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		}
 
 	}
-	else if (o_ptr->pval < 0)	/* hack: don't give large negatives */
+	else if ((o_ptr->pval < 0) && (known || object_pval_is_visible(o_ptr)))
 	{
 		if (f[0] & TR0_STR) p += 4 * o_ptr->pval;
 		if (f[0] & TR0_INT) p += 2 * o_ptr->pval;
@@ -624,27 +628,31 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		if (f[0] & TR0_STEALTH) p += o_ptr->pval;
 		LOG_PRINT1("Subtracting power for negative ability values, total is %d\n", p);
 	}
-	if (f[0] & TR0_CHR)
-	{
-		p += CHR_POWER * o_ptr->pval;
-		LOG_PRINT2("Adding power for CHR bonus/penalty %d, total is %d\n", o_ptr->pval, p);
-	}
-	if (f[0] & TR0_INFRA)
-	{
-		p += INFRA_POWER * o_ptr->pval;
-		LOG_PRINT2("Adding power for infra bonus/penalty %d, total is %d\n", o_ptr->pval, p);
-	}
-	if (f[0] & TR0_TUNNEL)
-	{
-		p += TUNN_POWER * o_ptr->pval;
-		LOG_PRINT2("Adding power for tunnelling bonus/penalty %d, total is %d\n", o_ptr->pval, p);
-	}
-	if (f[0] & TR0_SPEED)
-	{
-		p += sign(o_ptr->pval) * speed_power[ABS(o_ptr->pval)];
-		LOG_PRINT2("Adding power for speed bonus/penalty %d, total is %d\n", o_ptr->pval, p);
-	}
 
+	if (known || object_pval_is_visible(o_ptr))
+	{
+		if (f[0] & TR0_CHR)
+		{
+			p += CHR_POWER * o_ptr->pval;
+			LOG_PRINT2("Adding power for CHR bonus/penalty %d, total is %d\n", o_ptr->pval, p);
+		}
+		if (f[0] & TR0_INFRA)
+		{
+			p += INFRA_POWER * o_ptr->pval;
+			LOG_PRINT2("Adding power for infra bonus/penalty %d, total is %d\n", o_ptr->pval, p);
+		}
+		if (f[0] & TR0_TUNNEL)
+		{
+			p += TUNN_POWER * o_ptr->pval;
+			LOG_PRINT2("Adding power for tunnelling bonus/penalty %d, total is %d\n", o_ptr->pval, p);
+		}
+		if (f[0] & TR0_SPEED)
+		{
+			p += sign(o_ptr->pval) * speed_power[ABS(o_ptr->pval)];
+			LOG_PRINT2("Adding power for speed bonus/penalty %d, total is %d\n", o_ptr->pval, p);
+		}
+	}
+	
 #define ADD_POWER(string, val, flag, flgnum, extra) \
 	if (f[flgnum] & flag) { \
 		p += (val); \
@@ -686,32 +694,32 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		}
 	}
 
-	ADD_POWER("free action",        14, TR2_FREE_ACT,    2, misc++);
-	ADD_POWER("hold life",            12, TR2_HOLD_LIFE,   2, misc++);
-	ADD_POWER("feather fall",         1, TR2_FEATHER,     2, 0);
-	ADD_POWER("permanent light",         3, TR2_LITE,         2, misc++);
-	ADD_POWER("see invisible",        10, TR2_SEE_INVIS,   2, misc++);
-	ADD_POWER("telepathy",            70, TR2_TELEPATHY,   2, misc++);
+	ADD_POWER("free action",           14, TR2_FREE_ACT,    2, misc++);
+	ADD_POWER("hold life",             12, TR2_HOLD_LIFE,   2, misc++);
+	ADD_POWER("feather fall",           1, TR2_FEATHER,     2, 0);
+	ADD_POWER("permanent light",        3, TR2_LITE,        2, misc++);
+	ADD_POWER("see invisible",         10, TR2_SEE_INVIS,   2, misc++);
+	ADD_POWER("telepathy",             70, TR2_TELEPATHY,   2, misc++);
 	ADD_POWER("slow digestion",         2, TR2_SLOW_DIGEST, 2, misc++);
-	ADD_POWER("resist acid",         5, TR1_RES_ACID,    1, lowres++);
-	ADD_POWER("resist elec",         6, TR1_RES_ELEC,    1, lowres++);
-	ADD_POWER("resist fire",         6, TR1_RES_FIRE,    1, lowres++);
-	ADD_POWER("resist cold",         6, TR1_RES_COLD,    1, lowres++);
-	ADD_POWER("resist poison",        28, TR1_RES_POIS,    1, highres++);
-	ADD_POWER("resist fear",         6, TR1_RES_FEAR,    1, highres++);
-	ADD_POWER("resist light",         6, TR1_RES_LITE,    1, highres++);
-	ADD_POWER("resist dark",        16, TR1_RES_DARK,    1, highres++);
-	ADD_POWER("resist blindness",        16, TR1_RES_BLIND,   1, highres++);
-	ADD_POWER("resist confusion",        24, TR1_RES_CONFU,   1, highres++);
-	ADD_POWER("resist sound",        14, TR1_RES_SOUND,   1, highres++);
-	ADD_POWER("resist shards",         8, TR1_RES_SHARD,   1, highres++);
-	ADD_POWER("resist nexus",        15, TR1_RES_NEXUS,   1, highres++);
-	ADD_POWER("resist nether",        20, TR1_RES_NETHR,   1, highres++);
-	ADD_POWER("resist chaos",        20, TR1_RES_CHAOS,   1, highres++);
-	ADD_POWER("resist disenchantment",    20, TR1_RES_DISEN,   1, highres++);
-	ADD_POWER("regeneration",         9, TR2_REGEN,         2, misc++);
-	ADD_POWER("blessed",             1, TR2_BLESSED,     2, 0);
-	ADD_POWER("no fuel",             5, TR2_NO_FUEL,     2, 0);
+	ADD_POWER("resist acid",            5, TR1_RES_ACID,    1, lowres++);
+	ADD_POWER("resist elec",            6, TR1_RES_ELEC,    1, lowres++);
+	ADD_POWER("resist fire",            6, TR1_RES_FIRE,    1, lowres++);
+	ADD_POWER("resist cold",            6, TR1_RES_COLD,    1, lowres++);
+	ADD_POWER("resist poison",         28, TR1_RES_POIS,    1, highres++);
+	ADD_POWER("resist fear",            6, TR1_RES_FEAR,    1, highres++);
+	ADD_POWER("resist light",           6, TR1_RES_LITE,    1, highres++);
+	ADD_POWER("resist dark",           16, TR1_RES_DARK,    1, highres++);
+	ADD_POWER("resist blindness",      16, TR1_RES_BLIND,   1, highres++);
+	ADD_POWER("resist confusion",      24, TR1_RES_CONFU,   1, highres++);
+	ADD_POWER("resist sound",          14, TR1_RES_SOUND,   1, highres++);
+	ADD_POWER("resist shards",          8, TR1_RES_SHARD,   1, highres++);
+	ADD_POWER("resist nexus",          15, TR1_RES_NEXUS,   1, highres++);
+	ADD_POWER("resist nether",         20, TR1_RES_NETHR,   1, highres++);
+	ADD_POWER("resist chaos",          20, TR1_RES_CHAOS,   1, highres++);
+	ADD_POWER("resist disenchantment", 20, TR1_RES_DISEN,   1, highres++);
+	ADD_POWER("regeneration",           9, TR2_REGEN,       2, misc++);
+	ADD_POWER("blessed",                1, TR2_BLESSED,     2, 0);
+	ADD_POWER("no fuel",                5, TR2_NO_FUEL,     2, 0);
 
 	for (i = 2; i <= misc; i++)
 	{
