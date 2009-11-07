@@ -68,11 +68,8 @@
 /* Allow changing "visuals" at runtime */
 #define ALLOW_VISUALS
 
-/* Allow chaning macros at run-time */
+/* Allow changing macros at run-time */
 #define ALLOW_MACROS
-
-/* Allow parsing of the lib/edit/ files. */
-#define ALLOW_TEMPLATES
 
 
 
@@ -91,18 +88,6 @@
 #if defined(ALLOW_BORG) && defined(USE_GRAPHICS)
 # define ALLOW_BORG_GRAPHICS
 #endif
-
-
-
-/*
- * OPTION: Allow output of 'parsable' ascii template files.
- * This can be used to help change the ascii template format, and to make
- * changes to the data in the parsed files within Angband itself.
- *
- * Files are output to lib/user with the same file names as lib/edit.
- */
-/* #define ALLOW_TEMPLATES_OUTPUT */
-
 
 
 /*** X11 settings ***/

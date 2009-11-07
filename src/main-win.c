@@ -4641,7 +4641,6 @@ static void init_stuff(void)
 	/* Hack -- Validate the paths */
 	validate_dir(ANGBAND_DIR_APEX);
 	validate_dir(ANGBAND_DIR_BONE);
-	validate_dir(ANGBAND_DIR_DATA);
 	validate_dir(ANGBAND_DIR_EDIT);
 	validate_dir(ANGBAND_DIR_FILE);
 	validate_dir(ANGBAND_DIR_HELP);

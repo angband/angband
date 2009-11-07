@@ -30,20 +30,12 @@
  * at a time.
  *
  * Several of the arrays for Angband are built from "template" files in
- * the "lib/file" directory, from which quick-load binary "image" files
- * are constructed whenever they are not present in the "lib/data"
- * directory, or if those files become obsolete, if we are allowed.
+ * the "lib/edit" directory.
  *
  * Warning -- the "ascii" file parsers use a minor hack to collect the
  * name and text information in a single pass.  Thus, the game will not
  * be able to load any template file with more than 20K of names or 60K
  * of text, even though technically, up to 64K should be legal.
- *
- * The "init1.c" file is used only to parse the ascii template files,
- * to create the binary image files.  If you include the binary image
- * files instead of the ascii template files, then you can undefine
- * "ALLOW_TEMPLATES", saving about 20K by removing "init1.c".  Note
- * that the binary image files are extremely system dependant.
  */
 
 
@@ -91,7 +83,6 @@ void init_file_paths(const char *path)
 	/* Free the sub-paths */
 	string_free(ANGBAND_DIR_APEX);
 	string_free(ANGBAND_DIR_BONE);
-	string_free(ANGBAND_DIR_DATA);
 	string_free(ANGBAND_DIR_EDIT);
 	string_free(ANGBAND_DIR_FILE);
 	string_free(ANGBAND_DIR_HELP);
@@ -151,10 +142,6 @@ void init_file_paths(const char *path)
 	ANGBAND_DIR_BONE = string_make(buf);
 
 	/* Build the path to the user specific sub-directory */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "data");
-	ANGBAND_DIR_DATA = string_make(buf);
-
-	/* Build the path to the user specific sub-directory */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "save");
 	ANGBAND_DIR_SAVE = string_make(buf);
 
@@ -163,7 +150,6 @@ void init_file_paths(const char *path)
 	/* Build pathnames */
 	ANGBAND_DIR_APEX = string_make(format("%sapex", path));
 	ANGBAND_DIR_BONE = string_make(format("%sbone", path));
-	ANGBAND_DIR_DATA = string_make(format("%sdata", path));
 	ANGBAND_DIR_SAVE = string_make(format("%ssave", path));
 
 #endif /* USE_PRIVATE_PATHS */
@@ -205,12 +191,6 @@ void create_user_dirs(void)
 
 	/* Build the path to the savefile sub-directory */
 	path_build(dirpath, sizeof(dirpath), subdirpath, "bone");
-
-	/* Create the directory */
-	mkdir(dirpath, 0700);
-
-	/* Build the path to the savefile sub-directory */
-	path_build(dirpath, sizeof(dirpath), subdirpath, "data");
 
 	/* Create the directory */
 	mkdir(dirpath, 0700);
@@ -282,92 +262,31 @@ header flavor_head;
 header s_head;
 
 
-
-/*** Initialize from binary image files ***/
-
-
 /*
- * Initialize a "*_info" array, by parsing a binary "image" file
- */
-static bool init_info_raw(const char *fname, header *head)
-{
-	header test;
-	ang_file *fh = file_open(fname, MODE_READ, -1);
-
-	if (!fh) return FALSE;
-
-	/* Read and verify the header */
-	if (!file_read(fh, (char *)(&test), sizeof(header)) ||
-	    (test.v_major != head->v_major) ||
-	    (test.v_minor != head->v_minor) ||
-	    (test.v_patch != head->v_patch) ||
-	    (test.v_extra != head->v_extra) ||
-	    (test.info_num != head->info_num) ||
-	    (test.info_len != head->info_len) ||
-	    (test.head_size != head->head_size) ||
-	    (test.info_size != head->info_size))
-	{
-		file_close(fh);
-		return FALSE;
-	}
-
-
-	/* 
-	 * Accept the header - these are the only parts we need to copy
-	 * from the saved structure, as the rest is either identical (see
-	 * above test), or not restorable (function hooks, data pointers).
-	 */
-	head->name_size = test.name_size;
-	head->text_size = test.text_size;
-
-	/* Allocate and read the "*_info" array */
-	head->info_ptr = C_RNEW(head->info_size, char);
-	file_read(fh, head->info_ptr, head->info_size);
-
-	if (head->name_size)
-	{
-		/* Allocate and read the "*_name" array */
-		head->name_ptr = C_RNEW(head->name_size, char);
-		file_read(fh, head->name_ptr, head->name_size);
-	}
-
-	if (head->text_size)
-	{
-		/* Allocate and read the "*_text" array */
-		head->text_ptr = C_RNEW(head->text_size, char);
-		file_read(fh, head->text_ptr, head->text_size);
-	}
-
-	file_close(fh);
-	return TRUE;
-}
-
-
-/*
- * Initialize the header of an *_info.raw file.
+ * Initialize the header of an *_info array.
  */
 static void init_header(header *head, int num, int len)
 {
-	/* Save the "version" */
-	head->v_major = VERSION_MAJOR;
-	head->v_minor = VERSION_MINOR;
-	head->v_patch = VERSION_PATCH;
-	head->v_extra = VERSION_EXTRA;
+       /* Save the "version" */
+       head->v_major = VERSION_MAJOR;
+       head->v_minor = VERSION_MINOR;
+       head->v_patch = VERSION_PATCH;
+       head->v_extra = VERSION_EXTRA;
 
-	/* Save the "record" information */
-	head->info_num = num;
-	head->info_len = len;
+       /* Save the "record" information */
+       head->info_num = num;
+       head->info_len = len;
 
-	/* Save the size of "*_head" and "*_info" */
-	head->head_size = sizeof(header);
-	head->info_size = head->info_num * head->info_len;
+       /* Save the size of "*_head" and "*_info" */
+       head->head_size = sizeof(header);
+       head->info_size = head->info_num * head->info_len;
 
-	/* Clear post-parsing evaluation function */
-	head->eval_info_post = NULL;
-	
-	/* Clear the template emission functions */
-	head->emit_info_txt_index = NULL;
-	head->emit_info_txt_always = NULL;
+       /* Clear post-parsing evaluation function */
+       head->eval_info_post = NULL;
+
+       /* Clear the template emission functions */
+       head->emit_info_txt_index = NULL;
+       head->emit_info_txt_always = NULL;
 }
 
 
@@ -404,30 +323,15 @@ static errr init_info(cptr filename, header *head)
 
 	errr err = 1;
 
-	char raw_file[1024];
 	char txt_file[1024];
 
 	char buf[1024];
 
+	void *fake_name;
+	void *fake_text;
 
-	/* Build the filenames */
-	path_build(raw_file, sizeof(raw_file), ANGBAND_DIR_DATA, format("%s.raw", filename));
+	/* Build the filename */
 	path_build(txt_file, sizeof(txt_file), ANGBAND_DIR_EDIT, format("%s.txt", filename));
-
-
-#ifdef ALLOW_TEMPLATES
-
-	/* If the raw file's more recent than the text file, load it */
-	if (file_newer(raw_file, txt_file) &&
-	    init_info_raw(raw_file, head))
-	{
-		/* Post processing the data */
-		if (head->eval_info_post) eval_info(head->eval_info_post, head);
-		return 0;
-	}
-
-
-	/*** Make the fake arrays ***/
 
 	/* Allocate the "*_info" array */
 	head->info_ptr = C_ZNEW(head->info_size, char);
@@ -457,7 +361,6 @@ static errr init_info(cptr filename, header *head)
 	/* Post processing the data */
 	if (head->eval_info_post) eval_info(head->eval_info_post, head);
 
-#ifdef ALLOW_TEMPLATES_OUTPUT
 
 	/*** Output a 'parsable' ascii template file ***/
 	if ((head->emit_info_txt_index) || (head->emit_info_txt_always))
@@ -482,62 +385,21 @@ static errr init_info(cptr filename, header *head)
 		file_close(fout);
 	}
 
-#endif
+	/* Copy the parsed data into the real array from the fakes */
+	fake_name = head->name_ptr;
+	head->name_ptr = C_ZNEW(head->name_size, char);
+	memcpy(head->name_ptr, fake_name, head->name_size);
 
+	fake_text = head->text_ptr;
+	head->text_ptr = C_ZNEW(head->text_size, char);
+	memcpy(head->text_ptr, fake_text, head->text_size);
 
-	/*** Dump the binary image file ***/
-
-	safe_setuid_grab();
-	fh = file_open(raw_file, MODE_WRITE, FTYPE_RAW);
-	safe_setuid_drop();
-
-	/* Failure */
-	if (!fh)
-	{
-		plog_fmt("Cannot write the '%s' file!", raw_file);
-		return (0);
-	}
-
-	/* Dump it */
-	file_write(fh, (const char *) head, head->head_size);
-
-	/* Dump the "*_info" array */
-	if (head->info_size > 0)
-		file_write(fh, head->info_ptr, head->info_size);
-
-	/* Dump the "*_name" array */
-	if (head->name_size > 0)
-		file_write(fh, head->name_ptr, head->name_size);
-
-	/* Dump the "*_text" array */
-	if (head->text_size > 0)
-		file_write(fh, head->text_ptr, head->text_size);
-
-	/* Close */
-	file_close(fh);
-
-
-	/*** Kill the fake arrays ***/
-
-	/* Free the "*_info" array */
-	FREE(head->info_ptr);
-
-	/* MegaHack -- Free the "fake" arrays */
+	/* Free the fake arrays */
 	if (z_info)
 	{
-		FREE(head->name_ptr);
-		FREE(head->text_ptr);
+		FREE(fake_name);
+		FREE(fake_text);
 	}
-
-
-#endif /* ALLOW_TEMPLATES */
-
-
-	/*** Load the binary image file ***/
-
-	if (!init_info_raw(raw_file, head))
-		quit(format("Cannot load '%s.raw' file.", filename));
-
 
 	/* Success */
 	return (0);
@@ -573,12 +435,8 @@ static errr init_z_info(void)
 	/* Init the header */
 	init_header(&z_head, 1, sizeof(maxima));
 
-#ifdef ALLOW_TEMPLATES
-
 	/* Save a pointer to the parsing function */
 	z_head.parse_info_txt = parse_z_info;
-
-#endif /* ALLOW_TEMPLATES */
 
 	err = init_info("limits", &z_head);
 
@@ -599,12 +457,8 @@ static errr init_f_info(void)
 	/* Init the header */
 	init_header(&f_head, z_info->f_max, sizeof(feature_type));
 
-#ifdef ALLOW_TEMPLATES
-
 	/* Save a pointer to the parsing function */
 	f_head.parse_info_txt = parse_f_info;
-
-#endif /* ALLOW_TEMPLATES */
 
 	err = init_info("terrain", &f_head);
 
@@ -628,12 +482,8 @@ static errr init_k_info(void)
 	/* Init the header */
 	init_header(&k_head, z_info->k_max, sizeof(object_kind));
 
-#ifdef ALLOW_TEMPLATES
-
 	/* Save a pointer to the parsing function */
 	k_head.parse_info_txt = parse_k_info;
-
-#endif /* ALLOW_TEMPLATES */
 
 	err = init_info("object", &k_head);
 
@@ -657,12 +507,8 @@ static errr init_a_info(void)
 	/* Init the header */
 	init_header(&a_head, z_info->a_max, sizeof(artifact_type));
 
-#ifdef ALLOW_TEMPLATES
-
 	/* Save a pointer to the parsing function */
 	a_head.parse_info_txt = parse_a_info;
-
-#endif /* ALLOW_TEMPLATES */
 
 	err = init_info("artifact", &a_head);
 
@@ -686,15 +532,11 @@ static errr init_e_info(void)
 	/* Init the header */
 	init_header(&e_head, z_info->e_max, sizeof(ego_item_type));
 
-#ifdef ALLOW_TEMPLATES
-
 	/* Save a pointer to the parsing function */
 	e_head.parse_info_txt = parse_e_info;
 
 	/* Save a pointer to the slay cache function */
 	e_head.eval_info_post = eval_e_slays;
-
-#endif /* ALLOW_TEMPLATES */
 
 	err = init_info("ego_item", &e_head);
 
@@ -702,7 +544,6 @@ static errr init_e_info(void)
 	e_info = e_head.info_ptr;
 	e_name = e_head.name_ptr;
 	e_text = e_head.text_ptr;
-
 	return (err);
 }
 
@@ -719,21 +560,14 @@ static errr init_r_info(void)
 	/* Init the header */
 	init_header(&r_head, z_info->r_max, sizeof(monster_race));
 
-#ifdef ALLOW_TEMPLATES
-
 	/* Save a pointer to the parsing function */
 	r_head.parse_info_txt = parse_r_info;
 
 	/* Save a pointer to the evaluate power function*/
 	r_head.eval_info_post = eval_r_power;
 
-#ifdef ALLOW_TEMPLATES_OUTPUT
-
-	/* Save a pointer to the evaluate power function*/
-	r_head.emit_info_txt_index = emit_r_info_index;
-#endif /* ALLOW_TEMPLATES_OUTPUT */
-
-#endif /* ALLOW_TEMPLATES */
+	/* Save a pointer to the text file output function*/
+	if (arg_rebalance) r_head.emit_info_txt_index = emit_r_info_index;
 
 	err = init_info("monster", &r_head);
 
@@ -762,12 +596,8 @@ static errr init_v_info(void)
 	/* Init the header */
 	init_header(&v_head, z_info->v_max, sizeof(vault_type));
 
-#ifdef ALLOW_TEMPLATES
-
 	/* Save a pointer to the parsing function */
 	v_head.parse_info_txt = parse_v_info;
-
-#endif /* ALLOW_TEMPLATES */
 
 	err = init_info("vault", &v_head);
 
@@ -790,12 +620,8 @@ static errr init_p_info(void)
 	/* Init the header */
 	init_header(&p_head, z_info->p_max, sizeof(player_race));
 
-#ifdef ALLOW_TEMPLATES
-
 	/* Save a pointer to the parsing function */
 	p_head.parse_info_txt = parse_p_info;
-
-#endif /* ALLOW_TEMPLATES */
 
 	err = init_info("p_race", &p_head);
 
@@ -818,12 +644,8 @@ static errr init_c_info(void)
 	/* Init the header */
 	init_header(&c_head, z_info->c_max, sizeof(player_class));
 
-#ifdef ALLOW_TEMPLATES
-
 	/* Save a pointer to the parsing function */
 	c_head.parse_info_txt = parse_c_info;
-
-#endif /* ALLOW_TEMPLATES */
 
 	err = init_info("p_class", &c_head);
 
@@ -847,12 +669,8 @@ static errr init_h_info(void)
 	/* Init the header */
 	init_header(&h_head, z_info->h_max, sizeof(hist_type));
 
-#ifdef ALLOW_TEMPLATES
-
 	/* Save a pointer to the parsing function */
 	h_head.parse_info_txt = parse_h_info;
-
-#endif /* ALLOW_TEMPLATES */
 
 	err = init_info("p_hist", &h_head);
 
@@ -875,12 +693,8 @@ static errr init_b_info(void)
 	/* Init the header */
 	init_header(&b_head, (u16b)(MAX_STORES * z_info->b_max), sizeof(owner_type));
 
-#ifdef ALLOW_TEMPLATES
-
 	/* Save a pointer to the parsing function */
 	b_head.parse_info_txt = parse_b_info;
-
-#endif /* ALLOW_TEMPLATES */
 
 	err = init_info("shop_own", &b_head);
 
@@ -904,12 +718,8 @@ static errr init_flavor_info(void)
 	/* Init the header */
 	init_header(&flavor_head, z_info->flavor_max, sizeof(flavor_type));
 
-#ifdef ALLOW_TEMPLATES
-
 	/* Save a pointer to the parsing function */
 	flavor_head.parse_info_txt = parse_flavor_info;
-
-#endif /* ALLOW_TEMPLATES */
 
 	err = init_info("flavor", &flavor_head);
 
@@ -933,12 +743,8 @@ static errr init_s_info(void)
 	/* Init the header */
 	init_header(&s_head, z_info->s_max, sizeof(spell_type));
 
-#ifdef ALLOW_TEMPLATES
-
 	/* Save a pointer to the parsing function */
 	s_head.parse_info_txt = parse_s_info;
-
-#endif /* ALLOW_TEMPLATES */
 
 	err = init_info("spell", &s_head);
 
@@ -1617,7 +1423,6 @@ void cleanup_angband(void)
 	string_free(ANGBAND_DIR);
 	string_free(ANGBAND_DIR_APEX);
 	string_free(ANGBAND_DIR_BONE);
-	string_free(ANGBAND_DIR_DATA);
 	string_free(ANGBAND_DIR_EDIT);
 	string_free(ANGBAND_DIR_FILE);
 	string_free(ANGBAND_DIR_HELP);

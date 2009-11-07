@@ -197,7 +197,6 @@ extern const char *ANGBAND_GRAF;
 extern char *ANGBAND_DIR;
 extern char *ANGBAND_DIR_APEX;
 extern char *ANGBAND_DIR_BONE;
-extern char *ANGBAND_DIR_DATA;
 extern char *ANGBAND_DIR_EDIT;
 extern char *ANGBAND_DIR_FILE;
 extern char *ANGBAND_DIR_HELP;

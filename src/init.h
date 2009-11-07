@@ -118,7 +118,6 @@ extern errr eval_info(eval_info_post_func eval_info_process, header *head);
 extern errr emit_info_txt(ang_file *fp, ang_file *template, char *buf, header *head,
    emit_info_txt_index_func emit_info_txt_index, emit_info_txt_always_func emit_info_txt_always);
 
-#ifdef ALLOW_TEMPLATES
 extern errr parse_z_info(char *buf, header *head);
 extern errr parse_v_info(char *buf, header *head);
 extern errr parse_f_info(char *buf, header *head);
@@ -136,9 +135,7 @@ extern errr parse_s_info(char *buf, header *head);
 extern errr eval_r_power(header *head);
 extern errr eval_e_slays(header *head);
 
-#ifdef ALLOW_TEMPLATES_OUTPUT
 extern errr emit_r_info_index(ang_file *fp, header *head, int i);
-#endif
 
 
 /*
@@ -146,9 +143,6 @@ extern errr emit_r_info_index(ang_file *fp, header *head, int i);
  */
 extern int error_idx;
 extern int error_line;
-
-
-#endif /* ALLOW_TEMPLATES */
 
 
 /*

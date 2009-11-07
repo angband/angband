@@ -35,14 +35,6 @@
  * be able to load any template file with more than 20K of names or 60K
  * of text, even though technically, up to 64K should be legal.
  *
- * Note that if "ALLOW_TEMPLATES" is not defined, then a lot of the code
- * in this file is compiled out, and the game will not run unless valid
- * "binary template files" already exist in "lib/data".  Thus, one can
- * compile Angband with ALLOW_TEMPLATES defined, run once to create the
- * "*.raw" files in "lib/data", and then quit, and recompile without
- * defining ALLOW_TEMPLATES, which will both save 20K and prevent people
- * from changing the ascii template files in potentially dangerous ways.
- *
  * The code could actually be removed and placed into a "stand-alone"
  * program, but that feels a little silly, especially considering some
  * of the platforms that we currently support.
@@ -50,10 +42,6 @@
 
 #include "effects.h"
 #include "monster/constants.h"
-
-#ifdef ALLOW_TEMPLATES
-
-
 #include "init.h"
 
 
@@ -4524,8 +4512,6 @@ errr eval_e_slays(header *head)
 	return 0;
 }
 
-#ifdef ALLOW_TEMPLATES_OUTPUT
-
 /*
  * Emit a "template" file.
  * 
@@ -4884,9 +4870,4 @@ errr emit_r_info_index(ang_file *fp, header *head, int i)
 	/* Success */
 	return (0);	
 }
-
-
-#endif /* ALLOW_TEMPLATES_OUTPUT */
-
-#endif	/* ALLOW_TEMPLATES */
 
