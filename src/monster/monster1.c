@@ -17,6 +17,8 @@
  */
 #include "angband.h"
 #include "object/tvalsval.h"
+#include "monster/constants.h"
+
 
 /*
  * Pronoun arrays, by gender.
@@ -29,7 +31,6 @@ static cptr wd_his[3] = { "its", "his", "her" };
  * Pluralizer.  Args(count, singular, plural)
  */
 #define plural(c, s, p)    (((c) == 1) ? (s) : (p))
-
 
 
 static void output_list(const char *list[], int num, byte attr)
@@ -60,6 +61,39 @@ static void output_list(const char *list[], int num, byte attr)
 	}
 }
 
+static void output_list_dam(const char *list[], int num, int col[], int dam[])
+{
+   int i;
+   const char *conjunction = "and ";
+
+   if (num < 0)
+   {
+      num = -num;
+      conjunction = "or ";
+   }
+
+   for (i = 0; i < num; i++)
+   {
+        if (i)
+      {
+         if (num > 2)
+            text_out(", ");
+         else
+            text_out(" ");
+
+         if (i == num - 1)
+            text_out(conjunction);
+      }
+
+		text_out_c(col[i], list[i]);
+
+		if(dam[i])
+		{
+			text_out_c(col[i], format(" (%d)", dam[i]));
+		}
+	}
+}
+
 
 static void output_desc_list(int msex, cptr intro, cptr list[], int n, byte attr)
 {
@@ -77,7 +111,362 @@ static void output_desc_list(int msex, cptr intro, cptr list[], int n, byte attr
 }
 
 
+/* Struct for coloring attacks in monster memory.
+ * Initialized in get_attack_colors()
+ * RBE_ flags index the melee array directly
+ * RSF0_ bit flags use the get/set_spell_color functions
+ */
+typedef struct
+{
+	int melee[RBE_MAX+1];
+	int spell[3][32];
+} atk_colors;
 
+int get_spell_color(const atk_colors *col, int byte, u32b flag)
+{
+	int i;
+
+	/* Convert the flag into an index "i" */
+
+	for (i = 0; flag > 1; i++)
+		flag >>= 1;
+
+	return col->spell[byte][i];
+}
+
+void set_spell_color(atk_colors *col, int byte, u32b flag, int color)
+{
+	int i;
+
+	/* Convert the flag into an index "i" */
+
+	for (i = 0; flag > 1; i++)
+		flag >>= 1;
+
+	col->spell[byte][i] = color;
+}
+
+void get_attack_colors(atk_colors *col)
+{
+	int m, n;
+	bool known;
+	u32b f[OBJ_FLAG_N];
+	player_state st;
+	int tmp_col;
+
+	calc_bonuses(inventory, &st, TRUE);
+
+	/* Initialize the colors to green */
+	for (m = 0; m < RBE_MAX+1; m++)
+		col->melee[m] = TERM_L_GREEN;
+
+	for (m = 0; m < 3; m++)
+		for (n = 0; n < 32; n++)
+			col->spell[m][n] = TERM_L_GREEN;
+
+	/* Scan the inventory for potentially vulnerable items */
+	for (m = 0; m < INVEN_TOTAL; m++)
+	{
+		object_type *o_ptr = &inventory[m];
+
+		/* Only occupied slots */
+		if (!o_ptr->k_idx) continue;
+
+		object_flags_known(o_ptr, f);
+
+		/* Don't reveal the nature of an object.
+		 * Assume the player is conservative with unknown items.
+		 */
+		known = object_is_known(o_ptr);
+
+		/* Drain charges - requires a charged item */
+		if (m < INVEN_PACK && (!known || o_ptr->pval > 0) &&
+				(o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND))
+			col->melee[RBE_UN_POWER] = TERM_L_RED;
+
+		/* Steal item - requires non-artifacts */
+		if (m < INVEN_PACK && (!known || !artifact_p(o_ptr)) &&
+				p_ptr->lev + adj_dex_safe[st.stat_ind[A_DEX]] < 100)
+			col->melee[RBE_EAT_ITEM] = TERM_L_RED;
+
+		/* Eat food - requries food */
+		if (m < INVEN_PACK && o_ptr->tval == TV_FOOD)
+			col->melee[RBE_EAT_FOOD] = TERM_YELLOW;
+
+		/* Eat light - requires a fueled lite */
+		if (m == INVEN_LITE && !(f[2] & TR2_NO_FUEL) &&
+				o_ptr->timeout > 0)
+			col->melee[RBE_EAT_LITE] = TERM_YELLOW;
+
+		/* Disenchantment - requires an enchanted item */
+		if (m >= INVEN_WIELD && (!known || o_ptr->to_a > 0 ||
+				o_ptr->to_h > 0 || o_ptr->to_d > 0) && !st.resist_disen)
+		{
+			col->melee[RBE_UN_BONUS] = TERM_L_RED;
+			set_spell_color(col, 0, RSF0_BR_DISE, TERM_L_RED);
+		}
+	}
+
+	/* Acid */
+	if (st.immune_acid)
+		tmp_col = TERM_L_GREEN;
+	else if (st.resist_acid)
+		tmp_col = TERM_YELLOW;
+	else
+		tmp_col = TERM_ORANGE;
+
+	col->melee[RBE_ACID] = tmp_col;
+	set_spell_color(col, 0, RSF0_BR_ACID, tmp_col);
+	set_spell_color(col, 1, RSF1_BO_ACID, tmp_col);
+	set_spell_color(col, 1, RSF1_BA_ACID, tmp_col);
+
+	/* Cold and ice */
+	if (st.immune_cold)
+		tmp_col = TERM_L_GREEN;
+	else if (st.resist_cold)
+		tmp_col = TERM_YELLOW;
+	else
+		tmp_col = TERM_ORANGE;
+
+	col->melee[RBE_COLD] = tmp_col;
+	set_spell_color(col, 0, RSF0_BR_COLD, tmp_col);
+	set_spell_color(col, 1, RSF1_BO_COLD, tmp_col);
+	set_spell_color(col, 1, RSF1_BA_COLD, tmp_col);
+	set_spell_color(col, 1, RSF1_BO_ICEE, tmp_col);
+
+	/* Elec */
+	if (st.immune_elec)
+		tmp_col = TERM_L_GREEN;
+	else if (st.resist_elec)
+		tmp_col = TERM_YELLOW;
+	else
+		tmp_col = TERM_ORANGE;
+
+	col->melee[RBE_ELEC] = tmp_col;
+	set_spell_color(col, 0, RSF0_BR_ELEC, tmp_col);
+	set_spell_color(col, 1, RSF1_BO_ELEC, tmp_col);
+	set_spell_color(col, 1, RSF1_BA_ELEC, tmp_col);
+
+	/* Fire */
+	if (st.immune_fire)
+		tmp_col = TERM_L_GREEN;
+	else if (st.resist_fire)
+		tmp_col = TERM_YELLOW;
+	else
+		tmp_col = TERM_ORANGE;
+
+	col->melee[RBE_FIRE] = tmp_col;
+	set_spell_color(col, 0, RSF0_BR_FIRE, tmp_col);
+	set_spell_color(col, 1, RSF1_BO_FIRE, tmp_col);
+	set_spell_color(col, 1, RSF1_BA_FIRE, tmp_col);
+
+	/* Poison */
+	if (!st.resist_pois)
+	{
+		col->melee[RBE_POISON] = TERM_ORANGE;
+		set_spell_color(col, 0, RSF0_BR_POIS, TERM_ORANGE);
+		set_spell_color(col, 1, RSF1_BA_POIS, TERM_ORANGE);
+	}
+
+	/* Nexus  */
+	if (!st.resist_nexus)
+	{
+		if(st.skills[SKILL_SAVE] < 100)
+			set_spell_color(col, 0, RSF0_BR_NEXU, TERM_L_RED);
+		else
+			set_spell_color(col, 0, RSF0_BR_NEXU, TERM_YELLOW);
+	}
+
+	/* Nether */
+	if (!st.resist_nethr)
+	{
+		set_spell_color(col, 0, RSF0_BR_NETH, TERM_ORANGE);
+		set_spell_color(col, 1, RSF1_BA_NETH, TERM_ORANGE);
+		set_spell_color(col, 1, RSF1_BO_NETH, TERM_ORANGE);
+	}
+
+	/* Inertia, gravity, and time */
+	set_spell_color(col, 0, RSF0_BR_INER, TERM_ORANGE);
+	set_spell_color(col, 0, RSF0_BR_GRAV, TERM_L_RED);
+	set_spell_color(col, 0, RSF0_BR_TIME, TERM_L_RED);
+
+	/* Sound, force, and plasma */
+	if (!st.resist_sound)
+	{
+		set_spell_color(col, 0, RSF0_BR_SOUN, TERM_ORANGE);
+		set_spell_color(col, 0, RSF0_BR_WALL, TERM_YELLOW);
+
+		set_spell_color(col, 0, RSF0_BR_PLAS, TERM_ORANGE);
+		set_spell_color(col, 1, RSF1_BO_PLAS, TERM_ORANGE);
+	}
+	else
+	{
+		set_spell_color(col, 0, RSF0_BR_PLAS, TERM_YELLOW);
+		set_spell_color(col, 1, RSF1_BO_PLAS, TERM_YELLOW);
+	}
+
+ 	/* Shards */
+ 	if(!st.resist_shard)
+ 		set_spell_color(col, 0, RSF0_BR_SHAR, TERM_ORANGE);
+
+	/* Confusion */
+	if (!st.resist_confu)
+	{
+		col->melee[RBE_CONFUSE] = TERM_ORANGE;
+		set_spell_color(col, 0, RSF0_BR_CONF, TERM_ORANGE);
+	}
+
+	/* Chaos */
+	if (!st.resist_chaos)
+		set_spell_color(col, 0, RSF0_BR_CHAO, TERM_ORANGE);
+
+	/* Light */
+	if (!st.resist_lite)
+		set_spell_color(col, 0, RSF0_BR_LITE, TERM_ORANGE);
+
+	/* Darkness */
+	if (!st.resist_dark)
+	{
+		set_spell_color(col, 0, RSF0_BR_DARK, TERM_ORANGE);
+		set_spell_color(col, 1, RSF1_BA_DARK, TERM_L_RED);
+	}
+
+	/* Water */
+	if (!st.resist_confu || !st.resist_sound)
+	{
+		set_spell_color(col, 1, RSF1_BA_WATE, TERM_L_RED);
+		set_spell_color(col, 1, RSF1_BO_WATE, TERM_L_RED);
+	}
+	else
+	{
+		set_spell_color(col, 1, RSF1_BA_WATE, TERM_ORANGE);
+		set_spell_color(col, 1, RSF1_BO_WATE, TERM_ORANGE);
+	}
+
+	/* Mana */
+	set_spell_color(col, 0, RSF1_BO_MANA, TERM_L_RED);
+	set_spell_color(col, 1, RSF1_BA_MANA, TERM_L_RED);
+	set_spell_color(col, 1, RSF1_BO_MANA, TERM_L_RED);
+
+	/* These attacks only apply without a perfect save */
+	if (st.skills[SKILL_SAVE] < 100)
+	{
+		/* Amnesia */
+		set_spell_color(col, 2, RSF2_FORGET, TERM_YELLOW);
+
+		/* Fear */
+		if (!st.resist_fear)
+		{
+			col->melee[RBE_TERRIFY] = TERM_YELLOW;
+			set_spell_color(col, 1, RSF1_SCARE, TERM_YELLOW);
+		}
+
+		/* Paralysis and slow */
+		if (!st.free_act)
+		{
+			col->melee[RBE_PARALYZE] = TERM_L_RED;
+			set_spell_color(col, 1, RSF1_HOLD, TERM_L_RED);
+			set_spell_color(col, 1, RSF1_SLOW, TERM_ORANGE);
+		}
+
+		/* Blind */
+		if (!st.resist_blind)
+			set_spell_color(col, 1, RSF1_BLIND, TERM_ORANGE);
+
+		/* Confusion */
+		if (!st.resist_confu)
+			set_spell_color(col, 1, RSF1_CONF, TERM_ORANGE);
+
+		/* Cause wounds */
+		set_spell_color(col, 1, RSF1_CAUSE_1, TERM_YELLOW);
+		set_spell_color(col, 1, RSF1_CAUSE_2, TERM_YELLOW);
+		set_spell_color(col, 1, RSF1_CAUSE_3, TERM_YELLOW);
+		set_spell_color(col, 1, RSF1_CAUSE_4, TERM_YELLOW);
+
+		/* Mind blast */
+		set_spell_color(col, 1, RSF1_MIND_BLAST,
+			(st.resist_confu ? TERM_YELLOW : TERM_ORANGE));
+
+		/* Brain smash slows even when conf/blind resisted */
+		set_spell_color(col, 1, RSF1_BRAIN_SMASH, (st.resist_blind &&
+			st.free_act && st.resist_confu ? TERM_ORANGE : TERM_L_RED));
+	}
+
+	/* Gold theft */
+	if (p_ptr->lev + adj_dex_safe[st.stat_ind[A_DEX]] < 100 && p_ptr->au)
+		col->melee[RBE_EAT_GOLD] = TERM_YELLOW;
+
+	/* Melee blindness and hallucinations */
+	if (!st.resist_blind)
+		col->melee[RBE_BLIND] = TERM_YELLOW;
+	if (!st.resist_chaos)
+		col->melee[RBE_HALLU] = TERM_YELLOW;
+
+	/* Stat draining is bad */
+	if (!st.sustain_str) col->melee[RBE_LOSE_STR] = TERM_ORANGE;
+	if (!st.sustain_int) col->melee[RBE_LOSE_INT] = TERM_ORANGE;
+	if (!st.sustain_wis) col->melee[RBE_LOSE_WIS] = TERM_ORANGE;
+	if (!st.sustain_dex) col->melee[RBE_LOSE_DEX] = TERM_ORANGE;
+	if (!st.sustain_con) col->melee[RBE_LOSE_CON] = TERM_ORANGE;
+	if (!st.sustain_chr) col->melee[RBE_LOSE_CHR] = TERM_ORANGE;
+
+	/* Drain all gets a red warning */
+	if (!st.sustain_str || !st.sustain_int || !st.sustain_wis ||
+			!st.sustain_dex || !st.sustain_con || !st.sustain_chr)
+		col->melee[RBE_LOSE_ALL] = TERM_L_RED;
+
+	/* Hold life isn't 100% effective */
+	col->melee[RBE_EXP_10] = col->melee[RBE_EXP_20] =
+		col->melee[RBE_EXP_40] = col->melee[RBE_EXP_80] =
+		st.hold_life ? TERM_YELLOW : TERM_ORANGE;
+
+	/* Shatter is always noteworthy */
+	col->melee[RBE_SHATTER] = TERM_YELLOW;
+
+	/* Heal (and drain mana) and haste are always noteworthy */
+	set_spell_color(col, 2, RSF2_HEAL, TERM_YELLOW);
+	set_spell_color(col, 1, RSF1_DRAIN_MANA, TERM_YELLOW);
+	set_spell_color(col, 2, RSF2_HASTE, TERM_YELLOW);
+
+	/* Player teleports and traps are annoying */
+	set_spell_color(col, 2, RSF2_TELE_TO, TERM_YELLOW);
+	set_spell_color(col, 2, RSF2_TELE_AWAY, TERM_YELLOW);
+	if (!st.resist_nexus && st.skills[SKILL_SAVE] < 100)
+		set_spell_color(col, 2, RSF2_TELE_LEVEL, TERM_YELLOW);
+	set_spell_color(col, 2, RSF2_TRAPS, TERM_YELLOW);
+
+	/* Summons are potentially dangerous */
+	set_spell_color(col, 2, RSF2_S_MONSTER, TERM_ORANGE);
+	set_spell_color(col, 2, RSF2_S_MONSTERS, TERM_ORANGE);
+	set_spell_color(col, 2, RSF2_S_KIN, TERM_ORANGE);
+	set_spell_color(col, 2, RSF2_S_ANIMAL, TERM_ORANGE);
+	set_spell_color(col, 2, RSF2_S_SPIDER, TERM_ORANGE);
+	set_spell_color(col, 2, RSF2_S_HOUND, TERM_ORANGE);
+	set_spell_color(col, 2, RSF2_S_HYDRA, TERM_ORANGE);
+	set_spell_color(col, 2, RSF2_S_ANGEL, TERM_ORANGE);
+	set_spell_color(col, 2, RSF2_S_DEMON, TERM_ORANGE);
+	set_spell_color(col, 2, RSF2_S_DRAGON, TERM_ORANGE);
+	set_spell_color(col, 2, RSF2_S_UNDEAD, TERM_ORANGE);
+
+	/* High level summons are very dangerous */
+	set_spell_color(col, 2, RSF2_S_HI_DEMON, TERM_L_RED);
+	set_spell_color(col, 2, RSF2_S_HI_DRAGON, TERM_L_RED);
+	set_spell_color(col, 2, RSF2_S_HI_UNDEAD, TERM_L_RED);
+	set_spell_color(col, 2, RSF2_S_UNIQUE, TERM_L_RED);
+	set_spell_color(col, 2, RSF2_S_WRAITH, TERM_L_RED);
+
+	/* Shrieking can lead to bad combos */
+	set_spell_color(col, 0, RSF0_SHRIEK, TERM_ORANGE);
+
+	/* Ranged attacks can't be resisted (only mitigated by accuracy)
+	 * They are colored yellow to indicate the damage is a hard value
+	 */
+	set_spell_color(col, 0, RSF0_ARROW_1, TERM_YELLOW);
+	set_spell_color(col, 0, RSF0_ARROW_2, TERM_YELLOW);
+	set_spell_color(col, 0, RSF0_ARROW_3, TERM_YELLOW);
+	set_spell_color(col, 0, RSF0_ARROW_4, TERM_YELLOW);
+	set_spell_color(col, 0, RSF0_BOULDER, TERM_YELLOW);
+}
 
 
 
@@ -148,16 +537,18 @@ static void describe_monster_desc(int r_idx)
 }
 
 
-static void describe_monster_spells(int r_idx, const monster_lore *l_ptr)
+static void describe_monster_spells(int r_idx, const monster_lore *l_ptr, const atk_colors *colors)
 {
 	const monster_race *r_ptr = &r_info[r_idx];
 	int m, n;
 	int msex = 0;
 	bool breath = FALSE;
 	bool magic = FALSE;
-	int vn;
-	cptr vp[64];
-
+	int vn; /* list size */
+	cptr vp[64]; /* list item names */
+	int vc[64]; /* list colors */
+	int vd[64]; /* list avg damage values */
+	int known_hp;
 
 	/* Extract a gender (if applicable) */
 	if (r_ptr->flags[0] & RF0_FEMALE) msex = 2;
@@ -165,45 +556,184 @@ static void describe_monster_spells(int r_idx, const monster_lore *l_ptr)
 
 	/* Collect innate attacks */
 	vn = 0;
-	if (l_ptr->spell_flags[0] & RSF0_SHRIEK)  vp[vn++] = "shriek for help";
-	if (l_ptr->spell_flags[0] & RSF0_XXX2)    vp[vn++] = "do something";
-	if (l_ptr->spell_flags[0] & RSF0_XXX3)    vp[vn++] = "do something";
-	if (l_ptr->spell_flags[0] & RSF0_XXX4)    vp[vn++] = "do something";
-	if (l_ptr->spell_flags[0] & RSF0_ARROW_1) vp[vn++] = "fire an arrow";
-	if (l_ptr->spell_flags[0] & RSF0_ARROW_2) vp[vn++] = "fire arrows";
-	if (l_ptr->spell_flags[0] & RSF0_ARROW_3) vp[vn++] = "fire a missile";
-	if (l_ptr->spell_flags[0] & RSF0_ARROW_4) vp[vn++] = "fire missiles";
-	if (l_ptr->spell_flags[0] & RSF0_BOULDER) vp[vn++] = "throw boulders";
+	for(m = 0; m < 64; m++) { vd[m] = 0; vc[m] = TERM_WHITE; }
+
+	if (l_ptr->spell_flags[0] & RSF0_SHRIEK)
+	{
+		vp[vn] = "shriek for help";
+		vc[vn++] = get_spell_color(colors, 0, RSF0_SHRIEK);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_ARROW_1)
+	{
+		vp[vn] = "fire an arrow";
+		vc[vn] = get_spell_color(colors, 0, RSF0_ARROW_1);
+		vd[vn++] = ARROW1_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_ARROW_2)
+	{
+		vp[vn] = "fire arrows";
+		vc[vn] = get_spell_color(colors, 0, RSF0_ARROW_2);
+		vd[vn++] = ARROW2_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_ARROW_3)
+	{
+		vp[vn] = "fire a missile";
+		vc[vn] = get_spell_color(colors, 0, RSF0_ARROW_3);
+		vd[vn++] = ARROW3_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_ARROW_4)
+	{
+		vp[vn] = "fire missiles";
+		vc[vn] = get_spell_color(colors, 0, RSF0_ARROW_4);
+		vd[vn++] = ARROW4_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_BOULDER)
+	{
+		vp[vn] = "throw boulders";
+		vc[vn] = get_spell_color(colors, 0, RSF0_BOULDER);
+		vd[vn++] = BOULDER_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_XXX2) vp[vn++] = "do something";
+	if (l_ptr->spell_flags[0] & RSF0_XXX3) vp[vn++] = "do something";
+	if (l_ptr->spell_flags[0] & RSF0_XXX4) vp[vn++] = "do something";
 
 	/* Describe innate attacks */
-	output_desc_list(msex, "may", vp, -vn, TERM_WHITE);
-
+	if(vn)
+	{
+		text_out("%^s may ", wd_he[msex]);
+		output_list_dam(vp, -vn, vc, vd);
+		text_out(".  ");
+	}
 
 	/* Collect breaths */
 	vn = 0;
-	if (l_ptr->spell_flags[0] & RSF0_BR_ACID) vp[vn++] = "acid";
-	if (l_ptr->spell_flags[0] & RSF0_BR_ELEC) vp[vn++] = "lightning";
-	if (l_ptr->spell_flags[0] & RSF0_BR_FIRE) vp[vn++] = "fire";
-	if (l_ptr->spell_flags[0] & RSF0_BR_COLD) vp[vn++] = "frost";
-	if (l_ptr->spell_flags[0] & RSF0_BR_POIS) vp[vn++] = "poison";
-	if (l_ptr->spell_flags[0] & RSF0_BR_NETH) vp[vn++] = "nether";
-	if (l_ptr->spell_flags[0] & RSF0_BR_LITE) vp[vn++] = "light";
-	if (l_ptr->spell_flags[0] & RSF0_BR_DARK) vp[vn++] = "darkness";
-	if (l_ptr->spell_flags[0] & RSF0_BR_CONF) vp[vn++] = "confusion";
-	if (l_ptr->spell_flags[0] & RSF0_BR_SOUN) vp[vn++] = "sound";
-	if (l_ptr->spell_flags[0] & RSF0_BR_CHAO) vp[vn++] = "chaos";
-	if (l_ptr->spell_flags[0] & RSF0_BR_DISE) vp[vn++] = "disenchantment";
-	if (l_ptr->spell_flags[0] & RSF0_BR_NEXU) vp[vn++] = "nexus";
-	if (l_ptr->spell_flags[0] & RSF0_BR_TIME) vp[vn++] = "time";
-	if (l_ptr->spell_flags[0] & RSF0_BR_INER) vp[vn++] = "inertia";
-	if (l_ptr->spell_flags[0] & RSF0_BR_GRAV) vp[vn++] = "gravity";
-	if (l_ptr->spell_flags[0] & RSF0_BR_SHAR) vp[vn++] = "shards";
-	if (l_ptr->spell_flags[0] & RSF0_BR_PLAS) vp[vn++] = "plasma";
-	if (l_ptr->spell_flags[0] & RSF0_BR_WALL) vp[vn++] = "force";
-	if (l_ptr->spell_flags[0] & RSF0_BR_MANA) vp[vn++] = "mana";
-	if (l_ptr->spell_flags[0] & RSF0_XXX5)    vp[vn++] = "something";
-	if (l_ptr->spell_flags[0] & RSF0_XXX6)    vp[vn++] = "something";
-	if (l_ptr->spell_flags[0] & RSF0_XXX7)    vp[vn++] = "something";
+	for(m = 0; m < 64; m++) { vd[m] = 0; vc[m] = TERM_WHITE; }
+
+	known_hp = know_armour(r_idx, l_ptr) ? r_ptr->avg_hp : 0;
+
+	if (l_ptr->spell_flags[0] & RSF0_BR_ACID)
+	{
+		vp[vn] = "acid";
+		vc[vn] = get_spell_color(colors, 0, RSF0_BR_ACID);
+		vd[vn++] = MIN(known_hp / BR_ACID_DIVISOR, BR_ACID_MAX);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_BR_ELEC)
+	{
+		vp[vn] = "lightning";
+		vc[vn] = get_spell_color(colors, 0, RSF0_BR_ELEC);
+		vd[vn++] = MIN(known_hp / BR_ELEC_DIVISOR, BR_ELEC_MAX);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_BR_FIRE)
+	{
+		vp[vn] = "fire";
+		vc[vn] = get_spell_color(colors, 0, RSF0_BR_FIRE);
+		vd[vn++] = MIN(known_hp / BR_FIRE_DIVISOR, BR_FIRE_MAX);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_BR_COLD)
+	{
+		vp[vn] = "frost";
+		vc[vn] = get_spell_color(colors, 0, RSF0_BR_COLD);
+		vd[vn++] = MIN(known_hp / BR_COLD_DIVISOR, BR_COLD_MAX);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_BR_POIS)
+	{
+		vp[vn] = "poison";
+		vc[vn] = get_spell_color(colors, 0, RSF0_BR_POIS);
+		vd[vn++] = MIN(known_hp / BR_POIS_DIVISOR, BR_POIS_MAX);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_BR_NETH)
+	{
+		vp[vn] = "nether";
+		vc[vn] = get_spell_color(colors, 0, RSF0_BR_NETH);
+		vd[vn++] = MIN(known_hp / BR_NETH_DIVISOR, BR_NETH_MAX);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_BR_LITE)
+	{
+		vp[vn] = "light";
+		vc[vn] = get_spell_color(colors, 0, RSF0_BR_LITE);
+		vd[vn++] = MIN(known_hp / BR_LITE_DIVISOR, BR_LITE_MAX);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_BR_DARK)
+	{
+		vp[vn] = "darkness";
+		vc[vn] = get_spell_color(colors, 0, RSF0_BR_DARK);
+		vd[vn++] = MIN(known_hp / BR_DARK_DIVISOR, BR_DARK_MAX);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_BR_CONF)
+	{
+		vp[vn] = "confusion";
+		vc[vn] = get_spell_color(colors, 0, RSF0_BR_CONF);
+		vd[vn++] = MIN(known_hp / BR_CONF_DIVISOR, BR_CONF_MAX);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_BR_SOUN)
+	{
+		vp[vn] = "sound";
+		vc[vn] = get_spell_color(colors, 0, RSF0_BR_SOUN);
+		vd[vn++] = MIN(known_hp / BR_SOUN_DIVISOR, BR_SOUN_MAX);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_BR_CHAO)
+	{
+		vp[vn] = "chaos";
+		vc[vn] = get_spell_color(colors, 0, RSF0_BR_CHAO);
+		vd[vn++] = MIN(known_hp / BR_CHAO_DIVISOR, BR_CHAO_MAX);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_BR_DISE)
+	{
+		vp[vn] = "disenchantment";
+		vc[vn] = get_spell_color(colors, 0, RSF0_BR_DISE);
+		vd[vn++] = MIN(known_hp / BR_DISE_DIVISOR, BR_DISE_MAX);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_BR_NEXU)
+	{
+		vp[vn] = "nexus";
+		vc[vn] = get_spell_color(colors, 0, RSF0_BR_NEXU);
+		vd[vn++] = MIN(known_hp / BR_NEXU_DIVISOR, BR_NEXU_MAX);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_BR_TIME)
+	{
+		vp[vn] = "time";
+		vc[vn] = get_spell_color(colors, 0, RSF0_BR_TIME);
+		vd[vn++] = MIN(known_hp / BR_TIME_DIVISOR, BR_TIME_MAX);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_BR_INER)
+	{
+		vp[vn] = "inertia";
+		vc[vn] = get_spell_color(colors, 0, RSF0_BR_INER);
+		vd[vn++] = MIN(known_hp / BR_INER_DIVISOR, BR_INER_MAX);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_BR_GRAV)
+	{
+		vp[vn] = "gravity";
+		vc[vn] = get_spell_color(colors, 0, RSF0_BR_GRAV);
+		vd[vn++] = MIN(known_hp / BR_GRAV_DIVISOR, BR_GRAV_MAX);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_BR_SHAR)
+	{
+		vp[vn] = "shards";
+		vc[vn] = get_spell_color(colors, 0, RSF0_BR_SHAR);
+		vd[vn++] = MIN(known_hp / BR_SHAR_DIVISOR, BR_SHAR_MAX);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_BR_PLAS)
+	{
+		vp[vn] = "plasma";
+		vc[vn] = get_spell_color(colors, 0, RSF0_BR_PLAS);
+		vd[vn++] = MIN(known_hp / BR_PLAS_DIVISOR, BR_PLAS_MAX);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_BR_WALL)
+	{
+		vp[vn] = "force";
+		vc[vn] = get_spell_color(colors, 0, RSF0_BR_WALL);
+		vd[vn++] = MIN(known_hp / BR_FORC_DIVISOR, BR_FORC_MAX);
+	}
+	if (l_ptr->spell_flags[0] & RSF0_BR_MANA)
+	{
+		vp[vn] = "mana";
+		vc[vn] = get_spell_color(colors, 0, RSF0_BR_MANA);
+		vd[vn++] = 0;
+	}
+	if (l_ptr->spell_flags[0] & RSF0_XXX5) vp[vn++] = "something";
+	if (l_ptr->spell_flags[0] & RSF0_XXX6) vp[vn++] = "something";
+	if (l_ptr->spell_flags[0] & RSF0_XXX7) vp[vn++] = "something";
 
 	/* Describe breaths */
 	if (vn)
@@ -214,76 +744,351 @@ static void describe_monster_spells(int r_idx, const monster_lore *l_ptr)
 		/* Display */
 		text_out("%^s may ", wd_he[msex]);
 		text_out_c(TERM_L_RED, "breathe ");
-		output_list(vp, -vn, TERM_WHITE);
+		output_list_dam(vp, -vn, vc, vd);
 	}
 
 
-	/* Collect spells */
+	/* Collect spell information */
 	vn = 0;
-	if (l_ptr->spell_flags[1] & RSF1_BA_ACID)     vp[vn++] = "produce acid balls";
-	if (l_ptr->spell_flags[1] & RSF1_BA_ELEC)     vp[vn++] = "produce lightning balls";
-	if (l_ptr->spell_flags[1] & RSF1_BA_FIRE)     vp[vn++] = "produce fire balls";
-	if (l_ptr->spell_flags[1] & RSF1_BA_COLD)     vp[vn++] = "produce frost balls";
-	if (l_ptr->spell_flags[1] & RSF1_BA_POIS)     vp[vn++] = "produce poison balls";
-	if (l_ptr->spell_flags[1] & RSF1_BA_NETH)     vp[vn++] = "produce nether balls";
-	if (l_ptr->spell_flags[1] & RSF1_BA_WATE)     vp[vn++] = "produce water balls";
-	if (l_ptr->spell_flags[1] & RSF1_BA_MANA)     vp[vn++] = "invoke mana storms";
-	if (l_ptr->spell_flags[1] & RSF1_BA_DARK)     vp[vn++] = "invoke darkness storms";
-	if (l_ptr->spell_flags[1] & RSF1_DRAIN_MANA)  vp[vn++] = "drain mana";
-	if (l_ptr->spell_flags[1] & RSF1_MIND_BLAST)  vp[vn++] = "cause mind blasting";
-	if (l_ptr->spell_flags[1] & RSF1_BRAIN_SMASH) vp[vn++] = "cause brain smashing";
-	if (l_ptr->spell_flags[1] & RSF1_CAUSE_1)     vp[vn++] = "cause light wounds";
-	if (l_ptr->spell_flags[1] & RSF1_CAUSE_2)     vp[vn++] = "cause serious wounds";
-	if (l_ptr->spell_flags[1] & RSF1_CAUSE_3)     vp[vn++] = "cause critical wounds";
-	if (l_ptr->spell_flags[1] & RSF1_CAUSE_4)     vp[vn++] = "cause mortal wounds";
-	if (l_ptr->spell_flags[1] & RSF1_BO_ACID)     vp[vn++] = "produce acid bolts";
-	if (l_ptr->spell_flags[1] & RSF1_BO_ELEC)     vp[vn++] = "produce lightning bolts";
-	if (l_ptr->spell_flags[1] & RSF1_BO_FIRE)     vp[vn++] = "produce fire bolts";
-	if (l_ptr->spell_flags[1] & RSF1_BO_COLD)     vp[vn++] = "produce frost bolts";
-	if (l_ptr->spell_flags[1] & RSF1_BO_POIS)     vp[vn++] = "produce poison bolts";
-	if (l_ptr->spell_flags[1] & RSF1_BO_NETH)     vp[vn++] = "produce nether bolts";
-	if (l_ptr->spell_flags[1] & RSF1_BO_WATE)     vp[vn++] = "produce water bolts";
-	if (l_ptr->spell_flags[1] & RSF1_BO_MANA)     vp[vn++] = "produce mana bolts";
-	if (l_ptr->spell_flags[1] & RSF1_BO_PLAS)     vp[vn++] = "produce plasma bolts";
-	if (l_ptr->spell_flags[1] & RSF1_BO_ICEE)     vp[vn++] = "produce ice bolts";
-	if (l_ptr->spell_flags[1] & RSF1_MISSILE)     vp[vn++] = "produce magic missiles";
-	if (l_ptr->spell_flags[1] & RSF1_SCARE)       vp[vn++] = "terrify";
-	if (l_ptr->spell_flags[1] & RSF1_BLIND)       vp[vn++] = "blind";
-	if (l_ptr->spell_flags[1] & RSF1_CONF)        vp[vn++] = "confuse";
-	if (l_ptr->spell_flags[1] & RSF1_SLOW)        vp[vn++] = "slow";
-	if (l_ptr->spell_flags[1] & RSF1_HOLD)        vp[vn++] = "paralyze";
-	if (l_ptr->spell_flags[2] & RSF2_HASTE)       vp[vn++] = "haste-self";
-	if (l_ptr->spell_flags[2] & RSF2_XXX1)        vp[vn++] = "do something";
-	if (l_ptr->spell_flags[2] & RSF2_HEAL)        vp[vn++] = "heal-self";
-	if (l_ptr->spell_flags[2] & RSF2_XXX2)        vp[vn++] = "do something";
-	if (l_ptr->spell_flags[2] & RSF2_BLINK)       vp[vn++] = "blink-self";
-	if (l_ptr->spell_flags[2] & RSF2_TPORT)       vp[vn++] = "teleport-self";
-	if (l_ptr->spell_flags[2] & RSF2_XXX3)        vp[vn++] = "do something";
-	if (l_ptr->spell_flags[2] & RSF2_XXX4)        vp[vn++] = "do something";
-	if (l_ptr->spell_flags[2] & RSF2_TELE_TO)     vp[vn++] = "teleport to";
-	if (l_ptr->spell_flags[2] & RSF2_TELE_AWAY)   vp[vn++] = "teleport away";
-	if (l_ptr->spell_flags[2] & RSF2_TELE_LEVEL)  vp[vn++] = "teleport level";
-	if (l_ptr->spell_flags[2] & RSF2_XXX5)        vp[vn++] = "do something";
-	if (l_ptr->spell_flags[2] & RSF2_DARKNESS)    vp[vn++] = "create darkness";
-	if (l_ptr->spell_flags[2] & RSF2_TRAPS)       vp[vn++] = "create traps";
-	if (l_ptr->spell_flags[2] & RSF2_FORGET)      vp[vn++] = "cause amnesia";
-	if (l_ptr->spell_flags[2] & RSF2_XXX6)        vp[vn++] = "do something";
-	if (l_ptr->spell_flags[2] & RSF2_S_KIN)       vp[vn++] = "summon similar monsters";
-	if (l_ptr->spell_flags[2] & RSF2_S_MONSTER)   vp[vn++] = "summon a monster";
-	if (l_ptr->spell_flags[2] & RSF2_S_MONSTERS)  vp[vn++] = "summon monsters";
-	if (l_ptr->spell_flags[2] & RSF2_S_ANIMAL)    vp[vn++] = "summon animals";
-	if (l_ptr->spell_flags[2] & RSF2_S_SPIDER)    vp[vn++] = "summon spiders";
-	if (l_ptr->spell_flags[2] & RSF2_S_HOUND)     vp[vn++] = "summon hounds";
-	if (l_ptr->spell_flags[2] & RSF2_S_HYDRA)     vp[vn++] = "summon hydras";
-	if (l_ptr->spell_flags[2] & RSF2_S_ANGEL)     vp[vn++] = "summon an angel";
-	if (l_ptr->spell_flags[2] & RSF2_S_DEMON)     vp[vn++] = "summon a demon";
-	if (l_ptr->spell_flags[2] & RSF2_S_UNDEAD)    vp[vn++] = "summon an undead";
-	if (l_ptr->spell_flags[2] & RSF2_S_DRAGON)    vp[vn++] = "summon a dragon";
-	if (l_ptr->spell_flags[2] & RSF2_S_HI_UNDEAD) vp[vn++] = "summon greater undead";
-	if (l_ptr->spell_flags[2] & RSF2_S_HI_DRAGON) vp[vn++] = "summon ancient dragons";
-	if (l_ptr->spell_flags[2] & RSF2_S_HI_DEMON)  vp[vn++] = "summon greater demons";
-	if (l_ptr->spell_flags[2] & RSF2_S_WRAITH)    vp[vn++] = "summon ringwraiths";
-	if (l_ptr->spell_flags[2] & RSF2_S_UNIQUE)    vp[vn++] = "summon uniques";
+	for(m = 0; m < 64; m++) { vd[m] = 0; vc[m] = TERM_WHITE; }
+
+	/* Ball spells */
+	if (l_ptr->spell_flags[1] & RSF1_BA_MANA)
+	{
+		vp[vn] = "invoke mana storms";
+		vc[vn] = get_spell_color(colors, 1, RSF1_BA_MANA);
+		vd[vn++] = BA_MANA_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_BA_DARK)
+	{
+		vp[vn] = "invoke darkness storms";
+		vc[vn] = get_spell_color(colors, 1, RSF1_BA_DARK);
+		vd[vn++] = BA_DARK_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_BA_WATE)
+	{
+		vp[vn] = "produce water balls";
+		vc[vn] = get_spell_color(colors, 1, RSF1_BA_WATE);
+		vd[vn++] = BA_WATE_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_BA_NETH)
+	{
+		vp[vn] = "produce nether balls";
+		vc[vn] = get_spell_color(colors, 1, RSF1_BA_NETH);
+		vd[vn++] = BA_NETH_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_BA_FIRE)
+	{
+		vp[vn] = "produce fire balls";
+		vc[vn] = get_spell_color(colors, 1, RSF1_BA_FIRE);
+		vd[vn++] = BA_FIRE_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_BA_ACID)
+	{
+		vp[vn] = "produce acid balls";
+		vc[vn] = get_spell_color(colors, 1, RSF1_BA_ACID);
+		vd[vn++] = BA_ACID_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_BA_COLD)
+	{
+		vp[vn] = "produce frost balls";
+		vc[vn] = get_spell_color(colors, 1, RSF1_BA_COLD);
+		vd[vn++] = BA_COLD_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_BA_ELEC)
+	{
+		vp[vn] = "produce lightning balls";
+		vc[vn] = get_spell_color(colors, 1, RSF1_BA_ELEC);
+		vd[vn++] = BA_ELEC_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_BA_POIS)
+	{
+		vp[vn] = "produce poison balls";
+		vc[vn] = get_spell_color(colors, 1, RSF1_BA_POIS);
+		vd[vn++] = BA_POIS_DMG(r_ptr->level, AVERAGE);
+	}
+
+	/* Bolt spells */
+	if (l_ptr->spell_flags[1] & RSF1_BO_MANA)
+	{
+		vp[vn] = "produce mana bolts";
+		vc[vn] = get_spell_color(colors, 1, RSF1_BO_MANA);
+		vd[vn++] = BO_MANA_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_BO_PLAS)
+	{
+		vp[vn] = "produce plasma bolts";
+		vc[vn] = get_spell_color(colors, 1, RSF1_BO_PLAS);
+		vd[vn++] = BO_PLAS_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_BO_ICEE)
+	{
+		vp[vn] = "produce ice bolts";
+		vc[vn] = get_spell_color(colors, 1, RSF1_BO_ICEE);
+		vd[vn++] = BO_ICEE_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_BO_WATE)
+	{
+		vp[vn] = "produce water bolts";
+		vc[vn] = get_spell_color(colors, 1, RSF1_BO_WATE);
+		vd[vn++] = BO_WATE_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_BO_NETH)
+	{
+		vp[vn] = "produce nether bolts";
+		vc[vn] = get_spell_color(colors, 1, RSF1_BO_NETH);
+		vd[vn++] = BO_NETH_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_BO_FIRE)
+	{
+		vp[vn] = "produce fire bolts";
+		vc[vn] = get_spell_color(colors, 1, RSF1_BO_FIRE);
+		vd[vn++] = BO_FIRE_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_BO_ACID)
+	{
+		vp[vn] = "produce acid bolts";
+		vc[vn] = get_spell_color(colors, 1, RSF1_BO_ACID);
+		vd[vn++] = BO_ACID_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_BO_COLD)
+	{
+		vp[vn] = "produce frost bolts";
+		vc[vn] = get_spell_color(colors, 1, RSF1_BO_COLD);
+		vd[vn++] = BO_COLD_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_BO_ELEC)
+	{
+		vp[vn] = "produce lightning bolts";
+		vc[vn] = get_spell_color(colors, 1, RSF1_BO_ELEC);
+		vd[vn++] = BO_ELEC_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_BO_POIS)
+	{
+		vp[vn] = "produce poison bolts";
+		vc[vn] = get_spell_color(colors, 1, RSF1_BO_POIS);
+		vd[vn++] = 0;
+	}
+	if (l_ptr->spell_flags[1] & RSF1_MISSILE)
+	{
+		vp[vn] = "produce magic missiles";
+		vc[vn] = get_spell_color(colors, 1, RSF1_MISSILE);
+		vd[vn++] = MISSILE_DMG(r_ptr->level, AVERAGE);
+	}
+
+	/* Curses */
+	if (l_ptr->spell_flags[1] & RSF1_BRAIN_SMASH)
+	{
+		vp[vn] = "cause brain smashing";
+		vc[vn] = get_spell_color(colors, 1, RSF1_BRAIN_SMASH);
+		vd[vn++] = BRAIN_SMASH_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_MIND_BLAST)
+	{
+		vp[vn] = "cause mind blasting";
+		vc[vn] = get_spell_color(colors, 1, RSF1_MIND_BLAST);
+		vd[vn++] = MIND_BLAST_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_CAUSE_4)
+	{
+		vp[vn] = "cause mortal wounds";
+		vc[vn] = get_spell_color(colors, 1, RSF1_CAUSE_4);
+		vd[vn++] = CAUSE4_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_CAUSE_3)
+	{
+		vp[vn] = "cause critical wounds";
+		vc[vn] = get_spell_color(colors, 1, RSF1_CAUSE_3);
+		vd[vn++] = CAUSE3_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_CAUSE_2)
+	{
+		vp[vn] = "cause serious wounds";
+		vc[vn] = get_spell_color(colors, 1, RSF1_CAUSE_2);
+		vd[vn++] = CAUSE2_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_CAUSE_1)
+	{
+		vp[vn] = "cause light wounds";
+		vc[vn] = get_spell_color(colors, 1, RSF1_CAUSE_1);
+		vd[vn++] = CAUSE1_DMG(r_ptr->level, AVERAGE);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_FORGET)
+	{
+		vp[vn] = "cause amnesia";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_FORGET);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_SCARE)
+	{
+		vp[vn] = "terrify";
+		vc[vn++] = get_spell_color(colors, 1, RSF1_SCARE);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_BLIND)
+	{
+		vp[vn] = "blind";
+		vc[vn++] = get_spell_color(colors, 1, RSF1_BLIND);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_CONF)
+	{
+		vp[vn] = "confuse";
+		vc[vn++] = get_spell_color(colors, 1, RSF1_CONF);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_SLOW)
+	{
+		vp[vn] = "slow";
+		vc[vn++] = get_spell_color(colors, 1, RSF1_SLOW);
+	}
+	if (l_ptr->spell_flags[1] & RSF1_HOLD)
+	{
+		vp[vn] = "paralyze";
+		vc[vn++] = get_spell_color(colors, 1, RSF1_HOLD);
+	}
+
+	/* Healing and haste */
+	if (l_ptr->spell_flags[1] & RSF1_DRAIN_MANA)
+	{
+		vp[vn] = "drain mana";
+		vc[vn++] = get_spell_color(colors, 1, RSF1_DRAIN_MANA);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_HEAL)
+	{
+		vp[vn] = "heal-self";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_HEAL);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_HASTE)
+	{
+		vp[vn] = "haste-self";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_HASTE);
+	}
+
+	/* Teleports */
+	if (l_ptr->spell_flags[2] & RSF2_BLINK)
+	{
+		vp[vn] = "blink-self";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_BLINK);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_TPORT)
+	{
+		vp[vn] = "teleport-self";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_TPORT);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_TELE_TO)
+	{
+		vp[vn] = "teleport to";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_TELE_TO);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_TELE_AWAY)
+	{
+		vp[vn] = "teleport away";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_TELE_AWAY);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_TELE_LEVEL)
+	{
+		vp[vn] = "teleport level";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_TELE_LEVEL);
+	}
+
+	/* Annoyances */
+	if (l_ptr->spell_flags[2] & RSF2_DARKNESS)
+	{
+		vp[vn] = "create darkness";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_DARKNESS);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_TRAPS)
+	{
+		vp[vn] = "create traps";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_TRAPS);
+	}
+
+	/* Summoning */
+	if (l_ptr->spell_flags[2] & RSF2_S_KIN)
+	{
+		vp[vn] = "summon similar monsters";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_S_KIN);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_S_MONSTER)
+	{
+		vp[vn] = "summon a monster";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_S_MONSTER);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_S_MONSTERS)
+	{
+		vp[vn] = "summon monsters";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_S_MONSTERS);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_S_ANIMAL)
+	{
+		vp[vn] = "summon animals";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_S_ANIMAL);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_S_SPIDER)
+	{
+		vp[vn] = "summon spiders";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_S_SPIDER);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_S_HOUND)
+	{
+		vp[vn] = "summon hounds";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_S_HOUND);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_S_HYDRA)
+	{
+		vp[vn] = "summon hydras";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_S_HYDRA);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_S_ANGEL)
+	{
+		vp[vn] = "summon an angel";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_S_ANGEL);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_S_DEMON)
+	{
+		vp[vn] = "summon a demon";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_S_DEMON);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_S_UNDEAD)
+	{
+		vp[vn] = "summon an undead";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_S_UNDEAD);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_S_DRAGON)
+	{
+		vp[vn] = "summon a dragon";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_S_DRAGON);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_S_HI_UNDEAD)
+	{
+		vp[vn] = "summon greater undead";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_S_HI_UNDEAD);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_S_HI_DRAGON)
+	{
+		vp[vn] = "summon ancient dragons";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_S_HI_DRAGON);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_S_HI_DEMON)
+	{
+		vp[vn] = "summon greater demons";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_S_HI_DEMON);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_S_WRAITH)
+	{
+		vp[vn] = "summon ringwraiths";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_S_WRAITH);
+	}
+	if (l_ptr->spell_flags[2] & RSF2_S_UNIQUE)
+	{
+		vp[vn] = "summon uniques";
+		vc[vn++] = get_spell_color(colors, 2, RSF2_S_UNIQUE);
+	}
+
+	/* For expansion */
+	if (l_ptr->spell_flags[2] & RSF2_XXX1) vp[vn++] = "do something";
+	if (l_ptr->spell_flags[2] & RSF2_XXX2) vp[vn++] = "do something";
+	if (l_ptr->spell_flags[2] & RSF2_XXX3) vp[vn++] = "do something";
+	if (l_ptr->spell_flags[2] & RSF2_XXX4) vp[vn++] = "do something";
+	if (l_ptr->spell_flags[2] & RSF2_XXX5) vp[vn++] = "do something";
+	if (l_ptr->spell_flags[2] & RSF2_XXX6) vp[vn++] = "do something";
 
 	/* Describe spells */
 	if (vn)
@@ -293,20 +1098,19 @@ static void describe_monster_spells(int r_idx, const monster_lore *l_ptr)
 
 		/* Intro */
 		if (breath)
-			text_out(", and is also ");
+			text_out(", and may ");
 		else
-			text_out("%^s is ", wd_he[msex]);
+			text_out("%^s may ", wd_he[msex]);
 
 		/* Verb Phrase */
-		text_out_c(TERM_L_RED, "magical");
-		text_out(", casting spells");
+		text_out_c(TERM_L_RED, "cast spells");
 
 		/* Adverb */
 		if (l_ptr->flags[1] & RF1_SMART) text_out(" intelligently");
 
 		/* List */
 		text_out(" which ");
-		output_list(vp, -vn, TERM_WHITE);
+		output_list_dam(vp, -vn, vc, vd);
 	}
 
 
@@ -368,31 +1172,35 @@ static void describe_monster_drop(int r_idx, const monster_lore *l_ptr)
 		n = MAX(l_ptr->drop_gold, l_ptr->drop_item);
 
 		/* Count drops */
-		if (n == 1) text_out(" a single ");
-		else if (n == 2) text_out(" one or two ");
-		else text_out(format(" up to %d ", n));
+		if (n == 1) text_out_c(TERM_BLUE, " a single ");
+		else if (n == 2) text_out_c(TERM_BLUE, " one or two ");
+		else
+		{
+			text_out(" up to ");
+			text_out_c(TERM_BLUE, format("%d ", n));
+		}
 
 
 		/* Quality */
-		if (l_ptr->flags[0] & RF0_DROP_GREAT) text_out("exceptional ");
-		else if (l_ptr->flags[0] & RF0_DROP_GOOD) text_out("good ");
+		if (l_ptr->flags[0] & RF0_DROP_GREAT) text_out_c(TERM_BLUE, "exceptional ");
+		else if (l_ptr->flags[0] & RF0_DROP_GOOD) text_out_c(TERM_BLUE, "good ");
 
 
 		/* Objects */
 		if (l_ptr->drop_item)
 		{
 			/* Dump "object(s)" */
-			text_out("object%s", PLURAL(n));
+			text_out_c(TERM_BLUE, "object%s", PLURAL(n));
 
 			/* Add conjunction if also dropping gold */
-			if (l_ptr->drop_gold) text_out(" or ");
+			if (l_ptr->drop_gold) text_out_c(TERM_BLUE, " or ");
 		}
 
 		/* Treasures */
 		if (l_ptr->drop_gold)
 		{
 			/* Dump "treasure(s)" */
-			text_out("treasure%s", PLURAL(n));
+			text_out_c(TERM_BLUE, "treasure%s", PLURAL(n));
 		}
 
 		/* End this sentence */
@@ -403,153 +1211,15 @@ static void describe_monster_drop(int r_idx, const monster_lore *l_ptr)
 /*
  * Describe all of a monster's attacks.
  */
-static void describe_monster_attack(int r_idx, const monster_lore *l_ptr)
+static void describe_monster_attack(int r_idx, const monster_lore *l_ptr, const atk_colors *colors)
 {
 	const monster_race *r_ptr = &r_info[r_idx];
 	int m, n, r;
-	u32b f[OBJ_FLAG_N];
-	bool known;
-
 	int msex = 0;
-
-	int color_special[RBE_MAX+1];
-	player_state st;
-
-	calc_bonuses(inventory, &st, TRUE);
-
-	/* Color-code special attacks.  Green is not special or resisted,
-	 * yellow is unresisted attacks that make a monster more dangerous,
-	 * red cannot be ignored regardless of power difference under
-	 * threat of expensive and lasting character harm.
-	 */
-
-	/* All special attacks are assumed ineffective */
-	for (m = 0; m <= RBE_MAX; m++)
-		color_special[m] = TERM_L_GREEN;
-
-	/* If you have an item that can be affected, item affecting attacks
-	 * are bad. */
-	for (m = 0; m < INVEN_TOTAL; m++)
-	{
-		object_type *o_ptr = &inventory[m];
-
-		/* Only occupied slots */
-		if (!o_ptr->k_idx) continue;
-
-		object_flags_known(o_ptr, f);
-
-		/* We need to be careful not to reveal the nature of the object
-		 * here.  Assume the player is conservative with unknown items.
-		 */
-		known = object_is_known(o_ptr);
-
-		/* Can only be hurt by disenchantment with an enchanted item */
-		if (m >= INVEN_WIELD && (!known || (o_ptr->to_a >= 0) ||
-				(o_ptr->to_h >= 0) || (o_ptr->to_d >= 0)) &&
-				!st.resist_disen)
-			color_special[RBE_UN_BONUS] = TERM_L_RED;
-
-		/* A charged item is needed for drain charges */
-		if (m < INVEN_PACK && (!known || o_ptr->pval > 0) &&
-				(o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND))
-			color_special[RBE_UN_POWER] = TERM_L_RED;
-
-		/* Non-artifacts are needed for theft */
-		if (m < INVEN_PACK && (!known || !artifact_p(o_ptr)))
-			color_special[RBE_EAT_ITEM] = TERM_L_RED;
-
-		/* Characters without food do not suffer from eat food */
-		if (m < INVEN_PACK && o_ptr->tval == TV_FOOD)
-			color_special[RBE_EAT_FOOD] = TERM_YELLOW;
-
-		/* A fueled lite is needed for eat light */
-		if (m == INVEN_LITE && !(f[2] & TR2_NO_FUEL) &&
-				(o_ptr->timeout > 0))
-			color_special[RBE_EAT_LITE] = TERM_YELLOW;
-
-		/* With corrodable equipment, acid is much worse */
-		if (m >= INVEN_BODY && m <= INVEN_FEET &&
-				(!known || o_ptr->ac + o_ptr->to_a > 0)
-				&& !(f[2] & TR2_IGNORE_ACID) && !st.immune_acid)
-			color_special[RBE_ACID] = TERM_L_RED;
-	}
-
-	/* If they can hurt the character, they're also bad, but this is in general
-	 * less of a problem than long-term equipment damage.
-	 */
-
-	if (!st.resist_pois && !p_ptr->timed[TMD_OPP_POIS])
-		color_special[RBE_POISON] = TERM_YELLOW;
-	if (p_ptr->au)
-		color_special[RBE_EAT_GOLD] = TERM_YELLOW;
-
-	/* Theft has a general resistance */
-	if (p_ptr->lev + adj_dex_safe[st.stat_ind[A_DEX]] >= 100)
-	{
-		color_special[RBE_EAT_GOLD] = TERM_L_GREEN;
-		color_special[RBE_EAT_ITEM] = TERM_L_GREEN;
-	}
-
-	/* Acid can cause both wounding and equipment damage - always display
-	 * the worse.
-	 */
-
-	if (!st.resist_acid && !st.immune_acid && !p_ptr->timed[TMD_OPP_ACID] &&
-			(color_special[RBE_ACID] != TERM_L_RED))
-		color_special[RBE_ACID] = TERM_YELLOW;
-	if (!st.resist_fire && !st.immune_fire && !p_ptr->timed[TMD_OPP_FIRE])
-		color_special[RBE_FIRE] = TERM_YELLOW;
-	if (!st.resist_elec && !st.immune_elec && !p_ptr->timed[TMD_OPP_ELEC])
-		color_special[RBE_ELEC] = TERM_YELLOW;
-	if (!st.resist_cold && !st.immune_cold && !p_ptr->timed[TMD_OPP_COLD])
-		color_special[RBE_COLD] = TERM_YELLOW;
-
-	if (!p_ptr->state.resist_blind)
-		color_special[RBE_BLIND] = TERM_YELLOW;
-	if (!p_ptr->state.resist_confu)
-		color_special[RBE_CONFUSE] = TERM_YELLOW;
-	if (!p_ptr->state.resist_fear && p_ptr->state.skills[SKILL_SAVE] < 100)
-		color_special[RBE_TERRIFY] = TERM_YELLOW;
-	if (!p_ptr->state.resist_chaos)
-		color_special[RBE_HALLU] = TERM_YELLOW;
-
-	/* Paralysis gets an honorary permanent damage because it's so often
-	 * an instakill.
-	 */
-
-	if (!st.free_act && st.skills[SKILL_SAVE] < 100)
-		color_special[RBE_PARALYZE] = TERM_L_RED;
-
-	/* These types of wounding are expensive to fix */
-
-	if (!st.sustain_str)
-		color_special[RBE_LOSE_STR] = TERM_L_RED;
-	if (!st.sustain_int)
-		color_special[RBE_LOSE_INT] = TERM_L_RED;
-	if (!st.sustain_wis)
-		color_special[RBE_LOSE_WIS] = TERM_L_RED;
-	if (!st.sustain_dex)
-		color_special[RBE_LOSE_DEX] = TERM_L_RED;
-	if (!st.sustain_con)
-		color_special[RBE_LOSE_CON] = TERM_L_RED;
-	if (!st.sustain_chr)
-		color_special[RBE_LOSE_CHR] = TERM_L_RED;
-	if (!st.sustain_str || !st.sustain_int || !st.sustain_wis ||
-			!st.sustain_dex || !st.sustain_con || !st.sustain_chr)
-		color_special[RBE_LOSE_ALL] = TERM_L_RED;
-
-	/* Hold life isn't 100% effective */
-	color_special[RBE_EXP_10] = color_special[RBE_EXP_20] =
-		color_special[RBE_EXP_40] = color_special[RBE_EXP_80] =
-		st.hold_life ? TERM_YELLOW : TERM_L_RED;
-
-	/* Shatter is always dangerous */
-	color_special[RBE_SHATTER] = TERM_YELLOW;
 
 	/* Extract a gender (if applicable) */
 	if (r_ptr->flags[0] & RF0_FEMALE) msex = 2;
 	else if (r_ptr->flags[0] & RF0_MALE) msex = 1;
-
 
 	/* Count the number of "known" attacks */
 	for (n = 0, m = 0; m < MONSTER_BLOW_MAX; m++)
@@ -661,7 +1331,7 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr)
 		{
 			/* Describe the attack type */
 			text_out(" to ");
-			text_out_c(color_special[effect], "%s", q);
+			text_out_c(colors->melee[effect], "%s", q);
 
 			/* Describe damage (if known) */
 			if (d1 && d2 && know_damage(r_idx, l_ptr, m))
@@ -699,7 +1369,7 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 	int vn;
 	cptr vp[64];
 	bool prev = FALSE;
-	
+
 	int msex = 0;
 
 
@@ -752,7 +1422,7 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 	{
 		/* Output connecting text */
 		text_out("%^s is hurt by ", wd_he[msex]);
-		output_list(vp, vn, TERM_YELLOW);
+		output_list(vp, vn, TERM_VIOLET);
 		prev = TRUE;
 	}
 
@@ -778,7 +1448,7 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 			text_out("%^s resists ", wd_he[msex]);
 
 		/* Write the text */
-		output_list(vp, vn, TERM_ORANGE);
+		output_list(vp, vn, TERM_L_UMBER);
 		prev = TRUE;
 	}
 
@@ -797,7 +1467,7 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 		else
 			text_out("%^s cannot be ", wd_he[msex]);
 
-		output_list(vp, -vn, TERM_ORANGE);
+		output_list(vp, -vn, TERM_L_UMBER);
 		prev = TRUE;
 	}
 
@@ -827,7 +1497,7 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 		else                        act = "is ever vigilant for";
 
 		text_out("%^s %s intruders, which %s may notice from ", wd_he[msex], act, wd_he[msex]);
-		text_out_c(TERM_L_GREEN, "%d", 10 * r_ptr->aaf);
+		text_out_c(TERM_L_BLUE, "%d", 10 * r_ptr->aaf);
 		text_out(" feet.  ");
 	}
 
@@ -966,21 +1636,21 @@ static void describe_monster_toughness(int r_idx, const monster_lore *l_ptr)
 	/* Extract a gender (if applicable) */
 	if (r_ptr->flags[0] & RF0_FEMALE) msex = 2;
 	else if (r_ptr->flags[0] & RF0_MALE) msex = 1;
-	
+
 
 	/* Describe monster "toughness" */
 	if (know_armour(r_idx, l_ptr))
 	{
 		/* Armor */
 		text_out("%^s has an armor rating of ", wd_he[msex]);
-		text_out_c(TERM_L_GREEN, "%d", r_ptr->ac);
+		text_out_c(TERM_L_BLUE, "%d", r_ptr->ac);
 		text_out(", and a");
 
 		if (!(l_ptr->flags[0] & RF0_UNIQUE))
 			text_out("n average");
 
 		text_out(" life rating of ");
-		text_out_c(TERM_L_GREEN, "%d", r_ptr->avg_hp);
+		text_out_c(TERM_L_BLUE, "%d", r_ptr->avg_hp);
 		text_out(".  ");
 	}
 }
@@ -1018,8 +1688,7 @@ static void describe_monster_exp(int r_idx, const monster_lore *l_ptr)
 
 	/* Mention the experience */
 	text_out(" is worth ");
-	text_out_c(TERM_ORANGE, buf);
-	text_out(" point%s", PLURAL((i == 1) && (j == 0)));
+	text_out_c(TERM_BLUE, format("%s point%s", buf, PLURAL((i == 1) && (j == 0))));
 
 	/* Take account of annoying English */
 	p = "th";
@@ -1048,17 +1717,17 @@ static void describe_monster_movement(int r_idx, const monster_lore *l_ptr)
 
 	text_out("This");
 
-	if (r_ptr->flags[2] & RF2_ANIMAL) text_out(" natural");
-	if (r_ptr->flags[2] & RF2_EVIL) text_out(" evil");
-	if (r_ptr->flags[2] & RF2_UNDEAD) text_out(" undead");
-	if (r_ptr->flags[2] & RF2_METAL) text_out(" metal");
+	if (r_ptr->flags[2] & RF2_ANIMAL) text_out_c(TERM_L_BLUE, " natural");
+	if (r_ptr->flags[2] & RF2_EVIL) text_out_c(TERM_L_BLUE, " evil");
+	if (r_ptr->flags[2] & RF2_UNDEAD) text_out_c(TERM_L_BLUE, " undead");
+	if (r_ptr->flags[2] & RF2_METAL) text_out_c(TERM_L_BLUE, " metal");
 
-	if (r_ptr->flags[2] & RF2_DRAGON) text_out(" dragon");
-	else if (r_ptr->flags[2] & RF2_DEMON) text_out(" demon");
-	else if (r_ptr->flags[2] & RF2_GIANT) text_out(" giant");
-	else if (r_ptr->flags[2] & RF2_TROLL) text_out(" troll");
-	else if (r_ptr->flags[2] & RF2_ORC) text_out(" orc");
-	else text_out(" creature");
+	if (r_ptr->flags[2] & RF2_DRAGON) text_out_c(TERM_L_BLUE, " dragon");
+	else if (r_ptr->flags[2] & RF2_DEMON) text_out_c(TERM_L_BLUE, " demon");
+	else if (r_ptr->flags[2] & RF2_GIANT) text_out_c(TERM_L_BLUE, " giant");
+	else if (r_ptr->flags[2] & RF2_TROLL) text_out_c(TERM_L_BLUE, " troll");
+	else if (r_ptr->flags[2] & RF2_ORC) text_out_c(TERM_L_BLUE, " orc");
+	else text_out_c(TERM_L_BLUE, " creature");
 
 	/* Describe location */
 	if (r_ptr->level == 0)
@@ -1068,7 +1737,7 @@ static void describe_monster_movement(int r_idx, const monster_lore *l_ptr)
 	}
 	else
 	{
-		byte colour = (r_ptr->level > p_ptr->max_depth) ? TERM_RED : TERM_L_GREEN;
+		byte colour = (r_ptr->level > p_ptr->max_depth) ? TERM_RED : TERM_L_BLUE;
 
 		if (l_ptr->flags[0] & RF0_FORCE_DEPTH)
 			text_out(" is found ");
@@ -1208,11 +1877,14 @@ static void cheat_monster_lore(int r_idx, monster_lore *l_ptr)
 void describe_monster(int r_idx, bool spoilers)
 {
 	monster_lore lore;
+	atk_colors colors;
 
 	/* Get the race and lore */
 	const monster_race *r_ptr = &r_info[r_idx];
 	monster_lore *l_ptr = &l_list[r_idx];
 
+	/* Determine the special attack colors */
+	get_attack_colors(&colors);
 
 	/* Hack -- create a copy of the monster-memory */
 	COPY(&lore, l_ptr, monster_lore);
@@ -1240,16 +1912,20 @@ void describe_monster(int r_idx, bool spoilers)
 	/* Monster description */
 	describe_monster_desc(r_idx);
 
-	/* Describe the movement and level of the monster */
+	/* Describe the monster type, speed, life, and armor */
 	describe_monster_movement(r_idx, &lore);
+   if (!spoilers) describe_monster_toughness(r_idx, &lore);
 
+   /* Describe the experience and item reward when killed */
 	if (!spoilers) describe_monster_exp(r_idx, &lore);
-	describe_monster_spells(r_idx, &lore);
-	if (!spoilers) describe_monster_toughness(r_idx, &lore);
-	/* Describe the abilities of the monster */
+   describe_monster_drop(r_idx, &lore);
+
+	/* Describe the special properties of the monster */
 	describe_monster_abilities(r_idx, &lore);
-	describe_monster_drop(r_idx, &lore);
-	describe_monster_attack(r_idx, &lore);
+
+   /* Describe the spells, spell-like abilities and melee attacks */
+   describe_monster_spells(r_idx, &lore, &colors);
+	describe_monster_attack(r_idx, &lore, &colors);
 
 	/* Notice "Quest" monsters */
 	if (lore.flags[0] & RF0_QUESTOR)
@@ -1375,18 +2051,18 @@ void display_roff(int r_idx)
 int lookup_monster(const char *name)
 {
 	int i;
-	
+
 	/* Look for it */
 	for (i = 1; i < z_info->r_max; i++)
 	{
 		monster_race *r_ptr = &r_info[i];
 		const char *nm = r_name + r_ptr->name;
-		
+
 		/* Found a match */
 		if (streq(name, nm))
 			return i;
-		
-	} 
-	
+
+	}
+
 	return -1;
 }
