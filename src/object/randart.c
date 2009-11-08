@@ -3245,6 +3245,9 @@ static void scramble_artifact(int a_idx)
 		a_ptr->to_h = a_ptr->to_d = a_ptr->to_a = 0;
 		a_ptr->flags[0] = a_ptr->flags[1] = 0;
 
+                /* Clear the activations for rings and amulets but not lights */
+                if (a_ptr->tval != TV_LITE) a_ptr->effect = 0;
+
 		/* Artifacts ignore everything */
 		a_ptr->flags[2] = (TR2_IGNORE_MASK);
 	}
