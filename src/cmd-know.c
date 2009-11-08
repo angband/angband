@@ -1224,7 +1224,7 @@ static void desc_art_fake(int a_idx)
 	/* Wipe the object */
 	object_wipe(o_ptr);
 
-	/* Look for the artifact, either in inventory, home or the object list */
+	/* Look for the artifact, either in inventory, store or the object list */
 	for (i = 0; i < z_info->o_max; i++)
 	{
 		if (o_list[i].name1 == a_idx)
