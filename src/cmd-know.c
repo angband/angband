@@ -1215,16 +1215,58 @@ static void desc_art_fake(int a_idx)
 {
 	object_type *o_ptr;
 	object_type object_type_body;
-
+	bool lost = TRUE;
+	int i, j;
+	
 	/* Get local object */
 	o_ptr = &object_type_body;
 
 	/* Wipe the object */
 	object_wipe(o_ptr);
 
-	/* Make fake artifact */
-	make_fake_artifact(o_ptr, a_idx);
-	o_ptr->ident |= IDENT_STORE;
+	/* Look for the artifact, either in inventory, home or the object list */
+	for (i = 0; i < z_info->o_max; i++)
+	{
+		if (o_list[i].name1 == a_idx)
+		{
+			o_ptr = &o_list[i];
+			lost = FALSE;
+			break;
+		}
+	}
+
+	if (lost)
+	{
+		for (i = 0; i < INVEN_TOTAL; i++)
+		{
+			if (inventory[i].name1 == a_idx)
+			{
+				o_ptr = &inventory[i];
+				lost = FALSE;
+				break;
+			}
+		}
+	}
+
+	if (lost)
+	{
+		for (j = 1; j < (FEAT_SHOP_TAIL - FEAT_SHOP_HEAD + 1); j++)
+		{
+			for (i = 0; i < store[j].stock_size; i++)
+			{
+				if (store[j].stock[i].name1 == a_idx)
+				{
+					o_ptr = &store[j].stock[i];
+					lost = FALSE;
+					break;
+				}
+			}
+			if (!lost) break;
+		}
+	}
+
+	/* If it's been lost, make a fake artifact for it */
+	if (lost) make_fake_artifact(o_ptr, a_idx);
 
 	/* Hack -- Handle stuff */
 	handle_stuff();
@@ -1234,7 +1276,14 @@ static void desc_art_fake(int a_idx)
 
 	Term_gotoxy(0, 0);
 	object_info_header(o_ptr);
-	if (!object_info(o_ptr, FALSE))
+
+	/* Assume that lost artifacts were fully known, even if they weren't */
+	if (lost)
+	{
+		object_info(o_ptr, TRUE);
+		text_out("\nThis artifact has been lost.");
+	}
+	else if (!object_info(o_ptr, FALSE)) 
 		text_out("\n\nThis item does not seem to possess any special abilities.");
 
 	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
