@@ -2490,6 +2490,9 @@ void do_cmd_stash(cmd_code code, cmd_arg args[])
 	distribute_charges(o_ptr, &dropped_item, amt);
 	
 	/* Describe */
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+
+	/* Message */
 	msg_format("You drop %s (%c).", o_name, index_to_label(item));
 	
 	/* Take it from the players inventory */
