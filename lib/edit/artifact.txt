@@ -1049,7 +1049,7 @@ D:blood?
 
 N:77:'Zarcuthra'
 I:sword:Zweihander~:4
-W:30:180:250:200000
+W:30:180:240:200000
 P:0:4d6:19:21:0
 # F:DRAIN_MANA | 
 F:STR | CHR | INFRA | HIDE_TYPE | 
@@ -1151,7 +1151,7 @@ D:other blade he forged.
 
 N:85:'Elvagil'
 I:sword:Long Sword~:2
-W:1:1:130:30000
+W:1:2:130:30000
 P:0:2d5:12:12:0
 F:DEX | CHR | STEALTH | HIDE_TYPE | 
 F:SLAY_TROLL | SLAY_ORC | FEATHER | SEE_INVIS | SHOW_MODS
@@ -1161,7 +1161,7 @@ D:and secret places of the earth.
 
 N:86:'Forasgil'
 I:sword:Rapier~:0
-W:1:1:40:15000
+W:1:3:40:15000
 P:0:1d6:12:19:0
 F:SLAY_ANIMAL | BRAND_COLD | RES_COLD | RES_LITE | LITE | SHOW_MODS
 D:A slender, tapered needle of ice that coldly grips its impaled prey.
