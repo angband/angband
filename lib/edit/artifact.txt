@@ -1,12 +1,10 @@
 # File: artifact.txt
 
 
-# This file is used to initialize the "lib/data/artifact.raw" file, which
-# is used to initialize the "artifact" information for the Angband game.
+# This file is used to initialize the "artifact" information for Angband.
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-# After modifying this file, delete the "lib/data/artifact.raw" file.
 
 # The artifact indexes are defined in "defines.h", and must not be changed.
 
@@ -50,7 +48,7 @@
 # 'D' is for the artifact description.  These appear when the item is 
 # identified.  Special thanks to J.R.R Tolkien, without whom the words would
 # be unwritten, the images unconceived, the deed undone. -LM-
-# Contributers: Jeff Butler, Neal Hackler, Ethan Sicotte, Pat Tracy, Yuanli Zhou 
+# Contributors: Jeff Butler, Neal Hackler, Ethan Sicotte, Pat Tracy, Yuanli Zhou 
 
 ### IMPORTANT NOTES ###
 # (1.) Any changes or additions to the file will have influence on randarts

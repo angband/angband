@@ -1,12 +1,10 @@
 # File: spell.txt
 
 
-# This file is used to initialize the "lib/data/spell.raw" file, which is
-# used to initialize the "spell" information for the Angband game.
+# This file is used to initialize the "spell" information for the Angband game.
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-# After modifying this file, delete the "lib/data/ego_item.raw" file.
 
 # The spell indexes are defined in "x-spell.c", and must not be changed
 # or savefile compatibility will be lost.

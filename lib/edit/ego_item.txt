@@ -1,12 +1,10 @@
 # File: ego_item.txt
 
 
-# This file is used to initialize the "lib/data/ego_item.raw" file, which is
-# used to initialize the "ego-item" information for the Angband game.
+# This file is used to initialize the "ego-item" information for Angband.
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-# After modifying this file, delete the "lib/data/ego_item.raw" file.
 
 # The ego-item indexes are defined in "defines.h", and must not be changed
 # or savefile compatibility will be lost.
@@ -32,7 +30,7 @@
 # sustain", 2 is "one random extra resist", and 3 is "one random
 # extra ability".
 
-# 'C' is for creation bonusses - maximum to-hit, to-dam, to-ac, and
+# 'C' is for creation bonuses - maximum to-hit, to-dam, to-ac, and
 # pval. Cursed ego-items will negate the given value.
 
 # 'W' is for extra information. Depth is the depth the object is

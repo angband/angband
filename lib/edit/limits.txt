@@ -1,12 +1,10 @@
 # File: limits.txt
 
 
-# This file is used to initialize the "lib/data/limits.raw" file, which is
-# used to initialize the "array sizes" information for the Angband game.
+# This file is used to initialize the "array sizes" information for Angband.
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-# After modifying this file, delete the "lib/data/limits.raw" file.
 
 
 # Version stamp (required)

@@ -1,12 +1,10 @@
 # File: p_class.txt
 
 
-# This file is used to initialize the "lib/data/p_class.raw" file, which is
-# used to initialize the "player class" information for the Angband game.
+# This file is used to initialize the "player class" information for Angband.
 
 # Do not modify this file unless you know exactly what you are doing,
 # unless you wish to risk possible system crashes and broken savefiles.
-# After modifying this file, delete the "lib/data/p_class.raw" file.
 
 # === Understanding p_class.txt ===
 
