@@ -875,7 +875,7 @@ static bool describe_light(const object_type *o_ptr, u32b f3, bool terse)
 	else
 		text_out (" light.");
 
-	if (!terse && is_lite && !artifact)
+	if (!terse && is_lite && !no_fuel)
 	{
 		const char *name = (o_ptr->sval == SV_LITE_TORCH) ? "torches" : "lanterns";
 		int turns = (o_ptr->sval == SV_LITE_TORCH) ? FUEL_TORCH : FUEL_LAMP;
