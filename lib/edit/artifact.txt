@@ -135,7 +135,7 @@ I:amulet:51:3
 W:65:30:3:90000
 F:INT | WIS | CHR | INFRA | HIDE_TYPE | 
 F:SEE_INVIS | FREE_ACT | 
-F:RES_ACID | RES_COLD | RES_ELEC | RES_CONF |
+F:RES_ACID | RES_COLD | RES_ELEC | RES_CONFU |
 F:INSTA_ART
 A:DISPEL_EVIL:50+d50
 M:The {kind} flood{s} the area with goodness...
