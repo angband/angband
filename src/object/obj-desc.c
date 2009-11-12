@@ -724,6 +724,17 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 }
 
 
+/* Add "unseen" to the end of unaware items in stores */
+static size_t obj_desc_aware(const object_type *o_ptr, char *buf, size_t max,
+	size_t end)
+{
+        if (!object_flavor_is_aware(o_ptr)) strnfcat(buf, max, &end,
+		" {unseen}");
+
+        return end;
+}
+
+
 /**
  * Describes item `o_ptr` into buffer `buf` of size `max`.
  *
@@ -803,7 +814,11 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 
 		end = obj_desc_charges(o_ptr, buf, max, end);
 
-		if (!(mode & ODESC_STORE))
+		if (mode & ODESC_STORE)
+		{
+			end = obj_desc_aware(o_ptr, buf, max, end);
+		}
+		else
 			end = obj_desc_inscrip(o_ptr, buf, max, end);
 	}
 
