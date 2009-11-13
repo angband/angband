@@ -849,6 +849,8 @@ static void adjust_freqs(void)
 		artprobs[ART_IDX_GEN_TUNN] = 5;
 	if (artprobs[ART_IDX_NONWEAPON_BRAND] < 3)
 		artprobs[ART_IDX_NONWEAPON_BRAND] = 3;
+	if (artprobs[ART_IDX_NONWEAPON_SLAY] < 3)
+		artprobs[ART_IDX_NONWEAPON_SLAY] = 3;
 	if (artprobs[ART_IDX_BOW_BRAND] < 3)
 		artprobs[ART_IDX_BOW_BRAND] = 3;
 	if (artprobs[ART_IDX_BOW_SLAY] < 3)
@@ -2380,12 +2382,6 @@ static void add_slay(artifact_type *a_ptr, bool brand)
 	int x;
 	int count = 0;
 	const slay_t *s_ptr;
-
-	/* hack - do not allow slays/brands on nonweapons other than rings */
-	if (!((a_ptr->tval == TV_BOW) || (a_ptr->tval == TV_SWORD) ||
-		(a_ptr->tval == TV_POLEARM) || (a_ptr->tval == TV_HAFTED) ||
-		(a_ptr->tval == TV_DIGGING) || (a_ptr->tval == TV_RING)))
-		return;
 	
 	while (count < MAX_TRIES)
 	{
