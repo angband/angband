@@ -2516,6 +2516,7 @@ static void store_sell(void)
 {
 	int amt;
 	int item;
+	int get_mode = USE_EQUIP | USE_INVEN | USE_FLOOR;
 
 	object_type *o_ptr;
 	object_type object_type_body;
@@ -2542,12 +2543,15 @@ static void store_sell(void)
 	if (this_store == STORE_HOME)
 		prompt = "Drop which item? ";
 	else
+	{
 		item_tester_hook = store_will_buy_tester;
+		get_mode |= SHOW_PRICES;
+	}
 
 	/* Get an item */
 	p_ptr->command_wrk = USE_INVEN;
 	p_ptr->command_cmd = 'd';
-	if (!get_item(&item, prompt, reject, (USE_EQUIP | USE_INVEN | USE_FLOOR)))
+	if (!get_item(&item, prompt, reject, get_mode))
 	{
 		store_flags |= STORE_KEEP_PROMPT;
 		return;

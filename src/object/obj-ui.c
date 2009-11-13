@@ -20,179 +20,17 @@
 
 
 /*
- * Choice window "shadow" of the "show_inven()" function
- */
-void display_inven(void)
-{
-	register int i, n, z = 0;
-
-	object_type *o_ptr;
-
-	byte attr;
-
-	char tmp_val[10];
-
-	char o_name[80];
-
-
-	/* Find the "final" slot */
-	for (i = 0; i < INVEN_PACK; i++)
-	{
-		o_ptr = &inventory[i];
-
-		/* Skip non-objects */
-		if (!o_ptr->k_idx) continue;
-
-		/* Track */
-		z = i + 1;
-	}
-
-	/* Display the pack */
-	for (i = 0; i < z; i++)
-	{
-		/* Examine the item */
-		o_ptr = &inventory[i];
-
-		/* Start with an empty "index" */
-		tmp_val[0] = tmp_val[1] = tmp_val[2] = ' ';
-
-		/* Is this item "acceptable"? */
-		if (item_tester_okay(o_ptr))
-		{
-			/* Prepare an "index" */
-			tmp_val[0] = index_to_label(i);
-
-			/* Bracket the "index" --(-- */
-			tmp_val[1] = ')';
-		}
-
-		/* Display the index (or blank space) */
-		Term_putstr(0, i, 3, TERM_WHITE, tmp_val);
-
-		/* Obtain an item description */
-		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
-
-		/* Obtain the length of the description */
-		n = strlen(o_name);
-
-		/* Get inventory color */
-		attr = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
-
-		/* Display the entry itself */
-		Term_putstr(3, i, n, attr, o_name);
-
-		/* Erase the rest of the line */
-		Term_erase(3+n, i, 255);
-
-		/* Display the weight if needed */
-		if (o_ptr->weight)
-		{
-			int wgt = o_ptr->weight * o_ptr->number;
-			strnfmt(tmp_val, sizeof(tmp_val), "%3d.%1d lb", wgt / 10, wgt % 10);
-			Term_putstr(71, i, -1, TERM_WHITE, tmp_val);
-		}
-	}
-
-	/* Erase the rest of the window */
-	for (i = z; i < Term->hgt; i++)
-	{
-		/* Erase the line */
-		Term_erase(0, i, 255);
-	}
-}
-
-
-
-/*
- * Choice window "shadow" of the "show_equip()" function
- */
-void display_equip(void)
-{
-	register int i, n;
-	object_type *o_ptr;
-	byte attr;
-
-	char tmp_val[10];
-
-	char o_name[80];
-
-
-	/* Display the equipment */
-	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
-	{
-		/* Examine the item */
-		o_ptr = &inventory[i];
-
-		/* Start with an empty "index" */
-		tmp_val[0] = tmp_val[1] = tmp_val[2] = ' ';
-
-		/* Is this item "acceptable"? */
-		if (item_tester_okay(o_ptr))
-		{
-			/* Prepare an "index" */
-			tmp_val[0] = index_to_label(i);
-
-			/* Bracket the "index" --(-- */
-			tmp_val[1] = ')';
-		}
-
-		/* Display the index (or blank space) */
-		Term_putstr(0, i - INVEN_WIELD, 3, TERM_WHITE, tmp_val);
-
-		/* Obtain an item description */
-		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
-
-		/* Obtain the length of the description */
-		n = strlen(o_name);
-
-		/* Get inventory color */
-		attr = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
-
-		/* Display the entry itself */
-		Term_putstr(3, i - INVEN_WIELD, n, attr, o_name);
-
-		/* Erase the rest of the line */
-		Term_erase(3+n, i - INVEN_WIELD, 255);
-
-		/* Display the slot description (if needed) */
-		if (OPT(show_labels))
-		{
-			Term_putstr(61, i - INVEN_WIELD, -1, TERM_WHITE, "<--");
-			Term_putstr(65, i - INVEN_WIELD, -1, TERM_WHITE, mention_use(i));
-		}
-
-		/* Display the weight (if needed) */
-		if (o_ptr->weight)
-		{
-			int wgt = o_ptr->weight * o_ptr->number;
-			int col = (OPT(show_labels) ? 52 : 71);
-			strnfmt(tmp_val, sizeof(tmp_val), "%3d.%1d lb", wgt / 10, wgt % 10);
-			Term_putstr(col, i - INVEN_WIELD, -1, TERM_WHITE, tmp_val);
-		}
-	}
-
-	/* Erase the rest of the window */
-	for (i = INVEN_TOTAL - INVEN_WIELD; i < Term->hgt; i++)
-	{
-		/* Clear that line */
-		Term_erase(0, i, 255);
-	}
-}
-
-
-
-/*
- * Display the inventory.
+ * Display the inventory.  Called with mode |= OLIST_WINDOW
+ * from the inventory term window.
  *
  * Hack -- do not display "trailing" empty slots
  */
-void show_inven(void)
+void show_inven(olist_detail_t mode)
 {
 	int i, j, k, l, z = 0;
-	int col, len, lim;
+	int col, row, len, lim;
 
 	object_type *o_ptr;
-
 	char o_name[80];
 
 	char tmp_val[80];
@@ -203,12 +41,24 @@ void show_inven(void)
 
 
 	/* Default length */
-	len = 79 - 50;
+	len = (Term->wid-1) - 50;
 
-	/* Maximum space allowed for descriptions */
-	/* screen width - "a) " - weight */
-	lim = 79 - 3 - 9;
+	/* Maximum space allowed for descriptions 
+	 * Screen width minus the letter label "a) "
+	 */
+	lim = (Term->wid-1) - 3;
 
+	/* Reserve space for price */
+	if (mode & OLIST_PRICE)
+		lim -= 9;
+
+	/* Reserve space for weight */
+	if (mode & OLIST_WEIGHT)
+		lim -= 9;
+		
+	/* Do not overflow o_name buffer */
+	if (lim > 79)
+		lim = 79;
 
 	/* Find the "final" slot */
 	for (i = 0; i < INVEN_PACK; i++)
@@ -228,16 +78,32 @@ void show_inven(void)
 		o_ptr = &inventory[i];
 
 		/* Is this item acceptable? */
-		if (!item_tester_okay(o_ptr)) continue;
+		if (!item_tester_okay(o_ptr))
+		{
+			if (mode & OLIST_WINDOW)
+			{
+				/* Display unacceptable items in terminal windows, but
+				 * don't save the index for a letter label
+				 */
+				out_index[k] = -1;
+			}
+			else
+			{
+				/* Don't display unacceptable items in main window lists */
+				continue;
+			}
+		}
+		else
+		{
+			/* Acceptable, so save the index */
+			out_index[k] = i;
+		}
 
 		/* Describe the object */
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 		/* Hack -- enforce max length */
 		o_name[lim] = '\0';
-
-		/* Save the index */
-		out_index[k] = i;
 
 		/* Get inventory color */
 		out_color[k] = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
@@ -248,8 +114,11 @@ void show_inven(void)
 		/* Find the predicted "line length" */
 		l = strlen(out_desc[k]) + 5;
 
-		/* Be sure to account for the weight */
-		l += 9;
+		/* Be sure to account for extra fields */
+		if (mode & OLIST_WEIGHT)
+			l += 9;
+		if (mode & OLIST_PRICE)
+			l += 9;
 
 		/* Maintain the maximum length */
 		if (l > len) len = l;
@@ -258,13 +127,24 @@ void show_inven(void)
 		k++;
 	}
 
-	/* Find the column to start in */
-	col = (len > 76) ? 0 : (79 - len);
+	/* Find the row and column to start in */
+	if (mode & OLIST_WINDOW)
+	{
+		col = 0;
+		row = 0;
+	}
+	else
+	{
+		col = (len > (Term->wid-4)) ? 0 : ((Term->wid-1) - len);
+		row = 1;
+	}
 
 	/* Output each entry */
 	for (j = 0; j < k; j++)
 	{
+		u32b price;
 		int wgt;
+		int r_col = Term->wid;
 
 		/* Get the index */
 		i = out_index[j];
@@ -273,35 +153,64 @@ void show_inven(void)
 		o_ptr = &inventory[i];
 
 		/* Clear the line */
-		prt("", j + 1, col ? col - 2 : col);
+		prt("", row + j, col ? col - 2 : col);
 
-		/* Prepare an index --(-- */
-		strnfmt(tmp_val, sizeof(tmp_val), "%c)", index_to_label(i));
+		if (i > -1)
+		{
+			/* Prepare an index --(-- */
+			strnfmt(tmp_val, sizeof(tmp_val), "%c)", index_to_label(i));
 
-		/* Clear the line with the (possibly indented) index */
-		put_str(tmp_val, j + 1, col);
+			/* Clear the line with the (possibly indented) index */
+			put_str(tmp_val, row + j, col);
+		}
 
 		/* Display the entry itself */
-		c_put_str(out_color[j], out_desc[j], j + 1, col + 3);
+		c_put_str(out_color[j], out_desc[j], row + j, col + 3);
 
 		/* Display the weight if needed */
-		wgt = o_ptr->weight * o_ptr->number;
-		strnfmt(tmp_val, sizeof(tmp_val), "%3d.%1d lb", wgt / 10, wgt % 10);
-		put_str(tmp_val, j + 1, 71);
+		if (mode & OLIST_WEIGHT)
+		{
+			r_col -= 9;
+			wgt = o_ptr->weight * o_ptr->number;
+			strnfmt(tmp_val, sizeof(tmp_val), "%3d.%1d lb", wgt / 10, wgt % 10);
+			put_str(tmp_val, row + j, r_col);
+		}
+
+		/* Display the price if needed */
+		if (mode & OLIST_PRICE)
+		{
+			r_col -= 9;
+			price = price_item(o_ptr, TRUE, o_ptr->number);
+			strnfmt(tmp_val, sizeof(tmp_val), "%5d au", price);
+			put_str(tmp_val, row + j, r_col);
+		}
 	}
 
-	/* Make a "shadow" below the list (only if needed) */
-	if (j && (j < 23)) prt("", j + 1, col ? col - 2 : col);
+	if (mode & OLIST_WINDOW)
+	{
+		/* Erase the rest of the window */
+		for (i = z; i < Term->hgt; i++)
+		{
+			/* Erase the line */
+			Term_erase(0, i, 255);
+		}
+	}
+	else
+	{
+		/* Make a "shadow" below the list (only if needed) */
+		if (j && (j < 23)) prt("", row + j, col ? col - 2 : col);
+	}
 }
 
 
 /*
- * Display the equipment.
+ * Display the equipment.  Called with mode |= OLIST_WINDOW
+ * from the equipment term window.
  */
-void show_equip(void)
+void show_equip(olist_detail_t mode)
 {
-	int i, j, k, l;
-	int col, len, lim;
+	int i, j, k, l, b = 0;
+	int col, row, len, lim;
 
 	object_type *o_ptr;
 
@@ -313,18 +222,28 @@ void show_equip(void)
 	byte out_color[24];
 	char out_desc[24][80];
 
-
 	/* Default length */
-	len = 79 - 50;
+	len = (Term->wid-1) - 50;
 
-	/* Maximum space allowed for descriptions */
-	lim = 79 - 3;
+	/* Maximum space allowed for descriptions 
+	 * Screen width minus the letter label "a) "
+	 */
+	lim = (Term->wid-1) - 3;
 
+	/* Reserve space for price */
+	if (mode & OLIST_PRICE)
+		lim -= 9;
+
+	/* Reserve space for weight */
+	if (mode & OLIST_WEIGHT)
+		lim -= 9;
+		
 	/* Require space for labels (if needed) */
 	if (OPT(show_labels)) lim -= (14 + 2);
 
-	/* Require space for weight */
-	lim -= 9;
+	/* Do not overflow o_name buffer */
+	if (lim > 79)
+		lim = 79;
 
 	/* Scan the equipment list */
 	for (k = 0, i = INVEN_WIELD; i < INVEN_TOTAL; i++)
@@ -332,16 +251,32 @@ void show_equip(void)
 		o_ptr = &inventory[i];
 
 		/* Is this item acceptable? */
-		if (!item_tester_okay(o_ptr)) continue;
+		if (!item_tester_okay(o_ptr))
+		{
+			if (mode & OLIST_WINDOW)
+			{
+				/* Display unacceptable items in terminal windows, but
+				 * don't save the index for a letter label
+				 */
+				out_index[k] = -1;
+			}
+			else
+			{
+				/* Don't display unacceptable items in main window lists */
+				continue;
+			}
+		}
+		else
+		{
+			/* Acceptable, so save the index */
+			out_index[k] = i;
+		}
 
 		/* Description */
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 		/* Truncate the description */
 		o_name[lim] = 0;
-
-		/* Save the index */
-		out_index[k] = i;
 
 		/* Get inventory color */
 		out_color[k] = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
@@ -355,8 +290,11 @@ void show_equip(void)
 		/* Increase length for labels (if needed) */
 		if (OPT(show_labels)) l += (14 + 2);
 
-		/* Increase length for weight */
-		l += 9;
+		/* Be sure to account for extra fields */
+		if (mode & OLIST_WEIGHT)
+			l += 9;
+		if (mode & OLIST_PRICE)
+			l += 9;
 
 		/* Maintain the max-length */
 		if (l > len) len = l;
@@ -365,13 +303,27 @@ void show_equip(void)
 		k++;
 	}
 
-	/* Hack -- Find a column to start in */
-	col = (len > 76) ? 0 : (79 - len);
+	/* Find the row and column to start in */
+	if (mode & OLIST_WINDOW)
+	{
+		col = 0;
+		row = 0;
+	}
+	else
+	{
+		col = (len > (Term->wid-4)) ? 0 : ((Term->wid-1) - len);
+		row = 1;
+	}
+
+   /* Track the slot label */
+   b = INVEN_WIELD;
 
 	/* Output each entry */
-	for (j = 0; j < k; j++)
+	for (j = 0; j < k; j++, b++)
 	{
+		u32b price;
 		int wgt;
+		int r_col = Term->wid;
 
 		/* Get the index */
 		i = out_index[j];
@@ -380,40 +332,71 @@ void show_equip(void)
 		o_ptr = &inventory[i];
 
 		/* Clear the line */
-		prt("", j + 1, col ? col - 2 : col);
+		prt("", row + j, col ? col - 2 : col);
 
 		/* Prepare an index --(-- */
-		strnfmt(tmp_val, sizeof(tmp_val), "%c)", index_to_label(i));
+		if (i > -1)
+		{
+			/* Track the slot label */
+			b = i;
+			
+			strnfmt(tmp_val, sizeof(tmp_val), "%c)", index_to_label(i));
 
-		/* Clear the line with the (possibly indented) index */
-		put_str(tmp_val, j+1, col);
+			/* Clear the line with the (possibly indented) index */
+			put_str(tmp_val, row + j, col);
+		}
 
 		/* Use labels */
 		if (OPT(show_labels))
 		{
 			/* Mention the use */
-			strnfmt(tmp_val, sizeof(tmp_val), "%-14s: ", mention_use(i));
-			put_str(tmp_val, j+1, col + 3);
+			strnfmt(tmp_val, sizeof(tmp_val), "%-14s: ", mention_use(b));
+			put_str(tmp_val, row + j, col + 3);
 
 			/* Display the entry itself */
-			c_put_str(out_color[j], out_desc[j], j+1, col + 3 + 14 + 2);
+			c_put_str(out_color[j], out_desc[j], row + j, col + 3 + 14 + 2);
 		}
 
 		/* No labels */
 		else
 		{
 			/* Display the entry itself */
-			c_put_str(out_color[j], out_desc[j], j+1, col + 3);
+			c_put_str(out_color[j], out_desc[j], row + j, col + 3);
 		}
 
 		/* Display the weight if needed */
-		wgt = o_ptr->weight * o_ptr->number;
-		strnfmt(tmp_val, sizeof(tmp_val), "%3d.%d lb", wgt / 10, wgt % 10);
-		put_str(tmp_val, j+1, 71);
+		if (mode & OLIST_WEIGHT)
+		{
+			r_col -= 9;
+			wgt = o_ptr->weight * o_ptr->number;
+			strnfmt(tmp_val, sizeof(tmp_val), "%3d.%1d lb", wgt / 10, wgt % 10);
+			put_str(tmp_val, row + j, r_col);
+		}
+
+		/* Display the price if needed */
+		if (mode & OLIST_PRICE)
+		{
+			r_col -= 9;
+			price = price_item(o_ptr, TRUE, o_ptr->number);
+			strnfmt(tmp_val, sizeof(tmp_val), "%5d au", price);
+			put_str(tmp_val, row + j, r_col);
+		}
 	}
 
-	/* Make a "shadow" below the list (only if needed) */
-	if (j && (j < 23)) prt("", j + 1, col ? col - 2 : col);
+	if (mode & OLIST_WINDOW)
+	{
+		/* Erase the rest of the window */
+		for (i = k; i < Term->hgt; i++)
+		{
+			/* Clear that line */
+			Term_erase(0, i, 255);
+		}
+	}
+	else
+	{
+		/* Make a "shadow" below the list (only if needed) */
+		if (j && (j < 23)) prt("", j + 1, col ? col - 2 : col);
+	}
 }
 
 
@@ -894,7 +877,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 		if (p_ptr->command_wrk == USE_INVEN)
 		{
 			/* Redraw if needed */
-			if (show_list) show_inven();
+			if (show_list) show_inven(((mode & SHOW_PRICES) ? OLIST_PRICE | OLIST_WEIGHT : OLIST_WEIGHT));
 
 			/* Begin the prompt */
 			strnfmt(out_val, sizeof(out_val), "Inven:");
@@ -943,7 +926,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 		else if (p_ptr->command_wrk == USE_EQUIP)
 		{
 			/* Redraw if needed */
-			if (show_list) show_equip();
+			if (show_list) show_equip(((mode & SHOW_PRICES) ? OLIST_PRICE | OLIST_WEIGHT : OLIST_WEIGHT));
 
 			/* Begin the prompt */
 			strnfmt(out_val, sizeof(out_val), "Equip:");

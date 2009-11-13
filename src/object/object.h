@@ -33,6 +33,18 @@ typedef enum
 
 
 /**
+ * Modes for item lists in "show_inven()" and "show_equip()"
+ */
+typedef enum
+{
+	OLIST_NONE   = 0x00,   /* No options */
+   OLIST_WINDOW = 0x01,   /* Display list in a sub-term (left-align) */
+	OLIST_WEIGHT = 0x02,   /* Show item weight */
+	OLIST_PRICE  = 0x04    /* Show item price */
+} olist_detail_t;
+
+
+/**
  * Pseudo-ID markers.
  */
 typedef enum
@@ -120,10 +132,8 @@ u32b ego_xtra_power_list(void);
 
 
 /* obj-ui.c */
-void display_inven(void);
-void display_equip(void);
-void show_inven(void);
-void show_equip(void);
+void show_inven(olist_detail_t mode);
+void show_equip(olist_detail_t mode);
 void show_floor(const int *floor_list, int floor_num, bool gold);
 bool verify_item(cptr prompt, int item);
 bool get_item(int *cp, cptr pmt, cptr str, int mode);

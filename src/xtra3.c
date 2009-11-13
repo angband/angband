@@ -1106,9 +1106,9 @@ static void update_inven_subwindow(game_event_type type, game_event_data *data,
 	Term_activate(inv_term);
 
 	if (!flip_inven)
-		display_inven();
+		show_inven(OLIST_WINDOW | OLIST_WEIGHT);
 	else
-		display_equip();
+		show_equip(OLIST_WINDOW | OLIST_WEIGHT);
 
 	Term_fresh();
 	
@@ -1126,9 +1126,9 @@ static void update_equip_subwindow(game_event_type type, game_event_data *data,
 	Term_activate(inv_term);
 
 	if (!flip_inven)
-		display_equip();
+		show_equip(OLIST_WINDOW | OLIST_WEIGHT);
 	else
-		display_inven();
+		show_inven(OLIST_WINDOW | OLIST_WEIGHT);
 
 	Term_fresh();
 	
@@ -1155,18 +1155,18 @@ void toggle_inven_equip(void)
 		if (op_ptr->window_flag[i] & PW_INVEN)
 		{
 			if (!flip_inven)
-				display_inven();
+				show_inven(OLIST_WINDOW | OLIST_WEIGHT);
 			else
-				display_equip();
+				show_equip(OLIST_WINDOW | OLIST_WEIGHT);
 			
 			Term_fresh();
 		}
 		else if (op_ptr->window_flag[i] & PW_EQUIP)
 		{
 			if (!flip_inven)
-				display_equip();
+				show_equip(OLIST_WINDOW | OLIST_WEIGHT);
 			else
-				display_inven();
+				show_inven(OLIST_WINDOW | OLIST_WEIGHT);
 			
 			Term_fresh();
 		}

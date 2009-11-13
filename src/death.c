@@ -239,7 +239,7 @@ static void death_info(void *unused, const char *title)
 	{
 		Term_clear();
 		item_tester_full = TRUE;
-		show_equip();
+		show_equip(OLIST_WEIGHT);
 		prt("You are using: -more-", 0, 0);
 		(void)anykey();
 	}
@@ -249,7 +249,7 @@ static void death_info(void *unused, const char *title)
 	{
 		Term_clear();
 		item_tester_full = TRUE;
-		show_inven();
+		show_inven(OLIST_WEIGHT);
 		prt("You are carrying: -more-", 0, 0);
 		(void)anykey();
 	}
