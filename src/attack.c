@@ -340,28 +340,28 @@ void py_attack(int y, int x)
 			/* Handle normal weapon */
 			if (o_ptr->k_idx)
 			{
-				int weapon_brand_mult, ring_brand_mult[2];
+				int weapon_brand_mult;
+				int other_brand_mult[INVEN_TOTAL];
 				int use_mult = 1;
+				int i;
 
 				hit_verb = "hit";
 
-				/* Hack-- put rings first, because they can
-				 * only be brands right now */
-				ring_brand_mult[0] = get_brand_mult(
-						&inventory[INVEN_LEFT],
-						m_ptr, &hit_verb, FALSE, TRUE);
-				ring_brand_mult[1] = get_brand_mult(
-						&inventory[INVEN_RIGHT],
-						m_ptr, &hit_verb, FALSE, TRUE);
-				weapon_brand_mult = get_brand_mult(
-						o_ptr,
+				/* Get the best multiplier from all slays or
+				 * brands on all non-launcher equipment */
+				for (i = INVEN_LEFT; i < INVEN_TOTAL; i++)
+				{
+					other_brand_mult[i] = get_brand_mult(
+						&inventory[i], m_ptr,
+						&hit_verb, FALSE, TRUE);
+
+					if (other_brand_mult[i] > use_mult)
+						use_mult = other_brand_mult[i];
+				}
+
+				weapon_brand_mult = get_brand_mult(o_ptr,
 						m_ptr, &hit_verb, FALSE, FALSE);
 
-						
-				if (ring_brand_mult[0] > use_mult)
-					use_mult = ring_brand_mult[0];
-				if (ring_brand_mult[1] > use_mult)
-					use_mult = ring_brand_mult[1];
 				if (weapon_brand_mult > use_mult)
 					use_mult = weapon_brand_mult;
 

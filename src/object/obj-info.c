@@ -403,8 +403,8 @@ static bool describe_slays(u32b f1, int tval)
 
 	if ((tval == TV_SWORD) || (tval == TV_HAFTED) || (tval == TV_POLEARM)
 		|| (tval == TV_DIGGING ) || (tval == TV_BOW) || (tval == TV_SHOT)
-		|| (tval == TV_ARROW) || (tval == TV_BOLT) || (tval == TV_LITE)
-		|| (tval == TV_FLASK)) fulldesc = FALSE;		
+		|| (tval == TV_ARROW) || (tval == TV_BOLT) || (tval == TV_FLASK))
+		fulldesc = FALSE;		
 	else fulldesc = TRUE;
 
 	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
@@ -667,20 +667,26 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	}
 
 	/* Collect slays */
-	/* Melee weapons get slays from rings now */
+	/* Melee weapons get slays and brands from other items now */
 	if (weapon)
 	{
 		u32b g[OBJ_FLAG_N];
-		u32b h[OBJ_FLAG_N];
-		
-		object_flags_known(&inventory[INVEN_LEFT], g);
-		object_flags_known(&inventory[INVEN_RIGHT], h);
+		bool nonweap = FALSE;
 
-		if (!((f[0] & TR0_BRAND_MASK) ==
-			((f[0] | g[0] | h[0]) & TR0_BRAND_MASK)))
-			text_out("This weapon benefits from one or more ring brands.\n");
+		for (i = INVEN_LEFT; i < INVEN_TOTAL; i++)
+		{
+			object_flags_known(&inventory[i], g);
 
-		f[0] |= (g[0] | h[0]);
+			if ((f[0] & TR0_ALL_SLAYS) !=
+			((f[0] | g[0]) & TR0_ALL_SLAYS))
+			{
+				f[0] |= g[0];
+				nonweap = TRUE;
+			}
+		}
+
+		if (nonweap)
+			text_out("This weapon benefits from one or more off-weapon brands or slays.\n");
 	}
 
 	text_out("Average damage/hit: ");
