@@ -22,9 +22,17 @@
  * actual location of the "lib" folder, for example, "/tmp/angband/lib/"
  * or "/usr/games/lib/angband/", or "/pkg/angband/lib".
  */
-#ifndef DEFAULT_PATH
-# define DEFAULT_PATH "." PATH_SEP "lib" PATH_SEP
-#endif /* DEFAULT_PATH */
+#ifndef DEFAULT_CONFIG_PATH
+# define DEFAULT_CONFIG_PATH "." PATH_SEP "lib" PATH_SEP
+#endif 
+
+#ifndef DEFAULT_LIB_PATH
+# define DEFAULT_LIB_PATH "." PATH_SEP "lib" PATH_SEP
+#endif 
+
+#ifndef DEFAULT_DATA_PATH
+# define DEFAULT_DATA_PATH "." PATH_SEP "lib" PATH_SEP
+#endif 
 
 
 /*
