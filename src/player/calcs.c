@@ -513,7 +513,9 @@ static void calc_torch(void)
 }
 
 /*
- * Calculate the blows a player would get, in current condition, wielding "o_ptr".
+ * Calculate the blows a player would get, in current condition, wielding
+ * "o_ptr". NOTE - this function does not take any extra blows from items
+ * into account.
  */
 int calc_blows(const object_type *o_ptr, player_state *state)
 {

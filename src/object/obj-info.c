@@ -546,7 +546,8 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	int cnt, dam, total_dam, plus = 0;
 	int xtra_postcrit = 0, xtra_precrit = 0;
 	int crit_mult, crit_div, crit_add;
-	int str_plus, dex_plus, old_blows, new_blows, str_done = -1;
+	int str_plus, dex_plus, old_blows, new_blows, extra_blows;
+	int str_done = -1;
 	object_type *j_ptr = &inventory[INVEN_BOW];
 
 	u32b f[OBJ_FLAG_N];
@@ -609,14 +610,25 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 
 		/* Check to see if extra STR or DEX would yield extra blows */
 		old_blows = state.num_blow;
+		extra_blows = 0;
 
+		/* First we need to look for extra blows on items, as state
+		 * does not track these */
+		for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+		{
+			if (inventory[i].known_flags[0] & TR0_BLOWS)
+				extra_blows += inventory[i].pval;
+		}
+
+		/* Then we check for extra native blows */
 		for (dex_plus = 0; dex_plus < 8; dex_plus++)
 		{
 			for (str_plus = 0; str_plus < 8; str_plus++)
 		        {
 				state.stat_ind[A_STR] += str_plus;
 				state.stat_ind[A_DEX] += dex_plus;
-				new_blows = calc_blows(o_ptr, &state);
+				new_blows = calc_blows(o_ptr, &state)
+					+ extra_blows;
 
 				/* Test to make sure that this extra blow is a
 				 * new str/dex combination, not a repeat
