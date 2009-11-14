@@ -730,7 +730,7 @@ static void init_stuff(void)
 	my_strcpy(path, "XXX XXX XXX", sizeof(path));
 
 	/* Prepare the filepaths */
-	init_file_paths(path);
+	init_file_paths(path, path, path);
 
 
 #ifdef USE_SOUND

@@ -69,7 +69,7 @@
  * this function to be called multiple times, for example, to
  * try several base "path" values until a good one is found.
  */
-void init_file_paths(const char *path)
+void init_file_paths(const char *configpath, const char *libpath, const char *datapath)
 {
 #ifdef PRIVATE_USER_PATH
 	char buf[1024];
@@ -77,12 +77,8 @@ void init_file_paths(const char *path)
 
 	/*** Free everything ***/
 
-	/* Free the main path */
-	string_free(ANGBAND_DIR);
-
 	/* Free the sub-paths */
 	string_free(ANGBAND_DIR_APEX);
-	string_free(ANGBAND_DIR_BONE);
 	string_free(ANGBAND_DIR_EDIT);
 	string_free(ANGBAND_DIR_FILE);
 	string_free(ANGBAND_DIR_HELP);
@@ -100,16 +96,13 @@ void init_file_paths(const char *path)
 
 	/*** Prepare the paths ***/
 
-	/* Save the main directory */
-	ANGBAND_DIR = string_make(path);
-
 	/* Build path names */
-	ANGBAND_DIR_EDIT = string_make(format("%sedit", path));
-	ANGBAND_DIR_FILE = string_make(format("%sfile", path));
-	ANGBAND_DIR_HELP = string_make(format("%shelp", path));
-	ANGBAND_DIR_INFO = string_make(format("%sinfo", path));
-	ANGBAND_DIR_PREF = string_make(format("%spref", path));
-	ANGBAND_DIR_XTRA = string_make(format("%sxtra", path));
+	ANGBAND_DIR_EDIT = string_make(format("%sedit", configpath));
+	ANGBAND_DIR_FILE = string_make(format("%sfile", configpath));
+	ANGBAND_DIR_HELP = string_make(format("%shelp", libpath));
+	ANGBAND_DIR_INFO = string_make(format("%sinfo", libpath));
+	ANGBAND_DIR_PREF = string_make(format("%spref", configpath));
+	ANGBAND_DIR_XTRA = string_make(format("%sxtra", libpath));
 
 	/* Build xtra/ paths */
 	ANGBAND_DIR_XTRA_FONT = string_make(format("%s" PATH_SEP "font", ANGBAND_DIR_XTRA));
@@ -126,7 +119,7 @@ void init_file_paths(const char *path)
 
 #else /* PRIVATE_USER_PATH */
 
-        ANGBAND_DIR_USER = string_make(format("%suser", path));
+        ANGBAND_DIR_USER = string_make(format("%suser", datapath));
 
 #endif /* PRIVATE_USER_PATH */
 
@@ -138,19 +131,14 @@ void init_file_paths(const char *path)
 	ANGBAND_DIR_APEX = string_make(buf);
 
 	/* Build the path to the user specific sub-directory */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "bone");
-	ANGBAND_DIR_BONE = string_make(buf);
-
-	/* Build the path to the user specific sub-directory */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "save");
 	ANGBAND_DIR_SAVE = string_make(buf);
 
 #else /* USE_PRIVATE_PATHS */
 
 	/* Build pathnames */
-	ANGBAND_DIR_APEX = string_make(format("%sapex", path));
-	ANGBAND_DIR_BONE = string_make(format("%sbone", path));
-	ANGBAND_DIR_SAVE = string_make(format("%ssave", path));
+	ANGBAND_DIR_APEX = string_make(format("%sapex", datapath));
+	ANGBAND_DIR_SAVE = string_make(format("%ssave", datapath));
 
 #endif /* USE_PRIVATE_PATHS */
 }
@@ -185,12 +173,6 @@ void create_user_dirs(void)
 #ifdef USE_PRIVATE_PATHS
 	/* Build the path to the scores sub-directory */
 	path_build(dirpath, sizeof(dirpath), subdirpath, "scores");
-
-	/* Create the directory */
-	mkdir(dirpath, 0700);
-
-	/* Build the path to the savefile sub-directory */
-	path_build(dirpath, sizeof(dirpath), subdirpath, "bone");
 
 	/* Create the directory */
 	mkdir(dirpath, 0700);
@@ -1420,9 +1402,7 @@ void cleanup_angband(void)
 	vformat_kill();
 
 	/* Free the directories */
-	string_free(ANGBAND_DIR);
 	string_free(ANGBAND_DIR_APEX);
-	string_free(ANGBAND_DIR_BONE);
 	string_free(ANGBAND_DIR_EDIT);
 	string_free(ANGBAND_DIR_FILE);
 	string_free(ANGBAND_DIR_HELP);

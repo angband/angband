@@ -671,16 +671,9 @@ const char *ANGBAND_SYS = "xxx";
 const char *ANGBAND_GRAF = "old";
 
 /*
- * Path name: The main "lib" directory
- * This variable is not actually used anywhere in the code
- */
-char *ANGBAND_DIR;
-
-/*
- * Various lib/ sub-directories.
+ * Various directories. These are no longer necessarily all subdirs of "lib"
  */
 char *ANGBAND_DIR_APEX;
-char *ANGBAND_DIR_BONE;
 char *ANGBAND_DIR_EDIT;
 char *ANGBAND_DIR_FILE;
 char *ANGBAND_DIR_HELP;

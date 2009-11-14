@@ -125,20 +125,27 @@ static void quit_hook(cptr s)
  */
 static void init_stuff(void)
 {
-	char path[1024];
-
+	char configpath[512];
+	char libpath[512];
+	char datapath[512];
 
 	/* Use the angband_path, or a default */
-	my_strcpy(path, DEFAULT_PATH, sizeof(path));
+	my_strcpy(configpath, DEFAULT_CONFIG_PATH, sizeof(configpath));
+	my_strcpy(libpath, DEFAULT_LIB_PATH, sizeof(libpath));
+	my_strcpy(datapath, DEFAULT_DATA_PATH, sizeof(datapath));
 
-	/* Make sure it's terminated */
-	path[511] = '\0';
+	/* Make sure they're terminated */
+	configpath[511] = '\0';
+	libpath[511] = '\0';
+	datapath[511] = '\0';
 
 	/* Hack -- Add a path separator (only if needed) */
-	if (!suffix(path, PATH_SEP)) my_strcat(path, PATH_SEP, sizeof(path));
+	if (!suffix(configpath, PATH_SEP)) my_strcat(configpath, PATH_SEP, sizeof(configpath));
+	if (!suffix(libpath, PATH_SEP)) my_strcat(libpath, PATH_SEP, sizeof(libpath));
+	if (!suffix(datapath, PATH_SEP)) my_strcat(datapath, PATH_SEP, sizeof(datapath));
 
 	/* Initialize */
-	init_file_paths(path);
+	init_file_paths(configpath, libpath, datapath);
 }
 
 

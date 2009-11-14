@@ -80,6 +80,23 @@ if test "x$with_private_dirs" != "x"; then
 	AC_DEFINE(USE_PRIVATE_PATHS, 1, [Define to use private user paths.])
 fi
 
+bindir=${exec_prefix}/games
+
+AC_ARG_WITH(configpath, [  --with-configpath=PATH     use PATH as the path to the Angband configuration folder])
+
+if test "$with_configpath" != ""; then
+	configpath="${with_configpath}"
+elif test "$with_no_install" != ""; then
+	configpath="./lib/"
+else
+	configpath="${prefix}/etc/"
+fi
+
+case "/$configpath" in
+	*/) MY_EXPAND_DIR(configdir, "$configpath")  ;;
+	*)  MY_EXPAND_DIR(configdir, "$configpath/") ;;
+esac
+
 AC_ARG_WITH(libpath, [  --with-libpath=PATH     use PATH as the path to the Angband lib folder])
 
 if test "$with_libpath" != ""; then
@@ -88,19 +105,39 @@ elif test "$with_no_install" != ""; then
 	libpath="./lib/"
 	bindir=".."
 else
-	libpath="${prefix}/share/${PACKAGE}/"
+	libpath="${prefix}/share/"
 fi
 
 case "/$libpath" in
-	*/) MY_EXPAND_DIR(game_datadir, "$libpath")  ;;
-	*)  MY_EXPAND_DIR(game_datadir, "$libpath/") ;;
+	*/) MY_EXPAND_DIR(libdatadir, "$libpath")  ;;
+	*)  MY_EXPAND_DIR(libdatadir, "$libpath/") ;;
 esac
 
-AC_DEFINE_UNQUOTED([DEFAULT_PATH], "${game_datadir}", [Path to the game's lib directory])
+AC_ARG_WITH(varpath, [  --with-varpath=PATH     use PATH as the path to the Angband saved data folder])
+
+if test "$with_varpath" != ""; then
+	varpath="${with_varpath}"
+elif test "$with_no_install" != ""; then
+	varpath="./lib/"
+else
+	varpath="${prefix}/var/games/"
+fi
+
+case "/$varpath" in
+	*/) MY_EXPAND_DIR(vardatadir, "$varpath")  ;;
+	*)  MY_EXPAND_DIR(vardatadir, "$varpath/") ;;
+esac
+
+AC_SUBST([configdir])
+AC_SUBST([libdatadir])
+AC_SUBST([vardatadir])
+
+AC_DEFINE_UNQUOTED([DEFAULT_CONFIG_PATH], "${configdir}${PACKAGE}/", [Path to the game's configuration data])
+AC_DEFINE_UNQUOTED([DEFAULT_LIB_PATH], "${libdatadir}${PACKAGE}/", [Path to the game's lib directory])
+AC_DEFINE_UNQUOTED([DEFAULT_DATA_PATH], "${vardatadir}${PACKAGE}/", [Path to the game's variable data])
 
 NOINSTALL="$with_noinstall"; AC_SUBST(NOINSTALL)
 SETEGID="$with_setgid";      AC_SUBST(SETEGID)
-DATA_PATH="$game_datadir";   AC_SUBST(DATA_PATH)
 
 dnl Frontends
 AC_ARG_ENABLE(gtk,
@@ -241,7 +278,9 @@ echo
 echo "Configuration:"
 echo
 echo "  Install path:                           ${prefix}"
-echo "  lib/ path:                              ${game_datadir}"
+echo "  config path:                            ${configdir}"
+echo "  lib path:                               ${libdatadir}"
+echo "  var path:                               ${vardatadir}"
 if test "$wsetgid" = "yes"; then
 	echo "  (as group ${SETEGID})"
 else

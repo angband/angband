@@ -194,9 +194,7 @@ extern s16b spell_list[MAX_REALMS][BOOKS_PER_REALM][SPELLS_PER_BOOK];
 extern const char *ANGBAND_SYS;
 extern const char *ANGBAND_GRAF;
 
-extern char *ANGBAND_DIR;
 extern char *ANGBAND_DIR_APEX;
-extern char *ANGBAND_DIR_BONE;
 extern char *ANGBAND_DIR_EDIT;
 extern char *ANGBAND_DIR_FILE;
 extern char *ANGBAND_DIR_HELP;
@@ -355,7 +353,7 @@ void history_display(void);
 void dump_history(ang_file *file);
 
 /* init2.c */
-extern void init_file_paths(const char *path);
+extern void init_file_paths(const char *configpath, const char *libpath, const char *datapath);
 extern void create_user_dirs(void);
 extern bool init_angband(void);
 extern void cleanup_angband(void);

@@ -1313,7 +1313,7 @@ static void init_stuff(void)
 	strcpy(path, "/angband/lib/");
 
 	/* Prepare the filepaths */
-	init_file_paths(path);
+	init_file_paths(path, path, path);
 
 	/* Hack */
 	strcpy(savefile, "/angband/lib/save/PLAYER");

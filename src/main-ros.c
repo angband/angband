@@ -5342,7 +5342,7 @@ int main(int argc, char *argv[])
 	load_choices();
 	read_alarm_choices();
 
-	init_file_paths(unixify_name(resource_path));
+	init_file_paths(unixify_name(resource_path), unixify_name(resource_path), unixify_name(resource_path));
 
 	START_HOURGLASS;			/* Paranoia */
 
