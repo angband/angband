@@ -551,6 +551,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	object_type *j_ptr = &inventory[INVEN_BOW];
 
 	u32b f[OBJ_FLAG_N];
+	u32b flags[OBJ_FLAG_N];
 
 	bool weapon = (wield_slot(o_ptr) == INVEN_WIELD);
 	bool ammo   = (p_ptr->state.ammo_tval == o_ptr->tval) &&
@@ -616,7 +617,9 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 		 * does not track these */
 		for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 		{
-			if (inventory[i].known_flags[0] & TR0_BLOWS)
+			object_flags_known(&inventory[i], flags);
+			
+			if (flags[0] & TR0_BLOWS)
 				extra_blows += inventory[i].pval;
 		}
 
