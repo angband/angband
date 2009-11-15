@@ -115,7 +115,7 @@ if test "x$with_libpath" != "x"; then
 	libpath="${with_libpath}"
 elif test "x$with_no_install" != "x"; then
 	libpath="./lib/"
-	bindir="./"
+	bindir=".."
 else
 	libpath="${prefix}/share/${PACKAGE}/"
 fi
