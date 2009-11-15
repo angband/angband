@@ -4,14 +4,23 @@
 /*** Some really important things you ought to change ***/
 
 /*
- * Defines the default path to the Angband "lib" directory, for ports that use
+ * Defines the default paths to the Angband directories, for ports that use
  * the main.c file.
  *
- * The configure script overrides this value.  Check the "--prefix=<dir>"
+ * "config path" is for per-installation configurable data, like the game's
+ * splash screen, edit files and system-wide preferences.
+ *
+ * "lib path" is for static data, like sounds, graphics and fonts.
+ *
+ * "data path" is for variable data, like save files and scores. On single-
+ * user systems, this also includes user preferences and dumps (on multi-
+ * user systems these go under the user's home directory).
+ *
+ * The configure script overrides these values. Check the "--prefix=<dir>"
  * option of the configure script.
  *
- * This value will be over-ridden by the "ANGBAND_PATH" environment
- * variable, if that variable is defined and accessable.  The final
+ * These values will be over-ridden by the "ANGBAND_PATH" environment
+ * variable, if that variable is defined and accessible.  The final
  * "slash" is required if the value supplied is in fact a directory.
  *
  * Using the value "./lib/" below tells Angband that, by default,
@@ -19,8 +28,12 @@
  * the "lib" directory.  This is a reasonable (but imperfect) default.
  *
  * If at all possible, you should change this value to refer to the
- * actual location of the "lib" folder, for example, "/tmp/angband/lib/"
- * or "/usr/games/lib/angband/", or "/pkg/angband/lib".
+ * actual location of the folders, for example, "/etc/angband/"
+ * or "/usr/share/angband/", or "/var/games/angband/". In fact, if at all
+ * possible you should use a packaging system which does this for you.
+ *
+ * N.B. The data path is only used if USE_PRIVATE_PATHS is not defined.
+ * The other two are always used. 
  */
 #ifndef DEFAULT_CONFIG_PATH
 # define DEFAULT_CONFIG_PATH "." PATH_SEP "lib" PATH_SEP
@@ -37,7 +50,7 @@
 
 /*
  * OPTION: Create and use a hidden directory in the users home directory
- * for storing pref-files and character-dumps.
+ * for storing pref files and character dumps.
  */
 #ifdef SET_UID
 # ifndef PRIVATE_USER_PATH
@@ -48,7 +61,7 @@
 
 /*
  * OPTION: Create and use hidden directories in the users home directory
- * for storing save files, data files, and high-scores
+ * for storing save files and high-scores
  */
 #ifdef PRIVATE_USER_PATH
 /* # define USE_PRIVATE_PATHS */

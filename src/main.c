@@ -112,7 +112,7 @@ static void quit_hook(cptr s)
  *
  * First, we'll look for the ANGBAND_PATH environment variable,
  * and then look for the files in there.  If that doesn't work,
- * we'll try the DEFAULT_PATH constant.  So be sure that one of
+ * we'll try the DEFAULT_PATH constants.  So be sure that one of
  * these two things works...
  *
  * We must ensure that the path ends with "PATH_SEP" if needed,

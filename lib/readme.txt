@@ -13,38 +13,20 @@ This file should be (more or less) portable between different platforms.  It
 must be present (or creatable) for the game to run correctly.
 
 
-=== Directory "lib/bone" ===
-
-The "lib/bone" directory is currently unused.
-
-
-=== Directory "lib/data" ===
-
-The "lib/data" directory contains various special binary data files.
-
-The *.raw files are binary image files constructed by parsing the ascii
-template files in "lib/edit", described below.  These files are required,
-but can be created by the game if the "lib/edit" directory contains the
-proper files, and if the game was compiled to allow this creation.
-
-
 === Directory "lib/edit" ===
 
 The "lib/edit" directory contains various special ascii data files.
 
-The *.txt files are ascii template files used to construct the binary image
-files in "lib/data", described above.  These files describe the "terrain
-features", "object kinds", "artifacts", "ego-items", "monster races", and
-"dungeon vaults", "player races", "player classes", and many other things.
+The *.txt files are ascii template files used to construct the data 
+arrays for the game. These arrays describe the "terrain features", 
+"object kinds", "artifacts", "ego-items", "monster races", and "dungeon 
+vaults", "player races", "player classes", and many other things.
 
 The ascii template files are easier to edit than hard-coded arrays, prevent
 compilation errors on some machines, and also shrink the size of the binary
 executable, and also provide a user-readable spoiler file of sorts.
 
 These files should not be modified unless you know exactly what you are doing.
-
-These files are optional if the game is distributed with pre-created
-binary raw files in "lib/data".
 
 
 === Directory "lib/file" ===
@@ -80,23 +62,6 @@ These files should not be modified unless you know exactly what you are doing.
 The "lib/help" directory contains the "online help" files.
 
 This directory is used to search for normal "online help" files.
-
-
-=== Directory "lib/info" ===
-
-The "lib/info" directory contains the "online spoiler" files.
-
-This directory is used to search for any "online help" file that cannot
-be found in the "lib/help" directory.
-
-This directory is empty by default.  Many people use this directory for
-"online spoiler files", many of which are available.
-
-Note that the default "help.hlp" file allows the "9" key to access a help
-file called "spoiler.hlp", and allows the "0" key to access "user.hlp".
-
-These special help files can thus be placed in the user's own "info"
-directory to allow the on line help to access his files.
 
 
 === Directory "lib/save" ===
