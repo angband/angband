@@ -8,7 +8,7 @@
  * the main.c file.
  *
  * "config path" is for per-installation configurable data, like the game's
- * splash screen, edit files and system-wide preferences.
+ * edit files and system-wide preferences.
  *
  * "lib path" is for static data, like sounds, graphics and fonts.
  *

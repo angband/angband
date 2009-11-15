@@ -100,7 +100,7 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 
 	/* Build path names */
 	ANGBAND_DIR_EDIT = string_make(format("%sedit", configpath));
-	ANGBAND_DIR_FILE = string_make(format("%sfile", configpath));
+	ANGBAND_DIR_FILE = string_make(format("%sfile", libpath));
 	ANGBAND_DIR_HELP = string_make(format("%shelp", libpath));
 	ANGBAND_DIR_INFO = string_make(format("%sinfo", libpath));
 	ANGBAND_DIR_PREF = string_make(format("%spref", configpath));

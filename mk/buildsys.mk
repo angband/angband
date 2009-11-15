@@ -358,7 +358,7 @@ distclean: clean
 			fi \
 		fi \
 	done
-	rm -rf configure *.mk autom4te.cache
+	rm -rf configure *.mk autom4te.cache config.log config.status aclocal.m4 src/autoconf.* mk/extra.mk mk/sinclude.mk
 
 DIR_ENTER = cd $$i || exit 1
 DIR_LEAVE = cd .. || exit 1
