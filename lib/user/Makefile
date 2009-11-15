@@ -1,6 +1,6 @@
 MKPATH=../../mk/
 include $(MKPATH)buildsys.mk
 
-DATA = delete.me
+VARDATA = delete.me
 PACKAGE = user
 

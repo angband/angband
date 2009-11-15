@@ -1,15 +1,15 @@
 MKPATH=../../mk/
 include $(MKPATH)buildsys.mk
 
-DATA = delete.me
+VARDATA = delete.me
 PACKAGE = apex
 
 install-extra:
 	if [ "x$(SETEGID)" != "x" ]; then \
 		if [ "x$(DRY)" = "x" ]; then \
-			${MKDIR_P} ${DESTDIR}${datadir}/${PACKAGE}; \
-			touch ${DESTDIR}${datadir}/${PACKAGE}/scores.raw; \
-			chown -R root:${SETEGID} ${DESTDIR}${datadir}/${PACKAGE}; \
-			chmod -R g+w ${DESTDIR}${datadir}/${PACKAGE}; \
+			${MKDIR_P} ${DESTDIR}${vardatadir}${PACKAGE}; \
+			touch ${DESTDIR}${vardatadir}${PACKAGE}/scores.raw; \
+			chown -R root:${SETEGID} ${DESTDIR}${vardatadir}${PACKAGE}; \
+			chmod -R g+w ${DESTDIR}${vardatadir}${PACKAGE}; \
 		fi; \
 	fi
