@@ -1475,7 +1475,11 @@ bool make_object(object_type *j_ptr, int lev, bool good, bool great)
 
 	/* Try to make a special artifact */
 	if (one_in_(good ? 10 : 1000))
-		return make_artifact_special(j_ptr, lev);
+	{
+		if (make_artifact_special(j_ptr, lev)) return TRUE;
+		/* If we failed to make an artifact, the player gets a great item */
+		good = great = TRUE;
+	}
 
 	/* Base level for the object */
 	base = (good ? (lev + 10) : lev);
