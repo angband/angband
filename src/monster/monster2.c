@@ -1040,7 +1040,7 @@ void lore_do_probe(int m_idx)
 	unsigned i;
 
 	/* Know various things */
-	race_flags_assign(l_ptr->flags, r_ptr->flags);
+	memset(l_ptr->flags, 255, sizeof(l_ptr->flags));
 	race_flags_assign_spell(l_ptr->spell_flags, r_ptr->spell_flags);
 	for (i = 0; i < MONSTER_BLOW_MAX; i++)
 		l_ptr->blows[i] = MAX_UCHAR;
@@ -1067,7 +1067,6 @@ void lore_do_probe(int m_idx)
 void lore_treasure(int m_idx, int num_item, int num_gold)
 {
 	monster_type *m_ptr = &mon_list[m_idx];
-	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
 
@@ -1075,9 +1074,8 @@ void lore_treasure(int m_idx, int num_item, int num_gold)
 	if (num_item > l_ptr->drop_item) l_ptr->drop_item = num_item;
 	if (num_gold > l_ptr->drop_gold) l_ptr->drop_gold = num_gold;
 
-	/* Hack -- memorize the good/great flags */
-	if (r_ptr->flags[0] & (RF0_DROP_GOOD)) l_ptr->flags[0] |= (RF0_DROP_GOOD);
-	if (r_ptr->flags[0] & (RF0_DROP_GREAT)) l_ptr->flags[0] |= (RF0_DROP_GREAT);
+	/* Learn about drop quality */
+	l_ptr->flags[0] |= (RF0_DROP_GOOD | RF0_DROP_GREAT);
 
 	/* Update monster recall window */
 	if (p_ptr->monster_race_idx == m_ptr->r_idx)
@@ -1210,8 +1208,7 @@ void update_mon(int m_idx, bool full)
 			/* Empty mind, no telepathy */
 			if (r_ptr->flags[1] & (RF1_EMPTY_MIND))
 			{
-				/* Memorize flags */
-				l_ptr->flags[1] |= (RF1_EMPTY_MIND);
+				/* Nothing! */
 			}
 
 			/* Weird mind, occasional telepathy */
@@ -1225,13 +1222,6 @@ void update_mon(int m_idx, bool full)
 
 					/* Check for LOS so that MFLAG_VIEW is set later */
 					if (player_has_los_bold(fy, fx)) easy = TRUE;
-
-					/* Memorize flags */
-					l_ptr->flags[1] |= (RF1_WEIRD_MIND);
-
-					/* Hack -- Memorize mental flags */
-					if (r_ptr->flags[1] & (RF1_SMART)) l_ptr->flags[1] |= (RF1_SMART);
-					if (r_ptr->flags[1] & (RF1_STUPID)) l_ptr->flags[1] |= (RF1_STUPID);
 				}
 			}
 
@@ -1243,31 +1233,20 @@ void update_mon(int m_idx, bool full)
 
 				/* Check for LOS to that MFLAG_VIEW is set later */
 				if (player_has_los_bold(fy, fx)) easy = TRUE;
-
-				/* Hack -- Memorize mental flags */
-				if (r_ptr->flags[1] & (RF1_SMART)) l_ptr->flags[1] |= (RF1_SMART);
-				if (r_ptr->flags[1] & (RF1_STUPID)) l_ptr->flags[1] |= (RF1_STUPID);
 			}
 		}
 
 		/* Normal line of sight, and not blind */
 		if (player_has_los_bold(fy, fx) && !p_ptr->timed[TMD_BLIND])
 		{
-			bool do_invisible = FALSE;
-			bool do_cold_blood = FALSE;
-
 			/* Use "infravision" */
 			if (d <= p_ptr->state.see_infra)
 			{
-				/* Handle "cold blooded" monsters */
-				if (r_ptr->flags[1] & (RF1_COLD_BLOOD))
-				{
-					/* Take note */
-					do_cold_blood = TRUE;
-				}
-
+				/* Learn about warm/cold blood */
+				l_ptr->flags[1] |= (RF1_COLD_BLOOD);
+				
 				/* Handle "warm blooded" monsters */
-				else
+				if (!(r_ptr->flags[1] & (RF1_COLD_BLOOD)))
 				{
 					/* Easy to see */
 					easy = flag = TRUE;
@@ -1277,12 +1256,12 @@ void update_mon(int m_idx, bool full)
 			/* Use "illumination" */
 			if (player_can_see_bold(fy, fx))
 			{
+				/* Learn about invisibility */
+				l_ptr->flags[1] |= (RF1_INVISIBLE);
+				
 				/* Handle "invisible" monsters */
 				if (r_ptr->flags[1] & (RF1_INVISIBLE))
 				{
-					/* Take note */
-					do_invisible = TRUE;
-
 					/* See invisible */
 					if (p_ptr->state.see_inv)
 					{
@@ -1298,14 +1277,6 @@ void update_mon(int m_idx, bool full)
 					easy = flag = TRUE;
 				}
 			}
-
-			/* Visible */
-			if (flag)
-			{
-				/* Memorize flags */
-				if (do_invisible) l_ptr->flags[1] |= (RF1_INVISIBLE);
-				if (do_cold_blood) l_ptr->flags[1] |= (RF1_COLD_BLOOD);
-			}
 		}
 	}
 
@@ -1313,6 +1284,12 @@ void update_mon(int m_idx, bool full)
 	/* The monster is now visible */
 	if (flag)
 	{
+		/* Learn about the monster's mind */
+		if (p_ptr->state.telepathy)
+		{
+			l_ptr->flags[1] |= (RF1_EMPTY_MIND | RF1_WEIRD_MIND | RF1_SMART | RF1_STUPID);
+		}
+		
 		/* It was previously unseen */
 		if (!m_ptr->ml)
 		{
@@ -3284,3 +3261,17 @@ bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note)
 	return (FALSE);
 }
 
+/*
+ * Obtain the "flags" for a monster race which are known to the monster
+ * lore struct.  Known flags will be 1 for present, or 0 for not present.
+ * Unknown flags will always be 0.
+ */
+void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, u32b flags[])
+{
+	int i;
+
+	for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
+	{
+		flags[i] = l_ptr->flags[i] & r_ptr->flags[i];
+	}
+}

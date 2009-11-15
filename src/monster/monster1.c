@@ -540,6 +540,7 @@ static void describe_monster_desc(int r_idx)
 static void describe_monster_spells(int r_idx, const monster_lore *l_ptr, const atk_colors *colors)
 {
 	const monster_race *r_ptr = &r_info[r_idx];
+	u32b f[RACE_FLAG_STRICT_UB];
 	int m, n;
 	int msex = 0;
 	bool breath = FALSE;
@@ -549,6 +550,9 @@ static void describe_monster_spells(int r_idx, const monster_lore *l_ptr, const 
 	int vc[64]; /* list colors */
 	int vd[64]; /* list avg damage values */
 	int known_hp;
+	
+	/* Get the known monster flags */
+	monster_flags_known(r_ptr, l_ptr, f);
 
 	/* Extract a gender (if applicable) */
 	if (r_ptr->flags[0] & RF0_FEMALE) msex = 2;
@@ -1106,7 +1110,7 @@ static void describe_monster_spells(int r_idx, const monster_lore *l_ptr, const 
 		text_out_c(TERM_L_RED, "cast spells");
 
 		/* Adverb */
-		if (l_ptr->flags[1] & RF1_SMART) text_out(" intelligently");
+		if (f[1] & RF1_SMART) text_out(" intelligently");
 
 		/* List */
 		text_out(" which ");
@@ -1153,10 +1157,13 @@ static void describe_monster_spells(int r_idx, const monster_lore *l_ptr, const 
 static void describe_monster_drop(int r_idx, const monster_lore *l_ptr)
 {
 	const monster_race *r_ptr = &r_info[r_idx];
+	u32b f[RACE_FLAG_STRICT_UB];
 
 	int n;
 	int msex = 0;
 
+	/* Get the known monster flags */
+	monster_flags_known(r_ptr, l_ptr, f);
 
 	/* Extract a gender (if applicable) */
 	if (r_ptr->flags[0] & RF0_FEMALE) msex = 2;
@@ -1180,11 +1187,9 @@ static void describe_monster_drop(int r_idx, const monster_lore *l_ptr)
 			text_out_c(TERM_BLUE, format("%d ", n));
 		}
 
-
 		/* Quality */
-		if (l_ptr->flags[0] & RF0_DROP_GREAT) text_out_c(TERM_BLUE, "exceptional ");
-		else if (l_ptr->flags[0] & RF0_DROP_GOOD) text_out_c(TERM_BLUE, "good ");
-
+		if (f[0] & RF0_DROP_GREAT) text_out_c(TERM_BLUE, "exceptional ");
+		else if (f[0] & RF0_DROP_GOOD) text_out_c(TERM_BLUE, "good ");
 
 		/* Objects */
 		if (l_ptr->drop_item)
@@ -1214,9 +1219,13 @@ static void describe_monster_drop(int r_idx, const monster_lore *l_ptr)
 static void describe_monster_attack(int r_idx, const monster_lore *l_ptr, const atk_colors *colors)
 {
 	const monster_race *r_ptr = &r_info[r_idx];
+	u32b f[RACE_FLAG_STRICT_UB];
 	int m, n, r;
 	int msex = 0;
-
+	
+	/* Get the known monster flags */
+	monster_flags_known(r_ptr, l_ptr, f);
+	
 	/* Extract a gender (if applicable) */
 	if (r_ptr->flags[0] & RF0_FEMALE) msex = 2;
 	else if (r_ptr->flags[0] & RF0_MALE) msex = 1;
@@ -1350,7 +1359,7 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr, const 
 		text_out(".  ");
 
 	/* Notice lack of attacks */
-	else if (l_ptr->flags[0] & RF0_NEVER_BLOW)
+	else if (f[0] & RF0_NEVER_BLOW)
 		text_out("%^s has no physical attacks.  ", wd_he[msex]);
 
 	/* Or describe the lack of knowledge */
@@ -1365,29 +1374,31 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr, const 
 static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 {
 	const monster_race *r_ptr = &r_info[r_idx];
+	u32b f[RACE_FLAG_STRICT_UB];
 
 	int vn;
 	cptr vp[64];
 	bool prev = FALSE;
 
 	int msex = 0;
-
+	
+	/* Get the known monster flags */
+	monster_flags_known(r_ptr, l_ptr, f);
 
 	/* Extract a gender (if applicable) */
 	if (r_ptr->flags[0] & RF0_FEMALE) msex = 2;
 	else if (r_ptr->flags[0] & RF0_MALE) msex = 1;
 
-
 	/* Collect special abilities. */
 	vn = 0;
-	if (l_ptr->flags[1] & RF1_OPEN_DOOR) vp[vn++] = "open doors";
-	if (l_ptr->flags[1] & RF1_BASH_DOOR) vp[vn++] = "bash down doors";
-	if (l_ptr->flags[1] & RF1_PASS_WALL) vp[vn++] = "pass through walls";
-	if (l_ptr->flags[1] & RF1_KILL_WALL) vp[vn++] = "bore through walls";
-	if (l_ptr->flags[1] & RF1_MOVE_BODY) vp[vn++] = "push past weaker monsters";
-	if (l_ptr->flags[1] & RF1_KILL_BODY) vp[vn++] = "destroy weaker monsters";
-	if (l_ptr->flags[1] & RF1_TAKE_ITEM) vp[vn++] = "pick up objects";
-	if (l_ptr->flags[1] & RF1_KILL_ITEM) vp[vn++] = "destroy objects";
+	if (f[1] & RF1_OPEN_DOOR) vp[vn++] = "open doors";
+	if (f[1] & RF1_BASH_DOOR) vp[vn++] = "bash down doors";
+	if (f[1] & RF1_PASS_WALL) vp[vn++] = "pass through walls";
+	if (f[1] & RF1_KILL_WALL) vp[vn++] = "bore through walls";
+	if (f[1] & RF1_MOVE_BODY) vp[vn++] = "push past weaker monsters";
+	if (f[1] & RF1_KILL_BODY) vp[vn++] = "destroy weaker monsters";
+	if (f[1] & RF1_TAKE_ITEM) vp[vn++] = "pick up objects";
+	if (f[1] & RF1_KILL_ITEM) vp[vn++] = "destroy objects";
 
 	/* Describe special abilities. */
 	output_desc_list(msex, "can", vp, vn, TERM_WHITE);
@@ -1395,28 +1406,28 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 
 	/* Describe detection traits */
 	vn = 0;
-	if (l_ptr->flags[1] & RF1_INVISIBLE)  vp[vn++] = "invisible";
-	if (l_ptr->flags[1] & RF1_COLD_BLOOD) vp[vn++] = "cold blooded";
-	if (l_ptr->flags[1] & RF1_EMPTY_MIND) vp[vn++] = "not detected by telepathy";
-	if (l_ptr->flags[1] & RF1_WEIRD_MIND) vp[vn++] = "rarely detected by telepathy";
+	if (f[1] & RF1_INVISIBLE)  vp[vn++] = "invisible";
+	if (f[1] & RF1_COLD_BLOOD) vp[vn++] = "cold blooded";
+	if (f[1] & RF1_EMPTY_MIND) vp[vn++] = "not detected by telepathy";
+	if (f[1] & RF1_WEIRD_MIND) vp[vn++] = "rarely detected by telepathy";
 
 	output_desc_list(msex, "is", vp, vn, TERM_WHITE);
 
 
 	/* Describe special things */
-	if (l_ptr->flags[1] & RF1_MULTIPLY)
+	if (f[1] & RF1_MULTIPLY)
 		text_out("%^s breeds explosively.  ", wd_he[msex]);
-	if (l_ptr->flags[1] & RF1_REGENERATE)
+	if (f[1] & RF1_REGENERATE)
 		text_out("%^s regenerates quickly.  ", wd_he[msex]);
 
 
 
 	/* Collect susceptibilities */
 	vn = 0;
-	if (l_ptr->flags[2] & RF2_HURT_ROCK) vp[vn++] = "rock remover";
-	if (l_ptr->flags[2] & RF2_HURT_LITE) vp[vn++] = "bright light";
-	if (l_ptr->flags[2] & RF2_HURT_FIRE) vp[vn++] = "fire";
-	if (l_ptr->flags[2] & RF2_HURT_COLD) vp[vn++] = "cold";
+	if (f[2] & RF2_HURT_ROCK) vp[vn++] = "rock remover";
+	if (f[2] & RF2_HURT_LITE) vp[vn++] = "bright light";
+	if (f[2] & RF2_HURT_FIRE) vp[vn++] = "fire";
+	if (f[2] & RF2_HURT_COLD) vp[vn++] = "cold";
 
 	if (vn)
 	{
@@ -1428,16 +1439,16 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 
 	/* Collect immunities and resistances */
 	vn = 0;
-	if (l_ptr->flags[2] & RF2_IM_ACID)   vp[vn++] = "acid";
-	if (l_ptr->flags[2] & RF2_IM_ELEC)   vp[vn++] = "lightning";
-	if (l_ptr->flags[2] & RF2_IM_FIRE)   vp[vn++] = "fire";
-	if (l_ptr->flags[2] & RF2_IM_COLD)   vp[vn++] = "cold";
-	if (l_ptr->flags[2] & RF2_IM_POIS)   vp[vn++] = "poison";
-	if (l_ptr->flags[2] & RF2_IM_WATER)  vp[vn++] = "water";
-	if (l_ptr->flags[2] & RF2_RES_NETH)  vp[vn++] = "nether";
-	if (l_ptr->flags[2] & RF2_RES_PLAS)  vp[vn++] = "plasma";
-	if (l_ptr->flags[2] & RF2_RES_NEXUS) vp[vn++] = "nexus";
-	if (l_ptr->flags[2] & RF2_RES_DISE)  vp[vn++] = "disenchantment";
+	if (f[2] & RF2_IM_ACID)   vp[vn++] = "acid";
+	if (f[2] & RF2_IM_ELEC)   vp[vn++] = "lightning";
+	if (f[2] & RF2_IM_FIRE)   vp[vn++] = "fire";
+	if (f[2] & RF2_IM_COLD)   vp[vn++] = "cold";
+	if (f[2] & RF2_IM_POIS)   vp[vn++] = "poison";
+	if (f[2] & RF2_IM_WATER)  vp[vn++] = "water";
+	if (f[2] & RF2_RES_NETH)  vp[vn++] = "nether";
+	if (f[2] & RF2_RES_PLAS)  vp[vn++] = "plasma";
+	if (f[2] & RF2_RES_NEXUS) vp[vn++] = "nexus";
+	if (f[2] & RF2_RES_DISE)  vp[vn++] = "disenchantment";
 
 	if (vn)
 	{
@@ -1454,10 +1465,10 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 
 	/* Collect non-effects */
 	vn = 0;
-	if (l_ptr->flags[2] & RF2_NO_STUN) vp[vn++] = "stunned";
-	if (l_ptr->flags[2] & RF2_NO_FEAR) vp[vn++] = "frightened";
-	if (l_ptr->flags[2] & RF2_NO_CONF) vp[vn++] = "confused";
-	if (l_ptr->flags[2] & RF2_NO_SLEEP) vp[vn++] = "slept";
+	if (f[2] & RF2_NO_STUN) vp[vn++] = "stunned";
+	if (f[2] & RF2_NO_FEAR) vp[vn++] = "frightened";
+	if (f[2] & RF2_NO_CONF) vp[vn++] = "confused";
+	if (f[2] & RF2_NO_SLEEP) vp[vn++] = "slept";
 
 	if (vn)
 	{
@@ -1502,13 +1513,13 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 	}
 
 	/* Describe escorts */
-	if ((l_ptr->flags[0] & (RF0_ESCORT | RF0_ESCORTS)))
+	if ((f[0] & (RF0_ESCORT | RF0_ESCORTS)))
 	{
 		text_out("%^s usually appears with escorts.  ", wd_he[msex]);
 	}
 
 	/* Describe friends */
-	else if ((l_ptr->flags[0] & (RF0_FRIEND | RF0_FRIENDS)))
+	else if ((f[0] & (RF0_FRIEND | RF0_FRIENDS)))
 	{
 		text_out("%^s usually appears in groups.  ", wd_he[msex]);
 	}
@@ -1521,19 +1532,21 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 static void describe_monster_kills(int r_idx, const monster_lore *l_ptr)
 {
 	const monster_race *r_ptr = &r_info[r_idx];
+	u32b f[RACE_FLAG_STRICT_UB];
 
 	int msex = 0;
 
 	bool out = TRUE;
-
+	
+	/* Get the known monster flags */
+	monster_flags_known(r_ptr, l_ptr, f);
 
 	/* Extract a gender (if applicable) */
 	if (r_ptr->flags[0] & RF0_FEMALE) msex = 2;
 	else if (r_ptr->flags[0] & RF0_MALE) msex = 1;
 
-
 	/* Treat uniques differently */
-	if (l_ptr->flags[0] & RF0_UNIQUE)
+	if (f[0] & RF0_UNIQUE)
 	{
 		/* Hack -- Determine if the unique is "dead" */
 		bool dead = (r_ptr->max_num == 0) ? TRUE : FALSE;
@@ -1630,13 +1643,16 @@ static void describe_monster_kills(int r_idx, const monster_lore *l_ptr)
 static void describe_monster_toughness(int r_idx, const monster_lore *l_ptr)
 {
 	const monster_race *r_ptr = &r_info[r_idx];
+	u32b f[RACE_FLAG_STRICT_UB];
 
 	int msex = 0;
+
+	/* Get the known monster flags */
+	monster_flags_known(r_ptr, l_ptr, f);
 
 	/* Extract a gender (if applicable) */
 	if (r_ptr->flags[0] & RF0_FEMALE) msex = 2;
 	else if (r_ptr->flags[0] & RF0_MALE) msex = 1;
-
 
 	/* Describe monster "toughness" */
 	if (know_armour(r_idx, l_ptr))
@@ -1646,7 +1662,7 @@ static void describe_monster_toughness(int r_idx, const monster_lore *l_ptr)
 		text_out_c(TERM_L_BLUE, "%d", r_ptr->ac);
 		text_out(", and a");
 
-		if (!(l_ptr->flags[0] & RF0_UNIQUE))
+		if (!(f[0] & RF0_UNIQUE))
 			text_out("n average");
 
 		text_out(" life rating of ");
@@ -1659,6 +1675,7 @@ static void describe_monster_toughness(int r_idx, const monster_lore *l_ptr)
 static void describe_monster_exp(int r_idx, const monster_lore *l_ptr)
 {
 	const monster_race *r_ptr = &r_info[r_idx];
+	u32b f[RACE_FLAG_STRICT_UB];
 
 	cptr p, q;
 
@@ -1666,8 +1683,11 @@ static void describe_monster_exp(int r_idx, const monster_lore *l_ptr)
 
 	char buf[20] = "";
 
+	/* Get the known monster flags */
+	monster_flags_known(r_ptr, l_ptr, f);
+
 	/* Introduction */
-	if (l_ptr->flags[0] & RF0_UNIQUE)
+	if (f[0] & RF0_UNIQUE)
 		text_out("Killing");
 	else
 		text_out("A kill of");
@@ -1711,9 +1731,12 @@ static void describe_monster_exp(int r_idx, const monster_lore *l_ptr)
 static void describe_monster_movement(int r_idx, const monster_lore *l_ptr)
 {
 	const monster_race *r_ptr = &r_info[r_idx];
+	u32b f[RACE_FLAG_STRICT_UB];
 
 	bool old = FALSE;
 
+	/* Get the known monster flags */
+	monster_flags_known(r_ptr, l_ptr, f);
 
 	text_out("This");
 
@@ -1739,7 +1762,7 @@ static void describe_monster_movement(int r_idx, const monster_lore *l_ptr)
 	{
 		byte colour = (r_ptr->level > p_ptr->max_depth) ? TERM_RED : TERM_L_BLUE;
 
-		if (l_ptr->flags[0] & RF0_FORCE_DEPTH)
+		if (f[0] & RF0_FORCE_DEPTH)
 			text_out(" is found ");
 		else
 			text_out(" is normally found ");
@@ -1758,14 +1781,14 @@ static void describe_monster_movement(int r_idx, const monster_lore *l_ptr)
 	text_out(" moves");
 
 	/* Random-ness */
-	if ((l_ptr->flags[0] & (RF0_RAND_50 | RF0_RAND_25)))
+	if ((f[0] & (RF0_RAND_50 | RF0_RAND_25)))
 	{
 		/* Adverb */
-		if ((l_ptr->flags[0] & RF0_RAND_50) && (l_ptr->flags[0] & RF0_RAND_25))
+		if ((f[0] & RF0_RAND_50) && (f[0] & RF0_RAND_25))
 			text_out(" extremely");
-		else if (l_ptr->flags[0] & RF0_RAND_50)
+		else if (f[0] & RF0_RAND_50)
 			text_out(" somewhat");
-		else if (l_ptr->flags[0] & RF0_RAND_25)
+		else if (f[0] & RF0_RAND_25)
 			text_out(" a bit");
 
 		/* Adjective */
@@ -1795,7 +1818,7 @@ static void describe_monster_movement(int r_idx, const monster_lore *l_ptr)
 	}
 
 	/* The code above includes "attack speed" */
-	if (l_ptr->flags[0] & RF0_NEVER_MOVE)
+	if (f[0] & RF0_NEVER_MOVE)
 		text_out(", but does not deign to chase intruders");
 
 	/* End this sentence */
@@ -1857,7 +1880,7 @@ static void cheat_monster_lore(int r_idx, monster_lore *l_ptr)
 	l_ptr->cast_spell = MAX_UCHAR;
 
 	/* Hack -- know all the flags */
-	race_flags_assign(l_ptr->flags, r_ptr->flags);
+	memset(l_ptr->flags, 255, sizeof(l_ptr->flags));
 	race_flags_assign_spell(l_ptr->spell_flags, r_ptr->spell_flags);
 }
 
@@ -1877,6 +1900,7 @@ static void cheat_monster_lore(int r_idx, monster_lore *l_ptr)
 void describe_monster(int r_idx, bool spoilers)
 {
 	monster_lore lore;
+	u32b f[RACE_FLAG_STRICT_UB];
 	atk_colors colors;
 
 	/* Get the race and lore */
@@ -1890,18 +1914,20 @@ void describe_monster(int r_idx, bool spoilers)
 	COPY(&lore, l_ptr, monster_lore);
 
 	/* Assume some "obvious" flags */
-	lore.flags[0] |= (r_ptr->flags[0] & RF0_OBVIOUS_MASK);
-
+	lore.flags[0] |= (RF0_OBVIOUS_MASK);
 
 	/* Killing a monster reveals some properties */
 	if (lore.tkills)
 	{
 		/* Know "race" flags */
-		lore.flags[2] |= (r_ptr->flags[2] & RF2_RACE_MASK);
+		lore.flags[2] |= (RF2_RACE_MASK);
 
 		/* Know "forced" flags */
-		lore.flags[0] |= (r_ptr->flags[0] & (RF0_FORCE_DEPTH));
+		lore.flags[0] |= (RF0_FORCE_DEPTH);
 	}
+	
+	/* Now get the known monster flags */
+	monster_flags_known(r_ptr, &lore, f);
 
 	/* Cheat -- know everything */
 	if (OPT(cheat_know) || spoilers) cheat_monster_lore(r_idx, &lore);
@@ -1928,7 +1954,7 @@ void describe_monster(int r_idx, bool spoilers)
 	describe_monster_attack(r_idx, &lore, &colors);
 
 	/* Notice "Quest" monsters */
-	if (lore.flags[0] & RF0_QUESTOR)
+	if (f[0] & RF0_QUESTOR)
 		text_out("You feel an intense desire to kill this monster...  ");
 
 	/* All done */

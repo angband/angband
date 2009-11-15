@@ -3186,12 +3186,6 @@ static void process_monster(int m_idx)
 
 	bool did_open_door;
 	bool did_bash_door;
-	bool did_take_item;
-	bool did_kill_item;
-	bool did_move_body;
-	bool did_kill_body;
-	bool did_pass_wall;
-	bool did_kill_wall;
 
 
 	/* Handle "sleep" */
@@ -3414,8 +3408,10 @@ static void process_monster(int m_idx)
 	ox = m_ptr->fx;
 
 
-	/* Attempt to "mutiply" if able and allowed */
-	if ((r_ptr->flags[1] & (RF1_MULTIPLY)) && (num_repro < MAX_REPRO))
+	/* Attempt to "mutiply" (all monsters are allowed an attempt for lore
+	 * purposes, even non-breeders)
+	 */
+	if (num_repro < MAX_REPRO)
 	{
 		int k, y, x;
 
@@ -3429,18 +3425,18 @@ static void process_monster(int m_idx)
 			}
 		}
 
-		/* Hack -- multiply slower in crowded areas */
-		if ((k < 4) && (!k || one_in_(k * MON_MULT_ADJ)))
+		/* Multiply slower in crowded areas */
+		if ((k < 4) && (k == 0 || one_in_(k * MON_MULT_ADJ)))
 		{
-			/* Try to multiply */
-			if (multiply_monster(m_idx))
+			/* Successful breeding attempt, learn about that now */
+			if (m_ptr->ml) l_ptr->flags[1] |= (RF1_MULTIPLY);
+			
+			/* Try to multiply (only breeders allowed) */
+			if ((r_ptr->flags[1] & (RF1_MULTIPLY)) && multiply_monster(m_idx))
 			{
-				/* Take note if visible */
+				/* Make a sound */
 				if (m_ptr->ml)
 				{
-					l_ptr->flags[1] |= (RF1_MULTIPLY);
-
-					/* Make a sound */
 					sound(MSG_MULTIPLY);
 				}
 
@@ -3465,47 +3461,38 @@ static void process_monster(int m_idx)
 		stagger = TRUE;
 	}
 
-	/* Random movement */
-	else if (r_ptr->flags[0] & (RF0_RAND_50 | RF0_RAND_25))
+	/* Random movement - always attempt for lore purposes */
+	else
 	{
+		int roll = randint0(100);
+		
 		/* Random movement (25%) */
-		if (!(r_ptr->flags[0] & (RF0_RAND_50)))
+		if (roll < 25)
 		{
-			/* Random */
-			if (randint0(100) < 25)
-			{
-				/* Memorize flags */
-				if (m_ptr->ml) l_ptr->flags[0] |= (RF0_RAND_25);
+			/* Learn about small random movement */
+			if (m_ptr->ml) l_ptr->flags[0] |= (RF0_RAND_25);
 
-				/* Stagger */
-				stagger = TRUE;
-			}
+			/* Stagger */			
+			if (r_ptr->flags[0] & (RF0_RAND_25 | RF0_RAND_50)) stagger = TRUE;
 		}
-
+		
 		/* Random movement (50%) */
-		else if (!(r_ptr->flags[0] & (RF0_RAND_25)))
+		else if (roll < 50)
 		{
-			/* Random */
-			if (randint0(100) < 50)
-			{
-				/* Memorize flags */
-				if (m_ptr->ml) l_ptr->flags[0] |= (RF0_RAND_50);
+			/* Learn about medium random movement */
+			if (m_ptr->ml) l_ptr->flags[0] |= (RF0_RAND_50);
 
-				/* Stagger */
-				stagger = TRUE;
-			}
+			/* Stagger */			
+			if (r_ptr->flags[0] & (RF0_RAND_50)) stagger = TRUE;
 		}
-
+		
 		/* Random movement (75%) */
-		else
+		else if (roll < 75)
 		{
-			/* Random */
-			if (randint0(100) < 75)
+			/* Stagger */			
+			if (r_ptr->flags[0] & (RF0_RAND_25) &&
+			    r_ptr->flags[0] & (RF0_RAND_50))
 			{
-				/* Memorize flags */
-				if (m_ptr->ml) l_ptr->flags[0] |= (RF0_RAND_50 | RF0_RAND_25);
-
-				/* Stagger */
 				stagger = TRUE;
 			}
 		}
@@ -3527,12 +3514,6 @@ static void process_monster(int m_idx)
 	/* Assume nothing */
 	did_open_door = FALSE;
 	did_bash_door = FALSE;
-	did_take_item = FALSE;
-	did_kill_item = FALSE;
-	did_move_body = FALSE;
-	did_kill_body = FALSE;
-	did_pass_wall = FALSE;
-	did_kill_wall = FALSE;
 
 
 	/* Process moves */
@@ -3553,110 +3534,115 @@ static void process_monster(int m_idx)
 			do_move = TRUE;
 		}
 
-		/* Permanent wall */
+		/* Permanent wall in the way */
 		else if (cave_feat[ny][nx] >= FEAT_PERM_EXTRA)
 		{
 			/* Nothing */
 		}
 
-		/* Monster moves through walls (and doors) */
-		else if (r_ptr->flags[1] & (RF1_PASS_WALL))
+		/* Normal wall, door, or secret door in the way */
+		else
 		{
-			/* Pass through walls/doors/rubble */
-			do_move = TRUE;
+			/* There's some kind of feature in the way, so learn about
+			 * kill-wall and pass-wall now
+			 */
+			if (m_ptr->ml) l_ptr->flags[1] |= (RF1_PASS_WALL | RF1_KILL_WALL);
 
-			/* Monster went through a wall */
-			did_pass_wall = TRUE;
-		}
-
-		/* Monster destroys walls (and doors) */
-		else if (r_ptr->flags[1] & (RF1_KILL_WALL))
-		{
-			/* Eat through walls/doors/rubble */
-			do_move = TRUE;
-
-			/* Monster destroyed a wall */
-			did_kill_wall = TRUE;
-
-			/* Forget the wall */
-			cave_info[ny][nx] &= ~(CAVE_MARK);
-
-			/* Notice */
-			cave_set_feat(ny, nx, FEAT_FLOOR);
-
-			/* Note changes to viewable region */
-			if (player_has_los_bold(ny, nx)) do_view = TRUE;
-		}
-
-		/* Handle doors and secret doors */
-		else if (((cave_feat[ny][nx] >= FEAT_DOOR_HEAD) &&
-		          (cave_feat[ny][nx] <= FEAT_DOOR_TAIL)) ||
-		         (cave_feat[ny][nx] == FEAT_SECRET))
-		{
-			bool may_bash = TRUE;
-
-			/* Take a turn */
-			do_turn = TRUE;
-
-			/* Creature can open doors. */
-			if (r_ptr->flags[1] & (RF1_OPEN_DOOR))
+			/* Monster moves through walls (and doors) */
+			if (r_ptr->flags[1] & (RF1_PASS_WALL))
 			{
-				/* Closed doors and secret doors */
-				if ((cave_feat[ny][nx] == FEAT_DOOR_HEAD) ||
-				    (cave_feat[ny][nx] == FEAT_SECRET))
-				{
-					/* The door is open */
-					did_open_door = TRUE;
+				/* Pass through walls/doors/rubble */
+				do_move = TRUE;
+			}
 
-					/* Do not bash the door */
-					may_bash = FALSE;
+			/* Monster destroys walls (and doors) */
+			else if (r_ptr->flags[1] & (RF1_KILL_WALL))
+			{
+				/* Eat through walls/doors/rubble */
+				do_move = TRUE;
+
+				/* Forget the wall */
+				cave_info[ny][nx] &= ~(CAVE_MARK);
+
+				/* Notice */
+				cave_set_feat(ny, nx, FEAT_FLOOR);
+
+				/* Note changes to viewable region */
+				if (player_has_los_bold(ny, nx)) do_view = TRUE;
+			}
+
+			/* Handle doors and secret doors */
+			else if (((cave_feat[ny][nx] >= FEAT_DOOR_HEAD) &&
+						 (cave_feat[ny][nx] <= FEAT_DOOR_TAIL)) ||
+						(cave_feat[ny][nx] == FEAT_SECRET))
+			{
+				bool may_bash = TRUE;
+
+				/* Take a turn */
+				do_turn = TRUE;
+				
+				/* Learn about door abilities */
+				if (m_ptr->ml) l_ptr->flags[1] |= (RF1_OPEN_DOOR | RF1_BASH_DOOR);
+
+				/* Creature can open doors. */
+				if (r_ptr->flags[1] & (RF1_OPEN_DOOR))
+				{
+					/* Closed doors and secret doors */
+					if ((cave_feat[ny][nx] == FEAT_DOOR_HEAD) ||
+						 (cave_feat[ny][nx] == FEAT_SECRET))
+					{
+						/* The door is open */
+						did_open_door = TRUE;
+
+						/* Do not bash the door */
+						may_bash = FALSE;
+					}
+
+					/* Locked doors (not jammed) */
+					else if (cave_feat[ny][nx] < FEAT_DOOR_HEAD + 0x08)
+					{
+						int k;
+
+						/* Door power */
+						k = ((cave_feat[ny][nx] - FEAT_DOOR_HEAD) & 0x07);
+
+						/* Try to unlock it XXX XXX XXX */
+						if (randint0(m_ptr->hp / 10) > k)
+						{
+							/* Unlock the door */
+							cave_set_feat(ny, nx, FEAT_DOOR_HEAD + 0x00);
+
+							/* Do not bash the door */
+							may_bash = FALSE;
+						}
+					}
 				}
 
-				/* Locked doors (not jammed) */
-				else if (cave_feat[ny][nx] < FEAT_DOOR_HEAD + 0x08)
+				/* Stuck doors -- attempt to bash them down if allowed */
+				if (may_bash && (r_ptr->flags[1] & (RF1_BASH_DOOR)))
 				{
 					int k;
 
 					/* Door power */
 					k = ((cave_feat[ny][nx] - FEAT_DOOR_HEAD) & 0x07);
 
-					/* Try to unlock it XXX XXX XXX */
+					/* Attempt to Bash XXX XXX XXX */
 					if (randint0(m_ptr->hp / 10) > k)
 					{
-						/* Unlock the door */
-						cave_set_feat(ny, nx, FEAT_DOOR_HEAD + 0x00);
+						/* Message */
+						msg_print("You hear a door burst open!");
 
-						/* Do not bash the door */
-						may_bash = FALSE;
+						/* Disturb (sometimes) */
+						disturb(0, 0);
+
+						/* The door was bashed open */
+						did_bash_door = TRUE;
+
+						/* Hack -- fall into doorway */
+						do_move = TRUE;
 					}
 				}
 			}
-
-			/* Stuck doors -- attempt to bash them down if allowed */
-			if (may_bash && (r_ptr->flags[1] & (RF1_BASH_DOOR)))
-			{
-				int k;
-
-				/* Door power */
-				k = ((cave_feat[ny][nx] - FEAT_DOOR_HEAD) & 0x07);
-
-				/* Attempt to Bash XXX XXX XXX */
-				if (randint0(m_ptr->hp / 10) > k)
-				{
-					/* Message */
-					msg_print("You hear a door burst open!");
-
-					/* Disturb (sometimes) */
-					disturb(0, 0);
-
-					/* The door was bashed open */
-					did_bash_door = TRUE;
-
-					/* Hack -- fall into doorway */
-					do_move = TRUE;
-				}
-			}
-
 
 			/* Deal with doors in the way */
 			if (did_open_door || did_bash_door)
@@ -3705,36 +3691,39 @@ static void process_monster(int m_idx)
 			}
 		}
 
-		/* Some monsters never attack */
-		if (do_move && (cave_m_idx[ny][nx] < 0) &&
-		    (r_ptr->flags[0] & (RF0_NEVER_BLOW)))
-		{
-			/* Hack -- memorize lack of attacks */
-			if (m_ptr->ml) l_ptr->flags[0] |= (RF0_NEVER_BLOW);
 
-			/* Do not move */
-			do_move = FALSE;
-		}
-
-
-		/* The player is in the way.  Attack him. */
+		/* The player is in the way. */
 		if (do_move && (cave_m_idx[ny][nx] < 0))
 		{
-			/* Do the attack */
-			(void)make_attack_normal(m_idx);
+			/* Learn about if the monster attacks */
+			if (m_ptr->ml) l_ptr->flags[0] |= (RF0_NEVER_BLOW);
 
-			/* Do not move */
-			do_move = FALSE;
+			/* Some monsters never attack */
+			if (r_ptr->flags[0] & (RF0_NEVER_BLOW))
+			{
+				/* Do not move */
+				do_move = FALSE;
+			}
+			
+			/* Otherwise, attack the player */
+			else
+			{
+				/* Do the attack */
+				(void)make_attack_normal(m_idx);
 
-			/* Took a turn */
-			do_turn = TRUE;
+				/* Do not move */
+				do_move = FALSE;
+
+				/* Took a turn */
+				do_turn = TRUE;
+			}
 		}
 
 
 		/* Some monsters never move */
 		if (do_move && (r_ptr->flags[0] & (RF0_NEVER_MOVE)))
 		{
-			/* Hack -- memorize lack of attacks */
+			/* Learn about lack of movement */
 			if (m_ptr->ml) l_ptr->flags[0] |= (RF0_NEVER_MOVE);
 
 			/* Do not move */
@@ -3758,38 +3747,41 @@ static void process_monster(int m_idx)
 			/* Assume no movement */
 			do_move = FALSE;
 
-			if ((compare_monsters(m_ptr, n_ptr) > 0) && (kill_ok || move_ok))
+			if (compare_monsters(m_ptr, n_ptr) > 0)
 			{
-				/* Get the names of the monsters involved */
-				char m_name[80];
-				char n_name[80];
-				monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND1);
-				monster_desc(n_name, sizeof(n_name), n_ptr, MDESC_IND1);
+				/* Learn about pushing and shoving */
+				if (m_ptr->ml) l_ptr->flags[1] |= (RF1_KILL_BODY | RF1_MOVE_BODY);
 
-				/* Allow movement */
-				do_move = TRUE;
-
-				/* Monster ate another monster */
-				if (kill_ok)
+				if (kill_ok || move_ok)
 				{
-					/* Note if visible */
-					if (m_ptr->ml && (m_ptr->mflag & (MFLAG_VIEW)))
-					{
-						msg_format("%^s tramples over %s.", m_name, n_name);
-					}
+					/* Get the names of the monsters involved */
+					char m_name[80];
+					char n_name[80];
+					monster_desc(m_name, sizeof(m_name), m_ptr, MDESC_IND1);
+					monster_desc(n_name, sizeof(n_name), n_ptr, MDESC_IND1);
 
-					did_kill_body = TRUE;
-					delete_monster(ny, nx);
-				}
-				else
-				{
-					/* Note if visible */
-					if (m_ptr->ml && (m_ptr->mflag & (MFLAG_VIEW)))
-					{
-						msg_format("%^s pushes past %s.", m_name, n_name);
-					}
+					/* Allow movement */
+					do_move = TRUE;
 
-					did_move_body = TRUE;
+					/* Monster ate another monster */
+					if (kill_ok)
+					{
+						/* Note if visible */
+						if (m_ptr->ml && (m_ptr->mflag & (MFLAG_VIEW)))
+						{
+							msg_format("%^s tramples over %s.", m_name, n_name);
+						}
+
+						delete_monster(ny, nx);
+					}
+					else
+					{
+						/* Note if visible */
+						if (m_ptr->ml && (m_ptr->mflag & (MFLAG_VIEW)))
+						{
+							msg_format("%^s pushes past %s.", m_name, n_name);
+						}
+					}
 				}
 			}
 		}
@@ -3798,6 +3790,9 @@ static void process_monster(int m_idx)
 		if (do_move)
 		{
 			s16b this_o_idx, next_o_idx = 0;
+			
+			/* Learn about no lack of movement */
+			if (m_ptr->ml) l_ptr->flags[0] |= (RF0_NEVER_MOVE);
 
 			/* Take a turn */
 			do_turn = TRUE;
@@ -3829,6 +3824,9 @@ static void process_monster(int m_idx)
 
 				/* Skip gold */
 				if (o_ptr->tval == TV_GOLD) continue;
+				
+				/* Learn about item pickup behavior */
+				if (m_ptr->ml) l_ptr->flags[1] |= (RF1_TAKE_ITEM | RF1_KILL_ITEM);
 
 				/* Take or Kill objects on the floor */
 				if ((r_ptr->flags[1] & (RF1_TAKE_ITEM)) ||
@@ -3870,9 +3868,6 @@ static void process_monster(int m_idx)
 						/* Only give a message for "take_item" */
 						if (r_ptr->flags[1] & (RF1_TAKE_ITEM))
 						{
-							/* Take note */
-							did_take_item = TRUE;
-
 							/* Describe observable situations */
 							if (m_ptr->ml && player_has_los_bold(ny, nx) && !squelch_hide_item(o_ptr))
 							{
@@ -3888,9 +3883,6 @@ static void process_monster(int m_idx)
 					{
 						object_type *i_ptr;
 						object_type object_type_body;
-
-						/* Take note */
-						did_take_item = TRUE;
 
 						/* Describe observable situations */
 						if (player_has_los_bold(ny, nx) && !squelch_hide_item(o_ptr))
@@ -3915,9 +3907,6 @@ static void process_monster(int m_idx)
 					/* Destroy the item */
 					else
 					{
-						/* Take note */
-						did_kill_item = TRUE;
-
 						/* Describe observable situations */
 						if (player_has_los_bold(ny, nx) && !squelch_hide_item(o_ptr))
 						{
@@ -3952,35 +3941,6 @@ static void process_monster(int m_idx)
 
 		/* Fully update the flow XXX XXX XXX */
 		p_ptr->update |= (PU_FORGET_FLOW | PU_UPDATE_FLOW);
-	}
-
-
-	/* Learn things from observable monster */
-	if (m_ptr->ml)
-	{
-		/* Monster opened a door */
-		if (did_open_door) l_ptr->flags[1] |= (RF1_OPEN_DOOR);
-
-		/* Monster bashed a door */
-		if (did_bash_door) l_ptr->flags[1] |= (RF1_BASH_DOOR);
-
-		/* Monster tried to pick something up */
-		if (did_take_item) l_ptr->flags[1] |= (RF1_TAKE_ITEM);
-
-		/* Monster tried to crush something */
-		if (did_kill_item) l_ptr->flags[1] |= (RF1_KILL_ITEM);
-
-		/* Monster pushed past another monster */
-		if (did_move_body) l_ptr->flags[1] |= (RF1_MOVE_BODY);
-
-		/* Monster ate another monster */
-		if (did_kill_body) l_ptr->flags[1] |= (RF1_KILL_BODY);
-
-		/* Monster passed through a wall */
-		if (did_pass_wall) l_ptr->flags[1] |= (RF1_PASS_WALL);
-
-		/* Monster destroyed a wall */
-		if (did_kill_wall) l_ptr->flags[1] |= (RF1_KILL_WALL);
 	}
 
 

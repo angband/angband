@@ -243,22 +243,24 @@ bool make_attack_normal(int m_idx)
 
 
 			/* Hack -- Apply "protection from evil" */
-			if ((p_ptr->timed[TMD_PROTEVIL] > 0) &&
-			    (r_ptr->flags[2] & (RF2_EVIL)) &&
-			    (p_ptr->lev >= rlev) &&
-			    ((randint0(100) + p_ptr->lev) > 50))
+			if (p_ptr->timed[TMD_PROTEVIL] > 0)
 			{
-				/* Remember the Evil-ness */
+				/* Learn about the evil flag */
 				if (m_ptr->ml)
 				{
 					l_ptr->flags[2] |= (RF2_EVIL);
 				}
 
-				/* Message */
-				msg_format("%^s is repelled.", m_name);
+				if ((r_ptr->flags[2] & (RF2_EVIL)) &&
+				    (p_ptr->lev >= rlev) &&
+				    ((randint0(100) + p_ptr->lev) > 50))
+				{
+					/* Message */
+					msg_format("%^s is repelled.", m_name);
 
-				/* Hack -- Next attack */
-				continue;
+					/* Hack -- Next attack */
+					continue;
+				}
 			}
 
 

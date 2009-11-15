@@ -110,7 +110,9 @@ typedef struct
 
 	byte blows[MONSTER_BLOW_MAX]; /* Number of times each blow type was seen */
 
-	u32b flags[RACE_FLAG_STRICT_UB];	/* Observed racial flags */
+	u32b flags[RACE_FLAG_STRICT_UB]; /* Observed racial flags - a 1 indicates
+	                                  * the flag (or lack thereof) is known to
+	                                  * the player */
 	u32b spell_flags[RACE_FLAG_SPELL_STRICT_UB];	/* Observed racial spell flags */
 } monster_lore;
 

@@ -205,7 +205,7 @@ const slay_t slay_table[] =
 	 "fiercely smite", NULL, "demons",          NULL },
 	{ TR0_KILL_UNDEAD, RF2_UNDEAD, 0, 5, "deeply pierces",
 	 "fiercely smite", NULL, "undead",          NULL },
-	{ 0, 0, 0, 0, NULL, NULL, NULL, NULL }
+	{ 0, 0, 0, 0, NULL, NULL, NULL, NULL, NULL }
 };
 
 /*

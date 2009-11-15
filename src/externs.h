@@ -404,6 +404,7 @@ extern void message_pain(int m_idx, int dam);
 extern void update_smart_learn(int m_idx, int what);
 void monster_death(int m_idx);
 bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note);
+extern void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, u32b flags[]);
 
 /* pathfind.c */
 extern bool findpath(int y, int x);

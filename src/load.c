@@ -490,9 +490,7 @@ int rd_monster_memory(u32b version)
 		/* XXX */
 		strip_bytes(3);
 
-		/* Repair the lore flags */
-		for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
-			l_ptr->flags[i] &= r_ptr->flags[i];
+		/* Repair the spell lore flags */
 		for (i = 0; i < RACE_FLAG_SPELL_STRICT_UB; i++)
 			l_ptr->spell_flags[i] &= r_ptr->spell_flags[i];
 	}

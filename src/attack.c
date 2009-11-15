@@ -207,12 +207,33 @@ static int get_brand_mult(object_type *o_ptr, const monster_type *m_ptr,
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
-	u32b f[OBJ_FLAG_N];
+	u32b f[OBJ_FLAG_N], known_f[OBJ_FLAG_N];
 	object_flags(o_ptr, f);
+	object_flags_known(o_ptr, known_f);
 
 	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
 	{
 		if (!(f[0] & s_ptr->slay_flag)) continue;
+		
+		/* Learn about monster resistance/vulnerability IF:
+		 * 1) The slay flag on the object is known OR
+		 * 2) The monster does not possess the appropriate resistance flag OR
+		 * 3) The monster does possess the appropriate vulnerability flag
+		 */
+		if (known_f[0] & s_ptr->slay_flag ||
+		    (s_ptr->monster_flag && (r_ptr->flags[2] & s_ptr->monster_flag)) ||
+		    (s_ptr->resist_flag && !(r_ptr->flags[2] & s_ptr->resist_flag)))
+		{
+			if (m_ptr->ml && s_ptr->monster_flag)
+			{
+				l_ptr->flags[2] |= s_ptr->monster_flag;
+			}
+
+			if (m_ptr->ml && s_ptr->resist_flag)
+			{
+				l_ptr->flags[2] |= s_ptr->resist_flag;
+			}
+		}
 
 		/* notice any brand or slay that would affect the monster */
 		if ((s_ptr->resist_flag) || (r_ptr->flags[2] & s_ptr->monster_flag))
@@ -225,10 +246,6 @@ static int get_brand_mult(object_type *o_ptr, const monster_type *m_ptr,
 		if ((s_ptr->brand && !(r_ptr->flags[2] & s_ptr->resist_flag)) || 
 			(r_ptr->flags[2] & s_ptr->monster_flag))
 		{
-			/* Learn the flag */
-			if (m_ptr->ml)
-				l_ptr->flags[2] |= s_ptr->monster_flag;
-
 			if (mult < s_ptr->mult)
 				mult = s_ptr->mult;
 
@@ -247,13 +264,6 @@ static int get_brand_mult(object_type *o_ptr, const monster_type *m_ptr,
 						s_ptr->active_verb);
 			}
 		}
-
-		/* If the monster resisted, add to the monster lore */
-		if (r_ptr->flags[2] & s_ptr->resist_flag)
-		{
-			if (m_ptr->ml)
-				l_ptr->flags[2] |= s_ptr->resist_flag;
-		}
 	}
 	
 	return mult;
@@ -270,9 +280,9 @@ void py_attack(int y, int x)
 {
 	int num = 0, bonus, chance;
 
-	monster_type *m_ptr;
-	monster_race *r_ptr;
-	monster_lore *l_ptr;
+	monster_type *m_ptr = &mon_list[cave_m_idx[y][x]];
+	monster_race *r_ptr = &r_info[m_ptr->r_idx];
+	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
 	object_type *o_ptr;
 
@@ -283,11 +293,6 @@ void py_attack(int y, int x)
 	bool do_quake = FALSE;
 
 	const char *crit_msg = NULL;
-
-	/* Get the monster */
-	m_ptr = &mon_list[cave_m_idx[y][x]];
-	r_ptr = &r_info[m_ptr->r_idx];
-	l_ptr = &l_list[m_ptr->r_idx];
 
 
 	/* Disturb the player */
@@ -409,14 +414,15 @@ void py_attack(int y, int x)
 				/* Message */
 				msg_print("Your hands stop glowing.");
 
+				/* Update the lore */
+				if (m_ptr->ml)
+				{
+					l_ptr->flags[2] |= (RF2_NO_CONF);
+				}
+
 				/* Confuse the monster */
 				if (r_ptr->flags[2] & (RF2_NO_CONF))
 				{
-					if (m_ptr->ml)
-					{
-						l_ptr->flags[2] |= (RF2_NO_CONF);
-					}
-
 					msg_format("%^s is unaffected.", m_name);
 				}
 				else if (randint0(100) < r_ptr->level)
