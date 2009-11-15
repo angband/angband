@@ -89,7 +89,7 @@ if test "$with_configpath" != ""; then
 elif test "$with_no_install" != ""; then
 	configpath="./lib/"
 else
-	configpath="${prefix}/etc/"
+	configpath="${prefix}/etc/${PACKAGE}/"
 fi
 
 case "/$configpath" in
@@ -105,7 +105,7 @@ elif test "$with_no_install" != ""; then
 	libpath="./lib/"
 	bindir=".."
 else
-	libpath="${prefix}/share/"
+	libpath="${prefix}/share/${PACKAGE}/"
 fi
 
 case "/$libpath" in
@@ -120,7 +120,7 @@ if test "$with_varpath" != ""; then
 elif test "$with_no_install" != ""; then
 	varpath="./lib/"
 else
-	varpath="${prefix}/var/games/"
+	varpath="${prefix}/var/games/${PACKAGE}/"
 fi
 
 case "/$varpath" in
@@ -132,9 +132,9 @@ AC_SUBST([configdir])
 AC_SUBST([libdatadir])
 AC_SUBST([vardatadir])
 
-AC_DEFINE_UNQUOTED([DEFAULT_CONFIG_PATH], "${configdir}${PACKAGE}/", [Path to the game's configuration data])
-AC_DEFINE_UNQUOTED([DEFAULT_LIB_PATH], "${libdatadir}${PACKAGE}/", [Path to the game's lib directory])
-AC_DEFINE_UNQUOTED([DEFAULT_DATA_PATH], "${vardatadir}${PACKAGE}/", [Path to the game's variable data])
+AC_DEFINE_UNQUOTED([DEFAULT_CONFIG_PATH], "${configdir}", [Path to the game's configuration data])
+AC_DEFINE_UNQUOTED([DEFAULT_LIB_PATH], "${libdatadir}", [Path to the game's lib directory])
+AC_DEFINE_UNQUOTED([DEFAULT_DATA_PATH], "${vardatadir}", [Path to the game's variable data])
 
 NOINSTALL="$with_noinstall"; AC_SUBST(NOINSTALL)
 SETEGID="$with_setgid";      AC_SUBST(SETEGID)

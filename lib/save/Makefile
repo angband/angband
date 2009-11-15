@@ -2,7 +2,7 @@ MKPATH=../../mk/
 include $(MKPATH)buildsys.mk
 
 DATA = delete.me
-PACKAGE = ${PACKAGE_NAME}/save
+PACKAGE = save
 
 install-extra:
 	if [ "x$(SETEGID)" != "x" ]; then \

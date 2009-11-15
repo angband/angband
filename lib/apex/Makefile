@@ -2,7 +2,7 @@ MKPATH=../../mk/
 include $(MKPATH)buildsys.mk
 
 DATA = delete.me
-PACKAGE = ${PACKAGE_NAME}/apex
+PACKAGE = apex
 
 install-extra:
 	if [ "x$(SETEGID)" != "x" ]; then \
