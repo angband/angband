@@ -75,6 +75,9 @@ dnl Work around an autoconf bug.
 if test "$prefix" = "NONE"; then
 	prefix="${ac_default_prefix}"
 fi
+if test "$exec_prefix" = "NONE"; then
+	exec_prefix="${prefix}"
+fi
 
 if test "x$with_private_dirs" != "x"; then
 	AC_DEFINE(USE_PRIVATE_PATHS, 1, [Define to use private user paths.])
