@@ -13,20 +13,23 @@ AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [Version number of package])
 
 AC_ARG_WITH(setgid,
 	[  --with-setgid=NAME      install angband as group NAME],
-	[wsetgid=yes],
-	[with_private_dirs=yes])
+	[wsetgid=yes])
 AC_ARG_WITH(private_dirs,
-	[  --with-private-dirs     use private scorefiles/savefiles/datafiles])
+	[  --with-private-dirs     use private scorefiles/savefiles])
 AC_ARG_WITH(no_install,
-	[  --with-no-install      don't install, just run in-place])
+	[  --with-no-install       don't install, just run in-place])
 
 if test "x$with_setgid" = "xyes"; then
 	AC_MSG_ERROR([Please specify a group to install as.])
 fi
 
-if test "x$wsetgid$with_private_dirs$no_install" != "xyes";  then
+if test "x$wsetgid" = "x" && test "x$with_no_install" = "x"; then
+	with_private_dirs="yes"
+fi
 
-	echo "Please run ./configure with one of:
+if test "x$wsetgid$with_private_dirs$with_no_install" != "xyes";  then
+
+	echo "Please run ./configure with only one of:
 
 --with-setgid=<groupname>
     This configures the game to store savefiles and scorefiles in a central
@@ -39,7 +42,13 @@ if test "x$wsetgid$with_private_dirs$no_install" != "xyes";  then
 --with-private-dirs
     This configures the game to store savefiles and scorefiles for each user
     in that user's home directory.  The game requires no special privileges if
-    you do this, and should be used for most installations of the game.
+    you do this, and should be used for most installations of the game. This
+    is the default, if you specify none of these three options.
+
+--with-no-install
+    This leaves the game to run from the directory into which it was extracted
+    and compiled, touching nothing else on the system - make install is not
+    run.
 "
 
 	AC_MSG_ERROR([Please specify an installation method.])
@@ -80,16 +89,16 @@ if test "$exec_prefix" = "NONE"; then
 fi
 
 if test "x$with_private_dirs" != "x"; then
-	AC_DEFINE(USE_PRIVATE_PATHS, 1, [Define to use private user paths.])
+	AC_DEFINE(USE_PRIVATE_PATHS, 1, [Define to use private save and score paths.])
 fi
 
 bindir=${exec_prefix}/games
 
-AC_ARG_WITH(configpath, [  --with-configpath=PATH     use PATH as the path to the Angband configuration folder])
+AC_ARG_WITH(configpath, [  --with-configpath=PATH  use PATH as the path to the Angband configuration folder])
 
-if test "$with_configpath" != ""; then
+if test "x$with_configpath" != "x"; then
 	configpath="${with_configpath}"
-elif test "$with_no_install" != ""; then
+elif test "x$with_no_install" != "x"; then
 	configpath="./lib/"
 else
 	configpath="${prefix}/etc/${PACKAGE}/"
@@ -102,11 +111,11 @@ esac
 
 AC_ARG_WITH(libpath, [  --with-libpath=PATH     use PATH as the path to the Angband lib folder])
 
-if test "$with_libpath" != ""; then
+if test "x$with_libpath" != "x"; then
 	libpath="${with_libpath}"
-elif test "$with_no_install" != ""; then
+elif test "x$with_no_install" != "x"; then
 	libpath="./lib/"
-	bindir=".."
+	bindir="./"
 else
 	libpath="${prefix}/share/${PACKAGE}/"
 fi
@@ -118,9 +127,9 @@ esac
 
 AC_ARG_WITH(varpath, [  --with-varpath=PATH     use PATH as the path to the Angband saved data folder])
 
-if test "$with_varpath" != ""; then
+if test "x$with_varpath" != "x"; then
 	varpath="${with_varpath}"
-elif test "$with_no_install" != ""; then
+elif test "x$with_no_install" != "x"; then
 	varpath="./lib/"
 else
 	varpath="${prefix}/var/games/${PACKAGE}/"
@@ -277,18 +286,33 @@ fi
 AC_CONFIG_FILES([mk/extra.mk mk/sinc@&t@lude.mk])
 AC_OUTPUT
 
+if test "x$with_private_dirs" = "xyes"; then
+	displayedvardatadir="(not used)"
+else
+	displayedvardatadir="$vardatadir"
+fi
+
+if test "x$with_no_install" = "xyes"; then
+	displayedprefix="(not used)"
+else
+	displayedprefix="$prefix"
+fi
+
 echo
 echo "Configuration:"
 echo
-echo "  Install path:                           ${prefix}"
+echo "  Install path:                           ${displayedprefix}"
+echo "  binary path:                            ${bindir}"
 echo "  config path:                            ${configdir}"
 echo "  lib path:                               ${libdatadir}"
-echo "  var path:                               ${vardatadir}"
-if test "$wsetgid" = "yes"; then
+echo "  var path:                               ${displayedvardatadir}"
+
+if test "x$wsetgid" = "xyes"; then
 	echo "  (as group ${SETEGID})"
-else
-	echo "  (with private user files in ~/.angband/)"
+elif test "x$with_private_dirs" = "xyes"; then
+	echo "  (with private save and score files in ~/.angband/Angband/)"
 fi
+
 echo
 echo "-- Frontends --"
 if test "$enable_curses" = "yes"; then

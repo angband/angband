@@ -148,7 +148,7 @@ ${STATIC_LIB} ${STATIC_LIB_NOINST}: ${EXT_DEPS} ${OBJS}
 		${COMPILE_FAILED}; \
 	fi
 
-install: ${LIB} ${STATIC_LIB} ${PLUGIN} ${PROG} install-extra
+install: ${LIB} ${STATIC_LIB} ${PLUGIN} ${PROG} ${CONFIG} ${LIBDATA} ${VARDATA} ${INCLUDES} ${MAN} install-extra
 	for i in ${SUBDIRS}; do \
 		${DIR_ENTER}; \
 		${MAKE} ${MFLAGS} install || exit 1; \
