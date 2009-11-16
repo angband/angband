@@ -28,7 +28,7 @@
 void show_inven(olist_detail_t mode)
 {
 	int i, j, k, l, z = 0;
-	int col, row, len, lim;
+	int col, row, r_col, len = 0, lim, ex_wid = 0;
 
 	object_type *o_ptr;
 	char o_name[80];
@@ -40,21 +40,20 @@ void show_inven(olist_detail_t mode)
 	char out_desc[24][80];
 
 
-	/* Default length */
-	len = (Term->wid-1) - 50;
+	/* Default length of the item name column */
+	if (mode & OLIST_WINDOW) len = 60;
 
-	/* Maximum space allowed for descriptions 
+	/* Maximum space allowed for item descriptions 
 	 * Screen width minus the letter label "a) "
 	 */
 	lim = (Term->wid-1) - 3;
 
-	/* Reserve space for price */
+   /* Reserve space for extra fields */
 	if (mode & OLIST_PRICE)
-		lim -= 9;
-
-	/* Reserve space for weight */
+		ex_wid += 9;
 	if (mode & OLIST_WEIGHT)
-		lim -= 9;
+		ex_wid += 9;
+	lim -= ex_wid;
 		
 	/* Do not overflow o_name buffer */
 	if (lim > 79)
@@ -105,23 +104,20 @@ void show_inven(olist_detail_t mode)
 		/* Hack -- enforce max length */
 		o_name[lim] = '\0';
 
-		/* Get inventory color */
-		out_color[k] = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
+		/* Find the predicted line length: "a) " + Item description  */
+		l = 3 + strlen(o_name);
+
+		/* Adjust length for for extra fields */
+		l += ex_wid;
+
+		/* Track the maximum line length */
+		if (l > len) len = l;
 
 		/* Save the object description */
 		my_strcpy(out_desc[k], o_name, sizeof(out_desc[0]));
 
-		/* Find the predicted "line length" */
-		l = strlen(out_desc[k]) + 5;
-
-		/* Be sure to account for extra fields */
-		if (mode & OLIST_WEIGHT)
-			l += 9;
-		if (mode & OLIST_PRICE)
-			l += 9;
-
-		/* Maintain the maximum length */
-		if (l > len) len = l;
+		/* Save the inventory color */
+		out_color[k] = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
 
 		/* Advance to next "line" */
 		k++;
@@ -130,22 +126,26 @@ void show_inven(olist_detail_t mode)
 	/* Find the row and column to start in */
 	if (mode & OLIST_WINDOW)
 	{
+		/* Terminal window - left justified */
 		col = 0;
 		row = 0;
+		r_col = MIN(Term->wid, len + 1);
 	}
 	else
 	{
-		col = (len > (Term->wid-4)) ? 0 : ((Term->wid-1) - len);
+		/* Main window - right justified */
+		col = (Term->wid-1) - len;
 		row = 1;
+		r_col = Term->wid;
+		if (col < 3) col = 0;
 	}
 
 	/* Output each entry */
 	for (j = 0; j < k; j++)
 	{
 		u32b price;
-		int wgt;
-		int r_col = Term->wid;
-
+		int ralign, wgt;
+		
 		/* Get the index */
 		i = out_index[j];
 
@@ -167,22 +167,21 @@ void show_inven(olist_detail_t mode)
 		/* Display the entry itself */
 		c_put_str(out_color[j], out_desc[j], row + j, col + 3);
 
-		/* Display the weight if needed */
+		/* Display extra fields */
+		ralign = r_col;
 		if (mode & OLIST_WEIGHT)
 		{
-			r_col -= 9;
+			ralign -= 9;
 			wgt = o_ptr->weight * o_ptr->number;
 			strnfmt(tmp_val, sizeof(tmp_val), "%3d.%1d lb", wgt / 10, wgt % 10);
-			put_str(tmp_val, row + j, r_col);
+			put_str(tmp_val, row + j, ralign);
 		}
-
-		/* Display the price if needed */
 		if (mode & OLIST_PRICE)
 		{
-			r_col -= 9;
+			ralign -= 9;
 			price = price_item(o_ptr, TRUE, o_ptr->number);
 			strnfmt(tmp_val, sizeof(tmp_val), "%5d au", price);
-			put_str(tmp_val, row + j, r_col);
+			put_str(tmp_val, row + j, ralign);
 		}
 	}
 
@@ -210,35 +209,34 @@ void show_inven(olist_detail_t mode)
 void show_equip(olist_detail_t mode)
 {
 	int i, j, k, l, b = 0;
-	int col, row, len, lim;
+	int col, row, r_col, len = 0, lim, ex_wid = 0;
 
 	object_type *o_ptr;
+	char o_name[80];
 
 	char tmp_val[80];
-
-	char o_name[80];
 
 	int out_index[24];
 	byte out_color[24];
 	char out_desc[24][80];
 
-	/* Default length */
-	len = (Term->wid-1) - 50;
+
+	/* Default length of the item name column */
+	if (mode & OLIST_WINDOW) len = 60;
 
 	/* Maximum space allowed for descriptions 
 	 * Screen width minus the letter label "a) "
 	 */
 	lim = (Term->wid-1) - 3;
 
-	/* Reserve space for price */
+   /* Reserve space for extra fields */
 	if (mode & OLIST_PRICE)
-		lim -= 9;
-
-	/* Reserve space for weight */
+		ex_wid += 9;
 	if (mode & OLIST_WEIGHT)
-		lim -= 9;
+		ex_wid += 9;
+	lim -= ex_wid;
 		
-	/* Require space for labels (if needed) */
+	/* Reserve space for labels: "Wielded       " + ": " */
 	if (OPT(show_labels)) lim -= (14 + 2);
 
 	/* Do not overflow o_name buffer */
@@ -278,26 +276,23 @@ void show_equip(olist_detail_t mode)
 		/* Truncate the description */
 		o_name[lim] = 0;
 
-		/* Get inventory color */
-		out_color[k] = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
-
-		/* Save the description */
-		my_strcpy(out_desc[k], o_name, sizeof(out_desc[0]));
-
-		/* Extract the maximal length (see below) */
-		l = strlen(out_desc[k]) + (2 + 3);
+		/* Find the predicted line length: "a) " + Item description */
+		l = 3 + strlen(o_name);
 
 		/* Increase length for labels (if needed) */
 		if (OPT(show_labels)) l += (14 + 2);
 
-		/* Be sure to account for extra fields */
-		if (mode & OLIST_WEIGHT)
-			l += 9;
-		if (mode & OLIST_PRICE)
-			l += 9;
+		/* Adjust length for extra fields */
+		l += ex_wid;
 
-		/* Maintain the max-length */
+		/* Track the maximum line length */
 		if (l > len) len = l;
+
+		/* Save the description */
+		my_strcpy(out_desc[k], o_name, sizeof(out_desc[0]));
+
+		/* Save the inventory color */
+		out_color[k] = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
 
 		/* Advance the entry */
 		k++;
@@ -306,13 +301,18 @@ void show_equip(olist_detail_t mode)
 	/* Find the row and column to start in */
 	if (mode & OLIST_WINDOW)
 	{
+		/* Terminal window - left justified */
 		col = 0;
 		row = 0;
+		r_col = MIN(Term->wid, len + 1);
 	}
 	else
 	{
-		col = (len > (Term->wid-4)) ? 0 : ((Term->wid-1) - len);
+		/* Main window - right justified */
+		col = (Term->wid-1) - len;
 		row = 1;
+		r_col = Term->wid;
+		if (col < 3) col = 0;
 	}
 
    /* Track the slot label */
@@ -322,8 +322,7 @@ void show_equip(olist_detail_t mode)
 	for (j = 0; j < k; j++, b++)
 	{
 		u32b price;
-		int wgt;
-		int r_col = Term->wid;
+		int ralign, wgt;
 
 		/* Get the index */
 		i = out_index[j];
@@ -364,22 +363,21 @@ void show_equip(olist_detail_t mode)
 			c_put_str(out_color[j], out_desc[j], row + j, col + 3);
 		}
 
-		/* Display the weight if needed */
+		/* Display extra fields */
+		ralign = r_col;
 		if (mode & OLIST_WEIGHT)
 		{
-			r_col -= 9;
+			ralign -= 9;
 			wgt = o_ptr->weight * o_ptr->number;
 			strnfmt(tmp_val, sizeof(tmp_val), "%3d.%1d lb", wgt / 10, wgt % 10);
-			put_str(tmp_val, row + j, r_col);
+			put_str(tmp_val, row + j, ralign);
 		}
-
-		/* Display the price if needed */
 		if (mode & OLIST_PRICE)
 		{
-			r_col -= 9;
+			ralign -= 9;
 			price = price_item(o_ptr, TRUE, o_ptr->number);
 			strnfmt(tmp_val, sizeof(tmp_val), "%5d au", price);
-			put_str(tmp_val, row + j, r_col);
+			put_str(tmp_val, row + j, ralign);
 		}
 	}
 
