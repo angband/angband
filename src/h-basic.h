@@ -103,10 +103,13 @@
  */
 #undef PATH_SEP
 #define PATH_SEP "/"
+#define PATH_SEPC '/'
 
 #ifdef WINDOWS
 # undef PATH_SEP
+# undef PATH_SEPC
 # define PATH_SEP "\\"
+# define PATH_SEPC '\\'
 #endif
 
 

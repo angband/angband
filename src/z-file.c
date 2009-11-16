@@ -27,6 +27,7 @@
 #ifdef WINDOWS
 # include <windows.h>
 # include <io.h>
+# include <direct.h>
 #endif
 
 #ifdef MACH_O_CARBON
@@ -44,6 +45,15 @@
 
 #ifdef HAVE_STAT
 # include <sys/stat.h>
+# include <sys/types.h>
+#endif
+
+#ifdef WINDOWS
+# define my_mkdir(path, perms) mkdir(path)
+#elif HAVE_MKDIR
+# define my_mkdir(path, perms) mkdir(path, perms)
+#else
+# define my_mkdir(path, perms) FALSE
 #endif
 
 /*
@@ -150,8 +160,7 @@ static void path_process(char *buf, size_t len, size_t *cur_len, const char *pat
 #ifndef MACH_O_CARBON
 
 		/* Look up a user (or "current" user) */
-		if (username[0]) pw = getpwnam(username);
-		else             pw = getpwuid(getuid());
+		pw = username[0] ? getpwnam(username) : getpwuid(getuid());
 
 #else /* MACH_O_CARBON */
 
@@ -181,7 +190,6 @@ static void path_process(char *buf, size_t len, size_t *cur_len, const char *pat
 		strnfcat(buf, len, cur_len, "%s", path);
 	}
 }
-
 
 
 
@@ -325,42 +333,29 @@ bool file_exists(const char *fname)
 
 #endif
 
-
 #ifndef RISCOS
-#ifdef HAVE_STAT
 
 /*
  * Return TRUE if first is newer than second, FALSE otherwise.
  */
 bool file_newer(const char *first, const char *second)
 {
-	struct stat first_stat, second_stat;
+#ifdef HAVE_STAT
+	struct stat stat1, stat2;
 
-	bool second_exists = stat(second, &second_stat) ? FALSE : TRUE;
-	bool first_exists = stat(first, &first_stat) ? FALSE : TRUE;
+	/* If the first doesn't exist, the first is not newer. */
+	if (stat(first, &stat1) != 0) return FALSE;
 
-	/*
-	 * If the first doesn't exist, the first is not newer;
-	 * If the second doesn't exist, the first is always newer.
-	 */
-	if (!first_exists)  return FALSE;
-	if (!second_exists) return TRUE;
+	/* If the second doesn't exist, the first is always newer. */
+	if (stat(second, &stat2) != 0) return TRUE;
 
-	if (first_stat.st_mtime >= second_stat.st_mtime)
-		return TRUE;
-
-	return FALSE;
-}
-
+	/* Compare modification times. */
+	return stat1.st_mtime > stat2.st_mtime ? TRUE : FALSE;
 #else /* HAVE_STAT */
-
-bool file_newer(const char *first, const char *second)
-{
-	/* Assume newer */
 	return FALSE;
+#endif /* !HAVE_STAT */
 }
 
-#endif /* HAVE_STAT */
 #endif /* RISCOS */
 
 
@@ -375,7 +370,6 @@ bool file_newer(const char *first, const char *second)
 ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 {
 	ang_file *f = ZNEW(ang_file);
-	char modestr[3] = "__";
 	char buf[1024];
 
 	(void)ftype;
@@ -385,23 +379,11 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 
 	switch (mode)
 	{
-		case MODE_WRITE:
-			modestr[0] = 'w';
-			modestr[1] = 'b';
-			break;
-		case MODE_READ:
-			modestr[0] = 'r';
-			modestr[1] = 'b';
-			break;
-		case MODE_APPEND:
-			modestr[0] = 'a';
-			modestr[1] = '+';
-			break;
-		default:
-			break;
+		case MODE_WRITE:  f->fh = fopen(buf, "wb"); break;
+		case MODE_READ:   f->fh = fopen(buf, "rb"); break;
+		case MODE_APPEND: f->fh = fopen(buf, "a+"); break;
+		default:          f->fh = fopen(buf, "__");
 	}
-
-	f->fh = fopen(buf, modestr);
 
 	if (f->fh == NULL)
 	{
@@ -425,7 +407,7 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 
 		fsetfileinfo(buf, 'A271', mac_type);
 	}
-#endif
+#endif /* MACH_O_CARBON */
 
 #if defined(RISCOS) && 0
 	/* do something for RISC OS here? */
@@ -435,6 +417,7 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 
 	return f;
 }
+
 
 /*
  * Close file handle 'f'.
@@ -619,7 +602,6 @@ bool file_write(ang_file *f, const char *buf, size_t n)
 
 #endif 
 
-
 /** Line-based IO **/
 
 /*
@@ -722,6 +704,67 @@ bool file_putf(ang_file *f, const char *fmt, ...)
 }
 
 
+bool dir_exists(const char *path)
+{
+	#ifdef HAVE_STAT
+	struct stat buf;
+	if (stat(path, &buf) != 0)
+		return FALSE;
+	else if (buf.st_mode & S_IFDIR)
+		return TRUE;
+	else
+		return FALSE;
+	#else
+	return TRUE;
+	#endif
+}
+
+#ifdef HAVE_STAT
+bool dir_create(const char *path)
+{
+	const char *ptr;
+	char buf[512];
+
+	/* If the directory already exists then we're done */
+	if (dir_exists(path)) return TRUE;
+
+	#ifdef WINDOWS
+	/* If we're on windows, we need to skip past the "C:" part. */
+	if (isalpha(path[0]) && path[1] == ':') path += 2;
+	#endif
+
+	/* Iterate through the path looking for path segements. At each step,
+	 * create the path segment if it doesn't already exist. */
+	for (ptr = path; *ptr; ptr++)
+	{
+		if (*ptr == PATH_SEPC)
+		{
+			/* Find the length of the parent path string */
+			size_t len = (size_t)(ptr - path);
+
+			/* We can't handle really big filenames */
+			if (len - 1 > 512) return FALSE;
+
+			/* Skip redundant path seperators */
+			if (len == 0) continue;
+
+			/* Create the parent path string, plus null-padding */
+			my_strcpy(buf, path, len + 1);
+
+			/* Skip if the parent exists */
+			if (dir_exists(buf)) continue;
+
+			/* The parent doesn't exist, so create it or fail */
+			if (my_mkdir(buf, 0755) != 0) return FALSE;
+		}
+	}
+
+	return my_mkdir(path, 0755) == 0 ? TRUE : FALSE;
+}
+
+#else /* HAVE_STAT */
+bool dir_create(const char *path) { return FALSE; }
+#endif /* !HAVE_STAT */
 
 /*** Directory scanning API ***/
 
