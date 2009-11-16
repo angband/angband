@@ -693,7 +693,11 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 	else if ((o_ptr->ident & IDENT_EMPTY) && !object_is_known(o_ptr))
 		u[n++] = "empty";
 	else if (!object_is_known(o_ptr) && object_was_worn(o_ptr))
-		u[n++] = "wielded";
+	{
+		if (wield_slot(o_ptr) == INVEN_WIELD || wield_slot(o_ptr) ==
+		INVEN_BOW) u[n++] = "wielded";
+		else u[n++] = "worn";
+	}
 	else if (!object_flavor_is_aware(o_ptr) && object_flavor_was_tried(o_ptr))
 		u[n++] = "tried";
 
