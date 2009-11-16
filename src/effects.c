@@ -110,7 +110,7 @@ bool effect_wonder(int dir, int die, int beam)
 	else if (die < 36)
 		visible = fire_bolt_or_beam(beam - 10, GF_MISSILE, dir,
 		                            damroll(3 + ((plev - 1) / 5), 4));
-	else if (die < 41) visible = confuse_monster(dir, plev);
+	else if (die < 41) visible = confuse_monster(dir, plev, FALSE);
 	else if (die < 46) visible = fire_ball(GF_POIS, dir, 20 + (plev / 2), 3);
 	else if (die < 51) visible = lite_line(dir);
 	else if (die < 56)
@@ -139,7 +139,7 @@ bool effect_wonder(int dir, int die, int beam)
 	{
 		dispel_monsters(150);
 		slow_monsters();
-		sleep_monsters();
+		sleep_monsters(TRUE);
 		hp_player(300);
 	}
 
@@ -1055,7 +1055,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_LOSSLEEP:
 		{
-			if (sleep_monsters()) *ident = TRUE;
+			if (sleep_monsters(aware)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1067,7 +1067,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_LOSCONF:
 		{
-			if (confuse_monsters()) *ident = TRUE;
+			if (confuse_monsters(aware)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1123,7 +1123,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		case EF_CONFUSE2:
 		{
 			*ident = TRUE;
-			confuse_monster(dir, 20);
+			confuse_monster(dir, 20, aware);
 			return TRUE;
 		}
 
@@ -1162,7 +1162,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		case EF_SLEEPII:
 		{
 			*ident = TRUE;
-			sleep_monsters_touch();
+			sleep_monsters_touch(aware);
 			return TRUE;
 		}
 
@@ -1470,13 +1470,13 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_MON_CONFUSE:
 		{
-			if (confuse_monster(dir, 10)) *ident = TRUE;
+			if (confuse_monster(dir, 10, aware)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_MON_SLEEP:
 		{
-			if (sleep_monster(dir)) *ident = TRUE;
+			if (sleep_monster(dir, aware)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1488,7 +1488,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_MON_SCARE:
 		{
-			if (fear_monster(dir, 10)) *ident = TRUE;
+			if (fear_monster(dir, 10, aware)) *ident = TRUE;
 			return TRUE;
 		}
 

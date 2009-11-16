@@ -1570,14 +1570,13 @@ bool recharge(int num)
  *
  * Note that affected monsters are NOT auto-tracked by this usage.
  */
-bool project_los(int typ, int dam)
+bool project_los(int typ, int dam, bool obvious)
 {
 	int i, x, y;
 
 	int flg = PROJECT_JUMP | PROJECT_KILL | PROJECT_HIDE;
 
-	bool obvious = FALSE;
-
+	if(obvious) flg |= PROJECT_AWARE;
 
 	/* Affect all (nearby) monsters */
 	for (i = 1; i < mon_max; i++)
@@ -1608,7 +1607,7 @@ bool project_los(int typ, int dam)
  */
 bool speed_monsters(void)
 {
-	return (project_los(GF_OLD_SPEED, p_ptr->lev));
+	return (project_los(GF_OLD_SPEED, p_ptr->lev, FALSE));
 }
 
 /*
@@ -1616,23 +1615,23 @@ bool speed_monsters(void)
  */
 bool slow_monsters(void)
 {
-	return (project_los(GF_OLD_SLOW, p_ptr->lev));
+	return (project_los(GF_OLD_SLOW, p_ptr->lev, FALSE));
 }
 
 /*
  * Sleep monsters
  */
-bool sleep_monsters(void)
+bool sleep_monsters(bool aware)
 {
-	return (project_los(GF_OLD_SLEEP, p_ptr->lev));
+	return (project_los(GF_OLD_SLEEP, p_ptr->lev, aware));
 }
 
 /*
  * Confuse monsters
  */
-bool confuse_monsters(void)
+bool confuse_monsters(bool aware)
 {
-	return (project_los(GF_OLD_CONF, p_ptr->lev));
+	return (project_los(GF_OLD_CONF, p_ptr->lev, aware));
 }
 
 
@@ -1641,16 +1640,16 @@ bool confuse_monsters(void)
  */
 bool banish_evil(int dist)
 {
-	return (project_los(GF_AWAY_EVIL, dist));
+	return (project_los(GF_AWAY_EVIL, dist, FALSE));
 }
 
 
 /*
  * Turn undead
  */
-bool turn_undead(void)
+bool turn_undead(bool aware)
 {
-	return (project_los(GF_TURN_UNDEAD, p_ptr->lev));
+	return (project_los(GF_TURN_UNDEAD, p_ptr->lev, aware));
 }
 
 
@@ -1659,7 +1658,7 @@ bool turn_undead(void)
  */
 bool dispel_undead(int dam)
 {
-	return (project_los(GF_DISP_UNDEAD, dam));
+	return (project_los(GF_DISP_UNDEAD, dam, FALSE));
 }
 
 /*
@@ -1667,7 +1666,7 @@ bool dispel_undead(int dam)
  */
 bool dispel_evil(int dam)
 {
-	return (project_los(GF_DISP_EVIL, dam));
+	return (project_los(GF_DISP_EVIL, dam, FALSE));
 }
 
 /*
@@ -1675,7 +1674,7 @@ bool dispel_evil(int dam)
  */
 bool dispel_monsters(int dam)
 {
-	return (project_los(GF_DISP_ALL, dam));
+	return (project_los(GF_DISP_ALL, dam, FALSE));
 }
 
 
@@ -2854,15 +2853,17 @@ bool slow_monster(int dir)
 	return (project_hook(GF_OLD_SLOW, dir, p_ptr->lev, flg));
 }
 
-bool sleep_monster(int dir)
+bool sleep_monster(int dir, bool aware)
 {
 	int flg = PROJECT_STOP | PROJECT_KILL;
+	if(aware) flg |= PROJECT_AWARE;
 	return (project_hook(GF_OLD_SLEEP, dir, p_ptr->lev, flg));
 }
 
-bool confuse_monster(int dir, int plev)
+bool confuse_monster(int dir, int plev, bool aware)
 {
 	int flg = PROJECT_STOP | PROJECT_KILL;
+	if(aware) flg |= PROJECT_AWARE;
 	return (project_hook(GF_OLD_CONF, dir, plev, flg));
 }
 
@@ -2878,9 +2879,10 @@ bool clone_monster(int dir)
 	return (project_hook(GF_OLD_CLONE, dir, 0, flg));
 }
 
-bool fear_monster(int dir, int plev)
+bool fear_monster(int dir, int plev, bool aware)
 {
 	int flg = PROJECT_STOP | PROJECT_KILL;
+	if(aware) flg |= PROJECT_AWARE;
 	return (project_hook(GF_TURN_ALL, dir, plev, flg));
 }
 
@@ -2923,12 +2925,13 @@ bool destroy_doors_touch(void)
 	return (project(-1, 1, py, px, 0, GF_KILL_DOOR, flg));
 }
 
-bool sleep_monsters_touch(void)
+bool sleep_monsters_touch(bool aware)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
 	int flg = PROJECT_KILL | PROJECT_HIDE;
+	if (aware) flg |= PROJECT_AWARE;
 	return (project(-1, 1, py, px, p_ptr->lev, GF_OLD_SLEEP, flg));
 }
 

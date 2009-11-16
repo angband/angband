@@ -973,16 +973,18 @@ enum
  *   ITEM: Affect each object in the "blast area" in some way
  *   KILL: Affect each monster in the "blast area" in some way
  *   HIDE: Hack -- disable "visual" feedback from projection
+ *   AWARE: Effects are already obvious to the player
  */
-#define PROJECT_NONE	0x00
-#define PROJECT_JUMP	0x01
-#define PROJECT_BEAM	0x02
-#define PROJECT_THRU	0x04
-#define PROJECT_STOP	0x08
-#define PROJECT_GRID	0x10
-#define PROJECT_ITEM	0x20
-#define PROJECT_KILL	0x40
-#define PROJECT_HIDE	0x80
+#define PROJECT_NONE  0x000
+#define PROJECT_JUMP  0x001
+#define PROJECT_BEAM  0x002
+#define PROJECT_THRU  0x004
+#define PROJECT_STOP  0x008
+#define PROJECT_GRID  0x010
+#define PROJECT_ITEM  0x020
+#define PROJECT_KILL  0x040
+#define PROJECT_HIDE  0x080
+#define PROJECT_AWARE 0x100
 
 
 /*

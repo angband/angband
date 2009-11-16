@@ -544,7 +544,7 @@ static bool cast_mage_spell(int spell, int dir)
 
 		case SPELL_CONFUSE_MONSTER:
 		{
-			(void)confuse_monster(dir, plev);
+			(void)confuse_monster(dir, plev, TRUE);
 			break;
 		}
 
@@ -562,7 +562,7 @@ static bool cast_mage_spell(int spell, int dir)
 
 		case SPELL_SLEEP_MONSTER:
 		{
-			(void)sleep_monster(dir);
+			(void)sleep_monster(dir, TRUE);
 			break;
 		}
 
@@ -628,7 +628,7 @@ static bool cast_mage_spell(int spell, int dir)
 
 		case SPELL_MASS_SLEEP:
 		{
-			(void)sleep_monsters();
+			(void)sleep_monsters(TRUE);
 			break;
 		}
 
@@ -950,7 +950,7 @@ static bool cast_priest_spell(int spell, int dir)
 
 		case PRAYER_SCARE_MONSTER:
 		{
-			(void)fear_monster(dir, plev);
+			(void)fear_monster(dir, plev, TRUE);
 			break;
 		}
 
@@ -977,7 +977,7 @@ static bool cast_priest_spell(int spell, int dir)
 
 		case PRAYER_SANCTUARY:
 		{
-			(void)sleep_monsters_touch();
+			(void)sleep_monsters_touch(TRUE);
 			break;
 		}
 
@@ -1065,7 +1065,7 @@ static bool cast_priest_spell(int spell, int dir)
 
 		case PRAYER_TURN_UNDEAD:
 		{
-			(void)turn_undead();
+			(void)turn_undead(TRUE);
 			break;
 		}
 
