@@ -742,11 +742,14 @@ bool dir_create(const char *path)
 			/* Find the length of the parent path string */
 			size_t len = (size_t)(ptr - path);
 
+			/* Skip the initial slash */
+			if (len == 0) continue;
+
+			/* If this is a duplicate path separator, continue */
+			if (*(ptr - 1) == PATH_SEPC) continue;
+
 			/* We can't handle really big filenames */
 			if (len - 1 > 512) return FALSE;
-
-			/* Skip redundant path seperators */
-			if (len == 0) continue;
 
 			/* Create the parent path string, plus null-padding */
 			my_strcpy(buf, path, len + 1);
@@ -758,7 +761,6 @@ bool dir_create(const char *path)
 			if (my_mkdir(buf, 0755) != 0) return FALSE;
 		}
 	}
-
 	return my_mkdir(path, 0755) == 0 ? TRUE : FALSE;
 }
 
