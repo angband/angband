@@ -2654,7 +2654,7 @@ static void store_examine(int item)
 
 	/* Show full info in most stores, but normal info in player home */
 	info_known = object_info(o_ptr,
-			(current_store() != STORE_HOME) ? TRUE : FALSE);
+			(current_store() != STORE_HOME) ? OINFO_FULL : OINFO_NONE);
 
 	if (!info_known)
 		text_out("\n\nThis item does not seem to possess any special abilities.");

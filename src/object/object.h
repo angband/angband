@@ -45,6 +45,19 @@ typedef enum
 
 
 /**
+ * Modes for object_info()
+ */
+typedef enum
+{
+	OINFO_NONE   = 0x00, /* No options */
+	OINFO_TERSE  = 0x01, /* Keep descriptions brief, e.g. for dumps */
+	OINFO_SUBJ   = 0x02, /* Describe object from the character's POV */
+	OINFO_FULL   = 0x04, /* Treat object as if fully IDd */
+	OINFO_DUMMY  = 0x08 /* Object does not exist (e.g. knowledge menu) */
+} oinfo_detail_t;
+
+
+/**
  * Pseudo-ID markers.
  */
 typedef enum
@@ -111,7 +124,7 @@ extern const slay_t slay_table[];
 size_t num_slays(void);
 void object_info_header(const object_type *o_ptr);
 
-bool object_info(const object_type *o_ptr, bool full);
+bool object_info(const object_type *o_ptr, oinfo_detail_t mode);
 bool object_info_chardump(const object_type *o_ptr);
 bool object_info_spoil(const object_type *o_ptr);
 

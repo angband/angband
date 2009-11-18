@@ -3409,7 +3409,7 @@ void display_object_recall(object_type *o_ptr)
 	clear_from(0);
 	prt("", 0, 0);
 	object_info_header(o_ptr);
-	if (!object_info(o_ptr, FALSE))
+	if (!object_info(o_ptr, OINFO_NONE))
 		text_out("This item does not seem to possess any special abilities.");
 }
 

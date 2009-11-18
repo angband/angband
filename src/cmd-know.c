@@ -1280,15 +1280,15 @@ static void desc_art_fake(int a_idx)
 	/* Assume that lost artifacts were fully known, even if they weren't */
 	if (lost)
 	{
-		object_info(o_ptr, TRUE);
+		object_info(o_ptr, OINFO_FULL);
 		text_out("\nThis artifact has been lost.");
 	}
-	else if (!object_info(o_ptr, FALSE)) 
+	else if (!object_info(o_ptr, OINFO_NONE))
 		text_out("\n\nThis item does not seem to possess any special abilities.");
 
 	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
 	(void)anykey();
-      
+
 	screen_load();
 }
 
@@ -1669,7 +1669,7 @@ static void desc_obj_fake(int k_idx)
 
 	Term_gotoxy(0,0);
 	object_info_header(o_ptr);
-	if (!object_info(o_ptr, FALSE))
+	if (!object_info(o_ptr, OINFO_NONE))
 		text_out("\n\nThis item does not seem to possess any special abilities.");
 
 	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");

@@ -165,9 +165,9 @@ static const flag_type f3_misc[] =
 
 /** Slays **/
 /*
- * Entries in this table should be in ascending order of multiplier, to 
- * ensure that the highest one takes precedence 
- * object flag, vulnerable flag, resist flag, multiplier, ranged verb, 
+ * Entries in this table should be in ascending order of multiplier, to
+ * ensure that the highest one takes precedence
+ * object flag, vulnerable flag, resist flag, multiplier, ranged verb,
  * melee verb, verb describing what the thing branded does when it is active,
  * description of affected creatures, brand
  */
@@ -404,7 +404,7 @@ static bool describe_slays(u32b f1, int tval)
 	if ((tval == TV_SWORD) || (tval == TV_HAFTED) || (tval == TV_POLEARM)
 		|| (tval == TV_DIGGING ) || (tval == TV_BOW) || (tval == TV_SHOT)
 		|| (tval == TV_ARROW) || (tval == TV_BOLT) || (tval == TV_FLASK))
-		fulldesc = FALSE;		
+		fulldesc = FALSE;
 	else fulldesc = TRUE;
 
 	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
@@ -618,7 +618,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 		for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 		{
 			object_flags_known(&inventory[i], flags);
-			
+
 			if (flags[0] & TR0_BLOWS)
 				extra_blows += inventory[i].pval;
 		}
@@ -637,7 +637,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 				 * new str/dex combination, not a repeat
 				 */
 				if ((new_blows > old_blows) &&
-					((str_plus < str_done) || 
+					((str_plus < str_done) ||
 					(str_done == -1)))
 				{
 					text_out("With an additional %d strength and %d dex you would get %d blows\n",
@@ -705,7 +705,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	}
 
 	text_out("Average damage/hit: ");
-	
+
 	cnt = collect_slays(desc, mult, f[0]);
 	for (i = 0; i < cnt; i++)
 	{
@@ -743,7 +743,7 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 
 	if (cnt) text_out(" vs. others");
 	text_out(".\n");
-	
+
 	/* Note the impact flag */
 	if (f[2] & TR2_IMPACT)
 		text_out("Sometimes creates earthquakes on impact.\n");
@@ -859,7 +859,7 @@ static bool describe_food(const object_type *o_ptr, bool subjective, bool full)
 			text_out(" turns.\n");
 		}
 		else text_out("Provides some nourishment.\n");
-		
+
 		return TRUE;
 	}
 
@@ -1136,12 +1136,15 @@ void object_info_header(const object_type *o_ptr)
 /*
  * Output object information
  */
-static bool object_info_out(const object_type *o_ptr, bool full, bool terse, bool subjective)
+static bool object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 {
 	u32b f[OBJ_FLAG_N];
 	bool something = FALSE;
 	bool known = object_is_known(o_ptr);
-	
+	bool full = mode & OINFO_FULL;
+	bool terse = mode & OINFO_TERSE;
+	bool subjective = mode & OINFO_SUBJ;
+
 	/* Grab the object flags */
 	if (full)
 		object_flags(o_ptr, f);
@@ -1152,8 +1155,8 @@ static bool object_info_out(const object_type *o_ptr, bool full, bool terse, boo
 	{
 		text_out("You do not know the full extent of this item's powers.\n");
 		something = TRUE;
-	}	
-	
+	}
+
 	if (describe_curses(o_ptr, f[2])) something = TRUE;
 	if (describe_stats(o_ptr, f[0], full)) something = TRUE;
 	if (describe_slays(f[0], o_ptr->tval)) something = TRUE;
@@ -1162,7 +1165,7 @@ static bool object_info_out(const object_type *o_ptr, bool full, bool terse, boo
 	if (describe_sustains(f[1])) something = TRUE;
 	if (describe_misc_magic(f[2])) something = TRUE;
 	if (something) text_out("\n");
-	
+
 	if (describe_effect(o_ptr, f[2], full, terse, subjective))
 	{
 		something = TRUE;
@@ -1185,15 +1188,16 @@ static bool object_info_out(const object_type *o_ptr, bool full, bool terse, boo
 
 /**
  * Provide information on an item, including how it would affect the current player's state.
- * 
+ *
  * \param full should be set if actual player knowledge should be ignored in favour of
  *              full knowledge.
  *
  * \returns TRUE if anything is printed.
  */
-bool object_info(const object_type *o_ptr, bool full)
+bool object_info(const object_type *o_ptr, oinfo_detail_t mode)
 {
-	return object_info_out(o_ptr, full, FALSE, TRUE);
+	mode |= OINFO_SUBJ;
+	return object_info_out(o_ptr, mode);
 }
 
 
@@ -1202,7 +1206,7 @@ bool object_info(const object_type *o_ptr, bool full)
  */
 bool object_info_chardump(const object_type *o_ptr)
 {
-	return object_info_out(o_ptr, FALSE, TRUE, TRUE);
+	return object_info_out(o_ptr, OINFO_TERSE | OINFO_SUBJ);
 }
 
 
@@ -1214,6 +1218,5 @@ bool object_info_chardump(const object_type *o_ptr)
  */
 bool object_info_spoil(const object_type *o_ptr)
 {
-	return object_info_out(o_ptr, TRUE, FALSE, FALSE);
+	return object_info_out(o_ptr, OINFO_FULL);
 }
-
