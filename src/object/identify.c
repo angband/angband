@@ -572,7 +572,7 @@ bool object_notice_curses(object_type *o_ptr)
 void object_notice_on_defend(void)
 {
 	int i;
-	
+
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 		object_notice_defence_plusses(&inventory[i]);
 
@@ -644,20 +644,20 @@ void object_notice_on_wield(object_type *o_ptr)
 	
 	if (f[0] & TR0_OBVIOUS_MASK & ~k_ptr->flags[0]) to_sense = TRUE;
 	if (f[2] & TR2_OBVIOUS_MASK & ~k_ptr->flags[2]) to_sense = TRUE;
-	
+
 	/* XXX Eddie should these next NOT call object_check_for_ident due to worries about repairing? */
 	o_ptr->known_flags[0] |= TR0_OBVIOUS_MASK;
 	o_ptr->known_flags[2] |= TR2_OBVIOUS_MASK;
-	
+
 	object_check_for_ident(o_ptr);
-	
+
 	if (!obvious) return;
-	
+
 	/* something obvious should be immediately sensed */
 	if (to_sense)
 		object_notice_sensing(o_ptr);
 	/* XXX Eddie is above necessary here?  done again at end of function */
-	
+
 	if (EASY_LEARN && object_is_jewelry(o_ptr) && obvious_without_activate)
 	{
 		/* XXX Eddie this is a small hack, but jewelry with anything noticeable really is obvious */
@@ -665,7 +665,7 @@ void object_notice_on_wield(object_type *o_ptr)
 		object_flavor_aware(o_ptr);
 		object_check_for_ident(o_ptr);
 	}
-	
+
 	/* Messages */
 	if (wield_slot(o_ptr) == INVEN_WIELD)
 	{
@@ -680,9 +680,9 @@ void object_notice_on_wield(object_type *o_ptr)
 		if (f[0] & TR0_BRAND_ACID)
 			msg_print("It starts spitting acid!");
 	}
-	
+
 	/* XXX Eddie need to add stealth here, also need to assert/double-check everything is covered */
-	
+
 	if (f[0] & TR0_STR)
 		msg_format("You feel %s!", o_ptr->pval > 0 ? "stronger" : "weaker");
 	if (f[0] & TR0_INT)
@@ -701,21 +701,21 @@ void object_notice_on_wield(object_type *o_ptr)
 		msg_format("Your hands %s", o_ptr->pval > 0 ? "tingle!" : "ache.");
 	if (f[0] & TR0_INFRA)
 		msg_format("Your eyes tingle.");
-	
+
 	if (f[2] & TR2_LITE)
 		msg_print("It glows!");
 	if (f[2] & TR2_TELEPATHY)
 		msg_print("Your mind feels strangely sharper!");
-	
+
 	/* learn the ego on any brand or slay */
 	if (EASY_LEARN && f[0] & TR0_OBVIOUS_MASK & TR0_ALL_SLAYS)
 		if (ego_item_p(o_ptr))
 		/* XXX Eddie somewhat inconsistent, style is to notice even when property is not present */
 			object_notice_ego(o_ptr);
-	
+
 	/* Remember the flags */
 	object_notice_sensing(o_ptr);
-	
+
 	/* XXX Eddie should we check_for_ident here? */
 }
 
@@ -779,7 +779,7 @@ static void object_notice_after_time(void)
 		}
 		/* XXX Eddie the object_notice_flags should presumably come out of the if/else and next check not necessary, fix later */
 		object_check_for_ident(o_ptr);
-	}	
+	}
 }
 
 
@@ -794,20 +794,20 @@ void wieldeds_notice_flag(int flagset, u32b flag)
 {
 	int i;
 	size_t j;
-	
+
 	/* XXX Eddie need different naming conventions for starting wieldeds at INVEN_WIELD vs INVEN_WIELD+2 */
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
 		object_type *o_ptr = &inventory[i];
 		u32b f[OBJ_FLAG_N];
-		
+
 		object_flags(o_ptr, f);
 		if ((f[flagset] & flag) &&
 			!(o_ptr->known_flags[flagset] & flag))
 		{
 			char o_name[80];
 			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-			
+
 			/* Notice flags */
 			object_notice_flags(o_ptr, flagset, flag);
 			
@@ -1044,8 +1044,9 @@ void sense_inventory(void)
 			object_notice_everything(o_ptr);
 
 			message_format(MSG_PSEUDOID, 0,
-					"You feel the %s (%c) in your pack %s average...",
-					o_name, index_to_label(i),
+					"You feel the %s (%c) %s %s average...",
+					o_name, index_to_label(i),((i >=
+					INVEN_WIELD) ? "you are using" : "in your pack"),
 					((o_ptr->number == 1) ? "is" : "are"));
 		}
 		else
@@ -1065,8 +1066,8 @@ void sense_inventory(void)
 				                           text);
 			}
 		}
-		
-		
+
+
 		/* Set squelch flag as appropriate */
 		if (i < INVEN_WIELD)
 			p_ptr->notice |= PN_SQUELCH;
