@@ -12,8 +12,8 @@ you will stay there.  Advancing by one page is the only efficient method.
 
 You can press Pound (#) [or Percent (%)] to go to a specific line [or file].
 
-You can press Slash (/) [or Ampersand (&)] to search for [or hilite] a string
-(case-insensitive by default, (!) toggles to case-sensitive).
+You can press Slash (/) [or Ampersand (&)] to search for [or highlight] a 
+string (case-insensitive by default, (!) toggles to case-sensitive).
 Use "#" + "0" + Return + "/" + Return to restart a search.
 
 Please continue to press Space to view the rest of this file...

@@ -78,7 +78,7 @@ Show dungeon level in feet    [depth_in_feet]
     Display dungeon depths in "feet" instead of "levels".
 
 ***** <hilite_player>
-Hilite the player with the cursor    [hilite_player]
+Highlight the player with the cursor    [hilite_player]
     Place the visible cursor on the player.  This looks fine on some Unix
     machines, but horrible on most graphics machines.  Note that only some
     machines are able to *not* show the cursor, but on those machines, hiding
