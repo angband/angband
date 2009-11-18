@@ -851,7 +851,7 @@ static bool describe_food(const object_type *o_ptr, bool subjective, bool full)
 		int multiplier = extract_energy[p_ptr->state.speed];
 		if (!subjective) multiplier = 10;
 
-		if (object_pval_is_visible(o_ptr) || full)
+		if (object_is_known(o_ptr) || full)
 		{
 			text_out("Nourishes for around ");
 			text_out_c(TERM_L_GREEN, "%d", (o_ptr->pval / 2) *
