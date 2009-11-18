@@ -245,17 +245,20 @@ static bool describe_curses(const object_type *o_ptr, u32b f3)
 /*
  * Describe stat modifications.
  */
-static bool describe_stats(const object_type *o_ptr, u32b f1, bool full)
+static bool describe_stats(const object_type *o_ptr, u32b f1, oinfo_detail_t
+	mode)
 {
 	cptr descs[N_ELEMENTS(f1_pval)];
 	size_t count;
+	bool full = mode & OINFO_FULL;
+	bool dummy = mode & OINFO_DUMMY;
 
-	if (!o_ptr->pval) return FALSE;
+	if (!o_ptr->pval && !dummy) return FALSE;
 
 	count = info_collect(f1_pval, N_ELEMENTS(f1_pval), f1, descs);
 	if (count)
 	{
-		if (object_pval_is_visible(o_ptr) || full)
+		if ((object_pval_is_visible(o_ptr) || full) && !dummy)
 		{
 			text_out_c((o_ptr->pval > 0) ? TERM_L_GREEN : TERM_RED,
 				 "%+i ", o_ptr->pval);
@@ -271,7 +274,7 @@ static bool describe_stats(const object_type *o_ptr, u32b f1, bool full)
 
 	if (f1 & TR0_SEARCH)
 	{
-		if (object_pval_is_visible(o_ptr) || full)
+		if ((object_pval_is_visible(o_ptr) || full) && !dummy)
 		{
 			text_out_c((o_ptr->pval > 0) ? TERM_L_GREEN : TERM_RED,
 				"%+i%% ", o_ptr->pval * 5);
@@ -538,8 +541,10 @@ static void calculate_missile_crits(player_state *state, int weight,
 /*
  * Describe combat advantages.
  */
-static bool describe_combat(const object_type *o_ptr, bool full)
+static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 {
+	bool full = mode & OINFO_FULL;
+
 	const char *desc[16];
 	int i;
 	int mult[16];
@@ -558,6 +563,8 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 	              (j_ptr->k_idx);
 
 	/* Abort if we've nothing to say */
+	if (mode & OINFO_DUMMY) return FALSE;
+
 	if (!weapon && !ammo)
 	{
 		/* Potions can have special text */
@@ -762,8 +769,10 @@ static bool describe_combat(const object_type *o_ptr, bool full)
 /*
  * Describe objects that can be used for digging.
  */
-static bool describe_digger(const object_type *o_ptr, bool full)
+static bool describe_digger(const object_type *o_ptr, oinfo_detail_t mode)
 {
+	bool full = mode & OINFO_FULL;
+
 	player_state st;
 
 	object_type inven[INVEN_TOTAL];
@@ -775,6 +784,9 @@ static bool describe_digger(const object_type *o_ptr, bool full)
 
 	int chances[4]; /* These are out of 1600 */
 	static const char *names[4] = { "rubble", "magma veins", "quartz veins", "granite" };
+
+	/* abort if we are a dummy object */
+	if (mode & OINFO_DUMMY) return FALSE;
 
 	if (full)
 		object_flags(o_ptr, f);
@@ -1158,7 +1170,7 @@ static bool object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 	}
 
 	if (describe_curses(o_ptr, f[2])) something = TRUE;
-	if (describe_stats(o_ptr, f[0], full)) something = TRUE;
+	if (describe_stats(o_ptr, f[0], mode)) something = TRUE;
 	if (describe_slays(f[0], o_ptr->tval)) something = TRUE;
 	if (describe_immune(f[1])) something = TRUE;
 	if (describe_ignores(f[2])) something = TRUE;
@@ -1172,7 +1184,7 @@ static bool object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 		text_out("\n");
 	}
 
-	if (subjective && describe_combat(o_ptr, full))
+	if (subjective && describe_combat(o_ptr, mode))
 	{
 		something = TRUE;
 		text_out("\n");
@@ -1180,19 +1192,20 @@ static bool object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 
 	if (!terse && describe_food(o_ptr, subjective, full)) something = TRUE;
 	if (describe_light(o_ptr, f[2], terse)) something = TRUE;
-	if (!terse && subjective && describe_digger(o_ptr, full)) something = TRUE;
+	if (!terse && subjective && describe_digger(o_ptr, mode)) something = TRUE;
 
 	return something;
 }
 
 
 /**
- * Provide information on an item, including how it would affect the current player's state.
+ * Provide information on an item, including how it would affect the current
+ * player's state.
  *
- * \param full should be set if actual player knowledge should be ignored in favour of
- *              full knowledge.
+ * mode OINFO_FULL should be set if actual player knowledge should be ignored
+ * in favour of full knowledge.
  *
- * \returns TRUE if anything is printed.
+ * returns TRUE if anything is printed.
  */
 bool object_info(const object_type *o_ptr, oinfo_detail_t mode)
 {

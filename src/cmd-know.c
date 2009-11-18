@@ -147,7 +147,7 @@ static struct
 /*
  * Description of each feature group.
  */
-const char *feature_group_text[] = 
+const char *feature_group_text[] =
 {
 	"Floors",
 	"Traps",
@@ -167,9 +167,9 @@ const char *feature_group_text[] =
 static void display_visual_list(int col, int row, int height, int width,
 				byte attr_top, byte char_left);
 
-static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr, 
-				int height, int width, 
-				byte *attr_top_ptr, byte *char_left_ptr, 
+static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
+				int height, int width,
+				byte *attr_top_ptr, byte *char_left_ptr,
 				byte *cur_attr_ptr, byte *cur_char_ptr,
 				int col, int row, int *delay);
 
@@ -315,7 +315,7 @@ static const char *recall_prompt(int oid)
 #define swap(a, b) (swapspace = (void*)(a)), ((a) = (b)), ((b) = swapspace)
 
 /*
- * Interactive group by. 
+ * Interactive group by.
  * Recognises inscriptions, graphical symbols, lore
  */
 static void display_knowledge(const char *title, int *obj_list, int o_count,
@@ -763,9 +763,9 @@ static void place_visual_list_cursor(int col, int row, byte a, byte c, byte attr
 /*
  *  Do visual mode command -- Change symbols
  */
-static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr, 
-				int height, int width, 
-				byte *attr_top_ptr, byte *char_left_ptr, 
+static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
+				int height, int width,
+				byte *attr_top_ptr, byte *char_left_ptr,
 				byte *cur_attr_ptr, byte *cur_char_ptr,
 				int col, int row, int *delay)
 {
@@ -1154,11 +1154,11 @@ static void do_cmd_knowledge_monsters(void *obj, const char *name)
 		monster_race *r_ptr = &r_info[i];
 		if (!OPT(cheat_know) && !l_list[i].sights) continue;
 		if (!r_ptr->name) continue;
-	
+
 		for (j = 0; j < N_ELEMENTS(monster_group)-1; j++)
 		{
 			const char *pat = monster_group[j].chars;
-			if (j == 0 && !(r_ptr->flags[0] & RF0_UNIQUE)) 
+			if (j == 0 && !(r_ptr->flags[0] & RF0_UNIQUE))
 				continue;
 			else if (j > 0 && !strchr(pat, r_ptr->d_char))
 				continue;
@@ -1217,7 +1217,7 @@ static void desc_art_fake(int a_idx)
 	object_type object_type_body;
 	bool lost = TRUE;
 	int i, j;
-	
+
 	/* Get local object */
 	o_ptr = &object_type_body;
 
@@ -1343,7 +1343,7 @@ static bool artifact_is_known(int a_idx)
 		if (!o_ptr->k_idx) continue;
 
 
-		if (o_ptr->name1 && o_ptr->name1 == a_idx && 
+		if (o_ptr->name1 && o_ptr->name1 == a_idx &&
 		    !object_is_known(o_ptr))
 		{
 			return FALSE;
@@ -1352,7 +1352,7 @@ static bool artifact_is_known(int a_idx)
 
 	return TRUE;
 }
- 
+
 
 /* If 'artifacts' is NULL, it counts the number of known artifacts, otherwise
    it collects the list of known artifacts into 'artifacts' as well. */
@@ -1463,7 +1463,8 @@ static void desc_ego_fake(int oid)
 
 	/* List ego flags */
 	dummy.name2 = e_idx;
-	object_info_spoil(&dummy);
+	dummy.tval = e_ptr->tval[0];
+	object_info(&dummy, OINFO_FULL | OINFO_DUMMY);
 
 	if (e_ptr->xtra)
 		text_out(format("It provides one random %s.", xtra[e_ptr->xtra - 1]));
