@@ -64,6 +64,24 @@ The "lib/help" directory contains the "online help" files.
 This directory is used to search for normal "online help" files.
 
 
+=== Directory "lib/info" ===
+
+The "lib/info" directory contains the "online spoiler" files.
+
+This directory is used to search for any "online help" file that cannot
+be found in the "lib/help" directory.
+
+This directory is empty by default. Many people use this directory for
+"online spoiler files", many of which are available. Simply download 
+whichever spoilers you want and place them in this directory.
+
+Note that the default "help.hlp" file allows the "9" key to access a help
+file called "spoiler.hlp", and allows the "0" key to access "user.hlp".
+
+These special help files can thus be placed in the user's own "info"
+directory to allow the on line help to access his files.
+
+
 === Directory "lib/save" ===
 
 The "lib/save" directory contains "savefiles" for the players.

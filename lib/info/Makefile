@@ -1,5 +1,5 @@
 MKPATH=../../mk/
 include $(MKPATH)buildsys.mk
 
-PACKAGE = user
-
+LIBDATA = readme.txt
+PACKAGE = info
