@@ -354,7 +354,7 @@ void dump_history(ang_file *file);
 
 /* init2.c */
 extern void init_file_paths(const char *configpath, const char *libpath, const char *datapath);
-extern void create_user_dirs(void);
+extern void create_needed_dirs(void);
 extern bool init_angband(void);
 extern void cleanup_angband(void);
 

@@ -278,12 +278,8 @@ int main(int argc, char *argv[])
 	/* Get the "user name" as a default player name */
 	user_name(op_ptr->full_name, sizeof(op_ptr->full_name), player_uid);
 
-#ifdef PRIVATE_USER_PATH
-
-	/* Create directories for the users files */
-	create_user_dirs();
-
-#endif /* PRIVATE_USER_PATH */
+	/* Create any missing directories */
+	create_needed_dirs();
 
 #endif /* SET_UID */
 
