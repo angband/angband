@@ -620,9 +620,9 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 		old_blows = state.num_blow;
 		extra_blows = 0;
 
-		/* First we need to look for extra blows on items, as state
-		 * does not track these */
-		for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+		/* First we need to look for extra blows on other items, as
+		 * state does not track these */
+		for (i = INVEN_BOW; i < INVEN_TOTAL; i++)
 		{
 			object_flags_known(&inventory[i], flags);
 
@@ -630,7 +630,10 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 				extra_blows += inventory[i].pval;
 		}
 
-		/* Then we check for extra native blows */
+		/* Then we add blows from the weapon being examined */
+		if (f[0] & TR0_BLOWS) extra_blows += o_ptr->pval;
+
+		/* Then we check for extra "real" blows */
 		for (dex_plus = 0; dex_plus < 8; dex_plus++)
 		{
 			for (str_plus = 0; str_plus < 8; str_plus++)
