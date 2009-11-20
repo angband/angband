@@ -785,7 +785,7 @@ static bool quality_action(char cmd, void *db, int oid)
 {
 	menu_type menu;
 	menu_iter menu_f = { NULL, NULL, quality_subdisplay, quality_subaction };
-	region area = { 24, 5, 26, SQUELCH_MAX };
+	region area = { 24, 5, 29, SQUELCH_MAX };
 	ui_event_data evt;
 	int cursor;
 
@@ -802,6 +802,10 @@ static bool quality_action(char cmd, void *db, int oid)
 	menu.count = SQUELCH_MAX;
 	if ((oid == TYPE_RING) || (oid == TYPE_AMULET))
 		menu.count = area.page_rows = SQUELCH_BAD + 1;
+
+	/* Need to low menus up */
+	if (area.row + menu.count > Term->hgt - 1)
+		area.row += Term->hgt - 1 - area.row - menu.count;
 
 	menu_init(&menu, MN_SKIN_SCROLL, &menu_f, &area);
 	window_make(area.col - 2, area.row - 1, area.col + area.width + 2, area.row + area.page_rows);
