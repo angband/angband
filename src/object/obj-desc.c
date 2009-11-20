@@ -559,10 +559,8 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 	/* Show weapon bonuses */
 	if (spoil || object_attack_plusses_are_visible(o_ptr))
 	{
-		if (obj_desc_show_weapon(o_ptr) || o_ptr->to_d)
+		if (obj_desc_show_weapon(o_ptr) || o_ptr->to_d || o_ptr->to_h)
 			strnfcat(buf, max, &end, " (%+d,%+d)", o_ptr->to_h, o_ptr->to_d);
-		else if (o_ptr->to_h)
-			strnfcat(buf, max, &end, " (%+d)", o_ptr->to_h);
 	}
 
 
