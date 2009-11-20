@@ -579,6 +579,7 @@ void store_maint(int which);
 /* target.c */
 bool target_able(int m_idx);
 bool target_okay(void);
+bool target_set_closest(int mode);
 void target_set_monster(int m_idx);
 void target_set_location(int y, int x);
 bool target_set_interactive(int mode, int x, int y);

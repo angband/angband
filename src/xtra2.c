@@ -530,13 +530,9 @@ bool get_aim_dir(int *dp)
 	{
 		/* Choose a prompt */
 		if (!target_okay())
-		{
-			p = "Direction ('*' or <click> to choose a target, Escape to cancel)? ";
-		}
+			p = "Direction ('*' or <click> to target, \"'\" for closest, Escape to cancel)? ";
 		else
-		{
 			p = "Direction ('5' for target, '*' or <click> to re-target, Escape to cancel)? ";
-		}
 
 		/* Get a command (or Cancel) */
 		if (!get_com_ex(p, &ke)) break;
@@ -557,6 +553,13 @@ bool get_aim_dir(int *dp)
 			case '*':
 			{
 				if (target_set_interactive(TARGET_KILL, -1, -1)) dir = 5;
+				break;
+			}
+
+			/* Set to closest target */
+			case '\'':
+			{
+				if (target_set_closest(TARGET_KILL)) dir = 5;
 				break;
 			}
 

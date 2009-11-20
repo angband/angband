@@ -76,6 +76,7 @@ static command_type cmd_action[] =
 	{ "Rest for a while",           'R', CMD_NULL, textui_cmd_rest },
 	{ "Look around",                'l', CMD_NULL, do_cmd_look },
 	{ "Target monster or location", '*', CMD_NULL, do_cmd_target },
+	{ "Target closest monster",     '\'', CMD_NULL, do_cmd_target_closest },
 	{ "Dig a tunnel",               'T', CMD_NULL, textui_cmd_tunnel },
 	{ "Go up staircase",            '<', CMD_GO_UP, NULL },
 	{ "Go down staircase",          '>', CMD_GO_DOWN, NULL },

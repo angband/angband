@@ -475,19 +475,17 @@ void refuel_torch(object_type *j_ptr, object_type *o_ptr, int item)
  */
 void do_cmd_target(void)
 {
-	/* Target set */
 	if (target_set_interactive(TARGET_KILL, -1, -1))
-	{
 		msg_print("Target Selected.");
-	}
-
-	/* Target aborted */
 	else
-	{
 		msg_print("Target Aborted.");
-	}
 }
 
+
+void do_cmd_target_closest(void)
+{
+	target_set_closest(TARGET_KILL);
+}
 
 
 /*

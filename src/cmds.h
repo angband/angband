@@ -90,6 +90,7 @@ void textui_cmd_destroy(void);
 void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item);
 void refuel_torch(object_type *j_ptr, object_type *o_ptr, int item);
 void do_cmd_target(void);
+void do_cmd_target_closest(void);
 void do_cmd_look(void);
 void do_cmd_locate(void);
 bool ang_sort_comp_hook(const void *u, const void *v, int a, int b);
