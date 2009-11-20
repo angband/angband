@@ -803,7 +803,7 @@ static bool quality_action(char cmd, void *db, int oid)
 	if ((oid == TYPE_RING) || (oid == TYPE_AMULET))
 		menu.count = area.page_rows = SQUELCH_BAD + 1;
 
-	/* Need to low menus up */
+	/* Stop menus from going off the bottom of the screen */
 	if (area.row + menu.count > Term->hgt - 1)
 		area.row += Term->hgt - 1 - area.row - menu.count;
 
