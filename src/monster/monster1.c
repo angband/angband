@@ -1449,6 +1449,9 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 	if (f[2] & RF2_RES_PLAS)  vp[vn++] = "plasma";
 	if (f[2] & RF2_RES_NEXUS) vp[vn++] = "nexus";
 	if (f[2] & RF2_RES_DISE)  vp[vn++] = "disenchantment";
+	/* Note lack of vulnerability as a resistance */
+	if ((l_ptr->flags[2] & RF2_HURT_LITE) && !(f[2] & RF2_HURT_LITE)) vp[vn++] = "bright light";
+	if ((l_ptr->flags[2] & RF2_HURT_ROCK) && !(f[2] & RF2_HURT_ROCK)) vp[vn++] = "rock remover";
 
 	if (vn)
 	{
