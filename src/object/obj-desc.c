@@ -560,7 +560,18 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 	if (spoil || object_attack_plusses_are_visible(o_ptr))
 	{
 		if (obj_desc_show_weapon(o_ptr) || o_ptr->to_d || o_ptr->to_h)
-			strnfcat(buf, max, &end, " (%+d,%+d)", o_ptr->to_h, o_ptr->to_d);
+		{
+			/* Make an exception for body armor with only a to-hit penalty */
+			if (o_ptr->to_h < 0 && o_ptr->to_d == 0 &&
+			    (o_ptr->tval == TV_SOFT_ARMOR ||
+			     o_ptr->tval == TV_HARD_ARMOR ||
+			     o_ptr->tval == TV_DRAG_ARMOR))
+				strnfcat(buf, max, &end, " (%+d)", o_ptr->to_h);
+
+			/* Otherwise, always use the full tuple */
+			else
+				strnfcat(buf, max, &end, " (%+d,%+d)", o_ptr->to_h, o_ptr->to_d);
+		}
 	}
 
 
