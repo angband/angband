@@ -465,6 +465,7 @@ static void object_notice_defence_plusses(object_type *o_ptr)
 				o_name);
 	}
 
+	p_ptr->update |= (PU_BONUS);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }
@@ -498,6 +499,7 @@ void object_notice_attack_plusses(object_type *o_ptr)
 		message_format(MSG_PSEUDOID, 0, "Your %s glows.", o_name);
 	}
 
+	p_ptr->update |= (PU_BONUS);
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
 }
