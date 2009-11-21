@@ -53,7 +53,7 @@
 #define AVG_BOW_MULT            5 /* i.e. 2.5 */
 #define AVG_XBOW_MULT           7 /* i.e. 3.5 */
 #define AVG_LAUNCHER_DMG	9
-#define MELEE_DAMAGE_BOOST      5
+#define MELEE_DAMAGE_BOOST     10
 #define RING_BRAND_DMG	        9 /* i.e. 3d5 or 2d8 weapon */
 #define BASE_LITE_POWER         6
 #define BASE_JEWELRY_POWER	4
@@ -400,8 +400,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				{
 					p = sign(p) * ((ABS(p) * (MAX_BLOWS + o_ptr->pval)) 
 						/ MAX_BLOWS);
-					/* Add an extra amount per blow to account for damage rings */
-					p += (MELEE_DAMAGE_BOOST * o_ptr->pval * DAMAGE_POWER / 2);
+					/* Add an extra amount per extra blow to account for damage rings */
+					p += (MELEE_DAMAGE_BOOST * o_ptr->pval * DAMAGE_POWER / (2 * MAX_BLOWS));
 					LOG_PRINT1("Adding power for blows, total is %d\n", p);
 				}
 			}
@@ -447,7 +447,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		case TV_DRAG_ARMOR:
 		{
 			p += BASE_ARMOUR_POWER;
-			LOG_PRINT1("Armour item, base power is %d", p);
+			LOG_PRINT1("Armour item, base power is %d\n", p);
 			
 			p += sign(o_ptr->ac) * ((ABS(o_ptr->ac) * BASE_AC_POWER) / 2);
 			LOG_PRINT1("Adding power for base AC value, total is %d\n", p);
@@ -458,11 +458,47 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			p += o_ptr->to_d * DAMAGE_POWER;
 			LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
 
-			/* Apply the correct brand multiplier */
+			/* Apply the correct brand/slay multiplier */
 			p += (((2 * (o_ptr->to_d + RING_BRAND_DMG)
 				* slay_power(o_ptr, verbose, log_file, f))
 				/ tot_mon_power) - (2 * (o_ptr->to_d + RING_BRAND_DMG)));
-			LOG_PRINT1("Adjusted for brand power, total is %d\n", p);
+			LOG_PRINT1("Adjusted for brand/slay power, total is %d\n", p);
+
+			/* Add power for extra blows */
+			if ((f[0] & TR0_BLOWS) && (known ||
+				object_pval_is_visible(o_ptr)))
+			{
+				LOG_PRINT1("Extra blows: %d\n", o_ptr->pval);
+				if (o_ptr->pval >= INHIBIT_BLOWS || o_ptr->pval < 0)
+				{
+					p += INHIBIT_POWER;	/* inhibit */
+					LOG_PRINT("INHIBITING, too many extra blows or a negative number\n");
+				}
+				else if (o_ptr->pval > 0)
+				{
+					/* We assume a 3d5 weapon with +10 damage elsewhere - gives ~16 power per extra blow */
+					p += ((MELEE_DAMAGE_BOOST + RING_BRAND_DMG + o_ptr->to_d) * o_ptr->pval * DAMAGE_POWER / MAX_BLOWS);
+					LOG_PRINT1("Adding power for extra blows, total is %d\n", p);
+				}
+			}
+
+			/* Add power for extra shots */
+			if ((f[0] & TR0_SHOTS) && (known ||
+				object_pval_is_visible(o_ptr)))
+			{
+				LOG_PRINT1("Extra shots: %d\n", o_ptr->pval);
+				if (o_ptr->pval >= INHIBIT_SHOTS || o_ptr->pval < 0)
+				{
+					p += INHIBIT_POWER;	/* inhibit */
+					LOG_PRINT("INHIBITING - too many extra shots\n");
+				}
+				else if (o_ptr->pval > 0)
+				{
+					/* We assume a x2.5 +9dam launcher with +9 1d4 ammo - gives ~50 power per extra shot */
+					p += ((AVG_BOW_AMMO_DAMAGE + AVG_LAUNCHER_DMG) * AVG_BOW_MULT * o_ptr->pval * DAMAGE_POWER / (2 * BOW_RESCALER));
+					LOG_PRINT1("Adding power for extra shots - total is %d\n", p);
+				}
+			}
 
 			if (o_ptr->weight < k_ptr->weight)
 			{
@@ -474,7 +510,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		case TV_LITE:
 		{
 			p += BASE_LITE_POWER;
-			LOG_PRINT("Artifact light source, adding base power\n");
+			LOG_PRINT("Light source, adding base power\n");
 
 			p += sign(o_ptr->to_h) * (ABS(o_ptr->to_h) * TO_HIT_POWER);
 			LOG_PRINT1("Adding power for to_hit, total is %d\n", p);
@@ -482,11 +518,47 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			p += o_ptr->to_d * DAMAGE_POWER;
 			LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
 
-			/* Apply the correct brand multiplier */
+			/* Apply the correct brand/slay multiplier */
 			p += (((2 * (o_ptr->to_d + RING_BRAND_DMG)
 				* slay_power(o_ptr, verbose, log_file, f))
 				/ tot_mon_power) - (2 * (o_ptr->to_d + RING_BRAND_DMG)));
-			LOG_PRINT1("Adjusted for brand power, total is %d\n", p);
+			LOG_PRINT1("Adjusted for brand/slay power, total is %d\n", p);
+
+			/* Add power for extra blows */
+			if ((f[0] & TR0_BLOWS) && (known ||
+				object_pval_is_visible(o_ptr)))
+			{
+				LOG_PRINT1("Extra blows: %d\n", o_ptr->pval);
+				if (o_ptr->pval >= INHIBIT_BLOWS || o_ptr->pval < 0)
+				{
+					p += INHIBIT_POWER;	/* inhibit */
+					LOG_PRINT("INHIBITING, too many extra blows or a negative number\n");
+				}
+				else if (o_ptr->pval > 0)
+				{
+					/* We assume a 3d5 weapon with +10 damage elsewhere - gives ~16 power per extra blow */
+					p += ((MELEE_DAMAGE_BOOST + RING_BRAND_DMG + o_ptr->to_d) * o_ptr->pval * DAMAGE_POWER / MAX_BLOWS);
+					LOG_PRINT1("Adding power for extra blows, total is %d\n", p);
+				}
+			}
+
+			/* Add power for extra shots */
+			if ((f[0] & TR0_SHOTS) && (known ||
+				object_pval_is_visible(o_ptr)))
+			{
+				LOG_PRINT1("Extra shots: %d\n", o_ptr->pval);
+				if (o_ptr->pval >= INHIBIT_SHOTS || o_ptr->pval < 0)
+				{
+					p += INHIBIT_POWER;	/* inhibit */
+					LOG_PRINT("INHIBITING - too many extra shots\n");
+				}
+				else if (o_ptr->pval > 0)
+				{
+					/* We assume a x2.5 +9dam launcher with +9 1d4 ammo - gives ~25 power per extra shot */
+					p += ((AVG_BOW_AMMO_DAMAGE + AVG_LAUNCHER_DMG) * AVG_BOW_MULT * o_ptr->pval * DAMAGE_POWER / (2 * BOW_RESCALER));
+					LOG_PRINT1("Adding power for extra shots - total is %d\n", p);
+				}
+			}
 
 			/* 
 			 * Big boost for extra light radius 
@@ -508,11 +580,47 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			p += o_ptr->to_d * DAMAGE_POWER;
 			LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
 
-			/* Apply the correct brand multiplier */
+			/* Apply the correct brand/slay multiplier */
 			p += (((2 * (o_ptr->to_d + RING_BRAND_DMG)
 				* slay_power(o_ptr, verbose, log_file, f))
 				/ tot_mon_power) - (2 * (o_ptr->to_d + RING_BRAND_DMG)));
-			LOG_PRINT1("Adjusted for brand power, total is %d\n", p);
+			LOG_PRINT1("Adjusted for brand/slay power, total is %d\n", p);
+
+			/* Add power for extra blows */
+			if ((f[0] & TR0_BLOWS) && (known ||
+				object_pval_is_visible(o_ptr)))
+			{
+				LOG_PRINT1("Extra blows: %d\n", o_ptr->pval);
+				if (o_ptr->pval >= INHIBIT_BLOWS || o_ptr->pval < 0)
+				{
+					p += INHIBIT_POWER;	/* inhibit */
+					LOG_PRINT("INHIBITING, too many extra blows or a negative number\n");
+				}
+				else if (o_ptr->pval > 0)
+				{
+					/* We assume a 3d5 weapon with +10 damage elsewhere - gives ~16 power per extra blow */
+					p += ((MELEE_DAMAGE_BOOST + RING_BRAND_DMG + o_ptr->to_d) * o_ptr->pval * DAMAGE_POWER / MAX_BLOWS);
+					LOG_PRINT1("Adding power for extra blows, total is %d\n", p);
+				}
+			}
+
+			/* Add power for extra shots */
+			if ((f[0] & TR0_SHOTS) && (known ||
+				object_pval_is_visible(o_ptr)))
+			{
+				LOG_PRINT1("Extra shots: %d\n", o_ptr->pval);
+				if (o_ptr->pval >= INHIBIT_SHOTS || o_ptr->pval < 0)
+				{
+					p += INHIBIT_POWER;	/* inhibit */
+					LOG_PRINT("INHIBITING - too many extra shots\n");
+				}
+				else if (o_ptr->pval > 0)
+				{
+					/* We assume a x2.5 +9dam launcher with +9 1d4 ammo - gives ~25 power per extra shot */
+					p += ((AVG_BOW_AMMO_DAMAGE + AVG_LAUNCHER_DMG) * AVG_BOW_MULT * o_ptr->pval * DAMAGE_POWER / (2 * BOW_RESCALER));
+					LOG_PRINT1("Adding power for extra shots - total is %d\n", p);
+				}
+			}
 
 			break;
 		}
