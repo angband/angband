@@ -8552,7 +8552,7 @@ D: acknowledges no master save himself, as he hunts alone for his nemesis -
 D: Carcharoth, the terrible wolf of Angband.
 
 N:544:Carcharoth, the Jaws of Thirst
-G:C:r
+G:C:v
 I:130:8000:50:160:10
 W:90:1:0:40000
 B:CLAW:FIRE:9d12
