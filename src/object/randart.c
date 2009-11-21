@@ -66,6 +66,8 @@
 #define ART_IDX_NONWEAPON_HIT_DAM 6
 #define ART_IDX_NONWEAPON_BRAND 78
 #define ART_IDX_NONWEAPON_SLAY 79
+#define ART_IDX_NONWEAPON_BLOWS 83
+#define ART_IDX_NONWEAPON_SHOTS 84
 
 #define ART_IDX_MELEE_BLESS 7
 #define ART_IDX_MELEE_BRAND 8
@@ -154,13 +156,13 @@
 #define ART_IDX_NONWEAPON_AGGR 75
 
 /* Total of abilities */
-#define ART_IDX_TOTAL 83
+#define ART_IDX_TOTAL 85
 
 /* Tallies of different ability types */
 /* ToDo: use N_ELEMENTS for these */
 #define ART_IDX_BOW_COUNT 4
 #define ART_IDX_WEAPON_COUNT 3
-#define ART_IDX_NONWEAPON_COUNT 6
+#define ART_IDX_NONWEAPON_COUNT 8
 #define ART_IDX_MELEE_COUNT 9
 #define ART_IDX_ALLARMOR_COUNT 1
 #define ART_IDX_BOOT_COUNT 4
@@ -180,7 +182,8 @@ static s16b art_idx_weapon[] =
 	{ART_IDX_WEAPON_HIT, ART_IDX_WEAPON_DAM, ART_IDX_WEAPON_AGGR};
 static s16b art_idx_nonweapon[] =
 	{ART_IDX_NONWEAPON_HIT, ART_IDX_NONWEAPON_DAM, ART_IDX_NONWEAPON_HIT_DAM,
-	ART_IDX_NONWEAPON_AGGR, ART_IDX_NONWEAPON_BRAND, ART_IDX_NONWEAPON_SLAY};
+	ART_IDX_NONWEAPON_AGGR, ART_IDX_NONWEAPON_BRAND, ART_IDX_NONWEAPON_SLAY,
+	ART_IDX_NONWEAPON_BLOWS, ART_IDX_NONWEAPON_SHOTS};
 static s16b art_idx_melee[] =
 	{ART_IDX_MELEE_BLESS, ART_IDX_MELEE_SINV, ART_IDX_MELEE_BRAND, ART_IDX_MELEE_SLAY,
 	ART_IDX_MELEE_BLOWS, ART_IDX_MELEE_AC, ART_IDX_MELEE_DICE,
@@ -847,14 +850,18 @@ static void adjust_freqs(void)
 		artprobs[ART_IDX_GEN_AC] = 5;
 	if (artprobs[ART_IDX_GEN_TUNN] < 5)
 		artprobs[ART_IDX_GEN_TUNN] = 5;
-	if (artprobs[ART_IDX_NONWEAPON_BRAND] < 3)
-		artprobs[ART_IDX_NONWEAPON_BRAND] = 3;
-	if (artprobs[ART_IDX_NONWEAPON_SLAY] < 3)
-		artprobs[ART_IDX_NONWEAPON_SLAY] = 3;
+	if (artprobs[ART_IDX_NONWEAPON_BRAND] < 2)
+		artprobs[ART_IDX_NONWEAPON_BRAND] = 2;
+	if (artprobs[ART_IDX_NONWEAPON_SLAY] < 2)
+		artprobs[ART_IDX_NONWEAPON_SLAY] = 2;
 	if (artprobs[ART_IDX_BOW_BRAND] < 3)
 		artprobs[ART_IDX_BOW_BRAND] = 3;
 	if (artprobs[ART_IDX_BOW_SLAY] < 3)
 		artprobs[ART_IDX_BOW_SLAY] = 3;
+	if (artprobs[ART_IDX_NONWEAPON_BLOWS] < 2)
+		artprobs[ART_IDX_NONWEAPON_BLOWS] = 2;
+	if (artprobs[ART_IDX_NONWEAPON_SHOTS] < 2)
+		artprobs[ART_IDX_NONWEAPON_SHOTS] = 2;
 
 	/* Cut aggravation frequencies in half since they're used twice */
 	artprobs[ART_IDX_NONWEAPON_AGGR] /= 2;
@@ -1097,6 +1104,17 @@ static void parse_frequencies(void)
 				artprobs[ART_IDX_NONWEAPON_SLAY] += temp;
 			}
 
+			if (a_ptr->flags[0] & TR0_BLOWS)
+			{
+				LOG_PRINT("Adding 1 for extra blows on nonweapon");
+				(artprobs[ART_IDX_NONWEAPON_BLOWS])++;
+			}
+
+			if (a_ptr->flags[0] & TR0_SHOTS)
+			{
+				LOG_PRINT("Adding 1 for extra shots on nonweapon");
+				(artprobs[ART_IDX_NONWEAPON_SHOTS])++;
+			}
 		}
 
 		if (a_ptr->tval == TV_DIGGING || a_ptr->tval == TV_HAFTED ||
@@ -2758,6 +2776,7 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 	switch(r)
 	{
 		case ART_IDX_BOW_SHOTS:
+		case ART_IDX_NONWEAPON_SHOTS:
 			add_shots(a_ptr);
 			break;
 
@@ -2811,6 +2830,7 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			break;
 
 		case ART_IDX_MELEE_BLOWS:
+		case ART_IDX_NONWEAPON_BLOWS:
 			add_blows(a_ptr);
 			break;
 
