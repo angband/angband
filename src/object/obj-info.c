@@ -968,7 +968,14 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 		}
 		else if (object_effect(o_ptr) != 0)
 		{
-			text_out("It can be activated.\n");
+			if (o_ptr->tval == TV_FOOD)
+				text_out("It can be eaten.\n");
+			else if (o_ptr->tval == TV_POTION)
+				text_out("It can be drunk.\n");
+			else if (o_ptr->tval == TV_SCROLL)
+				text_out("It can be read.\n");
+			else text_out("It can be activated.\n");
+			
 			return TRUE;
 		}
 	}
