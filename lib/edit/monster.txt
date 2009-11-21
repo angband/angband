@@ -565,7 +565,7 @@ F:IM_ACID
 D:A small humanoid figure.
 
 N:46:Grip, Farmer Maggot's dog
-G:C:U
+G:C:u
 I:120:25:30:30:0
 W:2:1:0:30
 B:BITE:HURT:1d4
@@ -576,7 +576,7 @@ D:A rather vicious dog belonging to Farmer Maggot.  It thinks you are stealing
 D: mushrooms.
 
 N:47:Fang, Farmer Maggot's dog
-G:C:U
+G:C:u
 I:120:25:30:30:0
 W:2:1:0:30
 B:BITE:HURT:1d4
