@@ -996,7 +996,7 @@ errr init_names_txt(ang_file *fp, char *buf)
 			if (1 != sscanf(buf, "D:%s", temp))
 				return PARSE_ERROR_GENERIC;
 
-			name_sections[name_section][counter++] = strdup(temp);
+			name_sections[name_section][counter++] = (char *)strdup(temp);
 		}
 
 		else

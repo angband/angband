@@ -559,7 +559,7 @@ static void do_cmd_menu(void)
 
 	ui_event_data evt;
 	int cursor = 0;
-	command_type chosen_command = { NULL };
+	command_type chosen_command = {NULL, '\0', CMD_NULL, NULL};
 
 	/* Set up the menu */
 	WIPE(&menu, menu);

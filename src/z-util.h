@@ -9,7 +9,7 @@
 /**
  * The name of the program.
  */
-extern const char *argv0;
+extern char *argv0;
 
 
 /* Aux functions */

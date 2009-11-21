@@ -655,7 +655,7 @@ static const byte special_key_list[] =
 #include "cmds.h"
 #include "textui.h"
 
-static game_command cmd = { CMD_NULL, 0, { NULL } };
+static game_command cmd = { CMD_NULL, 0, {{NULL}} };
 
 #if 0
 /*

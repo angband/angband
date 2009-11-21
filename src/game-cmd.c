@@ -192,7 +192,7 @@ int cmd_idx(cmd_code code)
  */
 errr cmd_insert(cmd_code c, ...)
 {
-	game_command cmd = {0};
+	game_command cmd = {CMD_NULL, 0, {{0}} };
 	va_list vp;
 	size_t j = 0;
 	int idx = cmd_idx(c);
