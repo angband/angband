@@ -218,18 +218,18 @@ static void object_check_for_ident(object_type *o_ptr)
 {
 	int i;
 	u32b flags[OBJ_FLAG_N];
-	
+
 	object_flags(o_ptr, flags);
 
 	/* Some flags are irrelevant or never learned or too hard to learn */
 	flags[2] &= ~(TR2_INSTA_ART | TR2_EASY_KNOW | TR2_HIDE_TYPE | TR2_SHOW_MODS | TR2_IGNORE_ACID | TR2_IGNORE_ELEC | TR2_IGNORE_FIRE | TR2_IGNORE_COLD);
-	
+
 	for (i = 0; i < OBJ_FLAG_N; i++)
 	{
 		if (flags[i] != (flags[i] & o_ptr->known_flags[i]))
 			return;
 	}
-	
+
 	/* If we know attack bonuses, and defence bonuses, and effect, then
 	 * we effectively know everything, so mark as such */
 	if ((object_attack_plusses_are_visible(o_ptr) || (object_was_sensed(o_ptr) && o_ptr->to_h == 0 && o_ptr->to_d == 0)) &&
@@ -238,7 +238,7 @@ static void object_check_for_ident(object_type *o_ptr)
 	{
 		object_notice_everything(o_ptr);
 	}
-	
+
 	/* We still know all the flags, so we still know if it's an ego */
 	else if (ego_item_p(o_ptr))
 	{
@@ -286,7 +286,7 @@ void object_flavor_tried(object_type *o_ptr)
 	assert(o_ptr != NULL);
 	assert(o_ptr->k_idx > 0);
 	assert(o_ptr->k_idx < z_info->k_max);
-	
+
 	k_info[o_ptr->k_idx].tried = TRUE;
 }
 
@@ -302,7 +302,7 @@ void object_know_all_flags(object_type *o_ptr)
 
 
 /**
- * Mark as object as fully known, a.k.a identified. 
+ * Mark as object as fully known, a.k.a identified.
  *
  * \param o_ptr is the object to mark as identified
  */
@@ -312,7 +312,7 @@ void object_notice_everything(object_type *o_ptr)
 
 	/* The object is "empty" */
 	o_ptr->ident &= ~(IDENT_EMPTY);
-	
+
 	/* Mark as known */
 	object_flavor_aware(o_ptr);
 	object_add_ident_flags(o_ptr, IDENT_KNOWN | IDENT_ATTACK |
@@ -321,7 +321,10 @@ void object_notice_everything(object_type *o_ptr)
 
 	/* Artifact has now been seen */
 	if (a_ptr)
+	{
 		a_ptr->seen = a_ptr->everseen = TRUE;
+		history_add_artifact(o_ptr->name1, TRUE);
+	}
 
 	/* Mark ego as known */
 	if (ego_item_p(o_ptr))
