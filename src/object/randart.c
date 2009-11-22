@@ -464,9 +464,7 @@ static s16b choose_item(int a_idx)
 	s16b k_idx, r;
 
 	/*
-	 * Pick a base item from the cumulative frequency table, with a
-	 * steer towards target item level (note the hack for gloves, which
-	 * are all very shallow base items).
+	 * Pick a base item from the cumulative frequency table.
 	 *
 	 * Although this looks hideous, it provides for easy addition of
 	 * future artifact types, simply by removing the tvals from this
