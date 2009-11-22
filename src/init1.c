@@ -2152,6 +2152,24 @@ errr parse_e_info(char *buf, header *head)
 		e_ptr->max_pval = pv;
 	}
 
+	/* Process 'M' for "minimum values" */
+	else if (buf[0] == 'M')
+	{
+		int th, td, ta, pv;
+
+		/* There better be a current e_ptr */
+		if (!e_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
+
+		/* Scan for the values */
+		if (4 != sscanf(buf+2, "%d:%d:%d:%d",
+			            &th, &td, &ta, &pv)) return (PARSE_ERROR_GENERIC);
+
+		e_ptr->min_to_h = th;
+		e_ptr->min_to_d = td;
+		e_ptr->min_to_a = ta;
+		e_ptr->min_pval = pv;
+	}
+
 	/* Hack -- Process 'F' for flags */
 	else if (buf[0] == 'F')
 	{

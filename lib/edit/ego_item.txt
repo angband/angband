@@ -17,6 +17,7 @@
 # N: serial number : ego type
 # X: rating : xtra
 # C: max to-hit : max to-dam : max to-ac : pval
+# M: min to-hit : min to-dam : min to-ac : min pval
 # W: depth : rarity : weight : cost
 # T: tval : min_sval : max_sval
 # F: flag | flag | etc
@@ -30,8 +31,13 @@
 # sustain", 2 is "one random extra resist", and 3 is "one random
 # extra ability".
 
-# 'C' is for creation bonuses - maximum to-hit, to-dam, to-ac, and
-# pval. Cursed ego-items will negate the given value.
+# 'C' is for creation bonuses - maximum bonus to-hit, to-dam, to-ac,
+# and pval. Cursed ego-items will negate the given value.  These are
+# extra bonuses on top of the normal values, not ceilings on allowed
+# values.
+
+# 'M' is for minimum values - minimum allowed to-hit, to-dam, to-ac,
+# and pval. Cursed ego-items will have minimum penalties.
 
 # 'W' is for extra information. Depth is the depth the object is
 # normally found at, rarity determines how common the object is,
@@ -824,6 +830,7 @@ N:104:of Accuracy
 X:10:0
 W:0:1:0:1000
 C:15:5:0:0
+M:15:0:0:0
 T:19:0:99
 D:It has no special abilities, but its to-hit value may be unusually
 D: high.
@@ -832,6 +839,7 @@ N:105:of Power
 X:10:0
 W:0:1:0:1000
 C:5:15:0:0
+M:0:15:0:0
 T:19:0:99
 D:It has no special abilities, but its to-dam value may be unusually
 D: high.

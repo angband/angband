@@ -148,6 +148,11 @@ typedef struct
 	byte max_to_a;		/* Maximum to-ac bonus */
 	byte max_pval;		/* Maximum pval */
 
+	byte min_to_h;		/* Minimum to-hit value */
+	byte min_to_d;		/* Minimum to-dam value */
+	byte min_to_a;		/* Minimum to-ac value */
+	byte min_pval;		/* Minimum pval */
+
 	byte xtra;			/* Extra sustain/resist/power */
 
 	bool everseen;		/* Do not spoil squelch menus */

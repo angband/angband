@@ -1344,6 +1344,12 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 
 			/* Hack -- obtain pval */
 			if (e_ptr->max_pval > 0) o_ptr->pval -= randint1(e_ptr->max_pval);
+
+			/* Apply minimums */
+			if (o_ptr->to_h > -1 * e_ptr->min_to_h) o_ptr->to_h = -1 * e_ptr->min_to_h;
+			if (o_ptr->to_d > -1 * e_ptr->min_to_d) o_ptr->to_d = -1 * e_ptr->min_to_d;
+			if (o_ptr->to_a > -1 * e_ptr->min_to_a) o_ptr->to_a = -1 * e_ptr->min_to_a;
+			if (o_ptr->pval > -1 * e_ptr->min_pval) o_ptr->pval = -1 * e_ptr->min_pval;
 		}
 
 		/* Hack -- apply extra bonuses if needed */
@@ -1356,6 +1362,12 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 
 			/* Hack -- obtain pval */
 			if (e_ptr->max_pval > 0) o_ptr->pval += randint1(e_ptr->max_pval);
+
+			/* Apply minimums */
+			if (o_ptr->to_h < e_ptr->min_to_h) o_ptr->to_h = e_ptr->min_to_h;
+			if (o_ptr->to_d < e_ptr->min_to_d) o_ptr->to_d = e_ptr->min_to_d;
+			if (o_ptr->to_a < e_ptr->min_to_a) o_ptr->to_a = e_ptr->min_to_a;
+			if (o_ptr->pval < e_ptr->min_pval) o_ptr->pval = e_ptr->min_pval;
 		}
 
 		/* Hack -- apply rating bonus */
