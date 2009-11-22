@@ -508,10 +508,6 @@ static s16b choose_item(int a_idx)
 	a_ptr->flags[0] = k_ptr->flags[0];
 	a_ptr->flags[1] = k_ptr->flags[1];
 	a_ptr->flags[2] = k_ptr->flags[2];
-	a_ptr->effect = k_ptr->effect;
-	a_ptr->time_base = k_ptr->time_base;
-	a_ptr->time_dice = k_ptr->time_dice;
-	a_ptr->time_sides = k_ptr->time_sides;
 
 	/* Artifacts ignore everything */
 	a_ptr->flags[2] |= TR2_IGNORE_MASK;
@@ -1059,7 +1055,7 @@ static void parse_frequencies(void)
 				(artprobs[ART_IDX_GEN_TUNN])++;
 			}
 		}
-		
+
 		/*
 		 * Count up extra AC bonus values.
 		 * Could also add logic to subtract for lower values here, but it's
@@ -2243,7 +2239,7 @@ static void add_slay(artifact_type *a_ptr, bool brand)
 	int x;
 	int count = 0;
 	const slay_t *s_ptr;
-	
+
 	while (count < MAX_TRIES)
 	{
 		x = randint0(num_slays());
@@ -2265,7 +2261,7 @@ static void add_slay(artifact_type *a_ptr, bool brand)
 			return;
 		}
 		count++;
-	}			
+	}
 }
 
 static void add_bless_weapon(artifact_type *a_ptr)
@@ -2404,7 +2400,7 @@ static void add_immunity(artifact_type *a_ptr)
 	}
 }
 
-/* Add an activation (called only if neither artifact nor base item has one) */
+/* Add an activation (called only if artifact does not yet have one) */
 static void add_activation(artifact_type *a_ptr)
 {
 	int x;
