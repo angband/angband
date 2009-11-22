@@ -44,7 +44,7 @@
 
 /*
  * Power rating below which uncursed randarts cannot aggravate
- * (so that aggravate is found only on endgame-quality items or 
+ * (so that aggravate is found only on endgame-quality items or
  * cursed items)
  */
 #define AGGR_POWER 180
@@ -57,7 +57,7 @@
 
 #define ART_IDX_BOW_SHOTS 0
 #define ART_IDX_BOW_MIGHT 1
-#define ART_IDX_BOW_BRAND 80 
+#define ART_IDX_BOW_BRAND 80
 #define ART_IDX_BOW_SLAY 81
 #define ART_IDX_WEAPON_HIT 2
 #define ART_IDX_WEAPON_DAM 3
@@ -225,6 +225,7 @@ static s16b art_idx_high_resist[] =
 
 /* Initialize the data structures for learned probabilities */
 static s16b artprobs[ART_IDX_TOTAL];
+s16b *baseprobs;
 static s16b art_bow_total = 0;
 static s16b art_melee_total = 0;
 static s16b art_boot_total = 0;
@@ -237,10 +238,11 @@ static s16b art_other_total = 0;
 static s16b art_total = 0;
 
 /*
- * Working array for holding frequency values - global to avoid repeated
+ * Working arrays for holding frequency values - global to avoid repeated
  * allocation of memory
  */
-static s16b art_freq[ART_IDX_TOTAL];
+static s16b art_freq[ART_IDX_TOTAL];  	/* artifact attributes */
+s16b *base_freq; 			/* base items */
 
 /*
  * Mean start and increment values for to_hit, to_dam and AC.  Update these
@@ -364,14 +366,14 @@ static errr init_names(void)
 /*
  * Return the artifact power, by generating a "fake" object based on the
  * artifact, and calling the common object_power function
- */ 
+ */
 static s32b artifact_power(int a_idx)
 {
 	object_type obj;
-	
+
 	LOG_PRINT("********** ENTERING EVAL POWER ********\n");
 	LOG_PRINT1("Artifact index is %d\n", a_idx);
-	
+
 	if(!make_fake_artifact(&obj, a_idx))
 	{
 		return 0;
@@ -443,23 +445,6 @@ static void store_base_power (void)
 	            art_glove_total + art_boot_total + art_other_total;
 }
 
-static struct item_choice {
-	int threshold;
-	int tval;
-	const char *report;
-} item_choices[] = {
-	{  7, TV_BOW,           "a missile weapon"},
-	{ 10, TV_DIGGING,       "a digger"},
-	{ 20, TV_HAFTED,        "a blunt weapon"},
-	{ 32, TV_SWORD,         "an edged weapon"},
-	{ 42, TV_POLEARM,       "a polearm"},
-	{ 64, TV_SOFT_ARMOR,    "body armour"},
-	{ 71, TV_BOOTS,         "footwear"},
-	{ 78, TV_GLOVES,        "gloves"},
-	{ 87, TV_HELM,          "a hat"},
-	{ 94, TV_SHIELD,        "a shield"},
-	{100, TV_CLOAK,         "a cloak"}
-};
 
 /*
  * Randomly select a base item type (tval,sval).  Assign the various fields
@@ -468,218 +453,50 @@ static struct item_choice {
  * The return value gives the index of the new item type.  The method is
  * passed a pointer to a rarity value in order to return the rarity of the
  * new item.
- *
- * ToDo: complete rewrite removing the hard-coded tables above and below
  */
 static s16b choose_item(int a_idx)
 {
 	artifact_type *a_ptr = &a_info[a_idx];
-	int tval;
+	int tval = 0;
 	int sval = 0;
 	object_kind *k_ptr;
-	int r, i;
-	s16b k_idx, r2;
-	byte target_level;
+	int i;
+	s16b k_idx, r;
 
 	/*
-	 * Look up the original artifact's base object kind to get level.
+	 * Pick a base item from the cumulative frequency table, with a
+	 * steer towards target item level (note the hack for gloves, which
+	 * are all very shallow base items).
+	 *
+	 * Although this looks hideous, it provides for easy addition of
+	 * future artifact types, simply by removing the tvals from this
+	 * loop.
+	 *
+	 * N.B. Could easily generate lights, rings and amulets this way if
+	 * the whole special/flavour issue was sorted out
 	 */
-	k_idx = lookup_kind(a_ptr->tval, a_ptr->sval);
-	k_ptr = &k_info[k_idx];
-	target_level = base_item_level[a_idx];
-	LOG_PRINT1("Base item level is: %d\n", target_level);
-
-	/*
-	 * If the artifact level is higher then we use that instead.
-	 */
-
-	if(a_ptr->level > target_level) target_level = a_ptr->level;
-	LOG_PRINT1("Target level is: %d\n", target_level);
-
-	/*
-	 * Pick a category (tval) of weapon randomly.  Within each tval, roll
-	 * an sval (specific item) based on the target level.  The number we
-	 * roll should be a bell curve.  The mean and standard variation of the
-	 * bell curve are based on the target level; the distribution of
-	 * kinds versus the bell curve is hand-tweaked. :-(
-	 */
-	r = randint0(100);
-	r2 = Rand_normal(target_level * 2, target_level);
-	LOG_PRINT2("r is: %d, r2 is: %d\n", r, r2);
-
-	i = 0;
-	while (r >= item_choices[i].threshold)
+	while (tval == 0 || tval == TV_SKELETON || tval == TV_BOTTLE ||
+		tval == TV_JUNK || tval == TV_SPIKE || tval == TV_CHEST ||
+		tval == TV_SHOT || tval == TV_ARROW || tval == TV_BOLT ||
+		tval == TV_STAFF || tval == TV_WAND || tval == TV_ROD ||
+		tval == TV_SCROLL || tval == TV_POTION || tval == TV_FLASK ||
+		tval == TV_FOOD || tval == TV_MAGIC_BOOK || tval ==
+		TV_PRAYER_BOOK || tval == TV_GOLD || tval == TV_LITE ||
+		tval == TV_AMULET || tval == TV_RING || sval == SV_GROND ||
+		sval == SV_MORGOTH)
 	{
-		i++;
+		r = randint1(base_freq[z_info->k_max - 1]);
+		i = 0;
+		while (r >= base_freq[i])
+		{
+			i++;
+		}
+		tval = k_info[i].tval;
+		sval = k_info[i].sval;
 	}
-
-	tval = item_choices[i].tval;
-	LOG_PRINT1("Creating %s\n", item_choices[i].report);
-
-	switch (tval)
-	{
-	case TV_BOW:
-		if (r2 <10) sval = SV_SLING;
-		else if (r2 < 30) sval = SV_SHORT_BOW;
-		else if (r2 < 60) sval = SV_LONG_BOW;
-		else if (r2 < 90) sval = SV_LIGHT_XBOW;
-		else sval = SV_HEAVY_XBOW;
-		break;
-
-	case TV_DIGGING:
-		if (r2 < 40) sval = SV_SHOVEL;
-		else if (r2 < 80) sval = SV_PICK;
-		else sval = SV_MATTOCK;
-		break;
-
-	case TV_HAFTED:
-		if (r2 < 5) sval = SV_WHIP;
-		else if (r2 < 10) sval = SV_MACE;
-		else if (r2 < 17) sval = SV_WAR_HAMMER;
-		else if (r2 < 25) sval = SV_QUARTERSTAFF;
-		else if (r2 < 35) sval = SV_MORNING_STAR;
-		else if (r2 < 48) sval = SV_FLAIL;
-		else if (r2 < 63) sval = SV_LEAD_FILLED_MACE;
-		else if (r2 < 80) sval = SV_BALL_AND_CHAIN;
-		else if (r2 < 100) sval = SV_GREAT_HAMMER;
-		else if (r2 < 120) sval = SV_MAUL;
-		else if (r2 < 135) sval = SV_TWO_HANDED_GREAT_FLAIL;
-		else sval = SV_MACE_OF_DISRUPTION;
-		break;
-
-	case TV_SWORD:
-		if (r2 < 5) sval = SV_DAGGER;
-		else if (r2 < 9) sval = SV_MAIN_GAUCHE;
-		else if (r2 < 14) sval = SV_RAPIER;
-		else if (r2 < 20) sval = SV_SHORT_SWORD;
-		else if (r2 < 27) sval = SV_CUTLASS;
-		else if (r2 < 35) sval = SV_TULWAR;
-		else if (r2 < 44) sval = SV_BROAD_SWORD;
-		else if (r2 < 54) sval = SV_LONG_SWORD;
-		else if (r2 < 65) sval = SV_SCIMITAR;
-		else if (r2 < 80) sval = SV_BASTARD_SWORD;
-		else if (r2 < 100) sval = SV_KATANA;
-		else if (r2 < 120) sval = SV_ZWEIHANDER;
-		else if (r2 < 135) sval = SV_EXECUTIONERS_SWORD;
-		else sval = SV_BLADE_OF_CHAOS;
-		break;
-
-	case TV_POLEARM:
-		if (r2 < 5) sval = SV_SPEAR;
-		else if (r2 < 9) sval = SV_TRIDENT;
-		else if (r2 < 14) sval = SV_LANCE;
-		else if (r2 < 20) sval = SV_AWL_PIKE;
-		else if (r2 < 27) sval = SV_PIKE;
-		else if (r2 < 35) sval = SV_BEAKED_AXE;
-		else if (r2 < 44) sval = SV_BROAD_AXE;
-		else if (r2 < 54) sval = SV_BATTLE_AXE;
-		else if (r2 < 65) sval = SV_GLAIVE;
-		else if (r2 < 76) sval = SV_LUCERNE_HAMMER;
-		else if (r2 < 88) sval = SV_HALBERD;
-		else if (r2 < 102) sval = SV_GREAT_AXE;
-		else if (r2 < 120) sval = SV_SCYTHE;
-		else if (r2 < 135) sval = SV_LOCHABER_AXE;
-		else sval = SV_SCYTHE_OF_SLICING;
-		break;
-
-	case TV_SOFT_ARMOR:
-		/* Hack - multiply r2 by 3/2 (armor has deeper base levels than other types) */
-		r2 = sign(r2) * ((ABS(r2) * 3) / 2);
-
-		/* Adjust tval, as all armor is done together */
-		if (r2 < 30) tval = TV_SOFT_ARMOR;
-		else if (r2 < 116) tval = TV_HARD_ARMOR;
-		else tval = TV_DRAG_ARMOR;
-
-		/* Soft stuff. */
-		if (r2 < 5) sval = SV_ROBE;
-		else if (r2 < 11) sval = SV_SOFT_LEATHER_ARMOUR;
-		else if (r2 < 18) sval = SV_STUDDED_LEATHER_ARMOUR;
-		else if (r2 < 24) sval = SV_HARD_LEATHER_ARMOUR;
-		else if (r2 < 30) sval = SV_LEATHER_SCALE_MAIL;
-
-		/* Hard stuff. */
-		else if (r2 < 38) sval = SV_METAL_SCALE_MAIL;
-		else if (r2 < 45) sval = SV_CHAIN_MAIL;
-		else if (r2 < 52) sval = SV_AUGMENTED_CHAIN_MAIL;
-		else if (r2 < 59) sval = SV_BAR_CHAIN_MAIL;
-		else if (r2 < 66) sval = SV_METAL_BRIGANDINE_ARMOUR;
-		else if (r2 < 73) sval = SV_PARTIAL_PLATE_ARMOUR;
-		else if (r2 < 80) sval = SV_METAL_LAMELLAR_ARMOUR;
-		else if (r2 < 87) sval = SV_FULL_PLATE_ARMOUR;
-		else if (r2 < 94) sval = SV_RIBBED_PLATE_ARMOUR;
-		else if (r2 < 101) sval = SV_MITHRIL_CHAIN_MAIL;
-		else if (r2 < 108) sval = SV_MITHRIL_PLATE_MAIL;
-		else if (r2 < 116) sval = SV_ADAMANTITE_PLATE_MAIL;
-
-		/* DSM - CC 18/8/01 */
-		else if (r2 < 121) sval = SV_DRAGON_BLACK;
-		else if (r2 < 126) sval = SV_DRAGON_BLUE;
-		else if (r2 < 131) sval = SV_DRAGON_WHITE;
-		else if (r2 < 136) sval = SV_DRAGON_RED;
-		else if (r2 < 142) sval = SV_DRAGON_GREEN;
-		else if (r2 < 148) sval = SV_DRAGON_MULTIHUED;
-		else if (r2 < 154) sval = SV_DRAGON_SHINING;
-		else if (r2 < 160) sval = SV_DRAGON_LAW;
-		else if (r2 < 167) sval = SV_DRAGON_BRONZE;
-		else if (r2 < 173) sval = SV_DRAGON_GOLD;
-		else if (r2 < 178) sval = SV_DRAGON_CHAOS;
-		else if (r2 < 183) sval = SV_DRAGON_BALANCE;
-		else sval = SV_DRAGON_POWER;
-		break;
-
-	case TV_BOOTS:
-		if (r2 < 15) sval = SV_PAIR_OF_LEATHER_SANDALS;
-		else if (r2 < 30) sval = SV_PAIR_OF_LEATHER_BOOTS;
-		else if (r2 < 50) sval = SV_PAIR_OF_IRON_SHOD_BOOTS;
-		else if (r2 < 70) sval = SV_PAIR_OF_STEEL_SHOD_BOOTS; 
-		else if (r2 < 90) sval = SV_PAIR_OF_MITHRIL_SHOD_BOOTS; 
-		else sval = SV_PAIR_OF_ETHEREAL_SLIPPERS;
-		break;
-
-	case TV_GLOVES:
-		if (r2 < 15) sval = SV_SET_OF_LEATHER_GLOVES;
-		else if (r2 < 30) sval = SV_SET_OF_GAUNTLETS;
-		else if (r2 < 60) sval = SV_SET_OF_MITHRIL_GAUNTLETS;
-		else if (r2 < 90) sval = SV_SET_OF_ALCHEMISTS_GLOVES;
-		else sval = SV_SET_OF_CAESTUS;
-		break;
-
-	case TV_HELM:
-		/* Adjust tval to handle crowns and helms here */
-		if (r2 < 50) tval = TV_HELM; else tval = TV_CROWN;
-
-		if (r2 < 9) sval = SV_HARD_LEATHER_CAP;
-		else if (r2 < 20) sval = SV_METAL_CAP;
-		else if (r2 < 35) sval = SV_IRON_HELM;
-		else if (r2 < 50) sval = SV_STEEL_HELM;
-
-		else if (r2 < 70) sval = SV_IRON_CROWN;
-		else if (r2 < 90) sval = SV_GOLDEN_CROWN;
-		else sval = SV_JEWEL_ENCRUSTED_CROWN;
-		break;
-
-	case TV_SHIELD:
-		if (r2 < 15) sval = SV_WICKER_SHIELD;
-		else if (r2 < 40) sval = SV_SMALL_METAL_SHIELD;
-		else if (r2 < 70) sval = SV_LEATHER_SHIELD;
-		else if (r2 < 95) sval = SV_LARGE_METAL_SHIELD;
-		else sval = SV_MITHRIL_SHIELD;
-		break;
-
-	case TV_CLOAK:
-		if (r2 < 40) sval = SV_CLOAK;
-		else if (r2 < 70) sval = SV_FUR_CLOAK;
-		else if (r2 < 100) sval = SV_ELVEN_CLOAK;
-		else sval = SV_ETHEREAL_CLOAK;
-		break;
-	}
-/* CC debug hacks */
-	LOG_PRINT2("tval is %d, sval is %d\n", tval, sval);
+	LOG_PRINT2("Creating tval %d sval %d\n", tval, sval);
 	k_idx = lookup_kind(tval, sval);
 	k_ptr = &k_info[k_idx];
-	LOG_PRINT2("k_idx is %d, k_ptr->alloc_prob is %d\n", k_idx, k_ptr->alloc_prob);
-/* CC end - but need a flush here */
 	a_ptr->tval = k_ptr->tval;
 	a_ptr->sval = k_ptr->sval;
 	a_ptr->pval = k_ptr->pval;
@@ -854,10 +671,10 @@ static void adjust_freqs(void)
 		artprobs[ART_IDX_NONWEAPON_BRAND] = 2;
 	if (artprobs[ART_IDX_NONWEAPON_SLAY] < 2)
 		artprobs[ART_IDX_NONWEAPON_SLAY] = 2;
-	if (artprobs[ART_IDX_BOW_BRAND] < 3)
-		artprobs[ART_IDX_BOW_BRAND] = 3;
-	if (artprobs[ART_IDX_BOW_SLAY] < 3)
-		artprobs[ART_IDX_BOW_SLAY] = 3;
+	if (artprobs[ART_IDX_BOW_BRAND] < 2)
+		artprobs[ART_IDX_BOW_BRAND] = 2;
+	if (artprobs[ART_IDX_BOW_SLAY] < 2)
+		artprobs[ART_IDX_BOW_SLAY] = 2;
 	if (artprobs[ART_IDX_NONWEAPON_BLOWS] < 2)
 		artprobs[ART_IDX_NONWEAPON_BLOWS] = 2;
 	if (artprobs[ART_IDX_NONWEAPON_SHOTS] < 2)
@@ -874,7 +691,7 @@ static void adjust_freqs(void)
  */
 static void parse_frequencies(void)
 {
-	int i;
+	int i, j;
 	const artifact_type *a_ptr;
 	object_kind *k_ptr;
 	s32b temp, temp2;
@@ -883,16 +700,23 @@ static void parse_frequencies(void)
 
 	LOG_PRINT("\n****** BEGINNING GENERATION OF FREQUENCIES\n\n");
 
-	/* Zero the frequencies */
-
-	for(i = 0; i < ART_IDX_TOTAL; i++)
+	/* Zero the frequencies for artifact attributes */
+	for (i = 0; i < ART_IDX_TOTAL; i++)
 	{
 		artprobs[i] = 0;
 	}
 
-	/* Go through the list of all artifacts */
+	/*
+	 * Initialise the frequencies for base items so that each item could
+	 * be chosen - we check for illegal items during choose_item()
+	 */
+	for (i = 0; i < z_info->k_max; i++)
+	{
+		baseprobs[i] = 1;
+	}
 
-	for(i = 0; i < z_info->a_max; i++)
+	/* Go through the list of all artifacts */
+	for (i = 0; i < z_info->a_max; i++)
 	{
 		LOG_PRINT1("Current artifact index is %d\n", i);
 
@@ -911,8 +735,11 @@ static void parse_frequencies(void)
 		k_idx = lookup_kind(a_ptr->tval, a_ptr->sval);
 		k_ptr = &k_info[k_idx];
 
-		/* Count up the abilities for this artifact */
+		/* Add the base item to the baseprobs array */
+		baseprobs[k_idx]++;
+		LOG_PRINT1("Base item is %d\n", k_idx);
 
+		/* Count up the abilities for this artifact */
 		if (a_ptr->tval == TV_BOW)
 		{
 			if(a_ptr->flags[0] & TR0_SHOTS)
@@ -1077,9 +904,8 @@ static void parse_frequencies(void)
 				LOG_PRINT("Adding 1 for aggravation - nonweapon\n");
 				(artprobs[ART_IDX_NONWEAPON_AGGR])++;
 			}
-			
-			/* Brands or slays - count all together */
 
+			/* Brands or slays - count all together */
 			if (a_ptr->flags[0] & TR0_ALL_SLAYS)
 			{
 				const slay_t *s_ptr;
@@ -1106,13 +932,13 @@ static void parse_frequencies(void)
 
 			if (a_ptr->flags[0] & TR0_BLOWS)
 			{
-				LOG_PRINT("Adding 1 for extra blows on nonweapon");
+				LOG_PRINT("Adding 1 for extra blows on nonweapon\n");
 				(artprobs[ART_IDX_NONWEAPON_BLOWS])++;
 			}
 
 			if (a_ptr->flags[0] & TR0_SHOTS)
 			{
-				LOG_PRINT("Adding 1 for extra shots on nonweapon");
+				LOG_PRINT("Adding 1 for extra shots on nonweapon\n");
 				(artprobs[ART_IDX_NONWEAPON_SHOTS])++;
 			}
 		}
@@ -1151,7 +977,7 @@ static void parse_frequencies(void)
 					(artprobs[ART_IDX_MELEE_BLOWS])++;
 				}
 			}
-			
+
 			/* Does this weapon have an unusual bonus to AC? */
 			if ( (a_ptr->to_a - k_ptr->to_a) > 0)
 			{
@@ -1812,12 +1638,17 @@ static void parse_frequencies(void)
 	}
 	/* End for loop */
 
-	if(verbose)
+	if (verbose)
 	{
 	/* Print out some of the abilities, to make sure that everything's fine */
-		for(i=0; i<ART_IDX_TOTAL; i++)
+		for (i=0; i<ART_IDX_TOTAL; i++)
 		{
 			file_putf(log_file, "Frequency of ability %d: %d\n", i, artprobs[i]);
+		}
+
+		for (i=0; i < z_info->k_max; i++)
+		{
+			file_putf(log_file, "Frequency of item %d: %d\n", i, baseprobs[i]);
 		}
 	}
 
@@ -1937,6 +1768,20 @@ static void parse_frequencies(void)
 		LOG_PRINT2( "Rescaled frequency of ability %d: %d\n", i, artprobs[i]);
 	}
 
+	/* Build a cumulative frequency table for the base items */
+	for (i = 0; i < z_info->k_max; i++)
+	{
+		for (j = i; j < z_info->k_max; j++)
+		{
+			base_freq[j] += baseprobs[i];
+		}
+	}
+
+	/* Print out the frequency table, for verification */
+	for (i = 0; i < z_info->k_max; i++)
+	{
+		LOG_PRINT2("Cumulative frequency of item %d is: %d\n", i, base_freq[i]);
+	}
 }
 
 static bool add_str(artifact_type *a_ptr)
@@ -2601,7 +2446,6 @@ static void add_activation(artifact_type *a_ptr)
  * The resulting frequency table is cumulative for ease of use in the
  * weighted randomization algorithm.
  */
-
 static void build_freq_table(artifact_type *a_ptr, s16b *freq)
 {
 	int i,j;
@@ -3531,12 +3375,14 @@ errr do_randart(u32b randart_seed, bool full)
 		base_item_level = C_ZNEW(z_info->a_max, byte);
 		base_item_prob = C_ZNEW(z_info->a_max, byte);
 		base_art_rarity = C_ZNEW(z_info->a_max, byte);
+		baseprobs = C_ZNEW(z_info->k_max, s16b);
+		base_freq = C_ZNEW(z_info->k_max, s16b);
 
 		/* Open the log file for writing */
 		if (verbose)
 		{
 			char buf[1024];
-			path_build(buf, sizeof(buf), ANGBAND_DIR_USER, 
+			path_build(buf, sizeof(buf), ANGBAND_DIR_USER,
 				"randart.log");
 			log_file = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 			if (!log_file)
@@ -3579,6 +3425,8 @@ errr do_randart(u32b randart_seed, bool full)
 		FREE(base_item_level);
 		FREE(base_item_prob);
 		FREE(base_art_rarity);
+		FREE(baseprobs);
+		FREE(base_freq);
 	}
 
 	/* When done, resume use of the Angband "complex" RNG. */
