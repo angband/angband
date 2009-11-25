@@ -3692,6 +3692,16 @@ bool obj_is_ammo(const object_type *o_ptr)
 	}
 }
 
+/* Determine if an object has charges */
+bool obj_has_charges(const object_type *o_ptr)
+{
+	if (o_ptr->tval != TV_WAND && o_ptr->tval != TV_STAFF) return FALSE;
+
+	if (o_ptr->pval <= 0) return FALSE;
+
+	return TRUE;
+}
+
 /* Determine if an object is zappable */
 bool obj_can_zap(const object_type *o_ptr)
 {

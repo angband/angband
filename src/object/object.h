@@ -221,6 +221,7 @@ bool obj_is_food(const object_type *o_ptr);
 bool obj_is_lite(const object_type *o_ptr);
 bool obj_is_ring(const object_type *o_ptr);
 bool obj_is_ammo(const object_type *o_ptr);
+bool obj_has_charges(const object_type *o_ptr);
 bool obj_can_zap(const object_type *o_ptr);
 bool obj_is_activatable(const object_type *o_ptr);
 bool obj_can_activate(const object_type *o_ptr);

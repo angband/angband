@@ -485,7 +485,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	{
 		if (!obj_can_zap(o_ptr))
 		{
-			msg_print("The rod is not yet recharged.");
+			msg_print("That rod is still charging.");
 			return;
 		}
 
@@ -495,12 +495,24 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	}
 	else if (obj_is_wand(o_ptr))
 	{
+		if (!obj_has_charges(o_ptr))
+		{
+			msg_print("That wand has no charges.");
+			return;
+		}
+
 		use = USE_CHARGE;
 		snd = MSG_ZAP_ROD;
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
 	else if (obj_is_staff(o_ptr))
 	{	
+		if (!obj_has_charges(o_ptr))
+		{
+			msg_print("That staff has no charges.");
+			return;
+		}
+
 		use = USE_CHARGE;
 		snd = MSG_ZAP_ROD;
 		items_allowed = USE_INVEN | USE_FLOOR;
@@ -531,7 +543,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	{
 		if (!obj_can_activate(o_ptr))
 		{
-			msg_print("The item is not ready to activate");
+			msg_print("That item is still charging.");
 			return;
 		}
 		
@@ -806,11 +818,11 @@ static item_act_t item_actions[] =
 
 	{ NULL, CMD_USE_ROD, "zap",
       "Zap which rod? ", "You have no charged rods to zap.",
-	  obj_can_zap, (USE_INVEN | USE_FLOOR), NULL },
+	  obj_is_rod, (USE_INVEN | USE_FLOOR), NULL },
 
 	{ NULL, CMD_ACTIVATE, "activate",
       "Activate which item? ", "You have nothing to activate.",
-	  obj_can_activate, USE_EQUIP, NULL },
+	  obj_is_activatable, USE_EQUIP, NULL },
 
 	{ NULL, CMD_EAT, "eat",
       "Eat which item? ", "You have nothing to eat.",
@@ -893,6 +905,7 @@ static void do_item(item_act act)
 		cmd_needs_aim = TRUE;
 	}
 
+	/* Execute the item command */
 	if (item_actions[act].action != NULL)
 		item_actions[act].action(o_ptr, item);
 	else if (cmd_needs_aim && obj_needs_aim(o_ptr))
