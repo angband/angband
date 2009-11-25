@@ -485,7 +485,7 @@ static s16b choose_item(int a_idx)
 	{
 		r = randint1(base_freq[z_info->k_max - 1]);
 		i = 0;
-		while (r >= base_freq[i])
+		while (r > base_freq[i])
 		{
 			i++;
 		}
