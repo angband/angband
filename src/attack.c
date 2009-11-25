@@ -20,17 +20,13 @@
 #include "object/object.h"
 #include "object/tvalsval.h"
 #include "game-cmd.h"
+#include "cmds.h"
 
-/**
- * Determines how likely an object is to break on throwing or shooting.
- *
- * \returns percentage change of breaking
- */
+/* Returns percent chance of an object breaking after throwing or shooting. */
 int breakage_chance(const object_type *o_ptr)
 {
 	/* Artifacts never break */
-	if (artifact_p(o_ptr))
-		return 0;
+	if (artifact_p(o_ptr)) return 0;
 
 	switch (o_ptr->tval)
 	{
