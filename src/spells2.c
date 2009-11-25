@@ -1205,142 +1205,105 @@ static bool item_tester_hook_armour(const object_type *o_ptr)
 
 static bool item_tester_unknown(const object_type *o_ptr)
 {
-	if (object_is_known(o_ptr))
-		return FALSE;
-	else
-		return TRUE;
+	return object_is_known(o_ptr) ? FALSE : TRUE;
 }
 
-
-/*
- * Enchant an item
- *
- * Revamped!  Now takes item pointer, number of times to try enchanting,
- * and a flag of what to try enchanting.  Artifacts resist enchantment
- * some of the time, and successful enchantment to at least +0 might
- * break a curse on the item.  -CFT
- *
- * Note that an item can technically be enchanted all the way to +15 if
- * you wait a very, very, long time.  Going from +9 to +10 only works
- * about 5% of the time, and from +10 to +11 only about 1% of the time.
- *
- * Note that this function can now be used on "piles" of items, and
- * the larger the pile, the lower the chance of success.
- */
-bool enchant(object_type *o_ptr, int n, int eflag)
+/* Tries to increase an items bonus score, if possible */
+bool _enchant_score(s16b *score, bool is_artifact)
 {
-	int i, chance, prob;
+	int chance;
 
-	bool res = FALSE;
+	/* Artifacts resist enchantment half the time */
+	if (is_artifact && randint0(100) < 50) return FALSE;
 
-	bool a = artifact_p(o_ptr);
+	/* Figure out the chance to enchant */
+	if (*score < 0) chance = 0;
+	else if (*score > 15) chance = 1000;
+	else chance = enchant_table[*score];
 
+	/* If we roll less-than-or-equal to chance, it fails */
+	if (randint1(1000) <= chance) return FALSE;
+
+	/* Increment the score */
+	++*score;
+
+	return TRUE;
+}
+
+/* Tries to uncurse a cursed item, if possible */
+bool _enchant_curse(object_type *o_ptr, bool is_artifact)
+{
 	u32b f[OBJ_FLAG_N];
 
 	/* Extract the flags */
 	object_flags(o_ptr, f);
 
+	/* If the item isn't cursed (or is perma-cursed) this doesn't work */
+	if (!cursed_p(o_ptr) || f[2] & TR2_PERMA_CURSE) return FALSE;
+
+	/* Artifacts resist enchanting curses away half the time */
+	if (is_artifact && randint0(100) < 50) return FALSE;
+
+	/* Normal items are uncursed about 20% of the tiem */
+	if (randint0(100) >= 20) return FALSE;
+
+	/* Uncurse the item */
+	msg_print("The curse is broken!");
+	uncurse_object(o_ptr);
+	return TRUE;
+}
+
+/*
+ * Helper function for enchant() which tries to do the two things that
+ * enchanting an item does, namely increasing its bonuses and breaking curses
+ */
+bool _enchant(object_type *o_ptr, s16b *score)
+{
+	bool result = FALSE;
+	bool is_artifact = artifact_p(o_ptr);
+	if (_enchant_score(score, is_artifact)) result = TRUE;
+	if (_enchant_curse(o_ptr, is_artifact)) result = TRUE;
+	return result;
+}
+
+/*
+ * Enchant an item
+ *
+ * Revamped!  Now takes item pointer, number of times to try enchanting, and a
+ * flag of what to try enchanting.  Artifacts resist enchantment some of the
+ * time. Also, any enchantment attempt (even unsuccessful) kicks off a parallel
+ * attempt to uncurse a cursed item.
+ *
+ * Note that an item can technically be enchanted all the way to +15 if you
+ * wait a very, very, long time.  Going from +9 to +10 only works about 5% of
+ * the time, and from +10 to +11 only about 1% of the time.
+ *
+ * Note that this function can now be used on "piles" of items, and the larger
+ * the pile, the lower the chance of success.
+ */
+bool enchant(object_type *o_ptr, int n, int eflag)
+{
+	int i, prob;
+	bool res = FALSE;
 
 	/* Large piles resist enchantment */
 	prob = o_ptr->number * 100;
 
 	/* Missiles are easy to enchant */
 	if ((o_ptr->tval == TV_BOLT) ||
-	    (o_ptr->tval == TV_ARROW) ||
-	    (o_ptr->tval == TV_SHOT))
-	{
-		prob = prob / 20;
-	}
+		(o_ptr->tval == TV_ARROW) ||
+		(o_ptr->tval == TV_SHOT)) prob = prob / 20;
 
 	/* Try "n" times */
 	for (i = 0; i < n; i++)
 	{
-		/* Hack -- Roll for pile resistance */
-		if ((prob > 100) && (randint0(prob) >= 100)) continue;
+		/* Roll for pile resistance */
+		if (prob > 100 && randint0(prob) >= 100) continue;
 
-		/* Enchant to hit */
-		if (eflag & (ENCH_TOHIT))
-		{
-			if (o_ptr->to_h < 0) chance = 0;
-			else if (o_ptr->to_h > 15) chance = 1000;
-			else chance = enchant_table[o_ptr->to_h];
-
-			/* Attempt to enchant */
-			if ((randint1(1000) > chance) && (!a || (randint0(100) < 50)))
-			{
-				res = TRUE;
-
-				/* Enchant */
-				o_ptr->to_h++;
-
-				/* Break curse */
-				if (cursed_p(o_ptr) &&
-				    (!(f[2] & (TR2_PERMA_CURSE))) &&
-				    (o_ptr->to_h >= 0) && (randint0(100) < 25))
-				{
-					msg_print("The curse is broken!");
-
-					/* Uncurse the object */
-					uncurse_object(o_ptr);
-				}
-			}
-		}
-
-		/* Enchant to damage */
-		if (eflag & (ENCH_TODAM))
-		{
-			if (o_ptr->to_d < 0) chance = 0;
-			else if (o_ptr->to_d > 15) chance = 1000;
-			else chance = enchant_table[o_ptr->to_d];
-
-			/* Attempt to enchant */
-			if ((randint1(1000) > chance) && (!a || (randint0(100) < 50)))
-			{
-				res = TRUE;
-
-				/* Enchant */
-				o_ptr->to_d++;
-
-				/* Break curse */
-				if (cursed_p(o_ptr) &&
-				    (!(f[2] & (TR2_PERMA_CURSE))) &&
-				    (o_ptr->to_d >= 0) && (randint0(100) < 25))
-				{
-					msg_print("The curse is broken!");
-
-					/* Uncurse the object */
-					uncurse_object(o_ptr);
-				}
-			}
-		}
-
-		/* Enchant to armor class */
-		if (eflag & (ENCH_TOAC))
-		{
-			if (o_ptr->to_a < 0) chance = 0;
-			else if (o_ptr->to_a > 15) chance = 1000;
-			else chance = enchant_table[o_ptr->to_a];
-
-			/* Attempt to enchant */
-			if ((randint1(1000) > chance) && (!a || (randint0(100) < 50)))
-			{
-				res = TRUE;
-
-				/* Enchant */
-				o_ptr->to_a++;
-
-				/* Break curse */
-				if (cursed_p(o_ptr) &&
-				    (!(f[2] & (TR2_PERMA_CURSE))) &&
-				    (o_ptr->to_a >= 0) && (randint0(100) < 25))
-				{
-					msg_print("The curse is broken!");
-
-					/* Uncurse the object */
-					uncurse_object(o_ptr);
-				}
-			}
-		}
+		/* Try the three kinds of enchantment we can do */
+		if ((eflag & ENCH_TOHIT) && _enchant(o_ptr, &o_ptr->to_h)) res = TRUE;
+		if ((eflag & ENCH_TODAM) && _enchant(o_ptr, &o_ptr->to_d)) res = TRUE;
+		if ((eflag & ENCH_TOAC)  && _enchant(o_ptr, &o_ptr->to_a)) res = TRUE;
 	}
 
 	/* Failure */
