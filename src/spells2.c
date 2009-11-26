@@ -3047,6 +3047,7 @@ void brand_object(object_type *o_ptr, byte brand_type)
 
 		/* Brand the object */
 		o_ptr->name2 = brand_type;
+		object_notice_ego(o_ptr);
 
 		/* Combine / Reorder the pack (later) */
 		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
@@ -3060,7 +3061,7 @@ void brand_object(object_type *o_ptr, byte brand_type)
 	else
 	{
 		if (OPT(flush_failure)) flush();
-		msg_print("The Branding failed.");
+		msg_print("The branding failed.");
 	}
 }
 
