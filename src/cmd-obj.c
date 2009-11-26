@@ -472,7 +472,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	int item = args[0].item;
 	object_type *o_ptr = object_from_item_idx(item);
 	int effect;
-	bool ident = FALSE, used;
+	bool ident = FALSE, used = TRUE;
 	bool was_aware = object_flavor_is_aware(o_ptr);
 	int dir = 5;
 	int px = p_ptr->px, py = p_ptr->py;
@@ -573,37 +573,35 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	if (obj_needs_aim(o_ptr))
 		dir = args[1].direction;
 
-	/* Use energy regardless of failure */
-	p_ptr->energy_use = 100;
-
-	/* Check for use */
-	if (use == USE_CHARGE || use == USE_TIMEOUT)
+	/* Check for use if necessary, and execute the effect */
+	if ((use != USE_CHARGE && use != USE_TIMEOUT) ||
+	    check_devices(o_ptr))
 	{
-		if (!check_devices(o_ptr))
-			return;
-	}
+		/* Special message for artifacts */
+		if (artifact_p(o_ptr))
+		{
+			message(snd, 0, "You activate it.");
+			activation_message(o_ptr, a_text + a_info[o_ptr->name1].effect_msg);
+		}
+		else
+		{
+			/* Make a noise! */
+			sound(snd);
+		}
 
-	/* Special message for artifacts */
-	if (artifact_p(o_ptr))
-	{
-		message(snd, 0, "You activate it.");
-		activation_message(o_ptr, a_text + a_info[o_ptr->name1].effect_msg);
-	}
-	else
-	{
-		/* Make a noise! */
-		sound(snd);
-	}
+		/* A bit of a hack to make ID work better.
+			-- Check for "obvious" effects beforehand. */
+		if (effect_obvious(effect)) object_flavor_aware(o_ptr);
 
-	/* A bit of a hack to make ID work better.
-	   -- Check for "obvious" effects beforehand. */
-	if (effect_obvious(effect)) object_flavor_aware(o_ptr);
-
-	/* Do effect */
-	used = effect_do(effect, &ident, was_aware, dir, beam_chance(o_ptr->tval));
+		/* Do effect */
+		used = effect_do(effect, &ident, was_aware, dir, beam_chance(o_ptr->tval));
+	}
 
 	/* If the item is a null pointer or has been wiped, be done now */
 	if (!o_ptr || o_ptr->k_idx <= 1) return;
+
+	/* Quit if the item wasn't used and no knowledge was gained */
+	if (!used && (was_aware || !ident)) return;
 
 	if (ident) object_notice_effect(o_ptr);
 
@@ -611,7 +609,8 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	if (o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION)
 		(void)set_food(p_ptr->food + o_ptr->pval);
 
-	if (!used && !ident) return;
+	/* Use the turn */
+	p_ptr->energy_use = 100;
 
 	/* Mark as tried and redisplay */
 	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
