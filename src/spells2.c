@@ -1252,8 +1252,8 @@ bool enchant_curse(object_type *o_ptr, bool is_artifact)
 	/* Artifacts resist enchanting curses away half the time */
 	if (is_artifact && randint0(100) < 50) return FALSE;
 
-	/* Normal items are uncursed about 20% of the tiem */
-	if (randint0(100) >= 20) return FALSE;
+	/* Normal items are uncursed 25% of the tiem */
+	if (randint0(100) >= 25) return FALSE;
 
 	/* Uncurse the item */
 	msg_print("The curse is broken!");
