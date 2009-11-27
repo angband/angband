@@ -1672,7 +1672,7 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 
 	/* Different flags */
 	for (i = 0; i < OBJ_FLAG_N; i++)
-		if (o_ptr->flags[i] != j_ptr->flags[1])
+		if (o_ptr->flags[i] != j_ptr->flags[i])
 			return FALSE;
 
 
