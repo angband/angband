@@ -1208,8 +1208,12 @@ static bool item_tester_unknown(const object_type *o_ptr)
 	return object_is_known(o_ptr) ? FALSE : TRUE;
 }
 
-/* Tries to increase an items bonus score, if possible */
-bool _enchant_score(s16b *score, bool is_artifact)
+/**
+ * Tries to increase an items bonus score, if possible.
+ *
+ * \returns true if the bonus was increased
+ */
+bool enchant_score(s16b *score, bool is_artifact)
 {
 	int chance;
 
@@ -1230,8 +1234,12 @@ bool _enchant_score(s16b *score, bool is_artifact)
 	return TRUE;
 }
 
-/* Tries to uncurse a cursed item, if possible */
-bool _enchant_curse(object_type *o_ptr, bool is_artifact)
+/**
+ * Tries to uncurse a cursed item, if possible
+ *
+ * \returns true if a curse was broken
+ */
+bool enchant_curse(object_type *o_ptr, bool is_artifact)
 {
 	u32b f[OBJ_FLAG_N];
 
@@ -1253,20 +1261,22 @@ bool _enchant_curse(object_type *o_ptr, bool is_artifact)
 	return TRUE;
 }
 
-/*
+/**
  * Helper function for enchant() which tries to do the two things that
  * enchanting an item does, namely increasing its bonuses and breaking curses
+ *
+ * \returns true if a bonus was increased or a curse was broken
  */
-bool _enchant(object_type *o_ptr, s16b *score)
+bool enchant2(object_type *o_ptr, s16b *score)
 {
 	bool result = FALSE;
 	bool is_artifact = artifact_p(o_ptr);
-	if (_enchant_score(score, is_artifact)) result = TRUE;
-	if (_enchant_curse(o_ptr, is_artifact)) result = TRUE;
+	if (enchant_score(score, is_artifact)) result = TRUE;
+	if (enchant_curse(o_ptr, is_artifact)) result = TRUE;
 	return result;
 }
 
-/*
+/**
  * Enchant an item
  *
  * Revamped!  Now takes item pointer, number of times to try enchanting, and a
@@ -1280,6 +1290,8 @@ bool _enchant(object_type *o_ptr, s16b *score)
  *
  * Note that this function can now be used on "piles" of items, and the larger
  * the pile, the lower the chance of success.
+ *
+ * \returns true if the item was changed in some way
  */
 bool enchant(object_type *o_ptr, int n, int eflag)
 {
@@ -1301,9 +1313,9 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 		if (prob > 100 && randint0(prob) >= 100) continue;
 
 		/* Try the three kinds of enchantment we can do */
-		if ((eflag & ENCH_TOHIT) && _enchant(o_ptr, &o_ptr->to_h)) res = TRUE;
-		if ((eflag & ENCH_TODAM) && _enchant(o_ptr, &o_ptr->to_d)) res = TRUE;
-		if ((eflag & ENCH_TOAC)  && _enchant(o_ptr, &o_ptr->to_a)) res = TRUE;
+		if ((eflag & ENCH_TOHIT) && enchant2(o_ptr, &o_ptr->to_h)) res = TRUE;
+		if ((eflag & ENCH_TODAM) && enchant2(o_ptr, &o_ptr->to_d)) res = TRUE;
+		if ((eflag & ENCH_TOAC)  && enchant2(o_ptr, &o_ptr->to_a)) res = TRUE;
 	}
 
 	/* Failure */
