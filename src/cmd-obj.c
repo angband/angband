@@ -472,7 +472,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	int item = args[0].item;
 	object_type *o_ptr = object_from_item_idx(item);
 	int effect;
-	bool ident = FALSE, used = TRUE;
+	bool ident = FALSE, used = FALSE, failed = FALSE;
 	bool was_aware = object_flavor_is_aware(o_ptr);
 	int dir = 5;
 	int px = p_ptr->px, py = p_ptr->py;
@@ -573,9 +573,15 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	if (obj_needs_aim(o_ptr))
 		dir = args[1].direction;
 
-	/* Check for use if necessary, and execute the effect */
-	if ((use != USE_CHARGE && use != USE_TIMEOUT) ||
-	    check_devices(o_ptr))
+	/* Check for activation success */
+	if ((use == USE_CHARGE || use == USE_TIMEOUT) &&
+	    !check_devices(o_ptr))
+	{
+		failed = TRUE;
+	}
+
+	/* Execute the effect */	
+	if (!failed)
 	{
 		/* Special message for artifacts */
 		if (artifact_p(o_ptr))
@@ -600,8 +606,10 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	/* If the item is a null pointer or has been wiped, be done now */
 	if (!o_ptr || o_ptr->k_idx <= 1) return;
 
-	/* Quit if the item wasn't used and no knowledge was gained */
-	if (!used && (was_aware || !ident)) return;
+	/* Quit if the player didn't fail, item wasn't used,
+	 * and no knowledge was gained
+	 */
+	if (!failed && !used && (was_aware || !ident)) return;
 
 	if (ident) object_notice_effect(o_ptr);
 
