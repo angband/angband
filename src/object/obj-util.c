@@ -2350,6 +2350,86 @@ void inven_item_increase(int item, int num)
 }
 
 
+/**
+ * Compare ammunition from slots (0-9); used for sorting.
+ *
+ * \returns -1 if slot1 should come first, 1 if slot2 should come first, or 0.
+ */
+int compare_ammo(int slot1, int slot2)
+{
+	/* Right now there is no sorting criteria */
+	return 0;
+}
+
+/**
+ * Swap ammunition between quiver slots (0-9).
+ */
+void swap_quiver_slots(int slot1, int slot2)
+{
+	int i = slot1 + QUIVER_START;
+	int j = slot2 + QUIVER_START;
+	object_type o;
+
+	object_copy(&o, &inventory[i]);
+	object_copy(&inventory[i], &inventory[j]);
+	object_copy(&inventory[j], &o);
+}
+
+/**
+ * Sorts the quiver--ammunition inscribed with @fN prefers to end up in quiver
+ * slot N.
+ */
+void sort_quiver(void)
+{
+	/* Ammo slots go from 0-9; these indices correspond to the range of
+	 * (QUIVER_START) - (QUIVER_END-1) in inventory[].
+	 */
+	bool locked[10] = {FALSE, FALSE, FALSE, FALSE, FALSE,
+					   FALSE, FALSE, FALSE, FALSE, FALSE};
+	int desired[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	int i, j, k;
+	object_type *o_ptr;
+
+	/* Here we figure out which slots have inscribed ammo, and whether that
+	 * ammo is already in the slot it "wants" to be in or not.
+	 */
+	for (i=0; i < 10; i++)
+	{
+		j = QUIVER_START + i;
+		o_ptr = &inventory[j];
+
+		/* Skip this slot if it doesn't have ammo */
+		if (!o_ptr->k_idx) continue;
+
+		/* Figure out which slot this ammo prefers, if any */
+		k = get_inscribed_ammo_slot(o_ptr);
+		if (!k) continue;
+
+		k -= QUIVER_START;
+		if (k == i) locked[i] = TRUE;
+		if (!desired[k]) desired[k] = i;
+	}
+
+	/* For items which had a preference that was not fulfilled, we will swap
+	 * them into the slot as long as it isn't already locked.
+	 */
+	for (i=0; i < 10; i++)
+	{
+		if (locked[i] || !desired[i]) continue;
+		swap_quiver_slots(i, desired[i]);
+		locked[i] = TRUE;
+	}
+
+	/* Now we will sort all other ammo using a simple insertion sort */
+	for (i=0; i < 10; i++)
+	{
+		k = i;
+		for (j=i + 1; j < 10; j++) if (compare_ammo(k, j) > 0) k = j;
+		if (k != i) swap_quiver_slots(i, k);
+	}
+}
+
+
 /*
  * Erase an inventory slot if it has no more items
  */
@@ -3967,83 +4047,4 @@ bool item_is_available(int item, bool (*tester)(const object_type *), int mode)
 	}
 
 	return FALSE;
-}
-
-/**
- * Compare ammunition from slots (0-9); used for sorting.
- *
- * \returns -1 if slot1 should come first, 1 if slot2 should come first, or 0.
- */
-int compare_ammo(int slot1, int slot2)
-{
-	/* Right now there is no sorting criteria */
-	return 0;
-}
-
-/**
- * Swap ammunition between quiver slots (0-9).
- */
-void swap_quiver_slots(int slot1, int slot2)
-{
-	int i = slot1 + QUIVER_START;
-	int j = slot2 + QUIVER_START;
-	object_type o;
-
-	object_copy(&o, &inventory[i]);
-	object_copy(&inventory[i], &inventory[j]);
-	object_copy(&inventory[j], &o);
-}
-
-/**
- * Sorts the quiver--ammunition inscribed with @fN prefers to end up in quiver
- * slot N.
- */
-void sort_quiver(void)
-{
-	/* Ammo slots go from 0-9; these indices correspond to the range of
-	 * (QUIVER_START) - (QUIVER_END-1) in inventory[].
-	 */
-	bool locked[10] = {FALSE, FALSE, FALSE, FALSE, FALSE,
-					   FALSE, FALSE, FALSE, FALSE, FALSE};
-	int desired[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	int i, j, k;
-	object_type *o_ptr;
-
-	/* Here we figure out which slots have inscribed ammo, and whether that
-	 * ammo is already in the slot it "wants" to be in or not.
-	 */
-	for (i=0; i < 10; i++)
-	{
-		j = QUIVER_START + i;
-		o_ptr = &inventory[j];
-
-		/* Skip this slot if it doesn't have ammo */
-		if (!o_ptr->k_idx) continue;
-
-		/* Figure out which slot this ammo prefers, if any */
-		k = get_inscribed_ammo_slot(o_ptr);
-		if (!k) continue;
-
-		k -= QUIVER_START;
-		if (k == i) locked[i] = TRUE;
-		if (!desired[k]) desired[k] = i;
-	}
-
-	/* For items which had a preference that was not fulfilled, we will swap
-	 * them into the slot as long as it isn't already locked.
-	 */
-	for (i=0; i < 10; i++)
-	{
-		if (locked[i] || !desired[i]) continue;
-		swap_quiver_slots(i, desired[i]);
-		locked[i] = TRUE;
-	}
-
-	/* Now we will sort all other ammo using a simple insertion sort */
-	for (i=0; i < 10; i++)
-	{
-		k = i;
-		for (j=i + 1; j < 10; j++) if (compare_ammo(k, j) > 0) k = j;
-		if (k != i) swap_quiver_slots(i, k);
-	}
 }
