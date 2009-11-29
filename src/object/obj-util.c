@@ -2426,6 +2426,10 @@ void sort_quiver(void)
 	 * "front" of the quiver */
 	for (i=0; i < QUIVER_SIZE; i++)
 	{
+		/* TODO: figure out how to swap an empty slot and a non-empty one
+		 *       on windows, then remove the break */
+		break;
+		
 		/* If the slot isn't empty, skip it */
 		if (inventory[QUIVER_START + i].k_idx) continue;
 
