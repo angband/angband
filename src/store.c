@@ -1862,7 +1862,7 @@ static bool store_get_check(const char *prompt)
 
 
 /*
- * Return the quantity of a given item in the pack.
+ * Return the quantity of a given item in the pack (include quiver).
  */
 static int find_inven(const object_type *o_ptr)
 {
@@ -1870,9 +1870,12 @@ static int find_inven(const object_type *o_ptr)
 	int num = 0;
 
 	/* Similar slot? */
-	for (j = 0; j < INVEN_PACK; j++)
+	for (j = 0; j < QUIVER_END; j++)
 	{
 		object_type *j_ptr = &inventory[j];
+
+		/* Check only the inventory and the quiver */
+		if (j >= INVEN_WIELD && j < QUIVER_START) continue;
 
 		/* Require identical object types */
 		if (!j_ptr->k_idx || o_ptr->k_idx != j_ptr->k_idx) continue;
