@@ -539,13 +539,20 @@ static void wield_all(void)
 		/* Make sure we can wield it */
 		slot = wield_slot(o_ptr);
 		if (slot < INVEN_WIELD) continue;
+		i_ptr = &inventory[slot];
 
 		/* Make sure that there's an available slot */
-		if (is_ammo && !object_similar(o_ptr, &inventory[slot])) continue;
-		if (!is_ammo && inventory[slot].k_idx) continue;
+		if (is_ammo)
+		{
+			if (i_ptr->k_idx && !object_similar(o_ptr, i_ptr)) continue;
+		}
+		else
+		{
+			if (i_ptr->k_idx) continue;
+		}
 
 		/* Figure out how much of the item we'll be wielding */
-		num = obj_is_ammo(o_ptr) ? o_ptr->number : 1;
+		num = is_ammo ? o_ptr->number : 1;
 
 		/* Get local object */
 		i_ptr = &object_type_body;
