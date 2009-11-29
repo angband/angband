@@ -842,12 +842,18 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 
 	int msec = op_ptr->delay_factor * op_ptr->delay_factor;
 
+	if (item >= INVEN_WIELD && item < QUIVER_START)
+	{
+		msg_print("You have cannot throw wielded items.");
+		return;
+	}
+
 	/* Get item to throw and direction in which to throw it. */
 	item = args[0].item;
 	dir = args[1].direction;
 
 	/* Check the item being thrown is usable by the player. */
-	if (!item_is_available(item, NULL, (USE_INVEN | USE_FLOOR)))
+	if (!item_is_available(item, NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR)))
 	{
 		msg_format("That item is not within your reach.");
 		return;
@@ -1101,6 +1107,12 @@ void textui_cmd_throw(void)
 	q = "Throw which item? ";
 	s = "You have nothing to throw.";
 	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return;
+
+	if (item >= INVEN_WIELD && item < QUIVER_START)
+	{
+		msg_print("You have cannot throw wielded items.");
+		return;
+	}
 
 	/* Get a direction (or cancel) */
 	if (!get_aim_dir(&dir)) return;
