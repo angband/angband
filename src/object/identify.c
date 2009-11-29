@@ -611,7 +611,7 @@ void object_notice_on_wield(object_type *o_ptr)
 	bool obvious = FALSE;
 	bool obvious_without_activate = FALSE;
 	bool to_sense = FALSE;
-
+	const slay_t *s_ptr;
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
 
@@ -647,19 +647,19 @@ void object_notice_on_wield(object_type *o_ptr)
 	/* notice all artifacts upon wield */
 	if (artifact_p(o_ptr))
 		object_notice_sensing(o_ptr);
-	
+
 	/* Extract the flags */
 	object_flags(o_ptr, f);
-	
+
 	/* Find obvious things */
 	if (f[0] & TR0_OBVIOUS_MASK) obvious = TRUE;
 	if (f[2] & TR2_OBVIOUS_MASK & ~TR2_CURSE_MASK) obvious = TRUE;
-	
+
 	/* XXX Eddie this next block should go when learning cascades with flags */
 	if (f[0] & TR0_OBVIOUS_MASK) obvious_without_activate = TRUE;
 	if (f[2] & TR2_OBVIOUS_MASK & ~TR2_CURSE_MASK)
 		obvious_without_activate = TRUE;
-	
+
 	if (f[0] & TR0_OBVIOUS_MASK & ~k_ptr->flags[0]) to_sense = TRUE;
 	if (f[2] & TR2_OBVIOUS_MASK & ~k_ptr->flags[2]) to_sense = TRUE;
 
@@ -685,18 +685,14 @@ void object_notice_on_wield(object_type *o_ptr)
 	}
 
 	/* Messages */
-	if (wield_slot(o_ptr) == INVEN_WIELD)
+	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
 	{
-		if (f[0] & TR0_BRAND_POIS)
-			msg_print("It seethes with poison!");
-		if (f[0] & TR0_BRAND_ELEC)
-			msg_print("It crackles with electricity!");
-		if (f[0] & TR0_BRAND_FIRE)
-			msg_print("It flares with fire!");
-		if (f[0] & TR0_BRAND_COLD)
-			msg_print("It coats itself in ice!");
-		if (f[0] & TR0_BRAND_ACID)
-			msg_print("It starts spitting acid!");
+		if ((f[0] & s_ptr->slay_flag) && s_ptr->brand)
+                {
+                	char o_name[40];
+                        object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+                        msg_format("Your %s %s!", o_name, s_ptr->active_verb);
+		}
 	}
 
 	/* XXX Eddie need to add stealth here, also need to assert/double-check everything is covered */
@@ -828,7 +824,7 @@ void wieldeds_notice_flag(int flagset, u32b flag)
 
 			/* Notice flags */
 			object_notice_flags(o_ptr, flagset, flag);
-			
+
 			/* XXX Eddie should this go before noticing the flag to avoid learning twice? */
 			if (EASY_LEARN && object_is_jewelry(o_ptr))
 			{
@@ -836,7 +832,7 @@ void wieldeds_notice_flag(int flagset, u32b flag)
 				object_flavor_aware(o_ptr);
 				object_check_for_ident(o_ptr);
 			}
-			
+
 			for (j = 0; j < N_ELEMENTS(msgs); j++)
 			{
 				if (msgs[j].flagset == flagset &&
