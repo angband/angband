@@ -264,6 +264,18 @@ void show_equip(olist_detail_t mode)
 	/* Scan the equipment list */
 	for (k = 0, i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
+		/* We should display a separator between equipment and quiver if we
+		 * are going to show items from both */
+		if (i == INVEN_TOTAL)
+		{
+			if (k > 0)
+			{
+				out_index[k] = -2;
+				k++;
+			}
+			continue;
+		}
+
 		o_ptr = &inventory[i];
 
 		/* Is this item acceptable? */
@@ -368,7 +380,7 @@ void show_equip(olist_detail_t mode)
 		}
 
 		/* There is an empty line between regular equipment and the quiver */
-		if (j + INVEN_WIELD == INVEN_TOTAL) continue;
+		if (i == -2) continue;
 
 		/* Prepare an index --(-- */
 		if (i > -1)
