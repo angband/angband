@@ -195,7 +195,7 @@ static int critical_norm(int weight, int plus, int dam, const char **crit_msg)
  * \returns attack multiplier
  */
 static int get_brand_mult(object_type *o_ptr, const monster_type *m_ptr,
-		const char **hit_verb, bool is_ranged, bool secondary)
+		const char **hit_verb, bool is_ranged)
 {
 	int mult = 1;
 	const slay_t *s_ptr;
@@ -210,7 +210,7 @@ static int get_brand_mult(object_type *o_ptr, const monster_type *m_ptr,
 	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
 	{
 		if (!(f[0] & s_ptr->slay_flag)) continue;
-		
+
 		/* Learn about monster resistance/vulnerability IF:
 		 * 1) The slay flag on the object is known OR
 		 * 2) The monster does not possess the appropriate resistance flag OR
@@ -231,37 +231,23 @@ static int get_brand_mult(object_type *o_ptr, const monster_type *m_ptr,
 			}
 		}
 
-		/* notice any brand or slay that would affect the monster */
-		if ((s_ptr->resist_flag) || (r_ptr->flags[2] & s_ptr->monster_flag))
-		{
-			object_notice_slays(o_ptr, s_ptr->slay_flag);
-			wieldeds_notice_slays(s_ptr->slay_flag);
-		}
-
 		/* If the monster doesn't match or the slay flag does */
 		if ((s_ptr->brand && !(r_ptr->flags[2] & s_ptr->resist_flag)) || 
 			(r_ptr->flags[2] & s_ptr->monster_flag))
 		{
-			if (mult < s_ptr->mult)
-				mult = s_ptr->mult;
+			/* notice any brand or slay that would affect the monster */
+			object_notice_slays(o_ptr, s_ptr->slay_flag);
+
+			if (mult < s_ptr->mult)	mult = s_ptr->mult;
 
 			/* Set the hit verb appropriately */
 			if (is_ranged)
 				*hit_verb = s_ptr->range_verb;
 			else
 				*hit_verb = s_ptr->melee_verb;
-
-			/* Print a cool message for branded rings et al */
-			if (s_ptr->active_verb && secondary)
-			{
-				char o_name[40];
-				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-				msg_format("Your %s %s!", o_name,
-						s_ptr->active_verb);
-			}
 		}
 	}
-	
+
 	return mult;
 }
 
@@ -354,14 +340,14 @@ void py_attack(int y, int x)
 				{
 					other_brand_mult[i] = get_brand_mult(
 						&inventory[i], m_ptr,
-						&hit_verb, FALSE, TRUE);
+						&hit_verb, FALSE);
 
 					if (other_brand_mult[i] > use_mult)
 						use_mult = other_brand_mult[i];
 				}
 
 				weapon_brand_mult = get_brand_mult(o_ptr,
-						m_ptr, &hit_verb, FALSE, FALSE);
+						m_ptr, &hit_verb, FALSE);
 
 				if (weapon_brand_mult > use_mult)
 					use_mult = weapon_brand_mult;
@@ -635,17 +621,17 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 
 			const char *hit_verb = "hits";
 
-			int ammo_mult = get_brand_mult(o_ptr, m_ptr,
-					&hit_verb, TRUE, FALSE);
-			int shoot_mult = get_brand_mult(j_ptr, m_ptr,
-					&hit_verb, TRUE, FALSE);
-
 			/* Note the collision */
 			hit_body = TRUE;
 
 			/* Did we hit it (penalize distance travelled) */
 			if (test_hit(chance2, r_ptr->ac, m_ptr->ml))
 			{
+				int ammo_mult = get_brand_mult(o_ptr, m_ptr,
+					&hit_verb, TRUE);
+				int shoot_mult = get_brand_mult(j_ptr, m_ptr,
+					&hit_verb, TRUE);
+
 				bool fear = FALSE;
 
 				/* Assume a default death */
@@ -1013,7 +999,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 
 				/* Apply special damage  - brought forward to fill in hit_verb XXX XXX XXX */
 				tdam *= get_brand_mult(i_ptr, m_ptr,
-						&hit_verb, TRUE, FALSE);
+						&hit_verb, TRUE);
 
 				/* Handle unseen monster */
 				if (!visible)

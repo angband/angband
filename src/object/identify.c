@@ -109,10 +109,10 @@ bool object_pval_is_visible(const object_type *o_ptr)
 {
 	u32b f[OBJ_FLAG_N];
 	object_flags(o_ptr, f);
-	
+
 	if (o_ptr->ident & IDENT_STORE)
 		return TRUE;
-	
+
 	if (f[0] & TR0_PVAL_MASK & o_ptr->known_flags[0])
 		return TRUE;
 	else
@@ -126,7 +126,7 @@ bool object_ego_is_visible(const object_type *o_ptr)
 {
 	if ((o_ptr->tval == TV_LITE) && (ego_item_p(o_ptr)))
 		return TRUE;
-	if ((o_ptr->ident & IDENT_EGO) || 
+	if ((o_ptr->ident & IDENT_EGO) ||
 	    ((o_ptr->ident & IDENT_STORE) && ego_item_p(o_ptr)))
 		return TRUE;
 	else
@@ -437,14 +437,26 @@ void object_notice_effect(object_type *o_ptr)
  */
 void object_notice_slays(object_type *o_ptr, u32b known_f0)
 {
-	u32b flags[OBJ_FLAG_N];
-	object_flags(o_ptr, flags);
+	const slay_t *s_ptr;
+	bool learned = object_notice_flags(o_ptr, 0, known_f0);
 
-	object_notice_flags(o_ptr, 0, known_f0);
-
-	/* if you learn a slay, learn the ego */
-	if (EASY_LEARN && (flags[0] & known_f0))
+	/* if you learn a slay, learn the ego and print a message */
+	if (EASY_LEARN && learned)
+	{
 		object_notice_ego(o_ptr);
+
+		for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
+		{
+                        if (s_ptr->slay_flag & known_f0)
+                        {
+                                char o_name[40];
+                                object_desc(o_name, sizeof(o_name), o_ptr,
+					ODESC_BASE);
+                                msg_format("Your %s %s!", o_name,
+                                                s_ptr->active_verb);
+                        }
+		}
+	}
 	object_check_for_ident(o_ptr);
 }
 
@@ -529,21 +541,22 @@ static const flag_message_t msgs[] =
 
 
 /*
- * Notice a set of flags
+ * Notice a set of flags - returns TRUE if anything new was learned
  *
  * this is non-standard -- everything else notices an individual flag
  */
-void object_notice_flags(object_type *o_ptr, int flagset, u32b flags)
+bool object_notice_flags(object_type *o_ptr, int flagset, u32b flags)
 {
 	if (flags & (~o_ptr->known_flags[flagset]))
 	{
 		o_ptr->known_flags[flagset] |= flags;
 		/* XXX Eddie don't want infinite recursion if object_check_for_ident sets more flags, but maybe this will interfere with savefile repair */
 		object_check_for_ident(o_ptr);
+		event_signal(EVENT_INVENTORY);
+		event_signal(EVENT_EQUIPMENT);
+		return TRUE;
 	}
-
-	event_signal(EVENT_INVENTORY);
-	event_signal(EVENT_EQUIPMENT);
+	return FALSE;
 }
 
 
@@ -612,7 +625,7 @@ void object_notice_on_wield(object_type *o_ptr)
 	object_flavor_tried(o_ptr);
 	if (object_add_ident_flags(o_ptr, IDENT_WORN))
 		object_check_for_ident(o_ptr);
-	
+
 	if (obj_is_lite(o_ptr) && ego_item_p(o_ptr))
 		object_notice_ego(o_ptr);
 
@@ -836,12 +849,12 @@ void wieldeds_notice_flag(int flagset, u32b flag)
 			/* Notice that flag is absent */
 			object_notice_flags(o_ptr, flagset, flag);
 		}
-		
+
 		/* XXX Eddie should not need this, should be done in noticing, but will remove later */
 		object_check_for_ident(o_ptr);
-		
-	}	
-	
+
+	}
+
 	return;
 }
 
@@ -862,21 +875,6 @@ void wieldeds_notice_on_attack(void)
 
 	return;
 }
-
-
-/*
- * Notice slays on wielded items other than melee and bow slots.
- *
- * \param known_f0 is the list of flags to notice
- */
-void wieldeds_notice_slays(u32b known_f0)
-{
-	int i;
-	
-	for (i = INVEN_WIELD+2; i < INVEN_TOTAL; i++)
-		object_notice_slays(&inventory[i], known_f0);
-}
-
 
 
 /*
@@ -955,16 +953,16 @@ void sense_inventory(void)
 		object_last_wield = 0;
 	}
 
-	
+
 	/* Get improvement rate */
 	if (cp_ptr->flags & CF_PSEUDO_ID_IMPROV)
 		rate = cp_ptr->sense_base / (p_ptr->lev * p_ptr->lev + cp_ptr->sense_div);
 	else
 		rate = cp_ptr->sense_base / (p_ptr->lev + cp_ptr->sense_div);
-	
+
 	if (!one_in_(rate)) return;
-	
-	
+
+
 	/* Check everything */
 	for (i = 0; i < INVEN_TOTAL; i++)
 	{
@@ -973,12 +971,12 @@ void sense_inventory(void)
 		object_type *o_ptr = &inventory[i];
 		obj_pseudo_t feel;
 		bool cursed;
-		
+
 		bool okay = FALSE;
-		
+
 		/* Skip empty slots */
 		if (!o_ptr->k_idx) continue;
-		
+
 		/* Valid "tval" codes */
 		switch (o_ptr->tval)
 		{
