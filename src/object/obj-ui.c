@@ -188,7 +188,7 @@ void show_inven(olist_detail_t mode)
 
 	/* Count the number of missiles in the quiver */
 	ammo_count = 0;
-	for (i=0; i < QUIVER_END; i++)
+	for (i=QUIVER_START; i < QUIVER_END; i++)
 		if (inventory[i].k_idx)
 			ammo_count += inventory[i].number;
 
