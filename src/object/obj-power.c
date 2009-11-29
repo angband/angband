@@ -758,19 +758,25 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		}
 	}
 	
-#define ADD_POWER(string, val, flag, flgnum, extra) \
+#define ADD_POWER1(string, val, flag, flgnum) \
+	if (f[flgnum] & flag) { \
+		p += (val); \
+		LOG_PRINT1("Adding power for " string ", total is %d\n", p); \
+	}
+
+#define ADD_POWER2(string, val, flag, flgnum, extra) \
 	if (f[flgnum] & flag) { \
 		p += (val); \
 		extra; \
 		LOG_PRINT1("Adding power for " string ", total is %d\n", p); \
 	}
 
-	ADD_POWER("sustain STR",         9, TR1_SUST_STR, 1, sustains++);
-	ADD_POWER("sustain INT",         4, TR1_SUST_INT, 1, sustains++);
-	ADD_POWER("sustain WIS",         4, TR1_SUST_WIS, 1, sustains++);
-	ADD_POWER("sustain DEX",         7, TR1_SUST_DEX, 1, sustains++);
-	ADD_POWER("sustain CON",         8, TR1_SUST_CON, 1, sustains++);
-	ADD_POWER("sustain CHR",         1, TR1_SUST_CHR, 1, );
+	ADD_POWER2("sustain STR",         9, TR1_SUST_STR, 1, sustains++);
+	ADD_POWER2("sustain INT",         4, TR1_SUST_INT, 1, sustains++);
+	ADD_POWER2("sustain WIS",         4, TR1_SUST_WIS, 1, sustains++);
+	ADD_POWER2("sustain DEX",         7, TR1_SUST_DEX, 1, sustains++);
+	ADD_POWER2("sustain CON",         8, TR1_SUST_CON, 1, sustains++);
+	ADD_POWER1("sustain CHR",         1, TR1_SUST_CHR, 1);
 
 	for (i = 2; i <= sustains; i++)
 	{
@@ -783,10 +789,10 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		}
 	}
 	
-	ADD_POWER("acid immunity",      38, TR1_IM_ACID,  1, immunities++);
-	ADD_POWER("elec immunity",      35, TR1_IM_ELEC,  1, immunities++);
-	ADD_POWER("fire immunity",      40, TR1_IM_FIRE,  1, immunities++);
-	ADD_POWER("cold immunity",      37, TR1_IM_COLD,  1, immunities++);
+	ADD_POWER2("acid immunity",      38, TR1_IM_ACID,  1, immunities++);
+	ADD_POWER2("elec immunity",      35, TR1_IM_ELEC,  1, immunities++);
+	ADD_POWER2("fire immunity",      40, TR1_IM_FIRE,  1, immunities++);
+	ADD_POWER2("cold immunity",      37, TR1_IM_COLD,  1, immunities++);
 
 	for (i = 2; i <= immunities; i++)
 	{
@@ -799,32 +805,32 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		}
 	}
 
-	ADD_POWER("free action",           14, TR2_FREE_ACT,    2, misc++);
-	ADD_POWER("hold life",             12, TR2_HOLD_LIFE,   2, misc++);
-	ADD_POWER("feather fall",           1, TR2_FEATHER,     2, );
-	ADD_POWER("permanent light",        3, TR2_LITE,        2, misc++);
-	ADD_POWER("see invisible",         10, TR2_SEE_INVIS,   2, misc++);
-	ADD_POWER("telepathy",             70, TR2_TELEPATHY,   2, misc++);
-	ADD_POWER("slow digestion",         2, TR2_SLOW_DIGEST, 2, misc++);
-	ADD_POWER("resist acid",            5, TR1_RES_ACID,    1, lowres++);
-	ADD_POWER("resist elec",            6, TR1_RES_ELEC,    1, lowres++);
-	ADD_POWER("resist fire",            6, TR1_RES_FIRE,    1, lowres++);
-	ADD_POWER("resist cold",            6, TR1_RES_COLD,    1, lowres++);
-	ADD_POWER("resist poison",         28, TR1_RES_POIS,    1, highres++);
-	ADD_POWER("resist fear",            6, TR1_RES_FEAR,    1, highres++);
-	ADD_POWER("resist light",           6, TR1_RES_LITE,    1, highres++);
-	ADD_POWER("resist dark",           16, TR1_RES_DARK,    1, highres++);
-	ADD_POWER("resist blindness",      16, TR1_RES_BLIND,   1, highres++);
-	ADD_POWER("resist confusion",      24, TR1_RES_CONFU,   1, highres++);
-	ADD_POWER("resist sound",          14, TR1_RES_SOUND,   1, highres++);
-	ADD_POWER("resist shards",          8, TR1_RES_SHARD,   1, highres++);
-	ADD_POWER("resist nexus",          15, TR1_RES_NEXUS,   1, highres++);
-	ADD_POWER("resist nether",         20, TR1_RES_NETHR,   1, highres++);
-	ADD_POWER("resist chaos",          20, TR1_RES_CHAOS,   1, highres++);
-	ADD_POWER("resist disenchantment", 20, TR1_RES_DISEN,   1, highres++);
-	ADD_POWER("regeneration",           9, TR2_REGEN,       2, misc++);
-	ADD_POWER("blessed",                1, TR2_BLESSED,     2, );
-	ADD_POWER("no fuel",                5, TR2_NO_FUEL,     2, );
+	ADD_POWER2("free action",           14, TR2_FREE_ACT,    2, misc++);
+	ADD_POWER2("hold life",             12, TR2_HOLD_LIFE,   2, misc++);
+	ADD_POWER1("feather fall",           1, TR2_FEATHER,     2);
+	ADD_POWER2("permanent light",        3, TR2_LITE,        2, misc++);
+	ADD_POWER2("see invisible",         10, TR2_SEE_INVIS,   2, misc++);
+	ADD_POWER2("telepathy",             70, TR2_TELEPATHY,   2, misc++);
+	ADD_POWER2("slow digestion",         2, TR2_SLOW_DIGEST, 2, misc++);
+	ADD_POWER2("resist acid",            5, TR1_RES_ACID,    1, lowres++);
+	ADD_POWER2("resist elec",            6, TR1_RES_ELEC,    1, lowres++);
+	ADD_POWER2("resist fire",            6, TR1_RES_FIRE,    1, lowres++);
+	ADD_POWER2("resist cold",            6, TR1_RES_COLD,    1, lowres++);
+	ADD_POWER2("resist poison",         28, TR1_RES_POIS,    1, highres++);
+	ADD_POWER2("resist fear",            6, TR1_RES_FEAR,    1, highres++);
+	ADD_POWER2("resist light",           6, TR1_RES_LITE,    1, highres++);
+	ADD_POWER2("resist dark",           16, TR1_RES_DARK,    1, highres++);
+	ADD_POWER2("resist blindness",      16, TR1_RES_BLIND,   1, highres++);
+	ADD_POWER2("resist confusion",      24, TR1_RES_CONFU,   1, highres++);
+	ADD_POWER2("resist sound",          14, TR1_RES_SOUND,   1, highres++);
+	ADD_POWER2("resist shards",          8, TR1_RES_SHARD,   1, highres++);
+	ADD_POWER2("resist nexus",          15, TR1_RES_NEXUS,   1, highres++);
+	ADD_POWER2("resist nether",         20, TR1_RES_NETHR,   1, highres++);
+	ADD_POWER2("resist chaos",          20, TR1_RES_CHAOS,   1, highres++);
+	ADD_POWER2("resist disenchantment", 20, TR1_RES_DISEN,   1, highres++);
+	ADD_POWER2("regeneration",           9, TR2_REGEN,       2, misc++);
+	ADD_POWER1("blessed",                1, TR2_BLESSED,     2);
+	ADD_POWER1("no fuel",                5, TR2_NO_FUEL,     2);
 
 	for (i = 2; i <= misc; i++)
 	{
