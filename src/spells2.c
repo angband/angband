@@ -1325,7 +1325,7 @@ bool enchant(object_type *o_ptr, int n, int eflag)
 	p_ptr->update |= (PU_BONUS);
 
 	/* Combine / Reorder the pack (later) */
-	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+	p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
 
 	/* Redraw stuff */
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP );
@@ -3062,7 +3062,7 @@ void brand_object(object_type *o_ptr, byte brand_type)
 		object_notice_ego(o_ptr);
 
 		/* Combine / Reorder the pack (later) */
-		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+		p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
 
 		/* Window stuff */
 		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
@@ -3275,7 +3275,7 @@ void do_ident_item(int item, object_type *o_ptr)
 	p_ptr->update |= (PU_BONUS);
 
 	/* Combine / Reorder the pack (later) */
-	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+	p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
 
 	/* Window stuff */
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);

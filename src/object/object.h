@@ -200,6 +200,7 @@ s16b inven_takeoff(int item, int amt);
 void inven_drop(int item, int amt);
 void combine_pack(void);
 void reorder_pack(void);
+void sort_quiver(void);
 void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt);
 void reduce_charges(object_type *o_ptr, int amt);
 unsigned check_for_inscrip(const object_type *o_ptr, const char *inscrip);

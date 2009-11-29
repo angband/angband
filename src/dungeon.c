@@ -1428,7 +1428,7 @@ static void dungeon(void)
 	p_ptr->update |= (PU_BONUS | PU_HP | PU_MANA | PU_SPELLS);
 
 	/* Combine / Reorder the pack */
-	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+	p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
 
 	/* Make basic mouse buttons */
 	(void) button_add("[ESC]", ESCAPE);

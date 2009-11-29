@@ -205,7 +205,7 @@ void do_cmd_uninscribe(cmd_code code, cmd_arg args[])
 
 	o_ptr->note = 0;
 
-	p_ptr->notice |= (PN_COMBINE | PN_SQUELCH);
+	p_ptr->notice |= (PN_COMBINE | PN_SQUELCH | PN_SORT_QUIVER);
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 }
 
@@ -216,7 +216,7 @@ void do_cmd_inscribe(cmd_code code, cmd_arg args[])
 	
 	o_ptr->note = quark_add(args[1].string);
 
-	p_ptr->notice |= (PN_COMBINE | PN_SQUELCH);
+	p_ptr->notice |= (PN_COMBINE | PN_SQUELCH | PN_SORT_QUIVER);
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 }
 

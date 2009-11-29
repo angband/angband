@@ -704,7 +704,7 @@ void squelch_items(void)
 		               count, ((count > 1) ? "s" : ""));
 
 		/* Combine/reorder the pack */
-		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+		p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
 	}
 }
 

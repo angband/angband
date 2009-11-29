@@ -1079,7 +1079,7 @@ void sense_inventory(void)
 		
 		
 		/* Combine / Reorder the pack (later) */
-		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+		p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
 		
 		/* Redraw stuff */
 		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);

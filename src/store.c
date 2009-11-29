@@ -2066,7 +2066,7 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 	object_notice_everything(i_ptr);
 
 	/* Combine / Reorder the pack (later) */
-	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+	p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
 
 	/* The object no longer belongs to the store */
 	i_ptr->ident &= ~(IDENT_STORE);
@@ -2400,7 +2400,7 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 		history_add_artifact(o_ptr->name1, TRUE);
 	
 	/* Combine / Reorder the pack (later) */
-	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+	p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
 	
 	/* Redraw stuff */
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);

@@ -1339,6 +1339,13 @@ void notice_stuff(void)
 		p_ptr->notice &= ~(PN_REORDER);
 		reorder_pack();
 	}
+
+	/* Sort the quiver */
+	if (p_ptr->notice & PN_SORT_QUIVER)
+	{
+		p_ptr->notice &= ~(PN_SORT_QUIVER);
+		sort_quiver();
+	}
 }
 
 /*
