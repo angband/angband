@@ -340,7 +340,7 @@ void show_equip(olist_detail_t mode)
    b = INVEN_WIELD;
 
 	/* Output each entry */
-	for (j = 0; j <= last; j++, b++)
+	for (j = 0; j + INVEN_WIELD < ALL_INVEN_TOTAL; j++, b++)
 	{
 		u32b price;
 		int ralign, wgt;
@@ -356,6 +356,9 @@ void show_equip(olist_detail_t mode)
 
 		/* Clear the line */
 		prt("", y, col ? col - 2 : col);
+
+		/* All we need to do is clear the line if we passed the last entry */
+		if (j > last) continue;
 
 		/* There is an empty line between regular equipment and the quiver */
 		if (j + INVEN_WIELD == INVEN_TOTAL) continue;
