@@ -513,7 +513,7 @@ static void player_wipe(void)
 	p_ptr->resting_turn = 0;
 }
 
-/*
+/**
  * Try to wield everything wieldable in the inventory.
  */
 static void wield_all(void)
@@ -524,29 +524,38 @@ static void wield_all(void)
 
 	int slot;
 	int item;
+	int num;
+	bool is_ammo;
 
 	/* Scan through the slots backwards */
 	for (item = INVEN_PACK - 1; item >= 0; item--)
 	{
 		o_ptr = &inventory[item];
+		is_ammo = obj_is_ammo(o_ptr);
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
 
-		/* Make sure we can wield it and that there's nothing else in that slot */
+		/* Make sure we can wield it */
 		slot = wield_slot(o_ptr);
 		if (slot < INVEN_WIELD) continue;
-		if (inventory[slot].k_idx) continue;
+
+		/* Make sure that there's an available slot */
+		if (is_ammo && !object_similar(o_ptr, &inventory[slot])) continue;
+		if (!is_ammo && inventory[slot].k_idx) continue;
+
+		/* Figure out how much of the item we'll be wielding */
+		num = obj_is_ammo(o_ptr) ? o_ptr->number : 1;
 
 		/* Get local object */
 		i_ptr = &object_type_body;
 		object_copy(i_ptr, o_ptr);
 
 		/* Modify quantity */
-		i_ptr->number = 1;
+		i_ptr->number = num;
 
 		/* Decrease the item (from the pack) */
-		inven_item_increase(item, -1);
+		inven_item_increase(item, -num);
 		inven_item_optimize(item);
 
 		/* Get the wield slot */
