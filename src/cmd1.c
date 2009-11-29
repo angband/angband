@@ -245,7 +245,7 @@ static bool auto_pickup_okay(const object_type *o_ptr)
  */
 static void py_pickup_aux(int o_idx, bool msg)
 {
-	int slot;
+	int slot, quiver_slot = 0;
 
 	char o_name[80];
 	object_type *o_ptr = &o_list[o_idx];
@@ -256,6 +256,18 @@ static void py_pickup_aux(int o_idx, bool msg)
 	/* Handle errors (paranoia) */
 	if (slot < 0) return;
 
+	/* If we have picked up ammo which matches something in the quiver, note
+	 * that it so that we can wield it later (and suppress pick up message) */
+	if (obj_is_ammo(o_ptr)) {
+		int i;
+		for (i=QUIVER_START; i < QUIVER_END; i++) {
+			if (!inventory[i].k_idx) continue;
+			if (!object_similar(&inventory[i], o_ptr)) continue;
+			quiver_slot = i;
+			break;
+		}
+	}
+
 	/* Get the new object */
 	o_ptr = &inventory[slot];
 
@@ -263,7 +275,7 @@ static void py_pickup_aux(int o_idx, bool msg)
 	p_ptr->notice |= PN_SQUELCH;
 
 	/* Optionally, display a message */
-	if (msg)
+	if (msg && !quiver_slot)
 	{
 		/* Describe the object */
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
@@ -279,17 +291,8 @@ static void py_pickup_aux(int o_idx, bool msg)
 	/* Delete the object */
 	delete_object_idx(o_idx);
 
-	/* If we have picked up ammo which matches something in the quiver, then
-	 * we should go ahead and wield it (which will automatically group it
-	 * correctly. */
-	if (obj_is_ammo(o_ptr)) {
-		int i;
-		for (i=QUIVER_START; i < QUIVER_END; i++) {
-			if (!inventory[i].k_idx) continue;
-			if (object_similar(&inventory[i], o_ptr))
-				wield_item(o_ptr, slot, i);
-		}
-	}
+	/* If we have a quiver slot that this ammo matches, use it */
+	if (quiver_slot) wield_item(o_ptr, slot, quiver_slot);
 }
 
 
