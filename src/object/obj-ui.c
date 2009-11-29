@@ -227,7 +227,7 @@ void show_equip(olist_detail_t mode)
 {
 	int i, j, k, l, b = 0;
 	int col, row, r_col, len = 0, lim, ex_wid = 0;
-	int last = 0;
+	int x, y, last = 0;
 
 	object_type *o_ptr;
 	char o_name[80];
@@ -351,11 +351,14 @@ void show_equip(olist_detail_t mode)
 		/* Get the item */
 		o_ptr = &inventory[i];
 
+		/* Display row */
+		y = row + j;
+
 		/* Clear the line */
-		prt("", row + j, col ? col - 2 : col);
+		prt("", y, col ? col - 2 : col);
 
 		/* There is an empty line between regular equipment and the quiver */
-		if (i == INVEN_TOTAL) continue;
+		if (j + INVEN_WIELD == INVEN_TOTAL) continue;
 
 		/* Prepare an index --(-- */
 		if (i > -1)
@@ -366,26 +369,32 @@ void show_equip(olist_detail_t mode)
 			strnfmt(tmp_val, sizeof(tmp_val), "%c)", index_to_label(i));
 
 			/* Clear the line with the (possibly indented) index */
-			put_str(tmp_val, row + j, col);
+			put_str(tmp_val, y, col);
 		}
+
+		/* Display column */
+		x = col + 3;
 
 		/* Use labels */
 		if (OPT(show_labels))
 		{
 			/* Mention the use */
 			strnfmt(tmp_val, sizeof(tmp_val), "%-14s: ", mention_use(b));
-			put_str(tmp_val, row + j, col + 3);
-
-			/* Display the entry itself */
-			c_put_str(out_color[j], out_desc[j], row + j, col + 3 + 14 + 2);
+			put_str(tmp_val, y, x);
+			x += 14 + 2;
 		}
 
-		/* No labels */
-		else
+		/* Only "quiver labels" */
+		else if (i >= QUIVER_START)
 		{
-			/* Display the entry itself */
-			c_put_str(out_color[j], out_desc[j], row + j, col + 3);
+			strnfmt(tmp_val, sizeof(tmp_val), "[f%d] ", i - QUIVER_START);
+			put_str(tmp_val, y, x);
+			x += 4 + 1;
 		}
+
+		/* Display the entry itself */
+		c_put_str(out_color[j], out_desc[j], y, x);
+
 
 		/* Display extra fields */
 		ralign = r_col;
@@ -394,14 +403,14 @@ void show_equip(olist_detail_t mode)
 			ralign -= 9;
 			wgt = o_ptr->weight * o_ptr->number;
 			strnfmt(tmp_val, sizeof(tmp_val), "%3d.%1d lb", wgt / 10, wgt % 10);
-			put_str(tmp_val, row + j, ralign);
+			put_str(tmp_val, y, ralign);
 		}
 		if (mode & OLIST_PRICE)
 		{
 			ralign -= 9;
 			price = price_item(o_ptr, TRUE, o_ptr->number);
 			strnfmt(tmp_val, sizeof(tmp_val), "%5d au", price);
-			put_str(tmp_val, row + j, ralign);
+			put_str(tmp_val, y, ralign);
 		}
 	}
 
