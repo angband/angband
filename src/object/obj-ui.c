@@ -289,7 +289,7 @@ void show_equip(olist_detail_t mode)
 		}
 
 		/* Save the last slot that should be displayed */
-		if (i < INVEN_TOTAL - 1 || o_ptr->k_idx) last = k;
+		if (i < INVEN_TOTAL || o_ptr->k_idx) last = k;
 
 		/* Description */
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
@@ -357,8 +357,15 @@ void show_equip(olist_detail_t mode)
 		/* Clear the line */
 		prt("", y, col ? col - 2 : col);
 
-		/* All we need to do is clear the line if we passed the last entry */
-		if (j > last) continue;
+		/* If we're in a term window, we need to blank the successive lines.
+		 * otherwise, we need to break so as not to obscure more of the map
+		 * than necessary.
+		 */
+		if (j > last)
+		{
+			if (mode & OLIST_WINDOW) continue;
+			else break;
+		}
 
 		/* There is an empty line between regular equipment and the quiver */
 		if (j + INVEN_WIELD == INVEN_TOTAL) continue;
