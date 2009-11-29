@@ -167,7 +167,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	}
 
 	/* Increase the weight */
-	p_ptr->total_weight += i_ptr->weight;
+	p_ptr->total_weight += i_ptr->weight * num;
 
 	/* Do any ID-on-wield */
 	object_notice_on_wield(o_ptr);
