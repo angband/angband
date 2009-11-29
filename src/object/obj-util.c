@@ -2384,16 +2384,16 @@ void sort_quiver(void)
 	/* Ammo slots go from 0-9; these indices correspond to the range of
 	 * (QUIVER_START) - (QUIVER_END-1) in inventory[].
 	 */
-	bool locked[10] = {FALSE, FALSE, FALSE, FALSE, FALSE,
-					   FALSE, FALSE, FALSE, FALSE, FALSE};
-	int desired[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+	bool locked[QUIVER_SIZE] = {FALSE, FALSE, FALSE, FALSE, FALSE,
+								FALSE, FALSE, FALSE, FALSE, FALSE};
+	int desired[QUIVER_SIZE] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 	int i, j, k;
 	object_type *o_ptr;
 
 	/* Here we figure out which slots have inscribed ammo, and whether that
 	 * ammo is already in the slot it "wants" to be in or not.
 	 */
-	for (i=0; i < 10; i++)
+	for (i=0; i < QUIVER_SIZE; i++)
 	{
 		j = QUIVER_START + i;
 		o_ptr = &inventory[j];
@@ -2413,7 +2413,7 @@ void sort_quiver(void)
 	/* For items which had a preference that was not fulfilled, we will swap
 	 * them into the slot as long as it isn't already locked.
 	 */
-	for (i=0; i < 10; i++)
+	for (i=0; i < QUIVER_SIZE; i++)
 	{
 		if (locked[i] || desired[i] < 0) continue;
 
@@ -2424,13 +2424,13 @@ void sort_quiver(void)
 
 	/* Now we need to compact ammo which isn't in a preferrred slot towards the
 	 * "front" of the quiver */
-	for (i=0; i < 10; i++)
+	for (i=0; i < QUIVER_SIZE; i++)
 	{
 		/* If the slot isn't empty, skip it */
 		if (inventory[QUIVER_START + i].k_idx) continue;
 
 		/* Start from the end and find an unlocked item to put here. */
-		for (j=10; j > i; j--)
+		for (j=QUIVER_SIZE; j > i; j--)
 		{
 			if (!inventory[QUIVER_START + j].k_idx || locked[j]) continue;
 			swap_quiver_slots(i, j);
@@ -2439,10 +2439,10 @@ void sort_quiver(void)
 	}
 
 	/* Now we will sort all other ammo using a simple insertion sort */
-	for (i=0; i < 10; i++)
+	for (i=0; i < QUIVER_SIZE; i++)
 	{
 		k = i;
-		for (j=i + 1; j < 10; j++) if (compare_ammo(k, j) > 0) k = j;
+		for (j=i + 1; j < QUIVER_SIZE; j++) if (compare_ammo(k, j) > 0) k = j;
 		if (k != i) swap_quiver_slots(i, k);
 	}
 }
