@@ -210,6 +210,7 @@ void show_equip(olist_detail_t mode)
 {
 	int i, j, k, l, b = 0;
 	int col, row, r_col, len = 0, lim, ex_wid = 0;
+	int last = 0;
 
 	object_type *o_ptr;
 	char o_name[80];
@@ -244,7 +245,7 @@ void show_equip(olist_detail_t mode)
 		lim = 79;
 
 	/* Scan the equipment list */
-	for (k = 0, i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+	for (k = 0, i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
 		o_ptr = &inventory[i];
 
@@ -269,6 +270,9 @@ void show_equip(olist_detail_t mode)
 			/* Acceptable, so save the index */
 			out_index[k] = i;
 		}
+
+		/* Save the last slot that should be displayed */
+		if (i < INVEN_TOTAL - 1 || o_ptr->k_idx) last = k;
 
 		/* Description */
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
@@ -319,7 +323,7 @@ void show_equip(olist_detail_t mode)
    b = INVEN_WIELD;
 
 	/* Output each entry */
-	for (j = 0; j < k; j++, b++)
+	for (j = 0; j <= last; j++, b++)
 	{
 		u32b price;
 		int ralign, wgt;
@@ -332,6 +336,9 @@ void show_equip(olist_detail_t mode)
 
 		/* Clear the line */
 		prt("", row + j, col ? col - 2 : col);
+
+		/* There is an empty line between regular equipment and the quiver */
+		if (i == INVEN_TOTAL) continue;
 
 		/* Prepare an index --(-- */
 		if (i > -1)
@@ -596,9 +603,20 @@ static int get_tag(int *cp, char tag)
 	int i;
 	cptr s;
 
+	/* (f)ire is handled differently from all others, due to the quiver */
+	if (p_ptr->command_cmd == 'f')
+	{
+		i = QUIVER_START + tag - '0';
+		if (inventory[i].k_idx)
+		{
+			*cp = i;
+			return (TRUE);
+		}
+		return (FALSE);
+	}
 
 	/* Check every object */
-	for (i = 0; i < INVEN_TOTAL; ++i)
+	for (i = 0; i < ALL_INVEN_TOTAL; ++i)
 	{
 		object_type *o_ptr = &inventory[i];
 
@@ -763,7 +781,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 	/* Full equipment */
 	e1 = INVEN_WIELD;
-	e2 = INVEN_TOTAL - 1;
+	e2 = ALL_INVEN_TOTAL - 1;
 
 	/* Forbid equipment */
 	if (!use_equip) e2 = -1;
@@ -1224,6 +1242,10 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 					k = i1;
 				}
+
+				/* Choose the "default" slot (0) of the quiver */
+				else if(p_ptr->command_cmd == 'f')
+					k = e1;
 
 				/* Choose "default" equipment item */
 				else if (p_ptr->command_wrk == USE_EQUIP)

@@ -604,7 +604,7 @@ int rd_artifacts(u32b version)
 		anywhere = C_ZNEW(z_info->a_max, bool);
 
 		/* All inventory/home artifacts need to be marked as seen */
-		for (i = 0; i < INVEN_TOTAL; i++)
+		for (i = 0; i < ALL_INVEN_TOTAL; i++)
 		{
 			o_ptr = &o_list[i];
 			if (object_is_known_artifact(o_ptr))
@@ -1130,7 +1130,7 @@ int rd_inventory(u32b version)
 		if (!i_ptr->k_idx) continue;;
 
 		/* Verify slot */
-		if (n >= INVEN_TOTAL) return (-1);
+		if (n >= ALL_INVEN_TOTAL) return (-1);
 
 		/* Wield equipment */
 		if (n >= INVEN_WIELD)

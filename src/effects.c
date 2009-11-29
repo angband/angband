@@ -473,12 +473,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			/* Pick a random stat to decrease other than strength */
 			int stat = randint0(A_MAX-1) + 1;
 			
-			if (do_dec_stat(stat, TRUE))
-			{
-				do_inc_stat(A_STR);
-				*ident = TRUE;
-			}
-
+			if (!do_dec_stat(stat, TRUE)) return FALSE;
+			if (do_inc_stat(A_STR)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -488,12 +484,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			int stat = randint0(A_MAX-1);
 			if (stat >= A_INT) stat++;
 			
-			if (do_dec_stat(stat, TRUE))
-			{
-				do_inc_stat(A_INT);
-				*ident = TRUE;
-			}
-
+			if (!do_dec_stat(stat, TRUE)) return FALSE;
+			if (do_inc_stat(A_INT)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -503,12 +495,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			int stat = randint0(A_MAX-1);
 			if (stat >= A_WIS) stat++;
 			
-			if (do_dec_stat(stat, TRUE))
-			{
-				do_inc_stat(A_WIS);
-				*ident = TRUE;
-			}
-
+			if (!do_dec_stat(stat, TRUE)) return FALSE;
+			if (do_inc_stat(A_WIS)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -518,12 +506,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			int stat = randint0(A_MAX-1);
 			if (stat >= A_CON) stat++;
 			
-			if (do_dec_stat(stat, TRUE))
-			{
-				do_inc_stat(A_CON);
-				*ident = TRUE;
-			}
-
+			if (!do_dec_stat(stat, TRUE)) return FALSE;
+			if (do_inc_stat(A_CON)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -533,12 +517,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			int stat = randint0(A_MAX-1);
 			if (stat >= A_DEX) stat++;
 			
-			if (do_dec_stat(stat, TRUE))
-			{
-				do_inc_stat(A_DEX);
-				*ident = TRUE;
-			}
-
+			if (!do_dec_stat(stat, TRUE)) return FALSE;
+			if (do_inc_stat(A_DEX)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -547,12 +527,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			/* Pick a random stat to decrease other than charisma */
 			int stat = randint0(A_MAX-1);
 			
-			if (do_dec_stat(stat, TRUE))
-			{
-				do_inc_stat(A_CHR);
-				*ident = TRUE;
-			}
-
+			if (!do_dec_stat(stat, TRUE)) return FALSE;
+			if (do_inc_stat(A_CHR)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -617,7 +593,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_RESTORE_ALL:
 		{
-			/* Life, above, also gives these effects */
 			if (do_res_stat(A_STR)) *ident = TRUE;
 			if (do_res_stat(A_INT)) *ident = TRUE;
 			if (do_res_stat(A_WIS)) *ident = TRUE;

@@ -108,8 +108,18 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	object_type object_type_body;
 	object_type *i_ptr = &object_type_body;
 
-	cptr act;
+	cptr fmt;
 	char o_name[80];
+
+	bool combined_ammo = FALSE;
+	int num = 1;
+
+	/* If we are stacking ammo in the quiver */
+	if (obj_is_ammo(o_ptr))
+	{
+		num = o_ptr->number;
+		combined_ammo = object_similar(o_ptr, &inventory[slot]);
+	}
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
@@ -118,19 +128,19 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	object_copy(i_ptr, o_ptr);
 
 	/* Modify quantity */
-	i_ptr->number = 1;
+	i_ptr->number = num;
 
 	/* Decrease the item (from the pack) */
 	if (item >= 0)
 	{
-		inven_item_increase(item, -1);
+		inven_item_increase(item, -num);
 		inven_item_optimize(item);
 	}
 
 	/* Decrease the item (from the floor) */
 	else
 	{
-		floor_item_increase(0 - item, -1);
+		floor_item_increase(0 - item, -num);
 		floor_item_optimize(0 - item);
 	}
 
@@ -138,40 +148,50 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	o_ptr = &inventory[slot];
 
 	/* Take off existing item */
-	if (o_ptr->k_idx)
+	if (combined_ammo)
+	{
+		/* Add the new ammo to the already-quiver-ed ammo */
+		object_absorb(o_ptr, i_ptr);
+	}
+	else 
 	{
 		/* Take off existing item */
-		(void)inven_takeoff(slot, 255);
-	}
+		if (o_ptr->k_idx)
+			(void)inven_takeoff(slot, 255);
+	
+		/* Wear the new stuff */
+		object_copy(o_ptr, i_ptr);
 
-	/* Wear the new stuff */
-	object_copy(o_ptr, i_ptr);
+		/* Increment the equip counter by hand */
+		p_ptr->equip_cnt++;
+	}
 
 	/* Increase the weight */
 	p_ptr->total_weight += i_ptr->weight;
-
-	/* Increment the equip counter by hand */
-	p_ptr->equip_cnt++;
 
 	/* Do any ID-on-wield */
 	object_notice_on_wield(o_ptr);
 
 	/* Where is the item now */
 	if (slot == INVEN_WIELD)
-		act = "You are wielding";
+		fmt = "You are wielding %s (%c).";
 	else if (slot == INVEN_BOW)
-		act = "You are shooting with";
+		fmt = "You are shooting with %s (%c).";
 	else if (slot == INVEN_LITE)
-		act = "Your light source is";
+		fmt = "Your light source is %s (%c).";
+	else if (combined_ammo)
+		fmt = "Your combine %s in your quiver (%c).";
+	else if (slot >= QUIVER_START && slot < QUIVER_END)
+		fmt = "Your add %s to your quiver (%c).";
 	else
-		act = "You are wearing";
+		fmt = "You are wearing %s (%c).";
 
 	/* Describe the result */
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
 	sound(MSG_WIELD);
-	msg_format("%s %s (%c).", act, o_name, index_to_label(slot));
+	msg_format(fmt, o_name, index_to_label(slot));
 
 	/* Cursed! */
 	if (cursed_p(o_ptr))

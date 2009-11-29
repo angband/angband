@@ -278,6 +278,18 @@ static void py_pickup_aux(int o_idx, bool msg)
 
 	/* Delete the object */
 	delete_object_idx(o_idx);
+
+	/* If we have picked up ammo which matches something in the quiver, then
+	 * we should go ahead and wield it (which will automatically group it
+	 * correctly. */
+	if (obj_is_ammo(o_ptr)) {
+		int i;
+		for (i=QUIVER_START; i < QUIVER_END; i++) {
+			if (!inventory[i].k_idx) continue;
+			if (object_similar(&inventory[i], o_ptr))
+				wield_item(o_ptr, slot, i);
+		}
+	}
 }
 
 

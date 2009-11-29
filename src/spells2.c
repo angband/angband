@@ -252,7 +252,7 @@ void identify_pack(void)
 	int i;
 
 	/* Simply identify and know every item */
-	for (i = 0; i < INVEN_TOTAL; i++)
+	for (i = 0; i < ALL_INVEN_TOTAL; i++)
 	{
 		object_type *o_ptr = &inventory[i];
 

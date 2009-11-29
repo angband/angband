@@ -522,7 +522,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	dir = args[1].direction;
 
 	/* Check the item being fired is usable by the player. */
-	if (!item_is_available(item, NULL, (USE_INVEN | USE_FLOOR)))
+	if (!item_is_available(item, NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR)))
 	{
 		msg_format("That item is not within your reach.");
 		return;
@@ -779,8 +779,8 @@ void textui_cmd_fire(void)
 	object_type *j_ptr, *o_ptr;
 	int item;
 	int dir;
-	cptr q, s;
-
+	cptr q = "Fire which item? ";
+	cptr s = "You have nothing to fire.";
 
 	/* Get the "bow" (if any) */
 	j_ptr = &inventory[INVEN_BOW];
@@ -792,13 +792,12 @@ void textui_cmd_fire(void)
 		return;
 	}
 
-	/* Require proper missile */
+	/* Require proper missile; prefer the quiver */
 	item_tester_tval = p_ptr->state.ammo_tval;
+	p_ptr->command_wrk = USE_EQUIP;
 
 	/* Get an item */
-	q = "Fire which item? ";
-	s = "You have nothing to fire.";
-	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return;
+	if (!get_item(&item, q, s, (USE_INVEN | USE_EQUIP | USE_FLOOR))) return;
 
 	/* Get the object */
 	o_ptr = object_from_item_idx(item);

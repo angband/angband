@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "defines.h"
 #include "tvalsval.h"
 #include "effects.h"
 #include "game-cmd.h"
@@ -421,7 +422,8 @@ s16b label_to_equip(int c)
 	i = (islower((unsigned char)c) ? A2I(c) : -1) + INVEN_WIELD;
 
 	/* Verify the index */
-	if ((i < INVEN_WIELD) || (i >= INVEN_TOTAL)) return (-1);
+	if ((i < INVEN_WIELD) || (i >= ALL_INVEN_TOTAL)) return (-1);
+	if (i == INVEN_TOTAL) return (-1);
 
 	/* Empty slots can never be chosen */
 	if (!inventory[i].k_idx) return (-1);
@@ -458,18 +460,63 @@ bool wearable_p(const object_type *o_ptr)
 		case TV_DRAG_ARMOR:
 		case TV_LITE:
 		case TV_AMULET:
-		case TV_RING:
-		{
-			return (TRUE);
-		}
+		case TV_RING: return (TRUE);
 	}
 
 	/* Nope */
 	return (FALSE);
 }
 
-/*
- * Determine which equipment slot (if any) an item likes
+int get_inscribed_ammo_slot(const object_type *o_ptr)
+{
+	char *s;
+	if (!o_ptr->note) return 0;
+	s = strchr(quark_str(o_ptr->note), 'f');
+	if (!s || s[1] < '0' || s[1] > '9') return 0;
+
+	return QUIVER_START + (s[1] - '0');
+}
+
+/**
+ * Used by wield_slot() to find an appopriate slot for ammo. See wield_slot()
+ * for information on what this returns.
+ */
+s16b wield_slot_ammo(const object_type *o_ptr)
+{
+	s16b i, open = 0;
+
+	/* If the ammo is inscribed with a slot number, we'll try to put it in */
+	/* that slot, if possible. */
+	i = get_inscribed_ammo_slot(o_ptr);
+	if (i && !inventory[i].k_idx) return i;
+
+	for (i = QUIVER_START; i <= QUIVER_END; i++)
+	{
+		if (!inventory[i].k_idx)
+		{
+			/* Save the open slot if we haven't found one already */
+			if (!open) open = i;
+			continue;
+		}
+
+		/* If ammo is cursed we can't stack it */
+		if (cursed_p(&inventory[i])) continue;
+
+		/* If they are stackable, we'll use this slot for sure */
+		if (object_similar(&inventory[i], o_ptr)) return i;
+	}
+
+	/* If not absorbed, return an open slot (or QUIVER_START if no room) */
+	return open ? open : QUIVER_START;
+}
+
+/**
+ * Determine which equipment slot (if any) an item likes. The slot might (or
+ * might not) be open, but it is a slot which the object could be equipped in.
+ *
+ * For items where multiple slots could work (e.g. ammo or rings), the function
+ * will try to a return a stackable slot first (only for ammo), then an open
+ * slot if possible, and finally a used (but valid) slot if necessary.
  */
 s16b wield_slot(const object_type *o_ptr)
 {
@@ -479,67 +526,35 @@ s16b wield_slot(const object_type *o_ptr)
 		case TV_DIGGING:
 		case TV_HAFTED:
 		case TV_POLEARM:
-		case TV_SWORD:
-		{
-			return (INVEN_WIELD);
-		}
+		case TV_SWORD: return (INVEN_WIELD);
 
-		case TV_BOW:
-		{
-			return (INVEN_BOW);
-		}
+		case TV_BOW: return (INVEN_BOW);
 
 		case TV_RING:
-		{
-			/* Use the right hand first */
-			if (!inventory[INVEN_RIGHT].k_idx) return (INVEN_RIGHT);
+			return inventory[INVEN_RIGHT].k_idx ? INVEN_LEFT : INVEN_RIGHT;
 
-			/* Use the left hand for swapping (by default) */
-			return (INVEN_LEFT);
-		}
+		case TV_AMULET: return (INVEN_NECK);
 
-		case TV_AMULET:
-		{
-			return (INVEN_NECK);
-		}
-
-		case TV_LITE:
-		{
-			return (INVEN_LITE);
-		}
+		case TV_LITE: return (INVEN_LITE);
 
 		case TV_DRAG_ARMOR:
 		case TV_HARD_ARMOR:
-		case TV_SOFT_ARMOR:
-		{
-			return (INVEN_BODY);
-		}
+		case TV_SOFT_ARMOR: return (INVEN_BODY);
 
-		case TV_CLOAK:
-		{
-			return (INVEN_OUTER);
-		}
+		case TV_CLOAK: return (INVEN_OUTER);
 
-		case TV_SHIELD:
-		{
-			return (INVEN_ARM);
-		}
+		case TV_SHIELD: return (INVEN_ARM);
 
 		case TV_CROWN:
-		case TV_HELM:
-		{
-			return (INVEN_HEAD);
-		}
+		case TV_HELM: return (INVEN_HEAD);
 
-		case TV_GLOVES:
-		{
-			return (INVEN_HANDS);
-		}
+		case TV_GLOVES: return (INVEN_HANDS);
 
-		case TV_BOOTS:
-		{
-			return (INVEN_FEET);
-		}
+		case TV_BOOTS: return (INVEN_FEET);
+
+		case TV_BOLT:
+		case TV_ARROW:
+		case TV_SHOT: return wield_slot_ammo(o_ptr);
 	}
 
 	/* No slot available */
@@ -597,7 +612,21 @@ const char *mention_use(int slot)
 		case INVEN_HEAD:  return "On head";
 		case INVEN_HANDS: return "On hands";
 		case INVEN_FEET:  return "On feet";
+
+		case QUIVER_START + 0: return "In quiver [f0]";
+		case QUIVER_START + 1: return "In quiver [f1]";
+		case QUIVER_START + 2: return "In quiver [f2]";
+		case QUIVER_START + 3: return "In quiver [f3]";
+		case QUIVER_START + 4: return "In quiver [f4]";
+		case QUIVER_START + 5: return "In quiver [f5]";
+		case QUIVER_START + 6: return "In quiver [f6]";
+		case QUIVER_START + 7: return "In quiver [f7]";
+		case QUIVER_START + 8: return "In quiver [f8]";
+		case QUIVER_START + 9: return "In quiver [f9]";
 	}
+
+	/*if (slot >= QUIVER_START && slot < QUIVER_END)
+		return "In quiver";*/
 
 	return "In pack";
 }
@@ -1672,7 +1701,7 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 
 	/* Different flags */
 	for (i = 0; i < OBJ_FLAG_N; i++)
-		if (o_ptr->flags[i] != j_ptr->flags[i])
+		if (o_ptr->flags[i] != j_ptr->flags[1])
 			return FALSE;
 
 
@@ -2327,59 +2356,64 @@ void inven_item_increase(int item, int num)
 void inven_item_optimize(int item)
 {
 	object_type *o_ptr = &inventory[item];
+	int i, j, slot, limit;
 
-	/* Only optimize real items */
-	if (!o_ptr->k_idx) return;
+	/* Only optimize real items which are empty */
+	if (!o_ptr->k_idx || o_ptr->number) return;
 
-	/* Only optimize empty items */
-	if (o_ptr->number) return;
-
-	/* The item is in the pack */
+	/* Items in the pack are treated differently from other items */
 	if (item < INVEN_WIELD)
 	{
-		int i;
-
-		/* One less item */
 		p_ptr->inven_cnt--;
-
-		/* Slide everything down */
-		for (i = item; i < INVEN_PACK; i++)
-		{
-			/* Hack -- slide object */
-			COPY(&inventory[i], &inventory[i+1], object_type);
-		}
-
-		/* Hack -- wipe hole */
-		(void)WIPE(&inventory[i], object_type);
-
-		/* Redraw stuff */
-		p_ptr->redraw |= (PR_INVEN);
-
-		/* Inventory has changed, repeated command may use the wrong item */ 
-		cmd_disable_repeat();		
+		p_ptr->redraw |= PR_INVEN;
+		limit = INVEN_PACK;
 	}
 
-	/* The item is being wielded */
+	/* Items in the quiver and equipped items are (mostly) treated similarly */
 	else
 	{
-		/* One less item */
 		p_ptr->equip_cnt--;
+		p_ptr->redraw |= PR_EQUIP;
+		limit = item >= QUIVER_START ? QUIVER_END : 0;
+	}
 
+	/* If the item is equipped (but not in the quiver), there is no need to */
+	/* slide other items. Bonuses and such will need to be recalculated */
+	if (!limit)
+	{
 		/* Erase the empty slot */
 		object_wipe(&inventory[item]);
-
-		/* Recalculate bonuses */
+		
+		/* Recalculate stuff */
 		p_ptr->update |= (PU_BONUS);
-
-		/* Recalculate torch */
 		p_ptr->update |= (PU_TORCH);
-
-		/* Recalculate mana XXX */
 		p_ptr->update |= (PU_MANA);
-
-		/* Redraw stuff */
-		p_ptr->redraw |= (PR_EQUIP);
+		
+		return;
 	}
+
+	/* Slide everything down */
+	for (j = item, i = item + 1; i < limit; i++)
+	{
+		if (limit == QUIVER_END && inventory[i].k_idx)
+		{
+			/* If we have an item with an inscribed location (and it's in */
+			/* that location) then we won't move it. */
+			slot = get_inscribed_ammo_slot(&inventory[i]);
+			if (slot && slot == i)
+				continue;
+		}
+		COPY(&inventory[j], &inventory[i], object_type);
+		j = i;
+	}
+
+	if (item >= QUIVER_START) sort_quiver();
+
+	/* Wipe the left-over object on the end */
+	object_wipe(&inventory[j]);
+
+	/* Inventory has changed, so disable repeat command */ 
+	cmd_disable_repeat();
 }
 
 
@@ -2480,21 +2514,19 @@ bool inven_carry_okay(const object_type *o_ptr)
  */
 bool inven_stack_okay(const object_type *o_ptr)
 {
-	int j;
-
 	/* Similar slot? */
-	for (j = 0; j < INVEN_PACK; j++)
+	int j;
+	for (j = 0; j < ALL_INVEN_TOTAL; j++)
 	{
 		object_type *j_ptr = &inventory[j];
 
-		/* Skip non-objects */
+		/* Skip equipped items and non-objects */
+		if (j >= INVEN_PACK && j < QUIVER_START) continue;
 		if (!j_ptr->k_idx) continue;
 
 		/* Check if the two items can be combined */
 		if (object_similar(j_ptr, o_ptr)) return (TRUE);
 	}
-
-	/* Nope */
 	return (FALSE);
 }
 
@@ -3886,7 +3918,7 @@ int scan_items(int *item_list, size_t item_list_max, int mode)
 
 	if (use_equip)
 	{
-		for (i = INVEN_WIELD; i < INVEN_TOTAL && item_list_num < item_list_max; i++)
+		for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL && item_list_num < item_list_max; i++)
 		{
 			if (get_item_okay(i))
 				item_list[item_list_num++] = i;
@@ -3920,7 +3952,7 @@ int scan_items(int *item_list, size_t item_list_max, int mode)
  */
 bool item_is_available(int item, bool (*tester)(const object_type *), int mode)
 {
-	int item_list[INVEN_TOTAL + MAX_FLOOR_STACK];
+	int item_list[ALL_INVEN_TOTAL + MAX_FLOOR_STACK];
 	int item_num;
 	int i;
 
@@ -3937,4 +3969,81 @@ bool item_is_available(int item, bool (*tester)(const object_type *), int mode)
 	return FALSE;
 }
 
+/**
+ * Compare ammunition from slots (0-9); used for sorting.
+ *
+ * \returns -1 if slot1 should come first, 1 if slot2 should come first, or 0.
+ */
+int compare_ammo(int slot1, int slot2)
+{
+	/* Right now there is no sorting criteria */
+	return 0;
+}
 
+/**
+ * Swap ammunition between quiver slots (0-9).
+ */
+void swap_quiver_slots(int slot1, int slot2)
+{
+	int i = slot1 + QUIVER_START;
+	int j = slot2 + QUIVER_START;
+	object_type o;
+
+	object_copy(&o, &inventory[i]);
+	object_copy(&inventory[i], &inventory[j]);
+	object_copy(&inventory[j], &o);
+}
+
+/**
+ * Sorts the quiver--ammunition inscribed with @fN prefers to end up in quiver
+ * slot N.
+ */
+void sort_quiver(void)
+{
+	/* Ammo slots go from 0-9; these indices correspond to the range of
+	 * (QUIVER_START) - (QUIVER_END-1) in inventory[].
+	 */
+	bool locked[10] = {FALSE, FALSE, FALSE, FALSE, FALSE,
+					   FALSE, FALSE, FALSE, FALSE, FALSE};
+	int desired[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+	int i, j, k;
+	object_type *o_ptr;
+
+	/* Here we figure out which slots have inscribed ammo, and whether that
+	 * ammo is already in the slot it "wants" to be in or not.
+	 */
+	for (i=0; i < 10; i++)
+	{
+		j = QUIVER_START + i;
+		o_ptr = &inventory[j];
+
+		/* Skip this slot if it doesn't have ammo */
+		if (!o_ptr->k_idx) continue;
+
+		/* Figure out which slot this ammo prefers, if any */
+		k = get_inscribed_ammo_slot(o_ptr);
+		if (!k) continue;
+
+		k -= QUIVER_START;
+		if (k == i) locked[i] = TRUE;
+		if (!desired[k]) desired[k] = i;
+	}
+
+	/* For items which had a preference that was not fulfilled, we will swap
+	 * them into the slot as long as it isn't already locked.
+	 */
+	for (i=0; i < 10; i++)
+	{
+		if (locked[i] || !desired[i]) continue;
+		swap_quiver_slots(i, desired[i]);
+		locked[i] = TRUE;
+	}
+
+	/* Now we will sort all other ammo using a simple insertion sort */
+	for (i=0; i < 10; i++)
+	{
+		k = i;
+		for (j=i + 1; j < 10; j++) if (compare_ammo(k, j) > 0) k = j;
+		if (k != i) swap_quiver_slots(i, k);
+	}
+}

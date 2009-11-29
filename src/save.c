@@ -551,7 +551,7 @@ void wr_inventory(void)
 	int i;
 	
 	/* Write the inventory */
-	for (i = 0; i < INVEN_TOTAL; i++)
+	for (i = 0; i < ALL_INVEN_TOTAL; i++)
 	{
 		object_type *o_ptr = &inventory[i];
 		

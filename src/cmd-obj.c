@@ -311,19 +311,27 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 
 	equip_o_ptr = &inventory[slot];
 
-	/* Check for existing wielded item */
-	if (equip_o_ptr)
-	{
-		/* Prevent wielding into a cursed slot */
-		if (cursed_p(equip_o_ptr))
-		{
-			/* Message */
-			object_desc(o_name, sizeof(o_name), equip_o_ptr, ODESC_BASE);
-			msg_format("The %s you are %s appears to be cursed.",
-			           o_name, describe_use(slot));
+	/* If the slot is open, wield and be done */
+	if (!equip_o_ptr) {
+		wield_item(o_ptr, item, slot);
+		return;
+	}
 
-			return;
-		}
+	/* If the slot is in the quiver and objects can be combined */
+	if (obj_is_ammo(equip_o_ptr) && object_similar(equip_o_ptr, o_ptr))
+	{
+		wield_item(o_ptr, item, slot);
+		return;
+	}
+
+	/* Prevent wielding into a cursed slot */
+	if (cursed_p(equip_o_ptr))
+	{
+		object_desc(o_name, sizeof(o_name), equip_o_ptr, ODESC_BASE);
+		msg_format("The %s you are %s appears to be cursed.", o_name,
+				   describe_use(slot));
+		return;
+	}
 
 		/* "!t" checks for taking off */
 		n = check_for_inscrip(equip_o_ptr, "!t");
@@ -333,9 +341,8 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 			object_desc(o_name, sizeof(o_name), equip_o_ptr,
 						ODESC_PREFIX | ODESC_FULL);
 
-			/* Forget it */
-			if (!get_check(format("Really take off %s? ", o_name))) return;
-		}
+		/* Forget it */
+		if (!get_check(format("Really take off %s? ", o_name))) return;
 	}
 
 	wield_item(o_ptr, item, slot);
@@ -472,7 +479,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	int item = args[0].item;
 	object_type *o_ptr = object_from_item_idx(item);
 	int effect;
-	bool ident = FALSE, used = FALSE, failed = FALSE;
+	bool ident = FALSE, used = TRUE;
 	bool was_aware = object_flavor_is_aware(o_ptr);
 	int dir = 5;
 	int px = p_ptr->px, py = p_ptr->py;
@@ -573,15 +580,9 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	if (obj_needs_aim(o_ptr))
 		dir = args[1].direction;
 
-	/* Check for activation success */
-	if ((use == USE_CHARGE || use == USE_TIMEOUT) &&
-	    !check_devices(o_ptr))
-	{
-		failed = TRUE;
-	}
-
-	/* Execute the effect */	
-	if (!failed)
+	/* Check for use if necessary, and execute the effect */
+	if ((use != USE_CHARGE && use != USE_TIMEOUT) ||
+	    check_devices(o_ptr))
 	{
 		/* Special message for artifacts */
 		if (artifact_p(o_ptr))
@@ -606,10 +607,8 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	/* If the item is a null pointer or has been wiped, be done now */
 	if (!o_ptr || o_ptr->k_idx <= 1) return;
 
-	/* Quit if the player didn't fail, item wasn't used,
-	 * and no knowledge was gained
-	 */
-	if (!failed && !used && (was_aware || !ident)) return;
+	/* Quit if the item wasn't used and no knowledge was gained */
+	if (!used && (was_aware || !ident)) return;
 
 	if (ident) object_notice_effect(o_ptr);
 

@@ -425,6 +425,15 @@ typedef enum
 
 
 /*
+ *Quiver
+ */
+#define QUIVER_START 37
+#define QUIVER_SIZE  10
+#define QUIVER_END   47
+
+#define ALL_INVEN_TOTAL 47
+
+/*
  * Special return code corresponding to squelched items.
  */
 #define ALL_SQUELCHED	101
