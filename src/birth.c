@@ -434,11 +434,8 @@ static void player_wipe(void)
 	(void)WIPE(p_ptr, player_type);
 
 	/* Clear the inventory */
-	for (i = 0; i < INVEN_TOTAL; i++)
-	{
+	for (i = 0; i < ALL_INVEN_TOTAL; i++)
 		object_wipe(&inventory[i]);
-	}
-
 
 	/* Start with no artifacts made yet */
 	for (i = 0; i < z_info->a_max; i++)
