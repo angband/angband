@@ -29,6 +29,7 @@ void show_inven(olist_detail_t mode)
 {
 	int i, j, k, l, z = 0;
 	int col, row, r_col, len = 0, lim, ex_wid = 0;
+	int ammo_count;
 
 	object_type *o_ptr;
 	char o_name[80];
@@ -184,6 +185,19 @@ void show_inven(olist_detail_t mode)
 			put_str(tmp_val, row + j, ralign);
 		}
 	}
+
+	/* Count the number of missiles in the quiver */
+	ammo_count = 0;
+	for (i=0; i < QUIVER_END; i++)
+		if (inventory[i].k_idx)
+			ammo_count += inventory[i].number;
+
+	/* Clear a row, and then print the number of missiles in the quiver */
+	prt("", row + j, col ? col - 2 : col);
+	strnfmt(o_name, sizeof(o_name), "(QUIVER - %d missile%s)", ammo_count,
+			ammo_count == 1 ? "" : "s");
+	c_put_str(TERM_BLUE, o_name, row + j, col + 3);
+	j++;
 
 	if (mode & OLIST_WINDOW)
 	{
