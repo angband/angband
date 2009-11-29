@@ -180,9 +180,9 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	else if (slot == INVEN_LITE)
 		fmt = "Your light source is %s (%c).";
 	else if (combined_ammo)
-		fmt = "Your combine %s in your quiver (%c).";
+		fmt = "You combine %s in your quiver (%c).";
 	else if (slot >= QUIVER_START && slot < QUIVER_END)
-		fmt = "Your add %s to your quiver (%c).";
+		fmt = "You add %s to your quiver (%c).";
 	else
 		fmt = "You are wearing %s (%c).";
 
