@@ -794,6 +794,41 @@ void textui_cmd_fire(void)
 	cmd_insert(CMD_FIRE, item, dir);
 }
 
+void textui_cmd_fire_at_nearest(void)
+{
+	/* the direction '5' means 'use the target' */
+	int i, dir = 5, item = -1;
+
+	/* Require a usable launcher */
+	if (!inventory[INVEN_BOW].tval || !p_ptr->state.ammo_tval)
+	{
+		msg_print("You have nothing to fire with.");
+		return;
+	}
+
+	/* Find first eligible ammo in the quiver */
+	for (i=QUIVER_START; i < QUIVER_END; i++)
+	{
+		if (inventory[i].tval != p_ptr->state.ammo_tval) continue;
+		item = i;
+		break;
+	}
+
+	/* Require usable ammo */
+	if (item < 0)
+	{
+		msg_print("You have no ammunition in the quiver to fire");
+		return;
+	}
+
+	/* Require foe */
+	if (!target_set_closest(TARGET_KILL | TARGET_QUIET))
+		return;
+
+	/* Fire! */
+	cmd_insert(CMD_FIRE, item, dir);
+}
+
 /*
  * Throw an object from the pack or floor.
  *

@@ -99,6 +99,7 @@ static command_type cmd_item_use[] =
 	{ "Eat some food",            'E', CMD_NULL, textui_cmd_eat_food },
 	{ "Fuel your light source",   'F', CMD_NULL, textui_cmd_refill },
 	{ "Fire your missile weapon", 'f', CMD_NULL, textui_cmd_fire },
+	{ "Fire at nearest target",   'h', CMD_NULL, textui_cmd_fire_at_nearest },
 	{ "Throw an item",            'v', CMD_NULL, textui_cmd_throw }
 };
 

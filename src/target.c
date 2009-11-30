@@ -1070,7 +1070,8 @@ bool target_set_closest(int mode)
 	/* Target the monster */
 	m_ptr = &mon_list[m_idx];
 	monster_desc(m_name, sizeof(m_name), m_ptr, 0x00);
-	msg_format("%^s is targeted.", m_name);
+	if (!(mode & TARGET_QUIET))
+		msg_format("%^s is targeted.", m_name);
 	Term_fresh();
 
 	/* Set up target information */
