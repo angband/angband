@@ -1138,7 +1138,7 @@ void lore_treasure(int m_idx, int num_item, int num_gold)
  *
  * Monsters which are not on the current panel may be "visible" to
  * the player, and their descriptions will include an "offscreen"
- * reference.  Currently, offscreen monsters cannot be targetted
+ * reference.  Currently, offscreen monsters cannot be targeted
  * or viewed directly, but old targets will remain set.  XXX XXX
  *
  * The player can choose to be disturbed by several things, including
