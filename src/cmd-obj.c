@@ -479,7 +479,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	int item = args[0].item;
 	object_type *o_ptr = object_from_item_idx(item);
 	int effect;
-	bool ident = FALSE, used = TRUE;
+	bool ident = FALSE, used = FALSE;
 	bool was_aware = object_flavor_is_aware(o_ptr);
 	int dir = 5;
 	int px = p_ptr->px, py = p_ptr->py;
@@ -602,13 +602,13 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 
 		/* Do effect */
 		used = effect_do(effect, &ident, was_aware, dir, beam_chance(o_ptr->tval));
+
+		/* Quit if the item wasn't used and no knowledge was gained */
+		if (!used && (was_aware || !ident)) return;
 	}
 
 	/* If the item is a null pointer or has been wiped, be done now */
 	if (!o_ptr || o_ptr->k_idx <= 1) return;
-
-	/* Quit if the item wasn't used and no knowledge was gained */
-	if (!used && (was_aware || !ident)) return;
 
 	if (ident) object_notice_effect(o_ptr);
 
