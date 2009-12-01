@@ -1929,6 +1929,28 @@ errr parse_a_info(char *buf, header *head)
 		a_ptr->cost = cost;
 	}
 
+	/* Process 'A' for "Allocation" (one line only) */
+	else if (buf[0] == 'A')
+	{
+		int common, min, max;
+
+		/* Format is "A:<common>:<min> to <max>" */
+		if (3 != sscanf(buf+2, "%d:%d to %d", &common, &min, &max))
+			return (PARSE_ERROR_GENERIC);
+
+
+		/* Limit to size a byte */
+		if (common < 0 || common > 255) return (PARSE_ERROR_GENERIC);
+		if (min < 0 || min > 255) return (PARSE_ERROR_GENERIC);
+		if (max < 0 || max > 255) return (PARSE_ERROR_GENERIC);
+
+
+		/* Set up data */
+		a_ptr->alloc_prob = common;
+		a_ptr->alloc_min = min;
+		a_ptr->alloc_max = max;
+	}
+
 	/* Process 'P' for "power" and such */
 	else if (buf[0] == 'P')
 	{
@@ -1971,8 +1993,8 @@ errr parse_a_info(char *buf, header *head)
 		}
 	}
 
-	/* Process 'A' for "Activation & time" */
-	else if (buf[0] == 'A')
+	/* Process 'E' for Effect (Activation) & time */
+	else if (buf[0] == 'E')
 	{
 		/* Find the colon after the name */
 		s = strchr(buf + 2, ':');

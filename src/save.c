@@ -518,26 +518,29 @@ void wr_randarts(void)
 		wr_byte(a_ptr->tval);
 		wr_byte(a_ptr->sval);
 		wr_s16b(a_ptr->pval);
-		
+
 		wr_s16b(a_ptr->to_h);
 		wr_s16b(a_ptr->to_d);
 		wr_s16b(a_ptr->to_a);
 		wr_s16b(a_ptr->ac);
-		
+
 		wr_byte(a_ptr->dd);
 		wr_byte(a_ptr->ds);
-		
+
 		wr_s16b(a_ptr->weight);
-		
+
 		wr_s32b(a_ptr->cost);
-		
+
 		wr_u32b(a_ptr->flags[0]);
 		wr_u32b(a_ptr->flags[1]);
 		wr_u32b(a_ptr->flags[2]);
-		
+
 		wr_byte(a_ptr->level);
 		wr_byte(a_ptr->rarity);
-		
+		wr_byte(a_ptr->alloc_prob);
+		wr_byte(a_ptr->alloc_min);
+		wr_byte(a_ptr->alloc_max);
+
 		wr_u16b(a_ptr->effect);
 		wr_u16b(a_ptr->time_base);
 		wr_u16b(a_ptr->time_dice);
@@ -549,12 +552,12 @@ void wr_randarts(void)
 void wr_inventory(void)
 {
 	int i;
-	
+
 	/* Write the inventory */
 	for (i = 0; i < ALL_INVEN_TOTAL; i++)
 	{
 		object_type *o_ptr = &inventory[i];
-		
+
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
 		

@@ -106,8 +106,11 @@ typedef struct
 
 	u32b flags[OBJ_FLAG_N];		/**< Flags */
 
-	byte level;   /**< Minimum depth artifact can appear at */
-	byte rarity;  /**< Artifact rarity */
+	byte level;   /** Unused */
+	byte rarity;  /** Unused */
+	byte alloc_prob; /** Chance of being generated (i.e. rarity) */
+	byte alloc_min;  /** Minimum depth (can appear earlier) */
+	byte alloc_max;  /** Maximum depth (will NEVER appear deeper) */
 
 	bool created;	/**< Whether this artifact has been created */
 	bool seen;	/**< Whether this artifact has been seen as an artifact */

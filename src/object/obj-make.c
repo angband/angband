@@ -403,9 +403,7 @@ static void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
  * Note -- see "make_artifact()" and "apply_magic()".
  *
  * We *prefer* to create the special artifacts in order, but this is
- * normally outweighed by the "rarity" rolls for those artifacts.  The
- * only major effect of this logic is that the Phial (with rarity one)
- * is always the first special artifact created.
+ * normally outweighed by the "rarity" rolls for those artifacts.
  */
 static bool make_artifact_special(object_type *o_ptr, int level)
 {
@@ -432,17 +430,20 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 		if (a_ptr->created) continue;
 
 		/* Enforce minimum "depth" (loosely) */
-		if (a_ptr->level > p_ptr->depth)
+		if (a_ptr->alloc_min > p_ptr->depth)
 		{
 			/* Get the "out-of-depth factor" */
-			int d = (a_ptr->level - p_ptr->depth) * 2;
+			int d = (a_ptr->alloc_min - p_ptr->depth) * 2;
 
 			/* Roll for out-of-depth creation */
 			if (randint0(d) != 0) continue;
 		}
 
+		/* Enforce maximum depth (strictly) */
+		if (a_ptr->alloc_max < p_ptr->depth) continue;
+
 		/* Artifact "rarity roll" */
-		if (randint0(a_ptr->rarity) != 0) continue;
+		if (randint1(100) > a_ptr->alloc_prob) continue;
 
 		/* Find the base object */
 		k_idx = lookup_kind(a_ptr->tval, a_ptr->sval);
@@ -515,17 +516,20 @@ static bool make_artifact(object_type *o_ptr)
 		if (a_ptr->sval != o_ptr->sval) continue;
 
 		/* XXX XXX Enforce minimum "depth" (loosely) */
-		if (a_ptr->level > p_ptr->depth)
+		if (a_ptr->alloc_min > p_ptr->depth)
 		{
 			/* Get the "out-of-depth factor" */
-			int d = (a_ptr->level - p_ptr->depth) * 2;
+			int d = (a_ptr->alloc_min - p_ptr->depth) * 2;
 
 			/* Roll for out-of-depth creation */
 			if (randint0(d) != 0) continue;
 		}
 
+		/* Enforce maximum depth (strictly) */
+		if (a_ptr->alloc_max < p_ptr->depth) continue;
+
 		/* We must make the "rarity roll" */
-		if (randint0(a_ptr->rarity) != 0) continue;
+		if (randint1(100) > a_ptr->alloc_prob) continue;
 
 		/* Mark the item as an artifact */
 		o_ptr->name1 = i;

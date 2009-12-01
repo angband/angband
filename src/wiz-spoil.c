@@ -509,9 +509,10 @@ static void spoil_artifact(cptr fname)
 			 * Determine the minimum depth an artifact can appear, its rarity,
 			 * its weight, and its value in gold pieces.
 			 */
-			text_out("\nLevel %u, Rarity %u, %d.%d lbs, %ld AU\n",
-					 a_ptr->level, a_ptr->rarity, (a_ptr->weight / 10),
-					 (a_ptr->weight % 10), ((long)a_ptr->cost));
+			text_out("\nMin Level %u, Max Level %u, Generation chance %u, %d.%d lbs, %ld AU\n",
+				a_ptr->alloc_min, a_ptr->alloc_max,
+				a_ptr->alloc_prob, (a_ptr->weight / 10),
+				(a_ptr->weight % 10), ((long)a_ptr->cost));
 
 			/* Terminate the entry */
 			spoiler_blanklines(2);

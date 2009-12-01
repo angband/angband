@@ -1039,6 +1039,9 @@ int rd_randarts(u32b version)
 
 				rd_byte(&a_ptr->level);
 				rd_byte(&a_ptr->rarity);
+				rd_byte(&a_ptr->alloc_prob);
+				rd_byte(&a_ptr->alloc_min);
+				rd_byte(&a_ptr->alloc_max);
 
 				rd_u16b(&a_ptr->effect);
 				rd_u16b(&a_ptr->time_base);
@@ -1076,6 +1079,9 @@ int rd_randarts(u32b version)
 
 				rd_byte(&tmp8u); /* a_ptr->level */
 				rd_byte(&tmp8u); /* a_ptr->rarity */
+				rd_byte(&tmp8u); /* a_ptr->alloc_prob */
+				rd_byte(&tmp8u); /* a_ptr->alloc_min */
+				rd_byte(&tmp8u); /* a_ptr->alloc_max */
 
 				rd_u16b(&tmp16u); /* a_ptr->effect */
 				rd_u16b(&tmp16u); /* a_ptr->time_base */
