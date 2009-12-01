@@ -222,6 +222,10 @@ void show_inven(olist_detail_t mode)
 /*
  * Display the equipment.  Called with mode |= OLIST_WINDOW
  * from the equipment term window.
+ *
+ * TODO: Clean this method up--the quiver refactor has kind of made a mess of
+ *       things, and Windows is especially sensitive to uninitialized memory
+ *       access violations.
  */
 void show_equip(olist_detail_t mode)
 {
@@ -234,7 +238,12 @@ void show_equip(olist_detail_t mode)
 
 	char tmp_val[80];
 
-	int out_index[24];
+	/* As a quick hack, I will use -3 to mean "uninitialized" so that we can
+	 * avoid trying to process it below */
+	int out_index[24] = {
+		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3,
+		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3
+	};
 	byte out_color[24];
 	char out_desc[24][80];
 
@@ -359,6 +368,10 @@ void show_equip(olist_detail_t mode)
 
 		/* Get the index */
 		i = out_index[j];
+
+		/* As part of our cheap hack, if we see -3 that means this part of the
+		 * array was never reached and we should be done. */
+		if (i == -3) break;
 
 		/* Get the item */
 		o_ptr = &inventory[i];
