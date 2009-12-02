@@ -278,7 +278,7 @@ static byte *base_item_prob;
 /*
  * Store the original artifact rarities
  */
-static byte *base_art_rarity;
+static byte *base_art_alloc;
 
 /* Global just for convenience. */
 static int verbose = 1;
@@ -406,7 +406,7 @@ static void store_base_power (void)
 		k_ptr = &k_info[k_idx];
 		base_item_level[i] = k_ptr->level;
 		base_item_prob[i] = k_ptr->alloc_prob;
-		base_art_rarity[i] = a_ptr->rarity;
+		base_art_alloc[i] = a_ptr->alloc_prob;
 	}
 
 	/* Store the number of different types, for use later */
@@ -471,7 +471,7 @@ static s16b choose_item(int a_idx)
 	 * loop.
 	 *
 	 * N.B. Could easily generate lights, rings and amulets this way if
-	 * the whole special/flavour issue was sorted out
+	 * the whole special/flavour issue was sorted out (see ticket #1014)
 	 */
 	while (tval == 0 || tval == TV_SKELETON || tval == TV_BOTTLE ||
 		tval == TV_JUNK || tval == TV_SPIKE || tval == TV_CHEST ||
@@ -2990,8 +2990,7 @@ static void scramble_artifact(int a_idx)
 	s32b power;
 	int tries = 0;
 	s16b k_idx;
-	byte rarity_old, base_rarity_old;
-	s16b rarity_new;
+	byte alloc_old, base_alloc_old, alloc_new;
 	s32b ap = 0;
 	bool curse_me = FALSE;
 	bool success = FALSE;
@@ -3031,21 +3030,18 @@ static void scramble_artifact(int a_idx)
 		/*
 		 * Normal artifact - choose a random base item type.  Not too
 		 * powerful, so we'll have to add something to it.  Not too
-		 * weak, for the opposite reason.  We also require a new
-		 * rarity rating of at least 2.
+		 * weak, for the opposite reason.
 		 *
 		 * CR 7/15/2001 - lowered the upper limit so that we get at
 		 * least a few powers (from 8/10 to 6/10) but permit anything
 		 * more than 20 below the target power
 		 */
 		int count = 0;
-		int smeg = 0;
 		s32b ap2;
 
 		/* Capture the rarity of the original base item and artifact */
-		base_rarity_old = 100 / base_item_prob[a_idx];
-		if (base_rarity_old < 1) base_rarity_old = 1; 
-		rarity_old = base_art_rarity[a_idx];
+		alloc_old = base_art_alloc[a_idx];
+		base_alloc_old = base_item_prob[a_idx];
 		do
 		{
 			k_idx = choose_item(a_idx);
@@ -3069,25 +3065,22 @@ static void scramble_artifact(int a_idx)
 			 * artifact rarity multiplied by the base item rarity.
 			 */
 
-/* CC bugfix hacking */
-			LOG_PRINT2("rarity old is %d, base is %d\n", rarity_old, base_rarity_old);
 			k_ptr = &k_info[k_idx];
-			smeg = 100 / k_ptr->alloc_prob;
-			if (smeg < 1) smeg = 1;
-			LOG_PRINT1("k_ptr->alloc_prob is %d\n", k_ptr->alloc_prob);
-/* end CC */
-			rarity_new = ( (s16b) rarity_old * (s16b) base_rarity_old ) /
-			             smeg;
+			alloc_new = alloc_old * base_alloc_old
+				/ k_ptr->alloc_prob;
 
-			if (rarity_new > 255) rarity_new = 255;
-			if (rarity_new < 1) rarity_new = 1;
+			if (alloc_new > 99) alloc_new = 99;
+			if (alloc_new < 1) alloc_new = 1;
+
+			LOG_PRINT2("Old allocs are base %d, art %d\n", base_alloc_old, alloc_old);
+			LOG_PRINT2("New allocs are base %d, art %d\n", k_ptr->alloc_prob, alloc_new);
 
 		} while ( (count < MAX_TRIES) &&
 		          (((ap2 > (power * 6) / 10 + 1) && (power-ap2 < 20)) ||
-		          (ap2 < (power / 10)) || rarity_new == 1) );
+		          (ap2 < (power / 10))) );
 
 		/* Got an item - set the new rarity */
-		a_ptr->rarity = (byte) rarity_new;
+		a_ptr->alloc_prob = alloc_new;
 	}
 	else
 	{
@@ -3104,6 +3097,8 @@ static void scramble_artifact(int a_idx)
 
 		/* Artifacts ignore everything */
 		a_ptr->flags[2] = (TR2_IGNORE_MASK);
+
+		LOG_PRINT1("Alloc prob is %d\n", a_ptr->alloc_prob);
 	}
 
 	/* Got a base item. */
@@ -3178,7 +3173,7 @@ static void scramble_artifact(int a_idx)
 					a_ptr->tval == TV_POLEARM || a_ptr->tval == TV_SWORD
 					|| a_ptr->tval == TV_BOW) && (a_ptr->to_d < 10))
 				{
-					a_ptr->to_d += randint0(6);
+					a_ptr->to_d += randint0(10);
 					LOG_PRINT1("Redeeming crappy weapon: +dam now %d\n", a_ptr->to_d);
 				}
 				break;
@@ -3207,7 +3202,48 @@ static void scramble_artifact(int a_idx)
 		}
 	}
 
-	if (a_ptr->cost < 0) a_ptr->cost = 0;
+	/* Set depth and rarity info according to power */
+	/* This is currently very tricky for special artifacts */
+	LOG_PRINT2("Old depths are min %d, max %d\n", a_ptr->alloc_min, a_ptr->alloc_max);
+	LOG_PRINT1("Alloc prob is %d\n", a_ptr->alloc_prob);
+
+	if (a_idx < ART_MIN_NORMAL)
+	{
+		a_ptr->alloc_max = 127;
+		if (ap > 110)
+		{
+			a_ptr->alloc_prob = 5 - (ap / 100);
+			a_ptr->alloc_min = MAX(50, (ap / 5) - 10);
+		}
+		else if (ap > 30)
+		{
+			a_ptr->alloc_prob = 10 - (ap / 20);
+			a_ptr->alloc_min = MAX(25, (ap / 3));
+		}
+		else /* Just the Phial */
+		{
+			a_ptr->alloc_prob = 50 - ap;
+			a_ptr->alloc_min = 5;
+		}
+	}
+	else
+	{
+		a_ptr->alloc_max = MIN(127, (ap * 4) / 5);
+		a_ptr->alloc_min = MAX(1, (ap / 5) - 10);
+		if (ap > 289 || k_ptr->alloc_prob < 10)
+			a_ptr->alloc_prob = 100 / k_ptr->alloc_prob;
+		else if (ap > 199)
+			a_ptr->alloc_prob = (100 / k_ptr->alloc_prob) * (30 - (ap / 10));
+		else
+			a_ptr->alloc_prob = (100 / k_ptr->alloc_prob) * (110 - (ap / 2));
+	}
+
+	/* sanity check */
+	if (a_ptr->alloc_prob > 99) a_ptr->alloc_prob = 99;
+	if (a_ptr->alloc_prob < 1) a_ptr->alloc_prob = 1;
+
+	LOG_PRINT2("New depths are min %d, max %d\n", a_ptr->alloc_min, a_ptr->alloc_max);
+	LOG_PRINT1("Power-based alloc_prob is %d\n", a_ptr->alloc_prob);
 
 	/* Restore some flags */
 	if (a_ptr->tval == TV_LITE) a_ptr->flags[2] |= TR2_NO_FUEL;
@@ -3221,7 +3257,6 @@ static void scramble_artifact(int a_idx)
 		a_ptr->flags[2] |= TR2_HIDE_TYPE;
 
 	/* Success */
-
 	LOG_PRINT(">>>>>>>>>>>>>>>>>>>>>>>>>> ARTIFACT COMPLETED <<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
 	LOG_PRINT2("Number of tries for artifact %d was: %d\n", a_idx, tries);
 }
@@ -3368,7 +3403,7 @@ errr do_randart(u32b randart_seed, bool full)
 		base_power = C_ZNEW(z_info->a_max, s32b);
 		base_item_level = C_ZNEW(z_info->a_max, byte);
 		base_item_prob = C_ZNEW(z_info->a_max, byte);
-		base_art_rarity = C_ZNEW(z_info->a_max, byte);
+		base_art_alloc = C_ZNEW(z_info->a_max, byte);
 		baseprobs = C_ZNEW(z_info->k_max, s16b);
 		base_freq = C_ZNEW(z_info->k_max, s16b);
 
@@ -3418,7 +3453,7 @@ errr do_randart(u32b randart_seed, bool full)
 		FREE(base_power);
 		FREE(base_item_level);
 		FREE(base_item_prob);
-		FREE(base_art_rarity);
+		FREE(base_art_alloc);
 		FREE(baseprobs);
 		FREE(base_freq);
 	}

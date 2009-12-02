@@ -54,7 +54,7 @@
 #define AVG_XBOW_MULT           7 /* i.e. 3.5 */
 #define AVG_LAUNCHER_DMG	9
 #define MELEE_DAMAGE_BOOST     10
-#define RING_BRAND_DMG	        9 /* i.e. 3d5 or 2d8 weapon */
+#define RING_BRAND_DMG	       30 /* fudge to boost off-weapon brand power */
 #define BASE_LITE_POWER         6
 #define BASE_JEWELRY_POWER	4
 #define BASE_ARMOUR_POWER	2
@@ -448,7 +448,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		{
 			p += BASE_ARMOUR_POWER;
 			LOG_PRINT1("Armour item, base power is %d\n", p);
-			
+
 			p += sign(o_ptr->ac) * ((ABS(o_ptr->ac) * BASE_AC_POWER) / 2);
 			LOG_PRINT1("Adding power for base AC value, total is %d\n", p);
 
@@ -887,7 +887,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	/* add power for effect */
 	if (known || object_effect_is_known(o_ptr))
 	{
-		if (o_ptr->name1)
+		if (o_ptr->name1 && a_info[o_ptr->name1].effect)
 		{
 			p += effect_power(a_info[o_ptr->name1].effect);
 			LOG_PRINT1("Adding power for artifact activation, total is %d\n", p);
@@ -904,7 +904,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	if (f[2] & TR2_IGNORE_FIRE) p++;
 	if (f[2] & TR2_IGNORE_COLD) p++;
 	if (f[2] & TR2_IGNORE_ELEC) p++;
-	
+
 	LOG_PRINT1("After ignore flags, FINAL POWER IS %d\n", p);
 
 	return (p);

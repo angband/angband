@@ -252,7 +252,7 @@ s32b object_power(const object_type *o_ptr, int verbose, ang_file *log_file, boo
 #define INHIBIT_POWER       20000
 #define HIGH_TO_AC             21
 #define VERYHIGH_TO_AC         31
-#define INHIBIT_AC             41
+#define INHIBIT_AC             51
 #define HIGH_TO_HIT            16
 #define VERYHIGH_TO_HIT        26
 #define HIGH_TO_DAM            16
@@ -275,5 +275,5 @@ s32b object_power(const object_type *o_ptr, int verbose, ang_file *log_file, boo
         do { if (verbose) \
                 file_putf(log_file, (string), (val1), (val2)); \
         } while (0);
-	
+
 #endif /* !INCLUDED_OBJECT_H */
