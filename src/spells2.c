@@ -2383,6 +2383,8 @@ static void cave_temp_room_lite(void)
 		int y = temp_y[i];
 		int x = temp_x[i];
 
+		if (x >= level_wid || y >= level_hgt) continue;
+
 		/* Redraw the grid */
 		lite_spot(y, x);
 

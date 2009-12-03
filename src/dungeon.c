@@ -54,7 +54,7 @@ static void regenhp(int percent)
 
 	/* check for overflow */
 	if ((p_ptr->chp < 0) && (old_chp > 0)) p_ptr->chp = MAX_SHORT;
-	new_chp_frac = (new_chp & 0xFFFF) + p_ptr->chp_frac;	/* mod 65536 */
+	new_chp_frac = (new_chp & 0xFFFF) + p_ptr->chp_frac;    /* mod 65536 */
 	if (new_chp_frac >= 0x10000L)
 	{
 		p_ptr->chp_frac = (u16b)(new_chp_frac - 0x10000L);
@@ -93,13 +93,13 @@ static void regenmana(int percent)
 
 	old_csp = p_ptr->csp;
 	new_mana = ((long)p_ptr->msp) * percent + PY_REGEN_MNBASE;
-	p_ptr->csp += (s16b)(new_mana >> 16);	/* div 65536 */
+	p_ptr->csp += (s16b)(new_mana >> 16);    /* div 65536 */
 	/* check for overflow */
 	if ((p_ptr->csp < 0) && (old_csp > 0))
 	{
 		p_ptr->csp = MAX_SHORT;
 	}
-	new_mana_frac = (new_mana & 0xFFFF) + p_ptr->csp_frac;	/* mod 65536 */
+	new_mana_frac = (new_mana & 0xFFFF) + p_ptr->csp_frac;    /* mod 65536 */
 	if (new_mana_frac >= 0x10000L)
 	{
 		p_ptr->csp_frac = (u16b)(new_mana_frac - 0x10000L);
@@ -723,7 +723,7 @@ static void process_world(void)
 
 		/* If the light has the NO_FUEL flag, well... */
 		if (f[2] & TR2_NO_FUEL)
-		    burn_fuel = FALSE;
+			burn_fuel = FALSE;
 
 		/* Use some fuel (except on artifacts, or during the day) */
 		if (burn_fuel && o_ptr->timeout > 0)
@@ -850,8 +850,8 @@ static void process_player_aux(void)
 
 	static byte old_blows[MONSTER_BLOW_MAX];
 
-	static byte	old_cast_innate = 0;
-	static byte	old_cast_spell = 0;
+	static byte    old_cast_innate = 0;
+	static byte    old_cast_spell = 0;
 
 
 	/* Tracking a monster */
@@ -871,11 +871,11 @@ static void process_player_aux(void)
 
 		/* Check for change of any kind */
 		if (changed ||
-		    (old_monster_race_idx != p_ptr->monster_race_idx) ||
-		    race_flags_differ(old_flags, l_ptr->flags) ||
-		    race_flags_differ_spell(old_spell_flags, l_ptr->spell_flags) ||
-		    (old_cast_innate != l_ptr->cast_innate) ||
-		    (old_cast_spell != l_ptr->cast_spell))
+			(old_monster_race_idx != p_ptr->monster_race_idx) ||
+			race_flags_differ(old_flags, l_ptr->flags) ||
+			race_flags_differ_spell(old_spell_flags, l_ptr->spell_flags) ||
+			(old_cast_innate != l_ptr->cast_innate) ||
+			(old_cast_spell != l_ptr->cast_spell))
 		{
 			/* Memorize old race */
 			old_monster_race_idx = p_ptr->monster_race_idx;
@@ -932,7 +932,7 @@ static void process_player(void)
 		{
 			/* Stop resting */
 			if ((p_ptr->chp == p_ptr->mhp) &&
-			    (p_ptr->csp == p_ptr->msp))
+				(p_ptr->csp == p_ptr->msp))
 			{
 				disturb(0, 0);
 			}
@@ -943,13 +943,13 @@ static void process_player(void)
 		{
 			/* Stop resting */
 			if ((p_ptr->chp == p_ptr->mhp) &&
-			    (p_ptr->csp == p_ptr->msp) &&
-			    !p_ptr->timed[TMD_BLIND] && !p_ptr->timed[TMD_CONFUSED] &&
-			    !p_ptr->timed[TMD_POISONED] && !p_ptr->timed[TMD_AFRAID] &&
-			    !p_ptr->timed[TMD_TERROR] &&
-			    !p_ptr->timed[TMD_STUN] && !p_ptr->timed[TMD_CUT] &&
-			    !p_ptr->timed[TMD_SLOW] && !p_ptr->timed[TMD_PARALYZED] &&
-			    !p_ptr->timed[TMD_IMAGE] && !p_ptr->word_recall)
+				(p_ptr->csp == p_ptr->msp) &&
+				!p_ptr->timed[TMD_BLIND] && !p_ptr->timed[TMD_CONFUSED] &&
+				!p_ptr->timed[TMD_POISONED] && !p_ptr->timed[TMD_AFRAID] &&
+				!p_ptr->timed[TMD_TERROR] &&
+				!p_ptr->timed[TMD_STUN] && !p_ptr->timed[TMD_CUT] &&
+				!p_ptr->timed[TMD_SLOW] && !p_ptr->timed[TMD_PARALYZED] &&
+				!p_ptr->timed[TMD_IMAGE] && !p_ptr->word_recall)
 			{
 				disturb(0, 0);
 			}
@@ -960,7 +960,7 @@ static void process_player(void)
 		{
 			/* Stop resting */
 			if ((p_ptr->chp == p_ptr->mhp) ||
-			    (p_ptr->csp == p_ptr->msp))
+				(p_ptr->csp == p_ptr->msp))
 			{
 				disturb(0, 0);
 			}
@@ -969,8 +969,8 @@ static void process_player(void)
 
 	/* Check for "player abort" */
 	if (p_ptr->running ||
-	    p_ptr->command_rep ||
-	    (p_ptr->resting && !(turn & 0x7F)))
+		p_ptr->command_rep ||
+		(p_ptr->resting && !(turn & 0x7F)))
 	{
 		/* Do not wait */
 		inkey_scan = SCAN_INSTANT;
