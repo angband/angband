@@ -338,3 +338,28 @@ void ang_sort(void *u, void *v, int n)
 	ang_sort_aux(u, v, 0, n-1);
 }
 
+/* Arithmetic mean of the first 'size' entries of the array 'nums' */
+int mean(int *nums, int size)
+{
+    	int i, total = 0;
+
+    	for(i = 0; i < size; i++) total += nums[i];
+
+    	return total / size;
+}
+
+/* Variance of the first 'size' entries of the array 'nums'  */
+int variance(int *nums, int size)
+{
+    	int i, avg, total = 0;
+
+    	avg = mean(nums, size);
+
+    	for(i = 0; i < size; i++)
+	{
+        	int delta = nums[i] - avg;
+        	total += delta * delta;
+    	}
+
+    	return total / size;
+}

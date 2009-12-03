@@ -248,8 +248,8 @@ s16b *base_freq; 			/* base items */
  * Mean start and increment values for to_hit, to_dam and AC.  Update these
  * if the algorithm changes.  They are used in frequency generation.
  */
-static s16b mean_hit_increment = 3;
-static s16b mean_dam_increment = 3;
+static s16b mean_hit_increment = 4;
+static s16b mean_dam_increment = 4;
 static s16b mean_hit_startval = 10;
 static s16b mean_dam_startval = 10;
 static s16b mean_ac_startval = 15;
@@ -264,6 +264,10 @@ static ang_file *log_file = NULL;
  * Store the original artifact power ratings
  */
 static s32b *base_power;
+static s16b max_power;
+static s16b min_power;
+static s16b avg_power;
+static s16b var_power;
 
 /*
  * Store the original base item levels
@@ -392,15 +396,25 @@ static void store_base_power (void)
 	artifact_type *a_ptr;
 	object_kind *k_ptr;
 	s16b k_idx;
+	s32b *fake_power;
+
+	max_power = 0;
+	min_power = 32767;
+	var_power = 0;
+	fake_power = C_ZNEW(z_info->a_max, s32b);
 
 	for(i = 0; i < z_info->a_max; i++)
 	{
 		base_power[i] = artifact_power(i);
-	}
 
-	for(i = 0; i < z_info->a_max; i++)
-	{
-		/* Kinds array was populated in the above step */
+		/* capture power stats, ignoring cursed and uber arts */
+		if (base_power[i] > max_power && base_power[i] < INHIBIT_POWER)
+			max_power = base_power[i];
+		if (base_power[i] < min_power && base_power[i] > 0)
+			min_power = base_power[i];
+		if (base_power[i] > 0 && base_power[i] < INHIBIT_POWER)
+			fake_power[i] = base_power[i];
+
 		a_ptr = &a_info[i];
 		k_idx = lookup_kind(a_ptr->tval, a_ptr->sval);
 		k_ptr = &k_info[k_idx];
@@ -409,8 +423,14 @@ static void store_base_power (void)
 		base_art_alloc[i] = a_ptr->alloc_prob;
 	}
 
+	avg_power = mean(fake_power, z_info->a_max);
+	var_power = variance(fake_power, z_info->a_max);
+
+	LOG_PRINT2("Max power is %d, min is %d\n", max_power, min_power);
+	LOG_PRINT2("Mean is %d, variance is %d\n", avg_power, var_power);
+
 	/* Store the number of different types, for use later */
-	/* ToDo: replace this with base item freq parsing */
+	/* ToDo: replace this with full combination tracking */
 	for (i = 0; i < z_info->a_max; i++)
 	{
 		switch (a_info[i].tval)
@@ -1635,12 +1655,12 @@ static void parse_frequencies(void)
 	if (verbose)
 	{
 	/* Print out some of the abilities, to make sure that everything's fine */
-		for (i=0; i<ART_IDX_TOTAL; i++)
+		for (i = 0; i < ART_IDX_TOTAL; i++)
 		{
 			file_putf(log_file, "Frequency of ability %d: %d\n", i, artprobs[i]);
 		}
 
-		for (i=0; i < z_info->k_max; i++)
+		for (i = 0; i < z_info->k_max; i++)
 		{
 			file_putf(log_file, "Frequency of item %d: %d\n", i, baseprobs[i]);
 		}
@@ -1757,7 +1777,7 @@ static void parse_frequencies(void)
 	adjust_freqs();
 
 	/* Log the final frequencies to check that everything's correct */
-	for(i=0; i<ART_IDX_TOTAL; i++)
+	for(i = 0; i < ART_IDX_TOTAL; i++)
 	{
 		LOG_PRINT2( "Rescaled frequency of ability %d: %d\n", i, artprobs[i]);
 	}
@@ -3207,17 +3227,20 @@ static void scramble_artifact(int a_idx)
 	LOG_PRINT2("Old depths are min %d, max %d\n", a_ptr->alloc_min, a_ptr->alloc_max);
 	LOG_PRINT1("Alloc prob is %d\n", a_ptr->alloc_prob);
 
+	/* flip cursed items to avoid overflows */
+	if (ap < 0) ap = -ap;
+
 	if (a_idx < ART_MIN_NORMAL)
 	{
 		a_ptr->alloc_max = 127;
-		if (ap > 110)
+		if (ap > avg_power)
 		{
-			a_ptr->alloc_prob = 5 - (ap / 100);
-			a_ptr->alloc_min = MAX(50, (ap / 5) - 10);
+			a_ptr->alloc_prob = (max_power - ap) / 100;
+			a_ptr->alloc_min = MAX(50, (ap * 100 / max_power));
 		}
 		else if (ap > 30)
 		{
-			a_ptr->alloc_prob = 10 - (ap / 20);
+			a_ptr->alloc_prob = MAX(3, (avg_power - ap) / 20);
 			a_ptr->alloc_min = MAX(25, (ap / 3));
 		}
 		else /* Just the Phial */
@@ -3228,14 +3251,28 @@ static void scramble_artifact(int a_idx)
 	}
 	else
 	{
+		LOG_PRINT1("k_ptr->alloc_prob is %d\n", k_ptr->alloc_prob);
 		a_ptr->alloc_max = MIN(127, (ap * 4) / 5);
-		a_ptr->alloc_min = MAX(1, (ap / 5) - 10);
-		if (ap > 289 || k_ptr->alloc_prob < 10)
+		a_ptr->alloc_min = MAX(1, (ap * 100 / max_power));
+
+		/* Hugely powerful artifacts or base items have tot prob 1 */
+		if (((ap * ap) > ((avg_power * avg_power) + (2 * var_power))) ||
+			(k_ptr->alloc_prob < 10))
 			a_ptr->alloc_prob = 100 / k_ptr->alloc_prob;
-		else if (ap > 199)
-			a_ptr->alloc_prob = (100 / k_ptr->alloc_prob) * (30 - (ap / 10));
+
+		/* The rest of the good have total prob 1-3 */
+		else if (ap > avg_power)
+			a_ptr->alloc_prob = (max_power - ap) / k_ptr->alloc_prob;
+
+		/* The best of the rest have total prob 4-10 */
+		else if ((ap * ap) > ((avg_power * avg_power) - var_power))
+			a_ptr->alloc_prob = (100 / k_ptr->alloc_prob) *
+				(avg_power - ap + 40) / 10;
+
+		/* The weak ones have prob >10 */
 		else
-			a_ptr->alloc_prob = (100 / k_ptr->alloc_prob) * (110 - (ap / 2));
+			a_ptr->alloc_prob = (100 / k_ptr->alloc_prob) *
+				(avg_power - ap) / 5;
 	}
 
 	/* sanity check */
