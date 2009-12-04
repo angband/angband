@@ -1067,23 +1067,23 @@ errr file_character(const char *path, bool full)
 	text_out_wrap = 72;
 
 	/* Dump the equipment */
-	if (p_ptr->equip_cnt)
+	file_putf(fp, "  [Character Equipment]\n\n");
+	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
-		file_putf(fp, "  [Character Equipment]\n\n");
-		for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+		if (i == INVEN_TOTAL)
 		{
-			object_desc(o_name, sizeof(o_name), &inventory[i],
-						ODESC_PREFIX | ODESC_FULL);
-
-			file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
-			if (inventory[i].k_idx)
-				object_info_chardump(&inventory[i]);
+			file_putf(fp, "\n\n  [Character Quiver]\n\n");
+			continue;
 		}
-		file_putf(fp, "\n\n");
+		object_desc(o_name, sizeof(o_name), &inventory[i],
+				ODESC_PREFIX | ODESC_FULL);
+
+		file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
+		if (inventory[i].k_idx) object_info_chardump(&inventory[i]);
 	}
 
 	/* Dump the inventory */
-	file_putf(fp, "  [Character Inventory]\n\n");
+	file_putf(fp, "\n\n  [Character Inventory]\n\n");
 	for (i = 0; i < INVEN_PACK; i++)
 	{
 		if (!inventory[i].k_idx) break;
