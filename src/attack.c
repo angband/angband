@@ -825,6 +825,13 @@ void textui_cmd_fire_at_nearest(void)
 	if (!target_set_closest(TARGET_KILL | TARGET_QUIET))
 		return;
 
+	/* Check for confusion */
+	if (p_ptr->timed[TMD_CONFUSED])
+	{
+		msg_print("You are confused.");
+		dir = ddd[randint0(8)];
+	}
+
 	/* Fire! */
 	cmd_insert(CMD_FIRE, item, dir);
 }
