@@ -392,19 +392,22 @@ static s32b artifact_power(int a_idx)
  */
 static void store_base_power (void)
 {
-	int i;
+	int i, j;
 	artifact_type *a_ptr;
 	object_kind *k_ptr;
 	s16b k_idx;
 	s32b *fake_power;
+	int fake_max = z_info->a_max;
 
 	max_power = 0;
 	min_power = 32767;
 	var_power = 0;
 	fake_power = C_ZNEW(z_info->a_max, s32b);
+	j = 0;
 
 	for(i = 0; i < z_info->a_max; i++)
 	{
+		j++;
 		base_power[i] = artifact_power(i);
 
 		/* capture power stats, ignoring cursed and uber arts */
@@ -413,7 +416,12 @@ static void store_base_power (void)
 		if (base_power[i] < min_power && base_power[i] > 0)
 			min_power = base_power[i];
 		if (base_power[i] > 0 && base_power[i] < INHIBIT_POWER)
-			fake_power[i] = base_power[i];
+			fake_power[j] = base_power[i];
+		else
+		{
+			j--;
+			fake_max--;
+		}
 
 		a_ptr = &a_info[i];
 		k_idx = lookup_kind(a_ptr->tval, a_ptr->sval);
@@ -423,8 +431,8 @@ static void store_base_power (void)
 		base_art_alloc[i] = a_ptr->alloc_prob;
 	}
 
-	avg_power = mean(fake_power, z_info->a_max);
-	var_power = variance(fake_power, z_info->a_max);
+	avg_power = mean(fake_power, fake_max);
+	var_power = variance(fake_power, fake_max);
 
 	LOG_PRINT2("Max power is %d, min is %d\n", max_power, min_power);
 	LOG_PRINT2("Mean is %d, variance is %d\n", avg_power, var_power);
