@@ -793,6 +793,12 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 			panel[i].value[0] = i2u(skill);
 			panel[i].color = colour_table[skill / 10];
 		}
+		else if (skills[i].skill == SKILL_DEVICE)
+		{
+			panel[i].fmt = "%y";
+			panel[i].value[0] = i2u(skill);
+			panel[i].color = colour_table[skill / 13];
+		}
 		else if (skills[i].skill == SKILL_SEARCH_FREQUENCY)
 		{
 			if (skill <= 0) skill = 1;

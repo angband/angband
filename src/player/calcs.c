@@ -826,6 +826,8 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->dis_to_h -= 20;
 		state->to_d -= 20;
 		state->dis_to_d -= 20;
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
+			* 8 / 10;
 	}
 	else if (p_ptr->timed[TMD_STUN])
 	{
@@ -833,6 +835,8 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->dis_to_h -= 5;
 		state->to_d -= 5;
 		state->dis_to_d -= 5;
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
+			* 9 / 10;
 	}
 
 	/* Invulnerability */
@@ -849,6 +853,8 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->dis_to_a += 5;
 		state->to_h += 10;
 		state->dis_to_h += 10;
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
+			* 105 / 100;
 	}
 
 	/* Temporary shield */
@@ -872,6 +878,8 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->to_h += 12;
 		state->dis_to_h += 12;
 		state->resist_fear = TRUE;
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
+			* 105 / 100;
 	}
 
 	/* Temporary "Berserk" */
@@ -882,6 +890,8 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->to_a -= 10;
 		state->dis_to_a -= 10;
 		state->resist_fear = TRUE;
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
+			* 9 / 10;
 	}
 
 	/* Temporary "fast" */
@@ -891,7 +901,6 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	/* Temporary "slow" */
 	if (p_ptr->timed[TMD_SLOW])
 		state->speed -= 10;
-
 
 	/* Temporary see invisible */
 	if (p_ptr->timed[TMD_SINVIS])
@@ -916,7 +925,6 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	if (p_ptr->timed[TMD_TERROR])
 		state->speed += 5;
 
-
 	/* Fear can come from item flags too */
 	if (state->afraid)
 	{
@@ -924,8 +932,29 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->dis_to_h -= 20;
 		state->to_a += 8;
 		state->dis_to_a += 8;
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
+			* 95 / 100;
 	}
 
+	/* Confusion */
+	if (p_ptr->timed[TMD_CONFUSED])
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
+			* 75 / 100;
+
+	/* Amnesia */
+	if (p_ptr->timed[TMD_AMNESIA])
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
+			* 8 / 10;
+
+	/* Poison */
+	if (p_ptr->timed[TMD_POISONED])
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
+			* 95 / 100;
+
+	/* Hallucination */
+	if (p_ptr->timed[TMD_IMAGE])
+		state->skills[SKILL_DEVICE] = state->skills[SKILL_DEVICE]
+			* 8 / 10;
 
 	/*** Analyze weight ***/
 

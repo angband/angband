@@ -935,7 +935,7 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 	const object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	const char *desc;
 
-	int effect = 0, base, dice, sides;
+	int effect = 0, base, dice, sides, fail;
 
 	if (o_ptr->name1)
 	{
@@ -975,7 +975,7 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 			else if (o_ptr->tval == TV_SCROLL)
 				text_out("It can be read.\n");
 			else text_out("It can be activated.\n");
-			
+
 			return TRUE;
 		}
 	}
@@ -1036,6 +1036,18 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 			text_out(" at your current speed");
 
 		text_out(".\n");
+	}
+
+	if (!subjective || o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION ||
+		o_ptr->tval == TV_SCROLL)
+	{
+		return TRUE;
+	}
+	else
+	{
+		fail = get_use_device_chance(o_ptr);
+		text_out("Your chance of success is %d.%d%%\n", (1000 - fail) /
+			10, (1000 - fail) % 10);
 	}
 
 	return TRUE;

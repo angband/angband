@@ -3,7 +3,7 @@
  * Purpose: Handle objects in various ways
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
- * Copyright (c) 2007 Andrew Sidwell
+ * Copyright (c) 2007-9 Andrew Sidwell, Chris Carr, Ed Graham, Erik Osheim
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -24,12 +24,13 @@
 #include "effects.h"
 
 /*** Utility bits and bobs ***/
+
 /*
  * Check to see if the player can use a rod/wand/staff/activatable object.
  */
 static int check_devices(object_type *o_ptr)
 {
-	int lev, chance;
+	int fail;
 	const char *msg;
 	const char *what = NULL;
 
@@ -42,30 +43,11 @@ static int check_devices(object_type *o_ptr)
 		default:       msg = "activate it";  break;
 	}
 
-	/* Extract the item level */
-	if (artifact_p(o_ptr))
-		lev = a_info[o_ptr->name1].level;
-	else
-		lev = k_info[o_ptr->k_idx].level;
-
-	/* Base chance of success */
-	chance = p_ptr->state.skills[SKILL_DEVICE];
-
-	/* Confusion hurts skill */
-	if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_AMNESIA])
-		chance = chance / 2;
-
-	/* High level objects are harder */
-	chance -= MIN(lev, 50);
-
-	/* Give everyone a (slight) chance */
-	if ((chance < USE_DEVICE) && one_in_(USE_DEVICE - chance + 1))
-	{
-		chance = USE_DEVICE;
-	}
+	/* Figure out how hard the item is to use */
+	fail = get_use_device_chance(o_ptr);
 
 	/* Roll for usage */
-	if ((chance < USE_DEVICE) || (randint1(chance) < USE_DEVICE))
+	if (randint1(1000) < fail)
 	{
 		if (OPT(flush_failure)) flush();
 		msg_format("You failed to %s properly.", msg);
@@ -83,6 +65,40 @@ static int check_devices(object_type *o_ptr)
 
 	return TRUE;
 }
+
+/*
+ *Returns the number of times in 1000 that @ will FAIL
+ * - thanks to Ed Graham for the formula
+ */
+int get_use_device_chance(const object_type *o_ptr)
+{
+	int lev, skill, fail;
+
+	/* these could be globals if desired, calculated rather than stated */
+	int skill_min = 10;
+	int skill_max = 129;
+	int diff_min = 1;
+	int diff_max = 100;
+
+	/* Extract the item level, which is the difficulty rating */
+	if (artifact_p(o_ptr))
+		lev = a_info[o_ptr->name1].level;
+	else
+		lev = k_info[o_ptr->k_idx].level;
+
+	/* Chance of failure */
+	skill = p_ptr->state.skills[SKILL_DEVICE];
+
+	fail = 100 * ((skill - lev) - (skill_max - diff_min))
+		/ ((lev - skill) - (diff_max - skill_min));
+
+	/* Limit range */
+	if (fail > 950) fail = 950;
+	if (fail < 10) fail = 10;
+
+	return fail;
+}
+
 
 /*
  * Return the chance of an effect beaming, given a tval.
