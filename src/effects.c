@@ -170,7 +170,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			if (!p_ptr->state.resist_pois)
 			{
 				if (!p_ptr->timed[TMD_OPP_POIS] &&
-						inc_timed(TMD_POISONED, damroll(2, 7) + 10, TRUE))
+					inc_timed(TMD_POISONED, damroll(2, 7)
+					+ 10, TRUE))
 					*ident = TRUE;
 			}
 			else
@@ -185,7 +186,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			if (!p_ptr->state.resist_blind)
 			{
-				if (inc_timed(TMD_BLIND, damroll(4, 25) + 75, TRUE))
+				if (inc_timed(TMD_BLIND, damroll(4, 25) + 75,
+					TRUE))
 					*ident = TRUE;
 			}
 			else
@@ -200,7 +202,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			if (!p_ptr->state.resist_fear)
 			{
-				if (inc_timed(TMD_AFRAID, randint0(10) + 10, TRUE))
+				if (inc_timed(TMD_AFRAID, randint0(10) + 10,
+					TRUE))
 					*ident = TRUE;
 			}
 			else
@@ -215,7 +218,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			if (!p_ptr->state.resist_confu)
 			{
-				if (inc_timed(TMD_CONFUSED, damroll(4, 5) + 10, TRUE))
+				if (inc_timed(TMD_CONFUSED, damroll(4, 5) + 10,
+					TRUE))
 					*ident = TRUE;
 			}
 			else
@@ -230,7 +234,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			if (!p_ptr->state.resist_chaos)
 			{
-				if (inc_timed(TMD_IMAGE, randint0(250) + 250, TRUE))
+				if (inc_timed(TMD_IMAGE, randint0(250) + 250,
+					TRUE))
 					*ident = TRUE;
 			}
 			else
@@ -245,7 +250,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			if (!p_ptr->state.free_act)
 			{
-				if (inc_timed(TMD_PARALYZED, randint0(5) + 5, TRUE))
+				if (inc_timed(TMD_PARALYZED, randint0(5) + 5,
+					TRUE))
 					*ident = TRUE;
 			}
 			else
@@ -258,7 +264,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_SLOW:
 		{
-			if (inc_timed(TMD_SLOW, randint1(25) + 15, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_SLOW, randint1(25) + 15, TRUE))
+			*ident = TRUE;
 			return TRUE;
 		}
 
@@ -292,7 +299,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			if (clear_timed(TMD_AFRAID, TRUE)) *ident = TRUE;
 			if (clear_timed(TMD_IMAGE, TRUE)) *ident = TRUE;
 			if (!p_ptr->state.resist_confu &&
-					inc_timed(TMD_OPP_CONF, damroll(4, 10), TRUE))
+				inc_timed(TMD_OPP_CONF, damroll(4, 10), TRUE))
 			    	*ident = TRUE;
 			return TRUE;
 		}
@@ -399,7 +406,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			return TRUE;
 		}
 
-
 		case EF_GAIN_EXP:
 		{
 			if (p_ptr->exp < PY_MAX_EXP)
@@ -472,7 +478,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			/* Pick a random stat to decrease other than strength */
 			int stat = randint0(A_MAX-1) + 1;
-			
+
 			if (do_dec_stat(stat, TRUE))
 			{
 				do_inc_stat(A_STR);
@@ -487,7 +493,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			/* Pick a random stat to decrease other than intelligence */
 			int stat = randint0(A_MAX-1);
 			if (stat >= A_INT) stat++;
-			
+
 			if (do_dec_stat(stat, TRUE))
 			{
 				do_inc_stat(A_INT);
@@ -502,7 +508,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			/* Pick a random stat to decrease other than wisdom */
 			int stat = randint0(A_MAX-1);
 			if (stat >= A_WIS) stat++;
-			
+
 			if (do_dec_stat(stat, TRUE))
 			{
 				do_inc_stat(A_WIS);
@@ -517,7 +523,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			/* Pick a random stat to decrease other than constitution */
 			int stat = randint0(A_MAX-1);
 			if (stat >= A_CON) stat++;
-			
+
 			if (do_dec_stat(stat, TRUE))
 			{
 				do_inc_stat(A_CON);
@@ -532,7 +538,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			/* Pick a random stat to decrease other than dexterity */
 			int stat = randint0(A_MAX-1);
 			if (stat >= A_DEX) stat++;
-			
+
 			if (do_dec_stat(stat, TRUE))
 			{
 				do_inc_stat(A_DEX);
@@ -546,7 +552,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			/* Pick a random stat to decrease other than charisma */
 			int stat = randint0(A_MAX-1);
-			
+
 			if (do_dec_stat(stat, TRUE))
 			{
 				do_inc_stat(A_CHR);
@@ -639,24 +645,26 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			return TRUE;
 		}
 
-
 		case EF_TMD_INFRA:
 		{
-			if (inc_timed(TMD_SINFRA, 100 + damroll(4, 25), TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_SINFRA, 100 + damroll(4, 25), TRUE))
+				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_TMD_SINVIS:
 		{
 			if (clear_timed(TMD_BLIND, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_SINVIS, 12 + damroll(2, 6), TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_SINVIS, 12 + damroll(2, 6), TRUE))
+				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_TMD_ESP:
 		{
 			if (clear_timed(TMD_BLIND, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_TELEPATHY, 12 + damroll(6, 6), TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_TELEPATHY, 12 + damroll(6, 6), TRUE))
+				*ident = TRUE;
 			return TRUE;
 		}
 
@@ -689,7 +697,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			if (hp_player(10)) *ident = TRUE;
 			if (clear_timed(TMD_AFRAID, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_HERO, randint1(25) + 25, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_HERO, randint1(25) + 25, TRUE))
+				*ident = TRUE;
 			return TRUE;
 		}
 
@@ -697,7 +706,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		{
 			if (hp_player(30)) *ident = TRUE;
 			if (clear_timed(TMD_AFRAID, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_SHERO, randint1(25) + 25, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_SHERO, randint1(25) + 25, TRUE))
+				*ident = TRUE;
 			return TRUE;
 		}
 
@@ -739,11 +749,16 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_RESIST_ALL:
 		{
-			if (inc_timed(TMD_OPP_ACID, randint1(20) + 20, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_OPP_ELEC, randint1(20) + 20, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_OPP_FIRE, randint1(20) + 20, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_OPP_COLD, randint1(20) + 20, TRUE)) *ident = TRUE;
-			if (inc_timed(TMD_OPP_POIS, randint1(20) + 20, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_OPP_ACID, randint1(20) + 20, TRUE))
+				*ident = TRUE;
+			if (inc_timed(TMD_OPP_ELEC, randint1(20) + 20, TRUE))
+				*ident = TRUE;
+			if (inc_timed(TMD_OPP_FIRE, randint1(20) + 20, TRUE))
+				*ident = TRUE;
+			if (inc_timed(TMD_OPP_COLD, randint1(20) + 20, TRUE))
+				*ident = TRUE;
+			if (inc_timed(TMD_OPP_POIS, randint1(20) + 20, TRUE))
+				*ident = TRUE;
 			return TRUE;
 		}
 
@@ -801,7 +816,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		case EF_ENCHANT_WEAPON:
 		{
 			*ident = TRUE;
-			if (!enchant_spell(randint1(3), randint1(3), 0)) return FALSE;
+			if (!enchant_spell(randint1(3), randint1(3), 0))
+				return FALSE;
 			return TRUE;
 		}
 
@@ -852,7 +868,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			if (lite_area(damroll(2, 8), 2)) *ident = TRUE;
 			return TRUE;
 		}
-		
+
 		case EF_SUMMON_MON:
 		{
 			int i;
@@ -873,7 +889,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 			for (i = 0; i < randint1(3); i++)
 			{
-				if (summon_specific(py, px, p_ptr->depth, SUMMON_UNDEAD, 1))
+				if (summon_specific(py, px, p_ptr->depth,
+					SUMMON_UNDEAD, 1))
 					*ident = TRUE;
 			}
 			return TRUE;
@@ -934,7 +951,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_ACQUIRE2:
 		{
-			acquirement(py, px, p_ptr->depth, randint1(2) + 1, TRUE);
+			acquirement(py, px, p_ptr->depth, randint1(2) + 1,
+				TRUE);
 			*ident = TRUE;
 			return TRUE;
 		}
@@ -982,9 +1000,13 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 		case EF_DARKNESS:
 		{
 			if (!p_ptr->state.resist_blind)
-				(void)inc_timed(TMD_BLIND, 3 + randint1(5), TRUE);
+				(void)inc_timed(TMD_BLIND, 3 + randint1(5),
+					TRUE);
 			else
+			{
 				wieldeds_notice_flag(1, TR1_RES_BLIND);
+				wieldeds_notice_flag(1, TR1_RES_DARK);
+			}
 
 			if (unlite_area(10, 3)) *ident = TRUE;
 			return TRUE;
