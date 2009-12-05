@@ -1075,7 +1075,8 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 				if (tdam < 0) tdam = 0;
 
 				/* Learn the bonuses */
-				/* XXX Eddie This is messed up, better done for firing, should use that method [split last] instead */
+				/* XXX Eddie This is messed up, better done for firing, */
+				/* should use that method [split last] instead */
 				/* check if inven_optimize removed what o_ptr referenced */
 				if (object_similar(i_ptr, o_ptr))
 					object_notice_attack_plusses(o_ptr);
@@ -1083,10 +1084,8 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 
 				/* Complex message */
 				if (p_ptr->wizard)
-				{
 					msg_format("You do %d (out of %d) damage.",
-					           tdam, m_ptr->hp);
-				}
+							   tdam, m_ptr->hp);
 
 				/* Hit the monster, check for death */
 				if (mon_take_hit(cave_m_idx[y][x], tdam, &fear, note_dies))

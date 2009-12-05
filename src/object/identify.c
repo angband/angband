@@ -753,11 +753,13 @@ static void object_notice_after_time(void)
 	int i;
 	size_t j;
 
-	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
 		object_type *o_ptr = &inventory[i];
 		char o_name[80];
 		u32b f[OBJ_FLAG_N];
+
+		if (!o_ptr->k_idx) continue;
 
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
 		object_flags(o_ptr, f);
@@ -767,8 +769,7 @@ static void object_notice_after_time(void)
 			int set = notice_msgs[j].flagset;
 			u32b flag = notice_msgs[j].flag;
 
-			if ((f[set] & flag) &&
-					!(o_ptr->known_flags[set] & flag))
+			if ((f[set] & flag) && !(o_ptr->known_flags[set] & flag))
 			{
 				/* Notice the flag */
 				object_notice_flags(o_ptr, set, flag);
@@ -810,14 +811,15 @@ void wieldeds_notice_flag(int flagset, u32b flag)
 	size_t j;
 
 	/* XXX Eddie need different naming conventions for starting wieldeds at INVEN_WIELD vs INVEN_WIELD+2 */
-	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
 		object_type *o_ptr = &inventory[i];
 		u32b f[OBJ_FLAG_N];
 
+		if (!o_ptr->k_idx) continue;
+
 		object_flags(o_ptr, f);
-		if ((f[flagset] & flag) &&
-			!(o_ptr->known_flags[flagset] & flag))
+		if ((f[flagset] & flag) && !(o_ptr->known_flags[flagset] & flag))
 		{
 			char o_name[80];
 			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
@@ -960,7 +962,7 @@ void sense_inventory(void)
 
 
 	/* Check everything */
-	for (i = 0; i < INVEN_TOTAL; i++)
+	for (i = 0; i < ALL_INVEN_TOTAL; i++)
 	{
 		const char *text = NULL;
 
