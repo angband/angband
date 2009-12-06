@@ -426,8 +426,8 @@ static void store_base_power (void)
 		base_art_alloc[i] = a_ptr->alloc_prob;
 	}
 
-	avg_power = mean(fake_power, j);
-	var_power = variance(fake_power, j);
+	avg_power = mean((int*)fake_power, j);
+	var_power = variance((int*)fake_power, j);
 
 	LOG_PRINT2("Max power is %d, min is %d\n", max_power, min_power);
 	LOG_PRINT2("Mean is %d, variance is %d\n", avg_power, var_power);
@@ -3067,7 +3067,9 @@ static void scramble_artifact(int a_idx)
 		base_alloc_old = base_item_prob[a_idx];
 		do
 		{
+			/* Get the new item kind */
 			k_idx = choose_item(a_idx);
+			k_ptr = &k_info[k_idx];
 
 			/*
 			 * Hack: if power is positive but very low, and if we're not having
@@ -3088,7 +3090,6 @@ static void scramble_artifact(int a_idx)
 			 * artifact rarity multiplied by the base item rarity.
 			 */
 
-			k_ptr = &k_info[k_idx];
 			alloc_new = alloc_old * base_alloc_old
 				/ k_ptr->alloc_prob;
 
@@ -3107,16 +3108,19 @@ static void scramble_artifact(int a_idx)
 	}
 	else
 	{
-		/*
-		 * Special artifact (light source, ring, or amulet).
-		 * Clear the following fields; leave the rest alone.
-		 */
+		/* Special artifact (light source, ring, or amulet) */
+
+		/* Keep the item kind */
+		k_idx = lookup_kind(a_ptr->tval, a_ptr->sval);
+		k_ptr = &k_info[k_idx];
+
+		/* Clear the following fields; leave the rest alone */
 		a_ptr->pval = 0;
 		a_ptr->to_h = a_ptr->to_d = a_ptr->to_a = 0;
 		a_ptr->flags[0] = a_ptr->flags[1] = 0;
 
-                /* Clear the activations for rings and amulets but not lights */
-                if (a_ptr->tval != TV_LITE) a_ptr->effect = 0;
+		/* Clear the activations for rings and amulets but not lights */
+		if (a_ptr->tval != TV_LITE) a_ptr->effect = 0;
 
 		/* Artifacts ignore everything */
 		a_ptr->flags[2] = (TR2_IGNORE_MASK);
