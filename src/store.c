@@ -166,6 +166,30 @@ static const char *comment_great[] =
 	"Wow.  I'm going to name my new villa in your honour."
 };
 
+/*
+ * Staple definitions.
+ */
+typedef enum { MAKE_SINGLE, MAKE_NORMAL, MAKE_MAX } create_mode;
+
+static struct staple_type
+{
+	int tval, sval;
+	create_mode mode;
+} staples[] =
+{
+	{ TV_FOOD, SV_FOOD_RATION, MAKE_NORMAL },
+	{ TV_LITE, SV_LITE_TORCH, MAKE_NORMAL },
+	{ TV_SCROLL, SV_SCROLL_WORD_OF_RECALL, MAKE_NORMAL },
+	{ TV_SCROLL, SV_SCROLL_PHASE_DOOR, MAKE_NORMAL },
+	{ TV_FLASK, 0, MAKE_NORMAL },
+	{ TV_SPIKE, 0, MAKE_NORMAL },
+	{ TV_SHOT, SV_AMMO_NORMAL, MAKE_MAX },
+	{ TV_ARROW, SV_AMMO_NORMAL, MAKE_MAX },
+	{ TV_BOLT, SV_AMMO_NORMAL, MAKE_MAX },
+	{ TV_DIGGING, SV_SHOVEL, MAKE_SINGLE },
+	{ TV_DIGGING, SV_PICK, MAKE_SINGLE },
+	{ TV_CLOAK, SV_CLOAK, MAKE_SINGLE }
+};
 
 
 /*
@@ -259,8 +283,23 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 		/* General Store */
 		case STORE_GENERAL:
 		{
-			/* Doesn't buy anything back */
-			return (FALSE);
+			int i;
+			bool accept = FALSE;
+
+			/* Accept lights and food */
+			if (o_ptr->tval == TV_LITE || o_ptr->tval == TV_FOOD)
+			    accept = TRUE;
+
+			/* Accept staples */
+			for (i = 0; !accept && i < N_ELEMENTS(staples); i++)
+			{
+				if (staples[i].tval == o_ptr->tval &&
+				    staples[i].sval == o_ptr->sval)
+					accept = TRUE;
+			}
+
+			if (!accept) return FALSE;
+			break;
 		}
 
 		/* Armoury */
@@ -1323,32 +1362,6 @@ static bool store_create_random(int st)
 
 	return FALSE;
 }
-
-/*
- * Staple definitions.
- */
-typedef enum { MAKE_SINGLE, MAKE_NORMAL, MAKE_MAX } create_mode;
-
-static struct staple_type
-{
-	int tval, sval;
-	create_mode mode;
-} staples[] =
-{
-	{ TV_FOOD, SV_FOOD_RATION, MAKE_NORMAL },
-	{ TV_LITE, SV_LITE_TORCH, MAKE_NORMAL },
-	{ TV_SCROLL, SV_SCROLL_WORD_OF_RECALL, MAKE_NORMAL },
-	{ TV_SCROLL, SV_SCROLL_PHASE_DOOR, MAKE_NORMAL },
-	{ TV_LITE, SV_LITE_TORCH, MAKE_NORMAL },
-	{ TV_FLASK, 0, MAKE_NORMAL },
-	{ TV_SPIKE, 0, MAKE_NORMAL },
-	{ TV_SHOT, SV_AMMO_NORMAL, MAKE_MAX },
-	{ TV_ARROW, SV_AMMO_NORMAL, MAKE_MAX },
-	{ TV_BOLT, SV_AMMO_NORMAL, MAKE_MAX },
-	{ TV_DIGGING, SV_SHOVEL, MAKE_SINGLE },
-	{ TV_DIGGING, SV_PICK, MAKE_SINGLE },
-	{ TV_CLOAK, SV_CLOAK, MAKE_SINGLE }
-};
 
 
 /*
