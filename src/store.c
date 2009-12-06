@@ -283,7 +283,7 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 		/* General Store */
 		case STORE_GENERAL:
 		{
-			int i;
+			size_t i;
 			bool accept = FALSE;
 
 			/* Accept lights and food */
