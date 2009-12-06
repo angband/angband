@@ -911,6 +911,7 @@ static int store_carry(int st, object_type *o_ptr)
 	object_type *j_ptr;
 
 	store_type *st_ptr = &store[st];
+	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
 	/* Evaluate the object */
 	value = object_value(o_ptr, 1, FALSE);
@@ -920,6 +921,37 @@ static int store_carry(int st, object_type *o_ptr)
 
 	/* Erase the inscription & pseudo-ID bit */
 	o_ptr->note = 0;
+	
+	/* Recharge rods */
+	if (o_ptr->tval == TV_ROD)
+		o_ptr->timeout = 0;
+
+	/* Possibly recharge wands and staves */
+	if (o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND)
+	{
+		bool recharge = FALSE;
+
+		/* Recharge without fail if the store normally carries that type */
+		for (i = 0; i < st_ptr->table_num; i++)
+		{
+			if (st_ptr->table[i] == o_ptr->k_idx)
+				recharge = TRUE;
+		}
+
+		if (recharge)
+		{
+			int charges = 0;
+
+			/* Calculate the recharged number of charges */
+			charges = k_ptr->charge_base * o_ptr->number;
+			for (i = 0; i < o_ptr->number; i++)
+				charges += damroll(k_ptr->charge_dd, k_ptr->charge_ds);
+
+			/* Use recharged value only if greater */
+			if (charges > o_ptr->pval)
+				o_ptr->pval = charges;
+		}
+	}
 
 	/* Check each existing object (try to combine) */
 	for (slot = 0; slot < st_ptr->stock_num; slot++)
