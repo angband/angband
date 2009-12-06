@@ -1014,7 +1014,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_PROTEVIL:
 		{
-			if (inc_timed(TMD_PROTEVIL, randint1(25) + 3 * p_ptr->lev, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_PROTEVIL, randint1(25) + 3 *
+				p_ptr->lev, TRUE)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -1038,19 +1039,22 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 
 		case EF_BLESSING:
 		{
-			if (inc_timed(TMD_BLESSED, randint1(12) + 6, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_BLESSED, randint1(12) + 6, TRUE))
+				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_BLESSING2:
 		{
-			if (inc_timed(TMD_BLESSED, randint1(24) + 12, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_BLESSED, randint1(24) + 12, TRUE))
+				*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_BLESSING3:
 		{
-			if (inc_timed(TMD_BLESSED, randint1(48) + 24, TRUE)) *ident = TRUE;
+			if (inc_timed(TMD_BLESSED, randint1(48) + 24, TRUE))
+				*ident = TRUE;
 			return TRUE;
 		}
 
@@ -1160,7 +1164,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			return TRUE;
 		}
 
-
 		case EF_STONE_TO_MUD:
 		{
 			if (wall_to_mud(dir)) *ident = TRUE;
@@ -1174,7 +1177,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			return TRUE;
 		}
 
-
 		case EF_BIZARRE:
 		{
 			*ident = TRUE;
@@ -1182,12 +1184,12 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam)
 			return TRUE;
 		}
 
-
 		case EF_STAR_BALL:
 		{
 			int i;
 			*ident = TRUE;
-			for (i = 0; i < 8; i++) fire_ball(GF_ELEC, ddd[i], 150, 3);
+			for (i = 0; i < 8; i++) fire_ball(GF_ELEC, ddd[i], 150,
+				3);
 			return TRUE;
 		}
 

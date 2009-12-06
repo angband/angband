@@ -76,7 +76,7 @@ int get_use_device_chance(const object_type *o_ptr)
 
 	/* these could be globals if desired, calculated rather than stated */
 	int skill_min = 10;
-	int skill_max = 129;
+	int skill_max = 141;
 	int diff_min = 1;
 	int diff_max = 100;
 
