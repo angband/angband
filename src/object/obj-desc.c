@@ -531,6 +531,13 @@ static size_t obj_desc_chest(const object_type *o_ptr, char *buf, size_t max, si
 static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max, 
 		size_t end, bool spoil)
 {
+	object_kind *k_ptr = &k_info[o_ptr->k_idx];
+	u32b flags[OBJ_FLAG_N];
+	u32b flags_known[OBJ_FLAG_N];
+
+	object_flags(o_ptr, flags);
+	object_flags_known(o_ptr, flags_known);
+
 	/* Dump base weapon info */
 	switch (o_ptr->tval)
 	{
@@ -543,14 +550,22 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 		case TV_SWORD:
 		case TV_DIGGING:
 		{
-			strnfcat(buf, max, &end, " (%dd%d)", o_ptr->dd, o_ptr->ds);
+			/* Only display the real damage dice if the combat stats are known */
+			if (spoil || object_attack_plusses_are_visible(o_ptr))
+				strnfcat(buf, max, &end, " (%dd%d)", o_ptr->dd, o_ptr->ds);
+			else
+				strnfcat(buf, max, &end, " (%dd%d)", k_ptr->dd, k_ptr->ds);
 			break;
 		}
 
 		/* Missile launchers */
 		case TV_BOW:
 		{
-			strnfcat(buf, max, &end, " (x%d)", o_ptr->sval % 10);
+			/* Display shooting power as part of the multiplier */
+			if ((flags[0] & TR0_MIGHT) && (spoil || (flags_known[0] & TR0_MIGHT)))
+				strnfcat(buf, max, &end, " (x%d)", (o_ptr->sval % 10) + o_ptr->pval);
+			else
+				strnfcat(buf, max, &end, " (x%d)", o_ptr->sval % 10);
 			break;
 		}
 	}
@@ -608,26 +623,27 @@ static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max, siz
 	u32b f[OBJ_FLAG_N];
 	object_flags(o_ptr, f);
 
-	if (!(f[0] & TR0_PVAL_MASK)) return end;
+	/* For laucnhers, MIGHT is displayed in the multiplier, not in the pval */
+	if (o_ptr->tval == TV_BOW)
+		f[0] &= ~TR0_MIGHT;
 
-	if (f[2] & TR2_HIDE_TYPE)
-	{
-		strnfcat(buf, max, &end, " (%+d)", o_ptr->pval);
-		return end;
-	}
+	if (!(f[0] & TR0_PVAL_MASK)) return end;
 
 	strnfcat(buf, max, &end, " (%+d", o_ptr->pval);
 
-	if (f[0] & TR0_STEALTH)
-		strnfcat(buf, max, &end, " stealth");
-	else if (f[0] & TR0_SEARCH)
-		strnfcat(buf, max, &end, " searching");
-	else if (f[0] & TR0_INFRA)
-		strnfcat(buf, max, &end, " infravision");
-	else if (f[0] & TR0_SPEED)
-		strnfcat(buf, max, &end, " speed");
-	else if (f[0] & TR0_BLOWS)
-		strnfcat(buf, max, &end, " attack%s", PLURAL(o_ptr->pval));
+	if (!(f[2] & TR2_HIDE_TYPE))
+	{
+		if (f[0] & TR0_STEALTH)
+			strnfcat(buf, max, &end, " stealth");
+		else if (f[0] & TR0_SEARCH)
+			strnfcat(buf, max, &end, " searching");
+		else if (f[0] & TR0_INFRA)
+			strnfcat(buf, max, &end, " infravision");
+		else if (f[0] & TR0_SPEED)
+			strnfcat(buf, max, &end, " speed");
+		else if (f[0] & TR0_BLOWS)
+			strnfcat(buf, max, &end, " attack%s", PLURAL(o_ptr->pval));
+	}
 
 	strnfcat(buf, max, &end, ")");
 
