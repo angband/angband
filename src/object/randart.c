@@ -396,12 +396,12 @@ static void store_base_power (void)
 	artifact_type *a_ptr;
 	object_kind *k_ptr;
 	s16b k_idx;
-	s32b *fake_power;
+	int *fake_power;
 
 	max_power = 0;
 	min_power = 32767;
 	var_power = 0;
-	fake_power = C_ZNEW(z_info->a_max, s32b);
+	fake_power = C_ZNEW(z_info->a_max, int);
 	j = 0;
 
 	for(i = 0; i < z_info->a_max; i++, j++)
@@ -414,7 +414,7 @@ static void store_base_power (void)
 		if (base_power[i] < min_power && base_power[i] > 0)
 			min_power = base_power[i];
 		if (base_power[i] > 0 && base_power[i] < INHIBIT_POWER)
-			fake_power[j] = base_power[i];
+			fake_power[j] = (int)base_power[i];
 		else
 			j--;
 
@@ -426,8 +426,8 @@ static void store_base_power (void)
 		base_art_alloc[i] = a_ptr->alloc_prob;
 	}
 
-	avg_power = mean((int*)fake_power, j);
-	var_power = variance((int*)fake_power, j);
+	avg_power = mean(fake_power, j);
+	var_power = variance(fake_power, j);
 
 	LOG_PRINT2("Max power is %d, min is %d\n", max_power, min_power);
 	LOG_PRINT2("Mean is %d, variance is %d\n", avg_power, var_power);
