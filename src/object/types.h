@@ -39,7 +39,7 @@ typedef struct
 	byte alloc_prob;   /**< Allocation: commonness */
 	byte alloc_min;    /**< Highest normal dungeon level */
 	byte alloc_max;    /**< Lowest normal dungeon level */
-	byte level;        /**< Level */
+	byte level;        /**< Level (difficulty of activation) */
 
 	u16b effect;       /**< Effect this item produces (effects.c) */
 	u16b time_base;    /**< Recharge time (if appropriate) */
@@ -106,7 +106,7 @@ typedef struct
 
 	u32b flags[OBJ_FLAG_N];		/**< Flags */
 
-	byte level;   /** Unused */
+	byte level;   /** Difficulty level for activation */
 	byte rarity;  /** Unused */
 	byte alloc_prob; /** Chance of being generated (i.e. rarity) */
 	byte alloc_min;  /** Minimum depth (can appear earlier) */

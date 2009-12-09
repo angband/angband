@@ -2424,19 +2424,32 @@ static void add_immunity(artifact_type *a_ptr)
 }
 
 /* Add an activation (called only if artifact does not yet have one) */
-static void add_activation(artifact_type *a_ptr)
+static void add_activation(artifact_type *a_ptr, s32b target_power)
 {
-	int x;
-	int p;
+	int i, x, p, max_effect;
 	int count = 0;
 
+	/* Work out the maximum allowed effect power */
+	for (i = 0; i < EF_MAX; i++)
+	{
+		if (effect_power(i) > max_effect && effect_power(i) <
+			INHIBIT_POWER)
+			max_effect = effect_power(i);
+	}
+
+	/* Select an effect at random */
 	while (count < MAX_TRIES)
 	{
 		x = randint0(EF_MAX);
 		p = effect_power(x);
 
-		/* Check that activation is useful but not exploitable */
-		if ((p > 0) && (p < INHIBIT_POWER))
+		/*
+		 * Check that activation is useful but not exploitable,
+		 * and roughly proportionate to the overall power
+		 */
+		if (p < INHIBIT_POWER && 100 * p / max_effect > 50 *
+			target_power / max_power && 100 * p / max_effect < 200
+			* target_power / max_power)
 		{
 			LOG_PRINT1("Adding activation effect %d\n", x);
 			a_ptr->effect = x;
@@ -2867,7 +2880,7 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			break;
 
 		case ART_IDX_GEN_ACTIV:
-			if (!a_ptr->effect) add_activation(a_ptr);
+			if (!a_ptr->effect) add_activation(a_ptr, target_power);
 			break;
 	}
 }
@@ -2942,7 +2955,7 @@ static void try_supercharge(artifact_type *a_ptr, s32b target_power)
 	if (randint0(z_info->a_max) < artprobs[ART_IDX_GEN_SPEED_SUPER])
 	{
 		a_ptr->flags[0] |= TR0_SPEED;
-		a_ptr->pval = 7 + randint0(6); 
+		a_ptr->pval = 7 + randint0(6);
 		if (one_in_(4)) a_ptr->pval += randint1(4);
 		LOG_PRINT1("Supercharging speed for this item!  (New speed bonus is %d)\n", a_ptr->pval);
 	}
