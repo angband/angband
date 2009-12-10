@@ -490,7 +490,7 @@ s16b wield_slot_ammo(const object_type *o_ptr)
 	i = get_inscribed_ammo_slot(o_ptr);
 	if (i && !inventory[i].k_idx) return i;
 
-	for (i = QUIVER_START; i <= QUIVER_END; i++)
+	for (i = QUIVER_START; i < QUIVER_END; i++)
 	{
 		if (!inventory[i].k_idx)
 		{
@@ -567,15 +567,12 @@ s16b wield_slot(const object_type *o_ptr)
  */
 bool slot_can_wield_item(int slot, const object_type *o_ptr)
 {
-	/* XXX This is nasty, but is there a better way? */
-	if (o_ptr->tval == TV_RING &&
-			(slot == INVEN_LEFT || slot == INVEN_RIGHT))
-		return TRUE;
-
-	if (wield_slot(o_ptr) == slot)
-		return TRUE;
+	if (o_ptr->tval == TV_RING)
+		return (slot == INVEN_LEFT || slot == INVEN_RIGHT) ? TRUE : FALSE;
+	else if (obj_is_ammo(o_ptr))
+		return (slot >= QUIVER_START && slot < QUIVER_END) ? TRUE : FALSE;
 	else
-		return FALSE;
+		return (wield_slot(o_ptr) == slot) ? TRUE : FALSE;
 }
 
 

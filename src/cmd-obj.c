@@ -328,7 +328,7 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 	equip_o_ptr = &inventory[slot];
 
 	/* If the slot is open, wield and be done */
-	if (!equip_o_ptr) {
+	if (!equip_o_ptr->k_idx) {
 		wield_item(o_ptr, item, slot);
 		return;
 	}
@@ -402,13 +402,19 @@ static void obj_wield(object_type *o_ptr, int item)
 {
 	int slot = wield_slot(o_ptr);
 
-	if (o_ptr->tval == TV_RING &&
-		(inventory[INVEN_LEFT].k_idx && inventory[INVEN_RIGHT].k_idx))
+	if (o_ptr->tval == TV_RING && inventory[slot].k_idx)
 	{
 		cptr q = "Replace which ring? ";
 		cptr s = "Error in obj_wield, please report";
-
 		item_tester_hook = obj_is_ring;
+		if (!get_item(&slot, q, s, USE_EQUIP)) return;
+	}
+
+	if (obj_is_ammo(o_ptr) && inventory[slot].k_idx)
+	{
+		cptr q = "Replace which ammunition? ";
+		cptr s = "Error in obj_wield, please report";
+		item_tester_hook = obj_is_ammo;
 		if (!get_item(&slot, q, s, USE_EQUIP)) return;
 	}
 
