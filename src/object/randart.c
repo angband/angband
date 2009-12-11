@@ -2426,7 +2426,7 @@ static void add_immunity(artifact_type *a_ptr)
 /* Add an activation (called only if artifact does not yet have one) */
 static void add_activation(artifact_type *a_ptr, s32b target_power)
 {
-	int i, x, p, max_effect;
+	int i, x, p, max_effect = 0;
 	int count = 0;
 
 	/* Work out the maximum allowed effect power */
