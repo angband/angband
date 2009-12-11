@@ -3556,8 +3556,8 @@ void generate_cave(void)
 	/* The dungeon is ready */
 	character_dungeon = TRUE;
 
-	/* Remember when this level was "created" */
-	old_turn = turn;
+	/* Remember when the last dungeon level was created */
+	if (p_ptr->depth > 0) old_turn = turn;
 }
 
 
