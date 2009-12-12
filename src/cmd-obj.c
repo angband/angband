@@ -402,20 +402,26 @@ static void obj_wield(object_type *o_ptr, int item)
 {
 	int slot = wield_slot(o_ptr);
 
-	if (o_ptr->tval == TV_RING && inventory[slot].k_idx)
+	/* Usually if the slot is taken we'll just replace the item in the slot,
+	 * but in some cases we need to ask the user which slot they actually
+	 * want to replace */
+	if (inventory[slot].k_idx)
 	{
-		cptr q = "Replace which ring? ";
-		cptr s = "Error in obj_wield, please report";
-		item_tester_hook = obj_is_ring;
-		if (!get_item(&slot, q, s, USE_EQUIP)) return;
-	}
+		if (o_ptr->tval == TV_RING)
+		{
+			cptr q = "Replace which ring? ";
+			cptr s = "Error in obj_wield, please report";
+			item_tester_hook = obj_is_ring;
+			if (!get_item(&slot, q, s, USE_EQUIP)) return;
+		}
 
-	if (obj_is_ammo(o_ptr) && inventory[slot].k_idx)
-	{
-		cptr q = "Replace which ammunition? ";
-		cptr s = "Error in obj_wield, please report";
-		item_tester_hook = obj_is_ammo;
-		if (!get_item(&slot, q, s, USE_EQUIP)) return;
+		if (obj_is_ammo(o_ptr) && !object_similar(&inventory[slot], o_ptr))
+		{
+			cptr q = "Replace which ammunition? ";
+			cptr s = "Error in obj_wield, please report";
+			item_tester_hook = obj_is_ammo;
+			if (!get_item(&slot, q, s, USE_EQUIP)) return;
+		}
 	}
 
 	cmd_insert(CMD_WIELD, item, slot);
