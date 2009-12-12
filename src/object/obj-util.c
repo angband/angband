@@ -2348,6 +2348,21 @@ void inven_item_increase(int item, int num)
 
 
 /**
+ * Save the size of the quiver.
+ */
+void save_quiver_size(void)
+{
+	int i, count = 0;
+	for (i = QUIVER_START; i < QUIVER_END; i++)
+		if (inventory[i].k_idx) count += inventory[i].number;
+
+	p_ptr->quiver_size = count;
+	p_ptr->quiver_slots = (count + 98) / 99;
+	p_ptr->quiver_remainder = count % 99;
+}
+
+
+/**
  * Compare ammunition from slots (0-9); used for sorting.
  *
  * \returns -1 if slot1 should come first, 1 if slot2 should come first, or 0.
@@ -2453,6 +2468,9 @@ void inven_item_optimize(int item)
 	object_type *o_ptr = &inventory[item];
 	int i, j, slot, limit;
 
+	/* Save a possibly new quiver size */
+	if (item >= QUIVER_START) save_quiver_size();
+
 	/* Only optimize real items which are empty */
 	if (!o_ptr->k_idx || o_ptr->number) return;
 
@@ -2461,7 +2479,7 @@ void inven_item_optimize(int item)
 	{
 		p_ptr->inven_cnt--;
 		p_ptr->redraw |= PR_INVEN;
-		limit = INVEN_PACK;
+		limit = INVEN_MAX_PACK;
 	}
 
 	/* Items in the quiver and equipped items are (mostly) treated similarly */
@@ -2502,6 +2520,7 @@ void inven_item_optimize(int item)
 		j = i;
 	}
 
+	/* Reorder the quiver if necessary */
 	if (item >= QUIVER_START) sort_quiver();
 
 	/* Wipe the left-over object on the end */
@@ -2595,7 +2614,7 @@ void floor_item_optimize(int item)
 bool inven_carry_okay(const object_type *o_ptr)
 {
 	/* Empty slot? */
-	if (p_ptr->inven_cnt < INVEN_PACK) return TRUE;
+	if (p_ptr->inven_cnt < INVEN_MAX_PACK) return TRUE;
 
 	/* Check if it can stack */
 	if (inven_stack_okay(o_ptr)) return TRUE;
@@ -2679,6 +2698,9 @@ s16b inven_carry(object_type *o_ptr)
 			/* Redraw stuff */
 			p_ptr->redraw |= (PR_INVEN);
 
+			/* Save quiver size */
+			save_quiver_size();
+
 			/* Success */
 			return (j);
 		}
@@ -2686,11 +2708,11 @@ s16b inven_carry(object_type *o_ptr)
 
 
 	/* Paranoia */
-	if (p_ptr->inven_cnt > INVEN_PACK) return (-1);
+	if (p_ptr->inven_cnt > INVEN_MAX_PACK) return (-1);
 
 
 	/* Find an empty slot */
-	for (j = 0; j <= INVEN_PACK; j++)
+	for (j = 0; j <= INVEN_MAX_PACK; j++)
 	{
 		j_ptr = &inventory[j];
 
@@ -2711,7 +2733,7 @@ s16b inven_carry(object_type *o_ptr)
 		o_value = k_info[o_ptr->k_idx].cost;
 
 		/* Scan every occupied slot */
-		for (j = 0; j < INVEN_PACK; j++)
+		for (j = 0; j < INVEN_MAX_PACK; j++)
 		{
 			j_ptr = &inventory[j];
 
@@ -2819,6 +2841,9 @@ s16b inven_carry(object_type *o_ptr)
 			do_ident_item(i, j_ptr);
 		}
 	}
+
+	/* Save quiver size */
+	save_quiver_size();
 
 	/* Return the slot */
 	return (i);

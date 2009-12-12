@@ -995,6 +995,9 @@ static void process_player(void)
 	/* Repeat until energy is reduced */
 	do
 	{
+		/* Item slot just past the legal end of the pack */
+		int item = INVEN_MAX_PACK;
+
 		/* Notice stuff (if needed) */
 		if (p_ptr->notice) notice_stuff();
 
@@ -1011,12 +1014,9 @@ static void process_player(void)
 		/* Refresh (optional) */
 		Term_fresh();
 
-
 		/* Hack -- Pack Overflow */
-		if (inventory[INVEN_PACK].k_idx)
+		if (inventory[item].k_idx)
 		{
-			int item = INVEN_PACK;
-
 			char o_name[80];
 
 			object_type *o_ptr;

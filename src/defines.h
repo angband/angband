@@ -400,7 +400,12 @@ typedef enum
  * Note that "INVEN_PACK" is probably hard-coded by its use in savefiles, and
  * by the fact that the screen can only show 23 items plus a one-line prompt.
  */
-#define INVEN_PACK		23
+#define INVEN_PACK        23
+
+/*
+ * Like the previous but takes into account the (variably full quiver).
+ */
+#define INVEN_MAX_PACK  (INVEN_PACK - p_ptr->quiver_slots)
 
 /*
  * Indexes used for various "equipment" slots (hard-coded by savefiles, etc).

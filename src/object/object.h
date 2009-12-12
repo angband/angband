@@ -187,6 +187,7 @@ void acquirement(int y1, int x1, int level, int num, bool great);
 void inven_item_charges(int item);
 void inven_item_describe(int item);
 void inven_item_increase(int item, int num);
+void save_quiver_size(void);
 void inven_item_optimize(int item);
 void floor_item_charges(int item);
 void floor_item_describe(int item);

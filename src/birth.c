@@ -569,11 +569,13 @@ static void wield_all(void)
 		object_copy(o_ptr, i_ptr);
 
 		/* Increase the weight */
-		p_ptr->total_weight += i_ptr->weight;
+		p_ptr->total_weight += i_ptr->weight * i_ptr->number;
 
 		/* Increment the equip counter by hand */
 		p_ptr->equip_cnt++;
 	}
+
+	save_quiver_size();
 
 	return;
 }
