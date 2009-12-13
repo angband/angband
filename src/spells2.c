@@ -2383,8 +2383,6 @@ static void cave_temp_room_lite(void)
 		int y = temp_y[i];
 		int x = temp_x[i];
 
-		if (x >= level_wid || y >= level_hgt) continue;
-
 		/* Redraw the grid */
 		lite_spot(y, x);
 
@@ -2518,6 +2516,8 @@ void lite_room(int y1, int x1)
 {
 	int i, x, y;
 
+        /* Assure that temp_n =0 to avoid strange bugs*/
+        temp_n = 0;
 	/* Add the initial grid */
 	cave_temp_room_aux(y1, x1);
 
@@ -2553,6 +2553,9 @@ void lite_room(int y1, int x1)
 void unlite_room(int y1, int x1)
 {
 	int i, x, y;
+
+        /* Assure that temp_n =0 to avoid strange bugs*/
+        temp_n = 0;
 
 	/* Add the initial grid */
 	cave_temp_room_aux(y1, x1);
