@@ -159,7 +159,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
-	int dam;
+	int dam, chance;
 
 	if (effect < 1 || effect > EF_MAX)
 	{
@@ -1930,7 +1930,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_DRAGON_CHAOS:
 		{
 			dam = 220 * (100 + boost) / 100;
-			int chance = randint0(2);
+			chance = randint0(2);
 			sound(((chance == 1 ? MSG_BR_CHAOS : MSG_BR_DISENCHANT)));
 			msg_format("You breathe %s.",
 			           ((chance == 1 ? "chaos" : "disenchantment")));
@@ -1942,7 +1942,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_DRAGON_LAW:
 		{
 			dam = 230 * (100 + boost) / 100;
-			int chance = randint0(2);
+			chance = randint0(2);
 			sound(((chance == 1 ? MSG_BR_SOUND : MSG_BR_SHARDS)));
 			msg_format("You breathe %s.",
 			           ((chance == 1 ? "sound" : "shards")));
@@ -1954,7 +1954,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_DRAGON_BALANCE:
 		{
 			dam = 250 * (100 + boost) / 100;
-			int chance = randint0(4);
+			chance = randint0(4);
 			msg_format("You breathe %s.",
 			           ((chance == 1) ? "chaos" :
 			            ((chance == 2) ? "disenchantment" :
@@ -1969,7 +1969,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_DRAGON_SHINING:
 		{
 			dam = 200 * (100 + boost) / 100;
-			int chance = randint0(2);
+			chance = randint0(2);
 			sound(((chance == 0 ? MSG_BR_LIGHT : MSG_BR_DARK)));
 			msg_format("You breathe %s.",
 			        ((chance == 0 ? "light" : "darkness")));

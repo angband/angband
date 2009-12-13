@@ -422,7 +422,7 @@ void autoinscribe_pack(void)
 /*** Squelch code ***/
 
 /*
- * Determines whether a tval is eligable for sval-squelch.
+ * Determines whether a tval is eligible for sval-squelch.
  */
 bool squelch_tval(int tval)
 {
@@ -462,7 +462,9 @@ static squelch_type_t squelch_type_of(const object_type *o_ptr)
 	/* Find the appropriate squelch group */
 	for (i = 0; i < N_ELEMENTS(quality_mapping); i++)
 	{
-		if ((quality_mapping[i].tval == o_ptr->tval) && (quality_mapping[i].min_sval <= o_ptr->sval) && (quality_mapping[i].max_sval >= o_ptr->sval))
+		if ((quality_mapping[i].tval == o_ptr->tval) &&
+			(quality_mapping[i].min_sval <= o_ptr->sval) &&
+			(quality_mapping[i].max_sval >= o_ptr->sval))
 			return quality_mapping[i].squelch_type;
 	}
 
@@ -480,6 +482,9 @@ static byte squelch_level_of(const object_type *o_ptr)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	byte value;
+	u32b f[OBJ_FLAG_N];
+
+	object_flags_known(o_ptr, f);
 
 	if ((object_pval_is_visible(o_ptr)) && (o_ptr->pval < 0))
 		return SQUELCH_BAD;
@@ -491,6 +496,19 @@ static byte squelch_level_of(const object_type *o_ptr)
 			return SQUELCH_AVERAGE;
 		if ((o_ptr->to_h > 0) || (o_ptr->to_d > 0) || (o_ptr->to_a > 0))
 			return SQUELCH_AVERAGE;
+		if ((o_ptr->to_h < 0) || (o_ptr->to_d < 0) || (o_ptr->to_a < 0))
+			return SQUELCH_BAD;
+
+		return SQUELCH_AVERAGE;
+	}
+
+	/* And lights */
+	if (o_ptr->tval == TV_LITE)
+	{
+		if (f[2] & TR2_OBVIOUS_MASK)
+			return SQUELCH_ALL;
+		if ((o_ptr->to_h > 0) || (o_ptr->to_d > 0) || (o_ptr->to_a > 0))
+			return SQUELCH_GOOD;
 		if ((o_ptr->to_h < 0) || (o_ptr->to_d < 0) || (o_ptr->to_a < 0))
 			return SQUELCH_BAD;
 
@@ -592,7 +610,7 @@ void kind_squelch_when_unaware(object_kind *k_ptr)
 
 
 /*
- * Determines if an object is eligable for squelching.
+ * Determines if an object is eligible for squelching.
  */
 bool squelch_item_ok(const object_type *o_ptr)
 {
@@ -1213,7 +1231,7 @@ bool squelch_interactive(const object_type *o_ptr)
 				object_squelch_flavor_of(o_ptr);
 				msg_format("Ignoring %s from now on.", sval_name);
 				return TRUE;
-			}		
+			}
 		}
 		/* XXX Eddie need to add generalized squelching, e.g. con rings with pval < 3 */
 		if (!object_is_jewelry(o_ptr) || (squelch_level_of(o_ptr) != SQUELCH_BAD))
