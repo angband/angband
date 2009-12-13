@@ -115,12 +115,12 @@ static int beam_chance(int tval)
 }
 
 
-typedef enum { 
-	ART_TAG_NONE, 
-	ART_TAG_NAME, 
-	ART_TAG_KIND, 
-	ART_TAG_VERB, 
-	ART_TAG_VERB_IS 
+typedef enum {
+	ART_TAG_NONE,
+	ART_TAG_NAME,
+	ART_TAG_KIND,
+	ART_TAG_VERB,
+	ART_TAG_VERB_IS
 } art_tag_t;
 
 static art_tag_t art_tag_lookup(const char *tag)
@@ -139,13 +139,13 @@ static art_tag_t art_tag_lookup(const char *tag)
 
 /*
  * Print an artifact activation message.
- * 
+ *
  * In order to support randarts, with scrambled names, we re-write
  * the message to replace instances of {name} with the artifact name
  * and instances of {kind} with the type of object.
  *
- * This code deals with plural and singular forms of verbs correctly 
- * when encountering {s}, though in fact both names and kinds are 
+ * This code deals with plural and singular forms of verbs correctly
+ * when encountering {s}, though in fact both names and kinds are
  * always singular in the current code (gloves are "Set of" and boots
  * are "Pair of")
  */
@@ -157,9 +157,9 @@ static void activation_message(object_type *o_ptr, const char *message)
 	const char *tag;
 	const char *in_cursor;
 	size_t end = 0;
- 
+
 	in_cursor = message;
- 
+
 	next = strchr(in_cursor, '{');
 	while (next)
 	{
@@ -173,7 +173,7 @@ static void activation_message(object_type *o_ptr, const char *message)
 		{
 			tag = next + 1; /* Start the tag after the { */
 			in_cursor = s + 1;
- 
+
 			switch(art_tag_lookup(tag))
 			{
 			case ART_TAG_NAME:
@@ -198,14 +198,14 @@ static void activation_message(object_type *o_ptr, const char *message)
 		else    /* An invalid tag, skip it */
 		{
 			in_cursor = next + 1;
-		} 
+		}
 
 		next = strchr(in_cursor, '{');
 	}
 	strnfcat(buf, 1024, &end, in_cursor);
- 
+
 	msg_print(buf);
-} 
+}
 
 
 
@@ -229,7 +229,7 @@ void do_cmd_uninscribe(cmd_code code, cmd_arg args[])
 void do_cmd_inscribe(cmd_code code, cmd_arg args[])
 {
 	object_type *o_ptr = object_from_item_idx(args[0].item);
-	
+
 	o_ptr->note = quark_add(args[1].string);
 
 	p_ptr->notice |= (PN_COMBINE | PN_SQUELCH | PN_SORT_QUIVER);
@@ -316,7 +316,7 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 	{
 		msg_print("You do not have that item to wield.");
 		return;
-	}	
+	}
 
 	/* Check the slot */
 	if (!slot_can_wield_item(slot, o_ptr))
@@ -511,7 +511,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	bool was_aware = object_flavor_is_aware(o_ptr);
 	int dir = 5;
 	int px = p_ptr->px, py = p_ptr->py;
-	int snd;
+	int snd, boost, level;
 	use_type use;
 	int items_allowed = 0;
 
@@ -541,7 +541,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
 	else if (obj_is_staff(o_ptr))
-	{	
+	{
 		if (!obj_has_charges(o_ptr))
 		{
 			msg_print("That staff has no charges.");
@@ -555,13 +555,13 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	else if (obj_is_food(o_ptr))
 	{
 		use = USE_SINGLE;
-		snd = MSG_EAT;		
+		snd = MSG_EAT;
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
 	else if (obj_is_potion(o_ptr))
 	{
 		use = USE_SINGLE;
-		snd = MSG_QUAFF;		
+		snd = MSG_QUAFF;
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
 	else if (obj_is_scroll(o_ptr))
@@ -571,7 +571,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 			return;
 
 		use = USE_SINGLE;
-		snd = MSG_GENERIC;		
+		snd = MSG_GENERIC;
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
 	else if (obj_is_activatable(o_ptr))
@@ -581,7 +581,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 			msg_print("That item is still charging.");
 			return;
 		}
-		
+
 		use = USE_TIMEOUT;
 		snd = MSG_ACT_ARTIFACT;
 		items_allowed = USE_EQUIP;
@@ -604,7 +604,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	/* Figure out effect to use */
 	effect = object_effect(o_ptr);
 
-	/* If the item requires a direction, get one (allow cancelling) */	
+	/* If the item requires a direction, get one (allow cancelling) */
 	if (obj_needs_aim(o_ptr))
 		dir = args[1].direction;
 
@@ -617,19 +617,26 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		{
 			message(snd, 0, "You activate it.");
 			activation_message(o_ptr, a_text + a_info[o_ptr->name1].effect_msg);
+			level = a_info[o_ptr->name1].level;
 		}
 		else
 		{
 			/* Make a noise! */
 			sound(snd);
+			level = k_info[o_ptr->k_idx].level;
 		}
 
 		/* A bit of a hack to make ID work better.
 			-- Check for "obvious" effects beforehand. */
 		if (effect_obvious(effect)) object_flavor_aware(o_ptr);
 
+		/* Boost damage effects if skill > difficulty */
+		boost = p_ptr->state.skills[SKILL_DEVICE] - level;
+		if (boost < 0) boost = 0;
+
 		/* Do effect */
-		used = effect_do(effect, &ident, was_aware, dir, beam_chance(o_ptr->tval));
+		used = effect_do(effect, &ident, was_aware, dir,
+			beam_chance(o_ptr->tval), boost);
 
 		/* Quit if the item wasn't used and no knowledge was gained */
 		if (!used && (was_aware || !ident)) return;
