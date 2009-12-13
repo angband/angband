@@ -257,11 +257,11 @@ static int rd_item(object_type *o_ptr)
 	if (!wearable_p(o_ptr))
 	{
 		/* Get the correct fields */
-		if (randcalc_valid(k_ptr->to_h, o_ptr->to_h))
+		if (!randcalc_valid(k_ptr->to_h, o_ptr->to_h))
 			o_ptr->to_h = randcalc(k_ptr->to_h, o_ptr->origin_depth, RANDOMISE);
-		if (randcalc_valid(k_ptr->to_d, o_ptr->to_d))
+		if (!randcalc_valid(k_ptr->to_d, o_ptr->to_d))
 			o_ptr->to_d = randcalc(k_ptr->to_d, o_ptr->origin_depth, RANDOMISE);
-		if (randcalc_valid(k_ptr->to_a, o_ptr->to_a))
+		if (!randcalc_valid(k_ptr->to_a, o_ptr->to_a))
 			o_ptr->to_a = randcalc(k_ptr->to_a, o_ptr->origin_depth, RANDOMISE);
 
 		/* Get the correct fields */
