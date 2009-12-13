@@ -666,7 +666,7 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 		if (o_ptr->tval == TV_ROD && o_ptr->number > 1)
 		{
 			int power;
-			int time_base = k_ptr->time_base;
+			int time_base = randcalc(k_ptr->time, 0, MINIMISE);
 
 			if (!time_base) time_base = 1;
 

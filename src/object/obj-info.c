@@ -934,8 +934,10 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 {
 	const object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	const char *desc;
+	bool has_timeout;
+	random_value timeout;
 
-	int effect = 0, base, dice, sides, fail;
+	int effect = 0, fail;
 
 	if (o_ptr->name1)
 	{
@@ -944,9 +946,8 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 		if (object_effect_is_known(o_ptr) || full)
 		{
 			effect = a_ptr->effect;
-			base = a_ptr->time_base;
-			dice = a_ptr->time_dice;
-			sides = a_ptr->time_sides;
+			timeout = a_ptr->time;
+			has_timeout = TRUE;
 		}
 		else if (object_effect(o_ptr))
 		{
@@ -962,9 +963,8 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 		if (object_effect_is_known(o_ptr) || full)
 		{
 			effect = k_ptr->effect;
-			base = k_ptr->time_base;
-			dice = k_ptr->time_dice;
-			sides = k_ptr->time_sides;
+			timeout = k_ptr->time;
+			has_timeout = TRUE;
 		}
 		else if (object_effect(o_ptr) != 0)
 		{
@@ -1009,7 +1009,7 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 
 	text_out(".\n");
 
-	if (base || dice || sides)
+	if (has_timeout)
 	{
 		int min_time, max_time;
 
@@ -1020,8 +1020,8 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 		text_out("Takes ");
 
 		/* Correct for player speed */
-		min_time = (dice*1     + base) * multiplier / 10;
-		max_time = (dice*sides + base) * multiplier / 10;
+		min_time = randcalc(timeout, 0, MINIMISE) * multiplier / 10;
+		max_time = randcalc(timeout, 0, MAXIMISE) * multiplier / 10;
 
 		text_out_c(TERM_L_GREEN, "%d", min_time);
 

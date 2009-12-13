@@ -542,9 +542,9 @@ void wr_randarts(void)
 		wr_byte(a_ptr->alloc_max);
 
 		wr_u16b(a_ptr->effect);
-		wr_u16b(a_ptr->time_base);
-		wr_u16b(a_ptr->time_dice);
-		wr_u16b(a_ptr->time_sides);
+		wr_u16b(a_ptr->time.base);
+		wr_u16b(a_ptr->time.dice);
+		wr_u16b(a_ptr->time.sides);
 	}
 }
 

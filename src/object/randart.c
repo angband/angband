@@ -520,10 +520,10 @@ static s16b choose_item(int a_idx)
 	k_ptr = &k_info[k_idx];
 	a_ptr->tval = k_ptr->tval;
 	a_ptr->sval = k_ptr->sval;
-	a_ptr->pval = k_ptr->pval;
-	a_ptr->to_h = k_ptr->to_h;
-	a_ptr->to_d = k_ptr->to_d;
-	a_ptr->to_a = k_ptr->to_a;
+	a_ptr->pval = randcalc(k_ptr->pval, 0, MINIMISE);
+	a_ptr->to_h = randcalc(k_ptr->to_h, 0, MINIMISE);
+	a_ptr->to_d = randcalc(k_ptr->to_d, 0, MINIMISE);
+	a_ptr->to_a = randcalc(k_ptr->to_a, 0, MINIMISE);
 	a_ptr->ac = k_ptr->ac;
 	a_ptr->dd = k_ptr->dd;
 	a_ptr->ds = k_ptr->ds;
@@ -822,9 +822,9 @@ static void parse_frequencies(void)
 			a_ptr->tval == TV_HAFTED || a_ptr->tval == TV_POLEARM ||
 			a_ptr->tval == TV_SWORD)
 		{
-			if (a_ptr->to_h - k_ptr->to_h - mean_hit_startval > 0)
+			if (a_ptr->to_h - randcalc(k_ptr->to_h, 0, MINIMISE) - mean_hit_startval > 0)
 			{
-				temp = (a_ptr->to_d - k_ptr->to_d - mean_dam_startval) /
+				temp = (a_ptr->to_d - randcalc(k_ptr->to_d, 0, MINIMISE) - mean_dam_startval) /
 					mean_dam_increment;
 				if (temp > 0)
 				{
@@ -833,9 +833,9 @@ static void parse_frequencies(void)
 					(artprobs[ART_IDX_WEAPON_HIT]) += temp;
 				}
 			}
-			else if (a_ptr->to_h - k_ptr->to_h - mean_hit_startval < 0)
+			else if (a_ptr->to_h - randcalc(k_ptr->to_h, 0, MINIMISE) - mean_hit_startval < 0)
 			{
-				temp = ( -(a_ptr->to_d - k_ptr->to_d - mean_dam_startval) ) /
+				temp = ( -(a_ptr->to_d - randcalc(k_ptr->to_d, 0, MINIMISE) - mean_dam_startval) ) /
 					mean_dam_increment;
 				if (temp > 0)
 				{
@@ -844,9 +844,9 @@ static void parse_frequencies(void)
 					(artprobs[ART_IDX_WEAPON_HIT]) -= temp;
 				}
 			}
-			if (a_ptr->to_d - k_ptr->to_d - mean_dam_startval > 0)
+			if (a_ptr->to_d - randcalc(k_ptr->to_d, 0, MINIMISE) - mean_dam_startval > 0)
 			{
-				temp = (a_ptr->to_d - k_ptr->to_d - mean_dam_startval) /
+				temp = (a_ptr->to_d - randcalc(k_ptr->to_d, 0, MINIMISE) - mean_dam_startval) /
 					mean_dam_increment;
 				if (temp > 0)
 				{
@@ -855,9 +855,9 @@ static void parse_frequencies(void)
 					(artprobs[ART_IDX_WEAPON_DAM]) += temp;
 				}
 			}
-			else if (a_ptr->to_d - k_ptr->to_d - mean_dam_startval < 0)
+			else if (a_ptr->to_d - randcalc(k_ptr->to_d, 0, MINIMISE) - mean_dam_startval < 0)
 			{
-				temp = ( -(a_ptr->to_d - k_ptr->to_d - mean_dam_startval)) /
+				temp = ( -(a_ptr->to_d - randcalc(k_ptr->to_d, 0, MINIMISE) - mean_dam_startval)) /
 					mean_dam_increment;
 				if (temp > 0)
 				{
@@ -878,11 +878,11 @@ static void parse_frequencies(void)
 		}
 		else
 		{
-			if ( (a_ptr->to_h - k_ptr->to_h > 0) &&
-				(a_ptr->to_h - k_ptr->to_h == a_ptr->to_d - k_ptr->to_d) )
+			if ( (a_ptr->to_h - randcalc(k_ptr->to_h, 0, MINIMISE) > 0) &&
+				(a_ptr->to_h - randcalc(k_ptr->to_h, 0, MINIMISE) == a_ptr->to_d - randcalc(k_ptr->to_d, 0, MINIMISE)) )
 			{
 				/* Special case: both hit and dam bonuses present and equal */
-				temp = (a_ptr->to_d - k_ptr->to_d) / mean_dam_increment;
+				temp = (a_ptr->to_d - randcalc(k_ptr->to_d, 0, MINIMISE)) / mean_dam_increment;
 				if (temp > 0)
 				{
 					LOG_PRINT1("Adding %d instances of extra to-hit and to-dam bonus for non-weapon\n", temp);
@@ -893,9 +893,9 @@ static void parse_frequencies(void)
 			else
 			{
 				/* Uneven bonuses - handle separately */
-				if (a_ptr->to_h - k_ptr->to_h > 0)
+				if (a_ptr->to_h - randcalc(k_ptr->to_h, 0, MINIMISE) > 0)
 				{
-					temp = (a_ptr->to_d - k_ptr->to_d) / mean_dam_increment;
+					temp = (a_ptr->to_d - randcalc(k_ptr->to_d, 0, MINIMISE)) / mean_dam_increment;
 					if (temp > 0)
 					{
 						LOG_PRINT1("Adding %d instances of extra to-hit bonus for non-weapon\n", temp);
@@ -903,9 +903,9 @@ static void parse_frequencies(void)
 						(artprobs[ART_IDX_NONWEAPON_HIT]) += temp;
 					}
 				}
-				if (a_ptr->to_d - k_ptr->to_d > 0)
+				if (a_ptr->to_d - randcalc(k_ptr->to_d, 0, MINIMISE) > 0)
 				{
-					temp = (a_ptr->to_d - k_ptr->to_d) / mean_dam_increment;
+					temp = (a_ptr->to_d - randcalc(k_ptr->to_d, 0, MINIMISE)) / mean_dam_increment;
 					if (temp > 0)
 					{
 						LOG_PRINT1("Adding %d instances of extra to-dam bonus for non-weapon\n", temp);
@@ -996,9 +996,9 @@ static void parse_frequencies(void)
 			}
 
 			/* Does this weapon have an unusual bonus to AC? */
-			if ( (a_ptr->to_a - k_ptr->to_a) > 0)
+			if ( (a_ptr->to_a - randcalc(k_ptr->to_a, 0, MAXIMISE)) > 0)
 			{
-				temp = (a_ptr->to_a - k_ptr->to_a) / mean_ac_increment;
+				temp = (a_ptr->to_a - randcalc(k_ptr->to_a, 0, MAXIMISE)) / mean_ac_increment;
 				if (temp > 0)
 				{
 					LOG_PRINT1("Adding %d instances of extra AC bonus for weapon\n", temp);
@@ -1085,9 +1085,9 @@ static void parse_frequencies(void)
 		 * probably not worth the trouble since it's so rare.
 		 */
 
-		if ( (a_ptr->to_a - k_ptr->to_a - mean_ac_startval) > 0)
+		if ( (a_ptr->to_a - randcalc(k_ptr->to_a, 0, MINIMISE) - mean_ac_startval) > 0)
 		{
-			temp = (a_ptr->to_a - k_ptr->to_a - mean_ac_startval) /
+			temp = (a_ptr->to_a - randcalc(k_ptr->to_a, 0, MINIMISE) - mean_ac_startval) /
 				mean_ac_increment;
 			if (temp > 0)
 			{
@@ -2453,9 +2453,9 @@ static void add_activation(artifact_type *a_ptr, s32b target_power)
 		{
 			LOG_PRINT1("Adding activation effect %d\n", x);
 			a_ptr->effect = x;
-			a_ptr->time_base = (p * p);
-			a_ptr->time_dice = p;
-			a_ptr->time_sides = p;
+			a_ptr->time.base = (p * p);
+			a_ptr->time.dice = p;
+			a_ptr->time.sides = p;
 			return;
 		}
 		count++;

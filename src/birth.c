@@ -613,7 +613,7 @@ static void player_outfit(void)
 			if (!k_idx) continue;
 
 			/* Prepare the item */
-			object_prep(i_ptr, k_idx);
+			object_prep(i_ptr, k_idx, 0, MINIMISE);
 			i_ptr->number = (byte)rand_range(e_ptr->min, e_ptr->max);
 			i_ptr->origin = ORIGIN_BIRTH;
 
@@ -631,7 +631,7 @@ static void player_outfit(void)
 	i_ptr = &object_type_body;
 
 	/* Hack -- Give the player some food */
-	object_prep(i_ptr, lookup_kind(TV_FOOD, SV_FOOD_RATION));
+	object_prep(i_ptr, lookup_kind(TV_FOOD, SV_FOOD_RATION), 0, MINIMISE);
 	i_ptr->number = (byte)rand_range(3, 7);
 	i_ptr->origin = ORIGIN_BIRTH;
 	object_flavor_aware(i_ptr);
@@ -644,7 +644,7 @@ static void player_outfit(void)
 	i_ptr = &object_type_body;
 
 	/* Hack -- Give the player some torches */
-	object_prep(i_ptr, lookup_kind(TV_LITE, SV_LITE_TORCH));
+	object_prep(i_ptr, lookup_kind(TV_LITE, SV_LITE_TORCH), 0, MINIMISE);
 	i_ptr->number = (byte)rand_range(3, 7);
 	i_ptr->timeout = FUEL_TORCH;
 	i_ptr->origin = ORIGIN_BIRTH;

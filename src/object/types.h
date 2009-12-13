@@ -13,48 +13,43 @@ typedef struct
 {
 	/** Constants **/
 
-	u32b name;     /**< (const char *) object_kind::name + k_name = Name */
-	u32b text;     /**< (const char *) object_kind::text + k_text = Description  */
+	u32b name;         /**< (const char *) object_kind::name + k_name = Name */
+	u32b text;         /**< (const char *) object_kind::text + k_text = Description  */
 
-	byte tval;     /**< General object type (see TV_ macros) */
-	byte sval;     /**< Object sub-type (see SV_ macros) */
-	s16b pval;     /**< Power for any flags which need it */
+	byte tval;         /**< General object type (see TV_ macros) */
+	byte sval;         /**< Object sub-type (see SV_ macros) */
+	random_value pval; /**< Power for any flags which need it */
 
-	s16b to_h;     /**< Bonus to-hit */
-	s16b to_d;     /**< Bonus to damage */
-	s16b to_a;     /**< Bonus to armor */
-	s16b ac;       /**< Base armor */
+	random_value to_h; /**< Bonus to hit */
+	random_value to_d; /**< Bonus to damage */
+	random_value to_a; /**< Bonus to armor */
+	s16b ac;           /**< Base armor */
 
-	byte dd;       /**< Damage dice */
-	byte ds;       /**< Damage sides */
-	s16b weight;   /**< Weight, in 1/10lbs */
+	byte dd;           /**< Damage dice */
+	byte ds;           /**< Damage sides */
+	s16b weight;       /**< Weight, in 1/10lbs */
 
-	s32b cost;     /**< Object base cost */
+	s32b cost;         /**< Object base cost */
 
 	u32b flags[OBJ_FLAG_N];		/**< Flags */
 
-	byte d_attr;   /**< Default object attribute */
-	char d_char;   /**< Default object character */
+	byte d_attr;       /**< Default object attribute */
+	char d_char;       /**< Default object character */
 
 	byte alloc_prob;   /**< Allocation: commonness */
 	byte alloc_min;    /**< Highest normal dungeon level */
 	byte alloc_max;    /**< Lowest normal dungeon level */
 	byte level;        /**< Level (difficulty of activation) */
 
-	u16b effect;       /**< Effect this item produces (effects.c) */
-	u16b time_base;    /**< Recharge time (if appropriate) */
-	u16b time_dice;    /**< Randomised recharge time dice */
-	u16b time_sides;   /**< Randomised recharge time sides */
+	u16b effect;         /**< Effect this item produces (effects.c) */
+	random_value time;   /**< Recharge time (rods) */
+	random_value charge; /**< Number of charges (staves/wands) */
 
-	byte charge_base;  /**< Non-random initial charge base */
-	byte charge_dd;    /**< Randomised initial charge dice */
-	byte charge_ds;    /**< Randomised initial charge sides */
+	byte gen_mult_prob;  /**< Probability of generating more than one */
+	byte gen_dice;       /**< Number to generate dice */
+	byte gen_side;       /**< Number to generate sides */
 
-	byte gen_mult_prob; /**< Probability of generating more than one */
-	byte gen_dice;      /**< Number to generate dice */
-	byte gen_side;      /**< Number to generate sides */
-
-	u16b flavor;        /**< Special object flavor (or zero) */
+	u16b flavor;         /**< Special object flavor (or zero) */
 
 
 	/** Game-dependent **/
@@ -119,9 +114,7 @@ typedef struct
 	u16b effect;     /**< Artifact activation (see effects.c) */
 	u32b effect_msg; /**< (const char *) artifact_type::effect_msg + a_text = Effect message */
 
-	u16b time_base;  /**< Recharge time (if appropriate) */
-	u16b time_dice;  /**< Randomised recharge time dice */
-	u16b time_sides; /**< Randomised recharge time sides */
+	random_value time;  /**< Recharge time (if appropriate) */
 
 } artifact_type;
 

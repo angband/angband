@@ -769,28 +769,6 @@ static u32b grab_one_effect(const char *what)
 	return 0;
 }
 
-/**
- * Parse a timeout figure, in dice+adds format
- *
- * Note -- we use temporary variables of type 'int' because ther
- * is no sscanf identifer for uint16_t.
- */
-static bool grab_one_timeout(const char *text, u16b *dd, u16b *ds, u16b *base)
-{
-	int t_dd = 0, t_ds = 0, t_base = 0;
-
-	     if (1 == sscanf(text, "d%d",      &t_ds))          { t_dd = 1; }
-	else if (2 == sscanf(text, "%d+d%d",   &t_base, &t_ds)) { t_dd = 1; }
-	else if (2 == sscanf(text, "%dd%d",    &t_dd, &t_ds));
-	else if (3 == sscanf(text, "%d+%dd%d", &t_base, &t_dd, &t_ds));
-	else if (1 == sscanf(text, "%d",       &t_base)) { t_dd = t_ds = 0; }
-	else return FALSE;
-
-	*dd = t_dd; *ds = t_ds; *base = t_base;
-
-	return TRUE;
-}
-
 
 /**
  * Initialise the store stocking lists.
@@ -1622,16 +1600,17 @@ errr parse_k_info(char *buf, header *head)
 	/* Process 'I' for "Info" (one line only) */
 	else if (buf[0] == 'I')
 	{
-		int tval, sval, pval;
+		int tval, sval;
+		char pval[50];
 
 		/* Scan for the values */
-		if (3 != sscanf(buf+2, "%d:%d:%d",
-			            &tval, &sval, &pval)) return (PARSE_ERROR_GENERIC);
+		if (3 != sscanf(buf+2, "%d:%d:%s",
+			            &tval, &sval, pval)) return (PARSE_ERROR_GENERIC);
 
 		/* Save the values */
 		k_ptr->tval = tval;
 		k_ptr->sval = sval;
-		k_ptr->pval = pval;
+		if (!parse_random_value(pval, &k_ptr->pval)) return PARSE_ERROR_INVALID_VALUE;
 	}
 
 	/* Process 'W' for "More Info" (one line only) */
@@ -1675,57 +1654,25 @@ errr parse_k_info(char *buf, header *head)
 	/* Hack -- Process 'P' for "power" and such */
 	else if (buf[0] == 'P')
 	{
-		int ac, hd1, hd2, th, td, ta;
+		int ac, hd1, hd2;
+		char th[50], td[50], ta[50];
 
 		/* Scan for the values */
-		if (6 != sscanf(buf+2, "%d:%dd%d:%d:%d:%d",
-			            &ac, &hd1, &hd2, &th, &td, &ta)) return (PARSE_ERROR_GENERIC);
+		if (6 != sscanf(buf+2, "%d:%dd%d:%[^:]:%[^:]:%s",
+			            &ac, &hd1, &hd2, th, td, ta)) return (PARSE_ERROR_GENERIC);
 
 		k_ptr->ac = ac;
 		k_ptr->dd = hd1;
 		k_ptr->ds = hd2;
-		k_ptr->to_h = th;
-		k_ptr->to_d = td;
-		k_ptr->to_a = ta;
+		if (!parse_random_value(th, &k_ptr->to_h)) return PARSE_ERROR_INVALID_VALUE;
+		if (!parse_random_value(td, &k_ptr->to_d)) return PARSE_ERROR_INVALID_VALUE;
+		if (!parse_random_value(ta, &k_ptr->to_a)) return PARSE_ERROR_INVALID_VALUE;
 	}
 
 	/* Hack -- Process 'C' for "charges" */
 	else if (buf[0] == 'C')
 	{
-		int base = 0;
-		int ds = 0;
-		int dd = 1;
-
-		/* Assign base values */
-		k_ptr->charge_base = 0;
-		k_ptr->charge_ds = 0;
-		k_ptr->charge_dd = 1;
-
-		/* Scan for the values */
-		if (1 == sscanf(buf+2, "d%d", &ds))
-		{
-			k_ptr->charge_ds = ds;
-		}
-		else if (2 == sscanf(buf+2, "%d+d%d", &base, &ds))
-		{
-			k_ptr->charge_base = base;
-			k_ptr->charge_ds   = ds;
-		}
-		else if (2 == sscanf(buf+2, "%dd%d", &dd, &ds))
-		{
-			k_ptr->charge_dd = dd;
-			k_ptr->charge_ds = ds;
-		}
-		else if (3 == sscanf(buf+2, "%d+%dd%d", &base, &dd, &ds))
-		{
-			k_ptr->charge_base = base;
-			k_ptr->charge_dd   = dd;
-			k_ptr->charge_ds   = ds;
-		}
-		else
-		{
-			return (PARSE_ERROR_GENERIC);
-		}
+		if(!parse_random_value(buf+2, &k_ptr->charge)) return PARSE_ERROR_INVALID_VALUE;
 	}
 
 	/* Process 'M' for "Multiple quantity" (one line only) */
@@ -1782,9 +1729,9 @@ errr parse_k_info(char *buf, header *head)
 		k_ptr->effect = grab_one_effect(buf + 2);
 		if (!k_ptr->effect) return (PARSE_ERROR_GENERIC);
 
-		if (s && !grab_one_timeout(s, &k_ptr->time_dice,
-				&k_ptr->time_sides, &k_ptr->time_base))
-			return (PARSE_ERROR_GENERIC);
+		/* Get the timeout, if supplied */
+		if (s && !parse_random_value(s, &k_ptr->time))
+			return (PARSE_ERROR_INVALID_VALUE);
 	}
 
 	/* Process 'D' for "Description" */
@@ -2009,9 +1956,8 @@ errr parse_a_info(char *buf, header *head)
 		if (!a_ptr->effect) return (PARSE_ERROR_GENERIC);
 
 		/* Scan for the values */
-		if (!grab_one_timeout(s, &a_ptr->time_dice, &a_ptr->time_sides,
-				&a_ptr->time_base))
-			return (PARSE_ERROR_GENERIC);
+		if (!parse_random_value(s, &a_ptr->time))
+			return (PARSE_ERROR_INVALID_VALUE);
 	}
 
 	/* Process 'M' for "Effect message" */
@@ -3548,6 +3494,115 @@ errr parse_s_info(char *buf, header *head)
 
 	/* Success */
 	return (0);
+}
+
+/*
+ * This function reads a value of the form "1+2d3M4"
+ *
+ * - The 1 is a constant base value.
+ * - The 2d3 is a dice roll, to be applied with damroll().  The number of dice
+ *   is optional, and if not present, is assumed to be 1.
+ * - The M4 is a magic bonus, to be applied with m_bonus().
+ *
+ * All parts of the random value are optional.  The value is read into a
+ * "random_value" struct and may be used with the randcalc() function to
+ * determine the minimum, maximum, average, or randomised result of the roll.
+ */
+bool parse_random_value(const char *str, random_value *bonus)
+{
+	bool negative = FALSE;
+
+	char buffer[50];
+	int i = 0, b, dn, ds, mb;
+	
+	const char end_chr = '|';
+	char eov;
+
+	/* Entire value may be negated */
+	if (str[0] == '-')
+	{
+		negative = TRUE;
+		i++;
+	}
+
+	/* Make a working copy of the string */
+	my_strcpy(buffer, &str[i], N_ELEMENTS(buffer) - 2);
+
+	/* Check for invalid negative numbers */
+	if (NULL != strstr(buffer, "-"))	return FALSE;
+
+	/* Add the sentinal value */
+	buffer[strlen(buffer) + 1] = '\0';
+	buffer[strlen(buffer)] = end_chr;
+
+	/* Scan the value, apply defaults for unspecified components */
+	if (5 == sscanf(buffer, "%d+%dd%dM%d%c", &b, &dn, &ds, &mb, &eov) && eov == end_chr)
+	{
+		/* No defaults */
+	}
+	else if (4 == sscanf(buffer, "%d+d%dM%d%c", &b, &ds, &mb, &eov) && eov == end_chr)
+	{
+		dn = 1;
+	}
+	else if (3 == sscanf(buffer, "%d+M%d%c", &b, &mb, &eov) && eov == end_chr)
+	{
+		dn = 0; ds = 0;
+	}
+	else if (4 == sscanf(buffer, "%d+%dd%d%c", &b, &dn, &ds, &eov) && eov == end_chr)
+	{
+		mb = 0;
+	}
+	else if (3 == sscanf(buffer, "%d+d%d%c", &b, &ds, &eov) && eov == end_chr)
+	{
+		dn = 1; mb = 0;
+	}
+	else if (4 == sscanf(buffer, "%dd%dM%d%c", &dn, &ds, &mb, &eov) && eov == end_chr)
+	{
+		b = 0;
+	}
+	else if (3 == sscanf(buffer, "d%dM%d%c", &ds, &mb, &eov) && eov == end_chr)
+	{
+		b = 0; dn = 1;
+	}
+	else if (2 == sscanf(buffer, "M%d%c", &mb, &eov) && eov == end_chr)
+	{
+		b = 0; dn = 0; ds = 0;
+	}
+	else if (3 == sscanf(buffer, "%dd%d%c", &dn, &ds, &eov) && eov == end_chr)
+	{
+		b = 0; mb = 0;
+	}
+	else if (2 == sscanf(buffer, "d%d%c", &ds, &eov) && eov == end_chr)
+	{
+		b = 0; dn = 1; mb = 0;
+	}
+	else if (2 == sscanf(buffer, "%d%c", &b, &eov) && eov == end_chr)
+	{
+		dn = 0; ds = 0; mb = 0;
+	}
+	else
+	{
+		return FALSE;
+	}
+
+	/* Assign the values */
+	bonus->base = b;
+	bonus->dice = dn;
+	bonus->sides = ds;
+	bonus->m_bonus = mb;
+
+	/*
+	 * Handle negation (the random components are always positive, so the base
+	 * must be adjusted as necessary).
+	 */
+	if (negative)
+	{
+		bonus->base *= -1;
+		bonus->base -= bonus->m_bonus;
+		bonus->base -= bonus->dice * (bonus->sides + 1);
+	}
+
+	return TRUE;
 }
 
 

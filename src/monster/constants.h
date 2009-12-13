@@ -25,9 +25,9 @@
  * init1.c   - to evaluate the "power" of monsters
  *
  * The first two uses can involve randomness, but the third requires minimum
- * values (of resistance) and maxima (of damage). So we use damcalc() as a
- * wrapper for z-rand.c's damroll(), which allows us to obtain the values we
- * need in each case. All uses of randint1(x) have been replaced with
+ * values (of resistance) and maxima (of damage). So we use z-rand.c's
+ * damcalc() as a wrapper for damroll(), which allows us to obtain the values
+ * we need in each case. All uses of randint1(x) have been replaced with
  * damroll(1, x) in order to pass cleanly through the wrapper.
  *
  * If you want to change any damage or resistance calculations, you only have
@@ -37,16 +37,6 @@
  * no random element. But it also means that if you want to make breath
  * damage dependent on rlev (for example), you have more work to do.
  */
-
-typedef enum
-{
-	MAXIMISE,
-	RANDOMISE,
-	MINIMISE,
-	AVERAGE
-} aspect;
-
-int damcalc(int dice, int sides, aspect dam_aspect);
 
 #define NOT_USED	/* to avoid confusion in spells1.c */
 

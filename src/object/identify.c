@@ -912,16 +912,19 @@ obj_pseudo_t object_pseudo(const object_type *o_ptr)
 			return INSCRIP_EXCELLENT;
 	}
 
-	if (o_ptr->to_a == k_ptr->to_a && o_ptr->to_h == k_ptr->to_h &&
-			o_ptr->to_d == k_ptr->to_d)
+	if (o_ptr->to_a == randcalc(k_ptr->to_a, 0, MINIMISE) &&
+	    o_ptr->to_h == randcalc(k_ptr->to_h, 0, MINIMISE) &&
+		 o_ptr->to_d == randcalc(k_ptr->to_d, 0, MINIMISE))
 		return INSCRIP_AVERAGE;
 
-	if (o_ptr->to_a >= k_ptr->to_a && o_ptr->to_h >= k_ptr->to_h &&
-			o_ptr->to_d >= k_ptr->to_d)
+	if (o_ptr->to_a >= randcalc(k_ptr->to_a, 0, MINIMISE) &&
+	    o_ptr->to_h >= randcalc(k_ptr->to_h, 0, MINIMISE) &&
+	    o_ptr->to_d >= randcalc(k_ptr->to_d, 0, MINIMISE))
 		return INSCRIP_MAGICAL;
 
-	if (o_ptr->to_a <= k_ptr->to_a && o_ptr->to_h <= k_ptr->to_h &&
-			o_ptr->to_d <= k_ptr->to_d)
+	if (o_ptr->to_a <= randcalc(k_ptr->to_a, 0, MINIMISE) &&
+	    o_ptr->to_h <= randcalc(k_ptr->to_h, 0, MINIMISE) &&
+	    o_ptr->to_d <= randcalc(k_ptr->to_d, 0, MINIMISE))
 		return INSCRIP_MAGICAL;
 
 	return INSCRIP_STRANGE;

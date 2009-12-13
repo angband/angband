@@ -19,6 +19,15 @@
 # F: flag | flag | etc
 # D: description
 
+# Some fields accept randomized numbers of the form "10+2d3M4" where
+# 10 is the non-variable base, 2d3 is a standard die roll, and
+# M4 uses the m_bonus function to generate a number between 0 and
+# 4 according to a normal distribution.  All three components are
+# optional, and the number of dice is optional and assumed to be 1
+# when not specified.  10+2d3M4 has the range 12-20.  10+M4 has the
+# range 10-14.  10+2d3 has the range 12-16.  10+d3 has the range 11-13.
+# 2d3, d3, M4, 2d3M4, and d3M4 are all acceptable as well.
+
 # 'N' indicates the beginning of an entry. The serial number must
 # increase for each new item. The '&' and '~' symbols are use to
 # include articles and pluralization as necessary to ensure
@@ -41,16 +50,15 @@
 
 # 'I' is for basic information. The tval is for the type of item, the
 # sval identifies the subtype and the pval indicates the amount of
-# effect the item has, if applicable (a fixed value: variable pvals
-# are currently hard-coded.) 
+# effect the item has, if applicable.  The pval accepts randomized values.
 
 # 'W' is for extra information. Depth defines what "level" the object is,
 # when determining how easy it is to use a wand, staff or rod; rarity
 # is unused; weight is in tenth-pounds and cost is the item's base value.
 
 # 'P' is for power information. The items base armor class, its base
-# damage and pluses to-hit, to-dam and to-ac (assuming the latter 
-# three numbers to be fixed: variable bonuses must be hard-coded.)
+# damage and pluses to-hit, to-dam and to-ac.  The latter three numbers
+# accept randomized values.
 
 # 'A' is for allocation - depth and rarity, in pairs. This allows an
 # item to have multiple natural depths and rarities. It is used to
@@ -58,8 +66,8 @@
 # are found throughout the dungeon. The "allocation" depth need not
 # match the depth as specified in the "W:" line.
 
-# 'C' is for charges (wands and staves only).  It specifies, in the form x+ydz,
-# the number of charges a wand or staff should have on creation.
+# 'C' is for charges (wands and staves only).  This field accepts
+# randomized values.
 
 # 'F' is for flags. These are fairly self-explanatory. As many F:
 # lines may be used as are needed to specify all the flags and flags
@@ -1118,42 +1126,42 @@ F:IGNORE_ACID
 
 N:190:Strength
 G:=:d
-I:45:1:0
+I:45:1:1+M5
 W:30:0:2:500
 A:100:10 to 100
 F:STR | SUST_STR | HIDE_TYPE
 
 N:191:Intelligence
 G:=:d
-I:45:2:0
+I:45:2:1+M5
 W:30:0:2:500
 A:100:30 to 100
 F:INT | SUST_INT | HIDE_TYPE
 
 N:192:Dexterity
 G:=:d
-I:45:3:0
+I:45:3:1+M5
 W:30:0:2:500
 A:100:30 to 100
 F:DEX | SUST_DEX | HIDE_TYPE
 
 N:193:Constitution
 G:=:d
-I:45:4:0
+I:45:4:1+M5
 W:30:0:2:500
 A:100:30 to 100
 F:CON | SUST_CON | HIDE_TYPE
 
 N:194:Speed
 G:=:d
-I:45:5:0
+I:45:5:d5M5
 W:75:0:2:100000
 A:100:75 to 100
 F:SPEED | HIDE_TYPE
 
 N:195:Searching
 G:=:d
-I:45:6:0
+I:45:6:1+M5
 W:5:0:2:250
 A:100:5 to 100
 F:SEARCH | HIDE_TYPE
@@ -1212,10 +1220,9 @@ F:RES_COLD | IGNORE_COLD | EASY_KNOW
 
 ### Elemental rings ###
 
-# Light gets a pval in code for searching
 N:205:Light
 G:=:d
-I:45:16:0
+I:45:16:1+M5
 W:0:0:2:400
 A:100:25 to 100
 F:RES_LITE | SEARCH | LITE
@@ -1223,7 +1230,7 @@ F:RES_LITE | SEARCH | LITE
 # Waiting for un_lite to be implemented
 #N:206:Dark
 #G:=:d
-#I:45:17:0
+#I:45:17:1+M5
 #W:0:0:2:400
 #A:100:25 to 100
 #F:RES_DARK | SEARCH | UN_LITE
@@ -1233,7 +1240,7 @@ G:=:d
 I:45:18:0
 W:50:0:2:3000
 A:100:50 to 100
-P:0:0d0:0:0:15
+P:0:0d0:0:0:5+d5M10
 F:RES_FIRE | IGNORE_FIRE | BRAND_FIRE |
 E:RING_FLAMES:50+d50
 
@@ -1242,7 +1249,7 @@ G:=:d
 I:45:19:0
 W:50:0:2:3000
 A:100:50 to 100
-P:0:0d0:0:0:15
+P:0:0d0:0:0:5+d5M10
 F:RES_ACID | IGNORE_ACID | BRAND_ACID |
 E:RING_ACID:50+d50
 
@@ -1251,7 +1258,7 @@ G:=:d
 I:45:20:0
 W:50:0:2:3000
 A:100:50 to 100
-P:0:0d0:0:0:15
+P:0:0d0:0:0:5+d5M10
 F:RES_COLD | IGNORE_COLD | BRAND_COLD |
 E:RING_ICE:50+d50
 
@@ -1260,6 +1267,7 @@ G:=:d
 I:45:21:0
 W:50:0:2:5000
 A:50:50 to 100
+P:0:0d0:0:0:5+d5M10
 F:RES_ELEC | IGNORE_ELEC | BRAND_ELEC |
 E:RING_LIGHTNING:50+d50
 
@@ -1272,6 +1280,7 @@ G:=:d
 I:45:23:0
 W:20:0:2:500
 A:100:20 to 100
+P:0:0d0:0:5+d3M7:0
 D:It boosts your to-dam value.
 
 N:213:Accuracy
@@ -1279,6 +1288,7 @@ G:=:d
 I:45:24:0
 W:20:0:2:500
 A:100:20 to 100
+P:0:0d0:5+d3M7:0:0
 D:It boosts your to-hit value.
 
 N:214:Slaying
@@ -1286,6 +1296,7 @@ G:=:d
 I:45:25:0
 W:40:0:2:1000
 A:100:40 to 100
+P:0:0d0:d5M5:d5M5:0
 D:It boosts your to-hit and to-dam values.
 
 N:215:Protection
@@ -1293,6 +1304,7 @@ G:=:d
 I:45:26:0
 W:10:0:2:500
 A:100:10 to 100
+P:0:0d0:0:0:5+d5M10
 D:It increases your armor class.
 
 
@@ -1305,12 +1317,12 @@ W:5:0:2:0
 A:100:5 to 100
 F:TELEPORT | SPEED | EASY_KNOW
 
-# Reckless Attacks gets +x tohit/+x todam/-(x*4) AC in the code
 N:217:Reckless Attacks
 G:=:d
 I:45:28:0
 W:0:0:2:200
 A:100:10 to 100
+P:0:0d0:2+d3:2+d3:-8+4d3
 
 N:218:Open Wounds
 G:=:d
@@ -1327,12 +1339,12 @@ W:30:0:2:0
 A:100:15 to 100
 F:AFRAID | SPEED | EASY_KNOW
 
-# of the Mouse gets +pval/-to-dam in code
 N:220:the Mouse
 G:=:d
-I:45:31:0
+I:45:31:d4
 W:30:0:2:500
 A:100:15 to 100
+P:0:0d0:0:-3d4:0
 F:DEX
 
 N:221:the Dog
@@ -1375,10 +1387,9 @@ W:30:0:2:340
 A:100:30 to 100
 F:SEE_INVIS | EASY_KNOW
 
-# Delving gets +3/4/5 tunneling in the code
 N:227:Delving
 G:=:d
-I:45:38:0
+I:45:38:2+d3
 W:0:0:2:800
 A:100:30 to 100
 F:TUNNEL
@@ -1392,14 +1403,14 @@ E:STONE_TO_MUD:15+2d10
 
 N:230:Wisdom
 G:":d
-I:40:1:0
+I:40:1:1+M5
 W:30:0:3:500
 A:100:20 to 100
 F:WIS | SUST_WIS | HIDE_TYPE
 
 N:231:Charisma
 G:":d
-I:40:2:0
+I:40:2:1+M5
 W:30:0:3:500
 A:100:20 to 100
 F:CHR | SUST_CHR | HIDE_TYPE
@@ -1441,17 +1452,17 @@ F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 
 N:236:the Magi
 G:":d
-I:40:7:0
+I:40:7:1+M3
 W:70:0:3:30000
 A:12:70 to 100
-P:0:0d0:0:0:3
+P:0:0d0:0:0:d5M5
 F:FREE_ACT | SEE_INVIS | SEARCH | SUST_INT | INT | RES_CONFU |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD |
 F:HIDE_TYPE
 
 N:237:ESP
 G:":d
-I:40:8:0
+I:40:8:d5M5
 W:50:0:3:25000
 A:12:60 to 100
 F:TELEPATHY | SEARCH | 
@@ -1460,7 +1471,7 @@ F:HIDE_TYPE
 
 N:238:Devotion
 G:":d
-I:40:9:0
+I:40:9:1+M3
 W:70:0:3:30000
 A:12:70 to 100
 F:WIS | CHR | SUST_WIS | SUST_CHR | LITE | 
@@ -1469,16 +1480,17 @@ F:HIDE_TYPE
 
 N:239:Weaponmastery
 G:":d
-I:40:10:0
+I:40:10:1+M2
 W:70:0:3:30000
 P:0:0d0:0:0:0
 A:12:70 to 100
+P:0:0d0:1+M4:1+M4:0
 F:STR | SUST_STR | SUST_CON | FREE_ACT | 
 F:RES_FEAR | RES_DISEN | HIDE_TYPE
 
 N:240:Trickery
 G:":d
-I:40:11:1
+I:40:11:1+M3
 W:70:0:3:30000
 A:12:70 to 100
 F:DEX | SUST_DEX | STEALTH | SPEED | SEARCH | INFRA | 
@@ -1499,14 +1511,14 @@ F:REGEN | EASY_KNOW
 
 N:245:Infravision
 G:":d
-I:40:16:0
+I:40:16:1+M5
 W:10:0:3:200
 A:50:10 to 100
 F:INFRA | HIDE_TYPE
 
 N:246:Searching
 G:":d
-I:40:17:0
+I:40:17:d5M5
 W:15:0:3:600
 A:100:15 to 100
 F:SEARCH | HIDE_TYPE
@@ -2958,6 +2970,7 @@ G:-:d
 I:66:1:0
 W:5:0:15:1000
 A:100:8 to 100
+P:0:1d1:0:0:0
 F:EASY_KNOW
 E:DETECT_TREASURE:50
 

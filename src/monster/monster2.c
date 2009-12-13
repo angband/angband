@@ -2910,7 +2910,7 @@ void monster_death(int m_idx)
 		i_ptr = &object_type_body;
 
 		/* Mega-Hack -- Prepare to make "Grond" */
-		object_prep(i_ptr, lookup_kind(TV_HAFTED, SV_GROND));
+		object_prep(i_ptr, lookup_kind(TV_HAFTED, SV_GROND), 0, MAXIMISE);
 
 		/* Note -- We must not set name1 so that it can be made into
 		 * an artifact by apply_magic */
@@ -2930,7 +2930,7 @@ void monster_death(int m_idx)
 		i_ptr = &object_type_body;
 
 		/* Mega-Hack -- Prepare to make "Morgoth" */
-		object_prep(i_ptr, lookup_kind(TV_CROWN, SV_MORGOTH));
+		object_prep(i_ptr, lookup_kind(TV_CROWN, SV_MORGOTH), 0, MAXIMISE);
 
 		/* Mega-Hack -- Actually create "Morgoth" */
 		apply_magic(i_ptr, -1, TRUE, TRUE, TRUE);

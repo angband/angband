@@ -1729,8 +1729,6 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
  */
 void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 {
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
-
 	int i;
 	int total = o_ptr->number + j_ptr->number;
 
@@ -1751,7 +1749,7 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 	 */
 	if (o_ptr->tval == TV_ROD)
 	{
-		o_ptr->pval = total * k_ptr->pval;
+		o_ptr->pval = total * j_ptr->pval;
 		o_ptr->timeout += j_ptr->timeout;
 	}
 
@@ -1831,6 +1829,9 @@ void object_copy(object_type *o_ptr, const object_type *j_ptr)
  */
 void object_copy_amt(object_type *dst, object_type *src, int amt)
 {
+	const object_kind *k_ptr = &k_info[src->k_idx];
+	int time_base = randcalc(k_ptr->time, 0, MINIMISE);
+	
 	/* Get a copy of the object */
 	object_copy(dst, src);
 
@@ -1848,7 +1849,7 @@ void object_copy_amt(object_type *dst, object_type *src, int amt)
 
 	if (src->tval == TV_ROD)
 	{
-		int max_time = k_info[src->k_idx].time_base * amt;
+		int max_time = time_base * amt;
 
 		if (src->timeout > max_time)
 			dst->timeout = max_time;
@@ -1860,8 +1861,9 @@ void object_copy_amt(object_type *dst, object_type *src, int amt)
 
 /*
  * Prepare an object based on an object kind.
+ * Use the specified randomization aspect
  */
-void object_prep(object_type *o_ptr, int k_idx)
+void object_prep(object_type *o_ptr, int k_idx, int lev, aspect rand_aspect)
 {
 	object_kind *k_ptr = &k_info[k_idx];
 
@@ -1876,18 +1878,22 @@ void object_prep(object_type *o_ptr, int k_idx)
 	o_ptr->sval = k_ptr->sval;
 
 	/* Default "pval" */
-	o_ptr->pval = k_ptr->pval;
+	o_ptr->pval = randcalc(k_ptr->pval, lev, rand_aspect);
 
 	/* Default number */
 	o_ptr->number = 1;
 
 	/* Default weight */
 	o_ptr->weight = k_ptr->weight;
+	
+	/* Assign charges (wands/staves only) */
+	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF)
+		o_ptr->pval = randcalc(k_ptr->charge, lev, rand_aspect);
 
 	/* Default magic */
-	o_ptr->to_h = k_ptr->to_h;
-	o_ptr->to_d = k_ptr->to_d;
-	o_ptr->to_a = k_ptr->to_a;
+	o_ptr->to_h = randcalc(k_ptr->to_h, lev, rand_aspect);
+	o_ptr->to_d = randcalc(k_ptr->to_d, lev, rand_aspect);
+	o_ptr->to_a = randcalc(k_ptr->to_a, lev, rand_aspect);
 
 	/* Default power */
 	o_ptr->ac = k_ptr->ac;
@@ -3219,6 +3225,8 @@ void reorder_pack(void)
  */
 void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt)
 {
+	const object_kind *k_ptr = &k_info[o_ptr->k_idx];
+	int time_base = randcalc(k_ptr->time, 0, MINIMISE);
 	int max_time;
 
 	/*
@@ -3243,7 +3251,7 @@ void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt)
 	 */
 	if (o_ptr->tval == TV_ROD)
 	{
-		max_time = k_info[o_ptr->k_idx].time_base * amt;
+		max_time = time_base * amt;
 
 		if (o_ptr->timeout > max_time)
 			q_ptr->timeout = max_time;
@@ -3588,7 +3596,7 @@ void display_object_kind_recall(s16b k_idx)
 	object_type object;
 	object_type *o_ptr = &object;
 	object_wipe(o_ptr);
-	object_prep(o_ptr, k_idx);
+	object_prep(o_ptr, k_idx, 0, EXTREMIFY);
 	if (k_info[k_idx].aware) o_ptr->ident |= (IDENT_STORE);
 
 	/* draw it */
@@ -3858,10 +3866,12 @@ bool obj_has_charges(const object_type *o_ptr)
 bool obj_can_zap(const object_type *o_ptr)
 {
 	const object_kind *k_ptr = &k_info[o_ptr->k_idx];
+	int time_base = randcalc(k_ptr->time, 0, MINIMISE);
+	
 	if (o_ptr->tval != TV_ROD) return FALSE;
 
 	/* All still charging? */
-	if (o_ptr->number <= (o_ptr->timeout + (k_ptr->time_base - 1)) / k_ptr->time_base) return FALSE;
+	if (o_ptr->number <= (o_ptr->timeout + time_base - 1) / time_base) return FALSE;
 
 	/* Otherwise OK */
 	return TRUE;

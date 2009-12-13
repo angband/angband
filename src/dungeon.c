@@ -300,7 +300,8 @@ static void recharge_objects(void)
 		if ((o_ptr->tval == TV_ROD) && (o_ptr->timeout))
 		{
 			/* Determine how many rods are charging */
-			int temp = (o_ptr->timeout + (k_ptr->time_base - 1)) / k_ptr->time_base;
+			int time_base = randcalc(k_ptr->time, 0, MINIMISE);
+			int temp = (o_ptr->timeout + time_base - 1) / time_base;
 			if (temp > o_ptr->number) temp = o_ptr->number;
 
 			/* Decrease timeout by that number */
@@ -310,8 +311,11 @@ static void recharge_objects(void)
 			if (o_ptr->timeout < 0) o_ptr->timeout = 0;
 
 			/* Update if any rods are recharged */
-			if (temp > (o_ptr->timeout + (k_ptr->time_base - 1)) / k_ptr->time_base)
+			if (temp > (o_ptr->timeout + time_base - 1) / time_base)
 			{
+				/* XXX - Hack - Fixme - Marble Dice */
+				msg_print("This can never happen!");
+
 				/* Update window */
 				charged++;
 

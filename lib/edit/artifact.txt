@@ -131,7 +131,7 @@ A:10:50 to 100
 F:CON | HIDE_TYPE | 
 F:RES_FIRE | 
 F:INSTA_ART
-E:PROTEVIL:225:+d225
+E:PROTEVIL:225+d225
 M:The {kind} let{s} out a shrill wail...
 D:A fiery circle of bronze, with mighty spells to ward off and banish evil.
 

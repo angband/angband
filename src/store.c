@@ -616,7 +616,7 @@ static void mass_produce(object_type *o_ptr)
 	/* Hack -- rods need to increase PVAL if stacked */
 	if (o_ptr->tval == TV_ROD)
 	{
-		o_ptr->pval = o_ptr->number * k_info[o_ptr->k_idx].pval;
+		o_ptr->pval = o_ptr->number * randcalc(k_info[o_ptr->k_idx].pval, 0, RANDOMISE);
 	}
 }
 
@@ -943,9 +943,8 @@ static int store_carry(int st, object_type *o_ptr)
 			int charges = 0;
 
 			/* Calculate the recharged number of charges */
-			charges = k_ptr->charge_base * o_ptr->number;
 			for (i = 0; i < o_ptr->number; i++)
-				charges += damroll(k_ptr->charge_dd, k_ptr->charge_ds);
+				charges += randcalc(k_ptr->charge, 0, RANDOMISE);
 
 			/* Use recharged value only if greater */
 			if (charges > o_ptr->pval)
@@ -1318,7 +1317,7 @@ static bool store_create_random(int st)
 		i_ptr = &object_type_body;
 
 		/* Create a new object of the chosen kind */
-		object_prep(i_ptr, k_idx);
+		object_prep(i_ptr, k_idx, 0, RANDOMISE);
 
 		/* Apply some "low-level" magic (no artifacts) */
 		apply_magic(i_ptr, level, FALSE, FALSE, FALSE);
@@ -1419,7 +1418,7 @@ static int store_create_item(int st, int tval, int sval)
 	object_wipe(&object);
 
 	/* Create a new object of the chosen kind */
-	object_prep(&object, k_idx);
+	object_prep(&object, k_idx, 0, RANDOMISE);
 
 	/* Item belongs to a store */
 	object.ident |= IDENT_STORE;

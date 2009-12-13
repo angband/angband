@@ -28,40 +28,6 @@
 
 
 /*
- * Damage calculation - we want max damage for power evaluation,
- * but random damage for combat. See full explanation in monster/constants.h
- */
-int damcalc(int dice, int sides, aspect dam_aspect)
-{
-	int num = 0;
-	switch (dam_aspect)
-	{
-		case MAXIMISE:
-		{
-			num = dice * sides;
-			break;
-		}
-		case RANDOMISE:
-		{
-			num = damroll(dice, sides);
-			break;
-		}
-		case MINIMISE:
-		{
-			num = dice;
-			break;
-		}
-		case AVERAGE:
-		{
-			num = dice * (sides + 1) / 2;
-			break;
-		}
-	}
-	return (num);
-}
-
-
-/*
  * And now for Intelligent monster attacks (including spells).
  *
  * Give monsters more intelligent attack/spell selection based on

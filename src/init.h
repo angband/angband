@@ -12,7 +12,7 @@
 #define INCLUDED_INIT_H
 
 #include "h-basic.h"
-
+#include "z-rand.h"
 
 /*
  * Parse errors
@@ -23,6 +23,7 @@ enum
 	PARSE_ERROR_INVALID_FLAG,
 	PARSE_ERROR_INVALID_ITEM_NUMBER,
 	PARSE_ERROR_INVALID_SPELL_FREQ,
+	PARSE_ERROR_INVALID_VALUE,
 	PARSE_ERROR_MISSING_COLON,
 	PARSE_ERROR_MISSING_FIELD,
 	PARSE_ERROR_MISSING_RECORD_HEADER,
@@ -134,6 +135,7 @@ extern errr parse_flavor_info(char *buf, header *head);
 extern errr parse_s_info(char *buf, header *head);
 extern errr eval_r_power(header *head);
 extern errr eval_e_slays(header *head);
+extern bool parse_random_value(const char *str, random_value *bonus);
 
 extern errr emit_r_info_index(ang_file *fp, header *head, int i);
 

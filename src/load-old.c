@@ -257,9 +257,9 @@ static int rd_item(object_type *o_ptr)
 	if (!wearable_p(o_ptr))
 	{
 		/* Get the correct fields */
-		o_ptr->to_h = k_ptr->to_h;
-		o_ptr->to_d = k_ptr->to_d;
-		o_ptr->to_a = k_ptr->to_a;
+		o_ptr->to_h = randcalc(k_ptr->to_h, 0, RANDOMISE);
+		o_ptr->to_d = randcalc(k_ptr->to_d, 0, RANDOMISE);
+		o_ptr->to_a = randcalc(k_ptr->to_a, 0, RANDOMISE);
 
 		/* Get the correct fields */
 		o_ptr->ac = k_ptr->ac;
@@ -1129,6 +1129,7 @@ static int rd_randarts(void)
 			for (i = 0; i < artifact_count; i++)
 			{
 				artifact_type *a_ptr = &a_info[i];
+				u16b time_base, time_dice, time_sides;
 
 				rd_byte(&a_ptr->tval);
 				rd_byte(&a_ptr->sval);
@@ -1157,9 +1158,12 @@ static int rd_randarts(void)
 				rd_byte(&a_ptr->alloc_max);
 
 				rd_u16b(&a_ptr->effect);
-				rd_u16b(&a_ptr->time_base);
-				rd_u16b(&a_ptr->time_dice);
-				rd_u16b(&a_ptr->time_sides);
+				rd_u16b(&time_base);
+				rd_u16b(&time_dice);
+				rd_u16b(&time_sides);
+				a_ptr->time.base = time_base;
+				a_ptr->time.dice = time_dice;
+				a_ptr->time.sides = time_sides;
 			}
 
 		/* Initialize only the randart names */

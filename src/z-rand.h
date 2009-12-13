@@ -2,6 +2,18 @@
 #define INCLUDED_Z_RAND_H
 
 #include "h-basic.h"
+#include "defines.h"
+
+
+/**** Types ****/
+
+typedef struct struct_random_value
+{
+	int base;
+	int dice;
+	int sides;
+	int m_bonus;
+} random_value;
 
 
 /**** Constants ****/
@@ -12,6 +24,15 @@
  */
 #define RAND_DEG 63
 
+/* Random aspects used by damcalc, m_bonus_calc, and ranvals */
+typedef enum
+{
+	MINIMISE,
+	AVERAGE,
+	MAXIMISE,
+	EXTREMIFY,
+	RANDOMISE
+} aspect;
 
 
 /**** Available macros ****/
@@ -89,6 +110,11 @@ u32b Rand_simple(u32b m);
 int damroll(int num, int sides);
 
 /**
+ * Calculation helper function for damroll
+ */
+int damcalc(int num, int sides, aspect dam_aspect);
+
+/**
  * Generates a random signed long integer X where "A <= X <= B"
  * Note that "rand_range(0, N-1)" == "randint0(N)"
  *
@@ -96,5 +122,25 @@ int damroll(int num, int sides);
  */
 int rand_range(int A, int B);
 
+/**
+ * Function used to determine enchantment bonuses, see function header for
+ * a more complete description.
+ */
+s16b m_bonus(int max, int level);
+
+/**
+ * Calculation helper function for m_bonus
+ */
+s16b m_bonus_calc(int max, int level, aspect bonus_aspect);
+
+/**
+ * Calculation helper function for random_value structs
+ */
+int randcalc(random_value v, int level, aspect rand_aspect);
+
+/**
+ * Test to see if a value is within a random_value's range
+ */
+bool randcalc_valid(random_value v, int test);
 
 #endif /* INCLUDED_Z_RAND_H */

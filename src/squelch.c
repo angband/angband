@@ -534,9 +534,11 @@ static byte squelch_level_of(const object_type *o_ptr)
 			/* This is the interesting case */
 			case INSCRIP_MAGICAL:
 				value = SQUELCH_GOOD;
-				if ((object_attack_plusses_are_visible(o_ptr) || (o_ptr->to_h == k_ptr->to_h && o_ptr->to_d == k_ptr->to_d)) &&
-				    (object_defence_plusses_are_visible(o_ptr) || (o_ptr->to_a == k_ptr->to_a)) &&
-				    (o_ptr->to_h <= k_ptr->to_h) && (o_ptr->to_d <= k_ptr->to_d) && (o_ptr->to_a <= k_ptr->to_a))
+				if ((object_attack_plusses_are_visible(o_ptr) || (randcalc_valid(k_ptr->to_h, o_ptr->to_h) && randcalc_valid(k_ptr->to_d, o_ptr->to_d))) &&
+				    (object_defence_plusses_are_visible(o_ptr) || (randcalc_valid(k_ptr->to_a, o_ptr->to_a))) &&
+				    (o_ptr->to_h <= randcalc(k_ptr->to_h, 0, MINIMISE)) &&
+				    (o_ptr->to_d <= randcalc(k_ptr->to_d, 0, MINIMISE)) &&
+				    (o_ptr->to_a <= randcalc(k_ptr->to_a, 0, MINIMISE)))
 					value = SQUELCH_BAD;
 				break;
 

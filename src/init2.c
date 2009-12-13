@@ -192,6 +192,7 @@ static cptr err_str[PARSE_ERROR_MAX] =
 	"invalid flag specification",
 	"invalid number of items (0-99)",
 	"invalid spell frequency",
+	"invalid random value",
 	"missing colon",
 	"missing field",
 	"missing record header",

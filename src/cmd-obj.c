@@ -699,12 +699,12 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		if (o_ptr->name1)
 		{
 			const artifact_type *a_ptr = &a_info[o_ptr->name1];
-			o_ptr->timeout = a_ptr->time_base + damroll(a_ptr->time_dice, a_ptr->time_sides);
+			o_ptr->timeout = randcalc(a_ptr->time, 0, RANDOMISE);
 		}
 		else
 		{
 			const object_kind *k_ptr = &k_info[o_ptr->k_idx];
-			o_ptr->timeout += k_ptr->time_base + damroll(k_ptr->time_dice, k_ptr->time_sides);
+			o_ptr->timeout += randcalc(k_ptr->time, 0, RANDOMISE);
 		}
 	}
 	else if (used && use == USE_SINGLE)
