@@ -576,3 +576,14 @@ bool randcalc_valid(random_value v, int test)
 
 	return TRUE;
 }
+
+/*
+ * Test to see if a random_value actually varies
+ */
+bool randcalc_varies(random_value v)
+{
+	if (randcalc(v, 0, MINIMISE) == randcalc(v, 0, MAXIMISE))
+		return FALSE;
+
+	return TRUE;
+}

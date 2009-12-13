@@ -138,10 +138,20 @@ bool object_ego_is_visible(const object_type *o_ptr)
  */
 bool object_attack_plusses_are_visible(const object_type *o_ptr)
 {
+	/* Bonuses have been revealed or for sale */
 	if ((o_ptr->ident & IDENT_ATTACK) || (o_ptr->ident & IDENT_STORE))
 		return TRUE;
-	else
-		return FALSE;
+
+	/* Aware jewelry with non-variable bonuses */
+	if (object_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr))
+	{
+		const object_kind *k_ptr = &k_info[o_ptr->k_idx];
+
+		if (!randcalc_varies(k_ptr->to_h) && !randcalc_varies(k_ptr->to_d))
+			return TRUE;
+	}
+
+	return FALSE;
 }
 
 /**
@@ -149,10 +159,20 @@ bool object_attack_plusses_are_visible(const object_type *o_ptr)
  */
 bool object_defence_plusses_are_visible(const object_type *o_ptr)
 {
+	/* Bonuses have been revealed or for sale */
 	if ((o_ptr->ident & IDENT_DEFENCE) || (o_ptr->ident & IDENT_STORE))
 		return TRUE;
-	else
-		return FALSE;
+
+	/* Aware jewelry with non-variable bonuses */
+	if (object_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr))
+	{
+		const object_kind *k_ptr = &k_info[o_ptr->k_idx];
+
+		if (!randcalc_varies(k_ptr->to_a))
+			return TRUE;
+	}
+
+	return FALSE;
 }
 
 
@@ -629,19 +649,10 @@ void object_notice_on_wield(object_type *o_ptr)
 	if (obj_is_lite(o_ptr) && ego_item_p(o_ptr))
 		object_notice_ego(o_ptr);
 
-	if (object_flavor_is_aware(o_ptr))
+	if (object_flavor_is_aware(o_ptr) && easy_know(o_ptr))
 	{
-		if (easy_know(o_ptr))
-		{
-			object_notice_everything(o_ptr);
-			return;
-		}
-
-		/* We currently always know all flags on aware jewelry */
-		else if (object_is_jewelry(o_ptr))
-		{
-			object_know_all_flags(o_ptr);
-		}
+		object_notice_everything(o_ptr);
+		return;
 	}
 
 	/* notice all artifacts upon wield */
@@ -667,6 +678,19 @@ void object_notice_on_wield(object_type *o_ptr)
 	o_ptr->known_flags[0] |= TR0_OBVIOUS_MASK;
 	o_ptr->known_flags[2] |= TR2_OBVIOUS_MASK;
 
+	/* XXX Eddie this is a small hack, but jewelry with anything noticeable really is obvious */
+	/* XXX Eddie learn =soulkeeping vs =bodykeeping when notice sustain_str */
+	if (object_is_jewelry(o_ptr))
+	{
+		/* Learn the flavor of jewelry with obvious flags */
+		if (EASY_LEARN && obvious_without_activate)
+			object_flavor_aware(o_ptr);
+
+		/* Learn all flags on any aware jewelry */
+		if (object_flavor_is_aware(o_ptr))
+			object_know_all_flags(o_ptr);
+	}
+
 	object_check_for_ident(o_ptr);
 
 	if (!obvious) return;
@@ -676,22 +700,14 @@ void object_notice_on_wield(object_type *o_ptr)
 		object_notice_sensing(o_ptr);
 	/* XXX Eddie is above necessary here?  done again at end of function */
 
-	if (EASY_LEARN && object_is_jewelry(o_ptr) && obvious_without_activate)
-	{
-		/* XXX Eddie this is a small hack, but jewelry with anything noticeable really is obvious */
-		/* XXX Eddie learn =soulkeeping vs =bodykeeping when notice sustain_str */
-		object_flavor_aware(o_ptr);
-		object_check_for_ident(o_ptr);
-	}
-
 	/* Messages */
 	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
 	{
 		if ((f[0] & s_ptr->slay_flag) && s_ptr->brand)
-                {
-                	char o_name[40];
-                        object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-                        msg_format("Your %s %s!", o_name, s_ptr->active_verb);
+		{
+			char o_name[40];
+			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
+			msg_format("Your %s %s!", o_name, s_ptr->active_verb);
 		}
 	}
 

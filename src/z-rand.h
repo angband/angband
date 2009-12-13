@@ -143,4 +143,9 @@ int randcalc(random_value v, int level, aspect rand_aspect);
  */
 bool randcalc_valid(random_value v, int test);
 
+/**
+ * Test to see if a random_value actually varies
+ */
+bool randcalc_varies(random_value v);
+
 #endif /* INCLUDED_Z_RAND_H */
