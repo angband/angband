@@ -7,7 +7,7 @@
 
 /**** Types ****/
 
-typedef struct struct_random_value
+typedef struct
 {
 	int base;
 	int dice;

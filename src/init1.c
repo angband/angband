@@ -748,6 +748,120 @@ static errr grab_one_flag(u32b *flags, cptr names[], cptr what)
 	return (-1);
 }
 
+
+/*
+ * This function reads a value of the form "1+2d3M4"
+ *
+ * - The 1 is a constant base value.
+ * - The 2d3 is a dice roll, to be applied with damroll().  The number of dice
+ *   is optional, and if not present, is assumed to be 1.
+ * - The M4 is a magic bonus, to be applied with m_bonus().
+ *
+ * All parts of the random value are optional.  The value is read into a
+ * "random_value" struct and may be used with the randcalc() function to
+ * determine the minimum, maximum, average, or randomised result of the roll.
+ */
+static bool parse_random_value(const char *str, random_value *bonus)
+{
+	bool negative = FALSE;
+
+	char buffer[50];
+	int i = 0, b, dn, ds, mb;
+	
+	const char end_chr = '|';
+	char eov;
+
+	/* Entire value may be negated */
+	if (str[0] == '-')
+	{
+		negative = TRUE;
+		i++;
+	}
+
+	/* Make a working copy of the string */
+	my_strcpy(buffer, &str[i], N_ELEMENTS(buffer) - 2);
+
+	/* Check for invalid negative numbers */
+	if (NULL != strstr(buffer, "-"))	return FALSE;
+
+	/*
+	 * Add a sentinal value at the end of the string.
+	 * Used by scanf to make sure there's no text after the final conversion.
+	 */
+	buffer[strlen(buffer) + 1] = '\0';
+	buffer[strlen(buffer)] = end_chr;
+
+	/* Scan the value, apply defaults for unspecified components */
+	if (5 == sscanf(buffer, "%d+%dd%dM%d%c", &b, &dn, &ds, &mb, &eov) && eov == end_chr)
+	{
+		/* No defaults */
+	}
+	else if (4 == sscanf(buffer, "%d+d%dM%d%c", &b, &ds, &mb, &eov) && eov == end_chr)
+	{
+		dn = 1;
+	}
+	else if (3 == sscanf(buffer, "%d+M%d%c", &b, &mb, &eov) && eov == end_chr)
+	{
+		dn = 0; ds = 0;
+	}
+	else if (4 == sscanf(buffer, "%d+%dd%d%c", &b, &dn, &ds, &eov) && eov == end_chr)
+	{
+		mb = 0;
+	}
+	else if (3 == sscanf(buffer, "%d+d%d%c", &b, &ds, &eov) && eov == end_chr)
+	{
+		dn = 1; mb = 0;
+	}
+	else if (4 == sscanf(buffer, "%dd%dM%d%c", &dn, &ds, &mb, &eov) && eov == end_chr)
+	{
+		b = 0;
+	}
+	else if (3 == sscanf(buffer, "d%dM%d%c", &ds, &mb, &eov) && eov == end_chr)
+	{
+		b = 0; dn = 1;
+	}
+	else if (2 == sscanf(buffer, "M%d%c", &mb, &eov) && eov == end_chr)
+	{
+		b = 0; dn = 0; ds = 0;
+	}
+	else if (3 == sscanf(buffer, "%dd%d%c", &dn, &ds, &eov) && eov == end_chr)
+	{
+		b = 0; mb = 0;
+	}
+	else if (2 == sscanf(buffer, "d%d%c", &ds, &eov) && eov == end_chr)
+	{
+		b = 0; dn = 1; mb = 0;
+	}
+	else if (2 == sscanf(buffer, "%d%c", &b, &eov) && eov == end_chr)
+	{
+		dn = 0; ds = 0; mb = 0;
+	}
+	else
+	{
+		return FALSE;
+	}
+
+	/* Assign the values */
+	bonus->base = b;
+	bonus->dice = dn;
+	bonus->sides = ds;
+	bonus->m_bonus = mb;
+
+	/*
+	 * Handle negation (the random components are always positive, so the base
+	 * must be adjusted as necessary).
+	 */
+	if (negative)
+	{
+		bonus->base *= -1;
+		bonus->base -= bonus->m_bonus;
+		bonus->base -= bonus->dice * (bonus->sides + 1);
+	}
+
+	return TRUE;
+}
+
+
 /*
  * Figure out what index an activation should have
  */
@@ -1655,18 +1769,24 @@ errr parse_k_info(char *buf, header *head)
 	else if (buf[0] == 'P')
 	{
 		int ac, hd1, hd2;
-		char th[50], td[50], ta[50];
+		char *to_h, *to_d, *to_a;
+		char fields[150];
 
-		/* Scan for the values */
-		if (6 != sscanf(buf+2, "%d:%dd%d:%[^:]:%[^:]:%s",
-			            &ac, &hd1, &hd2, th, td, ta)) return (PARSE_ERROR_GENERIC);
+		/* Scan for the values "P:0:0d0:0:0:0" */
+		if (4 != sscanf(buf+2, "%d:%dd%d:%s",
+			            &ac, &hd1, &hd2, fields)) return (PARSE_ERROR_GENERIC);
+
+		/* Tokenize the last three fields */
+		if(!(to_h = strtok(fields, ":"))) return PARSE_ERROR_GENERIC;
+		if(!(to_d = strtok(NULL, ":"))) return PARSE_ERROR_GENERIC;
+		if(!(to_a = strtok(NULL, ":"))) return PARSE_ERROR_GENERIC;
 
 		k_ptr->ac = ac;
 		k_ptr->dd = hd1;
 		k_ptr->ds = hd2;
-		if (!parse_random_value(th, &k_ptr->to_h)) return PARSE_ERROR_INVALID_VALUE;
-		if (!parse_random_value(td, &k_ptr->to_d)) return PARSE_ERROR_INVALID_VALUE;
-		if (!parse_random_value(ta, &k_ptr->to_a)) return PARSE_ERROR_INVALID_VALUE;
+		if (!parse_random_value(to_h, &k_ptr->to_h)) return PARSE_ERROR_INVALID_VALUE;
+		if (!parse_random_value(to_d, &k_ptr->to_d)) return PARSE_ERROR_INVALID_VALUE;
+		if (!parse_random_value(to_a, &k_ptr->to_a)) return PARSE_ERROR_INVALID_VALUE;
 	}
 
 	/* Hack -- Process 'C' for "charges" */
@@ -3494,115 +3614,6 @@ errr parse_s_info(char *buf, header *head)
 
 	/* Success */
 	return (0);
-}
-
-/*
- * This function reads a value of the form "1+2d3M4"
- *
- * - The 1 is a constant base value.
- * - The 2d3 is a dice roll, to be applied with damroll().  The number of dice
- *   is optional, and if not present, is assumed to be 1.
- * - The M4 is a magic bonus, to be applied with m_bonus().
- *
- * All parts of the random value are optional.  The value is read into a
- * "random_value" struct and may be used with the randcalc() function to
- * determine the minimum, maximum, average, or randomised result of the roll.
- */
-bool parse_random_value(const char *str, random_value *bonus)
-{
-	bool negative = FALSE;
-
-	char buffer[50];
-	int i = 0, b, dn, ds, mb;
-	
-	const char end_chr = '|';
-	char eov;
-
-	/* Entire value may be negated */
-	if (str[0] == '-')
-	{
-		negative = TRUE;
-		i++;
-	}
-
-	/* Make a working copy of the string */
-	my_strcpy(buffer, &str[i], N_ELEMENTS(buffer) - 2);
-
-	/* Check for invalid negative numbers */
-	if (NULL != strstr(buffer, "-"))	return FALSE;
-
-	/* Add the sentinal value */
-	buffer[strlen(buffer) + 1] = '\0';
-	buffer[strlen(buffer)] = end_chr;
-
-	/* Scan the value, apply defaults for unspecified components */
-	if (5 == sscanf(buffer, "%d+%dd%dM%d%c", &b, &dn, &ds, &mb, &eov) && eov == end_chr)
-	{
-		/* No defaults */
-	}
-	else if (4 == sscanf(buffer, "%d+d%dM%d%c", &b, &ds, &mb, &eov) && eov == end_chr)
-	{
-		dn = 1;
-	}
-	else if (3 == sscanf(buffer, "%d+M%d%c", &b, &mb, &eov) && eov == end_chr)
-	{
-		dn = 0; ds = 0;
-	}
-	else if (4 == sscanf(buffer, "%d+%dd%d%c", &b, &dn, &ds, &eov) && eov == end_chr)
-	{
-		mb = 0;
-	}
-	else if (3 == sscanf(buffer, "%d+d%d%c", &b, &ds, &eov) && eov == end_chr)
-	{
-		dn = 1; mb = 0;
-	}
-	else if (4 == sscanf(buffer, "%dd%dM%d%c", &dn, &ds, &mb, &eov) && eov == end_chr)
-	{
-		b = 0;
-	}
-	else if (3 == sscanf(buffer, "d%dM%d%c", &ds, &mb, &eov) && eov == end_chr)
-	{
-		b = 0; dn = 1;
-	}
-	else if (2 == sscanf(buffer, "M%d%c", &mb, &eov) && eov == end_chr)
-	{
-		b = 0; dn = 0; ds = 0;
-	}
-	else if (3 == sscanf(buffer, "%dd%d%c", &dn, &ds, &eov) && eov == end_chr)
-	{
-		b = 0; mb = 0;
-	}
-	else if (2 == sscanf(buffer, "d%d%c", &ds, &eov) && eov == end_chr)
-	{
-		b = 0; dn = 1; mb = 0;
-	}
-	else if (2 == sscanf(buffer, "%d%c", &b, &eov) && eov == end_chr)
-	{
-		dn = 0; ds = 0; mb = 0;
-	}
-	else
-	{
-		return FALSE;
-	}
-
-	/* Assign the values */
-	bonus->base = b;
-	bonus->dice = dn;
-	bonus->sides = ds;
-	bonus->m_bonus = mb;
-
-	/*
-	 * Handle negation (the random components are always positive, so the base
-	 * must be adjusted as necessary).
-	 */
-	if (negative)
-	{
-		bonus->base *= -1;
-		bonus->base -= bonus->m_bonus;
-		bonus->base -= bonus->dice * (bonus->sides + 1);
-	}
-
-	return TRUE;
 }
 
 

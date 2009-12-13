@@ -934,8 +934,7 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 {
 	const object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	const char *desc;
-	bool has_timeout;
-	random_value timeout;
+	random_value timeout = {0, 0, 0, 0};
 
 	int effect = 0, fail;
 
@@ -947,7 +946,6 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 		{
 			effect = a_ptr->effect;
 			timeout = a_ptr->time;
-			has_timeout = TRUE;
 		}
 		else if (object_effect(o_ptr))
 		{
@@ -964,7 +962,6 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 		{
 			effect = k_ptr->effect;
 			timeout = k_ptr->time;
-			has_timeout = TRUE;
 		}
 		else if (object_effect(o_ptr) != 0)
 		{
@@ -1009,7 +1006,7 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 
 	text_out(".\n");
 
-	if (has_timeout)
+	if (randcalc(timeout, 0, MAXIMISE) > 0)
 	{
 		int min_time, max_time;
 

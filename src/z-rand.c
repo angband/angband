@@ -526,7 +526,7 @@ s16b m_bonus_calc(int max, int level, aspect bonus_aspect)
 		}
 		case AVERAGE:
 		{
-			val = max / 2;
+			val = max * level / MAX_DEPTH;
 			break;
 		}
 	}
