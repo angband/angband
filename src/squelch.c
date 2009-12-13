@@ -52,6 +52,7 @@ typedef enum
 	TYPE_DIGGER,
 	TYPE_RING,
 	TYPE_AMULET,
+	TYPE_LIGHT,
 
 	TYPE_MAX
 } squelch_type_t;
@@ -91,6 +92,7 @@ static quality_squelch_struct quality_mapping[] =
 	{ TYPE_DIGGER,		TV_DIGGING,	0,		SV_UNKNOWN },
 	{ TYPE_RING,		TV_RING,	0,		SV_UNKNOWN },
 	{ TYPE_AMULET,		TV_AMULET,	0,		SV_UNKNOWN },
+	{ TYPE_LIGHT, 		TV_LITE, 	0,		SV_UNKNOWN },
 };
 
 
@@ -119,6 +121,7 @@ static quality_name_struct quality_choices[TYPE_MAX] =
 	{ TYPE_DIGGER,		"Diggers" },
 	{ TYPE_RING,		"Rings" },
 	{ TYPE_AMULET,		"Amulets" },
+	{ TYPE_LIGHT, 		"Lights" },
 };
 
 /* Structure to describe tval/description pairings. */
