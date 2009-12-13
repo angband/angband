@@ -623,10 +623,6 @@ static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max, siz
 	u32b f[OBJ_FLAG_N];
 	object_flags(o_ptr, f);
 
-	/* For laucnhers, MIGHT is displayed in the multiplier, not in the pval */
-	if (o_ptr->tval == TV_BOW)
-		f[0] &= ~TR0_MIGHT;
-
 	if (!(f[0] & TR0_PVAL_MASK)) return end;
 
 	strnfcat(buf, max, &end, " (%+d", o_ptr->pval);
