@@ -249,13 +249,12 @@ static void recharge_objects(void)
 {
 	int i;
 
-	int charged = 0;
+	bool charged = FALSE, discharged_stack;
 
 	object_type *o_ptr;
 	object_kind *k_ptr;
 
-
-	/* Process equipment */
+	/*** Recharge equipment ***/
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
 		/* Get the object */
@@ -265,16 +264,12 @@ static void recharge_objects(void)
 		if (!o_ptr->k_idx) continue;
 
 		/* Recharge activatable objects */
-		if (o_ptr->timeout > 0 && !(o_ptr->tval == TV_LITE && !artifact_p(o_ptr)))
+		if (recharge_timeout(o_ptr))
 		{
-			/* Recharge */
-			o_ptr->timeout--;
+			charged = TRUE;
 
-			/* Notice changes */
-			if (!o_ptr->timeout) charged++;
-
-			/* Message if item is recharged, if inscribed with "!!" */
-			if (!o_ptr->timeout) recharged_notice(o_ptr, TRUE);
+			/* Message if an item recharged */
+			recharged_notice(o_ptr, TRUE);
 		}
 	}
 
@@ -285,9 +280,9 @@ static void recharge_objects(void)
 		p_ptr->redraw |= (PR_EQUIP);
 	}
 
-	charged = 0;
+	charged = FALSE;
 
-	/* Recharge rods */
+	/*** Recharge the inventory ***/
 	for (i = 0; i < INVEN_PACK; i++)
 	{
 		o_ptr = &inventory[i];
@@ -296,33 +291,23 @@ static void recharge_objects(void)
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
 
-		/* Examine all charging rods */
-		if ((o_ptr->tval == TV_ROD) && (o_ptr->timeout))
+		discharged_stack = (number_charging(o_ptr) == o_ptr->number) ? TRUE : FALSE;
+
+		/* Recharge rods, and update if any rods are recharged */
+		if (o_ptr->tval == TV_ROD && recharge_timeout(o_ptr))
 		{
-			/* Determine how many rods are charging */
-			int time_base = randcalc(k_ptr->time, 0, MINIMISE);
-			int temp = (o_ptr->timeout + time_base - 1) / time_base;
-			if (temp > o_ptr->number) temp = o_ptr->number;
+			charged = TRUE;
 
-			/* Decrease timeout by that number */
-			o_ptr->timeout -= temp;
-
-			/* Boundary control */
-			if (o_ptr->timeout < 0) o_ptr->timeout = 0;
-
-			/* Update if any rods are recharged */
-			if (temp > (o_ptr->timeout + time_base - 1) / time_base)
+			/* Entire stack is recharged */
+			if (o_ptr->timeout == 0)
 			{
-				/* XXX - Hack - Fixme - Marble Dice */
-				msg_print("This can never happen!");
+				recharged_notice(o_ptr, TRUE);
+			}
 
-				/* Update window */
-				charged++;
-
-				/* Message if whole stack is recharged, if inscribed with "!!" */
-				if (!o_ptr->timeout) recharged_notice(o_ptr, TRUE);
-				/* Message if first in a stack is recharged, if inscribed with "!!" -HK- */
-				else if (temp == o_ptr->number) recharged_notice(o_ptr, FALSE);
+			/* Previously exhausted stack has acquired a charge */
+			else if (discharged_stack)
+			{
+				recharged_notice(o_ptr, FALSE);
 			}
 		}
 	}
@@ -337,10 +322,7 @@ static void recharge_objects(void)
 		p_ptr->redraw |= (PR_INVEN);
 	}
 
-
-	/*** Process Objects ***/
-
-	/* Process objects */
+	/*** Recharge the ground ***/
 	for (i = 1; i < o_max; i++)
 	{
 		/* Get the object */
@@ -350,14 +332,8 @@ static void recharge_objects(void)
 		if (!o_ptr->k_idx) continue;
 
 		/* Recharge rods on the ground */
-		if ((o_ptr->tval == TV_ROD) && o_ptr->timeout)
-		{
-			/* Charge it */
-			o_ptr->timeout -= o_ptr->number;
-
-			/* Boundary control */
-			if (o_ptr->timeout < 0) o_ptr->timeout = 0;
-		}
+		if (o_ptr->tval == TV_ROD)
+			recharge_timeout(o_ptr);
 	}
 }
 

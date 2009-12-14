@@ -1830,8 +1830,8 @@ void object_copy(object_type *o_ptr, const object_type *j_ptr)
 void object_copy_amt(object_type *dst, object_type *src, int amt)
 {
 	const object_kind *k_ptr = &k_info[src->k_idx];
-	int time_base = randcalc(k_ptr->time, 0, MINIMISE);
-	
+	int charge_time = randcalc(k_ptr->time, 0, AVERAGE), max_time;
+
 	/* Get a copy of the object */
 	object_copy(dst, src);
 
@@ -1849,7 +1849,7 @@ void object_copy_amt(object_type *dst, object_type *src, int amt)
 
 	if (src->tval == TV_ROD)
 	{
-		int max_time = time_base * amt;
+		max_time = charge_time * amt;
 
 		if (src->timeout > max_time)
 			dst->timeout = max_time;
@@ -3226,8 +3226,7 @@ void reorder_pack(void)
 void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt)
 {
 	const object_kind *k_ptr = &k_info[o_ptr->k_idx];
-	int time_base = randcalc(k_ptr->time, 0, MINIMISE);
-	int max_time;
+	int charge_time = randcalc(k_ptr->time, 0, AVERAGE), max_time;
 
 	/*
 	 * Hack -- If rods, staves, or wands are dropped, the total maximum
@@ -3251,7 +3250,7 @@ void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt)
 	 */
 	if (o_ptr->tval == TV_ROD)
 	{
-		max_time = time_base * amt;
+		max_time = charge_time * amt;
 
 		if (o_ptr->timeout > max_time)
 			q_ptr->timeout = max_time;
@@ -3286,7 +3285,58 @@ void reduce_charges(object_type *o_ptr, int amt)
 }
 
 
+int number_charging(const object_type *o_ptr)
+{
+	int charge_time, num_charging;
+	random_value timeout;
 
+	/* Artifacts have a special timeout */	
+	if(o_ptr->name1)
+		timeout = a_info[o_ptr->name1].time;
+	else
+		timeout = k_info[o_ptr->k_idx].time;
+
+	charge_time = randcalc(timeout, 0, AVERAGE);
+
+	/* Item has no timeout */
+	if (charge_time <= 0) return 0;
+
+	/* No items are charging */
+	if (o_ptr->timeout <= 0) return 0;
+
+	/* Calculate number charging based on timeout */
+	num_charging = (o_ptr->timeout + charge_time - 1) / charge_time;
+
+	/* Number charging cannot exceed stack size */
+	if (num_charging > o_ptr->number) num_charging = o_ptr->number;
+
+	return num_charging;
+}
+
+
+bool recharge_timeout(object_type *o_ptr)
+{
+	int charging_before, charging_after;
+
+	/* Find the number of charging items */
+	charging_before = number_charging(o_ptr);
+
+	/* Nothing to charge */	
+	if (charging_before == 0)
+		return FALSE;
+
+	/* Decrease the timeout */
+	o_ptr->timeout -= MIN(charging_before, o_ptr->timeout);
+
+	/* Find the new number of charging items */
+	charging_after = number_charging(o_ptr);
+
+	/* Return true if at least 1 item obtained a charge */
+	if (charging_after < charging_before)
+		return TRUE;
+	else
+		return FALSE;
+}
 
 /*
  * Looks if "inscrip" is present on the given object.
@@ -3865,16 +3915,11 @@ bool obj_has_charges(const object_type *o_ptr)
 /* Determine if an object is zappable */
 bool obj_can_zap(const object_type *o_ptr)
 {
-	const object_kind *k_ptr = &k_info[o_ptr->k_idx];
-	int time_base = randcalc(k_ptr->time, 0, MINIMISE);
-	
-	if (o_ptr->tval != TV_ROD) return FALSE;
+	/* Any rods not charging? */
+	if (o_ptr->tval == TV_ROD && number_charging(o_ptr) < o_ptr->number)
+		return TRUE;
 
-	/* All still charging? */
-	if (o_ptr->number <= (o_ptr->timeout + time_base - 1) / time_base) return FALSE;
-
-	/* Otherwise OK */
-	return TRUE;
+	return FALSE;
 }
 
 /* Determine if an object is activatable */

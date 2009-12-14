@@ -203,6 +203,8 @@ void reorder_pack(void);
 void sort_quiver(void);
 void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt);
 void reduce_charges(object_type *o_ptr, int amt);
+int number_charging(const object_type *o_ptr);
+bool recharge_timeout(object_type *o_ptr);
 unsigned check_for_inscrip(const object_type *o_ptr, const char *inscrip);
 int lookup_kind(int tval, int sval);
 bool lookup_reverse(s16b k_idx, int *tval, int *sval);
