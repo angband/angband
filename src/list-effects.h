@@ -165,7 +165,7 @@ EFFECT(FIREBRAND,      FALSE, 25,	"brands bolts with fire, in an unbalanced fash
 EFFECT(FIRE_BOLT,      TRUE,   5,	"creates a fire bolt with damage 9d8")
 EFFECT(FIRE_BOLT2,     TRUE,   7,	"creates a fire bolt with damage 12d8")
 EFFECT(FIRE_BOLT3,     TRUE,   9,	"creates a fire bolt with damage 16d8")
-EFFECT(FIRE_BOLT72,    TRUE,   9,	"creates a fire bolt with damage 72")
+EFFECT(FIRE_BOLT72,    TRUE,   9,	"creates a fire ball with damage 72")
 EFFECT(FIRE_BALL,      TRUE,  11,	"creates a fire ball with damage 144")
 EFFECT(FIRE_BALL2,     TRUE,  11,	"creates a large fire ball with damage 120")
 EFFECT(FIRE_BALL200,   TRUE,  13,	"creates a large fire ball with damage 200")
