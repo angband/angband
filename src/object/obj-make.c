@@ -1231,7 +1231,7 @@ bool make_object(object_type *j_ptr, int lev, bool good, bool great)
 	if (k_ptr->gen_mult_prob >= 100 ||
 	    k_ptr->gen_mult_prob >= randint1(100))
 	{
-		j_ptr->number = damroll(k_ptr->gen_dice, k_ptr->gen_side);
+		j_ptr->number = randcalc(k_ptr->stack_size, lev, RANDOMISE);
 	}
 
 

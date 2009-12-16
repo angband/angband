@@ -42,12 +42,11 @@ typedef struct
 	byte level;        /**< Level (difficulty of activation) */
 
 	u16b effect;         /**< Effect this item produces (effects.c) */
-	random_value time;   /**< Recharge time (rods) */
+	random_value time;   /**< Recharge time (rods/activation) */
 	random_value charge; /**< Number of charges (staves/wands) */
 
-	byte gen_mult_prob;  /**< Probability of generating more than one */
-	byte gen_dice;       /**< Number to generate dice */
-	byte gen_side;       /**< Number to generate sides */
+	byte gen_mult_prob;      /**< Probability of generating more than one */
+	random_value stack_size; /**< Number to generate */
 
 	u16b flavor;         /**< Special object flavor (or zero) */
 

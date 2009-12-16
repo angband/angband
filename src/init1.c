@@ -1798,19 +1798,16 @@ errr parse_k_info(char *buf, header *head)
 	/* Process 'M' for "Multiple quantity" (one line only) */
 	else if (buf[0] == 'M')
 	{
-		int prob, dice, side;
+		int prob;
+		char stack[50];
 
 		/* Scan for the values */
-		if (3 != sscanf(buf+2, "%d:%dd%d", &prob, &dice, &side))
+		if (2 != sscanf(buf+2, "%d:%s", &prob, stack))
 			return (PARSE_ERROR_GENERIC);
-
-		/* Sanity check */
-		if (!(dice * side)) prob = dice = side = 0;
 
 		/* Save the values */
 		k_ptr->gen_mult_prob = prob;
-		k_ptr->gen_dice = dice;
-		k_ptr->gen_side = side;
+		if (!parse_random_value(stack, &k_ptr->stack_size)) return PARSE_ERROR_INVALID_VALUE;
 	}
 
 	/* Hack -- Process 'F' for flags */
