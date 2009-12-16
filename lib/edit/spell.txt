@@ -80,10 +80,9 @@ N:8:Identify
 I:90:2:5
 D:Reveals the powers of an object.
 
-N:9:Detect Invisible
+N:9:Reveal Monsters
 I:90:2:6
-D:Detects all invisible monsters in the immediate area,
-D: for one turn only.
+D:Detects all monsters in the immediate area, for one turn only.
 
 N:10:Detect Enchantment
 I:90:3:5

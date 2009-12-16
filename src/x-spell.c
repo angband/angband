@@ -753,6 +753,7 @@ static bool cast_mage_spell(int spell, int dir)
 		}
 		case SPELL_DETECT_INVISIBLE:
 		{
+			(void)detect_monsters_normal(TRUE);
 			(void)detect_monsters_invis(TRUE);
 			break;
 		}
