@@ -26,7 +26,6 @@
  */
 char scroll_adj[MAX_TITLES][16];
 
-
 static void flavor_assign_fixed(void)
 {
 	int i, j;
@@ -2729,9 +2728,8 @@ s16b inven_carry(object_type *o_ptr)
 	/* Use that slot */
 	i = j;
 
-
 	/* Reorder the pack */
-	if (i < INVEN_PACK)
+	if (i < INVEN_MAX_PACK)
 	{
 		s32b o_value, j_value;
 
@@ -2796,7 +2794,6 @@ s16b inven_carry(object_type *o_ptr)
 		/* Wipe the empty slot */
 		object_wipe(&inventory[i]);
 	}
-
 
 	/* Copy the item */
 	object_copy(&inventory[i], o_ptr);
@@ -4142,4 +4139,69 @@ bool item_is_available(int item, bool (*tester)(const object_type *), int mode)
 	}
 
 	return FALSE;
+}
+
+/*
+ * Returns whether the pack is holding the maximum number of items. The max
+ * size is INVEN_MAX_PACK, which is a macro since quiver size affects slots
+ * available.
+ */
+bool pack_is_full(void)
+{
+	return inventory[INVEN_MAX_PACK - 1].k_idx ? TRUE : FALSE;
+}
+
+/*
+ * Returns whether the pack is holding the more than the maximum number of
+ * items. The max size is INVEN_MAX_PACK, which is a macro since quiver size
+ * affects slots available. If this is true, calling pack_overflow() will
+ * trigger a pack overflow.
+ */
+bool pack_is_overfull(void)
+{
+	return inventory[INVEN_MAX_PACK].k_idx ? TRUE : FALSE;
+}
+
+/*
+ * Overflow an item from the pack, if it is overfull.
+ */
+void pack_overflow(void)
+{
+	int item = INVEN_MAX_PACK;
+	char o_name[80];
+	object_type *o_ptr;
+
+	if (!pack_is_overfull()) return;
+
+	/* Get the slot to be dropped */
+	o_ptr = &inventory[item];
+
+	/* Disturbing */
+	disturb(0, 0);
+
+	/* Warning */
+	msg_print("Your pack overflows!");
+
+	/* Describe */
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+
+	/* Message */
+	msg_format("You drop %s (%c).", o_name, index_to_label(item));
+
+	/* Drop it (carefully) near the player */
+	drop_near(o_ptr, 0, p_ptr->py, p_ptr->px);
+
+	/* Modify, Describe, Optimize */
+	inven_item_increase(item, -255);
+	inven_item_describe(item);
+	inven_item_optimize(item);
+
+	/* Notice stuff (if needed) */
+	if (p_ptr->notice) notice_stuff();
+
+	/* Update stuff (if needed) */
+	if (p_ptr->update) update_stuff();
+
+	/* Redraw stuff (if needed) */
+	if (p_ptr->redraw) redraw_stuff();
 }

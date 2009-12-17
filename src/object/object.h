@@ -243,6 +243,9 @@ extern void display_itemlist(void);
 extern void display_object_idx_recall(s16b o_idx);
 extern void display_object_kind_recall(s16b k_idx);
 
+bool pack_is_full(void);
+bool pack_is_overfull(void);
+void pack_overflow(void);
 
 /* obj-power.c and randart.c */
 s32b object_power(const object_type *o_ptr, int verbose, ang_file *log_file, bool known);

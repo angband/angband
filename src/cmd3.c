@@ -207,6 +207,9 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	/* Save quiver size */
 	save_quiver_size();
 
+	/* See if we have to overflow the pack */
+	pack_overflow();
+
 	/* Recalculate bonuses, torch, mana */
 	p_ptr->update |= (PU_BONUS | PU_TORCH | PU_MANA);
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);

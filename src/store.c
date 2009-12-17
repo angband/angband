@@ -2725,7 +2725,7 @@ static void store_examine(int item)
  */
 static bool store_overflow(void)
 {
-	int item = INVEN_PACK;
+	int item = INVEN_MAX_PACK;
 
 	object_type *o_ptr = &inventory[item];
 
@@ -3178,7 +3178,7 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 			handle_stuff();
 
 			/* XXX Pack Overflow */
-			if (inventory[INVEN_PACK].k_idx)
+			if (inventory[INVEN_MAX_PACK].k_idx)
 				leave = store_overflow();
 		}
 

@@ -901,7 +901,6 @@ static void process_player(void)
 {
 	int i;
 
-
 	/*** Check for interrupts ***/
 
 	/* Complete resting */
@@ -975,9 +974,6 @@ static void process_player(void)
 	/* Repeat until energy is reduced */
 	do
 	{
-		/* Item slot just past the legal end of the pack */
-		int item = INVEN_MAX_PACK;
-
 		/* Notice stuff (if needed) */
 		if (p_ptr->notice) notice_stuff();
 
@@ -995,49 +991,10 @@ static void process_player(void)
 		Term_fresh();
 
 		/* Hack -- Pack Overflow */
-		if (inventory[item].k_idx)
-		{
-			char o_name[80];
-
-			object_type *o_ptr;
-
-			/* Get the slot to be dropped */
-			o_ptr = &inventory[item];
-
-			/* Disturbing */
-			disturb(0, 0);
-
-			/* Warning */
-			msg_print("Your pack overflows!");
-
-			/* Describe */
-			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
-
-			/* Message */
-			msg_format("You drop %s (%c).", o_name, index_to_label(item));
-
-			/* Drop it (carefully) near the player */
-			drop_near(o_ptr, 0, p_ptr->py, p_ptr->px);
-
-			/* Modify, Describe, Optimize */
-			inven_item_increase(item, -255);
-			inven_item_describe(item);
-			inven_item_optimize(item);
-
-			/* Notice stuff (if needed) */
-			if (p_ptr->notice) notice_stuff();
-
-			/* Update stuff (if needed) */
-			if (p_ptr->update) update_stuff();
-
-			/* Redraw stuff (if needed) */
-			if (p_ptr->redraw) redraw_stuff();
-		}
-
+		pack_overflow();
 
 		/* Hack -- reset to inventory display */
 		if (!p_ptr->command_new) p_ptr->command_wrk = USE_INVEN;
-
 
 		/* Assume free turn */
 		p_ptr->energy_use = 0;
@@ -1527,7 +1484,6 @@ static void dungeon(void)
 
 		/* Handle "leaving" */
 		if (p_ptr->leaving) break;
-
 
 		/*** Apply energy ***/
 
