@@ -1055,13 +1055,13 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 		/* Hack -- apply extra penalties if needed */
 		if (cursed_p(o_ptr))
 		{
-			/* Hack -- obtain bonuses */
-			if (e_ptr->max_to_h > 0) o_ptr->to_h -= randint1(e_ptr->max_to_h);
-			if (e_ptr->max_to_d > 0) o_ptr->to_d -= randint1(e_ptr->max_to_d);
-			if (e_ptr->max_to_a > 0) o_ptr->to_a -= randint1(e_ptr->max_to_a);
+			/* Apply extra ego bonuses */
+			o_ptr->to_h -= randcalc(e_ptr->to_h, lev, RANDOMISE);
+			o_ptr->to_d -= randcalc(e_ptr->to_d, lev, RANDOMISE);
+			o_ptr->to_a -= randcalc(e_ptr->to_a, lev, RANDOMISE);
 
-			/* Hack -- obtain pval */
-			if (e_ptr->max_pval > 0) o_ptr->pval -= randint1(e_ptr->max_pval);
+			/* Apply ego pval */
+			o_ptr->pval -= randcalc(e_ptr->pval, lev, RANDOMISE);
 
 			/* Apply minimums */
 			if (o_ptr->to_h > -1 * e_ptr->min_to_h) o_ptr->to_h = -1 * e_ptr->min_to_h;
@@ -1073,13 +1073,13 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 		/* Hack -- apply extra bonuses if needed */
 		else
 		{
-			/* Hack -- obtain bonuses */
-			if (e_ptr->max_to_h > 0) o_ptr->to_h += randint1(e_ptr->max_to_h);
-			if (e_ptr->max_to_d > 0) o_ptr->to_d += randint1(e_ptr->max_to_d);
-			if (e_ptr->max_to_a > 0) o_ptr->to_a += randint1(e_ptr->max_to_a);
+			/* Apply extra ego bonuses */
+			o_ptr->to_h += randcalc(e_ptr->to_h, lev, RANDOMISE);
+			o_ptr->to_d += randcalc(e_ptr->to_d, lev, RANDOMISE);
+			o_ptr->to_a += randcalc(e_ptr->to_a, lev, RANDOMISE);
 
-			/* Hack -- obtain pval */
-			if (e_ptr->max_pval > 0) o_ptr->pval += randint1(e_ptr->max_pval);
+			/* Apply ego pval */
+			o_ptr->pval += randcalc(e_ptr->pval, lev, RANDOMISE);
 
 			/* Apply minimums */
 			if (o_ptr->to_h < e_ptr->min_to_h) o_ptr->to_h = e_ptr->min_to_h;

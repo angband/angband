@@ -138,10 +138,10 @@ typedef struct
 	byte min_sval[EGO_TVALS_MAX];	/* Minimum legal sval */
 	byte max_sval[EGO_TVALS_MAX];	/* Maximum legal sval */
 
-	byte max_to_h;		/* Maximum to-hit bonus */
-	byte max_to_d;		/* Maximum to-dam bonus */
-	byte max_to_a;		/* Maximum to-ac bonus */
-	byte max_pval;		/* Maximum pval */
+	random_value to_h;     /* Extra to-hit bonus */
+	random_value to_d; /* Extra to-dam bonus */
+	random_value to_a; /* Extra to-ac bonus */
+	random_value pval; /* Extra pval bonus */
 
 	byte min_to_h;		/* Minimum to-hit value */
 	byte min_to_d;		/* Minimum to-dam value */

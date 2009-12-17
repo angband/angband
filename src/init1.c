@@ -1769,7 +1769,7 @@ errr parse_k_info(char *buf, header *head)
 	else if (buf[0] == 'P')
 	{
 		int ac, hd1, hd2;
-		char *to_h, *to_d, *to_a;
+		char *th, *td, *ta;
 		char fields[150];
 
 		/* Scan for the values "P:0:0d0:0:0:0" */
@@ -1777,16 +1777,16 @@ errr parse_k_info(char *buf, header *head)
 			            &ac, &hd1, &hd2, fields)) return (PARSE_ERROR_GENERIC);
 
 		/* Tokenize the last three fields */
-		if(!(to_h = strtok(fields, ":"))) return PARSE_ERROR_GENERIC;
-		if(!(to_d = strtok(NULL, ":"))) return PARSE_ERROR_GENERIC;
-		if(!(to_a = strtok(NULL, ":"))) return PARSE_ERROR_GENERIC;
+		if(!(th = strtok(fields, ":"))) return PARSE_ERROR_GENERIC;
+		if(!(td = strtok(NULL, ":"))) return PARSE_ERROR_GENERIC;
+		if(!(ta = strtok(NULL, ":"))) return PARSE_ERROR_GENERIC;
 
 		k_ptr->ac = ac;
 		k_ptr->dd = hd1;
 		k_ptr->ds = hd2;
-		if (!parse_random_value(to_h, &k_ptr->to_h)) return PARSE_ERROR_INVALID_VALUE;
-		if (!parse_random_value(to_d, &k_ptr->to_d)) return PARSE_ERROR_INVALID_VALUE;
-		if (!parse_random_value(to_a, &k_ptr->to_a)) return PARSE_ERROR_INVALID_VALUE;
+		if (!parse_random_value(th, &k_ptr->to_h)) return PARSE_ERROR_INVALID_VALUE;
+		if (!parse_random_value(td, &k_ptr->to_d)) return PARSE_ERROR_INVALID_VALUE;
+		if (!parse_random_value(ta, &k_ptr->to_a)) return PARSE_ERROR_INVALID_VALUE;
 	}
 
 	/* Hack -- Process 'C' for "charges" */
@@ -2222,19 +2222,24 @@ errr parse_e_info(char *buf, header *head)
 	/* Hack -- Process 'C' for "creation" */
 	else if (buf[0] == 'C')
 	{
-		int th, td, ta, pv;
+		char *th, *td, *ta, *pv;
+		char fields[200];
 
 		/* There better be a current e_ptr */
 		if (!e_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
 
 		/* Scan for the values */
-		if (4 != sscanf(buf+2, "%d:%d:%d:%d",
-			            &th, &td, &ta, &pv)) return (PARSE_ERROR_GENERIC);
+		if (1 != sscanf(buf+2, "%s", fields)) return (PARSE_ERROR_GENERIC);
 
-		e_ptr->max_to_h = th;
-		e_ptr->max_to_d = td;
-		e_ptr->max_to_a = ta;
-		e_ptr->max_pval = pv;
+		if(!(th = strtok(fields, ":"))) return PARSE_ERROR_GENERIC;
+		if(!(td = strtok(NULL, ":"))) return PARSE_ERROR_GENERIC;
+		if(!(ta = strtok(NULL, ":"))) return PARSE_ERROR_GENERIC;
+		if(!(pv = strtok(NULL, ":"))) return PARSE_ERROR_GENERIC;
+		
+		if(!parse_random_value(th, &e_ptr->to_h)) return PARSE_ERROR_INVALID_VALUE;
+		if(!parse_random_value(td, &e_ptr->to_d)) return PARSE_ERROR_INVALID_VALUE;
+		if(!parse_random_value(ta, &e_ptr->to_a)) return PARSE_ERROR_INVALID_VALUE;
+		if(!parse_random_value(pv, &e_ptr->pval)) return PARSE_ERROR_INVALID_VALUE;
 	}
 
 	/* Process 'M' for "minimum values" */
