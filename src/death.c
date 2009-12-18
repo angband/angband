@@ -108,7 +108,7 @@ static void death_knowledge(void)
 
 	int i;
 
-	for (i = 0; i < INVEN_TOTAL; i++)
+	for (i = 0; i < ALL_INVEN_TOTAL; i++)
 	{
 		o_ptr = &inventory[i];
 		if (!o_ptr->k_idx) continue;
