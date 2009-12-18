@@ -24,7 +24,7 @@
  * Used by show_inven(), show_equip(), and show_floor().  Mode flags are
  * documented in object.h
  */
-static void show_obj_list(size_t num_obj, char labels[50][80], object_type *objects[50], olist_detail_t mode)
+static void show_obj_list(int num_obj, char labels[50][80], object_type *objects[50], olist_detail_t mode)
 {
 	int i, row = 0, col = 0;
 	int max_len = 0, ex_width = 0, ex_offset, ex_offset_ctr;
@@ -126,7 +126,7 @@ static void show_obj_list(size_t num_obj, char labels[50][80], object_type *obje
 		}
 	}
 
-	/* For the inventory: print the quiver if requested */
+	/* For the inventory: print the quiver count */
 	if (mode & OLIST_QUIVER)
 	{
 		int count, j;
@@ -182,7 +182,7 @@ void show_inven(olist_detail_t mode)
 
 	object_type *o_ptr;
 
-   size_t num_obj = 0;
+   int num_obj = 0;
    char labels[50][80];
    object_type *objects[50];
 
@@ -232,7 +232,7 @@ void show_equip(olist_detail_t mode)
 
 	object_type *o_ptr;
 
-   size_t num_obj = 0;
+   int num_obj = 0;
    char labels[50][80];
    object_type *objects[50];
 
@@ -250,10 +250,23 @@ void show_equip(olist_detail_t mode)
 	/* Build the object list */
 	for (i = INVEN_WIELD; i <= last_slot; i++)
 	{
-		/* Add a spacer between equipment and quiver */
+		o_ptr = &inventory[i];
+
+		/* May need a blank line to separate the quiver */
 		if (i == INVEN_TOTAL)
 		{
-			if (num_obj > 0)
+			int j;
+			bool need_spacer = FALSE;
+			
+			/* Scan the rest of the items for acceptable entries */
+			for (j = i; j < last_slot; j++)
+			{
+				o_ptr = &inventory[j];
+				if (item_tester_okay(o_ptr)) need_spacer = TRUE;
+			}
+
+			/* Add a spacer between equipment and quiver */
+			if (num_obj > 0 && need_spacer)
 			{
 				my_strcpy(labels[num_obj], "", sizeof(labels[num_obj]));
 				objects[num_obj] = NULL;
@@ -262,8 +275,6 @@ void show_equip(olist_detail_t mode)
 
 			continue;
 		}
-
-		o_ptr = &inventory[i];
 
 		/* Acceptable items get a label */
 		if (item_tester_okay(o_ptr))
@@ -311,7 +322,7 @@ void show_floor(const int *floor_list, int floor_num, olist_detail_t mode)
 
 	object_type *o_ptr;
 
-   size_t num_obj = 0;
+   int num_obj = 0;
    char labels[50][80];
    object_type *objects[50];
 
