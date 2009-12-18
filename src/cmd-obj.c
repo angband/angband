@@ -297,6 +297,7 @@ void do_cmd_takeoff(cmd_code code, cmd_arg args[])
 	}
 
 	(void)inven_takeoff(item, 255);
+	pack_overflow();
 	p_ptr->energy_use = 50;
 }
 
