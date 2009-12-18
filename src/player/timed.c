@@ -85,7 +85,7 @@ static timed_effect effects[] =
 	{ "You feel righteous!", "The prayer has expired.",
 			"You feel more righteous!", "You feel less righteous.",
 			0, PU_BONUS, MSG_BLESSED },
-	{ "Your eyes feel very sensitive!", "Your no longer feel so sensitive.",
+	{ "Your eyes feel very sensitive!", "Your eyes no longer feel so sensitive.",
 			"Your eyes feel more sensitive!", "Your eyes feel less sensitive.",
 			0, (PU_BONUS | PU_MONSTERS), MSG_SEE_INVIS },
 	{ "Your eyes begin to tingle!", "Your eyes stop tingling.",
