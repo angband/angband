@@ -66,39 +66,6 @@ static int check_devices(object_type *o_ptr)
 	return TRUE;
 }
 
-/*
- *Returns the number of times in 1000 that @ will FAIL
- * - thanks to Ed Graham for the formula
- */
-int get_use_device_chance(const object_type *o_ptr)
-{
-	int lev, skill, fail;
-
-	/* these could be globals if desired, calculated rather than stated */
-	int skill_min = 10;
-	int skill_max = 141;
-	int diff_min = 1;
-	int diff_max = 100;
-
-	/* Extract the item level, which is the difficulty rating */
-	if (artifact_p(o_ptr))
-		lev = a_info[o_ptr->name1].level;
-	else
-		lev = k_info[o_ptr->k_idx].level;
-
-	/* Chance of failure */
-	skill = p_ptr->state.skills[SKILL_DEVICE];
-
-	fail = 100 * ((skill - lev) - (skill_max - diff_min))
-		/ ((lev - skill) - (diff_max - skill_min));
-
-	/* Limit range */
-	if (fail > 950) fail = 950;
-	if (fail < 10) fail = 10;
-
-	return fail;
-}
-
 
 /*
  * Return the chance of an effect beaming, given a tval.
@@ -297,7 +264,7 @@ void do_cmd_takeoff(cmd_code code, cmd_arg args[])
 	}
 
 	(void)inven_takeoff(item, 255);
-	pack_overflow();
+	/*pack_overflow();*/
 	p_ptr->energy_use = 50;
 }
 
@@ -852,19 +819,19 @@ static item_act_t item_actions[] =
 	/*** Item usage ***/
 	{ NULL, CMD_USE_STAFF, "use",
 	  "Use which staff? ", "You have no staff to use.",
-	  obj_is_staff, (USE_INVEN | USE_FLOOR), NULL },
+	  obj_is_staff, (USE_INVEN | USE_FLOOR | SHOW_FAIL), NULL },
 
 	{ NULL, CMD_USE_WAND, "aim",
       "Aim which wand? ", "You have no wand to aim.",
-	  obj_is_wand, (USE_INVEN | USE_FLOOR), NULL },
+	  obj_is_wand, (USE_INVEN | USE_FLOOR | SHOW_FAIL), NULL },
 
 	{ NULL, CMD_USE_ROD, "zap",
       "Zap which rod? ", "You have no charged rods to zap.",
-	  obj_is_rod, (USE_INVEN | USE_FLOOR), NULL },
+	  obj_is_rod, (USE_INVEN | USE_FLOOR | SHOW_FAIL), NULL },
 
 	{ NULL, CMD_ACTIVATE, "activate",
       "Activate which item? ", "You have nothing to activate.",
-	  obj_is_activatable, USE_EQUIP, NULL },
+	  obj_is_activatable, (USE_EQUIP | SHOW_FAIL), NULL },
 
 	{ NULL, CMD_EAT, "eat",
       "Eat which item? ", "You have nothing to eat.",

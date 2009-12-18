@@ -456,7 +456,7 @@ byte py_pickup(int pickup)
 				screen_save();
 
 				/* Display objects on the floor */
-				show_floor(floor_list, floor_num, FALSE);
+				show_floor(floor_list, floor_num, (OLIST_WEIGHT));
 
 				/* Display prompt */
 				prt(format("You %s: ", p), 0, 0);

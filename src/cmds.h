@@ -44,7 +44,6 @@ void textui_cmd_eat_food(void);
 void textui_cmd_quaff_potion(void);
 void textui_cmd_read_scroll(void);
 
-int get_use_device_chance(const object_type *o_ptr);
 
 /* cmd2.c */
 void do_cmd_go_up(cmd_code code, cmd_arg args[]);

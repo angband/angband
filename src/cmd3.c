@@ -35,7 +35,7 @@ void do_cmd_inven(void)
 	item_tester_full = TRUE;
 
 	/* Display the inventory */
-	show_inven(OLIST_WEIGHT);
+	show_inven(OLIST_WEIGHT | OLIST_QUIVER);
 
 	/* Hack -- hide empty slots */
 	item_tester_full = FALSE;

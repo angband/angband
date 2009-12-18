@@ -3214,6 +3214,40 @@ void reorder_pack(void)
 
 
 /*
+ *Returns the number of times in 1000 that @ will FAIL
+ * - thanks to Ed Graham for the formula
+ */
+int get_use_device_chance(const object_type *o_ptr)
+{
+	int lev, skill, fail;
+
+	/* these could be globals if desired, calculated rather than stated */
+	int skill_min = 10;
+	int skill_max = 141;
+	int diff_min = 1;
+	int diff_max = 100;
+
+	/* Extract the item level, which is the difficulty rating */
+	if (artifact_p(o_ptr))
+		lev = a_info[o_ptr->name1].level;
+	else
+		lev = k_info[o_ptr->k_idx].level;
+
+	/* Chance of failure */
+	skill = p_ptr->state.skills[SKILL_DEVICE];
+
+	fail = 100 * ((skill - lev) - (skill_max - diff_min))
+		/ ((lev - skill) - (diff_max - skill_min));
+
+	/* Limit range */
+	if (fail > 950) fail = 950;
+	if (fail < 10) fail = 10;
+
+	return fail;
+}
+
+
+/*
  * Distribute charges of rods, staves, or wands.
  *
  * o_ptr = source item

@@ -901,7 +901,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 						screen_save();
 
 						/* Display */
-						show_floor(floor_list, floor_num, TRUE);
+						show_floor(floor_list, floor_num, (OLIST_WEIGHT | OLIST_GOLD));
 
 						/* Describe the pile */
 						prt(out_val, 0, 0);

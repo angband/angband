@@ -33,14 +33,18 @@ typedef enum
 
 
 /**
- * Modes for item lists in "show_inven()" and "show_equip()"
+ * Modes for item lists in "show_inven()"  "show_equip()" and "show_floor()"
  */
 typedef enum
 {
 	OLIST_NONE   = 0x00,   /* No options */
    OLIST_WINDOW = 0x01,   /* Display list in a sub-term (left-align) */
-	OLIST_WEIGHT = 0x02,   /* Show item weight */
-	OLIST_PRICE  = 0x04    /* Show item price */
+   OLIST_QUIVER = 0x02,   /* Display quiver lines */
+   OLIST_GOLD   = 0x04,   /* Include gold in the list */
+	OLIST_WEIGHT = 0x08,   /* Show item weight */
+	OLIST_PRICE  = 0x10,   /* Show item price */
+	OLIST_FAIL   = 0x20    /* Show device failure */
+	
 } olist_detail_t;
 
 
@@ -146,7 +150,7 @@ u32b ego_xtra_power_list(void);
 /* obj-ui.c */
 void show_inven(olist_detail_t mode);
 void show_equip(olist_detail_t mode);
-void show_floor(const int *floor_list, int floor_num, bool gold);
+void show_floor(const int *floor_list, int floor_num, olist_detail_t mode);
 bool verify_item(cptr prompt, int item);
 bool get_item(int *cp, cptr pmt, cptr str, int mode);
 
@@ -201,6 +205,7 @@ void inven_drop(int item, int amt);
 void combine_pack(void);
 void reorder_pack(void);
 void sort_quiver(void);
+int get_use_device_chance(const object_type *o_ptr);
 void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt);
 void reduce_charges(object_type *o_ptr, int amt);
 int number_charging(const object_type *o_ptr);

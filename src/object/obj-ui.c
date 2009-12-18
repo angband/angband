@@ -20,560 +20,326 @@
 
 
 /*
- * Display the inventory.  Called with mode |= OLIST_WINDOW
- * from the inventory term window.
- *
- * Hack -- do not display "trailing" empty slots
+ * Display a list of objects.  Each object may be prefixed with a label.
+ * Used by show_inven(), show_equip(), and show_floor().  Mode flags are
+ * documented in object.h
  */
-void show_inven(olist_detail_t mode)
+static void show_obj_list(size_t num_obj, char labels[50][80], object_type *objects[50], olist_detail_t mode)
 {
-	int i, j, k, l, z = 0;
-	int col, row, r_col, len = 0, lim, ex_wid = 0;
+	int i, row = 0, col = 0;
+	int max_len = 0, ex_width = 0, ex_offset, ex_offset_ctr;
 
 	object_type *o_ptr;
-	char o_name[80];
-
+	char o_name[50][80];
 	char tmp_val[80];
+	
+	bool in_term;
+	
+	in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
 
-	int out_index[24];
-	byte out_color[24];
-	char out_desc[24][80];
+	if (in_term) max_len = 40;
 
-
-	/* Default length of the item name column */
-	if (mode & OLIST_WINDOW) len = 60;
-
-	/* Maximum space allowed for item descriptions 
-	 * Screen width minus the letter label "a) "
-	 */
-	lim = (Term->wid-1) - 3;
-
-   /* Reserve space for extra fields */
-	if (mode & OLIST_PRICE)
-		ex_wid += 9;
-	if (mode & OLIST_WEIGHT)
-		ex_wid += 9;
-	lim -= ex_wid;
-		
-	/* Do not overflow o_name buffer */
-	if (lim > 79)
-		lim = 79;
-
-	/* Find the "final" slot */
-	for (i = 0; i < INVEN_PACK; i++)
+	/* Calculate name offset and max name length */
+	for (i = 0; i < num_obj; i++)
 	{
-		o_ptr = &inventory[i];
+		o_ptr = objects[i];
 
-		/* Skip non-objects */
-		if (!o_ptr->k_idx) continue;
+		/* Null objects are used to skip lines, or display only a label */		
+		if (o_ptr == NULL) continue;
 
-		/* Track */
-		z = i + 1;
+		/* Max length of label + object name */
+		object_desc(o_name[i], sizeof(o_name[i]), o_ptr, ODESC_PREFIX | ODESC_FULL);
+		max_len = MAX(max_len, strlen(labels[i]) + strlen(o_name[i]));
 	}
 
-	/* Display the inventory */
-	for (k = 0, i = 0; i < z; i++)
+	/* Width of extra fields */
+	if (mode & OLIST_WEIGHT) ex_width += 9;
+	if (mode & OLIST_PRICE) ex_width += 9;
+	if (mode & OLIST_FAIL) ex_width += 10;
+
+	/* Determine beginning row and column */
+	if (in_term)
 	{
-		o_ptr = &inventory[i];
-
-		/* Is this item acceptable? */
-		if (!item_tester_okay(o_ptr))
-		{
-			if (mode & OLIST_WINDOW)
-			{
-				/* Display unacceptable items in terminal windows, but
-				 * don't save the index for a letter label
-				 */
-				out_index[k] = -1;
-			}
-			else
-			{
-				/* Don't display unacceptable items in main window lists */
-				continue;
-			}
-		}
-		else
-		{
-			/* Acceptable, so save the index */
-			out_index[k] = i;
-		}
-
-		/* Describe the object */
-		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
-
-		/* Hack -- enforce max length */
-		o_name[lim] = '\0';
-
-		/* Find the predicted line length: "a) " + Item description  */
-		l = 3 + strlen(o_name);
-
-		/* Adjust length for for extra fields */
-		l += ex_wid;
-
-		/* Track the maximum line length */
-		if (l > len) len = l;
-
-		/* Save the object description */
-		my_strcpy(out_desc[k], o_name, sizeof(out_desc[0]));
-
-		/* Save the inventory color */
-		out_color[k] = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
-
-		/* Advance to next "line" */
-		k++;
-	}
-
-	/* Find the row and column to start in */
-	if (mode & OLIST_WINDOW)
-	{
-		/* Terminal window - left justified */
-		col = 0;
+		/* Term window */
 		row = 0;
-		r_col = MIN(Term->wid, len + 1);
+		col = 0;
 	}
 	else
 	{
-		/* Main window - right justified */
-		col = (Term->wid-1) - len;
+		/* Main window */
 		row = 1;
-		r_col = Term->wid;
+		col = Term->wid - 1 - max_len - ex_width;
+		
 		if (col < 3) col = 0;
 	}
-
-	/* Output each entry */
-	for (j = 0; j < k; j++)
-	{
-		u32b price;
-		int ralign, wgt;
-		
-		/* Get the index */
-		i = out_index[j];
-
-		/* Get the item */
-		o_ptr = &inventory[i];
-
-		/* Clear the line */
-		prt("", row + j, col ? col - 2 : col);
-
-		if (i > -1)
-		{
-			/* Prepare an index --(-- */
-			strnfmt(tmp_val, sizeof(tmp_val), "%c)", index_to_label(i));
-
-			/* Clear the line with the (possibly indented) index */
-			put_str(tmp_val, row + j, col);
-		}
-
-		/* Display the entry itself */
-		c_put_str(out_color[j], out_desc[j], row + j, col + 3);
-
-		/* Display extra fields */
-		ralign = r_col;
-		if (mode & OLIST_WEIGHT)
-		{
-			ralign -= 9;
-			wgt = o_ptr->weight * o_ptr->number;
-			strnfmt(tmp_val, sizeof(tmp_val), "%3d.%1d lb", wgt / 10, wgt % 10);
-			put_str(tmp_val, row + j, ralign);
-		}
-		if (mode & OLIST_PRICE)
-		{
-			ralign -= 9;
-			price = price_item(o_ptr, TRUE, o_ptr->number);
-			strnfmt(tmp_val, sizeof(tmp_val), "%5d au", price);
-			put_str(tmp_val, row + j, ralign);
-		}
-	}
-
-	/* Count the number of missiles in the quiver */
-	if (j < 23 && p_ptr->command_cmd == 'i')
-	{
-		/* Clear a row, and then print the number of missiles in the quiver */
-		for(i = 0; i < p_ptr->quiver_slots; i++)
-		{
-			int count = 99;
-			if (i == p_ptr->quiver_slots - 1) count = p_ptr->quiver_remainder;
-
-			prt("", row + j, col ? col - 2 : col);
-			strnfmt(o_name, sizeof(o_name), "[QUIVER - %d missile%s]", count,
-					count == 1 ? "" : "s");
-			c_put_str(TERM_BLUE, o_name, row + j, col + 3);
-			j++;
-		}
 	
-	}
+	/* Column offset of the first extra field */
+	ex_offset = MIN(max_len, Term->wid - 1 - ex_width - col);
 
-	if (mode & OLIST_WINDOW)
+	/* Output the list */
+	for (i = 0; i < num_obj; i++)
 	{
-		/* Erase the rest of the window */
-		for (i = z; i < Term->hgt; i++)
+		o_ptr = objects[i];
+		
+		/* Clear the line */
+		prt("", row + i, MAX(col - 2, 0));
+
+		/* Print the label */
+		put_str(labels[i], row + i, col);
+
+		/* Print the object */
+		if (o_ptr != NULL)
 		{
-			/* Erase the line */
-			Term_erase(0, i, 255);
+			/* Object name */
+			c_put_str(tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)], o_name[i],
+			          row + i, col + strlen(labels[i]));
+
+			/* Extra fields */
+			ex_offset_ctr = ex_offset;
+			
+			if (mode & OLIST_PRICE)
+			{
+				int price = price_item(o_ptr, TRUE, o_ptr->number);
+				strnfmt(tmp_val, sizeof(tmp_val), "%6d au", price);
+				put_str(tmp_val, row + i, col + ex_offset_ctr);
+				ex_offset_ctr += 9;
+			}
+
+			if (mode & OLIST_FAIL)
+			{
+				int fail = (9 + get_use_device_chance(o_ptr)) / 10;
+				if (object_effect_is_known(o_ptr))
+					strnfmt(tmp_val, sizeof(tmp_val), "%4d%% fail", fail);
+				else
+					my_strcpy(tmp_val, "    ? fail", sizeof(tmp_val));
+				put_str(tmp_val, row + i, col + ex_offset_ctr);
+				ex_offset_ctr += 10;
+			}
+
+			if (mode & OLIST_WEIGHT)
+			{
+				int weight = o_ptr->weight * o_ptr->number;
+				strnfmt(tmp_val, sizeof(tmp_val), "%4d.%1d lb", weight / 10, weight % 10);
+				put_str(tmp_val, row + i, col + ex_offset_ctr);
+				ex_offset_ctr += 9;
+			}
 		}
 	}
-	else
+
+	/* For the inventory: print the quiver if requested */
+	if (mode & OLIST_QUIVER)
 	{
-		/* Make a "shadow" below the list (only if needed) */
-		if (j && (j < 23)) prt("", row + j, col ? col - 2 : col);
+		int count, j;
+
+		/* Quiver may take multiple lines */
+		for(j = 0; j < p_ptr->quiver_slots; j++, i++)
+		{
+			/* Number of missiles in this "slot" */
+			if (j == p_ptr->quiver_slots - 1 && p_ptr->quiver_remainder > 0)
+				count = p_ptr->quiver_remainder;
+			else
+				count = 99;
+
+			/* Clear the line */
+			prt("", row + i, MAX(col - 2, 0));
+
+			/* Print the (disabled) label */
+			strnfmt(tmp_val, sizeof(tmp_val), "%c) ", index_to_label(i));
+			c_put_str(TERM_SLATE, tmp_val, row + i, col);
+
+			/* Print the count */
+			strnfmt(tmp_val, sizeof(tmp_val), "in Quiver: %d missile%s", count,
+					count == 1 ? "" : "s");
+			c_put_str(TERM_L_UMBER, tmp_val, row + i, col + 3);
+		}
+	}
+
+	/* Clear term windows */
+	if (in_term)
+	{
+		for (; i < Term->hgt; i++)
+		{
+			prt("", row + i, MAX(col - 2, 0));
+		}
+	}
+	
+	/* Print a drop shadow for the main window if necessary */
+	else if (i > 0 && row + i < 24)
+	{
+		prt("", row + i, MAX(col - 2, 0));
 	}
 }
 
 
 /*
- * Display the equipment.  Called with mode |= OLIST_WINDOW
- * from the equipment term window.
- *
- * TODO: Clean this method up--the quiver refactor has kind of made a mess of
- *       things, and Windows is especially sensitive to uninitialized memory
- *       access violations.
+ * Display the inventory.  Builds a list of objects and passes them
+ * off to show_obj_list() for display.  Mode flags documented in
+ * object.h
+ */
+void show_inven(olist_detail_t mode)
+{
+	int i, last_slot = 0;
+
+	object_type *o_ptr;
+
+   size_t num_obj = 0;
+   char labels[50][80];
+   object_type *objects[50];
+
+   bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
+
+	/* Find the last occupied inventory slot */
+	for (i = 0; i < INVEN_PACK; i++)
+	{
+		o_ptr = &inventory[i];
+		if (o_ptr->k_idx) last_slot = i;
+	}
+
+	/* Build the object list */
+	for (i = 0; i <= last_slot; i++)
+	{
+		o_ptr = &inventory[i];
+
+		/* Acceptable items get a label */
+		if (item_tester_okay(o_ptr))
+			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ", index_to_label(i));
+
+		/* Unacceptable items are still displayed in term windows */
+		else if (in_term)
+			my_strcpy(labels[num_obj], "   ", sizeof(labels[num_obj]));
+
+		/* Unacceptable items are skipped in the main window */
+		else continue;
+
+		/* Save the object */
+		objects[num_obj] = o_ptr;
+		num_obj++;
+	}
+
+	/* Display the object list */
+	show_obj_list(num_obj, labels, objects, mode);
+}
+
+
+/*
+ * Display the equipment.  Builds a list of objects and passes them
+ * off to show_obj_list() for display.  Mode flags documented in
+ * object.h
  */
 void show_equip(olist_detail_t mode)
 {
-	int i, j, k, l, b = 0;
-	int col, row, r_col, len = 0, lim, ex_wid = 0;
-	int x, y, last = 0;
+	int i, last_slot = 0;
 
 	object_type *o_ptr;
-	char o_name[80];
+
+   size_t num_obj = 0;
+   char labels[50][80];
+   object_type *objects[50];
 
 	char tmp_val[80];
 
-	/* As a quick hack, I will use -3 to mean "uninitialized" so that we can
-	 * avoid trying to process it below */
-	int out_index[24] = {
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3,
-		-3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3, -3
-	};
-	byte out_color[24];
-	char out_desc[24][80];
+   bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
 
-
-	/* Default length of the item name column */
-	if (mode & OLIST_WINDOW) len = 60;
-
-	/* Maximum space allowed for descriptions 
-	 * Screen width minus the letter label "a) "
-	 */
-	lim = (Term->wid-1) - 3;
-
-   /* Reserve space for extra fields */
-	if (mode & OLIST_PRICE)
-		ex_wid += 9;
-	if (mode & OLIST_WEIGHT)
-		ex_wid += 9;
-	lim -= ex_wid;
-		
-	/* Reserve space for labels: "Wielded       " + ": " */
-	if (OPT(show_labels)) lim -= (14 + 2);
-
-	/* Do not overflow o_name buffer */
-	if (lim > 79)
-		lim = 79;
-
-	/* Scan the equipment list */
-	for (k = 0, i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
+	/* Find the last equipment slot to display */
+	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
-		/* We should display a separator between equipment and quiver if we
-		 * are going to show items from both */
+		o_ptr = &inventory[i];
+		if (i < INVEN_TOTAL || o_ptr->k_idx) last_slot = i;
+	}
+
+	/* Build the object list */
+	for (i = INVEN_WIELD; i <= last_slot; i++)
+	{
+		/* Add a spacer between equipment and quiver */
 		if (i == INVEN_TOTAL)
 		{
-			if (k > 0)
+			if (num_obj > 0)
 			{
-				out_index[k] = -2;
-				k++;
+				my_strcpy(labels[num_obj], "", sizeof(labels[num_obj]));
+				objects[num_obj] = NULL;
+				num_obj++;
 			}
+
 			continue;
 		}
 
 		o_ptr = &inventory[i];
 
-		/* Is this item acceptable? */
-		if (!item_tester_okay(o_ptr))
-		{
-			if (mode & OLIST_WINDOW)
-			{
-				/* Display unacceptable items in terminal windows, but
-				 * don't save the index for a letter label
-				 */
-				out_index[k] = -1;
-			}
-			else
-			{
-				/* Don't display unacceptable items in main window lists */
-				continue;
-			}
-		}
-		else
-		{
-			/* Acceptable, so save the index */
-			out_index[k] = i;
-		}
+		/* Acceptable items get a label */
+		if (item_tester_okay(o_ptr))
+			strnfmt(labels[num_obj], sizeof(labels[num_obj]), "%c) ", index_to_label(i));
 
-		/* Save the last slot that should be displayed */
-		if (i < INVEN_TOTAL || o_ptr->k_idx) last = k;
+		/* Unacceptable items are still displayed in term windows */
+		else if (in_term)
+			my_strcpy(labels[num_obj], "   ", sizeof(labels[num_obj]));
 
-		/* Description */
-		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+		/* Unacceptable items are skipped in the main window */
+		else continue;
 
-		/* Truncate the description */
-		o_name[lim] = 0;
-
-		/* Find the predicted line length: "a) " + Item description */
-		l = 3 + strlen(o_name);
-
-		/* Increase length for labels (if needed) */
-		if (OPT(show_labels)) l += (14 + 2);
-
-		/* Adjust length for extra fields */
-		l += ex_wid;
-
-		/* Track the maximum line length */
-		if (l > len) len = l;
-
-		/* Save the description */
-		my_strcpy(out_desc[k], o_name, sizeof(out_desc[0]));
-
-		/* Save the inventory color */
-		out_color[k] = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
-
-		/* Advance the entry */
-		k++;
-	}
-
-	/* Find the row and column to start in */
-	if (mode & OLIST_WINDOW)
-	{
-		/* Terminal window - left justified */
-		col = 0;
-		row = 0;
-		r_col = MIN(Term->wid, len + 1);
-	}
-	else
-	{
-		/* Main window - right justified */
-		col = (Term->wid-1) - len;
-		row = 1;
-		r_col = Term->wid;
-		if (col < 3) col = 0;
-	}
-
-   /* Track the slot label */
-   b = INVEN_WIELD;
-
-	/* Output each entry */
-	for (j = 0; j + INVEN_WIELD < ALL_INVEN_TOTAL; j++, b++)
-	{
-		u32b price;
-		int ralign, wgt;
-
-		/* Get the index */
-		i = out_index[j];
-
-		/* As part of our cheap hack, if we see -3 that means this part of the
-		 * array was never reached and we should be done. */
-		if (i == -3) break;
-
-		/* Get the item */
-		o_ptr = &inventory[i];
-
-		/* Display row */
-		y = row + j;
-
-		/* Clear the line */
-		prt("", y, col ? col - 2 : col);
-
-		/* If we're in a term window, we need to blank the successive lines.
-		 * otherwise, we need to break so as not to obscure more of the map
-		 * than necessary.
-		 */
-		if (j > last)
-		{
-			if (mode & OLIST_WINDOW) continue;
-			else break;
-		}
-
-		/* There is an empty line between regular equipment and the quiver */
-		if (i == -2) continue;
-
-		/* Prepare an index --(-- */
-		if (i > -1)
-		{
-			/* Track the slot label */
-			b = i;
-			
-			strnfmt(tmp_val, sizeof(tmp_val), "%c)", index_to_label(i));
-
-			/* Clear the line with the (possibly indented) index */
-			put_str(tmp_val, y, col);
-		}
-
-		/* Display column */
-		x = col + 3;
-
-		/* Use labels */
+		/* Show full slot labels */
 		if (OPT(show_labels))
 		{
-			/* Mention the use */
-			strnfmt(tmp_val, sizeof(tmp_val), "%-14s: ", mention_use(b));
-			put_str(tmp_val, y, x);
-			x += 14 + 2;
+			strnfmt(tmp_val, sizeof(tmp_val), "%-14s: ", mention_use(i));
+			my_strcat(labels[num_obj], tmp_val, sizeof(labels[num_obj]));
 		}
 
-		/* Only "quiver labels" */
+		/* Otherwise only show short quiver labels */
 		else if (i >= QUIVER_START)
 		{
-			strnfmt(tmp_val, sizeof(tmp_val), "[f%d] ", i - QUIVER_START);
-			put_str(tmp_val, y, x);
-			x += 4 + 1;
+			strnfmt(tmp_val, sizeof(tmp_val), "[f%d]: ", i - QUIVER_START);
+			my_strcat(labels[num_obj], tmp_val, sizeof(labels[num_obj]));
 		}
 
-		/* Display the entry itself */
-		c_put_str(out_color[j], out_desc[j], y, x);
-
-
-		/* Display extra fields */
-		ralign = r_col;
-		if (mode & OLIST_WEIGHT)
-		{
-			ralign -= 9;
-			wgt = o_ptr->weight * o_ptr->number;
-			strnfmt(tmp_val, sizeof(tmp_val), "%3d.%1d lb", wgt / 10, wgt % 10);
-			put_str(tmp_val, y, ralign);
-		}
-		if (mode & OLIST_PRICE)
-		{
-			ralign -= 9;
-			price = price_item(o_ptr, TRUE, o_ptr->number);
-			strnfmt(tmp_val, sizeof(tmp_val), "%5d au", price);
-			put_str(tmp_val, y, ralign);
-		}
+		/* Save the object */
+		objects[num_obj] = o_ptr;
+		num_obj++;
 	}
 
-	if (mode & OLIST_WINDOW)
-	{
-		/* Erase the rest of the window */
-		for (i = k; i < Term->hgt; i++)
-		{
-			/* Clear that line */
-			Term_erase(0, i, 255);
-		}
-	}
-	else
-	{
-		/* Make a "shadow" below the list (only if needed) */
-		if (j && (j < 23)) prt("", j + 1, col ? col - 2 : col);
-	}
+	/* Display the object list */
+	show_obj_list(num_obj, labels, objects, mode);
 }
 
 
 /*
- * Display a list of the items on the floor at the given location.  -TNB-
+ * Display the floor.  Builds a list of objects and passes them
+ * off to show_obj_list() for display.  Mode flags documented in
+ * object.h
  */
-void show_floor(const int *floor_list, int floor_num, bool gold)
+void show_floor(const int *floor_list, int floor_num, olist_detail_t mode)
 {
-	int i, j, k, l;
-	int col, len, lim;
+	int i;
 
 	object_type *o_ptr;
 
-	char o_name[80];
+   size_t num_obj = 0;
+   char labels[50][80];
+   object_type *objects[50];
 
-	char tmp_val[80];
-
-	int out_index[MAX_FLOOR_STACK];
-	byte out_color[MAX_FLOOR_STACK];
-	char out_desc[MAX_FLOOR_STACK][80];
-
-
-	/* Default length */
-	len = 79 - 50;
-
-	/* Maximum space allowed for descriptions */
-	lim = 79 - 3;
-
-	/* Require space for weight */
-	lim -= 9;
-
-	/* Limit displayed floor items to 23 (screen limits) */
 	if (floor_num > MAX_FLOOR_STACK) floor_num = MAX_FLOOR_STACK;
 
-	/* Display the floor */
-	for (k = 0, i = 0; i < floor_num; i++)
+	/* Build the object list */
+	for (i = 0; i < floor_num; i++)
 	{
 		o_ptr = &o_list[floor_list[i]];
 
-		/* Optionally, show gold */
-		if ((o_ptr->tval != TV_GOLD) || (!gold))
-		{
-			/* Is this item acceptable?  (always rejects gold) */
-			if (!item_tester_okay(o_ptr)) continue;
-		}
+		/* Tester always skips gold. When gold should be displayed,
+		 * only test items that are not gold.
+		 */
+		if ((o_ptr->tval != TV_GOLD || !(mode & OLIST_GOLD)) &&
+		    !item_tester_okay(o_ptr))
+			continue;
 
-		/* Describe the object */
-		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+		strnfmt(labels[num_obj], sizeof(labels[num_obj]),
+		        "%c) ", index_to_label(i));
 
-		/* Hack -- enforce max length */
-		o_name[lim] = '\0';
-
-		/* Save the index */
-		out_index[k] = i;
-
-		/* Get inventory color */
-		out_color[k] = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
-
-		/* Save the object description */
-		my_strcpy(out_desc[k], o_name, sizeof(out_desc[0]));
-
-		/* Find the predicted "line length" */
-		l = strlen(out_desc[k]) + 5;
-
-		/* Be sure to account for the weight */
-		l += 9;
-
-		/* Maintain the maximum length */
-		if (l > len) len = l;
-
-		/* Advance to next "line" */
-		k++;
+		/* Save the object */
+		objects[num_obj] = o_ptr;
+		num_obj++;
 	}
 
-	/* Find the column to start in */
-	col = (len > 76) ? 0 : (79 - len);
-
-	/* Output each entry */
-	for (j = 0; j < k; j++)
-	{
-		int wgt;
-
-		/* Get the index */
-		i = floor_list[out_index[j]];
-
-		/* Get the item */
-		o_ptr = &o_list[i];
-
-		/* Clear the line */
-		prt("", j + 1, col ? col - 2 : col);
-
-		/* Prepare an index --(-- */
-		strnfmt(tmp_val, sizeof(tmp_val), "%c)", index_to_label(out_index[j]));
-
-		/* Clear the line with the (possibly indented) index */
-		put_str(tmp_val, j + 1, col);
-
-		/* Display the entry itself */
-		c_put_str(out_color[j], out_desc[j], j + 1, col + 3);
-
-		/* Display the weight if needed */
-		wgt = o_ptr->weight * o_ptr->number;
-		strnfmt(tmp_val, sizeof(tmp_val), "%3d.%1d lb", wgt / 10, wgt % 10);
-		put_str(tmp_val, j + 1, 71);
-	}
-
-	/* Make a "shadow" below the list (only if needed) */
-	if (j && (j < 23)) prt("", j + 1, col ? col - 2 : col);
+	/* Display the object list */
+	show_obj_list(num_obj, labels, objects, mode);
 }
-
 
 
 /*
@@ -800,6 +566,8 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 	bool can_squelch = ((mode & CAN_SQUELCH) ? TRUE : FALSE);
 	bool is_harmless = ((mode & IS_HARMLESS) ? TRUE : FALSE);
 
+	olist_detail_t olist_mode = 0;
+
 	bool allow_inven = FALSE;
 	bool allow_equip = FALSE;
 	bool allow_floor = FALSE;
@@ -814,6 +582,14 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 
 	bool show_list = OPT(show_lists) ? TRUE : FALSE;
 
+
+	/* Object list display modes */
+	if (mode & SHOW_FAIL)
+		olist_mode |= (OLIST_FAIL);
+	else
+		olist_mode |= (OLIST_WEIGHT);
+	if (mode & SHOW_PRICES)
+		olist_mode |= (OLIST_PRICE);
 
 	/* Paranoia XXX XXX XXX */
 	message_flush();
@@ -955,7 +731,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 		if (p_ptr->command_wrk == USE_INVEN)
 		{
 			/* Redraw if needed */
-			if (show_list) show_inven(((mode & SHOW_PRICES) ? OLIST_PRICE | OLIST_WEIGHT : OLIST_WEIGHT));
+			if (show_list) show_inven(olist_mode);
 
 			/* Begin the prompt */
 			strnfmt(out_val, sizeof(out_val), "Inven:");
@@ -1004,7 +780,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 		else if (p_ptr->command_wrk == USE_EQUIP)
 		{
 			/* Redraw if needed */
-			if (show_list) show_equip(((mode & SHOW_PRICES) ? OLIST_PRICE | OLIST_WEIGHT : OLIST_WEIGHT));
+			if (show_list) show_equip(olist_mode);
 
 			/* Begin the prompt */
 			strnfmt(out_val, sizeof(out_val), "Equip:");
@@ -1046,7 +822,7 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 		else
 		{
 			/* Redraw if needed */
-			if (show_list) show_floor(floor_list, floor_num, FALSE);
+			if (show_list) show_floor(floor_list, floor_num, olist_mode);
 
 			/* Begin the prompt */
 			strnfmt(out_val, sizeof(out_val), "Floor:");

@@ -1040,12 +1040,13 @@ enum
 /*
  * Bit flags for the "get_item" function
  */
-#define USE_EQUIP		0x01	/* Allow equip items */
-#define USE_INVEN		0x02	/* Allow inven items */
-#define USE_FLOOR		0x04	/* Allow floor items */
-#define CAN_SQUELCH		0x08	/* Allow selection of all squelched items */
-#define IS_HARMLESS		0x10	/* Ignore generic warning inscriptions */
-#define SHOW_PRICES		0x20	/* Show item prices in item lists */
+#define USE_EQUIP     0x01	/* Allow equip items */
+#define USE_INVEN     0x02	/* Allow inven items */
+#define USE_FLOOR     0x04	/* Allow floor items */
+#define CAN_SQUELCH   0x08	/* Allow selection of all squelched items */
+#define IS_HARMLESS   0x10	/* Ignore generic warning inscriptions */
+#define SHOW_PRICES	 0x20	/* Show item prices in item lists */
+#define SHOW_FAIL     0x40 /* Show device failure in item lists */
 
 
 /*** Player flags ***/
