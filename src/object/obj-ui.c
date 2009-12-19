@@ -27,7 +27,8 @@
 static void show_obj_list(int num_obj, char labels[50][80], object_type *objects[50], olist_detail_t mode)
 {
 	int i, row = 0, col = 0;
-	int max_len = 0, ex_width = 0, ex_offset, ex_offset_ctr;
+	size_t max_len = 0;
+	int ex_width = 0, ex_offset, ex_offset_ctr;
 
 	object_type *o_ptr;
 	char o_name[50][80];
@@ -74,7 +75,7 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
 	}
 	
 	/* Column offset of the first extra field */
-	ex_offset = MIN(max_len, Term->wid - 1 - ex_width - col);
+	ex_offset = MIN(max_len, (size_t)(Term->wid - 1 - ex_width - col));
 
 	/* Output the list */
 	for (i = 0; i < num_obj; i++)
@@ -91,7 +92,7 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
 		if (o_ptr != NULL)
 		{
 			/* Limit object name */
-			if (strlen(labels[i]) + strlen(o_name[i]) > ex_offset)
+			if (strlen(labels[i]) + strlen(o_name[i]) > (size_t)ex_offset)
 				o_name[i][MAX(ex_offset, 0)] = '\0';
 
 			/* Object name */
