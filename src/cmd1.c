@@ -232,9 +232,8 @@ static void py_pickup_gold(void)
 static bool auto_pickup_okay(const object_type *o_ptr)
 {
 	if (!inven_carry_okay(o_ptr)) return FALSE;
-
-	if (OPT(pickup_inven) && inven_stack_okay(o_ptr)) return TRUE;
 	if (OPT(pickup_always) || check_for_inscrip(o_ptr, "=g")) return TRUE;
+	if (OPT(pickup_inven) && inven_stack_okay(o_ptr)) return TRUE;
 
 	return FALSE;
 }

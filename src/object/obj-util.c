@@ -2635,7 +2635,14 @@ bool inven_stack_okay(const object_type *o_ptr)
 {
 	/* Similar slot? */
 	int j;
-	for (j = 0; j < ALL_INVEN_TOTAL; j++)
+
+	/* If our pack is full and we're adding too many missiles, there won't be
+	 * enough room in the quiver, so don't check it. */
+	int limit = ALL_INVEN_TOTAL;
+	if (pack_is_full() && (p_ptr->quiver_remainder + o_ptr->number > 99))
+		limit = INVEN_PACK;
+
+	for (j = 0; j < limit; j++)
 	{
 		object_type *j_ptr = &inventory[j];
 
