@@ -90,6 +90,10 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
 		/* Print the object */
 		if (o_ptr != NULL)
 		{
+			/* Limit object name */
+			if (strlen(labels[i]) + strlen(o_name[i]) > ex_offset)
+				o_name[i][MAX(ex_offset, 0)] = '\0';
+
 			/* Object name */
 			c_put_str(tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)], o_name[i],
 			          row + i, col + strlen(labels[i]));
