@@ -3744,7 +3744,7 @@ void display_itemlist(void)
 				unsigned j;
 
 				/* Skip gold/squelched */
-				if (o_ptr->tval == TV_GOLD || squelch_item_ok(o_ptr))
+				if (o_ptr->tval == TV_GOLD || squelch_hide_item(o_ptr))
 					continue;
 
 				/* See if we've already seen a similar item; if so, just add */
@@ -3813,7 +3813,7 @@ void display_itemlist(void)
 		object_type *o_ptr = types[i];
 
 		/* We shouldn't list coins or squelched items */
-		if (o_ptr->tval == TV_GOLD || squelch_item_ok(o_ptr))
+		if (o_ptr->tval == TV_GOLD || squelch_hide_item(o_ptr))
 			continue;
 
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
