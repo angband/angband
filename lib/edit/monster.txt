@@ -9099,7 +9099,7 @@ D: demon armies.
 ### Dungeon level 79 ###
 
 N:573:Greater Balrog
-G:U:v
+G:U:R
 I:130:4400:40:140:80
 W:79:3:0:25000
 B:HIT:FIRE:8d12
@@ -9357,7 +9357,7 @@ D: to hear so well that it nearly makes up for his disability.
 ### Dungeon level 76 ###
 
 N:586:Atlas, the Titan
-G:P:s
+G:P:v
 I:120:6000:30:160:15
 W:76:3:0:37000
 B:HIT:SHATTER:13d13
@@ -9527,7 +9527,7 @@ D: fleeing their wrath, following the murder of Princess Aredhel of Gondolin.
 ### Dungeon level 81 ###
 
 N:595:Maeglin, the Traitor of Gondolin
-G:h:D
+G:h:v
 I:130:6000:70:120:20
 W:81:2:0:35000
 B:HIT:HURT:8d8
