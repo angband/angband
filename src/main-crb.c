@@ -2243,7 +2243,7 @@ static void init_windows(void)
 		term_data_hack(td);
 
 		/* Obtain title */
-		cptr s = angband_term_name[i];
+		const char *s = angband_term_name[i];
 
 		/* Get length */
 		int n = strlen(s);
@@ -2252,7 +2252,7 @@ static void init_windows(void)
 		if (n > 15) n = 15;
 
 		/* Copy the title */
-		strncpy((char*)(td->title) + 1, s, n);
+		my_strcpy((char *)(td->title) + 1, s, n);
 
 		/* Save the length */
 		td->title[0] = n;

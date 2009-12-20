@@ -2258,7 +2258,7 @@ static errr term_data_init(term_data *td, int i)
 			if (buf[0] == '#') continue;
 
 			/* Window specific location (x) */
-			sprintf(cmd, "AT_X_%d", i);
+			strnfmt(cmd, sizeof(cmd), "AT_X_%d", i);
 
 			if (prefix(buf, cmd))
 			{
@@ -2268,7 +2268,7 @@ static errr term_data_init(term_data *td, int i)
 			}
 
 			/* Window specific location (y) */
-			sprintf(cmd, "AT_Y_%d", i);
+			strnfmt(cmd, sizeof(cmd), "AT_Y_%d", i);
 
 			if (prefix(buf, cmd))
 			{
@@ -2278,7 +2278,7 @@ static errr term_data_init(term_data *td, int i)
 			}
 
 			/* Window specific cols */
-			sprintf(cmd, "COLS_%d", i);
+			strnfmt(cmd, sizeof(cmd), "COLS_%d", i);
 
 			if (prefix(buf, cmd))
 			{
@@ -2289,7 +2289,7 @@ static errr term_data_init(term_data *td, int i)
 			}
 
 			/* Window specific rows */
-			sprintf(cmd, "ROWS_%d", i);
+			strnfmt(cmd, sizeof(cmd), "ROWS_%d", i);
 
 			if (prefix(buf, cmd))
 			{
@@ -2300,7 +2300,7 @@ static errr term_data_init(term_data *td, int i)
 			}
 
 			/* Window specific inner border offset (ox) */
-			sprintf(cmd, "IBOX_%d", i);
+			strnfmt(cmd, sizeof(cmd), "IBOX_%d", i);
 
 			if (prefix(buf, cmd))
 			{
@@ -2311,7 +2311,7 @@ static errr term_data_init(term_data *td, int i)
 			}
 
 			/* Window specific inner border offset (oy) */
-			sprintf(cmd, "IBOY_%d", i);
+			strnfmt(cmd, sizeof(cmd), "IBOY_%d", i);
 
 			if (prefix(buf, cmd))
 			{
@@ -2322,7 +2322,7 @@ static errr term_data_init(term_data *td, int i)
 			}
 
 			/* Window specific font name */
-			sprintf(cmd, "FONT_%d", i);
+			strnfmt(cmd, sizeof(cmd), "FONT_%d", i);
 
 			if (prefix(buf, cmd))
 			{
@@ -2336,7 +2336,7 @@ static errr term_data_init(term_data *td, int i)
 			}
 
 			/* Window specific tile width */
-			sprintf(cmd, "TILE_WIDTH_%d", i);
+			strnfmt(cmd, sizeof(cmd), "TILE_WIDTH_%d", i);
 
 			if (prefix(buf, cmd))
 			{
@@ -2347,7 +2347,7 @@ static errr term_data_init(term_data *td, int i)
 			}
 
 			/* Window specific tile height */
-			sprintf(cmd, "TILE_HEIGHT_%d", i);
+			strnfmt(cmd, sizeof(cmd), "TILE_HEIGHT_%d", i);
 
 			if (prefix(buf, cmd))
 			{
@@ -2367,43 +2367,43 @@ static errr term_data_init(term_data *td, int i)
 	 */
 
 	/* Window specific location (x) */
-	sprintf(buf, "ANGBAND_X11_AT_X_%d", i);
+	strnfmt(buf, sizeof(buf), "ANGBAND_X11_AT_X_%d", i);
 	str = getenv(buf);
 	val = (str != NULL) ? atoi(str) : -1;
 	if (val > 0) x = val;
 
 	/* Window specific location (y) */
-	sprintf(buf, "ANGBAND_X11_AT_Y_%d", i);
+	strnfmt(buf, sizeof(buf), "ANGBAND_X11_AT_Y_%d", i);
 	str = getenv(buf);
 	val = (str != NULL) ? atoi(str) : -1;
 	if (val > 0) y = val;
 
 	/* Window specific cols */
-	sprintf(buf, "ANGBAND_X11_COLS_%d", i);
+	strnfmt(buf, sizeof(buf), "ANGBAND_X11_COLS_%d", i);
 	str = getenv(buf);
 	val = (str != NULL) ? atoi(str) : -1;
 	if (val > 0) cols = val;
 
 	/* Window specific rows */
-	sprintf(buf, "ANGBAND_X11_ROWS_%d", i);
+	strnfmt(buf, sizeof(buf), "ANGBAND_X11_ROWS_%d", i);
 	str = getenv(buf);
 	val = (str != NULL) ? atoi(str) : -1;
 	if (val > 0) rows = val;
 
 	/* Window specific inner border offset (ox) */
-	sprintf(buf, "ANGBAND_X11_IBOX_%d", i);
+	strnfmt(buf, sizeof(buf), "ANGBAND_X11_IBOX_%d", i);
 	str = getenv(buf);
 	val = (str != NULL) ? atoi(str) : -1;
 	if (val > 0) ox = val;
 
 	/* Window specific inner border offset (oy) */
-	sprintf(buf, "ANGBAND_X11_IBOY_%d", i);
+	strnfmt(buf, sizeof(buf), "ANGBAND_X11_IBOY_%d", i);
 	str = getenv(buf);
 	val = (str != NULL) ? atoi(str) : -1;
 	if (val > 0) oy = val;
 
 	/* Window specific font name */
-	sprintf(buf, "ANGBAND_X11_FONT_%d", i);
+	strnfmt(buf, sizeof(buf), "ANGBAND_X11_FONT_%d", i);
 	str = getenv(buf);
 	if (str) font = str;
 
