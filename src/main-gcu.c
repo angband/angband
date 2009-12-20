@@ -179,6 +179,15 @@ static unsigned int acs_table[32] = {
 	'+', '|', '?', '?', '?', '?', '?', '.'
 };
 
+#define PAIR_WHITE 0
+#define PAIR_RED 1
+#define PAIR_GREEN 2
+#define PAIR_YELLOW 3
+#define PAIR_BLUE 4
+#define PAIR_MAGENTA 5
+#define PAIR_CYAN 6
+#define PAIR_BLACK 7
+
 #endif
 
 
@@ -639,8 +648,8 @@ static errr Term_xtra_gcu_event(int v)
 
 void set_256color_table(int i, int fg)
 {
-	init_pair(16 + i, fg, bg_color);
-	colortable[i] = COLOR_PAIR(16 + i) | A_BRIGHT;
+	init_pair(i + 1, fg, bg_color);
+	colortable[i] = COLOR_PAIR(i + 1) | A_BRIGHT;
 }
 
 
@@ -667,25 +676,46 @@ static errr Term_xtra_gcu_react(void)
 	}
 	else if (COLORS == 256)
 	{
-		/* If we have 256 colors, find the best matches */
-		set_256color_table(0, 0);    /* black */
-		set_256color_table(1, 15);   /* white */
-		set_256color_table(2, 246);  /* grey */
-		set_256color_table(3, 208);  /* orange */
-		set_256color_table(4, 1);    /* red */
-		set_256color_table(5, 28);    /* green */
-		set_256color_table(6, 20);    /* blue */
-		set_256color_table(7, 130);  /* umber */
-		set_256color_table(8, 242);  /* dark-grey */
-		set_256color_table(9, 250);  /* light-grey */
-		set_256color_table(10, 91);  /* purple */
-		set_256color_table(11, 11);  /* yellow */
-		set_256color_table(12, 204);   /* light red */
-		set_256color_table(13, 40);  /* light green */
-		set_256color_table(14, 32);  /* light blue */
-		set_256color_table(15, 136); /* light umber */
+		/* If we have 256 colors, find the best matches. These numbers
+		 * correspond to xterm's builtin color numbers--they do not correspond
+		 * to curses' constants OR with curses' color pairs.
+		 *
+		 * XTerm has 216 (6*6*6) colors, with each RGB setting 0-5. So, to find
+		 * the "closest" match, I just multiply Angband's RGB setting by 5 and
+		 * then divide by 255. I used true rounding because using the floor
+		 * produces too dark a feel, and using the ceiling kind of washes all
+		 * the colors out.
+		 */
+		set_256color_table(TERM_DARK, 0);
+		set_256color_table(TERM_WHITE, 15);
+		set_256color_table(TERM_SLATE, 145);
+		set_256color_table(TERM_ORANGE, 214);
+		set_256color_table(TERM_RED, 160);
+		set_256color_table(TERM_GREEN, 35);
+		set_256color_table(TERM_BLUE, 27);
+		set_256color_table(TERM_UMBER, 130);
+		set_256color_table(TERM_L_DARK, 102);
+		set_256color_table(TERM_L_WHITE, 188);
+		set_256color_table(TERM_L_PURPLE, 201);
+		set_256color_table(TERM_YELLOW, 226);
+		set_256color_table(TERM_L_RED, 203);
+		set_256color_table(TERM_L_GREEN, 46);
+		set_256color_table(TERM_L_BLUE, 51);
+		set_256color_table(TERM_L_UMBER, 179);
+		set_256color_table(TERM_PURPLE, 127);
+		set_256color_table(TERM_VIOLET, 135);
+		set_256color_table(TERM_TEAL, 37);
+		set_256color_table(TERM_MUD, 101);
+		set_256color_table(TERM_L_YELLOW, 229);
+		set_256color_table(TERM_MAGENTA, 199);
+		set_256color_table(TERM_L_TEAL, 86);
+		set_256color_table(TERM_L_VIOLET, 183);
+		set_256color_table(TERM_L_PINK, 217);
+		set_256color_table(TERM_MUSTARD, 184);
+		set_256color_table(TERM_BLUE_SLATE, 152);
+		set_256color_table(TERM_DEEP_L_BLUE, 39);
 	}
-	/* TODO: figure out how 88-color terminals work */
+	/* TODO: figure out how 88-color terminals (e.g. urxvt) work */
 
 #endif
 
@@ -786,17 +816,12 @@ static errr Term_wipe_gcu(int x, int y, int n)
 	/* Place cursor */
 	wmove(td->win, y, x);
 
-	/* Clear to end of line */
 	if (x + n >= td->t.wid)
-	{
+		/* Clear to end of line */
 		wclrtoeol(td->win);
-	}
-
-	/* Clear some characters */
 	else
-	{
+		/* Clear some characters */
 		whline(td->win, ' ', n);
-	}
 
 	/* Success */
 	return (0);
@@ -812,7 +837,7 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 
 #ifdef A_COLOR
 	/* Set the color */
-	if (can_use_color) wattrset(td->win, colortable[a & (BASIC_COLORS-1)]);
+	if (can_use_color) wattrset(td->win, colortable[a & 255]);
 #endif
 
 	/* Move the cursor */
@@ -822,15 +847,13 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 	while (n--) {
 		unsigned int c = (unsigned char) *(s++);
 
-		/* Map high-bit characters down using the $TERM-specific
-		 * alternate character set.
-		 */
-
 #ifdef A_ALTCHARSET
+		/* Map high-bit characters down using the $TERM-specific
+		 * alternate character set. */
 		if (c < 32) c = acs_table[c];
 #endif
 
-		if ((c & 255) < ' ' || (c & 255) == 127) {
+		if ((c & 255) < ' ' || (c & 255) == 127)
 			/* Hack - replace non-ASCII characters to
 			 * avoid display glitches in selectors.
 			 *
@@ -839,7 +862,7 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 			 * are in curses itself.
 			 */
 			waddch(td->win, '?');
-		} else
+		else
 			waddch(td->win, c);
 	}
 
@@ -1023,34 +1046,46 @@ errr init_gcu(int argc, char **argv)
 	/* Attempt to use colors */
 	else if (can_use_color)
 	{
-		/* Color-pair 0 is *always* WHITE on BLACK */
-
 		/* Prepare the color pairs */
-		init_pair(1, COLOR_RED,     bg_color);
-		init_pair(2, COLOR_GREEN,   bg_color);
-		init_pair(3, COLOR_YELLOW,  bg_color);
-		init_pair(4, COLOR_BLUE,    bg_color);
-		init_pair(5, COLOR_MAGENTA, bg_color);
-		init_pair(6, COLOR_CYAN,    bg_color);
-		init_pair(7, COLOR_BLACK,   bg_color);
+		/* PAIR_WHITE (pair 0) is *always* WHITE on BLACK */
+		init_pair(PAIR_RED, COLOR_RED, bg_color);
+		init_pair(PAIR_GREEN, COLOR_GREEN, bg_color);
+		init_pair(PAIR_YELLOW, COLOR_YELLOW, bg_color);
+		init_pair(PAIR_BLUE, COLOR_BLUE, bg_color);
+		init_pair(PAIR_MAGENTA, COLOR_MAGENTA, bg_color);
+		init_pair(PAIR_CYAN, COLOR_CYAN, bg_color);
+		init_pair(PAIR_BLACK, COLOR_BLACK, bg_color);
 
 		/* Prepare the colors */
-		colortable[0] = (COLOR_PAIR(7) | A_NORMAL);	/* Black */
-		colortable[1] = (COLOR_PAIR(0) | A_BRIGHT);	/* White */
-		colortable[2] = (COLOR_PAIR(0) | A_NORMAL);	/* Grey XXX */
-		colortable[3] = (COLOR_PAIR(1) | A_BRIGHT);	/* Orange XXX */
-		colortable[4] = (COLOR_PAIR(1) | A_NORMAL);	/* Red */
-		colortable[5] = (COLOR_PAIR(2) | A_NORMAL);	/* Green */
-		colortable[6] = (COLOR_PAIR(4) | A_NORMAL);	/* Blue */
-		colortable[7] = (COLOR_PAIR(3) | A_NORMAL);	/* Umber */
-		colortable[8] = (COLOR_PAIR(7) | A_BRIGHT);	/* Dark-grey XXX */
-		colortable[9] = (COLOR_PAIR(0) | A_NORMAL);	/* Light-grey XXX */
-		colortable[10] = (COLOR_PAIR(5) | A_NORMAL);	/* Purple */
-		colortable[11] = (COLOR_PAIR(3) | A_BRIGHT);	/* Yellow */
-		colortable[12] = (COLOR_PAIR(5) | A_BRIGHT);	/* Light Red XXX */
-		colortable[13] = (COLOR_PAIR(2) | A_BRIGHT);	/* Light Green */
-		colortable[14] = (COLOR_PAIR(4) | A_BRIGHT);	/* Light Blue */
-		colortable[15] = (COLOR_PAIR(3) | A_NORMAL);	/* Light Umber XXX */
+		colortable[TERM_DARK]     = (COLOR_PAIR(PAIR_BLACK));
+		colortable[TERM_WHITE]    = (COLOR_PAIR(PAIR_WHITE) | A_BRIGHT);
+		colortable[TERM_SLATE]    = (COLOR_PAIR(PAIR_WHITE));
+		colortable[TERM_ORANGE]   = (COLOR_PAIR(PAIR_RED) | A_BRIGHT);
+		colortable[TERM_RED]      = (COLOR_PAIR(PAIR_RED));
+		colortable[TERM_GREEN]    = (COLOR_PAIR(PAIR_YELLOW));
+		colortable[TERM_BLUE]     = (COLOR_PAIR(PAIR_BLUE));
+		colortable[TERM_UMBER]    = (COLOR_PAIR(PAIR_YELLOW));
+		colortable[TERM_L_DARK]   = (COLOR_PAIR(PAIR_BLACK) | A_BRIGHT);
+		colortable[TERM_L_WHITE]  = (COLOR_PAIR(PAIR_WHITE));
+		colortable[TERM_L_PURPLE] = (COLOR_PAIR(PAIR_MAGENTA));
+		colortable[TERM_YELLOW]   = (COLOR_PAIR(PAIR_YELLOW) | A_BRIGHT);
+		colortable[TERM_L_RED]    = (COLOR_PAIR(PAIR_MAGENTA) | A_BRIGHT);
+		colortable[TERM_L_GREEN]  = (COLOR_PAIR(PAIR_GREEN) | A_BRIGHT);
+		colortable[TERM_L_BLUE]   = (COLOR_PAIR(PAIR_BLUE) | A_BRIGHT);
+		colortable[TERM_L_UMBER]  = (COLOR_PAIR(PAIR_YELLOW));
+
+		colortable[TERM_PURPLE]      = (COLOR_PAIR(3));
+		colortable[TERM_VIOLET]      = (COLOR_PAIR(3));
+		colortable[TERM_TEAL]        = (COLOR_PAIR(3));
+		colortable[TERM_MUD]         = (COLOR_PAIR(3));
+		colortable[TERM_L_YELLOW]    = (COLOR_PAIR(3));
+		colortable[TERM_MAGENTA]     = (COLOR_PAIR(3));
+		colortable[TERM_L_TEAL]      = (COLOR_PAIR(3));
+		colortable[TERM_L_VIOLET]    = (COLOR_PAIR(3));
+		colortable[TERM_L_PINK]      = (COLOR_PAIR(3));
+		colortable[TERM_MUSTARD]     = (COLOR_PAIR(3));
+		colortable[TERM_BLUE_SLATE]  = (COLOR_PAIR(3));
+		colortable[TERM_DEEP_L_BLUE] = (COLOR_PAIR(3));
 	}
 
 #endif

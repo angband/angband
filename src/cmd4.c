@@ -1373,7 +1373,7 @@ void do_cmd_colors(void)
 				}
 
 				/* Describe the color */
-				name = ((a < BASIC_COLORS) ? color_names[a] : "undefined");
+				name = ((a < BASIC_COLORS) ? color_table[a].name : "undefined");
 
 				/* Describe the color */
 				Term_putstr(5, 10, -1, TERM_WHITE,

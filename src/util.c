@@ -3271,33 +3271,32 @@ bool is_a_vowel(int ch)
 
 
 /*
- * Convert a "color letter" into an "actual" color
- * The colors are: dwsorgbuDWvyRGBU, as shown below
+ * Accept a color index character; if legal, return the color.  -LM-
+ *
+ * Unlike Sangband, we don't translate these colours here.
  */
 int color_char_to_attr(char c)
 {
-	switch (c)
-	{
-		case 'd': return (TERM_DARK);
-		case 'w': return (TERM_WHITE);
-		case 's': return (TERM_SLATE);
-		case 'o': return (TERM_ORANGE);
-		case 'r': return (TERM_RED);
-		case 'g': return (TERM_GREEN);
-		case 'b': return (TERM_BLUE);
-		case 'u': return (TERM_UMBER);
+	int a;
 
-		case 'D': return (TERM_L_DARK);
-		case 'W': return (TERM_L_WHITE);
-		case 'v': return (TERM_VIOLET);
-		case 'y': return (TERM_YELLOW);
-		case 'R': return (TERM_L_RED);
-		case 'G': return (TERM_L_GREEN);
-		case 'B': return (TERM_L_BLUE);
-		case 'U': return (TERM_L_UMBER);
+	/* Is negative -- spit it right back out */
+	if (c < 0) return (c);
+
+	/* Is a space or '\0' -- return black */
+	if (c == '\0' || c == ' ') return (TERM_DARK);
+
+	/* Search the color table */
+	for (a = 0; a < BASIC_COLORS; a++)
+	{
+		/* Look for the index */
+		if (color_table[a].index_char == c) break;
 	}
 
-	return (-1);
+	/* If we don't find the color, we assume white */
+	if (a == BASIC_COLORS) return (TERM_WHITE);
+
+	/* Return the color */
+	return (a);
 }
 
 
@@ -3306,29 +3305,15 @@ int color_char_to_attr(char c)
  */
 int color_text_to_attr(cptr name)
 {
-	if (my_stricmp(name, "dark")       == 0) return TERM_DARK;
-	if (my_stricmp(name, "white")      == 0) return TERM_WHITE;
-	if (my_stricmp(name, "slate")      == 0) return TERM_SLATE;
-	if (my_stricmp(name, "gray")       == 0) return TERM_SLATE;
-	if (my_stricmp(name, "grey")       == 0) return TERM_SLATE;
-	if (my_stricmp(name, "orange")     == 0) return TERM_ORANGE;
-	if (my_stricmp(name, "red")        == 0) return TERM_RED;
-	if (my_stricmp(name, "green")      == 0) return TERM_GREEN;
-	if (my_stricmp(name, "blue")       == 0) return TERM_BLUE;
-	if (my_stricmp(name, "umber")      == 0) return TERM_UMBER;
-	if (my_stricmp(name, "brown")      == 0) return TERM_UMBER;
-	if (my_stricmp(name, "violet")     == 0) return TERM_VIOLET;
-	if (my_stricmp(name, "yellow")     == 0) return TERM_YELLOW;
-	if (my_stricmp(name, "lightdark")  == 0) return TERM_L_DARK;
-	if (my_stricmp(name, "lightwhite") == 0) return TERM_L_WHITE;
-	if (my_stricmp(name, "lightred")   == 0) return TERM_L_RED;
-	if (my_stricmp(name, "lightgreen") == 0) return TERM_L_GREEN;
-	if (my_stricmp(name, "lightblue")  == 0) return TERM_L_BLUE;
-	if (my_stricmp(name, "lightumber") == 0) return TERM_L_UMBER;
-	if (my_stricmp(name, "lightbrown") == 0) return TERM_L_UMBER;
+	int a;
 
-	/* Oops */
-	return -1;
+	for (a = 0; a < MAX_COLORS; a++)
+	{
+		if (my_stricmp(name, color_table[a].name) == 0) return (a);
+	}
+
+	/* Default to white */
+	return (TERM_WHITE);
 }
 
 
@@ -3337,28 +3322,10 @@ int color_text_to_attr(cptr name)
  */
 cptr attr_to_text(byte a)
 {
-	switch (a)
-	{
-		case TERM_DARK:    return "Dark";
-		case TERM_WHITE:   return "White";
-		case TERM_SLATE:   return "Slate";
-		case TERM_ORANGE:  return "Orange";
-		case TERM_RED:     return "Red";
-		case TERM_GREEN:   return "Green";
-		case TERM_BLUE:    return "Blue";
-		case TERM_UMBER:   return "Umber";
-		case TERM_L_DARK:  return "L.Dark";
-		case TERM_L_WHITE: return "L.Slate";
-		case TERM_VIOLET:  return "Violet";
-		case TERM_YELLOW:  return "Yellow";
-		case TERM_L_RED:   return "L.Red";
-		case TERM_L_GREEN: return "L.Green";
-		case TERM_L_BLUE:  return "L.Blue";
-		case TERM_L_UMBER: return "L.Umber";
-	}
-
-	/* Oops */
-	return "Icky";
+	if (a < BASIC_COLORS)
+		return (color_table[a].name);
+	else
+		return ("Icky");
 }
 
 

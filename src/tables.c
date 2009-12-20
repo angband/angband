@@ -1300,29 +1300,6 @@ const byte chest_traps[64] =
 };
 
 
-/*
- * Hack -- the "basic" color names (see "TERM_xxx")
- */
-cptr color_names[BASIC_COLORS] =
-{
-	"Dark",
-	"White",
-	"Slate",
-	"Orange",
-	"Red",
-	"Green",
-	"Blue",
-	"Umber",
-	"Light Dark",
-	"Light Slate",
-	"Violet",
-	"Yellow",
-	"Light Red",
-	"Light Green",
-	"Light Blue",
-	"Light Umber",
-};
-
 
 /*
  * Abbreviations of healthy stats

@@ -428,7 +428,7 @@ void dump_colors(ang_file *fff)
 		if (!kv && !rv && !gv && !bv) continue;
 
 		/* Extract the color name */
-		if (i < BASIC_COLORS) name = color_names[i];
+		if (i < BASIC_COLORS) name = color_table[i].name;
 
 		file_putf(fff, "# Color: %s\n", name);
 		file_putf(fff, "V:%d:0x%02X:0x%02X:0x%02X:0x%02X\n\n", i, kv, rv, gv, bv);

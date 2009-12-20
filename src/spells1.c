@@ -419,6 +419,9 @@ static u16b bolt_pict(int y, int x, int ny, int nx, int typ)
 		/* Basic spell color */
 		k = spell_color(typ);
 
+		/* Reduce to allowed colour range for spell bolts/balls - see e.g. font-xxx.prf */
+		k = get_color(k, ATTR_MISC, 1);
+
 		/* Obtain attr/char */
 		a = misc_to_attr[base+k];
 		c = misc_to_char[base+k];

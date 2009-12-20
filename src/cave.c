@@ -435,6 +435,39 @@ bool feat_supports_lighting(int feat)
 	}
 }
 
+
+/*
+ * Translate text colours.
+ *
+ * This translates a color based on the attribute. We use this to set terrain to
+ * be lighter or darker, make metallic monsters shimmer, highlight text under the
+ * mouse, and reduce the colours on mono colour or 16 colour terms to the correct
+ * colour space.
+ *
+ * TODO: Honour the attribute for the term (full color, mono, 16 color) but ensure
+ * that e.g. the lighter version of yellow becomes white in a 16 color term, but
+ * light yellow in a full colour term.
+ */
+byte get_color(byte a, int attr, int n)
+{
+	/* Accept any graphical attr (high bit set) */
+	if (a & (0x80)) return (a);
+
+	/* TODO: Honour the attribute for the term (full color, mono, 16 color) */
+	if (!attr) return(a);
+
+	/* Translate the color N times */
+	while (n > 0)
+	{
+		a = color_table[a].color_translate[attr];
+		n--;
+	}
+	
+	/* Return the modified color */
+	return (a);
+}
+
+
 /*
  * This function modifies the attr/char pair for an empty floor space
  * to reflect the various lighting options available.
