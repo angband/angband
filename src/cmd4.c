@@ -1358,6 +1358,7 @@ void do_cmd_colors(void)
 			while (1)
 			{
 				cptr name;
+				char index;
 
 				/* Clear */
 				clear_from(10);
@@ -1366,18 +1367,23 @@ void do_cmd_colors(void)
 				for (i = 0; i < BASIC_COLORS; i++)
 				{
 					/* Exhibit this color */
-					Term_putstr(i*4, 20, -1, a, "###");
+					Term_putstr(i*3, 20, -1, a, "##");
+
+					/* Exhibit character letter */
+					Term_putstr(i*3, 21, -1, (byte)i,
+								format(" %c", color_table[i].index_char));
 
 					/* Exhibit all colors */
-					Term_putstr(i*4, 22, -1, (byte)i, format("%3d", i));
+					Term_putstr(i*3, 22, -1, (byte)i, format("%2d", i));
 				}
 
 				/* Describe the color */
 				name = ((a < BASIC_COLORS) ? color_table[a].name : "undefined");
+				index = ((a < BASIC_COLORS) ? color_table[a].index_char : '?');
 
 				/* Describe the color */
 				Term_putstr(5, 10, -1, TERM_WHITE,
-					    format("Color = %d, Name = %s", a, name));
+							format("Color = %d, Name = %s, Index = %c", a, name, index));
 
 				/* Label the Current values */
 				Term_putstr(5, 12, -1, TERM_WHITE,
