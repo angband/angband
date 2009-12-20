@@ -3378,7 +3378,7 @@ static bool artifacts_acceptable(void)
 		if (verbose)
 		{
 			char types[256];
-			sprintf(types, "%s%s%s%s%s%s%s%s%s%s",
+			strnfmt(types, sizeof(types), "%s%s%s%s%s%s%s%s%s%s",
 				swords > 0 ? " swords" : "",
 				polearms > 0 ? " polearms" : "",
 				blunts > 0 ? " blunts" : "",

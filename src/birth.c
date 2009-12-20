@@ -57,6 +57,8 @@ typedef struct birther /*lovely*/ birther; /*sometimes we think she's a dream*/
 /*
  * A structure to hold "rolled" information, and any
  * other useful state for the birth process.
+ *
+ * XXX Demand Obama's birth certificate
  */
 struct birther
 {

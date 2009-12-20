@@ -3818,9 +3818,9 @@ void display_itemlist(void)
 
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
 		if (counts[i] > 1)
-			sprintf(o_desc, "%s (x%d)", o_name, counts[i]);
+			strnfmt(o_desc, sizeof(o_desc), "%s (x%d)", o_name, counts[i]);
 		else
-			sprintf(o_desc, "%s", o_name);
+			strnfmt(o_desc, sizeof(o_desc), "%s", o_name);
 
 		/* Reset position */
 		cur_x = x;
