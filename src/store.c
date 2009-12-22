@@ -612,12 +612,6 @@ static void mass_produce(object_type *o_ptr)
 
 	/* Save the total pile size */
 	o_ptr->number = size;
-
-	/* Hack -- rods need to increase PVAL if stacked */
-	if (o_ptr->tval == TV_ROD)
-	{
-		o_ptr->pval = o_ptr->number * randcalc(k_info[o_ptr->k_idx].pval, 0, RANDOMISE);
-	}
 }
 
 
@@ -692,15 +686,9 @@ static void store_object_absorb(object_type *o_ptr, object_type *j_ptr)
 	/* Combine quantity, lose excess items */
 	o_ptr->number = (total > 99) ? 99 : total;
 
-	/*
-	 * Hack -- if rods are stacking, add the pvals (maximum timeouts)
-	 * and any charging timeouts together
-	 */
+	/* Hack -- if rods are stacking, add the charging timeouts */
 	if (o_ptr->tval == TV_ROD)
-	{
-		o_ptr->pval += j_ptr->pval;
 		o_ptr->timeout += j_ptr->timeout;
-	}
 
 	/* Hack -- if wands/staves are stacking, combine the charges */
 	if ((o_ptr->tval == TV_WAND) || (o_ptr->tval == TV_STAFF))
@@ -921,34 +909,62 @@ static int store_carry(int st, object_type *o_ptr)
 
 	/* Erase the inscription & pseudo-ID bit */
 	o_ptr->note = 0;
-	
-	/* Recharge rods */
-	if (o_ptr->tval == TV_ROD)
-		o_ptr->timeout = 0;
 
-	/* Possibly recharge wands and staves */
-	if (o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND)
+	/* Some item types require maintenance */
+	switch (o_ptr->tval)
 	{
-		bool recharge = FALSE;
-
-		/* Recharge without fail if the store normally carries that type */
-		for (i = 0; i < st_ptr->table_num; i++)
+		/* Refuel lights to the standard amount */
+		case TV_LITE:
 		{
-			if (st_ptr->table[i] == o_ptr->k_idx)
-				recharge = TRUE;
+			u32b f[OBJ_FLAG_N];
+			object_flags(o_ptr, f);
+			
+			if (!(f[2] & TR2_NO_FUEL))
+			{
+				if (o_ptr->sval == SV_LITE_TORCH)
+					o_ptr->timeout = DEFAULT_TORCH;
+
+				else if (o_ptr->sval == SV_LITE_LANTERN)
+					o_ptr->timeout = DEFAULT_LAMP;
+			}
+
+			break;
 		}
 
-		if (recharge)
+		/* Recharge rods */
+		case TV_ROD:
 		{
-			int charges = 0;
+			o_ptr->timeout = 0;
+			break;
+		}
 
-			/* Calculate the recharged number of charges */
-			for (i = 0; i < o_ptr->number; i++)
-				charges += randcalc(k_ptr->charge, 0, RANDOMISE);
+		/* Possibly recharge wands and staves */
+		case TV_STAFF:
+		case TV_WAND:
+		{
+			bool recharge = FALSE;
 
-			/* Use recharged value only if greater */
-			if (charges > o_ptr->pval)
-				o_ptr->pval = charges;
+			/* Recharge without fail if the store normally carries that type */
+			for (i = 0; i < st_ptr->table_num; i++)
+			{
+				if (st_ptr->table[i] == o_ptr->k_idx)
+					recharge = TRUE;
+			}
+
+			if (recharge)
+			{
+				int charges = 0;
+
+				/* Calculate the recharged number of charges */
+				for (i = 0; i < o_ptr->number; i++)
+					charges += randcalc(k_ptr->charge, 0, RANDOMISE);
+
+				/* Use recharged value only if greater */
+				if (charges > o_ptr->pval)
+					o_ptr->pval = charges;
+			}
+
+			break;
 		}
 	}
 
@@ -1072,24 +1088,18 @@ static void store_item_optimize(int st, int item)
 
 
 /*
- * Delete a random object from store 'st', or, if it is a stack, perhaps only
+ * Delete an object from store 'st', or, if it is a stack, perhaps only
  * partially delete it.
- *
- * This function is used when store maintainance occurs, and is designed to
- * imitate non-PC purchasers making purchases from the store.
  */
-static void store_delete_item(int st)
+static void store_delete_index(int st, int what)
 {
-	int what, num;
+	int num;
 	object_type *o_ptr;
 
 	store_type *st_ptr = &store[st];
 
 	/* Paranoia */
 	if (st_ptr->stock_num <= 0) return;
-
-	/* Pick a random slot */
-	what = randint0(st_ptr->stock_num);
 
 	/* Get the object */
 	o_ptr = &st_ptr->stock[what];
@@ -1108,42 +1118,30 @@ static void store_delete_item(int st)
 			case TV_ARROW:
 			case TV_BOLT:
 			{
-				int cur_num = num;
+				/* 50% of the time, destroy the entire stack */
+				if (randint0(100) < 50 || num < 10)
+					num = o_ptr->number;
 
-				/* Sometimes take things to the nearest increment of 5 */
-				if (randint0(100) < 50) break;
-
-				/* Keep things to increments of 5 */
-				if (num % 5)
-				{
-					/* `num` is number of items to remove */
-					num = num % 5;
-				}
+				/* 50% of the time, reduce the size to a multiple of 5 */
 				else
-				{
-					/* Maybe decrement some more */
-					if (randint0(100) < 75) break;
-
-					/* Decrement by a random factor of 5 */
-					num = randint1(cur_num) * 5;
-				}
+					num = randint1(num / 5) * 5 + (num % 5);
 
 				break;
 			}
 
 			default:
 			{
-				/* Sometimes destroy a single object */
+				/* 50% of the time, destroy a single object */
 				if (randint0(100) < 50) num = 1;
 
-				/* Sometimes destroy half the objects */
+				/* 25% of the time, destroy half the objects */
 				else if (randint0(100) < 50) num = (num + 1) / 2;
+				
+				/* 25% of the time, destroy all objects */
+				else num = o_ptr->number;
 
-
-				/* Hack -- decrement the maximum timeouts and total charges of rods and wands. */
-				if ((o_ptr->tval == TV_ROD) ||
-				    (o_ptr->tval == TV_STAFF) ||
-				    (o_ptr->tval == TV_WAND))
+				/* Hack -- decrement the total charges of staves and wands. */
+				if (o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND)
 				{
 					o_ptr->pval -= num * o_ptr->pval / o_ptr->number;
 				}
@@ -1159,6 +1157,46 @@ static void store_delete_item(int st)
 	/* Delete the item */
 	store_item_increase(st, what, -num);
 	store_item_optimize(st, what);
+}
+
+
+
+/*
+ * Delete a random object from store 'st', or, if it is a stack, perhaps only
+ * partially delete it.
+ *
+ * This function is used when store maintainance occurs, and is designed to
+ * imitate non-PC purchasers making purchases from the store.
+ */
+static void store_delete_random(int st)
+{
+	int what;
+	store_type *st_ptr = &store[st];
+
+	/* Paranoia */
+	if (st_ptr->stock_num <= 0) return;
+
+	/* Pick a random slot */
+	what = randint0(st_ptr->stock_num);
+
+	store_delete_index(st, what);
+}
+
+
+
+/*
+ * Delete a percentage of a store's inventory
+ */
+static void store_prune(int st, int chance_in_1000)
+{
+	int i;
+	store_type *st_ptr = &store[st];
+
+	for (i = 0; i < st_ptr->stock_num; i++)
+	{
+		if (randint0(1000) < chance_in_1000)
+			store_delete_index(st, i);
+	}
 }
 
 
@@ -1207,35 +1245,6 @@ static bool black_market_ok(const object_type *o_ptr)
 	return (TRUE);
 }
 
-
-/*
- * Helper function: Find a given tval,sval pair in the store 'num'.
- * Return first occurance of that item, or -1 if not found.
- */
-static int store_find(int num, int tval, int sval)
-{
-	int i, k_idx;
-
-	/* Find the kind */
-	k_idx = lookup_kind(tval, sval);
-
-	/* Validate */
-	if (!k_idx)
-	{
-		msg_print("No object from store_find");
-		return -1;
-	}
-
-	/* Check every object in the store */
-	for (i = 0; i < store[num].stock_num; i++)
-	{
-		/* Compare object kinds */
-		if (store[num].stock[i].k_idx == k_idx) return i;
-	}
-
-	/* Otherwise fine */
-	return -1;
-}
 
 
 /*
@@ -1317,7 +1326,7 @@ static bool store_create_random(int st)
 		i_ptr = &object_type_body;
 
 		/* Create a new object of the chosen kind */
-		object_prep(i_ptr, k_idx, 0, RANDOMISE);
+		object_prep(i_ptr, k_idx, level, RANDOMISE);
 
 		/* Apply some "low-level" magic (no artifacts) */
 		apply_magic(i_ptr, level, FALSE, FALSE, FALSE);
@@ -1371,16 +1380,6 @@ static bool store_create_random(int st)
 		/* No "worthless" items */
 		if (object_value(i_ptr, 1, FALSE) < 1) continue;
 
-
-		/* Charge lights XXX */
-		if (i_ptr->tval == TV_LITE)
-		{
-			if (i_ptr->sval == SV_LITE_TORCH)
-				i_ptr->timeout = FUEL_TORCH;
-			if (i_ptr->sval == SV_LITE_LANTERN)
-				i_ptr->timeout = FUEL_LAMP / 2;
-		}
-
 		/* Mass produce and/or apply discount */
 		mass_produce(i_ptr);
 
@@ -1424,15 +1423,6 @@ static int store_create_item(int st, int tval, int sval)
 	object.ident |= IDENT_STORE;
 	object.origin = ORIGIN_STORE;
 
-	/* Charge lights */
-	if (object.tval == TV_LITE)
-	{
-		if (object.sval == SV_LITE_TORCH)
-			object.timeout = FUEL_TORCH;
-		else if (object.sval == SV_LITE_LANTERN)
-			object.timeout = FUEL_LAMP / 2;
-	}
-
 	/* Attempt to carry the object */
 	return store_carry(st, &object);
 }
@@ -1444,24 +1434,27 @@ static int store_create_item(int st, int tval, int sval)
  */
 static void store_create_staples(void)
 {
-	unsigned i;
+	const store_type *st_ptr = &store[STORE_GENERAL];
+	struct staple_type *staple;
+	object_type *o_ptr;
+
+	int i, idx;
+
+	/* Make sure there's enough room for staples */
+	while (st_ptr->stock_num >= STORE_INVEN_MAX - N_ELEMENTS(staples))
+		store_delete_random(STORE_GENERAL);
 
 	/* Iterate through staples */
 	for (i = 0; i < N_ELEMENTS(staples); i++)
 	{
-		struct staple_type *staple = &staples[i];
-		object_type *o_ptr;
+		staple = &staples[i];
 
-		int idx = store_find(STORE_GENERAL, staple->tval, staple->sval);
+		/* Create the staple and combine it into the store inventory */
+		idx = store_create_item(STORE_GENERAL, staple->tval, staple->sval);
 
-		/* Look for the item, and if it isn't there, create it */
-		if (idx == -1)
-			idx = store_create_item(STORE_GENERAL,
-					staple->tval, staple->sval);
+		o_ptr = &st_ptr->stock[idx];
 
-		o_ptr = &store[STORE_GENERAL].stock[idx];
-
-		/* Stock appropriate amounts */
+		/* Tweak the quantities */
 		switch (staple->mode)
 		{
 			case MAKE_SINGLE:
@@ -1500,7 +1493,12 @@ void store_maint(int which)
 	/* General Store gets special treatment */
 	if (which == STORE_GENERAL)
 	{
+		/* Sell off 30% of the inventory */
+		store_prune(which, 300);
+
+		/* Acquire staple items */
 		store_create_staples();
+
 		return;
 	}
 
@@ -1538,7 +1536,7 @@ void store_maint(int which)
 	if (stock < STORE_MIN_KEEP) stock = STORE_MIN_KEEP;
 
 	/* Destroy objects until only "j" slots are left */
-	while (st_ptr->stock_num > stock) store_delete_item(which);
+	while (st_ptr->stock_num > stock) store_delete_random(which);
 
 
 	/*** "Buy in" various items */
@@ -2130,10 +2128,8 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 				ODESC_PREFIX | ODESC_FULL);
 	msg_format("You have %s (%c).", o_name, index_to_label(item_new));
 
-	/* Now, reduce the original stack's pval */
-	if ((o_ptr->tval == TV_ROD) ||
-		(o_ptr->tval == TV_WAND) ||
-		(o_ptr->tval == TV_STAFF))
+	/* Hack - Reduce the number of charges in the original stack */
+	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF)
 	{
 		o_ptr->pval -= i_ptr->pval;
 	}

@@ -740,11 +740,11 @@ static void a_m_aux_4(object_type *o_ptr, int level, int power)
 	{
 		case TV_LITE:
 		{
-			/* Torches and lanterns get half-fuel */
+			/* Default fuel levels */
 			if (o_ptr->sval == SV_LITE_TORCH)
-				o_ptr->timeout = FUEL_TORCH;
+				o_ptr->timeout = DEFAULT_TORCH;
 			else if (o_ptr->sval == SV_LITE_LANTERN)
-				o_ptr->timeout = FUEL_LAMP / 2;
+				o_ptr->timeout = DEFAULT_LAMP;
 
 			break;
 		}

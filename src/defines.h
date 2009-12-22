@@ -293,8 +293,10 @@ typedef enum
 /*
  * Refueling constants
  */
-#define FUEL_TORCH	5000	/* Maximum amount of fuel in a torch */
-#define FUEL_LAMP	15000   /* Maximum amount of fuel in a lantern */
+#define FUEL_TORCH                5000  /* Maximum amount of fuel in a torch */
+#define FUEL_LAMP                15000  /* Maximum amount of fuel in a lantern */
+#define DEFAULT_TORCH       FUEL_TORCH  /* Default amount of fuel in a torch */
+#define DEFAULT_LAMP   (FUEL_LAMP / 2)  /* Default amount of fuel in a lantern */
 
 
 /*

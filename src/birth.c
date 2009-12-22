@@ -647,12 +647,12 @@ static void player_outfit(void)
 
 	/* Hack -- Give the player some torches */
 	object_prep(i_ptr, lookup_kind(TV_LITE, SV_LITE_TORCH), 0, MINIMISE);
+	apply_magic(i_ptr, 0, FALSE, FALSE, FALSE);
 	i_ptr->number = (byte)rand_range(3, 7);
-	i_ptr->timeout = FUEL_TORCH;
 	i_ptr->origin = ORIGIN_BIRTH;
 	object_flavor_aware(i_ptr);
 	object_notice_everything(i_ptr);
-        k_info[i_ptr->k_idx].everseen = TRUE;
+	k_info[i_ptr->k_idx].everseen = TRUE;
 	(void)inven_carry(i_ptr);
 
 
