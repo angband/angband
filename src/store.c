@@ -1435,10 +1435,7 @@ static int store_create_item(int st, int tval, int sval)
 static void store_create_staples(void)
 {
 	const store_type *st_ptr = &store[STORE_GENERAL];
-	struct staple_type *staple;
-	object_type *o_ptr;
-
-	int i, idx;
+	size_t i;
 
 	/* Make sure there's enough room for staples */
 	while (st_ptr->stock_num >= STORE_INVEN_MAX - N_ELEMENTS(staples))
@@ -1447,12 +1444,12 @@ static void store_create_staples(void)
 	/* Iterate through staples */
 	for (i = 0; i < N_ELEMENTS(staples); i++)
 	{
-		staple = &staples[i];
+		struct staple_type *staple = &staples[i];
 
 		/* Create the staple and combine it into the store inventory */
-		idx = store_create_item(STORE_GENERAL, staple->tval, staple->sval);
+		int idx = store_create_item(STORE_GENERAL, staple->tval, staple->sval);
 
-		o_ptr = &st_ptr->stock[idx];
+		object_type *o_ptr = &st_ptr->stock[idx];
 
 		/* Tweak the quantities */
 		switch (staple->mode)
