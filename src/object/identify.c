@@ -113,10 +113,19 @@ bool object_pval_is_visible(const object_type *o_ptr)
 	if (o_ptr->ident & IDENT_STORE)
 		return TRUE;
 
+	/* Aware jewelry with non-variable pvals */
+	if (object_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr))
+	{
+		const object_kind *k_ptr = &k_info[o_ptr->k_idx];
+
+		if (!randcalc_varies(k_ptr->pval))
+			return TRUE;
+	}
+
 	if (f[0] & TR0_PVAL_MASK & o_ptr->known_flags[0])
 		return TRUE;
-	else
-		return FALSE;
+
+	return FALSE;
 }
 
 /**
