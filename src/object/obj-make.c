@@ -1268,6 +1268,11 @@ void make_gold(object_type *j_ptr, int lev, int coin_type)
 	s32b spread = lev + 10;
 	s32b value = rand_spread(avg, spread);
 
+	/* Increase variance to infinity, retain same mean */
+	while (one_in_(2) && (value * 1414) / 1000 <= MAX_SHORT) /* 1414/1000 = sqrt(2) */
+		value = (value * 1414) / 1000;
+	value = (value * 414) / 1414;
+
 	/* Pick a treasure variety scaled by level, or force a type */
 	if (coin_type != SV_GOLD_ANY)
 		sval = coin_type;
