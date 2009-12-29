@@ -572,12 +572,6 @@ void squelch_drop(void);
 void do_cmd_options_item(void *unused, cptr title);
 bool squelch_interactive(const object_type *o_ptr);
 
-/* store.c */
-s32b price_item(const object_type *o_ptr, bool store_buying, int qty);
-void store_init(void);
-void store_shuffle(int which);
-void store_maint(int which);
-
 /* target.c */
 bool target_able(int m_idx);
 bool target_okay(void);

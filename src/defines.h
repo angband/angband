@@ -134,25 +134,6 @@
 #define ANGBAND_TERM_MAX 8
 
 
-/* XXX Should be enums */
-
-/*
- * Total number of stores (see "store.c", etc)
- */
-#define MAX_STORES	8
-
-
-/*
- * Store index definitions (see "store.c", etc)
- */
-#define STORE_GENERAL	0
-#define STORE_ARMOR		1
-#define STORE_WEAPON	2
-#define STORE_TEMPLE	3
-#define STORE_ALCHEMY	4
-#define STORE_MAGIC		5
-#define STORE_B_MARKET	6
-#define STORE_HOME		7
 
 /*
  * Maximum number of player "sex" types (see "table.c", etc)
@@ -231,16 +212,6 @@
 #define HISTORY_SAVEFILE_IMPORT  0x0080	/* Added when an older version savefile is imported */
 #define HISTORY_GAIN_LEVEL       0x0100	/* Player gained a level */
 #define HISTORY_GENERIC          0x0200	/* Anything else not covered here (unused) */
-
-
-/*
- * Store constants
- *
- * STORE_MAX_KEEP must be < STORE_INVEN_MAX.
- */
-#define STORE_INVEN_MAX	24		/* Max number of discrete objs in inven */
-#define STORE_TURNS		1000	/* Number of turns between turnovers */
-#define STORE_SHUFFLE	25		/* 1/Chance (per day) of an owner changing */
 
 
 /*
