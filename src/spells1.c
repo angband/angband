@@ -3764,16 +3764,14 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (p_ptr->state.resist_dark)
 			{
 				dam = RES_DARK_ADJ(dam, RANDOMISE);
-				wieldeds_notice_flag(1, TR1_RES_DARK);
 			}
 			else if (!blind && !p_ptr->state.resist_blind)
 			{
 				(void)inc_timed(TMD_BLIND, randint1(5) + 2, TRUE);
 			}
-			else if (p_ptr->state.resist_blind)
-			{
-				wieldeds_notice_flag(1, TR1_RES_BLIND);
-			}
+			wieldeds_notice_flag(1, TR1_RES_DARK);
+			wieldeds_notice_flag(1, TR1_RES_BLIND);
+
 			take_hit(dam, killer);
 			break;
 		}
