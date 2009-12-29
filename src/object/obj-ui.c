@@ -93,7 +93,14 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
 		{
 			/* Limit object name */
 			if (strlen(labels[i]) + strlen(o_name[i]) > (size_t)ex_offset)
-				o_name[i][MAX(ex_offset, 0)] = '\0';
+			{
+				int truncate = ex_offset - strlen(labels[i]);
+				
+				if (truncate < 0) truncate = 0;
+				if ((size_t)truncate > sizeof(o_name[i]) - 1) truncate = sizeof(o_name[i]) - 1;
+
+				o_name[i][truncate] = '\0';
+			}
 
 			/* Object name */
 			c_put_str(tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)], o_name[i],
