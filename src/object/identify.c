@@ -70,6 +70,14 @@ bool object_was_worn(const object_type *o_ptr)
 }
 
 /**
+ * \returns whether the object has been fired/thrown
+ */
+bool object_was_fired(const object_type *o_ptr)
+{
+	return o_ptr->ident & IDENT_FIRED ? TRUE : FALSE;
+}
+
+/**
  * \returns whether the object has been sensed with pseudo-ID
  */
 bool object_was_sensed(const object_type *o_ptr)
@@ -99,6 +107,7 @@ bool object_flavor_was_tried(const object_type *o_ptr)
 bool object_effect_is_known(const object_type *o_ptr)
 {
 	return (easy_know(o_ptr) || (o_ptr->ident & IDENT_EFFECT)
+		|| (object_flavor_is_aware(o_ptr) && k_info[o_ptr->k_idx].effect)
 		|| (o_ptr->ident & IDENT_STORE)) ? TRUE : FALSE;
 }
 
@@ -129,14 +138,25 @@ bool object_pval_is_visible(const object_type *o_ptr)
 }
 
 /**
+ * \returns whether any ego or artifact name is available to the player
+ */
+bool object_name_is_visible(const object_type *o_ptr)
+{
+	return o_ptr->ident & IDENT_NAME ? TRUE : FALSE;
+}
+
+/**
  * \returns whether both the object is both an ego and the player knows it is
  */
 bool object_ego_is_visible(const object_type *o_ptr)
 {
-	if ((o_ptr->tval == TV_LITE) && (ego_item_p(o_ptr)))
+	if (!ego_item_p(o_ptr))
+		return FALSE;
+
+	if (o_ptr->tval == TV_LITE)
 		return TRUE;
-	if ((o_ptr->ident & IDENT_EGO) ||
-	    ((o_ptr->ident & IDENT_STORE) && ego_item_p(o_ptr)))
+
+	if ((o_ptr->ident & IDENT_NAME) || (o_ptr->ident & IDENT_STORE))
 		return TRUE;
 	else
 		return FALSE;
@@ -238,25 +258,33 @@ static bool object_add_ident_flags(object_type *o_ptr, u32b flags)
 }
 
 
+/* Flags on an object that do not affect the player, belongs in some .h file */
+#define TR2_AFFECTS_OBJ_ONLY (TR2_INSTA_ART | TR2_EASY_KNOW | TR2_HIDE_TYPE | TR2_SHOW_MODS | TR2_IGNORE_ACID | TR2_IGNORE_ELEC | TR2_IGNORE_FIRE | TR2_IGNORE_COLD)
+
 /*
  * Checks for additional knowledge implied by what the player already knows.
  *
  * \param o_ptr is the object to check
+ *
+ * returns whether it calls object_notice_everyting
  */
-static void object_check_for_ident(object_type *o_ptr)
+bool object_check_for_ident(object_type *o_ptr)
 {
 	int i;
 	u32b flags[OBJ_FLAG_N];
-
+	u32b known_flags[OBJ_FLAG_N];
+	
 	object_flags(o_ptr, flags);
+	object_flags_known(o_ptr, known_flags);
 
 	/* Some flags are irrelevant or never learned or too hard to learn */
-	flags[2] &= ~(TR2_INSTA_ART | TR2_EASY_KNOW | TR2_HIDE_TYPE | TR2_SHOW_MODS | TR2_IGNORE_ACID | TR2_IGNORE_ELEC | TR2_IGNORE_FIRE | TR2_IGNORE_COLD);
+	flags[2] &= ~TR2_AFFECTS_OBJ_ONLY;
+	known_flags[2] &= ~TR2_AFFECTS_OBJ_ONLY;
 
 	for (i = 0; i < OBJ_FLAG_N; i++)
 	{
-		if (flags[i] != (flags[i] & o_ptr->known_flags[i]))
-			return;
+		if (flags[i] != known_flags[i])
+			return FALSE;
 	}
 
 	/* If we know attack bonuses, and defence bonuses, and effect, then
@@ -266,13 +294,16 @@ static void object_check_for_ident(object_type *o_ptr)
 	    (object_effect_is_known(o_ptr) || !object_effect(o_ptr)))
 	{
 		object_notice_everything(o_ptr);
+		return TRUE;
 	}
 
 	/* We still know all the flags, so we still know if it's an ego */
 	else if (ego_item_p(o_ptr))
 	{
-		object_add_ident_flags(o_ptr, IDENT_EGO);
+		object_notice_ego(o_ptr);
 	}
+
+	return FALSE;
 }
 
 
@@ -330,7 +361,40 @@ void object_know_all_flags(object_type *o_ptr)
 }
 
 
+#define IDENTS_SET_BY_IDENTIFY ( IDENT_KNOWN | IDENT_ATTACK | IDENT_DEFENCE | IDENT_SENSE | IDENT_EFFECT | IDENT_WORN | IDENT_FIRED | IDENT_NAME )
+
 /**
+ * Check whether an object has IDENT_KNOWN but should not
+ */
+bool object_is_not_known_consistently(const object_type *o_ptr)
+{
+	int i;
+
+	if (easy_know(o_ptr))
+		return FALSE;
+	if (!(o_ptr->ident & IDENT_KNOWN))
+		return TRUE;
+	if ((o_ptr->ident & IDENTS_SET_BY_IDENTIFY) != IDENTS_SET_BY_IDENTIFY)
+		return TRUE;
+	if (o_ptr->ident & IDENT_EMPTY)
+		return TRUE;
+	else if (o_ptr->name1)
+	{
+		artifact_type *a_ptr = &a_info[o_ptr->name1];
+		if (!(a_ptr->seen || a_ptr->everseen))
+			return TRUE;
+	}
+	for (i = 0; i < OBJ_FLAG_N; i++)
+		if (o_ptr->known_flags[i] != (u32b) -1)
+			return TRUE;
+
+	return FALSE;
+}
+
+
+
+/**
+ * Mark as object as fully known, a.k.a identified. 
  * Mark as object as fully known, a.k.a identified.
  *
  * \param o_ptr is the object to mark as identified
@@ -344,9 +408,7 @@ void object_notice_everything(object_type *o_ptr)
 
 	/* Mark as known */
 	object_flavor_aware(o_ptr);
-	object_add_ident_flags(o_ptr, IDENT_KNOWN | IDENT_ATTACK |
-			IDENT_DEFENCE | IDENT_SENSE | IDENT_EFFECT |
-			IDENT_WORN);
+	object_add_ident_flags(o_ptr, IDENTS_SET_BY_IDENTIFY);
 
 	/* Artifact has now been seen */
 	if (a_ptr)
@@ -355,13 +417,10 @@ void object_notice_everything(object_type *o_ptr)
 		history_add_artifact(o_ptr->name1, TRUE);
 	}
 
-	/* Mark ego as known */
-	if (ego_item_p(o_ptr))
-		object_add_ident_flags(o_ptr, IDENT_EGO);
-
 	/* Know all flags there are to be known */
 	object_know_all_flags(o_ptr);
 }
+
 
 
 /**
@@ -417,7 +476,7 @@ void object_notice_ego(object_type *o_ptr)
 	for (i = 0; i < OBJ_FLAG_N; i++)
 		o_ptr->known_flags[i] |= (learned_flags[i] | e_ptr->flags[i]);
 
-	if (object_add_ident_flags(o_ptr, IDENT_EGO))
+	if (object_add_ident_flags(o_ptr, IDENT_NAME))
 		object_check_for_ident(o_ptr);
 }
 
@@ -434,7 +493,10 @@ void object_notice_sensing(object_type *o_ptr)
 
 
 	if (a_ptr)
+	{
 		a_ptr->seen = a_ptr->everseen = TRUE;
+		o_ptr->ident |= IDENT_NAME;
+	}
 
 	object_notice_curses(o_ptr);
 	if (object_add_ident_flags(o_ptr, IDENT_SENSE))
@@ -629,9 +691,20 @@ void object_notice_on_defend(void)
 
 
 /*
- * Determine whether a weapon or missile weapon is obviously {excellent} when worn.
+ * Notice stuff when firing or throwing objects.
  *
- * When repairing knowledge, do not print messages.
+ */
+/* XXX Eddie perhaps some stuff from do_cmd_fire and do_cmd_throw should be moved here */
+void object_notice_on_firing(object_type *o_ptr)
+{
+	if (object_add_ident_flags(o_ptr, IDENT_FIRED))
+		object_check_for_ident(o_ptr);
+}
+
+
+
+/*
+ * Determine whether a weapon or missile weapon is obviously {excellent} when worn.
  */
 /* XXX Eddie should messages be adhoc all over the place?  perhaps the main loop should check for change in inventory/wieldeds and all messages be printed from one place */
 void object_notice_on_wield(object_type *o_ptr)

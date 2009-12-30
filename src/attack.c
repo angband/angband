@@ -549,6 +549,8 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	/* Sound */
 	sound(MSG_SHOOT);
 
+	object_notice_on_firing(o_ptr);
+
 	/* Describe the object */
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL | ODESC_SINGULAR);
 
@@ -890,6 +892,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 
 	/* Get the object */
 	o_ptr = object_from_item_idx(item);
+	object_notice_on_firing(o_ptr);
 
 	/* Get local object */
 	i_ptr = &object_type_body;

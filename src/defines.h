@@ -1170,7 +1170,8 @@ enum
 #define IDENT_EFFECT	0x0080	/* Know item activation/effect */
 /* xxx */
 #define IDENT_INDESTRUCT	0x0200	/* Tried to destroy it and failed */
-#define IDENT_EGO	0x0400	/* Know the ego */
+#define IDENT_NAME	0x0400	/* Know the name of ego or artifact if there is one */
+#define IDENT_FIRED	0x0800  /* Has been used as a missile */
 /* ... */
 
 

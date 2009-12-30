@@ -250,7 +250,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 		}
 		else if (o_ptr->number > 1)
 			strnfcat(buf, max, &end, "%d ", o_ptr->number);
-		else if (known && artifact_p(o_ptr))
+		else if ((object_name_is_visible(o_ptr) || known) && artifact_p(o_ptr))
 			strnfcat(buf, max, &end, "The ");
 
 		else if (*basename == '&')
@@ -394,7 +394,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 
 	/** Append extra names of various kinds **/
 
-	if (known && o_ptr->name1)
+	if ((object_name_is_visible(o_ptr) || known) && o_ptr->name1)
 		strnfcat(buf, max, &end, " %s", a_name + a_info[o_ptr->name1].name);
 
 	else if ((spoil && o_ptr->name2) || object_ego_is_visible(o_ptr))
@@ -719,6 +719,8 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 		INVEN_BOW) u[n++] = "wielded";
 		else u[n++] = "worn";
 	}
+	else if (!object_is_known(o_ptr) && object_was_fired(o_ptr))
+		u[n++] = "fired";
 	else if (!object_flavor_is_aware(o_ptr) && object_flavor_was_tried(o_ptr))
 		u[n++] = "tried";
 

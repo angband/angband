@@ -1203,8 +1203,29 @@ static bool item_tester_hook_armour(const object_type *o_ptr)
 }
 
 
+/*
+ * Now that object flags are changing so much, it is likely that there
+ * will be buggy objects that are marked with IDENT_KNOWN but do not
+ * have all flags correctly marked.  This function needs to allow for
+ * reidentifying buggy objects.
+ */
 static bool item_tester_unknown(const object_type *o_ptr)
 {
+	if (object_is_not_known_consistently(o_ptr))
+	{
+		/* 
+		 * This next hack is pretty terrible, but people playing 
+		 * the nightlies will really appreciate not having to reidentify
+		 * every time a new IDENT_ flag is added.  It should be
+		 * removed when the codebase is stable.
+		 */
+		object_type *i_ptr = (object_type *) o_ptr;
+		if (!object_check_for_ident(i_ptr))
+			return TRUE;
+		else
+			return FALSE;
+	}
+
 	return object_is_known(o_ptr) ? FALSE : TRUE;
 }
 

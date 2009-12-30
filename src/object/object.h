@@ -87,7 +87,9 @@ extern s32b object_last_wield;
 
 bool object_is_known(const object_type *o_ptr);
 bool object_is_known_artifact(const object_type *o_ptr);
+bool object_is_not_known_consistently(const object_type *o_ptr);
 bool object_was_worn(const object_type *o_ptr);
+bool object_was_fired(const object_type *o_ptr);
 bool object_was_sensed(const object_type *o_ptr);
 bool object_flavor_is_aware(const object_type *o_ptr);
 bool object_flavor_was_tried(const object_type *o_ptr);
@@ -111,12 +113,15 @@ bool object_notice_flags(object_type *o_ptr, int flagset, u32b flags);
 bool object_notice_curses(object_type *o_ptr);
 void object_notice_on_defend(void);
 void object_notice_on_wield(object_type *o_ptr);
+void object_notice_on_firing(object_type *o_ptr);
 void wieldeds_notice_flag(int flagset, u32b flag);
 void wieldeds_notice_on_attack(void);
 void object_repair_knowledge(object_type *o_ptr);
 obj_pseudo_t object_pseudo(const object_type *o_ptr);
 void sense_inventory(void);
 bool easy_know(const object_type *o_ptr);
+bool object_check_for_ident(object_type *o_ptr);
+bool object_name_is_visible(const object_type *o_ptr);
 
 /* obj-desc.c */
 void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know);
