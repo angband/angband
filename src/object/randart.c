@@ -531,6 +531,7 @@ static s16b choose_item(int a_idx)
 	a_ptr->flags[0] = k_ptr->flags[0];
 	a_ptr->flags[1] = k_ptr->flags[1];
 	a_ptr->flags[2] = k_ptr->flags[2];
+	a_ptr->effect = 0;
 
 	/* Artifacts ignore everything */
 	a_ptr->flags[2] |= TR2_IGNORE_MASK;
