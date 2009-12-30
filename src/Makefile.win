@@ -47,7 +47,8 @@ endif
 
 CC = $(CROSS)gcc
 WRES = $(CROSS)windres
-CFLAGS += -Wall -Wno-unused-parameter -std=iso9899:199409 -pedantic -O2 -I.
+WARNINGS = -Wall -Wextra -Wno-unused-parameter
+CFLAGS += $(WARNINGS) -std=iso9899:199409 -pedantic -O2 -I.
 LIBS += -s
 
 ifdef BUILD_ID
