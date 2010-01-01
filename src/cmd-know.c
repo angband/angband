@@ -1217,6 +1217,7 @@ static void desc_art_fake(int a_idx)
 	object_type object_type_body;
 	bool lost = TRUE, abil = FALSE;
 	int i, j;
+	oinfo_detail_t mode = OINFO_NONE;
 
 	/* Get local object */
 	o_ptr = &object_type_body;
@@ -1265,11 +1266,12 @@ static void desc_art_fake(int a_idx)
 		}
 	}
 
-	/* If it's been lost, make a fake artifact for it (assume known) */
+	/* If it's been lost, make a fake artifact for it */
 	if (lost)
 	{
 		make_fake_artifact(o_ptr, a_idx);
-		object_notice_everything(o_ptr);
+		o_ptr->ident |= IDENT_NAME;
+		mode = OINFO_FULL;
 	}
 
 	/* Hack -- Handle stuff */
@@ -1281,7 +1283,7 @@ static void desc_art_fake(int a_idx)
 	/* Print the artifact information */
 	Term_gotoxy(0, 0);
 	object_info_header(o_ptr);
-	abil = object_info(o_ptr, OINFO_NONE);
+	abil = object_info(o_ptr, mode);
 	if (lost) text_out("\nThis artifact has been lost.");
 	if (!abil) text_out("\n\nThis item does not seem to possess any special abilities.");
 
