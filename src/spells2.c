@@ -1211,7 +1211,8 @@ static bool item_tester_hook_armour(const object_type *o_ptr)
  */
 static bool item_tester_unknown(const object_type *o_ptr)
 {
-	if (object_is_not_known_consistently(o_ptr))
+	/* A hack for a hack - Disable this for the 3.1.2 release */
+	if (FALSE && object_is_not_known_consistently(o_ptr))
 	{
 		/* 
 		 * This next hack is pretty terrible, but people playing 
