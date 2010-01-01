@@ -1215,7 +1215,7 @@ static void desc_art_fake(int a_idx)
 {
 	object_type *o_ptr;
 	object_type object_type_body;
-	bool lost = TRUE;
+	bool lost = TRUE, abil = FALSE;
 	int i, j;
 
 	/* Get local object */
@@ -1265,8 +1265,12 @@ static void desc_art_fake(int a_idx)
 		}
 	}
 
-	/* If it's been lost, make a fake artifact for it */
-	if (lost) make_fake_artifact(o_ptr, a_idx);
+	/* If it's been lost, make a fake artifact for it (assume known) */
+	if (lost)
+	{
+		make_fake_artifact(o_ptr, a_idx);
+		object_notice_everything(o_ptr);
+	}
 
 	/* Hack -- Handle stuff */
 	handle_stuff();
@@ -1274,17 +1278,12 @@ static void desc_art_fake(int a_idx)
 	text_out_hook = text_out_to_screen;
 	screen_save();
 
+	/* Print the artifact information */
 	Term_gotoxy(0, 0);
 	object_info_header(o_ptr);
-
-	/* Assume that lost artifacts were fully known, even if they weren't */
-	if (lost)
-	{
-		object_info(o_ptr, OINFO_FULL);
-		text_out("\nThis artifact has been lost.");
-	}
-	else if (!object_info(o_ptr, OINFO_NONE))
-		text_out("\n\nThis item does not seem to possess any special abilities.");
+	abil = object_info(o_ptr, OINFO_NONE);
+	if (lost) text_out("\nThis artifact has been lost.");
+	if (!abil) text_out("\n\nThis item does not seem to possess any special abilities.");
 
 	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
 	(void)anykey();
