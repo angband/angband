@@ -132,7 +132,7 @@ EFFECT(BLESSING,       FALSE,  6,	"increases your AC and to-hit bonus for 1d12+6
 EFFECT(BLESSING2,      FALSE,  7,	"increases your AC and to-hit bonus for 1d24+12 turns")
 EFFECT(BLESSING3,      FALSE,  8,	"increases your AC and to-hit bonus for 1d48+24 turns")
 EFFECT(RECALL,         FALSE, 15,	"returns you from the dungeon or takes you to the dungeon after a short delay")
-EFFECT(DEEP_DESCENT,   FALSE, 19,	"transports you two or three levels below your maximum dungeon depth")
+EFFECT(DEEP_DESCENT,   FALSE, 19,	"teleports you two levels down")
 
 EFFECT(EARTHQUAKES,    FALSE,  5,	"causes an earthquake around you")
 EFFECT(DESTRUCTION2,   FALSE, 12,	"destroys an area around you in the shape of a circle radius 15, and blinds you for 1d10+10 turns")

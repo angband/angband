@@ -1055,34 +1055,25 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_DEEP_DESCENT:
 		{
-			int i = 2;
-			int new_max = p_ptr->max_depth;
-
-			do
+			int i, target_depth = p_ptr->depth;
+			
+			/* Calculate target depth */
+			for (i = 2; i > 0; i--)
 			{
-				if (is_quest(new_max)) continue;
-				if (new_max >= MAX_DEPTH-1) continue;
-				new_max++;
-			} while (--i);
-
-			if (new_max == p_ptr->max_depth)
-				return TRUE;
-
-			p_ptr->max_depth = new_max;
-			*ident = TRUE;
-
-			if (p_ptr->depth == 0)
-			{
-				set_recall();
-				msg_print("The lower reaches of the dungeon beckon.");
+				if (is_quest(target_depth)) break;
+				if (target_depth >= MAX_DEPTH - 1) break;
+				
+				target_depth++;
 			}
-			else
+
+			if (target_depth > p_ptr->depth)
 			{
 				message(MSG_TPLEVEL, 0, "You sink through the floor...");
-				dungeon_change_level(p_ptr->max_depth);
+				dungeon_change_level(target_depth);
+
+				*ident = TRUE;
 			}
 
-			*ident = TRUE;
 			return TRUE;
 		}
 
