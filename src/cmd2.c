@@ -748,8 +748,12 @@ void do_cmd_open(cmd_code code, cmd_arg args[])
 
 
 	/* Verify legality */
-	if (!o_idx && !do_cmd_open_test(y, x)) return;
-
+	if (!o_idx && !do_cmd_open_test(y, x))
+	{
+		/* Cancel repeat */
+		disturb(0, 0);
+		return;
+	}
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
@@ -906,7 +910,12 @@ void do_cmd_close(cmd_code code, cmd_arg args[])
 	x = p_ptr->px + ddx[dir];
 
 	/* Verify legality */
-	if (!do_cmd_close_test(y, x)) return;
+	if (!do_cmd_close_test(y, x))
+	{
+		/* Cancel repeat */
+		disturb(0, 0);
+		return;
+	}
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
@@ -1238,8 +1247,12 @@ void do_cmd_tunnel(cmd_code code, cmd_arg args[])
 
 
 	/* Oops */
-	if (!do_cmd_tunnel_test(y, x)) return;
-
+	if (!do_cmd_tunnel_test(y, x))
+	{
+		/* Cancel repeat */
+		disturb(0, 0);
+		return;
+	}
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
@@ -1420,8 +1433,12 @@ void do_cmd_disarm(cmd_code code, cmd_arg args[])
 
 
 	/* Verify legality */
-	if (!o_idx && !do_cmd_disarm_test(y, x)) return;
-
+	if (!o_idx && !do_cmd_disarm_test(y, x))
+	{
+		/* Cancel repeat */
+		disturb(0, 0);
+		return;
+	}
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
@@ -1629,6 +1646,7 @@ static bool do_cmd_bash_aux(int y, int x)
 void do_cmd_bash(cmd_code code, cmd_arg args[])
 {
 	int y, x, dir;
+	bool more = FALSE;
 
 	dir = args[0].direction;
 
@@ -1638,8 +1656,12 @@ void do_cmd_bash(cmd_code code, cmd_arg args[])
 
 
 	/* Verify legality */
-	if (!do_cmd_bash_test(y, x)) return;
-
+	if (!do_cmd_bash_test(y, x))
+	{
+		/* Cancel repeat */
+		disturb(0, 0);
+		return;
+	}
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
@@ -1667,12 +1689,11 @@ void do_cmd_bash(cmd_code code, cmd_arg args[])
 	else
 	{
 		/* Bash the door */
-		if (!do_cmd_bash_aux(y, x))
-		{
-			/* Cancel repeat */
-			disturb(0, 0);
-		}
+		more = do_cmd_bash_aux(y, x);
 	}
+
+	/* Cancel repeat unless we may continue */
+	if (!more) disturb(0, 0);
 }
 
 void textui_cmd_bash(void)
@@ -1732,53 +1753,46 @@ void do_cmd_alter_aux(int dir)
 	/* Attack monsters */
 	if (cave_m_idx[y][x] > 0)
 	{
-		/* Attack */
 		py_attack(y, x);
 	}
 
 	/* Tunnel through walls */
 	else if (feat >= FEAT_SECRET)
 	{
-		/* Tunnel */
 		more = do_cmd_tunnel_aux(y, x);
 	}
+
 #if 0
 	/* Bash jammed doors */
 	else if (feat >= FEAT_DOOR_HEAD + 0x08)
 	{
-		/* Tunnel */
 		more = do_cmd_bash_aux(y, x);
 	}
-#endif /* 0 */
+#endif
+
 	/* Open closed doors */
 	else if (feat >= FEAT_DOOR_HEAD)
 	{
-		/* Tunnel */
 		more = do_cmd_open_aux(y, x);
 	}
 
 	/* Disarm traps */
 	else if (feat >= FEAT_TRAP_HEAD)
 	{
-		/* Tunnel */
 		more = do_cmd_disarm_aux(y, x);
 	}
 
 #if 0
-
 	/* Close open doors */
 	else if (feat == FEAT_OPEN)
 	{
-		/* Close */
 		more = do_cmd_close_aux(y, x);
 	}
-
 #endif
 
 	/* Oops */
 	else
 	{
-		/* Oops */
 		msg_print("You spin around.");
 	}
 
