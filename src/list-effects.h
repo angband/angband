@@ -179,7 +179,7 @@ EFFECT(ACID_BOLT,      TRUE,   4,	"creates an acid bolt with damage 5d8")
 EFFECT(ACID_BOLT2,     TRUE,   6,	"creates an acid bolt with damage 10d8")
 EFFECT(ACID_BOLT3,     TRUE,   7,	"creates an acid bolt with damage 12d8")
 EFFECT(ACID_BALL,      TRUE,  11,	"creates an acid ball with damage 125")
-EFFECT(ELEC_BOLT,      TRUE,   5,	"creates a lightning bolt with damage 6d6")
+EFFECT(ELEC_BOLT,      TRUE,   5,	"creates a lightning bolt (that always beams) with damage 6d6")
 EFFECT(ELEC_BALL,      TRUE,   9,	"creates a lightning ball with damage 64")
 EFFECT(ELEC_BALL2,     TRUE,  14,	"creates a large lightning ball with damage 250")
 

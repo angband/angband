@@ -1421,7 +1421,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			dam = damroll(6, 6) * (100 + boost) / 100;
 			*ident = TRUE;
-			fire_bolt_or_beam(beam, GF_ELEC, dir, dam);
+			fire_beam(GF_ELEC, dir, dam);
 			return TRUE;
 		}
 
