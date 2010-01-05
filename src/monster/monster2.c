@@ -1499,6 +1499,9 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Update monster */
 		update_mon(m1, TRUE);
+
+		/* Redraw monster list */
+		p_ptr->redraw |= (PR_MONLIST);
 	}
 
 	/* Player 1 */
@@ -1532,6 +1535,9 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Update monster */
 		update_mon(m2, TRUE);
+
+		/* Redraw monster list */
+		p_ptr->redraw |= (PR_MONLIST);
 	}
 
 	/* Player 2 */
