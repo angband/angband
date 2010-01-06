@@ -788,6 +788,7 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 		if (skills[i].skill == SKILL_SAVE ||
 				skills[i].skill == SKILL_SEARCH)
 		{
+			if (skill < 0) skill = 0;
 			if (skill > 100) skill = 100;
 			panel[i].fmt = "%y%%";
 			panel[i].value[0] = i2u(skill);

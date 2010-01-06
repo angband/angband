@@ -1360,7 +1360,7 @@ enum
  */
 #define TR0_OBVIOUS_MASK \
 	(TR0_STR | TR0_INT | TR0_WIS | TR0_DEX | \
-	 TR0_CON | TR0_CHR | TR0_STEALTH | \
+	 TR0_CON | TR0_CHR | TR0_STEALTH | TR0_SEARCH | \
 	 TR0_INFRA | TR0_TUNNEL | TR0_SPEED | \
 	 TR0_BLOWS | TR0_SHOTS | TR0_MIGHT | \
 	 TR0_BRAND_POIS | TR0_BRAND_ELEC | \
@@ -2202,14 +2202,6 @@ enum
 #define GRAPHICS_ADAM_BOLT      2
 #define GRAPHICS_DAVID_GERVAIS  3
 #define GRAPHICS_PSEUDO         4
-
-
-/*
- * List of commands that will be auto-repeated
- *
- * ToDo: This string should be user-configurable.
- */
-#define AUTO_REPEAT_COMMANDS "TBDoc+"
 
 
 /* player_type.noscore flags */

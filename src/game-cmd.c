@@ -47,71 +47,72 @@ static struct
 	enum cmd_arg_type arg_type[3];
 	cmd_handler_fn fn;
 	bool repeat_allowed;
+	int auto_repeat_n;
 } game_cmds[] =
 {
-	{ CMD_LOADFILE, { arg_END }, NULL, FALSE },
-	{ CMD_NEWGAME, { arg_END }, NULL, FALSE },
+	{ CMD_LOADFILE, { arg_END }, NULL, FALSE, 0 },
+	{ CMD_NEWGAME, { arg_END }, NULL, FALSE, 0 },
 
-	{ CMD_BIRTH_RESET, { arg_END }, NULL, FALSE },
-	{ CMD_CHOOSE_SEX, { arg_CHOICE, arg_END }, NULL, FALSE },
-	{ CMD_CHOOSE_RACE, { arg_CHOICE, arg_END }, NULL, FALSE },
-	{ CMD_CHOOSE_CLASS, { arg_CHOICE, arg_END }, NULL, FALSE },
-	{ CMD_BUY_STAT, { arg_CHOICE, arg_END }, NULL, FALSE },
-	{ CMD_SELL_STAT, { arg_CHOICE, arg_END }, NULL, FALSE },
-	{ CMD_RESET_STATS, { arg_CHOICE, arg_END }, NULL, FALSE },
-	{ CMD_ROLL_STATS, { arg_END }, NULL, FALSE },
-	{ CMD_PREV_STATS, { arg_END }, NULL, FALSE },
-	{ CMD_NAME_CHOICE, { arg_STRING, arg_END }, NULL, FALSE },
-	{ CMD_ACCEPT_CHARACTER, { arg_END }, NULL, FALSE },
+	{ CMD_BIRTH_RESET, { arg_END }, NULL, FALSE, 0 },
+	{ CMD_CHOOSE_SEX, { arg_CHOICE, arg_END }, NULL, FALSE, 0 },
+	{ CMD_CHOOSE_RACE, { arg_CHOICE, arg_END }, NULL, FALSE, 0 },
+	{ CMD_CHOOSE_CLASS, { arg_CHOICE, arg_END }, NULL, FALSE, 0 },
+	{ CMD_BUY_STAT, { arg_CHOICE, arg_END }, NULL, FALSE, 0 },
+	{ CMD_SELL_STAT, { arg_CHOICE, arg_END }, NULL, FALSE, 0 },
+	{ CMD_RESET_STATS, { arg_CHOICE, arg_END }, NULL, FALSE, 0 },
+	{ CMD_ROLL_STATS, { arg_END }, NULL, FALSE, 0 },
+	{ CMD_PREV_STATS, { arg_END }, NULL, FALSE, 0 },
+	{ CMD_NAME_CHOICE, { arg_STRING, arg_END }, NULL, FALSE, 0 },
+	{ CMD_ACCEPT_CHARACTER, { arg_END }, NULL, FALSE, 0 },
 
-	{ CMD_GO_UP, { arg_END }, do_cmd_go_up, FALSE },
-	{ CMD_GO_DOWN, { arg_END }, do_cmd_go_down, FALSE },
-	{ CMD_SEARCH, { arg_END }, do_cmd_search, TRUE },
-	{ CMD_TOGGLE_SEARCH, { arg_END }, do_cmd_toggle_search, FALSE },
-	{ CMD_WALK, { arg_DIRECTION, arg_END }, do_cmd_walk, TRUE },
-	{ CMD_RUN, { arg_DIRECTION, arg_END }, do_cmd_run, FALSE },
-	{ CMD_JUMP, { arg_DIRECTION, arg_END }, do_cmd_jump, FALSE },
-	{ CMD_OPEN, { arg_DIRECTION, arg_END }, do_cmd_open, TRUE },
-	{ CMD_CLOSE, { arg_DIRECTION, arg_END }, do_cmd_close, TRUE },
-	{ CMD_TUNNEL, { arg_DIRECTION, arg_END }, do_cmd_tunnel, TRUE },
-	{ CMD_HOLD, { arg_END }, do_cmd_hold, TRUE },
-	{ CMD_DISARM, { arg_DIRECTION, arg_END }, do_cmd_disarm, TRUE },
-	{ CMD_BASH, { arg_DIRECTION, arg_END }, do_cmd_bash, TRUE },
-	{ CMD_ALTER, { arg_DIRECTION, arg_END }, do_cmd_alter, TRUE },
-	{ CMD_JAM, { arg_DIRECTION, arg_END }, do_cmd_spike, FALSE },
-	{ CMD_REST, { arg_CHOICE, arg_END }, do_cmd_rest, FALSE },
-	{ CMD_PATHFIND, { arg_POINT, arg_END }, do_cmd_pathfind, FALSE },
-	{ CMD_PICKUP, { arg_ITEM, arg_END }, do_cmd_pickup, FALSE },
-	{ CMD_WIELD, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_wield, FALSE },
-	{ CMD_TAKEOFF, { arg_ITEM, arg_END }, do_cmd_takeoff, FALSE },
-	{ CMD_DROP, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_drop, FALSE },
-	{ CMD_UNINSCRIBE, { arg_ITEM, arg_END }, do_cmd_uninscribe, FALSE },
-	{ CMD_EAT, { arg_ITEM, arg_END }, do_cmd_use, FALSE },
-	{ CMD_QUAFF, { arg_ITEM, arg_TARGET, arg_END }, do_cmd_use, FALSE },
-	{ CMD_USE_ROD, { arg_ITEM, arg_TARGET, arg_END }, do_cmd_use, FALSE },
-	{ CMD_USE_STAFF, { arg_ITEM, arg_END }, do_cmd_use, FALSE },
-	{ CMD_USE_WAND, { arg_ITEM, arg_TARGET, arg_END }, do_cmd_use, FALSE },
-	{ CMD_READ_SCROLL, { arg_ITEM, arg_TARGET, arg_END }, do_cmd_use, FALSE },
-	{ CMD_ACTIVATE, { arg_ITEM, arg_TARGET, arg_END }, do_cmd_use, FALSE },
-	{ CMD_REFILL, { arg_ITEM, arg_END }, do_cmd_refill, FALSE },
-	{ CMD_FIRE, { arg_ITEM, arg_TARGET, arg_END }, do_cmd_fire, FALSE },
-	{ CMD_THROW, { arg_ITEM, arg_TARGET, arg_END }, do_cmd_throw, FALSE },
-	{ CMD_DESTROY, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_destroy, FALSE },
-	{ CMD_ENTER_STORE, { arg_END }, do_cmd_store, FALSE },
-	{ CMD_INSCRIBE, { arg_ITEM, arg_STRING, arg_END }, do_cmd_inscribe, FALSE },
-	{ CMD_STUDY_SPELL, { arg_CHOICE, arg_END }, do_cmd_study_spell, FALSE },
-	{ CMD_STUDY_BOOK, { arg_ITEM, arg_END }, do_cmd_study_book, FALSE },
-	{ CMD_CAST, { arg_CHOICE, arg_TARGET, arg_END }, do_cmd_cast, FALSE },
-	{ CMD_SELL, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_sell, FALSE },
-	{ CMD_STASH, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_stash, FALSE },
-	{ CMD_BUY, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_buy, FALSE },
-	{ CMD_RETRIEVE, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_retrieve, FALSE }
+	{ CMD_GO_UP, { arg_END }, do_cmd_go_up, FALSE, 0 },
+	{ CMD_GO_DOWN, { arg_END }, do_cmd_go_down, FALSE, 0 },
+	{ CMD_SEARCH, { arg_END }, do_cmd_search, TRUE, 10 },
+	{ CMD_TOGGLE_SEARCH, { arg_END }, do_cmd_toggle_search, FALSE, 0 },
+	{ CMD_WALK, { arg_DIRECTION, arg_END }, do_cmd_walk, TRUE, 0 },
+	{ CMD_RUN, { arg_DIRECTION, arg_END }, do_cmd_run, FALSE, 0 },
+	{ CMD_JUMP, { arg_DIRECTION, arg_END }, do_cmd_jump, FALSE, 0 },
+	{ CMD_OPEN, { arg_DIRECTION, arg_END }, do_cmd_open, TRUE, 99 },
+	{ CMD_CLOSE, { arg_DIRECTION, arg_END }, do_cmd_close, TRUE, 99 },
+	{ CMD_TUNNEL, { arg_DIRECTION, arg_END }, do_cmd_tunnel, TRUE, 99 },
+	{ CMD_HOLD, { arg_END }, do_cmd_hold, TRUE, 0 },
+	{ CMD_DISARM, { arg_DIRECTION, arg_END }, do_cmd_disarm, TRUE, 99 },
+	{ CMD_BASH, { arg_DIRECTION, arg_END }, do_cmd_bash, TRUE, 99 },
+	{ CMD_ALTER, { arg_DIRECTION, arg_END }, do_cmd_alter, TRUE, 99 },
+	{ CMD_JAM, { arg_DIRECTION, arg_END }, do_cmd_spike, FALSE, 0 },
+	{ CMD_REST, { arg_CHOICE, arg_END }, do_cmd_rest, FALSE, 0 },
+	{ CMD_PATHFIND, { arg_POINT, arg_END }, do_cmd_pathfind, FALSE, 0 },
+	{ CMD_PICKUP, { arg_ITEM, arg_END }, do_cmd_pickup, FALSE, 0 },
+	{ CMD_WIELD, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_wield, FALSE, 0 },
+	{ CMD_TAKEOFF, { arg_ITEM, arg_END }, do_cmd_takeoff, FALSE, 0 },
+	{ CMD_DROP, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_drop, FALSE, 0 },
+	{ CMD_UNINSCRIBE, { arg_ITEM, arg_END }, do_cmd_uninscribe, FALSE, 0 },
+	{ CMD_EAT, { arg_ITEM, arg_END }, do_cmd_use, FALSE, 0 },
+	{ CMD_QUAFF, { arg_ITEM, arg_TARGET, arg_END }, do_cmd_use, FALSE, 0 },
+	{ CMD_USE_ROD, { arg_ITEM, arg_TARGET, arg_END }, do_cmd_use, FALSE, 0 },
+	{ CMD_USE_STAFF, { arg_ITEM, arg_END }, do_cmd_use, FALSE, 0 },
+	{ CMD_USE_WAND, { arg_ITEM, arg_TARGET, arg_END }, do_cmd_use, FALSE, 0 },
+	{ CMD_READ_SCROLL, { arg_ITEM, arg_TARGET, arg_END }, do_cmd_use, FALSE, 0 },
+	{ CMD_ACTIVATE, { arg_ITEM, arg_TARGET, arg_END }, do_cmd_use, FALSE, 0 },
+	{ CMD_REFILL, { arg_ITEM, arg_END }, do_cmd_refill, FALSE, 0 },
+	{ CMD_FIRE, { arg_ITEM, arg_TARGET, arg_END }, do_cmd_fire, FALSE, 0 },
+	{ CMD_THROW, { arg_ITEM, arg_TARGET, arg_END }, do_cmd_throw, FALSE, 0 },
+	{ CMD_DESTROY, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_destroy, FALSE, 0 },
+	{ CMD_ENTER_STORE, { arg_END }, do_cmd_store, FALSE, 0 },
+	{ CMD_INSCRIBE, { arg_ITEM, arg_STRING, arg_END }, do_cmd_inscribe, FALSE, 0 },
+	{ CMD_STUDY_SPELL, { arg_CHOICE, arg_END }, do_cmd_study_spell, FALSE, 0 },
+	{ CMD_STUDY_BOOK, { arg_ITEM, arg_END }, do_cmd_study_book, FALSE, 0 },
+	{ CMD_CAST, { arg_CHOICE, arg_TARGET, arg_END }, do_cmd_cast, FALSE, 0 },
+	{ CMD_SELL, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_sell, FALSE, 0 },
+	{ CMD_STASH, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_stash, FALSE, 0 },
+	{ CMD_BUY, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_buy, FALSE, 0 },
+	{ CMD_RETRIEVE, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_retrieve, FALSE, 0 }
 ,
-	{ CMD_SUICIDE, { arg_END }, do_cmd_suicide, FALSE },
-	{ CMD_SAVE, { arg_END }, do_cmd_save_game, FALSE },
-	{ CMD_QUIT, { arg_END }, do_cmd_quit, FALSE },
-	{ CMD_HELP, { arg_END }, NULL, FALSE },
-	{ CMD_REPEAT, { arg_END }, NULL, FALSE },
+	{ CMD_SUICIDE, { arg_END }, do_cmd_suicide, FALSE, 0 },
+	{ CMD_SAVE, { arg_END }, do_cmd_save_game, FALSE, 0 },
+	{ CMD_QUIT, { arg_END }, do_cmd_quit, FALSE, 0 },
+	{ CMD_HELP, { arg_END }, NULL, FALSE, 0 },
+	{ CMD_REPEAT, { arg_END }, NULL, FALSE, 0 },
 };
 
 
@@ -384,9 +385,17 @@ void process_command(cmd_context ctx, bool no_request)
 				break;
 			}
 		}
-		
+
+
+		/* Command repetition */
 		if (game_cmds[idx].repeat_allowed)
+		{
+			/* Auto-repeat */
+			if (game_cmds[idx].auto_repeat_n > 0 && p_ptr->command_arg == 0 && p_ptr->command_rep == 0)
+				p_ptr->command_arg = game_cmds[idx].auto_repeat_n;
+
 			allow_repeated_command();
+		}
 
 		repeat_prev_allowed = TRUE;
 

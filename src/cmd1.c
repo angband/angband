@@ -24,14 +24,18 @@
 
 
 /*
- * Search for hidden things
+ * Search for hidden things.  Returns true if a search was attempted, returns
+ * false when the player has a 0% chance of finding anything.  Prints messages
+ * for negative confirmation when verbose mode is requested.
  */
-void search(void)
+bool search(bool verbose)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
 	int y, x, chance;
+
+	bool found = FALSE;
 
 	object_type *o_ptr;
 
@@ -39,12 +43,29 @@ void search(void)
 	/* Start with base search ability */
 	chance = p_ptr->state.skills[SKILL_SEARCH];
 
-	/* Notice object flags */
-	wieldeds_notice_flag(0, TR0_SEARCH);
-
 	/* Penalize various conditions */
 	if (p_ptr->timed[TMD_BLIND] || no_lite()) chance = chance / 10;
 	if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) chance = chance / 10;
+
+	/* Prevent fruitless searches */
+	if (chance <= 0)
+	{
+		if (verbose)
+		{
+			msg_print("You can't make out your surroundings well enough to search.");
+
+			/* Cancel repeat */
+			disturb(0, 0);
+		}
+
+		return FALSE;
+	}
+
+	if (chance >= 100)
+	{
+		/* Repeat is unnecessary */
+		disturb(0, 0);
+	}
 
 	/* Search the nearby grids, which are always in bounds */
 	for (y = (py - 1); y <= (py + 1); y++)
@@ -57,6 +78,8 @@ void search(void)
 				/* Invisible trap */
 				if (cave_feat[y][x] == FEAT_INVIS)
 				{
+					found = TRUE;
+
 					/* Pick a trap */
 					pick_trap(y, x);
 
@@ -70,6 +93,8 @@ void search(void)
 				/* Secret door */
 				if (cave_feat[y][x] == FEAT_SECRET)
 				{
+					found = TRUE;
+
 					/* Message */
 					msg_print("You have found a secret door.");
 
@@ -95,6 +120,8 @@ void search(void)
 					/* Identify once */
 					if (!object_is_known(o_ptr))
 					{
+						found = TRUE;
+
 						/* Message */
 						msg_print("You have discovered a trap on the chest!");
 
@@ -108,6 +135,16 @@ void search(void)
 			}
 		}
 	}
+
+	if (verbose && !found)
+	{
+		if (chance >= 100)
+			msg_print("There are no secrets here.");
+		else
+			msg_print("You found nothing.");
+	}
+
+	return TRUE;
 }
 
 
@@ -671,13 +708,13 @@ void move_player(int dir)
 		if ((p_ptr->state.skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
 		    one_in_(50 - p_ptr->state.skills[SKILL_SEARCH_FREQUENCY]))
 		{
-			search();
+			search(FALSE);
 		}
 
 		/* Continuous Searching */
 		if (p_ptr->searching)
 		{
-			search();
+			search(FALSE);
 		}
 
 

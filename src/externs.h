@@ -297,7 +297,7 @@ extern bool is_quest(int level);
 extern bool dtrap_edge(int y, int x);
 
 /* cmd1.c */
-extern void search(void);
+extern bool search(bool verbose);
 extern byte py_pickup(int pickup);
 extern void move_player(int dir);
 

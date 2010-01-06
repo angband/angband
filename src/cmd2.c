@@ -88,11 +88,9 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
  */
 void do_cmd_search(cmd_code code, cmd_arg args[])
 {
-	/* Take a turn */
-	p_ptr->energy_use = 100;
-
-	/* Search */
-	search();
+	/* Only take a turn if attempted */
+	if (search(TRUE))
+		p_ptr->energy_use = 100;
 }
 
 
@@ -1201,7 +1199,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 			more = TRUE;
 
 			/* Occasional Search XXX XXX */
-			if (randint0(100) < 25) search();
+			if (randint0(100) < 25) search(FALSE);
 		}
 	}
 
@@ -2028,6 +2026,9 @@ static bool do_cmd_walk_test(int y, int x)
 			message(MSG_HITWALL, 0, "There is a wall in the way!");
 		}
 
+		/* Cancel repeat */
+		disturb(0, 0);
+
 		/* Nope */
 		return (FALSE);
 	}
@@ -2197,13 +2198,13 @@ void do_cmd_hold(cmd_code code, cmd_arg args[])
 	if ((p_ptr->state.skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
 	    one_in_(50 - p_ptr->state.skills[SKILL_SEARCH_FREQUENCY]))
 	{
-		search();
+		search(FALSE);
 	}
 
 	/* Continuous Searching */
 	if (p_ptr->searching)
 	{
-		search();
+		search(FALSE);
 	}
 
 	/* Pick things up, not using extra energy */

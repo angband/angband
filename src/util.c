@@ -3202,17 +3202,6 @@ void request_command(void)
 		break;
 	}
 
-	/* Hack -- Auto-repeat certain commands */
-	if (p_ptr->command_arg <= 0)
-	{
-		/* Hack -- auto repeat certain commands */
-		if (strchr(AUTO_REPEAT_COMMANDS, p_ptr->command_cmd))
-		{
-			/* Repeat 99 times */
-			p_ptr->command_arg = 99;
-		}
-	}
-
 
 	/* Hack -- Scan equipment */
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
