@@ -877,6 +877,11 @@ static bool run_test(void)
 		row = py + ddy[prev_dir] + ddy[new_dir];
 		col = px + ddx[prev_dir] + ddx[new_dir];
 		
+		/* HACK: Ugh. Sometimes we come up with illegal bounds. This will
+		 * treat the symptom but not the disease. */
+		if (row >= DUNGEON_HGT || col >= DUNGEON_WID) continue;
+		if (row < 0 || col < 0) continue;
+
 		/* Visible monsters abort running */
 		if (cave_m_idx[row][col] > 0)
 		{
