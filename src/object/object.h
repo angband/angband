@@ -191,7 +191,7 @@ void object_copy(object_type *o_ptr, const object_type *j_ptr);
 void object_copy_amt(object_type *dst, object_type *src, int amt);
 void object_prep(object_type *o_ptr, int k_idx, int lev, aspect rand_aspect);
 s16b floor_carry(int y, int x, object_type *j_ptr);
-void drop_near(object_type *j_ptr, int chance, int y, int x);
+void drop_near(object_type *j_ptr, int chance, int y, int x, bool verbose);
 void acquirement(int y1, int x1, int level, int num, bool great);
 void inven_item_charges(int item);
 void inven_item_describe(int item);

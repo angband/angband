@@ -2902,7 +2902,7 @@ void monster_death(int m_idx)
 		delete_object_idx(this_o_idx);
 
 		/* Drop it */
-		drop_near(i_ptr, -1, y, x);
+		drop_near(i_ptr, 0, y, x, TRUE);
 	}
 
 	/* Forget objects */
@@ -2929,7 +2929,7 @@ void monster_death(int m_idx)
 		i_ptr->origin_xtra = m_ptr->r_idx;
 
 		/* Drop it in the dungeon */
-		drop_near(i_ptr, -1, y, x);
+		drop_near(i_ptr, 0, y, x, TRUE);
 
 
 		/* Get local object */
@@ -2946,7 +2946,7 @@ void monster_death(int m_idx)
 		i_ptr->origin_xtra = m_ptr->r_idx;
 
 		/* Drop it in the dungeon */
-		drop_near(i_ptr, -1, y, x);
+		drop_near(i_ptr, 0, y, x, TRUE);
 	}
 
 
@@ -2994,7 +2994,7 @@ void monster_death(int m_idx)
 		i_ptr->origin_xtra = m_ptr->r_idx;
 
 		/* Drop it in the dungeon */
-		drop_near(i_ptr, -1, y, x);
+		drop_near(i_ptr, 0, y, x, TRUE);
 	}
 
 	/* Take note of any dropped treasure */

@@ -759,7 +759,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	j = (hit_body ? breakage_chance(i_ptr) : 0);
 
 	/* Drop (or break) near that location */
-	drop_near(i_ptr, j, y, x);
+	drop_near(i_ptr, j, y, x, TRUE);
 }
 
 void textui_cmd_fire(void)
@@ -1126,7 +1126,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 	j = (hit_body ? breakage_chance(i_ptr) : 0);
 
 	/* Drop (or break) near that location */
-	drop_near(i_ptr, j, y, x);
+	drop_near(i_ptr, j, y, x, TRUE);
 }
 
 void textui_cmd_throw(void)
