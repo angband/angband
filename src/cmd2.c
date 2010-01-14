@@ -219,7 +219,7 @@ static void chest_death(int y, int x, s16b o_idx)
 			if (!make_object(i_ptr, value, FALSE, FALSE))
 				continue;
 			i_ptr->origin = ORIGIN_CHEST;
-			i_ptr->origin_depth = value;
+			i_ptr->origin_depth = o_ptr->origin_depth;
 		}
 
 		/* Drop it in the dungeon */

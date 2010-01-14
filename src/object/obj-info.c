@@ -1060,12 +1060,20 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 void object_info_header(const object_type *o_ptr)
 {
 	char o_name[120];
+	char origin_text[80];
 
 	/* Object name */
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 	text_out_c(TERM_L_BLUE, "%^s\n", o_name);
 
 	/* Display the origin */
+	
+	if (o_ptr->origin_depth)
+		strnfmt(origin_text, sizeof(origin_text), "%d feet (level %d)",
+		        o_ptr->origin_depth * 50, o_ptr->origin_depth);
+	else
+		my_strcpy(origin_text, "town", sizeof(origin_text));
+
 	switch (o_ptr->origin)
 	{
 		case ORIGIN_NONE:
@@ -1081,9 +1089,9 @@ void object_info_header(const object_type *o_ptr)
 			break;
 
 		case ORIGIN_FLOOR:
-			text_out("(lying on the floor at %d feet (level %d))\n",
-			         o_ptr->origin_depth * 50,
-			         o_ptr->origin_depth);
+			text_out("(lying on the floor %s %s)\n",
+			         (o_ptr->origin_depth ? "at" : "in"),
+			         origin_text);
  			break;
 
 		case ORIGIN_DROP:
@@ -1091,37 +1099,45 @@ void object_info_header(const object_type *o_ptr)
 			const char *name = r_name + r_info[o_ptr->origin_xtra].name;
 			bool unique = (r_info[o_ptr->origin_xtra].flags[0] & RF0_UNIQUE) ? TRUE : FALSE;
 
-			text_out("dropped by ");
+			text_out("(dropped by ");
 
 			if (unique)
 				text_out("%s", name);
 			else
 				text_out("%s%s", is_a_vowel(name[0]) ? "an " : "a ", name);
 
-			text_out(" at %d feet (level %d)\n",
-			         o_ptr->origin_depth * 50,
-			         o_ptr->origin_depth);
-
+			text_out(" %s %s)\n",
+			         (o_ptr->origin_depth ? "at" : "in"),
+			         origin_text);
  			break;
 		}
 
 		case ORIGIN_DROP_UNKNOWN:
-			text_out("(dropped by an unknown monster)\n");
+		{
+			text_out("(dropped by an unknown monster %s %s)\n",
+			         (o_ptr->origin_depth ? "at" : "in"),
+			         origin_text);
 			break;
+		}
 
 		case ORIGIN_ACQUIRE:
-			text_out("(conjured forth by magic)\n");
+		{
+			text_out("(conjured forth by magic %s %s)\n",
+			         (o_ptr->origin_depth ? "at" : "in"),
+			         origin_text);
  			break;
+		}
 
 		case ORIGIN_CHEAT:
 			text_out("(created by debug option)\n");
  			break;
 
 		case ORIGIN_CHEST:
-			text_out("(found in a chest at %d feet (level %d))\n",
-			         o_ptr->origin_depth * 50,
-			         o_ptr->origin_depth);
+		{
+			text_out("(found in a chest from %s)\n",
+			         origin_text);
 			break;
+		}
 	}
 
 	text_out("\n");
