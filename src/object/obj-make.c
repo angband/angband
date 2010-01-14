@@ -1280,7 +1280,7 @@ void make_gold(object_type *j_ptr, int lev, int coin_type)
 		sval = (((value * 100) / MAX_GOLD_DROP) * SV_GOLD_MAX) / 100;
 
 	/* Do not create illegal treasure types */
-	if (sval > SV_GOLD_MAX) sval = SV_GOLD_MAX;
+	if (sval >= SV_GOLD_MAX) sval = SV_GOLD_MAX - 1;
 
 	/* Prepare a gold object */
 	k_idx = lookup_kind(TV_GOLD, sval);
