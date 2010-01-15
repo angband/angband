@@ -209,7 +209,7 @@ struct term_data
 
 	int spacing;      /* Text padding (in pixels) for tiling wider than text */
 
-	Str15 title;    /* Window title. */
+	char title[255];    /* Window title. */
 
 	s16b mapped;    /* Active state. */
 
@@ -1459,7 +1459,7 @@ static void Term_init_mac(term *t)
 	SetWRefCon(td->w, (long)td);
 
 	/* Set window title */
-	SetWTitle(td->w, td->title);
+	SetWindowTitleWithCFString(td->w, CFStringCreateWithCString(NULL, td->title, kTextEncodingUS_ASCII));
 
 	InstallStandardEventHandler(GetWindowEventTarget(td->w));
 
@@ -2242,20 +2242,8 @@ static void init_windows(void)
 		/* Defaults */
 		term_data_hack(td);
 
-		/* Obtain title */
-		const char *s = angband_term_name[i];
-
-		/* Get length */
-		int n = strlen(s);
-
-		/* Maximal length */
-		if (n > 15) n = 15;
-
 		/* Copy the title */
-		my_strcpy((char *)(td->title) + 1, s, n);
-
-		/* Save the length */
-		td->title[0] = n;
+		my_strcpy((char *)(td->title), angband_term_name[i], sizeof(td->title));
 
 		/* Tile the windows */
 		td->r.left += (b * 30);
