@@ -2915,14 +2915,10 @@ void monster_death(int m_idx)
 		/* Get local object */
 		i_ptr = &object_type_body;
 
-		/* Mega-Hack -- Prepare to make "Grond" */
+		/* Mega-Hack -- Make "Grond" */
 		object_prep(i_ptr, lookup_kind(TV_HAFTED, SV_GROND), 0, MAXIMISE);
-
-		/* Note -- We must not set name1 so that it can be made into
-		 * an artifact by apply_magic */
-
-		/* Mega-Hack -- Actually create "Grond" */
-		apply_magic(i_ptr, -1, TRUE, TRUE, TRUE);
+		i_ptr->name1 = ART_GROND;
+		apply_magic(i_ptr, 0, TRUE, TRUE, TRUE);
 
 		i_ptr->origin = ORIGIN_DROP;
 		i_ptr->origin_depth = p_ptr->depth;
@@ -2935,11 +2931,10 @@ void monster_death(int m_idx)
 		/* Get local object */
 		i_ptr = &object_type_body;
 
-		/* Mega-Hack -- Prepare to make "Morgoth" */
+		/* Mega-Hack -- Make "Morgoth" */
 		object_prep(i_ptr, lookup_kind(TV_CROWN, SV_MORGOTH), 0, MAXIMISE);
-
-		/* Mega-Hack -- Actually create "Morgoth" */
-		apply_magic(i_ptr, -1, TRUE, TRUE, TRUE);
+		i_ptr->name1 = ART_MORGOTH;
+		apply_magic(i_ptr, 0, TRUE, TRUE, TRUE);
 
 		i_ptr->origin = ORIGIN_DROP;
 		i_ptr->origin_depth = p_ptr->depth;

@@ -1858,53 +1858,6 @@ void object_copy_amt(object_type *dst, object_type *src, int amt)
 }
 
 
-/*
- * Prepare an object based on an object kind.
- * Use the specified randomization aspect
- */
-void object_prep(object_type *o_ptr, int k_idx, int lev, aspect rand_aspect)
-{
-	object_kind *k_ptr = &k_info[k_idx];
-
-	/* Clear the record */
-	(void)WIPE(o_ptr, object_type);
-
-	/* Save the kind index */
-	o_ptr->k_idx = k_idx;
-
-	/* Efficiency -- tval/sval */
-	o_ptr->tval = k_ptr->tval;
-	o_ptr->sval = k_ptr->sval;
-
-	/* Default "pval" */
-	o_ptr->pval = randcalc(k_ptr->pval, lev, rand_aspect);
-
-	/* Default number */
-	o_ptr->number = 1;
-
-	/* Default weight */
-	o_ptr->weight = k_ptr->weight;
-	
-	/* Assign charges (wands/staves only) */
-	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF)
-		o_ptr->pval = randcalc(k_ptr->charge, lev, rand_aspect);
-
-	/* Default magic */
-	o_ptr->to_h = randcalc(k_ptr->to_h, lev, rand_aspect);
-	o_ptr->to_d = randcalc(k_ptr->to_d, lev, rand_aspect);
-	o_ptr->to_a = randcalc(k_ptr->to_a, lev, rand_aspect);
-
-	/* Default power */
-	o_ptr->ac = k_ptr->ac;
-	o_ptr->dd = k_ptr->dd;
-	o_ptr->ds = k_ptr->ds;
-
-	/* Hack -- cursed items are always "cursed" */
-	if (k_ptr->flags[2] & TR2_LIGHT_CURSE)
-	    o_ptr->flags[2] |= TR2_LIGHT_CURSE;
-}
-
-
 /**
  * Find and return the index to the oldest object on the given grid marked as
  * "squelch".

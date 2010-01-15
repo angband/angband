@@ -394,7 +394,9 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 
 
 /*
- * Attempt to change an object into an artifact
+ * Attempt to change an object into an artifact.  If the object's name1
+ * is already set, use that artifact.  Otherwise, look for a suitable
+ * artifact and attempt to use it.
  *
  * This routine should only be called by "apply_magic()"
  *
@@ -402,11 +404,15 @@ static bool make_artifact_special(object_type *o_ptr, int level)
  */
 static bool make_artifact(object_type *o_ptr)
 {
+	artifact_type *a_ptr;
 	int i;
 
 
 	/* No artifacts, do nothing */
-	if (OPT(adult_no_artifacts)) return (FALSE);
+	if (OPT(adult_no_artifacts) &&
+	    o_ptr->name1 != ART_GROND &&
+	    o_ptr->name1 != ART_MORGOTH)
+		return (FALSE);
 
 	/* No artifacts in the town */
 	if (!p_ptr->depth) return (FALSE);
@@ -415,9 +421,9 @@ static bool make_artifact(object_type *o_ptr)
 	if (o_ptr->number != 1) return (FALSE);
 
 	/* Check the artifact list (skip the "specials") */
-	for (i = ART_MIN_NORMAL; i < z_info->a_max; i++)
+	for (i = ART_MIN_NORMAL; !o_ptr->name1 && i < z_info->a_max; i++)
 	{
-		artifact_type *a_ptr = &a_info[i];
+		a_ptr = &a_info[i];
 
 		/* Skip "empty" items */
 		if (!a_ptr->name) continue;
@@ -447,11 +453,16 @@ static bool make_artifact(object_type *o_ptr)
 
 		/* Mark the item as an artifact */
 		o_ptr->name1 = i;
+	}
+
+	if (o_ptr->name1)
+	{
+		a_ptr = &a_info[o_ptr->name1];
 
 		/* Copy across all the data from the artifact struct */
 		copy_artifact_data(o_ptr, a_ptr);
 
-		/* Hack -- Mark the artifact as "created" */
+		/* Mark the artifact as "created" */
 		a_ptr->created = 1;
 
 		return TRUE;
@@ -884,6 +895,53 @@ u32b get_new_attr(u32b flags, const u32b attrs[], size_t size)
 }
 
 
+/*
+ * Prepare an object based on an object kind.
+ * Use the specified randomization aspect
+ */
+void object_prep(object_type *o_ptr, int k_idx, int lev, aspect rand_aspect)
+{
+	object_kind *k_ptr = &k_info[k_idx];
+
+	/* Clear the record */
+	(void)WIPE(o_ptr, object_type);
+
+	/* Save the kind index */
+	o_ptr->k_idx = k_idx;
+
+	/* Efficiency -- tval/sval */
+	o_ptr->tval = k_ptr->tval;
+	o_ptr->sval = k_ptr->sval;
+
+	/* Default number */
+	o_ptr->number = 1;
+
+	/* Default "pval" */
+	o_ptr->pval = randcalc(k_ptr->pval, lev, rand_aspect);
+
+	/* Default weight */
+	o_ptr->weight = k_ptr->weight;
+	
+	/* Assign charges (wands/staves only) */
+	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF)
+		o_ptr->pval = randcalc(k_ptr->charge, lev, rand_aspect);
+
+	/* Default magic */
+	o_ptr->to_h = randcalc(k_ptr->to_h, lev, rand_aspect);
+	o_ptr->to_d = randcalc(k_ptr->to_d, lev, rand_aspect);
+	o_ptr->to_a = randcalc(k_ptr->to_a, lev, rand_aspect);
+
+	/* Default power */
+	o_ptr->ac = k_ptr->ac;
+	o_ptr->dd = k_ptr->dd;
+	o_ptr->ds = k_ptr->ds;
+
+	/* Hack -- cursed items are always "cursed" */
+	if (k_ptr->flags[2] & TR2_LIGHT_CURSE)
+	    o_ptr->flags[2] |= TR2_LIGHT_CURSE;
+}
+
+
 /**
  * Complete object creation by applying magic to it.
  *
@@ -934,7 +992,7 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 
 
 	/* Roll for artifact creation */
-	if (allow_artifacts && !o_ptr->name1)
+	if (allow_artifacts)
 	{
 		int i;
 		int rolls = 0;
