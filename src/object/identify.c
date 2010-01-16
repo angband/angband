@@ -737,9 +737,12 @@ void object_notice_on_wield(object_type *o_ptr)
 		return;
 	}
 
-	/* notice all artifacts upon wield */
+	/* Automatically sense artifacts upon wield, and note it */
 	if (artifact_p(o_ptr))
+	{
 		object_notice_sensing(o_ptr);
+		history_add_artifact(o_ptr->name1, object_is_known(o_ptr));
+	}
 
 	/* Extract the flags */
 	object_flags(o_ptr, f);

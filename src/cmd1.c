@@ -310,6 +310,13 @@ static void py_pickup_aux(int o_idx, bool msg)
 	/* Set squelch status */
 	p_ptr->notice |= PN_SQUELCH;
 
+	/* Automatically sense artifacts, and log it */
+	if (artifact_p(o_ptr))
+	{
+		object_notice_sensing(o_ptr);
+		history_add_artifact(o_ptr->name1, object_is_known(o_ptr));
+	}
+
 	/* Optionally, display a message */
 	if (msg && !quiver_slot)
 	{
@@ -320,9 +327,6 @@ static void py_pickup_aux(int o_idx, bool msg)
 		msg_format("You have %s (%c).", o_name, index_to_label(slot));
 	}
 
-	/* Log if picking up an artifact. */
-	if (artifact_p(o_ptr))
-		history_add_artifact(o_ptr->name1, object_is_known(o_ptr));
 
 	/* Delete the object */
 	delete_object_idx(o_idx);
