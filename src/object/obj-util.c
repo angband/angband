@@ -2590,8 +2590,16 @@ bool inven_stack_okay(const object_type *o_ptr)
 
 	/* If our pack is full and we're adding too many missiles, there won't be
 	 * enough room in the quiver, so don't check it. */
-	int limit = ALL_INVEN_TOTAL;
-	if (pack_is_full() && (p_ptr->quiver_remainder + o_ptr->number > 99))
+	int limit;
+
+	if (!pack_is_full())
+		/* The pack has more room */
+		limit = ALL_INVEN_TOTAL;
+	else if (p_ptr->quiver_remainder == 0)
+		/* Quiver already maxed out */
+		limit = INVEN_PACK;
+	else if (p_ptr->quiver_remainder + o_ptr->number > 99)
+		/* Too much new ammo */
 		limit = INVEN_PACK;
 
 	for (j = 0; j < limit; j++)
