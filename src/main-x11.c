@@ -534,9 +534,9 @@ static u32b create_pixel(Display *dpy, byte red, byte green, byte blue)
 
 	/* Build the color */
 
-	xcolour.red = red * 255;
-	xcolour.green = green * 255;
-	xcolour.blue = blue * 255;
+	xcolour.red   = red * 257;
+	xcolour.green = green * 257;
+	xcolour.blue  = blue * 257;
 	xcolour.flags = DoRed | DoGreen | DoBlue;
 
 	/* Attempt to Allocate the Parsed color */
