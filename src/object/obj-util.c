@@ -2601,6 +2601,8 @@ bool inven_stack_okay(const object_type *o_ptr)
 	else if (p_ptr->quiver_remainder + o_ptr->number > 99)
 		/* Too much new ammo */
 		limit = INVEN_PACK;
+	else
+		limit = ALL_INVEN_TOTAL;
 
 	for (j = 0; j < limit; j++)
 	{

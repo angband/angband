@@ -1055,7 +1055,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_DEEP_DESCENT:
 		{
-			int i, target_depth = p_ptr->depth;
+			int i, target_depth = p_ptr->max_depth;
 			
 			/* Calculate target depth */
 			for (i = 2; i > 0; i--)
@@ -1070,7 +1070,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			{
 				message(MSG_TPLEVEL, 0, "You sink through the floor...");
 				dungeon_change_level(target_depth);
-
 				*ident = TRUE;
 			}
 
