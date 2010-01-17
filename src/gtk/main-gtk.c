@@ -2056,7 +2056,7 @@ static void init_color_tags(xtra_win_data *xd)
 
 	tags = gtk_text_buffer_get_tag_table(xd->buf);
 	
-	for (i = 0; i <= 15; i++)
+	for (i = 0; i <= MAX_COLORS; i++)
 	{
 		strnfmt(colorname, sizeof(colorname),  "color-%d", i);
 		strnfmt(str, sizeof(str), "#%02x%02x%02x", angband_color_table[i][1], angband_color_table[i][2], angband_color_table[i][3]);
@@ -2374,7 +2374,7 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 	text_view_print(xd, str, 1);
 	
 	/* Go over in reverse order (so we show harder monsters first) */
-for (i = 1; i < z_info->r_max; i++)
+	for (i = 1; i < z_info->r_max; i++)
 	{
 		monster_lore *l_ptr = &l_list[i];
 
@@ -2394,7 +2394,8 @@ for (i = 1; i < z_info->r_max; i++)
 		/* Display uniques in a special colour */
 		if (r_ptr->flags[0] & RF0_UNIQUE)
 			attr = TERM_VIOLET;
-		else if (l_ptr->tkills && (r_ptr->level > p_ptr->depth))
+		/* If the player has never killed it (ever) AND it is out of depth */
+		else if ((!l_ptr->tkills) && (r_ptr->level > p_ptr->depth))
 			attr = TERM_RED;
 		else
 			attr = TERM_WHITE;
