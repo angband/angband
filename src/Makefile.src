@@ -6,7 +6,7 @@
 #
 
 VERSION = 3.1.2
-COPYRIGHT = (c) 1995-2009 Angband contributors
+COPYRIGHT = (c) 1995-2010 Angband contributors
 
 HEADERS = \
 	angband.h \
