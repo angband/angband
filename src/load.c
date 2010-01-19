@@ -1244,7 +1244,8 @@ int rd_stores(u32b version)
 				return (-1);
 			}
 
-			i_ptr->ident |= IDENT_STORE;
+			if (i != STORE_HOME)
+				i_ptr->ident |= IDENT_STORE;
 			
 			/* Accept any valid items */
 			if ((st_ptr->stock_num < STORE_INVEN_MAX) &&
