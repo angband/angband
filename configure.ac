@@ -92,7 +92,21 @@ if test "x$with_private_dirs" != "x"; then
 	AC_DEFINE(USE_PRIVATE_PATHS, 1, [Define to use private save and score paths.])
 fi
 
-bindir=${exec_prefix}/games
+ac_dashdash=
+for i in $ac_option
+do
+  case $ac_dashdash$i in
+  --)
+    ac_dashdash=yes ;;
+
+  -bindir | --bindir | --bindi | --bind | --bin | --bi | -bindir=* | --bindir=* | --bindi=* | --bind=* | --bin=* | --bi=*)
+    mbindir=yes ;;
+  esac
+done
+
+if test "x$mbindir" == "x"; then
+  bindir=${exec_prefix}/games
+fi
 
 AC_ARG_WITH(configpath, [  --with-configpath=PATH  use PATH as the path to the Angband configuration folder])
 
