@@ -8935,7 +8935,7 @@ D: dangerous enemy.
 ### Dungeon level 28 ###
 
 N:566:Beorn, the Shape-Changer
-G:q:D
+G:q:v
 I:120:1400:25:60:25
 W:28:3:0:1000
 B:CLAW:HURT:2d10
@@ -9334,7 +9334,7 @@ D:A gigantic ugly humanoid with but one eye and very thick skin.
 ### Dungeon level 69 ###
 
 N:585:Polyphemus, the Blind Cyclops
-G:P:g
+G:P:v
 I:130:5300:40:140:40
 W:69:3:0:29000
 B:HIT:HURT:11d10
@@ -9503,7 +9503,7 @@ D: barely see through them.
 ### Dungeon level 49 ###
 
 N:594:Eol, the Dark Elf
-G:h:D
+G:h:v
 I:130:2400:20:100:60
 W:49:2:0:25000
 B:HIT:HURT:3d8
@@ -9832,7 +9832,7 @@ D: you, wielding a huge club and pushing his own followers rudely aside.
 ### Dungeon level 55 ###
 
 N:611:Ar-Pharazon the Golden
-G:p:y
+G:p:v
 I:130:4000:30:45:255
 W:55:1:0:32500
 B:HIT:HURT:8d8
