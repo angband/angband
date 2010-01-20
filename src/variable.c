@@ -225,7 +225,7 @@ byte angband_color_table[MAX_COLORS][4] =
  */
 color_type color_table[MAX_COLORS] =
 {
-	/* full mono vga blind lighter darker highlight metallic*/
+	/* full mono vga blind lighter darker highlight metallic misc */
 	{'d', "Dark", {0, 0, 0, TERM_DARK, TERM_L_DARK, TERM_DARK,
 				   TERM_L_DARK, TERM_L_DARK, TERM_DARK}},
 
@@ -276,40 +276,40 @@ color_type color_table[MAX_COLORS] =
 
 	/* "new" colors */
 	{'p', "Purple", {16, 1, 10,TERM_SLATE, TERM_L_PURPLE, TERM_SLATE,
-					 TERM_L_PURPLE, TERM_L_PURPLE, TERM_PURPLE}},
+					 TERM_L_PURPLE, TERM_L_PURPLE, TERM_L_PURPLE}},
 
 	{'v', "Violet", {17, 1, 10,TERM_SLATE, TERM_L_PURPLE, TERM_SLATE,
-					 TERM_L_PURPLE, TERM_L_PURPLE, TERM_VIOLET}},
+					 TERM_L_PURPLE, TERM_L_PURPLE, TERM_L_PURPLE}},
 
 	{'t', "Teal", {18, 1, 6, TERM_SLATE, TERM_L_TEAL, TERM_SLATE,
-				   TERM_L_TEAL, TERM_L_TEAL, TERM_TEAL}},
+				   TERM_L_TEAL, TERM_L_TEAL, TERM_L_BLUE}},
 
 	{'m', "Mud", {19, 1, 5, TERM_SLATE, TERM_MUSTARD, TERM_SLATE,
-				  TERM_MUSTARD, TERM_MUSTARD, TERM_MUD}},
+				  TERM_MUSTARD, TERM_MUSTARD, TERM_UMBER}},
 
-	{'Y', "Light Yellow", {20, 1, 11,TERM_WHITE, TERM_WHITE, TERM_YELLOW,
+	{'Y', "Light Yellow", {20, 1, 11, TERM_WHITE, TERM_WHITE, TERM_YELLOW,
 						   TERM_WHITE, TERM_WHITE, TERM_L_YELLOW}},
 
-	{'i', "Magenta-Pink", {21, 1, 12,TERM_SLATE, TERM_L_PINK, TERM_RED,
-						   TERM_L_PINK, TERM_L_PINK, TERM_MAGENTA}},
+	{'i', "Magenta-Pink", {21, 1, 12, TERM_SLATE, TERM_L_PINK, TERM_RED,
+						   TERM_L_PINK, TERM_L_PINK, TERM_L_PURPLE}},
 
-	{'T', "Light Teal", {22, 1, 14,TERM_L_WHITE, TERM_YELLOW, TERM_TEAL,
-						 TERM_YELLOW, TERM_YELLOW, TERM_L_TEAL}},
+	{'T', "Light Teal", {22, 1, 14, TERM_L_WHITE, TERM_YELLOW, TERM_TEAL,
+						 TERM_YELLOW, TERM_YELLOW, TERM_L_BLUE}},
 
-	{'V', "Light Violet", {23, 1, 10,TERM_L_WHITE, TERM_YELLOW, TERM_VIOLET,
-						   TERM_YELLOW, TERM_YELLOW, TERM_L_VIOLET}},
+	{'V', "Light Violet", {23, 1, 10, TERM_L_WHITE, TERM_YELLOW, TERM_VIOLET,
+						   TERM_YELLOW, TERM_YELLOW, TERM_L_PURPLE}},
 
-	{'I', "Light Pink", {24, 1, 12,TERM_L_WHITE, TERM_YELLOW, TERM_MAGENTA,
-						 TERM_YELLOW, TERM_YELLOW, TERM_L_PINK}},
+	{'I', "Light Pink", {24, 1, 12, TERM_L_WHITE, TERM_YELLOW, TERM_MAGENTA,
+						 TERM_YELLOW, TERM_YELLOW, TERM_L_PURPLE}},
 
-	{'M', "Mustard", {25, 1, 11,TERM_SLATE, TERM_YELLOW, TERM_SLATE,
-					  TERM_YELLOW, TERM_YELLOW, TERM_MUSTARD}},
+	{'M', "Mustard", {25, 1, 11, TERM_SLATE, TERM_YELLOW, TERM_SLATE,
+					  TERM_YELLOW, TERM_YELLOW, TERM_YELLOW}},
 
-	{'z', "Blue Slate",  {26, 1, 9, TERM_SLATE, TERM_DEEP_L_BLUE,TERM_SLATE,
-						  TERM_DEEP_L_BLUE, TERM_DEEP_L_BLUE, TERM_BLUE_SLATE}},
+	{'z', "Blue Slate",  {26, 1, 9, TERM_SLATE, TERM_DEEP_L_BLUE, TERM_SLATE,
+						  TERM_DEEP_L_BLUE, TERM_DEEP_L_BLUE, TERM_L_WHITE}},
 
-	{'Z', "Deep Light Blue", {27, 1, 14,TERM_L_WHITE, TERM_L_BLUE, TERM_BLUE_SLATE,
-							  TERM_L_BLUE, TERM_L_BLUE, TERM_DEEP_L_BLUE}},
+	{'Z', "Deep Light Blue", {27, 1, 14, TERM_L_WHITE, TERM_L_BLUE, TERM_BLUE_SLATE,
+							  TERM_L_BLUE, TERM_L_BLUE, TERM_L_BLUE}},
 
 	/* Rest to be filled in when the game loads */
 };
