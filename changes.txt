@@ -25,7 +25,7 @@ Extensive tweaking of artifact list (http://angband.oook.cz/forum/showthread.php
 Various randart changes, including random activations (#974)
 Add NPP-style quiver
 Tweaks to ID-by-use:
- - When items have base dice which differ from their object kind (artifacts and boosted egos), don't display it until wield
+ - Don't display larger than normal base dice (artifacts/boosted egos) until the weapon is attacked with
  - Notice artifacts on pickup
 Bows of Power/Accuracy should always have a good bonus
 Show stat requirements for next blow when describing melee weapons

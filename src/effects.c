@@ -1055,7 +1055,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_DEEP_DESCENT:
 		{
-			int i, target_depth = p_ptr->max_depth;
+			int i, target_depth = p_ptr->depth;
 			
 			/* Calculate target depth */
 			for (i = 2; i > 0; i--)
