@@ -1022,21 +1022,21 @@ D:iridescent patterns around you.  It weighs absolutely nothing.
 ### The Gloves ###
 
 N:174:& Set~ of Leather Gloves
-G:]:lightbrown
+G:]:U
 I:31:1:0
 W:0:0:5:5
 A:100:1 to 100
 P:1:0d0:0:0:0
 
 N:175:& Set~ of Gauntlets
-G:]:gray
+G:]:s
 I:31:2:0
 W:0:0:25:45
 A:100:10 to 100
 P:3:1d1:0:0:0
 
 N:176:& Set~ of Mithril Gauntlets
-G:]:lightblue
+G:]:B
 I:31:3:0
 W:0:0:20:700
 A:100:40 to 100
@@ -1044,7 +1044,7 @@ P:5:1d1:0:0:0
 F:IGNORE_ACID
 
 N:177:& Set~ of Caestus
-G:]:lightbrown
+G:]:U
 I:31:4:0
 W:0:0:40:100
 A:50:20 to 100
@@ -1053,7 +1053,7 @@ D:An ancient battle glove designed for hand-to-hand fighting.  Its layered
 D: leather thongs are enhanced for combat by bloody-looking spikes.
 
 N:178:& Set~ of Alchemist's Gloves
-G:]:lightred
+G:]:R
 I:31:5:0
 W:0:0:5:500
 A:50:50 to 100
@@ -1062,7 +1062,7 @@ F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 D:Highly protective gloves designed for an alchemist's elemental magics.
 
 #N:179:& Set~ of Mining Gloves
-#G:]:lightbrown
+#G:]:U
 #I:31:6:0
 #W:0:0:5:500 
 #A:50:50 to 100
@@ -1073,7 +1073,7 @@ D:Highly protective gloves designed for an alchemist's elemental magics.
 ### The shields ###
 
 #N:180:& Buckler~
-#G:):lightbrown
+#G:):U
 #I:34:1:0
 #W:3:0:20:30
 #A:100:3 to 100
@@ -1089,28 +1089,28 @@ P:2:1d1:0:0:0
 D:A light circular frame of wood surrounding fine-grained wickerwork.
 
 N:182:& Small Metal Shield~
-G:):gray
+G:):s
 I:34:3:0
 W:10:0:60:80
 A:100:15 to 100
 P:4:1d2:0:0:0
 
 N:183:& Leather Shield~
-G:):lightbrown
+G:):U
 I:34:4:0
 W:15:0:100:200
 A:100:10 to 100
 P:6:1d3:0:0:0
 
 N:184:& Large Metal Shield~
-G:):gray
+G:):s
 I:34:5:0
 W:30:0:150:500
 A:100:30 to 100
 P:8:1d5:0:0:0
 
 N:185:& Mithril Shield~
-G:):lightblue
+G:):B
 I:34:10:0
 W:70:0:100:10000
 A:20:70 to 100
