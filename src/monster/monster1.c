@@ -344,7 +344,7 @@ void get_attack_colors(atk_colors *col)
 	}
 
 	/* Mana */
-	set_spell_color(col, 0, RSF1_BO_MANA, TERM_L_RED);
+	set_spell_color(col, 0, RSF0_BR_MANA, TERM_L_RED);
 	set_spell_color(col, 1, RSF1_BA_MANA, TERM_L_RED);
 	set_spell_color(col, 1, RSF1_BO_MANA, TERM_L_RED);
 
