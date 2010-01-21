@@ -209,6 +209,7 @@ s16b inven_takeoff(int item, int amt);
 void inven_drop(int item, int amt);
 void combine_pack(void);
 void reorder_pack(void);
+void open_quiver_slot(int slot);
 void sort_quiver(void);
 int get_use_device_chance(const object_type *o_ptr);
 void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt);

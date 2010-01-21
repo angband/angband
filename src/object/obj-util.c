@@ -2416,6 +2416,40 @@ void sort_quiver(void)
 	}
 }
 
+/*
+ * Shifts ammo at or above the item slot towards the end of the quiver, making
+ * room for a new piece of ammo.
+ */
+void open_quiver_slot(int slot)
+{
+	int i, pref;
+	int dest = QUIVER_END - 1;
+
+	/* This should only be used on ammunition */
+	if (slot < QUIVER_START) return;
+
+	/* Quiver is full */
+	if (inventory[QUIVER_END - 1].k_idx) return;
+
+	/* Find the first open quiver slot */
+	while (inventory[dest].k_idx) dest++;
+
+	/* Swap things with the space one higher (essentially moving the open space
+	 * towards our goal slot. */
+	for (i = dest - 1; i >= slot; i--)
+	{
+		/* If we have an item with an inscribed location (and it's in */
+		/* that location) then we won't move it. */
+		pref = get_inscribed_ammo_slot(&inventory[i]);
+		if (i != slot && pref && pref == i) continue;
+
+		/* Copy the item up and wipe the old slot */
+		COPY(&inventory[dest], &inventory[i], object_type);
+		dest = i;
+		object_wipe(&inventory[dest]);
+	}
+}
+
 
 /*
  * Erase an inventory slot if it has no more items

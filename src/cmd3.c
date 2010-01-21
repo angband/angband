@@ -147,7 +147,6 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	/* Get the wield slot */
 	o_ptr = &inventory[slot];
 
-	/* Take off existing item */
 	if (combined_ammo)
 	{
 		/* Add the new ammo to the already-quiver-ed ammo */
@@ -158,6 +157,12 @@ void wield_item(object_type *o_ptr, int item, int slot)
 		/* Take off existing item */
 		if (o_ptr->k_idx)
 			(void)inven_takeoff(slot, 255);
+
+		/* If we are wielding ammo we may need to "open" the slot by shifting
+		 * later ammo up the quiver; this is because we already called the
+		 * inven_item_optimize() function. */
+		if (slot >= QUIVER_START)
+			open_quiver_slot(slot);
 	
 		/* Wear the new stuff */
 		object_copy(o_ptr, i_ptr);
