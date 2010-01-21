@@ -2165,8 +2165,15 @@ static void handle_message(game_event_type type, game_event_data *data, void *us
 	int i;
 
 	if (!xd) return;
-
-	xd->buf = gtk_text_buffer_new(NULL);
+	
+	if (!GTK_IS_TEXT_BUFFER(xd->buf))
+	{
+		xd->buf = gtk_text_buffer_new(NULL);
+	}
+	else
+	{
+		gtk_text_buffer_set_text(xd->buf, "", -1);
+	}
 	gtk_text_view_set_buffer(GTK_TEXT_VIEW (xd->text_view), xd->buf);
 	
 	init_color_tags(xd);
@@ -2258,8 +2265,15 @@ static void handle_inv(game_event_type type, game_event_data *data, void *user)
 
 
 	if (!xd) return;
-
-	xd->buf = gtk_text_buffer_new(NULL);
+	
+	if (!GTK_IS_TEXT_BUFFER(xd->buf))
+	{
+		xd->buf = gtk_text_buffer_new(NULL);
+	}
+	else
+	{
+		gtk_text_buffer_set_text(xd->buf, "", -1);
+	}
 	gtk_text_view_set_buffer(GTK_TEXT_VIEW(xd->text_view), xd->buf);
 	
 	init_color_tags(xd);
@@ -2293,8 +2307,15 @@ static void handle_equip(game_event_type type, game_event_data *data, void *user
 		char str[80];
 	
 	if (!xd) return;
-
-	xd->buf = gtk_text_buffer_new(NULL);
+	
+	if (!GTK_IS_TEXT_BUFFER(xd->buf))
+	{
+		xd->buf = gtk_text_buffer_new(NULL);
+	}
+	else
+	{
+		gtk_text_buffer_set_text(xd->buf, "", -1);
+	}
 	gtk_text_view_set_buffer(GTK_TEXT_VIEW(xd->text_view), xd->buf);
 	
 	init_color_tags(xd);
@@ -2335,7 +2356,15 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 
 	if (!xd) return;
 
-	xd->buf = gtk_text_buffer_new(NULL);
+	if (!GTK_IS_TEXT_BUFFER(xd->buf))
+	{
+		xd->buf = gtk_text_buffer_new(NULL);
+	}
+	else
+	{
+		gtk_text_buffer_set_text(xd->buf, "", -1);
+	}
+	
 	gtk_text_view_set_buffer(GTK_TEXT_VIEW (xd->text_view), xd->buf);
 	
 	init_color_tags(xd);
