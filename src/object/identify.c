@@ -62,6 +62,17 @@ bool object_is_known_artifact(const object_type *o_ptr)
 }
 
 /**
+ * \returns whether the object is known to not be an artifact
+ */
+bool object_is_not_artifact(const object_type *o_ptr)
+{
+	if (o_ptr->ident & IDENT_NOTART)
+		return TRUE;
+
+	return FALSE;
+}
+
+/**
  * \returns whether the object has been worn/wielded
  */
 bool object_was_worn(const object_type *o_ptr)
@@ -504,6 +515,17 @@ void object_notice_sensing(object_type *o_ptr)
 }
 
 
+/*
+ * Sense artifacts
+ */
+void object_sense_artifact(object_type *o_ptr)
+{
+	if (artifact_p(o_ptr))
+		object_notice_sensing(o_ptr);
+	else
+		o_ptr->ident |= IDENT_NOTART;
+}
+
 
 /**
  * Notice the "effect" from activating an object.
@@ -737,12 +759,12 @@ void object_notice_on_wield(object_type *o_ptr)
 		return;
 	}
 
-	/* Automatically sense artifacts upon wield, and note it */
+	/* Automatically sense artifacts upon wield */
+	object_sense_artifact(o_ptr);
+
+	/* Note artifacts when found */
 	if (artifact_p(o_ptr))
-	{
-		object_notice_sensing(o_ptr);
-		history_add_artifact(o_ptr->name1, object_is_known(o_ptr));
-	}
+		history_add_artifact(o_ptr->name1, object_was_sensed(o_ptr));
 
 	/* Extract the flags */
 	object_flags(o_ptr, f);

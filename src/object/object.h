@@ -87,6 +87,7 @@ extern s32b object_last_wield;
 
 bool object_is_known(const object_type *o_ptr);
 bool object_is_known_artifact(const object_type *o_ptr);
+bool object_is_not_artifact(const object_type *o_ptr);
 bool object_is_not_known_consistently(const object_type *o_ptr);
 bool object_was_worn(const object_type *o_ptr);
 bool object_was_fired(const object_type *o_ptr);
@@ -106,6 +107,7 @@ void object_notice_everything(object_type *o_ptr);
 void object_notice_indestructible(object_type *o_ptr);
 void object_notice_ego(object_type *o_ptr);
 void object_notice_sensing(object_type *o_ptr);
+void object_sense_artifact(object_type *o_ptr);
 void object_notice_effect(object_type *o_ptr);
 void object_notice_slays(object_type *o_ptr, u32b known_f0);
 void object_notice_attack_plusses(object_type *o_ptr);

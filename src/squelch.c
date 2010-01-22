@@ -641,10 +641,13 @@ bool squelch_item_ok(const object_type *o_ptr)
 			kind_is_squelched_unaware(k_ptr))
 		return TRUE;
 
-
 	type = squelch_type_of(o_ptr);
 	if (type == TYPE_MAX)
 		return FALSE;
+
+	/* Squelch items known not to be special */
+	if (object_is_not_artifact(o_ptr) && squelch_level[type] == SQUELCH_ALL)
+		return TRUE;
 
 	/* Get result based on the feeling and the squelch_level */
 	if (squelch_level_of(o_ptr) <= squelch_level[type])

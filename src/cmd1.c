@@ -310,12 +310,12 @@ static void py_pickup_aux(int o_idx, bool msg)
 	/* Set squelch status */
 	p_ptr->notice |= PN_SQUELCH;
 
-	/* Automatically sense artifacts, and log it */
+	/* Automatically sense artifacts */
+	object_sense_artifact(o_ptr);
+
+	/* Log artifacts if found */
 	if (artifact_p(o_ptr))
-	{
-		object_notice_sensing(o_ptr);
-		history_add_artifact(o_ptr->name1, object_is_known(o_ptr));
-	}
+		history_add_artifact(o_ptr->name1, object_was_sensed(o_ptr));
 
 	/* Optionally, display a message */
 	if (msg && !quiver_slot)
