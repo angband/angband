@@ -194,7 +194,7 @@ static option_entry options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 57 */
 { NULL,                  NULL,                                          FALSE }, /* 58 */
 { "hilite_player",       "Hilite the player with the cursor",           FALSE }, /* 59 */
-{ "view_yellow_lite",    "Use special colors for torch lite",           FALSE }, /* 60 */
+{ "view_yellow_lite",    "Use special colors for torch light",          FALSE }, /* 60 */
 { "view_bright_lite",    "Use special colors for field of view",        TRUE },  /* 61 */
 { "view_granite_lite",   "Use special colors for wall grids",           FALSE }, /* 62 */
 { "view_special_lite",   "Use special colors for floor grids",          TRUE },  /* 63 */
