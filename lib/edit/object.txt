@@ -3722,9 +3722,9 @@ F:INSTA_ART
 # is added in "obj-desc.c" based on the artifact index ("i_ptr->name1").
 #
 # These objects do specify a "base name", which is used when the object
-# is "aware" (always true for lites)
+# is "aware" (always true for lights)
 #
-# The Lites (and the One Ring) specify "physical colors", which
+# The lights (and the One Ring) specify "physical colors", which
 # over-ride the "flavor" colors, if any.  Note that the "One Ring"
 # also has a specific check for "unknown" in which it changes its
 # name to "a plain gold ring".  See "obj-desc.c"

@@ -4547,8 +4547,8 @@ for (iteration = 0; iteration < 3; iteration ++)
 	return(0);
 }
 
-/* 
- * Create the slay cache by determining the number of different slay 
+/*
+ * Create the slay cache by determining the number of different slay
  * combinations available to ego items
  */
 errr eval_e_slays(header *head)
@@ -4615,17 +4615,17 @@ errr eval_e_slays(header *head)
 	slay_cache[count].value = 0;
 
 	FREE(dupcheck);
-	
+
 	/* Success */
 	return 0;
 }
 
 /*
  * Emit a "template" file.
- * 
+ *
  * This allows us to modify an existing template file by parsing it
  * in and then modifying the data structures.
- * 
+ *
  * We parse the previous "template" file to allow us to include comments.
  */
 errr emit_info_txt(ang_file *fp, ang_file *template, char *buf, header *head,
@@ -4681,7 +4681,7 @@ errr emit_info_txt(ang_file *fp, ang_file *template, char *buf, header *head,
 
 			/* Output the version number */
 			file_putf(fp, "\nV:%d.%d.%d\n\n", head->v_major, head->v_minor, head->v_patch);
-			
+
 			/* Okay to proceed */
 			okay = TRUE;
 
@@ -4696,15 +4696,15 @@ errr emit_info_txt(ang_file *fp, ang_file *template, char *buf, header *head,
 		if ((emit_info_txt_index) && (buf[0] == 'N'))
 		{
 			int idx;
-			
+
 			idx = atoi(buf + 2);
 
 			/* Verify index order */
 			if (idx < ++error_idx) return (PARSE_ERROR_NON_SEQUENTIAL_RECORDS);
-			
+
 			/* Verify information */
 			if (idx >= head->info_num) return (PARSE_ERROR_TOO_MANY_ENTRIES);
-			
+
 			if (comment) file_putf(fp,"\n");
 			comment = FALSE;
 			blanklines = 0;
@@ -4903,7 +4903,7 @@ static char color_attr_to_char[] =
 		'B',
 		'U'
 };
-		
+
 /*
  * Emit the "r_info" array into an ascii "template" file
  */
@@ -4913,8 +4913,8 @@ errr emit_r_info_index(ang_file *fp, header *head, int i)
 
 	/* Current entry */
 	monster_race *r_ptr = (monster_race *)head->info_ptr + i;
-	
-	
+
+
 	/* Output 'N' for "New/Number/Name" */
 	file_putf(fp, "N:%d:%s\n", i,head->name_ptr + r_ptr->name);
 
@@ -4933,21 +4933,21 @@ errr emit_r_info_index(ang_file *fp, header *head, int i)
 		/* End of blows */
 		if (!r_ptr->blow[n].method) break;
 
-		/* Output blow method */		
+		/* Output blow method */
 		file_putf(fp, "B:%s", r_info_blow_method[r_ptr->blow[n].method]);
-		
+
 		/* Output blow effect */
 		if (r_ptr->blow[n].effect)
 		{
 			file_putf(fp, ":%s", r_info_blow_effect[r_ptr->blow[n].effect]);
-			
+
 			/* Output blow damage if required */
 			if ((r_ptr->blow[n].d_dice) && (r_ptr->blow[n].d_side))
 			{
 				file_putf(fp, ":%dd%d", r_ptr->blow[n].d_dice, r_ptr->blow[n].d_side);
 			}
 		}
-		
+
 		/* End line */
 		file_putf(fp, "\n");
 	}
@@ -4961,11 +4961,11 @@ errr emit_r_info_index(ang_file *fp, header *head, int i)
 	emit_flags_32(fp, "S:", r_ptr->spell_flags[0], r_info_spell_flags0);
 	emit_flags_32(fp, "S:", r_ptr->spell_flags[1], r_info_spell_flags1);
 	emit_flags_32(fp, "S:", r_ptr->spell_flags[2], r_info_spell_flags2);
-	
+
 	/* Output 'S' for spell frequency in unwieldy format */
 	/* TODO: use this routine to output M:freq_innate:freq_spell or similar to allow these to be
 	 * specified properly. 'M' is for magic. Could be extended with :spell_power:mana for 4GAI.
-	 * 
+	 *
 	 * XXX Need to check for rounding errors here.
 	 */
 	if (r_ptr->freq_innate) file_putf(fp, "S:1_IN_%d\n",100/r_ptr->freq_innate);
@@ -4976,6 +4976,6 @@ errr emit_r_info_index(ang_file *fp, header *head, int i)
 	file_putf(fp,"\n");
 
 	/* Success */
-	return (0);	
+	return (0);
 }
 
