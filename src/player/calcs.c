@@ -430,11 +430,11 @@ static void calc_torch(void)
 {
 	int i;
 
-	s16b old_lite = p_ptr->cur_lite;
+	s16b old_light = p_ptr->cur_light;
 	bool burn_light = TRUE;
 
-	s16b new_lite = 0;
-	int extra_lite = 0;
+	s16b new_light = 0;
+	int extra_light = 0;
 
 
 
@@ -461,12 +461,12 @@ static void calc_torch(void)
 		if (f[2] & TR2_LIGHT_CURSE)
 			amt = 0;
 
-		/* Examine actual lites */
-		else if (o_ptr->tval == TV_LITE)
+		/* Examine actual lights */
+		else if (o_ptr->tval == TV_LIGHT)
 		{
-			int flag_inc = (f[2] & TR2_LITE) ? 1 : 0;
+			int flag_inc = (f[2] & TR2_LIGHT) ? 1 : 0;
 
-			/* Artifact Lites provide permanent bright light */
+			/* Artifact lights provide permanent bright light */
 			if (artifact_p(o_ptr))
 				amt = 3 + flag_inc;
 
@@ -480,34 +480,34 @@ static void calc_torch(void)
 				amt = 2 + flag_inc;
 
 				/* Torches below half fuel provide less light */
-				if (o_ptr->sval == SV_LITE_TORCH && o_ptr->timeout < (FUEL_TORCH / 4))
+				if (o_ptr->sval == SV_LIGHT_TORCH && o_ptr->timeout < (FUEL_TORCH / 4))
 				    amt--;
 			}
 		}
 
 		else
 		{
-			/* LITE flag on an non-cursed non-lights always increases radius */
-			if (f[2] & TR2_LITE) extra_lite++;
+			/* LIGHT flag on an non-cursed non-lights always increases radius */
+			if (f[2] & TR2_LIGHT) extra_light++;
 		}
 
-		/* Alter p_ptr->cur_lite if reasonable */
-		if (new_lite < amt)
-		    new_lite = amt;
+		/* Alter p_ptr->cur_light if reasonable */
+		if (new_light < amt)
+		    new_light = amt;
 	}
 
-	/* Add bonus from LITE flags */
-	new_lite += extra_lite;
+	/* Add bonus from LIGHT flags */
+	new_light += extra_light;
 
 	/* Limit light */
-	new_lite = MIN(new_lite, 5);
-	new_lite = MAX(new_lite, 0);
+	new_light = MIN(new_light, 5);
+	new_light = MAX(new_light, 0);
 
-	/* Notice changes in the "lite radius" */
-	if (old_lite != new_lite)
+	/* Notice changes in the "light radius" */
+	if (old_light != new_light)
 	{
 		/* Update the visuals */
-		p_ptr->cur_lite = new_lite;
+		p_ptr->cur_light = new_light;
 		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
 	}
 }
@@ -753,7 +753,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	if (collect_f[1] & TR1_RES_COLD) state->resist_cold = TRUE;
 	if (collect_f[1] & TR1_RES_POIS) state->resist_pois = TRUE;
 	if (collect_f[1] & TR1_RES_FEAR) state->resist_fear = TRUE;
-	if (collect_f[1] & TR1_RES_LITE) state->resist_lite = TRUE;
+	if (collect_f[1] & TR1_RES_LIGHT) state->resist_light = TRUE;
 	if (collect_f[1] & TR1_RES_DARK) state->resist_dark = TRUE;
 	if (collect_f[1] & TR1_RES_BLIND) state->resist_blind = TRUE;
 	if (collect_f[1] & TR1_RES_CONFU) state->resist_confu = TRUE;

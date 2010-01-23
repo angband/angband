@@ -103,7 +103,7 @@ static cptr r_info_blow_effect[] =
 	"EAT_GOLD",
 	"EAT_ITEM",
 	"EAT_FOOD",
-	"EAT_LITE",
+	"EAT_LIGHT",
 	"ACID",
 	"ELEC",
 	"FIRE",
@@ -224,7 +224,7 @@ static cptr r_info_flags2[] =
 	"XXX2X3",
 	"XXX3X3",
 	"XXX4X3",
-	"HURT_LITE",
+	"HURT_LIGHT",
 	"HURT_ROCK",
 	"HURT_FIRE",
 	"HURT_COLD",
@@ -265,7 +265,7 @@ static cptr r_info_spell_flags0[] =
 	"BR_COLD",
 	"BR_POIS",
 	"BR_NETH",
-	"BR_LITE",
+	"BR_LIGHT",
 	"BR_DARK",
 	"BR_CONF",
 	"BR_SOUN",
@@ -430,7 +430,7 @@ static cptr k_info_flags2[] =
 	"RES_COLD",
 	"RES_POIS",
 	"RES_FEAR",
-	"RES_LITE",
+	"RES_LIGHT",
 	"RES_DARK",
 	"RES_BLIND",
 	"RES_CONFU",
@@ -449,7 +449,7 @@ static cptr k_info_flags3[] =
 {
 	"SLOW_DIGEST",
 	"FEATHER",
-	"LITE",
+	"LIGHT",
 	"REGEN",
 	"TELEPATHY",
 	"SEE_INVIS",
@@ -3641,7 +3641,7 @@ static long eval_blow_effect(int effect, int atk_dam, int rlev)
 		case RBE_EAT_GOLD:
 		case RBE_EAT_ITEM:
 		case RBE_EAT_FOOD:
-		case RBE_EAT_LITE:
+		case RBE_EAT_LIGHT:
 		case RBE_LOSE_CHR:
 		{
 			atk_dam += 5;
@@ -3813,10 +3813,10 @@ static long eval_max_dam(monster_race *r_ptr)
 		if (spell_dam < breath_dam) spell_dam = (breath_dam * 5 / 4)
 			+ 5;
 		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_LITE)
+	if (r_ptr->spell_flags[0] & RSF0_BR_LIGHT)
 		{
-		breath_dam = (RES_LITE_ADJ(MIN(BR_LITE_MAX,
-			(hp / BR_LITE_DIVISOR)), MINIMISE));
+		breath_dam = (RES_LIGHT_ADJ(MIN(BR_LIGHT_MAX,
+			(hp / BR_LIGHT_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
 		}
 	if (r_ptr->spell_flags[0] & RSF0_BR_DARK)

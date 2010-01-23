@@ -44,7 +44,7 @@ bool search(bool verbose)
 	chance = p_ptr->state.skills[SKILL_SEARCH];
 
 	/* Penalize various conditions */
-	if (p_ptr->timed[TMD_BLIND] || no_lite()) chance = chance / 10;
+	if (p_ptr->timed[TMD_BLIND] || no_light()) chance = chance / 10;
 	if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) chance = chance / 10;
 
 	/* Prevent fruitless searches */
@@ -391,7 +391,7 @@ byte py_pickup(int pickup)
 	int can_pickup = 0;
 	bool call_function_again = FALSE;
 
-	bool blind = ((p_ptr->timed[TMD_BLIND]) || (no_lite()));
+	bool blind = ((p_ptr->timed[TMD_BLIND]) || (no_light()));
 	bool msg = TRUE;
 
 
@@ -502,7 +502,7 @@ byte py_pickup(int pickup)
 				prt(format("You %s: ", p), 0, 0);
 
 				/* Move cursor back to character, if needed */
-				if (OPT(hilite_player)) move_cursor_relative(p_ptr->py, p_ptr->px);
+				if (OPT(highlight_player)) move_cursor_relative(p_ptr->py, p_ptr->px);
 
 				/* Wait for it.  Use key as next command. */
 				p_ptr->command_new = inkey();
@@ -645,7 +645,7 @@ void move_player(int dir)
 			{
 				message(MSG_HITWALL, 0, "You feel a pile of rubble blocking your way.");
 				cave_info[y][x] |= (CAVE_MARK);
-				lite_spot(y, x);
+				light_spot(y, x);
 			}
 
 			/* Closed door */
@@ -653,7 +653,7 @@ void move_player(int dir)
 			{
 				message(MSG_HITWALL, 0, "You feel a door blocking your way.");
 				cave_info[y][x] |= (CAVE_MARK);
-				lite_spot(y, x);
+				light_spot(y, x);
 			}
 
 			/* Wall (or secret door) */
@@ -661,7 +661,7 @@ void move_player(int dir)
 			{
 				message(MSG_HITWALL, 0, "You feel a wall blocking your way.");
 				cave_info[y][x] |= (CAVE_MARK);
-				lite_spot(y, x);
+				light_spot(y, x);
 			}
 		}
 

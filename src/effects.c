@@ -112,7 +112,7 @@ bool effect_wonder(int dir, int die, int beam)
 		                            damroll(3 + ((plev - 1) / 5), 4));
 	else if (die < 41) visible = confuse_monster(dir, plev, FALSE);
 	else if (die < 46) visible = fire_ball(GF_POIS, dir, 20 + (plev / 2), 3);
-	else if (die < 51) visible = lite_line(dir);
+	else if (die < 51) visible = light_line(dir);
 	else if (die < 56)
 		visible = fire_beam(GF_ELEC, dir, damroll(3+((plev-5)/6), 6));
 	else if (die < 61)
@@ -662,7 +662,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_ENLIGHTENMENT:
 		{
 			msg_print("An image of your surroundings forms in your mind...");
-			wiz_lite();
+			wiz_light();
 			*ident = TRUE;
 			return TRUE;
 		}
@@ -672,7 +672,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			msg_print("You begin to feel more enlightened...");
 			message_flush();
-			wiz_lite();
+			wiz_light();
 			(void)do_inc_stat(A_INT);
 			(void)do_inc_stat(A_WIS);
 			(void)detect_traps(TRUE);
@@ -854,7 +854,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_LIGHT:
 		{
-			if (lite_area(damroll(2, 8), 2)) *ident = TRUE;
+			if (light_area(damroll(2, 8), 2)) *ident = TRUE;
 			return TRUE;
 		}
 
@@ -991,7 +991,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			if ((!p_ptr->state.resist_blind) && (!p_ptr->state.resist_dark))
 				(void)inc_timed(TMD_BLIND, 3 + randint1(5), TRUE);
 
-			unlite_area(10, 3);
+			unlight_area(10, 3);
 
 			wieldeds_notice_flag(1, TR1_RES_BLIND);
 			wieldeds_notice_flag(1, TR1_RES_DARK);
@@ -1123,14 +1123,14 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_ILLUMINATION:
 		{
-			if (lite_area(damroll(2, 15), 3)) *ident = TRUE;
+			if (light_area(damroll(2, 15), 3)) *ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_CLAIRVOYANCE:
 		{
 			*ident = TRUE;
-			wiz_lite();
+			wiz_light();
 			(void)detect_traps(TRUE);
 			(void)detect_doorstairs(TRUE);
 			return TRUE;
@@ -1554,7 +1554,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_LIGHT_LINE:
 		{
 			msg_print("A line of shimmering blue light appears.");
-			lite_line(dir);
+			light_line(dir);
 			*ident = TRUE;
 			return TRUE;
 		}
@@ -1588,7 +1588,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			int i;
 			if (!p_ptr->timed[TMD_BLIND])
 				msg_print("Light shoots in all directions!");
-			for (i = 0; i < 8; i++) lite_line(ddd[i]);
+			for (i = 0; i < 8; i++) light_line(ddd[i]);
 			*ident = TRUE;
 			return TRUE;
 		}
@@ -1596,7 +1596,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_STARLIGHT2:
 		{
 			int k;
-			for (k = 0; k < 8; k++) strong_lite_line(ddd[k]);
+			for (k = 0; k < 8; k++) strong_light_line(ddd[k]);
 			*ident = TRUE;
 			return TRUE;
 		}
@@ -1948,7 +1948,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			sound(((chance == 0 ? MSG_BR_LIGHT : MSG_BR_DARK)));
 			msg_format("You breathe %s.",
 			        ((chance == 0 ? "light" : "darkness")));
-			fire_ball((chance == 0 ? GF_LITE : GF_DARK), dir, dam,
+			fire_ball((chance == 0 ? GF_LIGHT : GF_DARK), dir, dam,
 				2);
 			return TRUE;
 		}

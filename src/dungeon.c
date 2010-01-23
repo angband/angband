@@ -686,10 +686,10 @@ static void process_world(void)
 	/*** Process Light ***/
 
 	/* Check for light being wielded */
-	o_ptr = &inventory[INVEN_LITE];
+	o_ptr = &inventory[INVEN_LIGHT];
 
-	/* Burn some fuel in the current lite */
-	if (o_ptr->tval == TV_LITE)
+	/* Burn some fuel in the current light */
+	if (o_ptr->tval == TV_LIGHT)
 	{
 		u32b f[OBJ_FLAG_N];
 		bool burn_fuel = TRUE;
@@ -1143,7 +1143,7 @@ static void process_player(void)
 					shimmer_monsters = TRUE;
 
 					/* Redraw regardless */
-					lite_spot(m_ptr->fy, m_ptr->fx);
+					light_spot(m_ptr->fy, m_ptr->fx);
 				}
 			}
 
@@ -1441,7 +1441,7 @@ static void dungeon(void)
 		/* Redraw stuff */
 		if (p_ptr->redraw) redraw_stuff();
 
-		/* Hack -- Hilite the player */
+		/* Hack -- Highlight the player */
 		move_cursor_relative(p_ptr->py, p_ptr->px);
 
 		/* Handle "leaving" */
@@ -1460,7 +1460,7 @@ static void dungeon(void)
 		/* Redraw stuff */
 		if (p_ptr->redraw) redraw_stuff();
 
-		/* Hack -- Hilite the player */
+		/* Hack -- Highlight the player */
 		move_cursor_relative(p_ptr->py, p_ptr->px);
 
 		/* Handle "leaving" */
@@ -1479,7 +1479,7 @@ static void dungeon(void)
 		/* Redraw stuff */
 		if (p_ptr->redraw) redraw_stuff();
 
-		/* Hack -- Hilite the player */
+		/* Hack -- Highlight the player */
 		move_cursor_relative(p_ptr->py, p_ptr->px);
 
 		/* Handle "leaving" */

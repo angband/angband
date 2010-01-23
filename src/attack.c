@@ -37,7 +37,7 @@ int breakage_chance(const object_type *o_ptr)
 		case TV_JUNK:
 			return 100;
 
-		case TV_LITE:
+		case TV_LIGHT:
 		case TV_SCROLL:
 		case TV_SKELETON:
 			return 50;
@@ -599,7 +599,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 			if (p_ptr->redraw) redraw_stuff();
 
 			Term_xtra(TERM_XTRA_DELAY, msec);
-			lite_spot(y, x);
+			light_spot(y, x);
 
 			Term_fresh();
 			if (p_ptr->redraw) redraw_stuff();
@@ -997,7 +997,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 			if (p_ptr->redraw) redraw_stuff();
 
 			Term_xtra(TERM_XTRA_DELAY, msec);
-			lite_spot(y, x);
+			light_spot(y, x);
 
 			Term_fresh();
 			if (p_ptr->redraw) redraw_stuff();

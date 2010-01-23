@@ -109,7 +109,7 @@ static const grouper group_item[] =
 	{ TV_CHEST,		"Chests" },
 
 	{ TV_SPIKE,		"Various" },
-	{ TV_LITE,		  NULL },
+	{ TV_LIGHT,		  NULL },
 	{ TV_FLASK,		  NULL },
 	{ TV_JUNK,		  NULL },
 	{ TV_BOTTLE,	  NULL },
@@ -376,7 +376,7 @@ static const grouper group_artifact[] =
 	{ TV_GLOVES,        "Gloves" },
 	{ TV_BOOTS,         "Boots" },
 
-	{ TV_LITE,          "Light Sources" },
+	{ TV_LIGHT,         "Light Sources" },
 	{ TV_AMULET,        "Amulets" },
 	{ TV_RING,          "Rings" },
 

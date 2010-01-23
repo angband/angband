@@ -2421,7 +2421,7 @@ static void windows_map_aux(void)
 		}
 	}
 
-	/* Hilite the player */
+	/* Highlight the player */
 	Term_curs_win(p_ptr->px - min_x, p_ptr->py - min_y);
 }
 

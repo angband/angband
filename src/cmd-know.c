@@ -1697,7 +1697,7 @@ static int o_cmp_tval(const void *a, const void *b)
 
 	switch (k_a->tval)
 	{
-		case TV_LITE:
+		case TV_LIGHT:
 		case TV_MAGIC_BOOK:
 		case TV_PRAYER_BOOK:
 		case TV_DRAG_ARMOR:

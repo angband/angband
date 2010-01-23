@@ -58,7 +58,7 @@ bool player_can_cast(void)
 		return FALSE;
 	}
 
-	if (p_ptr->timed[TMD_BLIND] || no_lite())
+	if (p_ptr->timed[TMD_BLIND] || no_light())
 	{
 		msg_print("You cannot see!");
 		return FALSE;
@@ -98,7 +98,7 @@ bool player_can_read(void)
 		return FALSE;
 	}
 
-	if (no_lite())
+	if (no_light())
 	{
 		msg_print("You have no light to read by.");
 		return FALSE;

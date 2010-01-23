@@ -170,7 +170,7 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 		case TV_SOFT_ARMOR:
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
-		case TV_LITE:
+		case TV_LIGHT:
 			return (k_name + k_ptr->name);
 
 		case TV_AMULET:
@@ -612,7 +612,7 @@ static size_t obj_desc_light(const object_type *o_ptr, char *buf, size_t max, si
 	object_flags(o_ptr, f);
 
 	/* Fuelled light sources get number of remaining turns appended */
-	if ((o_ptr->tval == TV_LITE) && !(f[2] & TR2_NO_FUEL))
+	if ((o_ptr->tval == TV_LIGHT) && !(f[2] & TR2_NO_FUEL))
 		strnfcat(buf, max, &end, " (%d turns)", o_ptr->timeout);
 
 	return end;
@@ -680,7 +680,7 @@ static size_t obj_desc_charges(const object_type *o_ptr, char *buf, size_t max, 
 		}
 
 		/* Artifacts, single rods */
-		else if (!(o_ptr->tval == TV_LITE && !artifact_p(o_ptr)))
+		else if (!(o_ptr->tval == TV_LIGHT && !artifact_p(o_ptr)))
 		{
 			strnfcat(buf, max, &end, " (charging)");
 		}
@@ -828,7 +828,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 	{
 		if (o_ptr->tval == TV_CHEST)
 			end = obj_desc_chest(o_ptr, buf, max, end);
-		else if (o_ptr->tval == TV_LITE)
+		else if (o_ptr->tval == TV_LIGHT)
 			end = obj_desc_light(o_ptr, buf, max, end);
 
 		end = obj_desc_combat(o_ptr, buf, max, end, spoil);

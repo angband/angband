@@ -132,7 +132,7 @@ static void remove_bad_spells(int m_idx, u32b* const f)
 		if (p_ptr->state.resist_cold) smart |= (SM_RES_COLD);
 		if (p_ptr->state.resist_pois) smart |= (SM_RES_POIS);
 		if (p_ptr->state.resist_fear) smart |= (SM_RES_FEAR);
-		if (p_ptr->state.resist_lite) smart |= (SM_RES_LITE);
+		if (p_ptr->state.resist_light) smart |= (SM_RES_LIGHT);
 		if (p_ptr->state.resist_dark) smart |= (SM_RES_DARK);
 		if (p_ptr->state.resist_blind) smart |= (SM_RES_BLIND);
 		if (p_ptr->state.resist_confu) smart |= (SM_RES_CONFU);
@@ -249,9 +249,9 @@ static void remove_bad_spells(int m_idx, u32b* const f)
 		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_SCARE);
 	}
 
-	if (smart & (SM_RES_LITE))
+	if (smart & (SM_RES_LIGHT))
 	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_LITE);
+		if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_LIGHT);
 	}
 
 	if (smart & (SM_RES_DARK))
@@ -969,15 +969,15 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		case SPELL(0,RSF0_BR_LITE):
+		case SPELL(0,RSF0_BR_LIGHT):
 		{
 			disturb(1, 0);
 			sound(MSG_BR_LIGHT);
 			if (blind) msg_format("%^s breathes.", m_name);
 			else msg_format("%^s breathes light.", m_name);
-			breath(m_idx, GF_LITE,
-			       ((m_ptr->hp / BR_LITE_DIVISOR) > BR_LITE_MAX ? BR_LITE_MAX : (m_ptr->hp / BR_LITE_DIVISOR)));
-			update_smart_learn(m_idx, DRS_RES_LITE);
+			breath(m_idx, GF_LIGHT,
+			       ((m_ptr->hp / BR_LIGHT_DIVISOR) > BR_LIGHT_MAX ? BR_LIGHT_MAX : (m_ptr->hp / BR_LIGHT_DIVISOR)));
+			update_smart_learn(m_idx, DRS_RES_LIGHT);
 			break;
 		}
 
@@ -1854,7 +1854,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg_format("%^s mumbles.", m_name);
 			else msg_format("%^s gestures in shadow.", m_name);
-			(void)unlite_area(0, 3);
+			(void)unlight_area(0, 3);
 			break;
 		}
 
@@ -3977,7 +3977,7 @@ static bool monster_can_flow(int m_idx)
  * When the player is resting, virtually 90% of the processor time is spent
  * in this function, and its children, "process_monster()" and "make_move()".
  *
- * Most of the rest of the time is spent in "update_view()" and "lite_spot()",
+ * Most of the rest of the time is spent in "update_view()" and "light_spot()",
  * especially when the player is running.
  *
  * Note the special "MFLAG_NICE" flag, which prevents "nasty" monsters from

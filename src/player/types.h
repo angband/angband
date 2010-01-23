@@ -62,7 +62,7 @@ typedef struct
 	bool resist_pois;	/* Resist poison */
 
 	bool resist_fear;	/* Resist fear */
-	bool resist_lite;	/* Resist light */
+	bool resist_light;	/* Resist light */
 	bool resist_dark;	/* Resist darkness */
 	bool resist_blind;	/* Resist blindness */
 	bool resist_confu;	/* Resist confusion */
@@ -226,7 +226,7 @@ typedef struct
 	bool cumber_armor;	/* Mana draining armor */
 	bool cumber_glove;	/* Mana draining gloves */
 
-	s16b cur_lite;		/* Radius of lite (if any) */
+	s16b cur_light;		/* Radius of light (if any) */
 
 	u32b notice;		/* Special Updates (bit flags) */
 	u32b update;		/* Pending Updates (bit flags) */

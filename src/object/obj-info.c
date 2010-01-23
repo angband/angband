@@ -114,7 +114,7 @@ static const flag_type f2_resist[] =
 	{ TR1_RES_COLD,  "cold" },
 	{ TR1_RES_POIS,  "poison" },
 	{ TR1_RES_FEAR,  "fear" },
-	{ TR1_RES_LITE,  "light" },
+	{ TR1_RES_LIGHT, "light" },
 	{ TR1_RES_DARK,  "dark" },
 	{ TR1_RES_BLIND, "blindness" },
 	{ TR1_RES_CONFU, "confusion" },
@@ -891,30 +891,30 @@ static bool describe_light(const object_type *o_ptr, u32b f3, bool terse)
 
 	bool artifact = artifact_p(o_ptr);
 	bool no_fuel = (f3 & TR2_NO_FUEL) ? TRUE : FALSE;
-	bool is_lite = (o_ptr->tval == TV_LITE) ? TRUE : FALSE;
+	bool is_light = (o_ptr->tval == TV_LIGHT) ? TRUE : FALSE;
 
-	if ((o_ptr->tval != TV_LITE) && !(f3 & TR2_LITE))
+	if ((o_ptr->tval != TV_LIGHT) && !(f3 & TR2_LIGHT))
 		return FALSE;
 
 	/* Work out radius */
-	if (artifact && is_lite) rad = 3;
-	else if (is_lite) rad = 2;
-	if (f3 & TR2_LITE) rad++;
+	if (artifact && is_light) rad = 3;
+	else if (is_light) rad = 2;
+	if (f3 & TR2_LIGHT) rad++;
 
 	/* Describe here */
 	text_out("Radius ");
 	text_out_c(TERM_L_GREEN, format("%d", rad));
 	if (no_fuel && !artifact)
 		text_out(" light.  No fuel required.");
-	else if (is_lite && o_ptr->sval == SV_LITE_TORCH)
+	else if (is_light && o_ptr->sval == SV_LIGHT_TORCH)
 		text_out(" light, reduced when running out of fuel.");
 	else
 		text_out (" light.");
 
-	if (!terse && is_lite && !no_fuel)
+	if (!terse && is_light && !no_fuel)
 	{
-		const char *name = (o_ptr->sval == SV_LITE_TORCH) ? "torches" : "lanterns";
-		int turns = (o_ptr->sval == SV_LITE_TORCH) ? FUEL_TORCH : FUEL_LAMP;
+		const char *name = (o_ptr->sval == SV_LIGHT_TORCH) ? "torches" : "lanterns";
+		int turns = (o_ptr->sval == SV_LIGHT_TORCH) ? FUEL_TORCH : FUEL_LAMP;
 
 		text_out("  Refills other %s up to %d turns of fuel.", name, turns);
 	}

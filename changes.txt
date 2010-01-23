@@ -150,6 +150,7 @@ Misc
 #1038 Various fields in the edit files now take random values of the form "5+2d6M8"
       (e.g. stack size, pval, to_hit, to_dam, to_ac, recharge time, number of charges)
 #1079 Fix GTK port memory leak
+      Replace all instances of "lite" and "hilite" with light and highlight (except rLite on the C screen)
 
 
 Unix

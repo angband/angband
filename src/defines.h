@@ -388,7 +388,7 @@ typedef enum
 #define INVEN_LEFT      26
 #define INVEN_RIGHT     27
 #define INVEN_NECK      28
-#define INVEN_LITE      29
+#define INVEN_LIGHT     29
 #define INVEN_BODY      30
 #define INVEN_OUTER     31
 #define INVEN_ARM       32
@@ -535,7 +535,7 @@ enum
 #define GF_MISSILE      3
 #define GF_MANA         4
 #define GF_HOLY_ORB     5
-#define GF_LITE_WEAK	6
+#define GF_LIGHT_WEAK	6
 #define GF_DARK_WEAK	7
 #define GF_WATER        8
 #define GF_PLASMA       9
@@ -551,7 +551,7 @@ enum
 #define GF_COLD         19
 #define GF_POIS         20
 #define GF_XXX2			21
-#define GF_LITE         22
+#define GF_LIGHT        22
 #define GF_DARK         23
 #define GF_XXX3			24
 #define GF_CONFUSION    25
@@ -604,7 +604,7 @@ enum
 #define DRS_RES_COLD	19
 #define DRS_RES_POIS	20
 #define DRS_RES_FEAR	21
-#define DRS_RES_LITE	22
+#define DRS_RES_LIGHT	22
 #define DRS_RES_DARK	23
 #define DRS_RES_BLIND	24
 #define DRS_RES_CONFU	25
@@ -754,7 +754,7 @@ enum
 #define EGO_LORDLINESS		29
 #define EGO_SEEING			30
 #define EGO_INFRAVISION		31
-#define EGO_LITE			32
+#define EGO_LIGHT			32
 #define EGO_TELEPATHY		33
 #define EGO_REGENERATION	34
 #define EGO_TELEPORTATION	35
@@ -920,7 +920,7 @@ enum
 #define RBE_EAT_GOLD	5
 #define RBE_EAT_ITEM	6
 #define RBE_EAT_FOOD	7
-#define RBE_EAT_LITE	8
+#define RBE_EAT_LIGHT	8
 #define RBE_ACID		9
 #define RBE_ELEC		10
 #define RBE_FIRE		11
@@ -1204,7 +1204,7 @@ enum
 #define SM_RES_COLD		0x00080000
 #define SM_RES_POIS		0x00100000
 #define SM_RES_FEAR		0x00200000
-#define SM_RES_LITE		0x00400000
+#define SM_RES_LIGHT		0x00400000
 #define SM_RES_DARK		0x00800000
 #define SM_RES_BLIND	0x01000000
 #define SM_RES_CONFU	0x02000000
@@ -1281,7 +1281,7 @@ enum
 #define TR1_RES_COLD        0x00080000L /* Resist cold */
 #define TR1_RES_POIS        0x00100000L /* Resist poison */
 #define TR1_RES_FEAR        0x00200000L /* Resist fear */
-#define TR1_RES_LITE        0x00400000L /* Resist lite */
+#define TR1_RES_LIGHT        0x00400000L /* Resist light */
 #define TR1_RES_DARK        0x00800000L /* Resist dark */
 #define TR1_RES_BLIND       0x01000000L /* Resist blind */
 #define TR1_RES_CONFU       0x02000000L /* Resist confusion */
@@ -1294,7 +1294,7 @@ enum
 
 #define TR2_SLOW_DIGEST     0x00000001L /* Slow digest */
 #define TR2_FEATHER         0x00000002L /* Feather Falling */
-#define TR2_LITE            0x00000004L /* Perma-Lite */
+#define TR2_LIGHT           0x00000004L /* Perma-Light */
 #define TR2_REGEN           0x00000008L /* Regeneration */
 #define TR2_TELEPATHY       0x00000010L /* Telepathy */
 #define TR2_SEE_INVIS       0x00000020L /* See Invis */
@@ -1340,7 +1340,7 @@ enum
  * flag set for high resists
  */
 #define TR1_HIGH_RESIST_MASK \
-	(TR1_RES_POIS | TR1_RES_FEAR | TR1_RES_LITE | \
+	(TR1_RES_POIS | TR1_RES_FEAR | TR1_RES_LIGHT | \
 	 TR1_RES_DARK | TR1_RES_BLIND | TR1_RES_CONFU | \
 	 TR1_RES_SOUND | TR1_RES_SHARD | TR1_RES_NEXUS | \
 	 TR1_RES_NETHR | TR1_RES_CHAOS | TR1_RES_DISEN)
@@ -1371,7 +1371,7 @@ enum
 	(0)
 
 #define TR2_OBVIOUS_MASK \
-	(TR2_LITE | TR2_SEE_INVIS | TR2_TELEPATHY | TR2_NO_FUEL | \
+	(TR2_LIGHT | TR2_SEE_INVIS | TR2_TELEPATHY | TR2_NO_FUEL | \
 	 TR2_BLESSED | TR2_CURSE_MASK | TR2_AFRAID)
 
 /*
@@ -1605,7 +1605,7 @@ enum
 #define RF2_XXX2			0x00000200	/* (?) */
 #define RF2_XXX3			0x00000400	/* Non-Vocal (?) */
 #define RF2_XXX4			0x00000800	/* Non-Living (?) */
-#define RF2_HURT_LITE		0x00001000	/* Hurt by lite */
+#define RF2_HURT_LIGHT		0x00001000	/* Hurt by light */
 #define RF2_HURT_ROCK		0x00002000	/* Hurt by rock remover */
 #define RF2_HURT_FIRE		0x00004000	/* Hurt badly by fire */
 #define RF2_HURT_COLD		0x00008000	/* Hurt badly by cold */
@@ -1643,7 +1643,7 @@ enum
 #define RSF0_BR_COLD         0x00000800 /* Breathe Cold */
 #define RSF0_BR_POIS         0x00001000 /* Breathe Poison */
 #define RSF0_BR_NETH         0x00002000 /* Breathe Nether */
-#define RSF0_BR_LITE         0x00004000 /* Breathe Lite */
+#define RSF0_BR_LIGHT        0x00004000 /* Breathe Light */
 #define RSF0_BR_DARK         0x00008000 /* Breathe Dark */
 #define RSF0_BR_CONF         0x00010000 /* Breathe Confusion */
 #define RSF0_BR_SOUN         0x00020000 /* Breathe Sound */
@@ -1808,7 +1808,7 @@ enum
 #define RSF0_ATTACK_MASK \
 	(RSF0_ARROW_1 | RSF0_ARROW_2 | RSF0_ARROW_3 | RSF0_ARROW_4 | RSF0_BOULDER | \
 	 RSF0_BR_ACID | RSF0_BR_ELEC | RSF0_BR_FIRE | RSF0_BR_COLD | RSF0_BR_POIS | \
-	 RSF0_BR_NETH | RSF0_BR_LITE | RSF0_BR_DARK | RSF0_BR_CONF | RSF0_BR_SOUN | \
+	 RSF0_BR_NETH | RSF0_BR_LIGHT| RSF0_BR_DARK | RSF0_BR_CONF | RSF0_BR_SOUN | \
 	 RSF0_BR_CHAO | RSF0_BR_DISE | RSF0_BR_NEXU | RSF0_BR_TIME | RSF0_BR_INER | \
 	 RSF0_BR_GRAV | RSF0_BR_SHAR | RSF0_BR_PLAS | RSF0_BR_WALL | RSF0_BR_MANA)
 
@@ -1899,7 +1899,7 @@ enum
 #define RSF0_INNATE_MASK \
 	(RSF0_SHRIEK | RSF0_ARROW_1 | RSF0_ARROW_2 | RSF0_ARROW_3 | RSF0_ARROW_4 | \
 	 RSF0_BR_ACID | RSF0_BR_ELEC | RSF0_BR_FIRE | RSF0_BR_COLD | RSF0_BR_POIS | \
-	 RSF0_BR_NETH | RSF0_BR_LITE | RSF0_BR_DARK | RSF0_BR_CONF | RSF0_BR_SOUN | \
+	 RSF0_BR_NETH | RSF0_BR_LIGHT| RSF0_BR_DARK | RSF0_BR_CONF | RSF0_BR_SOUN | \
 	 RSF0_BR_CHAO | RSF0_BR_DISE | RSF0_BR_NEXU | RSF0_BR_TIME | RSF0_BR_INER | \
 	 RSF0_BR_GRAV | RSF0_BR_SHAR | RSF0_BR_PLAS | RSF0_BR_WALL | RSF0_BR_MANA | \
 	 RSF0_BOULDER)

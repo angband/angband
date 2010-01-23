@@ -426,7 +426,7 @@ byte kbd_vblank()
   static u16b touched = 0;
   // coordinates from each frame, the median is used to get the keycode
   static s16b xarr[3],yarr[3];
-  // the keycode of the last key pressed, so it can be un-hilited
+  // the keycode of the last key pressed, so it can be un-highlighted
   static u16b last_code;
   // the keycode of the currently pressed key, is usu. returned
   u16b keycode;
@@ -498,10 +498,10 @@ byte kbd_vblank()
       // get the keycode that corresponds to this key
       u16b keycode = kbd_xy2key(the_x, the_y);
       
-      // if it's not a modifier, hilite it
+      // if it's not a modifier, highlight it
       if (keycode && !(keycode & K_MODIFIER)) 
 	kbd_set_color_from_code(keycode,1);
-      // set last_code so it can be un-hilited later
+      // set last_code so it can be un-highlighted later
       last_code = keycode;
       
       /*// check for special keystrokes: alt-b, f5, f6

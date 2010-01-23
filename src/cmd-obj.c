@@ -714,7 +714,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 /*** Refuelling ***/
 void do_cmd_refill(cmd_code code, cmd_arg args[])
 {
-	object_type *j_ptr = &inventory[INVEN_LITE];
+	object_type *j_ptr = &inventory[INVEN_LIGHT];
 	u32b f[OBJ_FLAG_N];
 
 	int item = args[0].item;
@@ -729,7 +729,7 @@ void do_cmd_refill(cmd_code code, cmd_arg args[])
 	/* Check what we're wielding. */
 	object_flags(j_ptr, f);
 
-	if (j_ptr->tval != TV_LITE)
+	if (j_ptr->tval != TV_LIGHT)
 	{
 		msg_print("You are not wielding a light.");
 		return;
@@ -742,11 +742,11 @@ void do_cmd_refill(cmd_code code, cmd_arg args[])
 	}
 
 	/* It's a lamp */
-	if (j_ptr->sval == SV_LITE_LANTERN)
+	if (j_ptr->sval == SV_LIGHT_LANTERN)
 		refill_lamp(j_ptr, o_ptr, item);
 
 	/* It's a torch */
-	else if (j_ptr->sval == SV_LITE_TORCH)
+	else if (j_ptr->sval == SV_LIGHT_TORCH)
 		refuel_torch(j_ptr, o_ptr, item);
 
 	p_ptr->energy_use = 50;

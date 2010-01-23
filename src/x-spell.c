@@ -509,7 +509,7 @@ static bool cast_mage_spell(int spell, int dir)
 
 		case SPELL_LIGHT_AREA:
 		{
-			(void)lite_area(damroll(2, (plev / 2)), (plev / 10) + 1);
+			(void)light_area(damroll(2, (plev / 2)), (plev / 10) + 1);
 			break;
 		}
 
@@ -581,7 +581,7 @@ static bool cast_mage_spell(int spell, int dir)
 		case SPELL_SPEAR_OF_LIGHT:
 		{
 			msg_print("A line of blue shimmering light appears.");
-			lite_line(dir);
+			light_line(dir);
 			break;
 		}
 
@@ -932,7 +932,7 @@ static bool cast_priest_spell(int spell, int dir)
 
 		case PRAYER_CALL_LIGHT:
 		{
-			(void)lite_area(damroll(2, (plev / 2)), (plev / 10) + 1);
+			(void)light_area(damroll(2, (plev / 2)), (plev / 10) + 1);
 			break;
 		}
 
@@ -1145,7 +1145,7 @@ static bool cast_priest_spell(int spell, int dir)
 
 		case PRAYER_CLAIRVOYANCE:
 		{
-			wiz_lite();
+			wiz_light();
 			break;
 		}
 

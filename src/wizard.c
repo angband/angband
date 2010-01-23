@@ -407,7 +407,7 @@ static const tval_desc tvals[] =
 	{ TV_SOFT_ARMOR,        "Soft Armor"           },
 	{ TV_RING,              "Ring"                 },
 	{ TV_AMULET,            "Amulet"               },
-	{ TV_LITE,              "Lite"                 },
+	{ TV_LIGHT,             "Light"                },
 	{ TV_POTION,            "Potion"               },
 	{ TV_SCROLL,            "Scroll"               },
 	{ TV_WAND,              "Wand"                 },
@@ -1814,7 +1814,7 @@ void do_cmd_debug(void)
 		/* Wizard Light the Level */
 		case 'w':
 		{
-			wiz_lite();
+			wiz_light();
 			break;
 		}
 

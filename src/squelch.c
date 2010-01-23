@@ -92,7 +92,7 @@ static quality_squelch_struct quality_mapping[] =
 	{ TYPE_DIGGER,		TV_DIGGING,	0,		SV_UNKNOWN },
 	{ TYPE_RING,		TV_RING,	0,		SV_UNKNOWN },
 	{ TYPE_AMULET,		TV_AMULET,	0,		SV_UNKNOWN },
-	{ TYPE_LIGHT, 		TV_LITE, 	0,		SV_UNKNOWN },
+	{ TYPE_LIGHT, 		TV_LIGHT, 	0,		SV_UNKNOWN },
 };
 
 
@@ -145,7 +145,7 @@ static tval_desc sval_dependent[] =
 	{ TV_MAGIC_BOOK,	"Magic books" },
 	{ TV_PRAYER_BOOK,	"Prayer books" },
 	{ TV_SPIKE,			"Spikes" },
-	{ TV_LITE,			"Lights" },
+	{ TV_LIGHT,			"Lights" },
 	{ TV_FLASK,			"Flasks of oil" },
 	{ TV_DRAG_ARMOR,	"Dragon Mail Armor" },
 };
@@ -503,7 +503,7 @@ static byte squelch_level_of(const object_type *o_ptr)
 	}
 
 	/* And lights */
-	if (o_ptr->tval == TV_LITE)
+	if (o_ptr->tval == TV_LIGHT)
 	{
 		if (f[2] & TR2_OBVIOUS_MASK)
 			return SQUELCH_ALL;
@@ -992,7 +992,7 @@ static bool sval_menu(int tval, const char *desc)
         /* sort by name in squelch menus except for categories of items that are aware from the start */
         switch(tval)
         {
-                case TV_LITE:
+                case TV_LIGHT:
                 case TV_MAGIC_BOOK:
                 case TV_PRAYER_BOOK:
                 case TV_DRAG_ARMOR:

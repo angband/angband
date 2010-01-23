@@ -178,7 +178,7 @@ static struct staple_type
 } staples[] =
 {
 	{ TV_FOOD, SV_FOOD_RATION, MAKE_NORMAL },
-	{ TV_LITE, SV_LITE_TORCH, MAKE_NORMAL },
+	{ TV_LIGHT, SV_LIGHT_TORCH, MAKE_NORMAL },
 	{ TV_SCROLL, SV_SCROLL_WORD_OF_RECALL, MAKE_NORMAL },
 	{ TV_SCROLL, SV_SCROLL_PHASE_DOOR, MAKE_NORMAL },
 	{ TV_FLASK, 0, MAKE_NORMAL },
@@ -287,7 +287,7 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 			bool accept = FALSE;
 
 			/* Accept lights and food */
-			if (o_ptr->tval == TV_LITE || o_ptr->tval == TV_FOOD)
+			if (o_ptr->tval == TV_LIGHT || o_ptr->tval == TV_FOOD)
 			    accept = TRUE;
 
 			/* Accept staples */
@@ -545,10 +545,10 @@ static void mass_produce(object_type *o_ptr)
 	/* Analyze the type */
 	switch (o_ptr->tval)
 	{
-		/* Food, Flasks, and Lites */
+		/* Food, Flasks, and Lights */
 		case TV_FOOD:
 		case TV_FLASK:
-		case TV_LITE:
+		case TV_LIGHT:
 		{
 			if (cost <= 5L) size += mass_roll(3, 5);
 			if (cost <= 20L) size += mass_roll(3, 5);
@@ -651,11 +651,11 @@ static bool store_object_similar(const object_type *o_ptr, const object_type *j_
 	if (o_ptr->name2 != j_ptr->name2) return (0);
 
 	/* Hack -- Never stack recharging items */
-	if ((o_ptr->timeout || j_ptr->timeout) && o_ptr->tval != TV_LITE)
+	if ((o_ptr->timeout || j_ptr->timeout) && o_ptr->tval != TV_LIGHT)
 		return (0);
 
 	/* Never stack items with different fuel */
-	else if ((o_ptr->timeout != j_ptr->timeout) && o_ptr->tval == TV_LITE)
+	else if ((o_ptr->timeout != j_ptr->timeout) && o_ptr->tval == TV_LIGHT)
 		return (0);
 
 	/* Require many identical values */
@@ -914,17 +914,17 @@ static int store_carry(int st, object_type *o_ptr)
 	switch (o_ptr->tval)
 	{
 		/* Refuel lights to the standard amount */
-		case TV_LITE:
+		case TV_LIGHT:
 		{
 			u32b f[OBJ_FLAG_N];
 			object_flags(o_ptr, f);
 			
 			if (!(f[2] & TR2_NO_FUEL))
 			{
-				if (o_ptr->sval == SV_LITE_TORCH)
+				if (o_ptr->sval == SV_LIGHT_TORCH)
 					o_ptr->timeout = DEFAULT_TORCH;
 
-				else if (o_ptr->sval == SV_LITE_LANTERN)
+				else if (o_ptr->sval == SV_LIGHT_LANTERN)
 					o_ptr->timeout = DEFAULT_LAMP;
 			}
 
@@ -1972,10 +1972,10 @@ static int find_inven(const object_type *o_ptr)
 				/* Fall through */
 			}
 
-			/* Rings, Amulets, Lites */
+			/* Rings, Amulets, Lights */
 			case TV_RING:
 			case TV_AMULET:
-			case TV_LITE:
+			case TV_LIGHT:
 			{
 				/* Require both items to be known */
 				if (!object_is_known(o_ptr) || !object_is_known(j_ptr)) continue;
@@ -2005,8 +2005,8 @@ static int find_inven(const object_type *o_ptr)
 				/* Require identical "ego-item" names */
 				if (o_ptr->name2 != j_ptr->name2) continue;
 
-				/* Lites must have same amount of fuel */
-				else if (o_ptr->timeout != j_ptr->timeout && o_ptr->tval == TV_LITE)
+				/* Lights must have same amount of fuel */
+				else if (o_ptr->timeout != j_ptr->timeout && o_ptr->tval == TV_LIGHT)
 					continue;
 
 				/* Require identical "values" */

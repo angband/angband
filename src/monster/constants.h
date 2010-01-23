@@ -85,9 +85,9 @@
 #define BR_NETH_DIVISOR				6
 #define RES_NETH_ADJ(dam, dam_aspect)		(((dam) * 6) / (damcalc(1, 6, dam_aspect) + 6))
 
-#define BR_LITE_MAX				400
-#define BR_LITE_DIVISOR				6
-#define RES_LITE_ADJ(dam, dam_aspect)           (((dam) * 4) / (damcalc(1, 6, dam_aspect) + 6))
+#define BR_LIGHT_MAX				400
+#define BR_LIGHT_DIVISOR				6
+#define RES_LIGHT_ADJ(dam, dam_aspect)           (((dam) * 4) / (damcalc(1, 6, dam_aspect) + 6))
 
 #define BR_DARK_MAX				400
 #define BR_DARK_DIVISOR				6

@@ -113,7 +113,7 @@ I:light:6:0
 W:50:50:5:50000
 A:2:50 to 127
 P:0:1d1:0:0:0
-F:SEE_INVIS | HOLD_LIFE | RES_LITE | RES_DARK | NO_FUEL |
+F:SEE_INVIS | HOLD_LIFE | RES_LIGHT | RES_DARK | NO_FUEL |
 F:INSTA_ART
 E:DETECT_ALL:30+d30
 M:The {kind} form{s} an image in your mind...
@@ -159,7 +159,7 @@ I:amulet:52:4
 W:50:50:3:75000
 A:2:50 to 127
 F:STR | CON | INFRA | HIDE_TYPE | 
-F:SEE_INVIS | FREE_ACT | REGEN | LITE | RES_FEAR | 
+F:SEE_INVIS | FREE_ACT | REGEN | LIGHT | RES_FEAR | 
 F:INSTA_ART
 D:The Nauglamir; a carencet of gold set with a multitude of shining gems of 
 D:Valinor, accenting a radiant Silmaril.  The sturdy spirits of Dwarvish 
@@ -341,8 +341,8 @@ A:11:90 to 127
 P:30:2d4:-4:0:25
 F:FREE_ACT | IM_ELEC | RES_DISEN | 
 F:RES_ACID | RES_FIRE | RES_COLD | 
-F:RES_POIS | RES_LITE | RES_DARK | 
-F:LITE | SEE_INVIS | AGGRAVATE | 
+F:RES_POIS | RES_LIGHT | RES_DARK | 
+F:LIGHT | SEE_INVIS | AGGRAVATE | 
 E:STAR_BALL:1000
 M:Your {kind} {is} surrounded by lightning!
 D:A massive suit of heavy dragon scales deeply saturated with many colors.  
@@ -357,7 +357,7 @@ A:6:100 to 127
 P:50:2d4:-8:0:35
 F:HOLD_LIFE | REGEN | 
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_POIS | RES_FEAR | 
-F:RES_LITE | RES_DARK | RES_BLIND | RES_CONFU | RES_SOUND | 
+F:RES_LIGHT | RES_DARK | RES_BLIND | RES_CONFU | RES_SOUND | 
 F:RES_SHARD | RES_NETHR | RES_NEXUS | RES_CHAOS | RES_DISEN | 
 E:RAGE_BLESS_RESIST:400
 M:{name} glow{s} many colors...
@@ -521,7 +521,7 @@ I:shield:Mithril Shield~:5
 W:70:4:80:65000
 A:25:70 to 127
 P:10:1d3:0:0:20
-F:LITE | WIS | CHR | 
+F:LIGHT | WIS | CHR | 
 F:RES_ELEC | RES_ACID | RES_DISEN | RES_DARK | HIDE_TYPE | 
 F:SUST_WIS | SUST_DEX | SUST_CHR
 E:STARLIGHT2:100
@@ -546,7 +546,7 @@ I:shield:Leather Shield~:0
 W:30:3:60:12000
 A:33:30 to 100
 P:4:1d2:0:0:20
-F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_LITE | RES_DARK
+F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_LIGHT | RES_DARK
 F:RES_BLIND
 D:This shield emblazoned with a multitude of creatures unseen for ages 
 D:once protected Celegorm, Lord of Himlad; around it a mystic balance lies, 
@@ -585,8 +585,8 @@ A:0:100 to 100
 P:0:1d1:0:0:0
 F:STR | INT | WIS | DEX | CON | CHR | INFRA | HIDE_TYPE | 
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_POIS | 
-F:RES_LITE | RES_DARK | RES_CONFU | RES_NEXUS | RES_NETHR | 
-F:LITE | SEE_INVIS | TELEPATHY | RES_FEAR | 
+F:RES_LIGHT | RES_DARK | RES_CONFU | RES_NEXUS | RES_NETHR | 
+F:LIGHT | SEE_INVIS | TELEPATHY | RES_FEAR | 
 F:LIGHT_CURSE | HEAVY_CURSE | PERMA_CURSE | 
 F:INSTA_ART
 D:Containing much of the power of he who once was mightiest among the Ainur, 
@@ -648,7 +648,7 @@ A:5:40 to 127
 P:5:1d3:0:0:20
 F:STR | DEX | CON | HIDE_TYPE | RES_FEAR | 
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | 
-F:LITE | SEE_INVIS | TELEPATHY
+F:LIGHT | SEE_INVIS | TELEPATHY
 D:The legendary dragon helm of Turin Turambar, an object of dread to the 
 D:servants of Morgoth.
 
@@ -684,9 +684,9 @@ W:40:40:30:100000
 A:2:40 to 127
 P:0:1d1:0:0:15
 F:STR | WIS | CON | SPEED | HIDE_TYPE | 
-F:RES_COLD | RES_FIRE | RES_LITE | RES_BLIND | 
+F:RES_COLD | RES_FIRE | RES_LIGHT | RES_BLIND | 
 F:RES_CONFU | RES_SOUND | RES_CHAOS | 
-F:LITE | SEE_INVIS | REGEN
+F:LIGHT | SEE_INVIS | REGEN
 E:HEAL1:250
 M:You feel a warm tingling inside...
 D:The shining winged circlet brought by Elendil from dying Numenor, emblem of 
@@ -702,7 +702,7 @@ P:0:1d1:0:0:18
 F:INT | DEX | CHR | SEARCH | SPEED | HIDE_TYPE |
 F:SEE_INVIS | FREE_ACT |  
 F:RES_SHARD | RES_SOUND | RES_COLD | 
-F:RES_LITE | RES_DARK | RES_BLIND | LITE
+F:RES_LIGHT | RES_DARK | RES_BLIND | LIGHT
 # A:ANALYZE:50
 D:A crown of massive gold, set with wondrous jewels of thought and warding, 
 D:worn by the kings of ancient Numenor.
@@ -829,7 +829,7 @@ I:gloves:Set~ of Leather Gloves:0
 W:10:3:5:30000
 A:33:10 to 80
 P:1:0d0:5:5:10
-F:FREE_ACT | RES_LITE | SUST_CON | LITE
+F:FREE_ACT | RES_LIGHT | SUST_CON | LIGHT
 E:MISSILE:2
 M:{name} glows very brightly...
 D:These gloves glow so brightly as to light the way for the wearer and cast 
@@ -863,7 +863,7 @@ I:gloves:Set~ of Gauntlets:0
 W:1:4:25:11000
 A:25:1 to 75
 P:3:1d1:0:0:14
-F:RES_ELEC | LITE | RES_LITE
+F:RES_ELEC | LIGHT | RES_LIGHT
 E:ELEC_BOLT:6+d6
 M:Your {kind} {is} covered in sparks...
 D:A set of handgear with sparks that crackle across its knuckleguards.
@@ -1082,8 +1082,8 @@ I:sword:Broad Sword~:1
 W:20:20:150:40000
 A:5:20 to 80
 P:0:2d5:10:15:0
-F:SEARCH | HIDE_TYPE | BLESSED | LITE | 
-F:SLAY_EVIL | BRAND_FIRE | SLAY_ORC | SLAY_DEMON | RES_FIRE | RES_LITE | 
+F:SEARCH | HIDE_TYPE | BLESSED | LIGHT | 
+F:SLAY_EVIL | BRAND_FIRE | SLAY_ORC | SLAY_DEMON | RES_FIRE | RES_LIGHT | 
 F:SLOW_DIGEST | SHOW_MODS
 D:This fiery, shining blade, mate to Orcrist, earned its sobriquet "Beater" 
 D:from dying orcs who dared to behold hidden Gondolin.
@@ -1094,7 +1094,7 @@ I:sword:Broad Sword~:1
 W:20:30:150:45000
 A:3:20 to 100
 P:0:2d5:12:16:0
-F:SEARCH | HIDE_TYPE | BLESSED | LITE | 
+F:SEARCH | HIDE_TYPE | BLESSED | LIGHT | 
 F:SLAY_ORC | SLAY_TROLL | SLAY_GIANT | BRAND_ELEC | RES_ELEC | RES_BLIND | 
 F:SLOW_DIGEST | SHOW_MODS
 D:Like unto Orcrist and Glamdring, and like them long lost, this sword is 
@@ -1107,7 +1107,7 @@ I:sword:Broad Sword~:3
 W:20:20:150:40000
 A:5:20 to 80
 P:0:2d5:10:15:0
-F:SEARCH | HIDE_TYPE | BLESSED | LITE | 
+F:SEARCH | HIDE_TYPE | BLESSED | LIGHT | 
 F:SLAY_EVIL | BRAND_COLD | SLAY_ORC | SLAY_DRAGON | RES_COLD | RES_DARK | 
 F:SLOW_DIGEST | SHOW_MODS
 D:This coldly gleaming blade, mate to Glamdring, is called simply "Biter" 
@@ -1200,7 +1200,7 @@ A:1:20 to 127
 P:0:4d5:22:25:0
 F:SPEED | RES_FEAR | BLESSED |
 F:SLAY_EVIL | BRAND_COLD | SLAY_UNDEAD | KILL_DEMON | SLAY_TROLL | 
-F:FREE_ACT | RES_COLD | RES_LITE | LITE | SEE_INVIS | SLOW_DIGEST | REGEN | 
+F:FREE_ACT | RES_COLD | RES_LIGHT | LIGHT | SEE_INVIS | SLOW_DIGEST | REGEN | 
 F:SHOW_MODS
 E:COLD_BALL100:40
 M:{name} glows an intense blue...
@@ -1232,7 +1232,7 @@ A:3:20 to 127
 P:0:2d5:10:12:0
 F:STR | CON | SPEED | BLOWS | HIDE_TYPE | AGGRAVATE | 
 F:SLAY_EVIL | BRAND_POIS | SLAY_DEMON | FREE_ACT | RES_ELEC | 
-F:RES_LITE | RES_DARK | LITE | SEE_INVIS | SHOW_MODS
+F:RES_LIGHT | RES_DARK | LIGHT | SEE_INVIS | SHOW_MODS
 D:Forged of black galvorn by the Dark-Elven smith Eol, and as deadly as any
 D:other blade he forged.
 
@@ -1253,7 +1253,7 @@ I:sword:Rapier~:0
 W:1:3:40:15000
 A:45:1 to 50
 P:0:1d6:12:19:0
-F:SLAY_ANIMAL | BRAND_COLD | RES_COLD | RES_LITE | LITE | SHOW_MODS
+F:SLAY_ANIMAL | BRAND_COLD | RES_COLD | RES_LIGHT | LIGHT | SHOW_MODS
 D:A slender, tapered needle of ice that coldly grips its impaled prey.
 
 
@@ -1276,7 +1276,7 @@ A:7:20 to 100
 P:0:1d6:7:8:0
 F:STR | DEX | CON | BLOWS | SPEED | HIDE_TYPE | RES_FEAR | 
 F:SLAY_EVIL | SLAY_UNDEAD | SLAY_ORC | SLAY_ANIMAL | 
-F:FREE_ACT | RES_LITE | LITE | SEE_INVIS | SHOW_MODS
+F:FREE_ACT | RES_LIGHT | LIGHT | SEE_INVIS | SHOW_MODS
 D:"I will give you a name, and I shall call you Sting."  The perfect size 
 D:for Bilbo, and stamped forever by the courage he found in Mirkwood, this 
 D:sturdy little blade grants the wearer combat prowess and survival 
@@ -1329,7 +1329,7 @@ A:2:65 to 127
 P:0:4d6:-12:20:0 
 # F:DRAIN_MANA | DRAIN_HP | 
 F:STEALTH | WIS | LIGHT_CURSE | HEAVY_CURSE | DRAIN_EXP | AGGRAVATE | 
-F:BRAND_POIS | RES_DARK | RES_BLIND | RES_LITE | RES_NETHR
+F:BRAND_POIS | RES_DARK | RES_BLIND | RES_LIGHT | RES_NETHR
 D:A mighty, heavy black spear, once wielded by the Lord of Darkness 
 D:himself as he came to Valinor in wrath. Its envenomed bite pierced 
 D:the Two Trees with wounds that would not heal.
@@ -1404,8 +1404,8 @@ A:2:15 to 127
 P:0:4d6:15:15:0
 # F:DRAIN_MANA | 
 F:INT | SPEED | INFRA | HIDE_TYPE | 
-F:BRAND_FIRE | SLAY_GIANT | SLAY_ANIMAL | RES_FIRE | RES_LITE | 
-F:FEATHER | LITE | SEE_INVIS | BLESSED | SHOW_MODS
+F:BRAND_FIRE | SLAY_GIANT | SLAY_ANIMAL | RES_FIRE | RES_LIGHT | 
+F:FEATHER | LIGHT | SEE_INVIS | BLESSED | SHOW_MODS
 E:STONE_TO_MUD:5
 M:Your {kind} pulsate{s}...
 D:The thrusting spear of wise Orome the Vala, strong against giants of frost, 
@@ -1445,7 +1445,7 @@ P:0:4d4:10:20:15
 F:STR | CON | TUNNEL | HIDE_TYPE | BRAND_ACID | BRAND_FIRE | 
 F:KILL_DRAGON | SLAY_DEMON | SLAY_TROLL | SLAY_ORC | FREE_ACT | 
 F:RES_CONFU | RES_FEAR | 
-F:RES_ACID | RES_FIRE | RES_LITE | RES_DARK | RES_CHAOS | SHOW_MODS
+F:RES_ACID | RES_FIRE | RES_LIGHT | RES_DARK | RES_CHAOS | SHOW_MODS
 D:The twin massive axe heads of this ancient demon's dread gleam with 
 D:mithril inlay, which tell sagas of endurance, invoking the powers of 
 D:Kazad-dum to protect the wearer and slay all evils found underground.
@@ -1525,7 +1525,7 @@ W:15:35:300:90000
 A:3:15 to 100
 P:0:3d8:16:18:0 
 F:STR | DEX | HIDE_TYPE | BRAND_POIS | 
-F:SLAY_EVIL | KILL_UNDEAD | RES_LITE | RES_DARK | SEE_INVIS | 
+F:SLAY_EVIL | KILL_UNDEAD | RES_LIGHT | RES_DARK | SEE_INVIS | 
 F:BLESSED | SHOW_MODS
 D:A massive triple-pronged spear, so great it normally requires two hands 
 D:to wield, evoking the spirit of Osse who with it pierced legions of 
@@ -1556,7 +1556,7 @@ A:12:40 to 100
 P:0:5d3:18:12:30
 F:DEX | CHR | SPEED | HIDE_TYPE | 
 F:BRAND_COLD | BRAND_FIRE | FREE_ACT | RES_FIRE | RES_COLD | 
-F:RES_LITE | LITE | SEE_INVIS | SHOW_MODS
+F:RES_LIGHT | LIGHT | SEE_INVIS | SHOW_MODS
 E:RECALL:200
 M:{name} pulses a soft white.
 D:Binding elemental powers whose struggles turn this weapon red and purest 
@@ -1572,7 +1572,7 @@ P:0:3d6:12:15:0
 # F:DRAIN_MANA | 
 F:KILL_DEMON | 
 F:STR | CON | HIDE_TYPE | 
-F:BRAND_ACID | RES_ACID | RES_DARK | RES_FIRE | LITE | 
+F:BRAND_ACID | RES_ACID | RES_DARK | RES_FIRE | LIGHT | 
 F:SLAY_DRAGON | SLAY_TROLL | SHOW_MODS
 E:BERSERKER:80+d80
 M:{name} glows in anger!
@@ -1695,7 +1695,7 @@ W:20:18:150:20000
 A:5:20 to 100
 P:0:1d9:13:15:0
 F:INT | WIS | HIDE_TYPE | 
-F:SLAY_EVIL | RES_LITE | LITE | SEE_INVIS | SHOW_MODS
+F:SLAY_EVIL | RES_LIGHT | LIGHT | SEE_INVIS | SHOW_MODS
 E:IDENTIFY:10
 M:Your {kind} glow{s} yellow...
 D:The radiant golden staff of an Istar of legend; this wizard's companion 
@@ -1741,7 +1741,7 @@ W:20:15:120:30000
 A:7:20 to 100
 P:0:2d5:10:11:8
 F:WIS | INFRA | HIDE_TYPE | BLESSED |
-F:BRAND_COLD | SLAY_ORC | IM_COLD | RES_LITE | LITE | REGEN | 
+F:BRAND_COLD | SLAY_ORC | IM_COLD | RES_LIGHT | LIGHT | REGEN | 
 F:SHOW_MODS
 E:DRAIN_LIFE1:40
 M:{name} glows white...
@@ -1758,7 +1758,7 @@ P:0:6d3:13:15:0
 # F:DRAIN_HP | 
 F:INT | DEX | WIS | HIDE_TYPE | 
 F:LIGHT_CURSE | HEAVY_CURSE | AGGRAVATE |  
-F:BRAND_FIRE | IM_FIRE | RES_ELEC | RES_DARK | LITE
+F:BRAND_FIRE | IM_FIRE | RES_ELEC | RES_DARK | LIGHT
 F:SLAY_ANIMAL | KILL_DRAGON | SLAY_TROLL | SLAY_GIANT | 
 F:SHOW_MODS
 E:FIRE_BALL:15
@@ -1808,7 +1808,7 @@ W:60:20:200:35000
 A:5:60 to 127
 P:0:4d1:18:18:0
 F:STR | CON | MIGHT | AGGRAVATE | 
-F:RES_LITE | RES_DARK | RES_BLIND | RES_ELEC | 
+F:RES_LIGHT | RES_DARK | RES_BLIND | RES_ELEC | 
 F:HIDE_TYPE | SHOW_MODS
 E:ARROW:20+d20
 M:Your {kind} form{s} a magical arrow...
@@ -1863,9 +1863,9 @@ I:digger:Pick~:5
 W:55:5:200:30000
 A:20:55 to 100
 P:0:3d4:5:20:0
-F:STR | CON | TUNNEL | SUST_STR | HIDE_TYPE | LITE | 
+F:STR | CON | TUNNEL | SUST_STR | HIDE_TYPE | LIGHT | 
 F:SLAY_ORC | SLAY_TROLL | SLAY_DEMON | BRAND_ACID | 
-F:RES_CHAOS | RES_LITE | RES_DARK
+F:RES_CHAOS | RES_LIGHT | RES_DARK
 D:A fine dwarven pick, good for a miner, and suitable as a weapon 
 D:should the wielder ever tunnel through into a foe's stronghold.
 
@@ -1877,7 +1877,7 @@ I:hafted:Ball-and-Chain~:4
 W:65:100:130:60000
 A:1:65 to 127
 P:0:4d4:13:17:10
-F:STR | WIS | SPEED | LITE | HIDE_TYPE | 
+F:STR | WIS | SPEED | LIGHT | HIDE_TYPE | 
 F:SLAY_EVIL | SLAY_UNDEAD | 
 F:RES_FIRE | RES_ELEC | RES_NETHR | HOLD_LIFE | 
 E:DISPEL_EVIL:100+d100

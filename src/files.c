@@ -168,7 +168,7 @@ static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 	{ "rCold",	1, TR1_RES_COLD,	TR1_IM_COLD,	TR1_VULN_COLD },
 	{ "rPois",	1, TR1_RES_POIS,	0, 0 },
 	{ "rFear",	1, TR1_RES_FEAR,	0, 0 },
-	{ "rLite",	1, TR1_RES_LITE,	0, 0 },
+	{ "rLite",	1, TR1_RES_LIGHT,	0, 0 },
 	{ "rDark",	1, TR1_RES_DARK,	0, 0 },
 	{ "rBlnd",	1, TR1_RES_BLIND,	0, 0 },
 
@@ -182,7 +182,7 @@ static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 	{ "S.Dig",	2, TR2_SLOW_DIGEST,	0, 0 },
 	{ "Feath",	2, TR2_FEATHER, 	0, 0 },
 
-	{ "PLite",	2, TR2_LITE, 		0, 0 },
+	{ "Light",	2, TR2_LIGHT, 		0, 0 },
 	{ "Regen",	2, TR2_REGEN, 		0, 0 },
 	{ "  ESP",	2, TR2_TELEPATHY, 	0, 0 },
 	{ "Invis",	2, TR2_SEE_INVIS, 	0, 0 },
@@ -1426,7 +1426,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 			/* Dump the line */
 			Term_putstr(0, i+2, -1, TERM_WHITE, buf);
 
-			/* Hilite "shower" */
+			/* Highlight "shower" */
 			if (shower[0])
 			{
 				cptr str = lc_buf;

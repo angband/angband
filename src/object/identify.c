@@ -164,7 +164,7 @@ bool object_ego_is_visible(const object_type *o_ptr)
 	if (!ego_item_p(o_ptr))
 		return FALSE;
 
-	if (o_ptr->tval == TV_LITE)
+	if (o_ptr->tval == TV_LIGHT)
 		return TRUE;
 
 	if ((o_ptr->ident & IDENT_NAME) || (o_ptr->ident & IDENT_STORE))
@@ -342,7 +342,7 @@ void object_flavor_aware(object_type *o_ptr)
 		/* So update display for all floor objects of this kind */
 		if (!floor_o_ptr->held_m_idx &&
 				floor_o_ptr->k_idx == o_ptr->k_idx)
-			lite_spot(floor_o_ptr->iy, floor_o_ptr->ix);
+			light_spot(floor_o_ptr->iy, floor_o_ptr->ix);
 	}
 }
 
@@ -750,7 +750,7 @@ void object_notice_on_wield(object_type *o_ptr)
 	if (object_add_ident_flags(o_ptr, IDENT_WORN))
 		object_check_for_ident(o_ptr);
 
-	if (obj_is_lite(o_ptr) && ego_item_p(o_ptr))
+	if (obj_is_light(o_ptr) && ego_item_p(o_ptr))
 		object_notice_ego(o_ptr);
 
 	if (object_flavor_is_aware(o_ptr) && easy_know(o_ptr))
@@ -839,7 +839,7 @@ void object_notice_on_wield(object_type *o_ptr)
 	if (f[0] & TR0_INFRA)
 		msg_format("Your eyes tingle.");
 
-	if (f[2] & TR2_LITE)
+	if (f[2] & TR2_LIGHT)
 		msg_print("It glows!");
 	if (f[2] & TR2_TELEPATHY)
 		msg_print("Your mind feels strangely sharper!");

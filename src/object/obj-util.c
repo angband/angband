@@ -457,7 +457,7 @@ bool wearable_p(const object_type *o_ptr)
 		case TV_SOFT_ARMOR:
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
-		case TV_LITE:
+		case TV_LIGHT:
 		case TV_AMULET:
 		case TV_RING: return (TRUE);
 	}
@@ -534,7 +534,7 @@ s16b wield_slot(const object_type *o_ptr)
 
 		case TV_AMULET: return (INVEN_NECK);
 
-		case TV_LITE: return (INVEN_LITE);
+		case TV_LIGHT: return (INVEN_LIGHT);
 
 		case TV_DRAG_ARMOR:
 		case TV_HARD_ARMOR:
@@ -601,7 +601,7 @@ const char *mention_use(int slot)
 		case INVEN_LEFT:  return "On left hand";
 		case INVEN_RIGHT: return "On right hand";
 		case INVEN_NECK:  return "Around neck";
-		case INVEN_LITE:  return "Light source";
+		case INVEN_LIGHT: return "Light source";
 		case INVEN_BODY:  return "On body";
 		case INVEN_OUTER: return "About body";
 		case INVEN_ARM:   return "On arm";
@@ -643,7 +643,7 @@ cptr describe_use(int i)
 		case INVEN_LEFT:  p = "wearing on your left hand"; break;
 		case INVEN_RIGHT: p = "wearing on your right hand"; break;
 		case INVEN_NECK:  p = "wearing around your neck"; break;
-		case INVEN_LITE:  p = "using to light the way"; break;
+		case INVEN_LIGHT: p = "using to light the way"; break;
 		case INVEN_BODY:  p = "wearing on your body"; break;
 		case INVEN_OUTER: p = "wearing on your back"; break;
 		case INVEN_ARM:   p = "wearing on your arm"; break;
@@ -915,7 +915,7 @@ void delete_object_idx(int o_idx)
 		x = j_ptr->ix;
 
 		/* Visual update */
-		lite_spot(y, x);
+		light_spot(y, x);
 	}
 
 	/* Wipe the object */
@@ -960,7 +960,7 @@ void delete_object(int y, int x)
 	cave_o_idx[y][x] = 0;
 
 	/* Visual update */
-	lite_spot(y, x);
+	light_spot(y, x);
 }
 
 
@@ -1450,8 +1450,8 @@ static s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 		value = sign(power) * ((a * power * power) + (b * power));
 
 		if ( (o_ptr->tval == TV_SHOT) || (o_ptr->tval == TV_ARROW) ||
-  			(o_ptr->tval == TV_BOLT) || ((o_ptr->tval == TV_LITE)
-			&& (o_ptr->sval == SV_LITE_TORCH) && !o_ptr->name2) )
+  			(o_ptr->tval == TV_BOLT) || ((o_ptr->tval == TV_LIGHT)
+			&& (o_ptr->sval == SV_LIGHT_TORCH) && !o_ptr->name2) )
 		{
 			value = value / AMMO_RESCALER;
 			if (value < 1) value = 1;
@@ -1652,7 +1652,7 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 		case TV_DRAG_ARMOR:
 		case TV_RING:
 		case TV_AMULET:
-		case TV_LITE:
+		case TV_LIGHT:
 		{
 			/* Fall through */
 		}
@@ -1677,11 +1677,11 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 			if (o_ptr->name2 != j_ptr->name2) return (FALSE);
 
 			/* Hack - Never stack recharging items */
-			if ((o_ptr->timeout || j_ptr->timeout) && o_ptr->tval != TV_LITE) 
+			if ((o_ptr->timeout || j_ptr->timeout) && o_ptr->tval != TV_LIGHT) 
 				return FALSE;
 
-			/* Lites must have same amount of fuel */
-			else if (o_ptr->timeout != j_ptr->timeout && o_ptr->tval == TV_LITE)
+			/* Lights must have same amount of fuel */
+			else if (o_ptr->timeout != j_ptr->timeout && o_ptr->tval == TV_LIGHT)
 				return FALSE;
 
 			/* Require identical "values" */
@@ -1978,7 +1978,7 @@ s16b floor_carry(int y, int x, object_type *j_ptr)
 		note_spot(y, x);
 
 		/* Redraw */
-		lite_spot(y, x);
+		light_spot(y, x);
 	}
 
 	/* Result */
@@ -2784,8 +2784,8 @@ s16b inven_carry(object_type *o_ptr)
 			if (!object_is_known(o_ptr)) continue;
 			if (!object_is_known(j_ptr)) break;
 
-			/* Lites sort by decreasing fuel */
-			if (o_ptr->tval == TV_LITE)
+			/* Lights sort by decreasing fuel */
+			if (o_ptr->tval == TV_LIGHT)
 			{
 				if (o_ptr->pval > j_ptr->pval) break;
 				if (o_ptr->pval < j_ptr->pval) continue;
@@ -2929,7 +2929,7 @@ s16b inven_takeoff(int item, int amt)
 	}
 
 	/* Took off light */
-	else if (item == INVEN_LITE)
+	else if (item == INVEN_LIGHT)
 	{
 		act = "You were holding";
 	}
@@ -3180,8 +3180,8 @@ void reorder_pack(void)
 			if (!object_is_known(o_ptr)) continue;
 			if (!object_is_known(j_ptr)) break;
 
-			/* Lites sort by decreasing fuel */
-			if (o_ptr->tval == TV_LITE)
+			/* Lights sort by decreasing fuel */
+			if (o_ptr->tval == TV_LIGHT)
 			{
 				if (o_ptr->pval > j_ptr->pval) break;
 				if (o_ptr->pval < j_ptr->pval) continue;
@@ -3490,7 +3490,7 @@ static const grouper tval_names[] =
 	{ TV_HARD_ARMOR,  "hard armour" },
 	{ TV_DRAG_ARMOR,  "dragon armor" },
 	{ TV_DRAG_ARMOR,  "dragon armour" },
-	{ TV_LITE,        "light" },
+	{ TV_LIGHT,       "light" },
 	{ TV_AMULET,      "amulet" },
 	{ TV_RING,        "ring" },
 	{ TV_STAFF,       "staff" },
@@ -3929,7 +3929,7 @@ bool obj_is_rod(const object_type *o_ptr)    { return o_ptr->tval == TV_ROD; }
 bool obj_is_potion(const object_type *o_ptr) { return o_ptr->tval == TV_POTION; }
 bool obj_is_scroll(const object_type *o_ptr) { return o_ptr->tval == TV_SCROLL; }
 bool obj_is_food(const object_type *o_ptr)   { return o_ptr->tval == TV_FOOD; }
-bool obj_is_lite(const object_type *o_ptr)   { return o_ptr->tval == TV_LITE; }
+bool obj_is_light(const object_type *o_ptr)   { return o_ptr->tval == TV_LIGHT; }
 bool obj_is_ring(const object_type *o_ptr)   { return o_ptr->tval == TV_RING; }
 
 
@@ -3992,19 +3992,19 @@ bool obj_can_activate(const object_type *o_ptr)
 bool obj_can_refill(const object_type *o_ptr)
 {
 	u32b f[OBJ_FLAG_N];
-	const object_type *j_ptr = &inventory[INVEN_LITE];
+	const object_type *j_ptr = &inventory[INVEN_LIGHT];
 
 	/* Get flags */
 	object_flags(o_ptr, f);
 
-	if (j_ptr->sval == SV_LITE_LANTERN)
+	if (j_ptr->sval == SV_LIGHT_LANTERN)
 	{
 		/* Flasks of oil are okay */
 		if (o_ptr->tval == TV_FLASK) return (TRUE);
 	}
 
 	/* Non-empty, non-everburning sources are okay */
-	if ((o_ptr->tval == TV_LITE) &&
+	if ((o_ptr->tval == TV_LIGHT) &&
 	    (o_ptr->sval == j_ptr->sval) &&
 	    (o_ptr->timeout > 0) &&
 		!(f[2] & TR2_NO_FUEL))

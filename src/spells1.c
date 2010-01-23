@@ -365,8 +365,8 @@ static byte spell_color(int type)
 		case GF_INERTIA:	return (TERM_L_WHITE);
 		case GF_GRAVITY:	return (TERM_L_WHITE);
 		case GF_TIME:		return (TERM_L_BLUE);
-		case GF_LITE_WEAK:	return (TERM_ORANGE);
-		case GF_LITE:		return (TERM_ORANGE);
+		case GF_LIGHT_WEAK:	return (TERM_ORANGE);
+		case GF_LIGHT:		return (TERM_ORANGE);
 		case GF_DARK_WEAK:	return (TERM_L_DARK);
 		case GF_DARK:		return (TERM_L_DARK);
 		case GF_PLASMA:		return (TERM_RED);
@@ -622,7 +622,7 @@ static bool hates_fire(const object_type *o_ptr)
 	switch (o_ptr->tval)
 	{
 		/* Wearable */
-		case TV_LITE:
+		case TV_LIGHT:
 		case TV_ARROW:
 		case TV_BOW:
 		case TV_HAFTED:
@@ -1732,9 +1732,9 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 			break;
 		}
 
-		/* Lite up the grid */
-		case GF_LITE_WEAK:
-		case GF_LITE:
+		/* Light up the grid */
+		case GF_LIGHT_WEAK:
+		case GF_LIGHT:
 		{
 			/* Turn on the light */
 			cave_info[y][x] |= (CAVE_GLOW);
@@ -2039,7 +2039,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 				delete_object_idx(this_o_idx);
 
 				/* Redraw */
-				lite_spot(y, x);
+				light_spot(y, x);
 			}
 		}
 	}
@@ -2705,14 +2705,14 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		}
 
 
-		/* Lite, but only hurts susceptible creatures */
-		case GF_LITE_WEAK:
+		/* Light, but only hurts susceptible creatures */
+		case GF_LIGHT_WEAK:
 		{
 			if (seen) obvious = TRUE;
-			if (seen) l_ptr->flags[2] |= (RF2_HURT_LITE);
+			if (seen) l_ptr->flags[2] |= (RF2_HURT_LIGHT);
 
 			/* Hurt by light */
-			if (r_ptr->flags[2] & (RF2_HURT_LITE))
+			if (r_ptr->flags[2] & (RF2_HURT_LIGHT))
 			{
 				/* Special effect */
 				note = " cringes from the light!";
@@ -2730,21 +2730,21 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		}
 
 
-		/* Lite -- opposite of Dark */
-		case GF_LITE:
+		/* Light -- opposite of Dark */
+		case GF_LIGHT:
 		{
 			if (seen) obvious = TRUE;
-			if (seen) l_ptr->flags[2] |= (RF2_HURT_LITE);
+			if (seen) l_ptr->flags[2] |= (RF2_HURT_LIGHT);
 
-			if (r_ptr->spell_flags[0] & (RSF0_BR_LITE))
+			if (r_ptr->spell_flags[0] & (RSF0_BR_LIGHT))
 			{
 				/* Learn about breathers through resistance */
-				if (seen) l_ptr->spell_flags[0] |= (RSF0_BR_LITE);
+				if (seen) l_ptr->spell_flags[0] |= (RSF0_BR_LIGHT);
 
 				note = " resists.";
 				dam *= 2; dam /= (randint1(6)+6);
 			}
-			else if (r_ptr->flags[2] & (RF2_HURT_LITE))
+			else if (r_ptr->flags[2] & (RF2_HURT_LIGHT))
 			{
 				note = " cringes from the light!";
 				note_dies = " shrivels away in the light!";
@@ -2754,7 +2754,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		}
 
 
-		/* Dark -- opposite of Lite */
+		/* Dark -- opposite of Light */
 		case GF_DARK:
 		{
 			if (seen) obvious = TRUE;
@@ -3335,7 +3335,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	update_mon(cave_m_idx[y][x], FALSE);
 
 	/* Redraw the monster grid */
-	lite_spot(y, x);
+	light_spot(y, x);
 
 
 	/* Update monster recall window */
@@ -3736,14 +3736,14 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			break;
 		}
 
-		/* Lite -- blinding */
-		case GF_LITE:
+		/* Light -- blinding */
+		case GF_LIGHT:
 		{
 			if (blind) msg_print("You are hit by something!");
-			if (p_ptr->state.resist_lite)
+			if (p_ptr->state.resist_light)
 			{
-				dam = RES_LITE_ADJ(dam, RANDOMISE);
-				wieldeds_notice_flag(1, TR1_RES_LITE);
+				dam = RES_LIGHT_ADJ(dam, RANDOMISE);
+				wieldeds_notice_flag(1, TR1_RES_LIGHT);
 			}
 			else if (!blind && !p_ptr->state.resist_blind)
 			{
@@ -4214,7 +4214,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 
 				Term_xtra(TERM_XTRA_DELAY, msec);
 
-				lite_spot(y, x);
+				light_spot(y, x);
 
 				Term_fresh();
 				if (p_ptr->redraw) redraw_stuff();
@@ -4361,7 +4361,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 				/* Hack -- Erase if needed */
 				if (player_has_los_bold(y, x))
 				{
-					lite_spot(y, x);
+					light_spot(y, x);
 				}
 			}
 

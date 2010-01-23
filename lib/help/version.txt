@@ -194,7 +194,7 @@ code that handles all bolts, beams, and balls, the new "update_view()" code
 that simplifies line of sight computation, or the new "generate()" code that 
 builds new levels in the dungeon.  Many changes have been made to increase 
 efficiency, including the new "process_monsters()" and "update_monsters()" 
-functions, and the new "objdes()" and "lite_spot()" routines.  The generic 
+functions, and the new "objdes()" and "light_spot()" routines.  The generic 
 "z-term.c" package yielded efficient screen updates, and enabled the 
 efficient use of "color". 
 

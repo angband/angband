@@ -1178,7 +1178,7 @@ char (*inkey_hack)(int flush_first) = NULL;
  * triggers.  The "inkey_base" flag is extremely dangerous!
  *
  * If "inkey_flag" is TRUE, then we will assume that we are waiting for a
- * normal command, and we will only show the cursor if "OPT(hilite_player)" is
+ * normal command, and we will only show the cursor if "OPT(highlight_player)" is
  * TRUE (or if the player is in a store), instead of always showing the
  * cursor.  The various "main-xxx.c" files should avoid saving the game
  * in response to a "menu item" request unless "inkey_flag" is TRUE, to
@@ -1282,7 +1282,7 @@ ui_event_data inkey_ex(void)
 	(void)Term_get_cursor(&cursor_state);
 
 	/* Show the cursor if waiting, except sometimes in "command" mode */
-	if (!inkey_scan && (!inkey_flag || OPT(hilite_player) || character_icky))
+	if (!inkey_scan && (!inkey_flag || OPT(highlight_player) || character_icky))
 	{
 		/* Show the cursor */
 		(void)Term_set_cursor(TRUE);

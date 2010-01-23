@@ -121,7 +121,7 @@
 #define ART_IDX_GEN_FA 47
 #define ART_IDX_GEN_HLIFE 48
 #define ART_IDX_GEN_FEATHER 49
-#define ART_IDX_GEN_LITE 50
+#define ART_IDX_GEN_LIGHT 50
 #define ART_IDX_GEN_SINV 51
 #define ART_IDX_GEN_ESP 52
 #define ART_IDX_GEN_SDIG 53
@@ -129,7 +129,7 @@
 #define ART_IDX_GEN_LRES 55
 #define ART_IDX_GEN_RPOIS 56
 #define ART_IDX_GEN_RFEAR 57
-#define ART_IDX_GEN_RLITE 58
+#define ART_IDX_GEN_RLIGHT 58
 #define ART_IDX_GEN_RDARK 59
 #define ART_IDX_GEN_RBLIND 60
 #define ART_IDX_GEN_RCONF 61
@@ -208,17 +208,17 @@ static s16b art_idx_gen[] =
 	{ART_IDX_GEN_STAT, ART_IDX_GEN_SUST, ART_IDX_GEN_STEALTH,
 	ART_IDX_GEN_SEARCH, ART_IDX_GEN_INFRA, ART_IDX_GEN_SPEED,
 	ART_IDX_GEN_IMMUNE, ART_IDX_GEN_FA, ART_IDX_GEN_HLIFE,
-	ART_IDX_GEN_FEATHER, ART_IDX_GEN_LITE, ART_IDX_GEN_SINV,
+	ART_IDX_GEN_FEATHER, ART_IDX_GEN_LIGHT, ART_IDX_GEN_SINV,
 	ART_IDX_GEN_ESP, ART_IDX_GEN_SDIG, ART_IDX_GEN_REGEN,
 	ART_IDX_GEN_LRES, ART_IDX_GEN_RPOIS, ART_IDX_GEN_RFEAR,
-	ART_IDX_GEN_RLITE, ART_IDX_GEN_RDARK, ART_IDX_GEN_RBLIND,
+	ART_IDX_GEN_RLIGHT, ART_IDX_GEN_RDARK, ART_IDX_GEN_RBLIND,
 	ART_IDX_GEN_RCONF, ART_IDX_GEN_RSOUND, ART_IDX_GEN_RSHARD,
 	ART_IDX_GEN_RNEXUS, ART_IDX_GEN_RNETHER, ART_IDX_GEN_RCHAOS,
 	ART_IDX_GEN_RDISEN, ART_IDX_GEN_AC, ART_IDX_GEN_TUNN,
 	ART_IDX_GEN_ACTIV};
 static s16b art_idx_high_resist[] =
 	{ART_IDX_GEN_RPOIS, ART_IDX_GEN_RFEAR,
-	ART_IDX_GEN_RLITE, ART_IDX_GEN_RDARK, ART_IDX_GEN_RBLIND,
+	ART_IDX_GEN_RLIGHT, ART_IDX_GEN_RDARK, ART_IDX_GEN_RBLIND,
 	ART_IDX_GEN_RCONF, ART_IDX_GEN_RSOUND, ART_IDX_GEN_RSHARD,
 	ART_IDX_GEN_RNEXUS, ART_IDX_GEN_RNETHER, ART_IDX_GEN_RCHAOS,
 	ART_IDX_GEN_RDISEN};
@@ -502,7 +502,7 @@ static s16b choose_item(int a_idx)
 		tval == TV_STAFF || tval == TV_WAND || tval == TV_ROD ||
 		tval == TV_SCROLL || tval == TV_POTION || tval == TV_FLASK ||
 		tval == TV_FOOD || tval == TV_MAGIC_BOOK || tval ==
-		TV_PRAYER_BOOK || tval == TV_GOLD || tval == TV_LITE ||
+		TV_PRAYER_BOOK || tval == TV_GOLD || tval == TV_LIGHT ||
 		tval == TV_AMULET || tval == TV_RING || sval == SV_GROND ||
 		sval == SV_MORGOTH)
 	{
@@ -1399,12 +1399,12 @@ static void parse_frequencies(void)
 			}
 		}
 
-		if (a_ptr->flags[2] & TR2_LITE)
+		if (a_ptr->flags[2] & TR2_LIGHT)
 		{
 			/* Handle permanent light */
 			LOG_PRINT("Adding 1 for permanent light - general.\n");
 
-			(artprobs[ART_IDX_GEN_LITE])++;
+			(artprobs[ART_IDX_GEN_LIGHT])++;
 		}
 
 		if (a_ptr->flags[2] & TR2_SEE_INVIS)
@@ -1524,7 +1524,7 @@ static void parse_frequencies(void)
 			temp = 0;
 			if (a_ptr->flags[1] & TR1_RES_POIS) temp++;
 			if (a_ptr->flags[1] & TR1_RES_FEAR) temp++;
-			if (a_ptr->flags[1] & TR1_RES_LITE) temp++;
+			if (a_ptr->flags[1] & TR1_RES_LIGHT) temp++;
 			if (a_ptr->flags[1] & TR1_RES_DARK) temp++;
 			if (a_ptr->flags[1] & TR1_RES_BLIND) temp++;
 			if (a_ptr->flags[1] & TR1_RES_CONFU) temp++;
@@ -1556,12 +1556,12 @@ static void parse_frequencies(void)
 			(artprobs[ART_IDX_GEN_RFEAR])++;
 		}
 
-		if (a_ptr->flags[1] & TR1_RES_LITE)
+		if (a_ptr->flags[1] & TR1_RES_LIGHT)
 		{
 			/* Resist light ability */
 			LOG_PRINT("Adding 1 for resist light - general.\n");
 
-			(artprobs[ART_IDX_GEN_RLITE])++;
+			(artprobs[ART_IDX_GEN_RLIGHT])++;
 		}
 
 		if (a_ptr->flags[1] & TR1_RES_DARK)
@@ -2085,8 +2085,8 @@ static bool add_resist_fear(artifact_type *a_ptr)
 
 static bool add_resist_light(artifact_type *a_ptr)
 {
-	if (a_ptr->flags[1] & TR1_RES_LITE) return FALSE;
-	a_ptr->flags[1] |= TR1_RES_LITE;
+	if (a_ptr->flags[1] & TR1_RES_LIGHT) return FALSE;
+	a_ptr->flags[1] |= TR1_RES_LIGHT;
 	LOG_PRINT("Adding ability: resist light\n");
 	return TRUE;
 }
@@ -2224,7 +2224,7 @@ static void add_feather_falling(artifact_type *a_ptr)
 
 static void add_permanent_light(artifact_type *a_ptr)
 {
-	a_ptr->flags[2] |= TR2_LITE;
+	a_ptr->flags[2] |= TR2_LIGHT;
 	LOG_PRINT("Adding ability: permanent light\n");
 }
 
@@ -2824,7 +2824,7 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			add_immunity(a_ptr);
 			break;
 
-		case ART_IDX_GEN_LITE:
+		case ART_IDX_GEN_LIGHT:
 			add_permanent_light(a_ptr);
 			break;
 
@@ -2844,7 +2844,7 @@ static void add_ability_aux(artifact_type *a_ptr, int r, s32b target_power)
 			add_resist_fear(a_ptr);
 			break;
 
-		case ART_IDX_GEN_RLITE:
+		case ART_IDX_GEN_RLIGHT:
 			add_resist_light(a_ptr);
 			break;
 
@@ -3134,7 +3134,7 @@ static void scramble_artifact(int a_idx)
 		a_ptr->flags[0] = a_ptr->flags[1] = 0;
 
 		/* Clear the activations for rings and amulets but not lights */
-		if (a_ptr->tval != TV_LITE) a_ptr->effect = 0;
+		if (a_ptr->tval != TV_LIGHT) a_ptr->effect = 0;
 
 		/* Artifacts ignore everything */
 		a_ptr->flags[2] = (TR2_IGNORE_MASK);
@@ -3304,7 +3304,7 @@ static void scramble_artifact(int a_idx)
 	LOG_PRINT1("Power-based alloc_prob is %d\n", a_ptr->alloc_prob);
 
 	/* Restore some flags */
-	if (a_ptr->tval == TV_LITE) a_ptr->flags[2] |= TR2_NO_FUEL;
+	if (a_ptr->tval == TV_LIGHT) a_ptr->flags[2] |= TR2_NO_FUEL;
 	if (a_idx < ART_MIN_NORMAL) a_ptr->flags[2] |= TR2_INSTA_ART;
 
 	/*

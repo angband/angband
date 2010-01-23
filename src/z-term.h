@@ -310,12 +310,12 @@ struct term
 
 #define ATTR_FULL        0    /* full color translation */
 #define ATTR_MONO        1    /* mono color translation */
-#define ATTR_VGA        2    /* 16 color translation */
-#define ATTR_BLIND        3    /* "Blind" color translation */
-#define ATTR_LITE        4    /* "Torchlit" color translation */
+#define ATTR_VGA         2    /* 16 color translation */
+#define ATTR_BLIND       3    /* "Blind" color translation */
+#define ATTR_LIGHT       4    /* "Torchlit" color translation */
 #define ATTR_DARK        5    /* "Dark" color translation */
 #define ATTR_HIGH        6    /* "Highlight" color translation */
-#define ATTR_METAL        7    /* "Metallic" color translation */
+#define ATTR_METAL       7    /* "Metallic" color translation */
 #define ATTR_MISC        8    /* "Miscellaneous" color translation - see misc_to_attr */
 
 #define MAX_ATTR        9

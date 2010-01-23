@@ -193,10 +193,10 @@ void get_attack_colors(atk_colors *col)
 		if (m < INVEN_PACK && o_ptr->tval == TV_FOOD)
 			col->melee[RBE_EAT_FOOD] = TERM_YELLOW;
 
-		/* Eat light - requires a fueled lite */
-		if (m == INVEN_LITE && !(f[2] & TR2_NO_FUEL) &&
+		/* Eat light - requires a fuelled light */
+		if (m == INVEN_LIGHT && !(f[2] & TR2_NO_FUEL) &&
 				o_ptr->timeout > 0)
-			col->melee[RBE_EAT_LITE] = TERM_YELLOW;
+			col->melee[RBE_EAT_LIGHT] = TERM_YELLOW;
 
 		/* Disenchantment - requires an enchanted item */
 		if (m >= INVEN_WIELD && (!known || o_ptr->to_a > 0 ||
@@ -321,8 +321,8 @@ void get_attack_colors(atk_colors *col)
 		set_spell_color(col, 0, RSF0_BR_CHAO, TERM_ORANGE);
 
 	/* Light */
-	if (!st.resist_lite)
-		set_spell_color(col, 0, RSF0_BR_LITE, TERM_ORANGE);
+	if (!st.resist_light)
+		set_spell_color(col, 0, RSF0_BR_LIGHT, TERM_ORANGE);
 
 	/* Darkness */
 	if (!st.resist_dark)
@@ -651,11 +651,11 @@ static void describe_monster_spells(int r_idx, const monster_lore *l_ptr, const 
 		vc[vn] = get_spell_color(colors, 0, RSF0_BR_NETH);
 		vd[vn++] = MIN(known_hp / BR_NETH_DIVISOR, BR_NETH_MAX);
 	}
-	if (l_ptr->spell_flags[0] & RSF0_BR_LITE)
+	if (l_ptr->spell_flags[0] & RSF0_BR_LIGHT)
 	{
 		vp[vn] = "light";
-		vc[vn] = get_spell_color(colors, 0, RSF0_BR_LITE);
-		vd[vn++] = MIN(known_hp / BR_LITE_DIVISOR, BR_LITE_MAX);
+		vc[vn] = get_spell_color(colors, 0, RSF0_BR_LIGHT);
+		vd[vn++] = MIN(known_hp / BR_LIGHT_DIVISOR, BR_LIGHT_MAX);
 	}
 	if (l_ptr->spell_flags[0] & RSF0_BR_DARK)
 	{
@@ -1299,7 +1299,7 @@ static void describe_monster_attack(int r_idx, const monster_lore *l_ptr, const 
 			case RBE_EAT_GOLD:  q = "steal gold"; break;
 			case RBE_EAT_ITEM:  q = "steal items"; break;
 			case RBE_EAT_FOOD:  q = "eat your food"; break;
-			case RBE_EAT_LITE:  q = "absorb light"; break;
+			case RBE_EAT_LIGHT:  q = "absorb light"; break;
 			case RBE_ACID:      q = "shoot acid"; break;
 			case RBE_ELEC:      q = "electrify"; break;
 			case RBE_FIRE:      q = "burn"; break;
@@ -1425,7 +1425,7 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 	/* Collect susceptibilities */
 	vn = 0;
 	if (f[2] & RF2_HURT_ROCK) vp[vn++] = "rock remover";
-	if (f[2] & RF2_HURT_LITE) vp[vn++] = "bright light";
+	if (f[2] & RF2_HURT_LIGHT) vp[vn++] = "bright light";
 	if (f[2] & RF2_HURT_FIRE) vp[vn++] = "fire";
 	if (f[2] & RF2_HURT_COLD) vp[vn++] = "cold";
 
@@ -1450,7 +1450,7 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 	if (f[2] & RF2_RES_NEXUS) vp[vn++] = "nexus";
 	if (f[2] & RF2_RES_DISE)  vp[vn++] = "disenchantment";
 	/* Note lack of vulnerability as a resistance */
-	if ((l_ptr->flags[2] & RF2_HURT_LITE) && !(f[2] & RF2_HURT_LITE)) vp[vn++] = "bright light";
+	if ((l_ptr->flags[2] & RF2_HURT_LIGHT) && !(f[2] & RF2_HURT_LIGHT)) vp[vn++] = "bright light";
 	if ((l_ptr->flags[2] & RF2_HURT_ROCK) && !(f[2] & RF2_HURT_ROCK)) vp[vn++] = "rock remover";
 
 	if (vn)

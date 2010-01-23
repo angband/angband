@@ -646,7 +646,7 @@ static void player_outfit(void)
 	i_ptr = &object_type_body;
 
 	/* Hack -- Give the player some torches */
-	object_prep(i_ptr, lookup_kind(TV_LITE, SV_LITE_TORCH), 0, MINIMISE);
+	object_prep(i_ptr, lookup_kind(TV_LIGHT, SV_LIGHT_TORCH), 0, MINIMISE);
 	apply_magic(i_ptr, 0, FALSE, FALSE, FALSE);
 	i_ptr->number = (byte)rand_range(3, 7);
 	i_ptr->origin = ORIGIN_BIRTH;

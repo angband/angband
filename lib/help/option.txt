@@ -77,8 +77,8 @@ Player color indicates low hit points    [hp_changes_color]
 Show dungeon level in feet    [depth_in_feet]
     Display dungeon depths in "feet" instead of "levels".
 
-***** <hilite_player>
-Highlight the player with the cursor    [hilite_player]
+***** <highlight_player>
+Highlight the player with the cursor    [highlight_player]
     Place the visible cursor on the player.  This looks fine on some Unix
     machines, but horrible on most graphics machines.  Note that only some
     machines are able to *not* show the cursor, but on those machines, hiding
@@ -104,16 +104,16 @@ Show labels in equipment listings    [show_labels]
     Display "labels" (what an object is being used for) for objects in all
     "equipment" listings.
 
-***** <view_yellow_lite>
-Use special colors for torch-lit grids    [view_yellow_lite]
+***** <view_yellow_light>
+Use special colors for torch-lit grids    [view_yellow_light]
     This option causes special colors to be used for "torch-lit" grids in
-    certain situations (see "view_granite_lite" and "view_special_lite").
+    certain situations (see "view_granite_light" and "view_special_light").
     Turning this option off will slightly improve game speed.
 
-***** <view_bright_lite>
-Use special colors for 'viewable' grids    [view_bright_lite]
+***** <view_bright_light>
+Use special colors for 'viewable' grids    [view_bright_light]
     This option causes special colors to be used for non "viewable" grids
-    in certain situations (see "view_granite_lite" and "view_special_lite").
+    in certain situations (see "view_granite_light" and "view_special_light").
     When this option is set, floor grids which are normally drawn in "white"
     but which are not currently "viewable" by the player are instead drawn
     in "dark gray".  This makes the "viewable" grids to appear "brighter"
@@ -121,26 +121,26 @@ Use special colors for 'viewable' grids    [view_bright_lite]
     grids are in "line of sight".  Turning this option off will probably
     increase the speed of the game.
 
-***** <view_granite_lite>
-Use special colors for wall grids (slow)    [view_granite_lite]
+***** <view_granite_light>
+Use special colors for wall grids (slow)    [view_granite_light]
     This option activates a special color scheme for all "wall" grids which
     are normally drawn in "white" (as walls and rubble normally are).  When
     the player is blind, we use "dark gray", else if the grid is torch-lit,
-    we use "yellow" (or "white") depending on the "view_yellow_lite" option,
-    else if the "view_bright_lite" option is set, and the grid is not in line
+    we use "yellow" (or "white") depending on the "view_yellow_light" option,
+    else if the "view_bright_light" option is set, and the grid is not in line
     of sight, or the grid is dark, or the grid is only "partially" lit, then
     we use "gray", otherwise we use the normal "white".  Turning this option
     off will probably increase the speed of the game.  This option may not
     work well if the attr/char codes for walls/veins have been changed, or
     if "graphics" are being used.
 
-***** <view_special_lite>
-Use special colors for floor grids (slow)    [view_special_lite]
+***** <view_special_light>
+Use special colors for floor grids (slow)    [view_special_light]
     This option activates a special color scheme for all "floor" grids which
     are normally drawn in "white" (as they normally are).  When the player is
     blind, we use "dark gray", else if the grid is torch-lit, we use "yellow"
-    (or "white") depending on the "view_yellow_lite" option, else if the grid
-    is "dark", we use "dark gray", else if the "view_bright_lite" option is
+    (or "white") depending on the "view_yellow_light" option, else if the grid
+    is "dark", we use "dark gray", else if the "view_bright_light" option is
     set, and the grid is not in line of sight, we use "gray", otherwise we
     use the normal "white".  Turning this option off will probably increase
     the speed of the game.  This option may not work well if the attr/char
@@ -153,7 +153,7 @@ Map remembers all perma-lit grids    [view_perma_grids]
     were perma-lit, but does not distinguish between dark floor grids,
     unexplored floor grids, and unknown grids.  Turning off this option
     allows the player to always know which lit floor grids are in line
-    of sight, but this is better accomplished by the "view_bright_lite"
+    of sight, but this is better accomplished by the "view_bright_light"
     option.  Note that any non-floor grids which is seen by the player
     are always memorized, and "object" which is seen by the player is
     memorized independantly from the memorization of the grid itself.
@@ -165,10 +165,10 @@ Map remembers all torch-lit grids    [view_torch_grids]
     have been explored, but also which ones are "dark", because the use
     of this option activates a special "color scheme" for the display of
     floor grids, in which "dark" grids are drawn in "dark gray", "lit"
-    grids are drawn in "white", and (if the "view_bright_lite" option is
+    grids are drawn in "white", and (if the "view_bright_light" option is
     set) "lit" grids which are also in line of sight are drawn in "orange".
     Note that grids which are currently "torch-lit" are considered to be
-    "lit", and are thus drawn in "white", unless the "view_yellow_lite"
+    "lit", and are thus drawn in "white", unless the "view_yellow_light"
     option is set, in which case they are drawn in "yellow".
 
 

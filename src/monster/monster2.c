@@ -85,7 +85,7 @@ void delete_monster_idx(int i)
 	mon_cnt--;
 
 	/* Visual update */
-	lite_spot(y, x);
+	light_spot(y, x);
 }
 
 
@@ -1297,7 +1297,7 @@ void update_mon(int m_idx, bool full)
 			m_ptr->ml = TRUE;
 
 			/* Draw the monster */
-			lite_spot(fy, fx);
+			light_spot(fy, fx);
 
 			/* Update health bar as needed */
 			if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
@@ -1323,7 +1323,7 @@ void update_mon(int m_idx, bool full)
 			m_ptr->ml = FALSE;
 
 			/* Erase the monster */
-			lite_spot(fy, fx);
+			light_spot(fy, fx);
 
 			/* Update health bar as needed */
 			if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
@@ -1562,8 +1562,8 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 
 	/* Redraw */
-	lite_spot(y1, x1);
-	lite_spot(y2, x2);
+	light_spot(y1, x1);
+	light_spot(y2, x2);
 }
 
 
@@ -2604,7 +2604,7 @@ static learn_attack_struct attack_table[] = {
 	{ DRS_RES_COLD, 1, TR1_RES_COLD },
 	{ DRS_RES_POIS, 1, TR1_RES_POIS },
 	{ DRS_RES_FEAR, 1, TR1_RES_FEAR },
-	{ DRS_RES_LITE, 1, TR1_RES_LITE },
+	{ DRS_RES_LIGHT, 1, TR1_RES_LIGHT },
 	{ DRS_RES_DARK, 1, TR1_RES_DARK },
 	{ DRS_RES_BLIND, 1, TR1_RES_BLIND },
 	{ DRS_RES_CONFU, 1, TR1_RES_CONFU },
@@ -2705,9 +2705,9 @@ void update_smart_learn(int m_idx, int what)
 			break;
 		}
 
-		case DRS_RES_LITE:
+		case DRS_RES_LIGHT:
 		{
-			if (p_ptr->state.resist_lite) m_ptr->smart |= (SM_RES_LITE);
+			if (p_ptr->state.resist_light) m_ptr->smart |= (SM_RES_LIGHT);
 			break;
 		}
 

@@ -749,12 +749,12 @@ static void a_m_aux_4(object_type *o_ptr, int level, int power)
 	/* Apply magic (good or bad) according to type */
 	switch (o_ptr->tval)
 	{
-		case TV_LITE:
+		case TV_LIGHT:
 		{
 			/* Default fuel levels */
-			if (o_ptr->sval == SV_LITE_TORCH)
+			if (o_ptr->sval == SV_LIGHT_TORCH)
 				o_ptr->timeout = DEFAULT_TORCH;
-			else if (o_ptr->sval == SV_LITE_LANTERN)
+			else if (o_ptr->sval == SV_LIGHT_LANTERN)
 				o_ptr->timeout = DEFAULT_LAMP;
 
 			break;
@@ -809,7 +809,7 @@ static const u32b ego_resists[] =
 {
 	TR1_RES_POIS,
 	TR1_RES_FEAR,
-	TR1_RES_LITE,
+	TR1_RES_LIGHT,
 	TR1_RES_DARK,
 	TR1_RES_BLIND,
 	TR1_RES_CONFU,
@@ -844,7 +844,7 @@ static const u32b ego_powers[] =
 {
 	TR2_SLOW_DIGEST,
 	TR2_FEATHER,
-	TR2_LITE,
+	TR2_LIGHT,
 	TR2_REGEN,
 	TR2_TELEPATHY,
 	TR2_SEE_INVIS,
@@ -1070,7 +1070,7 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 			break;
 		}
 
-		case TV_LITE:
+		case TV_LIGHT:
 		{
 			if (power == 2 || power == -2)
 				make_ego_item(o_ptr, lev, (bool)(power > 0));

@@ -182,7 +182,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 		fmt = "You are wielding %s (%c).";
 	else if (slot == INVEN_BOW)
 		fmt = "You are shooting with %s (%c).";
-	else if (slot == INVEN_LITE)
+	else if (slot == INVEN_LIGHT)
 		fmt = "Your light source is %s (%c).";
 	else if (combined_ammo)
 		fmt = "You combine %s in your quiver (%c).";
@@ -379,7 +379,7 @@ void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 	}
 
 	/* Refilled from a lantern */
-	if (o_ptr->sval == SV_LITE_LANTERN)
+	if (o_ptr->sval == SV_LIGHT_LANTERN)
 	{
 		/* Unstack if necessary */
 		if (o_ptr->number > 1)

@@ -55,7 +55,7 @@
 #define AVG_LAUNCHER_DMG	9
 #define MELEE_DAMAGE_BOOST     10
 #define RING_BRAND_DMG	       30 /* fudge to boost off-weapon brand power */
-#define BASE_LITE_POWER         6
+#define BASE_LIGHT_POWER         6
 #define BASE_JEWELRY_POWER	4
 #define BASE_ARMOUR_POWER	2
 #define DAMAGE_POWER            4 /* i.e. 2 */
@@ -507,9 +507,9 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			}
 			break;
 		}
-		case TV_LITE:
+		case TV_LIGHT:
 		{
-			p += BASE_LITE_POWER;
+			p += BASE_LIGHT_POWER;
 			LOG_PRINT("Light source, adding base power\n");
 
 			p += sign(o_ptr->to_h) * (ABS(o_ptr->to_h) * TO_HIT_POWER);
@@ -564,7 +564,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			 * Big boost for extra light radius 
 			 * n.b. Another few points are added below 
 			 */
-			if (f[2] & TR2_LITE) p += 30;
+			if (f[2] & TR2_LIGHT) p += 30;
 
 			break;
 		}
@@ -808,7 +808,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	ADD_POWER2("free action",           14, TR2_FREE_ACT,    2, misc++);
 	ADD_POWER2("hold life",             12, TR2_HOLD_LIFE,   2, misc++);
 	ADD_POWER1("feather fall",           1, TR2_FEATHER,     2);
-	ADD_POWER2("permanent light",        3, TR2_LITE,        2, misc++);
+	ADD_POWER2("permanent light",        3, TR2_LIGHT,       2, misc++);
 	ADD_POWER2("see invisible",         10, TR2_SEE_INVIS,   2, misc++);
 	ADD_POWER2("telepathy",             70, TR2_TELEPATHY,   2, misc++);
 	ADD_POWER2("slow digestion",         2, TR2_SLOW_DIGEST, 2, misc++);
@@ -818,7 +818,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	ADD_POWER2("resist cold",            6, TR1_RES_COLD,    1, lowres++);
 	ADD_POWER2("resist poison",         28, TR1_RES_POIS,    1, highres++);
 	ADD_POWER2("resist fear",            6, TR1_RES_FEAR,    1, highres++);
-	ADD_POWER2("resist light",           6, TR1_RES_LITE,    1, highres++);
+	ADD_POWER2("resist light",           6, TR1_RES_LIGHT,   1, highres++);
 	ADD_POWER2("resist dark",           16, TR1_RES_DARK,    1, highres++);
 	ADD_POWER2("resist blindness",      16, TR1_RES_BLIND,   1, highres++);
 	ADD_POWER2("resist confusion",      24, TR1_RES_CONFU,   1, highres++);
@@ -835,7 +835,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	for (i = 2; i <= misc; i++)
 	{
 		p += i;
-		LOG_PRINT1("Adding power for multiple misc abilites, total is %d\n", p);
+		LOG_PRINT1("Adding power for multiple misc abilities, total is %d\n", p);
 	}
 
 	for (i = 2; i <= lowres; i++)
