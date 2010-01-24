@@ -133,6 +133,7 @@ Better grammar in ID messages
 Fix possibility of infinite loop when generating ego-items
 Update description of GAIN_EXP effect
 Player melee confusion effect now triggers before monster death is checked
+Rename "Detect Hidden Doors/Traps" to "Detect Doors, Traps & Stairs"
 
 
 Misc
