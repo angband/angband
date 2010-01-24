@@ -965,7 +965,9 @@ static bool describe_effect(const object_type *o_ptr, u32b f3, bool full,
 		}
 		else if (object_effect(o_ptr) != 0)
 		{
-			if (o_ptr->tval == TV_FOOD)
+			if (effect_aim(k_ptr->effect))
+				text_out("It can be aimed.\n");
+			else if (o_ptr->tval == TV_FOOD)
 				text_out("It can be eaten.\n");
 			else if (o_ptr->tval == TV_POTION)
 				text_out("It can be drunk.\n");
