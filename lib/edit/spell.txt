@@ -186,7 +186,7 @@ D: (resistance to fear, and a bonus of +12 to-hit) for 25+1d25 turns.
 N:28:Berserker
 I:90:7:1
 D:Cures 30 points of damage, removes fear, and grants you berserk
-D: strength (resistance to fear, a bonus of +12 to-hit, and a penalty
+D: strength (resistance to fear, a bonus of +24 to-hit, and a penalty
 D: of -10 to AC) for 25+1d25 turns.
 
 N:29:Haste Self
