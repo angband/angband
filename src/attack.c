@@ -361,13 +361,15 @@ void py_attack(int y, int x)
 				k += o_ptr->to_d;
 				k = critical_norm(o_ptr->weight, o_ptr->to_h, k, &crit_msg);
 
-				/* Learn by use */
+				/* Learn by use for the weapon */
 				object_notice_attack_plusses(o_ptr);
-				wieldeds_notice_on_attack();
 
 				if (do_quake)
 					wieldeds_notice_flag(2, TR2_IMPACT);
 			}
+
+			/* Learn by use for other equipped items */
+			wieldeds_notice_on_attack();
 
 			/* Apply the player damage bonuses */
 			k += p_ptr->state.to_d;
