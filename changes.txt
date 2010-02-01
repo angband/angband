@@ -28,3 +28,4 @@ List of bugs fixed
 ==================
 #1099 Fixed the description of the Berserker spell
 #1103 Unarmed attacks now allow the player to learn "notice on attack" things
+#1107 Fixed typo bug display green in 16-color GCU mode
