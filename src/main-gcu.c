@@ -1062,7 +1062,7 @@ errr init_gcu(int argc, char **argv)
 		colortable[TERM_SLATE]    = (COLOR_PAIR(PAIR_WHITE));
 		colortable[TERM_ORANGE]   = (COLOR_PAIR(PAIR_RED) | A_BRIGHT);
 		colortable[TERM_RED]      = (COLOR_PAIR(PAIR_RED));
-		colortable[TERM_GREEN]    = (COLOR_PAIR(PAIR_YELLOW));
+		colortable[TERM_GREEN]    = (COLOR_PAIR(PAIR_GREEN));
 		colortable[TERM_BLUE]     = (COLOR_PAIR(PAIR_BLUE));
 		colortable[TERM_UMBER]    = (COLOR_PAIR(PAIR_YELLOW));
 		colortable[TERM_L_DARK]   = (COLOR_PAIR(PAIR_BLACK) | A_BRIGHT);
