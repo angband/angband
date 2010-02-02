@@ -463,9 +463,9 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 
 	/* Get the value of the stack of wands, or a single item */
 	if ((o_ptr->tval == TV_WAND) || (o_ptr->tval == TV_STAFF))
-		price = object_value(o_ptr, qty, TRUE);
+		price = object_value(o_ptr, qty, FALSE);
 	else
-		price = object_value(o_ptr, 1, TRUE);
+		price = object_value(o_ptr, 1, FALSE);
 
 	/* Worthless items */
 	if (price <= 0) return (0L);
@@ -918,7 +918,7 @@ static int store_carry(int st, object_type *o_ptr)
 		{
 			u32b f[OBJ_FLAG_N];
 			object_flags(o_ptr, f);
-			
+
 			if (!(f[2] & TR2_NO_FUEL))
 			{
 				if (o_ptr->sval == SV_LIGHT_TORCH)
@@ -2373,7 +2373,7 @@ static bool store_purchase(int item)
 static bool store_will_buy_tester(const object_type *o_ptr)
 {
 	int this_store = current_store();
-	
+
 	if (this_store == STORE_NONE) return FALSE;
 
 	return store_will_buy(this_store, o_ptr);
@@ -2389,63 +2389,63 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 	object_type sold_item;
 	int price, dummy, value;
 	char o_name[120];
-	
+
 	/* Get the item */
 	object_type *o_ptr = object_from_item_idx(item);
-	
+
 	/* Cannot remove cursed objects */
 	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
 	{
 		msg_print("Hmmm, it seems to be cursed.");
 		return;
-	}	
-	
+	}
+
 	/* Check we are somewhere we can sell the items. */
 	if (current_store() == STORE_NONE)
 	{
 		msg_print("You cannot sell items when not in a store.");
 		return;
 	}
-	
+
 	/* Check the store wants the items being sold */
 	if (!store_will_buy(current_store(), o_ptr))
 	{
 		msg_print("I do not wish to purchase this item.");
 		return;
 	}
-	
+
 	/* Get a copy of the object representing the number being sold */
 	object_copy_amt(&sold_item, o_ptr, amt);
-	
+
 	/* Check if the store has space for the items */
 	if (!store_check_num(current_store(), &sold_item))
 	{
 		msg_print("I have not the room in my store to keep it.");
 		return;
 	}
-	
+
 	price = price_item(&sold_item, TRUE, amt);
-	
+
 	/* Get some money */
 	p_ptr->au += price;
-	
+
 	/* Update the display */
 	store_flags |= STORE_GOLD_CHANGE;
-	
+
 	/* Update the auto-history if selling an artifact that was previously un-IDed. (Ouch!) */
 	if (artifact_p(o_ptr))
 		history_add_artifact(o_ptr->name1, TRUE);
-	
+
 	/* Combine / Reorder the pack (later) */
 	p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
-	
+
 	/* Redraw stuff */
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
-	
+
 	/* Get the "apparent" value */
-	dummy = object_value(&sold_item, amt, TRUE);
+	dummy = object_value(&sold_item, amt, FALSE);
 /*	msg_format("Dummy is %d", dummy); */
-	
+
 	/* Identify original object */
 	object_notice_everything(o_ptr);
 
@@ -2454,30 +2454,30 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 
 	/* The item belongs to the store now */
 	sold_item.ident |= IDENT_STORE;
-	   
+
 	/*
 	* Hack -- Allocate charges between those wands, staves, or rods
 	* sold and retained, unless all are being sold.
 	 */
 	distribute_charges(o_ptr, &sold_item, amt);
-	
+
 	/* Get the "actual" value */
-	value = object_value(&sold_item, amt, TRUE);
+	value = object_value(&sold_item, amt, FALSE);
 /*	msg_format("Value is %d", value); */
 
 	/* Get the description all over again */
 	object_desc(o_name, sizeof(o_name), &sold_item, ODESC_PREFIX | ODESC_FULL);
-	
+
 	/* Describe the result (in message buffer) */
 	msg_format("You sold %s (%c) for %ld gold.",
-			   o_name, index_to_label(item), (long)price);
-	
+		o_name, index_to_label(item), (long)price);
+
 	/* Analyze the prices (and comment verbally) */
 	purchase_analyze(price, value, dummy);
-	
+
 	/* Set squelch flag */
 	p_ptr->notice |= PN_SQUELCH;
-	
+
 	/* Take the object from the player */
 	inven_item_increase(item, -amt);
 	inven_item_optimize(item);
