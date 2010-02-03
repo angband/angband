@@ -1074,18 +1074,18 @@ errr init_gcu(int argc, char **argv)
 		colortable[TERM_L_BLUE]   = (COLOR_PAIR(PAIR_BLUE) | A_BRIGHT);
 		colortable[TERM_L_UMBER]  = (COLOR_PAIR(PAIR_YELLOW));
 
-		colortable[TERM_PURPLE]      = (COLOR_PAIR(3));
-		colortable[TERM_VIOLET]      = (COLOR_PAIR(3));
-		colortable[TERM_TEAL]        = (COLOR_PAIR(3));
-		colortable[TERM_MUD]         = (COLOR_PAIR(3));
-		colortable[TERM_L_YELLOW]    = (COLOR_PAIR(3));
-		colortable[TERM_MAGENTA]     = (COLOR_PAIR(3));
-		colortable[TERM_L_TEAL]      = (COLOR_PAIR(3));
-		colortable[TERM_L_VIOLET]    = (COLOR_PAIR(3));
-		colortable[TERM_L_PINK]      = (COLOR_PAIR(3));
-		colortable[TERM_MUSTARD]     = (COLOR_PAIR(3));
-		colortable[TERM_BLUE_SLATE]  = (COLOR_PAIR(3));
-		colortable[TERM_DEEP_L_BLUE] = (COLOR_PAIR(3));
+		colortable[TERM_PURPLE]      = (COLOR_PAIR(PAIR_MAGENTA));
+		colortable[TERM_VIOLET]      = (COLOR_PAIR(PAIR_MAGENTA));
+		colortable[TERM_TEAL]        = (COLOR_PAIR(PAIR_CYAN));
+		colortable[TERM_MUD]         = (COLOR_PAIR(PAIR_YELLOW));
+		colortable[TERM_L_YELLOW]    = (COLOR_PAIR(PAIR_YELLOW | A_BRIGHT));
+		colortable[TERM_MAGENTA]     = (COLOR_PAIR(PAIR_MAGENTA | A_BRIGHT));
+		colortable[TERM_L_TEAL]      = (COLOR_PAIR(PAIR_CYAN | A_BRIGHT));
+		colortable[TERM_L_VIOLET]    = (COLOR_PAIR(PAIR_MAGENTA | A_BRIGHT));
+		colortable[TERM_L_PINK]      = (COLOR_PAIR(PAIR_MAGENTA | A_BRIGHT));
+		colortable[TERM_MUSTARD]     = (COLOR_PAIR(PAIR_YELLOW));
+		colortable[TERM_BLUE_SLATE]  = (COLOR_PAIR(PAIR_BLUE));
+		colortable[TERM_DEEP_L_BLUE] = (COLOR_PAIR(PAIR_BLUE));
 	}
 
 #endif
