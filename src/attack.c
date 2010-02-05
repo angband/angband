@@ -238,13 +238,16 @@ static int get_brand_mult(object_type *o_ptr, const monster_type *m_ptr,
 			/* notice any brand or slay that would affect the monster */
 			object_notice_slays(o_ptr, s_ptr->slay_flag);
 
-			if (mult < s_ptr->mult)	mult = s_ptr->mult;
+			if (mult < s_ptr->mult)
+			{
+				mult = s_ptr->mult;
 
-			/* Set the hit verb appropriately */
-			if (is_ranged)
-				*hit_verb = s_ptr->range_verb;
-			else
-				*hit_verb = s_ptr->melee_verb;
+				/* Set the hit verb appropriately */
+				if (is_ranged)
+					*hit_verb = s_ptr->range_verb;
+				else
+					*hit_verb = s_ptr->melee_verb;
+			}
 		}
 	}
 
