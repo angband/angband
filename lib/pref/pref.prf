@@ -186,6 +186,10 @@ C:1:T
 A:f
 C:1:t
 
+# Fire default ammo at nearest target
+A:h
+C:1:g
+
 # Bash a door (Force)
 A:B
 C:1:f

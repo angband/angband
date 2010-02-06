@@ -416,6 +416,13 @@ Fire an item (f) or Fire an item (t)
         a direction.  Targeting mode (see the next command) can be invoked
         with "*" at the "Direction?" prompt.  This command takes some energy.
 
+Fire default ammo at nearest (h) or (g)
+        If you have a missile weapon equipped and the appropriate ammunition
+        in your quiver, you can use this command to fire at the nearest
+        visible enemy. This command will cancel itself if you lack a
+        launcher, ammunition or a visible target that is in range. The 
+        first ammunition of the correct type found in the quiver is used.
+
 Throw an item (v)
         You may throw any object carried by your character.  The lighter
         the object, the farther you can throw it.  Only one object from a
@@ -494,16 +501,16 @@ Look around (l) or Examine things (x)
 
 Observe an item (I)
         This command lets you observe a previously *identified* item.
-		This will tell you things about the special powers of the object,
-		as well as attack information for weapons.
+        This will tell you things about the special powers of the object,
+        as well as attack information for weapons.
         
 List visible monsters ([)
         This command lists all monsters that are visible to you, telling you
         how many there are of each kind.
 
 List visible items (])
-		This command lists all items that are visible to you, telling you
-		how of each there are.
+        This command lists all items that are visible to you, telling you
+        how of each there are.
 
 --- Message Commands ---
 
@@ -590,7 +597,7 @@ Interact with visuals - option submenu.
         from user pref files, or modify the attr/char mappings for the
         monsters, objects, and terrain features.  You must use the "redraw"
         command (^R) to redraw the map after changing attr/char mappings.
-		NOTE: It is generally easier to modify visuals via the "knowledge"
+        NOTE: It is generally easier to modify visuals via the "knowledge"
         menus.
 
 Interact with colors - option submenu.
@@ -656,10 +663,10 @@ Load screen dump (left-paren)
 Save screen dump (right-paren)
         This command dumps a "snap-shot" of the current screen to the file
         "dump.txt", including encoded color information.  The command has
-		three variants:
-		- text, a simple ascii dump of the screen concatenated with a dump of
-		the color attributes.  It may be viewed in color with the '(' command.
-		- html, suitable for viewing in a web browser.
-		- forum embedded html for vBulletin, suitable for pasting in
-		web forums like http://angband.oook.cz/forums.
+        three variants:
+        - text, a simple ascii dump of the screen concatenated with a dump of
+        the color attributes.  It may be viewed in color with the '(' command.
+        - html, suitable for viewing in a web browser.
+        - forum embedded html for vBulletin, suitable for pasting in
+        web forums like http://angband.oook.cz/forums.
 
