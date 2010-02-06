@@ -3799,11 +3799,12 @@ static void init_paths(void)
 	{
 		quit("unable to find 'lib' dir");
 	}
-	/* Create any missing directories */
-	create_needed_dirs();
 
 	/* Prepare the paths */
 	init_file_paths(path, path, path);
+
+	/* Create any missing directories */
+	create_needed_dirs();
 
 	/* Build the filename */
 	path_build(path, sizeof(path), ANGBAND_DIR_FILE, "news.txt");

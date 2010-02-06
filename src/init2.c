@@ -159,19 +159,19 @@ void create_needed_dirs(void)
 	char dirpath[512];
 
 	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_USER, "");
-	if (!dir_create(dirpath)) quit_fmt("Cannot create %s", dirpath);
+	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
 
 	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_SAVE, "");
-	if (!dir_create(dirpath)) quit_fmt("Cannot create %s", dirpath);
+	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
 
 	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_APEX, "");
-	if (!dir_create(dirpath)) quit_fmt("Cannot create %s", dirpath);
+	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
 
 	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_INFO, "");
-	if (!dir_create(dirpath)) quit_fmt("Cannot create %s", dirpath);
+	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
 
 	path_build(dirpath, sizeof(dirpath), ANGBAND_DIR_HELP, "");
-	if (!dir_create(dirpath)) quit_fmt("Cannot create %s", dirpath);
+	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
 }
 
 
