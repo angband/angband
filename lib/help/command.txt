@@ -416,7 +416,7 @@ Fire an item (f) or Fire an item (t)
         a direction.  Targeting mode (see the next command) can be invoked
         with "*" at the "Direction?" prompt.  This command takes some energy.
 
-Fire default ammo at nearest (h) or (g)
+Fire default ammo at nearest (h) or (TAB)
         If you have a missile weapon equipped and the appropriate ammunition
         in your quiver, you can use this command to fire at the nearest
         visible enemy. This command will cancel itself if you lack a
