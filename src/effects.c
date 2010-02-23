@@ -601,14 +601,20 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			(void)clear_timed(TMD_CUT, TRUE);
 			(void)clear_timed(TMD_AMNESIA, TRUE);
 
+			if (do_res_stat(A_STR)) *ident = TRUE;
+			if (do_res_stat(A_INT)) *ident = TRUE;
+			if (do_res_stat(A_WIS)) *ident = TRUE;
+			if (do_res_stat(A_DEX)) *ident = TRUE;
+			if (do_res_stat(A_CON)) *ident = TRUE;
+			if (do_res_stat(A_CHR)) *ident = TRUE;
+
 			/* Recalculate max. hitpoints */
 			update_stuff();
 
 			hp_player(5000);
 
 			*ident = TRUE;
-
-			/* Now restore all */
+			return TRUE;
 		}
 
 		case EF_RESTORE_ALL:
