@@ -246,7 +246,12 @@ static void calc_mana(void)
 	bool old_cumber_armor = p_ptr->cumber_armor;
 
 	/* Hack -- Must be literate */
-	if (!cp_ptr->spell_book) return;
+	if (!cp_ptr->spell_book)
+	{
+		p_ptr->csp = 0;
+		p_ptr->csp_frac = 0;
+		return;
+	}
 
 
 	/* Extract "effective" player level */
@@ -1142,8 +1147,12 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		state->heavy_wield = TRUE;
 	}
 
+	/* Non-object means barehanded attacks */
+	if (!o_ptr->k_idx)
+		assert(o_ptr->weight == 0);
+
 	/* Normal weapons */
-	if (o_ptr->k_idx && !state->heavy_wield)
+	if (!state->heavy_wield)
 	{
 		/* Calculate number of blows */
 		state->num_blow = calc_blows(o_ptr, state) + extra_blows;
