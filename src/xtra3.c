@@ -339,8 +339,8 @@ static void prt_sp(int row, int col)
 	char cur_sp[32], max_sp[32];
 	byte color = player_sp_attr();
 
-	/* Do not show mana unless it matters */
-	if (!cp_ptr->spell_book) return;
+	/* Do not show mana unless we have some */
+	if (!p_ptr->msp) return;
 
 	put_str("SP ", row, col);
 
