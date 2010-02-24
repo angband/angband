@@ -248,6 +248,7 @@ static void calc_mana(void)
 	/* Hack -- Must be literate */
 	if (!cp_ptr->spell_book)
 	{
+		p_ptr->msp = 0;
 		p_ptr->csp = 0;
 		p_ptr->csp_frac = 0;
 		return;
