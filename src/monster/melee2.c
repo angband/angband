@@ -84,21 +84,31 @@ static void remove_bad_spells(int m_idx, u32b* const f)
 	u32b smart = 0L;
 
 
-	/* Too stupid to know anything */
-	if (r_ptr->flags[1] & (RF1_STUPID)) return;
+	/* Stupid monsters act randomly */
+	if (r_ptr->flags[1] & RF1_STUPID) return;
 
 
-	/* Must be cheating or learning */
-	if (!OPT(adult_ai_cheat) && !OPT(adult_ai_learn)) return;
-
-	/* take working copy of spell flags */
+	/* Take working copy of spell flags */
 	race_flags_assign_spell(f2, f);
+
+
+	/* Don't heal if full */
+	if (m_ptr->hp >= m_ptr->maxhp) f2[2] &= ~(RSF2_HEAL);
+	
+	/* Don't haste if hasted */
+	/* if (m_ptr->mspeed > r_ptr->speed + 10) f2[2] &= ~(RSF2_HASTE); */
+
+	/* Don't teleport to if the player is already next to us */
+	if (m_ptr->cdis == 1) f2[2] &= ~(RSF2_TELE_TO);
+
+
 
 	/* Update acquired knowledge */
 	if (OPT(adult_ai_learn))
 	{
 		/* Hack -- Occasionally forget player status */
-		if (m_ptr->smart && (randint0(100) < 1)) m_ptr->smart = 0L;
+		if (m_ptr->smart && one_in_(100))
+			m_ptr->smart = 0L;
 
 		/* Use the memorized flags */
 		smart = m_ptr->smart;
@@ -145,177 +155,176 @@ static void remove_bad_spells(int m_idx, u32b* const f)
 	}
 
 
-	/* Nothing known */
-	if (!smart) return;
+	/* Cancel out certain flags based on knowledge */
+	if (smart)
+	{
+		if (smart & SM_IMM_ACID)
+		{
+			if (int_outof(r_ptr, 100)) f2[0] &= ~(RSF0_BR_ACID);
+			if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BA_ACID);
+			if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BO_ACID);
+		}
+		else if ((smart & SM_OPP_ACID) && (smart & SM_RES_ACID))
+		{
+			if (int_outof(r_ptr, 80)) f2[0] &= ~(RSF0_BR_ACID);
+			if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BA_ACID);
+			if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BO_ACID);
+		}
+		else if ((smart & SM_OPP_ACID) || (smart & SM_RES_ACID))
+		{
+			if (int_outof(r_ptr, 30)) f2[0] &= ~(RSF0_BR_ACID);
+			if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BA_ACID);
+			if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BO_ACID);
+		}
 
 
-	if (smart & (SM_IMM_ACID))
-	{
-		if (int_outof(r_ptr, 100)) f2[0] &= ~(RSF0_BR_ACID);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BA_ACID);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BO_ACID);
-	}
-	else if ((smart & (SM_OPP_ACID)) && (smart & (SM_RES_ACID)))
-	{
-		if (int_outof(r_ptr, 80)) f2[0] &= ~(RSF0_BR_ACID);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BA_ACID);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BO_ACID);
-	}
-	else if ((smart & (SM_OPP_ACID)) || (smart & (SM_RES_ACID)))
-	{
-		if (int_outof(r_ptr, 30)) f2[0] &= ~(RSF0_BR_ACID);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BA_ACID);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BO_ACID);
-	}
+		if (smart & SM_IMM_ELEC)
+		{
+			if (int_outof(r_ptr, 100)) f2[0] &= ~(RSF0_BR_ELEC);
+			if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BA_ELEC);
+			if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BO_ELEC);
+		}
+		else if ((smart & SM_OPP_ELEC) && (smart & SM_RES_ELEC))
+		{
+			if (int_outof(r_ptr, 80)) f2[0] &= ~(RSF0_BR_ELEC);
+			if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BA_ELEC);
+			if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BO_ELEC);
+		}
+		else if ((smart & SM_OPP_ELEC) || (smart & SM_RES_ELEC))
+		{
+			if (int_outof(r_ptr, 30)) f2[0] &= ~(RSF0_BR_ELEC);
+			if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BA_ELEC);
+			if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BO_ELEC);
+		}
 
 
-	if (smart & (SM_IMM_ELEC))
-	{
-		if (int_outof(r_ptr, 100)) f2[0] &= ~(RSF0_BR_ELEC);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BA_ELEC);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BO_ELEC);
-	}
-	else if ((smart & (SM_OPP_ELEC)) && (smart & (SM_RES_ELEC)))
-	{
-		if (int_outof(r_ptr, 80)) f2[0] &= ~(RSF0_BR_ELEC);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BA_ELEC);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BO_ELEC);
-	}
-	else if ((smart & (SM_OPP_ELEC)) || (smart & (SM_RES_ELEC)))
-	{
-		if (int_outof(r_ptr, 30)) f2[0] &= ~(RSF0_BR_ELEC);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BA_ELEC);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BO_ELEC);
-	}
+		if (smart & SM_IMM_FIRE)
+		{
+			if (int_outof(r_ptr, 100)) f2[0] &= ~(RSF0_BR_FIRE);
+			if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BA_FIRE);
+			if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BO_FIRE);
+		}
+		else if ((smart & SM_OPP_FIRE) && (smart & SM_RES_FIRE))
+		{
+			if (int_outof(r_ptr, 80)) f2[0] &= ~(RSF0_BR_FIRE);
+			if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BA_FIRE);
+			if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BO_FIRE);
+		}
+		else if ((smart & SM_OPP_FIRE) || (smart & SM_RES_FIRE))
+		{
+			if (int_outof(r_ptr, 30)) f2[0] &= ~(RSF0_BR_FIRE);
+			if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BA_FIRE);
+			if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BO_FIRE);
+		}
 
 
-	if (smart & (SM_IMM_FIRE))
-	{
-		if (int_outof(r_ptr, 100)) f2[0] &= ~(RSF0_BR_FIRE);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BA_FIRE);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BO_FIRE);
-	}
-	else if ((smart & (SM_OPP_FIRE)) && (smart & (SM_RES_FIRE)))
-	{
-		if (int_outof(r_ptr, 80)) f2[0] &= ~(RSF0_BR_FIRE);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BA_FIRE);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BO_FIRE);
-	}
-	else if ((smart & (SM_OPP_FIRE)) || (smart & (SM_RES_FIRE)))
-	{
-		if (int_outof(r_ptr, 30)) f2[0] &= ~(RSF0_BR_FIRE);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BA_FIRE);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BO_FIRE);
-	}
+		if (smart & SM_IMM_COLD)
+		{
+			if (int_outof(r_ptr, 100)) f2[0] &= ~(RSF0_BR_COLD);
+			if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BA_COLD);
+			if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BO_COLD);
+			if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BO_ICEE);
+		}
+		else if ((smart & SM_OPP_COLD) && (smart & SM_RES_COLD))
+		{
+			if (int_outof(r_ptr, 80)) f2[0] &= ~(RSF0_BR_COLD);
+			if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BA_COLD);
+			if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BO_COLD);
+			if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BO_ICEE);
+		}
+		else if ((smart & SM_OPP_COLD) || (smart & SM_RES_COLD))
+		{
+			if (int_outof(r_ptr, 30)) f2[0] &= ~(RSF0_BR_COLD);
+			if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BA_COLD);
+			if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BO_COLD);
+			if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BO_ICEE);
+		}
 
 
-	if (smart & (SM_IMM_COLD))
-	{
-		if (int_outof(r_ptr, 100)) f2[0] &= ~(RSF0_BR_COLD);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BA_COLD);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BO_COLD);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BO_ICEE);
-	}
-	else if ((smart & (SM_OPP_COLD)) && (smart & (SM_RES_COLD)))
-	{
-		if (int_outof(r_ptr, 80)) f2[0] &= ~(RSF0_BR_COLD);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BA_COLD);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BO_COLD);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BO_ICEE);
-	}
-	else if ((smart & (SM_OPP_COLD)) || (smart & (SM_RES_COLD)))
-	{
-		if (int_outof(r_ptr, 30)) f2[0] &= ~(RSF0_BR_COLD);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BA_COLD);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BO_COLD);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BO_ICEE);
-	}
+		if ((smart & SM_OPP_POIS) && (smart & SM_RES_POIS))
+		{
+			if (int_outof(r_ptr, 80)) f2[0] &= ~(RSF0_BR_POIS);
+			if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BA_POIS);
+		}
+		else if ((smart & SM_OPP_POIS) || (smart & SM_RES_POIS))
+		{
+			if (int_outof(r_ptr, 30)) f2[0] &= ~(RSF0_BR_POIS);
+			if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BA_POIS);
+		}
 
 
-	if ((smart & (SM_OPP_POIS)) && (smart & (SM_RES_POIS)))
-	{
-		if (int_outof(r_ptr, 80)) f2[0] &= ~(RSF0_BR_POIS);
-		if (int_outof(r_ptr, 80)) f2[1] &= ~(RSF1_BA_POIS);
+		if (smart & SM_RES_FEAR)
+		{
+			if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_SCARE);
+		}
+
+		if (smart & SM_RES_LIGHT)
+		{
+			if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_LIGHT);
+		}
+
+		if (smart & SM_RES_DARK)
+		{
+			if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_DARK);
+			if (int_outof(r_ptr, 50)) f2[1] &= ~(RSF1_BA_DARK);
+		}
+
+		if (smart & SM_RES_BLIND)
+		{
+			if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BLIND);
+		}
+
+		if (smart & SM_RES_CONFU)
+		{
+			if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_CONF);
+			if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_CONF);
+		}
+
+		if (smart & SM_RES_SOUND)
+		{
+			if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_SOUN);
+		}
+
+		if (smart & SM_RES_SHARD)
+		{
+			if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_SHAR);
+		}
+
+		if (smart & SM_RES_NEXUS)
+		{
+			if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_NEXU);
+			if (int_outof(r_ptr, 50)) f2[2] &= ~(RSF2_TELE_LEVEL);
+		}
+
+		if (smart & SM_RES_NETHR)
+		{
+			if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_NETH);
+			if (int_outof(r_ptr, 50)) f2[1] &= ~(RSF1_BA_NETH);
+			if (int_outof(r_ptr, 50)) f2[1] &= ~(RSF1_BO_NETH);
+		}
+
+		if (smart & SM_RES_CHAOS)
+		{
+			if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_CHAO);
+		}
+
+		if (smart & SM_RES_DISEN)
+		{
+			if (int_outof(r_ptr, 100)) f2[0] &= ~(RSF0_BR_DISE);
+		}
+
+
+		if (smart & SM_IMM_FREE)
+		{
+			if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_HOLD);
+			if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_SLOW);
+		}
+
+		if (smart & SM_IMM_MANA)
+		{
+			if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_DRAIN_MANA);
+		}
 	}
-	else if ((smart & (SM_OPP_POIS)) || (smart & (SM_RES_POIS)))
-	{
-		if (int_outof(r_ptr, 30)) f2[0] &= ~(RSF0_BR_POIS);
-		if (int_outof(r_ptr, 30)) f2[1] &= ~(RSF1_BA_POIS);
-	}
-
-
-	if (smart & (SM_RES_FEAR))
-	{
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_SCARE);
-	}
-
-	if (smart & (SM_RES_LIGHT))
-	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_LIGHT);
-	}
-
-	if (smart & (SM_RES_DARK))
-	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_DARK);
-		if (int_outof(r_ptr, 50)) f2[1] &= ~(RSF1_BA_DARK);
-	}
-
-	if (smart & (SM_RES_BLIND))
-	{
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_BLIND);
-	}
-
-	if (smart & (SM_RES_CONFU))
-	{
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_CONF);
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_CONF);
-	}
-
-	if (smart & (SM_RES_SOUND))
-	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_SOUN);
-	}
-
-	if (smart & (SM_RES_SHARD))
-	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_SHAR);
-	}
-
-	if (smart & (SM_RES_NEXUS))
-	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_NEXU);
-		if (int_outof(r_ptr, 50)) f2[2] &= ~(RSF2_TELE_LEVEL);
-	}
-
-	if (smart & (SM_RES_NETHR))
-	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_NETH);
-		if (int_outof(r_ptr, 50)) f2[1] &= ~(RSF1_BA_NETH);
-		if (int_outof(r_ptr, 50)) f2[1] &= ~(RSF1_BO_NETH);
-	}
-
-	if (smart & (SM_RES_CHAOS))
-	{
-		if (int_outof(r_ptr, 50)) f2[0] &= ~(RSF0_BR_CHAO);
-	}
-
-	if (smart & (SM_RES_DISEN))
-	{
-		if (int_outof(r_ptr, 100)) f2[0] &= ~(RSF0_BR_DISE);
-	}
-
-
-	if (smart & (SM_IMM_FREE))
-	{
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_HOLD);
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_SLOW);
-	}
-
-	if (smart & (SM_IMM_MANA))
-	{
-		if (int_outof(r_ptr, 100)) f2[1] &= ~(RSF1_DRAIN_MANA);
-	}
-
 
 	/* XXX XXX XXX No spells left? */
 	/* if (!f4 && !f5 && !f6) ... */
