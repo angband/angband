@@ -8,7 +8,7 @@ releases have been.  Doubtless there will be another release in a few weeks
 time fixing the bugs found herein, but in the meantime, play.
 
 This release was brought to you by (in no particular order): bron, Tobias,
-Eddie Grove, Antoine, Chris Carr, MarbleDice, Erik Osheim, Stefan O'Rear,
+Eddie Grove, Antoine, Chris Carr, William Moore, Erik Osheim, Stefan O'Rear,
 Peter Denison, Andi Sidwell, rhinocesaurus, and Andrew Doull, Marco and Pete
 Mack.  Other people may have contributed too; if you're missed off here,
 please file a bug at http://trac.rephial.org :)
@@ -29,3 +29,4 @@ List of bugs fixed
 #1099 Fixed the description of the Berserker spell
 #1103 Unarmed attacks now allow the player to learn "notice on attack" things
 #1107 Fixed typo bug display green in 16-color GCU mode
+#1123 Fix an update bug with the monster list subwindow

@@ -1523,6 +1523,9 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Update the flow */
 		p_ptr->update |= (PU_UPDATE_FLOW);
+
+		/* Redraw monster list */
+		p_ptr->redraw |= (PR_MONLIST);
 	}
 
 	/* Monster 2 */
@@ -1559,6 +1562,9 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Update the flow */
 		p_ptr->update |= (PU_UPDATE_FLOW);
+
+		/* Redraw monster list */
+		p_ptr->redraw |= (PR_MONLIST);
 	}
 
 
