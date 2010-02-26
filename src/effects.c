@@ -179,7 +179,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 					*ident = TRUE;
 			}
 			*ident = TRUE;
-			wieldeds_notice_flag(1, TR1_RES_POIS);
+			wieldeds_notice_flag(OF_RES_POIS);
 
 			return TRUE;
 		}
@@ -193,7 +193,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 					*ident = TRUE;
 			}
 			*ident = TRUE;
-			wieldeds_notice_flag(1, TR1_RES_BLIND);
+			wieldeds_notice_flag(OF_RES_BLIND);
 
 			return TRUE;
 		}
@@ -207,7 +207,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 					*ident = TRUE;
 			}
 			*ident = TRUE;
-			wieldeds_notice_flag(1, TR1_RES_FEAR);
+			wieldeds_notice_flag(OF_RES_FEAR);
 
 			return TRUE;
 		}
@@ -221,7 +221,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 					*ident = TRUE;
 			}
 			*ident = TRUE;
-			wieldeds_notice_flag(1, TR1_RES_CONFU);
+			wieldeds_notice_flag(OF_RES_CONFU);
 
 			return TRUE;
 		}
@@ -235,7 +235,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 					*ident = TRUE;
 			}
 			*ident = TRUE;
-			wieldeds_notice_flag(1, TR1_RES_CHAOS);
+			wieldeds_notice_flag(OF_RES_CHAOS);
 
 			return TRUE;
 		}
@@ -249,7 +249,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 					*ident = TRUE;
 			}
 			*ident = TRUE;
-			wieldeds_notice_flag(2, TR2_FREE_ACT);
+			wieldeds_notice_flag(OF_FREE_ACT);
 
 			return TRUE;
 		}
@@ -418,7 +418,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 				*ident = TRUE;
 			}
 			*ident = TRUE;
-			wieldeds_notice_flag(2, TR2_HOLD_LIFE);
+			wieldeds_notice_flag(OF_HOLD_LIFE);
 			return TRUE;
 		}
 
@@ -999,8 +999,8 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 			unlight_area(10, 3);
 
-			wieldeds_notice_flag(1, TR1_RES_BLIND);
-			wieldeds_notice_flag(1, TR1_RES_DARK);
+			wieldeds_notice_flag(OF_RES_BLIND);
+			wieldeds_notice_flag(OF_RES_DARK);
 
 			*ident = TRUE;
 			return TRUE;

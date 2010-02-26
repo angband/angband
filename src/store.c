@@ -667,9 +667,8 @@ static bool store_object_similar(const object_type *o_ptr, const object_type *j_
 	if (o_ptr->tval == TV_CHEST) return (0);
 
 	/* Different flags */
-	if (o_ptr->flags[0] != j_ptr->flags[0] ||
-		o_ptr->flags[1] != j_ptr->flags[1] ||
-		o_ptr->flags[2] != j_ptr->flags[2]) return FALSE;
+	if (!of_is_equal(o_ptr->flags, j_ptr->flags))
+		return FALSE;
 
 	/* They match, so they must be similar */
 	return (TRUE);
@@ -707,8 +706,8 @@ static void store_object_absorb(object_type *o_ptr, object_type *j_ptr)
 			monster_race *r_ptr = &r_info[o_ptr->origin_xtra];
 			monster_race *s_ptr = &r_info[j_ptr->origin_xtra];
 
-			bool r_uniq = (r_ptr->flags[0] & RF0_UNIQUE) ? TRUE : FALSE;
-			bool s_uniq = (s_ptr->flags[0] & RF0_UNIQUE) ? TRUE : FALSE;
+			bool r_uniq = rf_has(r_ptr->flags, RF_UNIQUE) ? TRUE : FALSE;
+			bool s_uniq = rf_has(s_ptr->flags, RF_UNIQUE) ? TRUE : FALSE;
 
 			if (r_uniq && !s_uniq) act = 0;
 			else if (s_uniq && !r_uniq) act = 1;
@@ -916,10 +915,10 @@ static int store_carry(int st, object_type *o_ptr)
 		/* Refuel lights to the standard amount */
 		case TV_LIGHT:
 		{
-			u32b f[OBJ_FLAG_N];
+			bitflag f[OF_SIZE];
 			object_flags(o_ptr, f);
 
-			if (!(f[2] & TR2_NO_FUEL))
+			if (!of_has(f, OF_NO_FUEL))
 			{
 				if (o_ptr->sval == SV_LIGHT_TORCH)
 					o_ptr->timeout = DEFAULT_TORCH;
@@ -2031,9 +2030,7 @@ static int find_inven(const object_type *o_ptr)
 
 
 		/* Different flags */
-		if (o_ptr->flags[0] != j_ptr->flags[0] ||
-			o_ptr->flags[1] != j_ptr->flags[1] ||
-			o_ptr->flags[2] != j_ptr->flags[2])
+		if (!of_is_equal(o_ptr->flags, j_ptr->flags))
 			continue;
 
 		/* They match, so add up */

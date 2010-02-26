@@ -203,40 +203,40 @@ static int get_brand_mult(object_type *o_ptr, const monster_type *m_ptr,
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
-	u32b f[OBJ_FLAG_N], known_f[OBJ_FLAG_N];
+	bitflag f[OF_SIZE], known_f[OF_SIZE];
 	object_flags(o_ptr, f);
 	object_flags_known(o_ptr, known_f);
 
 	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
 	{
-		if (!(f[0] & s_ptr->slay_flag)) continue;
+		if (!of_has(f, s_ptr->slay_flag)) continue;
 
 		/* Learn about monster resistance/vulnerability IF:
 		 * 1) The slay flag on the object is known OR
 		 * 2) The monster does not possess the appropriate resistance flag OR
 		 * 3) The monster does possess the appropriate vulnerability flag
 		 */
-		if (known_f[0] & s_ptr->slay_flag ||
-		    (s_ptr->monster_flag && (r_ptr->flags[2] & s_ptr->monster_flag)) ||
-		    (s_ptr->resist_flag && !(r_ptr->flags[2] & s_ptr->resist_flag)))
+		if (of_has(known_f, s_ptr->slay_flag) ||
+		    (s_ptr->monster_flag && rf_has(r_ptr->flags, s_ptr->monster_flag)) ||
+		    (s_ptr->resist_flag && !rf_has(r_ptr->flags, s_ptr->resist_flag)))
 		{
 			if (m_ptr->ml && s_ptr->monster_flag)
 			{
-				l_ptr->flags[2] |= s_ptr->monster_flag;
+				rf_on(l_ptr->flags, s_ptr->monster_flag);
 			}
 
 			if (m_ptr->ml && s_ptr->resist_flag)
 			{
-				l_ptr->flags[2] |= s_ptr->resist_flag;
+				rf_on(l_ptr->flags, s_ptr->resist_flag);
 			}
 		}
 
 		/* If the monster doesn't match or the slay flag does */
-		if ((s_ptr->brand && !(r_ptr->flags[2] & s_ptr->resist_flag)) || 
-			(r_ptr->flags[2] & s_ptr->monster_flag))
+		if ((s_ptr->brand && !rf_has(r_ptr->flags, s_ptr->resist_flag)) || 
+		    rf_has(r_ptr->flags, s_ptr->monster_flag))
 		{
 			/* notice any brand or slay that would affect the monster */
-			object_notice_slays(o_ptr, s_ptr->slay_flag);
+			object_notice_slay(o_ptr, s_ptr->slay_flag);
 
 			if (mult < s_ptr->mult)
 			{
@@ -368,7 +368,7 @@ void py_attack(int y, int x)
 				object_notice_attack_plusses(o_ptr);
 
 				if (do_quake)
-					wieldeds_notice_flag(2, TR2_IMPACT);
+					wieldeds_notice_flag(OF_IMPACT);
 			}
 
 			/* Learn by use for other equipped items */
@@ -404,11 +404,11 @@ void py_attack(int y, int x)
 				/* Update the lore */
 				if (m_ptr->ml)
 				{
-					l_ptr->flags[2] |= (RF2_NO_CONF);
+					rf_on(l_ptr->flags, RF_NO_CONF);
 				}
 
 				/* Confuse the monster */
-				if (r_ptr->flags[2] & (RF2_NO_CONF))
+				if (rf_has(r_ptr->flags, RF_NO_CONF))
 				{
 					msg_format("%^s is unaffected.", m_name);
 				}
@@ -645,10 +645,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 				cptr note_dies = " dies.";
 
 				/* Some monsters get "destroyed" */
-				if ((r_ptr->flags[2] & RF2_DEMON) ||
-						(r_ptr->flags[2] & RF2_UNDEAD) ||
-						(r_ptr->flags[1] & RF1_STUPID) ||
-						strchr("Evg", r_ptr->d_char))
+				if (monster_is_unusual(r_ptr))
 				{
 					/* Special note at death */
 					note_dies = " is destroyed.";
@@ -1038,10 +1035,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 				cptr note_dies = " dies.";
 
 				/* Some monsters get "destroyed" */
-				if ((r_ptr->flags[2] & (RF2_DEMON)) ||
-				    (r_ptr->flags[2] & (RF2_UNDEAD)) ||
-				    (r_ptr->flags[1] & (RF1_STUPID)) ||
-				    (strchr("Evg", r_ptr->d_char)))
+				if (monster_is_unusual(r_ptr))
 				{
 					/* Special note at death */
 					note_dies = " is destroyed.";

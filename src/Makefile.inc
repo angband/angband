@@ -150,7 +150,7 @@ depgen:
   z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h config.h \
   defines.h option.h types.h object/constants.h object/types.h \
   object/object.h monster/types.h player/types.h player/player.h store.h \
-  ui.h z-type.h externs.h bitflag.h object/tvalsval.h monster/constants.h
+  ui.h z-type.h externs.h object/tvalsval.h monster/constants.h
 ./monster/monster1.o: monster/monster1.c angband.h h-basic.h z-file.h z-form.h \
   z-util.h z-virt.h z-rand.h z-term.h ui-event.h z-quark.h z-msg.h \
   config.h defines.h option.h types.h object/constants.h object/types.h \

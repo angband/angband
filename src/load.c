@@ -33,6 +33,8 @@ static int rd_item(object_type *o_ptr)
 	byte tmp8u;
 	u16b tmp16u;
 
+	size_t i;
+
 	object_kind *k_ptr;
 
 	char buf[128];
@@ -101,16 +103,19 @@ static int rd_item(object_type *o_ptr)
 	rd_byte(&o_ptr->origin_depth);
 	rd_u16b(&o_ptr->origin_xtra);
 
-	rd_u32b(&o_ptr->flags[0]);
-	rd_u32b(&o_ptr->flags[1]);
-	rd_u32b(&o_ptr->flags[2]);
+	/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
+	for (i = 0; i < 12 && i < OF_SIZE; i++)
+		rd_byte(&o_ptr->flags[i]);
+	if (i < 12) strip_bytes(12 - i);
+	
 
 	memset(&o_ptr->known_flags, 0, sizeof(o_ptr->known_flags));
 	if (ver > 4)
 	{
-		rd_u32b(&o_ptr->known_flags[0]);
-		rd_u32b(&o_ptr->known_flags[1]);
-		rd_u32b(&o_ptr->known_flags[2]);
+		/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
+		for (i = 0; i < 12 && i < OF_SIZE; i++)
+			rd_byte(&o_ptr->known_flags[i]);
+		if (i < 12) strip_bytes(12 - i);
 	}
 	else if (ver > 2)
 	{
@@ -245,7 +250,7 @@ static int rd_item(object_type *o_ptr)
 		}
 
 		/* Hack -- enforce legal pval */
-		if (e_ptr->flags[0] & (TR0_PVAL_MASK))
+		if (flags_test(e_ptr->flags, OF_SIZE, OF_PVAL_MASK, FLAG_END))
 		{
 			/* Force a meaningful pval */
 			if (!o_ptr->pval) o_ptr->pval = 1;
@@ -452,22 +457,22 @@ int rd_monster_memory(u32b version)
 	/* Read the available records */
 	for (r_idx = 0; r_idx < tmp16u; r_idx++)
 	{
-		int i;
+		size_t i;
 
 		monster_race *r_ptr = &r_info[r_idx];
 		monster_lore *l_ptr = &l_list[r_idx];
-			
-			
+
+
 		/* Count sights/deaths/kills */
 		rd_s16b(&l_ptr->sights);
 		rd_s16b(&l_ptr->deaths);
 		rd_s16b(&l_ptr->pkills);
 		rd_s16b(&l_ptr->tkills);
-		
+
 		/* Count wakes and ignores */
 		rd_byte(&l_ptr->wake);
 		rd_byte(&l_ptr->ignore);
-			
+
 		/* Count drops */
 		rd_byte(&l_ptr->drop_gold);
 		rd_byte(&l_ptr->drop_item);
@@ -481,21 +486,26 @@ int rd_monster_memory(u32b version)
 			rd_byte(&l_ptr->blows[i]);
 
 		/* Memorize flags */
-		for (i = 0; i < RACE_FLAG_STRICT_UB; i++)
-			rd_u32b(&l_ptr->flags[i]);
-		for (i = 0; i < RACE_FLAG_SPELL_STRICT_UB; i++)
-			rd_u32b(&l_ptr->spell_flags[i]);
-			
-			
+
+		/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
+		for (i = 0; i < 12 && i < RF_SIZE; i++)
+			rd_byte(&l_ptr->flags[i]);
+		if (i < 12) strip_bytes(12 - i);
+
+		/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
+		for (i = 0; i < 12 && i < RSF_SIZE; i++)
+			rd_byte(&l_ptr->spell_flags[i]);
+		if (i < 12) strip_bytes(12 - i);
+
+
 		/* Read the "Racial" monster limit per level */
 		rd_byte(&r_ptr->max_num);
-			
+
 		/* XXX */
 		strip_bytes(3);
 
 		/* Repair the spell lore flags */
-		for (i = 0; i < RACE_FLAG_SPELL_STRICT_UB; i++)
-			l_ptr->spell_flags[i] &= r_ptr->spell_flags[i];
+		rsf_inter(l_ptr->spell_flags, r_ptr->spell_flags);
 	}
 	
 	return 0;
@@ -958,7 +968,7 @@ int rd_player_spells(u32b version)
  */
 int rd_randarts(u32b version)
 {
-	int i;
+	size_t i, j;
 	byte tmp8u;
 	s16b tmp16s;
 	u16b tmp16u;
@@ -1037,9 +1047,10 @@ int rd_randarts(u32b version)
 
 				rd_s32b(&a_ptr->cost);
 
-				rd_u32b(&a_ptr->flags[0]);
-				rd_u32b(&a_ptr->flags[1]);
-				rd_u32b(&a_ptr->flags[2]);
+				/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
+				for (j = 0; j < 12 && j < OF_SIZE; j++)
+					rd_byte(&a_ptr->flags[j]);
+				if (j < 12) strip_bytes(OF_SIZE - j);
 
 				rd_byte(&a_ptr->level);
 				rd_byte(&a_ptr->rarity);
@@ -1056,8 +1067,8 @@ int rd_randarts(u32b version)
 				a_ptr->time.sides = time_sides;
 			}
 
-		/* Initialize only the randart names */
-		do_randart(seed_randart, FALSE);
+			/* Initialize only the randart names */
+			do_randart(seed_randart, FALSE);
 		}
 		else
 		{

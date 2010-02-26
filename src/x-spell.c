@@ -340,7 +340,7 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 				break;
 			case PRAYER_ORB_OF_DRAINING:
 				strnfmt(p, len, " %d+3d6", plev +
-				        (plev / ((cp_ptr->flags & CF_BLESS_WEAPON) ? 2 : 4)));
+				        (plev / (player_has(PF_BLESS_WEAPON) ? 2 : 4)));
 				break;
 			case PRAYER_CURE_CRITICAL_WOUNDS:
 				my_strcpy(p, " heal 25%", len);
@@ -403,7 +403,7 @@ void get_spell_info(int tval, int spell, char *p, size_t len)
 static int beam_chance(void)
 {
 	int plev = p_ptr->lev;
-	return ((cp_ptr->flags & CF_BEAM) ? plev : (plev / 2));
+	return (player_has(PF_BEAM) ? plev : (plev / 2));
 }
 
 
@@ -1011,7 +1011,7 @@ static bool cast_priest_spell(int spell, int dir)
 		{
 			fire_ball(GF_HOLY_ORB, dir,
 			          (damroll(3, 6) + plev +
-			           (plev / ((cp_ptr->flags & CF_BLESS_WEAPON) ? 2 : 4))),
+			           (plev / (player_has(PF_BLESS_WEAPON) ? 2 : 4))),
 			          ((plev < 30) ? 2 : 3));
 			break;
 		}

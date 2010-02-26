@@ -221,6 +221,11 @@ void strip_bytes(int n)
 	while (n--) rd_byte(&tmp8u);
 }
 
+void pad_bytes(int n)
+{
+	while (n--) wr_byte(0);
+}
+
 
 
 
@@ -271,6 +276,7 @@ static bool try_save(ang_file *file)
 		assert(pos == SAVEFILE_HEAD_SIZE);
 		
 		file_write(file, (char *)savefile_head, SAVEFILE_HEAD_SIZE);
+
 		file_write(file, (char *)buffer, buffer_pos);
 
 		/* pad to 4 byte multiples */

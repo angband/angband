@@ -19,6 +19,7 @@
 /*
  * Include the mid-level includes.
  */
+#include "z-bitflag.h"
 #include "z-file.h"
 #include "z-form.h"
 #include "z-util.h"

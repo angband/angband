@@ -77,8 +77,8 @@ static void regenhp(int percent)
 	{
 		/* Redraw */
 		p_ptr->redraw |= (PR_HP);
-		wieldeds_notice_flag(2, TR2_REGEN);
-		wieldeds_notice_flag(2, TR2_IMPAIR_HP);
+		wieldeds_notice_flag(OF_REGEN);
+		wieldeds_notice_flag(OF_IMPAIR_HP);
 	}
 }
 
@@ -122,8 +122,8 @@ static void regenmana(int percent)
 	{
 		/* Redraw */
 		p_ptr->redraw |= (PR_MANA);
-		wieldeds_notice_flag(2, TR2_REGEN);
-		wieldeds_notice_flag(2, TR2_IMPAIR_MANA);
+		wieldeds_notice_flag(OF_REGEN);
+		wieldeds_notice_flag(OF_IMPAIR_MANA);
 	}
 }
 
@@ -161,7 +161,7 @@ static void regen_monsters(void)
 			if (!frac) frac = 1;
 
 			/* Hack -- Some monsters regenerate quickly */
-			if (r_ptr->flags[1] & (RF1_REGENERATE)) frac *= 2;
+			if (rf_has(r_ptr->flags, RF_REGENERATE)) frac *= 2;
 
 			/* Hack -- Regenerate */
 			m_ptr->hp += frac;
@@ -691,7 +691,7 @@ static void process_world(void)
 	/* Burn some fuel in the current light */
 	if (o_ptr->tval == TV_LIGHT)
 	{
-		u32b f[OBJ_FLAG_N];
+		bitflag f[OF_SIZE];
 		bool burn_fuel = TRUE;
 
 		/* Get the object flags */
@@ -702,7 +702,7 @@ static void process_world(void)
 			burn_fuel = FALSE;
 
 		/* If the light has the NO_FUEL flag, well... */
-		if (f[2] & TR2_NO_FUEL)
+		if (of_has(f, OF_NO_FUEL))
 		    burn_fuel = FALSE;
 
 		/* Use some fuel (except on artifacts, or during the day) */
@@ -757,7 +757,7 @@ static void process_world(void)
 			check_experience();
 		}
 
-		wieldeds_notice_flag(2, TR2_DRAIN_EXP);
+		wieldeds_notice_flag(OF_DRAIN_EXP);
 	}
 
 	/* Recharge activatable objects and rods */
@@ -772,7 +772,7 @@ static void process_world(void)
 	/* Random teleportation */
 	if (p_ptr->state.teleport && one_in_(100))
 	{
-		wieldeds_notice_flag(2, TR2_TELEPORT);
+		wieldeds_notice_flag(OF_TELEPORT);
 		teleport_player(40);
 		disturb(0, 0);
 	}
@@ -824,15 +824,13 @@ static void process_player_aux(void)
 	bool changed = FALSE;
 
 	static int old_monster_race_idx = 0;
-
-	static u32b old_flags[RACE_FLAG_STRICT_UB] = { 0L, 0L, 0L };
-	static u32b old_spell_flags[RACE_FLAG_SPELL_STRICT_UB] = { 0L, 0L, 0L };
+	static bitflag old_flags[RF_SIZE];
+	static bitflag old_spell_flags[RSF_SIZE];
 
 	static byte old_blows[MONSTER_BLOW_MAX];
 
 	static byte	old_cast_innate = 0;
 	static byte	old_cast_spell = 0;
-
 
 	/* Tracking a monster */
 	if (p_ptr->monster_race_idx)
@@ -852,8 +850,8 @@ static void process_player_aux(void)
 		/* Check for change of any kind */
 		if (changed ||
 		    (old_monster_race_idx != p_ptr->monster_race_idx) ||
-		    race_flags_differ(old_flags, l_ptr->flags) ||
-		    race_flags_differ_spell(old_spell_flags, l_ptr->spell_flags) ||
+		    !rf_is_equal(old_flags, l_ptr->flags) ||
+		    !rsf_is_equal(old_spell_flags, l_ptr->spell_flags) ||
 		    (old_cast_innate != l_ptr->cast_innate) ||
 		    (old_cast_spell != l_ptr->cast_spell))
 		{
@@ -861,8 +859,8 @@ static void process_player_aux(void)
 			old_monster_race_idx = p_ptr->monster_race_idx;
 
 			/* Memorize flags */
-			race_flags_assign(old_flags, l_ptr->flags);
-			race_flags_assign_spell(old_spell_flags, l_ptr->spell_flags);
+			rf_copy(old_flags, l_ptr->flags);
+			rsf_copy(old_spell_flags, l_ptr->spell_flags);
 
 			/* Memorize blows */
 			memmove(old_blows, l_ptr->blows, sizeof(byte)*MONSTER_BLOW_MAX);
@@ -1000,7 +998,7 @@ static void process_player(void)
 		p_ptr->energy_use = 0;
 
 		/* Dwarves detect treasure */
-		if (rp_ptr->new_racial_flags & NRF_SEE_ORE)
+		if (player_has(PF_SEE_ORE))
 		{
 			/* Only if they are in good shape */
 			if (!p_ptr->timed[TMD_IMAGE] &&
@@ -1137,7 +1135,7 @@ static void process_player(void)
 					r_ptr = &r_info[m_ptr->r_idx];
 
 					/* Skip non-multi-hued monsters */
-					if (!(r_ptr->flags[0] & (RF0_ATTR_MULTI))) continue;
+					if (!rf_has(r_ptr->flags, RF_ATTR_MULTI)) continue;
 
 					/* Reset the flag */
 					shimmer_monsters = TRUE;

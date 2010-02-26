@@ -482,7 +482,7 @@ static byte squelch_level_of(const object_type *o_ptr)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	byte value;
-	u32b f[OBJ_FLAG_N];
+	bitflag f[OF_SIZE];
 
 	object_flags_known(o_ptr, f);
 
@@ -505,7 +505,7 @@ static byte squelch_level_of(const object_type *o_ptr)
 	/* And lights */
 	if (o_ptr->tval == TV_LIGHT)
 	{
-		if (f[2] & TR2_OBVIOUS_MASK)
+		if (flags_test(f, OF_SIZE, OF_OBVIOUS_MASK, FLAG_END))
 			return SQUELCH_ALL;
 		if ((o_ptr->to_h > 0) || (o_ptr->to_d > 0) || (o_ptr->to_a > 0))
 			return SQUELCH_GOOD;

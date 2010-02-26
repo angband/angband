@@ -12,6 +12,7 @@
 #define INCLUDED_INIT_H
 
 #include "h-basic.h"
+#include "z-bitflag.h"
 #include "z-rand.h"
 
 /*

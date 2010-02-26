@@ -149,7 +149,7 @@ bool make_attack_normal(int m_idx)
 
 
 	/* Not allowed to attack */
-	if (r_ptr->flags[0] & (RF0_NEVER_BLOW)) return (FALSE);
+	if (rf_has(r_ptr->flags, RF_NEVER_BLOW)) return (FALSE);
 
 
 	/* Total armor */
@@ -248,12 +248,12 @@ bool make_attack_normal(int m_idx)
 				/* Learn about the evil flag */
 				if (m_ptr->ml)
 				{
-					l_ptr->flags[2] |= (RF2_EVIL);
+					rf_on(l_ptr->flags, RF_EVIL);
 				}
 
-				if ((r_ptr->flags[2] & (RF2_EVIL)) &&
-				    (p_ptr->lev >= rlev) &&
-				    ((randint0(100) + p_ptr->lev) > 50))
+				if (rf_has(r_ptr->flags, RF_EVIL) &&
+				    p_ptr->lev >= rlev &&
+				    randint0(100) + p_ptr->lev > 50)
 				{
 					/* Message */
 					msg_format("%^s is repelled.", m_name);
@@ -327,12 +327,6 @@ bool make_attack_normal(int m_idx)
 					break;
 				}
 
-				case RBM_XXX1:
-				{
-					act = "XXX1's you.";
-					break;
-				}
-
 				case RBM_BUTT:
 				{
 					act = "butts you.";
@@ -353,12 +347,6 @@ bool make_attack_normal(int m_idx)
 				{
 					act = "engulfs you.";
 					sound_msg = MSG_MON_ENGULF;
-					break;
-				}
-
-				case RBM_XXX2:
-				{
-					act = "XXX2's you.";
 					break;
 				}
 
@@ -383,12 +371,6 @@ bool make_attack_normal(int m_idx)
 					break;
 				}
 
-				case RBM_XXX3:
-				{
-					act = "XXX3's on you.";
-					break;
-				}
-
 				case RBM_GAZE:
 				{
 					act = "gazes at you.";
@@ -410,12 +392,6 @@ bool make_attack_normal(int m_idx)
 					break;
 				}
 
-				case RBM_XXX4:
-				{
-					act = "projects XXX4's at you.";
-					break;
-				}
-
 				case RBM_BEG:
 				{
 					act = "begs you for money.";
@@ -434,12 +410,6 @@ bool make_attack_normal(int m_idx)
 				{
 					act = desc_moan[randint0(MAX_DESC_MOAN)];
 					sound_msg = MSG_MON_MOAN; 
-					break;
-				}
-
-				case RBM_XXX5:
-				{
-					act = "XXX5's you.";
 					break;
 				}
 			}
@@ -787,7 +757,7 @@ bool make_attack_normal(int m_idx)
 
 				case RBE_EAT_LIGHT:
 				{
-					u32b f[OBJ_FLAG_N];
+					bitflag f[OF_SIZE];
 
 					/* Take damage */
 					take_hit(damage, ddesc);
@@ -797,7 +767,7 @@ bool make_attack_normal(int m_idx)
 					object_flags(o_ptr, f);
 
 					/* Drain fuel where applicable */
-					if (!(f[2] & TR2_NO_FUEL) && (o_ptr->timeout > 0))
+					if (!of_has(f, OF_NO_FUEL) && (o_ptr->timeout > 0))
 					{
 						/* Reduce fuel */
 						o_ptr->timeout -= (250 + randint1(250));
@@ -1102,7 +1072,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* XXX Eddie need a DRS for HOLD_LIFE */
-					wieldeds_notice_flag(2, TR2_HOLD_LIFE);
+					wieldeds_notice_flag(OF_HOLD_LIFE);
 
 					if (p_ptr->state.hold_life && (randint0(100) < 95))
 					{
@@ -1133,7 +1103,7 @@ bool make_attack_normal(int m_idx)
 					/* Take damage */
 					take_hit(damage, ddesc);
 
-					wieldeds_notice_flag(2, TR2_HOLD_LIFE);
+					wieldeds_notice_flag(OF_HOLD_LIFE);
 
 					if (p_ptr->state.hold_life && (randint0(100) < 90))
 					{
@@ -1165,7 +1135,7 @@ bool make_attack_normal(int m_idx)
 					/* Take damage */
 					take_hit(damage, ddesc);
 
-					wieldeds_notice_flag(2, TR2_HOLD_LIFE);
+					wieldeds_notice_flag(OF_HOLD_LIFE);
 
 					if (p_ptr->state.hold_life && (randint0(100) < 75))
 					{
@@ -1197,7 +1167,7 @@ bool make_attack_normal(int m_idx)
 					/* Take damage */
 					take_hit(damage, ddesc);
 
-					wieldeds_notice_flag(2, TR2_HOLD_LIFE);
+					wieldeds_notice_flag(OF_HOLD_LIFE);
 
 					if (p_ptr->state.hold_life && (randint0(100) < 50))
 					{
@@ -1323,11 +1293,9 @@ bool make_attack_normal(int m_idx)
 				case RBM_CLAW:
 				case RBM_BITE:
 				case RBM_STING:
-				case RBM_XXX1:
 				case RBM_BUTT:
 				case RBM_CRUSH:
 				case RBM_ENGULF:
-				case RBM_XXX2:
 
 				/* Visible monsters */
 				if (m_ptr->ml)

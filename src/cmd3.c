@@ -902,10 +902,10 @@ void do_cmd_query_symbol(void)
 		if (!OPT(cheat_know) && !l_ptr->sights) continue;
 
 		/* Require non-unique monsters if needed */
-		if (norm && (r_ptr->flags[0] & (RF0_UNIQUE))) continue;
+		if (norm && rf_has(r_ptr->flags, RF_UNIQUE)) continue;
 
 		/* Require unique monsters if needed */
-		if (uniq && !(r_ptr->flags[0] & (RF0_UNIQUE))) continue;
+		if (uniq && !rf_has(r_ptr->flags, RF_UNIQUE)) continue;
 
 		/* Collect "appropriate" monsters */
 		if (all || (r_ptr->d_char == sym)) who[n++] = i;

@@ -298,8 +298,8 @@ typedef struct
 	
 	s16b hist;			/* Starting history index */
 	
-	u32b flags[OBJ_FLAG_N];	/* Racial flags */
-	u32b new_racial_flags; /* New Racial flags */
+	bitflag flags[OF_SIZE];   /* Racial (object) flags */
+	bitflag pflags[PF_SIZE];  /* Racial (player) flags */
 } player_race;
 
 
@@ -343,33 +343,33 @@ typedef struct
  */
 typedef struct
 {
-	u32b name;			/* Name (offset) */
+	u32b name;         /* Name (offset) */
 	
-	u32b title[10];		/* Titles - offset */
+	u32b title[10];    /* Titles - offset */
 	
-	s16b c_adj[A_MAX];	/* Class stat modifier */
+	s16b c_adj[A_MAX]; /* Class stat modifier */
 	
 	s16b c_skills[SKILL_MAX];	/* class skills */
 	s16b x_skills[SKILL_MAX];	/* extra skills */
 	
-	s16b c_mhp;			/* Class hit-dice adjustment */
-	s16b c_exp;			/* Class experience factor */
+	s16b c_mhp;        /* Class hit-dice adjustment */
+	s16b c_exp;        /* Class experience factor */
 	
-	u32b flags;			/* Class Flags */
+	bitflag pflags[PF_SIZE]; /* Class (player) flags */
 	
-	u16b max_attacks;	/* Maximum possible attacks */
-	u16b min_weight;	/* Minimum weapon weight for calculations */
-	u16b att_multiply;	/* Multiplier for attack calculations */
+	u16b max_attacks;  /* Maximum possible attacks */
+	u16b min_weight;   /* Minimum weapon weight for calculations */
+	u16b att_multiply; /* Multiplier for attack calculations */
 	
-	byte spell_book;	/* Tval of spell books (if any) */
-	u16b spell_stat;	/* Stat for spells (if any) */
-	u16b spell_first;	/* Level of first spell */
-	u16b spell_weight;	/* Weight that hurts spells */
+	byte spell_book;   /* Tval of spell books (if any) */
+	u16b spell_stat;   /* Stat for spells (if any) */
+	u16b spell_first;  /* Level of first spell */
+	u16b spell_weight; /* Weight that hurts spells */
 	
-	u32b sense_base;	/* Base pseudo-id value */
-	u16b sense_div;		/* Pseudo-id divisor */
+	u32b sense_base;   /* Base pseudo-id value */
+	u16b sense_div;    /* Pseudo-id divisor */
 	
-	start_item start_items[MAX_START_ITEMS];/**< The starting inventory */
+	start_item start_items[MAX_START_ITEMS]; /**< The starting inventory */
 	
 	player_magic spells; /* Magic spells */
 } player_class;

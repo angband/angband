@@ -315,59 +315,54 @@ void reset_visuals(bool unused)
 /*
  * Obtain the "flags" for an item
  */
-void object_flags(const object_type *o_ptr, u32b flags[OBJ_FLAG_N])
+void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE])
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
-	flags[0] = k_ptr->flags[0];
-	flags[1] = k_ptr->flags[1];
-	flags[2] = (k_ptr->flags[2] & ~TR2_CURSE_MASK);
+	of_wipe(flags);
 
+	/* Obtain kind flags */
+	of_union(flags, k_ptr->flags);
+
+	/* Obtain artifact flags */
 	if (o_ptr->name1)
 	{
 		artifact_type *a_ptr = &a_info[o_ptr->name1];
 
-		flags[0] = a_ptr->flags[0];
-		flags[1] = a_ptr->flags[1];
-		flags[2] = (a_ptr->flags[2] & ~TR2_CURSE_MASK);
+		of_union(flags, a_ptr->flags);
 	}
 
+	/* Obtain ego flags */
 	if (o_ptr->name2)
 	{
 		ego_item_type *e_ptr = &e_info[o_ptr->name2];
 
-		flags[0] |= e_ptr->flags[0];
-		flags[1] |= e_ptr->flags[1];
-		flags[2] |= (e_ptr->flags[2] & ~TR2_CURSE_MASK);
+		of_union(flags, e_ptr->flags);
 	}
 
-	flags[0] |= o_ptr->flags[0];
-	flags[1] |= o_ptr->flags[1];
-	flags[2] |= o_ptr->flags[2];
+	/* Remove curse flags (use only the object's curse flags) */
+	flags_clear(flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
+
+	/* Obtain the object's flags */
+	of_union(flags, o_ptr->flags);
 }
 
 
 /*
  * Obtain the "flags" for an item which are known to the player
  */
-void object_flags_known(const object_type *o_ptr, u32b flags[])
+void object_flags_known(const object_type *o_ptr, bitflag flags[OF_SIZE])
 {
-	u32b f[OBJ_FLAG_N];
-	int i;
-	bool aware = object_flavor_is_aware(o_ptr);
+	object_flags(o_ptr, flags);
 
-	object_flags(o_ptr, f);
+	of_inter(flags, o_ptr->known_flags);
 
-	for (i = 0; i < OBJ_FLAG_N; i++)
-	{
-		flags[i] = o_ptr->known_flags[i] & f[i];
-		if (aware)
-			flags[i] |= k_info[o_ptr->k_idx].flags[i];
-		if (o_ptr->name2 && easy_know(o_ptr))
-			flags[i] |= e_info[o_ptr->name2].flags[i];
-	}
+	if (object_flavor_is_aware(o_ptr))
+		of_union(flags, k_info[o_ptr->k_idx].flags);
+
+	if (o_ptr->name2 && easy_know(o_ptr))
+		of_union(flags, e_info[o_ptr->name2].flags);
 }
-
 
 
 /*
@@ -1359,13 +1354,13 @@ object_type *get_next_object(const object_type *o_ptr)
  */
 bool is_blessed(const object_type *o_ptr)
 {
-	u32b f[OBJ_FLAG_N];
+	bitflag f[OF_SIZE];
 
 	/* Get the flags */
 	object_flags(o_ptr, f);
 
 	/* Is the object blessed? */
-	return ((f[2] & TR2_BLESSED) ? TRUE : FALSE);
+	return (of_has(f, OF_BLESSED) ? TRUE : FALSE);
 }
 
 
@@ -1418,8 +1413,6 @@ static s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 	bool known)
 {
 	s32b value, total_value;
-
-	u32b f[OBJ_FLAG_N];
 
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
@@ -1479,9 +1472,6 @@ static s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 
 	/* Base cost */
 	value = k_ptr->cost;
-
-	/* Extract some flags */
-	object_flags(o_ptr, f);
 
 	/* Analyze the item type and quantity*/
 	switch (o_ptr->tval)
@@ -1586,7 +1576,6 @@ s32b object_value(const object_type *o_ptr, int qty, int verbose)
  */
 bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 {
-	int i;
 	int total = o_ptr->number + j_ptr->number;
 
 
@@ -1711,9 +1700,8 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 
 
 	/* Different flags */
-	for (i = 0; i < OBJ_FLAG_N; i++)
-		if (o_ptr->flags[i] != j_ptr->flags[1])
-			return FALSE;
+	if (!of_is_equal(o_ptr->flags, j_ptr->flags))
+		return FALSE;
 
 
 	/* Maximal "stacking" limit */
@@ -1743,7 +1731,6 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
  */
 void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 {
-	int i;
 	int total = o_ptr->number + j_ptr->number;
 
 	/* Add together the item counts */
@@ -1751,8 +1738,7 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 
 	/* Blend all knowledge */
 	o_ptr->ident |= (j_ptr->ident & ~IDENT_EMPTY);
-	for (i = 0; i < OBJ_FLAG_N; i++)
-		o_ptr->known_flags[i] |= j_ptr->known_flags[i];
+	of_union(o_ptr->known_flags, j_ptr->known_flags);
 
 	/* Hack -- Blend "notes" */
 	if (j_ptr->note != 0) o_ptr->note = j_ptr->note;
@@ -1787,8 +1773,8 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 			monster_race *r_ptr = &r_info[o_ptr->origin_xtra];
 			monster_race *s_ptr = &r_info[j_ptr->origin_xtra];
 
-			bool r_uniq = (r_ptr->flags[0] & RF0_UNIQUE) ? TRUE : FALSE;
-			bool s_uniq = (s_ptr->flags[0] & RF0_UNIQUE) ? TRUE : FALSE;
+			bool r_uniq = rf_has(r_ptr->flags, RF_UNIQUE) ? TRUE : FALSE;
+			bool s_uniq = rf_has(s_ptr->flags, RF_UNIQUE) ? TRUE : FALSE;
 
 			if (r_uniq && !s_uniq) act = 0;
 			else if (s_uniq && !r_uniq) act = 1;
@@ -2849,14 +2835,13 @@ s16b inven_carry(object_type *o_ptr)
 	/* Hobbits ID mushrooms on pickup, gnomes ID wands and staffs on pickup */
 	if (!object_is_known(j_ptr))
 	{
-		if ((rp_ptr->new_racial_flags & NRF_KNOW_MUSHROOM) &&
-			j_ptr->tval == TV_FOOD)
+		if (player_has(PF_KNOW_MUSHROOM) && j_ptr->tval == TV_FOOD)
 		{
 			do_ident_item(i, j_ptr);
 			msg_print("Mushrooms for breakfast!");
 		}
 
-		if ((rp_ptr->new_racial_flags & NRF_KNOW_ZAPPER) &&
+		if (player_has(PF_KNOW_ZAPPER) &&
 			(j_ptr->tval == TV_WAND || j_ptr->tval == TV_STAFF))
 		{
 			do_ident_item(i, j_ptr);
@@ -3991,7 +3976,7 @@ bool obj_can_activate(const object_type *o_ptr)
 
 bool obj_can_refill(const object_type *o_ptr)
 {
-	u32b f[OBJ_FLAG_N];
+	bitflag f[OF_SIZE];
 	const object_type *j_ptr = &inventory[INVEN_LIGHT];
 
 	/* Get flags */
@@ -4007,7 +3992,7 @@ bool obj_can_refill(const object_type *o_ptr)
 	if ((o_ptr->tval == TV_LIGHT) &&
 	    (o_ptr->sval == j_ptr->sval) &&
 	    (o_ptr->timeout > 0) &&
-		!(f[2] & TR2_NO_FUEL))
+	    !of_has(f, OF_NO_FUEL))
 	{
 		return (TRUE);
 	}

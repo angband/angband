@@ -104,27 +104,28 @@ static s16b ability_power[25] =
  * Calculate the rating for a given slay combination
  */
 static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file,
-	u32b f[OBJ_FLAG_N])
+	const bitflag flags[OF_SIZE])
 {
-	u32b s_index = 0;
+	bitflag s_index[OF_SIZE];
 	s32b sv = 0;
 	int i;
 	int mult;
 	const slay_t *s_ptr;
 
 	/* Combine the slay bytes into an index value */
-	s_index = f[0] & TR0_ALL_SLAYS;
+	of_copy(s_index, flags);
+	flags_mask(s_index, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
 
 	/* Look in the cache to see if we know this one yet */
-	for (i = 0; slay_cache[i].flags; i++)
+	for (i = 0; !of_is_empty(slay_cache[i].flags); i++)
 	{
-		if (slay_cache[i].flags == s_index) sv = slay_cache[i].value;
+		if (of_is_equal(s_index, slay_cache[i].flags))
+			break;
 	}
 
-	/* we know the value of 0 (no slays) is cached at the end of the array */
-	if (s_index == 0) sv = slay_cache[N_ELEMENTS(slay_cache)].value;
-
-	/* If it's cached, return its value */
+	sv = slay_cache[i].value;
+	
+	/* If it's cached (or there are no slays), return the value */
 	if (sv) 
 	{
 		LOG_PRINT("Slay cache hit\n");
@@ -147,10 +148,10 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 		 */
 		for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
 		{
-			if ((f[0] & s_ptr->slay_flag) &&
-				((r_ptr->flags[2] & s_ptr->monster_flag) || 
-				(s_ptr->brand && !(r_ptr->flags[2] & 
-				s_ptr->resist_flag))))
+			if (!of_has(flags, s_ptr->slay_flag)) continue;
+
+			if (rf_has(r_ptr->flags, s_ptr->monster_flag) ||
+			    !rf_has(r_ptr->flags, s_ptr->resist_flag))
 			{
 			    mult = s_ptr->mult;
 			}
@@ -170,23 +171,22 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 		/* Write info about the slay combination and multiplier */
 		file_putf(log_file,"Slay multiplier for:");
 
-		if (f[0] & TR0_SLAY_EVIL) file_putf(log_file,"Evl ");
-		if (f[0] & TR0_KILL_DRAGON) file_putf(log_file,"XDr ");
-		if (f[0] & TR0_KILL_DEMON) file_putf(log_file,"XDm ");
-		if (f[0] & TR0_KILL_UNDEAD) file_putf(log_file,"XUn ");
-		if (f[0] & TR0_SLAY_ANIMAL) file_putf(log_file,"Ani ");
-		if (f[0] & TR0_SLAY_UNDEAD) file_putf(log_file,"Und ");
-		if (f[0] & TR0_SLAY_DRAGON) file_putf(log_file,"Drg ");
-		if (f[0] & TR0_SLAY_DEMON) file_putf(log_file,"Dmn ");
-		if (f[0] & TR0_SLAY_TROLL) file_putf(log_file,"Tro ");
-		if (f[0] & TR0_SLAY_ORC) file_putf(log_file,"Orc ");
-		if (f[0] & TR0_SLAY_GIANT) file_putf(log_file,"Gia ");
-
-		if (f[0] & TR0_BRAND_ACID) file_putf(log_file,"Acd ");
-		if (f[0] & TR0_BRAND_ELEC) file_putf(log_file,"Elc ");
-		if (f[0] & TR0_BRAND_FIRE) file_putf(log_file,"Fir ");
-		if (f[0] & TR0_BRAND_COLD) file_putf(log_file,"Cld ");
-		if (f[0] & TR0_BRAND_POIS) file_putf(log_file,"Poi ");
+		if (of_has(flags, OF_SLAY_EVIL)) file_putf(log_file,"Evl ");
+		if (of_has(flags, OF_KILL_DRAGON)) file_putf(log_file,"XDr ");
+		if (of_has(flags, OF_KILL_DEMON)) file_putf(log_file,"XDm ");
+		if (of_has(flags, OF_KILL_UNDEAD)) file_putf(log_file,"XUn ");
+		if (of_has(flags, OF_SLAY_ANIMAL)) file_putf(log_file,"Ani ");
+		if (of_has(flags, OF_SLAY_UNDEAD)) file_putf(log_file,"Und ");
+		if (of_has(flags, OF_SLAY_DRAGON)) file_putf(log_file,"Drg ");
+		if (of_has(flags, OF_SLAY_DEMON)) file_putf(log_file,"Dmn ");
+		if (of_has(flags, OF_SLAY_TROLL)) file_putf(log_file,"Tro ");
+		if (of_has(flags, OF_SLAY_ORC)) file_putf(log_file,"Orc ");
+		if (of_has(flags, OF_SLAY_GIANT)) file_putf(log_file,"Gia ");
+		if (of_has(flags, OF_BRAND_ACID)) file_putf(log_file,"Acd ");
+		if (of_has(flags, OF_BRAND_ELEC)) file_putf(log_file,"Elc ");
+		if (of_has(flags, OF_BRAND_FIRE)) file_putf(log_file,"Fir ");
+		if (of_has(flags, OF_BRAND_COLD)) file_putf(log_file,"Cld ");
+		if (of_has(flags, OF_BRAND_POIS)) file_putf(log_file,"Poi ");
 
 		file_putf(log_file,"sv is: %d\n", sv);
 		file_putf(log_file," and t_m_p is: %d \n", tot_mon_power);
@@ -195,14 +195,13 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 	}
 
 	/* Add to the cache */
-     /*	LOG_PRINT1("s_index is %d\n", s_index); */
-	for (i = 0; slay_cache[i].flags; i++)
+	for (i = 0; !of_is_empty(slay_cache[i].flags); i++)
 	{
-	     /*	LOG_PRINT2("i is %d and flag is %d\n", i, slay_cache[i].flags); */
-		if (slay_cache[i].flags == s_index) slay_cache[i].value = sv;
+		if (of_is_equal(s_index, slay_cache[i].flags))
+			break;
 	}
-	/* Ensure we cache the value of 0 (no slays) */
-	if (s_index == 0) slay_cache[N_ELEMENTS(slay_cache)].value = sv;
+
+	slay_cache[i].value = sv;
 
 	LOG_PRINT("Added to slay cache\n");
 
@@ -238,26 +237,26 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	int sustains = 0;
 	int extra_stat_bonus = 0;
 	int i;
-	u32b f[OBJ_FLAG_N];
+	bitflag flags[OF_SIZE];
 
 	/* Extract the flags */
 	if (known) 
 	{
 		LOG_PRINT("Object is known\n");
-		object_flags(o_ptr, f);
+		object_flags(o_ptr, flags);
 	}		
 	else 
 	{
 		LOG_PRINT("Object is not fully known\n");
-		object_flags_known(o_ptr, f);
+		object_flags_known(o_ptr, flags);
 	}
 
 	if (verbose)
 	{
-		for (i = 0; i < OBJ_FLAG_N; i++)
-		{
-			LOG_PRINT2("Object flags[%d] is %x\n", i, f[i]);
-		}
+		LOG_PRINT("Object flags =");
+		for (i = 0; i < (int)OF_SIZE; i++)
+			LOG_PRINT1(" %02x", flags[i]);
+		LOG_PRINT("\n");
 	}
 
 	k_ptr = &k_info[o_ptr->k_idx];
@@ -308,8 +307,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 
 			LOG_PRINT1("Base multiplier for this weapon is %d\n", mult);
 
-			if ((f[0] & TR0_MIGHT) && (known ||
-				object_pval_is_visible(o_ptr)))
+			if (of_has(flags, OF_MIGHT) &&
+			    (known || object_pval_is_visible(o_ptr)))
 			{
 				if (o_ptr->pval >= INHIBIT_MIGHT || o_ptr->pval < 0)
 				{
@@ -326,8 +325,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			p *= mult;
 			LOG_PRINT2("Multiplying power by %d, total is %d\n", mult, p);
 
-			if ((f[0] & TR0_SHOTS) && (known ||
-				object_pval_is_visible(o_ptr)))
+			if (of_has(flags, OF_SHOTS) &&
+			    (known || object_pval_is_visible(o_ptr)))
 			{
 				LOG_PRINT1("Extra shots: %d\n", o_ptr->pval);
 
@@ -345,7 +344,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			}
 
 			/* Apply the correct slay multiplier */
-			p = (p * slay_power(o_ptr, verbose, log_file, f)) / tot_mon_power;
+			p = (p * slay_power(o_ptr, verbose, log_file, flags)) / tot_mon_power;
 			LOG_PRINT1("Adjusted for slay power, total is %d\n", p);
 
 			if (o_ptr->weight < k_ptr->weight)
@@ -381,14 +380,14 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			LOG_PRINT1("Adding power for dam dice, total is %d\n", p);
 
 			/* Apply the correct slay multiplier */
-			p = (p * slay_power(o_ptr, verbose, log_file, f)) / tot_mon_power;
+			p = (p * slay_power(o_ptr, verbose, log_file, flags)) / tot_mon_power;
 			LOG_PRINT1("Adjusted for slay power, total is %d\n", p);
 
 			p += (o_ptr->to_d * DAMAGE_POWER / 2);
 			LOG_PRINT1("Adding power for to_dam, total is %d\n", p);
 
-			if ((f[0] & TR0_BLOWS) && (known ||
-				object_pval_is_visible(o_ptr)))
+			if (of_has(flags, OF_BLOWS) &&
+			    (known || object_pval_is_visible(o_ptr)))
 			{
 				LOG_PRINT1("Extra blows: %d\n", o_ptr->pval);
 				if (o_ptr->pval >= INHIBIT_BLOWS || o_ptr->pval < 0)
@@ -460,13 +459,13 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 
 			/* Apply the correct brand/slay multiplier */
 			p += (((2 * (o_ptr->to_d + RING_BRAND_DMG)
-				* slay_power(o_ptr, verbose, log_file, f))
+				* slay_power(o_ptr, verbose, log_file, flags))
 				/ tot_mon_power) - (2 * (o_ptr->to_d + RING_BRAND_DMG)));
 			LOG_PRINT1("Adjusted for brand/slay power, total is %d\n", p);
 
 			/* Add power for extra blows */
-			if ((f[0] & TR0_BLOWS) && (known ||
-				object_pval_is_visible(o_ptr)))
+			if (of_has(flags, OF_BLOWS) &&
+			    (known || object_pval_is_visible(o_ptr)))
 			{
 				LOG_PRINT1("Extra blows: %d\n", o_ptr->pval);
 				if (o_ptr->pval >= INHIBIT_BLOWS || o_ptr->pval < 0)
@@ -483,8 +482,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			}
 
 			/* Add power for extra shots */
-			if ((f[0] & TR0_SHOTS) && (known ||
-				object_pval_is_visible(o_ptr)))
+			if (of_has(flags, OF_SHOTS) &&
+			    (known || object_pval_is_visible(o_ptr)))
 			{
 				LOG_PRINT1("Extra shots: %d\n", o_ptr->pval);
 				if (o_ptr->pval >= INHIBIT_SHOTS || o_ptr->pval < 0)
@@ -520,13 +519,13 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 
 			/* Apply the correct brand/slay multiplier */
 			p += (((2 * (o_ptr->to_d + RING_BRAND_DMG)
-				* slay_power(o_ptr, verbose, log_file, f))
+				* slay_power(o_ptr, verbose, log_file, flags))
 				/ tot_mon_power) - (2 * (o_ptr->to_d + RING_BRAND_DMG)));
 			LOG_PRINT1("Adjusted for brand/slay power, total is %d\n", p);
 
 			/* Add power for extra blows */
-			if ((f[0] & TR0_BLOWS) && (known ||
-				object_pval_is_visible(o_ptr)))
+			if (of_has(flags, OF_BLOWS) &&
+			    (known || object_pval_is_visible(o_ptr)))
 			{
 				LOG_PRINT1("Extra blows: %d\n", o_ptr->pval);
 				if (o_ptr->pval >= INHIBIT_BLOWS || o_ptr->pval < 0)
@@ -543,8 +542,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			}
 
 			/* Add power for extra shots */
-			if ((f[0] & TR0_SHOTS) && (known ||
-				object_pval_is_visible(o_ptr)))
+			if (of_has(flags, OF_SHOTS) &&
+			    (known || object_pval_is_visible(o_ptr)))
 			{
 				LOG_PRINT1("Extra shots: %d\n", o_ptr->pval);
 				if (o_ptr->pval >= INHIBIT_SHOTS || o_ptr->pval < 0)
@@ -564,7 +563,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			 * Big boost for extra light radius 
 			 * n.b. Another few points are added below 
 			 */
-			if (f[2] & TR2_LIGHT) p += 30;
+			if (of_has(flags, OF_LIGHT)) p += 30;
 
 			break;
 		}
@@ -582,13 +581,13 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 
 			/* Apply the correct brand/slay multiplier */
 			p += (((2 * (o_ptr->to_d + RING_BRAND_DMG)
-				* slay_power(o_ptr, verbose, log_file, f))
+				* slay_power(o_ptr, verbose, log_file, flags))
 				/ tot_mon_power) - (2 * (o_ptr->to_d + RING_BRAND_DMG)));
 			LOG_PRINT1("Adjusted for brand/slay power, total is %d\n", p);
 
 			/* Add power for extra blows */
-			if ((f[0] & TR0_BLOWS) && (known ||
-				object_pval_is_visible(o_ptr)))
+			if (of_has(flags, OF_BLOWS) &&
+			    (known || object_pval_is_visible(o_ptr)))
 			{
 				LOG_PRINT1("Extra blows: %d\n", o_ptr->pval);
 				if (o_ptr->pval >= INHIBIT_BLOWS || o_ptr->pval < 0)
@@ -605,8 +604,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			}
 
 			/* Add power for extra shots */
-			if ((f[0] & TR0_SHOTS) && (known ||
-				object_pval_is_visible(o_ptr)))
+			if (of_has(flags, OF_SHOTS) &&
+			    (known || object_pval_is_visible(o_ptr)))
 			{
 				LOG_PRINT1("Extra shots: %d\n", o_ptr->pval);
 				if (o_ptr->pval >= INHIBIT_SHOTS || o_ptr->pval < 0)
@@ -648,37 +647,37 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 
 	if ((o_ptr->pval > 0) && (known || object_pval_is_visible(o_ptr)))
 	{
-		if (f[0] & TR0_STR)
+		if (of_has(flags, OF_STR))
 		{
 			p += STR_POWER * o_ptr->pval;
 			LOG_PRINT2("Adding power for STR bonus %d, total is %d\n", o_ptr->pval, p);
 		}
-		if (f[0] & TR0_INT)
+		if (of_has(flags, OF_INT))
 		{
 			p += INT_POWER * o_ptr->pval;
 			LOG_PRINT2("Adding power for INT bonus %d, total is %d\n", o_ptr->pval, p);
 		}
-		if (f[0] & TR0_WIS)
+		if (of_has(flags, OF_WIS))
 		{
 			p += WIS_POWER * o_ptr->pval;
 			LOG_PRINT2("Adding power for WIS bonus %d, total is %d\n", o_ptr->pval, p);
 		}
-		if (f[0] & TR0_DEX)
+		if (of_has(flags, OF_DEX))
 		{
 			p += DEX_POWER * o_ptr->pval;
 			LOG_PRINT2("Adding power for DEX bonus %d, total is %d\n", o_ptr->pval, p);
 		}
-		if (f[0] & TR0_CON)
+		if (of_has(flags, OF_CON))
 		{
 			p += CON_POWER * o_ptr->pval;
 			LOG_PRINT2("Adding power for CON bonus %d, total is %d\n", o_ptr->pval, p);
 		}
-		if (f[0] & TR0_STEALTH)
+		if (of_has(flags, OF_STEALTH))
 		{
 			p += STEALTH_POWER * o_ptr->pval;
 			LOG_PRINT2("Adding power for Stealth bonus %d, total is %d\n", o_ptr->pval, p);
 		}
-		if (f[0] & TR0_SEARCH)
+		if (of_has(flags, OF_SEARCH))
 		{
 			p += SEARCH_POWER * o_ptr->pval;
 			LOG_PRINT2("Adding power for searching bonus %d, total is %d\n", o_ptr->pval , p);
@@ -686,27 +685,27 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		/* Add extra power term if there are a lot of ability bonuses */
 		if (o_ptr->pval > 0)
 		{
-			extra_stat_bonus += ( (f[0] & TR0_STR) ? 1 * o_ptr->pval: 0);
-			extra_stat_bonus += ( (f[0] & TR0_INT) ? 3 * o_ptr->pval / 4: 0);
-			extra_stat_bonus += ( (f[0] & TR0_WIS) ? 3 * o_ptr->pval / 4: 0);
-			extra_stat_bonus += ( (f[0] & TR0_DEX) ? 1 * o_ptr->pval: 0);
-			extra_stat_bonus += ( (f[0] & TR0_CON) ? 1 * o_ptr->pval: 0);
-			extra_stat_bonus += ( (f[0] & TR0_CHR) ? 0 * o_ptr->pval: 0);
-			extra_stat_bonus += ( (f[0] & TR0_STEALTH) ? 1 * o_ptr->pval: 0);
-			extra_stat_bonus += ( (f[0] & TR0_INFRA) ? 0 * o_ptr->pval: 0);
-			extra_stat_bonus += ( (f[0] & TR0_TUNNEL) ? 0 * o_ptr->pval: 0);
-			extra_stat_bonus += ( (f[0] & TR0_SEARCH) ? 0 * o_ptr->pval: 0);
-			extra_stat_bonus += ( (f[0] & TR0_SPEED) ? 0 * o_ptr->pval: 0);
+			extra_stat_bonus += (of_has(flags, OF_STR) ? 1 * o_ptr->pval : 0);
+			extra_stat_bonus += (of_has(flags, OF_INT) ? 3 * o_ptr->pval / 4 : 0);
+			extra_stat_bonus += (of_has(flags, OF_WIS) ? 3 * o_ptr->pval / 4 : 0);
+			extra_stat_bonus += (of_has(flags, OF_DEX) ? 1 * o_ptr->pval : 0);
+			extra_stat_bonus += (of_has(flags, OF_CON) ? 1 * o_ptr->pval : 0);
+			extra_stat_bonus += (of_has(flags, OF_CHR) ? 0 * o_ptr->pval : 0);
+			extra_stat_bonus += (of_has(flags, OF_STEALTH) ? 1 * o_ptr->pval : 0);
+			extra_stat_bonus += (of_has(flags, OF_INFRA) ? 0 * o_ptr->pval : 0);
+			extra_stat_bonus += (of_has(flags, OF_TUNNEL) ? 0 * o_ptr->pval : 0);
+			extra_stat_bonus += (of_has(flags, OF_SEARCH) ? 0 * o_ptr->pval : 0);
+			extra_stat_bonus += (of_has(flags, OF_SPEED) ? 0 * o_ptr->pval : 0);
 
 			if (o_ptr->tval == TV_BOW)
 			{
-				extra_stat_bonus += ( (f[0] & TR0_MIGHT) ? 5 * o_ptr->pval / 2: 0);
-				extra_stat_bonus += ( (f[0] & TR0_SHOTS) ? 3 * o_ptr->pval: 0);
+				extra_stat_bonus += (of_has(flags, OF_MIGHT) ? 5 * o_ptr->pval / 2 : 0);
+				extra_stat_bonus += (of_has(flags, OF_SHOTS) ? 3 * o_ptr->pval : 0);
 			}
 			else if ( (o_ptr->tval == TV_DIGGING) || (o_ptr->tval == TV_HAFTED) ||
 			          (o_ptr->tval == TV_POLEARM) || (o_ptr->tval == TV_SWORD) )
 			{
-				extra_stat_bonus += ( (f[0] & TR0_BLOWS) ? 3 * o_ptr->pval: 0);
+				extra_stat_bonus += (of_has(flags, OF_BLOWS) ? 3 * o_ptr->pval : 0);
 			}
 
 			if (extra_stat_bonus > 24)
@@ -725,58 +724,58 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	}
 	else if ((o_ptr->pval < 0) && (known || object_pval_is_visible(o_ptr)))
 	{
-		if (f[0] & TR0_STR) p += 4 * o_ptr->pval;
-		if (f[0] & TR0_INT) p += 2 * o_ptr->pval;
-		if (f[0] & TR0_WIS) p += 2 * o_ptr->pval;
-		if (f[0] & TR0_DEX) p += 3 * o_ptr->pval;
-		if (f[0] & TR0_CON) p += 4 * o_ptr->pval;
-		if (f[0] & TR0_STEALTH) p += o_ptr->pval;
+		if (of_has(flags, OF_STR)) p += 4 * o_ptr->pval;
+		if (of_has(flags, OF_INT)) p += 2 * o_ptr->pval;
+		if (of_has(flags, OF_WIS)) p += 2 * o_ptr->pval;
+		if (of_has(flags, OF_DEX)) p += 3 * o_ptr->pval;
+		if (of_has(flags, OF_CON)) p += 4 * o_ptr->pval;
+		if (of_has(flags, OF_STEALTH)) p += o_ptr->pval;
 		LOG_PRINT1("Subtracting power for negative ability values, total is %d\n", p);
 	}
 
 	if (known || object_pval_is_visible(o_ptr))
 	{
-		if (f[0] & TR0_CHR)
+		if (of_has(flags, OF_CHR))
 		{
 			p += CHR_POWER * o_ptr->pval;
 			LOG_PRINT2("Adding power for CHR bonus/penalty %d, total is %d\n", o_ptr->pval, p);
 		}
-		if (f[0] & TR0_INFRA)
+		if (of_has(flags, OF_INFRA))
 		{
 			p += INFRA_POWER * o_ptr->pval;
 			LOG_PRINT2("Adding power for infra bonus/penalty %d, total is %d\n", o_ptr->pval, p);
 		}
-		if (f[0] & TR0_TUNNEL)
+		if (of_has(flags, OF_TUNNEL))
 		{
 			p += TUNN_POWER * o_ptr->pval;
 			LOG_PRINT2("Adding power for tunnelling bonus/penalty %d, total is %d\n", o_ptr->pval, p);
 		}
-		if (f[0] & TR0_SPEED)
+		if (of_has(flags, OF_SPEED))
 		{
 			p += sign(o_ptr->pval) * speed_power[ABS(o_ptr->pval)];
 			LOG_PRINT2("Adding power for speed bonus/penalty %d, total is %d\n", o_ptr->pval, p);
 		}
 	}
 	
-#define ADD_POWER1(string, val, flag, flgnum) \
-	if (f[flgnum] & flag) { \
+#define ADD_POWER1(string, val, flag) \
+	if (of_has(flags, flag)) { \
 		p += (val); \
 		LOG_PRINT1("Adding power for " string ", total is %d\n", p); \
 	}
 
-#define ADD_POWER2(string, val, flag, flgnum, extra) \
-	if (f[flgnum] & flag) { \
+#define ADD_POWER2(string, val, flag, extra) \
+	if (of_has(flags, flag)) { \
 		p += (val); \
 		extra; \
 		LOG_PRINT1("Adding power for " string ", total is %d\n", p); \
 	}
 
-	ADD_POWER2("sustain STR",         9, TR1_SUST_STR, 1, sustains++);
-	ADD_POWER2("sustain INT",         4, TR1_SUST_INT, 1, sustains++);
-	ADD_POWER2("sustain WIS",         4, TR1_SUST_WIS, 1, sustains++);
-	ADD_POWER2("sustain DEX",         7, TR1_SUST_DEX, 1, sustains++);
-	ADD_POWER2("sustain CON",         8, TR1_SUST_CON, 1, sustains++);
-	ADD_POWER1("sustain CHR",         1, TR1_SUST_CHR, 1);
+	ADD_POWER2("sustain STR",         9, OF_SUST_STR, sustains++);
+	ADD_POWER2("sustain INT",         4, OF_SUST_INT, sustains++);
+	ADD_POWER2("sustain WIS",         4, OF_SUST_WIS, sustains++);
+	ADD_POWER2("sustain DEX",         7, OF_SUST_DEX, sustains++);
+	ADD_POWER2("sustain CON",         8, OF_SUST_CON, sustains++);
+	ADD_POWER1("sustain CHR",         1, OF_SUST_CHR);
 
 	for (i = 2; i <= sustains; i++)
 	{
@@ -789,10 +788,10 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		}
 	}
 	
-	ADD_POWER2("acid immunity",      38, TR1_IM_ACID,  1, immunities++);
-	ADD_POWER2("elec immunity",      35, TR1_IM_ELEC,  1, immunities++);
-	ADD_POWER2("fire immunity",      40, TR1_IM_FIRE,  1, immunities++);
-	ADD_POWER2("cold immunity",      37, TR1_IM_COLD,  1, immunities++);
+	ADD_POWER2("acid immunity",      38, OF_IM_ACID, immunities++);
+	ADD_POWER2("elec immunity",      35, OF_IM_ELEC, immunities++);
+	ADD_POWER2("fire immunity",      40, OF_IM_FIRE, immunities++);
+	ADD_POWER2("cold immunity",      37, OF_IM_COLD, immunities++);
 
 	for (i = 2; i <= immunities; i++)
 	{
@@ -805,32 +804,32 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		}
 	}
 
-	ADD_POWER2("free action",           14, TR2_FREE_ACT,    2, misc++);
-	ADD_POWER2("hold life",             12, TR2_HOLD_LIFE,   2, misc++);
-	ADD_POWER1("feather fall",           1, TR2_FEATHER,     2);
-	ADD_POWER2("permanent light",        3, TR2_LIGHT,       2, misc++);
-	ADD_POWER2("see invisible",         10, TR2_SEE_INVIS,   2, misc++);
-	ADD_POWER2("telepathy",             70, TR2_TELEPATHY,   2, misc++);
-	ADD_POWER2("slow digestion",         2, TR2_SLOW_DIGEST, 2, misc++);
-	ADD_POWER2("resist acid",            5, TR1_RES_ACID,    1, lowres++);
-	ADD_POWER2("resist elec",            6, TR1_RES_ELEC,    1, lowres++);
-	ADD_POWER2("resist fire",            6, TR1_RES_FIRE,    1, lowres++);
-	ADD_POWER2("resist cold",            6, TR1_RES_COLD,    1, lowres++);
-	ADD_POWER2("resist poison",         28, TR1_RES_POIS,    1, highres++);
-	ADD_POWER2("resist fear",            6, TR1_RES_FEAR,    1, highres++);
-	ADD_POWER2("resist light",           6, TR1_RES_LIGHT,   1, highres++);
-	ADD_POWER2("resist dark",           16, TR1_RES_DARK,    1, highres++);
-	ADD_POWER2("resist blindness",      16, TR1_RES_BLIND,   1, highres++);
-	ADD_POWER2("resist confusion",      24, TR1_RES_CONFU,   1, highres++);
-	ADD_POWER2("resist sound",          14, TR1_RES_SOUND,   1, highres++);
-	ADD_POWER2("resist shards",          8, TR1_RES_SHARD,   1, highres++);
-	ADD_POWER2("resist nexus",          15, TR1_RES_NEXUS,   1, highres++);
-	ADD_POWER2("resist nether",         20, TR1_RES_NETHR,   1, highres++);
-	ADD_POWER2("resist chaos",          20, TR1_RES_CHAOS,   1, highres++);
-	ADD_POWER2("resist disenchantment", 20, TR1_RES_DISEN,   1, highres++);
-	ADD_POWER2("regeneration",           9, TR2_REGEN,       2, misc++);
-	ADD_POWER1("blessed",                1, TR2_BLESSED,     2);
-	ADD_POWER1("no fuel",                5, TR2_NO_FUEL,     2);
+	ADD_POWER2("free action",           14, OF_FREE_ACT,    misc++);
+	ADD_POWER2("hold life",             12, OF_HOLD_LIFE,   misc++);
+	ADD_POWER1("feather fall",           1, OF_FEATHER);
+	ADD_POWER2("permanent light",        3, OF_LIGHT,       misc++);
+	ADD_POWER2("see invisible",         10, OF_SEE_INVIS,   misc++);
+	ADD_POWER2("telepathy",             70, OF_TELEPATHY,   misc++);
+	ADD_POWER2("slow digestion",         2, OF_SLOW_DIGEST, misc++);
+	ADD_POWER2("resist acid",            5, OF_RES_ACID,    lowres++);
+	ADD_POWER2("resist elec",            6, OF_RES_ELEC,    lowres++);
+	ADD_POWER2("resist fire",            6, OF_RES_FIRE,    lowres++);
+	ADD_POWER2("resist cold",            6, OF_RES_COLD,    lowres++);
+	ADD_POWER2("resist poison",         28, OF_RES_POIS,    highres++);
+	ADD_POWER2("resist fear",            6, OF_RES_FEAR,    highres++);
+	ADD_POWER2("resist light",           6, OF_RES_LIGHT,   highres++);
+	ADD_POWER2("resist dark",           16, OF_RES_DARK,    highres++);
+	ADD_POWER2("resist blindness",      16, OF_RES_BLIND,   highres++);
+	ADD_POWER2("resist confusion",      24, OF_RES_CONFU,   highres++);
+	ADD_POWER2("resist sound",          14, OF_RES_SOUND,   highres++);
+	ADD_POWER2("resist shards",          8, OF_RES_SHARD,   highres++);
+	ADD_POWER2("resist nexus",          15, OF_RES_NEXUS,   highres++);
+	ADD_POWER2("resist nether",         20, OF_RES_NETHR,   highres++);
+	ADD_POWER2("resist chaos",          20, OF_RES_CHAOS,   highres++);
+	ADD_POWER2("resist disenchantment", 20, OF_RES_DISEN,   highres++);
+	ADD_POWER2("regeneration",           9, OF_REGEN,       misc++);
+	ADD_POWER1("blessed",                1, OF_BLESSED);
+	ADD_POWER1("no fuel",                5, OF_NO_FUEL);
 
 	for (i = 2; i <= misc; i++)
 	{
@@ -856,33 +855,33 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	}
 
 	/* Note: the following code is irrelevant until curses are reworked */
-	if (f[2] & TR2_TELEPORT)
+	if (of_has(flags, OF_TELEPORT))
 	{
 		p -= 1;
 		LOG_PRINT1("Subtracting power for teleportation, total is %d\n", p);
 	}
-	if (f[2] & TR2_DRAIN_EXP)
+	if (of_has(flags, OF_DRAIN_EXP))
 	{
 		p -= 1;
 		LOG_PRINT1("Subtracting power for drain experience, total is %d\n", p);
 	}
-	if (f[2] & TR2_AGGRAVATE)
+	if (of_has(flags, OF_AGGRAVATE))
 	{
 		p -= 1;
 		LOG_PRINT1("Subtracting power for aggravation, total is %d\n", p);
 	}
-	if (f[2] & TR2_LIGHT_CURSE)
+	if (of_has(flags, OF_LIGHT_CURSE))
 	{
 		p -= 1;
 		LOG_PRINT1("Subtracting power for light curse, total is %d\n", p);
 	}
-	if (f[2] & TR2_HEAVY_CURSE)
+	if (of_has(flags, OF_HEAVY_CURSE))
 	{
 		p -= 1;
 		LOG_PRINT1("Subtracting power for heavy curse, total is %d\n", p);
 	}
 
-	/*	if (f[2] & TR2_PERMA_CURSE) p -= 40; */
+	/*	if (of_has(flags, OF_PERMA_CURSE)) p -= 40; */
 
 	/* add power for effect */
 	if (known || object_effect_is_known(o_ptr))
@@ -900,10 +899,10 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	}
 
 	/* add tiny amounts for ignore flags */
-	if (f[2] & TR2_IGNORE_ACID) p++;
-	if (f[2] & TR2_IGNORE_FIRE) p++;
-	if (f[2] & TR2_IGNORE_COLD) p++;
-	if (f[2] & TR2_IGNORE_ELEC) p++;
+	if (of_has(flags, OF_IGNORE_ACID)) p++;
+	if (of_has(flags, OF_IGNORE_FIRE)) p++;
+	if (of_has(flags, OF_IGNORE_COLD)) p++;
+	if (of_has(flags, OF_IGNORE_ELEC)) p++;
 
 	LOG_PRINT1("After ignore flags, FINAL POWER IS %d\n", p);
 

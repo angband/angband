@@ -31,7 +31,7 @@ s16b poly_r_idx(int r_idx)
 	int i, r, lev1, lev2;
 
 	/* Paranoia -- Uniques never polymorph */
-	if (r_ptr->flags[0] & (RF0_UNIQUE)) return (r_idx);
+	if (rf_has(r_ptr->flags, RF_UNIQUE)) return (r_idx);
 
 	/* Allowable range of "levels" for resulting monster */
 	lev1 = r_ptr->level - ((randint1(20)/randint1(9))+1);
@@ -50,7 +50,7 @@ s16b poly_r_idx(int r_idx)
 		r_ptr = &r_info[r];
 
 		/* Ignore unique monsters */
-		if (r_ptr->flags[0] & (RF0_UNIQUE)) continue;
+		if (rf_has(r_ptr->flags, RF_UNIQUE)) continue;
 
 		/* Ignore monsters with incompatible levels */
 		if ((r_ptr->level < lev1) || (r_ptr->level > lev2)) continue;
@@ -691,10 +691,10 @@ static bool hates_cold(const object_type *o_ptr)
  */
 static int set_acid_destroy(const object_type *o_ptr)
 {
-	u32b f[OBJ_FLAG_N];
+	bitflag f[OF_SIZE];
 	if (!hates_acid(o_ptr)) return (FALSE);
 	object_flags(o_ptr, f);
-	if (f[2] & TR2_IGNORE_ACID) return (FALSE);
+	if (of_has(f, OF_IGNORE_ACID)) return (FALSE);
 	return (TRUE);
 }
 
@@ -704,10 +704,10 @@ static int set_acid_destroy(const object_type *o_ptr)
  */
 static int set_elec_destroy(const object_type *o_ptr)
 {
-	u32b f[OBJ_FLAG_N];
+	bitflag f[OF_SIZE];
 	if (!hates_elec(o_ptr)) return (FALSE);
 	object_flags(o_ptr, f);
-	if (f[2] & TR2_IGNORE_ELEC) return (FALSE);
+	if (of_has(f, OF_IGNORE_ELEC)) return (FALSE);
 	return (TRUE);
 }
 
@@ -717,10 +717,10 @@ static int set_elec_destroy(const object_type *o_ptr)
  */
 static int set_fire_destroy(const object_type *o_ptr)
 {
-	u32b f[OBJ_FLAG_N];
+	bitflag f[OF_SIZE];
 	if (!hates_fire(o_ptr)) return (FALSE);
 	object_flags(o_ptr, f);
-	if (f[2] & TR2_IGNORE_FIRE) return (FALSE);
+	if (of_has(f, OF_IGNORE_FIRE)) return (FALSE);
 	return (TRUE);
 }
 
@@ -730,10 +730,10 @@ static int set_fire_destroy(const object_type *o_ptr)
  */
 static int set_cold_destroy(const object_type *o_ptr)
 {
-	u32b f[OBJ_FLAG_N];
+	bitflag f[OF_SIZE];
 	if (!hates_cold(o_ptr)) return (FALSE);
 	object_flags(o_ptr, f);
-	if (f[2] & TR2_IGNORE_COLD) return (FALSE);
+	if (of_has(f, OF_IGNORE_COLD)) return (FALSE);
 	return (TRUE);
 }
 
@@ -919,7 +919,7 @@ static int minus_ac(void)
 {
 	object_type *o_ptr = NULL;
 
-	u32b f[OBJ_FLAG_N];
+	bitflag f[OF_SIZE];
 
 	char o_name[80];
 
@@ -949,7 +949,7 @@ static int minus_ac(void)
 	object_flags(o_ptr, f);
 
 	/* Object resists */
-	if (f[2] & TR2_IGNORE_ACID)
+	if (of_has(f, OF_IGNORE_ACID))
 	{
 		msg_format("Your %s is unaffected!", o_name);
 
@@ -992,9 +992,9 @@ void acid_dam(int dam, cptr kb_str)
 	if (p_ptr->timed[TMD_OPP_ACID]) n++;
 
 	/* Notice flags */
-	wieldeds_notice_flag(1, TR1_IM_ACID);
-	wieldeds_notice_flag(1, TR1_RES_ACID);
-	wieldeds_notice_flag(1, TR1_VULN_ACID);
+	wieldeds_notice_flag(OF_IM_ACID);
+	wieldeds_notice_flag(OF_RES_ACID);
+	wieldeds_notice_flag(OF_VULN_ACID);
 
 	/* Change damage */
 	if (n >= 3) return;
@@ -1034,9 +1034,9 @@ void elec_dam(int dam, cptr kb_str)
 	if (p_ptr->timed[TMD_OPP_ELEC]) n++;
 
 	/* Notice flags */
-	wieldeds_notice_flag(1, TR1_IM_ELEC);
-	wieldeds_notice_flag(1, TR1_RES_ELEC);
-	wieldeds_notice_flag(1, TR1_VULN_ELEC);
+	wieldeds_notice_flag(OF_IM_ELEC);
+	wieldeds_notice_flag(OF_RES_ELEC);
+	wieldeds_notice_flag(OF_VULN_ELEC);
 
 	/* Change damage */
 	if (n >= 3) return;
@@ -1073,9 +1073,9 @@ void fire_dam(int dam, cptr kb_str)
 	if (p_ptr->timed[TMD_OPP_FIRE]) n++;
 
 	/* Notice flags */
-	wieldeds_notice_flag(1, TR1_IM_FIRE);
-	wieldeds_notice_flag(1, TR1_RES_FIRE);
-	wieldeds_notice_flag(1, TR1_VULN_FIRE);
+	wieldeds_notice_flag(OF_IM_FIRE);
+	wieldeds_notice_flag(OF_RES_FIRE);
+	wieldeds_notice_flag(OF_VULN_FIRE);
 
 	/* Change damage */
 	if (n >= 3) return;
@@ -1112,9 +1112,9 @@ void cold_dam(int dam, cptr kb_str)
 	if (p_ptr->timed[TMD_OPP_COLD]) n++;
 
 	/* Notice flags */
-	wieldeds_notice_flag(1, TR1_IM_COLD);
-	wieldeds_notice_flag(1, TR1_RES_COLD);
-	wieldeds_notice_flag(1, TR1_VULN_COLD);
+	wieldeds_notice_flag(OF_IM_COLD);
+	wieldeds_notice_flag(OF_RES_COLD);
+	wieldeds_notice_flag(OF_VULN_COLD);
 
 	/* Change damage */
 	if (n >= 3) return;
@@ -1810,7 +1810,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 {
 	s16b this_o_idx, next_o_idx = 0;
 
-	u32b f[OBJ_FLAG_N];
+	bitflag f[OF_SIZE];
 
 	char o_name[80];
 
@@ -1863,7 +1863,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 				{
 					do_kill = TRUE;
 					note_kill = (plural ? " melt!" : " melts!");
-					if (f[2] & (TR2_IGNORE_ACID)) ignore = TRUE;
+					if (of_has(f, OF_IGNORE_ACID)) ignore = TRUE;
 				}
 				break;
 			}
@@ -1875,7 +1875,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 				{
 					do_kill = TRUE;
 					note_kill = (plural ? " are destroyed!" : " is destroyed!");
-					if (f[2] & (TR2_IGNORE_ELEC)) ignore = TRUE;
+					if (of_has(f, OF_IGNORE_ELEC)) ignore = TRUE;
 				}
 				break;
 			}
@@ -1887,7 +1887,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 				{
 					do_kill = TRUE;
 					note_kill = (plural ? " burn up!" : " burns up!");
-					if (f[2] & (TR2_IGNORE_FIRE)) ignore = TRUE;
+					if (of_has(f, OF_IGNORE_FIRE)) ignore = TRUE;
 				}
 				break;
 			}
@@ -1899,7 +1899,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 				{
 					note_kill = (plural ? " shatter!" : " shatters!");
 					do_kill = TRUE;
-					if (f[2] & (TR2_IGNORE_COLD)) ignore = TRUE;
+					if (of_has(f, OF_IGNORE_COLD)) ignore = TRUE;
 				}
 				break;
 			}
@@ -1911,14 +1911,14 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 				{
 					do_kill = TRUE;
 					note_kill = (plural ? " burn up!" : " burns up!");
-					if (f[2] & (TR2_IGNORE_FIRE)) ignore = TRUE;
+					if (of_has(f, OF_IGNORE_FIRE)) ignore = TRUE;
 				}
 				if (hates_elec(o_ptr))
 				{
 					ignore = FALSE;
 					do_kill = TRUE;
 					note_kill = (plural ? " are destroyed!" : " is destroyed!");
-					if (f[2] & (TR2_IGNORE_ELEC)) ignore = TRUE;
+					if (of_has(f, OF_IGNORE_ELEC)) ignore = TRUE;
 				}
 				break;
 			}
@@ -1930,14 +1930,14 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 				{
 					do_kill = TRUE;
 					note_kill = (plural ? " burn up!" : " burns up!");
-					if (f[2] & (TR2_IGNORE_FIRE)) ignore = TRUE;
+					if (of_has(f, OF_IGNORE_FIRE)) ignore = TRUE;
 				}
 				if (hates_cold(o_ptr))
 				{
 					ignore = FALSE;
 					do_kill = TRUE;
 					note_kill = (plural ? " shatter!" : " shatters!");
-					if (f[2] & (TR2_IGNORE_COLD)) ignore = TRUE;
+					if (of_has(f, OF_IGNORE_COLD)) ignore = TRUE;
 				}
 				break;
 			}
@@ -2183,9 +2183,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 
 
 	/* Some monsters get "destroyed" */
-	if ((r_ptr->flags[2] & (RF2_DEMON | RF2_UNDEAD)) ||
-	    (r_ptr->flags[1] & (RF1_STUPID)) ||
-	    (strchr("Evg", r_ptr->d_char)))
+	if (monster_is_unusual(r_ptr))
 	{
 		/* Special note at death */
 		note_dies = " is destroyed.";
@@ -2206,8 +2204,8 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_ACID:
 		{
 			if (seen) obvious = TRUE;
-			if (seen) l_ptr->flags[2] |= (RF2_IM_ACID);
-			if (r_ptr->flags[2] & (RF2_IM_ACID))
+			if (seen) rf_on(l_ptr->flags, RF_IM_ACID);
+			if (rf_has(r_ptr->flags, RF_IM_ACID))
 			{
 				note = " resists a lot.";
 				dam /= 9;
@@ -2219,8 +2217,8 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_ELEC:
 		{
 			if (seen) obvious = TRUE;
-			if (seen) l_ptr->flags[2] |= (RF2_IM_ELEC);
-			if (r_ptr->flags[2] & (RF2_IM_ELEC))
+			if (seen) rf_on(l_ptr->flags, RF_IM_ELEC);
+			if (rf_has(r_ptr->flags, RF_IM_ELEC))
 			{
 				note = " resists a lot.";
 				dam /= 9;
@@ -2232,13 +2230,17 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_FIRE:
 		{
 			if (seen) obvious = TRUE;
-			if (seen) l_ptr->flags[2] |= (RF2_IM_FIRE | RF2_HURT_FIRE);
-			if (r_ptr->flags[2] & (RF2_IM_FIRE))
+			if (seen)
+			{
+				rf_on(l_ptr->flags, RF_IM_FIRE);
+				rf_on(l_ptr->flags, RF_HURT_FIRE);
+			}
+			if (rf_has(r_ptr->flags, RF_IM_FIRE))
 			{
 				note = " resists a lot.";
 				dam /= 9;
 			}
-			else if (r_ptr->flags[2] & (RF2_HURT_FIRE))
+			else if (rf_has(r_ptr->flags, RF_HURT_FIRE))
 			{
 				note = " catches on fire!";
 				note_dies = " disintegrates!";
@@ -2253,19 +2255,23 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_ICE:
 		{
 			if (seen) obvious = TRUE;
-			if (seen) l_ptr->flags[2] |= (RF2_IM_COLD | RF2_HURT_COLD);
+			if (seen)
+			{
+				rf_on(l_ptr->flags, RF_IM_COLD);
+				rf_on(l_ptr->flags, RF_HURT_COLD);
+			}
 			
 			if(typ == GF_ICE)
 			{
 				do_stun = (randint1(15) + 1) / (r + 1);
 			}
 			
-			if (r_ptr->flags[2] & (RF2_IM_COLD))
+			if (rf_has(r_ptr->flags, RF_IM_COLD))
 			{
 				note = " resists a lot.";
 				dam /= 9;
 			}
-			else if (r_ptr->flags[2] & (RF2_HURT_COLD))
+			else if (rf_has(r_ptr->flags, RF_HURT_COLD))
 			{
 				note = " is badly frozen!";
 				note_dies = " freezes and shatters!";
@@ -2278,8 +2284,8 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_POIS:
 		{
 			if (seen) obvious = TRUE;
-			if (seen) l_ptr->flags[2] |= (RF2_IM_POIS);
-			if (r_ptr->flags[2] & (RF2_IM_POIS))
+			if (seen) rf_on(l_ptr->flags, RF_IM_POIS);
+			if (rf_has(r_ptr->flags, RF_IM_POIS))
 			{
 				note = " resists a lot.";
 				dam /= 9;
@@ -2291,8 +2297,8 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_HOLY_ORB:
 		{
 			if (seen) obvious = TRUE;
-			if (seen) l_ptr->flags[2] |= (RF2_EVIL);
-			if (r_ptr->flags[2] & (RF2_EVIL))
+			if (seen) rf_on(l_ptr->flags, RF_EVIL);
+			if (rf_has(r_ptr->flags, RF_EVIL))
 			{
 				dam *= 2;
 				note = " is hit hard.";
@@ -2311,8 +2317,8 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_PLASMA:
 		{
 			if (seen) obvious = TRUE;
-			if (seen) l_ptr->flags[2] |= RF2_RES_PLAS;
-			if (r_ptr->flags[2] & RF2_RES_PLAS)
+			if (seen) rf_on(l_ptr->flags, RF_RES_PLAS);
+			if (rf_has(r_ptr->flags, RF_RES_PLAS))
 			{
 				note = " resists.";
 				dam *= 3; dam /= (randint1(6)+6);
@@ -2329,37 +2335,38 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (seen)
 			{
 				/* Acquire knowledge of undead type and nether resistance */
-				l_ptr->flags[2] |= (RF2_UNDEAD | RF2_RES_NETH);
+				rf_on(l_ptr->flags, RF_UNDEAD);
+				rf_on(l_ptr->flags, RF_RES_NETH);
 				
 				/* If it isn't undead, acquire extra knowledge */
-				if (!(r_ptr->flags[2] & (RF2_UNDEAD)))
+				if (!rf_has(r_ptr->flags, RF_UNDEAD))
 				{
 					/* Learn this creature breathes nether if true */
-					if (r_ptr->spell_flags[0] & (RSF0_BR_NETH))
+					if (rsf_has(r_ptr->spell_flags, RSF_BR_NETH))
 					{
-						l_ptr->spell_flags[0] |= (RSF0_BR_NETH);
+						rsf_on(l_ptr->spell_flags, RSF_BR_NETH);
 					}
 
 					/* Otherwise learn about evil type */
 					else
 					{
-						l_ptr->flags[2] |= (RF2_EVIL);
+						rf_on(l_ptr->flags, RF_EVIL);
 					}
 				}
 			}
 
-			if (r_ptr->flags[2] & (RF2_UNDEAD))
+			if (rf_has(r_ptr->flags, RF_UNDEAD))
 			{
 				note = " is immune.";
 				dam = 0;
 			}
-			else if (r_ptr->flags[2] & (RF2_RES_NETH) ||
-			         r_ptr->spell_flags[0] & (RSF0_BR_NETH))
+			else if (rf_has(r_ptr->flags, RF_RES_NETH) ||
+			         rsf_has(r_ptr->spell_flags, RSF_BR_NETH))
 			{
 				note = " resists.";
 				dam *= 3; dam /= (randint1(6)+6);
 			}
-			else if (r_ptr->flags[2] & (RF2_EVIL))
+			else if (rf_has(r_ptr->flags, RF_EVIL))
 			{
 				dam /= 2;
 				note = " resists somewhat.";
@@ -2371,8 +2378,8 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_WATER:
 		{
 			if (seen) obvious = TRUE;
-			if (seen) l_ptr->flags[2] |= (RF2_IM_WATER);
-			if (r_ptr->flags[2] & (RF2_IM_WATER))
+			if (seen) rf_on(l_ptr->flags, RF_IM_WATER);
+			if (rf_has(r_ptr->flags, RF_IM_WATER))
 			{
 				note = " is immune.";
 				dam = 0;
@@ -2387,10 +2394,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 
 			do_poly = TRUE;
 			do_conf = (5 + randint1(11) + r) / (r + 1);
-			if (r_ptr->spell_flags[0] & (RSF0_BR_CHAO))
+			if (rsf_has(r_ptr->spell_flags, RSF_BR_CHAO))
 			{
 				/* Learn about breathers through resistance */
-				if (seen) l_ptr->spell_flags[0] |= (RSF0_BR_CHAO);
+				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_CHAO);
 
 				note = " resists.";
 				dam *= 3; dam /= (randint1(6)+6);
@@ -2403,10 +2410,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_SHARD:
 		{
 			if (seen) obvious = TRUE;
-			if (r_ptr->spell_flags[0] & (RSF0_BR_SHAR))
+			if (rsf_has(r_ptr->spell_flags, RSF_BR_SHAR))
 			{
 				/* Learn about breathers through resistance */
-				if (seen) l_ptr->spell_flags[0] |= (RSF0_BR_SHAR);
+				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_SHAR);
 
 				note = " resists.";
 				dam *= 3; dam /= (randint1(6)+6);
@@ -2420,10 +2427,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (seen) obvious = TRUE;
 			
 			do_stun = (10 + randint1(15) + r) / (r + 1);
-			if (r_ptr->spell_flags[0] & (RSF0_BR_SOUN))
+			if (rsf_has(r_ptr->spell_flags, RSF_BR_SOUN))
 			{
 				/* Learn about breathers through resistance */
-				if (seen) l_ptr->spell_flags[0] |= (RSF0_BR_SOUN);
+				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_SOUN);
 
 				note = " resists.";
 				dam *= 2; dam /= (randint1(6)+6);
@@ -2435,18 +2442,18 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_CONFUSION:
 		{
 			if (seen) obvious = TRUE;
-			if (seen) l_ptr->flags[2] |= (RF2_NO_CONF);
+			if (seen) rf_on(l_ptr->flags, RF_NO_CONF);
 
 			do_conf = (10 + randint1(15) + r) / (r + 1);
-			if (r_ptr->spell_flags[0] & (RSF0_BR_CONF))
+			if (rsf_has(r_ptr->spell_flags, RSF_BR_CONF))
 			{
 				/* Learn about breathers through resistance */
-				if (seen) l_ptr->spell_flags[0] |= (RSF0_BR_CONF);
+				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_CONF);
 
 				note = " resists.";
 				dam *= 2; dam /= (randint1(6)+6);
 			}
-			else if (r_ptr->flags[2] & (RF2_NO_CONF))
+			else if (rf_has(r_ptr->flags, RF_NO_CONF))
 			{
 				note = " resists somewhat.";
 				dam /= 2;
@@ -2458,8 +2465,8 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_DISENCHANT:
 		{
 			if (seen) obvious = TRUE;
-			if (seen) l_ptr->flags[2] |= (RF2_RES_DISE);
-			if (r_ptr->flags[2] & (RF2_RES_DISE))
+			if (seen) rf_on(l_ptr->flags, RF_RES_DISE);
+			if (rf_has(r_ptr->flags, RF_RES_DISE))
 			{
 				note = " resists.";
 				dam *= 3; dam /= (randint1(6)+6);
@@ -2471,8 +2478,8 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_NEXUS:
 		{
 			if (seen) obvious = TRUE;
-			if (seen) l_ptr->flags[2] |= (RF2_RES_NEXUS);
-			if (r_ptr->flags[2] & RF2_RES_NEXUS)
+			if (seen) rf_on(l_ptr->flags, RF_RES_NEXUS);
+			if (rf_has(r_ptr->flags, RF_RES_NEXUS))
 			{
 				note = " resists.";
 				dam *= 3; dam /= (randint1(6)+6);
@@ -2486,10 +2493,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (seen) obvious = TRUE;
 			
 			do_stun = (randint1(15) + r) / (r + 1);
-			if (r_ptr->spell_flags[0] & (RSF0_BR_WALL))
+			if (rsf_has(r_ptr->spell_flags, RSF_BR_WALL))
 			{
 				/* Learn about breathers through resistance */
-				if (seen) l_ptr->spell_flags[0] |= (RSF0_BR_WALL);
+				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_WALL);
 
 				note = " resists.";
 				dam *= 3; dam /= (randint1(6)+6);
@@ -2501,10 +2508,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_INERTIA:
 		{
 			if (seen) obvious = TRUE;
-			if (r_ptr->spell_flags[0] & (RSF0_BR_INER))
+			if (rsf_has(r_ptr->spell_flags, RSF_BR_INER))
 			{
 				/* Learn about breathers through resistance */
-				if (seen) l_ptr->spell_flags[0] |= (RSF0_BR_INER);
+				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_INER);
 
 				note = " resists.";
 				dam *= 3; dam /= (randint1(6)+6);
@@ -2516,10 +2523,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_TIME:
 		{
 			if (seen) obvious = TRUE;
-			if (r_ptr->spell_flags[0] & (RSF0_BR_TIME))
+			if (rsf_has(r_ptr->spell_flags, RSF_BR_TIME))
 			{
 				/* Learn about breathers through resistance */
-				if (seen) l_ptr->spell_flags[0] |= (RSF0_BR_TIME);
+				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_TIME);
 
 				note = " resists.";
 				dam *= 3; dam /= (randint1(6)+6);
@@ -2536,10 +2543,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (randint1(127) > r_ptr->level)
 				do_dist = 10;
 
-			if (r_ptr->spell_flags[0] & (RSF0_BR_GRAV))
+			if (rsf_has(r_ptr->spell_flags, RSF_BR_GRAV))
 			{
 				/* Learn about breathers through resistance */
-				if (seen) l_ptr->spell_flags[0] |= (RSF0_BR_GRAV);
+				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_GRAV);
 
 				note = " resists.";
 				dam *= 3; dam /= (randint1(6)+6);
@@ -2566,9 +2573,12 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_OLD_DRAIN:
 		{
 			if (seen) obvious = TRUE;
-			if (seen) l_ptr->flags[2] |= (RF2_UNDEAD | RF2_DEMON);
-			if ((r_ptr->flags[2] & (RF2_UNDEAD | RF2_DEMON)) ||
-			    (strchr("Egv", r_ptr->d_char)))
+			if (seen)
+			{
+				rf_on(l_ptr->flags, RF_UNDEAD);
+				rf_on(l_ptr->flags, RF_DEMON);
+			}
+			if (monster_is_unusual(r_ptr))
 			{
 				note = " is unaffected!";
 				obvious = FALSE;
@@ -2661,7 +2671,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (seen) obvious = TRUE;
 
 			/* Powerful monsters can resist */
-			if ((r_ptr->flags[0] & (RF0_UNIQUE)) ||
+			if (rf_has(r_ptr->flags, RF_UNIQUE) ||
 			    (r_ptr->level > randint1((dam - 10) < 1 ? 1 : (dam - 10)) + 10))
 			{
 				note = " is unaffected!";
@@ -2709,10 +2719,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_LIGHT_WEAK:
 		{
 			if (seen) obvious = TRUE;
-			if (seen) l_ptr->flags[2] |= (RF2_HURT_LIGHT);
+			if (seen) rf_on(l_ptr->flags, RF_HURT_LIGHT);
 
 			/* Hurt by light */
-			if (r_ptr->flags[2] & (RF2_HURT_LIGHT))
+			if (rf_has(r_ptr->flags, RF_HURT_LIGHT))
 			{
 				/* Special effect */
 				note = " cringes from the light!";
@@ -2734,17 +2744,17 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_LIGHT:
 		{
 			if (seen) obvious = TRUE;
-			if (seen) l_ptr->flags[2] |= (RF2_HURT_LIGHT);
+			if (seen) rf_on(l_ptr->flags, RF_HURT_LIGHT);
 
-			if (r_ptr->spell_flags[0] & (RSF0_BR_LIGHT))
+			if (rsf_has(r_ptr->spell_flags, RSF_BR_LIGHT))
 			{
 				/* Learn about breathers through resistance */
-				if (seen) l_ptr->spell_flags[0] |= (RSF0_BR_LIGHT);
+				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_LIGHT);
 
 				note = " resists.";
 				dam *= 2; dam /= (randint1(6)+6);
 			}
-			else if (r_ptr->flags[2] & (RF2_HURT_LIGHT))
+			else if (rf_has(r_ptr->flags, RF_HURT_LIGHT))
 			{
 				note = " cringes from the light!";
 				note_dies = " shrivels away in the light!";
@@ -2758,10 +2768,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_DARK:
 		{
 			if (seen) obvious = TRUE;
-			if (r_ptr->spell_flags[0] & (RSF0_BR_DARK))
+			if (rsf_has(r_ptr->spell_flags, RSF_BR_DARK))
 			{
 				/* Learn about breathers through resistance */
-				if (seen) l_ptr->spell_flags[0] |= (RSF0_BR_DARK);
+				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_DARK);
 
 				note = " resists.";
 				dam *= 2; dam /= (randint1(6)+6);
@@ -2774,10 +2784,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_KILL_WALL:
 		{
 			if (seen) obvious = TRUE;
-			if (seen) l_ptr->flags[2] |= (RF2_HURT_ROCK);
+			if (seen) rf_on(l_ptr->flags, RF_HURT_ROCK);
 
 			/* Hurt by rock remover */
-			if (r_ptr->flags[2] & (RF2_HURT_ROCK))
+			if (rf_has(r_ptr->flags, RF_HURT_ROCK))
 			{
 				/* Cute little message */
 				note = " loses some skin!";
@@ -2798,10 +2808,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Teleport undead (Use "dam" as "power") */
 		case GF_AWAY_UNDEAD:
 		{
-			if (seen) l_ptr->flags[2] |= (RF2_UNDEAD);
+			if (seen) rf_on(l_ptr->flags, RF_UNDEAD);
 
 			/* Only affect undead */
-			if (r_ptr->flags[2] & (RF2_UNDEAD))
+			if (rf_has(r_ptr->flags, RF_UNDEAD))
 			{
 				if (seen) obvious = TRUE;
 				do_dist = dam;
@@ -2823,10 +2833,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Teleport evil (Use "dam" as "power") */
 		case GF_AWAY_EVIL:
 		{
-			if (seen) l_ptr->flags[2] |= (RF2_EVIL);
+			if (seen) rf_on(l_ptr->flags, RF_EVIL);
 
 			/* Only affect evil */
-			if (r_ptr->flags[2] & (RF2_EVIL))
+			if (rf_has(r_ptr->flags, RF_EVIL))
 			{
 				if (seen) obvious = TRUE;
 				do_dist = dam;
@@ -2864,7 +2874,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_TURN_UNDEAD:
 		{
 			/* Only affect undead */
-			if (r_ptr->flags[2] & (RF2_UNDEAD))
+			if (rf_has(r_ptr->flags, RF_UNDEAD))
 			{
 				/* Obvious */
 				if (seen) obvious = TRUE;
@@ -2887,7 +2897,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_TURN_EVIL:
 		{
 			/* Only affect evil */
-			if (r_ptr->flags[2] & (RF2_EVIL))
+			if (rf_has(r_ptr->flags, RF_EVIL))
 			{
 				/* Obvious */
 				if (seen) obvious = TRUE;
@@ -2921,10 +2931,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Dispel undead */
 		case GF_DISP_UNDEAD:
 		{
-			if (seen) l_ptr->flags[2] |= (RF2_UNDEAD);
+			if (seen) rf_on(l_ptr->flags, RF_UNDEAD);
 
 			/* Only affect undead */
-			if (r_ptr->flags[2] & (RF2_UNDEAD))
+			if (rf_has(r_ptr->flags, RF_UNDEAD))
 			{
 				/* Obvious */
 				if (seen) obvious = TRUE;
@@ -2951,10 +2961,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Dispel evil */
 		case GF_DISP_EVIL:
 		{
-			if (seen) l_ptr->flags[2] |= (RF2_EVIL);
+			if (seen) rf_on(l_ptr->flags, RF_EVIL);
 
 			/* Only affect evil */
-			if (r_ptr->flags[2] & (RF2_EVIL))
+			if (rf_has(r_ptr->flags, RF_EVIL))
 			{
 				/* Obvious */
 				if (seen) obvious = TRUE;
@@ -3011,7 +3021,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 
 
 	/* "Unique" monsters can only be "killed" by the player */
-	if (r_ptr->flags[0] & (RF0_UNIQUE))
+	if (rf_has(r_ptr->flags, RF_UNIQUE))
 	{
 		/* Uniques may only be killed by the player */
 		if ((who > 0) && (dam > m_ptr->hp)) dam = m_ptr->hp;
@@ -3029,7 +3039,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	else if (do_poly)
 	{
 		/* Uniques cannot be polymorphed */
-		if (r_ptr->flags[0] & (RF0_UNIQUE))
+		if (rf_has(r_ptr->flags, RF_UNIQUE))
 		{
 			/* Don't print a message for chaos side effects */
 			if (obvious && typ == GF_OLD_POLY) note = " is unaffected!";
@@ -3100,16 +3110,16 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	else if (do_stun)
 	{
 		/* Monsters can be immune, as are sound and force breathers */
-		if (r_ptr->flags[2] & (RF2_NO_STUN) ||
-	       r_ptr->spell_flags[0] & (RSF0_BR_SOUN | RSF0_BR_WALL))
+		if (rf_has(r_ptr->flags, RF_NO_STUN) ||
+	       flags_test(r_ptr->spell_flags, RSF_SIZE, RSF_BR_SOUN, RSF_BR_WALL, FLAG_END))
 	   {
 			/* Immune to stunning */
-			if (seen && obvious) l_ptr->flags[2] |= (RF2_NO_STUN);
+			if (seen && obvious) rf_on(l_ptr->flags, RF_NO_STUN);
 		}
 	   else
 		{
 			if (seen) obvious = TRUE;
-			if (seen) l_ptr->flags[2] |= (RF2_NO_STUN);
+			if (seen) rf_on(l_ptr->flags, RF_NO_STUN);
 
 			tmp = do_stun;
 
@@ -3134,14 +3144,14 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	else if (do_conf)
 	{
 		/* Uniques, confusion breathers, and chaos breathers are also immune */
-		if ((r_ptr->flags[2] & (RF2_NO_CONF)) ||
-			 (r_ptr->flags[0] & (RF0_UNIQUE)) ||
-		    (r_ptr->spell_flags[0] & (RSF0_BR_CONF | RSF0_BR_CHAO)))
+		if (rf_has(r_ptr->flags, RF_NO_CONF) ||
+			 rf_has(r_ptr->flags, RF_UNIQUE) ||
+		    flags_test(r_ptr->spell_flags, RSF_SIZE, RSF_BR_CONF, RSF_BR_CHAO, FLAG_END))
 		{
 			/* Immune. Learn about confusion and get a message only if it's already obvious */
 			if (seen && obvious)
 			{
-				l_ptr->flags[2] |= (RF2_NO_CONF);
+				rf_on(l_ptr->flags, RF_NO_CONF);
 
 				/* Don't print a message for chaos and confusion damage side effects */
 				if (typ == GF_OLD_CONF) note = " is unaffected!";
@@ -3151,7 +3161,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		{
 			/* Monster is not immune to confusion */
 			if (seen) obvious = TRUE;
-			if (seen) l_ptr->flags[2] |= (RF2_NO_CONF);
+			if (seen) rf_on(l_ptr->flags, RF_NO_CONF);
 
 			/* Normal confusion has a saving throw. */
 			if (typ == GF_OLD_CONF && r_ptr->level > randint1(MAX(1, do_conf - 10)) + 10)
@@ -3187,13 +3197,13 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	{
 		/* Normal fear - monsters can be immune, uniques are immune */
 		if (typ == GF_TURN_ALL &&
-		    (r_ptr->flags[2] & (RF2_NO_FEAR) ||
-		     r_ptr->flags[0] & (RF0_UNIQUE)))
+		    (rf_has(r_ptr->flags, RF_NO_FEAR) ||
+		     rf_has(r_ptr->flags, RF_UNIQUE)))
 		{
 			/* Immune. Learn about fear and get a message only if it's already obvious */
 			if (seen && obvious)
 			{
-				l_ptr->flags[2] |= (RF2_NO_FEAR);
+				rf_on(l_ptr->flags, RF_NO_FEAR);
 				note = " is unaffected!";
 			}
 		}
@@ -3203,7 +3213,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (seen) obvious = TRUE;
 
 			/* Learn about fear (NO_FEAR doesn't apply to turn evil/undead) */
-			if (seen && typ == GF_TURN_ALL) l_ptr->flags[2] |= (RF2_NO_FEAR);
+			if (seen && typ == GF_TURN_ALL) rf_on(l_ptr->flags, RF_NO_FEAR);
 
 			/* All fear has a saving throw. */
 			if (r_ptr->level > randint1(MAX(1, do_fear - 10)) + 10)
@@ -3295,20 +3305,20 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	if(!mon_died && do_sleep)
 	{
 		/* Monsters can be immune, and so are uniques */
-		if (r_ptr->flags[2] & (RF2_NO_SLEEP) ||
-		    r_ptr->flags[0] & (RF0_UNIQUE))
+		if (rf_has(r_ptr->flags, RF_NO_SLEEP) ||
+		    rf_has(r_ptr->flags, RF_UNIQUE))
 		{
 			/* Immune.  Learn about sleep and get a message only if it's already obvious */
 			if (seen && obvious)
 			{
-				l_ptr->flags[2] |= (RF2_NO_SLEEP);
+				rf_on(l_ptr->flags, RF_NO_SLEEP);
 				note = " is unaffected!";
 			}
 		}
 		else
 		{
 			if (seen) obvious = TRUE;
-			if (seen) l_ptr->flags[2] |= (RF2_NO_SLEEP);
+			if (seen) rf_on(l_ptr->flags, RF_NO_SLEEP);
 
 			/* Monsters may still make a saving throw */
 			if (r_ptr->level > randint1(MAX(1, do_sleep - 10)) + 10)
@@ -3464,7 +3474,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (p_ptr->state.resist_pois)
 			{
 				dam = RES_POIS_ADJ(dam, NOT_USED);
-				wieldeds_notice_flag(1, TR1_RES_POIS);
+				wieldeds_notice_flag(OF_RES_POIS);
 			}
 
 			if (p_ptr->timed[TMD_OPP_POIS])
@@ -3515,7 +3525,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			}
 			else
 			{
-				wieldeds_notice_flag(1, TR1_RES_SOUND);
+				wieldeds_notice_flag(OF_RES_SOUND);
 			}
 			break;
 		}
@@ -3527,14 +3537,14 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (p_ptr->state.resist_nethr)
 			{
 				dam = RES_NETH_ADJ(dam, RANDOMISE);
-				wieldeds_notice_flag(1, TR1_RES_NETHR);
+				wieldeds_notice_flag(OF_RES_NETHR);
 			}
 			else
 			{
 				if (p_ptr->state.hold_life && (randint0(100) < 75))
 				{
 					msg_print("You keep hold of your life force!");
-					wieldeds_notice_flag(2, TR2_HOLD_LIFE);
+					wieldeds_notice_flag(OF_HOLD_LIFE);
 				}
 				else
 				{
@@ -3544,7 +3554,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 					{
 						msg_print("You feel your life slipping away!");
 						lose_exp(d / 10);
-						wieldeds_notice_flag(2, TR2_HOLD_LIFE);
+						wieldeds_notice_flag(OF_HOLD_LIFE);
 					}
 					else
 					{
@@ -3564,12 +3574,12 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (!p_ptr->state.resist_sound)
 				(void)inc_timed(TMD_STUN, randint1(40), TRUE);
 			else
-				wieldeds_notice_flag(1, TR1_RES_SOUND);
+				wieldeds_notice_flag(OF_RES_SOUND);
 
 			if (!p_ptr->state.resist_confu)
 				(void)inc_timed(TMD_CONFUSED, randint1(5) + 5, TRUE);
 			else
-				wieldeds_notice_flag(1, TR1_RES_CONFU);
+				wieldeds_notice_flag(OF_RES_CONFU);
 
 			take_hit(dam, killer);
 			break;
@@ -3582,7 +3592,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (p_ptr->state.resist_chaos)
 			{
 				dam = RES_CHAO_ADJ(dam, RANDOMISE);
-				wieldeds_notice_flag(1, TR1_RES_CHAOS);
+				wieldeds_notice_flag(OF_RES_CHAOS);
 			}
 			if (!p_ptr->state.resist_confu && !p_ptr->state.resist_chaos)
 			{
@@ -3592,14 +3602,14 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (!p_ptr->state.resist_chaos)
 				(void)inc_timed(TMD_IMAGE, randint1(10), TRUE);
 			else
-				wieldeds_notice_flag(1, TR1_RES_CHAOS);
+				wieldeds_notice_flag(OF_RES_CHAOS);
 
 			if (!p_ptr->state.resist_nethr && !p_ptr->state.resist_chaos)
 			{
 				if (p_ptr->state.hold_life && (randint0(100) < 75))
 				{
 					msg_print("You keep hold of your life force!");
-					wieldeds_notice_flag(2, TR2_HOLD_LIFE);
+					wieldeds_notice_flag(OF_HOLD_LIFE);
 				}
 				else
 				{
@@ -3609,7 +3619,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 					{
 						msg_print("You feel your life slipping away!");
 						lose_exp(d / 10);
-						wieldeds_notice_flag(2, TR2_HOLD_LIFE);
+						wieldeds_notice_flag(OF_HOLD_LIFE);
 					}
 					else
 					{
@@ -3620,8 +3630,8 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			}
 			else
 			{
-				wieldeds_notice_flag(1, TR1_RES_NETHR);
-				wieldeds_notice_flag(1, TR1_RES_CHAOS);
+				wieldeds_notice_flag(OF_RES_NETHR);
+				wieldeds_notice_flag(OF_RES_CHAOS);
 			}
 
 			take_hit(dam, killer);
@@ -3635,7 +3645,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (p_ptr->state.resist_shard)
 			{
 				dam = RES_SHAR_ADJ(dam, RANDOMISE);
-				wieldeds_notice_flag(1, TR1_RES_SHARD);
+				wieldeds_notice_flag(OF_RES_SHARD);
 			}
 			else
 			{
@@ -3652,7 +3662,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (p_ptr->state.resist_sound)
 			{
 				dam = RES_SOUN_ADJ(dam, RANDOMISE);
-				wieldeds_notice_flag(1, TR1_RES_SOUND);
+				wieldeds_notice_flag(OF_RES_SOUND);
 			}
 			else
 			{
@@ -3670,7 +3680,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (p_ptr->state.resist_confu)
 			{
 				dam = RES_CONF_ADJ(dam, RANDOMISE);
-				wieldeds_notice_flag(1, TR1_RES_CONFU);
+				wieldeds_notice_flag(OF_RES_CONFU);
 			}
 			else
 			{
@@ -3687,7 +3697,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (p_ptr->state.resist_disen)
 			{
 				dam = RES_DISE_ADJ(dam, RANDOMISE);
-				wieldeds_notice_flag(1, TR1_RES_DISEN);
+				wieldeds_notice_flag(OF_RES_DISEN);
 			}
 			else
 			{
@@ -3704,7 +3714,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (p_ptr->state.resist_nexus)
 			{
 				dam = RES_NEXU_ADJ(dam, RANDOMISE);
-				wieldeds_notice_flag(1, TR1_RES_NEXUS);
+				wieldeds_notice_flag(OF_RES_NEXUS);
 			}
 			else
 			{
@@ -3721,7 +3731,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (!p_ptr->state.resist_sound)
 				(void)inc_timed(TMD_STUN, randint1(20), TRUE);
 			else
-				wieldeds_notice_flag(1, TR1_RES_SOUND);
+				wieldeds_notice_flag(OF_RES_SOUND);
 
 			take_hit(dam, killer);
 			break;
@@ -3743,7 +3753,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (p_ptr->state.resist_light)
 			{
 				dam = RES_LIGHT_ADJ(dam, RANDOMISE);
-				wieldeds_notice_flag(1, TR1_RES_LIGHT);
+				wieldeds_notice_flag(OF_RES_LIGHT);
 			}
 			else if (!blind && !p_ptr->state.resist_blind)
 			{
@@ -3751,7 +3761,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			}
 			else if (p_ptr->state.resist_blind)
 			{
-				wieldeds_notice_flag(1, TR1_RES_BLIND);
+				wieldeds_notice_flag(OF_RES_BLIND);
 			}
 			take_hit(dam, killer);
 			break;
@@ -3769,8 +3779,8 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			{
 				(void)inc_timed(TMD_BLIND, randint1(5) + 2, TRUE);
 			}
-			wieldeds_notice_flag(1, TR1_RES_DARK);
-			wieldeds_notice_flag(1, TR1_RES_BLIND);
+			wieldeds_notice_flag(OF_RES_DARK);
+			wieldeds_notice_flag(OF_RES_BLIND);
 
 			take_hit(dam, killer);
 			break;
@@ -3845,7 +3855,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			}
 			else
 			{
-				wieldeds_notice_flag(1, TR1_RES_SOUND);
+				wieldeds_notice_flag(OF_RES_SOUND);
 			}
 			take_hit(dam, killer);
 			break;
@@ -3876,12 +3886,12 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (!p_ptr->state.resist_shard)
 				(void)inc_timed(TMD_CUT, damroll(5, 8), TRUE);
 			else
-				wieldeds_notice_flag(1, TR1_RES_SHARD);
+				wieldeds_notice_flag(OF_RES_SHARD);
 
 			if (!p_ptr->state.resist_sound)
 				(void)inc_timed(TMD_STUN, randint1(15), TRUE);
 			else
-				wieldeds_notice_flag(1, TR1_RES_SOUND);
+				wieldeds_notice_flag(OF_RES_SOUND);
 
 			break;
 		}

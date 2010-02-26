@@ -320,7 +320,7 @@ extern int value_check_aux1(const object_type *o_ptr);
 
 /* files.c */
 extern void html_screenshot(cptr name, int mode);
-extern void player_flags(u32b f[OBJ_FLAG_N]);
+extern void player_flags(bitflag f[OF_SIZE]);
 extern void display_player(int mode);
 extern void display_player_stat_info(void);
 extern void display_player_xtra_info(void);
@@ -406,7 +406,7 @@ extern void message_pain(int m_idx, int dam);
 extern void update_smart_learn(int m_idx, int what);
 void monster_death(int m_idx);
 bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note);
-extern void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, u32b flags[]);
+extern void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, bitflag flags[RF_SIZE]);
 
 /* pathfind.c */
 extern bool findpath(int y, int x);

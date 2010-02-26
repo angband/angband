@@ -279,7 +279,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 		if (!(p_ptr->state.resist_pois || p_ptr->timed[TMD_OPP_POIS]))
 			(void)inc_timed(TMD_POISONED, 10 + randint1(20), TRUE);
 		else if (p_ptr->state.resist_pois)
-			wieldeds_notice_flag(1, TR1_RES_POIS);
+			wieldeds_notice_flag(OF_RES_POIS);
 	}
 
 	/* Paralyze */
@@ -289,7 +289,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 		if (!p_ptr->state.free_act)
 			(void)inc_timed(TMD_PARALYZED, 10 + randint1(20), TRUE);
 		else
-			wieldeds_notice_flag(2, TR2_FREE_ACT);
+			wieldeds_notice_flag(OF_FREE_ACT);
 	}
 
 	/* Summon monsters */

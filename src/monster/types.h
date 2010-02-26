@@ -59,14 +59,8 @@ typedef struct
 	byte freq_innate;		/* Innate spell frequency */
 	byte freq_spell;		/* Other spell frequency */
 
-	u32b flags[RACE_FLAG_STRICT_UB];	/* Flags */
-		/* Flags 0 (general) */
-		/* Flags 1 (abilities) */
-		/* Flags 2 (race/resist) */
-	u32b spell_flags[RACE_FLAG_SPELL_STRICT_UB];	/* Spell flags */
-		/* Flags 3 (innate/breath) */
-		/* Flags 4 (normal spells) */
-		/* Flags 5 (special spells) */
+	bitflag flags[RF_SIZE];         /* Flags */
+	bitflag spell_flags[RSF_SIZE];  /* Spell flags */
 
 	monster_blow blow[MONSTER_BLOW_MAX]; /* Up to four blows per round */
 
@@ -110,10 +104,10 @@ typedef struct
 
 	byte blows[MONSTER_BLOW_MAX]; /* Number of times each blow type was seen */
 
-	u32b flags[RACE_FLAG_STRICT_UB]; /* Observed racial flags - a 1 indicates
-	                                  * the flag (or lack thereof) is known to
-	                                  * the player */
-	u32b spell_flags[RACE_FLAG_SPELL_STRICT_UB];	/* Observed racial spell flags */
+	bitflag flags[RF_SIZE]; /* Observed racial flags - a 1 indicates
+	                         * the flag (or lack thereof) is known to
+	                         * the player */
+	bitflag spell_flags[RSF_SIZE];  /* Observed racial spell flags */
 } monster_lore;
 
 

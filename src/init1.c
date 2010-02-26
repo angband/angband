@@ -57,74 +57,25 @@ static const char *effect_list[] =
 
 
 /*
- * Monster Blow Methods
+ * Monster blow methods
  */
-static cptr r_info_blow_method[] =
+static const char *r_info_blow_method[] =
 {
-	"",
-	"HIT",
-	"TOUCH",
-	"PUNCH",
-	"KICK",
-	"CLAW",
-	"BITE",
-	"STING",
-	"XXX1",
-	"BUTT",
-	"CRUSH",
-	"ENGULF",
-	"XXX2",
-	"CRAWL",
-	"DROOL",
-	"SPIT",
-	"XXX3",
-	"GAZE",
-	"WAIL",
-	"SPORE",
-	"XXX4",
-	"BEG",
-	"INSULT",
-	"MOAN",
-	"XXX5",
+	#define RBM(a, b) #a,
+	#include "list-blow-methods.h"
+	#undef RBM
 	NULL
 };
 
 
 /*
- * Monster Blow Effects
+ * Monster blow effects
  */
-static cptr r_info_blow_effect[] =
+static const char *r_info_blow_effect[] =
 {
-	"",
-	"HURT",
-	"POISON",
-	"UN_BONUS",
-	"UN_POWER",
-	"EAT_GOLD",
-	"EAT_ITEM",
-	"EAT_FOOD",
-	"EAT_LIGHT",
-	"ACID",
-	"ELEC",
-	"FIRE",
-	"COLD",
-	"BLIND",
-	"CONFUSE",
-	"TERRIFY",
-	"PARALYZE",
-	"LOSE_STR",
-	"LOSE_INT",
-	"LOSE_WIS",
-	"LOSE_DEX",
-	"LOSE_CON",
-	"LOSE_CHR",
-	"LOSE_ALL",
-	"SHATTER",
-	"EXP_10",
-	"EXP_20",
-	"EXP_40",
-	"EXP_80",
-	"HALLU",
+	#define RBE(a, b) #a,
+	#include "list-blow-effects.h"
+	#undef RBE
 	NULL
 };
 
@@ -132,431 +83,50 @@ static cptr r_info_blow_effect[] =
 /*
  * Monster race flags
  */
-static cptr r_info_flags0[] =
-{
-	"UNIQUE",
-	"QUESTOR",
-	"MALE",
-	"FEMALE",
-	"CHAR_CLEAR",
-	"CHAR_MULTI",
-	"ATTR_CLEAR",
-	"ATTR_MULTI",
-	"FORCE_DEPTH",
-	"FORCE_MAXHP",
-	"FORCE_SLEEP",
-	"FORCE_EXTRA",
-	"FRIEND",
-	"FRIENDS",
-	"ESCORT",
-	"ESCORTS",
-	"NEVER_BLOW",
-	"NEVER_MOVE",
-	"RAND_25",
-	"RAND_50",
-	"ONLY_GOLD",
-	"ONLY_ITEM",
-	"DROP_40",
-	"DROP_60",
-	"DROP_1",
-	"DROP_2",
-	"DROP_3",
-	"DROP_4",
-	"DROP_GOOD",
-	"DROP_GREAT",
-	"DROP_20",
-	"DROP_CHOSEN"
-};
 
-/*
- * Monster race flags
- */
-static cptr r_info_flags1[] =
+static const char *r_info_flags[] =
 {
-	"STUPID",
-	"SMART",
-	"XXX1X2",
-	"XXX2X2",
-	"INVISIBLE",
-	"COLD_BLOOD",
-	"EMPTY_MIND",
-	"WEIRD_MIND",
-	"MULTIPLY",
-	"REGENERATE",
-	"XXX3X2",
-	"XXX4X2",
-	"POWERFUL",
-	"XXX5X2",
-	"XXX7X2",
-	"XXX6X2",
-	"OPEN_DOOR",
-	"BASH_DOOR",
-	"PASS_WALL",
-	"KILL_WALL",
-	"MOVE_BODY",
-	"KILL_BODY",
-	"TAKE_ITEM",
-	"KILL_ITEM",
-	"BRAIN_1",
-	"BRAIN_2",
-	"BRAIN_3",
-	"BRAIN_4",
-	"BRAIN_5",
-	"BRAIN_6",
-	"BRAIN_7",
-	"BRAIN_8"
-};
-
-/*
- * Monster race flags
- */
-static cptr r_info_flags2[] =
-{
-	"ORC",
-	"TROLL",
-	"GIANT",
-	"DRAGON",
-	"DEMON",
-	"UNDEAD",
-	"EVIL",
-	"ANIMAL",
-	"METAL",
-	"XXX2X3",
-	"XXX3X3",
-	"XXX4X3",
-	"HURT_LIGHT",
-	"HURT_ROCK",
-	"HURT_FIRE",
-	"HURT_COLD",
-	"IM_ACID",
-	"IM_ELEC",
-	"IM_FIRE",
-	"IM_COLD",
-	"IM_POIS",
-	"XXX5X3",
-	"RES_NETH",
-	"IM_WATER",
-	"RES_PLAS",
-	"RES_NEXUS",
-	"RES_DISE",
-	"XXX6X3",
-	"NO_FEAR",
-	"NO_STUN",
-	"NO_CONF",
-	"NO_SLEEP"
-};
-
-/*
- * Monster race flags
- */
-static cptr r_info_spell_flags0[] =
-{
-	"SHRIEK",
-	"XXX2X4",
-	"XXX3X4",
-	"XXX4X4",
-	"ARROW_1",
-	"ARROW_2",
-	"ARROW_3",
-	"ARROW_4",
-	"BR_ACID",
-	"BR_ELEC",
-	"BR_FIRE",
-	"BR_COLD",
-	"BR_POIS",
-	"BR_NETH",
-	"BR_LIGHT",
-	"BR_DARK",
-	"BR_CONF",
-	"BR_SOUN",
-	"BR_CHAO",
-	"BR_DISE",
-	"BR_NEXU",
-	"BR_TIME",
-	"BR_INER",
-	"BR_GRAV",
-	"BR_SHAR",
-	"BR_PLAS",
-	"BR_WALL",
-	"BR_MANA",
-	"XXX5X4",
-	"XXX6X4",
-	"XXX7X4",
-	"BOULDER"
-};
-
-/*
- * Monster race flags
- */
-static cptr r_info_spell_flags1[] =
-{
-	"BA_ACID",
-	"BA_ELEC",
-	"BA_FIRE",
-	"BA_COLD",
-	"BA_POIS",
-	"BA_NETH",
-	"BA_WATE",
-	"BA_MANA",
-	"BA_DARK",
-	"DRAIN_MANA",
-	"MIND_BLAST",
-	"BRAIN_SMASH",
-	"CAUSE_1",
-	"CAUSE_2",
-	"CAUSE_3",
-	"CAUSE_4",
-	"BO_ACID",
-	"BO_ELEC",
-	"BO_FIRE",
-	"BO_COLD",
-	"BO_POIS",
-	"BO_NETH",
-	"BO_WATE",
-	"BO_MANA",
-	"BO_PLAS",
-	"BO_ICEE",
-	"MISSILE",
-	"SCARE",
-	"BLIND",
-	"CONF",
-	"SLOW",
-	"HOLD"
-};
-
-/*
- * Monster race flags
- */
-static cptr r_info_spell_flags2[] =
-{
-	"HASTE",
-	"XXX1X6",
-	"HEAL",
-	"XXX2X6",
-	"BLINK",
-	"TPORT",
-	"XXX3X6",
-	"XXX4X6",
-	"TELE_TO",
-	"TELE_AWAY",
-	"TELE_LEVEL",
-	"XXX5",
-	"DARKNESS",
-	"TRAPS",
-	"FORGET",
-	"XXX6X6",
-	"S_KIN",
-	"S_HI_DEMON",
-	"S_MONSTER",
-	"S_MONSTERS",
-	"S_ANIMAL",
-	"S_SPIDER",
-	"S_HOUND",
-	"S_HYDRA",
-	"S_ANGEL",
-	"S_DEMON",
-	"S_UNDEAD",
-	"S_DRAGON",
-	"S_HI_UNDEAD",
-	"S_HI_DRAGON",
-	"S_WRAITH",
-	"S_UNIQUE"
+	#define RF(a, b) #a,
+	#include "list-mon-flags.h"
+	#undef RF
+	NULL
 };
 
 
 /*
- * Object flags
+ * Monster (race) spell flags
  */
-static cptr k_info_flags1[] =
+static const char *r_info_spell_flags[] =
 {
-	"STR",
-	"INT",
-	"WIS",
-	"DEX",
-	"CON",
-	"CHR",
-	"XXX1",
-	"XXX2",
-	"STEALTH",
-	"SEARCH",
-	"INFRA",
-	"TUNNEL",
-	"SPEED",
-	"BLOWS",
-	"SHOTS",
-	"MIGHT",
-	"SLAY_ANIMAL",
-	"SLAY_EVIL",
-	"SLAY_UNDEAD",
-	"SLAY_DEMON",
-	"SLAY_ORC",
-	"SLAY_TROLL",
-	"SLAY_GIANT",
-	"SLAY_DRAGON",
-	"KILL_DRAGON",
-	"KILL_DEMON",
-	"KILL_UNDEAD",
-	"BRAND_POIS",
-	"BRAND_ACID",
-	"BRAND_ELEC",
-	"BRAND_FIRE",
-	"BRAND_COLD"
+	#define RSF(a, b) #a,
+	#include "list-mon-spells.h"
+	#undef RSF
+	NULL
+};
+
+
+/*
+ * Object (kind) flags
+ */
+
+static const char *k_info_flags[] =
+{
+	#define OF(a, b) #a,
+	#include "list-object-flags.h"
+	#undef OF
+	NULL
 };
 
 /*
- * Object flags
+ * Player race and class flags
  */
-static cptr k_info_flags2[] =
-{
-	"SUST_STR",
-	"SUST_INT",
-	"SUST_WIS",
-	"SUST_DEX",
-	"SUST_CON",
-	"SUST_CHR",
-	"VULN_ACID",
-	"VULN_ELEC",
-	"VULN_FIRE",
-	"VULN_COLD",
-	"XXX5",
-	"XXX6",
-	"IM_ACID",
-	"IM_ELEC",
-	"IM_FIRE",
-	"IM_COLD",
-	"RES_ACID",
-	"RES_ELEC",
-	"RES_FIRE",
-	"RES_COLD",
-	"RES_POIS",
-	"RES_FEAR",
-	"RES_LIGHT",
-	"RES_DARK",
-	"RES_BLIND",
-	"RES_CONFU",
-	"RES_SOUND",
-	"RES_SHARD",
-	"RES_NEXUS",
-	"RES_NETHR",
-	"RES_CHAOS",
-	"RES_DISEN"
-};
 
-/*
- * Object flags
- */
-static cptr k_info_flags3[] =
+static const char *player_info_flags[] =
 {
-	"SLOW_DIGEST",
-	"FEATHER",
-	"LIGHT",
-	"REGEN",
-	"TELEPATHY",
-	"SEE_INVIS",
-	"FREE_ACT",
-	"HOLD_LIFE",
-	"NO_FUEL",
-	"IMPAIR_HP",
-	"IMPAIR_MANA",
-	"AFRAID",
-	"IMPACT",
-	"TELEPORT",
-	"AGGRAVATE",
-	"DRAIN_EXP",
-	"IGNORE_ACID",
-	"IGNORE_ELEC",
-	"IGNORE_FIRE",
-	"IGNORE_COLD",
-	"XXX5",
-	"XXX6",
-	"BLESSED",
-	"XXX8",
-	"INSTA_ART",
-	"EASY_KNOW",
-	"HIDE_TYPE",
-	"SHOW_MODS",
-	"XXX7",
-	"LIGHT_CURSE",
-	"HEAVY_CURSE",
-	"PERMA_CURSE"
-};
-
-/*
- * Class flags
- */
-static cptr c_info_flags[] =
-{
-	"EXTRA_SHOT",
-	"BRAVERY_30",
-	"BLESS_WEAPON",
-	"CUMBER_GLOVE",
-	"ZERO_FAIL",
-	"BEAM",
-	"CHOOSE_SPELLS",
-	"XXX9",
-	"PSEUDO_ID_IMPROV",
-	"XXX10",
-	"XXX11",
-	"XXX12",
-	"XXX13",
-	"XXX14",
-	"XXX15",
-	"XXX16",
-	"XXX17",
-	"XXX18",
-	"XXX19",
-	"XXX20",
-	"XXX21",
-	"XXX22",
-	"XXX23",
-	"XXX24",
-	"XXX25",
-	"XXX26",
-	"XXX27",
-	"XXX28",
-	"XXX29",
-	"XXX30",
-	"XXX31",
-	"XXX32"
-};
-
-/*
- * New racial flags
- */
-static cptr race_info_flags[] =
-{
-	"XXX1",
-	"KNOW_MUSHROOM",
-	"KNOW_ZAPPER",
-	"XXX2",
-	"SEE_ORE",
-	"XXX6",
-	"XXX7",
-	"XXX8",
-	"XXX9",
-	"XXX10",
-	"XXX11",
-	"XXX12",
-	"XXX13",
-	"XXX14",
-	"XXX15",
-	"XXX16",
-	"XXX17",
-	"XXX18",
-	"XXX19",
-	"XXX20",
-	"XXX21",
-	"XXX22",
-	"XXX23",
-	"XXX24",
-	"XXX25",
-	"XXX26",
-	"XXX27",
-	"XXX28",
-	"XXX29",
-	"XXX30",
-	"XXX31",
-	"XXX32"
+	#define PF(a, b) #a,
+	#include "list-player-flags.h"
+	#undef PF
+	NULL
 };
 
 /*
@@ -1602,20 +1172,34 @@ errr parse_f_info(char *buf, header *head)
 
 
 /*
- * Grab one flag in an object_kind from a textual string
+ * Find a flag's index from a textual string.
  */
-static errr grab_one_object_flag(u32b flags[OBJ_FLAG_N], cptr what)
+static int lookup_flag(const char **flag_table, const char *flag_name)
 {
-	if (grab_one_flag(&flags[0], k_info_flags1, what) == 0 ||
-			grab_one_flag(&flags[1], k_info_flags2, what) == 0 ||
-			grab_one_flag(&flags[2], k_info_flags3, what) == 0)
-		return (0);
+	int i = FLAG_START;
 
-	/* Oops */
-	msg_format("Unknown object flag '%s'.", what);
+	while (flag_table[i] && !streq(flag_table[i], flag_name))
+		i++;
 
-	/* Error */
-	return (PARSE_ERROR_INVALID_FLAG);
+	/* End of table reached without match */
+	if (!flag_table[i]) i = FLAG_END;
+
+	return i;
+}
+
+
+/*
+ * Grab one flag from a string, and set that flag in a bit field
+ */
+static errr grab_flag(bitflag *flags, const size_t size, const char **flag_table, const char *flag_name)
+{
+	int flag = lookup_flag(flag_table, flag_name);
+
+	if (flag == FLAG_END) return PARSE_ERROR_INVALID_FLAG;
+
+	flag_on(flags, size, flag);
+
+	return 0;
 }
 
 
@@ -1827,7 +1411,7 @@ errr parse_k_info(char *buf, header *head)
 			}
 
 			/* Parse this entry */
-			if (0 != grab_one_object_flag(k_ptr->flags, s))
+			if (0 != grab_flag(k_ptr->flags, OF_SIZE, k_info_flags, s))
 				return (PARSE_ERROR_INVALID_FLAG);
 
 			/* Start the next entry */
@@ -1919,7 +1503,7 @@ errr parse_a_info(char *buf, header *head)
 			return (PARSE_ERROR_OUT_OF_MEMORY);
 
 		/* Ignore everything */
-		a_ptr->flags[2] |= (TR2_IGNORE_MASK);
+		flags_set(a_ptr->flags, OF_SIZE, OF_IGNORE_MASK, FLAG_END);
 
 		/* Return early */
 		return (0);
@@ -2049,7 +1633,7 @@ errr parse_a_info(char *buf, header *head)
 			}
 
 			/* Parse this entry */
-			if (0 != grab_one_object_flag(a_ptr->flags, s))
+			if (0 != grab_flag(a_ptr->flags, OF_SIZE, k_info_flags, s))
 				return (PARSE_ERROR_INVALID_FLAG);
 
 			/* Start the next entry */
@@ -2280,7 +1864,7 @@ errr parse_e_info(char *buf, header *head)
 			}
 
 			/* Parse this entry */
-			if (0 != grab_one_object_flag(e_ptr->flags, s))
+			if (0 != grab_flag(e_ptr->flags, OF_SIZE, k_info_flags, s))
 				return (PARSE_ERROR_INVALID_FLAG);
 
 			/* Start the next entry */
@@ -2311,51 +1895,6 @@ errr parse_e_info(char *buf, header *head)
 	/* Success */
 	return (0);
 }
-
-
-/*
- * Grab one (basic) flag in a monster_race from a textual string
- */
-static errr grab_one_basic_flag(monster_race *r_ptr, cptr what)
-{
-	if (grab_one_flag(&r_ptr->flags[0], r_info_flags0, what) == 0)
-		return (0);
-
-	if (grab_one_flag(&r_ptr->flags[1], r_info_flags1, what) == 0)
-		return (0);
-
-	if (grab_one_flag(&r_ptr->flags[2], r_info_flags2, what) == 0)
-		return (0);
-
-	/* Oops */
-	msg_format("Unknown monster flag '%s'.", what);
-
-	/* Failure */
-	return (PARSE_ERROR_INVALID_FLAG);
-}
-
-
-/*
- * Grab one (spell) flag in a monster_race from a textual string
- */
-static errr grab_one_spell_flag(monster_race *r_ptr, cptr what)
-{
-	if (grab_one_flag(&r_ptr->spell_flags[0], r_info_spell_flags0, what) == 0)
-		return (0);
-
-	if (grab_one_flag(&r_ptr->spell_flags[1], r_info_spell_flags1, what) == 0)
-		return (0);
-
-	if (grab_one_flag(&r_ptr->spell_flags[2], r_info_spell_flags2, what) == 0)
-		return (0);
-
-	/* Oops */
-	msg_format("Unknown monster flag '%s'.", what);
-
-	/* Failure */
-	return (PARSE_ERROR_INVALID_FLAG);
-}
-
 
 
 
@@ -2527,6 +2066,7 @@ errr parse_r_info(char *buf, header *head)
 		/* Analyze effect */
 		for (n2 = 0; r_info_blow_effect[n2]; n2++)
 		{
+			if (streq(s, "")) break;
 			if (streq(s, r_info_blow_effect[n2])) break;
 		}
 
@@ -2567,7 +2107,7 @@ errr parse_r_info(char *buf, header *head)
 			}
 
 			/* Parse this entry */
-			if (0 != grab_one_basic_flag(r_ptr, s))
+			if (0 != grab_flag(r_ptr->flags, RF_SIZE, r_info_flags, s))
 				return (PARSE_ERROR_INVALID_FLAG);
 
 			/* Start the next entry */
@@ -2609,7 +2149,7 @@ errr parse_r_info(char *buf, header *head)
 			}
 
 			/* Parse this entry */
-			if (0 != grab_one_spell_flag(r_ptr, s))
+			if (0 != grab_flag(r_ptr->spell_flags, RSF_SIZE, r_info_spell_flags, s))
 				return (PARSE_ERROR_INVALID_FLAG);
 
 			/* Start the next entry */
@@ -2625,23 +2165,6 @@ errr parse_r_info(char *buf, header *head)
 
 	/* Success */
 	return (0);
-}
-
-
-
-/*
- * Grab one new race-only flag in a player_race from a textual string
- */
-static errr grab_one_new_racial_flag(player_race *pr_ptr, cptr what)
-{
-	if (grab_one_flag(&pr_ptr->new_racial_flags, race_info_flags, what) == 0)
-		return (0);
-
-	/* Oops */
-	msg_format("Unknown new player flag '%s'.", what);
-
-	/* Error */
-	return (PARSE_ERROR_INVALID_FLAG);
 }
 
 
@@ -2860,7 +2383,7 @@ errr parse_p_info(char *buf, header *head)
 			}
 
 			/* Parse this entry */
-			if (0 != grab_one_object_flag(pr_ptr->flags, s))
+			if (0 != grab_flag(pr_ptr->flags, OF_SIZE, k_info_flags, s))
 				return (PARSE_ERROR_INVALID_FLAG);
 
 			/* Start the next entry */
@@ -2888,7 +2411,7 @@ errr parse_p_info(char *buf, header *head)
 			}
 
 			/* Parse this entry */
-			if (0 != grab_one_new_racial_flag(pr_ptr, s))
+			if (0 != grab_flag(pr_ptr->pflags, PF_SIZE, player_info_flags, s))
 				return (PARSE_ERROR_INVALID_FLAG);
 
 			/* Start the next entry */
@@ -2930,22 +2453,6 @@ errr parse_p_info(char *buf, header *head)
 
 	/* Success */
 	return (0);
-}
-
-
-/*
- * Grab one flag in a player class from a textual string
- */
-static errr grab_one_class_flag(player_class *pc_ptr, cptr what)
-{
-	if (grab_one_flag(&pc_ptr->flags, c_info_flags, what) == 0)
-		return (0);
-
-	/* Oops */
-	msg_format("Unknown player class flag '%s'.", what);
-
-	/* Error */
-	return (PARSE_ERROR_INVALID_FLAG);
 }
 
 
@@ -3263,7 +2770,7 @@ errr parse_c_info(char *buf, header *head)
 			}
 
 			/* Parse this entry */
-			if (0 != grab_one_class_flag(pc_ptr, s))
+			if (0 != grab_flag(pc_ptr->pflags, PF_SIZE, player_info_flags, s))
 				return (PARSE_ERROR_INVALID_FLAG);
 
 			/* Start the next entry */
@@ -3748,260 +3255,259 @@ static long eval_max_dam(monster_race *r_ptr)
 	rlev = ((r_ptr->level >= 1) ? r_ptr->level : 1);
 
 	/* Assume single resist for the elemental attacks */
-	if (r_ptr->spell_flags[0] & RSF0_BR_ACID)
-		{
+	if (rsf_has(r_ptr->spell_flags, RSF_BR_ACID))
+	{
 		breath_dam = (RES_ACID_ADJ(MIN(BR_ACID_MAX,
 			(hp / BR_ACID_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 20;
-		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_ELEC)
-		{
+	}
+	if (rsf_has(r_ptr->spell_flags, RSF_BR_ELEC))
+	{
 		breath_dam = (RES_ELEC_ADJ(MIN(BR_ELEC_MAX, 
 			(hp / BR_ELEC_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
-		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_FIRE)
-		{
+	}
+	if (rsf_has(r_ptr->spell_flags, RSF_BR_FIRE))
+	{
 		breath_dam = (RES_FIRE_ADJ(MIN(BR_FIRE_MAX,
 			(hp / BR_FIRE_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
-		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_COLD)
-		{
+	}
+	if (rsf_has(r_ptr->spell_flags, RSF_BR_COLD))
+	{
 		breath_dam = (RES_COLD_ADJ(MIN(BR_COLD_MAX,
 			(hp / BR_COLD_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
-		}
+	}
 	/* Same for poison, but lower damage cap */
-	if (r_ptr->spell_flags[0] & RSF0_BR_POIS)
-		{
+	if (rsf_has(r_ptr->spell_flags, RSF_BR_POIS))
+	{
 		breath_dam = (RES_POIS_ADJ(MIN(BR_POIS_MAX,
 			(hp / BR_POIS_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = (breath_dam * 5 / 4)
 			+ rlev;
-		}
+	}
 	/*
 	 * Same formula for the high resist attacks
 	 * (remember, we are assuming maximum resisted damage
 	 * so we *minimise* the resistance)
 	 * See also: melee2.c, spells1.c, constants.h
 	 */
-	if (r_ptr->spell_flags[0] & RSF0_BR_NETH)
-		{
+	if (rsf_has(r_ptr->spell_flags, RSF_BR_NETH))
+	{
 		breath_dam = (RES_NETH_ADJ(MIN(BR_NETH_MAX,
 			(hp / BR_NETH_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 2000
 			/ (rlev + 1);
-		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_CHAO)
-		{
+	}
+	if (rsf_has(r_ptr->spell_flags, RSF_BR_CHAO))
+	{
 		breath_dam = (RES_CHAO_ADJ(MIN(BR_CHAO_MAX,
 			(hp / BR_CHAO_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 2000
 			/ (rlev + 1);
-		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_DISE)
-		{
+	}
+	if (rsf_has(r_ptr->spell_flags, RSF_BR_DISE))
+	{
 		breath_dam = (RES_DISE_ADJ(MIN(BR_DISE_MAX,
 			(hp / BR_DISE_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 50;
-		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_SHAR)
-		{
+	}
+	if (rsf_has(r_ptr->spell_flags, RSF_BR_SHAR))
+	{
 		breath_dam = (RES_SHAR_ADJ(MIN(BR_SHAR_MAX,
 			(hp / BR_SHAR_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = (breath_dam * 5 / 4)
 			+ 5;
-		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_LIGHT)
-		{
+	}
+	if (rsf_has(r_ptr->spell_flags, RSF_BR_LIGHT))
+	{
 		breath_dam = (RES_LIGHT_ADJ(MIN(BR_LIGHT_MAX,
 			(hp / BR_LIGHT_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
-		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_DARK)
-		{
+	}
+	if (rsf_has(r_ptr->spell_flags, RSF_BR_DARK))
+	{
 		breath_dam = (RES_DARK_ADJ(MIN(BR_DARK_MAX,
 			(hp / BR_DARK_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
-		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_CONF)
-		{
+	}
+	if (rsf_has(r_ptr->spell_flags, RSF_BR_CONF))
+	{
 		breath_dam = (RES_CONF_ADJ(MIN(BR_CONF_MAX,
 			(hp / BR_CONF_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 20;
-		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_SOUN)
-		{
+	}
+	if (rsf_has(r_ptr->spell_flags, RSF_BR_SOUN))
+	{
 		breath_dam = (RES_SOUN_ADJ(MIN(BR_SOUN_MAX,
 			(hp / BR_SOUN_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 20;
-		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_NEXU)
-		{
+	}
+	if (rsf_has(r_ptr->spell_flags, RSF_BR_NEXU))
+	{
 		breath_dam = (RES_NEXU_ADJ(MIN(BR_NEXU_MAX,
 			(hp / BR_NEXU_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 20;
-		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_TIME)
-		{
+	}
+	if (rsf_has(r_ptr->spell_flags, RSF_BR_TIME))
+	{
 		breath_dam = MIN(BR_TIME_MAX, (hp / BR_TIME_DIVISOR));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 2000
-			/ (rlev + 1);
-		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_INER)
-		{
+		if (spell_dam < breath_dam) spell_dam = breath_dam + 2000 / (rlev + 1);
+	}
+	if (rsf_has(r_ptr->spell_flags, RSF_BR_INER))
+	{
 		breath_dam = MIN(BR_INER_MAX, (hp / BR_INER_DIVISOR));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 30;
-		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_GRAV)
-		{
+	}
+	if (rsf_has(r_ptr->spell_flags, RSF_BR_GRAV))
+	{
 		breath_dam = MIN(BR_GRAV_MAX, (hp / BR_GRAV_DIVISOR));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 30;
-		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_PLAS)
-		{
+	}
+	if (rsf_has(r_ptr->spell_flags, RSF_BR_PLAS))
+	{
 		breath_dam = MIN(BR_PLAS_MAX, (hp / BR_PLAS_DIVISOR));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 30;
-		}
-	if (r_ptr->spell_flags[0] & RSF0_BR_WALL)
-		{
+	}
+	if (rsf_has(r_ptr->spell_flags, RSF_BR_WALL))
+	{
 		breath_dam = MIN(BR_FORC_MAX, (hp / BR_FORC_DIVISOR));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 30;
-		}
+	}
 	/* Handle the attack spells, again assuming minimised single resists for max damage */
-	if ((r_ptr->spell_flags[1] & RSF1_BA_ACID) && spell_dam < (RES_ACID_ADJ(BA_ACID_DMG(rlev, MAXIMISE), MINIMISE) + 20))
+	if (rsf_has(r_ptr->spell_flags, RSF_BA_ACID) && spell_dam < (RES_ACID_ADJ(BA_ACID_DMG(rlev, MAXIMISE), MINIMISE) + 20))
 		spell_dam = (RES_ACID_ADJ(BA_ACID_DMG(rlev, MAXIMISE), MINIMISE) + 20);
-	if ((r_ptr->spell_flags[1] & RSF1_BA_ELEC) && spell_dam < (RES_ELEC_ADJ(BA_ELEC_DMG(rlev, MAXIMISE), MINIMISE) + 10))
+	if (rsf_has(r_ptr->spell_flags, RSF_BA_ELEC) && spell_dam < (RES_ELEC_ADJ(BA_ELEC_DMG(rlev, MAXIMISE), MINIMISE) + 10))
 		spell_dam = (RES_ELEC_ADJ(BA_ELEC_DMG(rlev, MAXIMISE), MINIMISE) + 10);
-	if ((r_ptr->spell_flags[1] & RSF1_BA_FIRE) && spell_dam < (RES_FIRE_ADJ(BA_FIRE_DMG(rlev, MAXIMISE), MINIMISE) + 10))
+	if (rsf_has(r_ptr->spell_flags, RSF_BA_FIRE) && spell_dam < (RES_FIRE_ADJ(BA_FIRE_DMG(rlev, MAXIMISE), MINIMISE) + 10))
 		spell_dam = (RES_FIRE_ADJ(BA_FIRE_DMG(rlev, MAXIMISE), MINIMISE) + 10);
-	if ((r_ptr->spell_flags[1] & RSF1_BA_COLD) && spell_dam < (RES_COLD_ADJ(BA_COLD_DMG(rlev, MAXIMISE), MINIMISE) + 10))
+	if (rsf_has(r_ptr->spell_flags, RSF_BA_COLD) && spell_dam < (RES_COLD_ADJ(BA_COLD_DMG(rlev, MAXIMISE), MINIMISE) + 10))
 		spell_dam = (RES_COLD_ADJ(BA_COLD_DMG(rlev, MAXIMISE), MINIMISE) + 10);
-	if ((r_ptr->spell_flags[1] & RSF1_BA_POIS) && spell_dam < 8)
+	if (rsf_has(r_ptr->spell_flags, RSF_BA_POIS) && spell_dam < 8)
 		spell_dam = 8;
-	if ((r_ptr->spell_flags[1] & RSF1_BA_NETH) && spell_dam < (RES_NETH_ADJ(BA_NETH_DMG(rlev, MAXIMISE), MINIMISE) + 2000 / (rlev + 1)))
+	if (rsf_has(r_ptr->spell_flags, RSF_BA_NETH) && spell_dam < (RES_NETH_ADJ(BA_NETH_DMG(rlev, MAXIMISE), MINIMISE) + 2000 / (rlev + 1)))
 		spell_dam = (RES_NETH_ADJ(BA_NETH_DMG(rlev, MAXIMISE), MINIMISE) + 2000 / (rlev + 1));
-	if ((r_ptr->spell_flags[1] & RSF1_BA_WATE) && spell_dam < (BA_WATE_DMG(rlev, MAXIMISE) + 20))
+	if (rsf_has(r_ptr->spell_flags, RSF_BA_WATE) && spell_dam < (BA_WATE_DMG(rlev, MAXIMISE) + 20))
 		spell_dam = (BA_WATE_DMG(rlev, MAXIMISE) + 20);
-	if ((r_ptr->spell_flags[1] & RSF1_BA_MANA) && spell_dam < (BA_MANA_DMG(rlev, MAXIMISE) + 100))
+	if (rsf_has(r_ptr->spell_flags, RSF_BA_MANA) && spell_dam < (BA_MANA_DMG(rlev, MAXIMISE) + 100))
 		spell_dam = (BA_MANA_DMG(rlev, MAXIMISE) + 100);
-	if ((r_ptr->spell_flags[1] & RSF1_BA_DARK) && spell_dam < (RES_DARK_ADJ(BA_DARK_DMG(rlev, MAXIMISE), MINIMISE) + 10))
+	if (rsf_has(r_ptr->spell_flags, RSF_BA_DARK) && spell_dam < (RES_DARK_ADJ(BA_DARK_DMG(rlev, MAXIMISE), MINIMISE) + 10))
 		spell_dam = (RES_DARK_ADJ(BA_DARK_DMG(rlev, MAXIMISE), MINIMISE) + 10);
 	/* Small annoyance value */
-	if ((r_ptr->spell_flags[1] & RSF1_DRAIN_MANA) && spell_dam < 5)
+	if (rsf_has(r_ptr->spell_flags, RSF_DRAIN_MANA) && spell_dam < 5)
 		spell_dam = 5;
 	/* For all attack forms the player can save against, spell_damage is halved */
-	if ((r_ptr->spell_flags[1] & RSF1_MIND_BLAST) && spell_dam < (MIND_BLAST_DMG(rlev, MAXIMISE) / 2))
+	if (rsf_has(r_ptr->spell_flags, RSF_MIND_BLAST) && spell_dam < (MIND_BLAST_DMG(rlev, MAXIMISE) / 2))
 		spell_dam = (MIND_BLAST_DMG(rlev, MAXIMISE) / 2);
-	if ((r_ptr->spell_flags[1] & RSF1_BRAIN_SMASH) && spell_dam < (BRAIN_SMASH_DMG(rlev, MAXIMISE) / 2))
+	if (rsf_has(r_ptr->spell_flags, RSF_BRAIN_SMASH) && spell_dam < (BRAIN_SMASH_DMG(rlev, MAXIMISE) / 2))
 		spell_dam = (BRAIN_SMASH_DMG(rlev, MAXIMISE) / 2);
-	if ((r_ptr->spell_flags[1] & RSF1_CAUSE_1) && spell_dam < (CAUSE1_DMG(rlev, MAXIMISE) / 2))
+	if (rsf_has(r_ptr->spell_flags, RSF_CAUSE_1) && spell_dam < (CAUSE1_DMG(rlev, MAXIMISE) / 2))
 		spell_dam = (CAUSE1_DMG(rlev, MAXIMISE) / 2);
-	if ((r_ptr->spell_flags[1] & RSF1_CAUSE_2) && spell_dam < (CAUSE2_DMG(rlev, MAXIMISE) / 2))
+	if (rsf_has(r_ptr->spell_flags, RSF_CAUSE_2) && spell_dam < (CAUSE2_DMG(rlev, MAXIMISE) / 2))
 		spell_dam = (CAUSE2_DMG(rlev, MAXIMISE) / 2);
-	if ((r_ptr->spell_flags[1] & RSF1_CAUSE_3) && spell_dam < (CAUSE3_DMG(rlev, MAXIMISE) / 2))
+	if (rsf_has(r_ptr->spell_flags, RSF_CAUSE_3) && spell_dam < (CAUSE3_DMG(rlev, MAXIMISE) / 2))
 		spell_dam = (CAUSE3_DMG(rlev, MAXIMISE) / 2);
-	if ((r_ptr->spell_flags[1] & RSF1_CAUSE_4) && spell_dam < (CAUSE4_DMG(rlev, MAXIMISE) / 2))
+	if (rsf_has(r_ptr->spell_flags, RSF_CAUSE_4) && spell_dam < (CAUSE4_DMG(rlev, MAXIMISE) / 2))
 		spell_dam = (CAUSE4_DMG(rlev, MAXIMISE) / 2);
-	if ((r_ptr->spell_flags[1] & RSF1_BO_ACID) && spell_dam < (RES_ACID_ADJ(BO_ACID_DMG(rlev, MAXIMISE), MINIMISE) + 20))
+	if (rsf_has(r_ptr->spell_flags, RSF_BO_ACID) && spell_dam < (RES_ACID_ADJ(BO_ACID_DMG(rlev, MAXIMISE), MINIMISE) + 20))
 		spell_dam = (RES_ACID_ADJ(BO_ACID_DMG(rlev, MAXIMISE), MINIMISE) + 20);
-	if ((r_ptr->spell_flags[1] & RSF1_BO_ELEC) && spell_dam < (RES_ELEC_ADJ(BO_ELEC_DMG(rlev, MAXIMISE), MINIMISE) + 10))
+	if (rsf_has(r_ptr->spell_flags, RSF_BO_ELEC) && spell_dam < (RES_ELEC_ADJ(BO_ELEC_DMG(rlev, MAXIMISE), MINIMISE) + 10))
 		spell_dam = (RES_ELEC_ADJ(BO_ELEC_DMG(rlev, MAXIMISE), MINIMISE) + 10);
-	if ((r_ptr->spell_flags[1] & RSF1_BO_FIRE) && spell_dam < (RES_FIRE_ADJ(BO_FIRE_DMG(rlev, MAXIMISE), MINIMISE) + 10))
+	if (rsf_has(r_ptr->spell_flags, RSF_BO_FIRE) && spell_dam < (RES_FIRE_ADJ(BO_FIRE_DMG(rlev, MAXIMISE), MINIMISE) + 10))
 		spell_dam = (RES_FIRE_ADJ(BO_FIRE_DMG(rlev, MAXIMISE), MINIMISE) + 10);
-	if ((r_ptr->spell_flags[1] & RSF1_BO_COLD) && spell_dam < (RES_COLD_ADJ(BO_COLD_DMG(rlev, MAXIMISE), MINIMISE) + 10))
+	if (rsf_has(r_ptr->spell_flags, RSF_BO_COLD) && spell_dam < (RES_COLD_ADJ(BO_COLD_DMG(rlev, MAXIMISE), MINIMISE) + 10))
 		spell_dam = (RES_COLD_ADJ(BO_COLD_DMG(rlev, MAXIMISE), MINIMISE) + 10);
-	if ((r_ptr->spell_flags[1] & RSF1_BO_NETH) && spell_dam < (RES_NETH_ADJ(BO_NETH_DMG(rlev, MAXIMISE), MINIMISE) + 2000 / (rlev + 1)))
+	if (rsf_has(r_ptr->spell_flags, RSF_BO_NETH) && spell_dam < (RES_NETH_ADJ(BO_NETH_DMG(rlev, MAXIMISE), MINIMISE) + 2000 / (rlev + 1)))
 		spell_dam = (RES_NETH_ADJ(BO_NETH_DMG(rlev, MAXIMISE), MINIMISE) + 2000 / (rlev + 1));
-	if ((r_ptr->spell_flags[1] & RSF1_BO_WATE) && spell_dam < (BO_WATE_DMG(rlev, MAXIMISE) + 20))
+	if (rsf_has(r_ptr->spell_flags, RSF_BO_WATE) && spell_dam < (BO_WATE_DMG(rlev, MAXIMISE) + 20))
 		spell_dam = (BO_WATE_DMG(rlev, MAXIMISE) + 20);
-	if ((r_ptr->spell_flags[1] & RSF1_BO_MANA) && spell_dam < (BO_MANA_DMG(rlev, MAXIMISE)))
+	if (rsf_has(r_ptr->spell_flags, RSF_BO_MANA) && spell_dam < (BO_MANA_DMG(rlev, MAXIMISE)))
 		spell_dam = (BO_MANA_DMG(rlev, MAXIMISE));
-	if ((r_ptr->spell_flags[1] & RSF1_BO_PLAS) && spell_dam < (BO_PLAS_DMG(rlev, MAXIMISE)))
+	if (rsf_has(r_ptr->spell_flags, RSF_BO_PLAS) && spell_dam < (BO_PLAS_DMG(rlev, MAXIMISE)))
 		spell_dam = (BO_PLAS_DMG(rlev, MAXIMISE));
-	if ((r_ptr->spell_flags[1] & RSF1_BO_ICEE) && spell_dam < (RES_COLD_ADJ(BO_ICEE_DMG(rlev, MAXIMISE), MINIMISE)))
+	if (rsf_has(r_ptr->spell_flags, RSF_BO_ICEE) && spell_dam < (RES_COLD_ADJ(BO_ICEE_DMG(rlev, MAXIMISE), MINIMISE)))
 		spell_dam = (RES_COLD_ADJ(BO_ICEE_DMG(rlev, MAXIMISE), MINIMISE));
-	if ((r_ptr->spell_flags[1] & RSF1_MISSILE) && spell_dam < (MISSILE_DMG(rlev, MAXIMISE)))
+	if (rsf_has(r_ptr->spell_flags, RSF_MISSILE) && spell_dam < (MISSILE_DMG(rlev, MAXIMISE)))
 		spell_dam = (MISSILE_DMG(rlev, MAXIMISE));
 	/* Small annoyance value */
-	if ((r_ptr->spell_flags[1] & RSF1_SCARE) && spell_dam < 5)
+	if (rsf_has(r_ptr->spell_flags, RSF_SCARE) && spell_dam < 5)
 		spell_dam = 5;
 	/* Somewhat higher annoyance values */
-	if ((r_ptr->spell_flags[1] & RSF1_BLIND) && spell_dam < 10)
+	if (rsf_has(r_ptr->spell_flags, RSF_BLIND) && spell_dam < 10)
 		spell_dam = 8;
-	if ((r_ptr->spell_flags[1] & RSF1_CONF) && spell_dam < 10)
+	if (rsf_has(r_ptr->spell_flags, RSF_CONF) && spell_dam < 10)
 		spell_dam = 10;
 	/* A little more dangerous */
-	if ((r_ptr->spell_flags[1] & RSF1_SLOW) && spell_dam < 15)
+	if (rsf_has(r_ptr->spell_flags, RSF_SLOW) && spell_dam < 15)
 		spell_dam = 15;
 	/* Quite dangerous at an early level */
-	if ((r_ptr->spell_flags[1] & RSF1_HOLD) && spell_dam < 25)
+	if (rsf_has(r_ptr->spell_flags, RSF_HOLD) && spell_dam < 25)
 		spell_dam = 25;
 	/* Arbitrary values along similar lines from here on */
-	if ((r_ptr->spell_flags[2] & RSF2_HASTE) && spell_dam < 70)
+	if (rsf_has(r_ptr->spell_flags, RSF_HASTE) && spell_dam < 70)
 		spell_dam = 70;
-	if ((r_ptr->spell_flags[2] & RSF2_HEAL) && spell_dam < 30)
+	if (rsf_has(r_ptr->spell_flags, RSF_HEAL) && spell_dam < 30)
 		spell_dam = 30;
-	if ((r_ptr->spell_flags[2] & RSF2_BLINK) && spell_dam < 5)
+	if (rsf_has(r_ptr->spell_flags, RSF_BLINK) && spell_dam < 5)
 		spell_dam = 15;
-	if ((r_ptr->spell_flags[2] & RSF2_TELE_TO) && spell_dam < 25)
+	if (rsf_has(r_ptr->spell_flags, RSF_TELE_TO) && spell_dam < 25)
 		spell_dam = 25;
-	if ((r_ptr->spell_flags[2] & RSF2_TELE_AWAY) && spell_dam < 25)
+	if (rsf_has(r_ptr->spell_flags, RSF_TELE_AWAY) && spell_dam < 25)
 		spell_dam = 25;
-	if ((r_ptr->spell_flags[2] & RSF2_TELE_LEVEL) && spell_dam < 40)
+	if (rsf_has(r_ptr->spell_flags, RSF_TELE_LEVEL) && spell_dam < 40)
 		spell_dam = 25;
-	if ((r_ptr->spell_flags[2] & RSF2_DARKNESS) && spell_dam < 5)
+	if (rsf_has(r_ptr->spell_flags, RSF_DARKNESS) && spell_dam < 5)
 		spell_dam = 6;
-	if ((r_ptr->spell_flags[2] & RSF2_TRAPS) && spell_dam < 10)
+	if (rsf_has(r_ptr->spell_flags, RSF_TRAPS) && spell_dam < 10)
 		spell_dam = 5;
-	if ((r_ptr->spell_flags[2] & RSF2_FORGET) && spell_dam < 25)
+	if (rsf_has(r_ptr->spell_flags, RSF_FORGET) && spell_dam < 25)
 		spell_dam = 5;
 	/* All summons are assigned arbitrary values */
 	/* Summon kin is more dangerous at deeper levels */
-	if ((r_ptr->spell_flags[2] & RSF2_S_KIN) && spell_dam < rlev * 2)
+	if (rsf_has(r_ptr->spell_flags, RSF_S_KIN) && spell_dam < rlev * 2)
 		spell_dam = rlev * 2;
 	/* Dangerous! */
-	if ((r_ptr->spell_flags[2] & RSF2_S_HI_DEMON) && spell_dam < 250)
+	if (rsf_has(r_ptr->spell_flags, RSF_S_HI_DEMON) && spell_dam < 250)
 		spell_dam = 250;
 	/* Somewhat dangerous */
-	if ((r_ptr->spell_flags[2] & RSF2_S_MONSTER) && spell_dam < 40)
+	if (rsf_has(r_ptr->spell_flags, RSF_S_MONSTER) && spell_dam < 40)
 		spell_dam = 40;
 	/* More dangerous */
-	if ((r_ptr->spell_flags[2] & RSF2_S_MONSTERS) && spell_dam < 80)
+	if (rsf_has(r_ptr->spell_flags, RSF_S_MONSTERS) && spell_dam < 80)
 		spell_dam = 80;
 	/* Mostly just annoying */
-	if ((r_ptr->spell_flags[2] & RSF2_S_ANIMAL) && spell_dam < 30)
+	if (rsf_has(r_ptr->spell_flags, RSF_S_ANIMAL) && spell_dam < 30)
 		spell_dam = 30;
-	if ((r_ptr->spell_flags[2] & RSF2_S_SPIDER) && spell_dam < 20)
+	if (rsf_has(r_ptr->spell_flags, RSF_S_SPIDER) && spell_dam < 20)
 		spell_dam = 20;
 	/* Can be quite dangerous */
-	if ((r_ptr->spell_flags[2] & RSF2_S_HOUND) && spell_dam < 100)
+	if (rsf_has(r_ptr->spell_flags, RSF_S_HOUND) && spell_dam < 100)
 		spell_dam = 100;
 	/* Dangerous! */
-	if ((r_ptr->spell_flags[2] & RSF2_S_HYDRA) && spell_dam < 150)
+	if (rsf_has(r_ptr->spell_flags, RSF_S_HYDRA) && spell_dam < 150)
 		spell_dam = 150;
 	/* Can be quite dangerous */
-	if ((r_ptr->spell_flags[2] & RSF2_S_ANGEL) && spell_dam < 150)
+	if (rsf_has(r_ptr->spell_flags, RSF_S_ANGEL) && spell_dam < 150)
 		spell_dam = 150;
 	/* All of these more dangerous at higher levels */
-	if ((r_ptr->spell_flags[2] & RSF2_S_DEMON) && spell_dam < (rlev * 3) / 2)
+	if (rsf_has(r_ptr->spell_flags, RSF_S_DEMON) && spell_dam < (rlev * 3) / 2)
 		spell_dam = (rlev * 3) / 2;
-	if ((r_ptr->spell_flags[2] & RSF2_S_UNDEAD) && spell_dam < (rlev * 3) / 2)
+	if (rsf_has(r_ptr->spell_flags, RSF_S_UNDEAD) && spell_dam < (rlev * 3) / 2)
 		spell_dam = (rlev * 3) / 2;
-	if ((r_ptr->spell_flags[2] & RSF2_S_DRAGON) && spell_dam < (rlev * 3) / 2)
+	if (rsf_has(r_ptr->spell_flags, RSF_S_DRAGON) && spell_dam < (rlev * 3) / 2)
 		spell_dam = (rlev * 3) / 2;
 	/* Extremely dangerous */
-	if ((r_ptr->spell_flags[2] & RSF2_S_HI_UNDEAD) && spell_dam < 400)
+	if (rsf_has(r_ptr->spell_flags, RSF_S_HI_UNDEAD) && spell_dam < 400)
 		spell_dam = 400;
 	/* Extremely dangerous */
-	if ((r_ptr->spell_flags[2] & RSF2_S_HI_DRAGON) && spell_dam < 400)
+	if (rsf_has(r_ptr->spell_flags, RSF_S_HI_DRAGON) && spell_dam < 400)
 		spell_dam = 400;
 	/* Extremely dangerous */
-	if ((r_ptr->spell_flags[2] & RSF2_S_WRAITH) && spell_dam < 450)
+	if (rsf_has(r_ptr->spell_flags, RSF_S_WRAITH) && spell_dam < 450)
 		spell_dam = 450;
 	/* Most dangerous summon */
-	if ((r_ptr->spell_flags[2] & RSF2_S_UNIQUE) && spell_dam < 500)
+	if (rsf_has(r_ptr->spell_flags, RSF_S_UNIQUE) && spell_dam < 500)
 		spell_dam = 500;
 
 	/* Hack - Apply over 10 rounds */
@@ -4061,7 +3567,7 @@ static long eval_max_dam(monster_race *r_ptr)
 			}
 
 			/* Normal melee attack */
-			if (!(r_ptr->flags[0] & (RF0_NEVER_BLOW)))
+			if (!rf_has(r_ptr->flags, RF_NEVER_BLOW))
 			{
 				/* Keep a running total */
 				melee_dam += atk_dam;
@@ -4074,11 +3580,11 @@ static long eval_max_dam(monster_race *r_ptr)
 		 * Hack - this is except for pass wall and kill wall monsters which can always get to the player.
 		 * Hack - use different values for huge monsters as they strike out to range 2.
 		 */
-		if (r_ptr->flags[1] & (RF1_KILL_WALL | RF1_PASS_WALL))
+		if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
 				melee_dam *= 10;
 		else
 		{
-			melee_dam = melee_dam * 3 + melee_dam * extract_energy[r_ptr->speed + (r_ptr->spell_flags[2] & RSF2_HASTE ? 5 : 0)] / 7;
+			melee_dam = melee_dam * 3 + melee_dam * extract_energy[r_ptr->speed + (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)] / 7;
 		}
 
 		/*
@@ -4087,15 +3593,15 @@ static long eval_max_dam(monster_race *r_ptr)
 		melee_dam = melee_dam * MIN(45 + rlev * 3, 95) / 100;
 
 		/* Hack -- Monsters that multiply ignore the following reductions */
-		if (!(r_ptr->flags[1] & (RF1_MULTIPLY)))
+		if (!rf_has(r_ptr->flags, RF_MULTIPLY))
 		{
 			/*Reduce damamge potential for monsters that move randomly */
-			if ((r_ptr->flags[0] & (RF0_RAND_25)) || (r_ptr->flags[0] & (RF0_RAND_50)))
+			if (flags_test(r_ptr->flags, RF_SIZE, RF_RAND_25, RF_RAND_50, FLAG_END))
 			{
 				int reduce = 100;
 
-				if (r_ptr->flags[0] & (RF0_RAND_25)) reduce -= 25;
-				if (r_ptr->flags[0] & (RF0_RAND_50)) reduce -= 50;
+				if (rf_has(r_ptr->flags, RF_RAND_25)) reduce -= 25;
+				if (rf_has(r_ptr->flags, RF_RAND_50)) reduce -= 50;
 
 				/*even moving randomly one in 8 times will hit the player*/
 				reduce += (100 - reduce) / 8;
@@ -4105,17 +3611,18 @@ static long eval_max_dam(monster_race *r_ptr)
 			}
 
 			/*monsters who can't move aren't nearly as much of a combat threat*/
-			if (r_ptr->flags[0] & (RF0_NEVER_MOVE))
+			if (rf_has(r_ptr->flags, RF_NEVER_MOVE))
 			{
-				if (r_ptr->spell_flags[2] & (RSF2_TELE_TO | RSF2_BLINK))
+				if (rsf_has(r_ptr->spell_flags, RSF_TELE_TO) ||
+				    rsf_has(r_ptr->spell_flags, RSF_BLINK))
 				{
 					/* Scale for frequency */
 					melee_dam = melee_dam / 5 + 4 * melee_dam * r_ptr->freq_spell / 500;
 
 					/* Incorporate spell failure chance */
-					if (!(r_ptr->flags[1] & RF1_STUPID)) melee_dam = melee_dam / 5 + 4 * melee_dam * MIN(75 + (rlev + 3) / 4, 100) / 500;
+					if (!rf_has(r_ptr->flags, RF_STUPID)) melee_dam = melee_dam / 5 + 4 * melee_dam * MIN(75 + (rlev + 3) / 4, 100) / 500;
 				}
-				else if (r_ptr->flags[1] & (RF1_INVISIBLE)) melee_dam /= 3;
+				else if (rf_has(r_ptr->flags, RF_INVISIBLE)) melee_dam /= 3;
 				else melee_dam /= 5;
 			}
 		}
@@ -4136,20 +3643,20 @@ static long eval_max_dam(monster_race *r_ptr)
 	 * Adjust for speed.  Monster at speed 120 will do double damage,
 	 * monster at speed 100 will do half, etc.  Bonus for monsters who can haste self.
 	 */
-	dam = (dam * extract_energy[r_ptr->speed + (r_ptr->spell_flags[2] & RSF2_HASTE ? 5 : 0)]) / 10;
+	dam = (dam * extract_energy[r_ptr->speed + (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)]) / 10;
 
 	/*
 	 * Adjust threat for speed -- multipliers are more threatening.
 	 */
-	if (r_ptr->flags[1] & (RF1_MULTIPLY))
-		r_ptr->highest_threat = (r_ptr->highest_threat * extract_energy[r_ptr->speed + (r_ptr->spell_flags[2] & RSF2_HASTE ? 5 : 0)]) / 5;
+	if (rf_has(r_ptr->flags, RF_MULTIPLY))
+		r_ptr->highest_threat = (r_ptr->highest_threat * extract_energy[r_ptr->speed + (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)]) / 5;
 
 	/*
 	 * Adjust threat for friends.
 	 */
-	if (r_ptr->flags[0] & (RF0_FRIENDS))
+	if (rf_has(r_ptr->flags, RF_FRIENDS))
 		r_ptr->highest_threat *= 2;
-	else if (r_ptr->flags[0] & (RF0_FRIEND))
+	else if (rf_has(r_ptr->flags, RF_FRIEND))
 		r_ptr->highest_threat = r_ptr->highest_threat * 3 / 2;
 		
 	/*but deep in a minimum*/
@@ -4170,50 +3677,50 @@ static long eval_hp_adjust(monster_race *r_ptr)
 	hp = r_ptr->avg_hp;
 
 	/* Never moves with no ranged attacks - high hit points count for less */
-	if ((r_ptr->flags[0] & (RF0_NEVER_MOVE)) && !(r_ptr->freq_innate || r_ptr->freq_spell))
+	if (rf_has(r_ptr->flags, RF_NEVER_MOVE) && !(r_ptr->freq_innate || r_ptr->freq_spell))
 	{
 		hp /= 2;
 		if (hp < 1) hp = 1;
 	}
 
 	/* Just assume healers have more staying power */
-	if (r_ptr->spell_flags[2] & RSF2_HEAL) hp = (hp * 6) / 5;
+	if (rsf_has(r_ptr->spell_flags, RSF_HEAL)) hp = (hp * 6) / 5;
 
 	/* Miscellaneous improvements */
-	if (r_ptr->flags[1] & RF1_REGENERATE) {hp *= 10; hp /= 9;}
-	if (r_ptr->flags[1] & RF1_PASS_WALL) 	{hp *= 3; hp /= 2;}
+	if (rf_has(r_ptr->flags, RF_REGENERATE)) {hp *= 10; hp /= 9;}
+	if (rf_has(r_ptr->flags, RF_PASS_WALL)) {hp *= 3; hp /= 2;}
 
 	/* Calculate hide bonus */
-	if (r_ptr->flags[1] & RF1_EMPTY_MIND) hide_bonus += 2;
+	if (rf_has(r_ptr->flags, RF_EMPTY_MIND)) hide_bonus += 2;
 	else
 	{
-		if (r_ptr->flags[1] & RF1_COLD_BLOOD) hide_bonus += 1;
-		if (r_ptr->flags[1] & RF1_WEIRD_MIND) hide_bonus += 1;
+		if (rf_has(r_ptr->flags, RF_COLD_BLOOD)) hide_bonus += 1;
+		if (rf_has(r_ptr->flags, RF_WEIRD_MIND)) hide_bonus += 1;
 	}
 
 	/* Invisibility */
-	if (r_ptr->flags[1] & RF1_INVISIBLE)
+	if (rf_has(r_ptr->flags, RF_INVISIBLE))
 	{
 		hp = (hp * (r_ptr->level + hide_bonus + 1)) / MAX(1, r_ptr->level);
 	}
 
 	/* Monsters that can teleport are a hassle, and can easily run away */
-	if 	((r_ptr->spell_flags[2] & RSF2_TPORT) ||
-		 (r_ptr->spell_flags[2] & RSF2_TELE_AWAY)||
-		 (r_ptr->spell_flags[2] & RSF2_TELE_LEVEL)) hp = (hp * 6) / 5;
+	if (flags_test(r_ptr->spell_flags, RSF_SIZE, RSF_TPORT, RSF_TELE_AWAY,
+	    RSF_TELE_LEVEL, FLAG_END))
+		hp = (hp * 6) / 5;
 
 	/*
  	 * Monsters that multiply are tougher to kill
 	 */
-	if (r_ptr->flags[1] & (RF1_MULTIPLY)) hp *= 2;
+	if (rf_has(r_ptr->flags, RF_MULTIPLY)) hp *= 2;
 
 	/* Monsters with resistances are harder to kill.
 	   Therefore effective slays / brands against them are worth more. */
-	if (r_ptr->flags[2] & RF2_IM_ACID)	resists += 2;
-	if (r_ptr->flags[2] & RF2_IM_FIRE) 	resists += 2;
-	if (r_ptr->flags[2] & RF2_IM_COLD)	resists += 2;
-	if (r_ptr->flags[2] & RF2_IM_ELEC)	resists += 2;
-	if (r_ptr->flags[2] & RF2_IM_POIS)	resists += 2;
+	if (rf_has(r_ptr->flags, RF_IM_ACID)) resists += 2;
+	if (rf_has(r_ptr->flags, RF_IM_FIRE)) resists += 2;
+	if (rf_has(r_ptr->flags, RF_IM_COLD)) resists += 2;
+	if (rf_has(r_ptr->flags, RF_IM_ELEC)) resists += 2;
+	if (rf_has(r_ptr->flags, RF_IM_POIS)) resists += 2;
 
 	/* Bonus for multiple basic resists and weapon resists */
 	if (resists >= 12) resists *= 6;
@@ -4224,11 +3731,11 @@ static long eval_hp_adjust(monster_race *r_ptr)
 	/* If quite resistant, reduce resists by defense holes */
 	if (resists >= 6)
 	{
-		if (r_ptr->flags[2] & RF2_HURT_ROCK) 	resists -= 1;
-		if (!(r_ptr->flags[2] & RF2_NO_SLEEP))	resists -= 3;
-		if (!(r_ptr->flags[2] & RF2_NO_FEAR))	resists -= 2;
-		if (!(r_ptr->flags[2] & RF2_NO_CONF))	resists -= 2;
-		if (!(r_ptr->flags[2] & RF2_NO_STUN))	resists -= 1;
+		if (rf_has(r_ptr->flags, RF_HURT_ROCK)) resists -= 1;
+		if (!rf_has(r_ptr->flags, RF_NO_SLEEP)) resists -= 3;
+		if (!rf_has(r_ptr->flags, RF_NO_FEAR)) resists -= 2;
+		if (!rf_has(r_ptr->flags, RF_NO_CONF)) resists -= 2;
+		if (!rf_has(r_ptr->flags, RF_NO_STUN)) resists -= 1;
 
 		if (resists < 5) resists = 5;
 	}
@@ -4236,10 +3743,10 @@ static long eval_hp_adjust(monster_race *r_ptr)
 	/* If quite resistant, bonus for high resists */
 	if (resists >= 3)
 	{
-		if (r_ptr->flags[2] & RF2_IM_WATER)	resists += 1;
-		if (r_ptr->flags[2] & RF2_RES_NETH)	resists += 1;
-		if (r_ptr->flags[2] & RF2_RES_NEXUS)	resists += 1;
-		if (r_ptr->flags[2] & RF2_RES_DISE)	resists += 1;
+		if (rf_has(r_ptr->flags, RF_IM_WATER)) resists += 1;
+		if (rf_has(r_ptr->flags, RF_RES_NETH)) resists += 1;
+		if (rf_has(r_ptr->flags, RF_RES_NEXUS)) resists += 1;
+		if (rf_has(r_ptr->flags, RF_RES_DISE)) resists += 1;
 	}
 
 	/* Scale resists */
@@ -4331,7 +3838,7 @@ for (iteration = 0; iteration < 3; iteration ++)
 		else
 		{
 			/* Compute depths of non-unique monsters */
-			if (!(r_ptr->flags[0] & (RF0_UNIQUE)))
+			if (!rf_has(r_ptr->flags, RF_UNIQUE))
 			{
 				long mexp = (hp * dam) / 25;
 				long threat = r_ptr->highest_threat;
@@ -4395,27 +3902,27 @@ for (iteration = 0; iteration < 3; iteration ++)
 		power[i] = hp * dam;
 
 		/* Adjust for group monsters.  Average in-level group size is 5 */
-		if (r_ptr->flags[0] & RF0_UNIQUE) ;
+		if (rf_has(r_ptr->flags, RF_UNIQUE)) ;
 
-		else if (r_ptr->flags[0] & RF0_FRIEND) power[i] *= 2;
+		else if (rf_has(r_ptr->flags, RF_FRIEND)) power[i] *= 2;
 
-		else if (r_ptr->flags[0] & RF0_FRIENDS) power[i] *= 5;
+		else if (rf_has(r_ptr->flags, RF_FRIENDS)) power[i] *= 5;
 
 		/* Adjust for multiplying monsters. This is modified by the speed,
                  * as fast multipliers are much worse than slow ones. We also adjust for
 		 * ability to bypass walls or doors.
                  */
-		if (r_ptr->flags[1] & RF1_MULTIPLY)
+		if (rf_has(r_ptr->flags, RF_MULTIPLY))
 		{
-			if (r_ptr->flags[1] & (RF1_KILL_WALL | RF1_PASS_WALL))
+			if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
 				power[i] = MAX(power[i], power[i] * extract_energy[r_ptr->speed
-					+ (r_ptr->spell_flags[2] & RSF2_HASTE ? 5 : 0)]);
-			else if (r_ptr->flags[1] & (RF1_OPEN_DOOR | RF1_BASH_DOOR))
+					+ (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)]);
+			else if (flags_test(r_ptr->flags, RF_SIZE, RF_OPEN_DOOR, RF_BASH_DOOR, FLAG_END))
 				power[i] = MAX(power[i], power[i] *  extract_energy[r_ptr->speed
-					+ (r_ptr->spell_flags[2] & RSF2_HASTE ? 5 : 0)] * 3 / 2);
+					+ (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)] * 3 / 2);
 			else
 				power[i] = MAX(power[i], power[i] * extract_energy[r_ptr->speed
-					+ (r_ptr->spell_flags[2] & RSF2_HASTE ? 5 : 0)] / 2);
+					+ (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)] / 2);
 		}
 
 		/*
@@ -4429,7 +3936,7 @@ for (iteration = 0; iteration < 3; iteration ++)
 			/*
 			 * Uniques don't count towards monster power on the level.
 			 */
-			if (r_ptr->flags[0] & RF0_UNIQUE) continue;
+			if (rf_has(r_ptr->flags, RF_UNIQUE)) continue;
 
 			/*
 			 * Specifically placed monsters don't count towards monster power on the level.
@@ -4462,20 +3969,20 @@ for (iteration = 0; iteration < 3; iteration ++)
 			 * so that the averages don't get thrown off
 			 */
 
-			if (r_ptr->flags[0] & RF0_FRIEND) count = 20;
-			else if (r_ptr->flags[0] & RF0_FRIENDS) count = 50;
+			if (rf_has(r_ptr->flags, RF_FRIEND)) count = 20;
+			else if (rf_has(r_ptr->flags, RF_FRIENDS)) count = 50;
 
-			if (r_ptr->flags[1] & RF1_MULTIPLY)
+			if (rf_has(r_ptr->flags, RF_MULTIPLY))
 			{
-				if (r_ptr->flags[1] & (RF1_KILL_WALL | RF1_PASS_WALL))
+				if (flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
 					count = MAX(1, extract_energy[r_ptr->speed
-						+ (r_ptr->spell_flags[2] & RSF2_HASTE ? 5 : 0)]) * count;
-				else if (r_ptr->flags[1] & (RF1_OPEN_DOOR | RF1_BASH_DOOR))
+						+ (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)]) * count;
+				else if (flags_test(r_ptr->flags, RF_SIZE, RF_OPEN_DOOR, RF_BASH_DOOR, FLAG_END))
 					count = MAX(1, extract_energy[r_ptr->speed
-						+ (r_ptr->spell_flags[2] & RSF2_HASTE ? 5 : 0)] * 3 / 2) * count;
+						+ (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)] * 3 / 2) * count;
 				else
 					count = MAX(1, extract_energy[r_ptr->speed
-						+ (r_ptr->spell_flags[2] & RSF2_HASTE ? 5 : 0)] / 2) * count;
+						+ (rsf_has(r_ptr->spell_flags, RSF_HASTE) ? 5 : 0)] / 2) * count;
 			}
 
 			/*
@@ -4556,64 +4063,60 @@ errr eval_e_slays(header *head)
 	int i;
 	int j;
 	int count = 0;
-	u32b cacheme;
-	u32b *dupcheck;
-	bool duplicate;
+	bitflag cacheme[OF_SIZE];
+	bitflag slay_mask[OF_SIZE];
+	bitflag **dupcheck;
 	ego_item_type *e_ptr;
 
-	dupcheck = C_ZNEW(z_info->e_max, u32b);
+	/* Build the slay mask */
+	flags_init(slay_mask, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
+
+	/* Calculate necessary size of slay_cache */
+	dupcheck = C_ZNEW(z_info->e_max, bitflag *);
 	
 	for (i = 0; i < z_info->e_max; i++)
 	{
-		dupcheck[i] = 0;
-		duplicate = FALSE;
+		dupcheck[i] = C_ZNEW(OF_SIZE, bitflag);
 		e_ptr = (ego_item_type*)head->info_ptr + i;
-		cacheme = (e_ptr->flags[0] & TR0_ALL_SLAYS);
 
-		if (cacheme)
+		/* Find the slay flags on this ego */		
+		of_copy(cacheme, e_ptr->flags);
+		of_inter(cacheme, slay_mask);
+
+		/* Only consider non-empty combinations of slay flags */
+		if (!of_is_empty(cacheme))
 		{
+			/* Skip previously scanned combinations */
 			for (j = 0; j < i; j++)
 			{
-				if (dupcheck[j] == cacheme) duplicate = TRUE;
+				if (of_is_equal(cacheme, dupcheck[j]))
+					continue;
 			}
-			if (!duplicate)
-			{
-				count++;
-				dupcheck[i] = cacheme;
-			     /*	msg_print("Found a new slay combo on an ego item"); */
-			}
+
+			/* msg_print("Found a new slay combo on an ego item"); */
+			count++;
+			of_copy(dupcheck[i], cacheme);
 		}
 	}
 
+	/* Allocate slay_cache with an extra empty element for an iteration stop */
 	slay_cache = C_ZNEW((count + 1), flag_cache);
 	count = 0;
 
+	/* Populate the slay_cache */
 	for (i = 0; i < z_info->e_max; i++)
 	{
-		duplicate = FALSE;
-		e_ptr = (ego_item_type*)head->info_ptr + i;
-		cacheme = (e_ptr->flags[0] & TR0_ALL_SLAYS);
-
-		if (cacheme)
+		if (!of_is_empty(dupcheck[i]))
 		{
-			for (j = 0; j < count; j++)
-			{
-				if (slay_cache[j].flags == cacheme) duplicate = TRUE;
-			}
-			if (!duplicate)
-			{
-				slay_cache[count].flags = cacheme;
-				slay_cache[count].value = 0;
-				count++;
-			     /*	msg_print("Cached a slay combination"); */
-			}
+			of_copy(slay_cache[count].flags, dupcheck[i]);
+			slay_cache[count].value = 0;
+			count++;
+			/*msg_print("Cached a slay combination");*/
 		}
 	}
 
-	/* add a null element to enable looping over the array */
-	slay_cache[count].flags = 0;
-	slay_cache[count].value = 0;
-
+	for (i = 0; i < z_info->e_max; i++)
+		FREE(dupcheck[i]);
 	FREE(dupcheck);
 
 	/* Success */
@@ -4734,18 +4237,19 @@ errr emit_info_txt(ang_file *fp, ang_file *template, char *buf, header *head,
 
 
 /*
- * Emit one textual string based on a flag.
+ * Emit one textual string based on a bitflag set.
  */
-static errr emit_flags_32(ang_file *fp, cptr intro_text, u32b flags, cptr names[])
+static errr emit_flags(ang_file *fp, cptr intro_text, bitflag *flags, const size_t size, const char **names)
 {
+	int max_flags = FLAG_MAX(size);
 	int i;
 	bool intro = TRUE;
 	int len = 0;
 
 	/* Check flags */
-	for (i = 0; i < 32; i++)
+	for (i = 0; i < max_flags; i++)
 	{
-		if ((flags & (1L << i)) != 0)
+		if (flag_has(flags, size, i))
 		{
 			/* Newline needed */
 			if (len + strlen(names[i]) > 75)
@@ -4953,14 +4457,10 @@ errr emit_r_info_index(ang_file *fp, header *head, int i)
 	}
 
 	/* Output 'F' for "Flags" */
-	emit_flags_32(fp, "F:", r_ptr->flags[0], r_info_flags0);
-	emit_flags_32(fp, "F:", r_ptr->flags[1], r_info_flags1);
-	emit_flags_32(fp, "F:", r_ptr->flags[2], r_info_flags2);
+	emit_flags(fp, "F:", r_ptr->flags, RF_SIZE, r_info_flags);
 
 	/* Output 'S' for "Spell Flags" (multiple lines) */
-	emit_flags_32(fp, "S:", r_ptr->spell_flags[0], r_info_spell_flags0);
-	emit_flags_32(fp, "S:", r_ptr->spell_flags[1], r_info_spell_flags1);
-	emit_flags_32(fp, "S:", r_ptr->spell_flags[2], r_info_spell_flags2);
+	emit_flags(fp, "S:", r_ptr->spell_flags, RSF_SIZE, r_info_spell_flags);
 
 	/* Output 'S' for spell frequency in unwieldy format */
 	/* TODO: use this routine to output M:freq_innate:freq_spell or similar to allow these to be

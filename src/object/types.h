@@ -31,7 +31,7 @@ typedef struct
 
 	s32b cost;         /**< Object base cost */
 
-	u32b flags[OBJ_FLAG_N];		/**< Flags */
+	bitflag flags[OF_SIZE];		/**< Flags */
 
 	byte d_attr;       /**< Default object attribute */
 	char d_char;       /**< Default object character */
@@ -98,7 +98,7 @@ typedef struct
 
 	s32b cost;    /**< Artifact (pseudo-)worth */
 
-	u32b flags[OBJ_FLAG_N];		/**< Flags */
+	bitflag flags[OF_SIZE];		/**< Flags */
 
 	byte level;   /** Difficulty level for activation */
 	byte rarity;  /** Unused */
@@ -128,7 +128,7 @@ typedef struct
 
 	s32b cost;			/* Ego-item "cost" */
 
-	u32b flags[OBJ_FLAG_N];		/**< Flags */
+	bitflag flags[OF_SIZE];		/**< Flags */
 
 	byte level;			/* Minimum level */
 	byte rarity;		/* Object rarity */
@@ -199,8 +199,8 @@ typedef struct
 	byte name1;			/* Artifact type, if any */
 	byte name2;			/* Ego-Item type, if any */
 
-	u32b flags[OBJ_FLAG_N];		/**< Flags */
-	u32b known_flags[OBJ_FLAG_N];	/**< Player-known flags */
+	bitflag flags[OF_SIZE];		/**< Flags */
+	bitflag known_flags[OF_SIZE];	/**< Player-known flags */
 	u16b ident;			/* Special flags */
 
 	s16b ac;			/* Normal AC */
@@ -248,9 +248,9 @@ typedef struct
  */
 typedef struct
 {
-	u32b slay_flag;		/* Object flag for the slay */
-	u32b monster_flag;	/* Which monster flag(s) make it vulnerable */
-	u32b resist_flag;	/* Which monster flag(s) make it resist */
+	int slay_flag;		/* Object flag for the slay */
+	int monster_flag;	/* Which monster flag(s) make it vulnerable */
+	int resist_flag;	/* Which monster flag(s) make it resist */
 	int mult;		/* Slay multiplier */
 	const char *range_verb;	/* attack verb for ranged hits */
 	const char *melee_verb; /* attack verb for melee hits */
@@ -264,8 +264,8 @@ typedef struct
  */
 typedef struct
 {
-	u32b flags;		/* Combination of slays and brands */
-	s32b value;		/* Value of this combination */
+	bitflag flags[OF_SIZE];   /* Combination of slays and brands */
+	s32b value;            /* Value of this combination */
 } flag_cache;
 
 #endif /* INCLUDED_OBJECT_TYPES_H */

@@ -52,8 +52,7 @@ static void look_mon_desc(char *buf, size_t max, int m_idx)
 
 
 	/* Determine if the monster is "living" (vs "undead") */
-	if (r_ptr->flags[2] & (RF2_UNDEAD | RF2_DEMON)) living = FALSE;
-	if (strchr("Egv", r_ptr->d_char)) living = FALSE;
+	if (monster_is_unusual(r_ptr)) living = FALSE;
 
 
 	/* Healthy monsters */
@@ -793,8 +792,8 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 				s1 = "It is ";
 
 				/* Hack -- take account of gender */
-				if (r_ptr->flags[0] & (RF0_FEMALE)) s1 = "She is ";
-				else if (r_ptr->flags[0] & (RF0_MALE)) s1 = "He is ";
+				if (rf_has(r_ptr->flags, RF_FEMALE)) s1 = "She is ";
+				else if (rf_has(r_ptr->flags, RF_MALE)) s1 = "He is ";
 
 				/* Use a preposition */
 				s2 = "carrying ";

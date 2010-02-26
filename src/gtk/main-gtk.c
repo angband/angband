@@ -2421,7 +2421,7 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 		m_name = r_name + r_ptr->name;
 
 		/* Display uniques in a special colour */
-		if (r_ptr->flags[0] & RF0_UNIQUE)
+		if (rf_has(r_ptr->flags, RF_UNIQUE))
 			attr = TERM_VIOLET;
 		/* If the player has never killed it (ever) AND it is out of depth */
 		else if ((!l_ptr->tkills) && (r_ptr->level > p_ptr->depth))

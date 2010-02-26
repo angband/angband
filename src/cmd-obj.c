@@ -411,7 +411,7 @@ static void obj_study(object_type *o_ptr, int item)
 	track_object(item);
 
 	/* Mage -- Choose a spell to study */
-	if (cp_ptr->flags & CF_CHOOSE_SPELLS)
+	if (player_has(PF_CHOOSE_SPELLS))
 	{
 		int spell = get_spell(o_ptr, "study", FALSE, FALSE);
 		if (spell >= 0)
@@ -715,7 +715,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 void do_cmd_refill(cmd_code code, cmd_arg args[])
 {
 	object_type *j_ptr = &inventory[INVEN_LIGHT];
-	u32b f[OBJ_FLAG_N];
+	bitflag f[OF_SIZE];
 
 	int item = args[0].item;
 	object_type *o_ptr = object_from_item_idx(item);
@@ -735,7 +735,7 @@ void do_cmd_refill(cmd_code code, cmd_arg args[])
 		return;
 	}
 
-	else if (f[2] & TR2_NO_FUEL)
+	else if (of_has(f, OF_NO_FUEL))
 	{
 		msg_print("Your light cannot be refilled.");
 		return;

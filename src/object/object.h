@@ -99,7 +99,7 @@ bool object_pval_is_visible(const object_type *o_ptr);
 bool object_ego_is_visible(const object_type *o_ptr);
 bool object_attack_plusses_are_visible(const object_type *o_ptr);
 bool object_defence_plusses_are_visible(const object_type *o_ptr);
-bool object_flag_is_known(const object_type *o_ptr, int idx, u32b flag);
+bool object_flag_is_known(const object_type *o_ptr, int flag);
 bool object_high_resist_is_possible(const object_type *o_ptr);
 void object_flavor_aware(object_type *o_ptr);
 void object_flavor_tried(object_type *o_ptr);
@@ -109,14 +109,15 @@ void object_notice_ego(object_type *o_ptr);
 void object_notice_sensing(object_type *o_ptr);
 void object_sense_artifact(object_type *o_ptr);
 void object_notice_effect(object_type *o_ptr);
-void object_notice_slays(object_type *o_ptr, u32b known_f0);
+void object_notice_slay(object_type *o_ptr, int flag);
 void object_notice_attack_plusses(object_type *o_ptr);
-bool object_notice_flags(object_type *o_ptr, int flagset, u32b flags);
+bool object_notice_flag(object_type *o_ptr, int flag);
+bool object_notice_flags(object_type *o_ptr, bitflag flags[OF_SIZE]);
 bool object_notice_curses(object_type *o_ptr);
 void object_notice_on_defend(void);
 void object_notice_on_wield(object_type *o_ptr);
 void object_notice_on_firing(object_type *o_ptr);
-void wieldeds_notice_flag(int flagset, u32b flag);
+void wieldeds_notice_flag(int flag);
 void wieldeds_notice_on_attack(void);
 void object_repair_knowledge(object_type *o_ptr);
 obj_pseudo_t object_pseudo(const object_type *o_ptr);
@@ -147,12 +148,9 @@ void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great);
 bool make_object(object_type *j_ptr, int lev, bool good, bool great);
 void make_gold(object_type *j_ptr, int lev, int coin_type);
 
-unsigned ego_xtra_sustain_idx(void);
-u32b ego_xtra_sustain_list(void);
-unsigned ego_xtra_resist_idx(void);
-u32b ego_xtra_resist_list(void);
-unsigned ego_xtra_power_idx(void);
-u32b ego_xtra_power_list(void);
+void set_ego_xtra_sustain(bitflag flags[OF_SIZE]);
+void set_ego_xtra_resist(bitflag flags[OF_SIZE]);
+void set_ego_xtra_power(bitflag flags[OF_SIZE]);
 
 
 /* obj-ui.c */
@@ -165,8 +163,8 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode);
 /* obj-util.c */
 void flavor_init(void);
 void reset_visuals(bool unused);
-void object_flags(const object_type *o_ptr, u32b flags[OBJ_FLAG_N]);
-void object_flags_known(const object_type *o_ptr, u32b flags[OBJ_FLAG_N]);
+void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE]);
+void object_flags_known(const object_type *o_ptr, bitflag flags[OF_SIZE]);
 char index_to_label(int i);
 s16b label_to_inven(int c);
 s16b label_to_equip(int c);

@@ -270,7 +270,7 @@ static int make_ego_item(object_type *o_ptr, int level, bool force_uncursed)
 	e_idx = (byte)table[i].index;
 	o_ptr->name2 = e_idx;
 
-	return (e_info[e_idx].flags[2] & TR2_CURSE_MASK ? -2 : 2);
+	return (flags_test(e_info[e_idx].flags, OF_SIZE, OF_CURSE_MASK, FLAG_END) ? -2 : 2);
 }
 
 
@@ -292,7 +292,13 @@ static void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 
 	/* Hack -- extract the "cursed" flags */
 	if (cursed_p(a_ptr))
-		o_ptr->flags[2] |= (a_ptr->flags[2] & TR2_CURSE_MASK);
+	{
+		bitflag curse_flags[OF_SIZE];
+
+		of_copy(curse_flags, a_ptr->flags);
+		flags_mask(curse_flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
+		of_union(o_ptr->flags, curse_flags);
+	}
 
 	/* Mega-Hack -- increase the rating */
 	rating += 10;
@@ -649,7 +655,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					o_ptr->to_h = -o_ptr->to_h;
 					o_ptr->to_d = -o_ptr->to_d;
 					o_ptr->to_a = -o_ptr->to_a;
-					o_ptr->flags[2] |= TR2_LIGHT_CURSE;
+					of_on(o_ptr->flags, OF_LIGHT_CURSE);
 
 					break;
 				}
@@ -670,7 +676,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 					o_ptr->to_h = -o_ptr->to_h;
 					o_ptr->to_d = -o_ptr->to_d;
 					o_ptr->to_a = -o_ptr->to_a;
-					o_ptr->flags[2] |= TR2_LIGHT_CURSE;
+					of_on(o_ptr->flags, OF_LIGHT_CURSE);
 
 					break;
 				}
@@ -776,99 +782,68 @@ static void a_m_aux_4(object_type *o_ptr, int level, int power)
 	}
 }
 
-static const u32b ego_sustains[] =
+static const int ego_sustains[] =
 {
-	TR1_SUST_STR,
-	TR1_SUST_INT,
-	TR1_SUST_WIS,
-	TR1_SUST_DEX,
-	TR1_SUST_CON,
-	TR1_SUST_CHR,
+	OF_SUST_STR,
+	OF_SUST_INT,
+	OF_SUST_WIS,
+	OF_SUST_DEX,
+	OF_SUST_CON,
+	OF_SUST_CHR,
 };
 
-/*
- * Which TR? flags have the sustains
- */
-unsigned ego_xtra_sustain_idx(void)
+void set_ego_xtra_sustain(bitflag flags[OF_SIZE])
 {
-	return 1;
-}
-
-u32b ego_xtra_sustain_list(void)
-{
-	u32b ret = 0;
 	size_t i;
 
-	for (i = 0; i < N_ELEMENTS(ego_sustains); i++)
-		ret |= ego_sustains[i];
+	of_wipe(flags);
 
-	return ret;
+	for (i = 0; i < N_ELEMENTS(ego_sustains); i++)
+		of_on(flags, ego_sustains[i]);
 }
 
-static const u32b ego_resists[] =
+static const int ego_resists[] =
 {
-	TR1_RES_POIS,
-	TR1_RES_FEAR,
-	TR1_RES_LIGHT,
-	TR1_RES_DARK,
-	TR1_RES_BLIND,
-	TR1_RES_CONFU,
-	TR1_RES_SOUND,
-	TR1_RES_SHARD,
-	TR1_RES_NEXUS,
-	TR1_RES_NETHR,
-	TR1_RES_CHAOS,
-	TR1_RES_DISEN,
+	OF_RES_POIS,
+	OF_RES_FEAR,
+	OF_RES_LIGHT,
+	OF_RES_DARK,
+	OF_RES_BLIND,
+	OF_RES_CONFU,
+	OF_RES_SOUND,
+	OF_RES_SHARD,
+	OF_RES_NEXUS,
+	OF_RES_NETHR,
+	OF_RES_CHAOS,
+	OF_RES_DISEN,
 };
 
-/*
- * Which TR? flags have the random resists
- */
-unsigned ego_xtra_resist_idx(void)
+void set_ego_xtra_resist(bitflag flags[OF_SIZE])
 {
-	return 1;
-}
-
-u32b ego_xtra_resist_list(void)
-{
-	u32b ret = 0;
 	size_t i;
 
 	for (i = 0; i < N_ELEMENTS(ego_resists); i++)
-		ret |= ego_resists[i];
-
-	return ret;
+		of_on(flags, ego_resists[i]);
 }
 
-static const u32b ego_powers[] =
+static const int ego_powers[] =
 {
-	TR2_SLOW_DIGEST,
-	TR2_FEATHER,
-	TR2_LIGHT,
-	TR2_REGEN,
-	TR2_TELEPATHY,
-	TR2_SEE_INVIS,
-	TR2_FREE_ACT,
-	TR2_HOLD_LIFE,
+	OF_SLOW_DIGEST,
+	OF_FEATHER,
+	OF_LIGHT,
+	OF_REGEN,
+	OF_TELEPATHY,
+	OF_SEE_INVIS,
+	OF_FREE_ACT,
+	OF_HOLD_LIFE,
 };
 
-/*
- * Which TR? flags have the random powers
- */
-unsigned ego_xtra_power_idx(void)
+void set_ego_xtra_power(bitflag flags[OF_SIZE])
 {
-	return 2;
-}
-
-u32b ego_xtra_power_list(void)
-{
-	u32b ret = 0;
 	size_t i;
 
 	for (i = 0; i < N_ELEMENTS(ego_powers); i++)
-		ret |= ego_powers[i];
-
-	return ret;
+		of_on(flags, ego_powers[i]);
 }
 
 /**
@@ -877,20 +852,22 @@ u32b ego_xtra_power_list(void)
  * the array, and returns an entry from attrs, or 0 if there are no
  * new attrs.
  */
-u32b get_new_attr(u32b flags, const u32b attrs[], size_t size)
+static int get_new_attr(bitflag flags[OF_SIZE], const int attrs[], size_t size)
 {
 	size_t i;
 	int options = 0;
-	u32b flag = 0;
+	int flag = 0;
+
 	for (i = 0; i < size; i++)
 	{
 		/* skip this one if the flag is already present */
-		if (flags & attrs[i]) continue;
+		if (of_has(flags, attrs[i])) continue;
 
 		/* each time we find a new possible option, we have a 1-in-N chance of
 		 * choosing it and an (N-1)-in-N chance of keeping a previous one */
 		if (one_in_(++options)) flag = attrs[i];
 	}
+
 	return flag;
 }
 
@@ -937,8 +914,8 @@ void object_prep(object_type *o_ptr, int k_idx, int lev, aspect rand_aspect)
 	o_ptr->ds = k_ptr->ds;
 
 	/* Hack -- cursed items are always "cursed" */
-	if (k_ptr->flags[2] & TR2_LIGHT_CURSE)
-	    o_ptr->flags[2] |= TR2_LIGHT_CURSE;
+	if (of_has(k_ptr->flags, OF_LIGHT_CURSE))
+	    of_on(o_ptr->flags, OF_LIGHT_CURSE);
 }
 
 
@@ -1092,23 +1069,30 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 	if (o_ptr->name2)
 	{
 		ego_item_type *e_ptr = &e_info[o_ptr->name2];
-		u32b flags[OBJ_FLAG_N];
+		bitflag flags[OF_SIZE];
+
 		object_flags(o_ptr, flags);
 
 		/* Extra powers */
 		if (e_ptr->xtra == OBJECT_XTRA_TYPE_SUSTAIN)
-			o_ptr->flags[1] |= get_new_attr(flags[1], ego_sustains,
-											N_ELEMENTS(ego_sustains));
+			of_on(o_ptr->flags, get_new_attr(flags, ego_sustains,
+											N_ELEMENTS(ego_sustains)));
 		else if (e_ptr->xtra == OBJECT_XTRA_TYPE_RESIST)
-			o_ptr->flags[1] |= get_new_attr(flags[1], ego_resists,
-											N_ELEMENTS(ego_resists));
+			of_on(o_ptr->flags, get_new_attr(flags, ego_resists,
+											N_ELEMENTS(ego_resists)));
 		else if (e_ptr->xtra == OBJECT_XTRA_TYPE_POWER)
-			o_ptr->flags[2] |= get_new_attr(flags[2], ego_powers,
-											N_ELEMENTS(ego_powers));
+			of_on(o_ptr->flags, get_new_attr(flags, ego_powers,
+											N_ELEMENTS(ego_powers)));
 
 		/* Hack -- acquire "cursed" flags */
 		if (cursed_p(e_ptr))
-			o_ptr->flags[2] |= (e_ptr->flags[2] & TR2_CURSE_MASK);
+		{
+			bitflag curse_flags[OF_SIZE];
+
+			of_copy(curse_flags, e_ptr->flags);
+			flags_mask(curse_flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
+			of_union(o_ptr->flags, curse_flags);
+		}
 
 		/* Hack -- apply extra penalties if needed */
 		if (cursed_p(o_ptr))
@@ -1164,7 +1148,13 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 
 		/* Hack -- acquire "cursed" flag */
 		if (cursed_p(k_ptr))
-			o_ptr->flags[2] |= (k_ptr->flags[2] & TR2_CURSE_MASK);
+		{
+			bitflag curse_flags[OF_SIZE];
+
+			of_copy(curse_flags, k_ptr->flags);
+			flags_mask(curse_flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
+			of_union(o_ptr->flags, curse_flags);
+		}
 	}
 }
 

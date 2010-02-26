@@ -54,9 +54,9 @@ s16b spell_chance(int spell)
 	minfail = adj_mag_fail[p_ptr->state.stat_ind[cp_ptr->spell_stat]];
 
 	/* Non mage/priest characters never get better than 5 percent */
-	if (!(cp_ptr->flags & CF_ZERO_FAIL))
+	if (!player_has(PF_ZERO_FAIL) && minfail < 5)
 	{
-		if (minfail < 5) minfail = 5;
+		minfail = 5;
 	}
 
 	/* Priest prayer penalty for "edged" weapons (before minfail) */

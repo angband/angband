@@ -27,6 +27,7 @@ HEADERS = \
 	ui.h \
 	ui-menu.h \
 	wizard.h \
+	z-bitflag.h \
 	z-file.h \
 	z-form.h \
 	z-msg.h \
@@ -41,7 +42,7 @@ GTKHEADERS = \
 	gtk/cairo-utils.h \
 	gtk/main-gtk.h \
 	
-ZFILES = z-file.o z-form.o z-msg.o z-quark.o z-rand.o z-term.o z-type.o \
+ZFILES = z-bitflag.o z-file.o z-form.o z-msg.o z-quark.o z-rand.o z-term.o z-type.o \
          z-util.o z-virt.o
 MAINFILES = main.o main-crb.o main-gcu.o $(GTKMAINFILES) \
             main-ros.o main-sdl.o main-win.o main-x11.o snd-sdl.o

@@ -999,7 +999,7 @@ static void display_monster(int col, int row, bool cursor, int oid)
 	big_pad(66, row, a, c);
 
 	/* Display kills */
-	if (r_ptr->flags[0] & (RF0_UNIQUE))
+	if (rf_has(r_ptr->flags, RF_UNIQUE))
 		put_str(format("%s", (r_ptr->max_num == 0)?  " dead" : "alive"), row, 70);
 	else
 		put_str(format("%5d", l_ptr->pkills), row, 70);
@@ -1072,7 +1072,7 @@ static void mon_summary(int gid, const int *object_list, int n, int top, int row
 	}
 
 	/* Different display for the first item if we've got uniques to show */
-	if (gid == 0 && ((&r_info[default_join[object_list[0]].oid])->flags[0] & (RF0_UNIQUE)))
+	if (gid == 0 && rf_has((&r_info[default_join[object_list[0]].oid])->flags, RF_UNIQUE))
 	{
 		c_prt(TERM_L_BLUE, format("%d known uniques, %d slain.", n, kills),
 					row, col);
@@ -1100,7 +1100,7 @@ static int count_known_monsters(void)
 		if (!OPT(cheat_know) && !l_list[i].sights) continue;
 		if (!r_ptr->name) continue;
 
-		if (r_ptr->flags[0] & RF0_UNIQUE) m_count++;
+		if (rf_has(r_ptr->flags, RF_UNIQUE)) m_count++;
 
 		for (j = 1; j < N_ELEMENTS(monster_group) - 1; j++)
 		{
@@ -1136,7 +1136,7 @@ static void do_cmd_knowledge_monsters(void *obj, const char *name)
 		if (!OPT(cheat_know) && !l_list[i].sights) continue;
 		if (!r_ptr->name) continue;
 
-		if (r_ptr->flags[0] & RF0_UNIQUE) m_count++;
+		if (rf_has(r_ptr->flags, RF_UNIQUE)) m_count++;
 
 		for (j = 1; j < N_ELEMENTS(monster_group) - 1; j++)
 		{
@@ -1158,7 +1158,7 @@ static void do_cmd_knowledge_monsters(void *obj, const char *name)
 		for (j = 0; j < N_ELEMENTS(monster_group)-1; j++)
 		{
 			const char *pat = monster_group[j].chars;
-			if (j == 0 && !(r_ptr->flags[0] & RF0_UNIQUE))
+			if (j == 0 && !rf_has(r_ptr->flags, RF_UNIQUE))
 				continue;
 			else if (j > 0 && !strchr(pat, r_ptr->d_char))
 				continue;
@@ -1432,7 +1432,7 @@ static void desc_ego_fake(int oid)
 	/* Hack: dereference the join */
 	const char *cursed[] = { "permanently cursed", "heavily cursed", "cursed" };
 	const char *xtra[] = { "sustain", "higher resistance", "ability" };
-	u32b f2, i;
+	int i;
 
 	int e_idx = default_join[oid].oid;
 	ego_item_type *e_ptr = &e_info[e_idx];
@@ -1470,13 +1470,16 @@ static void desc_ego_fake(int oid)
 	if (e_ptr->xtra)
 		text_out(format("It provides one random %s.", xtra[e_ptr->xtra - 1]));
 
-	for (i = 0, f2 = TR2_PERMA_CURSE; i < 3 ; f2 >>= 1, i++)
+	if (flags_test(e_ptr->flags, OF_SIZE, OF_CURSE_MASK, FLAG_END))
 	{
-		if (e_ptr->flags[2] & f2)
-		{
-			text_out_c(TERM_RED, format("It is %s.", cursed[i]));
-			break;
-		}
+		if (of_has(e_ptr->flags, OF_PERMA_CURSE))
+			i = 0;
+		else if (of_has(e_ptr->flags, OF_PERMA_CURSE))
+			i = 1;
+		else
+			i = 2;
+
+		text_out_c(TERM_RED, format("It is %s.", cursed[i]));
 	}
 
 	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
@@ -1556,7 +1559,7 @@ static int get_artifact_from_kind(object_kind *k_ptr)
 {
 	int i;
 
-	assert(k_ptr->flags[2] & TR2_INSTA_ART);
+	assert(of_has(k_ptr->flags, OF_INSTA_ART));
 
 	/* Look for the corresponding artifact */
 	for (i = 0; i < z_info->a_max; i++)
@@ -1595,7 +1598,7 @@ static void display_object(int col, int row, bool cursor, int oid)
 	byte c = use_flavour ? flavor_info[k_ptr->flavor].x_char : k_ptr->x_char;
 
 	/* Display known artifacts differently */
-	if ((k_ptr->flags[2] & TR2_INSTA_ART) && artifact_is_known(get_artifact_from_kind(k_ptr)))
+	if (of_has(k_ptr->flags, OF_INSTA_ART) && artifact_is_known(get_artifact_from_kind(k_ptr)))
 	{
 		get_artifact_display_name(o_name, sizeof(o_name), get_artifact_from_kind(k_ptr));
 	}
@@ -1640,7 +1643,7 @@ static void desc_obj_fake(int k_idx)
 	object_type *o_ptr = &object_type_body;
 
 	/* Check for known artifacts, display them as artifacts */
-	if ((k_ptr->flags[2] & TR2_INSTA_ART) && artifact_is_known(get_artifact_from_kind(k_ptr)))
+	if (of_has(k_ptr->flags, OF_INSTA_ART) && artifact_is_known(get_artifact_from_kind(k_ptr)))
 	{
 		desc_art_fake(get_artifact_from_kind(k_ptr));
 		return;
@@ -1861,7 +1864,7 @@ void do_cmd_knowledge_objects(void *obj, const char *name)
 	for (i = 0; i < z_info->k_max; i++)
 	{
 		if ((k_info[i].everseen || k_info[i].flavor || OPT(cheat_xtra)) &&
-				!(k_info[i].flags[2] & TR2_INSTA_ART))
+				!of_has(k_info[i].flags, OF_INSTA_ART))
 		{
 			int c = obj_group_order[k_info[i].tval];
 			if (c >= 0) objects[o_count++] = i;

@@ -149,16 +149,31 @@ bool do_dec_stat(int stat, bool perma)
 	/* Get the "sustain" */
 	switch (stat)
 	{
-		case A_STR: if (p_ptr->state.sustain_str) sust = TRUE; break;
-		case A_INT: if (p_ptr->state.sustain_int) sust = TRUE; break;
-		case A_WIS: if (p_ptr->state.sustain_wis) sust = TRUE; break;
-		case A_DEX: if (p_ptr->state.sustain_dex) sust = TRUE; break;
-		case A_CON: if (p_ptr->state.sustain_con) sust = TRUE; break;
-		case A_CHR: if (p_ptr->state.sustain_chr) sust = TRUE; break;
+		case A_STR:
+			if (p_ptr->state.sustain_str) sust = TRUE;
+			wieldeds_notice_flag(OF_SUST_STR);
+			break;
+		case A_INT:
+			if (p_ptr->state.sustain_int) sust = TRUE;
+			wieldeds_notice_flag(OF_SUST_INT);
+			break;
+		case A_WIS:
+			if (p_ptr->state.sustain_wis) sust = TRUE;
+			wieldeds_notice_flag(OF_SUST_WIS);
+			break;
+		case A_DEX:
+			if (p_ptr->state.sustain_dex) sust = TRUE;
+			wieldeds_notice_flag(OF_SUST_DEX);
+			break;
+		case A_CON:
+			if (p_ptr->state.sustain_con) sust = TRUE;
+			wieldeds_notice_flag(OF_SUST_CON);
+			break;
+		case A_CHR:
+			if (p_ptr->state.sustain_chr) sust = TRUE;
+			wieldeds_notice_flag(OF_SUST_CHR);
+			break;
 	}
-
-	assert(TR1_SUST_STR == (1<<A_STR));
-	wieldeds_notice_flag(1, 1<<stat);
 
 	/* Sustain */
 	if (sust && !perma)
@@ -293,7 +308,7 @@ static const int enchant_table[16] =
 static void uncurse_object(object_type *o_ptr)
 {
 	/* Uncurse it */
-	o_ptr->flags[2] &= ~(TR2_CURSE_MASK);
+	flags_clear(o_ptr->flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
 }
 
 
@@ -317,10 +332,10 @@ static int remove_curse_aux(bool heavy)
 		if (!cursed_p(o_ptr)) continue;
 
 		/* Heavily cursed items need a special spell */
-		if ((o_ptr->flags[2] & TR2_HEAVY_CURSE) && !heavy) continue;
+		if (of_has(o_ptr->flags, OF_HEAVY_CURSE) && !heavy) continue;
 
 		/* Perma-cursed items can never be removed */
-		if (o_ptr->flags[2] & TR2_PERMA_CURSE) continue;
+		if (of_has(o_ptr->flags, OF_PERMA_CURSE)) continue;
 
 		/* Uncurse, and update things */
 		uncurse_object(o_ptr);
@@ -920,7 +935,7 @@ bool detect_monsters_normal(bool aware)
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Detect all non-invisible monsters */
-		if (!(r_ptr->flags[1] & (RF1_INVISIBLE)))
+		if (!rf_has(r_ptr->flags, RF_INVISIBLE))
 		{
 			/* Optimize -- Repair flags */
 			repair_mflag_mark = repair_mflag_show = TRUE;
@@ -984,10 +999,10 @@ bool detect_monsters_invis(bool aware)
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Detect invisible monsters */
-		if (r_ptr->flags[1] & (RF1_INVISIBLE))
+		if (rf_has(r_ptr->flags, RF_INVISIBLE))
 		{
 			/* Take note that they are invisible */
-			l_ptr->flags[1] |= (RF1_INVISIBLE);
+			rf_on(l_ptr->flags, RF_INVISIBLE);
 
 			/* Update monster recall window */
 			if (p_ptr->monster_race_idx == m_ptr->r_idx)
@@ -1058,10 +1073,10 @@ bool detect_monsters_evil(bool aware)
 		if (x < x1 || y < y1 || x > x2 || y > y2) continue;
 
 		/* Detect evil monsters */
-		if (r_ptr->flags[2] & (RF2_EVIL))
+		if (rf_has(r_ptr->flags, RF_EVIL))
 		{
 			/* Take note that they are evil */
-			l_ptr->flags[2] |= (RF2_EVIL);
+			rf_on(l_ptr->flags, RF_EVIL);
 
 			/* Update monster recall window */
 			if (p_ptr->monster_race_idx == m_ptr->r_idx)
@@ -1263,13 +1278,13 @@ bool enchant_score(s16b *score, bool is_artifact)
  */
 bool enchant_curse(object_type *o_ptr, bool is_artifact)
 {
-	u32b f[OBJ_FLAG_N];
+	bitflag f[OF_SIZE];
 
 	/* Extract the flags */
 	object_flags(o_ptr, f);
 
 	/* If the item isn't cursed (or is perma-cursed) this doesn't work */
-	if (!cursed_p(o_ptr) || f[2] & TR2_PERMA_CURSE) return FALSE;
+	if (!cursed_p(o_ptr) || of_has(f, OF_PERMA_CURSE)) return FALSE;
 
 	/* Artifacts resist enchanting curses away half the time */
 	if (is_artifact && randint0(100) < 50) return FALSE;
@@ -1757,7 +1772,7 @@ bool banishment(void)
 		if (!m_ptr->r_idx) continue;
 
 		/* Hack -- Skip Unique Monsters */
-		if (r_ptr->flags[0] & (RF0_UNIQUE)) continue;
+		if (rf_has(r_ptr->flags, RF_UNIQUE)) continue;
 
 		/* Skip "wrong" monsters */
 		if (r_ptr->d_char != typ) continue;
@@ -1801,7 +1816,7 @@ bool mass_banishment(void)
 		if (!m_ptr->r_idx) continue;
 
 		/* Hack -- Skip unique monsters */
-		if (r_ptr->flags[0] & (RF0_UNIQUE)) continue;
+		if (rf_has(r_ptr->flags, RF_UNIQUE)) continue;
 
 		/* Skip distant monsters */
 		if (m_ptr->cdis > MAX_SIGHT) continue;
@@ -2202,7 +2217,7 @@ void earthquake(int cy, int cx, int r)
 				monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 				/* Most monsters cannot co-exist with rock */
-				if (!(r_ptr->flags[1] & (RF1_KILL_WALL | RF1_PASS_WALL)))
+				if (!flags_test(r_ptr->flags, RF_SIZE, RF_KILL_WALL, RF_PASS_WALL, FLAG_END))
 				{
 					char m_name[80];
 
@@ -2210,7 +2225,7 @@ void earthquake(int cy, int cx, int r)
 					sn = 0;
 
 					/* Monster can move to escape the wall */
-					if (!(r_ptr->flags[0] & (RF0_NEVER_MOVE)))
+					if (!rf_has(r_ptr->flags, RF_NEVER_MOVE))
 					{
 						/* Look for safety */
 						for (i = 0; i < 8; i++)
@@ -2417,10 +2432,10 @@ static void cave_temp_room_light(void)
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 			/* Stupid monsters rarely wake up */
-			if (r_ptr->flags[1] & (RF1_STUPID)) chance = 10;
+			if (rf_has(r_ptr->flags, RF_STUPID)) chance = 10;
 
 			/* Smart monsters always wake up */
-			if (r_ptr->flags[1] & (RF1_SMART)) chance = 100;
+			if (rf_has(r_ptr->flags, RF_SMART)) chance = 100;
 
 			/* Sometimes monsters wake up */
 			if (m_ptr->csleep && (randint0(100) < chance))
@@ -2976,7 +2991,7 @@ bool curse_armor(void)
 		o_ptr->to_a -= randint1(3);
 
 		/* Curse it */
-		o_ptr->flags[2] |= (TR2_LIGHT_CURSE | TR2_HEAVY_CURSE);
+		flags_set(o_ptr->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE, FLAG_END);
 
 		/* Recalculate bonuses */
 		p_ptr->update |= (PU_BONUS);
@@ -3031,7 +3046,7 @@ bool curse_weapon(void)
 		o_ptr->to_d = 0 - randint1(3);
 
 		/* Curse it */
-		o_ptr->flags[2] |= (TR2_LIGHT_CURSE | TR2_HEAVY_CURSE);
+		flags_set(o_ptr->flags, OF_SIZE, OF_LIGHT_CURSE, OF_HEAVY_CURSE, FLAG_END);
 
 		/* Recalculate bonuses */
 		p_ptr->update |= (PU_BONUS);
