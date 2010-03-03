@@ -27,7 +27,9 @@
 typedef byte bitflag;
 #define FLAG_WIDTH        (sizeof(bitflag)*8)
 
-/* Enum flag value of the first valid flag in a set */
+/* Enum flag value of the first valid flag in a set
+ * Enums must be manually padded with the number of dummy elements
+ */
 #define FLAG_START        1
 
 /* Sentinel value indicates no more flags present for va-arg functions */
@@ -36,8 +38,8 @@ typedef byte bitflag;
 /* The array size necessary to hold "n" flags */
 #define FLAG_SIZE(n)      ((((n) - FLAG_START) + FLAG_WIDTH - 1) / FLAG_WIDTH)
 
-/* The maximum plus one number of flags contained in an array of size "n" */
-#define FLAG_MAX(n)       (int)((n) * FLAG_WIDTH + FLAG_START + 1)
+/* The highest flag value plus one in an array of size "n" */
+#define FLAG_MAX(n)       (int)((n) * FLAG_WIDTH + FLAG_START)
 
 /* Convert a sequential flag enum value to its array index */
 #define FLAG_OFFSET(id)   (((id) - FLAG_START) / FLAG_WIDTH)

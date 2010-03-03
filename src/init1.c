@@ -4241,13 +4241,13 @@ errr emit_info_txt(ang_file *fp, ang_file *template, char *buf, header *head,
  */
 static errr emit_flags(ang_file *fp, cptr intro_text, bitflag *flags, const size_t size, const char **names)
 {
-	int max_flags = FLAG_MAX(size);
+	const int max_flags = FLAG_MAX(size);
 	int i;
 	bool intro = TRUE;
 	int len = 0;
 
 	/* Check flags */
-	for (i = 0; i < max_flags; i++)
+	for (i = FLAG_START; i < max_flags; i++)
 	{
 		if (flag_has(flags, size, i))
 		{
