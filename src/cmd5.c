@@ -95,6 +95,10 @@ s16b spell_chance(int spell)
  * The spell must be legible, not forgotten, and also, to cast,
  * it must be known, and to study, it must not be known.
  * When browsing a book, all legible spells are okay.
+ *               known   browse
+ * cast/recite    TRUE    FALSE
+ * study         FALSE    FALSE
+ * browse         TRUE     TRUE
  */
 bool spell_okay(int spell, bool known, bool browse)
 {
@@ -103,27 +107,21 @@ bool spell_okay(int spell, bool known, bool browse)
 	/* Get the spell */
 	s_ptr = &mp_ptr->info[spell];
 
-	/* Spell is illegible */
+	/* Spell is illegible - never ok */
 	if (s_ptr->slevel >= 99) return (FALSE);
 
-	/* Spell is too hard */
+	/* Spell is too hard - browse ok, no cast/study */
 	if (s_ptr->slevel > p_ptr->lev) return (browse);
 
-	/* Spell is forgotten */
+	/* Spell is forgotten - browse ok, no cast/study */
 	if (p_ptr->spell_flags[spell] & PY_SPELL_FORGOTTEN)
-	{
-		/* Never okay */
-		return (!browse);
-	}
+		return (browse);
 
-	/* Spell is learned */
+	/* Spell is learned - cast/browse ok, no study */
 	if (p_ptr->spell_flags[spell] & PY_SPELL_LEARNED)
-	{
-		/* Okay to cast or browse, not to study */
 		return (known || browse);
-	}
 
-	/* Okay to study or browse, not to cast */
+	/* Spell has never been learned - study/browse ok, no cast */
 	return (!known || browse);
 }
 
