@@ -222,10 +222,12 @@ bool object_defence_plusses_are_visible(const object_type *o_ptr)
  */
 bool object_flag_is_known(const object_type *o_ptr, int flag)
 {
-	if (easy_know(o_ptr) || of_has(o_ptr->known_flags, flag))
+	if (easy_know(o_ptr) ||
+	    (o_ptr->ident & IDENT_STORE) ||
+	    of_has(o_ptr->known_flags, flag))
 		return TRUE;
-	else
-		return FALSE;
+
+	return FALSE;
 }
 
 
