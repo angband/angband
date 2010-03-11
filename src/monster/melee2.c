@@ -690,7 +690,7 @@ bool make_attack_spell(int m_idx)
 	    randint0(100) < 50)
 	{
 		/* Require intelligent spells */
-		flags_mask(f, RSF_INT_MASK);
+		flags_mask(f, RSF_SIZE, RSF_INT_MASK, FLAG_END);
 
 		/* No spells left */
 		if (rsf_is_empty(f)) return (FALSE);
