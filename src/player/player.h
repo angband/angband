@@ -5,6 +5,7 @@ void notice_stuff(void);
 void update_stuff(void);
 void redraw_stuff(void);
 void handle_stuff(void);
+int weight_remaining(void);
 
 /* timed.c */
 bool set_timed(int idx, int v, bool notify);

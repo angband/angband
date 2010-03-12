@@ -70,10 +70,10 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
 		/* Main window */
 		row = 1;
 		col = Term->wid - 1 - max_len - ex_width;
-		
+
 		if (col < 3) col = 0;
 	}
-	
+
 	/* Column offset of the first extra field */
 	ex_offset = MIN(max_len, (size_t)(Term->wid - 1 - ex_width - col));
 
@@ -191,6 +191,7 @@ static void show_obj_list(int num_obj, char labels[50][80], object_type *objects
 void show_inven(olist_detail_t mode)
 {
 	int i, last_slot = 0;
+	int diff = weight_remaining();
 
 	object_type *o_ptr;
 
@@ -199,6 +200,19 @@ void show_inven(olist_detail_t mode)
    object_type *objects[50];
 
    bool in_term = (mode & OLIST_WINDOW) ? TRUE : FALSE;
+
+	/* Include burden for term windows */
+	if (in_term)
+	{
+		strnfmt(labels[num_obj], sizeof(labels[num_obj]),
+		        "Burden %d.%d lb (%d.%d lb %s) ",
+		        p_ptr->total_weight / 10, p_ptr->total_weight % 10,
+		        abs(diff) / 10, abs(diff) % 10,
+		        (diff < 0 ? "overweight" : "remaining"));
+
+		objects[num_obj] = NULL;
+		num_obj++;
+	}
 
 	/* Find the last occupied inventory slot */
 	for (i = 0; i < INVEN_PACK; i++)

@@ -25,6 +25,8 @@
  */
 void do_cmd_inven(void)
 {
+	int diff = weight_remaining();
+
 	/* Hack -- Start in "inventory" mode */
 	p_ptr->command_wrk = (USE_INVEN);
 
@@ -41,9 +43,11 @@ void do_cmd_inven(void)
 	item_tester_full = FALSE;
 
 	/* Prompt for a command */
-	prt(format("(Inventory) Burden %d.%dlb (%d%% capacity). Command: ",
-	    p_ptr->total_weight / 10, p_ptr->total_weight % 10,
-	    (10 * p_ptr->total_weight) / (6 * adj_str_wgt[p_ptr->state.stat_ind[A_STR]])), 0, 0);
+	prt(format("(Inventory) Burden %d.%d lb (%d.%d lb %s). Command: ",
+		        p_ptr->total_weight / 10, p_ptr->total_weight % 10,
+		        abs(diff) / 10, abs(diff) % 10,
+		        (diff < 0 ? "overweight" : "remaining")),
+	    0, 0);
 
 	/* Hack -- Get a new command */
 	p_ptr->command_new = inkey();

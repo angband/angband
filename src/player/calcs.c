@@ -566,6 +566,21 @@ static int weight_limit(player_state *state)
 
 
 /*
+ * Computes weight remaining before burdened.
+ */
+int weight_remaining()
+{
+	int i;
+
+	/* Weight limit based only on strength */
+	i = 60 * adj_str_wgt[p_ptr->state.stat_ind[A_STR]] - p_ptr->total_weight - 1;
+
+	/* Return the result */
+	return (i);
+}
+
+
+/*
  * Calculate the players current "state", taking into account
  * not only race/class intrinsics, but also objects being worn
  * and temporary spell effects.

@@ -21,6 +21,8 @@ Gameplay changes
 
 User interface
 ==============
+#1119 Display burden in the inven term window, and show lbs remaining instead
+      of percent capacity
 
 
 
