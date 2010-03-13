@@ -31,6 +31,7 @@ List of bugs fixed
 #1099 Fixed the description of the Berserker spell
 #1103 Unarmed attacks now allow the player to learn "notice on attack" things
 #1107 Fixed typo bug display green in 16-color GCU mode
+#1122 Fix a display bug with the number of dropped items in the home.
 #1123 Fix an update bug with the monster list subwindow
 #1129 Fix shooting power display in stores
 #1130 Prevent the casting of forgotten spells 
