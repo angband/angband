@@ -641,7 +641,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		gain_exp((lev + (p_ptr->lev / 2)) / p_ptr->lev);
 		p_ptr->notice |= PN_SQUELCH;
 	}
-	else
+	else if (used)
 	{
 		object_flavor_tried(o_ptr);
 	}
