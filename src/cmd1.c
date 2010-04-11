@@ -166,6 +166,7 @@ static void py_pickup_gold(void)
 	object_type *o_ptr;
 
 	int sound_msg;
+	bool verbal = FALSE;
 
 	/* Allocate an array of ordinary gold objects */
 	treasure = C_ZNEW(SV_GOLD_MAX, byte);
@@ -186,6 +187,10 @@ static void py_pickup_gold(void)
 
 		/* Note that we have this kind of treasure */
 		treasure[o_ptr->sval]++;
+
+		/* Remember whether feedback message is in order */
+		if (!squelch_item_ok(o_ptr))
+			verbal = TRUE;
 
 		/* Increment total value */
 		total_gold += (s32b)o_ptr->pval;
@@ -248,7 +253,8 @@ static void py_pickup_gold(void)
 		else                       sound_msg = MSG_MONEY3;
 
 		/* Display the message */
-		message(sound_msg, 0, buf);
+		if (verbal)
+			message(sound_msg, 0, buf);
 
 		/* Add gold to purse */
 		p_ptr->au += total_gold;

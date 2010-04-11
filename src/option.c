@@ -210,7 +210,7 @@ static option_entry options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 73 */
 { "hp_changes_color",    "Player color indicates low hit points",       FALSE }, /* 74 */
 { "hide_squelchable",    "Hide items set as squelchable",               FALSE }, /* 75 */
-{ "squelch_worthless",   "Automatically squelch worthless items",       FALSE }, /* 76 */
+{ "squelch_worthless",   "Squelch worthless item kinds",                FALSE }, /* 76 */
 { "mouse_movement",      "Allow mouse clicks to move the player",       FALSE }, /* 77 */
 { "mouse_buttons",        "Show mouse status line buttons",             FALSE }, /* 78 */
 { "notify_recharge",     "Notify on object recharge",                   FALSE }, /* 79 */

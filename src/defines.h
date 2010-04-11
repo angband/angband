@@ -491,6 +491,12 @@ enum
 	A_MAX
 };
 
+/*
+ * The range of possible indexes into tables based upon stats.
+ * Currently things range from 3 to 18/220 = 40.
+ */
+#define STAT_RANGE 38
+
 
 /*
  * Player sex constants (hard-coded by save-files, arrays, etc)

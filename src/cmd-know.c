@@ -1618,6 +1618,9 @@ static void display_object(int col, int row, bool cursor, int oid)
 	if ((aware && kind_is_squelched_aware(k_ptr)) || 
 		(!aware && kind_is_squelched_unaware(k_ptr)))
 		c_put_str(attr, "Yes", row, 46);
+	else if (aware && OPT(squelch_worthless) && !k_ptr->cost)
+		c_put_str(attr, "Yes*", row, 46);
+
 
 	/* Show autoinscription if around */
 	if (aware && inscrip)

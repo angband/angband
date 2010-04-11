@@ -363,7 +363,7 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 				case TV_SWORD:
 				{
 					/* Known blessed blades are accepted too */
-					if (is_blessed(o_ptr) && object_is_known(o_ptr)) break;
+					if (object_is_known_blessed(o_ptr)) break;
 				}
 
 				default:

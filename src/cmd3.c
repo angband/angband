@@ -220,6 +220,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	pack_overflow();
 
 	/* Recalculate bonuses, torch, mana */
+	p_ptr->notice |= PN_SORT_QUIVER;
 	p_ptr->update |= (PU_BONUS | PU_TORCH | PU_MANA);
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 }

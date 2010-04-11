@@ -595,12 +595,17 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 		 * wielding this item.
 		 */
 		player_state state;
+		int dex_plus_bound;
+		int str_plus_bound;
+
 		object_type inven[INVEN_TOTAL];
 
 		memcpy(inven, inventory, INVEN_TOTAL * sizeof(object_type));
 		inven[INVEN_WIELD] = *o_ptr;
 
 		calc_bonuses(inven, &state, TRUE);
+		dex_plus_bound = STAT_RANGE - state.stat_ind[A_DEX];
+		str_plus_bound = STAT_RANGE - state.stat_ind[A_STR];
 
 		dam = ((o_ptr->ds + 1) * o_ptr->dd * 5);
 
@@ -639,9 +644,9 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 		if (of_has(f, OF_BLOWS)) extra_blows += o_ptr->pval;
 
 		/* Then we check for extra "real" blows */
-		for (dex_plus = 0; dex_plus < 8; dex_plus++)
+		for (dex_plus = 0; dex_plus < dex_plus_bound; dex_plus++)
 		{
-			for (str_plus = 0; str_plus < 8; str_plus++)
+			for (str_plus = 0; str_plus < str_plus_bound; str_plus++)
 		        {
 				state.stat_ind[A_STR] += str_plus;
 				state.stat_ind[A_DEX] += dex_plus;

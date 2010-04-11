@@ -1313,7 +1313,7 @@ D:It increases your armor class.
 N:216:Teleportation
 G:=:d
 I:45:27:2
-W:5:0:2:0
+W:5:0:2:1000
 A:100:5 to 100
 F:TELEPORT | SPEED | EASY_KNOW
 
@@ -1335,14 +1335,14 @@ E:CURE_SERIOUS:10+5d8
 N:219:Escaping
 G:=:d
 I:45:30:4
-W:30:0:2:0
+W:30:0:2:4000
 A:100:15 to 100
 F:AFRAID | SPEED | EASY_KNOW
 
 N:220:the Mouse
 G:=:d
 I:45:31:d4
-W:30:0:2:500
+W:30:0:2:0
 A:100:15 to 100
 P:0:0d0:0:-3d4:0
 F:DEX
@@ -1350,7 +1350,7 @@ F:DEX
 N:221:the Dog
 G:=:d
 I:45:32:-4
-W:0:0:2:600
+W:0:0:2:0
 A:40:10 to 100
 P:0:0d0:0:0:-10
 F:RES_FEAR | STEALTH | EASY_KNOW
@@ -1528,7 +1528,7 @@ F:SEARCH | HIDE_TYPE
 N:247:Teleportation
 G:":d
 I:40:18:0
-W:10:0:3:0
+W:10:0:3:10
 A:100:10 to 100
 F:TELEPORT | EASY_KNOW
 
@@ -1552,7 +1552,7 @@ F:EASY_KNOW
 N:250:Inertia
 G:":d
 I:40:21:-3
-W:15:0:3:1300
+W:15:0:3:0
 A:80:15 to 100
 F:FREE_ACT | SPEED | EASY_KNOW
 
@@ -2049,8 +2049,8 @@ E:CURE_FULL
 
 N:322:*Healing*
 G:!:d
-I:75:13:0
-W:40:0:4:300
+I:75:13:300
+W:40:0:4:1500
 A:35:40 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW
@@ -2363,7 +2363,7 @@ E:DRINK_SALT
 N:363:Dragon Breath
 G:!:d
 I:75:58:0
-W:0:0:4:0
+W:0:0:4:100
 M:100:1d2
 A:10:40 to 100
 F:EASY_KNOW

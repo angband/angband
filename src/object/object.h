@@ -87,7 +87,9 @@ extern s32b object_last_wield;
 
 bool object_is_known(const object_type *o_ptr);
 bool object_is_known_artifact(const object_type *o_ptr);
-bool object_is_not_artifact(const object_type *o_ptr);
+bool object_is_known_cursed(const object_type *o_ptr);
+bool object_is_known_blessed(const object_type *o_ptr);
+bool object_is_known_not_artifact(const object_type *o_ptr);
 bool object_is_not_known_consistently(const object_type *o_ptr);
 bool object_was_worn(const object_type *o_ptr);
 bool object_was_fired(const object_type *o_ptr);
@@ -120,6 +122,7 @@ void object_notice_on_firing(object_type *o_ptr);
 void wieldeds_notice_flag(int flag);
 void wieldeds_notice_on_attack(void);
 void object_repair_knowledge(object_type *o_ptr);
+bool object_FA_would_be_obvious(const object_type *o_ptr);
 obj_pseudo_t object_pseudo(const object_type *o_ptr);
 void sense_inventory(void);
 bool easy_know(const object_type *o_ptr);

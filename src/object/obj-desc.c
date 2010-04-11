@@ -789,26 +789,11 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 
 	bool prefix = mode & ODESC_PREFIX;
 	bool spoil = (mode & ODESC_SPOIL);
-	bool aware = object_flavor_is_aware(o_ptr) ||
-			(o_ptr->ident & IDENT_STORE) || spoil;
 	bool known = object_is_known(o_ptr) ||
 			(o_ptr->ident & IDENT_STORE) || spoil;
 
 	size_t end = 0;
 
-
-	/** Horrible, horrible squelch **/
-
-	/* Hack -- mark-to-squelch worthless items XXX */
-	if (aware && !k_ptr->everseen)
-	{
-		k_ptr->everseen = TRUE;
-		if (OPT(squelch_worthless) && k_ptr->cost == 0)
-		{
-			k_ptr->squelch = TRUE;
-			p_ptr->notice |= PN_SQUELCH;
-		}
-	}
 
 	/* We've seen it at least once now we're aware of it */
 	if (known && o_ptr->name2) e_info[o_ptr->name2].everseen = TRUE;
@@ -817,8 +802,9 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 	/*** Some things get really simple descriptions ***/
 
 	if (o_ptr->tval == TV_GOLD)
-		return strnfmt(buf, max, "%d gold pieces worth of %s",
-				o_ptr->pval, k_name + k_ptr->name);
+		return strnfmt(buf, max, "%d gold pieces worth of %s%s",
+				o_ptr->pval, k_name + k_ptr->name,
+				squelch_item_ok(o_ptr) ? " {squelch}" : "");
 	else if (!o_ptr->tval)
 		return strnfmt(buf, max, "(nothing)");
 

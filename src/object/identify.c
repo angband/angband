@@ -62,9 +62,36 @@ bool object_is_known_artifact(const object_type *o_ptr)
 }
 
 /**
+ * \returns whether the object is known to be cursed
+ */
+bool object_is_known_cursed(const object_type *o_ptr)
+{
+	bitflag f[OF_SIZE];
+
+	object_flags_known(o_ptr, f);
+
+	/* Know whatever curse flags there are to know */
+	flags_mask(f, OF_SIZE, OF_CURSE_MASK, FLAG_END);
+
+	return !of_is_empty(f);
+}
+
+/**
+ * \returns whether the object is known to be blessed
+ */
+bool object_is_known_blessed(const object_type *o_ptr)
+{
+	bitflag f[OF_SIZE];
+
+	object_flags_known(o_ptr, f);
+
+	return (of_has(f, OF_BLESSED)) ? TRUE : FALSE;
+}
+
+/**
  * \returns whether the object is known to not be an artifact
  */
-bool object_is_not_artifact(const object_type *o_ptr)
+bool object_is_known_not_artifact(const object_type *o_ptr)
 {
 	if (o_ptr->ident & IDENT_NOTART)
 		return TRUE;
@@ -141,10 +168,13 @@ bool object_pval_is_visible(const object_type *o_ptr)
 			return TRUE;
 	}
 
-	object_flags_known(o_ptr, f);
+	if (object_was_worn(o_ptr))
+	{
+		object_flags_known(o_ptr, f);
 
-	if (flags_test(f, OF_SIZE, OF_PVAL_MASK, FLAG_END))
-		return TRUE;
+		if (flags_test(f, OF_SIZE, OF_PVAL_MASK, FLAG_END))
+			return TRUE;
+	}
 
 	return FALSE;
 }
@@ -307,7 +337,9 @@ bool object_check_for_ident(object_type *o_ptr)
 	/* We still know all the flags, so we still know if it's an ego */
 	else if (ego_item_p(o_ptr))
 	{
-		object_notice_ego(o_ptr);
+		/* require worn status so you don't learn launcher of accuracy or gloves of slaying before wield */
+		if (object_was_worn(o_ptr))
+			object_notice_ego(o_ptr);
 	}
 
 	return FALSE;
@@ -776,6 +808,10 @@ void object_notice_on_wield(object_type *o_ptr)
 	if (artifact_p(o_ptr))
 		history_add_artifact(o_ptr->name1, object_was_sensed(o_ptr));
 
+	/* special case FA, needed at least for mages wielding gloves */
+	if (object_FA_would_be_obvious(o_ptr))
+		of_on(obvious_mask, OF_FREE_ACT);
+
 	/* Learn about obvious flags */
 	of_union(o_ptr->known_flags, obvious_mask);
 
@@ -842,8 +878,10 @@ void object_notice_on_wield(object_type *o_ptr)
 	if (of_has(f, OF_TELEPATHY))
 		msg_print("Your mind feels strangely sharper!");
 
-	/* learn the ego on any brand or slay */
-	/* XXX Eddie somewhat inconsistent, style is to notice even when property is not present */
+	/* WARNING -- masking f by obvious mask -- this should be at the end of this function */
+	flags_mask(f, OF_SIZE, OF_OBVIOUS_MASK, FLAG_END);
+
+	/* learn the ego on any obvious brand or slay */
 	if (EASY_LEARN && ego_item_p(o_ptr) && obvious &&
 	    flags_test(f, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END))
 		object_notice_ego(o_ptr);
@@ -987,6 +1025,23 @@ void wieldeds_notice_on_attack(void)
 }
 
 
+bool object_FA_would_be_obvious(const object_type *o_ptr)
+{
+	bitflag flags[OF_SIZE];
+	
+	if (!player_has(PF_CUMBER_GLOVE))
+		return FALSE;
+
+	if ((wield_slot(o_ptr) != INVEN_HANDS) || (o_ptr->sval == SV_SET_OF_ALCHEMISTS_GLOVES))
+		return FALSE;
+
+	object_flags(o_ptr, flags);
+	if (of_has(flags, OF_DEX))
+		return FALSE;
+
+	return TRUE;
+}
+
 /*
  * Given an object, return a short identifier which gives some idea of what
  * the item is.
@@ -1000,7 +1055,14 @@ obj_pseudo_t object_pseudo(const object_type *o_ptr)
 	 * not including curses or properties of the kind
 	 */
 	object_flags_known(o_ptr, flags);
-	flags_mask(flags, OF_SIZE, OF_OBVIOUS_MASK, FLAG_END);
+
+	/* MEGA-hack : there needs to be a table of what is obvious in each slot perhaps for each class */
+	/* FA on gloves is obvious to mage casters */
+	if (object_FA_would_be_obvious(o_ptr))
+		flags_mask(flags, OF_SIZE, OF_OBVIOUS_MASK, OF_FREE_ACT, FLAG_END);
+	else
+		flags_mask(flags, OF_SIZE, OF_OBVIOUS_MASK, FLAG_END);
+
 	flags_clear(flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
 	of_diff(flags, k_ptr->flags);
 

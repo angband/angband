@@ -294,13 +294,6 @@ static void calc_mana(void)
 			/* Reduce mana */
 			msp = (3 * msp) / 4;
 		}
-
-		if (!of_has(f, OF_DEX) &&
-		    !(o_ptr->sval == SV_SET_OF_ALCHEMISTS_GLOVES))
-		{
-			/* If no dex bonus and not alchemist's gloves, know whether gloves provide FA */
-			object_notice_flag(o_ptr, OF_FREE_ACT);
-		}
 	}
 
 
@@ -822,14 +815,19 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		/* Save the new value */
 		state->stat_use[i] = use;
 
-		/* Values: 3, 4, ..., 17 */
-		if (use <= 18) ind = (use - 3);
+		/* Values: n/a */
+		if (use <= 3) ind = 0;
+
+		/* Values: 3, 4, ..., 18 */
+		else if (use <= 18) ind = (use - 3);
 
 		/* Ranges: 18/00-18/09, ..., 18/210-18/219 */
 		else if (use <= 18+219) ind = (15 + (use - 18) / 10);
 
 		/* Range: 18/220+ */
 		else ind = (37);
+
+		assert((0 <= ind) && (ind < STAT_RANGE));
 
 		/* Save the new index */
 		state->stat_ind[i] = ind;

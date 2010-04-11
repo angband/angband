@@ -148,6 +148,7 @@ static tval_desc sval_dependent[] =
 	{ TV_LIGHT,			"Lights" },
 	{ TV_FLASK,			"Flasks of oil" },
 	{ TV_DRAG_ARMOR,	"Dragon Mail Armor" },
+	{ TV_GOLD,			"Money" },
 };
 
 byte squelch_level[TYPE_MAX];
@@ -570,6 +571,8 @@ static byte squelch_level_of(const object_type *o_ptr)
 	{
 		if (object_was_worn(o_ptr))
 			value = SQUELCH_EXCELLENT_NO_SPL; /* object would be sensed if it were splendid */
+		else if (object_is_known_not_artifact(o_ptr))
+			value = SQUELCH_ALL;
 		else
 			value = SQUELCH_MAX;
 	}
@@ -621,12 +624,6 @@ bool squelch_item_ok(const object_type *o_ptr)
 	if (artifact_p(o_ptr))
 		return FALSE;
 
-	/* HACK: Don't squelch gold */
-	/* Some prefs seem to have gold set to squelched. Need to figure out where
-	 * that is loaded to so we can disable that and remove this hack. */
-	if (o_ptr->tval == TV_GOLD)
-		return FALSE;
-
 	/* Don't squelch stuff inscribed not to be destroyed (!k) */
 	if (check_for_inscrip(o_ptr, "!k") || check_for_inscrip(o_ptr, "!*"))
 		return FALSE;
@@ -635,10 +632,19 @@ bool squelch_item_ok(const object_type *o_ptr)
 	if (o_ptr->tval == TV_CHEST && o_ptr->pval == 0)
 		return TRUE;
 
+	/* check option for worthless kinds */
+	if (OPT(squelch_worthless) && o_ptr->tval != TV_GOLD)
+	{
+		if (object_flavor_is_aware(o_ptr) && k_ptr->cost == 0)
+			return TRUE;
+		if (object_is_known_cursed(o_ptr))
+			return TRUE;
+	}
+
 	/* Do squelching by kind */
 	if (object_flavor_is_aware(o_ptr) ?
-			kind_is_squelched_aware(k_ptr) :
-			kind_is_squelched_unaware(k_ptr))
+		 kind_is_squelched_aware(k_ptr) :
+		 kind_is_squelched_unaware(k_ptr))
 		return TRUE;
 
 	type = squelch_type_of(o_ptr);
@@ -646,7 +652,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 		return FALSE;
 
 	/* Squelch items known not to be special */
-	if (object_is_not_artifact(o_ptr) && squelch_level[type] == SQUELCH_ALL)
+	if (object_is_known_not_artifact(o_ptr) && squelch_level[type] == SQUELCH_ALL)
 		return TRUE;
 
 	/* Get result based on the feeling and the squelch_level */
@@ -963,19 +969,20 @@ static bool sval_menu(int tval, const char *desc)
 		if (!k_ptr->name) continue;
 		if (k_ptr->tval != tval) continue;
 
-		/* can unaware squelch anything */
-		/* XXX Eddie should it be required that unaware squelched flavors have been seen this game, if so, how to save that info? */
 		if (!k_ptr->aware)
 		{
+			/* can unaware squelch anything */
+			/* XXX Eddie should it be required that unaware squelched flavors have been seen this game, if so, how to save that info? */
+
 			choice[num].idx = i;
 			choice[num].aware = FALSE;
 			num++;
 		}
-
-		/* aware squelch requires everseen */
-		/* do not require awareness for aware squelch, so people can set at game start */
-		if (k_ptr->everseen)
+		else if (k_ptr->everseen || k_ptr->tval == TV_GOLD)
 		{
+			/* aware squelch requires everseen */
+			/* do not require awareness for aware squelch, so people can set at game start */
+
 			choice[num].idx = i;
 			choice[num].aware = TRUE;
 			num++;
@@ -989,22 +996,23 @@ static bool sval_menu(int tval, const char *desc)
 		return FALSE;
 	}
 
-        /* sort by name in squelch menus except for categories of items that are aware from the start */
-        switch(tval)
-        {
-                case TV_LIGHT:
-                case TV_MAGIC_BOOK:
-                case TV_PRAYER_BOOK:
-                case TV_DRAG_ARMOR:
+	/* sort by name in squelch menus except for categories of items that are aware from the start */
+	switch(tval)
+	{
+		case TV_LIGHT:
+		case TV_MAGIC_BOOK:
+		case TV_PRAYER_BOOK:
+		case TV_DRAG_ARMOR:
 		case TV_GOLD:
-                        /* leave sorted by sval */
-                        break;
-                default:
-                        /* sort by name */
-                        ang_sort_comp = ang_sort_comp_hook_squelch_choices;
-                        ang_sort_swap = ang_sort_swap_hook_squelch_choices;
-                        ang_sort((void*)choice, NULL, num);
-        }
+			/* leave sorted by sval */
+			break;
+
+		default:
+			/* sort by name */
+			ang_sort_comp = ang_sort_comp_hook_squelch_choices;
+			ang_sort_swap = ang_sort_swap_hook_squelch_choices;
+			ang_sort((void*)choice, NULL, num);
+	}
 
 
 	/* Save the screen and clear it */
@@ -1241,7 +1249,7 @@ bool squelch_interactive(const object_type *o_ptr)
 			return FALSE;
 	}
 
-	if (object_was_sensed(o_ptr) || object_was_worn(o_ptr))
+	if (object_was_sensed(o_ptr) || object_was_worn(o_ptr) || object_is_known_not_artifact(o_ptr))
 	{
 		byte value = squelch_level_of(o_ptr);
 		int type = squelch_type_of(o_ptr);

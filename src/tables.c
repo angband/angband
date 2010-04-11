@@ -59,7 +59,7 @@ const char hexsym[16] =
 /*
  * Stat Table (INT/WIS) -- Number of 1/100 spells per level
  */
-const int adj_mag_study[] =
+const int adj_mag_study[STAT_RANGE] =
 {
 	  0	/* 3 */,
 	  0	/* 4 */,
@@ -105,7 +105,7 @@ const int adj_mag_study[] =
 /*
  * Stat Table (INT/WIS) -- extra 1/100 mana-points per level
  */
-const int adj_mag_mana[] =
+const int adj_mag_mana[STAT_RANGE] =
 {
 	  0	/* 3 */,
 	 10	/* 4 */,
@@ -151,7 +151,7 @@ const int adj_mag_mana[] =
 /*
  * Stat Table (INT/WIS) -- Minimum failure rate (percentage)
  */
-const byte adj_mag_fail[] =
+const byte adj_mag_fail[STAT_RANGE] =
 {
 	99	/* 3 */,
 	99	/* 4 */,
@@ -197,7 +197,7 @@ const byte adj_mag_fail[] =
 /*
  * Stat Table (INT/WIS) -- failure rate adjustment
  */
-const int adj_mag_stat[] =
+const int adj_mag_stat[STAT_RANGE] =
 {
 	-5	/* 3 */,
 	-4	/* 4 */,
@@ -243,7 +243,7 @@ const int adj_mag_stat[] =
 /*
  * Stat Table (CHR) -- payment percentages
  */
-const byte adj_chr_gold[] =
+const byte adj_chr_gold[STAT_RANGE] =
 {
 	143	/* 3 */,
 	137	/* 4 */,
@@ -289,7 +289,7 @@ const byte adj_chr_gold[] =
 /*
  * Stat Table (INT) -- Magic devices
  */
-const byte adj_int_dev[] =
+const byte adj_int_dev[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -335,7 +335,7 @@ const byte adj_int_dev[] =
 /*
  * Stat Table (WIS) -- Saving throw
  */
-const byte adj_wis_sav[] =
+const byte adj_wis_sav[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -381,7 +381,7 @@ const byte adj_wis_sav[] =
 /*
  * Stat Table (DEX) -- disarming
  */
-const byte adj_dex_dis[] =
+const byte adj_dex_dis[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -427,7 +427,7 @@ const byte adj_dex_dis[] =
 /*
  * Stat Table (INT) -- disarming
  */
-const byte adj_int_dis[] =
+const byte adj_int_dis[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -473,7 +473,7 @@ const byte adj_int_dis[] =
 /*
  * Stat Table (DEX) -- bonus to ac (plus 128)
  */
-const byte adj_dex_ta[] =
+const byte adj_dex_ta[STAT_RANGE] =
 {
 	128 + -4	/* 3 */,
 	128 + -3	/* 4 */,
@@ -519,7 +519,7 @@ const byte adj_dex_ta[] =
 /*
  * Stat Table (STR) -- bonus to dam (plus 128)
  */
-const byte adj_str_td[] =
+const byte adj_str_td[STAT_RANGE] =
 {
 	128 + -2	/* 3 */,
 	128 + -2	/* 4 */,
@@ -565,7 +565,7 @@ const byte adj_str_td[] =
 /*
  * Stat Table (DEX) -- bonus to hit (plus 128)
  */
-const byte adj_dex_th[] =
+const byte adj_dex_th[STAT_RANGE] =
 {
 	128 + -3	/* 3 */,
 	128 + -2	/* 4 */,
@@ -611,7 +611,7 @@ const byte adj_dex_th[] =
 /*
  * Stat Table (STR) -- bonus to hit (plus 128)
  */
-const byte adj_str_th[] =
+const byte adj_str_th[STAT_RANGE] =
 {
 	128 + -3	/* 3 */,
 	128 + -2	/* 4 */,
@@ -657,7 +657,7 @@ const byte adj_str_th[] =
 /*
  * Stat Table (STR) -- weight limit in deca-pounds
  */
-const byte adj_str_wgt[] =
+const byte adj_str_wgt[STAT_RANGE] =
 {
 	5	/* 3 */,
 	6	/* 4 */,
@@ -703,7 +703,7 @@ const byte adj_str_wgt[] =
 /*
  * Stat Table (STR) -- weapon weight limit in pounds
  */
-const byte adj_str_hold[] =
+const byte adj_str_hold[STAT_RANGE] =
 {
 	4	/* 3 */,
 	5	/* 4 */,
@@ -749,7 +749,7 @@ const byte adj_str_hold[] =
 /*
  * Stat Table (STR) -- digging value
  */
-const byte adj_str_dig[] =
+const byte adj_str_dig[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -795,7 +795,7 @@ const byte adj_str_dig[] =
 /*
  * Stat Table (STR) -- help index into the "blow" table
  */
-const byte adj_str_blow[] =
+const byte adj_str_blow[STAT_RANGE] =
 {
 	3	/* 3 */,
 	4	/* 4 */,
@@ -841,7 +841,7 @@ const byte adj_str_blow[] =
 /*
  * Stat Table (DEX) -- index into the "blow" table
  */
-const byte adj_dex_blow[] =
+const byte adj_dex_blow[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -887,7 +887,7 @@ const byte adj_dex_blow[] =
 /*
  * Stat Table (DEX) -- chance of avoiding "theft" and "falling"
  */
-const byte adj_dex_safe[] =
+const byte adj_dex_safe[STAT_RANGE] =
 {
 	0	/* 3 */,
 	1	/* 4 */,
@@ -933,7 +933,7 @@ const byte adj_dex_safe[] =
 /*
  * Stat Table (CON) -- base regeneration rate
  */
-const byte adj_con_fix[] =
+const byte adj_con_fix[STAT_RANGE] =
 {
 	0	/* 3 */,
 	0	/* 4 */,
@@ -979,7 +979,7 @@ const byte adj_con_fix[] =
 /*
  * Stat Table (CON) -- extra 1/100th hitpoints per level
  */
-const int adj_con_mhp[] =
+const int adj_con_mhp[STAT_RANGE] =
 {
 	-250	/* 3 */,
 	-150	/* 4 */,

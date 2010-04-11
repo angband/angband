@@ -15,7 +15,7 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#include "angband.h"
+#include "angband.h" 
 #include "defines.h"
 #include "tvalsval.h"
 #include "effects.h"
@@ -2412,8 +2412,10 @@ void sort_quiver(void)
 	for (i=0; i < QUIVER_SIZE; i++)
 	{
 		k = i;
-		for (j=i + 1; j < QUIVER_SIZE; j++) if (compare_ammo(k, j) > 0) k = j;
-		if (k != i) swap_quiver_slots(i, k);
+		if (!locked[k])
+			for (j = i + 1; j < QUIVER_SIZE; j++)
+				if (!locked[j] && compare_ammo(k, j) > 0)
+					swap_quiver_slots(j, k);
 	}
 }
 
@@ -3704,6 +3706,7 @@ void display_itemlist(void)
 
 	object_type *types[MAX_ITEMLIST];
 	int counts[MAX_ITEMLIST];
+	int dx[MAX_ITEMLIST], dy[MAX_ITEMLIST];
 	unsigned counter = 0;
 
 	int dungeon_hgt = p_ptr->depth == 0 ? TOWN_HGT : DUNGEON_HGT;
@@ -3750,6 +3753,11 @@ void display_itemlist(void)
 					if (object_similar(o_ptr, types[j]))
 					{
 						counts[j] += o_ptr->number;
+						if ((my - p_ptr->py) * (my - p_ptr->py) + (mx - p_ptr->px) * (mx - p_ptr->px) < dy[j] * dy[j] + dx[j] * dx[j])
+						{
+							dy[j] = my - p_ptr->py;
+							dx[j] = mx - p_ptr->px;
+						}
 						break;
 					}
 				}
@@ -3761,14 +3769,22 @@ void display_itemlist(void)
 				{
 					types[counter] = o_ptr;
 					counts[counter] = o_ptr->number;
+					dy[counter] = my - p_ptr->py;
+					dx[counter] = mx - p_ptr->px;
 
 					while (j > 0 && compare_items(types[j - 1], types[j]) > 0)
 					{
 						object_type *tmp_o = types[j - 1];
 						int tmpcount;
+						int tmpdx = dx[j-1];
+						int tmpdy = dy[j-1];
 
 						types[j - 1] = types[j];
 						types[j] = tmp_o;
+						dx[j-1] = dx[j];
+						dx[j] = tmpdx;
+						dy[j-1] = dy[j];
+						dy[j] = tmpdy;
 						tmpcount = counts[j - 1];
 						counts[j - 1] = counts[j];
 						counts[j] = tmpcount;
@@ -3814,9 +3830,13 @@ void display_itemlist(void)
 
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
 		if (counts[i] > 1)
-			strnfmt(o_desc, sizeof(o_desc), "%s (x%d)", o_name, counts[i]);
+			strnfmt(o_desc, sizeof(o_desc), "%s (x%d) %d %c, %d %c", o_name, counts[i],
+				(dy[i] > 0) ? dy[i] : -dy[i], (dy[i] > 0) ? 'S' : 'N',
+				(dx[i] > 0) ? dx[i] : -dx[i], (dx[i] > 0) ? 'E' : 'W');
 		else
-			strnfmt(o_desc, sizeof(o_desc), "%s", o_name);
+			strnfmt(o_desc, sizeof(o_desc), "%s  %d %c %d %c", o_name,
+				(dy[i] > 0) ? dy[i] : -dy[i], (dy[i] > 0) ? 'S' : 'N',
+				(dx[i] > 0) ? dx[i] : -dx[i], (dx[i] > 0) ? 'E' : 'W');
 
 		/* Reset position */
 		cur_x = x;
