@@ -16,6 +16,8 @@ please file a bug at http://trac.rephial.org :)
 
 Gameplay changes
 ================
+#1140 Allow selling unidentified weapons to the temple so long as they are known blessed
+#1140 Make Free Action on gloves obvious to magical casters 
 
 
 
@@ -23,6 +25,8 @@ User interface
 ==============
 #1119 Display burden in the inven term window, and show lbs remaining instead
       of percent capacity
+#1140 Money is type squelchable through the squelch menu (= s o)
+#1140 Add direction/distance to the visible item list ']'
 
 
 
@@ -36,3 +40,10 @@ List of bugs fixed
 #1129 Fix shooting power display in stores
 #1130 Prevent the casting of forgotten spells 
 #1133 Do not mark object flavors {tried} on device activation failure
+#1140 Fix the cost and nutrition on Potions of *Healing*
+#1140 Allow selling of Potions of Dragon Breath
+#1140 Do not display pvals for known flavors before use/ID
+#1140 Fix an issue with the message for addtional str/dex to get extra blows
+#1140 Fix squelch worthless so non-salable items are squelched, salable items
+      are not squelched, and the object knowledge menu indicates worthless
+      items which are squelched by the option with Yes*
