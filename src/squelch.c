@@ -603,11 +603,13 @@ bool kind_is_squelched_unaware(const object_kind *k_ptr)
 void kind_squelch_when_aware(object_kind *k_ptr)
 {
 	k_ptr->squelch |= SQUELCH_IF_AWARE;
+	p_ptr->notice |= PN_SQUELCH;
 }
 
 void kind_squelch_when_unaware(object_kind *k_ptr)
 {
 	k_ptr->squelch |= SQUELCH_IF_UNAWARE;
+	p_ptr->notice |= PN_SQUELCH;
 }
 
 
@@ -1209,7 +1211,6 @@ void do_cmd_options_item(void *unused, cptr title)
 
 	/* Load screen and finish */
 	screen_load();
-	p_ptr->notice |= PN_SQUELCH;
 
 	return;
 }

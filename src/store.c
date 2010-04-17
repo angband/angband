@@ -2102,7 +2102,7 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 	object_notice_everything(i_ptr);
 
 	/* Combine / Reorder the pack (later) */
-	p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
+	p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER | PN_SQUELCH);
 
 	/* The object no longer belongs to the store */
 	i_ptr->ident &= ~(IDENT_STORE);

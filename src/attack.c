@@ -189,15 +189,11 @@ static int critical_norm(int weight, int plus, int dam, const char **crit_msg)
  *
  * \param o_ptr is the object being used to attack
  * \param m_ptr is the monster being attacked
- * \param hit_verb is where a new verb is returned
- * \param is_ranged should be true for ranged attacks
+ * \param best_s_ptr is the best applicable slay_table entry, or NULL if no slay already known
  *
- * \returns attack multiplier
  */
-static int get_brand_mult(object_type *o_ptr, const monster_type *m_ptr,
-		const char **hit_verb, bool is_ranged)
+void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr, const slay_t **best_s_ptr)
 {
-	int mult = 1;
 	const slay_t *s_ptr;
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
@@ -238,20 +234,11 @@ static int get_brand_mult(object_type *o_ptr, const monster_type *m_ptr,
 			/* notice any brand or slay that would affect the monster */
 			object_notice_slay(o_ptr, s_ptr->slay_flag);
 
-			if (mult < s_ptr->mult)
-			{
-				mult = s_ptr->mult;
-
-				/* Set the hit verb appropriately */
-				if (is_ranged)
-					*hit_verb = s_ptr->range_verb;
-				else
-					*hit_verb = s_ptr->melee_verb;
-			}
+			/* compare multipliers to determine best attack, would be more complex for O-style brands */
+			if ((*best_s_ptr == NULL) || ((*best_s_ptr)->mult < s_ptr->mult))
+				*best_s_ptr = s_ptr;
 		}
 	}
-
-	return mult;
 }
 
 
@@ -330,33 +317,22 @@ void py_attack(int y, int x)
 			/* Handle normal weapon */
 			if (o_ptr->k_idx)
 			{
-				int weapon_brand_mult;
-				int other_brand_mult[INVEN_TOTAL];
-				int use_mult = 1;
 				int i;
+				const slay_t *best_s_ptr = NULL;
 
 				hit_verb = "hit";
 
-				/* Get the best multiplier from all slays or
+				/* Get the best attack from all slays or
 				 * brands on all non-launcher equipment */
 				for (i = INVEN_LEFT; i < INVEN_TOTAL; i++)
-				{
-					other_brand_mult[i] = get_brand_mult(
-						&inventory[i], m_ptr,
-						&hit_verb, FALSE);
+					improve_attack_modifier(&inventory[i], m_ptr, &best_s_ptr);
 
-					if (other_brand_mult[i] > use_mult)
-						use_mult = other_brand_mult[i];
-				}
-
-				weapon_brand_mult = get_brand_mult(o_ptr,
-						m_ptr, &hit_verb, FALSE);
-
-				if (weapon_brand_mult > use_mult)
-					use_mult = weapon_brand_mult;
+				improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr);
+				if (best_s_ptr != NULL)
+					hit_verb = best_s_ptr->melee_verb;
 
 				k = damroll(o_ptr->dd, o_ptr->ds);
-				k *= use_mult;
+				k *= (best_s_ptr == NULL) ? 1 : best_s_ptr->mult;
 
 				if (p_ptr->state.impact && (k > 50))
 					do_quake = TRUE;
@@ -627,6 +603,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 			int visible = m_ptr->ml;
 
 			const char *hit_verb = "hits";
+			const slay_t *best_s_ptr = NULL;
 
 			/* Note the collision */
 			hit_body = TRUE;
@@ -634,15 +611,15 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 			/* Did we hit it (penalize distance travelled) */
 			if (test_hit(chance2, r_ptr->ac, m_ptr->ml))
 			{
-				int ammo_mult = get_brand_mult(o_ptr, m_ptr,
-					&hit_verb, TRUE);
-				int shoot_mult = get_brand_mult(j_ptr, m_ptr,
-					&hit_verb, TRUE);
-
 				bool fear = FALSE;
 
 				/* Assume a default death */
 				cptr note_dies = " dies.";
+
+				improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr);
+				improve_attack_modifier(j_ptr, m_ptr, &best_s_ptr);
+				if (best_s_ptr != NULL)
+					hit_verb = best_s_ptr->range_verb;
 
 				/* Some monsters get "destroyed" */
 				if (monster_is_unusual(r_ptr))
@@ -681,7 +658,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 				tdam = damroll(o_ptr->dd, o_ptr->ds);
 				tdam += o_ptr->to_d + j_ptr->to_d;
 				tdam *= p_ptr->state.ammo_mult;
-				tdam *= MAX(ammo_mult, shoot_mult);
+				tdam *= (best_s_ptr == NULL) ? 1 : best_s_ptr->mult;
 				tdam = critical_shot(o_ptr->weight, o_ptr->to_h, tdam);
 
 				object_notice_attack_plusses(o_ptr);
@@ -1030,6 +1007,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 			{
 				const char *hit_verb = "hits";
 				bool fear = FALSE;
+				const slay_t *best_s_ptr = NULL;
 
 				/* Assume a default death */
 				cptr note_dies = " dies.";
@@ -1042,8 +1020,12 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 				}
 
 				/* Apply special damage  - brought forward to fill in hit_verb XXX XXX XXX */
-				tdam *= get_brand_mult(i_ptr, m_ptr,
-						&hit_verb, TRUE);
+				improve_attack_modifier(i_ptr, m_ptr, &best_s_ptr);
+				if (best_s_ptr != NULL)
+				{
+					tdam *= best_s_ptr->mult;
+					hit_verb = best_s_ptr->range_verb;
+				}
 
 				/* Handle unseen monster */
 				if (!visible)
