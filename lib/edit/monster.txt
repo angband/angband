@@ -2372,7 +2372,7 @@ D:A giant snake-like figure with a woman's torso.
 N:193:Light hound
 G:Z:o
 I:110:21:30:30:0
-W:15:1:0:50
+W:15:3:0:50
 B:CLAW:HURT:1d4
 B:CLAW:HURT:1d4
 B:BITE:HURT:1d6
@@ -2386,7 +2386,7 @@ D:A brilliant canine form whose light hurts your eyes, even at this distance.
 N:194:Dark hound
 G:Z:D
 I:110:21:30:30:0
-W:15:1:0:50
+W:15:3:0:50
 B:CLAW:HURT:1d4
 B:CLAW:HURT:1d4
 B:BITE:HURT:1d6
@@ -2503,7 +2503,7 @@ D:A mage of short stature.
 N:203:Clear hound
 G:Z:w
 I:110:21:30:30:0
-W:15:1:0:50
+W:15:3:0:50
 B:CLAW:HURT:1d6
 B:CLAW:HURT:1d6
 B:BITE:HURT:1d8
@@ -2760,7 +2760,7 @@ D:A whirlwind of sentient flame.
 N:221:Fire hound
 G:Z:r
 I:110:35:30:30:0
-W:18:1:0:70
+W:18:3:0:70
 B:CLAW:HURT:3d3
 B:CLAW:HURT:3d3
 B:BITE:FIRE:2d6
@@ -2776,7 +2776,7 @@ D: furnace heat radiating from the creature.
 N:222:Cold hound
 G:Z:w
 I:110:35:30:30:0
-W:18:1:0:70
+W:18:3:0:70
 B:CLAW:HURT:3d3
 B:CLAW:HURT:3d3
 B:BITE:COLD:2d6
@@ -2792,7 +2792,7 @@ D: planes of ice.  Cold radiates from it and freezes your breath in the air.
 N:223:Energy hound
 G:Z:b
 I:110:35:30:30:0
-W:18:1:0:70
+W:18:3:0:70
 B:CLAW:HURT:3d3
 B:CLAW:HURT:3d3
 B:BITE:ELEC:2d6
@@ -3016,7 +3016,7 @@ D:A strange reptilian hybrid with three heads, guarding its hoard.
 N:238:Earth hound
 G:Z:u
 I:110:68:30:30:0
-W:20:1:0:200
+W:20:3:0:200
 B:BITE:HURT:1d8
 B:BITE:HURT:1d8
 B:CLAW:HURT:3d3
@@ -3032,7 +3032,7 @@ D: presents.  Your flesh tingles as it approaches.
 N:239:Air hound
 G:Z:g
 I:110:68:30:30:0
-W:20:1:0:200
+W:20:3:0:200
 B:BITE:POISON:1d8
 B:BITE:POISON:1d8
 B:CLAW:HURT:3d3
@@ -3062,7 +3062,7 @@ D: the strongest armour.
 N:241:Water hound
 G:Z:s
 I:110:68:30:30:0
-W:20:1:0:200
+W:20:3:0:200
 B:BITE:ACID:1d8
 B:BITE:ACID:1d8
 B:CLAW:HURT:3d3
@@ -3816,7 +3816,7 @@ D:A powerful troll form.  Venom drips from its needlelike claws.
 N:294:Vibration hound
 G:Z:y
 I:110:138:30:30:0
-W:27:2:0:250
+W:27:4:0:250
 B:BITE:HURT:2d8
 B:BITE:HURT:2d8
 B:CLAW:HURT:3d3
@@ -3833,7 +3833,7 @@ D: You can feel the earth resonating beneath your feet.
 N:295:Nexus hound
 G:Z:v
 I:110:138:30:30:0
-W:27:2:0:250
+W:27:4:0:250
 B:BITE:HURT:2d8
 B:BITE:HURT:2d8
 B:CLAW:HURT:3d3
@@ -5008,7 +5008,7 @@ D:A human warrior, moving with lightning speed.
 N:365:Gravity hound
 G:Z:W
 I:110:193:30:30:0
-W:35:2:0:500
+W:35:4:0:500
 B:CLAW:HURT:2d8
 B:CLAW:HURT:2d8
 B:BITE:HURT:2d8
@@ -5041,7 +5041,7 @@ D:A disgusting animated blob of destruction.  Flee its gruesome hunger!
 N:367:Inertia hound
 G:Z:W
 I:110:193:30:30:0
-W:35:2:0:500
+W:35:4:0:500
 B:CLAW:HURT:2d8
 B:CLAW:HURT:2d8
 B:BITE:HURT:2d8
@@ -5058,7 +5058,7 @@ D: with deadly menace.  It makes you tired just to look at it.
 N:368:Impact hound
 G:Z:u
 I:110:193:30:30:0
-W:35:2:0:500
+W:35:4:0:500
 B:CLAW:HURT:2d8
 B:CLAW:HURT:2d8
 B:BITE:HURT:2d8
@@ -7283,7 +7283,7 @@ D: mind loses all will to fight as you stand in awe of this mighty being.
 N:485:Nether hound
 G:Z:G
 I:120:330:30:100:0
-W:51:2:0:5000
+W:51:4:0:5000
 B:CLAW:HURT:2d12
 B:CLAW:HURT:2d12
 B:BITE:HURT:2d12
@@ -7300,7 +7300,7 @@ D: darkness in the shape of a large dog.
 N:486:Time hound
 G:Z:B
 I:130:330:30:100:0
-W:51:2:0:5000
+W:51:4:0:5000
 B:CLAW:HURT:2d12
 B:CLAW:HURT:2d12
 B:BITE:HURT:2d12
@@ -7318,7 +7318,7 @@ D: go to bed.
 N:487:Plasma hound
 G:Z:R
 I:120:330:30:100:0
-W:51:2:0:5000
+W:51:4:0:5000
 B:CLAW:HURT:2d12
 B:CLAW:HURT:2d12
 B:BITE:HURT:2d12
@@ -7489,7 +7489,7 @@ D: combat awesome and his form twisted by evil cunning.
 N:495:Ethereal hound
 G:Z:G
 I:120:480:30:100:0
-W:59:3:0:7000
+W:59:5:0:7000
 B:CLAW:HURT:2d12
 B:CLAW:HURT:2d12
 B:BITE:HURT:2d12
@@ -7998,7 +7998,7 @@ D: Run and run quickly, for death incarnate chases behind you!
 N:518:Chaos hound
 G:Z:v
 I:120:930:30:100:0
-W:64:2:0:10000
+W:64:4:0:10000
 B:CLAW:HURT:2d12
 B:CLAW:HURT:2d12
 B:BITE:HURT:2d12
@@ -8274,7 +8274,7 @@ D: starvation.
 N:531:Aether hound
 G:Z:v
 I:120:1230:30:100:0
-W:74:3:0:10000
+W:74:5:0:10000
 B:CLAW:HURT:3d12
 B:CLAW:HURT:3d12
 B:BITE:HURT:3d12
@@ -9930,7 +9930,7 @@ D:Once a powerful ruler, now an even more powerful undead menace.
 N:616:Multi-hued hound
 G:Z:v
 I:110:220:25:40:0
-W:43:5:0:600
+W:43:6:0:600
 B:CLAW:HURT:2d8
 B:CLAW:HURT:2d8
 B:BITE:HURT:4d4
