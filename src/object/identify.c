@@ -834,8 +834,8 @@ void object_notice_on_wield(object_type *o_ptr)
 		if (EASY_LEARN && obvious)
 			object_flavor_aware(o_ptr);
 
-		/* Learn all flags on any aware jewelry */
-		if (object_flavor_is_aware(o_ptr))
+		/* Learn all flags on any aware non-artifact jewelry */
+		if (object_flavor_is_aware(o_ptr) && !artifact_p(o_ptr))
 			object_know_all_flags(o_ptr);
 	}
 

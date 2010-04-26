@@ -233,6 +233,9 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 
 	bool pluralise = (mode & ODESC_PLURAL) ? TRUE : FALSE;
 
+	if (aware && !k_ptr->everseen)
+		k_ptr->everseen = TRUE;
+
 	if (o_ptr->number > 1)
 		pluralise = TRUE;
 	if (mode & ODESC_SINGULAR)

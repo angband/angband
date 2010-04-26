@@ -586,15 +586,14 @@ static byte squelch_level_of(const object_type *o_ptr)
 void kind_squelch_clear(object_kind *k_ptr)
 {
 	k_ptr->squelch = 0;
+	p_ptr->notice |= PN_SQUELCH;
 }
 
-/* XXX Eddie should use this consistently throughout file */
 bool kind_is_squelched_aware(const object_kind *k_ptr)
 {
 	return (k_ptr->squelch & SQUELCH_IF_AWARE) ? TRUE : FALSE;
 }
 
-/* XXX Eddie should use this consistently throughout file */
 bool kind_is_squelched_unaware(const object_kind *k_ptr)
 {
 	return (k_ptr->squelch & SQUELCH_IF_UNAWARE) ? TRUE : FALSE;
@@ -935,6 +934,7 @@ static bool sval_action(char cmd, void *db, int oid)
 		else
 			k_info[idx].squelch ^= SQUELCH_IF_UNAWARE;
 
+		p_ptr->notice |= PN_SQUELCH;
 		return TRUE;
 	}
 
@@ -1211,6 +1211,7 @@ void do_cmd_options_item(void *unused, cptr title)
 
 	/* Load screen and finish */
 	screen_load();
+	p_ptr->notice |= PN_SQUELCH;
 
 	return;
 }
