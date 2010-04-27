@@ -980,7 +980,8 @@ static bool sval_menu(int tval, const char *desc)
 			choice[num].aware = FALSE;
 			num++;
 		}
-		else if (k_ptr->everseen || k_ptr->tval == TV_GOLD)
+
+		if (k_ptr->everseen || k_ptr->tval == TV_GOLD)
 		{
 			/* aware squelch requires everseen */
 			/* do not require awareness for aware squelch, so people can set at game start */
