@@ -1393,8 +1393,9 @@ static void dungeon(void)
 	/* Announce (or repeat) the feeling */
 	if (p_ptr->depth) do_cmd_feeling();
 
-	/* Player gets to go first */
-	p_ptr->energy = 100;
+	/* Give player minimum energy to start a new level, but do not reduce higher value from savefile for level in progress */
+	if (p_ptr->energy < INITIAL_DUNGEON_ENERGY)
+		p_ptr->energy = INITIAL_DUNGEON_ENERGY;
 
 
 	/*** Process this dungeon level ***/

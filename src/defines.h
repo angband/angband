@@ -135,6 +135,9 @@
 
 
 
+/* The fixed amount of energy a player should have at the start of a new level */
+#define INITIAL_DUNGEON_ENERGY 100
+
 /*
  * Maximum number of player "sex" types (see "table.c", etc)
  */
