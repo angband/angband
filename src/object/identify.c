@@ -517,7 +517,12 @@ void object_notice_ego(object_type *o_ptr)
 	of_union(o_ptr->known_flags, learned_flags);
 
 	if (object_add_ident_flags(o_ptr, IDENT_NAME))
+	{
+		/* if you know the ego, you know which it is of excellent or splendid */
+		object_notice_sensing(o_ptr);
+
 		object_check_for_ident(o_ptr);
+	}
 }
 
 
