@@ -2002,28 +2002,26 @@ static void add_high_resist(artifact_type *a_ptr)
 
 static void add_slay(artifact_type *a_ptr, bool brand)
 {
-	int x;
+	/* The last slay entry is a NULL slay_t */
+	int size = num_slays() - 1;
 	int count = 0;
 	const slay_t *s_ptr;
 
-	while (0 && count < MAX_TRIES)
+	for(count = 0; count < MAX_TRIES; count++)
 	{
-		x = randint0(num_slays());
-		s_ptr = &slay_table[x];
-
+		s_ptr = &slay_table[randint0(size)];
 		if (brand && s_ptr->brand && !of_has(a_ptr->flags, s_ptr->slay_flag))
 		{
 			of_on(a_ptr->flags, s_ptr->slay_flag);
 			LOG_PRINT1("Adding brand: %s\n", s_ptr->brand);
 			return;
 		}
-		else if (!brand && s_ptr->brand && !of_has(a_ptr->flags, s_ptr->slay_flag))
+		if (!brand && !s_ptr->brand && !of_has(a_ptr->flags, s_ptr->slay_flag))
 		{
 			of_on(a_ptr->flags, s_ptr->slay_flag);
 			LOG_PRINT1("Adding slay: %s\n", s_ptr->desc);
 			return;
 		}
-		count++;
 	}
 }
 
