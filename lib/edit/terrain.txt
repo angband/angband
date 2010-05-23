@@ -202,7 +202,7 @@ E:TRAP_PIT_POISON
 # 0x14 --> visible trap -- rune -- summon
 
 N:20:strange rune
-G:^:o
+G:^:B
 P:20
 F:PWALK | PPASS | MWALK | MPASS | LOOK | TRAP
 E:TRAP_RUNE_SUMMON
