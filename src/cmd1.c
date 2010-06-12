@@ -61,12 +61,6 @@ bool search(bool verbose)
 		return FALSE;
 	}
 
-	if (chance >= 100)
-	{
-		/* Repeat is unnecessary */
-		disturb(0, 0);
-	}
-
 	/* Search the nearby grids, which are always in bounds */
 	for (y = (py - 1); y <= (py + 1); y++)
 	{
