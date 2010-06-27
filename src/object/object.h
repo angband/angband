@@ -38,13 +38,13 @@ typedef enum
 typedef enum
 {
 	OLIST_NONE   = 0x00,   /* No options */
-   OLIST_WINDOW = 0x01,   /* Display list in a sub-term (left-align) */
-   OLIST_QUIVER = 0x02,   /* Display quiver lines */
-   OLIST_GOLD   = 0x04,   /* Include gold in the list */
+   	OLIST_WINDOW = 0x01,   /* Display list in a sub-term (left-align) */
+   	OLIST_QUIVER = 0x02,   /* Display quiver lines */
+   	OLIST_GOLD   = 0x04,   /* Include gold in the list */
 	OLIST_WEIGHT = 0x08,   /* Show item weight */
 	OLIST_PRICE  = 0x10,   /* Show item price */
 	OLIST_FAIL   = 0x20    /* Show device failure */
-	
+
 } olist_detail_t;
 
 
@@ -128,6 +128,7 @@ void sense_inventory(void);
 bool easy_know(const object_type *o_ptr);
 bool object_check_for_ident(object_type *o_ptr);
 bool object_name_is_visible(const object_type *o_ptr);
+void object_know_all_flags(object_type *o_ptr);
 
 /* obj-desc.c */
 void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know);

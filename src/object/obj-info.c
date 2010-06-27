@@ -603,6 +603,8 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 		memcpy(inven, inventory, INVEN_TOTAL * sizeof(object_type));
 		inven[INVEN_WIELD] = *o_ptr;
 
+		if (full) object_know_all_flags(&inven[INVEN_WIELD]);
+
 		calc_bonuses(inven, &state, TRUE);
 		dex_plus_bound = STAT_RANGE - state.stat_ind[A_DEX];
 		str_plus_bound = STAT_RANGE - state.stat_ind[A_STR];
