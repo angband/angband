@@ -1263,11 +1263,11 @@ int rd_stores(u32b version)
 				(i_ptr->k_idx))
 			{
 				int k = st_ptr->stock_num++;
-				
+
 				/* Accept the item */
 				object_copy(&st_ptr->stock[k], i_ptr);
 			}
-		}	
+		}
 	}
 
 	return 0;
@@ -1314,7 +1314,7 @@ int rd_dungeon(u32b version)
 
 	/* Header info */
 	rd_s16b(&depth);
-	rd_u16b(&tmp16u);
+	rd_u16b(&daycount);
 	rd_s16b(&py);
 	rd_s16b(&px);
 	rd_s16b(&ymax);
@@ -1442,16 +1442,16 @@ int rd_dungeon(u32b version)
 	}
 
 	/*** Success ***/
-	
+
 	/* The dungeon is ready */
 	character_dungeon = TRUE;
-	
+
 #if 0
 	/* Regenerate town in old versions */
 	if (p_ptr->depth == 0)
 		character_dungeon = FALSE;
 #endif
-	
+
 	return 0;
 }
 

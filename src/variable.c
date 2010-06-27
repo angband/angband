@@ -883,3 +883,8 @@ u16b inscriptions_count = 0;
 /* Delay in centiseconds before moving to allow another keypress */
 /* Zero means normal instant movement. */
 u16b lazymove_delay = 0;
+
+
+/* Number of days passed on the current dungeon trip -
+  - used for determining store updates on return to town */
+u16b daycount = 0;

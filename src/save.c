@@ -196,17 +196,17 @@ void wr_messages(void)
 {
 	s16b i;
 	u16b num;
-	
+
 	num = messages_num();
 	if (num > 80) num = 80;
 	wr_u16b(num);
-	
+
 	/* Dump the messages (oldest first!) */
 	for (i = num - 1; i >= 0; i--)
 	{
 		wr_string(message_str(i));
 		wr_u16b(message_type(i));
-	}	
+	}
 }
 
 
@@ -214,35 +214,35 @@ void wr_monster_memory(void)
 {
 	size_t i;
 	int r_idx;
-	
+
 	wr_u16b(z_info->r_max);
 	for (r_idx = 0; r_idx < z_info->r_max; r_idx++)
 	{
 		monster_race *r_ptr = &r_info[r_idx];
 		monster_lore *l_ptr = &l_list[r_idx];
-		
+
 		/* Count sights/deaths/kills */
 		wr_s16b(l_ptr->sights);
 		wr_s16b(l_ptr->deaths);
 		wr_s16b(l_ptr->pkills);
 		wr_s16b(l_ptr->tkills);
-		
+
 		/* Count wakes and ignores */
 		wr_byte(l_ptr->wake);
 		wr_byte(l_ptr->ignore);
-		
+
 		/* Count drops */
 		wr_byte(l_ptr->drop_gold);
 		wr_byte(l_ptr->drop_item);
-		
+
 		/* Count spells */
 		wr_byte(l_ptr->cast_innate);
 		wr_byte(l_ptr->cast_spell);
-		
+
 		/* Count blows of each type */
 		for (i = 0; i < MONSTER_BLOW_MAX; i++)
 			wr_byte(l_ptr->blows[i]);
-		
+
 		/* Memorize flags */
 
 		/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
@@ -254,14 +254,14 @@ void wr_monster_memory(void)
 		for (i = 0; i < 12 && i < RSF_SIZE; i++)
 			wr_byte(l_ptr->spell_flags[i]);
 		if (i < 12) pad_bytes(12 - i);
-		
+
 		/* Monster limit per level */
 		wr_byte(r_ptr->max_num);
-		
+
 		/* XXX */
 		wr_byte(0);
 		wr_byte(0);
-		wr_byte(0);		
+		wr_byte(0);
 	}
 }
 
@@ -269,13 +269,13 @@ void wr_monster_memory(void)
 void wr_object_memory(void)
 {
 	int k_idx;
-	
+
 	wr_u16b(z_info->k_max);
 	for (k_idx = 0; k_idx < z_info->k_max; k_idx++)
 	{
 		byte tmp8u = 0;
 		object_kind *k_ptr = &k_info[k_idx];
-		
+
 		if (k_ptr->aware) tmp8u |= 0x01;
 		if (k_ptr->tried) tmp8u |= 0x02;
 		if (kind_is_squelched_aware(k_ptr)) tmp8u |= 0x04;
@@ -291,7 +291,7 @@ void wr_quests(void)
 {
 	int i;
 	u16b tmp16u;
-	
+
 	/* Hack -- Dump the quests */
 	tmp16u = MAX_Q_IDX;
 	wr_u16b(tmp16u);
@@ -309,7 +309,7 @@ void wr_artifacts(void)
 {
 	int i;
 	u16b tmp16u;
-	
+
 	/* Hack -- Dump the artifacts */
 	tmp16u = z_info->a_max;
 	wr_u16b(tmp16u);
@@ -327,59 +327,59 @@ void wr_artifacts(void)
 void wr_player(void)
 {
 	int i;
-	
+
 	wr_string(op_ptr->full_name);
-	
+
 	wr_string(p_ptr->died_from);
-	
+
 	wr_string(p_ptr->history);
-	
+
 	/* Race/Class/Gender/Spells */
 	wr_byte(p_ptr->prace);
 	wr_byte(p_ptr->pclass);
 	wr_byte(p_ptr->psex);
 	wr_byte(op_ptr->name_suffix);
-	
+
 	wr_byte(p_ptr->hitdie);
 	wr_byte(p_ptr->expfact);
-	
+
 	wr_s16b(p_ptr->age);
 	wr_s16b(p_ptr->ht);
 	wr_s16b(p_ptr->wt);
-	
+
 	/* Dump the stats (maximum and current and birth) */
 	for (i = 0; i < A_MAX; ++i) wr_s16b(p_ptr->stat_max[i]);
 	for (i = 0; i < A_MAX; ++i) wr_s16b(p_ptr->stat_cur[i]);
 	for (i = 0; i < A_MAX; ++i) wr_s16b(p_ptr->stat_birth[i]);
-	
+
 	wr_s16b(p_ptr->ht_birth);
 	wr_s16b(p_ptr->wt_birth);
 	wr_s16b(p_ptr->sc_birth);
 	wr_u32b(p_ptr->au_birth);
-	
+
 	/* Padding */
 	wr_u32b(0);
-	
+
 	wr_u32b(p_ptr->au);
-	
-	
+
+
 	wr_u32b(p_ptr->max_exp);
 	wr_u32b(p_ptr->exp);
 	wr_u16b(p_ptr->exp_frac);
 	wr_s16b(p_ptr->lev);
-	
+
 	wr_s16b(p_ptr->mhp);
 	wr_s16b(p_ptr->chp);
 	wr_u16b(p_ptr->chp_frac);
-	
+
 	wr_s16b(p_ptr->msp);
 	wr_s16b(p_ptr->csp);
 	wr_u16b(p_ptr->csp_frac);
-	
+
 	/* Max Player and Dungeon Levels */
 	wr_s16b(p_ptr->max_lev);
 	wr_s16b(p_ptr->max_depth);
-	
+
 	/* More info */
 	wr_s16b(0);	/* oops */
 	wr_s16b(0);	/* oops */
@@ -387,17 +387,17 @@ void wr_player(void)
 	wr_s16b(0);	/* oops */
 	wr_s16b(p_ptr->sc);
 	wr_s16b(0);	/* oops */
-	
+
 	wr_s16b(p_ptr->food);
 	wr_s16b(p_ptr->energy);
 	wr_s16b(p_ptr->word_recall);
 	wr_s16b(p_ptr->state.see_infra);
 	wr_byte(p_ptr->confusing);
 	wr_byte(p_ptr->searching);
-	
+
 	/* Find the number of timed effects */
 	wr_byte(TMD_MAX);
-	
+
 	/* Read all the effects, in a loop */
 	for (i = 0; i < TMD_MAX; i++)
 		wr_s16b(p_ptr->timed[i]);
@@ -406,7 +406,7 @@ void wr_player(void)
 	wr_u32b(p_ptr->player_turn);
 	/* # of turns spent resting */
 	wr_u32b(p_ptr->resting_turn);
-	
+
 	/* Future use */
 	for (i = 0; i < 8; i++) wr_u32b(0L);
 }
@@ -415,33 +415,33 @@ void wr_player(void)
 void wr_squelch(void)
 {
 	size_t i;
-	
+
 	/* Write number of squelch bytes */
 	wr_byte(squelch_size);
 	for (i = 0; i < squelch_size; i++)
 		wr_byte(squelch_level[i]);
-	
+
 	/* Write ego-item squelch bits */
 	wr_u16b(z_info->e_max);
 	for (i = 0; i < z_info->e_max; i++)
 	{
 		byte flags = 0;
-		
+
 		/* Figure out and write the everseen flag */
 		if (e_info[i].everseen) flags |= 0x02;
 		wr_byte(flags);
 	}
-	
+
 	/* Write the current number of auto-inscriptions */
 	wr_u16b(inscriptions_count);
-	
+
 	/* Write the autoinscriptions array */
 	for (i = 0; i < inscriptions_count; i++)
 	{
 		wr_s16b(inscriptions[i].kind_idx);
 		wr_string(quark_str(inscriptions[i].inscription_idx));
 	}
-	
+
 	return;
 }
 
@@ -451,39 +451,39 @@ void wr_misc(void)
 
 	/* Random artifact version */
 	wr_u32b(RANDART_VERSION);
-	
+
 	/* Random artifact seed */
 	wr_u32b(seed_randart);
-	
-	
+
+
 	/* XXX Ignore some flags */
 	wr_u32b(0L);
 	wr_u32b(0L);
 	wr_u32b(0L);
-	
-	
+
+
 	/* Write the "object seeds" */
 	wr_u32b(seed_flavor);
 	wr_u32b(seed_town);
-	
-	
+
+
 	/* Special stuff */
 	wr_u16b(p_ptr->panic_save);
 	wr_u16b(p_ptr->total_winner);
 	wr_u16b(p_ptr->noscore);
-	
-	
+
+
 	/* Write death */
 	wr_byte(p_ptr->is_dead);
-	
+
 	/* Write feeling */
 	wr_byte(feeling);
-	
+
 	/* Turn of last "feeling" */
 	wr_s32b(old_turn);
-	
+
 	/* Current turn */
-	wr_s32b(turn);	
+	wr_s32b(turn);
 }
 
 
@@ -498,14 +498,14 @@ void wr_player_hp(void)
 
 
 void wr_player_spells(void)
-{	
+{
 	int i;
 
 	wr_u16b(PY_MAX_SPELLS);
 
 	for (i = 0; i < PY_MAX_SPELLS; i++)
 		wr_byte(p_ptr->spell_flags[i]);
-	
+
 	for (i = 0; i < PY_MAX_SPELLS; i++)
 		wr_byte(p_ptr->spell_order[i]);
 }
@@ -518,11 +518,11 @@ void wr_randarts(void)
 {
 	size_t i, j;
 
-	if (!OPT(adult_randarts)) 
+	if (!OPT(adult_randarts))
 		return;
 
 	wr_u16b(z_info->a_max);
-	
+
 	for (i = 0; i < z_info->a_max; i++)
 	{
 		artifact_type *a_ptr = &a_info[i];
@@ -573,14 +573,14 @@ void wr_inventory(void)
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
-		
+
 		/* Dump index */
 		wr_u16b((u16b)i);
-		
+
 		/* Dump object */
 		wr_item(o_ptr);
 	}
-	
+
 	/* Add a sentinel */
 	wr_u16b(0xFFFF);
 }
@@ -589,27 +589,27 @@ void wr_inventory(void)
 void wr_stores(void)
 {
 	int i;
-	
+
 	wr_u16b(MAX_STORES);
 	for (i = 0; i < MAX_STORES; i++)
 	{
 		const store_type *st_ptr = &store[i];
 		int j;
-		
+
 		/* XXX Old values */
 		wr_u32b(0L);
 		wr_s16b(0);
-		
+
 		/* Save the current owner */
 		wr_byte(st_ptr->owner);
-		
+
 		/* Save the stock size */
 		wr_byte(st_ptr->stock_num);
-		
+
 		/* XXX Old values */
 		wr_s16b(0);
 		wr_s16b(0);
-		
+
 		/* Save the stock */
 		for (j = 0; j < st_ptr->stock_num; j++)
 			wr_item(&st_ptr->stock[j]);
@@ -644,7 +644,7 @@ void wr_dungeon(void)
 
 	/* Dungeon specific info follows */
 	wr_u16b(p_ptr->depth);
-	wr_u16b(0);
+	wr_u16b(daycount);
 	wr_u16b(p_ptr->py);
 	wr_u16b(p_ptr->px);
 	wr_u16b(DUNGEON_HGT);

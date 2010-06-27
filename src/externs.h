@@ -227,6 +227,8 @@ extern u16b inscriptions_count;
 
 extern flag_cache *slay_cache;
 
+extern u16b daycount;
+
 /* history.c */
 extern history_info *history_list;
 

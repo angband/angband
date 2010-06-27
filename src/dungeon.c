@@ -28,7 +28,47 @@ void dungeon_change_level(int dlev)
 {
 	/* New depth */
 	p_ptr->depth = dlev;
-	
+
+	/* If we're returning to town, update the store contents
+	   according to how long we've been away */
+	if (!dlev && daycount)
+	{
+		if (OPT(cheat_xtra)) msg_print("Updating Shops...");
+		while (daycount--)
+		{
+			int n;
+
+			/* Maintain each shop (except home) */
+			for (n = 0; n < MAX_STORES; n++)
+			{
+				/* Skip the home */
+				if (n == STORE_HOME) continue;
+
+				/* Maintain */
+				store_maint(n);
+			}
+
+			/* Sometimes, shuffle the shop-keepers */
+			if (one_in_(STORE_SHUFFLE))
+			{
+				/* Message */
+				if (OPT(cheat_xtra)) msg_print("Shuffling a Shopkeeper...");
+
+				/* Pick a random shop (except home) */
+				while (1)
+				{
+					n = randint0(MAX_STORES);
+					if (n != STORE_HOME) break;
+				}
+
+				/* Shuffle it */
+				store_shuffle(n);
+			}
+		}
+		daycount = 0;
+		if (OPT(cheat_xtra)) msg_print("Done.");
+	}
+
 	/* Leaving */
 	p_ptr->leaving = TRUE;
 
@@ -376,13 +416,13 @@ static void play_ambient_sound(void)
 	}
 
 	/* Dungeon level 61-80 */
-	else if (p_ptr->depth <= 80) 
+	else if (p_ptr->depth <= 80)
 	{
 		sound(MSG_AMBIENT_DNG4);
 	}
 
 	/* Dungeon level 80- */
-	else  
+	else
 	{
 		sound(MSG_AMBIENT_DNG5);
 	}
@@ -480,46 +520,10 @@ static void process_world(void)
 	/* While in the dungeon */
 	else
 	{
-		/*** Update the Stores ***/
-
-		/* Update the stores once a day (while in dungeon) */
-		if (!(turn % (10L * STORE_TURNS)))
-		{
-			int n;
-
-			/* Message */
-			if (OPT(cheat_xtra)) msg_print("Updating Shops...");
-
-			/* Maintain each shop (except home) */
-			for (n = 0; n < MAX_STORES; n++)
-			{
-				/* Skip the home */
-				if (n == STORE_HOME) continue;
-
-				/* Maintain */
-				store_maint(n);
-			}
-
-			/* Sometimes, shuffle the shop-keepers */
-			if (one_in_(STORE_SHUFFLE))
-			{
-				/* Message */
-				if (OPT(cheat_xtra)) msg_print("Shuffling a Shopkeeper...");
-
-				/* Pick a random shop (except home) */
-				while (1)
-				{
-					n = randint0(MAX_STORES);
-					if (n != STORE_HOME) break;
-				}
-
-				/* Shuffle it */
-				store_shuffle(n);
-			}
-
-			/* Message */
-			if (OPT(cheat_xtra)) msg_print("Done.");
-		}
+		/* Update the stores once a day (while in the dungeon).
+		   The changes are not actually made until return to town,
+		   to avoid giving details away in the knowledge menu. */
+		if (!(turn % (10L * STORE_TURNS))) daycount++;
 	}
 
 
