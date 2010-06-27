@@ -1759,7 +1759,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_DARK_WEAK:
 		case GF_DARK:
 		{
-			if (p_ptr->depth != 0 && !is_daytime())
+			if (p_ptr->depth != 0 || !is_daytime())
 			{
 				/* Turn off the light */
 				cave_info[y][x] &= ~(CAVE_GLOW);
