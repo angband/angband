@@ -175,7 +175,7 @@ bool set_timed(int idx, int v, bool notify)
 			message(effect->msg, 0, effect->on_decrease);
 
 		/* Incrementing */
-		else if (v > p_ptr->timed[idx] && effect->on_decrease)
+		else if (v > p_ptr->timed[idx] && effect->on_increase)
 			message(effect->msg, 0, effect->on_increase);
 	}
 
