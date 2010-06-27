@@ -4387,27 +4387,6 @@ static errr emit_desc(ang_file *fp, cptr intro_text, cptr text)
 	return (0);
 }
 
-
-static char color_attr_to_char[] =
-{
-		'd',
-		'w',
-		's',
-		'o',
-		'r',
-		'g',
-		'b',
-		'u',
-		'D',
-		'W',
-		'v',
-		'y',
-		'R',
-		'G',
-		'B',
-		'U'
-};
-
 /*
  * Emit the "r_info" array into an ascii "template" file
  */
@@ -4423,7 +4402,7 @@ errr emit_r_info_index(ang_file *fp, header *head, int i)
 	file_putf(fp, "N:%d:%s\n", i,head->name_ptr + r_ptr->name);
 
 	/* Output 'G' for "Graphics" (one line only) */
-	file_putf(fp, "G:%c:%c\n",r_ptr->d_char,color_attr_to_char[r_ptr->d_attr]);
+	file_putf(fp, "G:%c:%c\n",r_ptr->d_char,color_table[r_ptr->d_attr].index_char);
 
 	/* Output 'I' for "Info" (one line only) */
 	file_putf(fp, "I:%d:%d:%d:%d:%d\n",r_ptr->speed,r_ptr->avg_hp,r_ptr->aaf,r_ptr->ac,r_ptr->sleep);
