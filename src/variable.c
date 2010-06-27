@@ -576,6 +576,11 @@ quest *q_list;
 store_type *store;
 
 /*
+ * Flag to override which store is selected if in a knowledge menu
+ */
+int store_knowledge = STORE_NONE;
+
+/*
  * Array[RANDNAME_NUM_TYPES][num_names] of random names
  */
 cptr** name_sections;

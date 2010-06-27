@@ -419,11 +419,15 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 }
 
 
-#define STORE_NONE -1
-
 /* Get the current store number, or STORE_NONE if not in a store */
 static int current_store()
 {
+	/* If we're displaying store knowledge whilst not in a store,
+	 * override the value returned
+	 */
+	if (store_knowledge != STORE_NONE)
+		return store_knowledge;
+
 	if ((cave_feat[p_ptr->py][p_ptr->px] >= FEAT_SHOP_HEAD) &&
 		(cave_feat[p_ptr->py][p_ptr->px] <= FEAT_SHOP_TAIL))
 		return (cave_feat[p_ptr->py][p_ptr->px] - FEAT_SHOP_HEAD);
@@ -1828,22 +1832,39 @@ static void store_display_help(void)
 	else
 		text_out_c(TERM_L_GREEN, "l");
 
-	text_out("' examines and '");
-	text_out_c(TERM_L_GREEN, "p");
+	text_out("' examines");
+	if (store_knowledge == STORE_NONE)
+	{
+		text_out(" and '");
+		text_out_c(TERM_L_GREEN, "p");
 
-	if (current_store() == STORE_HOME) text_out("' picks up");
-	else text_out("' purchases");
-
+		if (current_store() == STORE_HOME) text_out("' picks up");
+		else text_out("' purchases");
+	}
 	text_out(" the selected item. '");
 
-	text_out_c(TERM_L_GREEN, "d");
-	if (current_store() == STORE_HOME) text_out("' drops");
-	else text_out("' sells");
-
+	if (store_knowledge == STORE_NONE)
+	{
+		text_out_c(TERM_L_GREEN, "d");
+		if (current_store() == STORE_HOME) text_out("' drops");
+		else text_out("' sells");
+	}
+	else
+	{
+		text_out_c(TERM_L_GREEN, "I");
+		text_out("' inspects");
+	}
 	text_out(" an item from your inventory. ");
 
 	text_out_c(TERM_L_GREEN, "ESC");
-	text_out(" exits the building.");
+	if (store_knowledge == STORE_NONE)
+	{
+		text_out(" exits the building.");
+	}
+	else
+	{
+		text_out(" exits this screen.");
+	}
 
 	text_out_indent = 0;
 }
@@ -3019,6 +3040,110 @@ static bool store_process_command(char cmd, void *db, int oid)
 	return command_processed;
 }
 
+/*
+ * Display contents of a store from knowledge menu
+ *
+ * The only allowed actions are 'I' to inspect an item
+ */
+void do_cmd_store_knowledge(void)
+{
+	bool leave = FALSE;
+
+	static region items_region = { 1, 4, -1, -1 };
+	static const menu_iter store_menu = { NULL, NULL, store_display_entry, store_process_command };
+	const menu_iter *cur_menu = &store_menu;
+
+	menu_type menu;
+	ui_event_data evt = EVENT_EMPTY;
+	int cursor = 0;
+
+	store_type *st_ptr = &store[current_store()];
+
+	/* Wipe the menu and set it up */
+	WIPE(&menu, menu);
+	menu.flags = MN_DBL_TAP;
+
+	/* Calculate the positions of things and redraw */
+	store_flags = STORE_INIT_CHANGE;
+	store_display_recalc();
+	store_redraw();
+
+	/* Loop */
+	while (!leave)
+	{
+		/* As many rows in the menus as there are items in the store */
+		menu.count = st_ptr->stock_num;
+
+		/* Roguelike */
+		if (OPT(rogue_like_commands))
+		{
+			/* These two can't intersect! */
+			menu.cmd_keys = "\n\r?Ieilx\x8B\x8C";
+			menu.selections = "abcdfghjkmnopqrstuvwyz134567";
+		}
+
+		/* Original */
+		else
+		{
+			/* These two can't intersect! */
+			menu.cmd_keys = "\n\r?Ieil\x8B\x8C";
+			menu.selections = "abcdfghjkmnopqrstuvwxyz13456";
+		}
+
+		/* Keep the cursor in range of the stock */
+		if (cursor < 0 || cursor >= menu.count)
+			cursor = menu.count - 1;
+
+		items_region.page_rows = scr_places_y[LOC_MORE] - scr_places_y[LOC_ITEMS_START];
+
+		/* Init the menu structure */
+		menu_init(&menu, MN_SKIN_SCROLL, cur_menu, &items_region);
+
+		if (menu.count > items_region.page_rows)
+			menu.prompt = "  -more-";
+		else
+			menu.prompt = NULL;
+
+		menu_layout(&menu, &menu.boundary);
+
+		evt.type = EVT_MOVE;
+
+		/* Get a selection/action */
+		while (evt.type == EVT_MOVE)
+		{
+			evt = menu_select(&menu, &cursor, EVT_MOVE);
+			if (store_flags & STORE_KEEP_PROMPT)
+			{
+				/* Unset so that the prompt is cleared next time */
+				store_flags &= ~STORE_KEEP_PROMPT;
+			}
+			else
+			{
+				/* Clear the prompt */
+				prt("", 0, 0);
+			}
+		}
+
+		if (evt.key == ESCAPE || evt.type == EVT_BACK)
+		{
+			leave = TRUE;
+		}
+		else
+		{
+			/* Display the store */
+			store_display_recalc();
+			store_redraw();
+		}
+
+		msg_flag = FALSE;
+	}
+
+	/* Hack -- Cancel automatic command */
+	p_ptr->command_new = 0;
+
+	/* Flush messages XXX XXX XXX */
+	message_flush();
+}
 
 /*
  * Enter a store, and interact with it.

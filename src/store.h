@@ -7,9 +7,10 @@
 #define STORE_TURNS		1000  /* Number of turns between turnovers */
 #define STORE_SHUFFLE		25    /* 1/Chance (per day) of an owner changing */
 
-/* List of store indeces */
+/* List of store indices */
 enum
 {
+	STORE_NONE      = -1,
 	STORE_GENERAL	= 0,
 	STORE_ARMOR	= 1,
 	STORE_WEAPON	= 2,

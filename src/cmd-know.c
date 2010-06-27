@@ -3,6 +3,7 @@
  * Purpose: Knowledge screen stuff.
  *
  * Copyright (c) 2000-2007 Eytan Zweig, Andrew Doull, Pete Mack.
+ * (c) 2010 Peter Denison, Chris Carr.
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -19,7 +20,7 @@
 #include "object/tvalsval.h"
 #include "ui.h"
 #include "ui-menu.h"
-
+#include "store.h"
 
 /* Flag value for missing array entry */
 #define MISSING -17
@@ -1081,7 +1082,7 @@ static void mon_summary(int gid, const int *object_list, int n, int top, int row
 	{
 		int tkills = 0;
 
-		for (i = 0; i < z_info->r_max; i++) 
+		for (i = 0; i < z_info->r_max; i++)
 			tkills += l_list[i].pkills;
 
 		c_prt(TERM_L_BLUE, format("Creatures slain: %d/%d (in group/in total)", kills, tkills), row, col);
@@ -1536,7 +1537,7 @@ static void do_cmd_knowledge_ego_items(void *obj, const char *name)
 
 				egoitems[e_count] = e_count;
 				default_join[e_count].oid = i;
-				default_join[e_count++].gid = gid; 
+				default_join[e_count++].gid = gid;
 			}
 		}
 	}
@@ -1615,7 +1616,7 @@ static void display_object(int col, int row, bool cursor, int oid)
 	c_prt(attr, o_name, row, col);
 
 	/* Show squelch status */
-	if ((aware && kind_is_squelched_aware(k_ptr)) || 
+	if ((aware && kind_is_squelched_aware(k_ptr)) ||
 		(!aware && kind_is_squelched_unaware(k_ptr)))
 		c_put_str(attr, "Yes", row, 46);
 	else if (aware && OPT(squelch_worthless) && !k_ptr->cost)
@@ -1965,6 +1966,13 @@ static void do_cmd_knowledge_features(void *obj, const char *name)
 
 /* =================== END JOIN DEFINITIONS ================================ */
 
+static void do_cmd_knowledge_store(void *obj, const char *name)
+{
+	(void)name;
+	store_knowledge = (int)obj;
+	do_cmd_store_knowledge();
+	store_knowledge = STORE_NONE;
+}
 
 static void do_cmd_knowledge_scores(void *obj, const char *name)
 {
@@ -1987,13 +1995,29 @@ static void do_cmd_knowledge_history(void *obj, const char *name)
  */
 static menu_item knowledge_actions[] =
 {
-{ {0, "Display object knowledge",   do_cmd_knowledge_objects,   0}, 'a', 0 },
-{ {0, "Display artifact knowledge", do_cmd_knowledge_artifacts, 0}, 'b', 0 },
-{ {0, "Display ego item knowledge", do_cmd_knowledge_ego_items, 0}, 'c', 0 },
-{ {0, "Display monster knowledge",  do_cmd_knowledge_monsters,  0}, 'd', 0 },
-{ {0, "Display feature knowledge",  do_cmd_knowledge_features,  0}, 'e', 0 },
-{ {0, "Display hall of fame",       do_cmd_knowledge_scores,    0}, 'f', 0 },
-{ {0, "Display character history",  do_cmd_knowledge_history,   0}, 'g', 0 },
+{ {0, "Display object knowledge",   	   do_cmd_knowledge_objects,   0}, 'a', 0 },
+{ {0, "Display artifact knowledge", 	   do_cmd_knowledge_artifacts, 0}, 'b', 0 },
+{ {0, "Display ego item knowledge", 	   do_cmd_knowledge_ego_items, 0}, 'c', 0 },
+{ {0, "Display monster knowledge",  	   do_cmd_knowledge_monsters,  0}, 'd', 0 },
+{ {0, "Display feature knowledge",  	   do_cmd_knowledge_features,  0}, 'e', 0 },
+{ {0, "Display contents of general store", do_cmd_knowledge_store,
+	STORE_GENERAL}, 'f', 0 },
+{ {0, "Display contents of armourer",      do_cmd_knowledge_store,
+	STORE_ARMOR}, 'g', 0 },
+{ {0, "Display contents of weaponsmith",   do_cmd_knowledge_store,
+	STORE_WEAPON}, 'h', 0 },
+{ {0, "Display contents of temple",   	   do_cmd_knowledge_store,
+	STORE_TEMPLE}, 'i', 0 },
+{ {0, "Display contents of alchemist",     do_cmd_knowledge_store,
+	STORE_ALCHEMY}, 'j', 0 },
+{ {0, "Display contents of magic shop",    do_cmd_knowledge_store,
+	STORE_MAGIC}, 'k', 0 },
+{ {0, "Display contents of black market",  do_cmd_knowledge_store,
+	STORE_B_MARKET}, 'l', 0 },
+{ {0, "Display contents of home",   	   do_cmd_knowledge_store,
+	STORE_HOME}, 'm', 0 },
+{ {0, "Display hall of fame",       	   do_cmd_knowledge_scores,    0}, 'n', 0 },
+{ {0, "Display character history",  	   do_cmd_knowledge_history,   0}, 'o', 0 },
 };
 
 static menu_type knowledge_menu;
@@ -2010,7 +2034,7 @@ static void cleanup_cmds(void)
 }
 
 void init_cmd_know(void)
-{	
+{
 	/* Initialize the menus */
 	menu_type *menu = &knowledge_menu;
 	WIPE(menu, menu_type);
@@ -2018,20 +2042,20 @@ void init_cmd_know(void)
 	menu->menu_data = knowledge_actions;
 	menu->count = N_ELEMENTS(knowledge_actions),
 	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ITEMS), &SCREEN_REGION);
-	
+
 	/* initialize other static variables */
 	if (!obj_group_order)
 	{
 		int i;
 		int gid = -1;
-		
+
 		obj_group_order = C_ZNEW(TV_GOLD + 1, int);
 		atexit(cleanup_cmds);
-		
+
 		/* Allow for missing values */
 		for (i = 0; i <= TV_GOLD; i++)
 			obj_group_order[i] = -1;
-		
+
 		for (i = 0; 0 != object_text_order[i].tval; i++)
 		{
 			if (object_text_order[i].name) gid = i;
@@ -2051,14 +2075,14 @@ void do_cmd_knowledge(void)
 	int cursor = 0;
 	int i;
 	ui_event_data c = EVENT_EMPTY;
-	region knowledge_region = { 0, 0, -1, 11 };
-	
+	region knowledge_region = { 0, 0, -1, 18 };
+
 	/* Grey out menu items that won't display anything */
 	if (collect_known_artifacts(NULL, 0) > 0)
 		knowledge_actions[1].flags = 0;
 	else
 		knowledge_actions[1].flags = MN_GREYED;
-	
+
 	knowledge_actions[2].flags = MN_GREYED;
 	for (i = 0; i < z_info->e_max; i++)
 	{
@@ -2068,21 +2092,21 @@ void do_cmd_knowledge(void)
 			break;
 		}
 	}
-	
+
 	if (count_known_monsters() > 0)
 		knowledge_actions[3].flags = 0;
 	else
 		knowledge_actions[3].flags = MN_GREYED;
-	
+
 	screen_save();
 	menu_layout(&knowledge_menu, &knowledge_region);
-	
+
 	while (c.key != ESCAPE)
 	{
 		clear_from(0);
 		c = menu_select(&knowledge_menu, &cursor, 0);
 	}
-	
+
 	screen_load();
 }
 

@@ -135,6 +135,7 @@ extern s32b tot_mon_power;
 extern monster_lore *l_list;
 extern quest *q_list;
 extern store_type *store;
+extern int store_knowledge;
 extern cptr** name_sections;
 extern object_type *inventory;
 extern s16b alloc_ego_size;
@@ -573,6 +574,9 @@ void squelch_items(void);
 void squelch_drop(void);
 void do_cmd_options_item(void *unused, cptr title);
 bool squelch_interactive(const object_type *o_ptr);
+
+/* store.c */
+void do_cmd_store_knowledge(void);
 
 /* target.c */
 bool target_able(int m_idx);
