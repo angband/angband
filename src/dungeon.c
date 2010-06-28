@@ -793,18 +793,15 @@ static void process_world(void)
 			/* Disturbing! */
 			disturb(0, 0);
 
-			/* Sound */
-			sound(MSG_TPLEVEL);
-
 			/* Determine the level */
 			if (p_ptr->depth)
 			{
-				msg_print("You feel yourself yanked upwards!");
+				message_format(MSG_TPLEVEL, 0, "You feel yourself yanked upwards!");
 				dungeon_change_level(0);
 			}
 			else
 			{
-				msg_print("You feel yourself yanked downwards!");
+				message_format(MSG_TPLEVEL, 0, "You feel yourself yanked downwards!");
 
 				/* New depth - back to max depth or 1, whichever is deeper */
 				dungeon_change_level(p_ptr->max_depth < 1 ? 1: p_ptr->max_depth);

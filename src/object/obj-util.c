@@ -2935,8 +2935,7 @@ s16b inven_takeoff(int item, int amt)
 	slot = inven_carry(i_ptr);
 
 	/* Message */
-	sound(MSG_WIELD);
-	msg_format("%s %s (%c).", act, o_name, index_to_label(slot));
+	message_format(MSG_WIELD, 0, "%s %s (%c).", act, o_name, index_to_label(slot));
 
 	p_ptr->notice |= PN_SQUELCH;
 

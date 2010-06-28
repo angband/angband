@@ -1842,8 +1842,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_DRAGON_BLUE:
 		{
 			dam = 100 * (100 + boost) / 100;
-			sound(MSG_BR_ELEC);
-			msg_print("You breathe lightning.");
+			message_format(MSG_BR_ELEC, 0, "You breathe lightning.");
 			fire_ball(GF_ELEC, dir, dam, 2);
 			return TRUE;
 		}
@@ -1851,8 +1850,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_DRAGON_GREEN:
 		{
 			dam = 150 * (100 + boost) / 100;
-			sound(MSG_BR_GAS);
-			msg_print("You breathe poison gas.");
+			message_format(MSG_BR_GAS, 0, "You breathe poison gas.");
 			fire_ball(GF_POIS, dir, dam, 2);
 			return TRUE;
 		}
@@ -1860,8 +1858,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_DRAGON_RED:
 		{
 			dam = 200 * (100 + boost) / 100;
-			sound(MSG_BR_FIRE);
-			msg_print("You breathe fire.");
+			message_format(MSG_BR_FIRE, 0, "You breathe fire.");
 			fire_ball(GF_FIRE, dir, dam, 2);
 			return TRUE;
 		}
@@ -1870,7 +1867,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			static const struct
 			{
-				int sound;
+				int msg_sound;
 				const char *msg;
 				int typ;
 			} mh[] =
@@ -1884,8 +1881,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 			int chance = randint0(5);
 			dam = 250 * (100 + boost) / 100;
-			sound(mh[chance].sound);
-			msg_format("You breathe %s.", mh[chance].msg);
+			message_format(mh[chance].msg_sound, 0, "You breathe %s.", mh[chance].msg);
 			fire_ball(mh[chance].typ, dir, dam, 2);
 			return TRUE;
 		}
@@ -1893,8 +1889,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_DRAGON_BRONZE:
 		{
 			dam = 120 * (100 + boost) / 100;
-			sound(MSG_BR_CONF);
-			msg_print("You breathe confusion.");
+			message_format(MSG_BR_CONF, 0, "You breathe confusion.");
 			fire_ball(GF_CONFUSION, dir, dam, 2);
 			return TRUE;
 		}
@@ -1902,8 +1897,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_DRAGON_GOLD:
 		{
 			dam = 130 * (100 + boost) / 100;
-			sound(MSG_BR_SOUND);
-			msg_print("You breathe sound.");
+			message_format(MSG_BR_SOUND, 0, "You breathe sound.");
 			fire_ball(GF_SOUND, dir, dam, 2);
 			return TRUE;
 		}
@@ -1912,9 +1906,9 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			dam = 220 * (100 + boost) / 100;
 			chance = randint0(2);
-			sound(((chance == 1 ? MSG_BR_CHAOS : MSG_BR_DISENCHANT)));
-			msg_format("You breathe %s.",
-			           ((chance == 1 ? "chaos" : "disenchantment")));
+			message_format((chance == 1 ? MSG_BR_CHAOS : MSG_BR_DISENCHANT), 0,
+					"You breathe %s.",
+					((chance == 1 ? "chaos" : "disenchantment")));
 			fire_ball((chance == 1 ? GF_CHAOS : GF_DISENCHANT),
 			          dir, dam, 2);
 			return TRUE;
@@ -1924,8 +1918,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			dam = 230 * (100 + boost) / 100;
 			chance = randint0(2);
-			sound(((chance == 1 ? MSG_BR_SOUND : MSG_BR_SHARDS)));
-			msg_format("You breathe %s.",
+			message_format((chance == 1 ? MSG_BR_SOUND : MSG_BR_SHARDS), 0, "You breathe %s.",
 			           ((chance == 1 ? "sound" : "shards")));
 			fire_ball((chance == 1 ? GF_SOUND : GF_SHARD),
 			          dir, dam, 2);
@@ -1951,8 +1944,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			dam = 200 * (100 + boost) / 100;
 			chance = randint0(2);
-			sound(((chance == 0 ? MSG_BR_LIGHT : MSG_BR_DARK)));
-			msg_format("You breathe %s.",
+			message_format((chance == 0 ? MSG_BR_LIGHT : MSG_BR_DARK), 0, "You breathe %s.",
 			        ((chance == 0 ? "light" : "darkness")));
 			fire_ball((chance == 0 ? GF_LIGHT : GF_DARK), dir, dam,
 				2);
@@ -1962,8 +1954,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_DRAGON_POWER:
 		{
 			dam = 300 * (100 + boost) / 100;
-			sound(MSG_BR_ELEMENTS);
-			msg_print("You breathe the elements.");
+			message_format(MSG_BR_ELEMENTS, 0, "You breathe the elements.");
 			fire_ball(GF_MISSILE, dir, dam, 2);
 			return TRUE;
 		}

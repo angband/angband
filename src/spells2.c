@@ -3303,6 +3303,8 @@ void do_ident_item(int item, object_type *o_ptr)
 {
 	char o_name[80];
 
+	u32b msg_type = 0;
+
 	/* Identify it */
 	object_flavor_aware(o_ptr);
 	object_notice_everything(o_ptr);
@@ -3325,21 +3327,25 @@ void do_ident_item(int item, object_type *o_ptr)
 	/* Description */
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
-	/* Possibly play a sound depending on object quality. */
+	/* Determine the message type. */
 	if (o_ptr->pval < 0)
 	{
 		/* This is a bad item. */
-		sound(MSG_IDENT_BAD);
+		msg_type = MSG_IDENT_BAD;
 	}
 	else if (o_ptr->name1 != 0)
 	{
 		/* We have a good artifact. */
-		sound(MSG_IDENT_ART);
+		msg_type = MSG_IDENT_ART;
 	}
 	else if (o_ptr->name2 != 0)
 	{
 		/* We have a good ego item. */
-		sound(MSG_IDENT_EGO);
+		msg_type = MSG_IDENT_EGO;
+	}
+	else
+	{
+		msg_type = MSG_GENERIC;
 	}
 
 	/* Log artifacts to the history list. */
@@ -3349,16 +3355,16 @@ void do_ident_item(int item, object_type *o_ptr)
 	/* Describe */
 	if (item >= INVEN_WIELD)
 	{
-		msg_format("%^s: %s (%c).",
+		message_format(msg_type, 0, "%^s: %s (%c).",
 			  describe_use(item), o_name, index_to_label(item));
 	}
 	else if (item >= 0)
 	{
-		msg_format("In your pack: %s (%c).",
+		message_format(msg_type, 0, "In your pack: %s (%c).",
 			  o_name, index_to_label(item));
 	}
 	else
 	{
-		msg_format("On the ground: %s.", o_name);
+		message_format(msg_type, 0, "On the ground: %s.", o_name);
 	}
 }

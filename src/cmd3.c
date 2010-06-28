@@ -199,15 +199,13 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
-	sound(MSG_WIELD);
-	msg_format(fmt, o_name, index_to_label(slot));
+	message_format(MSG_WIELD, 0, fmt, o_name, index_to_label(slot));
 
 	/* Cursed! */
 	if (cursed_p(o_ptr))
 	{
 		/* Warn the player */
-		sound(MSG_CURSED);
-		msg_print("Oops! It feels deathly cold!");
+		message_format(MSG_CURSED, 0, "Oops! It feels deathly cold!");
 
 		/* Sense the object */
 		object_notice_curses(o_ptr);

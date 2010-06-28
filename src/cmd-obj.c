@@ -517,7 +517,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		}
 
 		use = USE_CHARGE;
-		snd = MSG_ZAP_ROD;
+		snd = MSG_USE_STAFF;
 		items_allowed = USE_INVEN | USE_FLOOR;
 	}
 	else if (obj_is_food(o_ptr))

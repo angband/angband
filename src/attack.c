@@ -88,7 +88,7 @@ bool test_hit(int chance, int ac, int vis)
  * Critical hits (from objects thrown by player)
  * Factor in item weight, total plusses, and player level.
  */
-static int critical_shot(int weight, int plus, int dam)
+static int critical_shot(int weight, int plus, int dam, u32b *msg_type)
 {
 	int i, k;
 
@@ -102,17 +102,17 @@ static int critical_shot(int weight, int plus, int dam)
 
 		if (k < 500)
 		{
-			msg_print("It was a good hit!");
+			*msg_type = MSG_HIT_GOOD;
 			dam = 2 * dam + 5;
 		}
 		else if (k < 1000)
 		{
-			msg_print("It was a great hit!");
+			*msg_type = MSG_HIT_GREAT;
 			dam = 2 * dam + 10;
 		}
 		else
 		{
-			msg_print("It was a superb hit!");
+			*msg_type = MSG_HIT_SUPERB;
 			dam = 3 * dam + 15;
 		}
 	}
@@ -127,7 +127,7 @@ static int critical_shot(int weight, int plus, int dam)
  *
  * Factor in weapon weight, total plusses, player level.
  */
-static int critical_norm(int weight, int plus, int dam, const char **crit_msg)
+static int critical_norm(int weight, int plus, int dam, u32b *msg_type)
 {
 	int i, k;
 
@@ -141,39 +141,32 @@ static int critical_norm(int weight, int plus, int dam, const char **crit_msg)
 
 		if (k < 400)
 		{
-			sound(MSG_HIT_GOOD);
-			*crit_msg = "It was a good hit!";
+			*msg_type = MSG_HIT_GOOD;
 			dam = 2 * dam + 5;
 		}
 		else if (k < 700)
 		{
-			sound(MSG_HIT_GREAT);
-			*crit_msg = "It was a great hit!";
+			*msg_type = MSG_HIT_GREAT;
 			dam = 2 * dam + 10;
 		}
 		else if (k < 900)
 		{
-			sound(MSG_HIT_SUPERB);
-			*crit_msg = "It was a superb hit!";
+			*msg_type = MSG_HIT_SUPERB;
 			dam = 3 * dam + 15;
 		}
 		else if (k < 1300)
 		{
-			sound(MSG_HIT_HI_GREAT);
-			*crit_msg = "It was a *GREAT* hit!";
+			*msg_type = MSG_HIT_HI_GREAT;
 			dam = 3 * dam + 20;
 		}
 		else
 		{
-			sound(MSG_HIT_HI_SUPERB);
-			*crit_msg = "It was a *SUPERB* hit!";
+			*msg_type = MSG_HIT_HI_SUPERB;
 			dam = ((7 * dam) / 2) + 25;
 		}
 	}
 	else
-	{
-		sound(MSG_HIT);
-	}
+		*msg_type = MSG_HIT;
 
 	return dam;
 }
@@ -264,7 +257,7 @@ void py_attack(int y, int x)
 
 	bool do_quake = FALSE;
 
-	const char *crit_msg = NULL;
+	u32b msg_type = 0;
 
 
 	/* Disturb the player */
@@ -307,117 +300,122 @@ void py_attack(int y, int x)
 	/* Attack once for each legal blow */
 	while (num++ < p_ptr->state.num_blow)
 	{
-		/* Test for hit */
-		if (test_hit(chance, r_ptr->ac, m_ptr->ml))
+		/* See if the player hit */
+		bool success = test_hit(chance, r_ptr->ac, m_ptr->ml);
+
+		/* Default to punching for one damage */
+		const char *hit_verb = "punch";
+		int dmg = 1;
+
+		/* If a miss, skip this hit */
+		if (!success)
 		{
-			/* Default to punching for one damage */
-			const char *hit_verb = "punch";
-			int k = 1;
+			message_format(MSG_MISS, m_ptr->r_idx, "You miss %s.", m_name);
+			continue;
+		}
 
-			/* Handle normal weapon */
-			if (o_ptr->k_idx)
-			{
-				int i;
-				const slay_t *best_s_ptr = NULL;
-
-				hit_verb = "hit";
-
-				/* Get the best attack from all slays or
-				 * brands on all non-launcher equipment */
-				for (i = INVEN_LEFT; i < INVEN_TOTAL; i++)
-					improve_attack_modifier(&inventory[i], m_ptr, &best_s_ptr);
-
-				improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr);
-				if (best_s_ptr != NULL)
-					hit_verb = best_s_ptr->melee_verb;
-
-				k = damroll(o_ptr->dd, o_ptr->ds);
-				k *= (best_s_ptr == NULL) ? 1 : best_s_ptr->mult;
-
-				if (p_ptr->state.impact && (k > 50))
-					do_quake = TRUE;
-
-				k += o_ptr->to_d;
-				k = critical_norm(o_ptr->weight, o_ptr->to_h, k, &crit_msg);
-
-				/* Learn by use for the weapon */
-				object_notice_attack_plusses(o_ptr);
-
-				if (do_quake)
-					wieldeds_notice_flag(OF_IMPACT);
-			}
-
-			/* Learn by use for other equipped items */
-			wieldeds_notice_on_attack();
-
-			/* Apply the player damage bonuses */
-			k += p_ptr->state.to_d;
-
-			/* No negative damage; change verb if no damage done */
-			if (k <= 0)
-			{
-				k = 0;
-				hit_verb = "fail to harm";
-			}
-
-			/* Tell the player what happened */
-			message_format(MSG_GENERIC, m_ptr->r_idx, "You %s %s.", hit_verb, m_name);
-			if (crit_msg) msg_print(crit_msg);
-
-			/* Complex message */
-			if (p_ptr->wizard)
-				msg_format("You do %d (out of %d) damage.", k, m_ptr->hp);
-
-			/* Confusion attack */
-			if (p_ptr->confusing)
-			{
-				/* Cancel glowing hands */
-				p_ptr->confusing = FALSE;
-
-				/* Message */
-				msg_print("Your hands stop glowing.");
-
-				/* Update the lore */
-				if (m_ptr->ml)
-				{
-					rf_on(l_ptr->flags, RF_NO_CONF);
-				}
-
-				/* Confuse the monster */
-				if (rf_has(r_ptr->flags, RF_NO_CONF))
-				{
-					msg_format("%^s is unaffected.", m_name);
-				}
-				else if (randint0(100) < r_ptr->level)
-				{
-					msg_format("%^s is unaffected.", m_name);
-				}
-				else
-				{
-					msg_format("%^s appears confused.", m_name);
-					m_ptr->confused += 10 + randint0(p_ptr->lev) / 5;
-				}
-			}
-
-			/* Damage, check for fear and death */
-			if (mon_take_hit(cave_m_idx[y][x], k, &fear, NULL)) break;
+		
+		/* Handle normal weapon */
+		if (o_ptr->k_idx)
+		{
+			int i;
+			const slay_t *best_s_ptr = NULL;
+			
+			hit_verb = "hit";
+			
+			/* Get the best attack from all slays or
+			 * brands on all non-launcher equipment */
+			for (i = INVEN_LEFT; i < INVEN_TOTAL; i++)
+				improve_attack_modifier(&inventory[i], m_ptr, &best_s_ptr);
+			
+			improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr);
+			if (best_s_ptr != NULL)
+				hit_verb = best_s_ptr->melee_verb;
+			
+			dmg = damroll(o_ptr->dd, o_ptr->ds);
+			dmg *= (best_s_ptr == NULL) ? 1 : best_s_ptr->mult;
+			
+			if (p_ptr->state.impact && (dmg > 50))
+				do_quake = TRUE;
+			
+			dmg += o_ptr->to_d;
+			dmg = critical_norm(o_ptr->weight, o_ptr->to_h, dmg, &msg_type);
+			
+			/* Learn by use for the weapon */
+			object_notice_attack_plusses(o_ptr);
+			
+			if (do_quake)
+				wieldeds_notice_flag(OF_IMPACT);
 		}
 		
-		/* Player misses */
-		else
+		/* Learn by use for other equipped items */
+		wieldeds_notice_on_attack();
+		
+		/* Apply the player damage bonuses */
+		dmg += p_ptr->state.to_d;
+		
+		/* No negative damage */
+		if (dmg <= 0) dmg = 0;
+		
+		/* Tell the player what happened */
+		if (dmg <= 0)
+			message_format(MSG_MISS, m_ptr->r_idx,
+						   "You fail to harm %s.", m_name);
+		else if (msg_type == MSG_HIT)
+			message_format(MSG_HIT, m_ptr->r_idx, "You %s %s.",
+						   hit_verb, m_name);
+		else if (msg_type == MSG_HIT_GOOD)
+			message_format(MSG_HIT_GOOD, m_ptr->r_idx, "You %s %s. %s",
+						   hit_verb, m_name, "It was a good hit!");
+		else if (msg_type == MSG_HIT_GREAT)
+			message_format(MSG_HIT_GREAT, m_ptr->r_idx, "You %s %s. %s",
+						   hit_verb, m_name, "It was a great hit!");
+		else if (msg_type == MSG_HIT_SUPERB)
+			message_format(MSG_HIT_SUPERB, m_ptr->r_idx, "You %s %s. %s",
+						   hit_verb, m_name, "It was a superb hit!");
+		else if (msg_type == MSG_HIT_HI_GREAT)
+			message_format(MSG_HIT_HI_GREAT, m_ptr->r_idx, "You %s %s. %s",
+						   hit_verb, m_name, "It was a *GREAT* hit!");
+		else if (msg_type == MSG_HIT_HI_SUPERB)
+			message_format(MSG_HIT_HI_SUPERB, m_ptr->r_idx, "You %s %s. %s",
+						   hit_verb, m_name, "It was a *SUPERB* hit!");
+		
+		/* Complex message */
+		if (p_ptr->wizard)
+			msg_format("You do %d (out of %d) damage.", dmg, m_ptr->hp);
+		
+		/* Confusion attack */
+		if (p_ptr->confusing)
 		{
+			/* Cancel glowing hands */
+			p_ptr->confusing = FALSE;
+			
 			/* Message */
-			message_format(MSG_MISS, m_ptr->r_idx, "You miss %s.", m_name);
+			msg_print("Your hands stop glowing.");
+			
+			/* Update the lore */
+			if (m_ptr->ml)
+				rf_on(l_ptr->flags, RF_NO_CONF);
+			
+			/* Confuse the monster */
+			if (rf_has(r_ptr->flags, RF_NO_CONF))
+				msg_format("%^s is unaffected.", m_name);
+			else if (randint0(100) < r_ptr->level)
+				msg_format("%^s is unaffected.", m_name);
+			else
+			{
+				msg_format("%^s appears confused.", m_name);
+				m_ptr->confused += 10 + randint0(p_ptr->lev) / 5;
+			}
 		}
+		
+		/* Damage, check for fear and death */
+		if (mon_take_hit(cave_m_idx[y][x], dmg, &fear, NULL)) break;
 	}
-
+	
 	/* Hack -- delay fear messages */
 	if (fear && m_ptr->ml)
-	{
-		/* Message */
 		message_format(MSG_FLEE, m_ptr->r_idx, "%^s flees in terror!", m_name);
-	}
-
 
 	/* Mega-Hack -- apply earthquake brand */
 	if (do_quake) earthquake(p_ptr->py, p_ptr->px, 10);
@@ -468,6 +466,8 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	char missile_char;
 
 	char o_name[80];
+
+	u32b msg_type = 0;
 
 	int path_n;
 	u16b path_g[256];
@@ -628,6 +628,22 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 					note_dies = " is destroyed.";
 				}
 
+				/* Apply damage: multiplier, slays, criticals, bonuses */
+				tdam = damroll(o_ptr->dd, o_ptr->ds);
+				tdam += o_ptr->to_d + j_ptr->to_d;
+				tdam *= p_ptr->state.ammo_mult;
+				tdam *= (best_s_ptr == NULL) ? 1 : best_s_ptr->mult;
+				tdam = critical_shot(o_ptr->weight, o_ptr->to_h, tdam, &msg_type);
+
+				object_notice_attack_plusses(o_ptr);
+				object_notice_attack_plusses(&inventory[INVEN_BOW]);
+
+				/* No negative damage; change verb if no damage done */
+				if (tdam <= 0)
+				{
+					tdam = 0;
+					hit_verb = "fail to harm";
+				}
 
 				/* Handle unseen monster */
 				if (!visible)
@@ -644,28 +660,34 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 					/* Get "the monster" or "it" */
 					monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
-					/* Message */
-					message_format(MSG_SHOOT_HIT, 0, "The %s %s %s.", o_name, hit_verb, m_name);
-
+					/* Tell the player what happened */
+					if (msg_type == MSG_SHOOT_HIT)
+						message_format(MSG_SHOOT_HIT, 0, "The %s %s %s.", o_name, hit_verb, m_name);
+					else
+					{
+						if (msg_type == MSG_HIT_GOOD)
+						{
+							message_format(MSG_HIT_GOOD, 0, "The %s %s %s. %s", o_name, hit_verb, m_name,
+										   "It was a good hit!");
+						}
+						else if (msg_type == MSG_HIT_GREAT)
+						{
+							message_format(MSG_HIT_GREAT, 0, "The %s %s %s. %s", o_name, hit_verb, m_name,
+										   "It was a great hit!");
+						}
+						else if (msg_type == MSG_HIT_SUPERB)
+						{
+							message_format(MSG_HIT_SUPERB, 0, "The %s %s %s. %s", o_name, hit_verb, m_name,
+										   "It was a superb hit!");
+						}
+					}
 					/* Hack -- Track this monster race */
 					if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
 
 					/* Hack -- Track this monster */
 					if (m_ptr->ml) health_track(cave_m_idx[y][x]);
+
 				}
-
-				/* Apply damage: multiplier, slays, criticals, bonuses */
-				tdam = damroll(o_ptr->dd, o_ptr->ds);
-				tdam += o_ptr->to_d + j_ptr->to_d;
-				tdam *= p_ptr->state.ammo_mult;
-				tdam *= (best_s_ptr == NULL) ? 1 : best_s_ptr->mult;
-				tdam = critical_shot(o_ptr->weight, o_ptr->to_h, tdam);
-
-				object_notice_attack_plusses(o_ptr);
-				object_notice_attack_plusses(&inventory[INVEN_BOW]);
-
-				/* No negative damage */
-				if (tdam < 0) tdam = 0;
 
 				/* Complex message */
 				if (p_ptr->wizard)
@@ -845,6 +867,8 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 	char missile_char;
 
 	char o_name[80];
+
+	u32b msg_type = 0;
 
 	int path_n;
 	u16b path_g[256];
@@ -1026,6 +1050,15 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 					tdam *= best_s_ptr->mult;
 					hit_verb = best_s_ptr->range_verb;
 				}
+				/* Apply special damage XXX XXX XXX */
+				tdam = critical_shot(i_ptr->weight, i_ptr->to_h, tdam, &msg_type);
+
+				/* No negative damage; change verb if no damage done */
+				if (tdam <= 0)
+				{
+					tdam = 0;
+					hit_verb = "fail to harm";
+				}
 
 				/* Handle unseen monster */
 				if (!visible)
@@ -1042,21 +1075,33 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 					/* Get "the monster" or "it" */
 					monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
-					/* Message */
-					msg_format("The %s %s %s.", o_name, hit_verb, m_name);
-
+					/* Tell the player what happened */
+					if (msg_type == MSG_SHOOT_HIT)
+						message_format(MSG_SHOOT_HIT, 0, "The %s %s %s.", o_name, hit_verb, m_name);
+					else
+					{
+						if (msg_type == MSG_HIT_GOOD)
+						{
+							message_format(MSG_HIT_GOOD, 0, "The %s %s %s. %s", o_name, hit_verb, m_name,
+										   "It was a good hit!");
+						}
+						else if (msg_type == MSG_HIT_GREAT)
+						{
+							message_format(MSG_HIT_GREAT, 0, "The %s %s %s. %s", o_name, hit_verb, m_name,
+										   "It was a great hit!");
+						}
+						else if (msg_type == MSG_HIT_SUPERB)
+						{
+							message_format(MSG_HIT_SUPERB, 0, "The %s %s %s. %s", o_name, hit_verb, m_name,
+										   "It was a superb hit!");
+						}
+					}
 					/* Hack -- Track this monster race */
 					if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
 
 					/* Hack -- Track this monster */
 					if (m_ptr->ml) health_track(cave_m_idx[y][x]);
 				}
-
-				/* Apply special damage XXX XXX XXX */
-				tdam = critical_shot(i_ptr->weight, i_ptr->to_h, tdam);
-
-				/* No negative damage */
-				if (tdam < 0) tdam = 0;
 
 				/* Learn the bonuses */
 				/* XXX Eddie This is messed up, better done for firing, */
@@ -1122,7 +1167,7 @@ void textui_cmd_throw(void)
 
 	if (item >= INVEN_WIELD && item < QUIVER_START)
 	{
-		msg_print("You have cannot throw wielded items.");
+		msg_print("You cannot throw wielded items.");
 		return;
 	}
 
