@@ -566,6 +566,7 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 	bool weapon = (wield_slot(o_ptr) == INVEN_WIELD);
 	bool ammo   = (p_ptr->state.ammo_tval == o_ptr->tval) &&
 	              (j_ptr->k_idx);
+	int multiplier = 1;
 
 	/* Abort if we've nothing to say */
 	if (mode & OINFO_DUMMY) return FALSE;
@@ -691,7 +692,6 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 			dam += (o_ptr->to_d * 10);
 		if (object_attack_plusses_are_visible(j_ptr))
 			dam += (j_ptr->to_d * 10);
-		dam *= p_ptr->state.ammo_mult;
 
 		/* Apply brands from the shooter to the ammo */
 		object_flags(j_ptr, tmp_f);
@@ -724,11 +724,13 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 
 	text_out("Average damage/hit: ");
 
+	if (ammo) multiplier = p_ptr->state.ammo_mult;
+
 	cnt = collect_slays(desc, mult, f);
 	for (i = 0; i < cnt; i++)
 	{
 		/* Include bonus damage and slay in stated average */
-		total_dam = dam * mult[i] + xtra_precrit;
+		total_dam = dam * (multiplier + mult[i]) + xtra_precrit;
 		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
 		total_dam += xtra_postcrit;
 
@@ -747,7 +749,7 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 	if (cnt) text_out("and ");
 
 	/* Include bonus damage in stated average */
-	total_dam = dam + xtra_precrit;
+	total_dam = dam * multiplier + xtra_precrit;
 	total_dam = (total_dam * crit_mult + crit_add) / crit_div;
 	total_dam += xtra_postcrit;
 

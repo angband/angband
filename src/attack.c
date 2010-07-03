@@ -601,6 +601,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 
 			int chance2 = chance - distance(p_ptr->py, p_ptr->px, y, x);
 			int visible = m_ptr->ml;
+			int multiplier = 1;
 
 			const char *hit_verb = "hits";
 			const slay_t *best_s_ptr = NULL;
@@ -628,11 +629,14 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 					note_dies = " is destroyed.";
 				}
 
+				/* Calculate multiplier */
+				multiplier = p_ptr->state.ammo_mult;
+				if (best_s_ptr != NULL) multiplier += best_s_ptr->mult;
+
 				/* Apply damage: multiplier, slays, criticals, bonuses */
 				tdam = damroll(o_ptr->dd, o_ptr->ds);
 				tdam += o_ptr->to_d + j_ptr->to_d;
-				tdam *= p_ptr->state.ammo_mult;
-				tdam *= (best_s_ptr == NULL) ? 1 : best_s_ptr->mult;
+				tdam *= multiplier;
 				tdam = critical_shot(o_ptr->weight, o_ptr->to_h, tdam, &msg_type);
 
 				object_notice_attack_plusses(o_ptr);
