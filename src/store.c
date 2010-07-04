@@ -2452,7 +2452,7 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 
 	/* Update the auto-history if selling an artifact that was previously un-IDed. (Ouch!) */
 	if (artifact_p(o_ptr))
-		history_add_artifact(o_ptr->name1, TRUE);
+		history_add_artifact(o_ptr->name1, TRUE, TRUE);
 
 	/* Combine / Reorder the pack (later) */
 	p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);

@@ -3517,14 +3517,18 @@ void generate_cave(void)
 	const char *error = "no generation";
 	int counter = 0;
 
-	/* The dungeon is not ready */
-	character_dungeon = FALSE;
-
 	/* Generate */
 	while (error)
 	{
 		error = NULL;
 		clear_cave();
+
+		/* The dungeon is not ready - we set this after calling clear_
+		   cave for the first time, so that unpreserved artifacts are
+		   lost when leaving real levels, but not when abandoning
+		   levels through errors in generation - see wipe_o_list in
+		   obj-util.c */
+		character_dungeon = FALSE;
 
 		if (!p_ptr->depth)
 			town_gen();
@@ -3562,6 +3566,3 @@ void generate_cave(void)
 	/* Remember when the last dungeon level was created */
 	if (p_ptr->depth > 0) old_turn = turn;
 }
-
-
-

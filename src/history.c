@@ -140,6 +140,9 @@ bool history_lose_artifact(byte a_idx)
 		}
 	}
 
+	/* If we lost an artifact that didn't previously have a history, then we missed it */
+	history_add_artifact(a_idx, FALSE, FALSE);
+
 	return FALSE;
 }
 
@@ -149,7 +152,7 @@ bool history_lose_artifact(byte a_idx)
  * ("HISTORY_xxx" in defines.h), and artifact number `id` (0 for everything
  * else).
  *
- * Returne TRUE on success.
+ * Return TRUE on success.
  */
 bool history_add_full(u16b type, byte a_idx, s16b dlev, s16b clev, s32b turn, const char *text)
 {
@@ -195,7 +198,7 @@ bool history_add(const char *event, u16b type, byte a_idx)
  * proper handling of the case where the player loses an artifact but (in
  * preserve mode) finds it again later.
  */
-static bool history_is_artifact_logged(byte a_idx)
+bool history_is_artifact_logged(byte a_idx)
 {
 	size_t i = history_ctr;
 
@@ -221,20 +224,21 @@ static bool history_is_artifact_logged(byte a_idx)
  * list or make the history entry visible--history_add_artifact will make that
  * determination depending on what object_is_known returns for the artifact.
  */
-bool history_add_artifact(byte a_idx, bool known)
+bool history_add_artifact(byte a_idx, bool known, bool found)
 {
 	object_type object_type_body;
 	object_type *o_ptr = &object_type_body;
 
 	char o_name[80];
 	char buf[80];
+	u16b type;
 
 	/* Make fake artifact for description purposes */
 	object_wipe(o_ptr);
 	make_fake_artifact(o_ptr, a_idx);
 	object_desc(o_name, sizeof(o_name), o_ptr,
 				ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);
-	strnfmt(buf, sizeof(buf), "Found %s", o_name);
+	strnfmt(buf, sizeof(buf), (found)?"Found %s":"Missed %s", o_name);
 
 	/* Known objects gets different treatment */
 	if (known)
@@ -248,9 +252,14 @@ bool history_add_artifact(byte a_idx, bool known)
 	else
 	{
 		if (!history_is_artifact_logged(a_idx))
-			history_add(buf, HISTORY_ARTIFACT_UNKNOWN, a_idx);
+		{
+			type = HISTORY_ARTIFACT_UNKNOWN | (found ? 0 : HISTORY_ARTIFACT_LOST);
+			history_add(buf, type, a_idx);
+		}
 		else
+		{
 			return FALSE;
+		}
 	}
 
 	return TRUE;

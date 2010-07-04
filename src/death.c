@@ -126,6 +126,8 @@ static void death_knowledge(void)
 		object_notice_everything(o_ptr);
 	}
 
+	history_unmask_unknown();
+
 	/* Hack -- Recalculate bonuses */
 	p_ptr->update |= (PU_BONUS);
 	handle_stuff();

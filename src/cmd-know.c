@@ -1272,7 +1272,11 @@ static void desc_art_fake(int a_idx)
 	{
 		make_fake_artifact(o_ptr, a_idx);
 		o_ptr->ident |= IDENT_NAME;
-		mode = OINFO_FULL;
+
+		/* If it has a history entry, it was known before it was lost,
+		  otherwise it was missed completely */
+		if (history_is_artifact_logged(a_idx)) mode = OINFO_FULL;
+			else mode = OINFO_NONE;
 	}
 
 	/* Hack -- Handle stuff */

@@ -1616,9 +1616,6 @@ void play_game(void)
 
 		/* The dungeon is not ready */
 		character_dungeon = FALSE;
-
-		/* XXX This is the place to add automatic character
-		   numbering (i.e. Rocky IV, V, etc.) Probably. */
 	}
 
 	/* Hack -- Default base_name */

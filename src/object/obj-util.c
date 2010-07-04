@@ -15,7 +15,7 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#include "angband.h" 
+#include "angband.h"
 #include "defines.h"
 #include "tvalsval.h"
 #include "effects.h"
@@ -1176,7 +1176,7 @@ void compact_objects(int size)
 	compact_objects(0);
 }
 
-/* 
+/*
  * Mention artifact preservation for peeking wizards
  */
 static void mention_preserve(const object_type *o_ptr)
