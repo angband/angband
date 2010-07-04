@@ -3223,13 +3223,14 @@ void reorder_pack(void)
  */
 int get_use_device_chance(const object_type *o_ptr)
 {
-	int lev, skill, fail;
+	int lev, fail, numerator, denominator;
 
-	/* these could be globals if desired, calculated rather than stated */
+	int skill = p_ptr->state.skills[SKILL_DEVICE];
+
 	int skill_min = 10;
 	int skill_max = 141;
-	int diff_min = 1;
-	int diff_max = 100;
+	int diff_min  = 1;
+	int diff_max  = 100;
 
 	/* Extract the item level, which is the difficulty rating */
 	if (artifact_p(o_ptr))
@@ -3237,13 +3238,16 @@ int get_use_device_chance(const object_type *o_ptr)
 	else
 		lev = k_info[o_ptr->k_idx].level;
 
-	/* Chance of failure */
-	skill = p_ptr->state.skills[SKILL_DEVICE];
+	/* TODO: maybe use something a little less convoluted? */
+	numerator   = (skill - lev) - (skill_max - diff_min);
+	denominator = (lev - skill) - (diff_max - skill_min);
 
-	fail = 100 * ((skill - lev) - (skill_max - diff_min))
-		/ ((lev - skill) - (diff_max - skill_min));
+	/* Make sure that we don't divide by zero */
+	if (denominator == 0) denominator = numerator > 0 ? 1 : -1;
 
-	/* Limit range */
+	fail = (100 * numerator) / denominator;
+
+	/* Ensure failure rate is between 1% and 95% */
 	if (fail > 950) fail = 950;
 	if (fail < 10) fail = 10;
 
