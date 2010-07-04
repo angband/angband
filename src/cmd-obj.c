@@ -317,14 +317,14 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 		return;
 	}
 
-		/* "!t" checks for taking off */
-		n = check_for_inscrip(equip_o_ptr, "!t");
-		while (n--)
-		{
-			/* Prompt */
-			object_desc(o_name, sizeof(o_name), equip_o_ptr,
-						ODESC_PREFIX | ODESC_FULL);
-
+	/* "!t" checks for taking off */
+	n = check_for_inscrip(equip_o_ptr, "!t");
+	while (n--)
+	{
+		/* Prompt */
+		object_desc(o_name, sizeof(o_name), equip_o_ptr,
+					ODESC_PREFIX | ODESC_FULL);
+		
 		/* Forget it */
 		if (!get_check(format("Really take off %s? ", o_name))) return;
 	}
