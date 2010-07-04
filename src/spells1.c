@@ -765,8 +765,10 @@ static int inven_damage(inven_func typ, int perc)
 	k = 0;
 
 	/* Scan through the slots backwards */
-	for (i = 0; i < INVEN_PACK; i++)
+	for (i = 0; i < QUIVER_END; i++)
 	{
+		if (i >= INVEN_PACK && i < QUIVER_START) continue;
+
 		o_ptr = &inventory[i];
 
 		/* Skip non-objects */
