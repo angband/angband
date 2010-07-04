@@ -336,14 +336,14 @@ D:return to the Shire.
 
 N:16:'Razorback'
 I:dragon armour:Multi-Hued Dragon Scale Mail~:0
-W:90:9:500:400000
+W:90:9:200:400000
 A:11:90 to 127
 P:30:2d4:-4:0:25
 F:FREE_ACT | IM_ELEC | RES_DISEN | 
 F:RES_ACID | RES_FIRE | RES_COLD | 
 F:RES_POIS | RES_LIGHT | RES_DARK | 
 F:LIGHT | SEE_INVIS | AGGRAVATE | 
-E:STAR_BALL:1000
+E:STAR_BALL:50
 M:Your {kind} {is} surrounded by lightning!
 D:A massive suit of heavy dragon scales deeply saturated with many colors.  
 D:It throbs with angry energies, and you feel the raw elemental might of 
@@ -352,14 +352,14 @@ D:untamed Lightning as you put it on.
 
 N:17:'Bladeturner'
 I:dragon armour:Power Dragon Scale Mail~:0
-W:100:16:600:500000
+W:100:16:200:500000
 A:6:100 to 127
 P:50:2d4:-8:0:35
 F:HOLD_LIFE | REGEN | 
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_POIS | RES_FEAR | 
 F:RES_LIGHT | RES_DARK | RES_BLIND | RES_CONFU | RES_SOUND | 
 F:RES_SHARD | RES_NETHR | RES_NEXUS | RES_CHAOS | RES_DISEN | 
-E:RAGE_BLESS_RESIST:400
+E:RAGE_BLESS_RESIST:50
 M:{name} glow{s} many colors...
 D:A suit of adamant, set with scales of every color, surrounded in a nimbus 
 D:of perfectly untramelled yet inextricably intermingled and utterly mastered 
@@ -368,7 +368,7 @@ D:powers elemental and ethereal.
 
 N:18:'Mediator'
 I:dragon armour:Balance Dragon Scale Mail~:0
-W:95:12:500:400000
+W:95:12:200:400000
 A:8:95 to 127
 P:30:2d4:-4:0:25
 F:RES_CHAOS | RES_DISEN | RES_SHARD | RES_SOUND | 
