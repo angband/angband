@@ -3247,8 +3247,8 @@ int get_use_device_chance(const object_type *o_ptr)
 
 	fail = (100 * numerator) / denominator;
 
-	/* Ensure failure rate is between 1% and 95% */
-	if (fail > 950) fail = 950;
+	/* Ensure failure rate is between 1% and 75% */
+	if (fail > 750) fail = 750;
 	if (fail < 10) fail = 10;
 
 	return fail;
