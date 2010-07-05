@@ -1255,11 +1255,14 @@ void update_mon(int m_idx, bool full)
 			}
 
 			/* See if the monster is emitting lite */
-			if (rf_has(r_ptr->flags, RF_HAS_LITE)) easy = flag = TRUE;
+			/*if (rf_has(r_ptr->flags, RF_HAS_LITE)) easy = flag = TRUE;*/
 
 			/* Use "illumination" */
 			if (player_can_see_bold(fy, fx))
 			{
+				/* Learn it emits light */
+				rf_on(l_ptr->flags, RF_HAS_LITE);
+
 				/* Learn about invisibility */
 				rf_on(l_ptr->flags, RF_INVISIBLE);
 				
