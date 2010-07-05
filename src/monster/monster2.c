@@ -684,7 +684,7 @@ void display_monlist(void)
 		}
 	}
 
-   	/* Message for monsters in LOS - even if there are none */
+	/* Message for monsters in LOS - even if there are none */
 	if (!los_count) prt(format("You can see no monsters."), 0, 0);
 	else prt(format("You can see %d monster%s", los_count, (los_count == 1
 		? ":" : "s:")), 0, 0);
@@ -750,7 +750,7 @@ void display_monlist(void)
 		}
 	}
 
-   	/* Message for monsters outside LOS, if there are any */
+	/* Message for monsters outside LOS, if there are any */
 	if (total_count > los_count)
 	{
 		/* Leave a blank line */
@@ -1254,6 +1254,9 @@ void update_mon(int m_idx, bool full)
 				}
 			}
 
+			/* See if the monster is emitting lite */
+			if (rf_has(r_ptr->flags, RF_HAS_LITE)) easy = flag = TRUE;
+
 			/* Use "illumination" */
 			if (player_can_see_bold(fy, fx))
 			{
@@ -1478,6 +1481,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 	monster_type *m_ptr;
 
+	monster_race *r_ptr;
 
 	/* Monsters */
 	m1 = cave_m_idx[y1][x1];
@@ -1500,6 +1504,10 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Update monster */
 		update_mon(m1, TRUE);
+
+		/* Radiate light? */
+		r_ptr = &r_info[m_ptr->r_idx];
+		if (rf_has(r_ptr->flags, RF_HAS_LITE)) p_ptr->redraw |= PU_UPDATE_VIEW;
 
 		/* Redraw monster list */
 		p_ptr->redraw |= (PR_MONLIST);
@@ -1539,6 +1547,10 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 		/* Update monster */
 		update_mon(m2, TRUE);
+
+		/* Radiate light? */
+		r_ptr = &r_info[m_ptr->r_idx];
+		if (rf_has(r_ptr->flags, RF_HAS_LITE)) p_ptr->update |= PU_UPDATE_VIEW;
 
 		/* Redraw monster list */
 		p_ptr->redraw |= (PR_MONLIST);
@@ -1814,6 +1826,9 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 		/* Optimize -- Repair flags */
 		repair_mflag_nice = TRUE;
 	}
+
+	/* Radiate light? */
+	if (rf_has(r_ptr->flags, RF_HAS_LITE)) p_ptr->update |= PU_UPDATE_VIEW;
 
 	/* Place the monster in the dungeon */
 	if (!monster_place(y, x, n_ptr)) return (FALSE);

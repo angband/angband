@@ -2723,7 +2723,7 @@ void update_view(void)
 
 	int pg = GRID(py,px);
 
-	int i, g, o2;
+	int i, j, k, g, o2;
 
 	int radius;
 
@@ -2777,6 +2777,48 @@ void update_view(void)
 
 	/* Handle real light */
 	if (radius > 0) ++radius;
+
+	/* Scan monster list and add monster lites */
+	for (k = 1; k < z_info->m_max; k++)
+	{
+		/* Check the k'th monster */
+		monster_type *m_ptr = &mon_list[k];
+		monster_race *r_ptr = &r_info[m_ptr->r_idx];
+
+		/* Access the location */
+		int fx = m_ptr->fx;
+		int fy = m_ptr->fy;
+		
+		/* Skip dead monsters */
+		if (!m_ptr->r_idx) continue;
+
+		/* Skip monsters not carrying lite */
+		if (!rf_has(r_ptr->flags, RF_HAS_LITE)) continue;
+		
+		/* Light a 3x3 box centered on the monster */
+		for (i = -1; i <= 1; i++)
+		{
+			for (j = -1; j <= 1; j++)
+			{
+				int sy = fy + i;
+				int sx = fx + j;
+				
+				/* Make sure the square is close enough and is in LOS */
+				if (distance(p_ptr->py, p_ptr->px, sy, sx) > MAX_SIGHT)
+					continue;
+				else if (!los(p_ptr->py, p_ptr->px, sy, sx))
+					continue;
+				
+				g = GRID(sy, sx);
+
+				/* Mark the square lit and seen */
+				fast_cave_info[g] |= (CAVE_VIEW | CAVE_SEEN);
+				
+				/* Save in array */
+				fast_view_g[fast_view_n++] = g;
+			}
+		}
+	}
 
 
 	/*** Step 1 -- player grid ***/

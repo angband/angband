@@ -3783,6 +3783,8 @@ static void process_monster(int m_idx)
 		if (make_attack_spell(m_idx)) return;
 	}
 
+	if (rf_has(r_ptr->flags, RF_HAS_LITE)) do_view = TRUE;
+
 	/* Notice changes in view */
 	if (do_view)
 	{

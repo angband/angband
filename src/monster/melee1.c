@@ -190,15 +190,14 @@ bool make_attack_normal(int m_idx)
 		/* Hack -- no more attacks */
 		if (!method) break;
 
-
 		/* Handle "leaving" */
 		if (p_ptr->leaving) break;
-
 
 		/* Extract visibility (before blink) */
 		if (m_ptr->ml) visible = TRUE;
 
-
+		/* Extract visibility from carrying lite */
+		if (rf_has(r_ptr->flags, RF_HAS_LITE)) visible = TRUE;
 
 		/* Extract the attack "power" */
 		switch (effect)

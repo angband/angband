@@ -1335,6 +1335,7 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 
 	/* Collect special abilities. */
 	vn = 0;
+	if (rf_has(f, RF_HAS_LITE)) vp[vn++] = "light surroundings";
 	if (rf_has(f, RF_OPEN_DOOR)) vp[vn++] = "open doors";
 	if (rf_has(f, RF_BASH_DOOR)) vp[vn++] = "bash down doors";
 	if (rf_has(f, RF_PASS_WALL)) vp[vn++] = "pass through walls";
