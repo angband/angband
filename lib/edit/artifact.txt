@@ -545,7 +545,7 @@ N:31:of Celegorm
 I:shield:Leather Shield~:0
 W:30:3:60:12000
 A:33:30 to 100
-P:4:1d2:0:0:20
+P:6:1d2:0:0:20
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_LIGHT | RES_DARK
 F:RES_BLIND
 D:This shield emblazoned with a multitude of creatures unseen for ages 
@@ -557,7 +557,7 @@ N:32:of Anarion
 I:shield:Large Metal Shield~:0
 W:40:9:120:160000
 A:11:40 to 100
-P:5:1d3:0:0:20
+P:8:1d3:0:0:20
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | SUST_STR | SUST_INT | 
 F:SUST_WIS | SUST_DEX | SUST_CON | SUST_CHR
 D:The great metal-bound shield of Anarion, son of Elendil, whom Sauron 
