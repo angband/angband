@@ -1273,10 +1273,10 @@ static void desc_art_fake(int a_idx)
 		make_fake_artifact(o_ptr, a_idx);
 		o_ptr->ident |= IDENT_NAME;
 
-		/* If it has a history entry, it was known before it was lost,
-		  otherwise it was missed completely */
-		if (history_is_artifact_logged(a_idx)) mode = OINFO_FULL;
-			else mode = OINFO_NONE;
+		/* Check the history entry, to see if it was fully known before it
+		 * was lost */
+		if (history_is_artifact_known(a_idx))
+			mode = OINFO_FULL;
 	}
 
 	/* Hack -- Handle stuff */
@@ -1333,14 +1333,14 @@ static bool artifact_is_known(int a_idx)
 	{
 		int a = o_list[i].name1;
 
-		/* If we haven't actually identified the artifact yet */
-		if (a && a == a_idx && !object_is_known(&o_list[i]))
+		/* If we haven't actually sensed the artifact yet */
+		if (a && a == a_idx && !object_is_known_artifact(&o_list[i]))
 		{
 			return FALSE;
 		}
 	}
 
-        /* Check inventory for the same */
+    /* Check inventory for the same */
 	for (i = 0; i < INVEN_TOTAL; i++)
 	{
 		object_type *o_ptr = &inventory[i];
@@ -1348,9 +1348,8 @@ static bool artifact_is_known(int a_idx)
 		/* Ignore non-objects */
 		if (!o_ptr->k_idx) continue;
 
-
 		if (o_ptr->name1 && o_ptr->name1 == a_idx &&
-		    !object_is_known(o_ptr))
+		    !object_is_known_artifact(o_ptr))
 		{
 			return FALSE;
 		}

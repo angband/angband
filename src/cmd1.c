@@ -315,7 +315,7 @@ static void py_pickup_aux(int o_idx, bool msg)
 
 	/* Log artifacts if found */
 	if (artifact_p(o_ptr))
-		history_add_artifact(o_ptr->name1, object_was_sensed(o_ptr), TRUE);
+		history_add_artifact(o_ptr->name1, object_is_known(o_ptr), TRUE);
 
 	/* Optionally, display a message */
 	if (msg && !quiver_slot)

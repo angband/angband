@@ -811,7 +811,7 @@ void object_notice_on_wield(object_type *o_ptr)
 
 	/* Note artifacts when found */
 	if (artifact_p(o_ptr))
-		history_add_artifact(o_ptr->name1, object_was_sensed(o_ptr), TRUE);
+		history_add_artifact(o_ptr->name1, object_is_known(o_ptr), TRUE);
 
 	/* special case FA, needed at least for mages wielding gloves */
 	if (object_FA_would_be_obvious(o_ptr))

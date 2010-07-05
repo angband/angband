@@ -356,7 +356,7 @@ void history_unmask_unknown(void);
 bool history_lose_artifact(byte a_idx);
 void history_display(void);
 void dump_history(ang_file *file);
-bool history_is_artifact_logged(byte a_idx);
+bool history_is_artifact_known(byte a_idx);
 
 /* init2.c */
 extern void init_file_paths(const char *configpath, const char *libpath, const char *datapath);

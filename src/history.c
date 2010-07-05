@@ -193,12 +193,28 @@ bool history_add(const char *event, u16b type, byte a_idx)
 
 
 /*
+ * Returns TRUE if the artifact denoted by a_idx is KNOWN in the history log.
+ */
+bool history_is_artifact_known(byte a_idx)
+{
+	size_t i = history_ctr;
+
+	while (i--)
+	{
+		if (history_list[i].a_idx == a_idx && (history_list[i].type & HISTORY_ARTIFACT_KNOWN))
+			return TRUE;
+	}
+	return FALSE;
+}
+
+
+/*
  * Returns TRUE if the artifact denoted by a_idx is an active entry in
  * the history log (i.e. is not marked HISTORY_ARTIFACT_LOST).  This permits
  * proper handling of the case where the player loses an artifact but (in
  * preserve mode) finds it again later.
  */
-bool history_is_artifact_logged(byte a_idx)
+static bool history_is_artifact_logged(byte a_idx)
 {
 	size_t i = history_ctr;
 
@@ -288,12 +304,12 @@ void history_unmask_unknown(void)
 /*
  * Used to determine whether the history entry is visible in the listing or not.
  * Returns TRUE if the item is masked -- that is, if it is invisible
+ *
+ * All artifacts are now sensed on pickup, so nothing is now invisible. The
+ * KNOWN / UNKNOWN distinction is if we had fully identified it or not
  */
 static bool history_masked(size_t i)
 {
-	if (history_list[i].type & HISTORY_ARTIFACT_UNKNOWN)
-		return TRUE;
-
 	return FALSE;
 }
 

@@ -1208,28 +1208,27 @@ void wipe_o_list(void)
 	for (i = 1; i < o_max; i++)
 	{
 		object_type *o_ptr = &o_list[i];
+		artifact_type *a_ptr = artifact_of(o_ptr);
 
 		/* Skip dead objects */
 		if (!o_ptr->k_idx) continue;
 
-		/* Preserve artifacts */
-		if (!character_dungeon || !OPT(adult_no_preserve))
-		{
-			artifact_type *a_ptr = artifact_of(o_ptr);
-
-			/* Preserve only artifacts not known to be unique */
-			if (a_ptr && !object_was_sensed(o_ptr))
+		/* Preserve artifacts or mark them as lost in the history */
+		if (a_ptr) {
+			/* Preserve if dungeon creation failed, or preserve mode, and only artifacts not seen */
+			if ((!character_dungeon || !OPT(adult_no_preserve)) && !object_was_sensed(o_ptr))
 			{
 				a_ptr->created = FALSE;
 
 				/* Cheat -- Mention preserving */
 				if (OPT(cheat_peek)) mention_preserve(o_ptr);
 			}
+			else
+			{
+				/* Mark artifact as lost in logs */
+				history_lose_artifact(o_ptr->name1);
+			}
 		}
-
-		/* Mark artifacts as lost in logs */
-		if (artifact_p(o_ptr))
-			history_lose_artifact(o_ptr->name1);
 
 		/* Monster */
 		if (o_ptr->held_m_idx)
