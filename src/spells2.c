@@ -324,7 +324,7 @@ static int remove_curse_aux(bool heavy)
 	int i, cnt = 0;
 
 	/* Attempt to uncurse items being worn */
-	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
 		object_type *o_ptr = &inventory[i];
 
