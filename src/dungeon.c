@@ -1238,6 +1238,43 @@ static void process_player(void)
 }
 
 
+/*
+ * This animates monsters and/or items as necessary.
+ */
+void do_animation(void)
+{
+	int i;
+	for (i = 1; i < mon_max; i++)
+	{
+		monster_type *m_ptr = &mon_list[i];
+		monster_race *r_ptr = &r_info[m_ptr->r_idx];
+
+		if (!m_ptr) continue;
+		if (!m_ptr->ml) continue;
+		if (!rf_has(r_ptr->flags, RF_ATTR_MULTI)) continue;
+
+		m_ptr->attr = randint1(BASIC_COLORS - 1);
+		p_ptr->redraw |= (PR_MAP | PR_MONLIST);
+	}
+}
+
+
+/*
+ * This is used when the user is idle to allow for simple animations.
+ * Currently the only thing it really does is animate shimmering monsters.
+ */
+void idle_update(void)
+{
+	if (!character_dungeon) return;
+
+	/* Animate and redraw if necessary */
+	do_animation();
+	redraw_stuff();
+
+	/* Refresh the main screen */
+	Term_fresh();
+}
+
 
 /*
  * Interact with the current dungeon level.
@@ -1417,6 +1454,8 @@ static void dungeon(void)
 		/* Hack -- Compress the object list occasionally */
 		if (o_cnt + 32 < o_max) compact_objects(0);
 
+		/* Do any necessary animations */
+		do_animation(); 
 
 		/* Can the player move? */
 		while ((p_ptr->energy >= 100) && !p_ptr->leaving)

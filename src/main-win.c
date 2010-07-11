@@ -1810,12 +1810,14 @@ static errr Term_xtra_win_event(int v)
 	/* Wait for an event */
 	if (v)
 	{
-		/* Block */
-		if (GetMessage(&msg, NULL, 0, 0))
+		while (!PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			/* Do animation updates, sleep 0.1s and try again */
+			idle_update();
+			Sleep(100);
 		}
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
 	}
 
 	/* Check for an event */

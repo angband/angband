@@ -759,7 +759,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			else if (rf_has(r_ptr->flags, RF_ATTR_MULTI))
 			{
 				/* Multi-hued attr */
-				a = randint1(BASIC_COLORS - 1);
+				a = m_ptr->attr ? m_ptr->attr : 1;
 				
 				/* Normal char */
 				c = dc;

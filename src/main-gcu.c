@@ -513,11 +513,16 @@ static errr Term_xtra_gcu_event(int v)
 	/* Wait */
 	if (v)
 	{
-		/* Paranoia -- Wait for it */
-		nodelay(stdscr, FALSE);
-
-		/* Get a keypress */
+		/* Get a keypress; we use halfdelay(1) so if the user takes more */
+		/* than 0.1 seconds we get a chance to do updates. */
+		halfdelay(1);
 		i = getch();
+		while (i == ERR)
+		{
+			i = getch();
+			idle_update();
+		}
+		cbreak();
 
 		/* Mega-Hack -- allow graceful "suspend" */
 		for (k = 0; (k < 10) && (i == ERR); k++) i = getch();

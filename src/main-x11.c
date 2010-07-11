@@ -1762,6 +1762,13 @@ static errr CheckEvent(bool wait)
 	/* Do not wait unless requested */
 	if (!wait && !XPending(Metadpy->dpy)) return (1);
 
+	/* Wait in 0.1s increments while updating animations */
+	while (!XPending(Metadpy->dpy))
+	{
+		idle_update();
+		usleep(100000);
+	}
+
 	/* Load the Event */
 	XNextEvent(Metadpy->dpy, xev);
 

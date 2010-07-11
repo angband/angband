@@ -320,6 +320,7 @@ void death_screen(void);
 extern void dungeon_change_level(int dlev);
 extern void play_game(void);
 extern int value_check_aux1(const object_type *o_ptr);
+extern void idle_update(void);
 
 /* files.c */
 extern void html_screenshot(cptr name, int mode);
