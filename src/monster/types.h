@@ -147,6 +147,8 @@ typedef struct
 
 	s16b hold_o_idx;	/* Object being held (if any) */
 
+	byte attr;  /* attr last used for drawing monster */
+
 	u32b smart;			/* Field for "adult_ai_learn" */
 } monster_type;
 
@@ -159,6 +161,7 @@ typedef struct
 	u16b asleep;		/* number asleep (not in LOS) */
 	u16b los;		/* number in LOS */
 	u16b los_asleep;	/* number asleep and in LOS */
+	byte attr; /* attr to use for drawing */
 } monster_vis; 
 
 #endif /* INCLUDED_MONSTER_TYPES_H */

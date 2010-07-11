@@ -801,8 +801,11 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			else if (!rf_has(r_ptr->flags, RF_ATTR_CLEAR))
 			{
 				/* Normal attr */
-					a = da;
+				a = da;
 			}
+
+			/* Store the drawing attr so we can use it other places too */
+			m_ptr->attr = a;
 		}
 	}
 

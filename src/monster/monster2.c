@@ -590,13 +590,18 @@ void display_monlist(void)
 	/* Scan the list of monsters on the level */
 	for (i = 1; i < (size_t)mon_max; i++)
 	{
+		monster_vis *v;
 		m_ptr = &mon_list[i];
 
 		/* Only consider visible monsters */
 		if (!m_ptr->ml) continue;
 
-		/* If this is the first one of this type, count the type */
-		if (!list[m_ptr->r_idx].count) type_count++;
+		/* Take a pointer to this monster visibility entry */
+		v = &list[m_ptr->r_idx];
+
+		/* Note each monster type and save its display attr (color) */
+		if (!v->count) type_count++;
+		if (!v->attr) v->attr = m_ptr->attr;
 		
 		/* Check for LOS
 		 * Hack - we should use (m_ptr->mflag & (MFLAG_VIEW)) here,
@@ -610,16 +615,16 @@ void display_monlist(void)
 			los_count++;
 
 			/* Increment the LOS count for this monster type */
-			list[m_ptr->r_idx].los++;
+			v->los++;
 			
 			/* Check if asleep and increment accordingly */
-			if (m_ptr->csleep) list[m_ptr->r_idx].los_asleep++;
+			if (m_ptr->csleep) v->los_asleep++;
 		}
 		/* Not in LOS so increment if asleep */
-		else if (m_ptr->csleep) list[m_ptr->r_idx].asleep++;
+		else if (m_ptr->csleep) v->asleep++;
 
 		/* Bump the count for this race, and the total count */
-		list[m_ptr->r_idx].count++;
+		v->count++;
 		total_count++;
 	}
 
@@ -722,7 +727,7 @@ void display_monlist(void)
 			list[order[i]].los, list[order[i]].los_asleep);
 
 		/* Display the pict */
-		Term_putch(cur_x++, line, r_ptr->x_attr, r_ptr->x_char);
+		Term_putch(cur_x++, line, list[order[i]].attr, r_ptr->x_char);
 		if (use_bigtile) Term_putch(cur_x++, line, 255, -1);
 		Term_putch(cur_x++, line, TERM_WHITE, ' ');
 
@@ -795,7 +800,7 @@ void display_monlist(void)
 			list[order[i]].asleep);
 
 		/* Display the pict */
-		Term_putch(cur_x++, line, r_ptr->x_attr, r_ptr->x_char);
+		Term_putch(cur_x++, line, list[order[i]].attr, r_ptr->x_char);
 		if (use_bigtile) Term_putch(cur_x++, line, 255, -1);
 		Term_putch(cur_x++, line, TERM_WHITE, ' ');
 
