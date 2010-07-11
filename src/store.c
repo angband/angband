@@ -211,7 +211,7 @@ static void prt_welcome(const owner_type *ot_ptr)
 	i = MIN(i, N_ELEMENTS(comment_welcome) - 1);
 
 	/* Only show the message one in four times to stop it being irritating. */
-	if (one_in_(4)) return;
+	if (!one_in_(4)) return;
 
 	/* Welcome the character */
 	if (i)
