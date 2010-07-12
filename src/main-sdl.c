@@ -2653,11 +2653,13 @@ static errr Term_xtra_sdl_event(int v)
 	/* Wait for an event */
 	if (v)
 	{
+		int i = 0;
 		while (!SDL_PollEvent(&event))
 		{
 			/* Do animation updates, sleep 0.1s and try again */
-			idle_update();
-			usleep(100000);
+			if (i == 0) idle_update();
+			usleep(10000);
+			i = (i + 1) % 10;
 		}
 
 		/* Handle it */

@@ -1763,10 +1763,12 @@ static errr CheckEvent(bool wait)
 	if (!wait && !XPending(Metadpy->dpy)) return (1);
 
 	/* Wait in 0.1s increments while updating animations */
+	i = 0;
 	while (!XPending(Metadpy->dpy))
 	{
-		idle_update();
-		usleep(100000);
+		if (i == 0) idle_update();
+		usleep(10000);
+		i = (i + 1) % 10;
 	}
 
 	/* Load the Event */

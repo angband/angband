@@ -1810,11 +1810,13 @@ static errr Term_xtra_win_event(int v)
 	/* Wait for an event */
 	if (v)
 	{
+		int i = 0;
 		while (!PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
 			/* Do animation updates, sleep 0.1s and try again */
-			idle_update();
-			Sleep(100);
+			if (i == 0) idle_update();
+			Sleep(10);
+			i = (i + 1) % 10;
 		}
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
