@@ -312,7 +312,7 @@ static errr Term_xtra_gcu_alive(int v)
 		(void)refresh();
 
 		/* Get current cursor position */
-		getyx(curscr, y, x);
+		getyx(stdscr, y, x);
 
 		/* Move the cursor to bottom right corner */
 		mvcur(y, x, LINES - 1, 0);
@@ -405,7 +405,7 @@ static void Term_nuke_gcu(term *t)
 #endif
 
 	/* Get current cursor position */
-	getyx(curscr, y, x);
+	getyx(stdscr, y, x);
 
 	/* Move the cursor to bottom right corner */
 	mvcur(y, x, LINES - 1, 0);
@@ -515,7 +515,7 @@ static errr Term_xtra_gcu_event(int v)
 	{
 		/* Get a keypress; we use halfdelay(1) so if the user takes more */
 		/* than 0.1 seconds we get a chance to do updates. */
-		halfdelay(1);
+		halfdelay(2);
 		i = getch();
 		while (i == ERR)
 		{

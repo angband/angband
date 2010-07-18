@@ -47,7 +47,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 	{
 		OPT_hp_changes_color,
 		OPT_highlight_player,
- 		OPT_center_player,
+ 		  OPT_center_player,
 		OPT_show_piles,
 		OPT_show_flavors,
 		OPT_show_labels,
@@ -57,7 +57,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_view_special_light,
 		OPT_view_perma_grids,
 		OPT_view_torch_grids,
-		OPT_NONE,
+		OPT_animate_flicker,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
@@ -200,7 +200,7 @@ static option_entry options[OPT_MAX] =
 { "view_special_light",  "Use special colors for floor grids",          TRUE },  /* 63 */
 { "easy_open",           "Open/Disarm/Close without direction",         FALSE }, /* 64 */
 { "easy_alter",          "Open/Disarm doors/traps on movement",         FALSE }, /* 65 */
-{ NULL,                  NULL,                                          FALSE }, /* 66 */
+{ "animate_flicker",     "Animate multi-colored monsters and items",    FALSE }, /* 66 */
 { "show_piles",          "Show stacks using special attr/char",         FALSE }, /* 67 */
 { "center_player",       "Center map continuously",                     FALSE }, /* 68 */
 { NULL,                  NULL,                                          FALSE }, /* 69 */

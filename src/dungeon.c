@@ -1237,6 +1237,48 @@ static void process_player(void)
 	while (!p_ptr->energy_use && !p_ptr->leaving);
 }
 
+byte flicker = 0;
+byte color_flicker[MAX_COLORS][3] = 
+{
+	{TERM_DARK, TERM_L_DARK, TERM_L_RED},
+	{TERM_WHITE, TERM_L_WHITE, TERM_L_BLUE},
+	{TERM_SLATE, TERM_WHITE, TERM_L_DARK},
+	{TERM_ORANGE, TERM_YELLOW, TERM_L_RED},
+	{TERM_RED, TERM_L_RED, TERM_L_PINK},
+	{TERM_GREEN, TERM_L_GREEN, TERM_L_TEAL},
+	{TERM_BLUE, TERM_L_BLUE, TERM_SLATE},
+	{TERM_UMBER, TERM_L_UMBER, TERM_MUSTARD},
+	{TERM_L_DARK, TERM_SLATE, TERM_L_VIOLET},
+	{TERM_WHITE, TERM_SLATE, TERM_L_WHITE},
+	{TERM_L_PURPLE, TERM_PURPLE, TERM_L_VIOLET},
+	{TERM_YELLOW, TERM_L_YELLOW, TERM_MUSTARD},
+	{TERM_L_RED, TERM_RED, TERM_L_PINK},
+	{TERM_L_GREEN, TERM_L_TEAL, TERM_GREEN},
+	{TERM_L_BLUE, TERM_DEEP_L_BLUE, TERM_BLUE_SLATE},
+	{TERM_L_UMBER, TERM_UMBER, TERM_MUD},
+	{TERM_PURPLE, TERM_VIOLET, TERM_MAGENTA},
+	{TERM_VIOLET, TERM_L_VIOLET, TERM_MAGENTA},
+	{TERM_TEAL, TERM_L_TEAL, TERM_L_GREEN},
+	{TERM_MUD, TERM_YELLOW, TERM_UMBER},
+	{TERM_L_YELLOW, TERM_WHITE, TERM_L_UMBER},
+	{TERM_MAGENTA, TERM_L_PINK, TERM_L_RED},
+	{TERM_L_TEAL, TERM_L_WHITE, TERM_TEAL},
+	{TERM_L_VIOLET, TERM_L_PURPLE, TERM_VIOLET},
+	{TERM_L_PINK, TERM_L_RED, TERM_L_WHITE},
+	{TERM_MUSTARD, TERM_YELLOW, TERM_UMBER},
+	{TERM_BLUE_SLATE, TERM_BLUE, TERM_SLATE},
+	{TERM_DEEP_L_BLUE, TERM_L_BLUE, TERM_BLUE},
+};
+
+byte get_flicker(byte a)
+{
+	switch(flicker % 3)
+	{
+		case 1: return color_flicker[a][1];
+		case 2: return color_flicker[a][2];
+	}
+	return a;
+}
 
 /*
  * This animates monsters and/or items as necessary.
@@ -1244,18 +1286,26 @@ static void process_player(void)
 void do_animation(void)
 {
 	int i;
+
 	for (i = 1; i < mon_max; i++)
 	{
+		byte attr;
 		monster_type *m_ptr = &mon_list[i];
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
-		if (!m_ptr) continue;
-		if (!m_ptr->ml) continue;
-		if (!rf_has(r_ptr->flags, RF_ATTR_MULTI)) continue;
+		if (!m_ptr || !m_ptr->ml)
+			continue;
+		else if (rf_has(r_ptr->flags, RF_ATTR_MULTI))
+			attr = randint1(BASIC_COLORS - 1);
+		else if (rf_has(r_ptr->flags, RF_ATTR_FLICKER))
+			attr = get_flicker(r_ptr->x_attr);
+		else
+			continue;
 
-		m_ptr->attr = randint1(BASIC_COLORS - 1);
+		m_ptr->attr = attr;
 		p_ptr->redraw |= (PR_MAP | PR_MONLIST);
 	}
+	flicker++;
 }
 
 
@@ -1266,6 +1316,8 @@ void do_animation(void)
 void idle_update(void)
 {
 	if (!character_dungeon) return;
+
+	if (!OPT(animate_flicker)) return;
 
 	/* Animate and redraw if necessary */
 	do_animation();
@@ -1454,12 +1506,12 @@ static void dungeon(void)
 		/* Hack -- Compress the object list occasionally */
 		if (o_cnt + 32 < o_max) compact_objects(0);
 
-		/* Do any necessary animations */
-		do_animation(); 
-
 		/* Can the player move? */
 		while ((p_ptr->energy >= 100) && !p_ptr->leaving)
 		{
+    		/* Do any necessary animations */
+    		do_animation(); 
+
 			/* process monster with even more energy first */
 			process_monsters((byte)(p_ptr->energy + 1));
 

@@ -1813,9 +1813,10 @@ static errr Term_xtra_win_event(int v)
 		int i = 0;
 		while (!PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
-			/* Do animation updates, sleep 0.1s and try again */
+			/* Do animation updates (once every ten iterations), then
+			 * sleep 0.02s and try again */
 			if (i == 0) idle_update();
-			Sleep(10);
+			Sleep(20);
 			i = (i + 1) % 10;
 		}
 		TranslateMessage(&msg);
@@ -1823,14 +1824,10 @@ static errr Term_xtra_win_event(int v)
 	}
 
 	/* Check for an event */
-	else
+	else if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 	{
-		/* Check */
-		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
 	}
 
 	/* Success */

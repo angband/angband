@@ -591,7 +591,9 @@ void display_monlist(void)
 	for (i = 1; i < (size_t)mon_max; i++)
 	{
 		monster_vis *v;
+
 		m_ptr = &mon_list[i];
+		r_ptr = &r_info[m_ptr->r_idx];
 
 		/* Only consider visible monsters */
 		if (!m_ptr->ml) continue;
@@ -601,7 +603,7 @@ void display_monlist(void)
 
 		/* Note each monster type and save its display attr (color) */
 		if (!v->count) type_count++;
-		if (!v->attr) v->attr = m_ptr->attr;
+		if (!v->attr) v->attr = m_ptr->attr ? m_ptr->attr : r_ptr->x_attr;
 		
 		/* Check for LOS
 		 * Hack - we should use (m_ptr->mflag & (MFLAG_VIEW)) here,

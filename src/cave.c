@@ -756,7 +756,8 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			}
 			
 			/* Multi-hued monster */
-			else if (rf_has(r_ptr->flags, RF_ATTR_MULTI))
+			else if (rf_has(r_ptr->flags, RF_ATTR_MULTI) ||
+					 rf_has(r_ptr->flags, RF_ATTR_FLICKER))
 			{
 				/* Multi-hued attr */
 				a = m_ptr->attr ? m_ptr->attr : 1;
