@@ -208,6 +208,21 @@ const slay_t slay_table[] =
 	{ FLAG_END,       FLAG_END,  FLAG_END,   0, NULL, NULL, NULL, NULL, NULL }
 };
 
+
+/* Slays which are in some sense duplicates. *Slay* dragons supercedes slay dragons
+ * for example.
+ */
+const struct {
+	int minor;
+	int major;
+} slay_dups[] =
+{
+	{ OF_SLAY_DRAGON, OF_KILL_DRAGON },
+	{ OF_SLAY_DEMON, OF_KILL_DEMON },
+	{ OF_SLAY_UNDEAD, OF_KILL_UNDEAD },
+};
+
+
 /*
  * Helper function to externalise N_ELEMENTS(slay_table), which itself is not
  * available outside this compilation unit
@@ -463,7 +478,18 @@ static bool describe_slays(const bitflag flags[OF_SIZE], int tval)
 static int collect_slays(const char *desc[], int mult[], bitflag *flags)
 {
 	int cnt = 0;
+	int i;
 	const slay_t *s_ptr;
+
+	/* Remove "duplicate" flags e.g. *slay* and slay the same
+	 * monster type
+	 */
+	for (i = 0; i < N_ELEMENTS(slay_dups); i++) {
+		if (of_has(flags, slay_dups[i].minor) &&
+			of_has(flags, slay_dups[i].major)) {
+			of_off(flags, slay_dups[i].minor);
+		}
+	}
 
 	/* Collect slays */
 	for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
