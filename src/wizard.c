@@ -545,29 +545,20 @@ static void wiz_tweak_item(object_type *o_ptr)
 	/* Hack -- leave artifacts alone */
 	if (artifact_p(o_ptr)) return;
 
-	p = "Enter new 'pval' setting: ";
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->pval);
-	if (!get_string(p, tmp_val, 6)) return;
-	o_ptr->pval = atoi(tmp_val);
-	wiz_display_item(o_ptr, TRUE);
+#define WIZ_TWEAK(attribute) do {\
+	p = "Enter new '" #attribute "' setting: ";\
+	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->attribute);\
+	if (!get_string(p, tmp_val, 6)) return;\
+	o_ptr->attribute = atoi(tmp_val);\
+	wiz_display_item(o_ptr, TRUE);\
+} while (0)
 
-	p = "Enter new 'to_a' setting: ";
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->to_a);
-	if (!get_string(p, tmp_val, 6)) return;
-	o_ptr->to_a = atoi(tmp_val);
-	wiz_display_item(o_ptr, TRUE);
-
-	p = "Enter new 'to_h' setting: ";
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->to_h);
-	if (!get_string(p, tmp_val, 6)) return;
-	o_ptr->to_h = atoi(tmp_val);
-	wiz_display_item(o_ptr, TRUE);
-
-	p = "Enter new 'to_d' setting: ";
-	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->to_d);
-	if (!get_string(p, tmp_val, 6)) return;
-	o_ptr->to_d = atoi(tmp_val);
-	wiz_display_item(o_ptr, TRUE);
+	WIZ_TWEAK(pval);
+	WIZ_TWEAK(to_a);
+	WIZ_TWEAK(to_h);
+	WIZ_TWEAK(to_d);
+	WIZ_TWEAK(name1);
+	WIZ_TWEAK(name2);
 }
 
 
