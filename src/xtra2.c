@@ -80,17 +80,15 @@ void check_experience(void)
 		p_ptr->lev++;
 
 		/* Save the highest level */
-		if (p_ptr->lev > p_ptr->max_lev)
-		{
-			p_ptr->max_lev = p_ptr->lev;
+		if (p_ptr->lev > p_ptr->max_lev) p_ptr->max_lev = p_ptr->lev;
 
-			/* Log level updates (TODO: perhaps only every other level or every 5) */
-			strnfmt(buf, sizeof(buf), "Reached level %d", p_ptr->lev);
-			history_add(buf, HISTORY_GAIN_LEVEL, 0);
-		}
+		/* Log level updates */
+		strnfmt(buf, sizeof(buf), "Reached level %d", p_ptr->lev);
+		history_add(buf, HISTORY_GAIN_LEVEL, 0);
 
 		/* Message */
-		message_format(MSG_LEVEL, p_ptr->lev, "Welcome to level %d.", p_ptr->lev);
+		message_format(MSG_LEVEL, p_ptr->lev, "Welcome to level %d.",
+			p_ptr->lev);
 
 		/* Add to social class */
 		p_ptr->sc += randint1(2);
