@@ -835,10 +835,14 @@ enum
 #define EGO_KILL_TROLL		85
 #define EGO_KILL_GIANT		86
 #define EGO_KILL_DRAGON		95
+
+/* Lights */
 /* xxx */
+#define EGO_BRIGHTNESS		97
+#define EGO_EVERBURNING		98
 /* xxx */
-/* xxx */
-/* xxx */
+
+/* More weapons */
 #define EGO_DIGGING			100
 #define EGO_DIGGER_EARTHQUAKE		101
 #define EGO_MORGUL			102

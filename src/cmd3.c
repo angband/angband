@@ -358,7 +358,7 @@ void textui_cmd_destroy(void)
 	else if (result == 's' && squelch_interactive(o_ptr))
 	{
 		p_ptr->notice |= PN_SQUELCH;
-		
+
 		/* If the item is not equipped, we can rely on it being dropped and */
 		/* ignored, otherwise we should continue on to check if we should */
 		/* still destroy it. */
@@ -457,11 +457,25 @@ void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 
 void refuel_torch(object_type *j_ptr, object_type *o_ptr, int item)
 {
+	bitflag f[OF_SIZE];
+	bitflag g[OF_SIZE];
+
 	/* Refuel */
 	j_ptr->timeout += o_ptr->timeout + 5;
 
 	/* Message */
 	msg_print("You combine the torches.");
+
+	/* Transfer the LIGHT flag if refuelling from a torch with it to one
+	   without it */
+	object_flags(o_ptr, f);
+	object_flags(j_ptr, g);
+	if (of_has(f, OF_LIGHT) && !of_has(g, OF_LIGHT))
+	{
+		of_on(j_ptr->flags, OF_LIGHT);
+		if (!j_ptr->name2) j_ptr->name2 = EGO_BRIGHTNESS;
+		msg_print("Your torch shines further!");
+	}
 
 	/* Over-fuel message */
 	if (j_ptr->timeout >= FUEL_TORCH)
