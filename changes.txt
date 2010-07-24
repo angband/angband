@@ -78,4 +78,5 @@ r2005 Allow wizmode tweaking to specify artifact or ego type (name1/name2)
 Documentation changes
 =====================
 r1973 Remove obsolete references to class restrictions
+r2012 Include power rating in artifact spoiler
 

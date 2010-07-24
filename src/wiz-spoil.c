@@ -506,12 +506,14 @@ static void spoil_artifact(cptr fname)
 			object_info_spoil(i_ptr);
 
 			/*
-			 * Determine the minimum depth an artifact can appear, its rarity,
-			 * its weight, and its value in gold pieces.
+			 * Determine the minimum and maximum depths an
+			 * artifact can appear, its rarity, its weight, and
+			 * its power rating.
 			 */
-			text_out("\nMin Level %u, Max Level %u, Generation chance %u, %d.%d lbs\n",
+			text_out("\nMin Level %u, Max Level %u, Generation chance %u, Power %u, %d.%d lbs\n",
 				a_ptr->alloc_min, a_ptr->alloc_max,
-				a_ptr->alloc_prob, (a_ptr->weight / 10),
+				a_ptr->alloc_prob, object_power(i_ptr, FALSE,
+				NULL, TRUE), (a_ptr->weight / 10),
 				(a_ptr->weight % 10));
 
 			/* Terminate the entry */
