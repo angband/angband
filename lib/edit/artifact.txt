@@ -338,7 +338,7 @@ N:16:'Razorback'
 I:dragon armour:Multi-Hued Dragon Scale Mail~:0
 W:90:9:200:400000
 A:11:90 to 127
-P:30:2d4:-4:0:25
+P:50:2d4:-4:0:25
 F:FREE_ACT | IM_ELEC | RES_DISEN | 
 F:RES_ACID | RES_FIRE | RES_COLD | 
 F:RES_POIS | RES_LIGHT | RES_DARK | 
@@ -352,9 +352,9 @@ D:untamed Lightning as you put it on.
 
 N:17:'Bladeturner'
 I:dragon armour:Power Dragon Scale Mail~:0
-W:100:16:200:500000
+W:100:16:250:500000
 A:6:100 to 127
-P:50:2d4:-8:0:35
+P:80:2d4:-8:0:35
 F:HOLD_LIFE | REGEN | 
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_POIS | RES_FEAR | 
 F:RES_LIGHT | RES_DARK | RES_BLIND | RES_CONFU | RES_SOUND | 
@@ -368,9 +368,9 @@ D:powers elemental and ethereal.
 
 N:18:'Mediator'
 I:dragon armour:Balance Dragon Scale Mail~:0
-W:95:12:200:400000
+W:95:12:250:400000
 A:8:95 to 127
-P:30:2d4:-4:0:25
+P:60:2d4:-4:0:25
 F:RES_CHAOS | RES_DISEN | RES_SHARD | RES_SOUND | 
 F:RES_CONFU | RES_NEXUS | 
 F:FREE_ACT | SLOW_DIGEST | REGEN | 
@@ -386,7 +386,7 @@ N:19:'Soulkeeper'
 I:hard armour:Adamantite Plate Mail~:2
 W:75:9:420:300000
 A:11:75 to 127
-P:40:2d4:-4:0:20
+P:90:2d4:-4:0:20
 F:CON | 
 F:HOLD_LIFE | SUST_CON | 
 F:RES_ACID | RES_COLD | RES_DARK | RES_NETHR | RES_NEXUS | 
@@ -402,7 +402,7 @@ N:20:of Isildur
 I:hard armour:Full Plate Armour~:1
 W:30:3:300:50000
 A:33:30 to 100
-P:26:2d4:0:0:25
+P:75:2d4:0:0:25
 F:CON | 
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | 
 F:RES_SOUND | RES_CONFU | RES_NEXUS
@@ -414,7 +414,7 @@ N:21:of the Rohirrim
 I:hard armour:Metal Brigandine Armour~:2
 W:30:3:200:30000
 A:33:30 to 100
-P:20:1d4:0:0:15
+P:50:1d4:0:0:15
 F:STR | DEX | HIDE_TYPE | RES_FEAR | 
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_CONFU | RES_SOUND
 D:Small metal plates cover an inner layer of sturdy canvas, and both bear 
@@ -426,7 +426,7 @@ N:22:'Belegennon'
 I:hard armour:Mithril Chain Mail~:4
 W:40:3:150:105000
 A:33:40 to 127
-P:28:1d4:-1:0:20
+P:35:1d4:-1:0:20
 F:DEX | STEALTH | HIDE_TYPE | 
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_POIS
 E:TELE_PHASE:2
@@ -440,7 +440,7 @@ N:23:of Celeborn
 I:hard armour:Mithril Plate Mail~:4
 W:40:3:250:150000
 A:33:40 to 127
-P:35:2d4:-3:0:25
+P:65:2d4:-3:0:25
 F:STR | CHR | HIDE_TYPE | 
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_DARK | 
 F:RES_DISEN
@@ -455,7 +455,7 @@ N:24:of Arvedui
 I:hard armour:Chain Mail~:2
 W:20:3:220:32000
 A:33:20 to 75
-P:14:1d4:-2:0:15
+P:40:1d4:-2:0:15
 F:STR | CHR | HIDE_TYPE | 
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_SHARD | RES_NEXUS
 D:A hauberk, leggings, and sleeves of interlocking steel rings, well padded 
@@ -467,7 +467,7 @@ N:25:of Caspanion
 I:hard armour:Augmented Chain Mail~:3
 W:25:9:270:40000
 A:11:25 to 100
-P:16:1d4:-2:0:20
+P:45:1d4:-2:0:20
 F:INT | WIS | CON | HIDE_TYPE | 
 F:RES_ACID | RES_POIS | RES_CONFU
 E:DESTROY_TDOORS:10
@@ -483,7 +483,7 @@ N:26:of Himring
 I:soft armour:Hard Leather Armour~:0
 W:50:20:100:35000
 A:5:50 to 100
-P:8:0d0:0:0:15
+P:20:0d0:0:0:15
 F:RES_CHAOS | RES_NETHR | RES_POIS
 E:PROTEVIL:100+d100
 M:The {kind} let{s} out a shrill wail...
@@ -495,7 +495,7 @@ N:27:'Hithlomir'
 I:soft armour:Soft Leather Armour~:4
 W:20:3:80:45000
 A:33:20 to 70
-P:4:0d0:0:0:20
+P:10:0d0:0:0:20
 F:STEALTH | HIDE_TYPE | 
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_DARK | RES_NETHR
 D:Familar with the secret ways hidden in darkness, this leather cuirass is 
@@ -506,7 +506,7 @@ N:28:'Thalkettoth'
 I:soft armour:Leather Scale Mail~:3
 W:20:3:60:25000
 A:33:20 to 60
-P:10:1d1:-1:0:25
+P:20:1d1:-1:0:25
 F:DEX | SPEED | HIDE_TYPE | 
 F:RES_ACID | RES_SHARD | FREE_ACT
 D:An amazingly light tunic and skirt sewn with thick, overlapping scales of 
@@ -520,7 +520,7 @@ N:29:of Gil-galad
 I:shield:Mithril Shield~:5
 W:70:4:80:65000
 A:25:70 to 127
-P:10:1d3:0:0:20
+P:20:1d3:0:0:20
 F:LIGHT | WIS | CHR | 
 F:RES_ELEC | RES_ACID | RES_DISEN | RES_DARK | HIDE_TYPE | 
 F:SUST_WIS | SUST_DEX | SUST_CHR
@@ -534,7 +534,7 @@ N:30:of Thorin
 I:shield:Small Metal Shield~:4
 W:40:6:65:60000
 A:16:40 to 127
-P:4:1d2:0:0:25
+P:5:1d2:0:0:25
 F:STR | CON | HIDE_TYPE | RES_FEAR | RES_SOUND
 F:FREE_ACT | IM_ACID | RES_CHAOS
 D:Invoking the strength and endurance of Thorin, King under the Mountain, 
@@ -545,7 +545,7 @@ N:31:of Celegorm
 I:shield:Leather Shield~:0
 W:30:3:60:12000
 A:33:30 to 100
-P:6:1d2:0:0:20
+P:8:1d2:0:0:20
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_LIGHT | RES_DARK
 F:RES_BLIND
 D:This shield emblazoned with a multitude of creatures unseen for ages 
@@ -557,7 +557,7 @@ N:32:of Anarion
 I:shield:Large Metal Shield~:0
 W:40:9:120:160000
 A:11:40 to 100
-P:8:1d3:0:0:20
+P:12:1d3:0:0:20
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | SUST_STR | SUST_INT | 
 F:SUST_WIS | SUST_DEX | SUST_CON | SUST_CHR
 D:The great metal-bound shield of Anarion, son of Elendil, whom Sauron 
@@ -631,7 +631,7 @@ N:38:of Hammerhand
 I:helm:Steel Helm~:3
 W:20:8:60:45000
 A:12:20 to 100
-P:6:1d3:9:9:20
+P:9:1d3:9:9:20
 F:STR | DEX | CON | HIDE_TYPE | 
 F:SUST_STR | SUST_DEX | SUST_CON | AGGRAVATE | 
 F:RES_ACID | RES_NEXUS | RES_COLD | RES_DARK
@@ -643,9 +643,9 @@ D:knew of his coming, none could stand against him.
 
 N:39:of Dor-Lomin
 I:helm:Iron Helm~:4
-W:40:20:75:300000
+W:40:20:50:300000
 A:5:40 to 127
-P:5:1d3:0:0:20
+P:7:1d3:0:0:20
 F:STR | DEX | CON | HIDE_TYPE | RES_FEAR | 
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | 
 F:LIGHT | SEE_INVIS | TELEPATHY
@@ -655,9 +655,9 @@ D:servants of Morgoth.
 
 N:40:'Holhenneth'
 I:helm:Iron Helm~:2
-W:20:5:75:100000
+W:20:5:50:100000
 A:20:20 to 100
-P:5:1d3:0:0:10
+P:7:1d3:0:0:10
 F:INT | WIS | SEARCH | HIDE_TYPE | 
 F:RES_BLIND | RES_CONFU | SEE_INVIS
 E:DETECT_ALL:55+d55
@@ -670,7 +670,7 @@ N:41:of Gorlim
 I:helm:Iron Helm~:-5
 W:20:5:75:1
 A:20:20 to 75
-P:5:1d3:8:8:10
+P:7:1d3:8:8:10
 # F: DRAIN_HP | 
 F:INT | WIS | SEARCH | HIDE_TYPE | RES_FEAR | 
 F:SEE_INVIS | FREE_ACT | AGGRAVATE | LIGHT_CURSE | HEAVY_CURSE
@@ -909,7 +909,7 @@ D:Morgoth seven mighty wounds and pain that will last forever.
 
 N:60:of Feanor
 I:boots:Pair~ of Leather Boots:15
-W:40:120:40:300000
+W:40:120:20:300000
 A:1:40 to 127
 P:2:1d1:0:0:20
 F:SPEED | HIDE_TYPE | 
@@ -939,9 +939,9 @@ D:withering, that grant the wearer extraordinary agility.
 
 N:62:of Thror
 I:boots:Pair~ of Steel Shod Boots:3
-W:30:25:80:12000
+W:30:25:60:12000
 A:4:30 to 100
-P:6:1d1:0:0:20
+P:7:1d1:0:0:20
 F:STR | CON | SPEED | HIDE_TYPE | RES_FEAR
 D:Sturdy footwear of leather and steel as enduring as the long-suffering 
 D:Dwarven king-in-exile who wore them.
@@ -1900,9 +1900,9 @@ D:kin, and was at first believed to be mortally wounded.
 
 N:134:of the Haradrim
 I:shield:Leather Shield~:1
-W:35:12:120:25000
+W:35:12:90:25000
 A:5:35 to 127
-P:4:1d2:5:5:15
+P:9:1d2:5:5:15
 F:STR | CON | BLOWS | SHOTS | SUST_STR | SUST_CON | HIDE_TYPE | 
 F:RES_FEAR | RES_BLIND | RES_POIS | AGGRAVATE
 E:BERSERKER:50

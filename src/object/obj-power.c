@@ -38,7 +38,7 @@
  * - power per point of +to_ac
  * (these four are all halved in the algorithm)
  * - assumed max blows
- * - fudge factor for rescaling missile power 
+ * - fudge factor for rescaling missile power
  * (shots are currently set to be 1.25x as powerful as blows)
  * - inhibiting values for +blows/might/shots/immunities (max is one less)
  * - power per unit pval for each pval ability (except speed)
@@ -55,7 +55,7 @@
 #define AVG_LAUNCHER_DMG	9
 #define MELEE_DAMAGE_BOOST     10
 #define RING_BRAND_DMG	       30 /* fudge to boost off-weapon brand power */
-#define BASE_LIGHT_POWER         6
+#define BASE_LIGHT_POWER        6
 #define BASE_JEWELRY_POWER	4
 #define BASE_ARMOUR_POWER	2
 #define DAMAGE_POWER            4 /* i.e. 2 */
@@ -79,7 +79,7 @@
 #define SEARCH_POWER		2
 #define INFRA_POWER		4
 #define TUNN_POWER		2
-#define RBASE_POWER		5 
+#define RBASE_POWER		5
 #define SUST_POWER		5
 
 /*
@@ -124,14 +124,14 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 	}
 
 	sv = slay_cache[i].value;
-	
+
 	/* If it's cached (or there are no slays), return the value */
-	if (sv) 
+	if (sv)
 	{
 		LOG_PRINT("Slay cache hit\n");
 		return sv;
 	}
-	
+
 	/*
 	 * Otherwise we need to calculate the expected average multiplier
 	 * for this combination (multiplied by the total number of
@@ -210,8 +210,8 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 
 /*
  * Calculate the multiplier we'll get with a given bow type.
- * Note that this relies on the multiplier being the 2nd digit of the bow's 
- * sval. We assume that sval has already been checked for legitimacy before 
+ * Note that this relies on the multiplier being the 2nd digit of the bow's
+ * sval. We assume that sval has already been checked for legitimacy before
  * we get here.
  */
 static int bow_multiplier(int sval)
@@ -240,12 +240,12 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	bitflag flags[OF_SIZE];
 
 	/* Extract the flags */
-	if (known) 
+	if (known)
 	{
 		LOG_PRINT("Object is known\n");
 		object_flags(o_ptr, flags);
-	}		
-	else 
+	}
+	else
 	{
 		LOG_PRINT("Object is not fully known\n");
 		object_flags_known(o_ptr, flags);
@@ -422,14 +422,14 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				p = p * AVG_XBOW_MULT / (2 * BOW_RESCALER);
 			}
 			LOG_PRINT1("After multiplying ammo and rescaling, power is %d\n", p);
-			
+
 			p += sign(o_ptr->to_h) * (ABS(o_ptr->to_h) * TO_HIT_POWER / 2);
 			LOG_PRINT1("Adding power for to hit, total is %d\n", p);
 
 			/* Remember, weight is in 0.1 lb. units. */
 			if (o_ptr->weight < k_ptr->weight)
 			{
-				p += (k_ptr->weight - o_ptr->weight) / 20; 
+				p += (k_ptr->weight - o_ptr->weight) / 20;
 				LOG_PRINT1("Adding power for low weight, total is %d\n", p);
 			}
 
@@ -445,12 +445,29 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
 		{
-			p += BASE_ARMOUR_POWER;
-			LOG_PRINT1("Armour item, base power is %d\n", p);
-
 			p += sign(o_ptr->ac) * ((ABS(o_ptr->ac) * BASE_AC_POWER) / 2);
 			LOG_PRINT1("Adding power for base AC value, total is %d\n", p);
 
+			/* Add power for AC per unit weight */
+			if (o_ptr->weight > 0)
+			{
+				i = 1000 * (o_ptr->ac + o_ptr->to_a) /
+					o_ptr->weight;
+
+				/* Stop overpricing Elven Cloaks */
+				if (i > 400) i = 400;
+
+				/* Adjust power */
+				p *= i;
+				p /= 100;
+			}
+			/* Weightless (ethereal) items get fixed boost */
+			else p *= 5;
+
+			p += BASE_ARMOUR_POWER;
+			LOG_PRINT1("Armour item, base power is %d\n", p);
+
+			/* Add power for +hit and +dam */
 			p += sign(o_ptr->to_h) * (ABS(o_ptr->to_h) * TO_HIT_POWER);
 			LOG_PRINT1("Adding power for to_hit, total is %d\n", p);
 
@@ -499,11 +516,6 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				}
 			}
 
-			if (o_ptr->weight < k_ptr->weight)
-			{
-				p += (k_ptr->weight - o_ptr->weight) / 10;
-				LOG_PRINT1("Adding power for low weight, total is %d\n", p);
-			}
 			break;
 		}
 		case TV_LIGHT:
@@ -559,9 +571,9 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				}
 			}
 
-			/* 
-			 * Big boost for extra light radius 
-			 * n.b. Another few points are added below 
+			/*
+			 * Big boost for extra light radius
+			 * n.b. Another few points are added below
 			 */
 			if (of_has(flags, OF_LIGHT)) p += 30;
 

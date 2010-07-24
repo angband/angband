@@ -771,23 +771,23 @@ P:2:1d1:0:0:0
 N:132:& Pair~ of Iron Shod Boots
 G:]:U
 I:30:3:0
-W:5:0:40:12
+W:5:0:35:12
 A:110:5 to 100
-P:3:1d1:0:0:0
+P:4:1d1:0:0:0
 
 N:133:& Pair~ of Steel Shod Boots
 G:]:s
 I:30:4:0
-W:20:0:80:50
+W:20:0:60:50
 A:110:20 to 100
-P:6:1d1:0:0:0
+P:7:1d1:0:0:0
 
 N:134:& Pair~ of Mithril Shod Boots
 G:]:B
 I:30:5:0
 W:60:0:40:500
 A:33:60 to 100
-P:7:1d1:0:0:0
+P:8:1d1:0:0:0
 F:IGNORE_ACID
 
 N:135:& Pair~ of Ethereal Slippers
@@ -805,30 +805,30 @@ F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 N:140:& Hard Leather Cap~
 G:]:u
 I:32:2:0
-W:3:0:15:12
+W:3:0:20:12
 A:100:3 to 100
 P:2:0d0:0:0:0
 
 N:141:& Metal Cap~
 G:]:s
 I:32:3:0
-W:10:0:20:30
+W:10:0:25:30
 A:100:10 to 100
 P:3:1d1:0:0:0
 
 N:142:& Iron Helm~
 G:]:s
 I:32:5:0
-W:20:0:75:75
+W:20:0:50:75
 A:100:20 to 100
-P:5:1d3:0:0:0
+P:7:1d3:0:0:0
 
 N:143:& Steel Helm~
 G:]:W
 I:32:6:0
 W:40:0:60:200
 A:100:40 to 100
-P:6:1d3:0:0:0
+P:9:1d3:0:0:0
 
 N:144:& Iron Crown~
 G:]:s
@@ -867,92 +867,92 @@ N:151:Soft Leather Armour~
 G:(:U
 I:36:4:0
 W:3:0:80:20
-A:100:1 to 100
-P:4:0d0:0:0:0
+A:100:3 to 100
+P:8:0d0:0:0:0
 
 N:152:Studded Leather Armour~
 G:(:U
 I:36:7:0
 W:10:0:100:100
 A:100:5 to 100
-P:6:1d1:-1:0:0
+P:12:1d1:-1:0:0
 
 N:153:Hard Leather Armour~
 G:(:U
 I:36:6:0
 W:5:0:120:150
 A:100:10 to 100
-P:8:1d2:-1:0:0
+P:16:1d2:-1:0:0
 
 N:154:Leather Scale Mail~
 G:(:U
 I:36:11:0
 W:15:0:140:370
 A:100:15 to 100
-P:10:1d1:-1:0:0
+P:20:1d1:-1:0:0
 
 N:155:Metal Scale Mail~
 G:[:s
 I:37:1:0
 W:25:0:250:550
-A:100:20 to 100
-P:12:1d4:-2:0:0
+A:100:25 to 100
+P:38:1d4:-2:0:0
 
 N:156:Chain Mail~
 G:[:s
 I:37:2:0
 W:25:0:220:750
-A:100:25 to 100
-P:14:1d4:-2:0:0
+A:100:20 to 100
+P:32:1d4:-2:0:0
 
 N:157:Augmented Chain Mail~
 G:[:s
 I:37:3:0
 W:30:0:270:900
-A:100:30 to 100
-P:16:1d4:-2:0:0
+A:100:35 to 100
+P:42:1d4:-2:0:0
 
 N:158:Bar Chain Mail~
 G:[:s
 I:37:4:0
 W:35:0:280:950
-A:100:35 to 100
-P:18:1d4:-2:0:0
+A:100:40 to 100
+P:45:1d4:-2:0:0
 
 N:159:Metal Brigandine Armour~
 G:[:s
 I:37:5:0
 W:35:0:290:1100
-A:100:40 to 100
-P:20:1d4:-3:0:0
+A:100:45 to 100
+P:48:1d4:-3:0:0
 
 N:160:Partial Plate Armour~
 G:[:W
 I:37:6:0
 W:45:0:260:1200
-A:100:45 to 100
-P:22:1d6:-3:0:0
+A:100:30 to 100
+P:40:1d6:-3:0:0
 
 N:161:Metal Lamellar Armour~
 G:[:W
 I:37:7:0
 W:45:0:340:1250
-A:100:45 to 100
-P:24:1d6:-3:0:0
+A:100:50 to 100
+P:58:1d6:-3:0:0
 
 N:162:Full Plate Armour~
 G:[:W
 I:37:8:0
-W:45:0:380:1350
-A:100:45 to 100
-P:26:2d4:-3:0:0
+W:45:0:360:1350
+A:100:55 to 100
+P:62:2d4:-3:0:0
 
 N:163:Ribbed Plate Armour~
 G:[:W
 I:37:9:0
 W:50:0:380:1500
-A:100:50 to 100
-P:28:2d4:-3:0:0
+A:100:60 to 100
+P:66:2d4:-3:0:0
 
 N:164:Mithril Chain Mail~
 G:[:B
@@ -966,8 +966,8 @@ N:165:Mithril Plate Mail~
 G:[:B
 I:37:11:0
 W:60:0:300:15000
-A:33:60 to 100
-P:35:2d4:-3:0:0
+A:33:65 to 100
+P:60:2d4:-3:0:0
 F:IGNORE_ACID
 
 N:166:Adamantite Plate Mail~
@@ -975,7 +975,7 @@ G:[:G
 I:37:12:0
 W:75:0:420:20000
 A:18:75 to 100
-P:40:2d4:-4:0:0
+P:80:2d4:-4:0:0
 F:IGNORE_ACID
 
 
@@ -993,7 +993,7 @@ D:A traveller's sturdy outer garment.
 N:171:& Fur Cloak~
 G:(:o
 I:35:2:0
-W:1:0:40:600
+W:1:0:25:600
 A:50:20 to 100
 P:3:0d0:0:0:0
 D:A heavy cloak made from fur and lined with leather; a luxury.
@@ -1024,7 +1024,7 @@ D:iridescent patterns around you.  It weighs absolutely nothing.
 N:174:& Set~ of Leather Gloves
 G:]:U
 I:31:1:0
-W:0:0:5:5
+W:0:0:10:5
 A:100:1 to 100
 P:1:0d0:0:0:0
 
@@ -1038,9 +1038,9 @@ P:3:1d1:0:0:0
 N:176:& Set~ of Mithril Gauntlets
 G:]:B
 I:31:3:0
-W:0:0:20:700
+W:0:0:25:700
 A:100:40 to 100
-P:5:1d1:0:0:0
+P:6:1d1:0:0:0
 F:IGNORE_ACID
 
 N:177:& Set~ of Caestus
@@ -1048,7 +1048,7 @@ G:]:U
 I:31:4:0
 W:0:0:40:100
 A:50:20 to 100
-P:2:1d1:0:3:0
+P:5:1d1:0:3:0
 D:An ancient battle glove designed for hand-to-hand fighting.  Its layered
 D: leather thongs are enhanced for combat by bloody-looking spikes.
 
@@ -1093,28 +1093,28 @@ G:):s
 I:34:3:0
 W:10:0:60:80
 A:100:15 to 100
-P:4:1d2:0:0:0
+P:5:1d2:0:0:0
 
 N:183:& Leather Shield~
 G:):U
 I:34:4:0
-W:15:0:100:200
+W:15:0:90:200
 A:100:10 to 100
-P:6:1d3:0:0:0
+P:8:1d3:0:0:0
 
 N:184:& Large Metal Shield~
 G:):s
 I:34:5:0
-W:30:0:150:500
+W:30:0:120:500
 A:100:30 to 100
-P:8:1d5:0:0:0
+P:12:1d5:0:0:0
 
 N:185:& Mithril Shield~
 G:):B
 I:34:10:0
 W:70:0:100:10000
 A:20:70 to 100
-P:10:1d4:0:0:10
+P:16:1d4:0:0:10
 F:IGNORE_ACID
 
 
@@ -3517,9 +3517,9 @@ F:EASY_KNOW
 N:500:Black Dragon Scale Mail~
 G:[:s
 I:38:1:0
-W:50:0:200:40000
-A:12:50 to 100
-P:30:2d4:-2:0:10
+W:50:0:120:40000
+A:22:50 to 100
+P:16:2d4:-2:0:10
 F:RES_ACID |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 E:ACID_BALL:50
@@ -3527,9 +3527,9 @@ E:ACID_BALL:50
 N:501:Blue Dragon Scale Mail~
 G:[:b
 I:38:2:0
-W:50:0:200:40000
-A:12:50 to 100
-P:30:2d4:-2:0:10
+W:50:0:100:40000
+A:25:40 to 100
+P:12:2d4:-2:0:10
 F:RES_ELEC |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 E:DRAGON_BLUE:50
@@ -3537,9 +3537,9 @@ E:DRAGON_BLUE:50
 N:502:White Dragon Scale Mail~
 G:[:w
 I:38:3:0
-W:50:0:200:40000
-A:12:50 to 100
-P:30:2d4:-2:0:10
+W:50:0:110:40000
+A:24:45 to 100
+P:14:2d4:-2:0:10
 F:RES_COLD |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 E:COLD_BALL100:50
@@ -3547,9 +3547,9 @@ E:COLD_BALL100:50
 N:503:Red Dragon Scale Mail~
 G:[:r
 I:38:4:0
-W:50:0:200:40000
-A:12:50 to 100
-P:30:2d4:-2:0:10
+W:50:0:160:40000
+A:16:65 to 100
+P:24:2d4:-2:0:10
 F:RES_FIRE |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 E:DRAGON_RED:50
@@ -3557,9 +3557,9 @@ E:DRAGON_RED:50
 N:504:Green Dragon Scale Mail~
 G:[:g
 I:38:5:0
-W:60:0:200:60000
-A:12:60 to 100
-P:30:2d4:-2:0:10
+W:60:0:140:60000
+A:18:60 to 100
+P:20:2d4:-2:0:10
 F:RES_POIS |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 E:DRAGON_GREEN:50
@@ -3567,9 +3567,9 @@ E:DRAGON_GREEN:50
 N:505:Multi-Hued Dragon Scale Mail~
 G:[:v
 I:38:6:0
-W:90:0:200:150000
-A:3:90 to 100
-P:30:2d4:-2:0:10
+W:90:0:260:150000
+A:6:90 to 100
+P:45:2d4:-2:0:10
 F:RES_ACID | RES_ELEC | RES_FIRE | RES_COLD | RES_POIS |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 E:DRAGON_MULTIHUED:50
@@ -3578,8 +3578,8 @@ N:506:Pseudo-Dragon Scale Mail~
 G:[:o
 I:38:10:0
 W:65:0:200:60000
-A:6:65 to 100
-P:30:2d4:-2:0:10
+A:12:75 to 100
+P:32:2d4:-2:0:10
 F:RES_LIGHT | RES_DARK |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 E:DRAGON_SHINING:50
@@ -3587,9 +3587,9 @@ E:DRAGON_SHINING:50
 N:507:Law Dragon Scale Mail~
 G:[:B
 I:38:12:0
-W:80:0:200:80000
-A:6:80 to 100
-P:30:2d4:-2:0:10
+W:80:0:220:80000
+A:10:80 to 100
+P:36:2d4:-2:0:10
 F:RES_SOUND | RES_SHARD |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 E:DRAGON_LAW:50
@@ -3597,9 +3597,9 @@ E:DRAGON_LAW:50
 N:508:Bronze Dragon Scale Mail~
 G:[:U
 I:38:14:0
-W:50:0:200:40000
-A:12:50 to 100
-P:30:2d4:-2:0:10
+W:50:0:130:40000
+A:20:55 to 100
+P:18:2d4:-2:0:10
 F:RES_CONFU |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 E:DRAGON_BRONZE:50
@@ -3607,9 +3607,9 @@ E:DRAGON_BRONZE:50
 N:509:Gold Dragon Scale Mail~
 G:[:y
 I:38:16:0
-W:50:0:200:40000
-A:12:50 to 100
-P:30:2d4:-2:0:10
+W:50:0:180:40000
+A:14:70 to 100
+P:28:2d4:-2:0:10
 F:RES_SOUND |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 E:DRAGON_GOLD:50
@@ -3617,9 +3617,9 @@ E:DRAGON_GOLD:50
 N:510:Chaos Dragon Scale Mail~
 G:[:v
 I:38:18:0
-W:80:0:200:80000
-A:6:80 to 100
-P:30:2d4:-2:0:10
+W:80:0:240:80000
+A:8:85 to 100
+P:40:2d4:-2:0:10
 F:RES_CHAOS | RES_DISEN |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 E:DRAGON_CHAOS:50
@@ -3627,9 +3627,9 @@ E:DRAGON_CHAOS:50
 N:511:Balance Dragon Scale Mail~
 G:[:v
 I:38:20:0
-W:95:0:200:100000
+W:95:0:280:100000
 A:3:95 to 100
-P:30:2d4:-2:0:10
+P:50:2d4:-2:0:10
 F:RES_SOUND | RES_SHARD | RES_CHAOS | RES_DISEN |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
 E:DRAGON_BALANCE:50
@@ -3637,9 +3637,9 @@ E:DRAGON_BALANCE:50
 N:512:Power Dragon Scale Mail~
 G:[:v
 I:38:30:0
-W:100:0:200:300000
+W:100:0:300:300000
 A:1:100 to 100
-P:40:2d4:-3:0:15
+P:60:2d4:-3:0:15
 F:RES_ACID | RES_FIRE | RES_COLD | RES_ELEC | RES_POIS |
 F:RES_CONFU | RES_DISEN | RES_SOUND | RES_SHARD |
 F:RES_LIGHT | RES_DARK | RES_CHAOS |
