@@ -46,24 +46,24 @@
  * - additional power for full rbase set (on top of arithmetic progression)
  * - additional power for full sustain set (ditto, excludes susCHR)
  */
-#define AVG_SLING_AMMO_DAMAGE  10
-#define AVG_BOW_AMMO_DAMAGE    11
-#define AVG_XBOW_AMMO_DAMAGE   12
+#define AVG_SLING_AMMO_DAMAGE  15
+#define AVG_BOW_AMMO_DAMAGE    18
+#define AVG_XBOW_AMMO_DAMAGE   20
 #define AVG_SLING_MULT          4 /* i.e. 2 */
 #define AVG_BOW_MULT            5 /* i.e. 2.5 */
 #define AVG_XBOW_MULT           7 /* i.e. 3.5 */
 #define AVG_LAUNCHER_DMG	9
-#define MELEE_DAMAGE_BOOST     10
-#define RING_BRAND_DMG	       30 /* fudge to boost off-weapon brand power */
+#define MELEE_DAMAGE_BOOST     30
+#define RING_BRAND_DMG	       60 /* fudge to boost off-weapon brand power */
 #define BASE_LIGHT_POWER        6
 #define BASE_JEWELRY_POWER	4
 #define BASE_ARMOUR_POWER	2
 #define DAMAGE_POWER            4 /* i.e. 2 */
 #define TO_HIT_POWER            2 /* i.e. 1 */
-#define BASE_AC_POWER           3 /* i.e. 1.5 */
+#define BASE_AC_POWER           2 /* i.e. 1 */
 #define TO_AC_POWER             2 /* i.e. 1 */
 #define MAX_BLOWS               5
-#define BOW_RESCALER            4
+#define BOW_RESCALER           20 /* i.e. 2.0 */
 #define INHIBIT_BLOWS           4
 #define INHIBIT_MIGHT           4
 #define INHIBIT_SHOTS           4
@@ -357,10 +357,11 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			 * Correction to match ratings to melee damage ratings.
 			 * We multiply all missile weapons by 1.5 in order to compare damage.
 			 * (CR 11/20/01 - changed this to 1.25).
-			 * Melee weapons assume 5 attacks per turn, so we must also divide
-			 * by 5 to get equal ratings. 1.25 / 5 = 0.25
+			 * (CC 24/07/10 - changed this to 2.0).
+			 * Melee weapons assume MAX_BLOWS per turn, so we must
+			 * also divide by MAX_BLOWS to get equal ratings.
 			 */
-			p = sign(p) * (ABS(p) / BOW_RESCALER);
+			p = sign(p) * (ABS(p) * BOW_RESCALER / (10 * MAX_BLOWS));
 			LOG_PRINT1("Rescaling bow power, total is %d\n", p);
 
 			p += sign(o_ptr->to_h) * (ABS(o_ptr->to_h) * TO_HIT_POWER / 2);
@@ -409,17 +410,17 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			if (o_ptr->tval == TV_SHOT)
 			{
 				if (o_ptr->name2) p += (AVG_LAUNCHER_DMG * DAMAGE_POWER / 2);
-				p = p * AVG_SLING_MULT / (2 * BOW_RESCALER);
+				p = p * AVG_SLING_MULT * BOW_RESCALER / (20 * MAX_BLOWS);
 			}
 			if (o_ptr->tval == TV_ARROW)
 			{
 				if (o_ptr->name2) p += (AVG_LAUNCHER_DMG * DAMAGE_POWER / 2);
-				p = p * AVG_BOW_MULT / (2 * BOW_RESCALER);
+				p = p * AVG_BOW_MULT * BOW_RESCALER / (20 * MAX_BLOWS);
 			}
 			if (o_ptr->tval == TV_BOLT)
 			{
 				if (o_ptr->name2) p += (AVG_LAUNCHER_DMG * DAMAGE_POWER / 2);
-				p = p * AVG_XBOW_MULT / (2 * BOW_RESCALER);
+				p = p * AVG_XBOW_MULT * BOW_RESCALER / (20 * MAX_BLOWS);
 			}
 			LOG_PRINT1("After multiplying ammo and rescaling, power is %d\n", p);
 
@@ -492,7 +493,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				}
 				else if (o_ptr->pval > 0)
 				{
-					/* We assume a 3d5 weapon with +10 damage elsewhere - gives ~16 power per extra blow */
+					/* We assume a 9d5 weapon with +30 damage elsewhere */
 					p += ((MELEE_DAMAGE_BOOST + RING_BRAND_DMG + o_ptr->to_d) * o_ptr->pval * DAMAGE_POWER / MAX_BLOWS);
 					LOG_PRINT1("Adding power for extra blows, total is %d\n", p);
 				}
@@ -511,7 +512,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				else if (o_ptr->pval > 0)
 				{
 					/* We assume a x2.5 +9dam launcher with +9 1d4 ammo - gives ~50 power per extra shot */
-					p += ((AVG_BOW_AMMO_DAMAGE + AVG_LAUNCHER_DMG) * AVG_BOW_MULT * o_ptr->pval * DAMAGE_POWER / (2 * BOW_RESCALER));
+					p += ((AVG_BOW_AMMO_DAMAGE + AVG_LAUNCHER_DMG) * AVG_BOW_MULT * o_ptr->pval * DAMAGE_POWER * BOW_RESCALER / (20 * MAX_BLOWS));
 					LOG_PRINT1("Adding power for extra shots - total is %d\n", p);
 				}
 			}
@@ -547,7 +548,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				}
 				else if (o_ptr->pval > 0)
 				{
-					/* We assume a 3d5 weapon with +10 damage elsewhere - gives ~16 power per extra blow */
+					/* We assume a 9d5 weapon with +30 damage elsewhere */
 					p += ((MELEE_DAMAGE_BOOST + RING_BRAND_DMG + o_ptr->to_d) * o_ptr->pval * DAMAGE_POWER / MAX_BLOWS);
 					LOG_PRINT1("Adding power for extra blows, total is %d\n", p);
 				}
@@ -566,7 +567,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				else if (o_ptr->pval > 0)
 				{
 					/* We assume a x2.5 +9dam launcher with +9 1d4 ammo - gives ~25 power per extra shot */
-					p += ((AVG_BOW_AMMO_DAMAGE + AVG_LAUNCHER_DMG) * AVG_BOW_MULT * o_ptr->pval * DAMAGE_POWER / (2 * BOW_RESCALER));
+					p += ((AVG_BOW_AMMO_DAMAGE + AVG_LAUNCHER_DMG) * AVG_BOW_MULT * o_ptr->pval * DAMAGE_POWER * BOW_RESCALER / (20 * MAX_BLOWS));
 					LOG_PRINT1("Adding power for extra shots - total is %d\n", p);
 				}
 			}
@@ -609,7 +610,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				}
 				else if (o_ptr->pval > 0)
 				{
-					/* We assume a 3d5 weapon with +10 damage elsewhere - gives ~16 power per extra blow */
+					/* We assume a 9d5 weapon with +30 damage elsewhere - gives ~16 power per extra blow */
 					p += ((MELEE_DAMAGE_BOOST + RING_BRAND_DMG + o_ptr->to_d) * o_ptr->pval * DAMAGE_POWER / MAX_BLOWS);
 					LOG_PRINT1("Adding power for extra blows, total is %d\n", p);
 				}
@@ -628,7 +629,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				else if (o_ptr->pval > 0)
 				{
 					/* We assume a x2.5 +9dam launcher with +9 1d4 ammo - gives ~25 power per extra shot */
-					p += ((AVG_BOW_AMMO_DAMAGE + AVG_LAUNCHER_DMG) * AVG_BOW_MULT * o_ptr->pval * DAMAGE_POWER / (2 * BOW_RESCALER));
+					p += ((AVG_BOW_AMMO_DAMAGE + AVG_LAUNCHER_DMG) * AVG_BOW_MULT * o_ptr->pval * DAMAGE_POWER * BOW_RESCALER / (20 * MAX_BLOWS));
 					LOG_PRINT1("Adding power for extra shots - total is %d\n", p);
 				}
 			}
