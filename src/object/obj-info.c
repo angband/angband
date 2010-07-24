@@ -208,13 +208,13 @@ const slay_t slay_table[] =
 	{ FLAG_END,       FLAG_END,  FLAG_END,   0, NULL, NULL, NULL, NULL, NULL }
 };
 
-
-/* Slays which are in some sense duplicates. *Slay* dragons supercedes slay dragons
- * for example.
+/*
+ * Slays which are in some sense duplicates. *Slay* dragon supercedes slay
+ * dragon, for example.
  */
 const struct {
-	int minor;
-	int major;
+	u16b minor;
+	u16b major;
 } slay_dups[] =
 {
 	{ OF_SLAY_DRAGON, OF_KILL_DRAGON },
@@ -478,7 +478,7 @@ static bool describe_slays(const bitflag flags[OF_SIZE], int tval)
 static int collect_slays(const char *desc[], int mult[], bitflag *flags)
 {
 	int cnt = 0;
-	int i;
+	u16b i;
 	const slay_t *s_ptr;
 
 	/* Remove "duplicate" flags e.g. *slay* and slay the same
