@@ -63,7 +63,7 @@
 #define BASE_AC_POWER           2 /* i.e. 1 */
 #define TO_AC_POWER             2 /* i.e. 1 */
 #define MAX_BLOWS               5
-#define BOW_RESCALER           20 /* i.e. 2.0 */
+#define BOW_RESCALER           15 /* i.e. 1.5 */
 #define INHIBIT_BLOWS           4
 #define INHIBIT_MIGHT           4
 #define INHIBIT_SHOTS           4
@@ -239,6 +239,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 	int extra_stat_bonus = 0;
 	int i;
 	bitflag flags[OF_SIZE];
+	const slay_t *s_ptr;
 
 	/* Extract the flags */
 	if (known)
@@ -358,7 +359,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			 * Correction to match ratings to melee damage ratings.
 			 * We multiply all missile weapons by 1.5 in order to compare damage.
 			 * (CR 11/20/01 - changed this to 1.25).
-			 * (CC 24/07/10 - changed this to 2.0).
+			 * (CC 25/07/10 - changed this back to 1.5).
 			 * Melee weapons assume MAX_BLOWS per turn, so we must
 			 * also divide by MAX_BLOWS to get equal ratings.
 			 */
@@ -406,6 +407,21 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 					LOG_PRINT1("Adding power for blows, total is %d\n", p);
 				}
 			}
+
+			/*
+			 * add extra power for multiple slays/brands, as these
+			 * add diminishing amounts to average damage
+			 */
+			i = 0;
+
+			for (s_ptr = slay_table; s_ptr->slay_flag; s_ptr++)
+			{
+				if (!of_has(flags, s_ptr->slay_flag)) continue;
+
+				i++;
+				if (i > 1) p += (i * 3);
+			}
+			LOG_PRINT1("Adding power for multiple slays/brands, total is %d\n", p);
 
 			/* add launcher bonus for ego ammo, and multiply */
 			if (o_ptr->tval == TV_SHOT)
@@ -764,7 +780,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			LOG_PRINT2("Adding power for speed bonus/penalty %d, total is %d\n", o_ptr->pval, p);
 		}
 	}
-	
+
 #define ADD_POWER1(string, val, flag) \
 	if (of_has(flags, flag)) { \
 		p += (val); \
@@ -795,7 +811,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			LOG_PRINT1("Adding power for full set of sustains, total is %d\n", p);
 		}
 	}
-	
+
 	ADD_POWER2("acid immunity",      38, OF_IM_ACID, immunities++);
 	ADD_POWER2("elec immunity",      35, OF_IM_ELEC, immunities++);
 	ADD_POWER2("fire immunity",      40, OF_IM_FIRE, immunities++);

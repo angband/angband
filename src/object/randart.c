@@ -389,7 +389,6 @@ static s32b artifact_power(int a_idx)
 
 	LOG_PRINT("********** ENTERING EVAL POWER ********\n");
 	LOG_PRINT1("Artifact index is %d\n", a_idx);
-	LOG_PRINT1("Artifact is %s\n", a_info[a_idx].name);
 
 	if(!make_fake_artifact(&obj, a_idx))
 	{
@@ -1128,7 +1127,7 @@ static void parse_frequencies(void)
 				if (a_ptr->to_a > 20)
 				{
 					LOG_PRINT1("Adding %d for supercharged AC\n", temp);
-					(artprobs[ART_IDX_GEN_AC_SUPER]) += temp;
+					(artprobs[ART_IDX_GEN_AC_SUPER])++;
 				}
 				else if (a_ptr->tval == TV_BOOTS)
 				{
@@ -3020,7 +3019,7 @@ static void scramble_artifact(int a_idx)
 			a_ptr->alloc_prob = (max_power - ap) / 100;
 			a_ptr->alloc_min = MAX(50, (ap * 100 / max_power));
 		}
-		else if (ap > 30)
+		else if (ap > 40)
 		{
 			a_ptr->alloc_prob = MAX(3, (avg_power - ap) / 20);
 			a_ptr->alloc_min = MAX(25, (ap / 4));
