@@ -827,7 +827,6 @@ static int home_carry(object_type *o_ptr)
 	/* No space? */
 	if (st_ptr->stock_num >= st_ptr->stock_size) return (-1);
 
-
 	/* Determine the "value" of the object */
 	value = object_value(o_ptr, 1, FALSE);
 
@@ -990,7 +989,6 @@ static int store_carry(int st, object_type *o_ptr)
 
 	/* No space? */
 	if (st_ptr->stock_num >= st_ptr->stock_size) return (-1);
-
 
 	/* Check existing slots to see if we must "slide" */
 	for (slot = 0; slot < st_ptr->stock_num; slot++)
@@ -2499,10 +2497,10 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 	/* Take the object from the player */
 	inven_item_increase(item, -amt);
 	inven_item_optimize(item);
-	
+
 	/* Handle stuff */
 	handle_stuff();
-	
+
 	/* The store gets that (known) object */
 	store_carry(current_store(), &sold_item);
 

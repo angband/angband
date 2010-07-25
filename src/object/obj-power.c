@@ -3,7 +3,7 @@
  * Purpose: calculation of object power
  *
  * Copyright (c) 2001 Chris Carr, Chris Robertson
- * Revised in 2009 by Chris Carr, Peter Denison
+ * Revised in 2009-10 by Chris Carr, Peter Denison
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -46,19 +46,19 @@
  * - additional power for full rbase set (on top of arithmetic progression)
  * - additional power for full sustain set (ditto, excludes susCHR)
  */
-#define AVG_SLING_AMMO_DAMAGE  15
-#define AVG_BOW_AMMO_DAMAGE    18
-#define AVG_XBOW_AMMO_DAMAGE   20
+#define AVG_SLING_AMMO_DAMAGE  10
+#define AVG_BOW_AMMO_DAMAGE    12
+#define AVG_XBOW_AMMO_DAMAGE   14
 #define AVG_SLING_MULT          4 /* i.e. 2 */
 #define AVG_BOW_MULT            5 /* i.e. 2.5 */
 #define AVG_XBOW_MULT           7 /* i.e. 3.5 */
 #define AVG_LAUNCHER_DMG	9
-#define MELEE_DAMAGE_BOOST     30
+#define MELEE_DAMAGE_BOOST     30 /* fudge to boost extra blows */
 #define RING_BRAND_DMG	       60 /* fudge to boost off-weapon brand power */
 #define BASE_LIGHT_POWER        6
 #define BASE_JEWELRY_POWER	4
-#define BASE_ARMOUR_POWER	2
-#define DAMAGE_POWER            4 /* i.e. 2 */
+#define BASE_ARMOUR_POWER	1
+#define DAMAGE_POWER            5 /* i.e. 2.5 */
 #define TO_HIT_POWER            2 /* i.e. 1 */
 #define BASE_AC_POWER           2 /* i.e. 1 */
 #define TO_AC_POWER             2 /* i.e. 1 */
@@ -151,7 +151,8 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 			if (!of_has(flags, s_ptr->slay_flag)) continue;
 
 			if (rf_has(r_ptr->flags, s_ptr->monster_flag) ||
-			    !rf_has(r_ptr->flags, s_ptr->resist_flag))
+			    (s_ptr->resist_flag && !rf_has(r_ptr->flags,
+			    s_ptr->resist_flag)))
 			{
 			    mult = s_ptr->mult;
 			}
@@ -446,6 +447,9 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
 		{
+			p += BASE_ARMOUR_POWER;
+			LOG_PRINT1("Armour item, base power is %d\n", p);
+
 			p += sign(o_ptr->ac) * ((ABS(o_ptr->ac) * BASE_AC_POWER) / 2);
 			LOG_PRINT1("Adding power for base AC value, total is %d\n", p);
 
@@ -464,9 +468,6 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 			}
 			/* Weightless (ethereal) items get fixed boost */
 			else p *= 5;
-
-			p += BASE_ARMOUR_POWER;
-			LOG_PRINT1("Armour item, base power is %d\n", p);
 
 			/* Add power for +hit and +dam */
 			p += sign(o_ptr->to_h) * (ABS(o_ptr->to_h) * TO_HIT_POWER);
@@ -493,7 +494,6 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				}
 				else if (o_ptr->pval > 0)
 				{
-					/* We assume a 9d5 weapon with +30 damage elsewhere */
 					p += ((MELEE_DAMAGE_BOOST + RING_BRAND_DMG + o_ptr->to_d) * o_ptr->pval * DAMAGE_POWER / MAX_BLOWS);
 					LOG_PRINT1("Adding power for extra blows, total is %d\n", p);
 				}
@@ -511,8 +511,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				}
 				else if (o_ptr->pval > 0)
 				{
-					/* We assume a x2.5 +9dam launcher with +9 1d4 ammo - gives ~50 power per extra shot */
-					p += ((AVG_BOW_AMMO_DAMAGE + AVG_LAUNCHER_DMG) * AVG_BOW_MULT * o_ptr->pval * DAMAGE_POWER * BOW_RESCALER / (20 * MAX_BLOWS));
+					p += ((AVG_XBOW_AMMO_DAMAGE + AVG_LAUNCHER_DMG) * AVG_XBOW_MULT * o_ptr->pval * DAMAGE_POWER * BOW_RESCALER / (20 * MAX_BLOWS));
 					LOG_PRINT1("Adding power for extra shots - total is %d\n", p);
 				}
 			}
@@ -548,7 +547,6 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				}
 				else if (o_ptr->pval > 0)
 				{
-					/* We assume a 9d5 weapon with +30 damage elsewhere */
 					p += ((MELEE_DAMAGE_BOOST + RING_BRAND_DMG + o_ptr->to_d) * o_ptr->pval * DAMAGE_POWER / MAX_BLOWS);
 					LOG_PRINT1("Adding power for extra blows, total is %d\n", p);
 				}
@@ -566,8 +564,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				}
 				else if (o_ptr->pval > 0)
 				{
-					/* We assume a x2.5 +9dam launcher with +9 1d4 ammo - gives ~25 power per extra shot */
-					p += ((AVG_BOW_AMMO_DAMAGE + AVG_LAUNCHER_DMG) * AVG_BOW_MULT * o_ptr->pval * DAMAGE_POWER * BOW_RESCALER / (20 * MAX_BLOWS));
+					p += ((AVG_XBOW_AMMO_DAMAGE + AVG_LAUNCHER_DMG) * AVG_XBOW_MULT * o_ptr->pval * DAMAGE_POWER * BOW_RESCALER / (20 * MAX_BLOWS));
 					LOG_PRINT1("Adding power for extra shots - total is %d\n", p);
 				}
 			}
@@ -610,7 +607,6 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				}
 				else if (o_ptr->pval > 0)
 				{
-					/* We assume a 9d5 weapon with +30 damage elsewhere - gives ~16 power per extra blow */
 					p += ((MELEE_DAMAGE_BOOST + RING_BRAND_DMG + o_ptr->to_d) * o_ptr->pval * DAMAGE_POWER / MAX_BLOWS);
 					LOG_PRINT1("Adding power for extra blows, total is %d\n", p);
 				}
@@ -628,8 +624,7 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				}
 				else if (o_ptr->pval > 0)
 				{
-					/* We assume a x2.5 +9dam launcher with +9 1d4 ammo - gives ~25 power per extra shot */
-					p += ((AVG_BOW_AMMO_DAMAGE + AVG_LAUNCHER_DMG) * AVG_BOW_MULT * o_ptr->pval * DAMAGE_POWER * BOW_RESCALER / (20 * MAX_BLOWS));
+					p += ((AVG_XBOW_AMMO_DAMAGE + AVG_LAUNCHER_DMG) * AVG_XBOW_MULT * o_ptr->pval * DAMAGE_POWER * BOW_RESCALER / (20 * MAX_BLOWS));
 					LOG_PRINT1("Adding power for extra shots - total is %d\n", p);
 				}
 			}

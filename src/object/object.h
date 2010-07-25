@@ -57,7 +57,7 @@ typedef enum
 	OINFO_TERSE  = 0x01, /* Keep descriptions brief, e.g. for dumps */
 	OINFO_SUBJ   = 0x02, /* Describe object from the character's POV */
 	OINFO_FULL   = 0x04, /* Treat object as if fully IDd */
-	OINFO_DUMMY  = 0x08 /* Object does not exist (e.g. knowledge menu) */
+	OINFO_DUMMY  = 0x08  /* Object does not exist (e.g. knowledge menu) */
 } oinfo_detail_t;
 
 
@@ -271,9 +271,9 @@ s32b object_power(const object_type *o_ptr, int verbose, ang_file *log_file, boo
  * (a stack of this many equals a weapon of the same damage output)
  */
 #define INHIBIT_POWER       20000
-#define HIGH_TO_AC             21
-#define VERYHIGH_TO_AC         31
-#define INHIBIT_AC             51
+#define HIGH_TO_AC             26
+#define VERYHIGH_TO_AC         36
+#define INHIBIT_AC             56
 #define HIGH_TO_HIT            16
 #define VERYHIGH_TO_HIT        26
 #define HIGH_TO_DAM            16

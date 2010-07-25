@@ -23,7 +23,7 @@
 
 /*
  * Original random artifact generator (randart) by Greg Wooledge.
- * Updated by Chris Carr / Chris Robertson 2001-2009.
+ * Updated by Chris Carr / Chris Robertson 2001-2010.
  */
 
 #define MAX_TRIES 200
@@ -47,7 +47,7 @@
  * (so that aggravate is found only on endgame-quality items or
  * cursed items)
  */
-#define AGGR_POWER 180
+#define AGGR_POWER 300
 
 /*
  * Numerical index values for the different learned probabilities
@@ -150,13 +150,14 @@
 #define ART_IDX_BOW_MIGHT_SUPER 72
 #define ART_IDX_GEN_SPEED_SUPER 73
 #define ART_IDX_MELEE_BLOWS_SUPER 77
+#define ART_IDX_GEN_AC_SUPER 85
 
 /* Aggravation - weapon and nonweapon */
 #define ART_IDX_WEAPON_AGGR 74
 #define ART_IDX_NONWEAPON_AGGR 75
 
 /* Total of abilities */
-#define ART_IDX_TOTAL 85
+#define ART_IDX_TOTAL 86
 
 /* Tallies of different ability types */
 /* ToDo: use N_ELEMENTS for these */
@@ -175,7 +176,6 @@
 #define ART_IDX_HIGH_RESIST_COUNT 12
 
 /* Arrays of indices by item type, used in frequency generation */
-
 static s16b art_idx_bow[] =
 	{ART_IDX_BOW_SHOTS, ART_IDX_BOW_MIGHT, ART_IDX_BOW_BRAND, ART_IDX_BOW_SLAY};
 static s16b art_idx_weapon[] =
@@ -319,7 +319,8 @@ static errr init_names(void)
 	for (i = 0; i < z_info->a_max; i++)
 	{
 		char word[MAX_NAME_LEN + 1];
-		randname_make(RANDNAME_TOLKIEN, MIN_NAME_LEN, MAX_NAME_LEN, word, sizeof word);
+		randname_make(RANDNAME_TOLKIEN, MIN_NAME_LEN, MAX_NAME_LEN,
+			word, sizeof word);
 		word[0] = toupper((unsigned char) word[0]);
 
 		if (one_in_(3))
@@ -388,6 +389,7 @@ static s32b artifact_power(int a_idx)
 
 	LOG_PRINT("********** ENTERING EVAL POWER ********\n");
 	LOG_PRINT1("Artifact index is %d\n", a_idx);
+	LOG_PRINT1("Artifact is %s\n", a_info[a_idx].name);
 
 	if(!make_fake_artifact(&obj, a_idx))
 	{
@@ -506,6 +508,7 @@ static s16b choose_item(int a_idx)
 	 *
 	 * N.B. Could easily generate lights, rings and amulets this way if
 	 * the whole special/flavour issue was sorted out (see ticket #1014)
+	 * Note that Carlammas and Barahir have the same sval as Grond/Morgoth
 	 */
 	while (tval == 0 || tval == TV_SKELETON || tval == TV_BOTTLE ||
 		tval == TV_JUNK || tval == TV_SPIKE || tval == TV_CHEST ||
@@ -707,6 +710,10 @@ static void adjust_freqs(void)
 		artprobs[ART_IDX_NONWEAPON_BLOWS] = 2;
 	if (artprobs[ART_IDX_NONWEAPON_SHOTS] < 2)
 		artprobs[ART_IDX_NONWEAPON_SHOTS] = 2;
+	if (artprobs[ART_IDX_GEN_AC_SUPER] < 5)
+		artprobs[ART_IDX_GEN_AC_SUPER] = 5;
+	if (artprobs[ART_IDX_MELEE_AC] < 5)
+		artprobs[ART_IDX_MELEE_AC] = 5;
 
 	/* Cut aggravation frequencies in half since they're used twice */
 	artprobs[ART_IDX_NONWEAPON_AGGR] /= 2;
@@ -985,8 +992,7 @@ static void parse_frequencies(void)
 		if (a_ptr->tval == TV_DIGGING || a_ptr->tval == TV_HAFTED ||
 			a_ptr->tval == TV_POLEARM || a_ptr->tval == TV_SWORD)
 		{
-			/* Blessed weapon Y/N */
-
+			/* Blessed weapon? */
 			if (of_has(a_ptr->flags, OF_BLESSED))
 			{
 				LOG_PRINT("Adding 1 for blessed weapon\n");
@@ -1119,7 +1125,12 @@ static void parse_frequencies(void)
 				mean_ac_increment;
 			if (temp > 0)
 			{
-				if (a_ptr->tval == TV_BOOTS)
+				if (a_ptr->to_a > 20)
+				{
+					LOG_PRINT1("Adding %d for supercharged AC\n", temp);
+					(artprobs[ART_IDX_GEN_AC_SUPER]) += temp;
+				}
+				else if (a_ptr->tval == TV_BOOTS)
 				{
 					LOG_PRINT1("Adding %d for AC bonus - boots\n", temp);
 					(artprobs[ART_IDX_BOOT_AC]) += temp;
@@ -1191,8 +1202,8 @@ static void parse_frequencies(void)
 		if (flags_test(a_ptr->flags, OF_SIZE, OF_STR, OF_INT, OF_WIS,
 		                     OF_DEX, OF_CON, OF_CHR, FLAG_END))
 		{
-			/* Stat bonus case.  Add up the number of individual bonuses */
-
+			/* Stat bonus case.  Add up the number of individual
+			   bonuses */
 			temp = 0;
 			if (of_has(a_ptr->flags, OF_STR)) temp++;
 			if (of_has(a_ptr->flags, OF_INT)) temp++;
@@ -1202,7 +1213,6 @@ static void parse_frequencies(void)
 			if (of_has(a_ptr->flags, OF_CHR)) temp++;
 
 			/* Handle a few special cases separately. */
-
 			if((a_ptr->tval == TV_HELM || a_ptr->tval == TV_CROWN) &&
 				(of_has(a_ptr->flags, OF_WIS) || of_has(a_ptr->flags, OF_INT)))
 			{
@@ -1246,7 +1256,6 @@ static void parse_frequencies(void)
 			}
 
 			/* Now the general case */
-
 			if (temp > 0)
 			{
 				/* There are some bonuses that weren't handled above */
@@ -1828,7 +1837,8 @@ static void parse_frequencies(void)
 	}
 }
 
-/* Adds a flag to an artifact. Returns true when canges were made.
+/*
+ * Adds a flag to an artifact. Returns true when canges were made.
  */
 static bool add_flag(artifact_type *a_ptr, int flag)
 {
@@ -1841,7 +1851,8 @@ static bool add_flag(artifact_type *a_ptr, int flag)
 	return TRUE;
 }
 
-/* Adds a flag and pval to an artifact. Always attempts
+/*
+ * Adds a flag and pval to an artifact. Always attempts
  * to increase the pval.
  */
 static void add_pval_flag(artifact_type *a_ptr, int flag)
@@ -1851,7 +1862,8 @@ static void add_pval_flag(artifact_type *a_ptr, int flag)
 	LOG_PRINT2("Adding ability: %s (now %+d)\n", flag_names[flag], a_ptr->pval);
 }
 
-/* Adds a flag and a pval to an artifact, but won't increase
+/*
+ * Adds a flag and a pval to an artifact, but won't increase
  * the pval if the flag is present. Returns true when changes were made.
  */
 static bool add_fixed_pval_flag(artifact_type *a_ptr, int flag)
@@ -1866,7 +1878,8 @@ static bool add_fixed_pval_flag(artifact_type *a_ptr, int flag)
 	return TRUE;
 }
 
-/* Adds a flag and an initial pval to an artifact.  Returns true
+/*
+ * Adds a flag and an initial pval to an artifact.  Returns true
  * when the flag was not present.
  */
 static bool add_first_pval_flag(artifact_type *a_ptr, int flag)
@@ -2179,8 +2192,8 @@ static void add_activation(artifact_type *a_ptr, s32b target_power)
 		{
 			LOG_PRINT1("Adding activation effect %d\n", x);
 			a_ptr->effect = x;
-			a_ptr->time.base = (p * p);
-			a_ptr->time.dice = p;
+			a_ptr->time.base = (p * 8);
+			a_ptr->time.dice = (p > 5 ? p / 5 : 1);
 			a_ptr->time.sides = p;
 			return;
 		}
@@ -2336,10 +2349,10 @@ static void build_freq_table(artifact_type *a_ptr, s16b *freq)
 }
 
 /*
- * Choose a random ability using weights based on the given cumulative frequency
- * table.  A pointer to the frequency array (which must be of size ART_IDX_TOTAL)
- * is passed as a parameter.  The function returns a number representing the
- * index of the ability chosen.
+ * Choose a random ability using weights based on the given cumulative
+ * frequency table.  A pointer to the frequency array (which must be of size
+ * ART_IDX_TOTAL) is passed as a parameter.  The function returns a number
+ * representing the index of the ability chosen.
  */
 
 static int choose_ability (s16b *freq_table)
@@ -2649,7 +2662,7 @@ static void try_supercharge(artifact_type *a_ptr, s32b target_power)
 		if (randint0(z_info->a_max) < artprobs[ART_IDX_MELEE_DICE_SUPER])
 		{
 			a_ptr->dd += 3 + randint0(4);
-			if (a_ptr->dd > 9) a_ptr->dd = 9;
+/*			if (a_ptr->dd > 9) a_ptr->dd = 9; */
 			LOG_PRINT1("Supercharging damage dice!  (Now %d dice)\n", a_ptr->dd);
 		}
 		else if (randint0(z_info->a_max) < artprobs[ART_IDX_MELEE_BLOWS_SUPER])
@@ -2677,14 +2690,27 @@ static void try_supercharge(artifact_type *a_ptr, s32b target_power)
 		}
 	}
 
-	/* Big speed bonus - any item (potentially) */
-	if (randint0(z_info->a_max) < artprobs[ART_IDX_GEN_SPEED_SUPER])
+	/* Big speed bonus - any item (potentially) but more likely on boots */
+	if (randint0(z_info->a_max) < artprobs[ART_IDX_GEN_SPEED_SUPER] ||
+		(a_ptr->tval == TV_BOOTS && randint0(z_info->a_max) <
+		artprobs[ART_IDX_BOOT_SPEED]))
 	{
 		of_on(a_ptr->flags, OF_SPEED);
-		a_ptr->pval = 7 + randint0(6);
-		if (one_in_(4)) a_ptr->pval += randint1(4);
+		a_ptr->pval = 5 + randint0(6);
+		if (INHIBIT_WEAK) a_ptr->pval += randint1(3);
+		if (INHIBIT_STRONG) a_ptr->pval += 1 + randint1(6);
 		LOG_PRINT1("Supercharging speed for this item!  (New speed bonus is %d)\n", a_ptr->pval);
 	}
+
+	/* Big AC bonus */
+	if (randint0(z_info->a_max) < artprobs[ART_IDX_GEN_AC_SUPER])
+	{
+		a_ptr->to_a += 19 + randint1(11);
+		if (INHIBIT_WEAK) a_ptr->to_a += randint1(10);
+		if (INHIBIT_STRONG) a_ptr->to_a += randint1(20);
+		LOG_PRINT1("Supercharging AC! New AC bonus is %d\n", a_ptr->to_a);
+	}
+
 	/* Aggravation */
 	if (a_ptr->tval == TV_BOW || a_ptr->tval == TV_DIGGING ||
 		a_ptr->tval == TV_HAFTED || a_ptr->tval == TV_POLEARM ||
@@ -2997,7 +3023,7 @@ static void scramble_artifact(int a_idx)
 		else if (ap > 30)
 		{
 			a_ptr->alloc_prob = MAX(3, (avg_power - ap) / 20);
-			a_ptr->alloc_min = MAX(25, (ap / 3));
+			a_ptr->alloc_min = MAX(25, (ap / 4));
 		}
 		else /* Just the Phial */
 		{

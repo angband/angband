@@ -745,7 +745,7 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 		}
 
 		if (nonweap)
-			text_out("This weapon benefits from one or more off-weapon brands or slays.\n");
+			text_out("This weapon may benefit from one or more off-weapon brands or slays.\n");
 	}
 
 	text_out("Average damage/hit: ");
