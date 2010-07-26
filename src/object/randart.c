@@ -2041,8 +2041,8 @@ static void add_damage_dice(artifact_type *a_ptr)
 {
 	/* CR 2001-09-02: changed this to increments 1 or 2 only */
 	a_ptr->dd += (byte)randint1(2);
-	if (a_ptr->dd > 9)
-		a_ptr->dd = 9;
+/*	if (a_ptr->dd > 9)
+		a_ptr->dd = 9; */
 	LOG_PRINT1("Adding ability: extra damage dice (now %d dice)\n", a_ptr->dd);
 }
 

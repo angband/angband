@@ -554,7 +554,7 @@ void display_monlist(void)
 	monster_race *r2_ptr;
 
 	monster_vis *list;
-	
+
 	u16b *order;
 
 	bool in_term = (Term != angband_term[0]);
@@ -1303,7 +1303,7 @@ void update_mon(int m_idx, bool full)
 		{
 			flags_set(l_ptr->flags, RF_SIZE, RF_EMPTY_MIND, RF_WEIRD_MIND, RF_SMART, RF_STUPID, FLAG_END);
 		}
-		
+
 		/* It was previously unseen */
 		if (!m_ptr->ml)
 		{
@@ -2977,8 +2977,9 @@ void monster_death(int m_idx)
 	if (rf_has(r_ptr->flags, RF_DROP_2)) number += rand_range(1, 3);
 	if (rf_has(r_ptr->flags, RF_DROP_1)) number++;
 
-	/* Average monster level and current depth */
-	level = MAX(p_ptr->depth, r_ptr->level);
+	/* Take the best of average of monster level and current depth,
+	   and monster level - to reward fighting OOD monsters */
+	level = MAX((r_ptr->level + p_ptr->depth) / 2, r_ptr->level);
 
 	/* Drop some objects */
 	for (j = 0; j < number; j++)
