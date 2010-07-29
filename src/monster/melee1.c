@@ -144,7 +144,7 @@ bool make_attack_normal(int m_idx)
 	char ddesc[80];
 
 	bool blinked;
-	
+
 	int sound_msg;
 
 
@@ -366,28 +366,28 @@ bool make_attack_normal(int m_idx)
 				case RBM_SPIT:
 				{
 					act = "spits on you.";
-					sound_msg = MSG_MON_SPIT; 
+					sound_msg = MSG_MON_SPIT;
 					break;
 				}
 
 				case RBM_GAZE:
 				{
 					act = "gazes at you.";
-					sound_msg = MSG_MON_GAZE; 
+					sound_msg = MSG_MON_GAZE;
 					break;
 				}
 
 				case RBM_WAIL:
 				{
 					act = "wails at you.";
-					sound_msg = MSG_MON_WAIL; 
+					sound_msg = MSG_MON_WAIL;
 					break;
 				}
 
 				case RBM_SPORE:
 				{
 					act = "releases spores at you.";
-					sound_msg = MSG_MON_SPORE; 
+					sound_msg = MSG_MON_SPORE;
 					break;
 				}
 
@@ -401,14 +401,14 @@ bool make_attack_normal(int m_idx)
 				case RBM_INSULT:
 				{
 					act = desc_insult[randint0(MAX_DESC_INSULT)];
-					sound_msg = MSG_MON_INSULT; 
+					sound_msg = MSG_MON_INSULT;
 					break;
 				}
 
 				case RBM_MOAN:
 				{
 					act = desc_moan[randint0(MAX_DESC_MOAN)];
-					sound_msg = MSG_MON_MOAN; 
+					sound_msg = MSG_MON_MOAN;
 					break;
 				}
 			}
@@ -446,7 +446,7 @@ bool make_attack_normal(int m_idx)
 					obvious = TRUE;
 
 					/* Hack -- Player armor reduces total damage */
-					damage -= (damage * ((ac < 150) ? ac : 150) / 250);
+					damage -= (damage * ((ac < 240) ? ac : 240) / 400);
 
 					/* Take damage */
 					take_hit(damage, ddesc);
@@ -1041,7 +1041,7 @@ bool make_attack_normal(int m_idx)
 					obvious = TRUE;
 
 					/* Hack -- Reduce damage based on the player armor class */
-					damage -= (damage * ((ac < 150) ? ac : 150) / 250);
+					damage -= (damage * ((ac < 240) ? ac : 240) / 400);
 
 					/* Take damage */
 					take_hit(damage, ddesc);
@@ -1051,7 +1051,7 @@ bool make_attack_normal(int m_idx)
 					{
 						int px_old = p_ptr->px;
 						int py_old = p_ptr->py;
-						
+
 						earthquake(m_ptr->fy, m_ptr->fx, 8);
 
 						/* Stop the blows if the player is pushed away */
