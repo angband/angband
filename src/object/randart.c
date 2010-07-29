@@ -3048,12 +3048,12 @@ static void scramble_artifact(int a_idx)
 		/* The best of the rest have total prob 4-10 */
 		else if ((ap * ap) > ((avg_power * avg_power) - var_power))
 			a_ptr->alloc_prob = (100 / k_ptr->alloc_prob) *
-				(avg_power - ap + 40) / 10;
+				(avg_power - ap + 80) / 10;
 
 		/* The weak ones have prob >10 */
 		else
 			a_ptr->alloc_prob = (100 / k_ptr->alloc_prob) *
-				(avg_power - ap) / 5;
+				(avg_power - ap) / 4;
 	}
 
 	/* sanity check */
