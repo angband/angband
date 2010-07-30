@@ -981,7 +981,7 @@ static int minus_ac(void)
 void acid_dam(int dam, cptr kb_str)
 {
 	int n;
-	int inv = (dam < 30) ? 1 : (dam < 60) ? 2 : 3;
+	int inv;
 
 	if (dam <= 0) return;
 
@@ -1011,6 +1011,7 @@ void acid_dam(int dam, cptr kb_str)
 	take_hit(dam, kb_str);
 
 	/* Inventory damage */
+    inv = (dam < 30) ? 1 : (dam < 60) ? 2 : 3;
 	inven_damage(set_acid_destroy, inv);
 }
 
@@ -1023,7 +1024,7 @@ void acid_dam(int dam, cptr kb_str)
 void elec_dam(int dam, cptr kb_str)
 {
 	int n;
-	int inv = (dam < 30) ? 1 : (dam < 60) ? 2 : 3;
+	int inv;
 
 	if (dam <= 0) return;
 
@@ -1050,6 +1051,7 @@ void elec_dam(int dam, cptr kb_str)
 	take_hit(dam, kb_str);
 
 	/* Inventory damage */
+    inv = (dam < 30) ? 1 : (dam < 60) ? 2 : 3;
 	inven_damage(set_elec_destroy, inv);
 }
 
@@ -1062,7 +1064,7 @@ void elec_dam(int dam, cptr kb_str)
 void fire_dam(int dam, cptr kb_str)
 {
 	int n;
-	int inv = (dam < 30) ? 1 : (dam < 60) ? 2 : 3;
+	int inv;
 
 	if (dam <= 0) return;
 
@@ -1089,6 +1091,7 @@ void fire_dam(int dam, cptr kb_str)
 	take_hit(dam, kb_str);
 
 	/* Inventory damage */
+    inv = (dam < 30) ? 1 : (dam < 60) ? 2 : 3;
 	inven_damage(set_fire_destroy, inv);
 }
 
@@ -1101,7 +1104,7 @@ void fire_dam(int dam, cptr kb_str)
 void cold_dam(int dam, cptr kb_str)
 {
 	int n;
-	int inv = (dam < 30) ? 1 : (dam < 60) ? 2 : 3;
+	int inv;
 
 	if (dam <= 0) return;
 
@@ -1128,6 +1131,7 @@ void cold_dam(int dam, cptr kb_str)
 	take_hit(dam, kb_str);
 
 	/* Inventory damage */
+    inv = (dam < 30) ? 1 : (dam < 60) ? 2 : 3;
 	inven_damage(set_cold_destroy, inv);
 }
 
