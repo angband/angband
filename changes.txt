@@ -22,6 +22,7 @@ Gameplay changes
 #1140 Allow selling unidentified weapons to the temple so long as they are
       known blessed
 #1140 Make Free Action on gloves obvious to magical casters 
+#1183 Allow resists to protect inventory items from damage
 r1947 Slightly more intelligent monster casting (don't heal if full hp etc.)
 r1963 Increase rarity of zephyr hounds
 r1969 Improve pseudo-ID
@@ -29,6 +30,8 @@ r1982 Ranged multipliers add (x3 bow with x3 slay is x6 not x9)
 r1984 Maximum device failure rate lowered to 75%
 r1985 Items in the quiver can now be destroyed by acid/fire
 r1986 DSM activation times reduced to 50
+      Various changes to randarts: off-weapon blows/shots/slays/brands less
+common, speed more common on boots, multiple brands/slays rated higher
 
 User interface
 ==============
