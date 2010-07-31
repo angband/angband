@@ -1054,6 +1054,13 @@ bool target_set_closest(int mode)
 	/* Get ready to do targetting */
 	target_set_interactive_prepare(mode);
 
+	/* If nothing was prepared, then return */
+	if (temp_n < 1)
+	{
+		msg_print("No Available Target.");
+		return FALSE;
+	}
+
 	/* Find the first monster in the queue */
 	y = temp_y[0];
 	x = temp_x[0];
