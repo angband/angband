@@ -116,6 +116,8 @@ static int critical_shot(int weight, int plus, int dam, u32b *msg_type)
 			dam = 3 * dam + 15;
 		}
 	}
+	else
+		*msg_type = MSG_SHOOT_HIT;
 
 	return (dam);
 }
