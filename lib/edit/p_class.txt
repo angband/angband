@@ -70,7 +70,7 @@ A:6:30:5
 M:0:0:0:0
 E:potion:Berserk Strength:1:1
 E:sword:Broad Sword~:1:1
-E:hard armour:Chain Mail~:1:1
+E:soft armour:Soft Leather Armour~:1:1
 E:scroll:Word of Recall:1:1
 F:BRAVERY_30 | PSEUDO_ID_IMPROV
 T:Rookie
@@ -351,7 +351,7 @@ A:5:35:4
 M:90:1:3:400
 E:magic book:[Magic for Beginners]:1:1
 E:sword:Broad Sword~:1:1
-E:bow:Long Bow~:1:1
+E:bow:Short Bow~:1:1
 E:arrow:Arrow~:15:20
 E:scroll:Word of Recall:1:1
 F:CUMBER_GLOVE | EXTRA_SHOT | CHOOSE_SPELLS | PSEUDO_ID_IMPROV
