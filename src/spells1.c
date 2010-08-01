@@ -746,12 +746,13 @@ static int set_cold_destroy(const object_type *o_ptr)
 typedef int (*inven_func)(const object_type *);
 
 /*
- * Destroys a type of item on a given percent chance
+ * Destroys a type of item on a given percent chance.
+ * The chance 'cperc' is in hundredths of a percent (1-in-10000)
  * Note that missiles are no longer necessarily all destroyed
  *
  * Returns number of items destroyed.
  */
-static int inven_damage(inven_func typ, int perc)
+static int inven_damage(inven_func typ, int cperc)
 {
 	int i, j, k, amt;
 
@@ -780,9 +781,10 @@ static int inven_damage(inven_func typ, int perc)
 		/* Give this item slot a shot at death */
 		if ((*typ)(o_ptr))
 		{
-			/* Scale the destruction chance up */
-			int chance = perc * 100;
+			/* Chance to destroy this item */
+			int chance = cperc;
 
+			/* Track if it is damaged instead of destroyed */
 			damage = FALSE;
 
 			/* Analyze the type to see if we just damage it */
@@ -796,7 +798,7 @@ static int inven_damage(inven_func typ, int perc)
 				case TV_DIGGING:
 				{
 					/* Chance to damage it */
-					if (randint0(10000) < perc)
+					if (randint0(10000 * 100) < cperc)
 					{
 						/* Damage the item */
 						o_ptr->to_h--;
@@ -822,7 +824,7 @@ static int inven_damage(inven_func typ, int perc)
 				case TV_DRAG_ARMOR:
 				{
 					/* Chance to damage it */
-					if (randint0(10000) < perc)
+					if (randint0(10000 * 100) < cperc)
 					{
 						/* Damage the item */
 						o_ptr->to_a--;
@@ -1000,8 +1002,8 @@ void acid_dam(int dam, cptr kb_str)
 
 	/* Change damage */
 	if (n >= 3) return;
-	else if (n >= 2) dam = DBLRES_ACID_ADJ(dam, NOT_USED);
-	else if (n == 1) dam = RES_ACID_ADJ(dam, NOT_USED);
+	else if (n >= 2)  dam = DBLRES_ACID_ADJ(dam, NOT_USED);
+	else if (n == 1)  dam = RES_ACID_ADJ(dam, NOT_USED);
 	else if (n == -1) dam = VULN_ACID_ADJ(dam, NOT_USED);
 
 	/* If any armor gets hit, defend the player */
@@ -1011,7 +1013,7 @@ void acid_dam(int dam, cptr kb_str)
 	take_hit(dam, kb_str);
 
 	/* Inventory damage */
-    inv = (dam < 30) ? 1 : (dam < 60) ? 2 : 3;
+	inv = (MIN(dam, 60) * 100) / 20;
 	inven_damage(set_acid_destroy, inv);
 }
 
@@ -1051,7 +1053,7 @@ void elec_dam(int dam, cptr kb_str)
 	take_hit(dam, kb_str);
 
 	/* Inventory damage */
-    inv = (dam < 30) ? 1 : (dam < 60) ? 2 : 3;
+	inv = (MIN(dam, 60) * 100) / 20;
 	inven_damage(set_elec_destroy, inv);
 }
 
@@ -1091,7 +1093,7 @@ void fire_dam(int dam, cptr kb_str)
 	take_hit(dam, kb_str);
 
 	/* Inventory damage */
-    inv = (dam < 30) ? 1 : (dam < 60) ? 2 : 3;
+	inv = (MIN(dam, 60) * 100) / 20;
 	inven_damage(set_fire_destroy, inv);
 }
 
@@ -1131,7 +1133,7 @@ void cold_dam(int dam, cptr kb_str)
 	take_hit(dam, kb_str);
 
 	/* Inventory damage */
-    inv = (dam < 30) ? 1 : (dam < 60) ? 2 : 3;
+	inv = (MIN(dam, 60) * 100) / 20;
 	inven_damage(set_cold_destroy, inv);
 }
 
