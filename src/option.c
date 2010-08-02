@@ -87,7 +87,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 	{
 		OPT_birth_maximize,
 		OPT_birth_randarts,
-		OPT_birth_money,
+/*		OPT_birth_money, */
 		OPT_birth_ai_sound,
 		OPT_birth_ai_smell,
 		OPT_birth_ai_packs,
@@ -264,7 +264,7 @@ static option_entry options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 127 */
 { "birth_maximize",      "Maximise effect of race/class bonuses",       TRUE },  /* 128 */
 { "birth_randarts",      "Randomise the artifacts (except a very few)", FALSE }, /* 129 */
-{ "birth_money",         "Start with more money instead of equipment",  FALSE }, /* 130 */
+/*{ "birth_money",         "Start with more money instead of equipment",  FALSE },  130 */
 { "birth_ironman",       "Restrict the use of stairs/recall",           FALSE }, /* 131 */
 { "birth_no_stores",     "Restrict the use of stores/home",             FALSE }, /* 132 */
 { "birth_no_artifacts",  "Restrict creation of artifacts",              FALSE }, /* 133 */

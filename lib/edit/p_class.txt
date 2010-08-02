@@ -69,7 +69,7 @@ I:9:0:7000:40
 A:6:30:5
 M:0:0:0:0
 E:potion:Berserk Strength:1:1
-E:sword:Broad Sword~:1:1
+E:sword:Short Sword~:1:1
 E:soft armour:Soft Leather Armour~:1:1
 E:scroll:Word of Recall:1:1
 F:BRAVERY_30 | PSEUDO_ID_IMPROV

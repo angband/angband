@@ -145,10 +145,10 @@
 
 
 /*
- * Maximum amount of starting equipment
+ * Maximum amount of starting equipment, and starting gold
  */
 #define MAX_START_ITEMS	5
-
+#define STARTING_GOLD 700
 
 /*
  * Number of tval/min-sval/max-sval slots per ego_item
@@ -227,8 +227,8 @@
 #define MON_DRAIN_LIFE	2		/* Percent of player exp drained per hit */
 #define USE_DEVICE      3		/* x> Harder devices x< Easier devices */
 
-/* 
- * The different types of name randname.c can generate 
+/*
+ * The different types of name randname.c can generate
  * which is also the number of sections in names.txt
  */
 typedef enum
@@ -335,7 +335,7 @@ typedef enum
 #define PY_REGEN_NORMAL		197		/* Regen factor*2^16 when full */
 #define PY_REGEN_WEAK		98		/* Regen factor*2^16 when weak */
 #define PY_REGEN_FAINT		33		/* Regen factor*2^16 when fainting */
-#define PY_REGEN_HPBASE		1442	/* Min amount hp regen*2^16 */
+#define PY_REGEN_HPBASE		1442		/* Min amount hp regen*2^16 */
 #define PY_REGEN_MNBASE		524		/* Min amount mana regen*2^16 */
 
 
@@ -992,8 +992,8 @@ enum
 #define USE_FLOOR     0x04	/* Allow floor items */
 #define CAN_SQUELCH   0x08	/* Allow selection of all squelched items */
 #define IS_HARMLESS   0x10	/* Ignore generic warning inscriptions */
-#define SHOW_PRICES	 0x20	/* Show item prices in item lists */
-#define SHOW_FAIL     0x40 /* Show device failure in item lists */
+#define SHOW_PRICES   0x20	/* Show item prices in item lists */
+#define SHOW_FAIL     0x40 	/* Show device failure in item lists */
 
 
 /*** Player flags ***/
@@ -1004,10 +1004,10 @@ enum
  */
 #define PN_COMBINE      0x00000001L    /* Combine the pack */
 #define PN_REORDER      0x00000002L    /* Reorder the pack */
-#define PN_AUTOINSCRIBE    0x00000004L    /* Autoinscribe items */
+#define PN_AUTOINSCRIBE 0x00000004L    /* Autoinscribe items */
 #define PN_PICKUP       0x00000008L    /* Pick stuff up */
 #define PN_SQUELCH      0x00000010L    /* Squelch stuff */
-#define PN_SORT_QUIVER      0x00000020L    /* Sort the quiver */
+#define PN_SORT_QUIVER  0x00000020L    /* Sort the quiver */
 /* xxx (many) */
 
 
@@ -1062,7 +1062,7 @@ enum
 #define PR_OBJECT		0x00800000L /* Display object recall */
 #define PR_MONLIST		0x01000000L /* Display monster list */
 #define PR_BUTTONS              0x02000000L     /* Display mouse buttons */
-#define PR_ITEMLIST        0x04000000L /* Display item list */
+#define PR_ITEMLIST             0x04000000L /* Display item list */
 
 /* Display Basic Info */
 #define PR_BASIC \
@@ -1276,7 +1276,7 @@ enum
 #define OF_ALL_SLAY_MASK \
 	OF_SLAY_MASK, OF_BRAND_MASK, OF_KILL_MASK
 
-	
+
 /*
  * Hack -- special "xtra" object flag info (type)
  */

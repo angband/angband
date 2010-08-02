@@ -29,7 +29,7 @@
  * To follow the code, start at player_birth towards the bottom of
  * the file - that is the only external entry point to the functions
  * defined here.
- * 
+ *
  * Player (in the Angband sense of character) birth is modelled as a
  * a series of commands from the UI to the game to manipulate the
  * character and corresponding events to inform the UI of the outcomes
@@ -37,14 +37,14 @@
  *
  * The current aim of this section is that after any birth command
  * is carried out, the character should be left in a playable state.
- * In particular, this means that if a savefile is supplied, the 
+ * In particular, this means that if a savefile is supplied, the
  * character will be set up according to the "quickstart" rules until
  * another race or class is chosen, or until the stats are reset by
  * the UI.
  *
- * Once the UI signals that the player is happy with the character, the 
- * game does housekeeping to ensure the character is ready to start the 
- * game (clearing the history log, making sure options are set, etc) 
+ * Once the UI signals that the player is happy with the character, the
+ * game does housekeeping to ensure the character is ready to start the
+ * game (clearing the history log, making sure options are set, etc)
  * before returning control to the game proper.
  */
 
@@ -120,15 +120,14 @@ static void load_roller_data(birther *player, birther *prev_player)
 {
 	int i;
 
-    /* The initialisation is just paranoia - structure assignment is
-	   (perhaps) not strictly defined to work with uninitialised parts
-	   of structures. */
+     /* The initialisation is just paranoia - structure assignment is
+        (perhaps) not strictly defined to work with uninitialised parts
+        of structures. */
 	birther temp;
 	WIPE(&temp, birther);
 
 	/*** Save the current data if we'll need it later ***/
-	if (prev_player)
-		save_roller_data(&temp);
+	if (prev_player) save_roller_data(&temp);
 
 	/*** Load the previous data ***/
 
@@ -141,10 +140,7 @@ static void load_roller_data(birther *player, birther *prev_player)
 	p_ptr->ht = p_ptr->ht_birth = player->ht;
 	p_ptr->sc = p_ptr->sc_birth = player->sc;
 	p_ptr->au_birth = player->au;
-	if (OPT(birth_money))
-		p_ptr->au = 500;
-	else
-		p_ptr->au = p_ptr->au_birth;
+	p_ptr->au = STARTING_GOLD;
 
 	/* Load the stats */
 	for (i = 0; i < A_MAX; i++)
@@ -157,8 +153,7 @@ static void load_roller_data(birther *player, birther *prev_player)
 
 
 	/*** Save the current data if the caller is interested in it. ***/
-	if (prev_player)
-		*prev_player = temp;
+	if (prev_player) *prev_player = temp;
 }
 
 
@@ -412,15 +407,14 @@ static void get_ahw(void)
  */
 static void get_money(int stat_use[A_MAX])
 {
-	if (OPT(birth_money))
+/*	if (OPT(birth_money))
 	{
 		p_ptr->au_birth = 200;
 		p_ptr->au = 500;
 	}
 	else
-	{
-		p_ptr->au = p_ptr->au_birth = 200;
-	}
+	{                                              */
+		p_ptr->au = p_ptr->au_birth = STARTING_GOLD;
 }
 
 
@@ -623,6 +617,9 @@ static void player_outfit(void)
 			object_notice_everything(i_ptr);
 			(void)inven_carry(i_ptr);
 			k_info[k_idx].everseen = TRUE;
+
+			/* Deduct the cost of the item from starting cash */
+			p_ptr->au -= object_value(i_ptr, i_ptr->number,	FALSE);
 		}
 	}
 
@@ -640,7 +637,7 @@ static void player_outfit(void)
 	object_notice_everything(i_ptr);
 	k_info[i_ptr->k_idx].everseen = TRUE;
 	(void)inven_carry(i_ptr);
-
+	p_ptr->au -= object_value(i_ptr, i_ptr->number, FALSE);
 
 	/* Get local object */
 	i_ptr = &object_type_body;
@@ -654,7 +651,10 @@ static void player_outfit(void)
 	object_notice_everything(i_ptr);
 	k_info[i_ptr->k_idx].everseen = TRUE;
 	(void)inven_carry(i_ptr);
+	p_ptr->au -= object_value(i_ptr, i_ptr->number, FALSE);
 
+	/* sanity check */
+	if (p_ptr->au < 0) p_ptr->au = 0;
 
 	/* Now try wielding everything */
 	wield_all();
@@ -682,26 +682,21 @@ static void recalculate_stats(int *stats, int points_left)
 			/* Reset stats */
 			p_ptr->stat_cur[i] = p_ptr->stat_max[i] = p_ptr->stat_birth[i] = stats[i];
 		}
-		
+
 		/* Fixed stat maxes */
 		else
 		{
 			/* Obtain a "bonus" for "race" and "class" */
 			int bonus = rp_ptr->r_adj[i] + cp_ptr->c_adj[i];
-			
+
 			/* Apply the racial/class bonuses */
 			p_ptr->stat_cur[i] = p_ptr->stat_max[i] =
 				modify_stat_value(stats[i], bonus);
 		}
 	}
-	
-	/* Gold is inversely proportional to cost */
-	if (OPT(birth_money))
-		p_ptr->au = 500;
-	else
-		p_ptr->au = 200 + (50 * points_left);
 
-	p_ptr->au_birth = 200 + (50 * points_left);
+	/* Gold is inversely proportional to cost */
+	p_ptr->au_birth = STARTING_GOLD + (50 * points_left);
 
 	/* Update bonuses, hp, etc. */
 	get_bonuses();
@@ -742,22 +737,22 @@ static bool buy_stat(int choice, int stats[A_MAX], int points_spent[A_MAX], int 
 		/* Get the cost of buying the extra point (beyond what
 		   it has already cost to get this far). */
 		int stat_cost = birth_stat_costs[stats[choice] + 1];
-		
+
 		if (stat_cost <= *points_left)
 		{
 			stats[choice]++;
 			points_spent[choice] += stat_cost;
 			*points_left -= stat_cost;
-			
+
 			/* Tell the UI the new points situation. */
 			event_signal_birthpoints(points_spent, *points_left);
-			
+
 			/* Recalculate everything that's changed because
 			   the stat has changed, and inform the UI. */
 			recalculate_stats(stats, *points_left);
-			
+
 			return TRUE;
-		}		
+		}
 	}
 
 	/* Didn't adjust stat. */
@@ -765,27 +760,27 @@ static bool buy_stat(int choice, int stats[A_MAX], int points_spent[A_MAX], int 
 }
 
 
-static bool sell_stat(int choice, int stats[A_MAX], int points_spent[A_MAX], 
+static bool sell_stat(int choice, int stats[A_MAX], int points_spent[A_MAX],
 					  int *points_left)
 {
 	/* Must be a valid stat, and we can't "sell" stats below the base of 10. */
 	if (!(choice >= A_MAX || choice < 0) && (stats[choice] > 10))
 	{
 		int stat_cost = birth_stat_costs[stats[choice]];
-		
+
 		stats[choice]--;
 		points_spent[choice] -= stat_cost;
 		*points_left += stat_cost;
-		
+
 		/* Tell the UI the new points situation. */
 		event_signal_birthpoints(points_spent, *points_left);
-		
+
 		/* Recalculate everything that's changed because
 		   the stat has changed, and inform the UI. */
 		recalculate_stats(stats, *points_left);
 
 		return TRUE;
-	}				
+	}
 
 	/* Didn't adjust stat. */
 	return FALSE;
@@ -997,7 +992,7 @@ static void generate_player()
 	p_ptr->player_hp[0] = p_ptr->hitdie;
 
 	/* Roll for age/height/weight */
-	get_ahw();					
+	get_ahw();
 
 	get_history();
 }
@@ -1046,15 +1041,15 @@ void player_birth(bool quickstart_allowed)
 	 */
 	birther prev = { 0, 0, 0, 0, 0, 0, 0, 0, {0}, "" };
 
-	/* 
+	/*
 	 * If quickstart is allowed, we store the old character in this,
 	 * to allow for it to be reloaded if we step back that far in the
 	 * birth process.
 	 */
 	birther quickstart_prev = {0, 0, 0, 0, 0, 0, 0, 0, {0}, "" };
 
-	/* 
-	 * If there's a quickstart character, store it for later use. 
+	/*
+	 * If there's a quickstart character, store it for later use.
 	 * If not, default to whatever the first of the choices is.
 	 */
 	if (quickstart_allowed)
@@ -1155,7 +1150,7 @@ void player_birth(bool quickstart_allowed)
 
 			/* Get a new character */
 			get_stats(stats);
-			
+
 			/* Roll for gold */
 			get_money(stats);
 
@@ -1201,11 +1196,11 @@ void player_birth(bool quickstart_allowed)
 		else if (cmd.command == CMD_NAME_CHOICE)
 		{
 			/* Set player name */
-			my_strcpy(op_ptr->full_name, cmd.args[0].string, 
+			my_strcpy(op_ptr->full_name, cmd.args[0].string,
 					  sizeof(op_ptr->full_name));
-			
+
 			string_free((void *) cmd.args[0].string);
-			
+
 			/* Don't change savefile name.  If the UI
 			   wants it changed, they can do it. XXX (Good idea?) */
 			process_player_name(FALSE);
@@ -1214,13 +1209,13 @@ void player_birth(bool quickstart_allowed)
 		else if (cmd.command == CMD_HELP)
 		{
 			char buf[80];
-			
+
 			strnfmt(buf, sizeof(buf), "birth.txt");
 			screen_save();
 			show_file(buf, NULL, 0, 0);
 			screen_load();
 		}
-		else if (cmd.command == CMD_QUIT) 
+		else if (cmd.command == CMD_QUIT)
 		{
 			quit(NULL);
 		}
@@ -1257,7 +1252,7 @@ void player_birth(bool quickstart_allowed)
 	message_add(" ", MSG_GENERIC);
 
 	/* Hack -- outfit the player */
-	if (!OPT(birth_money)) player_outfit();
+	player_outfit();
 
 	/* Initialise the stores */
 	store_init();
