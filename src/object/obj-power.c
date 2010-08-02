@@ -199,12 +199,12 @@ static s32b slay_power(const object_type *o_ptr, int verbose, ang_file* log_file
 	for (i = 0; !of_is_empty(slay_cache[i].flags); i++)
 	{
 		if (of_is_equal(s_index, slay_cache[i].flags))
+		{
+			slay_cache[i].value = sv;
+			LOG_PRINT("Added to slay cache\n");
 			break;
+		}
 	}
-
-	slay_cache[i].value = sv;
-
-	LOG_PRINT("Added to slay cache\n");
 
 	return sv;
 }
