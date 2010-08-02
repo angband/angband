@@ -59,7 +59,7 @@
 #define BASE_JEWELRY_POWER	4
 #define BASE_ARMOUR_POWER	1
 #define DAMAGE_POWER            5 /* i.e. 2.5 */
-#define TO_HIT_POWER            2 /* i.e. 1 */
+#define TO_HIT_POWER            3 /* i.e. 1.5 */
 #define BASE_AC_POWER           2 /* i.e. 1 */
 #define TO_AC_POWER             2 /* i.e. 1 */
 #define MAX_BLOWS               5
@@ -402,8 +402,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 				{
 					p = sign(p) * ((ABS(p) * (MAX_BLOWS + o_ptr->pval)) 
 						/ MAX_BLOWS);
-					/* Add an extra amount per extra blow to account for damage rings */
-					p += (MELEE_DAMAGE_BOOST * o_ptr->pval * DAMAGE_POWER / (2 * MAX_BLOWS));
+					/* Add an extra amount per extra blow to account for damage/branding rings */
+					p += ((MELEE_DAMAGE_BOOST + RING_BRAND_DMG) * o_ptr->pval * DAMAGE_POWER / (2 * MAX_BLOWS));
 					LOG_PRINT1("Adding power for blows, total is %d\n", p);
 				}
 			}
