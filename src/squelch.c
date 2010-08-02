@@ -75,9 +75,7 @@ static quality_squelch_struct quality_mapping[] =
 	{ TYPE_MISSILE_BOW,	TV_ARROW,	0,		SV_UNKNOWN },
 	{ TYPE_MISSILE_XBOW,	TV_BOLT,	0,		SV_UNKNOWN },
 	{ TYPE_ARMOR_ROBE,	TV_SOFT_ARMOR,	SV_ROBE,	SV_ROBE },
-	/* do not want to squelch dragon armor like other armor
 	{ TYPE_ARMOR_BODY,	TV_DRAG_ARMOR,	0,		SV_UNKNOWN },
-	*/
 	{ TYPE_ARMOR_BODY,	TV_HARD_ARMOR,	0,		SV_UNKNOWN },
 	{ TYPE_ARMOR_BODY,	TV_SOFT_ARMOR,	0,		SV_UNKNOWN },
 	{ TYPE_ARMOR_CLOAK,	TV_CLOAK,	SV_CLOAK, 	SV_FUR_CLOAK },
@@ -147,7 +145,7 @@ static tval_desc sval_dependent[] =
 	{ TV_SPIKE,			"Spikes" },
 	{ TV_LIGHT,			"Lights" },
 	{ TV_FLASK,			"Flasks of oil" },
-	{ TV_DRAG_ARMOR,	"Dragon Mail Armor" },
+/*	{ TV_DRAG_ARMOR,	"Dragon Mail Armor" }, */
 	{ TV_GOLD,			"Money" },
 };
 
