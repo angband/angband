@@ -2250,33 +2250,24 @@ void do_cmd_pickup(cmd_code code, cmd_arg args[])
  */
 void do_cmd_rest(cmd_code code, cmd_arg args[])
 {
-	/* Save the rest code */
-	switch (args[0].choice)
+	/* 
+	 * A little sanity checking on the input - only the specified negative 
+	 * values are valid. 
+	 */
+	if ((args[0].choice < 0) &&
+		((args[0].choice != REST_COMPLETE) &&
+		 (args[0].choice != REST_ALL_POINTS) &&
+		 (args[0].choice != REST_SOME_POINTS))) 
 	{
-		case REST_ALL:
-		{
-			p_ptr->resting = -2;
-			break;
-		}
-
-		case REST_ALL_POINTS:
-		{
-			p_ptr->resting = -1;
-			break;
-		}
-
-		case REST_SOME_POINTS:
-		{
-			p_ptr->resting = -3;
-			break;
-		}
-
-		default:
-		{
-			p_ptr->resting = p_ptr->command_arg;
-		}
+		return;
 	}
 
+	/* Save the rest code */
+	p_ptr->resting = args[0].choice;
+	
+	/* Truncate overlarge values */
+	if (p_ptr->resting > 9999) p_ptr->resting = 9999;
+	
 	/* Take a turn XXX XXX XXX (?) */
 	p_ptr->energy_use = 100;
 
@@ -2315,7 +2306,7 @@ void textui_cmd_rest(void)
 		/* Rest until done */
 		if (out_val[0] == '&')
 		{
-			cmd_insert(CMD_REST, REST_ALL);
+			cmd_insert(CMD_REST, REST_COMPLETE);
 		}
 
 		/* Rest a lot */
@@ -2333,11 +2324,11 @@ void textui_cmd_rest(void)
 		/* Rest some */
 		else
 		{
-			p_ptr->command_arg = atoi(out_val);
-			if (p_ptr->command_arg <= 0) return;
-			if (p_ptr->command_arg > 9999) p_ptr->command_arg = 9999;
+			int turns = atoi(out_val);
+			if (turns <= 0) return;
+			if (turns > 9999) turns = 9999;
 			
-			cmd_insert(CMD_REST, REST_TURNS);
+			cmd_insert(CMD_REST, turns);
 		}
 	}
 }

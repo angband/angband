@@ -906,7 +906,7 @@ static void process_player(void)
 	if (p_ptr->resting < 0)
 	{
 		/* Basic resting */
-		if (p_ptr->resting == -1)
+		if (p_ptr->resting == REST_ALL_POINTS)
 		{
 			/* Stop resting */
 			if ((p_ptr->chp == p_ptr->mhp) &&
@@ -917,7 +917,7 @@ static void process_player(void)
 		}
 
 		/* Complete resting */
-		else if (p_ptr->resting == -2)
+		else if (p_ptr->resting == REST_COMPLETE)
 		{
 			/* Stop resting */
 			if ((p_ptr->chp == p_ptr->mhp) &&
@@ -934,7 +934,7 @@ static void process_player(void)
 		}
 		
 		/* Rest until HP or SP are filled */
-		else if (p_ptr->resting == -3)
+		else if (p_ptr->resting == REST_SOME_POINTS)
 		{
 			/* Stop resting */
 			if ((p_ptr->chp == p_ptr->mhp) ||

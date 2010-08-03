@@ -508,6 +508,19 @@ enum
 #define SEX_MALE		1
 
 
+/* 
+ * Special values for the number of turns to rest, these need to be
+ * negative numbers, as postive numbers are taken to be a turncount,
+ * and zero means "not resting". 
+ */
+enum 
+{
+	REST_COMPLETE = -2,
+	REST_ALL_POINTS = -1,
+	REST_SOME_POINTS = -3
+};
+
+
 
 /*** General index values ***/
 

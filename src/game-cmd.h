@@ -103,14 +103,6 @@ typedef enum cmd_context
 #define DIR_UNKNOWN 0
 #define DIR_TARGET 5
 
-enum 
-{
-	REST_TURNS,
-	REST_ALL,
-	REST_ALL_POINTS,
-	REST_SOME_POINTS	
-};
-
 
 typedef union 
 {
