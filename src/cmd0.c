@@ -666,7 +666,7 @@ void textui_process_command(bool no_request)
 		assert(p_ptr->command_cmd >= CHAR_MIN && p_ptr->command_cmd <= CHAR_MAX);
 		/* Execute the command */
 		if (converted_list[(unsigned char) p_ptr->command_cmd].cmd != CMD_NULL)
-			cmd_insert(converted_list[(unsigned char) p_ptr->command_cmd].cmd);
+			cmd_insert_repeated(converted_list[(unsigned char) p_ptr->command_cmd].cmd, p_ptr->command_arg);
 
 		else if (converted_list[(unsigned char) p_ptr->command_cmd].hook)
 			converted_list[(unsigned char) p_ptr->command_cmd].hook();

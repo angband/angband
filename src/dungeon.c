@@ -947,7 +947,7 @@ static void process_player(void)
 
 	/* Check for "player abort" */
 	if (p_ptr->running ||
-	    p_ptr->command_rep ||
+	    cmd_get_nrepeats() > 0 ||
 	    (p_ptr->resting && !(turn & 0x7F)))
 	{
 		/* Do not wait */
@@ -1054,7 +1054,7 @@ static void process_player(void)
 		}
 
 		/* Repeated command */
-		else if (p_ptr->command_rep)
+		else if (cmd_get_nrepeats() > 0)
 		{
 			/* Hack -- Assume messages were seen */
 			msg_flag = FALSE;
@@ -1064,16 +1064,6 @@ static void process_player(void)
 
 			/* Process the command */
 			process_command(CMD_GAME, TRUE);
-
-			/* Count this execution */
-			if (p_ptr->command_rep)
-			{
-				/* Count this execution */
-				p_ptr->command_rep--;
-
-				/* Redraw the state */
-				p_ptr->redraw |= (PR_STATE);
-			}
 		}
 
 		/* Normal command */
@@ -1353,7 +1343,6 @@ static void dungeon(void)
 	/* Reset the "command" vars */
 	p_ptr->command_cmd = 0;
 	p_ptr->command_new = 0;
-	p_ptr->command_rep = 0;
 	p_ptr->command_arg = 0;
 	p_ptr->command_dir = 0;
 

@@ -3177,7 +3177,6 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 
 	/* Reset the command variables */
 	p_ptr->command_arg = 0;
-	p_ptr->command_rep = 0;
 	p_ptr->command_new = 0;
 
 

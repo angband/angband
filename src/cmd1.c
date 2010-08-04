@@ -620,13 +620,8 @@ void move_player(int dir)
 			(cave_feat[y][x] <= FEAT_DOOR_TAIL))
 	{
 		/* Auto-repeat if not already repeating */
-		if (!p_ptr->command_rep && (p_ptr->command_arg <= 0))
-		{
-			p_ptr->command_rep = 99;
-
-			/* Reset the command count */
-			p_ptr->command_arg = 0;
-		}
+		if (cmd_get_nrepeats() == 0)
+			cmd_set_repeat(99);
 
 		do_cmd_alter_aux(dir);
 	}

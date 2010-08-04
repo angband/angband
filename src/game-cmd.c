@@ -27,7 +27,9 @@ errr (*cmd_get_hook)(cmd_context c, bool wait);
 static int cmd_head = 0;
 static int cmd_tail = 0;
 static game_command cmd_queue[CMD_QUEUE_SIZE];
+
 static bool repeat_prev_allowed = FALSE;
+static bool repeating = FALSE;
 
 enum cmd_arg_type {
 	arg_STRING,
@@ -116,7 +118,9 @@ static struct
 };
 
 
-
+/*
+ * Insert the given command into the command queue.
+ */
 errr cmd_insert_s(game_command *cmd)
 {
 	/* If queue full, return error */
@@ -156,6 +160,13 @@ errr cmd_insert_s(game_command *cmd)
  */
 errr cmd_get(cmd_context c, game_command *cmd, bool wait)
 {
+	/* If we're repeating, just pull the last command again. */
+	if (repeating)
+	{
+		*cmd = cmd_queue[(cmd_tail - 1) % CMD_QUEUE_SIZE];
+		return 0;
+	}
+
 	/* If there are no commands queued, ask the UI for one. */
 	if (cmd_head == cmd_tail) 
 		cmd_get_hook(c, wait);
@@ -173,7 +184,8 @@ errr cmd_get(cmd_context c, game_command *cmd, bool wait)
 	return 1;
 }
 
-int cmd_idx(cmd_code code)
+/* Return the index of the given command in the command array. */
+static int cmd_idx(cmd_code code)
 {
 	size_t i;
 
@@ -188,20 +200,17 @@ int cmd_idx(cmd_code code)
 	return -1;
 }
 
-/* 
- * Inserts a command in the queue to be carried out. 
+/*
+ * Process the arguments to cmd_insert, etc, into a command struct and
+ * attempt to insert it into the queue.
  */
-errr cmd_insert(cmd_code c, ...)
+static errr vcmd_insert_repeated(cmd_code c, int nrepeats, va_list vp)
 {
 	game_command cmd = {CMD_NULL, 0, {{0}} };
-	va_list vp;
 	size_t j = 0;
 	int idx = cmd_idx(c);
 
 	if (idx == -1) return 1;
-
-	/* Begin the Varargs Stuff */
-	va_start(vp, c);
 
 	cmd.command = c;
 
@@ -255,35 +264,42 @@ errr cmd_insert(cmd_code c, ...)
 		}
 	}
 
-	/* End the Varargs Stuff */
-	va_end(vp);
+	cmd.nrepeats = nrepeats;
 
 	return cmd_insert_s(&cmd);
 }
 
+/* 
+ * Inserts a command in the queue to be carried out. 
+ */
+errr cmd_insert(cmd_code c, ...)
+{
+	va_list vp;
+	errr retcode = 0;
+
+	va_start(vp, c);
+	retcode = vcmd_insert_repeated(c, 0, vp);
+	va_end(vp);
+
+	return retcode;
+}
 
 /*
- * Mark a command as "allowed to be repeated".
- *
- * When a command is executed, the user has the option to request that
- * it be repeated by the UI setting p_ptr->command_arg.  If the command
- * permits repetition, then it calls this function to set 
- * p_ptr->command_rep to make it repeat until an interruption.
+ * Inserts a command in the queue to be carried out, with the given
+ * number of repeats.
  */
-static void allow_repeated_command(void)
+errr cmd_insert_repeated(cmd_code c, int nrepeats, ...)
 {
-	if (p_ptr->command_arg)
-	{
-		/* Set repeat count */
-		p_ptr->command_rep = p_ptr->command_arg - 1;
-		
-		/* Redraw the state */
-		p_ptr->redraw |= (PR_STATE);
-		
-		/* Cancel the arg */
-		p_ptr->command_arg = 0;
-	}
+	va_list vp;
+	errr retcode = 0;
+
+	va_start(vp, nrepeats);
+	retcode = vcmd_insert_repeated(c, nrepeats, vp);
+	va_end(vp);
+
+	return retcode;
 }
+
 
 /* 
  * Request a game command from the uI and carry out whatever actions
@@ -386,24 +402,79 @@ void process_command(cmd_context ctx, bool no_request)
 			}
 		}
 
-
 		/* Command repetition */
 		if (game_cmds[idx].repeat_allowed)
 		{
-			/* Auto-repeat */
-			if (game_cmds[idx].auto_repeat_n > 0 && p_ptr->command_arg == 0 && p_ptr->command_rep == 0)
-				p_ptr->command_arg = game_cmds[idx].auto_repeat_n;
-
-			allow_repeated_command();
+			/* Auto-repeat only if their isn't already a repeat length. */
+			if (game_cmds[idx].auto_repeat_n > 0 && cmd.nrepeats == 0)
+				cmd.nrepeats = game_cmds[idx].auto_repeat_n;
+		}
+		else
+		{
+			cmd.nrepeats = 0; repeating = FALSE;
 		}
 
+		/* 
+		 * The command gets to unset this if it isn't appropriate for
+		 * the user to repeat it.
+		 */
 		repeat_prev_allowed = TRUE;
 
 		if (game_cmds[idx].fn)
 			game_cmds[idx].fn(cmd.command, cmd.args);
+
+		/* If the command hasn't changed nrepeats, count this execution. */
+		if (cmd.nrepeats > 0 && cmd.nrepeats == cmd_get_nrepeats())
+			cmd_set_repeat(cmd.nrepeats - 1);
 	}
 }
 
+/* 
+ * Remove any pending repeats from the current command. 
+ */
+void cmd_cancel_repeat(void)
+{
+	game_command *cmd = &cmd_queue[(cmd_tail - 1) % CMD_QUEUE_SIZE];
+
+	if (cmd->nrepeats || repeating)
+	{
+		/* Cancel */
+		cmd->nrepeats = 0;
+		repeating = FALSE;
+		
+		/* Redraw the state (later) */
+		p_ptr->redraw |= (PR_STATE);
+	}
+}
+
+/* 
+ * Update the number of repeats pending for the current command. 
+ */
+void cmd_set_repeat(int nrepeats)
+{
+	game_command *cmd = &cmd_queue[(cmd_tail - 1) % CMD_QUEUE_SIZE];
+
+	cmd->nrepeats = nrepeats;
+	if (nrepeats) repeating = TRUE;
+	else repeating = FALSE;
+
+	/* Redraw the state (later) */
+	p_ptr->redraw |= (PR_STATE);
+}
+
+/* 
+ * Return the number of repeats pending for the current command. 
+ */
+int cmd_get_nrepeats(void)
+{
+	game_command *cmd = &cmd_queue[(cmd_tail - 1) % CMD_QUEUE_SIZE];
+	return cmd->nrepeats;
+}
+
+/*
+ * Do not allow the current command to be repeated by the user using the
+ * "repeat last command" command.
+ */
 void cmd_disable_repeat(void)
 {
 	repeat_prev_allowed = FALSE;

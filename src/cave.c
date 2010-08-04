@@ -18,6 +18,7 @@
 #include "angband.h"
 #include "object/tvalsval.h"
 #include "game-event.h"
+#include "game-cmd.h"
 
 /*
  * Support for Adam Bolt's tileset, lighting and transparency effects
@@ -3921,14 +3922,7 @@ void disturb(int stop_search, int unused_flag)
 	/* p_ptr->command_new = 0; */
 
 	/* Cancel repeated commands */
-	if (p_ptr->command_rep)
-	{
-		/* Cancel */
-		p_ptr->command_rep = 0;
-
-		/* Redraw the state (later) */
-		p_ptr->redraw |= (PR_STATE);
-	}
+	cmd_cancel_repeat();
 
 	/* Cancel Resting */
 	if (p_ptr->resting)

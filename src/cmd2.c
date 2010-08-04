@@ -818,7 +818,7 @@ void textui_cmd_open(void)
 		}
 	}
 
-	cmd_insert(CMD_OPEN, dir);
+	cmd_insert_repeated(CMD_OPEN, p_ptr->command_arg, dir);
 }
 
 
@@ -967,7 +967,7 @@ void textui_cmd_close(void)
 			return;
 	}
 
-	cmd_insert(CMD_CLOSE, dir);
+	cmd_insert_repeated(CMD_CLOSE, p_ptr->command_arg, dir);
 }
 
 
@@ -1289,7 +1289,7 @@ void textui_cmd_tunnel(void)
 {
 	int dir;
 	if (!get_rep_dir(&dir)) return;
-	cmd_insert(CMD_TUNNEL, dir);
+	cmd_insert_repeated(CMD_TUNNEL, p_ptr->command_arg, dir);
 }
 
 
@@ -1511,7 +1511,7 @@ void textui_cmd_disarm(void)
 			return;
 	}
 
-	cmd_insert(CMD_DISARM, dir);
+	cmd_insert_repeated(CMD_DISARM, p_ptr->command_arg, dir);
 }
 
 /*
@@ -1700,7 +1700,7 @@ void textui_cmd_bash(void)
 	if (!get_rep_dir(&dir))
 		return;
 
-	cmd_insert(CMD_BASH, dir);
+	cmd_insert_repeated(CMD_BASH, p_ptr->command_arg, dir);
 }
 
 
@@ -1810,7 +1810,7 @@ void textui_cmd_alter(void)
 	if (!get_rep_dir(&dir))
 		return;
 
-	cmd_insert(CMD_ALTER, dir);
+	cmd_insert_repeated(CMD_ALTER, p_ptr->command_arg, dir);
 }
 
 /*
@@ -1963,7 +1963,7 @@ void textui_cmd_spike(void)
 	if (!get_rep_dir(&dir))
 		return;
 
-	cmd_insert(CMD_JAM, dir);
+	cmd_insert_repeated(CMD_JAM, p_ptr->command_arg, dir);
 }
 
 
@@ -2086,7 +2086,7 @@ void textui_cmd_walk(void)
 	if (!get_rep_dir(&dir))
 		return;
 
-	cmd_insert(CMD_WALK, dir);
+	cmd_insert_repeated(CMD_WALK, p_ptr->command_arg, dir);
 }
 
 
@@ -2270,9 +2270,6 @@ void do_cmd_rest(cmd_code code, cmd_arg args[])
 	
 	/* Take a turn XXX XXX XXX (?) */
 	p_ptr->energy_use = 100;
-
-	/* Cancel the arg */
-	p_ptr->command_arg = 0;
 
 	/* Cancel searching */
 	p_ptr->searching = FALSE;

@@ -112,11 +112,6 @@ s16b mon_max = 1;	/* Number of allocated monsters */
 s16b mon_cnt = 0;	/* Number of live monsters */
 
 
-/*
- * TRUE if process_command() is a repeated call.
- */
-bool command_repeating = FALSE;
-
 
 /*
  * Dungeon variables

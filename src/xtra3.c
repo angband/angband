@@ -873,12 +873,14 @@ static size_t prt_state(int row, int col)
 	}
 
 	/* Repeating */
-	else if (p_ptr->command_rep)
+	else if (cmd_get_nrepeats())
 	{
-		if (p_ptr->command_rep > 999)
-			strnfmt(text, sizeof(text), "Rep. %3d00", p_ptr->command_rep / 100);
+		int nrepeats = cmd_get_nrepeats();
+
+		if (nrepeats > 999)
+			strnfmt(text, sizeof(text), "Rep. %3d00", nrepeats / 100);
 		else
-			strnfmt(text, sizeof(text), "Repeat %3d", p_ptr->command_rep);
+			strnfmt(text, sizeof(text), "Repeat %3d", nrepeats);
 	}
 
 	/* Searching */
