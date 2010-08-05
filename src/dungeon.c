@@ -1344,7 +1344,6 @@ static void dungeon(void)
 	p_ptr->command_cmd = 0;
 	p_ptr->command_new = 0;
 	p_ptr->command_arg = 0;
-	p_ptr->command_dir = 0;
 
 
 	/* Cancel the target */

@@ -511,7 +511,7 @@ int dir_transitions[10][10] =
 bool get_aim_dir(int *dp)
 {
 	/* Global direction */
-	int dir = p_ptr->command_dir;
+	int dir = 0;
 	
 	ui_event_data ke;
 
@@ -611,8 +611,8 @@ bool get_aim_dir(int *dp)
 	/* No direction */
 	if (!dir) return (FALSE);
 
-	/* Save the direction */
-	p_ptr->command_dir = dir;
+	/* Save direction */
+	(*dp) = dir;
 
 	/* Check for confusion */
 	if (p_ptr->timed[TMD_CONFUSED])
@@ -622,7 +622,7 @@ bool get_aim_dir(int *dp)
 	}
 
 	/* Notice confusion */
-	if (p_ptr->command_dir != dir)
+	if ((*dp) != dir)
 	{
 		/* Warn the user */
 		msg_print("You are confused.");
@@ -653,15 +653,12 @@ bool get_aim_dir(int *dp)
  */
 bool get_rep_dir(int *dp)
 {
-	int dir;
+	int dir = 0;
 
 	ui_event_data ke;
 
 	/* Initialize */
 	(*dp) = 0;
-
-	/* Global direction */
-	dir = p_ptr->command_dir;
 
 	/* Get a direction */
 	while (!dir)
@@ -756,9 +753,6 @@ bool get_rep_dir(int *dp)
 
 	/* Clear the prompt */
 	prt("", 0, 0);
-
-	/* Save desired direction */
-	p_ptr->command_dir = dir;
 
 	/* Save direction */
 	(*dp) = dir;

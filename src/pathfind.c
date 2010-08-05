@@ -1105,9 +1105,6 @@ void run_step(int dir)
 			}
 
 			p_ptr->run_cur_dir = pf_result[pf_result_index--] - '0';
-
-			/* Hack -- allow OPT(easy_alter) */
-			p_ptr->command_dir = p_ptr->run_cur_dir;
 		}
 	}
 

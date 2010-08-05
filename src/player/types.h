@@ -213,7 +213,6 @@ typedef struct
 
 	s16b command_cmd;		/* Gives identity of current command */
 	s16b command_arg;		/* Gives argument of current command */
-	s16b command_dir;		/* Gives direction of current command */
 	int  command_inv;		/* Gives item of current command */
 	ui_event_data command_cmd_ex; /* Gives additional information of current command */
 
