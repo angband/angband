@@ -407,7 +407,10 @@ void process_command(cmd_context ctx, bool no_request)
 		{
 			/* Auto-repeat only if their isn't already a repeat length. */
 			if (game_cmds[idx].auto_repeat_n > 0 && cmd.nrepeats == 0)
+			{
 				cmd.nrepeats = game_cmds[idx].auto_repeat_n;
+				cmd_set_repeat(cmd.nrepeats);
+			}
 		}
 		else
 		{
