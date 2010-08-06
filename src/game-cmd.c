@@ -163,7 +163,7 @@ errr cmd_get(cmd_context c, game_command *cmd, bool wait)
 	/* If we're repeating, just pull the last command again. */
 	if (repeating)
 	{
-		*cmd = cmd_queue[(cmd_tail - 1) % CMD_QUEUE_SIZE];
+		*cmd = cmd_queue[(cmd_tail + CMD_QUEUE_SIZE - 1) % CMD_QUEUE_SIZE];
 		return 0;
 	}
 
@@ -405,7 +405,7 @@ void process_command(cmd_context ctx, bool no_request)
 		/* Command repetition */
 		if (game_cmds[idx].repeat_allowed)
 		{
-			/* Auto-repeat only if their isn't already a repeat length. */
+			/* Auto-repeat only if there isn't already a repeat length. */
 			if (game_cmds[idx].auto_repeat_n > 0 && cmd.nrepeats == 0)
 			{
 				cmd.nrepeats = game_cmds[idx].auto_repeat_n;
