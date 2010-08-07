@@ -87,7 +87,7 @@ extern const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 
 #define OPT_birth_maximize          (OPT_BIRTH+0)
 #define OPT_birth_randarts          (OPT_BIRTH+1)
-#define OPT_birth_money             (OPT_BIRTH+2)
+/* #define OPT_birth_money             (OPT_BIRTH+2) */
 #define OPT_birth_ironman           (OPT_BIRTH+3)
 #define OPT_birth_no_stores         (OPT_BIRTH+4)
 #define OPT_birth_no_artifacts      (OPT_BIRTH+5)
