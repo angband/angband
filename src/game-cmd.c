@@ -23,6 +23,7 @@
 errr (*cmd_get_hook)(cmd_context c, bool wait);
 
 #define CMD_QUEUE_SIZE 20
+#define prev_cmd_idx(idx) ((idx + CMD_QUEUE_SIZE - 1) % CMD_QUEUE_SIZE)
 
 static int cmd_head = 0;
 static int cmd_tail = 0;
@@ -163,7 +164,7 @@ errr cmd_get(cmd_context c, game_command *cmd, bool wait)
 	/* If we're repeating, just pull the last command again. */
 	if (repeating)
 	{
-		*cmd = cmd_queue[(cmd_tail + CMD_QUEUE_SIZE - 1) % CMD_QUEUE_SIZE];
+		*cmd = cmd_queue[prev_cmd_idx(cmd_tail)];
 		return 0;
 	}
 
@@ -437,7 +438,7 @@ void process_command(cmd_context ctx, bool no_request)
  */
 void cmd_cancel_repeat(void)
 {
-	game_command *cmd = &cmd_queue[(cmd_tail - 1) % CMD_QUEUE_SIZE];
+	game_command *cmd = &cmd_queue[prev_cmd_idx(cmd_tail)];
 
 	if (cmd->nrepeats || repeating)
 	{
@@ -455,7 +456,7 @@ void cmd_cancel_repeat(void)
  */
 void cmd_set_repeat(int nrepeats)
 {
-	game_command *cmd = &cmd_queue[(cmd_tail - 1) % CMD_QUEUE_SIZE];
+	game_command *cmd = &cmd_queue[prev_cmd_idx(cmd_tail)];
 
 	cmd->nrepeats = nrepeats;
 	if (nrepeats) repeating = TRUE;
@@ -470,7 +471,7 @@ void cmd_set_repeat(int nrepeats)
  */
 int cmd_get_nrepeats(void)
 {
-	game_command *cmd = &cmd_queue[(cmd_tail - 1) % CMD_QUEUE_SIZE];
+	game_command *cmd = &cmd_queue[prev_cmd_idx(cmd_tail)];
 	return cmd->nrepeats;
 }
 
