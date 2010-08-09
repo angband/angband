@@ -640,7 +640,7 @@ G:{:U
 I:17:1:0
 W:3:0:2:1
 M:100:6d7
-A:50:3 to 100
+A:20:3 to 100
 P:0:1d4:0:0:0
 D:It can be shot with a bow.
 
@@ -648,7 +648,7 @@ N:101:& Seeker Arrow~
 G:{:G
 I:17:2:0
 W:55:0:2:20
-A:75:55 to 100
+A:25:55 to 100
 M:100:6d7
 P:0:4d4:0:0:0
 D:It can be shot with a bow.
@@ -658,7 +658,7 @@ G:{:B
 I:17:3:0
 W:55:0:2:25
 M:100:6d7
-A:50:50 to 100
+A:20:50 to 100
 P:0:3d4:0:0:0
 F:IGNORE_ACID | IGNORE_FIRE
 D:It can be shot with a bow.
@@ -669,7 +669,7 @@ G:{:s
 I:18:1:0
 W:3:0:3:2
 M:100:6d7
-A:50:3 to 100
+A:20:3 to 100
 P:0:1d5:0:0:0
 D:It can be shot with a crossbow.
 
@@ -678,7 +678,7 @@ G:{:g
 I:18:2:0
 W:65:0:3:25
 M:100:6d7
-A:75:65 to 100
+A:25:65 to 100
 P:0:4d5:0:0:0
 D:It can be shot with a crossbow.
 
@@ -687,7 +687,7 @@ G:{:B
 I:18:3:0
 W:50:0:2:30
 M:100:6d7
-A:50:60 to 100
+A:20:60 to 100
 P:0:3d5:0:0:0
 F:IGNORE_ACID | IGNORE_FIRE
 D:It can be shot with a crossbow.
@@ -698,7 +698,7 @@ G:{:s
 I:16:0:0
 W:0:0:4:1
 M:100:6d7
-A:50:0 to 100
+A:20:0 to 100
 P:0:1d2:0:0:0
 D:It can be shot with a sling.
 
@@ -707,7 +707,7 @@ G:{:s
 I:16:1:0
 W:3:0:5:2
 M:100:6d7
-A:75:3 to 100
+A:25:3 to 100
 P:0:1d4:0:0:0
 D:It can be shot with a sling.
 
@@ -716,7 +716,7 @@ G:{:B
 I:16:2:0
 W:40:0:4:20
 M:100:6d7
-A:50:40 to 100
+A:20:40 to 100
 P:0:2d4:5:5:0
 F:IGNORE_ACID
 D:It can be shot with a sling.
@@ -943,14 +943,14 @@ N:162:Full Plate Armour~
 G:[:W
 I:37:8:0
 W:45:0:360:1350
-A:20:55 to 100
+A:15:55 to 100
 P:62:2d4:-3:0:0
 
 N:163:Ribbed Plate Armour~
 G:[:W
 I:37:9:0
 W:50:0:380:1500
-A:20:60 to 100
+A:15:60 to 100
 P:66:2d4:-3:0:0
 
 N:164:Mithril Chain Mail~
@@ -1162,7 +1162,7 @@ N:195:Searching
 G:=:d
 I:45:6:1+M5
 W:5:0:2:250
-A:20:5 to 100
+A:20:5 to 90
 F:SEARCH | HIDE_TYPE
 
 ### 196, sval 7
@@ -1205,14 +1205,14 @@ N:202:Resist Fire
 G:=:d
 I:45:13:0
 W:10:0:2:250
-A:20:10 to 50
+A:50:10 to 50
 F:RES_FIRE | IGNORE_FIRE | EASY_KNOW
 
 N:203:Resist Cold
 G:=:d
 I:45:14:0
 W:10:0:2:250
-A:20:10 to 50
+A:50:10 to 50
 F:RES_COLD | IGNORE_COLD | EASY_KNOW
 
 ### 204, sval 15
@@ -1278,7 +1278,7 @@ N:212:Damage
 G:=:d
 I:45:23:0
 W:20:0:2:500
-A:50:20 to 100
+A:30:20 to 100
 P:0:0d0:0:5+d3M7:0
 D:It boosts your to-dam value.
 
@@ -1286,7 +1286,7 @@ N:213:Accuracy
 G:=:d
 I:45:24:0
 W:20:0:2:500
-A:50:20 to 100
+A:30:20 to 100
 P:0:0d0:10+d6M14:0:0
 D:It boosts your to-hit value.
 
@@ -1320,7 +1320,7 @@ N:217:Reckless Attacks
 G:=:d
 I:45:28:0
 W:0:0:2:200
-A:50:10 to 50
+A:30:10 to 50
 P:0:0d0:2+d3:2+d3:-8+4d3
 
 N:218:Open Wounds
@@ -1512,7 +1512,7 @@ N:245:Infravision
 G:":d
 I:40:16:1+M5
 W:10:0:3:200
-A:50:10 to 70
+A:30:10 to 70
 F:INFRA | HIDE_TYPE
 
 N:246:Searching
@@ -1669,7 +1669,7 @@ N:273:*Enchant Weapon*
 G:?:w
 I:70:14:0
 W:50:0:5:500
-A:70:50 to 100
+A:50:50 to 100
 F:EASY_KNOW
 E:ENCHANT_WEAPON
 
@@ -1677,7 +1677,7 @@ N:274:*Enchant Armour*
 G:?:w
 I:70:15:0
 W:50:0:5:500
-A:70:50 to 100
+A:50:50 to 100
 F:EASY_KNOW
 E:ENCHANT_ARMOR2
 
@@ -1876,7 +1876,7 @@ N:299:Rune of Protection
 G:?:w
 I:70:38:0
 W:60:0:5:500
-A:20:70 to 100
+A:30:70 to 100
 F:EASY_KNOW
 E:RUNE
 
@@ -1884,7 +1884,7 @@ N:300:*Destruction*
 G:?:w
 I:70:39:0
 W:40:0:5:250
-A:50:40 to 100
+A:30:40 to 100
 F:EASY_KNOW
 E:DESTRUCTION2
 
@@ -2042,7 +2042,7 @@ N:321:Healing
 G:!:d
 I:75:12:200
 W:15:0:4:300
-A:100:30 to 100
+A:80:30 to 100
 F:EASY_KNOW
 E:CURE_FULL
 
@@ -2076,7 +2076,7 @@ N:325:Restore Mana
 G:!:d
 I:75:16:0
 W:25:0:4:350
-A:100:15 to 100
+A:80:15 to 100
 F:EASY_KNOW
 E:RESTORE_MANA
 
@@ -2233,7 +2233,7 @@ N:346:Boldness
 G:!:d
 I:75:35:0
 W:1:0:4:8
-A:50:1 to 100
+A:50:1 to 90
 F:EASY_KNOW
 E:CURE_PARANOIA
 
@@ -2364,7 +2364,7 @@ G:!:d
 I:75:58:0
 W:0:0:4:100
 M:100:1d2
-A:10:40 to 100
+A:20:40 to 100
 F:EASY_KNOW
 E:DRINK_BREATH
 
@@ -2727,7 +2727,7 @@ N:403:Earthquakes
 G:_:d
 I:55:4:0
 W:40:0:50:350
-A:50:40 to 100
+A:20:40 to 100
 P:0:1d2:0:0:0
 C:3+d5
 F:EASY_KNOW
@@ -2737,7 +2737,7 @@ N:404:*Destruction*
 G:_:d
 I:55:5:0
 W:50:0:50:2500
-A:30:50 to 100
+A:20:50 to 100
 P:0:1d2:0:0:0
 C:1+d3
 F:EASY_KNOW
@@ -2995,7 +2995,7 @@ N:433:Detection
 G:-:d
 I:66:4:0
 W:30:0:15:5000
-A:10:30 to 100
+A:30:50 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW | IGNORE_ELEC
 E:DETECT_ALL:100
@@ -3133,7 +3133,7 @@ N:447:Healing
 G:-:d
 I:66:18:0
 W:80:0:15:20000
-A:10:80 to 100
+A:20:80 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW | IGNORE_ELEC
 E:HEAL3:1000
@@ -3142,7 +3142,7 @@ N:448:Restoration
 G:-:d
 I:66:19:0
 W:80:0:15:25000
-A:5:80 to 100
+A:10:80 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW | IGNORE_ELEC
 E:RESTORE_ST_LEV:1000
@@ -3226,7 +3226,7 @@ N:457:Speed
 G:-:d
 I:66:28:0
 W:95:0:15:50000
-A:10:95 to 100
+A:20:95 to 100
 P:0:1d1:0:0:0
 F:EASY_KNOW | IGNORE_ELEC
 E:HASTE:100
@@ -3401,42 +3401,42 @@ N:480:& Small wooden chest~
 G:~:s
 I:7:1:0
 W:5:0:250:20
-A:50:5 to 100
+A:30:5 to 100
 P:0:2d3:0:0:0
 
 N:481:& Large wooden chest~
 G:~:s
 I:7:5:0
 W:15:0:500:60
-A:50:15 to 100
+A:30:15 to 100
 P:0:2d5:0:0:0
 
 N:482:& Small iron chest~
 G:~:s
 I:7:2:0
 W:25:0:300:100
-A:50:25 to 100
+A:30:25 to 100
 P:0:2d4:0:0:0
 
 N:483:& Large iron chest~
 G:~:s
 I:7:6:0
 W:35:0:1000:150
-A:50:35 to 100
+A:30:35 to 100
 P:0:2d6:0:0:0
 
 N:484:& Small steel chest~
 G:~:s
 I:7:3:0
 W:45:0:500:200
-A:50:45 to 100
+A:30:45 to 100
 P:0:2d4:0:0:0
 
 N:485:& Large steel chest~
 G:~:s
 I:7:7:0
 W:55:0:1000:250
-A:50:55 to 100
+A:30:55 to 100
 P:0:2d6:0:0:0
 
 N:486:& Ruined chest~
@@ -3517,7 +3517,7 @@ N:500:Black Dragon Scale Mail~
 G:[:s
 I:38:1:0
 W:50:0:120:40000
-A:22:50 to 100
+A:10:50 to 100
 P:16:2d4:-2:0:10
 F:RES_ACID |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -3527,7 +3527,7 @@ N:501:Blue Dragon Scale Mail~
 G:[:b
 I:38:2:0
 W:50:0:100:40000
-A:25:40 to 100
+A:10:40 to 100
 P:12:2d4:-2:0:10
 F:RES_ELEC |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -3537,7 +3537,7 @@ N:502:White Dragon Scale Mail~
 G:[:w
 I:38:3:0
 W:50:0:110:40000
-A:24:45 to 100
+A:10:45 to 100
 P:14:2d4:-2:0:10
 F:RES_COLD |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -3547,7 +3547,7 @@ N:503:Red Dragon Scale Mail~
 G:[:r
 I:38:4:0
 W:50:0:160:40000
-A:16:65 to 100
+A:10:65 to 100
 P:24:2d4:-2:0:10
 F:RES_FIRE |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -3557,7 +3557,7 @@ N:504:Green Dragon Scale Mail~
 G:[:g
 I:38:5:0
 W:60:0:140:60000
-A:18:60 to 100
+A:10:60 to 100
 P:20:2d4:-2:0:10
 F:RES_POIS |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -3577,7 +3577,7 @@ N:506:Pseudo-Dragon Scale Mail~
 G:[:o
 I:38:10:0
 W:65:0:200:60000
-A:12:75 to 100
+A:8:75 to 100
 P:32:2d4:-2:0:10
 F:RES_LIGHT | RES_DARK |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -3587,7 +3587,7 @@ N:507:Law Dragon Scale Mail~
 G:[:B
 I:38:12:0
 W:80:0:220:80000
-A:10:80 to 100
+A:8:80 to 100
 P:36:2d4:-2:0:10
 F:RES_SOUND | RES_SHARD |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -3597,7 +3597,7 @@ N:508:Bronze Dragon Scale Mail~
 G:[:U
 I:38:14:0
 W:50:0:130:40000
-A:20:55 to 100
+A:10:55 to 100
 P:18:2d4:-2:0:10
 F:RES_CONFU |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -3607,7 +3607,7 @@ N:509:Gold Dragon Scale Mail~
 G:[:y
 I:38:16:0
 W:50:0:180:40000
-A:14:70 to 100
+A:10:70 to 100
 P:28:2d4:-2:0:10
 F:RES_SOUND |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
@@ -3617,7 +3617,7 @@ N:510:Chaos Dragon Scale Mail~
 G:[:v
 I:38:18:0
 W:80:0:240:80000
-A:8:85 to 100
+A:6:85 to 100
 P:40:2d4:-2:0:10
 F:RES_CHAOS | RES_DISEN |
 F:IGNORE_ACID | IGNORE_ELEC | IGNORE_FIRE | IGNORE_COLD
