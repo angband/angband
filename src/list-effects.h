@@ -143,7 +143,7 @@ EFFECT(LOSSLEEP,       FALSE,  8,	"sleeps all non-unique creatures within line o
 EFFECT(LOSCONF,        FALSE, 10,	"confuses all non-unique creatures within line of sight")
 EFFECT(LOSKILL,        FALSE, 25,	"removes all non-unique monsters within 20 squares, dealing you damage in the process")
 EFFECT(ILLUMINATION,   FALSE,  4,	"lights up the surrounding area, hurting light-sensitive creatures")
-EFFECT(CLAIRVOYANCE,   FALSE, 23,	"maps the entire level and detects objects, traps, doors, and stairs")
+EFFECT(CLAIRVOYANCE,   FALSE, 23,	"maps the entire level and detects nearby objects, traps, doors, and stairs")
 EFFECT(PROBING,        FALSE,  8,	"gives you information on the health and abilities of monsters you can see")
 
 EFFECT(HASTE,          FALSE, 10,	"hastens you for 2d10+20 turns")
