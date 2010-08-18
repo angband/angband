@@ -211,12 +211,17 @@ typedef struct
 	bool run_break_right;	/* Looking for a break (right) */
 	bool run_break_left;	/* Looking for a break (left) */
 
-	s16b command_cmd;		/* Gives identity of current command */
-	s16b command_arg;		/* Gives argument of current command */
-	int  command_inv;		/* Gives item of current command */
-	ui_event_data command_cmd_ex; /* Gives additional information of current command */
+	s16b command_cmd;		/* Gives the underlying keyset key for
+					   the currently-executing command. */
+	s16b command_arg;		/* Gives argument of current command 
+					   (generally a repeat count) */
+	ui_event_data command_cmd_ex;   /* Gives additional information of 
+					   currently-executing command */
 
-	s16b command_wrk;		/* See "cmd1.c" */
+	s16b command_wrk;		/* Used by the UI to decide whether
+					   to start off showing equipment or
+					   inventory listings when offering
+					   a choice.  See obj/obj-ui.c*/
 	s16b command_new;		/* Hack -- command chaining XXX XXX */
 
 	s16b new_spells;		/* Number of spells available */
@@ -226,9 +231,15 @@ typedef struct
 
 	s16b cur_light;		/* Radius of light (if any) */
 
-	u32b notice;		/* Special Updates (bit flags) */
-	u32b update;		/* Pending Updates (bit flags) */
-	u32b redraw;		/* Normal Redraws (bit flags) */
+	u32b notice;		/* Bit flags for pending "special" actions to 
+				   carry out after the current "action", 
+				   such as reordering inventory, squelching, 
+				   etc. */
+	u32b update;		/* Bit flags for recalculations needed after
+				   this "action", such as HP, or visible area */
+	u32b redraw;	        /* Bit flags for things that /have/ changed,
+				   and just need to be redrawn by the UI,
+				   such as HP, Speed, etc.*/
 
 	u32b player_turn;	/* Number of player turns (including resting) */
 	u32b resting_turn;	/* Number of player turns spent resting */

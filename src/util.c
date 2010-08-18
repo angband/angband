@@ -2803,7 +2803,7 @@ char get_char(cptr prompt, const char *options, size_t len, char fallback)
 	if (button_kill('n')) repeat = TRUE;
 	
 	/* Make some buttons */
-	for (i=0; i < len; i++)
+	for (i = 0; i < len; i++)
 	{
 		strnfmt(button, 4, "[%c]", options[i]);
 		button_add(button, options[i]);
@@ -2825,7 +2825,8 @@ char get_char(cptr prompt, const char *options, size_t len, char fallback)
 		if (strchr(options, key)) break;
 
 		/* If we want to escape, return the fallback */
-		if (key == ESCAPE || OPT(quick_messages)) {
+		if (key == ESCAPE || OPT(quick_messages)) 
+		{
 			key = fallback;
 			break;
 		}
@@ -2833,7 +2834,7 @@ char get_char(cptr prompt, const char *options, size_t len, char fallback)
 	}
 
 	/* Kill the buttons */
-	for (i=0; i < len; i++) button_kill(options[i]);
+	for (i = 0; i < len; i++) button_kill(options[i]);
 
 	/* Hack - restore the repeat button */
 	if (repeat) button_add("[Rpt]", 'n');

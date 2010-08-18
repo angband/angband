@@ -816,7 +816,7 @@ void textui_cmd_fire_at_nearest(void)
 	}
 
 	/* Find first eligible ammo in the quiver */
-	for (i=QUIVER_START; i < QUIVER_END; i++)
+	for (i = QUIVER_START; i < QUIVER_END; i++)
 	{
 		if (inventory[i].tval != p_ptr->state.ammo_tval) continue;
 		item = i;

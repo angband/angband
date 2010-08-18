@@ -1385,7 +1385,8 @@ bool target_set_interactive(int mode, int x, int y)
 		else
 		{
 			/* Update help */
-			if (help) {
+			if (help) 
+			{
 				bool good_target = ((cave_m_idx[y][x] > 0) && target_able(cave_m_idx[y][x]));
 				target_display_help(good_target, !(flag && temp_n));
 			}

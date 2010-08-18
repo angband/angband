@@ -296,7 +296,8 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 	equip_o_ptr = &inventory[slot];
 
 	/* If the slot is open, wield and be done */
-	if (!equip_o_ptr->k_idx) {
+	if (!equip_o_ptr->k_idx) 
+	{
 		wield_item(o_ptr, item, slot);
 		return;
 	}
