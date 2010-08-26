@@ -11,7 +11,11 @@ run() {
 	test="$1"
 	echo -n "Running: $test... "
 	../angband -mtest < "$test/input" > "$test/run.out"
-	diff "$test/run.out" "$test/output" >/dev/null 2>/dev/null
+	if [ -x "$test/matcher" ]; then
+		"$test/matcher" "$test"
+	else
+		diff "$test/run.out" "$test/output" >/dev/null 2>/dev/null
+	fi
 	result=$?
 	if [ $result -eq 0 ]; then
 		echo "Passed"
