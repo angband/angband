@@ -964,7 +964,7 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
  * This fleshes out a full player based on the choices currently made,
  * and so is called whenever things like race or class are chosen.
  */
-static void generate_player()
+void generate_player()
 {
 	/* Set sex according to p_ptr->sex */
 	sp_ptr = &sex_info[p_ptr->psex];

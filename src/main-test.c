@@ -38,7 +38,7 @@ static void c_quit(char *rest) {
 }
 
 static void c_verbose(char *rest) {
-	if (!strcmp(rest, "0")) {
+	if (rest && !strcmp(rest, "0")) {
 		printf("cmd-verbose: off\n");
 		verbose = 0;
 	} else {
@@ -53,7 +53,52 @@ static void c_version(char *rest) {
 
 /* Player commands */
 static void c_player_birth(char *rest) {
-	
+	char *sex = strtok(rest, " ");
+	char *race = strtok(NULL, " ");
+	char *class = strtok(NULL, " ");
+	int i;
+
+	if (!sex) sex = "Female";
+	if (!race) race = "Human";
+	if (!class) class = "Warrior";
+
+	for (i = 0; i < MAX_SEXES; i++) {
+		if (!strcmp(sex, sex_info[i].title)) {
+			p_ptr->psex = i;
+			break;
+		}
+	}
+
+	if (i == MAX_SEXES) {
+		printf("player-birth: bad sex '%s'\n", sex);
+		return;
+	}
+
+	for (i = 0; i < z_info->p_max; i++) {
+		if (!strcmp(race, p_name + p_info[i].name)) {
+			p_ptr->prace = i;
+			break;
+		}
+	}
+
+	if (i == z_info->p_max) {
+		printf("player-birth: bad race '%s'\n", race);
+		return;
+	}
+
+	for (i = 0; i < z_info->c_max; i++) {
+		if (!strcmp(class, c_name + c_info[i].name)) {
+			p_ptr->pclass = i;
+			break;
+		}
+	}
+
+	if (i == z_info->c_max) {
+		printf("player-birth: bad class '%s'\n", class);
+		return;
+	}
+
+	generate_player();
 }
 
 static void c_player_class(char *rest) {

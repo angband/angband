@@ -248,6 +248,7 @@ extern bool test_hit(int chance, int ac, int vis);
 extern void py_attack(int y, int x);
 
 /* birth.c */
+extern void generate_player(void);
 extern void player_birth(bool quickstart_allowed);
 
 /* button.c */
