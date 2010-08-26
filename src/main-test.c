@@ -52,6 +52,10 @@ static void c_version(char *rest) {
 }
 
 /* Player commands */
+static void c_player_birth(char *rest) {
+	
+}
+
 static void c_player_class(char *rest) {
 	printf("player-class: %s\n", c_name + cp_ptr->name);
 }
@@ -75,11 +79,12 @@ static test_cmd cmds[] = {
 	{ "noop", c_noop },
 	{ "quit", c_quit },
 	{ "verbose", c_verbose },
-	{ "version", c_version },
+	{ "version?", c_version },
 
-	{ "player-class", c_player_class },
-	{ "player-race", c_player_race },
-	{ "player-sex", c_player_sex },
+	{ "player-birth", c_player_birth },
+	{ "player-class?", c_player_class },
+	{ "player-race?", c_player_race },
+	{ "player-sex?", c_player_sex },
 
 	{ NULL, NULL }
 };

@@ -7,7 +7,7 @@ key enter
 key enter
 key enter
 # Character birthed.
-player-sex
-player-race
-player-class
+player-sex?
+player-race?
+player-class?
 quit
