@@ -18,9 +18,9 @@ run() {
 	fi
 	result=$?
 	if [ $result -eq 0 ]; then
-		echo "Passed"
+		echo "\033[01;32mPassed\033[00m"
 	else
-		echo "Failed"
+		echo "\033[01;31mFailed\033[00m"
 	fi
 	return $result
 }
