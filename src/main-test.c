@@ -51,17 +51,36 @@ static void c_version(char *rest) {
 	printf("cmd-version: %s %s\n", VERSION_NAME, VERSION_STRING);
 }
 
+/* Player commands */
+static void c_player_class(char *rest) {
+	printf("player-class: %s\n", c_name + cp_ptr->name);
+}
+
+static void c_player_race(char *rest) {
+	printf("player-race: %s\n", p_name + rp_ptr->name);
+}
+
+static void c_player_sex(char *rest) {
+	printf("player-sex: %s\n", sp_ptr->title);
+}
+
 typedef struct {
 	const char *name;
 	void (*func)(char *args);
 } test_cmd;
 
 static test_cmd cmds[] = {
+	{ "#", c_noop },
 	{ "key", c_key },
 	{ "noop", c_noop },
 	{ "quit", c_quit },
 	{ "verbose", c_verbose },
 	{ "version", c_version },
+
+	{ "player-class", c_player_class },
+	{ "player-race", c_player_race },
+	{ "player-sex", c_player_sex },
+
 	{ NULL, NULL }
 };
 
