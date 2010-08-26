@@ -1,0 +1,29 @@
+#!/bin/sh
+# Test runner
+
+usage() {
+	echo "Usage: $0 <test>"
+}
+
+run() {
+	rm -rf ~/.angband
+
+	test="$1"
+	echo -n "Running: $test... "
+	../angband -mtest < "$test/input" > "$test/run.out"
+	diff "$test/run.out" "$test/output" >/dev/null 2>/dev/null
+	result=$?
+	if [ $result -eq 0 ]; then
+		echo "Passed"
+	else
+		echo "Failed"
+	fi
+	return $result
+}
+
+if [ $# -lt 1 ]; then
+	usage
+	exit 1
+fi
+
+run $*

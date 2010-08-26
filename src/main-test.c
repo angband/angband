@@ -5,7 +5,33 @@
 
 #include "angband.h"
 
+static int prompt = 0;
 static int verbose = 0;
+static int nextkey = 0;
+
+static void c_key(char *rest) {
+	if (!strcmp(rest, "left")) {
+		nextkey = ARROW_LEFT;
+	} else if (!strcmp(rest, "right")) {
+		nextkey = ARROW_RIGHT;
+	} else if (!strcmp(rest, "up")) {
+		nextkey = ARROW_UP;
+	} else if (!strcmp(rest, "down")) {
+		nextkey = ARROW_DOWN;
+	} else if (!strcmp(rest, "space")) {
+		nextkey = ' ';
+	} else if (!strcmp(rest, "enter")) {
+		nextkey = '\n';
+	} else if (rest[0] == 'C' && rest[1] == '-') {
+		nextkey = KTRL(rest[2]);
+	} else {
+		nextkey = rest[0];
+	}
+}
+
+static void c_noop(char *rest) {
+
+}
 
 static void c_quit(char *rest) {
 	quit(NULL);
@@ -31,6 +57,8 @@ typedef struct {
 } test_cmd;
 
 static test_cmd cmds[] = {
+	{ "key", c_key },
+	{ "noop", c_noop },
 	{ "quit", c_quit },
 	{ "verbose", c_verbose },
 	{ "version", c_version },
@@ -43,8 +71,10 @@ static errr test_docmd(void) {
 	char *rest;
 	int i;
 
-	printf("test> ");
-	fflush(stdout);
+	if (prompt) {
+		printf("test> ");
+		fflush(stdout);
+	}
 	if (!fgets(buf, sizeof(buf), stdin)) {
 		return -1;
 	}
@@ -54,6 +84,7 @@ static errr test_docmd(void) {
 
 	if (verbose) printf("test-docmd: %s\n", buf);
 	cmd = strtok(buf, " ");
+	if (!cmd) return 0;
 	rest = strtok(NULL, "");
 
 	for (i = 0; cmds[i].name; i++) {
@@ -117,6 +148,10 @@ static errr term_xtra_alive(int v) {
 
 static errr term_xtra_event(int v) {
 	if (verbose) printf("term-xtra-event %d\n", v);
+	if (nextkey) {
+		Term_keypress(nextkey);
+		nextkey = 0;
+	}
 	return test_docmd();
 }
 
@@ -195,9 +230,20 @@ static void term_data_link(int i) {
 	angband_term[i] = t;
 }
 
-const char help_test[] = "Pseudo-UI for end-to-end tests.";
+const char help_test[] = "Test mode, subopts -p(rompt)";
 
 errr init_test(int argc, char *argv[]) {
+	int i;
+
+	/* Skip over argv[0] */
+	for (i = 1; i < argc; i++) {
+		if (!strcmp(argv[i], "-p")) {
+			prompt = 1;
+			continue;
+		}
+		printf("init-test: bad argument '%s'\n", argv[i]);
+	}
+
 	term_data_link(0);
 	return 0;
 }
