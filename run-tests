@@ -1,0 +1,6 @@
+#!/bin/sh
+
+cd tests
+for x in */*; do
+	./run-test $x
+done
