@@ -51,6 +51,10 @@ static const struct module modules[] =
 #ifdef USE_GCU
 	{ "gcu", help_gcu, init_gcu },
 #endif /* USE_GCU */
+
+#ifdef USE_TEST
+	{ "test", help_test, init_test },
+#endif /* !USE_TEST */
 };
 
 
