@@ -104,7 +104,7 @@ typedef struct
  * which must be saved in the savefile precedes all the information
  * which can be recomputed as needed.
  */
-typedef struct
+typedef struct player
 {
 	s16b py;			/* Player location */
 	s16b px;			/* Player location */

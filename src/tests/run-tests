@@ -1,0 +1,18 @@
+#!/bin/sh
+
+TESTS=`find . -mindepth 2 -maxdepth 2 -type f -executable`
+
+PASSED=0
+TOTAL=0
+
+for t in $TESTS; do
+	RES=`$t`
+	echo "$RES"
+	SPASSED=`echo $RES | sed -e 's/.* done: \(.*\) .*/\1/'`
+	STOTAL=`echo $RES | sed -e 's/.* done: \(.*\) \(.*\)/\2/'`
+	PASSED=`expr $PASSED + $SPASSED`
+	TOTAL=`expr $TOTAL + $STOTAL`
+done
+
+PCT=`expr $PASSED \* 100 / $TOTAL`
+echo "Total: $PASSED/$TOTAL ($PCT%)"
