@@ -266,7 +266,7 @@ typedef struct player
 /*
  * Player sex info
  */
-typedef struct
+typedef struct player_sex
 {
 	cptr title;			/* Type of sex */
 	cptr winner;		/* Name of winner */

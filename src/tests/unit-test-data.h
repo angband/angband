@@ -6,6 +6,74 @@
 #define UNIT_TEST_DATA
 
 #include "angband.h"
+#include "object/tvalsval.h"
+
+static struct player_sex test_sex = {
+	.title = "Test Sex",
+	.winner = "Test Winner",
+};
+
+static struct object_kind test_longsword = {
+	.name = "Test Longsword",
+	.text = "A test longsword [0].",
+	.kidx = 0,
+	.tval = TV_SWORD,
+	.sval = SV_LONG_SWORD,
+	.pval = 0,
+
+	.to_h = 1,
+	.to_d = 1,
+	.to_a = 2,
+
+	.dd = 4,
+	.ds = 6,
+	.weight = 16,
+
+	.cost = 20,
+
+	.d_attr = 0,
+	.d_char = '|',
+
+	.alloc_prob = 20,
+	.alloc_min = 1,
+	.alloc_max = 10,
+	.level = 0,
+
+	.effect = 0,
+	.gen_mult_prob = 0,
+	.flavor = 0,
+};
+
+static struct object_kind test_torch = {
+	.name = "Test Torch",
+	.text = "A test torch [1].",
+	.kidx = 1,
+	.tval = TV_LIGHT,
+	.sval = SV_LIGHT_TORCH,
+	.pval = 5000,
+
+	.to_h = 0,
+	.to_d = 0,
+	.to_a = 0,
+
+	.dd = 1,
+	.ds = 1,
+	.weight = 10,
+
+	.cost = 1,
+
+	.d_attr = 0,
+	.d_char = '~',
+
+	.alloc_prob = 10,
+	.alloc_min = 1,
+	.alloc_max = 10,
+	.level = 0,
+
+	.effect = 0,
+	.gen_mult_prob = 0,
+	.flavor = 0,
+};
 
 static struct player_race test_race = {
 	.name = "TestRace",
@@ -50,7 +118,7 @@ static struct player_race test_race = {
 
 	.choice = 0xFF,
 
-	.hist = 1,
+	.hist = 0,
 };
 
 static struct player_class test_class = {
@@ -117,6 +185,11 @@ static struct player_class test_class = {
 
 	.sense_base = 7000,
 	.sense_div = 40,
+
+	.start_items = {
+		{ &test_longsword, 1, 1 },
+		{ &test_torch, 3, 5 },
+	},
 };
 
 #endif /* !UNIT_TEST_DATA */
