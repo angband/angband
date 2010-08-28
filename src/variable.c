@@ -716,14 +716,7 @@ char *r_name;
 char *r_text;
 
 player_race *p_info;
-
-/*
- * The player class arrays
- */
 player_class *c_info;
-char *c_name;
-char *c_text;
-
 /*
  * The player history arrays
  */

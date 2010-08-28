@@ -165,6 +165,7 @@ bool verify_item(cptr prompt, int item);
 bool get_item(int *cp, cptr pmt, cptr str, int mode);
 
 /* obj-util.c */
+object_kind *objkind_get(int tval, int sval);
 void flavor_init(void);
 void reset_visuals(bool unused);
 void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE]);

@@ -156,7 +156,7 @@ static void prt_title(int row, int col)
 	/* Normal */
 	else
 	{
-		p = c_text + cp_ptr->title[(p_ptr->lev - 1) / 5];
+		p = cp_ptr->title[(p_ptr->lev - 1) / 5];
 	}
 
 	prt_field(p, row, col);
@@ -533,7 +533,7 @@ static void prt_int(int row, int col) { prt_stat(A_INT, row, col); }
 static void prt_con(int row, int col) { prt_stat(A_CON, row, col); }
 static void prt_chr(int row, int col) { prt_stat(A_CHR, row, col); }
 static void prt_race(int row, int col) { prt_field(rp_ptr->name, row, col); }
-static void prt_class(int row, int col) { prt_field(c_name + cp_ptr->name, row, col); }
+static void prt_class(int row, int col) { prt_field(cp_ptr->name, row, col); }
 
 
 /*
@@ -1389,7 +1389,7 @@ static void update_player_compact_subwindow(game_event_type type, game_event_dat
 
 	/* Race and Class */
 	prt_field(rp_ptr->name, row++, col);
-	prt_field(c_name + cp_ptr->name, row++, col);
+	prt_field(cp_ptr->name, row++, col);
 
 	/* Title */
 	prt_title(row++, col);

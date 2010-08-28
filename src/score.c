@@ -306,7 +306,7 @@ static void display_scores_aux(const high_score scores[], int from, int to, int 
 			strnfmt(out_val, sizeof(out_val),
 			        "%3d.%9s  %s the %s %s, Level %d",
 			        place, score->pts, score->who,
-			        p_info[pr].name, c_name + c_info[pc].name,
+			        p_info[pr].name, c_info[pc].name,
 			        clev);
 
 			/* Append a "maximum level" */

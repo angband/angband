@@ -87,7 +87,7 @@ static void c_player_birth(char *rest) {
 	}
 
 	for (i = 0; i < z_info->c_max; i++) {
-		if (!strcmp(class, c_name + c_info[i].name)) {
+		if (!strcmp(class, c_info[i].name)) {
 			p_ptr->pclass = i;
 			break;
 		}
@@ -102,7 +102,7 @@ static void c_player_birth(char *rest) {
 }
 
 static void c_player_class(char *rest) {
-	printf("player-class: %s\n", c_name + cp_ptr->name);
+	printf("player-class: %s\n", cp_ptr->name);
 }
 
 static void c_player_race(char *rest) {

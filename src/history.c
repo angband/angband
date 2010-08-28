@@ -337,7 +337,7 @@ static void print_history_header(void)
 	strnfmt(buf, sizeof(buf), "%s the %s %s",
 	        op_ptr->full_name,
 	        rp_ptr->name,
-	        c_name + cp_ptr->name);
+	        cp_ptr->name);
 
 	c_put_str(TERM_WHITE, buf, 0, 0);
 	c_put_str(TERM_WHITE, "============================================================", 1, 0);

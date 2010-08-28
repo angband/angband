@@ -173,8 +173,6 @@ extern char *r_name;
 extern char *r_text;
 extern player_race *p_info;
 extern player_class *c_info;
-extern char *c_name;
-extern char *c_text;
 extern hist_type *h_info;
 extern char *h_text;
 extern owner_type *b_info;

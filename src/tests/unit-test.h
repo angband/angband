@@ -25,6 +25,10 @@ int main(void) {
 	int i;
 	int passed = 0;
 	int total = 0;
+	int res;
+
+	printf("%s: starting\n", suite_name);
+	fflush(stdout);
 
 	if (setup(&state)) {
 		printf("%s: setup failed\n", suite_name);
@@ -32,11 +36,15 @@ int main(void) {
 	}
 
 	for (i = 0; tests[i].name; i++) {
-		int res = tests[i].func(state);
+		printf("%s: %s... ", suite_name, tests[i].name);
+		fflush(stdout);
+		res = tests[i].func(state);
 		if (res) {
-			printf("%s: test failed: %s\n", suite_name, tests[i].name);
+			printf("\033[01;31mFailed\033[00m\n");
+			fflush(stdout);
 		} else {
-			printf("%s: test passed: %s\n", suite_name, tests[i].name);
+			printf("\033[01;32mPassed\033[00m\n");
+			fflush(stdout);
 			passed++;
 		}
 		total++;

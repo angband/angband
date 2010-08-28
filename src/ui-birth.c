@@ -326,7 +326,7 @@ static void setup_menus()
 
 	for (i = 0; i < z_info->c_max; i++)
 	{	
-		mdata->items[i] = c_name + c_info[i].name;
+		mdata->items[i] = c_info[i].name;
 	}
 	mdata->hint = "Your 'class' determines various intrinsic abilities and bonuses";
 		

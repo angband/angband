@@ -565,7 +565,7 @@ static const char *show_title(void)
 	else if (p_ptr->total_winner || p_ptr->lev > PY_MAX_LEVEL)
 		return "***WINNER***";
 	else
-		return c_text + cp_ptr->title[(p_ptr->lev - 1) / 5];
+		return cp_ptr->title[(p_ptr->lev - 1) / 5];
 }
 
 static const char *show_adv_exp(void)
@@ -718,7 +718,7 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 	P_I(TERM_L_BLUE, "Name",	"%y",	s2u(op_ptr->full_name), END  );
 	P_I(TERM_L_BLUE, "Sex",		"%y",	s2u(sp_ptr->title), END  );
 	P_I(TERM_L_BLUE, "Race",	"%y",	s2u(rp_ptr->name), END  );
-	P_I(TERM_L_BLUE, "Class",	"%y",	s2u(c_name + cp_ptr->name), END  );
+	P_I(TERM_L_BLUE, "Class",	"%y",	s2u(cp_ptr->name), END  );
 	P_I(TERM_L_BLUE, "Title",	"%y",	s2u(show_title()), END  );
 	P_I(TERM_L_BLUE, "HP",	"%y/%y",	i2u(p_ptr->chp), i2u(p_ptr->mhp)  );
 	P_I(TERM_L_BLUE, "SP",	"%y/%y",	i2u(p_ptr->csp), i2u(p_ptr->msp)  );

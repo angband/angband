@@ -1232,7 +1232,7 @@ static cptr process_pref_file_expr(char **sp, char *fp)
 			/* Class */
 			else if (streq(b+1, "CLASS"))
 			{
-				v = c_name + cp_ptr->name;
+				v = cp_ptr->name;
 			}
 
 			/* Player */

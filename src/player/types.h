@@ -310,14 +310,9 @@ typedef struct player_race
 	bitflag pflags[PF_SIZE];  /* Racial (player) flags */
 } player_race;
 
-
-/*
- * Starting equipment entry
- */
-typedef struct
+typedef struct start_item
 {
-	byte tval;	/* Item's tval */
-	byte sval;	/* Item's sval */
+	object_kind *obj;
 	byte min;	/* Minimum starting amount */
 	byte max;	/* Maximum starting amount */
 } start_item;
@@ -349,11 +344,11 @@ typedef struct
 /*
  * Player class info
  */
-typedef struct
+typedef struct player_class
 {
-	u32b name;         /* Name (offset) */
+	const char *name;
 	
-	u32b title[10];    /* Titles - offset */
+	const char *title[10];    /* Titles - offset */
 	
 	s16b c_adj[A_MAX]; /* Class stat modifier */
 	

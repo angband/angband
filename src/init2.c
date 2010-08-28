@@ -617,8 +617,6 @@ static errr init_c_info(void)
 
 	/* Set the global variables */
 	c_info = c_head.info_ptr;
-	c_name = c_head.name_ptr;
-	c_text = c_head.text_ptr;
 
 	return (err);
 }

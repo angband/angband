@@ -2502,8 +2502,7 @@ errr parse_c_info(char *buf, header *head)
 		pc_ptr = (player_class*)head->info_ptr + i;
 
 		/* Store the name */
-		if ((pc_ptr->name = add_name(head, s)) == 0)
-			return (PARSE_ERROR_OUT_OF_MEMORY);
+		pc_ptr->name = string_make(s);
 
 		/* No titles and equipment yet */
 		cur_title = 0;
@@ -2670,8 +2669,7 @@ errr parse_c_info(char *buf, header *head)
 		s = buf+2;
 
 		/* Store the text */
-		if (!add_text(&pc_ptr->title[cur_title], head, s))
-			return (PARSE_ERROR_OUT_OF_MEMORY);
+		pc_ptr->title[cur_title] = string_make(s);
 
 		/* Next title */
 		cur_title++;

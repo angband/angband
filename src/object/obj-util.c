@@ -3424,6 +3424,9 @@ int lookup_kind(int tval, int sval)
 	return 0;
 }
 
+object_kind *objkind_get(int tval, int sval) {
+	int k = lookup_kind(tval, sval);
+}
 
 /**
  * Find the tval and sval of object kind `k_idx`, and return via the pointers
