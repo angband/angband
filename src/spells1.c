@@ -770,7 +770,7 @@ static int inven_damage(inven_func typ, int cperc)
 	{
 		if (i >= INVEN_PACK && i < QUIVER_START) continue;
 
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
@@ -931,12 +931,12 @@ static int minus_ac(void)
 	/* Pick a (possibly empty) inventory slot */
 	switch (randint1(6))
 	{
-		case 1: o_ptr = &inventory[INVEN_BODY]; break;
-		case 2: o_ptr = &inventory[INVEN_ARM]; break;
-		case 3: o_ptr = &inventory[INVEN_OUTER]; break;
-		case 4: o_ptr = &inventory[INVEN_HANDS]; break;
-		case 5: o_ptr = &inventory[INVEN_HEAD]; break;
-		case 6: o_ptr = &inventory[INVEN_FEET]; break;
+		case 1: o_ptr = &p_ptr->inventory[INVEN_BODY]; break;
+		case 2: o_ptr = &p_ptr->inventory[INVEN_ARM]; break;
+		case 3: o_ptr = &p_ptr->inventory[INVEN_OUTER]; break;
+		case 4: o_ptr = &p_ptr->inventory[INVEN_HANDS]; break;
+		case 5: o_ptr = &p_ptr->inventory[INVEN_HEAD]; break;
+		case 6: o_ptr = &p_ptr->inventory[INVEN_FEET]; break;
 	}
 
 	/* Nothing to damage */
@@ -1314,7 +1314,7 @@ bool apply_disenchant(int mode)
 	}
 
 	/* Get the item */
-	o_ptr = &inventory[t];
+	o_ptr = &p_ptr->inventory[t];
 
 	/* No item, nothing happens */
 	if (!o_ptr->k_idx) return (FALSE);

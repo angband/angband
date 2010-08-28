@@ -269,7 +269,7 @@ void identify_pack(void)
 	/* Simply identify and know every item */
 	for (i = 0; i < ALL_INVEN_TOTAL; i++)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
@@ -326,7 +326,7 @@ static int remove_curse_aux(bool heavy)
 	/* Attempt to uncurse items being worn */
 	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		if (!o_ptr->k_idx) continue;
 		if (!cursed_p(o_ptr)) continue;
@@ -2967,7 +2967,7 @@ bool curse_armor(void)
 
 
 	/* Curse the body armor */
-	o_ptr = &inventory[INVEN_BODY];
+	o_ptr = &p_ptr->inventory[INVEN_BODY];
 
 	/* Nothing to curse */
 	if (!o_ptr->k_idx) return (FALSE);
@@ -3021,7 +3021,7 @@ bool curse_weapon(void)
 
 
 	/* Curse the weapon */
-	o_ptr = &inventory[INVEN_WIELD];
+	o_ptr = &p_ptr->inventory[INVEN_WIELD];
 
 	/* Nothing to curse */
 	if (!o_ptr->k_idx) return (FALSE);
@@ -3131,7 +3131,7 @@ void brand_weapon(void)
 	object_type *o_ptr;
 	byte brand_type;
 
-	o_ptr = &inventory[INVEN_WIELD];
+	o_ptr = &p_ptr->inventory[INVEN_WIELD];
 
 	/* Select a brand */
 	if (randint0(100) < 25)

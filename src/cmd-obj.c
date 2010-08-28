@@ -384,7 +384,7 @@ static void obj_wield(object_type *o_ptr, int item)
 			if (!get_item(&slot, q, s, USE_EQUIP)) return;
 		}
 
-		if (obj_is_ammo(o_ptr) && !object_similar(&inventory[slot], o_ptr))
+		if (obj_is_ammo(o_ptr) && !object_similar(&p_ptr->inventory[slot], o_ptr))
 		{
 			cptr q = "Replace which ammunition? ";
 			cptr s = "Error in obj_wield, please report";

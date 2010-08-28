@@ -1328,11 +1328,10 @@ void cleanup_angband(void)
 	/* Free the stores */
 	FREE(store);
 
-	/* Free the player inventory */
-	FREE(inventory);
-
 	/* Free the quest list */
 	FREE(q_list);
+
+	FREE(p_ptr->inventory);
 
 	/* Free the lore, monster, and object lists */
 	FREE(l_list);

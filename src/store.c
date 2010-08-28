@@ -1929,7 +1929,7 @@ static int find_inven(const object_type *o_ptr)
 	/* Similar slot? */
 	for (j = 0; j < QUIVER_END; j++)
 	{
-		object_type *j_ptr = &inventory[j];
+		object_type *j_ptr = &p_ptr->inventory[j];
 
 		/* Check only the inventory and the quiver */
 		if (j >= INVEN_WIELD && j < QUIVER_START) continue;
@@ -2137,7 +2137,7 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 	item_new = inven_carry(i_ptr);
 
 	/* Message */
-	object_desc(o_name, sizeof(o_name), &inventory[item_new],
+	object_desc(o_name, sizeof(o_name), &p_ptr->inventory[item_new],
 				ODESC_PREFIX | ODESC_FULL);
 	msg_format("You have %s (%c).", o_name, index_to_label(item_new));
 

@@ -569,7 +569,7 @@ void wr_inventory(void)
 	/* Write the inventory */
 	for (i = 0; i < ALL_INVEN_TOTAL; i++)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;

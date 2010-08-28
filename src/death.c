@@ -110,7 +110,7 @@ static void death_knowledge(void)
 
 	for (i = 0; i < ALL_INVEN_TOTAL; i++)
 	{
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 		if (!o_ptr->k_idx) continue;
 
 		object_flavor_aware(o_ptr);
@@ -347,7 +347,7 @@ static void death_examine(void *unused, const char *title)
 
 	while (get_item(&item, q, s, (USE_INVEN | USE_EQUIP | IS_HARMLESS)))
 	{
-		object_type *o_ptr = &inventory[item];
+		object_type *o_ptr = &p_ptr->inventory[item];
 
 		/* Describe */
 		text_out_hook = text_out_to_screen;

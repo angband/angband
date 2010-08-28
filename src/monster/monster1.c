@@ -119,7 +119,7 @@ void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
 	player_state st;
 	int tmp_col;
 
-	calc_bonuses(inventory, &st, TRUE);
+	calc_bonuses(p_ptr->inventory, &st, TRUE);
 
 	/* Initialize the colors to green */
 	for (i = 0; i < RBE_MAX; i++)
@@ -130,7 +130,7 @@ void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
 	/* Scan the inventory for potentially vulnerable items */
 	for (i = 0; i < INVEN_TOTAL; i++)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Only occupied slots */
 		if (!o_ptr->k_idx) continue;

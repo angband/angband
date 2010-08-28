@@ -506,7 +506,7 @@ bool make_attack_normal(int m_idx)
 						i = randint0(INVEN_PACK);
 
 						/* Obtain the item */
-						o_ptr = &inventory[i];
+						o_ptr = &p_ptr->inventory[i];
 
 						/* Skip non-objects */
 						if (!o_ptr->k_idx) continue;
@@ -660,7 +660,7 @@ bool make_attack_normal(int m_idx)
 						i = randint0(INVEN_PACK);
 
 						/* Obtain the item */
-						o_ptr = &inventory[i];
+						o_ptr = &p_ptr->inventory[i];
 
 						/* Skip non-objects */
 						if (!o_ptr->k_idx) continue;
@@ -723,7 +723,7 @@ bool make_attack_normal(int m_idx)
 						i = randint0(INVEN_PACK);
 
 						/* Get the item */
-						o_ptr = &inventory[i];
+						o_ptr = &p_ptr->inventory[i];
 
 						/* Skip non-objects */
 						if (!o_ptr->k_idx) continue;
@@ -762,7 +762,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Get the light, and its flags */
-					o_ptr = &inventory[INVEN_LIGHT];
+					o_ptr = &p_ptr->inventory[INVEN_LIGHT];
 					object_flags(o_ptr, f);
 
 					/* Drain fuel where applicable */

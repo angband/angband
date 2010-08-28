@@ -406,10 +406,10 @@ void autoinscribe_pack(void)
 	for (i = INVEN_PACK; i >= 0; i--)
 	{
 		/* Skip empty items */
-		if (!inventory[i].k_idx) continue;
+		if (!p_ptr->inventory[i].k_idx) continue;
 
 		/* Apply the inscription */
-		apply_autoinscription(&inventory[i]);
+		apply_autoinscription(&p_ptr->inventory[i]);
 	}
 
 	return;
@@ -711,7 +711,7 @@ void squelch_items(void)
 	/* Scan through the slots backwards */
 	for (n = INVEN_PACK - 1; n >= 0; n--)
 	{
-		o_ptr = &inventory[n];
+		o_ptr = &p_ptr->inventory[n];
 
 		/* Skip non-objects and artifacts */
 		if (!o_ptr->k_idx) continue;
@@ -750,7 +750,7 @@ void squelch_drop(void)
 	/* Scan through the slots backwards */
 	for (n = INVEN_PACK - 1; n >= 0; n--)
 	{
-		object_type *o_ptr = &inventory[n];
+		object_type *o_ptr = &p_ptr->inventory[n];
 
 		/* Skip non-objects and unsquelchable objects */
 		if (!o_ptr->k_idx) continue;

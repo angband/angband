@@ -298,7 +298,7 @@ static void recharge_objects(void)
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
 		/* Get the object */
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
@@ -325,7 +325,7 @@ static void recharge_objects(void)
 	/*** Recharge the inventory ***/
 	for (i = 0; i < INVEN_PACK; i++)
 	{
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 		k_ptr = &k_info[o_ptr->k_idx];
 
 		/* Skip non-objects */
@@ -690,7 +690,7 @@ static void process_world(void)
 	/*** Process Light ***/
 
 	/* Check for light being wielded */
-	o_ptr = &inventory[INVEN_LIGHT];
+	o_ptr = &p_ptr->inventory[INVEN_LIGHT];
 
 	/* Burn some fuel in the current light */
 	if (o_ptr->tval == TV_LIGHT)

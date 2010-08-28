@@ -133,7 +133,7 @@ static void display_player_equippy(int y, int x)
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; ++i)
 	{
 		/* Object */
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 
 		/* Skip empty objects */
 		if (!o_ptr->k_idx) continue;
@@ -225,7 +225,7 @@ static void display_resistance_panel(const struct player_flag_record *resists,
 		/* repeated extraction of flags is inefficient but more natural */
 		for (j = INVEN_WIELD; j <= INVEN_TOTAL; j++)
 		{
-			object_type *o_ptr = &inventory[j];
+			object_type *o_ptr = &p_ptr->inventory[j];
 			bitflag f[OF_SIZE];
 
 			byte attr = TERM_WHITE | (j % 2) * 8; /* alternating columns */
@@ -413,7 +413,7 @@ static void display_player_sust_info(void)
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; ++i)
 	{
 		/* Get the object */
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 
 		/* Get the "known" flags */
 		object_flags_known(o_ptr, f);
@@ -750,8 +750,8 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 	ret = boundaries[3].page_rows;
 	P_I(TERM_L_BLUE, "Armor", "[%y,%+y]",	i2u(p_ptr->state.dis_ac), i2u(p_ptr->state.dis_to_a)  );
 	P_I(TERM_L_BLUE, "Fight", "(%+y,%+y)",	i2u(p_ptr->state.dis_to_h), i2u(p_ptr->state.dis_to_d)  );
-	P_I(TERM_L_BLUE, "Melee", "%y",			s2u(show_melee_weapon(&inventory[INVEN_WIELD])), END  );
-	P_I(TERM_L_BLUE, "Shoot", "%y",			s2u(show_missile_weapon(&inventory[INVEN_BOW])), END  );
+	P_I(TERM_L_BLUE, "Melee", "%y",			s2u(show_melee_weapon(&p_ptr->inventory[INVEN_WIELD])), END  );
+	P_I(TERM_L_BLUE, "Shoot", "%y",			s2u(show_missile_weapon(&p_ptr->inventory[INVEN_BOW])), END  );
 	P_I(TERM_L_BLUE, "Blows", "%y/turn",	i2u(p_ptr->state.num_blow), END  );
 	P_I(TERM_L_BLUE, "Shots", "%y/turn",	i2u(p_ptr->state.num_fire), END  );
 	P_I(TERM_L_BLUE, "Infra", "%y ft",		i2u(p_ptr->state.see_infra * 10), END  );
@@ -1083,24 +1083,25 @@ errr file_character(const char *path, bool full)
 			file_putf(fp, "\n\n  [Character Quiver]\n\n");
 			continue;
 		}
-		object_desc(o_name, sizeof(o_name), &inventory[i],
+		object_desc(o_name, sizeof(o_name), &p_ptr->inventory[i],
 				ODESC_PREFIX | ODESC_FULL);
 
 		file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
-		if (inventory[i].k_idx) object_info_chardump(&inventory[i]);
+		if (p_ptr->inventory[i].k_idx)
+			object_info_chardump(&p_ptr->inventory[i]);
 	}
 
 	/* Dump the inventory */
 	file_putf(fp, "\n\n  [Character Inventory]\n\n");
 	for (i = 0; i < INVEN_PACK; i++)
 	{
-		if (!inventory[i].k_idx) break;
+		if (!p_ptr->inventory[i].k_idx) break;
 
-		object_desc(o_name, sizeof(o_name), &inventory[i],
+		object_desc(o_name, sizeof(o_name), &p_ptr->inventory[i],
 					ODESC_PREFIX | ODESC_FULL);
 
 		file_putf(fp, "%c) %s\n", index_to_label(i), o_name);
-		object_info_chardump(&inventory[i]);
+		object_info_chardump(&p_ptr->inventory[i]);
 	}
 	file_putf(fp, "\n\n");
 
