@@ -355,8 +355,8 @@ void object_flavor_aware(object_type *o_ptr)
 {
 	int i;
 
-	if (k_info[o_ptr->k_idx].aware) return;
-	k_info[o_ptr->k_idx].aware = TRUE;
+	if (o_ptr->kind->aware) return;
+	o_ptr->kind->aware = TRUE;
 
 	/* Fix squelch/autoinscribe */
 	p_ptr->notice |= PN_SQUELCH;

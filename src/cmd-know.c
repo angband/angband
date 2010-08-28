@@ -1664,7 +1664,7 @@ static void desc_obj_fake(int k_idx)
 	object_wipe(o_ptr);
 
 	/* Create the artifact */
-	object_prep(o_ptr, k_idx, 0, EXTREMIFY);
+	object_prep(o_ptr, k_ptr, 0, EXTREMIFY);
 
 	/* Hack -- its in the store */
 	if (k_info[k_idx].aware) o_ptr->ident |= (IDENT_STORE);

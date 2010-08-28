@@ -114,6 +114,10 @@ typedef struct player
 	byte pclass;		/* Class index */
 	byte oops;			/* Unused */
 
+	const struct player_sex *sex;
+	const struct player_race *race;
+	const struct player_class *class;
+
 	byte hitdie;		/* Hit dice (sides) */
 	byte expfact;		/* Experience factor */
 

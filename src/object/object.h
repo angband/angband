@@ -147,7 +147,7 @@ bool object_info_spoil(const object_type *o_ptr);
 void free_obj_alloc(void);
 bool init_obj_alloc(void);
 s16b get_obj_num(int level, bool good);
-void object_prep(object_type *o_ptr, int k_idx, int lev, aspect rand_aspect);
+void object_prep(object_type *o_ptr, struct object_kind *kind, int lev, aspect rand_aspect);
 void apply_magic(object_type *o_ptr, int lev, bool okay, bool good, bool great);
 bool make_object(object_type *j_ptr, int lev, bool good, bool great);
 void make_gold(object_type *j_ptr, int lev, int coin_type);

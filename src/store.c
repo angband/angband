@@ -1327,7 +1327,7 @@ static bool store_create_random(int st)
 		i_ptr = &object_type_body;
 
 		/* Create a new object of the chosen kind */
-		object_prep(i_ptr, k_idx, level, RANDOMISE);
+		object_prep(i_ptr, &k_info[k_idx], level, RANDOMISE);
 
 		/* Apply some "low-level" magic (no artifacts) */
 		apply_magic(i_ptr, level, FALSE, FALSE, FALSE);
@@ -1418,7 +1418,7 @@ static int store_create_item(int st, int tval, int sval)
 	object_wipe(&object);
 
 	/* Create a new object of the chosen kind */
-	object_prep(&object, k_idx, 0, RANDOMISE);
+	object_prep(&object, &k_info[k_idx], 0, RANDOMISE);
 
 	/* Item belongs to a store */
 	object.ident |= IDENT_STORE;

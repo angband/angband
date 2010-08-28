@@ -690,6 +690,7 @@ int rd_player(u32b version)
 		return (-1);
 	}
 	rp_ptr = &p_info[p_ptr->prace];
+	p_ptr->race = rp_ptr;
 
 	/* Player class */
 	rd_byte(&p_ptr->pclass);
@@ -701,12 +702,14 @@ int rd_player(u32b version)
 		return (-1);
 	}
 	cp_ptr = &c_info[p_ptr->pclass];
+	p_ptr->class = cp_ptr;
 	mp_ptr = &cp_ptr->spells;
 
 
 	/* Player gender */
 	rd_byte(&p_ptr->psex);
 	sp_ptr = &sex_info[p_ptr->psex];
+	p_ptr->sex = sp_ptr;
 
 	/* Numeric name suffix */
 	rd_byte(&op_ptr->name_suffix);

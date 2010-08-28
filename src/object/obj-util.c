@@ -3692,7 +3692,7 @@ void display_object_kind_recall(s16b k_idx)
 	object_type object;
 	object_type *o_ptr = &object;
 	object_wipe(o_ptr);
-	object_prep(o_ptr, k_idx, 0, EXTREMIFY);
+	object_prep(o_ptr, &k_info[k_idx], 0, EXTREMIFY);
 	if (k_info[k_idx].aware) o_ptr->ident |= (IDENT_STORE);
 
 	/* draw it */

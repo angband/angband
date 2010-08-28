@@ -2938,7 +2938,7 @@ void monster_death(int m_idx)
 		i_ptr = &object_type_body;
 
 		/* Mega-Hack -- Make "Grond" */
-		object_prep(i_ptr, lookup_kind(TV_HAFTED, SV_GROND), 0, MAXIMISE);
+		object_prep(i_ptr, objkind_get(TV_HAFTED, SV_GROND), 0, MAXIMISE);
 		i_ptr->name1 = ART_GROND;
 		apply_magic(i_ptr, 0, TRUE, TRUE, TRUE);
 
@@ -2954,7 +2954,7 @@ void monster_death(int m_idx)
 		i_ptr = &object_type_body;
 
 		/* Mega-Hack -- Make "Morgoth" */
-		object_prep(i_ptr, lookup_kind(TV_CROWN, SV_MORGOTH), 0, MAXIMISE);
+		object_prep(i_ptr, objkind_get(TV_CROWN, SV_MORGOTH), 0, MAXIMISE);
 		i_ptr->name1 = ART_MORGOTH;
 		apply_magic(i_ptr, 0, TRUE, TRUE, TRUE);
 

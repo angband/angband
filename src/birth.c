@@ -603,14 +603,14 @@ void player_outfit(struct player *p)
 		if (e_ptr->kind)
 		{
 			/* Prepare the item */
-			object_prep(i_ptr, e_ptr->kind->kidx, 0, MINIMISE);
+			object_prep(i_ptr, e_ptr->kind, 0, MINIMISE);
 			i_ptr->number = (byte)rand_range(e_ptr->min, e_ptr->max);
 			i_ptr->origin = ORIGIN_BIRTH;
 
 			object_flavor_aware(i_ptr);
 			object_notice_everything(i_ptr);
 			(void)inven_carry(i_ptr);
-			k_info[e_ptr->kind->kidx].everseen = TRUE;
+			e_ptr->kind->everseen = TRUE;
 
 			/* Deduct the cost of the item from starting cash */
 			p->au -= object_value(i_ptr, i_ptr->number,	FALSE);
@@ -624,7 +624,7 @@ void player_outfit(struct player *p)
 	i_ptr = &object_type_body;
 
 	/* Hack -- Give the player some food */
-	object_prep(i_ptr, lookup_kind(TV_FOOD, SV_FOOD_RATION), 0, MINIMISE);
+	object_prep(i_ptr, objkind_get(TV_FOOD, SV_FOOD_RATION), 0, MINIMISE);
 	i_ptr->number = (byte)rand_range(3, 7);
 	i_ptr->origin = ORIGIN_BIRTH;
 	object_flavor_aware(i_ptr);
@@ -637,7 +637,7 @@ void player_outfit(struct player *p)
 	i_ptr = &object_type_body;
 
 	/* Hack -- Give the player some torches */
-	object_prep(i_ptr, lookup_kind(TV_LIGHT, SV_LIGHT_TORCH), 0, MINIMISE);
+	object_prep(i_ptr, objkind_get(TV_LIGHT, SV_LIGHT_TORCH), 0, MINIMISE);
 	apply_magic(i_ptr, 0, FALSE, FALSE, FALSE);
 	i_ptr->number = (byte)rand_range(3, 7);
 	i_ptr->origin = ORIGIN_BIRTH;
@@ -964,6 +964,10 @@ void generate_player(struct player *p, const player_sex *s,
 	if (!s) s = &sex_info[p->psex];
 	if (!c) c = &c_info[p->pclass];
 	if (!r) r = &p_info[p->prace];
+
+	p->sex = s;
+	p->class = c;
+	p->race = r;
 
 	sp_ptr = s;
 	cp_ptr = c;

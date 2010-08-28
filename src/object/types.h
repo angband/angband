@@ -11,8 +11,8 @@
  */
 typedef struct object_kind
 {
-	const char *name;
-	const char *text;
+	char *name;
+	char *text;
 
 	u32b kidx;
 
@@ -185,6 +185,7 @@ typedef struct
 typedef struct
 {
 	s16b k_idx;			/* Kind index (zero if "dead") */
+	struct object_kind *kind;
 
 	byte iy;			/* Y-position on map, or zero */
 	byte ix;			/* X-position on map, or zero */
