@@ -582,7 +582,7 @@ static void wield_all(void)
  *
  * Having an item identifies it and makes the player "aware" of its purpose.
  */
-static void player_outfit(void)
+void player_outfit(struct player *p)
 {
 	int i;
 	const start_item *e_ptr;
@@ -613,7 +613,7 @@ static void player_outfit(void)
 			k_info[e_ptr->kind->kidx].everseen = TRUE;
 
 			/* Deduct the cost of the item from starting cash */
-			p_ptr->au -= object_value(i_ptr, i_ptr->number,	FALSE);
+			p->au -= object_value(i_ptr, i_ptr->number,	FALSE);
 		}
 	}
 
@@ -631,7 +631,7 @@ static void player_outfit(void)
 	object_notice_everything(i_ptr);
 	k_info[i_ptr->k_idx].everseen = TRUE;
 	(void)inven_carry(i_ptr);
-	p_ptr->au -= object_value(i_ptr, i_ptr->number, FALSE);
+	p->au -= object_value(i_ptr, i_ptr->number, FALSE);
 
 	/* Get local object */
 	i_ptr = &object_type_body;
@@ -645,10 +645,10 @@ static void player_outfit(void)
 	object_notice_everything(i_ptr);
 	k_info[i_ptr->k_idx].everseen = TRUE;
 	(void)inven_carry(i_ptr);
-	p_ptr->au -= object_value(i_ptr, i_ptr->number, FALSE);
+	p->au -= object_value(i_ptr, i_ptr->number, FALSE);
 
 	/* sanity check */
-	if (p_ptr->au < 0) p_ptr->au = 0;
+	if (p->au < 0) p->au = 0;
 
 	/* Now try wielding everything */
 	wield_all();
@@ -1246,7 +1246,7 @@ void player_birth(bool quickstart_allowed)
 	message_add(" ", MSG_GENERIC);
 
 	/* Hack -- outfit the player */
-	player_outfit();
+	player_outfit(p_ptr);
 
 	/* Initialise the stores */
 	store_init();

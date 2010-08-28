@@ -245,6 +245,7 @@ extern void py_attack(int y, int x);
 /* birth.c */
 extern void generate_player(struct player *p, const player_sex *s,
                             struct player_race *r, player_class *c);
+extern void player_outfit(struct player *p);
 extern void player_birth(bool quickstart_allowed);
 
 /* button.c */
