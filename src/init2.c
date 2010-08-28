@@ -908,7 +908,7 @@ static errr init_other(void)
 	/*** Prepare the inventory ***/
 
 	/* Allocate it */
-	inventory = C_ZNEW(ALL_INVEN_TOTAL, object_type);
+	p_ptr->inventory = C_ZNEW(ALL_INVEN_TOTAL, object_type);
 
 
 

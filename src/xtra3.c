@@ -249,7 +249,7 @@ static void prt_equippy(int row, int col)
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
 		/* Object */
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 
 		a = object_attr(o_ptr);
 		c = object_char(o_ptr);

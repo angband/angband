@@ -2232,7 +2232,7 @@ void do_cmd_retrieve(cmd_code code, cmd_arg args[])
 	item_new = inven_carry(&picked_item);
 
 	/* Describe just the result */
-	object_desc(o_name, sizeof(o_name), &inventory[item_new],
+	object_desc(o_name, sizeof(o_name), &p_ptr->inventory[item_new],
 				ODESC_PREFIX | ODESC_FULL);
 	
 	/* Message */
@@ -2736,7 +2736,7 @@ static bool store_overflow(void)
 {
 	int item = INVEN_MAX_PACK;
 
-	object_type *o_ptr = &inventory[item];
+	object_type *o_ptr = &p_ptr->inventory[item];
 
 	/* Flee from the store */
 	if (current_store() != STORE_HOME)
@@ -3290,7 +3290,7 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 			handle_stuff();
 
 			/* XXX Pack Overflow */
-			if (inventory[INVEN_MAX_PACK].k_idx)
+			if (p_ptr->inventory[INVEN_MAX_PACK].k_idx)
 				leave = store_overflow();
 		}
 

@@ -122,7 +122,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	if (obj_is_ammo(o_ptr))
 	{
 		num = o_ptr->number;
-		combined_ammo = object_similar(o_ptr, &inventory[slot]);
+		combined_ammo = object_similar(o_ptr, &p_ptr->inventory[slot]);
 	}
 
 	/* Take a turn */
@@ -149,7 +149,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	}
 
 	/* Get the wield slot */
-	o_ptr = &inventory[slot];
+	o_ptr = &p_ptr->inventory[slot];
 
 	if (combined_ammo)
 	{

@@ -1241,9 +1241,9 @@ static void desc_art_fake(int a_idx)
 	{
 		for (i = 0; i < INVEN_TOTAL; i++)
 		{
-			if (inventory[i].name1 == a_idx)
+			if (p_ptr->inventory[i].name1 == a_idx)
 			{
-				o_ptr = &inventory[i];
+				o_ptr = &p_ptr->inventory[i];
 				lost = FALSE;
 				break;
 			}
@@ -1343,7 +1343,7 @@ static bool artifact_is_known(int a_idx)
     /* Check inventory for the same */
 	for (i = 0; i < INVEN_TOTAL; i++)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Ignore non-objects */
 		if (!o_ptr->k_idx) continue;

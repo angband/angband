@@ -137,7 +137,6 @@ extern quest *q_list;
 extern store_type *store;
 extern int store_knowledge;
 extern cptr** name_sections;
-extern object_type *inventory;
 extern s16b alloc_ego_size;
 extern alloc_entry *alloc_ego_table;
 extern s16b alloc_race_size;

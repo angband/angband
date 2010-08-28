@@ -3209,7 +3209,7 @@ void request_command(void)
 		char verify_inscrip[] = "^*";
 		unsigned n;
 
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;

@@ -182,7 +182,7 @@ typedef struct
  * The "held_m_idx" field is used to indicate which monster, if any,
  * is holding the object.  Objects being held have "ix=0" and "iy=0".
  */
-typedef struct
+typedef struct object
 {
 	s16b k_idx;			/* Kind index (zero if "dead") */
 	struct object_kind *kind;

@@ -581,12 +581,6 @@ int store_knowledge = STORE_NONE;
 cptr** name_sections;
 
 /*
- * Array[INVEN_TOTAL] of objects in the player's inventory
- */
-object_type *inventory;
-
-
-/*
  * The size of the "alloc_ego_table"
  */
 s16b alloc_ego_size;

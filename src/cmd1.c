@@ -299,15 +299,15 @@ static void py_pickup_aux(int o_idx, bool msg)
 		int i;
 		for (i = QUIVER_START; i < QUIVER_END; i++) 
 		{
-			if (!inventory[i].k_idx) continue;
-			if (!object_similar(&inventory[i], o_ptr)) continue;
+			if (!p_ptr->inventory[i].k_idx) continue;
+			if (!object_similar(&p_ptr->inventory[i], o_ptr)) continue;
 			quiver_slot = i;
 			break;
 		}
 	}
 
 	/* Get the new object */
-	o_ptr = &inventory[slot];
+	o_ptr = &p_ptr->inventory[slot];
 
 	/* Set squelch status */
 	p_ptr->notice |= PN_SQUELCH;

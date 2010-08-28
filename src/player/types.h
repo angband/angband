@@ -262,6 +262,8 @@ typedef struct player
 	u16b quiver_size;
 	u16b quiver_slots;
 	u16b quiver_remainder;
+
+	struct object *inventory;
 } player_type;
 
 

@@ -293,7 +293,7 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 		return;
 	}
 
-	equip_o_ptr = &inventory[slot];
+	equip_o_ptr = &p_ptr->inventory[slot];
 
 	/* If the slot is open, wield and be done */
 	if (!equip_o_ptr->k_idx) 
@@ -374,7 +374,7 @@ static void obj_wield(object_type *o_ptr, int item)
 	/* Usually if the slot is taken we'll just replace the item in the slot,
 	 * but in some cases we need to ask the user which slot they actually
 	 * want to replace */
-	if (inventory[slot].k_idx)
+	if (p_ptr->inventory[slot].k_idx)
 	{
 		if (o_ptr->tval == TV_RING)
 		{
@@ -716,7 +716,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 /*** Refuelling ***/
 void do_cmd_refill(cmd_code code, cmd_arg args[])
 {
-	object_type *j_ptr = &inventory[INVEN_LIGHT];
+	object_type *j_ptr = &p_ptr->inventory[INVEN_LIGHT];
 	bitflag f[OF_SIZE];
 
 	int item = args[0].item;

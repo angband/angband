@@ -427,11 +427,7 @@ static void player_wipe(void)
 	int i;
 
 	/* Wipe the player */
-	(void)WIPE(p_ptr, player_type);
-
-	/* Clear the inventory */
-	for (i = 0; i < ALL_INVEN_TOTAL; i++)
-		object_wipe(&inventory[i]);
+	(void)WIPE(p_ptr, struct player);
 
 	/* Start with no artifacts made yet */
 	for (i = 0; i < z_info->a_max; i++)
@@ -523,7 +519,7 @@ static void wield_all(void)
 	/* Scan through the slots backwards */
 	for (item = INVEN_PACK - 1; item >= 0; item--)
 	{
-		o_ptr = &inventory[item];
+		o_ptr = &p_ptr->inventory[item];
 		is_ammo = obj_is_ammo(o_ptr);
 
 		/* Skip non-objects */
@@ -532,7 +528,7 @@ static void wield_all(void)
 		/* Make sure we can wield it */
 		slot = wield_slot(o_ptr);
 		if (slot < INVEN_WIELD) continue;
-		i_ptr = &inventory[slot];
+		i_ptr = &p_ptr->inventory[slot];
 
 		/* Make sure that there's an available slot */
 		if (is_ammo)
@@ -559,7 +555,7 @@ static void wield_all(void)
 		inven_item_optimize(item);
 
 		/* Get the wield slot */
-		o_ptr = &inventory[slot];
+		o_ptr = &p_ptr->inventory[slot];
 
 		/* Wear the new stuff */
 		object_copy(o_ptr, i_ptr);
