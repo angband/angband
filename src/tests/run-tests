@@ -7,6 +7,10 @@ TOTAL=0
 
 for t in $TESTS; do
 	RES=`$t`
+	if [ $? -ne 0 ]; then
+		echo "\033[01;31mSuite died: $t\033[00m"
+		continue
+	fi
 	echo "$RES"
 	SPASSED=`echo $RES | sed -e 's/.* done: \(.*\) .*/\1/'`
 	STOTAL=`echo $RES | sed -e 's/.* done: \(.*\) \(.*\)/\2/'`

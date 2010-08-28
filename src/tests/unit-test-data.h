@@ -7,9 +7,7 @@
 
 #include "angband.h"
 
-static const struct object_kind 
-
-static const struct player_race test_race = {
+static struct player_race test_race = {
 	.name = "TestRace",
 	.r_adj = {
 		[A_STR] = +2,
@@ -55,7 +53,7 @@ static const struct player_race test_race = {
 	.hist = 1,
 };
 
-static const struct player_class {
+static struct player_class test_class = {
 	.name = "TestClass",
 	.title = {
 		"TestTitle0",

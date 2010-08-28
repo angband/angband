@@ -56,6 +56,7 @@ int main(void) {
 	}
 
 	printf("%s: done: %d %d\n", suite_name, passed, total);
+	return 0;
 }
 
 #define require(x) \
