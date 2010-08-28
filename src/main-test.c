@@ -75,7 +75,7 @@ static void c_player_birth(char *rest) {
 	}
 
 	for (i = 0; i < z_info->p_max; i++) {
-		if (!strcmp(race, p_name + p_info[i].name)) {
+		if (!strcmp(race, p_info[i].name)) {
 			p_ptr->prace = i;
 			break;
 		}
@@ -98,7 +98,7 @@ static void c_player_birth(char *rest) {
 		return;
 	}
 
-	generate_player();
+	generate_player(p_ptr, NULL, NULL, NULL);
 }
 
 static void c_player_class(char *rest) {
@@ -106,7 +106,7 @@ static void c_player_class(char *rest) {
 }
 
 static void c_player_race(char *rest) {
-	printf("player-race: %s\n", p_name + rp_ptr->name);
+	printf("player-race: %s\n", rp_ptr->name);
 }
 
 static void c_player_sex(char *rest) {

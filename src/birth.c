@@ -964,32 +964,32 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
  * This fleshes out a full player based on the choices currently made,
  * and so is called whenever things like race or class are chosen.
  */
-void generate_player()
+void generate_player(struct player *p, const player_sex *s,
+                     struct player_race *r, player_class *c)
 {
-	/* Set sex according to p_ptr->sex */
-	sp_ptr = &sex_info[p_ptr->psex];
+	if (!s) s = &sex_info[p->psex];
+	if (!c) c = &c_info[p->pclass];
+	if (!r) r = &p_info[p->prace];
 
-	/* Set class according to p_ptr->class */
-	cp_ptr = &c_info[p_ptr->pclass];
+	sp_ptr = s;
+	cp_ptr = c;
 	mp_ptr = &cp_ptr->spells;
-
-	/* Set race according to p_ptr->race */
-	rp_ptr = &p_info[p_ptr->prace];
+	rp_ptr = r;
 
 	/* Level 1 */
-	p_ptr->max_lev = p_ptr->lev = 1;
+	p->max_lev = p->lev = 1;
 
 	/* Experience factor */
-	p_ptr->expfact = rp_ptr->r_exp + cp_ptr->c_exp;
+	p->expfact = rp_ptr->r_exp + cp_ptr->c_exp;
 
 	/* Hitdice */
-	p_ptr->hitdie = rp_ptr->r_mhp + cp_ptr->c_mhp;
+	p->hitdie = rp_ptr->r_mhp + cp_ptr->c_mhp;
 
 	/* Initial hitpoints */
-	p_ptr->mhp = p_ptr->hitdie;
+	p->mhp = p->hitdie;
 
 	/* Pre-calculate level 1 hitdice */
-	p_ptr->player_hp[0] = p_ptr->hitdie;
+	p->player_hp[0] = p->hitdie;
 
 	/* Roll for age/height/weight */
 	get_ahw();
@@ -1008,7 +1008,7 @@ static void do_birth_reset(bool use_quickstart, birther *quickstart_prev)
 	if (use_quickstart && quickstart_prev)
 		load_roller_data(quickstart_prev, NULL);
 
-	generate_player();
+	generate_player(p_ptr, NULL, NULL, NULL);
 
 	/* Update stats with bonuses, etc. */
 	get_bonuses();
@@ -1059,7 +1059,7 @@ void player_birth(bool quickstart_allowed)
 		p_ptr->psex = 0;
 		p_ptr->pclass = 0;
 		p_ptr->prace = 0;
-		generate_player();
+		generate_player(p_ptr, NULL, NULL, NULL);
 	}
 
 	reset_stats(stats, points_spent, &points_left);
@@ -1100,12 +1100,12 @@ void player_birth(bool quickstart_allowed)
 		else if (cmd.command == CMD_CHOOSE_SEX)
 		{
 			p_ptr->psex = cmd.args[0].choice; 
-			generate_player();
+			generate_player(p_ptr, NULL, NULL, NULL);
 		}
 		else if (cmd.command == CMD_CHOOSE_RACE)
 		{
 			p_ptr->prace = cmd.args[0].choice;
-			generate_player();
+			generate_player(p_ptr, NULL, NULL, NULL);
 
 			reset_stats(stats, points_spent, &points_left);
 			generate_stats(stats, points_spent, &points_left);
@@ -1114,7 +1114,7 @@ void player_birth(bool quickstart_allowed)
 		else if (cmd.command == CMD_CHOOSE_CLASS)
 		{
 			p_ptr->pclass = cmd.args[0].choice;
-			generate_player();
+			generate_player(p_ptr, NULL, NULL, NULL);
 
 			reset_stats(stats, points_spent, &points_left);
 			generate_stats(stats, points_spent, &points_left);

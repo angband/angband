@@ -316,7 +316,7 @@ static void setup_menus()
 
 	for (i = 0; i < z_info->p_max; i++)
 	{	
-		mdata->items[i] = p_name + p_info[i].name;
+		mdata->items[i] = p_info[i].name;
 	}
 	mdata->hint = "Your 'race' determines various intrinsic factors and bonuses.";
 

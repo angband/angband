@@ -715,13 +715,7 @@ monster_race *r_info;
 char *r_name;
 char *r_text;
 
-
-/*
- * The player race arrays
- */
 player_race *p_info;
-char *p_name;
-char *p_text;
 
 /*
  * The player class arrays

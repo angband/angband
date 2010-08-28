@@ -276,10 +276,9 @@ typedef struct
 /*
  * Player racial info
  */
-typedef struct
+typedef struct player_race
 {
-	u32b name;			/* Name (offset) */
-	u32b text;			/* Text (offset) */
+	const char *name;
 	
 	s16b r_adj[A_MAX];	/* Racial stat bonuses */
 	

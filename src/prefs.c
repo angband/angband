@@ -1226,7 +1226,7 @@ static cptr process_pref_file_expr(char **sp, char *fp)
 			/* Race */
 			else if (streq(b+1, "RACE"))
 			{
-				v = p_name + rp_ptr->name;
+				v = rp_ptr->name;
 			}
 
 			/* Class */

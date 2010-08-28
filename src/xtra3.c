@@ -532,7 +532,7 @@ static void prt_wis(int row, int col) { prt_stat(A_WIS, row, col); }
 static void prt_int(int row, int col) { prt_stat(A_INT, row, col); }
 static void prt_con(int row, int col) { prt_stat(A_CON, row, col); }
 static void prt_chr(int row, int col) { prt_stat(A_CHR, row, col); }
-static void prt_race(int row, int col) { prt_field(p_name + rp_ptr->name, row, col); }
+static void prt_race(int row, int col) { prt_field(rp_ptr->name, row, col); }
 static void prt_class(int row, int col) { prt_field(c_name + cp_ptr->name, row, col); }
 
 
@@ -1388,7 +1388,7 @@ static void update_player_compact_subwindow(game_event_type type, game_event_dat
 	Term_activate(inv_term);
 
 	/* Race and Class */
-	prt_field(p_name + rp_ptr->name, row++, col);
+	prt_field(rp_ptr->name, row++, col);
 	prt_field(c_name + cp_ptr->name, row++, col);
 
 	/* Title */

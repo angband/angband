@@ -595,8 +595,6 @@ static errr init_p_info(void)
 
 	/* Set the global variables */
 	p_info = p_head.info_ptr;
-	p_name = p_head.name_ptr;
-	p_text = p_head.text_ptr;
 
 	return (err);
 }

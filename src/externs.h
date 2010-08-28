@@ -172,8 +172,6 @@ extern monster_race *r_info;
 extern char *r_name;
 extern char *r_text;
 extern player_race *p_info;
-extern char *p_name;
-extern char *p_text;
 extern player_class *c_info;
 extern char *c_name;
 extern char *c_text;
@@ -248,7 +246,8 @@ extern bool test_hit(int chance, int ac, int vis);
 extern void py_attack(int y, int x);
 
 /* birth.c */
-extern void generate_player(void);
+extern void generate_player(struct player *p, const player_sex *s,
+                            struct player_race *r, player_class *c);
 extern void player_birth(bool quickstart_allowed);
 
 /* button.c */
