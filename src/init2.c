@@ -457,8 +457,6 @@ static errr init_k_info(void)
 
 	/* Set the global variables */
 	k_info = k_head.info_ptr;
-	k_name = k_head.name_ptr;
-	k_text = k_head.text_ptr;
 
 	return (err);
 }

@@ -159,7 +159,7 @@ void autoinsc_dump(ang_file *fff)
 	{
 		object_kind *k_ptr = &k_info[inscriptions[i].kind_idx];
 
-		file_putf(fff, "# Autoinscription for %s\n", k_name + k_ptr->name);
+		file_putf(fff, "# Autoinscription for %s\n", k_ptr->name);
 		file_putf(fff, "B:%d:%s\n\n", inscriptions[i].kind_idx,
 		        quark_str(inscriptions[i].inscription_idx));
 	}
@@ -367,7 +367,7 @@ void dump_objects(ang_file *fff)
 		/* Skip non-entries */
 		if (!k_ptr->name) continue;
 
-		file_putf(fff, "# Object: %s\n", (k_name + k_ptr->name));
+		file_putf(fff, "# Object: %s\n", k_ptr->name);
 		file_putf(fff, "K:%d:0x%02X:0x%02X\n", i, attr, chr);
 	}
 }

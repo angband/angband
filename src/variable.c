@@ -686,12 +686,7 @@ feature_type *f_info;
 char *f_name;
 char *f_text;
 
-/*
- * The object kind arrays
- */
 object_kind *k_info;
-char *k_name;
-char *k_text;
 
 /*
  * The artifact arrays

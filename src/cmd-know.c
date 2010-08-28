@@ -1716,7 +1716,7 @@ static int o_cmp_tval(const void *a, const void *b)
 
 		default:
 			if (k_a->aware)
-				return strcmp(k_name + k_a->name, k_name + k_b->name);
+				return strcmp(k_a->name, k_b->name);
 
 			/* Then in tried order */
 			c = k_a->tried - k_b->tried;

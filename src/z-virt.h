@@ -118,4 +118,6 @@ char *string_make(const char *str);
 char *string_free(char *str);
 #define string_free mem_free
 
+char *string_append(char *s1, const char *s2);
+
 #endif /* INCLUDED_Z_VIRT_H */

@@ -1246,10 +1246,8 @@ errr parse_k_info(char *buf, header *head)
 
 		/* Point at the "info" */
 		k_ptr = (object_kind*)head->info_ptr + i;
-
-		/* Store the name */
-		if ((k_ptr->name = add_name(head, s)) == 0)
-			return (PARSE_ERROR_OUT_OF_MEMORY);
+		k_ptr->kidx = i;
+		k_ptr->name = string_make(s);
 
 		/* Success (return early) */
 		return (0);
@@ -1438,9 +1436,7 @@ errr parse_k_info(char *buf, header *head)
 	/* Process 'D' for "Description" */
 	else if (buf[0] == 'D')
 	{
-		/* Store the text */
-		if (!add_text(&(k_ptr->text), head, buf + 2))
-			return (PARSE_ERROR_OUT_OF_MEMORY);
+		k_ptr->text = string_append(k_ptr->text, buf + 2);
 	}
 
 	else
@@ -2734,8 +2730,7 @@ errr parse_c_info(char *buf, header *head)
 			return (PARSE_ERROR_INVALID_ITEM_NUMBER);
 
 		/* Save the values */
-		e_ptr->tval = tval;
-		e_ptr->sval = sval;
+		e_ptr->kind = objkind_get(tval, sval);
 		e_ptr->min = min;
 		e_ptr->max = max;
 

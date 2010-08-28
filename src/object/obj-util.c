@@ -1437,7 +1437,7 @@ static s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 			pricing_mode = MODE_APPEND;
 		}
 
-		LOG_PRINT1("object is %s", k_name + k_ptr->name);
+		LOG_PRINT1("object is %s", k_ptr->name);
 		power = object_power(o_ptr, verbose, log_file, known);
 		value = sign(power) * ((a * power * power) + (b * power));
 
@@ -3424,8 +3424,9 @@ int lookup_kind(int tval, int sval)
 	return 0;
 }
 
-object_kind *objkind_get(int tval, int sval) {
+struct object_kind *objkind_get(int tval, int sval) {
 	int k = lookup_kind(tval, sval);
+	return &k_info[k];
 }
 
 /**
@@ -3508,7 +3509,9 @@ int lookup_name(int tval, const char *name)
 	for (k = 1; k < z_info->k_max; k++)
 	{
 		object_kind *k_ptr = &k_info[k];
-		const char *nm = k_name + k_ptr->name;
+		const char *nm = k_ptr->name;
+
+		if (!nm) continue;
 
 		if (*nm == '&' && *(nm+1))
 			nm += 2;
@@ -3556,7 +3559,9 @@ int lookup_sval(int tval, const char *name)
 	for (k = 1; k < z_info->k_max; k++)
 	{
 		object_kind *k_ptr = &k_info[k];
-		const char *nm = k_name + k_ptr->name;
+		const char *nm = k_ptr->name;
+
+		if (!nm) continue;
 
 		if (*nm == '&' && *(nm+1))
 			nm += 2;

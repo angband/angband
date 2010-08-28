@@ -1195,7 +1195,7 @@ void object_info_header(const object_type *o_ptr)
 
 		if (k_info[o_ptr->k_idx].text)
 		{
-			text_out(k_text + k_info[o_ptr->k_idx].text);
+			text_out(k_info[o_ptr->k_idx].text);
 			did_desc = TRUE;
 		}
 

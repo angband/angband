@@ -9,12 +9,12 @@
  * TODO: split out the user-changeable bits into a separate struct so this
  * one can be read-only.
  */
-typedef struct
+typedef struct object_kind
 {
-	/** Constants **/
+	const char *name;
+	const char *text;
 
-	u32b name;         /**< (const char *) object_kind::name + k_name = Name */
-	u32b text;         /**< (const char *) object_kind::text + k_text = Description  */
+	u32b kidx;
 
 	byte tval;         /**< General object type (see TV_ macros) */
 	byte sval;         /**< Object sub-type (see SV_ macros) */

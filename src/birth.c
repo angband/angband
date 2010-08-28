@@ -600,23 +600,17 @@ static void player_outfit(void)
 		i_ptr = &object_type_body;
 
 		/* Hack	-- Give the player an object */
-		if (e_ptr->tval > 0)
+		if (e_ptr->kind)
 		{
-			/* Get the object_kind */
-			int k_idx = lookup_kind(e_ptr->tval, e_ptr->sval);
-
-			/* Valid item? */
-			if (!k_idx) continue;
-
 			/* Prepare the item */
-			object_prep(i_ptr, k_idx, 0, MINIMISE);
+			object_prep(i_ptr, e_ptr->kind->kidx, 0, MINIMISE);
 			i_ptr->number = (byte)rand_range(e_ptr->min, e_ptr->max);
 			i_ptr->origin = ORIGIN_BIRTH;
 
 			object_flavor_aware(i_ptr);
 			object_notice_everything(i_ptr);
 			(void)inven_carry(i_ptr);
-			k_info[k_idx].everseen = TRUE;
+			k_info[e_ptr->kind->kidx].everseen = TRUE;
 
 			/* Deduct the cost of the item from starting cash */
 			p_ptr->au -= object_value(i_ptr, i_ptr->number,	FALSE);

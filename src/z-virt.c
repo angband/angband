@@ -103,7 +103,7 @@ void *mem_realloc(void *p, size_t len)
 	void *mem;
 
 	/* Fail gracefully */
-	if (!p || len == 0) return (NULL);
+	if (len == 0) return (NULL);
 
 	if (realloc_aux) mem = (*realloc_aux)(p, len);
 	else             mem = realloc(p, len);
@@ -146,4 +146,19 @@ char *string_free(char *str)
 {
 	/* Kill the buffer of chars we must have allocated above */
 	return mem_free(str);
+}
+
+char *string_append(char *s1, const char *s2) {
+	u32b len;
+	if (!s1 && !s2) {
+		return NULL;
+	} else if (s1 && !s2) {
+		return s1;
+	} else if (!s1 && s2) {
+		return string_make(s2);
+	}
+	len = strlen(s1);
+	s1 = mem_realloc(s1, len + strlen(s2) + 1);
+	strcpy(s1 + len, s2);
+	return s1;
 }

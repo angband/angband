@@ -160,7 +160,6 @@ extern feature_type *f_info;
 extern char *f_name;
 extern char *f_text;
 extern object_kind *k_info;
-extern char *k_name;
 extern char *k_text;
 extern artifact_type *a_info;
 extern char *a_name;

@@ -312,7 +312,7 @@ typedef struct player_race
 
 typedef struct start_item
 {
-	object_kind *obj;
+	object_kind *kind;
 	byte min;	/* Minimum starting amount */
 	byte max;	/* Maximum starting amount */
 } start_item;
