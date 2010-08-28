@@ -4,6 +4,7 @@
  */
 
 #include "angband.h"
+#include "birth.h"
 
 static int prompt = 0;
 static int verbose = 0;
@@ -98,7 +99,7 @@ static void c_player_birth(char *rest) {
 		return;
 	}
 
-	generate_player(p_ptr, NULL, NULL, NULL);
+	player_generate(p_ptr, NULL, NULL, NULL);
 }
 
 static void c_player_class(char *rest) {

@@ -17,6 +17,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "object/inventory.h"
 #include "object/tvalsval.h"
 #include "cmds.h"
 
@@ -287,7 +288,7 @@ static void py_pickup_aux(int o_idx, bool msg)
 	object_type *o_ptr = &o_list[o_idx];
 
 	/* Carry the object */
-	slot = inven_carry(o_ptr);
+	slot = inven_carry(p_ptr, o_ptr);
 
 	/* Handle errors (paranoia) */
 	if (slot < 0) return;

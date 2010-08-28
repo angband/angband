@@ -20,6 +20,7 @@
 #include "cmds.h"
 #include "ui-menu.h"
 #include "game-event.h"
+#include "object/inventory.h"
 #include "object/tvalsval.h"
 
 
@@ -2134,7 +2135,7 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 	i_ptr->note = 0;
 
 	/* Give it to the player */
-	item_new = inven_carry(i_ptr);
+	item_new = inven_carry(p_ptr, i_ptr);
 
 	/* Message */
 	object_desc(o_name, sizeof(o_name), &p_ptr->inventory[item_new],
@@ -2229,7 +2230,7 @@ void do_cmd_retrieve(cmd_code code, cmd_arg args[])
 	distribute_charges(o_ptr, &picked_item, amt);
 	
 	/* Give it to the player */
-	item_new = inven_carry(&picked_item);
+	item_new = inven_carry(p_ptr, &picked_item);
 
 	/* Describe just the result */
 	object_desc(o_name, sizeof(o_name), &p_ptr->inventory[item_new],

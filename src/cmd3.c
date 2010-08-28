@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "object/inventory.h"
 #include "object/tvalsval.h"
 
 #include "cmds.h"
@@ -212,7 +213,7 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	}
 
 	/* Save quiver size */
-	save_quiver_size();
+	save_quiver_size(p_ptr);
 
 	/* See if we have to overflow the pack */
 	pack_overflow();
@@ -408,7 +409,7 @@ void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 
 			/* Carry or drop */
 			if (item >= 0)
-				item = inven_carry(i_ptr);
+				item = inven_carry(p_ptr, i_ptr);
 			else
 				drop_near(i_ptr, 0, p_ptr->py, p_ptr->px, FALSE);
 		}

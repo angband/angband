@@ -1,14 +1,13 @@
 #ifndef INCLUDED_OBJECT_H
 #define INCLUDED_OBJECT_H
 
-/*** Variables ***/
-
 /** Maximum number of scroll titles generated */
 #define MAX_TITLES     50
 
 /** The titles of scrolls, ordered by sval. */
 extern char scroll_adj[MAX_TITLES][16];
 
+struct player;
 
 /*** Constants ***/
 
@@ -77,8 +76,6 @@ typedef enum
 
 	INSCRIP_MAX                  /*!< Maximum number of pseudo-ID markers */
 } obj_pseudo_t;
-
-
 
 /*** Functions ***/
 
@@ -201,7 +198,7 @@ void acquirement(int y1, int x1, int level, int num, bool great);
 void inven_item_charges(int item);
 void inven_item_describe(int item);
 void inven_item_increase(int item, int num);
-void save_quiver_size(void);
+void save_quiver_size(struct player *p);
 void inven_item_optimize(int item);
 void floor_item_charges(int item);
 void floor_item_describe(int item);
@@ -209,7 +206,6 @@ void floor_item_increase(int item, int num);
 void floor_item_optimize(int item);
 bool inven_carry_okay(const object_type *o_ptr);
 bool inven_stack_okay(const object_type *o_ptr);
-s16b inven_carry(object_type *o_ptr);
 s16b inven_takeoff(int item, int amt);
 void inven_drop(int item, int amt);
 void combine_pack(void);

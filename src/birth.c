@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "object/inventory.h"
 #include "object/tvalsval.h"
 #include "cmds.h"
 #include "game-event.h"
@@ -417,20 +418,17 @@ static void get_money(int stat_use[A_MAX])
 		p_ptr->au = p_ptr->au_birth = STARTING_GOLD;
 }
 
-
-
-/*
- * Clear all the global "character" data
- */
-static void player_wipe(void)
-{
+void player_init(struct player *p) {
 	int i;
 
+	if (p->inventory)
+		mem_free(p->inventory);
+
 	/* Wipe the player */
-	(void)WIPE(p_ptr, struct player);
+	(void)WIPE(p, struct player);
 
 	/* Start with no artifacts made yet */
-	for (i = 0; i < z_info->a_max; i++)
+	for (i = 0; z_info && i < z_info->a_max; i++)
 	{
 		artifact_type *a_ptr = &a_info[i];
 		a_ptr->created = FALSE;
@@ -439,73 +437,59 @@ static void player_wipe(void)
 
 
 	/* Start with no quests */
-	for (i = 0; i < MAX_Q_IDX; i++)
+	for (i = 0; q_list && i < MAX_Q_IDX; i++)
 	{
 		q_list[i].level = 0;
 	}
 
-	/* Add a special quest */
-	q_list[0].level = 99;
+	if (q_list) {
+		q_list[0].level = 99;
+		q_list[1].level = 100;
+	}
 
-	/* Add a second quest */
-	q_list[1].level = 100;
-
-
-	/* Reset the "objects" */
-	for (i = 1; i < z_info->k_max; i++)
-	{
+	for (i = 1; z_info && i < z_info->k_max; i++) {
 		object_kind *k_ptr = &k_info[i];
-
-		/* Reset "tried" */
 		k_ptr->tried = FALSE;
-
-		/* Reset "aware" */
 		k_ptr->aware = FALSE;
 	}
 
-
-	/* Reset the "monsters" */
-	for (i = 1; i < z_info->r_max; i++)
+	for (i = 1; z_info && i < z_info->r_max; i++)
 	{
 		monster_race *r_ptr = &r_info[i];
 		monster_lore *l_ptr = &l_list[i];
-
-		/* Hack -- Reset the counter */
 		r_ptr->cur_num = 0;
-
-		/* Hack -- Reset the max counter */
 		r_ptr->max_num = 100;
-
-		/* Hack -- Reset the max counter */
-		if (rf_has(r_ptr->flags, RF_UNIQUE)) r_ptr->max_num = 1;
-
-		/* Clear player kills */
+		if (rf_has(r_ptr->flags, RF_UNIQUE))
+			r_ptr->max_num = 1;
 		l_ptr->pkills = 0;
 	}
 
 
 	/* Hack -- no ghosts */
-	r_info[z_info->r_max-1].max_num = 0;
+	if (z_info)
+		r_info[z_info->r_max-1].max_num = 0;
 
 
 	/* Hack -- Well fed player */
-	p_ptr->food = PY_FOOD_FULL - 1;
+	p->food = PY_FOOD_FULL - 1;
 
 
 	/* None of the spells have been learned yet */
-	for (i = 0; i < PY_MAX_SPELLS; i++) p_ptr->spell_order[i] = 99;
+	for (i = 0; i < PY_MAX_SPELLS; i++)
+		p->spell_order[i] = 99;
 
+	p->inventory = C_ZNEW(ALL_INVEN_TOTAL, struct object);
 
 	/* First turn. */
 	turn = old_turn = 1;
-	p_ptr->player_turn = 0;
-	p_ptr->resting_turn = 0;
+	p->player_turn = 0;
+	p->resting_turn = 0;
 }
 
 /**
  * Try to wield everything wieldable in the inventory.
  */
-static void wield_all(void)
+static void wield_all(struct player *p)
 {
 	object_type *o_ptr;
 	object_type *i_ptr;
@@ -519,7 +503,7 @@ static void wield_all(void)
 	/* Scan through the slots backwards */
 	for (item = INVEN_PACK - 1; item >= 0; item--)
 	{
-		o_ptr = &p_ptr->inventory[item];
+		o_ptr = &p->inventory[item];
 		is_ammo = obj_is_ammo(o_ptr);
 
 		/* Skip non-objects */
@@ -528,7 +512,7 @@ static void wield_all(void)
 		/* Make sure we can wield it */
 		slot = wield_slot(o_ptr);
 		if (slot < INVEN_WIELD) continue;
-		i_ptr = &p_ptr->inventory[slot];
+		i_ptr = &p->inventory[slot];
 
 		/* Make sure that there's an available slot */
 		if (is_ammo)
@@ -555,19 +539,19 @@ static void wield_all(void)
 		inven_item_optimize(item);
 
 		/* Get the wield slot */
-		o_ptr = &p_ptr->inventory[slot];
+		o_ptr = &p->inventory[slot];
 
 		/* Wear the new stuff */
 		object_copy(o_ptr, i_ptr);
 
 		/* Increase the weight */
-		p_ptr->total_weight += i_ptr->weight * i_ptr->number;
+		p->total_weight += i_ptr->weight * i_ptr->number;
 
 		/* Increment the equip counter by hand */
-		p_ptr->equip_cnt++;
+		p->equip_cnt++;
 	}
 
-	save_quiver_size();
+	save_quiver_size(p);
 
 	return;
 }
@@ -605,7 +589,7 @@ void player_outfit(struct player *p)
 
 			object_flavor_aware(i_ptr);
 			object_notice_everything(i_ptr);
-			(void)inven_carry(i_ptr);
+			inven_carry(p, i_ptr);
 			e_ptr->kind->everseen = TRUE;
 
 			/* Deduct the cost of the item from starting cash */
@@ -626,7 +610,7 @@ void player_outfit(struct player *p)
 	object_flavor_aware(i_ptr);
 	object_notice_everything(i_ptr);
 	k_info[i_ptr->k_idx].everseen = TRUE;
-	(void)inven_carry(i_ptr);
+	inven_carry(p, i_ptr);
 	p->au -= object_value(i_ptr, i_ptr->number, FALSE);
 
 	/* Get local object */
@@ -640,14 +624,14 @@ void player_outfit(struct player *p)
 	object_flavor_aware(i_ptr);
 	object_notice_everything(i_ptr);
 	k_info[i_ptr->k_idx].everseen = TRUE;
-	(void)inven_carry(i_ptr);
+	inven_carry(p, i_ptr);
 	p->au -= object_value(i_ptr, i_ptr->number, FALSE);
 
 	/* sanity check */
 	if (p->au < 0) p->au = 0;
 
 	/* Now try wielding everything */
-	wield_all();
+	wield_all(p);
 }
 
 
@@ -954,7 +938,7 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
  * This fleshes out a full player based on the choices currently made,
  * and so is called whenever things like race or class are chosen.
  */
-void generate_player(struct player *p, const player_sex *s,
+void player_generate(struct player *p, const player_sex *s,
                      struct player_race *r, player_class *c)
 {
 	if (!s) s = &sex_info[p->psex];
@@ -995,14 +979,14 @@ void generate_player(struct player *p, const player_sex *s,
 /* Reset everything back to how it would be on loading the game. */
 static void do_birth_reset(bool use_quickstart, birther *quickstart_prev)
 {
-	player_wipe();
+	player_init(p_ptr);
 
 	/* If there's quickstart data, we use it to set default
 	   character choices. */
 	if (use_quickstart && quickstart_prev)
 		load_roller_data(quickstart_prev, NULL);
 
-	generate_player(p_ptr, NULL, NULL, NULL);
+	player_generate(p_ptr, NULL, NULL, NULL);
 
 	/* Update stats with bonuses, etc. */
 	get_bonuses();
@@ -1053,7 +1037,7 @@ void player_birth(bool quickstart_allowed)
 		p_ptr->psex = 0;
 		p_ptr->pclass = 0;
 		p_ptr->prace = 0;
-		generate_player(p_ptr, NULL, NULL, NULL);
+		player_generate(p_ptr, NULL, NULL, NULL);
 	}
 
 	reset_stats(stats, points_spent, &points_left);
@@ -1094,12 +1078,12 @@ void player_birth(bool quickstart_allowed)
 		else if (cmd.command == CMD_CHOOSE_SEX)
 		{
 			p_ptr->psex = cmd.args[0].choice; 
-			generate_player(p_ptr, NULL, NULL, NULL);
+			player_generate(p_ptr, NULL, NULL, NULL);
 		}
 		else if (cmd.command == CMD_CHOOSE_RACE)
 		{
 			p_ptr->prace = cmd.args[0].choice;
-			generate_player(p_ptr, NULL, NULL, NULL);
+			player_generate(p_ptr, NULL, NULL, NULL);
 
 			reset_stats(stats, points_spent, &points_left);
 			generate_stats(stats, points_spent, &points_left);
@@ -1108,7 +1092,7 @@ void player_birth(bool quickstart_allowed)
 		else if (cmd.command == CMD_CHOOSE_CLASS)
 		{
 			p_ptr->pclass = cmd.args[0].choice;
-			generate_player(p_ptr, NULL, NULL, NULL);
+			player_generate(p_ptr, NULL, NULL, NULL);
 
 			reset_stats(stats, points_spent, &points_left);
 			generate_stats(stats, points_spent, &points_left);

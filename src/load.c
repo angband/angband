@@ -1199,7 +1199,7 @@ int rd_inventory(u32b version)
 		}
 	}
 
-	save_quiver_size();
+	save_quiver_size(p_ptr);
 
 	/* Success */
 	return (0);
