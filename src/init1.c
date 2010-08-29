@@ -707,7 +707,7 @@ errr parse_z_info(char *buf, header *head)
 		z_info->e_max = max;
 	else if (buf[2] == 'R')
 		z_info->r_max = max;
-	else if (buf[2]  == 'V')
+	else if (buf[2] == 'V')
 		z_info->v_max = max;
 	else if (buf[2] == 'P')
 		z_info->p_max = max;
@@ -726,39 +726,13 @@ errr parse_z_info(char *buf, header *head)
 	else if (buf[2] == 'L')
 		z_info->flavor_max = max;
 	else if (buf[2] == 'N')
-		z_info->
-
-	/* Process 'N' for "Fake name size" */
-	else if (buf[2] == 'N')
-	{
-		long max;
-
-		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%ld", &max)) return (PARSE_ERROR_NOT_NUMBER);
-
-		/* Save the value */
 		z_info->fake_name_size = max;
-	}
-
-	/* Process 'T' for "Fake text size" */
 	else if (buf[2] == 'T')
-	{
-		long max;
-
-		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%ld", &max)) return (PARSE_ERROR_NOT_NUMBER);
-
-		/* Save the value */
 		z_info->fake_text_size = max;
-	}
 	else
-	{
-		/* Oops */
-		return (PARSE_ERROR_UNDEFINED_DIRECTIVE);
-	}
+		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 
-	/* Success */
-	return (0);
+	return 0;
 }
 
 
