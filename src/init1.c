@@ -1063,6 +1063,12 @@ errr parse_k_info(char *buf, header *head)
 	/* Current entry */
 	static object_kind *k_ptr = NULL;
 
+	if (!buf[0])
+		return PARSE_ERROR_INTERNAL;
+	if (buf[1] != ':')
+		return PARSE_ERROR_MISSING_COLON;
+	if (!buf[2])
+		return PARSE_ERROR_MISSING_FIELD;
 
 	/* Process 'N' for "New/Number/Name" */
 	if (buf[0] == 'N')
@@ -1071,22 +1077,29 @@ errr parse_k_info(char *buf, header *head)
 		s = strchr(buf+2, ':');
 
 		/* Verify that colon */
-		if (!s) return (PARSE_ERROR_MISSING_COLON);
+		if (!s)
+			return PARSE_ERROR_MISSING_COLON;
 
-		/* Nuke the colon, advance to the name */
-		*s++ = '\0';
+		s++;
 
 		/* Paranoia -- require a name */
-		if (!*s) return (PARSE_ERROR_GENERIC);
+		if (!*s)
+			return PARSE_ERROR_MISSING_FIELD;
 
 		/* Get the index */
-		i = atoi(buf+2);
+		i = strtoul(buf+2, &t, 0);
+		if (t == buf + 2 && *t == ':')
+			return PARSE_ERROR_MISSING_FIELD;
+		if (t != (s - 1))
+			return PARSE_ERROR_NOT_NUMBER;
 
 		/* Verify information */
-		if (i <= error_idx) return (PARSE_ERROR_NON_SEQUENTIAL_RECORDS);
+		if (i <= error_idx)
+			return PARSE_ERROR_NON_SEQUENTIAL_RECORDS;
 
 		/* Verify information */
-		if (i >= head->info_num) return (PARSE_ERROR_TOO_MANY_ENTRIES);
+		if (i >= head->info_num)
+			return PARSE_ERROR_TOO_MANY_ENTRIES;
 
 		/* Save the index */
 		error_idx = i;
@@ -1097,7 +1110,7 @@ errr parse_k_info(char *buf, header *head)
 		k_ptr->name = string_make(s);
 
 		/* Success (return early) */
-		return (0);
+		return 0;
 	}
 
 	/* There better be a current k_ptr */

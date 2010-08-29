@@ -54,7 +54,7 @@ typedef struct color_type color_type;
  * These are actually not the maxima, but the maxima plus one, because of
  * 0-based indexing issues.
  */
-typedef struct
+typedef struct maxima
 {
 	u32b fake_text_size;  /**< Max size of all descriptions read in from lib/edit */
 	u32b fake_name_size;  /**< Max size of all names read in from lib/edit */
