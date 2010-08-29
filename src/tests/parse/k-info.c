@@ -52,7 +52,7 @@ static int test_n0(void *state) {
 	ok;
 }
 
-test_error(syntax_g0, "G", PARSE_ERROR_MISSING_FIELD);
+test_error(syntax_g0, "G", PARSE_ERROR_MISSING_COLON);
 test_error(syntax_g1, "G:", PARSE_ERROR_MISSING_FIELD);
 test_error(syntax_g2, "G.~:W", PARSE_ERROR_MISSING_COLON);
 test_error(syntax_g3, "G:~.W", PARSE_ERROR_MISSING_COLON);

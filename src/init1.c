@@ -1123,10 +1123,12 @@ errr parse_k_info(char *buf, header *head)
 		char d_char;
 		int d_attr;
 
-		/* Paranoia */
-		if (!buf[2]) return (PARSE_ERROR_GENERIC);
-		if (!buf[3]) return (PARSE_ERROR_GENERIC);
-		if (!buf[4]) return (PARSE_ERROR_GENERIC);
+		if (buf[2] == ':')
+			return PARSE_ERROR_MISSING_FIELD;
+		if (buf[3] != ':')
+			return PARSE_ERROR_MISSING_COLON;
+		if (!buf[4])
+			return PARSE_ERROR_MISSING_FIELD;
 
 		/* Extract d_char */
 		d_char = buf[2];
