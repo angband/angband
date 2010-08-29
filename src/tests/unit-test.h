@@ -19,16 +19,23 @@ static struct test tests[];
 
 static int setup(void **data);
 static int teardown(void *data);
+static int verbose = 0;
 
-int main(void) {
+int main(int argc, char *argv[]) {
 	void *state;
 	int i;
 	int passed = 0;
 	int total = 0;
 	int res;
 
-	printf("%s: starting\n", suite_name);
-	fflush(stdout);
+	if (argc > 1 && !strcmp(argv[1], "-v")) {
+		verbose = 1;
+	}
+
+	if (verbose) {
+		printf("%s: starting...\n", suite_name);
+		fflush(stdout);
+	}
 
 	if (setup(&state)) {
 		printf("%s: setup failed\n", suite_name);
@@ -36,21 +43,25 @@ int main(void) {
 	}
 
 	for (i = 0; tests[i].name; i++) {
-		printf("%s: %s... ", suite_name, tests[i].name);
+		if (verbose) printf("%s: %s... ", suite_name, tests[i].name);
 		fflush(stdout);
 		res = tests[i].func(state);
 		if (res) {
-			printf("\033[01;31mFailed\033[00m\n");
-			fflush(stdout);
+			if (verbose) {
+				printf("\033[01;31mFailed\033[00m\n");
+				fflush(stdout);
+			}
 		} else {
-			printf("\033[01;32mPassed\033[00m\n");
-			fflush(stdout);
+			if (verbose) {
+				printf("\033[01;32mPassed\033[00m\n");
+				fflush(stdout);
+			}
 			passed++;
 		}
 		total++;
 	}
 
-	if (teardown(&state)) {
+	if (teardown(state)) {
 		printf("%s: teardown failed\n", suite_name);
 		return 1;
 	}
@@ -65,5 +76,16 @@ int main(void) {
 		       suite_name, __LINE__, #x); \
 		return 1; \
 	}
+
+#define requireeq(x,y) \
+	if ((x) != (y)) { \
+		printf("%s:%d: requirement '%s' == '%s' failed\n", suite_name, \
+		       __LINE__, #x, #y); \
+		printf("  %s: %llx\n", #x, (long long)x); \
+		printf("  %s: %llx\n", #y, (long long)y); \
+		return 1; \
+	}
+
+#define ok return 0
 
 #endif /* !UNIT_TEST_H */

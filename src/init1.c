@@ -677,183 +677,56 @@ errr init_names_txt(ang_file *fp, char *buf)
  */
 errr parse_z_info(char *buf, header *head)
 {
-	maxima *z_info = head->info_ptr;
+	maxima *z_info;
+	int max;
 
-	/* Hack - Verify 'M:x:' format */
-	if (buf[0] != 'M') return (PARSE_ERROR_UNDEFINED_DIRECTIVE);
-	if (!buf[2]) return (PARSE_ERROR_UNDEFINED_DIRECTIVE);
-	if (buf[3] != ':') return (PARSE_ERROR_UNDEFINED_DIRECTIVE);
-
-
-	/* Process 'F' for "Maximum f_info[] index" */
-	if (buf[2] == 'F')
-	{
-		int max;
-
-		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
-
-		/* Save the value */
-		z_info->f_max = max;
-	}
-
-	/* Process 'K' for "Maximum k_info[] index" */
-	else if (buf[2] == 'K')
-	{
-		int max;
-
-		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
-
-		/* Save the value */
-		z_info->k_max = max;
-	}
-
-	/* Process 'A' for "Maximum a_info[] index" */
-	else if (buf[2] == 'A')
-	{
-		int max;
-
-		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
-
-		/* Save the value */
-		z_info->a_max = max;
-	}
-
-	/* Process 'E' for "Maximum e_info[] index" */
-	else if (buf[2] == 'E')
-	{
-		int max;
-
-		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
-
-		/* Save the value */
-		z_info->e_max = max;
-	}
-
-	/* Process 'R' for "Maximum r_info[] index" */
-	else if (buf[2] == 'R')
-	{
-		int max;
-
-		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
-
-		/* Save the value */
-		z_info->r_max = max;
-	}
-
-
-	/* Process 'V' for "Maximum v_info[] index" */
-	else if (buf[2] == 'V')
-	{
-		int max;
-
-		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
-
-		/* Save the value */
-		z_info->v_max = max;
-	}
-
-
-	/* Process 'P' for "Maximum p_info[] index" */
-	else if (buf[2] == 'P')
-	{
-		int max;
-
-		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
-
-		/* Save the value */
-		z_info->p_max = max;
-	}
-
-	/* Process 'C' for "Maximum c_info[] index" */
-	else if (buf[2] == 'C')
-	{
-		int max;
-
-		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
-
-		/* Save the value */
-		z_info->c_max = max;
-	}
-
-	/* Process 'H' for "Maximum h_info[] index" */
-	else if (buf[2] == 'H')
-	{
-		int max;
-
-		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
-
-		/* Save the value */
-		z_info->h_max = max;
-	}
-
-	/* Process 'B' for "Maximum b_info[] subindex" */
-	else if (buf[2] == 'B')
-	{
-		int max;
-
-		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
-
-		/* Save the value */
-		z_info->b_max = max;
-	}
-
-	/* Process 'L' for "Maximum flavor_info[] subindex" */
-	else if (buf[2] == 'L')
-	{
-		int max;
-
-		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
-
-		/* Save the value */
-		z_info->flavor_max = max;
-	}
+	if (!buf || !head)
+		return PARSE_ERROR_INTERNAL;
 	
-	/* Process 'S' for "Maximum s_info[] subindex" */
+	z_info = head->info_ptr;
+
+	if (buf[0] != 'M')
+		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+	if (!buf[2] || !buf[4])
+		return PARSE_ERROR_MISSING_FIELD;
+	if (buf[1] != ':' || buf[3] != ':')
+		return PARSE_ERROR_MISSING_COLON;
+
+	if (1 != sscanf(buf + 4, "%d", &max))
+		return PARSE_ERROR_NOT_NUMBER;
+	if (max < 0)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	if (buf[2] == 'F')
+		z_info->f_max = max;
+	else if (buf[2] == 'K')
+		z_info->k_max = max;
+	else if (buf[2] == 'A')
+		z_info->a_max = max;
+	else if (buf[2] == 'E')
+		z_info->e_max = max;
+	else if (buf[2] == 'R')
+		z_info->r_max = max;
+	else if (buf[2]  == 'V')
+		z_info->v_max = max;
+	else if (buf[2] == 'P')
+		z_info->p_max = max;
+	else if (buf[2] == 'C')
+		z_info->c_max = max;
+	else if (buf[2] == 'H')
+		z_info->h_max = max;
+	else if (buf[2] == 'B')
+		z_info->b_max = max;
 	else if (buf[2] == 'S')
-	{
-		int max;
-
-		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
-
-		/* Save the value */
 		z_info->s_max = max;
-	}
-
-	/* Process 'O' for "Maximum o_list[] index" */
 	else if (buf[2] == 'O')
-	{
-		int max;
-
-		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
-
-		/* Save the value */
 		z_info->o_max = max;
-	}
-
-	/* Process 'M' for "Maximum mon_list[] index" */
 	else if (buf[2] == 'M')
-	{
-		int max;
-
-		/* Scan for the value */
-		if (1 != sscanf(buf+4, "%d", &max)) return (PARSE_ERROR_NOT_NUMBER);
-
-		/* Save the value */
 		z_info->m_max = max;
-	}
+	else if (buf[2] == 'L')
+		z_info->flavor_max = max;
+	else if (buf[2] == 'N')
+		z_info->
 
 	/* Process 'N' for "Fake name size" */
 	else if (buf[2] == 'N')
