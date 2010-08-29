@@ -1114,7 +1114,8 @@ errr parse_k_info(char *buf, header *head)
 	}
 
 	/* There better be a current k_ptr */
-	if (!k_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
+	if (!k_ptr)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
 	/* Process 'G' for "Graphics" (one line only) */
 	if (buf[0] == 'G')

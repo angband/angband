@@ -41,8 +41,6 @@ test_error(syntax_n4, "N:A:A", PARSE_ERROR_NOT_NUMBER);
 test_error(syntax_n5, "N::A", PARSE_ERROR_MISSING_FIELD);
 test_error(syntax_n6, "N:1A:A:", PARSE_ERROR_NOT_NUMBER);
 
-test_error(badtype, "Z:haha", PARSE_ERROR_UNDEFINED_DIRECTIVE);
-
 static int test_n0(void *state) {
 	struct header *h = state;
 	struct object_kind *k = h->info_ptr;
@@ -53,6 +51,15 @@ static int test_n0(void *state) {
 	require(!strcmp(k[1].name, "A Test Object"));
 	ok;
 }
+
+test_error(syntax_g0, "G", PARSE_ERROR_MISSING_FIELD);
+test_error(syntax_g1, "G:", PARSE_ERROR_MISSING_FIELD);
+test_error(syntax_g2, "G.~:W", PARSE_ERROR_MISSING_COLON);
+test_error(syntax_g3, "G:~.W", PARSE_ERROR_MISSING_COLON);
+test_error(syntax_g4, "G::W", PARSE_ERROR_MISSING_FIELD);
+test_error(syntax_g5, "G:~:", PARSE_ERROR_MISSING_FIELD);
+
+test_error(badtype, "Z:haha", PARSE_ERROR_UNDEFINED_DIRECTIVE);
 
 static const char *suite_name = "parse/k-info";
 static struct test tests[] = {
@@ -67,6 +74,13 @@ static struct test tests[] = {
 	{ "syntax-n6", test_syntax_n6 },
 
 	{ "n0", test_n0 },
+
+	{ "syntax-g0", test_syntax_g0 },
+	{ "syntax-g1", test_syntax_g1 },
+	{ "syntax-g2", test_syntax_g2 },
+	{ "syntax-g3", test_syntax_g3 },
+	{ "syntax-g4", test_syntax_g4 },
+	{ "syntax-g5", test_syntax_g5 },
 
 	{ "badtype", test_badtype },
 

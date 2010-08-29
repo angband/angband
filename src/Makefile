@@ -22,8 +22,6 @@ clean-extra:
 	-rm autoconf.h
 
 tests:
-	echo "make..."
 	$(MAKE) -C tests all
-	echo "made"
 
 .PHONY : tests

@@ -72,17 +72,20 @@ int main(int argc, char *argv[]) {
 
 #define require(x) \
 	if (!(x)) { \
-		printf("%s:%d: requirement '%s' failed\n", \
-		       suite_name, __LINE__, #x); \
+		if (verbose) \
+			printf("%s:%d: requirement '%s' failed\n", \
+		           suite_name, __LINE__, #x); \
 		return 1; \
 	}
 
 #define requireeq(x,y) \
 	if ((x) != (y)) { \
-		printf("%s:%d: requirement '%s' == '%s' failed\n", suite_name, \
-		       __LINE__, #x, #y); \
-		printf("  %s: %llx\n", #x, (long long)x); \
-		printf("  %s: %llx\n", #y, (long long)y); \
+		if (verbose) { \
+			printf("%s:%d: requirement '%s' == '%s' failed\n", suite_name, \
+		           __LINE__, #x, #y); \
+			printf("  %s: %llx\n", #x, (long long)x); \
+			printf("  %s: %llx\n", #y, (long long)y); \
+		} \
 		return 1; \
 	}
 
