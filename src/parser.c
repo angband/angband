@@ -50,6 +50,9 @@ struct parser *parser_new(void) {
 }
 
 enum parser_error parser_parse(struct parser *p, const char *line) {
+	char *cline;
+	char *tok;
+
 	assert(p);
 	assert(line);
 
@@ -57,6 +60,12 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 		line++;
 	if (!*line || *line == '#')
 		return PARSE_ERROR_NONE;
+
+	cline = string_make(line);
+
+	tok = strtok(cline, ":");
+	if (!tok)
+		return PARSE_ERROR_MISSING_FIELD;
 
 	return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 }
