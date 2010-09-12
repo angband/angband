@@ -318,7 +318,12 @@ void reset_visuals(bool unused)
  */
 void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE])
 {
-	object_kind *k_ptr = o_ptr->kind;
+	object_kind *k_ptr;
+
+	assert(o_ptr);
+	assert(o_ptr->kind);
+
+	k_ptr = o_ptr->kind;
 
 	of_wipe(flags);
 

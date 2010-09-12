@@ -62,6 +62,7 @@ static int rd_item(object_type *o_ptr)
 	/* Paranoia */
 	if ((o_ptr->k_idx < 0) || (o_ptr->k_idx >= z_info->k_max))
 		return (-1);
+	o_ptr->kind = &k_info[o_ptr->k_idx];
 
 	/* Location */
 	rd_byte(&o_ptr->iy);
