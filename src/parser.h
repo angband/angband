@@ -40,10 +40,11 @@ extern void parser_destroy(struct parser *p);
 extern void *parser_priv(struct parser *p);
 extern void parser_setpriv(struct parser *p, void *v);
 
-extern errr parser_reg(struct parser *p, char *fmt,
+extern errr parser_reg(struct parser *p, const char *fmt,
                        enum parser_error (*func)(struct parser *p));
 
-extern const char *parser_getstr(struct parser *p, int field);
-extern int parser_getint(struct parser *p, int field);
+extern const char *parser_getsym(struct parser *p, const char *name);
+extern const char *parser_getstr(struct parser *p, const char *name);
+extern int parser_getint(struct parser *p, const char *name);
 
 #endif /* !PARSER_H */
