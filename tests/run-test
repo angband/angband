@@ -6,7 +6,7 @@ usage() {
 }
 
 run() {
-	rm -rf ~/.angband
+#	rm -rf ~/.angband
 
 	test="$1"
 	echo -n "Running: $test... "
