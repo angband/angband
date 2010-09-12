@@ -34,7 +34,6 @@ struct parser_hook {
 
 struct parser {
 	int lineno;
-	char *line;
 	struct parser_hook *hooks;
 	struct parser_value *fhead;
 	struct parser_value *ftail;
@@ -44,7 +43,6 @@ struct parser {
 struct parser *parser_new(void) {
 	struct parser *p = mem_alloc(sizeof *p);
 	p->lineno = 0;
-	p->line = NULL;
 	p->priv = NULL;
 	return p;
 }
@@ -82,6 +80,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 
 	parser_freeold(p);
 
+	p->lineno++;
 	p->fhead = NULL;
 	p->ftail = NULL;
 
@@ -105,14 +104,20 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 			tok = strtok(NULL, ":");
 		else
 			tok = strtok(NULL, "");
+		if (!tok)
+			return PARSE_ERROR_MISSING_FIELD;
 		v = mem_alloc(sizeof *v);
 		v->spec.next = NULL;
 		v->spec.type = s->type;
 		v->spec.name = s->name;
-		if (s->type == T_INT)
-			v->u.ival = atoi(tok);
-		else if (s->type == T_SYM || s->type == T_STR)
+		if (s->type == T_INT) {
+			char *z = NULL;
+			v->u.ival = strtol(tok, &z, 0);
+			if (z == tok)
+				return PARSE_ERROR_NOT_NUMBER;
+		} else if (s->type == T_SYM || s->type == T_STR) {
 			v->u.sval = string_make(tok);
+		}
 		if (!p->fhead)
 			p->fhead = v;
 		else
@@ -120,13 +125,8 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 		p->ftail = v;
 	}
 
+	mem_free(cline);
 	return h->func(p);
-}
-
-void parser_destroy(struct parser *p) {
-	if (p->line)
-		mem_free(p->line);
-	mem_free(p);
 }
 
 void *parser_priv(struct parser *p) {
@@ -155,6 +155,18 @@ static void clean_specs(struct parser_hook *h) {
 		mem_free((void*)s->name);
 		mem_free(s);
 	}
+}
+
+void parser_destroy(struct parser *p) {
+	struct parser_hook *h;
+	parser_freeold(p);
+	while (p->hooks) {
+		h = p->hooks->next;
+		clean_specs(p->hooks);
+		mem_free(p->hooks);
+		p->hooks = h;
+	}
+	mem_free(p);
 }
 
 static errr parse_specs(struct parser_hook *h, char *fmt) {

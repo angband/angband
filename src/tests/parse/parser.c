@@ -190,6 +190,30 @@ static int test_str0(void *state) {
 	ok;
 }
 
+static int test_syntax0(void *state) {
+	errr r = parser_reg(state, "test-syntax0 str s0", ignored);
+	requireeq(r, 0);
+	r = parser_parse(state, "test-syntax0");
+	requireeq(r, PARSE_ERROR_MISSING_FIELD);
+	ok;
+}
+
+static int test_syntax1(void *state) {
+	errr r = parser_reg(state, "test-syntax1 int i0", ignored);
+	requireeq(r, 0);
+	r = parser_parse(state, "test-syntax1:a");
+	requireeq(r, PARSE_ERROR_NOT_NUMBER);
+	ok;
+}
+
+static int test_syntax2(void *state) {
+	errr r = parser_reg(state, "test-syntax2 int i0 sym s1", ignored);
+	requireeq(r, 0);
+	r = parser_parse(state, "test-syntax2::test");
+	requireeq(r, PARSE_ERROR_NOT_NUMBER);
+	ok;
+}
+
 static const char *suite_name = "parse/parser";
 static struct test tests[] = {
 	{ "priv", test_priv },
@@ -205,6 +229,10 @@ static struct test tests[] = {
 	{ "spaces", test_spaces },
 	{ "comment0", test_comment0 },
 	{ "comment1", test_comment1 },
+
+	{ "syntax0", test_syntax0 },
+	{ "syntax1", test_syntax1 },
+	{ "syntax2", test_syntax2 },
 
 	{ "sym0", test_sym0 },
 	{ "sym1", test_sym1 },
