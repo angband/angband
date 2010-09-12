@@ -49,12 +49,41 @@ struct parser *parser_new(void) {
 	return p;
 }
 
+struct parser_hook *findhook(struct parser *p, const char *dir) {
+	struct parser_hook *h = p->hooks;
+	while (h) {
+		if (!strcmp(h->dir, dir))
+			break;
+		h = h->next;
+	}
+	return h;
+}
+
+static void parser_freeold(struct parser *p) {
+	struct parser_value *v;
+	while (p->fhead) {
+		v = (struct parser_value *)p->fhead->spec.next;
+		if (p->fhead->spec.type == T_SYM || p->fhead->spec.type == T_STR)
+			mem_free(p->fhead->u.sval);
+		mem_free(p->fhead);
+		p->fhead = v;
+	}
+}
+
 enum parser_error parser_parse(struct parser *p, const char *line) {
 	char *cline;
 	char *tok;
+	struct parser_hook *h;
+	struct parser_spec *s;
+	struct parser_value *v;
 
 	assert(p);
 	assert(line);
+
+	parser_freeold(p);
+
+	p->fhead = NULL;
+	p->ftail = NULL;
 
 	while (*line && (isspace(*line)))
 		line++;
@@ -67,7 +96,31 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 	if (!tok)
 		return PARSE_ERROR_MISSING_FIELD;
 
-	return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+	h = findhook(p, tok);
+	if (!h)
+		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+
+	for (s = h->fhead; s; s = s->next) {
+		if (s->type == T_INT || s->type == T_SYM)
+			tok = strtok(NULL, ":");
+		else
+			tok = strtok(NULL, "");
+		v = mem_alloc(sizeof *v);
+		v->spec.next = NULL;
+		v->spec.type = s->type;
+		v->spec.name = s->name;
+		if (s->type == T_INT)
+			v->u.ival = atoi(tok);
+		else if (s->type == T_SYM || s->type == T_STR)
+			v->u.sval = string_make(tok);
+		if (!p->fhead)
+			p->fhead = v;
+		else
+			p->ftail->spec.next = &v->spec;
+		p->ftail = v;
+	}
+
+	return h->func(p);
 }
 
 void parser_destroy(struct parser *p) {
@@ -105,11 +158,15 @@ static void clean_specs(struct parser_hook *h) {
 }
 
 static errr parse_specs(struct parser_hook *h, char *fmt) {
-	char *name = strtok(fmt, " ");
+	char *name ;
 	char *stype = NULL;
 	int type;
 	struct parser_spec *s;
 
+	assert(h);
+	assert(fmt);
+
+	name = strtok(fmt, " ");
 	if (!name)
 		return -EINVAL;
 	h->dir = string_make(name);
@@ -154,6 +211,7 @@ errr parser_reg(struct parser *p, const char *fmt,
 	cfmt = string_make(fmt);
 	h->next = p->hooks;
 	h->func = func;
+	h->fhead = NULL;
 	r = parse_specs(h, cfmt);
 	if (r) {
 		mem_free(h);
@@ -164,4 +222,32 @@ errr parser_reg(struct parser *p, const char *fmt,
 	p->hooks = h;
 	mem_free(cfmt);
 	return 0;
+}
+
+struct parser_value *parser_getval(struct parser *p, const char *name) {
+	struct parser_value *v;
+	for (v = p->fhead; v; v = (struct parser_value *)v->spec.next) {
+		if (!strcmp(v->spec.name, name)) {
+			return v;
+		}
+	}
+	assert(0);
+}
+
+const char *parser_getsym(struct parser *p, const char *name) {
+	struct parser_value *v = parser_getval(p, name);
+	assert(v->spec.type == T_SYM);
+	return v->u.sval;
+}
+
+int parser_getint(struct parser *p, const char *name) {
+	struct parser_value *v = parser_getval(p, name);
+	assert(v->spec.type == T_INT);
+	return v->u.ival;
+}
+
+const char *parser_getstr(struct parser *p, const char *name) {
+	struct parser_value *v = parser_getval(p, name);
+	assert(v->spec.type == T_STR);
+	return v->u.sval;
 }

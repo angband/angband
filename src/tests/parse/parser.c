@@ -103,12 +103,90 @@ static enum parser_error helper_sym0(struct parser *p) {
 
 static int test_sym0(void *state) {
 	int wasok = 0;
-	errr r = parser_reg(state, "test-sym0 sym foo", ignored);
+	errr r = parser_reg(state, "test-sym0 sym foo", helper_sym0);
 	requireeq(r, 0);
 	parser_setpriv(state, &wasok);
 	r = parser_parse(state, "test-sym0:bar");
-	requireeq(wasok, 1);
 	requireeq(r, PARSE_ERROR_NONE);
+	requireeq(wasok, 1);
+	ok;
+}
+
+static enum parser_error helper_sym1(struct parser *p) {
+	const char *s = parser_getsym(p, "foo");
+	const char *t = parser_getsym(p, "baz");
+	int *wasok = parser_priv(p);
+	if (!s || !t || strcmp(s, "bar") || strcmp(t, "quxx"))
+		return PARSE_ERROR_GENERIC;
+	*wasok = 1;
+	return PARSE_ERROR_NONE;
+}
+
+static int test_sym1(void *state) {
+	int wasok = 0;
+	errr r = parser_reg(state, "test-sym1 sym foo sym baz", helper_sym1);
+	requireeq(r, 0);
+	parser_setpriv(state, &wasok);
+	r = parser_parse(state, "test-sym1:bar:quxx");
+	requireeq(r, PARSE_ERROR_NONE);
+	requireeq(wasok, 1);
+	ok;
+}
+
+static enum parser_error helper_int0(struct parser *p) {
+	int s = parser_getint(p, "i0");
+	int t = parser_getint(p, "i1");
+	int *wasok = parser_priv(p);
+	*wasok = (s == 42 && t == 81);
+	return PARSE_ERROR_NONE;
+}
+
+static int test_int0(void *state) {
+	int wasok = 0;
+	errr r = parser_reg(state, "test-int0 int i0 int i1", helper_int0);
+	requireeq(r, 0);
+	parser_setpriv(state, &wasok);
+	r = parser_parse(state, "test-int0:42:81");
+	requireeq(r, PARSE_ERROR_NONE);
+	requireeq(wasok, 1);
+	ok;
+}
+
+static enum parser_error helper_int1(struct parser *p) {
+	int v = parser_getint(p, "i0");
+	int *wasok = parser_priv(p);
+	*wasok = (v == -3);
+	return PARSE_ERROR_NONE;
+}
+
+static int test_int1(void *state) {
+	int wasok = 0;
+	errr r = parser_reg(state, "test-int1 int i0", helper_int1);
+	requireeq(r, 0);
+	parser_setpriv(state, &wasok);
+	r = parser_parse(state, "test-int1:-3");
+	requireeq(r, PARSE_ERROR_NONE);
+	requireeq(wasok, 1);
+	ok;
+}
+
+static enum parser_error helper_str0(struct parser *p) {
+	const char *s = parser_getstr(p, "s0");
+	int *wasok = parser_priv(p);
+	if (!s || strcmp(s, "foo:bar:baz quxx..."))
+		return PARSE_ERROR_GENERIC;
+	*wasok = 1;
+	return PARSE_ERROR_NONE;
+}
+
+static int test_str0(void *state) {
+	int wasok = 0;
+	errr r = parser_reg(state, "test-str0 str s0", helper_str0);
+	requireeq(r, 0);
+	parser_setpriv(state, &wasok);
+	r = parser_parse(state, "test-str0:foo:bar:baz quxx...");
+	requireeq(r, PARSE_ERROR_NONE);
+	requireeq(wasok, 1);
 	ok;
 }
 
@@ -129,6 +207,12 @@ static struct test tests[] = {
 	{ "comment1", test_comment1 },
 
 	{ "sym0", test_sym0 },
+	{ "sym1", test_sym1 },
+
+	{ "int0", test_int0 },
+	{ "int1", test_int1 },
+
+	{ "str0", test_str0 },
 
 	{ NULL, NULL }
 };
