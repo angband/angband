@@ -116,33 +116,26 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 #ifdef PRIVATE_USER_PATH
 
 	/* Build the path to the user specific directory */
-	path_build(buf, sizeof(buf), PRIVATE_USER_PATH, VERSION_NAME);
+	if (strncmp(ANGBAND_SYS, "test", 4) == 0)
+		path_build(buf, sizeof(buf), PRIVATE_USER_PATH, "Test");
+	else
+		path_build(buf, sizeof(buf), PRIVATE_USER_PATH, VERSION_NAME);
 	ANGBAND_DIR_USER = string_make(buf);
 
-#else /* !PRIVATE_USER_PATH */
-
-        ANGBAND_DIR_USER = string_make(format("%suser", datapath));
-
-#endif /* PRIVATE_USER_PATH */
-
-
-#ifdef USE_PRIVATE_PATHS
-
-	/* Build the path to the user specific sub-directory */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "scores");
 	ANGBAND_DIR_APEX = string_make(buf);
 
-	/* Build the path to the user specific sub-directory */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "save");
 	ANGBAND_DIR_SAVE = string_make(buf);
 
-#else /* !USE_PRIVATE_PATHS */
+#else /* !PRIVATE_USER_PATH */
 
 	/* Build pathnames */
+    ANGBAND_DIR_USER = string_make(format("%suser", datapath));
 	ANGBAND_DIR_APEX = string_make(format("%sapex", datapath));
 	ANGBAND_DIR_SAVE = string_make(format("%ssave", datapath));
 
-#endif /* USE_PRIVATE_PATHS */
+#endif /* PRIVATE_USER_PATH */
 }
 
 
