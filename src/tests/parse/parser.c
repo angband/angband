@@ -214,6 +214,12 @@ static int test_syntax2(void *state) {
 	ok;
 }
 
+static int test_baddir(void *state) {
+	errr r = parser_parse(state, "test-baddir");
+	requireeq(r, PARSE_ERROR_UNDEFINED_DIRECTIVE);
+	ok;
+}
+
 static const char *suite_name = "parse/parser";
 static struct test tests[] = {
 	{ "priv", test_priv },
@@ -241,6 +247,8 @@ static struct test tests[] = {
 	{ "int1", test_int1 },
 
 	{ "str0", test_str0 },
+
+	{ "baddir", test_baddir },
 
 	{ NULL, NULL }
 };
