@@ -48,4 +48,5 @@ static const char *suite_name = "z-quark/quark";
 static struct test tests[] = {
 	{ "alloc", test_alloc },
 	{ "dedup", test_dedup },
+	{ NULL, NULL }
 };
