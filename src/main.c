@@ -258,10 +258,6 @@ int main(int argc, char *argv[])
 #endif /* SET_UID */
 
 
-	/* Get the file paths */
-	init_stuff();
-
-
 #ifdef SET_UID
 
 	/* Get the user id */
@@ -275,17 +271,6 @@ int main(int argc, char *argv[])
 
 	/* Drop permissions */
 	safe_setuid_drop();
-
-
-#ifdef SET_UID
-
-	/* Get the "user name" as a default player name */
-	user_name(op_ptr->full_name, sizeof(op_ptr->full_name), player_uid);
-
-	/* Create any missing directories */
-	create_needed_dirs();
-
-#endif /* SET_UID */
 
 
 	/* Process the command line arguments */
@@ -404,10 +389,11 @@ int main(int argc, char *argv[])
 		/* User requested a specific module? */
 		if (!mstr || (streq(mstr, modules[i].name)))
 		{
+			ANGBAND_SYS = modules[i].name;
 			if (0 == modules[i].init(argc, argv))
 			{
-				ANGBAND_SYS = modules[i].name;
 				done = TRUE;
+				/*quit_fmt("ggg %s", ANGBAND_SYS);*/
 				break;
 			}
 		}
@@ -416,6 +402,18 @@ int main(int argc, char *argv[])
 	/* Make sure we have a display! */
 	if (!done) quit("Unable to prepare any 'display module'!");
 
+	/* Get the file paths */
+	init_stuff();
+
+#ifdef SET_UID
+
+	/* Get the "user name" as a default player name */
+	user_name(op_ptr->full_name, sizeof(op_ptr->full_name), player_uid);
+
+	/* Create any missing directories */
+	create_needed_dirs();
+
+#endif /* SET_UID */
 
 	/* Process the player name */
 	process_player_name(TRUE);
