@@ -6,12 +6,12 @@ nosetup;
 noteardown;
 
 static int test_empty(void *state) {
-	return 0;
+	ok;
 }
 
 static int test_require(void *state) {
 	require(1);
-	return 0;
+	ok;
 }
 
 static const char *suite_name = "trivial/trivial";

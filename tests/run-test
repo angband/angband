@@ -18,9 +18,9 @@ run() {
 	fi
 	result=$?
 	if [ $result -eq 0 ]; then
-		echo -e "\033[01;32mPassed\033[00m"
+		printf "\033[01;32mPassed\033[00m\n"
 	else
-		echo -e "\033[01;31mFailed\033[00m"
+		printf "\033[01;31mFailed\033[00m\n"
 	fi
 	return $result
 }
@@ -30,4 +30,4 @@ if [ $# -lt 1 ]; then
 	exit 1
 fi
 
-run $*
+run "$@"

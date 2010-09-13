@@ -27,7 +27,7 @@ static int teardown(void *state) {
 #define test_error(n, s, g) \
 	static int test_##n(void *state) { \
 		errr r = parse_k_info(s, state); \
-		requireeq(r, g); \
+		eq(r, g); \
 		ok; \
 	}
 
@@ -46,8 +46,8 @@ static int test_n0(void *state) {
 	struct object_kind *k = h->info_ptr;
 	errr r = parse_k_info("N:1:A Test Object", state);
 
-	requireeq(r, 0);
-	requireeq(k[1].kidx, 1);
+	eq(r, 0);
+	eq(k[1].kidx, 1);
 	require(!strcmp(k[1].name, "A Test Object"));
 	ok;
 }

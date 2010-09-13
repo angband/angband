@@ -24,71 +24,71 @@ static enum parser_error ignored(struct parser *p) {
 }
 
 static int test_blank(void *state) {
-	requireeq(parser_parse(state, ""), PARSE_ERROR_NONE);
+	eq(parser_parse(state, ""), PARSE_ERROR_NONE);
 	ok;
 }
 
 static int test_spaces(void *state) {
-	requireeq(parser_parse(state, "   "), PARSE_ERROR_NONE);
+	eq(parser_parse(state, "   "), PARSE_ERROR_NONE);
 	ok;
 }
 
 static int test_comment0(void *state) {
-	requireeq(parser_parse(state, "# foo"), PARSE_ERROR_NONE);
+	eq(parser_parse(state, "# foo"), PARSE_ERROR_NONE);
 	ok;
 }
 
 static int test_comment1(void *state) {
-	requireeq(parser_parse(state, "  # bar"), PARSE_ERROR_NONE);
+	eq(parser_parse(state, "  # bar"), PARSE_ERROR_NONE);
 	ok;
 }
 
 static int test_priv(void *state) {
-	requireeq(parser_priv(state), NULL);
+	ptreq(parser_priv(state), 0);
 	parser_setpriv(state, (void*)0x42);
-	requireeq(parser_priv(state), (void*)0x42);
+	ptreq(parser_priv(state), (void*)0x42);
 	ok;
 }
 
 static int test_reg0(void *state) {
 	errr r = parser_reg(state, "", ignored);
-	requireeq(r, -EINVAL);
+	eq(r, -EINVAL);
 	ok;
 }
 
 static int test_reg1(void *state) {
 	errr r = parser_reg(state, " ", ignored);
-	requireeq(r, -EINVAL);
+	eq(r, -EINVAL);
 	ok;
 }
 
 static int test_reg2(void *state) {
 	errr r = parser_reg(state, "abc int", ignored);
-	requireeq(r, -EINVAL);
+	eq(r, -EINVAL);
 	ok;
 }
 
 static int test_reg3(void *state) {
 	errr r = parser_reg(state, "abc notype name", ignored);
-	requireeq(r, -EINVAL);
+	eq(r, -EINVAL);
 	ok;
 }
 
 static int test_reg_int(void *state) {
 	errr r = parser_reg(state, "test-reg-int int foo", ignored);
-	requireeq(r, 0);
+	eq(r, 0);
 	ok;
 }
 
 static int test_reg_sym(void *state) {
 	errr r = parser_reg(state, "test-reg-sym sym bar", ignored);
-	requireeq(r, 0);
+	eq(r, 0);
 	ok;
 }
 
 static int test_reg_str(void *state) {
 	errr r = parser_reg(state, "test-reg-str str baz", ignored);
-	requireeq(r, 0);
+	eq(r, 0);
 	ok;
 }
 
@@ -104,11 +104,11 @@ static enum parser_error helper_sym0(struct parser *p) {
 static int test_sym0(void *state) {
 	int wasok = 0;
 	errr r = parser_reg(state, "test-sym0 sym foo", helper_sym0);
-	requireeq(r, 0);
+	eq(r, 0);
 	parser_setpriv(state, &wasok);
 	r = parser_parse(state, "test-sym0:bar");
-	requireeq(r, PARSE_ERROR_NONE);
-	requireeq(wasok, 1);
+	eq(r, PARSE_ERROR_NONE);
+	eq(wasok, 1);
 	ok;
 }
 
@@ -125,11 +125,11 @@ static enum parser_error helper_sym1(struct parser *p) {
 static int test_sym1(void *state) {
 	int wasok = 0;
 	errr r = parser_reg(state, "test-sym1 sym foo sym baz", helper_sym1);
-	requireeq(r, 0);
+	eq(r, 0);
 	parser_setpriv(state, &wasok);
 	r = parser_parse(state, "test-sym1:bar:quxx");
-	requireeq(r, PARSE_ERROR_NONE);
-	requireeq(wasok, 1);
+	eq(r, PARSE_ERROR_NONE);
+	eq(wasok, 1);
 	ok;
 }
 
@@ -144,11 +144,11 @@ static enum parser_error helper_int0(struct parser *p) {
 static int test_int0(void *state) {
 	int wasok = 0;
 	errr r = parser_reg(state, "test-int0 int i0 int i1", helper_int0);
-	requireeq(r, 0);
+	eq(r, 0);
 	parser_setpriv(state, &wasok);
 	r = parser_parse(state, "test-int0:42:81");
-	requireeq(r, PARSE_ERROR_NONE);
-	requireeq(wasok, 1);
+	eq(r, PARSE_ERROR_NONE);
+	eq(wasok, 1);
 	ok;
 }
 
@@ -162,11 +162,11 @@ static enum parser_error helper_int1(struct parser *p) {
 static int test_int1(void *state) {
 	int wasok = 0;
 	errr r = parser_reg(state, "test-int1 int i0", helper_int1);
-	requireeq(r, 0);
+	eq(r, 0);
 	parser_setpriv(state, &wasok);
 	r = parser_parse(state, "test-int1:-3");
-	requireeq(r, PARSE_ERROR_NONE);
-	requireeq(wasok, 1);
+	eq(r, PARSE_ERROR_NONE);
+	eq(wasok, 1);
 	ok;
 }
 
@@ -182,41 +182,41 @@ static enum parser_error helper_str0(struct parser *p) {
 static int test_str0(void *state) {
 	int wasok = 0;
 	errr r = parser_reg(state, "test-str0 str s0", helper_str0);
-	requireeq(r, 0);
+	eq(r, 0);
 	parser_setpriv(state, &wasok);
 	r = parser_parse(state, "test-str0:foo:bar:baz quxx...");
-	requireeq(r, PARSE_ERROR_NONE);
-	requireeq(wasok, 1);
+	eq(r, PARSE_ERROR_NONE);
+	eq(wasok, 1);
 	ok;
 }
 
 static int test_syntax0(void *state) {
 	errr r = parser_reg(state, "test-syntax0 str s0", ignored);
-	requireeq(r, 0);
+	eq(r, 0);
 	r = parser_parse(state, "test-syntax0");
-	requireeq(r, PARSE_ERROR_MISSING_FIELD);
+	eq(r, PARSE_ERROR_MISSING_FIELD);
 	ok;
 }
 
 static int test_syntax1(void *state) {
 	errr r = parser_reg(state, "test-syntax1 int i0", ignored);
-	requireeq(r, 0);
+	eq(r, 0);
 	r = parser_parse(state, "test-syntax1:a");
-	requireeq(r, PARSE_ERROR_NOT_NUMBER);
+	eq(r, PARSE_ERROR_NOT_NUMBER);
 	ok;
 }
 
 static int test_syntax2(void *state) {
 	errr r = parser_reg(state, "test-syntax2 int i0 sym s1", ignored);
-	requireeq(r, 0);
+	eq(r, 0);
 	r = parser_parse(state, "test-syntax2::test");
-	requireeq(r, PARSE_ERROR_NOT_NUMBER);
+	eq(r, PARSE_ERROR_NOT_NUMBER);
 	ok;
 }
 
 static int test_baddir(void *state) {
 	errr r = parser_parse(state, "test-baddir");
-	requireeq(r, PARSE_ERROR_UNDEFINED_DIRECTIVE);
+	eq(r, PARSE_ERROR_UNDEFINED_DIRECTIVE);
 	ok;
 }
 

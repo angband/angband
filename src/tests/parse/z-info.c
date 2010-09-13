@@ -23,67 +23,67 @@ static int teardown(void *state) {
 
 int test_syntax0(void *state) {
 	errr r = parse_z_info("", state);
-	requireeq(r, PARSE_ERROR_UNDEFINED_DIRECTIVE);
+	eq(r, PARSE_ERROR_UNDEFINED_DIRECTIVE);
 	ok;
 }
 
 int test_syntax1(void *state) {
 	errr r = parse_z_info("D:F:0", state);
-	requireeq(r, PARSE_ERROR_UNDEFINED_DIRECTIVE);
+	eq(r, PARSE_ERROR_UNDEFINED_DIRECTIVE);
 	ok;
 }
 
 int test_syntax2(void *state) {
 	errr r = parse_z_info("M.F:0", state);
-	requireeq(r, PARSE_ERROR_MISSING_COLON);
+	eq(r, PARSE_ERROR_MISSING_COLON);
 	ok;
 }
 
 int test_syntax3(void *state) {
 	errr r = parse_z_info("M:", state);
-	requireeq(r, PARSE_ERROR_MISSING_FIELD);
+	eq(r, PARSE_ERROR_MISSING_FIELD);
 	ok;
 }
 
 int test_syntax4(void *state) {
 	errr r = parse_z_info("M:F.0", state);
-	requireeq(r, PARSE_ERROR_MISSING_COLON);
+	eq(r, PARSE_ERROR_MISSING_COLON);
 	ok;
 }
 
 int test_syntax5(void *state) {
 	errr r = parse_z_info("M:F:", state);
-	requireeq(r, PARSE_ERROR_MISSING_FIELD);
+	eq(r, PARSE_ERROR_MISSING_FIELD);
 	ok;
 }
 
 int test_syntax6(void *state) {
 	errr r = parse_z_info("M:F:a", state);
-	requireeq(r, PARSE_ERROR_NOT_NUMBER);
+	eq(r, PARSE_ERROR_NOT_NUMBER);
 	ok;
 }
 
 static int test_negative(void *state) {
 	errr r = parse_z_info("M:F:-1", state);
-	requireeq(r, PARSE_ERROR_INVALID_VALUE);
+	eq(r, PARSE_ERROR_INVALID_VALUE);
 	ok;
 }
 
 static int test_null0(void *state) {
 	errr r = parse_z_info(NULL, state);
-	requireeq(r, PARSE_ERROR_INTERNAL);
+	eq(r, PARSE_ERROR_INTERNAL);
 	ok;
 }
 
 static int test_null1(void *state) {
 	errr r = parse_z_info("M:F:1", NULL);
-	requireeq(r, PARSE_ERROR_INTERNAL);
+	eq(r, PARSE_ERROR_INTERNAL);
 	ok;
 }
 
 static int test_badmax(void *state) {
 	errr r = parse_z_info("M:D:1", state);
-	requireeq(r, PARSE_ERROR_UNDEFINED_DIRECTIVE);
+	eq(r, PARSE_ERROR_UNDEFINED_DIRECTIVE);
 	ok;
 }
 
@@ -95,8 +95,8 @@ static int test_badmax(void *state) {
 		errr r; \
 		snprintf(buf, sizeof(buf), "M:%c:%d", u, __LINE__); \
 		r = parse_z_info(buf, s); \
-		requireeq(m->l, __LINE__); \
-		requireeq(r, 0); \
+		eq(m->l, __LINE__); \
+		eq(r, 0); \
 		ok; \
 	}
 

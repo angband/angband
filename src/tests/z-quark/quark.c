@@ -24,7 +24,7 @@ static int test_alloc(void *state) {
 	require(!strcmp(quark_str(q2), "0-bar"));
 	require(!strcmp(quark_str(q3), "0-baz"));
 
-	return 0;
+	ok;
 }
 
 static int test_dedup(void *state) {
@@ -41,7 +41,7 @@ static int test_dedup(void *state) {
 	require(q1 != q3);
 	require(quark_str(q1) != quark_str(q3));
 
-	return 0;
+	ok;
 }
 
 static const char *suite_name = "z-quark/quark";
