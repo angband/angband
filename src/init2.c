@@ -22,6 +22,7 @@
 #include "option.h"
 #include "game-event.h"
 #include "game-cmd.h"
+#include "parser.h"
 
 /*
  * This file is used to initialize various variables and arrays for the
@@ -38,7 +39,77 @@
  * of text, even though technically, up to 64K should be legal.
  */
 
+struct file_parser {
+	struct parser *(*init)(void);
+	errr (*run)(struct parser *p);
+	errr (*finish)(struct parser *p);
+};
 
+static errr run_parser(struct file_parser *fp) {
+	struct parser *p = fp->init();
+	errr r;
+	if (!p) {
+		return PARSE_ERROR_GENERIC;
+	}
+	r = fp->run(p);
+	if (r) {
+		return r;
+	}
+	r = fp->finish(p);
+	return r;
+}
+
+static const char *k_info_flags[] = {
+	#define OF(a, b) #a,
+	#include "list-object-flags.h"
+	#undef OF
+	NULL
+};
+
+static const char *effect_list[] = {
+	#define EFFECT(x, y, r, z)    #x,
+	#include "list-effects.h"
+	#undef EFFECT
+};
+
+static int lookup_flag(const char **flag_table, const char *flag_name) {
+	int i = FLAG_START;
+
+	while (flag_table[i] && !streq(flag_table[i], flag_name))
+		i++;
+
+	/* End of table reached without match */
+	if (!flag_table[i]) i = FLAG_END;
+
+	return i;
+}
+
+static errr grab_flag(bitflag *flags, const size_t size, const char **flag_table, const char *flag_name) {
+	int flag = lookup_flag(flag_table, flag_name);
+
+	if (flag == FLAG_END) return PARSE_ERROR_INVALID_FLAG;
+
+	flag_on(flags, size, flag);
+
+	return 0;
+}
+
+static u32b grab_one_effect(const char *what) {
+	size_t i;
+
+	/* Scan activations */
+	for (i = 0; i < N_ELEMENTS(effect_list); i++)
+	{
+		if (streq(what, effect_list[i]))
+			return i;
+	}
+
+	/* Oops */
+	msg_format("Unknown effect '%s'.", what);
+
+	/* Error */
+	return 0;
+}
 
 /*
  * Find the default paths to all of our important sub-directories.
@@ -407,26 +478,254 @@ static enum parser_error ignored(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-/*
- * Initialize the "z_info" array
- */
-static errr init_z_info(void)
-{
-	errr err;
+static enum parser_error parse_z(struct parser *p) {
+	maxima *z;
+	const char *label;
+	int value;
+
+	z = parser_priv(p);
+	label = parser_getsym(p, "label");
+	value = parser_getint(p, "value");
+
+	if (value < 0)
+		return PARSE_ERROR_INVALID_VALUE;
+
+	if (streq(label, "F"))
+		z->f_max = value;
+	else if (streq(label, "K"))
+		z->k_max = value;
+	else if (streq(label, "A"))
+		z->a_max = value;
+	else if (streq(label, "E"))
+		z->e_max = value;
+	else if (streq(label, "R"))
+		z->r_max = value;
+	else if (streq(label, "V"))
+		z->v_max = value;
+	else if (streq(label, "P"))
+		z->p_max = value;
+	else if (streq(label, "C"))
+		z->c_max = value;
+	else if (streq(label, "H"))
+		z->h_max = value;
+	else if (streq(label, "B"))
+		z->b_max = value;
+	else if (streq(label, "S"))
+		z->s_max = value;
+	else if (streq(label, "O"))
+		z->o_max = value;
+	else if (streq(label, "M"))
+		z->m_max = value;
+	else if (streq(label, "L"))
+		z->flavor_max = value;
+	else if (streq(label, "N"))
+		z->fake_name_size = value;
+	else if (streq(label, "T"))
+		z->fake_text_size = value;
+	else
+		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+
+	return 0;
+}
+
+struct parser *init_parse_z(void) {
 	struct maxima *z = mem_alloc(sizeof *z);
 	struct parser *p = parser_new();
 
 	parser_setpriv(p, z);
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "M sym label int value", parse_z);
-	err = parse_file(p, "limits");
-	parser_destroy(p);
-
-	z_info = z;
-
-	return err;
+	return p;
 }
 
+static errr run_parse_z(struct parser *p) {
+	return parse_file(p, "limits");
+}
+
+static errr finish_parse_z(struct parser *p) {
+	z_info = parser_priv(p);
+	parser_destroy(p);
+	return 0;
+}
+
+static struct file_parser z_parser = {
+	init_parse_z,
+	run_parse_z,
+	finish_parse_z
+};
+
+static enum parser_error parse_k_n(struct parser *p) {
+	int idx = parser_getint(p, "index");
+	const char *name = parser_getstr(p, "name");
+	struct object_kind *h = parser_priv(p);
+
+	struct object_kind *k = mem_alloc(sizeof *k);
+	memset(k, 0, sizeof(*k));
+	k->next = h;
+	parser_setpriv(p, k);
+	k->kidx = idx;
+	k->name = string_make(name);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_k_g(struct parser *p) {
+	const char *sym = parser_getsym(p, "char");
+	const char *color = parser_getsym(p, "color");
+	struct object_kind *k = parser_priv(p);
+	assert(k);
+
+	k->d_char = sym[0];
+	if (strlen(color) > 1)
+		k->d_attr = color_text_to_attr(color);
+	else
+		k->d_attr = color_char_to_attr(color[0]);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_k_i(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	assert(k);
+
+	k->tval = parser_getint(p, "tval");
+	k->sval = parser_getint(p, "sval");
+	k->pval = parser_getrand(p, "pval");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_k_w(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	assert(k);
+
+	k->level = parser_getint(p, "level");
+	k->weight = parser_getint(p, "weight");
+	k->cost = parser_getint(p, "cost");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_k_a(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	const char *tmp = parser_getstr(p, "minmax");
+	int amin, amax;
+	assert(k);
+
+	k->alloc_prob = parser_getint(p, "common");
+	if (sscanf(tmp, "%d to %d", &amin, &amax) != 2)
+		return PARSE_ERROR_GENERIC;
+	
+	k->alloc_min = amin;
+	k->alloc_max = amax;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_k_p(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	struct random hd = parser_getrand(p, "hd");
+	assert(k);
+
+	k->ac = parser_getint(p, "ac");
+	k->dd = hd.dice;
+	k->ds = hd.sides;
+	k->to_h = parser_getrand(p, "to-h");
+	k->to_d = parser_getrand(p, "to-d");
+	k->to_a = parser_getrand(p, "to-a");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_k_c(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	assert(k);
+
+	k->charge = parser_getrand(p, "charges");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_k_m(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	assert(k);
+
+	k->gen_mult_prob = parser_getint(p, "prob");
+	k->stack_size = parser_getrand(p, "stack");
+	return PARSE_ERROR_NONE;
+}
+	
+static enum parser_error parse_k_f(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	char *s = string_make(parser_getstr(p, "flags"));
+	char *t;
+	assert(k);
+
+	t = strtok(s, " |");
+	while (t) {
+		if (grab_flag(k->flags, OF_SIZE, k_info_flags, t))
+			break;
+		t = strtok(NULL, " |");
+	}
+	mem_free(s);
+	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+
+}
+
+static enum parser_error parse_k_e(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	assert(k);
+
+	k->effect = grab_one_effect(parser_getsym(p, "name"));
+	if (parser_hasval(p, "time"))
+		k->time = parser_getrand(p, "time");
+	if (!k->effect)
+		return PARSE_ERROR_GENERIC;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_k_d(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	assert(k);
+	k->text = string_append(k->text, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_k(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "V sym version", ignored);
+	parser_reg(p, "N int index str name", parse_k_n);
+	parser_reg(p, "G sym char sym color", parse_k_g);
+	parser_reg(p, "I int tval int sval rand pval", parse_k_i);
+	parser_reg(p, "W int level int extra int weight int cost", parse_k_w);
+	parser_reg(p, "A int common str minmax", parse_k_a);
+	parser_reg(p, "P int ac rand hd rand to-h rand to-d rand to-a", parse_k_p);
+	parser_reg(p, "C rand charges", parse_k_c);
+	parser_reg(p, "M int prob rand stack", parse_k_m);
+	parser_reg(p, "F str flags", parse_k_f);
+	parser_reg(p, "E sym name ?rand time", parse_k_e);
+	parser_reg(p, "D str text", parse_k_d);
+	return p;
+}
+
+static errr run_parse_k(struct parser *p) {
+	return parse_file(p, "object");
+}
+
+static errr finish_parse_k(struct parser *p) {
+	int i;
+	struct object_kind *k;
+
+	k_info = mem_alloc(z_info->k_max * sizeof(*k));
+	for (i = 0, k = parser_priv(p); i < z_info->k_max && k; i++, k = k->next) {
+		if (k->kidx >= z_info->k_max)
+			continue;
+		memcpy(&k_info[i], k, sizeof(*k));
+	}
+
+	return 0;
+}
+
+struct file_parser k_parser = {
+	init_parse_k,
+	run_parse_k,
+	finish_parse_k
+};
 
 /*
  * Initialize the "f_info" array
@@ -450,30 +749,6 @@ static errr init_f_info(void)
 
 	return (err);
 }
-
-
-
-/*
- * Initialize the "k_info" array
- */
-static errr init_k_info(void)
-{
-	errr err;
-
-	/* Init the header */
-	init_header(&k_head, z_info->k_max, sizeof(object_kind));
-
-	/* Save a pointer to the parsing function */
-	k_head.parse_info_txt = parse_k_info;
-
-	err = init_info("object", &k_head);
-
-	/* Set the global variables */
-	k_info = k_head.info_ptr;
-
-	return (err);
-}
-
 
 
 /*
@@ -1196,7 +1471,7 @@ bool init_angband(void)
 
 	/* Initialize size info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing array sizes...");
-	if (init_z_info()) quit("Cannot initialize sizes");
+	if (run_parser(&z_parser)) quit("Cannot initialize sizes");
 
 	/* Initialize feature info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (features)");
@@ -1204,7 +1479,7 @@ bool init_angband(void)
 
 	/* Initialize object info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (objects)");
-	if (init_k_info()) quit("Cannot initialize objects");
+	if (run_parser(&k_parser)) quit("Cannot initialize objects");
 
 	/* Initialize ego-item info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (ego-items)");

@@ -1,6 +1,6 @@
 # Makefile for tests - builds unit-test binaries
 
-CFLAGS+=-I../ -I.
+CFLAGS+=-I../ -I. -g
 
 SUITES := $(shell find . -maxdepth 1 -mindepth 1 -type d)
 include $(patsubst %,%/suite.mk,$(SUITES))

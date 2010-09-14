@@ -14,6 +14,7 @@ typedef struct object_kind
 	char *name;
 	char *text;
 
+	struct object_kind *next;
 	u32b kidx;
 
 	byte tval;         /**< General object type (see TV_ macros) */

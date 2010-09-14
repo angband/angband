@@ -1034,8 +1034,6 @@ static errr grab_flag(bitflag *flags, const size_t size, const char **flag_table
 	return 0;
 }
 
-
-
 /*
  * Initialize the "k_info" array, by parsing an ascii "template" file
  */

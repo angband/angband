@@ -7,94 +7,34 @@
 #include "types.h"
 
 static int setup(void **state) {
-	struct header *h = mem_alloc(sizeof *h);
-	h->info_ptr = mem_alloc(sizeof(maxima));
-	memset(h->info_ptr, 0, sizeof(maxima));
-	*state = h;
-	return 0;
+	*state = init_parse_z();
+	return !*state;
 }
 
 static int teardown(void *state) {
-	struct header *h = state;
-	mem_free(h->info_ptr);
-	mem_free(h);
+	parser_destroy(state);
 	return 0;
 }
 
-int test_syntax0(void *state) {
-	errr r = parse_z_info("", state);
-	eq(r, PARSE_ERROR_UNDEFINED_DIRECTIVE);
-	ok;
-}
-
-int test_syntax1(void *state) {
-	errr r = parse_z_info("D:F:0", state);
-	eq(r, PARSE_ERROR_UNDEFINED_DIRECTIVE);
-	ok;
-}
-
-int test_syntax2(void *state) {
-	errr r = parse_z_info("M.F:0", state);
-	eq(r, PARSE_ERROR_MISSING_COLON);
-	ok;
-}
-
-int test_syntax3(void *state) {
-	errr r = parse_z_info("M:", state);
-	eq(r, PARSE_ERROR_MISSING_FIELD);
-	ok;
-}
-
-int test_syntax4(void *state) {
-	errr r = parse_z_info("M:F.0", state);
-	eq(r, PARSE_ERROR_MISSING_COLON);
-	ok;
-}
-
-int test_syntax5(void *state) {
-	errr r = parse_z_info("M:F:", state);
-	eq(r, PARSE_ERROR_MISSING_FIELD);
-	ok;
-}
-
-int test_syntax6(void *state) {
-	errr r = parse_z_info("M:F:a", state);
-	eq(r, PARSE_ERROR_NOT_NUMBER);
-	ok;
-}
-
 static int test_negative(void *state) {
-	errr r = parse_z_info("M:F:-1", state);
+	errr r = parser_parse(state, "M:F:-1");
 	eq(r, PARSE_ERROR_INVALID_VALUE);
 	ok;
 }
 
-static int test_null0(void *state) {
-	errr r = parse_z_info(NULL, state);
-	eq(r, PARSE_ERROR_INTERNAL);
-	ok;
-}
-
-static int test_null1(void *state) {
-	errr r = parse_z_info("M:F:1", NULL);
-	eq(r, PARSE_ERROR_INTERNAL);
-	ok;
-}
-
 static int test_badmax(void *state) {
-	errr r = parse_z_info("M:D:1", state);
+	errr r = parser_parse(state, "M:D:1");
 	eq(r, PARSE_ERROR_UNDEFINED_DIRECTIVE);
 	ok;
 }
 
 #define test_max(l,u) \
 	static int test_##l(void *s) { \
-		struct header *h = s; \
-		maxima *m = h->info_ptr; \
+		maxima *m = parser_priv(s); \
 		char buf[64]; \
 		errr r; \
 		snprintf(buf, sizeof(buf), "M:%c:%d", u, __LINE__); \
-		r = parse_z_info(buf, s); \
+		r = parser_parse(s, buf); \
 		eq(m->l, __LINE__); \
 		eq(r, 0); \
 		ok; \
@@ -120,16 +60,7 @@ test_max(fake_text_size, 'T');
 
 static const char *suite_name = "parse/z-info";
 static struct test tests[] = {
-	{ "syntax0", test_syntax0 },
-	{ "syntax1", test_syntax1 },
-	{ "syntax2", test_syntax2 },
-	{ "syntax3", test_syntax3 },
-	{ "syntax4", test_syntax4 },
-	{ "syntax5", test_syntax5 },
-	{ "syntax6", test_syntax6 },
 	{ "negative", test_negative },
-	{ "null0", test_null0 },
-	{ "null1", test_null1 },
 	{ "fmax", test_f_max },
 	{ "kmax", test_k_max },
 	{ "amax", test_a_max },

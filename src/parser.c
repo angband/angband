@@ -1,13 +1,42 @@
 /* parser.c - info file parser */
 
 #include "parser.h"
+#include "z-util.h"
 #include "z-virt.h"
+
+const char *parser_error_str[PARSE_ERROR_MAX] = {
+	"(none)",
+	"generic error",
+	"invalid flag",
+	"invalid item number",
+	"invalid spell frequency",
+	"invalid value",
+	"missing field",
+	"missing colon",
+	"missing record header",
+	"non-sequential records",
+	"not a number",
+	"not random",
+	"obsolete file",
+	"out of bounds",
+	"out of memory",
+	"too few entries",
+	"too many entries",
+	"undefined directive",
+	"unrecognized blow",
+	"unrecognized tval",
+	"unrecognized sval",
+	"vault too big",
+	"internal error",
+};
 
 enum {
 	T_NONE = 0,
-	T_INT,
-	T_SYM,
-	T_STR
+	T_INT = 2,
+	T_SYM = 4,
+	T_STR = 6,
+	T_RAND = 8,
+	T_OPT = 0x00000001
 };
 
 struct parser_spec {
@@ -21,6 +50,7 @@ struct parser_value {
 	union {
 		int ival;
 		char *sval;
+		random_value rval;
 	} u;
 };
 
@@ -71,6 +101,81 @@ static void parser_freeold(struct parser *p) {
 	}
 }
 
+static bool parse_random(const char *str, random_value *bonus) {
+	bool negative = FALSE;
+
+	char buffer[50];
+	int i = 0, b, dn, ds, mb;
+	
+	const char end_chr = '|';
+	char eov;
+
+	/* Entire value may be negated */
+	if (str[0] == '-') {
+		negative = TRUE;
+		i++;
+	}
+
+	/* Make a working copy of the string */
+	my_strcpy(buffer, &str[i], N_ELEMENTS(buffer) - 2);
+
+	/* Check for invalid negative numbers */
+	if (NULL != strstr(buffer, "-"))
+		return FALSE;
+
+	/*
+	 * Add a sentinal value at the end of the string.
+	 * Used by scanf to make sure there's no text after the final conversion.
+	 */
+	buffer[strlen(buffer) + 1] = '\0';
+	buffer[strlen(buffer)] = end_chr;
+
+	/* Scan the value, apply defaults for unspecified components */
+	if (5 == sscanf(buffer, "%d+%dd%dM%d%c", &b, &dn, &ds, &mb, &eov) && eov == end_chr) {
+		/* No defaults */
+	} else if (4 == sscanf(buffer, "%d+d%dM%d%c", &b, &ds, &mb, &eov) && eov == end_chr) {
+		dn = 1;
+	} else if (3 == sscanf(buffer, "%d+M%d%c", &b, &mb, &eov) && eov == end_chr) {
+		dn = 0; ds = 0;
+	} else if (4 == sscanf(buffer, "%d+%dd%d%c", &b, &dn, &ds, &eov) && eov == end_chr) {
+		mb = 0;
+	} else if (3 == sscanf(buffer, "%d+d%d%c", &b, &ds, &eov) && eov == end_chr) {
+		dn = 1; mb = 0;
+	} else if (4 == sscanf(buffer, "%dd%dM%d%c", &dn, &ds, &mb, &eov) && eov == end_chr) {
+		b = 0;
+	} else if (3 == sscanf(buffer, "d%dM%d%c", &ds, &mb, &eov) && eov == end_chr) {
+		b = 0; dn = 1;
+	} else if (2 == sscanf(buffer, "M%d%c", &mb, &eov) && eov == end_chr) {
+		b = 0; dn = 0; ds = 0;
+	} else if (3 == sscanf(buffer, "%dd%d%c", &dn, &ds, &eov) && eov == end_chr) {
+		b = 0; mb = 0;
+	} else if (2 == sscanf(buffer, "d%d%c", &ds, &eov) && eov == end_chr) {
+		b = 0; dn = 1; mb = 0;
+	} else if (2 == sscanf(buffer, "%d%c", &b, &eov) && eov == end_chr) {
+		dn = 0; ds = 0; mb = 0;
+	} else {
+		return FALSE;
+	}
+
+	/* Assign the values */
+	bonus->base = b;
+	bonus->dice = dn;
+	bonus->sides = ds;
+	bonus->m_bonus = mb;
+
+	/*
+	 * Handle negation (the random components are always positive, so the base
+	 * must be adjusted as necessary).
+	 */
+	if (negative) {
+		bonus->base *= -1;
+		bonus->base -= bonus->m_bonus;
+		bonus->base -= bonus->dice * (bonus->sides + 1);
+	}
+
+	return TRUE;
+}
+
 enum parser_error parser_parse(struct parser *p, const char *line) {
 	char *cline;
 	char *tok;
@@ -103,23 +208,34 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 
 	for (s = h->fhead; s; s = s->next) {
-		if (s->type == T_INT || s->type == T_SYM)
+		int t = s->type & ~T_OPT;
+		if (t == T_INT || t == T_SYM || t == T_RAND)
 			tok = strtok(NULL, ":");
 		else
 			tok = strtok(NULL, "");
-		if (!tok)
-			return PARSE_ERROR_MISSING_FIELD;
+		if (!tok) {
+			if (!(s->type & T_OPT))
+				return PARSE_ERROR_MISSING_FIELD;
+			break;
+		}
 		v = mem_alloc(sizeof *v);
 		v->spec.next = NULL;
 		v->spec.type = s->type;
 		v->spec.name = s->name;
-		if (s->type == T_INT) {
+		if (t == T_INT) {
 			char *z = NULL;
 			v->u.ival = strtol(tok, &z, 0);
-			if (z == tok)
+			if (z == tok) {
+				mem_free(v);
 				return PARSE_ERROR_NOT_NUMBER;
-		} else if (s->type == T_SYM || s->type == T_STR) {
+			}
+		} else if (t == T_SYM || t == T_STR) {
 			v->u.sval = string_make(tok);
+		} else if (t == T_RAND) {
+			if (!parse_random(tok, &v->u.rval)) {
+				mem_free(v);
+				return PARSE_ERROR_NOT_RANDOM;
+			}
 		}
 		if (!p->fhead)
 			p->fhead = v;
@@ -141,12 +257,19 @@ void parser_setpriv(struct parser *p, void *v) {
 }
 
 static int parse_type(const char *s) {
+	int rv = 0;
+	if (s[0] == '?') {
+		rv |= T_OPT;
+		s++;
+	}
 	if (!strcmp(s, "int"))
-		return T_INT;
+		return T_INT | rv;
 	if (!strcmp(s, "sym"))
-		return T_SYM;
+		return T_SYM | rv;
 	if (!strcmp(s, "str"))
-		return T_STR;
+		return T_STR | rv;
+	if (!strcmp(s, "rand"))
+		return T_RAND | rv;
 	return T_NONE;
 }
 
@@ -240,6 +363,16 @@ errr parser_reg(struct parser *p, const char *fmt,
 	return 0;
 }
 
+bool parser_hasval(struct parser *p, const char *name) {
+	struct parser_value *v;
+	for (v = p->fhead; v; v = (struct parser_value *)v->spec.next) {
+		if (!strcmp(v->spec.name, name)) {
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
 struct parser_value *parser_getval(struct parser *p, const char *name) {
 	struct parser_value *v;
 	for (v = p->fhead; v; v = (struct parser_value *)v->spec.next) {
@@ -252,18 +385,24 @@ struct parser_value *parser_getval(struct parser *p, const char *name) {
 
 const char *parser_getsym(struct parser *p, const char *name) {
 	struct parser_value *v = parser_getval(p, name);
-	assert(v->spec.type == T_SYM);
+	assert((v->spec.type & ~T_OPT) == T_SYM);
 	return v->u.sval;
 }
 
 int parser_getint(struct parser *p, const char *name) {
 	struct parser_value *v = parser_getval(p, name);
-	assert(v->spec.type == T_INT);
+	assert((v->spec.type & ~T_OPT) == T_INT);
 	return v->u.ival;
 }
 
 const char *parser_getstr(struct parser *p, const char *name) {
 	struct parser_value *v = parser_getval(p, name);
-	assert(v->spec.type == T_STR);
+	assert((v->spec.type & ~T_OPT) == T_STR);
 	return v->u.sval;
+}
+
+struct random parser_getrand(struct parser *p, const char *name) {
+	struct parser_value *v = parser_getval(p, name);
+	assert((v->spec.type & ~T_OPT) == T_RAND);
+	return v->u.rval;
 }

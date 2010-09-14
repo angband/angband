@@ -91,7 +91,9 @@ extern errr eval_info(eval_info_post_func eval_info_process, header *head);
 extern errr emit_info_txt(ang_file *fp, ang_file *template, char *buf, header *head,
    emit_info_txt_index_func emit_info_txt_index, emit_info_txt_always_func emit_info_txt_always);
 
-extern enum parser_error parse_z(struct parser *p);
+extern struct parser *init_parse_z(void);
+extern struct parser *init_parse_k(void);
+
 extern errr parse_v_info(char *buf, header *head);
 extern errr parse_f_info(char *buf, header *head);
 extern errr parse_k_info(char *buf, header *head);

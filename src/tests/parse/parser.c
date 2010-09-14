@@ -220,6 +220,78 @@ static int test_baddir(void *state) {
 	ok;
 }
 
+static enum parser_error helper_rand0(struct parser *p) {
+	struct random v = parser_getrand(p, "r0");
+	int *wasok = parser_priv(p);
+	if (v.dice != 2 || v.sides != 3)
+		return PARSE_ERROR_GENERIC;
+	*wasok = 1;
+	return PARSE_ERROR_NONE;
+}
+
+static int test_rand0(void *state) {
+	int wasok = 0;
+	errr r = parser_reg(state, "test-rand0 rand r0", helper_rand0);
+	eq(r, 0);
+	parser_setpriv(state, &wasok);
+	r = parser_parse(state, "test-rand0:2d3");
+	eq(r, 0);
+	eq(wasok, 1);
+	ok;
+}
+
+static enum parser_error helper_rand1(struct parser *p) {
+	struct random v = parser_getrand(p, "r0");
+	struct random u = parser_getrand(p, "r1");
+	int *wasok = parser_priv(p);
+	if (v.dice != 2 || v.sides != 3 || u.dice != 4 || u.sides != 5)
+		return PARSE_ERROR_GENERIC;
+	*wasok = 1;
+	return PARSE_ERROR_NONE;
+}
+
+static int test_rand1(void *state) {
+	int wasok = 0;
+	errr r = parser_reg(state, "test-rand1 rand r0 rand r1", helper_rand1);
+	eq(r, 0);
+	parser_setpriv(state, &wasok);
+	r = parser_parse(state, "test-rand1:2d3:4d5");
+	eq(r, 0);
+	eq(wasok, 1);
+	ok;
+}
+
+static enum parser_error helper_opt0(struct parser *p) {
+	const char *s0 = parser_getsym(p, "s0");
+	const char *s1 = parser_hasval(p, "s1") ? parser_getsym(p, "s1") : NULL;
+	int *wasok = parser_priv(p);
+	if (!s0 || strcmp(s0, "foo"))
+		return PARSE_ERROR_GENERIC;
+	if (s1 && !strcmp(s1, "bar"))
+		*wasok = 2;
+	else
+		*wasok = 1;
+	return PARSE_ERROR_NONE;
+}
+
+static int test_opt0(void *state) {
+	int wasok = 0;
+	errr r = parser_reg(state, "test-opt0 sym s0 ?sym s1", helper_opt0);
+	eq(r, 0);
+	parser_setpriv(state, &wasok);
+	r = parser_parse(state, "test-opt0:foo");
+	eq(r, 0);
+	eq(wasok, 1);
+	require(parser_hasval(state, "s0"));
+	require(!parser_hasval(state, "s1"));
+	r = parser_parse(state, "test-opt0:foo:bar");
+	eq(r, 0);
+	eq(wasok, 2);
+	require(parser_hasval(state, "s0"));
+	require(parser_hasval(state, "s1"));
+	ok;
+}
+
 static const char *suite_name = "parse/parser";
 static struct test tests[] = {
 	{ "priv", test_priv },
@@ -247,6 +319,11 @@ static struct test tests[] = {
 	{ "int1", test_int1 },
 
 	{ "str0", test_str0 },
+
+	{ "rand0", test_rand0 },
+	{ "rand1", test_rand1 },
+
+	{ "opt0", test_opt0 },
 
 	{ "baddir", test_baddir },
 

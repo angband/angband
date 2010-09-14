@@ -3,6 +3,7 @@
 #define PARSER_H
 
 #include "h-basic.h"
+#include "z-rand.h"
 
 struct parser;
 
@@ -18,6 +19,7 @@ enum parser_error {
 	PARSE_ERROR_MISSING_RECORD_HEADER,
 	PARSE_ERROR_NON_SEQUENTIAL_RECORDS,
 	PARSE_ERROR_NOT_NUMBER,
+	PARSE_ERROR_NOT_RANDOM,
 	PARSE_ERROR_OBSOLETE_FILE,
 	PARSE_ERROR_OUT_OF_BOUNDS,
 	PARSE_ERROR_OUT_OF_MEMORY,
@@ -33,6 +35,8 @@ enum parser_error {
 	PARSE_ERROR_MAX
 };
 
+extern const char *parser_error_str[PARSE_ERROR_MAX];
+
 extern struct parser *parser_new(void);
 extern enum parser_error parser_parse(struct parser *p, const char *line);
 extern void parser_destroy(struct parser *p);
@@ -43,8 +47,10 @@ extern void parser_setpriv(struct parser *p, void *v);
 extern errr parser_reg(struct parser *p, const char *fmt,
                        enum parser_error (*func)(struct parser *p));
 
+extern bool parser_hasval(struct parser *p, const char *name);
 extern const char *parser_getsym(struct parser *p, const char *name);
 extern const char *parser_getstr(struct parser *p, const char *name);
 extern int parser_getint(struct parser *p, const char *name);
+extern struct random parser_getrand(struct parser *p, const char *name);
 
 #endif /* !PARSER_H */
