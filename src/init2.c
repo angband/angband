@@ -612,7 +612,7 @@ static enum parser_error parse_k_a(struct parser *p) {
 	k->alloc_prob = parser_getint(p, "common");
 	if (sscanf(tmp, "%d to %d", &amin, &amax) != 2)
 		return PARSE_ERROR_GENERIC;
-	
+
 	k->alloc_min = amin;
 	k->alloc_max = amax;
 	return PARSE_ERROR_NONE;
@@ -648,7 +648,7 @@ static enum parser_error parse_k_m(struct parser *p) {
 	k->stack_size = parser_getrand(p, "stack");
 	return PARSE_ERROR_NONE;
 }
-	
+
 static enum parser_error parse_k_f(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	char *s = string_make(parser_getstr(p, "flags"));
