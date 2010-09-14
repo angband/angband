@@ -320,12 +320,12 @@ void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE])
 {
 	object_kind *k_ptr;
 
-	assert(o_ptr);
-	assert(o_ptr->kind);
-
 	k_ptr = o_ptr->kind;
 
 	of_wipe(flags);
+
+	if (!o_ptr->kind)
+		return;
 
 	/* Obtain kind flags */
 	of_union(flags, k_ptr->flags);

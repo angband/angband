@@ -135,6 +135,7 @@ static int rd_item(object_type *o_ptr)
 
 	/* Lookup item kind */
 	o_ptr->k_idx = lookup_kind(o_ptr->tval, o_ptr->sval);
+	assert(o_ptr->k_idx);	/* XXX-elly: handle nonfatally */
 
 	k_ptr = &k_info[o_ptr->k_idx];
 

@@ -147,11 +147,6 @@ extern errr emit_r_info_index(ang_file *fp, header *head, int i);
 extern int error_idx;
 extern int error_line;
 
-
-/*
- * File headers
- */
-extern header z_head;
 extern header v_head;
 extern header f_head;
 extern header k_head;
