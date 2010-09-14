@@ -44,6 +44,9 @@ struct parser *parser_new(void) {
 	struct parser *p = mem_alloc(sizeof *p);
 	p->lineno = 0;
 	p->priv = NULL;
+	p->hooks = NULL;
+	p->fhead = NULL;
+	p->ftail = NULL;
 	return p;
 }
 
@@ -199,6 +202,7 @@ static errr parse_specs(struct parser_hook *h, char *fmt) {
 		s = mem_alloc(sizeof *s);
 		s->type = type;
 		s->name = string_make(name);
+		s->next = NULL;
 		if (h->fhead)
 			h->ftail->next = s;
 		else

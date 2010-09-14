@@ -14,37 +14,7 @@
 #include "h-basic.h"
 #include "z-bitflag.h"
 #include "z-rand.h"
-
-/*
- * Parse errors
- */
-enum
-{
-	PARSE_ERROR_GENERIC = 1,
-	PARSE_ERROR_INVALID_FLAG,
-	PARSE_ERROR_INVALID_ITEM_NUMBER,
-	PARSE_ERROR_INVALID_SPELL_FREQ,
-	PARSE_ERROR_INVALID_VALUE,
-	PARSE_ERROR_MISSING_COLON,
-	PARSE_ERROR_MISSING_FIELD,
-	PARSE_ERROR_MISSING_RECORD_HEADER,
-	PARSE_ERROR_NON_SEQUENTIAL_RECORDS,
-	PARSE_ERROR_NOT_NUMBER,
-	PARSE_ERROR_OBSOLETE_FILE,
-	PARSE_ERROR_OUT_OF_BOUNDS,
-	PARSE_ERROR_OUT_OF_MEMORY,
-	PARSE_ERROR_TOO_FEW_ENTRIES,
-	PARSE_ERROR_TOO_MANY_ENTRIES,
-	PARSE_ERROR_UNDEFINED_DIRECTIVE,
-	PARSE_ERROR_UNRECOGNISED_BLOW,
-	PARSE_ERROR_UNRECOGNISED_TVAL,
-	PARSE_ERROR_UNRECOGNISED_SVAL,
-	PARSE_ERROR_VAULT_TOO_BIG,
-	PARSE_ERROR_INTERNAL,
-
-	PARSE_ERROR_MAX
-};
-
+#include "parser.h"
 
 typedef struct header header;
 
@@ -121,7 +91,7 @@ extern errr eval_info(eval_info_post_func eval_info_process, header *head);
 extern errr emit_info_txt(ang_file *fp, ang_file *template, char *buf, header *head,
    emit_info_txt_index_func emit_info_txt_index, emit_info_txt_always_func emit_info_txt_always);
 
-extern errr parse_z_info(char *buf, header *head);
+extern enum parser_error parse_z(struct parser *p);
 extern errr parse_v_info(char *buf, header *head);
 extern errr parse_f_info(char *buf, header *head);
 extern errr parse_k_info(char *buf, header *head);

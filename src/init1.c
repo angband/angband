@@ -43,6 +43,7 @@
 #include "effects.h"
 #include "monster/constants.h"
 #include "init.h"
+#include "parser.h"
 
 
 /*** Helper arrays for parsing ascii template files ***/
@@ -672,63 +673,47 @@ errr init_names_txt(ang_file *fp, char *buf)
 }
 
 
-/*
- * Initialize the "z_info" structure, by parsing an ascii "template" file
- */
-errr parse_z_info(char *buf, header *head)
-{
-	maxima *z_info;
-	int max;
+enum parser_error parse_z(struct parser *p) {
+	maxima *z;
+	const char *label;
+	int value;
 
-	if (!buf || !head)
-		return PARSE_ERROR_INTERNAL;
-	
-	z_info = head->info_ptr;
+	z = parser_priv(p);
+	label = parser_getsym(p, "label");
+	value = parser_getint(p, "value");
 
-	if (buf[0] != 'M')
-		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
-	if (!buf[2] || !buf[4])
-		return PARSE_ERROR_MISSING_FIELD;
-	if (buf[1] != ':' || buf[3] != ':')
-		return PARSE_ERROR_MISSING_COLON;
-
-	if (1 != sscanf(buf + 4, "%d", &max))
-		return PARSE_ERROR_NOT_NUMBER;
-	if (max < 0)
-		return PARSE_ERROR_INVALID_VALUE;
-
-	if (buf[2] == 'F')
-		z_info->f_max = max;
-	else if (buf[2] == 'K')
-		z_info->k_max = max;
-	else if (buf[2] == 'A')
-		z_info->a_max = max;
-	else if (buf[2] == 'E')
-		z_info->e_max = max;
-	else if (buf[2] == 'R')
-		z_info->r_max = max;
-	else if (buf[2] == 'V')
-		z_info->v_max = max;
-	else if (buf[2] == 'P')
-		z_info->p_max = max;
-	else if (buf[2] == 'C')
-		z_info->c_max = max;
-	else if (buf[2] == 'H')
-		z_info->h_max = max;
-	else if (buf[2] == 'B')
-		z_info->b_max = max;
-	else if (buf[2] == 'S')
-		z_info->s_max = max;
-	else if (buf[2] == 'O')
-		z_info->o_max = max;
-	else if (buf[2] == 'M')
-		z_info->m_max = max;
-	else if (buf[2] == 'L')
-		z_info->flavor_max = max;
-	else if (buf[2] == 'N')
-		z_info->fake_name_size = max;
-	else if (buf[2] == 'T')
-		z_info->fake_text_size = max;
+	if (streq(label, "F"))
+		z->f_max = value;
+	else if (streq(label, "K"))
+		z->k_max = value;
+	else if (streq(label, "A"))
+		z->a_max = value;
+	else if (streq(label, "E"))
+		z->e_max = value;
+	else if (streq(label, "R"))
+		z->r_max = value;
+	else if (streq(label, "V"))
+		z->v_max = value;
+	else if (streq(label, "P"))
+		z->p_max = value;
+	else if (streq(label, "C"))
+		z->c_max = value;
+	else if (streq(label, "H"))
+		z->h_max = value;
+	else if (streq(label, "B"))
+		z->b_max = value;
+	else if (streq(label, "S"))
+		z->s_max = value;
+	else if (streq(label, "O"))
+		z->o_max = value;
+	else if (streq(label, "M"))
+		z->m_max = value;
+	else if (streq(label, "L"))
+		z->flavor_max = value;
+	else if (streq(label, "N"))
+		z->fake_name_size = value;
+	else if (streq(label, "T"))
+		z->fake_text_size = value;
 	else
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 

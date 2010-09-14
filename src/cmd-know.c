@@ -85,7 +85,7 @@ static int default_join_cmp(const void *a, const void *b)
 static int default_group(int oid) { return default_join[oid].gid; }
 
 
-static int *obj_group_order;
+static int *obj_group_order = NULL;
 
 /*
  * Description of each monster group.
@@ -2031,9 +2031,8 @@ static menu_type knowledge_menu;
 
 
 /* Keep macro counts happy. */
-static void cleanup_cmds(void)
-{
-	FREE(obj_group_order);
+static void cleanup_cmds(void) {
+	mem_free(obj_group_order);
 }
 
 void init_cmd_know(void)

@@ -366,6 +366,24 @@ static errr init_info(cptr filename, header *head)
 	return (0);
 }
 
+errr parse_file(struct parser *p, const char *filename) {
+	char path[1024];
+	char buf[1024];
+	ang_file *fh;
+	errr r;
+
+	path_build(path, sizeof(path), ANGBAND_DIR_EDIT, format("%s.txt", filename));
+	fh = file_open(path, MODE_READ, -1);
+	if (!fh)
+		quit(format("Cannot open '%s.txt'", filename));
+	while (file_getl(fh, buf, sizeof(buf))) {
+		r = parser_parse(p, buf);
+		if (r)
+			break;
+	}
+	file_close(fh);
+	return r;
+}
 
 /*
  * Free the allocated memory for the info-, name-, and text- arrays.
@@ -385,6 +403,9 @@ static errr free_info(header *head)
 	return (0);
 }
 
+static enum parser_error ignored(struct parser *p) {
+	return PARSE_ERROR_NONE;
+}
 
 /*
  * Initialize the "z_info" array
@@ -392,19 +413,18 @@ static errr free_info(header *head)
 static errr init_z_info(void)
 {
 	errr err;
+	struct maxima *z = mem_alloc(sizeof *z);
+	struct parser *p = parser_new();
 
-	/* Init the header */
-	init_header(&z_head, 1, sizeof(maxima));
+	parser_setpriv(p, z);
+	parser_reg(p, "V sym version", ignored);
+	parser_reg(p, "M sym label int value", parse_z);
+	err = parse_file(p, "limits");
+	parser_destroy(p);
 
-	/* Save a pointer to the parsing function */
-	z_head.parse_info_txt = parse_z_info;
+	z_info = z;
 
-	err = init_info("limits", &z_head);
-
-	/* Set the global variables */
-	z_info = z_head.info_ptr;
-
-	return (err);
+	return err;
 }
 
 
