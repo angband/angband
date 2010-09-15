@@ -74,6 +74,12 @@ static int test_reg3(void *state) {
 	ok;
 }
 
+static int test_reg4(void *state) {
+	errr r = parser_reg(state, "abc int a ?int b int c", ignored);
+	eq(r, -EINVAL);
+	ok;
+}
+
 static int test_reg_int(void *state) {
 	errr r = parser_reg(state, "test-reg-int int foo", ignored);
 	eq(r, 0);
@@ -299,6 +305,7 @@ static struct test tests[] = {
 	{ "reg1", test_reg1 },
 	{ "reg2", test_reg2 },
 	{ "reg3", test_reg3 },
+	{ "reg4", test_reg4 },
 	{ "reg-int", test_reg_int },
 	{ "reg-sym", test_reg_sym },
 	{ "reg-str", test_reg_str },

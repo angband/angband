@@ -1,4 +1,11 @@
-/* parser.c - info file parser */
+/** Info file parser
+ *
+ * A parser has a list of hooks (which are run across new lines given to
+ * parser_parse()) and a list of the set of named values for the current line.
+ * Each hook has a list of specs, which are essentially named formal parameters;
+ * when we run a particular hook across a line, each spec in the hook is
+ * assigned a value.
+ */
 
 #include "parser.h"
 #include "z-util.h"
@@ -82,7 +89,8 @@ struct parser *parser_new(void) {
 
 struct parser_hook *findhook(struct parser *p, const char *dir) {
 	struct parser_hook *h = p->hooks;
-	while (h) {
+	while (h)
+	{
 		if (!strcmp(h->dir, dir))
 			break;
 		h = h->next;
@@ -92,7 +100,8 @@ struct parser_hook *findhook(struct parser *p, const char *dir) {
 
 static void parser_freeold(struct parser *p) {
 	struct parser_value *v;
-	while (p->fhead) {
+	while (p->fhead)
+	{
 		v = (struct parser_value *)p->fhead->spec.next;
 		if (p->fhead->spec.type == T_SYM || p->fhead->spec.type == T_STR)
 			mem_free(p->fhead->u.sval);
@@ -111,7 +120,8 @@ static bool parse_random(const char *str, random_value *bonus) {
 	char eov;
 
 	/* Entire value may be negated */
-	if (str[0] == '-') {
+	if (str[0] == '-')
+	{
 		negative = TRUE;
 		i++;
 	}
@@ -131,29 +141,52 @@ static bool parse_random(const char *str, random_value *bonus) {
 	buffer[strlen(buffer)] = end_chr;
 
 	/* Scan the value, apply defaults for unspecified components */
-	if (5 == sscanf(buffer, "%d+%dd%dM%d%c", &b, &dn, &ds, &mb, &eov) && eov == end_chr) {
+	if (5 == sscanf(buffer, "%d+%dd%dM%d%c", &b, &dn, &ds, &mb, &eov) && eov == end_chr)
+	{
 		/* No defaults */
-	} else if (4 == sscanf(buffer, "%d+d%dM%d%c", &b, &ds, &mb, &eov) && eov == end_chr) {
+	}
+	else if (4 == sscanf(buffer, "%d+d%dM%d%c", &b, &ds, &mb, &eov) && eov == end_chr)
+	{
 		dn = 1;
-	} else if (3 == sscanf(buffer, "%d+M%d%c", &b, &mb, &eov) && eov == end_chr) {
+	}
+	else if (3 == sscanf(buffer, "%d+M%d%c", &b, &mb, &eov) && eov == end_chr)
+	{
 		dn = 0; ds = 0;
-	} else if (4 == sscanf(buffer, "%d+%dd%d%c", &b, &dn, &ds, &eov) && eov == end_chr) {
+	}
+	else if (4 == sscanf(buffer, "%d+%dd%d%c", &b, &dn, &ds, &eov) && eov == end_chr)
+	{
 		mb = 0;
-	} else if (3 == sscanf(buffer, "%d+d%d%c", &b, &ds, &eov) && eov == end_chr) {
+	}
+	else if (3 == sscanf(buffer, "%d+d%d%c", &b, &ds, &eov) && eov == end_chr)
+	{
 		dn = 1; mb = 0;
-	} else if (4 == sscanf(buffer, "%dd%dM%d%c", &dn, &ds, &mb, &eov) && eov == end_chr) {
+	}
+	else if (4 == sscanf(buffer, "%dd%dM%d%c", &dn, &ds, &mb, &eov) && eov == end_chr)
+	{
 		b = 0;
-	} else if (3 == sscanf(buffer, "d%dM%d%c", &ds, &mb, &eov) && eov == end_chr) {
+	}
+	else if (3 == sscanf(buffer, "d%dM%d%c", &ds, &mb, &eov) && eov == end_chr)
+	{
 		b = 0; dn = 1;
-	} else if (2 == sscanf(buffer, "M%d%c", &mb, &eov) && eov == end_chr) {
+	}
+	else if (2 == sscanf(buffer, "M%d%c", &mb, &eov) && eov == end_chr)
+	{
 		b = 0; dn = 0; ds = 0;
-	} else if (3 == sscanf(buffer, "%dd%d%c", &dn, &ds, &eov) && eov == end_chr) {
+	}
+	else if (3 == sscanf(buffer, "%dd%d%c", &dn, &ds, &eov) && eov == end_chr)
+	{
 		b = 0; mb = 0;
-	} else if (2 == sscanf(buffer, "d%d%c", &ds, &eov) && eov == end_chr) {
+	}
+	else if (2 == sscanf(buffer, "d%d%c", &ds, &eov) && eov == end_chr)
+	{
 		b = 0; dn = 1; mb = 0;
-	} else if (2 == sscanf(buffer, "%d%c", &b, &eov) && eov == end_chr) {
+	}
+	else if (2 == sscanf(buffer, "%d%c", &b, &eov) && eov == end_chr)
+	{
 		dn = 0; ds = 0; mb = 0;
-	} else {
+	}
+	else
+	{
 		return FALSE;
 	}
 
@@ -167,7 +200,8 @@ static bool parse_random(const char *str, random_value *bonus) {
 	 * Handle negation (the random components are always positive, so the base
 	 * must be adjusted as necessary).
 	 */
-	if (negative) {
+	if (negative)
+	{
 		bonus->base *= -1;
 		bonus->base -= bonus->m_bonus;
 		bonus->base -= bonus->dice * (bonus->sides + 1);
@@ -176,6 +210,7 @@ static bool parse_random(const char *str, random_value *bonus) {
 	return TRUE;
 }
 
+/* This is a bit long and should probably be refactored a bit. */
 enum parser_error parser_parse(struct parser *p, const char *line) {
 	char *cline;
 	char *tok;
@@ -192,6 +227,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 	p->fhead = NULL;
 	p->ftail = NULL;
 
+	/* Ignore empty lines and comments. */
 	while (*line && (isspace(*line)))
 		line++;
 	if (!*line || *line == '#')
@@ -207,32 +243,51 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 	if (!h)
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 
-	for (s = h->fhead; s; s = s->next) {
+	/* There's a little bit of trickiness here to account for optional
+	 * types. The optional flag has a bit assigned to it in the spec's type
+	 * tag; we compute a temporary type for the spec with that flag removed
+	 * and use that instead. */
+	for (s = h->fhead; s; s = s->next)
+	{
 		int t = s->type & ~T_OPT;
+
+		/* These types are tokenized on ':'; strings are not tokenized
+		 * at all (i.e., they consume the remainder of the line) */
 		if (t == T_INT || t == T_SYM || t == T_RAND)
 			tok = strtok(NULL, ":");
 		else
 			tok = strtok(NULL, "");
-		if (!tok) {
+		if (!tok)
+		{
 			if (!(s->type & T_OPT))
 				return PARSE_ERROR_MISSING_FIELD;
 			break;
 		}
+
+		/* Allocate a value node, parse out its value, and link it into
+		 * the value list. */
 		v = mem_alloc(sizeof *v);
 		v->spec.next = NULL;
 		v->spec.type = s->type;
 		v->spec.name = s->name;
-		if (t == T_INT) {
+		if (t == T_INT)
+		{
 			char *z = NULL;
 			v->u.ival = strtol(tok, &z, 0);
-			if (z == tok) {
+			if (z == tok)
+			{
 				mem_free(v);
 				return PARSE_ERROR_NOT_NUMBER;
 			}
-		} else if (t == T_SYM || t == T_STR) {
+		}
+		else if (t == T_SYM || t == T_STR)
+		{
 			v->u.sval = string_make(tok);
-		} else if (t == T_RAND) {
-			if (!parse_random(tok, &v->u.rval)) {
+		}
+		else if (t == T_RAND)
+		{
+			if (!parse_random(tok, &v->u.rval))
+			{
 				mem_free(v);
 				return PARSE_ERROR_NOT_RANDOM;
 			}
@@ -258,7 +313,8 @@ void parser_setpriv(struct parser *p, void *v) {
 
 static int parse_type(const char *s) {
 	int rv = 0;
-	if (s[0] == '?') {
+	if (s[0] == '?')
+	{
 		rv |= T_OPT;
 		s++;
 	}
@@ -275,7 +331,8 @@ static int parse_type(const char *s) {
 
 static void clean_specs(struct parser_hook *h) {
 	struct parser_spec *s;
-	while (h->fhead) {
+	while (h->fhead)
+	{
 		s = h->fhead;
 		h->fhead = h->fhead->next;
 		mem_free((void*)s->name);
@@ -286,7 +343,8 @@ static void clean_specs(struct parser_hook *h) {
 void parser_destroy(struct parser *p) {
 	struct parser_hook *h;
 	parser_freeold(p);
-	while (p->hooks) {
+	while (p->hooks)
+	{
 		h = p->hooks->next;
 		clean_specs(p->hooks);
 		mem_free(p->hooks);
@@ -308,20 +366,39 @@ static errr parse_specs(struct parser_hook *h, char *fmt) {
 	if (!name)
 		return -EINVAL;
 	h->dir = string_make(name);
-	while (name) {
+	h->fhead = NULL;
+	h->ftail = NULL;
+	while (name)
+	{
+		/* Lack of a type is legal; that means we're at the end of the
+		 * line. */
 		stype = strtok(NULL, " ");
 		if (!stype)
 			break;
+
+		/* Lack of a name, on the other hand... */
 		name = strtok(NULL, " ");
-		if (!name) {
+		if (!name)
+		{
 			clean_specs(h);
 			return -EINVAL;
 		}
+
+		/* Grab a type, check to see if we have a mandatory type
+		 * following an optional type. */
 		type = parse_type(stype);
-		if (type == T_NONE) {
+		if (type == T_NONE)
+		{
 			clean_specs(h);
 			return -EINVAL;
 		}
+		if (!(type & T_OPT) && h->ftail && (h->ftail->type & T_OPT))
+		{
+			clean_specs(h);
+			return -EINVAL;
+		}
+
+		/* Save this spec. */
 		s = mem_alloc(sizeof *s);
 		s->type = type;
 		s->name = string_make(name);
@@ -350,9 +427,9 @@ errr parser_reg(struct parser *p, const char *fmt,
 	cfmt = string_make(fmt);
 	h->next = p->hooks;
 	h->func = func;
-	h->fhead = NULL;
 	r = parse_specs(h, cfmt);
-	if (r) {
+	if (r)
+	{
 		mem_free(h);
 		mem_free(cfmt);
 		return r;
@@ -365,18 +442,20 @@ errr parser_reg(struct parser *p, const char *fmt,
 
 bool parser_hasval(struct parser *p, const char *name) {
 	struct parser_value *v;
-	for (v = p->fhead; v; v = (struct parser_value *)v->spec.next) {
-		if (!strcmp(v->spec.name, name)) {
+	for (v = p->fhead; v; v = (struct parser_value *)v->spec.next)
+	{
+		if (!strcmp(v->spec.name, name))
 			return TRUE;
-		}
 	}
 	return FALSE;
 }
 
 struct parser_value *parser_getval(struct parser *p, const char *name) {
 	struct parser_value *v;
-	for (v = p->fhead; v; v = (struct parser_value *)v->spec.next) {
-		if (!strcmp(v->spec.name, name)) {
+	for (v = p->fhead; v; v = (struct parser_value *)v->spec.next)
+	{
+		if (!strcmp(v->spec.name, name))
+		{
 			return v;
 		}
 	}
