@@ -397,6 +397,11 @@ static errr parse_specs(struct parser_hook *h, char *fmt) {
 			clean_specs(h);
 			return -EINVAL;
 		}
+		if (h->ftail && ((h->ftail->type & ~T_OPT) == T_STR))
+		{
+			clean_specs(h);
+			return -EINVAL;
+		}
 
 		/* Save this spec. */
 		s = mem_alloc(sizeof *s);
