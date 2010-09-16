@@ -999,30 +999,6 @@ static errr init_f_info(void)
 	return (err);
 }
 
-
-/*
- * Initialize the "a_info" array
- */
-static errr init_a_info(void)
-{
-	errr err;
-
-	/* Init the header */
-	init_header(&a_head, z_info->a_max, sizeof(artifact_type));
-
-	/* Save a pointer to the parsing function */
-	a_head.parse_info_txt = parse_a_info;
-
-	err = init_info("artifact", &a_head);
-
-	/* Set the global variables */
-	a_info = a_head.info_ptr;
-
-	return (err);
-}
-
-
-
 /*
  * Initialize the "e_info" array
  */
