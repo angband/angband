@@ -1078,8 +1078,7 @@ errr parse_a_info(char *buf, header *head)
 		a_ptr = (artifact_type*)head->info_ptr + i;
 
 		/* Store the name */
-		if ((a_ptr->name = add_name(head, s)) == 0)
-			return (PARSE_ERROR_OUT_OF_MEMORY);
+		a_ptr->name = string_make(s);
 
 		/* Ignore everything */
 		flags_set(a_ptr->flags, OF_SIZE, OF_IGNORE_MASK, FLAG_END);
@@ -1244,16 +1243,14 @@ errr parse_a_info(char *buf, header *head)
 	else if (buf[0] == 'M')
 	{
 		/* Store the text */
-		if (!add_text(&a_ptr->effect_msg, head, buf+2))
-			return (PARSE_ERROR_OUT_OF_MEMORY);
+		a_ptr->effect_msg = string_append(a_ptr->effect_msg, buf + 2);
 	}
 
 	/* Process 'D' for "Description" */
 	else if (buf[0] == 'D')
 	{
 		/* Store the text */
-		if (!add_text(&a_ptr->text, head, buf+2))
-			return (PARSE_ERROR_OUT_OF_MEMORY);
+		a_ptr->text = string_append(a_ptr->text, buf + 2);
 	}
 
 	else

@@ -1184,7 +1184,7 @@ void object_info_header(const object_type *o_ptr)
 	if (!OPT(adult_randarts) && o_ptr->name1 &&
 	    object_is_known(o_ptr) && a_info[o_ptr->name1].text)
 	{
-		text_out(a_text + a_info[o_ptr->name1].text);
+		text_out(a_info[o_ptr->name1].text);
 		text_out("\n\n");
 	}
 

@@ -398,7 +398,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 	/** Append extra names of various kinds **/
 
 	if ((object_name_is_visible(o_ptr) || known) && o_ptr->name1)
-		strnfcat(buf, max, &end, " %s", a_name + a_info[o_ptr->name1].name);
+		strnfcat(buf, max, &end, " %s", a_info[o_ptr->name1].name);
 
 	else if ((spoil && o_ptr->name2) || object_ego_is_visible(o_ptr))
 		strnfcat(buf, max, &end, " %s", e_name + e_info[o_ptr->name2].name);

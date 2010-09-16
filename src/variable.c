@@ -686,8 +686,6 @@ object_kind *k_info;
  * The artifact arrays
  */
 artifact_type *a_info;
-char *a_name;
-char *a_text;
 
 /*
  * The ego-item arrays

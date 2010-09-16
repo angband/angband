@@ -13,6 +13,7 @@
 
 #include "h-basic.h"
 #include "z-bitflag.h"
+#include "z-file.h"
 #include "z-rand.h"
 #include "parser.h"
 
@@ -93,6 +94,8 @@ extern errr emit_info_txt(ang_file *fp, ang_file *template, char *buf, header *h
 
 extern struct parser *init_parse_z(void);
 extern struct parser *init_parse_k(void);
+extern struct parser *init_parse_a(void);
+extern struct parser *init_parse_names(void);
 
 extern errr parse_v_info(char *buf, header *head);
 extern errr parse_f_info(char *buf, header *head);

@@ -1,6 +1,8 @@
 #ifndef INCLUDED_OBJECT_H
 #define INCLUDED_OBJECT_H
 
+#include "angband.h"
+
 /** Maximum number of scroll titles generated */
 #define MAX_TITLES     50
 
@@ -261,6 +263,7 @@ void pack_overflow(void);
 
 /* obj-power.c and randart.c */
 s32b object_power(const object_type *o_ptr, int verbose, ang_file *log_file, bool known);
+char *artifact_gen_name(struct artifact *a, const char ***wordlist);
 /*
  * Some constants used in randart generation and power calculation
  * - thresholds for limiting to_hit, to_dam and to_ac

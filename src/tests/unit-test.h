@@ -87,13 +87,15 @@ int showfail(void) {
 	}
 
 #define require(x) \
-	if (!(x)) { \
-		if (verbose) \
-			showfail(); \
-			printf("    %s:%d: requirement '%s' failed\n", \
-		           suite_name, __LINE__, #x); \
-		return 1; \
-	}
+	do { \
+		if (!(x)) { \
+			if (verbose) \
+				showfail(); \
+				printf("    %s:%d: requirement '%s' failed\n", \
+			           suite_name, __LINE__, #x); \
+			return 1; \
+		} \
+	} while (0)
 
 #if __WORDSIZE == 64
 #define ptreq(x,y) \

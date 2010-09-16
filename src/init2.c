@@ -708,14 +708,13 @@ static errr run_parse_k(struct parser *p) {
 }
 
 static errr finish_parse_k(struct parser *p) {
-	int i;
 	struct object_kind *k;
 
 	k_info = mem_alloc(z_info->k_max * sizeof(*k));
-	for (i = 0, k = parser_priv(p); i < z_info->k_max && k; i++, k = k->next) {
+	for (k = parser_priv(p); k; k = k->next) {
 		if (k->kidx >= z_info->k_max)
 			continue;
-		memcpy(&k_info[i], k, sizeof(*k));
+		memcpy(&k_info[k->kidx], k, sizeof(*k));
 	}
 
 	return 0;
@@ -725,6 +724,251 @@ struct file_parser k_parser = {
 	init_parse_k,
 	run_parse_k,
 	finish_parse_k
+};
+
+static enum parser_error parse_a_n(struct parser *p) {
+	int idx = parser_getint(p, "index");
+	const char *name = parser_getstr(p, "name");
+	struct artifact *h = parser_priv(p);
+
+	struct artifact *a = mem_alloc(sizeof *a);
+	memset(a, 0, sizeof(*a));
+	a->next = h;
+	parser_setpriv(p, a);
+	a->aidx = idx;
+	a->name = string_make(name);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_a_i(struct parser *p) {
+	struct artifact *a = parser_priv(p);
+	const char *tv, *sv;
+	int tvi, svi;
+	assert(a);
+
+	tv = parser_getsym(p, "tval");
+	sv = parser_getsym(p, "sval");
+
+	if (sscanf(tv, "%d", &tvi) != 1) {
+		tvi = tval_find_idx(tv);
+		if (tvi == -1)
+			return PARSE_ERROR_UNRECOGNISED_TVAL;
+	}
+	if (tvi < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+
+	a->tval = tvi;
+
+	if (sscanf(sv, "%d", &svi) != 1) {
+		svi = lookup_sval(a->tval, sv);
+		if (svi == -1)
+			return PARSE_ERROR_UNRECOGNISED_SVAL;
+	}
+	if (svi < 0)
+		return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+	a->sval = svi;
+
+	a->pval = parser_getint(p, "pval");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_a_w(struct parser *p) {
+	struct artifact *a = parser_priv(p);
+	assert(a);
+
+	a->level = parser_getint(p, "level");
+	a->rarity = parser_getint(p, "rarity");
+	a->weight = parser_getint(p, "weight");
+	a->cost = parser_getint(p, "cost");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_a_a(struct parser *p) {
+	struct artifact *a = parser_priv(p);
+	const char *tmp = parser_getstr(p, "minmax");
+	int amin, amax;
+	assert(a);
+
+	a->alloc_prob = parser_getint(p, "common");
+	if (sscanf(tmp, "%d to %d", &amin, &amax) != 2)
+		return PARSE_ERROR_GENERIC;
+
+	if (amin > 255 || amax > 255 || amin < 0 || amax < 0)
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+
+	a->alloc_min = amin;
+	a->alloc_max = amax;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_a_p(struct parser *p) {
+	struct artifact *a = parser_priv(p);
+	struct random hd = parser_getrand(p, "hd");
+	assert(a);
+
+	a->ac = parser_getint(p, "ac");
+	a->dd = hd.dice;
+	a->ds = hd.sides;
+	a->to_h = parser_getint(p, "to-h");
+	a->to_d = parser_getint(p, "to-d");
+	a->to_a = parser_getint(p, "to-a");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_a_f(struct parser *p) {
+	struct artifact *a = parser_priv(p);
+	char *s = string_make(parser_getstr(p, "flags"));
+	char *t;
+	assert(a);
+
+	t = strtok(s, " |");
+	while (t) {
+		if (grab_flag(a->flags, OF_SIZE, k_info_flags, t))
+			break;
+		t = strtok(NULL, " |");
+	}
+	mem_free(s);
+	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_a_e(struct parser *p) {
+	struct artifact *a = parser_priv(p);
+	assert(a);
+
+	a->effect = grab_one_effect(parser_getsym(p, "name"));
+	a->time = parser_getrand(p, "time");
+	if (!a->effect)
+		return PARSE_ERROR_GENERIC;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_a_m(struct parser *p) {
+	struct artifact *a = parser_priv(p);
+	assert(a);
+
+	a->effect_msg = string_append(a->effect_msg, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_a_d(struct parser *p) {
+	struct artifact *a = parser_priv(p);
+	assert(a);
+
+	a->text = string_append(a->text, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_a(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "N int index str name", parse_a_n);
+	parser_reg(p, "I sym tval sym sval int pval", parse_a_i);
+	parser_reg(p, "W int level int rarity int weight int cost", parse_a_w);
+	parser_reg(p, "A int common str minmax", parse_a_a);
+	parser_reg(p, "P int ac rand hd int to-h int to-d int to-a", parse_a_p);
+	parser_reg(p, "F str flags", parse_a_f);
+	parser_reg(p, "E sym name rand time", parse_a_e);
+	parser_reg(p, "M str text", parse_a_m);
+	parser_reg(p, "D str text", parse_a_d);
+	return p;
+}
+
+static errr run_parse_a(struct parser *p) {
+	return parse_file(p, "artifact");
+}
+
+static errr finish_parse_a(struct parser *p) {
+	struct artifact *a;
+
+	a_info = mem_alloc(z_info->a_max * sizeof(*a));
+	for (a = parser_priv(p); a; a = a->next) {
+		if (a->aidx >= z_info->a_max)
+			continue;
+		memcpy(&a_info[a->aidx], a, sizeof(*a));
+	}
+
+	return 0;
+}
+
+struct file_parser parse_a = {
+	init_parse_a,
+	run_parse_a,
+	finish_parse_a
+};
+
+struct name {
+	struct name *next;
+	char *str;
+};
+
+struct names_parse {
+	unsigned int section;
+	unsigned int nnames[RANDNAME_NUM_TYPES];
+	struct name *names[RANDNAME_NUM_TYPES];
+};
+
+static enum parser_error parse_names_n(struct parser *p) {
+	unsigned int section = parser_getint(p, "section");
+	struct names_parse *s = parser_priv(p);
+	if (s->section >= RANDNAME_NUM_TYPES)
+		return PARSE_ERROR_GENERIC;
+	s->section = section;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_names_d(struct parser *p) {
+	const char *name = parser_getstr(p, "name");
+	struct names_parse *s = parser_priv(p);
+	struct name *ns = mem_alloc(sizeof *ns);
+
+	ns->next = s->names[s->section];
+	ns->str = string_make(name);
+	s->names[s->section] = ns;
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_names(void) {
+	struct parser *p = parser_new();
+	struct names_parse *n = mem_alloc(sizeof *n);
+	memset(n, 0, sizeof(*n));
+	n->section = 0;
+	parser_setpriv(p, n);
+	parser_reg(p, "N int section", parse_names_n);
+	parser_reg(p, "D str name", parse_names_d);
+	return p;
+}
+
+static errr run_parse_names(struct parser *p) {
+	return parse_file(p, "names");
+}
+
+static errr finish_parse_names(struct parser *p) {
+	int i;
+	unsigned int j;
+	struct names_parse *n = parser_priv(p);
+	struct name *nm;
+	name_sections = mem_alloc(sizeof(char**) * RANDNAME_NUM_TYPES);
+	for (i = 0; i < RANDNAME_NUM_TYPES; i++) {
+		name_sections[i] = mem_alloc(sizeof(char*) * (n->nnames[i] + 1));
+		for (nm = n->names[i], j = 0; nm && j < n->nnames[i]; nm = nm->next, j++) {
+			name_sections[i][j] = nm->str;
+		}
+		name_sections[i][n->nnames[i]] = NULL;
+		while (n->names[i]) {
+			nm = n->names[i]->next;
+			mem_free(n->names[i]);
+			n->names[i] = nm;
+		}
+	}
+	mem_free(n);
+	return 0;
+}
+
+struct file_parser names_parser = {
+	init_parse_names,
+	run_parse_names,
+	finish_parse_names
 };
 
 /*
@@ -768,8 +1012,6 @@ static errr init_a_info(void)
 
 	/* Set the global variables */
 	a_info = a_head.info_ptr;
-	a_name = a_head.name_ptr;
-	a_text = a_head.text_ptr;
 
 	return (err);
 }

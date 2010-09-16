@@ -168,13 +168,13 @@ void flavor_init(void)
 		int wordlen;
 		bool okay = TRUE;
 
-		wordlen = randname_make(RANDNAME_SCROLL, 2, 8, end, 24);
+		wordlen = randname_make(RANDNAME_SCROLL, 2, 8, end, 24, name_sections);
 		while (titlelen + wordlen < (int)(sizeof(scroll_adj[0]) - 1))
 		{
 			end[wordlen] = ' ';
 			titlelen += wordlen + 1;
 			end += wordlen + 1;
-			wordlen = randname_make(RANDNAME_SCROLL, 2, 8, end, 24 - titlelen);
+			wordlen = randname_make(RANDNAME_SCROLL, 2, 8, end, 24 - titlelen, name_sections);
 		}
 		buf[titlelen - 1] = '\0';
 
@@ -3524,10 +3524,9 @@ int lookup_artifact_name(const char *name)
 	for (i = 1; i < z_info->a_max; i++)
 	{
 		artifact_type *a_ptr = &a_info[i];
-		const char *nm = a_name + a_ptr->name;
 		
 		/* Found a match */
-		if (streq(name, nm))
+		if (streq(name, a_ptr->name))
 			return i;
 		
 	} 
@@ -3559,7 +3558,6 @@ int lookup_sval(int tval, const char *name)
 			return k_ptr->sval;
 	}
 
-	msg_format("No object (\"%s\",\"%s\")", tval_find_name(tval), name);
 	return -1;
 }
 

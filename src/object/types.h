@@ -78,10 +78,14 @@ typedef struct object_kind
  * TODO: Fix this max_num/cur_num crap and just have a big boolean array of
  * which artifacts have been created and haven't, so this can become read-only.
  */
-typedef struct
+typedef struct artifact
 {
-	u32b name;    /**< (const char *) artifact_type::name + a_name = Name */
-	u32b text;    /**< (const char *) artifact_type::text + a_text = Description  */
+	char *name;
+	char *text;
+
+	u32b aidx;
+
+	struct artifact *next;
 
 	byte tval;    /**< General artifact type (see TV_ macros) */
 	byte sval;    /**< Artifact sub-type (see SV_ macros) */
@@ -112,7 +116,7 @@ typedef struct
 	bool everseen;	/**< Whether this artifact has ever been seen (this game or previous) */
 
 	u16b effect;     /**< Artifact activation (see effects.c) */
-	u32b effect_msg; /**< (const char *) artifact_type::effect_msg + a_text = Effect message */
+	char *effect_msg;
 
 	random_value time;  /**< Recharge time (if appropriate) */
 

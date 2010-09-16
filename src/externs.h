@@ -161,8 +161,6 @@ extern char *f_text;
 extern object_kind *k_info;
 extern char *k_text;
 extern artifact_type *a_info;
-extern char *a_name;
-extern char *a_text;
 extern ego_item_type *e_info;
 extern char *e_name;
 extern char *e_text;
@@ -435,7 +433,7 @@ errr process_pref_file(cptr name);
 extern errr do_randart(u32b randart_seed, bool full);
 
 /* randname.c */
-extern size_t randname_make(randname_type name_type, size_t min, size_t max, char *word_buf, size_t buflen);
+extern size_t randname_make(randname_type name_type, size_t min, size_t max, char *word_buf, size_t buflen, const char ***wordlist);
 
 /* score.c */
 extern void enter_score(time_t *death_time);

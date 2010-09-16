@@ -304,6 +304,36 @@ static int test_opt0(void *state) {
 	ok;
 }
 
+static enum parser_error helper_uint0(struct parser *p) {
+	unsigned int a = parser_getuint(p, "u0");
+	int *wasok = parser_priv(p);
+	if (a != 42)
+		return PARSE_ERROR_GENERIC;
+	*wasok = 1;
+	return PARSE_ERROR_NONE;
+}
+
+static int test_uint0(void *state) {
+	int wasok = 0;
+	errr r = parser_reg(state, "test-uint0 uint u0", helper_uint0);
+	enum parser_error e;
+	eq(r, 0);
+	parser_setpriv(state, &wasok);
+	e = parser_parse(state, "test-uint0:42");
+	eq(e, PARSE_ERROR_NONE);
+	eq(wasok, 1);
+	ok;
+
+}
+
+static int test_uint1(void *state) {
+	errr r = parser_reg(state, "test-uint1 uint u0", ignored);
+	enum parser_error e = parser_parse(state, "test-uint1:-2");
+	eq(r, 0);
+	eq(e, PARSE_ERROR_NOT_NUMBER);
+	ok;
+}
+
 static const char *suite_name = "parse/parser";
 static struct test tests[] = {
 	{ "priv", test_priv },
@@ -338,6 +368,9 @@ static struct test tests[] = {
 	{ "rand1", test_rand1 },
 
 	{ "opt0", test_opt0 },
+
+	{ "uint0", test_uint0 },
+	{ "uint1", test_uint1 },
 
 	{ "baddir", test_baddir },
 

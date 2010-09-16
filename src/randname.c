@@ -68,7 +68,7 @@ static void build_prob(name_probs probs, cptr *learn)
  * Relies on the A2I and I2A macros (and so the ASCII character set) and 
  * is_a_vowel (so the basic 5 English vowels).
  */
-size_t randname_make(randname_type name_type, size_t min, size_t max, char *word_buf, size_t buflen)
+size_t randname_make(randname_type name_type, size_t min, size_t max, char *word_buf, size_t buflen, const char ***sections)
 {
 	size_t lnum = 0;
 	bool found_word = FALSE;
@@ -88,7 +88,7 @@ size_t randname_make(randname_type name_type, size_t min, size_t max, char *word
 	{
 		cptr *wordlist = NULL;
 
-		wordlist = name_sections[name_type];
+		wordlist = sections[name_type];
 
 		build_prob(lprobs, wordlist);
 
@@ -191,7 +191,7 @@ int main(int argc, char *argv[])
 
 	for (i = 0; i < 20; i++)
 	{
-		randname_make(RANDNAME_TOLKIEN, 5, 9, name, 256);
+		randname_make(RANDNAME_TOLKIEN, 5, 9, name, 256, name_sections);
 		name[0] = toupper((unsigned char) name[0]);
 		printf("%s\n", name);
 	}

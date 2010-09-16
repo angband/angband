@@ -93,6 +93,9 @@ extern const char *parser_getstr(struct parser *p, const char *name);
 /** Returns the integer named `name`. This symbol must exist. */
 extern int parser_getint(struct parser *p, const char *name);
 
+/** Returns the unsigned integer named `name`. This symbol must exist. */
+extern unsigned int parser_getuint(struct parser *p, const char *name);
+
 /** Returns the random value named `name`. This symbol must exist. */
 extern struct random parser_getrand(struct parser *p, const char *name);
 

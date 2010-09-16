@@ -1312,7 +1312,7 @@ static int a_cmp_tval(const void *a, const void *b)
 	/* order by */
 	c = a_a->sval - a_b->sval;
 	if (c) return c;
-	return strcmp(a_name+a_a->name, a_name+a_b->name);
+	return strcmp(a_a->name, a_b->name);
 }
 
 static const char *kind_name(int gid) { return object_text_order[gid].name; }
