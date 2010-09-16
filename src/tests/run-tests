@@ -38,7 +38,7 @@ sub blue   { $usecolor ? ("\033[01;34m", @_, "\033[0m") : (@_) }
 # determine which color to use: green == 100% > yellow >= 90% > red
 sub getcolor {
     my ($pass, $total) = @_;
-    my $perc = ($pass * 100) / $total;
+    my $perc = $total ? ($pass * 100) / $total : 100;
     return $pass == $total ? \&green : $perc >= 90 ? \&yellow : \&red;
 }
 
@@ -95,7 +95,7 @@ sub main {
     # print a summary of all the test results
     my $color = getcolor($pass, $total);
     my $ns    = join('', &$color("$pass/$total"));
-    my $ps    = join('', &$color(sprintf("%.1f%%", ($pass * 100) / $total)));
+    my $ps    = join('', &$color(sprintf("%.1f%%", ($total ? ($pass * 100) / $total : 100))));
     
     printf("Total: %s passed (%s)\n", $ns, $ps);
 }
