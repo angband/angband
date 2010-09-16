@@ -818,9 +818,13 @@ static enum parser_error parse_a_p(struct parser *p) {
 
 static enum parser_error parse_a_f(struct parser *p) {
 	struct artifact *a = parser_priv(p);
-	char *s = string_make(parser_getstr(p, "flags"));
+	char *s;
 	char *t;
 	assert(a);
+
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+	s = string_make(parser_getstr(p, "flags"));
 
 	t = strtok(s, " |");
 	while (t) {
@@ -862,12 +866,13 @@ static enum parser_error parse_a_d(struct parser *p) {
 struct parser *init_parse_a(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
+	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N int index str name", parse_a_n);
 	parser_reg(p, "I sym tval sym sval int pval", parse_a_i);
 	parser_reg(p, "W int level int rarity int weight int cost", parse_a_w);
 	parser_reg(p, "A int common str minmax", parse_a_a);
 	parser_reg(p, "P int ac rand hd int to-h int to-d int to-a", parse_a_p);
-	parser_reg(p, "F str flags", parse_a_f);
+	parser_reg(p, "F ?str flags", parse_a_f);
 	parser_reg(p, "E sym name rand time", parse_a_e);
 	parser_reg(p, "M str text", parse_a_m);
 	parser_reg(p, "D str text", parse_a_d);
@@ -891,7 +896,7 @@ static errr finish_parse_a(struct parser *p) {
 	return 0;
 }
 
-struct file_parser parse_a = {
+struct file_parser a_parser = {
 	init_parse_a,
 	run_parse_a,
 	finish_parse_a
@@ -1733,7 +1738,7 @@ bool init_angband(void)
 
 	/* Initialize artifact info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (artifacts)");
-	if (init_a_info()) quit("Cannot initialize artifacts");
+	if (run_parser(&a_parser)) quit("Cannot initialize artifacts");
 
 	/* Initialize feature info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (vaults)");
