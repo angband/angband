@@ -38,52 +38,19 @@ int which_pval(const object_type *o_ptr, const int flag)
 	assert(0);
 }
 
+static size_t obj_desc_name_format(char *buf, size_t max, size_t end,
+		const char *fmt, const char *modstr, bool pluralise);
+
+
 /**
  * Puts the object base kind's name into buf.
  */
 void object_base_name(char *buf, size_t max, int tval, bool plural)
 {
 	object_base *kb = &kb_info[tval];
-	const char *str = kb->name;
+	size_t end = 0;
 
-	char *t = buf;
-
-	/* Copy useful chars */
-	for (; *str && max > 1; str++)
-	{
-		/* Pluralizer for irregular plurals */
-		/* Useful for languages where adjective changes for plural */
-		if (*str == '|')
-		{
-			/* Process singular part */
-			for (str++; *str != '|' && max > 1; str++)
-			{
-				if (!plural)
-				{
-					*t++ = *str;
-					max--;
-				}
-			}
-
-			/* Process plural part */
-			for (str++; *str != '|' && max > 1; str++)
-			{
-				if (plural)
-				{
-					*t++ = *str;
-					max--;
-				}
-			}
-		}
-
-		else if (*str != '~')
-		{
-			*t++ = 's';
-		}
-	}
-
-	/* Terminate the new name */
-	*t = '\0';
+	end = obj_desc_name_format(buf, max, end, kb->name, NULL, plural);
 }
 
 
@@ -96,8 +63,6 @@ void object_base_name(char *buf, size_t max, int tval, bool plural)
  */
 void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know)
 {
-	char *t;
-
 	object_kind *k_ptr = &k_info[k_idx];
 
 	/* If not aware, use flavor */
@@ -117,7 +82,7 @@ void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know)
 	/* Use proper name (Healing, or whatever) */
 	else
 	{
-		cptr str = k_ptr->name;
+		char *t;
 
 		if (k_ptr->tval == TV_FOOD && k_ptr->sval > SV_FOOD_MIN_SHROOM)
 		{
@@ -130,37 +95,8 @@ void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know)
 			t = buf;
 		}
 
-		/* Skip past leading characters */
-		while ((*str == ' ') || (*str == '&')) str++;
-
-		/* Copy useful chars */
-		for (; *str && max > 1; str++)
-		{
-			/* Pluralizer for irregular plurals */
-			/* Useful for languages where adjective changes for plural */
-			if (*str == '|')
-			{
-				/* Process singular part */
-				for (str++; *str != '|' && max > 1; str++)
-				{
-					*t++ = *str;
-					max--;
-				}
-
-				/* Process plural part */
-				for (str++; *str != '|'; str++) ;
-			}
-
-			/* English plural indicator can simply be skipped */
-			else if (*str != '~')
-			{
-				*t++ = *str;
-				max--;
-			}
-		}
-
-		/* Terminate the new name */
-		*t = '\0';
+		/* Format remainder of the string */
+		obj_desc_name_format(t, max, 0, k_ptr->name, NULL, FALSE);
 	}
 }
 
@@ -273,106 +209,77 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 }
 
 
-
-
-
-
-/*
- * Copy 'src' into 'buf, replacing '#' with 'modstr' (if found), putting a plural
- * in the place indicated by '~' if required, or using alterate...
- */
-static size_t obj_desc_name(char *buf, size_t max, size_t end,
-		const object_type *o_ptr, bool prefix, odesc_detail_t mode,
-		bool spoil)
+static size_t obj_desc_name_prefix(char *buf, size_t max, size_t end,
+		const object_type *o_ptr, bool known, const char *basename,
+		const char *modstr)
 {
-	object_kind *k_ptr = &k_info[o_ptr->k_idx];
+	if (o_ptr->number <= 0)
+		strnfcat(buf, max, &end, "no more ");
+	else if (o_ptr->number > 1)
+		strnfcat(buf, max, &end, "%d ", o_ptr->number);
+	else if ((object_name_is_visible(o_ptr) || known) && artifact_p(o_ptr))
+		strnfcat(buf, max, &end, "The ");
 
-	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
-	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
-
-	const char *basename = obj_desc_get_basename(o_ptr, aware);
-	const char *modstr = obj_desc_get_modstr(o_ptr);
-
-	bool pluralise = (mode & ODESC_PLURAL) ? TRUE : FALSE;
-
-	if (aware && !k_ptr->everseen)
-		k_ptr->everseen = TRUE;
-
-	if (o_ptr->number > 1)
-		pluralise = TRUE;
-	if (mode & ODESC_SINGULAR)
-		pluralise = FALSE;
-
-	/* Add a pseudo-numerical prefix if desired */
-	if (prefix)
+	else if (*basename == '&')
 	{
-		if (o_ptr->number <= 0)
+		bool an = FALSE;
+		const char *lookahead = basename + 1;
+
+		while (*lookahead == ' ') lookahead++;
+
+		if (*lookahead == '#')
 		{
-			strnfcat(buf, max, &end, "no more ");
-			
-			/* Pluralise for grammatical correctness */
-			pluralise = TRUE;
-		}
-		else if (o_ptr->number > 1)
-			strnfcat(buf, max, &end, "%d ", o_ptr->number);
-		else if ((object_name_is_visible(o_ptr) || known) && artifact_p(o_ptr))
-			strnfcat(buf, max, &end, "The ");
-
-		else if (*basename == '&')
-		{
-			bool an = FALSE;
-			const char *lookahead = basename + 1;
-
-			while (*lookahead == ' ') lookahead++;
-
-			if (*lookahead == '#')
-			{
-				if (modstr && is_a_vowel(*modstr))
-					an = TRUE;
-			}
-			else if (is_a_vowel(*lookahead))
-			{
+			if (modstr && is_a_vowel(*modstr))
 				an = TRUE;
-			}
-
-			if (an)
-				strnfcat(buf, max, &end, "an ");
-			else
-				strnfcat(buf, max, &end, "a ");
 		}
+		else if (is_a_vowel(*lookahead))
+		{
+			an = TRUE;
+		}
+
+		if (an)
+			strnfcat(buf, max, &end, "an ");
+		else
+			strnfcat(buf, max, &end, "a ");
 	}
 
+	return end;
+}
 
-/*
- * Names have the following elements:
+
+
+/**
+ * Formats 'fmt' into 'buf', with the following formatting characters:
  *
- * '~' indicates where to place an 's' or an 'es'.  Other plural forms should
- * be handled with the syntax '|singular|plural|', e.g. "kni|fe|ves|".
+ * '~' at the end of a word (e.g. "fridge~") will pluralise
  *
- * '#' indicates the position of the "modifier", e.g. the flavour or spellbook
- * name.
+ * '|x|y|' will be output as 'x' if singular or 'y' if plural
+ *    (e.g. "kni|fe|ves|")
+ *
+ * '#' will be replaced with 'modstr' (which may contain the pluralising
+ * formats given above).
  */
-
-
-
+static size_t obj_desc_name_format(char *buf, size_t max, size_t end,
+		const char *fmt, const char *modstr, bool pluralise)
+{
 	/* Copy the string */
-	while (*basename)
+	while (*fmt)
 	{
-		if (*basename == '&')
+		if (*fmt == '&')
 		{
-			while (*basename == ' ' || *basename == '&')
-				basename++;
+			while (*fmt == ' ' || *fmt == '&')
+				fmt++;
 			continue;
 		}
 
 		/* Pluralizer (regular English plurals) */
-		else if (*basename == '~')
+		else if (*fmt == '~')
 		{
-			char prev = *(basename - 1);
+			char prev = *(fmt - 1);
 
 			if (!pluralise)
 			{
-				basename++;
+				fmt++;
 				continue;
 			}
 
@@ -384,11 +291,11 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 		}
 
 		/* Special plurals */
-		else if (*basename == '|')
+		else if (*fmt == '|')
 		{
-			/* e.g. & Wooden T|o|e|rch~
-			 *                 ^ ^^ */
-			const char *singular = basename + 1;
+			/* e.g. kni|fe|ves|
+			 *          ^  ^  ^ */
+			const char *singular = fmt + 1;
 			const char *plural   = strchr(singular, '|');
 			const char *endmark  = NULL;
 
@@ -405,56 +312,52 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 			else
 				strnfcat(buf, max, &end, "%.*s", endmark - plural, plural);
 
-			basename = endmark;
+			fmt = endmark;
 		}
 
-		/* Handle pluralisation in the modifier XXX */
-		else if (*basename == '#')
+		/* Add modstr, with pluralisation if relevant */
+		else if (*fmt == '#')
 		{
-			const char *basename = modstr;
-
-			while (basename && *basename && (end < max - 1))
-			{
-				/* Special plurals */
-				if (*basename == '|')
-				{
-					/* e.g. & Wooden T|o|e|rch~
-					 *                 ^ ^^ */
-					const char *singular = basename + 1;
-					const char *plural   = strchr(singular, '|');
-					const char *endmark  = NULL;
-
-					if (plural)
-					{
-						plural++;
-						endmark = strchr(plural, '|');
-					}
-
-					if (!singular || !plural || !endmark) return end;
-
-					if (!pluralise)
-						strnfcat(buf, max, &end, "%.*s", plural - singular - 1, singular);
-					else
-						strnfcat(buf, max, &end, "%.*s", endmark - plural, plural);
-
-					basename = endmark;
-				}
-
-				else
-					buf[end++] = *basename;
-
-				basename++;
-			}
+			end = obj_desc_name_format(buf, max, end, modstr, NULL,
+					pluralise);
 		}
 
 		else
-			buf[end++] = *basename;
+			buf[end++] = *fmt;
 
-		basename++;
+		fmt++;
 	}
 
-	/* 0-terminate, just in case XXX */
 	buf[end] = 0;
+
+	return end;
+}
+
+
+/*
+ * Format object o_ptr's name into 'buf'.
+ */
+static size_t obj_desc_name(char *buf, size_t max, size_t end,
+		const object_type *o_ptr, bool prefix, odesc_detail_t mode,
+		bool spoil)
+{
+	object_kind *k_ptr = &k_info[o_ptr->k_idx];
+
+	bool known = object_is_known(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
+	bool aware = object_flavor_is_aware(o_ptr) || (o_ptr->ident & IDENT_STORE) || spoil;
+
+	const char *basename = obj_desc_get_basename(o_ptr, aware);
+	const char *modstr = obj_desc_get_modstr(o_ptr);
+
+	if (aware && !k_ptr->everseen)
+		k_ptr->everseen = TRUE;
+
+	if (prefix)
+		end = obj_desc_name_prefix(buf, max, end, o_ptr, mode,
+				basename, modstr);
+
+	end = obj_desc_name_format(buf, max, end, basename, modstr,
+			!(o_ptr->number == 1 || mode & ODESC_SINGULAR));
 
 
 	/** Append extra names of various kinds **/
@@ -465,7 +368,8 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 	else if ((spoil && o_ptr->name2) || object_ego_is_visible(o_ptr))
 		strnfcat(buf, max, &end, " %s", e_info[o_ptr->name2].name);
 
-	else if (aware && !artifact_p(o_ptr) && (k_ptr->flavor || k_ptr->tval == TV_SCROLL))
+	else if (aware && !artifact_p(o_ptr) &&
+			(k_ptr->flavor || k_ptr->tval == TV_SCROLL))
 		strnfcat(buf, max, &end, " of %s", k_ptr->name);
 
 	return end;
