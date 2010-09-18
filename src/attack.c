@@ -28,35 +28,10 @@
 /* Returns percent chance of an object breaking after throwing or shooting. */
 int breakage_chance(const object_type *o_ptr)
 {
-	/* Artifacts never break */
-	if (artifact_p(o_ptr)) return 0;
-
-	switch (o_ptr->tval)
-	{
-		case TV_FLASK:
-		case TV_POTION:
-		case TV_BOTTLE:
-		case TV_FOOD:
-		case TV_JUNK:
-			return 100;
-
-		case TV_LIGHT:
-		case TV_SCROLL:
-		case TV_SKELETON:
-			return 50;
-
-		case TV_ARROW:
-			return 35;
-
-		case TV_WAND:
-		case TV_SHOT:
-		case TV_BOLT:
-		case TV_SPIKE:
-			return 25;
-
-		default:
-			return 10;
-	}
+	if (artifact_p(o_ptr))
+		return 0;
+	else
+		return o_ptr->kind->base->break_perc;
 }
 
 

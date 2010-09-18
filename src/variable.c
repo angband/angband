@@ -560,6 +560,7 @@ maxima *z_info;
 feature_type *f_info;
 
 object_kind *k_info;
+object_base *kb_info;
 
 /*
  * The artifact arrays

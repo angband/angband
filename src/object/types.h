@@ -6,6 +6,20 @@
 #include "z-rand.h"
 
 /**
+ * Information about object types, like rods, wands, etc.
+ */
+typedef struct object_base
+{
+	int tval;
+	struct object_base *next;
+
+	bitflag flags[OF_SIZE];
+
+	int break_perc;
+} object_base;
+
+
+/**
  * Information about object kinds, including player knowledge.
  *
  * TODO: split out the user-changeable bits into a separate struct so this
