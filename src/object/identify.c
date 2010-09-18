@@ -1038,19 +1038,15 @@ void wieldeds_notice_on_attack(void)
 
 bool object_FA_would_be_obvious(const object_type *o_ptr)
 {
-	bitflag flags[OF_SIZE];
-	
-	if (!player_has(PF_CUMBER_GLOVE))
-		return FALSE;
+	if (player_has(PF_CUMBER_GLOVE) && wield_slot(o_ptr) == INVEN_HANDS) {
+		bitflag flags[OF_SIZE];
+		object_flags(o_ptr, flags);
 
-	if ((wield_slot(o_ptr) != INVEN_HANDS) || (o_ptr->sval == SV_SET_OF_ALCHEMISTS_GLOVES))
-		return FALSE;
+		if (!of_has(flags, OF_DEX) && !of_has(flags, OF_SPELLS_OK))
+			return TRUE;
+	}
 
-	object_flags(o_ptr, flags);
-	if (of_has(flags, OF_DEX))
-		return FALSE;
-
-	return TRUE;
+	return FALSE;
 }
 
 /*
