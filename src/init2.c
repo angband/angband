@@ -522,6 +522,8 @@ static enum parser_error parse_k_i(struct parser *p) {
 	k->tval = tval;
 	k->sval = parser_getint(p, "sval");
 
+	k->base = &kb_info[k->tval];
+
 	return PARSE_ERROR_NONE;
 }
 

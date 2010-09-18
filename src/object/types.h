@@ -30,6 +30,8 @@ typedef struct object_kind
 	char *name;
 	char *text;
 
+	object_base *base;
+
 	struct object_kind *next;
 	u32b kidx;
 

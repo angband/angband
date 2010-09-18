@@ -310,6 +310,7 @@ void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE])
 		return;
 
 	/* Obtain kind flags */
+	of_union(flags, k_ptr->base->flags);
 	of_union(flags, k_ptr->flags);
 
 	/* Obtain artifact flags */
@@ -346,7 +347,7 @@ void object_flags_known(const object_type *o_ptr, bitflag flags[OF_SIZE])
 	of_inter(flags, o_ptr->known_flags);
 
 	if (object_flavor_is_aware(o_ptr))
-		of_union(flags, k_info[o_ptr->k_idx].flags);
+		of_union(flags, o_ptr->kind->flags);
 
 	if (o_ptr->name2 && easy_know(o_ptr))
 		of_union(flags, e_info[o_ptr->name2].flags);

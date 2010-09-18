@@ -525,166 +525,18 @@ void take_hit(int dam, cptr kb_str)
 
 
 
-
-/*
- * Does a given class of objects (usually) hate acid?
- * Note that acid can either melt or corrode something.
- */
-static bool hates_acid(const object_type *o_ptr)
-{
-	/* Analyze the type */
-	switch (o_ptr->tval)
-	{
-		/* Wearable items */
-		case TV_ARROW:
-		case TV_BOLT:
-		case TV_BOW:
-		case TV_SWORD:
-		case TV_HAFTED:
-		case TV_POLEARM:
-		case TV_HELM:
-		case TV_CROWN:
-		case TV_SHIELD:
-		case TV_BOOTS:
-		case TV_GLOVES:
-		case TV_CLOAK:
-		case TV_SOFT_ARMOR:
-		case TV_HARD_ARMOR:
-		case TV_DRAG_ARMOR:
-		{
-			return (TRUE);
-		}
-
-		/* Staffs/Scrolls are wood/paper */
-		case TV_STAFF:
-		case TV_SCROLL:
-		{
-			return (TRUE);
-		}
-
-		/* Ouch */
-		case TV_CHEST:
-		{
-			return (TRUE);
-		}
-
-		/* Junk is useless */
-		case TV_SKELETON:
-		case TV_BOTTLE:
-		case TV_JUNK:
-		{
-			return (TRUE);
-		}
-	}
-
-	return (FALSE);
-}
-
-
-/*
- * Does a given object (usually) hate electricity?
- */
-static bool hates_elec(const object_type *o_ptr)
-{
-	switch (o_ptr->tval)
-	{
-		case TV_RING:
-		case TV_WAND:
-		case TV_ROD:
-		{
-			return (TRUE);
-		}
-	}
-
-	return (FALSE);
-}
-
-
-/*
- * Does a given object (usually) hate fire?
- * Hafted/Polearm weapons have wooden shafts.
- * Arrows/Bows are mostly wooden.
- */
-static bool hates_fire(const object_type *o_ptr)
-{
-	/* Analyze the type */
-	switch (o_ptr->tval)
-	{
-		/* Wearable */
-		case TV_LIGHT:
-		case TV_ARROW:
-		case TV_BOW:
-		case TV_HAFTED:
-		case TV_POLEARM:
-		case TV_BOOTS:
-		case TV_GLOVES:
-		case TV_CLOAK:
-		case TV_SOFT_ARMOR:
-		{
-			return (TRUE);
-		}
-
-		/* Books */
-		case TV_MAGIC_BOOK:
-		case TV_PRAYER_BOOK:
-		{
-			return (TRUE);
-		}
-
-		/* Chests */
-		case TV_CHEST:
-		{
-			return (TRUE);
-		}
-
-		/* Staffs/Scrolls burn */
-		case TV_STAFF:
-		case TV_SCROLL:
-		{
-			return (TRUE);
-		}
-	}
-
-	return (FALSE);
-}
-
-
-/*
- * Does a given object (usually) hate cold?
- */
-static bool hates_cold(const object_type *o_ptr)
-{
-	switch (o_ptr->tval)
-	{
-		case TV_POTION:
-		case TV_FLASK:
-		case TV_BOTTLE:
-		{
-			return (TRUE);
-		}
-	}
-
-	return (FALSE);
-}
-
-
-
-
-
-
-
-
-
 /*
  * Melt something
  */
 static int set_acid_destroy(const object_type *o_ptr)
 {
 	bitflag f[OF_SIZE];
-	if (!hates_acid(o_ptr)) return (FALSE);
 	object_flags(o_ptr, f);
-	if (of_has(f, OF_IGNORE_ACID)) return (FALSE);
-	return (TRUE);
+
+	if (of_has(f, OF_HATES_ACID) && !of_has(f, OF_IGNORE_ACID))
+		return TRUE;
+
+	return FALSE;
 }
 
 
@@ -694,10 +546,12 @@ static int set_acid_destroy(const object_type *o_ptr)
 static int set_elec_destroy(const object_type *o_ptr)
 {
 	bitflag f[OF_SIZE];
-	if (!hates_elec(o_ptr)) return (FALSE);
 	object_flags(o_ptr, f);
-	if (of_has(f, OF_IGNORE_ELEC)) return (FALSE);
-	return (TRUE);
+
+	if (of_has(f, OF_HATES_ELEC) && !of_has(f, OF_IGNORE_ELEC))
+		return TRUE;
+
+	return FALSE;
 }
 
 
@@ -707,10 +561,12 @@ static int set_elec_destroy(const object_type *o_ptr)
 static int set_fire_destroy(const object_type *o_ptr)
 {
 	bitflag f[OF_SIZE];
-	if (!hates_fire(o_ptr)) return (FALSE);
 	object_flags(o_ptr, f);
-	if (of_has(f, OF_IGNORE_FIRE)) return (FALSE);
-	return (TRUE);
+
+	if (of_has(f, OF_HATES_FIRE) && !of_has(f, OF_IGNORE_FIRE))
+		return TRUE;
+
+	return FALSE;
 }
 
 
@@ -720,10 +576,12 @@ static int set_fire_destroy(const object_type *o_ptr)
 static int set_cold_destroy(const object_type *o_ptr)
 {
 	bitflag f[OF_SIZE];
-	if (!hates_cold(o_ptr)) return (FALSE);
 	object_flags(o_ptr, f);
-	if (of_has(f, OF_IGNORE_COLD)) return (FALSE);
-	return (TRUE);
+
+	if (of_has(f, OF_HATES_COLD) && !of_has(f, OF_IGNORE_COLD))
+		return TRUE;
+
+	return FALSE;
 }
 
 
@@ -1745,7 +1603,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 			/* Acid -- Lots of things */
 			case GF_ACID:
 			{
-				if (hates_acid(o_ptr))
+				if (of_has(f, OF_HATES_ACID))
 				{
 					do_kill = TRUE;
 					note_kill = (plural ? " melt!" : " melts!");
@@ -1757,7 +1615,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 			/* Elec -- Rings and Wands */
 			case GF_ELEC:
 			{
-				if (hates_elec(o_ptr))
+				if (of_has(f, OF_HATES_ELEC))
 				{
 					do_kill = TRUE;
 					note_kill = (plural ? " are destroyed!" : " is destroyed!");
@@ -1769,7 +1627,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 			/* Fire -- Flammable objects */
 			case GF_FIRE:
 			{
-				if (hates_fire(o_ptr))
+				if (of_has(f, OF_HATES_FIRE))
 				{
 					do_kill = TRUE;
 					note_kill = (plural ? " burn up!" : " burns up!");
@@ -1781,7 +1639,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 			/* Cold -- potions and flasks */
 			case GF_COLD:
 			{
-				if (hates_cold(o_ptr))
+				if (of_has(f, OF_HATES_COLD))
 				{
 					note_kill = (plural ? " shatter!" : " shatters!");
 					do_kill = TRUE;
@@ -1793,13 +1651,13 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 			/* Fire + Elec */
 			case GF_PLASMA:
 			{
-				if (hates_fire(o_ptr))
+				if (of_has(f, OF_HATES_FIRE))
 				{
 					do_kill = TRUE;
 					note_kill = (plural ? " burn up!" : " burns up!");
 					if (of_has(f, OF_IGNORE_FIRE)) ignore = TRUE;
 				}
-				if (hates_elec(o_ptr))
+				if (of_has(f, OF_HATES_ELEC))
 				{
 					ignore = FALSE;
 					do_kill = TRUE;
@@ -1812,13 +1670,13 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 			/* Fire + Cold */
 			case GF_METEOR:
 			{
-				if (hates_fire(o_ptr))
+				if (of_has(f, OF_HATES_FIRE))
 				{
 					do_kill = TRUE;
 					note_kill = (plural ? " burn up!" : " burns up!");
 					if (of_has(f, OF_IGNORE_FIRE)) ignore = TRUE;
 				}
-				if (hates_cold(o_ptr))
+				if (of_has(f, OF_HATES_COLD))
 				{
 					ignore = FALSE;
 					do_kill = TRUE;
@@ -1834,7 +1692,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 			case GF_FORCE:
 			case GF_SOUND:
 			{
-				if (hates_cold(o_ptr))
+				if (of_has(f, OF_HATES_COLD))
 				{
 					note_kill = (plural ? " shatter!" : " shatters!");
 					do_kill = TRUE;
