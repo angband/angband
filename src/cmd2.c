@@ -22,6 +22,7 @@
 #include "cmds.h"
 #include "files.h"
 #include "game-cmd.h"
+#include "game-event.h"
 #include "generate.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
@@ -2056,6 +2057,10 @@ void do_cmd_hold(cmd_code code, cmd_arg args[])
 
 		/* Free turn XXX XXX XXX */
 		p_ptr->energy_use = 0;
+	}
+	else
+	{
+	    event_signal(EVENT_SEEFLOOR);
 	}
 }
 

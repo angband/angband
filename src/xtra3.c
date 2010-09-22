@@ -1739,13 +1739,17 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 	bool blind = ((p_ptr->timed[TMD_BLIND]) || (no_light()));
 
 	const char *p = "see";
-	bool can_pickup = FALSE;
+	int can_pickup = 0;
+	int i;
 
 	/* Scan all marked objects in the grid */
 	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x03);
 	if (floor_num == 0) return;
 
-	can_pickup = inven_carry_okay(&o_list[floor_list[0]]);
+	for (i = 0; i < floor_num; i++)
+	{
+	    can_pickup += inven_carry_okay(&o_list[floor_list[i]]);
+	}
 	
 	/* One object */
 	if (floor_num == 1)
@@ -1834,7 +1838,7 @@ static void ui_enter_game(game_event_type type, game_event_data *data, void *use
 #endif
 	/* Check if the panel should shift when the player's moved */
 	event_add_handler(EVENT_PLAYERMOVED, check_panel, NULL);
-	event_add_handler(EVENT_PLAYERMOVED, see_floor_items, NULL);
+	event_add_handler(EVENT_SEEFLOOR, see_floor_items, NULL);
 }
 
 static void ui_leave_game(game_event_type type, game_event_data *data, void *user)

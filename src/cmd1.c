@@ -21,6 +21,7 @@
 #include "attack.h"
 #include "cave.h"
 #include "cmds.h"
+#include "game-event.h"
 #include "generate.h"
 #include "history.h"
 #include "monster/monster.h"
@@ -29,6 +30,7 @@
 #include "object/object.h"
 #include "squelch.h"
 #include "trap.h"
+
 
 /*
  * Search for hidden things.  Returns true if a search was attempted, returns
@@ -360,9 +362,6 @@ int do_autopickup(void)
 	size_t floor_num = 0;
 	int floor_list[MAX_FLOOR_STACK + 1];
 
-	int can_pickup = 0;
-
-
 	/* Nothing to pick up -- return */
 	if (!cave->o_idx[py][px]) return (0);
 
@@ -406,10 +405,6 @@ int do_autopickup(void)
 
 		/* Count non-gold objects that remain on the floor. */
 		floor_num++;
-
-		/* Tally objects that can be picked up.*/
-		if (inven_carry_okay(o_ptr))
-			can_pickup++;
 	}
 
 	return objs_picked_up;
@@ -462,6 +457,8 @@ byte py_pickup(int pickup)
 	size_t floor_num = 0;
 	int floor_list[MAX_FLOOR_STACK + 1];
 
+	size_t i;
+	int can_pickup = 0;
 	bool call_function_again = FALSE;
 
 	bool domsg = TRUE;
@@ -472,13 +469,23 @@ byte py_pickup(int pickup)
 	/* Nothing else to pick up -- return */
 	if (!cave->o_idx[py][px]) return objs_picked_up;
 
-	/* We can pick up objects.  Menus are not requested (yet). */
+	/* Tally objects that can be picked up.*/
+	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x03);
+	for (i = 0; i < floor_num; i++)
+	{
+	    can_pickup += inven_carry_okay(&o_list[floor_list[i]]);
+	}
+	
+	if (!can_pickup)
+	{
+	    /* Can't pick up, but probably want to know what's there. */
+	    event_signal(EVENT_SEEFLOOR);
+	    return objs_picked_up;
+	}
+
+	/* Use a menu interface for multiple objects, or pickup single objects */
 	if (pickup == 1)
 	{
-		/* Scan floor (again) */
-		floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x03);
-
-		/* Use a menu interface for multiple objects, or pickup single objects */
 		if (floor_num > 1)
 			pickup = 2;
 		else

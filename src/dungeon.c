@@ -1033,6 +1033,9 @@ static void process_player(void)
 			if (p_ptr->energy_use > 100)
 				p_ptr->energy_use = 100;
 			p_ptr->notice &= ~(PN_PICKUP);
+			
+			/* Appropriate time for the player to see objects */
+			event_signal(EVENT_SEEFLOOR);
 		}
 
 		/* Resting */
