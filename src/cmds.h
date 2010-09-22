@@ -49,6 +49,7 @@ void do_cmd_run(cmd_code code, cmd_arg args[]);
 void do_cmd_pathfind(cmd_code code, cmd_arg args[]);
 void do_cmd_hold(cmd_code code, cmd_arg args[]);
 void do_cmd_pickup(cmd_code code, cmd_arg args[]);
+void do_cmd_autopickup(cmd_code code, cmd_arg args[]);
 void do_cmd_rest(cmd_code code, cmd_arg args[]);
 void do_cmd_suicide(cmd_code code, cmd_arg args[]);
 void do_cmd_save_game(cmd_code code, cmd_arg args[]);

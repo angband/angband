@@ -194,6 +194,7 @@ static struct generic_command cmd_hidden[] =
 
 	{ "Toggle wizard mode",  KTRL('W'), CMD_NULL, do_cmd_wizard },
 	{ "Repeat previous command",  KTRL('V'), CMD_REPEAT, NULL },
+	{ "Do autopickup",           KTRL('G'), CMD_AUTOPICKUP, NULL },
 
 #ifdef ALLOW_DEBUG
 	{ "Debug mode commands", KTRL('A'), CMD_NULL, do_cmd_try_debug },

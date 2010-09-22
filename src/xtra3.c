@@ -1771,7 +1771,7 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 
 		/* Message */
 		message_flush();
-		msg("!You %s %s.", p, o_name);
+		msg("You %s %s.", p, o_name);
 	}
 	else
 	{
@@ -1780,13 +1780,10 @@ static void see_floor_items(game_event_type type, game_event_data *data, void *u
 		if (!can_pickup)	p = "have no room for the following objects";
 		else if (blind)     p = "feel something on the floor";
 
-		/* Save screen */
-		screen_save();
-
 		/* Display objects on the floor */
 		screen_save();
-		prt(format("!You %s: ", p), 0, 0);
 		show_floor(floor_list, floor_num, (OLIST_WEIGHT));
+		prt(format("You %s: ", p), 0, 0);
 
 		/* Wait for it.  Use key as next command. */
 		e = inkey_ex();

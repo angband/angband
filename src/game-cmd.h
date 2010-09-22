@@ -61,6 +61,7 @@ typedef enum cmd_code
 	CMD_FIRE,
 	CMD_THROW,
 	CMD_PICKUP,
+	CMD_AUTOPICKUP,
 	CMD_DESTROY,
 /*	CMD_SQUELCH_TYPE, -- might be a command, might have another interface */
 	CMD_DISARM,

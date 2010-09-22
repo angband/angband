@@ -79,6 +79,7 @@ static struct
 	{ CMD_REST, { arg_CHOICE }, do_cmd_rest, FALSE, 0 },
 	{ CMD_PATHFIND, { arg_POINT }, do_cmd_pathfind, FALSE, 0 },
 	{ CMD_PICKUP, { arg_ITEM }, do_cmd_pickup, FALSE, 0 },
+	{ CMD_AUTOPICKUP, { arg_NONE }, do_cmd_autopickup, FALSE, 0 },
 	{ CMD_WIELD, { arg_ITEM, arg_NUMBER }, do_cmd_wield, FALSE, 0 },
 	{ CMD_TAKEOFF, { arg_ITEM }, do_cmd_takeoff, FALSE, 0 },
 	{ CMD_DROP, { arg_ITEM, arg_NUMBER }, do_cmd_drop, FALSE, 0 },

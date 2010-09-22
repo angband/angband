@@ -59,6 +59,9 @@ C:0:X
 A:^V
 C:0:n
 
+# Pickup an item (with autopickup)
+A:^Gg
+C:0:g
 
 ##### Roguelike Keyset Mappings #####
 
@@ -218,6 +221,9 @@ C:1:X
 A:^V
 C:1:'
 
+# Pickup an item (with autopickup)
+A:^Gg
+C:0:g
 
 # Message colors
 %:message.prf
