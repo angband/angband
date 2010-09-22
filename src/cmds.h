@@ -28,6 +28,9 @@ void do_cmd_study_spell(cmd_code code, cmd_arg args[]);
 void do_cmd_cast(cmd_code code, cmd_arg args[]);
 void do_cmd_study_book(cmd_code code, cmd_arg args[]);
 
+/* cmd1.c */
+int do_autopickup(void);
+
 /* cmd2.c */
 void do_cmd_go_up(cmd_code code, cmd_arg args[]);
 void do_cmd_go_down(cmd_code code, cmd_arg args[]);
