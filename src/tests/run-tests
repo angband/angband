@@ -69,7 +69,7 @@ sub main {
             print red("$path: Suite died"), "\n";
             next;
         }
-        unless ($lines[-1] =~ m#^  ([^:]+) finished: (\d+)/(\d+) passed$#) {
+        unless ($lines[-1] =~ m#^([^:]+) finished: (\d+)/(\d+) passed$#) {
             print red("$path: Malformed output"), "\n";
             next;
         }

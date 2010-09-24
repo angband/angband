@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
-	printf("  %s finished: %d/%d passed\n", suite_name, passed, total);
+	printf("%s finished: %d/%d passed\n", suite_name, passed, total);
 	return 0;
 }
 

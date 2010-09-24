@@ -927,6 +927,7 @@ static enum parser_error parse_names_d(struct parser *p) {
 	struct names_parse *s = parser_priv(p);
 	struct name *ns = mem_alloc(sizeof *ns);
 
+	s->nnames[s->section]++;
 	ns->next = s->names[s->section];
 	ns->str = string_make(name);
 	s->names[s->section] = ns;
@@ -1122,7 +1123,7 @@ static errr run_parse_e(struct parser *p) {
 	return parse_file(p, "ego_item");
 }
 
-errr eval_e_slays(struct ego_item *items)
+static errr eval_e_slays(struct ego_item *items)
 {
 	int i;
 	int j;
@@ -1491,34 +1492,6 @@ static void init_stores(void)
 
 	return;
 }
-
-
-/*
- * Initialise random name fragments, from the edit file.
- */
-static void init_names(void)
-{
-	errr err;
-	char filename[1024];
-	char buf[1024];
-	ang_file *fh;
-
-	path_build(filename, sizeof(filename), ANGBAND_DIR_EDIT, "names.txt");
-
-	/* Open the file */
-	fh = file_open(filename, MODE_READ, -1);
-	if (!fh) quit("Cannot open 'names.txt' file.");
-
-	/* Parse the file */
-	err = init_names_txt(fh, buf);
-	file_close(fh);
-
-	/* Errors */
-	if (err) display_parse_error("names", err, buf);
-
-	return;
-}
-
 
 /*** Initialize others ***/
 
@@ -1959,7 +1932,7 @@ bool init_angband(void)
 
 	/* Initialise random name data */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (random names)");
-	init_names();
+	if (run_parser(&names_parser)) quit("Can't parse names");
 
 	/* Initialize some other arrays */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (other)");

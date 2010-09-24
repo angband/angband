@@ -24,6 +24,7 @@ static int test_d0(void *state) {
 	eq(r, 0);
 	r = parser_parse(state, "D:bar");
 	eq(r, 0);
+	ok;
 }
 
 static int test_n1(void *state) {
@@ -37,6 +38,7 @@ static int test_d1(void *state) {
 	eq(r, 0);
 	r = parser_parse(state, "D:quxx");
 	eq(r, 0);
+	ok;
 }
 
 static const char *suite_name = "parse/names";

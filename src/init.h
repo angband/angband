@@ -86,7 +86,6 @@ struct header
 extern errr init_info_txt(ang_file *fp, char *buf, header *head,
                           parse_info_txt_func parse_info_txt_line);
 extern errr init_store_txt(ang_file *fp, char *buf);
-extern errr init_names_txt(ang_file *fp, char *buf);
 extern errr eval_info(eval_info_post_func eval_info_process, header *head);
 
 extern errr emit_info_txt(ang_file *fp, ang_file *template, char *buf, header *head,
