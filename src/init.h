@@ -92,9 +92,10 @@ extern errr eval_info(eval_info_post_func eval_info_process, header *head);
 extern errr emit_info_txt(ang_file *fp, ang_file *template, char *buf, header *head,
    emit_info_txt_index_func emit_info_txt_index, emit_info_txt_always_func emit_info_txt_always);
 
-extern struct parser *init_parse_z(void);
-extern struct parser *init_parse_k(void);
 extern struct parser *init_parse_a(void);
+extern struct parser *init_parse_e(void);
+extern struct parser *init_parse_k(void);
+extern struct parser *init_parse_z(void);
 extern struct parser *init_parse_names(void);
 
 extern errr parse_v_info(char *buf, header *head);
@@ -111,7 +112,6 @@ extern errr parse_g_info(char *buf, header *head);
 extern errr parse_flavor_info(char *buf, header *head);
 extern errr parse_s_info(char *buf, header *head);
 extern errr eval_r_power(header *head);
-extern errr eval_e_slays(header *head);
 
 extern errr emit_r_info_index(ang_file *fp, header *head, int i);
 

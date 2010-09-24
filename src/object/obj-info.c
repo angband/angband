@@ -1203,7 +1203,7 @@ void object_info_header(const object_type *o_ptr)
 		if (object_ego_is_visible(o_ptr) && e_info[o_ptr->name2].text)
 		{
 			if (did_desc) text_out("  ");
-			text_out(e_text + e_info[o_ptr->name2].text);
+			text_out(e_info[o_ptr->name2].text);
 			text_out("\n\n");
 		}
 		else if (did_desc)

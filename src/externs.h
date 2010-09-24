@@ -162,7 +162,6 @@ extern object_kind *k_info;
 extern char *k_text;
 extern artifact_type *a_info;
 extern ego_item_type *e_info;
-extern char *e_name;
 extern char *e_text;
 extern monster_race *r_info;
 extern char *r_name;

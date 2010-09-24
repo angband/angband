@@ -691,8 +691,6 @@ artifact_type *a_info;
  * The ego-item arrays
  */
 ego_item_type *e_info;
-char *e_name;
-char *e_text;
 flag_cache *slay_cache;
 
 /*

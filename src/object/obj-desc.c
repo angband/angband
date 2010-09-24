@@ -401,7 +401,7 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 		strnfcat(buf, max, &end, " %s", a_info[o_ptr->name1].name);
 
 	else if ((spoil && o_ptr->name2) || object_ego_is_visible(o_ptr))
-		strnfcat(buf, max, &end, " %s", e_name + e_info[o_ptr->name2].name);
+		strnfcat(buf, max, &end, " %s", e_info[o_ptr->name2].name);
 
 	else if (aware && !artifact_p(o_ptr) && (k_ptr->flavor || k_ptr->tval == TV_SCROLL))
 		strnfcat(buf, max, &end, " of %s", k_ptr->name);

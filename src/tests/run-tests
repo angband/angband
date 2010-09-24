@@ -58,8 +58,8 @@ sub main {
     my $maxpath = (max map { length($_) } @paths) - 3;
     my $len     = $maxpath + 1 + 7;
     
-    print "Running ", scalar(@paths), " tests:\n" unless $quiet;
-    foreach my $path (@paths) {
+    print "Running ", scalar(@paths), " suites:\n" unless $quiet;
+    foreach my $path (sort @paths) {
         chomp $path;
 
         # actually run the test program here, getting the lines of output

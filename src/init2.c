@@ -976,6 +976,238 @@ struct file_parser names_parser = {
 	finish_parse_names
 };
 
+static enum parser_error parse_e_n(struct parser *p) {
+	int idx = parser_getint(p, "index");
+	const char *name = parser_getstr(p, "name");
+	struct ego_item *h = parser_priv(p);
+
+	struct ego_item *e = mem_alloc(sizeof *e);
+	memset(e, 0, sizeof(*e));
+	e->next = h;
+	parser_setpriv(p, e);
+	e->eidx = idx;
+	e->name = string_make(name);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_e_w(struct parser *p) {
+	int level = parser_getint(p, "level");
+	int rarity = parser_getint(p, "rarity");
+	int cost = parser_getint(p, "cost");
+	struct ego_item *e = parser_priv(p);
+
+	if (!e)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	e->level = level;
+	e->rarity = rarity;
+	e->cost = cost;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_e_x(struct parser *p) {
+	int rating = parser_getint(p, "rating");
+	int xtra = parser_getint(p, "xtra");
+	struct ego_item *e = parser_priv(p);
+
+	if (!e)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	e->rating = rating;
+	e->xtra = xtra;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_e_t(struct parser *p) {
+	int tval = parser_getint(p, "tval");
+	int min_sval = parser_getint(p, "min-sval");
+	int max_sval = parser_getint(p, "max-sval");
+	struct ego_item *e = parser_priv(p);
+	int i;
+
+	if (!e)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	for (i = 0; i < EGO_TVALS_MAX; i++) {
+		if (!e->tval[i]) {
+			e->tval[i] = tval;
+			e->min_sval[i] = min_sval;
+			e->max_sval[i] = max_sval;
+			break;
+		}
+	}
+
+	if (i == EGO_TVALS_MAX)
+		return PARSE_ERROR_GENERIC;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_e_c(struct parser *p) {
+	struct random th = parser_getrand(p, "th");
+	struct random td = parser_getrand(p, "td");
+	struct random ta = parser_getrand(p, "ta");
+	struct random pval = parser_getrand(p, "pval");
+	struct ego_item *e = parser_priv(p);
+
+	if (!e)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	e->to_h = th;
+	e->to_d = td;
+	e->to_a = ta;
+	e->pval = pval;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_e_m(struct parser *p) {
+	int th = parser_getint(p, "th");
+	int td = parser_getint(p, "td");
+	int ta = parser_getint(p, "ta");
+	int pval = parser_getint(p, "pval");
+	struct ego_item *e = parser_priv(p);
+
+	if (!e)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	e->min_to_h = th;
+	e->min_to_d = td;
+	e->min_to_a = ta;
+	e->min_pval = pval;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_e_f(struct parser *p) {
+	struct ego_item *e = parser_priv(p);
+	char *s;
+	char *t;
+
+	if (!e)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+	s = string_make(parser_getstr(p, "flags"));
+	t = strtok(s, " |");
+	while (t) {
+		if (grab_flag(e->flags, OF_SIZE, k_info_flags,t))
+			break;
+		t = strtok(NULL, " |");
+	}
+	mem_free(s);
+	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_e_d(struct parser *p) {
+	struct ego_item *e = parser_priv(p);
+
+	if (!e)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	e->text = string_append(e->text, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_e(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "V sym version", ignored);
+	parser_reg(p, "N int index str name", parse_e_n);
+	parser_reg(p, "W int level int rarity int pad int cost", parse_e_w);
+	parser_reg(p, "X int rating int xtra", parse_e_x);
+	parser_reg(p, "T int tval int min-sval int max-sval", parse_e_t);
+	parser_reg(p, "C rand th rand td rand ta rand pval", parse_e_c);
+	parser_reg(p, "M int th int td int ta int pval", parse_e_m);
+	parser_reg(p, "F ?str flags", parse_e_f);
+	parser_reg(p, "D str text", parse_e_d);
+	return p;
+}
+
+static errr run_parse_e(struct parser *p) {
+	return parse_file(p, "ego_item");
+}
+
+errr eval_e_slays(struct ego_item *items)
+{
+	int i;
+	int j;
+	int count = 0;
+	bitflag cacheme[OF_SIZE];
+	bitflag slay_mask[OF_SIZE];
+	bitflag **dupcheck;
+	ego_item_type *e_ptr;
+
+	/* Build the slay mask */
+	flags_init(slay_mask, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
+
+	/* Calculate necessary size of slay_cache */
+	dupcheck = C_ZNEW(z_info->e_max, bitflag *);
+	
+	for (i = 0; i < z_info->e_max; i++)
+	{
+		dupcheck[i] = C_ZNEW(OF_SIZE, bitflag);
+		e_ptr = items + i;
+
+		/* Find the slay flags on this ego */		
+		of_copy(cacheme, e_ptr->flags);
+		of_inter(cacheme, slay_mask);
+
+		/* Only consider non-empty combinations of slay flags */
+		if (!of_is_empty(cacheme))
+		{
+			/* Skip previously scanned combinations */
+			for (j = 0; j < i; j++)
+			{
+				if (of_is_equal(cacheme, dupcheck[j]))
+					continue;
+			}
+
+			/* msg_print("Found a new slay combo on an ego item"); */
+			count++;
+			of_copy(dupcheck[i], cacheme);
+		}
+	}
+
+	/* Allocate slay_cache with an extra empty element for an iteration stop */
+	slay_cache = C_ZNEW((count + 1), flag_cache);
+	count = 0;
+
+	/* Populate the slay_cache */
+	for (i = 0; i < z_info->e_max; i++)
+	{
+		if (!of_is_empty(dupcheck[i]))
+		{
+			of_copy(slay_cache[count].flags, dupcheck[i]);
+			slay_cache[count].value = 0;
+			count++;
+			/*msg_print("Cached a slay combination");*/
+		}
+	}
+
+	for (i = 0; i < z_info->e_max; i++)
+		FREE(dupcheck[i]);
+	FREE(dupcheck);
+
+	/* Success */
+	return 0;
+}
+
+static errr finish_parse_e(struct parser *p) {
+	struct ego_item *e;
+
+	e_info = mem_alloc(z_info->e_max * sizeof(*e));
+	for (e = parser_priv(p); e; e = e->next) {
+		if (e->eidx >= z_info->e_max)
+			continue;
+		memcpy(&e_info[e->eidx], e, sizeof(*e));
+	}
+
+	eval_e_slays(e_info);
+
+	return 0;
+}
+
+struct file_parser e_parser = {
+	init_parse_e,
+	run_parse_e,
+	finish_parse_e
+};
+
 /*
  * Initialize the "f_info" array
  */
@@ -998,33 +1230,6 @@ static errr init_f_info(void)
 
 	return (err);
 }
-
-/*
- * Initialize the "e_info" array
- */
-static errr init_e_info(void)
-{
-	errr err;
-
-	/* Init the header */
-	init_header(&e_head, z_info->e_max, sizeof(ego_item_type));
-
-	/* Save a pointer to the parsing function */
-	e_head.parse_info_txt = parse_e_info;
-
-	/* Save a pointer to the slay cache function */
-	e_head.eval_info_post = eval_e_slays;
-
-	err = init_info("ego_item", &e_head);
-
-	/* Set the global variables */
-	e_info = e_head.info_ptr;
-	e_name = e_head.name_ptr;
-	e_text = e_head.text_ptr;
-	return (err);
-}
-
-
 
 /*
  * Initialize the "r_info" array
@@ -1706,7 +1911,7 @@ bool init_angband(void)
 
 	/* Initialize ego-item info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (ego-items)");
-	if (init_e_info()) quit("Cannot initialize ego-items");
+	if (run_parser(&e_parser)) quit("Cannot initialize ego-items");
 
 	/* Initialize monster info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (monsters)");

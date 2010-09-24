@@ -1425,7 +1425,7 @@ static void display_ego_item(int col, int row, bool cursor, int oid)
 	byte attr = curs_attrs[0 != (int)e_ptr->everseen][0 != (int)cursor];
 
 	/* Display the name */
-	c_prt(attr, e_name + e_ptr->name, row, col);
+	c_prt(attr, e_ptr->name, row, col);
 }
 
 /*
@@ -1452,7 +1452,7 @@ static void desc_ego_fake(int oid)
 
 	/* Dump the name */
 	c_prt(TERM_L_BLUE, format("%s %s", ego_grp_name(default_group(oid)),
-	                                   e_name + e_ptr->name), 0, 0);
+	                                   e_ptr->name), 0, 0);
 
 	/* Begin recall */
 	Term_gotoxy(0, 1);
@@ -1461,7 +1461,7 @@ static void desc_ego_fake(int oid)
 	if (e_ptr->text)
 	{
 		int x, y;
-		text_out("%s", e_text + e_ptr->text);
+		text_out("%s", e_ptr->text);
 		Term_locate(&x, &y);
 		Term_gotoxy(0, y+1);
 	}
@@ -1503,7 +1503,7 @@ static int e_cmp_tval(const void *a, const void *b)
 	if (c) return c;
 
 	/* Order by */
-	return strcmp(e_name + ea->name, e_name + eb->name);
+	return strcmp(ea->name, eb->name);
 }
 
 /*

@@ -126,10 +126,14 @@ typedef struct artifact
 /*
  * Information about "ego-items".
  */
-typedef struct
+typedef struct ego_item
 {
-	u32b name;			/* Name (offset) */
-	u32b text;			/* Text (offset) */
+	struct ego_item *next;
+
+	char *name;
+	char *text;
+
+	u32b eidx;
 
 	s32b cost;			/* Ego-item "cost" */
 

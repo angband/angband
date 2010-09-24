@@ -40,13 +40,12 @@ static int test_badtval1(void *state) {
 	ok;
 }
 
-/* Causes segfault: lookup_sval() requires z_info/k_info
+/* Causes segfault: lookup_sval() requires z_info/k_info */
 static int test_badsval(void *state) {
 	errr r = parser_parse(state, "I:light:badsval:3");
 	eq(r, PARSE_ERROR_UNRECOGNISED_SVAL);
 	ok;
 }
-*/
 
 static int test_badsval1(void *state) {
 	enum parser_error r = parser_parse(state, "I:light:-2:3");
@@ -62,7 +61,7 @@ static int test_i0(void *state) {
 	a = parser_priv(state);
 	require(a);
 	eq(a->tval, TV_LIGHT);
-	eq(a->sval, SV_LIGHT_THRAIN);
+	eq(a->sval, 6);
 	eq(a->pval, 3);
 	ok;
 }
