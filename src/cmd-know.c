@@ -561,34 +561,45 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			delay = 0;
 		}
 
-		ke = inkey_ex();
-
-		/* Do visual mode command if needed */
-		if (o_funcs.xattr && o_funcs.xchar &&
-				visual_mode_command(ke, &visual_list, browser_rows-1, wid - (g_name_len + 3),
-				&attr_top, &char_left, o_funcs.xattr(oid), (byte *)o_funcs.xchar(oid),
-				g_name_len + 3, 7, &delay))
+		bool handled = TRUE;
+		while (handled)
 		{
-			continue;
+			ke = inkey_ex();
+
+			if (!visual_list && (ke.type & (EVT_KBRD | EVT_MOUSE | EVT_REFRESH)))
+				handled = menu_handle_event(active_menu, &ke);
+			else
+				handled = FALSE;
 		}
 
-		if (ke.type == EVT_MOUSE)
-		{
-			/* Change active panels */
-			if (region_inside(&inactive_menu->boundary, &ke))
-			{
-				swap(active_menu, inactive_menu);
-				swap(active_cursor, inactive_cursor);
-				panel = 1-panel;
-			}
-		}
-
-		ke = run_event_loop(menu_handle_event, active_menu, (EVT_KBRD | EVT_MOUSE | EVT_REFRESH), &ke);
 		switch (ke.type)
 		{
 			case EVT_KBRD:
 			{
+				/* Do visual mode command if needed */
+				if (o_funcs.xattr && o_funcs.xchar)
+				{
+					if (visual_mode_command(ke, &visual_list, browser_rows - 1,
+							wid - (g_name_len + 3), &attr_top, &char_left,
+							o_funcs.xattr(oid), (byte *)o_funcs.xchar(oid),
+							g_name_len + 3, 7, &delay))
+						continue;
+				}
+
 				break;
+			}
+
+			case EVT_MOUSE:
+			{
+				/* Change active panels */
+				if (region_inside(&inactive_menu->boundary, &ke))
+				{
+					swap(active_menu, inactive_menu);
+					swap(active_cursor, inactive_cursor);
+					panel = 1-panel;
+				}
+				break;
+
 			}
 
 			case ESCAPE:
