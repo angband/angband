@@ -185,7 +185,6 @@ struct menu_iter
 struct menu_type
 {
 	/* menu inherits from panel */
-	event_listener target;
 	void (*refresh)();
 	region boundary;
 
@@ -245,6 +244,7 @@ bool menu_layout(menu_type *menu, const region *loc);
 void menu_set_filter(menu_type *menu, const int object_list[], int n);
 void menu_release_filter(menu_type *menu);
 
+bool menu_handle_event(void *object, const ui_event_data *in);
 
 /* Find a menu iterator struct */
 const menu_iter *find_menu_iter(menu_iter_id iter_id);

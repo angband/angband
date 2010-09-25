@@ -45,15 +45,17 @@
 /*
  * Primitive event loop.
  *
- *  - target = the event target
- *  - start - optional initial event that allows you to prime the loop without
- *    pushing the event queue.
+ * handler: function to call for each event
+ * data: data to give to that function
+ * event_flags: events that the function is interested in
+ * start: optional initial event that allows you to prime the loop without pushing the event queue
+ *
  *  Returns:
  *    EVT_STOP - the loop was halted.
  *    EVT_AGAIN - start was not handled
  *    The first unhandled event.
  */
-ui_event_data run_event_loop(event_listener *target, const ui_event_data *start)
+ui_event_data run_event_loop(bool (*handler)(void *object, const ui_event_data *in), void *data, int event_flags, const ui_event_data *start)
 {
 	ui_event_data ke = EVENT_EMPTY;
 	bool handled = TRUE;
@@ -68,8 +70,8 @@ ui_event_data run_event_loop(event_listener *target, const ui_event_data *start)
 		if (ke.type == EVT_STOP)
 			break;
 
-		if (ke.type & target->event_flags)
-			handled = target->handler(target->object, &ke);
+		if (ke.type & event_flags)
+			handled = handler(data, &ke);
 
 		if (handled) start = NULL;
 	}

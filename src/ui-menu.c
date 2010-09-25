@@ -476,7 +476,7 @@ void menu_refresh(menu_type *menu)
 }
 
 /* The menu event loop, called as a handler from the event loop */
-static bool menu_handle_event(void *object, const ui_event_data *in)
+bool menu_handle_event(void *object, const ui_event_data *in)
 {
 	menu_type *menu = object;
 	int n = menu->filter_count;
@@ -722,7 +722,8 @@ ui_event_data menu_select(menu_type *menu, int *cursor, int no_handle)
 		menu->filter_count = menu->count;
 
 	ke.type = EVT_REFRESH;
-	(void)run_event_loop(&menu->target, &ke);
+
+	(void)run_event_loop(menu_handle_event, menu, (EVT_KBRD | EVT_MOUSE | EVT_REFRESH), &ke);
 
 	/* Check for command flag */
 	if (p_ptr->command_new)
@@ -734,7 +735,7 @@ ui_event_data menu_select(menu_type *menu, int *cursor, int no_handle)
 	/* Stop on first unhandled event. */
 	while (!(ke.type & no_handle))
 	{
-		ke = run_event_loop(&menu->target, NULL);
+		ke = run_event_loop(menu_handle_event, menu, (EVT_KBRD | EVT_MOUSE | EVT_REFRESH), NULL);
 
 		switch (ke.type)
 		{
@@ -895,11 +896,6 @@ bool menu_init(menu_type *menu, skin_id skin_id, const menu_iter *iter, const re
 	assert(skin && "menu skin not found!");
 	assert(iter && "menu iter not found!");
 	assert(loc && "no screen location specified!");
-
-	/* Stuff for the event listener (see ui-event.h) */
-	menu->target.handler = menu_handle_event;
-	menu->target.object = menu;
-	menu->target.event_flags = (EVT_KBRD | EVT_MOUSE | EVT_REFRESH);
 
 	/* Menu-specific initialisation */
 	menu->refresh = menu_refresh;

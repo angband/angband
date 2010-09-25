@@ -43,20 +43,7 @@ typedef struct
 #define EVENT_EMPTY		{ EVT_NONE, 0, 0, 0, 0 }
 
 
-/* An event handler member function */
-typedef bool (*handler_f)(void *object, const ui_event_data *in);
-
-
-/* Base class for event listener */
-typedef struct
-{
-	handler_f handler;  /* The handler function to call */
-	void *object;       /* Self-pointer */
-	int event_flags;    /* Set of events to which this listener has subscribed */
-} event_listener;
-
-
-ui_event_data run_event_loop(event_listener *parent, const ui_event_data *start);
+ui_event_data run_event_loop(bool (*handler)(void *object, const ui_event_data *in), void *data, int event_flags, const ui_event_data *start);
 
 
 #endif /* INCLUDED_UI_EVENT_H */
