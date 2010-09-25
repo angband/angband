@@ -48,31 +48,17 @@
  * handler: function to call for each event
  * data: data to give to that function
  * event_flags: events that the function is interested in
- * start: optional initial event that allows you to prime the loop without pushing the event queue
  *
- *  Returns the first unhandled event.
+ * Returns the first unhandled event.
  */
-ui_event_data run_event_loop(bool (*handler)(void *object, const ui_event_data *in), void *data, int event_flags, const ui_event_data *start)
+ui_event_data run_event_loop(bool (*handler)(void *object, const ui_event_data *in), void *data, int event_flags)
 {
 	ui_event_data ke;
-	bool handled = TRUE;
 
-	if (start)
-	{
-		ke = *start;
-		if (ke.type & event_flags)
-			handled = handler(data, &ke);
-	}
-
-	while (handled)
+	do
 	{
 		ke = inkey_ex();
-
-		if (ke.type & event_flags)
-			handled = handler(data, &ke);
-		else
-			break;
-	}
+	} while ((ke.type & event_flags) && handler(data, &ke));
 
 	return ke;
 }

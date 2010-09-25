@@ -733,7 +733,7 @@ ui_event_data menu_select(menu_type *menu, int *cursor, int no_handle)
 	/* Stop on first unhandled event */
 	while (!(ke.type & no_handle))
 	{
-		ke = run_event_loop(menu_handle_event, menu, (EVT_KBRD | EVT_MOUSE | EVT_REFRESH), NULL);
+		ke = run_event_loop(menu_handle_event, menu, (EVT_KBRD | EVT_MOUSE | EVT_REFRESH));
 
 		switch (ke.type)
 		{

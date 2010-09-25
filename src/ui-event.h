@@ -39,8 +39,6 @@ typedef struct
 
 #define EVENT_EMPTY		{ EVT_NONE, 0, 0, 0, 0 }
 
-
-ui_event_data run_event_loop(bool (*handler)(void *object, const ui_event_data *in), void *data, int event_flags, const ui_event_data *start);
-
+ui_event_data run_event_loop(bool (*handler)(void *object, const ui_event_data *in), void *data, int event_flags);
 
 #endif /* INCLUDED_UI_EVENT_H */
