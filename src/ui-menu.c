@@ -715,7 +715,7 @@ ui_event_data menu_select(menu_type *menu, int *cursor, int no_handle)
 	menu->cursor = *cursor;
 
 	/* Menu shall not handle these */
-	no_handle |= (EVT_SELECT | EVT_BACK | EVT_ESCAPE | EVT_STOP);
+	no_handle |= (EVT_SELECT | EVT_BACK | EVT_ESCAPE);
 	no_handle &= ~(EVT_REFRESH);
 
 	if (!menu->filter_list)

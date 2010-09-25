@@ -51,7 +51,6 @@
  * start: optional initial event that allows you to prime the loop without pushing the event queue
  *
  *  Returns:
- *    EVT_STOP - the loop was halted.
  *    EVT_AGAIN - start was not handled
  *    The first unhandled event.
  */
@@ -66,9 +65,6 @@ ui_event_data run_event_loop(bool (*handler)(void *object, const ui_event_data *
 
 		if (start) ke = *start;
 		else ke = inkey_ex();
-
-		if (ke.type == EVT_STOP)
-			break;
 
 		if (ke.type & event_flags)
 			handled = handler(data, &ke);
