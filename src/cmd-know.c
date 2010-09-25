@@ -453,7 +453,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	/* with "pop-up menu" for lore */
 	while ((!flag) && (grp_cnt))
 	{
-		ui_event_data ke, ke0;
+		ui_event_data ke;
 
 		if (redraw)
 		{
@@ -565,12 +565,9 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 		/* Do visual mode command if needed */
 		if (o_funcs.xattr && o_funcs.xchar &&
-					visual_mode_command(ke, &visual_list,
-					browser_rows-1, wid - (g_name_len + 3),
-					&attr_top, &char_left,
-					o_funcs.xattr(oid), (byte*)
-					o_funcs.xchar(oid),
-					g_name_len + 3, 7, &delay))
+				visual_mode_command(ke, &visual_list, browser_rows-1, wid - (g_name_len + 3),
+				&attr_top, &char_left, o_funcs.xattr(oid), (byte *)o_funcs.xchar(oid),
+				g_name_len + 3, 7, &delay))
 		{
 			continue;
 		}
@@ -586,9 +583,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			}
 		}
 
-		ke0 = run_event_loop(menu_handle_event, active_menu, (EVT_KBRD | EVT_MOUSE | EVT_REFRESH), &ke);
-		if (ke0.type != EVT_AGAIN) ke = ke0;
-
+		ke = run_event_loop(menu_handle_event, active_menu, (EVT_KBRD | EVT_MOUSE | EVT_REFRESH), &ke);
 		switch (ke.type)
 		{
 			case EVT_KBRD:

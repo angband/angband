@@ -50,32 +50,28 @@
  * event_flags: events that the function is interested in
  * start: optional initial event that allows you to prime the loop without pushing the event queue
  *
- *  Returns:
- *    EVT_AGAIN - start was not handled
- *    The first unhandled event.
+ *  Returns the first unhandled event.
  */
 ui_event_data run_event_loop(bool (*handler)(void *object, const ui_event_data *in), void *data, int event_flags, const ui_event_data *start)
 {
-	ui_event_data ke = EVENT_EMPTY;
+	ui_event_data ke;
 	bool handled = TRUE;
-
-	while (handled)
-	{
-		handled = FALSE;
-
-		if (start) ke = *start;
-		else ke = inkey_ex();
-
-		if (ke.type & event_flags)
-			handled = handler(data, &ke);
-
-		if (handled) start = NULL;
-	}
 
 	if (start)
 	{
-		ke.type = EVT_AGAIN;
-		ke.key = '\xff';
+		ke = *start;
+		if (ke.type & event_flags)
+			handled = handler(data, &ke);
+	}
+
+	while (handled)
+	{
+		ke = inkey_ex();
+
+		if (ke.type & event_flags)
+			handled = handler(data, &ke);
+		else
+			break;
 	}
 
 	return ke;
