@@ -1,13 +1,3 @@
-/*
- * Copyright (c) 2007 Pete Mack and others
- * This code released under the Gnu Public License. See www.fsf.org
- * for current GPL license details. Addition permission granted to
- * incorporate modifications in all Angband variants as defined in the
- * Angband variants FAQ. See rec.games.roguelike.angband for FAQ.
- */
-
-
-
 #ifndef INCLUDED_UI_EVENT_H
 #define INCLUDED_UI_EVENT_H
 
@@ -38,7 +28,5 @@ typedef struct
 } ui_event_data;
 
 #define EVENT_EMPTY		{ EVT_NONE, 0, 0, 0, 0 }
-
-ui_event_data run_event_loop(bool (*handler)(void *object, const ui_event_data *in), void *data, int event_flags);
 
 #endif /* INCLUDED_UI_EVENT_H */
