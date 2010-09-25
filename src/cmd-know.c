@@ -453,8 +453,6 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	/* with "pop-up menu" for lore */
 	while ((!flag) && (grp_cnt))
 	{
-		ui_event_data ke;
-
 		if (redraw)
 		{
 			/* Print the title bits */
@@ -561,19 +559,17 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			delay = 0;
 		}
 
-		bool handled = TRUE;
-		while (handled)
-		{
-			ui_event_data ke0 = EVENT_EMPTY;
-			ke = inkey_ex();
 
-			if (!visual_list && (ke.type & (EVT_KBRD | EVT_MOUSE | EVT_REFRESH)))
-				handled = menu_handle_event(active_menu, &ke, &ke0);
-			else
-				handled = FALSE;
-		}
+		ui_event_data ke;
+		ui_event_data ke0 = EVENT_EMPTY;
 
-		/* Do visual mode command if needed */
+		bool recall = FALSE;
+
+		ke = inkey_ex();
+		if (!visual_list && menu_handle_event(active_menu, &ke, &ke0))
+			ke = ke0;
+
+		/* XXX Do visual mode command if needed */
 		if (o_funcs.xattr && o_funcs.xchar)
 		{
 			if (visual_mode_command(ke, &visual_list, browser_rows - 1,
@@ -587,6 +583,11 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		{
 			case EVT_KBRD:
 			{
+				if (ke.key == 'r' || ke.key == 'R')
+					recall = TRUE;
+				else if (o_funcs.xtra_act)
+					o_funcs.xtra_act(ke.key, oid);
+
 				break;
 			}
 
@@ -599,106 +600,51 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 					swap(active_cursor, inactive_cursor);
 					panel = 1-panel;
 				}
-				break;
 
+				continue;
 			}
 
-			case ESCAPE:
+			case EVT_ESCAPE:
 			{
 				flag = TRUE;
-				continue;
+				break;
 			}
 
 			case EVT_SELECT:
 			{
-				if (panel == 1 && oid >= 0 && o_cur == active_menu->cursor)
-				{
-					o_funcs.lore(oid);
-					redraw = TRUE;
-				}
+				if (panel == 0)
+					do_swap = TRUE;
+				else if (panel == 1 && oid >= 0 && o_cur == active_menu->cursor)
+					recall = TRUE;
+				break;
 			}
 
 			case EVT_MOVE:
 			{
 				*active_cursor = active_menu->cursor;
-				continue;
+				break;
 			}
 
 			case EVT_BACK:
 			{
 				if (panel == 1)
 					do_swap = TRUE;
+				break;
 			}
-
-			/* XXX Handle EVT_RESIZE */
 
 			default:
 			{
-				continue;
+				break;
 			}
 		}
 
-		switch (ke.key)
+		/* Recall on screen */
+		if (recall)
 		{
-			case ESCAPE:
-			{
-				flag = TRUE;
-				break;
-			}
+			if (oid >= 0)
+				o_funcs.lore(oid);
 
-			case 'R':
-			case 'r':
-			{
-				/* Recall on screen */
-				if (oid >= 0)
-					o_funcs.lore(oid);
-
-				redraw = TRUE;
-				break;
-			}
-
-			/* Jump down a page */
-			case '3':
-			{
-				*active_cursor += browser_rows;
-
-				if (g_cur >= grp_cnt) g_cur = grp_cnt - 1;
-				else if (o_cur >= g_o_count) o_cur = g_o_count - 1;
-
-				break;
-			}
-
-			/* Jump up a page */
-			case '9':
-			{
-				*active_cursor -= browser_rows;
-
-				if (*active_cursor < 0) *active_cursor = 0;
-
-				break;
-			}
-
-			default:
-			{
-				int d = target_dir(ke.key);
-
-				/* Handle key-driven motion between panels */
-				if (ddx[d] && ((ddx[d] < 0) == (panel == 1)))
-				{
-					/* Silly hack -- diagonal arithmetic */
-					*inactive_cursor += ddy[d];
-					if (*inactive_cursor < 0) *inactive_cursor = 0;
-					else if (g_cur >= grp_cnt) g_cur = grp_cnt - 1;
-					else if (o_cur >= g_o_count) o_cur = g_o_count - 1;
-					do_swap = TRUE;
-				}
-				else if (o_funcs.xtra_act)
-				{
-					o_funcs.xtra_act(ke.key, oid);
-				}
-
-				break;
-			}
+			redraw = TRUE;
 		}
 	}
 
@@ -2109,12 +2055,19 @@ void do_cmd_knowledge(void)
 
 	screen_save();
 	menu_layout(&knowledge_menu, &knowledge_region);
-	clear_from(0);
 
 	while (c.type != EVT_ESCAPE)
+	{
+		clear_from(0);
 		c = menu_select(&knowledge_menu, 0);
+
+		if (c.type == EVT_SELECT && knowledge_actions[knowledge_menu.cursor].act.action)
+		{
+			knowledge_actions[knowledge_menu.cursor].act.action(
+					knowledge_actions[knowledge_menu.cursor].act.data,
+					knowledge_actions[knowledge_menu.cursor].act.name);
+		}
+	}
 
 	screen_load();
 }
-
-
