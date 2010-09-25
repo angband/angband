@@ -44,6 +44,7 @@ enum {
 	T_STR = 6,
 	T_RAND = 8,
 	T_UINT = 10,
+	T_CHAR = 12,
 	T_OPT = 0x00000001
 };
 
@@ -56,6 +57,7 @@ struct parser_spec {
 struct parser_value {
 	struct parser_spec spec;
 	union {
+		char cval;
 		int ival;
 		unsigned int uval;
 		char *sval;
@@ -219,6 +221,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 	struct parser_hook *h;
 	struct parser_spec *s;
 	struct parser_value *v;
+	char *sp = NULL;
 
 	assert(p);
 	assert(line);
@@ -255,10 +258,17 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 
 		/* These types are tokenized on ':'; strings are not tokenized
 		 * at all (i.e., they consume the remainder of the line) */
-		if (t == T_INT || t == T_SYM || t == T_RAND || t == T_UINT)
-			tok = strtok(NULL, ":");
-		else
-			tok = strtok(NULL, "");
+		if (t == T_INT || t == T_SYM || t == T_RAND || t == T_UINT) {
+			tok = strtok(sp, ":");
+			sp = NULL;
+		} else if (t == T_CHAR) {
+			tok = strtok(sp, "");
+			if (tok)
+				sp = tok + 1;
+		} else {
+			tok = strtok(sp, "");
+			sp = NULL;
+		}
 		if (!tok)
 		{
 			if (!(s->type & T_OPT))
@@ -291,6 +301,10 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 				mem_free(v);
 				return PARSE_ERROR_NOT_NUMBER;
 			}
+		}
+		else if (t == T_CHAR)
+		{
+			v->u.cval = *tok;
 		}
 		else if (t == T_SYM || t == T_STR)
 		{
@@ -340,6 +354,8 @@ static int parse_type(const char *s) {
 		return T_RAND | rv;
 	if (!strcmp(s, "uint"))
 		return T_UINT | rv;
+	if (!strcmp(s, "char"))
+		return T_CHAR | rv;
 	return T_NONE;
 }
 
@@ -509,4 +525,10 @@ struct random parser_getrand(struct parser *p, const char *name) {
 	struct parser_value *v = parser_getval(p, name);
 	assert((v->spec.type & ~T_OPT) == T_RAND);
 	return v->u.rval;
+}
+
+char parser_getchar(struct parser *p, const char *name) {
+	struct parser_value *v = parser_getval(p, name);
+	assert((v->spec.type & ~T_OPT) == T_CHAR);
+	return v->u.cval;
 }

@@ -68,7 +68,7 @@ extern void parser_setpriv(struct parser *p, void *v);
  *
  * Hooks have the following format:
  *   <fmt>  ::= <name> [<type> <name>]* [?<type> <name>]*
- *   <type> ::= int | str | sym | rand
+ *   <type> ::= int | str | sym | rand | char
  * The first <name> is called the directive for this hook. Any other hooks with
  * the same directive are superseded by this hook. It is an error for a
  * mandatory field to follow an optional field. It is an error for any field to

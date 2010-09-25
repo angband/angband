@@ -334,6 +334,53 @@ static int test_uint1(void *state) {
 	ok;
 }
 
+static enum parser_error helper_char0(struct parser *p) {
+	char c = parser_getchar(p, "c");
+	int *wasok = parser_priv(p);
+
+	if (c != 'C')
+		return PARSE_ERROR_GENERIC;
+	*wasok = 1;
+	return PARSE_ERROR_NONE;
+}
+
+static int test_char0(void *state) {
+	int wasok = 0;
+	errr r = parser_reg(state, "test-char0 char c", helper_char0);
+	enum parser_error e;
+	eq(r, 0);
+	parser_setpriv(state, &wasok);
+	e = parser_parse(state, "test-char0:C");
+	eq(e, PARSE_ERROR_NONE);
+	eq(wasok, 1);
+	ok;
+}
+
+static enum parser_error helper_char1(struct parser *p) {
+	char c0 = parser_getchar(p, "c0");
+	char c1 = parser_getchar(p, "c1");
+	int i0 = parser_getint(p, "i0");
+	const char *s = parser_getstr(p, "s");
+	int *wasok = parser_priv(p);
+
+	if (c0 != ':' || c1 != ':' || i0 != 34 || !streq(s, "lala"))
+		return PARSE_ERROR_GENERIC;
+	*wasok = 1;
+	return PARSE_ERROR_NONE;
+}
+
+static int test_char1(void *state) {
+	int wasok = 0;
+	errr r = parser_reg(state, "test-char1 char c0 int i0 char c1 str s", helper_char1);
+	enum parser_error e;
+	eq(r, 0);
+	parser_setpriv(state, &wasok);
+	e = parser_parse(state, "test-char1:::34:::lala");
+	eq(e, PARSE_ERROR_NONE);
+	eq(wasok, 1);
+	ok;
+}
+
 static const char *suite_name = "parse/parser";
 static struct test tests[] = {
 	{ "priv", test_priv },
@@ -371,6 +418,9 @@ static struct test tests[] = {
 
 	{ "uint0", test_uint0 },
 	{ "uint1", test_uint1 },
+
+	{ "char0", test_char0 },
+	{ "char1", test_char1 },
 
 	{ "baddir", test_baddir },
 
