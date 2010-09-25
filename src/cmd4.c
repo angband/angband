@@ -590,18 +590,16 @@ static void do_cmd_options_aux(void *vpage, cptr info)
 
 	menu_layout(menu, &SCREEN_REGION);
 
-	while (TRUE)
+	ui_event_data cx = EVENT_EMPTY;
+	while (cx.type != EVT_ESCAPE)
 	{
-		ui_event_data cx;
-
 		cx = menu_select(menu, 0);
 
-		if (cx.type == EVT_ESCAPE)
-			break;
-		else if (cx.type == EVT_SELECT && strchr("YN", toupper((unsigned char) cx.key)))
+		if (cx.type == EVT_SELECT && strchr("YN", toupper((unsigned char) cx.key)))
+		{
 			menu->cursor++;
-
-		menu->cursor = (menu->cursor + n) % n;
+			menu->cursor = (menu->cursor + n) % n;
+		}
 	}
 
 	/* Hack -- Notice use of any "cheat" options */
