@@ -710,7 +710,7 @@ bool menu_handle_event(void *object, const ui_event_data *in)
  */
 ui_event_data menu_select(menu_type *menu, int *cursor, int no_handle)
 {
-	ui_event_data ke;
+	ui_event_data ke = EVENT_EMPTY;
 
 	menu->cursor = *cursor;
 
@@ -721,9 +721,7 @@ ui_event_data menu_select(menu_type *menu, int *cursor, int no_handle)
 	if (!menu->filter_list)
 		menu->filter_count = menu->count;
 
-	ke.type = EVT_REFRESH;
-
-	(void)run_event_loop(menu_handle_event, menu, (EVT_KBRD | EVT_MOUSE | EVT_REFRESH), &ke);
+	menu_refresh(menu);
 
 	/* Check for command flag */
 	if (p_ptr->command_new)
@@ -732,7 +730,7 @@ ui_event_data menu_select(menu_type *menu, int *cursor, int no_handle)
 		p_ptr->command_new = 0;
 	}
 
-	/* Stop on first unhandled event. */
+	/* Stop on first unhandled event */
 	while (!(ke.type & no_handle))
 	{
 		ke = run_event_loop(menu_handle_event, menu, (EVT_KBRD | EVT_MOUSE | EVT_REFRESH), NULL);
@@ -775,6 +773,7 @@ ui_event_data menu_select(menu_type *menu, int *cursor, int no_handle)
 			}
 		}
 	}
+
 	return ke;
 }
 
