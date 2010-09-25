@@ -492,7 +492,6 @@ static bool cmd_menu(command_list *list, void *selection_p)
 	region area = { 23, 4, 37, 13 };
 
 	ui_event_data evt;
-	int cursor = 0;
 	command_type *selection = selection_p;
 
 	/* Set up the menu */
@@ -507,24 +506,17 @@ static bool cmd_menu(command_list *list, void *selection_p)
 	window_make(21, 3, 62, 17);
 
 	/* Select an entry */
-	evt = menu_select(&menu, &cursor, 0);
+	evt = menu_select(&menu, 0);
 
 	/* Load de screen */
 	screen_load();
 
 	if (evt.type == EVT_SELECT)
-	{
-		*selection = list->list[evt.index];
-	}
-
-	if (evt.type == EVT_ESCAPE)
-	{
+		*selection = list->list[menu.cursor];
+	else if (evt.type == EVT_ESCAPE)
 		return FALSE;
-	}
-	else
-	{
-		return TRUE;
-	}
+
+	return TRUE;
 }
 
 
@@ -559,7 +551,6 @@ static void do_cmd_menu(void)
 	region area = { 21, 5, 37, 6 };
 
 	ui_event_data evt;
-	int cursor = 0;
 	command_type chosen_command = {NULL, '\0', CMD_NULL, NULL};
 
 	/* Set up the menu */
@@ -574,20 +565,16 @@ static void do_cmd_menu(void)
 	window_make(19, 4, 58, 11);
 
 	/* Select an entry */
-	evt = menu_select(&menu, &cursor, 0);
+	evt = menu_select(&menu, 0);
 
 	/* Load de screen */
 	screen_load();
 
-	/* If a command was chosen, do it. */
+	/* If a command was chosen, do it */
 	if (chosen_command.cmd != CMD_NULL)
-	{
 		cmd_insert(chosen_command.cmd);
-	}
 	else if (chosen_command.hook)
-	{
 		chosen_command.hook();
-	}
 }
 
 

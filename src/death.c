@@ -441,7 +441,6 @@ void death_screen(void)
 	const char cmd_keys[] = { ARROW_LEFT, ARROW_RIGHT, '\0' };
 	const region area = { 51, 2, 0, N_ELEMENTS(death_actions) };
 
-	int cursor = 0;
 	ui_event_data c = EVENT_EMPTY;
 
 
@@ -487,16 +486,16 @@ void death_screen(void)
 
 	while (TRUE)
 	{
-		c = menu_select(&death_menu, &cursor, 0);
+		c = menu_select(&death_menu, 0);
 
-		if (c.key == ESCAPE || cursor == (menu->count -1))
+		if (c.type == EVT_ESCAPE || menu->cursor == (menu->count - 1))
 		{
 			if (get_check("Do you want to quit? "))
 				break;
 		}
-		else if (c.type == EVT_SELECT && death_actions[cursor].action)
+		else if (c.type == EVT_SELECT && death_actions[menu->cursor].action)
 		{
-			death_actions[cursor].action(death_actions[cursor].data, NULL);
+			death_actions[menu->cursor].action(death_actions[menu->cursor].data, NULL);
 		}
 	}
 }

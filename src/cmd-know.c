@@ -564,10 +564,11 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		bool handled = TRUE;
 		while (handled)
 		{
+			ui_event_data ke0 = EVENT_EMPTY;
 			ke = inkey_ex();
 
 			if (!visual_list && (ke.type & (EVT_KBRD | EVT_MOUSE | EVT_REFRESH)))
-				handled = menu_handle_event(active_menu, &ke);
+				handled = menu_handle_event(active_menu, &ke, &ke0);
 			else
 				handled = FALSE;
 		}
@@ -2081,7 +2082,6 @@ void init_cmd_know(void)
  */
 void do_cmd_knowledge(void)
 {
-	int cursor = 0;
 	int i;
 	ui_event_data c = EVENT_EMPTY;
 	region knowledge_region = { 0, 0, -1, 18 };
@@ -2109,12 +2109,10 @@ void do_cmd_knowledge(void)
 
 	screen_save();
 	menu_layout(&knowledge_menu, &knowledge_region);
+	clear_from(0);
 
-	while (c.key != ESCAPE)
-	{
-		clear_from(0);
-		c = menu_select(&knowledge_menu, &cursor, 0);
-	}
+	while (c.type != EVT_ESCAPE)
+		c = menu_select(&knowledge_menu, 0);
 
 	screen_load();
 }
