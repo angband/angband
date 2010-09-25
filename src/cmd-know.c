@@ -572,20 +572,20 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 				handled = FALSE;
 		}
 
+		/* Do visual mode command if needed */
+		if (o_funcs.xattr && o_funcs.xchar)
+		{
+			if (visual_mode_command(ke, &visual_list, browser_rows - 1,
+					wid - (g_name_len + 3), &attr_top, &char_left,
+					o_funcs.xattr(oid), (byte *)o_funcs.xchar(oid),
+					g_name_len + 3, 7, &delay))
+				continue;
+		}
+
 		switch (ke.type)
 		{
 			case EVT_KBRD:
 			{
-				/* Do visual mode command if needed */
-				if (o_funcs.xattr && o_funcs.xchar)
-				{
-					if (visual_mode_command(ke, &visual_list, browser_rows - 1,
-							wid - (g_name_len + 3), &attr_top, &char_left,
-							o_funcs.xattr(oid), (byte *)o_funcs.xchar(oid),
-							g_name_len + 3, 7, &delay))
-						continue;
-				}
-
 				break;
 			}
 
