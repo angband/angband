@@ -673,12 +673,7 @@ vault_type *v_info;
 char *v_name;
 char *v_text;
 
-/*
- * The terrain feature arrays
- */
 feature_type *f_info;
-char *f_name;
-char *f_text;
 
 object_kind *k_info;
 

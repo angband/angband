@@ -83,10 +83,9 @@ typedef struct maxima
  * At the moment this isn't very much, but eventually a primitive flag-based
  * information system will be used here.
  */
-typedef struct
+typedef struct feature
 {
-	u32b name;     /**< (const char *) feature_type::name + f_name = Name */
-	u32b text;     /**< (const char *) feature_type::text + f_text = Description (unused) */
+	char *name;
 
 	byte mimic;    /**< Feature to mimic */
 	byte priority; /**< Display priority */

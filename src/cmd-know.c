@@ -1901,7 +1901,7 @@ static void display_feature(int col, int row, bool cursor, int oid )
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
 
 	/* Display the name */
-	c_prt(attr, f_name + f_ptr->name, row, col);
+	c_prt(attr, f_ptr->name, row, col);
 
 #ifdef UNANGBAND
 	if (use_dbltile || use_trptile) return;
@@ -1925,7 +1925,7 @@ static int f_cmp_fkind(const void *a, const void *b)
 	if (c) return c;
 
 	/* order by feature name */
-	return strcmp(f_name + fa->name, f_name + fb->name);
+	return strcmp(fa->name, fb->name);
 }
 
 static const char *fkind_name(int gid) { return feature_group_text[gid]; }

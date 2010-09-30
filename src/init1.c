@@ -651,8 +651,7 @@ errr parse_f_info(char *buf, header *head)
 		f_ptr = (feature_type*)head->info_ptr + i;
 
 		/* Store the name */
-		if ((f_ptr->name = add_name(head, s)) == 0)
-			return (PARSE_ERROR_OUT_OF_MEMORY);
+		f_ptr->name = string_make(s);
 
 		/* Default "mimic" */
 		f_ptr->mimic = i;

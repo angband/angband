@@ -156,8 +156,6 @@ extern vault_type *v_info;
 extern char *v_name;
 extern char *v_text;
 extern feature_type *f_info;
-extern char *f_name;
-extern char *f_text;
 extern object_kind *k_info;
 extern char *k_text;
 extern artifact_type *a_info;

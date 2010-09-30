@@ -1345,7 +1345,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 
 
 	/* Get the trap name */
-	name = (f_name + f_info[cave_feat[y][x]].name);
+	name = f_info[cave_feat[y][x]].name;
 
 	/* Get the "disarm" factor */
 	i = p_ptr->state.skills[SKILL_DISARM];

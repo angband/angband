@@ -977,6 +977,24 @@ struct file_parser names_parser = {
 	finish_parse_names
 };
 
+/*
+static enum parser_error parse_f_n(struct parser *p) {
+}
+
+struct parser *init_parse_f(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "N int idx string name", parse_f_n);
+	parser_reg(p, "G char glyph sym color", parse_f_g);
+	parser_reg(p, "M int idx", parse_f_m);
+	parser_reg(p, "P int priority", parse_f_p);
+	parser_reg(p, "F str flags", parse_f_f);
+	parser_reg(p, "X int locked int jammed int shopnum int dig", parse_f_x);
+	parser_reg(p, "E str effect", parse_f_e);
+	return p;
+}
+*/
+
 static enum parser_error parse_e_n(struct parser *p) {
 	int idx = parser_getint(p, "index");
 	const char *name = parser_getstr(p, "name");
@@ -1226,8 +1244,6 @@ static errr init_f_info(void)
 
 	/* Set the global variables */
 	f_info = f_head.info_ptr;
-	f_name = f_head.name_ptr;
-	f_text = f_head.text_ptr;
 
 	return (err);
 }

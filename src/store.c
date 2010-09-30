@@ -1783,7 +1783,7 @@ static void store_display_frame(void)
 	/* Normal stores */
 	else
 	{
-		const char *store_name = (f_name + f_info[FEAT_SHOP_HEAD + this_store].name);
+		const char *store_name = f_info[FEAT_SHOP_HEAD + this_store].name;
 		const char *owner_name = &b_name[ot_ptr->owner_name];
 
 		/* Put the owner name */

@@ -995,7 +995,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 		/* Terrain feature if needed */
 		if (boring || (feat > FEAT_INVIS))
 		{
-			cptr name = f_name + f_info[feat].name;
+			cptr name = f_info[feat].name;
 
 			/* Hack -- handle unknown grids */
 			if (feat == FEAT_NONE) name = "unknown grid";
