@@ -86,6 +86,9 @@ typedef struct maxima
 typedef struct feature
 {
 	char *name;
+	int fidx;
+
+	struct feature *next;
 
 	byte mimic;    /**< Feature to mimic */
 	byte priority; /**< Display priority */

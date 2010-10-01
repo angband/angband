@@ -48,15 +48,6 @@
 
 /*** Helper arrays for parsing ascii template files ***/
 
-/* Use a slightly unusual include method to create effect_list[] */
-static const char *effect_list[] =
-{
-	#define EFFECT(x, y, r, z)    #x,
-	#include "list-effects.h"
-	#undef EFFECT
-};
-
-
 /*
  * Monster blow methods
  */
@@ -130,32 +121,7 @@ static const char *player_info_flags[] =
 	NULL
 };
 
-/*
- * Terrain feature flags
- */
-static const char *f_info_flags[] =
-{
-	"PWALK",
-	"PPASS",
-	"MWALK",
-	"MPASS",
-	"LOOK",
-	"DIG",
-	"DOOR",
-	"EXIT_UP",
-	"EXIT_DOWN",
-	"PERM",
-	"TRAP",
-	"SHOP",
-	"HIDDEN",
-	"BORING",
-	NULL
-};
-
-
-
 /*** Initialize from ascii template files ***/
-
 
 /*
  * Initialize an "*_info" array, by parsing an ascii "template" file
@@ -297,49 +263,6 @@ static u32b add_name(header *head, cptr buf)
 	/* Return the name index */
 	return (index);
 }
-
-
-/*
- * Grab one flag from a textual string
- */
-static errr grab_one_flag(u32b *flags, cptr names[], cptr what)
-{
-	int i;
-
-	/* Check flags */
-	for (i = 0; i < 32 && names[i]; i++)
-	{
-		if (streq(what, names[i]))
-		{
-			*flags |= (1L << i);
-			return (0);
-		}
-	}
-
-	return (-1);
-}
-
-/*
- * Figure out what index an activation should have
- */
-static u32b grab_one_effect(const char *what)
-{
-	size_t i;
-
-	/* Scan activations */
-	for (i = 0; i < N_ELEMENTS(effect_list); i++)
-	{
-		if (streq(what, effect_list[i]))
-			return i;
-	}
-
-	/* Oops */
-	msg_format("Unknown effect '%s'.", what);
-
-	/* Error */
-	return 0;
-}
-
 
 /**
  * Initialise the store stocking lists.
@@ -603,190 +526,6 @@ errr parse_v_info(char *buf, header *head)
 	/* Success */
 	return (0);
 }
-
-
-
-/*
- * Initialize the "f_info" array, by parsing an ascii "template" file
- */
-errr parse_f_info(char *buf, header *head)
-{
-	int i;
-
-	char *s;
-	char *t;
-
-	/* Current entry */
-	static feature_type *f_ptr = NULL;
-
-
-	/* Process 'N' for "New/Number/Name" */
-	if (buf[0] == 'N')
-	{
-		/* Find the colon before the name */
-		s = strchr(buf+2, ':');
-
-		/* Verify that colon */
-		if (!s) return (PARSE_ERROR_MISSING_COLON);
-
-		/* Nuke the colon, advance to the name */
-		*s++ = '\0';
-
-		/* Paranoia -- require a name */
-		if (!*s) return (PARSE_ERROR_GENERIC);
-
-		/* Get the index */
-		i = atoi(buf+2);
-
-		/* Verify information */
-		if (i <= error_idx) return (PARSE_ERROR_NON_SEQUENTIAL_RECORDS);
-
-		/* Verify information */
-		if (i >= head->info_num) return (PARSE_ERROR_TOO_MANY_ENTRIES);
-
-		/* Save the index */
-		error_idx = i;
-
-		/* Point at the "info" */
-		f_ptr = (feature_type*)head->info_ptr + i;
-
-		/* Store the name */
-		f_ptr->name = string_make(s);
-
-		/* Default "mimic" */
-		f_ptr->mimic = i;
-	}
-
-	/* Process 'M' for "Mimic" (one line only) */
-	else if (buf[0] == 'M')
-	{
-		int mimic;
-
-		/* There better be a current f_ptr */
-		if (!f_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
-
-		/* Scan for the values */
-		if (1 != sscanf(buf+2, "%d", &mimic))
-			return (PARSE_ERROR_NOT_NUMBER);
-
-		/* Save the values */
-		f_ptr->mimic = mimic;
-	}
-
-	/* Process 'P' for "Priority" */
-	else if (buf[0] == 'P')
-	{
-		int priority;
-
-		/* There better be a current f_ptr */
-		if (!f_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
-
-		/* Scan for the values */
-		if (1 != sscanf(buf+2, "%d", &priority))
-			return (PARSE_ERROR_NOT_NUMBER);
-
-		/* Save the values */
-		f_ptr->priority = priority;
-	}
-
-	/* Process 'G' for "Graphics" (one line only) */
-	else if (buf[0] == 'G')
-	{
-		char d_char;
-		int d_attr;
-
-		/* There better be a current f_ptr */
-		if (!f_ptr) return (PARSE_ERROR_MISSING_RECORD_HEADER);
-
-		/* Paranoia */
-		if (!buf[2]) return (PARSE_ERROR_GENERIC);
-		if (!buf[3]) return (PARSE_ERROR_GENERIC);
-		if (!buf[4]) return (PARSE_ERROR_GENERIC);
-
-		/* Extract d_char */
-		d_char = buf[2];
-
-		/* If we have a longer string than expected ... */
-		if (buf[5])
-		{
-			/* Advance "buf" on by 4 */
-			buf += 4;
-
-			/* Extract the colour */
-			d_attr = color_text_to_attr(buf);
-		}
-		else
-		{
-			/* Extract the attr */
-			d_attr = color_char_to_attr(buf[4]);
-		}
-
-		/* Paranoia */
-		if (d_attr < 0) return (PARSE_ERROR_GENERIC);
-
-		/* Save the values */
-		f_ptr->d_attr = d_attr;
-		f_ptr->d_char = d_char;
-	}
-
-	/* Process 'F' for flags */
-	else if (buf[0] == 'F')
-	{
-		/* Parse every entry textually */
-		for (s = buf + 2; *s; )
-		{
-			/* Find the end of this entry */
-			for (t = s; *t && (*t != ' ') && (*t != '|'); ++t) /* loop */;
-
-			/* Nuke and skip any dividers */
-			if (*t)
-			{
-				*t++ = '\0';
-				while ((*t == ' ') || (*t == '|')) t++;
-			}
-
-			/* Parse this entry */
-			if (0 != grab_one_flag(&f_ptr->flags, f_info_flags, s))
-				return (PARSE_ERROR_INVALID_FLAG);
-
-			/* Start the next entry */
-			s = t;
-		}
-	}
-
-	/* Process 'E' for effect */
-	else if (buf[0] == 'E')
-	{
-		f_ptr->effect = grab_one_effect(buf + 2);
-		if (!f_ptr->effect)
-			return PARSE_ERROR_GENERIC;
-	}
-
-	/* Process 'X' for extra */
-	else if (buf[0] == 'X')
-	{
-		int locked, jammed, shopnum, dig;
-
-		if (4 != sscanf(buf + 2, "%d:%d:%d:%d",
-				&locked, &jammed, &shopnum, &dig))
-			return PARSE_ERROR_NOT_NUMBER;
-
-		f_ptr->locked = locked;
-		f_ptr->jammed = jammed;
-		f_ptr->shopnum = shopnum;
-		f_ptr->dig = dig;
-	}
-
-	else
-	{
-		/* Oops */
-		return (PARSE_ERROR_UNDEFINED_DIRECTIVE);
-	}
-
-	/* Success */
-	return (0);
-}
-
 
 /*
  * Find a flag's index from a textual string.

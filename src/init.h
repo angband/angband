@@ -93,6 +93,7 @@ extern errr emit_info_txt(ang_file *fp, ang_file *template, char *buf, header *h
 
 extern struct parser *init_parse_a(void);
 extern struct parser *init_parse_e(void);
+extern struct parser *init_parse_f(void);
 extern struct parser *init_parse_k(void);
 extern struct parser *init_parse_z(void);
 extern struct parser *init_parse_names(void);

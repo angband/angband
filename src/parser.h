@@ -20,6 +20,8 @@ enum parser_error {
 	PARSE_ERROR_INVALID_ITEM_NUMBER,
 	PARSE_ERROR_INVALID_SPELL_FREQ,
 	PARSE_ERROR_INVALID_VALUE,
+	PARSE_ERROR_INVALID_COLOR,
+	PARSE_ERROR_INVALID_EFFECT,
 	PARSE_ERROR_MISSING_FIELD,
 	PARSE_ERROR_MISSING_COLON,
 	PARSE_ERROR_MISSING_RECORD_HEADER,
@@ -98,5 +100,8 @@ extern unsigned int parser_getuint(struct parser *p, const char *name);
 
 /** Returns the random value named `name`. This symbol must exist. */
 extern struct random parser_getrand(struct parser *p, const char *name);
+
+/** Returns the character named `name`. This symbol must exist. */
+extern char parser_getchar(struct parser *p, const char *name);
 
 #endif /* !PARSER_H */

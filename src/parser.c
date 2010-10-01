@@ -326,6 +326,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 	}
 
 	mem_free(cline);
+
 	return h->func(p);
 }
 

@@ -977,23 +977,177 @@ struct file_parser names_parser = {
 	finish_parse_names
 };
 
-/*
 static enum parser_error parse_f_n(struct parser *p) {
+	int idx = parser_getuint(p, "index");
+	const char *name = parser_getstr(p, "name");
+	struct feature *h = parser_priv(p);
+
+	struct feature *f = mem_alloc(sizeof *f);
+	memset(f, 0, sizeof(*f));
+	f->next = h;
+	f->fidx = idx;
+	f->mimic = idx;
+	f->name = string_make(name);
+	parser_setpriv(p, f);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_f_g(struct parser *p) {
+	char glyph = parser_getchar(p, "glyph");
+	const char *color = parser_getsym(p, "color");
+	int attr = 0;
+	struct feature *f = parser_priv(p);
+
+	if (!f)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	f->d_char = glyph;
+	if (strlen(color) > 1)
+		attr = color_text_to_attr(color);
+	else
+		attr = color_char_to_attr(color[0]);
+	if (attr < 0)
+		return PARSE_ERROR_INVALID_COLOR;
+	f->d_attr = attr;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_f_m(struct parser *p) {
+	unsigned int idx = parser_getuint(p, "index");
+	struct feature *f = parser_priv(p);
+
+	if (!f)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	f->mimic = idx;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_f_p(struct parser *p) {
+	unsigned int priority = parser_getuint(p, "priority");
+	struct feature *f = parser_priv(p);
+
+	if (!f)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	f->priority = priority;
+	return PARSE_ERROR_NONE;
+}
+
+static const char *f_info_flags[] =
+{
+	"PWALK",
+	"PPASS",
+	"MWALK",
+	"MPASS",
+	"LOOK",
+	"DIG",
+	"DOOR",
+	"EXIT_UP",
+	"EXIT_DOWN",
+	"PERM",
+	"TRAP",
+	"SHOP",
+	"HIDDEN",
+	"BORING",
+	NULL
+};
+
+static errr grab_one_flag(u32b *flags, cptr names[], cptr what)
+{
+	int i;
+
+	/* Check flags */
+	for (i = 0; i < 32 && names[i]; i++)
+	{
+		if (streq(what, names[i]))
+		{
+			*flags |= (1L << i);
+			return (0);
+		}
+	}
+
+	return (-1);
+}
+
+static enum parser_error parse_f_f(struct parser *p) {
+	char *flags;
+	struct feature *f = parser_priv(p);
+	char *s;
+
+	if (!f)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "flags"));
+
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_one_flag(&f->flags, f_info_flags, s))
+			return PARSE_ERROR_INVALID_FLAG;
+		s = strtok(NULL, " |");
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_f_x(struct parser *p) {
+	struct feature *f = parser_priv(p);
+
+	if (!f)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	f->locked = parser_getint(p, "locked");
+	f->jammed = parser_getint(p, "jammed");
+	f->shopnum = parser_getint(p, "shopnum");
+	f->dig = parser_getint(p, "dig");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_f_e(struct parser *p) {
+	struct feature *f = parser_priv(p);
+
+	if (!f)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	f->effect = grab_one_effect(parser_getstr(p, "effect"));
+	if (!f->effect)
+		return PARSE_ERROR_INVALID_EFFECT;
+	return PARSE_ERROR_NONE;
 }
 
 struct parser *init_parse_f(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
-	parser_reg(p, "N int idx string name", parse_f_n);
+	parser_reg(p, "V sym version", ignored);
+	parser_reg(p, "N uint index str name", parse_f_n);
 	parser_reg(p, "G char glyph sym color", parse_f_g);
-	parser_reg(p, "M int idx", parse_f_m);
-	parser_reg(p, "P int priority", parse_f_p);
-	parser_reg(p, "F str flags", parse_f_f);
+	parser_reg(p, "M uint index", parse_f_m);
+	parser_reg(p, "P uint priority", parse_f_p);
+	parser_reg(p, "F ?str flags", parse_f_f);
 	parser_reg(p, "X int locked int jammed int shopnum int dig", parse_f_x);
 	parser_reg(p, "E str effect", parse_f_e);
 	return p;
 }
-*/
+
+static errr run_parse_f(struct parser *p) {
+	return parse_file(p, "terrain");
+}
+
+static errr finish_parse_f(struct parser *p) {
+	struct feature *f;
+
+	f_info = mem_alloc(z_info->f_max * sizeof(*f));
+	for (f = parser_priv(p); f; f = f->next) {
+		if (f->fidx >= z_info->f_max)
+			continue;
+		memcpy(&f_info[f->fidx], f, sizeof(*f));
+	}
+
+	return 0;
+}
+
+struct file_parser f_parser = {
+	init_parse_f,
+	run_parse_f,
+	finish_parse_f
+};
 
 static enum parser_error parse_e_n(struct parser *p) {
 	int idx = parser_getint(p, "index");
@@ -1226,27 +1380,6 @@ struct file_parser e_parser = {
 	run_parse_e,
 	finish_parse_e
 };
-
-/*
- * Initialize the "f_info" array
- */
-static errr init_f_info(void)
-{
-	errr err;
-
-	/* Init the header */
-	init_header(&f_head, z_info->f_max, sizeof(feature_type));
-
-	/* Save a pointer to the parsing function */
-	f_head.parse_info_txt = parse_f_info;
-
-	err = init_info("terrain", &f_head);
-
-	/* Set the global variables */
-	f_info = f_head.info_ptr;
-
-	return (err);
-}
 
 /*
  * Initialize the "r_info" array
@@ -1892,7 +2025,7 @@ bool init_angband(void)
 
 	/* Initialize feature info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (features)");
-	if (init_f_info()) quit("Cannot initialize features");
+	if (run_parser(&f_parser)) quit("Cannot initialize features");
 
 	/* Initialize object info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (objects)");
