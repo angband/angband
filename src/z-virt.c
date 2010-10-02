@@ -72,7 +72,7 @@ void *mem_realloc(void *p, size_t len)
 	/* Fail gracefully */
 	if (len == 0) return (NULL);
 
-	m = realloc(m - sizeof(size_t), len + sizeof(size_t));
+	m = realloc(m ? m - sizeof(size_t) : NULL, len + sizeof(size_t));
 	m += sizeof(size_t);
 
 	/* Handle OOM */
