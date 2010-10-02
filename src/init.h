@@ -118,12 +118,6 @@ extern int error_idx;
 extern int error_line;
 
 extern header v_head;
-extern header f_head;
-extern header k_head;
-extern header a_head;
-extern header e_head;
-extern header r_head;
-extern header p_head;
 extern header c_head;
 extern header h_head;
 extern header b_head;

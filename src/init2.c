@@ -279,14 +279,7 @@ static cptr err_str[PARSE_ERROR_MAX] =
 /*
  * File headers
  */
-header z_head;
 header v_head;
-header f_head;
-header k_head;
-header a_head;
-header e_head;
-header r_head;
-header p_head;
 header c_head;
 header h_head;
 header b_head;
@@ -3473,15 +3466,8 @@ void cleanup_angband(void)
 	free_info(&g_head);
 	free_info(&b_head);
 	free_info(&c_head);
-	free_info(&p_head);
 	free_info(&h_head);
 	free_info(&v_head);
-	free_info(&r_head);
-	free_info(&e_head);
-	free_info(&a_head);
-	free_info(&k_head);
-	free_info(&f_head);
-	free_info(&z_head);
 	free_info(&s_head);
 
 	/* Free the format() buffer */
