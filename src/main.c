@@ -227,6 +227,18 @@ static errr default_get_cmd(cmd_context context, bool wait)
 		return textui_get_cmd(context, wait);
 }
 
+static void debug_opt(const char *arg) {
+	if (streq(arg, "mem-poison-alloc"))
+		mem_flags |= MEM_POISON_ALLOC;
+	else if (streq(arg, "mem-poison-free"))
+		mem_flags |= MEM_POISON_FREE;
+	else {
+		puts("Debug flags:");
+		puts("  mem-poison-alloc: Poison all memory allocations");
+		puts("   mem-poison-free: Poison all freed memory");
+		exit(0);
+	}
+}
 
 /*
  * Simple "main" function for multiple platforms.
@@ -338,6 +350,10 @@ int main(int argc, char *argv[])
 				continue;
 			}
 
+			case 'x':
+				debug_opt(arg);
+				continue;
+
 			case '-':
 			{
 				argv[i] = argv[0];
@@ -357,6 +373,7 @@ int main(int argc, char *argv[])
 				puts("  -w             Resurrect dead character (marks savefile)");
 				puts("  -r             Rebalance monsters if monster.raw is absent");
 				puts("  -g             Request graphics mode");
+				puts("  -x<opt>        Debug options; see -xhelp");
 				puts("  -u<who>        Use your <who> savefile");
 				puts("  -d<path>       Store pref files and screendumps in <path>");
 				puts("  -m<sys>        Use module <sys>, where <sys> can be:");
