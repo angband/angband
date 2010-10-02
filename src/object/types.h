@@ -1,7 +1,7 @@
 #ifndef INCLUDED_OBJECT_TYPES_H
 #define INCLUDED_OBJECT_TYPES_H
 
-
+#include "z-quark.h"
 
 /**
  * Information about object kinds, including player knowledge.

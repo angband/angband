@@ -1,6 +1,10 @@
 #ifndef INCLUDED_PLAYER_TYPES_H
 #define INCLUDED_PLAYER_TYPES_H
 
+#include "object/types.h"
+#include "option.h"
+#include "ui-event.h"
+
 typedef struct
 {
 	s16b speed;		/* Current speed */
@@ -284,8 +288,11 @@ typedef struct player_sex
  */
 typedef struct player_race
 {
+	struct player_race *next;
 	const char *name;
 	
+	unsigned int ridx;
+
 	s16b r_adj[A_MAX];	/* Racial stat bonuses */
 	
 	s16b r_skills[SKILL_MAX];	/* racial skills */

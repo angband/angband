@@ -95,12 +95,12 @@ extern struct parser *init_parse_a(void);
 extern struct parser *init_parse_e(void);
 extern struct parser *init_parse_f(void);
 extern struct parser *init_parse_k(void);
+extern struct parser *init_parse_p(void);
 extern struct parser *init_parse_r(void);
 extern struct parser *init_parse_z(void);
 extern struct parser *init_parse_names(void);
 
 extern errr parse_v_info(char *buf, header *head);
-extern errr parse_p_info(char *buf, header *head);
 extern errr parse_c_info(char *buf, header *head);
 extern errr parse_h_info(char *buf, header *head);
 extern errr parse_b_info(char *buf, header *head);

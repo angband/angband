@@ -2520,6 +2520,196 @@ struct file_parser r_parser = {
 	finish_parse_r
 };
 
+static enum parser_error parse_p_n(struct parser *p) {
+	struct player_race *h = parser_priv(p);
+	struct player_race *r = mem_zalloc(sizeof *r);
+
+	r->next = h;
+	r->ridx = parser_getuint(p, "index");
+	r->name = string_make(parser_getstr(p, "name"));
+	parser_setpriv(p, r);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_s(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	r->r_adj[A_STR] = parser_getint(p, "str");
+	r->r_adj[A_DEX] = parser_getint(p, "dex");
+	r->r_adj[A_CON] = parser_getint(p, "con");
+	r->r_adj[A_INT] = parser_getint(p, "int");
+	r->r_adj[A_WIS] = parser_getint(p, "wis");
+	r->r_adj[A_CHR] = parser_getint(p, "chr");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_r(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	r->r_skills[SKILL_DISARM] = parser_getint(p, "dis");
+	r->r_skills[SKILL_DEVICE] = parser_getint(p, "dev");
+	r->r_skills[SKILL_SAVE] = parser_getint(p, "sav");
+	r->r_skills[SKILL_STEALTH] = parser_getint(p, "stl");
+	r->r_skills[SKILL_SEARCH] = parser_getint(p, "srh");
+	r->r_skills[SKILL_SEARCH_FREQUENCY] = parser_getint(p, "fos");
+	r->r_skills[SKILL_TO_HIT_MELEE] = parser_getint(p, "thm");
+	r->r_skills[SKILL_TO_HIT_BOW] = parser_getint(p, "thb");
+	r->r_skills[SKILL_TO_HIT_THROW] = parser_getint(p, "throw");
+	r->r_skills[SKILL_DIGGING] = parser_getint(p, "dig");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_x(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	r->r_mhp = parser_getint(p, "mhp");
+	r->r_exp = parser_getint(p, "exp");
+	r->infra = parser_getint(p, "infra");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_i(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	r->hist = parser_getint(p, "hist");
+	r->b_age = parser_getint(p, "b-age");
+	r->m_age = parser_getint(p, "m-age");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_h(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	r->m_b_ht = parser_getint(p, "mbht");
+	r->m_m_ht = parser_getint(p, "mmht");
+	r->f_b_ht = parser_getint(p, "fbht");
+	r->f_m_ht = parser_getint(p, "fmht");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_w(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	r->m_b_wt = parser_getint(p, "mbwt");
+	r->m_m_wt = parser_getint(p, "mmwt");
+	r->f_b_wt = parser_getint(p, "fbwt");
+	r->f_m_wt = parser_getint(p, "fmwt");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_f(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "flags"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(r->flags, OF_SIZE, k_info_flags, s))
+			break;
+		s = strtok(NULL, " |");
+	}
+	mem_free(flags);
+	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
+static const char *player_info_flags[] =
+{
+	#define PF(a, b) #a,
+	#include "list-player-flags.h"
+	#undef PF
+	NULL
+};
+
+static enum parser_error parse_p_y(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "flags"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(r->pflags, PF_SIZE, player_info_flags, s))
+			break;
+		s = strtok(NULL, " |");
+	}
+	mem_free(flags);
+	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_p_c(struct parser *p) {
+	struct player_race *r = parser_priv(p);
+	char *classes;
+	char *s;
+
+	if (!r)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "classes"))
+		return PARSE_ERROR_NONE;
+	classes = string_make(parser_getstr(p, "classes"));
+	s = strtok(classes, " |");
+	while (s) {
+		r->choice |= 1 << atoi(s);
+		s = strtok(NULL, " |");
+	}
+	mem_free(classes);
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_p(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "V sym version", ignored);
+	parser_reg(p, "N uint index str name", parse_p_n);
+	parser_reg(p, "S int str int int int wis int dex int con int chr", parse_p_s);
+	parser_reg(p, "R int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_p_r);
+	parser_reg(p, "X int mhp int exp int infra", parse_p_x);
+	parser_reg(p, "I int hist int b-age int m-age", parse_p_i);
+	parser_reg(p, "H int mbht int mmht int fbht int fmht", parse_p_h);
+	parser_reg(p, "W int mbwt int mmwt int fbwt int fmwt", parse_p_w);
+	parser_reg(p, "F ?str flags", parse_p_f);
+	parser_reg(p, "Y ?str flags", parse_p_y);
+	parser_reg(p, "C ?str classes", parse_p_c);
+	return p;
+}
+
+static errr run_parse_p(struct parser *p) {
+	return parse_file(p, "p_race");
+}
+
+static errr finish_parse_p(struct parser *p) {
+	struct player_race *r;
+
+	p_info = mem_zalloc(sizeof(*r) * z_info->p_max);
+	for (r = parser_priv(p); r; r = r->next) {
+		if (r->ridx >= z_info->p_max)
+			continue;
+		memcpy(&p_info[r->ridx], r, sizeof(*r));
+	}
+
+	return 0;
+}
+
+struct file_parser p_parser = {
+	init_parse_p,
+	run_parse_p,
+	finish_parse_p
+};
+
 /*
  * Initialize the "v_info" array
  */
@@ -2542,29 +2732,6 @@ static errr init_v_info(void)
 
 	return (err);
 }
-
-
-/*
- * Initialize the "p_info" array
- */
-static errr init_p_info(void)
-{
-	errr err;
-
-	/* Init the header */
-	init_header(&p_head, z_info->p_max, sizeof(player_race));
-
-	/* Save a pointer to the parsing function */
-	p_head.parse_info_txt = parse_p_info;
-
-	err = init_info("p_race", &p_head);
-
-	/* Set the global variables */
-	p_info = p_head.info_ptr;
-
-	return (err);
-}
-
 
 /*
  * Initialize the "c_info" array
@@ -3155,7 +3322,7 @@ bool init_angband(void)
 
 	/* Initialize race info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (races)");
-	if (init_p_info()) quit("Cannot initialize races");
+	if (run_parser(&p_parser)) quit("Cannot initialize races");
 
 	/* Initialize class info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (classes)");
