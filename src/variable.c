@@ -692,8 +692,6 @@ flag_cache *slay_cache;
  * The monster race arrays
  */
 monster_race *r_info;
-char *r_name;
-char *r_text;
 
 player_race *p_info;
 player_class *c_info;

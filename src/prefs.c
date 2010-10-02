@@ -348,7 +348,7 @@ void dump_monsters(ang_file *fff)
 		/* Skip non-entries */
 		if (!r_ptr->name) continue;
 
-		file_putf(fff, "# Monster: %s\n", (r_name + r_ptr->name));
+		file_putf(fff, "# Monster: %s\n", r_ptr->name);
 		file_putf(fff, "R:%d:0x%02X:0x%02X\n", i, attr, chr);
 	}
 }

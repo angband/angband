@@ -496,7 +496,7 @@ static bool know_damage(int r_idx, const monster_lore *l_ptr, int i)
 static void describe_monster_desc(int r_idx)
 {
 	const monster_race *r_ptr = &r_info[r_idx];
-	text_out("%s\n", r_text + r_ptr->text);
+	text_out("%s\n", r_ptr->text);
 }
 
 
@@ -1946,7 +1946,7 @@ void roff_top(int r_idx)
 	}
 
 	/* Dump the name */
-	Term_addstr(-1, TERM_WHITE, (r_name + r_ptr->name));
+	Term_addstr(-1, TERM_WHITE, r_ptr->name);
 
 	/* Append the "standard" attr/char info */
 	Term_addstr(-1, TERM_WHITE, " ('");
@@ -2030,7 +2030,7 @@ int lookup_monster(const char *name)
 	for (i = 1; i < z_info->r_max; i++)
 	{
 		monster_race *r_ptr = &r_info[i];
-		const char *nm = r_name + r_ptr->name;
+		const char *nm = r_ptr->name;
 
 		/* Found a match */
 		if (streq(name, nm))

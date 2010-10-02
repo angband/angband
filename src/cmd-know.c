@@ -989,7 +989,7 @@ static void display_monster(int col, int row, bool cursor, int oid)
 	byte c = r_ptr->x_char;
 
 	/* Display the name */
-	c_prt(attr, r_name + r_ptr->name, row, col);
+	c_prt(attr, r_ptr->name, row, col);
 
 #ifdef UNANGBAND
 	if (use_dbltile || use_trptile)
@@ -1029,7 +1029,7 @@ static int m_cmp_race(const void *a, const void *b)
 	c = r_a->level - r_b->level;
 	if (c) return c;
 
-	return strcmp(r_name + r_a->name, r_name + r_b->name);
+	return strcmp(r_a->name, r_b->name);
 }
 
 static char *m_xchar(int oid) { return &r_info[default_join[oid].oid].x_char; }

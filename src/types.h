@@ -12,6 +12,8 @@
  * (like u32b and s32b) and not just "int"s.
  */
 
+#include "z-term.h"
+
 /**** Available Types ****/
 
 /** An array of 256 bytes */

@@ -103,6 +103,7 @@ bool mem_set_hooks(mem_alloc_hook alloc, mem_free_hook free, mem_realloc_hook re
 
 /* Allocate (and return) 'len', or quit */
 void *mem_alloc(size_t len);
+void *mem_zalloc(size_t len);
 
 /* De-allocate memory */
 void *mem_free(void *p);

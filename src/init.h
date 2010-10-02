@@ -95,15 +95,11 @@ extern struct parser *init_parse_a(void);
 extern struct parser *init_parse_e(void);
 extern struct parser *init_parse_f(void);
 extern struct parser *init_parse_k(void);
+extern struct parser *init_parse_r(void);
 extern struct parser *init_parse_z(void);
 extern struct parser *init_parse_names(void);
 
 extern errr parse_v_info(char *buf, header *head);
-extern errr parse_f_info(char *buf, header *head);
-extern errr parse_k_info(char *buf, header *head);
-extern errr parse_a_info(char *buf, header *head);
-extern errr parse_e_info(char *buf, header *head);
-extern errr parse_r_info(char *buf, header *head);
 extern errr parse_p_info(char *buf, header *head);
 extern errr parse_c_info(char *buf, header *head);
 extern errr parse_h_info(char *buf, header *head);
@@ -111,7 +107,6 @@ extern errr parse_b_info(char *buf, header *head);
 extern errr parse_g_info(char *buf, header *head);
 extern errr parse_flavor_info(char *buf, header *head);
 extern errr parse_s_info(char *buf, header *head);
-extern errr eval_r_power(header *head);
 
 extern errr emit_r_info_index(ang_file *fp, header *head, int i);
 

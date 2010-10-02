@@ -2175,7 +2175,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	m_ptr = &mon_list[cave_m_idx[y][x]];
 	r_ptr = &r_info[m_ptr->r_idx];
 	l_ptr = &l_list[m_ptr->r_idx];
-	name = (r_name + r_ptr->name);
+	name = r_ptr->name;
 	if (m_ptr->ml) seen = TRUE;
 
 

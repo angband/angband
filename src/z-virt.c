@@ -69,6 +69,12 @@ void *mem_alloc(size_t len)
 	return mem;
 }
 
+void *mem_zalloc(size_t len)
+{
+	void *mem = mem_alloc(len);
+	memset(mem, 0, len);
+	return mem;
+}
 
 /*
  * Free the memory pointed to by `p`.

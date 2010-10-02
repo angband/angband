@@ -603,7 +603,7 @@ static void spoil_mon_desc(cptr fname)
 	{
 		monster_race *r_ptr = &r_info[who[i]];
 
-		cptr name = (r_name + r_ptr->name);
+		cptr name = r_ptr->name;
 
 		/* Get the "name" */
 		if (rf_has(r_ptr->flags, RF_QUESTOR))
@@ -750,7 +750,7 @@ static void spoil_mon_info(cptr fname)
 		}
 
 		/* Name */
-		text_out("%s  (", (r_name + r_ptr->name));	/* ---)--- */
+		text_out("%s  (",  r_ptr->name);	/* ---)--- */
 
 		/* Color */
 		text_out(attr_to_text(r_ptr->d_attr));

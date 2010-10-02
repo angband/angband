@@ -2418,7 +2418,7 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 
 		/* Get monster race and name */
 		r_ptr = &r_info[i];
-		m_name = r_name + r_ptr->name;
+		m_name = r_ptr->name;
 
 		/* Display uniques in a special colour */
 		if (rf_has(r_ptr->flags, RF_UNIQUE))

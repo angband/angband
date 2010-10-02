@@ -162,8 +162,6 @@ extern artifact_type *a_info;
 extern ego_item_type *e_info;
 extern char *e_text;
 extern monster_race *r_info;
-extern char *r_name;
-extern char *r_text;
 extern player_race *p_info;
 extern player_class *c_info;
 extern hist_type *h_info;

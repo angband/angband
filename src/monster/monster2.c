@@ -710,7 +710,7 @@ void display_monlist(void)
 
 		/* Get monster race and name */
 		r_ptr = &r_info[order[i]];
-		m_name = r_name + r_ptr->name;
+		m_name = r_ptr->name;
 
 		/* Display uniques in a special colour */
 		if (rf_has(r_ptr->flags, RF_UNIQUE))
@@ -782,7 +782,7 @@ void display_monlist(void)
 
 		/* Get monster race and name */
 		r_ptr = &r_info[order[i]];
-		m_name = r_name + r_ptr->name;
+		m_name = r_ptr->name;
 
 		/* Display uniques in a special colour */
 		if (rf_has(r_ptr->flags, RF_UNIQUE))
@@ -908,7 +908,7 @@ void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
-	cptr name = (r_name + r_ptr->name);
+	cptr name = r_ptr->name;
 
 	bool seen, pron;
 
@@ -1724,7 +1724,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 	if (!r_ptr->name) return (FALSE);
 
 	/* Name */
-	name = (r_name + r_ptr->name);
+	name = r_ptr->name;
 
 
 	/* Hack -- "unique" monsters must be "unique" */
@@ -2797,7 +2797,7 @@ void update_smart_learn(int m_idx, int what)
  */
 static int get_coin_type(const monster_race *r_ptr)
 {
-	const char *name = (r_name + r_ptr->name);
+	const char *name = r_ptr->name;
 
 	if (!rf_has(r_ptr->flags, RF_METAL)) return SV_GOLD_ANY;
 
