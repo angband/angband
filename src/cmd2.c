@@ -16,10 +16,10 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-#include "object/tvalsval.h"
-
 #include "cmds.h"
 #include "game-cmd.h"
+#include "monster/monster.h"
+#include "object/tvalsval.h"
 
 /*
  * Go up one level

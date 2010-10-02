@@ -16,13 +16,12 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "cmds.h"
+#include "monster/monster.h"
 #include "object/inventory.h"
 #include "object/tvalsval.h"
-#include "cmds.h"
-
-
-
 
 /*
  * Search for hidden things.  Returns true if a search was attempted, returns

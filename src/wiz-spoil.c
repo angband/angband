@@ -15,11 +15,13 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-#include "z-file.h"
-#include "wizard.h"
 #include "cmds.h"
+#include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "wizard.h"
+#include "z-file.h"
 
 
 #ifdef ALLOW_SPOILERS

@@ -17,10 +17,11 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "store.h"
 #include "ui.h"
 #include "ui-menu.h"
-#include "store.h"
 
 /* Flag value for missing array entry */
 #define MISSING -17

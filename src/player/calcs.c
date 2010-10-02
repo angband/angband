@@ -16,11 +16,11 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
 #include "game-event.h"
+#include "monster/monster.h"
 #include "object/tvalsval.h"
-
-
 
 /*
  * Calculate number of spells player should have, and forget,
