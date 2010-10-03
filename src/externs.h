@@ -153,8 +153,6 @@ extern const player_magic *mp_ptr;
 extern player_other *op_ptr;
 extern player_type *p_ptr;
 extern vault_type *v_info;
-extern char *v_name;
-extern char *v_text;
 extern feature_type *f_info;
 extern object_kind *k_info;
 extern char *k_text;

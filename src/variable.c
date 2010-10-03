@@ -670,8 +670,6 @@ maxima *z_info;
  * The vault generation arrays
  */
 vault_type *v_info;
-char *v_name;
-char *v_text;
 
 feature_type *f_info;
 

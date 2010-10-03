@@ -39,7 +39,6 @@ typedef int (*button_kill_f)(unsigned char);
 
 /**** Available Structs ****/
 
-typedef struct vault_type vault_type;
 typedef struct alloc_entry alloc_entry;
 typedef struct quest quest;
 typedef struct owner_type owner_type;
@@ -115,10 +114,12 @@ typedef struct feature
 /*
  * Information about "vault generation"
  */
-struct vault_type
+typedef struct vault
 {
-	u32b name;			/* Name (offset) */
-	u32b text;			/* Text (offset) */
+	struct vault *next;
+	unsigned int vidx;
+	char *name;
+	char *text;
 
 	byte typ;			/* Vault type */
 
@@ -126,7 +127,7 @@ struct vault_type
 
 	byte hgt;			/* Vault height */
 	byte wid;			/* Vault width */
-};
+} vault_type;
 
 
 /*

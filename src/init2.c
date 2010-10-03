@@ -2923,28 +2923,77 @@ struct file_parser c_parser = {
 	finish_parse_c
 };
 
-/*
- * Initialize the "v_info" array
- */
-static errr init_v_info(void)
-{
-	errr err;
+static enum parser_error parse_v_n(struct parser *p) {
+	struct vault *h = parser_priv(p);
+	struct vault *v = mem_zalloc(sizeof *v);
 
-	/* Init the header */
-	init_header(&v_head, z_info->v_max, sizeof(vault_type));
-
-	/* Save a pointer to the parsing function */
-	v_head.parse_info_txt = parse_v_info;
-
-	err = init_info("vault", &v_head);
-
-	/* Set the global variables */
-	v_info = v_head.info_ptr;
-	v_name = v_head.name_ptr;
-	v_text = v_head.text_ptr;
-
-	return (err);
+	v->vidx = parser_getuint(p, "index");
+	v->name = string_make(parser_getstr(p, "name"));
+	v->next = h;
+	parser_setpriv(p, v);
+	return PARSE_ERROR_NONE;
 }
+
+static enum parser_error parse_v_x(struct parser *p) {
+	struct vault *v = parser_priv(p);
+
+	if (!v)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	v->typ = parser_getuint(p, "type");
+	v->rat = parser_getint(p, "rating");
+	v->hgt = parser_getuint(p, "height");
+	v->wid = parser_getuint(p, "width");
+
+	/* XXX: huh? These checks were in the original code and I have no idea
+	 * why. */
+	if (v->typ == 6 && (v->wid > 33 || v->hgt > 22))
+		return PARSE_ERROR_VAULT_TOO_BIG;
+	if (v->typ == 7 && (v->wid > 66 || v->hgt > 44))
+		return PARSE_ERROR_VAULT_TOO_BIG;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_v_d(struct parser *p) {
+	struct vault *v = parser_priv(p);
+
+	if (!v)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	v->text = string_append(v->text, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_v(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "V sym version", ignored);
+	parser_reg(p, "N uint index str name", parse_v_n);
+	parser_reg(p, "X uint type int rating uint height uint width", parse_v_x);
+	parser_reg(p, "D str text", parse_v_d);
+	return p;
+}
+
+static errr run_parse_v(struct parser *p) {
+	return parse_file(p, "vault");
+}
+
+static errr finish_parse_v(struct parser *p) {
+	struct vault *v;
+
+	v_info = mem_zalloc(sizeof(*v) * z_info->v_max);
+	for (v = parser_priv(p); v; v = v->next) {
+		if (v->vidx >= z_info->v_max)
+			continue;
+		memcpy(&v_info[v->vidx], v, sizeof(*v));
+	}
+
+	return 0;
+}
+
+struct file_parser v_parser = {
+	init_parse_v,
+	run_parse_v,
+	finish_parse_v
+};
 
 /*
  * Initialize the "h_info" array
@@ -3504,7 +3553,7 @@ bool init_angband(void)
 
 	/* Initialize feature info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (vaults)");
-	if (init_v_info()) quit("Cannot initialize vaults");
+	if (run_parser(&v_parser)) quit("Cannot initialize vaults");
 
 	/* Initialize history info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (histories)");
