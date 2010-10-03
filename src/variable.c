@@ -697,7 +697,6 @@ player_class *c_info;
  * The player history arrays
  */
 hist_type *h_info;
-char *h_text;
 
 /*
  * The shop owner arrays

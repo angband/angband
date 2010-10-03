@@ -2986,6 +2986,7 @@ static errr finish_parse_v(struct parser *p) {
 		memcpy(&v_info[v->vidx], v, sizeof(*v));
 	}
 
+	parser_destroy(p);
 	return 0;
 }
 
@@ -2995,29 +2996,61 @@ struct file_parser v_parser = {
 	finish_parse_v
 };
 
-/*
- * Initialize the "h_info" array
- */
-static errr init_h_info(void)
-{
-	errr err;
+static enum parser_error parse_h_n(struct parser *p) {
+	struct history *oh = parser_priv(p);
+	struct history *h = mem_zalloc(sizeof *h);
 
-	/* Init the header */
-	init_header(&h_head, z_info->h_max, sizeof(hist_type));
-
-	/* Save a pointer to the parsing function */
-	h_head.parse_info_txt = parse_h_info;
-
-	err = init_info("p_hist", &h_head);
-
-	/* Set the global variables */
-	h_info = h_head.info_ptr;
-	h_text = h_head.text_ptr;
-
-	return (err);
+	h->chart = parser_getint(p, "chart");
+	h->next = parser_getint(p, "next");
+	h->roll = parser_getint(p, "roll");
+	h->bonus = parser_getint(p, "bonus");
+	h->nextp = oh;
+	h->hidx = oh ? oh->hidx + 1 : 1;
+	parser_setpriv(p, h);
+	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_h_d(struct parser *p) {
+	struct history *h = parser_priv(p);
 
+	if (!h)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	h->text = string_append(h->text, parser_getstr(p, "text"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_h(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "V sym version", ignored);
+	parser_reg(p, "N int chart int next int roll int bonus", parse_h_n);
+	parser_reg(p, "D str text", parse_h_d);
+	return p;
+}
+
+static errr run_parse_h(struct parser *p) {
+	return parse_file(p, "p_hist");
+}
+
+static errr finish_parse_h(struct parser *p) {
+	struct history *h;
+
+	h_info = mem_zalloc(sizeof(*h) * z_info->h_max);
+	for (h = parser_priv(p); h; h = h->nextp) {
+		if (h->hidx >= z_info->h_max)
+			continue;
+		memcpy(&h_info[h->hidx], h, sizeof(*h));
+	}
+
+	parser_destroy(p);
+	return PARSE_ERROR_NONE;
+}
+
+struct file_parser h_parser = {
+	init_parse_h,
+	run_parse_h,
+	finish_parse_h
+};
 
 /*
  * Initialize the "b_info" array
@@ -3557,7 +3590,7 @@ bool init_angband(void)
 
 	/* Initialize history info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (histories)");
-	if (init_h_info()) quit("Cannot initialize histories");
+	if (run_parser(&h_parser)) quit("Cannot initialize histories");
 
 	/* Initialize race info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (races)");

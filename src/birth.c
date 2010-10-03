@@ -357,7 +357,7 @@ static void get_history(void)
 		while ((chart != h_info[i].chart) || (roll > h_info[i].roll)) i++;
 
 		/* Get the textual history */
-		my_strcat(p_ptr->history, (h_text + h_info[i].text), sizeof(p_ptr->history));
+		my_strcat(p_ptr->history, h_info[i].text, sizeof(p_ptr->history));
 
 		/* Add in the social class */
 		social_class += (int)(h_info[i].bonus) - 50;

@@ -396,9 +396,11 @@ typedef struct player_class
 /*
  * Player background information
  */
-typedef struct
+typedef struct history
 {
-	u32b text;			    /* Text (offset) */
+	struct history *nextp;
+	unsigned int hidx;
+	char *text;
 	
 	byte roll;			    /* Frequency of this entry */
 	byte chart;			    /* Chart index */
