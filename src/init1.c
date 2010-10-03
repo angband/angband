@@ -357,54 +357,6 @@ errr init_store_txt(ang_file *fp, char *buf)
 	return 0;
 }
 
-enum parser_error parse_z(struct parser *p) {
-	maxima *z;
-	const char *label;
-	int value;
-
-	z = parser_priv(p);
-	label = parser_getsym(p, "label");
-	value = parser_getint(p, "value");
-
-	if (streq(label, "F"))
-		z->f_max = value;
-	else if (streq(label, "K"))
-		z->k_max = value;
-	else if (streq(label, "A"))
-		z->a_max = value;
-	else if (streq(label, "E"))
-		z->e_max = value;
-	else if (streq(label, "R"))
-		z->r_max = value;
-	else if (streq(label, "V"))
-		z->v_max = value;
-	else if (streq(label, "P"))
-		z->p_max = value;
-	else if (streq(label, "C"))
-		z->c_max = value;
-	else if (streq(label, "H"))
-		z->h_max = value;
-	else if (streq(label, "B"))
-		z->b_max = value;
-	else if (streq(label, "S"))
-		z->s_max = value;
-	else if (streq(label, "O"))
-		z->o_max = value;
-	else if (streq(label, "M"))
-		z->m_max = value;
-	else if (streq(label, "L"))
-		z->flavor_max = value;
-	else if (streq(label, "N"))
-		z->fake_name_size = value;
-	else if (streq(label, "T"))
-		z->fake_text_size = value;
-	else
-		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
-
-	return 0;
-}
-
-
 /*
  * Initialize the "v_info" array, by parsing an ascii "template" file
  */
