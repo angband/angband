@@ -106,8 +106,9 @@ static void parser_freeold(struct parser *p) {
 	struct parser_value *v;
 	while (p->fhead)
 	{
+		int t = p->fhead->spec.type & ~T_OPT;
 		v = (struct parser_value *)p->fhead->spec.next;
-		if (p->fhead->spec.type == T_SYM || p->fhead->spec.type == T_STR)
+		if (t == T_SYM || t == T_STR)
 			mem_free(p->fhead->u.sval);
 		mem_free(p->fhead);
 		p->fhead = v;
@@ -241,12 +242,16 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 	cline = string_make(line);
 
 	tok = strtok(cline, ":");
-	if (!tok)
+	if (!tok) {
+		mem_free(cline);
 		return PARSE_ERROR_MISSING_FIELD;
+	}
 
 	h = findhook(p, tok);
-	if (!h)
+	if (!h) {
+		mem_free(cline);
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
+	}
 
 	/* There's a little bit of trickiness here to account for optional
 	 * types. The optional flag has a bit assigned to it in the spec's type
@@ -271,8 +276,10 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 		}
 		if (!tok)
 		{
-			if (!(s->type & T_OPT))
+			if (!(s->type & T_OPT)) {
+				mem_free(cline);
 				return PARSE_ERROR_MISSING_FIELD;
+			}
 			break;
 		}
 
@@ -289,6 +296,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 			if (z == tok)
 			{
 				mem_free(v);
+				mem_free(cline);
 				return PARSE_ERROR_NOT_NUMBER;
 			}
 		}
@@ -299,6 +307,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 			if (z == tok || *tok == '-')
 			{
 				mem_free(v);
+				mem_free(cline);
 				return PARSE_ERROR_NOT_NUMBER;
 			}
 		}
@@ -315,6 +324,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 			if (!parse_random(tok, &v->u.rval))
 			{
 				mem_free(v);
+				mem_free(cline);
 				return PARSE_ERROR_NOT_RANDOM;
 			}
 		}
@@ -362,6 +372,7 @@ static int parse_type(const char *s) {
 
 static void clean_specs(struct parser_hook *h) {
 	struct parser_spec *s;
+	mem_free(h->dir);
 	while (h->fhead)
 	{
 		s = h->fhead;

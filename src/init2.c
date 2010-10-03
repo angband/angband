@@ -702,7 +702,7 @@ static errr run_parse_k(struct parser *p) {
 }
 
 static errr finish_parse_k(struct parser *p) {
-	struct object_kind *k;
+	struct object_kind *k, *n;
 
 	k_info = mem_zalloc(z_info->k_max * sizeof(*k));
 	for (k = parser_priv(p); k; k = k->next) {
@@ -711,6 +711,14 @@ static errr finish_parse_k(struct parser *p) {
 		memcpy(&k_info[k->kidx], k, sizeof(*k));
 	}
 
+	k = parser_priv(p);
+	while (k) {
+		n = k->next;
+		mem_free(k);
+		k = n;
+	}
+
+	parser_destroy(p);
 	return 0;
 }
 
@@ -877,7 +885,7 @@ static errr run_parse_a(struct parser *p) {
 }
 
 static errr finish_parse_a(struct parser *p) {
-	struct artifact *a;
+	struct artifact *a, *n;
 
 	a_info = mem_zalloc(z_info->a_max * sizeof(*a));
 	for (a = parser_priv(p); a; a = a->next) {
@@ -886,6 +894,14 @@ static errr finish_parse_a(struct parser *p) {
 		memcpy(&a_info[a->aidx], a, sizeof(*a));
 	}
 
+	a = parser_priv(p);
+	while (a) {
+		n = a->next;
+		mem_free(a);
+		a = n;
+	}
+
+	parser_destroy(p);
 	return 0;
 }
 
@@ -960,6 +976,7 @@ static errr finish_parse_names(struct parser *p) {
 		}
 	}
 	mem_free(n);
+	parser_destroy(p);
 	return 0;
 }
 
@@ -1125,7 +1142,7 @@ static errr run_parse_f(struct parser *p) {
 }
 
 static errr finish_parse_f(struct parser *p) {
-	struct feature *f;
+	struct feature *f, *n;
 
 	f_info = mem_zalloc(z_info->f_max * sizeof(*f));
 	for (f = parser_priv(p); f; f = f->next) {
@@ -1134,6 +1151,14 @@ static errr finish_parse_f(struct parser *p) {
 		memcpy(&f_info[f->fidx], f, sizeof(*f));
 	}
 
+	f = parser_priv(p);
+	while (f) {
+		n = f->next;
+		mem_free(f);
+		f = n;
+	}
+
+	parser_destroy(p);
 	return 0;
 }
 
@@ -1355,7 +1380,7 @@ static errr eval_e_slays(struct ego_item *items)
 }
 
 static errr finish_parse_e(struct parser *p) {
-	struct ego_item *e;
+	struct ego_item *e, *n;
 
 	e_info = mem_zalloc(z_info->e_max * sizeof(*e));
 	for (e = parser_priv(p); e; e = e->next) {
@@ -1366,6 +1391,14 @@ static errr finish_parse_e(struct parser *p) {
 
 	eval_e_slays(e_info);
 
+	e = parser_priv(p);
+	while (e) {
+		n = e->next;
+		mem_free(e);
+		e = n;
+	}
+
+	parser_destroy(p);
 	return 0;
 }
 
@@ -2490,7 +2523,7 @@ for (iteration = 0; iteration < 3; iteration ++)
 }
 
 static errr finish_parse_r(struct parser *p) {
-	struct monster_race *r;
+	struct monster_race *r, *n;
 	int i;
 
 	r_info = mem_zalloc(sizeof(*r) * z_info->r_max);
@@ -2504,6 +2537,14 @@ static errr finish_parse_r(struct parser *p) {
 		tot_mon_power += r_info[i].power;
 	}
 
+	r = parser_priv(p);
+	while (r) {
+		n = r->next;
+		mem_free(r);
+		r = n;
+	}
+
+	parser_destroy(p);
 	return 0;
 }
 
@@ -2685,7 +2726,7 @@ static errr run_parse_p(struct parser *p) {
 }
 
 static errr finish_parse_p(struct parser *p) {
-	struct player_race *r;
+	struct player_race *r, *n;
 
 	p_info = mem_zalloc(sizeof(*r) * z_info->p_max);
 	for (r = parser_priv(p); r; r = r->next) {
@@ -2694,6 +2735,14 @@ static errr finish_parse_p(struct parser *p) {
 		memcpy(&p_info[r->ridx], r, sizeof(*r));
 	}
 
+	r = parser_priv(p);
+	while (r) {
+		n = r->next;
+		mem_free(r);
+		r = n;
+	}
+
+	parser_destroy(p);
 	return 0;
 }
 
@@ -2904,13 +2953,20 @@ static errr run_parse_c(struct parser *p) {
 }
 
 static errr finish_parse_c(struct parser *p) {
-	struct player_class *c;
+	struct player_class *c, *n;
 
 	c_info = mem_zalloc(sizeof(*c) * z_info->c_max);
 	for (c = parser_priv(p); c; c = c->next) {
 		if (c->cidx >= z_info->c_max)
 			continue;
 		memcpy(&c_info[c->cidx], c, sizeof(*c));
+	}
+
+	c = parser_priv(p);
+	while (c) {
+		n = c->next;
+		mem_free(c);
+		c = n;
 	}
 
 	parser_destroy(p);
@@ -2977,13 +3033,20 @@ static errr run_parse_v(struct parser *p) {
 }
 
 static errr finish_parse_v(struct parser *p) {
-	struct vault *v;
+	struct vault *v, *n;
 
 	v_info = mem_zalloc(sizeof(*v) * z_info->v_max);
 	for (v = parser_priv(p); v; v = v->next) {
 		if (v->vidx >= z_info->v_max)
 			continue;
 		memcpy(&v_info[v->vidx], v, sizeof(*v));
+	}
+
+	v = parser_priv(p);
+	while (v) {
+		n = v->next;
+		mem_free(v);
+		v = n;
 	}
 
 	parser_destroy(p);
@@ -3005,7 +3068,7 @@ static enum parser_error parse_h_n(struct parser *p) {
 	h->roll = parser_getint(p, "roll");
 	h->bonus = parser_getint(p, "bonus");
 	h->nextp = oh;
-	h->hidx = oh ? oh->hidx + 1 : 1;
+	h->hidx = oh ? oh->hidx + 1 : 0;
 	parser_setpriv(p, h);
 	return PARSE_ERROR_NONE;
 }
@@ -3033,13 +3096,22 @@ static errr run_parse_h(struct parser *p) {
 }
 
 static errr finish_parse_h(struct parser *p) {
-	struct history *h;
+	struct history *h, *n;
 
 	h_info = mem_zalloc(sizeof(*h) * z_info->h_max);
 	for (h = parser_priv(p); h; h = h->nextp) {
-		if (h->hidx >= z_info->h_max)
+		if (h->hidx >= z_info->h_max) {
+			printf("warning: skipping bad history %d\n", h->hidx);
 			continue;
+		}
 		memcpy(&h_info[h->hidx], h, sizeof(*h));
+	}
+
+	h = parser_priv(p);
+	while (h) {
+		n = h->nextp;
+		mem_free(h);
+		h = n;
 	}
 
 	parser_destroy(p);
@@ -3740,13 +3812,17 @@ void cleanup_angband(void)
 	/* Free the "quarks" */
 	quarks_free();
 
+	mem_free(k_info);
+	mem_free(a_info);
+	mem_free(e_info);
+	mem_free(r_info);
+	mem_free(c_info);
+
 	/* Free the info, name, and text arrays */
 	free_info(&flavor_head);
 	free_info(&g_head);
 	free_info(&b_head);
 	free_info(&c_head);
-	free_info(&h_head);
-	free_info(&v_head);
 	free_info(&s_head);
 
 	/* Free the format() buffer */

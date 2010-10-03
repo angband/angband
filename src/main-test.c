@@ -141,6 +141,8 @@ static errr test_docmd(void) {
 	char *rest;
 	int i;
 
+	memset(buf, 0, sizeof(buf));
+
 	if (prompt) {
 		printf("test> ");
 		fflush(stdout);
