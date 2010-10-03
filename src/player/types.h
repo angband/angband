@@ -359,7 +359,9 @@ typedef struct
  */
 typedef struct player_class
 {
+	struct player_class *next;
 	const char *name;
+	unsigned int cidx;
 	
 	const char *title[10];    /* Titles - offset */
 	

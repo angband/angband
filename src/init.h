@@ -92,6 +92,7 @@ extern errr emit_info_txt(ang_file *fp, ang_file *template, char *buf, header *h
    emit_info_txt_index_func emit_info_txt_index, emit_info_txt_always_func emit_info_txt_always);
 
 extern struct parser *init_parse_a(void);
+extern struct parser *init_parse_c(void);
 extern struct parser *init_parse_e(void);
 extern struct parser *init_parse_f(void);
 extern struct parser *init_parse_k(void);
@@ -101,7 +102,6 @@ extern struct parser *init_parse_z(void);
 extern struct parser *init_parse_names(void);
 
 extern errr parse_v_info(char *buf, header *head);
-extern errr parse_c_info(char *buf, header *head);
 extern errr parse_h_info(char *buf, header *head);
 extern errr parse_b_info(char *buf, header *head);
 extern errr parse_g_info(char *buf, header *head);
@@ -118,7 +118,6 @@ extern int error_idx;
 extern int error_line;
 
 extern header v_head;
-extern header c_head;
 extern header h_head;
 extern header b_head;
 extern header g_head;

@@ -2703,6 +2703,226 @@ struct file_parser p_parser = {
 	finish_parse_p
 };
 
+static enum parser_error parse_c_n(struct parser *p) {
+	struct player_class *h = parser_priv(p);
+	struct player_class *c = mem_zalloc(sizeof *c);
+	c->cidx = parser_getuint(p, "index");
+	c->name = string_make(parser_getstr(p, "name"));
+	c->next = h;
+	parser_setpriv(p, c);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_c_s(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	c->c_adj[A_STR] = parser_getint(p, "str");
+	c->c_adj[A_INT] = parser_getint(p, "int");
+	c->c_adj[A_WIS] = parser_getint(p, "wis");
+	c->c_adj[A_DEX] = parser_getint(p, "dex");
+	c->c_adj[A_CON] = parser_getint(p, "con");
+	c->c_adj[A_CHR] = parser_getint(p, "chr");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_c_c(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->c_skills[SKILL_DISARM] = parser_getint(p, "dis");
+	c->c_skills[SKILL_DEVICE] = parser_getint(p, "dev");
+	c->c_skills[SKILL_SAVE] = parser_getint(p, "sav");
+	c->c_skills[SKILL_STEALTH] = parser_getint(p, "stl");
+	c->c_skills[SKILL_SEARCH] = parser_getint(p, "srh");
+	c->c_skills[SKILL_SEARCH_FREQUENCY] = parser_getint(p, "fos");
+	c->c_skills[SKILL_TO_HIT_MELEE] = parser_getint(p, "thm");
+	c->c_skills[SKILL_TO_HIT_BOW] = parser_getint(p, "thb");
+	c->c_skills[SKILL_TO_HIT_THROW] = parser_getint(p, "throw");
+	c->c_skills[SKILL_DIGGING] = parser_getint(p, "dig");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_c_x(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->x_skills[SKILL_DISARM] = parser_getint(p, "dis");
+	c->x_skills[SKILL_DEVICE] = parser_getint(p, "dev");
+	c->x_skills[SKILL_SAVE] = parser_getint(p, "sav");
+	c->x_skills[SKILL_STEALTH] = parser_getint(p, "stl");
+	c->x_skills[SKILL_SEARCH] = parser_getint(p, "srh");
+	c->x_skills[SKILL_SEARCH_FREQUENCY] = parser_getint(p, "fos");
+	c->x_skills[SKILL_TO_HIT_MELEE] = parser_getint(p, "thm");
+	c->x_skills[SKILL_TO_HIT_BOW] = parser_getint(p, "thb");
+	c->x_skills[SKILL_TO_HIT_THROW] = parser_getint(p, "throw");
+	c->x_skills[SKILL_DIGGING] = parser_getint(p, "dig");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_c_i(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->c_mhp = parser_getint(p, "mhp");
+	c->c_exp = parser_getint(p, "exp");
+	c->sense_base = parser_getint(p, "sense-base");
+	c->sense_div = parser_getint(p, "sense-div");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_c_a(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->max_attacks = parser_getint(p, "max-attacks");
+	c->min_weight = parser_getint(p, "min-weight");
+	c->att_multiply = parser_getint(p, "att-multiply");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_c_m(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	c->spell_book = parser_getint(p, "book");
+	c->spell_stat = parser_getint(p, "stat");
+	c->spell_first = parser_getint(p, "first");
+	c->spell_weight = parser_getint(p, "weight");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_c_b(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	unsigned int spell;
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	spell = parser_getuint(p, "spell");
+	if (spell >= PY_MAX_SPELLS)
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+	c->spells.info[spell].slevel = parser_getint(p, "level");
+	c->spells.info[spell].smana = parser_getint(p, "mana");
+	c->spells.info[spell].sfail = parser_getint(p, "fail");
+	c->spells.info[spell].sexp = parser_getint(p, "exp");
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_c_t(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	int i;
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	for (i = 0; i < PY_MAX_LEVEL / 5; i++) {
+		if (!c->title[i]) {
+			c->title[i] = string_make(parser_getstr(p, "title"));
+			break;
+		}
+	}
+
+	if (i >= PY_MAX_LEVEL / 5)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_c_e(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	int i;
+	int tval, sval;
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	tval = tval_find_idx(parser_getsym(p, "tval"));
+	if (tval == -1)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	sval = lookup_sval(tval, parser_getsym(p, "sval"));
+	if (sval == -1)
+		return PARSE_ERROR_UNRECOGNISED_SVAL;
+	for (i = 0; i <= MAX_START_ITEMS; i++)
+		if (!c->start_items[i].min)
+			break;
+	if (i > MAX_START_ITEMS)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+	c->start_items[i].kind = objkind_get(tval, sval);
+	c->start_items[i].min = parser_getuint(p, "min");
+	c->start_items[i].max = parser_getuint(p, "max");
+	/* XXX: MAX_ITEM_STACK? */
+	if (c->start_items[i].min > 99 || c->start_items[i].max > 99)
+		return PARSE_ERROR_INVALID_ITEM_NUMBER;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_c_f(struct parser *p) {
+	struct player_class *c = parser_priv(p);
+	char *flags;
+	char *s;
+
+	if (!c)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+	flags = string_make(parser_getstr(p, "flags"));
+	s = strtok(flags, " |");
+	while (s) {
+		if (grab_flag(c->pflags, PF_SIZE, player_info_flags, s))
+			break;
+		s = strtok(NULL, " |");
+	}
+
+	mem_free(flags);
+	return s ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_c(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "V sym version", ignored);
+	parser_reg(p, "N uint index str name", parse_c_n);
+	parser_reg(p, "S int str int int int wis int dex int con int chr", parse_c_s);
+	parser_reg(p, "C int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_c_c);
+	parser_reg(p, "X int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_c_x);
+	parser_reg(p, "I int mhp int exp int sense-base int sense-div", parse_c_i);
+	parser_reg(p, "A int max-attacks int min-weight int att-multiply", parse_c_a);
+	parser_reg(p, "M int book int stat int first int weight", parse_c_m);
+	parser_reg(p, "B uint spell int level int mana int fail int exp", parse_c_b);
+	parser_reg(p, "T str title", parse_c_t);
+	parser_reg(p, "E sym tval sym sval uint min uint max", parse_c_e);
+	parser_reg(p, "F ?str flags", parse_c_f);
+	return p;
+}
+
+static errr run_parse_c(struct parser *p) {
+	return parse_file(p, "p_class");
+}
+
+static errr finish_parse_c(struct parser *p) {
+	struct player_class *c;
+
+	c_info = mem_zalloc(sizeof(*c) * z_info->c_max);
+	for (c = parser_priv(p); c; c = c->next) {
+		if (c->cidx >= z_info->c_max)
+			continue;
+		memcpy(&c_info[c->cidx], c, sizeof(*c));
+	}
+
+	parser_destroy(p);
+	return 0;
+}
+
+struct file_parser c_parser = {
+	init_parse_c,
+	run_parse_c,
+	finish_parse_c
+};
+
 /*
  * Initialize the "v_info" array
  */
@@ -2725,29 +2945,6 @@ static errr init_v_info(void)
 
 	return (err);
 }
-
-/*
- * Initialize the "c_info" array
- */
-static errr init_c_info(void)
-{
-	errr err;
-
-	/* Init the header */
-	init_header(&c_head, z_info->c_max, sizeof(player_class));
-
-	/* Save a pointer to the parsing function */
-	c_head.parse_info_txt = parse_c_info;
-
-	err = init_info("p_class", &c_head);
-
-	/* Set the global variables */
-	c_info = c_head.info_ptr;
-
-	return (err);
-}
-
-
 
 /*
  * Initialize the "h_info" array
@@ -3319,7 +3516,7 @@ bool init_angband(void)
 
 	/* Initialize class info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (classes)");
-	if (init_c_info()) quit("Cannot initialize classes");
+	if (run_parser(&c_parser)) quit("Cannot initialize classes");
 
 	/* Initialize owner info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (owners)");

@@ -1,4 +1,5 @@
 TESTPROGS += parse/a-info \
+             parse/c-info \
              parse/e-info \
 	     parse/f-info \
              parse/names \
@@ -9,6 +10,7 @@ TESTPROGS += parse/a-info \
 	     parse/z-info
 
 parse/a-info: parse/a-info.c ../angband.o
+parse/c-info: parse/c-info.c ../angband.o
 parse/e-info: parse/e-info.c ../angband.o
 parse/f-info: parse/f-info.c ../angband.o
 parse/names: parse/names.c ../angband.o

@@ -3541,6 +3541,10 @@ int lookup_artifact_name(const char *name)
 int lookup_sval(int tval, const char *name)
 {
 	int k;
+	unsigned int r;
+
+	if (sscanf(name, "%u", &r) == 1)
+		return r;
 
 	/* Look for it */
 	for (k = 1; k < z_info->k_max; k++)
@@ -3567,6 +3571,10 @@ int lookup_sval(int tval, const char *name)
 int tval_find_idx(const char *name)
 {
 	size_t i = 0;
+	unsigned int r;
+
+	if (sscanf(name, "%u", &r) == 1)
+		return r;
 
 	for (i = 0; i < N_ELEMENTS(tval_names); i++)
 	{
