@@ -15,7 +15,9 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "cave.h"
 #include "cmds.h"
 #include "game-cmd.h"
 #include "monster/monster.h"

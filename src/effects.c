@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "cave.h"
 #include "effects.h"
 #include "monster/monster.h"
 

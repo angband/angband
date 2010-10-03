@@ -19,6 +19,7 @@
  */
 
 #include "angband.h"
+#include "cave.h"
 #include "game-event.h"
 #include "game-cmd.h"
 #include "monster/monster.h"
