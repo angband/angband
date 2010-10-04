@@ -755,7 +755,7 @@ static enum parser_error parse_a_i(struct parser *p) {
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
 	a->tval = tval;
 
-	int sval = lookup_sval(a->tval, parser_getsym("sval"));
+	int sval = lookup_sval(a->tval, parser_getsym(p, "sval"));
 	if (sval < 0)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 	a->sval = sval;
