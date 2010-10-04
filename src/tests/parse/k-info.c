@@ -66,6 +66,18 @@ static int test_i0(void *state) {
 	ok;
 }
 
+static int test_i1(void *state) {
+	errr r = parser_parse(state, "I:food:2:0");
+	struct object_kind *k;
+
+	eq(r, 0);
+	k = parser_priv(state);
+	require(k);
+	eq(k->tval, TV_FOOD);
+	eq(k->sval, 2);
+	ok;
+}
+
 static int test_w0(void *state) {
 	errr r = parser_parse(state, "W:10:0:5:120");
 	struct object_kind *k;
@@ -182,6 +194,7 @@ static struct test tests[] = {
 	{ "g0", test_g0 },
 	{ "g1", test_g1 },
 	{ "i0", test_i0 },
+	{ "i1", test_i1 },
 	{ "w0", test_w0 },
 	{ "a0", test_a0 },
 	{ "p0", test_p0 },

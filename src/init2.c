@@ -582,7 +582,11 @@ static enum parser_error parse_k_i(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
 	assert(k);
 
-	k->tval = parser_getint(p, "tval");
+	int tval = tval_find_idx(parser_getsym(p, "tval"));
+	if (tval < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+
+	k->tval = tval;
 	k->sval = parser_getint(p, "sval");
 	k->pval = parser_getrand(p, "pval");
 	return PARSE_ERROR_NONE;
@@ -686,7 +690,7 @@ struct parser *init_parse_k(void) {
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N int index str name", parse_k_n);
 	parser_reg(p, "G sym char sym color", parse_k_g);
-	parser_reg(p, "I int tval int sval rand pval", parse_k_i);
+	parser_reg(p, "I sym tval int sval rand pval", parse_k_i);
 	parser_reg(p, "W int level int extra int weight int cost", parse_k_w);
 	parser_reg(p, "A int common str minmax", parse_k_a);
 	parser_reg(p, "P int ac rand hd rand to-h rand to-d rand to-a", parse_k_p);
@@ -744,32 +748,17 @@ static enum parser_error parse_a_n(struct parser *p) {
 
 static enum parser_error parse_a_i(struct parser *p) {
 	struct artifact *a = parser_priv(p);
-	const char *tv, *sv;
-	int tvi, svi;
 	assert(a);
 
-	tv = parser_getsym(p, "tval");
-	sv = parser_getsym(p, "sval");
-
-	if (sscanf(tv, "%d", &tvi) != 1) {
-		tvi = tval_find_idx(tv);
-		if (tvi == -1)
-			return PARSE_ERROR_UNRECOGNISED_TVAL;
-	}
-	if (tvi < 0)
+	int tval = tval_find_idx(parser_getsym(p, "tval"));
+	if (tval < 0)
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
+	a->tval = tval;
 
-	a->tval = tvi;
-
-	if (sscanf(sv, "%d", &svi) != 1) {
-		svi = lookup_sval(a->tval, sv);
-		if (svi == -1)
-			return PARSE_ERROR_UNRECOGNISED_SVAL;
-	}
-	if (svi < 0)
+	int sval = lookup_sval(a->tval, parser_getsym("sval"));
+	if (sval < 0)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
-
-	a->sval = svi;
+	a->sval = sval;
 
 	a->pval = parser_getint(p, "pval");
 	return PARSE_ERROR_NONE;
@@ -1210,7 +1199,10 @@ static enum parser_error parse_e_x(struct parser *p) {
 }
 
 static enum parser_error parse_e_t(struct parser *p) {
-	int tval = parser_getint(p, "tval");
+	int tval = tval_find_idx(parser_getsym(p, "tval"));
+	if (tval < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+
 	int min_sval = parser_getint(p, "min-sval");
 	int max_sval = parser_getint(p, "max-sval");
 	struct ego_item *e = parser_priv(p);
@@ -1303,7 +1295,7 @@ struct parser *init_parse_e(void) {
 	parser_reg(p, "N int index str name", parse_e_n);
 	parser_reg(p, "W int level int rarity int pad int cost", parse_e_w);
 	parser_reg(p, "X int rating int xtra", parse_e_x);
-	parser_reg(p, "T int tval int min-sval int max-sval", parse_e_t);
+	parser_reg(p, "T sym tval int min-sval int max-sval", parse_e_t);
 	parser_reg(p, "C rand th rand td rand ta rand pval", parse_e_c);
 	parser_reg(p, "M int th int td int ta int pval", parse_e_m);
 	parser_reg(p, "F ?str flags", parse_e_f);
@@ -2890,12 +2882,15 @@ static enum parser_error parse_c_e(struct parser *p) {
 
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
 	tval = tval_find_idx(parser_getsym(p, "tval"));
-	if (tval == -1)
+	if (tval < 0)
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
+
 	sval = lookup_sval(tval, parser_getsym(p, "sval"));
-	if (sval == -1)
+	if (sval < 0)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
+
 	for (i = 0; i <= MAX_START_ITEMS; i++)
 		if (!c->start_items[i].min)
 			break;
