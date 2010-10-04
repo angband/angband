@@ -1,13 +1,3 @@
-/*
- * Copyright (c) 2007 Pete Mack and others
- * This code released under the Gnu Public License. See www.fsf.org
- * for current GPL license details. Addition permission granted to
- * incorporate modifications in all Angband variants as defined in the
- * Angband variants FAQ. See rec.games.roguelike.angband for FAQ.
- */
-
-
-
 #ifndef INCLUDED_UI_EVENT_H
 #define INCLUDED_UI_EVENT_H
 
@@ -26,10 +16,7 @@ typedef enum
 	EVT_OK		= 0x0100,	/* Callback successful */
 					/* For example, a command key action. */
 	EVT_REFRESH	= 0x0200,	/* Display refresh */
-	EVT_RESIZE	= 0x0400,	/* Display resize */
-
-	EVT_AGAIN	= 0x4000000,	/* Retry notification */
-	EVT_STOP	= 0x8000000	/* Loop stopped (never handled) */
+	EVT_RESIZE	= 0x0400	/* Display resize */
 } ui_event_type;
 
 typedef struct
@@ -41,22 +28,5 @@ typedef struct
 } ui_event_data;
 
 #define EVENT_EMPTY		{ EVT_NONE, 0, 0, 0, 0 }
-
-
-/* An event handler member function */
-typedef bool (*handler_f)(void *object, const ui_event_data *in);
-
-
-/* Base class for event listener */
-typedef struct
-{
-	handler_f handler;  /* The handler function to call */
-	void *object;       /* Self-pointer */
-	int event_flags;    /* Set of events to which this listener has subscribed */
-} event_listener;
-
-
-ui_event_data run_event_loop(event_listener *parent, const ui_event_data *start);
-
 
 #endif /* INCLUDED_UI_EVENT_H */

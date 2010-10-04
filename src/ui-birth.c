@@ -410,7 +410,6 @@ static void print_menu_instructions(void)
 static enum birth_stage menu_question(enum birth_stage current, menu_type *current_menu, cmd_code choice_command)
 {
 	struct birthmenu_data *menu_data = current_menu->menu_data;
-	int cursor = current_menu->cursor;
 	ui_event_data cx;
 
 	enum birth_stage next = BIRTH_RESET;
@@ -424,7 +423,7 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 	while (next == BIRTH_RESET)
 	{
 		/* Display the menu, wait for a selection of some sort to be made. */
-		cx = menu_select(current_menu, &cursor, EVT_CMD);
+		cx = menu_select(current_menu, EVT_CMD);
 
 		/* As all the menus are displayed in "hierarchical" style, we allow
 		   use of "back" (left arrow key or equivalent) to step back in 
@@ -438,7 +437,7 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 		{
 			if (current == BIRTH_ROLLER_CHOICE)
 			{
-				if (cursor)
+				if (current_menu->cursor)
 				{
 					/* Do a first roll of the stats */
 					cmd_insert(CMD_ROLL_STATS);
@@ -461,7 +460,7 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 			}
 			else
 			{
-				cmd_insert(choice_command, cursor);
+				cmd_insert(choice_command, current_menu->cursor);
 				next = current + 1;
 			}
 		}

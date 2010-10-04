@@ -841,11 +841,11 @@ static bool quality_action(char cmd, void *db, int oid)
 	menu_init(&menu, MN_SKIN_SCROLL, &menu_f, &area);
 	window_make(area.col - 2, area.row - 1, area.col + area.width + 2, area.row + area.page_rows);
 
-	evt = menu_select(&menu, &cursor, 0);
+	evt = menu_select(&menu, 0);
 
 	/* Set the new value appropriately */
-	if (evt.key != ESCAPE && evt.type != EVT_BACK)
-		squelch_level[oid] = cursor;
+	if (evt.type != EVT_ESCAPE && evt.type != EVT_BACK)
+		squelch_level[oid] = menu.cursor;
 
 	/* Load and finish */
 	screen_load();
@@ -861,7 +861,6 @@ static void quality_menu(void *unused, const char *also_unused)
 	menu_iter menu_f = { NULL, NULL, quality_display, quality_action };
 	region area = { 1, 5, -1, -1 };
 	ui_event_data evt = EVENT_EMPTY;
-	int cursor = 0;
 
 	/* Save screen */
 	screen_save();
@@ -880,8 +879,8 @@ static void quality_menu(void *unused, const char *also_unused)
 	menu_init(&menu, MN_SKIN_SCROLL, &menu_f, &area);
 
 	/* Select an entry */
-	while (evt.key != ESCAPE)
-		evt = menu_select(&menu, &cursor, 0);
+	while (evt.type != EVT_ESCAPE)
+		evt = menu_select(&menu, 0);
 
 	/* Load screen */
 	screen_load();
@@ -949,7 +948,6 @@ static bool sval_menu(int tval, const char *desc)
 	menu_iter menu_f = { NULL, NULL, sval_display, sval_action };
 	region area = { 1, 5, -1, -1 };
 	ui_event_data evt = { EVT_NONE, 0, 0, 0, 0 };
-	int cursor = 0;
 
 	int num = 0;
 	size_t i;
@@ -1049,8 +1047,8 @@ static bool sval_menu(int tval, const char *desc)
 	menu_init(&menu, MN_SKIN_SCROLL, &menu_f, &area);
 
 	/* Select an entry */
-	while (evt.key != ESCAPE)
-		evt = menu_select(&menu, &cursor, 0);
+	while (evt.type != EVT_ESCAPE)
+		evt = menu_select(&menu, 0);
 
 	/* Free memory */
 	FREE(choice);
@@ -1172,15 +1170,12 @@ static const menu_iter options_item_iter =
  */
 void do_cmd_options_item(void *unused, cptr title)
 {
-	int cursor = 0;
 	ui_event_data c = EVENT_EMPTY;
-	const char cmd_keys[] = { ARROW_LEFT, ARROW_RIGHT, '\0' };
 
 	menu_type menu;
 
 	WIPE(&menu, menu_type);
 	menu.title = title;
-        menu.cmd_keys = cmd_keys;
 	menu.count = N_ELEMENTS(sval_dependent) + N_ELEMENTS(extra_item_options) + 1;
 	menu_init(&menu, MN_SKIN_SCROLL, &options_item_iter, &SCREEN_REGION);
 
@@ -1188,22 +1183,22 @@ void do_cmd_options_item(void *unused, cptr title)
 	screen_save();
 	clear_from(0);
 
-	while (c.key != ESCAPE)
+	while (c.type != EVT_ESCAPE)
 	{
 		clear_from(0);
-		c = menu_select(&menu, &cursor, 0);
+		c = menu_select(&menu, 0);
 
 		if (c.type == EVT_SELECT)
 		{
-			if ((size_t) cursor < N_ELEMENTS(sval_dependent))
+			if ((size_t) menu.cursor < N_ELEMENTS(sval_dependent))
 			{
-				sval_menu(sval_dependent[cursor].tval, sval_dependent[cursor].desc);
+				sval_menu(sval_dependent[menu.cursor].tval, sval_dependent[menu.cursor].desc);
 			}
 			else
 			{
-				cursor = cursor - N_ELEMENTS(sval_dependent) - 1;
-				if ((size_t) cursor < N_ELEMENTS(extra_item_options))
-					extra_item_options[cursor].action(NULL, NULL);
+				menu.cursor = menu.cursor - N_ELEMENTS(sval_dependent) - 1;
+				if ((size_t) menu.cursor < N_ELEMENTS(extra_item_options))
+					extra_item_options[menu.cursor].action(NULL, NULL);
 			}
 		}
 	}

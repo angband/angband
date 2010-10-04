@@ -185,7 +185,6 @@ struct menu_iter
 struct menu_type
 {
 	/* menu inherits from panel */
-	event_listener target;
 	void (*refresh)();
 	region boundary;
 
@@ -230,13 +229,12 @@ struct menu_type
  * 
  * Arguments:
  *  object_list - optional ordered subset of menu OID.  If NULL, cursor is used for OID
- *  cursor - current (absolute) position in menu.  Modified on selection.
  *  loc - location to display the menu.
  * Return: A command key; cursor is set to the corresponding row.
  * (This is a stand-in for a menu event)
  * reserved commands are 0xff for selection and ESCAPE for escape.
  */
-ui_event_data menu_select(menu_type *menu, int *cursor, int no_handle);
+ui_event_data menu_select(menu_type *menu, int no_handle);
 
 /* TODO: This belongs in the VTAB */
 bool menu_layout(menu_type *menu, const region *loc);
@@ -245,6 +243,7 @@ bool menu_layout(menu_type *menu, const region *loc);
 void menu_set_filter(menu_type *menu, const int object_list[], int n);
 void menu_release_filter(menu_type *menu);
 
+bool menu_handle_event(menu_type *menu, const ui_event_data *in, ui_event_data *out);
 
 /* Find a menu iterator struct */
 const menu_iter *find_menu_iter(menu_iter_id iter_id);

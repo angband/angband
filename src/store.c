@@ -3056,7 +3056,6 @@ void do_cmd_store_knowledge(void)
 
 	menu_type menu;
 	ui_event_data evt = EVENT_EMPTY;
-	int cursor = 0;
 
 	store_type *st_ptr = &store[current_store()];
 
@@ -3091,10 +3090,6 @@ void do_cmd_store_knowledge(void)
 			menu.selections = "abcdfghjkmnopqrstuvwxyz13456";
 		}
 
-		/* Keep the cursor in range of the stock */
-		if (cursor < 0 || cursor >= menu.count)
-			cursor = menu.count - 1;
-
 		items_region.page_rows = scr_places_y[LOC_MORE] - scr_places_y[LOC_ITEMS_START];
 
 		/* Init the menu structure */
@@ -3112,7 +3107,7 @@ void do_cmd_store_knowledge(void)
 		/* Get a selection/action */
 		while (evt.type == EVT_MOVE)
 		{
-			evt = menu_select(&menu, &cursor, EVT_MOVE);
+			evt = menu_select(&menu, EVT_MOVE);
 			if (store_flags & STORE_KEEP_PROMPT)
 			{
 				/* Unset so that the prompt is cleared next time */
@@ -3125,7 +3120,7 @@ void do_cmd_store_knowledge(void)
 			}
 		}
 
-		if (evt.key == ESCAPE || evt.type == EVT_BACK)
+		if (evt.type == EVT_ESCAPE || evt.type == EVT_BACK)
 		{
 			leave = TRUE;
 		}
@@ -3199,7 +3194,6 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 
 	menu_type menu;
 	ui_event_data evt = EVENT_EMPTY;
-	int cursor = 0;
 
 	store_type *st_ptr = &store[this_store];
 
@@ -3238,10 +3232,6 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 			menu.selections = "acfhjmnoqruvyz13456790ABDFGH";
 		}
 
-		/* Keep the cursor in range of the stock */
-		if (cursor < 0 || cursor >= menu.count)
-			cursor = menu.count - 1;
-
 		items_region.page_rows = scr_places_y[LOC_MORE] - scr_places_y[LOC_ITEMS_START];
 
 		/* Init the menu structure */
@@ -3259,7 +3249,7 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 		/* Get a selection/action */
 		while (evt.type == EVT_MOVE)
 		{
-			evt = menu_select(&menu, &cursor, EVT_MOVE);
+			evt = menu_select(&menu, EVT_MOVE);
 			if (store_flags & STORE_KEEP_PROMPT)
 			{
 				/* Unset so that the prompt is cleared next time */
@@ -3272,7 +3262,7 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 			}
 		}
 
-		if (evt.key == ESCAPE || evt.type == EVT_BACK)
+		if (evt.type == EVT_ESCAPE || evt.type == EVT_BACK)
 		{
 			leave = TRUE;
 		}

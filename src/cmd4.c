@@ -572,7 +572,6 @@ static void do_cmd_options_aux(void *vpage, cptr info)
 	int page = (int)vpage;
 	int opt[OPT_PAGE_PER];
 	int i, n = 0;
-	int cursor_pos = 0;
 
 	menu_type *menu = &option_toggle_menu;
 	menu->title = info;
@@ -593,20 +592,16 @@ static void do_cmd_options_aux(void *vpage, cptr info)
 
 	menu_layout(menu, &SCREEN_REGION);
 
-	while (TRUE)
+	ui_event_data cx = EVENT_EMPTY;
+	while (cx.type != EVT_ESCAPE)
 	{
-		ui_event_data cx;
+		cx = menu_select(menu, 0);
 
-		cx = menu_select(menu, &cursor_pos, EVT_MOVE);
-
-		if (cx.key == ESCAPE)
-			break;
-		else if (cx.type == EVT_MOVE)
-			cursor_pos = cx.index;
-		else if (cx.type == EVT_SELECT && strchr("YN", toupper((unsigned char) cx.key)))
-			cursor_pos++;
-
-		cursor_pos = (cursor_pos+n) % n;
+		if (cx.type == EVT_SELECT && strchr("YN", toupper((unsigned char) cx.key)))
+		{
+			menu->cursor++;
+			menu->cursor = (menu->cursor + n) % n;
+		}
 	}
 
 	/* Hack -- Notice use of any "cheat" options */
@@ -896,13 +891,11 @@ static menu_type macro_menu;
 
 void do_cmd_macros(void)
 {
-
 	char tmp[1024];
 
 	char pat[1024];
 
 	int mode;
-	int cursor = 0;
 
 	region loc = {0, 0, 0, 12};
 
@@ -933,12 +926,16 @@ void do_cmd_macros(void)
 
 		/* Display the current action */
 		prt(tmp, 14, 0);
-		c = menu_select(&macro_menu, &cursor, EVT_CMD);
 
+		c = menu_select(&macro_menu, EVT_CMD);
 
-		if (ESCAPE == c.key) break;
-		if (c.key == ARROW_LEFT || c.key == ARROW_RIGHT) continue;
-		evt = macro_actions[cursor].id;
+		if (c.type == EVT_ESCAPE)
+			break;
+
+		if (c.type == EVT_KBRD && (c.key == ARROW_LEFT || c.key == ARROW_RIGHT))
+			continue;
+
+		evt = macro_actions[macro_menu.cursor].id;
 
 		switch(evt)
 		{
@@ -1211,8 +1208,6 @@ static menu_type visual_menu;
  */
 void do_cmd_visuals(void)
 {
-	int cursor = 0;
-
 	/* Save screen */
 	screen_save();
 
@@ -1223,17 +1218,18 @@ void do_cmd_visuals(void)
 	{
 		ui_event_data key;
 		int evt = -1;
+
 		clear_from(0);
-		key = menu_select(&visual_menu, &cursor, EVT_CMD);
-		if (key.key == ESCAPE) 
+
+		key = menu_select(&visual_menu, EVT_CMD);
+
+		if (key.type == EVT_ESCAPE)
 			break;
 
-		if (key.key == ARROW_LEFT || key.key == ARROW_RIGHT)
+		if (key.type == EVT_KBRD && (key.key == ARROW_LEFT || key.key == ARROW_RIGHT))
 			continue;
 
-		assert(cursor >= 0 && cursor < visual_menu.count);
-
-		evt = visual_menu_items[cursor].id;
+		evt = visual_menu_items[visual_menu.cursor].id;
 
 		if (evt == LOAD_PREF)
 		{
@@ -1304,7 +1300,6 @@ void do_cmd_colors(void)
 {
 	int i;
 	int cx;
-	int cursor = 0;
 
 	screen_save();
 
@@ -1316,14 +1311,13 @@ void do_cmd_colors(void)
 		ui_event_data key;
 		int evt;
 		clear_from(0);
-		key = menu_select(&color_menu, &cursor, EVT_CMD);
+		key = menu_select(&color_menu, EVT_CMD);
 
 		/* Done */
-		if (key.key == ESCAPE) break;
-
+		if (key.type == EVT_ESCAPE) break;
 		if (key.key == ARROW_RIGHT || key.key == ARROW_LEFT) continue;
 
-		evt = color_events[cursor].id;
+		evt = color_events[color_menu.cursor].id;
 
 		/* Load a user pref file */
 		if (evt == LOAD_PREF)
@@ -1687,20 +1681,21 @@ static const menu_iter options_iter =
  */
 void do_cmd_options(void)
 {
-	int cursor = 0;
 	ui_event_data c = EVENT_EMPTY;
 
 	screen_save();
+	clear_from(0);
 	menu_layout(&option_menu, &SCREEN_REGION);
 
-	while (c.key != ESCAPE)
+	while (c.type != EVT_ESCAPE)
 	{
-		clear_from(0);
-		c = menu_select(&option_menu, &cursor, 0);
-		if (c.type == EVT_SELECT && option_actions[cursor].action)
+		c = menu_select(&option_menu, 0);
+
+		if (c.type == EVT_SELECT && option_actions[option_menu.cursor].action)
 		{
-			option_actions[cursor].action(option_actions[cursor].data,
-			                              option_actions[cursor].name);
+			option_actions[option_menu.cursor].action(
+					option_actions[option_menu.cursor].data,
+					option_actions[option_menu.cursor].name);
 		}
 
 		message_flush();
