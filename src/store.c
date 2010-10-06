@@ -205,7 +205,7 @@ static void prt_welcome(const owner_type *ot_ptr)
 {
 	char short_name[20];
 	const char *player_name;
-	const char *owner_name = &b_name[ot_ptr->owner_name];
+	const char *owner_name = ot_ptr->owner_name;
 
 	/* We go from level 1 - 50  */
 	size_t i = ((unsigned)p_ptr->lev - 1) / 5;
@@ -1786,7 +1786,7 @@ static void store_display_frame(void)
 	else
 	{
 		const char *store_name = f_info[FEAT_SHOP_HEAD + this_store].name;
-		const char *owner_name = &b_name[ot_ptr->owner_name];
+		const char *owner_name = ot_ptr->owner_name;
 
 		/* Put the owner name */
 		put_str(owner_name, scr_places_y[LOC_OWNER], 1);

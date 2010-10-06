@@ -1,6 +1,8 @@
 #ifndef INCLUDED_STORE_H
 #define INCLUDED_STORE_H
 
+#include "object/types.h"
+
 /*** Constants ***/
 
 #define STORE_INVEN_MAX		24    /* Max number of discrete objs in inven */
@@ -22,26 +24,19 @@ enum
 	MAX_STORES	= 8
 };
 
-
-
-/*** Types ***/
-
-/*
- * A store owner
- */
-struct owner_type
-{
-	u32b owner_name;	/* Name (offset) */
+typedef struct owner {
+	struct owner *next;
+	unsigned int store;
+	unsigned int oidx;
+	char *owner_name;
 	s32b max_cost;		/* Purse limit */
-};
-
+} owner_type;
 
 /*
  * A store, with an owner, various state flags, a current stock
  * of items, and a table of items that are often purchased.
  */
-struct store_type
-{
+typedef struct store {
 	byte owner;				/* Owner index */
 
 	byte stock_num;			/* Stock -- Number of entries */
@@ -51,9 +46,7 @@ struct store_type
 	s16b table_num;     /* Table -- Number of entries */
 	s16b table_size;    /* Table -- Total Size of Array */
 	s16b *table;        /* Table -- Legal item kinds */
-};
-
-
+} store_type;
 
 /*** Functions ***/
 

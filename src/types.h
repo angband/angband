@@ -41,8 +41,6 @@ typedef int (*button_kill_f)(unsigned char);
 
 typedef struct alloc_entry alloc_entry;
 typedef struct quest quest;
-typedef struct owner_type owner_type;
-typedef struct store_type store_type;
 typedef struct spell_type spell_type;
 typedef struct autoinscription autoinscription;
 typedef struct history_info history_info;

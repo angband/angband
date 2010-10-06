@@ -3142,8 +3142,6 @@ static errr init_b_info(void)
 
 	/* Set the global variables */
 	b_info = b_head.info_ptr;
-	b_name = b_head.name_ptr;
-	b_text = b_head.text_ptr;
 
 	return (err);
 }

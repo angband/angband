@@ -164,8 +164,6 @@ extern player_race *p_info;
 extern player_class *c_info;
 extern hist_type *h_info;
 extern owner_type *b_info;
-extern char *b_name;
-extern char *b_text;
 extern byte *g_info;
 extern char *g_name;
 extern char *g_text;
