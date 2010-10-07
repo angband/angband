@@ -127,11 +127,11 @@ acquire treasure.
 Your character will begin his adventure with some basic supplies, and some
 extra gold with which to purchase more supplies at the town stores.
 
-You may enter any open store and haggle with the owner to buy or sell items
-of the appropriate type. The price that the shopkeeper requests is dependent
-on the price of the item, the player's charisma, the shopkeeper's "greed"
-factor (the Black Market shopkeepers are always *VERY* greedy), and the
-races of the player and shopkeeper.
+You may enter any open store to buy or sell items of the appropriate type. 
+The price that the shopkeeper requests is dependent on the price of the 
+item and the player's charisma.  Stores also have a maximum value, they will
+not pay more than that for any item, regardless of how much it is actually
+worth.
 
 Once inside a store, you will see the name and race of the store owner, the
 name of the store, the maximum amount of cash that the store owner will pay
@@ -142,12 +142,12 @@ many of the commands which work in the dungeon work in the stores as well,
 but some do not, especially those which involve "using" objects.
 
 Stores do not always have everything in stock.  As the game progresses,
-they may get new items so check from time to time.  Also, if you sell them
-an item, it may get sold to a customer while you are adventuring, so don't
-always expect to be able to get back everything you have sold.  Note that
-the inventory of a store will not change while you are in town, even if you
-save the game and return.  You must spend time in the dungeon if you wish
-the store owner to clear out his stock and acquire new items.  If you have
+they may get new items so check from time to time.  Stores restock after
+10000 game turns have passed, but the inventory will never change while
+you are in town, even if you save the game and return.  You must be in the
+dungeon for the store to restock.  Also, if you sell them an item, it may 
+get sold to a customer while you are adventuring, so don't always expect 
+to be able to get back everything you have sold.  If you have
 a lot of spare gold, you can purchase every item in a store, which will
 induce the store owner to bring out new stock, and perhaps even retire.
 
@@ -155,19 +155,21 @@ Store owners will not buy known harmful or useless items.  If an object is
 unidentified, they will pay you some base price for it.  Once they have
 bought it they will immediately identify the object.  If it is a good object,
 they will add it to their inventory.  If it was a bad bargain, they simply
-throw the item away.  In any case, you may receive some knowledge of the
-item if another is encountered.
+throw the item away.  You can use this feature to learn item flavors.
 
 The General Store ("1")
-     The General Store sells foods, drinks, some clothing, torches, lamps,
-     oil, shovels, picks, and spikes.  All of these items and some others
-     can be sold back to the General store for money.
+     The General Store sells foods, some clothing, torches, scrolls
+     of phase door, scrolls of word of recall, oil, shovels, picks, 
+     and spikes.  All of these items and some others can be sold 
+     back to the General store for money. The general store restocks
+     like every store, but the inventory types never change.
 
 The Armoury ("2")
      The Armoury is where the town's armour is fashioned.  All sorts of
-     protective gear may be bought and sold here, though the owner will not 
-     stock anything better than bar chain mail unless it is sold to him
-     by the player.
+     protective gear may be bought and sold here.  The deeper into the
+     dungeon you progress the more exotic the equipment you will find stocked
+     in the armoury.  However, some armour types will never appear here 
+     unless you sell them.
 
 The Weaponsmith's Shop ("3")
      The Weaponsmith's Shop is where the town's weapons are fashioned.  Hand
@@ -176,12 +178,13 @@ The Weaponsmith's Shop ("3")
      stocked here, unless they are sold to the shop by the player first.
 
 The Temple ("4")
-     The Temple deals in healing and restoration potions, as well as bless
-     scrolls, word of recall scrolls, some approved priestly weapons, as
-     well as prayer books.
+     The Temple deals in healing potions, as well as bless scrolls, remove 
+     curse scrolls, and some approved priestly weapons, as well as prayer 
+     books.
 
 The Alchemy shop ("5")
-     The Alchemy Shop deals in all types of potions and scrolls.
+     The Alchemy Shop deals in all types of potions and scrolls, including
+     stat restoring potions.
 
 The Magic User's Shop ("6")
      The Magic User's Shop deals in all sorts of rings, wands, amulets, and
@@ -189,8 +192,9 @@ The Magic User's Shop ("6")
 
 The Black Market ("7")
      The Black Market will sell and buy anything at extortionate prices.
-     However it occasionally has VERY good items in it. The shopkeepers are
-     not known for their tolerance...
+     However it occasionally has VERY good items in it.  With the exception
+     of artifacts, every item found in the dungeon may appear in the black
+     market.
 
 Your Home ("8")
      This is your house where you can store objects that you 
@@ -210,10 +214,9 @@ dungeon is fifty feet high (thus dungeon level "Lev 1" is often called
 larger than the screen) by titanium walls.  Once you leave a level by a
 staircase, you will never again find your way back to that region of that
 level, but there are an infinite number of other regions at that same "depth"
-that you can explore later.  So be careful that you have found all the
-treasure before you leave a level, or you may never find it again!  The
-monsters, of course, can use the stairs, and you may eventually encounter
-them again.
+that you can explore later.  Monsters, of course, can use the stairs, 
+and you may eventually encounter them again, but they will not chase you up
+or down stairs.
 
 In the dungeon, there are many things to find, but your character must
 survive many horrible and challenging encounters to find the treasure lying
@@ -241,9 +244,10 @@ The mines are full of objects just waiting to be picked up and used.  How
 did they get there?  Well, the main source for useful items are all the
 foolish adventurers that proceeded into the dungeon before you.  They get
 killed, and the helpful creatures scatter the various treasure throughout
-the dungeon.  Many cursed items present in the dungeon - either left behind 
-as the result of a failed attempt to create a magic items, or deliberately
-placed by evil sorcerers who enjoy a good joke when it gets you killed...
+the dungeon.  There are a few cursed items present in the dungeon - 
+either left behind as the result of a failed attempt to create a magic items, 
+or deliberately placed by evil sorcerers.  Some will inconvenience you but
+a very few are deadly.
 
 Only one object may occupy a given floor location, which may or may not also
 contain one creature.  Doors, rubble, traps, and staircases are considered
@@ -260,7 +264,7 @@ it will drop onto the floor, so be careful when swapping one wielded weapon
 or worn piece of armor for another when your pack is full.
 
 You are, however, limited in the total amount of weight that you can carry.
-As you approach this value, you become slower, making it easier for monsters
+If you exceed this value, you become slower, making it easier for monsters
 to chase you.  Note that there is no upper bound on how much you can carry,
 if you do not mind being slow.  Your weight "limit" is determined by your
 strength.
@@ -268,7 +272,14 @@ strength.
 Many objects found within the dungeon have special commands for their use.
 Wands must be Aimed, staves must be Used, scrolls must be Read, and potions
 must be Quaffed.  You may, in general, not only use items in your pack, but
-also items on the ground, if you are standing on top of them.
+also items on the ground, if you are standing on top of them.  At the
+beginning of the game all items are assigned a random 'flavor'.  For example
+potions of 'cure light wounds' could be 'red potions'.  If you have never
+used, sold, or bought one of these potions, you will only see the flavor.
+You can learn what type of item it is by selling it to a store, using it and
+noticing an effect (for example, quaffing a healing potion when injured), or
+casting the spell identify.  Lastly, items in stores that you have not
+yet identified the flavor of will be labeled {unknown}
 
 Chests are complex objects, containing traps, locks, and possibly treasure
 or other objects inside them once they are opened.  Many of the commands
@@ -277,42 +288,43 @@ these commands do not work if you are carrying the chest.
 
 One item in particular will be discussed here.  The scroll of "Word of
 Recall" can be found within the dungeon, or bought at the temple in town.
-It acts in two manners, depending upon  your current location.  If read
+All classes start with one of these scrolls in their inventory.
+It acts in two manners, depending upon your current location.  If read
 within the dungeon, it will teleport you back to town.  If read in town, it
 will teleport you back down to the deepest level of the dungeon which your
 character has previously been on.  This makes the scroll very useful for
 getting back to the deeper levels of Angband.  Once the scroll has been
 read it takes a while for the spell to act, so don't expect it to save you
-in a crisis.  Reading a second scroll before the first has had a chance to
-take effect will cancel both scrolls.
+in a crisis.  During this time the word 'recall' will appear on the bottom
+of the screen below the dungeon.  Reading a second scroll before the first 
+takes effect will cancel the action.
 
 You may "inscribe" any object with a textual inscription of your choice.
 These inscriptions are not limited in length, though you may not be able to
 see the whole inscription on the item.  The game applies special meaning to
 inscriptions containing any text of the form "@#" or "@x#" or "!x" or "!*",
-see "commands.txt".
+see "command.txt".
 
 The game provides some "fake" inscriptions to help you keep track of your
 possessions.  Wands and staves which are known to be empty will be inscribed
-with "empty".  Objects which have been tried at least once but haven't been
+with {empty}.  Objects which have been tried at least once but haven't been
 identified yet will be inscribed with "tried".  Cursed objects are inscribed
-with "cursed".  Broken objects may be inscribed with "broken".  Also, any
-item which was purchased at a discount, implying that it is slightly
-"sub-standard", will be inscribed with the appropriate "discount", such as
-"25% off".  Note that these inscriptions are fake, and cannot be removed.
+with {cursed}.  In addition while carrying or wielding weapons or armor you
+may learn qualities of these items.  {average} means that the item has no
+magical bonuses.  {magical} means that it has magical bonuses although these
+bonuses may be negative.  An item with negative bonuses is not necessarily
+cursed.  An {ego} item has special abilities.  If the abilities are not 
+obvious to the wielder the item will get an {excellent} tag.  If the item has
+obvious abilities, such as an increase to a statistic it will be labeled
+{splendid}.  Lastly, if at any point you pick up an Artifact you will learn 
+its name immediately and it will be labeled {special}.  However, you may not
+be aware of all its powers.  Note that these inscriptions are fake, and cannot 
+be removed.
 
-Also, occasionally you will notice that something in your inventory or
-equipment list seems to be magical.  High level characters are much more
-likely to notice this than beginning characters.  When you do notice this,
-the item in question will be inscribed with "good" or "cursed" as is
-relevant. Warriors, paladins (both well acquainted with weapons and armor)
-and rogues (who have handled many powerful items in their time as stolen
-goods) are more sensitive, and can notice not just that an item is out of
-the ordinary, but just *how* extraordinary it is: they can notice an 
-"excellent" item (ego item), a "worthless" one (cursed ego item), a 
-"special" one (artifact) and a "terrible" one (cursed artifact). All 
-classes will know an item is "special" if it cannot be destroyed with the 
-"k" command (original keyset.)
+Only weapons and armor will receive these pseudo-identifications.  Wands,
+staves, rods, scrolls, potions and mushrooms can only get the {tried} label.
+However, if using or consuming the item creates an obvious effect, you will
+learn the flavor.  For example, if you are injured and drink an unknown
 
 It is rumored that rings of power and extra rare spell books may be found
 deeper in the dungeon...
@@ -337,10 +349,13 @@ and the item will be marked with the fake inscription "cursed".
 Shopkeepers will refuse to buy any item which is known to be cursed, either 
 by having been identified or by being marked with the fake inscription.
 
+Weapons and armor can be uncursed by either spells of remove curse or by
+attempting to enchant them with spells or scrolls.
+
 
 === Mining ===
 
-Much of the treasure within the dungeon can be found only by mining it out
+Some treasure within the dungeon can be found only by mining it out
 of the walls.  Many rich strikes exist within each level, but must be found
 and mined.  Quartz veins are the richest, yielding the most metals and gems,
 but magma veins will have some hoards hidden within.
@@ -379,6 +394,25 @@ a digging implement or magical means to enter.  The same rumors imply that
 these rooms are guarded by incredibly powerful monsters, so beware!
 
 
+=== Traps ===
+
+There are many traps located in the dungeon of varying danger.  These traps
+are hidden from sight and are triggered only when your character walks over
+them.  If you have found a trap you can attempt to "D"isarm it, but failure
+may mean activating it.
+
+There are some magical means to detecting all traps within a certain radius.  
+If you cast one of these spells, there will be a 'Dtrap' green label on the 
+bottom of the screen, below the dungeon map.  At some point in the dungeon 
+you may see a line of green squares on the floor.  This line represents the
+extent of your detection.  Beyond the green line you are no longer in the 
+safe region.
+
+Some monsters have the ability to create new traps on the level that may be
+hidden, even if the player is in a detected zone.  The detection only finds
+the traps that exist at the time of detection, it does not inform you of new
+ones that have since been created.
+
 === Staircases, Secret Doors, Passages, and Rooms ===
 
 Staircases are the manner in which you get deeper or climb out of the
@@ -410,22 +444,13 @@ For historical reasons, secret doors are never locked.
 
 === Winning The Game ===
 
-Once your character has killed Sauron, who lives on level 99 (4950') in the 
-dungeon, a magical staircase will appear that will allow you to finally reach
-level 100.  Morgoth lurks on this level of his dungeon, and you will not be
-able to go below his level until you have killed him.  Try to avoid wandering
-around on level 100 unless you are ready for him, since he has a habit of
-coming at you across the dungeon, the Mighty Hammer 'Grond' in hand, to slay
-you for your impudence.
-
-Morgoth cannot be killed by some of the easier methods used on normal
-creatures.  Morgoth, like all other "Unique" monsters, will simply teleport
-away to another region of the level if you attempt to use a spell such as
-destruction is upon him.  Morgoth, like some other monsters, cannot be
-polymorphed, slept, charmed, or banished.  Magical spells like Mana Storm 
-and Orb of Draining are effective against him, as are some of the more
-powerful weapons, but he is difficult to kill and if allowed to escape for
-a time he will heal himself rapidly.
+If your character has killed Sauron (a difficult task), who lives on level 
+99 (4950') in the dungeon, a magical staircase will appear that will allow 
+you to finally reach level 100.  Morgoth lurks on this level of his dungeon, 
+and you will not be able to go below his level until you have killed him.  
+Try to avoid wandering around on level 100 unless you are ready for him, 
+since he has a habit of coming at you across the dungeon, the Mighty Hammer 
+'Grond' in hand, to slay you for your impudence.
 
 If you should actually survive the attempt of killing Morgoth, you will
 receive the status of WINNER.  You may continue to explore, and may even

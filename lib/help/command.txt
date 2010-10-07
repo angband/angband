@@ -1,19 +1,23 @@
 === Command Descriptions ===
 
-        The following command descriptions are listed as the command name
-plus the "underlying command" key.  This is followed by the command name
-and "roguelike" keyset key, if different from the underlying command key.
-Then comes a brief description of the command, including information about
-alternative methods of specifying the command in each keyset, when needed.
+The following command descriptions are listed as the command name plus 
+the default key to use it. For those who prefer the original "roguelike" 
+keyset, the name and key of the roguelike command is also shown if it is 
+different.  Then comes a brief description of the command, including 
+information about alternative methods of specifying the command in each 
+keyset, when needed.
 
-        Some commands use the "repeat count" to automatically repeat the
-command several times, while others use the "repeat count" to specify a
-"quantity" for the command, and still others use it as an "argument" of
-some kind.  Some commands are auto-repeated several times if no repeat
-count is given and the "always_repeat" option is set.
+Some commands use the "repeat count" to automatically repeat the command 
+several times, while others use the "repeat count" to specify a 
+"quantity" for the command, and still others use it as an "argument" of 
+some kind.  There is an option to "always_repeat" certain commands - 
+please see the options help file.
 
-        Most commands take no "energy" to perform, while most other commands
-only take energy when they cause the world to change in some way.
+Most commands take no "energy" to perform, while other commands only 
+take energy when they cause the world to change in some way.  For 
+example, attempting to read a scroll while blind does not use any 
+energy.
+
 
 --- Inventory Commands ---
 
@@ -25,12 +29,12 @@ Inventory list (i)
         true of things like potions, scrolls, and food, but you may have
         to set options to allow wands, staves, and other such objects to
         stack.  Each object has a weight, and if you carry more objects
-        than your strength permits, you will begin to slow down.
+        than your strength permits, you will begin to slow down.  The amount of weight you can still carry without being overencumbered, or the amount of extra weight you are currently carrying is displayed at the top of the screen.
  
 Equipment list (e)
         Use this command to display a list of the objects currently being
-        used by your character.  Your character has 12 slots for equipment,
-        each corresponding to a different location on the body, and each of
+        used by your character.  Your character has 12 slots for equipment and 10 slots for ammunition (the quiver),
+        Each equipment slot corresponds to a different location on the body, and each of
         which may contain only a single object at a time, and each of which
         may only contain objects of the proper "type", and which include
         WIELD (weapon), BOW (missile launcher), LEFT (ring), RIGHT (ring),
@@ -60,8 +64,10 @@ Wear/Wield equipment (w)
         Since only one object can be in each slot at a time, if you wear
         or wield an item into a slot which is already occupied, the old
         item will be first be taken off, and may in fact be dropped if
-        there is no room for it in your inventory.  This command takes
-        some energy.
+        there is no room for it in your inventory.  Wielding ammunition 
+        will add it to an empty slot in your quiver and prompt you to 
+        replace a type of ammunition if your quiver is already full.  
+        This command takes some energy.
 
 Take off equipment (t) or Take off equipment (T)
         Use this command to take off a piece of equipment and return it
@@ -69,10 +75,20 @@ Take off equipment (t) or Take off equipment (T)
         which cannot be removed.  These items normally penalize you in some
         way and cannot be taken off until the curse is removed.  If there
         is no room in your inventory for the item, your pack will overflow
-        and you will drop the item after taking it off.  This command takes
+        and you will drop the item after taking it off.  You may also remove
+        ammunition from your quiver with this command.  This command takes
         some energy.
 
 --- Movement Commands ---
+
+Moving (arrow keys, number keys) or (arrow keys, number keys and 'yuhjklbn')
+	  This causes you to move one step in a given direction.  If the
+	  square you wish to move into is occupied by a monster, you will
+	  attack it.  If the square is occupied by a door or a trap you may
+	  attempt to open or disarm it if the appropriate option is set.
+	  Preceeding this command with CTRL will cause you to attack in the
+	  appropriate direction, but will not move your character if no monster
+	  is there.  These commands take some energy.
 
 Walk (with pickup) (;)
         Moves one step in the given direction.  The square you are moving
@@ -84,12 +100,12 @@ Walk (with pickup) (;)
         direction.  This command may take a count, requires a direction,
         and takes some energy.
 
-Walk (flip pickup) (-)
+Walk (flip pickup/disarm/open) (-)
         This is just like normal move, except that the "Pick things up"
         option is inverted.  In other words, if you normally pick up
         anything you encounter (the default), you will not pick things up
         when using this command.  If you normally do not pick things up,
-        you will when using this command.  This command may take a count,
+        you will when using this command.  Similarly if you normally disarm a known trap on movement, you will not disarm, and if you normally open a closed door you will instead walk into it.  This command may take a count,
         requires a direction, and takes some energy.
 
 Run (.) or Run (,)
@@ -153,7 +169,7 @@ Rest (R)
 Search (s)
         This command can be used to locate hidden traps and secret doors
         in the spaces adjacent to the player.  More than a single turn of
-        searching will be required in most cases.  You should always
+        searching will be required in most cases, so it is affected by the 'always repeat' option.  You should always
         search a chest before trying to open it, since they are generally
         trapped.  This command can take a count, which is useful if you
         are fairly sure of finding something eventually, since the command
@@ -190,14 +206,16 @@ Open a door or chest (o)
         command.  If the object is locked, you will attempt to pick the
         lock based on your disarming ability.  If you open a trapped chest
         without disarming the traps first, the trap will be set off.  Some
-        doors will be jammed shut and may have to be forced open.  You may
+        doors will be jammed shut and may have to be forced open.  Opening will automatically attempt to pick any lock doors.  You may
         need several tries to open a door or chest.  This command may take
         a count, is affected by the "always_repeat" option, requires a
         direction, and takes some energy.
 
 Close a door (c)
         Non-intelligent and some other creatures cannot open doors, so
-        shutting doors can be quite valuable.  Broken doors cannot be closed.
+        shutting doors can be quite valuable.  Furthermore, monsters cannot
+        see you behind closed doors, so closing doors may allow you to buy
+        some time without being attacked.  Broken doors cannot be closed.
         Bashing a door open may break it.  This command may take a count,
         is affected by the "always_repeat" option, requires a direction, and 
         takes some energy.
@@ -267,7 +285,7 @@ Cast a spell (m)
         large but decreases as you gain levels.  If you don't have enough
         mana to cast a spell, you will be prompted for confirmation.  If
         you decide to go ahead, the chance of failure is greatly increased,
-        and you may lose a point of constitution.  Since you must read the
+        and you may wind up paralyzed for several turns.  Since you must read the
         spell from a book, you cannot be blind or confused while casting,
         and there must be some light present.  This command takes some energy.
 
@@ -395,13 +413,23 @@ Zap a rod (z) or Activate a rod (a)
 --- Throwing and Missile Weapons ---
 
 Fire an item (f) or Fire an item (t)
+        This command will fire a will allow you to fire a missile from either your quiver or your inventory provided it is the appropriate ammunition for the current BOW you have equipped.  You may not fire an item without a BOW equipped.  Fired ammunition has a chance of breaking.  This command takes some energy.
+
+Fire default ammo at nearest (h) or (TAB)
+        If you have a missile weapon equipped and the appropriate ammunition
+        in your quiver, you can use this command to fire at the nearest
+        visible enemy. This command will cancel itself if you lack a
+        launcher, ammunition or a visible target that is in range. The 
+        first ammunition of the correct type found in the quiver is used.  This command takes some energy.
+
+Throw an item (v)
         You may throw any object carried by your character.  Depending on
         the weight, it may travel across the room or drop down beside you.
         Only one object from a pile will be thrown at a time.  Note that
         throwing an object will often cause it to break, so be careful!
         If you throw something at a creature, your chances of hitting it
         are determined by your pluses to hit, your ability at throwing,
-        and the object's pluses to hit.  Once the creature is it, the
+        and the object's pluses to hit.  Once the creature is hit, the
         object may or may not do any damage to it.  You've heard rumors
         that some objects found in the dungeon can do huge amounts of
         damage when thrown, but you're not sure which objects those
@@ -412,28 +440,9 @@ Fire an item (f) or Fire an item (t)
         wielding a missile launcher compatible with the object you are
         throwing, then you automatically use the launcher to fire the
         missile with much higher range, accuracy, and damage, than you
-        would get by just throwing the missile.  Fire or Throw requires
+        would get by just throwing the missile.  Throw, like fire, requires
         a direction.  Targeting mode (see the next command) can be invoked
         with "*" at the "Direction?" prompt.  This command takes some energy.
-
-Fire default ammo at nearest (h) or (TAB)
-        If you have a missile weapon equipped and the appropriate ammunition
-        in your quiver, you can use this command to fire at the nearest
-        visible enemy. This command will cancel itself if you lack a
-        launcher, ammunition or a visible target that is in range. The 
-        first ammunition of the correct type found in the quiver is used.
-
-Throw an item (v)
-        You may throw any object carried by your character.  The lighter
-        the object, the farther you can throw it.  Only one object from a
-        stack may be thrown at a time.  Throwing an object may break it.
-        If you throw something at a monster, your chances of hitting it
-        are determined by your pluses to hit, your ability at throwing,
-        and the object's pluses to hit.  If the object hits the monster,
-        it may or may not do damage.  Some objects, such as weapons, or
-        flasks of oil, can do a substantial amount of damage.  This
-        command requires a direction, and can take a target.  This command
-        takes some energy.
 
 Targeting Mode (*)
         This will allow you to aim your spells and such at a specific
@@ -502,7 +511,7 @@ Look around (l) or Examine things (x)
 Observe an item (I)
         This command lets you observe a previously *identified* item.
         This will tell you things about the special powers of the object,
-        as well as attack information for weapons.
+        as well as attack information for weapons.  It will also tell you what resistances or abilities you have noticed for the item and if you have not yet completely identified all properties.
         
 List visible monsters ([)
         This command lists all monsters that are visible to you, telling you
@@ -510,7 +519,7 @@ List visible monsters ([)
 
 List visible items (])
         This command lists all items that are visible to you, telling you
-        how of each there are.
+        how of each there are and where they are on the level relative to your current location.
 
 --- Message Commands ---
 
@@ -524,7 +533,7 @@ View previous messages (^P)
 
 Take notes (:)
         This command allows you to take notes, which will then appear in
-        your message list (prefixed with "Note:").
+        your message list and your character history (prefixed with "Note:").
 
 --- Game Status Commands ---
 
@@ -549,7 +558,9 @@ Check knowledge (~)
         special "unique" monsters which can only be killed once per game.
         Certain "objects" come in "flavors", and you must determine the
         effect of each "flavor" once for each such type of object, and
-        this command will allow you to display all "known" flavors.
+        this command will allow you to display all "known" flavors.  
+        Inscribing items in this list will cause you to similarly 
+        inscribe all similar items you find from this point on.
 
 Interact with the system (!)
         Allow the user to interact with the underlying visual system.

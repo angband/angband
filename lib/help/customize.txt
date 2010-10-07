@@ -1,0 +1,315 @@
+=== Customization ===
+
+        Angband supports multiple customizations.  These can vary from
+alternative methods for selecting objects, macros for different commands, 
+changing the visuals (using graphical tiles), creating subwindows, and
+saving customizations for use on future characters.  
+
+=== Special Keys ===
+ 
+        Certain special keys may be intercepted by the operating system or
+the host machine, causing unexpected results.  In general, these special keys
+are control keys, and often, you can disable their special effects.
+
+        If you are playing on a UNIX or similar system, then Ctrl-C will
+interrupt Angband.  The second and third interrupt will induce a warning
+bell, and the fourth will induce both a warning bell and a special message,
+since the fifth will quit the game, after killing your character.  Also,
+Ctrl-Z will suspend the game, and return you to the original command shell,
+until you resume the game with the "fg" command.  There is now a compilation
+option to force the game to prevent the "double ctrl-z escape death trick".
+The Ctrl-\ and Ctrl-D and Ctrl-S keys should not be intercepted.
+ 
+        It is often possible to specify "control-keys" without actually
+pressing the control key, by typing a caret ("^") followed by the key.
+This is useful for specifying control-key commands which might be caught
+by the operating system as explained above.
+
+        Pressing backslash ("\") before a command will bypass all keymaps,
+and the next keypress will be interpreted as an "underlying command" key,
+unless it is a caret ("^"), in which case the keypress after that will be
+turned into a control-key and interpreted as a command in the underlying
+angband keyset.  The backslash key is useful for creating macro actions
+which are not affected by any keymap definitions that may be in force, for
+example, the sequence "\" + "." + "6" will always mean "run east", even if
+the "." key has been mapped to a different underlying command.
+
+        The "0" and "^" and "\" keys all have special meaning when entered
+at the command prompt, and there is no "useful" way to specify any of them
+as an "underlying command", which is okay, since they would have no effect.
+
+        For many input requests or queries, the special character ESCAPE
+will abort the command.  The "[y/n]" prompts may be answered with "y" or
+"n", or escape.  The "-more-" message prompts may be cleared (after reading
+the displayed message) by pressing ESCAPE, SPACE, RETURN, LINEFEED, or by
+any keypress, if the "quick_messages" option is turned on.
+ 
+
+=== Command Counts ===
+ 
+        Some commands can be executed a fixed number of times by preceding
+them with a count.  Counted commands will execute until the count expires,
+until you type any character, or until something significant happens, such
+as being attacked.  Thus, a counted command doesn't work to attack another
+creature.  While the command is being repeated, the number of times left
+to be repeated will flash by on the line at the bottom of the screen.
+
+        To give a count to a command, type 0, the repeat count, and then
+the command.  If you want to give a movement command and you are using the
+original command set (where the movement commands are digits), press space
+after the count and you will be prompted for the command.
+ 
+        Counted commands are very useful for time consuming commands, as
+they automatically terminate on success, or if you are attacked.  You may
+also terminate any counted command (or resting or running), by typing any
+character.  This character is ignored, but it is safest to use a SPACE or
+ESCAPE which are always ignored as commands in case you type the command
+just after the count expires.
+
+        You can tell Angband to automatically use a repeat count of 99
+with commands you normally want to repeat (open, disarm, tunnel, bash,
+alter, etc) by setting the "always_repeat" option.
+
+=== Squelch settings ===
+      
+        Angband allows you to ignore specific items that you don't want
+to see anymore.  These items are 'squelched' and any similar items are
+hidden from view.  There are several ways to squelch an item.  The easiest
+way is to choose the 's' option when destroying an object.  Whenever you 
+destroy an object you are forced to confirm the destruction.  One of the
+options is 's'.  If you use this option, the object is dropped and then
+hidden from view.
+
+	  Weapons and armor have quality squelch options.  These allow you
+to specify what types of weapons and armor you are no longer interested
+in seeing.  There is a quality setting for each weapon and armor type.
+Squelching weapons and armor by destroying the object will prompt you with
+a question about whether you wish to squelch all of that type of armor with
+a certain quality setting.  These quality settings are described below:
+
+bad: the weapon/armor has negative AC, to-hit or to-dam.  It may or may 
+not be cursed
+
+average: The weapon/armor has no pluses no minuses.  It is non-magical.
+
+good: The weapon/armor has positive AC, to-hit or to-dam.  However it does
+not have any special abilities, brands, slays, stat-boosts, resistances
+ 
+excellent, with no high resists: Weapons will have some slays.  Armor
+will have resistances, but these are limited to rfire, rcold, racid and
+relec.
+
+excellent but not splendid: Weapons and armor may have high resists but 
+they do not have any stat boosts or brands.
+
+Splendid: Squelching all splendid items only leaves artifacts unsquelched.
+
+
+
+=== Using Inscriptions ===
+
+	  You can inscribe items to change the selection process.  Normally
+when you select an item from your inventory you must enter a letter that
+corresponds to the item.  Since the order of your inventory changes as
+items get added and removed, you may want to inscribe alternate methods of
+item selection.  Instead of entering letters, you can enter numbers, and
+automatically assign certain items to specific numbers.  The way to do this
+is by using the inscribe "{" command, which will add an inscription to the
+item.  You can add an inscription directly to an item or by using the "~"
+memory list you can add an auto-inscription.  Then every similar item you
+find from then on will have that inscription placed on this item. 
+
+        If you enter a number between 0 and 9, the first item engraved
+with "@#" where "#" is the number you entered will be selected.  For example,
+if you have a shovel engraved with "@0" and you type "w" (for wield) and
+then 0, you will wield the shovel.  This is very useful for macros (see
+below), since you can use this to select an object regardless of its
+location in your pack.  For example, Angband automatically defines a macro
+for the key "X" to do "w0".  If you then engrave both your digging
+instrument and your primary weapon with @0, pressing X will wield
+whichever one is not being currently wielded (letting you quickly switch
+between them).  Multiple numbers can be engraved on the same object; for
+example, if a sword is engraved with @1@0, then either "w1" or "w0" will
+wield it.  Since you may want different items defined with @0 you can also
+make an inscription "@x#" will act like "@#" but only when the current 
+"Angband command" is "x".  Thus you can put "@z4" on a rod and "@u4" on a 
+staff, and then use both "z4" and "u4" as desired.
+
+	  Perhaps the most commonly inscribed item are spellbooks.  Casting
+spells often takes at least 3 commands.  The cast commmand (m or p) the 
+book selection and the spell selection.  Then you may need to select a
+target.  For example, if you are a make and the beginner's spellbook is the
+first in your inventory, casting maa will cast magic missile.  However, if
+you lose your spellbook, casting maa will cast the first spell in whatever
+new book is in the top of your inventory.  This can be a waste in the best
+case scenario and exceedingly dangerous in the worst.  To avoid this, it's
+very useful to inscribe your spellbooks with "@m1, @m2, @m3" etc.  Then if
+you lose your first spellbook and attempt to cast magic missile by using 
+"m1a", you will not accidentally select the wrong spellbook, if the first
+spellbook is not in your inventory. 
+
+        You can also use inscriptions to force the game to prompt you on
+whether or not you want to use that object.  Any object containing "!x" in 
+its inscription, where "x" is the current "angband command" (or containing 
+"!*" for all commands) will induce "verification" whenever that object is 
+"selected".  Thus, inscribing, say, "!v!k!d" on an object will greatly reduce 
+the odds of you "losing" it by accident, and inscribing "!*" on an object will 
+allow you to be very paranoid about using the object.  Note that "selling" 
+and "dropping" both use the "d" command.
+
+
+=== User Pref Files ===
+
+        Angband allows you to change various aspects of the game to suit
+your tastes.  You may define keymaps (changing the way Angband maps your
+keypresses to underlying commands), create macros (allowing you to map a
+single keypress to a series of keypresses), modify the visuals (allowing
+you to change the appearance of monsters, objects, or terrain features),
+change the colors (allowing you to make a given color brighter, darker,
+or even completely different), or set options (turning them off or on).
+
+        Angband stores your preferences in files called "user pref files",
+which contain comments and "user pref commands", which are simple strings
+describing one aspect of the system about which the user has a preference.
+There are many ways to load a user pref file, and in fact, some of these
+files are automatically loaded for you by the game.  All of the files are
+kept in the "lib/user/" directory, though you may have to use one of the
+command line arguments to redirect this directory, especially on multiuser
+systems.  You may also enter single user pref commands directly, using the
+special "Enter a user pref command" command, activated by "double quote".
+You may have to use the "redraw" command (^R) after changing certain of
+the aspects of the game, to allow Angband to adapt to your changes.
+
+        When the game starts up, after you have loaded an old character,
+or created a new character, some user pref files are loaded automatically.
+First, the "pref.prf" file is loaded.  This file contains some user pref
+commands which will work on all platforms.  Then one of "font-xxx.prf"
+(for normal usage) or "graf-xxx.prf" (for bitmap usage) is loaded.  These
+files contain attr/char changes to allow the monsters, objects, and/or
+terrain features to look "better" on your system.  Then the "pref-xxx.prf"
+file is loaded.  This file contains pre-defined system specific stuff
+(macros, color definitions, etc).  Then, the "user-xxx.prf" file is loaded.
+This file contains user-defined system specific stuff.  The "user-xxx.prf"
+file is used as the "default" user pref file in many places.  The "xxx" is
+the "system suffix" for your system, taken from the "main-xxx.c" file which
+was used to generate your executable.  Finally, the "Race.prf", "Class.prf",
+and "Name.prf" files are loaded, where "Race", "Class", and "Name" are
+replaced by the actual race, class, and name of the current character.
+
+        Several commands allow you to both load existing user pref files,
+create new user pref files, append information to existing user pref files,
+and/or interact with various of the user preferences in a more intuitive
+way than the user pref commands allow.  The commands include "Interact with
+macros" (@), "Interact with visuals" (%), and "Interact with colors" (&),
+described below.
+
+=== Subwindows ===
+
+	  In addition to the main window, you can create additional window
+displays that have other secondary information on them.  You can access the
+subwindow menu by using "=" then "w".  You can select what windows to
+display.  You may then need to make the window visible using the "window"
+pull down menu from the menu bar.  There are a variety of subwindow choices
+and you should experiment to see which ones are the most useful for you.
+
+=== User Pref Files (Macros) ===
+
+        The "Interact with macros" command allows you to define or remove
+"macros", which are mappings from a single logical keypress to a sequence
+of keypresses, allowing you to use special keys on the keyboard, such as
+function keys or keypad keys, possibly in conjunction with modifier keys,
+to "automate" repetitive multi-keypress commands that you use a lot.
+
+        Since macros represent keypress sequences, and not all keypresses
+have a printable representation, macro triggers and actions must often be
+"encoded" into a human readible form.  This is done using several types
+of encoding, including "\xHH" for character number HH in hexidecimal, "\e"
+for the "escape" code, "\n" for the "newline" code, "\r" for the "return"
+code, "\s" for the "space" code, "\\" for backslash, "\^" for caret, and
+"^X" for the code for any "control" key "ctrl-X".  Note that the "action"
+of a macro will not be checked against other macro triggers (unless the
+macro action contains a "control-backslash"), so you cannot make infinite
+loops.  You may specify extremely long macros, but you are limited in
+length by the underlying input mechanisms, which in general limit you
+to about 1024 keys in both triggers and actions.
+
+        The special "\" command (which must be encoded in macros as "\\")
+is very useful in macros, since it bypasses all keymaps and allows the next
+keystroke to be considered a command in the underlying Angband command set.
+For a list of the Angband command set, see the "command.txt" help file.
+For example, a macro which maps Shift-KP6 to "\" + "." + "6" will induce
+the "run east" behavior, regardless of what keyset the user has chosen, and
+regardless of what keymaps have been defined.
+
+	Macros can be specified in user pref files as a pair of lines, one
+of the form "A:<str>", which defines the encoded macro action, and one of
+the form "P:<str>", which defines the encoded macro trigger.
+
+=== User Pref Files (Keymaps) ===
+
+      The "Interact with macros" command also allows you to define
+"keymaps", which are vaguely related to macros.  A keymap maps a single
+keypress to a series of keypresses, which bypass both other keymaps and
+any macros.  Angband uses keymaps to map the original and the roguelike
+keysets to the underlying command set, and allows the user to modify or
+add keymaps of their own.  Note that all keymap actions must be specified
+using underlying commands, not keypresses from the original or roguelike
+keysets.  The original keyset is almost identical to the underlying keyset,
+except that "numbers" are mapped to ";" plus a direction, "5" is mapped to
+",", and a few control-keys are mapped to various things.  See "command.txt"
+for the full set of underlying commands.  Some uses for keymaps include the
+ability to "disable" a command by mapping it to "\x00", 
+
+     	Keymaps can be specified in user pref files as line of the form
+"M:<T> <key> <str>", where <T> is the keyset (0/1 for original/roguelike),
+<key> is the encoded trigger key, and <str> is the encoded keymap action.
+
+      Note that any keys that are not required for access to the underlying
+command set may be used by the user to extend the "keyset" which is being
+used, by defining new "keymaps".  To avoid the use of any "keymaps", press
+backslash ("\") plus the "underlying command" key.  This is normally only
+used in "macro" definitions.  You may enter "control-keys" as a caret ("^")
+plus the key (so "^" + "p" yields "^P").
+
+
+=== User Pref Files (Visuals) ===
+
+        You can use the "Interact with visuals" command to change various
+visual information, currently including the choice of what attr/char values
+are used to represent various monsters, objects, or terrain features.  Note
+that in combination appropriate support in "main-xxx.c", and with the use of
+the "use_graphics" flag, you may be able to specify that "graphic bitmaps"
+should be used instead of normal "colored characters" for various things.
+
+        When interactively modifying the attr/char values for monsters,
+objects, or terrain features, pressing "n" or "N" will change which entry
+you are changing, pressing "a" or "A" will rotate through the available
+attr values, and pressing "c" or "C" will rotate though the available char
+values.  Note that attr/char values with the "high bit" set may induce the
+display of special "graphic" pictures if the "use_graphics" flag is set,
+and your system supports the "use_graphics" flag.
+
+        Note that this command can be abused in various ways, and if you
+must do so, remember that you are only cheating yourself.
+
+	Keymaps can be specified in user pref files as line of the form
+"R:<N>:<A>/<C>" or "K:<N>:<A>/<C>" or "F:<N>:<A>/<C>" or "U:<N>:<A>/<C>".
+
+=== User Pref Files (Colors) ===
+
+        The "Interact with colors" command allows you to change the actual
+internal values used to display various colors.  This command may or may
+not have any effect on your machine.  Advanced machines may allow you to
+change the actual RGB values used to represent each of the 16 colors used
+by Angband, and perhaps even allow you to define new colors which are not
+currently used by Angband.
+
+	Colors can be specified in user pref files as line of the form
+"V:<N>:<V>:<R>:<G>:<B>".
+
+=== User Pref Files (Options) ===
+
+        The "Interact with options" command allows you to turn options
+on or off.  You may turn options off or on using the user pref commands
+of the form "X:<option>" or "Y:<option>" respectively.
+
