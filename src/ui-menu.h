@@ -248,9 +248,12 @@ void menu_release_filter(menu_type *menu);
 /* Run a menu */
 ui_event_data menu_select(menu_type *menu, int notify);
 
+/* Interal menu stuff that cmd-know needs because it's quite horrible */
+bool menu_handle_mouse(menu_type *menu, const ui_event_data *in, ui_event_data *out);
+bool menu_handle_keypress(menu_type *menu, const ui_event_data *in, ui_event_data *out);
+
 /* Refresh the menu */
 void menu_refresh(menu_type *menu);
 
 
 #endif /* INCLUDED_UI_MENU_H */
-

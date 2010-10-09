@@ -555,16 +555,21 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		}
 
 
-		ui_event_data ke;
-		ui_event_data ke0 = EVENT_EMPTY;
-
 		bool recall = FALSE;
 
-		ke = inkey_ex();
-#if 0
-		if (!visual_list && menu_handle_event(active_menu, &ke, &ke0))
-			ke = ke0;
-#endif
+		ui_event_data ke = inkey_ex();
+		if (!visual_list)
+		{
+			ui_event_data ke0 = EVENT_EMPTY;
+
+			if (ke.type == EVT_MOUSE)
+				menu_handle_mouse(active_menu, &ke, &ke0);
+			else if (ke.type == EVT_KBRD)
+				menu_handle_keypress(active_menu, &ke, &ke0);
+
+			if (ke0.type != EVT_NONE)
+				ke = ke0;
+		}
 
 		/* XXX Do visual mode command if needed */
 		if (o_funcs.xattr && o_funcs.xchar)
