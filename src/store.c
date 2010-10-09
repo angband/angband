@@ -2802,7 +2802,7 @@ static bool store_overflow(void)
  * which are not allowed in the dungeon, and we must disable some commands
  * which are allowed in the dungeon but not in the stores, to prevent chaos.
  */
-static bool store_process_command(char cmd, void *db, int oid)
+static bool store_process_command_key(char cmd)
 {
 	bool equip_toggle = FALSE;
 	bool redraw = FALSE;
@@ -2811,51 +2811,6 @@ static bool store_process_command(char cmd, void *db, int oid)
 	/* Parse the command */
 	switch (cmd)
 	{
-		/* Leave */
-		case ESCAPE:
-		{
-			command_processed = TRUE;
-			break;
-		}
-
-		/* Sell */
-		case 's':
-		case 'd':
-		{
-			store_sell();
-			command_processed = TRUE;
-			break;
-		}
-
-		/* Buy */
-		case 'p':
-		case 'g':
-		{
-			/* On successful purchase, redraw */
-			command_processed = store_purchase(oid);
-			break;
-		}
-
-		/* Examine */
-		case 'l':
-		case 'x':
-		{
-			store_examine(oid);
-			break;
-		}
-
-
-		/* Redraw */
-		case KTRL('R'):
-		{
-			Term_clear();
-			store_flags |= (STORE_FRAME_CHANGE | STORE_GOLD_CHANGE);
-			command_processed = TRUE;
-			break;
-		}
-
-
-
 		/*** Inventory Commands ***/
 
 		/* Wear/wield equipment */
@@ -2972,20 +2927,6 @@ static bool store_process_command(char cmd, void *db, int oid)
 			break;
 		}
 
-		case '?':
-		{
-			/* Toggle help */
-			if (store_flags & STORE_SHOW_HELP)
-				store_flags &= ~(STORE_SHOW_HELP);
-			else
-				store_flags |= STORE_SHOW_HELP;
-
-			/* Redisplay */
-			store_flags |= STORE_INIT_CHANGE;
-
-			command_processed = TRUE;
-			break;
-		}
 
 		/*** System Commands ***/
 
@@ -3038,6 +2979,54 @@ static bool store_process_command(char cmd, void *db, int oid)
 	return command_processed;
 }
 
+
+/*
+ *
+ */
+bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
+{
+	if (event->type == EVT_SELECT)
+	{
+		/* Nothing for now. */
+		/* In future, maybe we want a display a list of what you can do. */
+	}
+	else if (event->type == EVT_KBRD)
+	{
+		char key = tolower(event->key);
+
+		if (key == 's' || key == 'd')
+			store_sell();
+		else if (key == 'p' || key == 'g')
+			store_purchase(oid);
+		else if (key == 'l' || key == 'x')
+			store_examine(oid);
+		/* XXX redraw functionality should be another menu_iter handler */
+		else if (key == KTRL('R'))
+		{
+			Term_clear();
+			store_flags |= (STORE_FRAME_CHANGE | STORE_GOLD_CHANGE);
+		}
+		else if (key == '?')
+		{
+			/* Toggle help */
+			if (store_flags & STORE_SHOW_HELP)
+				store_flags &= ~(STORE_SHOW_HELP);
+			else
+				store_flags |= STORE_SHOW_HELP;
+
+			/* Redisplay */
+			store_flags |= STORE_INIT_CHANGE;
+		}
+		else
+			return store_process_command_key(key);
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+
 /*
  * Display contents of a store from knowledge menu
  *
@@ -3048,7 +3037,7 @@ void do_cmd_store_knowledge(void)
 	bool leave = FALSE;
 
 	static region items_region = { 1, 4, -1, -1 };
-	static const menu_iter store_menu = { NULL, NULL, store_display_entry, store_process_command };
+	static const menu_iter store_menu = { NULL, NULL, store_display_entry, store_menu_handle };
 	const menu_iter *cur_menu = &store_menu;
 
 	menu_type menu;
@@ -3057,13 +3046,16 @@ void do_cmd_store_knowledge(void)
 	store_type *st_ptr = &store[current_store()];
 
 	/* Wipe the menu and set it up */
-	WIPE(&menu, menu);
 	menu.flags = MN_DBL_TAP;
 
 	/* Calculate the positions of things and redraw */
 	store_flags = STORE_INIT_CHANGE;
 	store_display_recalc();
 	store_redraw();
+
+	/* Init the menu structure */
+	menu_init(&menu, MN_SKIN_SCROLL, cur_menu);
+	menu_layout(&menu, &items_region);
 
 	/* Loop */
 	while (!leave)
@@ -3089,15 +3081,10 @@ void do_cmd_store_knowledge(void)
 
 		items_region.page_rows = scr_places_y[LOC_MORE] - scr_places_y[LOC_ITEMS_START];
 
-		/* Init the menu structure */
-		menu_init(&menu, MN_SKIN_SCROLL, cur_menu, &items_region);
-
 		if (menu.count > items_region.page_rows)
 			menu.prompt = "  -more-";
 		else
 			menu.prompt = NULL;
-
-		menu_layout(&menu, &menu.boundary);
 
 		evt.type = EVT_MOVE;
 
@@ -3186,7 +3173,7 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 	{
 
 	static region items_region = { 1, 4, -1, -1 };
-	static const menu_iter store_menu = { NULL, NULL, store_display_entry, store_process_command };
+	static const menu_iter store_menu = { NULL, NULL, store_display_entry, store_menu_handle };
 	const menu_iter *cur_menu = &store_menu;
 
 	menu_type menu;
@@ -3194,9 +3181,6 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 
 	store_type *st_ptr = &store[this_store];
 
-	/* Wipe the menu and set it up */
-	WIPE(&menu, menu);
-	menu.flags = MN_DBL_TAP;
 
 	/* Calculate the positions of things and redraw */
 	store_flags = STORE_INIT_CHANGE;
@@ -3206,6 +3190,11 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 	/* Say a friendly hello. */
 	if (this_store != STORE_HOME) 
 		prt_welcome(store_owner(this_store));
+
+	/* Wipe the menu and set it up */
+	menu_init(&menu, MN_SKIN_SCROLL, cur_menu);
+	menu_layout(&menu, &items_region);
+	menu.flags = MN_DBL_TAP;
 
 	/* Loop */
 	while (!leave)
@@ -3231,15 +3220,10 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 
 		items_region.page_rows = scr_places_y[LOC_MORE] - scr_places_y[LOC_ITEMS_START];
 
-		/* Init the menu structure */
-		menu_init(&menu, MN_SKIN_SCROLL, cur_menu, &items_region);
-
 		if (menu.count > items_region.page_rows)
 			menu.prompt = "  -more-";
 		else
 			menu.prompt = NULL;
-
-		menu_layout(&menu, &menu.boundary);
 
 		evt.type = EVT_MOVE;
 

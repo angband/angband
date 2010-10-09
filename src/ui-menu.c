@@ -34,13 +34,6 @@ const char upper_case[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 static void display_menu_row(menu_type *menu, int pos, int top,
 			     bool cursor, int row, int col, int width);
 
-/* ------------------------------------------------------------------------
- * MN_ACTIONS HELPER FUNCTIONS
- *
- * MN_ACTIONS is the type of menu iterator that displays a simple list of
- * menu_actions.
- * ------------------------------------------------------------------------ */
-
 /* Display an event, with possible preference overrides */
 static void display_action_aux(menu_action *act, byte color, int row, int col, int wid)
 {
@@ -52,46 +45,60 @@ static void display_action_aux(menu_action *act, byte color, int row, int col, i
 		Term_putstr(col, row, wid, color, act->name);
 }
 
-static void display_action(menu_type *menu, int oid, bool cursor, int row, int col, int width)
+/* ------------------------------------------------------------------------
+ * MN_ACTIONS HELPER FUNCTIONS
+ *
+ * MN_ACTIONS is the type of menu iterator that displays a simple list of
+ * menu_actions.
+ * ------------------------------------------------------------------------ */
+
+static char menu_action_tag(menu_type *m, int oid)
 {
-	menu_action *acts = (menu_action *) menu->menu_data;
+	menu_action *acts = menu_priv(m);
+
+	if (acts[oid].id)
+		return acts[oid].id;
+
+	return 0;
+}
+
+static int menu_action_valid(menu_type *m, int oid)
+{
+	menu_action *acts = menu_priv(m);
+	return acts[oid].name ? TRUE : FALSE;
+}
+
+static void menu_action_display(menu_type *m, int oid, bool cursor, int row, int col, int width)
+{
+	menu_action *acts = menu_priv(m);
 	byte color = curs_attrs[CURS_KNOWN][0 != cursor];
 
 	display_action_aux(&acts[oid], color, row, col, width);
 }
 
-/* act on selection only */
-/* Return: true if handled. */
-static bool handle_menu_item_action(char cmd, void *db, int oid)
+static bool menu_action_handle(menu_type *m, const ui_event_data *event, int oid)
 {
-	menu_action *act = &((menu_action *)db)[oid];
+	menu_action *acts = menu_priv(m);
 
-	if (cmd == '\xff' && act->action)
+	if (event->type == EVT_SELECT)
 	{
-		act->action(act->data, act->name);
-		return TRUE;
-	}
-	else if (cmd == '\xff')
-	{
+		if (acts[oid].action)
+			acts[oid].action(acts[oid].data, acts[oid].name);
+
 		return TRUE;
 	}
 
 	return FALSE;
 }
 
-static int valid_menu_action(menu_type *menu, int oid)
-{
-	menu_action *acts = (menu_action *)menu->menu_data;
-	return (NULL != acts[oid].name);
-}
 
 /* Virtual function table for action_events */
 const menu_iter menu_iter_actions =
 {
-	NULL,                     /* get_tag() */
-	valid_menu_action,        /* valid_row() */
-	display_action,           /* display_row() */
-	handle_menu_item_action   /* row_handler() */
+	menu_action_tag,
+	menu_action_valid,
+	menu_action_display,
+	menu_action_handle
 };
 
 
@@ -103,26 +110,37 @@ const menu_iter menu_iter_actions =
  * "selection" keys.
  * ------------------------------------------------------------------------ */
 
-static char tag_menu_item(menu_type *menu, int oid)
+static char item_menu_tag(menu_type *m, int oid)
 {
-	menu_item *items = (menu_item *)menu->menu_data;
+	menu_item *items = menu_priv(m);
 	return items[oid].sel;
 }
 
-static void display_menu_item(menu_type *menu, int oid, bool cursor, int row, int col, int width)
+static int item_menu_valid(menu_type *m, int oid)
 {
-	menu_item *items = (menu_item *)menu->menu_data;
+	menu_item *items = menu_priv(m);
+
+	if (items[oid].flags & MN_HIDDEN)
+		return 2;
+
+	return (NULL != items[oid].act.name);
+}
+
+static void item_menu_display(menu_type *m, int oid, bool cursor, int row, int col, int width)
+{
+	menu_item *items = menu_priv(m);
 	byte color = curs_attrs[!(items[oid].flags & (MN_GRAYED))][0 != cursor];
 
 	display_action_aux(&items[oid].act, color, row, col, width);
 }
 
-/* act on selection only */
-static bool handle_menu_item(char cmd, void *db, int oid)
+static bool item_menu_handle(menu_type *m, const ui_event_data *event, int oid)
 {
-	if (cmd == '\xff')
+	menu_item *items = menu_priv(m);
+
+	if (event->type == EVT_SELECT)
 	{
-		menu_item *item = &((menu_item *)db)[oid];
+		menu_item *item = &items[oid];
 
 		if (item->flags & MN_DISABLED)
 			return TRUE;
@@ -139,23 +157,13 @@ static bool handle_menu_item(char cmd, void *db, int oid)
 	return FALSE;
 }
 
-static int valid_menu_item(menu_type *menu, int oid)
-{
-	menu_item *items = (menu_item *)menu->menu_data;
-
-	if (items[oid].flags & MN_HIDDEN)
-		return 2;
-
-	return (NULL != items[oid].act.name);
-}
-
 /* Virtual function table for menu items */
 const menu_iter menu_iter_items =
 {
-	tag_menu_item,       /* get_tag() */
-	valid_menu_item,     /* valid_row() */
-	display_menu_item,   /* display_row() */
-	handle_menu_item     /* row_handler() */
+	item_menu_tag,       /* get_tag() */
+	item_menu_valid,     /* valid_row() */
+	item_menu_display,   /* display_row() */
+	item_menu_handle     /* row_handler() */
 };
 
 /* ------------------------------------------------------------------------
@@ -164,10 +172,10 @@ const menu_iter menu_iter_items =
  * MN_STRINGS is the type of menu iterator that displays a simple list of 
  * strings - no action is associated, as selection will just return the index.
  * ------------------------------------------------------------------------ */
-static void display_string(menu_type *menu, int oid, bool cursor,
-               int row, int col, int width)
+static void display_string(menu_type *m, int oid, bool cursor,
+		int row, int col, int width)
 {
-	const char **items = (const char **)menu->menu_data;
+	const char **items = menu_priv(m);
 	byte color = curs_attrs[CURS_KNOWN][0 != cursor];
 	Term_putstr(col, row, width, color, items[oid]);
 }
@@ -456,6 +464,7 @@ void menu_refresh(menu_type *menu)
 bool menu_handle_event(menu_type *menu, const ui_event_data *in, ui_event_data *out)
 {
 	bool refresh = FALSE;
+	bool processed = TRUE;
 
 	out->type = EVT_NONE;
 
@@ -513,10 +522,12 @@ bool menu_handle_event(menu_type *menu, const ui_event_data *in, ui_event_data *
 				int oid = menu->cursor;
 				if (menu->filter_list)
 					oid = menu->filter_list[menu->cursor];
-				if (menu->row_funcs->row_handler)
-					menu->row_funcs->row_handler(in->key, menu->menu_data, oid);
 
-				out->type = EVT_SELECT;
+				if (menu->row_funcs->row_handler)
+					processed = menu->row_funcs->row_handler(menu, in, oid);
+
+				out->key = in->key;
+				out->type = EVT_KBRD;
 				refresh = TRUE;
 				break;
 			}
@@ -628,7 +639,7 @@ bool menu_handle_event(menu_type *menu, const ui_event_data *in, ui_event_data *
 		return FALSE;
 
 	out->index = menu->cursor;
-	return TRUE;
+	return processed;
 }
 
 
@@ -657,6 +668,8 @@ ui_event_data menu_select(menu_type *menu, int no_handle)
 {
 	ui_event_data in = EVENT_EMPTY;
 	ui_event_data out = EVENT_EMPTY;
+
+	assert(menu->boundary.width != 0 && menu->boundary.page_rows != 0);
 
 	/* Set some events to never be handled, and one to always handle */
 	no_handle |= (EVT_SELECT | EVT_BACK | EVT_ESCAPE);
@@ -690,6 +703,8 @@ ui_event_data menu_select(menu_type *menu, int no_handle)
 
 /**
  * Return the menu iter struct for a given iter ID.
+ *
+ * XXX should be menu_find_iter
  */
 const menu_iter *find_menu_iter(menu_iter_id id)
 {
@@ -749,8 +764,6 @@ bool menu_layout(menu_type *menu, const region *loc)
 {
 	region active;
 
-	menu->cursor = 0;
-
 	if (!loc) return TRUE;
 	active = *loc;
 
@@ -792,6 +805,18 @@ bool menu_layout(menu_type *menu, const region *loc)
 }
 
 
+void menu_setpriv(menu_type *menu, int count, void *data)
+{
+	menu->count = count;
+	menu->menu_data = data;
+}
+
+void *menu_priv(menu_type *menu)
+{
+	return menu->menu_data;
+}
+
+
 /*
  * Correctly initialise the menu block at 'menu' so that it's ready to use.
  * Use the display skin given in 'skin' and the iterator in 'iter', and set
@@ -799,16 +824,16 @@ bool menu_layout(menu_type *menu, const region *loc)
  *
  * Returns FALSE if something goes wrong, and TRUE otherwise (i.e. always).
  */
-bool menu_init(menu_type *menu, skin_id skin_id, const menu_iter *iter, const region *loc)
+bool menu_init(menu_type *menu, skin_id skin_id, const menu_iter *iter)
 {
 	const menu_skin *skin = find_menu_skin(skin_id);
 	assert(skin && "menu skin not found!");
 	assert(iter && "menu iter not found!");
-	assert(loc && "no screen location specified!");
+
+	memset(menu, 0, sizeof *menu);
 
 	/* Menu-specific initialisation */
 	menu->refresh = menu_refresh;
-	menu->boundary = SCREEN_REGION;
 	menu->row_funcs = iter;
 	menu->skin = skin;
 
@@ -817,9 +842,7 @@ bool menu_init(menu_type *menu, skin_id skin_id, const menu_iter *iter, const re
 	if (menu->count && !menu->filter_list)
 		menu->filter_count = menu->count;
 
-	/* Do an initial layout calculation so we're ready to display. */
-	menu_layout(menu, loc);
-
 	/* TODO:  Check for collisions in selections & command keys here */
+
 	return TRUE;
 }

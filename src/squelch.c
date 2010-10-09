@@ -800,22 +800,14 @@ static void quality_subdisplay(menu_type *menu, int oid, bool cursor, int row, i
 	c_put_str(attr, name, row, col);
 }
 
-/*
- * Handle "Enter".  :(
- */
-static bool quality_subaction(char cmd, void *db, int oid)
-{
-	return TRUE;
-}
-
 
 /*
  * Handle keypresses.
  */
-static bool quality_action(char cmd, void *db, int oid)
+static bool quality_action(menu_type *m, const ui_event_data *event, int oid)
 {
 	menu_type menu;
-	menu_iter menu_f = { NULL, NULL, quality_subdisplay, quality_subaction };
+	menu_iter menu_f = { NULL, NULL, quality_subdisplay, NULL };
 	region area = { 24, 5, 29, SQUELCH_MAX };
 	ui_event_data evt;
 	int cursor;
@@ -829,7 +821,6 @@ static bool quality_action(char cmd, void *db, int oid)
 
 	/* Run menu */
 	WIPE(&menu, menu);
-	menu.cmd_keys = "\n\r";
 	menu.count = SQUELCH_MAX;
 	if ((oid == TYPE_RING) || (oid == TYPE_AMULET))
 		menu.count = area.page_rows = SQUELCH_BAD + 1;
@@ -838,13 +829,14 @@ static bool quality_action(char cmd, void *db, int oid)
 	if (area.row + menu.count > Term->hgt - 1)
 		area.row += Term->hgt - 1 - area.row - menu.count;
 
-	menu_init(&menu, MN_SKIN_SCROLL, &menu_f, &area);
+	menu_init(&menu, MN_SKIN_SCROLL, &menu_f);
+	menu_layout(&menu, &area);
 	window_make(area.col - 2, area.row - 1, area.col + area.width + 2, area.row + area.page_rows);
 
 	evt = menu_select(&menu, 0);
 
 	/* Set the new value appropriately */
-	if (evt.type != EVT_ESCAPE && evt.type != EVT_BACK)
+	if (evt.type == EVT_SELECT)
 		squelch_level[oid] = menu.cursor;
 
 	/* Load and finish */
@@ -860,7 +852,6 @@ static void quality_menu(void *unused, const char *also_unused)
 	menu_type menu;
 	menu_iter menu_f = { NULL, NULL, quality_display, quality_action };
 	region area = { 1, 5, -1, -1 };
-	ui_event_data evt = EVENT_EMPTY;
 
 	/* Save screen */
 	screen_save();
@@ -873,14 +864,12 @@ static void quality_menu(void *unused, const char *also_unused)
 	text_out_to_screen(TERM_L_RED, "Use the movement keys to navigate, and Enter to change settings.");
 
 	/* Set up the menu */
-	WIPE(&menu, menu);
-	menu.cmd_keys = " \n\r";
-	menu.count = TYPE_MAX;
-	menu_init(&menu, MN_SKIN_SCROLL, &menu_f, &area);
+	menu_init(&menu, MN_SKIN_SCROLL, &menu_f);
+	menu_setpriv(&menu, TYPE_MAX, quality_values);
+	menu_layout(&menu, &area);
 
 	/* Select an entry */
-	while (evt.type != EVT_ESCAPE)
-		evt = menu_select(&menu, 0);
+	menu_select(&menu, 0);
 
 	/* Load screen */
 	screen_load();
@@ -897,7 +886,7 @@ static void quality_menu(void *unused, const char *also_unused)
 static void sval_display(menu_type *menu, int oid, bool cursor, int row, int col, int width)
 {
 	char buf[80];
-	const squelch_choice *choice = (const squelch_choice *) menu->menu_data;
+	const squelch_choice *choice = menu_priv(menu);
 	int idx = choice[oid].idx;
 
 	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
@@ -916,12 +905,11 @@ static void sval_display(menu_type *menu, int oid, bool cursor, int row, int col
 /*
  * Deal with events on the sval menu
  */
-static bool sval_action(char cmd, void *db, int oid)
+static bool sval_action(menu_type *m, const ui_event_data *event, int oid)
 {
-	const squelch_choice *choice = (const squelch_choice *) db;
+	const squelch_choice *choice = menu_priv(m);
 
-	/* Toggle */
-	if (cmd == '\n' || cmd == '\r')
+	if (event->type == EVT_SELECT)
 	{
 		int idx = choice[oid].idx;
 
@@ -947,7 +935,6 @@ static bool sval_menu(int tval, const char *desc)
 	menu_type menu;
 	menu_iter menu_f = { NULL, NULL, sval_display, sval_action };
 	region area = { 1, 5, -1, -1 };
-	ui_event_data evt = { EVT_NONE, 0, 0, 0, 0 };
 
 	int num = 0;
 	size_t i;
@@ -1039,16 +1026,11 @@ static bool sval_menu(int tval, const char *desc)
 
 	text_out_indent = 0;
 
-	/* Set up the menu */
-	WIPE(&menu, menu);
-	menu.cmd_keys = " \n\r";
-	menu.count = num;
-	menu.menu_data = choice;
-	menu_init(&menu, MN_SKIN_SCROLL, &menu_f, &area);
-
-	/* Select an entry */
-	while (evt.type != EVT_ESCAPE)
-		evt = menu_select(&menu, 0);
+	/* Run menu */
+	menu_init(&menu, MN_SKIN_SCROLL, &menu_f);
+	menu_setpriv(&menu, num, choice);
+	menu_layout(&menu, &area);
+	menu_select(&menu, 0);
 
 	/* Free memory */
 	FREE(choice);
@@ -1155,13 +1137,34 @@ static void display_options_item(menu_type *menu, int oid, bool cursor, int row,
 	}
 }
 
+bool handle_options_item(menu_type *menu, const ui_event_data *event, int oid)
+{
+	if (event->type == EVT_SELECT)
+	{
+		if ((size_t) oid < N_ELEMENTS(sval_dependent))
+		{
+			sval_menu(sval_dependent[oid].tval, sval_dependent[oid].desc);
+		}
+		else
+		{
+			oid = oid - (int)N_ELEMENTS(sval_dependent) - 1;
+			assert((size_t) oid < N_ELEMENTS(extra_item_options));
+			extra_item_options[oid].action(NULL, NULL);
+		}
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
 
 static const menu_iter options_item_iter =
 {
 	tag_options_item,
 	valid_options_item,
 	display_options_item,
-	NULL
+	handle_options_item
 };
 
 
@@ -1170,41 +1173,18 @@ static const menu_iter options_item_iter =
  */
 void do_cmd_options_item(void *unused, cptr title)
 {
-	ui_event_data c = EVENT_EMPTY;
-
 	menu_type menu;
 
-	WIPE(&menu, menu_type);
+	menu_init(&menu, MN_SKIN_SCROLL, &options_item_iter);
+	menu_setpriv(&menu, N_ELEMENTS(sval_dependent) + N_ELEMENTS(extra_item_options) + 1, NULL);
+	menu_layout(&menu, &SCREEN_REGION);
 	menu.title = title;
-	menu.count = N_ELEMENTS(sval_dependent) + N_ELEMENTS(extra_item_options) + 1;
-	menu_init(&menu, MN_SKIN_SCROLL, &options_item_iter, &SCREEN_REGION);
 
-	/* Save and clear screen */
 	screen_save();
 	clear_from(0);
-
-	while (c.type != EVT_ESCAPE)
-	{
-		clear_from(0);
-		c = menu_select(&menu, 0);
-
-		if (c.type == EVT_SELECT)
-		{
-			if ((size_t) menu.cursor < N_ELEMENTS(sval_dependent))
-			{
-				sval_menu(sval_dependent[menu.cursor].tval, sval_dependent[menu.cursor].desc);
-			}
-			else
-			{
-				menu.cursor = menu.cursor - N_ELEMENTS(sval_dependent) - 1;
-				if ((size_t) menu.cursor < N_ELEMENTS(extra_item_options))
-					extra_item_options[menu.cursor].action(NULL, NULL);
-			}
-		}
-	}
-
-	/* Load screen and finish */
+	menu_select(&menu, 0);
 	screen_load();
+
 	p_ptr->notice |= PN_SQUELCH;
 
 	return;

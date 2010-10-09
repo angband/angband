@@ -191,18 +191,10 @@ static void birthmenu_display(menu_type *menu, int oid, bool cursor,
 	c_put_str(attr, data->items[oid], row, col);
 }
 
-/* We defer the choice of actual actions until outside of the menu API 
-   in menu_question(), so this can be a reasonably simple function
-   for when a menu "command" is activated. */
-static bool birthmenu_handler(char cmd, void *db, int oid)
-{
-	return TRUE;
-}
-
 /* Our custom menu iterator, only really needed to allow us to override
    the default handling of "commands" in the standard iterators (hence
    only defining the display and handler parts). */
-static const menu_iter birth_iter = { NULL, NULL, birthmenu_display, birthmenu_handler };
+static const menu_iter birth_iter = { NULL, NULL, birthmenu_display, NULL };
 
 static void race_help(int i, void *db, const region *l)
 {
@@ -257,35 +249,33 @@ static void init_birth_menu(menu_type *menu, int n_choices, int initial_choice, 
 {
 	struct birthmenu_data *menu_data;
 
+	/* Initialise a basic menu */
+	menu_init(menu, MN_SKIN_SCROLL, &birth_iter);
+
 	/* A couple of behavioural flags - we want selections letters in
 	   lower case and a double tap to act as a selection. */
 	menu->selections = lower_case;
 	menu->flags = MN_DBL_TAP;
 
-	/* Set the number of choices in the menu to the same as the game
-	   has told us we've got to offer. */
-	menu->count = n_choices;
+	/* Copy across the game's suggested initial selection, etc. */
+	menu->cursor = initial_choice;
 
 	/* Allocate sufficient space for our own bits of menu information. */
 	menu_data = mem_alloc(sizeof *menu_data);
 
-	/* Copy across the game's suggested initial selection, etc. */
-	menu->cursor = initial_choice;
-	menu_data->allow_random = allow_random;
-
 	/* Allocate space for an array of menu item texts and help texts
 	   (where applicable) */
-	menu_data->items = mem_alloc(menu->count * sizeof *menu_data->items);
+	menu_data->items = mem_alloc(n_choices * sizeof *menu_data->items);
+	menu_data->allow_random = allow_random;
 
-	/* Poke our menu data in to the assigned slot in the menu structure. */
-	menu->menu_data = menu_data;
+	/* Set private data */
+	menu_setpriv(menu, n_choices, menu_data);
 
 	/* Set up the "browse" hook to display help text (where applicable). */
 	menu->browse_hook = aux;
 
-	/* Get ui-menu to initialise whatever it wants to to give us a scrollable
-	   menu. */
-	menu_init(menu, MN_SKIN_SCROLL, &birth_iter, reg);
+	/* Lay out the menu appropriately */
+	menu_layout(menu, reg);
 }
 
 
@@ -418,7 +408,7 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 	clear_question();
 	Term_putstr(QUESTION_COL, QUESTION_ROW, -1, TERM_YELLOW, menu_data->hint);
 
-	current_menu->cmd_keys = "?=*\r\n\x18";	 /* ?, ,= *, \n, <ctl-X> */
+	current_menu->cmd_keys = "?=*\x18";	 /* ?, =, *, <ctl-X> */
 
 	while (next == BIRTH_RESET)
 	{
@@ -432,8 +422,7 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 		{
 			next = BIRTH_BACK;
 		}
-		/* '\xff' is a mouse selection, '\r' a keyboard one. */
-		else if (cx.key == '\xff' || cx.key == '\r') 
+		else if (cx.type == EVT_SELECT)
 		{
 			if (current == BIRTH_ROLLER_CHOICE)
 			{
@@ -464,28 +453,31 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 				next = current + 1;
 			}
 		}
-		/* '*' chooses an option at random from those the game's provided. */
-		else if (cx.key == '*' && menu_data->allow_random) 
+		else if (cx.type == EVT_KBRD)
 		{
-			current_menu->cursor = randint0(current_menu->count);
-			cmd_insert(choice_command, current_menu->cursor);
+			/* '*' chooses an option at random from those the game's provided. */
+			if (cx.key == '*' && menu_data->allow_random) 
+			{
+				current_menu->cursor = randint0(current_menu->count);
+				cmd_insert(choice_command, current_menu->cursor);
 
-			menu_refresh(current_menu);
-			next = current + 1;
-		}
-		else if (cx.key == '=') 
-		{
-			do_cmd_options();
-			next = current;
-		}
-		else if (cx.key == KTRL('X')) 
-		{
-			cmd_insert(CMD_QUIT);
-			next = BIRTH_COMPLETE;
-		}
-		else if (cx.key == '?')
-		{
-			do_cmd_help();
+				menu_refresh(current_menu);
+				next = current + 1;
+			}
+			else if (cx.key == '=') 
+			{
+				do_cmd_options();
+				next = current;
+			}
+			else if (cx.key == KTRL('X')) 
+			{
+				cmd_insert(CMD_QUIT);
+				next = BIRTH_COMPLETE;
+			}
+			else if (cx.key == '?')
+			{
+				do_cmd_help();
+			}
 		}
 	}
 	
