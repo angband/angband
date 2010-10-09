@@ -1180,8 +1180,9 @@ void do_cmd_options_item(void *unused, cptr title)
 
 	menu_init(&menu, MN_SKIN_SCROLL, &options_item_iter);
 	menu_setpriv(&menu, N_ELEMENTS(sval_dependent) + N_ELEMENTS(extra_item_options) + 1, NULL);
-	menu_layout(&menu, &SCREEN_REGION);
+
 	menu.title = title;
+	menu_layout(&menu, &SCREEN_REGION);
 
 	screen_save();
 	clear_from(0);
