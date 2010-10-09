@@ -413,12 +413,12 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 	while (next == BIRTH_RESET)
 	{
 		/* Display the menu, wait for a selection of some sort to be made. */
-		cx = menu_select(current_menu, EVT_CMD);
+		cx = menu_select(current_menu, EVT_KBRD);
 
 		/* As all the menus are displayed in "hierarchical" style, we allow
 		   use of "back" (left arrow key or equivalent) to step back in 
 		   the proces as well as "escape". */
-		if (cx.type == EVT_BACK || cx.type == EVT_ESCAPE)
+		if (cx.type == EVT_ESCAPE)
 		{
 			next = BIRTH_BACK;
 		}

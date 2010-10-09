@@ -561,8 +561,10 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		bool recall = FALSE;
 
 		ke = inkey_ex();
+#if 0
 		if (!visual_list && menu_handle_event(active_menu, &ke, &ke0))
 			ke = ke0;
+#endif
 
 		/* XXX Do visual mode command if needed */
 		if (o_funcs.xattr && o_funcs.xchar)
@@ -601,7 +603,11 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 			case EVT_ESCAPE:
 			{
-				flag = TRUE;
+				if (panel == 1)
+					do_swap = TRUE;
+				else
+					flag = TRUE;
+
 				break;
 			}
 
@@ -617,13 +623,6 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			case EVT_MOVE:
 			{
 				*active_cursor = active_menu->cursor;
-				break;
-			}
-
-			case EVT_BACK:
-			{
-				if (panel == 1)
-					do_swap = TRUE;
 				break;
 			}
 

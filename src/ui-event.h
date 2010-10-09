@@ -4,19 +4,19 @@
 /* The various UI events that can occur */
 typedef enum
 {
-	EVT_NONE	= 0x0,
-	EVT_ESCAPE	= 0x0001,	/* Synonym for KBRD + key = ESCAPE */
-	EVT_KBRD	= 0x0002,	/* keypress */
-	EVT_MOUSE	= 0x0004,	/* mousepress */
-	EVT_BACK	= 0x0008,	/* Up one level in heirarchical menus. */
-	EVT_MOVE	= 0x0010,	/* menu movement */
-	EVT_SELECT	= 0x0020,	/* Menu selection */
-	EVT_BUTTON	= 0x0040,	/* button press */
-	EVT_CMD		= 0x0080,	/* Command key execute */
-	EVT_OK		= 0x0100,	/* Callback successful */
-					/* For example, a command key action. */
-	EVT_REFRESH	= 0x0200,	/* Display refresh */
-	EVT_RESIZE	= 0x0400	/* Display resize */
+	EVT_NONE	= 0x0000,
+
+	/* Basic events */
+	EVT_KBRD	= 0x0001,	/* Keypress */
+	EVT_MOUSE	= 0x0002,	/* Mousepress */
+	EVT_RESIZE	= 0x0004,	/* Display resize */
+
+	EVT_BUTTON	= 0x0008,	/* Button press */
+
+	/* 'Abstract' events */
+	EVT_ESCAPE	= 0x0010,	/* Get out of this menu */
+	EVT_MOVE	= 0x0020,	/* Menu movement */
+	EVT_SELECT	= 0x0040	/* Menu selection */
 } ui_event_type;
 
 typedef struct

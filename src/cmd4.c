@@ -909,7 +909,7 @@ void do_cmd_macros(void)
 		/* Display the current action */
 		prt(tmp, 14, 0);
 
-		c = menu_select(&macro_menu, EVT_CMD);
+		c = menu_select(&macro_menu, 0);
 
 		if (c.type == EVT_ESCAPE)
 			break;
@@ -1203,7 +1203,7 @@ void do_cmd_visuals(void)
 
 		clear_from(0);
 
-		key = menu_select(&visual_menu, EVT_CMD);
+		key = menu_select(&visual_menu, 0);
 
 		if (key.type == EVT_ESCAPE)
 			break;
@@ -1293,7 +1293,7 @@ void do_cmd_colors(void)
 		ui_event_data key;
 		int evt;
 		clear_from(0);
-		key = menu_select(&color_menu, EVT_CMD);
+		key = menu_select(&color_menu, 0);
 
 		/* Done */
 		if (key.type == EVT_ESCAPE) break;

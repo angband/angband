@@ -3104,7 +3104,7 @@ void do_cmd_store_knowledge(void)
 			}
 		}
 
-		if (evt.type == EVT_ESCAPE || evt.type == EVT_BACK)
+		if (evt.type == EVT_ESCAPE)
 		{
 			leave = TRUE;
 		}
@@ -3243,7 +3243,7 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 			}
 		}
 
-		if (evt.type == EVT_ESCAPE || evt.type == EVT_BACK)
+		if (evt.type == EVT_ESCAPE)
 		{
 			leave = TRUE;
 		}
