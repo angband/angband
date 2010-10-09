@@ -819,18 +819,21 @@ static bool quality_action(menu_type *m, const ui_event_data *event, int oid)
 	/* Save */
 	screen_save();
 
-	/* Run menu */
-	WIPE(&menu, menu);
-	menu.count = SQUELCH_MAX;
+	/* Work out how many options we have */
+	int count = SQUELCH_MAX;
 	if ((oid == TYPE_RING) || (oid == TYPE_AMULET))
-		menu.count = area.page_rows = SQUELCH_BAD + 1;
+		count = area.page_rows = SQUELCH_BAD + 1;
+
+	/* Run menu */
+	menu_init(&menu, MN_SKIN_SCROLL, &menu_f);
+	menu_setpriv(&menu, count, quality_values);
 
 	/* Stop menus from going off the bottom of the screen */
 	if (area.row + menu.count > Term->hgt - 1)
 		area.row += Term->hgt - 1 - area.row - menu.count;
 
-	menu_init(&menu, MN_SKIN_SCROLL, &menu_f);
 	menu_layout(&menu, &area);
+
 	window_make(area.col - 2, area.row - 1, area.col + area.width + 2, area.row + area.page_rows);
 
 	evt = menu_select(&menu, 0);
