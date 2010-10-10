@@ -435,6 +435,9 @@ void menu_refresh(menu_type *menu)
 	region *loc = &menu->boundary;
 	int oid = menu->cursor;
 
+	if (!menu->filter_list)
+		menu->filter_count = menu->count;
+
 	if (menu->filter_list && menu->cursor >= 0)
 		oid = menu->filter_list[oid];
 
@@ -631,9 +634,6 @@ ui_event_data menu_select(menu_type *menu, int notify)
 	ui_event_data in = EVENT_EMPTY;
 
 	assert(menu->boundary.width != 0 && menu->boundary.page_rows != 0);
-
-	if (!menu->filter_list)
-		menu->filter_count = menu->count;
 
 	notify |= (EVT_SELECT | EVT_ESCAPE);
 
