@@ -81,11 +81,9 @@ static bool menu_action_handle(menu_type *m, const ui_event_data *event, int oid
 {
 	menu_action *acts = menu_priv(m);
 
-	if (event->type == EVT_SELECT)
+	if (event->type == EVT_SELECT && acts[oid].action)
 	{
-		if (acts[oid].action)
-			acts[oid].action(acts[oid].data, acts[oid].name);
-
+		acts[oid].action(acts[oid].data, acts[oid].name);
 		return TRUE;
 	}
 
@@ -654,10 +652,10 @@ ui_event_data menu_select(menu_type *menu, int notify)
 		in = inkey_ex();
 
 		/* Handle mouse & keyboard commands */
-		if (in.type == EVT_MOUSE) {
+		if (in.type == EVT_MOUSE)
 			ignore = menu_handle_mouse(menu, &in, &out);
-		}
-		else if (in.type == EVT_KBRD) {
+		else if (in.type == EVT_KBRD)
+		{
 			if (menu->cmd_keys &&
 					strchr(menu->cmd_keys, in.key) &&
 					menu_handle_action(menu, &in))
