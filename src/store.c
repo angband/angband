@@ -3048,6 +3048,9 @@ void do_cmd_store_knowledge(void)
 	/* Wipe the menu and set it up */
 	menu.flags = MN_DBL_TAP;
 
+	screen_save();
+	clear_from(0);
+
 	/* Calculate the positions of things and redraw */
 	store_flags = STORE_INIT_CHANGE;
 	store_display_recalc();
@@ -3123,6 +3126,8 @@ void do_cmd_store_knowledge(void)
 
 	/* Flush messages XXX XXX XXX */
 	message_flush();
+
+	screen_load();
 }
 
 /*

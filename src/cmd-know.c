@@ -442,6 +442,10 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 	o_funcs.is_visual = FALSE;
 
+	/* Save screen */
+	screen_save();
+	clear_from(0);
+
 
 	/* This is the event loop for a multi-region panel */
 	/* Panels are -- text panels, two menus, and visual browser */
@@ -657,6 +661,8 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	FREE(g_names);
 	FREE(g_offset);
 	FREE(g_list);
+
+	screen_load();
 }
 
 /*
