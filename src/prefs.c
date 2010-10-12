@@ -957,15 +957,8 @@ errr process_pref_file_command(char *buf)
 	/* Process "X:<str>" -- turn option off */
 	else if (buf[0] == 'X')
 	{
-		/* Check non-adult options */
-		for (i = 0; i < OPT_ADULT; i++)
-		{
-			if (option_name(i) && streq(option_name(i), buf + 2))
-			{
-				option_set(i, FALSE);
-				return (0);
-			}
-		}
+		/* Set the option (not adult ones though) */
+		(void)option_set(buf + 2, FALSE);
 
 		/* Ignore unknown options */
 		return (0);
@@ -974,15 +967,8 @@ errr process_pref_file_command(char *buf)
 	/* Process "Y:<str>" -- turn option on */
 	else if (buf[0] == 'Y')
 	{
-		/* Check non-adult options */
-		for (i = 0; i < OPT_ADULT; i++)
-		{
-			if (option_name(i) && streq(option_name(i), buf + 2))
-			{
-				option_set(i, TRUE);
-				return (0);
-			}
-		}
+		/* Set the option (not adult ones though) */
+		(void)option_set(buf + 2, TRUE);
 
 		/* Ignore unknown options */
 		return (0);

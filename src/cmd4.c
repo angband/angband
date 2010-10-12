@@ -514,17 +514,19 @@ static bool handle_option(menu_type *m, const ui_event_data *event, int oid)
 	bool next = FALSE;
 
 	if (event->type == EVT_SELECT)
-		op_ptr->opt[oid] = !op_ptr->opt[oid];
+	{
+		option_set(option_name(oid), !op_ptr->opt[oid]);
+	}
 	else if (event->type == EVT_KBRD)
 	{
 		if (event->key == 'y' || event->key == 'Y')
 		{
-			op_ptr->opt[oid] = TRUE;
+			option_set(option_name(oid), TRUE);
 			next = TRUE;
 		}
 		else if (event->key == 'n' || event->key == 'N')
 		{
-			op_ptr->opt[oid] = FALSE;
+			option_set(option_name(oid), FALSE);
 			next = TRUE;
 		}
 		else if (event->key == '?')
@@ -549,7 +551,8 @@ static const menu_iter options_toggle_iter =
 	NULL,
 	NULL,
 	display_option,		/* label */
-	handle_option		/* handle */
+	handle_option,		/* handle */
+	NULL
 };
 
 static menu_type option_toggle_menu;
@@ -584,17 +587,6 @@ static void do_cmd_options_aux(void *vpage, cptr info)
 	clear_from(0);
 
 	menu_select(menu, 0);
-
-	/* Hack -- Notice use of any "cheat" options */
-	/* XXX this should be moved to option_set() */
-	for (i = OPT_CHEAT; i < OPT_ADULT; i++)
-	{
-		if (op_ptr->opt[i])
-		{
-			/* Set score option */
-			op_ptr->opt[OPT_SCORE + (i - OPT_CHEAT)] = TRUE;
-		}
-	}
 
 	screen_load();
 }

@@ -5,7 +5,7 @@
 const char *option_name(int opt);
 const char *option_desc(int opt);
 
-void option_set(int opt, bool on);
+bool option_set(const char *opt, bool on);
 void option_set_defaults(void);
 
 
