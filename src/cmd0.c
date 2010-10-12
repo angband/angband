@@ -155,7 +155,6 @@ static command_type cmd_hidden[] =
 	{ "Take notes",               ':', CMD_NULL, do_cmd_note },
 	{ "Version info",             'V', CMD_NULL, do_cmd_version },
 	{ "Load a single pref line",  '"', CMD_NULL, do_cmd_pref },
-	{ "Mouse click",           '\xff', CMD_NULL, do_cmd_mouseclick },
 	{ "Enter a store",            '_', CMD_ENTER_STORE, NULL },
 	{ "Toggle windows",     KTRL('E'), CMD_NULL, toggle_inven_equip }, /* XXX */
 	{ "Alter a grid",             '+', CMD_NULL, textui_cmd_alter },
@@ -324,7 +323,7 @@ void do_cmd_quit(cmd_code code, cmd_arg args[])
 
 
 /*
- * Handle a mouseclick, using the horrible hack that is '\xff'.
+ * Handle a mouseclick.
  */
 static void do_cmd_mouseclick(void)
 {
@@ -621,6 +620,10 @@ void textui_process_command(bool no_request)
 	if (p_ptr->command_cmd_ex.type == EVT_RESIZE)
 	{
 		do_cmd_redraw();
+	}
+	else if (p_ptr->command_cmd_ex.type == EVT_MOUSE)
+	{
+		do_cmd_mouseclick();
 	}
 	else
 	{

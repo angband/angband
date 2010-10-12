@@ -834,7 +834,7 @@ static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
 				byte c = *cur_char_ptr;
 
 				/* Get mouse movement */
-				if (ke.key == '\xff')
+				if (ke.type == EVT_MOUSE)
 				{
 					int my = ke.mousey - row;
 					int mx = ke.mousex - col;
