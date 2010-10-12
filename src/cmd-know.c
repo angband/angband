@@ -432,7 +432,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 
 	/* Set up the two menus */
-	menu_init(&group_menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_STRINGS));
+	menu_init(&group_menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_STRINGS));
 	menu_setpriv(&group_menu, grp_cnt, g_names);
 	menu_layout(&group_menu, &group_region);
 
@@ -1992,7 +1992,7 @@ void init_cmd_know(void)
 {
 	/* Initialize the menus */
 	menu_type *menu = &knowledge_menu;
-	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ITEMS));
+	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ITEMS));
 	menu_setpriv(menu, N_ELEMENTS(knowledge_actions), knowledge_actions);
 
 	menu->title = "Display current knowledge";

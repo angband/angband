@@ -1638,7 +1638,7 @@ void init_cmd4_c(void)
 
 	/* options screen selection menu */
 	menu = &option_menu;
-	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ACTIONS));
+	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
 	menu_setpriv(menu, N_ELEMENTS(option_actions), option_actions);
 
 	menu->title = "Options Menu";
@@ -1657,7 +1657,7 @@ void init_cmd4_c(void)
 
 	/* macro menu */
 	menu = &macro_menu;
-	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ACTIONS));
+	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
 	menu_setpriv(menu, N_ELEMENTS(macro_actions), macro_actions);
 
 	menu->title = "Interact with macros";
@@ -1666,7 +1666,7 @@ void init_cmd4_c(void)
 
 	/* visuals menu */
 	menu = &visual_menu;
-	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ACTIONS));
+	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
 	menu_setpriv(menu, N_ELEMENTS(visual_menu_items), visual_menu_items);
 
 	menu->title = "Interact with visuals";
@@ -1675,7 +1675,7 @@ void init_cmd4_c(void)
 
 	/* colors menu */
 	menu = &color_menu;
-	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ACTIONS));
+	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
 	menu_setpriv(menu, N_ELEMENTS(color_events), color_events);
 
 	menu->title = "Interact with colors";

@@ -681,10 +681,8 @@ ui_event_data menu_select(menu_type *menu, int notify)
 
 /**
  * Return the menu iter struct for a given iter ID.
- *
- * XXX should be menu_find_iter
  */
-const menu_iter *find_menu_iter(menu_iter_id id)
+const menu_iter *menu_find_iter(menu_iter_id id)
 {
 	switch (id)
 	{
@@ -704,7 +702,7 @@ const menu_iter *find_menu_iter(menu_iter_id id)
 /*
  * Return the skin behaviour struct for a given skin ID.
  */
-static const menu_skin *find_menu_skin(skin_id id)
+static const menu_skin *menu_find_skin(skin_id id)
 {
 	switch (id)
 	{
@@ -799,7 +797,7 @@ void *menu_priv(menu_type *menu)
  */
 void menu_init(menu_type *menu, skin_id skin_id, const menu_iter *iter)
 {
-	const menu_skin *skin = find_menu_skin(skin_id);
+	const menu_skin *skin = menu_find_skin(skin_id);
 	assert(skin && "menu skin not found!");
 	assert(iter && "menu iter not found!");
 

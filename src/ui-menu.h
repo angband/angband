@@ -232,7 +232,7 @@ struct menu_type
 void menu_init(menu_type *menu, skin_id skin, const menu_iter *iter);
 
 /* Find a menu iterator struct */
-const menu_iter *find_menu_iter(menu_iter_id iter_id);
+const menu_iter *menu_find_iter(menu_iter_id iter_id);
 
 /* Get or set private data, with menu length */
 void *menu_priv(menu_type *menu);

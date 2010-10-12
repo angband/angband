@@ -447,7 +447,7 @@ void death_screen(void)
 
 	/* Initialize the menu */
 	menu = &death_menu;
-	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ACTIONS));
+	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
 	menu_setpriv(menu, N_ELEMENTS(death_actions), death_actions);
 	menu_layout(menu, &area);
 	menu->flags = MN_CASELESS_TAGS;
