@@ -499,13 +499,10 @@ void do_cmd_messages(void)
 /*
  * Displays an option entry.
  */
-static void display_option(menu_type *menu, int oid,
-							bool cursor, int row, int col, int width)
+static void display_option(menu_type *m, int oid, bool cursor,
+		int row, int col, int width)
 {
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
-	(void)menu;
-	(void)width;
-
 	c_prt(attr, format("%-45s: %s  (%s)", option_desc(oid),
 	                   op_ptr->opt[oid] ? "yes" : "no ", option_name(oid)),
 	                   row, col);
@@ -514,40 +511,36 @@ static void display_option(menu_type *menu, int oid,
 /*
  * Handle keypresses for an option entry.
  */
-static bool update_option(char key, void *pgdb, int oid)
+static bool handle_option(menu_type *m, const ui_event_data *event, int oid)
 {
-	(void)pgdb;
+	bool next = FALSE;
 
-	/* Ignore arrow events */
-	if (key == ARROW_LEFT || key == ARROW_RIGHT)
-		return TRUE;
-
-	switch (toupper((unsigned char) key))
+	if (event->type == EVT_SELECT)
+		op_ptr->opt[oid] = !op_ptr->opt[oid];
+	else if (event->type == EVT_KBRD)
 	{
-		case 'Y':
+		if (event->key == 'y' || event->key == 'Y')
 		{
 			op_ptr->opt[oid] = TRUE;
-			break;
+			next = TRUE;
 		}
-
-		case 'N':
+		else if (event->key == 'n' || event->key == 'N')
 		{
 			op_ptr->opt[oid] = FALSE;
-			break;
+			next = TRUE;
 		}
-
-		case '?':
-		{
+		else if (event->key == '?')
 			show_file(format("option.txt#%s", option_name(oid)), NULL, 0, 0);
-			break;
-		}
+		else
+			return FALSE;
+	}
+	else
+		return FALSE;
 
-		default:
-		{
-			op_ptr->opt[oid] = !op_ptr->opt[oid];
-			break;
-		}
-
+	if (next)
+	{
+		m->cursor++;
+		m->cursor = (m->cursor + m->filter_count) % m->filter_count;
 	}
 
 	return TRUE;
@@ -558,7 +551,7 @@ static const menu_iter options_toggle_iter =
 	NULL,
 	NULL,
 	display_option,		/* label */
-	update_option		/* updater */
+	handle_option		/* handle */
 };
 
 static menu_type option_toggle_menu;
@@ -574,11 +567,6 @@ static void do_cmd_options_aux(void *vpage, cptr info)
 	int i, n = 0;
 
 	menu_type *menu = &option_toggle_menu;
-	menu->title = info;
-	menu_layout(menu, &SCREEN_REGION);
-
-	screen_save();
-	clear_from(0);
 
 	/* Filter the options for this page */
 	for (i = 0; i < OPT_PAGE_PER; i++)
@@ -587,24 +575,20 @@ static void do_cmd_options_aux(void *vpage, cptr info)
 			opt[n++] = option_page[page][i];
 	}
 
-	menu_set_filter(menu, opt, n);
-	menu->menu_data = vpage;
+	menu->title = info;
 
+	menu_setpriv(menu, OPT_PAGE_PER, vpage);
+	menu_set_filter(menu, opt, n);
 	menu_layout(menu, &SCREEN_REGION);
 
-	ui_event_data cx = EVENT_EMPTY;
-	while (cx.type != EVT_ESCAPE)
-	{
-		cx = menu_select(menu, 0);
+	/* Run the menu */
+	screen_save();
+	clear_from(0);
 
-		if (cx.type == EVT_SELECT && strchr("YN", toupper((unsigned char) cx.key)))
-		{
-			menu->cursor++;
-			menu->cursor = (menu->cursor + n) % n;
-		}
-	}
+	menu_select(menu, 0);
 
 	/* Hack -- Notice use of any "cheat" options */
+	/* XXX this should be moved to option_set() */
 	for (i = OPT_CHEAT; i < OPT_ADULT; i++)
 	{
 		if (op_ptr->opt[i])
@@ -927,7 +911,7 @@ void do_cmd_macros(void)
 		/* Display the current action */
 		prt(tmp, 14, 0);
 
-		c = menu_select(&macro_menu, EVT_CMD);
+		c = menu_select(&macro_menu, 0);
 
 		if (c.type == EVT_ESCAPE)
 			break;
@@ -1221,7 +1205,7 @@ void do_cmd_visuals(void)
 
 		clear_from(0);
 
-		key = menu_select(&visual_menu, EVT_CMD);
+		key = menu_select(&visual_menu, 0);
 
 		if (key.type == EVT_ESCAPE)
 			break;
@@ -1311,7 +1295,7 @@ void do_cmd_colors(void)
 		ui_event_data key;
 		int evt;
 		clear_from(0);
-		key = menu_select(&color_menu, EVT_CMD);
+		key = menu_select(&color_menu, 0);
 
 		/* Done */
 		if (key.type == EVT_ESCAPE) break;
@@ -1603,12 +1587,7 @@ static void do_dump_options(void *unused, const char *title)
 
 /*** Main menu definitions and display ***/
 
-/*
- * Definition of the options menu.
- *
- * XXX Too many entries.
- */
-
+static menu_type option_menu;
 static menu_action option_actions [] = 
 {
 	{'a', "Interface options", do_cmd_options_aux, (void*)0}, 
@@ -1630,71 +1609,15 @@ static menu_action option_actions [] =
 	{'c', "Interact with colours (advanced)", (action_f) do_cmd_colors, 0},
 };
 
-static menu_type option_menu;
-
-static char tag_opt_main(menu_type *menu, int oid)
-{
-	(void)menu;
-	if (option_actions[oid].id)
-		return option_actions[oid].id;
-
-	return 0;
-}
-
-static int valid_opt_main(menu_type *menu, int oid)
-{
-	(void)menu;
-	if (option_actions[oid].name)
-		return 1;
-
-	return 0;
-}
-
-static void display_opt_main(menu_type *menu, int oid, bool cursor, int row, int col, int width)
-{
-	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
-
-	(void)menu;
-	(void)width;
-	if (option_actions[oid].name)
-		c_prt(attr, option_actions[oid].name, row, col);
-}
-
-
-static const menu_iter options_iter =
-{
-	tag_opt_main,
-	valid_opt_main,
-	display_opt_main,
-	NULL
-};
-
-
 /*
  * Display the options main menu.
  */
 void do_cmd_options(void)
 {
-	ui_event_data c = EVENT_EMPTY;
-
 	screen_save();
 	clear_from(0);
 	menu_layout(&option_menu, &SCREEN_REGION);
-
-	while (c.type != EVT_ESCAPE)
-	{
-		c = menu_select(&option_menu, 0);
-
-		if (c.type == EVT_SELECT && option_actions[option_menu.cursor].action)
-		{
-			option_actions[option_menu.cursor].action(
-					option_actions[option_menu.cursor].data,
-					option_actions[option_menu.cursor].name);
-		}
-
-		message_flush();
-	}
-
+	menu_select(&option_menu, 0);
 	screen_load();
 }
 
@@ -1706,62 +1629,53 @@ void do_cmd_options(void)
  */
 void init_cmd4_c(void)
 {
-	/* some useful standard command keys */
-	static const char cmd_keys[] = { ARROW_LEFT, ARROW_RIGHT, '\0' };
-
 	/* Initialize the menus */
 	menu_type *menu;
 
 	/* options screen selection menu */
 	menu = &option_menu;
-	WIPE(menu, menu_type);
+	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ACTIONS));
+	menu_setpriv(menu, N_ELEMENTS(option_actions), option_actions);
+
 	menu->title = "Options Menu";
-	menu->menu_data = option_actions;
 	menu->flags = MN_CASELESS_TAGS;
-	menu->cmd_keys = cmd_keys;
-	menu->count = N_ELEMENTS(option_actions);
-	menu_init(menu, MN_SKIN_SCROLL, &options_iter, &SCREEN_REGION);
+
 
 	/* Initialize the options toggle menu */
 	menu = &option_toggle_menu;
-	WIPE(menu, menu_type);
+	menu_init(menu, MN_SKIN_SCROLL, &options_toggle_iter);
+
 	menu->prompt = "Set option (y/n/t), '?' for information";
-	menu->cmd_keys = "?Yy\n\rNnTt\x8C"; /* \x8c = ARROW_RIGHT */
+	menu->cmd_keys = "?YyNnTt";
 	menu->selections = "abcdefghijklmopqrsuvwxz";
-	menu->count = OPT_PAGE_PER;
 	menu->flags = MN_DBL_TAP;
-	menu_init(menu, MN_SKIN_SCROLL, &options_toggle_iter, &SCREEN_REGION);
+
 
 	/* macro menu */
 	menu = &macro_menu;
-	WIPE(menu, menu_type);
+	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ACTIONS));
+	menu_setpriv(menu, N_ELEMENTS(macro_actions), macro_actions);
+
 	menu->title = "Interact with macros";
-	menu->cmd_keys = cmd_keys;
 	menu->selections = lower_case;
-	menu->menu_data = macro_actions;
-	menu->count = N_ELEMENTS(macro_actions);
-	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ACTIONS), &SCREEN_REGION);
+
 
 	/* visuals menu */
 	menu = &visual_menu;
-	WIPE(menu, menu_type);
+	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ACTIONS));
+	menu_setpriv(menu, N_ELEMENTS(visual_menu_items), visual_menu_items);
+
 	menu->title = "Interact with visuals";
-	menu->cmd_keys = cmd_keys;
 	menu->selections = lower_case;
-	menu->menu_data = visual_menu_items;
-	menu->count = N_ELEMENTS(visual_menu_items);
-	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ACTIONS), &SCREEN_REGION);
+
 
 	/* colors menu */
 	menu = &color_menu;
-	WIPE(menu, menu_type);
-	menu->title = "Interact with colors";
-	menu->cmd_keys = cmd_keys;
-	menu->selections = lower_case;
-	menu->menu_data = color_events;
-	menu->count = N_ELEMENTS(color_events);
-	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ACTIONS), &SCREEN_REGION);
+	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ACTIONS));
+	menu_setpriv(menu, N_ELEMENTS(color_events), color_events);
 
+	menu->title = "Interact with colors";
+	menu->selections = lower_case;
 }
 
 

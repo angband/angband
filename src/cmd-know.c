@@ -356,7 +356,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 	menu_type group_menu;
 	menu_type object_menu;
-	menu_iter object_iter;
+	menu_iter object_iter = { NULL, NULL, display_group_member, NULL };
 
 	/* Panel state */
 	/* These are swapped in parallel whenever the actively browsing " */
@@ -435,20 +435,15 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 
 	/* Set up the two menus */
-	WIPE(&group_menu, menu_type);
-	group_menu.count = grp_cnt;
-	group_menu.cmd_keys = "\n\r6\x8C";  /* Ignore these as menu commands */
-	group_menu.menu_data = g_names;
+	menu_init(&group_menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_STRINGS));
+	menu_setpriv(&group_menu, grp_cnt, g_names);
+	menu_layout(&group_menu, &group_region);
 
-	WIPE(&object_menu, menu_type);
-	object_menu.menu_data = &o_funcs;
-	WIPE(&object_iter, object_iter);
-	object_iter.display_row = display_group_member;
+	menu_init(&object_menu, MN_SKIN_SCROLL, &object_iter);
+	menu_setpriv(&object_menu, 0, &o_funcs);
+	menu_layout(&object_menu, &object_region);
 
 	o_funcs.is_visual = FALSE;
-
-	menu_init(&group_menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_STRINGS), &group_region);
-	menu_init(&object_menu, MN_SKIN_SCROLL, &object_iter, &object_region);
 
 
 	/* This is the event loop for a multi-region panel */
@@ -563,14 +558,21 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		}
 
 
-		ui_event_data ke;
-		ui_event_data ke0 = EVENT_EMPTY;
-
 		bool recall = FALSE;
 
-		ke = inkey_ex();
-		if (!visual_list && menu_handle_event(active_menu, &ke, &ke0))
-			ke = ke0;
+		ui_event_data ke = inkey_ex();
+		if (!visual_list)
+		{
+			ui_event_data ke0 = EVENT_EMPTY;
+
+			if (ke.type == EVT_MOUSE)
+				menu_handle_mouse(active_menu, &ke, &ke0);
+			else if (ke.type == EVT_KBRD)
+				menu_handle_keypress(active_menu, &ke, &ke0);
+
+			if (ke0.type != EVT_NONE)
+				ke = ke0;
+		}
 
 		/* XXX Do visual mode command if needed */
 		if (o_funcs.xattr && o_funcs.xchar)
@@ -609,7 +611,11 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 			case EVT_ESCAPE:
 			{
-				flag = TRUE;
+				if (panel == 1)
+					do_swap = TRUE;
+				else
+					flag = TRUE;
+
 				break;
 			}
 
@@ -625,13 +631,6 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			case EVT_MOVE:
 			{
 				*active_cursor = active_menu->cursor;
-				break;
-			}
-
-			case EVT_BACK:
-			{
-				if (panel == 1)
-					do_swap = TRUE;
 				break;
 			}
 
@@ -1995,11 +1994,10 @@ void init_cmd_know(void)
 {
 	/* Initialize the menus */
 	menu_type *menu = &knowledge_menu;
-	WIPE(menu, menu_type);
+	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ITEMS));
+	menu_setpriv(menu, N_ELEMENTS(knowledge_actions), knowledge_actions);
+
 	menu->title = "Display current knowledge";
-	menu->menu_data = knowledge_actions;
-	menu->count = N_ELEMENTS(knowledge_actions),
-	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ITEMS), &SCREEN_REGION);
 
 	/* initialize other static variables */
 	if (!obj_group_order)
@@ -2031,7 +2029,6 @@ void init_cmd_know(void)
 void do_cmd_knowledge(void)
 {
 	int i;
-	ui_event_data c = EVENT_EMPTY;
 	region knowledge_region = { 0, 0, -1, 18 };
 
 	/* Grey out menu items that won't display anything */
@@ -2058,18 +2055,8 @@ void do_cmd_knowledge(void)
 	screen_save();
 	menu_layout(&knowledge_menu, &knowledge_region);
 
-	while (c.type != EVT_ESCAPE)
-	{
-		clear_from(0);
-		c = menu_select(&knowledge_menu, 0);
-
-		if (c.type == EVT_SELECT && knowledge_actions[knowledge_menu.cursor].act.action)
-		{
-			knowledge_actions[knowledge_menu.cursor].act.action(
-					knowledge_actions[knowledge_menu.cursor].act.data,
-					knowledge_actions[knowledge_menu.cursor].act.name);
-		}
-	}
+	clear_from(0);
+	menu_select(&knowledge_menu, 0);
 
 	screen_load();
 }

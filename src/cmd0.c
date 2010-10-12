@@ -446,7 +446,7 @@ struct {
 static void cmd_sub_entry(menu_type *menu, int oid, bool cursor, int row, int col, int width)
 {
 	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
-	const command_type *commands = menu->menu_data;
+	const command_type *commands = menu_priv(menu);
 
 	(void)width;
 
@@ -471,38 +471,22 @@ static void cmd_sub_entry(menu_type *menu, int oid, bool cursor, int row, int co
 	Term_addch(attr, ')');
 }
 
-
-/* Handle user input from a command menu */
-static bool cmd_sub_action(char cmd, void *db, int oid)
-{
-	(void)db;
-	(void)oid;
-
-	/* Only handle enter */
-	if (cmd == '\n' || cmd == '\r')
-		return TRUE;
-	else
-		return FALSE;
-}
-
 /*
  * Display a list of commands.
  */
 static bool cmd_menu(command_list *list, void *selection_p)
 {
 	menu_type menu;
-	menu_iter commands_menu = { NULL, NULL, cmd_sub_entry, cmd_sub_action };
+	menu_iter commands_menu = { NULL, NULL, cmd_sub_entry, NULL };
 	region area = { 23, 4, 37, 13 };
 
 	ui_event_data evt;
 	command_type *selection = selection_p;
 
-	/* Set up the menu */
-	WIPE(&menu, menu);
-	menu.cmd_keys = "\x8B\x8C\n\r";
-	menu.count = list->len;
-	menu.menu_data = list->list;
-	menu_init(&menu, MN_SKIN_SCROLL, &commands_menu, &area);
+	/* Set up th emenu */
+	menu_init(&menu, MN_SKIN_SCROLL, &commands_menu);
+	menu_setpriv(&menu, list->len, list->list);
+	menu_layout(&menu, &area);
 
 	/* Set up the screen */
 	screen_save();
@@ -524,23 +508,17 @@ static bool cmd_menu(command_list *list, void *selection_p)
 
 
 
-static bool cmd_list_action(char cmd, void *db, int oid)
+static bool cmd_list_action(menu_type *m, const ui_event_data *event, int oid)
 {
-	if (cmd == '\n' || cmd == '\r' || cmd == '\xff')
-	{
-		return cmd_menu(&cmds_all[oid], db);
-	}
+	if (event->type == EVT_SELECT)
+		return cmd_menu(&cmds_all[oid], menu_priv(m));
 	else
-	{
 		return FALSE;
-	}
 }
 
 static void cmd_list_entry(menu_type *menu, int oid, bool cursor, int row, int col, int width)
 {
 	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
-	(void)menu;
-	(void)width;
 	Term_putstr(col, row, -1, attr, cmds_all[oid].name);
 }
 
@@ -553,22 +531,19 @@ static void do_cmd_menu(void)
 	menu_iter commands_menu = { NULL, NULL, cmd_list_entry, cmd_list_action };
 	region area = { 21, 5, 37, 6 };
 
-	ui_event_data evt;
-	command_type chosen_command = {NULL, '\0', CMD_NULL, NULL};
+	command_type chosen_command = { 0 };
 
 	/* Set up the menu */
-	WIPE(&menu, menu);
-	menu.cmd_keys = "\x8B\x8C\n\r";
-	menu.count = N_ELEMENTS(cmds_all) - 1;
-	menu.menu_data = &chosen_command;
-	menu_init(&menu, MN_SKIN_SCROLL, &commands_menu, &area);
+	menu_init(&menu, MN_SKIN_SCROLL, &commands_menu);
+	menu_setpriv(&menu, N_ELEMENTS(cmds_all) - 1, &chosen_command);
+	menu_layout(&menu, &area);
 
 	/* Set up the screen */
 	screen_save();
 	window_make(19, 4, 58, 11);
 
 	/* Select an entry */
-	evt = menu_select(&menu, 0);
+	menu_select(&menu, 0);
 
 	/* Load de screen */
 	screen_load();

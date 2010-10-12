@@ -402,33 +402,8 @@ static menu_action death_actions[] =
 	{ 'x', "Examine items", death_examine,  NULL },
 	{ 'h', "History",       death_history,  NULL },
 	{ 's', "Spoilers",	death_spoilers,	NULL },
-	{ 'q', "Quit",          death_examine,  NULL },
+	{ 'q', "Quit",          NULL,           NULL },
 };
-
-/* Return the tag for a menu entry */
-static char death_menu_tag(menu_type *menu, int oid)
-{
-	(void)menu;
-	return death_actions[oid].id;
-}
-
-/* Display a menu entry */
-static void death_menu_display(menu_type *menu, int oid, bool cursor, int row, int col, int width)
-{
-	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
-	(void)menu;
-	(void)width;
-	c_prt(attr, death_actions[oid].name, row, col);
-}
-
-static const menu_iter death_iter =
-{
-	death_menu_tag,
-	NULL,
-	death_menu_display,
-	NULL
-};
-
 
 
 
@@ -438,11 +413,7 @@ static const menu_iter death_iter =
 void death_screen(void)
 {
 	menu_type *menu;
-	const char cmd_keys[] = { ARROW_LEFT, ARROW_RIGHT, '\0' };
 	const region area = { 51, 2, 0, N_ELEMENTS(death_actions) };
-
-	ui_event_data c = EVENT_EMPTY;
-
 
 	/* Retire in the town in a good state */
 	if (p_ptr->total_winner)
@@ -476,26 +447,19 @@ void death_screen(void)
 
 	/* Initialize the menu */
 	menu = &death_menu;
-	WIPE(menu, menu_type);
-	menu->menu_data = death_actions;
+	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ACTIONS));
+	menu_setpriv(menu, N_ELEMENTS(death_actions), death_actions);
+	menu_layout(menu, &area);
 	menu->flags = MN_CASELESS_TAGS;
-	menu->cmd_keys = cmd_keys;
-	menu->count = N_ELEMENTS(death_actions);
-
-	menu_init(menu, MN_SKIN_SCROLL, &death_iter, &area);
 
 	while (TRUE)
 	{
-		c = menu_select(&death_menu, 0);
+		ui_event_data c = menu_select(&death_menu, 0);
 
 		if (c.type == EVT_ESCAPE || menu->cursor == (menu->count - 1))
 		{
 			if (get_check("Do you want to quit? "))
 				break;
-		}
-		else if (c.type == EVT_SELECT && death_actions[menu->cursor].action)
-		{
-			death_actions[menu->cursor].action(death_actions[menu->cursor].data, NULL);
 		}
 	}
 }
