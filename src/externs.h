@@ -343,9 +343,8 @@ void dump_features(ang_file *fff);
 void dump_flavors(ang_file *fff);
 void dump_colors(ang_file *fff);
 bool prefs_save(const char *path, void (*dump)(ang_file *), const char *title);
-s16b tokenize(char *buf, s16b num, char **tokens);
-errr process_pref_file_command(char *buf);
-errr process_pref_file(cptr name);
+errr process_pref_file_command(const char *buf);
+bool process_pref_file(const char *name, bool quiet);
 
 /* randart.c */
 extern errr do_randart(u32b randart_seed, bool full);

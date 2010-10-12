@@ -22,9 +22,11 @@ enum parser_error {
 	PARSE_ERROR_INVALID_VALUE,
 	PARSE_ERROR_INVALID_COLOR,
 	PARSE_ERROR_INVALID_EFFECT,
+	PARSE_ERROR_INVALID_OPTION,
 	PARSE_ERROR_MISSING_FIELD,
 	PARSE_ERROR_MISSING_COLON,
 	PARSE_ERROR_MISSING_RECORD_HEADER,
+	PARSE_ERROR_FIELD_TOO_LONG,
 	PARSE_ERROR_NON_SEQUENTIAL_RECORDS,
 	PARSE_ERROR_NOT_NUMBER,
 	PARSE_ERROR_NOT_RANDOM,
@@ -79,6 +81,11 @@ extern void parser_setpriv(struct parser *p, void *v);
  */
 extern errr parser_reg(struct parser *p, const char *fmt,
                        enum parser_error (*func)(struct parser *p));
+
+
+/** Returns the error string corresponding to 'e'. */
+extern const char *parser_error(enum parser_error e);
+
 
 /** Returns whether the parser has a value named `name`.
  *

@@ -1581,13 +1581,7 @@ static void do_cmd_pref_file_hack(long row)
 	if (!askfor_aux(ftmp, sizeof ftmp, NULL)) return;
 
 	/* Process the given filename */
-	if (process_pref_file(ftmp))
-	{
-		/* Mention failure */
-		prt("", 0, 0);
-		msg_format("Failed to load '%s'!", ftmp);
-	}
-	else
+	if (process_pref_file(ftmp, FALSE))
 	{
 		/* Mention success */
 		prt("", 0, 0);
@@ -2114,7 +2108,7 @@ static void do_cmd_save_screen_html(int mode)
 
 	/* Recover current graphics settings */
 	reset_visuals(TRUE);
-	process_pref_file(file_name);
+	process_pref_file(file_name, TRUE);
 	file_delete(file_name);
 	do_cmd_redraw();
 

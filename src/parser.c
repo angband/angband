@@ -11,6 +11,7 @@
 #include "z-util.h"
 #include "z-virt.h"
 
+
 const char *parser_error_str[PARSE_ERROR_MAX] = {
 	"(none)",
 	"generic error",
@@ -18,9 +19,13 @@ const char *parser_error_str[PARSE_ERROR_MAX] = {
 	"invalid item number",
 	"invalid spell frequency",
 	"invalid value",
+	"invalid colour",
+	"invalid effect",
+	"invalid option",
 	"missing field",
 	"missing colon",
 	"missing record header",
+	"field too long",
 	"non-sequential records",
 	"not a number",
 	"not random",
@@ -485,6 +490,12 @@ errr parser_reg(struct parser *p, const char *fmt,
 	p->hooks = h;
 	mem_free(cfmt);
 	return 0;
+}
+
+const char *parser_error(enum parser_error e) {
+	assert(e > 0);
+	assert(e < PARSE_ERROR_MAX);
+	return parser_error_str[e];
 }
 
 bool parser_hasval(struct parser *p, const char *name) {

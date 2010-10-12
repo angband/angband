@@ -3706,7 +3706,7 @@ bool init_angband(void)
 	event_signal_string(EVENT_INITSTATUS, "Loading basic user pref file...");
 
 	/* Process that file */
-	(void)process_pref_file("pref.prf");
+	(void)process_pref_file("pref.prf", FALSE);
 
 	/* Done */
 	event_signal_string(EVENT_INITSTATUS, "Initialization complete");
