@@ -164,15 +164,14 @@ byte message_color(u16b age)
 
 void message_color_define(u16b type, byte color)
 {
-	msgcolor_t *mc = messages->colors;
-
-	if (!mc)
+	if (!messages->colors)
 	{
 		messages->colors = ZNEW(msgcolor_t);
 		messages->colors->type = type;
 		messages->colors->color = color;
 	}
 
+	msgcolor_t *mc = messages->colors;
 	while (mc->next)
 	{
 		if (mc->type == type)
