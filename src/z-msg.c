@@ -162,7 +162,7 @@ byte message_color(u16b age)
 
 /* Message-color functions */
 
-errr message_color_define(u16b type, byte color)
+void message_color_define(u16b type, byte color)
 {
 	msgcolor_t *mc = messages->colors;
 
@@ -171,7 +171,6 @@ errr message_color_define(u16b type, byte color)
 		messages->colors = ZNEW(msgcolor_t);
 		messages->colors->type = type;
 		messages->colors->color = color;
-		return 0;
 	}
 
 	while (mc->next)
@@ -179,7 +178,6 @@ errr message_color_define(u16b type, byte color)
 		if (mc->type == type)
 		{
 			mc->color = color;
-			return 0;
 		}
 		mc = mc->next;
 	}
@@ -187,8 +185,6 @@ errr message_color_define(u16b type, byte color)
 	mc->next = ZNEW(msgcolor_t);
 	mc->next->type = type;
 	mc->next->color = color;
-
-	return 0;
 }
 
 byte message_type_color(u16b type)
