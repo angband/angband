@@ -409,7 +409,8 @@ const char *option_desc(int opt)
 /* Setup functions */
 bool option_set(const char *name, bool on)
 {
-	for (size_t opt = 0; opt < OPT_ADULT; opt++)
+	size_t opt;
+	for (opt = 0; opt < OPT_ADULT; opt++)
 	{
 		if (!options[opt].name || !streq(options[opt].name, name))
 			continue;
@@ -426,6 +427,7 @@ bool option_set(const char *name, bool on)
 
 void option_set_defaults(void)
 {
-	for (size_t opt = 0; opt < OPT_MAX; opt++)
+	size_t opt;
+	for (opt = 0; opt < OPT_MAX; opt++)
 		op_ptr->opt[opt] = options[opt].normal;
 }

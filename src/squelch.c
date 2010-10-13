@@ -811,6 +811,7 @@ static bool quality_action(menu_type *m, const ui_event_data *event, int oid)
 	region area = { 24, 5, 29, SQUELCH_MAX };
 	ui_event_data evt;
 	int cursor;
+	int count;
 
 	/* Display at the right point */
 	area.row += oid;
@@ -820,7 +821,7 @@ static bool quality_action(menu_type *m, const ui_event_data *event, int oid)
 	screen_save();
 
 	/* Work out how many options we have */
-	int count = SQUELCH_MAX;
+	count = SQUELCH_MAX;
 	if ((oid == TYPE_RING) || (oid == TYPE_AMULET))
 		count = area.page_rows = SQUELCH_BAD + 1;
 
