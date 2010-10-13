@@ -1779,7 +1779,7 @@ static void store_display_frame(void)
 		put_str("Home Inventory", scr_places_y[LOC_HEADER], 1);
 
 		/* Show weight header */
-		put_str("Weight", 5, scr_places_x[LOC_WEIGHT] + 2);
+		put_str("Weight", scr_places_y[LOC_HEADER], scr_places_x[LOC_WEIGHT] + 2);
 	}
 
 	/* Normal stores */
