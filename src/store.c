@@ -3052,11 +3052,11 @@ bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
 		else
 			return store_process_command_key(key);
 
-		if (storechange)
-			store_menu_recalc(m);
-
 		/* Let the game handle any core commands (equipping, etc) */
 		process_command(CMD_STORE, TRUE);
+
+		if (storechange)
+			store_menu_recalc(m);
 
 		/* Notice and handle stuff */
 		notice_stuff();
