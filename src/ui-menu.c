@@ -34,6 +34,7 @@ const char upper_case[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 /* forward declarations */
 static void display_menu_row(menu_type *menu, int pos, int top,
 			     bool cursor, int row, int col, int width);
+static bool menu_calc_size(menu_type *menu);
 
 /* Display an event, with possible preference overrides */
 static void display_action_aux(menu_action *act, byte color, int row, int col, int wid)
@@ -97,7 +98,8 @@ const menu_iter menu_iter_actions =
 	menu_action_tag,
 	menu_action_valid,
 	menu_action_display,
-	menu_action_handle
+	menu_action_handle,
+	NULL
 };
 
 
@@ -162,7 +164,8 @@ const menu_iter menu_iter_items =
 	item_menu_tag,       /* get_tag() */
 	item_menu_valid,     /* valid_row() */
 	item_menu_display,   /* display_row() */
-	item_menu_handle     /* row_handler() */
+	item_menu_handle,     /* row_handler() */
+	NULL
 };
 
 /* ------------------------------------------------------------------------
@@ -185,7 +188,8 @@ const menu_iter menu_iter_strings =
 	NULL,              /* get_tag() */
 	NULL,              /* valid_row() */
 	display_string,    /* display_row() */
-	NULL 	           /* row_handler() */
+	NULL, 	           /* row_handler() */
+	NULL
 };
 
 
@@ -430,16 +434,14 @@ static void display_menu_row(menu_type *menu, int pos, int top,
 
 void menu_refresh(menu_type *menu)
 {
-	region *loc = &menu->boundary;
 	int oid = menu->cursor;
+	region *loc = &menu->active;
 
 	if (!menu->filter_list)
 		menu->filter_count = menu->count;
 
 	if (menu->filter_list && menu->cursor >= 0)
 		oid = menu->filter_list[oid];
-
-	region_erase(&menu->boundary);
 
 	if (menu->title)
 		Term_putstr(loc->col, loc->row, loc->width, TERM_WHITE, menu->title);
@@ -449,9 +451,9 @@ void menu_refresh(menu_type *menu)
 					TERM_WHITE, menu->prompt);
 
 	if (menu->browse_hook && oid >= 0)
-		menu->browse_hook(oid, (void*) menu->menu_data, loc);
+		menu->browse_hook(oid, menu->menu_data, loc);
 
-	menu->skin->display_list(menu, menu->cursor, &menu->top, &menu->active);
+	menu->skin->display_list(menu, menu->cursor, &menu->top, loc);
 }
 
 
@@ -471,7 +473,7 @@ bool menu_handle_mouse(menu_type *menu, const ui_event_data *in,
 	if (!region_inside(&menu->active, in))
 	{
 		/* A click to the left of the active region is 'back' */
-		if (region_inside(&menu->boundary, in) &&
+		if (!region_inside(&menu->active, in) &&
 				in->mousex < menu->active.col)
 			out->type = EVT_ESCAPE;
 	}
@@ -631,7 +633,7 @@ ui_event_data menu_select(menu_type *menu, int notify)
 {
 	ui_event_data in = EVENT_EMPTY;
 
-	assert(menu->boundary.width != 0 && menu->boundary.page_rows != 0);
+	assert(menu->active.width != 0 && menu->active.page_rows != 0);
 
 	notify |= (EVT_SELECT | EVT_ESCAPE);
 
@@ -662,6 +664,12 @@ ui_event_data menu_select(menu_type *menu, int notify)
 				continue;
 
 			ignore = menu_handle_keypress(menu, &in, &out);
+		}
+		else if (in.type == EVT_RESIZE)
+		{
+			menu_calc_size(menu);
+			if (menu->row_funcs->resize)
+				menu->row_funcs->resize(menu);
 		}
 
 		/* If we've selected an item, then send that event out */
@@ -735,54 +743,59 @@ void menu_release_filter(menu_type *menu)
 
 /* ======================== MENU INITIALIZATION ==================== */
 
-/* This is extremely primitive, barely sufficient to the job done */
-bool menu_layout(menu_type *menu, const region *loc)
+static bool menu_calc_size(menu_type *menu)
 {
-	region active;
+	/* Start from initial settings */
+	menu->active = menu->boundary;
 
-	if (!loc) return TRUE;
-	active = *loc;
-
-	if (active.width <= 0 || active.page_rows <= 0)
+	/* Calculate term-relative width/height */
+	if (menu->active.width <= 0 || menu->active.page_rows <= 0)
 	{
 		int w, h;
 		Term_get_size(&w, &h);
-		if (active.width <= 0)
-			active.width = w + active.width - active.col;
-		if (active.page_rows <= 0)
-			active.page_rows = h + loc->page_rows - active.row;
-	}
 
-	menu->boundary = active;
+		if (menu->active.width <= 0)
+			menu->active.width = w + menu->active.width - menu->active.col;
+		if (menu->active.page_rows <= 0)
+			menu->active.page_rows = h + menu->active.page_rows - menu->active.row;
+	}
 
 	if (menu->title)
 	{
-		active.row += 2;
-		active.page_rows -= 2;
-		/* TODO: handle small screens */
-		active.col += 4;
+		menu->active.row += 2;
+		menu->active.page_rows -= 2;
+		menu->active.col += 4;
 	}
+
 	if (menu->prompt)
 	{
-		if (active.page_rows > 1)
-			active.page_rows--;
+		if (menu->active.page_rows > 1)
+			menu->active.page_rows--;
 		else
 		{
 			int offset = strlen(menu->prompt) + 2;
-			active.col += offset;
-			active.width -= offset;
+			menu->active.col += offset;
+			menu->active.width -= offset;
 		}
 	}
 
-	menu->active = active;
-	return (active.width > 0 && active.page_rows > 0);
+	return (menu->active.width > 0 && menu->active.page_rows > 0);
 }
 
+bool menu_layout(menu_type *m, const region *loc)
+{
+	m->boundary = *loc;
+	return menu_calc_size(m);
+}
 
 void menu_setpriv(menu_type *menu, int count, void *data)
 {
 	menu->count = count;
 	menu->menu_data = data;
+
+	/* XXX need to take account of filter_list */
+	if (menu->cursor >= menu->count)
+		menu->cursor = menu->count - 1;
 }
 
 void *menu_priv(menu_type *menu)

@@ -473,7 +473,7 @@ static void cmd_sub_entry(menu_type *menu, int oid, bool cursor, int row, int co
 static bool cmd_menu(command_list *list, void *selection_p)
 {
 	menu_type menu;
-	menu_iter commands_menu = { NULL, NULL, cmd_sub_entry, NULL };
+	menu_iter commands_menu = { NULL, NULL, cmd_sub_entry, NULL, NULL };
 	region area = { 23, 4, 37, 13 };
 
 	ui_event_data evt;
@@ -524,7 +524,7 @@ static void cmd_list_entry(menu_type *menu, int oid, bool cursor, int row, int c
 static void do_cmd_menu(void)
 {
 	menu_type menu;
-	menu_iter commands_menu = { NULL, NULL, cmd_list_entry, cmd_list_action };
+	menu_iter commands_menu = { NULL, NULL, cmd_list_entry, cmd_list_action, NULL };
 	region area = { 21, 5, 37, 6 };
 
 	command_type chosen_command = { 0 };

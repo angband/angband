@@ -179,6 +179,9 @@ struct menu_iter
 
 	/* Handler function called for 'positive' events (selections or cmd_keys) */
 	bool (*row_handler)(menu_type *menu, const ui_event_data *event, int oid);
+
+	/* Redraw hook */
+	void (*resize)(menu_type *m);
 };
 
 
