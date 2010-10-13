@@ -3006,6 +3006,8 @@ static bool store_process_command_key(char cmd)
  */
 bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
 {
+	bool processed = TRUE;
+
 	if (event->type == EVT_SELECT)
 	{
 		/* Nothing for now, except "handle" the event */
@@ -3050,7 +3052,7 @@ bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
 			store_menu_set_selections(m);
 		}
 		else
-			return store_process_command_key(key);
+			processed = store_process_command_key(key);
 
 		/* Let the game handle any core commands (equipping, etc) */
 		process_command(CMD_STORE, TRUE);
@@ -3066,7 +3068,7 @@ bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
 		store_display_recalc(m);
 		store_redraw();
 
-		return TRUE;
+		return processed;
 	}
 
 	return FALSE;
