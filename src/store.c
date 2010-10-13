@@ -52,7 +52,6 @@ static unsigned int scr_places_y[LOC_MAX];
 #define STORE_FRAME_CHANGE     0x02
 
 #define STORE_SHOW_HELP        0x04
-#define STORE_KEEP_PROMPT      0x08
 
 
 
@@ -2303,7 +2302,6 @@ static bool store_purchase(int item)
 		{
 			/* Tell the user */
 			msg_print("You do not have enough gold for this item.");
-			store_flags |= STORE_KEEP_PROMPT;
 
 			/* Abort now */
 			return FALSE;
@@ -2342,7 +2340,6 @@ static bool store_purchase(int item)
 	if (!inven_carry_okay(i_ptr))
 	{
 		msg_print("You cannot carry that many items.");
-		store_flags |= STORE_KEEP_PROMPT;
 		return FALSE;
 	}
 
@@ -2611,7 +2608,6 @@ static bool store_sell(void)
 	p_ptr->command_cmd = 'd';
 	if (!get_item(&item, prompt, reject, get_mode))
 	{
-		store_flags |= STORE_KEEP_PROMPT;
 		return FALSE;
 	}
 
@@ -2623,7 +2619,6 @@ static bool store_sell(void)
 	{
 		/* Oops */
 		msg_print("Hmmm, it seems to be cursed.");
-		store_flags |= STORE_KEEP_PROMPT;
 
 		/* Nope */
 		return FALSE;
@@ -2640,8 +2635,6 @@ static bool store_sell(void)
 
 	if (!store_check_num(this_store, i_ptr))
 	{
-		store_flags |= STORE_KEEP_PROMPT;
-
 		if (this_store == STORE_HOME)
 			msg_print("Your home is full.");
 
@@ -2767,7 +2760,6 @@ static bool store_overflow(void)
 
 		/* Give a message */
 		msg_print("Your pack overflows!");
-		store_flags |= STORE_KEEP_PROMPT;
 
 		/* Get local object */
 		i_ptr = &object_type_body;
@@ -3090,6 +3082,15 @@ static const menu_iter store_menu =
 	store_menu_redraw
 };
 
+static const menu_iter store_know_menu =
+{
+	NULL,
+	NULL,
+	store_display_entry,
+	NULL,
+	store_menu_redraw
+};
+
 
 /*
  * Display contents of a store from knowledge menu
@@ -3110,7 +3111,7 @@ void do_cmd_store_knowledge(void)
 	/* Calculate the positions of things and redraw */
 	store_flags = STORE_INIT_CHANGE;
 	store_display_recalc(&menu);
-	store_menu_set_selections(&menu);
+	menu.selections = lower_case;
 	store_menu_recalc(&menu);
 	store_redraw();
 
@@ -3190,7 +3191,7 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 
 	msg_flag = FALSE;
 	menu_select(&menu, 0);
-
+	msg_flag = TRUE;
 
 #if 0
 	/* XXX Pack Overflow */
