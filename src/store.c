@@ -3008,7 +3008,8 @@ bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
 {
 	if (event->type == EVT_SELECT)
 	{
-		/* Nothing for now. */
+		/* Nothing for now, except "handle" the event */
+		return TRUE;
 		/* In future, maybe we want a display a list of what you can do. */
 	}
 	else if (event->type == EVT_KBRD)
