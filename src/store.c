@@ -3014,7 +3014,7 @@ bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
 	}
 	else if (event->type == EVT_KBRD)
 	{
-		char key = tolower(event->key);
+		char key = event->key;
 		bool storechange = FALSE;
 
 		if (key == 's' || key == 'd')
