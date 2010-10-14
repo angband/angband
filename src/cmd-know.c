@@ -374,7 +374,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	int prev_g = -1;
 
 	int omode = OPT(rogue_like_commands);
-
+	ui_event_data ke;
 
 	/* Get size */
 	Term_get_size(&wid, &hgt);
@@ -452,6 +452,8 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	/* with "pop-up menu" for lore */
 	while ((!flag) && (grp_cnt))
 	{
+		bool recall = FALSE;
+
 		if (redraw)
 		{
 			/* Print the title bits */
@@ -558,10 +560,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			delay = 0;
 		}
 
-
-		bool recall = FALSE;
-
-		ui_event_data ke = inkey_ex();
+		ke = inkey_ex();
 		if (!visual_list)
 		{
 			ui_event_data ke0 = EVENT_EMPTY;

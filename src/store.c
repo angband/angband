@@ -1649,6 +1649,8 @@ void store_shuffle(int which)
 static void store_display_recalc(menu_type *m)
 {
 	int wid, hgt;
+	region loc;
+
 	Term_get_size(&wid, &hgt);
 
 	/* Clip the width at a maximum of 104 (enough room for an 80-char item name) */
@@ -1692,7 +1694,7 @@ static void store_display_recalc(menu_type *m)
 	scr_places_y[LOC_HELP_CLEAR] = hgt - 1;
 	scr_places_y[LOC_HELP_PROMPT] = hgt;
 
-	region loc = m->boundary;
+	loc = m->boundary;
 	loc.page_rows = (store_flags & STORE_SHOW_HELP) ? -5 : -1;
 	menu_layout(m, &loc);
 }
@@ -1779,7 +1781,7 @@ static void store_display_frame(void)
 		put_str("Home Inventory", scr_places_y[LOC_HEADER], 1);
 
 		/* Show weight header */
-		put_str("Weight", 5, scr_places_x[LOC_WEIGHT] + 2);
+		put_str("Weight", scr_places_y[LOC_HEADER], scr_places_x[LOC_WEIGHT] + 2);
 	}
 
 	/* Normal stores */
@@ -3006,6 +3008,8 @@ static bool store_process_command_key(char cmd)
  */
 bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
 {
+	bool processed = TRUE;
+
 	if (event->type == EVT_SELECT)
 	{
 		/* Nothing for now, except "handle" the event */
@@ -3014,7 +3018,7 @@ bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
 	}
 	else if (event->type == EVT_KBRD)
 	{
-		char key = tolower(event->key);
+		char key = event->key;
 		bool storechange = FALSE;
 
 		if (key == 's' || key == 'd')
@@ -3050,13 +3054,13 @@ bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
 			store_menu_set_selections(m);
 		}
 		else
-			return store_process_command_key(key);
-
-		if (storechange)
-			store_menu_recalc(m);
+			processed = store_process_command_key(key);
 
 		/* Let the game handle any core commands (equipping, etc) */
 		process_command(CMD_STORE, TRUE);
+
+		if (storechange)
+			store_menu_recalc(m);
 
 		/* Notice and handle stuff */
 		notice_stuff();
@@ -3066,7 +3070,7 @@ bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
 		store_display_recalc(m);
 		store_redraw();
 
-		return TRUE;
+		return processed;
 	}
 
 	return FALSE;
@@ -3136,6 +3140,7 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 {
 	/* Take note of the store number from the terrain feature */
 	int this_store = current_store();
+	menu_type menu;
 
 	/* Verify that there is a store */
 	if (this_store == STORE_NONE)
@@ -3172,8 +3177,6 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 
 
 	/*** Inventory display ***/
-
-	menu_type menu;
 
 	/* Say a friendly hello. */
 	if (this_store != STORE_HOME) 
