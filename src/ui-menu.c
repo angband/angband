@@ -230,12 +230,17 @@ static void display_scrolling(menu_type *menu, int cursor, int *top, region *loc
 	*top = MIN(*top, n - rows_per_page);
 	*top = MAX(*top, 0);
 
-
-	for (i = 0; i < rows_per_page && i < n; i++)
+	for (i = 0; i < rows_per_page; i++)
 	{
-		bool is_curs = (i == cursor - *top);
-		display_menu_row(menu, i + *top, *top, is_curs, row + i, col,
-						 loc->width);
+		/* Blank all lines */
+		Term_erase(col, row + i, loc->width - col);
+		if (i < n)
+		{
+			/* Redraw the line if it's within the number of menu items */
+			bool is_curs = (i == cursor - *top);
+			display_menu_row(menu, i + *top, *top, is_curs, row + i, col,
+							loc->width);
+		}
 	}
 
 	if (menu->cursor >= 0)
