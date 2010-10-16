@@ -523,6 +523,108 @@ void Term_queue_char(term *t, int x, int y, byte a, char c, byte ta, char tc)
 	if (x > t->x2[y]) t->x2[y] = x;
 }
 
+/* Queue a large-sized tile */
+
+void Term_big_queue_char(int x, int y, byte a, char c, byte a1, char c1)
+{
+        term *t = angband_term[0];
+
+	/* Avoid warning */
+	(void)c;
+	
+	/* Paranoia */
+	if (use_bigtile || use_dbltile || use_trptile)
+	{
+                /* Mega-Hack : Queue dummy char */
+	        if (a & 0x80)
+		        Term_queue_char(t, x + 1, y, 255, -1, 0, 0);
+		else
+		        Term_queue_char(t, x + 1, y, TERM_WHITE, ' ', a1, c1);
+      
+		/* Mega-Hack : Queue more dummy chars */
+		if (use_dbltile || use_trptile)
+		{
+		        if (a & 0x80)
+			{
+			        if (use_bigtile || use_trptile) 
+				        Term_queue_char(t, x + 2, y, 255, -1, 0, 0);
+				if (use_bigtile) 
+				        Term_queue_char(t, x + 3, y, 255, -1, 0, 0);
+				if (use_bigtile && use_trptile)
+				{
+				        Term_queue_char(t, x + 4, y, 255, -1, 0, 0);
+					Term_queue_char(t, x + 5, y, 255, -1, 0, 0);
+				}
+	      
+				Term_queue_char(t, x , y + 1, 255, -1, 0, 0);
+				Term_queue_char(t, x + 1, y + 1, 255, -1, 0, 0);
+	      
+				if (use_bigtile || use_trptile) 
+				        Term_queue_char(t, x + 2, y + 1, 255, -1, 0, 0);
+				if (use_bigtile) 
+				        Term_queue_char(t, x + 3, y + 1, 255, -1, 0, 0);
+				if (use_bigtile && use_trptile)
+				{
+				        Term_queue_char(t, x + 4, y + 1, 255, -1, 0, 0);
+					Term_queue_char(t, x + 5, y + 1, 255, -1, 0, 0);
+				}
+	      
+				if (use_trptile)
+				{
+				        Term_queue_char(t, x , y + 2, 255, -1, 0, 0);
+					Term_queue_char(t, x + 1, y + 2, 255, -1, 0, 0);
+					Term_queue_char(t, x + 2, y + 2, 255, -1, 0, 0);
+		  
+					if (use_bigtile)
+					{
+					        Term_queue_char(t, x + 3, y + 2, 255, -1, 0, 0);
+						Term_queue_char(t, x + 4, y + 2, 255, -1, 0, 0);
+						Term_queue_char(t, x + 5, y + 2, 255, -1, 0, 0);
+					}
+				}
+			}
+			else
+			{
+			        if (use_bigtile || use_trptile) 
+				        Term_queue_char(t, x + 2, y, TERM_WHITE, ' ', a1, c1);
+				if (use_bigtile) 
+				        Term_queue_char(t, x + 3, y, TERM_WHITE, ' ', a1, c1);
+				if (use_bigtile && use_trptile)
+				{
+				        Term_queue_char(t, x + 4, y, TERM_WHITE, ' ', a1, c1);
+					Term_queue_char(t, x + 5, y, TERM_WHITE, ' ', a1, c1);
+				}
+	      
+				Term_queue_char(t, x , y + 1, TERM_WHITE, ' ', a1, c1);
+				Term_queue_char(t, x + 1, y + 1, TERM_WHITE, ' ', a1, c1);
+	      
+				if (use_bigtile || use_trptile) 
+				        Term_queue_char(t, x + 2, y + 1, TERM_WHITE, ' ', a1, c1);
+				if (use_bigtile)  
+				        Term_queue_char(t, x + 3, y + 1, TERM_WHITE, ' ', a1, c1);
+				if (use_bigtile && use_trptile)
+				 {
+				         Term_queue_char(t, x + 4, y + 1, TERM_WHITE, ' ', a1, c1);
+					 Term_queue_char(t, x + 5, y + 1, TERM_WHITE, ' ', a1, c1);
+				 }
+	      
+				if (use_trptile)
+				{
+				        Term_queue_char(t, x , y + 2, TERM_WHITE, ' ', a1, c1);
+					Term_queue_char(t, x + 1, y + 2, TERM_WHITE, ' ', a1, c1);
+					Term_queue_char(t, x + 2, y + 2, TERM_WHITE, ' ', a1, c1);
+		  
+					if (use_bigtile)
+					{
+					        Term_queue_char(t, x + 3, y + 2, TERM_WHITE, ' ', a1, c1);
+						Term_queue_char(t, x + 4, y + 2, TERM_WHITE, ' ', a1, c1);
+						Term_queue_char(t, x + 5, y + 2, TERM_WHITE, ' ', a1, c1);
+					}
+				}
+			}
+		}
+	}
+}
 
 /*
  * Mentally draw some attr/chars at a given location
@@ -1553,6 +1655,109 @@ errr Term_putch(int x, int y, byte a, char c)
 
 	/* Success */
 	return (0);
+}
+
+
+/*
+ * Move to a location and, using an attr, add a big tile
+ */
+void Term_big_putch(int x, int y, byte a, char c)
+{
+        /* Avoid warning */
+        (void)c;
+  
+	/* Paranoia */
+	if (use_bigtile || use_dbltile || use_trptile)
+	{
+	        /* Mega-Hack : Queue dummy char */
+	        if (a & 0x80)
+		        Term_putch(x + 1, y, 255, -1);
+		else
+		        Term_putch(x + 1, y, TERM_WHITE, ' ');
+      
+		/* Mega-Hack : Queue more dummy chars */
+		if (use_dbltile || use_trptile)
+		{
+		        if (a & 0x80)
+			{
+			        if (use_bigtile || use_trptile) 
+				        Term_putch(x + 2, y, 255, -1);
+				if (use_bigtile) 
+				        Term_putch(x + 3, y, 255, -1);
+				if (use_bigtile && use_trptile)
+				{
+				        Term_putch(x + 4, y, 255, -1);
+					Term_putch(x + 5, y, 255, -1);
+				}
+
+				Term_putch(x , y + 1, 255, -1);
+				Term_putch(x + 1, y + 1, 255, -1);
+	      
+				if (use_bigtile || use_trptile) 
+				        Term_putch(x + 2, y + 1, 255, -1);
+				if (use_bigtile) 
+				        Term_putch(x + 3, y + 1, 255, -1);
+				if (use_bigtile && use_trptile)
+				{
+				        Term_putch(x + 4, y + 1, 255, -1);
+					Term_putch(x + 5, y + 1, 255, -1);
+				}
+				
+				if (use_trptile)
+				{
+				        Term_putch(x , y + 2, 255, -1);
+					Term_putch(x + 1, y + 2, 255, -1);
+					Term_putch(x + 2, y + 2, 255, -1);
+					
+					if (use_bigtile)
+					{
+					        Term_putch(x + 3, y + 2, 255, -1);
+						Term_putch(x + 4, y + 2, 255, -1);
+						Term_putch(x + 5, y + 2, 255, -1);
+					}
+				}
+			}
+			else
+			{
+			        if (use_bigtile || use_trptile) 
+				        Term_putch(x + 2, y, TERM_WHITE, ' ');
+				if (use_bigtile) 
+				        Term_putch(x + 3, y, TERM_WHITE, ' ');
+				if (use_bigtile && use_trptile)
+				{
+				        Term_putch(x + 4, y, TERM_WHITE, ' ');
+					Term_putch(x + 5, y, TERM_WHITE, ' ');
+				}
+	      
+				Term_putch(x , y + 1, TERM_WHITE, ' ');
+				Term_putch(x + 1, y + 1, TERM_WHITE, ' ');
+	      
+				if (use_bigtile || use_trptile) 
+				        Term_putch(x + 2, y + 1, TERM_WHITE, ' ');
+				if (use_bigtile) 
+				        Term_putch(x + 3, y + 1, TERM_WHITE, ' ');
+				if (use_bigtile && use_trptile)
+				{
+				        Term_putch(x + 4, y + 1, TERM_WHITE, ' ');
+					Term_putch(x + 5, y + 1, TERM_WHITE, ' ');
+				}
+				
+				if (use_trptile)
+				{
+				        Term_putch(x , y + 2, TERM_WHITE, ' ');
+					Term_putch(x + 1, y + 2, TERM_WHITE, ' ');
+					Term_putch(x + 2, y + 2, TERM_WHITE, ' ');
+		  
+					if (use_bigtile)
+					{
+					        Term_putch(x + 3, y + 2, TERM_WHITE, ' ');
+						Term_putch(x + 4, y + 2, TERM_WHITE, ' ');
+						Term_putch(x + 5, y + 2, TERM_WHITE, ' ');
+					}
+				}
+			}
+		}
+	}
 }
 
 
