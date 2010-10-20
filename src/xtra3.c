@@ -1046,7 +1046,17 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 			vy = ky + ROW_MAP;
 			vx = kx + COL_MAP;
 
-			if (use_bigtile) vx += kx;
+		      if (use_trptile)
+		      {
+			      vx += (use_bigtile ? 5 : 2) * kx;
+			      vy += 2 * ky;
+		      }
+		      else if (use_dbltile)
+		      {
+			      vx += (use_bigtile ? 3 : 1) * kx;
+			      vy += ky;
+		      }
+		      else if (use_bigtile) vx += kx;
 		}
 		else
 		{
@@ -1075,15 +1085,9 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 		Term_queue_char(t, vx, vy, TERM_L_GREEN, c, ta, tc);
 #endif
 		
-		if (use_bigtile)
+		if (use_bigtile || use_dbltile || use_trptile)
 		{
-			vx++;
-			
-			/* Mega-Hack : Queue dummy char */
-			if (a & 0x80)
-				Term_queue_char(t, vx, vy, 255, -1, 0, 0);
-			else
-				Term_queue_char(t, vx, vy, TERM_WHITE, ' ', TERM_WHITE, ' ');
+		        Term_big_queue_char(vx, vy, a, c, TERM_WHITE, ' ');
 		}
 	}
 }

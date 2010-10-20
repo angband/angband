@@ -1216,19 +1216,27 @@ void print_rel(char c, byte a, int y, int x)
 	/* Location in window */
 	vx = kx + COL_MAP;
 
-	if (use_bigtile) vx += kx;
+	if (use_trptile)
+	{
+	        vx += (use_bigtile ? 5 : 2) * kx;
+		vy += 2 * ky;
+	}
+	else if (use_dbltile)
+	{
+	        vx += (use_bigtile ? 3 : 1) * kx;
+		vy += ky;
+	}
+	else if (use_bigtile) vx += kx;
 
 	/* Hack -- Queue it */
 	Term_queue_char(Term, vx, vy, a, c, 0, 0);
 
-	if (use_bigtile)
+	if (use_bigtile || use_dbltile || use_trptile)
 	{
-		/* Mega-Hack : Queue dummy char */
-		if (a & 0x80)
-			Term_queue_char(Term, vx+1, vy, 255, -1, 0, 0);
-		else
-			Term_queue_char(Term, vx+1, vy, TERM_WHITE, ' ', 0, 0);
+	        /* Mega-Hack : Queue dummy char */
+	        Term_big_queue_char(vx, vy, a, c, 0, 0);
 	}
+  
 }
 
 
@@ -1425,17 +1433,25 @@ void prt_map(void)
 			/* Hack -- Queue it */
 			Term_queue_char(Term, vx, vy, a, c, ta, tc);
 
-			if (use_bigtile)
+			if (use_bigtile || use_dbltile || use_trptile)
 			{
-				vx++;
-
-				/* Mega-Hack : Queue dummy char */
-				if (a & 0x80)
-					Term_queue_char(Term, vx, vy, 255, -1, 0, 0);
+			        Term_big_queue_char(vx, vy, a, c, TERM_WHITE, ' ');
+	      
+				if (use_trptile)
+				{
+				        vx += (use_bigtile ? 5 : 2);
+				}
 				else
-					Term_queue_char(Term, vx, vy, TERM_WHITE, ' ', TERM_WHITE, ' ');
+				        vx+= ((use_dbltile && use_bigtile) ? 3 : 1);
 			}
 		}
+      
+		if (use_trptile)
+		        vy++;
+      
+		if (use_dbltile || use_trptile)
+		        vy++;
+
 	}
 }
 
@@ -1627,12 +1643,9 @@ void display_map(int *cy, int *cx)
 				/* Add the character */
 				Term_putch(col + 1, row + 1, ta, tc);
 
-				if (use_bigtile)
+				if (use_bigtile || use_dbltile || use_trptile)
 				{
-					if (ta & 0x80)
-						Term_putch(col + 2, row + 1, 255, -1);
-					else
-						Term_putch(col + 2, row + 1, TERM_WHITE, ' ');
+				        Term_big_putch(col + 1, row + 1, ta, tc);
 				}
 
 				/* Save priority */
@@ -1646,7 +1659,17 @@ void display_map(int *cy, int *cx)
 	row = (py * map_hgt / dungeon_hgt);
 	col = (px * map_wid / dungeon_wid);
 
-	if (use_bigtile)
+	if (use_trptile)
+	{
+	        col = col - (col % (use_bigtile ? 6 : 3));
+		row = row - (row % 3);
+	}
+	else if (use_dbltile)
+	{
+	        col = col & ~(use_bigtile ? 3 : 1);
+		row = row & ~1;
+	}
+	else if (use_bigtile)
 		col = col & ~1;
 
 	/*** Make sure the player is visible ***/
@@ -1660,6 +1683,11 @@ void display_map(int *cy, int *cx)
 	/* Draw the player */
 	Term_putch(col + 1, row + 1, ta, tc);
 
+	if (use_bigtile || use_dbltile || use_trptile)
+	{
+	        Term_big_putch(col + 1, row + 1, ta, tc);
+	}
+  
 	/* Return player location */
 	if (cy != NULL) (*cy) = row + 1;
 	if (cx != NULL) (*cx) = col + 1;
