@@ -525,10 +525,8 @@ void Term_queue_char(term *t, int x, int y, byte a, char c, byte ta, char tc)
 
 /* Queue a large-sized tile */
 
-void Term_big_queue_char(int x, int y, byte a, char c, byte a1, char c1)
+void Term_big_queue_char(term *t, int x, int y, byte a, char c, byte a1, char c1)
 {
-        term *t = angband_term[0];
-
 	/* Avoid warning */
 	(void)c;
 	

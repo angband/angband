@@ -124,6 +124,7 @@ void do_cmd_study_spell(cmd_code code, cmd_arg args[]);
 void do_cmd_study_book(cmd_code code, cmd_arg args[]);
 
 /* cmd-know.c */
+extern void big_pad(int col, int row, byte a, byte c);
 extern void do_cmd_knowledge_objects(void *obj, const char *name);
 extern void init_cmd_know(void);
 

@@ -1244,7 +1244,7 @@ void print_rel(char c, byte a, int y, int x)
 	if (use_bigtile || use_dbltile || use_trptile)
 	{
 	        /* Mega-Hack : Queue dummy char */
-	        Term_big_queue_char(vx, vy, a, c, 0, 0);
+	        Term_big_queue_char(Term, vx, vy, a, c, 0, 0);
 	}
   
 }
@@ -1445,7 +1445,7 @@ void prt_map(void)
 
 			if (use_bigtile || use_dbltile || use_trptile)
 			{
-			        Term_big_queue_char(vx, vy, a, c, TERM_WHITE, ' ');
+			        Term_big_queue_char(Term, vx, vy, a, c, TERM_WHITE, ' ');
 	      
 				if (use_trptile)
 				{

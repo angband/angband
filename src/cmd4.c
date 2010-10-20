@@ -79,6 +79,10 @@ static void do_cmd_pref_file_hack(long row);
 #define DUMP_OBJ	113
 #define DUMP_FEAT	114
 #define DUMP_FLAV	115
+#define MOD_MON		116
+#define	MOD_OBJ		117
+#define MOD_FEAT	118
+#define MOD_FLAV	119
 #define DUMP_COL	120
 #define MOD_COL		121
 #define RESET_VIS	122

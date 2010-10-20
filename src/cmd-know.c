@@ -209,7 +209,7 @@ static int feat_order(int feat)
 
 
 /* Emit a 'graphical' symbol and a padding character if appropriate */
-static void big_pad(int col, int row, byte a, byte c)
+extern void big_pad(int col, int row, byte a, byte c)
 {
 	Term_putch(col, row, a, c);
 	if (!use_bigtile) return;

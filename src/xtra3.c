@@ -1087,7 +1087,7 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 		
 		if (use_bigtile || use_dbltile || use_trptile)
 		{
-		        Term_big_queue_char(vx, vy, a, c, TERM_WHITE, ' ');
+		        Term_big_queue_char(t, vx, vy, a, c, TERM_WHITE, ' ');
 		}
 	}
 }
