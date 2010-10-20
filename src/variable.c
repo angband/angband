@@ -85,7 +85,9 @@ s32b old_turn;			/* Hack -- Level feeling counter */
 
 
 int use_graphics;		/* The "graphics" mode is enabled */
-bool use_bigtile = FALSE;
+bool use_bigtile = FALSE;       /* The bigtile mode is enabled */
+bool use_trptile = FALSE;       /* The triple tile mode is enabled */
+bool use_dbltile = FALSE;       /* The double tile mode is enabled */
 
 s16b signal_count;		/* Hack -- Count interrupts */
 

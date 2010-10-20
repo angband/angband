@@ -1179,11 +1179,96 @@ menu_action visual_menu_items [] =
 	{ DUMP_OBJ,  "Dump object attr/chars", 0, 0 },
 	{ DUMP_FEAT, "Dump feature attr/chars", 0, 0 },
 	{ DUMP_FLAV, "Dump flavor attr/chars", 0, 0 },
+	{ MOD_MON,   "Change monster attr/chars", 0, 0 },
+	{ MOD_OBJ,   "Change object attr/chars", 0, 0 },
+	{ MOD_FEAT,  "Change feature attr/chars", 0, 0 },
+	{ MOD_FLAV,  "Change flavor attr/chars", 0, 0 },
 	{ RESET_VIS, "Reset visuals", 0, 0 },
 };
 
 static menu_type visual_menu;
 
+
+int modify_attribute(const char *clazz, int oid, const char *name,
+		     byte da, char dc, byte *pca, char *pcc)
+{
+        ui_event_data ke = EVENT_EMPTY;
+	const char *empty_symbol = "<< ? >>";
+	const char *empty_symbol2 = "\0";
+	const char *empty_symbol3 = "\0";
+	
+	byte ca = (byte)*pca;
+	byte cc = (byte)*pcc;
+	
+	int linec = (use_trptile ? 22 : (use_dbltile ? 21 : 20));
+  
+	if (use_trptile && use_bigtile)
+	{
+	        empty_symbol = "// ?????? \\\\";
+		empty_symbol2 = "   ??????   ";
+		empty_symbol3 = "\\\\ ?????? //";
+	}
+	else if (use_dbltile && use_bigtile)
+	{
+	        empty_symbol = "// ???? \\\\";
+		empty_symbol2 = "\\\\ ???? //";
+	}
+	else if (use_trptile)
+	{
+	        empty_symbol = "// ??? \\\\";
+		empty_symbol2 = "   ???   ";
+		empty_symbol3 = "\\\\ ??? //";
+	}
+	else if (use_dbltile)
+	{
+	        empty_symbol = "// ?? \\\\";
+                empty_symbol2 = "\\\\ ?? //";
+	}
+	else if (use_bigtile) empty_symbol = "<< ?? >>";
+  
+	/* Prompt */
+	prt(format("Command: Change %s attr/chars", clazz), 15, 0);
+  
+	/* Label the object */
+	Term_putstr(5, 17, -1, TERM_WHITE, format("%s = %d, Name = %-40.40s", clazz, oid, name));
+  
+	/* Label the Default values */
+	Term_putstr(10, 19, -1, TERM_WHITE, format("Default attr/char = %3u / %3u", da, dc));
+	Term_putstr(40, 19, -1, TERM_WHITE, empty_symbol);
+  
+	if (use_dbltile || use_trptile) 
+	        Term_putstr (40, 20, -1, TERM_WHITE, empty_symbol2);
+	if (use_trptile) Term_putstr (40, 20, -1, TERM_WHITE, empty_symbol3);
+  
+  
+	big_pad(43, 19, da, dc);
+  
+	/* Label the Current values */
+	Term_putstr(10, linec, -1, TERM_WHITE, format("Current attr/char = %3u / %3u", ca, cc));
+	Term_putstr(40, linec, -1, TERM_WHITE, empty_symbol);
+	if (use_dbltile || use_trptile) 
+	        Term_putstr (40, linec+1, -1, TERM_WHITE, empty_symbol2); 
+	if (use_trptile) 
+	        Term_putstr (40, linec+2, -1, TERM_WHITE, empty_symbol3); 
+  
+	big_pad(43, linec, ca, cc);
+	
+	if (use_trptile) linec++;
+	
+	/* Prompt */
+	Term_putstr(0, linec + 2, -1, TERM_WHITE, "Command (n/N/a/A/c/C): ");
+
+	/* Get a command */
+	ke = inkey_ex();
+  
+	/* Analyze */
+	if (ke.key == 'a') *pca = (byte)(ca + 1);
+	if (ke.key == 'A') *pca = (byte)(ca - 1);
+	if (ke.key == 'c') *pcc = (byte)(cc + 1);
+	if (ke.key == 'C') *pcc = (byte)(cc - 1);
+      
+	return ke.key;
+}
 
 /*
  * Interact with "visuals"
@@ -1242,6 +1327,80 @@ void do_cmd_visuals(void)
 			dump_pref_file(dump_flavors, "Dump Flavor attr/chars", 15);
 		}
 
+		/* Modify monster attr/chars */
+		else if (evt == MOD_MON)
+		{
+		        static int r = 0;
+		    
+			/* Prompt */
+			prt("Command: Change monster attr/chars", 15, 0);
+			
+			/* Hack -- query until done */
+			while (1)
+			{
+			        int cx;
+				monster_race *r_ptr = &r_info[r];
+	      
+				cx = modify_attribute("Monster", r, r_name + r_ptr->name, r_ptr->d_attr, r_ptr->d_char, &r_ptr->x_attr, &r_ptr->x_char);
+	      
+				if (cx == ESCAPE) break;
+				/* Analyze */
+				if (cx == 'n') r = (r + z_info->r_max + 1) % z_info->r_max;
+				if (cx == 'N') r = (r + z_info->r_max - 1) % z_info->r_max;
+			}
+		}
+      
+		/* Modify object attr/chars */
+		else if (evt == MOD_OBJ)
+		{
+		        static int k = 0;
+			
+			/* Hack -- query until done */
+			while (1)
+			{
+			        int cx;
+				object_kind *k_ptr = &k_info[k];
+				cx = modify_attribute("Object", k, k_name + k_ptr->name, k_ptr->d_attr, k_ptr->d_char, &k_ptr->x_attr, &k_ptr->x_char);
+	      
+				if (cx == ESCAPE) break;
+				if (cx == 'n') k = (k + z_info->k_max + 1) % z_info->k_max;
+				if (cx == 'N') k = (k + z_info->k_max - 1) % z_info->k_max;
+			}
+		}
+      
+		/* Modify feature attr/chars */
+		else if (evt == MOD_FEAT)
+		{
+		        static int f = 0;
+	  
+			/* Hack -- query until done */
+			while (1)
+			{
+			        feature_type *f_ptr = &f_info[f];
+				int cx = modify_attribute("Feature", f, f_name + f_ptr->name, f_ptr->d_attr, f_ptr->d_char, &f_ptr->x_attr, &f_ptr->x_char);
+	      
+				if (cx == ESCAPE) break;
+				if (cx == 'n') f = (f + z_info->f_max + 1) % z_info->f_max;
+				if (cx == 'N') f = (f + z_info->f_max - 1) % z_info->f_max;
+			}
+		}
+		/* Modify flavor attr/chars */
+		else if (evt == MOD_FLAV)
+		{
+		        static int f = 0;
+	  
+			/* Hack -- query until done */
+			while (1)
+			{
+			        flavor_type *x_ptr = &flavor_info[f];
+				int cx = modify_attribute("Flavor", f, flavor_text + x_ptr->text, x_ptr->d_attr, x_ptr->d_char, &x_ptr->x_attr, &x_ptr->x_char);
+              
+				if (cx == ESCAPE) break;
+				if (cx == 'n') f = (f + z_info->flavor_max + 1) % z_info->flavor_max;
+				if (cx == 'N') f = (f + z_info->flavor_max - 1) % z_info->flavor_max;
+			}
+		}
+      
 #endif /* ALLOW_VISUALS */
 
 		/* Reset visuals */

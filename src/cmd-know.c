@@ -223,10 +223,8 @@ static void big_pad(int col, int row, byte a, byte c)
 /* Return the actual width of a symbol */
 static int actual_width(int width)
 {
-#ifdef UNANGBAND
 	if (use_trptile) width *= 3;
 	else if (use_dbltile) width *= 2;
-#endif
 
 	if (use_bigtile) width *= 2;
 
@@ -236,10 +234,8 @@ static int actual_width(int width)
 /* Return the actual height of a symbol */
 static int actual_height(int height)
 {
-#ifdef UNANGBAND
 	if (use_trptile) height = height * 3 / 2;
 	else if (use_dbltile) height *= 2;
-#endif
 
 	if (use_bigtile) height *= 2;
 
@@ -252,10 +248,8 @@ static int logical_width(int width)
 {
 	int divider = 1;
 
-#ifdef UNANGBAND
 	if (use_trptile) divider = 3;
 	else if (use_dbltile) divider = 2;
-#endif
 
 	if (use_bigtile) divider *= 2;
 
@@ -267,14 +261,12 @@ static int logical_height(int height)
 {
 	int divider = 1;
 
-#ifdef UNANGBAND
 	if (use_trptile)
 	{
 		height *= 2;
 		divider = 3;
 	}
 	else if (use_dbltile) divider = 2;
-#endif
 
 	if (use_bigtile) divider *= 2;
 
@@ -943,10 +935,8 @@ static void display_monster(int col, int row, bool cursor, int oid)
 	/* Display the name */
 	c_prt(attr, r_name + r_ptr->name, row, col);
 
-#ifdef UNANGBAND
 	if (use_dbltile || use_trptile)
 		return;
-#endif
 
 	/* Display symbol */
 	big_pad(66, row, a, c);
@@ -1582,11 +1572,9 @@ static void display_object(int col, int row, bool cursor, int oid)
 	if (aware && inscrip)
 		c_put_str(TERM_YELLOW, inscrip, row, 55);
 
-#ifdef UNANGBAND
 	/* Hack - don't use if double tile */
 	if (use_dbltile || use_trptile)
 		return;
-#endif
 
 	/* Display symbol */
 	big_pad(76, row, a, c);
@@ -1855,9 +1843,7 @@ static void display_feature(int col, int row, bool cursor, int oid )
 	/* Display the name */
 	c_prt(attr, f_name + f_ptr->name, row, col);
 
-#ifdef UNANGBAND
 	if (use_dbltile || use_trptile) return;
-#endif
 
 	/* Display symbol */
 	big_pad(68, row, f_ptr->x_attr, f_ptr->x_char);

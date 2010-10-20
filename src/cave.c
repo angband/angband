@@ -1115,7 +1115,17 @@ void move_cursor_relative(int y, int x)
 	/* Location in window */
 	vx = kx + COL_MAP;
 
-	if (use_bigtile) vx += kx;
+	if (use_trptile)
+	{
+	        vx += (use_bigtile ? 5 : 2) * kx;
+		vy += 2 * ky;
+	}
+	else if (use_dbltile)
+	{
+	        vx += (use_bigtile ? 3 : 1) * kx;
+		vy += ky;
+	}
+	else if (use_bigtile) vx += kx;
 
 	/* Go there */
 	(void)Term_gotoxy(vx, vy);

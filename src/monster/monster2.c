@@ -729,9 +729,12 @@ void display_monlist(void)
 			list[order[i]].los, list[order[i]].los_asleep);
 
 		/* Display the pict */
-		Term_putch(cur_x++, line, list[order[i]].attr, r_ptr->x_char);
-		if (use_bigtile) Term_putch(cur_x++, line, 255, -1);
-		Term_putch(cur_x++, line, TERM_WHITE, ' ');
+		if (!(use_dbltile) && !(use_trptile))
+		{
+		        Term_putch(cur_x++, line, list[order[i]].attr, r_ptr->x_char);
+			if (use_bigtile) Term_putch(cur_x++, line, 255, -1);
+			Term_putch(cur_x++, line, TERM_WHITE, ' ');
+		}
 
 		/* Print and bump line counter */
 		c_prt(attr, buf, line, cur_x);
