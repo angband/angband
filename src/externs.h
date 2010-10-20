@@ -85,6 +85,8 @@ extern s32b turn;
 extern s32b old_turn;
 extern int use_graphics;
 extern bool use_bigtile;
+extern bool use_dbltile;
+extern bool use_trptile;
 extern s16b signal_count;
 extern bool msg_flag;
 extern bool inkey_base;
