@@ -54,9 +54,7 @@ GTKMAINFILES = \
 ANGFILES = \
 	attack.o \
 	birth.o \
-	button.o \
 	cave.o \
-	cmd0.o \
 	cmd1.o \
 	cmd2.o \
 	cmd3.o \
@@ -109,6 +107,8 @@ ANGFILES = \
 	trap.o \
 	ui.o \
         ui-birth.o \
+	ui-button.o \
+	ui-cmd.o \
 	ui-menu.o \
 	util.o  \
 	variable.o \
