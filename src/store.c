@@ -2841,7 +2841,6 @@ static bool store_process_command_key(char cmd)
 {
 	bool equip_toggle = FALSE;
 	bool redraw = FALSE;
-	bool command_processed = FALSE;
 
 	/* Parse the command */
 	switch (cmd)
@@ -2991,15 +2990,7 @@ static bool store_process_command_key(char cmd)
 		}
 	}
 
-	if (redraw)
-	{
-		command_processed = TRUE;
-
-		event_signal(EVENT_INVENTORY);
-		event_signal(EVENT_EQUIPMENT);
-	}
-	
-	return command_processed;
+	return redraw;
 }
 
 
@@ -3060,7 +3051,15 @@ bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
 		process_command(CMD_STORE, TRUE);
 
 		if (storechange)
+		{
 			store_menu_recalc(m);
+		}
+
+		if (processed)
+		{
+			event_signal(EVENT_INVENTORY);
+			event_signal(EVENT_EQUIPMENT);
+		}
 
 		/* Notice and handle stuff */
 		notice_stuff();
