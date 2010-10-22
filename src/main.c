@@ -55,6 +55,10 @@ static const struct module modules[] =
 #ifdef USE_TEST
 	{ "test", help_test, init_test },
 #endif /* !USE_TEST */
+
+#ifdef USE_STATS
+	{ "stats", help_stats, init_stats },
+#endif /* USE_STATS */
 };
 
 
