@@ -356,7 +356,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 	menu_type group_menu;
 	menu_type object_menu;
-	menu_iter object_iter = { NULL, NULL, display_group_member, NULL };
+	menu_iter object_iter = { NULL, NULL, display_group_member, NULL, NULL };
 
 	/* Panel state */
 	/* These are swapped in parallel whenever the actively browsing " */
@@ -377,7 +377,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	int prev_g = -1;
 
 	int omode = OPT(rogue_like_commands);
-
+	ui_event_data ke;
 
 	/* Get size */
 	Term_get_size(&wid, &hgt);
@@ -435,7 +435,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 
 	/* Set up the two menus */
-	menu_init(&group_menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_STRINGS));
+	menu_init(&group_menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_STRINGS));
 	menu_setpriv(&group_menu, grp_cnt, g_names);
 	menu_layout(&group_menu, &group_region);
 
@@ -445,12 +445,18 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 	o_funcs.is_visual = FALSE;
 
+	/* Save screen */
+	screen_save();
+	clear_from(0);
+
 
 	/* This is the event loop for a multi-region panel */
 	/* Panels are -- text panels, two menus, and visual browser */
 	/* with "pop-up menu" for lore */
 	while ((!flag) && (grp_cnt))
 	{
+		bool recall = FALSE;
+
 		if (redraw)
 		{
 			/* Print the title bits */
@@ -557,10 +563,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			delay = 0;
 		}
 
-
-		bool recall = FALSE;
-
-		ui_event_data ke = inkey_ex();
+		ke = inkey_ex();
 		if (!visual_list)
 		{
 			ui_event_data ke0 = EVENT_EMPTY;
@@ -660,6 +663,8 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	FREE(g_names);
 	FREE(g_offset);
 	FREE(g_list);
+
+	screen_load();
 }
 
 /*
@@ -831,7 +836,7 @@ static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
 				byte c = *cur_char_ptr;
 
 				/* Get mouse movement */
-				if (ke.key == '\xff')
+				if (ke.type == EVT_MOUSE)
 				{
 					int my = ke.mousey - row;
 					int mx = ke.mousex - col;
@@ -1994,7 +1999,7 @@ void init_cmd_know(void)
 {
 	/* Initialize the menus */
 	menu_type *menu = &knowledge_menu;
-	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ITEMS));
+	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ITEMS));
 	menu_setpriv(menu, N_ELEMENTS(knowledge_actions), knowledge_actions);
 
 	menu->title = "Display current knowledge";

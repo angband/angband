@@ -807,10 +807,11 @@ static void quality_subdisplay(menu_type *menu, int oid, bool cursor, int row, i
 static bool quality_action(menu_type *m, const ui_event_data *event, int oid)
 {
 	menu_type menu;
-	menu_iter menu_f = { NULL, NULL, quality_subdisplay, NULL };
+	menu_iter menu_f = { NULL, NULL, quality_subdisplay, NULL, NULL };
 	region area = { 24, 5, 29, SQUELCH_MAX };
 	ui_event_data evt;
 	int cursor;
+	int count;
 
 	/* Display at the right point */
 	area.row += oid;
@@ -820,7 +821,7 @@ static bool quality_action(menu_type *m, const ui_event_data *event, int oid)
 	screen_save();
 
 	/* Work out how many options we have */
-	int count = SQUELCH_MAX;
+	count = SQUELCH_MAX;
 	if ((oid == TYPE_RING) || (oid == TYPE_AMULET))
 		count = area.page_rows = SQUELCH_BAD + 1;
 
@@ -853,7 +854,7 @@ static bool quality_action(menu_type *m, const ui_event_data *event, int oid)
 static void quality_menu(void *unused, const char *also_unused)
 {
 	menu_type menu;
-	menu_iter menu_f = { NULL, NULL, quality_display, quality_action };
+	menu_iter menu_f = { NULL, NULL, quality_display, quality_action, NULL };
 	region area = { 1, 5, -1, -1 };
 
 	/* Save screen */
@@ -936,7 +937,7 @@ static bool sval_action(menu_type *m, const ui_event_data *event, int oid)
 static bool sval_menu(int tval, const char *desc)
 {
 	menu_type menu;
-	menu_iter menu_f = { NULL, NULL, sval_display, sval_action };
+	menu_iter menu_f = { NULL, NULL, sval_display, sval_action, NULL };
 	region area = { 1, 5, -1, -1 };
 
 	int num = 0;
@@ -1167,7 +1168,8 @@ static const menu_iter options_item_iter =
 	tag_options_item,
 	valid_options_item,
 	display_options_item,
-	handle_options_item
+	handle_options_item,
+	NULL
 };
 
 

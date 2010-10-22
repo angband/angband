@@ -1002,7 +1002,7 @@ static ui_event_data inkey_aux(int scan_cutoff)
 
 	
 	/* End "macro action" */
-	if ((ch == 30) || (ch == '\xff'))
+	if (ke.key == 30 || ke.type == EVT_MOUSE)
 	{
 		parse_macro = FALSE;
 		return (ke);
@@ -1016,7 +1016,7 @@ static ui_event_data inkey_aux(int scan_cutoff)
 	
 
 	/* Save the first key, advance */
-	buf[p++] = ch;
+	buf[p++] = ke.key;
 	buf[p] = '\0';
 	
 	
@@ -3169,6 +3169,12 @@ void request_command(void)
 		{
 			act = tmp;
 			tmp[0] = ke.key;
+		}
+		else if (ke.type == EVT_MOUSE)
+		{
+			p_ptr->command_cmd = 0;
+			p_ptr->command_cmd_ex = ke;
+			break;
 		}
 
 		/* Look up applicable keymap */

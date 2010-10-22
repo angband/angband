@@ -158,7 +158,6 @@ static command_type cmd_hidden[] =
 	{ "Take notes",               ':', CMD_NULL, do_cmd_note },
 	{ "Version info",             'V', CMD_NULL, do_cmd_version },
 	{ "Load a single pref line",  '"', CMD_NULL, do_cmd_pref },
-	{ "Mouse click",           '\xff', CMD_NULL, do_cmd_mouseclick },
 	{ "Enter a store",            '_', CMD_ENTER_STORE, NULL },
 	{ "Toggle windows",     KTRL('E'), CMD_NULL, toggle_inven_equip }, /* XXX */
 	{ "Alter a grid",             '+', CMD_NULL, textui_cmd_alter },
@@ -327,7 +326,7 @@ void do_cmd_quit(cmd_code code, cmd_arg args[])
 
 
 /*
- * Handle a mouseclick, using the horrible hack that is '\xff'.
+ * Handle a mouseclick.
  */
 static void do_cmd_mouseclick(void)
 {
@@ -477,7 +476,7 @@ static void cmd_sub_entry(menu_type *menu, int oid, bool cursor, int row, int co
 static bool cmd_menu(command_list *list, void *selection_p)
 {
 	menu_type menu;
-	menu_iter commands_menu = { NULL, NULL, cmd_sub_entry, NULL };
+	menu_iter commands_menu = { NULL, NULL, cmd_sub_entry, NULL, NULL };
 	region area = { 23, 4, 37, 13 };
 
 	ui_event_data evt;
@@ -528,7 +527,7 @@ static void cmd_list_entry(menu_type *menu, int oid, bool cursor, int row, int c
 static void do_cmd_menu(void)
 {
 	menu_type menu;
-	menu_iter commands_menu = { NULL, NULL, cmd_list_entry, cmd_list_action };
+	menu_iter commands_menu = { NULL, NULL, cmd_list_entry, cmd_list_action, NULL };
 	region area = { 21, 5, 37, 6 };
 
 	command_type chosen_command = { 0 };
@@ -624,6 +623,10 @@ void textui_process_command(bool no_request)
 	if (p_ptr->command_cmd_ex.type == EVT_RESIZE)
 	{
 		do_cmd_redraw();
+	}
+	else if (p_ptr->command_cmd_ex.type == EVT_MOUSE)
+	{
+		do_cmd_mouseclick();
 	}
 	else
 	{

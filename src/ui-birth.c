@@ -194,7 +194,7 @@ static void birthmenu_display(menu_type *menu, int oid, bool cursor,
 /* Our custom menu iterator, only really needed to allow us to override
    the default handling of "commands" in the standard iterators (hence
    only defining the display and handler parts). */
-static const menu_iter birth_iter = { NULL, NULL, birthmenu_display, NULL };
+static const menu_iter birth_iter = { NULL, NULL, birthmenu_display, NULL, NULL };
 
 static void race_help(int i, void *db, const region *l)
 {

@@ -55,7 +55,6 @@ static unsigned int scr_places_y[LOC_MAX];
 #define STORE_FRAME_CHANGE     0x02
 
 #define STORE_SHOW_HELP        0x04
-#define STORE_KEEP_PROMPT      0x08
 
 
 
@@ -1650,9 +1649,11 @@ void store_shuffle(int which)
  *  line (height - 4): gold remaining
  *  line (height - 3): command help 
  */
-static void store_display_recalc(void)
+static void store_display_recalc(menu_type *m)
 {
 	int wid, hgt;
+	region loc;
+
 	Term_get_size(&wid, &hgt);
 
 	/* Clip the width at a maximum of 104 (enough room for an 80-char item name) */
@@ -1695,6 +1696,10 @@ static void store_display_recalc(void)
 
 	scr_places_y[LOC_HELP_CLEAR] = hgt - 1;
 	scr_places_y[LOC_HELP_PROMPT] = hgt;
+
+	loc = m->boundary;
+	loc.page_rows = (store_flags & STORE_SHOW_HELP) ? -5 : -1;
+	menu_layout(m, &loc);
 }
 
 
@@ -1779,7 +1784,7 @@ static void store_display_frame(void)
 		put_str("Home Inventory", scr_places_y[LOC_HEADER], 1);
 
 		/* Show weight header */
-		put_str("Weight", 5, scr_places_x[LOC_WEIGHT] + 2);
+		put_str("Weight", scr_places_y[LOC_HEADER], scr_places_x[LOC_WEIGHT] + 2);
 	}
 
 	/* Normal stores */
@@ -2302,7 +2307,6 @@ static bool store_purchase(int item)
 		{
 			/* Tell the user */
 			msg_print("You do not have enough gold for this item.");
-			store_flags |= STORE_KEEP_PROMPT;
 
 			/* Abort now */
 			return FALSE;
@@ -2341,7 +2345,6 @@ static bool store_purchase(int item)
 	if (!inven_carry_okay(i_ptr))
 	{
 		msg_print("You cannot carry that many items.");
-		store_flags |= STORE_KEEP_PROMPT;
 		return FALSE;
 	}
 
@@ -2370,14 +2373,12 @@ static bool store_purchase(int item)
 		if (!response) return FALSE;
 
 		cmd_insert(CMD_BUY, item, amt);
-		store_flags |= STORE_KEEP_PROMPT;
 	}
 
 	/* Home is much easier */
 	else
 	{
 		cmd_insert(CMD_RETRIEVE, item, amt);
-		store_flags |= STORE_KEEP_PROMPT;
 	}
 
 	/* Not kicked out */
@@ -2571,7 +2572,7 @@ void do_cmd_stash(cmd_code code, cmd_arg args[])
 /*
  * Sell an object, or drop if it we're in the home.
  */
-static void store_sell(void)
+static bool store_sell(void)
 {
 	int amt;
 	int item;
@@ -2592,7 +2593,7 @@ static void store_sell(void)
 	if (this_store == STORE_NONE)
 	{
 		msg_print("You cannot sell items when not in a store.");
-		return;
+		return FALSE;
 	}
 
 	/* Clear all current messages */
@@ -2612,8 +2613,7 @@ static void store_sell(void)
 	p_ptr->command_cmd = 'd';
 	if (!get_item(&item, prompt, reject, get_mode))
 	{
-		store_flags |= STORE_KEEP_PROMPT;
-		return;
+		return FALSE;
 	}
 
 	/* Get the item */
@@ -2624,32 +2624,29 @@ static void store_sell(void)
 	{
 		/* Oops */
 		msg_print("Hmmm, it seems to be cursed.");
-		store_flags |= STORE_KEEP_PROMPT;
 
 		/* Nope */
-		return;
+		return FALSE;
 	}
 
 	/* Get a quantity */
 	amt = get_quantity(NULL, o_ptr->number);
 
 	/* Allow user abort */
-	if (amt <= 0) return;
+	if (amt <= 0) return FALSE;
 
 	/* Get a copy of the object representing the number being sold */
 	object_copy_amt(i_ptr, object_from_item_idx(item), amt);
 
 	if (!store_check_num(this_store, i_ptr))
 	{
-		store_flags |= STORE_KEEP_PROMPT;
-
 		if (this_store == STORE_HOME)
 			msg_print("Your home is full.");
 
 		else
 			msg_print("I have not the room in my store to keep it.");
 
-		return;
+		return FALSE;
 	}
 
 	/* Get a full description */
@@ -2670,14 +2667,12 @@ static void store_sell(void)
 		if (!store_get_check(format("Sell %s? [ESC, any other key to accept]", o_name)))
 		{
 			screen_load();
-			return;
+			return FALSE;
 		}
 
 		screen_load();
 
 		cmd_insert(CMD_SELL, item, amt);
-
-		store_flags |= STORE_KEEP_PROMPT;
 	}
 
 	/* Player is at home */
@@ -2685,6 +2680,8 @@ static void store_sell(void)
 	{
 		cmd_insert(CMD_STASH, item, amt);
 	}
+
+	return TRUE;
 }
 
 
@@ -2768,7 +2765,6 @@ static bool store_overflow(void)
 
 		/* Give a message */
 		msg_print("Your pack overflows!");
-		store_flags |= STORE_KEEP_PROMPT;
 
 		/* Get local object */
 		i_ptr = &object_type_body;
@@ -2798,6 +2794,45 @@ static bool store_overflow(void)
 }
 
 
+void store_menu_set_selections(menu_type *menu)
+{
+	/* Roguelike */
+	if (OPT(rogue_like_commands))
+	{
+		/* These two can't intersect! */
+		menu->cmd_keys = "\x04\x10?={}~CEIPTdegilpswx"; /* \x10 = ^p , \x04 = ^D */
+		menu->selections = "abcfmnoqrtuvyz13456790ABDFGH";
+	}
+
+	/* Original */
+	else
+	{
+		/* These two can't intersect! */
+		menu->cmd_keys = "\x010?={}~CEIbdegiklpstwx"; /* \x10 = ^p */
+		menu->selections = "acfhjmnoqruvyz13456790ABDFGH";
+	}
+}
+
+void store_menu_redraw(menu_type *m)
+{
+	if (m->count > m->active.page_rows)
+		m->prompt = "  -more-";
+	else
+		m->prompt = NULL;
+}
+
+void store_menu_recalc(menu_type *m)
+{
+	store_type *st_ptr = &store[current_store()];
+
+	menu_setpriv(m, st_ptr->stock_num, st_ptr->stock);
+
+	if (m->count > m->active.page_rows)
+		m->prompt = "  -more-";
+	else
+		m->prompt = NULL;
+}
+
 /*
  * Process a command in a store
  *
@@ -2809,7 +2844,6 @@ static bool store_process_command_key(char cmd)
 {
 	bool equip_toggle = FALSE;
 	bool redraw = FALSE;
-	bool command_processed = FALSE;
 
 	/* Parse the command */
 	switch (cmd)
@@ -2933,15 +2967,6 @@ static bool store_process_command_key(char cmd)
 
 		/*** System Commands ***/
 
-		/* Interact with options */
-		case '=':
-		{
-			do_cmd_options();
-			redraw = TRUE;
-			
-			break;
-		}
-
 
 		/*** Misc Commands ***/
 
@@ -2968,18 +2993,7 @@ static bool store_process_command_key(char cmd)
 		}
 	}
 
-	/* Let the game handle any core commands (equipping, etc) */
-	process_command(CMD_STORE, TRUE);
-
-	if (redraw)
-	{
-		command_processed = TRUE;
-
-		event_signal(EVENT_INVENTORY);
-		event_signal(EVENT_EQUIPMENT);
-	}
-	
-	return command_processed;
+	return redraw;
 }
 
 
@@ -2988,19 +3002,27 @@ static bool store_process_command_key(char cmd)
  */
 bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
 {
+	bool processed = TRUE;
+
 	if (event->type == EVT_SELECT)
 	{
-		/* Nothing for now. */
+		/* Nothing for now, except "handle" the event */
+		return TRUE;
 		/* In future, maybe we want a display a list of what you can do. */
 	}
 	else if (event->type == EVT_KBRD)
 	{
-		char key = tolower(event->key);
+		char key = event->key;
+		bool storechange = FALSE;
 
 		if (key == 's' || key == 'd')
-			store_sell();
+		{
+			storechange = store_sell();
+		}
 		else if (key == 'p' || key == 'g')
-			store_purchase(oid);
+		{
+			storechange = store_purchase(oid);
+		}
 		else if (key == 'l' || key == 'x')
 			store_examine(oid);
 		/* XXX redraw functionality should be another menu_iter handler */
@@ -3020,14 +3042,60 @@ bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
 			/* Redisplay */
 			store_flags |= STORE_INIT_CHANGE;
 		}
+		else if (key == '=')
+		{
+			do_cmd_options();
+			store_menu_set_selections(m);
+		}
 		else
-			return store_process_command_key(key);
+			processed = store_process_command_key(key);
 
-		return TRUE;
+		/* Let the game handle any core commands (equipping, etc) */
+		process_command(CMD_STORE, TRUE);
+
+		if (storechange)
+		{
+			store_menu_recalc(m);
+		}
+
+		if (processed)
+		{
+			event_signal(EVENT_INVENTORY);
+			event_signal(EVENT_EQUIPMENT);
+		}
+
+		/* Notice and handle stuff */
+		notice_stuff();
+		handle_stuff();
+
+		/* Display the store */
+		store_display_recalc(m);
+		store_redraw();
+
+		return processed;
 	}
 
 	return FALSE;
 }
+
+static region store_menu_region = { 1, 4, -1, -1 };
+static const menu_iter store_menu =
+{
+	NULL,
+	NULL,
+	store_display_entry,
+	store_menu_handle,
+	store_menu_redraw
+};
+
+static const menu_iter store_know_menu =
+{
+	NULL,
+	NULL,
+	store_display_entry,
+	NULL,
+	store_menu_redraw
+};
 
 
 /*
@@ -3037,106 +3105,44 @@ bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
  */
 void do_cmd_store_knowledge(void)
 {
-	bool leave = FALSE;
-
-	static region items_region = { 1, 4, -1, -1 };
-	static const menu_iter store_menu = { NULL, NULL, store_display_entry, store_menu_handle };
-	const menu_iter *cur_menu = &store_menu;
-
 	menu_type menu;
-	ui_event_data evt = EVENT_EMPTY;
 
-	store_type *st_ptr = &store[current_store()];
+	screen_save();
+	clear_from(0);
 
-	/* Wipe the menu and set it up */
-	menu.flags = MN_DBL_TAP;
+	/* Init the menu structure */
+	menu_init(&menu, MN_SKIN_SCROLL, &store_menu);
+	menu_layout(&menu, &store_menu_region);
 
 	/* Calculate the positions of things and redraw */
 	store_flags = STORE_INIT_CHANGE;
-	store_display_recalc();
+	store_display_recalc(&menu);
+	menu.selections = lower_case;
+	store_menu_recalc(&menu);
 	store_redraw();
 
-	/* Init the menu structure */
-	menu_init(&menu, MN_SKIN_SCROLL, cur_menu);
-	menu_layout(&menu, &items_region);
-
-	/* Loop */
-	while (!leave)
-	{
-		/* As many rows in the menus as there are items in the store */
-		menu.count = st_ptr->stock_num;
-
-		/* Roguelike */
-		if (OPT(rogue_like_commands))
-		{
-			/* These two can't intersect! */
-			menu.cmd_keys = "\n\r?Ieilx\x8B\x8C";
-			menu.selections = "abcdfghjkmnopqrstuvwyz134567";
-		}
-
-		/* Original */
-		else
-		{
-			/* These two can't intersect! */
-			menu.cmd_keys = "\n\r?Ieil\x8B\x8C";
-			menu.selections = "abcdfghjkmnopqrstuvwxyz13456";
-		}
-
-		items_region.page_rows = scr_places_y[LOC_MORE] - scr_places_y[LOC_ITEMS_START];
-
-		if (menu.count > items_region.page_rows)
-			menu.prompt = "  -more-";
-		else
-			menu.prompt = NULL;
-
-		evt.type = EVT_MOVE;
-
-		/* Get a selection/action */
-		while (evt.type == EVT_MOVE)
-		{
-			evt = menu_select(&menu, EVT_MOVE);
-			if (store_flags & STORE_KEEP_PROMPT)
-			{
-				/* Unset so that the prompt is cleared next time */
-				store_flags &= ~STORE_KEEP_PROMPT;
-			}
-			else
-			{
-				/* Clear the prompt */
-				prt("", 0, 0);
-			}
-		}
-
-		if (evt.type == EVT_ESCAPE)
-		{
-			leave = TRUE;
-		}
-		else
-		{
-			/* Display the store */
-			store_display_recalc();
-			store_redraw();
-		}
-
-		msg_flag = FALSE;
-	}
+	menu_select(&menu, 0);
 
 	/* Hack -- Cancel automatic command */
 	p_ptr->command_new = 0;
 
 	/* Flush messages XXX XXX XXX */
 	message_flush();
+
+	screen_load();
 }
+
+
+
 
 /*
  * Enter a store, and interact with it.
  */
 void do_cmd_store(cmd_code code, cmd_arg args[])
 {
-	bool leave = FALSE;
-
 	/* Take note of the store number from the terrain feature */
 	int this_store = current_store();
+	menu_type menu;
 
 	/* Verify that there is a store */
 	if (this_store == STORE_NONE)
@@ -3166,115 +3172,38 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 
 
 
-
 	/*** Display ***/
 
 	/* Save current screen (ie. dungeon) */
 	screen_save();
 
+
 	/*** Inventory display ***/
-	{
-
-	static region items_region = { 1, 4, -1, -1 };
-	static const menu_iter store_menu = { NULL, NULL, store_display_entry, store_menu_handle };
-	const menu_iter *cur_menu = &store_menu;
-
-	menu_type menu;
-	ui_event_data evt = EVENT_EMPTY;
-
-	store_type *st_ptr = &store[this_store];
-
-
-	/* Calculate the positions of things and redraw */
-	store_flags = STORE_INIT_CHANGE;
-	store_display_recalc();
-	store_redraw();
 
 	/* Say a friendly hello. */
 	if (this_store != STORE_HOME) 
 		prt_welcome(store_owner(this_store));
 
 	/* Wipe the menu and set it up */
-	menu_init(&menu, MN_SKIN_SCROLL, cur_menu);
-	menu_layout(&menu, &items_region);
-	menu.flags = MN_DBL_TAP;
+	menu_init(&menu, MN_SKIN_SCROLL, &store_menu);
+	menu_layout(&menu, &store_menu_region);
 
-	/* Loop */
-	while (!leave)
-	{
-		/* As many rows in the menus as there are items in the store */
-		menu.count = st_ptr->stock_num;
+	store_menu_set_selections(&menu);
+	store_menu_recalc(&menu);
+	store_flags = STORE_INIT_CHANGE;
+	store_display_recalc(&menu);
+	store_redraw();
 
-		/* Roguelike */
-		if (OPT(rogue_like_commands))
-		{
-			/* These two can't intersect! */
-			menu.cmd_keys = "\n\x04\x10\r?={}~CEIPTdegilpswx\x8B\x8C"; /* \x10 = ^p , \x04 = ^D */
-			menu.selections = "abcfmnoqrtuvyz13456790ABDFGH";
-		}
+	msg_flag = FALSE;
+	menu_select(&menu, 0);
+	msg_flag = TRUE;
 
-		/* Original */
-		else
-		{
-			/* These two can't intersect! */
-			menu.cmd_keys = "\n\x010\r?={}~CEIbdegiklpstwx\x8B\x8C"; /* \x10 = ^p */
-			menu.selections = "acfhjmnoqruvyz13456790ABDFGH";
-		}
+#if 0
+	/* XXX Pack Overflow */
+	if (inventory[INVEN_MAX_PACK].k_idx)
+		leave = store_overflow();
+#endif
 
-		items_region.page_rows = scr_places_y[LOC_MORE] - scr_places_y[LOC_ITEMS_START];
-
-		if (menu.count > items_region.page_rows)
-			menu.prompt = "  -more-";
-		else
-			menu.prompt = NULL;
-
-		evt.type = EVT_MOVE;
-
-		/* Get a selection/action */
-		while (evt.type == EVT_MOVE)
-		{
-			evt = menu_select(&menu, EVT_MOVE);
-			if (store_flags & STORE_KEEP_PROMPT)
-			{
-				/* Unset so that the prompt is cleared next time */
-				store_flags &= ~STORE_KEEP_PROMPT;
-			}
-			else
-			{
-				/* Clear the prompt */
-				prt("", 0, 0);
-			}
-		}
-
-		if (evt.type == EVT_ESCAPE)
-		{
-			leave = TRUE;
-		}
-		else if (evt.type == EVT_RESIZE)
-		{
-			/* Resize event */
-			store_display_recalc();
-			store_redraw();
-		}
-		else
-		{
-			/* Display the store */
-			store_display_recalc();
-			store_redraw();
-
-			/* Notice and handle stuff */
-			notice_stuff();
-			handle_stuff();
-
-			/* XXX Pack Overflow */
-			if (p_ptr->inventory[INVEN_MAX_PACK].k_idx)
-				leave = store_overflow();
-		}
-
-		msg_flag = FALSE;
-	}
-
-	}
 
 	/* Switch back to the normal game view. */
 	event_signal(EVENT_LEAVE_STORE);

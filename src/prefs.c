@@ -1109,19 +1109,10 @@ static enum parser_error parse_prefs_x(struct parser *p)
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	const char *option = parser_getstr(p, "option");
+	/* XXX check for valid option */
+	option_set(parser_getstr(p, "option"), FALSE);
 
-	for (int i = 0; i < OPT_ADULT; i++)
-	{
-		const char *name = option_name(i);
-		if (name && streq(name, option))
-		{
-			option_set(i, FALSE);
-			return PARSE_ERROR_NONE;
-		}
-	}
-
-	return PARSE_ERROR_INVALID_OPTION;
+	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_prefs_y(struct parser *p)
@@ -1130,20 +1121,9 @@ static enum parser_error parse_prefs_y(struct parser *p)
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	const char *option = parser_getstr(p, "option");
+	option_set(parser_getstr(p, "option"), TRUE);
 
-	/* XXX option_set should take a name, not an index */
-	for (int i = 0; i < OPT_ADULT; i++)
-	{
-		const char *name = option_name(i);
-		if (name && streq(name, option))
-		{
-			option_set(i, TRUE);
-			return PARSE_ERROR_NONE;
-		}
-	}
-
-	return PARSE_ERROR_INVALID_OPTION;
+	return PARSE_ERROR_NONE;
 }
 
 

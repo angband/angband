@@ -1228,6 +1228,20 @@ bool target_set_interactive(int mode, int x, int y)
 			/* Assume no "direction" */
 			d = 0;
 
+
+			/* If we click, move the target location to the click and
+			   switch to "free targetting" mode by unsetting 'flag'.
+			   This means we get some info about wherever we've picked. */
+			if (query.type == EVT_MOUSE)
+			{
+				x = KEY_GRID_X(query);
+				y = KEY_GRID_Y(query);
+				flag = FALSE;
+				break;
+			}
+			else
+			{
+
 			/* Analyze */
 			switch (query.key)
 			{
@@ -1279,16 +1293,6 @@ bool target_set_interactive(int mode, int x, int y)
 					break;
 				}
 
-				/* If we click, move the target location to the click and
-				   switch to "free targetting" mode by unsetting 'flag'.
-				   This means we get some info about wherever we've picked. */
-				case '\xff':
-				{
-					x = KEY_GRID_X(query);
-					y = KEY_GRID_Y(query);
-					flag = FALSE;
-					break;
-				}
 				case 't':
 				case '5':
 				case '0':
@@ -1340,6 +1344,8 @@ bool target_set_interactive(int mode, int x, int y)
 
 					break;
 				}
+			}
+
 			}
 
 			/* Hack -- move around */
@@ -1402,6 +1408,44 @@ bool target_set_interactive(int mode, int x, int y)
 			/* Assume no direction */
 			d = 0;
 
+			if (query.type == EVT_MOUSE)
+			{
+				/* We only target if we click somewhere where the cursor
+				   is already (i.e. a double-click without a time limit) */
+				if (KEY_GRID_X(query) == x && KEY_GRID_Y(query) == y)
+				{
+					/* Make an attempt to target the monster on the given
+					   square rather than the square itself (it seems this
+					   is the more likely intention of clicking on a 
+					   monster). */
+					int m_idx = cave_m_idx[y][x];
+
+					if ((m_idx > 0) && target_able(m_idx))
+					{
+						health_track(m_idx);
+						target_set_monster(m_idx);
+					}
+					else
+					{
+						/* There is no monster, or it isn't targettable,
+						   so target the location instead. */
+						target_set_location(y, x);
+					}
+
+					done = TRUE;
+				}
+				else
+				{
+					/* Just move the cursor for now - another click will
+					   target. */
+					x = KEY_GRID_X(query);
+					y = KEY_GRID_Y(query);
+				}
+				break;
+			}
+			else
+			{
+
 			/* Analyze the keypress */
 			switch (query.key)
 			{
@@ -1463,41 +1507,6 @@ bool target_set_interactive(int mode, int x, int y)
 					break;
 				}
 
-				case '\xff':
-				{
-					/* We only target if we click somewhere where the cursor
-					   is already (i.e. a double-click without a time limit) */
-					if (KEY_GRID_X(query) == x && KEY_GRID_Y(query) == y)
-					{
-						/* Make an attempt to target the monster on the given
-						   square rather than the square itself (it seems this
-						   is the more likely intention of clicking on a 
-						   monster). */
-						int m_idx = cave_m_idx[y][x];
-
-						if ((m_idx > 0) && target_able(m_idx))
-						{
-							health_track(m_idx);
-							target_set_monster(m_idx);
-						}
-						else
-						{
-							/* There is no monster, or it isn't targettable,
-							   so target the location instead. */
-							target_set_location(y, x);
-						}
-
-						done = TRUE;
-					}
-					else
-					{
-						/* Just move the cursor for now - another click will
-						   target. */
-						x = KEY_GRID_X(query);
-						y = KEY_GRID_Y(query);
-					}
-					break;
-				}
 				case 't':
 				case '5':
 				case '0':
@@ -1539,6 +1548,8 @@ bool target_set_interactive(int mode, int x, int y)
 
 					break;
 				}
+			}
+
 			}
 
 			/* Handle "direction" */

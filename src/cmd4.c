@@ -206,7 +206,8 @@ void do_cmd_change_name(void)
 		if (ke.key == ESCAPE) break;
 
 		/* Change name */
-		if ((ke.key == 'c') || ((ke.key == '\xff') && (ke.mousey == 2) && (ke.mousex < 26)))
+		if (ke.key == 'c' ||
+			(ke.mousey == 2 && ke.mousex < 26))
 		{
 			char namebuf[32] = "";
 
@@ -239,8 +240,8 @@ void do_cmd_change_name(void)
 		}
 
 		/* Toggle mode */
-		else if ((ke.key == 'h') || (ke.key == '\xff') ||
-		         (ke.key == ARROW_LEFT) || (ke.key == ' '))
+		else if (ke.key == 'h' || ke.key == ARROW_LEFT ||
+				ke.key == ' ' || ke.type == EVT_MOUSE)
 		{
 			mode = (mode + 1) % INFO_SCREENS;
 		}
@@ -367,7 +368,7 @@ void do_cmd_messages(void)
 
 		/* Display prompt (not very informative) */
 		if (shower[0])
-		    prt("[Movement keys to navigate, '-' for next, '=' to find]", hgt - 1, 0);
+			prt("[Movement keys to navigate, '-' for next, '=' to find]", hgt - 1, 0);
 		else
 			prt("[Movement keys to navigate, '=' to find, or ESCAPE to exit]", hgt - 1, 0);
 			
@@ -376,8 +377,25 @@ void do_cmd_messages(void)
 		ke = inkey_ex();
 
 
+		/* Scroll forwards or backwards using mouse clicks */
+		if (ke.type == EVT_MOUSE)
+		{
+			/* Go older if legal */
+			if (ke.mousey <= hgt / 2)
+			{
+				if (i + 20 < n)
+					i += 20;
+			}
+
+			/* Go newer (if able) */
+			else
+			{
+				i = (i >= 20) ? (i - 20) : 0;
+			}
+		}
+
 		/* Exit on Escape */
-		if (ke.key == ESCAPE)
+		else if (ke.key == ESCAPE)
 		{
 			break;
 		}
@@ -441,24 +459,6 @@ void do_cmd_messages(void)
 			i = (i >= 20) ? (i - 20) : 0;
 		}
 
-		/* Scroll forwards or backwards using mouse clicks */
-		else if (ke.key == '\xff')
-		{
-			if (ke.index)
-			{
-				if (ke.mousey <= hgt / 2)
-				{
-					/* Go older if legal */
-					if (i + 20 < n) i += 20;
-				}
-				else
-				{
-					/* Go newer (if able) */
-					i = (i >= 20) ? (i - 20) : 0;
-				}
-			}
-		}
-
 		/* Error time */
 		else
 		{
@@ -516,17 +516,19 @@ static bool handle_option(menu_type *m, const ui_event_data *event, int oid)
 	bool next = FALSE;
 
 	if (event->type == EVT_SELECT)
-		op_ptr->opt[oid] = !op_ptr->opt[oid];
+	{
+		option_set(option_name(oid), !op_ptr->opt[oid]);
+	}
 	else if (event->type == EVT_KBRD)
 	{
 		if (event->key == 'y' || event->key == 'Y')
 		{
-			op_ptr->opt[oid] = TRUE;
+			option_set(option_name(oid), TRUE);
 			next = TRUE;
 		}
 		else if (event->key == 'n' || event->key == 'N')
 		{
-			op_ptr->opt[oid] = FALSE;
+			option_set(option_name(oid), FALSE);
 			next = TRUE;
 		}
 		else if (event->key == '?')
@@ -551,7 +553,8 @@ static const menu_iter options_toggle_iter =
 	NULL,
 	NULL,
 	display_option,		/* label */
-	handle_option		/* handle */
+	handle_option,		/* handle */
+	NULL
 };
 
 static menu_type option_toggle_menu;
@@ -586,17 +589,6 @@ static void do_cmd_options_aux(void *vpage, cptr info)
 	clear_from(0);
 
 	menu_select(menu, 0);
-
-	/* Hack -- Notice use of any "cheat" options */
-	/* XXX this should be moved to option_set() */
-	for (i = OPT_CHEAT; i < OPT_ADULT; i++)
-	{
-		if (op_ptr->opt[i])
-		{
-			/* Set score option */
-			op_ptr->opt[OPT_SCORE + (i - OPT_CHEAT)] = TRUE;
-		}
-	}
 
 	screen_load();
 }
@@ -691,7 +683,7 @@ static void do_cmd_options_win(void)
 		if ((ke.key == ESCAPE) || (ke.key == 'q')) break;
 
 		/* Mouse interaction */
-		if (ke.key == '\xff')
+		if (ke.type == EVT_MOUSE)
 		{
 			int choicey = ke.mousey - 5;
 			int choicex = (ke.mousex - 35)/5;
@@ -703,13 +695,12 @@ static void do_cmd_options_win(void)
 				y = choicey;
 				x = (ke.mousex - 35)/5;
 			}
-
-			/* Toggle using mousebutton later */
-			if (!ke.index) continue;
 		}
 
 		/* Toggle */
-		if ((ke.key == '5') || (ke.key == 't') || (ke.key == '\n') || (ke.key == '\r') || ((ke.key == '\xff') && (ke.index)))
+		else if ((ke.key == '5') || (ke.key == 't') ||
+				(ke.key == '\n') || (ke.key == '\r') ||
+				(ke.type == EVT_MOUSE))
 		{
 			/* Hack -- ignore the main window */
 			if (x == 0)
@@ -767,7 +758,7 @@ static void do_cmd_options_win(void)
  */
 static void do_cmd_macro_aux(char *buf)
 {
-	char ch;
+	ui_event_data e;
 
 	int n = 0;
 	int curs_x, curs_y;
@@ -785,14 +776,13 @@ static void do_cmd_macro_aux(char *buf)
 	inkey_base = TRUE;
 
 	/* First key */
-	ch = inkey();
-
+	e = inkey_ex();
 
 	/* Read the pattern */
-	while (ch != 0 && ch != '\xff')
+	while (e.key != 0 && e.type != EVT_MOUSE)
 	{
 		/* Save the key */
-		buf[n++] = ch;
+		buf[n++] = e.key;
 		buf[n] = 0;
 
 		/* Get representation of the sequence so far */
@@ -810,7 +800,7 @@ static void do_cmd_macro_aux(char *buf)
 		inkey_scan = SCAN_INSTANT;
 
 		/* Attempt to read a key */
-		ch = inkey();
+		e = inkey_ex();
 	}
 
 	/* Convert the trigger */
@@ -1634,7 +1624,7 @@ void init_cmd4_c(void)
 
 	/* options screen selection menu */
 	menu = &option_menu;
-	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ACTIONS));
+	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
 	menu_setpriv(menu, N_ELEMENTS(option_actions), option_actions);
 
 	menu->title = "Options Menu";
@@ -1653,7 +1643,7 @@ void init_cmd4_c(void)
 
 	/* macro menu */
 	menu = &macro_menu;
-	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ACTIONS));
+	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
 	menu_setpriv(menu, N_ELEMENTS(macro_actions), macro_actions);
 
 	menu->title = "Interact with macros";
@@ -1662,7 +1652,7 @@ void init_cmd4_c(void)
 
 	/* visuals menu */
 	menu = &visual_menu;
-	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ACTIONS));
+	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
 	menu_setpriv(menu, N_ELEMENTS(visual_menu_items), visual_menu_items);
 
 	menu->title = "Interact with visuals";
@@ -1671,7 +1661,7 @@ void init_cmd4_c(void)
 
 	/* colors menu */
 	menu = &color_menu;
-	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ACTIONS));
+	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
 	menu_setpriv(menu, N_ELEMENTS(color_events), color_events);
 
 	menu->title = "Interact with colors";
