@@ -484,6 +484,11 @@ static HMENU main_menu;
  */
 static bool can_use_graphics = FALSE;
 
+/**
+ * Flag set when switching tilesizes
+ */
+static bool change_tilesize = FALSE;
+
 /*
  * The global bitmap
  */
@@ -1756,6 +1761,9 @@ static errr Term_xtra_win_react(void)
 	int i;
 
 
+        /* Get the main window */
+        term_data *td = &data[0];
+
 	/* Simple color */
 	if (colors16)
 	{
@@ -2207,7 +2215,8 @@ static errr Term_bigcurs_win(int x, int y)
 	rc.left = x * tile_wid + td->size_ow1;
         rc.right = rc.left + ((use_trptile && use_bigtile) ? 6 : (use_trptile ? 3 : ((use_dbltile && use_bigtile) ? 4 : 2))) * tile_wid;
 	rc.top = y * tile_hgt + td->size_oh1;
-        rc.bottom = rc.top + (use_trptile ? 3 : (use_dbltile ? 2 : 1)) * tile_hg
+        rc.bottom = rc.top + (use_trptile ? 3 : (use_dbltile ? 2 : 1)) * tile_hgt;
+
 	/* Cursor is done as a yellow "box" */
 	hdc = GetDC(td->w);
 	FrameRect(hdc, &rc, hbrYellow);

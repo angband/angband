@@ -109,6 +109,12 @@ ANGBAND MENU
 			MENUITEM "&Old tiles", 401
 			MENUITEM "&Adam Bolt's tiles", 402
 			MENUITEM "&David Gervais' tiles", 403
+			MENUITEM SEPARATOR
+			MENUITEM "Enable nice &graphics", 405
+			MENUITEM SEPARATOR
+			MENUITEM "&Triple tile mode", 407
+			MENUITEM "Do&uble tile mode", 408
+			MENUITEM SEPARATOR
 			MENUITEM "&Bigtile mode", 409
 		}
 
