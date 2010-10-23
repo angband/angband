@@ -57,11 +57,7 @@ static void display_action_aux(menu_action *act, byte color, int row, int col, i
 static char menu_action_tag(menu_type *m, int oid)
 {
 	menu_action *acts = menu_priv(m);
-
-	if (acts[oid].tag)
-		return acts[oid].tag;
-
-	return 0;
+	return acts[oid].tag;
 }
 
 static int menu_action_valid(menu_type *m, int oid)
@@ -114,7 +110,7 @@ const menu_iter menu_iter_actions =
 static char item_menu_tag(menu_type *m, int oid)
 {
 	menu_item *items = menu_priv(m);
-	return items[oid].sel;
+	return items[oid].act.tag;
 }
 
 static int item_menu_valid(menu_type *m, int oid)

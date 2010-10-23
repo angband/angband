@@ -80,14 +80,11 @@ typedef struct
  * Decorated menu item with bound action
  *
  * XXX this menu type is used in one place, cmd4.c, just to allow flags.
- * XXX note that in practice, menu_action.id can be used as a selection key
- * XXX it's totally worth merging the two
+ * XXX it's totally worth merging this and menu_action
  */
 typedef struct
 {
 	menu_action act; /* Base type */
-	char sel;        /* Character used for selection, if special-purpose */
-	                 /* bindings are desired. */
 	int flags;	 /* State of the menu item.  See menu flags below */
 } menu_item;
 

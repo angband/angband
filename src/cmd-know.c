@@ -1936,21 +1936,21 @@ static void do_cmd_knowledge_history(const char *name, int row)
  */
 static menu_item knowledge_actions[] =
 {
-{ {0, "Display object knowledge",   	   do_cmd_knowledge_objects   }, 'a', 0 },
-{ {0, "Display artifact knowledge", 	   do_cmd_knowledge_artifacts }, 'b', 0 },
-{ {0, "Display ego item knowledge", 	   do_cmd_knowledge_ego_items }, 'c', 0 },
-{ {0, "Display monster knowledge",  	   do_cmd_knowledge_monsters  }, 'd', 0 },
-{ {0, "Display feature knowledge",  	   do_cmd_knowledge_features  }, 'e', 0 },
-{ {0, "Display contents of general store", do_cmd_knowledge_store     }, 'f', 0 },
-{ {0, "Display contents of armourer",      do_cmd_knowledge_store     }, 'g', 0 },
-{ {0, "Display contents of weaponsmith",   do_cmd_knowledge_store     }, 'h', 0 },
-{ {0, "Display contents of temple",   	   do_cmd_knowledge_store     }, 'i', 0 },
-{ {0, "Display contents of alchemist",     do_cmd_knowledge_store     }, 'j', 0 },
-{ {0, "Display contents of magic shop",    do_cmd_knowledge_store     }, 'k', 0 },
-{ {0, "Display contents of black market",  do_cmd_knowledge_store     }, 'l', 0 },
-{ {0, "Display contents of home",   	   do_cmd_knowledge_store     }, 'm', 0 },
-{ {0, "Display hall of fame",       	   do_cmd_knowledge_scores    }, 'n', 0 },
-{ {0, "Display character history",  	   do_cmd_knowledge_history   }, 'o', 0 },
+{ {0, "Display object knowledge",   	   do_cmd_knowledge_objects   }, 0 },
+{ {0, "Display artifact knowledge", 	   do_cmd_knowledge_artifacts }, 0 },
+{ {0, "Display ego item knowledge", 	   do_cmd_knowledge_ego_items }, 0 },
+{ {0, "Display monster knowledge",  	   do_cmd_knowledge_monsters  }, 0 },
+{ {0, "Display feature knowledge",  	   do_cmd_knowledge_features  }, 0 },
+{ {0, "Display contents of general store", do_cmd_knowledge_store     }, 0 },
+{ {0, "Display contents of armourer",      do_cmd_knowledge_store     }, 0 },
+{ {0, "Display contents of weaponsmith",   do_cmd_knowledge_store     }, 0 },
+{ {0, "Display contents of temple",   	   do_cmd_knowledge_store     }, 0 },
+{ {0, "Display contents of alchemist",     do_cmd_knowledge_store     }, 0 },
+{ {0, "Display contents of magic shop",    do_cmd_knowledge_store     }, 0 },
+{ {0, "Display contents of black market",  do_cmd_knowledge_store     }, 0 },
+{ {0, "Display contents of home",   	   do_cmd_knowledge_store     }, 0 },
+{ {0, "Display hall of fame",       	   do_cmd_knowledge_scores    }, 0 },
+{ {0, "Display character history",  	   do_cmd_knowledge_history   }, 0 },
 };
 
 static menu_type knowledge_menu;
@@ -1974,6 +1974,7 @@ void init_cmd_know(void)
 	menu_setpriv(menu, N_ELEMENTS(knowledge_actions), knowledge_actions);
 
 	menu->title = "Display current knowledge";
+	menu->selections = lower_case;
 
 	/* initialize other static variables */
 	if (!obj_group_order)
