@@ -39,8 +39,9 @@ typedef void do_cmd_type(void);
 
 /* Forward declare these, because they're really defined later */
 static do_cmd_type do_cmd_wizard, do_cmd_try_debug,
-            do_cmd_mouseclick, do_cmd_port,
-			do_cmd_xxx_options, do_cmd_menu, do_cmd_monlist, do_cmd_itemlist;
+		do_cmd_mouseclick, do_cmd_port,
+		do_cmd_xxx_options, do_cmd_menu,
+		do_cmd_monlist, do_cmd_itemlist;
 
 #ifdef ALLOW_BORG
 static do_cmd_type do_cmd_try_borg;
@@ -518,30 +519,37 @@ static void cmd_list_entry(menu_type *menu, int oid, bool cursor, int row, int c
 	Term_putstr(col, row, -1, attr, cmds_all[oid].name);
 }
 
+static menu_type *command_menu;
+static menu_iter command_menu_iter =
+{
+	NULL,
+	NULL,
+	cmd_list_entry,
+	cmd_list_action,
+	NULL
+};
+
 /*
  * Display a list of command types, allowing the user to select one.
  */
 static void do_cmd_menu(void)
 {
-	menu_type menu;
-	menu_iter commands_menu = { NULL, NULL, cmd_list_entry, cmd_list_action, NULL };
 	region area = { 21, 5, 37, 6 };
 
 	command_type chosen_command = { 0 };
 
-	/* Set up the menu */
-	menu_init(&menu, MN_SKIN_SCROLL, &commands_menu);
-	menu_setpriv(&menu, N_ELEMENTS(cmds_all) - 1, &chosen_command);
-	menu_layout(&menu, &area);
+	if (!command_menu)
+		command_menu = menu_new(MN_SKIN_SCROLL, &command_menu_iter);
+
+	menu_setpriv(command_menu, N_ELEMENTS(cmds_all) - 1, &chosen_command);
+	menu_layout(command_menu, &area);
 
 	/* Set up the screen */
 	screen_save();
 	window_make(19, 4, 58, 11);
 
-	/* Select an entry */
-	menu_select(&menu, 0);
+	menu_select(command_menu, 0);
 
-	/* Load de screen */
 	screen_load();
 
 	/* If a command was chosen, do it */
