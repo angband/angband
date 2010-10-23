@@ -4,7 +4,8 @@
  *
  * Copyright (c) 1997-2007 Robert A. Koeneke, James E. Wilson, Ben Harrison,
  * Eytan Zweig, Andrew Doull, Pete Mack.
- * HTML dump code (c) 2004 DarkGod 
+ * Copyright (c) 2004 DarkGod (HTML dump code)
+ * Copyright (c) 2010 Andi Sidwell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -60,29 +61,6 @@ static void dump_pref_file(void (*dump)(ang_file *), const char *title, int row)
 
 static void do_cmd_pref_file_hack(long row);
 
-
-
-/* Flag value for missing array entry */
-#define MISSING -17
-
-/* XXX these are horrible, remove them */
-#define APP_MACRO	101
-#define ASK_MACRO	103
-#define DEL_MACRO	104
-#define NEW_MACRO	105
-#define APP_KEYMAP	106
-#define ASK_KEYMAP	107
-#define DEL_KEYMAP	108
-#define NEW_KEYMAP	109
-#define ENTER_ACT	110
-#define LOAD_PREF	111
-#define DUMP_MON	112
-#define DUMP_OBJ	113
-#define DUMP_FEAT	114
-#define DUMP_FLAV	115
-#define DUMP_COL	120
-#define MOD_COL		121
-#define RESET_VIS	122
 
 
 #define INFO_SCREENS 2 /* Number of screens in character info mode */
@@ -748,6 +726,9 @@ static void do_cmd_options_win(const char *name, int row)
 }
 
 
+
+/*** Interact with macros and keymaps ***/
+
 #ifdef ALLOW_MACROS
 
 /*
@@ -811,14 +792,17 @@ static void do_cmd_macro_aux(char *buf)
 
 
 /*
- * Hack -- ask for a keymap "trigger" (see below)
+ * Ask for, and display, a keymap trigger.
+ *
+ * Returns the trigger input.
  *
  * Note that both "flush()" calls are extremely important.  This may
  * no longer be true, since "util.c" is much simpler now.  XXX XXX XXX
  */
-static void do_cmd_macro_aux_keymap(char *buf)
+static char keymap_get_trigger(void)
 {
-	char tmp[1024];
+	char tmp[80];
+	char buf[2];
 
 	/* Flush */
 	flush();
@@ -835,437 +819,476 @@ static void do_cmd_macro_aux_keymap(char *buf)
 
 	/* Flush */
 	flush();
-}
 
-#endif
+	/* Return trigger */
+	return buf[0];
+}
 
 
 /*
- * Interact with "macros"
- *
- * XXX macro interface is terrible
+ * Macro menu action functions
  */
-static menu_action macro_actions[] =
+
+static void macro_pref_load(const char *title, int row)
 {
-	{ LOAD_PREF,  "Load a user pref file",    0 },
-#ifdef ALLOW_MACROS
-	{ APP_MACRO,  "Append macros to a file",  0 },
-	{ ASK_MACRO,  "Query a macro",            0 },
-	{ NEW_MACRO,  "Create a macro",           0 },
-	{ DEL_MACRO,  "Remove a macro",           0 },
-	{ APP_KEYMAP, "Append keymaps to a file", 0 },
-	{ ASK_KEYMAP, "Query a keymap",           0 },
-	{ NEW_KEYMAP, "Create a keymap",          0 },
-	{ DEL_KEYMAP, "Remove a keymap",          0 },
-	{ ENTER_ACT,  "Enter a new action",       0 },
-#endif /* ALLOW_MACROS */
-};
+	do_cmd_pref_file_hack(16);
+}
 
-static menu_type macro_menu;
+static void macro_pref_append(const char *title, int row)
+{
+	(void)dump_pref_file(macro_dump, "Dump macros", 15);
+}
 
+static void macro_query(const char *title, int row)
+{
+	int k;
+	char buf[1024];
+	
+	prt("Command: Query a macro", 16, 0);
+	prt("Trigger: ", 18, 0);
+	
+	/* Get a macro trigger */
+	do_cmd_macro_aux(buf);
+	
+	/* Get the action */
+	k = macro_find_exact(buf);
+	
+	/* Nothing found */
+	if (k < 0)
+	{
+		/* Prompt */
+		prt("", 0, 0);
+		msg_print("Found no macro.");
+	}
+	
+	/* Found one */
+	else
+	{
+		/* Obtain the action */
+		my_strcpy(macro_buffer, macro__act[k], sizeof(macro_buffer));
+	
+		/* Analyze the current action */
+		ascii_to_text(buf, sizeof(buf), macro_buffer);
+	
+		/* Display the current action */
+		prt(buf, 22, 0);
+	
+		/* Prompt */
+		prt("", 0, 0);
+		msg_print("Found a macro.");
+	}
+}
 
-void do_cmd_macros(const char *title, int row)
+static void macro_create(const char *title, int row)
+{
+	char pat[1024];
+	char tmp[1024];
+
+	prt("Command: Create a macro", 16, 0);
+	prt("Trigger: ", 18, 0);
+	
+	/* Get a macro trigger */
+	do_cmd_macro_aux(pat);
+	
+	/* Clear */
+	clear_from(20);
+	
+	/* Prompt */
+	prt("Action: ", 20, 0);
+	
+	/* Convert to text */
+	ascii_to_text(tmp, sizeof(tmp), macro_buffer);
+	
+	/* Get an encoded action */
+	if (askfor_aux(tmp, sizeof tmp, NULL))
+	{
+		/* Convert to ascii */
+		text_to_ascii(macro_buffer, sizeof(macro_buffer), tmp);
+		
+		/* Link the macro */
+		macro_add(pat, macro_buffer);
+		
+		/* Prompt */
+		prt("", 0, 0);
+		msg_print("Added a macro.");
+	}					
+}
+
+static void macro_remove(const char *title, int row)
+{
+	char pat[1024];
+
+	prt("Command: Remove a macro", 16, 0);
+	prt("Trigger: ", 18, 0);
+	
+	/* Get a macro trigger */
+	do_cmd_macro_aux(pat);
+	
+	/* Link the macro */
+	macro_add(pat, pat);
+	
+	/* Prompt */
+	prt("", 0, 0);
+	msg_print("Removed a macro.");
+}
+
+static void keymap_pref_append(const char *title, int row)
+{
+	(void)dump_pref_file(keymap_dump, "Dump keymaps", 13);
+}
+
+static void keymap_query(const char *title, int row)
+{
+	char tmp[1024];
+	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+
+	prt(title, 13, 0);
+	prt("Key: ", 14, 0);
+	
+	/* Get a keymap trigger & mapping */
+	char c = keymap_get_trigger();
+	const char *act = keymap_act[mode][(byte) c];
+	
+	/* Nothing found */
+	if (!act)
+	{
+		/* Prompt */
+		prt("No keymap with that trigger.  Press any key to continue.", 16, 0);
+		inkey();
+	}
+	
+	/* Found one */
+	else
+	{
+		/* Obtain the action */
+		my_strcpy(macro_buffer, act, sizeof(macro_buffer));
+	
+		/* Analyze the current action */
+		ascii_to_text(tmp, sizeof(tmp), macro_buffer);
+	
+		/* Display the current action */
+		prt("Found: ", 15, 0);
+		Term_addstr(-1, TERM_WHITE, tmp);
+
+		prt("Press any key to continue.", 17, 0);
+		inkey();
+	}
+}
+
+static void keymap_create(const char *title, int row)
+{
+	char c;
+	char tmp[1024];
+	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+
+	prt(title, 13, 0);
+	prt("Key: ", 14, 0);
+
+	c = keymap_get_trigger();
+
+	prt("Action: ", 15, 0);
+
+	/* Get an encoded action, with a default response */
+	ascii_to_text(tmp, sizeof(tmp), macro_buffer);
+	if (askfor_aux(tmp, sizeof tmp, NULL))
+	{
+		/* Convert to ascii */
+		text_to_ascii(macro_buffer, sizeof(macro_buffer), tmp);
+	
+		/* Make new keymap */
+		string_free(keymap_act[mode][(byte) c]);
+		keymap_act[mode][(byte) c] = string_make(macro_buffer);
+
+		/* Prompt */
+		prt("Keymap added.  Press any key to continue.", 17, 0);
+		inkey();
+	}
+}
+
+static void keymap_remove(const char *title, int row)
+{
+	char c;
+	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
+
+	prt(title, 13, 0);
+	prt("Key: ", 14, 0);
+
+	c = keymap_get_trigger();
+
+	if (keymap_act[mode][(byte) c])
+	{
+		/* Free old keymap */
+		string_free(keymap_act[mode][(byte) c]);
+		keymap_act[mode][(byte) c] = NULL;
+
+		prt("Removed.", 16, 0);
+	}
+	else
+	{
+		prt("No keymap to remove!", 16, 0);
+	}
+
+	/* Prompt */
+	prt("Press any key to continue.", 17, 0);
+	inkey();
+}
+
+static void macro_enter(const char *title, int row)
 {
 	char tmp[1024];
 
-	char pat[1024];
+	prt(title, 16, 0);
+	prt("Action: ", 17, 0);
 
-	int mode;
+	/* Get an action, with a default response */
+	ascii_to_text(tmp, sizeof(tmp), macro_buffer);
+	if (askfor_aux(tmp, sizeof tmp, NULL))
+	{
+		/* Save to global macro buffer */
+		text_to_ascii(macro_buffer, sizeof(macro_buffer), tmp);
+	}
+}
 
+
+static menu_type macro_menu;
+static menu_action macro_actions[] =
+{
+	{ 0, "Load a user pref file",    macro_pref_load },
+	{ 0, "Append macros to a file",  macro_pref_append },
+	{ 0, "Query a macro",            macro_query },
+	{ 0, "Create a macro",           macro_create },
+	{ 0, "Remove a macro",           macro_remove },
+	{ 0, "Append keymaps to a file", keymap_pref_append },
+	{ 0, "Query a keymap",           keymap_query },
+	{ 0, "Create a keymap",          keymap_create },
+	{ 0, "Remove a keymap",          keymap_remove },
+	{ 0, "Enter a new action",       macro_enter },
+};
+
+static void macro_browse_hook(int oid, void *db, const region *loc)
+{
+	char tmp[1024];
+
+	message_flush();
+
+	clear_from(13);
+
+	/* Show current action */
+	prt("Current action (if any) shown below:", 13, 0);
+	ascii_to_text(tmp, sizeof(tmp), macro_buffer);
+	prt(tmp, 14, 0);
+}
+
+static void do_cmd_macros(const char *title, int row)
+{
 	region loc = {0, 0, 0, 12};
 
-	if (OPT(rogue_like_commands))
-		mode = KEYMAP_MODE_ROGUE;
-	else
-		mode = KEYMAP_MODE_ORIG;
-
-
 	screen_save();
+	clear_from(0);
 
 	menu_layout(&macro_menu, &loc);
+	menu_select(&macro_menu, 0);
 
-	/* Process requests until done */
-	while (1)
-	{
-		ui_event_data c;
-		int evt;
-
-		/* Clear screen */
-		clear_from(0);
-
-		/* Describe current action */
-		prt("Current action (if any) shown below:", 13, 0);
-
-		/* Analyze the current action */
-		ascii_to_text(tmp, sizeof(tmp), macro_buffer);
-
-		/* Display the current action */
-		prt(tmp, 14, 0);
-
-		c = menu_select(&macro_menu, 0);
-
-		if (c.type == EVT_ESCAPE)
-			break;
-
-		if (c.type == EVT_KBRD && (c.key == ARROW_LEFT || c.key == ARROW_RIGHT))
-			continue;
-
-		evt = macro_actions[macro_menu.cursor].id;
-
-		switch(evt)
-		{
-		case LOAD_PREF:
-		{
-			do_cmd_pref_file_hack(16);
-			break;
-		}
-
-#ifdef ALLOW_MACROS
-		case APP_MACRO:
-		{
-			/* Dump the macros */
-			(void)dump_pref_file(macro_dump, "Dump Macros", 15);
-
-			break;
-		}
-
-		case ASK_MACRO:
-		{
-			int k;
-
-			/* Prompt */
-			prt("Command: Query a macro", 16, 0);
-
-			/* Prompt */
-			prt("Trigger: ", 18, 0);
-
-			/* Get a macro trigger */
-			do_cmd_macro_aux(pat);
-
-			/* Get the action */
-			k = macro_find_exact(pat);
-
-			/* Nothing found */
-			if (k < 0)
-			{
-				/* Prompt */
-				prt("", 0, 0);
-				msg_print("Found no macro.");
-			}
-
-			/* Found one */
-			else
-			{
-				/* Obtain the action */
-				my_strcpy(macro_buffer, macro__act[k], sizeof(macro_buffer));
-
-				/* Analyze the current action */
-				ascii_to_text(tmp, sizeof(tmp), macro_buffer);
-
-				/* Display the current action */
-				prt(tmp, 22, 0);
-
-				/* Prompt */
-				prt("", 0, 0);
-				msg_print("Found a macro.");
-			}
-			break;
-		}
-
-		case NEW_MACRO:
-		{
-			/* Prompt */
-			prt("Command: Create a macro", 16, 0);
-
-			/* Prompt */
-			prt("Trigger: ", 18, 0);
-
-			/* Get a macro trigger */
-			do_cmd_macro_aux(pat);
-
-			/* Clear */
-			clear_from(20);
-
-			/* Prompt */
-			prt("Action: ", 20, 0);
-
-			/* Convert to text */
-			ascii_to_text(tmp, sizeof(tmp), macro_buffer);
-
-			/* Get an encoded action */
-			if (askfor_aux(tmp, sizeof tmp, NULL))
-			{
-				/* Convert to ascii */
-				text_to_ascii(macro_buffer, sizeof(macro_buffer), tmp);
-
-				/* Link the macro */
-				macro_add(pat, macro_buffer);
-
-				/* Prompt */
-				prt("", 0, 0);
-				msg_print("Added a macro.");
-			}
-			break;
-		}
-
-		case DEL_MACRO:
-		{
-			/* Prompt */
-			prt("Command: Remove a macro", 16, 0);
-
-			/* Prompt */
-			prt("Trigger: ", 18, 0);
-
-			/* Get a macro trigger */
-			do_cmd_macro_aux(pat);
-
-			/* Link the macro */
-			macro_add(pat, pat);
-
-			/* Prompt */
-			prt("", 0, 0);
-			msg_print("Removed a macro.");
-			break;
-		}
-		case APP_KEYMAP:
-		{
-			/* Dump the keymaps */
-			(void)dump_pref_file(keymap_dump, "Dump Keymaps", 15);
-			break;
-		}
-		case ASK_KEYMAP:
-		{
-			cptr act;
-
-			/* Prompt */
-			prt("Command: Query a keymap", 16, 0);
-
-			/* Prompt */
-			prt("Keypress: ", 18, 0);
-
-			/* Get a keymap trigger */
-			do_cmd_macro_aux_keymap(pat);
-
-			/* Look up the keymap */
-			act = keymap_act[mode][(byte)(pat[0])];
-
-			/* Nothing found */
-			if (!act)
-			{
-				/* Prompt */
-				prt("", 0, 0);
-				msg_print("Found no keymap.");
-			}
-
-			/* Found one */
-			else
-			{
-				/* Obtain the action */
-				my_strcpy(macro_buffer, act, sizeof(macro_buffer));
-
-				/* Analyze the current action */
-				ascii_to_text(tmp, sizeof(tmp), macro_buffer);
-
-				/* Display the current action */
-				prt(tmp, 22, 0);
-
-				/* Prompt */
-				prt("", 0, 0);
-				msg_print("Found a keymap.");
-			}
-			break;
-		}
-		case NEW_KEYMAP:
-		{
-			/* Prompt */
-			prt("Command: Create a keymap", 16, 0);
-
-			/* Prompt */
-			prt("Keypress: ", 18, 0);
-
-			/* Get a keymap trigger */
-			do_cmd_macro_aux_keymap(pat);
-
-			/* Clear */
-			clear_from(20);
-
-			/* Prompt */
-			prt("Action: ", 20, 0);
-
-			/* Convert to text */
-			ascii_to_text(tmp, sizeof(tmp), macro_buffer);
-
-			/* Get an encoded action */
-			if (askfor_aux(tmp, sizeof tmp, NULL))
-			{
-				/* Convert to ascii */
-				text_to_ascii(macro_buffer, sizeof(macro_buffer), tmp);
-
-				/* Free old keymap */
-				string_free(keymap_act[mode][(byte)(pat[0])]);
-
-				/* Make new keymap */
-				keymap_act[mode][(byte)(pat[0])] = string_make(macro_buffer);
-
-				/* Prompt */
-				prt("", 0, 0);
-				msg_print("Added a keymap.");
-			}
-			break;
-		}
-		case DEL_KEYMAP:
-		{
-			/* Prompt */
-			prt("Command: Remove a keymap", 16, 0);
-
-			/* Prompt */
-			prt("Keypress: ", 18, 0);
-
-			/* Get a keymap trigger */
-			do_cmd_macro_aux_keymap(pat);
-
-			/* Free old keymap */
-			string_free(keymap_act[mode][(byte)(pat[0])]);
-
-			/* Make new keymap */
-			keymap_act[mode][(byte)(pat[0])] = NULL;
-
-			/* Prompt */
-			prt("", 0, 0);
-			msg_print("Removed a keymap.");
-			break;
-		}
-		case ENTER_ACT: /* Enter a new action */
-		{
-			/* Prompt */
-			prt("Command: Enter a new action", 16, 0);
-
-			/* Go to the correct location */
-			Term_gotoxy(0, 22);
-
-			/* Analyze the current action */
-			ascii_to_text(tmp, sizeof(tmp), macro_buffer);
-
-			/* Get an encoded action */
-			if (askfor_aux(tmp, sizeof tmp, NULL))
-			{
-				/* Extract an action */
-				text_to_ascii(macro_buffer, sizeof(macro_buffer), tmp);
-			}
-			break;
-		}
-#endif /* ALLOW_MACROS */
-		}
-
-		/* Flush messages */
-		message_flush();
-	}
-
-	/* Load screen */
 	screen_load();
 }
 
-menu_action visual_menu_items [] =
+#endif /* ALLOW_MACROS */
+
+
+
+/*** Interact with visuals ***/
+
+static void visuals_pref_load(const char *title, int row)
 {
-	{ LOAD_PREF, "Load a user pref file", 0 },
-	{ DUMP_MON,  "Dump monster attr/chars", 0 },
-	{ DUMP_OBJ,  "Dump object attr/chars", 0 },
-	{ DUMP_FEAT, "Dump feature attr/chars", 0 },
-	{ DUMP_FLAV, "Dump flavor attr/chars", 0 },
-	{ RESET_VIS, "Reset visuals", 0 },
-};
+	do_cmd_pref_file_hack(15);
+}
+
+#ifdef ALLOW_VISUALS
+
+static void visuals_dump_monsters(const char *title, int row)
+{
+	dump_pref_file(dump_monsters, title, 15);
+}
+
+static void visuals_dump_objects(const char *title, int row)
+{
+	dump_pref_file(dump_objects, title, 15);
+}
+
+static void visuals_dump_features(const char *title, int row)
+{
+	dump_pref_file(dump_features, title, 15);
+}
+
+static void visuals_dump_flavors(const char *title, int row)
+{
+	dump_pref_file(dump_flavors, title, 15);
+}
+
+#endif /* ALLOW_VISUALS */
+
+static void visuals_reset(const char *title, int row)
+{
+	/* Reset */
+	reset_visuals(TRUE);
+
+	/* Message */
+	prt("", 0, 0);
+	msg_print("Visual attr/char tables reset.");
+	message_flush();
+}
+
 
 static menu_type visual_menu;
+static menu_action visual_menu_items [] =
+{
+	{ 0, "Load a user pref file",   visuals_pref_load },
+#ifdef ALLOW_VISUALS
+	{ 0, "Dump monster attr/chars", visuals_dump_monsters },
+	{ 0, "Dump object attr/chars",  visuals_dump_objects },
+	{ 0, "Dump feature attr/chars", visuals_dump_features },
+	{ 0, "Dump flavor attr/chars",  visuals_dump_flavors },
+#endif /* ALLOW_VISUALS */
+	{ 0, "Reset visuals",           visuals_reset },
+};
+
+
+static void visuals_browse_hook(int oid, void *db, const region *loc)
+{
+	message_flush();
+	clear_from(0);
+}
 
 
 /*
  * Interact with "visuals"
  */
-void do_cmd_visuals(const char *title, int row)
+static void do_cmd_visuals(const char *title, int row)
 {
-	/* Save screen */
 	screen_save();
+	clear_from(0);
 
 	menu_layout(&visual_menu, &SCREEN_REGION);
+	menu_select(&visual_menu, 0);
 
-	/* Interact until done */
-	while (1)
-	{
-		ui_event_data key;
-		int evt = -1;
-
-		clear_from(0);
-
-		key = menu_select(&visual_menu, 0);
-
-		if (key.type == EVT_ESCAPE)
-			break;
-
-		if (key.type == EVT_KBRD && (key.key == ARROW_LEFT || key.key == ARROW_RIGHT))
-			continue;
-
-		evt = visual_menu_items[visual_menu.cursor].id;
-
-		if (evt == LOAD_PREF)
-		{
-			/* Ask for and load a user pref file */
-			do_cmd_pref_file_hack(15);
-		}
-
-#ifdef ALLOW_VISUALS
-
-		else if (evt == DUMP_MON)
-		{
-			dump_pref_file(dump_monsters, "Dump Monster attr/chars", 15);
-		}
-
-		else if (evt == DUMP_OBJ)
-		{
-			dump_pref_file(dump_objects, "Dump Object attr/chars", 15);
-		}
-
-		else if (evt == DUMP_FEAT)
-		{
-			dump_pref_file(dump_features, "Dump Feature attr/chars", 15);
-		}
-
-		/* Dump flavor attr/chars */
-		else if (evt == DUMP_FLAV) 
-		{
-			dump_pref_file(dump_flavors, "Dump Flavor attr/chars", 15);
-		}
-
-#endif /* ALLOW_VISUALS */
-
-		/* Reset visuals */
-		else if (evt == RESET_VIS)
-		{
-			/* Reset */
-			reset_visuals(TRUE);
-
-			/* Message */
-			prt("", 0, 0);
-			msg_print("Visual attr/char tables reset.");
-		}
-
-		message_flush();
-	}
-
-	/* Load screen */
 	screen_load();
 }
 
 
-static menu_action color_events [] =
-{
-	{LOAD_PREF, "Load a user pref file", 0 },
+/*** Interact with colours ***/
+
 #ifdef ALLOW_COLORS
-	{DUMP_COL, "Dump colors", 0 },
-	{MOD_COL, "Modify colors", 0 }
-#endif
-};
+
+static void colors_pref_load(const char *title, int row)
+{
+	/* Ask for and load a user pref file */
+	do_cmd_pref_file_hack(8);
+	
+	/* XXX should probably be a cleaner way to tell UI about
+	 * colour changes - how about doing this in the pref file
+	 * loading code too? */
+	Term_xtra(TERM_XTRA_REACT, 0);
+	Term_redraw();
+}
+
+static void colors_pref_dump(const char *title, int row)
+{
+	dump_pref_file(dump_colors, title, 15);
+}
+
+static void colors_modify(const char *title, int row)
+{
+	int i;
+	int cx;
+
+	static byte a = 0;
+
+	/* Prompt */
+	prt("Command: Modify colors", 8, 0);
+
+	/* Hack -- query until done */
+	while (1)
+	{
+		cptr name;
+		char index;
+
+		/* Clear */
+		clear_from(10);
+
+		/* Exhibit the normal colors */
+		for (i = 0; i < BASIC_COLORS; i++)
+		{
+			/* Exhibit this color */
+			Term_putstr(i*3, 20, -1, a, "##");
+
+			/* Exhibit character letter */
+			Term_putstr(i*3, 21, -1, (byte)i,
+						format(" %c", color_table[i].index_char));
+
+			/* Exhibit all colors */
+			Term_putstr(i*3, 22, -1, (byte)i, format("%2d", i));
+		}
+
+		/* Describe the color */
+		name = ((a < BASIC_COLORS) ? color_table[a].name : "undefined");
+		index = ((a < BASIC_COLORS) ? color_table[a].index_char : '?');
+
+		/* Describe the color */
+		Term_putstr(5, 10, -1, TERM_WHITE,
+					format("Color = %d, Name = %s, Index = %c", a, name, index));
+
+		/* Label the Current values */
+		Term_putstr(5, 12, -1, TERM_WHITE,
+				format("K = 0x%02x / R,G,B = 0x%02x,0x%02x,0x%02x",
+				   angband_color_table[a][0],
+				   angband_color_table[a][1],
+				   angband_color_table[a][2],
+				   angband_color_table[a][3]));
+
+		/* Prompt */
+		Term_putstr(0, 14, -1, TERM_WHITE,
+				"Command (n/N/k/K/r/R/g/G/b/B): ");
+
+		/* Get a command */
+		cx = inkey();
+
+		/* All done */
+		if (cx == ESCAPE) break;
+
+		/* Analyze */
+		if (cx == 'n') a = (byte)(a + 1);
+		if (cx == 'N') a = (byte)(a - 1);
+		if (cx == 'k') angband_color_table[a][0] = (byte)(angband_color_table[a][0] + 1);
+		if (cx == 'K') angband_color_table[a][0] = (byte)(angband_color_table[a][0] - 1);
+		if (cx == 'r') angband_color_table[a][1] = (byte)(angband_color_table[a][1] + 1);
+		if (cx == 'R') angband_color_table[a][1] = (byte)(angband_color_table[a][1] - 1);
+		if (cx == 'g') angband_color_table[a][2] = (byte)(angband_color_table[a][2] + 1);
+		if (cx == 'G') angband_color_table[a][2] = (byte)(angband_color_table[a][2] - 1);
+		if (cx == 'b') angband_color_table[a][3] = (byte)(angband_color_table[a][3] + 1);
+		if (cx == 'B') angband_color_table[a][3] = (byte)(angband_color_table[a][3] - 1);
+
+		/* Hack -- react to changes */
+		Term_xtra(TERM_XTRA_REACT, 0);
+
+		/* Hack -- redraw */
+		Term_redraw();
+	}
+}
 
 static menu_type color_menu;
+static menu_action color_events [] =
+{
+	{ 0, "Load a user pref file", colors_pref_load },
+	{ 0, "Dump colors",           colors_pref_dump },
+	{ 0, "Modify colors",         colors_modify }
+};
+
+
+static void colors_browse_hook(int oid, void *db, const region *loc)
+{
+	message_flush();
+	clear_from(0);
+}
 
 
 /*
@@ -1273,139 +1296,16 @@ static menu_type color_menu;
  */
 void do_cmd_colors(const char *title, int row)
 {
-	int i;
-	int cx;
-
 	screen_save();
+	clear_from(0);
 
 	menu_layout(&color_menu, &SCREEN_REGION);
+	menu_select(&color_menu, 0);
 
-	/* Interact until done */
-	while (1)
-	{
-		ui_event_data key;
-		int evt;
-		clear_from(0);
-		key = menu_select(&color_menu, 0);
-
-		/* Done */
-		if (key.type == EVT_ESCAPE) break;
-		if (key.key == ARROW_RIGHT || key.key == ARROW_LEFT) continue;
-
-		evt = color_events[color_menu.cursor].id;
-
-		/* Load a user pref file */
-		if (evt == LOAD_PREF)
-		{
-			/* Ask for and load a user pref file */
-			do_cmd_pref_file_hack(8);
-
-			/* Could skip the following if loading cancelled XXX XXX XXX */
-
-			/* Mega-Hack -- React to color changes */
-			Term_xtra(TERM_XTRA_REACT, 0);
-
-			/* Mega-Hack -- Redraw physical windows */
-			Term_redraw();
-		}
-
-#ifdef ALLOW_COLORS
-
-		/* Dump colors */
-		else if (evt == DUMP_COL)
-		{
-			dump_pref_file(dump_colors, "Dump Colors", 15);
-		}
-
-		/* Edit colors */
-		else if (evt == MOD_COL)
-		{
-			static byte a = 0;
-
-			/* Prompt */
-			prt("Command: Modify colors", 8, 0);
-
-			/* Hack -- query until done */
-			while (1)
-			{
-				cptr name;
-				char index;
-
-				/* Clear */
-				clear_from(10);
-
-				/* Exhibit the normal colors */
-				for (i = 0; i < BASIC_COLORS; i++)
-				{
-					/* Exhibit this color */
-					Term_putstr(i*3, 20, -1, a, "##");
-
-					/* Exhibit character letter */
-					Term_putstr(i*3, 21, -1, (byte)i,
-								format(" %c", color_table[i].index_char));
-
-					/* Exhibit all colors */
-					Term_putstr(i*3, 22, -1, (byte)i, format("%2d", i));
-				}
-
-				/* Describe the color */
-				name = ((a < BASIC_COLORS) ? color_table[a].name : "undefined");
-				index = ((a < BASIC_COLORS) ? color_table[a].index_char : '?');
-
-				/* Describe the color */
-				Term_putstr(5, 10, -1, TERM_WHITE,
-							format("Color = %d, Name = %s, Index = %c", a, name, index));
-
-				/* Label the Current values */
-				Term_putstr(5, 12, -1, TERM_WHITE,
-					    format("K = 0x%02x / R,G,B = 0x%02x,0x%02x,0x%02x",
-						   angband_color_table[a][0],
-						   angband_color_table[a][1],
-						   angband_color_table[a][2],
-						   angband_color_table[a][3]));
-
-				/* Prompt */
-				Term_putstr(0, 14, -1, TERM_WHITE,
-					    "Command (n/N/k/K/r/R/g/G/b/B): ");
-
-				/* Get a command */
-				cx = inkey();
-
-				/* All done */
-				if (cx == ESCAPE) break;
-
-				/* Analyze */
-				if (cx == 'n') a = (byte)(a + 1);
-				if (cx == 'N') a = (byte)(a - 1);
-				if (cx == 'k') angband_color_table[a][0] = (byte)(angband_color_table[a][0] + 1);
-				if (cx == 'K') angband_color_table[a][0] = (byte)(angband_color_table[a][0] - 1);
-				if (cx == 'r') angband_color_table[a][1] = (byte)(angband_color_table[a][1] + 1);
-				if (cx == 'R') angband_color_table[a][1] = (byte)(angband_color_table[a][1] - 1);
-				if (cx == 'g') angband_color_table[a][2] = (byte)(angband_color_table[a][2] + 1);
-				if (cx == 'G') angband_color_table[a][2] = (byte)(angband_color_table[a][2] - 1);
-				if (cx == 'b') angband_color_table[a][3] = (byte)(angband_color_table[a][3] + 1);
-				if (cx == 'B') angband_color_table[a][3] = (byte)(angband_color_table[a][3] - 1);
-
-				/* Hack -- react to changes */
-				Term_xtra(TERM_XTRA_REACT, 0);
-
-				/* Hack -- redraw */
-				Term_redraw();
-			}
-		}
-
-#endif /* ALLOW_COLORS */
-		message_flush();
-
-		/* Clear screen */
-		clear_from(0);
-	}
-
-
-	/* Load screen */
 	screen_load();
 }
 
+#endif
 
 
 /*** Non-complex menu actions ***/
@@ -1608,9 +1508,16 @@ static menu_action option_actions [] =
 	{ 'l', "Load a user pref file", options_load_pref_file },
 	{ 'o', "Save options", do_dump_options }, 
 	{0, 0, 0}, /* Interact with */	
+
+#ifdef ALLOW_MACROS
 	{ 'm', "Interact with macros (advanced)", do_cmd_macros },
+#endif /* ALLOW_MACROS */
+
 	{ 'v', "Interact with visuals (advanced)", do_cmd_visuals },
+
+#ifdef ALLOW_COLORS
 	{ 'c', "Interact with colours (advanced)", do_cmd_colors },
+#endif /* ALLOW_COLORS */
 };
 
 /*
@@ -1644,7 +1551,6 @@ void init_cmd4_c(void)
 	menu->title = "Options Menu";
 	menu->flags = MN_CASELESS_TAGS;
 
-
 	/* Initialize the options toggle menu */
 	menu = &option_toggle_menu;
 	menu_init(menu, MN_SKIN_SCROLL, &options_toggle_iter);
@@ -1654,7 +1560,7 @@ void init_cmd4_c(void)
 	menu->selections = "abcdefghijklmopqrsuvwxz";
 	menu->flags = MN_DBL_TAP;
 
-
+#ifdef ALLOW_MACROS
 	/* macro menu */
 	menu = &macro_menu;
 	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
@@ -1662,7 +1568,8 @@ void init_cmd4_c(void)
 
 	menu->title = "Interact with macros";
 	menu->selections = lower_case;
-
+	menu->browse_hook = macro_browse_hook;
+#endif /* ALLOW_MACROS */
 
 	/* visuals menu */
 	menu = &visual_menu;
@@ -1671,8 +1578,9 @@ void init_cmd4_c(void)
 
 	menu->title = "Interact with visuals";
 	menu->selections = lower_case;
+	menu->browse_hook = visuals_browse_hook;
 
-
+#ifdef ALLOW_COLORS
 	/* colors menu */
 	menu = &color_menu;
 	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
@@ -1680,6 +1588,8 @@ void init_cmd4_c(void)
 
 	menu->title = "Interact with colors";
 	menu->selections = lower_case;
+	menu->browse_hook = colors_browse_hook;
+#endif /* ALLOW_COLORS */
 }
 
 
