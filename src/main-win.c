@@ -181,6 +181,9 @@
 #define IDM_OPTIONS_GRAPHICS_OLD    401
 #define IDM_OPTIONS_GRAPHICS_ADAM   402
 #define IDM_OPTIONS_GRAPHICS_DAVID  403
+#define IDM_OPTIONS_GRAPHICS_NICE   405
+#define IDM_OPTIONS_TRPTILE         407
+#define IDM_OPTIONS_DBLTILE         408
 #define IDM_OPTIONS_BIGTILE         409
 #define IDM_OPTIONS_LOW_PRIORITY    420
 #define IDM_OPTIONS_SAVER           430
@@ -808,6 +811,73 @@ static void term_getsize(term_data *td)
 	if (td->cols < 1) td->cols = 1;
 	if (td->rows < 1) td->rows = 1;
 
+        if (use_graphics_nice)
+          {
+            switch (use_graphics)
+              {
+              case GRAPHICS_DAVID_GERVAIS:
+                {
+                  /* Reset the tile info */
+                  td->tile_wid = 32;
+                  td->tile_hgt = 32;
+                  break;
+                }
+                
+              case GRAPHICS_ADAM_BOLT:
+                {
+                  /* Reset the tile info */
+                  td->tile_wid = 16;
+                  td->tile_hgt = 16;
+                  break;
+                }
+                
+              case GRAPHICS_ORIGINAL:
+                {
+                  /* Reset the tile info */
+                  td->tile_wid = 8;
+                  td->tile_hgt = 8;
+                  break;
+                }
+                
+              case GRAPHICS_NONE:
+                {
+                  /* Reset the tile info */
+                  td->tile_wid = td->font_wid;
+                  td->tile_hgt = td->font_hgt;
+                  break;
+                }
+                
+              }
+            
+            use_trptile = FALSE;
+            use_dbltile = FALSE;
+            use_bigtile = FALSE;
+            
+            if ((td->tile_hgt >= td->font_hgt * 3) && 
+                (td->tile_wid >= td->font_wid * 3))
+              {
+                use_trptile = TRUE;
+                td->tile_wid /= 3;
+                td->tile_hgt /= 3;
+              }
+            else if ((td->tile_hgt >= td->font_hgt * 2) && 
+                     (td->tile_wid >= td->font_wid * 2))
+              {
+                use_dbltile = TRUE;
+                td->tile_wid /= 2;
+                td->tile_hgt /= 2;
+              }
+            
+            if (td->tile_wid >= td->font_wid * 2)
+              {
+                use_bigtile = TRUE;
+                td->tile_wid /= 2;
+              }
+            
+            if (td->tile_wid < td->font_wid) td->tile_wid = td->font_wid;
+            if (td->tile_hgt < td->font_hgt) td->tile_hgt = td->font_hgt;
+          }
+        
 	/* Window sizes */
 	wid = td->cols * td->tile_wid + td->size_ow1 + td->size_ow2;
 	hgt = td->rows * td->tile_hgt + td->size_oh1 + td->size_oh2;
@@ -921,6 +991,18 @@ static void save_prefs(void)
 	sprintf(buf, "%d", arg_graphics);
 	WritePrivateProfileString("Angband", "Graphics", buf, ini_file);
 
+        /* Save the "use_graphics_nice" flag */
+        strcpy(buf, arg_graphics_nice ? "1" : "0");
+        WritePrivateProfileString("Angband", "Graphics_Nice", buf, ini_file);
+
+        /* Save the "use_trptile" flag */
+        strcpy(buf, use_trptile ? "1" : "0");
+        WritePrivateProfileString("Angband", "Trptile", buf, ini_file);
+
+        /* Save the "use_dbltile" flag */
+        strcpy(buf, use_dbltile ? "1" : "0");
+        WritePrivateProfileString("Angband", "Dbltile", buf, ini_file);
+
 	/* Save the "use_bigtile" flag */
 	strcpy(buf, use_bigtile ? "1" : "0");
 	WritePrivateProfileString("Angband", "Bigtile", buf, ini_file);
@@ -987,6 +1069,15 @@ static void load_prefs(void)
 
 	/* Extract the "arg_graphics" flag */
 	arg_graphics = GetPrivateProfileInt("Angband", "Graphics", GRAPHICS_NONE, ini_file);
+
+        /* Extract the "arg_graphics_nice" flag */
+        arg_graphics_nice = GetPrivateProfileInt("Angband", "Graphics_Nice", TRUE, ini_file);
+
+        /* Extract the "use_trptile" flag */
+        use_trptile = GetPrivateProfileInt("Angband", "Trptile", FALSE, ini_file);
+
+        /* Extract the "use_dbltile" flag */
+        use_dbltile = GetPrivateProfileInt("Angband", "Dbltile", FALSE, ini_file);
 
 	/* Extract the "use_bigtile" flag */
 	use_bigtile = GetPrivateProfileInt("Angband", "Bigtile", FALSE, ini_file);
@@ -1740,6 +1831,22 @@ static errr Term_xtra_win_react(void)
 
 #ifdef USE_GRAPHICS
 
+        /* Handle "arg_graphics_nice" */
+        if (use_graphics_nice != arg_graphics_nice)
+        {
+                /* Change setting */
+                use_graphics_nice = arg_graphics_nice;
+
+                /* HACK - Assume bizarre */
+                td->bizarre = TRUE;
+
+                /* Analyze the font */
+                term_getsize(td);
+
+                /* Resize the window */
+                term_window_resize(td);
+        }
+
 	/* Handle "arg_graphics" */
 	if (use_graphics != arg_graphics)
 	{
@@ -1763,9 +1870,34 @@ static errr Term_xtra_win_react(void)
 		/* Change setting */
 		use_graphics = arg_graphics;
 
+                if (use_graphics_nice)
+                {
+                        /* HACK - Assume bizarre */
+                        td->bizarre = TRUE;
+                  
+			/* Analyze the font */
+			term_getsize(td);
+			
+			/* Resize the window */
+			term_window_resize(td);
+                }
+
 		/* Reset visuals */
 		reset_visuals(TRUE);
 	}
+
+        /* Handle "change_tilesize" */
+        if (change_tilesize)
+        {
+                /* Reset visuals */
+                reset_visuals(TRUE);
+
+                /* Reset the panel */
+                verify_panel();
+
+                /* Reset the flag */
+                change_tilesize = FALSE;
+        }
 
 #endif /* USE_GRAPHICS */
 
@@ -2073,10 +2205,9 @@ static errr Term_bigcurs_win(int x, int y)
 
 	/* Frame the grid */
 	rc.left = x * tile_wid + td->size_ow1;
-	rc.right = rc.left + 2 * tile_wid;
+        rc.right = rc.left + ((use_trptile && use_bigtile) ? 6 : (use_trptile ? 3 : ((use_dbltile && use_bigtile) ? 4 : 2))) * tile_wid;
 	rc.top = y * tile_hgt + td->size_oh1;
-	rc.bottom = rc.top + tile_hgt;
-
+        rc.bottom = rc.top + (use_trptile ? 3 : (use_dbltile ? 2 : 1)) * tile_hg
 	/* Cursor is done as a yellow "box" */
 	hdc = GetDC(td->w);
 	FrameRect(hdc, &rc, hbrYellow);
@@ -2229,7 +2360,7 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 
 	int i;
 	int x1, y1, w1, h1;
-	int x2, y2, w2, h2, tw2;
+	int x2, y2, w2, h2, tw2, th2;
 	int x3, y3;
 
 	HDC hdcMask;
@@ -2250,14 +2381,28 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 		w2 = td->map_tile_wid;
 		h2 = td->map_tile_hgt;
 		tw2 = w2;
+                th2 = h2;
 	}
 	else
 	{
 		w2 = td->tile_wid;
 		h2 = td->tile_hgt;
 
-		/* big tile mode */
-		if (use_bigtile)
+                /* Triple tile mode */
+                if (use_trptile)
+                        th2 = 3 * h2;
+                else if (use_dbltile)
+                        th2 = 2 * h2;
+                else
+                        th2 = h2;
+
+                /* Triple tile mode */
+                if (use_trptile)
+                        tw2 = (use_bigtile ? 6 : 3) * w2;
+                else if (use_dbltile)
+                        tw2 = (use_bigtile ? 4 : 2) * w2;
+                /* big tile mode */
+                else if (use_bigtile)
 			tw2 = 2 * w2;
 		else
 			tw2 = w2;
@@ -2286,7 +2431,7 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 	}
 
 	/* Draw attr/char pairs */
-	for (i = 0; i < n; i++, x2 += w2)
+        for (i = n-1; i >= 0; i--, x2 -= w2)
 	{
 		byte a = ap[i];
 		char c = cp[i];
@@ -2306,16 +2451,20 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 			y3 = (tap[i] & 0x7F) * h1;
 
 			/* Perfect size */
-			if ((w1 == tw2) && (h1 == h2))
+			if ((w1 == tw2) && (h1 == th2))
 			{
 				/* Copy the terrain picture from the bitmap to the window */
-				BitBlt(hdc, x2, y2, tw2, h2, hdcSrc, x3, y3, SRCCOPY);
+				BitBlt(hdc, x2, y2, tw2, th2, hdcSrc, x3, y3, SRCCOPY);
 
-				/* Mask out the tile */
-				BitBlt(hdc, x2, y2, tw2, h2, hdcMask, x1, y1, SRCAND);
+                                /* Only draw if terrain and overlay are different */
+                                if ((x1 != x3) || (y1 != y3))
+                                {
+				        /* Mask out the tile */
+				        BitBlt(hdc, x2, y2, tw2, th2, hdcMask, x1, y1, SRCAND);
 
-				/* Draw the tile */
-				BitBlt(hdc, x2, y2, tw2, h2, hdcSrc, x1, y1, SRCPAINT);
+					/* Draw the tile */
+					BitBlt(hdc, x2, y2, tw2, th2, hdcSrc, x1, y1, SRCPAINT);
+				}
 			}
 
 			/* Need to stretch */
@@ -2325,26 +2474,26 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 				SetStretchBltMode(hdc, COLORONCOLOR);
 
 				/* Copy the terrain picture from the bitmap to the window */
-				StretchBlt(hdc, x2, y2, tw2, h2, hdcSrc, x3, y3, w1, h1, SRCCOPY);
+				StretchBlt(hdc, x2, y2, tw2, th2, hdcSrc, x3, y3, w1, h1, SRCCOPY);
 
 				/* Only draw if terrain and overlay are different */
 				if ((x1 != x3) || (y1 != y3))
 				{
 					/* Mask out the tile */
-					StretchBlt(hdc, x2, y2, tw2, h2, hdcMask, x1, y1, w1, h1, SRCAND);
+					StretchBlt(hdc, x2, y2, tw2, th2, hdcMask, x1, y1, w1, h1, SRCAND);
 
 					/* Draw the tile */
-					StretchBlt(hdc, x2, y2, tw2, h2, hdcSrc, x1, y1, w1, h1, SRCPAINT);
+					StretchBlt(hdc, x2, y2, tw2, th2, hdcSrc, x1, y1, w1, h1, SRCPAINT);
 				}
 			}
 		}
 		else
 		{
 			/* Perfect size */
-			if ((w1 == tw2) && (h1 == h2))
+			if ((w1 == tw2) && (h1 == th2))
 			{
 				/* Copy the picture from the bitmap to the window */
-				BitBlt(hdc, x2, y2, tw2, h2, hdcSrc, x1, y1, SRCCOPY);
+				BitBlt(hdc, x2, y2, tw2, th2, hdcSrc, x1, y1, SRCCOPY);
 			}
 
 			/* Need to stretch */
@@ -2354,7 +2503,7 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 				SetStretchBltMode(hdc, COLORONCOLOR);
 
 				/* Copy the picture from the bitmap to the window */
-				StretchBlt(hdc, x2, y2, tw2, h2, hdcSrc, x1, y1, w1, h1, SRCCOPY);
+				StretchBlt(hdc, x2, y2, tw2, th2, hdcSrc, x1, y1, w1, h1, SRCCOPY);
 			}
 		}
 	}
@@ -2859,6 +3008,12 @@ static void setup_menus(void)
 	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 	EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_DAVID,
 	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+        EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE,
+                       MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+        EnableMenuItem(hm, IDM_OPTIONS_TRPTILE,
+                       MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+        EnableMenuItem(hm, IDM_OPTIONS_DBLTILE,
+                       MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 	EnableMenuItem(hm, IDM_OPTIONS_BIGTILE,
 	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 	EnableMenuItem(hm, IDM_OPTIONS_SAVER,
@@ -2883,6 +3038,12 @@ static void setup_menus(void)
 	CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS_DAVID,
 	              (arg_graphics == GRAPHICS_DAVID_GERVAIS ? MF_CHECKED : MF_UNCHECKED));
 
+        CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE,
+                      (arg_graphics_nice ? MF_CHECKED : MF_UNCHECKED));
+        CheckMenuItem(hm, IDM_OPTIONS_TRPTILE,
+                      (use_trptile ? MF_CHECKED : MF_UNCHECKED));
+        CheckMenuItem(hm, IDM_OPTIONS_DBLTILE,
+                      (use_dbltile ? MF_CHECKED : MF_UNCHECKED));
 	CheckMenuItem(hm, IDM_OPTIONS_BIGTILE,
 	              (use_bigtile ? MF_CHECKED : MF_UNCHECKED));
 
@@ -2902,6 +3063,9 @@ static void setup_menus(void)
 		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_OLD, MF_ENABLED);
 		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_ADAM, MF_ENABLED);
 		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_DAVID, MF_ENABLED);
+		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE, MF_ENABLED);
+		EnableMenuItem(hm, IDM_OPTIONS_TRPTILE, MF_ENABLED);
+		EnableMenuItem(hm, IDM_OPTIONS_DBLTILE, MF_ENABLED);
 		EnableMenuItem(hm, IDM_OPTIONS_BIGTILE, MF_ENABLED);
 	}
 #endif /* USE_GRAPHICS */
@@ -3270,6 +3434,12 @@ static void process_menus(WORD wCmd)
 		case IDM_WINDOW_FONT_6:
 		case IDM_WINDOW_FONT_7:
 		{
+                        if ((use_graphics_nice) && (!inkey_flag || !initialized))
+			  {
+			          plog("You may not do that right now.");
+				  break;
+			  }
+                  
 			i = wCmd - IDM_WINDOW_FONT_0;
 
 			if ((i < 0) || (i >= MAX_TERM_DATA)) break;
@@ -3277,6 +3447,12 @@ static void process_menus(WORD wCmd)
 			td = &data[i];
 
 			term_change_font(td);
+
+			if (use_graphics_nice)
+			{
+			        /* Hack -- Force redraw */
+			        Term_key_push(KTRL('R'));
+			}
 
 			break;
 		}
@@ -3502,6 +3678,81 @@ static void process_menus(WORD wCmd)
 			break;
 		}
 
+                case IDM_OPTIONS_GRAPHICS_NICE:
+                {
+                        /* Paranoia */
+                        if (!inkey_flag || !initialized)
+			{
+				plog("You may not do that right now.");
+                                break;
+                        }
+
+                        /* Toggle "arg_graphics_nice" */
+                        arg_graphics_nice = !arg_graphics_nice;
+
+                        /* React to changes */
+                        Term_xtra_win_react();
+
+                        /* Hack -- Force redraw */
+                        Term_key_push(KTRL('R'));
+
+                        break;
+                }
+
+                case IDM_OPTIONS_TRPTILE:
+                {
+                        /* Paranoia */
+                        if (!inkey_flag || !initialized)
+                        {
+                                plog("You may not do that right now.");
+                                break;
+                        }
+
+                        /* Toggle "use_trptile" */
+                        use_trptile = !use_trptile;
+
+                        /* Cancel "use_dbltile" */
+                        use_dbltile = FALSE;
+
+                        /* Set flag */
+                        change_tilesize = TRUE;
+
+                        /* React to changes */
+                        Term_xtra_win_react();
+
+                        /* Hack -- Force redraw */
+                        Term_key_push(KTRL('R'));
+
+                        break;
+                        }
+
+                case IDM_OPTIONS_DBLTILE:
+                                {
+                        /* Paranoia */
+                        if (!inkey_flag || !initialized)
+                                        {
+                                plog("You may not do that right now.");
+                                break;
+                                }
+
+                        /* Toggle "use_dbltile" */
+                        use_dbltile = !use_dbltile;
+
+                        /* Cancel "use_trptile" */
+                        use_trptile = FALSE;
+
+                        /* Set flag */
+                        change_tilesize = TRUE;
+
+                        /* React to changes */
+                        Term_xtra_win_react();
+
+                        /* Hack -- Force redraw */
+                        Term_key_push(KTRL('R'));
+
+                        break;
+                                                }
+
 		case IDM_OPTIONS_BIGTILE:
 		{
 			/* Paranoia */
@@ -3514,7 +3765,13 @@ static void process_menus(WORD wCmd)
 			/* Toggle "use_bigtile" */
 			use_bigtile = !use_bigtile;
 
-			/* Mega-Hack : Redraw screen */
+                        /* Set flag */
+                        change_tilesize = TRUE;
+
+                        /* React to changes */
+                        Term_xtra_win_react();
+
+ 			/* Mega-Hack : Redraw screen */
 			Term_key_push(KTRL('R'));
 
 			break;
