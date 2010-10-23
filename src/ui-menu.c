@@ -622,17 +622,6 @@ bool menu_handle_keypress(menu_type *menu, const ui_event_data *in,
 
 /* 
  * Run a menu.
- *
- * 'menu' is the menu.
- * 'notify' is a bitwise OR of ui_event_type events that you want to know about,
- *
- * Event types that can be returned:
- *   EVT_ESCAPE: no selection; go back (by default)
- *   EVT_SELECT: menu->cursor is the selected menu item (by default)
- *   EVT_MOVE:   the cursor has moved 
- *   EVT_KBRD:   unhandled keyboard events
- *   EVT_MOUSE:  unhandled mouse events
- *   EVT_RESIZE: resize events
  */
 ui_event_data menu_select(menu_type *menu, int notify)
 {
@@ -732,16 +721,12 @@ static const menu_skin *menu_find_skin(skin_id id)
 }
 
 
-/*
- * Set the filter to a new value.
- */
 void menu_set_filter(menu_type *menu, const int filter_list[], int n)
 {
 	menu->filter_list = filter_list;
 	menu->filter_count = n;
 }
 
-/* Remove the filter */
 void menu_release_filter(menu_type *menu)
 {
 	menu->filter_list = NULL;
@@ -810,11 +795,6 @@ void *menu_priv(menu_type *menu)
 	return menu->menu_data;
 }
 
-
-/*
- * Correctly initialise the menu block at 'menu' so that it's ready to use.
- * Use the display skin given in 'skin' and the iterator in 'iter'.
- */
 void menu_init(menu_type *menu, skin_id skin_id, const menu_iter *iter)
 {
 	const menu_skin *skin = menu_find_skin(skin_id);
