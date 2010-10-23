@@ -371,7 +371,7 @@ static void death_spoilers(const char *title, int row)
  * Menu structures for the death menu. Note that Quit must always be the
  * last option, due to a hard-coded check in death_screen
  */
-static menu_type death_menu;
+static menu_type *death_menu;
 static menu_action death_actions[] =
 {
 	{ 'i', "Information",   death_info      },
@@ -391,7 +391,6 @@ static menu_action death_actions[] =
  */
 void death_screen(void)
 {
-	menu_type *menu;
 	const region area = { 51, 2, 0, N_ELEMENTS(death_actions) };
 
 	/* Retire in the town in a good state */
@@ -424,17 +423,19 @@ void death_screen(void)
 	message_flush();
 
 
-	/* Initialize the menu */
-	menu = &death_menu;
-	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
-	menu_setpriv(menu, N_ELEMENTS(death_actions), death_actions);
-	menu_layout(menu, &area);
-	menu->flags = MN_CASELESS_TAGS;
 
-	while (TRUE)
+	if (!death_menu)
 	{
-		menu_select(&death_menu, 0);
-		if (get_check("Do you want to quit? "))
-			break;
+		death_menu = menu_new_action(death_actions,
+				N_ELEMENTS(death_actions));
+
+		death_menu->flags = MN_CASELESS_TAGS;
 	}
+
+	menu_layout(death_menu, &area);
+
+	do
+	{
+		menu_select(death_menu, 0);
+	} while (!get_check("Do you want to quit? "));
 }

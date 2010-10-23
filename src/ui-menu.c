@@ -805,3 +805,17 @@ void menu_init(menu_type *menu, skin_id skin_id, const menu_iter *iter)
 	menu->row_funcs = iter;
 	menu->skin = skin;
 }
+
+menu_type *menu_new(skin_id skin_id, const menu_iter *iter)
+{
+	menu_type *m = mem_alloc(sizeof *m);
+	menu_init(m, skin_id, iter);
+	return m;
+}
+
+menu_type *menu_new_action(menu_action *acts, size_t n)
+{
+	menu_type *m = menu_new(MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
+	menu_setpriv(m, n, acts);
+	return m;
+}

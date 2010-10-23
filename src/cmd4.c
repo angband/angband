@@ -537,7 +537,7 @@ static const menu_iter options_toggle_iter =
 	NULL
 };
 
-static menu_type option_toggle_menu;
+static menu_type *option_toggle_menu;
 
 
 /*
@@ -547,8 +547,17 @@ static void do_cmd_options_aux(const char *name, int page)
 {
 	int i;
 
-	menu_type *menu = &option_toggle_menu;
-	menu->title = name;
+	if (!option_toggle_menu)
+	{
+		option_toggle_menu = menu_new(MN_SKIN_SCROLL, &options_toggle_iter);
+
+		option_toggle_menu->prompt = "Set option (y/n/t), '?' for information";
+		option_toggle_menu->cmd_keys = "?YyNnTt";
+		option_toggle_menu->selections = "abcdefghijklmopqrsuvwxz";
+		option_toggle_menu->flags = MN_DBL_TAP;
+	}
+
+	option_toggle_menu->title = name;
 
 	/* XXX assert(page < OPT_PAGE_MAX); */
 
@@ -560,15 +569,15 @@ static void do_cmd_options_aux(const char *name, int page)
 	}
 
 	/* Set the data to the player's options */
-	menu_setpriv(menu, OPT_MAX, &op_ptr->opt);
-	menu_set_filter(menu, option_page[page], i);
-	menu_layout(menu, &SCREEN_REGION);
+	menu_setpriv(option_toggle_menu, OPT_MAX, &op_ptr->opt);
+	menu_set_filter(option_toggle_menu, option_page[page], i);
+	menu_layout(option_toggle_menu, &SCREEN_REGION);
 
 	/* Run the menu */
 	screen_save();
 	clear_from(0);
 
-	menu_select(menu, 0);
+	menu_select(option_toggle_menu, 0);
 
 	screen_load();
 }
@@ -597,6 +606,7 @@ static void do_cmd_options_win(const char *name, int row)
 
 
 	/* Clear screen */
+	screen_save();
 	clear_from(0);
 
 	/* Interact */
@@ -723,6 +733,8 @@ static void do_cmd_options_win(const char *name, int row)
 
 	/* Notice changes */
 	subwindows_set_flags(new_flags, ANGBAND_TERM_MAX);
+
+	screen_load();
 }
 
 
@@ -1049,22 +1061,6 @@ static void macro_enter(const char *title, int row)
 	}
 }
 
-
-static menu_type macro_menu;
-static menu_action macro_actions[] =
-{
-	{ 0, "Load a user pref file",    macro_pref_load },
-	{ 0, "Append macros to a file",  macro_pref_append },
-	{ 0, "Query a macro",            macro_query },
-	{ 0, "Create a macro",           macro_create },
-	{ 0, "Remove a macro",           macro_remove },
-	{ 0, "Append keymaps to a file", keymap_pref_append },
-	{ 0, "Query a keymap",           keymap_query },
-	{ 0, "Create a keymap",          keymap_create },
-	{ 0, "Remove a keymap",          keymap_remove },
-	{ 0, "Enter a new action",       macro_enter },
-};
-
 static void macro_browse_hook(int oid, void *db, const region *loc)
 {
 	char tmp[1024];
@@ -1079,6 +1075,21 @@ static void macro_browse_hook(int oid, void *db, const region *loc)
 	prt(tmp, 14, 0);
 }
 
+static menu_type *macro_menu;
+static menu_action macro_actions[] =
+{
+	{ 0, "Load a user pref file",    macro_pref_load },
+	{ 0, "Append macros to a file",  macro_pref_append },
+	{ 0, "Query a macro",            macro_query },
+	{ 0, "Create a macro",           macro_create },
+	{ 0, "Remove a macro",           macro_remove },
+	{ 0, "Append keymaps to a file", keymap_pref_append },
+	{ 0, "Query a keymap",           keymap_query },
+	{ 0, "Create a keymap",          keymap_create },
+	{ 0, "Remove a keymap",          keymap_remove },
+	{ 0, "Enter a new action",       macro_enter },
+};
+
 static void do_cmd_macros(const char *title, int row)
 {
 	region loc = {0, 0, 0, 12};
@@ -1086,8 +1097,18 @@ static void do_cmd_macros(const char *title, int row)
 	screen_save();
 	clear_from(0);
 
-	menu_layout(&macro_menu, &loc);
-	menu_select(&macro_menu, 0);
+	if (!macro_menu)
+	{
+		macro_menu = menu_new_action(macro_actions,
+				N_ELEMENTS(macro_actions));
+	
+		macro_menu->title = title;
+		macro_menu->selections = lower_case;
+		macro_menu->browse_hook = macro_browse_hook;
+	}
+
+	menu_layout(macro_menu, &loc);
+	menu_select(macro_menu, 0);
 
 	screen_load();
 }
@@ -1139,7 +1160,7 @@ static void visuals_reset(const char *title, int row)
 }
 
 
-static menu_type visual_menu;
+static menu_type *visual_menu;
 static menu_action visual_menu_items [] =
 {
 	{ 0, "Load a user pref file",   visuals_pref_load },
@@ -1168,8 +1189,18 @@ static void do_cmd_visuals(const char *title, int row)
 	screen_save();
 	clear_from(0);
 
-	menu_layout(&visual_menu, &SCREEN_REGION);
-	menu_select(&visual_menu, 0);
+	if (!visual_menu)
+	{
+		visual_menu = menu_new_action(visual_menu_items,
+				N_ELEMENTS(visual_menu_items));
+
+		visual_menu->title = title;
+		visual_menu->selections = lower_case;
+		visual_menu->browse_hook = visuals_browse_hook;
+	}
+
+	menu_layout(visual_menu, &SCREEN_REGION);
+	menu_select(visual_menu, 0);
 
 	screen_load();
 }
@@ -1275,21 +1306,20 @@ static void colors_modify(const char *title, int row)
 	}
 }
 
-static menu_type color_menu;
-static menu_action color_events [] =
-{
-	{ 0, "Load a user pref file", colors_pref_load },
-	{ 0, "Dump colors",           colors_pref_dump },
-	{ 0, "Modify colors",         colors_modify }
-};
-
-
 static void colors_browse_hook(int oid, void *db, const region *loc)
 {
 	message_flush();
 	clear_from(0);
 }
 
+
+static menu_type *color_menu;
+static menu_action color_events [] =
+{
+	{ 0, "Load a user pref file", colors_pref_load },
+	{ 0, "Dump colors",           colors_pref_dump },
+	{ 0, "Modify colors",         colors_modify }
+};
 
 /*
  * Interact with "colors"
@@ -1299,8 +1329,18 @@ void do_cmd_colors(const char *title, int row)
 	screen_save();
 	clear_from(0);
 
-	menu_layout(&color_menu, &SCREEN_REGION);
-	menu_select(&color_menu, 0);
+	if (!color_menu)
+	{
+		color_menu = menu_new_action(color_events,
+			N_ELEMENTS(color_events));
+
+		color_menu->title = title;
+		color_menu->selections = lower_case;
+		color_menu->browse_hook = colors_browse_hook;
+	}
+
+	menu_layout(color_menu, &SCREEN_REGION);
+	menu_select(color_menu, 0);
 
 	screen_load();
 }
@@ -1491,7 +1531,7 @@ static void options_load_pref_file(const char *n, int row)
 
 /*** Main menu definitions and display ***/
 
-static menu_type option_menu;
+static menu_type *option_menu;
 static menu_action option_actions [] = 
 {
 	{ 'a', "Interface options", do_cmd_options_aux },
@@ -1520,81 +1560,30 @@ static menu_action option_actions [] =
 #endif /* ALLOW_COLORS */
 };
 
+
 /*
  * Display the options main menu.
  */
 void do_cmd_options(void)
 {
+	if (!option_menu)
+	{
+		/* Main option menu */
+		option_menu = menu_new_action(option_actions,
+				N_ELEMENTS(option_actions));
+
+		option_menu->title = "Options Menu";
+		option_menu->flags = MN_CASELESS_TAGS;
+	}
+
 	screen_save();
 	clear_from(0);
-	menu_layout(&option_menu, &SCREEN_REGION);
-	menu_select(&option_menu, 0);
+
+	menu_layout(option_menu, &SCREEN_REGION);
+	menu_select(option_menu, 0);
+
 	screen_load();
 }
-
-
-
-
-/*
- * Initialise all menus used here.
- */
-void init_cmd4_c(void)
-{
-	/* Initialize the menus */
-	menu_type *menu;
-
-	/* options screen selection menu */
-	menu = &option_menu;
-	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
-	menu_setpriv(menu, N_ELEMENTS(option_actions), option_actions);
-
-	menu->title = "Options Menu";
-	menu->flags = MN_CASELESS_TAGS;
-
-	/* Initialize the options toggle menu */
-	menu = &option_toggle_menu;
-	menu_init(menu, MN_SKIN_SCROLL, &options_toggle_iter);
-
-	menu->prompt = "Set option (y/n/t), '?' for information";
-	menu->cmd_keys = "?YyNnTt";
-	menu->selections = "abcdefghijklmopqrsuvwxz";
-	menu->flags = MN_DBL_TAP;
-
-#ifdef ALLOW_MACROS
-	/* macro menu */
-	menu = &macro_menu;
-	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
-	menu_setpriv(menu, N_ELEMENTS(macro_actions), macro_actions);
-
-	menu->title = "Interact with macros";
-	menu->selections = lower_case;
-	menu->browse_hook = macro_browse_hook;
-#endif /* ALLOW_MACROS */
-
-	/* visuals menu */
-	menu = &visual_menu;
-	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
-	menu_setpriv(menu, N_ELEMENTS(visual_menu_items), visual_menu_items);
-
-	menu->title = "Interact with visuals";
-	menu->selections = lower_case;
-	menu->browse_hook = visuals_browse_hook;
-
-#ifdef ALLOW_COLORS
-	/* colors menu */
-	menu = &color_menu;
-	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
-	menu_setpriv(menu, N_ELEMENTS(color_events), color_events);
-
-	menu->title = "Interact with colors";
-	menu->selections = lower_case;
-	menu->browse_hook = colors_browse_hook;
-#endif /* ALLOW_COLORS */
-}
-
-
-
-
 
 
 

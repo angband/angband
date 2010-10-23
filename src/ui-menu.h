@@ -232,6 +232,13 @@ struct menu_type
 /*** Menu API ***/
 
 /**
+ * Allocate and return a new, initialised, menu.
+ */
+menu_type *menu_new(skin_id, const menu_iter *iter);
+menu_type *menu_new_action(menu_action *acts, size_t n);
+
+
+/**
  * Initialise a menu, using the skin and iter functions specified.
  */
 void menu_init(menu_type *menu, skin_id skin, const menu_iter *iter);

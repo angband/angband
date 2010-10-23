@@ -1180,10 +1180,6 @@ bool init_angband(void)
 {
 	event_signal(EVENT_ENTER_INIT);
 
-	/* Initialize the menus */
-	/* This must occur before preference files are read(?) */
-	init_cmd4_c();
-
 
 	/*** Initialize some arrays ***/
 
