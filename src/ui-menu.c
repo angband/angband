@@ -449,11 +449,12 @@ void menu_refresh(menu_type *menu)
 		oid = menu->filter_list[oid];
 
 	if (menu->title)
-		Term_putstr(loc->col, loc->row, loc->width, TERM_WHITE, menu->title);
+		Term_putstr(menu->boundary.col, menu->boundary.row,
+				loc->width, TERM_WHITE, menu->title);
 
 	if (menu->prompt)
-		Term_putstr(loc->col, loc->row + loc->page_rows - 1, loc->width,
-					TERM_WHITE, menu->prompt);
+		Term_putstr(loc->col, loc->row + loc->page_rows - 1,
+				loc->width, TERM_WHITE, menu->prompt);
 
 	if (menu->browse_hook && oid >= 0)
 		menu->browse_hook(oid, menu->menu_data, loc);
