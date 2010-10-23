@@ -65,8 +65,8 @@ typedef enum
  */
 typedef struct
 {
-	/* Object id used to define macros &c */
-	int id;
+	/* Tag (optional) */
+	char tag;
 
 	/* Name of the action */
 	const char *name;

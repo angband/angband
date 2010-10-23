@@ -58,8 +58,8 @@ static char menu_action_tag(menu_type *m, int oid)
 {
 	menu_action *acts = menu_priv(m);
 
-	if (acts[oid].id)
-		return acts[oid].id;
+	if (acts[oid].tag)
+		return acts[oid].tag;
 
 	return 0;
 }
