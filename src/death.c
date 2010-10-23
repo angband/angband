@@ -179,13 +179,10 @@ static void display_winner(void)
 /*
  * Menu command: dump character dump to file.
  */
-static void death_file(void *unused, const char *title)
+static void death_file(const char *title, int row)
 {
 	char buf[1024];
 	char ftmp[80];
-
-	(void)unused;
-	(void)title;
 
 	strnfmt(ftmp, sizeof(ftmp), "%s.txt", op_ptr->base_name);
 
@@ -212,14 +209,11 @@ static void death_file(void *unused, const char *title)
 /*
  * Menu command: view character dump and inventory.
  */
-static void death_info(void *unused, const char *title)
+static void death_info(const char *title, int row)
 {
 	int i, j, k;
 	object_type *o_ptr;
 	store_type *st_ptr = &store[STORE_HOME];
-
-	(void)unused;
-	(void)title;
 
 
 	screen_save();
@@ -307,11 +301,8 @@ static void death_info(void *unused, const char *title)
 /*
  * Menu command: peruse pre-death messages.
  */
-static void death_messages(void *unused, const char *title)
+static void death_messages(const char *title, int row)
 {
-	(void)unused;
-	(void)title;
-
 	screen_save();
 	do_cmd_messages();
 	screen_load();
@@ -320,11 +311,8 @@ static void death_messages(void *unused, const char *title)
 /*
  * Menu command: see top twenty scores.
  */
-static void death_scores(void *unused, const char *title)
+static void death_scores(const char *title, int row)
 {
-	(void)unused;
-	(void)title;
-
 	screen_save();
 	show_scores();
 	screen_load();
@@ -333,13 +321,10 @@ static void death_scores(void *unused, const char *title)
 /*
  * Menu command: examine items in the inventory.
  */
-static void death_examine(void *unused, const char *title)
+static void death_examine(const char *title, int row)
 {
 	int item;
 	cptr q, s;
-
-	(void)unused;
-	(void)title;
 
 	/* Get an item */
 	q = "Examine which item? ";
@@ -369,22 +354,16 @@ static void death_examine(void *unused, const char *title)
 /*
  * Menu command: view character history.
  */
-static void death_history(void *unused, const char *title)
+static void death_history(const char *title, int row)
 {
-	(void)unused;
-	(void)title;
-
 	history_display();
 }
 
 /*
  * Menu command: allow spoiler generation (mainly for randarts).
  */
-static void death_spoilers(void *unused, const char *title)
+static void death_spoilers(const char *title, int row)
 {
-	(void)unused;
-	(void)title;
-
 	do_cmd_spoilers();
 }
 
@@ -395,14 +374,14 @@ static void death_spoilers(void *unused, const char *title)
 static menu_type death_menu;
 static menu_action death_actions[] =
 {
-	{ 'i', "Information",   death_info,     NULL },
-	{ 'm', "Messages",      death_messages, NULL },
-	{ 'f', "File dump",     death_file,     NULL },
-	{ 'v', "View scores",   death_scores,   NULL },
-	{ 'x', "Examine items", death_examine,  NULL },
-	{ 'h', "History",       death_history,  NULL },
-	{ 's', "Spoilers",	death_spoilers,	NULL },
-	{ 'q', "Quit",          NULL,           NULL },
+	{ 'i', "Information",   death_info      },
+	{ 'm', "Messages",      death_messages  },
+	{ 'f', "File dump",     death_file      },
+	{ 'v', "View scores",   death_scores    },
+	{ 'x', "Examine items", death_examine   },
+	{ 'h', "History",       death_history   },
+	{ 's', "Spoilers",	death_spoilers  },
+	{ 'q', "Quit",          NULL            },
 };
 
 
@@ -454,12 +433,8 @@ void death_screen(void)
 
 	while (TRUE)
 	{
-		ui_event_data c = menu_select(&death_menu, 0);
-
-		if (c.type == EVT_ESCAPE || menu->cursor == (menu->count - 1))
-		{
-			if (get_check("Do you want to quit? "))
-				break;
-		}
+		menu_select(&death_menu, 0);
+		if (get_check("Do you want to quit? "))
+			break;
 	}
 }

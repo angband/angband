@@ -18,7 +18,7 @@ void option_set_defaults(void);
 #define OPT_PAGE_PER				16
 
 /* The option data structures */
-extern const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
+extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 
 
 

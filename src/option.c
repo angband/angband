@@ -21,7 +21,7 @@
 /*
  * Option screen interface
  */
-const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
+const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 {
 	/* Interface */
 	{
@@ -47,7 +47,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 	{
 		OPT_hp_changes_color,
 		OPT_highlight_player,
- 		  OPT_center_player,
+		OPT_center_player,
 		OPT_show_piles,
 		OPT_show_flavors,
 		OPT_show_labels,

@@ -1176,7 +1176,7 @@ static const menu_iter options_item_iter =
 /*
  * Display and handle the main squelching menu.
  */
-void do_cmd_options_item(void *unused, cptr title)
+void do_cmd_options_item(const char *title, int row)
 {
 	menu_type menu;
 

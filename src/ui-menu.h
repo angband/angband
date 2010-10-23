@@ -1,21 +1,13 @@
-/*
- * Copyright (c) 2007 Pete Mack and others
- * This code released under the Gnu Public License. See www.fsf.org
- * for current GPL license details. Addition permission granted to
- * incorporate modifications in all Angband variants as defined in the
- * Angband variants FAQ. See rec.games.roguelike.angband for FAQ.
- */
-
 #ifndef INCLUDED_UI_MENU_H
 #define INCLUDED_UI_MENU_H
 
-/* ============= Constants ============ */
+/*** Constants ***/
 
 /* Colors for interactive menus */
 enum
 {
-	CURS_UNKNOWN = 0,		/* Use gray; dark blue for cursor */
-	CURS_KNOWN = 1			/* Use white; light blue for cursor */
+	CURS_UNKNOWN = 0,		/* Use gray / dark blue for cursor */
+	CURS_KNOWN = 1			/* Use white / light blue for cursor */
 };
 
 /* Cursor colours for different states */
@@ -26,13 +18,6 @@ extern const char lower_case[];			/* abc..z */
 extern const char upper_case[];			/* ABC..Z */
 
 
-
-/* Forward declare */
-/* RISC OS already has a menu_item in system library */
-#ifdef RISCOS
-#define menu_item ang_menu_item
-#endif
-
 typedef struct menu_item menu_item;
 typedef struct menu_type menu_type;
 typedef struct menu_skin menu_skin;
@@ -40,12 +25,6 @@ typedef struct menu_iter menu_iter;
 
 
 /* ================== MENUS ================= */
-
-/*
- * Performs an action on object with an optional environment label 
- * Member function of "menu_iter" VTAB
- */
-typedef void (*action_f)(void *object, const char *name);
 
 /* 
  * Displays a single row in a menu
@@ -67,8 +46,7 @@ typedef struct menu_action
 {
 	int id;			/* Object id used to define macros &c */
 	const char *name;	/* Name of the action */
-	action_f action;	/* Action to perform, if any */
-	void *data;		/* Local environment for the action, if required */
+	void (*action)(const char *name, int row); /* Action to perform */
 } menu_action;
 
 
@@ -230,33 +208,93 @@ struct menu_type
 
 
 
+/*** Menu API ***/
 
-/* Initialize a menu given skin ID and an iterator */
+/**
+ * Initialise a menu, using the skin and iter functions specified.
+ */
 void menu_init(menu_type *menu, skin_id skin, const menu_iter *iter);
 
-/* Find a menu iterator struct */
+
+/**
+ * Given a predefined menu kind, return its iter functions.
+ */
 const menu_iter *menu_find_iter(menu_iter_id iter_id);
 
-/* Get or set private data, with menu length */
-void *menu_priv(menu_type *menu);
+
+/**
+ * Set menu private data and the number of menu items.
+ *
+ * Menu private data is then available from inside menu callbacks using
+ * menu_priv().
+ */
 void menu_setpriv(menu_type *menu, int count, void *data);
 
-/* TODO: This belongs in the VTAB */
-bool menu_layout(menu_type *menu, const region *loc);
 
-/* accessor & utility functions */
+/**
+ * Return menu private data, set with menu_setpriv().
+ */
+void *menu_priv(menu_type *menu);
+
+
+/*
+ * Set a filter on what items a menu can display.
+ *
+ * Use this if your menu private data has 100 items, but you want to choose
+ * which ones of those to display at any given time, e.g. in an inventory menu.
+ * object_list[] should be an array of indexes to display, and n should be its
+ * length.
+ */
 void menu_set_filter(menu_type *menu, const int object_list[], int n);
+
+
+/**
+ * Remove any filters set on a menu by menu_set_filer().
+ */
 void menu_release_filter(menu_type *menu);
 
-/* Run a menu */
+
+/**
+ * Ready a menu for display in the region specified.
+ *
+ * XXX not ready for dynamic resizing just yet
+ */
+bool menu_layout(menu_type *menu, const region *loc);
+
+
+/**
+ * Display a menu.
+ */
+void menu_refresh(menu_type *menu);
+
+
+/**
+ * Run a menu.
+ *
+ * 'notify' is a bitwise OR of ui_event_type events that you want to
+ * menu_select to return to you if they're not handled inside the menu loop.
+ * e.g. if you want to handle key events without specifying a menu_iter->handle
+ * function, you can set notify to EVT_KBRD, and any non-navigation keyboard
+ * events will stop the menu loop and return them to you.
+ *
+ * Some events are returned by default, and else are EVT_ESCAPE and EVT_SELECT.
+ * 
+ * Event types that can be returned:
+ *   EVT_ESCAPE: no selection; go back (by default)
+ *   EVT_SELECT: menu->cursor is the selected menu item (by default)
+ *   EVT_MOVE:   the cursor has moved
+ *   EVT_KBRD:   unhandled keyboard events
+ *   EVT_MOUSE:  unhandled mouse events  
+ *   EVT_RESIZE: resize events
+ * 
+ * XXX remove 'notify'
+ */
 ui_event_data menu_select(menu_type *menu, int notify);
+
+
 
 /* Interal menu stuff that cmd-know needs because it's quite horrible */
 bool menu_handle_mouse(menu_type *menu, const ui_event_data *in, ui_event_data *out);
 bool menu_handle_keypress(menu_type *menu, const ui_event_data *in, ui_event_data *out);
-
-/* Refresh the menu */
-void menu_refresh(menu_type *menu);
-
 
 #endif /* INCLUDED_UI_MENU_H */

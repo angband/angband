@@ -84,7 +84,7 @@ static bool menu_action_handle(menu_type *m, const ui_event_data *event, int oid
 
 	if (event->type == EVT_SELECT && acts[oid].action)
 	{
-		acts[oid].action(acts[oid].data, acts[oid].name);
+		acts[oid].action(acts[oid].name, m->cursor);
 		return TRUE;
 	}
 
@@ -147,7 +147,7 @@ static bool item_menu_handle(menu_type *m, const ui_event_data *event, int oid)
 			return TRUE;
 
 		if (item->act.action)
-			item->act.action(item->act.data, item->act.name);
+			item->act.action(item->act.name, m->cursor);
 
 		if (item->flags & MN_SELECTABLE)
 			item->flags ^= MN_SELECTED;
@@ -676,6 +676,8 @@ ui_event_data menu_select(menu_type *menu, int notify)
 			if (menu->row_funcs->resize)
 				menu->row_funcs->resize(menu);
 		}
+
+		/* XXX should redraw menu here if cursor has moved */
 
 		/* If we've selected an item, then send that event out */
 		if (out.type == EVT_SELECT && menu_handle_action(menu, &out))

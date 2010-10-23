@@ -65,6 +65,7 @@ static void do_cmd_pref_file_hack(long row);
 /* Flag value for missing array entry */
 #define MISSING -17
 
+/* XXX these are horrible, remove them */
 #define APP_MACRO	101
 #define ASK_MACRO	103
 #define DEL_MACRO	104
@@ -501,8 +502,10 @@ static void display_option(menu_type *m, int oid, bool cursor,
 		int row, int col, int width)
 {
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
+	bool *options = menu_priv(m);
+
 	c_prt(attr, format("%-45s: %s  (%s)", option_desc(oid),
-	                   op_ptr->opt[oid] ? "yes" : "no ", option_name(oid)),
+	                   options[oid] ? "yes" : "no ", option_name(oid)),
 	                   row, col);
 }
 
@@ -537,6 +540,7 @@ static bool handle_option(menu_type *m, const ui_event_data *event, int oid)
 	else
 		return FALSE;
 
+	/* XXX should be moved to ui-menu somehow */
 	if (next)
 	{
 		m->cursor++;
@@ -561,25 +565,25 @@ static menu_type option_toggle_menu;
 /*
  * Interact with some options
  */
-static void do_cmd_options_aux(void *vpage, cptr info)
+static void do_cmd_options_aux(const char *name, int page)
 {
-	int page = (int)vpage;
-	int opt[OPT_PAGE_PER];
-	int i, n = 0;
+	int i;
 
 	menu_type *menu = &option_toggle_menu;
+	menu->title = name;
 
-	/* Filter the options for this page */
+	/* XXX assert(page < OPT_PAGE_MAX); */
+
+	/* Find the number of valid entries */
 	for (i = 0; i < OPT_PAGE_PER; i++)
 	{
-		if (option_page[page][i] != OPT_NONE)
-			opt[n++] = option_page[page][i];
+		if (option_page[page][i] == OPT_NONE)
+			break;
 	}
 
-	menu->title = info;
-
-	menu_setpriv(menu, OPT_PAGE_PER, vpage);
-	menu_set_filter(menu, opt, n);
+	/* Set the data to the player's options */
+	menu_setpriv(menu, OPT_MAX, &op_ptr->opt);
+	menu_set_filter(menu, option_page[page], i);
 	menu_layout(menu, &SCREEN_REGION);
 
 	/* Run the menu */
@@ -595,7 +599,7 @@ static void do_cmd_options_aux(void *vpage, cptr info)
 /*
  * Modify the "window" options
  */
-static void do_cmd_options_win(void)
+static void do_cmd_options_win(const char *name, int row)
 {
 	int i, j, d;
 
@@ -839,29 +843,28 @@ static void do_cmd_macro_aux_keymap(char *buf)
 /*
  * Interact with "macros"
  *
- * Could use some helpful instructions on this page.  XXX XXX XXX
- * CLEANUP
+ * XXX macro interface is terrible
  */
 static menu_action macro_actions[] =
 {
-	{ LOAD_PREF,  "Load a user pref file",    0, 0 },
+	{ LOAD_PREF,  "Load a user pref file",    0 },
 #ifdef ALLOW_MACROS
-	{ APP_MACRO,  "Append macros to a file",  0, 0 },
-	{ ASK_MACRO,  "Query a macro",            0, 0 },
-	{ NEW_MACRO,  "Create a macro",           0, 0 },
-	{ DEL_MACRO,  "Remove a macro",           0, 0 },
-	{ APP_KEYMAP, "Append keymaps to a file", 0, 0 },
-	{ ASK_KEYMAP, "Query a keymap",           0, 0 },
-	{ NEW_KEYMAP, "Create a keymap",          0, 0 },
-	{ DEL_KEYMAP, "Remove a keymap",          0, 0 },
-	{ ENTER_ACT,  "Enter a new action",       0, 0 },
+	{ APP_MACRO,  "Append macros to a file",  0 },
+	{ ASK_MACRO,  "Query a macro",            0 },
+	{ NEW_MACRO,  "Create a macro",           0 },
+	{ DEL_MACRO,  "Remove a macro",           0 },
+	{ APP_KEYMAP, "Append keymaps to a file", 0 },
+	{ ASK_KEYMAP, "Query a keymap",           0 },
+	{ NEW_KEYMAP, "Create a keymap",          0 },
+	{ DEL_KEYMAP, "Remove a keymap",          0 },
+	{ ENTER_ACT,  "Enter a new action",       0 },
 #endif /* ALLOW_MACROS */
 };
 
 static menu_type macro_menu;
 
 
-void do_cmd_macros(void)
+void do_cmd_macros(const char *title, int row)
 {
 	char tmp[1024];
 
@@ -1164,12 +1167,12 @@ void do_cmd_macros(void)
 
 menu_action visual_menu_items [] =
 {
-	{ LOAD_PREF, "Load a user pref file", 0, 0},
-	{ DUMP_MON,  "Dump monster attr/chars", 0, 0},
-	{ DUMP_OBJ,  "Dump object attr/chars", 0, 0 },
-	{ DUMP_FEAT, "Dump feature attr/chars", 0, 0 },
-	{ DUMP_FLAV, "Dump flavor attr/chars", 0, 0 },
-	{ RESET_VIS, "Reset visuals", 0, 0 },
+	{ LOAD_PREF, "Load a user pref file", 0 },
+	{ DUMP_MON,  "Dump monster attr/chars", 0 },
+	{ DUMP_OBJ,  "Dump object attr/chars", 0 },
+	{ DUMP_FEAT, "Dump feature attr/chars", 0 },
+	{ DUMP_FLAV, "Dump flavor attr/chars", 0 },
+	{ RESET_VIS, "Reset visuals", 0 },
 };
 
 static menu_type visual_menu;
@@ -1178,7 +1181,7 @@ static menu_type visual_menu;
 /*
  * Interact with "visuals"
  */
-void do_cmd_visuals(void)
+void do_cmd_visuals(const char *title, int row)
 {
 	/* Save screen */
 	screen_save();
@@ -1255,10 +1258,10 @@ void do_cmd_visuals(void)
 
 static menu_action color_events [] =
 {
-	{LOAD_PREF, "Load a user pref file", 0, 0},
+	{LOAD_PREF, "Load a user pref file", 0 },
 #ifdef ALLOW_COLORS
-	{DUMP_COL, "Dump colors", 0, 0},
-	{MOD_COL, "Modify colors", 0, 0}
+	{DUMP_COL, "Dump colors", 0 },
+	{MOD_COL, "Modify colors", 0 }
 #endif
 };
 
@@ -1268,7 +1271,7 @@ static menu_type color_menu;
 /*
  * Interact with "colors"
  */
-void do_cmd_colors(void)
+void do_cmd_colors(const char *title, int row)
 {
 	int i;
 	int cx;
@@ -1438,7 +1441,7 @@ static bool askfor_aux_numbers(char *buf, size_t buflen, size_t *curs, size_t *l
 /*
  * Set base delay factor
  */
-static void do_cmd_delay(void)
+static void do_cmd_delay(const char *name, int row)
 {
 	bool res;
 	char tmp[4] = "";
@@ -1467,7 +1470,7 @@ static void do_cmd_delay(void)
 /*
  * Set hitpoint warning level
  */
-static void do_cmd_hp_warn(void)
+static void do_cmd_hp_warn(const char *name, int row)
 {
 	bool res;
 	char tmp[4] = "";
@@ -1502,7 +1505,7 @@ static void do_cmd_hp_warn(void)
 /*
  * Set "lazy-movement" delay
  */
-static void do_cmd_lazymove_delay(void)
+static void do_cmd_lazymove_delay(const char *name, int row)
 {
 	bool res;
 	char tmp[4] = "";
@@ -1571,10 +1574,17 @@ static void do_cmd_pref_file_hack(long row)
 /*
  * Write options to a file.
  */
-static void do_dump_options(void *unused, const char *title)
+static void do_dump_options(const char *title, int row)
 {
-	(void)unused;
 	dump_pref_file(option_dump, "Dump options", 20);
+}
+
+/*
+ * Load a pref file.
+ */
+static void options_load_pref_file(const char *n, int row)
+{
+	do_cmd_pref_file_hack(20);
 }
 
 
@@ -1584,23 +1594,23 @@ static void do_dump_options(void *unused, const char *title)
 static menu_type option_menu;
 static menu_action option_actions [] = 
 {
-	{'a', "Interface options", do_cmd_options_aux, (void*)0}, 
-	{'b', "Display options", do_cmd_options_aux, (void*)1},
-	{'e', "Warning and disturbance options", do_cmd_options_aux, (void*)2}, 
-	{'f', "Birth (difficulty) options", do_cmd_options_aux, (void*)3}, 
-	{'g', "Cheat options", do_cmd_options_aux, (void*)4}, 
-	{0, 0, 0, 0}, /* Load and append */
-	{'w', "Subwindow display settings", (action_f) do_cmd_options_win, 0}, 
-	{'s', "Item squelch settings", (action_f) do_cmd_options_item, 0}, 
-	{'d', "Set base delay factor", (action_f) do_cmd_delay, 0}, 
-	{'h', "Set hitpoint warning", (action_f) do_cmd_hp_warn, 0}, 
-	{'i', "Set movement delay", (action_f) do_cmd_lazymove_delay, 0}, 
-	{'l', "Load a user pref file", (action_f) do_cmd_pref_file_hack, (void*)20},
-	{'o', "Save options", do_dump_options, 0}, 
-	{0, 0, 0, 0}, /* Interact with */	
-	{'m', "Interact with macros (advanced)", (action_f) do_cmd_macros, 0},
-	{'v', "Interact with visuals (advanced)", (action_f) do_cmd_visuals, 0},
-	{'c', "Interact with colours (advanced)", (action_f) do_cmd_colors, 0},
+	{ 'a', "Interface options", do_cmd_options_aux },
+	{ 'b', "Display options", do_cmd_options_aux },
+	{ 'e', "Warning and disturbance options", do_cmd_options_aux },
+	{ 'f', "Birth (difficulty) options", do_cmd_options_aux },
+	{ 'g', "Cheat options", do_cmd_options_aux },
+	{0, 0, 0}, /* Load and append */
+	{ 'w', "Subwindow display settings", do_cmd_options_win },
+	{ 's', "Item squelch settings", do_cmd_options_item },
+	{ 'd', "Set base delay factor", do_cmd_delay },
+	{ 'h', "Set hitpoint warning", do_cmd_hp_warn },
+	{ 'i', "Set movement delay", do_cmd_lazymove_delay },
+	{ 'l', "Load a user pref file", options_load_pref_file },
+	{ 'o', "Save options", do_dump_options }, 
+	{0, 0, 0}, /* Interact with */	
+	{ 'm', "Interact with macros (advanced)", do_cmd_macros },
+	{ 'v', "Interact with visuals (advanced)", do_cmd_visuals },
+	{ 'c', "Interact with colours (advanced)", do_cmd_colors },
 };
 
 /*
