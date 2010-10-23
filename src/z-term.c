@@ -875,9 +875,6 @@ static void Term_fresh_row_both(int y, int x1, int x2)
 		/* Handle high-bit attr/chars */
 		if ((na & 0x80) && (nc & 0x80))
 		{
-			/* 2nd byte of bigtile */
-			if ((na == 255) && (nc == (char) -1)) continue;
-
 			/* Flush */
 			if (fn)
 			{
@@ -896,6 +893,9 @@ static void Term_fresh_row_both(int y, int x1, int x2)
 				/* Forget */
 				fn = 0;
 			}
+
+			/* 2nd byte of bigtile */
+			if ((na == 255) && (nc == (char) -1)) continue;
 
 			/* Hack -- Draw the special attr/char pair */
 			(void)((*Term->pict_hook)(x, y, 1, &na, &nc, &nta, &ntc));

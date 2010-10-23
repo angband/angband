@@ -394,6 +394,9 @@ int main(int argc, char *argv[])
 	}
 
 
+	/* Install "quit" hook */
+	quit_aux = quit_hook;
+
 	/* Try the modules in the order specified by modules[] */
 	for (i = 0; i < (int)N_ELEMENTS(modules); i++)
 	{
@@ -415,9 +418,6 @@ int main(int argc, char *argv[])
 
 	/* Process the player name */
 	process_player_name(TRUE);
-
-	/* Install "quit" hook */
-	quit_aux = quit_hook;
 
 #ifdef USE_SOUND
 
