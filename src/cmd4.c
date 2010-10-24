@@ -1151,6 +1151,7 @@ int modify_attribute(const char *clazz, int oid, const char *name,
 {
         ui_event_data ke = EVENT_EMPTY;
 	const char *empty_symbol = "<< ? >>";
+	const char *empty_symbol1 = "<< ? >>";
 	const char *empty_symbol2 = "\0";
 	const char *empty_symbol3 = "\0";
 	
@@ -1161,24 +1162,24 @@ int modify_attribute(const char *clazz, int oid, const char *name,
   
 	if (use_trptile && use_bigtile)
 	{
-	        empty_symbol = "// ?????? \\\\";
+	        empty_symbol1 = "// ?????? \\\\";
 		empty_symbol2 = "   ??????   ";
 		empty_symbol3 = "\\\\ ?????? //";
 	}
 	else if (use_dbltile && use_bigtile)
 	{
-	        empty_symbol = "// ???? \\\\";
+	        empty_symbol1 = "// ???? \\\\";
 		empty_symbol2 = "\\\\ ???? //";
 	}
 	else if (use_trptile)
 	{
-	        empty_symbol = "// ??? \\\\";
+	        empty_symbol1 = "// ??? \\\\";
 		empty_symbol2 = "   ???   ";
 		empty_symbol3 = "\\\\ ??? //";
 	}
 	else if (use_dbltile)
 	{
-	        empty_symbol = "// ?? \\\\";
+	        empty_symbol1 = "// ?? \\\\";
                 empty_symbol2 = "\\\\ ?? //";
 	}
 	else if (use_bigtile) empty_symbol = "<< ?? >>";
@@ -1193,16 +1194,11 @@ int modify_attribute(const char *clazz, int oid, const char *name,
 	Term_putstr(10, 19, -1, TERM_WHITE, format("Default attr/char = %3u / %3u", da, dc));
 	Term_putstr(40, 19, -1, TERM_WHITE, empty_symbol);
   
-	if (use_dbltile || use_trptile) 
-	        Term_putstr (40, 20, -1, TERM_WHITE, empty_symbol2);
-	if (use_trptile) Term_putstr (40, 20, -1, TERM_WHITE, empty_symbol3);
-  
-  
 	big_pad(43, 19, da, dc);
   
 	/* Label the Current values */
 	Term_putstr(10, linec, -1, TERM_WHITE, format("Current attr/char = %3u / %3u", ca, cc));
-	Term_putstr(40, linec, -1, TERM_WHITE, empty_symbol);
+	Term_putstr(40, linec, -1, TERM_WHITE, empty_symbol1);
 	if (use_dbltile || use_trptile) 
 	        Term_putstr (40, linec+1, -1, TERM_WHITE, empty_symbol2); 
 	if (use_trptile) 
