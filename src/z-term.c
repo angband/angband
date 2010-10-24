@@ -2104,7 +2104,7 @@ errr Term_keypress(int k)
 errr Term_mousepress(int x, int y, char button)
 {
   /* Store the char, advance the queue */
-  Term->key_queue[Term->key_head].key = '\xff';
+  Term->key_queue[Term->key_head].key = 0;
   Term->key_queue[Term->key_head].mousex = x;
   Term->key_queue[Term->key_head].mousey = y;
   Term->key_queue[Term->key_head].index = button;

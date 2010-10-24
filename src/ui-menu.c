@@ -34,6 +34,7 @@ const char upper_case[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 /* forward declarations */
 static void display_menu_row(menu_type *menu, int pos, int top,
 			     bool cursor, int row, int col, int width);
+static bool menu_calc_size(menu_type *menu);
 
 /* Display an event, with possible preference overrides */
 static void display_action_aux(menu_action *act, byte color, int row, int col, int wid)
@@ -56,11 +57,7 @@ static void display_action_aux(menu_action *act, byte color, int row, int col, i
 static char menu_action_tag(menu_type *m, int oid)
 {
 	menu_action *acts = menu_priv(m);
-
-	if (acts[oid].id)
-		return acts[oid].id;
-
-	return 0;
+	return acts[oid].tag;
 }
 
 static int menu_action_valid(menu_type *m, int oid)
@@ -83,7 +80,7 @@ static bool menu_action_handle(menu_type *m, const ui_event_data *event, int oid
 
 	if (event->type == EVT_SELECT && acts[oid].action)
 	{
-		acts[oid].action(acts[oid].data, acts[oid].name);
+		acts[oid].action(acts[oid].name, m->cursor);
 		return TRUE;
 	}
 
@@ -97,7 +94,8 @@ const menu_iter menu_iter_actions =
 	menu_action_tag,
 	menu_action_valid,
 	menu_action_display,
-	menu_action_handle
+	menu_action_handle,
+	NULL
 };
 
 
@@ -112,7 +110,7 @@ const menu_iter menu_iter_actions =
 static char item_menu_tag(menu_type *m, int oid)
 {
 	menu_item *items = menu_priv(m);
-	return items[oid].sel;
+	return items[oid].act.tag;
 }
 
 static int item_menu_valid(menu_type *m, int oid)
@@ -145,7 +143,7 @@ static bool item_menu_handle(menu_type *m, const ui_event_data *event, int oid)
 			return TRUE;
 
 		if (item->act.action)
-			item->act.action(item->act.data, item->act.name);
+			item->act.action(item->act.name, m->cursor);
 
 		if (item->flags & MN_SELECTABLE)
 			item->flags ^= MN_SELECTED;
@@ -162,7 +160,8 @@ const menu_iter menu_iter_items =
 	item_menu_tag,       /* get_tag() */
 	item_menu_valid,     /* valid_row() */
 	item_menu_display,   /* display_row() */
-	item_menu_handle     /* row_handler() */
+	item_menu_handle,     /* row_handler() */
+	NULL
 };
 
 /* ------------------------------------------------------------------------
@@ -185,7 +184,8 @@ const menu_iter menu_iter_strings =
 	NULL,              /* get_tag() */
 	NULL,              /* valid_row() */
 	display_string,    /* display_row() */
-	NULL 	           /* row_handler() */
+	NULL, 	           /* row_handler() */
+	NULL
 };
 
 
@@ -226,12 +226,17 @@ static void display_scrolling(menu_type *menu, int cursor, int *top, region *loc
 	*top = MIN(*top, n - rows_per_page);
 	*top = MAX(*top, 0);
 
-
-	for (i = 0; i < rows_per_page && i < n; i++)
+	for (i = 0; i < rows_per_page; i++)
 	{
-		bool is_curs = (i == cursor - *top);
-		display_menu_row(menu, i + *top, *top, is_curs, row + i, col,
-						 loc->width);
+		/* Blank all lines */
+		Term_erase(col, row + i, loc->width - col);
+		if (i < n)
+		{
+			/* Redraw the line if it's within the number of menu items */
+			bool is_curs = (i == cursor - *top);
+			display_menu_row(menu, i + *top, *top, is_curs, row + i, col,
+							loc->width);
+		}
 	}
 
 	if (menu->cursor >= 0)
@@ -430,8 +435,8 @@ static void display_menu_row(menu_type *menu, int pos, int top,
 
 void menu_refresh(menu_type *menu)
 {
-	region *loc = &menu->boundary;
 	int oid = menu->cursor;
+	region *loc = &menu->active;
 
 	if (!menu->filter_list)
 		menu->filter_count = menu->count;
@@ -439,19 +444,18 @@ void menu_refresh(menu_type *menu)
 	if (menu->filter_list && menu->cursor >= 0)
 		oid = menu->filter_list[oid];
 
-	region_erase(&menu->boundary);
-
 	if (menu->title)
-		Term_putstr(loc->col, loc->row, loc->width, TERM_WHITE, menu->title);
+		Term_putstr(menu->boundary.col, menu->boundary.row,
+				loc->width, TERM_WHITE, menu->title);
 
 	if (menu->prompt)
-		Term_putstr(loc->col, loc->row + loc->page_rows - 1, loc->width,
-					TERM_WHITE, menu->prompt);
+		Term_putstr(loc->col, loc->row + loc->page_rows - 1,
+				loc->width, TERM_WHITE, menu->prompt);
 
 	if (menu->browse_hook && oid >= 0)
-		menu->browse_hook(oid, (void*) menu->menu_data, loc);
+		menu->browse_hook(oid, menu->menu_data, loc);
 
-	menu->skin->display_list(menu, menu->cursor, &menu->top, &menu->active);
+	menu->skin->display_list(menu, menu->cursor, &menu->top, loc);
 }
 
 
@@ -471,7 +475,7 @@ bool menu_handle_mouse(menu_type *menu, const ui_event_data *in,
 	if (!region_inside(&menu->active, in))
 	{
 		/* A click to the left of the active region is 'back' */
-		if (region_inside(&menu->boundary, in) &&
+		if (!region_inside(&menu->active, in) &&
 				in->mousex < menu->active.col)
 			out->type = EVT_ESCAPE;
 	}
@@ -615,23 +619,12 @@ bool menu_handle_keypress(menu_type *menu, const ui_event_data *in,
 
 /* 
  * Run a menu.
- *
- * 'menu' is the menu.
- * 'notify' is a bitwise OR of ui_event_type events that you want to know about,
- *
- * Event types that can be returned:
- *   EVT_ESCAPE: no selection; go back (by default)
- *   EVT_SELECT: menu->cursor is the selected menu item (by default)
- *   EVT_MOVE:   the cursor has moved 
- *   EVT_KBRD:   unhandled keyboard events
- *   EVT_MOUSE:  unhandled mouse events
- *   EVT_RESIZE: resize events
  */
 ui_event_data menu_select(menu_type *menu, int notify)
 {
 	ui_event_data in = EVENT_EMPTY;
 
-	assert(menu->boundary.width != 0 && menu->boundary.page_rows != 0);
+	assert(menu->active.width != 0 && menu->active.page_rows != 0);
 
 	notify |= (EVT_SELECT | EVT_ESCAPE);
 
@@ -663,6 +656,14 @@ ui_event_data menu_select(menu_type *menu, int notify)
 
 			ignore = menu_handle_keypress(menu, &in, &out);
 		}
+		else if (in.type == EVT_RESIZE)
+		{
+			menu_calc_size(menu);
+			if (menu->row_funcs->resize)
+				menu->row_funcs->resize(menu);
+		}
+
+		/* XXX should redraw menu here if cursor has moved */
 
 		/* If we've selected an item, then send that event out */
 		if (out.type == EVT_SELECT && menu_handle_action(menu, &out))
@@ -681,10 +682,8 @@ ui_event_data menu_select(menu_type *menu, int notify)
 
 /**
  * Return the menu iter struct for a given iter ID.
- *
- * XXX should be menu_find_iter
  */
-const menu_iter *find_menu_iter(menu_iter_id id)
+const menu_iter *menu_find_iter(menu_iter_id id)
 {
 	switch (id)
 	{
@@ -704,7 +703,7 @@ const menu_iter *find_menu_iter(menu_iter_id id)
 /*
  * Return the skin behaviour struct for a given skin ID.
  */
-static const menu_skin *find_menu_skin(skin_id id)
+static const menu_skin *menu_find_skin(skin_id id)
 {
 	switch (id)
 	{
@@ -719,16 +718,12 @@ static const menu_skin *find_menu_skin(skin_id id)
 }
 
 
-/*
- * Set the filter to a new value.
- */
 void menu_set_filter(menu_type *menu, const int filter_list[], int n)
 {
 	menu->filter_list = filter_list;
 	menu->filter_count = n;
 }
 
-/* Remove the filter */
 void menu_release_filter(menu_type *menu)
 {
 	menu->filter_list = NULL;
@@ -737,54 +732,59 @@ void menu_release_filter(menu_type *menu)
 
 /* ======================== MENU INITIALIZATION ==================== */
 
-/* This is extremely primitive, barely sufficient to the job done */
-bool menu_layout(menu_type *menu, const region *loc)
+static bool menu_calc_size(menu_type *menu)
 {
-	region active;
+	/* Start from initial settings */
+	menu->active = menu->boundary;
 
-	if (!loc) return TRUE;
-	active = *loc;
-
-	if (active.width <= 0 || active.page_rows <= 0)
+	/* Calculate term-relative width/height */
+	if (menu->active.width <= 0 || menu->active.page_rows <= 0)
 	{
 		int w, h;
 		Term_get_size(&w, &h);
-		if (active.width <= 0)
-			active.width = w + active.width - active.col;
-		if (active.page_rows <= 0)
-			active.page_rows = h + loc->page_rows - active.row;
-	}
 
-	menu->boundary = active;
+		if (menu->active.width <= 0)
+			menu->active.width = w + menu->active.width - menu->active.col;
+		if (menu->active.page_rows <= 0)
+			menu->active.page_rows = h + menu->active.page_rows - menu->active.row;
+	}
 
 	if (menu->title)
 	{
-		active.row += 2;
-		active.page_rows -= 2;
-		/* TODO: handle small screens */
-		active.col += 4;
+		menu->active.row += 2;
+		menu->active.page_rows -= 2;
+		menu->active.col += 4;
 	}
+
 	if (menu->prompt)
 	{
-		if (active.page_rows > 1)
-			active.page_rows--;
+		if (menu->active.page_rows > 1)
+			menu->active.page_rows--;
 		else
 		{
 			int offset = strlen(menu->prompt) + 2;
-			active.col += offset;
-			active.width -= offset;
+			menu->active.col += offset;
+			menu->active.width -= offset;
 		}
 	}
 
-	menu->active = active;
-	return (active.width > 0 && active.page_rows > 0);
+	return (menu->active.width > 0 && menu->active.page_rows > 0);
 }
 
+bool menu_layout(menu_type *m, const region *loc)
+{
+	m->boundary = *loc;
+	return menu_calc_size(m);
+}
 
 void menu_setpriv(menu_type *menu, int count, void *data)
 {
 	menu->count = count;
 	menu->menu_data = data;
+
+	/* XXX need to take account of filter_list */
+	if (menu->cursor >= menu->count)
+		menu->cursor = menu->count - 1;
 }
 
 void *menu_priv(menu_type *menu)
@@ -792,14 +792,9 @@ void *menu_priv(menu_type *menu)
 	return menu->menu_data;
 }
 
-
-/*
- * Correctly initialise the menu block at 'menu' so that it's ready to use.
- * Use the display skin given in 'skin' and the iterator in 'iter'.
- */
 void menu_init(menu_type *menu, skin_id skin_id, const menu_iter *iter)
 {
-	const menu_skin *skin = find_menu_skin(skin_id);
+	const menu_skin *skin = menu_find_skin(skin_id);
 	assert(skin && "menu skin not found!");
 	assert(iter && "menu iter not found!");
 
@@ -809,4 +804,18 @@ void menu_init(menu_type *menu, skin_id skin_id, const menu_iter *iter)
 	/* Menu-specific initialisation */
 	menu->row_funcs = iter;
 	menu->skin = skin;
+}
+
+menu_type *menu_new(skin_id skin_id, const menu_iter *iter)
+{
+	menu_type *m = mem_alloc(sizeof *m);
+	menu_init(m, skin_id, iter);
+	return m;
+}
+
+menu_type *menu_new_action(menu_action *acts, size_t n)
+{
+	menu_type *m = menu_new(MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
+	menu_setpriv(m, n, acts);
+	return m;
 }

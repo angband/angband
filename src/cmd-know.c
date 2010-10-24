@@ -345,7 +345,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 	menu_type group_menu;
 	menu_type object_menu;
-	menu_iter object_iter = { NULL, NULL, display_group_member, NULL };
+	menu_iter object_iter = { NULL, NULL, display_group_member, NULL, NULL };
 
 	/* Panel state */
 	/* These are swapped in parallel whenever the actively browsing " */
@@ -366,7 +366,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	int prev_g = -1;
 
 	int omode = OPT(rogue_like_commands);
-
+	ui_event_data ke;
 
 	/* Get size */
 	Term_get_size(&wid, &hgt);
@@ -424,7 +424,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 
 	/* Set up the two menus */
-	menu_init(&group_menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_STRINGS));
+	menu_init(&group_menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_STRINGS));
 	menu_setpriv(&group_menu, grp_cnt, g_names);
 	menu_layout(&group_menu, &group_region);
 
@@ -434,12 +434,18 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 	o_funcs.is_visual = FALSE;
 
+	/* Save screen */
+	screen_save();
+	clear_from(0);
+
 
 	/* This is the event loop for a multi-region panel */
 	/* Panels are -- text panels, two menus, and visual browser */
 	/* with "pop-up menu" for lore */
 	while ((!flag) && (grp_cnt))
 	{
+		bool recall = FALSE;
+
 		if (redraw)
 		{
 			/* Print the title bits */
@@ -546,10 +552,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			delay = 0;
 		}
 
-
-		bool recall = FALSE;
-
-		ui_event_data ke = inkey_ex();
+		ke = inkey_ex();
 		if (!visual_list)
 		{
 			ui_event_data ke0 = EVENT_EMPTY;
@@ -649,6 +652,8 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	FREE(g_names);
 	FREE(g_offset);
 	FREE(g_list);
+
+	screen_load();
 }
 
 /*
@@ -820,7 +825,7 @@ static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
 				byte c = *cur_char_ptr;
 
 				/* Get mouse movement */
-				if (ke.key == '\xff')
+				if (ke.type == EVT_MOUSE)
 				{
 					int my = ke.mousey - row;
 					int mx = ke.mousex - col;
@@ -1058,7 +1063,7 @@ static int count_known_monsters(void)
 /*
  * Display known monsters.
  */
-static void do_cmd_knowledge_monsters(void *obj, const char *name)
+static void do_cmd_knowledge_monsters(const char *name, int row)
 {
 	group_funcs r_funcs = {N_ELEMENTS(monster_group), FALSE, race_name,
 							m_cmp_race, default_group, mon_summary};
@@ -1069,9 +1074,6 @@ static void do_cmd_knowledge_monsters(void *obj, const char *name)
 	int m_count = 0;
 	int i;
 	size_t j;
-
-	(void)obj;
-	(void)name;
 
 	for (i = 0; i < z_info->r_max; i++)
 	{
@@ -1331,7 +1333,7 @@ static int collect_known_artifacts(int *artifacts, size_t artifacts_len)
 /*
  * Display known artifacts
  */
-static void do_cmd_knowledge_artifacts(void *obj, const char *name)
+static void do_cmd_knowledge_artifacts(const char *name, int row)
 {
 	/* HACK -- should be TV_MAX */
 	group_funcs obj_f = {TV_GOLD, FALSE, kind_name, a_cmp_tval, art2gid, 0};
@@ -1339,9 +1341,6 @@ static void do_cmd_knowledge_artifacts(void *obj, const char *name)
 
 	int *artifacts;
 	int a_count = 0;
-
-	(void)obj;
-	(void)name;
 
 	artifacts = C_ZNEW(z_info->a_max, int);
 
@@ -1451,7 +1450,7 @@ static int e_cmp_tval(const void *a, const void *b)
 /*
  * Display known ego_items
  */
-static void do_cmd_knowledge_ego_items(void *obj, const char *name)
+static void do_cmd_knowledge_ego_items(const char *name, int row)
 {
 	group_funcs obj_f =
 		{TV_GOLD, FALSE, ego_grp_name, e_cmp_tval, default_group, 0};
@@ -1461,9 +1460,6 @@ static void do_cmd_knowledge_ego_items(void *obj, const char *name)
 	int *egoitems;
 	int e_count = 0;
 	int i, j;
-
-	(void)obj;
-	(void)name;
 
 	/* HACK: currently no more than 3 tvals for one ego type */
 	egoitems = C_ZNEW(z_info->e_max * EGO_TVALS_MAX, int);
@@ -1794,7 +1790,7 @@ static void o_xtra_act(char ch, int oid)
 /*
  * Display known objects
  */
-void do_cmd_knowledge_objects(void *obj, const char *name)
+void do_cmd_knowledge_objects(const char *name, int row)
 {
 	group_funcs kind_f = {TV_GOLD, FALSE, kind_name, o_cmp_tval, obj2gid, 0};
 	member_funcs obj_f = {display_object, desc_obj_fake, o_xchar, o_xattr, o_xtra_prompt, o_xtra_act, 0};
@@ -1802,9 +1798,6 @@ void do_cmd_knowledge_objects(void *obj, const char *name)
 	int *objects;
 	int o_count = 0;
 	int i;
-
-	(void)obj;
-	(void)name;
 
 	objects = C_ZNEW(z_info->k_max, int);
 
@@ -1874,7 +1867,7 @@ static void feat_lore(int oid) { (void)oid; /* noop */ }
 /*
  * Interact with feature visuals.
  */
-static void do_cmd_knowledge_features(void *obj, const char *name)
+static void do_cmd_knowledge_features(const char *name, int row)
 {
 	group_funcs fkind_f = {N_ELEMENTS(feature_group_text), FALSE,
 							fkind_name, f_cmp_fkind, feat_order, 0};
@@ -1884,9 +1877,6 @@ static void do_cmd_knowledge_features(void *obj, const char *name)
 	int *features;
 	int f_count = 0;
 	int i;
-
-	(void)obj;
-	(void)name;
 
 	features = C_ZNEW(z_info->f_max, int);
 
@@ -1907,27 +1897,23 @@ static void do_cmd_knowledge_features(void *obj, const char *name)
 
 /* =================== END JOIN DEFINITIONS ================================ */
 
-static void do_cmd_knowledge_store(void *obj, const char *name)
+static void do_cmd_knowledge_store(const char *name, int row)
 {
-	(void)name;
-	store_knowledge = (int)obj;
+	store_knowledge = row - 5;
 	do_cmd_store_knowledge();
 	store_knowledge = STORE_NONE;
 }
 
-static void do_cmd_knowledge_scores(void *obj, const char *name)
+static void do_cmd_knowledge_scores(const char *name, int row)
 {
-	(void)obj;
-	(void)name;
 	show_scores();
 }
 
-static void do_cmd_knowledge_history(void *obj, const char *name)
+static void do_cmd_knowledge_history(const char *name, int row)
 {
-	(void)obj;
-	(void)name;
 	history_display();
 }
+
 
 
 
@@ -1936,29 +1922,21 @@ static void do_cmd_knowledge_history(void *obj, const char *name)
  */
 static menu_item knowledge_actions[] =
 {
-{ {0, "Display object knowledge",   	   do_cmd_knowledge_objects,   0}, 'a', 0 },
-{ {0, "Display artifact knowledge", 	   do_cmd_knowledge_artifacts, 0}, 'b', 0 },
-{ {0, "Display ego item knowledge", 	   do_cmd_knowledge_ego_items, 0}, 'c', 0 },
-{ {0, "Display monster knowledge",  	   do_cmd_knowledge_monsters,  0}, 'd', 0 },
-{ {0, "Display feature knowledge",  	   do_cmd_knowledge_features,  0}, 'e', 0 },
-{ {0, "Display contents of general store", do_cmd_knowledge_store,
-	(void*)STORE_GENERAL}, 'f', 0 },
-{ {0, "Display contents of armourer",      do_cmd_knowledge_store,
-	(void*)STORE_ARMOR}, 'g', 0 },
-{ {0, "Display contents of weaponsmith",   do_cmd_knowledge_store,
-	(void*)STORE_WEAPON}, 'h', 0 },
-{ {0, "Display contents of temple",   	   do_cmd_knowledge_store,
-	(void*)STORE_TEMPLE}, 'i', 0 },
-{ {0, "Display contents of alchemist",     do_cmd_knowledge_store,
-	(void*)STORE_ALCHEMY}, 'j', 0 },
-{ {0, "Display contents of magic shop",    do_cmd_knowledge_store,
-	(void*)STORE_MAGIC}, 'k', 0 },
-{ {0, "Display contents of black market",  do_cmd_knowledge_store,
-	(void*)STORE_B_MARKET}, 'l', 0 },
-{ {0, "Display contents of home",   	   do_cmd_knowledge_store,
-	(void*)STORE_HOME}, 'm', 0 },
-{ {0, "Display hall of fame",       	   do_cmd_knowledge_scores,    0}, 'n', 0 },
-{ {0, "Display character history",  	   do_cmd_knowledge_history,   0}, 'o', 0 },
+{ {0, "Display object knowledge",   	   do_cmd_knowledge_objects   }, 0 },
+{ {0, "Display artifact knowledge", 	   do_cmd_knowledge_artifacts }, 0 },
+{ {0, "Display ego item knowledge", 	   do_cmd_knowledge_ego_items }, 0 },
+{ {0, "Display monster knowledge",  	   do_cmd_knowledge_monsters  }, 0 },
+{ {0, "Display feature knowledge",  	   do_cmd_knowledge_features  }, 0 },
+{ {0, "Display contents of general store", do_cmd_knowledge_store     }, 0 },
+{ {0, "Display contents of armourer",      do_cmd_knowledge_store     }, 0 },
+{ {0, "Display contents of weaponsmith",   do_cmd_knowledge_store     }, 0 },
+{ {0, "Display contents of temple",   	   do_cmd_knowledge_store     }, 0 },
+{ {0, "Display contents of alchemist",     do_cmd_knowledge_store     }, 0 },
+{ {0, "Display contents of magic shop",    do_cmd_knowledge_store     }, 0 },
+{ {0, "Display contents of black market",  do_cmd_knowledge_store     }, 0 },
+{ {0, "Display contents of home",   	   do_cmd_knowledge_store     }, 0 },
+{ {0, "Display hall of fame",       	   do_cmd_knowledge_scores    }, 0 },
+{ {0, "Display character history",  	   do_cmd_knowledge_history   }, 0 },
 };
 
 static menu_type knowledge_menu;
@@ -1978,10 +1956,11 @@ void init_cmd_know(void)
 {
 	/* Initialize the menus */
 	menu_type *menu = &knowledge_menu;
-	menu_init(menu, MN_SKIN_SCROLL, find_menu_iter(MN_ITER_ITEMS));
+	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ITEMS));
 	menu_setpriv(menu, N_ELEMENTS(knowledge_actions), knowledge_actions);
 
 	menu->title = "Display current knowledge";
+	menu->selections = lower_case;
 
 	/* initialize other static variables */
 	if (!obj_group_order)

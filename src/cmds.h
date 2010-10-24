@@ -108,16 +108,12 @@ extern void do_cmd_message_one(void);
 extern void do_cmd_messages(void);
 extern void do_cmd_options(void);
 extern void do_cmd_pref(void);
-extern void do_cmd_macros(void);
-extern void do_cmd_visuals(void);
-extern void do_cmd_colors(void);
 extern void do_cmd_note(void);
 extern void do_cmd_version(void);
 extern void do_cmd_feeling(void);
 extern void do_cmd_load_screen(void);
 extern void do_cmd_save_screen(void);
 extern void do_cmd_knowledge(void);
-extern void init_cmd4_c(void);
 
 /* cmd5.c */
 void do_cmd_study_spell(cmd_code code, cmd_arg args[]);

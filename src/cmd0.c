@@ -39,8 +39,9 @@ typedef void do_cmd_type(void);
 
 /* Forward declare these, because they're really defined later */
 static do_cmd_type do_cmd_wizard, do_cmd_try_debug,
-            do_cmd_mouseclick, do_cmd_port,
-			do_cmd_xxx_options, do_cmd_menu, do_cmd_monlist, do_cmd_itemlist;
+		do_cmd_mouseclick, do_cmd_port,
+		do_cmd_xxx_options, do_cmd_menu,
+		do_cmd_monlist, do_cmd_itemlist;
 
 #ifdef ALLOW_BORG
 static do_cmd_type do_cmd_try_borg;
@@ -155,7 +156,6 @@ static command_type cmd_hidden[] =
 	{ "Take notes",               ':', CMD_NULL, do_cmd_note },
 	{ "Version info",             'V', CMD_NULL, do_cmd_version },
 	{ "Load a single pref line",  '"', CMD_NULL, do_cmd_pref },
-	{ "Mouse click",           '\xff', CMD_NULL, do_cmd_mouseclick },
 	{ "Enter a store",            '_', CMD_ENTER_STORE, NULL },
 	{ "Toggle windows",     KTRL('E'), CMD_NULL, toggle_inven_equip }, /* XXX */
 	{ "Alter a grid",             '+', CMD_NULL, textui_cmd_alter },
@@ -324,7 +324,7 @@ void do_cmd_quit(cmd_code code, cmd_arg args[])
 
 
 /*
- * Handle a mouseclick, using the horrible hack that is '\xff'.
+ * Handle a mouseclick.
  */
 static void do_cmd_mouseclick(void)
 {
@@ -474,7 +474,7 @@ static void cmd_sub_entry(menu_type *menu, int oid, bool cursor, int row, int co
 static bool cmd_menu(command_list *list, void *selection_p)
 {
 	menu_type menu;
-	menu_iter commands_menu = { NULL, NULL, cmd_sub_entry, NULL };
+	menu_iter commands_menu = { NULL, NULL, cmd_sub_entry, NULL, NULL };
 	region area = { 23, 4, 37, 13 };
 
 	ui_event_data evt;
@@ -519,30 +519,37 @@ static void cmd_list_entry(menu_type *menu, int oid, bool cursor, int row, int c
 	Term_putstr(col, row, -1, attr, cmds_all[oid].name);
 }
 
+static menu_type *command_menu;
+static menu_iter command_menu_iter =
+{
+	NULL,
+	NULL,
+	cmd_list_entry,
+	cmd_list_action,
+	NULL
+};
+
 /*
  * Display a list of command types, allowing the user to select one.
  */
 static void do_cmd_menu(void)
 {
-	menu_type menu;
-	menu_iter commands_menu = { NULL, NULL, cmd_list_entry, cmd_list_action };
 	region area = { 21, 5, 37, 6 };
 
 	command_type chosen_command = { 0 };
 
-	/* Set up the menu */
-	menu_init(&menu, MN_SKIN_SCROLL, &commands_menu);
-	menu_setpriv(&menu, N_ELEMENTS(cmds_all) - 1, &chosen_command);
-	menu_layout(&menu, &area);
+	if (!command_menu)
+		command_menu = menu_new(MN_SKIN_SCROLL, &command_menu_iter);
+
+	menu_setpriv(command_menu, N_ELEMENTS(cmds_all) - 1, &chosen_command);
+	menu_layout(command_menu, &area);
 
 	/* Set up the screen */
 	screen_save();
 	window_make(19, 4, 58, 11);
 
-	/* Select an entry */
-	menu_select(&menu, 0);
+	menu_select(command_menu, 0);
 
-	/* Load de screen */
 	screen_load();
 
 	/* If a command was chosen, do it */
@@ -621,6 +628,10 @@ void textui_process_command(bool no_request)
 	if (p_ptr->command_cmd_ex.type == EVT_RESIZE)
 	{
 		do_cmd_redraw();
+	}
+	else if (p_ptr->command_cmd_ex.type == EVT_MOUSE)
+	{
+		do_cmd_mouseclick();
 	}
 	else
 	{

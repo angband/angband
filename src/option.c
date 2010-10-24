@@ -21,7 +21,7 @@
 /*
  * Option screen interface
  */
-const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
+const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 {
 	/* Interface */
 	{
@@ -47,7 +47,7 @@ const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 	{
 		OPT_hp_changes_color,
 		OPT_highlight_player,
- 		  OPT_center_player,
+		OPT_center_player,
 		OPT_show_piles,
 		OPT_show_flavors,
 		OPT_show_labels,
@@ -407,15 +407,27 @@ const char *option_desc(int opt)
 }
 
 /* Setup functions */
-void option_set(int opt, bool on)
+bool option_set(const char *name, bool on)
 {
-	op_ptr->opt[opt] = on;
+	size_t opt;
+	for (opt = 0; opt < OPT_ADULT; opt++)
+	{
+		if (!options[opt].name || !streq(options[opt].name, name))
+			continue;
+
+		op_ptr->opt[opt] = on;
+		if (on && opt > OPT_CHEAT && opt < OPT_ADULT)
+			op_ptr->opt[opt + (OPT_SCORE - OPT_CHEAT)] = TRUE;
+
+		return TRUE;
+	}
+
+	return FALSE;
 }
 
 void option_set_defaults(void)
 {
 	size_t opt;
-
 	for (opt = 0; opt < OPT_MAX; opt++)
 		op_ptr->opt[opt] = options[opt].normal;
 }
