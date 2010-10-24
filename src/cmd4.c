@@ -1228,12 +1228,12 @@ int modify_attribute(const char *clazz, int oid, const char *name,
 }
 
 /* Modify monster attr/chars */
-static void visuals_modify_monsters(void)
+static void visuals_modify_monsters(const char *title, int row)
 {
         static int r = 0;
 		    
 	/* Prompt */
-	prt("Command: Change monster attr/chars", 15, 0);
+	prt(title, 15, 0);
 			
 	/* Hack -- query until done */
 	while (1)
@@ -1251,9 +1251,12 @@ static void visuals_modify_monsters(void)
 }
       
 /* Modify object attr/chars */
-static void visuals_modify_objects(void)
+static void visuals_modify_objects(const char *title, int row)
 {
         static int k = 0;
+			
+	/* Prompt */
+	prt(title, 15, 0);
 			
 	/* Hack -- query until done */
 	while (1)
@@ -1269,10 +1272,13 @@ static void visuals_modify_objects(void)
 }
       
 /* Modify feature attr/chars */
-static void visuals_modify_features(void)
+static void visuals_modify_features(const char *title, int row)
 {
         static int f = 0;
 	  
+	/* Prompt */
+	prt(title, 15, 0);
+			
 	/* Hack -- query until done */
 	while (1)
 	{
@@ -1286,10 +1292,13 @@ static void visuals_modify_features(void)
 }
 
 /* Modify flavor attr/chars */
-static void visuals_modify_flavors(void)
+static void visuals_modify_flavors(const char *title, int row)
 {
         static int f = 0;
 	  
+	/* Prompt */
+	prt(title, 15, 0);
+			
 	/* Hack -- query until done */
 	while (1)
 	{
