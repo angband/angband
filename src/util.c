@@ -1924,12 +1924,17 @@ void text_out_to_screen(byte a, cptr str)
 
 	cptr s;
 
+	/* We use either ascii or system-specific encoding */
+	 int encoding = (xchars_to_file) ? SYSTEM_SPECIFIC : ASCII;
 
 	/* Obtain the size */
 	(void)Term_get_size(&wid, &h);
 
 	/* Obtain the cursor */
 	(void)Term_locate(&x, &y);
+
+	 /* Translate it to 7-bit ASCII or system-specific format */
+	 xstr_trans(buf, encoding);
 
 	/* Use special wrapping boundary? */
 	if ((text_out_wrap > 0) && (text_out_wrap < wid))
@@ -1956,7 +1961,7 @@ void text_out_to_screen(byte a, cptr str)
 		}
 
 		/* Clean up the char */
-		ch = (isprint((unsigned char)*s) ? *s : ' ');
+		ch = (my_isprint((unsigned char)*s) ? *s : ' ');
 
 		/* Wrap words as needed */
 		if ((x >= wrap - 1) && (ch != ' '))
@@ -2040,8 +2045,14 @@ void text_out_to_file(byte a, cptr str)
 	/* Current location within "str" */
 	cptr s = str;
 
+	/* We use either ascii or system-specific encoding */
+ 	int encoding = (xchars_to_file) ? SYSTEM_SPECIFIC : ASCII;
+
 	/* Unused parameter */
 	(void)a;
+
+ 	/* Translate it to 7-bit ASCII or system-specific format */
+ 	xstr_trans(s, encoding);
 
 	/* Process the string */
 	while (*s)
@@ -2111,7 +2122,7 @@ void text_out_to_file(byte a, cptr str)
 		for (n = 0; n < len; n++)
 		{
 			/* Ensure the character is printable */
-			ch = (isprint((unsigned char) s[n]) ? s[n] : ' ');
+			ch = (my_isprint((unsigned char) s[n]) ? s[n] : ' ');
 
 			/* Write out the character */
 			file_writec(text_out_file, ch);
@@ -2646,6 +2657,9 @@ bool get_string(cptr prompt, char *buf, size_t len)
 
 	/* Ask the user for a string */
 	res = askfor_aux(buf, len, NULL);
+
+	/* Translate it to 8-bit (Latin-1) */
+ 	xstr_trans(buf, LATIN1);
 
 	/* Clear prompt */
 	prt("", 0, 0);

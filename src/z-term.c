@@ -656,7 +656,7 @@ void Term_queue_chars(int x, int y, int n, byte a, cptr s)
 
 		/* Save the "literal" information */
 		scr_aa[x] = a;
-		scr_cc[x] = *s;
+		scr_cc[x] = xchar_trans(*s);
 
 		scr_taa[x] = 0;
 		scr_tcc[x] = 0;
@@ -1604,13 +1604,21 @@ errr Term_addch(byte a, char c)
  * positive value, future calls to either function will
  * return negative ones.
  */
-errr Term_addstr(int n, byte a, cptr s)
+errr Term_addstr(int n, byte a, cptr buf)
 {
 	int k;
 
 	int w = Term->wid;
 
 	errr res = 0;
+
+	char s[1024];
+
+	/* Copy to a rewriteable string */
+ 	my_strcpy(s, buf, 1024);
+
+ 	/* Translate it to 7-bit ASCII or system-specific format */
+ 	xstr_trans(s, LATIN1);
 
 	/* Handle "unusable" cursor */
 	if (Term->scr->cu) return (-1);

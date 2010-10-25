@@ -163,6 +163,11 @@ bool file_put(ang_file *f, const char *buf);
  */
 bool file_putf(ang_file *f, const char *fmt, ...);
 
+/**
+ * Format and translate a string, then print it out to file.
+ */
+bool x_file_putf(ang_file *f, int encoding, const char *fmt, ...);
+
 
 /** Byte-based IO */
 

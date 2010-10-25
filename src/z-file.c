@@ -618,6 +618,8 @@ bool file_getl(ang_file *f, char *buf, size_t len)
 	byte b;
 	size_t i = 0;
 
+	bool check_encodes = FALSE;
+
 	/* Leave a byte for the terminating 0 */
 	size_t max_len = len - 1;
 
@@ -667,14 +669,24 @@ bool file_getl(ang_file *f, char *buf, size_t len)
 		}
 
 		/* Ignore non-printables */
-		if (!isprint((unsigned char) c))
+		else if (my_isprint((unsigned char)c))
+  		{
+			buf[i++] = c;
+
+			/* Notice possible encode */
+ 			if (c == '[') check_encodes = TRUE;
+
+			continue;
+		}
+		else
 		{
 			buf[i++] = '?';
 			continue;
 		}
-
-		buf[i++] = c;
 	}
+
+	/* Translate encodes if necessary */
+ 	if (check_encodes) xstr_trans(buf, LATIN1);
 
 	return TRUE;
 }
@@ -701,6 +713,31 @@ bool file_putf(ang_file *f, const char *fmt, ...)
 	va_end(vp);
 
 	return file_put(f, buf);
+}
+
+
+/*
+ * Format and translate a string, then print it out to file.
+ */
+bool x_file_putf(ang_file *f, int encoding, const char *fmt, ...)
+{
+	va_list vp;
+
+ 	char buf[1024];
+
+ 	/* Begin the Varargs Stuff */
+ 	va_start(vp, fmt);
+
+ 	/* Format the args, save the length */
+ 	(void)vstrnfmt(buf, sizeof(buf), fmt, vp);
+
+ 	/* End the Varargs Stuff */
+ 	va_end(vp);
+
+ 	/* Translate*/
+ 	xstr_trans(buf, encoding);
+
+ 	return file_put(f, buf);
 }
 
 

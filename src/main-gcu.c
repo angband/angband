@@ -832,6 +832,17 @@ static errr Term_wipe_gcu(int x, int y, int n)
 	return (0);
 }
 
+/*
+ * Given a position in the ISO Latin-1 character set, return
+ * the correct character on this system.
+ */
+ static byte Term_xchar_gcu(byte c)
+{
+ 	/* The GCU port uses the Latin-1 standard */
+ 	return (c);
+}
+
+
 
 /*
  * Place some text on the screen using an attribute
@@ -919,6 +930,7 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x)
 	t->wipe_hook = Term_wipe_gcu;
 	t->curs_hook = Term_curs_gcu;
 	t->xtra_hook = Term_xtra_gcu;
+	t->xchar_hook = Term_xchar_gcu;
 
 	/* Save the data */
 	t->data = td;

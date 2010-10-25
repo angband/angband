@@ -241,6 +241,9 @@ static void spoil_obj_desc(cptr fname)
 
 	cptr format = "%-51s  %7s%6s%4s%9s\n";
 
+	/* We use either ascii or system-specific encoding */
+ 	int encoding = (OPT(xchars_to_file)) ? SYSTEM_SPECIFIC : ASCII;
+
 	/* Open the file */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
 	fh = file_open(buf, MODE_WRITE, FTYPE_TEXT);
@@ -303,7 +306,7 @@ static void spoil_obj_desc(cptr fname)
 				kind_info(buf, sizeof(buf), dam, sizeof(dam), wgt, sizeof(wgt), &e, &v, who[s]);
 
 				/* Dump it */
-				file_putf(fh, "  %-51s%7s%6s%4d%9ld\n",
+				x_file_putf(fh, encoding, "  %-51s%7s%6s%4d%9ld\n",
 				        buf, dam, wgt, e, (long)(v));
 			}
 
@@ -314,7 +317,7 @@ static void spoil_obj_desc(cptr fname)
 			if (!group_item[i].tval) break;
 
 			/* Start a new set */
-			file_putf(fh, "\n\n%s\n\n", group_item[i].name);
+			x_file_putf(fh, encoding, "\n\n%s\n\n", group_item[i].name);
 		}
 
 		/* Get legal item types */
@@ -556,6 +559,8 @@ static void spoil_mon_desc(cptr fname)
 	u16b *who;
 	u16b why = 2;
 
+	/* We use either ascii or system-specific encoding */
+ 	int encoding = (xchars_to_file) ? SYSTEM_SPECIFIC : ASCII;
 
 	/* Build the filename */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
@@ -569,14 +574,14 @@ static void spoil_mon_desc(cptr fname)
 	}
 
 	/* Dump the header */
-	file_putf(fh, "Monster Spoilers for %s Version %s\n",
+	x_file_putf(fh, encoding, "Monster Spoilers for %s Version %s\n",
 	        VERSION_NAME, VERSION_STRING);
-	file_putf(fh, "------------------------------------------\n\n");
+	x_file_putf(fh, encoding, "------------------------------------------\n\n");
 
 	/* Dump the header */
-	file_putf(fh, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
+	x_file_putf(fh, encoding, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
 	        "Name", "Lev", "Rar", "Spd", "Hp", "Ac", "Visual Info");
-	file_putf(fh, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
+	file_putf(fh, encoding, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
 	        "----", "---", "---", "---", "--", "--", "-----------");
 
 	/* Allocate the "who" array */
@@ -646,7 +651,7 @@ static void spoil_mon_desc(cptr fname)
 		strnfmt(exp, sizeof(exp), "%s '%c'", attr_to_text(r_ptr->d_attr), r_ptr->d_char);
 
 		/* Dump the info */
-		file_putf(fh, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
+		x_file_putf(fh, encoding, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
 		        nam, lev, rar, spd, hp, ac, exp);
 	}
 

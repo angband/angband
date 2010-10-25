@@ -560,6 +560,9 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 				/* Prevent buffer overflows */
 				(void)my_strcpy(arg2, arg, sizeof(arg2));
 
+				/* Translate it to 8-bit (Latin-1) */
+ 				xstr_trans(arg2, LATIN1);
+
 				/* Format the argument */
 				sprintf(tmp, aux, arg2);
 
@@ -625,11 +628,11 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 			for (q = 0; tmp[q]; q++)
 			{
 				/* Notice first non-space */
-				if (!isspace((unsigned char)tmp[q]))
+				if (!my_isspace((unsigned char)tmp[q]))
 				{
 					/* Capitalize if possible */
-					if (islower((unsigned char)tmp[q]))
-						tmp[q] = toupper((unsigned char)tmp[q]);
+					if (my_islower((unsigned char)tmp[q]))
+						tmp[q] = my_toupper((unsigned char)tmp[q]);
 
 					/* Done */
 					break;

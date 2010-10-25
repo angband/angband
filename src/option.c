@@ -38,7 +38,7 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_show_lists,
 		OPT_mouse_movement,
 		OPT_mouse_buttons,
-		OPT_NONE,
+		OPT_xchars_to_file,
 		OPT_NONE,
 		OPT_NONE,
 	},
@@ -204,7 +204,7 @@ static option_entry options[OPT_MAX] =
 { "show_piles",          "Show stacks using special attr/char",         FALSE }, /* 67 */
 { "center_player",       "Center map continuously",                     FALSE }, /* 68 */
 { NULL,                  NULL,                                          FALSE }, /* 69 */
-{ NULL,                  NULL,                                          FALSE }, /* 70 */
+{ "xchars_to_file",      "Allow accents in output files",               FALSE }, /* 70 */
 { "auto_more",           "Automatically clear '-more-' prompts",        FALSE }, /* 71 */
 { NULL,                  NULL,                                          FALSE }, /* 72 */
 { NULL,                  NULL,                                          FALSE }, /* 73 */

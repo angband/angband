@@ -2257,6 +2257,16 @@ static errr Term_wipe_win(int x, int y, int n)
 
 
 /*
+ * Given a position in the ISO Latin-1 character set, return
+ * the correct character on this system.
+ */
+ static byte Term_xchar_win(byte c)
+{
+ 	/* The Windows port uses the Latin-1 standard */
+ 	return (c);
+}
+
+/*
  * Low level graphics.  Assumes valid input.
  *
  * Draw several ("n") chars, with an attr, at a given location.
@@ -2660,6 +2670,7 @@ static void term_data_link(term_data *td)
 	t->wipe_hook = Term_wipe_win;
 	t->text_hook = Term_text_win;
 	t->pict_hook = Term_pict_win;
+	t->xchar_hook = Term_xchar_win;
 
 	/* Remember where we came from */
 	t->data = td;
