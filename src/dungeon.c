@@ -1346,7 +1346,6 @@ static void dungeon(void)
 
 
 	/* Reset the "command" vars */
-	p_ptr->command_cmd = 0;
 	p_ptr->command_new = 0;
 	p_ptr->command_arg = 0;
 

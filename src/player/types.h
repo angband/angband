@@ -219,13 +219,8 @@ typedef struct player
 	bool run_break_right;	/* Looking for a break (right) */
 	bool run_break_left;	/* Looking for a break (left) */
 
-	s16b command_cmd;		/* Gives the underlying keyset key for
-					   the currently-executing command. */
 	s16b command_arg;		/* Gives argument of current command 
 					   (generally a repeat count) */
-	ui_event_data command_cmd_ex;   /* Gives additional information of 
-					   currently-executing command */
-
 	s16b command_wrk;		/* Used by the UI to decide whether
 					   to start off showing equipment or
 					   inventory listings when offering

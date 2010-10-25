@@ -44,7 +44,7 @@ typedef void do_cmd_type(void);
 
 /* Forward declare these, because they're really defined later */
 static do_cmd_type do_cmd_wizard, do_cmd_try_debug,
-		do_cmd_mouseclick, do_cmd_port,
+		do_cmd_port,
 		do_cmd_xxx_options, do_cmd_menu,
 		do_cmd_monlist, do_cmd_itemlist;
 
@@ -331,24 +331,24 @@ void do_cmd_quit(cmd_code code, cmd_arg args[])
 /*
  * Handle a mouseclick.
  */
-static void do_cmd_mouseclick(void)
+static void do_cmd_mouseclick(ui_event_data e)
 {
 	int x, y;
 
 	if (!OPT(mouse_movement)) return;
 
-	y = KEY_GRID_Y(p_ptr->command_cmd_ex);
-	x = KEY_GRID_X(p_ptr->command_cmd_ex);
+	y = KEY_GRID_Y(e);
+	x = KEY_GRID_X(e);
 
 	/* Check for a valid location */
 	if (!in_bounds_fully(y, x)) return;
 
 	/* XXX We could try various things here like going up/down stairs */
-	if ((p_ptr->py == y) && (p_ptr->px == x) /* && (p_ptr->command_cmd_ex.mousebutton) */)
+	if ((p_ptr->py == y) && (p_ptr->px == x))
 	{
 		textui_cmd_rest();
 	}
-	else /* if (p_ptr->command_cmd_ex.mousebutton == 1) */
+	else /* if (e.mousebutton == 1) */
 	{
 		if (p_ptr->timed[TMD_CONFUSED])
 		{
@@ -360,7 +360,7 @@ static void do_cmd_mouseclick(void)
 		}
 	}
 	/*
-	else if (p_ptr->command_cmd_ex.mousebutton == 2)
+	else if (e.mousebutton == 2)
 	{
 		target_set_location(y, x);
 		msg_print("Target set.");
@@ -629,8 +629,7 @@ static char request_command_buffer[256];
 /*
  * Request a command from the user.
  *
- * Sets p_ptr->command_cmd, p_ptr->command_arg.  
- * May modify p_ptr->command_new.
+ * Sets p_ptr->command_arg, may modify p_ptr->command_new.
  *
  * Note that "caret" ("^") is treated specially, and is used to
  * allow manual input of control characters.  This can be used
@@ -645,7 +644,7 @@ static char request_command_buffer[256];
  *
  * Note that "p_ptr->command_new" may not work any more.  XXX XXX XXX
  */
-static void textui_get_command(void)
+static ui_event_data textui_get_command(void)
 {
 	int i;
 	int mode;
@@ -663,8 +662,7 @@ static void textui_get_command(void)
 		mode = KEYMAP_MODE_ORIG;
 
 
-	/* Reset command/argument/direction */
-	p_ptr->command_cmd = 0;
+	/* Reset argument */
 	p_ptr->command_arg = 0;
 
 
@@ -700,14 +698,6 @@ static void textui_get_command(void)
 
 		/* Clear top line */
 		prt("", 0, 0);
-
-
-		/* Resize events XXX XXX */
-		if (ke.type == EVT_RESIZE)
-		{
-			p_ptr->command_cmd_ex = ke;
-			p_ptr->command_new = ' ';
-		}
 
 
 		/* Command Count */
@@ -834,22 +824,19 @@ static void textui_get_command(void)
 		}
 
 
-		/* Buttons are always specified in standard keyset */
-		if (ke.type == EVT_BUTTON)
+		if (ke.type == EVT_MOUSE)
+			break;
+		else if (ke.type == EVT_BUTTON)
 		{
+			/* Buttons are always specified in standard keyset */
 			act = tmp;
 			tmp[0] = ke.key;
 		}
-		else if (ke.type == EVT_MOUSE)
-		{
-			p_ptr->command_cmd = 0;
-			p_ptr->command_cmd_ex = ke;
-			break;
-		}
-
-		/* Look up applicable keymap */
 		else
+		{
+			/* Look up applicable keymap */
 			act = keymap_act[mode][(byte)(ke.key)];
+		}
 
 		/* Apply keymap if not inside a keymap already */
 		if (act && !inkey_next)
@@ -870,10 +857,6 @@ static void textui_get_command(void)
 		if (ke.key == '\0') continue;
 
 
-		/* Use command */
-		p_ptr->command_cmd = ke.key;
-		p_ptr->command_cmd_ex = ke;
-
 		/* Done */
 		break;
 	}
@@ -891,14 +874,18 @@ static void textui_get_command(void)
 		if (!o_ptr->k_idx) continue;
 
 		/* Set up string to look for, e.g. "^d" */
-		verify_inscrip[1] = p_ptr->command_cmd;
+		verify_inscrip[1] = ke.key;
 
 		/* Verify command */
 		n = check_for_inscrip(o_ptr, "^*") + check_for_inscrip(o_ptr, verify_inscrip);
 		while (n--)
 		{
 			if (!get_check("Are you sure? "))
-				p_ptr->command_cmd = '\n';
+			{
+				ke.type = EVT_NONE;
+				ke.key = 0;
+				break;
+			}
 		}
 	}
 
@@ -906,8 +893,8 @@ static void textui_get_command(void)
 	/* Hack -- erase the message line. */
 	prt("", 0, 0);
 
-	/* Hack again -- apply the modified key command */
-	p_ptr->command_cmd_ex.key = p_ptr->command_cmd;
+
+	return ke;
 }
 
 
@@ -919,30 +906,24 @@ static void textui_get_command(void)
  */
 void textui_process_command(bool no_request)
 {
-	if (!no_request)
-		textui_get_command();
+	ui_event_data e = textui_get_command();
 
-	/* Handle repeating the last command */
-	/* repeat_check();*/
-
-	/* Handle resize events XXX */
-	if (p_ptr->command_cmd_ex.type == EVT_RESIZE)
-	{
+	if (e.type == EVT_RESIZE)
 		do_cmd_redraw();
-	}
-	else if (p_ptr->command_cmd_ex.type == EVT_MOUSE)
-	{
-		do_cmd_mouseclick();
-	}
-	else
+
+	else if (e.type == EVT_MOUSE)
+		do_cmd_mouseclick(e);
+
+	else if (e.type == EVT_KBRD)
 	{
 		/* Within these boundaries, the cast to unsigned char will have the desired effect */
-		assert(p_ptr->command_cmd >= CHAR_MIN && p_ptr->command_cmd <= CHAR_MAX);
-		/* Execute the command */
-		if (converted_list[(unsigned char) p_ptr->command_cmd].cmd != CMD_NULL)
-			cmd_insert_repeated(converted_list[(unsigned char) p_ptr->command_cmd].cmd, p_ptr->command_arg);
+		assert(e.key >= CHAR_MIN && e.key <= CHAR_MAX);
 
-		else if (converted_list[(unsigned char) p_ptr->command_cmd].hook)
-			converted_list[(unsigned char) p_ptr->command_cmd].hook();
+		/* Execute the command */
+		if (converted_list[(unsigned char) e.key].cmd != CMD_NULL)
+			cmd_insert_repeated(converted_list[(unsigned char) e.key].cmd, p_ptr->command_arg);
+
+		else if (converted_list[(unsigned char) e.key].hook)
+			converted_list[(unsigned char) e.key].hook();
 	}
 }

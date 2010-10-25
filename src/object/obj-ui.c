@@ -435,11 +435,13 @@ static bool get_item_allow(int item, bool is_harmless)
 	else
 		o_ptr = &o_list[0 - item];
 
+#if 0
 	/* Check for a "prevention" inscription */
 	verify_inscrip[1] = p_ptr->command_cmd;
 
 	/* Find both sets of inscriptions, add togther, and prompt that number of times */
 	n = check_for_inscrip(o_ptr, verify_inscrip);
+#endif
 
 	if (!is_harmless)
 		n += check_for_inscrip(o_ptr, "!*");
@@ -470,6 +472,7 @@ static int get_tag(int *cp, char tag)
 	int i;
 	cptr s;
 
+#if 0
 	/* (f)ire is handled differently from all others, due to the quiver */
 	if (p_ptr->command_cmd == 'f')
 	{
@@ -523,6 +526,8 @@ static int get_tag(int *cp, char tag)
 			s = strchr(s + 1, '@');
 		}
 	}
+
+#endif
 
 	/* No such tag */
 	return (FALSE);
@@ -1120,9 +1125,11 @@ bool get_item(int *cp, cptr pmt, cptr str, int mode)
 					k = i1;
 				}
 
+#if 0
 				/* Choose the "default" slot (0) of the quiver */
-				else if(p_ptr->command_cmd == 'f')
+				else if (p_ptr->command_cmd == 'f')
 					k = e1;
+#endif
 
 				/* Choose "default" equipment item */
 				else if (p_ptr->command_wrk == USE_EQUIP)

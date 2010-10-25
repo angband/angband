@@ -2770,7 +2770,10 @@ static bool store_sell(void)
 
 	/* Get an item */
 	p_ptr->command_wrk = USE_INVEN;
-	p_ptr->command_cmd = 'd';
+
+	/* XXX this is horrible, better system needed */
+	/* p_ptr->command_cmd = 'd'; */
+
 	if (!get_item(&item, prompt, reject, get_mode))
 	{
 		return FALSE;
