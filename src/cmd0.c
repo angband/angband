@@ -552,6 +552,54 @@ void cmd_init(void)
 }
 
 
+/**
+ * Get a command count, with the '0' key.
+ */
+static int textui_get_count(void)
+{
+	int count = 0;
+
+	while (1)
+	{
+		prt(format("Count: %d", count), 0, 0);
+
+		ui_event_data ke = inkey_ex();
+		if (ke.type != EVT_KBRD)
+			continue;
+
+		if (ke.key == ESCAPE)
+			return -1;
+
+		/* Simple editing (delete or backspace) */
+		else if (ke.key == 0x7F || ke.key == KTRL('H'))
+			count = count / 10;
+
+		/* Actual numeric data */
+		else if (isdigit((unsigned char) ke.key))
+		{
+			count = count * 10 + D2I(ke.key);
+
+			if (count >= 9999)
+			{
+				bell("Invalid repeat count!");
+				count = 9999;
+			}
+		}
+
+		/* Anything non-numeric passes straight to command input */
+		else
+		{
+			/* XXX nasty hardcoding of action menu key */
+			if (ke.key != '\n' && ke.key != '\r')
+				Term_event_push(&ke);
+
+			break;
+		}
+	}
+
+	return count;
+}
+
 
 
 /*
@@ -563,8 +611,6 @@ static char request_command_buffer[256];
 
 /*
  * Request a command from the user.
- *
- * Sets p_ptr->command_arg.
  *
  * Note that "caret" ("^") is treated specially, and is used to
  * allow manual input of control characters.  This can be used
@@ -579,7 +625,7 @@ static char request_command_buffer[256];
  */
 static ui_event_data textui_get_command(void)
 {
-	int mode;
+	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
 	char tmp[2] = { '\0', '\0' };
 
@@ -587,15 +633,6 @@ static ui_event_data textui_get_command(void)
 
 	cptr act;
 
-
-	if (OPT(rogue_like_commands))
-		mode = KEYMAP_MODE_ROGUE;
-	else
-		mode = KEYMAP_MODE_ORIG;
-
-
-	/* Reset argument */
-	p_ptr->command_arg = 0;
 
 
 	/* Get command */
@@ -611,102 +648,37 @@ static ui_event_data textui_get_command(void)
 		ke = inkey_ex();
 
 
-
 		/* Command Count */
 		if (ke.key == '0')
 		{
-			int old_arg = p_ptr->command_arg;
+			int count = textui_get_count();
 
-			/* Reset */
-			p_ptr->command_arg = 0;
+			if (count == -1 || !get_com_ex("Command: ", &ke))
+				continue;
+			else
+				p_ptr->command_arg = count;
+		}
 
-			/* Begin the input */
-			prt("Count: ", 0, 0);
+		/* Allow "keymaps" to be bypassed */
+		else if (ke.key == '\\')
+		{
+			/* Get a real command */
+			(void)get_com("Command: ", &ke.key);
 
-			/* Get a command count */
-			while (1)
-			{
-				/* Get a new keypress */
-				ke.key = inkey();
+			/* Hack -- bypass keymaps */
+			if (!inkey_next) inkey_next = "";
+		}
 
-				/* Simple editing (delete or backspace) */
-				if ((ke.key == 0x7F) || (ke.key == KTRL('H')))
-				{
-					/* Delete a digit */
-					p_ptr->command_arg = p_ptr->command_arg / 10;
-
-					/* Show current count */
-					prt(format("Count: %d", p_ptr->command_arg), 0, 0);
-				}
-
-				/* Actual numeric data */
-				else if (isdigit((unsigned char)ke.key))
-				{
-					/* Stop count at 9999 */
-					if (p_ptr->command_arg >= 1000)
-					{
-						/* Warn */
-						bell("Invalid repeat count!");
-
-						/* Limit */
-						p_ptr->command_arg = 9999;
-					}
-
-					/* Increase count */
-					else
-					{
-						/* Incorporate that digit */
-						p_ptr->command_arg = p_ptr->command_arg * 10 + D2I(ke.key);
-					}
-
-					/* Show current count */
-					prt(format("Count: %d", p_ptr->command_arg), 0, 0);
-				}
-
-				/* Exit on "unusable" input */
-				else
-				{
-					break;
-				}
-			}
-
-			/* Hack -- Handle "zero" */
-			if (p_ptr->command_arg == 0)
-			{
-				/* Default to 99 */
-				p_ptr->command_arg = 99;
-
-				/* Show current count */
-				prt(format("Count: %d", p_ptr->command_arg), 0, 0);
-			}
-
-			/* Hack -- Handle "old_arg" */
-			if (old_arg != 0)
-			{
-				/* Restore old_arg */
-				p_ptr->command_arg = old_arg;
-
-				/* Show current count */
-				prt(format("Count: %d", p_ptr->command_arg), 0, 0);
-			}
-
-			/* Hack -- white-space means "enter command now" */
-			if ((ke.key == ' ') || (ke.key == '\n') || (ke.key == '\r'))
-			{
-				/* Get a real command */
-				if (!get_com("Command: ", &ke.key))
-				{
-					/* Clear count */
-					p_ptr->command_arg = 0;
-
-					/* Continue */
-					continue;
-				}
-			}
+		/* Allow "control chars" to be entered */
+		else if (ke.key == '^')
+		{
+			/* Get a new command and controlify it */
+			if (get_com("Control: ", &ke.key))
+				ke.key = KTRL(ke.key);
 		}
 
 		/* Special case for the arrow keys */
-		if (isarrow(ke.key))
+		else if (isarrow(ke.key))
 		{
 			switch (ke.key)
 			{
@@ -717,41 +689,24 @@ static ui_event_data textui_get_command(void)
 			}
 		}
 
-		/* Allow "keymaps" to be bypassed */
-		if (ke.key == '\\')
-		{
-			/* Get a real command */
-			(void)get_com("Command: ", &ke.key);
-
-			/* Hack -- bypass keymaps */
-			if (!inkey_next) inkey_next = "";
-		}
+		/* Erase the message line */
+		prt("", 0, 0);
 
 
-		/* Allow "control chars" to be entered */
-		if (ke.key == '^')
-		{
-			/* Get a new command and controlify it */
-			if (get_com("Control: ", &ke.key)) ke.key = KTRL(ke.key);
-		}
-
-
-		if (ke.type == EVT_MOUSE)
-			break;
-		else if (ke.type == EVT_BUTTON)
+		if (ke.type == EVT_BUTTON)
 		{
 			/* Buttons are always specified in standard keyset */
 			act = tmp;
 			tmp[0] = ke.key;
 		}
-		else
+		else if (ke.type == EVT_KBRD)
 		{
 			/* Look up applicable keymap */
 			act = keymap_act[mode][(byte)(ke.key)];
 		}
 
 		/* Apply keymap if not inside a keymap already */
-		if (act && !inkey_next)
+		if (ke.key && act && !inkey_next)
 		{
 			/* Install the keymap */
 			my_strcpy(request_command_buffer, act,
@@ -764,17 +719,9 @@ static ui_event_data textui_get_command(void)
 			continue;
 		}
 
-
-		/* Paranoia */
-		if (ke.key == '\0') continue;
-
-
 		/* Done */
 		break;
 	}
-
-	/* Erase the message line */
-	prt("", 0, 0);
 
 	return ke;
 }
@@ -881,6 +828,9 @@ void textui_process_command(bool no_request)
 {
 	bool done = TRUE;
 	ui_event_data e = textui_get_command();
+
+	/* Reset argument */
+	p_ptr->command_arg = 0;
 
 	if (e.type == EVT_RESIZE)
 		do_cmd_redraw();
