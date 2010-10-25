@@ -168,6 +168,11 @@ extern flag_cache *slay_cache;
 
 extern u16b daycount;
 
+/* util.c */
+extern cptr inkey_next;
+
+
+
 /* birth.c */
 extern void player_birth(bool quickstart_allowed);
 
@@ -282,7 +287,6 @@ extern bool get_com(cptr prompt, char *command);
 extern bool get_com_ex(cptr prompt, ui_event_data *command);
 extern void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp);
 extern void pause_line(int row);
-extern void request_command(void);
 extern bool is_a_vowel(int ch);
 extern int color_char_to_attr(char c);
 extern int color_text_to_attr(cptr name);
