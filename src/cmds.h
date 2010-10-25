@@ -16,6 +16,14 @@ extern void cmd_init(void);
 void do_cmd_quit(cmd_code code, cmd_arg args[]);
 
 /* cmd-obj.c */
+void do_cmd_uninscribe(cmd_code code, cmd_arg args[]);
+void do_cmd_inscribe(cmd_code code, cmd_arg args[]);
+void do_cmd_takeoff(cmd_code code, cmd_arg args[]);
+void do_cmd_wield(cmd_code code, cmd_arg args[]);
+void do_cmd_drop(cmd_code code, cmd_arg args[]);
+void do_cmd_use(cmd_code code, cmd_arg args[]);
+void do_cmd_refill(cmd_code code, cmd_arg args[]);
+
 void textui_obj_inscribe(object_type *o_ptr, int item);
 void textui_obj_examine(object_type *o_ptr, int item);
 void textui_obj_drop(object_type *o_ptr, int item);
@@ -23,36 +31,6 @@ void textui_obj_wield(object_type *o_ptr, int item);
 void textui_obj_browse(object_type *o_ptr, int item);
 void textui_obj_study(object_type *o_ptr, int item);
 void textui_obj_cast(object_type *o_ptr, int item);
-
-
-void do_cmd_uninscribe(cmd_code code, cmd_arg args[]);
-void do_cmd_takeoff(cmd_code code, cmd_arg args[]);
-void do_cmd_wield(cmd_code code, cmd_arg args[]);
-void do_cmd_drop(cmd_code code, cmd_arg args[]);
-void do_cmd_use(cmd_code code, cmd_arg args[]);
-void do_cmd_refill(cmd_code code, cmd_arg args[]);
-void do_cmd_inscribe(cmd_code code, cmd_arg args[]);
-
-void textui_cmd_uninscribe(void);
-void textui_cmd_inscribe(void);
-void do_cmd_observe(void);
-void textui_cmd_takeoff(void);
-void textui_cmd_wield(void);
-void textui_cmd_drop(void);
-void do_cmd_browse(void);
-void do_cmd_cast(cmd_code code, cmd_arg args[]);
-void textui_cmd_study(void);
-void textui_cmd_cast(void);
-void textui_cmd_pray(void);
-void textui_cmd_refill(void);
-void textui_cmd_use_staff(void);
-void textui_cmd_aim_wand(void);
-void textui_cmd_zap_rod(void);
-void textui_cmd_activate(void);
-void textui_cmd_eat_food(void);
-void textui_cmd_quaff_potion(void);
-void textui_cmd_read_scroll(void);
-
 
 /* cmd2.c */
 void do_cmd_go_up(cmd_code code, cmd_arg args[]);
@@ -127,6 +105,7 @@ void textui_spell_browse(object_type *o_ptr, int item);
 
 void do_cmd_study_spell(cmd_code code, cmd_arg args[]);
 void do_cmd_study_book(cmd_code code, cmd_arg args[]);
+void do_cmd_cast(cmd_code code, cmd_arg args[]);
 
 /* cmd-know.c */
 extern void do_cmd_knowledge_objects(void *obj, const char *name);

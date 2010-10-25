@@ -109,7 +109,7 @@ static item_act_t item_actions[] =
 	  NULL, (USE_EQUIP | USE_INVEN), NULL, FALSE },
 
 	/*** Spellbooks ***/
-	{ textui_obj_browse, "browse", "Browse a book", 'b', CMD_NULL,
+	{ textui_spell_browse, "browse", "Browse a book", 'b', CMD_NULL,
 	  "Browse which book? ", "You have no books that you can read.",
 	  obj_can_browse, (USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL, FALSE },
 

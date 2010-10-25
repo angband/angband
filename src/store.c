@@ -28,6 +28,7 @@
 #include "spells.h"
 #include "squelch.h"
 #include "target.h"
+#include "textui.h"
 #include "ui-menu.h"
 #include "z-debug.h"
 
@@ -2947,33 +2948,19 @@ static bool store_process_command_key(char cmd)
 	{
 		/*** Inventory Commands ***/
 
-		/* Wear/wield equipment */
 		case 'w':
-		{
-			textui_cmd_wield();
-			redraw = TRUE;
-			
-			break;
-		}
-
-		/* Take off equipment */
 		case 'T':
 		case 't':
-		{
-			textui_cmd_takeoff();
-			redraw = TRUE;
-			
-			break;
-		}
-
-		/* Destroy an item */
 		case KTRL('D'):
 		case 'k':
+		case 'P':
+		case 'b':
+		case 'I':
+		case '{':
+		case '}':
 		{
-			textui_cmd_destroy();
-			redraw = TRUE;
-			
-			break;
+			Term_key_push(cmd);
+			textui_process_command(TRUE);
 		}
 
 		/* Equipment list */
@@ -2993,13 +2980,6 @@ static bool store_process_command_key(char cmd)
 
 		/*** Various commands ***/
 
-		/* Identify an object */
-		case 'I':
-		{
-			do_cmd_observe();
-			break;
-		}
-
 		/* Hack -- toggle windows */
 		case KTRL('E'):
 		{
@@ -3007,35 +2987,6 @@ static bool store_process_command_key(char cmd)
 			break;
 		}
 
-
-
-		/*** Use various objects ***/
-
-		/* Browse a book */
-		case 'P':
-		case 'b':
-		{
-			do_cmd_browse();
-			break;
-		}
-
-		/* Inscribe an object */
-		case '{':
-		{
-			textui_cmd_inscribe();
-			redraw = TRUE;
-			
-			break;
-		}
-
-		/* Uninscribe an object */
-		case '}':
-		{
-			textui_cmd_uninscribe();
-			redraw = TRUE;
-			
-			break;
-		}
 
 
 		/*** Help and Such ***/
