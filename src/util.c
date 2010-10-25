@@ -1923,9 +1923,10 @@ void text_out_to_screen(byte a, cptr str)
 	int wrap;
 
 	cptr s;
+	char buf[1024];
 
 	/* We use either ascii or system-specific encoding */
-	 int encoding = (xchars_to_file) ? SYSTEM_SPECIFIC : ASCII;
+	int encoding = (OPT(xchars_to_file)) ? SYSTEM_SPECIFIC : ASCII;
 
 	/* Obtain the size */
 	(void)Term_get_size(&wid, &h);
@@ -1933,9 +1934,12 @@ void text_out_to_screen(byte a, cptr str)
 	/* Obtain the cursor */
 	(void)Term_locate(&x, &y);
 
-	 /* Translate it to 7-bit ASCII or system-specific format */
-	 xstr_trans(buf, encoding);
-
+	/* Copy to a rewriteable string */
+	my_strcpy(buf, str, 1024);
+	
+	/* Translate it to 7-bit ASCII or system-specific format */
+	xstr_trans(buf, encoding);
+	
 	/* Use special wrapping boundary? */
 	if ((text_out_wrap > 0) && (text_out_wrap < wid))
 		wrap = text_out_wrap;
@@ -1943,7 +1947,7 @@ void text_out_to_screen(byte a, cptr str)
 		wrap = wid;
 
 	/* Process the string */
-	for (s = str; *s; s++)
+	for (s = buf; *s; s++)
 	{
 		char ch;
 
@@ -2043,10 +2047,10 @@ void text_out_to_file(byte a, cptr str)
 	int wrap = (text_out_wrap ? text_out_wrap : 75);
 
 	/* Current location within "str" */
-	cptr s = str;
+	char *s = str;
 
 	/* We use either ascii or system-specific encoding */
- 	int encoding = (xchars_to_file) ? SYSTEM_SPECIFIC : ASCII;
+ 	int encoding = (OPT(xchars_to_file)) ? SYSTEM_SPECIFIC : ASCII;
 
 	/* Unused parameter */
 	(void)a;

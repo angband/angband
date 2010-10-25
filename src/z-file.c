@@ -15,10 +15,7 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#include "z-file.h"
-#include "z-virt.h"
-#include "z-util.h"
-#include "z-form.h"
+#include "angband.h"
 
 #ifndef RISCOS
 # include <sys/types.h>

@@ -27,6 +27,7 @@ HEADERS = \
 	ui.h \
 	ui-menu.h \
 	wizard.h \
+	x-char.h \
 	z-bitflag.h \
 	z-file.h \
 	z-form.h \
@@ -115,6 +116,7 @@ ANGFILES = \
 	wiz-spoil.o \
 	wiz-stats.o \
 	wizard.o \
+	x-char.o \
 	x-spell.o \
 	xtra2.o \
 	xtra3.o

@@ -560,7 +560,7 @@ static void spoil_mon_desc(cptr fname)
 	u16b why = 2;
 
 	/* We use either ascii or system-specific encoding */
- 	int encoding = (xchars_to_file) ? SYSTEM_SPECIFIC : ASCII;
+ 	int encoding = (OPT(xchars_to_file)) ? SYSTEM_SPECIFIC : ASCII;
 
 	/* Build the filename */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
@@ -581,7 +581,7 @@ static void spoil_mon_desc(cptr fname)
 	/* Dump the header */
 	x_file_putf(fh, encoding, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
 	        "Name", "Lev", "Rar", "Spd", "Hp", "Ac", "Visual Info");
-	file_putf(fh, encoding, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
+	x_file_putf(fh, encoding, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
 	        "----", "---", "---", "---", "--", "--", "-----------");
 
 	/* Allocate the "who" array */
