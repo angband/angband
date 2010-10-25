@@ -911,13 +911,7 @@ static void do_item(item_act_t *act)
 	if (act->action != NULL)
 		act->action(o_ptr, item);
 	else if (cmd_needs_aim && obj_needs_aim(o_ptr))
-	{
-		int dir;
-		if (!get_aim_dir(&dir))
-			return;
-
-		cmd_insert(act->command, item, dir);
-	}
+		cmd_insert(act->command, item, DIR_UNKNOWN);
 	else
 		cmd_insert(act->command, item);
 }
