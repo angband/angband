@@ -552,6 +552,12 @@ void cmd_init(void)
 }
 
 
+
+
+
+/*** Input processing ***/
+
+
 /**
  * Get a command count, with the '0' key.
  */
@@ -608,7 +614,6 @@ static int textui_get_count(void)
 static char request_command_buffer[256];
 
 
-
 /*
  * Request a command from the user.
  *
@@ -619,9 +624,6 @@ static char request_command_buffer[256];
  *
  * Note that "backslash" is treated specially, and is used to bypass any
  * keymap entry for the following character.  This is useful for macros.
- *
- * Note that this command is used both in the dungeon and in
- * stores, and must be careful to work in both situations.
  */
 static ui_event_data textui_get_command(void)
 {
@@ -799,7 +801,7 @@ static bool key_confirm_command(unsigned char c)
 /**
  * Process a textui keypress.
  */
-bool textui_process_key(unsigned char c)
+static bool textui_process_key(unsigned char c)
 {
 	if (c == ESCAPE || c == ' ' || c == '\a')
 		return TRUE;
