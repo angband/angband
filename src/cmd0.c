@@ -329,47 +329,6 @@ void do_cmd_quit(cmd_code code, cmd_arg args[])
 
 
 /*
- * Handle a mouseclick.
- */
-static void do_cmd_mouseclick(ui_event_data e)
-{
-	int x, y;
-
-	if (!OPT(mouse_movement)) return;
-
-	y = KEY_GRID_Y(e);
-	x = KEY_GRID_X(e);
-
-	/* Check for a valid location */
-	if (!in_bounds_fully(y, x)) return;
-
-	/* XXX We could try various things here like going up/down stairs */
-	if ((p_ptr->py == y) && (p_ptr->px == x))
-	{
-		textui_cmd_rest();
-	}
-	else /* if (e.mousebutton == 1) */
-	{
-		if (p_ptr->timed[TMD_CONFUSED])
-		{
-			cmd_insert(CMD_WALK, DIR_UNKNOWN);
-		}
-		else
-		{
-			cmd_insert(CMD_PATHFIND, y, x);
-		}
-	}
-	/*
-	else if (e.mousebutton == 2)
-	{
-		target_set_location(y, x);
-		msg_print("Target set.");
-	}
-	*/
-}
-
-
-/*
  * Port-specific options
  *
  * Should be moved to the options screen. XXX
@@ -589,30 +548,6 @@ void cmd_init(void)
 			converted_list[key].hook = commands[i].hook;
 			converted_list[key].cmd = commands[i].cmd;
 		}
-	}
-
-	/* Fill in the rest */
-	for (i = 0; i < N_ELEMENTS(converted_list); i++)
-	{
-		switch (i)
-		{
-			/* Ignore */
-			case ESCAPE:
-			case ' ':
-			case '\a':
-			{
-				break;
-			}
-
-			default:
-			{
-				if (!converted_list[i].hook && !converted_list[i].cmd)
-				{
-					converted_list[i].hook = do_cmd_unknown;
-					converted_list[i].cmd = CMD_NULL;
-				}
-			}
-		}		
 	}
 }
 
@@ -898,32 +833,82 @@ static ui_event_data textui_get_command(void)
 }
 
 
+/**
+ * Handle a textui mouseclick.
+ */
+static void textui_process_click(ui_event_data e)
+{
+	int x, y;
+
+	if (!OPT(mouse_movement)) return;
+
+	y = KEY_GRID_Y(e);
+	x = KEY_GRID_X(e);
+
+	/* Check for a valid location */
+	if (!in_bounds_fully(y, x)) return;
+
+	/* XXX show context menu here */
+	if ((p_ptr->py == y) && (p_ptr->px == x))
+		textui_cmd_rest();
+
+	else /* if (e.mousebutton == 1) */
+	{
+		if (p_ptr->timed[TMD_CONFUSED])
+			cmd_insert(CMD_WALK, DIR_UNKNOWN);
+		else
+			cmd_insert(CMD_PATHFIND, y, x);
+	}
+
+#if 0
+	else if (e.mousebutton == 2)
+	{
+		target_set_location(y, x);
+		msg_print("Target set.");
+	}
+#endif
+}
 
 
-/*
+/**
+ * Process a textui keypress.
+ */
+bool textui_process_key(unsigned char c)
+{
+	if (c == ESCAPE || c == ' ' || c == '\a')
+		return TRUE;
+
+	if (converted_list[c].cmd != CMD_NULL)
+		cmd_insert_repeated(converted_list[c].cmd, p_ptr->command_arg);
+
+	else if (converted_list[c].hook)
+		converted_list[c].hook();
+
+	else
+		return FALSE;
+
+	return TRUE;
+}
+
+
+/**
  * Parse and execute the current command
  * Give "Warning" on illegal commands.
  */
 void textui_process_command(bool no_request)
 {
+	bool done = TRUE;
 	ui_event_data e = textui_get_command();
 
 	if (e.type == EVT_RESIZE)
 		do_cmd_redraw();
 
 	else if (e.type == EVT_MOUSE)
-		do_cmd_mouseclick(e);
+		textui_process_click(e);
 
 	else if (e.type == EVT_KBRD)
-	{
-		/* Within these boundaries, the cast to unsigned char will have the desired effect */
-		assert(e.key >= CHAR_MIN && e.key <= CHAR_MAX);
+		done = textui_process_key(e.key);
 
-		/* Execute the command */
-		if (converted_list[(unsigned char) e.key].cmd != CMD_NULL)
-			cmd_insert_repeated(converted_list[(unsigned char) e.key].cmd, p_ptr->command_arg);
-
-		else if (converted_list[(unsigned char) e.key].hook)
-			converted_list[(unsigned char) e.key].hook();
-	}
+	if (!done)
+		do_cmd_unknown();
 }
