@@ -622,13 +622,6 @@ ui_event_data menu_select(menu_type *menu, int notify)
 
 	notify |= (EVT_SELECT | EVT_ESCAPE);
 
-	/* Check for command flag */
-	if (p_ptr->command_new)
-	{
-		Term_key_push(p_ptr->command_new);
-		p_ptr->command_new = 0;
-	}
-
 	/* Stop on first unhandled event */
 	while (!(in.type & notify))
 	{

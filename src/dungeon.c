@@ -1001,9 +1001,6 @@ static void process_player(void)
 		/* Hack -- Pack Overflow */
 		pack_overflow();
 
-		/* Hack -- reset to inventory display */
-		if (!p_ptr->command_new) p_ptr->command_wrk = USE_INVEN;
-
 		/* Assume free turn */
 		p_ptr->energy_use = 0;
 
@@ -1346,7 +1343,6 @@ static void dungeon(void)
 
 
 	/* Reset the "command" vars */
-	p_ptr->command_new = 0;
 	p_ptr->command_arg = 0;
 
 

@@ -513,7 +513,8 @@ byte py_pickup(int pickup)
 				if (OPT(highlight_player)) move_cursor_relative(p_ptr->py, p_ptr->px);
 
 				/* Wait for it.  Use key as next command. */
-				p_ptr->command_new = inkey();
+				ui_event_data e = inkey_ex();
+				Term_event_push(&e);
 
 				/* Restore screen */
 				screen_load();

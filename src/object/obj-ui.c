@@ -572,10 +572,6 @@ static int get_tag(int *cp, char tag)
  *
  * If no item is selected, we do nothing to "cp", and return FALSE.
  *
- * Global "p_ptr->command_new" is used when viewing the inventory or equipment
- * to allow the user to enter a command while viewing those screens, and
- * also to induce "auto-enter" of stores, and other such stuff.
- *
  * Global "p_ptr->command_wrk" is used to choose between equip/inven/floor
  * listings.  It is equal to USE_INVEN or USE_EQUIP or USE_FLOOR, except
  * when this function is first called, when it is equal to zero, which will

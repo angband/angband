@@ -55,19 +55,12 @@ void do_cmd_inven(void)
 		        (diff < 0 ? "overweight" : "remaining")),
 	    0, 0);
 
-	/* Hack -- Get a new command */
-	p_ptr->command_new = inkey();
+	/* Get a new command */
+	ui_event_data e = inkey_ex();
+	Term_event_push(&e);
 
 	/* Load screen */
 	screen_load();
-
-
-	/* Hack -- Process "Escape" */
-	if (p_ptr->command_new == ESCAPE)
-	{
-		/* Reset stuff */
-		p_ptr->command_new = 0;
-	}
 }
 
 
@@ -94,19 +87,12 @@ void do_cmd_equip(void)
 	/* Prompt for a command */
 	prt("(Equipment) Command: ", 0, 0);
 
-	/* Hack -- Get a new command */
-	p_ptr->command_new = inkey();
+	/* Get a new command */
+	ui_event_data e = inkey_ex();
+	Term_event_push(&e);
 
 	/* Load screen */
 	screen_load();
-
-
-	/* Hack -- Process "Escape" */
-	if (p_ptr->command_new == ESCAPE)
-	{
-		/* Reset stuff */
-		p_ptr->command_new = 0;
-	}
 }
 
 

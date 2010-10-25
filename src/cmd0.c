@@ -564,7 +564,7 @@ static char request_command_buffer[256];
 /*
  * Request a command from the user.
  *
- * Sets p_ptr->command_arg, may modify p_ptr->command_new.
+ * Sets p_ptr->command_arg.
  *
  * Note that "caret" ("^") is treated specially, and is used to
  * allow manual input of control characters.  This can be used
@@ -576,12 +576,9 @@ static char request_command_buffer[256];
  *
  * Note that this command is used both in the dungeon and in
  * stores, and must be careful to work in both situations.
- *
- * Note that "p_ptr->command_new" may not work any more.  XXX XXX XXX
  */
 static ui_event_data textui_get_command(void)
 {
-	int i;
 	int mode;
 
 	char tmp[2] = { '\0', '\0' };
@@ -604,32 +601,15 @@ static ui_event_data textui_get_command(void)
 	/* Get command */
 	while (1)
 	{
-		/* Hack -- auto-commands */
-		if (p_ptr->command_new)
-		{
-			/* Flush messages */
-			message_flush();
+		/* Hack -- no flush needed */
+		msg_flag = FALSE;
 
-			/* Use auto-command */
-			ke.key = (char)p_ptr->command_new;
-			ke.type = EVT_KBRD;
+		/* Activate "command mode" */
+		inkey_flag = TRUE;
 
-			/* Forget it */
-			p_ptr->command_new = 0;
-		}
+		/* Get a command */
+		ke = inkey_ex();
 
-		/* Get a keypress in "command" mode */
-		else
-		{
-			/* Hack -- no flush needed */
-			msg_flag = FALSE;
-
-			/* Activate "command mode" */
-			inkey_flag = TRUE;
-
-			/* Get a command */
-			ke = inkey_ex();
-		}
 
 
 		/* Command Count */
@@ -854,7 +834,7 @@ static bool key_confirm_command(unsigned char c)
 		if (!o_ptr->k_idx) continue;
 
 		/* Set up string to look for, e.g. "^d" */
-		verify_inscrip[1] = ke.key;
+		verify_inscrip[1] = c;
 
 		/* Verify command */
 		n = check_for_inscrip(o_ptr, "^*") + check_for_inscrip(o_ptr, verify_inscrip);

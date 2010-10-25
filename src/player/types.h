@@ -225,7 +225,6 @@ typedef struct player
 					   to start off showing equipment or
 					   inventory listings when offering
 					   a choice.  See obj/obj-ui.c*/
-	s16b command_new;		/* Hack -- command chaining XXX XXX */
 
 	s16b new_spells;		/* Number of spells available */
 

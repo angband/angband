@@ -3883,9 +3883,6 @@ void disturb(int stop_search, int unused_flag)
 	/* Unused parameter */
 	(void)unused_flag;
 
-	/* Cancel auto-commands */
-	/* p_ptr->command_new = 0; */
-
 	/* Cancel repeated commands */
 	cmd_cancel_repeat();
 

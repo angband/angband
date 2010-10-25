@@ -2940,7 +2940,6 @@ void store_menu_recalc(menu_type *m)
  */
 static bool store_process_command_key(char cmd)
 {
-	bool equip_toggle = FALSE;
 	bool redraw = FALSE;
 
 	/* Parse the command */
@@ -2980,28 +2979,14 @@ static bool store_process_command_key(char cmd)
 		/* Equipment list */
 		case 'e':
 		{
-			equip_toggle = TRUE;
+			do_cmd_equip();
+			break;
 		}
 
 		/* Inventory list */
 		case 'i':
 		{
-			/* Display the right thing until the user escapes */
-			do
-			{
-				if (equip_toggle) do_cmd_equip();
-				else do_cmd_inven();
-
-				/* Toggle the toggle */
-				equip_toggle = !equip_toggle;
-
-			} while (p_ptr->command_new == '/' || p_ptr->command_new == 'e' ||
-			         p_ptr->command_new == 'i');
-
-			/* Legal inventory commands are drop, inspect */
-			if (!strchr("dsI", p_ptr->command_new))
-				p_ptr->command_new = 0;
-
+			do_cmd_inven();
 			break;
 		}
 
@@ -3221,9 +3206,6 @@ void do_cmd_store_knowledge(void)
 
 	menu_select(&menu, 0);
 
-	/* Hack -- Cancel automatic command */
-	p_ptr->command_new = 0;
-
 	/* Flush messages XXX XXX XXX */
 	message_flush();
 
@@ -3266,7 +3248,6 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 
 	/* Reset the command variables */
 	p_ptr->command_arg = 0;
-	p_ptr->command_new = 0;
 
 
 
@@ -3302,10 +3283,6 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 
 	/* Take a turn */
 	p_ptr->energy_use = 100;
-
-
-	/* Hack -- Cancel automatic command */
-	p_ptr->command_new = 0;
 
 
 	/* Flush messages XXX XXX XXX */
