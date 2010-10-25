@@ -769,6 +769,7 @@ typedef struct
 	bool (*filter)(const object_type *o_ptr);
 	int mode;
 	bool (*prereq)(void);
+	bool needs_aim;
 } item_act_t;
 
 
@@ -780,74 +781,74 @@ static item_act_t item_actions[] =
 	 */
 	{ NULL, CMD_UNINSCRIBE, "uninscribe",
 	  "Un-inscribe which item? ", "You have nothing to un-inscribe.",
-	  obj_has_inscrip, (USE_EQUIP | USE_INVEN | USE_FLOOR), NULL },
+	  obj_has_inscrip, (USE_EQUIP | USE_INVEN | USE_FLOOR), NULL, FALSE },
 
 	{ textui_obj_inscribe, CMD_NULL, "inscribe",
 	  "Inscribe which item? ", "You have nothing to inscribe.",
-	  NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL },
+	  NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL, FALSE },
 
 	{ textui_obj_examine, CMD_NULL, "examine",
 	  "Examine which item? ", "You have nothing to examine.",
-	  NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL },
+	  NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL, FALSE },
 
 	/*** Takeoff/drop/wear ***/
 	{ NULL, CMD_TAKEOFF, "takeoff",
 	  "Take off which item? ", "You are not wearing anything you can take off.",
-	  obj_can_takeoff, USE_EQUIP, NULL },
+	  obj_can_takeoff, USE_EQUIP, NULL, FALSE },
 
 	{ textui_obj_wield, CMD_WIELD, "wield",
 	  "Wear/Wield which item? ", "You have nothing you can wear or wield.",
-	  obj_can_wear, (USE_INVEN | USE_FLOOR), NULL },
+	  obj_can_wear, (USE_INVEN | USE_FLOOR), NULL, FALSE },
 
 	{ textui_obj_drop, CMD_NULL, "drop",
 	  "Drop which item? ", "You have nothing to drop.",
-	  NULL, (USE_EQUIP | USE_INVEN), NULL },
+	  NULL, (USE_EQUIP | USE_INVEN), NULL, FALSE },
 
 	/*** Spellbooks ***/
 	{ textui_spell_browse, CMD_NULL, "browse",
 	  "Browse which book? ", "You have no books that you can read.",
-	  obj_can_browse, (USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL },
+	  obj_can_browse, (USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL, FALSE },
 
 	{ textui_obj_study, CMD_NULL, "study",
 	  "Study which book? ", "You have no books that you can read.",
-	  obj_can_browse, (USE_INVEN | USE_FLOOR), player_can_study },
+	  obj_can_browse, (USE_INVEN | USE_FLOOR), player_can_study, FALSE },
 
 	{ textui_obj_cast, CMD_NULL, "cast",
 	  "Use which book? ", "You have no books that you can read.",
-	  obj_can_browse, (USE_INVEN | USE_FLOOR), player_can_cast },
+	  obj_can_browse, (USE_INVEN | USE_FLOOR), player_can_cast, FALSE },
 
 	/*** Item usage ***/
 	{ NULL, CMD_USE_STAFF, "use",
 	  "Use which staff? ", "You have no staff to use.",
-	  obj_is_staff, (USE_INVEN | USE_FLOOR | SHOW_FAIL), NULL },
+	  obj_is_staff, (USE_INVEN | USE_FLOOR | SHOW_FAIL), NULL, TRUE },
 
 	{ NULL, CMD_USE_WAND, "aim",
       "Aim which wand? ", "You have no wand to aim.",
-	  obj_is_wand, (USE_INVEN | USE_FLOOR | SHOW_FAIL), NULL },
+	  obj_is_wand, (USE_INVEN | USE_FLOOR | SHOW_FAIL), NULL, TRUE },
 
 	{ NULL, CMD_USE_ROD, "zap",
       "Zap which rod? ", "You have no charged rods to zap.",
-	  obj_is_rod, (USE_INVEN | USE_FLOOR | SHOW_FAIL), NULL },
+	  obj_is_rod, (USE_INVEN | USE_FLOOR | SHOW_FAIL), NULL, TRUE },
 
 	{ NULL, CMD_ACTIVATE, "activate",
       "Activate which item? ", "You have nothing to activate.",
-	  obj_is_activatable, (USE_EQUIP | SHOW_FAIL), NULL },
+	  obj_is_activatable, (USE_EQUIP | SHOW_FAIL), NULL, TRUE },
 
 	{ NULL, CMD_EAT, "eat",
       "Eat which item? ", "You have nothing to eat.",
-	  obj_is_food, (USE_INVEN | USE_FLOOR), NULL },
+	  obj_is_food, (USE_INVEN | USE_FLOOR), NULL, FALSE },
 
 	{ NULL, CMD_QUAFF, "quaff",
       "Quaff which potion? ", "You have no potions to quaff.",
-	  obj_is_potion, (USE_INVEN | USE_FLOOR), NULL },
+	  obj_is_potion, (USE_INVEN | USE_FLOOR), NULL, TRUE },
 
 	{ NULL, CMD_READ_SCROLL, "read",
       "Read which scroll? ", "You have no scrolls to read.",
-	  obj_is_scroll, (USE_INVEN | USE_FLOOR), player_can_read },
+	  obj_is_scroll, (USE_INVEN | USE_FLOOR), player_can_read, TRUE },
 
 	{ NULL, CMD_REFILL, "refill",
       "Refuel with what fuel source? ", "You have nothing to refuel with.",
-	  obj_can_refill, (USE_INVEN | USE_FLOOR), NULL },
+	  obj_can_refill, (USE_INVEN | USE_FLOOR), NULL, FALSE },
 };
 
 
@@ -884,7 +885,6 @@ static void do_item(item_act_t *act)
 {
 	int item;
 	object_type *o_ptr;
-	bool cmd_needs_aim = FALSE;
 
 	if (act->prereq && !act->prereq())
 		return;
@@ -896,21 +896,10 @@ static void do_item(item_act_t *act)
 	/* Get the item */
 	o_ptr = object_from_item_idx(item);
 
-	/* These commands need an aim */
-	if (act->command == CMD_QUAFF ||
-		act->command == CMD_ACTIVATE ||
-		act->command == CMD_USE_WAND ||
-		act->command == CMD_USE_ROD ||
-		act->command == CMD_USE_STAFF ||
-		act->command == CMD_READ_SCROLL)
-	{
-		cmd_needs_aim = TRUE;
-	}
-
 	/* Execute the item command */
 	if (act->action != NULL)
 		act->action(o_ptr, item);
-	else if (cmd_needs_aim && obj_needs_aim(o_ptr))
+	else if (act->needs_aim && obj_needs_aim(o_ptr))
 		cmd_insert(act->command, item, DIR_UNKNOWN);
 	else
 		cmd_insert(act->command, item);
