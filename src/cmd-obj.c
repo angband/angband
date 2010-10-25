@@ -207,7 +207,7 @@ void do_cmd_inscribe(cmd_code code, cmd_arg args[])
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 }
 
-static void obj_inscribe(object_type *o_ptr, int item)
+void textui_obj_inscribe(object_type *o_ptr, int item)
 {
 	char o_name[80];
 	char tmp[80] = "";
@@ -229,7 +229,7 @@ static void obj_inscribe(object_type *o_ptr, int item)
 
 
 /*** Examination ***/
-static void obj_examine(object_type *o_ptr, int item)
+void textui_obj_examine(object_type *o_ptr, int item)
 {
 	track_object(item);
 
@@ -361,7 +361,7 @@ void do_cmd_drop(cmd_code code, cmd_arg args[])
 	p_ptr->energy_use = 50;
 }
 
-static void obj_drop(object_type *o_ptr, int item)
+void textui_obj_drop(object_type *o_ptr, int item)
 {
 	int amt;
 
@@ -371,7 +371,7 @@ static void obj_drop(object_type *o_ptr, int item)
 	cmd_insert(CMD_DROP, item, amt);
 }
 
-static void obj_wield(object_type *o_ptr, int item)
+void textui_obj_wield(object_type *o_ptr, int item)
 {
 	int slot = wield_slot(o_ptr);
 
@@ -404,7 +404,7 @@ static void obj_wield(object_type *o_ptr, int item)
 /*** Casting and browsing ***/
 
 /* Study a book to gain a new spell */
-static void obj_study(object_type *o_ptr, int item)
+void textui_obj_study(object_type *o_ptr, int item)
 {
 	/* Track the object kind */
 	track_object(item);
@@ -426,7 +426,7 @@ static void obj_study(object_type *o_ptr, int item)
 	}
 }
 
-static void obj_cast(object_type *o_ptr, int item)
+void textui_obj_cast(object_type *o_ptr, int item)
 {
 	int spell, dir = DIR_UNKNOWN;
 
@@ -782,11 +782,11 @@ static item_act_t item_actions[] =
 	  "Un-inscribe which item? ", "You have nothing to un-inscribe.",
 	  obj_has_inscrip, (USE_EQUIP | USE_INVEN | USE_FLOOR), NULL },
 
-	{ obj_inscribe, CMD_NULL, "inscribe",
+	{ textui_obj_inscribe, CMD_NULL, "inscribe",
 	  "Inscribe which item? ", "You have nothing to inscribe.",
 	  NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL },
 
-	{ obj_examine, CMD_NULL, "examine",
+	{ textui_obj_examine, CMD_NULL, "examine",
 	  "Examine which item? ", "You have nothing to examine.",
 	  NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL },
 
@@ -795,11 +795,11 @@ static item_act_t item_actions[] =
 	  "Take off which item? ", "You are not wearing anything you can take off.",
 	  obj_can_takeoff, USE_EQUIP, NULL },
 
-	{ obj_wield, CMD_WIELD, "wield",
+	{ textui_obj_wield, CMD_WIELD, "wield",
 	  "Wear/Wield which item? ", "You have nothing you can wear or wield.",
 	  obj_can_wear, (USE_INVEN | USE_FLOOR), NULL },
 
-	{ obj_drop, CMD_NULL, "drop",
+	{ textui_obj_drop, CMD_NULL, "drop",
 	  "Drop which item? ", "You have nothing to drop.",
 	  NULL, (USE_EQUIP | USE_INVEN), NULL },
 
@@ -808,11 +808,11 @@ static item_act_t item_actions[] =
 	  "Browse which book? ", "You have no books that you can read.",
 	  obj_can_browse, (USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL },
 
-	{ obj_study, CMD_NULL, "study",
+	{ textui_obj_study, CMD_NULL, "study",
 	  "Study which book? ", "You have no books that you can read.",
 	  obj_can_browse, (USE_INVEN | USE_FLOOR), player_can_study },
 
-	{ obj_cast, CMD_NULL, "cast",
+	{ textui_obj_cast, CMD_NULL, "cast",
 	  "Use which book? ", "You have no books that you can read.",
 	  obj_can_browse, (USE_INVEN | USE_FLOOR), player_can_cast },
 
@@ -880,71 +880,65 @@ typedef enum
 /*** Old-style noun-verb functions ***/
 
 /* Generic "do item action" function */
-static void do_item(item_act act)
+static void do_item(item_act_t *act)
 {
 	int item;
 	object_type *o_ptr;
 	bool cmd_needs_aim = FALSE;
 
-	cptr q, s;
-
-	if (item_actions[act].prereq)
-	{
-		if (!item_actions[act].prereq())
-			return;
-	}
+	if (act->prereq && !act->prereq())
+		return;
 
 	/* Get item */
-	q = item_actions[act].prompt;
-	s = item_actions[act].noop;
-	item_tester_hook = item_actions[act].filter;
-	if (!get_item(&item, q, s, item_actions[act].mode)) return;
+	item_tester_hook = act->filter;
+	if (!get_item(&item, act->prompt, act->noop, act->mode)) return;
 
 	/* Get the item */
 	o_ptr = object_from_item_idx(item);
 
 	/* These commands need an aim */
-	if (item_actions[act].command == CMD_QUAFF ||
-		item_actions[act].command == CMD_ACTIVATE ||
-		item_actions[act].command == CMD_USE_WAND ||
-		item_actions[act].command == CMD_USE_ROD ||
-		item_actions[act].command == CMD_USE_STAFF ||
-		item_actions[act].command == CMD_READ_SCROLL)
+	if (act->command == CMD_QUAFF ||
+		act->command == CMD_ACTIVATE ||
+		act->command == CMD_USE_WAND ||
+		act->command == CMD_USE_ROD ||
+		act->command == CMD_USE_STAFF ||
+		act->command == CMD_READ_SCROLL)
 	{
 		cmd_needs_aim = TRUE;
 	}
 
 	/* Execute the item command */
-	if (item_actions[act].action != NULL)
-		item_actions[act].action(o_ptr, item);
+	if (act->action != NULL)
+		act->action(o_ptr, item);
 	else if (cmd_needs_aim && obj_needs_aim(o_ptr))
 	{
 		int dir;
 		if (!get_aim_dir(&dir))
 			return;
 
-		cmd_insert(item_actions[act].command, item, dir);
+		cmd_insert(act->command, item, dir);
 	}
 	else
-		cmd_insert(item_actions[act].command, item);
+		cmd_insert(act->command, item);
 }
 
 /* Wrappers */
-void textui_cmd_uninscribe(void) { do_item(ACTION_UNINSCRIBE); }
-void textui_cmd_inscribe(void) { do_item(ACTION_INSCRIBE); }
-void do_cmd_observe(void) { do_item(ACTION_EXAMINE); }
-void textui_cmd_takeoff(void) { do_item(ACTION_TAKEOFF); }
-void textui_cmd_wield(void) { do_item(ACTION_WIELD); }
-void textui_cmd_drop(void) { do_item(ACTION_DROP); }
-void do_cmd_browse(void) { do_item(ACTION_BROWSE); }
-void textui_cmd_study(void) { do_item(ACTION_STUDY); }
-void textui_cmd_cast(void) { do_item(ACTION_CAST); }
-void textui_cmd_pray(void) { do_item(ACTION_CAST); }
-void textui_cmd_use_staff(void) { do_item(ACTION_USE_STAFF); }
-void textui_cmd_aim_wand(void) { do_item(ACTION_AIM_WAND); }
-void textui_cmd_zap_rod(void) { do_item(ACTION_ZAP_ROD); }
-void textui_cmd_activate(void) { do_item(ACTION_ACTIVATE); }
-void textui_cmd_eat_food(void) { do_item(ACTION_EAT_FOOD); }
-void textui_cmd_quaff_potion(void) { do_item(ACTION_QUAFF_POTION); }
-void textui_cmd_read_scroll(void) { do_item(ACTION_READ_SCROLL); }
-void textui_cmd_refill(void) { do_item(ACTION_REFILL); }
+void textui_cmd_uninscribe(void) { do_item(&item_actions[ACTION_UNINSCRIBE]); }
+void textui_cmd_inscribe(void) { do_item(&item_actions[ACTION_INSCRIBE]); }
+void do_cmd_observe(void) { do_item(&item_actions[ACTION_EXAMINE]); }
+void textui_cmd_takeoff(void) { do_item(&item_actions[ACTION_TAKEOFF]); }
+void textui_cmd_wield(void) { do_item(&item_actions[ACTION_WIELD]); }
+void textui_cmd_drop(void) { do_item(&item_actions[ACTION_DROP]); }
+void do_cmd_browse(void) { do_item(&item_actions[ACTION_BROWSE]); }
+void textui_cmd_study(void) { do_item(&item_actions[ACTION_STUDY]); }
+void textui_cmd_cast(void) { do_item(&item_actions[ACTION_CAST]); }
+void textui_cmd_pray(void) { do_item(&item_actions[ACTION_CAST]); }
+void textui_cmd_use_staff(void) { do_item(&item_actions[ACTION_USE_STAFF]); }
+void textui_cmd_aim_wand(void) { do_item(&item_actions[ACTION_AIM_WAND]); }
+void textui_cmd_zap_rod(void) { do_item(&item_actions[ACTION_ZAP_ROD]); }
+void textui_cmd_activate(void) { do_item(&item_actions[ACTION_ACTIVATE]); }
+void textui_cmd_eat_food(void) { do_item(&item_actions[ACTION_EAT_FOOD]); }
+void textui_cmd_quaff_potion(void) { do_item(&item_actions[ACTION_QUAFF_POTION]); }
+void textui_cmd_read_scroll(void) { do_item(&item_actions[ACTION_READ_SCROLL]); }
+void textui_cmd_refill(void) { do_item(&item_actions[ACTION_REFILL]); }
+
