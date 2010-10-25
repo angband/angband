@@ -16,6 +16,15 @@ extern void cmd_init(void);
 void do_cmd_quit(cmd_code code, cmd_arg args[]);
 
 /* cmd-obj.c */
+void textui_obj_inscribe(object_type *o_ptr, int item);
+void textui_obj_examine(object_type *o_ptr, int item);
+void textui_obj_drop(object_type *o_ptr, int item);
+void textui_obj_wield(object_type *o_ptr, int item);
+void textui_obj_browse(object_type *o_ptr, int item);
+void textui_obj_study(object_type *o_ptr, int item);
+void textui_obj_cast(object_type *o_ptr, int item);
+
+
 void do_cmd_uninscribe(cmd_code code, cmd_arg args[]);
 void do_cmd_takeoff(cmd_code code, cmd_arg args[]);
 void do_cmd_wield(cmd_code code, cmd_arg args[]);
