@@ -631,9 +631,6 @@ static ui_event_data textui_get_command(void)
 			ke = inkey_ex();
 		}
 
-		/* Clear top line */
-		prt("", 0, 0);
-
 
 		/* Command Count */
 		if (ke.key == '0')
@@ -796,38 +793,8 @@ static ui_event_data textui_get_command(void)
 		break;
 	}
 
-
-	/* Hack -- Scan equipment */
-	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
-	{
-		char verify_inscrip[] = "^*";
-		unsigned n;
-
-		object_type *o_ptr = &p_ptr->inventory[i];
-
-		/* Skip non-objects */
-		if (!o_ptr->k_idx) continue;
-
-		/* Set up string to look for, e.g. "^d" */
-		verify_inscrip[1] = ke.key;
-
-		/* Verify command */
-		n = check_for_inscrip(o_ptr, "^*") + check_for_inscrip(o_ptr, verify_inscrip);
-		while (n--)
-		{
-			if (!get_check("Are you sure? "))
-			{
-				ke.type = EVT_NONE;
-				ke.key = 0;
-				break;
-			}
-		}
-	}
-
-
-	/* Hack -- erase the message line. */
+	/* Erase the message line */
 	prt("", 0, 0);
-
 
 	return ke;
 }
@@ -871,6 +838,38 @@ static void textui_process_click(ui_event_data e)
 
 
 /**
+ * Check no currently worn items are stopping the action 'c'
+ */
+static bool key_confirm_command(unsigned char c)
+{
+	int i;
+
+	/* Hack -- Scan equipment */
+	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
+	{
+		char verify_inscrip[] = "^*";
+		unsigned n;
+
+		object_type *o_ptr = &p_ptr->inventory[i];
+		if (!o_ptr->k_idx) continue;
+
+		/* Set up string to look for, e.g. "^d" */
+		verify_inscrip[1] = ke.key;
+
+		/* Verify command */
+		n = check_for_inscrip(o_ptr, "^*") + check_for_inscrip(o_ptr, verify_inscrip);
+		while (n--)
+		{
+			if (!get_check("Are you sure? "))
+				return FALSE;
+		}
+	}
+
+	return TRUE;
+}
+
+
+/**
  * Process a textui keypress.
  */
 bool textui_process_key(unsigned char c)
@@ -878,14 +877,17 @@ bool textui_process_key(unsigned char c)
 	if (c == ESCAPE || c == ' ' || c == '\a')
 		return TRUE;
 
-	if (converted_list[c].cmd != CMD_NULL)
-		cmd_insert_repeated(converted_list[c].cmd, p_ptr->command_arg);
-
-	else if (converted_list[c].hook)
-		converted_list[c].hook();
-
-	else
-		return FALSE;
+	if (key_confirm_command(c))
+	{
+		if (converted_list[c].cmd != CMD_NULL)
+			cmd_insert_repeated(converted_list[c].cmd, p_ptr->command_arg);
+	
+		else if (converted_list[c].hook)
+			converted_list[c].hook();
+	
+		else
+			return FALSE;
+	}
 
 	return TRUE;
 }
