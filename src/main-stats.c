@@ -77,6 +77,22 @@ static void initialize_character(void)
 
 static void kill_all_monsters(void)
 {
+	int i;
+	char m_name[80];
+
+	for (i = mon_max - 1; i >= 1; i--)
+	{
+		const monster_type *m_ptr = &mon_list[i];
+
+		monster_desc(m_name, sizeof(m_name), m_ptr, 0x80);
+
+		printf("M|%d|%s\n",
+			m_ptr->r_idx,
+			m_name);	
+
+		monster_death(i);
+	}
+
 }
 
 static void print_all_objects(void)
