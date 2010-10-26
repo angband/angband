@@ -44,6 +44,7 @@ static void generate_player_for_stats()
 	p_ptr->wt = p_ptr->wt_birth = 150;
 	p_ptr->age = 14;
 
+	/* Set social class and (null) history */
 	p_ptr->history[0] = '\0';
 	p_ptr->sc = p_ptr->sc_birth = 50;
 }
@@ -61,6 +62,11 @@ static void initialize_character(void)
 	seed_flavor = randint0(0x10000000);
 	seed_town = randint0(0x10000000);
 	seed_randart = randint0(0x10000000);
+
+	if (randarts)
+	{
+		do_randart(seed_randart, TRUE);
+	}
 
 	store_init();
 	flavor_init();
@@ -119,7 +125,6 @@ static void descend_dungeon(void)
 }
 
 static errr run_stats(void) {
-	/* init_angband(); */
 	initialize_character();
 	descend_dungeon();
 
@@ -275,6 +280,5 @@ errr init_stats(int argc, char *argv[]) {
 	}
 
 	term_data_link(0);
-	/* run_stats(); */
 	return 0;
 }
