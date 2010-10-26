@@ -139,15 +139,15 @@ typedef struct {
 	errr (*func)(int v);
 } term_xtra_func;
 
-static void term_init_test(term *t) {
+static void term_init_stats(term *t) {
 	if (verbose) printf("term-init %s %s\n", VERSION_NAME, VERSION_STRING);
 }
 
-static void term_nuke_test(term *t) {
+static void term_nuke_stats(term *t) {
 	if (verbose) printf("term-end\n");
 }
 
-static errr term_user_test(int n) {
+static errr term_user_stats(int n) {
 	if (verbose) printf("term-user %d\n", n);
 	return 0;
 }
@@ -214,7 +214,7 @@ static term_xtra_func xtras[] = {
 	{ 0, NULL },
 };
 
-static errr term_xtra_test(int n, int v) {
+static errr term_xtra_stats(int n, int v) {
 	int i;
 	for (i = 0; xtras[i].func; i++) {
 		if (xtras[i].key == n) {
@@ -225,17 +225,17 @@ static errr term_xtra_test(int n, int v) {
 	return 0;
 }
 
-static errr term_curs_test(int x, int y) {
+static errr term_curs_stats(int x, int y) {
 	if (verbose) printf("term-curs %d %d\n", x, y);
 	return 0;
 }
 
-static errr term_wipe_test(int x, int y, int n) {
+static errr term_wipe_stats(int x, int y, int n) {
 	if (verbose) printf("term-wipe %d %d %d\n", x, y, n);
 	return 0;
 }
 
-static errr term_text_test(int x, int y, int n, byte a, const char *s) {
+static errr term_text_stats(int x, int y, int n, byte a, const char *s) {
 	if (verbose) printf("term-text %d %d %d %02x %s\n", x, y, n, a, s);
 	return 0;
 }
@@ -245,13 +245,13 @@ static void term_data_link(int i) {
 
 	term_init(t, 80, 24, 256);
 
-	t->init_hook = term_init_test;
-	t->nuke_hook = term_nuke_test;
+	t->init_hook = term_init_stats;
+	t->nuke_hook = term_nuke_stats;
 
-	t->xtra_hook = term_xtra_test;
-	t->curs_hook = term_curs_test;
-	t->wipe_hook = term_wipe_test;
-	t->text_hook = term_text_test;
+	t->xtra_hook = term_xtra_stats;
+	t->curs_hook = term_curs_stats;
+	t->wipe_hook = term_wipe_stats;
+	t->text_hook = term_text_stats;
 
 	t->data = &td;
 
