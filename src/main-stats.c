@@ -98,30 +98,44 @@ static void kill_all_monsters(void)
 static void print_all_objects(void)
 {
 	int x, y;
-	char obj_full_name[256];
+	char o_name[256];
 
 	/* Get stats on objects */
 	for (y = 1; y < DUNGEON_HGT - 1; y++)
 	{
 		for (x = 1; x < DUNGEON_WID - 1; x++)
 		{
-			const object_type *obj = get_first_object(y, x);
+			const object_type *o_ptr = get_first_object(y, x);
+			u16b o_origin_xtra;
 
-			if (obj) do
+			if (o_ptr) do
 			{
 				/* Mark object as fully known */
-				object_notice_everything(obj);
-				object_desc(obj_full_name, 256, obj, ODESC_FULL | ODESC_SPOIL);
-				printf("%d|%d|%d|%d|%d|%d|%s\n",
-					obj->tval,
-					obj->sval,
-					obj->pval[DEFAULT_PVAL],
-					obj->number,
-					obj->origin,
-					obj->origin_depth,
-					obj_full_name);
+				object_notice_everything(o_ptr);
+				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL | ODESC_SPOIL);
+
+				/* Report where floor items were found, 
+				 * notably vaults (CAVE_ICKY) */
+				if (o_ptr->origin == ORIGIN_FLOOR)
+				{
+					o_origin_xtra = cave_info[y][x] &
+						(CAVE_ICKY | CAVE_ROOM);
+				} 
+				else 
+				{
+					o_origin_xtra = o_ptr->origin_xtra;
+				}
+				printf("%d|%d|%d|%d|%d|%d|%d|%s\n",
+					o_ptr->tval,
+					o_ptr->sval,
+					o_ptr->pval[DEFAULT_PVAL],
+					o_ptr->number,
+					o_ptr->origin,
+					o_ptr->origin_depth,
+					o_origin_xtra,
+					o_name);
 			}
-			while ((obj = get_next_object(obj)));
+			while ((o_ptr = get_next_object(o_ptr)));
 		}
 	}
 }
