@@ -2,8 +2,7 @@
 #define INCLUDED_STORE_H
 
 #include "object/types.h"
-
-/*** Constants ***/
+#include "parser.h"
 
 #define STORE_INVEN_MAX		24    /* Max number of discrete objs in inven */
 #define STORE_TURNS		1000  /* Number of turns between turnovers */
@@ -29,32 +28,28 @@ typedef struct owner {
 	unsigned int store;
 	unsigned int oidx;
 	char *owner_name;
-	s32b max_cost;		/* Purse limit */
+	s32b max_cost;
 } owner_type;
 
-/*
- * A store, with an owner, various state flags, a current stock
- * of items, and a table of items that are often purchased.
- */
 typedef struct store {
+	struct store *next;
 	byte owner;				/* Owner index */
+	unsigned int sidx;
 
 	byte stock_num;			/* Stock -- Number of entries */
 	s16b stock_size;		/* Stock -- Total Size of Array */
 	object_type *stock;		/* Stock -- Actual stock items */
 
-	s16b table_num;     /* Table -- Number of entries */
-	s16b table_size;    /* Table -- Total Size of Array */
+	unsigned int table_num;     /* Table -- Number of entries */
+	unsigned int table_size;    /* Table -- Total Size of Array */
 	s16b *table;        /* Table -- Legal item kinds */
 } store_type;
 
-/*** Functions ***/
-
-/* store.c */
 void store_init(void);
 void store_shuffle(int which);
 void store_maint(int which);
 s32b price_item(const object_type *o_ptr, bool store_buying, int qty);
 
+extern struct parser *store_parser_new(void);
 
 #endif /* INCLUDED_STORE_H */

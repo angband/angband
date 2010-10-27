@@ -899,7 +899,7 @@ static int home_carry(object_type *o_ptr)
  */
 static int store_carry(int st, object_type *o_ptr)
 {
-	int i, slot;
+	unsigned int i, slot;
 	u32b value, j_value;
 	object_type *j_ptr;
 
@@ -3330,4 +3330,50 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 
 	/* Redraw map */
 	p_ptr->redraw |= (PR_MAP);
+}
+
+enum parser_error ignored(struct parser *p) {
+	return PARSE_ERROR_NONE;
+}
+
+enum parser_error parse_s(struct parser *p) {
+	struct store *h = parser_priv(p);
+	struct store *s;
+	unsigned int idx = parser_getuint(p, "index") - 1;
+	unsigned int slots = parser_getuint(p, "slots");
+
+	if (idx < STORE_ARMOR || idx > STORE_MAGIC)
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+
+	s = mem_zalloc(sizeof *s);
+	s->sidx = parser_getuint(p, "index");
+	s->table = mem_zalloc(sizeof(*s->table) * slots);
+	s->table_size = slots;
+	s->next = h;
+	parser_setpriv(p, s);
+	return PARSE_ERROR_NONE;
+}
+
+enum parser_error parse_i(struct parser *p) {
+	struct store *s = parser_priv(p);
+	unsigned int slots = parser_getuint(p, "slots");
+	int tval = tval_find_idx(parser_getsym(p, "tval"));
+	int kidx = lookup_name(tval, parser_getsym(p, "sval"));
+
+	if (s->table_num + slots > s->table_size)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+	while (slots--) {
+		s->table[s->table_num++] = kidx;
+	}
+	/* XXX: get rid of this table_size/table_num/indexing thing. It's
+	 * stupid. Dynamically allocate. */
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *store_parser_new(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "S uint index uint slots", parse_s);
+	parser_reg(p, "I uint slots sym tval sym sval", parse_i);
+	return p;
 }

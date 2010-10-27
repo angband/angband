@@ -1,7 +1,9 @@
 #ifndef INCLUDED_OBJECT_TYPES_H
 #define INCLUDED_OBJECT_TYPES_H
 
+#include "z-bitflag.h"
 #include "z-quark.h"
+#include "z-rand.h"
 
 /**
  * Information about object kinds, including player knowledge.

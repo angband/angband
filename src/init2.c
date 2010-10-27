@@ -3171,8 +3171,6 @@ static errr init_flavor_info(void)
 	return (err);
 }
 
-
-
 /*
  * Initialize the "s_info" array
  */
