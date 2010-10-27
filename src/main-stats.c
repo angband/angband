@@ -83,8 +83,16 @@ static void kill_all_monsters(void)
 	for (i = mon_max - 1; i >= 1; i--)
 	{
 		const monster_type *m_ptr = &mon_list[i];
+		char *offscreen_ptr;
 
 		monster_desc(m_name, sizeof(m_name), m_ptr, 0x80);
+
+		/* Remove " (offscreen)" from description */
+		offscreen_ptr = strstr(m_name, " (offscreen)");
+		if (offscreen_ptr)
+		{
+			*offscreen_ptr = '\0';
+		}
 
 		printf("M|%d|%s\n",
 			m_ptr->r_idx,
