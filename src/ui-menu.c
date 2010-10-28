@@ -63,13 +63,17 @@ static char menu_action_tag(menu_type *m, int oid)
 static int menu_action_valid(menu_type *m, int oid)
 {
 	menu_action *acts = menu_priv(m);
+
+	if (acts[oid].flags & MN_ACT_HIDDEN)
+		return 2;
+
 	return acts[oid].name ? TRUE : FALSE;
 }
 
 static void menu_action_display(menu_type *m, int oid, bool cursor, int row, int col, int width)
 {
 	menu_action *acts = menu_priv(m);
-	byte color = curs_attrs[CURS_KNOWN][0 != cursor];
+	byte color = curs_attrs[!(acts[oid].flags & (MN_ACT_GRAYED))][0 != cursor];
 
 	display_action_aux(&acts[oid], color, row, col, width);
 }
@@ -78,9 +82,11 @@ static bool menu_action_handle(menu_type *m, const ui_event_data *event, int oid
 {
 	menu_action *acts = menu_priv(m);
 
-	if (event->type == EVT_SELECT && acts[oid].action)
+	if (event->type == EVT_SELECT)
 	{
-		acts[oid].action(acts[oid].name, m->cursor);
+		if (!(acts->flags & MN_ACT_GRAYED) && acts[oid].action)
+			acts[oid].action(acts[oid].name, m->cursor);
+
 		return TRUE;
 	}
 
@@ -98,71 +104,6 @@ const menu_iter menu_iter_actions =
 	NULL
 };
 
-
-/* ------------------------------------------------------------------------
- * MN_ITEMS HELPER FUNCTIONS
- *
- * MN_ITEMS is the type of menu iterator that displays a simple list of 
- * menu_items (i.e. menu_actions with optional per-item flags and 
- * "selection" keys.
- * ------------------------------------------------------------------------ */
-
-static char item_menu_tag(menu_type *m, int oid)
-{
-	menu_item *items = menu_priv(m);
-	return items[oid].act.tag;
-}
-
-static int item_menu_valid(menu_type *m, int oid)
-{
-	menu_item *items = menu_priv(m);
-
-	if (items[oid].flags & MN_HIDDEN)
-		return 2;
-
-	return (NULL != items[oid].act.name);
-}
-
-static void item_menu_display(menu_type *m, int oid, bool cursor, int row, int col, int width)
-{
-	menu_item *items = menu_priv(m);
-	byte color = curs_attrs[!(items[oid].flags & (MN_GRAYED))][0 != cursor];
-
-	display_action_aux(&items[oid].act, color, row, col, width);
-}
-
-static bool item_menu_handle(menu_type *m, const ui_event_data *event, int oid)
-{
-	menu_item *items = menu_priv(m);
-
-	if (event->type == EVT_SELECT)
-	{
-		menu_item *item = &items[oid];
-
-		if (item->flags & MN_DISABLED)
-			return TRUE;
-
-		if (item->act.action)
-			item->act.action(item->act.name, m->cursor);
-
-		if (item->flags & MN_SELECTABLE)
-			item->flags ^= MN_SELECTED;
-
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-/* Virtual function table for menu items */
-const menu_iter menu_iter_items =
-{
-	item_menu_tag,       /* get_tag() */
-	item_menu_valid,     /* valid_row() */
-	item_menu_display,   /* display_row() */
-	item_menu_handle,     /* row_handler() */
-	NULL
-};
 
 /* ------------------------------------------------------------------------
  * MN_STRINGS HELPER FUNCTIONS
@@ -689,9 +630,6 @@ const menu_iter *menu_find_iter(menu_iter_id id)
 	{
 		case MN_ITER_ACTIONS:
 			return &menu_iter_actions;
-
-		case MN_ITER_ITEMS:
-			return &menu_iter_items;
 
 		case MN_ITER_STRINGS:
 			return &menu_iter_strings;

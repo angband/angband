@@ -1078,16 +1078,16 @@ static void macro_browse_hook(int oid, void *db, const region *loc)
 static menu_type *macro_menu;
 static menu_action macro_actions[] =
 {
-	{ 0, "Load a user pref file",    macro_pref_load },
-	{ 0, "Append macros to a file",  macro_pref_append },
-	{ 0, "Query a macro",            macro_query },
-	{ 0, "Create a macro",           macro_create },
-	{ 0, "Remove a macro",           macro_remove },
-	{ 0, "Append keymaps to a file", keymap_pref_append },
-	{ 0, "Query a keymap",           keymap_query },
-	{ 0, "Create a keymap",          keymap_create },
-	{ 0, "Remove a keymap",          keymap_remove },
-	{ 0, "Enter a new action",       macro_enter },
+	{ 0, 0, "Load a user pref file",    macro_pref_load },
+	{ 0, 0, "Append macros to a file",  macro_pref_append },
+	{ 0, 0, "Query a macro",            macro_query },
+	{ 0, 0, "Create a macro",           macro_create },
+	{ 0, 0, "Remove a macro",           macro_remove },
+	{ 0, 0, "Append keymaps to a file", keymap_pref_append },
+	{ 0, 0, "Query a keymap",           keymap_query },
+	{ 0, 0, "Create a keymap",          keymap_create },
+	{ 0, 0, "Remove a keymap",          keymap_remove },
+	{ 0, 0, "Enter a new action",       macro_enter },
 };
 
 static void do_cmd_macros(const char *title, int row)
@@ -1163,14 +1163,14 @@ static void visuals_reset(const char *title, int row)
 static menu_type *visual_menu;
 static menu_action visual_menu_items [] =
 {
-	{ 0, "Load a user pref file",   visuals_pref_load },
+	{ 0, 0, "Load a user pref file",   visuals_pref_load },
 #ifdef ALLOW_VISUALS
-	{ 0, "Dump monster attr/chars", visuals_dump_monsters },
-	{ 0, "Dump object attr/chars",  visuals_dump_objects },
-	{ 0, "Dump feature attr/chars", visuals_dump_features },
-	{ 0, "Dump flavor attr/chars",  visuals_dump_flavors },
+	{ 0, 0, "Dump monster attr/chars", visuals_dump_monsters },
+	{ 0, 0, "Dump object attr/chars",  visuals_dump_objects },
+	{ 0, 0, "Dump feature attr/chars", visuals_dump_features },
+	{ 0, 0, "Dump flavor attr/chars",  visuals_dump_flavors },
 #endif /* ALLOW_VISUALS */
-	{ 0, "Reset visuals",           visuals_reset },
+	{ 0, 0, "Reset visuals",           visuals_reset },
 };
 
 
@@ -1316,9 +1316,9 @@ static void colors_browse_hook(int oid, void *db, const region *loc)
 static menu_type *color_menu;
 static menu_action color_events [] =
 {
-	{ 0, "Load a user pref file", colors_pref_load },
-	{ 0, "Dump colors",           colors_pref_dump },
-	{ 0, "Modify colors",         colors_modify }
+	{ 0, 0, "Load a user pref file", colors_pref_load },
+	{ 0, 0, "Dump colors",           colors_pref_dump },
+	{ 0, 0, "Modify colors",         colors_modify }
 };
 
 /*
@@ -1534,29 +1534,29 @@ static void options_load_pref_file(const char *n, int row)
 static menu_type *option_menu;
 static menu_action option_actions [] = 
 {
-	{ 'a', "Interface options", do_cmd_options_aux },
-	{ 'b', "Display options", do_cmd_options_aux },
-	{ 'e', "Warning and disturbance options", do_cmd_options_aux },
-	{ 'f', "Birth (difficulty) options", do_cmd_options_aux },
-	{ 'g', "Cheat options", do_cmd_options_aux },
-	{0, 0, 0}, /* Load and append */
-	{ 'w', "Subwindow display settings", do_cmd_options_win },
-	{ 's', "Item squelch settings", do_cmd_options_item },
-	{ 'd', "Set base delay factor", do_cmd_delay },
-	{ 'h', "Set hitpoint warning", do_cmd_hp_warn },
-	{ 'i', "Set movement delay", do_cmd_lazymove_delay },
-	{ 'l', "Load a user pref file", options_load_pref_file },
-	{ 'o', "Save options", do_dump_options }, 
-	{0, 0, 0}, /* Interact with */	
+	{ 0, 'a', "Interface options", do_cmd_options_aux },
+	{ 0, 'b', "Display options", do_cmd_options_aux },
+	{ 0, 'e', "Warning and disturbance options", do_cmd_options_aux },
+	{ 0, 'f', "Birth (difficulty) options", do_cmd_options_aux },
+	{ 0, 'g', "Cheat options", do_cmd_options_aux },
+	{0, 0, 0, 0}, /* Load and append */
+	{ 0, 'w', "Subwindow display settings", do_cmd_options_win },
+	{ 0, 's', "Item squelch settings", do_cmd_options_item },
+	{ 0, 'd', "Set base delay factor", do_cmd_delay },
+	{ 0, 'h', "Set hitpoint warning", do_cmd_hp_warn },
+	{ 0, 'i', "Set movement delay", do_cmd_lazymove_delay },
+	{ 0, 'l', "Load a user pref file", options_load_pref_file },
+	{ 0, 'o', "Save options", do_dump_options }, 
+	{0, 0, 0, 0}, /* Interact with */	
 
 #ifdef ALLOW_MACROS
-	{ 'm', "Interact with macros (advanced)", do_cmd_macros },
+	{ 0, 'm', "Interact with macros (advanced)", do_cmd_macros },
 #endif /* ALLOW_MACROS */
 
-	{ 'v', "Interact with visuals (advanced)", do_cmd_visuals },
+	{ 0, 'v', "Interact with visuals (advanced)", do_cmd_visuals },
 
 #ifdef ALLOW_COLORS
-	{ 'c', "Interact with colours (advanced)", do_cmd_colors },
+	{ 0, 'c', "Interact with colours (advanced)", do_cmd_colors },
 #endif /* ALLOW_COLORS */
 };
 

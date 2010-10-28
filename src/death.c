@@ -374,14 +374,14 @@ static void death_spoilers(const char *title, int row)
 static menu_type *death_menu;
 static menu_action death_actions[] =
 {
-	{ 'i', "Information",   death_info      },
-	{ 'm', "Messages",      death_messages  },
-	{ 'f', "File dump",     death_file      },
-	{ 'v', "View scores",   death_scores    },
-	{ 'x', "Examine items", death_examine   },
-	{ 'h', "History",       death_history   },
-	{ 's', "Spoilers",	death_spoilers  },
-	{ 'q', "Quit",          NULL            },
+	{ 0, 'i', "Information",   death_info      },
+	{ 0, 'm', "Messages",      death_messages  },
+	{ 0, 'f', "File dump",     death_file      },
+	{ 0, 'v', "View scores",   death_scores    },
+	{ 0, 'x', "Examine items", death_examine   },
+	{ 0, 'h', "History",       death_history   },
+	{ 0, 's', "Spoilers",      death_spoilers  },
+	{ 0, 'q', "Quit",          NULL            },
 };
 
 

@@ -1934,23 +1934,23 @@ static void do_cmd_knowledge_history(const char *name, int row)
 /*
  * Definition of the "player knowledge" menu.
  */
-static menu_item knowledge_actions[] =
+static menu_action knowledge_actions[] =
 {
-{ {0, "Display object knowledge",   	   do_cmd_knowledge_objects   }, 0 },
-{ {0, "Display artifact knowledge", 	   do_cmd_knowledge_artifacts }, 0 },
-{ {0, "Display ego item knowledge", 	   do_cmd_knowledge_ego_items }, 0 },
-{ {0, "Display monster knowledge",  	   do_cmd_knowledge_monsters  }, 0 },
-{ {0, "Display feature knowledge",  	   do_cmd_knowledge_features  }, 0 },
-{ {0, "Display contents of general store", do_cmd_knowledge_store     }, 0 },
-{ {0, "Display contents of armourer",      do_cmd_knowledge_store     }, 0 },
-{ {0, "Display contents of weaponsmith",   do_cmd_knowledge_store     }, 0 },
-{ {0, "Display contents of temple",   	   do_cmd_knowledge_store     }, 0 },
-{ {0, "Display contents of alchemist",     do_cmd_knowledge_store     }, 0 },
-{ {0, "Display contents of magic shop",    do_cmd_knowledge_store     }, 0 },
-{ {0, "Display contents of black market",  do_cmd_knowledge_store     }, 0 },
-{ {0, "Display contents of home",   	   do_cmd_knowledge_store     }, 0 },
-{ {0, "Display hall of fame",       	   do_cmd_knowledge_scores    }, 0 },
-{ {0, "Display character history",  	   do_cmd_knowledge_history   }, 0 },
+{ 0, 0, "Display object knowledge",   	   do_cmd_knowledge_objects   },
+{ 0, 0, "Display artifact knowledge", 	   do_cmd_knowledge_artifacts },
+{ 0, 0, "Display ego item knowledge", 	   do_cmd_knowledge_ego_items },
+{ 0, 0, "Display monster knowledge",  	   do_cmd_knowledge_monsters  },
+{ 0, 0, "Display feature knowledge",  	   do_cmd_knowledge_features  },
+{ 0, 0, "Display contents of general store", do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of armourer",      do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of weaponsmith",   do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of temple",   	   do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of alchemist",     do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of magic shop",    do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of black market",  do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of home",   	   do_cmd_knowledge_store     },
+{ 0, 0, "Display hall of fame",       	   do_cmd_knowledge_scores    },
+{ 0, 0, "Display character history",  	   do_cmd_knowledge_history   },
 };
 
 static menu_type knowledge_menu;
@@ -1970,7 +1970,7 @@ void init_cmd_know(void)
 {
 	/* Initialize the menus */
 	menu_type *menu = &knowledge_menu;
-	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ITEMS));
+	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
 	menu_setpriv(menu, N_ELEMENTS(knowledge_actions), knowledge_actions);
 
 	menu->title = "Display current knowledge";
@@ -2012,9 +2012,9 @@ void do_cmd_knowledge(void)
 	if (collect_known_artifacts(NULL, 0) > 0)
 		knowledge_actions[1].flags = 0;
 	else
-		knowledge_actions[1].flags = MN_GREYED;
+		knowledge_actions[1].flags = MN_ACT_GRAYED;
 
-	knowledge_actions[2].flags = MN_GREYED;
+	knowledge_actions[2].flags = MN_ACT_GRAYED;
 	for (i = 0; i < z_info->e_max; i++)
 	{
 		if (e_info[i].everseen || OPT(cheat_xtra))
@@ -2027,7 +2027,7 @@ void do_cmd_knowledge(void)
 	if (count_known_monsters() > 0)
 		knowledge_actions[3].flags = 0;
 	else
-		knowledge_actions[3].flags = MN_GREYED;
+		knowledge_actions[3].flags = MN_ACT_GRAYED;
 
 	screen_save();
 	menu_layout(&knowledge_menu, &knowledge_region);
