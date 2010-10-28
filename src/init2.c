@@ -47,7 +47,7 @@ struct file_parser {
 	errr (*finish)(struct parser *p);
 };
 
-static errr run_parser(struct file_parser *fp) {
+errr run_parser(struct file_parser *fp) {
 	struct parser *p = fp->init();
 	errr r;
 	if (!p) {
@@ -3669,10 +3669,6 @@ bool init_angband(void)
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (classes)");
 	if (run_parser(&c_parser)) quit("Cannot initialize classes");
 
-	/* Initialize owner info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (owners)");
-	if (init_b_info()) quit("Cannot initialize owners");
-
 	/* Initialize flavor info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (flavors)");
 	if (init_flavor_info()) quit("Cannot initialize flavors");
@@ -3687,7 +3683,7 @@ bool init_angband(void)
 
 	/* Initialise store stocking data */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (store stocks)");
-	init_stores();
+	store_init();
 
 	/* Initialise random name data */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (random names)");

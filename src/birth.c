@@ -1233,7 +1233,7 @@ void player_birth(bool quickstart_allowed)
 	player_outfit(p_ptr);
 
 	/* Initialise the stores */
-	store_init();
+	store_reset();
 
 	/* Now we're really done.. */
 	event_signal(EVENT_LEAVE_BIRTH);

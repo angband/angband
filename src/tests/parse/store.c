@@ -1,8 +1,8 @@
 /* parse/store */
 
-#include "store.h"
-
 #include "unit-test.h"
+
+#include "store.h"
 
 static int setup(void **state) {
 	*state = store_parser_new();
@@ -21,7 +21,7 @@ static int test_s0(void *state) {
 	eq(r, PARSE_ERROR_NONE);
 	s = parser_priv(state);
 	require(s);
-	eq(s->sidx, 2);
+	eq(s->sidx, 1);
 	eq(s->table_size, 33);
 	ok;
 }

@@ -46,11 +46,12 @@ typedef struct store {
 } store_type;
 
 void store_init(void);
+void store_reset(void);
 void store_shuffle(int which);
 void store_maint(int which);
 s32b price_item(const object_type *o_ptr, bool store_buying, int qty);
 
-extern struct owner *store_ownerbyidx(struct store *s, int idx);
+extern struct owner *store_ownerbyidx(struct store *s, unsigned int idx);
 
 #ifdef TEST
 extern struct parser *store_parser_new(void);
