@@ -302,12 +302,6 @@ void history_display(void);
 void dump_history(ang_file *file);
 bool history_is_artifact_known(byte a_idx);
 
-/* init2.c */
-extern void init_file_paths(const char *configpath, const char *libpath, const char *datapath);
-extern void create_needed_dirs(void);
-extern bool init_angband(void);
-extern void cleanup_angband(void);
-
 /* load.c */
 extern bool old_load(void);
 
