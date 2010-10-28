@@ -3126,29 +3126,6 @@ struct file_parser h_parser = {
 };
 
 /*
- * Initialize the "b_info" array
- */
-static errr init_b_info(void)
-{
-	errr err;
-
-	/* Init the header */
-	init_header(&b_head, (u16b)(MAX_STORES * z_info->b_max), sizeof(owner_type));
-
-	/* Save a pointer to the parsing function */
-	b_head.parse_info_txt = parse_b_info;
-
-	err = init_info("shop_own", &b_head);
-
-	/* Set the global variables */
-	b_info = b_head.info_ptr;
-
-	return (err);
-}
-
-
-
-/*
  * Initialize the "flavor_info" array
  */
 static errr init_flavor_info(void)
@@ -3223,33 +3200,6 @@ static void init_books(void)
 		/* Put it in the book */
 		spell_list[s_ptr->realm][s_ptr->sval][s_ptr->snum] = spell;
 	}
-}
-
-
-/*
- * Initialise stores, from the edit file.
- */
-static void init_stores(void)
-{
-	errr err;
-	char filename[1024];
-	char buf[1024];
-	ang_file *fh;
-
-	path_build(filename, sizeof(filename), ANGBAND_DIR_EDIT, "store.txt");
-
-	/* Open the file */
-	fh = file_open(filename, MODE_READ, -1);
-	if (!fh) quit("Cannot open 'store.txt' file.");
-
-	/* Parse the file */
-	err = init_store_txt(fh, buf);
-	file_close(fh);
-
-	/* Errors */
-	if (err) display_parse_error("store", err, buf);
-
-	return;
 }
 
 /*** Initialize others ***/

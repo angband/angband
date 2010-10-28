@@ -1736,8 +1736,6 @@ static void flatten_stores(struct store *stores) {
 
 void store_init(void)
 {
-	int n, i;
-	store_type *st_ptr;
 	struct store *stores;
 
 	stores = parse_stores();
