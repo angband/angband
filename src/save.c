@@ -602,7 +602,7 @@ void wr_stores(void)
 		wr_s16b(0);
 
 		/* Save the current owner */
-		wr_byte(st_ptr->owner);
+		wr_byte(st_ptr->owner->oidx);
 
 		/* Save the stock size */
 		wr_byte(st_ptr->stock_num);

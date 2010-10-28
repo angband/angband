@@ -400,7 +400,7 @@ errr parse_b_info(char *buf, header *head)
 		s = strchr(buf+2, ':');
 		if (!s || s[1] == 0) return PARSE_ERROR_GENERIC;
 
-		ot_ptr->owner_name = string_make(s + 1);
+		ot_ptr->name = string_make(s + 1);
 
 		owner_idx++;
 		return 0;

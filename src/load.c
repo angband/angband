@@ -1241,8 +1241,9 @@ int rd_stores(u32b version)
 			note("Illegal store owner!");
 			return (-1);
 		}
-		
-		st_ptr->owner = own;
+	
+		/* XXX: refactor into store.c */
+		st_ptr->owner = store_ownerbyidx(st_ptr, own);
 		
 		/* Read the items */
 		for (j = 0; j < num; j++)

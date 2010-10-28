@@ -24,7 +24,7 @@
 #include "game-event.h"
 #include "object/inventory.h"
 #include "object/tvalsval.h"
-
+#include "z-debug.h"
 
 /*** Constants and definitions ***/
 
@@ -87,12 +87,9 @@ static u16b store_flags;
 /*
  * Return the owner struct for the given store.
  */
-static owner_type *store_owner(int st)
-{
-	store_type *st_ptr = &store[st];
-	return &b_info[(st * z_info->b_max) + st_ptr->owner];
+static struct owner *store_owner(int st) {
+	return store[st].owner;
 }
-
 
 /* Randomly select one of the entries in an array */
 #define ONE_OF(x)	x[randint0(N_ELEMENTS(x))]
@@ -205,7 +202,7 @@ static void prt_welcome(const owner_type *ot_ptr)
 {
 	char short_name[20];
 	const char *player_name;
-	const char *owner_name = ot_ptr->owner_name;
+	const char *owner_name = ot_ptr->name;
 
 	/* We go from level 1 - 50  */
 	size_t i = ((unsigned)p_ptr->lev - 1) / 5;
@@ -1559,6 +1556,27 @@ void store_maint(int which)
 	rating = old_rating;
 }
 
+struct owner *store_ownerbyidx(struct store *s, int idx) {
+	struct owner *o;
+	for (o = s->owners; o; o = o->next) {
+		if (o->oidx == idx)
+			return o;
+	}
+
+	notreached;
+}
+
+static struct owner *store_choose_owner(struct store *s) {
+	struct owner *o;
+	unsigned int n = 0;
+
+	for (o = s->owners; o; o = o->next) {
+		n++;
+	}
+
+	n = randint0(n);
+	return store_ownerbyidx(s, n);
+}
 
 /*
  * Initialize the stores.  Used at birth-time.
@@ -1577,7 +1595,7 @@ void store_init(void)
 
 
 		/* Pick an owner */
-		st_ptr->owner = (byte)randint0(z_info->b_max);
+		st_ptr->owner = store_choose_owner(st_ptr);
 
 		/* Nothing in stock */
 		st_ptr->stock_num = 0;
@@ -1603,21 +1621,17 @@ void store_init(void)
  */
 void store_shuffle(int which)
 {
-	int i;
-
 	store_type *st_ptr = &store[which];
+	struct owner *o = st_ptr->owner;
 
 	/* Ignore home */
 	if (which == STORE_HOME) return;
 
 
-	/* Pick a new owner */
-	i = st_ptr->owner;
+	while (o == st_ptr->owner)
+	    o = store_choose_owner(st_ptr);
 
-	while (i == st_ptr->owner)
-	    i = randint0(z_info->b_max);
-
-	st_ptr->owner = i;
+	st_ptr->owner = o;
 }
 
 
@@ -1786,7 +1800,7 @@ static void store_display_frame(void)
 	else
 	{
 		const char *store_name = f_info[FEAT_SHOP_HEAD + this_store].name;
-		const char *owner_name = ot_ptr->owner_name;
+		const char *owner_name = ot_ptr->name;
 
 		/* Put the owner name */
 		put_str(owner_name, scr_places_y[LOC_OWNER], 1);
@@ -3332,11 +3346,11 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 	p_ptr->redraw |= (PR_MAP);
 }
 
-enum parser_error ignored(struct parser *p) {
+static enum parser_error ignored(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-enum parser_error parse_s(struct parser *p) {
+static enum parser_error parse_s(struct parser *p) {
 	struct store *h = parser_priv(p);
 	struct store *s;
 	unsigned int idx = parser_getuint(p, "index") - 1;
@@ -3354,7 +3368,7 @@ enum parser_error parse_s(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-enum parser_error parse_i(struct parser *p) {
+static enum parser_error parse_i(struct parser *p) {
 	struct store *s = parser_priv(p);
 	unsigned int slots = parser_getuint(p, "slots");
 	int tval = tval_find_idx(parser_getsym(p, "tval"));
@@ -3370,10 +3384,60 @@ enum parser_error parse_i(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
-struct parser *store_parser_new(void) {
+testonly struct parser *store_parser_new(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "S uint index uint slots", parse_s);
 	parser_reg(p, "I uint slots sym tval sym sval", parse_i);
+	return p;
+}
+
+struct owner_parser_state {
+	struct store *stores;
+	struct store *cur;
+};
+
+static enum parser_error parse_own_n(struct parser *p) {
+	struct owner_parser_state *s = parser_priv(p);
+	unsigned int index = parser_getuint(p, "index");
+	struct store *st;
+
+	for (st = s->stores; st; st = st->next) {
+		if (st->sidx == index) {
+			s->cur = st;
+			break;
+		}
+	}
+
+	return st ? PARSE_ERROR_NONE : PARSE_ERROR_OUT_OF_BOUNDS;
+}
+
+static enum parser_error parse_own_s(struct parser *p) {
+	struct owner_parser_state *s = parser_priv(p);
+	unsigned int maxcost = parser_getuint(p, "maxcost");
+	char *name = string_make(parser_getstr(p, "name"));
+	struct owner *o;
+
+	if (!s->cur)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	o = mem_zalloc(sizeof *o);
+	o->oidx = (s->cur->owners ? s->cur->owners->oidx + 1 : 0);
+	o->next = s->cur->owners;
+	o->name = name;
+	o->max_cost = maxcost;
+	s->cur->owners = o;
+	return PARSE_ERROR_NONE;
+}
+
+testonly struct parser *store_owner_parser_new(struct store *stores) {
+	struct parser *p = parser_new();
+	struct owner_parser_state *s = mem_zalloc(sizeof *s);
+	s->stores = stores;
+	s->cur = NULL;
+	parser_setpriv(p, s);
+	parser_reg(p, "V sym version", ignored);
+	parser_reg(p, "N uint index", parse_own_n);
+	parser_reg(p, "S uint maxcost str name", parse_own_s);
 	return p;
 }

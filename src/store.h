@@ -24,16 +24,16 @@ enum
 };
 
 typedef struct owner {
-	struct owner *next;
-	unsigned int store;
 	unsigned int oidx;
-	char *owner_name;
+	struct owner *next;
+	char *name;
 	s32b max_cost;
 } owner_type;
 
 typedef struct store {
 	struct store *next;
-	byte owner;				/* Owner index */
+	struct owner *owners;
+	struct owner *owner;
 	unsigned int sidx;
 
 	byte stock_num;			/* Stock -- Number of entries */
@@ -50,6 +50,11 @@ void store_shuffle(int which);
 void store_maint(int which);
 s32b price_item(const object_type *o_ptr, bool store_buying, int qty);
 
+extern struct owner *store_ownerbyidx(struct store *s, int idx);
+
+#ifdef TEST
 extern struct parser *store_parser_new(void);
+extern struct parser *store_owner_parser_new(struct store *stores);
+#endif
 
 #endif /* INCLUDED_STORE_H */

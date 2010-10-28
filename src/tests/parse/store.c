@@ -1,4 +1,4 @@
-/* parse/s-info */
+/* parse/store */
 
 #include "store.h"
 
@@ -39,7 +39,7 @@ static int test_i0(void *state) {
 	ok;
 }
 
-static const char *suite_name = "parse/s-info";
+static const char *suite_name = "parse/store";
 static struct test tests[] = {
 	{ "s0", test_s0 },
 /*	{ "i0", test_i0 }, */

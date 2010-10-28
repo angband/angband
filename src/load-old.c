@@ -1344,7 +1344,7 @@ static int rd_stores(void)
 			return (-1);
 		}
 		
-		st_ptr->owner = own;
+		st_ptr->owner = store_ownerbyidx(st_ptr, own);
 		
 		/* Read the items */
 		for (j = 0; j < num; j++)
