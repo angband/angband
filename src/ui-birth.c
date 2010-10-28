@@ -399,7 +399,7 @@ static void print_menu_instructions(void)
    by the UI (displaying help text, for instance). */
 static enum birth_stage menu_question(enum birth_stage current, menu_type *current_menu, cmd_code choice_command)
 {
-	struct birthmenu_data *menu_data = current_menu->menu_data;
+	struct birthmenu_data *menu_data = menu_priv(current_menu);
 	ui_event_data cx;
 
 	enum birth_stage next = BIRTH_RESET;
