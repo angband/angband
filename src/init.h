@@ -106,7 +106,6 @@ extern struct parser *init_parse_names(void);
 
 extern errr parse_file(struct parser *p, const char *filename);
 
-extern errr parse_g_info(char *buf, header *head);
 extern errr parse_flavor_info(char *buf, header *head);
 extern errr parse_s_info(char *buf, header *head);
 
@@ -119,9 +118,6 @@ extern errr emit_r_info_index(ang_file *fp, header *head, int i);
 extern int error_idx;
 extern int error_line;
 
-extern header h_head;
-extern header b_head;
-extern header g_head;
 extern header flavor_head;
 
 #endif /* INCLUDED_INIT_H */
