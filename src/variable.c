@@ -698,12 +698,7 @@ player_class *c_info;
  */
 hist_type *h_info;
 
-/*
- * The shop owner arrays
- */
 owner_type *b_info;
-char *b_name;
-char *b_text;
 
 /*
  * The object flavor arrays

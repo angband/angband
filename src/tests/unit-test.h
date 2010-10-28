@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define TEST
+
 #define nosetup int setup(void **data) { return 0; }
 #define noteardown int teardown(void *data) { return 0; }
 

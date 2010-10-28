@@ -23,6 +23,7 @@
 #include "game-event.h"
 #include "init.h"
 #include "monster/constants.h"
+#include "object/tvalsval.h"
 #include "option.h"
 #include "parser.h"
 
@@ -47,7 +48,7 @@ struct file_parser {
 	errr (*finish)(struct parser *p);
 };
 
-static errr run_parser(struct file_parser *fp) {
+errr run_parser(struct file_parser *fp) {
 	struct parser *p = fp->init();
 	errr r;
 	if (!p) {
@@ -280,11 +281,6 @@ static cptr err_str[PARSE_ERROR_MAX] =
 /*
  * File headers
  */
-header v_head;
-header c_head;
-header h_head;
-header b_head;
-header g_head;
 header flavor_head;
 header s_head;
 
@@ -3120,30 +3116,93 @@ struct file_parser h_parser = {
 	finish_parse_h
 };
 
-/*
- * Initialize the "b_info" array
- */
-static errr init_b_info(void)
-{
-	errr err;
+static enum parser_error parse_flavor_n(struct parser *p) {
+	struct flavor *h = parser_priv(p);
+	struct flavor *f = mem_zalloc(sizeof *f);
 
-	/* Init the header */
-	init_header(&b_head, (u16b)(MAX_STORES * z_info->b_max), sizeof(owner_type));
-
-	/* Save a pointer to the parsing function */
-	b_head.parse_info_txt = parse_b_info;
-
-	err = init_info("shop_own", &b_head);
-
-	/* Set the global variables */
-	b_info = b_head.info_ptr;
-	b_name = b_head.name_ptr;
-	b_text = b_head.text_ptr;
-
-	return (err);
+	f->next = h;
+	f->fidx = parser_getuint(p, "index");
+	f->tval = tval_find_idx(parser_getsym(p, "tval"));
+	/* assert(f->tval); */
+	if (parser_hasval(p, "sval"))
+		f->sval = lookup_sval(f->tval, parser_getsym(p, "sval"));
+	else
+		f->sval = SV_UNKNOWN;
+	parser_setpriv(p, f);
+	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_flavor_g(struct parser *p) {
+	struct flavor *f = parser_priv(p);
+	int d_attr;
+	const char *attr;
 
+	if (!f)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	f->d_char = parser_getchar(p, "glyph");
+	attr = parser_getsym(p, "attr");
+	if (strlen(attr) == 1) {
+		d_attr = color_char_to_attr(attr[0]);
+	} else {
+		d_attr = color_text_to_attr(attr);
+	}
+	if (d_attr < 0)
+		return PARSE_ERROR_GENERIC;
+	f->d_attr = d_attr;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_flavor_d(struct parser *p) {
+	struct flavor *f = parser_priv(p);
+
+	if (!f)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	f->text = string_append(f->text, parser_getstr(p, "desc"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_flavor(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "V sym version", ignored);
+	parser_reg(p, "N uint index sym tval ?sym sval", parse_flavor_n);
+	parser_reg(p, "G char glyph sym attr", parse_flavor_g);
+	parser_reg(p, "D str desc", parse_flavor_d);
+	return p;
+}
+
+static errr run_parse_flavor(struct parser *p) {
+	return parse_file(p, "flavor");
+}
+
+static errr finish_parse_flavor(struct parser *p) {
+	struct flavor *f, *n;
+
+	flavor_info = mem_zalloc(z_info->flavor_max * sizeof(*f));
+
+	for (f = parser_priv(p); f; f = f->next) {
+		if (f->fidx >= z_info->flavor_max)
+			continue;
+		memcpy(&flavor_info[f->fidx], f, sizeof(*f));
+	}
+
+	f = parser_priv(p);
+	while (f) {
+		n = f->next;
+		mem_free(f);
+		f = n;
+	}
+
+	parser_destroy(p);
+	return 0;
+}
+
+struct file_parser flavor_parser = {
+	init_parse_flavor,
+	run_parse_flavor,
+	finish_parse_flavor
+};
 
 /*
  * Initialize the "flavor_info" array
@@ -3167,8 +3226,6 @@ static errr init_flavor_info(void)
 
 	return (err);
 }
-
-
 
 /*
  * Initialize the "s_info" array
@@ -3222,33 +3279,6 @@ static void init_books(void)
 		/* Put it in the book */
 		spell_list[s_ptr->realm][s_ptr->sval][s_ptr->snum] = spell;
 	}
-}
-
-
-/*
- * Initialise stores, from the edit file.
- */
-static void init_stores(void)
-{
-	errr err;
-	char filename[1024];
-	char buf[1024];
-	ang_file *fh;
-
-	path_build(filename, sizeof(filename), ANGBAND_DIR_EDIT, "store.txt");
-
-	/* Open the file */
-	fh = file_open(filename, MODE_READ, -1);
-	if (!fh) quit("Cannot open 'store.txt' file.");
-
-	/* Parse the file */
-	err = init_store_txt(fh, buf);
-	file_close(fh);
-
-	/* Errors */
-	if (err) display_parse_error("store", err, buf);
-
-	return;
 }
 
 /*** Initialize others ***/
@@ -3668,13 +3698,9 @@ bool init_angband(void)
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (classes)");
 	if (run_parser(&c_parser)) quit("Cannot initialize classes");
 
-	/* Initialize owner info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (owners)");
-	if (init_b_info()) quit("Cannot initialize owners");
-
 	/* Initialize flavor info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (flavors)");
-	if (init_flavor_info()) quit("Cannot initialize flavors");
+	if (run_parser(&flavor_parser)) quit("Cannot initialize flavors");
 
 	/* Initialize spell info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (spells)");
@@ -3686,7 +3712,7 @@ bool init_angband(void)
 
 	/* Initialise store stocking data */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (store stocks)");
-	init_stores();
+	store_init();
 
 	/* Initialise random name data */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (random names)");
@@ -3816,9 +3842,6 @@ void cleanup_angband(void)
 
 	/* Free the info, name, and text arrays */
 	free_info(&flavor_head);
-	free_info(&g_head);
-	free_info(&b_head);
-	free_info(&c_head);
 	free_info(&s_head);
 
 	/* Free the format() buffer */

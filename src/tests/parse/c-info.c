@@ -1,11 +1,11 @@
 /* parse/c-info */
 
+#include "unit-test.h"
+
 #include "init.h"
 #include "object/object.h"
 #include "object/tvalsval.h"
 #include "player/types.h"
-
-#include "unit-test.h"
 
 static int setup(void **state) {
 	*state = init_parse_c();

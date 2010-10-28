@@ -85,12 +85,12 @@ struct header
 
 extern errr init_info_txt(ang_file *fp, char *buf, header *head,
                           parse_info_txt_func parse_info_txt_line);
-extern errr init_store_txt(ang_file *fp, char *buf);
 extern errr eval_info(eval_info_post_func eval_info_process, header *head);
 
 extern errr emit_info_txt(ang_file *fp, ang_file *template, char *buf, header *head,
    emit_info_txt_index_func emit_info_txt_index, emit_info_txt_always_func emit_info_txt_always);
 
+#ifdef TEST
 extern struct parser *init_parse_a(void);
 extern struct parser *init_parse_c(void);
 extern struct parser *init_parse_e(void);
@@ -101,10 +101,12 @@ extern struct parser *init_parse_p(void);
 extern struct parser *init_parse_r(void);
 extern struct parser *init_parse_v(void);
 extern struct parser *init_parse_z(void);
+extern struct parser *init_parse_flavor(void);
 extern struct parser *init_parse_names(void);
+#endif
 
-extern errr parse_b_info(char *buf, header *head);
-extern errr parse_g_info(char *buf, header *head);
+extern errr parse_file(struct parser *p, const char *filename);
+
 extern errr parse_flavor_info(char *buf, header *head);
 extern errr parse_s_info(char *buf, header *head);
 
@@ -117,9 +119,6 @@ extern errr emit_r_info_index(ang_file *fp, header *head, int i);
 extern int error_idx;
 extern int error_line;
 
-extern header h_head;
-extern header b_head;
-extern header g_head;
 extern header flavor_head;
 
 #endif /* INCLUDED_INIT_H */

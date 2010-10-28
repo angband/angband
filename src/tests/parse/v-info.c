@@ -1,9 +1,9 @@
 /* parse/v-info */
 
+#include "unit-test.h"
+
 #include "init.h"
 #include "types.h"
-
-#include "unit-test.h"
 
 static int setup(void **state) {
 	*state = init_parse_v();
