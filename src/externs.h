@@ -168,8 +168,6 @@ extern byte *g_info;
 extern char *g_name;
 extern char *g_text;
 extern flavor_type *flavor_info;
-extern char *flavor_name;
-extern char *flavor_text;
 extern spell_type *s_info;
 extern char *s_name;
 extern char *s_text;

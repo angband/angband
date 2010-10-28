@@ -405,7 +405,7 @@ void dump_flavors(ang_file *fff)
 		byte attr = x_ptr->x_attr;
 		byte chr = x_ptr->x_char;
 
-		file_putf(fff, "# Item flavor: %s\n", (flavor_text + x_ptr->text));
+		file_putf(fff, "# Item flavor: %s\n", x_ptr->text);
 		file_putf(fff, "L:%d:0x%02X:0x%02X\n\n", i, attr, chr);
 	}
 }

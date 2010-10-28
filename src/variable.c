@@ -704,8 +704,6 @@ owner_type *b_info;
  * The object flavor arrays
  */
 flavor_type *flavor_info;
-char *flavor_name;
-char *flavor_text;
 
 /*
  * The spell arrays

@@ -1725,8 +1725,8 @@ static int o_cmp_tval(const void *a, const void *b)
 			c = k_a->tried - k_b->tried;
 			if (c) return -c;
 
-			return strcmp(flavor_text + flavor_info[k_a->flavor].text,
-			              flavor_text + flavor_info[k_b->flavor].text);
+			return strcmp(flavor_info[k_a->flavor].text,
+			              flavor_info[k_b->flavor].text);
 	}
 
 	return k_a->sval - k_b->sval;

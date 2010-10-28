@@ -3210,29 +3210,6 @@ struct file_parser flavor_parser = {
 };
 
 /*
- * Initialize the "flavor_info" array
- */
-static errr init_flavor_info(void)
-{
-	errr err;
-
-	/* Init the header */
-	init_header(&flavor_head, z_info->flavor_max, sizeof(flavor_type));
-
-	/* Save a pointer to the parsing function */
-	flavor_head.parse_info_txt = parse_flavor_info;
-
-	err = init_info("flavor", &flavor_head);
-
-	/* Set the global variables */
-	flavor_info = flavor_head.info_ptr;
-	flavor_name = flavor_head.name_ptr;
-	flavor_text = flavor_head.text_ptr;
-
-	return (err);
-}
-
-/*
  * Initialize the "s_info" array
  */
 static errr init_s_info(void)
