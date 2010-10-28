@@ -101,6 +101,7 @@ extern struct parser *init_parse_p(void);
 extern struct parser *init_parse_r(void);
 extern struct parser *init_parse_v(void);
 extern struct parser *init_parse_z(void);
+extern struct parser *init_parse_flavor(void);
 extern struct parser *init_parse_names(void);
 #endif
 

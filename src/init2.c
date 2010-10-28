@@ -23,6 +23,7 @@
 #include "game-event.h"
 #include "init.h"
 #include "monster/constants.h"
+#include "object/tvalsval.h"
 #include "option.h"
 #include "parser.h"
 
@@ -3120,6 +3121,94 @@ struct file_parser h_parser = {
 	finish_parse_h
 };
 
+static enum parser_error parse_flavor_n(struct parser *p) {
+	struct flavor *h = parser_priv(p);
+	struct flavor *f = mem_zalloc(sizeof *f);
+
+	f->next = h;
+	f->fidx = parser_getuint(p, "index");
+	f->tval = tval_find_idx(parser_getsym(p, "tval"));
+	/* assert(f->tval); */
+	if (parser_hasval(p, "sval"))
+		f->sval = lookup_sval(f->tval, parser_getsym(p, "sval"));
+	else
+		f->sval = SV_UNKNOWN;
+	parser_setpriv(p, f);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_flavor_g(struct parser *p) {
+	struct flavor *f = parser_priv(p);
+	int d_attr;
+	const char *attr;
+
+	if (!f)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	f->d_char = parser_getchar(p, "glyph");
+	attr = parser_getsym(p, "attr");
+	if (strlen(attr) == 1) {
+		d_attr = color_char_to_attr(attr[0]);
+	} else {
+		d_attr = color_text_to_attr(attr);
+	}
+	if (d_attr < 0)
+		return PARSE_ERROR_GENERIC;
+	f->d_attr = d_attr;
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_flavor_d(struct parser *p) {
+	struct flavor *f = parser_priv(p);
+
+	if (!f)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	f->text = string_append(f->text, parser_getstr(p, "desc"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_flavor(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "V sym version", ignored);
+	parser_reg(p, "N uint index sym tval ?sym sval", parse_flavor_n);
+	parser_reg(p, "G char glyph sym attr", parse_flavor_g);
+	parser_reg(p, "D str desc", parse_flavor_d);
+	return p;
+}
+
+static errr run_parse_flavor(struct parser *p) {
+	return parse_file(p, "flavor");
+}
+
+static errr finish_parse_flavor(struct parser *p) {
+	struct flavor *f, *n;
+
+	flavor_info = mem_zalloc(z_info->flavor_max * sizeof(*f));
+
+	for (f = parser_priv(p); f; f = f->next) {
+		if (f->fidx >= z_info->flavor_max)
+			continue;
+		memcpy(&flavor_info[f->fidx], f, sizeof(*f));
+	}
+
+	f = parser_priv(p);
+	while (f) {
+		n = f->next;
+		mem_free(f);
+		f = n;
+	}
+
+	parser_destroy(p);
+	return 0;
+}
+
+struct file_parser flavor_parser = {
+	init_parse_flavor,
+	run_parse_flavor,
+	finish_parse_flavor
+};
+
 /*
  * Initialize the "flavor_info" array
  */
@@ -3616,7 +3705,7 @@ bool init_angband(void)
 
 	/* Initialize flavor info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (flavors)");
-	if (init_flavor_info()) quit("Cannot initialize flavors");
+	if (run_parser(&flavor_parser)) quit("Cannot initialize flavors");
 
 	/* Initialize spell info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (spells)");

@@ -237,13 +237,10 @@ typedef struct object
 	quark_t note;			/* Inscription index */
 } object_type;
 
-
-/**
- * Flavour type. XXX
- */
-typedef struct
-{
-	u32b text;      /* Text (offset) */
+typedef struct flavor {
+	char *text;
+	struct flavor *next;
+	unsigned int fidx;
 
 	byte tval;      /* Associated object type */
 	byte sval;      /* Associated object sub-type */

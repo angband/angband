@@ -3264,6 +3264,7 @@ bool is_a_vowel(int ch)
  *
  * Unlike Sangband, we don't translate these colours here.
  */
+/* XXX: having color_{char,text}_to_attr() separately is moronic. */
 int color_char_to_attr(char c)
 {
 	int a;
