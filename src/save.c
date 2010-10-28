@@ -17,8 +17,9 @@
  */
 
 #include "angband.h"
-#include "option.h"
+#include "history.h"
 #include "monster/monster.h"
+#include "option.h"
 #include "savefile.h"
 
 /*

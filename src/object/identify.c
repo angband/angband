@@ -19,15 +19,12 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "history.h"
 #include "object/tvalsval.h"
 #include "game-event.h"
 
-
 /** Time last item was wielded */
 s32b object_last_wield;
-
-
-
 
 /*** Knowledge accessor functions ***/
 

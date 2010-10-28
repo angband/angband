@@ -21,6 +21,7 @@
 #include "cave.h"
 #include "cmds.h"
 #include "game-event.h"
+#include "history.h"
 #include "init.h"
 #include "object/inventory.h"
 #include "object/tvalsval.h"

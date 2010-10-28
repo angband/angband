@@ -19,6 +19,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "history.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
 #include "store.h"

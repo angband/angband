@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "defines.h"
+#include "history.h"
 #include "inventory.h"
 #include "tvalsval.h"
 #include "effects.h"

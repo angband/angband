@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "history.h"
 #include "object/tvalsval.h"
 
 

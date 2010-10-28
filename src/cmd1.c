@@ -20,6 +20,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmds.h"
+#include "history.h"
 #include "monster/monster.h"
 #include "object/inventory.h"
 #include "object/tvalsval.h"
