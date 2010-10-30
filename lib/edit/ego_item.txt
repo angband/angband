@@ -858,7 +858,7 @@ T:19:0:99
 D:It has no special abilities, but its to-dam value may be unusually
 D: high.
 
-N:106:of Lothlorien
+N:106:of Lothl['o]rien
 X:30:3
 W:50:4:0:20000
 C:d10:d10:0:d2
@@ -893,7 +893,7 @@ C:d8:d8:0:d2
 T:19:2:2
 F:DEX | SHOTS | MIGHT | IGNORE_ACID | IGNORE_FIRE | HIDE_TYPE
 
-N:111:of the Nazgul
+N:111:of the Nazg[^u]l
 X:0:0
 W:0:2:0:0
 C:d10:d10:0:0

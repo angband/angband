@@ -628,7 +628,7 @@ D: fistful of needles.
 
 ### Dungeon level 3 ###
 
-N:52:Smeagol
+N:52:Sm['e]agol
 G:h:v
 I:130:400:20:12:5
 W:3:2:0:50
@@ -1687,7 +1687,7 @@ F:NO_FEAR | NO_CONF | NO_SLEEP
 F:ATTR_CLEAR
 D:Yum!  It looks quite tasty.
 
-N:140:Grishnakh, the Hill Orc
+N:140:Grishn['a]kh, the Hill Orc
 G:o:v
 I:110:230:20:20:20
 W:10:3:0:160
@@ -2677,7 +2677,7 @@ F:OPEN_DOOR | BASH_DOOR
 F:HURT_LIGHT
 D:He is green skinned and ugly.
 
-N:215:Nar, the Dwarf
+N:215:N['a]r, the Dwarf
 G:h:v
 I:110:450:25:70:25
 W:17:2:0:250
@@ -2692,10 +2692,10 @@ F:IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 S:1_IN_6
 S:BLIND | CAUSE_2 | CONF | HEAL | MIND_BLAST
-D:The friend and companion of the dwarven king Thror, he went mad with grief
-D: after Thror's death at the hands of Azog the Orc.  With torn beard and ragged
-D: clothes, he seems to have fixed on you as a convenient target to vent his
-D: anger.
+D:The friend and companion of the dwarven king Thr['o]r, he went mad with grief
+D: after Thr['o]r's death at the hands of Azog the Orc.  With torn beard and 
+D:ragged clothes, he seems to have fixed on you as a convenient target to vent 
+D:his anger.
 
 N:216:2-headed hydra
 G:M:u
@@ -3177,7 +3177,7 @@ D:A large and powerful orc, captain of one of Saruman's orcish regiments.
 
 ### Dungeon level 22 ###
 
-N:249:Ugluk, the Uruk
+N:249:Ugl['u]k, the Uruk
 G:o:v
 I:110:720:20:95:20
 W:22:3:0:600
@@ -3362,8 +3362,8 @@ F:UNIQUE | MALE | ORC | EVIL | ESCORT | ESCORTS
 F:DROP_2 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR
 F:IM_POIS
-D:He is also known as the King of Khazad-dum.  His ego is renowned to be bigger
-D: than his head.
+D:He is also known as the King of Khazad-d[^u]m.  His ego is renowned to be 
+D:bigger than his head.
 
 N:263:Master rogue
 G:p:b
@@ -3429,7 +3429,7 @@ S:1_IN_10
 S:DRAIN_MANA | SCARE
 D:It is a ghostly apparition with a humanoid form.
 
-N:268:Ibun, Son of Mim
+N:268:Ibun, Son of M[^i]m
 G:h:v
 I:110:820:20:80:10
 W:24:2:0:300
@@ -3448,7 +3448,7 @@ S:BO_FIRE
 D:One of the last of the Petty-Dwarves.  Ibun is a tricky sorcerous little
 D: being, full of mischief.
 
-N:269:Khim, Son of Mim
+N:269:Kh[^i]m, Son of M[^i]m
 G:h:v
 I:110:820:20:80:10
 W:24:2:0:300
@@ -3464,7 +3464,7 @@ F:FORCE_SLEEP
 S:1_IN_8
 S:HEAL | SLOW
 S:BO_FIRE
-D:One of the last of the Petty-Dwarves.  Khim is a tricky sorcerous little
+D:One of the last of the Petty-Dwarves.  Kh[^i]m is a tricky sorcerous little
 D: being, full of mischief.
 
 N:270:4-headed hydra
@@ -3521,9 +3521,9 @@ F:IM_ELEC | IM_FIRE | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 S:1_IN_4
 S:CONF | SLOW
-D:A Black Numenorean with a blacker heart.
+D:A Black N['u]menorean with a blacker heart.
 
-N:274:Angamaite of Umbar
+N:274:Angamait["e] of Umbar
 G:p:v
 I:110:800:25:80:25
 W:24:2:0:400
@@ -3538,7 +3538,7 @@ F:IM_ELEC | IM_FIRE | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 S:1_IN_4
 S:CONF | SLOW
-D:A Black Numenorean who hates the men of the west.
+D:A Black N['u]menorean who hates the men of the west.
 
 N:275:Banshee
 G:G:b
@@ -3753,7 +3753,7 @@ D: fight it.
 
 ### Dungeon level 27 ###
 
-N:290:Mim, Betrayer of Turin
+N:290:M[^i]m, Betrayer of Turin
 G:h:v
 I:120:1100:20:80:20
 W:27:4:0:1000
@@ -3771,7 +3771,7 @@ S:1_IN_6
 S:HEAL | SCARE
 S:BA_ACID
 S:BO_ACID
-D:The last of his race, Mim is a Petty-Dwarf.  Petty-Dwarves are strange
+D:The last of his race, M[^i]m is a Petty-Dwarf.  Petty-Dwarves are strange
 D: creatures, powerful in sorcery and originating in the East.  They have been
 D: hunted nearly to extinction by the High Elves.
 
@@ -3998,8 +3998,8 @@ F:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 S:1_IN_10
 S:S_KIN
 D:An evil and cunning man from the East.  Having once sworn allegiance to the
-D: sons of Feanor, it was Uldor's treachery that turned the tide of the Battle
-D: of Unnumbered Tears in Morgoth's favour.
+D: sons of F["e]anor, it was Uldor's treachery that turned the tide of the 
+D:Battle of Unnumbered Tears in Morgoth's favour.
 
 N:305:Mage
 G:p:r
@@ -5149,7 +5149,7 @@ D: black hue.  Acid drips from its body.
 
 ### Dungeon level 35 ###
 
-N:373:Mumak
+N:373:M[^u]mak
 G:q:s
 I:110:495:20:55:100
 W:35:3:0:2100
@@ -5776,7 +5776,7 @@ F:FORCE_SLEEP
 S:1_IN_2
 S:HEAL | TRAPS
 S:BO_COLD | BO_ELEC | BO_FIRE | BO_ICEE
-D:A Black Numenorean who usurped the throne of Gondor, he is treacherous and
+D:A Black N['u]menorean who usurped the throne of Gondor, he is treacherous and
 D: evil.
 
 N:409:Time vortex
@@ -7078,7 +7078,7 @@ F:FORCE_SLEEP
 S:1_IN_4
 S:CAUSE_3 | CONF
 S:BR_FIRE
-D:Smaug is one of the Uruloki that still survive, a fire-drake of immense
+D:Smaug is one of the Urul['o]ki that still survive, a fire-drake of immense
 D: cunning and intelligence.  His speed through air is matched by few other
 D: dragons and his dragonfire is what legends are made of; he is believed to be
 D: the greatest dragon still surviving into the Third Age.
@@ -7462,7 +7462,7 @@ D: disdainful ease.
 
 ### Dungeon level 72 ###
 
-N:494:Khamul, the Black Easterling
+N:494:Kham[^u]l, the Black Easterling
 G:W:v
 I:120:5000:90:100:10
 W:72:3:0:40000
@@ -7481,7 +7481,7 @@ S:BLIND | CAUSE_3 | CAUSE_4 | HOLD | SCARE | TELE_LEVEL
 S:BA_COLD | BA_FIRE | BA_NETH
 S:BO_MANA
 S:S_HI_UNDEAD
-D:A warrior-king of the East.  Khamul is a powerful opponent, his skill in
+D:A warrior-king of the East.  Kham[^u]l is a powerful opponent, his skill in
 D: combat awesome and his form twisted by evil cunning.
 
 ### Dungeon level 59 ###
@@ -8592,8 +8592,8 @@ S:BLIND | CONF | SCARE
 S:BR_FIRE | BR_PLAS
 S:S_HI_DEMON | S_HI_UNDEAD
 D:Gothmog is the Chief Balrog in Morgoth's personal guard.  He is renowned for
-D: slaying Feanor and Fingon, two of the High Kings of the Noldor Elves, and has
-D: never been defeated in combat.  With his whip of flame and awesome fiery
+D: slaying F["e]anor and Fingon, two of the High Kings of the Noldor Elves, and
+D: has never been defeated in combat.  With his whip of flame and awesome fiery
 D: breath he saved his master from Ungoliant's rage.
 
 ### Dungeon level 99 ###
@@ -9502,7 +9502,7 @@ D: barely see through them.
 
 ### Dungeon level 49 ###
 
-N:594:Eol, the Dark Elf
+N:594:E["o]l, the Dark Elf
 G:h:v
 I:130:2400:20:100:60
 W:49:2:0:25000
@@ -9520,9 +9520,10 @@ S:TELE_TO
 S:BA_ACID | BA_COLD | BA_ELEC | BA_FIRE | BA_NETH
 S:BO_MANA
 S:S_DEMON | S_DRAGON | S_MONSTERS | S_UNDEAD
-D:A lord of the Teleri, Eol is a mighty metalsmith, the only one to ever forge
-D: weapons of meteorite iron.  The mortal enemy of the Eldar, he is currently
-D: fleeing their wrath, following the murder of Princess Aredhel of Gondolin.
+D:A lord of the Teleri, E["o]l is a mighty metalsmith, the only one to ever
+D: forge weapons of meteorite iron.  The mortal enemy of the Eldar, he is
+D: currently fleeing their wrath, following the murder of Princess Aredhel of
+D: Gondolin.
 
 ### Dungeon level 81 ###
 
@@ -9542,7 +9543,7 @@ F:FORCE_SLEEP
 S:1_IN_6
 S:S_ANIMAL | S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_MONSTERS | S_UNIQUE
 S:S_WRAITH
-D:The son of Eol the Dark Elf, Maeglin is every bit as evil as his father and
+D:The son of E["o]l the Dark Elf, Maeglin is every bit as evil as his father and
 D: more.  His greed for gold led him to betray the Hidden Kingdom of Gondolin to
 D: Morgoth's forces.  He is a mighty warrior himself, and some of Morgoth's
 D: greatest servants answer to his call.
@@ -9831,7 +9832,7 @@ D: you, wielding a huge club and pushing his own followers rudely aside.
 
 ### Dungeon level 55 ###
 
-N:611:Ar-Pharazon the Golden
+N:611:Ar-Pharaz[^o]n the Golden
 G:p:v
 I:130:4000:30:45:255
 W:55:1:0:32500
@@ -9847,9 +9848,9 @@ F:FORCE_SLEEP
 S:1_IN_6
 S:HEAL | TELE_AWAY
 S:S_KIN | S_MONSTERS
-D:Last and proudest king of ancient Numenor.  Corrupted by power and avarice, he
-D: fell victim to Sauron's wiles, tried to fight the Valar themselves, and
-D: condemned Numenor to oblivion.
+D:Last and proudest king of ancient N['u]menor.  Corrupted by power and avarice,
+D: he fell victim to Sauron's wiles, tried to fight the Valar themselves, and
+D: condemned N['u]menor to oblivion.
 
 ### Dungeon level 40 ###
 
