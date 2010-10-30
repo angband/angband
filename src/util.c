@@ -2040,23 +2040,29 @@ void text_out_to_screen(byte a, cptr str)
  */
 void text_out_to_file(byte a, cptr str)
 {
+	cptr s;
+	char buf[1024];
+
 	/* Current position on the line */
 	static int pos = 0;
 
 	/* Wrap width */
 	int wrap = (text_out_wrap ? text_out_wrap : 75);
 
-	/* Current location within "str" */
-	char *s = str;
-
 	/* We use either ascii or system-specific encoding */
- 	int encoding = (OPT(xchars_to_file)) ? SYSTEM_SPECIFIC : ASCII;
+ 	int encoding = OPT(xchars_to_file) ? SYSTEM_SPECIFIC : ASCII;
 
 	/* Unused parameter */
 	(void)a;
 
+	/* Copy to a rewriteable string */
+ 	my_strcpy(buf, str, 1024);
+
  	/* Translate it to 7-bit ASCII or system-specific format */
- 	xstr_trans(s, encoding);
+ 	xstr_trans(buf, encoding);
+
+	/* Current location within "buf" */
+ 	s = buf;
 
 	/* Process the string */
 	while (*s)
@@ -2442,7 +2448,7 @@ bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, ch
 			bool atnull = (buf[*curs] == 0);
 
 
-			if (!isprint((unsigned char)keypress))
+			if (!my_isprint((unsigned char)keypress))
 			{
 				bell("Illegal edit key!");
 				break;
