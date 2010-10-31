@@ -67,6 +67,7 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 	{
 		OPT_disturb_move,
 		OPT_disturb_near,
+		OPT_disturb_town,
 		OPT_disturb_detect,
 		OPT_disturb_state,
 		OPT_quick_messages,
@@ -75,7 +76,6 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_flush_failure,
 		OPT_flush_disturb,
 		OPT_notify_recharge,
-		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
@@ -156,9 +156,9 @@ static option_entry options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 19 */
 { "disturb_move",        "Disturb whenever any monster moves",          FALSE }, /* 20 */
 { "disturb_near",        "Disturb whenever viewable monster moves",     TRUE },  /* 21 */
-{ "disturb_detect",      "Disturb whenever leaving trap detected area", TRUE },  /* 22 */
-{ "disturb_state",       "Disturb whenever player state changes",       TRUE },  /* 23 */
-{ NULL,                  NULL,                                          FALSE }, /* 24 */
+{ "disturb_town",        "Disturb whenever townspeople move",           TRUE },  /* 22 */
+{ "disturb_detect",      "Disturb whenever leaving trap detected area", TRUE },  /* 23 */
+{ "disturb_state",       "Disturb whenever player state changes",       TRUE },  /* 24 */
 { NULL,                  NULL,                                          FALSE }, /* 25 */
 { NULL,                  NULL,                                          FALSE }, /* 26 */
 { NULL,                  NULL,                                          FALSE }, /* 27 */

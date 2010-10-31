@@ -1150,9 +1150,11 @@ void lore_treasure(int m_idx, int num_item, int num_gold)
  * or viewed directly, but old targets will remain set.  XXX XXX
  *
  * The player can choose to be disturbed by several things, including
- * "OPT(disturb_move)" (monster which is viewable moves in some way), and
+ * "OPT(disturb_move)" (monster which is viewable moves in some way),
  * "OPT(disturb_near)" (monster which is "easily" viewable moves in some
- * way).  Note that "moves" includes "appears" and "disappears".
+ * way), and "OPT(disturb_town)" (combines disturb_move and disturb_near
+ * but only for town monsters). 
+ * Note that "moves" includes "appears" and "disappears".
  */
 void update_mon(int m_idx, bool full)
 {
@@ -1320,7 +1322,11 @@ void update_mon(int m_idx, bool full)
 			if (l_ptr->sights < MAX_SHORT) l_ptr->sights++;
 
 			/* Disturb on appearance */
-			if (OPT(disturb_move)) disturb(1, 0);
+			if (OPT(disturb_move) && 
+			    (OPT(disturb_town) || r_info[m_ptr->r_idx].level != 0)) 
+			{
+				disturb(1, 0);
+			}
 
 			/* Window stuff */
 			p_ptr->redraw |= PR_MONLIST;
@@ -1343,7 +1349,11 @@ void update_mon(int m_idx, bool full)
 			if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
 
 			/* Disturb on disappearance */
-			if (OPT(disturb_move)) disturb(1, 0);
+			if (OPT(disturb_move) && 
+			    (OPT(disturb_town) || r_info[m_ptr->r_idx].level != 0)) 
+			{
+				disturb(1, 0);
+			}
 
 			/* Window stuff */
 			p_ptr->redraw |= PR_MONLIST;
@@ -1361,8 +1371,9 @@ void update_mon(int m_idx, bool full)
 			m_ptr->mflag |= (MFLAG_VIEW);
 
 			/* Disturb on appearance */
-			if (OPT(disturb_near)) disturb(1, 0);
-
+			if (OPT(disturb_near) && 
+			    (OPT(disturb_town) || r_info[m_ptr->r_idx].level != 0))
+				disturb(1, 0);
 			/* Re-draw monster window */
 			p_ptr->redraw |= PR_MONLIST;
 		}
@@ -1378,7 +1389,9 @@ void update_mon(int m_idx, bool full)
 			m_ptr->mflag &= ~(MFLAG_VIEW);
 
 			/* Disturb on disappearance */
-			if (OPT(disturb_near)) disturb(1, 0);
+			if (OPT(disturb_near) && 
+			    (OPT(disturb_town) || r_info[m_ptr->r_idx].level != 0))
+				disturb(1, 0);
 
 			/* Re-draw monster list window */
 			p_ptr->redraw |= PR_MONLIST;

@@ -56,9 +56,10 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 
 #define OPT_disturb_move			20
 #define OPT_disturb_near			21
-#define OPT_disturb_detect			22
-#define OPT_disturb_state			23
-#define OPT_disturb_minor			24
+#define OPT_disturb_town            22
+#define OPT_disturb_detect			23
+#define OPT_disturb_state			24
+#define OPT_disturb_minor			25
 
 #define OPT_view_perma_grids		38
 #define OPT_view_torch_grids		39

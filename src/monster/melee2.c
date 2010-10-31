@@ -3648,6 +3648,7 @@ static void process_monster(int m_idx)
 
 			/* Possible disturb */
 			if (m_ptr->ml &&
+			    (OPT(disturb_town) || r_info[m_ptr->r_idx].level != 0) && 
 			    (OPT(disturb_move) ||
 			     ((m_ptr->mflag & (MFLAG_VIEW)) &&
 			      OPT(disturb_near))))
