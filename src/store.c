@@ -360,6 +360,7 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 
 				case TV_POLEARM:
 				case TV_SWORD:
+				case TV_DIGGING:
 				{
 					/* Known blessed blades are accepted too */
 					if (object_is_known_blessed(o_ptr)) break;
