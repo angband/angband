@@ -535,45 +535,34 @@ bool get_aim_dir(int *dp)
 		/* Get a command (or Cancel) */
 		if (!get_com_ex(p, &ke)) break;
 
-		/* Analyze */
-		switch (ke.key)
+		if (ke.type == EVT_MOUSE)
 		{
-			/* Mouse aiming */
-			case '\xff':
+			if (target_set_interactive(TARGET_KILL, KEY_GRID_X(ke), KEY_GRID_Y(ke)))
+				dir = 5;
+		}
+		else if (ke.type == EVT_KBRD)
+		{
+			if (ke.key == '*')
 			{
-				if (target_set_interactive(TARGET_KILL, KEY_GRID_X(ke), KEY_GRID_Y(ke)))
+				/* Set new target, use target if legal */
+				if (target_set_interactive(TARGET_KILL, -1, -1))
 					dir = 5;
-
-				break;
 			}
-
-			/* Set new target, use target if legal */
-			case '*':
+			else if (ke.key == '\'')
 			{
-				if (target_set_interactive(TARGET_KILL, -1, -1)) dir = 5;
-				break;
+				/* Set to closest target */
+				if (target_set_closest(TARGET_KILL))
+					dir = 5;
 			}
-
-			/* Set to closest target */
-			case '\'':
+			else if (ke.key == 't' || ke.key == '5' ||
+					ke.key == '0' || ke.key == '.')
 			{
-				if (target_set_closest(TARGET_KILL)) dir = 5;
-				break;
+				if (target_okay())
+					dir = 5;
 			}
-
-			/* Use current target, if set and legal */
-			case 't':
-			case '5':
-			case '0':
-			case '.':
+			else
 			{
-				if (target_okay()) dir = 5;
-				break;
-			}
-
-			/* Possible direction */
-			default:
-			{
+				/* Possible direction */
 				int keypresses_handled = 0;
 				
 				while (ke.key != 0)
@@ -585,13 +574,9 @@ bool get_aim_dir(int *dp)
 					this_dir = target_dir(ke.key);
 					
 					if (this_dir)
-					{
 						dir = dir_transitions[dir][this_dir];
-					}
 					else
-					{
 						break;
-					}
 					
 					if (lazymove_delay == 0 || ++keypresses_handled > 1)
 						break;
@@ -674,14 +659,14 @@ bool get_rep_dir(int *dp)
 		ke = inkey_ex();
 		inkey_scan = SCAN_OFF;
 
-		if (ke.key != '\xff' && target_dir(ke.key) == 0)
+		if (ke.type == EVT_KBRD && target_dir(ke.key) == 0)
 		{
 			prt("Direction or <click> (Escape to cancel)? ", 0, 0);
 			ke = inkey_ex();
 		}
 
 		/* Check mouse coordinates */
-		if (ke.key == '\xff')
+		if (ke.type == EVT_MOUSE)
 		{
 			/*if (ke.button) */
 			{
@@ -705,7 +690,7 @@ bool get_rep_dir(int *dp)
 		}
 
 		/* Get other keypresses until a direction is chosen. */
-		else 
+		else
 		{
 			int keypresses_handled = 0;
 
