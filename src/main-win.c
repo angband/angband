@@ -326,7 +326,7 @@
 /*
  * Font settings
  */
-#define DEFAULT_FONT	"8X13.FON"
+#define DEFAULT_FONT	"8X12x.FON"
 
 
 
