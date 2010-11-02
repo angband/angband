@@ -241,193 +241,6 @@ void create_needed_dirs(void)
 	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
 }
 
-
-/*
- * Hack -- help give useful error messages
- */
-int error_idx;
-int error_line;
-
-
-/*
- * Standard error message text
- */
-static cptr err_str[PARSE_ERROR_MAX] =
-{
-	NULL,
-	"parse error",
-	"invalid flag specification",
-	"invalid number of items (0-99)",
-	"invalid spell frequency",
-	"invalid random value",
-	"missing colon",
-	"missing field",
-	"missing record header",
-	"non-sequential records",
-	"value not a number",
-	"obsolete file",
-	"value out of bounds",
-	"out of memory",
-	"too few entries",
-	"too many entries",
-	"undefined directive",
-	"unrecognised blow",
-	"unrecognised tval name",
-	"unrecognised sval name",
-	"vault too big",
-};
-
-
-/*
- * File headers
- */
-header flavor_head;
-header s_head;
-
-
-/*
- * Initialize the header of an *_info array.
- */
-static void init_header(header *head, int num, int len)
-{
-       /* Save the "version" */
-       head->v_major = VERSION_MAJOR;
-       head->v_minor = VERSION_MINOR;
-       head->v_patch = VERSION_PATCH;
-       head->v_extra = VERSION_EXTRA;
-
-       /* Save the "record" information */
-       head->info_num = num;
-       head->info_len = len;
-
-       /* Save the size of "*_head" and "*_info" */
-       head->head_size = sizeof(header);
-       head->info_size = head->info_num * head->info_len;
-
-       /* Clear post-parsing evaluation function */
-       head->eval_info_post = NULL;
-
-       /* Clear the template emission functions */
-       head->emit_info_txt_index = NULL;
-       head->emit_info_txt_always = NULL;
-}
-
-
-/*
- * Display a parser error message.
- */
-static void display_parse_error(cptr filename, errr err, cptr buf)
-{
-	cptr oops;
-
-	/* Error string */
-	oops = (((err > 0) && (err < PARSE_ERROR_MAX)) ? err_str[err] : "unknown");
-
-	/* Oops */
-	msg_format("Error at line %d of '%s.txt'.", error_line, filename);
-	msg_format("Record %d contains a '%s' error.", error_idx, oops);
-	msg_format("Parsing '%s'.", buf);
-	message_flush();
-
-	/* Quit */
-	quit_fmt("Error in '%s.txt' file.", filename);
-}
-
-
-/*
- * Initialize a "*_info" array
- *
- * Note that we let each entry have a unique "name" and "text" string,
- * even if the string happens to be empty (everyone has a unique '\0').
- */
-static errr init_info(cptr filename, header *head)
-{
-	ang_file *fh;
-
-	errr err = 1;
-
-	char txt_file[1024];
-
-	char buf[1024];
-
-	void *fake_name;
-	void *fake_text;
-
-	/* Build the filename */
-	path_build(txt_file, sizeof(txt_file), ANGBAND_DIR_EDIT, format("%s.txt", filename));
-
-	/* Allocate the "*_info" array */
-	head->info_ptr = C_ZNEW(head->info_size, char);
-
-	/* MegaHack -- make "fake" arrays */
-	if (z_info)
-	{
-		head->name_ptr = C_ZNEW(z_info->fake_name_size, char);
-		head->text_ptr = C_ZNEW(z_info->fake_text_size, char);
-	}
-
-
-	/*** Load the ascii template file ***/
-
-	/* Open the file */
-	fh = file_open(txt_file, MODE_READ, -1);
-	if (!fh) quit(format("Cannot open '%s.txt' file.", filename));
-
-	/* Parse the file */
-	err = init_info_txt(fh, buf, head, head->parse_info_txt);
-
-	file_close(fh);
-
-	/* Errors */
-	if (err) display_parse_error(filename, err, buf);
-
-	/* Post processing the data */
-	if (head->eval_info_post) eval_info(head->eval_info_post, head);
-
-
-	/*** Output a 'parsable' ascii template file ***/
-	if ((head->emit_info_txt_index) || (head->emit_info_txt_always))
-	{
-		char user_file[1024];
-		ang_file *fout;
-
-		/* Open the original */
-		fh = file_open(txt_file, MODE_READ, -1);
-		if (!fh) quit(format("Cannot open '%s.txt' file for re-parsing.", filename));
-
-		/* Open for output */
-		path_build(user_file, 1024, ANGBAND_DIR_USER, format("%s.txt", filename));
-		fout = file_open(user_file, MODE_WRITE, FTYPE_TEXT);
-		if (!fout) quit(format("Cannot open '%s.txt' file for output.", filename));
-
-		/* Parse and output the files */
-		err = emit_info_txt(fout, fh, user_file, head, head->emit_info_txt_index, head->emit_info_txt_always);
-
-		/* Close both files */
-		file_close(fh);
-		file_close(fout);
-	}
-
-	/* Copy the parsed data into the real array from the fakes */
-	fake_name = head->name_ptr;
-	head->name_ptr = C_ZNEW(head->name_size, char);
-	memcpy(head->name_ptr, fake_name, head->name_size);
-
-	fake_text = head->text_ptr;
-	head->text_ptr = C_ZNEW(head->text_size, char);
-	memcpy(head->text_ptr, fake_text, head->text_size);
-
-	/* Free the fake arrays */
-	if (z_info)
-	{
-		FREE(fake_name);
-		FREE(fake_text);
-	}
-
-	/* Success */
-	return (0);
-}
-
 errr parse_file(struct parser *p, const char *filename) {
 	char path[1024];
 	char buf[1024];
@@ -445,24 +258,6 @@ errr parse_file(struct parser *p, const char *filename) {
 	}
 	file_close(fh);
 	return r;
-}
-
-/*
- * Free the allocated memory for the info-, name-, and text- arrays.
- */
-static errr free_info(header *head)
-{
-	if (head->info_size)
-		FREE(head->info_ptr);
-
-	if (head->name_size)
-		FREE(head->name_ptr);
-
-	if (head->text_size)
-		FREE(head->text_ptr);
-
-	/* Success */
-	return (0);
 }
 
 static enum parser_error ignored(struct parser *p) {
@@ -3286,27 +3081,6 @@ static struct file_parser s_parser = {
 };
 
 /*
- * Initialize the "s_info" array
- */
-static errr init_s_info(void)
-{
-	errr err;
-
-	/* Init the header */
-	init_header(&s_head, z_info->s_max, sizeof(spell_type));
-
-	/* Save a pointer to the parsing function */
-	s_head.parse_info_txt = parse_s_info;
-
-	err = init_info("spell", &s_head);
-
-	/* Set the global variables */
-	s_info = s_head.info_ptr;
-
-	return (err);
-}
-
-/*
  * Initialize the "spell_list" array
  */
 static void init_books(void)
@@ -3895,10 +3669,6 @@ void cleanup_angband(void)
 	mem_free(e_info);
 	mem_free(r_info);
 	mem_free(c_info);
-
-	/* Free the info, name, and text arrays */
-	free_info(&flavor_head);
-	free_info(&s_head);
 
 	/* Free the format() buffer */
 	vformat_kill();
