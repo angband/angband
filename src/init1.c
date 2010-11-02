@@ -283,8 +283,7 @@ errr parse_s_info(char *buf, header *head)
 		s_ptr = (spell_type*)head->info_ptr + i;
 
 		/* Store the name */
-		if ((s_ptr->name = add_name(head, s)) == 0)
-			return (PARSE_ERROR_OUT_OF_MEMORY);
+		s_ptr->name = string_make(s);
 	}
 
 	/* Process 'I' for "Info" (one line only) */
@@ -319,8 +318,7 @@ errr parse_s_info(char *buf, header *head)
 		s = buf+2;
 
 		/* Store the text */
-		if (!add_text(&s_ptr->text, head, s))
-			return (PARSE_ERROR_OUT_OF_MEMORY);
+		s_ptr->text = string_append(s_ptr->text, s);
 	}
 
 	else

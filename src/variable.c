@@ -709,8 +709,6 @@ flavor_type *flavor_info;
  * The spell arrays
  */
 spell_type *s_info;
-char *s_name;
-char *s_text;
 
 
 /*

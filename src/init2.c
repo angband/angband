@@ -3209,6 +3209,82 @@ struct file_parser flavor_parser = {
 	finish_parse_flavor
 };
 
+static enum parser_error parse_s_n(struct parser *p) {
+	struct spell *s = mem_zalloc(sizeof *s);
+	s->next = parser_priv(p);
+	s->sidx = parser_getuint(p, "index");
+	s->name = string_make(parser_getstr(p, "name"));
+	parser_setpriv(p, s);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_s_i(struct parser *p) {
+	struct spell *s = parser_priv(p);
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	s->tval = parser_getuint(p, "tval");
+	s->sval = parser_getuint(p, "sval");
+	s->snum = parser_getuint(p, "snum");
+
+	/* XXX elly: postprocess instead? */
+	s->realm = s->tval - TV_MAGIC_BOOK;
+	s->spell_index = s->sidx - (s->realm * PY_MAX_SPELLS);
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_s_d(struct parser *p) {
+	struct spell *s = parser_priv(p);
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	s->text = string_append(s->text, parser_getstr(p, "desc"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_s(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "V sym version", ignored);
+	parser_reg(p, "N uint index str name", parse_s_n);
+	parser_reg(p, "I uint tval uint sval uint snum", parse_s_i);
+	parser_reg(p, "D str desc", parse_s_d);
+	return p;
+}
+
+static errr run_parse_s(struct parser *p) {
+	return parse_file(p, "spell");
+}
+
+static errr finish_parse_s(struct parser *p) {
+	struct spell *s, *n;
+
+	s_info = mem_zalloc(z_info->s_max * sizeof(*s_info));
+	for (s = parser_priv(p); s; s = s->next) {
+		if (s->sidx >= z_info->s_max)
+			continue;
+		memcpy(&s_info[s->sidx], s, sizeof(*s));
+	}
+
+	s = parser_priv(p);
+	while (s) {
+		n = s->next;
+		mem_free(s);
+		s = n;
+	}
+
+	parser_destroy(p);
+	return 0;
+}
+
+static struct file_parser s_parser = {
+	init_parse_s,
+	run_parse_s,
+	finish_parse_s
+};
+
 /*
  * Initialize the "s_info" array
  */
@@ -3226,8 +3302,6 @@ static errr init_s_info(void)
 
 	/* Set the global variables */
 	s_info = s_head.info_ptr;
-	s_name = s_head.name_ptr;
-	s_text = s_head.text_ptr;
 
 	return (err);
 }
@@ -3686,7 +3760,7 @@ bool init_angband(void)
 
 	/* Initialize spell info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (spells)");
-	if (init_s_info()) quit("Cannot initialize spells");
+	if (run_parser(&s_parser)) quit("Cannot initialize spells");
 
 	/* Initialize spellbook info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (spellbooks)");

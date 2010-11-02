@@ -41,7 +41,7 @@ typedef int (*button_kill_f)(unsigned char);
 
 typedef struct alloc_entry alloc_entry;
 typedef struct quest quest;
-typedef struct spell_type spell_type;
+typedef struct spell spell_type;
 typedef struct autoinscription autoinscription;
 typedef struct history_info history_info;
 typedef struct color_type color_type;
@@ -173,10 +173,11 @@ struct quest
 /*
  * And here's the structure for the "fixed" spell information
  */
-struct spell_type
-{
-	u32b name;			/* Name (offset) */
-	u32b text;			/* Text (offset) */
+struct spell {
+	struct spell *next;
+	unsigned int sidx;
+	char *name;
+	char *text;
 
 	byte realm;			/* 0 = mage; 1 = priest */
 	byte tval;			/* Item type for book this spell is in */

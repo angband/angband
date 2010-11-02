@@ -466,7 +466,7 @@ static void browse_spell(int spell)
 	/* Display the spell description */
 	text_out("\n\n   ");
 
-	text_out("%s", s_text + s_info[(cp_ptr->spell_book == TV_MAGIC_BOOK) ? spell : spell + PY_MAX_SPELLS].text);
+	text_out("%s", s_info[(cp_ptr->spell_book == TV_MAGIC_BOOK) ? spell : spell + PY_MAX_SPELLS].text);
 	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
 
 	/* Wait for input */

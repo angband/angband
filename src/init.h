@@ -72,6 +72,7 @@ extern struct parser *init_parse_h(void);
 extern struct parser *init_parse_k(void);
 extern struct parser *init_parse_p(void);
 extern struct parser *init_parse_r(void);
+extern struct parser *init_parse_s(void);
 extern struct parser *init_parse_v(void);
 extern struct parser *init_parse_z(void);
 extern struct parser *init_parse_flavor(void);

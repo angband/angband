@@ -169,8 +169,6 @@ extern char *g_name;
 extern char *g_text;
 extern flavor_type *flavor_info;
 extern spell_type *s_info;
-extern char *s_name;
-extern char *s_text;
 extern s16b spell_list[MAX_REALMS][BOOKS_PER_REALM][SPELLS_PER_BOOK];
 
 extern const char *ANGBAND_SYS;
