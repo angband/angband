@@ -305,13 +305,16 @@ extern byte py_pickup(int pickup);
 extern void move_player(int dir);
 
 /* cmd5.c */
+int spell_collect_from_book(const object_type *o_ptr, int spells[]);
+bool spell_okay_list(bool (*spell_test)(int spell), const int spells[], int n_spells);
+bool spell_okay_to_cast(int spell);
+bool spell_okay_to_study(int spell);
+bool spell_okay_to_browse(int spell);
 s16b spell_chance(int spell);
-bool spell_okay(int spell, bool known, bool browse);
 bool spell_cast(int spell, int dir);
 void spell_learn(int spell);
 
-int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool browse);
-void do_cmd_browse_aux(const object_type *o_ptr, int item);
+int get_spell(const object_type *o_ptr, const char *prompt, bool (*spell_test)(int spell));
 
 /* death.c */
 void death_screen(void);
