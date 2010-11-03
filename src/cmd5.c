@@ -24,6 +24,9 @@
 #include "ui-menu.h"
 
 
+/**
+ * Spell menu data struct
+ */
 struct spell_menu_data {
 	int spells[PY_MAX_SPELLS];
 	int n_spells;
@@ -141,6 +144,7 @@ static const menu_iter spell_menu_iter = {
 	NULL	/* no resize hook */
 };
 
+/** Create and initialise a spell menu, given an object and a validity hook */
 static menu_type *spell_menu_new(const object_type *o_ptr,
 		bool (*is_valid)(int spell))
 {
@@ -177,6 +181,7 @@ static menu_type *spell_menu_new(const object_type *o_ptr,
 	return m;
 }
 
+/** Clean up a spell menu instance */
 static void spell_menu_destroy(menu_type *m)
 {
 	struct spell_menu_data *d = menu_priv(m);
@@ -184,6 +189,9 @@ static void spell_menu_destroy(menu_type *m)
 	mem_free(m);
 }
 
+/**
+ * Run the spell menu to select a spell.
+ */
 static int spell_menu_select(menu_type *m, const char *noun, const char *verb)
 {
 	struct spell_menu_data *d = menu_priv(m);
@@ -204,6 +212,9 @@ static int spell_menu_select(menu_type *m, const char *noun, const char *verb)
 	return d->selected_spell;
 }
 
+/**
+ * Run the spell menu, without selections.
+ */
 static void spell_menu_browse(menu_type *m, const char *noun)
 {
 	struct spell_menu_data *d = menu_priv(m);
@@ -223,6 +234,12 @@ static void spell_menu_browse(menu_type *m, const char *noun)
 	screen_load();
 }
 
+
+/**
+ * Interactively select a spell.
+ *
+ * Returns the spell selected, or -1.
+ */
 int get_spell(const object_type *o_ptr, const char *verb,
 		bool (*spell_test)(int spell))
 {
@@ -240,6 +257,9 @@ int get_spell(const object_type *o_ptr, const char *verb,
 	return -1;
 }
 
+/**
+ * Browse the given book.
+ */
 void textui_spell_browse(object_type *o_ptr, int item)
 {
 	menu_type *m;
@@ -265,7 +285,10 @@ void textui_spell_browse(object_type *o_ptr, int item)
 
 /*** Game commands ***/
 
-int spell_collect_from_book(const object_type *o_ptr, int spells[])
+/**
+ * Collect spells from a book into the spells[] array.
+ */
+int spell_collect_from_book(const object_type *o_ptr, int spells[PY_MAX_SPELLS])
 {
 	int i;
 	int n_spells = 0;
@@ -281,6 +304,10 @@ int spell_collect_from_book(const object_type *o_ptr, int spells[])
 	return n_spells;
 }
 
+
+/**
+ * True if at least one spell in spells[] is OK according to spell_test.
+ */
 bool spell_okay_list(bool (*spell_test)(int spell),
 		const int spells[], int n_spells)
 {
@@ -296,11 +323,17 @@ bool spell_okay_list(bool (*spell_test)(int spell),
 	return okay;
 }
 
+/**
+ * True if the spell is castable.
+ */
 bool spell_okay_to_cast(int spell)
 {
 	return (p_ptr->spell_flags[spell] & PY_SPELL_LEARNED);
 }
 
+/**
+ * True if the spell can be studied.
+ */
 bool spell_okay_to_study(int spell)
 {
 	const magic_type *s_ptr = &mp_ptr->info[spell];
@@ -308,6 +341,9 @@ bool spell_okay_to_study(int spell)
 			!(p_ptr->spell_flags[spell] & PY_SPELL_LEARNED);
 }
 
+/**
+ * True if the spell is browsable.
+ */
 bool spell_okay_to_browse(int spell)
 {
 	const magic_type *s_ptr = &mp_ptr->info[spell];
