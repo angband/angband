@@ -35,6 +35,8 @@ static void dump_pref_file(void (*dump)(ang_file *), const char *title, int row)
 	char ftmp[80];
 	char buf[1024];
 
+	screen_save();
+
 	/* Prompt */
 	prt(format("%s to a pref file", title), row, 0);
 	
@@ -45,21 +47,21 @@ static void dump_pref_file(void (*dump)(ang_file *), const char *title, int row)
 	strnfmt(ftmp, sizeof ftmp, "%s.prf", op_ptr->base_name);
 	
 	/* Get a filename */
-	if (!askfor_aux(ftmp, sizeof ftmp, NULL)) return;
-
-	/* Build the filename */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, ftmp);
-	
-	if (!prefs_save(buf, dump, title))
+	if (askfor_aux(ftmp, sizeof ftmp, NULL))
 	{
+		/* Build the filename */
+		path_build(buf, sizeof(buf), ANGBAND_DIR_USER, ftmp);
+	
 		prt("", 0, 0);
-		msg_print("Failed");
-		return;
+		if (prefs_save(buf, dump, title))
+			msg_print(format("Dumped %s", strstr(title, " ") + 1));
+		else
+			msg_print("Failed");
 	}
 
-	/* Message */
-	prt("", 0, 0);
-	msg_print(format("Dumped %s", strstr(title, " ")+1));
+	screen_load();
+
+	return;
 }
 
 static void do_cmd_pref_file_hack(long row);
@@ -1180,7 +1182,7 @@ static menu_action visual_menu_items [] =
 static void visuals_browse_hook(int oid, void *db, const region *loc)
 {
 	message_flush();
-	clear_from(0);
+	clear_from(1);
 }
 
 
@@ -1312,7 +1314,7 @@ static void colors_modify(const char *title, int row)
 static void colors_browse_hook(int oid, void *db, const region *loc)
 {
 	message_flush();
-	clear_from(0);
+	clear_from(1);
 }
 
 
@@ -1392,6 +1394,8 @@ static void do_cmd_delay(const char *name, int row)
 
 	strnfmt(tmp, sizeof(tmp), "%i", op_ptr->delay_factor);
 
+	screen_save();
+
 	/* Prompt */
 	prt("Command: Base Delay Factor", 20, 0);
 
@@ -1407,6 +1411,8 @@ static void do_cmd_delay(const char *name, int row)
 	{
 		op_ptr->delay_factor = (u16b) strtoul(tmp, NULL, 0);
 	}
+
+	screen_load();
 }
 
 
@@ -1420,6 +1426,8 @@ static void do_cmd_hp_warn(const char *name, int row)
 	u16b warn;
 
 	strnfmt(tmp, sizeof(tmp), "%i", op_ptr->hitpoint_warn);
+
+	screen_save();
 
 	/* Prompt */
 	prt("Command: Hitpoint Warning", 20, 0);
@@ -1442,6 +1450,8 @@ static void do_cmd_hp_warn(const char *name, int row)
 
 		op_ptr->hitpoint_warn = warn;
 	}
+
+	screen_load();
 }
 
 
@@ -1454,6 +1464,8 @@ static void do_cmd_lazymove_delay(const char *name, int row)
 	char tmp[4] = "";
 
 	strnfmt(tmp, sizeof(tmp), "%i", lazymove_delay);
+
+	screen_save();
 
 	/* Prompt */
 	prt("Command: Movement Delay Factor", 20, 0);
@@ -1470,6 +1482,8 @@ static void do_cmd_lazymove_delay(const char *name, int row)
 	{
 		lazymove_delay = (u16b) strtoul(tmp, NULL, 0);
 	}
+
+	screen_load();
 }
 
 
@@ -1486,6 +1500,8 @@ static void do_cmd_pref_file_hack(long row)
 {
 	char ftmp[80];
 
+	screen_save();
+
 	/* Prompt */
 	prt("Command: Load a user pref file", row, 0);
 
@@ -1496,21 +1512,24 @@ static void do_cmd_pref_file_hack(long row)
 	strnfmt(ftmp, sizeof ftmp, "%s.prf", op_ptr->base_name);
 
 	/* Ask for a file (or cancel) */
-	if (!askfor_aux(ftmp, sizeof ftmp, NULL)) return;
+	if (askfor_aux(ftmp, sizeof ftmp, NULL))
+	{
+		/* Process the given filename */
+		if (process_pref_file(ftmp))
+		{
+			/* Mention failure */
+			prt("", 0, 0);
+			msg_format("Failed to load '%s'!", ftmp);
+		}
+		else
+		{
+			/* Mention success */
+			prt("", 0, 0);
+			msg_format("Loaded '%s'.", ftmp);
+		}
+	}
 
-	/* Process the given filename */
-	if (process_pref_file(ftmp))
-	{
-		/* Mention failure */
-		prt("", 0, 0);
-		msg_format("Failed to load '%s'!", ftmp);
-	}
-	else
-	{
-		/* Mention success */
-		prt("", 0, 0);
-		msg_format("Loaded '%s'.", ftmp);
-	}
+	screen_load();
 }
 
 
