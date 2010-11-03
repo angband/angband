@@ -30,6 +30,9 @@ static const region SCREEN_REGION = {0, 0, 0, 0};
 /* Erase the contents of a region */
 void region_erase(const region *loc);
 
+/* Given a region with relative values, make them absolute */
+region region_calculate(region loc);
+
 /* Check whether a (mouse) event is inside a region */
 bool region_inside(const region *loc, const ui_event_data *key);
 

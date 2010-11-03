@@ -672,20 +672,8 @@ void menu_release_filter(menu_type *menu)
 
 static bool menu_calc_size(menu_type *menu)
 {
-	/* Start from initial settings */
-	menu->active = menu->boundary;
-
-	/* Calculate term-relative width/height */
-	if (menu->active.width <= 0 || menu->active.page_rows <= 0)
-	{
-		int w, h;
-		Term_get_size(&w, &h);
-
-		if (menu->active.width <= 0)
-			menu->active.width = w + menu->active.width - menu->active.col;
-		if (menu->active.page_rows <= 0)
-			menu->active.page_rows = h + menu->active.page_rows - menu->active.row;
-	}
+	/* Calculate term-relative positions */
+	menu->active = region_calculate(menu->boundary);
 
 	if (menu->title)
 	{
