@@ -252,7 +252,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 
 	h = findhook(p, tok);
 	if (!h) {
-		snprintf(p->errmsg, sizeof(p->errmsg), "%s", tok);
+		my_strcpy(p->errmsg, tok, sizeof(p->errmsg));
 		p->error = PARSE_ERROR_UNDEFINED_DIRECTIVE;
 		mem_free(cline);
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
@@ -282,7 +282,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 		if (!tok)
 		{
 			if (!(s->type & T_OPT)) {
-				snprintf(p->errmsg, sizeof(p->errmsg), "%s", s->name);
+				my_strcpy(p->errmsg, s->name, sizeof(p->errmsg));
 				p->error = PARSE_ERROR_MISSING_FIELD;
 				mem_free(cline);
 				return PARSE_ERROR_MISSING_FIELD;
@@ -304,7 +304,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 			{
 				mem_free(v);
 				mem_free(cline);
-				snprintf(p->errmsg, sizeof(p->errmsg), "%s", s->name);
+				my_strcpy(p->errmsg, s->name, sizeof(p->errmsg));
 				p->error = PARSE_ERROR_NOT_NUMBER;
 				return PARSE_ERROR_NOT_NUMBER;
 			}
@@ -317,7 +317,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 			{
 				mem_free(v);
 				mem_free(cline);
-				snprintf(p->errmsg, sizeof(p->errmsg), "%s", s->name);
+				my_strcpy(p->errmsg, s->name, sizeof(p->errmsg));
 				p->error = PARSE_ERROR_NOT_NUMBER;
 				return PARSE_ERROR_NOT_NUMBER;
 			}
@@ -336,7 +336,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 			{
 				mem_free(v);
 				mem_free(cline);
-				snprintf(p->errmsg, sizeof(p->errmsg), "%s", s->name);
+				my_strcpy(p->errmsg, s->name, sizeof(p->errmsg));
 				p->error = PARSE_ERROR_NOT_RANDOM;
 				return PARSE_ERROR_NOT_RANDOM;
 			}
@@ -569,5 +569,5 @@ int parser_getstate(struct parser *p, struct parser_state *s) {
 
 void parser_setstate(struct parser *p, unsigned int col, const char *msg) {
 	p->colno = col;
-	snprintf(p->errmsg, sizeof(p->errmsg), "%s", msg);
+	my_strcpy(p->errmsg, msg, sizeof(p->errmsg));
 }
