@@ -15,7 +15,10 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "cave.h"
+#include "monster/monster.h"
 #include "object/tvalsval.h"
 
 
@@ -2396,7 +2399,7 @@ static void build_type7(int y0, int x0)
 	}
 
 	/* Message */
-	if (OPT(cheat_room)) msg_format("Lesser vault (%s)", v_name + v_ptr->name);
+	if (OPT(cheat_room)) msg_format("Lesser vault (%s)", v_ptr->name);
 
 	/* Boost the rating */
 	rating += v_ptr->rat;
@@ -2409,7 +2412,7 @@ static void build_type7(int y0, int x0)
 	}
 
 	/* Hack -- Build the vault */
-	build_vault(y0, x0, v_ptr->hgt, v_ptr->wid, v_text + v_ptr->text);
+	build_vault(y0, x0, v_ptr->hgt, v_ptr->wid, v_ptr->text);
 }
 
 
@@ -2432,7 +2435,7 @@ static void build_type8(int y0, int x0)
 	}
 
 	/* Message */
-	if (OPT(cheat_room)) msg_format("Greater vault (%s)", v_name + v_ptr->name);
+	if (OPT(cheat_room)) msg_format("Greater vault (%s)", v_ptr->name);
 
 	/* Boost the rating */
 	rating += v_ptr->rat;
@@ -2445,7 +2448,7 @@ static void build_type8(int y0, int x0)
 	}
 
 	/* Hack -- Build the vault */
-	build_vault(y0, x0, v_ptr->hgt, v_ptr->wid, v_text + v_ptr->text);
+	build_vault(y0, x0, v_ptr->hgt, v_ptr->wid, v_ptr->text);
 }
 
 

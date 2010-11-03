@@ -581,12 +581,6 @@ int store_knowledge = STORE_NONE;
 cptr** name_sections;
 
 /*
- * Array[INVEN_TOTAL] of objects in the player's inventory
- */
-object_type *inventory;
-
-
-/*
  * The size of the "alloc_ego_table"
  */
 s16b alloc_ego_size;
@@ -676,86 +670,45 @@ maxima *z_info;
  * The vault generation arrays
  */
 vault_type *v_info;
-char *v_name;
-char *v_text;
 
-/*
- * The terrain feature arrays
- */
 feature_type *f_info;
-char *f_name;
-char *f_text;
 
-/*
- * The object kind arrays
- */
 object_kind *k_info;
-char *k_name;
-char *k_text;
 
 /*
  * The artifact arrays
  */
 artifact_type *a_info;
-char *a_name;
-char *a_text;
 
 /*
  * The ego-item arrays
  */
 ego_item_type *e_info;
-char *e_name;
-char *e_text;
 flag_cache *slay_cache;
 
 /*
  * The monster race arrays
  */
 monster_race *r_info;
-char *r_name;
-char *r_text;
 
-
-/*
- * The player race arrays
- */
 player_race *p_info;
-char *p_name;
-char *p_text;
-
-/*
- * The player class arrays
- */
 player_class *c_info;
-char *c_name;
-char *c_text;
-
 /*
  * The player history arrays
  */
 hist_type *h_info;
-char *h_text;
 
-/*
- * The shop owner arrays
- */
 owner_type *b_info;
-char *b_name;
-char *b_text;
 
 /*
  * The object flavor arrays
  */
 flavor_type *flavor_info;
-char *flavor_name;
-char *flavor_text;
 
 /*
  * The spell arrays
  */
 spell_type *s_info;
-char *s_name;
-char *s_text;
 
 
 /*

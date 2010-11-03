@@ -676,6 +676,7 @@ bool file_getl(ang_file *f, char *buf, size_t len)
 		buf[i++] = c;
 	}
 
+	buf[i] = '\0';
 	return TRUE;
 }
 

@@ -1,4 +1,5 @@
 #include "angband.h"
+#include "cave.h"
 #include "object/tvalsval.h"
 
 /*

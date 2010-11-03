@@ -379,7 +379,7 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 		}
 
 		/* Assign the template */
-		object_prep(o_ptr, k_idx, a_ptr->alloc_min, RANDOMISE);
+		object_prep(o_ptr, &k_info[k_idx], a_ptr->alloc_min, RANDOMISE);
 
 		/* Mark the item as an artifact */
 		o_ptr->name1 = i;
@@ -876,45 +876,43 @@ static int get_new_attr(bitflag flags[OF_SIZE], const int attrs[], size_t size)
  * Prepare an object based on an object kind.
  * Use the specified randomization aspect
  */
-void object_prep(object_type *o_ptr, int k_idx, int lev, aspect rand_aspect)
+void object_prep(object_type *o_ptr, struct object_kind *k, int lev, aspect rand_aspect)
 {
-	object_kind *k_ptr = &k_info[k_idx];
-
 	/* Clear the record */
 	(void)WIPE(o_ptr, object_type);
 
-	/* Save the kind index */
-	o_ptr->k_idx = k_idx;
+	o_ptr->kind = k;
+	o_ptr->k_idx = k->kidx;
 
 	/* Efficiency -- tval/sval */
-	o_ptr->tval = k_ptr->tval;
-	o_ptr->sval = k_ptr->sval;
+	o_ptr->tval = k->tval;
+	o_ptr->sval = k->sval;
 
 	/* Default number */
 	o_ptr->number = 1;
 
 	/* Default "pval" */
-	o_ptr->pval = randcalc(k_ptr->pval, lev, rand_aspect);
+	o_ptr->pval = randcalc(k->pval, lev, rand_aspect);
 
 	/* Default weight */
-	o_ptr->weight = k_ptr->weight;
+	o_ptr->weight = k->weight;
 	
 	/* Assign charges (wands/staves only) */
 	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF)
-		o_ptr->pval = randcalc(k_ptr->charge, lev, rand_aspect);
+		o_ptr->pval = randcalc(k->charge, lev, rand_aspect);
 
 	/* Default magic */
-	o_ptr->to_h = randcalc(k_ptr->to_h, lev, rand_aspect);
-	o_ptr->to_d = randcalc(k_ptr->to_d, lev, rand_aspect);
-	o_ptr->to_a = randcalc(k_ptr->to_a, lev, rand_aspect);
+	o_ptr->to_h = randcalc(k->to_h, lev, rand_aspect);
+	o_ptr->to_d = randcalc(k->to_d, lev, rand_aspect);
+	o_ptr->to_a = randcalc(k->to_a, lev, rand_aspect);
 
 	/* Default power */
-	o_ptr->ac = k_ptr->ac;
-	o_ptr->dd = k_ptr->dd;
-	o_ptr->ds = k_ptr->ds;
+	o_ptr->ac = k->ac;
+	o_ptr->dd = k->dd;
+	o_ptr->ds = k->ds;
 
 	/* Hack -- cursed items are always "cursed" */
-	if (of_has(k_ptr->flags, OF_LIGHT_CURSE))
+	if (of_has(k->flags, OF_LIGHT_CURSE))
 	    of_on(o_ptr->flags, OF_LIGHT_CURSE);
 }
 
@@ -1267,7 +1265,7 @@ bool make_object(object_type *j_ptr, int lev, bool good, bool great)
 	if (!k_idx) return FALSE;
 
 	/* Prepare the object */
-	object_prep(j_ptr, k_idx, lev, RANDOMISE);
+	object_prep(j_ptr, &k_info[k_idx], lev, RANDOMISE);
 
 	/* Apply magic (allow artifacts) */
 	apply_magic(j_ptr, lev, TRUE, good, great);
@@ -1332,7 +1330,7 @@ void make_gold(object_type *j_ptr, int lev, int coin_type)
 
 	/* Prepare a gold object */
 	k_idx = lookup_kind(TV_GOLD, sval);
-	object_prep(j_ptr, k_idx, lev, RANDOMISE);
+	object_prep(j_ptr, &k_info[k_idx], lev, RANDOMISE);
 	j_ptr->pval = value;
 }
 

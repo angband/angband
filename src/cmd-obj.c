@@ -16,7 +16,9 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "cave.h"
 #include "object/tvalsval.h"
 #include "object/object.h"
 #include "game-cmd.h"
@@ -293,7 +295,7 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 		return;
 	}
 
-	equip_o_ptr = &inventory[slot];
+	equip_o_ptr = &p_ptr->inventory[slot];
 
 	/* If the slot is open, wield and be done */
 	if (!equip_o_ptr->k_idx) 
@@ -374,7 +376,7 @@ static void obj_wield(object_type *o_ptr, int item)
 	/* Usually if the slot is taken we'll just replace the item in the slot,
 	 * but in some cases we need to ask the user which slot they actually
 	 * want to replace */
-	if (inventory[slot].k_idx)
+	if (p_ptr->inventory[slot].k_idx)
 	{
 		if (o_ptr->tval == TV_RING)
 		{
@@ -384,7 +386,7 @@ static void obj_wield(object_type *o_ptr, int item)
 			if (!get_item(&slot, q, s, USE_EQUIP)) return;
 		}
 
-		if (obj_is_ammo(o_ptr) && !object_similar(&inventory[slot], o_ptr))
+		if (obj_is_ammo(o_ptr) && !object_similar(&p_ptr->inventory[slot], o_ptr))
 		{
 			cptr q = "Replace which ammunition? ";
 			cptr s = "Error in obj_wield, please report";
@@ -579,7 +581,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		if (artifact_p(o_ptr))
 		{
 			message(snd, 0, "You activate it.");
-			activation_message(o_ptr, a_text + a_info[o_ptr->name1].effect_msg);
+			activation_message(o_ptr, a_info[o_ptr->name1].effect_msg);
 			level = a_info[o_ptr->name1].level;
 		}
 		else
@@ -710,7 +712,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 /*** Refuelling ***/
 void do_cmd_refill(cmd_code code, cmd_arg args[])
 {
-	object_type *j_ptr = &inventory[INVEN_LIGHT];
+	object_type *j_ptr = &p_ptr->inventory[INVEN_LIGHT];
 	bitflag f[OF_SIZE];
 
 	int item = args[0].item;

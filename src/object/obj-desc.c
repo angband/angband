@@ -41,19 +41,19 @@ void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know)
 		}
 		else if (k_ptr->tval == TV_FOOD && k_ptr->sval > SV_FOOD_MIN_SHROOM)
 		{
-			strnfmt(buf, max, "%s Mushroom", flavor_text + flavor_info[k_ptr->flavor].text);
+			strnfmt(buf, max, "%s Mushroom", flavor_info[k_ptr->flavor].text);
 		}
 		else
 		{
 			/* Plain flavour (e.g. Copper) will do. */
-			my_strcpy(buf, flavor_text + flavor_info[k_ptr->flavor].text, max);
+			my_strcpy(buf, flavor_info[k_ptr->flavor].text, max);
 		}
 	}
 
 	/* Use proper name (Healing, or whatever) */
 	else
 	{
-		cptr str = (k_name + k_ptr->name);
+		cptr str = k_ptr->name;
 
 		if (k_ptr->tval == TV_FOOD && k_ptr->sval > SV_FOOD_MIN_SHROOM)
 		{
@@ -115,14 +115,14 @@ static const char *obj_desc_get_modstr(const object_type *o_ptr)
 		case TV_ROD:
 		case TV_POTION:
 		case TV_FOOD:
-			return (flavor_text + flavor_info[k_ptr->flavor].text);
+			return flavor_info[k_ptr->flavor].text;
 
 		case TV_SCROLL:
 			return scroll_adj[o_ptr->sval];
 
 		case TV_MAGIC_BOOK:
 		case TV_PRAYER_BOOK:
-			return (k_name + k_ptr->name);
+			return k_ptr->name;
 	}
 
 	return "";
@@ -142,7 +142,7 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 
 	/* Known artifacts get special treatment */
 	if (artifact_p(o_ptr) && aware)
-		return (k_name + k_ptr->name);
+		return k_ptr->name;
 
 	/* Analyze the object */
 	switch (o_ptr->tval)
@@ -171,7 +171,7 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 		case TV_HARD_ARMOR:
 		case TV_DRAG_ARMOR:
 		case TV_LIGHT:
-			return (k_name + k_ptr->name);
+			return k_ptr->name;
 
 		case TV_AMULET:
 			return (show_flavor ? "& # Amulet~" : "& Amulet~");
@@ -204,7 +204,7 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 			if (o_ptr->sval > SV_FOOD_MIN_SHROOM)
 				return (show_flavor ? "& # Mushroom~" : "& Mushroom~");
 			else
-				return (k_name + k_ptr->name);
+				return k_ptr->name;
 	}
 
 	return "(nothing)";
@@ -398,13 +398,13 @@ static size_t obj_desc_name(char *buf, size_t max, size_t end,
 	/** Append extra names of various kinds **/
 
 	if ((object_name_is_visible(o_ptr) || known) && o_ptr->name1)
-		strnfcat(buf, max, &end, " %s", a_name + a_info[o_ptr->name1].name);
+		strnfcat(buf, max, &end, " %s", a_info[o_ptr->name1].name);
 
 	else if ((spoil && o_ptr->name2) || object_ego_is_visible(o_ptr))
-		strnfcat(buf, max, &end, " %s", e_name + e_info[o_ptr->name2].name);
+		strnfcat(buf, max, &end, " %s", e_info[o_ptr->name2].name);
 
 	else if (aware && !artifact_p(o_ptr) && (k_ptr->flavor || k_ptr->tval == TV_SCROLL))
-		strnfcat(buf, max, &end, " of %s", k_name + k_ptr->name);
+		strnfcat(buf, max, &end, " of %s", k_ptr->name);
 
 	return end;
 }
@@ -806,7 +806,7 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr,
 
 	if (o_ptr->tval == TV_GOLD)
 		return strnfmt(buf, max, "%d gold pieces worth of %s%s",
-				o_ptr->pval, k_name + k_ptr->name,
+				o_ptr->pval, k_ptr->name,
 				squelch_item_ok(o_ptr) ? " {squelch}" : "");
 	else if (!o_ptr->tval)
 		return strnfmt(buf, max, "(nothing)");

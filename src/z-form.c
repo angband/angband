@@ -697,7 +697,7 @@ char *vformat(cptr fmt, va_list vp)
 	if (!format_buf)
 	{
 		format_len = 1024;
-		format_buf = C_RNEW(format_len, char);
+		format_buf = mem_zalloc(format_len);
 		format_buf[0] = 0;
 	}
 

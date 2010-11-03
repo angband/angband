@@ -16,11 +16,15 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "cave.h"
+#include "history.h"
+#include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "store.h"
 #include "ui.h"
 #include "ui-menu.h"
-#include "store.h"
 
 /* Flag value for missing array entry */
 #define MISSING -17
@@ -85,7 +89,7 @@ static int default_join_cmp(const void *a, const void *b)
 static int default_group(int oid) { return default_join[oid].gid; }
 
 
-static int *obj_group_order;
+static int *obj_group_order = NULL;
 
 /*
  * Description of each monster group.
@@ -946,7 +950,7 @@ static void display_monster(int col, int row, bool cursor, int oid)
 	byte c = r_ptr->x_char;
 
 	/* Display the name */
-	c_prt(attr, r_name + r_ptr->name, row, col);
+	c_prt(attr, r_ptr->name, row, col);
 
 #ifdef UNANGBAND
 	if (use_dbltile || use_trptile)
@@ -986,7 +990,7 @@ static int m_cmp_race(const void *a, const void *b)
 	c = r_a->level - r_b->level;
 	if (c) return c;
 
-	return strcmp(r_name + r_a->name, r_name + r_b->name);
+	return strcmp(r_a->name, r_b->name);
 }
 
 static char *m_xchar(int oid) { return &r_info[default_join[oid].oid].x_char; }
@@ -1195,9 +1199,9 @@ static void desc_art_fake(int a_idx)
 	{
 		for (i = 0; i < INVEN_TOTAL; i++)
 		{
-			if (inventory[i].name1 == a_idx)
+			if (p_ptr->inventory[i].name1 == a_idx)
 			{
-				o_ptr = &inventory[i];
+				o_ptr = &p_ptr->inventory[i];
 				lost = FALSE;
 				break;
 			}
@@ -1266,7 +1270,7 @@ static int a_cmp_tval(const void *a, const void *b)
 	/* order by */
 	c = a_a->sval - a_b->sval;
 	if (c) return c;
-	return strcmp(a_name+a_a->name, a_name+a_b->name);
+	return strcmp(a_a->name, a_b->name);
 }
 
 static const char *kind_name(int gid) { return object_text_order[gid].name; }
@@ -1297,7 +1301,7 @@ static bool artifact_is_known(int a_idx)
     /* Check inventory for the same */
 	for (i = 0; i < INVEN_TOTAL; i++)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Ignore non-objects */
 		if (!o_ptr->k_idx) continue;
@@ -1376,7 +1380,7 @@ static void display_ego_item(int col, int row, bool cursor, int oid)
 	byte attr = curs_attrs[0 != (int)e_ptr->everseen][0 != (int)cursor];
 
 	/* Display the name */
-	c_prt(attr, e_name + e_ptr->name, row, col);
+	c_prt(attr, e_ptr->name, row, col);
 }
 
 /*
@@ -1403,7 +1407,7 @@ static void desc_ego_fake(int oid)
 
 	/* Dump the name */
 	c_prt(TERM_L_BLUE, format("%s %s", ego_grp_name(default_group(oid)),
-	                                   e_name + e_ptr->name), 0, 0);
+	                                   e_ptr->name), 0, 0);
 
 	/* Begin recall */
 	Term_gotoxy(0, 1);
@@ -1412,7 +1416,7 @@ static void desc_ego_fake(int oid)
 	if (e_ptr->text)
 	{
 		int x, y;
-		text_out("%s", e_text + e_ptr->text);
+		text_out("%s", e_ptr->text);
 		Term_locate(&x, &y);
 		Term_gotoxy(0, y+1);
 	}
@@ -1454,7 +1458,7 @@ static int e_cmp_tval(const void *a, const void *b)
 	if (c) return c;
 
 	/* Order by */
-	return strcmp(e_name + ea->name, e_name + eb->name);
+	return strcmp(ea->name, eb->name);
 }
 
 /*
@@ -1612,7 +1616,7 @@ static void desc_obj_fake(int k_idx)
 	object_wipe(o_ptr);
 
 	/* Create the artifact */
-	object_prep(o_ptr, k_idx, 0, EXTREMIFY);
+	object_prep(o_ptr, k_ptr, 0, EXTREMIFY);
 
 	/* Hack -- its in the store */
 	if (k_info[k_idx].aware) o_ptr->ident |= (IDENT_STORE);
@@ -1664,14 +1668,14 @@ static int o_cmp_tval(const void *a, const void *b)
 
 		default:
 			if (k_a->aware)
-				return strcmp(k_name + k_a->name, k_name + k_b->name);
+				return strcmp(k_a->name, k_b->name);
 
 			/* Then in tried order */
 			c = k_a->tried - k_b->tried;
 			if (c) return -c;
 
-			return strcmp(flavor_text + flavor_info[k_a->flavor].text,
-			              flavor_text + flavor_info[k_b->flavor].text);
+			return strcmp(flavor_info[k_a->flavor].text,
+			              flavor_info[k_b->flavor].text);
 	}
 
 	return k_a->sval - k_b->sval;
@@ -1846,7 +1850,7 @@ static void display_feature(int col, int row, bool cursor, int oid )
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
 
 	/* Display the name */
-	c_prt(attr, f_name + f_ptr->name, row, col);
+	c_prt(attr, f_ptr->name, row, col);
 
 #ifdef UNANGBAND
 	if (use_dbltile || use_trptile) return;
@@ -1870,7 +1874,7 @@ static int f_cmp_fkind(const void *a, const void *b)
 	if (c) return c;
 
 	/* order by feature name */
-	return strcmp(f_name + fa->name, f_name + fb->name);
+	return strcmp(fa->name, fb->name);
 }
 
 static const char *fkind_name(int gid) { return feature_group_text[gid]; }
@@ -1961,9 +1965,8 @@ static menu_type knowledge_menu;
 
 
 /* Keep macro counts happy. */
-static void cleanup_cmds(void)
-{
-	FREE(obj_group_order);
+static void cleanup_cmds(void) {
+	mem_free(obj_group_order);
 }
 
 void init_cmd_know(void)

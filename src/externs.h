@@ -137,7 +137,6 @@ extern quest *q_list;
 extern store_type *store;
 extern int store_knowledge;
 extern cptr** name_sections;
-extern object_type *inventory;
 extern s16b alloc_ego_size;
 extern alloc_entry *alloc_ego_table;
 extern s16b alloc_race_size;
@@ -154,43 +153,22 @@ extern const player_magic *mp_ptr;
 extern player_other *op_ptr;
 extern player_type *p_ptr;
 extern vault_type *v_info;
-extern char *v_name;
-extern char *v_text;
 extern feature_type *f_info;
-extern char *f_name;
-extern char *f_text;
 extern object_kind *k_info;
-extern char *k_name;
 extern char *k_text;
 extern artifact_type *a_info;
-extern char *a_name;
-extern char *a_text;
 extern ego_item_type *e_info;
-extern char *e_name;
 extern char *e_text;
 extern monster_race *r_info;
-extern char *r_name;
-extern char *r_text;
 extern player_race *p_info;
-extern char *p_name;
-extern char *p_text;
 extern player_class *c_info;
-extern char *c_name;
-extern char *c_text;
 extern hist_type *h_info;
-extern char *h_text;
 extern owner_type *b_info;
-extern char *b_name;
-extern char *b_text;
 extern byte *g_info;
 extern char *g_name;
 extern char *g_text;
 extern flavor_type *flavor_info;
-extern char *flavor_name;
-extern char *flavor_text;
 extern spell_type *s_info;
-extern char *s_name;
-extern char *s_text;
 extern s16b spell_list[MAX_REALMS][BOOKS_PER_REALM][SPELLS_PER_BOOK];
 
 extern const char *ANGBAND_SYS;
@@ -263,43 +241,6 @@ void button_init(button_add_f add, button_kill_f kill);
 char button_get_key(int x, int y);
 size_t button_print(int row, int col);
 
-/* cave.c */
-extern int distance(int y1, int x1, int y2, int x2);
-extern bool los(int y1, int x1, int y2, int x2);
-extern bool no_light(void);
-extern bool cave_valid_bold(int y, int x);
-extern byte get_color(byte a, int attr, int n);
-extern bool feat_supports_lighting(int feat);
-extern void map_info(unsigned x, unsigned y, grid_data *g);
-extern void move_cursor_relative(int y, int x);
-extern void print_rel(char c, byte a, int y, int x);
-extern void note_spot(int y, int x);
-extern void light_spot(int y, int x);
-extern void prt_map(void);
-extern void display_map(int *cy, int *cx);
-extern void do_cmd_view_map(void);
-extern errr vinfo_init(void);
-extern void forget_view(void);
-extern void update_view(void);
-extern void forget_flow(void);
-extern void update_flow(void);
-extern void map_area(void);
-extern void wiz_light(void);
-extern void wiz_dark(void);
-extern void town_illuminate(bool daytime);
-extern void cave_set_feat(int y, int x, int feat);
-extern int project_path(u16b *gp, int range, \
-                         int y1, int x1, int y2, int x2, int flg);
-extern bool projectable(int y1, int x1, int y2, int x2, int flg);
-extern void scatter(int *yp, int *xp, int y, int x, int d, int m);
-extern void health_track(int m_idx);
-extern void monster_race_track(int r_idx);
-extern void track_object(int item);
-extern void track_object_kind(int k_idx);
-extern void disturb(int stop_search, int unused_flag);
-extern bool is_quest(int level);
-extern bool dtrap_edge(int y, int x);
-
 /* cmd1.c */
 extern bool search(bool verbose);
 extern byte py_pickup(int pickup);
@@ -351,24 +292,6 @@ void place_closed_door(int y, int x);
 void place_random_door(int y, int x);
 extern void generate_cave(void);
 
-/* history.c */
-void history_clear(void);
-size_t history_get_num(void);
-bool history_add_full(u16b type, byte a_idx, s16b dlev, s16b clev, s32b turn, const char *text);
-bool history_add(const char *event, u16b type, byte a_idx);
-bool history_add_artifact(byte a_idx, bool known, bool found);
-void history_unmask_unknown(void);
-bool history_lose_artifact(byte a_idx);
-void history_display(void);
-void dump_history(ang_file *file);
-bool history_is_artifact_known(byte a_idx);
-
-/* init2.c */
-extern void init_file_paths(const char *configpath, const char *libpath, const char *datapath);
-extern void create_needed_dirs(void);
-extern bool init_angband(void);
-extern void cleanup_angband(void);
-
 /* load.c */
 extern bool old_load(void);
 
@@ -379,43 +302,6 @@ bool make_attack_normal(int m_idx);
 /* melee2.c */
 extern bool make_attack_spell(int m_idx);
 extern void process_monsters(byte minimum_energy);
-
-/* monster1.c */
-extern void describe_monster(int r_idx, bool spoilers);
-extern void roff_top(int r_idx);
-extern void screen_roff(int r_idx);
-extern void display_roff(int r_idx);
-extern int lookup_monster(const char *name);
-
-/* monster2.c */
-extern bool wake_monster(monster_type *m_ptr);
-extern void delete_monster_idx(int i);
-extern void delete_monster(int y, int x);
-extern void compact_monsters(int size);
-extern void wipe_mon_list(void);
-extern s16b mon_pop(void);
-extern void get_mon_num_prep(void);
-extern s16b get_mon_num(int level);
-extern void display_monlist(void);
-extern void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode);
-extern void lore_do_probe(int m_idx);
-extern void lore_treasure(int m_idx, int num_item, int num_gold);
-extern void update_mon(int m_idx, bool full);
-extern void update_monsters(bool full);
-extern s16b monster_carry(int m_idx, object_type *j_ptr);
-extern void monster_swap(int y1, int x1, int y2, int x2);
-extern s16b player_place(int y, int x);
-extern s16b monster_place(int y, int x, monster_type *n_ptr);
-extern bool place_monster_aux(int y, int x, int r_idx, bool slp, bool grp);
-extern bool place_monster(int y, int x, int depth, bool slp, bool grp);
-extern bool alloc_monster(int dis, bool slp, int depth);
-extern bool summon_specific(int y1, int x1, int lev, int type, int delay);
-extern bool multiply_monster(int m_idx);
-extern void message_pain(int m_idx, int dam);
-extern void update_smart_learn(int m_idx, int what);
-void monster_death(int m_idx);
-bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note);
-extern void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, bitflag flags[RF_SIZE]);
 
 /* pathfind.c */
 extern bool findpath(int y, int x);
@@ -445,7 +331,7 @@ errr process_pref_file(cptr name);
 extern errr do_randart(u32b randart_seed, bool full);
 
 /* randname.c */
-extern size_t randname_make(randname_type name_type, size_t min, size_t max, char *word_buf, size_t buflen);
+extern size_t randname_make(randname_type name_type, size_t min, size_t max, char *word_buf, size_t buflen, const char ***wordlist);
 
 /* score.c */
 extern void enter_score(time_t *death_time);

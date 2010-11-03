@@ -37,10 +37,12 @@ typedef struct
  * be moved out of this array since they are not read from
  * "monster.txt".
  */
-typedef struct
+typedef struct monster_race
 {
-	u32b name;				/* Name (offset) */
-	u32b text;				/* Text (offset) */
+	struct monster_race *next;
+	unsigned int ridx;
+	char *name;
+	char *text;
 
 	u16b avg_hp;				/* Average HP for this creature */
 

@@ -15,11 +15,13 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#include "angband.h"
-#include "object/tvalsval.h"
 
+#include "angband.h"
+#include "cave.h"
 #include "cmds.h"
 #include "game-cmd.h"
+#include "monster/monster.h"
+#include "object/tvalsval.h"
 
 /*
  * Go up one level
@@ -1345,7 +1347,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 
 
 	/* Get the trap name */
-	name = (f_name + f_info[cave_feat[y][x]].name);
+	name = f_info[cave_feat[y][x]].name;
 
 	/* Get the "disarm" factor */
 	i = p_ptr->state.skills[SKILL_DISARM];
@@ -1825,7 +1827,7 @@ static bool get_spike(int *ip)
 	/* Check every item in the pack */
 	for (i = 0; i < INVEN_PACK; i++)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;

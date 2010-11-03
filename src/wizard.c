@@ -15,11 +15,14 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-#include "wizard.h"
+#include "cave.h"
 #include "cmds.h"
+#include "monster/monster.h"
 #include "object/tvalsval.h"
 #include "ui-menu.h"
+#include "wizard.h"
 
 
 #ifdef ALLOW_DEBUG
@@ -376,7 +379,7 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 
 
 
-const static region wiz_create_item_area = { 0, 0, 0, 0 };
+static const region wiz_create_item_area = { 0, 0, 0, 0 };
 
 /** Object kind selection */
 void wiz_create_item_subdisplay(menu_type *m, int oid, bool cursor,
@@ -406,7 +409,7 @@ bool wiz_create_item_subaction(menu_type *m, const ui_event_data *e, int oid)
 	i_ptr = &object_type_body;
 
 	/* Create the item */
-	object_prep(i_ptr, choices[oid], p_ptr->depth, RANDOMISE);
+	object_prep(i_ptr, &k_info[choices[oid]], p_ptr->depth, RANDOMISE);
 
 	/* Apply magic (no messages, no artifacts) */
 	apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
@@ -638,21 +641,21 @@ static void wiz_reroll_item(object_type *o_ptr)
 		/* Apply normal magic, but first clear object */
 		else if (ch == 'n' || ch == 'N')
 		{
-			object_prep(i_ptr, o_ptr->k_idx, p_ptr->depth, RANDOMISE);
+			object_prep(i_ptr, o_ptr->kind, p_ptr->depth, RANDOMISE);
 			apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
 		}
 
 		/* Apply good magic, but first clear object */
 		else if (ch == 'g' || ch == 'g')
 		{
-			object_prep(i_ptr, o_ptr->k_idx, p_ptr->depth, RANDOMISE);
+			object_prep(i_ptr, o_ptr->kind, p_ptr->depth, RANDOMISE);
 			apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, FALSE);
 		}
 
 		/* Apply great magic, but first clear object */
 		else if (ch == 'e' || ch == 'e')
 		{
-			object_prep(i_ptr, o_ptr->k_idx, p_ptr->depth, RANDOMISE);
+			object_prep(i_ptr, o_ptr->kind, p_ptr->depth, RANDOMISE);
 			apply_magic(i_ptr, p_ptr->depth, FALSE, TRUE, TRUE);
 		}
 	}
@@ -1034,7 +1037,6 @@ static void do_cmd_wiz_play(void)
 }
 
 
-
 /*
  * Create the artifact with the specified number
  */
@@ -1062,7 +1064,7 @@ static void wiz_create_artifact(int a_idx)
 	if (!k_idx) return;
 
 	/* Create the artifact */
-	object_prep(i_ptr, k_idx, a_ptr->alloc_min, RANDOMISE);
+	object_prep(i_ptr, &k_info[k_idx], a_ptr->alloc_min, RANDOMISE);
 
 	/* Save the name */
 	i_ptr->name1 = a_idx;
@@ -1211,7 +1213,7 @@ static void do_cmd_wiz_learn(void)
 			i_ptr = &object_type_body;
 
 			/* Prepare object */
-			object_prep(i_ptr, i, 0, MAXIMISE);
+			object_prep(i_ptr, k_ptr, 0, MAXIMISE);
 
 			/* Awareness */
 			object_flavor_aware(i_ptr);
@@ -1474,7 +1476,7 @@ static void wiz_test_kind(int tval)
 		if (k_idx)
 		{
 			/* Create the item */
-			object_prep(i_ptr, k_idx, p_ptr->depth, RANDOMISE);
+			object_prep(i_ptr, &k_info[k_idx], p_ptr->depth, RANDOMISE);
 
 			/* Apply magic (no messages, no artifacts) */
 			apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);

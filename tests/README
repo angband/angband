@@ -1,0 +1,15 @@
+elly/angband end-to-end tests
+
+This directory contains the end-to-end tests. The important script here is
+run-test, which runs angband with -mtest, feeds it some input, and compares the
+output against the expected output.
+
+Layout of a test:
+/tests/$suite/$test:
+	/input: Input to supply to the test frontend.
+	/output: Expected output from the test.
+	/matcher: Optional; an arbitrary program to match input against output;
+	          will be run instead of diff(1).
+	/run.out: Optional; output from last run of this test.
+
+For examples, look in /tests/trivial.

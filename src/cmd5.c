@@ -16,7 +16,9 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "cave.h"
 #include "object/tvalsval.h"
 #include "game-cmd.h"
 
@@ -130,7 +132,7 @@ static void spell_menu_browser(int oid, void *data, const region *loc)
 	screen_save();
 
 	Term_gotoxy(loc->col, loc->row + loc->page_rows);
-	text_out("\n%s\n", s_text + s_info[(cp_ptr->spell_book == TV_MAGIC_BOOK) ? spell : spell + PY_MAX_SPELLS].text);
+	text_out("\n%s\n", s_info[(cp_ptr->spell_book == TV_MAGIC_BOOK) ? spell : spell + PY_MAX_SPELLS].text);
 
 	/* XXX */
 	text_out_pad = 0;
