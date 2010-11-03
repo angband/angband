@@ -287,13 +287,24 @@ static ui_event_data column_process_direction(menu_type *m, int dir)
 {
 	ui_event_data out;
 
-	out.type = EVT_MOVE;
+	int n = m->filter_list ? m->filter_count : m->count;
+
+	region *loc = &m->active;
+	int rows_per_page = loc->page_rows;
+	int cols = (n + rows_per_page - 1) / rows_per_page;
 
 	if (ddx[dir])
-		m->cursor += ddx[dir] * m->active.page_rows;
+		m->cursor += ddx[dir] * rows_per_page;
 	if (ddy[dir])
 		m->cursor += ddy[dir];
 
+	/* Adjust to the correct locations (roughly) */
+	if (m->cursor > n)
+		m->cursor = m->cursor % rows_per_page;
+	else if (m->cursor < 0)
+		m->cursor = (rows_per_page * cols) + m->cursor;
+
+	out.type = EVT_MOVE;
 	return out;
 }
 
