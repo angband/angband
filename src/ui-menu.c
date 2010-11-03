@@ -394,6 +394,11 @@ void menu_refresh(menu_type *menu)
 	if (menu->browse_hook && oid >= 0)
 		menu->browse_hook(oid, menu->menu_data, loc);
 
+
+	if (menu->header)
+		Term_putstr(loc->col, loc->row - 1, loc->width,
+				TERM_WHITE, menu->header);
+
 	menu->skin->display_list(menu, menu->cursor, &menu->top, loc);
 }
 
@@ -698,6 +703,12 @@ static bool menu_calc_size(menu_type *menu)
 		menu->active.row += 2;
 		menu->active.page_rows -= 2;
 		menu->active.col += 4;
+	}
+
+	if (menu->header)
+	{
+		menu->active.row++;
+		menu->active.page_rows--;
 	}
 
 	if (menu->prompt)

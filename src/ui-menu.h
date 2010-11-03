@@ -156,6 +156,7 @@ enum
 struct menu_type
 {
 	/** Public variables **/
+	const char *header;
 	const char *title;
 	const char *prompt;
 

@@ -151,7 +151,7 @@ static menu_type *spell_menu_new(const object_type *o_ptr,
 	menu_type *m = menu_new(MN_SKIN_SCROLL, &spell_menu_iter);
 	struct spell_menu_data *d = mem_alloc(sizeof *d);
 
-	region loc = { -60, 2, 60, -99 };
+	region loc = { -60, 1, 60, -99 };
 
 	/* collect spells from object */
 	d->n_spells = spell_collect_from_book(o_ptr, d->spells);
@@ -170,12 +170,13 @@ static menu_type *spell_menu_new(const object_type *o_ptr,
 	menu_setpriv(m, d->n_spells, d);
 
 	/* set flags */
+	m->header = "Name                             Lv Mana Fail Info";
 	m->flags = MN_CASELESS_TAGS;
 	m->selections = lower_case;
 	m->browse_hook = spell_menu_browser;
 
 	/* set size */
-	loc.page_rows = d->n_spells;
+	loc.page_rows = d->n_spells + 1;
 	menu_layout(m, &loc);
 
 	return m;
@@ -200,8 +201,6 @@ static int spell_menu_select(menu_type *m, const char *noun, const char *verb)
 
 	region_erase_bordered(&m->active);
 	prt(format("%^s which %s? ", verb, noun), 0, 0);
-	prt("Name", 1, Term->wid - 60);
-	prt("Lv Mana Fail Info", 1, Term->wid - 27);
 
 	screen_save();
 	menu_select(m, 0);
@@ -223,8 +222,6 @@ static void spell_menu_browse(menu_type *m, const char *noun)
 
 	region_erase_bordered(&m->active);
 	prt(format("Browsing %ss.  Press Escape to exit.", noun), 0, 0);
-	prt("Name", 1, Term->wid - 60);
-	prt("Lv Mana Fail Info", 1, Term->wid - 27);
 
 	screen_save();
 	d->browse = TRUE;
