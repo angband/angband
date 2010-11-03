@@ -19,6 +19,7 @@
 #include "wizard.h"
 #include "cmds.h"
 #include "object/tvalsval.h"
+#include "ui-menu.h"
 
 
 #ifdef ALLOW_DEBUG
@@ -374,19 +375,79 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 }
 
 
+
+const static region wiz_create_item_area = { 0, 0, 0, 0 };
+
+/** Object kind selection */
+void wiz_create_item_subdisplay(menu_type *m, int oid, bool cursor,
+		int row, int col, int width)
+{
+	int *choices = menu_priv(m);
+	char buf[80];
+
+	object_kind_name(buf, sizeof buf, choices[oid], TRUE);
+	c_prt(curs_attrs[CURS_KNOWN][0 != cursor], buf, row, col);
+}
+
+bool wiz_create_item_subaction(menu_type *m, const ui_event_data *e, int oid)
+{
+	int *choices = menu_priv(m);
+
+	object_kind *kind = &k_info[choices[oid]];
+
+	object_type *i_ptr;
+	object_type object_type_body;
+
+	if (e->type != EVT_SELECT)
+		return TRUE;
+
+
+	/* Get local object */
+	i_ptr = &object_type_body;
+
+	/* Create the item */
+	object_prep(i_ptr, choices[oid], p_ptr->depth, RANDOMISE);
+
+	/* Apply magic (no messages, no artifacts) */
+	apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
+
+	/* Mark as cheat, and where created */
+	i_ptr->origin = ORIGIN_CHEAT;
+	i_ptr->origin_depth = p_ptr->depth;
+
+	if (kind->tval == TV_GOLD)
+		make_gold(i_ptr, p_ptr->depth, kind->sval);
+
+	/* Drop the object from heaven */
+	drop_near(i_ptr, 0, p_ptr->py, p_ptr->px, TRUE);
+
+	return FALSE;
+}
+
+menu_iter wiz_create_item_submenu =
+{
+	NULL,
+	NULL,
+	wiz_create_item_subdisplay,
+	wiz_create_item_subaction,
+	NULL
+};
+
+/** Object base kind selection **/
+
 /*
  * A structure to hold a tval and its description
  */
-typedef struct tval_desc
+struct tval_desc
 {
 	int tval;
-	cptr desc;
-} tval_desc;
+	const char *desc;
+};
 
 /*
  * A list of tvals and their textual names
  */
-static const tval_desc tvals[] =
+static struct tval_desc tvals[] =
 {
 	{ TV_SWORD,             "Sword"                },
 	{ TV_POLEARM,           "Polearm"              },
@@ -422,115 +483,86 @@ static const tval_desc tvals[] =
 	{ TV_SKELETON,          "Skeletons"            },
 	{ TV_BOTTLE,            "Empty bottle"         },
 	{ TV_JUNK,              "Junk"                 },
-	{ TV_GOLD,              "Gold"                 },
-	{ 0,                    NULL                   }
+	{ TV_GOLD,              "Gold"                 }
+};
+
+void wiz_create_item_display(menu_type *m, int oid, bool cursor,
+		int row, int col, int width)
+{
+	struct tval_desc *tvals = menu_priv(m);
+	c_prt(curs_attrs[CURS_KNOWN][0 != cursor], tvals[oid].desc, row, col);
+}
+
+bool wiz_create_item_action(menu_type *m, const ui_event_data *e, int oid)
+{
+	if (e->type != EVT_SELECT)
+		return TRUE;
+
+	ui_event_data ret;
+	menu_type *menu;
+
+	int choice[60];
+	int n_choices;
+
+	int i;
+
+	for (n_choices = 0, i = 1; (n_choices < 60) && (i < z_info->k_max); i++)
+	{
+		object_kind *kind = &k_info[i];
+
+		if (kind->tval != tvals[oid].tval ||
+				of_has(kind->flags, OF_INSTA_ART))
+			continue;
+
+		choice[n_choices++] = i;
+	}
+
+	screen_save();
+	clear_from(0);
+
+	menu = menu_new(MN_SKIN_COLUMNS, &wiz_create_item_submenu);
+	menu->selections = all_letters;
+	menu->title = format("What kind of %s?", tvals[oid].desc);
+
+	menu_setpriv(menu, n_choices, choice);
+	menu_layout(menu, &wiz_create_item_area);
+	ret = menu_select(menu, 0);
+
+	screen_load();
+
+	return (ret.type == EVT_ESCAPE);
+}
+
+menu_iter wiz_create_item_menu =
+{
+	NULL,
+	NULL,
+	wiz_create_item_display,
+	wiz_create_item_action,
+	NULL
 };
 
 
-
 /*
- * Get an object kind for creation (or zero)
- *
- * List up to 60 choices in three columns
+ * Choose and create an instance of an object kind
  */
-static int wiz_create_itemtype(void)
+static void wiz_create_item(void)
 {
-	int i, num, max_num;
-	int col, row;
-	int tval;
+	menu_type *menu = menu_new(MN_SKIN_COLUMNS, &wiz_create_item_menu);
 
-	cptr tval_desc;
-	char ch;
+	menu->selections = all_letters;
+	menu->title = "What kind of object?";
 
-	int choice[60];
-	static const char choice_name[] = "abcdefghijklmnopqrst"
-	                                  "ABCDEFGHIJKLMNOPQRST"
-	                                  "0123456789:;<=>?@%&*";
-	const char *cp;
+	screen_save();
+	clear_from(0);
 
-	char buf[160];
+	menu_setpriv(menu, N_ELEMENTS(tvals), tvals);
+	menu_layout(menu, &wiz_create_item_area);
+	menu_select(menu, 0);
 
-
-	/* Clear screen */
-	Term_clear();
-
-	/* Print all tval's and their descriptions */
-	for (num = 0; (num < 60) && tvals[num].tval; num++)
-	{
-		row = 2 + (num % 20);
-		col = 30 * (num / 20);
-		ch  = choice_name[num];
-		prt(format("[%c] %s", ch, tvals[num].desc), row, col);
-	}
-
-	/* We need to know the maximal possible tval_index */
-	max_num = num;
-
-	/* Choose! */
-	if (!get_com("Get what type of object? ", &ch)) return (0);
-
-	/* Analyze choice */
-	num = -1;
-	if ((cp = strchr(choice_name, ch)) != NULL)
-		num = cp - choice_name;
-
-	/* Bail out if choice is illegal */
-	if ((num < 0) || (num >= max_num)) return (0);
-
-	/* Base object type chosen, fill in tval */
-	tval = tvals[num].tval;
-	tval_desc = tvals[num].desc;
-
-
-	/*** And now we go for k_idx ***/
-
-	/* Clear screen */
-	Term_clear();
-
-	/* We have to search the whole itemlist. */
-	for (num = 0, i = 1; (num < 60) && (i < z_info->k_max); i++)
-	{
-		object_kind *k_ptr = &k_info[i];
-
-		/* Analyze matching items */
-		if (k_ptr->tval == tval)
-		{
-			/* Hack -- Skip instant artifacts */
-			if (of_has(k_ptr->flags, OF_INSTA_ART)) continue;
-
-			/* Prepare it */
-			row = 2 + (num % 20);
-			col = 30 * (num / 20);
-			ch  = choice_name[num];
-
-			/* Get the "name" of object "i" */
-			object_kind_name(buf, sizeof buf, i, TRUE);
-
-			/* Print it */
-			prt(format("[%c] %s", ch, buf), row, col);
-
-			/* Remember the object index */
-			choice[num++] = i;
-		}
-	}
-
-	/* Me need to know the maximal possible remembered object_index */
-	max_num = num;
-
-	/* Choose! */
-	if (!get_com(format("What Kind of %s? ", tval_desc), &ch)) return (0);
-
-	/* Analyze choice */
-	num = -1;
-	if ((cp = strchr(choice_name, ch)) != NULL)
-		num = cp - choice_name;
-
-	/* Bail out if choice is "illegal" */
-	if ((num < 0) || (num >= max_num)) return (0);
-
-	/* And return successful */
-	return (choice[num]);
+	screen_load();
 }
+
 
 
 /*
@@ -1001,61 +1033,6 @@ static void do_cmd_wiz_play(void)
 	}
 }
 
-
-/*
- * Wizard routine for creating objects
- *
- * Note that wizards cannot create objects on top of other objects.
- *
- * Hack -- this routine always makes a "dungeon object", and applies
- * magic to it, and attempts to decline cursed items. XXX XXX XXX
- */
-static void wiz_create_item(void)
-{
-	int py = p_ptr->py;
-	int px = p_ptr->px;
-
-	object_type *i_ptr;
-	object_type object_type_body;
-
-	int k_idx;
-
-
-	/* Save screen */
-	screen_save();
-
-	/* Get object base type */
-	k_idx = wiz_create_itemtype();
-
-	/* Load screen */
-	screen_load();
-
-
-	/* Return if failed */
-	if (!k_idx) return;
-
-	/* Get local object */
-	i_ptr = &object_type_body;
-
-	/* Create the item */
-	object_prep(i_ptr, k_idx, p_ptr->depth, RANDOMISE);
-
-	/* Apply magic (no messages, no artifacts) */
-	apply_magic(i_ptr, p_ptr->depth, FALSE, FALSE, FALSE);
-
-	/* Mark as cheat, and where created */
-	i_ptr->origin = ORIGIN_CHEAT;
-	i_ptr->origin_depth = p_ptr->depth;
-
-	if (k_info[k_idx].tval == TV_GOLD)
-		make_gold(i_ptr, p_ptr->depth, k_info[k_idx].sval);
-
-	/* Drop the object from heaven */
-	drop_near(i_ptr, 0, py, px, TRUE);
-
-	/* All done */
-	msg_print("Allocated.");
-}
 
 
 /*
