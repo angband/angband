@@ -123,6 +123,9 @@ typedef struct
 
 	/* Specifies the relative menu item given the state of the menu */
 	char (*get_tag)(menu_type *menu, int pos);
+
+	/* Process a direction */
+	ui_event_data (*process_dir)(menu_type *menu, int dir);
 } menu_skin;
 
 

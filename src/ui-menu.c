@@ -35,6 +35,8 @@ const char upper_case[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 static void display_menu_row(menu_type *menu, int pos, int top,
 			     bool cursor, int row, int col, int width);
 static bool menu_calc_size(menu_type *menu);
+static bool is_valid_row(menu_type *menu, int cursor);
+
 
 /* Display an event, with possible preference overrides */
 static void display_action_aux(menu_action *act, byte color, int row, int col, int wid)
@@ -192,16 +194,40 @@ static char scroll_get_tag(menu_type *menu, int pos)
 	return 0;
 }
 
+static ui_event_data scroll_process_direction(menu_type *m, int dir)
+{
+	ui_event_data out = EVENT_EMPTY;
+
+	/* Reject diagonals */
+	if (ddx[dir] && ddy[dir])
+		;
+
+	/* Forward/back */
+	else if (ddx[dir])
+		out.type = ddx[dir] < 0 ? EVT_ESCAPE : EVT_SELECT;
+
+	/* Move up or down to the next valid & visible row */
+	else if (ddy[dir])
+	{
+		m->cursor += ddy[dir];
+		out.type = EVT_MOVE;
+	}
+
+	return out;
+}
+
 /* Virtual function table for scrollable menu skin */
 const menu_skin menu_skin_scroll =
 {
 	scrolling_get_cursor,
 	display_scrolling,
-	scroll_get_tag
+	scroll_get_tag,
+	scroll_process_direction
 };
 
 
-/* Multi-column menu */
+/*** Multi-column menus ***/
+
 /* Find the position of a cursor given a screen address */
 static int columns_get_cursor(int row, int col, int n, int top, region *loc)
 {
@@ -243,6 +269,10 @@ static void display_columns(menu_type *menu, int cursor, int *top, region *loc)
 						row + r, col + c * colw, colw);
 		}
 	}
+
+	if (menu->cursor >= 0)
+		Term_gotoxy(col + (cursor / rows_per_page) * colw,
+				row + (cursor % rows_per_page) - *top);
 }
 
 static char column_get_tag(menu_type *menu, int pos)
@@ -253,12 +283,27 @@ static char column_get_tag(menu_type *menu, int pos)
 	return 0;
 }
 
+static ui_event_data column_process_direction(menu_type *m, int dir)
+{
+	ui_event_data out;
+
+	out.type = EVT_MOVE;
+
+	if (ddx[dir])
+		m->cursor += ddx[dir] * m->active.page_rows;
+	if (ddy[dir])
+		m->cursor += ddy[dir];
+
+	return out;
+}
+
 /* Virtual function table for multi-column menu skin */
 static const menu_skin menu_skin_column =
 {
 	columns_get_cursor,
 	display_columns,
-	column_get_tag
+	column_get_tag,
+	column_process_direction
 };
 
 
@@ -525,37 +570,27 @@ bool menu_handle_keypress(menu_type *menu, const ui_event_data *in,
 	else
 	{
 		int dir = target_dir(in->key);
-	
-		/* Reject diagonals */
-		if (ddx[dir] && ddy[dir])
-			;
-	
-		/* Forward/back */
-		else if (ddx[dir])
-			out->type = ddx[dir] < 0 ? EVT_ESCAPE : EVT_SELECT;
-	
-		/* Move up or down to the next valid & visible row */
-		else if (ddy[dir])
+
+		if (dir)
 		{
-			int n = count;
-			int dy = ddy[dir];
-			int ind = menu->cursor + dy;
+			*out = menu->skin->process_dir(menu, dir);
 
-			/* Find the next valid row */
-			while (!is_valid_row(menu, ind))
+			if (out->type == EVT_MOVE)
 			{
-				/* Loop around */
-				if (ind > n - 1)  ind = 0;
-				else if (ind < 0) ind = n - 1;
-				else              ind += dy;
+				while (!is_valid_row(menu, menu->cursor))
+				{
+					/* Loop around */
+					if (menu->cursor > count - 1)
+						menu->cursor = 0;
+					else if (menu->cursor < 0)
+						menu->cursor = count - 1;
+					else
+						menu->cursor += ddy[dir];
+				}
+			
+				assert(menu->cursor >= 0);
+				assert(menu->cursor < count);
 			}
-	
-			/* Set the cursor */
-			menu->cursor = ind;
-			assert(menu->cursor >= 0);
-			assert(menu->cursor < count);
-
-			out->type = EVT_MOVE;
 		}
 	}
 
