@@ -237,8 +237,10 @@ static void display_columns(menu_type *menu, int cursor, int *top, region *loc)
 		{
 			int pos = c * rows_per_page + r;
 			bool is_cursor = (pos == cursor);
-			display_menu_row(menu, pos, 0, is_cursor, row + r, col + c * colw,
-							 colw);
+
+			if (pos < n)
+				display_menu_row(menu, pos, 0, is_cursor,
+						row + r, col + c * colw, colw);
 		}
 	}
 }
