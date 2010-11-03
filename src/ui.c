@@ -36,6 +36,20 @@ region region_calculate(region loc)
 	return loc;
 }
 
+void region_erase_bordered(const region *loc)
+{
+	region calc = region_calculate(*loc);
+	int i = 0;
+
+	calc.col = MAX(calc.col - 1, 0);
+	calc.row = MAX(calc.row - 1, 0);
+	calc.width += 2;
+	calc.page_rows += 2;
+
+	for (i = 0; i < calc.page_rows; i++)
+		Term_erase(calc.col, calc.row + i, calc.width);
+}
+
 void region_erase(const region *loc)
 {
 	region calc = region_calculate(*loc);

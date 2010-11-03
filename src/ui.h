@@ -30,6 +30,9 @@ static const region SCREEN_REGION = {0, 0, 0, 0};
 /* Erase the contents of a region */
 void region_erase(const region *loc);
 
+/* Erase the contents of a region + 1 char each way */
+void region_erase_bordered(const region *loc);
+
 /* Given a region with relative values, make them absolute */
 region region_calculate(region loc);
 
