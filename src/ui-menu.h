@@ -16,6 +16,7 @@ extern const byte curs_attrs[2][2];
 /* Standard menu orderings */
 extern const char lower_case[];			/* abc..z */
 extern const char upper_case[];			/* ABC..Z */
+extern const char all_letters[];		/* abc..zABC..Z */
 
 
 /*
@@ -87,7 +88,7 @@ typedef struct
 	int (*valid_row)(menu_type *menu, int oid);
 
 	/* Displays a menu row */
-	void (*display_row)(menu_type *menu, int pos, bool cursor,
+	void (*display_row)(menu_type *menu, int oid, bool cursor,
 			int row, int col, int width);
 
 	/* Handle 'positive' events (selections or cmd_keys) */

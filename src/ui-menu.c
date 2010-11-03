@@ -30,6 +30,7 @@ const byte curs_attrs[2][2] =
 /* Some useful constants */
 const char lower_case[] = "abcdefghijklmnopqrstuvwxyz";
 const char upper_case[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const char all_letters[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 /* forward declarations */
 static void display_menu_row(menu_type *menu, int pos, int top,
