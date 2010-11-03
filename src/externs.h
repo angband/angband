@@ -221,6 +221,7 @@ extern ang_file *text_out_file;
 extern void (*text_out_hook)(byte a, cptr str);
 extern int text_out_wrap;
 extern int text_out_indent;
+extern int text_out_pad;
 extern bool use_transparency;
 extern void (*sound_hook)(int);
 extern autoinscription *inscriptions;

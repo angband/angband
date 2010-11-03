@@ -104,8 +104,6 @@ static bool spell_menu_handler(menu_type *m, const ui_event_data *e, int oid)
 	if (e->type == EVT_SELECT) {
 		d->selected_spell = d->spells[oid];
 		return d->browse ? TRUE : FALSE;
-	} else if (e->type == EVT_KBRD) {
-		/* handle '?' here? */
 	}
 
 	return TRUE;
@@ -122,14 +120,17 @@ static void spell_menu_browser(int oid, void *data, const region *loc)
 	/* Redirect output to the screen */
 	text_out_hook = text_out_to_screen;
 	text_out_wrap = 0;
-	text_out_indent = loc->col;
+	text_out_indent = loc->col - 1;
+	text_out_pad = 1;
 
 	screen_load();
 	screen_save();
 
-	Term_gotoxy(loc->col, loc->row + loc->page_rows + 1);
-	text_out("%s", s_text + s_info[(cp_ptr->spell_book == TV_MAGIC_BOOK) ? spell : spell + PY_MAX_SPELLS].text);
-	text_out("\n");
+	Term_gotoxy(loc->col, loc->row + loc->page_rows);
+	text_out("\n%s\n", s_text + s_info[(cp_ptr->spell_book == TV_MAGIC_BOOK) ? spell : spell + PY_MAX_SPELLS].text);
+
+	/* XXX */
+	text_out_pad = 0;
 }
 
 static const menu_iter spell_menu_iter = {
@@ -160,6 +161,7 @@ static menu_type *spell_menu_new(const object_type *o_ptr,
 	/* copy across private data */
 	d->is_valid = is_valid;
 	d->selected_spell = -1;
+	d->browse = FALSE;
 
 	menu_setpriv(m, d->n_spells, d);
 
