@@ -891,18 +891,19 @@ static void sval_display(menu_type *menu, int oid, bool cursor, int row, int col
 {
 	char buf[80];
 	const squelch_choice *choice = menu_priv(menu);
+
 	int idx = choice[oid].idx;
+	bool aware = choice[oid].aware;
 
-	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
-
+	byte attr = curs_attrs[aware][0 != cursor];
 
 	/* Acquire the "name" of object "i" */
-	object_kind_name(buf, sizeof(buf), idx, choice[oid].aware);
+	object_kind_name(buf, sizeof(buf), idx, aware);
 
 	/* Print it */
 	c_put_str(attr, format("[ ] %s", buf), row, col);
-	if ((choice[oid].aware && (k_info[idx].squelch & SQUELCH_IF_AWARE)) ||
-	    ((!choice[oid].aware) && (k_info[idx].squelch & SQUELCH_IF_UNAWARE)))
+	if ((aware && (k_info[idx].squelch & SQUELCH_IF_AWARE)) ||
+			(!aware && (k_info[idx].squelch & SQUELCH_IF_UNAWARE)))
 		c_put_str(TERM_L_RED, "*", row, col + 1);
 }
 
@@ -938,7 +939,7 @@ static bool sval_menu(int tval, const char *desc)
 {
 	menu_type menu;
 	menu_iter menu_f = { NULL, NULL, sval_display, sval_action, NULL };
-	region area = { 1, 5, -1, -1 };
+	region area = { 1, 2, -1, -1 };
 
 	int num = 0;
 	size_t i;
@@ -1010,28 +1011,10 @@ static bool sval_menu(int tval, const char *desc)
 	clear_from(0);
 
 	/* Help text */
-
-	/* Output to the screen */
-	text_out_hook = text_out_to_screen;
-
-	/* Indent output */
-	text_out_indent = 1;
-	text_out_wrap = 79;
-	Term_gotoxy(1, 0);
-
-	/* Display some helpful information */
-	text_out("Use the ");
-	text_out_c(TERM_L_GREEN, "movement keys");
-	text_out(" to scroll the list or ");
-	text_out_c(TERM_L_GREEN, "ESC");
-	text_out(" to return to the previous menu.  ");
-	text_out_c(TERM_L_BLUE, "Enter");
-	text_out(" toggles the current setting.");
-
-	text_out_indent = 0;
+	prt(format("Squelch the following %s:", desc), 0, 0);
 
 	/* Run menu */
-	menu_init(&menu, MN_SKIN_SCROLL, &menu_f);
+	menu_init(&menu, MN_SKIN_COLUMNS, &menu_f);
 	menu_setpriv(&menu, num, choice);
 	menu_layout(&menu, &area);
 	menu_select(&menu, 0);
