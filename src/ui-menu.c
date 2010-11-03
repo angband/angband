@@ -264,18 +264,16 @@ static const menu_skin menu_skin_column =
 
 static bool is_valid_row(menu_type *menu, int cursor)
 {
-	int oid = cursor;
+	int oid = menu->filter_list ? menu->filter_list[cursor] : cursor;
+	int count = menu->filter_list ? menu->filter_count : menu->count;
 
-	if (cursor < 0 || cursor >= menu->filter_count)
+	if (cursor < 0 || cursor >= count)
 		return FALSE;
 
-	if (menu->filter_list)
-		oid = menu->filter_list[cursor];
+	if (menu->row_funcs->valid_row)
+		return menu->row_funcs->valid_row(menu, oid);
 
-	if (!menu->row_funcs->valid_row)
-		return TRUE;
-
-	return menu->row_funcs->valid_row(menu, oid);
+	return TRUE;
 }
 
 /* 
@@ -569,6 +567,8 @@ ui_event_data menu_select(menu_type *menu, int notify)
 
 	notify |= (EVT_SELECT | EVT_ESCAPE);
 
+	menu_set_cursor_first_valid(menu);
+
 	/* Check for command flag */
 	if (p_ptr->command_new)
 	{
@@ -666,6 +666,24 @@ void menu_release_filter(menu_type *menu)
 {
 	menu->filter_list = NULL;
 	menu->filter_count = menu->count;
+}
+
+void menu_set_cursor_first_valid(menu_type *m)
+{
+	int row;
+	int count = m->filter_list ? m->filter_count : m->count;
+
+	for (row = 0; row < count; row++)
+	{
+		if (is_valid_row(m, row))
+		{
+			m->cursor = row;
+			return;
+		}
+	}
+
+	/* Assert that we have valid rows */
+	assert(row != count);
 }
 
 /* ======================== MENU INITIALIZATION ==================== */
