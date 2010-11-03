@@ -43,6 +43,13 @@ enum parser_error {
 	PARSE_ERROR_MAX
 };
 
+struct parser_state {
+	enum parser_error error;
+	unsigned int line;
+	unsigned int col;
+	char *msg;
+};
+
 extern const char *parser_error_str[PARSE_ERROR_MAX];
 
 /** Allocates a new parser. */
@@ -103,5 +110,13 @@ extern struct random parser_getrand(struct parser *p, const char *name);
 
 /** Returns the character named `name`. This symbol must exist. */
 extern char parser_getchar(struct parser *p, const char *name);
+
+/** Fills the provided struct with the parser's state, if any. Returns true if
+ * the parser is in an error state, and false otherwise.
+ */
+extern int parser_getstate(struct parser *p, struct parser_state *s);
+
+/** Sets the parser's detailed error description and field number. */
+extern void parser_setstate(struct parser *p, unsigned int col, const char *msg);
 
 #endif /* !PARSER_H */
