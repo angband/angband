@@ -171,6 +171,10 @@ AC_ARG_ENABLE(sdl,
 	[AS_HELP_STRING([--enable-sdl],       [Enables SDL frontend (default: disabled)])],
 	[enable_sdl=$enableval],
 	[enable_sdl=no])
+AC_ARG_ENABLE(test,
+	[AS_HELP_STRING([--enable-test],      [Enables test frontend (default: disabled)])],
+	[enable_test=$enableval],
+	[enable_test=no])
 
 dnl Sound modules
 AC_ARG_ENABLE(sdl_mixer,
@@ -286,6 +290,11 @@ if test "$enable_sdl_mixer" = "yes"; then
 	fi
 fi
 
+dnl Test checking
+if test "$enable_test" = "yes"; then
+	AC_DEFINE(USE_TEST, 1, [Define to 1 to build the test frontend])
+fi
+
 AC_CONFIG_FILES([mk/extra.mk mk/sinc@&t@lude.mk])
 AC_OUTPUT
 
@@ -353,6 +362,12 @@ if test "$enable_sdl" = "yes"; then
 	fi
 else
 	echo "- SDL                                     Disabled"
+fi
+
+if test "$enable_test" = "yes"; then
+	echo "- Test                                    Yes"
+else
+    echo "- Test                                    No"
 fi
 
 echo

@@ -15,7 +15,10 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "cave.h"
+#include "monster/monster.h"
 #include "object/tvalsval.h"
 
 
@@ -506,7 +509,7 @@ bool make_attack_normal(int m_idx)
 						i = randint0(INVEN_PACK);
 
 						/* Obtain the item */
-						o_ptr = &inventory[i];
+						o_ptr = &p_ptr->inventory[i];
 
 						/* Skip non-objects */
 						if (!o_ptr->k_idx) continue;
@@ -606,7 +609,7 @@ bool make_attack_normal(int m_idx)
 							/* Create a new temporary object */
 							object_type o;
 							object_wipe(&o);
-							object_prep(&o, lookup_kind(TV_GOLD, SV_GOLD), 0, MINIMISE);
+							object_prep(&o, objkind_get(TV_GOLD, SV_GOLD), 0, MINIMISE);
 
 							/* Amount of gold to put in this object */
 							amt = gold > MAX_PVAL ? MAX_PVAL : gold;
@@ -660,7 +663,7 @@ bool make_attack_normal(int m_idx)
 						i = randint0(INVEN_PACK);
 
 						/* Obtain the item */
-						o_ptr = &inventory[i];
+						o_ptr = &p_ptr->inventory[i];
 
 						/* Skip non-objects */
 						if (!o_ptr->k_idx) continue;
@@ -723,7 +726,7 @@ bool make_attack_normal(int m_idx)
 						i = randint0(INVEN_PACK);
 
 						/* Get the item */
-						o_ptr = &inventory[i];
+						o_ptr = &p_ptr->inventory[i];
 
 						/* Skip non-objects */
 						if (!o_ptr->k_idx) continue;
@@ -762,7 +765,7 @@ bool make_attack_normal(int m_idx)
 					take_hit(damage, ddesc);
 
 					/* Get the light, and its flags */
-					o_ptr = &inventory[INVEN_LIGHT];
+					o_ptr = &p_ptr->inventory[INVEN_LIGHT];
 					object_flags(o_ptr, f);
 
 					/* Drain fuel where applicable */

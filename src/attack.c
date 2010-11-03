@@ -17,10 +17,12 @@
  */
 #include "angband.h"
 
+#include "cave.h"
+#include "cmds.h"
+#include "game-cmd.h"
+#include "monster/monster.h"
 #include "object/object.h"
 #include "object/tvalsval.h"
-#include "game-cmd.h"
-#include "cmds.h"
 
 /* Returns percent chance of an object breaking after throwing or shooting. */
 int breakage_chance(const object_type *o_ptr)
@@ -292,7 +294,7 @@ void py_attack(int y, int x)
 
 
 	/* Get the weapon */
-	o_ptr = &inventory[INVEN_WIELD];
+	o_ptr = &p_ptr->inventory[INVEN_WIELD];
 
 	/* Calculate the "attack quality" */
 	bonus = p_ptr->state.to_h + o_ptr->to_h;
@@ -328,7 +330,7 @@ void py_attack(int y, int x)
 			/* Get the best attack from all slays or
 			 * brands on all non-launcher equipment */
 			for (i = INVEN_LEFT; i < INVEN_TOTAL; i++)
-				improve_attack_modifier(&inventory[i], m_ptr, &best_s_ptr);
+				improve_attack_modifier(&p_ptr->inventory[i], m_ptr, &best_s_ptr);
 			
 			improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr);
 			if (best_s_ptr != NULL)
@@ -477,7 +479,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	int msec = op_ptr->delay_factor * op_ptr->delay_factor;
 
 	/* Get the "bow" */
-	j_ptr = &inventory[INVEN_BOW];
+	j_ptr = &p_ptr->inventory[INVEN_BOW];
 
 	/* Require a usable launcher */
 	if (!j_ptr->tval || !p_ptr->state.ammo_tval)
@@ -642,7 +644,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 				tdam = critical_shot(o_ptr->weight, o_ptr->to_h, tdam, &msg_type);
 
 				object_notice_attack_plusses(o_ptr);
-				object_notice_attack_plusses(&inventory[INVEN_BOW]);
+				object_notice_attack_plusses(&p_ptr->inventory[INVEN_BOW]);
 
 				/* No negative damage; change verb if no damage done */
 				if (tdam <= 0)
@@ -745,8 +747,6 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	/* Single object */
 	i_ptr->number = 1;
 
-
-	/* Reduce and describe inventory */
 	if (item >= 0)
 	{
 		inven_item_increase(item, -1);
@@ -778,7 +778,7 @@ void textui_cmd_fire(void)
 	cptr s = "You have nothing to fire.";
 
 	/* Get the "bow" (if any) */
-	j_ptr = &inventory[INVEN_BOW];
+	j_ptr = &p_ptr->inventory[INVEN_BOW];
 
 	/* Require a usable launcher */
 	if (!j_ptr->tval || !p_ptr->state.ammo_tval)
@@ -809,7 +809,7 @@ void textui_cmd_fire_at_nearest(void)
 	int i, dir = 5, item = -1;
 
 	/* Require a usable launcher */
-	if (!inventory[INVEN_BOW].tval || !p_ptr->state.ammo_tval)
+	if (!p_ptr->inventory[INVEN_BOW].tval || !p_ptr->state.ammo_tval)
 	{
 		msg_print("You have nothing to fire with.");
 		return;
@@ -818,7 +818,7 @@ void textui_cmd_fire_at_nearest(void)
 	/* Find first eligible ammo in the quiver */
 	for (i = QUIVER_START; i < QUIVER_END; i++)
 	{
-		if (inventory[i].tval != p_ptr->state.ammo_tval) continue;
+		if (p_ptr->inventory[i].tval != p_ptr->state.ammo_tval) continue;
 		item = i;
 		break;
 	}

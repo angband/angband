@@ -16,11 +16,12 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "cave.h"
 #include "game-event.h"
+#include "monster/monster.h"
 #include "object/tvalsval.h"
-
-
 
 /*
  * Calculate number of spells player should have, and forget,
@@ -277,7 +278,7 @@ static void calc_mana(void)
 		p_ptr->cumber_glove = FALSE;
 
 		/* Get the gloves */
-		o_ptr = &inventory[INVEN_HANDS];
+		o_ptr = &p_ptr->inventory[INVEN_HANDS];
 
 		/* Examine the gloves */
 		object_flags(o_ptr, f);
@@ -302,12 +303,12 @@ static void calc_mana(void)
 
 	/* Weigh the armor */
 	cur_wgt = 0;
-	cur_wgt += inventory[INVEN_BODY].weight;
-	cur_wgt += inventory[INVEN_HEAD].weight;
-	cur_wgt += inventory[INVEN_ARM].weight;
-	cur_wgt += inventory[INVEN_OUTER].weight;
-	cur_wgt += inventory[INVEN_HANDS].weight;
-	cur_wgt += inventory[INVEN_FEET].weight;
+	cur_wgt += p_ptr->inventory[INVEN_BODY].weight;
+	cur_wgt += p_ptr->inventory[INVEN_HEAD].weight;
+	cur_wgt += p_ptr->inventory[INVEN_ARM].weight;
+	cur_wgt += p_ptr->inventory[INVEN_OUTER].weight;
+	cur_wgt += p_ptr->inventory[INVEN_HANDS].weight;
+	cur_wgt += p_ptr->inventory[INVEN_FEET].weight;
 
 	/* Determine the weight allowance */
 	max_wgt = cp_ptr->spell_weight;
@@ -448,7 +449,7 @@ static void calc_torch(void)
 		bitflag f[OF_SIZE];
 
 		int amt = 0;
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Skip empty slots */
 		if (!o_ptr->k_idx) continue;
@@ -1209,7 +1210,7 @@ static void update_bonuses(void)
 
 	/*** Calculate bonuses ***/
 
-	calc_bonuses(inventory, &p_ptr->state, FALSE);
+	calc_bonuses(p_ptr->inventory, &p_ptr->state, FALSE);
 
 
 	/*** Notice changes ***/
@@ -1300,7 +1301,7 @@ static void update_bonuses(void)
 		{
 			msg_print("You have trouble wielding such a heavy bow.");
 		}
-		else if (inventory[INVEN_BOW].k_idx)
+		else if (p_ptr->inventory[INVEN_BOW].k_idx)
 		{
 			msg_print("You have no trouble wielding your bow.");
 		}
@@ -1318,7 +1319,7 @@ static void update_bonuses(void)
 		{
 			msg_print("You have trouble wielding such a heavy weapon.");
 		}
-		else if (inventory[INVEN_WIELD].k_idx)
+		else if (p_ptr->inventory[INVEN_WIELD].k_idx)
 		{
 			msg_print("You have no trouble wielding your weapon.");
 		}
@@ -1336,7 +1337,7 @@ static void update_bonuses(void)
 		{
 			msg_print("You do not feel comfortable with your weapon.");
 		}
-		else if (inventory[INVEN_WIELD].k_idx)
+		else if (p_ptr->inventory[INVEN_WIELD].k_idx)
 		{
 			msg_print("You feel comfortable with your weapon.");
 		}

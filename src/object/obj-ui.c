@@ -217,14 +217,14 @@ void show_inven(olist_detail_t mode)
 	/* Find the last occupied inventory slot */
 	for (i = 0; i < INVEN_PACK; i++)
 	{
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 		if (o_ptr->k_idx) last_slot = i;
 	}
 
 	/* Build the object list */
 	for (i = 0; i <= last_slot; i++)
 	{
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 
 		/* Acceptable items get a label */
 		if (item_tester_okay(o_ptr))
@@ -269,14 +269,14 @@ void show_equip(olist_detail_t mode)
 	/* Find the last equipment slot to display */
 	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 		if (i < INVEN_TOTAL || o_ptr->k_idx) last_slot = i;
 	}
 
 	/* Build the object list */
 	for (i = INVEN_WIELD; i <= last_slot; i++)
 	{
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 
 		/* May need a blank line to separate the quiver */
 		if (i == INVEN_TOTAL)
@@ -287,7 +287,7 @@ void show_equip(olist_detail_t mode)
 			/* Scan the rest of the items for acceptable entries */
 			for (j = i; j < last_slot; j++)
 			{
-				o_ptr = &inventory[j];
+				o_ptr = &p_ptr->inventory[j];
 				if (item_tester_okay(o_ptr)) need_spacer = TRUE;
 			}
 
@@ -395,7 +395,7 @@ bool verify_item(cptr prompt, int item)
 	/* Inventory */
 	if (item >= 0)
 	{
-		o_ptr = &inventory[item];
+		o_ptr = &p_ptr->inventory[item];
 	}
 
 	/* Floor */
@@ -429,7 +429,7 @@ static bool get_item_allow(int item, bool is_harmless)
 
 	/* Inventory or floor */
 	if (item >= 0)
-		o_ptr = &inventory[item];
+		o_ptr = &p_ptr->inventory[item];
 	else
 		o_ptr = &o_list[0 - item];
 
@@ -472,7 +472,7 @@ static int get_tag(int *cp, char tag)
 	if (p_ptr->command_cmd == 'f')
 	{
 		i = QUIVER_START + tag - '0';
-		if (inventory[i].k_idx)
+		if (p_ptr->inventory[i].k_idx)
 		{
 			*cp = i;
 			return (TRUE);
@@ -483,7 +483,7 @@ static int get_tag(int *cp, char tag)
 	/* Check every object */
 	for (i = 0; i < ALL_INVEN_TOTAL; ++i)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;

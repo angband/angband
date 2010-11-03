@@ -159,7 +159,7 @@ void autoinsc_dump(ang_file *fff)
 	{
 		object_kind *k_ptr = &k_info[inscriptions[i].kind_idx];
 
-		file_putf(fff, "# Autoinscription for %s\n", k_name + k_ptr->name);
+		file_putf(fff, "# Autoinscription for %s\n", k_ptr->name);
 		file_putf(fff, "B:%d:%s\n\n", inscriptions[i].kind_idx,
 		        quark_str(inscriptions[i].inscription_idx));
 	}
@@ -348,7 +348,7 @@ void dump_monsters(ang_file *fff)
 		/* Skip non-entries */
 		if (!r_ptr->name) continue;
 
-		file_putf(fff, "# Monster: %s\n", (r_name + r_ptr->name));
+		file_putf(fff, "# Monster: %s\n", r_ptr->name);
 		file_putf(fff, "R:%d:0x%02X:0x%02X\n", i, attr, chr);
 	}
 }
@@ -367,7 +367,7 @@ void dump_objects(ang_file *fff)
 		/* Skip non-entries */
 		if (!k_ptr->name) continue;
 
-		file_putf(fff, "# Object: %s\n", (k_name + k_ptr->name));
+		file_putf(fff, "# Object: %s\n", k_ptr->name);
 		file_putf(fff, "K:%d:0x%02X:0x%02X\n", i, attr, chr);
 	}
 }
@@ -389,7 +389,7 @@ void dump_features(ang_file *fff)
 		/* Skip mimic entries -- except invisible trap */
 		if ((f_ptr->mimic != i) && (i != FEAT_INVIS)) continue;
 
-		file_putf(fff, "# Terrain: %s\n", (f_name + f_ptr->name));
+		file_putf(fff, "# Terrain: %s\n", f_ptr->name);
 		file_putf(fff, "F:%d:0x%02X:0x%02X\n", i, attr, chr);
 	}
 }
@@ -405,7 +405,7 @@ void dump_flavors(ang_file *fff)
 		byte attr = x_ptr->x_attr;
 		byte chr = x_ptr->x_char;
 
-		file_putf(fff, "# Item flavor: %s\n", (flavor_text + x_ptr->text));
+		file_putf(fff, "# Item flavor: %s\n", x_ptr->text);
 		file_putf(fff, "L:%d:0x%02X:0x%02X\n\n", i, attr, chr);
 	}
 }
@@ -1212,13 +1212,13 @@ static cptr process_pref_file_expr(char **sp, char *fp)
 			/* Race */
 			else if (streq(b+1, "RACE"))
 			{
-				v = p_name + rp_ptr->name;
+				v = rp_ptr->name;
 			}
 
 			/* Class */
 			else if (streq(b+1, "CLASS"))
 			{
-				v = c_name + cp_ptr->name;
+				v = cp_ptr->name;
 			}
 
 			/* Player */

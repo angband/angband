@@ -15,9 +15,11 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "cave.h"
 #include "game-cmd.h"
-/*#include "cmds.h"*/
+#include "monster/monster.h"
 
 /* 
  * Height of the help screen; any higher than 4 will overlap the health
@@ -995,7 +997,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 		/* Terrain feature if needed */
 		if (boring || (feat > FEAT_INVIS))
 		{
-			cptr name = f_name + f_info[feat].name;
+			cptr name = f_info[feat].name;
 
 			/* Hack -- handle unknown grids */
 			if (feat == FEAT_NONE) name = "unknown grid";

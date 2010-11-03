@@ -15,7 +15,11 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "cave.h"
+#include "history.h"
+#include "monster/monster.h"
 #include "object/tvalsval.h"
 #include "savefile.h"
 
@@ -62,6 +66,7 @@ static int rd_item(object_type *o_ptr)
 	/* Paranoia */
 	if ((o_ptr->k_idx < 0) || (o_ptr->k_idx >= z_info->k_max))
 		return (-1);
+	o_ptr->kind = &k_info[o_ptr->k_idx];
 
 	/* Location */
 	rd_byte(&o_ptr->iy);
@@ -134,6 +139,7 @@ static int rd_item(object_type *o_ptr)
 
 	/* Lookup item kind */
 	o_ptr->k_idx = lookup_kind(o_ptr->tval, o_ptr->sval);
+	assert(o_ptr->k_idx);	/* XXX-elly: handle nonfatally */
 
 	k_ptr = &k_info[o_ptr->k_idx];
 
@@ -690,6 +696,7 @@ int rd_player(u32b version)
 		return (-1);
 	}
 	rp_ptr = &p_info[p_ptr->prace];
+	p_ptr->race = rp_ptr;
 
 	/* Player class */
 	rd_byte(&p_ptr->pclass);
@@ -701,12 +708,14 @@ int rd_player(u32b version)
 		return (-1);
 	}
 	cp_ptr = &c_info[p_ptr->pclass];
+	p_ptr->class = cp_ptr;
 	mp_ptr = &cp_ptr->spells;
 
 
 	/* Player gender */
 	rd_byte(&p_ptr->psex);
 	sp_ptr = &sex_info[p_ptr->psex];
+	p_ptr->sex = sp_ptr;
 
 	/* Numeric name suffix */
 	rd_byte(&op_ptr->name_suffix);
@@ -1160,7 +1169,7 @@ int rd_inventory(u32b version)
 		if (n >= INVEN_WIELD)
 		{
 			/* Copy object */
-			object_copy(&inventory[n], i_ptr);
+			object_copy(&p_ptr->inventory[n], i_ptr);
 
 			/* Add the weight */
 			p_ptr->total_weight += (i_ptr->number * i_ptr->weight);
@@ -1186,7 +1195,7 @@ int rd_inventory(u32b version)
 			n = slot++;
 
 			/* Copy object */
-			object_copy(&inventory[n], i_ptr);
+			object_copy(&p_ptr->inventory[n], i_ptr);
 
 			/* Add the weight */
 			p_ptr->total_weight += (i_ptr->number * i_ptr->weight);
@@ -1196,7 +1205,7 @@ int rd_inventory(u32b version)
 		}
 	}
 
-	save_quiver_size();
+	save_quiver_size(p_ptr);
 
 	/* Success */
 	return (0);
@@ -1233,8 +1242,9 @@ int rd_stores(u32b version)
 			note("Illegal store owner!");
 			return (-1);
 		}
-		
-		st_ptr->owner = own;
+	
+		/* XXX: refactor into store.c */
+		st_ptr->owner = store_ownerbyidx(st_ptr, own);
 		
 		/* Read the items */
 		for (j = 0; j < num; j++)

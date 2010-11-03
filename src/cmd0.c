@@ -15,11 +15,14 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-#include "wizard.h"
+#include "cave.h"
 #include "cmds.h"
-#include "ui-menu.h"
 #include "game-cmd.h"
+#include "monster/monster.h"
+#include "ui-menu.h"
+#include "wizard.h"
 
 /*
  * This file contains (several) big lists of commands, so that they can be

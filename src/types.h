@@ -12,6 +12,8 @@
  * (like u32b and s32b) and not just "int"s.
  */
 
+#include "z-term.h"
+
 /**** Available Types ****/
 
 /** An array of 256 bytes */
@@ -37,12 +39,9 @@ typedef int (*button_kill_f)(unsigned char);
 
 /**** Available Structs ****/
 
-typedef struct vault_type vault_type;
 typedef struct alloc_entry alloc_entry;
 typedef struct quest quest;
-typedef struct owner_type owner_type;
-typedef struct store_type store_type;
-typedef struct spell_type spell_type;
+typedef struct spell spell_type;
 typedef struct autoinscription autoinscription;
 typedef struct history_info history_info;
 typedef struct color_type color_type;
@@ -54,7 +53,7 @@ typedef struct color_type color_type;
  * These are actually not the maxima, but the maxima plus one, because of
  * 0-based indexing issues.
  */
-typedef struct
+typedef struct maxima
 {
 	u32b fake_text_size;  /**< Max size of all descriptions read in from lib/edit */
 	u32b fake_name_size;  /**< Max size of all names read in from lib/edit */
@@ -83,10 +82,12 @@ typedef struct
  * At the moment this isn't very much, but eventually a primitive flag-based
  * information system will be used here.
  */
-typedef struct
+typedef struct feature
 {
-	u32b name;     /**< (const char *) feature_type::name + f_name = Name */
-	u32b text;     /**< (const char *) feature_type::text + f_text = Description (unused) */
+	char *name;
+	int fidx;
+
+	struct feature *next;
 
 	byte mimic;    /**< Feature to mimic */
 	byte priority; /**< Display priority */
@@ -111,10 +112,12 @@ typedef struct
 /*
  * Information about "vault generation"
  */
-struct vault_type
+typedef struct vault
 {
-	u32b name;			/* Name (offset) */
-	u32b text;			/* Text (offset) */
+	struct vault *next;
+	unsigned int vidx;
+	char *name;
+	char *text;
 
 	byte typ;			/* Vault type */
 
@@ -122,7 +125,7 @@ struct vault_type
 
 	byte hgt;			/* Vault height */
 	byte wid;			/* Vault width */
-};
+} vault_type;
 
 
 /*
@@ -170,10 +173,11 @@ struct quest
 /*
  * And here's the structure for the "fixed" spell information
  */
-struct spell_type
-{
-	u32b name;			/* Name (offset) */
-	u32b text;			/* Text (offset) */
+struct spell {
+	struct spell *next;
+	unsigned int sidx;
+	char *name;
+	char *text;
 
 	byte realm;			/* 0 = mage; 1 = priest */
 	byte tval;			/* Item type for book this spell is in */

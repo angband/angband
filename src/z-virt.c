@@ -18,30 +18,9 @@
 #include "z-virt.h"
 #include "z-util.h"
 
-/*
- * Hooks for platform-specific memory allocation.
- */
-static mem_alloc_hook ralloc_aux;
-static mem_free_hook rnfree_aux;
-static mem_realloc_hook realloc_aux;
+unsigned int mem_flags = 0;
 
-
-/*
- * Set the hooks for the memory system.
- */
-bool mem_set_hooks(mem_alloc_hook alloc, mem_free_hook free, mem_realloc_hook realloc)
-{
-	/* Error-check */
-	if (!alloc || !free || !realloc) return FALSE;
-
-	/* Set up hooks */
-	ralloc_aux = alloc;
-	rnfree_aux = free;
-	realloc_aux = realloc;
-
-	return TRUE;
-}
-
+#define SZ(uptr)	*((size_t *)((char *)(uptr) - sizeof(size_t)))
 
 /*
  * Allocate `len` bytes of memory.
@@ -54,67 +33,54 @@ bool mem_set_hooks(mem_alloc_hook alloc, mem_free_hook free, mem_realloc_hook re
  */
 void *mem_alloc(size_t len)
 {
-	void *mem;
+	char *mem;
 
 	/* Allow allocation of "zero bytes" */
 	if (len == 0) return (NULL);
 
-	/* Allocate some memory */
-	if (ralloc_aux) mem = (*ralloc_aux)(len);
-	else            mem = malloc(len);
-
-	/* Handle OOM */
-	if (!mem) quit("Out of Memory!");
+	mem = malloc(len + sizeof(size_t));
+	if (!mem)
+		quit("Out of Memory!");
+	mem += sizeof(size_t);
+	if (mem_flags & MEM_POISON_ALLOC)
+		memset(mem, 0xCC, len);
+	SZ(mem) = len;
 
 	return mem;
 }
 
-
-/*
- * Free the memory pointed to by `p`.
- *
- * Returns NULL.
- */
-void *mem_free(void *p)
+void *mem_zalloc(size_t len)
 {
-	/* Easy to free nothing */
-	if (!p) return (NULL);
-
-	/* Free memory */
-	if (rnfree_aux) (*rnfree_aux)(p);
-	else            free(p);
-
-	/* Done */
-	return (NULL);
+	void *mem = mem_alloc(len);
+	memset(mem, 0, len);
+	return mem;
 }
 
+void mem_free(void *p)
+{
+	if (!p) return;
 
-/*
- * Allocate `len` bytes of memory, copying whatever is in `p` with it.
- *
- * Returns:
- *  - NULL if `len` == 0 or `p` is NULL; or
- *  - a pointer to a block of memory of at least `len` bytes
- *
- * Doesn't return on out of memory.
- */
+	if (mem_flags & MEM_POISON_FREE)
+		memset(p, 0xCD, SZ(p));
+	free((char *)p - sizeof(size_t));
+}
+
 void *mem_realloc(void *p, size_t len)
 {
-	void *mem;
+	char *m = p;
 
 	/* Fail gracefully */
-	if (!p || len == 0) return (NULL);
+	if (len == 0) return (NULL);
 
-	if (realloc_aux) mem = (*realloc_aux)(p, len);
-	else             mem = realloc(p, len);
+	m = realloc(m ? m - sizeof(size_t) : NULL, len + sizeof(size_t));
+	m += sizeof(size_t);
 
 	/* Handle OOM */
-	if (!mem) quit("Out of Memory!");
+	if (!m) quit("Out of Memory!");
+	SZ(m) = len;
 
-	return mem;
+	return m;
 }
-
-
 
 /*
  * Duplicates an existing string `str`, allocating as much memory as necessary.
@@ -137,13 +103,22 @@ char *string_make(const char *str)
 	return res;
 }
 
-
-/*
- * Un-allocate a string allocated above.
- */
-#undef string_free
-char *string_free(char *str)
+void string_free(char *str)
 {
-	/* Kill the buffer of chars we must have allocated above */
-	return mem_free(str);
+	mem_free(str);
+}
+
+char *string_append(char *s1, const char *s2) {
+	u32b len;
+	if (!s1 && !s2) {
+		return NULL;
+	} else if (s1 && !s2) {
+		return s1;
+	} else if (!s1 && s2) {
+		return string_make(s2);
+	}
+	len = strlen(s1);
+	s1 = mem_realloc(s1, len + strlen(s2) + 1);
+	strcpy(s1 + len, s2);
+	return s1;
 }

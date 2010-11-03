@@ -16,12 +16,14 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-#include "object/tvalsval.h"
+#include "cave.h"
 #include "cmds.h"
-
-
-
+#include "history.h"
+#include "monster/monster.h"
+#include "object/inventory.h"
+#include "object/tvalsval.h"
 
 /*
  * Search for hidden things.  Returns true if a search was attempted, returns
@@ -287,7 +289,7 @@ static void py_pickup_aux(int o_idx, bool msg)
 	object_type *o_ptr = &o_list[o_idx];
 
 	/* Carry the object */
-	slot = inven_carry(o_ptr);
+	slot = inven_carry(p_ptr, o_ptr);
 
 	/* Handle errors (paranoia) */
 	if (slot < 0) return;
@@ -299,15 +301,15 @@ static void py_pickup_aux(int o_idx, bool msg)
 		int i;
 		for (i = QUIVER_START; i < QUIVER_END; i++) 
 		{
-			if (!inventory[i].k_idx) continue;
-			if (!object_similar(&inventory[i], o_ptr)) continue;
+			if (!p_ptr->inventory[i].k_idx) continue;
+			if (!object_similar(&p_ptr->inventory[i], o_ptr)) continue;
 			quiver_slot = i;
 			break;
 		}
 	}
 
 	/* Get the new object */
-	o_ptr = &inventory[slot];
+	o_ptr = &p_ptr->inventory[slot];
 
 	/* Set squelch status */
 	p_ptr->notice |= PN_SQUELCH;

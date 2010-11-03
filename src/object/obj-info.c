@@ -584,7 +584,7 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 	int crit_mult, crit_div, crit_add;
 	int str_plus, dex_plus, old_blows, new_blows, extra_blows;
 	int str_done = -1;
-	object_type *j_ptr = &inventory[INVEN_BOW];
+	object_type *j_ptr = &p_ptr->inventory[INVEN_BOW];
 
 	bitflag f[OF_SIZE];
 	bitflag tmp_f[OF_SIZE];
@@ -627,7 +627,7 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 
 		object_type inven[INVEN_TOTAL];
 
-		memcpy(inven, inventory, INVEN_TOTAL * sizeof(object_type));
+		memcpy(inven, p_ptr->inventory, INVEN_TOTAL * sizeof(object_type));
 		inven[INVEN_WIELD] = *o_ptr;
 
 		if (full) object_know_all_flags(&inven[INVEN_WIELD]);
@@ -663,10 +663,10 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 		 * state does not track these */
 		for (i = INVEN_BOW; i < INVEN_TOTAL; i++)
 		{
-			object_flags_known(&inventory[i], tmp_f);
+			object_flags_known(&p_ptr->inventory[i], tmp_f);
 
 			if (of_has(tmp_f, OF_BLOWS))
-				extra_blows += inventory[i].pval;
+				extra_blows += p_ptr->inventory[i].pval;
 		}
 
 		/* Then we add blows from the weapon being examined */
@@ -736,7 +736,7 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 
 		for (i = INVEN_LEFT; i < INVEN_TOTAL; i++)
 		{
-			object_flags_known(&inventory[i], tmp_f);
+			object_flags_known(&p_ptr->inventory[i], tmp_f);
 
 			flags_mask(tmp_f, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
 
@@ -835,14 +835,14 @@ static bool describe_digger(const object_type *o_ptr, oinfo_detail_t mode)
 	if (sl < 0 || (sl != INVEN_WIELD && !of_has(f, OF_TUNNEL)))
 		return FALSE;
 
-	memcpy(inven, inventory, INVEN_TOTAL * sizeof(object_type));
+	memcpy(inven, p_ptr->inventory, INVEN_TOTAL * sizeof(object_type));
 
 	/*
 	 * Hack -- if we examine a ring that is worn on the right finger,
 	 * we shouldn't put a copy of it on the left finger before calculating
 	 * digging skills.
 	 */
-	if (o_ptr != &inventory[INVEN_RIGHT])
+	if (o_ptr != &p_ptr->inventory[INVEN_RIGHT])
 		inven[sl] = *o_ptr;
 
 	calc_bonuses(inven, &st, TRUE);
@@ -1134,7 +1134,7 @@ void object_info_header(const object_type *o_ptr)
 
 		case ORIGIN_DROP:
 		{
-			const char *name = r_name + r_info[o_ptr->origin_xtra].name;
+			const char *name = r_info[o_ptr->origin_xtra].name;
 			bool unique = rf_has(r_info[o_ptr->origin_xtra].flags, RF_UNIQUE) ? TRUE : FALSE;
 
 			text_out("(dropped by ");
@@ -1184,7 +1184,7 @@ void object_info_header(const object_type *o_ptr)
 	if (!OPT(adult_randarts) && o_ptr->name1 &&
 	    object_is_known(o_ptr) && a_info[o_ptr->name1].text)
 	{
-		text_out(a_text + a_info[o_ptr->name1].text);
+		text_out(a_info[o_ptr->name1].text);
 		text_out("\n\n");
 	}
 
@@ -1195,7 +1195,7 @@ void object_info_header(const object_type *o_ptr)
 
 		if (k_info[o_ptr->k_idx].text)
 		{
-			text_out(k_text + k_info[o_ptr->k_idx].text);
+			text_out(k_info[o_ptr->k_idx].text);
 			did_desc = TRUE;
 		}
 
@@ -1203,7 +1203,7 @@ void object_info_header(const object_type *o_ptr)
 		if (object_ego_is_visible(o_ptr) && e_info[o_ptr->name2].text)
 		{
 			if (did_desc) text_out("  ");
-			text_out(e_text + e_info[o_ptr->name2].text);
+			text_out(e_info[o_ptr->name2].text);
 			text_out("\n\n");
 		}
 		else if (did_desc)
