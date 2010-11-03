@@ -174,7 +174,7 @@ enum
  */
 static quality_name_struct quality_values[SQUELCH_MAX] =
 {
-	{ SQUELCH_NONE,		"none" },
+	{ SQUELCH_NONE,		"no squelch" },
 	{ SQUELCH_BAD,		"bad" },
 	{ SQUELCH_AVERAGE,	"average" },
 	{ SQUELCH_GOOD,		"good" },
@@ -758,7 +758,7 @@ static bool quality_action(menu_type *m, const ui_event_data *event, int oid)
 {
 	menu_type menu;
 	menu_iter menu_f = { NULL, NULL, quality_subdisplay, NULL, NULL };
-	region area = { 24, 5, 29, SQUELCH_MAX };
+	region area = { 27, 2, 29, SQUELCH_MAX };
 	ui_event_data evt;
 	int cursor;
 	int count;
@@ -805,20 +805,15 @@ static void quality_menu(void *unused, const char *also_unused)
 {
 	menu_type menu;
 	menu_iter menu_f = { NULL, NULL, quality_display, quality_action, NULL };
-	region area = { 1, 5, -1, -1 };
+	region area = { 0, 0, 0, 0 };
 
 	/* Save screen */
 	screen_save();
 	clear_from(0);
 
-	/* Help text */
-	prt("Quality squelch menu", 0, 0);
-
-	Term_gotoxy(1, 1);
-	text_out_to_screen(TERM_L_RED, "Use the movement keys to navigate, and Enter to change settings.");
-
 	/* Set up the menu */
 	menu_init(&menu, MN_SKIN_SCROLL, &menu_f);
+	menu.title = "Quality squelch menu";
 	menu_setpriv(&menu, TYPE_MAX, quality_values);
 	menu_layout(&menu, &area);
 
