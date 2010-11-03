@@ -152,7 +152,7 @@ static void display_scrolling(menu_type *menu, int cursor, int *top, region *loc
 	int col = loc->col;
 	int row = loc->row;
 	int rows_per_page = loc->page_rows;
-	int n = menu->filter_count;
+	int n = menu->filter_list ? menu->filter_count : menu->count;
 	int i;
 
 	/* Keep a certain distance from the top when possible */
@@ -219,7 +219,7 @@ static void display_columns(menu_type *menu, int cursor, int *top, region *loc)
 {
 	int c, r;
 	int w, h;
-	int n = menu->filter_count;
+	int n = menu->filter_list ? menu->filter_count : menu->count;
 	int col = loc->col;
 	int row = loc->row;
 	int rows_per_page = loc->page_rows;
@@ -283,7 +283,7 @@ static bool is_valid_row(menu_type *menu, int cursor)
 static int get_cursor_key(menu_type *menu, int top, char key)
 {
 	int i;
-	int n = menu->filter_count;
+	int n = menu->filter_list ? menu->filter_count : menu->count;
 
 	if (menu->flags & MN_CASELESS_TAGS)
 		key = toupper((unsigned char) key);
@@ -377,9 +377,6 @@ void menu_refresh(menu_type *menu)
 	int oid = menu->cursor;
 	region *loc = &menu->active;
 
-	if (!menu->filter_list)
-		menu->filter_count = menu->count;
-
 	if (menu->filter_list && menu->cursor >= 0)
 		oid = menu->filter_list[oid];
 
@@ -425,8 +422,10 @@ bool menu_handle_mouse(menu_type *menu, const ui_event_data *in,
 	}
 	else
 	{
+		int count = menu->filter_list ? menu->filter_count : menu->count;
+
 		new_cursor = menu->skin->get_cursor(in->mousey, in->mousex,
-				menu->filter_count, menu->top, &menu->active);
+				count, menu->top, &menu->active);
 	
 		if (is_valid_row(menu, new_cursor))
 		{
@@ -474,6 +473,7 @@ bool menu_handle_keypress(menu_type *menu, const ui_event_data *in,
 		ui_event_data *out)
 {
 	bool eat = FALSE;
+	int count = menu->filter_list ? menu->filter_count : menu->count;
 
 	/* Get the new cursor position from the menu item tags */
 	int new_cursor = get_cursor_key(menu, menu->top, in->key);
@@ -492,14 +492,14 @@ bool menu_handle_keypress(menu_type *menu, const ui_event_data *in,
 		out->type = EVT_ESCAPE;
 
 	/* Menus with no rows can't be navigated or used, so eat all keypresses */
-	else if (menu->filter_count <= 0)
+	else if (count <= 0)
 		eat = TRUE;
 
 	/* Try existing, known keys */
 	else if (in->key == ' ')
 	{
 		int rows = menu->active.page_rows;
-		int total = menu->filter_count;
+		int total = count;
 
 		if (rows < total)
 		{
@@ -535,7 +535,7 @@ bool menu_handle_keypress(menu_type *menu, const ui_event_data *in,
 		/* Move up or down to the next valid & visible row */
 		else if (ddy[dir])
 		{
-			int n = menu->filter_count;
+			int n = count;
 			int dy = ddy[dir];
 			int ind = menu->cursor + dy;
 
@@ -551,7 +551,7 @@ bool menu_handle_keypress(menu_type *menu, const ui_event_data *in,
 			/* Set the cursor */
 			menu->cursor = ind;
 			assert(menu->cursor >= 0);
-			assert(menu->cursor < menu->filter_count);
+			assert(menu->cursor < count);
 
 			out->type = EVT_MOVE;
 		}
@@ -670,7 +670,7 @@ void menu_set_filter(menu_type *menu, const int filter_list[], int n)
 void menu_release_filter(menu_type *menu)
 {
 	menu->filter_list = NULL;
-	menu->filter_count = menu->count;
+	menu->filter_count = 0;
 }
 
 void menu_set_cursor_first_valid(menu_type *m)
