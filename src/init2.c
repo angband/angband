@@ -43,10 +43,20 @@
  */
 
 struct file_parser {
+	const char *name;
 	struct parser *(*init)(void);
 	errr (*run)(struct parser *p);
 	errr (*finish)(struct parser *p);
 };
+
+static void print_error(struct file_parser *fp, struct parser *p) {
+	struct parser_state s;
+	parser_getstate(p, &s);
+	msg_format("Parse error in %s line %d column %d: %s: %s", fp->name,
+	           s.line, s.col, s.msg, parser_error_str[s.error]);
+	message_flush();
+	quit_fmt("Parse error in %s line %d column %d.", fp->name, s.line, s.col);
+}
 
 errr run_parser(struct file_parser *fp) {
 	struct parser *p = fp->init();
@@ -56,9 +66,12 @@ errr run_parser(struct file_parser *fp) {
 	}
 	r = fp->run(p);
 	if (r) {
+		print_error(fp, p);
 		return r;
 	}
 	r = fp->finish(p);
+	if (r)
+		print_error(fp, p);
 	return r;
 }
 
@@ -335,6 +348,7 @@ static errr finish_parse_z(struct parser *p) {
 }
 
 static struct file_parser z_parser = {
+	"limits",
 	init_parse_z,
 	run_parse_z,
 	finish_parse_z
@@ -515,6 +529,7 @@ static errr finish_parse_k(struct parser *p) {
 }
 
 struct file_parser k_parser = {
+	"object",
 	init_parse_k,
 	run_parse_k,
 	finish_parse_k
@@ -698,6 +713,7 @@ static errr finish_parse_a(struct parser *p) {
 }
 
 struct file_parser a_parser = {
+	"artifact",
 	init_parse_a,
 	run_parse_a,
 	finish_parse_a
@@ -773,6 +789,7 @@ static errr finish_parse_names(struct parser *p) {
 }
 
 struct file_parser names_parser = {
+	"names",
 	init_parse_names,
 	run_parse_names,
 	finish_parse_names
@@ -955,6 +972,7 @@ static errr finish_parse_f(struct parser *p) {
 }
 
 struct file_parser f_parser = {
+	"terrain",
 	init_parse_f,
 	run_parse_f,
 	finish_parse_f
@@ -1195,6 +1213,7 @@ static errr finish_parse_e(struct parser *p) {
 }
 
 struct file_parser e_parser = {
+	"ego_item",
 	init_parse_e,
 	run_parse_e,
 	finish_parse_e
@@ -2341,6 +2360,7 @@ static errr finish_parse_r(struct parser *p) {
 }
 
 struct file_parser r_parser = {
+	"monster",
 	init_parse_r,
 	run_parse_r,
 	finish_parse_r
@@ -2539,6 +2559,7 @@ static errr finish_parse_p(struct parser *p) {
 }
 
 struct file_parser p_parser = {
+	"p_race",
 	init_parse_p,
 	run_parse_p,
 	finish_parse_p
@@ -2633,10 +2654,10 @@ static enum parser_error parse_c_m(struct parser *p) {
 
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	c->spell_book = parser_getint(p, "book");
-	c->spell_stat = parser_getint(p, "stat");
-	c->spell_first = parser_getint(p, "first");
-	c->spell_weight = parser_getint(p, "weight");
+	c->spell_book = parser_getuint(p, "book");
+	c->spell_stat = parser_getuint(p, "stat");
+	c->spell_first = parser_getuint(p, "first");
+	c->spell_weight = parser_getuint(p, "weight");
 	return PARSE_ERROR_NONE;
 }
 
@@ -2732,7 +2753,7 @@ struct parser *init_parse_c(void) {
 	parser_reg(p, "X int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_c_x);
 	parser_reg(p, "I int mhp int exp int sense-base int sense-div", parse_c_i);
 	parser_reg(p, "A int max-attacks int min-weight int att-multiply", parse_c_a);
-	parser_reg(p, "M int book int stat int first int weight", parse_c_m);
+	parser_reg(p, "M uint book uint stat uint first uint weight", parse_c_m);
 	parser_reg(p, "B uint spell int level int mana int fail int exp", parse_c_b);
 	parser_reg(p, "T str title", parse_c_t);
 	parser_reg(p, "E sym tval sym sval uint min uint max", parse_c_e);
@@ -2766,6 +2787,7 @@ static errr finish_parse_c(struct parser *p) {
 }
 
 struct file_parser c_parser = {
+	"p_class",
 	init_parse_c,
 	run_parse_c,
 	finish_parse_c
@@ -2846,6 +2868,7 @@ static errr finish_parse_v(struct parser *p) {
 }
 
 struct file_parser v_parser = {
+	"vault",
 	init_parse_v,
 	run_parse_v,
 	finish_parse_v
@@ -2911,6 +2934,7 @@ static errr finish_parse_h(struct parser *p) {
 }
 
 struct file_parser h_parser = {
+	"p_hist",
 	init_parse_h,
 	run_parse_h,
 	finish_parse_h
@@ -2999,6 +3023,7 @@ static errr finish_parse_flavor(struct parser *p) {
 }
 
 struct file_parser flavor_parser = {
+	"flavor",
 	init_parse_flavor,
 	run_parse_flavor,
 	finish_parse_flavor
@@ -3075,6 +3100,7 @@ static errr finish_parse_s(struct parser *p) {
 }
 
 static struct file_parser s_parser = {
+	"spell",
 	init_parse_s,
 	run_parse_s,
 	finish_parse_s

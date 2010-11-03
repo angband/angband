@@ -18,8 +18,9 @@ const char *parser_error_str[PARSE_ERROR_MAX] = {
 	"invalid item number",
 	"invalid spell frequency",
 	"invalid value",
+	"invalid color",
+	"invalid effect"
 	"missing field",
-	"missing colon",
 	"missing record header",
 	"non-sequential records",
 	"not a number",
