@@ -3,6 +3,7 @@
  * Purpose: Spell and prayer casting/praying
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
+ * Copyright (c) 2010 Andi Sidwell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -27,9 +28,7 @@ struct spell_menu_data {
 	int spells[PY_MAX_SPELLS];
 	int n_spells;
 
-	const char *verb;
-	const char *noun;
-
+	bool browse;
 	bool (*is_valid)(int spell);
 
 	int selected_spell;
@@ -39,7 +38,7 @@ struct spell_menu_data {
 /**
  * Is item oid valid?
  */
-int spell_menu_valid(menu_type *m, int oid)
+static int spell_menu_valid(menu_type *m, int oid)
 {
 	struct spell_menu_data *d = menu_priv(m);
 	int *spells = d->spells;
@@ -50,7 +49,7 @@ int spell_menu_valid(menu_type *m, int oid)
 /**
  * Display a row of the spell menu
  */
-void spell_menu_display(menu_type *m, int oid, bool cursor,
+static void spell_menu_display(menu_type *m, int oid, bool cursor,
 		int row, int col, int wid)
 {
 	struct spell_menu_data *d = menu_priv(m);
@@ -98,13 +97,13 @@ void spell_menu_display(menu_type *m, int oid, bool cursor,
 /**
  * Handle an event on a menu row.
  */
-bool spell_menu_handler(menu_type *m, const ui_event_data *e, int oid)
+static bool spell_menu_handler(menu_type *m, const ui_event_data *e, int oid)
 {
 	struct spell_menu_data *d = menu_priv(m);
 
 	if (e->type == EVT_SELECT) {
 		d->selected_spell = d->spells[oid];
-		return FALSE;
+		return d->browse ? TRUE : FALSE;
 	} else if (e->type == EVT_KBRD) {
 		/* handle '?' here? */
 	}
@@ -115,7 +114,7 @@ bool spell_menu_handler(menu_type *m, const ui_event_data *e, int oid)
 /**
  * Show spell long description when browsing
  */
-void spell_menu_browser(int oid, void *data, const region *loc)
+static void spell_menu_browser(int oid, void *data, const region *loc)
 {
 	struct spell_menu_data *d = data;
 	int spell = d->spells[oid];
@@ -133,7 +132,7 @@ void spell_menu_browser(int oid, void *data, const region *loc)
 	text_out("\n");
 }
 
-menu_iter spell_menu_iter = {
+static const menu_iter spell_menu_iter = {
 	NULL,	/* get_tag = NULL, just use lowercase selections */
 	spell_menu_valid,
 	spell_menu_display,
@@ -141,50 +140,60 @@ menu_iter spell_menu_iter = {
 	NULL	/* no resize hook */
 };
 
-menu_type *spell_menu_new(int spells[], int n_spells,
-		bool (*is_valid)(int spell), const char *noun, const char *verb)
+static menu_type *spell_menu_new(const object_type *o_ptr,
+		bool (*is_valid)(int spell))
 {
 	menu_type *m = menu_new(MN_SKIN_SCROLL, &spell_menu_iter);
 	struct spell_menu_data *d = mem_alloc(sizeof *d);
 
+	region loc = { -60, 2, 60, -99 };
+
+	/* collect spells from object */
+	d->n_spells = spell_collect_from_book(o_ptr, d->spells);
+	if (d->n_spells == 0 || !spell_okay_list(is_valid, d->spells, d->n_spells))
+	{
+		mem_free(m);
+		mem_free(d);
+		return NULL;
+	}
+
 	/* copy across private data */
-	memcpy(d->spells, spells, sizeof(d->spells));
-	d->n_spells = n_spells;
 	d->is_valid = is_valid;
 	d->selected_spell = -1;
-	d->noun = noun;
-	d->verb = verb;
 
+	menu_setpriv(m, d->n_spells, d);
+
+	/* set flags */
 	m->flags = MN_CASELESS_TAGS;
 	m->selections = lower_case;
 	m->browse_hook = spell_menu_browser;
 
-	menu_setpriv(m, n_spells, d);
+	/* set size */
+	loc.page_rows = d->n_spells;
+	menu_layout(m, &loc);
 
 	return m;
 }
 
-void spell_menu_destroy(menu_type *m)
+static void spell_menu_destroy(menu_type *m)
 {
 	struct spell_menu_data *d = menu_priv(m);
 	mem_free(d);
 	mem_free(m);
 }
 
-int spell_menu_run(menu_type *m)
+static int spell_menu_select(menu_type *m, const char *noun, const char *verb)
 {
 	struct spell_menu_data *d = menu_priv(m);
-	region menu_loc = { -60, 2, 60, d->n_spells };
 
 	screen_save();
 
-	region_erase_bordered(&menu_loc);
-	prt(format("%^s which %s? ", d->verb, d->noun), 0, 0);
+	region_erase_bordered(&m->active);
+	prt(format("%^s which %s? ", verb, noun), 0, 0);
 	prt("Name", 1, Term->wid - 60);
 	prt("Lv Mana Fail Info", 1, Term->wid - 27);
 
 	screen_save();
-	menu_layout(m, &menu_loc);
 	menu_select(m, 0);
 	screen_load();
 
@@ -193,38 +202,59 @@ int spell_menu_run(menu_type *m)
 	return d->selected_spell;
 }
 
+static void spell_menu_browse(menu_type *m, const char *noun)
+{
+	struct spell_menu_data *d = menu_priv(m);
+
+	screen_save();
+
+	region_erase_bordered(&m->active);
+	prt(format("Browsing %ss.  Press Escape to exit.", noun), 0, 0);
+	prt("Name", 1, Term->wid - 60);
+	prt("Lv Mana Fail Info", 1, Term->wid - 27);
+
+	screen_save();
+	d->browse = TRUE;
+	menu_select(m, 0);
+	screen_load();
+
+	screen_load();
+}
+
 int get_spell(const object_type *o_ptr, const char *verb,
 		bool (*spell_test)(int spell))
 {
 	menu_type *m;
-
-	int spell;
-
-	int spells[PY_MAX_SPELLS];
-	int n_spells = 0;
-
 	const char *noun = (cp_ptr->spell_book == TV_MAGIC_BOOK ?
 			"spell" : "prayer");
 
-	n_spells = spell_collect_from_book(o_ptr, spells);
+	m = spell_menu_new(o_ptr, spell_test);
+	if (m) {
+		int spell = spell_menu_select(m, noun, verb);
+		spell_menu_destroy(m);
+		return spell;
+	}
 
-	if (n_spells == 0 || !spell_okay_list(spell_test, spells, n_spells))
-		return -2;
-
-	m = spell_menu_new(spells, n_spells, spell_test, noun, verb);
-	spell = spell_menu_run(m);
-	spell_menu_destroy(m);
-
-	return spell;
+	return -1;
 }
 
 void textui_spell_browse(object_type *o_ptr, int item)
 {
+	menu_type *m;
+	const char *noun = (cp_ptr->spell_book == TV_MAGIC_BOOK ?
+			"spell" : "prayer");
+
 	/* Track the object kind */
 	track_object(item);
 	handle_stuff();
 
-	get_spell(o_ptr, "browse", spell_okay_to_browse);
+	m = spell_menu_new(o_ptr, spell_okay_to_browse);
+	if (m) {
+		spell_menu_browse(m, noun);
+		spell_menu_destroy(m);
+	} else {
+		msg_print("You cannot browse that.");
+	}
 }
 
 
