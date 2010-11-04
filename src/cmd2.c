@@ -22,6 +22,7 @@
 #include "game-cmd.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "spells.h"
 
 /*
  * Go up one level

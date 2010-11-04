@@ -21,7 +21,7 @@
 #include "history.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
-
+#include "spells.h"
 
 /*
  * Increase players hit points, notice effects

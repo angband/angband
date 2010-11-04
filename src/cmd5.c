@@ -18,8 +18,9 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "object/tvalsval.h"
 #include "game-cmd.h"
+#include "object/tvalsval.h"
+#include "spells.h"
 
 /*
  * Returns chance of failure for a spell

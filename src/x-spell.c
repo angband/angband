@@ -20,7 +20,7 @@
 #include "cave.h"
 #include "effects.h"
 #include "object/tvalsval.h"
-
+#include "spells.h"
 
 /*
  * The defines below must match the spell numbers in spell.txt

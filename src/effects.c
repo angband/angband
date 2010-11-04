@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "effects.h"
 #include "monster/monster.h"
+#include "spells.h"
 
 /*
  * Entries for spell/activation descriptions

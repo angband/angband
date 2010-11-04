@@ -21,6 +21,7 @@
 #include "cmds.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "spells.h"
 #include "wizard.h"
 
 

@@ -18,9 +18,10 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "object/tvalsval.h"
 #include "monster/constants.h"
 #include "monster/monster.h"
+#include "object/tvalsval.h"
+#include "spells.h"
 
 /*
  * Determine if a bolt will arrive, checking that no monsters are in the way

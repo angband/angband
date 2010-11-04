@@ -23,6 +23,7 @@
 #include "init.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "spells.h"
 
 /*
  * Change dungeon level - e.g. by going up stairs or with WoR.
