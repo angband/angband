@@ -426,7 +426,7 @@ static OSErr spec_to_path(const FSSpec *spec, char *buf, size_t size)
  * Set creator and filetype of a file specified by POSIX-style pathname.
  * Returns 0 on success, -1 in case of errors.
  */
-void fsetfileinfo(cptr pathname, u32b fcreator, u32b ftype)
+static void fsetfileinfo(cptr pathname, u32b fcreator, u32b ftype)
 {
 	OSErr err;
 	FSSpec spec;
@@ -446,6 +446,19 @@ void fsetfileinfo(cptr pathname, u32b fcreator, u32b ftype)
 	/* Done */
 	return;
 }
+
+static void osx_file_open_hook(const char *path, file_type ftype)
+{
+	u32b mac_type = 'TEXT';
+		
+	if (ftype == FTYPE_RAW)
+		mac_type = 'DATA';
+	else if (ftype == FTYPE_SAVE)
+		mac_type = 'SAVE';
+		
+	fsetfileinfo(path, 'A271', mac_type);
+}
+
 
 
 /*
@@ -3793,6 +3806,9 @@ static void hook_quit(cptr str)
 static void init_paths(void)
 {
 	char path[1024];
+
+	/* Hook in to the file_open routine */
+	file_open_hook = osx_file_open_hook;
 
 	/* Default to the "lib" folder with the application */
 	if (locate_lib(path, sizeof(path)) == NULL)
