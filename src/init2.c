@@ -26,6 +26,7 @@
 #include "object/tvalsval.h"
 #include "option.h"
 #include "parser.h"
+#include "squelch.h"
 
 /*
  * This file is used to initialize various variables and arrays for the

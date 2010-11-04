@@ -24,6 +24,7 @@
 #include "history.h"
 #include "inventory.h"
 #include "spells.h"
+#include "squelch.h"
 #include "tvalsval.h"
 
 /*

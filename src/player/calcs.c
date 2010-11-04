@@ -22,6 +22,7 @@
 #include "game-event.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "squelch.h"
 
 /*
  * Calculate number of spells player should have, and forget,

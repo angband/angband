@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "game-cmd.h"
 #include "monster/monster.h"
+#include "squelch.h"
 
 /* 
  * Height of the help screen; any higher than 4 will overlap the health

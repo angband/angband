@@ -22,6 +22,7 @@
 #include "monster/monster.h"
 #include "object/tvalsval.h"
 #include "spells.h"
+#include "squelch.h"
 
 /*
  * Increase players hit points, notice effects

@@ -22,6 +22,7 @@
 #include "history.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "squelch.h"
 #include "store.h"
 #include "ui.h"
 #include "ui-menu.h"

@@ -21,6 +21,7 @@
 #include "history.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "squelch.h"
 
 static ang_file *fff;
 

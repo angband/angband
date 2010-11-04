@@ -26,6 +26,7 @@
 #include "history.h"
 #include "object/tvalsval.h"
 #include "option.h"
+#include "squelch.h"
 #include "ui.h"
 #include "ui-menu.h"
 

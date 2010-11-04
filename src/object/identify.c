@@ -23,6 +23,7 @@
 #include "history.h"
 #include "object/tvalsval.h"
 #include "spells.h"
+#include "squelch.h"
 
 /** Time last item was wielded */
 s32b object_last_wield;

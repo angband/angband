@@ -22,6 +22,7 @@
 #include "history.h"
 #include "object/inventory.h"
 #include "object/tvalsval.h"
+#include "squelch.h"
 #include "ui-menu.h"
 
 /*

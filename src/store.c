@@ -26,6 +26,7 @@
 #include "object/inventory.h"
 #include "object/tvalsval.h"
 #include "spells.h"
+#include "squelch.h"
 #include "ui-menu.h"
 #include "z-debug.h"
 

@@ -23,6 +23,7 @@
 #include "monster/monster.h"
 #include "object/tvalsval.h"
 #include "spells.h"
+#include "squelch.h"
 
 /*
  * Go up one level
