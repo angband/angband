@@ -18,11 +18,8 @@
  */
 
 #include "angband.h"
+#include "prefs.h"
 #include "squelch.h"
-
-/*** Pref file saving code ***/
-
-
 
 /*
  * Header and footer marker string for pref file dumps

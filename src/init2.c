@@ -26,6 +26,7 @@
 #include "object/tvalsval.h"
 #include "option.h"
 #include "parser.h"
+#include "prefs.h"
 #include "squelch.h"
 
 /*

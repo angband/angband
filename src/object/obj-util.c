@@ -23,6 +23,7 @@
 #include "game-cmd.h"
 #include "history.h"
 #include "inventory.h"
+#include "prefs.h"
 #include "spells.h"
 #include "squelch.h"
 #include "tvalsval.h"

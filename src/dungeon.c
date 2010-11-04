@@ -23,6 +23,7 @@
 #include "init.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "prefs.h"
 #include "spells.h"
 #include "target.h"
 
