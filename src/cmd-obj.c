@@ -19,11 +19,12 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "object/tvalsval.h"
-#include "object/object.h"
-#include "game-cmd.h"
 #include "cmds.h"
 #include "effects.h"
+#include "game-cmd.h"
+#include "object/object.h"
+#include "object/tvalsval.h"
+#include "spells.h"
 
 /*** Utility bits and bobs ***/
 

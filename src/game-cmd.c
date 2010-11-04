@@ -15,10 +15,12 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "cmds.h"
 #include "game-cmd.h"
 #include "object/object.h"
-#include "cmds.h"
+#include "spells.h"
 
 errr (*cmd_get_hook)(cmd_context c, bool wait);
 

@@ -414,13 +414,6 @@ extern void build_gamma_table(int gamma);
 extern byte gamma_table[256];
 #endif /* SUPPORT_GAMMA */
 
-/* x-spell.c */
-extern int get_spell_index(const object_type *o_ptr, int index);
-extern cptr get_spell_name(int tval, int index);
-extern void get_spell_info(int tval, int index, char *buf, size_t len);
-extern bool cast_spell(int tval, int index, int dir);
-extern bool spell_needs_aim(int tval, int spell);
-
 /* xtra2.c */
 void check_experience(void);
 void gain_exp(s32b amount);
