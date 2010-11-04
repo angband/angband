@@ -352,11 +352,6 @@ bool get_aim_dir(int *dp);
 void target_get(s16b *col, s16b *row);
 s16b target_get_monster(void);
 
-/* trap.c */
-extern void hit_trap(int y, int x);
-extern void pick_trap(int y, int x);
-extern void place_trap(int y, int x);
-
 /* util.c */
 extern void text_to_ascii(char *buf, size_t len, cptr str);
 extern void ascii_to_text(char *buf, size_t len, cptr str);

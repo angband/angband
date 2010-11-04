@@ -22,6 +22,7 @@
 #include "monster/constants.h"
 #include "monster/monster.h"
 #include "squelch.h"
+#include "trap.h"
 
 /*
  * Helper function -- return a "nearby" race for polymorphing

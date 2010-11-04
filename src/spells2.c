@@ -23,6 +23,7 @@
 #include "object/tvalsval.h"
 #include "spells.h"
 #include "squelch.h"
+#include "trap.h"
 
 /*
  * Increase players hit points, notice effects

@@ -25,6 +25,7 @@
 #include "object/tvalsval.h"
 #include "spells.h"
 #include "squelch.h"
+#include "trap.h"
 
 /*
  * Go up one level

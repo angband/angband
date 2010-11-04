@@ -20,7 +20,7 @@
 #include "cave.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
-
+#include "trap.h"
 
 /*
  * Note that Level generation is *not* an important bottleneck,
