@@ -96,6 +96,7 @@ ANGFILES = \
 	pathfind.o \
 	prefs.o \
 	player/calcs.o \
+	player/player.o \
 	player/timed.o \
 	player/util.o \
 	score.o \

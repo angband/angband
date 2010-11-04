@@ -192,7 +192,7 @@ bool do_dec_stat(int stat, bool perma)
 	}
 
 	/* Attempt to reduce the stat */
-	if (dec_stat(stat, perma))
+	if (player_stat_dec(p_ptr, stat, perma))
 	{
 		/* Message */
 		message_format(MSG_DRAIN_STAT, stat, "You feel very %s.", desc_stat_neg[stat]);
@@ -237,7 +237,7 @@ bool do_inc_stat(int stat)
 	res = res_stat(stat);
 
 	/* Attempt to increase */
-	if (inc_stat(stat))
+	if (player_stat_inc(p_ptr, stat))
 	{
 		/* Message */
 		msg_format("You feel very %s!", desc_stat_pos[stat]);
@@ -3249,12 +3249,12 @@ void ring_of_power(int dir)
 			msg_print("You are surrounded by a malignant aura.");
 
 			/* Decrease all stats (permanently) */
-			(void)dec_stat(A_STR, TRUE);
-			(void)dec_stat(A_INT, TRUE);
-			(void)dec_stat(A_WIS, TRUE);
-			(void)dec_stat(A_DEX, TRUE);
-			(void)dec_stat(A_CON, TRUE);
-			(void)dec_stat(A_CHR, TRUE);
+			player_stat_dec(p_ptr, A_STR, TRUE);
+			player_stat_dec(p_ptr, A_INT, TRUE);
+			player_stat_dec(p_ptr, A_WIS, TRUE);
+			player_stat_dec(p_ptr, A_DEX, TRUE);
+			player_stat_dec(p_ptr, A_CON, TRUE);
+			player_stat_dec(p_ptr, A_CHR, TRUE);
 
 			/* Lose some experience (permanently) */
 			p_ptr->exp -= (p_ptr->exp / 4);

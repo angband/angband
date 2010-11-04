@@ -779,7 +779,7 @@ bool spell_cast(int spell, int dir)
 			msg_print("You have damaged your health!");
 
 			/* Reduce constitution */
-			(void)dec_stat(A_CON, perm);
+			player_stat_dec(p_ptr, A_CON, perm);
 		}
 	}
 
