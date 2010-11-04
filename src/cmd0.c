@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmds.h"
+#include "files.h"
 #include "game-cmd.h"
 #include "monster/monster.h"
 #include "ui-menu.h"

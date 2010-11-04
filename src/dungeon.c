@@ -20,6 +20,7 @@
 #include "button.h"
 #include "cave.h"
 #include "cmds.h"
+#include "files.h"
 #include "game-event.h"
 #include "generate.h"
 #include "init.h"

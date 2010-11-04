@@ -23,6 +23,7 @@
 #include "cave.h"
 #include "cmds.h"
 #include "externs.h"
+#include "files.h"
 #include "history.h"
 #include "object/tvalsval.h"
 #include "option.h"

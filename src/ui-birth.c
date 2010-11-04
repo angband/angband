@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "button.h"
 #include "cmds.h"
+#include "files.h"
 #include "game-cmd.h"
 #include "game-event.h"
 #include "ui-birth.h"
