@@ -52,14 +52,6 @@ extern const grouper object_text_order[];
 
 /* variable.c */
 extern cptr copyright;
-extern byte version_major;
-extern byte version_minor;
-extern byte version_patch;
-extern byte version_extra;
-extern byte sf_major;
-extern byte sf_minor;
-extern byte sf_patch;
-extern byte sf_extra;
 extern bool arg_wizard;
 extern bool arg_rebalance;
 extern int arg_graphics;

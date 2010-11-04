@@ -5,6 +5,13 @@
 #include "z-util.h"
 #include "z-virt.h"
 
+int max_macrotrigger = 0;
+char *macro_template = NULL;
+char *macro_modifier_chr;
+char *macro_modifier_name[MAX_MACRO_MOD];
+char *macro_trigger_name[MAX_MACRO_TRIGGER];
+char *macro_trigger_keycode[2][MAX_MACRO_TRIGGER];
+
 s16b macro__num;
 char **macro__pat;
 char **macro__act;

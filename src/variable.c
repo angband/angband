@@ -35,23 +35,6 @@ const char *copyright =
 	"   and not for profit purposes provided that this copyright and statement\n"
 	"   are included in all such copies.  Other copyrights may also apply.\n";
 
-
-/*
- * Executable version
- */
-byte version_major = VERSION_MAJOR;
-byte version_minor = VERSION_MINOR;
-byte version_patch = VERSION_PATCH;
-byte version_extra = VERSION_EXTRA;
-
-/*
- * Savefile version
- */
-byte sf_major;			/* Savefile's "version_major" */
-byte sf_minor;			/* Savefile's "version_minor" */
-byte sf_patch;			/* Savefile's "version_patch" */
-byte sf_extra;			/* Savefile's "version_extra" */
-
 /*
  * Run-time arguments
  */
@@ -131,23 +114,6 @@ bool closing_flag;		/* Dungeon is closing */
 char savefile[1024];
 char panic_savefile[1024];
 
-
-/*
- * Number of active macros.
- */
-s16b macro__num;
-
-/*
- * Array of macro patterns [MACRO_MAX]
- */
-char **macro__pat;
-
-/*
- * Array of macro actions [MACRO_MAX]
- */
-char **macro__act;
-
-
 /*
  * The array[ANGBAND_TERM_MAX] of window pointers
  */
@@ -170,15 +136,6 @@ char angband_term_name[ANGBAND_TERM_MAX][16] =
 	"Term-6",
 	"Term-7"
 };
-
-
-int max_macrotrigger = 0;
-char *macro_template = NULL;
-char *macro_modifier_chr;
-char *macro_modifier_name[MAX_MACRO_MOD];
-char *macro_trigger_name[MAX_MACRO_TRIGGER];
-char *macro_trigger_keycode[2][MAX_MACRO_TRIGGER];
-
 
 /*
  * Global table of color definitions (mostly zeros)
