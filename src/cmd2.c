@@ -21,6 +21,7 @@
 #include "cave.h"
 #include "cmds.h"
 #include "game-cmd.h"
+#include "generate.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
 #include "spells.h"

@@ -249,16 +249,6 @@ extern void save_game(void);
 extern void close_game(void);
 extern void exit_game_panic(void);
 
-/* generate.c */
-extern int level_hgt;
-extern int level_wid;
-void place_object(int y, int x, int level, bool good, bool great);
-void place_gold(int y, int x, int level);
-void place_secret_door(int y, int x);
-void place_closed_door(int y, int x);
-void place_random_door(int y, int x);
-extern void generate_cave(void);
-
 /* load.c */
 extern bool old_load(void);
 

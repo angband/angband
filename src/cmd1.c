@@ -21,6 +21,7 @@
 #include "attack.h"
 #include "cave.h"
 #include "cmds.h"
+#include "generate.h"
 #include "history.h"
 #include "monster/monster.h"
 #include "object/inventory.h"

@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "generate.h"
 #include "object/tvalsval.h"
 #include "monster/constants.h"
 #include "monster/monster.h"
