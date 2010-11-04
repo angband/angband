@@ -220,11 +220,6 @@ const size_t squelch_size;
  * Automatically generated "function declarations"
  */
 
-/* attack.c */
-extern int breakage_chance(const object_type *o_ptr);
-extern bool test_hit(int chance, int ac, int vis);
-extern void py_attack(int y, int x);
-
 /* birth.c */
 extern void player_birth(bool quickstart_allowed);
 
