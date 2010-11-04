@@ -3,10 +3,10 @@
 CFLAGS+=-I../ -I. -g
 -include config
 
+all : build run
+
 SUITES := $(shell find . -maxdepth 1 -mindepth 1 -type d)
 include $(patsubst %,%/suite.mk,$(SUITES))
-
-all : build run
 
 build : $(TESTPROGS)
 
