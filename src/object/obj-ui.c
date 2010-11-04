@@ -1,5 +1,5 @@
 /*
- * File: object1.c
+ * File: obj-ui.c
  * Purpose: Mainly object descriptions and generic UI functions
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
@@ -15,7 +15,9 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "button.h"
 #include "tvalsval.h"
 
 

@@ -208,32 +208,8 @@ extern flag_cache *slay_cache;
 
 extern u16b daycount;
 
-/* history.c */
-extern history_info *history_list;
-
-/* squelch.c */
-extern byte squelch_level[];
-const size_t squelch_size;
-
-
-/*
- * Automatically generated "function declarations"
- */
-
 /* birth.c */
 extern void player_birth(bool quickstart_allowed);
-
-/* button.c */
-int button_add_text(const char *label, unsigned char keypress);
-int button_add(const char *label, unsigned char keypress);
-void button_backup_all(void);
-void button_restore(void);
-int button_kill_text(unsigned char keypress);
-int button_kill(unsigned char keypress);
-void button_kill_all(void);
-void button_init(button_add_f add, button_kill_f kill);
-char button_get_key(int x, int y);
-size_t button_print(int row, int col);
 
 /* cmd1.c */
 extern bool search(bool verbose);

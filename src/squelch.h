@@ -26,4 +26,7 @@ void squelch_drop(void);
 void do_cmd_options_item(const char *title, int row);
 bool squelch_interactive(const object_type *o_ptr);
 
+extern byte squelch_level[];
+const size_t squelch_size;
+
 #endif /* !SQUELCH_H */
