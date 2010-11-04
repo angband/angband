@@ -20,7 +20,7 @@
 #include "cave.h"
 #include "history.h"
 #include "object/tvalsval.h"
-
+#include "target.h"
 
 /*
  * Delete a monster by index.

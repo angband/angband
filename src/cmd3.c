@@ -23,6 +23,7 @@
 #include "object/inventory.h"
 #include "object/tvalsval.h"
 #include "squelch.h"
+#include "target.h"
 
 /*
  * Display inventory

@@ -23,6 +23,7 @@
 #include "object/tvalsval.h"
 #include "spells.h"
 #include "squelch.h"
+#include "target.h"
 #include "trap.h"
 
 /*

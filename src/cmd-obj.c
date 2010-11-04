@@ -25,6 +25,7 @@
 #include "object/object.h"
 #include "object/tvalsval.h"
 #include "spells.h"
+#include "target.h"
 
 /*** Utility bits and bobs ***/
 
