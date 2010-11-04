@@ -6,6 +6,12 @@
 #include "player/types.h"
 
 /* calcs.c */
+extern const byte adj_chr_gold[STAT_RANGE];
+extern const byte adj_str_blow[STAT_RANGE];
+extern const byte adj_dex_safe[STAT_RANGE];
+extern const byte adj_con_fix[STAT_RANGE];
+extern const byte adj_str_hold[STAT_RANGE];
+
 void calc_bonuses(object_type inventory[], player_state *state, bool id_only);
 int calc_blows(const object_type *o_ptr, player_state *state);
 void notice_stuff(void);

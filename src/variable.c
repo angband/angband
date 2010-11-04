@@ -112,7 +112,6 @@ bool closing_flag;		/* Dungeon is closing */
  * Buffer to hold the current savefile name
  */
 char savefile[1024];
-char panic_savefile[1024];
 
 /*
  * The array[ANGBAND_TERM_MAX] of window pointers
