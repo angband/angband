@@ -63,6 +63,8 @@ static int test_d0(void *state) {
 	eq(r, PARSE_ERROR_NONE);
 	r = parser_parse(state, "D: bar");
 	eq(r, PARSE_ERROR_NONE);
+	f = parser_priv(state);
+	require(f);
 	require(streq(f->text, "foo bar"));
 	eq(f->fidx, 2);
 	ok;
