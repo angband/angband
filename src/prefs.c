@@ -18,6 +18,7 @@
  */
 
 #include "angband.h"
+#include "macro.h"
 #include "prefs.h"
 #include "squelch.h"
 

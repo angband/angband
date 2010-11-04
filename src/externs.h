@@ -5,13 +5,6 @@
  * Automatically generated "variable" declarations
  */
 
-extern int max_macrotrigger;
-extern char *macro_template;
-extern char *macro_modifier_chr;
-extern char *macro_modifier_name[MAX_MACRO_MOD];
-extern char *macro_trigger_name[MAX_MACRO_TRIGGER];
-extern char *macro_trigger_keycode[2][MAX_MACRO_TRIGGER];
-
 /* pathfind.c */
 extern char pf_result[];
 extern int pf_result_index;
@@ -107,9 +100,6 @@ extern bool good_item_flag;
 extern bool closing_flag;
 extern char savefile[1024];
 extern char panic_savefile[1024];
-extern s16b macro__num;
-extern char **macro__pat;
-extern char **macro__act;
 extern term *angband_term[ANGBAND_TERM_MAX];
 extern char angband_term_name[ANGBAND_TERM_MAX][16];
 extern byte angband_color_table[MAX_COLORS][4];
@@ -145,7 +135,6 @@ extern byte misc_to_attr[256];
 extern char misc_to_char[256];
 extern byte tval_to_attr[128];
 extern char macro_buffer[1024];
-extern char *keymap_act[KEYMAP_MODES][256];
 extern const player_sex *sp_ptr;
 extern const player_race *rp_ptr;
 extern const player_class *cp_ptr;
@@ -284,11 +273,6 @@ extern void ascii_to_text(char *buf, size_t len, cptr str);
 extern char *find_roman_suffix_start(cptr buf);
 extern int roman_to_int(const char *roman);
 extern int int_to_roman(int n, char *roman, size_t bufsize);
-extern int macro_find_exact(cptr pat);
-extern errr macro_add(cptr pat, cptr act);
-extern errr macro_init(void);
-extern errr macro_free(void);
-extern errr macro_trigger_free(void);
 extern void flush(void);
 extern void flush_fail(void);
 extern char inkey(void);

@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cmds.h"
 #include "history.h"
+#include "macro.h"
 #include "object/tvalsval.h"
 #include "target.h"
 

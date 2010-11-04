@@ -183,12 +183,6 @@
  */
 #define TEMP_MAX 1536
 
-
-/*
- * OPTION: Maximum number of macros (see "util.c")
- */
-#define MACRO_MAX	512
-
 /*
  * OPTION: Maximum number of autoinscriptions(see "object1.c")
  */

@@ -23,6 +23,7 @@
 #include "game-cmd.h"
 #include "game-event.h"
 #include "init.h"
+#include "macro.h"
 #include "monster/constants.h"
 #include "object/tvalsval.h"
 #include "option.h"
