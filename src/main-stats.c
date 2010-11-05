@@ -9,11 +9,17 @@
 static int randarts = 0;
 static int verbose = 0;
 static int nextkey = 0;
+static int running_stats = 0;
 
 /* Copied from birth.c:generate_player() */
 static void generate_player_for_stats()
 {
 	OPT(birth_randarts) = randarts;
+	OPT(birth_no_stacking) = FALSE;
+	OPT(quick_messages) = TRUE;
+	OPT(auto_more) = TRUE;
+
+	p_ptr->wizard = 1; /* Set wizard mode on */
 
 	p_ptr->psex = 0;   /* Female  */
 	p_ptr->race = races;  /* Human   */
@@ -33,8 +39,8 @@ static void generate_player_for_stats()
 	/* Hitdice */
 	p_ptr->hitdie = rp_ptr->r_mhp + cp_ptr->c_mhp;
 
-	/* Initial hitpoints */
-	p_ptr->mhp = p_ptr->hitdie;
+	/* Initial hitpoints -- high just to be safe */
+	p_ptr->mhp = p_ptr->chp = 2000;
 
 	/* Pre-calculate level 1 hitdice */
 	p_ptr->player_hp[0] = p_ptr->hitdie;
@@ -156,7 +162,6 @@ static void descend_dungeon(void)
 	{
 		dungeon_change_level(level);
 		generate_cave();
-		/* printf("Depth: %d\n", p_ptr->depth); */
 		kill_all_monsters();
 		print_all_objects();
 	}
@@ -226,6 +231,10 @@ static errr term_xtra_event(int v) {
 		Term_keypress(nextkey, 0);
 		nextkey = 0;
 	}
+	if (running_stats) {
+		return 0;
+	}
+	running_stats = 1;
 	return run_stats();
 }
 
@@ -287,6 +296,10 @@ static void term_data_link(int i) {
 	term *t = &td.t;
 
 	term_init(t, 80, 24, 256);
+
+	/* Ignore some actions for efficiency and safety */
+	t->never_bored = TRUE;
+	t->never_frosh = TRUE;
 
 	t->init_hook = term_init_stats;
 	t->nuke_hook = term_nuke_stats;
