@@ -134,9 +134,9 @@ static char *ANGBAND_DIR_USER_SDL;
 /*
  * Used as 'system' font
  */
-static cptr DEFAULT_FONT_FILE = "6x10.fon";
+static cptr DEFAULT_FONT_FILE = "6x10x.fon";
 
-#define MAX_FONTS 20
+#define MAX_FONTS 40
 char *FontList[MAX_FONTS];
 static int num_fonts = 0;
 
