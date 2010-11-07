@@ -420,6 +420,7 @@ static bool target_set_interactive_accept(int y, int x)
  *
  * Return the number of target_able monsters in the set.
  */
+/* XXX: Untangle this. The whole temp_* thing is complete madness. */
 static void target_set_interactive_prepare(int mode)
 {
 	int y, x;

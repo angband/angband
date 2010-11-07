@@ -192,42 +192,24 @@ typedef struct
 	bool aware;
 } squelch_choice;
 
-
-/*
- * Sort by name in squelch menus.
- */
-static void ang_sort_swap_hook_squelch_choices(void *u, void *v, int a, int b)
-{
-	squelch_choice temp;
-	squelch_choice *x = (squelch_choice *) u;
-
-	(void)v; /* unused */
-
-	temp = x[a];
-	x[a] = x[b];
-	x[b] = temp;
-}
-
-
 /*
  * Ordering function for squelch choices.
  * Aware comes before unaware, and then sort alphabetically.
  */
-static bool ang_sort_comp_hook_squelch_choices(const void *u, const void *v,
-		int a, int b)
+static int cmp_squelch(const void *a, const void *b)
 {
 	char bufa[80];
 	char bufb[80];
-	squelch_choice *x = (squelch_choice *) u;
-	(void)v; /* unused */
+	const squelch_choice *x = (squelch_choice *)a;
+	const squelch_choice *y = (squelch_choice *)b;
 
-	if (x[a].aware && !x[b].aware)
+	if (x->aware && !y->aware)
 		return TRUE;
-	if (!x[a].aware && x[b].aware)
+	if (!x->aware && y->aware)
 		return FALSE;
 
-	object_kind_name(bufa, sizeof(bufa), x[a].idx, x[a].aware);
-	object_kind_name(bufb, sizeof(bufb), x[b].idx, x[b].aware);
+	object_kind_name(bufa, sizeof(bufa), x->idx, x->aware);
+	object_kind_name(bufb, sizeof(bufb), y->idx, y->aware);
 
 	/* the = is crucial, inf loop in sort if use < rather than <= */
 	return strcmp(bufa, bufb) <= 0;
@@ -999,9 +981,7 @@ static bool sval_menu(int tval, const char *desc)
 
 		default:
 			/* sort by name */
-			ang_sort_comp = ang_sort_comp_hook_squelch_choices;
-			ang_sort_swap = ang_sort_swap_hook_squelch_choices;
-			ang_sort((void*)choice, NULL, num);
+			sort(choice, num, sizeof(*choice), cmp_squelch);
 	}
 
 

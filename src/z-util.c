@@ -15,15 +15,15 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
+#include <stdlib.h>
+
 #include "z-util.h"
-
-
 
 /*
  * Convenient storage of the program name
  */
 char *argv0 = NULL;
-
 
 /*
  * Case insensitive comparison between two strings
@@ -362,4 +362,10 @@ int variance(int *nums, int size)
     	}
 
     	return total / size;
+}
+
+void sort(void *base, size_t nmemb, size_t smemb,
+          int (*comp)(const void *, const void *))
+{
+	qsort(base, nmemb, smemb, comp);
 }

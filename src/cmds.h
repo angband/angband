@@ -145,6 +145,8 @@ typedef enum
 	USE_SINGLE
 } use_type;
 
+/* XXX */
+extern int cmp_monsters(const void *a, const void *b);
 
 #endif
 
