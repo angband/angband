@@ -1755,6 +1755,7 @@ void store_reset(void) {
 	for (i = 0; i < MAX_STORES; i++) {
 		s = &store[i];
 		s->stock_num = 0;
+		store_shuffle(i);
 		for (j = 0; j < s->stock_size; j++)
 			object_wipe(&s->stock[j]);
 		if (i == STORE_HOME)
@@ -1771,10 +1772,6 @@ void store_shuffle(int which)
 {
 	store_type *st_ptr = &store[which];
 	struct owner *o = st_ptr->owner;
-
-	/* Ignore home */
-	if (which == STORE_HOME) return;
-
 
 	while (o == st_ptr->owner)
 	    o = store_choose_owner(st_ptr);

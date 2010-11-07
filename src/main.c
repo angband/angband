@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "files.h"
 #include "init.h"
 
 /*
