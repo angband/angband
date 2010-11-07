@@ -388,13 +388,8 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	/* Disable the roguelike commands for the duration */
 	OPT(rogue_like_commands) = FALSE;
 
-
-
-	/* Do the group by. ang_sort only works on (void **) */
-	/* Maybe should make this a precondition? */
 	if (g_funcs.gcomp)
-		qsort(obj_list, o_count, sizeof(*obj_list), g_funcs.gcomp);
-
+		sort(obj_list, o_count, sizeof(*obj_list), g_funcs.gcomp);
 
 	/* Sort everything into group order */
 	g_list = C_ZNEW(max_group + 1, int);

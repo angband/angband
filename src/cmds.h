@@ -95,8 +95,6 @@ void do_cmd_target(void);
 void do_cmd_target_closest(void);
 void do_cmd_look(void);
 void do_cmd_locate(void);
-bool ang_sort_comp_hook(const void *u, const void *v, int a, int b);
-void ang_sort_swap_hook(void *u, void *v, int a, int b);
 void do_cmd_query_symbol(void);
 void do_cmd_center_map(void);
 
