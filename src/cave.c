@@ -1064,13 +1064,21 @@ static void move_cursor_relative_map(int y, int x)
 		/* Location relative to panel */
 		ky = y - t->offset_y;
 
+		if (tile_height > 1)
+		{
+		        ky = tile_height * ky;
+		}
+
 		/* Verify location */
 		if ((ky < 0) || (ky >= t->hgt)) continue;
 
 		/* Location relative to panel */
 		kx = x - t->offset_x;
 
-		if (use_bigtile) kx += kx;
+		if (tile_width > 1)
+		{
+		        kx = tile_width * kx;
+		}
 
 		/* Verify location */
 		if ((kx < 0) || (kx >= t->wid)) continue;
@@ -1115,17 +1123,14 @@ void move_cursor_relative(int y, int x)
 	/* Location in window */
 	vx = kx + COL_MAP;
 
-	if (use_trptile)
+	if (tile_width > 1)
 	{
-	        vx += (use_bigtile ? 5 : 2) * kx;
-		vy += 2 * ky;
+	        vx = tile_width * kx;
 	}
-	else if (use_dbltile)
+	if (tile_height > 1)
 	{
-	        vx += (use_bigtile ? 3 : 1) * kx;
-		vy += ky;
+		vy = tile_height * ky;
 	}
-	else if (use_bigtile) vx += kx;
 
 	/* Go there */
 	(void)Term_gotoxy(vx, vy);
@@ -1160,15 +1165,21 @@ static void print_rel_map(char c, byte a, int y, int x)
 		/* Location relative to panel */
 		ky = y - t->offset_y;
 
+		if (tile_height > 1)
+		{
+		        ky = tile_height * ky;
+			if (ky + 1 >= t->hgt) continue;
+		}
+
 		/* Verify location */
 		if ((ky < 0) || (ky >= t->hgt)) continue;
 
 		/* Location relative to panel */
 		kx = x - t->offset_x;
 
-		if (use_bigtile)
+		if (tile_width > 1)
 		{
-			kx += kx;
+		        kx = tile_width * kx;
 			if (kx + 1 >= t->wid) continue;
 		}
 
@@ -1178,13 +1189,10 @@ static void print_rel_map(char c, byte a, int y, int x)
 		/* Hack -- Queue it */
 		Term_queue_char(t, kx, ky, a, c, 0, 0);
 
-		if (use_bigtile)
+		if ((tile_width > 1) || (tile_height > 1))
 		{
-			/* Mega-Hack : Queue dummy char */
-			if (a & 0x80)
-				Term_queue_char(t, kx+1, ky, 255, -1, 0, 0);
-			else
-				Term_queue_char(t, kx+1, ky, TERM_WHITE, ' ', 0, 0);
+		        /* Mega-Hack : Queue dummy chars */
+		        Term_big_queue_char(Term, kx, ky, a, c, 0, 0);
 		}
 	}
 }
@@ -1226,24 +1234,21 @@ void print_rel(char c, byte a, int y, int x)
 	/* Location in window */
 	vx = kx + COL_MAP;
 
-	if (use_trptile)
+	if (tile_width > 1)
 	{
-	        vx += (use_bigtile ? 5 : 2) * kx;
-		vy += 2 * ky;
+	        vx = tile_width * kx;
 	}
-	else if (use_dbltile)
+	if (tile_height > 1)
 	{
-	        vx += (use_bigtile ? 3 : 1) * kx;
-		vy += ky;
+		vy = tile_height * ky;
 	}
-	else if (use_bigtile) vx += kx;
 
 	/* Hack -- Queue it */
 	Term_queue_char(Term, vx, vy, a, c, 0, 0);
 
-	if (use_bigtile || use_dbltile || use_trptile)
+	if ((tile_width > 1) || (tile_height > 1))
 	{
-	        /* Mega-Hack : Queue dummy char */
+	        /* Mega-Hack : Queue dummy chars */
 	        Term_big_queue_char(Term, vx, vy, a, c, 0, 0);
 	}
   
@@ -1365,35 +1370,29 @@ static void prt_map_aux(void)
 		if (!(op_ptr->window_flag[j] & (PW_MAP))) continue;
 
 		/* Assume screen */
-		ty = t->offset_y + t->hgt;
-		tx = t->offset_x + t->wid;
-
-		if (use_bigtile) tx = t->offset_x + (t->wid / 2);
+		ty = t->offset_y + (t->hgt / tile_height);
+		tx = t->offset_x + (t->wid / tile_width);
 
 		/* Dump the map */
 		for (y = t->offset_y, vy = 0; y < ty; vy++, y++)
 		{
+		        if (vy + tile_height - 1 >= t->hgt) continue;
 			for (x = t->offset_x, vx = 0; x < tx; vx++, x++)
 			{
 				/* Check bounds */
 				if (!in_bounds(y, x)) continue;
 
-				if (use_bigtile && (vx + 1 >= t->wid)) continue;
+				if (vx + tile_width - 1 >= t->wid) continue;
 
 				/* Determine what is there */
 				map_info(y, x, &g);
 				grid_data_as_text(&g, &a, &c, &ta, &tc);
 				Term_queue_char(t, vx, vy, a, c, ta, tc);
 
-				if (use_bigtile)
+				if ((tile_width > 1) || (tile_height > 1))
 				{
-					vx++;
-
-					/* Mega-Hack : Queue dummy char */
-					if (a & 0x80)
-						Term_queue_char(t, vx, vy, 255, -1, 0, 0);
-					else
-						Term_queue_char(t, vx, vy, TERM_WHITE, ' ', TERM_WHITE, ' ');
+					/* Mega-Hack : Queue dummy chars */
+					Term_big_queue_char(t, vx, vy, 255, -1, 0, 0);
 				}
 			}
 		}
@@ -1443,25 +1442,20 @@ void prt_map(void)
 			/* Hack -- Queue it */
 			Term_queue_char(Term, vx, vy, a, c, ta, tc);
 
-			if (use_bigtile || use_dbltile || use_trptile)
+			if ((tile_width > 1) || (tile_height > 1))
 			{
 			        Term_big_queue_char(Term, vx, vy, a, c, TERM_WHITE, ' ');
 	      
-				if (use_trptile)
+				if (tile_width > 1)
 				{
-				        vx += (use_bigtile ? 5 : 2);
+				        vx += tile_width - 1;
 				}
-				else
-				        vx+= ((use_dbltile && use_bigtile) ? 3 : 1);
 			}
 		}
       
-		if (use_trptile)
-		        vy++;
+		if (tile_height > 1)
+		        vy += tile_height - 1;
       
-		if (use_dbltile || use_trptile)
-		        vy++;
-
 	}
 }
 
@@ -1637,8 +1631,14 @@ void display_map(int *cy, int *cx)
 			row = (y * map_hgt / dungeon_hgt);
 			col = (x * map_wid / dungeon_wid);
 
-			if (use_bigtile)
-				col = col & ~1;
+			if (tile_width > 1)
+			{
+			        col = col - (col % tile_width);
+			}
+			if (tile_height > 1)
+			{
+			        row = row - (row % tile_height);
+			}
 
 			/* Get the attr/char at that map location */
 			map_info(y, x, &g);
@@ -1653,7 +1653,7 @@ void display_map(int *cy, int *cx)
 				/* Add the character */
 				Term_putch(col + 1, row + 1, ta, tc);
 
-				if (use_bigtile || use_dbltile || use_trptile)
+				if ((tile_width > 1) || (tile_height > 1))
 				{
 				        Term_big_putch(col + 1, row + 1, ta, tc);
 				}
@@ -1669,18 +1669,14 @@ void display_map(int *cy, int *cx)
 	row = (py * map_hgt / dungeon_hgt);
 	col = (px * map_wid / dungeon_wid);
 
-	if (use_trptile)
+	if (tile_width > 1)
 	{
-	        col = col - (col % (use_bigtile ? 6 : 3));
-		row = row - (row % 3);
+	        col = col - (col % tile_width);
 	}
-	else if (use_dbltile)
+	if (tile_height > 1)
 	{
-	        col = col & ~(use_bigtile ? 3 : 1);
-		row = row & ~1;
+		row = row - (row % tile_height);
 	}
-	else if (use_bigtile)
-		col = col & ~1;
 
 	/*** Make sure the player is visible ***/
 
@@ -1693,7 +1689,7 @@ void display_map(int *cy, int *cx)
 	/* Draw the player */
 	Term_putch(col + 1, row + 1, ta, tc);
 
-	if (use_bigtile || use_dbltile || use_trptile)
+	if ((tile_width > 1) || (tile_height > 1))
 	{
 	        Term_big_putch(col + 1, row + 1, ta, tc);
 	}

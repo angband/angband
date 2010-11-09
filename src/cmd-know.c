@@ -212,65 +212,36 @@ static int feat_order(int feat)
 extern void big_pad(int col, int row, byte a, byte c)
 {
 	Term_putch(col, row, a, c);
-	if (!use_bigtile) return;
 
-	if (a & 0x80)
-		Term_putch(col + 1, row, 255, -1);
-	else
-		Term_putch(col + 1, row, 1, ' ');
+	if ((tile_width > 1) || (tile_height > 1))
+	{
+	        Term_big_putch(col, row, ta, tc);
+	}
 }
 
 /* Return the actual width of a symbol */
 static int actual_width(int width)
 {
-	if (use_trptile) width *= 3;
-	else if (use_dbltile) width *= 2;
-
-	if (use_bigtile) width *= 2;
-
-	return width;
+	return width * tile_width;
 }
 
 /* Return the actual height of a symbol */
 static int actual_height(int height)
 {
-	if (use_trptile) height = height * 3 / 2;
-	else if (use_dbltile) height *= 2;
-
-	if (use_bigtile) height *= 2;
-
-	return height;
+	return height * tile_height;
 }
 
 
 /* From an actual width, return the logical width */
 static int logical_width(int width)
 {
-	int divider = 1;
-
-	if (use_trptile) divider = 3;
-	else if (use_dbltile) divider = 2;
-
-	if (use_bigtile) divider *= 2;
-
-	return width / divider;
+	return width / tile_width;
 }
 
 /* From an actual height, return the logical height */
 static int logical_height(int height)
 {
-	int divider = 1;
-
-	if (use_trptile)
-	{
-		height *= 2;
-		divider = 3;
-	}
-	else if (use_dbltile) divider = 2;
-
-	if (use_bigtile) divider *= 2;
-
-	return height / divider;
+	return height / tile_height;
 }
 
 
@@ -940,7 +911,7 @@ static void display_monster(int col, int row, bool cursor, int oid)
 	/* Display the name */
 	c_prt(attr, r_name + r_ptr->name, row, col);
 
-	if (use_dbltile || use_trptile)
+	if ((tile_width > 1) || (tile_height > 1))
 		return;
 
 	/* Display symbol */
@@ -1569,7 +1540,7 @@ static void display_object(int col, int row, bool cursor, int oid)
 		c_put_str(TERM_YELLOW, inscrip, row, 55);
 
 	/* Hack - don't use if double tile */
-	if (use_dbltile || use_trptile)
+	if ((tile_width > 1) || (tile_height > 1))
 		return;
 
 	/* Display symbol */
@@ -1836,7 +1807,7 @@ static void display_feature(int col, int row, bool cursor, int oid )
 	/* Display the name */
 	c_prt(attr, f_name + f_ptr->name, row, col);
 
-	if (use_dbltile || use_trptile) return;
+	if ((tile_width > 1) || (tile_height)) return;
 
 	/* Display symbol */
 	big_pad(68, row, f_ptr->x_attr, f_ptr->x_char);

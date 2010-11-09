@@ -243,7 +243,7 @@ static void prt_equippy(int row, int col)
 	object_type *o_ptr;
 
 	/* No equippy chars in bigtile mode */
-	if (use_bigtile) return;
+	if ((tile_width > 1) || (tile_height > 1)) return;
 
 	/* Dump equippy chars */
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
@@ -1046,24 +1046,24 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 			vy = ky + ROW_MAP;
 			vx = kx + COL_MAP;
 
-		      if (use_trptile)
+		      if (tile_width > 1)
 		      {
-			      vx += (use_bigtile ? 5 : 2) * kx;
-			      vy += 2 * ky;
+			      vx += (tile_width - 1) * kx;
 		      }
-		      else if (use_dbltile)
+		      if (tile_height > 1)
 		      {
-			      vx += (use_bigtile ? 3 : 1) * kx;
-			      vy += ky;
+			      vy += (tile_height - 1) * ky;
 		      }
-		      else if (use_bigtile) vx += kx;
 		}
 		else
 		{
-			if (use_bigtile)
+			if (tile_width > 1)
 			{
-				kx += kx;
-				if (kx + 1 >= t->wid) return;
+			        kx += (tile_width - 1) * kx;
+			}
+			if (tile_height > 1)
+			{
+			        ky += (tile_height - 1) * ky;
 			}
 			
 			/* Verify location */
@@ -1085,7 +1085,7 @@ static void update_maps(game_event_type type, game_event_data *data, void *user)
 		Term_queue_char(t, vx, vy, TERM_L_GREEN, c, ta, tc);
 #endif
 		
-		if (use_bigtile || use_dbltile || use_trptile)
+		if ((tile_width > 1) || (tile_height > 1))
 		{
 		        Term_big_queue_char(t, vx, vy, a, c, TERM_WHITE, ' ');
 		}

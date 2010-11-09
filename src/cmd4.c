@@ -1150,39 +1150,12 @@ int modify_attribute(const char *clazz, int oid, const char *name,
 		     byte da, char dc, byte *pca, char *pcc)
 {
         ui_event_data ke = EVENT_EMPTY;
-	const char *empty_symbol = "<< ? >>";
-	const char *empty_symbol1 = "<< ? >>";
-	const char *empty_symbol2 = "\0";
-	const char *empty_symbol3 = "\0";
+	const char *empty_symbol = "<< ? ";
 	
 	byte ca = (byte)*pca;
 	byte cc = (byte)*pcc;
 	
-	int linec = (use_trptile ? 22 : (use_dbltile ? 21 : 20));
-  
-	if (use_trptile && use_bigtile)
-	{
-	        empty_symbol1 = "// ?????? \\\\";
-		empty_symbol2 = "   ??????   ";
-		empty_symbol3 = "\\\\ ?????? //";
-	}
-	else if (use_dbltile && use_bigtile)
-	{
-	        empty_symbol1 = "// ???? \\\\";
-		empty_symbol2 = "\\\\ ???? //";
-	}
-	else if (use_trptile)
-	{
-	        empty_symbol1 = "// ??? \\\\";
-		empty_symbol2 = "   ???   ";
-		empty_symbol3 = "\\\\ ??? //";
-	}
-	else if (use_dbltile)
-	{
-	        empty_symbol1 = "// ?? \\\\";
-                empty_symbol2 = "\\\\ ?? //";
-	}
-	else if (use_bigtile) empty_symbol = "<< ?? >>";
+	int linec = 20 + tile_height - 1;
   
 	/* Prompt */
 	prt(format("Command: Change %s attr/chars", clazz), 15, 0);
@@ -1198,15 +1171,9 @@ int modify_attribute(const char *clazz, int oid, const char *name,
   
 	/* Label the Current values */
 	Term_putstr(10, linec, -1, TERM_WHITE, format("Current attr/char = %3u / %3u", ca, cc));
-	Term_putstr(40, linec, -1, TERM_WHITE, empty_symbol1);
-	if (use_dbltile || use_trptile) 
-	        Term_putstr (40, linec+1, -1, TERM_WHITE, empty_symbol2); 
-	if (use_trptile) 
-	        Term_putstr (40, linec+2, -1, TERM_WHITE, empty_symbol3); 
+	Term_putstr(40, linec, -1, TERM_WHITE, empty_symbol);
   
 	big_pad(43, linec, ca, cc);
-	
-	if (use_trptile) linec++;
 	
 	/* Prompt */
 	Term_putstr(0, linec + 2, -1, TERM_WHITE, "Command (n/N/a/A/c/C): ");

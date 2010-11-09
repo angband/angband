@@ -84,14 +84,12 @@
 /**
  * Number of grids in each panel (vertically)
  */
-#define PANEL_HGT	(use_trptile ? 3 : (use_dbltile ? 5 : 11))
+#define PANEL_HGT	((int)(BLOCK_HGT / tile_height))
 
 /**
  * Number of grids in each panel (horizontally)
  */
-#define PANEL_WID ((use_trptile && use_bigtile) ?  5 : (use_trptile ? 11 : \
-		  ((use_dbltile && use_bigtile) ? 8 : ((use_dbltile || \
-                  use_bigtile) ? 16 : 33))))
+#define PANEL_WID 	((int)(BLOCK_WID / tile_width))
 
 
 /**
@@ -102,15 +100,12 @@
 /**
  * Number of grids in each screen (vertically)
  */
-#define SCREEN_HGT    SCREEN_ROWS / (use_trptile ? 3 : (use_dbltile ? 2 : 1))
+#define SCREEN_HGT    ((int) (SCREEN_ROWS / tile_width))
 
 /**
  * Number of grids in each screen (horizontally)
  */
-#define SCREEN_WID	((Term->wid - COL_MAP - 1) / ((use_trptile && \
-                        use_bigtile) ?  6 : (use_trptile ? 3 : \
-			((use_dbltile && use_bigtile) ? 4 :((use_dbltile \
-                        || use_bigtile) ? 2 : 1)))))
+#define SCREEN_WID	((int)((Term->wid - COL_MAP - 1) / tile_width))
 
 #define ROW_MAP			1
 #define COL_MAP			13

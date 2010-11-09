@@ -333,9 +333,8 @@ struct term
 /**** Available Variables ****/
 
 extern term *Term;
-extern bool use_bigtile;
-extern bool use_dbltile;
-extern bool use_trptile;
+extern int tile_width;
+extern int tile_height;
 
 
 /**** Available Functions ****/
