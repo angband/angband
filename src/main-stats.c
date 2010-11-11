@@ -11,7 +11,7 @@ static int verbose = 0;
 static int nextkey = 0;
 static int running_stats = 0;
 
-static ang_file *obj_fp, *mon_fp, *ainfo_fp;
+static ang_file *obj_fp, *mon_fp, *ainfo_fp, *rinfo_fp;
 
 /* Copied from birth.c:generate_player() */
 static void generate_player_for_stats()
@@ -166,11 +166,22 @@ static void open_output_files(void)
 	mon_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "ainfo.txt");
 	ainfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "rinfo.txt");
+	rinfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 
 	/* Print headers */
 	file_putf(obj_fp, "tval|sval|pval|name1|name2|number|origin|origin_depth|origin_xtra|name\n");
 	file_putf(mon_fp, "level|r_idx|name\n");
 	file_putf(ainfo_fp, "aidx|tval|sval|pval|to_h|to_d|to_a|ac|dd|ds|weight|cost|flags|level|alloc_prob|alloc_min|alloc_max|effect|name\n");
+	file_putf(rinfo_fp, "ridx|level|rarity|d_char|name\n");
+}
+
+static void close_output_files(void)
+{
+	file_close(obj_fp);
+	file_close(mon_fp);
+	file_close(ainfo_fp);
+	file_close(rinfo_fp);
 }
 
 static void dump_ainfo(void) 
@@ -216,6 +227,28 @@ static void dump_ainfo(void)
 	}
 }
 
+static void dump_rinfo(void) 
+{
+	unsigned int i;
+
+	for (i = 0; i < z_info->r_max; i++)
+	{
+		monster_race *r_ptr = &r_info[i];	
+
+		/* Don't print anything for "empty" artifacts */
+		if (!r_ptr->name) continue;
+
+	        /* ridx|level|rarity|d_char|name */
+		file_putf(rinfo_fp,
+			"%d|%d|%d|%c|%s\n",
+			r_ptr->ridx,
+			r_ptr->level,
+			r_ptr->rarity,
+			r_ptr->d_char,
+			r_ptr->name);
+	}
+}
+
 static void descend_dungeon(void) 
 {
 	int level;
@@ -229,17 +262,11 @@ static void descend_dungeon(void)
 	}
 }
 
-static void close_output_files(void)
-{
-	file_close(obj_fp);
-	file_close(mon_fp);
-	file_close(ainfo_fp);
-}
-
 static errr run_stats(void) {
 	initialize_character();
 	open_output_files();
 	dump_ainfo();
+	dump_rinfo();
 	descend_dungeon();
 	close_output_files();
 	cleanup_angband();
