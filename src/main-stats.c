@@ -11,6 +11,8 @@ static int verbose = 0;
 static int nextkey = 0;
 static int running_stats = 0;
 
+static ang_file *obj_fp, *mon_fp, *ainfo_fp;
+
 /* Copied from birth.c:generate_player() */
 static void generate_player_for_stats()
 {
@@ -81,7 +83,7 @@ static void initialize_character(void)
 	generate_cave();
 }
 
-static void kill_all_monsters(void)
+static void kill_all_monsters(int level)
 {
 	int i;
 	char m_name[80];
@@ -100,7 +102,8 @@ static void kill_all_monsters(void)
 			*offscreen_ptr = '\0';
 		}
 
-		printf("M|%d|%s\n",
+		file_putf(mon_fp, "%d|%d|%s\n",
+			level,
 			m_ptr->r_idx,
 			m_name);	
 
@@ -114,7 +117,6 @@ static void print_all_objects(void)
 	int x, y;
 	char o_name[256];
 
-	/* Get stats on objects */
 	for (y = 1; y < DUNGEON_HGT - 1; y++)
 	{
 		for (x = 1; x < DUNGEON_WID - 1; x++)
@@ -139,7 +141,8 @@ static void print_all_objects(void)
 				{
 					o_origin_xtra = o_ptr->origin_xtra;
 				}
-				printf("%d|%d|%d|%d|%d|%d|%d|%s\n",
+				file_putf(obj_fp, 
+					"%d|%d|%d|%d|%d|%d|%d|%s\n",
 					o_ptr->tval,
 					o_ptr->sval,
 					o_ptr->pval[DEFAULT_PVAL],
@@ -154,6 +157,65 @@ static void print_all_objects(void)
 	}
 }
 
+static void open_output_files(void)
+{
+	char buf[1024];
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "objects.txt");
+	obj_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "monsters.txt");
+	mon_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
+	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, "ainfo.txt");
+	ainfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
+
+	/* Print headers */
+	file_putf(obj_fp, "tval|sval|pval|name1|name2|number|origin|origin_depth|origin_xtra|name\n");
+	file_putf(mon_fp, "level|r_idx|name\n");
+	file_putf(ainfo_fp, "aidx|tval|sval|pval|to_h|to_d|to_a|ac|dd|ds|weight|cost|flags|level|alloc_prob|alloc_min|alloc_max|effect|name\n");
+}
+
+static void dump_ainfo(void) 
+{
+	unsigned int i, j;
+	char flags[OF_SIZE];
+
+	flags[OF_SIZE] = 0;
+
+	for (i = 0; i < z_info->a_max; i++)
+	{
+		artifact_type *a_ptr = &a_info[i];	
+
+		/* Don't print anything for "empty" artifacts */
+		if (!a_ptr->name) continue;
+
+		for (j = 0; j < OF_SIZE; j++)
+		{
+			flags[j] = hexsym[a_ptr->flags[j] % 16];
+		}
+
+		file_putf(ainfo_fp,
+			"%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%s|%d|%d|%d|%d|%d|%s\n",
+			a_ptr->aidx,
+			a_ptr->tval,
+			a_ptr->sval,
+			a_ptr->pval,
+			a_ptr->to_h,
+			a_ptr->to_d,
+			a_ptr->to_a,
+			a_ptr->ac,
+			a_ptr->dd,
+			a_ptr->ds,
+			a_ptr->weight,
+			a_ptr->cost,
+			flags,
+			a_ptr->level,
+			a_ptr->alloc_prob,
+			a_ptr->alloc_min,
+			a_ptr->alloc_max,
+			a_ptr->effect,
+			a_ptr->name);
+	}
+}
+
 static void descend_dungeon(void) 
 {
 	int level;
@@ -162,15 +224,24 @@ static void descend_dungeon(void)
 	{
 		dungeon_change_level(level);
 		generate_cave();
-		kill_all_monsters();
+		kill_all_monsters(level);
 		print_all_objects();
 	}
 }
 
+static void close_output_files(void)
+{
+	file_close(obj_fp);
+	file_close(mon_fp);
+	file_close(ainfo_fp);
+}
+
 static errr run_stats(void) {
 	initialize_character();
+	open_output_files();
+	dump_ainfo();
 	descend_dungeon();
-
+	close_output_files();
 	cleanup_angband();
 	quit(NULL);
 	exit(0);
