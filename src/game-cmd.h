@@ -141,6 +141,9 @@ typedef struct game_command
 
 	/* Arguments to the command */
 	cmd_arg args[CMD_MAX_ARGS];
+
+	/* Whether an argument was passed or not */
+	bool arg_present[CMD_MAX_ARGS];
 } game_command;
 
 
