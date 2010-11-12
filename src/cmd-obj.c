@@ -401,52 +401,6 @@ void textui_obj_wield(object_type *o_ptr, int item)
 }
 
 
-/*** Casting and browsing ***/
-
-/* Study a book to gain a new spell */
-void textui_obj_study(object_type *o_ptr, int item)
-{
-	/* Track the object kind */
-	track_object(item);
-
-	/* Mage -- Choose a spell to study */
-	if (player_has(PF_CHOOSE_SPELLS))
-	{
-		int spell = get_spell(o_ptr, "study", spell_okay_to_study);
-		if (spell >= 0)
-			cmd_insert(CMD_STUDY_SPELL, spell);
-		else if (spell == -2)
-			msg_print("You cannot learn any spells from that book.");
-	}
-
-	/* Priest -- Choose a book to study */
-	else
-	{
-		cmd_insert(CMD_STUDY_BOOK, item);
-	}
-}
-
-void textui_obj_cast(object_type *o_ptr, int item)
-{
-	int spell;
-
-	cptr verb = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
-	cptr noun = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
-
-	/* Track the object kind */
-	track_object(item);
-
-	/* Ask for a spell */
-	spell = get_spell(o_ptr, verb, spell_okay_to_cast);
-	if (spell < 0)
-	{
-		if (spell == -2) msg_format("You don't know any %ss in that book.", noun);
-		return;
-	}
-
-	cmd_insert(CMD_CAST, spell);
-}
-
 
 /*** Using items the traditional way ***/
 
