@@ -225,12 +225,14 @@ static errr vcmd_insert_repeated(cmd_code c, int nrepeats, va_list vp)
 			case arg_CHOICE:
 			{
 				cmd.args[j].choice = va_arg(vp, int);
+				cmd.arg_present[j] = TRUE;
 				break;
 			}
 
 			case arg_STRING:
 			{
 				cmd.args[j].string = string_make(va_arg(vp, const char *));
+				cmd.arg_present[j] = TRUE;
 				break;
 			}
 			
@@ -238,6 +240,7 @@ static errr vcmd_insert_repeated(cmd_code c, int nrepeats, va_list vp)
 			case arg_TARGET:
 			{
 				cmd.args[j].direction = va_arg(vp, int);
+				cmd.arg_present[j] = TRUE;
 				break;
 			}
 			
@@ -245,18 +248,21 @@ static errr vcmd_insert_repeated(cmd_code c, int nrepeats, va_list vp)
 			{
 				cmd.args[j].point.y = va_arg(vp, int);
 				cmd.args[j].point.x = va_arg(vp, int);
+				cmd.arg_present[j] = TRUE;
 				break;
 			}
 			
 			case arg_ITEM:
 			{
 				cmd.args[j].item = va_arg(vp, int);
+				cmd.arg_present[j] = TRUE;
 				break;
 			}
 			
 			case arg_NUMBER:
 			{
 				cmd.args[j].number = va_arg(vp, int);
+				cmd.arg_present[j] = TRUE;
 				break;
 			}
 
@@ -400,7 +406,7 @@ void process_command(cmd_context ctx, bool no_request)
 
 			default: 
 			{
-                /* I can see the point of the compiler warning, but still... */
+				/* I can see the point of the compiler warning, but still... */
 				break;
 			}
 		}
