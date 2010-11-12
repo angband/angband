@@ -428,7 +428,7 @@ void textui_obj_study(object_type *o_ptr, int item)
 
 void textui_obj_cast(object_type *o_ptr, int item)
 {
-	int spell, dir = DIR_UNKNOWN;
+	int spell;
 
 	cptr verb = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
 	cptr noun = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
@@ -444,10 +444,7 @@ void textui_obj_cast(object_type *o_ptr, int item)
 		return;
 	}
 
-	if (spell_needs_aim(cp_ptr->spell_book, spell) && !get_aim_dir(&dir))
-		return;
-
-	cmd_insert(CMD_CAST, spell, dir);
+	cmd_insert(CMD_CAST, spell);
 }
 
 
