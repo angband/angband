@@ -111,6 +111,17 @@ void do_cmd_cast(cmd_code code, cmd_arg args[]);
 extern void do_cmd_knowledge_objects(void *obj, const char *name);
 extern void init_cmd_know(void);
 
+/* cmd-misc.c */
+void do_cmd_wizard(void);
+void do_cmd_try_debug(void);
+void do_cmd_try_borg(void);
+void do_cmd_quit(cmd_code code, cmd_arg args[]);
+void do_cmd_port(void);
+void do_cmd_xxx_options(void);
+void do_cmd_monlist(void);
+void do_cmd_itemlist(void);
+void do_cmd_unknown(void);
+
 /* attack.c */
 extern void do_cmd_fire(cmd_code code, cmd_arg args[]);
 extern void textui_cmd_fire(void);
