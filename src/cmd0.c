@@ -922,7 +922,7 @@ static bool textui_process_key(unsigned char c)
 		
 			/* Get item */
 			item_tester_hook = act->filter;
-			if (!get_item(&item, act->prompt, act->noop, act->mode))
+			if (!get_item(&item, act->prompt, act->noop, c, act->mode))
 				return TRUE;
 		
 			/* Get the item */

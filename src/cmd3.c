@@ -318,7 +318,7 @@ void textui_cmd_destroy(void)
 	/* Get an item */
 	q = "Destroy which item? ";
 	s = "You have nothing to destroy.";
-	if (!get_item(&item, q, s, (USE_INVEN | USE_EQUIP | USE_FLOOR | CAN_SQUELCH))) return;
+	if (!get_item(&item, q, s, 'k', (USE_INVEN | USE_EQUIP | USE_FLOOR | CAN_SQUELCH))) return;
 
 	/* Deal with squelched items */
 	if (item == ALL_SQUELCHED)

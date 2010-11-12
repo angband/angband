@@ -563,7 +563,7 @@ byte py_pickup(int pickup)
 		/* Get an object or exit. */
 		q = "Get which item?";
 		s = "You see nothing there.";
-		if (!get_item(&item, q, s, USE_FLOOR))
+		if (!get_item(&item, q, s, 'g', USE_FLOOR))
 			return (objs_picked_up);
 
 		this_o_idx = 0 - item;

@@ -161,7 +161,7 @@ void show_inven(olist_detail_t mode);
 void show_equip(olist_detail_t mode);
 void show_floor(const int *floor_list, int floor_num, olist_detail_t mode);
 bool verify_item(cptr prompt, int item);
-bool get_item(int *cp, cptr pmt, cptr str, int mode);
+bool get_item(int *cp, cptr pmt, cptr str, char c, int mode);
 
 /* obj-util.c */
 object_kind *objkind_get(int tval, int sval);

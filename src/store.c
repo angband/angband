@@ -2772,13 +2772,8 @@ static bool store_sell(void)
 	/* Get an item */
 	p_ptr->command_wrk = USE_INVEN;
 
-	/* XXX this is horrible, better system needed */
-	/* p_ptr->command_cmd = 'd'; */
-
-	if (!get_item(&item, prompt, reject, get_mode))
-	{
+	if (!get_item(&item, prompt, reject, 'd', get_mode))
 		return FALSE;
-	}
 
 	/* Get the item */
 	o_ptr = object_from_item_idx(item);

@@ -987,6 +987,7 @@ enum
 #define IS_HARMLESS   0x10	/* Ignore generic warning inscriptions */
 #define SHOW_PRICES   0x20	/* Show item prices in item lists */
 #define SHOW_FAIL     0x40 	/* Show device failure in item lists */
+#define QUIVER_TAGS   0x80  /* 0-9 are quiver slots when selecting */
 
 
 /*** Player flags ***/

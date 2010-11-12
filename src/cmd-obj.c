@@ -385,7 +385,7 @@ void textui_obj_wield(object_type *o_ptr, int item)
 			cptr q = "Replace which ring? ";
 			cptr s = "Error in obj_wield, please report";
 			item_tester_hook = obj_is_ring;
-			if (!get_item(&slot, q, s, USE_EQUIP)) return;
+			if (!get_item(&slot, q, s, 'w', USE_EQUIP)) return;
 		}
 
 		if (obj_is_ammo(o_ptr) && !object_similar(&p_ptr->inventory[slot], o_ptr))
@@ -393,7 +393,7 @@ void textui_obj_wield(object_type *o_ptr, int item)
 			cptr q = "Replace which ammunition? ";
 			cptr s = "Error in obj_wield, please report";
 			item_tester_hook = obj_is_ammo;
-			if (!get_item(&slot, q, s, USE_EQUIP)) return;
+			if (!get_item(&slot, q, s, 'w', USE_EQUIP)) return;
 		}
 	}
 

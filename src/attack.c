@@ -823,7 +823,7 @@ void textui_cmd_fire(void)
 	p_ptr->command_wrk = USE_EQUIP;
 
 	/* Get an item */
-	if (!get_item(&item, q, s, (USE_INVEN | USE_EQUIP | USE_FLOOR))) return;
+	if (!get_item(&item, q, s, 'f', (USE_INVEN | USE_EQUIP | USE_FLOOR))) return;
 
 	/* Get the object */
 	o_ptr = object_from_item_idx(item);
@@ -1200,7 +1200,7 @@ void textui_cmd_throw(void)
 	/* Get an item */
 	q = "Throw which item? ";
 	s = "You have nothing to throw.";
-	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return;
+	if (!get_item(&item, q, s, 't', (USE_EQUIP | USE_INVEN | USE_FLOOR))) return;
 
 	if (item >= INVEN_WIELD && item < QUIVER_START)
 	{
