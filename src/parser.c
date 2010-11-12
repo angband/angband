@@ -504,12 +504,6 @@ errr parser_reg(struct parser *p, const char *fmt,
 	return 0;
 }
 
-const char *parser_error(enum parser_error e) {
-	assert(e > 0);
-	assert(e < PARSE_ERROR_MAX);
-	return parser_error_str[e];
-}
-
 bool parser_hasval(struct parser *p, const char *name) {
 	struct parser_value *v;
 	for (v = p->fhead; v; v = (struct parser_value *)v->spec.next)

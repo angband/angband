@@ -89,10 +89,6 @@ extern errr parser_reg(struct parser *p, const char *fmt,
                        enum parser_error (*func)(struct parser *p));
 
 
-/** Returns the error string corresponding to 'e'. */
-extern const char *parser_error(enum parser_error e);
-
-
 /** Returns whether the parser has a value named `name`.
  *
  * Used to test for presence of optional values.

@@ -1167,6 +1167,15 @@ errr process_pref_file_command(const char *s)
 }
 
 
+static void print_error(const char *name, struct parser *p) {
+	struct parser_state s;
+	parser_getstate(p, &s);
+	msg_format("Parse error in %s line %d column %d: %s: %s", name,
+	           s.line, s.col, s.msg, parser_error_str[s.error]);
+	message_flush();
+}
+
+
 /*
  * Process the user pref file with the given name.
  * "quiet" means "don't complain about not finding the file.
@@ -1189,7 +1198,6 @@ bool process_pref_file(const char *name, bool quiet)
 		path_build(buf, sizeof(buf), ANGBAND_DIR_USER, name);
 
 	f = file_open(buf, MODE_READ, -1);
-	printf("trying %s\n", buf);
 	if (!f)
 	{
 		if (!quiet)
@@ -1208,12 +1216,9 @@ bool process_pref_file(const char *name, bool quiet)
 			e = parser_parse(p, line);
 			if (e != PARSE_ERROR_NONE)
 			{
-				msg_format("Parse error in '%s', line %d:", name, line_no);
-				msg_format("Line: '%s'.", line);
-				msg_format("Error '%s'.", parser_error(e));
+				print_error(buf, p);
 				break;
 			}
-
 		}
 
 		file_close(f);
