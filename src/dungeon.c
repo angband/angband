@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "cmds.h"
 #include "game-event.h"
+#include "init.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
 

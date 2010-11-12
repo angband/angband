@@ -43,10 +43,20 @@
  */
 
 struct file_parser {
+	const char *name;
 	struct parser *(*init)(void);
 	errr (*run)(struct parser *p);
 	errr (*finish)(struct parser *p);
 };
+
+static void print_error(struct file_parser *fp, struct parser *p) {
+	struct parser_state s;
+	parser_getstate(p, &s);
+	msg_format("Parse error in %s line %d column %d: %s: %s", fp->name,
+	           s.line, s.col, s.msg, parser_error_str[s.error]);
+	message_flush();
+	quit_fmt("Parse error in %s line %d column %d.", fp->name, s.line, s.col);
+}
 
 errr run_parser(struct file_parser *fp) {
 	struct parser *p = fp->init();
@@ -56,9 +66,12 @@ errr run_parser(struct file_parser *fp) {
 	}
 	r = fp->run(p);
 	if (r) {
+		print_error(fp, p);
 		return r;
 	}
 	r = fp->finish(p);
+	if (r)
+		print_error(fp, p);
 	return r;
 }
 
@@ -241,193 +254,6 @@ void create_needed_dirs(void)
 	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
 }
 
-
-/*
- * Hack -- help give useful error messages
- */
-int error_idx;
-int error_line;
-
-
-/*
- * Standard error message text
- */
-static cptr err_str[PARSE_ERROR_MAX] =
-{
-	NULL,
-	"parse error",
-	"invalid flag specification",
-	"invalid number of items (0-99)",
-	"invalid spell frequency",
-	"invalid random value",
-	"missing colon",
-	"missing field",
-	"missing record header",
-	"non-sequential records",
-	"value not a number",
-	"obsolete file",
-	"value out of bounds",
-	"out of memory",
-	"too few entries",
-	"too many entries",
-	"undefined directive",
-	"unrecognised blow",
-	"unrecognised tval name",
-	"unrecognised sval name",
-	"vault too big",
-};
-
-
-/*
- * File headers
- */
-header flavor_head;
-header s_head;
-
-
-/*
- * Initialize the header of an *_info array.
- */
-static void init_header(header *head, int num, int len)
-{
-       /* Save the "version" */
-       head->v_major = VERSION_MAJOR;
-       head->v_minor = VERSION_MINOR;
-       head->v_patch = VERSION_PATCH;
-       head->v_extra = VERSION_EXTRA;
-
-       /* Save the "record" information */
-       head->info_num = num;
-       head->info_len = len;
-
-       /* Save the size of "*_head" and "*_info" */
-       head->head_size = sizeof(header);
-       head->info_size = head->info_num * head->info_len;
-
-       /* Clear post-parsing evaluation function */
-       head->eval_info_post = NULL;
-
-       /* Clear the template emission functions */
-       head->emit_info_txt_index = NULL;
-       head->emit_info_txt_always = NULL;
-}
-
-
-/*
- * Display a parser error message.
- */
-static void display_parse_error(cptr filename, errr err, cptr buf)
-{
-	cptr oops;
-
-	/* Error string */
-	oops = (((err > 0) && (err < PARSE_ERROR_MAX)) ? err_str[err] : "unknown");
-
-	/* Oops */
-	msg_format("Error at line %d of '%s.txt'.", error_line, filename);
-	msg_format("Record %d contains a '%s' error.", error_idx, oops);
-	msg_format("Parsing '%s'.", buf);
-	message_flush();
-
-	/* Quit */
-	quit_fmt("Error in '%s.txt' file.", filename);
-}
-
-
-/*
- * Initialize a "*_info" array
- *
- * Note that we let each entry have a unique "name" and "text" string,
- * even if the string happens to be empty (everyone has a unique '\0').
- */
-static errr init_info(cptr filename, header *head)
-{
-	ang_file *fh;
-
-	errr err = 1;
-
-	char txt_file[1024];
-
-	char buf[1024];
-
-	void *fake_name;
-	void *fake_text;
-
-	/* Build the filename */
-	path_build(txt_file, sizeof(txt_file), ANGBAND_DIR_EDIT, format("%s.txt", filename));
-
-	/* Allocate the "*_info" array */
-	head->info_ptr = C_ZNEW(head->info_size, char);
-
-	/* MegaHack -- make "fake" arrays */
-	if (z_info)
-	{
-		head->name_ptr = C_ZNEW(z_info->fake_name_size, char);
-		head->text_ptr = C_ZNEW(z_info->fake_text_size, char);
-	}
-
-
-	/*** Load the ascii template file ***/
-
-	/* Open the file */
-	fh = file_open(txt_file, MODE_READ, -1);
-	if (!fh) quit(format("Cannot open '%s.txt' file.", filename));
-
-	/* Parse the file */
-	err = init_info_txt(fh, buf, head, head->parse_info_txt);
-
-	file_close(fh);
-
-	/* Errors */
-	if (err) display_parse_error(filename, err, buf);
-
-	/* Post processing the data */
-	if (head->eval_info_post) eval_info(head->eval_info_post, head);
-
-
-	/*** Output a 'parsable' ascii template file ***/
-	if ((head->emit_info_txt_index) || (head->emit_info_txt_always))
-	{
-		char user_file[1024];
-		ang_file *fout;
-
-		/* Open the original */
-		fh = file_open(txt_file, MODE_READ, -1);
-		if (!fh) quit(format("Cannot open '%s.txt' file for re-parsing.", filename));
-
-		/* Open for output */
-		path_build(user_file, 1024, ANGBAND_DIR_USER, format("%s.txt", filename));
-		fout = file_open(user_file, MODE_WRITE, FTYPE_TEXT);
-		if (!fout) quit(format("Cannot open '%s.txt' file for output.", filename));
-
-		/* Parse and output the files */
-		err = emit_info_txt(fout, fh, user_file, head, head->emit_info_txt_index, head->emit_info_txt_always);
-
-		/* Close both files */
-		file_close(fh);
-		file_close(fout);
-	}
-
-	/* Copy the parsed data into the real array from the fakes */
-	fake_name = head->name_ptr;
-	head->name_ptr = C_ZNEW(head->name_size, char);
-	memcpy(head->name_ptr, fake_name, head->name_size);
-
-	fake_text = head->text_ptr;
-	head->text_ptr = C_ZNEW(head->text_size, char);
-	memcpy(head->text_ptr, fake_text, head->text_size);
-
-	/* Free the fake arrays */
-	if (z_info)
-	{
-		FREE(fake_name);
-		FREE(fake_text);
-	}
-
-	/* Success */
-	return (0);
-}
-
 errr parse_file(struct parser *p, const char *filename) {
 	char path[1024];
 	char buf[1024];
@@ -445,24 +271,6 @@ errr parse_file(struct parser *p, const char *filename) {
 	}
 	file_close(fh);
 	return r;
-}
-
-/*
- * Free the allocated memory for the info-, name-, and text- arrays.
- */
-static errr free_info(header *head)
-{
-	if (head->info_size)
-		FREE(head->info_ptr);
-
-	if (head->name_size)
-		FREE(head->name_ptr);
-
-	if (head->text_size)
-		FREE(head->text_ptr);
-
-	/* Success */
-	return (0);
 }
 
 static enum parser_error ignored(struct parser *p) {
@@ -540,6 +348,7 @@ static errr finish_parse_z(struct parser *p) {
 }
 
 static struct file_parser z_parser = {
+	"limits",
 	init_parse_z,
 	run_parse_z,
 	finish_parse_z
@@ -724,6 +533,7 @@ static errr finish_parse_k(struct parser *p) {
 }
 
 struct file_parser k_parser = {
+	"object",
 	init_parse_k,
 	run_parse_k,
 	finish_parse_k
@@ -892,6 +702,7 @@ static errr finish_parse_a(struct parser *p) {
 }
 
 struct file_parser a_parser = {
+	"artifact",
 	init_parse_a,
 	run_parse_a,
 	finish_parse_a
@@ -967,6 +778,7 @@ static errr finish_parse_names(struct parser *p) {
 }
 
 struct file_parser names_parser = {
+	"names",
 	init_parse_names,
 	run_parse_names,
 	finish_parse_names
@@ -1149,6 +961,7 @@ static errr finish_parse_f(struct parser *p) {
 }
 
 struct file_parser f_parser = {
+	"terrain",
 	init_parse_f,
 	run_parse_f,
 	finish_parse_f
@@ -1392,6 +1205,7 @@ static errr finish_parse_e(struct parser *p) {
 }
 
 struct file_parser e_parser = {
+	"ego_item",
 	init_parse_e,
 	run_parse_e,
 	finish_parse_e
@@ -2538,6 +2352,7 @@ static errr finish_parse_r(struct parser *p) {
 }
 
 struct file_parser r_parser = {
+	"monster",
 	init_parse_r,
 	run_parse_r,
 	finish_parse_r
@@ -2736,6 +2551,7 @@ static errr finish_parse_p(struct parser *p) {
 }
 
 struct file_parser p_parser = {
+	"p_race",
 	init_parse_p,
 	run_parse_p,
 	finish_parse_p
@@ -2830,10 +2646,10 @@ static enum parser_error parse_c_m(struct parser *p) {
 
 	if (!c)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	c->spell_book = parser_getint(p, "book");
-	c->spell_stat = parser_getint(p, "stat");
-	c->spell_first = parser_getint(p, "first");
-	c->spell_weight = parser_getint(p, "weight");
+	c->spell_book = parser_getuint(p, "book");
+	c->spell_stat = parser_getuint(p, "stat");
+	c->spell_first = parser_getuint(p, "first");
+	c->spell_weight = parser_getuint(p, "weight");
 	return PARSE_ERROR_NONE;
 }
 
@@ -2932,7 +2748,7 @@ struct parser *init_parse_c(void) {
 	parser_reg(p, "X int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_c_x);
 	parser_reg(p, "I int mhp int exp int sense-base int sense-div", parse_c_i);
 	parser_reg(p, "A int max-attacks int min-weight int att-multiply", parse_c_a);
-	parser_reg(p, "M int book int stat int first int weight", parse_c_m);
+	parser_reg(p, "M uint book uint stat uint first uint weight", parse_c_m);
 	parser_reg(p, "B uint spell int level int mana int fail int exp", parse_c_b);
 	parser_reg(p, "T str title", parse_c_t);
 	parser_reg(p, "E sym tval sym sval uint min uint max", parse_c_e);
@@ -2966,6 +2782,7 @@ static errr finish_parse_c(struct parser *p) {
 }
 
 struct file_parser c_parser = {
+	"p_class",
 	init_parse_c,
 	run_parse_c,
 	finish_parse_c
@@ -3046,6 +2863,7 @@ static errr finish_parse_v(struct parser *p) {
 }
 
 struct file_parser v_parser = {
+	"vault",
 	init_parse_v,
 	run_parse_v,
 	finish_parse_v
@@ -3111,6 +2929,7 @@ static errr finish_parse_h(struct parser *p) {
 }
 
 struct file_parser h_parser = {
+	"p_hist",
 	init_parse_h,
 	run_parse_h,
 	finish_parse_h
@@ -3199,56 +3018,88 @@ static errr finish_parse_flavor(struct parser *p) {
 }
 
 struct file_parser flavor_parser = {
+	"flavor",
 	init_parse_flavor,
 	run_parse_flavor,
 	finish_parse_flavor
 };
 
-/*
- * Initialize the "flavor_info" array
- */
-static errr init_flavor_info(void)
-{
-	errr err;
-
-	/* Init the header */
-	init_header(&flavor_head, z_info->flavor_max, sizeof(flavor_type));
-
-	/* Save a pointer to the parsing function */
-	flavor_head.parse_info_txt = parse_flavor_info;
-
-	err = init_info("flavor", &flavor_head);
-
-	/* Set the global variables */
-	flavor_info = flavor_head.info_ptr;
-	flavor_name = flavor_head.name_ptr;
-	flavor_text = flavor_head.text_ptr;
-
-	return (err);
+static enum parser_error parse_s_n(struct parser *p) {
+	struct spell *s = mem_zalloc(sizeof *s);
+	s->next = parser_priv(p);
+	s->sidx = parser_getuint(p, "index");
+	s->name = string_make(parser_getstr(p, "name"));
+	parser_setpriv(p, s);
+	return PARSE_ERROR_NONE;
 }
 
-/*
- * Initialize the "s_info" array
- */
-static errr init_s_info(void)
-{
-	errr err;
+static enum parser_error parse_s_i(struct parser *p) {
+	struct spell *s = parser_priv(p);
 
-	/* Init the header */
-	init_header(&s_head, z_info->s_max, sizeof(spell_type));
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
 
-	/* Save a pointer to the parsing function */
-	s_head.parse_info_txt = parse_s_info;
+	s->tval = parser_getuint(p, "tval");
+	s->sval = parser_getuint(p, "sval");
+	s->snum = parser_getuint(p, "snum");
 
-	err = init_info("spell", &s_head);
-
-	/* Set the global variables */
-	s_info = s_head.info_ptr;
-	s_name = s_head.name_ptr;
-	s_text = s_head.text_ptr;
-
-	return (err);
+	/* XXX elly: postprocess instead? */
+	s->realm = s->tval - TV_MAGIC_BOOK;
+	s->spell_index = s->sidx - (s->realm * PY_MAX_SPELLS);
+	return PARSE_ERROR_NONE;
 }
+
+static enum parser_error parse_s_d(struct parser *p) {
+	struct spell *s = parser_priv(p);
+
+	if (!s)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	s->text = string_append(s->text, parser_getstr(p, "desc"));
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_s(void) {
+	struct parser *p = parser_new();
+	parser_setpriv(p, NULL);
+	parser_reg(p, "V sym version", ignored);
+	parser_reg(p, "N uint index str name", parse_s_n);
+	parser_reg(p, "I uint tval uint sval uint snum", parse_s_i);
+	parser_reg(p, "D str desc", parse_s_d);
+	return p;
+}
+
+static errr run_parse_s(struct parser *p) {
+	return parse_file(p, "spell");
+}
+
+static errr finish_parse_s(struct parser *p) {
+	struct spell *s, *n;
+
+	s_info = mem_zalloc(z_info->s_max * sizeof(*s_info));
+	for (s = parser_priv(p); s; s = s->next) {
+		if (s->sidx >= z_info->s_max)
+			continue;
+		memcpy(&s_info[s->sidx], s, sizeof(*s));
+	}
+
+	s = parser_priv(p);
+	while (s) {
+		n = s->next;
+		mem_free(s);
+		s = n;
+	}
+
+	parser_destroy(p);
+	return 0;
+}
+
+static struct file_parser s_parser = {
+	"spell",
+	init_parse_s,
+	run_parse_s,
+	finish_parse_s
+};
 
 /*
  * Initialize the "spell_list" array
@@ -3651,10 +3502,6 @@ bool init_angband(void)
 {
 	event_signal(EVENT_ENTER_INIT);
 
-	/* Initialize the menus */
-	/* This must occur before preference files are read(?) */
-	init_cmd4_c();
-
 
 	/*** Initialize some arrays ***/
 
@@ -3704,7 +3551,7 @@ bool init_angband(void)
 
 	/* Initialize spell info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (spells)");
-	if (init_s_info()) quit("Cannot initialize spells");
+	if (run_parser(&s_parser)) quit("Cannot initialize spells");
 
 	/* Initialize spellbook info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (spellbooks)");
@@ -3839,10 +3686,6 @@ void cleanup_angband(void)
 	mem_free(e_info);
 	mem_free(r_info);
 	mem_free(c_info);
-
-	/* Free the info, name, and text arrays */
-	free_info(&flavor_head);
-	free_info(&s_head);
 
 	/* Free the format() buffer */
 	vformat_kill();

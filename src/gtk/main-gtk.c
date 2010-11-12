@@ -2195,7 +2195,7 @@ static int last_inv_slot(void)
 	/* Find the "final" slot */
 	for (i = 0; i < INVEN_PACK; i++)
 	{
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
@@ -2215,7 +2215,7 @@ static void inv_slot(char *str, size_t len, int i, bool equip)
 	int name_size = 80;
 	
 	/* Examine the item */
-	o_ptr = &inventory[i];
+	o_ptr = &p_ptr->inventory[i];
 
 	/* Is this item "acceptable"? */
 	if (item_tester_okay(o_ptr) || equip)
@@ -2284,7 +2284,7 @@ static void handle_inv(game_event_type type, game_event_data *data, void *user)
 	for (i = 0; i < z; i++)
 	{
 		/* Examine the item */
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Is this item "acceptable"? */
 		if (item_tester_okay(o_ptr))
@@ -2323,7 +2323,7 @@ static void handle_equip(game_event_type type, game_event_data *data, void *user
 	/* Display the pack */
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 	
 		attr = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
 
@@ -2503,7 +2503,7 @@ static void cr_print_equippy(xtra_win_data *xd, int y)
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
 		/* Object */
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 
 		a = object_attr(o_ptr);
 		strnfmt(c, sizeof(c), "%c",object_char(o_ptr)); 
@@ -2567,7 +2567,7 @@ static void handle_sidebar(game_event_type type, game_event_data *data, void *us
 		draw_xtra_cr_text(xd, 0, 2, TERM_L_BLUE, str);
 		
 		/* Char Class */
-		strnfmt(str, sizeof(str), "%s", c_name + cp_ptr->name); 
+		strnfmt(str, sizeof(str), "%s", cp_ptr->name); 
 		draw_xtra_cr_text(xd, 0, 3, TERM_L_BLUE, str);
 
 		/* Char Level */

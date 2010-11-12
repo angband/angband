@@ -363,6 +363,8 @@ bool file_newer(const char *first, const char *second)
 
 /** File-handle functions **/
 
+void (*file_open_hook)(const char *path, file_type ftype);
+
 /*
  * Open file 'fname', in mode 'mode', with filetype 'ftype'.
  * Returns file handle or NULL.
@@ -394,26 +396,8 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 	f->fname = string_make(buf);
 	f->mode = mode;
 
-#ifdef MACH_O_CARBON
-	extern void fsetfileinfo(cptr path, u32b fcreator, u32b ftype);
-
-	/* OS X uses its own kind of filetypes */
-	if (mode != MODE_READ)
-	{
-		u32b mac_type = 'TEXT';
-
-		if (ftype == FTYPE_RAW) mac_type = 'DATA';
-		else if (ftype == FTYPE_SAVE) mac_type = 'SAVE';
-
-		fsetfileinfo(buf, 'A271', mac_type);
-	}
-#endif /* MACH_O_CARBON */
-
-#if defined(RISCOS) && 0
-	/* do something for RISC OS here? */
-	if (mode != MODE_READ)
-		File_SetType(n, ftype);
-#endif
+	if (mode != MODE_READ && file_open_hook)
+		file_open_hook(buf, ftype);
 
 	return f;
 }

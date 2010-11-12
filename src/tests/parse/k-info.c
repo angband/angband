@@ -183,7 +183,7 @@ static int test_d0(void *state) {
 	require(streq(k->text, "foo bar"));
 	r = parser_parse(state, "D: baz");
 	eq(r, 0);
-	eq(k, parser_priv(state));
+	ptreq(k, parser_priv(state));
 	require(streq(k->text, "foo bar baz"));
 	ok;
 }

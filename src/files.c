@@ -18,11 +18,12 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "object/tvalsval.h"
-#include "ui-menu.h"
-#include "game-cmd.h"
 #include "cmds.h"
+#include "game-cmd.h"
+#include "history.h"
+#include "object/tvalsval.h"
 #include "option.h"
+#include "ui-menu.h"
 
 #define MAX_PANEL 12
 

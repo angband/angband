@@ -168,11 +168,7 @@ extern byte *g_info;
 extern char *g_name;
 extern char *g_text;
 extern flavor_type *flavor_info;
-extern char *flavor_name;
-extern char *flavor_text;
 extern spell_type *s_info;
-extern char *s_name;
-extern char *s_text;
 extern s16b spell_list[MAX_REALMS][BOOKS_PER_REALM][SPELLS_PER_BOOK];
 
 extern const char *ANGBAND_SYS;
@@ -203,6 +199,7 @@ extern ang_file *text_out_file;
 extern void (*text_out_hook)(byte a, cptr str);
 extern int text_out_wrap;
 extern int text_out_indent;
+extern int text_out_pad;
 extern bool use_transparency;
 extern void (*sound_hook)(int);
 extern autoinscription *inscriptions;
@@ -250,13 +247,16 @@ extern byte py_pickup(int pickup);
 extern void move_player(int dir);
 
 /* cmd5.c */
+int spell_collect_from_book(const object_type *o_ptr, int spells[]);
+bool spell_okay_list(bool (*spell_test)(int spell), const int spells[], int n_spells);
+bool spell_okay_to_cast(int spell);
+bool spell_okay_to_study(int spell);
+bool spell_okay_to_browse(int spell);
 s16b spell_chance(int spell);
-bool spell_okay(int spell, bool known, bool browse);
 bool spell_cast(int spell, int dir);
 void spell_learn(int spell);
 
-int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool browse);
-void do_cmd_browse_aux(const object_type *o_ptr, int item);
+int get_spell(const object_type *o_ptr, const char *prompt, bool (*spell_test)(int spell));
 
 /* death.c */
 void death_screen(void);
@@ -291,24 +291,6 @@ void place_secret_door(int y, int x);
 void place_closed_door(int y, int x);
 void place_random_door(int y, int x);
 extern void generate_cave(void);
-
-/* history.c */
-void history_clear(void);
-size_t history_get_num(void);
-bool history_add_full(u16b type, byte a_idx, s16b dlev, s16b clev, s32b turn, const char *text);
-bool history_add(const char *event, u16b type, byte a_idx);
-bool history_add_artifact(byte a_idx, bool known, bool found);
-void history_unmask_unknown(void);
-bool history_lose_artifact(byte a_idx);
-void history_display(void);
-void dump_history(ang_file *file);
-bool history_is_artifact_known(byte a_idx);
-
-/* init2.c */
-extern void init_file_paths(const char *configpath, const char *libpath, const char *datapath);
-extern void create_needed_dirs(void);
-extern bool init_angband(void);
-extern void cleanup_angband(void);
 
 /* load.c */
 extern bool old_load(void);
@@ -481,7 +463,7 @@ bool squelch_item_ok(const object_type *o_ptr);
 bool squelch_hide_item(object_type *o_ptr);
 void squelch_items(void);
 void squelch_drop(void);
-void do_cmd_options_item(void *unused, cptr title);
+void do_cmd_options_item(const char *title, int row);
 bool squelch_interactive(const object_type *o_ptr);
 
 /* store.c */

@@ -23,7 +23,6 @@ const char *parser_error_str[PARSE_ERROR_MAX] = {
 	"invalid effect",
 	"invalid option",
 	"missing field",
-	"missing colon",
 	"missing record header",
 	"field too long",
 	"non-sequential records",
@@ -79,7 +78,10 @@ struct parser_hook {
 };
 
 struct parser {
-	int lineno;
+	enum parser_error error;
+	unsigned int lineno;
+	unsigned int colno;
+	char errmsg[1024];
 	struct parser_hook *hooks;
 	struct parser_value *fhead;
 	struct parser_value *ftail;
@@ -87,12 +89,7 @@ struct parser {
 };
 
 struct parser *parser_new(void) {
-	struct parser *p = mem_alloc(sizeof *p);
-	p->lineno = 0;
-	p->priv = NULL;
-	p->hooks = NULL;
-	p->fhead = NULL;
-	p->ftail = NULL;
+	struct parser *p = mem_zalloc(sizeof *p);
 	return p;
 }
 
@@ -228,6 +225,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 	struct parser_spec *s;
 	struct parser_value *v;
 	char *sp = NULL;
+	char *iline;
 
 	assert(p);
 	assert(line);
@@ -235,6 +233,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 	parser_freeold(p);
 
 	p->lineno++;
+	p->colno = 1;
 	p->fhead = NULL;
 	p->ftail = NULL;
 
@@ -245,15 +244,19 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 		return PARSE_ERROR_NONE;
 
 	cline = string_make(line);
+	iline = cline;
 
 	tok = strtok(cline, ":");
 	if (!tok) {
 		mem_free(cline);
+		p->error = PARSE_ERROR_MISSING_FIELD;
 		return PARSE_ERROR_MISSING_FIELD;
 	}
 
 	h = findhook(p, tok);
 	if (!h) {
+		my_strcpy(p->errmsg, tok, sizeof(p->errmsg));
+		p->error = PARSE_ERROR_UNDEFINED_DIRECTIVE;
 		mem_free(cline);
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 	}
@@ -265,7 +268,7 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 	for (s = h->fhead; s; s = s->next)
 	{
 		int t = s->type & ~T_OPT;
-
+		p->colno++;
 		/* These types are tokenized on ':'; strings are not tokenized
 		 * at all (i.e., they consume the remainder of the line) */
 		if (t == T_INT || t == T_SYM || t == T_RAND || t == T_UINT) {
@@ -282,6 +285,8 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 		if (!tok)
 		{
 			if (!(s->type & T_OPT)) {
+				my_strcpy(p->errmsg, s->name, sizeof(p->errmsg));
+				p->error = PARSE_ERROR_MISSING_FIELD;
 				mem_free(cline);
 				return PARSE_ERROR_MISSING_FIELD;
 			}
@@ -302,6 +307,8 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 			{
 				mem_free(v);
 				mem_free(cline);
+				my_strcpy(p->errmsg, s->name, sizeof(p->errmsg));
+				p->error = PARSE_ERROR_NOT_NUMBER;
 				return PARSE_ERROR_NOT_NUMBER;
 			}
 		}
@@ -313,6 +320,8 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 			{
 				mem_free(v);
 				mem_free(cline);
+				my_strcpy(p->errmsg, s->name, sizeof(p->errmsg));
+				p->error = PARSE_ERROR_NOT_NUMBER;
 				return PARSE_ERROR_NOT_NUMBER;
 			}
 		}
@@ -330,6 +339,8 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 			{
 				mem_free(v);
 				mem_free(cline);
+				my_strcpy(p->errmsg, s->name, sizeof(p->errmsg));
+				p->error = PARSE_ERROR_NOT_RANDOM;
 				return PARSE_ERROR_NOT_RANDOM;
 			}
 		}
@@ -342,7 +353,8 @@ enum parser_error parser_parse(struct parser *p, const char *line) {
 
 	mem_free(cline);
 
-	return h->func(p);
+	p->error = h->func(p);
+	return p->error;
 }
 
 void *parser_priv(struct parser *p) {
@@ -554,4 +566,17 @@ char parser_getchar(struct parser *p, const char *name) {
 	struct parser_value *v = parser_getval(p, name);
 	assert((v->spec.type & ~T_OPT) == T_CHAR);
 	return v->u.cval;
+}
+
+int parser_getstate(struct parser *p, struct parser_state *s) {
+	s->error = p->error;
+	s->line = p->lineno;
+	s->col = p->colno;
+	s->msg = p->errmsg;
+	return s->error != PARSE_ERROR_NONE;
+}
+
+void parser_setstate(struct parser *p, unsigned int col, const char *msg) {
+	p->colno = col;
+	my_strcpy(p->errmsg, msg, sizeof(p->errmsg));
 }

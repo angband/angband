@@ -203,26 +203,44 @@ static int test_str0(void *state) {
 }
 
 static int test_syntax0(void *state) {
+	struct parser_state s;
+	int v;
 	errr r = parser_reg(state, "test-syntax0 str s0", ignored);
 	eq(r, 0);
 	r = parser_parse(state, "test-syntax0");
 	eq(r, PARSE_ERROR_MISSING_FIELD);
+	v = parser_getstate(state, &s);
+	require(v);
+	eq(s.line, 5);
+	eq(s.col, 2);
 	ok;
 }
 
 static int test_syntax1(void *state) {
+	struct parser_state s;
+	int v;
 	errr r = parser_reg(state, "test-syntax1 int i0", ignored);
 	eq(r, 0);
 	r = parser_parse(state, "test-syntax1:a");
 	eq(r, PARSE_ERROR_NOT_NUMBER);
+	v = parser_getstate(state, &s);
+	require(v);
+	eq(s.line, 6);
+	eq(s.col, 2);
 	ok;
 }
 
 static int test_syntax2(void *state) {
+	struct parser_state s;
+	int v;
 	errr r = parser_reg(state, "test-syntax2 int i0 sym s1", ignored);
 	eq(r, 0);
 	r = parser_parse(state, "test-syntax2::test");
 	eq(r, PARSE_ERROR_NOT_NUMBER);
+	v = parser_getstate(state, &s);
+	require(v);
+	eq(s.line, 7);
+	eq(s.col, 2);
 	ok;
 }
 

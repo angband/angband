@@ -15,9 +15,11 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-#include "ui-menu.h"
 #include "cmds.h"
+#include "history.h"
+#include "ui-menu.h"
 #include "wizard.h"
 
 /*
@@ -179,13 +181,10 @@ static void display_winner(void)
 /*
  * Menu command: dump character dump to file.
  */
-static void death_file(void *unused, const char *title)
+static void death_file(const char *title, int row)
 {
 	char buf[1024];
 	char ftmp[80];
-
-	(void)unused;
-	(void)title;
 
 	strnfmt(ftmp, sizeof(ftmp), "%s.txt", op_ptr->base_name);
 
@@ -212,14 +211,11 @@ static void death_file(void *unused, const char *title)
 /*
  * Menu command: view character dump and inventory.
  */
-static void death_info(void *unused, const char *title)
+static void death_info(const char *title, int row)
 {
 	int i, j, k;
 	object_type *o_ptr;
 	store_type *st_ptr = &store[STORE_HOME];
-
-	(void)unused;
-	(void)title;
 
 
 	screen_save();
@@ -307,11 +303,8 @@ static void death_info(void *unused, const char *title)
 /*
  * Menu command: peruse pre-death messages.
  */
-static void death_messages(void *unused, const char *title)
+static void death_messages(const char *title, int row)
 {
-	(void)unused;
-	(void)title;
-
 	screen_save();
 	do_cmd_messages();
 	screen_load();
@@ -320,11 +313,8 @@ static void death_messages(void *unused, const char *title)
 /*
  * Menu command: see top twenty scores.
  */
-static void death_scores(void *unused, const char *title)
+static void death_scores(const char *title, int row)
 {
-	(void)unused;
-	(void)title;
-
 	screen_save();
 	show_scores();
 	screen_load();
@@ -333,13 +323,10 @@ static void death_scores(void *unused, const char *title)
 /*
  * Menu command: examine items in the inventory.
  */
-static void death_examine(void *unused, const char *title)
+static void death_examine(const char *title, int row)
 {
 	int item;
 	cptr q, s;
-
-	(void)unused;
-	(void)title;
 
 	/* Get an item */
 	q = "Examine which item? ";
@@ -369,22 +356,16 @@ static void death_examine(void *unused, const char *title)
 /*
  * Menu command: view character history.
  */
-static void death_history(void *unused, const char *title)
+static void death_history(const char *title, int row)
 {
-	(void)unused;
-	(void)title;
-
 	history_display();
 }
 
 /*
  * Menu command: allow spoiler generation (mainly for randarts).
  */
-static void death_spoilers(void *unused, const char *title)
+static void death_spoilers(const char *title, int row)
 {
-	(void)unused;
-	(void)title;
-
 	do_cmd_spoilers();
 }
 
@@ -392,17 +373,17 @@ static void death_spoilers(void *unused, const char *title)
  * Menu structures for the death menu. Note that Quit must always be the
  * last option, due to a hard-coded check in death_screen
  */
-static menu_type death_menu;
+static menu_type *death_menu;
 static menu_action death_actions[] =
 {
-	{ 'i', "Information",   death_info,     NULL },
-	{ 'm', "Messages",      death_messages, NULL },
-	{ 'f', "File dump",     death_file,     NULL },
-	{ 'v', "View scores",   death_scores,   NULL },
-	{ 'x', "Examine items", death_examine,  NULL },
-	{ 'h', "History",       death_history,  NULL },
-	{ 's', "Spoilers",	death_spoilers,	NULL },
-	{ 'q', "Quit",          NULL,           NULL },
+	{ 0, 'i', "Information",   death_info      },
+	{ 0, 'm', "Messages",      death_messages  },
+	{ 0, 'f', "File dump",     death_file      },
+	{ 0, 'v', "View scores",   death_scores    },
+	{ 0, 'x', "Examine items", death_examine   },
+	{ 0, 'h', "History",       death_history   },
+	{ 0, 's', "Spoilers",      death_spoilers  },
+	{ 0, 'q', "Quit",          NULL            },
 };
 
 
@@ -412,7 +393,6 @@ static menu_action death_actions[] =
  */
 void death_screen(void)
 {
-	menu_type *menu;
 	const region area = { 51, 2, 0, N_ELEMENTS(death_actions) };
 
 	/* Retire in the town in a good state */
@@ -445,21 +425,19 @@ void death_screen(void)
 	message_flush();
 
 
-	/* Initialize the menu */
-	menu = &death_menu;
-	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
-	menu_setpriv(menu, N_ELEMENTS(death_actions), death_actions);
-	menu_layout(menu, &area);
-	menu->flags = MN_CASELESS_TAGS;
 
-	while (TRUE)
+	if (!death_menu)
 	{
-		ui_event_data c = menu_select(&death_menu, 0);
+		death_menu = menu_new_action(death_actions,
+				N_ELEMENTS(death_actions));
 
-		if (c.type == EVT_ESCAPE || menu->cursor == (menu->count - 1))
-		{
-			if (get_check("Do you want to quit? "))
-				break;
-		}
+		death_menu->flags = MN_CASELESS_TAGS;
 	}
+
+	menu_layout(death_menu, &area);
+
+	do
+	{
+		menu_select(death_menu, 0);
+	} while (!get_check("Do you want to quit? "));
 }

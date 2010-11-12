@@ -21,6 +21,7 @@
 #include "cave.h"
 #include "cmds.h"
 #include "game-event.h"
+#include "history.h"
 #include "init.h"
 #include "object/inventory.h"
 #include "object/tvalsval.h"
@@ -463,6 +464,7 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 
 				case TV_POLEARM:
 				case TV_SWORD:
+				case TV_DIGGING:
 				{
 					/* Known blessed blades are accepted too */
 					if (object_is_known_blessed(o_ptr)) break;
@@ -2882,7 +2884,7 @@ static void store_examine(int item)
 	if (o_ptr->tval == cp_ptr->spell_book)
 	{
 		/* Call the aux function */
-		do_cmd_browse_aux(o_ptr, item);
+		textui_spell_browse(o_ptr, item);
 	}
 }
 
@@ -3358,7 +3360,7 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 
 #if 0
 	/* XXX Pack Overflow */
-	if (inventory[INVEN_MAX_PACK].k_idx)
+	if (p_ptr->inventory[INVEN_MAX_PACK].k_idx)
 		leave = store_overflow();
 #endif
 

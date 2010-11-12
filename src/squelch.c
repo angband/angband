@@ -174,7 +174,7 @@ enum
  */
 static quality_name_struct quality_values[SQUELCH_MAX] =
 {
-	{ SQUELCH_NONE,		"none" },
+	{ SQUELCH_NONE,		"no squelch" },
 	{ SQUELCH_BAD,		"bad" },
 	{ SQUELCH_AVERAGE,	"average" },
 	{ SQUELCH_GOOD,		"good" },
@@ -182,56 +182,6 @@ static quality_name_struct quality_values[SQUELCH_MAX] =
 	{ SQUELCH_EXCELLENT_NO_SPL,	"excellent but not splendid" },
 	{ SQUELCH_ALL,		"everything except artifacts" },
 };
-
-/*
- * menu struct for differentiating aware from unaware squelch
- */
-typedef struct
-{
-	s16b idx;
-	bool aware;
-} squelch_choice;
-
-
-/*
- * Sort by name in squelch menus.
- */
-static void ang_sort_swap_hook_squelch_choices(void *u, void *v, int a, int b)
-{
-	squelch_choice temp;
-	squelch_choice *x = (squelch_choice *) u;
-
-	(void)v; /* unused */
-
-	temp = x[a];
-	x[a] = x[b];
-	x[b] = temp;
-}
-
-
-/*
- * Ordering function for squelch choices.
- * Aware comes before unaware, and then sort alphabetically.
- */
-static bool ang_sort_comp_hook_squelch_choices(const void *u, const void *v,
-		int a, int b)
-{
-	char bufa[80];
-	char bufb[80];
-	squelch_choice *x = (squelch_choice *) u;
-	(void)v; /* unused */
-
-	if (x[a].aware && !x[b].aware)
-		return TRUE;
-	if (!x[a].aware && x[b].aware)
-		return FALSE;
-
-	object_kind_name(bufa, sizeof(bufa), x[a].idx, x[a].aware);
-	object_kind_name(bufb, sizeof(bufb), x[b].idx, x[b].aware);
-
-	/* the = is crucial, inf loop in sort if use < rather than <= */
-	return strcmp(bufa, bufb) <= 0;
-}
 
 
 /*
@@ -808,7 +758,7 @@ static bool quality_action(menu_type *m, const ui_event_data *event, int oid)
 {
 	menu_type menu;
 	menu_iter menu_f = { NULL, NULL, quality_subdisplay, NULL, NULL };
-	region area = { 24, 5, 29, SQUELCH_MAX };
+	region area = { 27, 2, 29, SQUELCH_MAX };
 	ui_event_data evt;
 	int cursor;
 	int count;
@@ -855,20 +805,15 @@ static void quality_menu(void *unused, const char *also_unused)
 {
 	menu_type menu;
 	menu_iter menu_f = { NULL, NULL, quality_display, quality_action, NULL };
-	region area = { 1, 5, -1, -1 };
+	region area = { 0, 0, 0, 0 };
 
 	/* Save screen */
 	screen_save();
 	clear_from(0);
 
-	/* Help text */
-	prt("Quality squelch menu", 0, 0);
-
-	Term_gotoxy(1, 1);
-	text_out_to_screen(TERM_L_RED, "Use the movement keys to navigate, and Enter to change settings.");
-
 	/* Set up the menu */
 	menu_init(&menu, MN_SKIN_SCROLL, &menu_f);
+	menu.title = "Quality squelch menu";
 	menu_setpriv(&menu, TYPE_MAX, quality_values);
 	menu_layout(&menu, &area);
 
@@ -885,43 +830,99 @@ static void quality_menu(void *unused, const char *also_unused)
 /*** Sval-dependent menu ***/
 
 /*
+ * menu struct for differentiating aware from unaware squelch
+ */
+typedef struct
+{
+	int k_idx;
+	object_kind *kind;
+	bool aware;
+} squelch_choice;
+
+
+/*
+ * Sort by name in squelch menus.
+ */
+static void ang_sort_swap_hook_squelch_choices(void *u, void *v, int a, int b)
+{
+	squelch_choice temp;
+	squelch_choice *x = (squelch_choice *) u;
+
+	(void)v; /* unused */
+
+	temp = x[a];
+	x[a] = x[b];
+	x[b] = temp;
+}
+
+
+/*
+ * Ordering function for squelch choices.
+ * Aware comes before unaware, and then sort alphabetically.
+ */
+static bool ang_sort_comp_hook_squelch_choices(const void *u, const void *v,
+		int a, int b)
+{
+	char bufa[80];
+	char bufb[80];
+	squelch_choice *x = (squelch_choice *) u;
+	(void)v; /* unused */
+
+	if (x[a].aware && !x[b].aware)
+		return TRUE;
+	if (!x[a].aware && x[b].aware)
+		return FALSE;
+
+	object_kind_name(bufa, sizeof(bufa), x[a].k_idx, x[a].aware);
+	object_kind_name(bufb, sizeof(bufb), x[b].k_idx, x[b].aware);
+
+	/* the = is crucial, inf loop in sort if use < rather than <= */
+	return strcmp(bufa, bufb) <= 0;
+}
+
+
+/*
  * Display an entry on the sval menu
  */
-static void sval_display(menu_type *menu, int oid, bool cursor, int row, int col, int width)
+static void squelch_sval_menu_display(menu_type *menu, int oid, bool cursor,
+		int row, int col, int width)
 {
 	char buf[80];
 	const squelch_choice *choice = menu_priv(menu);
-	int idx = choice[oid].idx;
 
-	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
+	object_kind *kind = choice[oid].kind;
+	bool aware = choice[oid].aware;
 
+	byte attr = curs_attrs[aware][0 != cursor];
 
 	/* Acquire the "name" of object "i" */
-	object_kind_name(buf, sizeof(buf), idx, choice[oid].aware);
+	object_kind_name(buf, sizeof(buf), choice[oid].k_idx, aware);
 
 	/* Print it */
 	c_put_str(attr, format("[ ] %s", buf), row, col);
-	if ((choice[oid].aware && (k_info[idx].squelch & SQUELCH_IF_AWARE)) ||
-	    ((!choice[oid].aware) && (k_info[idx].squelch & SQUELCH_IF_UNAWARE)))
+	if ((aware && (kind->squelch & SQUELCH_IF_AWARE)) ||
+			(!aware && (kind->squelch & SQUELCH_IF_UNAWARE)))
 		c_put_str(TERM_L_RED, "*", row, col + 1);
 }
+
 
 /*
  * Deal with events on the sval menu
  */
-static bool sval_action(menu_type *m, const ui_event_data *event, int oid)
+static bool squelch_sval_menu_action(menu_type *m, const ui_event_data *event,
+		int oid)
 {
 	const squelch_choice *choice = menu_priv(m);
 
 	if (event->type == EVT_SELECT)
 	{
-		int idx = choice[oid].idx;
+		object_kind *kind = choice[oid].kind;
 
 		/* Toggle the appropriate flag */
 		if (choice[oid].aware)
-			k_info[idx].squelch ^= SQUELCH_IF_AWARE;
+			kind->squelch ^= SQUELCH_IF_AWARE;
 		else
-			k_info[idx].squelch ^= SQUELCH_IF_UNAWARE;
+			kind->squelch ^= SQUELCH_IF_UNAWARE;
 
 		p_ptr->notice |= PN_SQUELCH;
 		return TRUE;
@@ -930,64 +931,79 @@ static bool sval_action(menu_type *m, const ui_event_data *event, int oid)
 	return FALSE;
 }
 
-
-/*
- * Display list of svals to be squelched.
- */
-static bool sval_menu(int tval, const char *desc)
+static const menu_iter squelch_sval_menu =
 {
-	menu_type menu;
-	menu_iter menu_f = { NULL, NULL, sval_display, sval_action, NULL };
-	region area = { 1, 5, -1, -1 };
+	NULL,
+	NULL,
+	squelch_sval_menu_display,
+	squelch_sval_menu_action,
+	NULL,
+};
 
-	int num = 0;
-	size_t i;
 
+/**
+ * Collect all tvals in the big squelch_choice array
+ */
+static int squelch_collect_kind(int tval, squelch_choice **ch)
+{
 	squelch_choice *choice;
+	int num = 0;
 
+	int i;
 
 	/* Create the array, with entries both for aware and unaware squelch */
-	choice = C_ZNEW(2 * z_info->k_max, squelch_choice);
+	choice = mem_alloc(2 * z_info->k_max * sizeof *choice);
 
-	/* Iterate over all possible object kinds, finding ones which can be squelched */
 	for (i = 1; i < z_info->k_max; i++)
 	{
 		object_kind *k_ptr = &k_info[i];
 
 		/* Skip empty objects, unseen objects, and incorrect tvals */
-		if (!k_ptr->name) continue;
-		if (k_ptr->tval != tval) continue;
+		if (!k_ptr->name || k_ptr->tval != tval)
+			continue;
 
 		if (!k_ptr->aware)
 		{
 			/* can unaware squelch anything */
-			/* XXX Eddie should it be required that unaware squelched flavors have been seen this game, if so, how to save that info? */
-
-			choice[num].idx = i;
-			choice[num].aware = FALSE;
-			num++;
+			choice[num].kind = k_ptr;
+			choice[num].k_idx = i;
+			choice[num++].aware = FALSE;
 		}
 
 		if (k_ptr->everseen || k_ptr->tval == TV_GOLD)
 		{
 			/* aware squelch requires everseen */
 			/* do not require awareness for aware squelch, so people can set at game start */
-
-			choice[num].idx = i;
-			choice[num].aware = TRUE;
-			num++;
+			choice[num].kind = k_ptr;
+			choice[num].k_idx = i;
+			choice[num++].aware = TRUE;
 		}
 	}
 
-	/* Return here if there are no objects */
-	if (!num)
-	{
-		FREE(choice);
+	if (num == 0)
+		mem_free(choice);
+	else
+		*ch = choice;
+
+	return num;
+}
+
+/*
+ * Display list of svals to be squelched.
+ */
+static bool sval_menu(int tval, const char *desc)
+{
+	menu_type *menu;
+	region area = { 1, 2, -1, -1 };
+
+	squelch_choice *choices;
+
+	int n_choices = squelch_collect_kind(tval, &choices);
+	if (!n_choices)
 		return FALSE;
-	}
 
 	/* sort by name in squelch menus except for categories of items that are aware from the start */
-	switch(tval)
+	switch (tval)
 	{
 		case TV_LIGHT:
 		case TV_MAGIC_BOOK:
@@ -1001,7 +1017,7 @@ static bool sval_menu(int tval, const char *desc)
 			/* sort by name */
 			ang_sort_comp = ang_sort_comp_hook_squelch_choices;
 			ang_sort_swap = ang_sort_swap_hook_squelch_choices;
-			ang_sort((void*)choice, NULL, num);
+			ang_sort(choices, NULL, n_choices);
 	}
 
 
@@ -1010,34 +1026,16 @@ static bool sval_menu(int tval, const char *desc)
 	clear_from(0);
 
 	/* Help text */
-
-	/* Output to the screen */
-	text_out_hook = text_out_to_screen;
-
-	/* Indent output */
-	text_out_indent = 1;
-	text_out_wrap = 79;
-	Term_gotoxy(1, 0);
-
-	/* Display some helpful information */
-	text_out("Use the ");
-	text_out_c(TERM_L_GREEN, "movement keys");
-	text_out(" to scroll the list or ");
-	text_out_c(TERM_L_GREEN, "ESC");
-	text_out(" to return to the previous menu.  ");
-	text_out_c(TERM_L_BLUE, "Enter");
-	text_out(" toggles the current setting.");
-
-	text_out_indent = 0;
+	prt(format("Squelch the following %s:", desc), 0, 0);
 
 	/* Run menu */
-	menu_init(&menu, MN_SKIN_SCROLL, &menu_f);
-	menu_setpriv(&menu, num, choice);
-	menu_layout(&menu, &area);
-	menu_select(&menu, 0);
+	menu = menu_new(MN_SKIN_COLUMNS, &squelch_sval_menu);
+	menu_setpriv(menu, n_choices, choices);
+	menu_layout(menu, &area);
+	menu_select(menu, 0);
 
 	/* Free memory */
-	FREE(choice);
+	FREE(choices);
 
 	/* Load screen */
 	screen_load();
@@ -1176,7 +1174,7 @@ static const menu_iter options_item_iter =
 /*
  * Display and handle the main squelching menu.
  */
-void do_cmd_options_item(void *unused, cptr title)
+void do_cmd_options_item(const char *title, int row)
 {
 	menu_type menu;
 

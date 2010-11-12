@@ -3,6 +3,7 @@
  * Purpose: Spell and prayer casting/praying
  *
  * Copyright (c) 1997 Ben Harrison, James E. Wilson, Robert A. Koeneke
+ * Copyright (c) 2010 Andi Sidwell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -20,6 +21,334 @@
 #include "cave.h"
 #include "object/tvalsval.h"
 #include "game-cmd.h"
+
+#include "ui.h"
+#include "ui-menu.h"
+
+
+/**
+ * Spell menu data struct
+ */
+struct spell_menu_data {
+	int spells[PY_MAX_SPELLS];
+	int n_spells;
+
+	bool browse;
+	bool (*is_valid)(int spell);
+
+	int selected_spell;
+};
+
+
+/**
+ * Is item oid valid?
+ */
+static int spell_menu_valid(menu_type *m, int oid)
+{
+	struct spell_menu_data *d = menu_priv(m);
+	int *spells = d->spells;
+
+	return d->is_valid(spells[oid]);
+}
+
+/**
+ * Display a row of the spell menu
+ */
+static void spell_menu_display(menu_type *m, int oid, bool cursor,
+		int row, int col, int wid)
+{
+	struct spell_menu_data *d = menu_priv(m);
+	int spell = d->spells[oid];
+	const magic_type *s_ptr = &mp_ptr->info[spell];
+
+	char help[30];
+	char out[80];
+
+	int attr;
+	const char *name;
+	const char *comment = NULL;
+
+	if (s_ptr->slevel >= 99) {
+		name = "(illegible)";
+		attr = TERM_L_DARK;
+	} else if (p_ptr->spell_flags[spell] & PY_SPELL_FORGOTTEN) {
+		comment = " forgotten";
+		attr = TERM_YELLOW;
+	} else if (p_ptr->spell_flags[spell] & PY_SPELL_LEARNED) {
+		if (p_ptr->spell_flags[spell] & PY_SPELL_WORKED) {
+			/* Get extra info */
+			get_spell_info(cp_ptr->spell_book, spell, help, sizeof(help));
+			comment = help;
+			attr = TERM_WHITE;
+		} else {
+			comment = " untried";
+			attr = TERM_L_GREEN;
+		}
+	} else if (s_ptr->slevel <= p_ptr->lev) {
+		comment = " unknown";
+		attr = TERM_L_BLUE;
+	} else {
+		comment = " difficult";
+		attr = TERM_RED;
+	}
+
+	/* Dump the spell --(-- */
+	strnfmt(out, sizeof(out), "%-30s%2d %4d %3d%%%s",
+			get_spell_name(cp_ptr->spell_book, spell),
+			s_ptr->slevel, s_ptr->smana, spell_chance(spell), comment);
+	c_prt(attr, out, row, col);
+}
+
+/**
+ * Handle an event on a menu row.
+ */
+static bool spell_menu_handler(menu_type *m, const ui_event_data *e, int oid)
+{
+	struct spell_menu_data *d = menu_priv(m);
+
+	if (e->type == EVT_SELECT) {
+		d->selected_spell = d->spells[oid];
+		return d->browse ? TRUE : FALSE;
+	}
+
+	return TRUE;
+}
+
+/**
+ * Show spell long description when browsing
+ */
+static void spell_menu_browser(int oid, void *data, const region *loc)
+{
+	struct spell_menu_data *d = data;
+	int spell = d->spells[oid];
+
+	/* Redirect output to the screen */
+	text_out_hook = text_out_to_screen;
+	text_out_wrap = 0;
+	text_out_indent = loc->col - 1;
+	text_out_pad = 1;
+
+	screen_load();
+	screen_save();
+
+	Term_gotoxy(loc->col, loc->row + loc->page_rows);
+	text_out("\n%s\n", s_info[(cp_ptr->spell_book == TV_MAGIC_BOOK) ? spell : spell + PY_MAX_SPELLS].text);
+
+	/* XXX */
+	text_out_pad = 0;
+}
+
+static const menu_iter spell_menu_iter = {
+	NULL,	/* get_tag = NULL, just use lowercase selections */
+	spell_menu_valid,
+	spell_menu_display,
+	spell_menu_handler,
+	NULL	/* no resize hook */
+};
+
+/** Create and initialise a spell menu, given an object and a validity hook */
+static menu_type *spell_menu_new(const object_type *o_ptr,
+		bool (*is_valid)(int spell))
+{
+	menu_type *m = menu_new(MN_SKIN_SCROLL, &spell_menu_iter);
+	struct spell_menu_data *d = mem_alloc(sizeof *d);
+
+	region loc = { -60, 1, 60, -99 };
+
+	/* collect spells from object */
+	d->n_spells = spell_collect_from_book(o_ptr, d->spells);
+	if (d->n_spells == 0 || !spell_okay_list(is_valid, d->spells, d->n_spells))
+	{
+		mem_free(m);
+		mem_free(d);
+		return NULL;
+	}
+
+	/* copy across private data */
+	d->is_valid = is_valid;
+	d->selected_spell = -1;
+	d->browse = FALSE;
+
+	menu_setpriv(m, d->n_spells, d);
+
+	/* set flags */
+	m->header = "Name                             Lv Mana Fail Info";
+	m->flags = MN_CASELESS_TAGS;
+	m->selections = lower_case;
+	m->browse_hook = spell_menu_browser;
+
+	/* set size */
+	loc.page_rows = d->n_spells + 1;
+	menu_layout(m, &loc);
+
+	return m;
+}
+
+/** Clean up a spell menu instance */
+static void spell_menu_destroy(menu_type *m)
+{
+	struct spell_menu_data *d = menu_priv(m);
+	mem_free(d);
+	mem_free(m);
+}
+
+/**
+ * Run the spell menu to select a spell.
+ */
+static int spell_menu_select(menu_type *m, const char *noun, const char *verb)
+{
+	struct spell_menu_data *d = menu_priv(m);
+
+	screen_save();
+
+	region_erase_bordered(&m->active);
+	prt(format("%^s which %s? ", verb, noun), 0, 0);
+
+	screen_save();
+	menu_select(m, 0);
+	screen_load();
+
+	screen_load();
+
+	return d->selected_spell;
+}
+
+/**
+ * Run the spell menu, without selections.
+ */
+static void spell_menu_browse(menu_type *m, const char *noun)
+{
+	struct spell_menu_data *d = menu_priv(m);
+
+	screen_save();
+
+	region_erase_bordered(&m->active);
+	prt(format("Browsing %ss.  Press Escape to exit.", noun), 0, 0);
+
+	screen_save();
+	d->browse = TRUE;
+	menu_select(m, 0);
+	screen_load();
+
+	screen_load();
+}
+
+
+/**
+ * Interactively select a spell.
+ *
+ * Returns the spell selected, or -1.
+ */
+int get_spell(const object_type *o_ptr, const char *verb,
+		bool (*spell_test)(int spell))
+{
+	menu_type *m;
+	const char *noun = (cp_ptr->spell_book == TV_MAGIC_BOOK ?
+			"spell" : "prayer");
+
+	m = spell_menu_new(o_ptr, spell_test);
+	if (m) {
+		int spell = spell_menu_select(m, noun, verb);
+		spell_menu_destroy(m);
+		return spell;
+	}
+
+	return -1;
+}
+
+/**
+ * Browse the given book.
+ */
+void textui_spell_browse(object_type *o_ptr, int item)
+{
+	menu_type *m;
+	const char *noun = (cp_ptr->spell_book == TV_MAGIC_BOOK ?
+			"spell" : "prayer");
+
+	/* Track the object kind */
+	track_object(item);
+	handle_stuff();
+
+	m = spell_menu_new(o_ptr, spell_okay_to_browse);
+	if (m) {
+		spell_menu_browse(m, noun);
+		spell_menu_destroy(m);
+	} else {
+		msg_print("You cannot browse that.");
+	}
+}
+
+
+
+
+
+/*** Game commands ***/
+
+/**
+ * Collect spells from a book into the spells[] array.
+ */
+int spell_collect_from_book(const object_type *o_ptr, int spells[PY_MAX_SPELLS])
+{
+	int i;
+	int n_spells = 0;
+
+	for (i = 0; i < SPELLS_PER_BOOK; i++)
+	{
+		int spell = get_spell_index(o_ptr, i);
+
+		if (spell != -1)
+			spells[n_spells++] = spell;
+	}
+
+	return n_spells;
+}
+
+
+/**
+ * True if at least one spell in spells[] is OK according to spell_test.
+ */
+bool spell_okay_list(bool (*spell_test)(int spell),
+		const int spells[], int n_spells)
+{
+	int i;
+	bool okay = FALSE;
+
+	for (i = 0; i < n_spells; i++)
+	{
+		if (spell_test(spells[i]))
+			okay = TRUE;
+	}
+
+	return okay;
+}
+
+/**
+ * True if the spell is castable.
+ */
+bool spell_okay_to_cast(int spell)
+{
+	return (p_ptr->spell_flags[spell] & PY_SPELL_LEARNED);
+}
+
+/**
+ * True if the spell can be studied.
+ */
+bool spell_okay_to_study(int spell)
+{
+	const magic_type *s_ptr = &mp_ptr->info[spell];
+	return (s_ptr->slevel <= p_ptr->lev) &&
+			!(p_ptr->spell_flags[spell] & PY_SPELL_LEARNED);
+}
+
+/**
+ * True if the spell is browsable.
+ */
+bool spell_okay_to_browse(int spell)
+{
+	const magic_type *s_ptr = &mp_ptr->info[spell];
+	return (s_ptr->slevel < 99);
+}
+
 
 /*
  * Returns chance of failure for a spell
@@ -92,413 +421,6 @@ s16b spell_chance(int spell)
 
 
 
-/*
- * Determine if a spell is "okay" for the player to cast or study
- * The spell must be legible, not forgotten, and also, to cast,
- * it must be known, and to study, it must not be known.
- * When browsing a book, all legible spells are okay.
- *               known   browse
- * cast/recite    TRUE    FALSE
- * study         FALSE    FALSE
- * browse         TRUE     TRUE
- */
-bool spell_okay(int spell, bool known, bool browse)
-{
-	const magic_type *s_ptr;
-
-	/* Get the spell */
-	s_ptr = &mp_ptr->info[spell];
-
-	/* Spell is illegible - never ok */
-	if (s_ptr->slevel >= 99) return (FALSE);
-
-	/* Spell is too hard - browse ok, no cast/study */
-	if (s_ptr->slevel > p_ptr->lev) return (browse);
-
-	/* Spell is forgotten - browse ok, no cast/study */
-	if (p_ptr->spell_flags[spell] & PY_SPELL_FORGOTTEN)
-		return (browse);
-
-	/* Spell is learned - cast/browse ok, no study */
-	if (p_ptr->spell_flags[spell] & PY_SPELL_LEARNED)
-		return (known || browse);
-
-	/* Spell has never been learned - study/browse ok, no cast */
-	return (!known || browse);
-}
-
-
-/*
- * Print a list of spells (for browsing or casting or viewing).
- */
-static void print_spells(const byte *spells, int num, int y, int x)
-{
-	int i, spell;
-
-	const magic_type *s_ptr;
-
-	char help[20];
-	char out_val[160];
-
-	const char *comment = help;
-
-	byte line_attr;
-
-	/* Title the list */
-	prt("", y, x);
-	put_str("Name", y, x + 5);
-	put_str("Lv Mana Fail Info", y, x + 35);
-
-	/* Dump the spells */
-	for (i = 0; i < num; i++)
-	{
-		/* Get the spell index */
-		spell = spells[i];
-
-		/* Get the spell info */
-		s_ptr = &mp_ptr->info[spell];
-
-		/* Skip illegible spells */
-		if (s_ptr->slevel >= 99)
-		{
-			strnfmt(out_val, sizeof(out_val), "  %c) %-30s", I2A(i), "(illegible)");
-			c_prt(TERM_L_DARK, out_val, y + i + 1, x);
-			continue;
-		}
-
-		/* Get extra info */
-		get_spell_info(cp_ptr->spell_book, spell, help, sizeof(help));
-
-		/* Assume spell is known and tried */
-		comment = help;
-		line_attr = TERM_WHITE;
-
-		/* Analyze the spell */
-		if (p_ptr->spell_flags[spell] & PY_SPELL_FORGOTTEN)
-		{
-			comment = " forgotten";
-			line_attr = TERM_YELLOW;
-		}
-		else if (!(p_ptr->spell_flags[spell] & PY_SPELL_LEARNED))
-		{
-			if (s_ptr->slevel <= p_ptr->lev)
-			{
-				comment = " unknown";
-				line_attr = TERM_L_BLUE;
-			}
-			else
-			{
-				comment = " difficult";
-				line_attr = TERM_RED;
-			}
-		}
-		else if (!(p_ptr->spell_flags[spell] & PY_SPELL_WORKED))
-		{
-			comment = " untried";
-			line_attr = TERM_L_GREEN;
-		}
-
-		/* Dump the spell --(-- */
-		strnfmt(out_val, sizeof(out_val), "  %c) %-30s%2d %4d %3d%%%s",
-		        I2A(i), get_spell_name(cp_ptr->spell_book, spell),
-		        s_ptr->slevel, s_ptr->smana, spell_chance(spell), comment);
-		c_prt(line_attr, out_val, y + i + 1, x);
-	}
-
-	/* Clear the bottom line */
-	prt("", y + i + 1, x);
-}
-
-
-
-/*
- * Allow user to choose a spell/prayer from the given book.
- *
- * Returns -1 if the user hits escape.
- * Returns -2 if there are no legal choices.
- * Returns a valid spell otherwise.
- *
- * The "prompt" should be "cast", "recite", "study", or "browse"
- * The "known" should be TRUE for cast/pray, FALSE for study
- * The "browse" should be TRUE for browse, FALSE for cast/pray/study
- */
-int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool browse)
-{
-	int i;
-
-	int spell;
-	int num = 0;
-
-	byte spells[PY_MAX_SPELLS];
-
-	bool verify;
-
-	bool flag, redraw, okay;
-	char choice;
-
-	const magic_type *s_ptr;
-
-	char out_val[160];
-
-	cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
-
-	/* Extract spells */
-	for (i = 0; i < SPELLS_PER_BOOK; i++)
-	{
-		spell = get_spell_index(o_ptr, i);
-
-		/* Collect this spell */
-		if (spell != -1) spells[num++] = spell;
-	}
-
-	/* Assume no usable spells */
-	okay = FALSE;
-
-	/* Check for "okay" spells */
-	for (i = 0; i < num; i++)
-	{
-		/* Look for "okay" spells */
-		if (spell_okay(spells[i], known, browse)) okay = TRUE;
-	}
-
-	/* No available spells */
-	if (!okay)
-		return (-2);
-
-
-
-	/* Nothing chosen yet */
-	flag = FALSE;
-
-	/* No redraw yet */
-	redraw = FALSE;
-
-	/* Hack -- when browsing a book, start with list shown */
-	if (browse || OPT(show_lists))
-	{
-		/* Show list */
-		redraw = TRUE;
-
-		/* Save screen */
-		screen_save();
-
-		/* Display a list of spells */
-		print_spells(spells, num, 1, 20);
-	}
-
-	/* Build a prompt (accept all spells) */
-	strnfmt(out_val, sizeof(out_val), "(%^ss a-%c%s, ESC=exit) %^s which %s? ",
-	        p, I2A(num - 1), (OPT(show_lists) ? "" : ", *=List"), prompt, p);
-
-	/* Get a spell from the user */
-	while (!flag && get_com(out_val, &choice))
-	{
-		/* Request redraw */
-		if (!OPT(show_lists) &&
-		    ((choice == ' ') || (choice == '*') || (choice == '?')))
-		{
-			/* Hide the list */
-			if (redraw)
-			{
-				/* Load screen */
-				screen_load();
-
-				/* Hide list */
-				redraw = FALSE;
-			}
-
-			/* Show the list */
-			else
-			{
-				/* Show list */
-				redraw = TRUE;
-
-				/* Save screen */
-				screen_save();
-
-				/* Display a list of spells */
-				print_spells(spells, num, 1, 20);
-			}
-
-			/* Ask again */
-			continue;
-		}
-
-
-		/* Note verify */
-		verify = (isupper((unsigned char)choice) ? TRUE : FALSE);
-
-		/* Lowercase */
-		choice = tolower((unsigned char)choice);
-
-		/* Extract request */
-		i = (islower((unsigned char)choice) ? A2I(choice) : -1);
-
-		/* Totally Illegal */
-		if ((i < 0) || (i >= num))
-		{
-			bell("Illegal spell choice!");
-			continue;
-		}
-
-		/* Save the spell index */
-		spell = spells[i];
-
-		/* Require "okay" spells */
-		if (!spell_okay(spell, known, browse))
-		{
-			bell("Illegal spell choice!");
-			msg_format("You may not %s that %s.", prompt, p);
-			continue;
-		}
-
-		/* Verify it */
-		if (verify)
-		{
-			char tmp_val[160];
-
-			/* Get the spell */
-			s_ptr = &mp_ptr->info[spell];
-
-			/* Prompt */
-			strnfmt(tmp_val, sizeof(tmp_val), "%^s %s (%d mana, %d%% fail)? ",
-			        prompt, get_spell_name(cp_ptr->spell_book, spell),
-			        s_ptr->smana, spell_chance(spell));
-
-			/* Belay that order */
-			if (!get_check(tmp_val)) continue;
-		}
-
-		/* Stop the loop */
-		flag = TRUE;
-	}
-
-
-	/* Restore the screen */
-	if (redraw)
-	{
-		/* Load screen */
-		screen_load();
-	}
-
-
-	/* Abort if needed */
-	if (!flag) return (-1);
-
-	/* Success */
-	return (spell);
-}
-
-
-
-/*
- * View the detailed description for a selected spell.
- */
-static void browse_spell(int spell)
-{
-	const magic_type *s_ptr;
-
-	char out_val[160];
-	char help[20];
-
-	const char *comment = help;
-
-	byte line_attr;
-
-
-	/* Redirect output to the screen */
-	text_out_hook = text_out_to_screen;
-
-	/* Save the screen */
-	screen_save();
-
-	/* Get the magic and spell info */
-	s_ptr = &mp_ptr->info[spell];
-
-	/* Get extra info */
-	get_spell_info(cp_ptr->spell_book, spell, help, sizeof(help));
-
-	/* Assume spell is known and tried */
-	line_attr = TERM_WHITE;
-
-	/* Analyze the spell */
-	if (p_ptr->spell_flags[spell] & PY_SPELL_FORGOTTEN)
-	{
-		comment = " forgotten";
-		line_attr = TERM_YELLOW;
-	}
-	else if (!(p_ptr->spell_flags[spell] & PY_SPELL_LEARNED))
-	{
-		if (s_ptr->slevel <= p_ptr->lev)
-		{
-			comment = " unknown";
-			line_attr = TERM_L_BLUE;
-		}
-		else
-		{
-			comment = " difficult";
-			line_attr = TERM_RED;
-		}
-	}
-	else if (!(p_ptr->spell_flags[spell] & PY_SPELL_WORKED))
-	{
-		comment = " untried";
-		line_attr = TERM_L_GREEN;
-	}
-
-	/* Show spell name and comment (if any) on first line of screen */
-	if (streq(comment, ""))
-	{
-		strnfmt(out_val, sizeof(out_val), "%^s",
-	    	    get_spell_name(cp_ptr->spell_book, spell));
-	}
-	else
-	{
-		strnfmt(out_val, sizeof(out_val), "%^s (%s)",
-	    	    get_spell_name(cp_ptr->spell_book, spell),
-	    	    /* Hack -- skip leading space */
-	    	    ++comment);
-	}
-
-	/* Print, in colour */
-	text_out_c(line_attr, out_val);
-
-	/* Display the spell description */
-	text_out("\n\n   ");
-
-	text_out("%s", s_text + s_info[(cp_ptr->spell_book == TV_MAGIC_BOOK) ? spell : spell + PY_MAX_SPELLS].text);
-	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
-
-	/* Wait for input */
-	(void)anykey();
-
-	/* Load screen */
-	screen_load();
-}
-
-
-void do_cmd_browse_aux(const object_type *o_ptr, int item)
-{
-	int spell;
-
-
-	/* Track the object kind */
-	track_object(item);
-	handle_stuff();
-
-
-	/* Continue to browse spells until player hits ESC */
-	while (1)
-	{
-		/* Ask for a spell */
-		spell = get_spell(o_ptr, "browse", TRUE, TRUE);
-		if (spell < 0) break;
-
-		/* Browse the spell */
-		browse_spell(spell);
-	}
-}
-
 /* Check if the given spell is in the given book. */
 static bool spell_in_book(int spell, int book)
 {
@@ -536,7 +458,7 @@ void do_cmd_study_spell(cmd_code code, cmd_arg args[])
 	{
 		if (spell_in_book(spell, item_list[i]))
 		{
-			if (spell_okay(spell, FALSE, FALSE))
+			if (spell_okay_to_study(spell))
 			{
 				/* Spell is in an available book, and player is capable. */
 				spell_learn(spell);
@@ -579,7 +501,7 @@ void do_cmd_cast(cmd_code code, cmd_arg args[])
 	{
 		if (spell_in_book(spell, item_list[i]))
 		{
-			if (spell_okay(spell, TRUE, FALSE))
+			if (spell_okay_to_cast(spell))
 			{
 				/* Get the spell */
 				const magic_type *s_ptr = &mp_ptr->info[spell];	
@@ -643,7 +565,7 @@ void do_cmd_study_book(cmd_code code, cmd_arg args[])
 		
 		/* Skip non-OK spells */
 		if (s == -1) continue;
-		if (!spell_okay(s, FALSE, FALSE)) continue;
+		if (!spell_okay_to_study(s)) continue;
 		
 		/* Apply the randomizer */
 		if ((++k > 1) && (randint0(k) != 0)) continue;

@@ -401,12 +401,6 @@ static void obj_wield(object_type *o_ptr, int item)
 
 /*** Casting and browsing ***/
 
-/* Peruse spells in a book */
-static void obj_browse(object_type *o_ptr, int item)
-{
-	do_cmd_browse_aux(o_ptr, item);
-}
-
 /* Study a book to gain a new spell */
 static void obj_study(object_type *o_ptr, int item)
 {
@@ -416,7 +410,7 @@ static void obj_study(object_type *o_ptr, int item)
 	/* Mage -- Choose a spell to study */
 	if (player_has(PF_CHOOSE_SPELLS))
 	{
-		int spell = get_spell(o_ptr, "study", FALSE, FALSE);
+		int spell = get_spell(o_ptr, "study", spell_okay_to_study);
 		if (spell >= 0)
 			cmd_insert(CMD_STUDY_SPELL, spell);
 		else if (spell == -2)
@@ -441,7 +435,7 @@ static void obj_cast(object_type *o_ptr, int item)
 	track_object(item);
 
 	/* Ask for a spell */
-	spell = get_spell(o_ptr, verb, TRUE, FALSE);
+	spell = get_spell(o_ptr, verb, spell_okay_to_cast);
 	if (spell < 0)
 	{
 		if (spell == -2) msg_format("You don't know any %ss in that book.", noun);
@@ -808,7 +802,7 @@ static item_act_t item_actions[] =
 	  NULL, (USE_EQUIP | USE_INVEN), NULL },
 
 	/*** Spellbooks ***/
-	{ obj_browse, CMD_NULL, "browse",
+	{ textui_spell_browse, CMD_NULL, "browse",
 	  "Browse which book? ", "You have no books that you can read.",
 	  obj_can_browse, (USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL },
 

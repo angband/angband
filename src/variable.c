@@ -704,15 +704,11 @@ owner_type *b_info;
  * The object flavor arrays
  */
 flavor_type *flavor_info;
-char *flavor_name;
-char *flavor_text;
 
 /*
  * The spell arrays
  */
 spell_type *s_info;
-char *s_name;
-char *s_text;
 
 
 /*
@@ -816,6 +812,11 @@ int text_out_wrap = 0;
  * Hack -- Indentation for the text when using text_out().
  */
 int text_out_indent = 0;
+
+/*
+ * Hack -- Padding after wrapping
+ */
+int text_out_pad = 0;
 
 
 /*
