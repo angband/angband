@@ -112,8 +112,7 @@ static struct
 	{ CMD_SELL, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_sell, FALSE, 0 },
 	{ CMD_STASH, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_stash, FALSE, 0 },
 	{ CMD_BUY, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_buy, FALSE, 0 },
-	{ CMD_RETRIEVE, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_retrieve, FALSE, 0 }
-,
+	{ CMD_RETRIEVE, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_retrieve, FALSE, 0 },
 	{ CMD_SUICIDE, { arg_END }, do_cmd_suicide, FALSE, 0 },
 	{ CMD_SAVE, { arg_END }, do_cmd_save_game, FALSE, 0 },
 	{ CMD_QUIT, { arg_END }, do_cmd_quit, FALSE, 0 },
