@@ -244,6 +244,8 @@ bool obj_is_activatable(const object_type *o_ptr);
 bool obj_can_activate(const object_type *o_ptr);
 bool obj_can_refill(const object_type *o_ptr);
 bool obj_can_browse(const object_type *o_ptr);
+bool obj_can_cast_from(const object_type *o_ptr);
+bool obj_can_study(const object_type *o_ptr);
 bool obj_can_takeoff(const object_type *o_ptr);
 bool obj_can_wear(const object_type *o_ptr);
 bool obj_has_inscrip(const object_type *o_ptr);

@@ -120,12 +120,12 @@ static struct item_command item_actions[] =
 	{ { "Gain new spells", 'G', CMD_NULL, NULL },
 	  textui_obj_study, "study", 
 	  "Study which book? ", "You have no books that you can read.",
-	  obj_can_browse, (USE_INVEN | USE_FLOOR), player_can_study, FALSE },
+	  obj_can_study, (USE_INVEN | USE_FLOOR), player_can_study, FALSE },
 
 	{ { "Cast a spell", 'm', CMD_NULL, NULL },
 	  textui_obj_cast, "cast",
 	  "Use which book? ", "You have no books that you can read.",
-	  obj_can_browse, (USE_INVEN | USE_FLOOR), player_can_cast, FALSE },
+	  obj_can_cast_from, (USE_INVEN | USE_FLOOR), player_can_cast, FALSE },
 
 	/*** Item usage ***/
 	{ { "Use a staff", 'u', CMD_USE_STAFF, NULL },

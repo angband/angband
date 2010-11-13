@@ -23,7 +23,6 @@
 #include "spells.h"
 
 
-
 /**
  * Collect spells from a book into the spells[] array.
  */
@@ -35,9 +34,28 @@ int spell_collect_from_book(const object_type *o_ptr, int spells[PY_MAX_SPELLS])
 	for (i = 0; i < SPELLS_PER_BOOK; i++)
 	{
 		int spell = get_spell_index(o_ptr, i);
-
-		if (spell != -1)
+		if (spell >= 0)
 			spells[n_spells++] = spell;
+	}
+
+	return n_spells;
+}
+
+
+/**
+ * Return the number of castable spells in the spellbook 'o_ptr'.
+ */
+int spell_book_count_spells(const object_type *o_ptr,
+		bool (*tester)(int spell))
+{
+	int i;
+	int n_spells = 0;
+
+	for (i = 0; i < SPELLS_PER_BOOK; i++)
+	{
+		int spell = get_spell_index(o_ptr, i);
+		if (spell >= 0 && tester(spell))
+			n_spells++;
 	}
 
 	return n_spells;
