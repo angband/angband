@@ -72,54 +72,50 @@ static void do_cmd_pref_file_hack(long row);
 
 /*** Options display and setting ***/
 
-/*
+
+
+/*** Boolean option menu code ***/
+
+/**
  * Displays an option entry.
  */
-static void display_option(menu_type *m, int oid, bool cursor,
+static void option_toggle_display(menu_type *m, int oid, bool cursor,
 		int row, int col, int width)
 {
-	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
+	byte attr = curs_attrs[CURS_KNOWN][cursor != 0];
 	bool *options = menu_priv(m);
 
 	c_prt(attr, format("%-45s: %s  (%s)", option_desc(oid),
-	                   options[oid] ? "yes" : "no ", option_name(oid)),
-	                   row, col);
+			options[oid] ? "yes" : "no ", option_name(oid)), row, col);
 }
 
-/*
+/**
  * Handle keypresses for an option entry.
  */
-static bool handle_option(menu_type *m, const ui_event_data *event, int oid)
+static bool option_toggle_handle(menu_type *m, const ui_event_data *event,
+		int oid)
 {
 	bool next = FALSE;
 
-	if (event->type == EVT_SELECT)
-	{
+	if (event->type == EVT_SELECT) {
 		option_set(option_name(oid), !op_ptr->opt[oid]);
-	}
-	else if (event->type == EVT_KBRD)
-	{
-		if (event->key == 'y' || event->key == 'Y')
-		{
+	} else if (event->type == EVT_KBRD) {
+		if (event->key == 'y' || event->key == 'Y') {
 			option_set(option_name(oid), TRUE);
 			next = TRUE;
-		}
-		else if (event->key == 'n' || event->key == 'N')
-		{
+		} else if (event->key == 'n' || event->key == 'N') {
 			option_set(option_name(oid), FALSE);
 			next = TRUE;
-		}
-		else if (event->key == '?')
+		} else if (event->key == '?') {
 			show_file(format("option.txt#%s", option_name(oid)), NULL, 0, 0);
-		else
+		} else {
 			return FALSE;
-	}
-	else
+		}
+	} else {
 		return FALSE;
+	}
 
-	/* XXX should be moved to ui-menu somehow */
-	if (next)
-	{
+	if (next) {
 		m->cursor++;
 		m->cursor = (m->cursor + m->filter_count) % m->filter_count;
 	}
@@ -127,58 +123,54 @@ static bool handle_option(menu_type *m, const ui_event_data *event, int oid)
 	return TRUE;
 }
 
-static const menu_iter options_toggle_iter =
-{
+/** Toggle option menu display and handling functions */
+static const menu_iter option_toggle_iter = {
 	NULL,
 	NULL,
-	display_option,		/* label */
-	handle_option,		/* handle */
+	option_toggle_display,
+	option_toggle_handle,
 	NULL
 };
 
-static menu_type *option_toggle_menu;
 
-
-/*
+/**
  * Interact with some options
  */
-static void do_cmd_options_aux(const char *name, int page)
+static void option_toggle_menu(const char *name, int page)
 {
 	int i;
+	
+	menu_type *m = menu_new(MN_SKIN_SCROLL, &option_toggle_iter);
 
-	if (!option_toggle_menu)
-	{
-		option_toggle_menu = menu_new(MN_SKIN_SCROLL, &options_toggle_iter);
+	/* for all menus */
+	m->prompt = "Set option (y/n/t), '?' for information";
+	m->cmd_keys = "?YyNnTt";
+	m->selections = "abcdefghijklmopqrsuvwxz";
+	m->flags = MN_DBL_TAP;
 
-		option_toggle_menu->prompt = "Set option (y/n/t), '?' for information";
-		option_toggle_menu->cmd_keys = "?YyNnTt";
-		option_toggle_menu->selections = "abcdefghijklmopqrsuvwxz";
-		option_toggle_menu->flags = MN_DBL_TAP;
-	}
-
-	option_toggle_menu->title = name;
-
-	/* XXX assert(page < OPT_PAGE_MAX); */
+	/* for this particular menu */
+	m->title = name;
 
 	/* Find the number of valid entries */
-	for (i = 0; i < OPT_PAGE_PER; i++)
-	{
+	for (i = 0; i < OPT_PAGE_PER; i++) {
 		if (option_page[page][i] == OPT_NONE)
 			break;
 	}
 
 	/* Set the data to the player's options */
-	menu_setpriv(option_toggle_menu, OPT_MAX, &op_ptr->opt);
-	menu_set_filter(option_toggle_menu, option_page[page], i);
-	menu_layout(option_toggle_menu, &SCREEN_REGION);
+	menu_setpriv(m, OPT_MAX, &op_ptr->opt);
+	menu_set_filter(m, option_page[page], i);
+	menu_layout(m, &SCREEN_REGION);
 
 	/* Run the menu */
 	screen_save();
-	clear_from(0);
 
-	menu_select(option_toggle_menu, 0);
+	clear_from(0);
+	menu_select(m, 0);
 
 	screen_load();
+
+	mem_free(m);
 }
 
 
@@ -1681,13 +1673,13 @@ void do_cmd_options_item(const char *title, int row)
 /*** Main menu definitions and display ***/
 
 static menu_type *option_menu;
-static menu_action option_actions [] = 
+static menu_action option_actions[] = 
 {
-	{ 0, 'a', "Interface options", do_cmd_options_aux },
-	{ 0, 'b', "Display options", do_cmd_options_aux },
-	{ 0, 'e', "Warning and disturbance options", do_cmd_options_aux },
-	{ 0, 'f', "Birth (difficulty) options", do_cmd_options_aux },
-	{ 0, 'g', "Cheat options", do_cmd_options_aux },
+	{ 0, 'a', "Interface options", option_toggle_menu },
+	{ 0, 'b', "Display options", option_toggle_menu },
+	{ 0, 'e', "Warning and disturbance options", option_toggle_menu },
+	{ 0, 'f', "Birth (difficulty) options", option_toggle_menu },
+	{ 0, 'g', "Cheat options", option_toggle_menu },
 	{0, 0, 0, 0}, /* Load and append */
 	{ 0, 'w', "Subwindow display settings", do_cmd_options_win },
 	{ 0, 's', "Item squelch settings", do_cmd_options_item },
