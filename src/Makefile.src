@@ -115,6 +115,7 @@ ANGFILES = \
 	ui-birth.o \
 	ui-knowledge.o \
 	ui-menu.o \
+	ui-options.o \
 	ui-spell.o \
 	util.o  \
 	variable.o \
