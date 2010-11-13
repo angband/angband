@@ -621,8 +621,6 @@ ui_event_data menu_select(menu_type *menu, int notify)
 
 	notify |= (EVT_SELECT | EVT_ESCAPE);
 
-	menu_set_cursor_first_valid(menu);
-
 	/* Check for command flag */
 	if (p_ptr->command_new)
 	{
@@ -714,12 +712,17 @@ void menu_set_filter(menu_type *menu, const int filter_list[], int n)
 {
 	menu->filter_list = filter_list;
 	menu->filter_count = n;
+
+	menu_set_cursor_first_valid(menu);
 }
 
 void menu_release_filter(menu_type *menu)
 {
 	menu->filter_list = NULL;
 	menu->filter_count = 0;
+
+	menu_set_cursor_first_valid(menu);
+
 }
 
 void menu_set_cursor_first_valid(menu_type *m)
@@ -783,9 +786,7 @@ void menu_setpriv(menu_type *menu, int count, void *data)
 	menu->count = count;
 	menu->menu_data = data;
 
-	/* XXX need to take account of filter_list */
-	if (menu->cursor >= menu->count)
-		menu->cursor = menu->count - 1;
+	menu_set_cursor_first_valid(menu);
 }
 
 void *menu_priv(menu_type *menu)
