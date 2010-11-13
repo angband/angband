@@ -4,3 +4,5 @@ config.log
 config.status
 configure
 *.out
+lib/apex/scores.*
+lib/save/1000.*
