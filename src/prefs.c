@@ -502,10 +502,12 @@ struct prefs_data
 static enum parser_error parse_prefs_load(struct parser *p)
 {
 	struct prefs_data *d = parser_priv(p);
+	const char *file;
+
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	const char *file = parser_getstr(p, "file");
+	file = parser_getstr(p, "file");
 	(void)process_pref_file(file, TRUE);
 
 	return PARSE_ERROR_NONE;
@@ -700,17 +702,24 @@ static const char *process_pref_file_expr(char **sp, char *fp)
 static enum parser_error parse_prefs_expr(struct parser *p)
 {
 	struct prefs_data *d = parser_priv(p);
+
+	const char *v;
+	char *str;
+	char *expr;
+	char f;
+
 	assert(d != NULL);
 
 	/* XXX this can be avoided with a rewrite of process_pref_file_expr */
-	char *str = string_make(parser_getstr(p, "expr"));
-	char *expr = str;
-	char f;
+	str = expr = string_make(parser_getstr(p, "expr"));
 
 	/* Parse the expr */
 /*	printf("expr '%s'\n", str); */
-	const char *v = process_pref_file_expr(&expr, &f);
+	v = process_pref_file_expr(&expr, &f);
 /*	printf("result '%s'\n", v); */
+	printf("expr '%s'\n", str);
+	v = process_pref_file_expr(&expr, &f);
+	printf("result '%s'\n", v);
 
 	string_free(str);
 
@@ -722,24 +731,26 @@ static enum parser_error parse_prefs_expr(struct parser *p)
 
 static enum parser_error parse_prefs_k(struct parser *p)
 {
+	int tvi, svi, idx;
+	object_kind *kind;
+
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	int tvi = tval_find_idx(parser_getsym(p, "tval"));
+	tvi = tval_find_idx(parser_getsym(p, "tval"));
 	if (tvi < 0)
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
 
-	int svi = lookup_sval(tvi, parser_getsym(p, "sval"));
+	svi = lookup_sval(tvi, parser_getsym(p, "sval"));
 	if (svi < 0)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-	int idx = lookup_kind(tvi, svi);
+	idx = lookup_kind(tvi, svi);
 	if (idx < 0)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-	object_kind *kind = &k_info[idx];
-
+	kind = &k_info[idx];
 	kind->x_attr = (byte)parser_getint(p, "attr");
 	kind->x_char = (char)parser_getint(p, "char");
 
@@ -748,16 +759,18 @@ static enum parser_error parse_prefs_k(struct parser *p)
 
 static enum parser_error parse_prefs_r(struct parser *p)
 {
+	int idx;
+	monster_race *monster;
+
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	int idx = parser_getuint(p, "idx");
+	idx = parser_getuint(p, "idx");
 	if (idx >= z_info->r_max)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
-	monster_race *monster = &r_info[idx];
-
+	monster = &r_info[idx];
 	monster->x_attr = (byte)parser_getint(p, "attr");
 	monster->x_char = (char)parser_getint(p, "char");
 
@@ -766,16 +779,18 @@ static enum parser_error parse_prefs_r(struct parser *p)
 
 static enum parser_error parse_prefs_f(struct parser *p)
 {
+	int idx;
+	feature_type *feature;
+
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	int idx = parser_getuint(p, "idx");
+	idx = parser_getuint(p, "idx");
 	if (idx >= z_info->f_max)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
-	feature_type *feature = &f_info[idx];
-
+	feature = &f_info[idx];
 	feature->x_attr = (byte)parser_getint(p, "attr");
 	feature->x_char = (char)parser_getint(p, "char");
 
@@ -784,11 +799,13 @@ static enum parser_error parse_prefs_f(struct parser *p)
 
 static enum parser_error parse_prefs_s(struct parser *p)
 {
+	size_t idx;
+
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	size_t idx = parser_getuint(p, "idx");
+	idx = parser_getuint(p, "idx");
 	if (idx >= N_ELEMENTS(misc_to_attr))
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
@@ -800,16 +817,18 @@ static enum parser_error parse_prefs_s(struct parser *p)
 
 static enum parser_error parse_prefs_l(struct parser *p)
 {
+	int idx;
+	flavor_type *flavor;
+
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	int idx = parser_getuint(p, "idx");
+	idx = parser_getuint(p, "idx");
 	if (idx >= z_info->flavor_max)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
-	flavor_type *flavor = &flavor_info[idx];
-
+	flavor = &flavor_info[idx];
 	flavor->x_attr = (byte)parser_getint(p, "attr");
 	flavor->x_char = (char)parser_getint(p, "char");
 
@@ -818,15 +837,17 @@ static enum parser_error parse_prefs_l(struct parser *p)
 
 static enum parser_error parse_prefs_e(struct parser *p)
 {
+	int tvi, a;
+
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	int tvi = tval_find_idx(parser_getsym(p, "tval"));
+	tvi = tval_find_idx(parser_getsym(p, "tval"));
 	if (tvi < 0 || tvi >= (long)N_ELEMENTS(tval_to_attr))
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
 
-	int a = parser_getint(p, "attr");
+	a = parser_getint(p, "attr");
 	if (a) tval_to_attr[tvi] = (byte) a;
 
 	return PARSE_ERROR_NONE;
@@ -840,19 +861,22 @@ static enum parser_error parse_prefs_q(struct parser *p)
 
 	if (parser_hasval(p, "sval") && parser_hasval(p, "flag"))
 	{
-		int tvi = tval_find_idx(parser_getsym(p, "n"));
+		object_kind *kind;
+		int tvi, svi, idx;
+
+		tvi = tval_find_idx(parser_getsym(p, "n"));
 		if (tvi < 0)
 			return PARSE_ERROR_UNRECOGNISED_TVAL;
 	
-		int svi = lookup_sval(tvi, parser_getsym(p, "sval"));
+		svi = lookup_sval(tvi, parser_getsym(p, "sval"));
 		if (svi < 0)
 			return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-		int idx = lookup_kind(tvi, svi);
+		idx = lookup_kind(tvi, svi);
 		if (idx < 0)
 			return PARSE_ERROR_UNRECOGNISED_SVAL;
 
-		object_kind *kind = &k_info[idx];
+		kind = &k_info[idx];
 		kind->squelch = parser_getint(p, "flag");
 	}
 	else
@@ -868,11 +892,13 @@ static enum parser_error parse_prefs_q(struct parser *p)
 
 static enum parser_error parse_prefs_b(struct parser *p)
 {
+	int idx;
+
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	int idx = parser_getint(p, "idx");
+	idx = parser_getint(p, "idx");
 	if (idx > z_info->k_max)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
@@ -883,11 +909,13 @@ static enum parser_error parse_prefs_b(struct parser *p)
 
 static enum parser_error parse_prefs_a(struct parser *p)
 {
+	const char *act;
+
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	const char *act = parser_getstr(p, "act");
+	act = parser_getstr(p, "act");
 	text_to_ascii(d->macro_buffer, sizeof(d->macro_buffer), act);
 
 	return PARSE_ERROR_NONE;
@@ -895,11 +923,12 @@ static enum parser_error parse_prefs_a(struct parser *p)
 
 static enum parser_error parse_prefs_p(struct parser *p)
 {
+	char tmp[1024];
+
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	char tmp[1024];
 	text_to_ascii(tmp, sizeof(tmp), parser_getstr(p, "key"));
 	macro_add(tmp, d->macro_buffer);
 
@@ -908,20 +937,23 @@ static enum parser_error parse_prefs_p(struct parser *p)
 
 static enum parser_error parse_prefs_c(struct parser *p)
 {
+	int mode;
+	byte j;
+	char tmp[1024];
+
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	int mode = parser_getint(p, "mode");
+	mode = parser_getint(p, "mode");
 	if (mode < 0 || mode >= KEYMAP_MODES)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
-	char tmp[1024];
 	text_to_ascii(tmp, sizeof(tmp), parser_getstr(p, "key"));
 	if (!tmp[0] || tmp[1])
 		return PARSE_ERROR_FIELD_TOO_LONG;
 
-	byte j = (byte)tmp[0];
+	j = (byte)tmp[0];
 
 	string_free(keymap_act[mode][j]);
 	keymap_act[mode][j] = string_make(d->macro_buffer);
@@ -944,6 +976,11 @@ static enum parser_error parse_prefs_t(struct parser *p)
 		const char *name0 = parser_getsym(p, "n3");
 		const char *namelist = parser_getstr(p, "n4");
 
+		char *modifiers;
+		char *t;
+		const char *names[MAX_MACRO_MOD];
+		int i = 1, j;
+
 		/* Free existing macro triggers and trigger template */
 		macro_trigger_free();
 
@@ -952,14 +989,12 @@ static enum parser_error parse_prefs_t(struct parser *p)
 			return PARSE_ERROR_NONE;
 
 		/* Tokenise last field... */
-		char *modifiers = string_make(namelist);
-		const char *names[MAX_MACRO_MOD];
-		int i = 1;
+		modifiers = string_make(namelist);
 
 		/* first token is name0 */
 		names[0] = name0;
 
-		char *t = strtok(modifiers, ":");
+		t = strtok(modifiers, ":");
 		while (t) {
 			names[i++] = t;
 			t = strtok(NULL, ":");
@@ -976,7 +1011,7 @@ static enum parser_error parse_prefs_t(struct parser *p)
 		/* OK, now copy the data across */
 		macro_template = string_make(template);
 		macro_modifier_chr = string_make(chars);
-		for (int j = 0; j < i; j++)
+		for (j = 0; j < i; j++)
 			macro_modifier_name[j] = string_make(names[j]);
 
 		string_free(modifiers);
@@ -990,12 +1025,12 @@ static enum parser_error parse_prefs_t(struct parser *p)
 		const char *kc = parser_getsym(p, "n2");
 		const char *shift_kc = NULL;
 
-		if (parser_hasval(p, "n3"))
-			shift_kc = parser_getsym(p, "n3");
-
 		char *buf;
 		const char *s;
 		char *t;
+
+		if (parser_hasval(p, "n3"))
+			shift_kc = parser_getsym(p, "n3");
 
 		if (max_macrotrigger >= MAX_MACRO_TRIGGER)
 			return PARSE_ERROR_TOO_MANY_ENTRIES;
@@ -1038,13 +1073,15 @@ static enum parser_error parse_prefs_t(struct parser *p)
 
 static enum parser_error parse_prefs_m(struct parser *p)
 {
+	int a, type;
+	const char *attr;
+
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	int type = parser_getint(p, "type");
-	const char *attr = parser_getsym(p, "attr");
-	int a;
+	type = parser_getint(p, "type");
+	attr = parser_getsym(p, "attr");
 
 	if (strlen(attr) > 1)
 		a = color_text_to_attr(attr);
@@ -1061,11 +1098,13 @@ static enum parser_error parse_prefs_m(struct parser *p)
 
 static enum parser_error parse_prefs_v(struct parser *p)
 {
+	int idx;
+
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	int idx = parser_getuint(p, "idx");
+	idx = parser_getuint(p, "idx");
 	if (idx > MAX_COLORS)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
@@ -1079,15 +1118,18 @@ static enum parser_error parse_prefs_v(struct parser *p)
 
 static enum parser_error parse_prefs_w(struct parser *p)
 {
+	int window;
+	size_t flag;
+
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	int window = parser_getint(p, "window");
+	window = parser_getint(p, "window");
 	if (window <= 0 || window >= ANGBAND_TERM_MAX)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
-	size_t flag = parser_getuint(p, "flag");
+	flag = parser_getuint(p, "flag");
 	if (flag >= N_ELEMENTS(window_flag_desc))
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 

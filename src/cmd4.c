@@ -959,12 +959,12 @@ static void keymap_query(const char *title, int row)
 	char tmp[1024];
 	int mode = OPT(rogue_like_commands) ? KEYMAP_MODE_ROGUE : KEYMAP_MODE_ORIG;
 
-	prt(title, 13, 0);
-	prt("Key: ", 14, 0);
-	
 	/* Get a keymap trigger & mapping */
 	char c = keymap_get_trigger();
 	const char *act = keymap_act[mode][(byte) c];
+
+	prt(title, 13, 0);
+	prt("Key: ", 14, 0);
 	
 	/* Nothing found */
 	if (!act)

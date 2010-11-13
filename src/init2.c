@@ -385,9 +385,11 @@ static enum parser_error parse_k_g(struct parser *p) {
 
 static enum parser_error parse_k_i(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
+	int tval;
+
 	assert(k);
 
-	int tval = tval_find_idx(parser_getsym(p, "tval"));
+	tval = tval_find_idx(parser_getsym(p, "tval"));
 	if (tval < 0)
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
 
@@ -554,14 +556,16 @@ static enum parser_error parse_a_n(struct parser *p) {
 
 static enum parser_error parse_a_i(struct parser *p) {
 	struct artifact *a = parser_priv(p);
+	int tval, sval;
+
 	assert(a);
 
-	int tval = tval_find_idx(parser_getsym(p, "tval"));
+	tval = tval_find_idx(parser_getsym(p, "tval"));
 	if (tval < 0)
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
 	a->tval = tval;
 
-	int sval = lookup_sval(a->tval, parser_getsym(p, "sval"));
+	sval = lookup_sval(a->tval, parser_getsym(p, "sval"));
 	if (sval < 0)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 	a->sval = sval;
@@ -1008,17 +1012,21 @@ static enum parser_error parse_e_x(struct parser *p) {
 }
 
 static enum parser_error parse_e_t(struct parser *p) {
-	int tval = tval_find_idx(parser_getsym(p, "tval"));
+	int i;
+	int tval;
+	int min_sval, max_sval;
+
+	struct ego_item *e = parser_priv(p);
+	if (!e)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+
+	tval = tval_find_idx(parser_getsym(p, "tval"));
 	if (tval < 0)
 		return PARSE_ERROR_UNRECOGNISED_TVAL;
 
-	int min_sval = parser_getint(p, "min-sval");
-	int max_sval = parser_getint(p, "max-sval");
-	struct ego_item *e = parser_priv(p);
-	int i;
+	min_sval = parser_getint(p, "min-sval");
+	max_sval = parser_getint(p, "max-sval");
 
-	if (!e)
-		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	for (i = 0; i < EGO_TVALS_MAX; i++) {
 		if (!e->tval[i]) {
 			e->tval[i] = tval;

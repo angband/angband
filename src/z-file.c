@@ -164,6 +164,7 @@ static void path_process(char *buf, size_t len, size_t *cur_len, const char *pat
 
 #else /* MACH_O_CARBON */
 
+		{
 		/* On Macs getlogin() can incorrectly return root, so get the username via system frameworks */
 		CFStringRef cfusername = CSCopyUserName(TRUE);
 		CFIndex cfbufferlength = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfusername), kCFStringEncodingUTF8) + 1;
@@ -174,6 +175,7 @@ static void path_process(char *buf, size_t len, size_t *cur_len, const char *pat
 		/* Look up the user */
 		pw = getpwnam(macusername);
 		mem_free(macusername);
+		}
 #endif /* !MACH_O_CARBON */
 
 		if (!pw) return;

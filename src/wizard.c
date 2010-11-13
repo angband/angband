@@ -498,9 +498,6 @@ void wiz_create_item_display(menu_type *m, int oid, bool cursor,
 
 bool wiz_create_item_action(menu_type *m, const ui_event_data *e, int oid)
 {
-	if (e->type != EVT_SELECT)
-		return TRUE;
-
 	ui_event_data ret;
 	menu_type *menu;
 
@@ -508,6 +505,9 @@ bool wiz_create_item_action(menu_type *m, const ui_event_data *e, int oid)
 	int n_choices;
 
 	int i;
+
+	if (e->type != EVT_SELECT)
+		return TRUE;
 
 	for (n_choices = 0, i = 1; (n_choices < 60) && (i < z_info->k_max); i++)
 	{
