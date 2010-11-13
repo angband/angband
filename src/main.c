@@ -30,6 +30,7 @@
 
 #include "main.h"
 #include "textui.h"
+#include "init.h"
 
 /*
  * List of the available modules in the order they are tried.

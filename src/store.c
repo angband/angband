@@ -1001,7 +1001,7 @@ static int home_carry(object_type *o_ptr)
 static int store_carry(int st, object_type *o_ptr)
 {
 	unsigned int i;
-	int slot;
+	unsigned int slot;
 	u32b value, j_value;
 	object_type *j_ptr;
 
@@ -2889,71 +2889,6 @@ static void store_examine(int item)
 }
 
 
-/*
- * Flee the store when it overflows.
- */
-static bool store_overflow(void)
-{
-	int item = INVEN_MAX_PACK;
-
-	object_type *o_ptr = &p_ptr->inventory[item];
-
-	/* Flee from the store */
-	if (current_store() != STORE_HOME)
-	{
-		/* Leave */
-		msg_print("Your pack is so full that you flee the store...");
-		return TRUE;
-	}
-
-	/* Flee from the home */
-	else if (!store_check_num(current_store(), o_ptr))
-	{
-		/* Leave */
-		msg_print("Your pack is so full that you flee your home...");
-		return TRUE;
-	}
-
-	/* Drop items into the home */
-	else
-	{
-		object_type *i_ptr;
-		object_type object_type_body;
-
-		char o_name[80];
-
-
-		/* Give a message */
-		msg_print("Your pack overflows!");
-
-		/* Get local object */
-		i_ptr = &object_type_body;
-
-		/* Grab a copy of the object */
-		object_copy(i_ptr, o_ptr);
-
-		/* Describe it */
-		object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
-
-		/* Message */
-		msg_format("You drop %s (%c).", o_name, index_to_label(item));
-
-		/* Remove it from the players inventory */
-		inven_item_increase(item, -255);
-		inven_item_describe(item);
-		inven_item_optimize(item);
-
-		/* Handle stuff */
-		handle_stuff();
-
-		/* Let the home carry it */
-		home_carry(i_ptr);
-	}
-
-	return FALSE;
-}
-
-
 void store_menu_set_selections(menu_type *menu)
 {
 	/* Roguelike */
@@ -3357,13 +3292,6 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 	msg_flag = FALSE;
 	menu_select(&menu, 0);
 	msg_flag = TRUE;
-
-#if 0
-	/* XXX Pack Overflow */
-	if (p_ptr->inventory[INVEN_MAX_PACK].k_idx)
-		leave = store_overflow();
-#endif
-
 
 	/* Switch back to the normal game view. */
 	event_signal(EVENT_LEAVE_STORE);
