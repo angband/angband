@@ -5,35 +5,25 @@
 # Based on Makefile.std, made separate because this port does not uses
 # main.c.
 
-# If you are able to construct "main-xxx.c" and/or "Makefile.xxx"
-# files for a currently unsupported system, please send them to
-# Robert Ruehlmann < rr9@thangorodrim.net > for inclusion in future
-# versions.
-#
-# This Makefile comes with "default" dependencies that may be obsolete.
+# default target
+all: install
 
-# Installing the Developer CD and you'll have this, as well as full
-# set of Mac OS programming documentation (HTML and PDF)
-
+# settings
 CC = gcc
+LD = ld
 OPT ?= -O2
 
-# Name of the game
-NAME =Angband
-APPNAME =$(NAME).app
-EXE =angband
+NAME = Angband
+APPNAME = $(NAME).app
+EXE = angband
 
-# Some Developer CD tools we need - the standard installation location
-TOOLDIR = /Developer/Tools
-SETFILE = $(TOOLDIR)/SetFile
-
-#WARNINGS = -W -Wall -Wextra -Wno-unused-parameter -Wold-style-definition -Wmissing-declarations -Wredundant-decls -Wpointer-arith -Wcast-align -Wwrite-strings -Winline -Wformat-security -Winit-self -Wmissing-include-dirs -Wundef -Wmissing-format-attribute -Wnested-externs
+ARCH = -arch i386 -arch ppc
 WARNINGS = -Wall -Wno-unused-parameter -Wno-missing-field-initializers
 JUST_C = -W -pedantic
-CFLAGS = \
-	-I. $(WARNINGS) -std=gnu99 $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
+OBJ_CFLAGS = -x objective-c -mmacosx-version-min=10.0
+CFLAGS = -I. $(WARNINGS) -std=gnu99 $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
 	-DPRIVATE_USER_PATH=\"~/Library/Preferences\" -DUSE_PRIVATE_PATHS \
-	-arch ppc -arch i386 -mmacosx-version-min=10.0
+	$(ARCH)
 LIBS = -framework CoreFoundation -framework QuickTime -framework Carbon \
 	-framework Cocoa
 
@@ -51,16 +41,6 @@ ppc: CFLAGS = \
 	-Wall -std=gnu99 $(OPT) -DMACH_O_CARBON -DHAVE_MKSTEMP \
 	-DPRIVATE_USER_PATH=\"~/Library/Preferences\" -DUSE_PRIVATE_PATHS
 
-# Object definitions are in common file.
-
-
-
-
-# Borg.  To build the borg, type:
-# $ make -f Makefile.osx clean borg all
-BOBJS = borg1.o borg2.o borg3.o borg4.o borg5.o borg6.o borg7.o \
-			borg8.o borg9.o
- 
 # -DALLOW_BORG is required for all .o files in a borg build 
 ifneq (,$(findstring borg, $(MAKECMDGOALS)))
 CFLAGS += -DALLOW_BORG
@@ -72,14 +52,14 @@ ifneq ($(autoconf),)
 CFLAGS += -DHAVE_CONFIG_H
 endif
 
-OBJS = $(BASEOBJS) main-crb.o
 
-#
-# Default target.
-#
-all: install
 
 include Makefile.inc
+
+BOBJS = borg1.o borg2.o borg3.o borg4.o borg5.o borg6.o borg7.o borg8.o borg9.o
+OBJS = $(BASEOBJS)
+OSX_OBJS = main-crb.o
+
 
 
 #
@@ -87,8 +67,11 @@ include Makefile.inc
 #
 
 
-$(EXE): $(OBJS) 
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS) 
+$(EXE).o: $(OBJS)
+	$(LD) -r -o $@ $(OBJS)
+
+$(EXE): $(EXE).o $(OSX_OBJS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(EXE).o $(OSX_OBJS) $(LIBS) 
 
 ppc: $(OBJS) 
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(OBJS) $(LIBS) 
@@ -101,7 +84,7 @@ borg: $(OBJS) $(BOBJS)
 #
 
 clean:
-	-rm -f $(OBJS) $(EXE)
+	-rm -f $(OBJS) $(EXE) $(EXE).o $(OSX_OBJS)
 
 
 #
@@ -110,7 +93,7 @@ clean:
 
 main-crb.o : main-crb.c
 	@printf "%10s %-20s (objective-c)\n" CC $<
-	@CC $(CFLAGS) -x objective-c -c -o $@ $<
+	@CC $(CFLAGS) $(OBJ_CFLAGS) -c -o $@ $<
 %.o : %.c
 	@printf "%10s %-20s\n" CC $<
 	@CC $(JUST_C) $(CFLAGS) -c -o $@ $<
@@ -191,7 +174,7 @@ install: $(EXE) $(ICONFILES) $(PLIST) $(LIBFILES)
 		-e 's/\$$NAME\$$/$(NAME)/' -e 's/\$$EXECUTABLE\$$/$(EXE)/' \
 		$(PLIST) > $(APPCONT)/Info.plist
 
-	$(SETFILE) -a B $(APPBNDL)
+	SetFile -a B $(APPBNDL)
 
 
 vars:
@@ -210,7 +193,7 @@ dist: install
 	mkdir -p disttemp/Docs
 	cp ../readme.txt ../changes.txt disttemp/Docs
 	cp -R -p "$(APPBNDL)" disttemp
-	$(SETFILE) -a B disttemp/$(APPNAME)
+	SetFile -a B disttemp/$(APPNAME)
 
 	@-rm ../"$(PACKAGE_NAME)-osx.dmg"
 

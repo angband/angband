@@ -199,6 +199,7 @@ extern ang_file *text_out_file;
 extern void (*text_out_hook)(byte a, cptr str);
 extern int text_out_wrap;
 extern int text_out_indent;
+extern int text_out_pad;
 extern bool use_transparency;
 extern void (*sound_hook)(int);
 extern autoinscription *inscriptions;
@@ -246,13 +247,16 @@ extern byte py_pickup(int pickup);
 extern void move_player(int dir);
 
 /* cmd5.c */
+int spell_collect_from_book(const object_type *o_ptr, int spells[]);
+bool spell_okay_list(bool (*spell_test)(int spell), const int spells[], int n_spells);
+bool spell_okay_to_cast(int spell);
+bool spell_okay_to_study(int spell);
+bool spell_okay_to_browse(int spell);
 s16b spell_chance(int spell);
-bool spell_okay(int spell, bool known, bool browse);
 bool spell_cast(int spell, int dir);
 void spell_learn(int spell);
 
-int get_spell(const object_type *o_ptr, cptr prompt, bool known, bool browse);
-void do_cmd_browse_aux(const object_type *o_ptr, int item);
+int get_spell(const object_type *o_ptr, const char *prompt, bool (*spell_test)(int spell));
 
 /* death.c */
 void death_screen(void);
@@ -319,9 +323,8 @@ void dump_features(ang_file *fff);
 void dump_flavors(ang_file *fff);
 void dump_colors(ang_file *fff);
 bool prefs_save(const char *path, void (*dump)(ang_file *), const char *title);
-s16b tokenize(char *buf, s16b num, char **tokens);
-errr process_pref_file_command(char *buf);
-errr process_pref_file(cptr name);
+errr process_pref_file_command(const char *buf);
+bool process_pref_file(const char *name, bool quiet);
 
 /* randart.c */
 extern errr do_randart(u32b randart_seed, bool full);

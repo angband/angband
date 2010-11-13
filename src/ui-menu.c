@@ -30,11 +30,14 @@ const byte curs_attrs[2][2] =
 /* Some useful constants */
 const char lower_case[] = "abcdefghijklmnopqrstuvwxyz";
 const char upper_case[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const char all_letters[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 /* forward declarations */
 static void display_menu_row(menu_type *menu, int pos, int top,
 			     bool cursor, int row, int col, int width);
 static bool menu_calc_size(menu_type *menu);
+static bool is_valid_row(menu_type *menu, int cursor);
+
 
 /* Display an event, with possible preference overrides */
 static void display_action_aux(menu_action *act, byte color, int row, int col, int wid)
@@ -63,13 +66,17 @@ static char menu_action_tag(menu_type *m, int oid)
 static int menu_action_valid(menu_type *m, int oid)
 {
 	menu_action *acts = menu_priv(m);
+
+	if (acts[oid].flags & MN_ACT_HIDDEN)
+		return 2;
+
 	return acts[oid].name ? TRUE : FALSE;
 }
 
 static void menu_action_display(menu_type *m, int oid, bool cursor, int row, int col, int width)
 {
 	menu_action *acts = menu_priv(m);
-	byte color = curs_attrs[CURS_KNOWN][0 != cursor];
+	byte color = curs_attrs[!(acts[oid].flags & (MN_ACT_GRAYED))][0 != cursor];
 
 	display_action_aux(&acts[oid], color, row, col, width);
 }
@@ -78,10 +85,13 @@ static bool menu_action_handle(menu_type *m, const ui_event_data *event, int oid
 {
 	menu_action *acts = menu_priv(m);
 
-	if (event->type == EVT_SELECT && acts[oid].action)
+	if (event->type == EVT_SELECT)
 	{
-		acts[oid].action(acts[oid].name, m->cursor);
-		return TRUE;
+		if (!(acts->flags & MN_ACT_GRAYED) && acts[oid].action)
+		{
+			acts[oid].action(acts[oid].name, m->cursor);
+			return TRUE;
+		}
 	}
 
 	return FALSE;
@@ -98,71 +108,6 @@ const menu_iter menu_iter_actions =
 	NULL
 };
 
-
-/* ------------------------------------------------------------------------
- * MN_ITEMS HELPER FUNCTIONS
- *
- * MN_ITEMS is the type of menu iterator that displays a simple list of 
- * menu_items (i.e. menu_actions with optional per-item flags and 
- * "selection" keys.
- * ------------------------------------------------------------------------ */
-
-static char item_menu_tag(menu_type *m, int oid)
-{
-	menu_item *items = menu_priv(m);
-	return items[oid].act.tag;
-}
-
-static int item_menu_valid(menu_type *m, int oid)
-{
-	menu_item *items = menu_priv(m);
-
-	if (items[oid].flags & MN_HIDDEN)
-		return 2;
-
-	return (NULL != items[oid].act.name);
-}
-
-static void item_menu_display(menu_type *m, int oid, bool cursor, int row, int col, int width)
-{
-	menu_item *items = menu_priv(m);
-	byte color = curs_attrs[!(items[oid].flags & (MN_GRAYED))][0 != cursor];
-
-	display_action_aux(&items[oid].act, color, row, col, width);
-}
-
-static bool item_menu_handle(menu_type *m, const ui_event_data *event, int oid)
-{
-	menu_item *items = menu_priv(m);
-
-	if (event->type == EVT_SELECT)
-	{
-		menu_item *item = &items[oid];
-
-		if (item->flags & MN_DISABLED)
-			return TRUE;
-
-		if (item->act.action)
-			item->act.action(item->act.name, m->cursor);
-
-		if (item->flags & MN_SELECTABLE)
-			item->flags ^= MN_SELECTED;
-
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-/* Virtual function table for menu items */
-const menu_iter menu_iter_items =
-{
-	item_menu_tag,       /* get_tag() */
-	item_menu_valid,     /* valid_row() */
-	item_menu_display,   /* display_row() */
-	item_menu_handle,     /* row_handler() */
-	NULL
-};
 
 /* ------------------------------------------------------------------------
  * MN_STRINGS HELPER FUNCTIONS
@@ -211,7 +156,7 @@ static void display_scrolling(menu_type *menu, int cursor, int *top, region *loc
 	int col = loc->col;
 	int row = loc->row;
 	int rows_per_page = loc->page_rows;
-	int n = menu->filter_count;
+	int n = menu->filter_list ? menu->filter_count : menu->count;
 	int i;
 
 	/* Keep a certain distance from the top when possible */
@@ -251,16 +196,40 @@ static char scroll_get_tag(menu_type *menu, int pos)
 	return 0;
 }
 
+static ui_event_data scroll_process_direction(menu_type *m, int dir)
+{
+	ui_event_data out = EVENT_EMPTY;
+
+	/* Reject diagonals */
+	if (ddx[dir] && ddy[dir])
+		;
+
+	/* Forward/back */
+	else if (ddx[dir])
+		out.type = ddx[dir] < 0 ? EVT_ESCAPE : EVT_SELECT;
+
+	/* Move up or down to the next valid & visible row */
+	else if (ddy[dir])
+	{
+		m->cursor += ddy[dir];
+		out.type = EVT_MOVE;
+	}
+
+	return out;
+}
+
 /* Virtual function table for scrollable menu skin */
 const menu_skin menu_skin_scroll =
 {
 	scrolling_get_cursor,
 	display_scrolling,
-	scroll_get_tag
+	scroll_get_tag,
+	scroll_process_direction
 };
 
 
-/* Multi-column menu */
+/*** Multi-column menus ***/
+
 /* Find the position of a cursor given a screen address */
 static int columns_get_cursor(int row, int col, int n, int top, region *loc)
 {
@@ -278,7 +247,7 @@ static void display_columns(menu_type *menu, int cursor, int *top, region *loc)
 {
 	int c, r;
 	int w, h;
-	int n = menu->filter_count;
+	int n = menu->filter_list ? menu->filter_count : menu->count;
 	int col = loc->col;
 	int row = loc->row;
 	int rows_per_page = loc->page_rows;
@@ -296,10 +265,16 @@ static void display_columns(menu_type *menu, int cursor, int *top, region *loc)
 		{
 			int pos = c * rows_per_page + r;
 			bool is_cursor = (pos == cursor);
-			display_menu_row(menu, pos, 0, is_cursor, row + r, col + c * colw,
-							 colw);
+
+			if (pos < n)
+				display_menu_row(menu, pos, 0, is_cursor,
+						row + r, col + c * colw, colw);
 		}
 	}
+
+	if (menu->cursor >= 0)
+		Term_gotoxy(col + (cursor / rows_per_page) * colw,
+				row + (cursor % rows_per_page) - *top);
 }
 
 static char column_get_tag(menu_type *menu, int pos)
@@ -310,12 +285,38 @@ static char column_get_tag(menu_type *menu, int pos)
 	return 0;
 }
 
+static ui_event_data column_process_direction(menu_type *m, int dir)
+{
+	ui_event_data out = EVENT_EMPTY;
+
+	int n = m->filter_list ? m->filter_count : m->count;
+
+	region *loc = &m->active;
+	int rows_per_page = loc->page_rows;
+	int cols = (n + rows_per_page - 1) / rows_per_page;
+
+	if (ddx[dir])
+		m->cursor += ddx[dir] * rows_per_page;
+	if (ddy[dir])
+		m->cursor += ddy[dir];
+
+	/* Adjust to the correct locations (roughly) */
+	if (m->cursor > n)
+		m->cursor = m->cursor % rows_per_page;
+	else if (m->cursor < 0)
+		m->cursor = (rows_per_page * cols) + m->cursor;
+
+	out.type = EVT_MOVE;
+	return out;
+}
+
 /* Virtual function table for multi-column menu skin */
 static const menu_skin menu_skin_column =
 {
 	columns_get_cursor,
 	display_columns,
-	column_get_tag
+	column_get_tag,
+	column_process_direction
 };
 
 
@@ -323,18 +324,16 @@ static const menu_skin menu_skin_column =
 
 static bool is_valid_row(menu_type *menu, int cursor)
 {
-	int oid = cursor;
+	int oid = menu->filter_list ? menu->filter_list[cursor] : cursor;
+	int count = menu->filter_list ? menu->filter_count : menu->count;
 
-	if (cursor < 0 || cursor >= menu->filter_count)
+	if (cursor < 0 || cursor >= count)
 		return FALSE;
 
-	if (menu->filter_list)
-		oid = menu->filter_list[cursor];
+	if (menu->row_funcs->valid_row)
+		return menu->row_funcs->valid_row(menu, oid);
 
-	if (!menu->row_funcs->valid_row)
-		return TRUE;
-
-	return menu->row_funcs->valid_row(menu, oid);
+	return TRUE;
 }
 
 /* 
@@ -344,7 +343,7 @@ static bool is_valid_row(menu_type *menu, int cursor)
 static int get_cursor_key(menu_type *menu, int top, char key)
 {
 	int i;
-	int n = menu->filter_count;
+	int n = menu->filter_list ? menu->filter_count : menu->count;
 
 	if (menu->flags & MN_CASELESS_TAGS)
 		key = toupper((unsigned char) key);
@@ -438,9 +437,6 @@ void menu_refresh(menu_type *menu)
 	int oid = menu->cursor;
 	region *loc = &menu->active;
 
-	if (!menu->filter_list)
-		menu->filter_count = menu->count;
-
 	if (menu->filter_list && menu->cursor >= 0)
 		oid = menu->filter_list[oid];
 
@@ -454,6 +450,11 @@ void menu_refresh(menu_type *menu)
 
 	if (menu->browse_hook && oid >= 0)
 		menu->browse_hook(oid, menu->menu_data, loc);
+
+
+	if (menu->header)
+		Term_putstr(loc->col, loc->row - 1, loc->width,
+				TERM_WHITE, menu->header);
 
 	menu->skin->display_list(menu, menu->cursor, &menu->top, loc);
 }
@@ -481,8 +482,10 @@ bool menu_handle_mouse(menu_type *menu, const ui_event_data *in,
 	}
 	else
 	{
+		int count = menu->filter_list ? menu->filter_count : menu->count;
+
 		new_cursor = menu->skin->get_cursor(in->mousey, in->mousex,
-				menu->filter_count, menu->top, &menu->active);
+				count, menu->top, &menu->active);
 	
 		if (is_valid_row(menu, new_cursor))
 		{
@@ -530,6 +533,7 @@ bool menu_handle_keypress(menu_type *menu, const ui_event_data *in,
 		ui_event_data *out)
 {
 	bool eat = FALSE;
+	int count = menu->filter_list ? menu->filter_count : menu->count;
 
 	/* Get the new cursor position from the menu item tags */
 	int new_cursor = get_cursor_key(menu, menu->top, in->key);
@@ -548,14 +552,14 @@ bool menu_handle_keypress(menu_type *menu, const ui_event_data *in,
 		out->type = EVT_ESCAPE;
 
 	/* Menus with no rows can't be navigated or used, so eat all keypresses */
-	else if (menu->filter_count <= 0)
+	else if (count <= 0)
 		eat = TRUE;
 
 	/* Try existing, known keys */
 	else if (in->key == ' ')
 	{
 		int rows = menu->active.page_rows;
-		int total = menu->filter_count;
+		int total = count;
 
 		if (rows < total)
 		{
@@ -579,37 +583,27 @@ bool menu_handle_keypress(menu_type *menu, const ui_event_data *in,
 	else
 	{
 		int dir = target_dir(in->key);
-	
-		/* Reject diagonals */
-		if (ddx[dir] && ddy[dir])
-			;
-	
-		/* Forward/back */
-		else if (ddx[dir])
-			out->type = ddx[dir] < 0 ? EVT_ESCAPE : EVT_SELECT;
-	
-		/* Move up or down to the next valid & visible row */
-		else if (ddy[dir])
+
+		if (dir)
 		{
-			int n = menu->filter_count;
-			int dy = ddy[dir];
-			int ind = menu->cursor + dy;
+			*out = menu->skin->process_dir(menu, dir);
 
-			/* Find the next valid row */
-			while (!is_valid_row(menu, ind))
+			if (out->type == EVT_MOVE)
 			{
-				/* Loop around */
-				if (ind > n - 1)  ind = 0;
-				else if (ind < 0) ind = n - 1;
-				else              ind += dy;
+				while (!is_valid_row(menu, menu->cursor))
+				{
+					/* Loop around */
+					if (menu->cursor > count - 1)
+						menu->cursor = 0;
+					else if (menu->cursor < 0)
+						menu->cursor = count - 1;
+					else
+						menu->cursor += ddy[dir];
+				}
+			
+				assert(menu->cursor >= 0);
+				assert(menu->cursor < count);
 			}
-	
-			/* Set the cursor */
-			menu->cursor = ind;
-			assert(menu->cursor >= 0);
-			assert(menu->cursor < menu->filter_count);
-
-			out->type = EVT_MOVE;
 		}
 	}
 
@@ -690,9 +684,6 @@ const menu_iter *menu_find_iter(menu_iter_id id)
 		case MN_ITER_ACTIONS:
 			return &menu_iter_actions;
 
-		case MN_ITER_ITEMS:
-			return &menu_iter_items;
-
 		case MN_ITER_STRINGS:
 			return &menu_iter_strings;
 	}
@@ -722,38 +713,52 @@ void menu_set_filter(menu_type *menu, const int filter_list[], int n)
 {
 	menu->filter_list = filter_list;
 	menu->filter_count = n;
+
+	menu_set_cursor_first_valid(menu);
 }
 
 void menu_release_filter(menu_type *menu)
 {
 	menu->filter_list = NULL;
-	menu->filter_count = menu->count;
+	menu->filter_count = 0;
+
+	menu_set_cursor_first_valid(menu);
+
+}
+
+void menu_set_cursor_first_valid(menu_type *m)
+{
+	int row;
+	int count = m->filter_list ? m->filter_count : m->count;
+
+	for (row = 0; row < count; row++)
+	{
+		if (is_valid_row(m, row))
+		{
+			m->cursor = row;
+			return;
+		}
+	}
 }
 
 /* ======================== MENU INITIALIZATION ==================== */
 
 static bool menu_calc_size(menu_type *menu)
 {
-	/* Start from initial settings */
-	menu->active = menu->boundary;
-
-	/* Calculate term-relative width/height */
-	if (menu->active.width <= 0 || menu->active.page_rows <= 0)
-	{
-		int w, h;
-		Term_get_size(&w, &h);
-
-		if (menu->active.width <= 0)
-			menu->active.width = w + menu->active.width - menu->active.col;
-		if (menu->active.page_rows <= 0)
-			menu->active.page_rows = h + menu->active.page_rows - menu->active.row;
-	}
+	/* Calculate term-relative positions */
+	menu->active = region_calculate(menu->boundary);
 
 	if (menu->title)
 	{
 		menu->active.row += 2;
 		menu->active.page_rows -= 2;
 		menu->active.col += 4;
+	}
+
+	if (menu->header)
+	{
+		menu->active.row++;
+		menu->active.page_rows--;
 	}
 
 	if (menu->prompt)
@@ -782,9 +787,7 @@ void menu_setpriv(menu_type *menu, int count, void *data)
 	menu->count = count;
 	menu->menu_data = data;
 
-	/* XXX need to take account of filter_list */
-	if (menu->cursor >= menu->count)
-		menu->cursor = menu->count - 1;
+	menu_set_cursor_first_valid(menu);
 }
 
 void *menu_priv(menu_type *menu)

@@ -20,6 +20,7 @@
 #include "cmds.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "ui-menu.h"
 #include "wizard.h"
 #include "z-file.h"
 
@@ -813,82 +814,46 @@ static void spoil_mon_info(cptr fname)
 }
 
 
+static void spoiler_menu_act(const char *title, int row)
+{
+	if (row == 0)
+		spoil_obj_desc("obj-desc.spo");
+	else if (row == 1)
+		spoil_artifact("artifact.spo");
+	else if (row == 2)
+		spoil_mon_desc("mon-desc.spo");
+	else if (row == 3)
+		spoil_mon_info("mon-info.spo");
+
+	message_flush();
+}
+
+static menu_type *spoil_menu;
+static menu_action spoil_actions[] =
+{
+	{ 0, 0, "Brief Object Info (obj-desc.spo)",		spoiler_menu_act },
+	{ 0, 0, "Brief Artifact Info (artifact.spo)",	spoiler_menu_act },
+	{ 0, 0, "Brief Monster Info (mon-desc.spo)",	spoiler_menu_act },
+	{ 0, 0, "Full Monster Info (mon-info.spo)",		spoiler_menu_act },
+};
+
 
 /*
  * Create Spoiler files
  */
 void do_cmd_spoilers(void)
 {
-	char ch;
-
-
-	/* Save screen */
-	screen_save();
-
-
-	/* Interact */
-	while (1)
+	if (!spoil_menu)
 	{
-		/* Clear screen */
-		Term_clear();
-
-		/* Info */
-		prt("Create a spoiler file.", 2, 0);
-
-		/* Prompt for a file */
-		prt("(1) Brief Object Info (obj-desc.spo)", 5, 5);
-		prt("(2) Brief Artifact Info (artifact.spo)", 6, 5);
-		prt("(3) Brief Monster Info (mon-desc.spo)", 7, 5);
-		prt("(4) Full Monster Info (mon-info.spo)", 8, 5);
-
-		/* Prompt */
-		prt("Command: ", 12, 0);
-
-		/* Get a choice */
-		ch = inkey();
-
-		/* Escape */
-		if (ch == ESCAPE)
-		{
-			break;
-		}
-
-		/* Option (1) */
-		else if (ch == '1')
-		{
-			spoil_obj_desc("obj-desc.spo");
-		}
-
-		/* Option (2) */
-		else if (ch == '2')
-		{
-			spoil_artifact("artifact.spo");
-		}
-
-		/* Option (3) */
-		else if (ch == '3')
-		{
-			spoil_mon_desc("mon-desc.spo");
-		}
-
-		/* Option (4) */
-		else if (ch == '4')
-		{
-			spoil_mon_info("mon-info.spo");
-		}
-
-		/* Oops */
-		else
-		{
-			bell("Illegal command for spoilers!");
-		}
-
-		/* Flush messages */
-		message_flush();
+		spoil_menu = menu_new_action(spoil_actions, N_ELEMENTS(spoil_actions));
+		spoil_menu->selections = lower_case;
+		spoil_menu->title = "Create spoilers";
 	}
 
-
-	/* Load screen */
+	screen_save();
+	clear_from(0);
+	menu_layout(spoil_menu, &SCREEN_REGION);
+	menu_select(spoil_menu, 0);
 	screen_load();
 }
 

@@ -52,7 +52,7 @@ sub main {
     ) || usage(1);
 
     my $dir     = dirname($0);
-    my @paths   = `find $dir -mindepth 2 -maxdepth 2 -type f -executable`;
+    my @paths   = `find $dir -mindepth 2 -maxdepth 2 -type f -perm -u+x`;
     my $pass    = 0;
     my $total   = 0;
     my $maxpath = (max map { length($_) } @paths) - 3;

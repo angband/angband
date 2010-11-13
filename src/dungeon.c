@@ -1601,13 +1601,13 @@ static void process_some_user_pref_files(void)
 
 
 	/* Process the "user.prf" file */
-	(void)process_pref_file("user.prf");
+	(void)process_pref_file("user.prf", TRUE);
 
 	/* Get the "PLAYER.prf" filename */
 	(void)strnfmt(buf, sizeof(buf), "%s.prf", op_ptr->base_name);
 
 	/* Process the "PLAYER.prf" file */
-	(void)process_pref_file(buf);
+	(void)process_pref_file(buf, TRUE);
 }
 
 

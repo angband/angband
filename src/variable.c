@@ -813,6 +813,11 @@ int text_out_wrap = 0;
  */
 int text_out_indent = 0;
 
+/*
+ * Hack -- Padding after wrapping
+ */
+int text_out_pad = 0;
+
 
 /*
  * Use transparent tiles

@@ -233,12 +233,8 @@ extern void init_translate_visuals(void);
  * If the "prefs" flag is TRUE, then we will also load the appropriate
  * "user pref file" based on the current setting of the "use_graphics"
  * flag.  This is useful for switching "graphics" on/off.
- *
- * The features, objects, and monsters, should all be encoded in the
- * relevant "font.pref" and/or "graf.prf" files.  XXX XXX XXX
- *
- * The "prefs" parameter is no longer meaningful.  XXX XXX XXX
  */
+/* XXX this does not belong here */
 void reset_visuals(bool unused)
 {
 	int i;
@@ -299,14 +295,14 @@ void reset_visuals(bool unused)
 	if (use_graphics)
 	{
 		/* Process "graf.prf" */
-		process_pref_file("graf.prf");
+		process_pref_file("graf.prf", FALSE);
 	}
 
 	/* Normal symbols */
 	else
 	{
 		/* Process "font.prf" */
-		process_pref_file("font.prf");
+		process_pref_file("font.prf", FALSE);
 	}
 
 #ifdef ALLOW_BORG_GRAPHICS

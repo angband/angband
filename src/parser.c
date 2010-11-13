@@ -11,6 +11,7 @@
 #include "z-util.h"
 #include "z-virt.h"
 
+
 const char *parser_error_str[PARSE_ERROR_MAX] = {
 	"(none)",
 	"generic error",
@@ -18,10 +19,12 @@ const char *parser_error_str[PARSE_ERROR_MAX] = {
 	"invalid item number",
 	"invalid spell frequency",
 	"invalid value",
-	"invalid color",
-	"invalid effect"
+	"invalid colour",
+	"invalid effect",
+	"invalid option",
 	"missing field",
 	"missing record header",
+	"field too long",
 	"non-sequential records",
 	"not a number",
 	"not random",

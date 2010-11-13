@@ -1952,6 +1952,9 @@ void text_out_to_screen(byte a, cptr str)
 			/* Clear line, move cursor */
 			Term_erase(x, y, 255);
 
+			x += text_out_pad;
+			Term_gotoxy(x, y);
+
 			continue;
 		}
 
@@ -1995,6 +1998,9 @@ void text_out_to_screen(byte a, cptr str)
 
 			/* Clear line, move cursor */
 			Term_erase(x, y, 255);
+
+			x += text_out_pad;
+			Term_gotoxy(x, y);
 
 			/* Wrap the word (if any) */
 			for (i = n; i < wrap - 1; i++)

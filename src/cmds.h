@@ -116,6 +116,8 @@ extern void do_cmd_save_screen(void);
 extern void do_cmd_knowledge(void);
 
 /* cmd5.c */
+void textui_spell_browse(object_type *o_ptr, int item);
+
 void do_cmd_study_spell(cmd_code code, cmd_arg args[]);
 void do_cmd_study_book(cmd_code code, cmd_arg args[]);
 

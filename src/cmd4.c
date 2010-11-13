@@ -35,6 +35,8 @@ static void dump_pref_file(void (*dump)(ang_file *), const char *title, int row)
 	char ftmp[80];
 	char buf[1024];
 
+	screen_save();
+
 	/* Prompt */
 	prt(format("%s to a pref file", title), row, 0);
 	
@@ -45,21 +47,21 @@ static void dump_pref_file(void (*dump)(ang_file *), const char *title, int row)
 	strnfmt(ftmp, sizeof ftmp, "%s.prf", op_ptr->base_name);
 	
 	/* Get a filename */
-	if (!askfor_aux(ftmp, sizeof ftmp, NULL)) return;
-
-	/* Build the filename */
-	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, ftmp);
-	
-	if (!prefs_save(buf, dump, title))
+	if (askfor_aux(ftmp, sizeof ftmp, NULL))
 	{
+		/* Build the filename */
+		path_build(buf, sizeof(buf), ANGBAND_DIR_USER, ftmp);
+	
 		prt("", 0, 0);
-		msg_print("Failed");
-		return;
+		if (prefs_save(buf, dump, title))
+			msg_print(format("Dumped %s", strstr(title, " ") + 1));
+		else
+			msg_print("Failed");
 	}
 
-	/* Message */
-	prt("", 0, 0);
-	msg_print(format("Dumped %s", strstr(title, " ")+1));
+	screen_load();
+
+	return;
 }
 
 static void do_cmd_pref_file_hack(long row);
@@ -1081,16 +1083,16 @@ static void macro_browse_hook(int oid, void *db, const region *loc)
 static menu_type *macro_menu;
 static menu_action macro_actions[] =
 {
-	{ 0, "Load a user pref file",    macro_pref_load },
-	{ 0, "Append macros to a file",  macro_pref_append },
-	{ 0, "Query a macro",            macro_query },
-	{ 0, "Create a macro",           macro_create },
-	{ 0, "Remove a macro",           macro_remove },
-	{ 0, "Append keymaps to a file", keymap_pref_append },
-	{ 0, "Query a keymap",           keymap_query },
-	{ 0, "Create a keymap",          keymap_create },
-	{ 0, "Remove a keymap",          keymap_remove },
-	{ 0, "Enter a new action",       macro_enter },
+	{ 0, 0, "Load a user pref file",    macro_pref_load },
+	{ 0, 0, "Append macros to a file",  macro_pref_append },
+	{ 0, 0, "Query a macro",            macro_query },
+	{ 0, 0, "Create a macro",           macro_create },
+	{ 0, 0, "Remove a macro",           macro_remove },
+	{ 0, 0, "Append keymaps to a file", keymap_pref_append },
+	{ 0, 0, "Query a keymap",           keymap_query },
+	{ 0, 0, "Create a keymap",          keymap_create },
+	{ 0, 0, "Remove a keymap",          keymap_remove },
+	{ 0, 0, "Enter a new action",       macro_enter },
 };
 
 static void do_cmd_macros(const char *title, int row)
@@ -1166,21 +1168,21 @@ static void visuals_reset(const char *title, int row)
 static menu_type *visual_menu;
 static menu_action visual_menu_items [] =
 {
-	{ 0, "Load a user pref file",   visuals_pref_load },
+	{ 0, 0, "Load a user pref file",   visuals_pref_load },
 #ifdef ALLOW_VISUALS
-	{ 0, "Dump monster attr/chars", visuals_dump_monsters },
-	{ 0, "Dump object attr/chars",  visuals_dump_objects },
-	{ 0, "Dump feature attr/chars", visuals_dump_features },
-	{ 0, "Dump flavor attr/chars",  visuals_dump_flavors },
+	{ 0, 0, "Dump monster attr/chars", visuals_dump_monsters },
+	{ 0, 0, "Dump object attr/chars",  visuals_dump_objects },
+	{ 0, 0, "Dump feature attr/chars", visuals_dump_features },
+	{ 0, 0, "Dump flavor attr/chars",  visuals_dump_flavors },
 #endif /* ALLOW_VISUALS */
-	{ 0, "Reset visuals",           visuals_reset },
+	{ 0, 0, "Reset visuals",           visuals_reset },
 };
 
 
 static void visuals_browse_hook(int oid, void *db, const region *loc)
 {
 	message_flush();
-	clear_from(0);
+	clear_from(1);
 }
 
 
@@ -1312,16 +1314,16 @@ static void colors_modify(const char *title, int row)
 static void colors_browse_hook(int oid, void *db, const region *loc)
 {
 	message_flush();
-	clear_from(0);
+	clear_from(1);
 }
 
 
 static menu_type *color_menu;
 static menu_action color_events [] =
 {
-	{ 0, "Load a user pref file", colors_pref_load },
-	{ 0, "Dump colors",           colors_pref_dump },
-	{ 0, "Modify colors",         colors_modify }
+	{ 0, 0, "Load a user pref file", colors_pref_load },
+	{ 0, 0, "Dump colors",           colors_pref_dump },
+	{ 0, 0, "Modify colors",         colors_modify }
 };
 
 /*
@@ -1392,6 +1394,8 @@ static void do_cmd_delay(const char *name, int row)
 
 	strnfmt(tmp, sizeof(tmp), "%i", op_ptr->delay_factor);
 
+	screen_save();
+
 	/* Prompt */
 	prt("Command: Base Delay Factor", 20, 0);
 
@@ -1407,6 +1411,8 @@ static void do_cmd_delay(const char *name, int row)
 	{
 		op_ptr->delay_factor = (u16b) strtoul(tmp, NULL, 0);
 	}
+
+	screen_load();
 }
 
 
@@ -1420,6 +1426,8 @@ static void do_cmd_hp_warn(const char *name, int row)
 	u16b warn;
 
 	strnfmt(tmp, sizeof(tmp), "%i", op_ptr->hitpoint_warn);
+
+	screen_save();
 
 	/* Prompt */
 	prt("Command: Hitpoint Warning", 20, 0);
@@ -1442,6 +1450,8 @@ static void do_cmd_hp_warn(const char *name, int row)
 
 		op_ptr->hitpoint_warn = warn;
 	}
+
+	screen_load();
 }
 
 
@@ -1454,6 +1464,8 @@ static void do_cmd_lazymove_delay(const char *name, int row)
 	char tmp[4] = "";
 
 	strnfmt(tmp, sizeof(tmp), "%i", lazymove_delay);
+
+	screen_save();
 
 	/* Prompt */
 	prt("Command: Movement Delay Factor", 20, 0);
@@ -1470,6 +1482,8 @@ static void do_cmd_lazymove_delay(const char *name, int row)
 	{
 		lazymove_delay = (u16b) strtoul(tmp, NULL, 0);
 	}
+
+	screen_load();
 }
 
 
@@ -1486,6 +1500,8 @@ static void do_cmd_pref_file_hack(long row)
 {
 	char ftmp[80];
 
+	screen_save();
+
 	/* Prompt */
 	prt("Command: Load a user pref file", row, 0);
 
@@ -1496,21 +1512,24 @@ static void do_cmd_pref_file_hack(long row)
 	strnfmt(ftmp, sizeof ftmp, "%s.prf", op_ptr->base_name);
 
 	/* Ask for a file (or cancel) */
-	if (!askfor_aux(ftmp, sizeof ftmp, NULL)) return;
+	if (askfor_aux(ftmp, sizeof ftmp, NULL))
+	{
+		/* Process the given filename */
+		if (process_pref_file(ftmp, FALSE))
+		{
+			/* Mention failure */
+			prt("", 0, 0);
+			msg_format("Failed to load '%s'!", ftmp);
+		}
+		else
+		{
+			/* Mention success */
+			prt("", 0, 0);
+			msg_format("Loaded '%s'.", ftmp);
+		}
+	}
 
-	/* Process the given filename */
-	if (process_pref_file(ftmp))
-	{
-		/* Mention failure */
-		prt("", 0, 0);
-		msg_format("Failed to load '%s'!", ftmp);
-	}
-	else
-	{
-		/* Mention success */
-		prt("", 0, 0);
-		msg_format("Loaded '%s'.", ftmp);
-	}
+	screen_load();
 }
 
 
@@ -1537,29 +1556,29 @@ static void options_load_pref_file(const char *n, int row)
 static menu_type *option_menu;
 static menu_action option_actions [] = 
 {
-	{ 'a', "Interface options", do_cmd_options_aux },
-	{ 'b', "Display options", do_cmd_options_aux },
-	{ 'e', "Warning and disturbance options", do_cmd_options_aux },
-	{ 'f', "Birth (difficulty) options", do_cmd_options_aux },
-	{ 'g', "Cheat options", do_cmd_options_aux },
-	{0, 0, 0}, /* Load and append */
-	{ 'w', "Subwindow display settings", do_cmd_options_win },
-	{ 's', "Item squelch settings", do_cmd_options_item },
-	{ 'd', "Set base delay factor", do_cmd_delay },
-	{ 'h', "Set hitpoint warning", do_cmd_hp_warn },
-	{ 'i', "Set movement delay", do_cmd_lazymove_delay },
-	{ 'l', "Load a user pref file", options_load_pref_file },
-	{ 'o', "Save options", do_dump_options }, 
-	{0, 0, 0}, /* Interact with */	
+	{ 0, 'a', "Interface options", do_cmd_options_aux },
+	{ 0, 'b', "Display options", do_cmd_options_aux },
+	{ 0, 'e', "Warning and disturbance options", do_cmd_options_aux },
+	{ 0, 'f', "Birth (difficulty) options", do_cmd_options_aux },
+	{ 0, 'g', "Cheat options", do_cmd_options_aux },
+	{0, 0, 0, 0}, /* Load and append */
+	{ 0, 'w', "Subwindow display settings", do_cmd_options_win },
+	{ 0, 's', "Item squelch settings", do_cmd_options_item },
+	{ 0, 'd', "Set base delay factor", do_cmd_delay },
+	{ 0, 'h', "Set hitpoint warning", do_cmd_hp_warn },
+	{ 0, 'i', "Set movement delay", do_cmd_lazymove_delay },
+	{ 0, 'l', "Load a user pref file", options_load_pref_file },
+	{ 0, 'o', "Save options", do_dump_options }, 
+	{0, 0, 0, 0}, /* Interact with */	
 
 #ifdef ALLOW_MACROS
-	{ 'm', "Interact with macros (advanced)", do_cmd_macros },
+	{ 0, 'm', "Interact with macros (advanced)", do_cmd_macros },
 #endif /* ALLOW_MACROS */
 
-	{ 'v', "Interact with visuals (advanced)", do_cmd_visuals },
+	{ 0, 'v', "Interact with visuals (advanced)", do_cmd_visuals },
 
 #ifdef ALLOW_COLORS
-	{ 'c', "Interact with colours (advanced)", do_cmd_colors },
+	{ 0, 'c', "Interact with colours (advanced)", do_cmd_colors },
 #endif /* ALLOW_COLORS */
 };
 
@@ -1928,7 +1947,7 @@ static void do_cmd_save_screen_html(int mode)
 
 	/* Recover current graphics settings */
 	reset_visuals(TRUE);
-	process_pref_file(file_name);
+	process_pref_file(file_name, TRUE);
 	file_delete(file_name);
 	do_cmd_redraw();
 
