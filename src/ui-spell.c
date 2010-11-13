@@ -241,7 +241,7 @@ static void spell_menu_browse(menu_type *m, const char *noun)
  *
  * Returns the spell selected, or -1.
  */
-int get_spell(const object_type *o_ptr, const char *verb,
+static int get_spell(const object_type *o_ptr, const char *verb,
 		bool (*spell_test)(int spell))
 {
 	menu_type *m;
@@ -295,8 +295,6 @@ void textui_obj_study(object_type *o_ptr, int item)
 		int spell = get_spell(o_ptr, "study", spell_okay_to_study);
 		if (spell >= 0)
 			cmd_insert(CMD_STUDY_SPELL, spell);
-		else if (spell == -2)
-			msg_print("You cannot learn any spells from that book.");
 	}
 
 	/* Priest -- Choose a book to study */
@@ -321,11 +319,6 @@ void textui_obj_cast(object_type *o_ptr, int item)
 
 	/* Ask for a spell */
 	spell = get_spell(o_ptr, verb, spell_okay_to_cast);
-	if (spell < 0)
-	{
-		if (spell == -2) msg_format("You don't know any %ss in that book.", noun);
-		return;
-	}
-
-	cmd_insert(CMD_CAST, spell);
+	if (spell >= 0)
+		cmd_insert(CMD_CAST, spell);
 }
