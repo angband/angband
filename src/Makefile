@@ -18,10 +18,15 @@ angband.o: $(OBJECTS)
 	$(LD) -r -o $@ $(OBJECTS)
 	@printf "%10s %-20s\n" LINK $@
 
+clean: test-clean
+
 clean-extra:
 	-rm autoconf.h
 
 tests:
 	$(MAKE) -C tests all
+
+test-clean:
+	$(MAKE) -C tests clean
 
 .PHONY : tests
