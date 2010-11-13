@@ -286,7 +286,7 @@ static char column_get_tag(menu_type *menu, int pos)
 
 static ui_event_data column_process_direction(menu_type *m, int dir)
 {
-	ui_event_data out;
+	ui_event_data out = EVENT_EMPTY;
 
 	int n = m->filter_list ? m->filter_count : m->count;
 
@@ -735,9 +735,6 @@ void menu_set_cursor_first_valid(menu_type *m)
 			return;
 		}
 	}
-
-	/* Assert that we have valid rows */
-	assert(row != count);
 }
 
 /* ======================== MENU INITIALIZATION ==================== */
