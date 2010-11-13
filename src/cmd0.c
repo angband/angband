@@ -214,7 +214,7 @@ static struct generic_command cmd_info[] =
 	{ "Help",                         '?', CMD_NULL, do_cmd_help },
 	{ "Identify symbol",              '/', CMD_NULL, do_cmd_query_symbol },
 	{ "Character description",        'C', CMD_NULL, do_cmd_change_name },
-	{ "Check knowledge",              '~', CMD_NULL, do_cmd_knowledge },
+	{ "Check knowledge",              '~', CMD_NULL, textui_browse_knowledge },
 	{ "Repeat level feeling",   KTRL('F'), CMD_NULL, do_cmd_feeling },
 	{ "Show previous message",  KTRL('O'), CMD_NULL, do_cmd_message_one },
 	{ "Show previous messages", KTRL('P'), CMD_NULL, do_cmd_messages }
@@ -248,7 +248,6 @@ static struct generic_command cmd_hidden[] =
 	{ "Jump into a trap",         '-', CMD_NULL, textui_cmd_jump },
 	{ "Start running",            '.', CMD_NULL, textui_cmd_run },
 	{ "Stand still",              ',', CMD_HOLD, NULL },
-	{ "Check knowledge",          '|', CMD_NULL, do_cmd_knowledge },
 	{ "Display menu of actions", '\n', CMD_NULL, do_cmd_menu },
 	{ "Display menu of actions", '\r', CMD_NULL, do_cmd_menu },
 	{ "Center map",              KTRL('L'), CMD_NULL, do_cmd_center_map },

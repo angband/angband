@@ -63,7 +63,6 @@ ANGFILES = \
 	cmd2.o \
 	cmd3.o \
 	cmd4.o \
-	cmd-know.o \
 	cmd-misc.o \
 	cmd-obj.o \
 	death.o \
@@ -114,6 +113,7 @@ ANGFILES = \
 	trap.o \
 	ui.o \
 	ui-birth.o \
+	ui-knowledge.o \
 	ui-menu.o \
 	ui-spell.o \
 	util.o  \

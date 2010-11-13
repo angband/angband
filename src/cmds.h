@@ -32,11 +32,6 @@ void textui_obj_examine(object_type *o_ptr, int item);
 void textui_obj_drop(object_type *o_ptr, int item);
 void textui_obj_wield(object_type *o_ptr, int item);
 
-/* ui-spell.c -- just for now */
-void textui_spell_browse(object_type *o_ptr, int item);
-void textui_obj_study(object_type *o_ptr, int item);
-void textui_obj_cast(object_type *o_ptr, int item);
-
 /* cmd2.c */
 void do_cmd_go_up(cmd_code code, cmd_arg args[]);
 void do_cmd_go_down(cmd_code code, cmd_arg args[]);
@@ -73,7 +68,6 @@ void textui_cmd_run(void);
 void textui_cmd_rest(void);
 void textui_cmd_suicide(void);
 
-
 /* cmd3.c */
 void do_cmd_inven(void);
 void do_cmd_equip(void);
@@ -103,11 +97,6 @@ extern void do_cmd_version(void);
 extern void do_cmd_feeling(void);
 extern void do_cmd_load_screen(void);
 extern void do_cmd_save_screen(void);
-extern void do_cmd_knowledge(void);
-
-/* cmd-know.c */
-extern void do_cmd_knowledge_objects(void *obj, const char *name);
-extern void init_cmd_know(void);
 
 /* cmd-misc.c */
 void do_cmd_wizard(void);
@@ -144,6 +133,18 @@ typedef enum
 
 /* XXX */
 extern int cmp_monsters(const void *a, const void *b);
+
+
+
+/* ui-spell.c -- just for now */
+void textui_spell_browse(object_type *o_ptr, int item);
+void textui_obj_study(object_type *o_ptr, int item);
+void textui_obj_cast(object_type *o_ptr, int item);
+
+/* ui-knowledge.c */
+extern void textui_browse_object_knowledge(void *obj, const char *name);
+extern void textui_knowledge_init(void);
+extern void textui_browse_knowledge(void);
 
 #endif
 

@@ -1055,7 +1055,7 @@ struct
 } extra_item_options[] =
 {
 	{ 'Q', "Quality squelching options", quality_menu },
-	{ '{', "Autoinscription setup", do_cmd_knowledge_objects },
+	{ '{', "Autoinscription setup", textui_browse_object_knowledge },
 };
 
 static char tag_options_item(menu_type *menu, int oid)
