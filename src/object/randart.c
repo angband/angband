@@ -298,85 +298,39 @@ static const char *flag_names[] =
 	""
 };
 
+char *artifact_gen_name(struct artifact *a, const char ***words) {
+	char buf[BUFLEN];
+	char word[MAX_NAME_LEN + 1];
+	randname_make(RANDNAME_TOLKIEN, MIN_NAME_LEN, MAX_NAME_LEN, word, sizeof(word), words);
+	word[0] = toupper((unsigned char)word[0]);
+	if (one_in_(3))
+		strnfmt(buf, sizeof(buf), "'%s'", word);
+	else
+		strnfmt(buf, sizeof(buf), "of %s", word);
+	if (a->aidx == ART_POWER)
+		strnfmt(buf, sizeof(buf), "of Power (The One Ring)");
+	if (a->aidx == ART_GROND)
+		strnfmt(buf, sizeof(buf), "'Grond'");
+	if (a->aidx == ART_MORGOTH)
+		strnfmt(buf, sizeof(buf), "of Morgoth");
+	return string_make(buf);
+}
+
 /*
  * Use W. Sheldon Simms' random name generator.
  */
 static errr init_names(void)
 {
-	char buf[BUFLEN];
-	size_t name_size;
-	char *a_base;
-	char *a_next;
 	int i;
-
-	/* Temporary space for names, while reading and randomizing them. */
-	char **names;
-
-	/* Allocate the "names" array */
-	/* ToDo: Make sure the memory is freed correctly in case of errors */
-	names = C_ZNEW(z_info->a_max, char *);
+	struct artifact *a;
 
 	for (i = 0; i < z_info->a_max; i++)
 	{
-		char word[MAX_NAME_LEN + 1];
-		randname_make(RANDNAME_TOLKIEN, MIN_NAME_LEN, MAX_NAME_LEN,
-			word, sizeof word);
-		word[0] = toupper((unsigned char) word[0]);
-
-		if (one_in_(3))
-			strnfmt(buf, sizeof(buf), "'%s'", word);
-		else
-			strnfmt(buf, sizeof(buf), "of %s", word);
-
-		names[i] = string_make(buf);
+		a = &a_info[i];
+		a->name = artifact_gen_name(a, name_sections);
 	}
 
-	/* Special cases -- keep these three names separate. */
-	string_free(names[ART_POWER - 1]);
-	string_free(names[ART_GROND - 1]);
-	string_free(names[ART_MORGOTH - 1]);
-	names[ART_POWER - 1] = string_make("of Power (The One Ring)");
-	names[ART_GROND - 1] = string_make("'Grond'");
-	names[ART_MORGOTH - 1] = string_make("of Morgoth");
-
-	/* Convert our names array into an a_name structure for later use. */
-	name_size = 0;
-
-	for (i = 1; i < z_info->a_max; i++)
-	{
-		name_size += strlen(names[i-1]) + 2;	/* skip first char */
-	}
-
-	a_base = C_ZNEW(name_size, char);
-
-	a_next = a_base + 1;	/* skip first char */
-
-	for (i = 1; i < z_info->a_max; i++)
-	{
-		my_strcpy(a_next, names[i-1], name_size - 1);
-		if (a_info[i].tval > 0)		/* skip unused! */
-			a_info[i].name = a_next - a_base;
-		a_next += strlen(names[i-1]) + 1;
-	}
-
-	/* Free the old names */
-	FREE(a_name);
-
-	for (i = 0; i < z_info->a_max; i++)
-	{
-		string_free(names[i]);
-	}
-
-	/* Free the "names" array */
-	FREE(names);
-
-	/* Store the names */
-	a_name = a_base;
-	a_head.name_ptr = a_base;
-	a_head.name_size = name_size;
-
-	/* Success */
-	return (0);
+	return 0;
 }
 
 /*

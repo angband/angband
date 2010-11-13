@@ -129,6 +129,8 @@ static bool sound_sdl_init(bool no_cache)
 
 	/* Build the "sound" path */
 	path_build(path, sizeof(path), ANGBAND_DIR_XTRA, "sound");
+	if (ANGBAND_DIR_XTRA_SOUND)
+		mem_free(ANGBAND_DIR_XTRA_SOUND);
 	ANGBAND_DIR_XTRA_SOUND = string_make(path);
 
 	/* Find and open the config file */

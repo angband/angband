@@ -842,7 +842,7 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 
 #ifdef A_COLOR
 	/* Set the color */
-	if (can_use_color) wattrset(td->win, colortable[a & 255]);
+	if (can_use_color) (void)wattrset(td->win, colortable[a & 255]);
 #endif
 
 	/* Move the cursor */

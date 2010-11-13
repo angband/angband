@@ -1,6 +1,10 @@
 #ifndef INCLUDED_PLAYER_TYPES_H
 #define INCLUDED_PLAYER_TYPES_H
 
+#include "object/types.h"
+#include "option.h"
+#include "ui-event.h"
+
 typedef struct
 {
 	s16b speed;		/* Current speed */
@@ -104,7 +108,7 @@ typedef struct
  * which must be saved in the savefile precedes all the information
  * which can be recomputed as needed.
  */
-typedef struct
+typedef struct player
 {
 	s16b py;			/* Player location */
 	s16b px;			/* Player location */
@@ -113,6 +117,10 @@ typedef struct
 	byte prace;			/* Race index */
 	byte pclass;		/* Class index */
 	byte oops;			/* Unused */
+
+	const struct player_sex *sex;
+	const struct player_race *race;
+	const struct player_class *class;
 
 	byte hitdie;		/* Hit dice (sides) */
 	byte expfact;		/* Experience factor */
@@ -258,6 +266,8 @@ typedef struct
 	u16b quiver_size;
 	u16b quiver_slots;
 	u16b quiver_remainder;
+
+	struct object *inventory;
 } player_type;
 
 
@@ -266,7 +276,7 @@ typedef struct
 /*
  * Player sex info
  */
-typedef struct
+typedef struct player_sex
 {
 	cptr title;			/* Type of sex */
 	cptr winner;		/* Name of winner */
@@ -276,11 +286,13 @@ typedef struct
 /*
  * Player racial info
  */
-typedef struct
+typedef struct player_race
 {
-	u32b name;			/* Name (offset) */
-	u32b text;			/* Text (offset) */
+	struct player_race *next;
+	const char *name;
 	
+	unsigned int ridx;
+
 	s16b r_adj[A_MAX];	/* Racial stat bonuses */
 	
 	s16b r_skills[SKILL_MAX];	/* racial skills */
@@ -311,14 +323,9 @@ typedef struct
 	bitflag pflags[PF_SIZE];  /* Racial (player) flags */
 } player_race;
 
-
-/*
- * Starting equipment entry
- */
-typedef struct
+typedef struct start_item
 {
-	byte tval;	/* Item's tval */
-	byte sval;	/* Item's sval */
+	object_kind *kind;
 	byte min;	/* Minimum starting amount */
 	byte max;	/* Maximum starting amount */
 } start_item;
@@ -350,11 +357,13 @@ typedef struct
 /*
  * Player class info
  */
-typedef struct
+typedef struct player_class
 {
-	u32b name;         /* Name (offset) */
+	struct player_class *next;
+	const char *name;
+	unsigned int cidx;
 	
-	u32b title[10];    /* Titles - offset */
+	const char *title[10];    /* Titles - offset */
 	
 	s16b c_adj[A_MAX]; /* Class stat modifier */
 	
@@ -387,9 +396,11 @@ typedef struct
 /*
  * Player background information
  */
-typedef struct
+typedef struct history
 {
-	u32b text;			    /* Text (offset) */
+	struct history *nextp;
+	unsigned int hidx;
+	char *text;
 	
 	byte roll;			    /* Frequency of this entry */
 	byte chart;			    /* Chart index */

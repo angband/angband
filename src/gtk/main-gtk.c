@@ -2418,7 +2418,7 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 
 		/* Get monster race and name */
 		r_ptr = &r_info[i];
-		m_name = r_name + r_ptr->name;
+		m_name = r_ptr->name;
 
 		/* Display uniques in a special colour */
 		if (rf_has(r_ptr->flags, RF_UNIQUE))
@@ -2559,11 +2559,11 @@ static void handle_sidebar(game_event_type type, game_event_data *data, void *us
 		draw_xtra_cr_text(xd, 0, 0, TERM_L_BLUE, str);
 		
 		/* Char Race */
-		strnfmt(str, sizeof(str), "%s", p_name + rp_ptr->name);
+		strnfmt(str, sizeof(str), "%s", rp_ptr->name);
 		draw_xtra_cr_text(xd, 0, 1, TERM_L_BLUE, str);
 		
 		/* Char Title*/
-		strnfmt(str, sizeof(str), "%s", c_text + cp_ptr->title[(p_ptr->lev - 1) / 5], TERM_L_BLUE); 
+		strnfmt(str, sizeof(str), "%s", cp_ptr->title[(p_ptr->lev - 1) / 5], TERM_L_BLUE); 
 		draw_xtra_cr_text(xd, 0, 2, TERM_L_BLUE, str);
 		
 		/* Char Class */

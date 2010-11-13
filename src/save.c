@@ -15,10 +15,12 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "history.h"
+#include "monster/monster.h"
 #include "option.h"
 #include "savefile.h"
-
 
 /*
  * Write an "item" record
@@ -569,7 +571,7 @@ void wr_inventory(void)
 	/* Write the inventory */
 	for (i = 0; i < ALL_INVEN_TOTAL; i++)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
@@ -601,7 +603,7 @@ void wr_stores(void)
 		wr_s16b(0);
 
 		/* Save the current owner */
-		wr_byte(st_ptr->owner);
+		wr_byte(st_ptr->owner->oidx);
 
 		/* Save the stock size */
 		wr_byte(st_ptr->stock_num);

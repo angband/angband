@@ -1,0 +1,103 @@
+#!/usr/bin/perl
+#
+# by Erik Osheim
+use warnings FATAL => 'all';
+use strict;
+use File::Basename qw(dirname basename);
+use List::Util qw(first max);
+use Getopt::Long qw(:config bundling no_ignore_case);
+
+# some nice global variables
+my $quiet    = 0;
+my $verbose  = $ENV{VERBOSE};
+my $usecolor = 1;
+
+sub usage {
+    my $prog = basename($0);
+    print <<USAGE;
+Usage: $prog [options]
+
+Options:
+    -h,--help        show this message
+    -c,--color       use ANSI colors (default)
+    -C,--no-color    don't use ANSI colors
+    -q,--quiet       only show summary output
+    -v,--verbose     show all test output
+
+Runs all the unit tests and reports the results.
+USAGE
+    exit(@_);
+}
+
+# print strings with (optional) ANSI color
+sub red    { $usecolor ? ("\033[01;31m", @_, "\033[0m") : (@_) }
+sub green  { $usecolor ? ("\033[01;32m", @_, "\033[0m") : (@_) }
+sub yellow { $usecolor ? ("\033[01;33m", @_, "\033[0m") : (@_) }
+sub blue   { $usecolor ? ("\033[01;34m", @_, "\033[0m") : (@_) }
+
+# determine which color to use: green == 100% > yellow >= 90% > red
+sub getcolor {
+    my ($pass, $total) = @_;
+    my $perc = $total ? ($pass * 100) / $total : 100;
+    return $pass == $total ? \&green : $perc >= 90 ? \&yellow : \&red;
+}
+
+sub main {
+    GetOptions(
+        'help|h'     => sub { usage(0) },
+        'color|c'    => sub { $usecolor = 1 },
+        'no-color|C' => sub { $usecolor = 0 },
+        'verbose|v'  => sub { $verbose = 1; $quiet = 0 },
+        'quiet|q'    => sub { $quiet = 1; $verbose = 0 },
+    ) || usage(1);
+
+    my $dir     = dirname($0);
+    my @paths   = `find $dir -mindepth 2 -maxdepth 2 -type f -executable`;
+    my $pass    = 0;
+    my $total   = 0;
+    my $maxpath = (max map { length($_) } @paths) - 3;
+    my $len     = $maxpath + 1 + 7;
+    
+    print "Running ", scalar(@paths), " suites:\n" unless $quiet;
+    foreach my $path (sort @paths) {
+        chomp $path;
+
+        # actually run the test program here, getting the lines of output
+        my @lines = $verbose ? `$path -v` : `$path`;
+
+        if ($? != 0) {
+            print red("$path: Suite died"), "\n";
+            next;
+        }
+        unless ($lines[-1] =~ m#^([^:]+) finished: (\d+)/(\d+) passed$#) {
+            print red("$path: Malformed output"), "\n";
+            next;
+        }
+
+        # tally the results
+        $pass  += $2;
+        $total += $3;
+    
+        next if $quiet;
+
+        # print a one-line summary of what happened
+        my $ns    = "$2/$3";
+        my $pad   = $len - length($1) - length($ns);
+        my $color = getcolor($2, $3);
+        if ($verbose) {
+            print '  ', $_ for @lines[0..$#lines - 1];
+            print '    ', $1, ' finished: ', &$color($ns), " passed\n";
+        } else {
+            print '    ', $1, ' ' x $pad, &$color($ns), " passed\n";
+        }
+    }
+
+    # print a summary of all the test results
+    my $color = getcolor($pass, $total);
+    my $ns    = join('', &$color("$pass/$total"));
+    my $ps    = join('', &$color(sprintf("%.1f%%", ($total ? ($pass * 100) / $total : 100))));
+    
+    printf("Total: %s passed (%s)\n", $ns, $ps);
+}
+
+main();

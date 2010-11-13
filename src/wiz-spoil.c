@@ -15,11 +15,13 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-#include "z-file.h"
-#include "wizard.h"
 #include "cmds.h"
+#include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "wizard.h"
+#include "z-file.h"
 
 
 #ifdef ALLOW_SPOILERS
@@ -140,7 +142,7 @@ static void kind_info(char *buf, size_t buf_len,
 	i_ptr = &object_type_body;
 
 	/* Prepare a fake item */
-	object_prep(i_ptr, k, 0, MAXIMISE);
+	object_prep(i_ptr, &k_info[k], 0, MAXIMISE);
 
 	/* Obtain the "kind" info */
 	k_ptr = &k_info[i_ptr->k_idx];
@@ -404,7 +406,7 @@ bool make_fake_artifact(object_type *o_ptr, byte name1)
 	if (!i) return (FALSE);
 
 	/* Create the artifact */
-	object_prep(o_ptr, i, 0, MAXIMISE);
+	object_prep(o_ptr, &k_info[i], 0, MAXIMISE);
 
 	/* Save the name */
 	o_ptr->name1 = name1;
@@ -603,7 +605,7 @@ static void spoil_mon_desc(cptr fname)
 	{
 		monster_race *r_ptr = &r_info[who[i]];
 
-		cptr name = (r_name + r_ptr->name);
+		cptr name = r_ptr->name;
 
 		/* Get the "name" */
 		if (rf_has(r_ptr->flags, RF_QUESTOR))
@@ -750,7 +752,7 @@ static void spoil_mon_info(cptr fname)
 		}
 
 		/* Name */
-		text_out("%s  (", (r_name + r_ptr->name));	/* ---)--- */
+		text_out("%s  (",  r_ptr->name);	/* ---)--- */
 
 		/* Color */
 		text_out(attr_to_text(r_ptr->d_attr));

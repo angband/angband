@@ -15,11 +15,12 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "cave.h"
+#include "history.h"
+#include "monster/monster.h"
 #include "object/tvalsval.h"
-
-
-
 
 static ang_file *fff;
 
@@ -1272,7 +1273,7 @@ static int rd_inventory(void)
 		if (n >= INVEN_WIELD)
 		{
 			/* Copy object */
-			object_copy(&inventory[n], i_ptr);
+			object_copy(&p_ptr->inventory[n], i_ptr);
 
 			/* Add the weight */
 			p_ptr->total_weight += (i_ptr->number * i_ptr->weight);
@@ -1298,7 +1299,7 @@ static int rd_inventory(void)
 			n = slot++;
 
 			/* Copy object */
-			object_copy(&inventory[n], i_ptr);
+			object_copy(&p_ptr->inventory[n], i_ptr);
 
 			/* Add the weight */
 			p_ptr->total_weight += (i_ptr->number * i_ptr->weight);
@@ -1344,7 +1345,7 @@ static int rd_stores(void)
 			return (-1);
 		}
 		
-		st_ptr->owner = own;
+		st_ptr->owner = store_ownerbyidx(st_ptr, own);
 		
 		/* Read the items */
 		for (j = 0; j < num; j++)
