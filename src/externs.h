@@ -181,19 +181,16 @@ extern bool search(bool verbose);
 extern byte py_pickup(int pickup);
 extern void move_player(int dir);
 
-/* cmd5.c */
-int spell_collect_from_book(const object_type *o_ptr, int spells[]);
-int spell_book_count_spells(const object_type *o_ptr, bool (*tester)(int spell));
-
-bool spell_okay_list(bool (*spell_test)(int spell), const int spells[], int n_spells);
+/* cmd-spell.c */
+int spell_collect_from_book(const object_type *o_ptr, int spells[PY_MAX_SPELLS]);
+int spell_book_count_spells(const object_type *o_ptr,;
+bool spell_okay_list(bool (*spell_test)(int spell),;
 bool spell_okay_to_cast(int spell);
 bool spell_okay_to_study(int spell);
 bool spell_okay_to_browse(int spell);
 s16b spell_chance(int spell);
-bool spell_cast(int spell, int dir);
 void spell_learn(int spell);
-
-int get_spell(const object_type *o_ptr, const char *prompt, bool (*spell_test)(int spell));
+bool spell_cast(int spell, int dir);
 
 /* death.c */
 void death_screen(void);
