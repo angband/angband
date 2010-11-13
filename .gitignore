@@ -3,8 +3,6 @@ autom4te.cache/
 config.log
 config.status
 configure
-lib/save/1000.Chrisc
-lib/apex/scores.*
 *.out
 lib/apex/scores.*
 lib/save/1000.*
