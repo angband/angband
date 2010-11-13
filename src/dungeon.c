@@ -1047,6 +1047,9 @@ static void process_player(void)
 
 			/* Take a turn */
 			p_ptr->energy_use = 100;
+
+			/* Increment the resting counter */
+			p_ptr->resting_turn++;
 		}
 
 		/* Running */
@@ -1085,21 +1088,14 @@ static void process_player(void)
 
 		/*** Clean up ***/
 
-		/* Action is or was resting */
-		if (p_ptr->resting)
-		{
-			/* Increment the resting counter */
-			p_ptr->resting_turn++;
-		}
-
 		/* Significant */
 		if (p_ptr->energy_use)
 		{
 			/* Use some energy */
 			p_ptr->energy -= p_ptr->energy_use;
 
-			/* Increment the player turn counter */
-			p_ptr->player_turn++;
+			/* Increment the total energy counter */
+			p_ptr->total_energy += p_ptr->energy_use;
 
 			/* Hack -- constant hallucination */
 			if (p_ptr->timed[TMD_IMAGE])

@@ -404,8 +404,8 @@ void wr_player(void)
 	for (i = 0; i < TMD_MAX; i++)
 		wr_s16b(p_ptr->timed[i]);
 
-	/* # of player turns */
-	wr_u32b(p_ptr->player_turn);
+	/* Total energy used so far */
+	wr_u32b(p_ptr->total_energy);
 	/* # of turns spent resting */
 	wr_u32b(p_ptr->resting_turn);
 

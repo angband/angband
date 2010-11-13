@@ -9,7 +9,7 @@ typedef struct
 {
 	s16b speed;		/* Current speed */
 
-	s16b num_blow;		/* Number of blows */
+	s16b num_blow;		/* Number of blows x100 */
 	s16b num_fire;		/* Number of shots */
 
 	byte ammo_mult;		/* Ammo multiplier */
@@ -249,7 +249,7 @@ typedef struct player
 				   and just need to be redrawn by the UI,
 				   such as HP, Speed, etc.*/
 
-	u32b player_turn;	/* Number of player turns (including resting) */
+	u32b total_energy;	/* Total energy used (including resting) */
 	u32b resting_turn;	/* Number of player turns spent resting */
 
 	/* Generation fields (for quick start) */

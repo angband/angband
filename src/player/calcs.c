@@ -42,7 +42,6 @@ static void calc_spells(void)
 
 	cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
-
 	/* Hack -- must be literate */
 	if (!cp_ptr->spell_book) return;
 
@@ -54,7 +53,6 @@ static void calc_spells(void)
 
 	/* Save the new_spells value */
 	old_spells = p_ptr->new_spells;
-
 
 	/* Determine the number of spells allowed */
 	levels = p_ptr->lev - cp_ptr->spell_first + 1;
@@ -83,8 +81,6 @@ static void calc_spells(void)
 
 	/* See how many spells we must forget or may learn */
 	p_ptr->new_spells = num_allowed - num_known;
-
-
 
 	/* Forget spells which are too hard */
 	for (i = PY_MAX_SPELLS - 1; i >= 0; i--)
@@ -119,7 +115,6 @@ static void calc_spells(void)
 		}
 	}
 
-
 	/* Forget spells if we know too many spells */
 	for (i = PY_MAX_SPELLS - 1; i >= 0; i--)
 	{
@@ -149,7 +144,6 @@ static void calc_spells(void)
 			p_ptr->new_spells++;
 		}
 	}
-
 
 	/* Check for spells to remember */
 	for (i = 0; i < PY_MAX_SPELLS; i++)
@@ -186,7 +180,6 @@ static void calc_spells(void)
 			p_ptr->new_spells--;
 		}
 	}
-
 
 	/* Assume no spells available */
 	k = 0;
@@ -255,7 +248,6 @@ static void calc_mana(void)
 		return;
 	}
 
-
 	/* Extract "effective" player level */
 	levels = (p_ptr->lev - cp_ptr->spell_first) + 1;
 	if (levels > 0)
@@ -297,7 +289,6 @@ static void calc_mana(void)
 		}
 	}
 
-
 	/* Assume player not encumbered by armor */
 	p_ptr->cumber_armor = FALSE;
 
@@ -323,10 +314,8 @@ static void calc_mana(void)
 		msp -= ((cur_wgt - max_wgt) / 10);
 	}
 
-
 	/* Mana can never be negative */
 	if (msp < 0) msp = 0;
-
 
 	/* Maximum mana has changed */
 	if (p_ptr->msp != msp)
@@ -345,7 +334,6 @@ static void calc_mana(void)
 		p_ptr->redraw |= (PR_MANA);
 	}
 
-
 	/* Hack -- handle "xtra" mode */
 	if (character_xtra) return;
 
@@ -362,7 +350,6 @@ static void calc_mana(void)
 			msg_print("Your hands feel more suitable for spellcasting.");
 		}
 	}
-
 
 	/* Take note when "armor state" changes */
 	if (old_cumber_armor != p_ptr->cumber_armor)
@@ -436,12 +423,9 @@ static void calc_torch(void)
 	s16b new_light = 0;
 	int extra_light = 0;
 
-
-
 	/* Ascertain lightness if in the town */
 	if (!p_ptr->depth && ((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2)))
 		burn_light = FALSE;
-
 
 	/* Examine all wielded objects, use the brightest */
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
@@ -516,15 +500,19 @@ static void calc_torch(void)
  * Calculate the blows a player would get, in current condition, wielding
  * "o_ptr". NOTE - this function does not take any extra blows from items
  * into account.
+ *
+ * N.B. state->num_blow is now 100x the number of blows.
  */
 int calc_blows(const object_type *o_ptr, player_state *state)
 {
 	int blows;
 	int str_index, dex_index;
 	int div;
+	int blow_energy;
 
 	/* Enforce a minimum "weight" (tenth pounds) */
-	div = ((o_ptr->weight < cp_ptr->min_weight) ? cp_ptr->min_weight : o_ptr->weight);
+	div = ((o_ptr->weight < cp_ptr->min_weight) ? cp_ptr->min_weight :
+		o_ptr->weight);
 
 	/* Get the strength vs weight */
 	str_index = adj_str_blow[state->stat_ind[A_STR]] *
@@ -536,11 +524,13 @@ int calc_blows(const object_type *o_ptr, player_state *state)
 	/* Index by dexterity */
 	dex_index = MIN(adj_dex_blow[state->stat_ind[A_DEX]], 11);
 
-	/* Use the blows table */
-	blows = MIN(blows_table[str_index][dex_index], cp_ptr->max_attacks);
+	/* Use the blows table to get energy per blow */
+	blow_energy = blows_table[str_index][dex_index];
+
+	blows = MIN((10000 / blow_energy), (100 * cp_ptr->max_attacks));
 
 	/* Require at least one blow */
-	return MAX(blows, 1);
+	return MAX(blows, 100);
 }
 
 
@@ -616,7 +606,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 
 	/* Set various defaults */
 	state->speed = 110;
-	state->num_blow = 1;
+	state->num_blow = 100;
 
 
 	/*** Extract race/class info ***/
@@ -1054,7 +1044,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	/* Assume not heavy */
 	state->heavy_shoot = FALSE;
 
-	/* It is hard to carholdry a heavy bow */
+	/* It is hard to hold a heavy bow */
 	if (hold < o_ptr->weight / 10)
 	{
 		/* Hard to wield a heavy bow */
@@ -1168,7 +1158,8 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	if (!state->heavy_wield)
 	{
 		/* Calculate number of blows */
-		state->num_blow = calc_blows(o_ptr, state) + extra_blows;
+		state->num_blow = calc_blows(o_ptr, state) + (100 *
+ 			extra_blows);
 
 		/* Boost digging skill by weapon weight */
 		state->skills[SKILL_DIGGING] += (o_ptr->weight / 10);

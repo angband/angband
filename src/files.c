@@ -192,9 +192,9 @@ static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 	{ "HLife",	OF_HOLD_LIFE,   FLAG_END,   FLAG_END },
 	{ "ImpHP",	OF_IMPAIR_HP,   FLAG_END,   FLAG_END },
 	{ "ImpSP",	OF_IMPAIR_MANA, FLAG_END,   FLAG_END },
-	{ " Fear",  OF_AFRAID,      FLAG_END,   FLAG_END },
+	{ " Fear",	OF_AFRAID,      FLAG_END,   FLAG_END },
 
-	{ "Aggrv",  OF_AGGRAVATE,   FLAG_END,   FLAG_END },
+	{ "Aggrv",	OF_AGGRAVATE,   FLAG_END,   FLAG_END },
 	{ "Stea.",	OF_STEALTH,     FLAG_END,   FLAG_END },
 	{ "Sear.",	OF_SEARCH,      FLAG_END,   FLAG_END },
 	{ "Infra",	OF_INFRA,       FLAG_END,   FLAG_END },
@@ -740,8 +740,8 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 	P_I(TERM_L_GREEN, "Adv Exp",	"%y",	s2u(show_adv_exp()), END  );
 	P_I(TERM_L_GREEN, "MaxDepth",	"%y",	s2u(show_depth()), END  );
 	P_I(TERM_L_GREEN, "Game Turns",	"%y",	i2u(turn), END  );
-	P_I(TERM_L_GREEN, "Player Turns","%y",	i2u(p_ptr->player_turn), END  );
-	P_I(TERM_L_GREEN, "Active Turns","%y",	i2u(p_ptr->player_turn - p_ptr->resting_turn), END  );
+	P_I(TERM_L_GREEN, "Standard Turns","%y", i2u(p_ptr->total_energy / 100), END  );
+	P_I(TERM_L_GREEN, "Resting Turns","%y",	i2u(p_ptr->resting_turn), END  );
 	P_I(TERM_L_GREEN, "Gold",		"%y",	i2u(p_ptr->au), END  );
 	assert(i == boundaries[2].page_rows);
 	return ret;
@@ -753,12 +753,12 @@ static int get_panel(int oid, data_panel *panel, size_t size)
 	ret = boundaries[3].page_rows;
 	P_I(TERM_L_BLUE, "Armor", "[%y,%+y]",	i2u(p_ptr->state.dis_ac), i2u(p_ptr->state.dis_to_a)  );
 	P_I(TERM_L_BLUE, "Fight", "(%+y,%+y)",	i2u(p_ptr->state.dis_to_h), i2u(p_ptr->state.dis_to_d)  );
-	P_I(TERM_L_BLUE, "Melee", "%y",			s2u(show_melee_weapon(&p_ptr->inventory[INVEN_WIELD])), END  );
-	P_I(TERM_L_BLUE, "Shoot", "%y",			s2u(show_missile_weapon(&p_ptr->inventory[INVEN_BOW])), END  );
-	P_I(TERM_L_BLUE, "Blows", "%y/turn",	i2u(p_ptr->state.num_blow), END  );
+	P_I(TERM_L_BLUE, "Melee", "%y",		s2u(show_melee_weapon(&p_ptr->inventory[INVEN_WIELD])), END  );
+	P_I(TERM_L_BLUE, "Shoot", "%y",		s2u(show_missile_weapon(&p_ptr->inventory[INVEN_BOW])), END  );
+	P_I(TERM_L_BLUE, "Blows", "%y.%y/turn",	i2u(p_ptr->state.num_blow / 100), i2u((p_ptr->state.num_blow / 10) % 10) );
 	P_I(TERM_L_BLUE, "Shots", "%y/turn",	i2u(p_ptr->state.num_fire), END  );
-	P_I(TERM_L_BLUE, "Infra", "%y ft",		i2u(p_ptr->state.see_infra * 10), END  );
-	P_I(TERM_L_BLUE, "Speed", "%y",			s2u(show_speed()), END );
+	P_I(TERM_L_BLUE, "Infra", "%y ft",	i2u(p_ptr->state.see_infra * 10), END  );
+	P_I(TERM_L_BLUE, "Speed", "%y",		s2u(show_speed()), END );
 	P_I(TERM_L_BLUE, "Burden","%.1y lbs",	f2u(p_ptr->total_weight/10.0), END  );
 	assert(i == boundaries[3].page_rows);
 	return ret;

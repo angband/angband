@@ -652,8 +652,9 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 		if (adj_str_hold[state.stat_ind[A_STR]] < o_ptr->weight / 10)
 			text_out_c(TERM_L_RED, "You are too weak to use this weapon.\n");
 
-		text_out_c(TERM_L_GREEN, "%d ", state.num_blow);
-		text_out("blow%s/round.\n", (state.num_blow > 1) ? "s" : "");
+		text_out_c(TERM_L_GREEN, "%d.%d ", state.num_blow / 100,
+			(state.num_blow / 10) % 10);
+		text_out("blow%s/round.\n", (state.num_blow > 100) ? "s" : "");
 
 		/* Check to see if extra STR or DEX would yield extra blows */
 		old_blows = state.num_blow;
@@ -675,12 +676,12 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 		/* Then we check for extra "real" blows */
 		for (dex_plus = 0; dex_plus < dex_plus_bound; dex_plus++)
 		{
-			for (str_plus = 0; str_plus < str_plus_bound; str_plus++)
+			for (str_plus = 0; str_plus < str_plus_bound;
+				str_plus++)
 		        {
 				state.stat_ind[A_STR] += str_plus;
 				state.stat_ind[A_DEX] += dex_plus;
-				new_blows = calc_blows(o_ptr, &state)
-					+ extra_blows;
+				new_blows = calc_blows(o_ptr, &state);
 
 				/* Test to make sure that this extra blow is a
 				 * new str/dex combination, not a repeat
@@ -689,8 +690,10 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 					((str_plus < str_done) ||
 					(str_done == -1)))
 				{
-					text_out("With an additional %d strength and %d dex you would get %d blows\n",
-						str_plus, dex_plus, new_blows);
+					text_out("With an additional %d strength and %d dex you would get %d.%d blows\n",
+						str_plus, dex_plus, (new_blows
+						/ 100 + extra_blows),
+						(new_blows / 10) % 10);
 					state.stat_ind[A_STR] -= str_plus;
 					state.stat_ind[A_DEX] -= dex_plus;
 					str_done = str_plus;

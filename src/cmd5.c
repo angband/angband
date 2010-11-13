@@ -521,7 +521,7 @@ void do_cmd_cast(cmd_code code, cmd_arg args[])
 
 				/* Cast a spell */
 				if (spell_cast(spell, dir))
-					p_ptr->energy_use = 100;
+					p_ptr->energy_use = 100 - p_ptr->lev + s_ptr->slevel;
 			}
 			else
 			{

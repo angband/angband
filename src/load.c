@@ -811,8 +811,8 @@ int rd_player(u32b version)
 		note("Discarded unsupported timed effects");
 	}
 
-	/* # of player turns */
-	rd_u32b(&p_ptr->player_turn);
+	/* Total energy used so far */
+	rd_u32b(&p_ptr->total_energy);
 	/* # of turns spent resting */
 	rd_u32b(&p_ptr->resting_turn);
 

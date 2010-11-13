@@ -483,8 +483,8 @@ void player_init(struct player *p) {
 
 	/* First turn. */
 	turn = old_turn = 1;
-	p->player_turn = 0;
-	p->resting_turn = 0;
+	p_ptr->total_energy = 0;
+	p_ptr->resting_turn = 0;
 }
 
 /**
