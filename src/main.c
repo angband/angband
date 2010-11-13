@@ -372,7 +372,7 @@ int main(int argc, char *argv[])
 				puts("  -n             Start a new character");
 				puts("  -L             Load a new-format save file");
 				puts("  -w             Resurrect dead character (marks savefile)");
-				puts("  -r             Rebalance monsters if monster.raw is absent");
+				puts("  -r             Rebalance monsters");
 				puts("  -g             Request graphics mode");
 				puts("  -x<opt>        Debug options; see -xhelp");
 				puts("  -u<who>        Use your <who> savefile");
@@ -400,6 +400,8 @@ int main(int argc, char *argv[])
 		argv[1] = NULL;
 	}
 
+	/* Get the file paths */
+	init_stuff();
 
 	/* Try the modules in the order specified by modules[] */
 	for (i = 0; i < (int)N_ELEMENTS(modules); i++)
@@ -419,9 +421,6 @@ int main(int argc, char *argv[])
 
 	/* Make sure we have a display! */
 	if (!done) quit("Unable to prepare any 'display module'!");
-
-	/* Get the file paths */
-	init_stuff();
 
 #ifdef SET_UID
 

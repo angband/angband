@@ -22,9 +22,9 @@
 /*
  * Comments and suggestions are welcome. The UI probably needs some
  * adjustment, and I need comments from you.
- *perhaps also something like "Angband 3.0.8 by Andrew Sidwell and others;
- SDL port by Iain McFall an others, please see the accompanying documentation
- for credits" or something
+ * perhaps also something like "Angband 3.0.8 by Andrew Sidwell and others;
+ * SDL port by Iain McFall an others, please see the accompanying documentation
+ * for credits" or something
  */
 
 /*
@@ -3455,21 +3455,17 @@ static void init_sdl_local(void)
 	sdl_FontCreate(&SystemFont, DEFAULT_FONT_FILE, AppWin); 
 }
 
+/** 
+ * This function is now mis-named as paths are set correctly by init_stuff()
+ * in main.c before init_sdl calls this. But it still does some other stuff.
+ */ 
 static void init_paths(void)
 {
 	int i;
 	char path[1024];
 	char buf[1024];
 	ang_dir *dir;
-	
-	/* Build the gfx path */
-	path_build(path, sizeof(path), ANGBAND_DIR_XTRA, "graf");
-	ANGBAND_DIR_XTRA_GRAF = string_make(path);
-	
-	/* Build the "font" path */
-	path_build(path, sizeof(path), ANGBAND_DIR_XTRA, "font");
-	ANGBAND_DIR_XTRA_FONT = string_make(path);
-	
+
 	/* Build the filename */
 	path_build(path, sizeof(path), ANGBAND_DIR_XTRA_FONT, DEFAULT_FONT_FILE);
 	
