@@ -88,9 +88,10 @@ static bool menu_action_handle(menu_type *m, const ui_event_data *event, int oid
 	if (event->type == EVT_SELECT)
 	{
 		if (!(acts->flags & MN_ACT_GRAYED) && acts[oid].action)
+		{
 			acts[oid].action(acts[oid].name, m->cursor);
-
-		return TRUE;
+			return TRUE;
+		}
 	}
 
 	return FALSE;
