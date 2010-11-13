@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "object/tvalsval.h"
 #include "game-cmd.h"
+#include "spells.h"
 
 #include "ui.h"
 #include "ui-menu.h"
@@ -312,7 +313,6 @@ void textui_obj_cast(object_type *o_ptr, int item)
 	int spell;
 
 	cptr verb = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
-	cptr noun = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
 
 	/* Track the object kind */
 	track_object(item);

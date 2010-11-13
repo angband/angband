@@ -66,7 +66,6 @@ ANGFILES = \
 	cmd-know.o \
 	cmd-misc.o \
 	cmd-obj.o \
-	cmd-spell.o \
 	death.o \
 	debug.o \
 	dungeon.o \
@@ -99,6 +98,7 @@ ANGFILES = \
 	prefs.o \
 	player/calcs.o \
 	player/player.o \
+	player/spell.o \
 	player/timed.o \
 	player/util.o \
 	score.o \

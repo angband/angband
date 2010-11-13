@@ -23,12 +23,17 @@ void do_cmd_wield(cmd_code code, cmd_arg args[]);
 void do_cmd_drop(cmd_code code, cmd_arg args[]);
 void do_cmd_use(cmd_code code, cmd_arg args[]);
 void do_cmd_refill(cmd_code code, cmd_arg args[]);
+void do_cmd_study_spell(cmd_code code, cmd_arg args[]);
+void do_cmd_cast(cmd_code code, cmd_arg args[]);
+void do_cmd_study_book(cmd_code code, cmd_arg args[]);
 
 void textui_obj_inscribe(object_type *o_ptr, int item);
 void textui_obj_examine(object_type *o_ptr, int item);
 void textui_obj_drop(object_type *o_ptr, int item);
 void textui_obj_wield(object_type *o_ptr, int item);
-void textui_obj_browse(object_type *o_ptr, int item);
+
+/* ui-spell.c -- just for now */
+void textui_spell_browse(object_type *o_ptr, int item);
 void textui_obj_study(object_type *o_ptr, int item);
 void textui_obj_cast(object_type *o_ptr, int item);
 
@@ -99,13 +104,6 @@ extern void do_cmd_feeling(void);
 extern void do_cmd_load_screen(void);
 extern void do_cmd_save_screen(void);
 extern void do_cmd_knowledge(void);
-
-/* cmd5.c */
-void textui_spell_browse(object_type *o_ptr, int item);
-
-void do_cmd_study_spell(cmd_code code, cmd_arg args[]);
-void do_cmd_study_book(cmd_code code, cmd_arg args[]);
-void do_cmd_cast(cmd_code code, cmd_arg args[]);
 
 /* cmd-know.c */
 extern void do_cmd_knowledge_objects(void *obj, const char *name);
