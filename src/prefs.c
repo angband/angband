@@ -714,12 +714,7 @@ static enum parser_error parse_prefs_expr(struct parser *p)
 	str = expr = string_make(parser_getstr(p, "expr"));
 
 	/* Parse the expr */
-/*	printf("expr '%s'\n", str); */
 	v = process_pref_file_expr(&expr, &f);
-/*	printf("result '%s'\n", v); */
-	printf("expr '%s'\n", str);
-	v = process_pref_file_expr(&expr, &f);
-	printf("result '%s'\n", v);
 
 	string_free(str);
 
