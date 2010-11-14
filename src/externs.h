@@ -72,8 +72,6 @@ extern s16b o_max;
 extern s16b o_cnt;
 extern s16b mon_max;
 extern s16b mon_cnt;
-extern byte feeling;
-extern s16b rating;
 extern bool good_item_flag;
 extern bool closing_flag;
 extern char savefile[1024];

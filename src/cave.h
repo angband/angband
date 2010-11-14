@@ -40,4 +40,15 @@ extern void disturb(int stop_search, int unused_flag);
 extern bool is_quest(int level);
 extern bool dtrap_edge(int y, int x);
 
+struct cave {
+	byte feeling;
+	s16b rating;
+};
+
+/* XXX: temporary while I refactor */
+extern struct cave *cave;
+
+extern struct cave *cave_new(void);
+extern void cave_free(struct cave *c);
+
 #endif /* !CAVE_H */

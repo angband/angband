@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "cave.h"
 #include "game-event.h"
 #include "game-cmd.h"
 #include "object/tvalsval.h"
@@ -3911,6 +3912,13 @@ bool is_quest(int level)
 	return (FALSE);
 }
 
+struct cave *cave = NULL;
 
+struct cave *cave_new(void) {
+	struct cave *c = mem_zalloc(sizeof *c);
+	return c;
+}
 
-
+void cave_free(struct cave *c) {
+	mem_free(c);
+}

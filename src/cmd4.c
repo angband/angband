@@ -520,8 +520,8 @@ void do_cmd_feeling(void)
 	if (OPT(birth_no_feelings)) return;
 
 	/* Verify the feeling */
-	if (feeling >= N_ELEMENTS(feeling_text))
-		feeling = N_ELEMENTS(feeling_text) - 1;
+	if (cave->feeling >= N_ELEMENTS(feeling_text))
+		cave->feeling = N_ELEMENTS(feeling_text) - 1;
 
 	/* No useful feeling in town */
 	if (!p_ptr->depth)
@@ -531,7 +531,7 @@ void do_cmd_feeling(void)
 	}
 
 	/* Display the feeling */
-	msg_print(feeling_text[feeling]);
+	msg_print(feeling_text[cave->feeling]);
 }
 
 

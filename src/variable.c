@@ -103,9 +103,6 @@ s16b mon_cnt = 0;	/* Number of live monsters */
  * Dungeon variables
  */
 
-byte feeling;			/* Most recent feeling */
-s16b rating;			/* Level's current rating */
-
 bool good_item_flag;	/* True if "Artifact" on this level */
 
 bool closing_flag;		/* Dungeon is closing */

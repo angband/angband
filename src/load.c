@@ -975,9 +975,11 @@ int rd_misc(void)
 	rd_byte(&tmp8u);
 	p_ptr->is_dead = tmp8u;
 
+	cave = cave_new();	/* XXX */
+
 	/* Read "feeling" */
 	rd_byte(&tmp8u);
-	feeling = tmp8u;
+	cave->feeling = tmp8u;
 
 	/* Turn of last "feeling" */
 	rd_s32b(&old_turn);

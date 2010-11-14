@@ -1758,7 +1758,7 @@ static bool vault_aux_demon(int r_idx)
  *
  * Note that "monster nests" will never contain "unique" monsters.
  */
-static void build_type5(int y0, int x0)
+static void build_type5(struct cave *c, int y0, int x0)
 {
 	int y, x, y1, x1, y2, x2;
 
@@ -1882,7 +1882,7 @@ static void build_type5(int y0, int x0)
 
 
 	/* Increase the level rating */
-	rating += 10;
+	c->rating += 10;
 
 	/* (Sometimes) Cause a "special feeling" (for "Monster Nests") */
 	if ((p_ptr->depth <= 40) &&
@@ -1954,7 +1954,7 @@ static void build_type5(int y0, int x0)
  *
  * Note that "monster pits" will never contain "unique" monsters.
  */
-static void build_type6(int y0, int x0)
+static void build_type6(struct cave *c, int y0, int x0)
 {
 	int tmp, what[16];
 
@@ -2196,7 +2196,7 @@ static void build_type6(int y0, int x0)
 
 
 	/* Increase the level rating */
-	rating += 10;
+	c->rating += 10;
 
 	/* (Sometimes) Cause a "special feeling" (for "Monster Pits") */
 	if ((p_ptr->depth <= 40) &&
@@ -2408,7 +2408,7 @@ static void build_vault(int y0, int x0, int ymax, int xmax, cptr data)
 /*
  * Type 7 -- simple vaults (see "vault.txt")
  */
-static void build_type7(int y0, int x0)
+static void build_type7(struct cave *c, int y0, int x0)
 {
 	vault_type *v_ptr;
 
@@ -2426,7 +2426,7 @@ static void build_type7(int y0, int x0)
 	if (OPT(cheat_room)) msg_format("Lesser vault (%s)", v_ptr->name);
 
 	/* Boost the rating */
-	rating += v_ptr->rat;
+	c->rating += v_ptr->rat;
 
 	/* (Sometimes) Cause a special feeling */
 	if ((p_ptr->depth <= 50) ||
@@ -2444,7 +2444,7 @@ static void build_type7(int y0, int x0)
 /*
  * Type 8 -- medium vaults (see "vault.txt")
  */
-static void build_type8(int y0, int x0)
+static void build_type8(struct cave *c, int y0, int x0)
 {
 	vault_type *v_ptr;
 
@@ -2462,7 +2462,7 @@ static void build_type8(int y0, int x0)
 	if (OPT(cheat_room)) msg_format("Medium vault (%s)", v_ptr->name);
 
 	/* Boost the rating */
-	rating += v_ptr->rat;
+	c->rating += v_ptr->rat;
 
 	/* (Sometimes) Cause a special feeling */
 	if ((p_ptr->depth <= 50) ||
@@ -2478,7 +2478,7 @@ static void build_type8(int y0, int x0)
 /*
  * Type 9 -- greater vaults (see "vault.txt")
  */
-static void build_type9(int y0, int x0)
+static void build_type9(struct cave *c, int y0, int x0)
 {
 	vault_type *v_ptr;
 
@@ -2496,7 +2496,7 @@ static void build_type9(int y0, int x0)
 	if (OPT(cheat_room)) msg_format("Greater vault (%s)", v_ptr->name);
 
 	/* Boost the rating */
-	rating += v_ptr->rat;
+	c->rating += v_ptr->rat;
 
 	/* (Sometimes) Cause a special feeling */
 	if ((p_ptr->depth <= 50) ||
@@ -2863,7 +2863,7 @@ static void try_door(int y, int x)
  * Note that we restrict the number of "crowded" rooms to reduce
  * the chance of overflowing the monster list during level creation.
  */
-static bool room_build(int by0, int bx0, int typ)
+static bool room_build(struct cave *c, int by0, int bx0, int typ)
 {
 	int y, x;
 	int by, bx;
@@ -2906,11 +2906,11 @@ static bool room_build(int by0, int bx0, int typ)
 	switch (typ)
 	{
 		/* Build an appropriate room */
-		case 9: build_type9(y, x); break;
-		case 8: build_type8(y, x); break;
-		case 7: build_type7(y, x); break;
-		case 6: build_type6(y, x); break;
-		case 5: build_type5(y, x); break;
+		case 9: build_type9(c, y, x); break;
+		case 8: build_type8(c, y, x); break;
+		case 7: build_type7(c, y, x); break;
+		case 6: build_type6(c, y, x); break;
+		case 5: build_type5(c, y, x); break;
 		case 4: build_type4(y, x); break;
 		case 3: build_type3(y, x); break;
 		case 2: build_type2(y, x); break;
@@ -2950,7 +2950,7 @@ static bool room_build(int by0, int bx0, int typ)
  *
  * Note that "dun_body" adds about 4000 bytes of memory to the stack.
  */
-static void cave_gen(void)
+static void cave_gen(struct cave *c)
 {
 	int i, j, k, l, y, x, y1, x1;
 	int by, bx;
@@ -3070,7 +3070,7 @@ static void cave_gen(void)
 			}
 
 			/* Attempt to pass the depth check and build a GV */
-			if (randint0(denominator) < numerator && room_build(by, bx, 9))
+			if (randint0(denominator) < numerator && room_build(c, by, bx, 9))
 				continue;
 		}
 
@@ -3084,30 +3084,30 @@ static void cave_gen(void)
 			if (randint0(DUN_UNUSUAL) < p_ptr->depth)
 			{
 				/* Type 8 -- Medium vault (10%) */
-				if ((k < 10) && room_build(by, bx, 8)) continue;
+				if ((k < 10) && room_build(c, by, bx, 8)) continue;
 
 				/* Type 7 -- Lesser vault (15%) */
-				if ((k < 25) && room_build(by, bx, 7)) continue;
+				if ((k < 25) && room_build(c, by, bx, 7)) continue;
 
 				/* Type 6 -- Monster pit (15%) */
-				if ((k < 40) && room_build(by, bx, 6)) continue;
+				if ((k < 40) && room_build(c, by, bx, 6)) continue;
 
 				/* Type 5 -- Monster nest (10%) */
-				if ((k < 50) && room_build(by, bx, 5)) continue;
+				if ((k < 50) && room_build(c, by, bx, 5)) continue;
 			}
 
 			/* Type 4 -- Large room (25%) */
-			if ((k < 25) && room_build(by, bx, 4)) continue;
+			if ((k < 25) && room_build(c, by, bx, 4)) continue;
 
 			/* Type 3 -- Cross room (25%) */
-			if ((k < 50) && room_build(by, bx, 3)) continue;
+			if ((k < 50) && room_build(c, by, bx, 3)) continue;
 
 			/* Type 2 -- Overlapping (50%) */
-			if ((k < 100) && room_build(by, bx, 2)) continue;
+			if ((k < 100) && room_build(c, by, bx, 2)) continue;
 		}
 
 		/* Attempt a trivial room */
-		if (room_build(by, bx, 1)) continue;
+		if (room_build(c, by, bx, 1)) continue;
 	}
 
 	/* Special boundary walls -- Bottom */
@@ -3510,7 +3510,7 @@ static void town_gen(void)
 /*
  * Clear the dungeon, ready for generation to begin.
  */
-static void clear_cave(void)
+static void clear_cave(struct cave *c)
 {
 	int x, y;
 
@@ -3550,7 +3550,7 @@ static void clear_cave(void)
 	good_item_flag = FALSE;
 
 	/* Nothing good here yet */
-	rating = 0;
+	c->rating = 0;
 }
 
 
@@ -3597,12 +3597,6 @@ static int calculate_feeling(int rating, int depth)
 	return feeling;
 }
 
-
-
-
-
-
-
 /*
  * Generate a random dungeon level
  *
@@ -3617,11 +3611,13 @@ void generate_cave(void)
 	const char *error = "no generation";
 	int counter = 0;
 
+	struct cave *c = cave_new();
+
 	/* Generate */
 	while (error)
 	{
 		error = NULL;
-		clear_cave();
+		clear_cave(c);
 
 		/* The dungeon is not ready - we set this after calling clear_
 		   cave for the first time, so that unpreserved artifacts are
@@ -3633,14 +3629,14 @@ void generate_cave(void)
 		if (!p_ptr->depth)
 			town_gen();
 		else
-			cave_gen();
+			cave_gen(c);
 
 
 		/* It takes 1000 game turns for "feelings" to recharge */
 		if (((turn - old_turn) < 1000) && (old_turn > 1))
-			feeling = 0;
+			c->feeling = 0;
 		else
-			feeling = calculate_feeling(rating, p_ptr->depth);
+			c->feeling = calculate_feeling(c->rating, p_ptr->depth);
 
 		/* Hack -- regenerate "over-flow" levels */
 		if (o_max >= z_info->o_max)
@@ -3659,6 +3655,10 @@ void generate_cave(void)
 			exit_game_panic();
 		}
 	}
+
+	if (cave)
+		cave_free(cave);
+	cave = c;
 
 	/* The dungeon is ready */
 	character_dungeon = TRUE;
