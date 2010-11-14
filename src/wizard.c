@@ -65,10 +65,10 @@ static void do_cmd_wiz_hack_ben(void)
 				if (!in_bounds_fully(y, x)) continue;
 
 				/* Display proper cost */
-				if (cave_cost[y][x] != i) continue;
+				if (cave->cost[y][x] != i) continue;
 
 				/* Reliability in yellow */
-				if (cave_when[y][x] == cave_when[py][px])
+				if (cave->when[y][x] == cave->when[py][px])
 				{
 					a = TERM_YELLOW;
 				}

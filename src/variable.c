@@ -478,12 +478,6 @@ s16b (*cave_m_idx)[DUNGEON_WID];
 byte (*cave_cost)[DUNGEON_WID];
 
 /*
- * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid flow "when" stamps
- */
-byte (*cave_when)[DUNGEON_WID];
-
-
-/*
  * Array[z_info->o_max] of dungeon objects
  */
 object_type *o_list;

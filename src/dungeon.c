@@ -1331,7 +1331,7 @@ void idle_update(void)
  * This function will not exit until the level is completed,
  * the user dies, or the game is terminated.
  */
-static void dungeon(void)
+static void dungeon(struct cave *c)
 {
 	monster_type *m_ptr;
 	int i;
@@ -1506,7 +1506,7 @@ static void dungeon(void)
     		do_animation(); 
 
 			/* process monster with even more energy first */
-			process_monsters((byte)(p_ptr->energy + 1));
+			process_monsters(c, (byte)(p_ptr->energy + 1));
 
 			/* if still alive */
 			if (!p_ptr->leaving)
@@ -1537,7 +1537,7 @@ static void dungeon(void)
 
 
 		/* Process all of the monsters */
-		process_monsters(100);
+		process_monsters(c, 100);
 
 		/* Notice stuff */
 		if (p_ptr->notice) notice_stuff();
@@ -1839,8 +1839,7 @@ void play_game(void)
 		play_ambient_sound();
 
 		/* Process the level */
-		dungeon();
-
+		dungeon(cave);
 
 		/* Notice stuff */
 		if (p_ptr->notice) notice_stuff();

@@ -3052,7 +3052,7 @@ static int flow_save = 0;
 /*
  * Hack -- forget the "flow" information
  */
-void forget_flow(void)
+void cave_forget_flow(struct cave *c)
 {
 	int x, y;
 
@@ -3065,8 +3065,8 @@ void forget_flow(void)
 		for (x = 0; x < DUNGEON_WID; x++)
 		{
 			/* Forget the old data */
-			cave_cost[y][x] = 0;
-			cave_when[y][x] = 0;
+			c->cost[y][x] = 0;
+			c->when[y][x] = 0;
 		}
 	}
 
@@ -3089,7 +3089,7 @@ void forget_flow(void)
  * We do not need a priority queue because the cost from grid to grid
  * is always "one" (even along diagonals) and we process them in order.
  */
-void update_flow(void)
+void cave_update_flow(struct cave *c)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -3123,8 +3123,8 @@ void update_flow(void)
 		{
 			for (x = 0; x < DUNGEON_WID; x++)
 			{
-				int w = cave_when[y][x];
-				cave_when[y][x] = (w >= 128) ? (w - 128) : 0;
+				int w = c->when[y][x];
+				c->when[y][x] = (w >= 128) ? (w - 128) : 0;
 			}
 		}
 
@@ -3139,10 +3139,10 @@ void update_flow(void)
 	/*** Player Grid ***/
 
 	/* Save the time-stamp */
-	cave_when[py][px] = flow_n;
+	c->when[py][px] = flow_n;
 
 	/* Save the flow cost */
-	cave_cost[py][px] = 0;
+	c->cost[py][px] = 0;
 
 	/* Enqueue that entry */
 	flow_y[flow_head] = py;
@@ -3165,7 +3165,7 @@ void update_flow(void)
 		if (++flow_head == FLOW_MAX) flow_head = 0;
 
 		/* Child cost */
-		n = cave_cost[ty][tx] + 1;
+		n = c->cost[ty][tx] + 1;
 
 		/* Hack -- Limit flow depth */
 		if (n == MONSTER_FLOW_DEPTH) continue;
@@ -3180,16 +3180,16 @@ void update_flow(void)
 			x = tx + ddx_ddd[d];
 
 			/* Ignore "pre-stamped" entries */
-			if (cave_when[y][x] == flow_n) continue;
+			if (c->when[y][x] == flow_n) continue;
 
 			/* Ignore "walls" and "rubble" */
-			if (cave_feat[y][x] >= FEAT_RUBBLE) continue;
+			if (c->feat[y][x] >= FEAT_RUBBLE) continue;
 
 			/* Save the time-stamp */
-			cave_when[y][x] = flow_n;
+			c->when[y][x] = flow_n;
 
 			/* Save the flow cost */
-			cave_cost[y][x] = n;
+			c->cost[y][x] = n;
 
 			/* Enqueue that entry */
 			flow_y[flow_tail] = y;
@@ -3896,7 +3896,7 @@ struct cave *cave_new(void) {
 	c->info2 = cave_info2;
 	c->feat = cave_feat;
 	c->cost = cave_cost;
-	c->when = cave_when;
+	c->when = C_ZNEW(DUNGEON_HGT, byte_wid);
 	c->m_idx = cave_m_idx;
 	return c;
 }

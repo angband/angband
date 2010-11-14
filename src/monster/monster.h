@@ -43,4 +43,6 @@ void monster_death(int m_idx);
 bool mon_take_hit(int m_idx, int dam, bool *fear, cptr note);
 extern void monster_flags_known(const monster_race *r_ptr, const monster_lore *l_ptr, bitflag flags[RF_SIZE]);
 
+extern void process_monsters(struct cave *c, byte min_energy);
+
 #endif /* !MONSTER_MONSTER_H */

@@ -20,8 +20,6 @@ extern void do_cmd_view_map(void);
 extern errr vinfo_init(void);
 extern void forget_view(void);
 extern void update_view(void);
-extern void forget_flow(void);
-extern void update_flow(void);
 extern void map_area(void);
 extern void wiz_light(void);
 extern void wiz_dark(void);
@@ -59,6 +57,8 @@ extern void cave_free(struct cave *c);
 extern void cave_set_feat(struct cave *c, int y, int x, int feat);
 extern void cave_note_spot(struct cave *c, int y, int x);
 extern void cave_light_spot(struct cave *c, int y, int x);
+extern void cave_update_flow(struct cave *c);
+extern void cave_forget_flow(struct cave *c);
 
 extern void cave_generate(struct cave *c);
 

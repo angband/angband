@@ -3242,7 +3242,6 @@ static errr init_other(void)
 
 	/* Flow arrays */
 	cave_cost = C_ZNEW(DUNGEON_HGT, byte_wid);
-	cave_when = C_ZNEW(DUNGEON_HGT, byte_wid);
 
 	cave = cave_new();
 
@@ -3704,7 +3703,6 @@ void cleanup_angband(void)
 	FREE(o_list);
 
 	/* Flow arrays */
-	FREE(cave_when);
 	FREE(cave_cost);
 
 	/* Free the cave */
