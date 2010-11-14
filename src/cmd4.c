@@ -23,9 +23,13 @@
 #include "cave.h"
 #include "cmds.h"
 #include "externs.h"
+#include "files.h"
 #include "history.h"
+#include "macro.h"
 #include "object/tvalsval.h"
 #include "option.h"
+#include "prefs.h"
+#include "squelch.h"
 #include "ui.h"
 #include "ui-menu.h"
 

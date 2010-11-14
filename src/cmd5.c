@@ -19,8 +19,9 @@
 
 #include "angband.h"
 #include "cave.h"
-#include "object/tvalsval.h"
 #include "game-cmd.h"
+#include "object/tvalsval.h"
+#include "spells.h"
 
 #include "ui.h"
 #include "ui-menu.h"
@@ -700,7 +701,7 @@ bool spell_cast(int spell, int dir)
 			msg_print("You have damaged your health!");
 
 			/* Reduce constitution */
-			(void)dec_stat(A_CON, perm);
+			player_stat_dec(p_ptr, A_CON, perm);
 		}
 	}
 

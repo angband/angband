@@ -17,12 +17,18 @@
  */
 
 #include "angband.h"
+#include "button.h"
 #include "cave.h"
 #include "cmds.h"
+#include "files.h"
 #include "game-event.h"
+#include "generate.h"
 #include "init.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "prefs.h"
+#include "spells.h"
+#include "target.h"
 
 /*
  * Change dungeon level - e.g. by going up stairs or with WoR.

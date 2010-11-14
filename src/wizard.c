@@ -19,9 +19,12 @@
 #include "angband.h"
 #include "cave.h"
 #include "cmds.h"
+#include "files.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
 #include "ui-menu.h"
+#include "spells.h"
+#include "target.h"
 #include "wizard.h"
 
 

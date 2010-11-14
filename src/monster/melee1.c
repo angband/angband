@@ -17,10 +17,11 @@
  */
 
 #include "angband.h"
+#include "attack.h"
 #include "cave.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
-
+#include "spells.h"
 
 /*
  * Critical blow.  All hits that do 95% of total possible damage,

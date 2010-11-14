@@ -19,7 +19,9 @@
  */
 
 #include "angband.h"
+#include "button.h"
 #include "cave.h"
+#include "files.h"
 #include "game-event.h"
 #include "game-cmd.h"
 #include "monster/monster.h"

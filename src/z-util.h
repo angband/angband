@@ -82,6 +82,9 @@ void ang_sort_aux(void *u, void *v, int p, int q);
 extern bool (*ang_sort_comp)(const void *u, const void *v, int a, int b);
 extern void (*ang_sort_swap)(void *u, void *v, int a, int b);
 
+extern void sort(void *array, size_t nmemb, size_t smemb,
+                 int (*comp)(const void *a, const void *b));
+
 /* Mathematical functions */
 int mean(int *nums, int size);
 int variance(int *nums, int size);

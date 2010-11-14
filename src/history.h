@@ -14,4 +14,6 @@ void history_display(void);
 void dump_history(ang_file *file);
 bool history_is_artifact_known(byte a_idx);
 
+extern history_info *history_list;
+
 #endif /* !HISTORY_H */

@@ -19,11 +19,15 @@
 #include "angband.h"
 #include "cave.h"
 #include "defines.h"
-#include "history.h"
-#include "inventory.h"
-#include "tvalsval.h"
 #include "effects.h"
 #include "game-cmd.h"
+#include "generate.h"
+#include "history.h"
+#include "inventory.h"
+#include "prefs.h"
+#include "spells.h"
+#include "squelch.h"
+#include "tvalsval.h"
 
 /*
  * Hold the titles of scrolls, 6 to 14 characters each.

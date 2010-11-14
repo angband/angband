@@ -17,11 +17,14 @@
  */
 
 #include "angband.h"
+#include "button.h"
 #include "cave.h"
 #include "cmds.h"
 #include "monster/monster.h"
 #include "object/inventory.h"
 #include "object/tvalsval.h"
+#include "squelch.h"
+#include "target.h"
 
 /*
  * Display inventory
@@ -743,103 +746,54 @@ static cptr ident_info[] =
 	NULL
 };
 
-
-
-/*
- * Sorting hook -- Comp function -- see below
- *
- * We use "u" to point to array of monster indexes,
- * and "v" to select the type of sorting to perform on "u".
- */
-bool ang_sort_comp_hook(const void *u, const void *v, int a, int b)
+static int cmp_mexp(const void *a, const void *b)
 {
-	const u16b *who = (const u16b *)(u);
-	const u16b *why = (const u16b *)(v);
-
-	int w1 = who[a];
-	int w2 = who[b];
-
-	int z1, z2;
-
-
-	/* Sort by player kills */
-	if (*why >= 4)
-	{
-		/* Extract player kills */
-		z1 = l_list[w1].pkills;
-		z2 = l_list[w2].pkills;
-
-		/* Compare player kills */
-		if (z1 < z2) return (TRUE);
-		if (z1 > z2) return (FALSE);
-	}
-
-
-	/* Sort by total kills */
-	if (*why >= 3)
-	{
-		/* Extract total kills */
-		z1 = l_list[w1].tkills;
-		z2 = l_list[w2].tkills;
-
-		/* Compare total kills */
-		if (z1 < z2) return (TRUE);
-		if (z1 > z2) return (FALSE);
-	}
-
-
-	/* Sort by monster level */
-	if (*why >= 2)
-	{
-		/* Extract levels */
-		z1 = r_info[w1].level;
-		z2 = r_info[w2].level;
-
-		/* Compare levels */
-		if (z1 < z2) return (TRUE);
-		if (z1 > z2) return (FALSE);
-	}
-
-
-	/* Sort by monster experience */
-	if (*why >= 1)
-	{
-		/* Extract experience */
-		z1 = r_info[w1].mexp;
-		z2 = r_info[w2].mexp;
-
-		/* Compare experience */
-		if (z1 < z2) return (TRUE);
-		if (z1 > z2) return (FALSE);
-	}
-
-
-	/* Compare indexes */
-	return (w1 <= w2);
+	u16b ia = *(const u16b *)a;
+	u16b ib = *(const u16b *)b;
+	if (r_info[ia].mexp < r_info[ib].mexp)
+		return -1;
+	if (r_info[ia].mexp > r_info[ib].mexp)
+		return 1;
+	return (a < b ? -1 : (a > b ? 1 : 0));
 }
 
-
-/*
- * Sorting hook -- Swap function -- see below
- *
- * We use "u" to point to array of monster indexes,
- * and "v" to select the type of sorting to perform.
- */
-void ang_sort_swap_hook(void *u, void *v, int a, int b)
+static int cmp_level(const void *a, const void *b)
 {
-	u16b *who = (u16b*)(u);
-
-	u16b holder;
-
-	/* Unused parameter */
-	(void)v;
-
-	/* Swap */
-	holder = who[a];
-	who[a] = who[b];
-	who[b] = holder;
+	u16b ia = *(const u16b *)a;
+	u16b ib = *(const u16b *)b;
+	if (r_info[ia].level < r_info[ib].level)
+		return -1;
+	if (r_info[ia].level > r_info[ib].level)
+		return 1;
+	return cmp_mexp(a, b);
 }
 
+static int cmp_tkill(const void *a, const void *b)
+{
+	u16b ia = *(const u16b *)a;
+	u16b ib = *(const u16b *)b;
+	if (l_list[ia].tkills < l_list[ib].tkills)
+		return -1;
+	if (l_list[ia].tkills > l_list[ib].tkills)
+		return 1;
+	return cmp_level(a, b);
+}
+
+static int cmp_pkill(const void *a, const void *b)
+{
+	u16b ia = *(const u16b *)a;
+	u16b ib = *(const u16b *)b;
+	if (l_list[ia].pkills < l_list[ib].pkills)
+		return -1;
+	if (l_list[ia].pkills > l_list[ib].pkills)
+		return 1;
+	return cmp_tkill(a, b);
+}
+
+int cmp_monsters(const void *a, const void *b)
+{
+	return cmp_level(a, b);
+}
 
 /*
  * Identify a character, allow recall of monsters
@@ -867,7 +821,6 @@ void do_cmd_query_symbol(void)
 
 	bool recall = FALSE;
 
-	u16b why = 0;
 	u16b *who;
 
 
@@ -966,12 +919,12 @@ void do_cmd_query_symbol(void)
 	if (query.key == 'k')
 	{
 		/* Sort by kills (and level) */
-		why = 4;
+		sort(who, n, sizeof(*who), cmp_pkill);
 	}
 	else if (query.key == 'y' || query.key == 'p')
 	{
 		/* Sort by level; accept 'p' as legacy */
-		why = 2;
+		sort(who, n, sizeof(*who), cmp_level);
 	}
 	else
 	{
@@ -982,14 +935,6 @@ void do_cmd_query_symbol(void)
 
 		return;
 	}
-
-
-	/* Select the sort method */
-	ang_sort_comp = ang_sort_comp_hook;
-	ang_sort_swap = ang_sort_swap_hook;
-
-	/* Sort the array */
-	ang_sort(who, &why, n);
 
 	/* Start at the end */
 	i = n - 1;

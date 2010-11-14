@@ -15,10 +15,12 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-#include "object/tvalsval.h"
 #include "game-event.h"
 #include "game-cmd.h"
+#include "object/tvalsval.h"
+#include "squelch.h"
 
 /*
  * Support for Adam Bolt's tileset, lighting and transparency effects
@@ -2271,45 +2273,18 @@ struct vinfo_hack {
 	long slopes_max[MAX_SIGHT+1][MAX_SIGHT+1];
 };
 
-
-
-/*
- * Sorting hook -- comp function -- array of long's (see below)
- *
- * We use "u" to point to an array of long integers.
- */
-static bool ang_sort_comp_hook_longs(const void *u, const void *v, int a, int b)
+static int cmp_longs(const void *a, const void *b)
 {
-	const long *x = u;
+	long x = *(const long *)a;
+	long y = *(const long *)b;
 
-	/* Unused parameter */
-	(void)v;
+	if (x < y)
+		return -1;
+	if (x > y)
+		return 1;
 
-	return (x[a] <= x[b]);
+	return 0;
 }
-
-
-/*
- * Sorting hook -- comp function -- array of long's (see below)
- *
- * We use "u" to point to an array of long integers.
- */
-static void ang_sort_swap_hook_longs(void *u, void *v, int a, int b)
-{
-	long *x = (long *)(u);
-
-	long temp;
-
-	/* Unused parameter */
-	(void)v;
-
-	/* Swap */
-	temp = x[a];
-	x[a] = x[b];
-	x[b] = temp;
-}
-
-
 
 /*
  * Save a slope
@@ -2446,17 +2421,7 @@ errr vinfo_init(void)
 		         hack->num_slopes, VINFO_MAX_SLOPES);
 	}
 
-
-	/* Sort slopes numerically */
-	ang_sort_comp = ang_sort_comp_hook_longs;
-
-	/* Sort slopes numerically */
-	ang_sort_swap = ang_sort_swap_hook_longs;
-
-	/* Sort the (unique) slopes */
-	ang_sort(hack->slopes, NULL, hack->num_slopes);
-
-
+	sort(hack->slopes, hack->num_slopes, sizeof(*hack->slopes), cmp_longs);
 
 	/* Enqueue player grid */
 	queue[queue_tail++] = &vinfo[0];

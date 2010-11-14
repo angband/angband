@@ -17,15 +17,19 @@
  */
 
 #include "angband.h"
+#include "button.h"
 #include "cave.h"
 #include "cmds.h"
 #include "game-cmd.h"
 #include "game-event.h"
 #include "init.h"
+#include "macro.h"
 #include "monster/constants.h"
 #include "object/tvalsval.h"
 #include "option.h"
 #include "parser.h"
+#include "prefs.h"
+#include "squelch.h"
 
 /*
  * This file is used to initialize various variables and arrays for the

@@ -18,9 +18,10 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "generate.h"
 #include "history.h"
 #include "object/tvalsval.h"
-
+#include "target.h"
 
 /*
  * Delete a monster by index.

@@ -19,9 +19,11 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "game-event.h"
 #include "history.h"
 #include "object/tvalsval.h"
-#include "game-event.h"
+#include "spells.h"
+#include "squelch.h"
 
 /** Time last item was wielded */
 s32b object_last_wield;

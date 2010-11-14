@@ -183,6 +183,39 @@ static quality_name_struct quality_values[SQUELCH_MAX] =
 	{ SQUELCH_ALL,		"everything except artifacts" },
 };
 
+/*
+ * menu struct for differentiating aware from unaware squelch
+ */
+typedef struct
+{
+	object_kind *kind;
+	s16b k_idx;
+	bool aware;
+} squelch_choice;
+
+/*
+ * Ordering function for squelch choices.
+ * Aware comes before unaware, and then sort alphabetically.
+ */
+static int cmp_squelch(const void *a, const void *b)
+{
+	char bufa[80];
+	char bufb[80];
+	const squelch_choice *x = (squelch_choice *)a;
+	const squelch_choice *y = (squelch_choice *)b;
+
+	if (x->aware && !y->aware)
+		return TRUE;
+	if (!x->aware && y->aware)
+		return FALSE;
+
+	object_kind_name(bufa, sizeof(bufa), x->k_idx, x->aware);
+	object_kind_name(bufb, sizeof(bufb), y->k_idx, y->aware);
+
+	/* the = is crucial, inf loop in sort if use < rather than <= */
+	return strcmp(bufa, bufb) <= 0;
+}
+
 
 /*
  * Initialise the squelch package (currently just asserts).
@@ -829,57 +862,6 @@ static void quality_menu(void *unused, const char *also_unused)
 
 /*** Sval-dependent menu ***/
 
-/*
- * menu struct for differentiating aware from unaware squelch
- */
-typedef struct
-{
-	int k_idx;
-	object_kind *kind;
-	bool aware;
-} squelch_choice;
-
-
-/*
- * Sort by name in squelch menus.
- */
-static void ang_sort_swap_hook_squelch_choices(void *u, void *v, int a, int b)
-{
-	squelch_choice temp;
-	squelch_choice *x = (squelch_choice *) u;
-
-	(void)v; /* unused */
-
-	temp = x[a];
-	x[a] = x[b];
-	x[b] = temp;
-}
-
-
-/*
- * Ordering function for squelch choices.
- * Aware comes before unaware, and then sort alphabetically.
- */
-static bool ang_sort_comp_hook_squelch_choices(const void *u, const void *v,
-		int a, int b)
-{
-	char bufa[80];
-	char bufb[80];
-	squelch_choice *x = (squelch_choice *) u;
-	(void)v; /* unused */
-
-	if (x[a].aware && !x[b].aware)
-		return TRUE;
-	if (!x[a].aware && x[b].aware)
-		return FALSE;
-
-	object_kind_name(bufa, sizeof(bufa), x[a].k_idx, x[a].aware);
-	object_kind_name(bufb, sizeof(bufb), x[b].k_idx, x[b].aware);
-
-	/* the = is crucial, inf loop in sort if use < rather than <= */
-	return strcmp(bufa, bufb) <= 0;
-}
-
 
 /*
  * Display an entry on the sval menu
@@ -1015,9 +997,7 @@ static bool sval_menu(int tval, const char *desc)
 
 		default:
 			/* sort by name */
-			ang_sort_comp = ang_sort_comp_hook_squelch_choices;
-			ang_sort_swap = ang_sort_swap_hook_squelch_choices;
-			ang_sort(choices, NULL, n_choices);
+			sort(choices, n_choices, sizeof(*choices), cmp_squelch);
 	}
 
 

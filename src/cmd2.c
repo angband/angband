@@ -17,11 +17,17 @@
  */
 
 #include "angband.h"
+#include "attack.h"
 #include "cave.h"
 #include "cmds.h"
+#include "files.h"
 #include "game-cmd.h"
+#include "generate.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "spells.h"
+#include "squelch.h"
+#include "trap.h"
 
 /*
  * Go up one level

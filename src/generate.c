@@ -18,9 +18,10 @@
 
 #include "angband.h"
 #include "cave.h"
+#include "files.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
-
+#include "trap.h"
 
 /*
  * Note that Level generation is *not* an important bottleneck,

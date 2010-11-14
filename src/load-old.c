@@ -21,6 +21,7 @@
 #include "history.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "squelch.h"
 
 static ang_file *fff;
 
@@ -29,6 +30,10 @@ static byte	xor_byte;
 static u32b	v_check = 0L;
 static u32b	x_check = 0L;
 
+static byte sf_major;
+static byte sf_minor;
+static byte sf_patch;
+static byte sf_extra;
 
 /*
  * Hack -- Show information on the screen, one line at a time.

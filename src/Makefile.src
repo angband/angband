@@ -78,6 +78,7 @@ ANGFILES = \
 	init2.o \
 	load.o \
 	load-old.o \
+	macro.o \
 	monster/melee1.o \
 	monster/melee2.o \
 	monster/monster1.o \
@@ -96,6 +97,7 @@ ANGFILES = \
 	pathfind.o \
 	prefs.o \
 	player/calcs.o \
+	player/player.o \
 	player/timed.o \
 	player/util.o \
 	score.o \

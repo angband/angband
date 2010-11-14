@@ -19,7 +19,9 @@
 #include "angband.h"
 #include "cmds.h"
 #include "history.h"
+#include "macro.h"
 #include "object/tvalsval.h"
+#include "target.h"
 
 /* Private function that is shared by verify_panel() and center_panel() */
 void verify_panel_int(bool centered);

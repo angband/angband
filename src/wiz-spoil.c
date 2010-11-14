@@ -557,8 +557,6 @@ static void spoil_mon_desc(cptr fname)
 	char exp[80];
 
 	u16b *who;
-	u16b why = 2;
-
 
 	/* Build the filename */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
@@ -594,12 +592,8 @@ static void spoil_mon_desc(cptr fname)
 		if (r_ptr->name) who[n++] = (u16b)i;
 	}
 
-	/* Select the sort method */
-	ang_sort_comp = ang_sort_comp_hook;
-	ang_sort_swap = ang_sort_swap_hook;
-
 	/* Sort the array by dungeon depth of monsters */
-	ang_sort(who, &why, n);
+	sort(who, n, sizeof(*who), cmp_monsters);
 
 	/* Scan again */
 	for (i = 0; i < n; i++)
@@ -686,7 +680,6 @@ static void spoil_mon_info(cptr fname)
 {
 	char buf[1024];
 	int i, n;
-	u16b why = 2;
 	u16b *who;
 	int count = 0;
 
@@ -723,12 +716,7 @@ static void spoil_mon_info(cptr fname)
 		if (r_ptr->name) who[count++] = (u16b)i;
 	}
 
-	/* Select the sort method */
-	ang_sort_comp = ang_sort_comp_hook;
-	ang_sort_swap = ang_sort_swap_hook;
-
-	/* Sort the array by dungeon depth of monsters */
-	ang_sort(who, &why, count);
+	sort(who, count, sizeof(*who), cmp_monsters);
 
 	/*
 	 * List all monsters in order (except the ghost).

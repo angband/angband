@@ -18,6 +18,7 @@
 
 #include "angband.h"
 #include "cmds.h"
+#include "files.h"
 #include "history.h"
 #include "ui-menu.h"
 #include "wizard.h"

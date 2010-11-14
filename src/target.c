@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "game-cmd.h"
 #include "monster/monster.h"
+#include "squelch.h"
 
 /* 
  * Height of the help screen; any higher than 4 will overlap the health
@@ -236,60 +237,37 @@ void target_set_location(int y, int x)
  * We use "u" and "v" to point to arrays of "x" and "y" positions,
  * and sort the arrays by double-distance to the player.
  */
-static bool ang_sort_comp_distance(const void *u, const void *v, int a, int b)
+static int cmp_distance(const void *a, const void *b)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	const byte *x = u;
-	const byte *y = v;
+	const struct point *pa = a;
+	const struct point *pb = b;
 
 	int da, db, kx, ky;
 
 	/* Absolute distance components */
-	kx = x[a]; kx -= px; kx = ABS(kx);
-	ky = y[a]; ky -= py; ky = ABS(ky);
+	kx = pa->x; kx -= px; kx = ABS(kx);
+	ky = pa->y; ky -= py; ky = ABS(ky);
 
 	/* Approximate Double Distance to the first point */
 	da = ((kx > ky) ? (kx + kx + ky) : (ky + ky + kx));
 
 	/* Absolute distance components */
-	kx = x[b]; kx -= px; kx = ABS(kx);
-	ky = y[b]; ky -= py; ky = ABS(ky);
+	kx = pb->x; kx -= px; kx = ABS(kx);
+	ky = pb->y; ky -= py; ky = ABS(ky);
 
 	/* Approximate Double Distance to the first point */
 	db = ((kx > ky) ? (kx + kx + ky) : (ky + ky + kx));
 
 	/* Compare the distances */
-	return (da <= db);
+	if (da < db)
+		return -1;
+	if (da > db)
+		return 1;
+	return 0;
 }
-
-
-/*
- * Sorting hook -- swap function -- by "distance to player"
- *
- * We use "u" and "v" to point to arrays of "x" and "y" positions,
- * and sort the arrays by distance to the player.
- */
-static void ang_sort_swap_distance(void *u, void *v, int a, int b)
-{
-	byte *x = (byte*)(u);
-	byte *y = (byte*)(v);
-
-	byte temp;
-
-	/* Swap "x" */
-	temp = x[a];
-	x[a] = x[b];
-	x[b] = temp;
-
-	/* Swap "y" */
-	temp = y[a];
-	y[a] = y[b];
-	y[b] = temp;
-}
-
-
 
 /*
  * Hack -- help "select" a location (see below)
@@ -413,18 +391,17 @@ static bool target_set_interactive_accept(int y, int x)
 	return (FALSE);
 }
 
-
 /*
  * Prepare the "temp" array for "target_interactive_set"
  *
  * Return the number of target_able monsters in the set.
  */
+/* XXX: Untangle this. The whole temp_* thing is complete madness. */
 static void target_set_interactive_prepare(int mode)
 {
 	int y, x;
-
-	/* Reset "temp" array */
-	temp_n = 0;
+	struct point *pts = mem_zalloc(sizeof(*pts) * SCREEN_HGT * SCREEN_WID);
+	unsigned int n = 0;
 
 	/* Scan the current panel */
 	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
@@ -448,18 +425,20 @@ static void target_set_interactive_prepare(int mode)
 			}
 
 			/* Save the location */
-			temp_x[temp_n] = x;
-			temp_y[temp_n] = y;
-			temp_n++;
+			pts[n].x = x;
+			pts[n].y = y;
+			n++;
 		}
 	}
 
-	/* Set the sort hooks */
-	ang_sort_comp = ang_sort_comp_distance;
-	ang_sort_swap = ang_sort_swap_distance;
+	sort(pts, n, sizeof(*pts), cmp_distance);
 
-	/* Sort the positions */
-	ang_sort(temp_x, temp_y, temp_n);
+	/* Reset "temp" array */
+	temp_n = n;
+	while (n--) {
+		temp_x[n] = pts[n].x;
+		temp_y[n] = pts[n].y;
+	}
 }
 
 

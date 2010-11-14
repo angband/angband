@@ -15,12 +15,15 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-#include "ui-menu.h"
-#include "ui-birth.h"
-#include "game-event.h"
-#include "game-cmd.h"
+#include "button.h"
 #include "cmds.h"
+#include "files.h"
+#include "game-cmd.h"
+#include "game-event.h"
+#include "ui-birth.h"
+#include "ui-menu.h"
 
 /*
  * Overview

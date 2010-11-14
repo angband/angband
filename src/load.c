@@ -22,7 +22,7 @@
 #include "monster/monster.h"
 #include "object/tvalsval.h"
 #include "savefile.h"
-
+#include "squelch.h"
 
 /*
  * Read an object

@@ -17,8 +17,10 @@
  */
 
 #include "angband.h"
+#include "attack.h"
 #include "cave.h"
 #include "monster/monster.h"
+#include "spells.h"
 
 /*
  * Determine if a trap affects the player.
