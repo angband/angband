@@ -58,14 +58,27 @@ static do_cmd_type do_cmd_try_borg;
 
 /*** Handling bits ***/
 
-/* Item "action" type */
-typedef struct
+/*
+ * Holds a generic command - if cmd is set to other than CMD_NULL 
+ * it simply pushes that command to the game, otherwise the hook 
+ * function will be called.
+ */
+struct generic_command
 {
+	const char *desc;
+	unsigned char key;
+	cmd_code cmd;
+	void (*hook)(void);
+};
+
+
+/* Item "action" type */
+struct item_command
+{
+	struct generic_command base;
+
 	void (*action)(object_type *, int);
 	const char *id;
-	const char *desc;
-	char key;
-	cmd_code command;
 
 	const char *prompt;
 	const char *noop;
@@ -74,83 +87,100 @@ typedef struct
 	int mode;
 	bool (*prereq)(void);
 	bool needs_aim;
-} item_act_t;
+};
 
 
 /* All possible item actions */
-static item_act_t item_actions[] =
+static struct item_command item_actions[] =
 {
 	/* Not setting IS_HARMLESS for this one because it could cause a true
 	 * dangerous command to not be prompted, later.
 	 */
-	{ NULL, "uninscribe", "Uninscribe an object", '}', CMD_UNINSCRIBE,
+	{ { "Uninscribe an object", '}', CMD_UNINSCRIBE, NULL },
+	  NULL, "uninscribe",
 	  "Un-inscribe which item? ", "You have nothing to un-inscribe.",
 	  obj_has_inscrip, (USE_EQUIP | USE_INVEN | USE_FLOOR), NULL, FALSE },
 
-	{ textui_obj_inscribe, "inscribe", "Inscribe an object", '{', CMD_NULL,
+	{ { "Inscribe an object", '{', CMD_NULL, NULL },
+	  textui_obj_inscribe, "inscribe",
 	  "Inscribe which item? ", "You have nothing to inscribe.",
 	  NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL, FALSE },
 
-	{ textui_obj_examine, "examine", "Examine an item", 'I', CMD_NULL,
+	{ { "Examine an item", 'I', CMD_NULL, NULL },
+	  textui_obj_examine, "examine",
 	  "Examine which item? ", "You have nothing to examine.",
 	  NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL, FALSE },
 
 	/*** Takeoff/drop/wear ***/
-	{ NULL, "takeoff", "Take/unwield off an item", 't', CMD_TAKEOFF,
+	{ { "Take/unwield off an item", 't', CMD_TAKEOFF, NULL },
+	  NULL, "takeoff",
 	  "Take off which item? ", "You are not wearing anything you can take off.",
 	  obj_can_takeoff, USE_EQUIP, NULL, FALSE },
 
-	{ textui_obj_wield, "wield", "Wear/wield an item", 'w', CMD_WIELD,
+	{ { "Wear/wield an item", 'w', CMD_WIELD, NULL },
+	  textui_obj_wield, "wield",
 	  "Wear/Wield which item? ", "You have nothing you can wear or wield.",
 	  obj_can_wear, (USE_INVEN | USE_FLOOR), NULL, FALSE },
 
-	{ textui_obj_drop, "drop", "Drop an item", 'd', CMD_NULL,
+	{ { "Drop an item", 'd', CMD_NULL, NULL },
+	  textui_obj_drop, "drop", 
 	  "Drop which item? ", "You have nothing to drop.",
 	  NULL, (USE_EQUIP | USE_INVEN), NULL, FALSE },
 
 	/*** Spellbooks ***/
-	{ textui_spell_browse, "browse", "Browse a book", 'b', CMD_NULL,
+	{ { "Browse a book", 'b', CMD_NULL, NULL },
+	  textui_spell_browse, "browse",
 	  "Browse which book? ", "You have no books that you can read.",
 	  obj_can_browse, (USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL, FALSE },
 
-	{ textui_obj_study, "study", "Gain new spells", 'G', CMD_NULL,
+	{ { "Gain new spells", 'G', CMD_NULL, NULL },
+	  textui_obj_study, "study", 
 	  "Study which book? ", "You have no books that you can read.",
 	  obj_can_browse, (USE_INVEN | USE_FLOOR), player_can_study, FALSE },
 
-	{ textui_obj_cast, "cast", "Cast a spell", 'm', CMD_NULL,
+	{ { "Cast a spell", 'm', CMD_NULL, NULL },
+	  textui_obj_cast, "cast",
 	  "Use which book? ", "You have no books that you can read.",
 	  obj_can_browse, (USE_INVEN | USE_FLOOR), player_can_cast, FALSE },
 
 	/*** Item usage ***/
-	{ NULL, "use", "Use a staff", 'u', CMD_USE_STAFF,
+	{ { "Use a staff", 'u', CMD_USE_STAFF, NULL },
+	  NULL, "use", 
 	  "Use which staff? ", "You have no staff to use.",
 	  obj_is_staff, (USE_INVEN | USE_FLOOR | SHOW_FAIL), NULL, TRUE },
 
-	{ NULL, "aim", "Aim a wand", 'a', CMD_USE_WAND,
+	{ { "Aim a wand", 'a', CMD_USE_WAND, NULL },
+	  NULL, "aim",
 	  "Aim which wand? ", "You have no wand to aim.",
 	  obj_is_wand, (USE_INVEN | USE_FLOOR | SHOW_FAIL), NULL, TRUE },
 
-	{ NULL, "zap", "Zap a rod", 'z', CMD_USE_ROD,
+	{ { "Zap a rod", 'z', CMD_USE_ROD, NULL },
+	  NULL, "zap", 
 	  "Zap which rod? ", "You have no charged rods to zap.",
 	  obj_is_rod, (USE_INVEN | USE_FLOOR | SHOW_FAIL), NULL, TRUE },
 
-	{ NULL, "activate", "Activate an object", 'A', CMD_ACTIVATE,
+	{ { "Activate an object", 'A', CMD_ACTIVATE, NULL },
+	  NULL, "activate",
 	  "Activate which item? ", "You have nothing to activate.",
 	  obj_is_activatable, (USE_EQUIP | SHOW_FAIL), NULL, TRUE },
 
-	{ NULL, "eat", "Eat some food", 'E', CMD_EAT,
+	{ { "Eat some food", 'E', CMD_EAT, NULL },
+	  NULL, "eat",
 	  "Eat which item? ", "You have nothing to eat.",
 	  obj_is_food, (USE_INVEN | USE_FLOOR), NULL, FALSE },
 
-	{ NULL, "quaff", "Quaff a potion", 'q', CMD_QUAFF,
+	{ { "Quaff a potion", 'q', CMD_QUAFF, NULL },
+	  NULL, "quaff",
 	  "Quaff which potion? ", "You have no potions to quaff.",
 	  obj_is_potion, (USE_INVEN | USE_FLOOR), NULL, TRUE },
 
-	{ NULL, "read", "Read a scroll", 'r', CMD_READ_SCROLL,
+	{ { "Read a scroll", 'r', CMD_READ_SCROLL, NULL },
+	  NULL, "read",
 	  "Read which scroll? ", "You have no scrolls to read.",
 	  obj_is_scroll, (USE_INVEN | USE_FLOOR), player_can_read, TRUE },
 
-	{ NULL, "refill", "Fuel your light source", 'F', CMD_REFILL,
+	{ { "Fuel your light source", 'F', CMD_REFILL, NULL },
+	  NULL, "refill",
 	 "Refuel with what fuel source? ", "You have nothing to refuel with.",
 	  obj_can_refill, (USE_INVEN | USE_FLOOR), NULL, FALSE },
 };
@@ -158,21 +188,8 @@ static item_act_t item_actions[] =
 
 
 
-/*
- * Holds a generic command - if cmd is set to other than CMD_NULL 
- * it simply pushes that command to the game, otherwise the hook 
- * function will be called.
- */
-typedef struct
-{
-	const char *desc;
-	unsigned char key;
-	cmd_code cmd;
-	do_cmd_type *hook;
-} command_type;
-
 /* General actions */
-static command_type cmd_action[] =
+static struct generic_command cmd_action[] =
 {
 	{ "Search for traps/doors",     's', CMD_SEARCH, NULL },
 	{ "Disarm a trap or chest",     'D', CMD_NULL, textui_cmd_disarm },
@@ -194,7 +211,7 @@ static command_type cmd_action[] =
 };
 
 /* Item management commands */
-static command_type cmd_item_manage[] =
+static struct generic_command cmd_item_manage[] =
 {
 	{ "Display equipment listing", 'e', CMD_NULL, do_cmd_equip },
 	{ "Display inventory listing", 'i', CMD_NULL, do_cmd_inven },
@@ -204,7 +221,7 @@ static command_type cmd_item_manage[] =
 };
 
 /* Information access commands */
-static command_type cmd_info[] =
+static struct generic_command cmd_info[] =
 {
 	{ "Full dungeon map",             'M', CMD_NULL, do_cmd_view_map },
 	{ "Display visible item list",    ']', CMD_NULL, do_cmd_itemlist },
@@ -220,7 +237,7 @@ static command_type cmd_info[] =
 };
 
 /* Utility/assorted commands */
-static command_type cmd_util[] =
+static struct generic_command cmd_util[] =
 {
 	{ "Interact with options",        '=', CMD_NULL, do_cmd_xxx_options },
 	{ "Port-specific preferences",    '!', CMD_NULL, do_cmd_port },
@@ -235,7 +252,7 @@ static command_type cmd_util[] =
 };
 
 /* Commands that shouldn't be shown to the user */ 
-static command_type cmd_hidden[] =
+static struct generic_command cmd_hidden[] =
 {
 	{ "Take notes",               ':', CMD_NULL, do_cmd_note },
 	{ "Version info",             'V', CMD_NULL, do_cmd_version },
@@ -264,8 +281,7 @@ static command_type cmd_hidden[] =
 };
 
 
-
-
+static struct generic_command cmd_item_use[N_ELEMENTS(item_actions)];
 
 
 
@@ -275,12 +291,13 @@ static command_type cmd_hidden[] =
 typedef struct
 {
 	const char *name;
-	command_type *list;
+	struct generic_command *list;
 	size_t len;
 } command_list;
 
 static command_list cmds_all[] =
 {
+	{ "Use item",        cmd_item_use,    N_ELEMENTS(item_actions) },
 	{ "Action commands", cmd_action,      N_ELEMENTS(cmd_action) },
 	{ "Manage items",    cmd_item_manage, N_ELEMENTS(cmd_item_manage) },
 	{ "Information",     cmd_info,        N_ELEMENTS(cmd_info) },
@@ -482,7 +499,7 @@ static void do_cmd_unknown(void)
 static void cmd_sub_entry(menu_type *menu, int oid, bool cursor, int row, int col, int width)
 {
 	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
-	const command_type *commands = menu_priv(menu);
+	const struct generic_command *commands = menu_priv(menu);
 
 	(void)width;
 
@@ -517,7 +534,7 @@ static bool cmd_menu(command_list *list, void *selection_p)
 	region area = { 23, 4, 37, 13 };
 
 	ui_event_data evt;
-	command_type *selection = selection_p;
+	struct generic_command *selection = selection_p;
 
 	/* Set up th emenu */
 	menu_init(&menu, MN_SKIN_SCROLL, &commands_menu);
@@ -536,10 +553,8 @@ static bool cmd_menu(command_list *list, void *selection_p)
 
 	if (evt.type == EVT_SELECT)
 		*selection = list->list[menu.cursor];
-	else if (evt.type == EVT_ESCAPE)
-		return FALSE;
 
-	return TRUE;
+	return FALSE;
 }
 
 
@@ -575,7 +590,7 @@ static void do_cmd_menu(void)
 {
 	region area = { 21, 5, 37, 6 };
 
-	command_type chosen_command = { 0 };
+	struct generic_command chosen_command = { 0 };
 
 	if (!command_menu)
 		command_menu = menu_new(MN_SKIN_SCROLL, &command_menu_iter);
@@ -591,11 +606,9 @@ static void do_cmd_menu(void)
 
 	screen_load();
 
-	/* If a command was chosen, do it */
-	if (chosen_command.cmd != CMD_NULL)
-		cmd_insert(chosen_command.cmd);
-	else if (chosen_command.hook)
-		chosen_command.hook();
+	/* If a command was chosen, execute it */
+	if (chosen_command.key)
+		Term_keypress(chosen_command.key);
 }
 
 
@@ -612,7 +625,7 @@ struct command
 	union
 	{
 		void (*basic_hook)();
-		item_act_t *item;	
+		struct item_command *item;	
 	} data;
 };
 
@@ -631,7 +644,7 @@ void cmd_init(void)
 	/* Go through all generic commands */
 	for (j = 0; j < N_ELEMENTS(cmds_all); j++)
 	{
-		command_type *commands = cmds_all[j].list;
+		struct generic_command *commands = cmds_all[j].list;
 
 		/* Fill everything in */
 		for (i = 0; i < cmds_all[j].len; i++)
@@ -646,12 +659,15 @@ void cmd_init(void)
 	/* Fill in item actions */
 	for (j = 0; j < N_ELEMENTS(item_actions); j++)
 	{
-		item_act_t *act = &item_actions[j];
-		unsigned char key = act->key;
+		struct item_command *act = &item_actions[j];
+		unsigned char key = act->base.key;
 
 		converted_list[key].is_object = TRUE;
 		converted_list[key].prereq = act->prereq;
 		converted_list[key].data.item = act;
+
+		/* Also update the action menus */
+		memcpy(&cmd_item_use[j], &act->base, sizeof(cmd_item_use[0]));
 	}
 }
 
@@ -918,7 +934,7 @@ static bool textui_process_key(unsigned char c)
 	{
 		if (cmd->is_object)
 		{
-			item_act_t *act = cmd->data.item;
+			struct item_command *act = cmd->data.item;
 			int item;
 			object_type *o_ptr;
 		
@@ -934,9 +950,9 @@ static bool textui_process_key(unsigned char c)
 			if (act->action != NULL)
 				act->action(o_ptr, item);
 			else if (act->needs_aim && obj_needs_aim(o_ptr))
-				cmd_insert(act->command, item, DIR_UNKNOWN);
+				cmd_insert(act->base.cmd, item, DIR_UNKNOWN);
 			else
-				cmd_insert(act->command, item);
+				cmd_insert(act->base.cmd, item);
 		}
 		else
 		{
