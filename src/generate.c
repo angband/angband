@@ -3583,12 +3583,12 @@ static int calculate_feeling(struct cave *c, int depth)
  *
  * Note that this function resets "cave_feat" and "cave_info" directly.
  */
-void generate_cave(void)
+void cave_generate(struct cave *c)
 {
 	const char *error = "no generation";
 	int counter = 0;
 
-	struct cave *c = cave_new();
+	assert(c);
 
 	/* Generate */
 	while (error)
@@ -3633,13 +3633,10 @@ void generate_cave(void)
 		}
 	}
 
-	if (cave)
-		cave_free(cave);
-	cave = c;
-
 	/* The dungeon is ready */
 	character_dungeon = TRUE;
 
 	/* Remember when the last dungeon level was created */
-	if (p_ptr->depth > 0) old_turn = turn;
+	if (p_ptr->depth > 0)
+		old_turn = turn;
 }

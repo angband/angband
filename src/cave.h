@@ -60,4 +60,6 @@ extern void cave_set_feat(struct cave *c, int y, int x, int feat);
 extern void cave_note_spot(struct cave *c, int y, int x);
 extern void cave_light_spot(struct cave *c, int y, int x);
 
+extern void cave_generate(struct cave *c);
+
 #endif /* !CAVE_H */

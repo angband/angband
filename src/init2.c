@@ -3229,9 +3229,6 @@ static errr init_other(void)
 	temp_y = ((byte*)(temp_g)) + 0;
 	temp_x = ((byte*)(temp_g)) + TEMP_MAX;
 
-
-	/*** Prepare dungeon arrays ***/
-
 	/* Padded into array */
 	cave_info = C_ZNEW(DUNGEON_HGT, byte_256);
 	cave_info2 = C_ZNEW(DUNGEON_HGT, byte_256);
@@ -3247,6 +3244,7 @@ static errr init_other(void)
 	cave_cost = C_ZNEW(DUNGEON_HGT, byte_wid);
 	cave_when = C_ZNEW(DUNGEON_HGT, byte_wid);
 
+	cave = cave_new();
 
 	/*** Prepare "vinfo" array ***/
 
