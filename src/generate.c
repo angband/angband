@@ -22,6 +22,7 @@
 #include "monster/monster.h"
 #include "object/tvalsval.h"
 #include "trap.h"
+#include "z-type.h"
 
 /*
  * Note that Level generation is *not* an important bottleneck,
@@ -192,19 +193,6 @@
 #define UNDEAD_NEST_OBJ 5
 
 /*
- * Simple structure to hold a map location
- */
-
-typedef struct coord coord;
-
-struct coord
-{
-	byte y;
-	byte x;
-};
-
-
-/*
  * Room type information
  */
 
@@ -230,19 +218,19 @@ struct dun_data
 {
 	/* Array of centers of rooms */
 	int cent_n;
-	coord cent[CENT_MAX];
+	struct point cent[CENT_MAX];
 
 	/* Array of possible door locations */
 	int door_n;
-	coord door[DOOR_MAX];
+	struct point door[DOOR_MAX];
 
 	/* Array of wall piercing locations */
 	int wall_n;
-	coord wall[WALL_MAX];
+	struct point wall[WALL_MAX];
 
 	/* Array of tunnel grids */
 	int tunn_n;
-	coord tunn[TUNN_MAX];
+	struct point tunn[TUNN_MAX];
 
 	/* Number of blocks along each axis */
 	int row_rooms;
