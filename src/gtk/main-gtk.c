@@ -21,6 +21,9 @@
 #ifdef USE_GTK
 #include "main-gtk.h"
 #include "textui.h"
+#include "files.h"
+#include "macro.h"
+
 /* 
  *Add a bunch of debugger message, to trace where problems are. 
  */

@@ -18,6 +18,7 @@
  */
 #include "angband.h"
 #include "cmds.h"
+#include "files.h"
 
 /*
  * Comments and suggestions are welcome. The UI probably needs some
