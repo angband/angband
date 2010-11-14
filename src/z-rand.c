@@ -34,7 +34,10 @@
 #define Identity(v) (v)
 
 u32b state_i = 0;
-u32b STATE[RAND_DEG];
+u32b STATE[RAND_DEG] = {0, 0, 0, 0, 0, 0, 0, 0,
+						0, 0, 0, 0, 0, 0, 0, 0,
+						0, 0, 0, 0, 0, 0, 0, 0,
+						0, 0, 0, 0, 0, 0, 0, 0};
 u32b z0, z1, z2;
 
 #define V0    STATE[state_i]

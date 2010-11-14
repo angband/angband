@@ -286,6 +286,9 @@ int rd_randomizer(u32b version)
 
 	/* state index */
 	rd_u32b(&state_i);
+
+	/* for safety, make sure state_i < RAND_DEG */
+	state_i = state_i % RAND_DEG;
     
 	/* RNG variables */
 	rd_u32b(&z0);
