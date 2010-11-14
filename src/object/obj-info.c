@@ -760,8 +760,9 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 	cnt = collect_slays(desc, mult, f);
 	for (i = 0; i < cnt; i++)
 	{
+		int melee_adj_mult = ammo ? 0 : 1; /* ammo mult adds fully, melee mult is times 1, so adds 1 less */
 		/* Include bonus damage and slay in stated average */
-		total_dam = dam * (multiplier + mult[i]) + xtra_precrit;
+		total_dam = dam * (multiplier + mult[i] - melee_adj_mult) + xtra_precrit;
 		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
 		total_dam += xtra_postcrit;
 
