@@ -3916,6 +3916,12 @@ struct cave *cave = NULL;
 
 struct cave *cave_new(void) {
 	struct cave *c = mem_zalloc(sizeof *c);
+	c->info = cave_info;
+	c->info2 = cave_info2;
+	c->feat = cave_feat;
+	c->cost = cave_cost;
+	c->when = cave_when;
+	c->m_idx = cave_m_idx;
 	return c;
 }
 

@@ -44,6 +44,13 @@ struct cave {
 	byte feeling;
 	s16b rating;
 	bool good_item;
+
+	byte (*info)[256];
+	byte (*info2)[256];
+	byte (*feat)[DUNGEON_WID];
+	byte (*cost)[DUNGEON_WID];
+	byte (*when)[DUNGEON_WID];
+	s16b (*m_idx)[DUNGEON_WID];
 };
 
 /* XXX: temporary while I refactor */
