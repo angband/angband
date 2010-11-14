@@ -300,11 +300,12 @@ static void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 		of_union(o_ptr->flags, curse_flags);
 	}
 
-	/* Mega-Hack -- increase the rating */
-	rating += 10;
-
-	/* Mega-Hack -- increase the rating again */
-	if (a_ptr->cost > 50000L) rating += 10;
+	/* Mega-Hack -- increase the level rating
+	 * - a sizeable increase for any artifact (c.f. up to 30 for ego items)
+	 * - a bigger increase for more powerful artifacts
+	 */
+	rating += 30;
+	rating += object_power(o_ptr, FALSE, NULL, TRUE) / 25;
 
 	/* Set the good item flag */
 	good_item_flag = TRUE;
@@ -611,7 +612,7 @@ static void a_m_aux_2(object_type *o_ptr, int level, int power)
 		case TV_DRAG_ARMOR:
 		{
 			/* Rating boost */
-			rating += 30;
+			rating += object_power(o_ptr, FALSE, NULL, TRUE) / 15;
 
 			/* Mention the item */
 			if (OPT(cheat_peek)) object_mention(o_ptr);
@@ -1285,7 +1286,7 @@ bool make_object(object_type *j_ptr, int lev, bool good, bool great)
 	if (!cursed_p(j_ptr) && (k_info[j_ptr->k_idx].level > p_ptr->depth))
 	{
 		/* Rating increase */
-		rating += (k_info[j_ptr->k_idx].level - p_ptr->depth);
+		rating += (k_info[j_ptr->k_idx].alloc_min - p_ptr->depth);
 
 		/* Cheat -- peek at items */
 		if (OPT(cheat_peek)) object_mention(j_ptr);
