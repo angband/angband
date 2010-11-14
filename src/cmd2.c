@@ -691,7 +691,7 @@ static bool do_cmd_open_aux(int y, int x)
 			message(MSG_LOCKPICK, 0, "You have picked the lock.");
 
 			/* Open the door */
-			cave_set_feat(y, x, FEAT_OPEN);
+			cave_set_feat(cave, y, x, FEAT_OPEN);
 
 			/* Update the visuals */
 			p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -717,7 +717,7 @@ static bool do_cmd_open_aux(int y, int x)
 	else
 	{
 		/* Open the door */
-		cave_set_feat(y, x, FEAT_OPEN);
+		cave_set_feat(cave, y, x, FEAT_OPEN);
 
 		/* Update the visuals */
 		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -863,7 +863,7 @@ static bool do_cmd_close_aux(int y, int x)
 	else
 	{
 		/* Close the door */
-		cave_set_feat(y, x, FEAT_DOOR_HEAD + 0x00);
+		cave_set_feat(cave, y, x, FEAT_DOOR_HEAD + 0x00);
 
 		/* Update the visuals */
 		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -986,7 +986,7 @@ static bool twall(int y, int x)
 	cave_info[y][x] &= ~(CAVE_MARK);
 
 	/* Remove the feature */
-	cave_set_feat(y, x, FEAT_FLOOR);
+	cave_set_feat(cave, y, x, FEAT_FLOOR);
 
 	/* Update the visuals */
 	p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -1333,7 +1333,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 		cave_info[y][x] &= ~(CAVE_MARK);
 
 		/* Remove the trap */
-		cave_set_feat(y, x, FEAT_FLOOR);
+		cave_set_feat(cave, y, x, FEAT_FLOOR);
 	}
 
 	/* Failure -- Keep trying */
@@ -1507,13 +1507,13 @@ static bool do_cmd_bash_aux(int y, int x)
 		/* Break down the door */
 		if (randint0(100) < 50)
 		{
-			cave_set_feat(y, x, FEAT_BROKEN);
+			cave_set_feat(cave, y, x, FEAT_BROKEN);
 		}
 
 		/* Open the door */
 		else
 		{
-			cave_set_feat(y, x, FEAT_OPEN);
+			cave_set_feat(cave, y, x, FEAT_OPEN);
 		}
 
 		/* Message */

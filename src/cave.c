@@ -3398,35 +3398,21 @@ void town_illuminate(bool daytime)
 	p_ptr->redraw |= (PR_MAP | PR_MONLIST | PR_ITEMLIST);
 }
 
-
-
-/*
- * Change the "feat" flag for a grid, and notice/redraw the grid
- */
-void cave_set_feat(int y, int x, int feat)
+void cave_set_feat(struct cave *c, int y, int x, int feat)
 {
-	/* Change the feature */
-	cave_feat[y][x] = feat;
+	assert(c);
+	assert(y >= 0 && y < DUNGEON_HGT);
+	assert(x >= 0 && x < DUNGEON_WID);
 
-	/* Handle "wall/door" grids */
+	c->feat[y][x] = feat;
+
 	if (feat >= FEAT_DOOR_HEAD)
-	{
-		cave_info[y][x] |= (CAVE_WALL);
-	}
-
-	/* Handle "floor"/etc grids */
+		c->info[y][x] |= CAVE_WALL;
 	else
-	{
-		cave_info[y][x] &= ~(CAVE_WALL);
-	}
+		c->info[y][x] &= ~CAVE_WALL;
 
-	/* Notice/Redraw */
-	if (character_dungeon)
-	{
-		/* Notice */
+	if (character_dungeon) {
 		note_spot(y, x);
-
-		/* Redraw */
 		light_spot(y, x);
 	}
 }

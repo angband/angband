@@ -28,7 +28,6 @@ extern void map_area(void);
 extern void wiz_light(void);
 extern void wiz_dark(void);
 extern void town_illuminate(bool daytime);
-extern void cave_set_feat(int y, int x, int feat);
 extern int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg);
 extern bool projectable(int y1, int x1, int y2, int x2, int flg);
 extern void scatter(int *yp, int *xp, int y, int x, int d, int m);
@@ -58,5 +57,7 @@ extern struct cave *cave;
 
 extern struct cave *cave_new(void);
 extern void cave_free(struct cave *c);
+
+extern void cave_set_feat(struct cave *c, int y, int x, int feat);
 
 #endif /* !CAVE_H */

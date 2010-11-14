@@ -113,7 +113,7 @@ void warding_glyph(void)
 	}
 
 	/* Create a glyph */
-	cave_set_feat(py, px, FEAT_GLYPH);
+	cave_set_feat(cave, py, px, FEAT_GLYPH);
 }
 
 
@@ -1161,19 +1161,19 @@ void stair_creation(void)
 	/* Create a staircase */
 	if (!p_ptr->depth)
 	{
-		cave_set_feat(py, px, FEAT_MORE);
+		cave_set_feat(cave, py, px, FEAT_MORE);
 	}
 	else if (is_quest(p_ptr->depth) || (p_ptr->depth >= MAX_DEPTH-1))
 	{
-		cave_set_feat(py, px, FEAT_LESS);
+		cave_set_feat(cave, py, px, FEAT_LESS);
 	}
 	else if (randint0(100) < 50)
 	{
-		cave_set_feat(py, px, FEAT_MORE);
+		cave_set_feat(cave, py, px, FEAT_MORE);
 	}
 	else
 	{
-		cave_set_feat(py, px, FEAT_LESS);
+		cave_set_feat(cave, py, px, FEAT_LESS);
 	}
 }
 
@@ -2003,7 +2003,7 @@ void destroy_area(int y1, int x1, int r, bool full)
 				}
 
 				/* Change the feature */
-				cave_set_feat(y, x, feat);
+				cave_set_feat(cave, y, x, feat);
 			}
 		}
 	}
@@ -2365,7 +2365,7 @@ void earthquake(int cy, int cx, int r)
 				}
 
 				/* Change the feature */
-				cave_set_feat(yy, xx, feat);
+				cave_set_feat(cave, yy, xx, feat);
 			}
 		}
 	}

@@ -1758,7 +1758,7 @@ void do_cmd_debug(void)
 		/* Create a trap */
 		case 'T':
 		{
-			cave_set_feat(p_ptr->py, p_ptr->px, FEAT_INVIS);
+			cave_set_feat(cave, p_ptr->py, p_ptr->px, FEAT_INVIS);
 			break;
 		}
 

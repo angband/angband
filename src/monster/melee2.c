@@ -3002,6 +3002,8 @@ static void process_monster(int m_idx)
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
+	struct cave *c = cave;	/* XXX */
+
 	int i, d, oy, ox, ny, nx;
 
 	int mm[5];
@@ -3397,7 +3399,7 @@ static void process_monster(int m_idx)
 				cave_info[ny][nx] &= ~(CAVE_MARK);
 
 				/* Notice */
-				cave_set_feat(ny, nx, FEAT_FLOOR);
+				cave_set_feat(c, ny, nx, FEAT_FLOOR);
 
 				/* Note changes to viewable region */
 				if (player_has_los_bold(ny, nx)) do_view = TRUE;
@@ -3446,7 +3448,7 @@ static void process_monster(int m_idx)
 						if (randint0(m_ptr->hp / 10) > k)
 						{
 							/* Unlock the door */
-							cave_set_feat(ny, nx, FEAT_DOOR_HEAD + 0x00);
+							cave_set_feat(c, ny, nx, FEAT_DOOR_HEAD + 0x00);
 
 							/* Do not bash the door */
 							may_bash = FALSE;
@@ -3486,13 +3488,13 @@ static void process_monster(int m_idx)
 				/* Break down the door */
 				if (did_bash_door && (randint0(100) < 50))
 				{
-					cave_set_feat(ny, nx, FEAT_BROKEN);
+					cave_set_feat(c, ny, nx, FEAT_BROKEN);
 				}
 
 				/* Open the door */
 				else
 				{
-					cave_set_feat(ny, nx, FEAT_OPEN);
+					cave_set_feat(c, ny, nx, FEAT_OPEN);
 				}
 
 				/* Handle viewable doors */
@@ -3517,10 +3519,10 @@ static void process_monster(int m_idx)
 				}
 
 				/* Forget the rune */
-				cave_info[ny][nx] &= ~(CAVE_MARK);
+				cave_info[ny][nx] &= ~CAVE_MARK;
 
 				/* Break the rune */
-				cave_set_feat(ny, nx, FEAT_FLOOR);
+				cave_set_feat(c, ny, nx, FEAT_FLOOR);
 
 				/* Allow movement */
 				do_move = TRUE;
