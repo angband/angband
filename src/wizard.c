@@ -426,7 +426,7 @@ bool wiz_create_item_subaction(menu_type *m, const ui_event_data *e, int oid)
 		make_gold(i_ptr, p_ptr->depth, kind->sval);
 
 	/* Drop the object from heaven */
-	drop_near(i_ptr, 0, p_ptr->py, p_ptr->px, TRUE);
+	drop_near(cave, i_ptr, 0, p_ptr->py, p_ptr->px, TRUE);
 
 	return FALSE;
 }
@@ -1035,7 +1035,6 @@ static void do_cmd_wiz_play(void)
 	}
 }
 
-
 /*
  * Create the artifact with the specified number
  */
@@ -1094,7 +1093,7 @@ static void wiz_create_artifact(int a_idx)
 	i_ptr->origin = ORIGIN_CHEAT;
 
 	/* Drop the artifact from heaven */
-	drop_near(i_ptr, 0, p_ptr->py, p_ptr->px, TRUE);
+	drop_near(cave, i_ptr, 0, p_ptr->py, p_ptr->px, TRUE);
 
 	/* All done */
 	msg_print("Allocated.");
@@ -1488,7 +1487,7 @@ static void wiz_test_kind(int tval)
 				make_gold(i_ptr, p_ptr->depth, sval);
 
 			/* Drop the object from heaven */
-			drop_near(i_ptr, 0, py, px, TRUE);
+			drop_near(cave, i_ptr, 0, py, px, TRUE);
 		}
 	}
 

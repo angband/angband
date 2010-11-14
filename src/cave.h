@@ -40,6 +40,9 @@ struct cave {
 	s16b rating;
 	bool good_item;
 
+	int height;
+	int width;
+
 	byte (*info)[256];
 	byte (*info2)[256];
 	byte (*feat)[DUNGEON_WID];

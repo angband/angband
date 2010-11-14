@@ -234,7 +234,7 @@ static void chest_death(int y, int x, s16b o_idx)
 		}
 
 		/* Drop it in the dungeon */
-		drop_near(i_ptr, 0, y, x, TRUE);
+		drop_near(cave, i_ptr, 0, y, x, TRUE);
 	}
 
 	/* No longer opening a chest */

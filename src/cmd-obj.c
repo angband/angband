@@ -724,7 +724,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		for (o_ptr = get_first_object(py, px); o_ptr; o_ptr =
 			get_next_object(o_ptr))
 		{
-			drop_near(o_ptr, 0, py, px, FALSE);
+			drop_near(cave, o_ptr, 0, py, px, FALSE);
 		}
 
 		/* Delete the "moved" objects from their original position */

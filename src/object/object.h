@@ -2,6 +2,7 @@
 #define INCLUDED_OBJECT_H
 
 #include "angband.h"
+#include "cave.h"
 #include "z-textblock.h"
 
 /** Maximum number of scroll titles generated */
@@ -209,7 +210,7 @@ void object_wipe(object_type *o_ptr);
 void object_copy(object_type *o_ptr, const object_type *j_ptr);
 void object_copy_amt(object_type *dst, object_type *src, int amt);
 s16b floor_carry(int y, int x, object_type *j_ptr);
-void drop_near(object_type *j_ptr, int chance, int y, int x, bool verbose);
+void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, bool verbose);
 void acquirement(int y1, int x1, int level, int num, bool great);
 void inven_item_charges(int item);
 void inven_item_describe(int item);

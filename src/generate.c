@@ -191,18 +191,6 @@
 #define ANIMAL_NEST_OBJ 10
 #define UNDEAD_NEST_OBJ 5
 
-
-/*
- * Height and width for the currently generated level
- *
- * This differs from DUNGEON_HGT (and dungeon_hgt) in that it bounds the part
- * of the level that might actually contain open squares. It will vary from
- * level to level, unlike the constant.
- */
-int level_hgt  = DUNGEON_HGT;
-int level_wid  = DUNGEON_WID;
-
-
 /*
  * Simple structure to hold a map location
  */
@@ -338,8 +326,8 @@ static void new_player_spot(struct cave *c)
 	while (1)
 	{
 		/* Pick a legal spot */
-		y = rand_range(1, level_hgt - 2);
-		x = rand_range(1, level_wid - 2);
+		y = rand_range(1, c->height - 2);
+		x = rand_range(1, c->width - 2);
 
 		/* Must be a "naked" floor grid */
 		if (!cave_naked_bold(y, x)) continue;
@@ -603,8 +591,8 @@ static void alloc_stairs(struct cave *c, int feat, int num, int walls)
 			for (j = 0; !flag && j <= 3000; j++)
 			{
 				/* Pick a random grid */
-				y = randint0(level_hgt);
-				x = randint0(level_wid);
+				y = randint0(c->height);
+				x = randint0(c->width);
 
 				/* Require "naked" floor grid */
 				if (!cave_naked_bold(y, x)) continue;
@@ -664,8 +652,8 @@ static void alloc_object(struct cave *c, int set, int typ, int num, int depth)
 			tries++;
 
 			/* Location */
-			y = randint0(level_hgt);
-			x = randint0(level_wid);
+			y = randint0(c->height);
+			x = randint0(c->width);
 
 			/* Require "naked" floor grid */
 			if (!cave_naked_bold(y, x)) continue;
@@ -2952,8 +2940,8 @@ static void cave_gen(struct cave *c)
 
 	/* scale the various generation variables */
 	num_rooms = DUN_ROOMS * size_percent / 100;
-	level_hgt = DUNGEON_HGT * size_percent / 100;
-	level_wid  = DUNGEON_WID * size_percent / 100;
+	c->height = DUNGEON_HGT * size_percent / 100;
+	c->width  = DUNGEON_WID * size_percent / 100;
 
 	/* Global data */
 	dun = &dun_body;
@@ -2964,8 +2952,8 @@ static void cave_gen(struct cave *c)
 			cave_set_feat(c, y, x, FEAT_WALL_EXTRA);
 
 	/* Actual maximum number of rooms on this level */
-	dun->row_rooms = level_hgt / BLOCK_HGT;
-	dun->col_rooms = level_wid / BLOCK_WID;
+	dun->row_rooms = c->height / BLOCK_HGT;
+	dun->col_rooms = c->width / BLOCK_WID;
 
 	/* Initialize the room table */
 	for (by = 0; by < dun->row_rooms; by++)
@@ -3208,8 +3196,8 @@ static void cave_gen(struct cave *c)
 				/* Pick a location */
 				while (1)
 				{
-					y = randint0(level_hgt);
-					x = randint0(level_wid);
+					y = randint0(c->height);
+					x = randint0(c->width);
 
 					if (cave_naked_bold(y, x)) break;
 				}
