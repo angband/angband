@@ -262,7 +262,7 @@ errr parse_file(struct parser *p, const char *filename) {
 	char path[1024];
 	char buf[1024];
 	ang_file *fh;
-	errr r;
+	errr r = 0;
 
 	path_build(path, sizeof(path), ANGBAND_DIR_EDIT, format("%s.txt", filename));
 	fh = file_open(path, MODE_READ, -1);
