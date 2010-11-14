@@ -478,7 +478,8 @@ static byte squelch_level_of(const object_type *o_ptr)
 			return SQUELCH_AVERAGE;
 		if ((o_ptr->to_h > 0) || (o_ptr->to_d > 0) || (o_ptr->to_a > 0))
 			return SQUELCH_AVERAGE;
-		if ((o_ptr->to_h < 0) || (o_ptr->to_d < 0) || (o_ptr->to_a < 0))
+		if ((object_attack_plusses_are_visible(o_ptr) && ((o_ptr->to_h < 0) || (o_ptr->to_d < 0))) ||
+		    (object_defence_plusses_are_visible(o_ptr) && (o_ptr->to_a < 0)))
 			return SQUELCH_BAD;
 
 		return SQUELCH_AVERAGE;
