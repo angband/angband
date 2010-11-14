@@ -31,6 +31,7 @@
  */
 void do_cmd_inven(void)
 {
+	ui_event_data e;
 	int diff = weight_remaining();
 
 	/* Hack -- Start in "inventory" mode */
@@ -56,7 +57,7 @@ void do_cmd_inven(void)
 	    0, 0);
 
 	/* Get a new command */
-	ui_event_data e = inkey_ex();
+	e = inkey_ex();
 	Term_event_push(&e);
 
 	/* Load screen */
@@ -69,6 +70,8 @@ void do_cmd_inven(void)
  */
 void do_cmd_equip(void)
 {
+	ui_event_data e;
+
 	/* Hack -- Start in "equipment" mode */
 	p_ptr->command_wrk = (USE_EQUIP);
 
@@ -88,7 +91,7 @@ void do_cmd_equip(void)
 	prt("(Equipment) Command: ", 0, 0);
 
 	/* Get a new command */
-	ui_event_data e = inkey_ex();
+	e = inkey_ex();
 	Term_event_push(&e);
 
 	/* Load screen */

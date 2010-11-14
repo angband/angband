@@ -671,9 +671,11 @@ static int textui_get_count(void)
 
 	while (1)
 	{
+		ui_event_data ke;
+
 		prt(format("Count: %d", count), 0, 0);
 
-		ui_event_data ke = inkey_ex();
+		ke = inkey_ex();
 		if (ke.type != EVT_KBRD)
 			continue;
 

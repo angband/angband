@@ -494,6 +494,8 @@ byte py_pickup(int pickup)
 			/* Optionally, display more information about floor items */
 			if (OPT(pickup_detail))
 			{
+				ui_event_data e;
+
 				if (!can_pickup)	p = "have no room for the following objects";
 				else if (blind)     p = "feel something on the floor";
 
@@ -513,7 +515,7 @@ byte py_pickup(int pickup)
 				if (OPT(highlight_player)) move_cursor_relative(p_ptr->py, p_ptr->px);
 
 				/* Wait for it.  Use key as next command. */
-				ui_event_data e = inkey_ex();
+				e = inkey_ex();
 				Term_event_push(&e);
 
 				/* Restore screen */
