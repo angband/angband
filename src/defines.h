@@ -1597,14 +1597,6 @@ enum
 #define object_is_jewelry(T) \
 	(((T)->tval == TV_RING) || ((T)->tval == TV_AMULET))
 
-
-/*
- * Rings and Amulets
- */
-#define object_is_jewelry(T) \
-	(((T)->tval == TV_RING) || ((T)->tval == TV_AMULET))
-
-
 /*
  * Some monster types are different.
  */
