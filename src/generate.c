@@ -1888,7 +1888,7 @@ static void build_type5(struct cave *c, int y0, int x0)
 	if ((p_ptr->depth <= 40) &&
 	    (randint1(p_ptr->depth * p_ptr->depth + 1) < 300))
 	{
-		good_item_flag = TRUE;
+		c->good_item = TRUE;
 	}
 
 
@@ -2202,7 +2202,7 @@ static void build_type6(struct cave *c, int y0, int x0)
 	if ((p_ptr->depth <= 40) &&
 	    (randint1(p_ptr->depth * p_ptr->depth + 1) < 300))
 	{
-		good_item_flag = TRUE;
+		c->good_item = TRUE;
 	}
 
 
@@ -2432,7 +2432,7 @@ static void build_type7(struct cave *c, int y0, int x0)
 	if ((p_ptr->depth <= 50) ||
 	    (randint1((p_ptr->depth-40) * (p_ptr->depth-40) + 1) < 400))
 	{
-		good_item_flag = TRUE;
+		c->good_item = TRUE;
 	}
 
 	/* Hack -- Build the vault */
@@ -2468,7 +2468,7 @@ static void build_type8(struct cave *c, int y0, int x0)
 	if ((p_ptr->depth <= 50) ||
 	    (randint1((p_ptr->depth-40) * (p_ptr->depth-40) + 1) < 400))
 	{
-		good_item_flag = TRUE;
+		c->good_item = TRUE;
 	}
 
 	/* Hack -- Build the vault */
@@ -2502,7 +2502,7 @@ static void build_type9(struct cave *c, int y0, int x0)
 	if ((p_ptr->depth <= 50) ||
 	    (randint1((p_ptr->depth-40) * (p_ptr->depth-40) + 1) < 400))
 	{
-		good_item_flag = TRUE;
+		c->good_item = TRUE;
 	}
 
 	/* Hack -- Build the vault */
@@ -3547,7 +3547,7 @@ static void clear_cave(struct cave *c)
 
 
 	/* Nothing special here yet */
-	good_item_flag = FALSE;
+	c->good_item = FALSE;
 
 	/* Nothing good here yet */
 	c->rating = 0;
@@ -3560,7 +3560,7 @@ static void clear_cave(struct cave *c)
 /*
  * Calculate the level feeling, using a "rating" and the player's depth.
  */
-static int calculate_feeling(int rating, int depth)
+static int calculate_feeling(struct cave *c, int depth)
 {
 	int feeling;
 
@@ -3581,18 +3581,18 @@ static int calculate_feeling(int rating, int depth)
 #endif
 
 	/* Extract the feeling */
-	if      (rating > 50 +     depth    ) feeling = 2;
-	else if (rating > 40 + 4 * depth / 5) feeling = 3;
-	else if (rating > 30 + 3 * depth / 5) feeling = 4;
-	else if (rating > 20 + 2 * depth / 5) feeling = 5;
-	else if (rating > 15 + 1 * depth / 3) feeling = 6;
-	else if (rating > 10 + 1 * depth / 5) feeling = 7;
-	else if (rating >  5 + 1 * depth /10) feeling = 8;
-	else if (rating >  0) feeling = 9;
+	if      (c->rating > 50 +     depth    ) feeling = 2;
+	else if (c->rating > 40 + 4 * depth / 5) feeling = 3;
+	else if (c->rating > 30 + 3 * depth / 5) feeling = 4;
+	else if (c->rating > 20 + 2 * depth / 5) feeling = 5;
+	else if (c->rating > 15 + 1 * depth / 3) feeling = 6;
+	else if (c->rating > 10 + 1 * depth / 5) feeling = 7;
+	else if (c->rating >  5 + 1 * depth /10) feeling = 8;
+	else if (c->rating >  0) feeling = 9;
 	else feeling = 10;
 
 	/* Hack -- Have a special feeling sometimes */
-	if (good_item_flag && OPT(birth_no_preserve)) feeling = 1;
+	if (c->good_item && OPT(birth_no_preserve)) feeling = 1;
 
 	return feeling;
 }
@@ -3636,7 +3636,7 @@ void generate_cave(void)
 		if (((turn - old_turn) < 1000) && (old_turn > 1))
 			c->feeling = 0;
 		else
-			c->feeling = calculate_feeling(c->rating, p_ptr->depth);
+			c->feeling = calculate_feeling(c, p_ptr->depth);
 
 		/* Hack -- regenerate "over-flow" levels */
 		if (o_max >= z_info->o_max)

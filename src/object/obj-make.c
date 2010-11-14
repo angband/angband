@@ -310,7 +310,7 @@ static void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 	cave->rating += object_power(o_ptr, FALSE, NULL, TRUE) / 25;
 
 	/* Set the good item flag */
-	good_item_flag = TRUE;
+	cave->good_item = TRUE;
 
 	/* Cheat -- peek at the item */
 	if (OPT(cheat_peek)) object_mention(o_ptr);

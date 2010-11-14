@@ -97,17 +97,6 @@ s16b o_cnt = 0;			/* Number of live objects */
 s16b mon_max = 1;	/* Number of allocated monsters */
 s16b mon_cnt = 0;	/* Number of live monsters */
 
-
-
-/*
- * Dungeon variables
- */
-
-bool good_item_flag;	/* True if "Artifact" on this level */
-
-bool closing_flag;		/* Dungeon is closing */
-
-
 /*
  * Buffer to hold the current savefile name
  */

@@ -43,6 +43,7 @@ extern bool dtrap_edge(int y, int x);
 struct cave {
 	byte feeling;
 	s16b rating;
+	bool good_item;
 };
 
 /* XXX: temporary while I refactor */
