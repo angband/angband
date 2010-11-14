@@ -111,6 +111,13 @@ static struct item_command item_actions[] =
 	  "Drop which item? ", "You have nothing to drop.",
 	  NULL, (USE_EQUIP | USE_INVEN), NULL, FALSE },
 
+	/*** Attacking ***/
+	{ { "Fire your missile weapon", 'f', CMD_FIRE, NULL },
+	  NULL, "fire",
+	  "Fire which item? ", "You have nothing to fire.",
+	  obj_can_fire, (USE_INVEN | USE_EQUIP | USE_FLOOR | QUIVER_TAGS),
+	  player_can_fire, TRUE },
+
 	/*** Spellbooks ***/
 	{ { "Browse a book", 'b', CMD_NULL, NULL },
 	  textui_spell_browse, "browse",
@@ -189,7 +196,6 @@ static struct generic_command cmd_action[] =
 	{ "Close a door",               'c', CMD_NULL, textui_cmd_close },
 	{ "Jam a door shut",            'j', CMD_NULL, textui_cmd_spike },
 	{ "Bash a door open",           'B', CMD_NULL, textui_cmd_bash },
-	{ "Fire your missile weapon", 'f', CMD_NULL, textui_cmd_fire },
 	{ "Fire at nearest target",   'h', CMD_NULL, textui_cmd_fire_at_nearest },
 	{ "Throw an item",            'v', CMD_NULL, textui_cmd_throw }
 };
