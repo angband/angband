@@ -1274,29 +1274,22 @@ void print_rel(char c, byte a, int y, int x)
  * This function is called primarily from the "update_view()" function, for
  * each grid which becomes newly "see-able".
  */
-void note_spot(int y, int x)
+void cave_note_spot(struct cave *c, int y, int x)
 {
-	byte info;
-
 	object_type *o_ptr;
 
-	/* Get cave info */
-	info = cave_info[y][x];
-
 	/* Require "seen" flag */
-	if (!(info & (CAVE_SEEN))) return;
+	if (!(c->info[y][x] & CAVE_SEEN))
+		return;
 
-
-	/* Hack -- memorize objects */
 	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
-	{
-		/* Memorize objects */
 		o_ptr->marked = TRUE;
-	}
 
+	if (c->info[y][x] & CAVE_MARK)
+		return;
 
 	/* Memorize this grid */
-	cave_info[y][x] |= (CAVE_MARK);
+	cave->info[y][x] |= (CAVE_MARK);
 }
 
 
@@ -1306,7 +1299,7 @@ void note_spot(int y, int x)
  *
  * This function should only be called on "legal" grids.
  */
-void light_spot(int y, int x)
+void cave_light_spot(struct cave *c, int y, int x)
 {
 	event_signal_point(EVENT_MAP, x, y);
 }
@@ -2563,7 +2556,7 @@ void forget_view(void)
 		/* fast_cave_info[g] &= ~(CAVE_LIGHT); */
 
 		/* Redraw */
-		light_spot(y, x);
+		cave_light_spot(cave, y, x);
 	}
 
 	/* None left */
@@ -2991,11 +2984,8 @@ void update_view(void)
 			y = GRID_Y(g);
 			x = GRID_X(g);
 
-			/* Note */
-			note_spot(y, x);
-
-			/* Redraw */
-			light_spot(y, x);
+			cave_note_spot(cave, y, x);
+			cave_light_spot(cave, y, x);
 		}
 	}
 
@@ -3024,7 +3014,7 @@ void update_view(void)
 			x = GRID_X(g);
 
 			/* Redraw */
-			light_spot(y, x);
+			cave_light_spot(cave, y, x);
 		}
 	}
 
@@ -3412,8 +3402,8 @@ void cave_set_feat(struct cave *c, int y, int x, int feat)
 		c->info[y][x] &= ~CAVE_WALL;
 
 	if (character_dungeon) {
-		note_spot(y, x);
-		light_spot(y, x);
+		cave_note_spot(c, y, x);
+		cave_light_spot(c, y, x);
 	}
 }
 

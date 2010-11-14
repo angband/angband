@@ -1942,7 +1942,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 				delete_object_idx(this_o_idx);
 
 				/* Redraw */
-				light_spot(y, x);
+				cave_light_spot(cave, y, x);
 			}
 		}
 	}
@@ -3247,7 +3247,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	update_mon(cave_m_idx[y][x], FALSE);
 
 	/* Redraw the monster grid */
-	light_spot(y, x);
+	cave_light_spot(cave, y, x);
 
 
 	/* Update monster recall window */
@@ -4108,7 +4108,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 
 				Term_xtra(TERM_XTRA_DELAY, msec);
 
-				light_spot(y, x);
+				cave_light_spot(cave, y, x);
 
 				Term_fresh();
 				if (p_ptr->redraw) redraw_stuff();
@@ -4255,7 +4255,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 				/* Hack -- Erase if needed */
 				if (player_has_los_bold(y, x))
 				{
-					light_spot(y, x);
+					cave_light_spot(cave, y, x);
 				}
 			}
 

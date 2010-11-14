@@ -927,8 +927,7 @@ void delete_object_idx(int o_idx)
 		y = j_ptr->iy;
 		x = j_ptr->ix;
 
-		/* Visual update */
-		light_spot(y, x);
+		cave_light_spot(cave, y, x);
 	}
 
 	/* Wipe the object */
@@ -973,7 +972,7 @@ void delete_object(int y, int x)
 	cave_o_idx[y][x] = 0;
 
 	/* Visual update */
-	light_spot(y, x);
+	cave_light_spot(cave, y, x);
 }
 
 
@@ -1962,11 +1961,8 @@ s16b floor_carry(int y, int x, object_type *j_ptr)
 		/* Link the floor to the object */
 		cave_o_idx[y][x] = o_idx;
 
-		/* Notice */
-		note_spot(y, x);
-
-		/* Redraw */
-		light_spot(y, x);
+		cave_note_spot(cave, y, x);
+		cave_light_spot(cave, y, x);
 	}
 
 	/* Result */

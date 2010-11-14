@@ -615,7 +615,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 			if (p_ptr->redraw) redraw_stuff();
 
 			Term_xtra(TERM_XTRA_DELAY, msec);
-			light_spot(y, x);
+			cave_light_spot(cave, y, x);
 
 			Term_fresh();
 			if (p_ptr->redraw) redraw_stuff();
@@ -1005,7 +1005,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 			if (p_ptr->redraw) redraw_stuff();
 
 			Term_xtra(TERM_XTRA_DELAY, msec);
-			light_spot(y, x);
+			cave_light_spot(cave, y, x);
 
 			Term_fresh();
 			if (p_ptr->redraw) redraw_stuff();

@@ -14,8 +14,6 @@ extern bool feat_supports_lighting(int feat);
 extern void map_info(unsigned x, unsigned y, grid_data *g);
 extern void move_cursor_relative(int y, int x);
 extern void print_rel(char c, byte a, int y, int x);
-extern void note_spot(int y, int x);
-extern void light_spot(int y, int x);
 extern void prt_map(void);
 extern void display_map(int *cy, int *cx);
 extern void do_cmd_view_map(void);
@@ -59,5 +57,7 @@ extern struct cave *cave_new(void);
 extern void cave_free(struct cave *c);
 
 extern void cave_set_feat(struct cave *c, int y, int x, int feat);
+extern void cave_note_spot(struct cave *c, int y, int x);
+extern void cave_light_spot(struct cave *c, int y, int x);
 
 #endif /* !CAVE_H */

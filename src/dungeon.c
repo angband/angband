@@ -1139,7 +1139,7 @@ static void process_player(void)
 					shimmer_monsters = TRUE;
 
 					/* Redraw regardless */
-					light_spot(m_ptr->fy, m_ptr->fx);
+					cave_light_spot(cave, m_ptr->fy, m_ptr->fx);
 				}
 			}
 
