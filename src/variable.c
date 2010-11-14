@@ -471,12 +471,6 @@ s16b (*cave_o_idx)[DUNGEON_WID];
  */
 s16b (*cave_m_idx)[DUNGEON_WID];
 
-
-/*
- * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid flow "cost" values
- */
-byte (*cave_cost)[DUNGEON_WID];
-
 /*
  * Array[z_info->o_max] of dungeon objects
  */

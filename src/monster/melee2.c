@@ -2290,7 +2290,7 @@ static bool get_fear_moves_aux(struct cave *c, int m_idx, int *yp, int *xp)
 		dis = distance(y, x, y1, x1);
 
 		/* Score this grid */
-		s = 5000 / (dis + 3) - 500 / (cave_cost[y][x] + 1);
+		s = 5000 / (dis + 3) - 500 / (c->cost[y][x] + 1);
 
 		/* No negative scores */
 		if (s < 0) s = 0;

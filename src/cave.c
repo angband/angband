@@ -3895,7 +3895,7 @@ struct cave *cave_new(void) {
 	c->info = cave_info;
 	c->info2 = cave_info2;
 	c->feat = cave_feat;
-	c->cost = cave_cost;
+	c->cost = C_ZNEW(DUNGEON_HGT, byte_wid);
 	c->when = C_ZNEW(DUNGEON_HGT, byte_wid);
 	c->m_idx = cave_m_idx;
 	return c;
