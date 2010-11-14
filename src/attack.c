@@ -188,7 +188,8 @@ static int critical_norm(int weight, int plus, int dam, u32b *msg_type)
  *
  * \param o_ptr is the object being used to attack
  * \param m_ptr is the monster being attacked
- * \param best_s_ptr is the best applicable slay_table entry, or NULL if no slay already known
+ * \param best_s_ptr is the best applicable slay_table entry, or NULL if no
+ *  slay already known
  *
  */
 void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr, const slay_t **best_s_ptr)
@@ -275,6 +276,7 @@ bool py_attack_real(int y, int x)
 	/* Default to punching for one damage */
 	const char *hit_verb = "punch";
 	int dmg = 1;
+	msg_type = MSG_HIT;
 
 	/* Extract monster name (or "it") */
 	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
