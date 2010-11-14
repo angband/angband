@@ -22,11 +22,10 @@ typedef struct random
  * The "degree" of the "complex" Random Number Generator.
  * This value is hard-coded at 63 for a wide variety of reasons.
  */
-#define RAND_DEG 63
+#define RAND_DEG 32
 
 /* Random aspects used by damcalc, m_bonus_calc, and ranvals */
-typedef enum
-{
+typedef enum {
 	MINIMISE,
 	AVERAGE,
 	MAXIMISE,
@@ -73,8 +72,12 @@ typedef enum
  */
 extern bool Rand_quick;
 extern u32b Rand_value;
-extern u16b Rand_place;
-extern u32b Rand_state[RAND_DEG];
+
+extern u32b state_i;
+extern u32b STATE[RAND_DEG];
+extern u32b z0;
+extern u32b z1;
+extern u32b z2;
 
 
 /**** Available Functions ****/

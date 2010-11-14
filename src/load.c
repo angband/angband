@@ -269,29 +269,37 @@ static int rd_item(object_type *o_ptr)
 }
 
 
-/*
+/**
  * Read RNG state
+ *
+ * There were originally 64 bytes of randomizer saved. Now we only need
+ * 32 + 5 bytes saved, so we'll read an extra 27 bytes at the end which won't
+ * be used.
  */
 int rd_randomizer(u32b version)
 {
 	int i;
+	u32b noop;
 
-	u16b tmp16u;
+	/* current value for the simple RNG */
+	rd_u32b(&Rand_value);
 
-
-	/* Tmp */
-	rd_u16b(&tmp16u);
-
-	/* Place */
-	rd_u16b(&Rand_place);
-
-	/* State */
+	/* state index */
+	rd_u32b(&state_i);
+    
+	/* RNG variables */
+	rd_u32b(&z0);
+	rd_u32b(&z1);
+	rd_u32b(&z2);
+    
+	/* RNG state */
 	for (i = 0; i < RAND_DEG; i++)
-	{
-		rd_u32b(&Rand_state[i]);
-	}
+		rd_u32b(&STATE[i]);
 
-	/* Accept */
+	/* NULL padding */
+	for (i = 0; i < 59 - RAND_DEG; i++)
+		rd_u32b(&noop);
+
 	Rand_quick = FALSE;
 
 	return 0;

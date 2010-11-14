@@ -385,23 +385,27 @@ static int rd_item(object_type *o_ptr)
 static int rd_randomizer(void)
 {
 	int i;
+	u32b noop;
 
-	u16b tmp16u;
+	/* current value for the simple RNG */
+	rd_u32b(&Rand_value);
 
+	/* state index */
+	rd_u32b(&state_i);
 
-	/* Tmp */
-	rd_u16b(&tmp16u);
+	/* RNG variables */
+	rd_u32b(&z0);
+	rd_u32b(&z1);
+	rd_u32b(&z2);
 
-	/* Place */
-	rd_u16b(&Rand_place);
-
-	/* State */
+	/* RNG state */
 	for (i = 0; i < RAND_DEG; i++)
-	{
-		rd_u32b(&Rand_state[i]);
-	}
+		rd_u32b(&STATE[i]);
 
-	/* Accept */
+	/* NULL padding */
+	for (i = 0; i < 59 - RAND_DEG; i++)
+		rd_u32b(&noop);
+
 	Rand_quick = FALSE;
 
 	return 0;
