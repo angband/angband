@@ -48,5 +48,6 @@ s16b modify_stat_value(int value, int amount);
 bool player_can_cast(void);
 bool player_can_study(void);
 bool player_can_read(void);
+bool player_can_fire(void);
 
 #endif /* !PLAYER_PLAYER_H */

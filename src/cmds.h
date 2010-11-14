@@ -111,7 +111,6 @@ void do_cmd_unknown(void);
 
 /* attack.c */
 extern void do_cmd_fire(cmd_code code, cmd_arg args[]);
-extern void textui_cmd_fire(void);
 extern void textui_cmd_fire_at_nearest(void);
 extern void do_cmd_throw(cmd_code code, cmd_arg args[]);
 extern void textui_cmd_throw(void);

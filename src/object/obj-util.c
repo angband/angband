@@ -4059,6 +4059,12 @@ bool obj_can_wear(const object_type *o_ptr)
 	return (wield_slot(o_ptr) >= INVEN_WIELD);
 }
 
+/* Can only fire an item with the right tval */
+bool obj_can_fire(const object_type *o_ptr)
+{
+	return o_ptr->tval == p_ptr->state.ammo_tval;
+}
+
 /* Can has inscrip pls */
 bool obj_has_inscrip(const object_type *o_ptr)
 {
@@ -4103,16 +4109,13 @@ bool obj_needs_aim(object_type *o_ptr)
 
 	/* If the effect needs aiming, or if the object type needs
 	   aiming, this object needs aiming. */
-	if (effect_aim(effect) ||
-	    (o_ptr->tval == TV_WAND) ||
-	    (o_ptr->tval == TV_ROD && !object_flavor_is_aware(o_ptr)))
-	{
+	if (effect_aim(effect) || o_ptr->tval == TV_BOLT ||
+			o_ptr->tval == TV_SHOT || o_ptr->tval == TV_ARROW ||
+			o_ptr->tval == TV_WAND ||
+			(o_ptr->tval == TV_ROD && !object_flavor_is_aware(o_ptr)))
 		return TRUE;
-	}
 	else
-	{
 		return FALSE;
-	}
 }
 
 
