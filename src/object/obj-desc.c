@@ -36,11 +36,7 @@ void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know)
 	/* If not aware, use flavor */
 	if (!easy_know && !k_ptr->aware && k_ptr->flavor)
 	{
-		if (k_ptr->tval == TV_SCROLL)
-		{
-			strnfmt(buf, max, "\"%s\"", scroll_adj[k_ptr->sval]);
-		}
-		else if (k_ptr->tval == TV_FOOD && k_ptr->sval > SV_FOOD_MIN_SHROOM)
+		if (k_ptr->tval == TV_FOOD && k_ptr->sval > SV_FOOD_MIN_SHROOM)
 		{
 			strnfmt(buf, max, "%s Mushroom", flavor_info[k_ptr->flavor].text);
 		}
@@ -116,10 +112,8 @@ static const char *obj_desc_get_modstr(const object_type *o_ptr)
 		case TV_ROD:
 		case TV_POTION:
 		case TV_FOOD:
-			return flavor_info[k_ptr->flavor].text;
-
 		case TV_SCROLL:
-			return scroll_adj[o_ptr->sval];
+			return flavor_info[k_ptr->flavor].text;
 
 		case TV_MAGIC_BOOK:
 		case TV_PRAYER_BOOK:
@@ -193,7 +187,7 @@ static const char *obj_desc_get_basename(const object_type *o_ptr, bool aware)
 			return (show_flavor ? "& # Potion~" : "& Potion~");
 
 		case TV_SCROLL:
-			return (show_flavor ? "& Scroll~ titled \"#\"" : "& Scroll~");
+			return (show_flavor ? "& Scroll~ titled #" : "& Scroll~");
 
 		case TV_MAGIC_BOOK:
 			return "& Book~ of Magic Spells #";
