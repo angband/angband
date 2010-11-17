@@ -1,6 +1,6 @@
 /*
  * File: z-rand.c
- * Purpose: A simple RNG for Angband
+ * Purpose: A Random Number Generator for Angband
  *
  * Copyright (c) 1997 Ben Harrison, Randy Hutson
  *
@@ -17,14 +17,29 @@
  */
 #include "z-rand.h"
 
+/**
+ * This file provides a pseudo-random number generator.
+ *
+ * This code provides both a "quick" random number generator (4 bytes of
+ * state), and a "complex" random number generator (128 + 4 bytes of state).
+ *
+ * The complex RNG (used for most game entropy) is provided by the WELL102a
+ * algorithm, used with permission. See below for copyright information
+ * about the WELL implementation.
+ *
+ * To use of the "simple" RNG, activate it via "Rand_quick = TRUE" and
+ * "Rand_value = seed". After that it will be automatically used instead of
+ * the "complex" RNG. When you are done, you can de-activate it via
+ * "Rand_quick = FALSE". You can also choose a new seed.
+ */
 
-/* begin WELL RNG */
-/* ************************************************************************* */
-/* Copyright:  Francois Panneton and Pierre L'Ecuyer, University of Montreal */
-/*             Makoto Matsumoto, Hiroshima University                        */
-/* ************************************************************************* */
-/* Code was modified slightly by Erik Osheim to work on unsigned integers.   */
-
+/* begin WELL RNG
+ * *************************************************************************
+ * Copyright:  Francois Panneton and Pierre L'Ecuyer, University of Montreal
+ *             Makoto Matsumoto, Hiroshima University                       
+ * *************************************************************************
+ * Code was modified slightly by Erik Osheim to work on unsigned integers.  
+ */
 #define M1 3
 #define M2 24
 #define M3 10
@@ -59,56 +74,25 @@ u32b WELLRNG1024a (void){
 }
 /* end WELL RNG */
 
-
 /*
- * This file provides an optimized random number generator.
- *
- *
- * This code provides both a "quick" random number generator (4 bytes of
- * state), and a "decent" random number generator (256 bytes of state),
- * both available in two flavors, first, the simple "mod" flavor, which
- * is fast, but slightly biased at high values, and second, the simple
- * "div" flavor, which is less fast (and potentially non-terminating)
- * but which is not biased and is much less subject to non-randomness
- * problems in the low bits.  Note the "randint0()" macro in "z-rand.h",
- * which must specify a "default" flavor.
- *
- * Note the use of the "simple" RNG, first you activate it via
- * "Rand_quick = TRUE" and "Rand_value = seed" and then it is used
- * automatically used instead of the "complex" RNG, and when you are
- * done, you de-activate it via "Rand_quick = FALSE" or choose a new
- * seed via "Rand_value = seed".
- *
- *
- * This (optimized) random number generator is based loosely on the old
- * "random.c" file from Berkeley but with some major optimizations and
- * algorithm changes.  See below for more details.
+ * Simple RNG, implemented with a linear congruent algorithm.
  */
+#define LCRNG(X) ((X) * 1103515245 + 12345)
 
 
-
-
-/*
- * Random Number Generator -- Linear Congruent RNG
- */
-#define LCRNG(X)        ((X) * 1103515245 + 12345)
-
-
-
-/*
- * Use the "simple" LCRNG
+/**
+ * Whether to use the simple RNG or not.
  */
 bool Rand_quick = TRUE;
 
-
-/*
- * Current "value" of the "simple" RNG
+/**
+ * The current "seed" of the simple RNG.
  */
 u32b Rand_value;
 
 
-/*
- * Initialize the "complex" RNG using a new seed
+/**
+ * Initialize the complex RNG using a new seed.
  */
 void Rand_state_init(u32b seed) {
 	int i, j;
@@ -134,16 +118,16 @@ void Rand_state_init(u32b seed) {
 }
 
 
-/*
- * Extract a "random" number from 0 to m-1, via "division"
+/**
+ * Extract a "random" number from 0 to m - 1, via "division"
  *
- * This method selects "random" 28-bit numbers, and then uses
- * division to drop those numbers into "m" different partitions,
- * plus a small non-partition to reduce bias, taking as the final
- * value the first "good" partition that a number falls into.
+ * This method selects "random" 28-bit numbers, and then uses division to drop
+ * those numbers into "m" different partitions, plus a small non-partition to
+ * reduce bias, taking as the final value the first "good" partition that a
+ * number falls into.
  *
- * This method has no bias, and is much less affected by patterns
- * in the "low" bits of the underlying RNG's.
+ * This method has no bias, and is much less affected by patterns in the "low"
+ * bits of the underlying RNG's. However, it is potentially non-terminating.
  */
 u32b Rand_div(u32b m) {
 	u32b r, n;
@@ -189,9 +173,7 @@ u32b Rand_div(u32b m) {
 }
 
 
-
-
-/*
+/**
  * The number of entries in the "Rand_normal_table"
  */
 #define RANDNOR_NUM	256
