@@ -3898,9 +3898,18 @@ struct cave *cave_new(void) {
 	c->cost = C_ZNEW(DUNGEON_HGT, byte_wid);
 	c->when = C_ZNEW(DUNGEON_HGT, byte_wid);
 	c->m_idx = cave_m_idx;
+	c->o_idx = cave_o_idx;
 	return c;
 }
 
 void cave_free(struct cave *c) {
 	mem_free(c);
+}
+
+bool cave_isempty(struct cave *c, int y, int x) {
+	return c->feat[y][x] == FEAT_FLOOR && !c->o_idx[y][x] && !c->m_idx[y][x];
+}
+
+bool cave_canputitem(struct cave *c, int y, int x) {
+	return c->feat[y][x] == FEAT_FLOOR && !c->o_idx[y][x];
 }

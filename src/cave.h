@@ -49,6 +49,7 @@ struct cave {
 	byte (*cost)[DUNGEON_WID];
 	byte (*when)[DUNGEON_WID];
 	s16b (*m_idx)[DUNGEON_WID];
+	s16b (*o_idx)[DUNGEON_WID];
 };
 
 /* XXX: temporary while I refactor */
@@ -62,6 +63,15 @@ extern void cave_note_spot(struct cave *c, int y, int x);
 extern void cave_light_spot(struct cave *c, int y, int x);
 extern void cave_update_flow(struct cave *c);
 extern void cave_forget_flow(struct cave *c);
+
+/** @brief Returns whether the specified square is empty or not.
+ *  Empty squares are floor squares that contain no items or monsters.
+ *  Old cave_naked_bold().
+ */
+extern bool cave_isempty(struct cave *c, int y, int x);
+
+/* Old cave_clean_bold() */
+extern bool cave_canputitem(struct cave *c, int y, int x);
 
 extern void cave_generate(struct cave *c);
 

@@ -212,10 +212,7 @@ struct room_data
  * Structure to hold all "dungeon generation" data
  */
 
-typedef struct dun_data dun_data;
-
-struct dun_data
-{
+struct dun_data {
 	/* Array of centers of rooms */
 	int cent_n;
 	struct point cent[CENT_MAX];
@@ -243,11 +240,7 @@ struct dun_data
 	bool crowded;
 };
 
-
-/*
- * Dungeon generation data -- see "cave_gen()"
- */
-static dun_data *dun;
+static struct dun_data *dun;
 
 
 /*
@@ -310,6 +303,8 @@ static void new_player_spot(struct cave *c)
 {
 	int y, x;
 
+	assert(c);
+
 	/* Place the player */
 	while (1)
 	{
@@ -317,53 +312,42 @@ static void new_player_spot(struct cave *c)
 		y = rand_range(1, c->height - 2);
 		x = rand_range(1, c->width - 2);
 
-		/* Must be a "naked" floor grid */
-		if (!cave_naked_bold(y, x)) continue;
+		if (!cave_isempty(c, y, x))
+			continue;
 
 		/* Refuse to start on anti-teleport grids */
-		if (cave_info[y][x] & (CAVE_ICKY)) continue;
-
-		if (!OPT(birth_no_stairs))
-		{
-			if (p_ptr->create_down_stair)
-			{
-				cave_set_feat(c, y, x, FEAT_MORE);
-				p_ptr->create_down_stair = FALSE;
-			}
-			else if (p_ptr->create_up_stair)
-			{
-				cave_set_feat(c, y, x, FEAT_LESS);
-				p_ptr->create_up_stair = FALSE;
-			}
-		}
+		if (c->info[y][x] & CAVE_ICKY)
+			continue;
 
 		/* Done */
 		break;
 	}
 
-	/* Place the player */
+	if (!OPT(birth_no_stairs)) {
+		if (p_ptr->create_down_stair) {
+			cave_set_feat(c, y, x, FEAT_MORE);
+			p_ptr->create_down_stair = FALSE;
+		} else if (p_ptr->create_up_stair) {
+			cave_set_feat(c, y, x, FEAT_LESS);
+			p_ptr->create_up_stair = FALSE;
+		}
+	}
+
 	player_place(y, x);
 }
 
-
-
-/*
- * Count the number of walls adjacent to the given grid.
- *
- * Note -- Assumes "in_bounds_fully(y, x)"
- *
- * We count only granite walls and permanent walls.
- */
-static int next_to_walls(int y, int x)
+static int next_to_walls(struct cave *c, int y, int x)
 {
 	int k = 0;
 
-	if (cave_feat[y+1][x] >= FEAT_WALL_EXTRA) k++;
-	if (cave_feat[y-1][x] >= FEAT_WALL_EXTRA) k++;
-	if (cave_feat[y][x+1] >= FEAT_WALL_EXTRA) k++;
-	if (cave_feat[y][x-1] >= FEAT_WALL_EXTRA) k++;
+	assert(in_bounds_fully(y, x));
 
-	return (k);
+	if (c->feat[y+1][x] >= FEAT_WALL_EXTRA) k++;
+	if (c->feat[y-1][x] >= FEAT_WALL_EXTRA) k++;
+	if (c->feat[y][x+1] >= FEAT_WALL_EXTRA) k++;
+	if (c->feat[y][x-1] >= FEAT_WALL_EXTRA) k++;
+
+	return k;
 }
 
 static void place_rubble(struct cave *c, int y, int x)
@@ -381,15 +365,10 @@ static void place_down_stairs(struct cave *c, int y, int x)
 	cave_set_feat(c, y, x, FEAT_MORE);
 }
 
-/*
- * Place an up/down staircase at given location
- */
 static void place_random_stairs(struct cave *c, int y, int x)
 {
-	/* Paranoia */
 	if (!cave_clean_bold(y, x)) return;
 
-	/* Choose a staircase */
 	if (!p_ptr->depth)
 	{
 		place_down_stairs(c, y, x);
@@ -411,16 +390,16 @@ static void place_random_stairs(struct cave *c, int y, int x)
 /*
  * Attempt to place an object (normal or good/great) at the given location.
  */
-void place_object(int y, int x, int level, bool good, bool great)
+void place_object(struct cave *c, int y, int x, int level, bool good, bool great)
 {
 	object_type *i_ptr;
 	object_type object_type_body;
 
-	/* Paranoia */
-	if (!in_bounds(y, x)) return;
+	if (!in_bounds(y, x))
+		return;
 
-	/* Hack -- clean floor space */
-	if (!cave_clean_bold(y, x)) return;
+	if (!cave_canputitem(c, y, x))
+		return;
 
 	/* Get local object */
 	i_ptr = &object_type_body;
@@ -429,54 +408,35 @@ void place_object(int y, int x, int level, bool good, bool great)
 	object_wipe(i_ptr);
 
 	/* Make an object (if possible) */
-	if (make_object(i_ptr, level, good, great))
-	{
+	if (make_object(i_ptr, level, good, great)) {
 		i_ptr->origin = ORIGIN_FLOOR;
 		i_ptr->origin_depth = p_ptr->depth;
 
 		/* Give it to the floor */
-		if (!floor_carry(y, x, i_ptr))
-		{
+		if (!floor_carry(y, x, i_ptr)) {
 			/* XXX Should this be done in floor_carry? */
 			a_info[i_ptr->name1].created = FALSE;
 		}
 	}
 }
 
-
-/*
- * Places a treasure (Gold or Gems) at given location
- */
-void place_gold(int y, int x, int level)
+void place_gold(struct cave *c, int y, int x, int level)
 {
 	object_type *i_ptr;
 	object_type object_type_body;
 
-	/* Paranoia */
-	if (!in_bounds(y, x)) return;
+	if (!in_bounds(y, x))
+		return;
 
-	/* Require clean floor space */
-	if (!cave_clean_bold(y, x)) return;
+	if (!cave_canputitem(c, y, x))
+		return;
 
-	/* Get local object */
 	i_ptr = &object_type_body;
-
-	/* Wipe the object */
 	object_wipe(i_ptr);
-
-	/* Make some gold */
 	make_gold(i_ptr, level, SV_GOLD_ANY);
-
-	/* Give it to the floor */
-	(void)floor_carry(y, x, i_ptr);
+	floor_carry(y, x, i_ptr);
 }
 
-
-
-
-/*
- * Place a secret door at the given location
- */
 void place_secret_door(struct cave *c, int y, int x)
 {
 	/* Create secret door */
@@ -586,7 +546,7 @@ static void alloc_stairs(struct cave *c, int feat, int num, int walls)
 				if (!cave_naked_bold(y, x)) continue;
 
 				/* Require a certain number of adjacent walls */
-				if (next_to_walls(y, x) < walls) continue;
+				if (next_to_walls(c, y, x) < walls) continue;
 
 				/* Town -- must go down */
 				if (!p_ptr->depth)
@@ -676,13 +636,13 @@ static void alloc_object(struct cave *c, int set, int typ, int num, int depth)
 
 			case ALLOC_TYP_GOLD:
 			{
-				place_gold(y, x, depth);
+				place_gold(c, y, x, depth);
 				break;
 			}
 
 			case ALLOC_TYP_OBJECT:
 			{
-				place_object(y, x, depth, FALSE, FALSE);
+				place_object(c, y, x, depth, FALSE, FALSE);
 				break;
 			}
 		}
@@ -754,7 +714,7 @@ static void build_streamer(struct cave *c, int feat, int chance)
  * Create up to "num" objects near the given coordinates
  * Only really called by some of the "vault" routines.
  */
-static void vault_objects(int y, int x, int depth, int num)
+static void vault_objects(struct cave *c, int y, int x, int depth, int num)
 {
 	int i, j, k;
 
@@ -779,13 +739,13 @@ static void vault_objects(int y, int x, int depth, int num)
 			/* Place an item */
 			if (randint0(100) < 75)
 			{
-				place_object(j, k, depth, FALSE, FALSE);
+				place_object(c, j, k, depth, FALSE, FALSE);
 			}
 
 			/* Place gold */
 			else
 			{
-				place_gold(j, k, depth);
+				place_gold(c, j, k, depth);
 			}
 
 			/* Placement accomplished */
@@ -1227,7 +1187,7 @@ static void build_type3(struct cave *c, int y0, int x0)
 			generate_hole(c, y1b, x1a, y2b, x2a, FEAT_SECRET);
 
 			/* Place a treasure in the vault */
-			place_object(y0, x0, p_ptr->depth, FALSE, FALSE);
+			place_object(c, y0, x0, p_ptr->depth, FALSE, FALSE);
 
 			/* Let's guard the treasure well */
 			vault_monsters(c, y0, x0, p_ptr->depth + 2, randint0(2) + 3);
@@ -1367,7 +1327,7 @@ static void build_type4(struct cave *c, int y0, int x0)
 			/* Object (80%) */
 			if (randint0(100) < 80)
 			{
-				place_object(y0, x0, p_ptr->depth, FALSE, FALSE);
+				place_object(c, y0, x0, p_ptr->depth, FALSE, FALSE);
 			}
 
 			/* Stairs (20%) */
@@ -1431,8 +1391,8 @@ static void build_type4(struct cave *c, int y0, int x0)
 				vault_monsters(c, y0, x0 + 2, p_ptr->depth + 2, randint1(2));
 
 				/* Objects */
-				if (one_in_(3)) place_object(y0, x0 - 2, p_ptr->depth, FALSE, FALSE);
-				if (one_in_(3)) place_object(y0, x0 + 2, p_ptr->depth, FALSE, FALSE);
+				if (one_in_(3)) place_object(c, y0, x0 - 2, p_ptr->depth, FALSE, FALSE);
+				if (one_in_(3)) place_object(c, y0, x0 + 2, p_ptr->depth, FALSE, FALSE);
 			}
 
 			break;
@@ -1466,7 +1426,7 @@ static void build_type4(struct cave *c, int y0, int x0)
 			vault_traps(y0, x0 + 3, 2, 8, randint1(3));
 
 			/* Mazes should have some treasure too. */
-			vault_objects(y0, x0, p_ptr->depth, 3);
+			vault_objects(c, y0, x0, p_ptr->depth, 3);
 
 			break;
 		}
@@ -1497,7 +1457,7 @@ static void build_type4(struct cave *c, int y0, int x0)
 			}
 
 			/* Treasure, centered at the center of the cross */
-			vault_objects(y0, x0, p_ptr->depth, 2 + randint1(2));
+			vault_objects(c, y0, x0, p_ptr->depth, 2 + randint1(2));
 
 			/* Gotta have some monsters */
 			vault_monsters(c, y0 + 1, x0 - 4, p_ptr->depth + 2, randint1(4));
@@ -1855,7 +1815,7 @@ static void build_type5(struct cave *c, int y0, int x0)
 
 			/* Occasionally place an item, making it good 1/3 of the time */
 			if (one_in_(alloc_obj)) 
-				place_object(y, x, p_ptr->depth + 10, one_in_(3), FALSE);
+				place_object(c, y, x, p_ptr->depth + 10, one_in_(3), FALSE);
 		}
 	}
 }
@@ -2266,7 +2226,7 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cptr
 				{
 					if (randint0(100) < 75)
 					{
-						place_object(y, x, p_ptr->depth, FALSE, FALSE);
+						place_object(c, y, x, p_ptr->depth, FALSE, FALSE);
 					}
 					else
 					{
@@ -2326,7 +2286,7 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cptr
 				case '9':
 				{
 					place_monster(c, y, x, p_ptr->depth + 9, TRUE, TRUE);
-					place_object(y, x, p_ptr->depth + 7, TRUE, FALSE);
+					place_object(c, y, x, p_ptr->depth + 7, TRUE, FALSE);
 					break;
 				}
 
@@ -2334,7 +2294,7 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cptr
 				case '8':
 				{
 					place_monster(c, y, x, p_ptr->depth + 40, TRUE, TRUE);
-					place_object(y, x, p_ptr->depth + 20, TRUE, FALSE);
+					place_object(c, y, x, p_ptr->depth + 20, TRUE, FALSE);
 					break;
 				}
 
@@ -2345,7 +2305,7 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cptr
 						place_monster(c, y, x, p_ptr->depth + 3, TRUE, TRUE);
 
 					if (randint0(100) < 50)
-						place_object(y, x, p_ptr->depth + 7, FALSE, FALSE);
+						place_object(c, y, x, p_ptr->depth + 7, FALSE, FALSE);
 
 					break;
 				}
@@ -2909,7 +2869,7 @@ static void cave_gen(struct cave *c)
 
 	bool blocks_tried[MAX_ROOMS_ROW][MAX_ROOMS_COL];
 
-	dun_data dun_body;
+	struct dun_data dun_body;
 
 	/* Possibly generate fewer rooms in a smaller area via a scaling factor.
 	 * Since we scale row_rooms and col_rooms by the same amount, DUN_ROOMS
