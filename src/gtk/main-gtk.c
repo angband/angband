@@ -203,9 +203,9 @@ gboolean on_big_tiles(GtkWidget *widget, GdkEventButton *event, gpointer user_da
 	term_data *td = &data[0];
 	
 	if ((widget != NULL) && (!gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget))))
-		use_bigtile = FALSE;
+		tile_width = 1;
 	else
-		use_bigtile = TRUE;
+		tile_width = 2;
 	
 	load_font_by_name(td, td->font.name);
 	term_data_redraw(td);
@@ -727,16 +727,8 @@ static void load_font_by_name(term_data *td, cptr font_name)
 	if (td->font.size == 0) td->font.size = 12;
 	get_font_size(&td->font);
 	
-	if (use_bigtile)
-	{
-		td->actual.w = td->font.w * 2;
-		td->actual.h = td->font.h;
-	}
-	else
-	{
-		td->actual.w = td->font.w;
-		td->actual.h = td->font.h;
-	}
+	td->actual.w = td->font.w * tile_width;
+	td->actual.h = td->font.h;
 	
 	td->size.w = td->cols * td->font.w;
 	td->size.h = td->rows * td->font.h;
@@ -1092,7 +1084,7 @@ static void save_prefs(void)
 	file_putf(fff, "[General Settings]\n");
 	/* Graphics setting */
 	file_putf(fff,"Tile set=%d\n", arg_graphics);
-	file_putf(fff,"Big Tiles=%d\n", use_bigtile);
+	file_putf(fff,"Tile Width=%d\n", tile_width);
 
 	/* New section */
 	file_putf(fff, "\n");
@@ -1227,11 +1219,11 @@ static void load_term_prefs()
 				arg_graphics = val;
 				continue;
 			}
-			if (prefix(buf, "Big Tiles="))
+			if (prefix(buf, "Tile Width="))
 			{
 				val = get_value(buf);
-				sscanf(buf, "Big Tiles=%d", &val);
-				use_bigtile = val;
+				sscanf(buf, "Tile Width=%d", &val);
+				tile_width = val;
 				continue;
 			}
 		}
@@ -1937,7 +1929,7 @@ static void show_windows(void)
 			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(xd->menu),TRUE);
 	}
 	
-	if ((use_bigtile) && (big_tile_item != NULL))
+	if ((tile_width == 2) && (big_tile_item != NULL))
 		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(big_tile_item), TRUE);
 }
 
@@ -2494,7 +2486,7 @@ static void cr_print_equippy(xtra_win_data *xd, int y)
 	object_type *o_ptr;
 
 	/* No equippy chars if  we're in bigtile mode or creating a char */
-	if ((use_bigtile) || (arg_graphics != 0) || (!character_generated))
+	if ((tile_width == 2) || (arg_graphics != 0) || (!character_generated))
 	{
 		return;
 	}

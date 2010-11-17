@@ -215,7 +215,7 @@ extern void big_pad(int col, int row, byte a, byte c)
 
 	if ((tile_width > 1) || (tile_height > 1))
 	{
-	        Term_big_putch(col, row, ta, tc);
+	        Term_big_putch(col, row, a, c);
 	}
 }
 

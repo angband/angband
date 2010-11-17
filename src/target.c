@@ -496,8 +496,9 @@ bool adjust_panel_help(int y, int x, bool help)
 		screen_hgt = (j == 0) ? screen_hgt_main : t->hgt;
 		screen_wid = (j == 0) ? (Term->wid - COL_MAP - 1) : t->wid;
 
-		/* Bigtile panels only have half the width */
-		if (use_bigtile) screen_wid = screen_wid / 2;
+		/* Bigtile panels need adjustment */
+		screen_wid = screen_wid / tile_width;
+		screen_hgt = screen_hgt / tile_height;
 
 		/* Adjust as needed */
 		while (y >= wy + screen_hgt) wy += screen_hgt / 2;

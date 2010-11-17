@@ -333,8 +333,8 @@ struct term
 /**** Available Variables ****/
 
 extern term *Term;
-extern int tile_width;
-extern int tile_height;
+extern byte tile_width;
+extern byte tile_height;
 
 
 /**** Available Functions ****/

@@ -1756,39 +1756,6 @@ static void MoreActivate(sdl_Button *sender)
 	sdl_ButtonVisible(button, TRUE);
 	button->activate = HeightChange;
 	
-	/*        MoreBigtile = sdl_ButtonBankNew(&PopUp.buttons);
-        button1 = sdl_ButtonBankGet(&PopUp.buttons, MoreBigtile);
-        
-        button1->unsel_colour = ucolour;
-        button1->sel_colour = scolour;
-        sdl_ButtonSize(button1, 50 , PopUp.font.height + 2);
-        sdl_ButtonVisible(button1, TRUE);
-        sdl_ButtonCaption(button1, use_bigtile ? "On" : "Off");
-        button1->tag = use_bigtile;
-        button1->activate = FlipTag;
-        
-        MoreDbltile = sdl_ButtonBankNew(&PopUp.buttons);
-        button2 = sdl_ButtonBankGet(&PopUp.buttons, MoreDbltile);
-        
-        button2->unsel_colour = ucolour;
-        button2->sel_colour = scolour;
-        sdl_ButtonSize(button2, 50 , PopUp.font.height + 2);
-        sdl_ButtonVisible(button2, TRUE);
-        sdl_ButtonCaption(button2, use_dbltile ? "On" : "Off");
-        button2->tag = use_dbltile;
-        button2->activate = FlipTag;
-        
-        MoreTrptile = sdl_ButtonBankNew(&PopUp.buttons);
-        button3 = sdl_ButtonBankGet(&PopUp.buttons, MoreTrptile);
-        
-        button3->unsel_colour = ucolour;
-        button3->sel_colour = scolour;
-        sdl_ButtonSize(button3, 50 , PopUp.font.height + 2);
-        sdl_ButtonVisible(button3, TRUE);
-        sdl_ButtonCaption(button3, use_trptile ? "On" : "Off");
-        button3->tag = use_trptile;
-        button3->activate = FlipTag;*/
-        
 	SelectedGfx = use_graphics;
 	
 	for (i = 0; i < GfxModes; i++)

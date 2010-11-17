@@ -854,28 +854,29 @@ static void term_getsize(term_data *td)
                 
               }
             
-            use_trptile = FALSE;
-            use_dbltile = FALSE;
-            use_bigtile = FALSE;
-            
+	    tile_width = 1;
+	    tile_height = 1;
+
             if ((td->tile_hgt >= td->font_hgt * 3) && 
                 (td->tile_wid >= td->font_wid * 3))
               {
-                use_trptile = TRUE;
+                tile_width = 3;
+                tile_height = 3;
                 td->tile_wid /= 3;
                 td->tile_hgt /= 3;
               }
             else if ((td->tile_hgt >= td->font_hgt * 2) && 
                      (td->tile_wid >= td->font_wid * 2))
               {
-                use_dbltile = TRUE;
+                tile_width = 2;
+                tile_height = 2;
                 td->tile_wid /= 2;
                 td->tile_hgt /= 2;
               }
             
             if (td->tile_wid >= td->font_wid * 2)
               {
-                use_bigtile = TRUE;
+                tile_width *= 2;
                 td->tile_wid /= 2;
               }
             
@@ -1000,18 +1001,13 @@ static void save_prefs(void)
         strcpy(buf, arg_graphics_nice ? "1" : "0");
         WritePrivateProfileString("Angband", "Graphics_Nice", buf, ini_file);
 
-        /* Save the "use_trptile" flag */
-        strcpy(buf, use_trptile ? "1" : "0");
-        WritePrivateProfileString("Angband", "Trptile", buf, ini_file);
+        /* Save the tile width */
+        wsprintf(buf, "%d", tile_width);
+        WritePrivateProfileString("Angband", "TileWidth", buf, ini_file);
 
-        /* Save the "use_dbltile" flag */
-        strcpy(buf, use_dbltile ? "1" : "0");
-        WritePrivateProfileString("Angband", "Dbltile", buf, ini_file);
-
-	/* Save the "use_bigtile" flag */
-	strcpy(buf, use_bigtile ? "1" : "0");
-	WritePrivateProfileString("Angband", "Bigtile", buf, ini_file);
-
+        /* Save the tile height */
+        wsprintf(buf, "%d", tile_height);
+        WritePrivateProfileString("Angband", "TileHeight", buf, ini_file);
 
 	/* Save window prefs */
 	for (i = 0; i < MAX_TERM_DATA; i++)
@@ -1078,14 +1074,11 @@ static void load_prefs(void)
         /* Extract the "arg_graphics_nice" flag */
         arg_graphics_nice = GetPrivateProfileInt("Angband", "Graphics_Nice", TRUE, ini_file);
 
-        /* Extract the "use_trptile" flag */
-        use_trptile = GetPrivateProfileInt("Angband", "Trptile", FALSE, ini_file);
+	/* Extract the tile width */
+	tile_width = GetPrivateProfileInt("Angband", "TileWidth", FALSE, ini_file);
 
-        /* Extract the "use_dbltile" flag */
-        use_dbltile = GetPrivateProfileInt("Angband", "Dbltile", FALSE, ini_file);
-
-	/* Extract the "use_bigtile" flag */
-	use_bigtile = GetPrivateProfileInt("Angband", "Bigtile", FALSE, ini_file);
+	/* Extract the tile height */
+	tile_height = GetPrivateProfileInt("Angband", "TileHeight", FALSE, ini_file);
 
 	/* Extract the "arg_wizard" flag */
 	arg_wizard = (GetPrivateProfileInt("Angband", "Wizard", 0, ini_file) != 0);
@@ -2213,9 +2206,9 @@ static errr Term_bigcurs_win(int x, int y)
 
 	/* Frame the grid */
 	rc.left = x * tile_wid + td->size_ow1;
-        rc.right = rc.left + ((use_trptile && use_bigtile) ? 6 : (use_trptile ? 3 : ((use_dbltile && use_bigtile) ? 4 : 2))) * tile_wid;
+        rc.right = rc.left + tile_width * tile_wid;
 	rc.top = y * tile_hgt + td->size_oh1;
-        rc.bottom = rc.top + (use_trptile ? 3 : (use_dbltile ? 2 : 1)) * tile_hgt;
+        rc.bottom = rc.top + tile_height * tile_hgt;
 
 	/* Cursor is done as a yellow "box" */
 	hdc = GetDC(td->w);
@@ -2407,24 +2400,9 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 		w2 = td->tile_wid;
 		h2 = td->tile_hgt;
 
-                /* Triple tile mode */
-                if (use_trptile)
-                        th2 = 3 * h2;
-                else if (use_dbltile)
-                        th2 = 2 * h2;
-                else
-                        th2 = h2;
-
-                /* Triple tile mode */
-                if (use_trptile)
-                        tw2 = (use_bigtile ? 6 : 3) * w2;
-                else if (use_dbltile)
-                        tw2 = (use_bigtile ? 4 : 2) * w2;
-                /* big tile mode */
-                else if (use_bigtile)
-			tw2 = 2 * w2;
-		else
-			tw2 = w2;
+                /* Large tile mode */
+		th2 = tile_height * h2;
+		tw2 = tile_width * w2;
 	}
 
 	/* Location of window cell */
@@ -3061,11 +3039,11 @@ static void setup_menus(void)
         CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE,
                       (arg_graphics_nice ? MF_CHECKED : MF_UNCHECKED));
         CheckMenuItem(hm, IDM_OPTIONS_TRPTILE,
-                      (use_trptile ? MF_CHECKED : MF_UNCHECKED));
+                      (tile_height = 3 ? MF_CHECKED : MF_UNCHECKED));
         CheckMenuItem(hm, IDM_OPTIONS_DBLTILE,
-                      (use_dbltile ? MF_CHECKED : MF_UNCHECKED));
+                      (tile_height == 2 ? MF_CHECKED : MF_UNCHECKED));
 	CheckMenuItem(hm, IDM_OPTIONS_BIGTILE,
-	              (use_bigtile ? MF_CHECKED : MF_UNCHECKED));
+	              (tile_width == (2 * tile_height) ? MF_CHECKED : MF_UNCHECKED));
 
 #ifdef USE_SAVER
 	CheckMenuItem(hm, IDM_OPTIONS_SAVER,
@@ -3728,11 +3706,21 @@ static void process_menus(WORD wCmd)
                                 break;
                         }
 
-                        /* Toggle "use_trptile" */
-                        use_trptile = !use_trptile;
+                        /* Reduce... */
+			if (tile_height == 3)
+			{
+			        tile_width /= 3;
+			        tile_height /= 3;
+			}
 
-                        /* Cancel "use_dbltile" */
-                        use_dbltile = FALSE;
+                        /* ...or increase */
+			else
+			{
+			        tile_width /= tile_height;
+			        tile_width *= 3;
+			        tile_height = 3;
+			}
+
 
                         /* Set flag */
                         change_tilesize = TRUE;
@@ -3755,11 +3743,20 @@ static void process_menus(WORD wCmd)
                                 break;
                                 }
 
-                        /* Toggle "use_dbltile" */
-                        use_dbltile = !use_dbltile;
+                        /* Reduce... */
+			if (tile_height == 2)
+			{
+			        tile_width /= 2;
+			        tile_height /= 2;
+			}
 
-                        /* Cancel "use_trptile" */
-                        use_trptile = FALSE;
+                        /* ...or increase */
+			else
+			{
+			        tile_width /= tile_height;
+			        tile_height = 2;
+			        tile_width *= tile_height;
+			}
 
                         /* Set flag */
                         change_tilesize = TRUE;
@@ -3782,10 +3779,19 @@ static void process_menus(WORD wCmd)
 				break;
 			}
 
-			/* Toggle "use_bigtile" */
-			use_bigtile = !use_bigtile;
+                        /* Reduce... */
+			if (tile_height != tile_width)
+			{
+			        tile_width = tile_height;
+			}
 
-                        /* Set flag */
+                        /* ...or increase */
+			else
+			{
+			        tile_width *= 2;
+			}
+
+                       /* Set flag */
                         change_tilesize = TRUE;
 
                         /* React to changes */

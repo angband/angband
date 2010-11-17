@@ -3885,9 +3885,11 @@ void display_itemlist(void)
 		c = object_kind_char(o_ptr->k_idx);
 
 		/* Display the pict */
-		Term_putch(cur_x++, line, a, c);
-		if (use_bigtile) Term_putch(cur_x++, line, 255, -1);
-		Term_putch(cur_x++, line, TERM_WHITE, ' ');
+		if ((tile_width == 1) && (tile_height == 1))
+		{
+		        Term_putch(cur_x++, line, a, c);
+			Term_putch(cur_x++, line, TERM_WHITE, ' ');
+		}
 
 		/* Print and bump line counter */
 		c_prt(attr, o_desc, line, cur_x);
