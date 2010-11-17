@@ -68,7 +68,9 @@ OSX_OBJS = main-crb.o
 
 
 $(EXE).o: $(OBJS)
-	$(LD) -r -o $@ $(OBJS)
+	$(LD) -r -arch ppc -o $@.ppc $(OBJS)
+	$(LD) -r -arch i386 -o $@.i386 $(OBJS)
+	lipo -arch ppc $@.ppc -arch i386 $@.i386 -create -output angband.o
 
 $(EXE): $(EXE).o $(OSX_OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $(EXE) $(EXE).o $(OSX_OBJS) $(LIBS) 
@@ -84,7 +86,7 @@ borg: $(OBJS) $(BOBJS)
 #
 
 clean:
-	-rm -f $(OBJS) $(EXE) $(EXE).o $(OSX_OBJS)
+	-rm -f $(OBJS) $(EXE) $(EXE).o.ppc $(EXE).o.i386 $(EXE).o $(OSX_OBJS)
 
 
 #
