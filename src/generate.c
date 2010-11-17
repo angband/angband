@@ -367,55 +367,37 @@ static void place_down_stairs(struct cave *c, int y, int x)
 
 static void place_random_stairs(struct cave *c, int y, int x)
 {
-	if (!cave_clean_bold(y, x)) return;
+	if (!cave_canputitem(c, y, x))
+		return;
 
 	if (!p_ptr->depth)
-	{
 		place_down_stairs(c, y, x);
-	}
 	else if (is_quest(p_ptr->depth) || (p_ptr->depth >= MAX_DEPTH-1))
-	{
 		place_up_stairs(c, y, x);
-	}
 	else if (randint0(100) < 50)
-	{
 		place_down_stairs(c, y, x);
-	}
 	else
-	{
 		place_up_stairs(c, y, x);
-	}
 }
 
-/*
- * Attempt to place an object (normal or good/great) at the given location.
- */
 void place_object(struct cave *c, int y, int x, int level, bool good, bool great)
 {
-	object_type *i_ptr;
-	object_type object_type_body;
+	object_type otype;
 
-	if (!in_bounds(y, x))
-		return;
+	assert(cave_in_bounds(c, y, x));
 
 	if (!cave_canputitem(c, y, x))
 		return;
 
-	/* Get local object */
-	i_ptr = &object_type_body;
-
-	/* Wipe the object */
-	object_wipe(i_ptr);
-
-	/* Make an object (if possible) */
-	if (make_object(i_ptr, level, good, great)) {
-		i_ptr->origin = ORIGIN_FLOOR;
-		i_ptr->origin_depth = p_ptr->depth;
+	object_wipe(&otype);
+	if (make_object(&otype, level, good, great)) {
+		otype.origin = ORIGIN_FLOOR;
+		otype.origin_depth = p_ptr->depth;
 
 		/* Give it to the floor */
-		if (!floor_carry(y, x, i_ptr)) {
+		if (!floor_carry(y, x, &otype)) {
 			/* XXX Should this be done in floor_carry? */
-			a_info[i_ptr->name1].created = FALSE;
+			a_info[otype.name1].created = FALSE;
 		}
 	}
 }
@@ -425,8 +407,7 @@ void place_gold(struct cave *c, int y, int x, int level)
 	object_type *i_ptr;
 	object_type object_type_body;
 
-	if (!in_bounds(y, x))
-		return;
+	assert(cave_in_bounds(c, y, x));
 
 	if (!cave_canputitem(c, y, x))
 		return;
@@ -439,90 +420,40 @@ void place_gold(struct cave *c, int y, int x, int level)
 
 void place_secret_door(struct cave *c, int y, int x)
 {
-	/* Create secret door */
 	cave_set_feat(c, y, x, FEAT_SECRET);
 }
 
-
-/*
- * Place a random type of closed door at the given location.
- */
 void place_closed_door(struct cave *c, int y, int x)
 {
-	int tmp;
+	int tmp = randint0(400);
 
-	/* Choose an object */
-	tmp = randint0(400);
-
-	/* Closed doors (300/400) */
 	if (tmp < 300)
-	{
-		/* Create closed door */
 		cave_set_feat(c, y, x, FEAT_DOOR_HEAD + 0x00);
-	}
-
-	/* Locked doors (99/400) */
 	else if (tmp < 399)
-	{
-		/* Create locked door */
 		cave_set_feat(c, y, x, FEAT_DOOR_HEAD + randint1(7));
-	}
-
-	/* Stuck doors (1/400) */
 	else
-	{
-		/* Create jammed door */
 		cave_set_feat(c, y, x, FEAT_DOOR_HEAD + 0x08 + randint0(8));
-	}
 }
 
-
-/*
- * Place a random type of door at the given location.
- */
 void place_random_door(struct cave *c, int y, int x)
 {
-	int tmp;
+	int tmp = randint0(1000);
 
-	/* Choose an object */
-	tmp = randint0(1000);
-
-	/* Open doors (300/1000) */
 	if (tmp < 300)
-	{
-		/* Create open door */
 		cave_set_feat(c, y, x, FEAT_OPEN);
-	}
-
-	/* Broken doors (100/1000) */
 	else if (tmp < 400)
-	{
-		/* Create broken door */
 		cave_set_feat(c, y, x, FEAT_BROKEN);
-	}
-
-	/* Secret doors (200/1000) */
 	else if (tmp < 600)
-	{
-		/* Create secret door */
 		cave_set_feat(c, y, x, FEAT_SECRET);
-	}
-
-	/* Closed, locked, or stuck doors (400/1000) */
 	else
-	{
-		/* Create closed door */
 		place_closed_door(c, y, x);
-	}
 }
-
-
-
-
-
 
 /*
  * Places some staircases near walls
+ * XXX: Might loop infinitely if there are no free spaces for stairs. This
+ * method is stupid - we should just collect all the plausible places and
+ * allocate stairs into those in random order. Fix me!
  */
 static void alloc_stairs(struct cave *c, int feat, int num, int walls)
 {
@@ -542,32 +473,19 @@ static void alloc_stairs(struct cave *c, int feat, int num, int walls)
 				y = randint0(c->height);
 				x = randint0(c->width);
 
-				/* Require "naked" floor grid */
-				if (!cave_naked_bold(y, x)) continue;
+				if (!cave_isempty(c, y, x))
+					continue;
 
-				/* Require a certain number of adjacent walls */
-				if (next_to_walls(c, y, x) < walls) continue;
+				if (next_to_walls(c, y, x) < walls)
+					continue;
 
 				/* Town -- must go down */
 				if (!p_ptr->depth)
-				{
-					/* Clear previous contents, add down stairs */
 					cave_set_feat(c, y, x, FEAT_MORE);
-				}
-
-				/* Quest -- must go up */
 				else if (is_quest(p_ptr->depth) || (p_ptr->depth >= MAX_DEPTH-1))
-				{
-					/* Clear previous contents, add up stairs */
 					cave_set_feat(c, y, x, FEAT_LESS);
-				}
-
-				/* Requested type */
 				else
-				{
-					/* Clear previous contents, add stairs */
 					cave_set_feat(c, y, x, feat);
-				}
 
 				/* All done */
 				flag = TRUE;
@@ -604,10 +522,10 @@ static void alloc_object(struct cave *c, int set, int typ, int num, int depth)
 			x = randint0(c->width);
 
 			/* Require "naked" floor grid */
-			if (!cave_naked_bold(y, x)) continue;
+			if (!cave_isempty(c, y, x)) continue;
 
 			/* Check for "room" */
-			room = (cave_info[y][x] & (CAVE_ROOM)) ? TRUE : FALSE;
+			room = (c->info[y][x] & CAVE_ROOM) ? TRUE : FALSE;
 
 			/* Require corridor? */
 			if ((set == ALLOC_SET_CORR) && room) continue;
@@ -685,19 +603,20 @@ static void build_streamer(struct cave *c, int feat, int chance)
 			{
 				ty = rand_spread(y, d);
 				tx = rand_spread(x, d);
-				if (!in_bounds(ty, tx)) continue;
+				if (!cave_in_bounds(c, ty, tx)) continue;
 				break;
 			}
 
 			/* Only convert "granite" walls */
-			if (cave_feat[ty][tx] < FEAT_WALL_EXTRA) continue;
-			if (cave_feat[ty][tx] > FEAT_WALL_SOLID) continue;
+			if (c->feat[ty][tx] < FEAT_WALL_EXTRA) continue;
+			if (c->feat[ty][tx] > FEAT_WALL_SOLID) continue;
 
 			/* Clear previous contents, add proper vein type */
 			cave_set_feat(c, ty, tx, feat);
 
 			/* Hack -- Add some (known) treasure */
-			if (one_in_(chance)) cave_feat[ty][tx] += 0x04;
+			/* XXX: 0x04? Seriously? */
+			if (one_in_(chance)) c->feat[ty][tx] += 0x04;
 		}
 
 		/* Advance the streamer */
@@ -705,7 +624,7 @@ static void build_streamer(struct cave *c, int feat, int chance)
 		x += ddx[dir];
 
 		/* Stop at dungeon edge */
-		if (!in_bounds(y, x)) break;
+		if (!cave_in_bounds(c, y, x)) break;
 	}
 }
 
@@ -734,7 +653,7 @@ static void vault_objects(struct cave *c, int y, int x, int depth, int num)
 			}
 
 			/* Require "clean" floor space */
-			if (!cave_clean_bold(j, k)) continue;
+			if (!cave_canputitem(c, j, k)) continue;
 
 			/* Place an item */
 			if (randint0(100) < 75)
@@ -834,7 +753,7 @@ static void vault_monsters(struct cave *c, int y1, int x1, int depth, int num)
 /*
  * Generate helper -- create a new room with optional light
  */
-static void generate_room(int y1, int x1, int y2, int x2, int light)
+static void generate_room(struct cave *c, int y1, int x1, int y2, int x2, int light)
 {
 	int y, x;
 
@@ -842,8 +761,9 @@ static void generate_room(int y1, int x1, int y2, int x2, int light)
 	{
 		for (x = x1; x <= x2; x++)
 		{
-			cave_info[y][x] |= (CAVE_ROOM);
-			if (light) cave_info[y][x] |= (CAVE_GLOW);
+			c->info[y][x] |= CAVE_ROOM;
+			if (light)
+				c->info[y][x] |= CAVE_GLOW;
 		}
 	}
 }
@@ -1003,7 +923,7 @@ static void build_type1(struct cave *c, int y0, int x0)
 
 
 	/* Generate new room */
-	generate_room(y1-1, x1-1, y2+1, x2+1, light);
+	generate_room(c, y1-1, x1-1, y2+1, x2+1, light);
 
 	/* Generate outer walls */
 	generate_draw(c, y1-1, x1-1, y2+1, x2+1, FEAT_WALL_OUTER);
@@ -1072,10 +992,10 @@ static void build_type2(struct cave *c, int y0, int x0)
 
 
 	/* Generate new room (a) */
-	generate_room(y1a-1, x1a-1, y2a+1, x2a+1, light);
+	generate_room(c, y1a-1, x1a-1, y2a+1, x2a+1, light);
 
 	/* Generate new room (b) */
-	generate_room(y1b-1, x1b-1, y2b+1, x2b+1, light);
+	generate_room(c, y1b-1, x1b-1, y2b+1, x2b+1, light);
 
 	/* Generate outer walls (a) */
 	generate_draw(c, y1a-1, x1a-1, y2a+1, x2a+1, FEAT_WALL_OUTER);
@@ -1141,10 +1061,10 @@ static void build_type3(struct cave *c, int y0, int x0)
 
 
 	/* Generate new room (a) */
-	generate_room(y1a-1, x1a-1, y2a+1, x2a+1, light);
+	generate_room(c, y1a-1, x1a-1, y2a+1, x2a+1, light);
 
 	/* Generate new room (b) */
-	generate_room(y1b-1, x1b-1, y2b+1, x2b+1, light);
+	generate_room(c, y1b-1, x1b-1, y2b+1, x2b+1, light);
 
 	/* Generate outer walls (a) */
 	generate_draw(c, y1a-1, x1a-1, y2a+1, x2a+1, FEAT_WALL_OUTER);
@@ -1274,7 +1194,7 @@ static void build_type4(struct cave *c, int y0, int x0)
 
 
 	/* Generate new room */
-	generate_room(y1-1, x1-1, y2+1, x2+1, light);
+	generate_room(c, y1-1, x1-1, y2+1, x2+1, light);
 
 	/* Generate outer walls */
 	generate_draw(c, y1-1, x1-1, y2+1, x2+1, FEAT_WALL_OUTER);
@@ -1694,7 +1614,7 @@ static void build_type5(struct cave *c, int y0, int x0)
 
 
 	/* Generate new room */
-	generate_room(y1-1, x1-1, y2+1, x2+1, light);
+	generate_room(c, y1-1, x1-1, y2+1, x2+1, light);
 
 	/* Generate outer walls */
 	generate_draw(c, y1-1, x1-1, y2+1, x2+1, FEAT_WALL_OUTER);
@@ -1886,7 +1806,7 @@ static void build_type6(struct cave *c, int y0, int x0)
 
 
 	/* Generate new room */
-	generate_room(y1-1, x1-1, y2+1, x2+1, light);
+	generate_room(c, y1-1, x1-1, y2+1, x2+1, light);
 
 	/* Generate outer walls */
 	generate_draw(c, y1-1, x1-1, y2+1, x2+1, FEAT_WALL_OUTER);
@@ -2195,7 +2115,7 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cptr
 			cave_set_feat(c, y, x, FEAT_FLOOR);
 
 			/* Part of a vault */
-			cave_info[y][x] |= (CAVE_ROOM | CAVE_ICKY);
+			c->info[y][x] |= (CAVE_ROOM | CAVE_ICKY);
 
 			/* Analyze the grid */
 			switch (*t)
@@ -2420,8 +2340,6 @@ static void build_type9(struct cave *c, int y0, int x0)
 	build_vault(c, y0, x0, v_ptr->hgt, v_ptr->wid, v_ptr->text);
 }
 
-
-
 /*
  * Constructs a tunnel between two points
  *
@@ -2466,8 +2384,6 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 
 	bool door_flag = FALSE;
 
-
-
 	/* Reset the arrays */
 	dun->tunn_n = 0;
 	dun->wall_n = 0;
@@ -2502,8 +2418,6 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 		tmp_row = row1 + row_dir;
 		tmp_col = col1 + col_dir;
 
-
-		/* Do not leave the dungeon!!! XXX XXX */
 		while (!in_bounds_fully(tmp_row, tmp_col))
 		{
 			/* Get the correct direction */
@@ -2522,28 +2436,28 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 
 
 		/* Avoid the edge of the dungeon */
-		if (cave_feat[tmp_row][tmp_col] == FEAT_PERM_SOLID) continue;
+		if (c->feat[tmp_row][tmp_col] == FEAT_PERM_SOLID) continue;
 
 		/* Avoid the edge of vaults */
-		if (cave_feat[tmp_row][tmp_col] == FEAT_PERM_OUTER) continue;
+		if (c->feat[tmp_row][tmp_col] == FEAT_PERM_OUTER) continue;
 
 		/* Avoid "solid" granite walls */
-		if (cave_feat[tmp_row][tmp_col] == FEAT_WALL_SOLID) continue;
+		if (c->feat[tmp_row][tmp_col] == FEAT_WALL_SOLID) continue;
 
 		/* Pierce "outer" walls of rooms */
-		if (cave_feat[tmp_row][tmp_col] == FEAT_WALL_OUTER)
+		if (c->feat[tmp_row][tmp_col] == FEAT_WALL_OUTER)
 		{
 			/* Get the "next" location */
 			y = tmp_row + row_dir;
 			x = tmp_col + col_dir;
 
 			/* Hack -- Avoid outer/solid permanent walls */
-			if (cave_feat[y][x] == FEAT_PERM_SOLID) continue;
-			if (cave_feat[y][x] == FEAT_PERM_OUTER) continue;
+			if (c->feat[y][x] == FEAT_PERM_SOLID) continue;
+			if (c->feat[y][x] == FEAT_PERM_OUTER) continue;
 
 			/* Hack -- Avoid outer/solid granite walls */
-			if (cave_feat[y][x] == FEAT_WALL_OUTER) continue;
-			if (cave_feat[y][x] == FEAT_WALL_SOLID) continue;
+			if (c->feat[y][x] == FEAT_WALL_OUTER) continue;
+			if (c->feat[y][x] == FEAT_WALL_SOLID) continue;
 
 			/* Accept this location */
 			row1 = tmp_row;
@@ -2563,7 +2477,7 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 				for (x = col1 - 1; x <= col1 + 1; x++)
 				{
 					/* Convert adjacent "outer" walls as "solid" walls */
-					if (cave_feat[y][x] == FEAT_WALL_OUTER)
+					if (c->feat[y][x] == FEAT_WALL_OUTER)
 					{
 						/* Change the wall to a "solid" wall */
 						cave_set_feat(c, y, x, FEAT_WALL_SOLID);
@@ -2573,7 +2487,7 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 		}
 
 		/* Travel quickly through rooms */
-		else if (cave_info[tmp_row][tmp_col] & (CAVE_ROOM))
+		else if (c->info[tmp_row][tmp_col] & (CAVE_ROOM))
 		{
 			/* Accept the location */
 			row1 = tmp_row;
@@ -2581,7 +2495,7 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 		}
 
 		/* Tunnel through all other walls */
-		else if (cave_feat[tmp_row][tmp_col] >= FEAT_WALL_EXTRA)
+		else if (c->feat[tmp_row][tmp_col] >= FEAT_WALL_EXTRA)
 		{
 			/* Accept this location */
 			row1 = tmp_row;
@@ -2670,22 +2584,18 @@ static void build_tunnel(struct cave *c, int row1, int col1, int row2, int col2)
 	}
 }
 
-
-
-
 /*
  * Count the number of "corridor" grids adjacent to the given grid.
- *
- * Note -- Assumes "in_bounds_fully(y1, x1)"
  *
  * This routine currently only counts actual "empty floor" grids
  * which are not in rooms.  We might want to also count stairs,
  * open doors, closed doors, etc.  XXX XXX
  */
-static int next_to_corr(int y1, int x1)
+static int next_to_corr(struct cave *c, int y1, int x1)
 {
 	int i, y, x, k = 0;
 
+	assert(cave_in_bounds_fully(c, y1, x1));
 
 	/* Scan adjacent grids */
 	for (i = 0; i < 4; i++)
@@ -2695,51 +2605,43 @@ static int next_to_corr(int y1, int x1)
 		x = x1 + ddx_ddd[i];
 
 		/* Skip non floors */
-		if (!cave_floor_bold(y, x)) continue;
+		if (!cave_isfloor(c, y, x)) continue;
 
 		/* Skip non "empty floor" grids */
-		if (cave_feat[y][x] != FEAT_FLOOR) continue;
+		if (c->feat[y][x] != FEAT_FLOOR) continue;
 
 		/* Skip grids inside rooms */
-		if (cave_info[y][x] & (CAVE_ROOM)) continue;
+		if (c->info[y][x] & CAVE_ROOM) continue;
 
 		/* Count these grids */
 		k++;
 	}
 
 	/* Return the number of corridors */
-	return (k);
+	return k;
 }
 
-
-/*
- * Determine if the given location is "between" two walls,
- * and "next to" two corridor spaces.  XXX XXX XXX
- *
- * Assumes "in_bounds_fully(y,x)"
+/* Returns whether a doorway can be built in a space. To have a doorway, a space
+ * must be adjacent to at least two corridors and be between two walls.
  */
-static bool possible_doorway(int y, int x)
+static bool possible_doorway(struct cave *c, int y, int x)
 {
-	/* Count the adjacent corridors */
-	if (next_to_corr(y, x) >= 2)
-	{
-		/* Check Vertical */
-		if ((cave_feat[y-1][x] >= FEAT_MAGMA) &&
-		    (cave_feat[y+1][x] >= FEAT_MAGMA))
-		{
-			return (TRUE);
-		}
+	assert(cave_in_bounds_fully(c, y, x));
 
-		/* Check Horizontal */
-		if ((cave_feat[y][x-1] >= FEAT_MAGMA) &&
-		    (cave_feat[y][x+1] >= FEAT_MAGMA))
-		{
-			return (TRUE);
-		}
-	}
+	if (next_to_corr(c, y, x) < 2)
+		return FALSE;
 
-	/* No doorway */
-	return (FALSE);
+	/* Check Vertical */
+	if ((c->feat[y-1][x] >= FEAT_MAGMA) &&
+	    (c->feat[y+1][x] >= FEAT_MAGMA))
+		return TRUE;
+
+	/* Check Horizontal */
+	if ((c->feat[y][x-1] >= FEAT_MAGMA) &&
+	    (c->feat[y][x+1] >= FEAT_MAGMA))
+		return TRUE;
+
+	return FALSE;
 }
 
 
@@ -2748,21 +2650,19 @@ static bool possible_doorway(int y, int x)
  */
 static void try_door(struct cave *c, int y, int x)
 {
-	/* Paranoia */
-	if (!in_bounds(y, x)) return;
+	assert(cave_in_bounds(c, y, x));
 
 	/* Ignore walls */
-	if (cave_feat[y][x] >= FEAT_MAGMA) return;
+	if (c->feat[y][x] >= FEAT_MAGMA)
+		return;
 
 	/* Ignore room grids */
-	if (cave_info[y][x] & (CAVE_ROOM)) return;
+	if (c->info[y][x] & CAVE_ROOM)
+		return;
 
 	/* Occasional door (if allowed) */
-	if ((randint0(100) < DUN_TUN_JCT) && possible_doorway(y, x))
-	{
-		/* Place a door */
+	if ((randint0(100) < DUN_TUN_JCT) && possible_doorway(c, y, x))
 		place_random_door(c, y, x);
-	}
 }
 
 
@@ -2780,6 +2680,7 @@ static bool room_build(struct cave *c, int by0, int bx0, int typ)
 	int by, bx;
 	int by1, bx1, by2, bx2;
 
+	assert(typ > 0 && typ <= 8);
 
 	/* Restrict level */
 	if (p_ptr->depth < room[typ].level) return (FALSE);
@@ -2806,9 +2707,6 @@ static bool room_build(struct cave *c, int by0, int bx0, int typ)
 		}
 	}
 
-	/* It is *extremely* important that the following calculation */
-	/* be *exactly* correct to prevent memory errors XXX XXX XXX */
-
 	/* Get the location of the room */
 	y = ((by1 + by2 + 1) * BLOCK_HGT) / 2;
 	x = ((bx1 + bx2 + 1) * BLOCK_WID) / 2;
@@ -2826,9 +2724,6 @@ static bool room_build(struct cave *c, int by0, int bx0, int typ)
 		case 3: build_type3(c, y, x); break;
 		case 2: build_type2(c, y, x); break;
 		case 1: build_type1(c, y, x); break;
-
-		/* Paranoia */
-		default: return (FALSE);
 	}
 
 	/* Save the room location */
@@ -2852,14 +2747,12 @@ static bool room_build(struct cave *c, int by0, int bx0, int typ)
 	if ((typ == 5) || (typ == 6)) dun->crowded = TRUE;
 
 	/* Success */
-	return (TRUE);
+	return TRUE;
 }
 
 
-/*
- * Generate a new dungeon level
- *
- * Note that "dun_body" adds about 4000 bytes of memory to the stack.
+/** @brief Generate a new dungeon level
+ *  XXX: Needs refactoring.
  */
 static void cave_gen(struct cave *c)
 {
@@ -3147,7 +3040,7 @@ static void cave_gen(struct cave *c)
 					y = randint0(c->height);
 					x = randint0(c->width);
 
-					if (cave_naked_bold(y, x)) break;
+					if (cave_isempty(c, y, x)) break;
 				}
 
 				/* Place the questor */
@@ -3266,15 +3159,16 @@ static void build_store(struct cave *c, int n, int yy, int xx)
 	cave_set_feat(c, y, x, FEAT_SHOP_HEAD + n);
 }
 
-
-
-
 /*
  * Generate the "consistent" town features, and place the player
  *
  * Hack -- play with the R.N.G. to always yield the same town
  * layout, including the size and shape of the buildings, the
  * locations of the doorways, and the location of the stairs.
+ *
+ * XXX: Remove this gross hack when this piece of code is fully reentrant -
+ * i.e., when all we need to do is swing a pointer to change caves, we just need
+ * to generate the town once.
  */
 static void town_gen_hack(struct cave *c)
 {
@@ -3319,7 +3213,7 @@ static void town_gen_hack(struct cave *c)
 		x = rand_range(3, TOWN_WID - 4);
 
 		/* Require a "naked" floor grid */
-		if (cave_naked_bold(y, x)) break;
+		if (cave_isempty(c, y, x)) break;
 	}
 
 	/* Clear previous contents, add down stairs */
@@ -3333,9 +3227,6 @@ static void town_gen_hack(struct cave *c)
 	/* Hack -- use the "complex" RNG */
 	Rand_quick = FALSE;
 }
-
-
-
 
 /*
  * Town logic flow for generation of new town
@@ -3361,27 +3252,23 @@ static void town_gen(struct cave *c)
 
 	assert(c);
 
-	/* Day time */
-	if ((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2))
-	{
-		/* Day time */
+	c->height = TOWN_HGT;
+	c->width = TOWN_WID;
+
+	if ((turn % (10L * TOWN_DAWN)) < ((10L * TOWN_DAWN) / 2)) {
 		daytime = TRUE;
-
-		/* Number of residents */
 		residents = MIN_M_ALLOC_TD;
-	}
-
-	/* Night time */
-	else
-	{
-		/* Night time */
+	} else {
 		daytime = FALSE;
-
-		/* Number of residents */
 		residents = MIN_M_ALLOC_TN;
 	}
 
-	/* Start with solid walls */
+	/* Start with solid walls. We can't use c->height and c->width here
+	 * because then there'll be a bunch of empty space in the level that
+	 * monsters might spawn in (or teleport might take you to, or whatever).
+	 * XXX: fix this to use c->height and c->width when all the 'choose
+	 * random location' things honor them.
+	 */
 	for (y = 0; y < DUNGEON_HGT; y++)
 	{
 		for (x = 0; x < DUNGEON_WID; x++)
@@ -3392,9 +3279,9 @@ static void town_gen(struct cave *c)
 	}
 
 	/* Then place some floors */
-	for (y = 1; y < TOWN_HGT - 1; y++)
+	for (y = 1; y < c->height - 1; y++)
 	{
-		for (x = 1; x < TOWN_WID - 1; x++)
+		for (x = 1; x < c->width - 1; x++)
 		{
 			/* Create empty floor */
 			cave_set_feat(c, y, x, FEAT_FLOOR);
@@ -3405,15 +3292,11 @@ static void town_gen(struct cave *c)
 	town_gen_hack(c);
 
 	/* Apply illumination */
-	town_illuminate(daytime);
+	cave_illuminate(c, daytime);
 
 	/* Make some residents */
 	for (i = 0; i < residents; i++)
-	{
-		/* Make a resident */
-		assert(c);
-		(void)alloc_monster(c, 3, TRUE, p_ptr->depth);
-	}
+		alloc_monster(c, 3, TRUE, p_ptr->depth);
 }
 
 
@@ -3516,8 +3399,6 @@ static int calculate_feeling(struct cave *c, int depth)
  * Hack -- regenerate any "overflow" levels
  *
  * Hack -- allow auto-scumming via a gameplay option.
- *
- * Note that this function resets "cave_feat" and "cave_info" directly.
  */
 void cave_generate(struct cave *c)
 {

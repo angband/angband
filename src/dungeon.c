@@ -480,7 +480,7 @@ static void decrease_timeouts(void)
 /*
  * Handle certain things once every 10 game turns
  */
-static void process_world(void)
+static void process_world(struct cave *c)
 {
 	int i;
 
@@ -522,7 +522,7 @@ static void process_world(void)
 				msg_print("The sun has fallen.");
 
 			/* Illuminate */
-			town_illuminate(dawn);
+			cave_illuminate(c, dawn);
 		}
 	}
 
@@ -1556,7 +1556,7 @@ static void dungeon(struct cave *c)
 
 
 		/* Process the world */
-		process_world();
+		process_world(c);
 
 		/* Notice stuff */
 		if (p_ptr->notice) notice_stuff();

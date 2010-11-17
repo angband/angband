@@ -3313,57 +3313,57 @@ void wiz_dark(void)
 /*
  * Light or Darken the town
  */
-void town_illuminate(bool daytime)
+void cave_illuminate(struct cave *c, bool daytime)
 {
 	int y, x, i;
 
 
 	/* Apply light or darkness */
-	for (y = 0; y < TOWN_HGT; y++)
+	for (y = 0; y < c->height; y++)
 	{
-		for (x = 0; x < TOWN_WID; x++)
+		for (x = 0; x < c->width; x++)
 		{
 			/* Interesting grids */
-			if (cave_feat[y][x] > FEAT_INVIS)
+			if (c->feat[y][x] > FEAT_INVIS)
 			{
 				/* Illuminate the grid */
-				cave_info[y][x] |= (CAVE_GLOW);
+				c->info[y][x] |= (CAVE_GLOW);
 
 				/* Memorize the grid */
-				cave_info[y][x] |= (CAVE_MARK);
+				c->info[y][x] |= (CAVE_MARK);
 			}
 
 			/* Boring grids (light) */
 			else if (daytime)
 			{
 				/* Illuminate the grid */
-				cave_info[y][x] |= (CAVE_GLOW);
+				c->info[y][x] |= (CAVE_GLOW);
 
 				/* Memorize grids */
-				cave_info[y][x] |= (CAVE_MARK);
+				c->info[y][x] |= (CAVE_MARK);
 			}
 
 			/* Boring grids (dark) */
 			else
 			{
 				/* Darken the grid */
-				cave_info[y][x] &= ~(CAVE_GLOW);
+				c->info[y][x] &= ~(CAVE_GLOW);
 
 				/* Forget grids */
-				cave_info[y][x] &= ~(CAVE_MARK);
+				c->info[y][x] &= ~(CAVE_MARK);
 			}
 		}
 	}
 
 
 	/* Handle shop doorways */
-	for (y = 0; y < TOWN_HGT; y++)
+	for (y = 0; y < c->height; y++)
 	{
-		for (x = 0; x < TOWN_WID; x++)
+		for (x = 0; x < c->width; x++)
 		{
 			/* Track shop doorways */
-			if ((cave_feat[y][x] >= FEAT_SHOP_HEAD) &&
-			    (cave_feat[y][x] <= FEAT_SHOP_TAIL))
+			if ((c->feat[y][x] >= FEAT_SHOP_HEAD) &&
+			    (c->feat[y][x] <= FEAT_SHOP_TAIL))
 			{
 				for (i = 0; i < 8; i++)
 				{
@@ -3371,10 +3371,10 @@ void town_illuminate(bool daytime)
 					int xx = x + ddx_ddd[i];
 
 					/* Illuminate the grid */
-					cave_info[yy][xx] |= (CAVE_GLOW);
+					c->info[yy][xx] |= (CAVE_GLOW);
 
 					/* Memorize grids */
-					cave_info[yy][xx] |= (CAVE_MARK);
+					c->info[yy][xx] |= (CAVE_MARK);
 				}
 			}
 		}
@@ -3393,6 +3393,8 @@ void cave_set_feat(struct cave *c, int y, int x, int feat)
 	assert(c);
 	assert(y >= 0 && y < DUNGEON_HGT);
 	assert(x >= 0 && x < DUNGEON_WID);
+	/* XXX: Check against c->height and c->width instead, once everywhere
+	 * honors those... */
 
 	c->feat[y][x] = feat;
 
@@ -3407,7 +3409,15 @@ void cave_set_feat(struct cave *c, int y, int x, int feat)
 	}
 }
 
+bool cave_in_bounds(struct cave *c, int y, int x)
+{
+	return x >= 0 && x < c->width && y >= 0 && y < c->height;
+}
 
+bool cave_in_bounds_fully(struct cave *c, int y, int x)
+{
+	return x > 0 && x < c->width - 1 && y > 0 && y < c->height - 1;
+}
 
 /*
  * Determine the path taken by a projection.
@@ -3912,4 +3922,8 @@ bool cave_isempty(struct cave *c, int y, int x) {
 
 bool cave_canputitem(struct cave *c, int y, int x) {
 	return c->feat[y][x] == FEAT_FLOOR && !c->o_idx[y][x];
+}
+
+bool cave_isfloor(struct cave *c, int y, int x) {
+	return !(c->info[y][x] & CAVE_WALL);
 }

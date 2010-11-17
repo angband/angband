@@ -23,7 +23,6 @@ extern void update_view(void);
 extern void map_area(void);
 extern void wiz_light(void);
 extern void wiz_dark(void);
-extern void town_illuminate(bool daytime);
 extern int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg);
 extern bool projectable(int y1, int x1, int y2, int x2, int flg);
 extern void scatter(int *yp, int *xp, int y, int x, int d, int m);
@@ -63,6 +62,7 @@ extern void cave_note_spot(struct cave *c, int y, int x);
 extern void cave_light_spot(struct cave *c, int y, int x);
 extern void cave_update_flow(struct cave *c);
 extern void cave_forget_flow(struct cave *c);
+extern void cave_illuminate(struct cave *c, bool daytime);
 
 /** @brief Returns whether the specified square is empty or not.
  *  Empty squares are floor squares that contain no items or monsters.
@@ -72,7 +72,12 @@ extern bool cave_isempty(struct cave *c, int y, int x);
 
 /* Old cave_clean_bold() */
 extern bool cave_canputitem(struct cave *c, int y, int x);
+/* Old cave_floor_bold() */
+extern bool cave_isfloor(struct cave *c, int y, int x);
 
 extern void cave_generate(struct cave *c);
+
+extern bool cave_in_bounds(struct cave *c, int y, int x);
+extern bool cave_in_bounds_fully(struct cave *c, int y, int x);
 
 #endif /* !CAVE_H */
