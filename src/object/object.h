@@ -6,9 +6,6 @@
 /** Maximum number of scroll titles generated */
 #define MAX_TITLES     50
 
-/** The titles of scrolls, ordered by sval. */
-extern char scroll_adj[MAX_TITLES][16];
-
 struct player;
 
 /*** Constants ***/

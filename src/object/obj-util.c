@@ -30,9 +30,9 @@
 #include "tvalsval.h"
 
 /*
- * Hold the titles of scrolls, 6 to 14 characters each.
+ * Hold the titles of scrolls, 6 to 14 characters each, plus quotes.
  */
-char scroll_adj[MAX_TITLES][16];
+char scroll_adj[MAX_TITLES][18];
 
 static void flavor_assign_fixed(void)
 {
@@ -109,6 +109,12 @@ static void flavor_assign_random(byte tval)
 				/* Mark the flavor as used */
 				flavor_info[j].sval = k_info[i].sval;
 
+				/* Hack - set the scroll name if it's a scroll */
+				if (tval == TV_SCROLL)
+				{
+					flavor_info[j].text = scroll_adj[k_info[i].sval];
+				}
+
 				/* One less flavor to choose from */
 				flavor_count--;
 
@@ -164,26 +170,26 @@ void flavor_init(void)
 	flavor_assign_random(TV_ROD);
 	flavor_assign_random(TV_FOOD);
 	flavor_assign_random(TV_POTION);
-	flavor_assign_random(TV_SCROLL);
 
 	/* Scrolls (random titles, always white) */
 	for (i = 0; i < MAX_TITLES; i++)
 	{
-		char buf[24];
-		char *end = buf;
+		char buf[26] = "\"";
+		char *end = buf + 1;
 		int titlelen = 0;
 		int wordlen;
 		bool okay = TRUE;
 
 		wordlen = randname_make(RANDNAME_SCROLL, 2, 8, end, 24, name_sections);
-		while (titlelen + wordlen < (int)(sizeof(scroll_adj[0]) - 1))
+		while (titlelen + wordlen < (int)(sizeof(scroll_adj[0]) - 3))
 		{
 			end[wordlen] = ' ';
 			titlelen += wordlen + 1;
 			end += wordlen + 1;
 			wordlen = randname_make(RANDNAME_SCROLL, 2, 8, end, 24 - titlelen, name_sections);
 		}
-		buf[titlelen - 1] = '\0';
+		buf[titlelen] = '"';
+		buf[titlelen+1] = '\0';
 
 		/* Check the scroll name hasn't already been generated */
 		for (j = 0; j < i; j++)
@@ -205,6 +211,7 @@ void flavor_init(void)
 			i--;
 		}
 	}
+	flavor_assign_random(TV_SCROLL);
 
 	/* Hack -- Use the "complex" RNG */
 	Rand_quick = FALSE;
