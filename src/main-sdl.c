@@ -390,9 +390,11 @@ static GfxInfo GfxDesc[GfxModes] =
 	/*{NULL, NULL, NULL, -1, -1},	*/						
 };
 
-static int MoreBigtile;				/* Toggle bigtile button */
-static int MoreDbltile;                 /* Toggle dbltile button */
-static int MoreTrptile;                 /* Toggle trptile button */
+
+static int MoreWidthPlus;	/* Increase tile width */
+static int MoreWidthMinus;	/* Decrease tile width */
+static int MoreHeightPlus;	/* Increase tile height */
+static int MoreHeightMinus;	/* Decrease tile height */
 static int GfxButtons[GfxModes];	/* Graphics mode buttons */
 static int SelectedGfx;				/* Current selected gfx */
 #endif
@@ -1493,6 +1495,7 @@ static void FontActivate(sdl_Button *sender)
 
 #ifdef USE_GRAPHICS
 static errr load_gfx(void);
+static bool do_update = FALSE;
 
 static void SelectGfx(sdl_Button *sender)
 {
@@ -1503,43 +1506,10 @@ static void SelectGfx(sdl_Button *sender)
 static void AcceptChanges(sdl_Button *sender)
 {
 	sdl_Button *button, *button1, *button2, *button3;
-	bool do_update = FALSE;
 	bool do_video_reset = FALSE;
         bool check_size = FALSE;
 	
 #ifdef USE_GRAPHICS
-	/* Check to see if bigtile has changed */
-        button1 = sdl_ButtonBankGet(&PopUp.buttons, MoreBigtile);
-        button2 = sdl_ButtonBankGet(&PopUp.buttons, MoreDbltile);
-        button3 = sdl_ButtonBankGet(&PopUp.buttons, MoreTrptile);
-	
-	if (button1->tag != use_bigtile)
-	{
-		do_update = TRUE;
-		
-		use_bigtile = !use_bigtile;
-	}
-	
-        if (button2->tag != use_dbltile)
-        {
-                do_update = TRUE;
-                
-                use_dbltile = !use_dbltile;
-                if (use_trptile) 
-                  {
-                    use_trptile = FALSE;
-                    check_size = TRUE;
-                  }
-        }
-        
-        if ((button3->tag != use_trptile) && !check_size)
-        {
-                do_update = TRUE;
-                
-                use_trptile = !use_trptile;
-                if (use_dbltile) use_dbltile = FALSE;
-        }
-        
 	if (use_graphics != SelectedGfx)
 	{
 		do_update = TRUE;
@@ -1554,9 +1524,8 @@ static void AcceptChanges(sdl_Button *sender)
 		else
 		{
 			arg_graphics = FALSE;
-			use_bigtile = FALSE;
-                        use_dbltile = FALSE;
-                        use_trptile = FALSE;
+			tile_width = 1;
+			tile_height = 1;
 			reset_visuals(TRUE);
 		}
 	}
@@ -1609,6 +1578,8 @@ static void AcceptChanges(sdl_Button *sender)
 		
 		SDL_PushEvent(&Event);
 	}
+
+	do_update = FALSE;
 	
 }
 
@@ -1634,10 +1605,28 @@ static void SnapChange(sdl_Button *sender)
 	PopUp.need_update = TRUE;
 }
 
+#ifdef USE_GRAPHICS
+static void WidthChange(sdl_Button *sender)
+{
+	tile_width += sender->tag;
+	if (tile_width < 1) tile_width = 1;
+	if (tile_width > 6) tile_width = 6;
+	do_update = TRUE;
+}
+
+static void HeightChange(sdl_Button *sender)
+{
+	tile_height += sender->tag;
+	if (tile_height < 1) tile_height = 1;
+	if (tile_height > 3) tile_height = 3;
+	do_update = TRUE;
+}
+#endif
+
 static void MoreDraw(sdl_Window *win)
 {
 	SDL_Rect rc;
-	sdl_Button *button, *button1, *button2, *button3;
+	sdl_Button *button;
 	int y = 20, i;
 	
 	/* Wow - a different colour! */
@@ -1650,30 +1639,25 @@ static void MoreDraw(sdl_Window *win)
 	
 #ifdef USE_GRAPHICS
 	
-        button1 = sdl_ButtonBankGet(&win->buttons, MoreBigtile);
-        button2 = sdl_ButtonBankGet(&win->buttons, MoreDbltile);
-        button3 = sdl_ButtonBankGet(&win->buttons, MoreTrptile);
-	
 	if (SelectedGfx)
 	{
-                sdl_ButtonVisible(button1, TRUE);
-                sdl_ButtonVisible(button2, TRUE);
-                sdl_ButtonVisible(button3, TRUE);
-                sdl_WindowText(win, colour, 20, y, "Bigtile is:");
-                sdl_WindowText(win, colour, 20, y + 20, "Dbltile is:");
-                sdl_WindowText(win, colour, 20, y + 40, "Trptile is:");
+	        sdl_WindowText(win, colour, 20, y, format("Tile width is %d.", tile_width));
+		button = sdl_ButtonBankGet(&win->buttons, MoreWidthMinus);
+		sdl_ButtonMove(button, 200, y);
+		
+		button = sdl_ButtonBankGet(&win->buttons, MoreWidthPlus);
+		sdl_ButtonMove(button, 230, y);
+
+		y += 20;
+
+	        sdl_WindowText(win, colour, 20, y, format("Tile height is %d.", tile_height));
+		button = sdl_ButtonBankGet(&win->buttons, MoreHeightMinus);
+		sdl_ButtonMove(button, 200, y);
+		
+		button = sdl_ButtonBankGet(&win->buttons, MoreHeightPlus);
+		sdl_ButtonMove(button, 230, y);
                 
-                sdl_ButtonMove(button1, 200, y);
-                sdl_ButtonMove(button2, 200, y + 20);
-                sdl_ButtonMove(button3, 200, y + 40);
-                
-                y += 60;
-	}
-	else
-	{
-                sdl_ButtonVisible(button1, FALSE);
-                sdl_ButtonVisible(button2, FALSE);
-                sdl_ButtonVisible(button3, FALSE);
+                y += 20;
 	}
 	
 	
@@ -1728,7 +1712,51 @@ static void MoreActivate(sdl_Button *sender)
 	scolour = SDL_MapRGB(PopUp.surface->format, 210, 110, 110);
 	
 #ifdef USE_GRAPHICS
-        MoreBigtile = sdl_ButtonBankNew(&PopUp.buttons);
+	MoreWidthPlus = sdl_ButtonBankNew(&PopUp.buttons);
+	button = sdl_ButtonBankGet(&PopUp.buttons, MoreWidthPlus);
+	
+	button->unsel_colour = ucolour;
+	button->sel_colour = scolour;
+	sdl_ButtonSize(button, 20, PopUp.font.height + 2);
+	sdl_ButtonCaption(button, "+");
+	button->tag = 1;
+	sdl_ButtonVisible(button, TRUE);
+	button->activate = WidthChange;
+	
+	MoreWidthMinus = sdl_ButtonBankNew(&PopUp.buttons);
+	button = sdl_ButtonBankGet(&PopUp.buttons, MoreWidthMinus);
+	
+	button->unsel_colour = ucolour;
+	button->sel_colour = scolour;
+	sdl_ButtonSize(button, 20, PopUp.font.height + 2);
+	sdl_ButtonCaption(button, "-");
+	button->tag = -1;
+	sdl_ButtonVisible(button, TRUE);
+	button->activate = WidthChange;
+	
+	MoreHeightPlus = sdl_ButtonBankNew(&PopUp.buttons);
+	button = sdl_ButtonBankGet(&PopUp.buttons, MoreHeightPlus);
+	
+	button->unsel_colour = ucolour;
+	button->sel_colour = scolour;
+	sdl_ButtonSize(button, 20, PopUp.font.height + 2);
+	sdl_ButtonCaption(button, "+");
+	button->tag = 1;
+	sdl_ButtonVisible(button, TRUE);
+	button->activate = HeightChange;
+	
+	MoreHeightMinus = sdl_ButtonBankNew(&PopUp.buttons);
+	button = sdl_ButtonBankGet(&PopUp.buttons, MoreHeightMinus);
+	
+	button->unsel_colour = ucolour;
+	button->sel_colour = scolour;
+	sdl_ButtonSize(button, 20, PopUp.font.height + 2);
+	sdl_ButtonCaption(button, "-");
+	button->tag = -1;
+	sdl_ButtonVisible(button, TRUE);
+	button->activate = HeightChange;
+	
+	/*        MoreBigtile = sdl_ButtonBankNew(&PopUp.buttons);
         button1 = sdl_ButtonBankGet(&PopUp.buttons, MoreBigtile);
         
         button1->unsel_colour = ucolour;
@@ -1759,7 +1787,7 @@ static void MoreActivate(sdl_Button *sender)
         sdl_ButtonVisible(button3, TRUE);
         sdl_ButtonCaption(button3, use_trptile ? "On" : "Off");
         button3->tag = use_trptile;
-        button3->activate = FlipTag;
+        button3->activate = FlipTag;*/
         
 	SelectedGfx = use_graphics;
 	
@@ -2020,17 +2048,27 @@ static errr load_prefs(void)
 			use_graphics = atoi(s);
 			if (use_graphics) arg_graphics = TRUE;
 		}
+		else if (strstr(buf, "TileWidth"))
+		{
+			tile_width = atoi(s);
+		}
+		else if (strstr(buf, "TileHeight"))
+		{
+			tile_height = atoi(s);
+		}
 		else if (strstr(buf, "Bigtile"))
 		{
-			use_bigtile = atoi(s);
+			tile_width += atoi(s);
 		}
                 else if (strstr(buf, "Dbltile"))
                 {
-                        use_dbltile = atoi(s);
+			tile_width += tile_width * atoi(s);
+			tile_height += tile_height * atoi(s);
                 }
                 else if (strstr(buf, "Trptile"))
                 {
-                        use_trptile = atoi(s);
+			tile_width += 2 * tile_width * atoi(s);
+			tile_height += 2 * tile_height * atoi(s);
                 }
 		else if (strstr(buf, "Window"))
 		{
@@ -2090,9 +2128,8 @@ static errr save_prefs(void)
 	file_putf(fff, "Resolution = %dx%d\n", screen_w, screen_h);
 	file_putf(fff, "Fullscreen = %d\n", fullscreen);
 	file_putf(fff, "Graphics = %d\n", use_graphics);
-	file_putf(fff, "Bigtile = %d\n\n", use_bigtile);
-        file_putf(fff, "Dbltile = %d\n\n", use_dbltile);
-        file_putf(fff, "Trptile = %d\n\n", use_trptile);
+	file_putf(fff, "TileWidth = %d\n\n", tile_width);
+        file_putf(fff, "TileHeight = %d\n\n", tile_height);
 	
 	for (i = 0; i < ANGBAND_TERM_MAX; i++)
 	{
@@ -2904,7 +2941,6 @@ static errr Term_wipe_sdl(int col, int row, int n)
 	
 	SDL_Rect rc;
 	
-	/*if (use_bigtile) n*=2;*/
 	/* Build the area to black out */
 	rc.x = col * win->tile_wid;
 	rc.y = row * win->tile_hgt;
@@ -3056,19 +3092,8 @@ static errr sdl_BuildTileset(term_window *win)
 	td = GfxSurface->h / info->height;
 	
 	/* Calculate the size of the new surface */
-	x = ta * win->tile_wid;
-	y = td * win->tile_hgt;
-	if (use_bigtile) x *= 2;
-        if (use_dbltile) 
-          {
-            x *= 2;
-            y *= 2;
-          }
-        else if (use_trptile) 
-          {
-            x *= 3;
-            y *= 3;
-          }
+	x = ta * win->tile_wid * tile_width;
+	y = td * win->tile_hgt * tile_height;
 	
 	/* Make it */
 	win->tiles = SDL_CreateRGBSurface(SDL_SWSURFACE, x, y,
@@ -3085,9 +3110,9 @@ static errr sdl_BuildTileset(term_window *win)
 		for (yy = 0; yy < td; yy++)
 		{
 			SDL_Rect src, dest;
-                        int dwid = (use_trptile ? (use_bigtile ? win->tile_wid * 6 : win->tile_wid * 3) : (use_dbltile ? (use_bigtile ? win->tile_wid * 4 : win->tile_wid * 2) : (use_bigtile ? win->tile_wid * 2 : win->tile_wid)));
+                        int dwid = win->tile_wid * tile_width;
                         
-                        int dhgt = (use_trptile ? win->tile_hgt * 3 : (use_dbltile ? win->tile_hgt * 2 : win->tile_hgt));
+                        int dhgt = win->tile_hgt * tile_height;
 			
 			/* Source rectangle (on GfxSurface) */
 			RECT(xx * info->width, yy * info->height, info->width, info->height, &src);
@@ -3121,7 +3146,7 @@ static errr Term_pict_sdl(int col, int row, int n, const byte *ap, const char *c
 	term_window *win = (term_window*)(Term->data);
 	
 	SDL_Rect rc, src;
-	int i;
+	int i, j;
 	
 	/* First time a pict is requested we load the tileset in */
 	if (!win->tiles)
@@ -3138,54 +3163,17 @@ static errr Term_pict_sdl(int col, int row, int n, const byte *ap, const char *c
 	rc.y += win->title_height;
 	
 	/* Stretch for bigtile mode */
-	if (use_bigtile) rc.w *= 2;
-        if (use_dbltile) 
-          {
-            rc.w *= 2;
-            rc.h *= 2;
-          }
-        else if (use_trptile) 
-          {
-            rc.w *= 3;
-            rc.h *= 3;
-          }
+	rc.w *= tile_width;
+	rc.h *= tile_height;
 	
 	/* Get the dimensions of the graphic surface */
 	src.w = rc.w;
 	src.h = rc.h;
 	
 	/* Clear the way */
-        Term_wipe_sdl(col, row, n);
-        if (use_bigtile)
-          Term_wipe_sdl(col + 1, row, n);
-        if (use_dbltile || use_trptile) 
-          {
-            Term_wipe_sdl(col, row + 1, n);
-            Term_wipe_sdl(col + 1, row + 1, n);
-            if (use_bigtile) 
-              {
-                Term_wipe_sdl(col + 2, row, n);
-                Term_wipe_sdl(col + 2, row + 1, n);
-                Term_wipe_sdl(col + 3, row, n);
-                Term_wipe_sdl(col + 3, row + 1, n);
-              }
-          }
-        if (use_trptile) 
-          {
-            Term_wipe_sdl(col, row + 2, n);
-            Term_wipe_sdl(col + 1, row + 2, n);
-            Term_wipe_sdl(col + 2, row + 2, n);
-            if (use_bigtile) 
-              {
-                Term_wipe_sdl(col + 4, row, n);
-                Term_wipe_sdl(col + 5, row, n);
-                Term_wipe_sdl(col + 4, row + 1, n);
-                Term_wipe_sdl(col + 5, row + 1, n);
-                Term_wipe_sdl(col + 3, row + 2, n);
-                Term_wipe_sdl(col + 4, row + 2, n);
-                Term_wipe_sdl(col + 5, row + 2, n);
-              }
-          }
+	for (i = 0; i < tile_width; i++)
+	        for (j = 0; j < tile_height; j++)
+		        Term_wipe_sdl(col + i, row + j, n);
 	
 	/* Blit 'em! (it) */
 	for (i = 0; i < n; i++)
@@ -3435,9 +3423,8 @@ static void init_gfx(void)
 	
 	/* Make sure */
 	use_graphics = GRAPHICS_NONE;
-	use_bigtile = FALSE;
-        use_dbltile = FALSE;
-        use_trptile = FALSE;
+	tile_width = 1;
+        tile_height = 1;
 #else
 	GfxInfo *info = &GfxDesc[use_graphics];
 	int i;
@@ -3465,9 +3452,8 @@ static void init_gfx(void)
 	{
 		use_graphics = GRAPHICS_NONE;
 		arg_graphics = FALSE;
-		use_bigtile = FALSE;
-                use_dbltile = FALSE;
-                use_trptile = FALSE;
+		tile_width = 1;
+		tile_height = 1;
 	}
 	
 	/* Load the graphics stuff in */
