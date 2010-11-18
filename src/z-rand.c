@@ -119,7 +119,7 @@ void Rand_state_init(u32b seed) {
 
 
 /**
- * Extract a "random" number from 0 to m - 1, via "division"
+ * Extract a "random" number from 0 to m - 1, via division.
  *
  * This method selects "random" 28-bit numbers, and then uses division to drop
  * those numbers into "m" different partitions, plus a small non-partition to
@@ -178,77 +178,76 @@ u32b Rand_div(u32b m) {
  */
 #define RANDNOR_NUM	256
 
-/*
+/**
  * The standard deviation of the "Rand_normal_table"
  */
 #define RANDNOR_STD	64
 
-/*
+/**
  * The normal distribution table for the "Rand_normal()" function (below)
  */
 static s16b Rand_normal_table[RANDNOR_NUM] = {
-	206,     613,     1022,    1430,		1838,    2245,     2652,     3058,
-	3463,    3867,    4271,    4673,    5075,    5475,     5874,     6271,
-	6667,    7061,    7454,    7845,    8234,    8621,     9006,     9389,
-	9770,    10148,   10524,   10898,   11269,	11638,	 12004,	  12367,
-	12727,   13085,   13440,   13792,   14140,	14486,	 14828,	  15168,
-	15504,   15836,   16166,   16492,   16814,	17133,	 17449,	  17761,
-	18069,   18374,   18675,   18972,   19266,	19556,	 19842,	  20124,
-	20403,   20678,   20949,   21216,   21479,	21738,	 21994,	  22245,
+	206,   613,   1022,  1430,  1838,  2245,  2652,  3058,
+	3463,  3867,  4271,  4673,  5075,  5475,  5874,  6271,
+	6667,  7061,  7454,  7845,  8234,  8621,  9006,  9389,
+	9770,  10148, 10524, 10898, 11269,	11638,	12004,	12367,
+	12727, 13085, 13440, 13792, 14140,	14486,	14828,	15168,
+	15504, 15836, 16166, 16492, 16814,	17133,	17449,	17761,
+	18069, 18374, 18675, 18972, 19266,	19556,	19842,	20124,
+	20403, 20678, 20949, 21216, 21479,	21738,	21994,	22245,
 
-	22493,   22737,   22977,   23213,   23446,	23674,	 23899,	  24120,
-	24336,   24550,   24759,   24965,   25166,	25365,	 25559,	  25750,
-	25937,   26120,   26300,   26476,   26649,	26818,	 26983,	  27146,
-	27304,   27460,   27612,   27760,   27906,	28048,	 28187,	  28323,
-	28455,   28585,   28711,   28835,   28955,	29073,	 29188,	  29299,
-	29409,   29515,   29619,   29720,   29818,	29914,	 30007,	  30098,
-	30186,   30272,   30356,   30437,   30516,	30593,	 30668,	  30740,
-	30810,   30879,   30945,   31010,   31072,	31133,	 31192,	  31249,
+	22493, 22737, 22977, 23213, 23446,	23674,	23899,	24120,
+	24336, 24550, 24759, 24965, 25166,	25365,	25559,	25750,
+	25937, 26120, 26300, 26476, 26649,	26818,	26983,	27146,
+	27304, 27460, 27612, 27760, 27906,	28048,	28187,	28323,
+	28455, 28585, 28711, 28835, 28955,	29073,	29188,	29299,
+	29409, 29515, 29619, 29720, 29818,	29914,	30007,	30098,
+	30186, 30272, 30356, 30437, 30516,	30593,	30668,	30740,
+	30810, 30879, 30945, 31010, 31072,	31133,	31192,	31249,
 
-	31304,   31358,   31410,   31460,   31509,	31556,	 31601,	  31646,
-	31688,   31730,   31770,   31808,   31846,	31882,	 31917,	  31950,
-	31983,   32014,   32044,   32074,   32102,	32129,	 32155,	  32180,
-	32205,   32228,   32251,   32273,   32294,	32314,	 32333,	  32352,
-	32370,   32387,   32404,   32420,   32435,	32450,	 32464,	  32477,
-	32490,   32503,   32515,   32526,   32537,	32548,	 32558,	  32568,
-	32577,   32586,   32595,   32603,   32611,	32618,	 32625,	  32632,
-	32639,   32645,   32651,   32657,   32662,	32667,	 32672,	  32677,
+	31304, 31358, 31410, 31460, 31509,	31556,	31601,	31646,
+	31688, 31730, 31770, 31808, 31846,	31882,	31917,	31950,
+	31983, 32014, 32044, 32074, 32102,	32129,	32155,	32180,
+	32205, 32228, 32251, 32273, 32294,	32314,	32333,	32352,
+	32370, 32387, 32404, 32420, 32435,	32450,	32464,	32477,
+	32490, 32503, 32515, 32526, 32537,	32548,	32558,	32568,
+	32577, 32586, 32595, 32603, 32611,	32618,	32625,	32632,
+	32639, 32645, 32651, 32657, 32662,	32667,	32672,	32677,
 
-	32682,   32686,   32690,   32694,   32698,	32702,	 32705,	  32708,
-	32711,   32714,   32717,   32720,   32722,	32725,	 32727,	  32729,
-	32731,   32733,   32735,   32737,   32739,	32740,	 32742,	  32743,
-	32745,   32746,   32747,   32748,   32749,	32750,	 32751,	  32752,
-	32753,   32754,   32755,   32756,   32757,	32757,	 32758,	  32758,
-	32759,   32760,   32760,   32761,   32761,	32761,	 32762,	  32762,
-	32763,   32763,   32763,   32764,   32764,	32764,	 32764,	  32765,
-	32765,   32765,   32765,   32766,   32766,	32766,	 32766,	  32767,
+	32682, 32686, 32690, 32694, 32698,	32702,	32705,	32708,
+	32711, 32714, 32717, 32720, 32722,	32725,	32727,	32729,
+	32731, 32733, 32735, 32737, 32739,	32740,	32742,	32743,
+	32745, 32746, 32747, 32748, 32749,	32750,	32751,	32752,
+	32753, 32754, 32755, 32756, 32757,	32757,	32758,	32758,
+	32759, 32760, 32760, 32761, 32761,	32761,	32762,	32762,
+	32763, 32763, 32763, 32764, 32764,	32764,	32764,	32765,
+	32765, 32765, 32765, 32766, 32766, 32766, 32766, 32767,
 };
 
 
-
-/*
+/**
  * Generate a random integer number of NORMAL distribution
  *
- * The table above is used to generate a psuedo-normal distribution,
- * in a manner which is much faster than calling a transcendental
- * function to calculate a true normal distribution.
+ * The table above is used to generate a psuedo-normal distribution, in a
+ * manner which is much faster than calling a transcendental function to
+ * calculate a true normal distribution.
  *
- * Basically, entry 64*N in the table above represents the number of
- * times out of 32767 that a random variable with normal distribution
- * will fall within N standard deviations of the mean.  That is, about
- * 68 percent of the time for N=1 and 95 percent of the time for N=2.
+ * Basically, entry 64 * N in the table above represents the number of times
+ * out of 32767 that a random variable with normal distribution will fall
+ * within N standard deviations of the mean.  That is, about 68 percent of the
+ * time for N=1 and 95 percent of the time for N=2.
  *
- * The table above contains a "faked" final entry which allows us to
- * pretend that all values in a normal distribution are strictly less
- * than four standard deviations away from the mean.  This results in
- * "conservative" distribution of approximately 1/32768 values.
+ * The table above contains a "faked" final entry which allows us to pretend
+ * that all values in a normal distribution are strictly less than four
+ * standard deviations away from the mean.  This results in "conservative"
+ * distribution of approximately 1/32768 values.
  *
  * Note that the binary search takes up to 16 quick iterations.
  */
 s16b Rand_normal(int mean, int stand) {
-	s16b tmp;
-	s16b offset;
+	s16b tmp, offset;
 
+	// foo
 	s16b low = 0;
 	s16b high = RANDNOR_NUM;
 
@@ -274,31 +273,30 @@ s16b Rand_normal(int mean, int stand) {
 	offset = (long)stand * (long)low / RANDNOR_STD;
 
 	/* One half should be negative */
-	if (randint0(100) < 50) return (mean - offset);
+	if (one_in_(2)) return (mean - offset);
 
 	/* One half should be positive */
 	return (mean + offset);
 }
 
 
-/*
+/**
  * Generates damage for "2d6" style dice rolls
  */
 int damroll(int num, int sides) {
 	int i;
 	int sum = 0;
 
-	if (sides <= 0) return (0);
+	if (sides <= 0) return 0;
 
 	for (i = 0; i < num; i++)
 		sum += randint1(sides);
-
-	return (sum);
+	return sum;
 }
 
 
 
-/*
+/**
  * Calculation helper function for damroll
  */
 int damcalc(int num, int sides, aspect dam_aspect) {
@@ -317,7 +315,6 @@ int damcalc(int num, int sides, aspect dam_aspect) {
 }
 
 
-
 /**
  * Generates a random signed long integer X where `A` <= X <= `B`.
  * The integer X falls along a uniform distribution.
@@ -331,7 +328,20 @@ int rand_range(int A, int B) {
 	return A + (s32b)Rand_div(1 + B - A);
 }
 
-/*
+
+/**
+ * Perform division, possibly rounding up or down depending on the size of the
+ * remainder and chance.
+ */
+int simulate_division(int dividend, int divisor) {
+	int quotient  = dividend / divisor;
+	int remainder = dividend % divisor;
+	if (randint0(divisor) < remainder) quotient++;
+	return quotient;
+}
+
+
+/**
  * Help determine an "enchantment bonus" for an object.
  *
  * To avoid floating point but still provide a smooth distribution of bonuses,
@@ -371,43 +381,31 @@ int rand_range(int A, int B) {
  * 128    0.02  0.01  0.13  0.33  0.83  1.41  3.24  6.17  9.57 14.22 64.07
  */
 s16b m_bonus(int max, int level) {
-	int bonus, stand, extra, value;
+	int bonus, stand, value;
 
-	/* Paranoia -- enforce maximal "level" */
-	if (level > MAX_DEPTH - 1) level = MAX_DEPTH - 1;
+	/* Make sure level is reasonable */
+	if (level >= MAX_DEPTH) level = MAX_DEPTH - 1;
 
-	/* The "bonus" moves towards the max */
-	bonus = ((max * level) / MAX_DEPTH);
+	/* The bonus approaches max as level approaches MAX_DEPTH */
+	bonus = simulate_division(max * level, MAX_DEPTH);
 
-	/* Hack -- determine fraction of error */
-	extra = ((max * level) % MAX_DEPTH);
+	/* The standard deviation is 1/4 of the max */
+	stand = simulate_division(max, 4);
 
-	/* Hack -- simulate floating point computations */
-	if (randint0(MAX_DEPTH) < extra) bonus++;
-
-	/* The "stand" is equal to one quarter of the max */
-	stand = (max / 4);
-
-	/* Hack -- determine fraction of error */
-	extra = (max % 4);
-
-	/* Hack -- simulate floating point computations */
-	if (randint0(4) < extra) stand++;
-
-	/* Choose an "interesting" value */
+	/* Choose a value */
 	value = Rand_normal(bonus, stand);
 
-	/* Enforce the minimum value */
-	if (value < 0) return (0);
-
-	/* Enforce the maximum value */
-	if (value > max) return (max);
-
-	/* Result */
-	return (value);
+	/* Return, enforcing the min and max values */
+	if (value < 0)
+		return 0;
+	else if (value > max)
+		return max;
+	else
+		return value;
 }
 
-/*
+
+/**
  * Calculation helper function for m_bonus
  */
 s16b m_bonus_calc(int max, int level, aspect bonus_aspect) {
@@ -425,32 +423,25 @@ s16b m_bonus_calc(int max, int level, aspect bonus_aspect) {
 	return 0;
 }
 
-/*
+
+/**
  * Calculation helper function for random_value structs
  */
 int randcalc(random_value v, int level, aspect rand_aspect) {
-	int total;
-	
 	if (rand_aspect == EXTREMIFY) {
-		int min, max;
-		
-		min = randcalc(v, level, MINIMISE);
-		max = randcalc(v, level, MAXIMISE);
-		
-		if (abs(min) > abs(max))
-			total = min;
-		else
-			total = max;
-	} else {
-		total = v.base +
-			damcalc(v.dice, v.sides, rand_aspect) +
-			m_bonus_calc(v.m_bonus, level, rand_aspect);
-	}
+		int min = randcalc(v, level, MINIMISE);
+		int max = randcalc(v, level, MAXIMISE);
+		return abs(min) > abs(max) ? min : max;
 
-	return total;
+	} else {
+		int dmg   = damcalc(v.dice, v.sides, rand_aspect);
+		int bonus = m_bonus_calc(v.m_bonus, level, rand_aspect);
+		return v.base + dmg + bonus;
+	}
 }
 
-/*
+
+/**
  * Test to see if a value is within a random_value's range
  */
 bool randcalc_valid(random_value v, int test) {
@@ -462,7 +453,7 @@ bool randcalc_valid(random_value v, int test) {
 		return TRUE;
 }
 
-/*
+/**
  * Test to see if a random_value actually varies
  */
 bool randcalc_varies(random_value v) {

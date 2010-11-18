@@ -37,7 +37,7 @@ typedef enum {
  *
  * The integer X falls along a uniform distribution.
  */
-#define randint0(M)	((s32b) Rand_div(M))
+#define randint0(M) ((s32b) Rand_div(M))
 
 
 /**
@@ -58,7 +58,7 @@ typedef enum {
 /**
  * Return TRUE one time in `x`.
  */
-#define one_in_(x)	(!randint0(x))
+#define one_in_(x) (!randint0(x))
 
 /**
  * Whether we are currently using the "quick" method or not.
@@ -117,7 +117,7 @@ int damcalc(int num, int sides, aspect dam_aspect);
 
 /**
  * Generates a random signed long integer X where "A <= X <= B"
- * Note that "rand_range(0, N-1)" == "randint0(N)"
+ * Note that "rand_range(0, N-1)" == "randint0(N)".
  *
  * The integer X falls along a uniform distribution.
  */
@@ -130,22 +130,22 @@ int rand_range(int A, int B);
 s16b m_bonus(int max, int level);
 
 /**
- * Calculation helper function for m_bonus
+ * Calculation helper function for m_bonus.
  */
 s16b m_bonus_calc(int max, int level, aspect bonus_aspect);
 
 /**
- * Calculation helper function for random_value structs
+ * Calculation helper function for random_value structs.
  */
 int randcalc(random_value v, int level, aspect rand_aspect);
 
 /**
- * Test to see if a value is within a random_value's range
+ * Test to see if a value is within a random_value's range.
  */
 bool randcalc_valid(random_value v, int test);
 
 /**
- * Test to see if a random_value actually varies
+ * Test to see if a random_value actually varies.
  */
 bool randcalc_varies(random_value v);
 
