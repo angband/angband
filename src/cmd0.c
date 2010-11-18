@@ -725,6 +725,9 @@ static bool textui_process_key(unsigned char c)
 	struct command *cmd = &converted_list[c];
 	struct generic_command *command = cmd->command;
 
+	if (!command)
+		return FALSE;
+
 	if (c == ESCAPE || c == ' ' || c == '\a')
 		return TRUE;
 
@@ -761,9 +764,6 @@ static bool textui_process_key(unsigned char c)
 
 			else if (command->hook)
 				command->hook();
-
-			else
-				return FALSE;
 		}
 	}
 
