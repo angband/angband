@@ -3602,20 +3602,20 @@ bool init_angband(void)
 	/* Ask for a "command" until we get one we like. */
 	while (1)
 	{
-		game_command command_req;
+		game_command *command_req;
 
 		cmd_get(CMD_INIT, &command_req, TRUE);
 
-		if (command_req.command == CMD_QUIT)
+		if (command_req->command == CMD_QUIT)
 		{
 			quit(NULL);
 		}
-		else if (command_req.command == CMD_NEWGAME)
+		else if (command_req->command == CMD_NEWGAME)
 		{
 			event_signal(EVENT_LEAVE_INIT);
 			return TRUE;
 		}
-		else if (command_req.command == CMD_LOADFILE)
+		else if (command_req->command == CMD_LOADFILE)
 		{
 			event_signal(EVENT_LEAVE_INIT);
 			/* In future we might want to pass back or set the savefile
