@@ -534,7 +534,8 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		if (artifact_p(o_ptr))
 		{
 			message(snd, 0, "You activate it.");
-			activation_message(o_ptr, a_info[o_ptr->name1].effect_msg);
+			if (a_info[o_ptr->name1].effect_msg)
+				activation_message(o_ptr, a_info[o_ptr->name1].effect_msg);
 			level = a_info[o_ptr->name1].level;
 		}
 		else
