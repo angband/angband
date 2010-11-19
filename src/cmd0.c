@@ -2,7 +2,7 @@
  * File: cmd0.c
  * Purpose: Deal with command processing.
  *
- * Copyright (c) 2007 Andrew Sidwell, Ben Harrison
+ * Copyright (c) 2010 Andi Sidwell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -36,24 +36,8 @@
  * This file still needs some clearing up. XXX
  */
 
-/*** Big list of commands ***/
 
-/* Useful typedef */
-typedef void do_cmd_type(void);
-
-
-/* Forward declare these, because they're really defined later */
-static do_cmd_type do_cmd_wizard, do_cmd_try_debug,
-		do_cmd_port,
-		do_cmd_xxx_options, do_cmd_menu,
-		do_cmd_monlist, do_cmd_itemlist;
-
-#ifdef ALLOW_BORG
-static do_cmd_type do_cmd_try_borg;
-#endif
-
-
-
+static void do_cmd_menu(void);
 
 
 /*** Handling bits ***/
@@ -69,23 +53,27 @@ struct generic_command
 	unsigned char key;
 	cmd_code cmd;
 	void (*hook)(void);
+	bool (*prereq)(void);
 };
 
-
-/* Item "action" type */
-struct item_command
+/* Item selector type (everything required for get_item()) */
+struct item_selector
 {
-	struct generic_command base;
-
-	void (*action)(object_type *, int);
-	const char *id;
-
 	const char *prompt;
 	const char *noop;
 
 	bool (*filter)(const object_type *o_ptr);
 	int mode;
-	bool (*prereq)(void);
+};
+
+/* Item "action" type */
+struct item_command
+{
+	struct generic_command base;
+	struct item_selector selector;
+
+	void (*action)(object_type *, int);
+	const char *id;
 	bool needs_aim;
 };
 
@@ -96,93 +84,99 @@ static struct item_command item_actions[] =
 	/* Not setting IS_HARMLESS for this one because it could cause a true
 	 * dangerous command to not be prompted, later.
 	 */
-	{ { "Uninscribe an object", '}', CMD_UNINSCRIBE, NULL },
-	  NULL, "uninscribe",
-	  "Un-inscribe which item? ", "You have nothing to un-inscribe.",
-	  obj_has_inscrip, (USE_EQUIP | USE_INVEN | USE_FLOOR), NULL, FALSE },
+	{ { "Uninscribe an object", '}', CMD_UNINSCRIBE, NULL, NULL },
+	  { "Un-inscribe which item? ", "You have nothing to un-inscribe.",
+	    obj_has_inscrip, (USE_EQUIP | USE_INVEN | USE_FLOOR) },
+	  NULL, "uninscribe", FALSE },
 
-	{ { "Inscribe an object", '{', CMD_NULL, NULL },
-	  textui_obj_inscribe, "inscribe",
-	  "Inscribe which item? ", "You have nothing to inscribe.",
-	  NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL, FALSE },
+	{ { "Inscribe an object", '{', CMD_NULL, NULL, NULL },
+	  { "Inscribe which item? ", "You have nothing to inscribe.",
+	    NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS) },
+	  textui_obj_inscribe, "inscribe", FALSE },
 
-	{ { "Examine an item", 'I', CMD_NULL, NULL },
-	  textui_obj_examine, "examine",
-	  "Examine which item? ", "You have nothing to examine.",
-	  NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL, FALSE },
+	{ { "Examine an item", 'I', CMD_NULL, NULL, NULL },
+	  { "Examine which item? ", "You have nothing to examine.",
+	    NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS) },
+	  textui_obj_examine, "examine", FALSE },
 
 	/*** Takeoff/drop/wear ***/
-	{ { "Take/unwield off an item", 't', CMD_TAKEOFF, NULL },
-	  NULL, "takeoff",
-	  "Take off which item? ", "You are not wearing anything you can take off.",
-	  obj_can_takeoff, USE_EQUIP, NULL, FALSE },
+	{ { "Take/unwield off an item", 't', CMD_TAKEOFF, NULL, NULL },
+	  { "Take off which item? ", "You are not wearing anything you can take off.",
+	    obj_can_takeoff, USE_EQUIP },
+	  NULL, "takeoff", FALSE },
 
-	{ { "Wear/wield an item", 'w', CMD_WIELD, NULL },
-	  textui_obj_wield, "wield",
-	  "Wear/Wield which item? ", "You have nothing you can wear or wield.",
-	  obj_can_wear, (USE_INVEN | USE_FLOOR), NULL, FALSE },
+	{ { "Wear/wield an item", 'w', CMD_WIELD, NULL, NULL },
+	  { "Wear/Wield which item? ", "You have nothing you can wear or wield.",
+	    obj_can_wear, (USE_INVEN | USE_FLOOR) },
+	  textui_obj_wield, "wield", FALSE },
 
-	{ { "Drop an item", 'd', CMD_NULL, NULL },
-	  textui_obj_drop, "drop", 
-	  "Drop which item? ", "You have nothing to drop.",
-	  NULL, (USE_EQUIP | USE_INVEN), NULL, FALSE },
+	{ { "Drop an item", 'd', CMD_NULL, NULL, NULL },
+	  { "Drop which item? ", "You have nothing to drop.",
+	    NULL, (USE_EQUIP | USE_INVEN) },
+	  textui_obj_drop, "drop", FALSE },
+
+	/*** Attacking ***/
+	{ { "Fire your missile weapon", 'f', CMD_FIRE, NULL, player_can_fire },
+	  { "Fire which item? ", "You have nothing to fire.",
+	    obj_can_fire, (USE_INVEN | USE_EQUIP | USE_FLOOR | QUIVER_TAGS) },
+	  NULL, "fire", TRUE },
 
 	/*** Spellbooks ***/
-	{ { "Browse a book", 'b', CMD_NULL, NULL },
-	  textui_spell_browse, "browse",
-	  "Browse which book? ", "You have no books that you can read.",
-	  obj_can_browse, (USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL, FALSE },
+	{ { "Browse a book", 'b', CMD_NULL, NULL, NULL },
+	  { "Browse which book? ", "You have no books that you can read.",
+	    obj_can_browse, (USE_INVEN | USE_FLOOR | IS_HARMLESS) },
+	  textui_spell_browse, "browse", FALSE },
 
-	{ { "Gain new spells", 'G', CMD_NULL, NULL },
-	  textui_obj_study, "study", 
-	  "Study which book? ", "You have no books that you can read.",
-	  obj_can_browse, (USE_INVEN | USE_FLOOR), player_can_study, FALSE },
+	{ { "Gain new spells", 'G', CMD_NULL, NULL, player_can_study },
+	  { "Study which book? ", "You have no books that you can read.",
+	    obj_can_study, (USE_INVEN | USE_FLOOR) },
+	  textui_obj_study, "study", FALSE },
 
-	{ { "Cast a spell", 'm', CMD_NULL, NULL },
-	  textui_obj_cast, "cast",
-	  "Use which book? ", "You have no books that you can read.",
-	  obj_can_browse, (USE_INVEN | USE_FLOOR), player_can_cast, FALSE },
+	{ { "Cast a spell", 'm', CMD_NULL, NULL, player_can_cast },
+	  { "Use which book? ", "You have no books that you can read.",
+	    obj_can_cast_from, (USE_INVEN | USE_FLOOR) } ,
+	  textui_obj_cast, "cast", FALSE },
 
 	/*** Item usage ***/
-	{ { "Use a staff", 'u', CMD_USE_STAFF, NULL },
-	  NULL, "use", 
-	  "Use which staff? ", "You have no staff to use.",
-	  obj_is_staff, (USE_INVEN | USE_FLOOR | SHOW_FAIL), NULL, TRUE },
+	{ { "Use a staff", 'u', CMD_USE_STAFF, NULL, NULL },
+	  { "Use which staff? ", "You have no staff to use.",
+	    obj_is_staff, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
+	  NULL, "use", TRUE,},
 
-	{ { "Aim a wand", 'a', CMD_USE_WAND, NULL },
-	  NULL, "aim",
-	  "Aim which wand? ", "You have no wand to aim.",
-	  obj_is_wand, (USE_INVEN | USE_FLOOR | SHOW_FAIL), NULL, TRUE },
+	{ { "Aim a wand", 'a', CMD_USE_WAND, NULL, NULL },
+	  { "Aim which wand? ", "You have no wand to aim.",
+	    obj_is_wand, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
+	  NULL, "aim", TRUE,},
 
-	{ { "Zap a rod", 'z', CMD_USE_ROD, NULL },
-	  NULL, "zap", 
-	  "Zap which rod? ", "You have no charged rods to zap.",
-	  obj_is_rod, (USE_INVEN | USE_FLOOR | SHOW_FAIL), NULL, TRUE },
+	{ { "Zap a rod", 'z', CMD_USE_ROD, NULL, NULL },
+	  { "Zap which rod? ", "You have no charged rods to zap.",
+	    obj_is_rod, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
+	  NULL, "zap", TRUE },
 
-	{ { "Activate an object", 'A', CMD_ACTIVATE, NULL },
-	  NULL, "activate",
-	  "Activate which item? ", "You have nothing to activate.",
-	  obj_is_activatable, (USE_EQUIP | SHOW_FAIL), NULL, TRUE },
+	{ { "Activate an object", 'A', CMD_ACTIVATE, NULL, NULL },
+	  { "Activate which item? ", "You have nothing to activate.",
+	    obj_is_activatable, (USE_EQUIP | SHOW_FAIL) },
+	  NULL, "activate", TRUE },
 
-	{ { "Eat some food", 'E', CMD_EAT, NULL },
-	  NULL, "eat",
-	  "Eat which item? ", "You have nothing to eat.",
-	  obj_is_food, (USE_INVEN | USE_FLOOR), NULL, FALSE },
+	{ { "Eat some food", 'E', CMD_EAT, NULL, NULL },
+	  { "Eat which item? ", "You have nothing to eat.",
+	    obj_is_food, (USE_INVEN | USE_FLOOR) },
+	  NULL, "eat", FALSE },
 
-	{ { "Quaff a potion", 'q', CMD_QUAFF, NULL },
-	  NULL, "quaff",
-	  "Quaff which potion? ", "You have no potions to quaff.",
-	  obj_is_potion, (USE_INVEN | USE_FLOOR), NULL, TRUE },
+	{ { "Quaff a potion", 'q', CMD_QUAFF, NULL, NULL },
+	  { "Quaff which potion? ", "You have no potions to quaff.",
+	    obj_is_potion, (USE_INVEN | USE_FLOOR) },
+	  NULL, "quaff", TRUE },
 
-	{ { "Read a scroll", 'r', CMD_READ_SCROLL, NULL },
-	  NULL, "read",
-	  "Read which scroll? ", "You have no scrolls to read.",
-	  obj_is_scroll, (USE_INVEN | USE_FLOOR), player_can_read, TRUE },
+	{ { "Read a scroll", 'r', CMD_READ_SCROLL, NULL, player_can_read },
+	  { "Read which scroll? ", "You have no scrolls to read.",
+	    obj_is_scroll, (USE_INVEN | USE_FLOOR) },
+	  NULL, "read", TRUE },
 
-	{ { "Fuel your light source", 'F', CMD_REFILL, NULL },
-	  NULL, "refill",
-	 "Refuel with what fuel source? ", "You have nothing to refuel with.",
-	  obj_can_refill, (USE_INVEN | USE_FLOOR), NULL, FALSE },
+	{ { "Fuel your light source", 'F', CMD_REFILL, NULL, NULL },
+	  { "Refuel with what fuel source? ", "You have nothing to refuel with.",
+	    obj_can_refill, (USE_INVEN | USE_FLOOR) },
+	  NULL, "refill", FALSE },
 };
 
 
@@ -205,7 +199,6 @@ static struct generic_command cmd_action[] =
 	{ "Close a door",               'c', CMD_NULL, textui_cmd_close },
 	{ "Jam a door shut",            'j', CMD_NULL, textui_cmd_spike },
 	{ "Bash a door open",           'B', CMD_NULL, textui_cmd_bash },
-	{ "Fire your missile weapon", 'f', CMD_NULL, textui_cmd_fire },
 	{ "Fire at nearest target",   'h', CMD_NULL, textui_cmd_fire_at_nearest },
 	{ "Throw an item",            'v', CMD_NULL, textui_cmd_throw }
 };
@@ -230,7 +223,7 @@ static struct generic_command cmd_info[] =
 	{ "Help",                         '?', CMD_NULL, do_cmd_help },
 	{ "Identify symbol",              '/', CMD_NULL, do_cmd_query_symbol },
 	{ "Character description",        'C', CMD_NULL, do_cmd_change_name },
-	{ "Check knowledge",              '~', CMD_NULL, do_cmd_knowledge },
+	{ "Check knowledge",              '~', CMD_NULL, textui_browse_knowledge },
 	{ "Repeat level feeling",   KTRL('F'), CMD_NULL, do_cmd_feeling },
 	{ "Show previous message",  KTRL('O'), CMD_NULL, do_cmd_message_one },
 	{ "Show previous messages", KTRL('P'), CMD_NULL, do_cmd_messages }
@@ -264,7 +257,6 @@ static struct generic_command cmd_hidden[] =
 	{ "Jump into a trap",         '-', CMD_NULL, textui_cmd_jump },
 	{ "Start running",            '.', CMD_NULL, textui_cmd_run },
 	{ "Stand still",              ',', CMD_HOLD, NULL },
-	{ "Check knowledge",          '|', CMD_NULL, do_cmd_knowledge },
 	{ "Display menu of actions", '\n', CMD_NULL, do_cmd_menu },
 	{ "Display menu of actions", '\r', CMD_NULL, do_cmd_menu },
 	{ "Center map",              KTRL('L'), CMD_NULL, do_cmd_center_map },
@@ -304,191 +296,6 @@ static command_list cmds_all[] =
 	{ "Utility",         cmd_util,        N_ELEMENTS(cmd_util) },
 	{ "Hidden",          cmd_hidden,      N_ELEMENTS(cmd_hidden) }
 };
-
-
-
-
-
-/*
- * Toggle wizard mode
- */
-static void do_cmd_wizard(void)
-{
-	/* Verify first time */
-	if (!(p_ptr->noscore & NOSCORE_WIZARD))
-	{
-		/* Mention effects */
-		msg_print("You are about to enter 'wizard' mode for the very first time!");
-		msg_print("This is a form of cheating, and your game will not be scored!");
-		message_flush();
-
-		/* Verify request */
-		if (!get_check("Are you sure you want to enter wizard mode? "))
-			return;
-
-		/* Mark savefile */
-		p_ptr->noscore |= NOSCORE_WIZARD;
-	}
-
-	/* Toggle mode */
-	if (p_ptr->wizard)
-	{
-		p_ptr->wizard = FALSE;
-		msg_print("Wizard mode off.");
-	}
-	else
-	{
-		p_ptr->wizard = TRUE;
-		msg_print("Wizard mode on.");
-	}
-
-	/* Update monsters */
-	p_ptr->update |= (PU_MONSTERS);
-
-	/* Redraw "title" */
-	p_ptr->redraw |= (PR_TITLE);
-}
-
-
-
-
-#ifdef ALLOW_DEBUG
-
-/*
- * Verify use of "debug" mode
- */
-static void do_cmd_try_debug(void)
-{
-	/* Ask first time */
-	if (!(p_ptr->noscore & NOSCORE_DEBUG))
-	{
-		/* Mention effects */
-		msg_print("You are about to use the dangerous, unsupported, debug commands!");
-		msg_print("Your machine may crash, and your savefile may become corrupted!");
-		message_flush();
-
-		/* Verify request */
-		if (!get_check("Are you sure you want to use the debug commands? "))
-			return;
-
-		/* Mark savefile */
-		p_ptr->noscore |= NOSCORE_DEBUG;
-	}
-
-	/* Okay */
-	do_cmd_debug();
-}
-
-#endif /* ALLOW_DEBUG */
-
-
-
-#ifdef ALLOW_BORG
-
-/*
- * Verify use of "borg" mode
- */
-static void do_cmd_try_borg(void)
-{
-	/* Ask first time */
-	if (!(p_ptr->noscore & NOSCORE_BORG))
-	{
-		/* Mention effects */
-		msg_print("You are about to use the dangerous, unsupported, borg commands!");
-		msg_print("Your machine may crash, and your savefile may become corrupted!");
-		message_flush();
-
-		/* Verify request */
-		if (!get_check("Are you sure you want to use the borg commands? "))
-			return;
-
-		/* Mark savefile */
-		p_ptr->noscore |= NOSCORE_BORG;
-	}
-
-	/* Okay */
-	do_cmd_borg();
-}
-
-#endif /* ALLOW_BORG */
-
-
-/*
- * Quit the game.
- */
-void do_cmd_quit(cmd_code code, cmd_arg args[])
-{
-	/* Stop playing */
-	p_ptr->playing = FALSE;
-
-	/* Leaving */
-	p_ptr->leaving = TRUE;
-}
-
-
-/*
- * Port-specific options
- *
- * Should be moved to the options screen. XXX
- */
-static void do_cmd_port(void)
-{
-	(void)Term_user(0);
-}
-
-
-/*
- * Display the options and redraw afterward.
- */
-static void do_cmd_xxx_options(void)
-{
-	do_cmd_options();
-	do_cmd_redraw();
-}
-
-
-/*
- * Display the main-screen monster list.
- */
-static void do_cmd_monlist(void)
-{
-	/* Save the screen and display the list */
-	screen_save();
-	display_monlist();
-
-	/* Wait */
-	anykey();
-
-	/* Return */
-	screen_load();
-}
-
-
-/*
- * Display the main-screen item list.
- */
-static void do_cmd_itemlist(void)
-{
-	/* Save the screen and display the list */
-	screen_save();
-	display_itemlist();
-
-	/* Wait */
-	anykey();
-
-	/* Return */
-	screen_load();
-}
-
-
-/*
- * Invoked when the command isn't recognised.
- */
-static void do_cmd_unknown(void)
-{
-	prt("Type '?' for help.", 0, 0);
-}
-
 
 
 
@@ -617,16 +424,10 @@ static void do_cmd_menu(void)
 /* List indexed by char */
 struct command
 {
-	cmd_code cmd;
+	struct generic_command *command;
+
 	bool is_object;
-
-	bool (*prereq)(void);
-
-	union
-	{
-		void (*basic_hook)();
-		struct item_command *item;	
-	} data;
+	struct item_command *item;	
 };
 
 static struct command converted_list[UCHAR_MAX+1];
@@ -648,12 +449,7 @@ void cmd_init(void)
 
 		/* Fill everything in */
 		for (i = 0; i < cmds_all[j].len; i++)
-		{
-			unsigned char key = commands[i].key;
-
-			converted_list[key].data.basic_hook = commands[i].hook;
-			converted_list[key].cmd = commands[i].cmd;
-		}
+			converted_list[commands[i].key].command = &commands[i];
 	}
 
 	/* Fill in item actions */
@@ -662,9 +458,9 @@ void cmd_init(void)
 		struct item_command *act = &item_actions[j];
 		unsigned char key = act->base.key;
 
+		converted_list[key].command = &act->base;
 		converted_list[key].is_object = TRUE;
-		converted_list[key].prereq = act->prereq;
-		converted_list[key].data.item = act;
+		converted_list[key].item = act;
 
 		/* Also update the action menus */
 		memcpy(&cmd_item_use[j], &act->base, sizeof(cmd_item_use[0]));
@@ -908,7 +704,8 @@ static bool key_confirm_command(unsigned char c)
 		verify_inscrip[1] = c;
 
 		/* Verify command */
-		n = check_for_inscrip(o_ptr, "^*") + check_for_inscrip(o_ptr, verify_inscrip);
+		n = check_for_inscrip(o_ptr, "^*") +
+				check_for_inscrip(o_ptr, verify_inscrip);
 		while (n--)
 		{
 			if (!get_check("Are you sure? "))
@@ -926,23 +723,29 @@ static bool key_confirm_command(unsigned char c)
 static bool textui_process_key(unsigned char c)
 {
 	struct command *cmd = &converted_list[c];
+	struct generic_command *command = cmd->command;
+
+	if (!command)
+		return FALSE;
 
 	if (c == ESCAPE || c == ' ' || c == '\a')
 		return TRUE;
 
-	if (key_confirm_command(c) && (!cmd->prereq || cmd->prereq()))
+	if (key_confirm_command(c) &&
+			(!command->prereq || command->prereq()))
 	{
 		if (cmd->is_object)
 		{
-			struct item_command *act = cmd->data.item;
+			struct item_command *act = cmd->item;
 			int item;
 			object_type *o_ptr;
 		
 			/* Get item */
-			item_tester_hook = act->filter;
-			if (!get_item(&item, act->prompt, act->noop, c, act->mode))
+			item_tester_hook = act->selector.filter;
+			if (!get_item(&item, act->selector.prompt,
+					act->selector.noop, c, act->selector.mode))
 				return TRUE;
-		
+
 			/* Get the item */
 			o_ptr = object_from_item_idx(item);
 		
@@ -950,20 +753,17 @@ static bool textui_process_key(unsigned char c)
 			if (act->action != NULL)
 				act->action(o_ptr, item);
 			else if (act->needs_aim && obj_needs_aim(o_ptr))
-				cmd_insert(act->base.cmd, item, DIR_UNKNOWN);
+				cmd_insert(command->cmd, item, DIR_UNKNOWN);
 			else
-				cmd_insert(act->base.cmd, item);
+				cmd_insert(command->cmd, item);
 		}
 		else
 		{
-			if (cmd->cmd != CMD_NULL)
-				cmd_insert_repeated(cmd->cmd, p_ptr->command_arg);
-		
-			else if (cmd->data.basic_hook)
-				cmd->data.basic_hook();
-	
-			else
-				return FALSE;
+			if (command->cmd != CMD_NULL)
+				cmd_insert_repeated(command->cmd, p_ptr->command_arg);
+
+			else if (command->hook)
+				command->hook();
 		}
 	}
 

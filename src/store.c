@@ -2953,6 +2953,7 @@ static bool store_process_command_key(char cmd)
 		case 'I':
 		case '{':
 		case '}':
+		case '~':
 		{
 			Term_key_push(cmd);
 			textui_process_command(TRUE);
@@ -3003,14 +3004,6 @@ static bool store_process_command_key(char cmd)
 		case KTRL('P'):
 		{
 			do_cmd_messages();
-			break;
-		}
-
-		/* Check knowledge */
-		case '~':
-		case '|':
-		{
-			do_cmd_knowledge();
 			break;
 		}
 

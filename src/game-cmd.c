@@ -112,8 +112,7 @@ static struct
 	{ CMD_SELL, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_sell, FALSE, 0 },
 	{ CMD_STASH, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_stash, FALSE, 0 },
 	{ CMD_BUY, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_buy, FALSE, 0 },
-	{ CMD_RETRIEVE, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_retrieve, FALSE, 0 }
-,
+	{ CMD_RETRIEVE, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_retrieve, FALSE, 0 },
 	{ CMD_SUICIDE, { arg_END }, do_cmd_suicide, FALSE, 0 },
 	{ CMD_SAVE, { arg_END }, do_cmd_save_game, FALSE, 0 },
 	{ CMD_QUIT, { arg_END }, do_cmd_quit, FALSE, 0 },
@@ -226,12 +225,14 @@ static errr vcmd_insert_repeated(cmd_code c, int nrepeats, va_list vp)
 			case arg_CHOICE:
 			{
 				cmd.args[j].choice = va_arg(vp, int);
+				cmd.arg_present[j] = TRUE;
 				break;
 			}
 
 			case arg_STRING:
 			{
 				cmd.args[j].string = string_make(va_arg(vp, const char *));
+				cmd.arg_present[j] = TRUE;
 				break;
 			}
 			
@@ -239,6 +240,7 @@ static errr vcmd_insert_repeated(cmd_code c, int nrepeats, va_list vp)
 			case arg_TARGET:
 			{
 				cmd.args[j].direction = va_arg(vp, int);
+				cmd.arg_present[j] = TRUE;
 				break;
 			}
 			
@@ -246,18 +248,21 @@ static errr vcmd_insert_repeated(cmd_code c, int nrepeats, va_list vp)
 			{
 				cmd.args[j].point.y = va_arg(vp, int);
 				cmd.args[j].point.x = va_arg(vp, int);
+				cmd.arg_present[j] = TRUE;
 				break;
 			}
 			
 			case arg_ITEM:
 			{
 				cmd.args[j].item = va_arg(vp, int);
+				cmd.arg_present[j] = TRUE;
 				break;
 			}
 			
 			case arg_NUMBER:
 			{
 				cmd.args[j].number = va_arg(vp, int);
+				cmd.arg_present[j] = TRUE;
 				break;
 			}
 
@@ -401,7 +406,7 @@ void process_command(cmd_context ctx, bool no_request)
 
 			default: 
 			{
-                /* I can see the point of the compiler warning, but still... */
+				/* I can see the point of the compiler warning, but still... */
 				break;
 			}
 		}

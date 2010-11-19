@@ -63,8 +63,7 @@ ANGFILES = \
 	cmd2.o \
 	cmd3.o \
 	cmd4.o \
-	cmd5.o \
-	cmd-know.o \
+	cmd-misc.o \
 	cmd-obj.o \
 	death.o \
 	debug.o \
@@ -98,6 +97,7 @@ ANGFILES = \
 	prefs.o \
 	player/calcs.o \
 	player/player.o \
+	player/spell.o \
 	player/timed.o \
 	player/util.o \
 	score.o \
@@ -112,8 +112,11 @@ ANGFILES = \
 	target.o \
 	trap.o \
 	ui.o \
-        ui-birth.o \
+	ui-birth.o \
+	ui-knowledge.o \
 	ui-menu.o \
+	ui-options.o \
+	ui-spell.o \
 	util.o  \
 	variable.o \
 	wiz-spoil.o \

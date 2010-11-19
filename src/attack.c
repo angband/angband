@@ -800,40 +800,6 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	drop_near(i_ptr, j, y, x, TRUE);
 }
 
-void textui_cmd_fire(void)
-{
-	object_type *j_ptr, *o_ptr;
-	int item;
-	int dir;
-	cptr q = "Fire which item? ";
-	cptr s = "You have nothing to fire.";
-
-	/* Get the "bow" (if any) */
-	j_ptr = &p_ptr->inventory[INVEN_BOW];
-
-	/* Require a usable launcher */
-	if (!j_ptr->tval || !p_ptr->state.ammo_tval)
-	{
-		msg_print("You have nothing to fire with.");
-		return;
-	}
-
-	/* Require proper missile; prefer the quiver */
-	item_tester_tval = p_ptr->state.ammo_tval;
-	p_ptr->command_wrk = USE_EQUIP;
-
-	/* Get an item */
-	if (!get_item(&item, q, s, 'f', (USE_INVEN | USE_EQUIP | USE_FLOOR))) return;
-
-	/* Get the object */
-	o_ptr = object_from_item_idx(item);
-
-	/* Get a direction (or cancel) */
-	if (!get_aim_dir(&dir)) return;
-
-	cmd_insert(CMD_FIRE, item, dir);
-}
-
 void textui_cmd_fire_at_nearest(void)
 {
 	/* the direction '5' means 'use the target' */
