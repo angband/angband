@@ -1015,8 +1015,6 @@ static int store_carry(int st, object_type *o_ptr)
 	/* Evaluate the object */
 	value = object_value(o_ptr, 1, FALSE);
 
-	assert(value > 0);
-
 	/* Cursed/Worthless items "disappear" when sold */
 	if (value <= 0) return (-1);
 
