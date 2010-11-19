@@ -448,7 +448,7 @@ void py_attack(int y, int x)
 	 * note that we limit energy use to 100, even if an extra blow would
 	 * be possible, to avoid monster double moves
 	 */
-	while ((p_ptr->energy > (blow_energy * (blows + 1))) && !stop)
+	while ((p_ptr->energy >= (blow_energy * (blows + 1))) && !stop)
 	{
 		stop = py_attack_real(y, x);
 		p_ptr->energy_use += blow_energy;
