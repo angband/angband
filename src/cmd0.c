@@ -675,7 +675,7 @@ static void textui_process_click(ui_event_data e)
 		else
 		{
 			cmd_insert(CMD_PATHFIND);
-			cmd_set_arg_point(0, y, x);
+			cmd_set_arg_point(cmd_get_top(), 0, y, x);
 		}
 	}
 
@@ -760,7 +760,7 @@ static bool textui_process_key(unsigned char c)
 			else
 			{
 				cmd_insert_repeated(command->cmd, p_ptr->command_arg);
-				cmd_set_arg_item(0, item);
+				cmd_set_arg_item(cmd_get_top(), 0, item);
 			}
 		}
 		else

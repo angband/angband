@@ -162,6 +162,11 @@ typedef struct game_command
 } game_command;
 
 
+/**
+ * Returns the top command on the queue.
+ */
+game_command *cmd_get_top(void);
+
 /*
  * A function called by the game to get a command from the UI.
  */
@@ -178,15 +183,15 @@ errr cmd_insert_repeated(cmd_code c, int nrepeats);
 errr cmd_insert(cmd_code c);
 
 /**
- * Set the args of the top command in the queue.
+ * Set the args of a command.
  */
-void cmd_set_arg_choice(int n, int choice);
-void cmd_set_arg_string(int n, const char *str);
-void cmd_set_arg_direction(int n, int dir);
-void cmd_set_arg_target(int n, int target);
-void cmd_set_arg_point(int n, int x, int y);
-void cmd_set_arg_item(int n, int item);
-void cmd_set_arg_number(int n, int num);
+void cmd_set_arg_choice(game_command *cmd, int n, int choice);
+void cmd_set_arg_string(game_command *cmd, int n, const char *str);
+void cmd_set_arg_direction(game_command *cmd, int n, int dir);
+void cmd_set_arg_target(game_command *cmd, int n, int target);
+void cmd_set_arg_point(game_command *cmd, int n, int x, int y);
+void cmd_set_arg_item(game_command *cmd, int n, int item);
+void cmd_set_arg_number(game_command *cmd, int n, int num);
 
 /* 
  * Gets the next command from the queue, optionally waiting to allow

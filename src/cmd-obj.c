@@ -224,8 +224,8 @@ void textui_obj_inscribe(object_type *o_ptr, int item)
 	if (get_string("Inscription: ", tmp, sizeof(tmp)))
 	{
 		cmd_insert(CMD_INSCRIBE);
-		cmd_set_arg_item(0, item);
-		cmd_set_arg_string(1, tmp);
+		cmd_set_arg_item(cmd_get_top(), 0, item);
+		cmd_set_arg_string(cmd_get_top(), 1, tmp);
 	}
 }
 
@@ -390,8 +390,8 @@ void textui_obj_wield(object_type *o_ptr, int item)
 	}
 
 	cmd_insert(CMD_WIELD);
-	cmd_set_arg_item(0, item);
-	cmd_set_arg_number(1, slot);
+	cmd_set_arg_item(cmd_get_top(), 0, item);
+	cmd_set_arg_number(cmd_get_top(), 1, slot);
 }
 
 

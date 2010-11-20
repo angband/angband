@@ -327,7 +327,7 @@ void textui_cmd_destroy(void)
 	if (item == ALL_SQUELCHED)
 	{
 		cmd_insert(CMD_DESTROY);
-		cmd_set_arg_item(0, item);
+		cmd_set_arg_item(cmd_get_top(), 0, item);
 		return;
 	}
 	
@@ -352,8 +352,8 @@ void textui_cmd_destroy(void)
 	if (result == 'y')
 	{
 		cmd_insert(CMD_DESTROY);
-		cmd_set_arg_item(0, item);
-		cmd_set_arg_number(1, amt);
+		cmd_set_arg_item(cmd_get_top(), 0, item);
+		cmd_set_arg_number(cmd_get_top(), 1, amt);
 	}
 	else if (result == 's' && squelch_interactive(o_ptr))
 	{
