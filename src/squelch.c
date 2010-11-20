@@ -20,42 +20,11 @@
 #include "cmds.h"
 #include "ui-menu.h"
 #include "object/tvalsval.h"
+#include "squelch.h"
 
 
 
-/*
- * Squelch flags
- */
-#define SQUELCH_IF_AWARE	0x01
-#define SQUELCH_IF_UNAWARE	0x02
 
-
-/*
- * List of kinds of item, for pseudo-id squelch.
- */
-typedef enum
-{
-	TYPE_WEAPON_POINTY,
-	TYPE_WEAPON_BLUNT,
-	TYPE_SHOOTER,
-	TYPE_MISSILE_SLING,
-	TYPE_MISSILE_BOW,
-	TYPE_MISSILE_XBOW,
-	TYPE_ARMOR_ROBE,
-	TYPE_ARMOR_BODY,
-	TYPE_ARMOR_CLOAK,
-	TYPE_ARMOR_ELVEN_CLOAK,
-	TYPE_ARMOR_SHIELD,
-	TYPE_ARMOR_HEAD,
-	TYPE_ARMOR_HANDS,
-	TYPE_ARMOR_FEET,
-	TYPE_DIGGER,
-	TYPE_RING,
-	TYPE_AMULET,
-	TYPE_LIGHT,
-
-	TYPE_MAX
-} squelch_type_t;
 
 typedef struct
 {
@@ -94,144 +63,10 @@ static quality_squelch_struct quality_mapping[] =
 };
 
 
-typedef struct
-{
-	int enum_val;
-	const char *name;
-} quality_name_struct;
-
-static quality_name_struct quality_choices[TYPE_MAX] =
-{
-	{ TYPE_WEAPON_POINTY,	"Pointy Melee Weapons" },
-	{ TYPE_WEAPON_BLUNT,	"Blunt Melee Weapons" },
-	{ TYPE_SHOOTER,		"Missile weapons" },
-	{ TYPE_MISSILE_SLING,	"Shots and Pebbles" },
-	{ TYPE_MISSILE_BOW,	"Arrows" },
-	{ TYPE_MISSILE_XBOW,	"Bolts" },
-	{ TYPE_ARMOR_ROBE,	"Robes" },
-	{ TYPE_ARMOR_BODY,	"Body Armor" },
-	{ TYPE_ARMOR_CLOAK,	"Cloaks" },
-	{ TYPE_ARMOR_ELVEN_CLOAK,	"Elven Cloaks" },
-	{ TYPE_ARMOR_SHIELD,	"Shields" },
-	{ TYPE_ARMOR_HEAD,	"Headgear" },
-	{ TYPE_ARMOR_HANDS,	"Handgear" },
-	{ TYPE_ARMOR_FEET,	"Footgear" },
-	{ TYPE_DIGGER,		"Diggers" },
-	{ TYPE_RING,		"Rings" },
-	{ TYPE_AMULET,		"Amulets" },
-	{ TYPE_LIGHT, 		"Lights" },
-};
-
-/* Structure to describe tval/description pairings. */
-typedef struct
-{
-	int tval;
-	const char *desc;
-} tval_desc;
-
-/* Categories for sval-dependent squelch. */
-static tval_desc sval_dependent[] =
-{
-	{ TV_STAFF,			"Staffs" },
-	{ TV_WAND,			"Wands" },
-	{ TV_ROD,			"Rods" },
-	{ TV_SCROLL,		"Scrolls" },
-	{ TV_POTION,		"Potions" },
-	{ TV_RING,			"Rings" },
-	{ TV_AMULET,		"Amulets" },
-	{ TV_FOOD,			"Food" },
-	{ TV_MAGIC_BOOK,	"Magic books" },
-	{ TV_PRAYER_BOOK,	"Prayer books" },
-	{ TV_SPIKE,			"Spikes" },
-	{ TV_LIGHT,			"Lights" },
-	{ TV_FLASK,			"Flasks of oil" },
-/*	{ TV_DRAG_ARMOR,	"Dragon Mail Armor" }, */
-	{ TV_GOLD,			"Money" },
-};
 
 byte squelch_level[TYPE_MAX];
 const size_t squelch_size = TYPE_MAX;
 
-
-/*
- * The different kinds of quality squelch
- */
-enum
-{
-	SQUELCH_NONE,
-	SQUELCH_BAD,
-	SQUELCH_AVERAGE,
-	SQUELCH_GOOD,
-	SQUELCH_EXCELLENT_NO_HI,
-	SQUELCH_EXCELLENT_NO_SPL,
-	SQUELCH_ALL,
-
-	SQUELCH_MAX
-};
-
-/*
- * The names for the various kinds of quality
- */
-static quality_name_struct quality_values[SQUELCH_MAX] =
-{
-	{ SQUELCH_NONE,		"none" },
-	{ SQUELCH_BAD,		"bad" },
-	{ SQUELCH_AVERAGE,	"average" },
-	{ SQUELCH_GOOD,		"good" },
-	{ SQUELCH_EXCELLENT_NO_HI,	"excellent with no high resists" },
-	{ SQUELCH_EXCELLENT_NO_SPL,	"excellent but not splendid" },
-	{ SQUELCH_ALL,		"everything except artifacts" },
-};
-
-/*
- * menu struct for differentiating aware from unaware squelch
- */
-typedef struct
-{
-	s16b idx;
-	bool aware;
-} squelch_choice;
-
-
-/*
- * Sort by name in squelch menus.
- */
-static void ang_sort_swap_hook_squelch_choices(void *u, void *v, int a, int b)
-{
-	squelch_choice temp;
-	squelch_choice *x = (squelch_choice *) u;
-
-	(void)v; /* unused */
-
-	temp = x[a];
-	x[a] = x[b];
-	x[b] = temp;
-}
-
-
-/*
- * Ordering function for squelch choices.
- * Aware comes before unaware, and then sort alphabetically.
- */
-static bool ang_sort_comp_hook_squelch_choices(const void *u, const void *v,
-		int a, int b)
-{
-	char bufa[80];
-	char bufb[80];
-	squelch_choice *x = (squelch_choice *) u;
-	(void)v; /* unused */
-
-	if (x[a].aware && !x[b].aware)
-		return TRUE;
-	if (!x[a].aware && x[b].aware)
-		return FALSE;
-
-	object_kind_name(bufa, sizeof(bufa), x[a].idx, x[a].aware);
-	object_kind_name(bufb, sizeof(bufb), x[b].idx, x[b].aware);
-
-	/* the = is crucial, inf loop in sort if use < rather than <= */
-	return strcmp(bufa, bufb) <= 0;
-}
 
 
 /*
@@ -239,12 +74,6 @@ static bool ang_sort_comp_hook_squelch_choices(const void *u, const void *v,
  */
 void squelch_init(void)
 {
-	int i;
-
-	for (i = 0; i < TYPE_MAX; i++)
-		assert(quality_choices[i].enum_val == i);
-	for (i = 0; i < SQUELCH_MAX; i++)
-		assert(quality_values[i].enum_val == i);
 }
 
 
@@ -406,10 +235,10 @@ void autoinscribe_pack(void)
 	for (i = INVEN_PACK; i >= 0; i--)
 	{
 		/* Skip empty items */
-		if (!inventory[i].k_idx) continue;
+		if (!p_ptr->inventory[i].k_idx) continue;
 
 		/* Apply the inscription */
-		apply_autoinscription(&inventory[i]);
+		apply_autoinscription(&p_ptr->inventory[i]);
 	}
 
 	return;
@@ -421,29 +250,10 @@ void autoinscribe_pack(void)
 /*** Squelch code ***/
 
 /*
- * Determines whether a tval is eligible for sval-squelch.
- */
-bool squelch_tval(int tval)
-{
-	size_t i;
-
-	/* Only squelch if the tval's allowed */
-	for (i = 0; i < N_ELEMENTS(sval_dependent); i++)
-	{
-		if (tval == sval_dependent[i].tval)
-			return TRUE;
-	}
-
-	return FALSE;
-}
-
-
-/*
  * Squelch the flavor of an object
  */
-static void object_squelch_flavor_of(const object_type *o_ptr)
+void object_squelch_flavor_of(const object_type *o_ptr)
 {
-	assert(squelch_tval(o_ptr->tval));
 	if (object_flavor_is_aware(o_ptr))
 		k_info[o_ptr->k_idx].squelch |= SQUELCH_IF_AWARE;
 	else
@@ -454,7 +264,7 @@ static void object_squelch_flavor_of(const object_type *o_ptr)
 /*
  * Find the squelch type of the object, or TYPE_MAX if none
  */
-static squelch_type_t squelch_type_of(const object_type *o_ptr)
+squelch_type_t squelch_type_of(const object_type *o_ptr)
 {
 	size_t i;
 
@@ -477,7 +287,7 @@ static squelch_type_t squelch_type_of(const object_type *o_ptr)
  * The main point is when the value is undetermined given current info,
  * return the maximum possible value.
  */
-static byte squelch_level_of(const object_type *o_ptr)
+byte squelch_level_of(const object_type *o_ptr)
 {
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	byte value;
@@ -495,7 +305,8 @@ static byte squelch_level_of(const object_type *o_ptr)
 			return SQUELCH_AVERAGE;
 		if ((o_ptr->to_h > 0) || (o_ptr->to_d > 0) || (o_ptr->to_a > 0))
 			return SQUELCH_AVERAGE;
-		if ((o_ptr->to_h < 0) || (o_ptr->to_d < 0) || (o_ptr->to_a < 0))
+		if ((object_attack_plusses_are_visible(o_ptr) && ((o_ptr->to_h < 0) || (o_ptr->to_d < 0))) ||
+		    (object_defence_plusses_are_visible(o_ptr) && (o_ptr->to_a < 0)))
 			return SQUELCH_BAD;
 
 		return SQUELCH_AVERAGE;
@@ -711,7 +522,7 @@ void squelch_items(void)
 	/* Scan through the slots backwards */
 	for (n = INVEN_PACK - 1; n >= 0; n--)
 	{
-		o_ptr = &inventory[n];
+		o_ptr = &p_ptr->inventory[n];
 
 		/* Skip non-objects and artifacts */
 		if (!o_ptr->k_idx) continue;
@@ -750,7 +561,7 @@ void squelch_drop(void)
 	/* Scan through the slots backwards */
 	for (n = INVEN_PACK - 1; n >= 0; n--)
 	{
-		object_type *o_ptr = &inventory[n];
+		object_type *o_ptr = &p_ptr->inventory[n];
 
 		/* Skip non-objects and unsquelchable objects */
 		if (!o_ptr->k_idx) continue;
@@ -766,490 +577,4 @@ void squelch_drop(void)
 
 	/* Combine/reorder the pack */
 	p_ptr->notice |= (PN_COMBINE | PN_REORDER);
-}
-
-
-
-/*** Quality-squelch menu ***/
-
-/*
- * Display an entry in the menu.
- */
-static void quality_display(menu_type *menu, int oid, bool cursor, int row, int col, int width)
-{
-	const char *name = quality_choices[oid].name;
-
-	byte level = squelch_level[oid];
-	const char *level_name = quality_values[level].name;
-
-	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
-
-
-	c_put_str(attr, format("%-20s : %s", name, level_name), row, col);
-}
-
-
-/*
- * Display the quality squelch subtypes.
- */
-static void quality_subdisplay(menu_type *menu, int oid, bool cursor, int row, int col, int width)
-{
-	const char *name = quality_values[oid].name;
-	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
-
-	c_put_str(attr, name, row, col);
-}
-
-
-/*
- * Handle keypresses.
- */
-static bool quality_action(menu_type *m, const ui_event_data *event, int oid)
-{
-	menu_type menu;
-	menu_iter menu_f = { NULL, NULL, quality_subdisplay, NULL, NULL };
-	region area = { 24, 5, 29, SQUELCH_MAX };
-	ui_event_data evt;
-	int cursor;
-	int count;
-
-	/* Display at the right point */
-	area.row += oid;
-	cursor = squelch_level[oid];
-
-	/* Save */
-	screen_save();
-
-	/* Work out how many options we have */
-	count = SQUELCH_MAX;
-	if ((oid == TYPE_RING) || (oid == TYPE_AMULET))
-		count = area.page_rows = SQUELCH_BAD + 1;
-
-	/* Run menu */
-	menu_init(&menu, MN_SKIN_SCROLL, &menu_f);
-	menu_setpriv(&menu, count, quality_values);
-
-	/* Stop menus from going off the bottom of the screen */
-	if (area.row + menu.count > Term->hgt - 1)
-		area.row += Term->hgt - 1 - area.row - menu.count;
-
-	menu_layout(&menu, &area);
-
-	window_make(area.col - 2, area.row - 1, area.col + area.width + 2, area.row + area.page_rows);
-
-	evt = menu_select(&menu, 0);
-
-	/* Set the new value appropriately */
-	if (evt.type == EVT_SELECT)
-		squelch_level[oid] = menu.cursor;
-
-	/* Load and finish */
-	screen_load();
-	return TRUE;
-}
-
-/*
- * Display quality squelch menu.
- */
-static void quality_menu(void *unused, const char *also_unused)
-{
-	menu_type menu;
-	menu_iter menu_f = { NULL, NULL, quality_display, quality_action, NULL };
-	region area = { 1, 5, -1, -1 };
-
-	/* Save screen */
-	screen_save();
-	clear_from(0);
-
-	/* Help text */
-	prt("Quality squelch menu", 0, 0);
-
-	Term_gotoxy(1, 1);
-	text_out_to_screen(TERM_L_RED, "Use the movement keys to navigate, and Enter to change settings.");
-
-	/* Set up the menu */
-	menu_init(&menu, MN_SKIN_SCROLL, &menu_f);
-	menu_setpriv(&menu, TYPE_MAX, quality_values);
-	menu_layout(&menu, &area);
-
-	/* Select an entry */
-	menu_select(&menu, 0);
-
-	/* Load screen */
-	screen_load();
-	return;
-}
-
-
-
-/*** Sval-dependent menu ***/
-
-/*
- * Display an entry on the sval menu
- */
-static void sval_display(menu_type *menu, int oid, bool cursor, int row, int col, int width)
-{
-	char buf[80];
-	const squelch_choice *choice = menu_priv(menu);
-	int idx = choice[oid].idx;
-
-	byte attr = (cursor ? TERM_L_BLUE : TERM_WHITE);
-
-
-	/* Acquire the "name" of object "i" */
-	object_kind_name(buf, sizeof(buf), idx, choice[oid].aware);
-
-	/* Print it */
-	c_put_str(attr, format("[ ] %s", buf), row, col);
-	if ((choice[oid].aware && (k_info[idx].squelch & SQUELCH_IF_AWARE)) ||
-	    ((!choice[oid].aware) && (k_info[idx].squelch & SQUELCH_IF_UNAWARE)))
-		c_put_str(TERM_L_RED, "*", row, col + 1);
-}
-
-/*
- * Deal with events on the sval menu
- */
-static bool sval_action(menu_type *m, const ui_event_data *event, int oid)
-{
-	const squelch_choice *choice = menu_priv(m);
-
-	if (event->type == EVT_SELECT)
-	{
-		int idx = choice[oid].idx;
-
-		/* Toggle the appropriate flag */
-		if (choice[oid].aware)
-			k_info[idx].squelch ^= SQUELCH_IF_AWARE;
-		else
-			k_info[idx].squelch ^= SQUELCH_IF_UNAWARE;
-
-		p_ptr->notice |= PN_SQUELCH;
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-
-/*
- * Display list of svals to be squelched.
- */
-static bool sval_menu(int tval, const char *desc)
-{
-	menu_type menu;
-	menu_iter menu_f = { NULL, NULL, sval_display, sval_action, NULL };
-	region area = { 1, 5, -1, -1 };
-
-	int num = 0;
-	size_t i;
-
-	squelch_choice *choice;
-
-
-	/* Create the array, with entries both for aware and unaware squelch */
-	choice = C_ZNEW(2 * z_info->k_max, squelch_choice);
-
-	/* Iterate over all possible object kinds, finding ones which can be squelched */
-	for (i = 1; i < z_info->k_max; i++)
-	{
-		object_kind *k_ptr = &k_info[i];
-
-		/* Skip empty objects, unseen objects, and incorrect tvals */
-		if (!k_ptr->name) continue;
-		if (k_ptr->tval != tval) continue;
-
-		if (!k_ptr->aware)
-		{
-			/* can unaware squelch anything */
-			/* XXX Eddie should it be required that unaware squelched flavors have been seen this game, if so, how to save that info? */
-
-			choice[num].idx = i;
-			choice[num].aware = FALSE;
-			num++;
-		}
-
-		if (k_ptr->everseen || k_ptr->tval == TV_GOLD)
-		{
-			/* aware squelch requires everseen */
-			/* do not require awareness for aware squelch, so people can set at game start */
-
-			choice[num].idx = i;
-			choice[num].aware = TRUE;
-			num++;
-		}
-	}
-
-	/* Return here if there are no objects */
-	if (!num)
-	{
-		FREE(choice);
-		return FALSE;
-	}
-
-	/* sort by name in squelch menus except for categories of items that are aware from the start */
-	switch(tval)
-	{
-		case TV_LIGHT:
-		case TV_MAGIC_BOOK:
-		case TV_PRAYER_BOOK:
-		case TV_DRAG_ARMOR:
-		case TV_GOLD:
-			/* leave sorted by sval */
-			break;
-
-		default:
-			/* sort by name */
-			ang_sort_comp = ang_sort_comp_hook_squelch_choices;
-			ang_sort_swap = ang_sort_swap_hook_squelch_choices;
-			ang_sort((void*)choice, NULL, num);
-	}
-
-
-	/* Save the screen and clear it */
-	screen_save();
-	clear_from(0);
-
-	/* Help text */
-
-	/* Output to the screen */
-	text_out_hook = text_out_to_screen;
-
-	/* Indent output */
-	text_out_indent = 1;
-	text_out_wrap = 79;
-	Term_gotoxy(1, 0);
-
-	/* Display some helpful information */
-	text_out("Use the ");
-	text_out_c(TERM_L_GREEN, "movement keys");
-	text_out(" to scroll the list or ");
-	text_out_c(TERM_L_GREEN, "ESC");
-	text_out(" to return to the previous menu.  ");
-	text_out_c(TERM_L_BLUE, "Enter");
-	text_out(" toggles the current setting.");
-
-	text_out_indent = 0;
-
-	/* Run menu */
-	menu_init(&menu, MN_SKIN_SCROLL, &menu_f);
-	menu_setpriv(&menu, num, choice);
-	menu_layout(&menu, &area);
-	menu_select(&menu, 0);
-
-	/* Free memory */
-	FREE(choice);
-
-	/* Load screen */
-	screen_load();
-	return TRUE;
-}
-
-
-/* Returns TRUE if there's anything to display a menu of */
-static bool seen_tval(int tval)
-{
-	int i;
-
-	for (i = 1; i < z_info->k_max; i++)
-	{
-		object_kind *k_ptr = &k_info[i];
-
-		/* Skip empty objects, unseen objects, and incorrect tvals */
-		if (!k_ptr->name) continue;
-		if (!k_ptr->everseen) continue;
-		if (k_ptr->tval != tval) continue;
-
-		 return TRUE;
-	}
-
-
-	return FALSE;
-}
-
-
-/* Extra options on the "item options" menu */
-struct
-{
-	char tag;
-	const char *name;
-	void (*action)(void *unused, const char *also_unused);
-} extra_item_options[] =
-{
-	{ 'Q', "Quality squelching options", quality_menu },
-	{ '{', "Autoinscription setup", do_cmd_knowledge_objects },
-};
-
-static char tag_options_item(menu_type *menu, int oid)
-{
-	size_t line = (size_t) oid;
-
-	if (line < N_ELEMENTS(sval_dependent))
-		return I2A(oid);
-
-	/* Separator - blank line. */
-	if (line == N_ELEMENTS(sval_dependent))
-		return 0;
-
-	line = line - N_ELEMENTS(sval_dependent) - 1;
-
-	if (line < N_ELEMENTS(extra_item_options))
-		return extra_item_options[line].tag;
-
-	return 0;
-}
-
-static int valid_options_item(menu_type *menu, int oid)
-{
-	size_t line = (size_t) oid;
-
-	if (line < N_ELEMENTS(sval_dependent))
-		return 1;
-
-	/* Separator - blank line. */
-	if (line == N_ELEMENTS(sval_dependent))
-		return 0;
-
-	line = line - N_ELEMENTS(sval_dependent) - 1;
-
-	if (line < N_ELEMENTS(extra_item_options))
-		return 1;
-
-	return 0;
-}
-
-static void display_options_item(menu_type *menu, int oid, bool cursor, int row, int col, int width)
-{
-	size_t line = (size_t) oid;
-
-	/* First section of menu - the svals */
-	if (line < N_ELEMENTS(sval_dependent))
-	{
-		bool known = seen_tval(sval_dependent[line].tval);
-		byte attr = curs_attrs[known ? CURS_KNOWN: CURS_UNKNOWN][(int)cursor];
-
-		c_prt(attr, sval_dependent[line].desc, row, col);
-	}
-	/* Second section - the "extra options" */
-	else
-	{
-		byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
-
-		line = line - N_ELEMENTS(sval_dependent) - 1;
-
-		if (line < N_ELEMENTS(extra_item_options))
-			c_prt(attr, extra_item_options[line].name, row, col);
-	}
-}
-
-bool handle_options_item(menu_type *menu, const ui_event_data *event, int oid)
-{
-	if (event->type == EVT_SELECT)
-	{
-		if ((size_t) oid < N_ELEMENTS(sval_dependent))
-		{
-			sval_menu(sval_dependent[oid].tval, sval_dependent[oid].desc);
-		}
-		else
-		{
-			oid = oid - (int)N_ELEMENTS(sval_dependent) - 1;
-			assert((size_t) oid < N_ELEMENTS(extra_item_options));
-			extra_item_options[oid].action(NULL, NULL);
-		}
-
-		return TRUE;
-	}
-
-	return FALSE;
-}
-
-
-static const menu_iter options_item_iter =
-{
-	tag_options_item,
-	valid_options_item,
-	display_options_item,
-	handle_options_item,
-	NULL
-};
-
-
-/*
- * Display and handle the main squelching menu.
- */
-void do_cmd_options_item(const char *title, int row)
-{
-	menu_type menu;
-
-	menu_init(&menu, MN_SKIN_SCROLL, &options_item_iter);
-	menu_setpriv(&menu, N_ELEMENTS(sval_dependent) + N_ELEMENTS(extra_item_options) + 1, NULL);
-
-	menu.title = title;
-	menu_layout(&menu, &SCREEN_REGION);
-
-	screen_save();
-	clear_from(0);
-	menu_select(&menu, 0);
-	screen_load();
-
-	p_ptr->notice |= PN_SQUELCH;
-
-	return;
-}
-
-
-/*
- * Inquire whether the player wishes to squelch items similar to an object
- *
- * Returns whether the item is now squelched.
- */
-bool squelch_interactive(const object_type *o_ptr)
-{
-	char out_val[70];
-
-	if (squelch_tval(o_ptr->tval))
-	{
-		char sval_name[50];
-
-		/* Obtain plural form without a quantity */
-		object_desc(sval_name, sizeof sval_name, o_ptr,
-					ODESC_BASE | ODESC_PLURAL);
-		/* XXX Eddie while correct in a sense, to squelch all torches on torch of brightness you get the message "Ignore Wooden Torches of Brightness in future? " */
-		strnfmt(out_val, sizeof out_val, "Ignore %s in future? ",
-				sval_name);
-
-		if (!artifact_p(o_ptr) || !object_flavor_is_aware(o_ptr))
-		{
-			if (get_check(out_val))
-			{
-				object_squelch_flavor_of(o_ptr);
-				msg_format("Ignoring %s from now on.", sval_name);
-				return TRUE;
-			}
-		}
-		/* XXX Eddie need to add generalized squelching, e.g. con rings with pval < 3 */
-		if (!object_is_jewelry(o_ptr) || (squelch_level_of(o_ptr) != SQUELCH_BAD))
-			return FALSE;
-	}
-
-	if (object_was_sensed(o_ptr) || object_was_worn(o_ptr) || object_is_known_not_artifact(o_ptr))
-	{
-		byte value = squelch_level_of(o_ptr);
-		int type = squelch_type_of(o_ptr);
-
-/* XXX Eddie on pseudoed cursed artifact, only showed {cursed}, asked to ignore artifacts */
-		if ((value != SQUELCH_MAX) && ((value == SQUELCH_BAD) || !object_is_jewelry(o_ptr)))
-		{
-
-			strnfmt(out_val, sizeof out_val, "Ignore all %s that are %s in future? ",
-				quality_choices[type].name, quality_values[value].name);
-
-			if (get_check(out_val))
-			{
-				squelch_level[type] = value;
-				return TRUE;
-			}
-		}
-
-	}
-	return FALSE;
 }

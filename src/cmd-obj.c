@@ -16,12 +16,16 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-#include "object/tvalsval.h"
-#include "object/object.h"
-#include "game-cmd.h"
+#include "cave.h"
 #include "cmds.h"
 #include "effects.h"
+#include "game-cmd.h"
+#include "object/object.h"
+#include "object/tvalsval.h"
+#include "spells.h"
+#include "target.h"
 
 /*** Utility bits and bobs ***/
 
@@ -203,7 +207,7 @@ void do_cmd_inscribe(cmd_code code, cmd_arg args[])
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 }
 
-static void obj_inscribe(object_type *o_ptr, int item)
+void textui_obj_inscribe(object_type *o_ptr, int item)
 {
 	char o_name[80];
 	char tmp[80] = "";
@@ -219,13 +223,15 @@ static void obj_inscribe(object_type *o_ptr, int item)
 	/* Get a new inscription (possibly empty) */
 	if (get_string("Inscription: ", tmp, sizeof(tmp)))
 	{
-		cmd_insert(CMD_INSCRIBE, item, tmp);
+		cmd_insert(CMD_INSCRIBE);
+		cmd_set_arg_item(cmd_get_top(), 0, item);
+		cmd_set_arg_string(cmd_get_top(), 1, tmp);
 	}
 }
 
 
 /*** Examination ***/
-static void obj_examine(object_type *o_ptr, int item)
+void textui_obj_examine(object_type *o_ptr, int item)
 {
 	track_object(item);
 
@@ -293,7 +299,7 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 		return;
 	}
 
-	equip_o_ptr = &inventory[slot];
+	equip_o_ptr = &p_ptr->inventory[slot];
 
 	/* If the slot is open, wield and be done */
 	if (!equip_o_ptr->k_idx) 
@@ -357,100 +363,37 @@ void do_cmd_drop(cmd_code code, cmd_arg args[])
 	p_ptr->energy_use = 50;
 }
 
-static void obj_drop(object_type *o_ptr, int item)
-{
-	int amt;
-
-	amt = get_quantity(NULL, o_ptr->number);
-	if (amt <= 0) return;
-
-	cmd_insert(CMD_DROP, item, amt);
-}
-
-static void obj_wield(object_type *o_ptr, int item)
+void textui_obj_wield(object_type *o_ptr, int item)
 {
 	int slot = wield_slot(o_ptr);
 
 	/* Usually if the slot is taken we'll just replace the item in the slot,
 	 * but in some cases we need to ask the user which slot they actually
 	 * want to replace */
-	if (inventory[slot].k_idx)
+	if (p_ptr->inventory[slot].k_idx)
 	{
 		if (o_ptr->tval == TV_RING)
 		{
 			cptr q = "Replace which ring? ";
 			cptr s = "Error in obj_wield, please report";
 			item_tester_hook = obj_is_ring;
-			if (!get_item(&slot, q, s, USE_EQUIP)) return;
+			if (!get_item(&slot, q, s, 'w', USE_EQUIP)) return;
 		}
 
-		if (obj_is_ammo(o_ptr) && !object_similar(&inventory[slot], o_ptr))
+		if (obj_is_ammo(o_ptr) && !object_similar(&p_ptr->inventory[slot], o_ptr))
 		{
 			cptr q = "Replace which ammunition? ";
 			cptr s = "Error in obj_wield, please report";
 			item_tester_hook = obj_is_ammo;
-			if (!get_item(&slot, q, s, USE_EQUIP)) return;
+			if (!get_item(&slot, q, s, 'w', USE_EQUIP)) return;
 		}
 	}
 
-	cmd_insert(CMD_WIELD, item, slot);
+	cmd_insert(CMD_WIELD);
+	cmd_set_arg_item(cmd_get_top(), 0, item);
+	cmd_set_arg_number(cmd_get_top(), 1, slot);
 }
 
-
-/*** Casting and browsing ***/
-
-/* Peruse spells in a book */
-static void obj_browse(object_type *o_ptr, int item)
-{
-	do_cmd_browse_aux(o_ptr, item);
-}
-
-/* Study a book to gain a new spell */
-static void obj_study(object_type *o_ptr, int item)
-{
-	/* Track the object kind */
-	track_object(item);
-
-	/* Mage -- Choose a spell to study */
-	if (player_has(PF_CHOOSE_SPELLS))
-	{
-		int spell = get_spell(o_ptr, "study", FALSE, FALSE);
-		if (spell >= 0)
-			cmd_insert(CMD_STUDY_SPELL, spell);
-		else if (spell == -2)
-			msg_print("You cannot learn any spells from that book.");
-	}
-
-	/* Priest -- Choose a book to study */
-	else
-	{
-		cmd_insert(CMD_STUDY_BOOK, item);
-	}
-}
-
-static void obj_cast(object_type *o_ptr, int item)
-{
-	int spell, dir = DIR_UNKNOWN;
-
-	cptr verb = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
-	cptr noun = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
-
-	/* Track the object kind */
-	track_object(item);
-
-	/* Ask for a spell */
-	spell = get_spell(o_ptr, verb, TRUE, FALSE);
-	if (spell < 0)
-	{
-		if (spell == -2) msg_format("You don't know any %ss in that book.", noun);
-		return;
-	}
-
-	if (spell_needs_aim(cp_ptr->spell_book, spell) && !get_aim_dir(&dir))
-		return;
-
-	cmd_insert(CMD_CAST, spell, dir);
-}
 
 
 /*** Using items the traditional way ***/
@@ -585,7 +528,8 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		if (artifact_p(o_ptr))
 		{
 			message(snd, 0, "You activate it.");
-			activation_message(o_ptr, a_text + a_info[o_ptr->name1].effect_msg);
+			if (a_info[o_ptr->name1].effect_msg)
+				activation_message(o_ptr, a_info[o_ptr->name1].effect_msg);
 			level = a_info[o_ptr->name1].level;
 		}
 		else
@@ -716,7 +660,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 /*** Refuelling ***/
 void do_cmd_refill(cmd_code code, cmd_arg args[])
 {
-	object_type *j_ptr = &inventory[INVEN_LIGHT];
+	object_type *j_ptr = &p_ptr->inventory[INVEN_LIGHT];
 	bitflag f[OF_SIZE];
 
 	int item = args[0].item;
@@ -756,197 +700,153 @@ void do_cmd_refill(cmd_code code, cmd_arg args[])
 
 
 
-/*** Handling bits ***/
+/*** Spell casting ***/
 
-/* Item "action" type */
-typedef struct
+/* Gain a specific spell, specified by spell number (for mages). */
+void do_cmd_study_spell(cmd_code code, cmd_arg args[])
 {
-	void (*action)(object_type *, int);
-	cmd_code command;
-	const char *desc;
+	int spell = args[0].choice;
 
-	const char *prompt;
-	const char *noop;
+	int item_list[INVEN_TOTAL + MAX_FLOOR_STACK];
+	int item_num;
+	int i;
 
-	bool (*filter)(const object_type *o_ptr);
-	int mode;
-	bool (*prereq)(void);
-} item_act_t;
+	/* Check the player can study at all atm */
+	if (!player_can_study())
+		return;
 
+	/* Check that the player can actually learn the nominated spell. */
+	item_tester_hook = obj_can_browse;
+	item_num = scan_items(item_list, N_ELEMENTS(item_list), (USE_INVEN | USE_FLOOR));
 
-/* All possible item actions */
-static item_act_t item_actions[] =
-{
-	/* Not setting IS_HARMLESS for this one because it could cause a true
-	 * dangerous command to not be prompted, later.
-	 */
-	{ NULL, CMD_UNINSCRIBE, "uninscribe",
-	  "Un-inscribe which item? ", "You have nothing to un-inscribe.",
-	  obj_has_inscrip, (USE_EQUIP | USE_INVEN | USE_FLOOR), NULL },
-
-	{ obj_inscribe, CMD_NULL, "inscribe",
-	  "Inscribe which item? ", "You have nothing to inscribe.",
-	  NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL },
-
-	{ obj_examine, CMD_NULL, "examine",
-	  "Examine which item? ", "You have nothing to examine.",
-	  NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL },
-
-	/*** Takeoff/drop/wear ***/
-	{ NULL, CMD_TAKEOFF, "takeoff",
-	  "Take off which item? ", "You are not wearing anything you can take off.",
-	  obj_can_takeoff, USE_EQUIP, NULL },
-
-	{ obj_wield, CMD_WIELD, "wield",
-	  "Wear/Wield which item? ", "You have nothing you can wear or wield.",
-	  obj_can_wear, (USE_INVEN | USE_FLOOR), NULL },
-
-	{ obj_drop, CMD_NULL, "drop",
-	  "Drop which item? ", "You have nothing to drop.",
-	  NULL, (USE_EQUIP | USE_INVEN), NULL },
-
-	/*** Spellbooks ***/
-	{ obj_browse, CMD_NULL, "browse",
-	  "Browse which book? ", "You have no books that you can read.",
-	  obj_can_browse, (USE_INVEN | USE_FLOOR | IS_HARMLESS), NULL },
-
-	{ obj_study, CMD_NULL, "study",
-	  "Study which book? ", "You have no books that you can read.",
-	  obj_can_browse, (USE_INVEN | USE_FLOOR), player_can_study },
-
-	{ obj_cast, CMD_NULL, "cast",
-	  "Use which book? ", "You have no books that you can read.",
-	  obj_can_browse, (USE_INVEN | USE_FLOOR), player_can_cast },
-
-	/*** Item usage ***/
-	{ NULL, CMD_USE_STAFF, "use",
-	  "Use which staff? ", "You have no staff to use.",
-	  obj_is_staff, (USE_INVEN | USE_FLOOR | SHOW_FAIL), NULL },
-
-	{ NULL, CMD_USE_WAND, "aim",
-      "Aim which wand? ", "You have no wand to aim.",
-	  obj_is_wand, (USE_INVEN | USE_FLOOR | SHOW_FAIL), NULL },
-
-	{ NULL, CMD_USE_ROD, "zap",
-      "Zap which rod? ", "You have no charged rods to zap.",
-	  obj_is_rod, (USE_INVEN | USE_FLOOR | SHOW_FAIL), NULL },
-
-	{ NULL, CMD_ACTIVATE, "activate",
-      "Activate which item? ", "You have nothing to activate.",
-	  obj_is_activatable, (USE_EQUIP | SHOW_FAIL), NULL },
-
-	{ NULL, CMD_EAT, "eat",
-      "Eat which item? ", "You have nothing to eat.",
-	  obj_is_food, (USE_INVEN | USE_FLOOR), NULL },
-
-	{ NULL, CMD_QUAFF, "quaff",
-      "Quaff which potion? ", "You have no potions to quaff.",
-	  obj_is_potion, (USE_INVEN | USE_FLOOR), NULL },
-
-	{ NULL, CMD_READ_SCROLL, "read",
-      "Read which scroll? ", "You have no scrolls to read.",
-	  obj_is_scroll, (USE_INVEN | USE_FLOOR), player_can_read },
-
-	{ NULL, CMD_REFILL, "refill",
-      "Refuel with what fuel source? ", "You have nothing to refuel with.",
-	  obj_can_refill, (USE_INVEN | USE_FLOOR), NULL },
-};
-
-
-/* List matching up to item_actions[] */
-typedef enum
-{
-	ACTION_UNINSCRIBE = 0,
-	ACTION_INSCRIBE,
-	ACTION_EXAMINE,
-	ACTION_TAKEOFF,
-	ACTION_WIELD,
-	ACTION_DROP,
-
-	ACTION_BROWSE,
-	ACTION_STUDY,
-	ACTION_CAST,
-
-	ACTION_USE_STAFF,
-	ACTION_AIM_WAND,
-	ACTION_ZAP_ROD,
-	ACTION_ACTIVATE,
-	ACTION_EAT_FOOD,
-	ACTION_QUAFF_POTION,
-	ACTION_READ_SCROLL,
-	ACTION_REFILL
-} item_act;
-
-
-
-/*** Old-style noun-verb functions ***/
-
-/* Generic "do item action" function */
-static void do_item(item_act act)
-{
-	int item;
-	object_type *o_ptr;
-	bool cmd_needs_aim = FALSE;
-
-	cptr q, s;
-
-	if (item_actions[act].prereq)
+	/* Check through all available books */
+	for (i = 0; i < item_num; i++)
 	{
-		if (!item_actions[act].prereq())
+		if (spell_in_book(spell, item_list[i]))
+		{
+			if (spell_okay_to_study(spell))
+			{
+				/* Spell is in an available book, and player is capable. */
+				spell_learn(spell);
+				p_ptr->energy_use = 100;
+			}
+			else
+			{
+				/* Spell is present, but player incapable. */
+				msg_format("You cannot learn that spell.");
+			}
+
 			return;
+		}
 	}
-
-	/* Get item */
-	q = item_actions[act].prompt;
-	s = item_actions[act].noop;
-	item_tester_hook = item_actions[act].filter;
-	if (!get_item(&item, q, s, item_actions[act].mode)) return;
-
-	/* Get the item */
-	o_ptr = object_from_item_idx(item);
-
-	/* These commands need an aim */
-	if (item_actions[act].command == CMD_QUAFF ||
-		item_actions[act].command == CMD_ACTIVATE ||
-		item_actions[act].command == CMD_USE_WAND ||
-		item_actions[act].command == CMD_USE_ROD ||
-		item_actions[act].command == CMD_USE_STAFF ||
-		item_actions[act].command == CMD_READ_SCROLL)
-	{
-		cmd_needs_aim = TRUE;
-	}
-
-	/* Execute the item command */
-	if (item_actions[act].action != NULL)
-		item_actions[act].action(o_ptr, item);
-	else if (cmd_needs_aim && obj_needs_aim(o_ptr))
-	{
-		int dir;
-		if (!get_aim_dir(&dir))
-			return;
-
-		cmd_insert(item_actions[act].command, item, dir);
-	}
-	else
-		cmd_insert(item_actions[act].command, item);
 }
 
-/* Wrappers */
-void textui_cmd_uninscribe(void) { do_item(ACTION_UNINSCRIBE); }
-void textui_cmd_inscribe(void) { do_item(ACTION_INSCRIBE); }
-void do_cmd_observe(void) { do_item(ACTION_EXAMINE); }
-void textui_cmd_takeoff(void) { do_item(ACTION_TAKEOFF); }
-void textui_cmd_wield(void) { do_item(ACTION_WIELD); }
-void textui_cmd_drop(void) { do_item(ACTION_DROP); }
-void do_cmd_browse(void) { do_item(ACTION_BROWSE); }
-void textui_cmd_study(void) { do_item(ACTION_STUDY); }
-void textui_cmd_cast(void) { do_item(ACTION_CAST); }
-void textui_cmd_pray(void) { do_item(ACTION_CAST); }
-void textui_cmd_use_staff(void) { do_item(ACTION_USE_STAFF); }
-void textui_cmd_aim_wand(void) { do_item(ACTION_AIM_WAND); }
-void textui_cmd_zap_rod(void) { do_item(ACTION_ZAP_ROD); }
-void textui_cmd_activate(void) { do_item(ACTION_ACTIVATE); }
-void textui_cmd_eat_food(void) { do_item(ACTION_EAT_FOOD); }
-void textui_cmd_quaff_potion(void) { do_item(ACTION_QUAFF_POTION); }
-void textui_cmd_read_scroll(void) { do_item(ACTION_READ_SCROLL); }
-void textui_cmd_refill(void) { do_item(ACTION_REFILL); }
+/* Cast a spell from a book */
+void do_cmd_cast(cmd_code code, cmd_arg args[])
+{
+	int spell = args[0].choice;
+	int dir = args[1].direction;
+
+	int item_list[INVEN_TOTAL + MAX_FLOOR_STACK];
+	int item_num;
+	int i;
+
+	cptr verb = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
+	cptr noun = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+
+	/* Check the player can cast spells at all */
+	if (!player_can_cast())
+		return;
+
+	/* Check spell is in a book they can access */
+	item_tester_hook = obj_can_browse;
+	item_num = scan_items(item_list, N_ELEMENTS(item_list), (USE_INVEN | USE_FLOOR));
+
+	/* Check through all available books */
+	for (i = 0; i < item_num; i++)
+	{
+		if (spell_in_book(spell, item_list[i]))
+		{
+			if (spell_okay_to_cast(spell))
+			{
+				/* Get the spell */
+				const magic_type *s_ptr = &mp_ptr->info[spell];	
+				
+				/* Verify "dangerous" spells */
+				if (s_ptr->smana > p_ptr->csp)
+				{
+					/* Warning */
+					msg_format("You do not have enough mana to %s this %s.", verb, noun);
+					
+					/* Flush input */
+					flush();
+					
+					/* Verify */
+					if (!get_check("Attempt it anyway? ")) return;
+				}
+
+				/* Cast a spell */
+				if (spell_cast(spell, dir))
+					p_ptr->energy_use = 100;
+			}
+			else
+			{
+				/* Spell is present, but player incapable. */
+				msg_format("You cannot %s that %s.", verb, noun);
+			}
+
+			return;
+		}
+	}
+
+}
+
+
+/* Gain a random spell from the given book (for priests) */
+void do_cmd_study_book(cmd_code code, cmd_arg args[])
+{
+	int book = args[0].item;
+	object_type *o_ptr = object_from_item_idx(book);
+
+	int spell = -1;
+	int i, k = 0;
+
+	cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+
+	/* Check the player can study at all atm */
+	if (!player_can_study())
+		return;
+
+	/* Check that the player has access to the nominated spell book. */
+	if (!item_is_available(book, obj_can_browse, (USE_INVEN | USE_FLOOR)))
+	{
+		msg_format("That item is not within your reach.");
+		return;
+	}
+
+	/* Extract spells */
+	for (i = 0; i < SPELLS_PER_BOOK; i++)
+	{
+		int s = get_spell_index(o_ptr, i);
+		
+		/* Skip non-OK spells */
+		if (s == -1) continue;
+		if (!spell_okay_to_study(s)) continue;
+		
+		/* Apply the randomizer */
+		if ((++k > 1) && (randint0(k) != 0)) continue;
+		
+		/* Track it */
+		spell = s;
+	}
+
+	if (spell < 0)
+	{
+		msg_format("You cannot learn any %ss in that book.", p);
+	}
+	else
+	{
+		spell_learn(spell);
+		p_ptr->energy_use = 100;	
+	}
+}

@@ -15,10 +15,13 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-
+#include "cave.h"
+#include "generate.h"
+#include "history.h"
 #include "object/tvalsval.h"
-
+#include "target.h"
 
 /*
  * Delete a monster by index.
@@ -710,7 +713,7 @@ void display_monlist(void)
 
 		/* Get monster race and name */
 		r_ptr = &r_info[order[i]];
-		m_name = r_name + r_ptr->name;
+		m_name = r_ptr->name;
 
 		/* Display uniques in a special colour */
 		if (rf_has(r_ptr->flags, RF_UNIQUE))
@@ -784,7 +787,7 @@ void display_monlist(void)
 
 		/* Get monster race and name */
 		r_ptr = &r_info[order[i]];
-		m_name = r_name + r_ptr->name;
+		m_name = r_ptr->name;
 
 		/* Display uniques in a special colour */
 		if (rf_has(r_ptr->flags, RF_UNIQUE))
@@ -912,7 +915,7 @@ void monster_desc(char *desc, size_t max, const monster_type *m_ptr, int mode)
 
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
-	cptr name = (r_name + r_ptr->name);
+	cptr name = r_ptr->name;
 
 	bool seen, pron;
 
@@ -1728,7 +1731,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 	if (!r_ptr->name) return (FALSE);
 
 	/* Name */
-	name = (r_name + r_ptr->name);
+	name = r_ptr->name;
 
 
 	/* Hack -- "unique" monsters must be "unique" */
@@ -2801,7 +2804,7 @@ void update_smart_learn(int m_idx, int what)
  */
 static int get_coin_type(const monster_race *r_ptr)
 {
-	const char *name = (r_name + r_ptr->name);
+	const char *name = r_ptr->name;
 
 	if (!rf_has(r_ptr->flags, RF_METAL)) return SV_GOLD_ANY;
 
@@ -2942,7 +2945,7 @@ void monster_death(int m_idx)
 		i_ptr = &object_type_body;
 
 		/* Mega-Hack -- Make "Grond" */
-		object_prep(i_ptr, lookup_kind(TV_HAFTED, SV_GROND), 0, MAXIMISE);
+		object_prep(i_ptr, objkind_get(TV_HAFTED, SV_GROND), 0, MAXIMISE);
 		i_ptr->name1 = ART_GROND;
 		apply_magic(i_ptr, 0, TRUE, TRUE, TRUE);
 
@@ -2958,7 +2961,7 @@ void monster_death(int m_idx)
 		i_ptr = &object_type_body;
 
 		/* Mega-Hack -- Make "Morgoth" */
-		object_prep(i_ptr, lookup_kind(TV_CROWN, SV_MORGOTH), 0, MAXIMISE);
+		object_prep(i_ptr, objkind_get(TV_CROWN, SV_MORGOTH), 0, MAXIMISE);
 		i_ptr->name1 = ART_MORGOTH;
 		apply_magic(i_ptr, 0, TRUE, TRUE, TRUE);
 

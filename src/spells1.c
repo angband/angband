@@ -15,9 +15,15 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "cave.h"
+#include "generate.h"
 #include "object/tvalsval.h"
 #include "monster/constants.h"
+#include "monster/monster.h"
+#include "squelch.h"
+#include "trap.h"
 
 /*
  * Helper function -- return a "nearby" race for polymorphing
@@ -770,7 +776,7 @@ static int inven_damage(inven_func typ, int cperc)
 	{
 		if (i >= INVEN_PACK && i < QUIVER_START) continue;
 
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
@@ -931,12 +937,12 @@ static int minus_ac(void)
 	/* Pick a (possibly empty) inventory slot */
 	switch (randint1(6))
 	{
-		case 1: o_ptr = &inventory[INVEN_BODY]; break;
-		case 2: o_ptr = &inventory[INVEN_ARM]; break;
-		case 3: o_ptr = &inventory[INVEN_OUTER]; break;
-		case 4: o_ptr = &inventory[INVEN_HANDS]; break;
-		case 5: o_ptr = &inventory[INVEN_HEAD]; break;
-		case 6: o_ptr = &inventory[INVEN_FEET]; break;
+		case 1: o_ptr = &p_ptr->inventory[INVEN_BODY]; break;
+		case 2: o_ptr = &p_ptr->inventory[INVEN_ARM]; break;
+		case 3: o_ptr = &p_ptr->inventory[INVEN_OUTER]; break;
+		case 4: o_ptr = &p_ptr->inventory[INVEN_HANDS]; break;
+		case 5: o_ptr = &p_ptr->inventory[INVEN_HEAD]; break;
+		case 6: o_ptr = &p_ptr->inventory[INVEN_FEET]; break;
 	}
 
 	/* Nothing to damage */
@@ -1137,57 +1143,6 @@ void cold_dam(int dam, cptr kb_str)
 	inven_damage(set_cold_destroy, inv);
 }
 
-
-
-
-
-/*
- * Increase a stat by one randomized level
- *
- * Most code will "restore" a stat before calling this function,
- * in particular, stat potions will always restore the stat and
- * then increase the fully restored value.
- */
-bool inc_stat(int stat)
-{
-	int value = p_ptr->stat_cur[stat];
-
-	/* Cannot go above 18/100 */
-	if (value >= 18+100) return FALSE;
-
-	/* Increase linearly */
-	if (value < 18)
-		p_ptr->stat_cur[stat] += 1;
-	else if (value < 18+90)
-	{
-		int gain;
-
-                /* Approximate gain value */ 
-                gain = (((18+100) - value) / 2 + 3) / 2; 
- 
-                /* Paranoia */ 
-                if (gain < 1) gain = 1; 
- 
-                /* Apply the bonus */ 
-                p_ptr->stat_cur[stat] += randint1(gain) + gain / 2; 
- 
-                /* Maximal value */ 
-                if (p_ptr->stat_cur[stat] > 18+99) p_ptr->stat_cur[stat] = 18 + 99;
-	}
-	else
-		p_ptr->stat_cur[stat] = 18+100;
-
-	/* Bring up the maximum too */
-	if (p_ptr->stat_cur[stat] > p_ptr->stat_max[stat])
-		p_ptr->stat_max[stat] = p_ptr->stat_cur[stat];
-
-	/* Recalculate bonuses */
-	p_ptr->update |= (PU_BONUS);
-	return TRUE;
-}
-
-
-
 /*
  * Decreases a stat by an amount indended to vary from 0 to 100 percent.
  *
@@ -1197,61 +1152,6 @@ bool inc_stat(int stat)
  * if your stat is already drained, the "max" value will not drop all
  * the way down to the "cur" value.
  */
-bool dec_stat(int stat, bool permanent)
-{
-	int cur, max, same, res = FALSE;
-
-
-	/* Get the current value */
-	cur = p_ptr->stat_cur[stat];
-	max = p_ptr->stat_max[stat];
-
-	/* Note when the values are identical */
-	same = (cur == max);
-
-	/* Damage current value */
-	if (cur > 18+10)
-		cur -= 10;
-	else if (cur > 18)
-		cur = 18;
-	else if (cur > 3)
-		cur -= 1;
-
-	/* Something happened */
-	if (cur != p_ptr->stat_cur[stat]) res = TRUE;
-
-
-	/* Damage "max" value */
-	if (permanent)
-	{
-		if (max > 18+10)
-			max -= 10;
-		else if (cur > 18)
-			max = 18;
-		else if (cur > 3)
-			max -= 1;
-
-		/* Lower max and cur together */
-		if (same) max = cur;
-
-		/* Something happened */
-		if (max != p_ptr->stat_max[stat]) res = TRUE;
-	}
-
-	/* Apply changes */
-	if (res)
-	{
-		/* Actually set the stat to its new value. */
-		p_ptr->stat_cur[stat] = cur;
-		p_ptr->stat_max[stat] = max;
-
-		/* Recalculate bonuses */
-		p_ptr->update |= (PU_BONUS);
-	}
-
-	/* Done */
-	return (res);
-}
 
 
 /*
@@ -1314,7 +1214,7 @@ bool apply_disenchant(int mode)
 	}
 
 	/* Get the item */
-	o_ptr = &inventory[t];
+	o_ptr = &p_ptr->inventory[t];
 
 	/* No item, nothing happens */
 	if (!o_ptr->k_idx) return (FALSE);
@@ -2175,7 +2075,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	m_ptr = &mon_list[cave_m_idx[y][x]];
 	r_ptr = &r_info[m_ptr->r_idx];
 	l_ptr = &l_list[m_ptr->r_idx];
-	name = (r_name + r_ptr->name);
+	name = r_ptr->name;
 	if (m_ptr->ml) seen = TRUE;
 
 

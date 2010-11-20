@@ -15,11 +15,20 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#include "angband.h"
-#include "object/tvalsval.h"
-#include "cmds.h"
-#include "game-event.h"
 
+#include "angband.h"
+#include "button.h"
+#include "cave.h"
+#include "cmds.h"
+#include "files.h"
+#include "game-event.h"
+#include "generate.h"
+#include "init.h"
+#include "monster/monster.h"
+#include "object/tvalsval.h"
+#include "prefs.h"
+#include "spells.h"
+#include "target.h"
 
 /*
  * Change dungeon level - e.g. by going up stairs or with WoR.
@@ -298,7 +307,7 @@ static void recharge_objects(void)
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
 		/* Get the object */
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
@@ -325,7 +334,7 @@ static void recharge_objects(void)
 	/*** Recharge the inventory ***/
 	for (i = 0; i < INVEN_PACK; i++)
 	{
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 		k_ptr = &k_info[o_ptr->k_idx];
 
 		/* Skip non-objects */
@@ -690,7 +699,7 @@ static void process_world(void)
 	/*** Process Light ***/
 
 	/* Check for light being wielded */
-	o_ptr = &inventory[INVEN_LIGHT];
+	o_ptr = &p_ptr->inventory[INVEN_LIGHT];
 
 	/* Burn some fuel in the current light */
 	if (o_ptr->tval == TV_LIGHT)
@@ -992,9 +1001,6 @@ static void process_player(void)
 		/* Hack -- Pack Overflow */
 		pack_overflow();
 
-		/* Hack -- reset to inventory display */
-		if (!p_ptr->command_new) p_ptr->command_wrk = USE_INVEN;
-
 		/* Assume free turn */
 		p_ptr->energy_use = 0;
 
@@ -1044,6 +1050,9 @@ static void process_player(void)
 
 			/* Take a turn */
 			p_ptr->energy_use = 100;
+
+			/* Increment the resting counter */
+			p_ptr->resting_turn++;
 		}
 
 		/* Running */
@@ -1082,21 +1091,14 @@ static void process_player(void)
 
 		/*** Clean up ***/
 
-		/* Action is or was resting */
-		if (p_ptr->resting)
-		{
-			/* Increment the resting counter */
-			p_ptr->resting_turn++;
-		}
-
 		/* Significant */
 		if (p_ptr->energy_use)
 		{
 			/* Use some energy */
 			p_ptr->energy -= p_ptr->energy_use;
 
-			/* Increment the player turn counter */
-			p_ptr->player_turn++;
+			/* Increment the total energy counter */
+			p_ptr->total_energy += p_ptr->energy_use;
 
 			/* Hack -- constant hallucination */
 			if (p_ptr->timed[TMD_IMAGE])
@@ -1341,8 +1343,6 @@ static void dungeon(void)
 
 
 	/* Reset the "command" vars */
-	p_ptr->command_cmd = 0;
-	p_ptr->command_new = 0;
 	p_ptr->command_arg = 0;
 
 
@@ -1598,13 +1598,13 @@ static void process_some_user_pref_files(void)
 
 
 	/* Process the "user.prf" file */
-	(void)process_pref_file("user.prf");
+	(void)process_pref_file("user.prf", TRUE);
 
 	/* Get the "PLAYER.prf" filename */
 	(void)strnfmt(buf, sizeof(buf), "%s.prf", op_ptr->base_name);
 
 	/* Process the "PLAYER.prf" file */
-	(void)process_pref_file(buf);
+	(void)process_pref_file(buf, TRUE);
 }
 
 

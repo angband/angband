@@ -1,6 +1,8 @@
 #ifndef INCLUDED_Z_QUARK_H
 #define INCLUDED_Z_QUARK_H
 
+#include "h-basic.h"
+
 /* Quark type */
 typedef size_t quark_t;
 

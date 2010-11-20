@@ -1,9 +1,9 @@
 /*
- * File: cmd-know.c
- * Purpose: Knowledge screen stuff.
+ * File: ui-knowledge.c
+ * Purpose: Knowledge screen
  *
  * Copyright (c) 2000-2007 Eytan Zweig, Andrew Doull, Pete Mack.
- * (c) 2010 Peter Denison, Chris Carr.
+ * Copyright (c) 2010 Peter Denison, Chris Carr.
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -16,11 +16,16 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "cave.h"
+#include "history.h"
+#include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "squelch.h"
+#include "store.h"
 #include "ui.h"
 #include "ui-menu.h"
-#include "store.h"
 
 /* Flag value for missing array entry */
 #define MISSING -17
@@ -85,7 +90,7 @@ static int default_join_cmp(const void *a, const void *b)
 static int default_group(int oid) { return default_join[oid].gid; }
 
 
-static int *obj_group_order;
+static int *obj_group_order = NULL;
 
 /*
  * Description of each monster group.
@@ -346,13 +351,8 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 	/* Disable the roguelike commands for the duration */
 	OPT(rogue_like_commands) = FALSE;
 
-
-
-	/* Do the group by. ang_sort only works on (void **) */
-	/* Maybe should make this a precondition? */
 	if (g_funcs.gcomp)
-		qsort(obj_list, o_count, sizeof(*obj_list), g_funcs.gcomp);
-
+		sort(obj_list, o_count, sizeof(*obj_list), g_funcs.gcomp);
 
 	/* Sort everything into group order */
 	g_list = C_ZNEW(max_group + 1, int);
@@ -909,7 +909,7 @@ static void display_monster(int col, int row, bool cursor, int oid)
 	byte c = r_ptr->x_char;
 
 	/* Display the name */
-	c_prt(attr, r_name + r_ptr->name, row, col);
+	c_prt(attr, r_ptr->name, row, col);
 
 	if ((tile_width > 1) || (tile_height > 1))
 		return;
@@ -947,7 +947,7 @@ static int m_cmp_race(const void *a, const void *b)
 	c = r_a->level - r_b->level;
 	if (c) return c;
 
-	return strcmp(r_name + r_a->name, r_name + r_b->name);
+	return strcmp(r_a->name, r_b->name);
 }
 
 static char *m_xchar(int oid) { return &r_info[default_join[oid].oid].x_char; }
@@ -1156,9 +1156,9 @@ static void desc_art_fake(int a_idx)
 	{
 		for (i = 0; i < INVEN_TOTAL; i++)
 		{
-			if (inventory[i].name1 == a_idx)
+			if (p_ptr->inventory[i].name1 == a_idx)
 			{
-				o_ptr = &inventory[i];
+				o_ptr = &p_ptr->inventory[i];
 				lost = FALSE;
 				break;
 			}
@@ -1227,7 +1227,7 @@ static int a_cmp_tval(const void *a, const void *b)
 	/* order by */
 	c = a_a->sval - a_b->sval;
 	if (c) return c;
-	return strcmp(a_name+a_a->name, a_name+a_b->name);
+	return strcmp(a_a->name, a_b->name);
 }
 
 static const char *kind_name(int gid) { return object_text_order[gid].name; }
@@ -1258,7 +1258,7 @@ static bool artifact_is_known(int a_idx)
     /* Check inventory for the same */
 	for (i = 0; i < INVEN_TOTAL; i++)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Ignore non-objects */
 		if (!o_ptr->k_idx) continue;
@@ -1337,7 +1337,7 @@ static void display_ego_item(int col, int row, bool cursor, int oid)
 	byte attr = curs_attrs[0 != (int)e_ptr->everseen][0 != (int)cursor];
 
 	/* Display the name */
-	c_prt(attr, e_name + e_ptr->name, row, col);
+	c_prt(attr, e_ptr->name, row, col);
 }
 
 /*
@@ -1364,7 +1364,7 @@ static void desc_ego_fake(int oid)
 
 	/* Dump the name */
 	c_prt(TERM_L_BLUE, format("%s %s", ego_grp_name(default_group(oid)),
-	                                   e_name + e_ptr->name), 0, 0);
+	                                   e_ptr->name), 0, 0);
 
 	/* Begin recall */
 	Term_gotoxy(0, 1);
@@ -1373,7 +1373,7 @@ static void desc_ego_fake(int oid)
 	if (e_ptr->text)
 	{
 		int x, y;
-		text_out("%s", e_text + e_ptr->text);
+		text_out("%s", e_ptr->text);
 		Term_locate(&x, &y);
 		Term_gotoxy(0, y+1);
 	}
@@ -1415,7 +1415,7 @@ static int e_cmp_tval(const void *a, const void *b)
 	if (c) return c;
 
 	/* Order by */
-	return strcmp(e_name + ea->name, e_name + eb->name);
+	return strcmp(ea->name, eb->name);
 }
 
 /*
@@ -1571,7 +1571,7 @@ static void desc_obj_fake(int k_idx)
 	object_wipe(o_ptr);
 
 	/* Create the artifact */
-	object_prep(o_ptr, k_idx, 0, EXTREMIFY);
+	object_prep(o_ptr, k_ptr, 0, EXTREMIFY);
 
 	/* Hack -- its in the store */
 	if (k_info[k_idx].aware) o_ptr->ident |= (IDENT_STORE);
@@ -1623,14 +1623,14 @@ static int o_cmp_tval(const void *a, const void *b)
 
 		default:
 			if (k_a->aware)
-				return strcmp(k_name + k_a->name, k_name + k_b->name);
+				return strcmp(k_a->name, k_b->name);
 
 			/* Then in tried order */
 			c = k_a->tried - k_b->tried;
 			if (c) return -c;
 
-			return strcmp(flavor_text + flavor_info[k_a->flavor].text,
-			              flavor_text + flavor_info[k_b->flavor].text);
+			return strcmp(flavor_info[k_a->flavor].text,
+			              flavor_info[k_b->flavor].text);
 	}
 
 	return k_a->sval - k_b->sval;
@@ -1761,7 +1761,7 @@ static void o_xtra_act(char ch, int oid)
 /*
  * Display known objects
  */
-void do_cmd_knowledge_objects(const char *name, int row)
+void textui_browse_object_knowledge(const char *name, int row)
 {
 	group_funcs kind_f = {TV_GOLD, FALSE, kind_name, o_cmp_tval, obj2gid, 0};
 	member_funcs obj_f = {display_object, desc_obj_fake, o_xchar, o_xattr, o_xtra_prompt, o_xtra_act, 0};
@@ -1805,7 +1805,7 @@ static void display_feature(int col, int row, bool cursor, int oid )
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
 
 	/* Display the name */
-	c_prt(attr, f_name + f_ptr->name, row, col);
+	c_prt(attr, f_ptr->name, row, col);
 
 	if ((tile_width > 1) || (tile_height)) return;
 
@@ -1827,7 +1827,7 @@ static int f_cmp_fkind(const void *a, const void *b)
 	if (c) return c;
 
 	/* order by feature name */
-	return strcmp(f_name + fa->name, f_name + fb->name);
+	return strcmp(fa->name, fb->name);
 }
 
 static const char *fkind_name(int gid) { return feature_group_text[gid]; }
@@ -1891,23 +1891,23 @@ static void do_cmd_knowledge_history(const char *name, int row)
 /*
  * Definition of the "player knowledge" menu.
  */
-static menu_item knowledge_actions[] =
+static menu_action knowledge_actions[] =
 {
-{ {0, "Display object knowledge",   	   do_cmd_knowledge_objects   }, 0 },
-{ {0, "Display artifact knowledge", 	   do_cmd_knowledge_artifacts }, 0 },
-{ {0, "Display ego item knowledge", 	   do_cmd_knowledge_ego_items }, 0 },
-{ {0, "Display monster knowledge",  	   do_cmd_knowledge_monsters  }, 0 },
-{ {0, "Display feature knowledge",  	   do_cmd_knowledge_features  }, 0 },
-{ {0, "Display contents of general store", do_cmd_knowledge_store     }, 0 },
-{ {0, "Display contents of armourer",      do_cmd_knowledge_store     }, 0 },
-{ {0, "Display contents of weaponsmith",   do_cmd_knowledge_store     }, 0 },
-{ {0, "Display contents of temple",   	   do_cmd_knowledge_store     }, 0 },
-{ {0, "Display contents of alchemist",     do_cmd_knowledge_store     }, 0 },
-{ {0, "Display contents of magic shop",    do_cmd_knowledge_store     }, 0 },
-{ {0, "Display contents of black market",  do_cmd_knowledge_store     }, 0 },
-{ {0, "Display contents of home",   	   do_cmd_knowledge_store     }, 0 },
-{ {0, "Display hall of fame",       	   do_cmd_knowledge_scores    }, 0 },
-{ {0, "Display character history",  	   do_cmd_knowledge_history   }, 0 },
+{ 0, 0, "Display object knowledge",   	   textui_browse_object_knowledge },
+{ 0, 0, "Display artifact knowledge", 	   do_cmd_knowledge_artifacts },
+{ 0, 0, "Display ego item knowledge", 	   do_cmd_knowledge_ego_items },
+{ 0, 0, "Display monster knowledge",  	   do_cmd_knowledge_monsters  },
+{ 0, 0, "Display feature knowledge",  	   do_cmd_knowledge_features  },
+{ 0, 0, "Display contents of general store", do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of armourer",      do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of weaponsmith",   do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of temple",   	   do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of alchemist",     do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of magic shop",    do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of black market",  do_cmd_knowledge_store     },
+{ 0, 0, "Display contents of home",   	   do_cmd_knowledge_store     },
+{ 0, 0, "Display hall of fame",       	   do_cmd_knowledge_scores    },
+{ 0, 0, "Display character history",  	   do_cmd_knowledge_history   },
 };
 
 static menu_type knowledge_menu;
@@ -1918,16 +1918,15 @@ static menu_type knowledge_menu;
 
 
 /* Keep macro counts happy. */
-static void cleanup_cmds(void)
-{
-	FREE(obj_group_order);
+static void cleanup_cmds(void) {
+	mem_free(obj_group_order);
 }
 
-void init_cmd_know(void)
+void textui_knowledge_init(void)
 {
 	/* Initialize the menus */
 	menu_type *menu = &knowledge_menu;
-	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ITEMS));
+	menu_init(menu, MN_SKIN_SCROLL, menu_find_iter(MN_ITER_ACTIONS));
 	menu_setpriv(menu, N_ELEMENTS(knowledge_actions), knowledge_actions);
 
 	menu->title = "Display current knowledge";
@@ -1960,7 +1959,7 @@ void init_cmd_know(void)
 /*
  * Display the "player knowledge" menu.
  */
-void do_cmd_knowledge(void)
+void textui_browse_knowledge(void)
 {
 	int i;
 	region knowledge_region = { 0, 0, -1, 18 };
@@ -1969,9 +1968,9 @@ void do_cmd_knowledge(void)
 	if (collect_known_artifacts(NULL, 0) > 0)
 		knowledge_actions[1].flags = 0;
 	else
-		knowledge_actions[1].flags = MN_GREYED;
+		knowledge_actions[1].flags = MN_ACT_GRAYED;
 
-	knowledge_actions[2].flags = MN_GREYED;
+	knowledge_actions[2].flags = MN_ACT_GRAYED;
 	for (i = 0; i < z_info->e_max; i++)
 	{
 		if (e_info[i].everseen || OPT(cheat_xtra))
@@ -1984,7 +1983,7 @@ void do_cmd_knowledge(void)
 	if (count_known_monsters() > 0)
 		knowledge_actions[3].flags = 0;
 	else
-		knowledge_actions[3].flags = MN_GREYED;
+		knowledge_actions[3].flags = MN_ACT_GRAYED;
 
 	screen_save();
 	menu_layout(&knowledge_menu, &knowledge_region);

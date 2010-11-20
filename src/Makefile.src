@@ -10,6 +10,7 @@ COPYRIGHT = (c) 1995-2010 Angband contributors
 
 HEADERS = \
 	angband.h \
+	birth.h \
 	cmds.h \
 	config.h \
 	defines.h \
@@ -22,6 +23,7 @@ HEADERS = \
 	init.h \
 	main.h \
 	option.h \
+	parser.h \
 	types.h \
 	ui-event.h \
 	ui.h \
@@ -44,9 +46,9 @@ GTKHEADERS = \
 	gtk/main-gtk.h \
 	
 ZFILES = z-bitflag.o z-file.o z-form.o z-msg.o z-quark.o z-rand.o z-term.o z-type.o \
-         z-util.o z-virt.o
+         z-util.o z-virt.o z-textblock.o
 MAINFILES = main.o main-crb.o main-gcu.o $(GTKMAINFILES) \
-            main-ros.o main-sdl.o main-win.o main-x11.o snd-sdl.o
+            main-ros.o main-sdl.o main-win.o main-x11.o snd-sdl.o main-test.o
 
 GTKMAINFILES = \
 	gtk/main-gtk.o \
@@ -62,8 +64,7 @@ ANGFILES = \
 	cmd2.o \
 	cmd3.o \
 	cmd4.o \
-	cmd5.o \
-	cmd-know.o \
+	cmd-misc.o \
 	cmd-obj.o \
 	death.o \
 	debug.o \
@@ -74,10 +75,10 @@ ANGFILES = \
 	game-event.o \
 	generate.o \
 	history.o \
-	init1.o \
 	init2.o \
 	load.o \
 	load-old.o \
+	macro.o \
 	monster/melee1.o \
 	monster/melee2.o \
 	monster/monster1.o \
@@ -91,10 +92,13 @@ ANGFILES = \
 	object/obj-util.o \
 	object/randart.o \
 	option.o \
+	parser.o \
 	randname.o \
 	pathfind.o \
 	prefs.o \
 	player/calcs.o \
+	player/player.o \
+	player/spell.o \
 	player/timed.o \
 	player/util.o \
 	score.o \
@@ -109,8 +113,11 @@ ANGFILES = \
 	target.o \
 	trap.o \
 	ui.o \
-        ui-birth.o \
+	ui-birth.o \
+	ui-knowledge.o \
 	ui-menu.o \
+	ui-options.o \
+	ui-spell.o \
 	util.o  \
 	variable.o \
 	wiz-spoil.o \

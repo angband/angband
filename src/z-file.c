@@ -161,6 +161,7 @@ static void path_process(char *buf, size_t len, size_t *cur_len, const char *pat
 
 #else /* MACH_O_CARBON */
 
+		{
 		/* On Macs getlogin() can incorrectly return root, so get the username via system frameworks */
 		CFStringRef cfusername = CSCopyUserName(TRUE);
 		CFIndex cfbufferlength = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfusername), kCFStringEncodingUTF8) + 1;
@@ -171,6 +172,7 @@ static void path_process(char *buf, size_t len, size_t *cur_len, const char *pat
 		/* Look up the user */
 		pw = getpwnam(macusername);
 		mem_free(macusername);
+		}
 #endif /* !MACH_O_CARBON */
 
 		if (!pw) return;
@@ -360,6 +362,8 @@ bool file_newer(const char *first, const char *second)
 
 /** File-handle functions **/
 
+void (*file_open_hook)(const char *path, file_type ftype);
+
 /*
  * Open file 'fname', in mode 'mode', with filetype 'ftype'.
  * Returns file handle or NULL.
@@ -391,26 +395,8 @@ ang_file *file_open(const char *fname, file_mode mode, file_type ftype)
 	f->fname = string_make(buf);
 	f->mode = mode;
 
-#ifdef MACH_O_CARBON
-	extern void fsetfileinfo(cptr path, u32b fcreator, u32b ftype);
-
-	/* OS X uses its own kind of filetypes */
-	if (mode != MODE_READ)
-	{
-		u32b mac_type = 'TEXT';
-
-		if (ftype == FTYPE_RAW) mac_type = 'DATA';
-		else if (ftype == FTYPE_SAVE) mac_type = 'SAVE';
-
-		fsetfileinfo(buf, 'A271', mac_type);
-	}
-#endif /* MACH_O_CARBON */
-
-#if defined(RISCOS) && 0
-	/* do something for RISC OS here? */
-	if (mode != MODE_READ)
-		File_SetType(n, ftype);
-#endif
+	if (mode != MODE_READ && file_open_hook)
+		file_open_hook(buf, ftype);
 
 	return f;
 }
@@ -685,6 +671,7 @@ bool file_getl(ang_file *f, char *buf, size_t len)
 	/* Translate encodes if necessary */
  	if (check_encodes) xstr_trans(buf, LATIN1);
 
+	buf[i] = '\0';
 	return TRUE;
 }
 

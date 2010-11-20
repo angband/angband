@@ -118,6 +118,13 @@ bool file_newer(const char *first, const char *second);
  */
 ang_file *file_open(const char *buf, file_mode mode, file_type ftype);
 
+
+/**
+ * Platform hook for file_open.  Used to set filetypes.
+ */
+void (*file_open_hook)(const char *path, file_type ftype);        
+
+
 /**
  * Attempt to close the file handle `f`.
  *

@@ -15,15 +15,15 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
+#include <stdlib.h>
+
 #include "z-util.h"
-
-
 
 /*
  * Convenient storage of the program name
  */
 char *argv0 = NULL;
-
 
 /*
  * Case insensitive comparison between two strings
@@ -267,77 +267,6 @@ void quit(cptr str)
 	(void)(exit(EXIT_FAILURE));
 }
 
-
-
-
-/* Compare and swap hooks */
-bool (*ang_sort_comp)(const void *u, const void *v, int a, int b);
-void (*ang_sort_swap)(void *u, void *v, int a, int b);
-
-
-/*
- * Angband sorting algorithm -- quick sort in place
- *
- * Note that the details of the data we are sorting is hidden,
- * and we rely on the "ang_sort_comp()" and "ang_sort_swap()"
- * function hooks to interact with the data, which is given as
- * two pointers, and which may have any user-defined form.
- */
-void ang_sort_aux(void *u, void *v, int p, int q)
-{
-	int z, a, b;
-
-	/* Done sort */
-	if (p >= q) return;
-
-	/* Pivot */
-	z = p;
-
-	/* Begin */
-	a = p;
-	b = q;
-
-	/* Partition */
-	while (TRUE)
-	{
-		/* Slide i2 */
-		while (!(*ang_sort_comp)(u, v, b, z)) b--;
-
-		/* Slide i1 */
-		while (!(*ang_sort_comp)(u, v, z, a)) a++;
-
-		/* Done partition */
-		if (a >= b) break;
-
-		/* Swap */
-		(*ang_sort_swap)(u, v, a, b);
-
-		/* Advance */
-		a++, b--;
-	}
-
-	/* Recurse left side */
-	ang_sort_aux(u, v, p, b);
-
-	/* Recurse right side */
-	ang_sort_aux(u, v, b+1, q);
-}
-
-
-/*
- * Angband sorting algorithm -- quick sort in place
- *
- * Note that the details of the data we are sorting is hidden,
- * and we rely on the "ang_sort_comp()" and "ang_sort_swap()"
- * function hooks to interact with the data, which is given as
- * two pointers, and which may have any user-defined form.
- */
-void ang_sort(void *u, void *v, int n)
-{
-	/* Sort the array */
-	ang_sort_aux(u, v, 0, n-1);
-}
-
 /* Arithmetic mean of the first 'size' entries of the array 'nums' */
 int mean(int *nums, int size)
 {
@@ -362,4 +291,10 @@ int variance(int *nums, int size)
     	}
 
     	return total / size;
+}
+
+void sort(void *base, size_t nmemb, size_t smemb,
+          int (*comp)(const void *, const void *))
+{
+	qsort(base, nmemb, smemb, comp);
 }

@@ -15,8 +15,10 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#include "angband.h"
 
+#include "angband.h"
+#include "files.h"
+#include "init.h"
 
 /*
  * Some machines have a "main()" function in their "main-xxx.c" file,
@@ -30,6 +32,7 @@
 
 #include "main.h"
 #include "textui.h"
+#include "init.h"
 
 /*
  * List of the available modules in the order they are tried.
@@ -51,6 +54,10 @@ static const struct module modules[] =
 #ifdef USE_GCU
 	{ "gcu", help_gcu, init_gcu },
 #endif /* USE_GCU */
+
+#ifdef USE_TEST
+	{ "test", help_test, init_test },
+#endif /* !USE_TEST */
 };
 
 
@@ -223,6 +230,18 @@ static errr default_get_cmd(cmd_context context, bool wait)
 		return textui_get_cmd(context, wait);
 }
 
+static void debug_opt(const char *arg) {
+	if (streq(arg, "mem-poison-alloc"))
+		mem_flags |= MEM_POISON_ALLOC;
+	else if (streq(arg, "mem-poison-free"))
+		mem_flags |= MEM_POISON_FREE;
+	else {
+		puts("Debug flags:");
+		puts("  mem-poison-alloc: Poison all memory allocations");
+		puts("   mem-poison-free: Poison all freed memory");
+		exit(0);
+	}
+}
 
 /*
  * Simple "main" function for multiple platforms.
@@ -254,10 +273,6 @@ int main(int argc, char *argv[])
 #endif /* SET_UID */
 
 
-	/* Get the file paths */
-	init_stuff();
-
-
 #ifdef SET_UID
 
 	/* Get the user id */
@@ -271,17 +286,6 @@ int main(int argc, char *argv[])
 
 	/* Drop permissions */
 	safe_setuid_drop();
-
-
-#ifdef SET_UID
-
-	/* Get the "user name" as a default player name */
-	user_name(op_ptr->full_name, sizeof(op_ptr->full_name), player_uid);
-
-	/* Create any missing directories */
-	create_needed_dirs();
-
-#endif /* SET_UID */
 
 
 	/* Process the command line arguments */
@@ -349,6 +353,10 @@ int main(int argc, char *argv[])
 				continue;
 			}
 
+			case 'x':
+				debug_opt(arg);
+				continue;
+
 			case '-':
 			{
 				argv[i] = argv[0];
@@ -366,8 +374,9 @@ int main(int argc, char *argv[])
 				puts("  -n             Start a new character");
 				puts("  -L             Load a new-format save file");
 				puts("  -w             Resurrect dead character (marks savefile)");
-				puts("  -r             Rebalance monsters if monster.raw is absent");
+				puts("  -r             Rebalance monsters");
 				puts("  -g             Request graphics mode");
+				puts("  -x<opt>        Debug options; see -xhelp");
 				puts("  -u<who>        Use your <who> savefile");
 				puts("  -d<path>       Store pref files and screendumps in <path>");
 				puts("  -m<sys>        Use module <sys>, where <sys> can be:");
@@ -393,6 +402,8 @@ int main(int argc, char *argv[])
 		argv[1] = NULL;
 	}
 
+	/* Get the file paths */
+	init_stuff();
 
 	/* Install "quit" hook */
 	quit_aux = quit_hook;
@@ -403,10 +414,11 @@ int main(int argc, char *argv[])
 		/* User requested a specific module? */
 		if (!mstr || (streq(mstr, modules[i].name)))
 		{
+			ANGBAND_SYS = modules[i].name;
 			if (0 == modules[i].init(argc, argv))
 			{
-				ANGBAND_SYS = modules[i].name;
 				done = TRUE;
+				/*quit_fmt("ggg %s", ANGBAND_SYS);*/
 				break;
 			}
 		}
@@ -415,6 +427,18 @@ int main(int argc, char *argv[])
 	/* Make sure we have a display! */
 	if (!done) quit("Unable to prepare any 'display module'!");
 
+#ifdef SET_UID
+
+	/* Get the "user name" as a default player name, unless set with -u switch */
+	if(!op_ptr->full_name)
+	{
+		user_name(op_ptr->full_name, sizeof(op_ptr->full_name), player_uid);
+	}
+
+	/* Create any missing directories */
+	create_needed_dirs();
+
+#endif /* SET_UID */
 
 	/* Process the player name */
 	process_player_name(TRUE);

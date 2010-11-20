@@ -16,7 +16,9 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "attack.h"
 #include "effects.h"
 #include "cmds.h"
 #include "tvalsval.h"
@@ -584,7 +586,7 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 	int crit_mult, crit_div, crit_add;
 	int str_plus, dex_plus, old_blows, new_blows, extra_blows;
 	int str_done = -1;
-	object_type *j_ptr = &inventory[INVEN_BOW];
+	object_type *j_ptr = &p_ptr->inventory[INVEN_BOW];
 
 	bitflag f[OF_SIZE];
 	bitflag tmp_f[OF_SIZE];
@@ -627,7 +629,7 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 
 		object_type inven[INVEN_TOTAL];
 
-		memcpy(inven, inventory, INVEN_TOTAL * sizeof(object_type));
+		memcpy(inven, p_ptr->inventory, INVEN_TOTAL * sizeof(object_type));
 		inven[INVEN_WIELD] = *o_ptr;
 
 		if (full) object_know_all_flags(&inven[INVEN_WIELD]);
@@ -652,8 +654,9 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 		if (adj_str_hold[state.stat_ind[A_STR]] < o_ptr->weight / 10)
 			text_out_c(TERM_L_RED, "You are too weak to use this weapon.\n");
 
-		text_out_c(TERM_L_GREEN, "%d ", state.num_blow);
-		text_out("blow%s/round.\n", (state.num_blow > 1) ? "s" : "");
+		text_out_c(TERM_L_GREEN, "%d.%d ", state.num_blow / 100,
+			(state.num_blow / 10) % 10);
+		text_out("blow%s/round.\n", (state.num_blow > 100) ? "s" : "");
 
 		/* Check to see if extra STR or DEX would yield extra blows */
 		old_blows = state.num_blow;
@@ -663,10 +666,10 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 		 * state does not track these */
 		for (i = INVEN_BOW; i < INVEN_TOTAL; i++)
 		{
-			object_flags_known(&inventory[i], tmp_f);
+			object_flags_known(&p_ptr->inventory[i], tmp_f);
 
 			if (of_has(tmp_f, OF_BLOWS))
-				extra_blows += inventory[i].pval;
+				extra_blows += p_ptr->inventory[i].pval;
 		}
 
 		/* Then we add blows from the weapon being examined */
@@ -675,12 +678,12 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 		/* Then we check for extra "real" blows */
 		for (dex_plus = 0; dex_plus < dex_plus_bound; dex_plus++)
 		{
-			for (str_plus = 0; str_plus < str_plus_bound; str_plus++)
+			for (str_plus = 0; str_plus < str_plus_bound;
+				str_plus++)
 		        {
 				state.stat_ind[A_STR] += str_plus;
 				state.stat_ind[A_DEX] += dex_plus;
-				new_blows = calc_blows(o_ptr, &state)
-					+ extra_blows;
+				new_blows = calc_blows(o_ptr, &state);
 
 				/* Test to make sure that this extra blow is a
 				 * new str/dex combination, not a repeat
@@ -689,8 +692,10 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 					((str_plus < str_done) ||
 					(str_done == -1)))
 				{
-					text_out("With an additional %d strength and %d dex you would get %d blows\n",
-						str_plus, dex_plus, new_blows);
+					text_out("With an additional %d strength and %d dex you would get %d.%d blows\n",
+						str_plus, dex_plus, (new_blows
+						/ 100 + extra_blows),
+						(new_blows / 10) % 10);
 					state.stat_ind[A_STR] -= str_plus;
 					state.stat_ind[A_DEX] -= dex_plus;
 					str_done = str_plus;
@@ -736,7 +741,7 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 
 		for (i = INVEN_LEFT; i < INVEN_TOTAL; i++)
 		{
-			object_flags_known(&inventory[i], tmp_f);
+			object_flags_known(&p_ptr->inventory[i], tmp_f);
 
 			flags_mask(tmp_f, OF_SIZE, OF_ALL_SLAY_MASK, FLAG_END);
 
@@ -755,8 +760,9 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 	cnt = collect_slays(desc, mult, f);
 	for (i = 0; i < cnt; i++)
 	{
+		int melee_adj_mult = ammo ? 0 : 1; /* ammo mult adds fully, melee mult is times 1, so adds 1 less */
 		/* Include bonus damage and slay in stated average */
-		total_dam = dam * (multiplier + mult[i]) + xtra_precrit;
+		total_dam = dam * (multiplier + mult[i] - melee_adj_mult) + xtra_precrit;
 		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
 		total_dam += xtra_postcrit;
 
@@ -835,14 +841,14 @@ static bool describe_digger(const object_type *o_ptr, oinfo_detail_t mode)
 	if (sl < 0 || (sl != INVEN_WIELD && !of_has(f, OF_TUNNEL)))
 		return FALSE;
 
-	memcpy(inven, inventory, INVEN_TOTAL * sizeof(object_type));
+	memcpy(inven, p_ptr->inventory, INVEN_TOTAL * sizeof(object_type));
 
 	/*
 	 * Hack -- if we examine a ring that is worn on the right finger,
 	 * we shouldn't put a copy of it on the left finger before calculating
 	 * digging skills.
 	 */
-	if (o_ptr != &inventory[INVEN_RIGHT])
+	if (o_ptr != &p_ptr->inventory[INVEN_RIGHT])
 		inven[sl] = *o_ptr;
 
 	calc_bonuses(inven, &st, TRUE);
@@ -1134,7 +1140,7 @@ void object_info_header(const object_type *o_ptr)
 
 		case ORIGIN_DROP:
 		{
-			const char *name = r_name + r_info[o_ptr->origin_xtra].name;
+			const char *name = r_info[o_ptr->origin_xtra].name;
 			bool unique = rf_has(r_info[o_ptr->origin_xtra].flags, RF_UNIQUE) ? TRUE : FALSE;
 
 			text_out("(dropped by ");
@@ -1184,7 +1190,7 @@ void object_info_header(const object_type *o_ptr)
 	if (!OPT(adult_randarts) && o_ptr->name1 &&
 	    object_is_known(o_ptr) && a_info[o_ptr->name1].text)
 	{
-		text_out(a_text + a_info[o_ptr->name1].text);
+		text_out(a_info[o_ptr->name1].text);
 		text_out("\n\n");
 	}
 
@@ -1195,7 +1201,7 @@ void object_info_header(const object_type *o_ptr)
 
 		if (k_info[o_ptr->k_idx].text)
 		{
-			text_out(k_text + k_info[o_ptr->k_idx].text);
+			text_out(k_info[o_ptr->k_idx].text);
 			did_desc = TRUE;
 		}
 
@@ -1203,7 +1209,7 @@ void object_info_header(const object_type *o_ptr)
 		if (object_ego_is_visible(o_ptr) && e_info[o_ptr->name2].text)
 		{
 			if (did_desc) text_out("  ");
-			text_out(e_text + e_info[o_ptr->name2].text);
+			text_out(e_info[o_ptr->name2].text);
 			text_out("\n\n");
 		}
 		else if (did_desc)

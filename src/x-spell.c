@@ -15,10 +15,12 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "cave.h"
 #include "effects.h"
 #include "object/tvalsval.h"
-
+#include "spells.h"
 
 /*
  * The defines below must match the spell numbers in spell.txt
@@ -194,9 +196,9 @@ int get_spell_index(const object_type *o_ptr, int index)
 cptr get_spell_name(int tval, int spell)
 {
 	if (tval == TV_MAGIC_BOOK)
-		return s_name + s_info[spell].name;
+		return s_info[spell].name;
 	else
-		return s_name + s_info[spell + PY_MAX_SPELLS].name;
+		return s_info[spell + PY_MAX_SPELLS].name;
 }
 
 

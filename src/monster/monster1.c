@@ -15,10 +15,11 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#include "angband.h"
-#include "object/tvalsval.h"
-#include "monster/constants.h"
 
+#include "angband.h"
+#include "monster/constants.h"
+#include "monster/monster.h"
+#include "object/tvalsval.h"
 
 /*
  * Pronoun arrays, by gender.
@@ -119,7 +120,7 @@ void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
 	player_state st;
 	int tmp_col;
 
-	calc_bonuses(inventory, &st, TRUE);
+	calc_bonuses(p_ptr->inventory, &st, TRUE);
 
 	/* Initialize the colors to green */
 	for (i = 0; i < RBE_MAX; i++)
@@ -130,7 +131,7 @@ void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
 	/* Scan the inventory for potentially vulnerable items */
 	for (i = 0; i < INVEN_TOTAL; i++)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Only occupied slots */
 		if (!o_ptr->k_idx) continue;
@@ -496,7 +497,7 @@ static bool know_damage(int r_idx, const monster_lore *l_ptr, int i)
 static void describe_monster_desc(int r_idx)
 {
 	const monster_race *r_ptr = &r_info[r_idx];
-	text_out("%s\n", r_text + r_ptr->text);
+	text_out("%s\n", r_ptr->text);
 }
 
 
@@ -1946,7 +1947,7 @@ void roff_top(int r_idx)
 	}
 
 	/* Dump the name */
-	Term_addstr(-1, TERM_WHITE, (r_name + r_ptr->name));
+	Term_addstr(-1, TERM_WHITE, r_ptr->name);
 
 	if ((tile_width == 1) && (tile_height == 1))
 	{
@@ -2032,7 +2033,7 @@ int lookup_monster(const char *name)
 	for (i = 1; i < z_info->r_max; i++)
 	{
 		monster_race *r_ptr = &r_info[i];
-		const char *nm = r_name + r_ptr->name;
+		const char *nm = r_ptr->name;
 
 		/* Found a match */
 		if (streq(name, nm))

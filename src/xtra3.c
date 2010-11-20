@@ -17,15 +17,17 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#include "angband.h"
 
+#include "angband.h"
+#include "button.h"
+#include "cave.h"
+#include "files.h"
 #include "game-event.h"
 #include "game-cmd.h"
-
+#include "monster/monster.h"
+#include "object/tvalsval.h"
 #include "textui.h"
 #include "ui-birth.h"
-
-#include "object/tvalsval.h"
 
 /* 
  * There are a few functions installed to be triggered by several 
@@ -156,7 +158,7 @@ static void prt_title(int row, int col)
 	/* Normal */
 	else
 	{
-		p = c_text + cp_ptr->title[(p_ptr->lev - 1) / 5];
+		p = cp_ptr->title[(p_ptr->lev - 1) / 5];
 	}
 
 	prt_field(p, row, col);
@@ -249,7 +251,7 @@ static void prt_equippy(int row, int col)
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
 		/* Object */
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 
 		a = object_attr(o_ptr);
 		c = object_char(o_ptr);
@@ -532,8 +534,8 @@ static void prt_wis(int row, int col) { prt_stat(A_WIS, row, col); }
 static void prt_int(int row, int col) { prt_stat(A_INT, row, col); }
 static void prt_con(int row, int col) { prt_stat(A_CON, row, col); }
 static void prt_chr(int row, int col) { prt_stat(A_CHR, row, col); }
-static void prt_race(int row, int col) { prt_field(p_name + rp_ptr->name, row, col); }
-static void prt_class(int row, int col) { prt_field(c_name + cp_ptr->name, row, col); }
+static void prt_race(int row, int col) { prt_field(rp_ptr->name, row, col); }
+static void prt_class(int row, int col) { prt_field(cp_ptr->name, row, col); }
 
 
 /*
@@ -1392,8 +1394,8 @@ static void update_player_compact_subwindow(game_event_type type, game_event_dat
 	Term_activate(inv_term);
 
 	/* Race and Class */
-	prt_field(p_name + rp_ptr->name, row++, col);
-	prt_field(c_name + cp_ptr->name, row++, col);
+	prt_field(rp_ptr->name, row++, col);
+	prt_field(cp_ptr->name, row++, col);
 
 	/* Title */
 	prt_title(row++, col);

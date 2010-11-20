@@ -17,17 +17,15 @@
  */
 #include "angband.h"
 
+#ifdef USE_GCU
+#include "main.h"
+#include "files.h"
+
 /* included for redrawing code, to prevent warnings */
 #include "cmds.h"
 
-#ifdef USE_GCU
-
-#include "main.h"
-
-
 /* Avoid 'struct term' name conflict with <curses.h> (via <term.h>) on AIX */
 #define term System_term
-
 
 /*
  * Include the proper "header" file
@@ -853,7 +851,7 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 
 #ifdef A_COLOR
 	/* Set the color */
-	if (can_use_color) wattrset(td->win, colortable[a & 255]);
+	if (can_use_color) (void)wattrset(td->win, colortable[a & 255]);
 #endif
 
 	/* Move the cursor */

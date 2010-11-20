@@ -21,6 +21,9 @@
 #ifdef USE_GTK
 #include "main-gtk.h"
 #include "textui.h"
+#include "files.h"
+#include "macro.h"
+
 /* 
  *Add a bunch of debugger message, to trace where problems are. 
  */
@@ -2187,7 +2190,7 @@ static int last_inv_slot(void)
 	/* Find the "final" slot */
 	for (i = 0; i < INVEN_PACK; i++)
 	{
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
@@ -2207,7 +2210,7 @@ static void inv_slot(char *str, size_t len, int i, bool equip)
 	int name_size = 80;
 	
 	/* Examine the item */
-	o_ptr = &inventory[i];
+	o_ptr = &p_ptr->inventory[i];
 
 	/* Is this item "acceptable"? */
 	if (item_tester_okay(o_ptr) || equip)
@@ -2276,7 +2279,7 @@ static void handle_inv(game_event_type type, game_event_data *data, void *user)
 	for (i = 0; i < z; i++)
 	{
 		/* Examine the item */
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Is this item "acceptable"? */
 		if (item_tester_okay(o_ptr))
@@ -2315,7 +2318,7 @@ static void handle_equip(game_event_type type, game_event_data *data, void *user
 	/* Display the pack */
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 	
 		attr = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
 
@@ -2410,7 +2413,7 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 
 		/* Get monster race and name */
 		r_ptr = &r_info[i];
-		m_name = r_name + r_ptr->name;
+		m_name = r_ptr->name;
 
 		/* Display uniques in a special colour */
 		if (rf_has(r_ptr->flags, RF_UNIQUE))
@@ -2495,7 +2498,7 @@ static void cr_print_equippy(xtra_win_data *xd, int y)
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
 		/* Object */
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 
 		a = object_attr(o_ptr);
 		strnfmt(c, sizeof(c), "%c",object_char(o_ptr)); 
@@ -2551,15 +2554,15 @@ static void handle_sidebar(game_event_type type, game_event_data *data, void *us
 		draw_xtra_cr_text(xd, 0, 0, TERM_L_BLUE, str);
 		
 		/* Char Race */
-		strnfmt(str, sizeof(str), "%s", p_name + rp_ptr->name);
+		strnfmt(str, sizeof(str), "%s", rp_ptr->name);
 		draw_xtra_cr_text(xd, 0, 1, TERM_L_BLUE, str);
 		
 		/* Char Title*/
-		strnfmt(str, sizeof(str), "%s", c_text + cp_ptr->title[(p_ptr->lev - 1) / 5], TERM_L_BLUE); 
+		strnfmt(str, sizeof(str), "%s", cp_ptr->title[(p_ptr->lev - 1) / 5], TERM_L_BLUE); 
 		draw_xtra_cr_text(xd, 0, 2, TERM_L_BLUE, str);
 		
 		/* Char Class */
-		strnfmt(str, sizeof(str), "%s", c_name + cp_ptr->name); 
+		strnfmt(str, sizeof(str), "%s", cp_ptr->name); 
 		draw_xtra_cr_text(xd, 0, 3, TERM_L_BLUE, str);
 
 		/* Char Level */

@@ -35,23 +35,6 @@ const char *copyright =
 	"   and not for profit purposes provided that this copyright and statement\n"
 	"   are included in all such copies.  Other copyrights may also apply.\n";
 
-
-/*
- * Executable version
- */
-byte version_major = VERSION_MAJOR;
-byte version_minor = VERSION_MINOR;
-byte version_patch = VERSION_PATCH;
-byte version_extra = VERSION_EXTRA;
-
-/*
- * Savefile version
- */
-byte sf_major;			/* Savefile's "version_major" */
-byte sf_minor;			/* Savefile's "version_minor" */
-byte sf_patch;			/* Savefile's "version_patch" */
-byte sf_extra;			/* Savefile's "version_extra" */
-
 /*
  * Run-time arguments
  */
@@ -132,24 +115,6 @@ bool closing_flag;		/* Dungeon is closing */
  * Buffer to hold the current savefile name
  */
 char savefile[1024];
-char panic_savefile[1024];
-
-
-/*
- * Number of active macros.
- */
-s16b macro__num;
-
-/*
- * Array of macro patterns [MACRO_MAX]
- */
-char **macro__pat;
-
-/*
- * Array of macro actions [MACRO_MAX]
- */
-char **macro__act;
-
 
 /*
  * The array[ANGBAND_TERM_MAX] of window pointers
@@ -173,15 +138,6 @@ char angband_term_name[ANGBAND_TERM_MAX][16] =
 	"Term-6",
 	"Term-7"
 };
-
-
-int max_macrotrigger = 0;
-char *macro_template = NULL;
-char *macro_modifier_chr;
-char *macro_modifier_name[MAX_MACRO_MOD];
-char *macro_trigger_name[MAX_MACRO_TRIGGER];
-char *macro_trigger_keycode[2][MAX_MACRO_TRIGGER];
-
 
 /*
  * Global table of color definitions (mostly zeros)
@@ -584,12 +540,6 @@ int store_knowledge = STORE_NONE;
 cptr** name_sections;
 
 /*
- * Array[INVEN_TOTAL] of objects in the player's inventory
- */
-object_type *inventory;
-
-
-/*
  * The size of the "alloc_ego_table"
  */
 s16b alloc_ego_size;
@@ -679,86 +629,45 @@ maxima *z_info;
  * The vault generation arrays
  */
 vault_type *v_info;
-char *v_name;
-char *v_text;
 
-/*
- * The terrain feature arrays
- */
 feature_type *f_info;
-char *f_name;
-char *f_text;
 
-/*
- * The object kind arrays
- */
 object_kind *k_info;
-char *k_name;
-char *k_text;
 
 /*
  * The artifact arrays
  */
 artifact_type *a_info;
-char *a_name;
-char *a_text;
 
 /*
  * The ego-item arrays
  */
 ego_item_type *e_info;
-char *e_name;
-char *e_text;
 flag_cache *slay_cache;
 
 /*
  * The monster race arrays
  */
 monster_race *r_info;
-char *r_name;
-char *r_text;
 
-
-/*
- * The player race arrays
- */
 player_race *p_info;
-char *p_name;
-char *p_text;
-
-/*
- * The player class arrays
- */
 player_class *c_info;
-char *c_name;
-char *c_text;
-
 /*
  * The player history arrays
  */
 hist_type *h_info;
-char *h_text;
 
-/*
- * The shop owner arrays
- */
 owner_type *b_info;
-char *b_name;
-char *b_text;
 
 /*
  * The object flavor arrays
  */
 flavor_type *flavor_info;
-char *flavor_name;
-char *flavor_text;
 
 /*
  * The spell arrays
  */
 spell_type *s_info;
-char *s_name;
-char *s_text;
 
 
 /*
@@ -862,6 +771,11 @@ int text_out_wrap = 0;
  * Hack -- Indentation for the text when using text_out().
  */
 int text_out_indent = 0;
+
+/*
+ * Hack -- Padding after wrapping
+ */
+int text_out_pad = 0;
 
 
 /*

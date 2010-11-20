@@ -16,16 +16,17 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#include "angband.h"
-#include "object/tvalsval.h"
-#include "game-event.h"
 
+#include "angband.h"
+#include "cave.h"
+#include "game-event.h"
+#include "history.h"
+#include "object/tvalsval.h"
+#include "spells.h"
+#include "squelch.h"
 
 /** Time last item was wielded */
 s32b object_last_wield;
-
-
-
 
 /*** Knowledge accessor functions ***/
 
@@ -355,8 +356,8 @@ void object_flavor_aware(object_type *o_ptr)
 {
 	int i;
 
-	if (k_info[o_ptr->k_idx].aware) return;
-	k_info[o_ptr->k_idx].aware = TRUE;
+	if (o_ptr->kind->aware) return;
+	o_ptr->kind->aware = TRUE;
 
 	/* Fix squelch/autoinscribe */
 	p_ptr->notice |= PN_SQUELCH;
@@ -751,7 +752,7 @@ void object_notice_on_defend(void)
 	int i;
 
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
-		object_notice_defence_plusses(&inventory[i]);
+		object_notice_defence_plusses(&p_ptr->inventory[i]);
 
 	event_signal(EVENT_INVENTORY);
 	event_signal(EVENT_EQUIPMENT);
@@ -916,7 +917,7 @@ static void object_notice_after_time(void)
 	/* Check every item the player is wearing */
 	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 
 		if (!o_ptr->k_idx || object_is_known(o_ptr)) continue;
 
@@ -970,7 +971,7 @@ void wieldeds_notice_flag(int flag)
 	/* XXX Eddie need different naming conventions for starting wieldeds at INVEN_WIELD vs INVEN_WIELD+2 */
 	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 		bitflag f[OF_SIZE];
 
 		if (!o_ptr->k_idx) continue;
@@ -1021,7 +1022,7 @@ void wieldeds_notice_on_attack(void)
 	int i;
 
 	for (i = INVEN_WIELD + 2; i < INVEN_TOTAL; i++)
-		object_notice_attack_plusses(&inventory[i]);
+		object_notice_attack_plusses(&p_ptr->inventory[i]);
 
 	/* XXX Eddie print message? */
 	/* XXX Eddie do we need to do more about ammo? */
@@ -1155,7 +1156,7 @@ void sense_inventory(void)
 	{
 		const char *text = NULL;
 
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 		obj_pseudo_t feel;
 		bool cursed;
 
