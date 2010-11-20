@@ -1081,12 +1081,12 @@ void player_birth(bool quickstart_allowed)
 		}
 		else if (cmd->command == CMD_CHOOSE_SEX)
 		{
-			p_ptr->psex = cmd->args[0].choice; 
+			p_ptr->psex = cmd->arg[0].choice; 
 			player_generate(p_ptr, NULL, NULL, NULL);
 		}
 		else if (cmd->command == CMD_CHOOSE_RACE)
 		{
-			p_ptr->prace = cmd->args[0].choice;
+			p_ptr->prace = cmd->arg[0].choice;
 			player_generate(p_ptr, NULL, NULL, NULL);
 
 			reset_stats(stats, points_spent, &points_left);
@@ -1095,7 +1095,7 @@ void player_birth(bool quickstart_allowed)
 		}
 		else if (cmd->command == CMD_CHOOSE_CLASS)
 		{
-			p_ptr->pclass = cmd->args[0].choice;
+			p_ptr->pclass = cmd->arg[0].choice;
 			player_generate(p_ptr, NULL, NULL, NULL);
 
 			reset_stats(stats, points_spent, &points_left);
@@ -1106,20 +1106,20 @@ void player_birth(bool quickstart_allowed)
 		{
 			/* .choice is the stat to buy */
 			if (!rolled_stats)
-				buy_stat(cmd->args[0].choice, stats, points_spent, &points_left);
+				buy_stat(cmd->arg[0].choice, stats, points_spent, &points_left);
 		}
 		else if (cmd->command == CMD_SELL_STAT)
 		{
 			/* .choice is the stat to sell */
 			if (!rolled_stats)
-				sell_stat(cmd->args[0].choice, stats, points_spent, &points_left);
+				sell_stat(cmd->arg[0].choice, stats, points_spent, &points_left);
 		}
 		else if (cmd->command == CMD_RESET_STATS)
 		{
 			/* .choice is whether to regen stats */
 			reset_stats(stats, points_spent, &points_left);
 
-			if (cmd->args[0].choice)
+			if (cmd->arg[0].choice)
 				generate_stats(stats, points_spent, &points_left);
 
 			rolled_stats = FALSE;
@@ -1178,10 +1178,10 @@ void player_birth(bool quickstart_allowed)
 		else if (cmd->command == CMD_NAME_CHOICE)
 		{
 			/* Set player name */
-			my_strcpy(op_ptr->full_name, cmd->args[0].string,
+			my_strcpy(op_ptr->full_name, cmd->arg[0].string,
 					  sizeof(op_ptr->full_name));
 
-			string_free((void *) cmd->args[0].string);
+			string_free((void *) cmd->arg[0].string);
 
 			/* Don't change savefile name.  If the UI
 			   wants it changed, they can do it. XXX (Good idea?) */

@@ -122,6 +122,18 @@ typedef union
 /* Maximum number of arguments a command needs to take. */
 #define CMD_MAX_ARGS 2
 
+enum cmd_arg_type
+{
+	arg_NONE = 0,
+	arg_STRING = 0x01,
+	arg_CHOICE = 0x02,
+	arg_NUMBER = 0x04,
+	arg_ITEM = 0x08,
+	arg_DIRECTION = 0x10,
+	arg_TARGET = 0x20,
+	arg_POINT = 0x40
+};
+
 /*
  * The game_command type is used to return details of the command the
  * game should carry out.
@@ -140,10 +152,13 @@ typedef struct game_command
 	int nrepeats; 
 
 	/* Arguments to the command */
-	cmd_arg args[CMD_MAX_ARGS];
+	cmd_arg arg[CMD_MAX_ARGS];
 
 	/* Whether an argument was passed or not */
 	bool arg_present[CMD_MAX_ARGS];
+
+	/* Types of the arguments passed */
+	enum cmd_arg_type arg_type[CMD_MAX_ARGS];
 } game_command;
 
 
@@ -159,8 +174,19 @@ errr cmd_insert_s(game_command *cmd);
  * Convenience functions.
  * Insert a command with params in the queue to be carried out.
  */
-errr cmd_insert(cmd_code c, ...);
-errr cmd_insert_repeated(cmd_code c, int nrepeats,  ...);
+errr cmd_insert_repeated(cmd_code c, int nrepeats);
+errr cmd_insert(cmd_code c);
+
+/**
+ * Set the args of the top command in the queue.
+ */
+void cmd_set_arg_choice(int n, int choice);
+void cmd_set_arg_string(int n, const char *str);
+void cmd_set_arg_direction(int n, int dir);
+void cmd_set_arg_target(int n, int target);
+void cmd_set_arg_point(int n, int x, int y);
+void cmd_set_arg_item(int n, int item);
+void cmd_set_arg_number(int n, int num);
 
 /* 
  * Gets the next command from the queue, optionally waiting to allow

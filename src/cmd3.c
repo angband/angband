@@ -326,7 +326,8 @@ void textui_cmd_destroy(void)
 	/* Deal with squelched items */
 	if (item == ALL_SQUELCHED)
 	{
-		cmd_insert(CMD_DESTROY, item, 0);
+		cmd_insert(CMD_DESTROY);
+		cmd_set_arg_item(0, item);
 		return;
 	}
 	
@@ -349,7 +350,11 @@ void textui_cmd_destroy(void)
 	result = get_char(out_val, "yns", 3, 'n');
 
 	if (result == 'y')
-		cmd_insert(CMD_DESTROY, item, amt);
+	{
+		cmd_insert(CMD_DESTROY);
+		cmd_set_arg_item(0, item);
+		cmd_set_arg_number(1, amt);
+	}
 	else if (result == 's' && squelch_interactive(o_ptr))
 	{
 		p_ptr->notice |= PN_SQUELCH;
