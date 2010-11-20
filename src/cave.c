@@ -1127,11 +1127,11 @@ void move_cursor_relative(int y, int x)
 
 	if (tile_width > 1)
 	{
-	        vx = tile_width * kx;
+	        vx += (tile_width - 1) * kx;
 	}
 	if (tile_height > 1)
 	{
-		vy = tile_height * ky;
+	        vy += (tile_height - 1) * ky;
 	}
 
 	/* Go there */

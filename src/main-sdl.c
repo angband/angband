@@ -2797,7 +2797,7 @@ static errr Term_bigcurs_sdl(int col, int row)
 	SDL_Rect rc;
 	
 	/* Make a rectangle */
-	RECT((col + tile_width) * win->tile_wid, (row + tile_height / 2) * win->tile_hgt, win->tile_wid * tile_width, win->tile_hgt * tile_height, &rc);
+	RECT(col * win->tile_wid, row * win->tile_hgt, win->tile_wid * tile_width, win->tile_hgt * tile_height, &rc);
 	
 	/* Translate it */
 	rc.x += win->border;

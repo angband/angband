@@ -1353,7 +1353,8 @@ errr Term_fresh(void)
 		/* Draw the cursor */
 		if (!scr->cu && scr->cv)
 		{
-		        if ((tile_width > 1)||(tile_height > 1))
+		        if (((tile_width > 1)||(tile_height > 1)) && 
+			    (Term->saved == 0) && (scr->cy > 0))
 			{
 				/* Double width cursor for the Bigtile mode */
 				(void)((*Term->bigcurs_hook)(scr->cx, scr->cy));
@@ -2159,6 +2160,9 @@ errr Term_save(void)
 	mem->next = Term->mem;
 	Term->mem = mem;
 
+	/* One more saved */
+	Term->saved++;
+
 	/* Success */
 	return (0);
 }
@@ -2205,6 +2209,9 @@ errr Term_load(void)
 	/* Assume change */
 	Term->y1 = 0;
 	Term->y2 = h - 1;
+
+	/* One less saved */
+	Term->saved--;
 
 	/* Success */
 	return (0);
@@ -2565,6 +2572,8 @@ errr term_init(term *t, int w, int h, int k)
 	t->attr_blank = 0;
 	t->char_blank = ' ';
 
+	/* No saves yet */
+	t->saved = 0;
 
 	/* Success */
 	return (0);
