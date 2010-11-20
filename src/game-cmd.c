@@ -402,7 +402,19 @@ void process_command(cmd_context ctx, bool no_request)
 				
 				break;
 			}
-			
+
+			case CMD_DROP:
+			{
+				if (!cmd->arg_present[1])
+				{
+					object_type *o_ptr = object_from_item_idx(cmd->arg[0].item);
+					int amt = get_quantity(NULL, o_ptr->number);
+					if (amt <= 0)
+						return;
+
+					cmd->arg[1].number = amt;
+				}
+			}
 			
 			/* 
 			 * These take an item number and a  "target" as arguments, 

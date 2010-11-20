@@ -363,18 +363,6 @@ void do_cmd_drop(cmd_code code, cmd_arg args[])
 	p_ptr->energy_use = 50;
 }
 
-void textui_obj_drop(object_type *o_ptr, int item)
-{
-	int amt;
-
-	amt = get_quantity(NULL, o_ptr->number);
-	if (amt <= 0) return;
-
-	cmd_insert(CMD_DROP);
-	cmd_set_arg_item(0, item);
-	cmd_set_arg_number(1, amt);
-}
-
 void textui_obj_wield(object_type *o_ptr, int item)
 {
 	int slot = wield_slot(o_ptr);

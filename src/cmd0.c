@@ -110,10 +110,10 @@ static struct item_command item_actions[] =
 	    obj_can_wear, (USE_INVEN | USE_FLOOR) },
 	  textui_obj_wield, "wield", FALSE },
 
-	{ { "Drop an item", 'd', CMD_NULL, NULL, NULL },
+	{ { "Drop an item", 'd', CMD_DROP, NULL, NULL },
 	  { "Drop which item? ", "You have nothing to drop.",
 	    NULL, (USE_EQUIP | USE_INVEN) },
-	  textui_obj_drop, "drop", FALSE },
+	  NULL, "drop", FALSE },
 
 	/*** Attacking ***/
 	{ { "Fire your missile weapon", 'f', CMD_FIRE, NULL, player_can_fire },
