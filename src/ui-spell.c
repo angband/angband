@@ -68,11 +68,11 @@ static void spell_menu_display(menu_type *m, int oid, bool cursor,
 	char out[80];
 
 	int attr;
-	const char *name;
+	const char *illegible = NULL;
 	const char *comment = NULL;
 
 	if (s_ptr->slevel >= 99) {
-		name = "(illegible)";
+		illegible = "(illegible)";
 		attr = TERM_L_DARK;
 	} else if (p_ptr->spell_flags[spell] & PY_SPELL_FORGOTTEN) {
 		comment = " forgotten";
@@ -99,7 +99,7 @@ static void spell_menu_display(menu_type *m, int oid, bool cursor,
 	strnfmt(out, sizeof(out), "%-30s%2d %4d %3d%%%s",
 			get_spell_name(cp_ptr->spell_book, spell),
 			s_ptr->slevel, s_ptr->smana, spell_chance(spell), comment);
-	c_prt(attr, out, row, col);
+	c_prt(attr, illegible ? illegible : out, row, col);
 }
 
 /**

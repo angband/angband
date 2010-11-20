@@ -426,8 +426,11 @@ int main(int argc, char *argv[])
 
 #ifdef SET_UID
 
-	/* Get the "user name" as a default player name */
-	user_name(op_ptr->full_name, sizeof(op_ptr->full_name), player_uid);
+	/* Get the "user name" as a default player name, unless set with -u switch */
+	if(!op_ptr->full_name)
+	{
+		user_name(op_ptr->full_name, sizeof(op_ptr->full_name), player_uid);
+	}
 
 	/* Create any missing directories */
 	create_needed_dirs();
