@@ -534,13 +534,16 @@ void Term_big_queue_char(term *t, int x, int y, byte a, char c, byte a1, char c1
 	if (tile_width > 1)
 	{
 	        /* Horizontal first */
-	        for (hor = 1; hor <= tile_width; hor++)
+	        for (hor = 0; hor <= tile_width; hor++)
 		{
 		        /* Queue dummy character */
-	                if (a & 0x80)
-		                Term_queue_char(t, x + hor, y, 255, -1, 0, 0);
-			else
-		                Term_queue_char(t, x + hor, y, TERM_WHITE, ' ', a1, c1);
+		        if (hor != 0)
+			{
+			        if (a & 0x80)
+				        Term_queue_char(t, x + hor, y, 255, -1, 0, 0);
+				else
+				        Term_queue_char(t, x + hor, y, TERM_WHITE, ' ', a1, c1);
+			}
 
 			/* Now vertical */
 			for (vert = 1; vert <= tile_height; vert++)
@@ -1350,7 +1353,7 @@ errr Term_fresh(void)
 		/* Draw the cursor */
 		if (!scr->cu && scr->cv)
 		{
-			if ((scr->cx + 1 < w) && (old->a[scr->cy][scr->cx + 1] == 255))
+		        if ((tile_width > 1)||(tile_height > 1))
 			{
 				/* Double width cursor for the Bigtile mode */
 				(void)((*Term->bigcurs_hook)(scr->cx, scr->cy));
@@ -1621,13 +1624,16 @@ void Term_big_putch(int x, int y, byte a, char c)
 	if (tile_width > 1)
 	{
 	        /* Horizontal first */
-	        for (hor = 1; hor <= tile_width; hor++)
+	        for (hor = 0; hor <= tile_width; hor++)
 		{
 		        /* Queue dummy character */
-	                if (a & 0x80)
-		                Term_putch(x + hor, y, 255, -1);
-			else
-		                Term_putch(x + hor, y, TERM_WHITE, ' ');
+		        if (hor != 0)
+			{	
+			        if (a & 0x80)
+				        Term_putch(x + hor, y, 255, -1);
+				else
+				        Term_putch(x + hor, y, TERM_WHITE, ' ');
+			}
 
 			/* Now vertical */
 			for (vert = 1; vert <= tile_height; vert++)

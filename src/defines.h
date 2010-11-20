@@ -95,12 +95,12 @@
 /**
  * Number of text rows in each map screen, regardless of tile size
  */
-#define SCREEN_ROWS	(Term->hgt - ROW_MAP) 
+#define SCREEN_ROWS	(Term->hgt - ROW_MAP - 1) 
 
 /**
  * Number of grids in each screen (vertically)
  */
-#define SCREEN_HGT    ((int) (SCREEN_ROWS / tile_width))
+#define SCREEN_HGT    ((int) (SCREEN_ROWS / tile_height))
 
 /**
  * Number of grids in each screen (horizontally)

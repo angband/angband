@@ -1505,9 +1505,8 @@ static void SelectGfx(sdl_Button *sender)
 
 static void AcceptChanges(sdl_Button *sender)
 {
-	sdl_Button *button, *button1, *button2, *button3;
+	sdl_Button *button;
 	bool do_video_reset = FALSE;
-        bool check_size = FALSE;
 	
 #ifdef USE_GRAPHICS
 	if (use_graphics != SelectedGfx)
@@ -1698,7 +1697,7 @@ static void MoreActivate(sdl_Button *sender)
 	int width = 300;
 	int height = 300;
 	int i;
-	sdl_Button *button, *button1, *button2, *button3;
+	sdl_Button *button;
 	
 	Uint32 ucolour;
 	Uint32 scolour;
@@ -2797,7 +2796,7 @@ static errr Term_bigcurs_sdl(int col, int row)
 	SDL_Rect rc;
 	
 	/* Make a rectangle */
-	RECT(col * win->tile_wid, row * win->tile_hgt, win->tile_wid * 2, win->tile_hgt, &rc);
+	RECT((col + tile_width) * win->tile_wid, (row + tile_height / 2) * win->tile_hgt, win->tile_wid * tile_width, win->tile_hgt * tile_height, &rc);
 	
 	/* Translate it */
 	rc.x += win->border;
