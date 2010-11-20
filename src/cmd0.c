@@ -674,9 +674,14 @@ static void textui_process_click(ui_event_data e)
 	else /* if (e.mousebutton == 1) */
 	{
 		if (p_ptr->timed[TMD_CONFUSED])
-			cmd_insert(CMD_WALK, DIR_UNKNOWN);
+		{
+			cmd_insert(CMD_WALK);
+		}
 		else
-			cmd_insert(CMD_PATHFIND, y, x);
+		{
+			cmd_insert(CMD_PATHFIND);
+			cmd_set_arg_point(0, y, x);
+		}
 	}
 
 #if 0
@@ -758,7 +763,10 @@ static bool textui_process_key(unsigned char c)
 			if (act->action != NULL)
 				act->action(o_ptr, item);
 			else
-				cmd_insert_repeated(command->cmd, p_ptr->command_arg, item);
+			{
+				cmd_insert_repeated(command->cmd, p_ptr->command_arg);
+				cmd_set_arg_item(0, item);
+			}
 		}
 		else
 		{

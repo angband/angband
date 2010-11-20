@@ -839,7 +839,9 @@ void textui_cmd_fire_at_nearest(void)
 	}
 
 	/* Fire! */
-	cmd_insert(CMD_FIRE, item, dir);
+	cmd_insert(CMD_FIRE);
+	cmd_set_arg_item(0, item);
+	cmd_set_arg_direction(1, dir);
 }
 
 /*
@@ -1177,5 +1179,7 @@ void textui_cmd_throw(void)
 	/* Get a direction (or cancel) */
 	if (!get_aim_dir(&dir)) return;
 
-	cmd_insert(CMD_THROW, item, dir);
+	cmd_insert(CMD_THROW);
+	cmd_set_arg_item(0, item);
+	cmd_set_arg_direction(1, dir);
 }

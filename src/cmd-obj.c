@@ -223,7 +223,9 @@ void textui_obj_inscribe(object_type *o_ptr, int item)
 	/* Get a new inscription (possibly empty) */
 	if (get_string("Inscription: ", tmp, sizeof(tmp)))
 	{
-		cmd_insert(CMD_INSCRIBE, item, tmp);
+		cmd_insert(CMD_INSCRIBE);
+		cmd_set_arg_item(0, item);
+		cmd_set_arg_string(1, tmp);
 	}
 }
 
@@ -368,7 +370,9 @@ void textui_obj_drop(object_type *o_ptr, int item)
 	amt = get_quantity(NULL, o_ptr->number);
 	if (amt <= 0) return;
 
-	cmd_insert(CMD_DROP, item, amt);
+	cmd_insert(CMD_DROP);
+	cmd_set_arg_item(0, item);
+	cmd_set_arg_number(1, amt);
 }
 
 void textui_obj_wield(object_type *o_ptr, int item)
@@ -397,7 +401,9 @@ void textui_obj_wield(object_type *o_ptr, int item)
 		}
 	}
 
-	cmd_insert(CMD_WIELD, item, slot);
+	cmd_insert(CMD_WIELD);
+	cmd_set_arg_item(0, item);
+	cmd_set_arg_number(1, slot);
 }
 
 

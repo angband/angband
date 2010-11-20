@@ -286,22 +286,18 @@ void textui_spell_browse(object_type *o_ptr, int item)
  */
 void textui_obj_study(object_type *o_ptr, int item)
 {
-	/* Track the object kind */
 	track_object(item);
 	handle_stuff();
 
-	/* Mage -- Choose a spell to study */
-	if (player_has(PF_CHOOSE_SPELLS))
-	{
+	if (player_has(PF_CHOOSE_SPELLS)) {
 		int spell = get_spell(o_ptr, "study", spell_okay_to_study);
-		if (spell >= 0)
-			cmd_insert(CMD_STUDY_SPELL, spell);
-	}
-
-	/* Priest -- Choose a book to study */
-	else
-	{
-		cmd_insert(CMD_STUDY_BOOK, item);
+		if (spell >= 0) {
+			cmd_insert(CMD_STUDY_SPELL);
+			cmd_set_arg_choice(0, spell);
+		}
+	} else {
+		cmd_insert(CMD_STUDY_BOOK);
+		cmd_set_arg_item(0, item);
 	}
 }
 
@@ -319,6 +315,8 @@ void textui_obj_cast(object_type *o_ptr, int item)
 
 	/* Ask for a spell */
 	spell = get_spell(o_ptr, verb, spell_okay_to_cast);
-	if (spell >= 0)
-		cmd_insert(CMD_CAST, spell);
+	if (spell >= 0) {
+		cmd_insert(CMD_CAST);
+		cmd_set_arg_choice(0, spell);
+	}
 }
