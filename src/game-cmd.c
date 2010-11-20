@@ -321,8 +321,8 @@ void process_command(cmd_context ctx, bool no_request)
 	/* If we've got a command to process, do it. */
 	if (cmd_get(ctx, &cmd, !no_request) == 0)
 	{
-		int idx = cmd_idx(cmd->command);
 		int oldrepeats = cmd->nrepeats;
+		int idx = cmd_idx(cmd->command);
 
 		if (idx == -1) return;
 
@@ -330,19 +330,70 @@ void process_command(cmd_context ctx, bool no_request)
 		   been declared as "unknown", such as directions and targets. */
 		switch (cmd->command)
 		{
+			case CMD_OPEN:
+			{
+				if (OPT(easy_open) && (!cmd->arg_present[0] ||
+						cmd->args[0].direction == DIR_UNKNOWN))
+				{
+					int y, x;
+					int n_closed_doors, n_locked_chests;
+			
+					n_closed_doors = count_feats(&y, &x, is_closed, FALSE);
+					n_locked_chests = count_chests(&y, &x, FALSE);
+			
+					if (n_closed_doors + n_locked_chests == 1)
+						cmd->args[0].direction = coords_to_dir(y, x);
+				}
+
+				goto get_dir;
+			}
+
+			case CMD_CLOSE:
+			{
+				if (OPT(easy_open) && (!cmd->arg_present[0] ||
+						cmd->args[0].direction == DIR_UNKNOWN))
+				{
+					int y, x;
+			
+					/* Count open doors */
+					if (count_feats(&y, &x, is_open, FALSE) == 1)
+						cmd->args[0].direction = coords_to_dir(y, x);
+				}
+
+				goto get_dir;
+			}
+
+			case CMD_DISARM:
+			{
+				if (OPT(easy_open) && (!cmd->arg_present[0] ||
+						cmd->args[0].direction == DIR_UNKNOWN))
+				{
+					int y, x;
+					int n_visible_traps, n_trapped_chests;
+			
+					n_visible_traps = count_feats(&y, &x, is_trap, TRUE);			
+					n_trapped_chests = count_chests(&y, &x, TRUE);
+
+					if (n_visible_traps + n_trapped_chests == 1)
+						cmd->args[0].direction = coords_to_dir(y, x);
+				}
+
+				goto get_dir;
+			}
+
+			case CMD_TUNNEL:
 			case CMD_WALK:
 			case CMD_RUN:
 			case CMD_JUMP:
-			case CMD_OPEN:
-			case CMD_CLOSE:
-			case CMD_TUNNEL:
-			case CMD_DISARM:
 			case CMD_BASH:
 			case CMD_ALTER:
 			case CMD_JAM:
 			{
+			get_dir:
+
 				/* Direction hasn't been specified, so we ask for one. */
-				if (cmd->args[0].direction == DIR_UNKNOWN)
+				if (!cmd->arg_present[0] ||
+						cmd->args[0].direction == DIR_UNKNOWN)
 				{
 					if (!get_rep_dir(&cmd->args[0].direction))
 						return;
@@ -367,10 +418,11 @@ void process_command(cmd_context ctx, bool no_request)
 			{
 				bool get_target = FALSE;
 
-				if (cmd->command == CMD_FIRE ||
-					cmd->command == CMD_THROW ||
-					obj_needs_aim(object_from_item_idx(cmd->args[0].choice)))
+				if (obj_needs_aim(object_from_item_idx(cmd->args[0].choice)))
 				{
+					if (!cmd->arg_present[1])
+						get_target = TRUE;
+
 					if (cmd->args[1].direction == DIR_UNKNOWN)
 						get_target = TRUE;
 
@@ -391,6 +443,9 @@ void process_command(cmd_context ctx, bool no_request)
 
 				if (spell_needs_aim(cp_ptr->spell_book, cmd->args[0].choice))
 				{
+					if (!cmd->arg_present[1])
+						get_target = TRUE;
+
 					if (cmd->args[1].direction == DIR_UNKNOWN)
 						get_target = TRUE;
 

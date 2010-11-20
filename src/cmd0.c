@@ -191,19 +191,19 @@ static struct item_command item_actions[] =
 static struct generic_command cmd_action[] =
 {
 	{ "Search for traps/doors",     's', CMD_SEARCH, NULL },
-	{ "Disarm a trap or chest",     'D', CMD_NULL, textui_cmd_disarm },
+	{ "Disarm a trap or chest",     'D', CMD_DISARM, NULL },
 	{ "Rest for a while",           'R', CMD_NULL, textui_cmd_rest },
 	{ "Look around",                'l', CMD_NULL, do_cmd_look },
 	{ "Target monster or location", '*', CMD_NULL, do_cmd_target },
 	{ "Target closest monster",     '\'', CMD_NULL, do_cmd_target_closest },
-	{ "Dig a tunnel",               'T', CMD_NULL, textui_cmd_tunnel },
+	{ "Dig a tunnel",               'T', CMD_TUNNEL, NULL },
 	{ "Go up staircase",            '<', CMD_GO_UP, NULL },
 	{ "Go down staircase",          '>', CMD_GO_DOWN, NULL },
 	{ "Toggle search mode",         'S', CMD_TOGGLE_SEARCH, NULL },
-	{ "Open a door or a chest",     'o', CMD_NULL, textui_cmd_open },
-	{ "Close a door",               'c', CMD_NULL, textui_cmd_close },
-	{ "Jam a door shut",            'j', CMD_NULL, textui_cmd_spike },
-	{ "Bash a door open",           'B', CMD_NULL, textui_cmd_bash },
+	{ "Open a door or a chest",     'o', CMD_OPEN, NULL },
+	{ "Close a door",               'c', CMD_CLOSE, NULL },
+	{ "Jam a door shut",            'j', CMD_JAM, NULL },
+	{ "Bash a door open",           'B', CMD_BASH, NULL },
 	{ "Fire at nearest target",   'h', CMD_NULL, textui_cmd_fire_at_nearest },
 	{ "Throw an item",            'v', CMD_NULL, textui_cmd_throw }
 };
@@ -257,10 +257,10 @@ static struct generic_command cmd_hidden[] =
 	{ "Load a single pref line",  '"', CMD_NULL, do_cmd_pref },
 	{ "Enter a store",            '_', CMD_ENTER_STORE, NULL },
 	{ "Toggle windows",     KTRL('E'), CMD_NULL, toggle_inven_equip }, /* XXX */
-	{ "Alter a grid",             '+', CMD_NULL, textui_cmd_alter },
-	{ "Walk",                     ';', CMD_NULL, textui_cmd_walk },
-	{ "Jump into a trap",         '-', CMD_NULL, textui_cmd_jump },
-	{ "Start running",            '.', CMD_NULL, textui_cmd_run },
+	{ "Alter a grid",             '+', CMD_ALTER, NULL },
+	{ "Walk",                     ';', CMD_WALK, NULL },
+	{ "Jump into a trap",         '-', CMD_JUMP, NULL },
+	{ "Start running",            '.', CMD_RUN, NULL },
 	{ "Stand still",              ',', CMD_HOLD, NULL },
 	{ "Display menu of actions", '\n', CMD_NULL, do_cmd_menu },
 	{ "Display menu of actions", '\r', CMD_NULL, do_cmd_menu },
@@ -556,7 +556,7 @@ static ui_event_data textui_get_command(void)
 
 	ui_event_data ke = EVENT_EMPTY;
 
-	cptr act = NULL;
+	cptr act;
 
 
 
@@ -730,11 +730,11 @@ static bool textui_process_key(unsigned char c)
 	struct command *cmd = &converted_list[c];
 	struct generic_command *command = cmd->command;
 
-	if (c == ESCAPE || c == ' ' || c == '\a')
-		return TRUE;
-
 	if (!command)
 		return FALSE;
+
+	if (c == ESCAPE || c == ' ' || c == '\a')
+		return TRUE;
 
 	if (key_confirm_command(c) &&
 			(!command->prereq || command->prereq()))
@@ -753,14 +753,12 @@ static bool textui_process_key(unsigned char c)
 
 			/* Get the item */
 			o_ptr = object_from_item_idx(item);
-		
+
 			/* Execute the item command */
 			if (act->action != NULL)
 				act->action(o_ptr, item);
-			else if (act->needs_aim && obj_needs_aim(o_ptr))
-				cmd_insert(command->cmd, item, DIR_UNKNOWN);
 			else
-				cmd_insert(command->cmd, item);
+				cmd_insert_repeated(command->cmd, p_ptr->command_arg, item);
 		}
 		else
 		{

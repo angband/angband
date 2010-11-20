@@ -55,16 +55,6 @@ void do_cmd_suicide(cmd_code code, cmd_arg args[]);
 void do_cmd_save_game(cmd_code code, cmd_arg args[]);
 
 void do_cmd_alter_aux(int dir);
-void textui_cmd_open(void);
-void textui_cmd_close(void);
-void textui_cmd_tunnel(void);
-void textui_cmd_disarm(void);
-void textui_cmd_bash(void);
-void textui_cmd_alter(void);
-void textui_cmd_spike(void);
-void textui_cmd_walk(void);
-void textui_cmd_jump(void);
-void textui_cmd_run(void);
 void textui_cmd_rest(void);
 void textui_cmd_suicide(void);
 

@@ -478,7 +478,7 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 /*
  * Return TRUE if the given feature is an open door
  */
-static bool is_open(int feat)
+bool is_open(int feat)
 {
 	return (feat == FEAT_OPEN);
 }
@@ -487,7 +487,7 @@ static bool is_open(int feat)
 /*
  * Return TRUE if the given feature is a closed door
  */
-static bool is_closed(int feat)
+bool is_closed(int feat)
 {
 	return ((feat >= FEAT_DOOR_HEAD) &&
 	        (feat <= FEAT_DOOR_TAIL));
@@ -497,7 +497,7 @@ static bool is_closed(int feat)
 /*
  * Return TRUE if the given feature is a trap
  */
-static bool is_trap(int feat)
+bool is_trap(int feat)
 {
 	return ((feat >= FEAT_TRAP_HEAD) &&
 	        (feat <= FEAT_TRAP_TAIL));
@@ -507,7 +507,7 @@ static bool is_trap(int feat)
 /*
  * Return the number of doors/traps around (or under) the character.
  */
-static int count_feats(int *y, int *x, bool (*test)(int feat), bool under)
+int count_feats(int *y, int *x, bool (*test)(int feat), bool under)
 {
 	int d;
 	int xx, yy;
@@ -549,7 +549,7 @@ static int count_feats(int *y, int *x, bool (*test)(int feat), bool under)
  * Return the number of chests around (or under) the character.
  * If requested, count only trapped chests.
  */
-static int count_chests(int *y, int *x, bool trapped)
+int count_chests(int *y, int *x, bool trapped)
 {
 	int d, count, o_idx;
 
@@ -600,7 +600,7 @@ static int count_chests(int *y, int *x, bool trapped)
  * Extract a "direction" which will move one step from the player location
  * towards the given "target" location (or "5" if no motion necessary).
  */
-static int coords_to_dir(int y, int x)
+int coords_to_dir(int y, int x)
 {
 	return (motion_dir(p_ptr->py, p_ptr->px, y, x));
 }
@@ -804,31 +804,6 @@ void do_cmd_open(cmd_code code, cmd_arg args[])
 	if (!more) disturb(0, 0);
 }
 
-void textui_cmd_open(void)
-{
-	int y, x, dir = DIR_UNKNOWN;
-
-	/* Easy Open */
-	if (OPT(easy_open))
-	{
-		int num_doors, num_chests;
-
-		/* Count closed doors */
-		num_doors = count_feats(&y, &x, is_closed, FALSE);
-
-		/* Count chests (locked) */
-		num_chests = count_chests(&y, &x, FALSE);
-
-		/* See if only one target */
-		if ((num_doors + num_chests) == 1)
-		{
-			dir = coords_to_dir(y, x);
-		}
-	}
-
-	cmd_insert_repeated(CMD_OPEN, p_ptr->command_arg, dir);
-}
-
 
 /*
  * Determine if a given grid may be "closed"
@@ -954,28 +929,6 @@ void do_cmd_close(cmd_code code, cmd_arg args[])
 
 	/* Cancel repeat unless told not to */
 	if (!more) disturb(0, 0);
-}
-
-void textui_cmd_close(void)
-{
-	int y, x, dir = DIR_UNKNOWN;
-
-	/* Easy Close */
-	if (OPT(easy_open))
-	{
-		/* Count open doors */
-		if (count_feats(&y, &x, is_open, FALSE) == 1)
-		{
-			dir = coords_to_dir(y, x);
-		}
-	}
-	else
-	{
-		if (!get_rep_dir(&dir))
-			return;
-	}
-
-	cmd_insert_repeated(CMD_CLOSE, p_ptr->command_arg, dir);
 }
 
 
@@ -1293,14 +1246,6 @@ void do_cmd_tunnel(cmd_code code, cmd_arg args[])
 	if (!more) disturb(0, 0);
 }
 
-void textui_cmd_tunnel(void)
-{
-	int dir;
-	if (!get_rep_dir(&dir)) return;
-	cmd_insert_repeated(CMD_TUNNEL, p_ptr->command_arg, dir);
-}
-
-
 /*
  * Determine if a given grid may be "disarmed"
  */
@@ -1489,38 +1434,6 @@ void do_cmd_disarm(cmd_code code, cmd_arg args[])
 	if (!more) disturb(0, 0);
 }
 
-void textui_cmd_disarm(void)
-{
-	int y, x, dir;
-
-	dir = DIR_UNKNOWN;
-
-	/* Easy Disarm */
-	if (OPT(easy_open))
-	{
-		int num_traps, num_chests;
-
-		/* Count visible traps */
-		num_traps = count_feats(&y, &x, is_trap, TRUE);
-
-		/* Count chests (trapped) */
-		num_chests = count_chests(&y, &x, TRUE);
-
-		/* See if only one target */
-		if (num_traps || num_chests)
-		{
-			if (num_traps + num_chests <= 1)
-				dir = coords_to_dir(y, x);
-		}
-	}
-	else
-	{
-		if (!get_rep_dir(&dir))
-			return;
-	}
-
-	cmd_insert_repeated(CMD_DISARM, p_ptr->command_arg, dir);
-}
 
 /*
  * Determine if a given grid may be "bashed"
@@ -1702,16 +1615,6 @@ void do_cmd_bash(cmd_code code, cmd_arg args[])
 	if (!more) disturb(0, 0);
 }
 
-void textui_cmd_bash(void)
-{
-	int dir;
-	if (!get_rep_dir(&dir))
-		return;
-
-	cmd_insert_repeated(CMD_BASH, p_ptr->command_arg, dir);
-}
-
-
 
 /*
  * Manipulate an adjacent grid in some way
@@ -1811,15 +1714,6 @@ void do_cmd_alter(cmd_code code, cmd_arg args[])
 	do_cmd_alter_aux(args[0].direction);
 }
 
-void textui_cmd_alter(void)
-{
-	int dir;
-
-	if (!get_rep_dir(&dir))
-		return;
-
-	cmd_insert_repeated(CMD_ALTER, p_ptr->command_arg, dir);
-}
 
 /*
  * Find the index of some "spikes", if possible.
@@ -1965,15 +1859,6 @@ void do_cmd_spike(cmd_code code, cmd_arg args[])
 	}
 }
 
-void textui_cmd_spike(void)
-{
-	int dir;
-	if (!get_rep_dir(&dir))
-		return;
-
-	cmd_insert_repeated(CMD_JAM, p_ptr->command_arg, dir);
-}
-
 
 /*
  * Determine if a given grid may be "walked"
@@ -2084,19 +1969,6 @@ void do_cmd_walk(cmd_code code, cmd_arg args[])
 	move_player(dir);
 }
 
-/*
- * Tell the game we want to walk - in future we might want to supply
- * directions here rather than rely on keymap/macro things.
- */
-void textui_cmd_walk(void)
-{
-	int dir;
-	if (!get_rep_dir(&dir))
-		return;
-
-	cmd_insert_repeated(CMD_WALK, p_ptr->command_arg, dir);
-}
-
 
 /*
  * Jump into a trap, turn off pickup (does not work).
@@ -2115,15 +1987,6 @@ void do_cmd_jump(cmd_code code, cmd_arg args[])
 
 	/* Restore OPT(easy_alter) */
 	OPT(easy_alter) = old_easy_alter;
-}
-
-void textui_cmd_jump(void)
-{
-	int dir;
-	if (!get_rep_dir(&dir))
-		return;
-
-	cmd_insert(CMD_JUMP, dir);
 }
 
 
@@ -2158,14 +2021,6 @@ void do_cmd_run(cmd_code code, cmd_arg args[])
 	run_step(dir);
 }
 
-void textui_cmd_run(void)
-{
-	int dir;
-	if (!get_rep_dir(&dir))
-		return;
-
-	cmd_insert(CMD_RUN, dir);
-}
 
 /*
  * Start running with pathfinder.
