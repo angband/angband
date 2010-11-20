@@ -2167,21 +2167,21 @@ void textui_cmd_rest(void)
 		if (out_val[0] == '&')
 		{
 			cmd_insert(CMD_REST);
-			cmd_set_arg_choice(0, REST_COMPLETE);
+			cmd_set_arg_choice(cmd_get_top(), 0, REST_COMPLETE);
 		}
 
 		/* Rest a lot */
 		else if (out_val[0] == '*')
 		{
 			cmd_insert(CMD_REST);
-			cmd_set_arg_choice(0, REST_ALL_POINTS);
+			cmd_set_arg_choice(cmd_get_top(), 0, REST_ALL_POINTS);
 		}
 
 		/* Rest until HP or SP filled */
 		else if (out_val[0] == '!')
 		{
 			cmd_insert(CMD_REST);
-			cmd_set_arg_choice(0, REST_SOME_POINTS);
+			cmd_set_arg_choice(cmd_get_top(), 0, REST_SOME_POINTS);
 		}
 		
 		/* Rest some */
@@ -2192,7 +2192,7 @@ void textui_cmd_rest(void)
 			if (turns > 9999) turns = 9999;
 			
 			cmd_insert(CMD_REST);
-			cmd_set_arg_choice(0, turns);
+			cmd_set_arg_choice(cmd_get_top(), 0, turns);
 		}
 	}
 }

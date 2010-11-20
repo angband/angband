@@ -1295,7 +1295,7 @@ bool target_set_interactive(int mode, int x, int y)
 				case 'g':
 				{
 					cmd_insert(CMD_PATHFIND);
-					cmd_set_arg_point(0, y, x);
+					cmd_set_arg_point(cmd_get_top(), 0, y, x);
 					done = TRUE;
 					break;
 				}
@@ -1500,7 +1500,7 @@ bool target_set_interactive(int mode, int x, int y)
 				case 'g':
 				{
 					cmd_insert(CMD_PATHFIND);
-					cmd_set_arg_point(0, y, x);
+					cmd_set_arg_point(cmd_get_top(), 0, y, x);
 					done = TRUE;
 					break;
 				}

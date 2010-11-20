@@ -110,6 +110,12 @@ static struct
 };
 
 
+game_command *cmd_get_top(void)
+{
+	return &cmd_queue[prev_cmd_idx(cmd_head)];
+}
+
+
 /*
  * Insert the given command into the command queue.
  */
@@ -192,9 +198,8 @@ static int cmd_idx(cmd_code code)
 	return -1;
 }
 
-void cmd_set_arg_choice(int n, int choice)
+void cmd_set_arg_choice(game_command *cmd, int n, int choice)
 {
-	game_command *cmd = &cmd_queue[prev_cmd_idx(cmd_head)];
 	int idx = cmd_idx(cmd->command);
 
 	assert(n <= CMD_MAX_ARGS);
@@ -205,9 +210,8 @@ void cmd_set_arg_choice(int n, int choice)
 	cmd->arg_present[n] = TRUE;
 }
 
-void cmd_set_arg_string(int n, const char *str)
+void cmd_set_arg_string(game_command *cmd, int n, const char *str)
 {
-	game_command *cmd = &cmd_queue[prev_cmd_idx(cmd_head)];
 	int idx = cmd_idx(cmd->command);
 
 	assert(n <= CMD_MAX_ARGS);
@@ -218,9 +222,8 @@ void cmd_set_arg_string(int n, const char *str)
 	cmd->arg_present[n] = TRUE;
 }
 
-void cmd_set_arg_direction(int n, int dir)
+void cmd_set_arg_direction(game_command *cmd, int n, int dir)
 {
-	game_command *cmd = &cmd_queue[prev_cmd_idx(cmd_head)];
 	int idx = cmd_idx(cmd->command);
 
 	assert(n <= CMD_MAX_ARGS);
@@ -231,9 +234,8 @@ void cmd_set_arg_direction(int n, int dir)
 	cmd->arg_present[n] = TRUE;
 }
 
-void cmd_set_arg_target(int n, int target)
+void cmd_set_arg_target(game_command *cmd, int n, int target)
 {
-	game_command *cmd = &cmd_queue[prev_cmd_idx(cmd_head)];
 	int idx = cmd_idx(cmd->command);
 
 	assert(n <= CMD_MAX_ARGS);
@@ -244,9 +246,8 @@ void cmd_set_arg_target(int n, int target)
 	cmd->arg_present[n] = TRUE;
 }
 
-void cmd_set_arg_point(int n, int x, int y)
+void cmd_set_arg_point(game_command *cmd, int n, int x, int y)
 {
-	game_command *cmd = &cmd_queue[prev_cmd_idx(cmd_head)];
 	int idx = cmd_idx(cmd->command);
 
 	assert(n <= CMD_MAX_ARGS);
@@ -258,9 +259,8 @@ void cmd_set_arg_point(int n, int x, int y)
 	cmd->arg_present[n] = TRUE;
 }
 
-void cmd_set_arg_item(int n, int item)
+void cmd_set_arg_item(game_command *cmd, int n, int item)
 {
-	game_command *cmd = &cmd_queue[prev_cmd_idx(cmd_head)];
 	int idx = cmd_idx(cmd->command);
 
 	assert(n <= CMD_MAX_ARGS);
@@ -271,9 +271,8 @@ void cmd_set_arg_item(int n, int item)
 	cmd->arg_present[n] = TRUE;
 }
 
-void cmd_set_arg_number(int n, int num)
+void cmd_set_arg_number(game_command *cmd, int n, int num)
 {
-	game_command *cmd = &cmd_queue[prev_cmd_idx(cmd_head)];
 	int idx = cmd_idx(cmd->command);
 
 	assert(n <= CMD_MAX_ARGS);
