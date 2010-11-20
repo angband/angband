@@ -181,6 +181,15 @@ extern bool search(bool verbose);
 extern byte py_pickup(int pickup);
 extern void move_player(int dir);
 
+/* cmd2.c */
+/* XXX should probably be moved to cave.c? */
+bool is_open(int feat);
+bool is_closed(int feat);
+bool is_trap(int feat);
+int count_feats(int *y, int *x, bool (*test)(int feat), bool under);
+int count_chests(int *y, int *x, bool trapped);
+int coords_to_dir(int y, int x);
+
 /* death.c */
 void death_screen(void);
 
