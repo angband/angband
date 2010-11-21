@@ -81,7 +81,7 @@ struct item_command
 /* All possible item actions */
 static struct item_command item_actions[] =
 {
-	{ { "Inscribe an object", '{', CMD_NULL, NULL, NULL },
+	{ { "Inscribe an object", '{', CMD_INSCRIBE, NULL, NULL },
 	  { "Inscribe which item? ", "You have nothing to inscribe.",
 	    NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR | IS_HARMLESS) },
 	  textui_obj_inscribe, "inscribe", FALSE },
@@ -99,17 +99,12 @@ static struct item_command item_actions[] =
 	  textui_obj_wield, "wield", FALSE },
 
 	/*** Spellbooks ***/
-	{ { "Browse a book", 'b', CMD_NULL, NULL, NULL },
-	  { "Browse which book? ", "You have no books that you can read.",
-	    obj_can_browse, (USE_INVEN | USE_FLOOR | IS_HARMLESS) },
-	  textui_spell_browse, "browse", FALSE },
-
 	{ { "Gain new spells", 'G', CMD_NULL, NULL, player_can_study },
 	  { "Study which book? ", "You have no books that you can read.",
 	    obj_can_study, (USE_INVEN | USE_FLOOR) },
 	  textui_obj_study, "study", FALSE },
 
-	{ { "Cast a spell", 'm', CMD_NULL, NULL, player_can_cast },
+	{ { "Cast a spell", 'm', CMD_CAST, NULL, player_can_cast },
 	  { "Use which book? ", "You have no books that you can read.",
 	    obj_can_cast_from, (USE_INVEN | USE_FLOOR) } ,
 	  textui_obj_cast, "cast", FALSE },
@@ -166,6 +161,7 @@ static struct generic_command cmd_item_manage[] =
 /* Information access commands */
 static struct generic_command cmd_info[] =
 {
+	{ "Browse a book", 'b', CMD_NULL, textui_spell_browse, NULL },
 	{ "Full dungeon map",             'M', CMD_NULL, do_cmd_view_map },
 	{ "Display visible item list",    ']', CMD_NULL, do_cmd_itemlist },
 	{ "Display visible monster list", '[', CMD_NULL, do_cmd_monlist },
