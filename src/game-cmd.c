@@ -112,8 +112,7 @@ static struct
 	{ CMD_SELL, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_sell, FALSE, 0 },
 	{ CMD_STASH, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_stash, FALSE, 0 },
 	{ CMD_BUY, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_buy, FALSE, 0 },
-	{ CMD_RETRIEVE, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_retrieve, FALSE, 0 }
-,
+	{ CMD_RETRIEVE, { arg_ITEM, arg_NUMBER, arg_END }, do_cmd_retrieve, FALSE, 0 },
 	{ CMD_SUICIDE, { arg_END }, do_cmd_suicide, FALSE, 0 },
 	{ CMD_SAVE, { arg_END }, do_cmd_save_game, FALSE, 0 },
 	{ CMD_QUIT, { arg_END }, do_cmd_quit, FALSE, 0 },
@@ -162,12 +161,12 @@ errr cmd_insert_s(game_command *cmd)
  * are prepared to wait for a command or require a quick return with
  * no command.
  */
-errr cmd_get(cmd_context c, game_command *cmd, bool wait)
+errr cmd_get(cmd_context c, game_command **cmd, bool wait)
 {
 	/* If we're repeating, just pull the last command again. */
 	if (repeating)
 	{
-		*cmd = cmd_queue[prev_cmd_idx(cmd_tail)];
+		*cmd = &cmd_queue[prev_cmd_idx(cmd_tail)];
 		return 0;
 	}
 
@@ -178,7 +177,7 @@ errr cmd_get(cmd_context c, game_command *cmd, bool wait)
 	/* If we have a command ready, set it and return success. */
 	if (cmd_head != cmd_tail)
 	{
-		*cmd = cmd_queue[cmd_tail++];
+		*cmd = &cmd_queue[cmd_tail++];
 		if (cmd_tail == CMD_QUEUE_SIZE) cmd_tail = 0;
 
 		return 0;
@@ -226,12 +225,14 @@ static errr vcmd_insert_repeated(cmd_code c, int nrepeats, va_list vp)
 			case arg_CHOICE:
 			{
 				cmd.args[j].choice = va_arg(vp, int);
+				cmd.arg_present[j] = TRUE;
 				break;
 			}
 
 			case arg_STRING:
 			{
 				cmd.args[j].string = string_make(va_arg(vp, const char *));
+				cmd.arg_present[j] = TRUE;
 				break;
 			}
 			
@@ -239,6 +240,7 @@ static errr vcmd_insert_repeated(cmd_code c, int nrepeats, va_list vp)
 			case arg_TARGET:
 			{
 				cmd.args[j].direction = va_arg(vp, int);
+				cmd.arg_present[j] = TRUE;
 				break;
 			}
 			
@@ -246,18 +248,21 @@ static errr vcmd_insert_repeated(cmd_code c, int nrepeats, va_list vp)
 			{
 				cmd.args[j].point.y = va_arg(vp, int);
 				cmd.args[j].point.x = va_arg(vp, int);
+				cmd.arg_present[j] = TRUE;
 				break;
 			}
 			
 			case arg_ITEM:
 			{
 				cmd.args[j].item = va_arg(vp, int);
+				cmd.arg_present[j] = TRUE;
 				break;
 			}
 			
 			case arg_NUMBER:
 			{
 				cmd.args[j].number = va_arg(vp, int);
+				cmd.arg_present[j] = TRUE;
 				break;
 			}
 
@@ -311,19 +316,19 @@ errr cmd_insert_repeated(cmd_code c, int nrepeats, ...)
  */
 void process_command(cmd_context ctx, bool no_request)
 {
-	int idx;
-	game_command cmd;
+	game_command *cmd;
 
 	/* If we've got a command to process, do it. */
 	if (cmd_get(ctx, &cmd, !no_request) == 0)
 	{
-		idx = cmd_idx(cmd.command);
+		int idx = cmd_idx(cmd->command);
+		int oldrepeats = cmd->nrepeats;
 
 		if (idx == -1) return;
 
 		/* Do some sanity checking on those arguments that might have 
 		   been declared as "unknown", such as directions and targets. */
-		switch (cmd.command)
+		switch (cmd->command)
 		{
 			case CMD_WALK:
 			case CMD_RUN:
@@ -337,9 +342,9 @@ void process_command(cmd_context ctx, bool no_request)
 			case CMD_JAM:
 			{
 				/* Direction hasn't been specified, so we ask for one. */
-				if (cmd.args[0].direction == DIR_UNKNOWN)
+				if (cmd->args[0].direction == DIR_UNKNOWN)
 				{
-					if (!get_rep_dir(&cmd.args[0].direction))
+					if (!get_rep_dir(&cmd->args[0].direction))
 						return;
 				}
 				
@@ -362,18 +367,18 @@ void process_command(cmd_context ctx, bool no_request)
 			{
 				bool get_target = FALSE;
 
-				if (cmd.command == CMD_FIRE ||
-					cmd.command == CMD_THROW ||
-					obj_needs_aim(object_from_item_idx(cmd.args[0].choice)))
+				if (cmd->command == CMD_FIRE ||
+					cmd->command == CMD_THROW ||
+					obj_needs_aim(object_from_item_idx(cmd->args[0].choice)))
 				{
-					if (cmd.args[1].direction == DIR_UNKNOWN)
+					if (cmd->args[1].direction == DIR_UNKNOWN)
 						get_target = TRUE;
 
-					if (cmd.args[1].direction == DIR_TARGET && !target_okay())
+					if (cmd->args[1].direction == DIR_TARGET && !target_okay())
 						get_target = TRUE;
 				}
 
-				if (get_target && !get_aim_dir(&cmd.args[1].direction))
+				if (get_target && !get_aim_dir(&cmd->args[1].direction))
 						return;
 
 				break;
@@ -384,16 +389,16 @@ void process_command(cmd_context ctx, bool no_request)
 			{
 				bool get_target = FALSE;
 
-				if (spell_needs_aim(cp_ptr->spell_book, cmd.args[0].choice))
+				if (spell_needs_aim(cp_ptr->spell_book, cmd->args[0].choice))
 				{
-					if (cmd.args[1].direction == DIR_UNKNOWN)
+					if (cmd->args[1].direction == DIR_UNKNOWN)
 						get_target = TRUE;
 
-					if (cmd.args[1].direction == DIR_TARGET && !target_okay())
+					if (cmd->args[1].direction == DIR_TARGET && !target_okay())
 						get_target = TRUE;
 				}
 
-				if (get_target && !get_aim_dir(&cmd.args[1].direction))
+				if (get_target && !get_aim_dir(&cmd->args[1].direction))
 						return;
 				
 				break;
@@ -401,7 +406,7 @@ void process_command(cmd_context ctx, bool no_request)
 
 			default: 
 			{
-                /* I can see the point of the compiler warning, but still... */
+				/* I can see the point of the compiler warning, but still... */
 				break;
 			}
 		}
@@ -410,15 +415,13 @@ void process_command(cmd_context ctx, bool no_request)
 		if (game_cmds[idx].repeat_allowed)
 		{
 			/* Auto-repeat only if there isn't already a repeat length. */
-			if (game_cmds[idx].auto_repeat_n > 0 && cmd.nrepeats == 0)
-			{
-				cmd.nrepeats = game_cmds[idx].auto_repeat_n;
-				cmd_set_repeat(cmd.nrepeats);
-			}
+			if (game_cmds[idx].auto_repeat_n > 0 && cmd->nrepeats == 0)
+				cmd_set_repeat(game_cmds[idx].auto_repeat_n);
 		}
 		else
 		{
-			cmd.nrepeats = 0; repeating = FALSE;
+			cmd->nrepeats = 0;
+			repeating = FALSE;
 		}
 
 		/* 
@@ -428,11 +431,11 @@ void process_command(cmd_context ctx, bool no_request)
 		repeat_prev_allowed = TRUE;
 
 		if (game_cmds[idx].fn)
-			game_cmds[idx].fn(cmd.command, cmd.args);
+			game_cmds[idx].fn(cmd->command, cmd->args);
 
 		/* If the command hasn't changed nrepeats, count this execution. */
-		if (cmd.nrepeats > 0 && cmd.nrepeats == cmd_get_nrepeats())
-			cmd_set_repeat(cmd.nrepeats - 1);
+		if (cmd->nrepeats > 0 && oldrepeats == cmd_get_nrepeats())
+			cmd_set_repeat(oldrepeats - 1);
 	}
 }
 

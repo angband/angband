@@ -1006,7 +1006,8 @@ static void do_birth_reset(bool use_quickstart, birther *quickstart_prev)
 void player_birth(bool quickstart_allowed)
 {
 	int i;
-	game_command cmd = { CMD_NULL, 0, {{0}} };
+	game_command blank = { CMD_NULL, 0, {{0}} };
+	game_command *cmd = &blank;
 
 	int stats[A_MAX];
 	int points_spent[A_MAX];
@@ -1068,63 +1069,63 @@ void player_birth(bool quickstart_allowed)
 	 * Loop around until the UI tells us we have an acceptable character.
 	 * Note that it is possible to quit from inside this loop.
 	 */
-	while (cmd.command != CMD_ACCEPT_CHARACTER)
+	while (cmd->command != CMD_ACCEPT_CHARACTER)
 	{
 		/* Grab a command from the queue - we're happy to wait for it. */
 		if (cmd_get(CMD_BIRTH, &cmd, TRUE) != 0) continue;
 
-		if (cmd.command == CMD_BIRTH_RESET)
+		if (cmd->command == CMD_BIRTH_RESET)
 		{
 			reset_stats(stats, points_spent, &points_left);
 			do_birth_reset(quickstart_allowed, &quickstart_prev);
 			rolled_stats = FALSE;
 		}
-		else if (cmd.command == CMD_CHOOSE_SEX)
+		else if (cmd->command == CMD_CHOOSE_SEX)
 		{
-			p_ptr->psex = cmd.args[0].choice; 
+			p_ptr->psex = cmd->args[0].choice; 
 			player_generate(p_ptr, NULL, NULL, NULL);
 		}
-		else if (cmd.command == CMD_CHOOSE_RACE)
+		else if (cmd->command == CMD_CHOOSE_RACE)
 		{
-			p_ptr->prace = cmd.args[0].choice;
-			player_generate(p_ptr, NULL, NULL, NULL);
-
-			reset_stats(stats, points_spent, &points_left);
-			generate_stats(stats, points_spent, &points_left);
-			rolled_stats = FALSE;
-		}
-		else if (cmd.command == CMD_CHOOSE_CLASS)
-		{
-			p_ptr->pclass = cmd.args[0].choice;
+			p_ptr->prace = cmd->args[0].choice;
 			player_generate(p_ptr, NULL, NULL, NULL);
 
 			reset_stats(stats, points_spent, &points_left);
 			generate_stats(stats, points_spent, &points_left);
 			rolled_stats = FALSE;
 		}
-		else if (cmd.command == CMD_BUY_STAT)
+		else if (cmd->command == CMD_CHOOSE_CLASS)
+		{
+			p_ptr->pclass = cmd->args[0].choice;
+			player_generate(p_ptr, NULL, NULL, NULL);
+
+			reset_stats(stats, points_spent, &points_left);
+			generate_stats(stats, points_spent, &points_left);
+			rolled_stats = FALSE;
+		}
+		else if (cmd->command == CMD_BUY_STAT)
 		{
 			/* .choice is the stat to buy */
 			if (!rolled_stats)
-				buy_stat(cmd.args[0].choice, stats, points_spent, &points_left);
+				buy_stat(cmd->args[0].choice, stats, points_spent, &points_left);
 		}
-		else if (cmd.command == CMD_SELL_STAT)
+		else if (cmd->command == CMD_SELL_STAT)
 		{
 			/* .choice is the stat to sell */
 			if (!rolled_stats)
-				sell_stat(cmd.args[0].choice, stats, points_spent, &points_left);
+				sell_stat(cmd->args[0].choice, stats, points_spent, &points_left);
 		}
-		else if (cmd.command == CMD_RESET_STATS)
+		else if (cmd->command == CMD_RESET_STATS)
 		{
 			/* .choice is whether to regen stats */
 			reset_stats(stats, points_spent, &points_left);
 
-			if (cmd.args[0].choice)
+			if (cmd->args[0].choice)
 				generate_stats(stats, points_spent, &points_left);
 
 			rolled_stats = FALSE;
 		}
-		else if (cmd.command == CMD_ROLL_STATS)
+		else if (cmd->command == CMD_ROLL_STATS)
 		{
 			int i;
 
@@ -1160,7 +1161,7 @@ void player_birth(bool quickstart_allowed)
 			/* Lock out buying and selling of stats based on rolled stats. */
 			rolled_stats = TRUE;
 		}
-		else if (cmd.command == CMD_PREV_STATS)
+		else if (cmd->command == CMD_PREV_STATS)
 		{
 			/* Only switch to the stored "previous"
 			   character if we've actually got one to load. */
@@ -1175,20 +1176,20 @@ void player_birth(bool quickstart_allowed)
 			event_signal(EVENT_HP);
 			event_signal(EVENT_STATS);
 		}
-		else if (cmd.command == CMD_NAME_CHOICE)
+		else if (cmd->command == CMD_NAME_CHOICE)
 		{
 			/* Set player name */
-			my_strcpy(op_ptr->full_name, cmd.args[0].string,
+			my_strcpy(op_ptr->full_name, cmd->args[0].string,
 					  sizeof(op_ptr->full_name));
 
-			string_free((void *) cmd.args[0].string);
+			string_free((void *) cmd->args[0].string);
 
 			/* Don't change savefile name.  If the UI
 			   wants it changed, they can do it. XXX (Good idea?) */
 			process_player_name(FALSE);
 		}
 		/* Various not-specific-to-birth commands. */
-		else if (cmd.command == CMD_HELP)
+		else if (cmd->command == CMD_HELP)
 		{
 			char buf[80];
 
@@ -1197,7 +1198,7 @@ void player_birth(bool quickstart_allowed)
 			show_file(buf, NULL, 0, 0);
 			screen_load();
 		}
-		else if (cmd.command == CMD_QUIT)
+		else if (cmd->command == CMD_QUIT)
 		{
 			quit(NULL);
 		}

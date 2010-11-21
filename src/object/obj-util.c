@@ -4038,10 +4038,20 @@ bool obj_can_refill(const object_type *o_ptr)
 
 bool obj_can_browse(const object_type *o_ptr)
 {
-	if (o_ptr->tval != cp_ptr->spell_book) return FALSE;
-	return TRUE;
+	return o_ptr->tval == cp_ptr->spell_book;
 }
 
+bool obj_can_cast_from(const object_type *o_ptr)
+{
+	return obj_can_browse(o_ptr) &&
+			spell_book_count_spells(o_ptr, spell_okay_to_cast) > 0;
+}
+
+bool obj_can_study(const object_type *o_ptr)
+{
+	return obj_can_browse(o_ptr) &&
+			spell_book_count_spells(o_ptr, spell_okay_to_study) > 0;
+}
 
 
 /* Can only take off non-cursed items */
@@ -4054,6 +4064,12 @@ bool obj_can_takeoff(const object_type *o_ptr)
 bool obj_can_wear(const object_type *o_ptr)
 {
 	return (wield_slot(o_ptr) >= INVEN_WIELD);
+}
+
+/* Can only fire an item with the right tval */
+bool obj_can_fire(const object_type *o_ptr)
+{
+	return o_ptr->tval == p_ptr->state.ammo_tval;
 }
 
 /* Can has inscrip pls */
@@ -4100,16 +4116,13 @@ bool obj_needs_aim(object_type *o_ptr)
 
 	/* If the effect needs aiming, or if the object type needs
 	   aiming, this object needs aiming. */
-	if (effect_aim(effect) ||
-	    (o_ptr->tval == TV_WAND) ||
-	    (o_ptr->tval == TV_ROD && !object_flavor_is_aware(o_ptr)))
-	{
+	if (effect_aim(effect) || o_ptr->tval == TV_BOLT ||
+			o_ptr->tval == TV_SHOT || o_ptr->tval == TV_ARROW ||
+			o_ptr->tval == TV_WAND ||
+			(o_ptr->tval == TV_ROD && !object_flavor_is_aware(o_ptr)))
 		return TRUE;
-	}
 	else
-	{
 		return FALSE;
-	}
 }
 
 

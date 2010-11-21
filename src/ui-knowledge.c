@@ -1,9 +1,9 @@
 /*
- * File: cmd-know.c
- * Purpose: Knowledge screen stuff.
+ * File: ui-knowledge.c
+ * Purpose: Knowledge screen
  *
  * Copyright (c) 2000-2007 Eytan Zweig, Andrew Doull, Pete Mack.
- * (c) 2010 Peter Denison, Chris Carr.
+ * Copyright (c) 2010 Peter Denison, Chris Carr.
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -1802,7 +1802,7 @@ static void o_xtra_act(char ch, int oid)
 /*
  * Display known objects
  */
-void do_cmd_knowledge_objects(const char *name, int row)
+void textui_browse_object_knowledge(const char *name, int row)
 {
 	group_funcs kind_f = {TV_GOLD, FALSE, kind_name, o_cmp_tval, obj2gid, 0};
 	member_funcs obj_f = {display_object, desc_obj_fake, o_xchar, o_xattr, o_xtra_prompt, o_xtra_act, 0};
@@ -1936,7 +1936,7 @@ static void do_cmd_knowledge_history(const char *name, int row)
  */
 static menu_action knowledge_actions[] =
 {
-{ 0, 0, "Display object knowledge",   	   do_cmd_knowledge_objects   },
+{ 0, 0, "Display object knowledge",   	   textui_browse_object_knowledge },
 { 0, 0, "Display artifact knowledge", 	   do_cmd_knowledge_artifacts },
 { 0, 0, "Display ego item knowledge", 	   do_cmd_knowledge_ego_items },
 { 0, 0, "Display monster knowledge",  	   do_cmd_knowledge_monsters  },
@@ -1965,7 +1965,7 @@ static void cleanup_cmds(void) {
 	mem_free(obj_group_order);
 }
 
-void init_cmd_know(void)
+void textui_knowledge_init(void)
 {
 	/* Initialize the menus */
 	menu_type *menu = &knowledge_menu;
@@ -2002,7 +2002,7 @@ void init_cmd_know(void)
 /*
  * Display the "player knowledge" menu.
  */
-void do_cmd_knowledge(void)
+void textui_browse_knowledge(void)
 {
 	int i;
 	region knowledge_region = { 0, 0, -1, 18 };

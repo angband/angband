@@ -401,55 +401,6 @@ void textui_obj_wield(object_type *o_ptr, int item)
 }
 
 
-/*** Casting and browsing ***/
-
-/* Study a book to gain a new spell */
-void textui_obj_study(object_type *o_ptr, int item)
-{
-	/* Track the object kind */
-	track_object(item);
-
-	/* Mage -- Choose a spell to study */
-	if (player_has(PF_CHOOSE_SPELLS))
-	{
-		int spell = get_spell(o_ptr, "study", spell_okay_to_study);
-		if (spell >= 0)
-			cmd_insert(CMD_STUDY_SPELL, spell);
-		else if (spell == -2)
-			msg_print("You cannot learn any spells from that book.");
-	}
-
-	/* Priest -- Choose a book to study */
-	else
-	{
-		cmd_insert(CMD_STUDY_BOOK, item);
-	}
-}
-
-void textui_obj_cast(object_type *o_ptr, int item)
-{
-	int spell, dir = DIR_UNKNOWN;
-
-	cptr verb = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
-	cptr noun = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
-
-	/* Track the object kind */
-	track_object(item);
-
-	/* Ask for a spell */
-	spell = get_spell(o_ptr, verb, spell_okay_to_cast);
-	if (spell < 0)
-	{
-		if (spell == -2) msg_format("You don't know any %ss in that book.", noun);
-		return;
-	}
-
-	if (spell_needs_aim(cp_ptr->spell_book, spell) && !get_aim_dir(&dir))
-		return;
-
-	cmd_insert(CMD_CAST, spell, dir);
-}
-
 
 /*** Using items the traditional way ***/
 
@@ -583,7 +534,8 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		if (artifact_p(o_ptr))
 		{
 			message(snd, 0, "You activate it.");
-			activation_message(o_ptr, a_info[o_ptr->name1].effect_msg);
+			if (a_info[o_ptr->name1].effect_msg)
+				activation_message(o_ptr, a_info[o_ptr->name1].effect_msg);
 			level = a_info[o_ptr->name1].level;
 		}
 		else
@@ -750,4 +702,157 @@ void do_cmd_refill(cmd_code code, cmd_arg args[])
 		refuel_torch(j_ptr, o_ptr, item);
 
 	p_ptr->energy_use = 50;
+}
+
+
+
+/*** Spell casting ***/
+
+/* Gain a specific spell, specified by spell number (for mages). */
+void do_cmd_study_spell(cmd_code code, cmd_arg args[])
+{
+	int spell = args[0].choice;
+
+	int item_list[INVEN_TOTAL + MAX_FLOOR_STACK];
+	int item_num;
+	int i;
+
+	/* Check the player can study at all atm */
+	if (!player_can_study())
+		return;
+
+	/* Check that the player can actually learn the nominated spell. */
+	item_tester_hook = obj_can_browse;
+	item_num = scan_items(item_list, N_ELEMENTS(item_list), (USE_INVEN | USE_FLOOR));
+
+	/* Check through all available books */
+	for (i = 0; i < item_num; i++)
+	{
+		if (spell_in_book(spell, item_list[i]))
+		{
+			if (spell_okay_to_study(spell))
+			{
+				/* Spell is in an available book, and player is capable. */
+				spell_learn(spell);
+				p_ptr->energy_use = 100;
+			}
+			else
+			{
+				/* Spell is present, but player incapable. */
+				msg_format("You cannot learn that spell.");
+			}
+
+			return;
+		}
+	}
+}
+
+/* Cast a spell from a book */
+void do_cmd_cast(cmd_code code, cmd_arg args[])
+{
+	int spell = args[0].choice;
+	int dir = args[1].direction;
+
+	int item_list[INVEN_TOTAL + MAX_FLOOR_STACK];
+	int item_num;
+	int i;
+
+	cptr verb = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
+	cptr noun = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+
+	/* Check the player can cast spells at all */
+	if (!player_can_cast())
+		return;
+
+	/* Check spell is in a book they can access */
+	item_tester_hook = obj_can_browse;
+	item_num = scan_items(item_list, N_ELEMENTS(item_list), (USE_INVEN | USE_FLOOR));
+
+	/* Check through all available books */
+	for (i = 0; i < item_num; i++)
+	{
+		if (spell_in_book(spell, item_list[i]))
+		{
+			if (spell_okay_to_cast(spell))
+			{
+				/* Get the spell */
+				const magic_type *s_ptr = &mp_ptr->info[spell];	
+				
+				/* Verify "dangerous" spells */
+				if (s_ptr->smana > p_ptr->csp)
+				{
+					/* Warning */
+					msg_format("You do not have enough mana to %s this %s.", verb, noun);
+					
+					/* Flush input */
+					flush();
+					
+					/* Verify */
+					if (!get_check("Attempt it anyway? ")) return;
+				}
+
+				/* Cast a spell */
+				if (spell_cast(spell, dir))
+					p_ptr->energy_use = 100;
+			}
+			else
+			{
+				/* Spell is present, but player incapable. */
+				msg_format("You cannot %s that %s.", verb, noun);
+			}
+
+			return;
+		}
+	}
+
+}
+
+
+/* Gain a random spell from the given book (for priests) */
+void do_cmd_study_book(cmd_code code, cmd_arg args[])
+{
+	int book = args[0].item;
+	object_type *o_ptr = object_from_item_idx(book);
+
+	int spell = -1;
+	int i, k = 0;
+
+	cptr p = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "spell" : "prayer");
+
+	/* Check the player can study at all atm */
+	if (!player_can_study())
+		return;
+
+	/* Check that the player has access to the nominated spell book. */
+	if (!item_is_available(book, obj_can_browse, (USE_INVEN | USE_FLOOR)))
+	{
+		msg_format("That item is not within your reach.");
+		return;
+	}
+
+	/* Extract spells */
+	for (i = 0; i < SPELLS_PER_BOOK; i++)
+	{
+		int s = get_spell_index(o_ptr, i);
+		
+		/* Skip non-OK spells */
+		if (s == -1) continue;
+		if (!spell_okay_to_study(s)) continue;
+		
+		/* Apply the randomizer */
+		if ((++k > 1) && (randint0(k) != 0)) continue;
+		
+		/* Track it */
+		spell = s;
+	}
+
+	if (spell < 0)
+	{
+		msg_format("You cannot learn any %ss in that book.", p);
+	}
+	else
+	{
+		spell_learn(spell);
+		p_ptr->energy_use = 100;	
+	}
 }

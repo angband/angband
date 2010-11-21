@@ -893,7 +893,7 @@ static enum parser_error parse_prefs_b(struct parser *p)
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
 
-	idx = parser_getint(p, "idx");
+	idx = parser_getuint(p, "idx");
 	if (idx > z_info->k_max)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 

@@ -141,6 +141,9 @@ typedef struct game_command
 
 	/* Arguments to the command */
 	cmd_arg args[CMD_MAX_ARGS];
+
+	/* Whether an argument was passed or not */
+	bool arg_present[CMD_MAX_ARGS];
 } game_command;
 
 
@@ -163,7 +166,7 @@ errr cmd_insert_repeated(cmd_code c, int nrepeats,  ...);
  * Gets the next command from the queue, optionally waiting to allow
  * the UI time to process user input, etc. if wait is TRUE 
  */
-errr cmd_get(cmd_context c,game_command *cmd, bool wait);
+errr cmd_get(cmd_context c, game_command **cmd, bool wait);
 
 /* Called by the game engine to get the player's next action. */
 void process_command(cmd_context c, bool no_request);
