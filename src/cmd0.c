@@ -97,17 +97,6 @@ static struct item_command item_actions[] =
 	  { "Wear/Wield which item? ", "You have nothing you can wear or wield.",
 	    obj_can_wear, (USE_INVEN | USE_FLOOR) },
 	  textui_obj_wield, "wield", FALSE },
-
-	/*** Spellbooks ***/
-	{ { "Gain new spells", 'G', CMD_NULL, NULL, player_can_study },
-	  { "Study which book? ", "You have no books that you can read.",
-	    obj_can_study, (USE_INVEN | USE_FLOOR) },
-	  textui_obj_study, "study", FALSE },
-
-	{ { "Cast a spell", 'm', CMD_CAST, NULL, player_can_cast },
-	  { "Use which book? ", "You have no books that you can read.",
-	    obj_can_cast_from, (USE_INVEN | USE_FLOOR) } ,
-	  textui_obj_cast, "cast", FALSE },
 };
 
 
@@ -162,6 +151,8 @@ static struct generic_command cmd_item_manage[] =
 static struct generic_command cmd_info[] =
 {
 	{ "Browse a book", 'b', CMD_NULL, textui_spell_browse, NULL },
+	{ "Gain new spells", 'G', CMD_NULL, textui_obj_study, player_can_study },
+	{ "Cast a spell", 'm', CMD_CAST, textui_obj_cast, player_can_cast },
 	{ "Full dungeon map",             'M', CMD_NULL, do_cmd_view_map },
 	{ "Display visible item list",    ']', CMD_NULL, do_cmd_itemlist },
 	{ "Display visible monster list", '[', CMD_NULL, do_cmd_monlist },

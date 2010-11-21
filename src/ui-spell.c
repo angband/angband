@@ -260,14 +260,29 @@ static int get_spell(const object_type *o_ptr, const char *verb,
 }
 
 /**
+ * Browse a given book.
+ */
+void textui_book_browse(const object_type *o_ptr)
+{
+	menu_type *m;
+	const char *noun = (cp_ptr->spell_book == TV_MAGIC_BOOK ?
+			"spell" : "prayer");
+
+	m = spell_menu_new(o_ptr, spell_okay_to_browse);
+	if (m) {
+		spell_menu_browse(m, noun);
+		spell_menu_destroy(m);
+	} else {
+		msg_print("You cannot browse that.");
+	}
+}
+
+/**
  * Browse the given book.
  */
 void textui_spell_browse(void)
 {
-	item item;
-	menu_type *m;
-	const char *noun = (cp_ptr->spell_book == TV_MAGIC_BOOK ?
-			"spell" : "prayer");
+	int item;
 
 	item_tester_hook = obj_can_browse;
 	if (!get_item(&item, "Browse which book? ",
@@ -279,13 +294,7 @@ void textui_spell_browse(void)
 	track_object(item);
 	handle_stuff();
 
-	m = spell_menu_new(o_ptr, spell_okay_to_browse);
-	if (m) {
-		spell_menu_browse(m, noun);
-		spell_menu_destroy(m);
-	} else {
-		msg_print("You cannot browse that.");
-	}
+	textui_book_browse(object_from_item_idx(item));
 }
 
 /**
@@ -306,7 +315,8 @@ void textui_obj_study(void)
 	handle_stuff();
 
 	if (player_has(PF_CHOOSE_SPELLS)) {
-		int spell = get_spell(o_ptr, "study", spell_okay_to_study);
+		int spell = get_spell(object_from_item_idx(item),
+				"study", spell_okay_to_study);
 		if (spell >= 0) {
 			cmd_insert(CMD_STUDY_SPELL);
 			cmd_set_arg_choice(cmd_get_top(), 0, spell);
@@ -337,7 +347,7 @@ void textui_obj_cast(void)
 	track_object(item);
 
 	/* Ask for a spell */
-	spell = get_spell(o_ptr, verb, spell_okay_to_cast);
+	spell = get_spell(object_from_item_idx(item), verb, spell_okay_to_cast);
 	if (spell >= 0) {
 		cmd_insert(CMD_CAST);
 		cmd_set_arg_choice(cmd_get_top(), 0, spell);
