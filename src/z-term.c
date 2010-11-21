@@ -1020,8 +1020,9 @@ static void Term_fresh_row_text(int y, int x1, int x2)
 	}
 }
 
-/* Helper variable for visual menu */
+/* Helper variables for large cursor */
 bool bigcurs = FALSE;
+bool smlcurs = TRUE;
 
 
 /*
@@ -1354,7 +1355,8 @@ errr Term_fresh(void)
 		if (!scr->cu && scr->cv)
 		{
 		        if ((((tile_width > 1)||(tile_height > 1)) && 
-			     (Term->saved == 0) && (scr->cy > 0)) || bigcurs)
+			     (!smlcurs) && (Term->saved == 0) && (scr->cy > 0))
+			    || bigcurs)
 			{
 				/* Double width cursor for the Bigtile mode */
 				(void)((*Term->bigcurs_hook)(scr->cx, scr->cy));

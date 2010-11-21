@@ -339,6 +339,7 @@ extern term *Term;
 extern byte tile_width;
 extern byte tile_height;
 extern bool bigcurs;
+extern bool smlcurs;
 
 /**** Available Functions ****/
 

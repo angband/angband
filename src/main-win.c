@@ -3039,7 +3039,7 @@ static void setup_menus(void)
         CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE,
                       (arg_graphics_nice ? MF_CHECKED : MF_UNCHECKED));
         CheckMenuItem(hm, IDM_OPTIONS_TRPTILE,
-                      (tile_height = 3 ? MF_CHECKED : MF_UNCHECKED));
+                      (tile_height == 3 ? MF_CHECKED : MF_UNCHECKED));
         CheckMenuItem(hm, IDM_OPTIONS_DBLTILE,
                       (tile_height == 2 ? MF_CHECKED : MF_UNCHECKED));
 	CheckMenuItem(hm, IDM_OPTIONS_BIGTILE,

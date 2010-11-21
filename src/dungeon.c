@@ -1786,6 +1786,8 @@ void play_game(void)
 	/* Flash a message */
 	prt("Please wait...", 0, 0);
 
+	/* Allow big cursor */
+	smlcurs = FALSE;
 
 	/* Flush the message */
 	Term_fresh();
@@ -1942,6 +1944,9 @@ void play_game(void)
 		/* Make a new level */
 		generate_cave();
 	}
+
+	/* Disallow big cursor */
+	smlcurs = TRUE;
 
 	/* Tell the UI we're done with the game state */
 	event_signal(EVENT_LEAVE_GAME);
