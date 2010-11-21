@@ -262,11 +262,18 @@ static int get_spell(const object_type *o_ptr, const char *verb,
 /**
  * Browse the given book.
  */
-void textui_spell_browse(object_type *o_ptr, int item)
+void textui_spell_browse(void)
 {
+	item item;
 	menu_type *m;
 	const char *noun = (cp_ptr->spell_book == TV_MAGIC_BOOK ?
 			"spell" : "prayer");
+
+	item_tester_hook = obj_can_browse;
+	if (!get_item(&item, "Browse which book? ",
+			"You have no books that you can read.",
+			0, (USE_INVEN | USE_FLOOR | IS_HARMLESS)))
+		return;
 
 	/* Track the object kind */
 	track_object(item);
@@ -284,8 +291,17 @@ void textui_spell_browse(object_type *o_ptr, int item)
 /**
  * Study a book to gain a new spell
  */
-void textui_obj_study(object_type *o_ptr, int item)
+void textui_obj_study(void)
 {
+	int item;
+
+	item_tester_hook = obj_can_study;
+	/* XXX need some way for player to !G */
+	if (!get_item(&item, "Study which book? ",
+			"You have no books that you can read.",
+			0, (USE_INVEN | USE_FLOOR)))
+		return;
+
 	track_object(item);
 	handle_stuff();
 
@@ -304,11 +320,18 @@ void textui_obj_study(object_type *o_ptr, int item)
 /**
  * Cast a spell from a book.
  */
-void textui_obj_cast(object_type *o_ptr, int item)
+void textui_obj_cast(void)
 {
+	int item;
 	int spell;
 
 	cptr verb = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
+
+	item_tester_hook = obj_can_cast_from;
+	if (!get_item(&item, "Cast from which book? ",
+			"You have no books that you can read.",
+			0, (USE_INVEN | USE_FLOOR)))
+		return;
 
 	/* Track the object kind */
 	track_object(item);
