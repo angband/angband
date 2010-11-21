@@ -723,11 +723,10 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 		if (object_attack_plusses_are_visible(j_ptr))
 			dam += (j_ptr->to_d * 10);
 
-		/* Apply brands from the shooter to the ammo */
-		if (full)
-			object_flags(j_ptr, tmp_f);
-		else
-			object_flags_known(j_ptr, tmp_f);
+		/* Apply brands/slays from the shooter to the ammo, but only if known
+		 * Note that this is not dependent on mode, so that viewing shop-held
+		 * ammo (fully known) does not leak information about launcher */
+		object_flags_known(j_ptr, tmp_f);
 		of_union(f, tmp_f);
 
 		text_out("Hits targets up to ");
