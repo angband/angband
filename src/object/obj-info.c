@@ -683,7 +683,7 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 		        {
 				state.stat_ind[A_STR] += str_plus;
 				state.stat_ind[A_DEX] += dex_plus;
-				new_blows = calc_blows(o_ptr, &state);
+				new_blows = calc_blows(o_ptr, &state, extra_blows);
 
 				/* Test to make sure that this extra blow is a
 				 * new str/dex combination, not a repeat
@@ -693,8 +693,7 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 					(str_done == -1)))
 				{
 					text_out("With an additional %d strength and %d dex you would get %d.%d blows\n",
-						str_plus, dex_plus, (new_blows
-						/ 100 + extra_blows),
+						str_plus, dex_plus, (new_blows / 100),
 						(new_blows / 10) % 10);
 					state.stat_ind[A_STR] -= str_plus;
 					state.stat_ind[A_DEX] -= dex_plus;
