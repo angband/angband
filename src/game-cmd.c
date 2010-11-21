@@ -109,6 +109,70 @@ static struct
 	{ CMD_REPEAT, { arg_NONE }, NULL, FALSE, 0 },
 };
 
+/* Item selector type (everything required for get_item()) */
+struct item_selector
+{
+	cmd_code command;
+	const char *prompt;
+	const char *noop;
+
+	bool (*filter)(const object_type *o_ptr);
+	int mode;
+};
+
+/** List of requirements for various commands' objects */
+struct item_selector item_selector[] =
+{
+	{ CMD_UNINSCRIBE, "Un-inscribe which item? ",
+	  "You have nothing to un-inscribe.",
+	  obj_has_inscrip, (USE_EQUIP | USE_INVEN | USE_FLOOR) },
+
+	{ CMD_TAKEOFF, "Take off which item? ",
+	  "You are not wearing anything you can take off.",
+	  obj_can_takeoff, USE_EQUIP },
+
+	{ CMD_DROP, "Drop which item? ",
+	  "You have nothing to drop.",
+	  NULL, (USE_EQUIP | USE_INVEN) },
+
+	{ CMD_FIRE, "Fire which item? ",
+	  "You have nothing to fire.",
+	  obj_can_fire, (USE_INVEN | USE_EQUIP | USE_FLOOR | QUIVER_TAGS) },
+
+	{ CMD_USE_STAFF, "Use which staff? ",
+	  "You have no staff to use.",
+	  obj_is_staff, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
+
+	{ CMD_USE_WAND, "Aim which wand? ",
+	  "You have no wand to aim.",
+	  obj_is_wand, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
+
+	{ CMD_USE_ROD, "Zap which rod? ",
+	  "You have no charged rods to zap.",
+	  obj_is_rod, (USE_INVEN | USE_FLOOR | SHOW_FAIL) },
+
+	{ CMD_ACTIVATE, "Activate which item? ",
+	  "You have nothing to activate.",
+	  obj_is_activatable, (USE_EQUIP | SHOW_FAIL) },
+
+	{ CMD_EAT, "Eat which item? ",
+	  "You have nothing to eat.",
+	  obj_is_food, (USE_INVEN | USE_FLOOR) },
+
+	{ CMD_QUAFF, "Quaff which potion? ",
+	  "You have no potions to quaff.",
+	  obj_is_potion, (USE_INVEN | USE_FLOOR) },
+
+	{ CMD_READ_SCROLL, "Read which scroll? ",
+	  "You have no scrolls to read.",
+	  obj_is_scroll, (USE_INVEN | USE_FLOOR) },
+
+	{ CMD_REFILL, "Refuel with what fuel source? ",
+	  "You have nothing to refuel with.",
+	  obj_can_refill, (USE_INVEN | USE_FLOOR) },
+};
+
+
 
 game_command *cmd_get_top(void)
 {
@@ -325,6 +389,25 @@ void process_command(cmd_context ctx, bool no_request)
 		int idx = cmd_idx(cmd->command);
 
 		if (idx == -1) return;
+
+		for (size_t i = 0; i < N_ELEMENTS(item_selector); i++)
+		{
+			struct item_selector *is = &item_selector[i];
+
+			if (is->command != cmd->command)
+				continue;
+
+			if (!cmd->arg_present[0])
+			{
+				int item;
+
+				item_tester_hook = is->filter;
+				if (!get_item(&item, is->prompt, is->noop, 0, is->mode))
+					return;
+
+				cmd_set_arg_item(cmd, 0, item);
+			}
+		}
 
 		/* Do some sanity checking on those arguments that might have 
 		   been declared as "unknown", such as directions and targets. */
