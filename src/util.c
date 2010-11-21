@@ -20,6 +20,7 @@
 #include "button.h"
 #include "game-event.h"
 #include "macro.h"
+#include "cmds.h"
 
 /*
  * Convert a decimal to a single digit hex number
@@ -1588,6 +1589,12 @@ void screen_load(void)
 
 	/* Decrease "icky" depth */
 	character_icky--;
+
+	/* Mega hack -redraw big graphics - sorry NRM */
+	if ((tile_width > 1) || (tile_height > 1)) 
+	{
+	        do_cmd_redraw();
+	}
 }
 
 

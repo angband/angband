@@ -146,7 +146,10 @@ static void display_player_equippy(int y, int x)
 		c = object_char(o_ptr);
 
 		/* Dump */
-		Term_putch(x+i-INVEN_WIELD, y, a, c);
+		if ((tile_width == 1) && (tile_height == 1))
+		{
+		        Term_putch(x+i-INVEN_WIELD, y, a, c);
+		}
 	}
 }
 

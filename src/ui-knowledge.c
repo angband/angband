@@ -506,6 +506,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 
 		if (visual_list)
 		{
+		        bigcurs = TRUE;
 			display_visual_list(g_name_len + 3, 7, browser_rows-1,
 			                             wid - (g_name_len + 3), attr_top, char_left);
 			place_visual_list_cursor(g_name_len + 3, 7, *o_funcs.xattr(oid), 
@@ -639,6 +640,7 @@ static void display_visual_list(int col, int row, int height, int width, byte at
 			Term_erase(col, row + i, width);
 
 	width = logical_width(width);
+	height = logical_height(height);
 
 	/* Display lines until done */
 	for (i = 0; i < height; i++)
@@ -649,7 +651,7 @@ static void display_visual_list(int col, int row, int height, int width, byte at
 			byte a;
 			unsigned char c;
 			int x = col + actual_width(j);
-			int y = row + actual_width(i);
+			int y = row + actual_height(i);
 			int ia, ic;
 
 			ia = attr_top + i;
@@ -682,6 +684,25 @@ static void place_visual_list_cursor(int col, int row, byte a, byte c, byte attr
 
 
 /*
+ * Remove the visual list and clear the screen 
+ */
+static void remove_visual_list(int col, int row, bool *visual_list_ptr, int width, int height)
+{
+	int i;
+
+	/* No more big cursor */
+	bigcurs = FALSE;
+
+	/* Cancel visual list */
+	*visual_list_ptr = FALSE;
+
+	/* Clear the display lines */
+	for (i = 0; i < height; i++)
+	        Term_erase(col, row + i, width);
+
+}
+
+/*
  *  Do visual mode command -- Change symbols
  */
 static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
@@ -710,7 +731,7 @@ static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
 				/* Cancel change */
 				*cur_attr_ptr = attr_old;
 				*cur_char_ptr = char_old;
-				*visual_list_ptr = FALSE;
+				remove_visual_list(col, row, visual_list_ptr, width, height);
 
 				return TRUE;
 			}
@@ -724,7 +745,7 @@ static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
 			if (*visual_list_ptr)
 			{
 				/* Accept change */
-				*visual_list_ptr = FALSE;
+			  remove_visual_list(col, row, visual_list_ptr, width, height);
 				return TRUE;
 			}
 
@@ -737,6 +758,7 @@ static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
 			if (!*visual_list_ptr)
 			{
 				*visual_list_ptr = TRUE;
+				bigcurs = TRUE;
 
 				*attr_top_ptr = (byte)MAX(0, (int)*cur_attr_ptr - frame_top);
 				*char_left_ptr = (char)MAX(0, (int)*cur_char_ptr - frame_left);
@@ -749,7 +771,7 @@ static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
 				/* Cancel change */
 				*cur_attr_ptr = attr_old;
 				*cur_char_ptr = char_old;
-				*visual_list_ptr = FALSE;
+				remove_visual_list(col, row, visual_list_ptr, width, height);
 			}
 
 			return TRUE;
@@ -795,6 +817,8 @@ static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
 				byte a = *cur_attr_ptr;
 				byte c = *cur_char_ptr;
 
+				bigcurs = TRUE;
+
 				/* Get mouse movement */
 				if (ke.type == EVT_MOUSE)
 				{
@@ -826,7 +850,8 @@ static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
 						*delay = 100;
 
 						/* Accept change */
-						if (ke.index) *visual_list_ptr = FALSE;
+						if (ke.index) 
+						  remove_visual_list(col, row, visual_list_ptr, width, height);
 
 						return TRUE;
 					}
@@ -836,7 +861,7 @@ static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
 					{
 						*cur_attr_ptr = attr_old;
 						*cur_char_ptr = char_old;
-						*visual_list_ptr = FALSE;
+						remove_visual_list(col, row, visual_list_ptr, width, height);
 
 						return TRUE;
 					}

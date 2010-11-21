@@ -3268,7 +3268,6 @@ static errr init_other(void)
 	/* Hack -- Just call the "format()" function */
 	(void)format("I wish you could swim, like dolphins can swim...");
 
-
 	/* Success */
 	return (0);
 }
