@@ -137,6 +137,11 @@ static struct item_command item_actions[] =
 	    obj_can_cast_from, (USE_INVEN | USE_FLOOR) } ,
 	  textui_obj_cast, "cast", FALSE },
 
+	{ { "Cast a spell", 'p', CMD_NULL, NULL, player_can_cast },
+	  { "Use which book? ", "You have no books that you can read.",
+	    obj_can_cast_from, (USE_INVEN | USE_FLOOR) } ,
+	  textui_obj_cast, "cast", FALSE },
+
 	/*** Item usage ***/
 	{ { "Use a staff", 'u', CMD_USE_STAFF, NULL, NULL },
 	  { "Use which staff? ", "You have no staff to use.",
