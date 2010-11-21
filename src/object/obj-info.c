@@ -724,7 +724,10 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 			dam += (j_ptr->to_d * 10);
 
 		/* Apply brands from the shooter to the ammo */
-		object_flags(j_ptr, tmp_f);
+		if (full)
+			object_flags(j_ptr, tmp_f);
+		else
+			object_flags_known(j_ptr, tmp_f);
 		of_union(f, tmp_f);
 
 		text_out("Hits targets up to ");
