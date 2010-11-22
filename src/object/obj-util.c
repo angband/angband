@@ -3536,7 +3536,7 @@ int lookup_artifact_name(const char *name)
 		artifact_type *a_ptr = &a_info[i];
 		
 		/* Found a match */
-		if (streq(name, a_ptr->name))
+		if (a_ptr->name && streq(name, a_ptr->name))
 			return i;
 		
 	} 
