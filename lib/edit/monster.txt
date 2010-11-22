@@ -653,13 +653,8 @@ D: fistful of needles.
 
 ### Dungeon level 3 ###
 
-<<<<<<< HEAD
 N:52:Sm['e]agol
-G:h:v
-=======
-N:52:Smeagol
 G:h:B
->>>>>>> official/master
 I:130:400:20:12:5
 W:3:2:0:50
 B:TOUCH:EAT_GOLD:1d4
@@ -1717,13 +1712,8 @@ F:NO_FEAR | NO_CONF | NO_SLEEP
 F:ATTR_CLEAR
 D:Yum!  It looks quite tasty.
 
-<<<<<<< HEAD
 N:140:Grishn['a]kh, the Hill Orc
-G:o:v
-=======
-N:140:Grishnakh, the Hill Orc
 G:o:y
->>>>>>> official/master
 I:110:230:20:20:20
 W:10:3:0:160
 B:HIT:HURT:1d12
@@ -2712,13 +2702,8 @@ F:OPEN_DOOR | BASH_DOOR
 F:HURT_LIGHT
 D:He is green skinned and ugly.
 
-<<<<<<< HEAD
 N:215:N['a]r, the Dwarf
-G:h:v
-=======
-N:215:Nar, the Dwarf
 G:h:y
->>>>>>> official/master
 I:110:450:25:70:25
 W:17:2:0:250
 B:HIT:HURT:3d5
@@ -3217,13 +3202,8 @@ D:A large and powerful orc, captain of one of Saruman's orcish regiments.
 
 ### Dungeon level 22 ###
 
-<<<<<<< HEAD
 N:249:Ugl['u]k, the Uruk
-G:o:v
-=======
-N:249:Ugluk, the Uruk
 G:o:b
->>>>>>> official/master
 I:110:720:20:95:20
 W:22:3:0:600
 B:HIT:HURT:3d8
@@ -3474,13 +3454,8 @@ S:1_IN_10
 S:DRAIN_MANA | SCARE
 D:It is a ghostly apparition with a humanoid form.
 
-<<<<<<< HEAD
 N:268:Ibun, Son of M[^i]m
-G:h:v
-=======
-N:268:Ibun, Son of Mim
 G:h:o
->>>>>>> official/master
 I:110:820:20:80:10
 W:24:2:0:300
 B:HIT:HURT:3d6
@@ -3498,13 +3473,8 @@ S:BO_FIRE
 D:One of the last of the Petty-Dwarves.  Ibun is a tricky sorcerous little
 D: being, full of mischief.
 
-<<<<<<< HEAD
 N:269:Kh[^i]m, Son of M[^i]m
-G:h:v
-=======
-N:269:Khim, Son of Mim
 G:h:o
->>>>>>> official/master
 I:110:820:20:80:10
 W:24:2:0:300
 B:HIT:HURT:3d6
@@ -3578,13 +3548,8 @@ S:1_IN_4
 S:CONF | SLOW
 D:A Black N['u]menorean with a blacker heart.
 
-<<<<<<< HEAD
 N:274:Angamait["e] of Umbar
-G:p:v
-=======
-N:274:Angamaite of Umbar
 G:p:U
->>>>>>> official/master
 I:110:800:25:80:25
 W:24:2:0:400
 B:HIT:HURT:4d6
@@ -3813,13 +3778,8 @@ D: fight it.
 
 ### Dungeon level 27 ###
 
-<<<<<<< HEAD
 N:290:M[^i]m, Betrayer of Turin
-G:h:v
-=======
-N:290:Mim, Betrayer of Turin
 G:h:I
->>>>>>> official/master
 I:120:1100:20:80:20
 W:27:4:0:1000
 B:HIT:HURT:3d8
@@ -7527,13 +7487,8 @@ D: disdainful ease.
 
 ### Dungeon level 72 ###
 
-<<<<<<< HEAD
 N:494:Kham[^u]l, the Black Easterling
-G:W:v
-=======
-N:494:Khamul, the Black Easterling
 G:W:p
->>>>>>> official/master
 I:120:5000:90:100:10
 W:72:3:0:40000
 B:HIT:HURT:9d10
@@ -9902,13 +9857,8 @@ D: you, wielding a huge club and pushing his own followers rudely aside.
 
 ### Dungeon level 55 ###
 
-<<<<<<< HEAD
 N:611:Ar-Pharaz[^o]n the Golden
-G:p:v
-=======
-N:611:Ar-Pharazon the Golden
 G:p:y
->>>>>>> official/master
 I:130:4000:30:45:255
 W:55:1:0:32500
 B:HIT:HURT:8d8
