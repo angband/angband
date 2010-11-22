@@ -180,12 +180,6 @@ game_command *cmd_get_top(void)
 }
 
 
-game_command *cmd_get_top(void)
-{
-	return &cmd_queue[prev_cmd_idx(cmd_head)];
-}
-
-
 /*
  * Insert the given command into the command queue.
  */

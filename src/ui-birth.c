@@ -838,7 +838,6 @@ errr get_birth_command(bool wait)
 		case BIRTH_RESET:
 		{
 			cmd_insert(CMD_BIRTH_RESET);
-			cmd_set_arg_choice(cmd_get_top(), 0, TRUE);
 
 			roller = BIRTH_RESET;
 			

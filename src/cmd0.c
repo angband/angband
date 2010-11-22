@@ -689,30 +689,15 @@ static bool textui_process_key(unsigned char c)
 					act->selector.noop, c, act->selector.mode))
 				return TRUE;
 
-<<<<<<< HEAD
-			/* Get the item */
-			o_ptr = object_from_item_idx(item);
-
-			/* Execute the item command */
-			if (act->action != NULL)
-				act->action(o_ptr, item);
-			else
-			{
-				cmd_insert_repeated(command->cmd, p_ptr->command_arg);
-				cmd_set_arg_item(cmd_get_top(), 0, item);
-			}
-=======
 			/* Execute the item command */
 			act->action(object_from_item_idx(item), item);
->>>>>>> official/master
 		}
 		else
 		{
-			if (command->cmd != CMD_NULL)
-				cmd_insert_repeated(command->cmd, p_ptr->command_arg);
-
-			else if (command->hook)
+			if (command->hook)
 				command->hook();
+			else
+				cmd_insert_repeated(command->cmd, p_ptr->command_arg);
 		}
 	}
 
