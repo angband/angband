@@ -425,7 +425,7 @@ void process_command(cmd_context ctx, bool no_request)
 					n_locked_chests = count_chests(&y, &x, FALSE);
 			
 					if (n_closed_doors + n_locked_chests == 1)
-						cmd->arg[0].direction = coords_to_dir(y, x);
+						cmd_set_arg_direction(cmd, 0, coords_to_dir(y, x));
 				}
 
 				goto get_dir;
@@ -440,7 +440,7 @@ void process_command(cmd_context ctx, bool no_request)
 			
 					/* Count open doors */
 					if (count_feats(&y, &x, is_open, FALSE) == 1)
-						cmd->arg[0].direction = coords_to_dir(y, x);
+						cmd_set_arg_direction(cmd, 0, coords_to_dir(y, x));
 				}
 
 				goto get_dir;
@@ -458,7 +458,7 @@ void process_command(cmd_context ctx, bool no_request)
 					n_trapped_chests = count_chests(&y, &x, TRUE);
 
 					if (n_visible_traps + n_trapped_chests == 1)
-						cmd->arg[0].direction = coords_to_dir(y, x);
+						cmd_set_arg_direction(cmd, 0, coords_to_dir(y, x));
 				}
 
 				goto get_dir;
@@ -478,8 +478,11 @@ void process_command(cmd_context ctx, bool no_request)
 				if (!cmd->arg_present[0] ||
 						cmd->arg[0].direction == DIR_UNKNOWN)
 				{
-					if (!get_rep_dir(&cmd->arg[0].direction))
+					int dir;
+					if (!get_rep_dir(&dir))
 						return;
+
+					cmd_set_arg_direction(cmd, 0, dir);
 				}
 				
 				break;
@@ -494,7 +497,7 @@ void process_command(cmd_context ctx, bool no_request)
 					if (amt <= 0)
 						return;
 
-					cmd->arg[1].number = amt;
+					cmd_set_arg_number(cmd, 1, amt);
 				}
 			}
 			
@@ -528,6 +531,8 @@ void process_command(cmd_context ctx, bool no_request)
 				if (get_target && !get_aim_dir(&cmd->arg[1].direction))
 						return;
 
+				cmd->arg_present[1] = TRUE;
+
 				break;
 			}
 			
@@ -550,6 +555,8 @@ void process_command(cmd_context ctx, bool no_request)
 
 				if (get_target && !get_aim_dir(&cmd->arg[1].direction))
 						return;
+
+				cmd->arg_present[1] = TRUE;
 				
 				break;
 			}

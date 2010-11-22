@@ -1181,5 +1181,5 @@ void textui_cmd_throw(void)
 
 	cmd_insert(CMD_THROW);
 	cmd_set_arg_item(cmd_get_top(), 0, item);
-	cmd_set_arg_direction(cmd_get_top(), 1, dir);
+	cmd_set_arg_target(cmd_get_top(), 1, dir);
 }
