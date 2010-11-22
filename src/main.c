@@ -430,7 +430,7 @@ int main(int argc, char *argv[])
 #ifdef SET_UID
 
 	/* Get the "user name" as a default player name, unless set with -u switch */
-	if(!op_ptr->full_name)
+	if (!op_ptr->full_name[0])
 	{
 		user_name(op_ptr->full_name, sizeof(op_ptr->full_name), player_uid);
 	}
