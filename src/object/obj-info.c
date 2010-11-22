@@ -683,7 +683,7 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 		        {
 				state.stat_ind[A_STR] += str_plus;
 				state.stat_ind[A_DEX] += dex_plus;
-				new_blows = calc_blows(o_ptr, &state);
+				new_blows = calc_blows(o_ptr, &state, extra_blows);
 
 				/* Test to make sure that this extra blow is a
 				 * new str/dex combination, not a repeat
@@ -693,8 +693,7 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 					(str_done == -1)))
 				{
 					text_out("With an additional %d strength and %d dex you would get %d.%d blows\n",
-						str_plus, dex_plus, (new_blows
-						/ 100 + extra_blows),
+						str_plus, dex_plus, (new_blows / 100),
 						(new_blows / 10) % 10);
 					state.stat_ind[A_STR] -= str_plus;
 					state.stat_ind[A_DEX] -= dex_plus;
@@ -724,8 +723,10 @@ static bool describe_combat(const object_type *o_ptr, oinfo_detail_t mode)
 		if (object_attack_plusses_are_visible(j_ptr))
 			dam += (j_ptr->to_d * 10);
 
-		/* Apply brands from the shooter to the ammo */
-		object_flags(j_ptr, tmp_f);
+		/* Apply brands/slays from the shooter to the ammo, but only if known
+		 * Note that this is not dependent on mode, so that viewing shop-held
+		 * ammo (fully known) does not leak information about launcher */
+		object_flags_known(j_ptr, tmp_f);
 		of_union(f, tmp_f);
 
 		text_out("Hits targets up to ");
