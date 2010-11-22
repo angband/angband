@@ -401,7 +401,8 @@ static bool store_will_buy(int store_num, const object_type *o_ptr)
 			for (i = 0; !accept && i < N_ELEMENTS(staples); i++)
 			{
 				if (staples[i].tval == o_ptr->tval &&
-				    staples[i].sval == o_ptr->sval)
+				    staples[i].sval == o_ptr->sval &&
+				    object_is_known(o_ptr))
 					accept = TRUE;
 			}
 
