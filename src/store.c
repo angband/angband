@@ -2960,6 +2960,7 @@ static bool store_process_command_key(char cmd)
 		{
 			Term_key_push(cmd);
 			textui_process_command(TRUE);
+			break;
 		}
 
 		/* Equipment list */

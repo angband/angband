@@ -694,11 +694,10 @@ static bool textui_process_key(unsigned char c)
 		}
 		else
 		{
-			if (command->cmd != CMD_NULL)
-				cmd_insert_repeated(command->cmd, p_ptr->command_arg);
-
-			else if (command->hook)
+			if (command->hook)
 				command->hook();
+			else
+				cmd_insert_repeated(command->cmd, p_ptr->command_arg);
 		}
 	}
 

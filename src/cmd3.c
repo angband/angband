@@ -58,7 +58,8 @@ void do_cmd_inven(void)
 
 	/* Get a new command */
 	e = inkey_ex();
-	Term_event_push(&e);
+	if (!(e.type == EVT_KBRD && e.key == ESCAPE))
+		Term_event_push(&e);
 
 	/* Load screen */
 	screen_load();
@@ -92,7 +93,8 @@ void do_cmd_equip(void)
 
 	/* Get a new command */
 	e = inkey_ex();
-	Term_event_push(&e);
+	if (!(e.type == EVT_KBRD && e.key == ESCAPE))
+		Term_event_push(&e);
 
 	/* Load screen */
 	screen_load();
