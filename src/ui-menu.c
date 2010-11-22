@@ -174,7 +174,7 @@ static void display_scrolling(menu_type *menu, int cursor, int *top, region *loc
 	for (i = 0; i < rows_per_page; i++)
 	{
 		/* Blank all lines */
-		Term_erase(col, row + i, loc->width - col);
+		Term_erase(col, row + i, loc->width);
 		if (i < n)
 		{
 			/* Redraw the line if it's within the number of menu items */

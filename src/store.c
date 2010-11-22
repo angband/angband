@@ -2887,10 +2887,7 @@ static void store_examine(int item)
 
 	/* Hack -- Browse book, then prompt for a command */
 	if (o_ptr->tval == cp_ptr->spell_book)
-	{
-		/* Call the aux function */
-		textui_spell_browse(o_ptr, item);
-	}
+		textui_book_browse(o_ptr);
 }
 
 

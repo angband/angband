@@ -1282,7 +1282,7 @@ static void calc_torch(void)
  *
  * N.B. state->num_blow is now 100x the number of blows.
  */
-int calc_blows(const object_type *o_ptr, player_state *state)
+int calc_blows(const object_type *o_ptr, player_state *state, int extra_blows)
 {
 	int blows;
 	int str_index, dex_index;
@@ -1309,7 +1309,7 @@ int calc_blows(const object_type *o_ptr, player_state *state)
 	blows = MIN((10000 / blow_energy), (100 * cp_ptr->max_attacks));
 
 	/* Require at least one blow */
-	return MAX(blows, 100);
+	return MAX(blows + (100 * extra_blows), 100);
 }
 
 
@@ -1937,8 +1937,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	if (!state->heavy_wield)
 	{
 		/* Calculate number of blows */
-		state->num_blow = calc_blows(o_ptr, state) + (100 *
- 			extra_blows);
+		state->num_blow = calc_blows(o_ptr, state, extra_blows);
 
 		/* Boost digging skill by weapon weight */
 		state->skills[SKILL_DIGGING] += (o_ptr->weight / 10);

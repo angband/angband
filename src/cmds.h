@@ -125,9 +125,10 @@ extern int cmp_monsters(const void *a, const void *b);
 
 
 /* ui-spell.c -- just for now */
-void textui_spell_browse(object_type *o_ptr, int item);
-void textui_obj_study(object_type *o_ptr, int item);
-void textui_obj_cast(object_type *o_ptr, int item);
+void textui_book_browse(const object_type *o_ptr);
+void textui_spell_browse(void);
+void textui_obj_study(void);
+void textui_obj_cast(void);
 
 /* ui-knowledge.c */
 extern void big_pad(int col, int row, byte a, byte c);

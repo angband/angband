@@ -260,17 +260,13 @@ static int get_spell(const object_type *o_ptr, const char *verb,
 }
 
 /**
- * Browse the given book.
+ * Browse a given book.
  */
-void textui_spell_browse(object_type *o_ptr, int item)
+void textui_book_browse(const object_type *o_ptr)
 {
 	menu_type *m;
 	const char *noun = (cp_ptr->spell_book == TV_MAGIC_BOOK ?
 			"spell" : "prayer");
-
-	/* Track the object kind */
-	track_object(item);
-	handle_stuff();
 
 	m = spell_menu_new(o_ptr, spell_okay_to_browse);
 	if (m) {
@@ -282,15 +278,45 @@ void textui_spell_browse(object_type *o_ptr, int item)
 }
 
 /**
+ * Browse the given book.
+ */
+void textui_spell_browse(void)
+{
+	int item;
+
+	item_tester_hook = obj_can_browse;
+	if (!get_item(&item, "Browse which book? ",
+			"You have no books that you can read.",
+			0, (USE_INVEN | USE_FLOOR | IS_HARMLESS)))
+		return;
+
+	/* Track the object kind */
+	track_object(item);
+	handle_stuff();
+
+	textui_book_browse(object_from_item_idx(item));
+}
+
+/**
  * Study a book to gain a new spell
  */
-void textui_obj_study(object_type *o_ptr, int item)
+void textui_obj_study(void)
 {
+	int item;
+
+	item_tester_hook = obj_can_study;
+	/* XXX need some way for player to !G */
+	if (!get_item(&item, "Study which book? ",
+			"You have no books that you can read.",
+			0, (USE_INVEN | USE_FLOOR)))
+		return;
+
 	track_object(item);
 	handle_stuff();
 
 	if (player_has(PF_CHOOSE_SPELLS)) {
-		int spell = get_spell(o_ptr, "study", spell_okay_to_study);
+		int spell = get_spell(object_from_item_idx(item),
+				"study", spell_okay_to_study);
 		if (spell >= 0) {
 			cmd_insert(CMD_STUDY_SPELL);
 			cmd_set_arg_choice(cmd_get_top(), 0, spell);
@@ -304,17 +330,24 @@ void textui_obj_study(object_type *o_ptr, int item)
 /**
  * Cast a spell from a book.
  */
-void textui_obj_cast(object_type *o_ptr, int item)
+void textui_obj_cast(void)
 {
+	int item;
 	int spell;
 
 	cptr verb = ((cp_ptr->spell_book == TV_MAGIC_BOOK) ? "cast" : "recite");
+
+	item_tester_hook = obj_can_cast_from;
+	if (!get_item(&item, "Cast from which book? ",
+			"You have no books that you can read.",
+			0, (USE_INVEN | USE_FLOOR)))
+		return;
 
 	/* Track the object kind */
 	track_object(item);
 
 	/* Ask for a spell */
-	spell = get_spell(o_ptr, verb, spell_okay_to_cast);
+	spell = get_spell(object_from_item_idx(item), verb, spell_okay_to_cast);
 	if (spell >= 0) {
 		cmd_insert(CMD_CAST);
 		cmd_set_arg_choice(cmd_get_top(), 0, spell);
