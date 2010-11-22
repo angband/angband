@@ -1088,6 +1088,7 @@ static void save_prefs(void)
 	/* Graphics setting */
 	file_putf(fff,"Tile set=%d\n", arg_graphics);
 	file_putf(fff,"Tile Width=%d\n", tile_width);
+	file_putf(fff,"Tile Height=%d\n", tile_height);
 
 	/* New section */
 	file_putf(fff, "\n");
