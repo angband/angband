@@ -2475,10 +2475,10 @@ static void sdl_keypress(SDL_keysym keysym)
 	SDLKey key_sym = keysym.sym;
 	
 	/* Store the value of various modifier keys */
-	bool mc = (bool)(keysym.mod & (KMOD_CTRL));
-	bool ms = (bool)(keysym.mod & (KMOD_SHIFT));
-	bool ma = (bool)(keysym.mod & (KMOD_ALT));
-	bool mm = (bool)(keysym.mod & (KMOD_META));
+	bool mc = (keysym.mod & (KMOD_CTRL)) > 0;
+	bool ms = (keysym.mod & (KMOD_SHIFT)) > 0;
+	bool ma = (keysym.mod & (KMOD_ALT)) > 0;
+	bool mm = (keysym.mod & (KMOD_META)) > 0;
 	
 	
 	/* Ignore if main term is not initialized */
