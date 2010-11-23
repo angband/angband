@@ -357,34 +357,34 @@ static bool target_set_interactive_accept(int y, int x)
 	if (cave_info[y][x] & (CAVE_MARK))
 	{
 		/* Notice glyphs */
-		if (cave_feat[y][x] == FEAT_GLYPH) return (TRUE);
+		if (cave->feat[y][x] == FEAT_GLYPH) return (TRUE);
 
 		/* Notice doors */
-		if (cave_feat[y][x] == FEAT_OPEN) return (TRUE);
-		if (cave_feat[y][x] == FEAT_BROKEN) return (TRUE);
+		if (cave->feat[y][x] == FEAT_OPEN) return (TRUE);
+		if (cave->feat[y][x] == FEAT_BROKEN) return (TRUE);
 
 		/* Notice stairs */
-		if (cave_feat[y][x] == FEAT_LESS) return (TRUE);
-		if (cave_feat[y][x] == FEAT_MORE) return (TRUE);
+		if (cave->feat[y][x] == FEAT_LESS) return (TRUE);
+		if (cave->feat[y][x] == FEAT_MORE) return (TRUE);
 
 		/* Notice shops */
-		if ((cave_feat[y][x] >= FEAT_SHOP_HEAD) &&
-		    (cave_feat[y][x] <= FEAT_SHOP_TAIL)) return (TRUE);
+		if ((cave->feat[y][x] >= FEAT_SHOP_HEAD) &&
+		    (cave->feat[y][x] <= FEAT_SHOP_TAIL)) return (TRUE);
 
 		/* Notice traps */
-		if ((cave_feat[y][x] >= FEAT_TRAP_HEAD) &&
-		    (cave_feat[y][x] <= FEAT_TRAP_TAIL)) return (TRUE);
+		if ((cave->feat[y][x] >= FEAT_TRAP_HEAD) &&
+		    (cave->feat[y][x] <= FEAT_TRAP_TAIL)) return (TRUE);
 
 		/* Notice doors */
-		if ((cave_feat[y][x] >= FEAT_DOOR_HEAD) &&
-		    (cave_feat[y][x] <= FEAT_DOOR_TAIL)) return (TRUE);
+		if ((cave->feat[y][x] >= FEAT_DOOR_HEAD) &&
+		    (cave->feat[y][x] <= FEAT_DOOR_TAIL)) return (TRUE);
 
 		/* Notice rubble */
-		if (cave_feat[y][x] == FEAT_RUBBLE) return (TRUE);
+		if (cave->feat[y][x] == FEAT_RUBBLE) return (TRUE);
 
 		/* Notice veins with treasure */
-		if (cave_feat[y][x] == FEAT_MAGMA_K) return (TRUE);
-		if (cave_feat[y][x] == FEAT_QUARTZ_K) return (TRUE);
+		if (cave->feat[y][x] == FEAT_MAGMA_K) return (TRUE);
+		if (cave->feat[y][x] == FEAT_QUARTZ_K) return (TRUE);
 	}
 
 	/* Nope */
@@ -965,7 +965,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 
 
 		/* Feature (apply "mimic") */
-		feat = f_info[cave_feat[y][x]].mimic;
+		feat = f_info[cave->feat[y][x]].mimic;
 
 		/* Require knowledge about grid, or ability to see grid */
 		if (!(cave_info[y][x] & (CAVE_MARK)) && !player_can_see_bold(y,x))

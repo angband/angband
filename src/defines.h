@@ -1537,7 +1537,7 @@ enum
  * Line 2 -- forbid normal objects
  */
 #define cave_clean_bold(Y,X) \
-	((cave_feat[Y][X] == FEAT_FLOOR) && \
+	((cave->feat[Y][X] == FEAT_FLOOR) && \
 	 (cave_o_idx[Y][X] == 0))
 
 /*
@@ -1558,7 +1558,7 @@ enum
  * Line 3 -- forbid player/monsters
  */
 #define cave_naked_bold(Y,X) \
-	((cave_feat[Y][X] == FEAT_FLOOR) && \
+	((cave->feat[Y][X] == FEAT_FLOOR) && \
 	 (cave_o_idx[Y][X] == 0) && \
 	 (cave_m_idx[Y][X] == 0))
 
@@ -1571,11 +1571,11 @@ enum
  * Line 4-5 -- shop doors
  */
 #define cave_perma_bold(Y,X) \
-	((cave_feat[Y][X] >= FEAT_PERM_EXTRA) || \
-	 ((cave_feat[Y][X] == FEAT_LESS) || \
-	  (cave_feat[Y][X] == FEAT_MORE)) || \
-	 ((cave_feat[Y][X] >= FEAT_SHOP_HEAD) && \
-	  (cave_feat[Y][X] <= FEAT_SHOP_TAIL)))
+	((cave->feat[Y][X] >= FEAT_PERM_EXTRA) || \
+	 ((cave->feat[Y][X] == FEAT_LESS) || \
+	  (cave->feat[Y][X] == FEAT_MORE)) || \
+	 ((cave->feat[Y][X] >= FEAT_SHOP_HEAD) && \
+	  (cave->feat[Y][X] <= FEAT_SHOP_TAIL)))
 
 
 /*

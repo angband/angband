@@ -544,9 +544,9 @@ static int current_store()
 	if (store_knowledge != STORE_NONE)
 		return store_knowledge;
 
-	if ((cave_feat[p_ptr->py][p_ptr->px] >= FEAT_SHOP_HEAD) &&
-		(cave_feat[p_ptr->py][p_ptr->px] <= FEAT_SHOP_TAIL))
-		return (cave_feat[p_ptr->py][p_ptr->px] - FEAT_SHOP_HEAD);
+	if ((cave->feat[p_ptr->py][p_ptr->px] >= FEAT_SHOP_HEAD) &&
+		(cave->feat[p_ptr->py][p_ptr->px] <= FEAT_SHOP_TAIL))
+		return (cave->feat[p_ptr->py][p_ptr->px] - FEAT_SHOP_HEAD);
 
 	return STORE_NONE;
 }

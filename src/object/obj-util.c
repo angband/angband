@@ -2124,7 +2124,7 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 			if (!los(y, x, ty, tx)) continue;
 
 			/* Require floor space */
-			if (cave_feat[ty][tx] != FEAT_FLOOR) continue;
+			if (cave->feat[ty][tx] != FEAT_FLOOR) continue;
 
 			/* No objects */
 			k = 0;
@@ -2212,7 +2212,7 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 		}
 
 		/* Require floor space */
-		if (cave_feat[ty][tx] != FEAT_FLOOR) continue;
+		if (cave->feat[ty][tx] != FEAT_FLOOR) continue;
 
 		/* Bounce to that location */
 		by = ty;

@@ -936,7 +936,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	g->lighting = LIGHT_GLOW;
 
 	/* Set things we can work out right now */
-	g->f_idx = cave_feat[y][x];
+	g->f_idx = cave->feat[y][x];
 	g->in_view = (info & CAVE_SEEN) ? TRUE : FALSE;
 	g->is_player = (cave_m_idx[y][x] < 0) ? TRUE : FALSE;
 	g->m_idx = (g->is_player) ? 0 : cave_m_idx[y][x];
@@ -3240,7 +3240,7 @@ void wiz_light(void)
 		for (x = 1; x < DUNGEON_WID-1; x++)
 		{
 			/* Process all non-walls */
-			if (cave_feat[y][x] < FEAT_SECRET)
+			if (cave->feat[y][x] < FEAT_SECRET)
 			{
 				/* Scan all neighbors */
 				for (i = 0; i < 9; i++)
@@ -3252,7 +3252,7 @@ void wiz_light(void)
 					cave_info[yy][xx] |= (CAVE_GLOW);
 
 					/* Memorize normal features */
-					if (cave_feat[yy][xx] > FEAT_INVIS)
+					if (cave->feat[yy][xx] > FEAT_INVIS)
 						cave_info[yy][xx] |= (CAVE_MARK);
 				}
 			}
@@ -3904,7 +3904,7 @@ struct cave *cave_new(void) {
 	struct cave *c = mem_zalloc(sizeof *c);
 	c->info = cave_info;
 	c->info2 = C_ZNEW(DUNGEON_HGT, byte_256);
-	c->feat = cave_feat;
+	c->feat = C_ZNEW(DUNGEON_HGT, byte_wid);
 	c->cost = C_ZNEW(DUNGEON_HGT, byte_wid);
 	c->when = C_ZNEW(DUNGEON_HGT, byte_wid);
 	c->m_idx = cave_m_idx;

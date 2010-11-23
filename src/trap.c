@@ -66,7 +66,7 @@ void pick_trap(int y, int x)
 	};
 
 	/* Paranoia */
-	if (cave_feat[y][x] != FEAT_INVIS) return;
+	if (cave->feat[y][x] != FEAT_INVIS) return;
 
 	/* Pick a trap */
 	while (1)
@@ -131,7 +131,7 @@ void hit_trap(int y, int x)
 	disturb(0, 0);
 
 	/* Analyze XXX XXX XXX */
-	switch (cave_feat[y][x])
+	switch (cave->feat[y][x])
 	{
 		case FEAT_TRAP_HEAD + 0x00:
 		{

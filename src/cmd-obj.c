@@ -718,7 +718,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	}
 	
 	/* Hack to make Glyph of Warding work properly */
-	if (cave_feat[py][px] == FEAT_GLYPH)
+	if (cave->feat[py][px] == FEAT_GLYPH)
 	{
 		/* Shift any objects to further away */
 		for (o_ptr = get_first_object(py, px); o_ptr; o_ptr =

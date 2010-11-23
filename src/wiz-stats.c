@@ -264,7 +264,7 @@ static void print_dun(void)
 	{
 		for (x = 1; x < DUNGEON_WID - 1; x++)
 		{
-			char feat = 'A' + cave_feat[y][x];
+			char feat = 'A' + cave->feat[y][x];
 			printf("%c", feat);
 		}
 		printf("\n");

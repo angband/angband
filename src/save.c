@@ -747,7 +747,7 @@ void wr_dungeon(void)
 		for (x = 0; x < DUNGEON_WID; x++)
 		{
 			/* Extract a byte */
-			tmp8u = cave_feat[y][x];
+			tmp8u = cave->feat[y][x];
 
 			/* If the run is broken, or too full, flush it */
 			if ((tmp8u != prev_char) || (count == MAX_UCHAR))

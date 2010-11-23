@@ -440,12 +440,6 @@ byte *temp_x;
 byte (*cave_info)[256];
 
 /*
- * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid feature codes
- */
-byte (*cave_feat)[DUNGEON_WID];
-
-
-/*
  * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid object indexes
  *
  * Note that this array yields the index of the top object in the stack of

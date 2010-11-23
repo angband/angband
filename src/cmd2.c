@@ -35,7 +35,7 @@
 void do_cmd_go_up(cmd_code code, cmd_arg args[])
 {
 	/* Verify stairs */
-	if (cave_feat[p_ptr->py][p_ptr->px] != FEAT_LESS)
+	if (cave->feat[p_ptr->py][p_ptr->px] != FEAT_LESS)
 	{
 		msg_print("I see no up staircase here.");
 		return;
@@ -69,7 +69,7 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
 void do_cmd_go_down(cmd_code code, cmd_arg args[])
 {
 	/* Verify stairs */
-	if (cave_feat[p_ptr->py][p_ptr->px] != FEAT_MORE)
+	if (cave->feat[p_ptr->py][p_ptr->px] != FEAT_MORE)
 	{
 		msg_print("I see no down staircase here.");
 		return;
@@ -533,7 +533,7 @@ int count_feats(int *y, int *x, bool (*test)(int feat), bool under)
 		if (!(cave_info[yy][xx] & (CAVE_MARK))) continue;
 
 		/* Not looking for this feature */
-		if (!((*test)(cave_feat[yy][xx]))) continue;
+		if (!((*test)(cave->feat[yy][xx]))) continue;
 
 		/* Count it */
 		++count;
@@ -625,8 +625,8 @@ static bool do_cmd_open_test(int y, int x)
 	}
 
 	/* Must be a closed door */
-	if (!((cave_feat[y][x] >= FEAT_DOOR_HEAD) &&
-	      (cave_feat[y][x] <= FEAT_DOOR_TAIL)))
+	if (!((cave->feat[y][x] >= FEAT_DOOR_HEAD) &&
+	      (cave->feat[y][x] <= FEAT_DOOR_TAIL)))
 	{
 		/* Message */
 		message(MSG_NOTHING_TO_OPEN, 0, "You see nothing there to open.");
@@ -659,14 +659,14 @@ static bool do_cmd_open_aux(int y, int x)
 
 
 	/* Jammed door */
-	if (cave_feat[y][x] >= FEAT_DOOR_HEAD + 0x08)
+	if (cave->feat[y][x] >= FEAT_DOOR_HEAD + 0x08)
 	{
 		/* Stuck */
 		msg_print("The door appears to be stuck.");
 	}
 
 	/* Locked door */
-	else if (cave_feat[y][x] >= FEAT_DOOR_HEAD + 0x01)
+	else if (cave->feat[y][x] >= FEAT_DOOR_HEAD + 0x01)
 	{
 		/* Disarm factor */
 		i = p_ptr->state.skills[SKILL_DISARM];
@@ -676,7 +676,7 @@ static bool do_cmd_open_aux(int y, int x)
 		if (p_ptr->timed[TMD_CONFUSED] || p_ptr->timed[TMD_IMAGE]) i = i / 10;
 
 		/* Extract the lock power */
-		j = cave_feat[y][x] - FEAT_DOOR_HEAD;
+		j = cave->feat[y][x] - FEAT_DOOR_HEAD;
 
 		/* Extract the difficulty XXX XXX XXX */
 		j = i - (j * 4);
@@ -823,8 +823,8 @@ static bool do_cmd_close_test(int y, int x)
 	}
 
  	/* Require open/broken door */
-	if ((cave_feat[y][x] != FEAT_OPEN) &&
-	    (cave_feat[y][x] != FEAT_BROKEN))
+	if ((cave->feat[y][x] != FEAT_OPEN) &&
+	    (cave->feat[y][x] != FEAT_BROKEN))
 	{
 		/* Message */
 		msg_print("You see nothing there to close.");
@@ -853,7 +853,7 @@ static bool do_cmd_close_aux(int y, int x)
 	if (!do_cmd_close_test(y, x)) return (FALSE);
 
 	/* Broken door */
-	if (cave_feat[y][x] == FEAT_BROKEN)
+	if (cave->feat[y][x] == FEAT_BROKEN)
 	{
 		/* Message */
 		msg_print("The door appears to be broken.");
@@ -1021,13 +1021,13 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	/* sound(MSG_DIG); */
 
 	/* Titanium */
-	if (cave_feat[y][x] >= FEAT_PERM_EXTRA)
+	if (cave->feat[y][x] >= FEAT_PERM_EXTRA)
 	{
 		msg_print("This seems to be permanent rock.");
 	}
 
 	/* Granite */
-	else if (cave_feat[y][x] >= FEAT_WALL_EXTRA)
+	else if (cave->feat[y][x] >= FEAT_WALL_EXTRA)
 	{
 		/* Tunnel */
 		if ((p_ptr->state.skills[SKILL_DIGGING] > 40 + randint0(1600)) && twall(y, x))
@@ -1045,20 +1045,20 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	}
 
 	/* Quartz / Magma */
-	else if (cave_feat[y][x] >= FEAT_MAGMA)
+	else if (cave->feat[y][x] >= FEAT_MAGMA)
 	{
 		bool okay = FALSE;
 		bool gold = FALSE;
 		bool hard = FALSE;
 
 		/* Found gold */
-		if (cave_feat[y][x] >= FEAT_MAGMA_H)
+		if (cave->feat[y][x] >= FEAT_MAGMA_H)
 		{
 			gold = TRUE;
 		}
 
 		/* Extract "quartz" flag XXX XXX XXX */
-		if ((cave_feat[y][x] - FEAT_MAGMA) & 0x01)
+		if ((cave->feat[y][x] - FEAT_MAGMA) & 0x01)
 		{
 			hard = TRUE;
 		}
@@ -1114,7 +1114,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	}
 
 	/* Rubble */
-	else if (cave_feat[y][x] == FEAT_RUBBLE)
+	else if (cave->feat[y][x] == FEAT_RUBBLE)
 	{
 		/* Remove the rubble */
 		if ((p_ptr->state.skills[SKILL_DIGGING] > randint0(200)) && twall(y, x))
@@ -1146,7 +1146,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	}
 
 	/* Secret doors */
-	else if (cave_feat[y][x] >= FEAT_SECRET)
+	else if (cave->feat[y][x] >= FEAT_SECRET)
 	{
 		/* Tunnel */
 		if ((p_ptr->state.skills[SKILL_DIGGING] > 30 + randint0(1200)) && twall(y, x))
@@ -1264,8 +1264,8 @@ static bool do_cmd_disarm_test(int y, int x)
 	}
 
 	/* Require an actual trap */
-	if (!((cave_feat[y][x] >= FEAT_TRAP_HEAD) &&
-	      (cave_feat[y][x] <= FEAT_TRAP_TAIL)))
+	if (!((cave->feat[y][x] >= FEAT_TRAP_HEAD) &&
+	      (cave->feat[y][x] <= FEAT_TRAP_TAIL)))
 	{
 		/* Message */
 		msg_print("You see nothing there to disarm.");
@@ -1300,7 +1300,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 
 
 	/* Get the trap name */
-	name = f_info[cave_feat[y][x]].name;
+	name = f_info[cave->feat[y][x]].name;
 
 	/* Get the "disarm" factor */
 	i = p_ptr->state.skills[SKILL_DISARM];
@@ -1452,8 +1452,8 @@ static bool do_cmd_bash_test(int y, int x)
 	}
 
 	/* Require a door */
-	if (!((cave_feat[y][x] >= FEAT_DOOR_HEAD) &&
-	      (cave_feat[y][x] <= FEAT_DOOR_TAIL)))
+	if (!((cave->feat[y][x] >= FEAT_DOOR_HEAD) &&
+	      (cave->feat[y][x] <= FEAT_DOOR_TAIL)))
 	{
 		/* Message */
 		msg_print("You see nothing there to bash.");
@@ -1493,7 +1493,7 @@ static bool do_cmd_bash_aux(int y, int x)
 	bash = adj_str_blow[p_ptr->state.stat_ind[A_STR]];
 
 	/* Extract door power */
-	temp = ((cave_feat[y][x] - FEAT_DOOR_HEAD) & 0x07);
+	temp = ((cave->feat[y][x] - FEAT_DOOR_HEAD) & 0x07);
 
 	/* Compare bash power to door power XXX XXX XXX */
 	temp = (bash - (temp * 10));
@@ -1642,7 +1642,7 @@ void do_cmd_alter_aux(int dir)
 
 
 	/* Original feature */
-	feat = cave_feat[y][x];
+	feat = cave->feat[y][x];
 
 	/* Must have knowledge to know feature XXX XXX */
 	if (!(cave_info[y][x] & (CAVE_MARK))) feat = FEAT_NONE;
@@ -1765,8 +1765,8 @@ static bool do_cmd_spike_test(int y, int x)
 	}
 
 	/* Require a door */
-	if (!((cave_feat[y][x] >= FEAT_DOOR_HEAD) &&
-	      (cave_feat[y][x] <= FEAT_DOOR_TAIL)))
+	if (!((cave->feat[y][x] >= FEAT_DOOR_HEAD) &&
+	      (cave->feat[y][x] <= FEAT_DOOR_TAIL)))
 	{
 		/* Message */
 		msg_print("You see nothing there to spike.");
@@ -1842,15 +1842,15 @@ void do_cmd_spike(cmd_code code, cmd_arg args[])
 		msg_print("You jam the door with a spike.");
 
 		/* Convert "locked" to "stuck" XXX XXX XXX */
-		if (cave_feat[y][x] < FEAT_DOOR_HEAD + 0x08)
+		if (cave->feat[y][x] < FEAT_DOOR_HEAD + 0x08)
 		{
-			cave_feat[y][x] += 0x08;
+			cave->feat[y][x] += 0x08;
 		}
 
 		/* Add one spike to the door */
-		if (cave_feat[y][x] < FEAT_DOOR_TAIL)
+		if (cave->feat[y][x] < FEAT_DOOR_TAIL)
 		{
-			cave_feat[y][x] += 0x01;
+			cave->feat[y][x] += 0x01;
 		}
 
 		/* Use up, and describe, a single spike, from the bottom */
@@ -1898,11 +1898,11 @@ static bool do_cmd_walk_test(int y, int x)
 	if (!cave_floor_bold(y, x))
 	{
 		/* Rubble */
-		if (cave_feat[y][x] == FEAT_RUBBLE)
+		if (cave->feat[y][x] == FEAT_RUBBLE)
 			message(MSG_HITWALL, 0, "There is a pile of rubble in the way!");
 
 		/* Door */
-		else if (cave_feat[y][x] < FEAT_SECRET)
+		else if (cave->feat[y][x] < FEAT_SECRET)
 			return TRUE;
 
 		/* Wall */
@@ -2046,8 +2046,8 @@ void do_cmd_hold(cmd_code code, cmd_arg args[])
 	(void)py_pickup(0);
 
 	/* Hack -- enter a store if we are on one */
-	if ((cave_feat[p_ptr->py][p_ptr->px] >= FEAT_SHOP_HEAD) &&
-	    (cave_feat[p_ptr->py][p_ptr->px] <= FEAT_SHOP_TAIL))
+	if ((cave->feat[p_ptr->py][p_ptr->px] >= FEAT_SHOP_HEAD) &&
+	    (cave->feat[p_ptr->py][p_ptr->px] <= FEAT_SHOP_TAIL))
 	{
 		/* Disturb */
 		disturb(0, 0);

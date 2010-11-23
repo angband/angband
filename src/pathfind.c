@@ -568,7 +568,7 @@ static int see_wall(int dir, int y, int x)
 	if (!in_bounds(y, x)) return (FALSE);
 
 	/* Non-wall grids are not known walls */
-	if (cave_feat[y][x] < FEAT_SECRET) return (FALSE);
+	if (cave->feat[y][x] < FEAT_SECRET) return (FALSE);
 
 	/* Unknown walls are not known walls */
 	if (!(cave_info[y][x] & (CAVE_MARK))) return (FALSE);
@@ -763,7 +763,7 @@ static bool run_test(void)
 			bool notice = TRUE;
 
 			/* Examine the terrain */
-			switch (cave_feat[row][col])
+			switch (cave->feat[row][col])
 			{
 				/* Floors */
 				case FEAT_FLOOR:
@@ -910,7 +910,7 @@ static bool run_test(void)
 			/* Unknown grid or non-wall */
 			/* Was: cave_floor_bold(row, col) */
 			if (!(cave_info[row][col] & (CAVE_MARK)) ||
-			    (cave_feat[row][col] < FEAT_SECRET))
+			    (cave->feat[row][col] < FEAT_SECRET))
 			{
 				/* Looking to break right */
 				if (p_ptr->run_break_right)
@@ -941,7 +941,7 @@ static bool run_test(void)
 			/* Unknown grid or non-wall */
 			/* Was: cave_floor_bold(row, col) */
 			if (!(cave_info[row][col] & (CAVE_MARK)) ||
-			    (cave_feat[row][col] < FEAT_SECRET))
+			    (cave->feat[row][col] < FEAT_SECRET))
 			{
 				/* Looking to break left */
 				if (p_ptr->run_break_left)
