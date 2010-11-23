@@ -605,13 +605,13 @@ static void special_wall_display(byte *a, char *c, bool in_view, int feat)
 bool dtrap_edge(int y, int x) 
 { 
 	/* Check if the square is a dtrap in the first place */ 
- 	if (!cave_info2[y][x] & CAVE2_DTRAP) return FALSE; 
+ 	if (!cave->info2[y][x] & CAVE2_DTRAP) return FALSE; 
 
  	/* Check for non-dtrap adjacent grids */ 
- 	if (in_bounds_fully(y + 1, x    ) && (!cave_info2[y + 1][x    ] & CAVE2_DTRAP)) return TRUE; 
- 	if (in_bounds_fully(y    , x + 1) && (!cave_info2[y    ][x + 1] & CAVE2_DTRAP)) return TRUE; 
- 	if (in_bounds_fully(y - 1, x    ) && (!cave_info2[y - 1][x    ] & CAVE2_DTRAP)) return TRUE; 
- 	if (in_bounds_fully(y    , x - 1) && (!cave_info2[y    ][x - 1] & CAVE2_DTRAP)) return TRUE; 
+ 	if (in_bounds_fully(y + 1, x    ) && (!cave->info2[y + 1][x    ] & CAVE2_DTRAP)) return TRUE; 
+ 	if (in_bounds_fully(y    , x + 1) && (!cave->info2[y    ][x + 1] & CAVE2_DTRAP)) return TRUE; 
+ 	if (in_bounds_fully(y - 1, x    ) && (!cave->info2[y - 1][x    ] & CAVE2_DTRAP)) return TRUE; 
+ 	if (in_bounds_fully(y    , x - 1) && (!cave->info2[y    ][x - 1] & CAVE2_DTRAP)) return TRUE; 
 
 	return FALSE; 
 } 
@@ -928,7 +928,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	assert(y < DUNGEON_HGT);
 
 	info = cave_info[y][x];
-	info2 = cave_info2[y][x];
+	info2 = cave->info2[y][x];
 	
 	/* Default "clear" values, others will be set later where appropriate. */
 	g->first_k_idx = 0;
@@ -3282,7 +3282,7 @@ void wiz_dark(void)
 		{
 			/* Process the grid */
 			cave_info[y][x] &= ~(CAVE_MARK);
-			cave_info2[y][x] &= ~(CAVE2_DTRAP);
+			cave->info2[y][x] &= ~(CAVE2_DTRAP);
 		}
 	}
 
@@ -3903,7 +3903,7 @@ struct cave *cave = NULL;
 struct cave *cave_new(void) {
 	struct cave *c = mem_zalloc(sizeof *c);
 	c->info = cave_info;
-	c->info2 = cave_info2;
+	c->info2 = C_ZNEW(DUNGEON_HGT, byte_256);
 	c->feat = cave_feat;
 	c->cost = C_ZNEW(DUNGEON_HGT, byte_wid);
 	c->when = C_ZNEW(DUNGEON_HGT, byte_wid);

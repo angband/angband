@@ -656,8 +656,8 @@ void move_player(int dir, bool disarm)
 	else
 	{
 		/* See if trap detection status will change */
-		bool old_dtrap = ((cave_info2[py][px] & (CAVE2_DTRAP)) != 0);
-		bool new_dtrap = ((cave_info2[y][x] & (CAVE2_DTRAP)) != 0);
+		bool old_dtrap = ((cave->info2[py][px] & (CAVE2_DTRAP)) != 0);
+		bool new_dtrap = ((cave->info2[y][x] & (CAVE2_DTRAP)) != 0);
 
 		/* Note the change in the detect status */
 		if (old_dtrap != new_dtrap)

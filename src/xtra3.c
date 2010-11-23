@@ -903,7 +903,7 @@ static size_t prt_state(int row, int col)
  */
 static size_t prt_dtrap(int row, int col)
 {
-	byte info = cave_info2[p_ptr->py][p_ptr->px];
+	byte info = cave->info2[p_ptr->py][p_ptr->px];
 
 	/* The player is in a trap-detected grid */
 	if (info & (CAVE2_DTRAP))

@@ -568,7 +568,7 @@ bool detect_traps(bool aware)
 			}
 
 			/* Mark as trap-detected */
-			cave_info2[y][x] |= (CAVE2_DTRAP);
+			cave->info2[y][x] |= CAVE2_DTRAP;
 		}
 	}
 

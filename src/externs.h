@@ -85,7 +85,6 @@ extern u16b *temp_g;
 extern byte *temp_y;
 extern byte *temp_x;
 extern byte (*cave_info)[256];
-extern byte (*cave_info2)[256];
 extern byte (*cave_feat)[DUNGEON_WID];
 extern s16b (*cave_o_idx)[DUNGEON_WID];
 extern s16b (*cave_m_idx)[DUNGEON_WID];

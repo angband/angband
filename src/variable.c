@@ -438,7 +438,6 @@ byte *temp_x;
  * in the array via "grid" values (see the GRID() macros).
  */
 byte (*cave_info)[256];
-byte (*cave_info2)[256];
 
 /*
  * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid feature codes

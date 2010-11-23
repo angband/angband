@@ -696,7 +696,7 @@ void wr_dungeon(void)
 		wr_byte((byte)prev_char);
 	}
 
-	/** Now dump the cave_info2[][] stuff **/
+	/** Now dump the cave->info2[][] stuff **/
 
 	/* Note that this will induce two wasted bytes */
 	count = 0;
@@ -708,7 +708,7 @@ void wr_dungeon(void)
 		for (x = 0; x < DUNGEON_WID; x++)
 		{
 			/* Keep all the information from info2 */
-			tmp8u = cave_info2[y][x];
+			tmp8u = cave->info2[y][x];
 
 			/* If the run is broken, or too full, flush it */
 			if ((tmp8u != prev_char) || (count == MAX_UCHAR))
