@@ -444,18 +444,6 @@ byte *temp_x;
 s16b (*cave_o_idx)[DUNGEON_WID];
 
 /*
- * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid monster indexes
- *
- * Note that this array yields the index of the monster or player in a grid,
- * where negative numbers are used to represent the player, positive numbers
- * are used to represent a monster, and zero is used to indicate "nobody".
- * This array replicates the information contained in the monster list and
- * the player structure, but provides extremely fast determination of which,
- * if any, monster or player is in any given grid.
- */
-s16b (*cave_m_idx)[DUNGEON_WID];
-
-/*
  * Array[z_info->o_max] of dungeon objects
  */
 object_type *o_list;

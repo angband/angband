@@ -61,7 +61,7 @@ void delete_monster_idx(int i)
 
 
 	/* Monster is gone */
-	cave_m_idx[y][x] = 0;
+	cave->m_idx[y][x] = 0;
 
 
 	/* Delete objects */
@@ -103,7 +103,7 @@ void delete_monster(int y, int x)
 	if (!in_bounds(y, x)) return;
 
 	/* Delete the monster (if any) */
-	if (cave_m_idx[y][x] > 0) delete_monster_idx(cave_m_idx[y][x]);
+	if (cave->m_idx[y][x] > 0) delete_monster_idx(cave->m_idx[y][x]);
 }
 
 
@@ -131,7 +131,7 @@ static void compact_monsters_aux(int i1, int i2)
 	x = m_ptr->fx;
 
 	/* Update the cave */
-	cave_m_idx[y][x] = i2;
+	cave->m_idx[y][x] = i2;
 
 	/* Repair objects being carried by monster */
 	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx)
@@ -275,7 +275,7 @@ void wipe_mon_list(void)
 		r_ptr->cur_num--;
 
 		/* Monster is gone */
-		cave_m_idx[m_ptr->fy][m_ptr->fx] = 0;
+		cave->m_idx[m_ptr->fy][m_ptr->fx] = 0;
 
 		/* Wipe the Monster */
 		(void)WIPE(m_ptr, monster_type);
@@ -1503,13 +1503,13 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	monster_race *r_ptr;
 
 	/* Monsters */
-	m1 = cave_m_idx[y1][x1];
-	m2 = cave_m_idx[y2][x2];
+	m1 = cave->m_idx[y1][x1];
+	m2 = cave->m_idx[y2][x2];
 
 
 	/* Update grids */
-	cave_m_idx[y1][x1] = m2;
-	cave_m_idx[y2][x2] = m1;
+	cave->m_idx[y1][x1] = m2;
+	cave->m_idx[y2][x2] = m1;
 
 
 	/* Monster 1 */
@@ -1611,7 +1611,7 @@ void monster_swap(int y1, int x1, int y2, int x2)
 s16b player_place(int y, int x)
 {
 	/* Paranoia XXX XXX */
-	if (cave_m_idx[y][x] != 0) return (0);
+	if (cave->m_idx[y][x] != 0) return (0);
 
 
 	/* Save player location */
@@ -1619,7 +1619,7 @@ s16b player_place(int y, int x)
 	p_ptr->px = x;
 
 	/* Mark cave grid */
-	cave_m_idx[y][x] = -1;
+	cave->m_idx[y][x] = -1;
 
 	/* Success */
 	return (-1);
@@ -1638,7 +1638,7 @@ s16b monster_place(int y, int x, monster_type *n_ptr)
 
 
 	/* Paranoia XXX XXX */
-	if (cave_m_idx[y][x] != 0) return (0);
+	if (cave->m_idx[y][x] != 0) return (0);
 
 
 	/* Get a new record */
@@ -1648,7 +1648,7 @@ s16b monster_place(int y, int x, monster_type *n_ptr)
 	if (m_idx)
 	{
 		/* Make a new monster */
-		cave_m_idx[y][x] = m_idx;
+		cave->m_idx[y][x] = m_idx;
 
 		/* Get the new monster */
 		m_ptr = &mon_list[m_idx];
@@ -2449,7 +2449,7 @@ bool summon_specific(int y1, int x1, int lev, int type, int delay)
 	/* If delay, try to let the player act before the summoned monsters. */
 	/* NOTE: should really be -100, but energy is currently 0-255. */
 	if (delay)
-		mon_list[cave_m_idx[y][x]].energy = 0;
+		mon_list[cave->m_idx[y][x]].energy = 0;
 
 	/* Success */
 	return (TRUE);

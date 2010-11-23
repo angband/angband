@@ -591,7 +591,7 @@ void move_player(int dir, bool disarm)
 	int x = px + ddx[dir];
 
 	/* Attack monsters */
-	if (cave_m_idx[y][x] > 0)
+	if (cave->m_idx[y][x] > 0)
 		py_attack(y, x);
 
 	/* Optionally alter known traps/doors on movement */

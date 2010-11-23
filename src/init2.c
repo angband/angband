@@ -3339,7 +3339,6 @@ static errr init_other(void)
 
 	/* Entity arrays */
 	cave_o_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
-	cave_m_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
 
 	cave = cave_new();
 
@@ -3802,7 +3801,7 @@ void cleanup_angband(void)
 
 	/* Free the cave */
 	FREE(cave_o_idx);
-	FREE(cave_m_idx);
+	FREE(cave->m_idx);
 
 	/* Free the "update_view()" array */
 	FREE(view_g);

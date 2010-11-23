@@ -330,7 +330,7 @@ static bool target_set_interactive_accept(int y, int x)
 
 
 	/* Player grids are always interesting */
-	if (cave_m_idx[y][x] < 0) return (TRUE);
+	if (cave->m_idx[y][x] < 0) return (TRUE);
 
 
 	/* Handle hallucination */
@@ -338,9 +338,9 @@ static bool target_set_interactive_accept(int y, int x)
 
 
 	/* Visible monsters */
-	if (cave_m_idx[y][x] > 0)
+	if (cave->m_idx[y][x] > 0)
 	{
-		monster_type *m_ptr = &mon_list[cave_m_idx[y][x]];
+		monster_type *m_ptr = &mon_list[cave->m_idx[y][x]];
 
 		/* Visible monsters */
 		if (m_ptr->ml) return (TRUE);
@@ -418,10 +418,10 @@ static void target_set_interactive_prepare(int mode)
 			if (mode & (TARGET_KILL))
 			{
 				/* Must contain a monster */
-				if (!(cave_m_idx[y][x] > 0)) continue;
+				if (!(cave->m_idx[y][x] > 0)) continue;
 
 				/* Must be a targettable monster */
-			 	if (!target_able(cave_m_idx[y][x])) continue;
+			 	if (!target_able(cave->m_idx[y][x])) continue;
 			}
 
 			/* Save the location */
@@ -642,7 +642,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 
 
 		/* The player */
-		if (cave_m_idx[y][x] < 0)
+		if (cave->m_idx[y][x] < 0)
 		{
 			/* Description */
 			s1 = "You are ";
@@ -680,9 +680,9 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 		}
 
 		/* Actual monsters */
-		if (cave_m_idx[y][x] > 0)
+		if (cave->m_idx[y][x] > 0)
 		{
-			monster_type *m_ptr = &mon_list[cave_m_idx[y][x]];
+			monster_type *m_ptr = &mon_list[cave->m_idx[y][x]];
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 			/* Visible */
@@ -702,7 +702,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 				monster_race_track(m_ptr->r_idx);
 
 				/* Hack -- health bar for this monster */
-				health_track(cave_m_idx[y][x]);
+				health_track(cave->m_idx[y][x]);
 
 				/* Hack -- handle stuff */
 				handle_stuff();
@@ -732,7 +732,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 						char buf[80];
 
 						/* Describe the monster */
-						look_mon_desc(buf, sizeof(buf), cave_m_idx[y][x]);
+						look_mon_desc(buf, sizeof(buf), cave->m_idx[y][x]);
 
 						/* Describe, and prompt for recall */
 						if (p_ptr->wizard)
@@ -1046,7 +1046,7 @@ bool target_set_closest(int mode)
 	/* Find the first monster in the queue */
 	y = temp_y[0];
 	x = temp_x[0];
-	m_idx = cave_m_idx[y][x];
+	m_idx = cave->m_idx[y][x];
 	
 	/* Target the monster, if possible */
 	if ((m_idx <= 0) || !target_able(m_idx))
@@ -1064,7 +1064,7 @@ bool target_set_closest(int mode)
 
 	/* Set up target information */
 	monster_race_track(m_ptr->r_idx);
-	health_track(cave_m_idx[y][x]);
+	health_track(cave->m_idx[y][x]);
 	target_set_monster(m_idx);
 
 	/* Visual cue */
@@ -1194,8 +1194,8 @@ bool target_set_interactive(int mode, int x, int y)
 			/* Update help */
 			if (help)
 			{
-				bool good_target = ((cave_m_idx[y][x] > 0) &&
-								target_able(cave_m_idx[y][x]));
+				bool good_target = ((cave->m_idx[y][x] > 0) &&
+								target_able(cave->m_idx[y][x]));
 				target_display_help(good_target, !(flag && temp_n));
 			}
 
@@ -1278,7 +1278,7 @@ bool target_set_interactive(int mode, int x, int y)
 				case '0':
 				case '.':
 				{
-					int m_idx = cave_m_idx[y][x];
+					int m_idx = cave->m_idx[y][x];
 
 					if ((m_idx > 0) && target_able(m_idx))
 					{
@@ -1376,7 +1376,7 @@ bool target_set_interactive(int mode, int x, int y)
 			/* Update help */
 			if (help) 
 			{
-				bool good_target = ((cave_m_idx[y][x] > 0) && target_able(cave_m_idx[y][x]));
+				bool good_target = ((cave->m_idx[y][x] > 0) && target_able(cave->m_idx[y][x]));
 				target_display_help(good_target, !(flag && temp_n));
 			}
 
@@ -1399,7 +1399,7 @@ bool target_set_interactive(int mode, int x, int y)
 					   square rather than the square itself (it seems this
 					   is the more likely intention of clicking on a 
 					   monster). */
-					int m_idx = cave_m_idx[y][x];
+					int m_idx = cave->m_idx[y][x];
 
 					if ((m_idx > 0) && target_able(m_idx))
 					{

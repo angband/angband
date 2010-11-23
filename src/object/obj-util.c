@@ -2248,7 +2248,7 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 	sound(MSG_DROP);
 
 	/* Message when an object falls under the player */
-	if (verbose && (cave_m_idx[by][bx] < 0) && !squelch_item_ok(j_ptr))
+	if (verbose && (cave->m_idx[by][bx] < 0) && !squelch_item_ok(j_ptr))
 	{
 		msg_print("You feel something roll beneath your feet.");
 	}

@@ -212,8 +212,8 @@ static void stats_collect_level(void)
 		{
 			for (x = 1; x < DUNGEON_WID - 1; x++)
 			{
-				if (cave_m_idx[y][x])
-					stats_monster(&mon_list[cave_m_idx[y][x]]);
+				if (cave->m_idx[y][x])
+					stats_monster(&mon_list[cave->m_idx[y][x]]);
 			}
 		}
 	}

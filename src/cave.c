@@ -938,8 +938,8 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	/* Set things we can work out right now */
 	g->f_idx = cave->feat[y][x];
 	g->in_view = (info & CAVE_SEEN) ? TRUE : FALSE;
-	g->is_player = (cave_m_idx[y][x] < 0) ? TRUE : FALSE;
-	g->m_idx = (g->is_player) ? 0 : cave_m_idx[y][x];
+	g->is_player = (cave->m_idx[y][x] < 0) ? TRUE : FALSE;
+	g->m_idx = (g->is_player) ? 0 : cave->m_idx[y][x];
 	g->hallucinate = p_ptr->timed[TMD_IMAGE] ? TRUE : FALSE;
 	g->trapborder = (dtrap_edge(y, x)) ? TRUE : FALSE;
 
@@ -3554,7 +3554,7 @@ int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg)
 			/* Sometimes stop at non-initial monsters/players */
 			if (flg & (PROJECT_STOP))
 			{
-				if ((n > 0) && (cave_m_idx[y][x] != 0)) break;
+				if ((n > 0) && (cave->m_idx[y][x] != 0)) break;
 			}
 
 			/* Slant */
@@ -3616,7 +3616,7 @@ int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg)
 			/* Sometimes stop at non-initial monsters/players */
 			if (flg & (PROJECT_STOP))
 			{
-				if ((n > 0) && (cave_m_idx[y][x] != 0)) break;
+				if ((n > 0) && (cave->m_idx[y][x] != 0)) break;
 			}
 
 			/* Slant */
@@ -3672,7 +3672,7 @@ int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg)
 			/* Sometimes stop at non-initial monsters/players */
 			if (flg & (PROJECT_STOP))
 			{
-				if ((n > 0) && (cave_m_idx[y][x] != 0)) break;
+				if ((n > 0) && (cave->m_idx[y][x] != 0)) break;
 			}
 
 			/* Advance (Y) */
@@ -3909,7 +3909,7 @@ struct cave *cave_new(void) {
 	c->feat = C_ZNEW(DUNGEON_HGT, byte_wid);
 	c->cost = C_ZNEW(DUNGEON_HGT, byte_wid);
 	c->when = C_ZNEW(DUNGEON_HGT, byte_wid);
-	c->m_idx = cave_m_idx;
+	c->m_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
 	c->o_idx = cave_o_idx;
 	return c;
 }

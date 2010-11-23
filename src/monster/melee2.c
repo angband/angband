@@ -3250,7 +3250,7 @@ static void process_monster(struct cave *c, int m_idx)
 			for (x = ox - 1; x <= ox + 1; x++)
 			{
 				/* Count monsters */
-				if (cave_m_idx[y][x] > 0) k++;
+				if (cave->m_idx[y][x] > 0) k++;
 			}
 		}
 
@@ -3529,7 +3529,7 @@ static void process_monster(struct cave *c, int m_idx)
 
 
 		/* The player is in the way. */
-		if (do_move && (cave_m_idx[ny][nx] < 0))
+		if (do_move && (cave->m_idx[ny][nx] < 0))
 		{
 			/* Learn about if the monster attacks */
 			if (m_ptr->ml) rf_on(l_ptr->flags, RF_NEVER_BLOW);
@@ -3568,9 +3568,9 @@ static void process_monster(struct cave *c, int m_idx)
 
 
 		/* A monster is in the way */
-		if (do_move && (cave_m_idx[ny][nx] > 0))
+		if (do_move && (cave->m_idx[ny][nx] > 0))
 		{
-			monster_type *n_ptr = &mon_list[cave_m_idx[ny][nx]];
+			monster_type *n_ptr = &mon_list[cave->m_idx[ny][nx]];
 
 			/* Kill weaker monsters */
 			int kill_ok = rf_has(r_ptr->flags, RF_KILL_BODY);

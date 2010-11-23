@@ -1955,7 +1955,7 @@ void destroy_area(int y1, int x1, int r, bool full)
 			cave_light_spot(cave, y, x);
 
 			/* Hack -- Notice player affect */
-			if (cave_m_idx[y][x] < 0)
+			if (cave->m_idx[y][x] < 0)
 			{
 				/* Hurt the player later */
 				flag = TRUE;
@@ -2221,9 +2221,9 @@ void earthquake(int cy, int cx, int r)
 			if (!map[16+yy-cy][16+xx-cx]) continue;
 
 			/* Process monsters */
-			if (cave_m_idx[yy][xx] > 0)
+			if (cave->m_idx[yy][xx] > 0)
 			{
-				monster_type *m_ptr = &mon_list[cave_m_idx[yy][xx]];
+				monster_type *m_ptr = &mon_list[cave->m_idx[yy][xx]];
 				monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 				/* Most monsters cannot co-exist with rock */
@@ -2434,11 +2434,11 @@ static void cave_temp_room_light(void)
 		cave_light_spot(cave, y, x);
 
 		/* Process affected monsters */
-		if (cave_m_idx[y][x] > 0)
+		if (cave->m_idx[y][x] > 0)
 		{
 			int chance = 25;
 
-			monster_type *m_ptr = &mon_list[cave_m_idx[y][x]];
+			monster_type *m_ptr = &mon_list[cave->m_idx[y][x]];
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 			/* Stupid monsters rarely wake up */

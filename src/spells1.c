@@ -2060,14 +2060,14 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 
 
 	/* No monster here */
-	if (!(cave_m_idx[y][x] > 0)) return (FALSE);
+	if (!(cave->m_idx[y][x] > 0)) return (FALSE);
 
 	/* Never affect projector */
-	if (cave_m_idx[y][x] == who) return (FALSE);
+	if (cave->m_idx[y][x] == who) return (FALSE);
 
 
 	/* Obtain monster info */
-	m_ptr = &mon_list[cave_m_idx[y][x]];
+	m_ptr = &mon_list[cave->m_idx[y][x]];
 	r_ptr = &r_info[m_ptr->r_idx];
 	l_ptr = &l_list[m_ptr->r_idx];
 	name = r_ptr->name;
@@ -2514,7 +2514,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (m_ptr->mspeed < 150) m_ptr->mspeed += 10;
 
 			/* Attempt to clone. */
-			if (multiply_monster(cave_m_idx[y][x]))
+			if (multiply_monster(cave->m_idx[y][x]))
 			{
 				note = " spawns!";
 			}
@@ -2541,7 +2541,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (m_ptr->hp > m_ptr->maxhp) m_ptr->hp = m_ptr->maxhp;
 
 			/* Redraw (later) if needed */
-			if (p_ptr->health_who == cave_m_idx[y][x]) p_ptr->redraw |= (PR_HEALTH);
+			if (p_ptr->health_who == cave->m_idx[y][x]) p_ptr->redraw |= (PR_HEALTH);
 
 			/* Message */
 			note = " looks healthier.";
@@ -2974,7 +2974,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 					dam = 0;
 
 					/* "Kill" the "old" monster */
-					delete_monster_idx(cave_m_idx[y][x]);
+					delete_monster_idx(cave->m_idx[y][x]);
 
 					/* Create a new monster (no groups) */
 					(void)place_monster_aux(cave, y, x, tmp, FALSE, FALSE);
@@ -2982,7 +2982,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 					/* Hack -- Assume success XXX XXX XXX */
 
 					/* Hack -- Get new monster */
-					m_ptr = &mon_list[cave_m_idx[y][x]];
+					m_ptr = &mon_list[cave->m_idx[y][x]];
 
 					/* Hack -- Get new race */
 					r_ptr = &r_info[m_ptr->r_idx];
@@ -3001,7 +3001,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		note = " disappears!";
 
 		/* Teleport */
-		teleport_away(cave_m_idx[y][x], do_dist);
+		teleport_away(cave->m_idx[y][x], do_dist);
 
 		/* Hack -- get new location */
 		y = m_ptr->fy;
@@ -3138,7 +3138,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	if (who > 0)
 	{
 		/* Redraw (later) if needed */
-		if (p_ptr->health_who == cave_m_idx[y][x]) p_ptr->redraw |= (PR_HEALTH);
+		if (p_ptr->health_who == cave->m_idx[y][x]) p_ptr->redraw |= (PR_HEALTH);
 
 		/* Wake the monster up */
 		wake_monster(m_ptr);
@@ -3150,10 +3150,10 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		if (m_ptr->hp < 0)
 		{
 			/* Generate treasure, etc */
-			monster_death(cave_m_idx[y][x]);
+			monster_death(cave->m_idx[y][x]);
 
 			/* Delete the monster */
-			delete_monster_idx(cave_m_idx[y][x]);
+			delete_monster_idx(cave->m_idx[y][x]);
 
 			/* Give detailed messages if destroyed */
 			if (note) msg_format("%^s%s", m_name, note);
@@ -3168,7 +3168,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (note && seen) msg_format("%^s%s", m_name, note);
 
 			/* Hack -- Pain message */
-			else if (dam > 0) message_pain(cave_m_idx[y][x], dam);
+			else if (dam > 0) message_pain(cave->m_idx[y][x], dam);
 		}
 	}
 
@@ -3178,7 +3178,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		bool fear = FALSE;
 
 		/* Hurt the monster, check for fear and death */
-		if (mon_take_hit(cave_m_idx[y][x], dam, &fear, note_dies))
+		if (mon_take_hit(cave->m_idx[y][x], dam, &fear, note_dies))
 		{
 			/* Dead monster */
 			mon_died = TRUE;
@@ -3191,7 +3191,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (note && seen) msg_format("%^s%s", m_name, note);
 
 			/* Hack -- Pain message */
-			else if (dam > 0) message_pain(cave_m_idx[y][x], dam);
+			else if (dam > 0) message_pain(cave->m_idx[y][x], dam);
 
 			/* Take note */
 			if (seen && (fear || m_ptr->monfear))
@@ -3244,7 +3244,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	/* Verify this code XXX XXX XXX */
 
 	/* Update the monster */
-	update_mon(cave_m_idx[y][x], FALSE);
+	update_mon(cave->m_idx[y][x], FALSE);
 
 	/* Redraw the monster grid */
 	cave_light_spot(cave, y, x);
@@ -3311,10 +3311,10 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 
 
 	/* No player here */
-	if (!(cave_m_idx[y][x] < 0)) return (FALSE);
+	if (!(cave->m_idx[y][x] < 0)) return (FALSE);
 
 	/* Never affect projector */
-	if (cave_m_idx[y][x] == who) return (FALSE);
+	if (cave->m_idx[y][x] == who) return (FALSE);
 
 
 	/* Limit maximum damage XXX XXX XXX */
@@ -4352,15 +4352,15 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 			y = project_m_y;
 
 			/* Track if possible */
-			if (cave_m_idx[y][x] > 0)
+			if (cave->m_idx[y][x] > 0)
 			{
-				monster_type *m_ptr = &mon_list[cave_m_idx[y][x]];
+				monster_type *m_ptr = &mon_list[cave->m_idx[y][x]];
 
 				/* Hack -- auto-recall */
 				if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
 
 				/* Hack - auto-track */
-				if (m_ptr->ml) health_track(cave_m_idx[y][x]);
+				if (m_ptr->ml) health_track(cave->m_idx[y][x]);
 			}
 		}
 	}

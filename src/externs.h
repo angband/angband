@@ -85,7 +85,6 @@ extern u16b *temp_g;
 extern byte *temp_y;
 extern byte *temp_x;
 extern s16b (*cave_o_idx)[DUNGEON_WID];
-extern s16b (*cave_m_idx)[DUNGEON_WID];
 extern maxima *z_info;
 extern object_type *o_list;
 extern monster_type *mon_list;
