@@ -174,7 +174,7 @@ static void py_pickup_gold(void)
 
 
 	/* Pick up all the ordinary gold objects */
-	for (this_o_idx = cave_o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
+	for (this_o_idx = cave->o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
 	{
 		/* Get the object */
 		o_ptr = &o_list[this_o_idx];
@@ -404,7 +404,7 @@ byte py_pickup(int pickup)
 
 
 	/* Nothing to pick up -- return */
-	if (!cave_o_idx[py][px]) return (0);
+	if (!cave->o_idx[py][px]) return (0);
 
 
 	/* Always pickup gold, effortlessly */
@@ -412,7 +412,7 @@ byte py_pickup(int pickup)
 
 
 	/* Scan the remaining objects */
-	for (this_o_idx = cave_o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
+	for (this_o_idx = cave->o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
 	{
 		/* Get the object and the next object */
 		o_ptr = &o_list[this_o_idx];

@@ -1538,7 +1538,7 @@ enum
  */
 #define cave_clean_bold(Y,X) \
 	((cave->feat[Y][X] == FEAT_FLOOR) && \
-	 (cave_o_idx[Y][X] == 0))
+	 (cave->o_idx[Y][X] == 0))
 
 /*
  * Determine if a "legal" grid is an "empty" floor grid
@@ -1559,7 +1559,7 @@ enum
  */
 #define cave_naked_bold(Y,X) \
 	((cave->feat[Y][X] == FEAT_FLOOR) && \
-	 (cave_o_idx[Y][X] == 0) && \
+	 (cave->o_idx[Y][X] == 0) && \
 	 (cave->m_idx[Y][X] == 0))
 
 

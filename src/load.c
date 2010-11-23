@@ -2273,10 +2273,10 @@ int rd_objects_1(void)
 			/* ToDo: Verify coordinates */
 
 			/* Link the object to the pile */
-			o_ptr->next_o_idx = cave_o_idx[y][x];
+			o_ptr->next_o_idx = cave->o_idx[y][x];
 
 			/* Link the floor to the object */
-			cave_o_idx[y][x] = o_idx;
+			cave->o_idx[y][x] = o_idx;
 		}
 	}
 

@@ -145,7 +145,7 @@ static s16b chest_check(int y, int x)
 
 
 	/* Scan all objects in the grid */
-	for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
+	for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
 	{
 		object_type *o_ptr;
 
@@ -1129,7 +1129,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 				place_object(y, x, p_ptr->depth, FALSE, FALSE);
 
 				/* Observe the new object */
-				if (!squelch_item_ok(&o_list[cave_o_idx[y][x]]) &&
+				if (!squelch_item_ok(&o_list[cave->o_idx[y][x]]) &&
 				    player_can_see_bold(y, x))
 				{
 					msg_print("You have found something!");

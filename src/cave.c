@@ -3910,7 +3910,7 @@ struct cave *cave_new(void) {
 	c->cost = C_ZNEW(DUNGEON_HGT, byte_wid);
 	c->when = C_ZNEW(DUNGEON_HGT, byte_wid);
 	c->m_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
-	c->o_idx = cave_o_idx;
+	c->o_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
 	return c;
 }
 

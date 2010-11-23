@@ -250,7 +250,7 @@ void autoinscribe_ground(void)
 	s16b this_o_idx, next_o_idx = 0;
 
 	/* Scan the pile of objects */
-	for (this_o_idx = cave_o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
+	for (this_o_idx = cave->o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
 	{
 		/* Get the next object */
 		next_o_idx = o_list[this_o_idx].next_o_idx;

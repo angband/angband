@@ -3652,7 +3652,7 @@ static void process_monster(struct cave *c, int m_idx)
 
 
 			/* Scan all objects in the grid */
-			for (this_o_idx = cave_o_idx[ny][nx]; this_o_idx; this_o_idx = next_o_idx)
+			for (this_o_idx = cave->o_idx[ny][nx]; this_o_idx; this_o_idx = next_o_idx)
 			{
 				object_type *o_ptr;
 

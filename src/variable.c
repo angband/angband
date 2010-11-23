@@ -431,19 +431,6 @@ byte *temp_y;
 byte *temp_x;
 
 /*
- * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid object indexes
- *
- * Note that this array yields the index of the top object in the stack of
- * objects in a given grid, using the "next_o_idx" field in that object to
- * indicate the next object in the stack, and so on, using zero to indicate
- * "nothing".  This array replicates the information contained in the object
- * list, for efficiency, providing extremely fast determination of whether
- * any object is in a grid, and relatively fast determination of which objects
- * are in a grid.
- */
-s16b (*cave_o_idx)[DUNGEON_WID];
-
-/*
  * Array[z_info->o_max] of dungeon objects
  */
 object_type *o_list;

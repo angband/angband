@@ -809,7 +809,7 @@ int scan_floor(int *items, int max_size, int y, int x, int mode)
 	if (!in_bounds(y, x)) return 0;
 
 	/* Scan all objects in the grid */
-	for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
+	for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
 	{
 		object_type *o_ptr;
 
@@ -918,7 +918,7 @@ void excise_object_idx(int o_idx)
 		int x = j_ptr->ix;
 
 		/* Scan all objects in the grid */
-		for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
+		for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
 		{
 			object_type *o_ptr;
 
@@ -935,7 +935,7 @@ void excise_object_idx(int o_idx)
 				if (prev_o_idx == 0)
 				{
 					/* Remove from list */
-					cave_o_idx[y][x] = next_o_idx;
+					cave->o_idx[y][x] = next_o_idx;
 				}
 
 				/* Real previous */
@@ -1012,7 +1012,7 @@ void delete_object(int y, int x)
 
 
 	/* Scan all objects in the grid */
-	for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
+	for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
 	{
 		object_type *o_ptr;
 
@@ -1030,7 +1030,7 @@ void delete_object(int y, int x)
 	}
 
 	/* Objects are gone */
-	cave_o_idx[y][x] = 0;
+	cave->o_idx[y][x] = 0;
 
 	/* Visual update */
 	cave_light_spot(cave, y, x);
@@ -1100,10 +1100,10 @@ static void compact_objects_aux(int i1, int i2)
 		x = o_ptr->ix;
 
 		/* Repair grid */
-		if (cave_o_idx[y][x] == i1)
+		if (cave->o_idx[y][x] == i1)
 		{
 			/* Repair */
-			cave_o_idx[y][x] = i2;
+			cave->o_idx[y][x] = i2;
 		}
 	}
 
@@ -1272,7 +1272,7 @@ static void mention_preserve(const object_type *o_ptr)
  *
  * Note -- we do NOT visually reflect these (irrelevant) changes
  *
- * Hack -- we clear the "cave_o_idx[y][x]" field for every grid,
+ * Hack -- we clear the "cave->o_idx[y][x]" field for every grid,
  * and the "m_ptr->next_o_idx" field for every monster, since
  * we know we are clearing every object.  Technically, we only
  * clear those fields for grids/monsters containing objects,
@@ -1328,7 +1328,7 @@ void wipe_o_list(void)
 			int x = o_ptr->ix;
 
 			/* Hack -- see above */
-			cave_o_idx[y][x] = 0;
+			cave->o_idx[y][x] = 0;
 		}
 
 		/* Wipe the object */
@@ -1404,7 +1404,7 @@ s16b o_pop(void)
  */
 object_type *get_first_object(int y, int x)
 {
-	s16b o_idx = cave_o_idx[y][x];
+	s16b o_idx = cave->o_idx[y][x];
 
 	if (o_idx) return (&o_list[o_idx]);
 
@@ -1938,7 +1938,7 @@ static s16b floor_get_idx_oldest_squelched(int y, int x)
 
 	object_type *o_ptr = NULL;
 
-	for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = o_ptr->next_o_idx)
+	for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = o_ptr->next_o_idx)
 	{
 		o_ptr = &o_list[this_o_idx];
 
@@ -1964,7 +1964,7 @@ s16b floor_carry(int y, int x, object_type *j_ptr)
 
 
 	/* Scan objects in that grid for combination */
-	for (this_o_idx = cave_o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
+	for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
 	{
 		object_type *o_ptr = &o_list[this_o_idx];
 
@@ -2023,10 +2023,10 @@ s16b floor_carry(int y, int x, object_type *j_ptr)
 		o_ptr->held_m_idx = 0;
 
 		/* Link the object to the pile */
-		o_ptr->next_o_idx = cave_o_idx[y][x];
+		o_ptr->next_o_idx = cave->o_idx[y][x];
 
 		/* Link the floor to the object */
-		cave_o_idx[y][x] = o_idx;
+		cave->o_idx[y][x] = o_idx;
 
 		cave_note_spot(cave, y, x);
 		cave_light_spot(cave, y, x);
