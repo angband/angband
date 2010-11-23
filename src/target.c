@@ -354,7 +354,7 @@ static bool target_set_interactive_accept(int y, int x)
 	}
 
 	/* Interesting memorized features */
-	if (cave_info[y][x] & (CAVE_MARK))
+	if (cave->info[y][x] & (CAVE_MARK))
 	{
 		/* Notice glyphs */
 		if (cave->feat[y][x] == FEAT_GLYPH) return (TRUE);
@@ -968,7 +968,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 		feat = f_info[cave->feat[y][x]].mimic;
 
 		/* Require knowledge about grid, or ability to see grid */
-		if (!(cave_info[y][x] & (CAVE_MARK)) && !player_can_see_bold(y,x))
+		if (!(cave->info[y][x] & (CAVE_MARK)) && !player_can_see_bold(y,x))
 		{
 			/* Forget feature */
 			feat = FEAT_NONE;

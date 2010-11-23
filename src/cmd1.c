@@ -595,7 +595,7 @@ void move_player(int dir, bool disarm)
 		py_attack(y, x);
 
 	/* Optionally alter known traps/doors on movement */
-	else if (disarm && (cave_info[y][x] & CAVE_MARK) &&
+	else if (disarm && (cave->info[y][x] & CAVE_MARK) &&
 			(cave->feat[y][x] >= FEAT_TRAP_HEAD) &&
 			(cave->feat[y][x] <= FEAT_DOOR_TAIL))
 	{
@@ -613,13 +613,13 @@ void move_player(int dir, bool disarm)
 		disturb(0, 0);
 
 		/* Notice unknown obstacles */
-		if (!(cave_info[y][x] & CAVE_MARK))
+		if (!(cave->info[y][x] & CAVE_MARK))
 		{
 			/* Rubble */
 			if (cave->feat[y][x] == FEAT_RUBBLE)
 			{
 				message(MSG_HITWALL, 0, "You feel a pile of rubble blocking your way.");
-				cave_info[y][x] |= (CAVE_MARK);
+				cave->info[y][x] |= (CAVE_MARK);
 				cave_light_spot(cave, y, x);
 			}
 
@@ -627,7 +627,7 @@ void move_player(int dir, bool disarm)
 			else if (cave->feat[y][x] < FEAT_SECRET)
 			{
 				message(MSG_HITWALL, 0, "You feel a door blocking your way.");
-				cave_info[y][x] |= (CAVE_MARK);
+				cave->info[y][x] |= (CAVE_MARK);
 				cave_light_spot(cave, y, x);
 			}
 
@@ -635,7 +635,7 @@ void move_player(int dir, bool disarm)
 			else
 			{
 				message(MSG_HITWALL, 0, "You feel a wall blocking your way.");
-				cave_info[y][x] |= (CAVE_MARK);
+				cave->info[y][x] |= (CAVE_MARK);
 				cave_light_spot(cave, y, x);
 			}
 		}

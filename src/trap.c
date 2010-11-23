@@ -246,7 +246,7 @@ void hit_trap(int y, int x)
 		{
 			sound(MSG_SUM_MONSTER);
 			msg_print("You are enveloped in a cloud of smoke!");
-			cave_info[y][x] &= ~(CAVE_MARK);
+			cave->info[y][x] &= ~(CAVE_MARK);
 			cave_set_feat(cave, y, x, FEAT_FLOOR);
 			num = 2 + randint1(3);
 			for (i = 0; i < num; i++)

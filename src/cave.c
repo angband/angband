@@ -927,7 +927,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	assert(x < DUNGEON_WID);
 	assert(y < DUNGEON_HGT);
 
-	info = cave_info[y][x];
+	info = cave->info[y][x];
 	info2 = cave->info2[y][x];
 	
 	/* Default "clear" values, others will be set later where appropriate. */
@@ -1772,7 +1772,7 @@ void do_cmd_view_map(void)
  * use of shifting instead of multiplication.
  *
  * Several pieces of information about each cave grid are stored in the
- * "cave_info" array, which is a special two dimensional array of bytes,
+ * "cave->info" array, which is a special two dimensional array of bytes,
  * one for each cave grid, each containing eight separate "flags" which
  * describe some property of the cave grid.  These flags can be checked and
  * modified extremely quickly, especially when special idioms are used to
@@ -2531,7 +2531,8 @@ void forget_view(void)
 	int fast_view_n = view_n;
 	u16b *fast_view_g = view_g;
 
-	byte *fast_cave_info = &cave_info[0][0];
+	/* XXX: this is moronic. It's not 'fast'. */
+	byte *fast_cave_info = &cave->info[0][0];
 
 
 	/* None to forget */
@@ -2553,7 +2554,7 @@ void forget_view(void)
 		fast_cave_info[g] &= ~(CAVE_VIEW | CAVE_SEEN);
 
 		/* Clear "CAVE_LIGHT" flag */
-		/* fast_cave_info[g] &= ~(CAVE_LIGHT); */
+		/* fast_cave->info[g] &= ~(CAVE_LIGHT); */
 
 		/* Redraw */
 		cave_light_spot(cave, y, x);
@@ -2672,7 +2673,8 @@ void update_view(void)
 	int fast_temp_n = 0;
 	u16b *fast_temp_g = temp_g;
 
-	byte *fast_cave_info = &cave_info[0][0];
+	/* XXX: also moronic. Optimizers exist. */
+	byte *fast_cave_info = &cave->info[0][0];
 
 	byte info;
 
@@ -2885,7 +2887,7 @@ void update_view(void)
 							int xx = (x < px) ? (x + 1) : (x > px) ? (x - 1) : x;
 
 							/* Check for "simple" illumination */
-							if (cave_info[yy][xx] & (CAVE_GLOW))
+							if (cave->info[yy][xx] & (CAVE_GLOW))
 							{
 								/* Mark as seen */
 								info |= (CAVE_SEEN);
@@ -3249,11 +3251,11 @@ void wiz_light(void)
 					int xx = x + ddx_ddd[i];
 
 					/* Perma-light the grid */
-					cave_info[yy][xx] |= (CAVE_GLOW);
+					cave->info[yy][xx] |= (CAVE_GLOW);
 
 					/* Memorize normal features */
 					if (cave->feat[yy][xx] > FEAT_INVIS)
-						cave_info[yy][xx] |= (CAVE_MARK);
+						cave->info[yy][xx] |= (CAVE_MARK);
 				}
 			}
 		}
@@ -3281,7 +3283,7 @@ void wiz_dark(void)
 		for (x = 0; x < DUNGEON_WID; x++)
 		{
 			/* Process the grid */
-			cave_info[y][x] &= ~(CAVE_MARK);
+			cave->info[y][x] &= ~(CAVE_MARK);
 			cave->info2[y][x] &= ~(CAVE2_DTRAP);
 		}
 	}
@@ -3902,7 +3904,7 @@ struct cave *cave = NULL;
 
 struct cave *cave_new(void) {
 	struct cave *c = mem_zalloc(sizeof *c);
-	c->info = cave_info;
+	c->info = C_ZNEW(DUNGEON_HGT, byte_256);
 	c->info2 = C_ZNEW(DUNGEON_HGT, byte_256);
 	c->feat = C_ZNEW(DUNGEON_HGT, byte_wid);
 	c->cost = C_ZNEW(DUNGEON_HGT, byte_wid);

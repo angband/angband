@@ -1444,10 +1444,10 @@ static void do_cmd_wiz_query(void)
 			if (!in_bounds_fully(y, x)) continue;
 
 			/* Given mask, show only those grids */
-			if (mask && !(cave_info[y][x] & mask)) continue;
+			if (mask && !(cave->info[y][x] & mask)) continue;
 
 			/* Given no mask, show unknown grids */
-			if (!mask && (cave_info[y][x] & (CAVE_MARK))) continue;
+			if (!mask && (cave->info[y][x] & (CAVE_MARK))) continue;
 
 			/* Color */
 			if (cave_floor_bold(y, x)) a = TERM_YELLOW;

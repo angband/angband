@@ -128,7 +128,7 @@ void teleport_away(int m_idx, int dis)
 			if (cave->feat[ny][nx] == FEAT_GLYPH) continue;
 
 			/* No teleporting into vaults and such */
-			/* if (cave_info[ny][nx] & (CAVE_ICKY)) continue; */
+			/* if (cave->info[ny][nx] & (CAVE_ICKY)) continue; */
 
 			/* This grid looks good */
 			look = FALSE;
@@ -200,7 +200,7 @@ void teleport_player(int dis)
 			if (!cave_naked_bold(y, x)) continue;
 
 			/* No teleporting into vaults and such */
-			if (cave_info[y][x] & (CAVE_ICKY)) continue;
+			if (cave->info[y][x] & (CAVE_ICKY)) continue;
 
 			/* This grid looks good */
 			look = FALSE;
@@ -1422,7 +1422,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				}
 
 				/* Forget the trap */
-				cave_info[y][x] &= ~(CAVE_MARK);
+				cave->info[y][x] &= ~(CAVE_MARK);
 
 				/* Destroy the trap */
 				cave_set_feat(cave, y, x, FEAT_FLOOR);
@@ -1475,7 +1475,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				}
 
 				/* Forget the door */
-				cave_info[y][x] &= ~(CAVE_MARK);
+				cave->info[y][x] &= ~(CAVE_MARK);
 
 				/* Destroy the feature */
 				cave_set_feat(cave, y, x, FEAT_FLOOR);
@@ -1497,14 +1497,14 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (cave->feat[y][x] >= FEAT_WALL_EXTRA)
 			{
 				/* Message */
-				if (cave_info[y][x] & (CAVE_MARK))
+				if (cave->info[y][x] & (CAVE_MARK))
 				{
 					msg_print("The wall turns into mud!");
 					obvious = TRUE;
 				}
 
 				/* Forget the wall */
-				cave_info[y][x] &= ~(CAVE_MARK);
+				cave->info[y][x] &= ~(CAVE_MARK);
 
 				/* Destroy the wall */
 				cave_set_feat(cave, y, x, FEAT_FLOOR);
@@ -1514,7 +1514,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 			else if (cave->feat[y][x] >= FEAT_MAGMA_H)
 			{
 				/* Message */
-				if (cave_info[y][x] & (CAVE_MARK))
+				if (cave->info[y][x] & (CAVE_MARK))
 				{
 					msg_print("The vein turns into mud!");
 					msg_print("You have found something!");
@@ -1522,7 +1522,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				}
 
 				/* Forget the wall */
-				cave_info[y][x] &= ~(CAVE_MARK);
+				cave->info[y][x] &= ~(CAVE_MARK);
 
 				/* Destroy the wall */
 				cave_set_feat(cave, y, x, FEAT_FLOOR);
@@ -1535,14 +1535,14 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 			else if (cave->feat[y][x] >= FEAT_MAGMA)
 			{
 				/* Message */
-				if (cave_info[y][x] & (CAVE_MARK))
+				if (cave->info[y][x] & (CAVE_MARK))
 				{
 					msg_print("The vein turns into mud!");
 					obvious = TRUE;
 				}
 
 				/* Forget the wall */
-				cave_info[y][x] &= ~(CAVE_MARK);
+				cave->info[y][x] &= ~(CAVE_MARK);
 
 				/* Destroy the wall */
 				cave_set_feat(cave, y, x, FEAT_FLOOR);
@@ -1552,14 +1552,14 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 			else if (cave->feat[y][x] == FEAT_RUBBLE)
 			{
 				/* Message */
-				if (cave_info[y][x] & (CAVE_MARK))
+				if (cave->info[y][x] & (CAVE_MARK))
 				{
 					msg_print("The rubble turns into mud!");
 					obvious = TRUE;
 				}
 
 				/* Forget the wall */
-				cave_info[y][x] &= ~(CAVE_MARK);
+				cave->info[y][x] &= ~(CAVE_MARK);
 
 				/* Destroy the rubble */
 				cave_set_feat(cave, y, x, FEAT_FLOOR);
@@ -1583,14 +1583,14 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 			else /* if (cave->feat[y][x] >= FEAT_DOOR_HEAD) */
 			{
 				/* Hack -- special message */
-				if (cave_info[y][x] & (CAVE_MARK))
+				if (cave->info[y][x] & (CAVE_MARK))
 				{
 					msg_print("The door turns into mud!");
 					obvious = TRUE;
 				}
 
 				/* Forget the wall */
-				cave_info[y][x] &= ~(CAVE_MARK);
+				cave->info[y][x] &= ~(CAVE_MARK);
 
 				/* Destroy the feature */
 				cave_set_feat(cave, y, x, FEAT_FLOOR);
@@ -1615,7 +1615,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 			cave_set_feat(cave, y, x, FEAT_DOOR_HEAD + 0x00);
 
 			/* Observe */
-			if (cave_info[y][x] & (CAVE_MARK)) obvious = TRUE;
+			if (cave->info[y][x] & (CAVE_MARK)) obvious = TRUE;
 
 			/* Update the visuals */
 			p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -1640,7 +1640,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_LIGHT:
 		{
 			/* Turn on the light */
-			cave_info[y][x] |= (CAVE_GLOW);
+			cave->info[y][x] |= (CAVE_GLOW);
 
 			/* Grid is in line of sight */
 			if (player_has_los_bold(y, x))
@@ -1665,11 +1665,11 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (p_ptr->depth != 0 || !is_daytime())
 			{
 				/* Turn off the light */
-				cave_info[y][x] &= ~(CAVE_GLOW);
+				cave->info[y][x] &= ~(CAVE_GLOW);
 
 				/* Hack -- Forget "boring" grids */
 				if (cave->feat[y][x] <= FEAT_INVIS)
-					cave_info[y][x] &= ~(CAVE_MARK);
+					cave->info[y][x] &= ~(CAVE_MARK);
 			}
 
 			/* Grid is in line of sight */

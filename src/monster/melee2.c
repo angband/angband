@@ -2678,7 +2678,7 @@ static bool get_moves(struct cave *c, int m_idx, int mm[5])
 			/* Check grid around the player for room interior (room walls count)
 			   or other empty space */
 			if ((cave->feat[py + ddy_ddd[i]][px + ddx_ddd[i]] <= FEAT_MORE) ||
-				(cave_info[py + ddy_ddd[i]][px + ddx_ddd[i]] & (CAVE_ROOM)))
+				(cave->info[py + ddy_ddd[i]][px + ddx_ddd[i]] & (CAVE_ROOM)))
 			{
 				/* One more open grid */
 				open++;
@@ -3394,7 +3394,7 @@ static void process_monster(struct cave *c, int m_idx)
 				do_move = TRUE;
 
 				/* Forget the wall */
-				cave_info[ny][nx] &= ~(CAVE_MARK);
+				cave->info[ny][nx] &= ~(CAVE_MARK);
 
 				/* Notice */
 				cave_set_feat(c, ny, nx, FEAT_FLOOR);
@@ -3511,13 +3511,13 @@ static void process_monster(struct cave *c, int m_idx)
 			if (randint1(BREAK_GLYPH) < r_ptr->level)
 			{
 				/* Describe observable breakage */
-				if (cave_info[ny][nx] & (CAVE_MARK))
+				if (cave->info[ny][nx] & (CAVE_MARK))
 				{
 					msg_print("The rune of protection is broken!");
 				}
 
 				/* Forget the rune */
-				cave_info[ny][nx] &= ~CAVE_MARK;
+				cave->info[ny][nx] &= ~CAVE_MARK;
 
 				/* Break the rune */
 				cave_set_feat(c, ny, nx, FEAT_FLOOR);

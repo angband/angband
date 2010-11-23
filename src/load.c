@@ -2032,7 +2032,7 @@ int rd_dungeon(void)
 		for (i = count; i > 0; i--)
 		{
 			/* Extract "info" */
-			cave_info[y][x] = tmp8u;
+			cave->info[y][x] = tmp8u;
 
 			/* Advance/Wrap */
 			if (++x >= DUNGEON_WID)

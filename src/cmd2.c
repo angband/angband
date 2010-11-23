@@ -530,7 +530,7 @@ int count_feats(int *y, int *x, bool (*test)(int feat), bool under)
 		if (!in_bounds_fully(yy, xx)) continue;
 
 		/* Must have knowledge */
-		if (!(cave_info[yy][xx] & (CAVE_MARK))) continue;
+		if (!(cave->info[yy][xx] & (CAVE_MARK))) continue;
 
 		/* Not looking for this feature */
 		if (!((*test)(cave->feat[yy][xx]))) continue;
@@ -615,7 +615,7 @@ int coords_to_dir(int y, int x)
 static bool do_cmd_open_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!(cave_info[y][x] & (CAVE_MARK)))
+	if (!(cave->info[y][x] & (CAVE_MARK)))
 	{
 		/* Message */
 		msg_print("You see nothing there.");
@@ -813,7 +813,7 @@ void do_cmd_open(cmd_code code, cmd_arg args[])
 static bool do_cmd_close_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!(cave_info[y][x] & (CAVE_MARK)))
+	if (!(cave->info[y][x] & (CAVE_MARK)))
 	{
 		/* Message */
 		msg_print("You see nothing there.");
@@ -940,7 +940,7 @@ void do_cmd_close(cmd_code code, cmd_arg args[])
 static bool do_cmd_tunnel_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!(cave_info[y][x] & (CAVE_MARK)))
+	if (!(cave->info[y][x] & (CAVE_MARK)))
 	{
 		/* Message */
 		msg_print("You see nothing there.");
@@ -983,7 +983,7 @@ static bool twall(int y, int x)
 	sound(MSG_DIG);
 
 	/* Forget the wall */
-	cave_info[y][x] &= ~(CAVE_MARK);
+	cave->info[y][x] &= ~(CAVE_MARK);
 
 	/* Remove the feature */
 	cave_set_feat(cave, y, x, FEAT_FLOOR);
@@ -1254,7 +1254,7 @@ void do_cmd_tunnel(cmd_code code, cmd_arg args[])
 static bool do_cmd_disarm_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!(cave_info[y][x] & (CAVE_MARK)))
+	if (!(cave->info[y][x] & (CAVE_MARK)))
 	{
 		/* Message */
 		msg_print("You see nothing there.");
@@ -1330,7 +1330,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 		gain_exp(power);
 
 		/* Forget the trap */
-		cave_info[y][x] &= ~(CAVE_MARK);
+		cave->info[y][x] &= ~(CAVE_MARK);
 
 		/* Remove the trap */
 		cave_set_feat(cave, y, x, FEAT_FLOOR);
@@ -1442,7 +1442,7 @@ void do_cmd_disarm(cmd_code code, cmd_arg args[])
 static bool do_cmd_bash_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!(cave_info[y][x] & (CAVE_MARK)))
+	if (!(cave->info[y][x] & (CAVE_MARK)))
 	{
 		/* Message */
 		msg_print("You see nothing there.");
@@ -1645,7 +1645,7 @@ void do_cmd_alter_aux(int dir)
 	feat = cave->feat[y][x];
 
 	/* Must have knowledge to know feature XXX XXX */
-	if (!(cave_info[y][x] & (CAVE_MARK))) feat = FEAT_NONE;
+	if (!(cave->info[y][x] & (CAVE_MARK))) feat = FEAT_NONE;
 
 
 	/* Take a turn */
@@ -1755,7 +1755,7 @@ static bool get_spike(int *ip)
 static bool do_cmd_spike_test(int y, int x)
 {
 	/* Must have knowledge */
-	if (!(cave_info[y][x] & (CAVE_MARK)))
+	if (!(cave->info[y][x] & (CAVE_MARK)))
 	{
 		/* Message */
 		msg_print("You see nothing there.");
@@ -1891,7 +1891,7 @@ static bool do_cmd_walk_test(int y, int x)
 	}
 
 	/* If we don't know the grid, allow attempts to walk into it */
-	if (!(cave_info[y][x] & CAVE_MARK))
+	if (!(cave->info[y][x] & CAVE_MARK))
 		return TRUE;
 
 	/* Require open space */

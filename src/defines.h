@@ -1512,7 +1512,7 @@ enum
 /*
  * Determines if a map location is currently "on screen"
  * Note that "panel_contains(Y,X)" always implies "in_bounds(Y,X)".
- * Pre-storing this into a cave_info flag would be nice.  XXX XXX
+ * Pre-storing this into a cave->info flag would be nice.  XXX XXX
  */
 #define panel_contains(Y,X) \
 	(((unsigned)((Y) - Term->offset_y) < (unsigned)(SCREEN_HGT)) && \
@@ -1528,7 +1528,7 @@ enum
  * Note the use of the new "CAVE_WALL" flag.
  */
 #define cave_floor_bold(Y,X) \
-	(!(cave_info[Y][X] & (CAVE_WALL)))
+	(!(cave->info[Y][X] & (CAVE_WALL)))
 
 /*
  * Determine if a "legal" grid is a "clean" floor grid
@@ -1584,7 +1584,7 @@ enum
  * Note the use of comparison to zero to force a "boolean" result
  */
 #define player_has_los_bold(Y,X) \
-	((cave_info[Y][X] & (CAVE_VIEW)) != 0)
+	((cave->info[Y][X] & (CAVE_VIEW)) != 0)
 
 
 /*
@@ -1593,7 +1593,7 @@ enum
  * Note the use of comparison to zero to force a "boolean" result
  */
 #define player_can_see_bold(Y,X) \
-	((cave_info[Y][X] & (CAVE_SEEN)) != 0)
+	((cave->info[Y][X] & (CAVE_SEEN)) != 0)
 
 
 /*

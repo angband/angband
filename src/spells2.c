@@ -495,7 +495,7 @@ void map_area(void)
 				if (cave->feat[y][x] > FEAT_INVIS)
 				{
 					/* Memorize the object */
-					cave_info[y][x] |= (CAVE_MARK);
+					cave->info[y][x] |= (CAVE_MARK);
 					cave_light_spot(cave, y, x);
 				}
 
@@ -509,7 +509,7 @@ void map_area(void)
 					if (cave->feat[yy][xx] >= FEAT_SECRET)
 					{
 						/* Memorize the walls */
-						cave_info[yy][xx] |= (CAVE_MARK);
+						cave->info[yy][xx] |= (CAVE_MARK);
 						cave_light_spot(cave, yy, xx);
 					}
 				}
@@ -561,7 +561,7 @@ bool detect_traps(bool aware)
 			    (cave->feat[y][x] <= FEAT_TRAP_TAIL))
 			{
 				/* Hack -- Memorize */
-				cave_info[y][x] |= (CAVE_MARK);
+				cave->info[y][x] |= (CAVE_MARK);
 
 				/* We found something to detect */
 				detect = TRUE;
@@ -641,7 +641,7 @@ bool detect_doorstairs(bool aware)
 			     (cave->feat[y][x] == FEAT_BROKEN)))
 			{
 				/* Hack -- Memorize */
-				cave_info[y][x] |= (CAVE_MARK);
+				cave->info[y][x] |= (CAVE_MARK);
 
 				/* Redraw */
 				cave_light_spot(cave, y, x);
@@ -655,7 +655,7 @@ bool detect_doorstairs(bool aware)
 			    (cave->feat[y][x] == FEAT_MORE))
 			{
 				/* Hack -- Memorize */
-				cave_info[y][x] |= (CAVE_MARK);
+				cave->info[y][x] |= (CAVE_MARK);
 
 				/* Redraw */
 				cave_light_spot(cave, y, x);
@@ -721,7 +721,7 @@ bool detect_treasure(bool aware)
 			    (cave->feat[y][x] == FEAT_QUARTZ_K))
 			{
 				/* Hack -- Memorize */
-				cave_info[y][x] |= (CAVE_MARK);
+				cave->info[y][x] |= (CAVE_MARK);
 
 				/* Redraw */
 				cave_light_spot(cave, y, x);
@@ -815,7 +815,7 @@ bool detect_close_buried_treasure(void)
 			    (cave->feat[y][x] == FEAT_QUARTZ_K))
 			{
 				/* Hack -- Memorize */
-				cave_info[y][x] |= (CAVE_MARK);
+				cave->info[y][x] |= (CAVE_MARK);
 
 				/* Redraw */
 				cave_light_spot(cave, y, x);
@@ -1947,10 +1947,10 @@ void destroy_area(int y1, int x1, int r, bool full)
 			if (k > r) continue;
 
 			/* Lose room and vault */
-			cave_info[y][x] &= ~(CAVE_ROOM | CAVE_ICKY);
+			cave->info[y][x] &= ~(CAVE_ROOM | CAVE_ICKY);
 
 			/* Lose light and knowledge */
-			cave_info[y][x] &= ~(CAVE_GLOW | CAVE_MARK);
+			cave->info[y][x] &= ~(CAVE_GLOW | CAVE_MARK);
 			
 			cave_light_spot(cave, y, x);
 
@@ -2100,10 +2100,10 @@ void earthquake(int cy, int cx, int r)
 			if (distance(cy, cx, yy, xx) > r) continue;
 
 			/* Lose room and vault */
-			cave_info[yy][xx] &= ~(CAVE_ROOM | CAVE_ICKY);
+			cave->info[yy][xx] &= ~(CAVE_ROOM | CAVE_ICKY);
 
 			/* Lose light and knowledge */
-			cave_info[yy][xx] &= ~(CAVE_GLOW | CAVE_MARK);
+			cave->info[yy][xx] &= ~(CAVE_GLOW | CAVE_MARK);
 			
 			/* Skip the epicenter */
 			if (!dx && !dy) continue;
@@ -2412,10 +2412,10 @@ static void cave_temp_room_light(void)
 		int x = temp_x[i];
 
 		/* No longer in the array */
-		cave_info[y][x] &= ~(CAVE_TEMP);
+		cave->info[y][x] &= ~(CAVE_TEMP);
 
 		/* Perma-Light */
-		cave_info[y][x] |= (CAVE_GLOW);
+		cave->info[y][x] |= (CAVE_GLOW);
 	}
 
 	/* Fully update the visuals */
@@ -2494,16 +2494,16 @@ static void cave_temp_room_unlight(void)
 		int x = temp_x[i];
 
 		/* No longer in the array */
-		cave_info[y][x] &= ~(CAVE_TEMP);
+		cave->info[y][x] &= ~(CAVE_TEMP);
 
 		/* Darken the grid */
-		cave_info[y][x] &= ~(CAVE_GLOW);
+		cave->info[y][x] &= ~(CAVE_GLOW);
 
 		/* Hack -- Forget "boring" grids */
 		if (cave->feat[y][x] <= FEAT_INVIS)
 		{
 			/* Forget the grid */
-			cave_info[y][x] &= ~(CAVE_MARK);
+			cave->info[y][x] &= ~(CAVE_MARK);
 		}
 	}
 
@@ -2536,16 +2536,16 @@ static void cave_temp_room_unlight(void)
 static void cave_temp_room_aux(int y, int x)
 {
 	/* Avoid infinite recursion */
-	if (cave_info[y][x] & (CAVE_TEMP)) return;
+	if (cave->info[y][x] & (CAVE_TEMP)) return;
 
 	/* Do not "leave" the current room */
-	if (!(cave_info[y][x] & (CAVE_ROOM))) return;
+	if (!(cave->info[y][x] & (CAVE_ROOM))) return;
 
 	/* Paranoia -- verify space */
 	if (temp_n == TEMP_MAX) return;
 
 	/* Mark the grid as "seen" */
-	cave_info[y][x] |= (CAVE_TEMP);
+	cave->info[y][x] |= (CAVE_TEMP);
 
 	/* Add it to the "seen" set */
 	temp_y[temp_n] = y;

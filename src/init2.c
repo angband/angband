@@ -3337,9 +3337,6 @@ static errr init_other(void)
 	temp_y = ((byte*)(temp_g)) + 0;
 	temp_x = ((byte*)(temp_g)) + TEMP_MAX;
 
-	/* Padded into array */
-	cave_info = C_ZNEW(DUNGEON_HGT, byte_256);
-
 	/* Entity arrays */
 	cave_o_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
 	cave_m_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
@@ -3806,7 +3803,6 @@ void cleanup_angband(void)
 	/* Free the cave */
 	FREE(cave_o_idx);
 	FREE(cave_m_idx);
-	FREE(cave_info);
 
 	/* Free the "update_view()" array */
 	FREE(view_g);

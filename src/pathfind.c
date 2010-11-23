@@ -41,7 +41,7 @@ static int ox, oy, ex, ey;
 static bool is_valid_pf(int y, int x)
 {
 	/* Unvisited means allowed */
-	if (!(cave_info[y][x] & (CAVE_MARK))) return (TRUE);
+	if (!(cave->info[y][x] & (CAVE_MARK))) return (TRUE);
 
 	/* Require open space */
 	return (cave_floor_bold(y, x));
@@ -571,7 +571,7 @@ static int see_wall(int dir, int y, int x)
 	if (cave->feat[y][x] < FEAT_SECRET) return (FALSE);
 
 	/* Unknown walls are not known walls */
-	if (!(cave_info[y][x] & (CAVE_MARK))) return (FALSE);
+	if (!(cave->info[y][x] & (CAVE_MARK))) return (FALSE);
 
 	/* Default */
 	return (TRUE);
@@ -758,7 +758,7 @@ static bool run_test(void)
 		inv = TRUE;
 
 		/* Check memorized grids */
-		if (cave_info[row][col] & (CAVE_MARK))
+		if (cave->info[row][col] & (CAVE_MARK))
 		{
 			bool notice = TRUE;
 
@@ -909,7 +909,7 @@ static bool run_test(void)
 
 			/* Unknown grid or non-wall */
 			/* Was: cave_floor_bold(row, col) */
-			if (!(cave_info[row][col] & (CAVE_MARK)) ||
+			if (!(cave->info[row][col] & (CAVE_MARK)) ||
 			    (cave->feat[row][col] < FEAT_SECRET))
 			{
 				/* Looking to break right */
@@ -940,7 +940,7 @@ static bool run_test(void)
 
 			/* Unknown grid or non-wall */
 			/* Was: cave_floor_bold(row, col) */
-			if (!(cave_info[row][col] & (CAVE_MARK)) ||
+			if (!(cave->info[row][col] & (CAVE_MARK)) ||
 			    (cave->feat[row][col] < FEAT_SECRET))
 			{
 				/* Looking to break left */
@@ -1063,7 +1063,7 @@ void run_step(int dir)
 				x = p_ptr->px + ddx[pf_result[pf_result_index] - '0'];
 
 				/* Known wall */
-				if ((cave_info[y][x] & (CAVE_MARK)) && !cave_floor_bold(y, x))
+				if ((cave->info[y][x] & (CAVE_MARK)) && !cave_floor_bold(y, x))
 				{
 					disturb(0,0);
 					p_ptr->running_withpathfind = FALSE;
@@ -1088,7 +1088,7 @@ void run_step(int dir)
 				x = p_ptr->px + ddx[pf_result[pf_result_index] - '0'];
 
 				/* Known wall */
-				if ((cave_info[y][x] & (CAVE_MARK)) && !cave_floor_bold(y, x))
+				if ((cave->info[y][x] & (CAVE_MARK)) && !cave_floor_bold(y, x))
 				{
 					disturb(0,0);
 					p_ptr->running_withpathfind = FALSE;
@@ -1100,7 +1100,7 @@ void run_step(int dir)
 				x = x + ddx[pf_result[pf_result_index-1] - '0'];
 
 				/* Known wall */
-				if ((cave_info[y][x] & (CAVE_MARK)) && !cave_floor_bold(y, x))
+				if ((cave->info[y][x] & (CAVE_MARK)) && !cave_floor_bold(y, x))
 				{
 					p_ptr->running_withpathfind = FALSE;
 

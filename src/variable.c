@@ -430,15 +430,6 @@ u16b *temp_g;
 byte *temp_y;
 byte *temp_x;
 
-
-/*
- * Array[DUNGEON_HGT][256] of cave grid info flags (padded)
- *
- * These arrays are padded to a width of 256 to allow fast access to elements
- * in the array via "grid" values (see the GRID() macros).
- */
-byte (*cave_info)[256];
-
 /*
  * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid object indexes
  *
