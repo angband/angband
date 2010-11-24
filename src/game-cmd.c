@@ -382,6 +382,9 @@ void process_command(cmd_context ctx, bool no_request)
 {
 	game_command *cmd;
 
+	/* Reset so that when selecting items, we look in the default location */
+	p_ptr->command_wrk = 0;
+
 	/* If we've got a command to process, do it. */
 	if (cmd_get(ctx, &cmd, !no_request) == 0)
 	{
