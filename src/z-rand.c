@@ -457,5 +457,5 @@ bool randcalc_valid(random_value v, int test) {
  * Test to see if a random_value actually varies
  */
 bool randcalc_varies(random_value v) {
-	return randcalc(v, 0, MINIMISE) == randcalc(v, 0, MAXIMISE);
+	return randcalc(v, 0, MINIMISE) != randcalc(v, 0, MAXIMISE);
 }

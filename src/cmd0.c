@@ -712,10 +712,11 @@ static bool textui_process_key(unsigned char c)
 void textui_process_command(bool no_request)
 {
 	bool done = TRUE;
-	ui_event_data e = textui_get_command();
+	ui_event_data e;
 
-	/* Reset argument */
+	/* Reset argument before getting command */
 	p_ptr->command_arg = 0;
+	e = textui_get_command();
 
 	if (e.type == EVT_RESIZE)
 		do_cmd_redraw();

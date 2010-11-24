@@ -1846,7 +1846,10 @@ static void ResizeWin(term_window* win, int w, int h)
 		
 		/* Oops */
 		if (!win->tile_wid || !win->tile_hgt)
-			quit(format("Unable to find font '%s'.", win->req_font));
+			quit(format("Unable to find font '%s'.\n"
+						"Note that there are new extended font files ending in 'x' in %s.\n"
+					    "Please check %s and edit if necessary.",
+					    win->req_font, ANGBAND_DIR_XTRA_FONT, ANGBAND_DIR_USER_SDL));
 	}
 	
 	/* Get the amount of columns & rows */
