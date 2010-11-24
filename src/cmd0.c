@@ -685,6 +685,10 @@ static bool textui_process_key(unsigned char c)
 		
 			/* Get item */
 			item_tester_hook = act->selector.filter;
+
+			/* Reset in order to start looking in the defualt place  */
+			p_ptr->command_wrk = 0;
+
 			if (!get_item(&item, act->selector.prompt,
 					act->selector.noop, c, act->selector.mode))
 				return TRUE;
