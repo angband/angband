@@ -516,7 +516,7 @@ static void spoil_artifact(cptr fname)
 			 * artifact can appear, its rarity, its weight, and
 			 * its power rating.
 			 */
-			text_out("\nMin Level %u, Max Level %u, Generation chance %u, Power %u, %d.%d lbs\n",
+			text_out("\nMin Level %u, Max Level %u, Generation chance %u, Power %d, %d.%d lbs\n",
 				a_ptr->alloc_min, a_ptr->alloc_max,
 				a_ptr->alloc_prob, object_power(i_ptr, FALSE,
 				NULL, TRUE), (a_ptr->weight / 10),
