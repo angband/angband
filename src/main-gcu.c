@@ -21,6 +21,10 @@
 #include "main.h"
 #include "files.h"
 
+/* locale junk */
+#include "locale.h"
+#include "langinfo.h"
+
 /* included for redrawing code, to prevent warnings */
 #include "cmds.h"
 
@@ -831,13 +835,14 @@ static errr Term_wipe_gcu(int x, int y, int n)
 }
 
 /*
- * Given a position in the ISO Latin-1 character set, return
- * the correct character on this system.
+ * Since GCU currently only supports Latin-1 extended chracters, we only
+ * install this hook if we're not using UTF-8.
+ * Given a position in the ISO Latin-1 character set, return the correct
+ * character on this system. Currently
  */
  static byte Term_xchar_gcu(byte c)
 {
- 	/* The GCU port uses the Latin-1 standard */
- 	return (c);
+	return (c);
 }
 
 
@@ -928,7 +933,13 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x)
 	t->wipe_hook = Term_wipe_gcu;
 	t->curs_hook = Term_curs_gcu;
 	t->xtra_hook = Term_xtra_gcu;
-	t->xchar_hook = Term_xchar_gcu;
+
+	/* only if the locale supports Latin-1 will we enable xchar_hook */
+	if (setlocale(LC_CTYPE, "")) {
+		/* the Latin-1 codeset is ISO-8859-1 */
+		if (strcmp(nl_langinfo(CODESET), "ISO-8859-1") == 0)
+			t->xchar_hook = Term_xchar_gcu;
+	}
 
 	/* Save the data */
 	t->data = td;
