@@ -15,12 +15,15 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-#include "ui-menu.h"
-#include "ui-birth.h"
-#include "game-event.h"
-#include "game-cmd.h"
+#include "button.h"
 #include "cmds.h"
+#include "files.h"
+#include "game-cmd.h"
+#include "game-event.h"
+#include "ui-birth.h"
+#include "ui-menu.h"
 
 /*
  * Overview
@@ -109,7 +112,7 @@ static enum birth_stage get_quickstart_command(void)
 		
 		if (ke.key == 'N' || ke.key == 'n')
 		{
-			cmd_insert(CMD_BIRTH_RESET, TRUE);
+			cmd_insert(CMD_BIRTH_RESET);
 			next = BIRTH_SEX_CHOICE;
 		}
 		else if (ke.key == KTRL('X'))
@@ -306,7 +309,7 @@ static void setup_menus()
 
 	for (i = 0; i < z_info->p_max; i++)
 	{	
-		mdata->items[i] = p_name + p_info[i].name;
+		mdata->items[i] = p_info[i].name;
 	}
 	mdata->hint = "Your 'race' determines various intrinsic factors and bonuses.";
 
@@ -316,7 +319,7 @@ static void setup_menus()
 
 	for (i = 0; i < z_info->c_max; i++)
 	{	
-		mdata->items[i] = c_name + c_info[i].name;
+		mdata->items[i] = c_info[i].name;
 	}
 	mdata->hint = "Your 'class' determines various intrinsic abilities and bonuses";
 		
@@ -399,7 +402,7 @@ static void print_menu_instructions(void)
    by the UI (displaying help text, for instance). */
 static enum birth_stage menu_question(enum birth_stage current, menu_type *current_menu, cmd_code choice_command)
 {
-	struct birthmenu_data *menu_data = current_menu->menu_data;
+	struct birthmenu_data *menu_data = menu_priv(current_menu);
 	ui_event_data cx;
 
 	enum birth_stage next = BIRTH_RESET;
@@ -443,13 +446,15 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 					 * totals.  This is, it should go without saying, a hack.
 					 */
 					point_based_start();
-					cmd_insert(CMD_RESET_STATS, TRUE);
+					cmd_insert(CMD_RESET_STATS);
+					cmd_set_arg_choice(cmd_get_top(), 0, TRUE);
 					next = current + 1;
 				}
 			}
 			else
 			{
-				cmd_insert(choice_command, current_menu->cursor);
+				cmd_insert(choice_command);
+				cmd_set_arg_choice(cmd_get_top(), 0, current_menu->cursor);
 				next = current + 1;
 			}
 		}
@@ -459,7 +464,8 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 			if (cx.key == '*' && menu_data->allow_random) 
 			{
 				current_menu->cursor = randint0(current_menu->count);
-				cmd_insert(choice_command, current_menu->cursor);
+				cmd_insert(choice_command);
+				cmd_set_arg_choice(cmd_get_top(), 0, current_menu->cursor);
 
 				menu_refresh(current_menu);
 				next = current + 1;
@@ -688,7 +694,8 @@ static enum birth_stage point_based_command(void)
 
 	else if (ch == 'r' || ch == 'R') 
 	{
-		cmd_insert(CMD_RESET_STATS, FALSE);
+		cmd_insert(CMD_RESET_STATS);
+		cmd_set_arg_choice(cmd_get_top(), 0, FALSE);
 	}
 	
 	/* Done */
@@ -711,13 +718,15 @@ static enum birth_stage point_based_command(void)
 		/* Decrease stat (if possible) */
 		if (ch == 4)
 		{
-			cmd_insert(CMD_SELL_STAT, stat);
+			cmd_insert(CMD_SELL_STAT);
+			cmd_set_arg_choice(cmd_get_top(), 0, stat);
 		}
 		
 		/* Increase stat (if possible) */
 		if (ch == 6)
 		{
-			cmd_insert(CMD_BUY_STAT, stat);
+			cmd_insert(CMD_BUY_STAT);
+			cmd_set_arg_choice(cmd_get_top(), 0, stat);
 		}
 	}
 
@@ -734,7 +743,8 @@ static enum birth_stage get_name_command(void)
 
 	if (get_name(name, sizeof(name)))
 	{	
-		cmd_insert(CMD_NAME_CHOICE, name);
+		cmd_insert(CMD_NAME_CHOICE);
+		cmd_set_arg_string(cmd_get_top(), 0, name);
 		next = BIRTH_FINAL_CONFIRM;
 	}
 	else
@@ -827,7 +837,8 @@ errr get_birth_command(bool wait)
 	{
 		case BIRTH_RESET:
 		{
-			cmd_insert(CMD_BIRTH_RESET, TRUE);
+			cmd_insert(CMD_BIRTH_RESET);
+
 			roller = BIRTH_RESET;
 			
 			if (quickstart_allowed)

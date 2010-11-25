@@ -16,7 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
-
+#include "macro.h"
 
 /*
  * This file helps Angband work with UNIX/X11 computers.
@@ -2433,11 +2433,8 @@ static errr term_data_init(term_data *td, int i)
 	if (td->tile_wid <= 0) td->tile_wid = td->fnt->twid;
 	if (td->tile_hgt <= 0) td->tile_hgt = td->fnt->hgt;
 
-	/* Allow bigtile mode */
-	if (use_bigtile)
-		td->tile_wid2 = td->tile_wid * 2;
-	else
-		td->tile_wid2 = td->tile_wid;
+	/* Don't allow bigtile mode - one day maybe NRM */
+	td->tile_wid2 = td->tile_wid;
 
 	/* Hack -- key buffer size */
 	num = ((i == 0) ? 1024 : 16);

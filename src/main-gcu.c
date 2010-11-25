@@ -17,17 +17,15 @@
  */
 #include "angband.h"
 
+#ifdef USE_GCU
+#include "main.h"
+#include "files.h"
+
 /* included for redrawing code, to prevent warnings */
 #include "cmds.h"
 
-#ifdef USE_GCU
-
-#include "main.h"
-
-
 /* Avoid 'struct term' name conflict with <curses.h> (via <term.h>) on AIX */
 #define term System_term
-
 
 /*
  * Include the proper "header" file
@@ -832,6 +830,17 @@ static errr Term_wipe_gcu(int x, int y, int n)
 	return (0);
 }
 
+/*
+ * Given a position in the ISO Latin-1 character set, return
+ * the correct character on this system.
+ */
+ static byte Term_xchar_gcu(byte c)
+{
+ 	/* The GCU port uses the Latin-1 standard */
+ 	return (c);
+}
+
+
 
 /*
  * Place some text on the screen using an attribute
@@ -842,7 +851,7 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 
 #ifdef A_COLOR
 	/* Set the color */
-	if (can_use_color) wattrset(td->win, colortable[a & 255]);
+	if (can_use_color) (void)wattrset(td->win, colortable[a & 255]);
 #endif
 
 	/* Move the cursor */
@@ -919,6 +928,7 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x)
 	t->wipe_hook = Term_wipe_gcu;
 	t->curs_hook = Term_curs_gcu;
 	t->xtra_hook = Term_xtra_gcu;
+	t->xchar_hook = Term_xchar_gcu;
 
 	/* Save the data */
 	t->data = td;

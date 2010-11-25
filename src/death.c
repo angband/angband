@@ -15,9 +15,12 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-#include "ui-menu.h"
 #include "cmds.h"
+#include "files.h"
+#include "history.h"
+#include "ui-menu.h"
 #include "wizard.h"
 
 /*
@@ -81,11 +84,11 @@ static void print_tomb(void)
 	if (p_ptr->total_winner)
 		put_str_centred(line++, 8, 8+31, "Magnificent");
 	else
-		put_str_centred(line++, 8, 8+31, "%s", c_text + cp_ptr->title[(p_ptr->lev - 1) / 5]);
+		put_str_centred(line++, 8, 8+31, "%s", cp_ptr->title[(p_ptr->lev - 1) / 5]);
 
 	line++;
 
-	put_str_centred(line++, 8, 8+31, "%s", c_name + cp_ptr->name);
+	put_str_centred(line++, 8, 8+31, "%s", cp_ptr->name);
 	put_str_centred(line++, 8, 8+31, "Level: %d", (int)p_ptr->lev);
 	put_str_centred(line++, 8, 8+31, "Exp: %d", (int)p_ptr->exp);
 	put_str_centred(line++, 8, 8+31, "AU: %d", (int)p_ptr->au);
@@ -110,7 +113,7 @@ static void death_knowledge(void)
 
 	for (i = 0; i < ALL_INVEN_TOTAL; i++)
 	{
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 		if (!o_ptr->k_idx) continue;
 
 		object_flavor_aware(o_ptr);
@@ -330,9 +333,9 @@ static void death_examine(const char *title, int row)
 	q = "Examine which item? ";
 	s = "You have nothing to examine.";
 
-	while (get_item(&item, q, s, (USE_INVEN | USE_EQUIP | IS_HARMLESS)))
+	while (get_item(&item, q, s, 0, (USE_INVEN | USE_EQUIP | IS_HARMLESS)))
 	{
-		object_type *o_ptr = &inventory[item];
+		object_type *o_ptr = &p_ptr->inventory[item];
 
 		/* Describe */
 		text_out_hook = text_out_to_screen;
@@ -374,14 +377,14 @@ static void death_spoilers(const char *title, int row)
 static menu_type *death_menu;
 static menu_action death_actions[] =
 {
-	{ 'i', "Information",   death_info      },
-	{ 'm', "Messages",      death_messages  },
-	{ 'f', "File dump",     death_file      },
-	{ 'v', "View scores",   death_scores    },
-	{ 'x', "Examine items", death_examine   },
-	{ 'h', "History",       death_history   },
-	{ 's', "Spoilers",	death_spoilers  },
-	{ 'q', "Quit",          NULL            },
+	{ 0, 'i', "Information",   death_info      },
+	{ 0, 'm', "Messages",      death_messages  },
+	{ 0, 'f', "File dump",     death_file      },
+	{ 0, 'v', "View scores",   death_scores    },
+	{ 0, 'x', "Examine items", death_examine   },
+	{ 0, 'h', "History",       death_history   },
+	{ 0, 's', "Spoilers",      death_spoilers  },
+	{ 0, 'q', "Quit",          NULL            },
 };
 
 

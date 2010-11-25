@@ -17,10 +17,14 @@
  */
 #include "angband.h"
 
+#include "cave.h"
+#include "cmds.h"
+#include "game-cmd.h"
+#include "monster/monster.h"
 #include "object/object.h"
 #include "object/tvalsval.h"
-#include "game-cmd.h"
-#include "cmds.h"
+#include "spells.h"
+#include "target.h"
 
 /* Returns percent chance of an object breaking after throwing or shooting. */
 int breakage_chance(const object_type *o_ptr)
@@ -184,7 +188,8 @@ static int critical_norm(int weight, int plus, int dam, u32b *msg_type)
  *
  * \param o_ptr is the object being used to attack
  * \param m_ptr is the monster being attacked
- * \param best_s_ptr is the best applicable slay_table entry, or NULL if no slay already known
+ * \param best_s_ptr is the best applicable slay_table entry, or NULL if no
+ *  slay already known
  *
  */
 void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr, const slay_t **best_s_ptr)
@@ -242,10 +247,15 @@ void improve_attack_modifier(object_type *o_ptr, const monster_type *m_ptr, cons
  * Attack the monster at the given location
  *
  * If no "weapon" is available, then "punch" the monster one time.
+ *
+ * We get blows until energy drops below that required for another blow, or
+ * until the target monster dies. We use a wrapper to work out the number of
+ * blows. We don't allow @ to spend more than 100 energy in one go, to avoid
+ * slower monsters getting double moves.
  */
-void py_attack(int y, int x)
+bool py_attack_real(int y, int x)
 {
-	int num = 0, bonus, chance;
+	int bonus, chance;
 
 	monster_type *m_ptr = &mon_list[cave_m_idx[y][x]];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
@@ -258,17 +268,18 @@ void py_attack(int y, int x)
 	bool fear = FALSE;
 
 	bool do_quake = FALSE;
+	bool dead = FALSE;
 
 	u32b msg_type = 0;
+	bool success = FALSE;
 
-
-	/* Disturb the player */
-	disturb(0, 0);
-
+	/* Default to punching for one damage */
+	const char *hit_verb = "punch";
+	int dmg = 1;
+	msg_type = MSG_HIT;
 
 	/* Extract monster name (or "it") */
 	monster_desc(m_name, sizeof(m_name), m_ptr, 0);
-
 
 	/* Auto-Recall if possible and visible */
 	if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
@@ -276,153 +287,175 @@ void py_attack(int y, int x)
 	/* Track a new monster */
 	if (m_ptr->ml) health_track(cave_m_idx[y][x]);
 
-
 	/* Handle player fear (only for invisible monsters) */
 	if (p_ptr->state.afraid)
 	{
 		message_format(MSG_AFRAID, 0,
 				"You are too afraid to attack %s!",
 				m_name);
-		return;
+		return (FALSE);
 	}
-
 
 	/* Disturb the monster */
 	wake_monster(m_ptr);
 
-
 	/* Get the weapon */
-	o_ptr = &inventory[INVEN_WIELD];
+	o_ptr = &p_ptr->inventory[INVEN_WIELD];
 
 	/* Calculate the "attack quality" */
 	bonus = p_ptr->state.to_h + o_ptr->to_h;
 	chance = (p_ptr->state.skills[SKILL_TO_HIT_MELEE] + (bonus * BTH_PLUS_ADJ));
 
+	/* See if the player hit */
+	success = test_hit(chance, r_ptr->ac, m_ptr->ml);
 
-	/* Attack once for each legal blow */
-	while (num++ < p_ptr->state.num_blow)
+	/* If a miss, skip this hit */
+	if (!success)
 	{
-		/* See if the player hit */
-		bool success = test_hit(chance, r_ptr->ac, m_ptr->ml);
-
-		/* Default to punching for one damage */
-		const char *hit_verb = "punch";
-		int dmg = 1;
-
-		/* If a miss, skip this hit */
-		if (!success)
-		{
-			message_format(MSG_MISS, m_ptr->r_idx, "You miss %s.", m_name);
-			continue;
-		}
-
-		
-		/* Handle normal weapon */
-		if (o_ptr->k_idx)
-		{
-			int i;
-			const slay_t *best_s_ptr = NULL;
-			
-			hit_verb = "hit";
-			
-			/* Get the best attack from all slays or
-			 * brands on all non-launcher equipment */
-			for (i = INVEN_LEFT; i < INVEN_TOTAL; i++)
-				improve_attack_modifier(&inventory[i], m_ptr, &best_s_ptr);
-			
-			improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr);
-			if (best_s_ptr != NULL)
-				hit_verb = best_s_ptr->melee_verb;
-			
-			dmg = damroll(o_ptr->dd, o_ptr->ds);
-			dmg *= (best_s_ptr == NULL) ? 1 : best_s_ptr->mult;
-			
-			if (p_ptr->state.impact && (dmg > 50))
-				do_quake = TRUE;
-			
-			dmg += o_ptr->to_d;
-			dmg = critical_norm(o_ptr->weight, o_ptr->to_h, dmg, &msg_type);
-			
-			/* Learn by use for the weapon */
-			object_notice_attack_plusses(o_ptr);
-			
-			if (do_quake)
-				wieldeds_notice_flag(OF_IMPACT);
-		}
-		
-		/* Learn by use for other equipped items */
-		wieldeds_notice_on_attack();
-		
-		/* Apply the player damage bonuses */
-		dmg += p_ptr->state.to_d;
-		
-		/* No negative damage */
-		if (dmg <= 0) dmg = 0;
-		
-		/* Tell the player what happened */
-		if (dmg <= 0)
-			message_format(MSG_MISS, m_ptr->r_idx,
-						   "You fail to harm %s.", m_name);
-		else if (msg_type == MSG_HIT)
-			message_format(MSG_HIT, m_ptr->r_idx, "You %s %s.",
-						   hit_verb, m_name);
-		else if (msg_type == MSG_HIT_GOOD)
-			message_format(MSG_HIT_GOOD, m_ptr->r_idx, "You %s %s. %s",
-						   hit_verb, m_name, "It was a good hit!");
-		else if (msg_type == MSG_HIT_GREAT)
-			message_format(MSG_HIT_GREAT, m_ptr->r_idx, "You %s %s. %s",
-						   hit_verb, m_name, "It was a great hit!");
-		else if (msg_type == MSG_HIT_SUPERB)
-			message_format(MSG_HIT_SUPERB, m_ptr->r_idx, "You %s %s. %s",
-						   hit_verb, m_name, "It was a superb hit!");
-		else if (msg_type == MSG_HIT_HI_GREAT)
-			message_format(MSG_HIT_HI_GREAT, m_ptr->r_idx, "You %s %s. %s",
-						   hit_verb, m_name, "It was a *GREAT* hit!");
-		else if (msg_type == MSG_HIT_HI_SUPERB)
-			message_format(MSG_HIT_HI_SUPERB, m_ptr->r_idx, "You %s %s. %s",
-						   hit_verb, m_name, "It was a *SUPERB* hit!");
-		
-		/* Complex message */
-		if (p_ptr->wizard)
-			msg_format("You do %d (out of %d) damage.", dmg, m_ptr->hp);
-		
-		/* Confusion attack */
-		if (p_ptr->confusing)
-		{
-			/* Cancel glowing hands */
-			p_ptr->confusing = FALSE;
-			
-			/* Message */
-			msg_print("Your hands stop glowing.");
-			
-			/* Update the lore */
-			if (m_ptr->ml)
-				rf_on(l_ptr->flags, RF_NO_CONF);
-			
-			/* Confuse the monster */
-			if (rf_has(r_ptr->flags, RF_NO_CONF))
-				msg_format("%^s is unaffected.", m_name);
-			else if (randint0(100) < r_ptr->level)
-				msg_format("%^s is unaffected.", m_name);
-			else
-			{
-				msg_format("%^s appears confused.", m_name);
-				m_ptr->confused += 10 + randint0(p_ptr->lev) / 5;
-			}
-		}
-		
-		/* Damage, check for fear and death */
-		if (mon_take_hit(cave_m_idx[y][x], dmg, &fear, NULL)) break;
+		message_format(MSG_MISS, m_ptr->r_idx, "You miss %s.", m_name);
+		return (FALSE);
 	}
-	
+
+	/* Handle normal weapon */
+	if (o_ptr->k_idx)
+	{
+		int i;
+		const slay_t *best_s_ptr = NULL;
+
+		hit_verb = "hit";
+
+		/* Get the best attack from all slays or
+		 * brands on all non-launcher equipment */
+		for (i = INVEN_LEFT; i < INVEN_TOTAL; i++)
+			improve_attack_modifier(&p_ptr->inventory[i], m_ptr,
+			&best_s_ptr);
+
+		improve_attack_modifier(o_ptr, m_ptr, &best_s_ptr);
+		if (best_s_ptr != NULL)
+			hit_verb = best_s_ptr->melee_verb;
+
+		dmg = damroll(o_ptr->dd, o_ptr->ds);
+		dmg *= (best_s_ptr == NULL) ? 1 : best_s_ptr->mult;
+
+		if (p_ptr->state.impact && (dmg > 50))
+			do_quake = TRUE;
+
+		dmg += o_ptr->to_d;
+		dmg = critical_norm(o_ptr->weight, o_ptr->to_h, dmg, &msg_type);
+
+		/* Learn by use for the weapon */
+		object_notice_attack_plusses(o_ptr);
+
+		if (do_quake)
+			wieldeds_notice_flag(OF_IMPACT);
+	}
+
+	/* Learn by use for other equipped items */
+	wieldeds_notice_on_attack();
+
+	/* Apply the player damage bonuses */
+	dmg += p_ptr->state.to_d;
+
+	/* No negative damage */
+	if (dmg <= 0) dmg = 0;
+
+	/* Tell the player what happened */
+	if (dmg <= 0)
+		message_format(MSG_MISS, m_ptr->r_idx,
+					   "You fail to harm %s.", m_name);
+	else if (msg_type == MSG_HIT)
+		message_format(MSG_HIT, m_ptr->r_idx, "You %s %s.",
+					   hit_verb, m_name);
+	else if (msg_type == MSG_HIT_GOOD)
+		message_format(MSG_HIT_GOOD, m_ptr->r_idx, "You %s %s. %s",
+					   hit_verb, m_name, "It was a good hit!");
+	else if (msg_type == MSG_HIT_GREAT)
+		message_format(MSG_HIT_GREAT, m_ptr->r_idx, "You %s %s. %s",
+					   hit_verb, m_name, "It was a great hit!");
+	else if (msg_type == MSG_HIT_SUPERB)
+		message_format(MSG_HIT_SUPERB, m_ptr->r_idx, "You %s %s. %s",
+					   hit_verb, m_name, "It was a superb hit!");
+	else if (msg_type == MSG_HIT_HI_GREAT)
+		message_format(MSG_HIT_HI_GREAT, m_ptr->r_idx, "You %s %s. %s",
+					   hit_verb, m_name, "It was a *GREAT* hit!");
+	else if (msg_type == MSG_HIT_HI_SUPERB)
+		message_format(MSG_HIT_HI_SUPERB, m_ptr->r_idx, "You %s %s. %s",
+					   hit_verb, m_name, "It was a *SUPERB* hit!");
+
+	/* Complex message */
+	if (p_ptr->wizard)
+		msg_format("You do %d (out of %d) damage.", dmg, m_ptr->hp);
+
+	/* Confusion attack */
+	if (p_ptr->confusing)
+	{
+		/* Cancel glowing hands */
+		p_ptr->confusing = FALSE;
+
+		/* Message */
+		msg_print("Your hands stop glowing.");
+
+		/* Update the lore */
+		if (m_ptr->ml)
+			rf_on(l_ptr->flags, RF_NO_CONF);
+
+		/* Confuse the monster */
+		if (rf_has(r_ptr->flags, RF_NO_CONF))
+			msg_format("%^s is unaffected.", m_name);
+		else if (randint0(100) < r_ptr->level)
+			msg_format("%^s is unaffected.", m_name);
+		else
+		{
+			msg_format("%^s appears confused.", m_name);
+			m_ptr->confused += 10 + randint0(p_ptr->lev) / 5;
+		}
+	}
+
+	/* Damage, check for fear and death */
+	dead = mon_take_hit(cave_m_idx[y][x], dmg, &fear, NULL);
+
 	/* Hack -- delay fear messages */
 	if (fear && m_ptr->ml)
-		message_format(MSG_FLEE, m_ptr->r_idx, "%^s flees in terror!", m_name);
+		message_format(MSG_FLEE, m_ptr->r_idx, "%^s flees in terror!",
+		m_name);
 
 	/* Mega-Hack -- apply earthquake brand */
 	if (do_quake) earthquake(p_ptr->py, p_ptr->px, 10);
+
+	return (dead);
 }
 
+void py_attack(int y, int x)
+{
+	int blow_energy;
+	bool stop = FALSE;
+	int blows = 0;
+
+	/* disturb the player */
+	disturb(0,0);
+
+	/* calculate energy per blow */
+	blow_energy = 10000 / p_ptr->state.num_blow;
+
+	/*
+	 * set energy use to zero, overriding whatever was set before we
+	 * got here
+	 */
+	p_ptr->energy_use = 0;
+
+	/*
+	 * take blows until energy runs out or monster dies -
+	 * note that we limit energy use to 100, even if an extra blow would
+	 * be possible, to avoid monster double moves
+	 */
+	while ((p_ptr->energy >= (blow_energy * (blows + 1))) && !stop)
+	{
+		stop = py_attack_real(y, x);
+		p_ptr->energy_use += blow_energy;
+		if ((p_ptr->energy_use + blow_energy) > 100) stop = TRUE;
+		blows++;
+	}
+}
 
 
 /*
@@ -477,7 +510,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	int msec = op_ptr->delay_factor * op_ptr->delay_factor;
 
 	/* Get the "bow" */
-	j_ptr = &inventory[INVEN_BOW];
+	j_ptr = &p_ptr->inventory[INVEN_BOW];
 
 	/* Require a usable launcher */
 	if (!j_ptr->tval || !p_ptr->state.ammo_tval)
@@ -642,7 +675,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 				tdam = critical_shot(o_ptr->weight, o_ptr->to_h, tdam, &msg_type);
 
 				object_notice_attack_plusses(o_ptr);
-				object_notice_attack_plusses(&inventory[INVEN_BOW]);
+				object_notice_attack_plusses(&p_ptr->inventory[INVEN_BOW]);
 
 				/* No negative damage; change verb if no damage done */
 				if (tdam <= 0)
@@ -745,8 +778,6 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	/* Single object */
 	i_ptr->number = 1;
 
-
-	/* Reduce and describe inventory */
 	if (item >= 0)
 	{
 		inven_item_increase(item, -1);
@@ -769,47 +800,13 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	drop_near(i_ptr, j, y, x, TRUE);
 }
 
-void textui_cmd_fire(void)
-{
-	object_type *j_ptr, *o_ptr;
-	int item;
-	int dir;
-	cptr q = "Fire which item? ";
-	cptr s = "You have nothing to fire.";
-
-	/* Get the "bow" (if any) */
-	j_ptr = &inventory[INVEN_BOW];
-
-	/* Require a usable launcher */
-	if (!j_ptr->tval || !p_ptr->state.ammo_tval)
-	{
-		msg_print("You have nothing to fire with.");
-		return;
-	}
-
-	/* Require proper missile; prefer the quiver */
-	item_tester_tval = p_ptr->state.ammo_tval;
-	p_ptr->command_wrk = USE_EQUIP;
-
-	/* Get an item */
-	if (!get_item(&item, q, s, (USE_INVEN | USE_EQUIP | USE_FLOOR))) return;
-
-	/* Get the object */
-	o_ptr = object_from_item_idx(item);
-
-	/* Get a direction (or cancel) */
-	if (!get_aim_dir(&dir)) return;
-
-	cmd_insert(CMD_FIRE, item, dir);
-}
-
 void textui_cmd_fire_at_nearest(void)
 {
 	/* the direction '5' means 'use the target' */
 	int i, dir = 5, item = -1;
 
 	/* Require a usable launcher */
-	if (!inventory[INVEN_BOW].tval || !p_ptr->state.ammo_tval)
+	if (!p_ptr->inventory[INVEN_BOW].tval || !p_ptr->state.ammo_tval)
 	{
 		msg_print("You have nothing to fire with.");
 		return;
@@ -818,7 +815,7 @@ void textui_cmd_fire_at_nearest(void)
 	/* Find first eligible ammo in the quiver */
 	for (i = QUIVER_START; i < QUIVER_END; i++)
 	{
-		if (inventory[i].tval != p_ptr->state.ammo_tval) continue;
+		if (p_ptr->inventory[i].tval != p_ptr->state.ammo_tval) continue;
 		item = i;
 		break;
 	}
@@ -842,7 +839,9 @@ void textui_cmd_fire_at_nearest(void)
 	}
 
 	/* Fire! */
-	cmd_insert(CMD_FIRE, item, dir);
+	cmd_insert(CMD_FIRE);
+	cmd_set_arg_item(cmd_get_top(), 0, item);
+	cmd_set_arg_target(cmd_get_top(), 1, dir);
 }
 
 /*
@@ -1169,7 +1168,7 @@ void textui_cmd_throw(void)
 	/* Get an item */
 	q = "Throw which item? ";
 	s = "You have nothing to throw.";
-	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return;
+	if (!get_item(&item, q, s, 't', (USE_EQUIP | USE_INVEN | USE_FLOOR))) return;
 
 	if (item >= INVEN_WIELD && item < QUIVER_START)
 	{
@@ -1180,5 +1179,7 @@ void textui_cmd_throw(void)
 	/* Get a direction (or cancel) */
 	if (!get_aim_dir(&dir)) return;
 
-	cmd_insert(CMD_THROW, item, dir);
+	cmd_insert(CMD_THROW);
+	cmd_set_arg_item(cmd_get_top(), 0, item);
+	cmd_set_arg_target(cmd_get_top(), 1, dir);
 }

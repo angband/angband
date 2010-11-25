@@ -258,6 +258,9 @@ static bool interpolate = 0;
 
 static bool antialias = 0;
 
+/* Nasty hack - sorry NRM */
+static bool use_bigtile = 0;
+
 static struct {
 	bool *var;				// Value to toggle (*var = !*var)
 	int menuID;				// Menu for this action (MenuRef would be better)

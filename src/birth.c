@@ -15,11 +15,16 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-#include "object/tvalsval.h"
 #include "cmds.h"
+#include "files.h"
 #include "game-event.h"
 #include "game-cmd.h"
+#include "history.h"
+#include "object/inventory.h"
+#include "object/tvalsval.h"
+#include "squelch.h"
 #include "ui-menu.h"
 
 /*
@@ -356,7 +361,7 @@ static void get_history(void)
 		while ((chart != h_info[i].chart) || (roll > h_info[i].roll)) i++;
 
 		/* Get the textual history */
-		my_strcat(p_ptr->history, (h_text + h_info[i].text), sizeof(p_ptr->history));
+		my_strcat(p_ptr->history, h_info[i].text, sizeof(p_ptr->history));
 
 		/* Add in the social class */
 		social_class += (int)(h_info[i].bonus) - 50;
@@ -417,24 +422,17 @@ static void get_money(int stat_use[A_MAX])
 		p_ptr->au = p_ptr->au_birth = STARTING_GOLD;
 }
 
-
-
-/*
- * Clear all the global "character" data
- */
-static void player_wipe(void)
-{
+void player_init(struct player *p) {
 	int i;
 
-	/* Wipe the player */
-	(void)WIPE(p_ptr, player_type);
+	if (p->inventory)
+		mem_free(p->inventory);
 
-	/* Clear the inventory */
-	for (i = 0; i < ALL_INVEN_TOTAL; i++)
-		object_wipe(&inventory[i]);
+	/* Wipe the player */
+	(void)WIPE(p, struct player);
 
 	/* Start with no artifacts made yet */
-	for (i = 0; i < z_info->a_max; i++)
+	for (i = 0; z_info && i < z_info->a_max; i++)
 	{
 		artifact_type *a_ptr = &a_info[i];
 		a_ptr->created = FALSE;
@@ -443,73 +441,59 @@ static void player_wipe(void)
 
 
 	/* Start with no quests */
-	for (i = 0; i < MAX_Q_IDX; i++)
+	for (i = 0; q_list && i < MAX_Q_IDX; i++)
 	{
 		q_list[i].level = 0;
 	}
 
-	/* Add a special quest */
-	q_list[0].level = 99;
+	if (q_list) {
+		q_list[0].level = 99;
+		q_list[1].level = 100;
+	}
 
-	/* Add a second quest */
-	q_list[1].level = 100;
-
-
-	/* Reset the "objects" */
-	for (i = 1; i < z_info->k_max; i++)
-	{
+	for (i = 1; z_info && i < z_info->k_max; i++) {
 		object_kind *k_ptr = &k_info[i];
-
-		/* Reset "tried" */
 		k_ptr->tried = FALSE;
-
-		/* Reset "aware" */
 		k_ptr->aware = FALSE;
 	}
 
-
-	/* Reset the "monsters" */
-	for (i = 1; i < z_info->r_max; i++)
+	for (i = 1; z_info && i < z_info->r_max; i++)
 	{
 		monster_race *r_ptr = &r_info[i];
 		monster_lore *l_ptr = &l_list[i];
-
-		/* Hack -- Reset the counter */
 		r_ptr->cur_num = 0;
-
-		/* Hack -- Reset the max counter */
 		r_ptr->max_num = 100;
-
-		/* Hack -- Reset the max counter */
-		if (rf_has(r_ptr->flags, RF_UNIQUE)) r_ptr->max_num = 1;
-
-		/* Clear player kills */
+		if (rf_has(r_ptr->flags, RF_UNIQUE))
+			r_ptr->max_num = 1;
 		l_ptr->pkills = 0;
 	}
 
 
 	/* Hack -- no ghosts */
-	r_info[z_info->r_max-1].max_num = 0;
+	if (z_info)
+		r_info[z_info->r_max-1].max_num = 0;
 
 
 	/* Hack -- Well fed player */
-	p_ptr->food = PY_FOOD_FULL - 1;
+	p->food = PY_FOOD_FULL - 1;
 
 
 	/* None of the spells have been learned yet */
-	for (i = 0; i < PY_MAX_SPELLS; i++) p_ptr->spell_order[i] = 99;
+	for (i = 0; i < PY_MAX_SPELLS; i++)
+		p->spell_order[i] = 99;
 
+	p->inventory = C_ZNEW(ALL_INVEN_TOTAL, struct object);
 
 	/* First turn. */
 	turn = old_turn = 1;
-	p_ptr->player_turn = 0;
+	p_ptr->total_energy = 0;
 	p_ptr->resting_turn = 0;
 }
 
 /**
  * Try to wield everything wieldable in the inventory.
  */
-static void wield_all(void)
+static void wield_all(struct player *p)
 {
 	object_type *o_ptr;
 	object_type *i_ptr;
@@ -523,7 +507,7 @@ static void wield_all(void)
 	/* Scan through the slots backwards */
 	for (item = INVEN_PACK - 1; item >= 0; item--)
 	{
-		o_ptr = &inventory[item];
+		o_ptr = &p->inventory[item];
 		is_ammo = obj_is_ammo(o_ptr);
 
 		/* Skip non-objects */
@@ -532,7 +516,7 @@ static void wield_all(void)
 		/* Make sure we can wield it */
 		slot = wield_slot(o_ptr);
 		if (slot < INVEN_WIELD) continue;
-		i_ptr = &inventory[slot];
+		i_ptr = &p->inventory[slot];
 
 		/* Make sure that there's an available slot */
 		if (is_ammo)
@@ -559,19 +543,19 @@ static void wield_all(void)
 		inven_item_optimize(item);
 
 		/* Get the wield slot */
-		o_ptr = &inventory[slot];
+		o_ptr = &p->inventory[slot];
 
 		/* Wear the new stuff */
 		object_copy(o_ptr, i_ptr);
 
 		/* Increase the weight */
-		p_ptr->total_weight += i_ptr->weight * i_ptr->number;
+		p->total_weight += i_ptr->weight * i_ptr->number;
 
 		/* Increment the equip counter by hand */
-		p_ptr->equip_cnt++;
+		p->equip_cnt++;
 	}
 
-	save_quiver_size();
+	save_quiver_size(p);
 
 	return;
 }
@@ -582,7 +566,7 @@ static void wield_all(void)
  *
  * Having an item identifies it and makes the player "aware" of its purpose.
  */
-static void player_outfit(void)
+void player_outfit(struct player *p)
 {
 	int i;
 	const start_item *e_ptr;
@@ -600,26 +584,20 @@ static void player_outfit(void)
 		i_ptr = &object_type_body;
 
 		/* Hack	-- Give the player an object */
-		if (e_ptr->tval > 0)
+		if (e_ptr->kind)
 		{
-			/* Get the object_kind */
-			int k_idx = lookup_kind(e_ptr->tval, e_ptr->sval);
-
-			/* Valid item? */
-			if (!k_idx) continue;
-
 			/* Prepare the item */
-			object_prep(i_ptr, k_idx, 0, MINIMISE);
+			object_prep(i_ptr, e_ptr->kind, 0, MINIMISE);
 			i_ptr->number = (byte)rand_range(e_ptr->min, e_ptr->max);
 			i_ptr->origin = ORIGIN_BIRTH;
 
 			object_flavor_aware(i_ptr);
 			object_notice_everything(i_ptr);
-			(void)inven_carry(i_ptr);
-			k_info[k_idx].everseen = TRUE;
+			inven_carry(p, i_ptr);
+			e_ptr->kind->everseen = TRUE;
 
 			/* Deduct the cost of the item from starting cash */
-			p_ptr->au -= object_value(i_ptr, i_ptr->number,	FALSE);
+			p->au -= object_value(i_ptr, i_ptr->number,	FALSE);
 		}
 	}
 
@@ -630,34 +608,34 @@ static void player_outfit(void)
 	i_ptr = &object_type_body;
 
 	/* Hack -- Give the player some food */
-	object_prep(i_ptr, lookup_kind(TV_FOOD, SV_FOOD_RATION), 0, MINIMISE);
+	object_prep(i_ptr, objkind_get(TV_FOOD, SV_FOOD_RATION), 0, MINIMISE);
 	i_ptr->number = (byte)rand_range(3, 7);
 	i_ptr->origin = ORIGIN_BIRTH;
 	object_flavor_aware(i_ptr);
 	object_notice_everything(i_ptr);
 	k_info[i_ptr->k_idx].everseen = TRUE;
-	(void)inven_carry(i_ptr);
-	p_ptr->au -= object_value(i_ptr, i_ptr->number, FALSE);
+	inven_carry(p, i_ptr);
+	p->au -= object_value(i_ptr, i_ptr->number, FALSE);
 
 	/* Get local object */
 	i_ptr = &object_type_body;
 
 	/* Hack -- Give the player some torches */
-	object_prep(i_ptr, lookup_kind(TV_LIGHT, SV_LIGHT_TORCH), 0, MINIMISE);
+	object_prep(i_ptr, objkind_get(TV_LIGHT, SV_LIGHT_TORCH), 0, MINIMISE);
 	apply_magic(i_ptr, 0, FALSE, FALSE, FALSE);
 	i_ptr->number = (byte)rand_range(3, 7);
 	i_ptr->origin = ORIGIN_BIRTH;
 	object_flavor_aware(i_ptr);
 	object_notice_everything(i_ptr);
 	k_info[i_ptr->k_idx].everseen = TRUE;
-	(void)inven_carry(i_ptr);
-	p_ptr->au -= object_value(i_ptr, i_ptr->number, FALSE);
+	inven_carry(p, i_ptr);
+	p->au -= object_value(i_ptr, i_ptr->number, FALSE);
 
 	/* sanity check */
-	if (p_ptr->au < 0) p_ptr->au = 0;
+	if (p->au < 0) p->au = 0;
 
 	/* Now try wielding everything */
-	wield_all();
+	wield_all(p);
 }
 
 
@@ -964,32 +942,36 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
  * This fleshes out a full player based on the choices currently made,
  * and so is called whenever things like race or class are chosen.
  */
-static void generate_player()
+void player_generate(struct player *p, const player_sex *s,
+                     struct player_race *r, player_class *c)
 {
-	/* Set sex according to p_ptr->sex */
-	sp_ptr = &sex_info[p_ptr->psex];
+	if (!s) s = &sex_info[p->psex];
+	if (!c) c = &c_info[p->pclass];
+	if (!r) r = &p_info[p->prace];
 
-	/* Set class according to p_ptr->class */
-	cp_ptr = &c_info[p_ptr->pclass];
+	p->sex = s;
+	p->class = c;
+	p->race = r;
+
+	sp_ptr = s;
+	cp_ptr = c;
 	mp_ptr = &cp_ptr->spells;
-
-	/* Set race according to p_ptr->race */
-	rp_ptr = &p_info[p_ptr->prace];
+	rp_ptr = r;
 
 	/* Level 1 */
-	p_ptr->max_lev = p_ptr->lev = 1;
+	p->max_lev = p->lev = 1;
 
 	/* Experience factor */
-	p_ptr->expfact = rp_ptr->r_exp + cp_ptr->c_exp;
+	p->expfact = rp_ptr->r_exp + cp_ptr->c_exp;
 
 	/* Hitdice */
-	p_ptr->hitdie = rp_ptr->r_mhp + cp_ptr->c_mhp;
+	p->hitdie = rp_ptr->r_mhp + cp_ptr->c_mhp;
 
 	/* Initial hitpoints */
-	p_ptr->mhp = p_ptr->hitdie;
+	p->mhp = p->hitdie;
 
 	/* Pre-calculate level 1 hitdice */
-	p_ptr->player_hp[0] = p_ptr->hitdie;
+	p->player_hp[0] = p->hitdie;
 
 	/* Roll for age/height/weight */
 	get_ahw();
@@ -1001,14 +983,14 @@ static void generate_player()
 /* Reset everything back to how it would be on loading the game. */
 static void do_birth_reset(bool use_quickstart, birther *quickstart_prev)
 {
-	player_wipe();
+	player_init(p_ptr);
 
 	/* If there's quickstart data, we use it to set default
 	   character choices. */
 	if (use_quickstart && quickstart_prev)
 		load_roller_data(quickstart_prev, NULL);
 
-	generate_player();
+	player_generate(p_ptr, NULL, NULL, NULL);
 
 	/* Update stats with bonuses, etc. */
 	get_bonuses();
@@ -1024,7 +1006,8 @@ static void do_birth_reset(bool use_quickstart, birther *quickstart_prev)
 void player_birth(bool quickstart_allowed)
 {
 	int i;
-	game_command cmd = { CMD_NULL, 0, {{0}} };
+	game_command blank = { CMD_NULL, 0, {{0}} };
+	game_command *cmd = &blank;
 
 	int stats[A_MAX];
 	int points_spent[A_MAX];
@@ -1059,7 +1042,7 @@ void player_birth(bool quickstart_allowed)
 		p_ptr->psex = 0;
 		p_ptr->pclass = 0;
 		p_ptr->prace = 0;
-		generate_player();
+		player_generate(p_ptr, NULL, NULL, NULL);
 	}
 
 	reset_stats(stats, points_spent, &points_left);
@@ -1086,63 +1069,63 @@ void player_birth(bool quickstart_allowed)
 	 * Loop around until the UI tells us we have an acceptable character.
 	 * Note that it is possible to quit from inside this loop.
 	 */
-	while (cmd.command != CMD_ACCEPT_CHARACTER)
+	while (cmd->command != CMD_ACCEPT_CHARACTER)
 	{
 		/* Grab a command from the queue - we're happy to wait for it. */
 		if (cmd_get(CMD_BIRTH, &cmd, TRUE) != 0) continue;
 
-		if (cmd.command == CMD_BIRTH_RESET)
+		if (cmd->command == CMD_BIRTH_RESET)
 		{
 			reset_stats(stats, points_spent, &points_left);
 			do_birth_reset(quickstart_allowed, &quickstart_prev);
 			rolled_stats = FALSE;
 		}
-		else if (cmd.command == CMD_CHOOSE_SEX)
+		else if (cmd->command == CMD_CHOOSE_SEX)
 		{
-			p_ptr->psex = cmd.args[0].choice; 
-			generate_player();
+			p_ptr->psex = cmd->arg[0].choice; 
+			player_generate(p_ptr, NULL, NULL, NULL);
 		}
-		else if (cmd.command == CMD_CHOOSE_RACE)
+		else if (cmd->command == CMD_CHOOSE_RACE)
 		{
-			p_ptr->prace = cmd.args[0].choice;
-			generate_player();
+			p_ptr->prace = cmd->arg[0].choice;
+			player_generate(p_ptr, NULL, NULL, NULL);
 
 			reset_stats(stats, points_spent, &points_left);
 			generate_stats(stats, points_spent, &points_left);
 			rolled_stats = FALSE;
 		}
-		else if (cmd.command == CMD_CHOOSE_CLASS)
+		else if (cmd->command == CMD_CHOOSE_CLASS)
 		{
-			p_ptr->pclass = cmd.args[0].choice;
-			generate_player();
+			p_ptr->pclass = cmd->arg[0].choice;
+			player_generate(p_ptr, NULL, NULL, NULL);
 
 			reset_stats(stats, points_spent, &points_left);
 			generate_stats(stats, points_spent, &points_left);
 			rolled_stats = FALSE;
 		}
-		else if (cmd.command == CMD_BUY_STAT)
+		else if (cmd->command == CMD_BUY_STAT)
 		{
 			/* .choice is the stat to buy */
 			if (!rolled_stats)
-				buy_stat(cmd.args[0].choice, stats, points_spent, &points_left);
+				buy_stat(cmd->arg[0].choice, stats, points_spent, &points_left);
 		}
-		else if (cmd.command == CMD_SELL_STAT)
+		else if (cmd->command == CMD_SELL_STAT)
 		{
 			/* .choice is the stat to sell */
 			if (!rolled_stats)
-				sell_stat(cmd.args[0].choice, stats, points_spent, &points_left);
+				sell_stat(cmd->arg[0].choice, stats, points_spent, &points_left);
 		}
-		else if (cmd.command == CMD_RESET_STATS)
+		else if (cmd->command == CMD_RESET_STATS)
 		{
 			/* .choice is whether to regen stats */
 			reset_stats(stats, points_spent, &points_left);
 
-			if (cmd.args[0].choice)
+			if (cmd->arg[0].choice)
 				generate_stats(stats, points_spent, &points_left);
 
 			rolled_stats = FALSE;
 		}
-		else if (cmd.command == CMD_ROLL_STATS)
+		else if (cmd->command == CMD_ROLL_STATS)
 		{
 			int i;
 
@@ -1178,7 +1161,7 @@ void player_birth(bool quickstart_allowed)
 			/* Lock out buying and selling of stats based on rolled stats. */
 			rolled_stats = TRUE;
 		}
-		else if (cmd.command == CMD_PREV_STATS)
+		else if (cmd->command == CMD_PREV_STATS)
 		{
 			/* Only switch to the stored "previous"
 			   character if we've actually got one to load. */
@@ -1193,20 +1176,20 @@ void player_birth(bool quickstart_allowed)
 			event_signal(EVENT_HP);
 			event_signal(EVENT_STATS);
 		}
-		else if (cmd.command == CMD_NAME_CHOICE)
+		else if (cmd->command == CMD_NAME_CHOICE)
 		{
 			/* Set player name */
-			my_strcpy(op_ptr->full_name, cmd.args[0].string,
+			my_strcpy(op_ptr->full_name, cmd->arg[0].string,
 					  sizeof(op_ptr->full_name));
 
-			string_free((void *) cmd.args[0].string);
+			string_free((void *) cmd->arg[0].string);
 
 			/* Don't change savefile name.  If the UI
 			   wants it changed, they can do it. XXX (Good idea?) */
 			process_player_name(FALSE);
 		}
 		/* Various not-specific-to-birth commands. */
-		else if (cmd.command == CMD_HELP)
+		else if (cmd->command == CMD_HELP)
 		{
 			char buf[80];
 
@@ -1215,7 +1198,7 @@ void player_birth(bool quickstart_allowed)
 			show_file(buf, NULL, 0, 0);
 			screen_load();
 		}
-		else if (cmd.command == CMD_QUIT)
+		else if (cmd->command == CMD_QUIT)
 		{
 			quit(NULL);
 		}
@@ -1252,10 +1235,10 @@ void player_birth(bool quickstart_allowed)
 	message_add(" ", MSG_GENERIC);
 
 	/* Hack -- outfit the player */
-	player_outfit();
+	player_outfit(p_ptr);
 
 	/* Initialise the stores */
-	store_init();
+	store_reset();
 
 	/* Now we're really done.. */
 	event_signal(EVENT_LEAVE_BIRTH);

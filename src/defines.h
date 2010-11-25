@@ -55,18 +55,9 @@
 #define VERSION_EXTRA	0
 
 /*
- * Oldest version number that can still be imported
- */
-#define OLD_VERSION_MAJOR	3
-#define OLD_VERSION_MINOR	0
-#define OLD_VERSION_PATCH	14
-
-
-/*
  * Version of random artifact code.
  */
 #define RANDART_VERSION	63
-
 
 /*
  * Number of grids in each block (vertically)
@@ -80,34 +71,34 @@
  */
 #define BLOCK_WID	11
 
-
-/*
+/**
  * Number of grids in each panel (vertically)
- * Must be a multiple of BLOCK_HGT
  */
-#define PANEL_HGT	11
+#define PANEL_HGT	((int)(BLOCK_HGT / tile_height))
 
-/*
+/**
  * Number of grids in each panel (horizontally)
- * Must be a multiple of BLOCK_WID
  */
-#define PANEL_WID	(use_bigtile ? 16 : 33)
+#define PANEL_WID 	((int)(BLOCK_WID / tile_width))
+
+
+/**
+ * Number of text rows in each map screen, regardless of tile size
+ */
+#define SCREEN_ROWS	(Term->hgt - ROW_MAP - 1) 
+
+/**
+ * Number of grids in each screen (vertically)
+ */
+#define SCREEN_HGT    ((int) (SCREEN_ROWS / tile_height))
+
+/**
+ * Number of grids in each screen (horizontally)
+ */
+#define SCREEN_WID	((int)((Term->wid - COL_MAP - 1) / tile_width))
 
 #define ROW_MAP			1
 #define COL_MAP			13
-
-
-/*
- * Number of grids in each screen (vertically)
- * Must be a multiple of PANEL_HGT (at least 2x)
- */
-#define SCREEN_HGT	(Term->hgt - ROW_MAP - 1)
-
-/*
- * Number of grids in each screen (horizontally)
- * Must be a multiple of PANEL_WID (at least 2x)
- */
-#define SCREEN_WID	((Term->wid - COL_MAP - 1) / (use_bigtile ? 2 : 1))
 
 
 /*
@@ -193,12 +184,6 @@
  */
 #define TEMP_MAX 1536
 
-
-/*
- * OPTION: Maximum number of macros (see "util.c")
- */
-#define MACRO_MAX	512
-
 /*
  * OPTION: Maximum number of autoinscriptions(see "object1.c")
  */
@@ -225,7 +210,6 @@
 #define BTH_PLUS_ADJ    3       /* Adjust BTH per plus-to-hit */
 #define MON_MULT_ADJ	8		/* High value slows multiplication */
 #define MON_DRAIN_LIFE	2		/* Percent of player exp drained per hit */
-#define USE_DEVICE      3		/* x> Harder devices x< Easier devices */
 
 /*
  * The different types of name randname.c can generate
@@ -261,8 +245,6 @@ typedef enum
  */
 #define NASTY_MON    25        /* 1/chance of inflated monster level */
 #define MON_OOD_MAX  10        /* maximum out-of-depth amount */
-
-
 
 /*
  * Refueling constants
@@ -430,7 +412,6 @@ typedef enum
  * An item's pval (for charges, amount of gold, etc) is limited to s16b
  */
 #define MAX_PVAL  32767
-#define MIN_PVAL -32768
 
 
 /*
@@ -1007,6 +988,7 @@ enum
 #define IS_HARMLESS   0x10	/* Ignore generic warning inscriptions */
 #define SHOW_PRICES   0x20	/* Show item prices in item lists */
 #define SHOW_FAIL     0x40 	/* Show device failure in item lists */
+#define QUIVER_TAGS   0x80  /* 0-9 are quiver slots when selecting */
 
 
 /*** Player flags ***/
@@ -1617,14 +1599,6 @@ enum
 #define object_is_jewelry(T) \
 	(((T)->tval == TV_RING) || ((T)->tval == TV_AMULET))
 
-
-/*
- * Rings and Amulets
- */
-#define object_is_jewelry(T) \
-	(((T)->tval == TV_RING) || ((T)->tval == TV_AMULET))
-
-
 /*
  * Some monster types are different.
  */
@@ -1674,13 +1648,13 @@ enum
  * Convert a "key event" into a "location" (Y)
  */
 #define KEY_GRID_Y(K) \
-	((int) ((K.mousey - ROW_MAP) + Term->offset_y))
+  ((int) (((K.mousey - ROW_MAP) / tile_height) + Term->offset_y))
 
 /*
  * Convert a "key event" into a "location" (X)
  */
 #define KEY_GRID_X(K) \
-	((int) (((K.mousex - COL_MAP) / (use_bigtile ? 2 : 1)) + Term->offset_x))
+	((int) (((K.mousex - COL_MAP) / tile_width) + Term->offset_x))
 
 
 /*

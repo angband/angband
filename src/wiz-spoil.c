@@ -15,11 +15,14 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-#include "z-file.h"
-#include "wizard.h"
 #include "cmds.h"
+#include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "ui-menu.h"
+#include "wizard.h"
+#include "z-file.h"
 
 
 #ifdef ALLOW_SPOILERS
@@ -140,7 +143,7 @@ static void kind_info(char *buf, size_t buf_len,
 	i_ptr = &object_type_body;
 
 	/* Prepare a fake item */
-	object_prep(i_ptr, k, 0, MAXIMISE);
+	object_prep(i_ptr, &k_info[k], 0, MAXIMISE);
 
 	/* Obtain the "kind" info */
 	k_ptr = &k_info[i_ptr->k_idx];
@@ -241,6 +244,9 @@ static void spoil_obj_desc(cptr fname)
 
 	cptr format = "%-51s  %7s%6s%4s%9s\n";
 
+	/* We use either ascii or system-specific encoding */
+ 	int encoding = (OPT(xchars_to_file)) ? SYSTEM_SPECIFIC : ASCII;
+
 	/* Open the file */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
 	fh = file_open(buf, MODE_WRITE, FTYPE_TEXT);
@@ -303,7 +309,7 @@ static void spoil_obj_desc(cptr fname)
 				kind_info(buf, sizeof(buf), dam, sizeof(dam), wgt, sizeof(wgt), &e, &v, who[s]);
 
 				/* Dump it */
-				file_putf(fh, "  %-51s%7s%6s%4d%9ld\n",
+				x_file_putf(fh, encoding, "  %-51s%7s%6s%4d%9ld\n",
 				        buf, dam, wgt, e, (long)(v));
 			}
 
@@ -314,7 +320,7 @@ static void spoil_obj_desc(cptr fname)
 			if (!group_item[i].tval) break;
 
 			/* Start a new set */
-			file_putf(fh, "\n\n%s\n\n", group_item[i].name);
+			x_file_putf(fh, encoding, "\n\n%s\n\n", group_item[i].name);
 		}
 
 		/* Get legal item types */
@@ -404,7 +410,7 @@ bool make_fake_artifact(object_type *o_ptr, byte name1)
 	if (!i) return (FALSE);
 
 	/* Create the artifact */
-	object_prep(o_ptr, i, 0, MAXIMISE);
+	object_prep(o_ptr, &k_info[i], 0, MAXIMISE);
 
 	/* Save the name */
 	o_ptr->name1 = name1;
@@ -554,8 +560,9 @@ static void spoil_mon_desc(cptr fname)
 	char exp[80];
 
 	u16b *who;
-	u16b why = 2;
 
+	/* We use either ascii or system-specific encoding */
+ 	int encoding = (OPT(xchars_to_file)) ? SYSTEM_SPECIFIC : ASCII;
 
 	/* Build the filename */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_USER, fname);
@@ -569,14 +576,14 @@ static void spoil_mon_desc(cptr fname)
 	}
 
 	/* Dump the header */
-	file_putf(fh, "Monster Spoilers for %s Version %s\n",
+	x_file_putf(fh, encoding, "Monster Spoilers for %s Version %s\n",
 	        VERSION_NAME, VERSION_STRING);
-	file_putf(fh, "------------------------------------------\n\n");
+	x_file_putf(fh, encoding, "------------------------------------------\n\n");
 
 	/* Dump the header */
-	file_putf(fh, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
+	x_file_putf(fh, encoding, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
 	        "Name", "Lev", "Rar", "Spd", "Hp", "Ac", "Visual Info");
-	file_putf(fh, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
+	x_file_putf(fh, encoding, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
 	        "----", "---", "---", "---", "--", "--", "-----------");
 
 	/* Allocate the "who" array */
@@ -591,19 +598,15 @@ static void spoil_mon_desc(cptr fname)
 		if (r_ptr->name) who[n++] = (u16b)i;
 	}
 
-	/* Select the sort method */
-	ang_sort_comp = ang_sort_comp_hook;
-	ang_sort_swap = ang_sort_swap_hook;
-
 	/* Sort the array by dungeon depth of monsters */
-	ang_sort(who, &why, n);
+	sort(who, n, sizeof(*who), cmp_monsters);
 
 	/* Scan again */
 	for (i = 0; i < n; i++)
 	{
 		monster_race *r_ptr = &r_info[who[i]];
 
-		cptr name = (r_name + r_ptr->name);
+		cptr name = r_ptr->name;
 
 		/* Get the "name" */
 		if (rf_has(r_ptr->flags, RF_QUESTOR))
@@ -646,7 +649,7 @@ static void spoil_mon_desc(cptr fname)
 		strnfmt(exp, sizeof(exp), "%s '%c'", attr_to_text(r_ptr->d_attr), r_ptr->d_char);
 
 		/* Dump the info */
-		file_putf(fh, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
+		x_file_putf(fh, encoding, "%-40.40s%4s%4s%6s%8s%4s  %11.11s\n",
 		        nam, lev, rar, spd, hp, ac, exp);
 	}
 
@@ -683,7 +686,6 @@ static void spoil_mon_info(cptr fname)
 {
 	char buf[1024];
 	int i, n;
-	u16b why = 2;
 	u16b *who;
 	int count = 0;
 
@@ -720,12 +722,7 @@ static void spoil_mon_info(cptr fname)
 		if (r_ptr->name) who[count++] = (u16b)i;
 	}
 
-	/* Select the sort method */
-	ang_sort_comp = ang_sort_comp_hook;
-	ang_sort_swap = ang_sort_swap_hook;
-
-	/* Sort the array by dungeon depth of monsters */
-	ang_sort(who, &why, count);
+	sort(who, count, sizeof(*who), cmp_monsters);
 
 	/*
 	 * List all monsters in order (except the ghost).
@@ -750,7 +747,7 @@ static void spoil_mon_info(cptr fname)
 		}
 
 		/* Name */
-		text_out("%s  (", (r_name + r_ptr->name));	/* ---)--- */
+		text_out("%s  (",  r_ptr->name);	/* ---)--- */
 
 		/* Color */
 		text_out(attr_to_text(r_ptr->d_attr));
@@ -811,82 +808,46 @@ static void spoil_mon_info(cptr fname)
 }
 
 
+static void spoiler_menu_act(const char *title, int row)
+{
+	if (row == 0)
+		spoil_obj_desc("obj-desc.spo");
+	else if (row == 1)
+		spoil_artifact("artifact.spo");
+	else if (row == 2)
+		spoil_mon_desc("mon-desc.spo");
+	else if (row == 3)
+		spoil_mon_info("mon-info.spo");
+
+	message_flush();
+}
+
+static menu_type *spoil_menu;
+static menu_action spoil_actions[] =
+{
+	{ 0, 0, "Brief Object Info (obj-desc.spo)",		spoiler_menu_act },
+	{ 0, 0, "Brief Artifact Info (artifact.spo)",	spoiler_menu_act },
+	{ 0, 0, "Brief Monster Info (mon-desc.spo)",	spoiler_menu_act },
+	{ 0, 0, "Full Monster Info (mon-info.spo)",		spoiler_menu_act },
+};
+
 
 /*
  * Create Spoiler files
  */
 void do_cmd_spoilers(void)
 {
-	char ch;
-
-
-	/* Save screen */
-	screen_save();
-
-
-	/* Interact */
-	while (1)
+	if (!spoil_menu)
 	{
-		/* Clear screen */
-		Term_clear();
-
-		/* Info */
-		prt("Create a spoiler file.", 2, 0);
-
-		/* Prompt for a file */
-		prt("(1) Brief Object Info (obj-desc.spo)", 5, 5);
-		prt("(2) Brief Artifact Info (artifact.spo)", 6, 5);
-		prt("(3) Brief Monster Info (mon-desc.spo)", 7, 5);
-		prt("(4) Full Monster Info (mon-info.spo)", 8, 5);
-
-		/* Prompt */
-		prt("Command: ", 12, 0);
-
-		/* Get a choice */
-		ch = inkey();
-
-		/* Escape */
-		if (ch == ESCAPE)
-		{
-			break;
-		}
-
-		/* Option (1) */
-		else if (ch == '1')
-		{
-			spoil_obj_desc("obj-desc.spo");
-		}
-
-		/* Option (2) */
-		else if (ch == '2')
-		{
-			spoil_artifact("artifact.spo");
-		}
-
-		/* Option (3) */
-		else if (ch == '3')
-		{
-			spoil_mon_desc("mon-desc.spo");
-		}
-
-		/* Option (4) */
-		else if (ch == '4')
-		{
-			spoil_mon_info("mon-info.spo");
-		}
-
-		/* Oops */
-		else
-		{
-			bell("Illegal command for spoilers!");
-		}
-
-		/* Flush messages */
-		message_flush();
+		spoil_menu = menu_new_action(spoil_actions, N_ELEMENTS(spoil_actions));
+		spoil_menu->selections = lower_case;
+		spoil_menu->title = "Create spoilers";
 	}
 
-
-	/* Load screen */
+	screen_save();
+	clear_from(0);
+	menu_layout(spoil_menu, &SCREEN_REGION);
+	menu_select(spoil_menu, 0);
 	screen_load();
 }
 

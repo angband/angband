@@ -15,9 +15,17 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#include "angband.h"
-#include "object/tvalsval.h"
 
+#include "angband.h"
+#include "cave.h"
+#include "generate.h"
+#include "history.h"
+#include "monster/monster.h"
+#include "object/tvalsval.h"
+#include "spells.h"
+#include "squelch.h"
+#include "target.h"
+#include "trap.h"
 
 /*
  * Increase players hit points, notice effects
@@ -188,7 +196,7 @@ bool do_dec_stat(int stat, bool perma)
 	}
 
 	/* Attempt to reduce the stat */
-	if (dec_stat(stat, perma))
+	if (player_stat_dec(p_ptr, stat, perma))
 	{
 		/* Message */
 		message_format(MSG_DRAIN_STAT, stat, "You feel very %s.", desc_stat_neg[stat]);
@@ -233,7 +241,7 @@ bool do_inc_stat(int stat)
 	res = res_stat(stat);
 
 	/* Attempt to increase */
-	if (inc_stat(stat))
+	if (player_stat_inc(p_ptr, stat))
 	{
 		/* Message */
 		msg_format("You feel very %s!", desc_stat_pos[stat]);
@@ -269,7 +277,7 @@ void identify_pack(void)
 	/* Simply identify and know every item */
 	for (i = 0; i < ALL_INVEN_TOTAL; i++)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
@@ -326,7 +334,7 @@ static int remove_curse_aux(bool heavy)
 	/* Attempt to uncurse items being worn */
 	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		if (!o_ptr->k_idx) continue;
 		if (!cursed_p(o_ptr)) continue;
@@ -1402,7 +1410,7 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 	/* Get an item */
 	q = "Enchant which item? ";
 	s = "You have nothing to enchant.";
-	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
+	if (!get_item(&item, q, s, 0, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
 
 	o_ptr = object_from_item_idx(item);
 
@@ -1454,7 +1462,7 @@ bool ident_spell(void)
 	/* Get an item */
 	q = "Identify which item? ";
 	s = "You have nothing to identify.";
-	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
+	if (!get_item(&item, q, s, 0, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
 
 	o_ptr = object_from_item_idx(item);
 
@@ -1514,7 +1522,7 @@ bool recharge(int num)
 	/* Get an item */
 	q = "Recharge which item? ";
 	s = "You have nothing to recharge.";
-	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return (FALSE);
+	if (!get_item(&item, q, s, 0, (USE_INVEN | USE_FLOOR))) return (FALSE);
 
 	o_ptr = object_from_item_idx(item);
 
@@ -2967,7 +2975,7 @@ bool curse_armor(void)
 
 
 	/* Curse the body armor */
-	o_ptr = &inventory[INVEN_BODY];
+	o_ptr = &p_ptr->inventory[INVEN_BODY];
 
 	/* Nothing to curse */
 	if (!o_ptr->k_idx) return (FALSE);
@@ -3021,7 +3029,7 @@ bool curse_weapon(void)
 
 
 	/* Curse the weapon */
-	o_ptr = &inventory[INVEN_WIELD];
+	o_ptr = &p_ptr->inventory[INVEN_WIELD];
 
 	/* Nothing to curse */
 	if (!o_ptr->k_idx) return (FALSE);
@@ -3131,7 +3139,7 @@ void brand_weapon(void)
 	object_type *o_ptr;
 	byte brand_type;
 
-	o_ptr = &inventory[INVEN_WIELD];
+	o_ptr = &p_ptr->inventory[INVEN_WIELD];
 
 	/* Select a brand */
 	if (randint0(100) < 25)
@@ -3180,7 +3188,7 @@ bool brand_ammo(void)
 	/* Get an item */
 	q = "Brand which kind of ammunition? ";
 	s = "You have nothing to brand.";
-	if (!get_item(&item, q, s, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
+	if (!get_item(&item, q, s, 0, (USE_EQUIP | USE_INVEN | USE_FLOOR))) return (FALSE);
 
 	o_ptr = object_from_item_idx(item);
 
@@ -3218,7 +3226,7 @@ bool brand_bolts(void)
 	/* Get an item */
 	q = "Brand which bolts? ";
 	s = "You have no bolts to brand.";
-	if (!get_item(&item, q, s, (USE_INVEN | USE_FLOOR))) return (FALSE);
+	if (!get_item(&item, q, s, 0, (USE_INVEN | USE_FLOOR))) return (FALSE);
 
 	o_ptr = object_from_item_idx(item);
 
@@ -3245,12 +3253,12 @@ void ring_of_power(int dir)
 			msg_print("You are surrounded by a malignant aura.");
 
 			/* Decrease all stats (permanently) */
-			(void)dec_stat(A_STR, TRUE);
-			(void)dec_stat(A_INT, TRUE);
-			(void)dec_stat(A_WIS, TRUE);
-			(void)dec_stat(A_DEX, TRUE);
-			(void)dec_stat(A_CON, TRUE);
-			(void)dec_stat(A_CHR, TRUE);
+			player_stat_dec(p_ptr, A_STR, TRUE);
+			player_stat_dec(p_ptr, A_INT, TRUE);
+			player_stat_dec(p_ptr, A_WIS, TRUE);
+			player_stat_dec(p_ptr, A_DEX, TRUE);
+			player_stat_dec(p_ptr, A_CON, TRUE);
+			player_stat_dec(p_ptr, A_CHR, TRUE);
 
 			/* Lose some experience (permanently) */
 			p_ptr->exp -= (p_ptr->exp / 4);

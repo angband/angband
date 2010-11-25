@@ -15,9 +15,7 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#include "z-term.h"
-
-#include "z-virt.h"
+#include "angband.h"
 
 
 /*
@@ -523,6 +521,54 @@ void Term_queue_char(term *t, int x, int y, byte a, char c, byte ta, char tc)
 	if (x > t->x2[y]) t->x2[y] = x;
 }
 
+/* Queue a large-sized tile */
+
+void Term_big_queue_char(term *t, int x, int y, byte a, char c, byte a1, char c1)
+{
+        int hor, vert;
+
+	/* Avoid warning */
+	(void)c;
+
+	/* No tall skinny tiles */
+	if (tile_width > 1)
+	{
+	        /* Horizontal first */
+	        for (hor = 0; hor <= tile_width; hor++)
+		{
+		        /* Queue dummy character */
+		        if (hor != 0)
+			{
+			        if (a & 0x80)
+				        Term_queue_char(t, x + hor, y, 255, -1, 0, 0);
+				else
+				        Term_queue_char(t, x + hor, y, TERM_WHITE, ' ', a1, c1);
+			}
+
+			/* Now vertical */
+			for (vert = 1; vert <= tile_height; vert++)
+			{
+			        /* Queue dummy character */
+			        if (a & 0x80)
+				        Term_queue_char(t, x + hor, y + vert, 255, -1, 0, 0);
+				else
+				        Term_queue_char(t, x + hor, y + vert, TERM_WHITE, ' ', a1, c1);
+			}
+		}
+	}
+	else
+	{
+	        /* Only vertical */
+	        for (vert = 1; vert <= tile_height; vert++)
+		{
+		        /* Queue dummy character */
+		        if (a & 0x80)
+			        Term_queue_char(t, x, y + vert, 255, -1, 0, 0);
+			else
+			        Term_queue_char(t, x, y + vert, TERM_WHITE, ' ', a1, c1);
+		}
+	}
+}
 
 /*
  * Mentally draw some attr/chars at a given location
@@ -556,7 +602,7 @@ void Term_queue_chars(int x, int y, int n, byte a, cptr s)
 
 		/* Save the "literal" information */
 		scr_aa[x] = a;
-		scr_cc[x] = *s;
+		scr_cc[x] = xchar_trans(*s);
 
 		scr_taa[x] = 0;
 		scr_tcc[x] = 0;
@@ -775,9 +821,6 @@ static void Term_fresh_row_both(int y, int x1, int x2)
 		/* Handle high-bit attr/chars */
 		if ((na & 0x80) && (nc & 0x80))
 		{
-			/* 2nd byte of bigtile */
-			if ((na == 255) && (nc == (char) -1)) continue;
-
 			/* Flush */
 			if (fn)
 			{
@@ -796,6 +839,9 @@ static void Term_fresh_row_both(int y, int x1, int x2)
 				/* Forget */
 				fn = 0;
 			}
+
+			/* 2nd byte of bigtile */
+			if ((na == 255) && (nc == (char) -1)) continue;
 
 			/* Hack -- Draw the special attr/char pair */
 			(void)((*Term->pict_hook)(x, y, 1, &na, &nc, &nta, &ntc));
@@ -974,8 +1020,9 @@ static void Term_fresh_row_text(int y, int x1, int x2)
 	}
 }
 
-
-
+/* Helper variables for large cursor */
+bool bigcurs = FALSE;
+bool smlcurs = TRUE;
 
 
 /*
@@ -1307,7 +1354,9 @@ errr Term_fresh(void)
 		/* Draw the cursor */
 		if (!scr->cu && scr->cv)
 		{
-			if ((scr->cx + 1 < w) && (old->a[scr->cy][scr->cx + 1] == 255))
+		        if ((((tile_width > 1)||(tile_height > 1)) && 
+			     (!smlcurs) && (Term->saved == 0) && (scr->cy > 0))
+			    || bigcurs)
 			{
 				/* Double width cursor for the Bigtile mode */
 				(void)((*Term->bigcurs_hook)(scr->cx, scr->cy));
@@ -1504,13 +1553,21 @@ errr Term_addch(byte a, char c)
  * positive value, future calls to either function will
  * return negative ones.
  */
-errr Term_addstr(int n, byte a, cptr s)
+errr Term_addstr(int n, byte a, cptr buf)
 {
 	int k;
 
 	int w = Term->wid;
 
 	errr res = 0;
+
+	char s[1024];
+
+	/* Copy to a rewriteable string */
+ 	my_strcpy(s, buf, 1024);
+
+ 	/* Translate it to 7-bit ASCII or system-specific format */
+ 	xstr_trans(s, LATIN1);
 
 	/* Handle "unusable" cursor */
 	if (Term->scr->cu) return (-1);
@@ -1553,6 +1610,57 @@ errr Term_putch(int x, int y, byte a, char c)
 
 	/* Success */
 	return (0);
+}
+
+
+/*
+ * Move to a location and, using an attr, add a big tile
+ */
+void Term_big_putch(int x, int y, byte a, char c)
+{
+        int hor, vert;
+
+	/* Avoid warning */
+	(void)c;
+
+	/* No tall skinny tiles */
+	if (tile_width > 1)
+	{
+	        /* Horizontal first */
+	        for (hor = 0; hor <= tile_width; hor++)
+		{
+		        /* Queue dummy character */
+		        if (hor != 0)
+			{	
+			        if (a & 0x80)
+				        Term_putch(x + hor, y, 255, -1);
+				else
+				        Term_putch(x + hor, y, TERM_WHITE, ' ');
+			}
+
+			/* Now vertical */
+			for (vert = 1; vert <= tile_height; vert++)
+			{
+			        /* Queue dummy character */
+			        if (a & 0x80)
+				        Term_putch(x + hor, y + vert, 255, -1);
+				else
+				        Term_putch(x + hor, y + vert, TERM_WHITE, ' ');
+			}
+		}
+	}
+	else
+	{
+	        /* Only vertical */
+	        for (vert = 1; vert <= tile_height; vert++)
+		{
+		        /* Queue dummy character */
+		        if (a & 0x80)
+			        Term_putch(x, y + vert, 255, -1);
+			else
+			        Term_putch(x, y + vert, TERM_WHITE, ' ');
+		}
+	}
 }
 
 
@@ -2054,6 +2162,9 @@ errr Term_save(void)
 	mem->next = Term->mem;
 	Term->mem = mem;
 
+	/* One more saved */
+	Term->saved++;
+
 	/* Success */
 	return (0);
 }
@@ -2100,6 +2211,9 @@ errr Term_load(void)
 	/* Assume change */
 	Term->y1 = 0;
 	Term->y2 = h - 1;
+
+	/* One less saved */
+	Term->saved--;
 
 	/* Success */
 	return (0);
@@ -2460,6 +2574,8 @@ errr term_init(term *t, int w, int h, int k)
 	t->attr_blank = 0;
 	t->char_blank = ' ';
 
+	/* No saves yet */
+	t->saved = 0;
 
 	/* Success */
 	return (0);

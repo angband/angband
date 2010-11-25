@@ -15,10 +15,13 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "history.h"
+#include "monster/monster.h"
 #include "option.h"
 #include "savefile.h"
-
+#include "squelch.h"
 
 /*
  * Write an "item" record
@@ -93,15 +96,33 @@ static void wr_item(const object_type *o_ptr)
 
 /*
  * Write RNG state
+ *
+ * There were originally 64 bytes of randomizer saved. Now we only need
+ * 32 + 4 bytes saved, so we'll write an extra 28 bytes at the end which won't
+ * be used.
  */
 void wr_randomizer(void)
 {
 	int i;
 
-	wr_u16b(0);
-	wr_u16b(Rand_place);
+	/* current value for the simple RNG */
+	wr_u32b(Rand_value);
+
+	/* state index */
+	wr_u32b(state_i);
+
+	/* RNG variables */
+	wr_u32b(z0);
+	wr_u32b(z1);
+	wr_u32b(z2);
+
+	/* RNG state */
 	for (i = 0; i < RAND_DEG; i++)
-		wr_u32b(Rand_state[i]);
+		wr_u32b(STATE[i]);
+
+	/* NULL padding */
+	for (i = 0; i < 60 - RAND_DEG; i++)
+		wr_u32b(0);
 }
 
 
@@ -402,8 +423,8 @@ void wr_player(void)
 	for (i = 0; i < TMD_MAX; i++)
 		wr_s16b(p_ptr->timed[i]);
 
-	/* # of player turns */
-	wr_u32b(p_ptr->player_turn);
+	/* Total energy used so far */
+	wr_u32b(p_ptr->total_energy);
 	/* # of turns spent resting */
 	wr_u32b(p_ptr->resting_turn);
 
@@ -569,7 +590,7 @@ void wr_inventory(void)
 	/* Write the inventory */
 	for (i = 0; i < ALL_INVEN_TOTAL; i++)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
@@ -601,7 +622,7 @@ void wr_stores(void)
 		wr_s16b(0);
 
 		/* Save the current owner */
-		wr_byte(st_ptr->owner);
+		wr_byte(st_ptr->owner->oidx);
 
 		/* Save the stock size */
 		wr_byte(st_ptr->stock_num);
