@@ -390,12 +390,12 @@ void place_object(struct cave *c, int y, int x, int level, bool good, bool great
 		return;
 
 	object_wipe(&otype);
-	if (make_object(&otype, level, good, great)) {
+	if (make_object(c, &otype, level, good, great)) {
 		otype.origin = ORIGIN_FLOOR;
 		otype.origin_depth = c->depth;
 
 		/* Give it to the floor */
-		if (!floor_carry(y, x, &otype)) {
+		if (!floor_carry(c, y, x, &otype) && otype.name1) {
 			/* XXX Should this be done in floor_carry? */
 			a_info[otype.name1].created = FALSE;
 		}
@@ -415,7 +415,7 @@ void place_gold(struct cave *c, int y, int x, int level)
 	i_ptr = &object_type_body;
 	object_wipe(i_ptr);
 	make_gold(i_ptr, level, SV_GOLD_ANY);
-	floor_carry(y, x, i_ptr);
+	floor_carry(c, y, x, i_ptr);
 }
 
 void place_secret_door(struct cave *c, int y, int x)
@@ -548,7 +548,7 @@ static void alloc_object(struct cave *c, int set, int typ, int num, int depth)
 
 			case ALLOC_TYP_TRAP:
 			{
-				place_trap(y, x);
+				place_trap(c, y, x);
 				break;
 			}
 
@@ -677,29 +677,23 @@ static void vault_objects(struct cave *c, int y, int x, int depth, int num)
 /*
  * Place a trap with a given displacement of point
  */
-static void vault_trap_aux(int y, int x, int yd, int xd)
+static void vault_trap_aux(struct cave *c, int y, int x, int yd, int xd)
 {
 	int count, y1, x1;
 
-	/* Place traps */
-	for (count = 0; count <= 5; count++)
-	{
-		/* Get a location */
-		while (1)
-		{
+	for (count = 0; count <= 5; count++) {
+		while (1) {
 			y1 = rand_spread(y, yd);
 			x1 = rand_spread(x, xd);
-			if (!in_bounds(y1, x1)) continue;
+			if (!cave_in_bounds(c, y1, x1))
+				continue;
 			break;
 		}
 
-		/* Require "naked" floor grids */
-		if (!cave_naked_bold(y1, x1)) continue;
+		if (!cave_isempty(c, y1, x1))
+			continue;
 
-		/* Place the trap */
-		place_trap(y1, x1);
-
-		/* Done */
+		place_trap(c, y1, x1);
 		break;
 	}
 }
@@ -708,13 +702,13 @@ static void vault_trap_aux(int y, int x, int yd, int xd)
 /*
  * Place some traps with a given displacement of given location
  */
-static void vault_traps(int y, int x, int yd, int xd, int num)
+static void vault_traps(struct cave *c, int y, int x, int yd, int xd, int num)
 {
 	int i;
 
 	for (i = 0; i < num; i++)
 	{
-		vault_trap_aux(y, x, yd, xd);
+		vault_trap_aux(c, y, x, yd, xd);
 	}
 }
 
@@ -1113,7 +1107,7 @@ static void build_type3(struct cave *c, int y0, int x0)
 			vault_monsters(c, y0, x0, c->depth + 2, randint0(2) + 3);
 
 			/* Traps naturally */
-			vault_traps(y0, x0, 4, 4, randint0(3) + 2);
+			vault_traps(c, y0, x0, 4, 4, randint0(3) + 2);
 
 			break;
 		}
@@ -1257,7 +1251,7 @@ static void build_type4(struct cave *c, int y0, int x0)
 			}
 
 			/* Traps to protect the treasure */
-			vault_traps(y0, x0, 4, 10, 2 + randint1(3));
+			vault_traps(c, y0, x0, 4, 10, 2 + randint1(3));
 
 			break;
 		}
@@ -1342,8 +1336,8 @@ static void build_type4(struct cave *c, int y0, int x0)
 			vault_monsters(c, y0, x0 + 5, c->depth + 2, randint1(3));
 
 			/* Traps make them entertaining. */
-			vault_traps(y0, x0 - 3, 2, 8, randint1(3));
-			vault_traps(y0, x0 + 3, 2, 8, randint1(3));
+			vault_traps(c, y0, x0 - 3, 2, 8, randint1(3));
+			vault_traps(c, y0, x0 + 3, 2, 8, randint1(3));
 
 			/* Mazes should have some treasure too. */
 			vault_objects(c, y0, x0, c->depth, 3);
@@ -2150,7 +2144,7 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cptr
 					}
 					else
 					{
-						place_trap(y, x);
+						place_trap(c, y, x);
 					}
 					break;
 				}
@@ -2165,7 +2159,7 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cptr
 				/* Trap */
 				case '^':
 				{
-					place_trap(y, x);
+					place_trap(c, y, x);
 					break;
 				}
 			}
@@ -3016,7 +3010,7 @@ static void cave_gen(struct cave *c, struct player *p)
 	/* Put some monsters in the dungeon */
 	for (i = i + k; i > 0; i--)
 	{
-		alloc_monster(c, 0, TRUE, c->depth);
+		alloc_monster(c, point(p->px, p->py), 0, TRUE, c->depth);
 	}
 
 	/* Ensure quest monsters */
@@ -3296,12 +3290,8 @@ static void town_gen(struct cave *c, struct player *p)
 
 	/* Make some residents */
 	for (i = 0; i < residents; i++)
-		alloc_monster(c, 3, TRUE, c->depth);
+		alloc_monster(c, point(p->px, p->py), 3, TRUE, c->depth);
 }
-
-
-
-
 
 /*
  * Clear the dungeon, ready for generation to begin.
@@ -3310,8 +3300,8 @@ static void cave_clear(struct cave *c, struct player *p)
 {
 	int x, y;
 
-	wipe_o_list();
-	wipe_mon_list();
+	wipe_o_list(c);
+	wipe_mon_list(c, p);
 
 	/* Clear flags and flow information. */
 	for (y = 0; y < DUNGEON_HGT; y++)
@@ -3338,9 +3328,10 @@ static void cave_clear(struct cave *c, struct player *p)
 	p->px = p->py = 0;
 
 	/* Hack -- illegal panel */
+#ifdef WTF
 	Term->offset_y = DUNGEON_HGT;
 	Term->offset_x = DUNGEON_WID;
-
+#endif
 
 	/* Nothing special here yet */
 	c->good_item = FALSE;
@@ -3348,10 +3339,6 @@ static void cave_clear(struct cave *c, struct player *p)
 	/* Nothing good here yet */
 	c->rating = 0;
 }
-
-
-
-
 
 /*
  * Calculate the level feeling, using a "rating" and the player's depth.

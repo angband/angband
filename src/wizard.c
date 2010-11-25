@@ -811,7 +811,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 			object_wipe(i_ptr);
 
 			/* Create an object */
-			make_object(i_ptr, level, good, great);
+			make_object(cave, i_ptr, level, good, great);
 
 			/* Allow multiple artifacts, because breaking the game is fine here */
 			a_ptr = artifact_of(o_ptr);

@@ -1,6 +1,8 @@
 #ifndef INCLUDED_ZTYPE_H
 #define INCLUDED_ZTYPE_H
 
+#include "h-basic.h"
+
 typedef struct data_panel data_panel;
 typedef struct type_union type_union;
 
@@ -47,5 +49,7 @@ struct point {
 	int x;
 	int y;
 };
+
+struct point point(int x, int y);
 
 #endif /* !INCLUDED_ZTYPE_H */

@@ -57,7 +57,7 @@ void delete_monster_idx(int i)
 	if (target_get_monster() == i) target_set_monster(0);
 
 	/* Hack -- remove tracked monster */
-	if (p_ptr->health_who == i) health_track(0);
+	if (p_ptr->health_who == i) health_track(p_ptr, 0);
 
 
 	/* Monster is gone */
@@ -255,7 +255,7 @@ void compact_monsters(int size)
  * This is an efficient method of simulating multiple calls to the
  * "delete_monster()" function, with no visual effects.
  */
-void wipe_mon_list(void)
+void wipe_mon_list(struct cave *c, struct player *p)
 {
 	int i;
 
@@ -275,7 +275,7 @@ void wipe_mon_list(void)
 		r_ptr->cur_num--;
 
 		/* Monster is gone */
-		cave->m_idx[m_ptr->fy][m_ptr->fx] = 0;
+		c->m_idx[m_ptr->fy][m_ptr->fx] = 0;
 
 		/* Wipe the Monster */
 		(void)WIPE(m_ptr, monster_type);
@@ -294,9 +294,8 @@ void wipe_mon_list(void)
 	target_set_monster(0);
 
 	/* Hack -- no more tracking */
-	health_track(0);
+	health_track(p, 0);
 }
-
 
 /*
  * Get and return the index of a "free" monster.
@@ -2155,10 +2154,6 @@ bool place_monster(struct cave *c, int y, int x, int depth, bool slp, bool grp)
  * XXX XXX XXX
  */
 
-
-
-
-
 /*
  * Attempt to allocate a random monster in the dungeon.
  *
@@ -2168,10 +2163,10 @@ bool place_monster(struct cave *c, int y, int x, int depth, bool slp, bool grp)
  *
  * Use "depth" for the monster level
  */
-bool alloc_monster(struct cave *c, int dis, bool slp, int depth)
+bool alloc_monster(struct cave *c, struct point pt, int dis, bool slp, int depth)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = pt.y;
+	int px = pt.x;
 
 	int y = 0, x = 0;
 	int	attempts_left = 10000;
@@ -2186,7 +2181,7 @@ bool alloc_monster(struct cave *c, int dis, bool slp, int depth)
 		x = randint0(c->width);
 
 		/* Require "naked" floor grid */
-		if (!cave_naked_bold(y, x)) continue;
+		if (!cave_isempty(c, y, x)) continue;
 
 		/* Accept far away grids */
 		if (distance(y, x, py, px) > dis) break;
@@ -3007,7 +3002,7 @@ void monster_death(int m_idx)
 		else
 		{
 			/* Make an object */
-			if (!make_object(i_ptr, level, good, great)) continue;
+			if (!make_object(cave, i_ptr, level, good, great)) continue;
 			dump_item++;
 		}
 

@@ -16,3 +16,10 @@ TYPE_FUN(i2u, T_INT, int, i)
 TYPE_FUN(c2u, T_CHAR, char, c)
 TYPE_FUN(f2u, T_FLOAT, float, f)
 TYPE_FUN(s2u, T_STRING, const char *, s)
+
+struct point point(int x, int y) {
+	struct point p;
+	p.x = x;
+	p.y = y;
+	return p;
+}

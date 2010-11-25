@@ -1277,7 +1277,7 @@ static bool kind_is_good(const object_kind *k_ptr)
  *
  * We assume that the given object has been "wiped".
  */
-bool make_object(object_type *j_ptr, int lev, bool good, bool great)
+bool make_object(struct cave *c, object_type *j_ptr, int lev, bool good, bool great)
 {
 	int k_idx, base;
 	object_kind *k_ptr;
@@ -1315,10 +1315,10 @@ bool make_object(object_type *j_ptr, int lev, bool good, bool great)
 
 
 	/* Notice "okay" out-of-depth objects */
-	if (!cursed_p(j_ptr) && (k_info[j_ptr->k_idx].level > p_ptr->depth))
+	if (!cursed_p(j_ptr) && (k_info[j_ptr->k_idx].level > c->depth))
 	{
 		/* Rating increase */
-		cave->rating += (k_info[j_ptr->k_idx].alloc_min - p_ptr->depth);
+		c->rating += (k_info[j_ptr->k_idx].alloc_min - c->depth);
 
 		/* Cheat -- peek at items */
 		if (OPT(cheat_peek)) object_mention(j_ptr);

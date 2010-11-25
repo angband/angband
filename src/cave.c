@@ -3769,24 +3769,11 @@ void scatter(int *yp, int *xp, int y, int x, int d, int m)
 	(*xp) = nx;
 }
 
-
-
-
-
-
-/*
- * Track a new monster
- */
-void health_track(int m_idx)
+void health_track(struct player *p, int m_idx)
 {
-	/* Track a new guy */
-	p_ptr->health_who = m_idx;
-
-	/* Redraw (later) */
-	p_ptr->redraw |= (PR_HEALTH);
+	p->health_who = m_idx;
+	p->redraw |= PR_HEALTH;
 }
-
-
 
 /*
  * Hack -- track the given monster race
@@ -3876,28 +3863,18 @@ void disturb(int stop_search, int unused_flag)
 	flush();
 }
 
-
-
-
-/*
- * Hack -- Check if a level is a "quest" level
- */
 bool is_quest(int level)
 {
 	int i;
 
 	/* Town is never a quest */
-	if (!level) return (FALSE);
+	if (!level || !q_list) return FALSE;
 
-	/* Check quests */
 	for (i = 0; i < MAX_Q_IDX; i++)
-	{
-		/* Check for quest */
-		if (q_list[i].level == level) return (TRUE);
-	}
+		if (q_list[i].level == level)
+			return TRUE;
 
-	/* Nope */
-	return (FALSE);
+	return FALSE;
 }
 
 struct cave *cave = NULL;

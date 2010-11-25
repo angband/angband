@@ -1,8 +1,17 @@
 #ifndef INCLUDED_EXTERNS_H
 #define INCLUDED_EXTERNS_H
 
-/*
- * Automatically generated "variable" declarations
+#include "monster/types.h"
+#include "object/types.h"
+#include "player/types.h"
+#include "store.h"
+#include "z-file.h"
+#include "z-msg.h"
+
+/* This file was automatically generated. It is now obsolete (it was never a
+ * good idea to begin with; you should include only what you use instead of
+ * including everything everywhere) and is being slowly destroyed. Do not add
+ * new entries to this file.
  */
 
 /* pathfind.c */

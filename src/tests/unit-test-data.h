@@ -75,6 +75,37 @@ static struct object_kind test_torch = {
 	.flavor = 0,
 };
 
+static struct object_kind test_gold = {
+	.name = "Test Gold",
+	.text = "Test gold [2].",
+	.kidx = 2,
+	.tval = TV_GOLD,
+	.sval = 0,
+	.pval = 0,
+
+	.to_h = 0,
+	.to_d = 0,
+	.to_a = 0,
+
+	.dd = 1,
+	.ds = 1,
+	.weight = 1,
+
+	.cost = 0,
+
+	.d_attr = 0,
+	.d_char = '$',
+
+	.alloc_prob = 0,
+	.alloc_min = 0,
+	.alloc_max = 0,
+	.level = 0,
+
+	.effect = 0,
+	.gen_mult_prob = 0,
+	.flavor = 0,
+};
+
 static struct player_race test_race = {
 	.name = "TestRace",
 	.r_adj = {

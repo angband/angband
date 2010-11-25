@@ -285,7 +285,7 @@ bool py_attack_real(int y, int x)
 	if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
 
 	/* Track a new monster */
-	if (m_ptr->ml) health_track(cave->m_idx[y][x]);
+	if (m_ptr->ml) health_track(p_ptr, cave->m_idx[y][x]);
 
 	/* Handle player fear (only for invisible monsters) */
 	if (p_ptr->state.afraid)
@@ -724,7 +724,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 					if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
 
 					/* Hack -- Track this monster */
-					if (m_ptr->ml) health_track(cave->m_idx[y][x]);
+					if (m_ptr->ml) health_track(p_ptr, cave->m_idx[y][x]);
 
 				}
 
@@ -1105,7 +1105,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 					if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
 
 					/* Hack -- Track this monster */
-					if (m_ptr->ml) health_track(cave->m_idx[y][x]);
+					if (m_ptr->ml) health_track(p_ptr, cave->m_idx[y][x]);
 				}
 
 				/* Learn the bonuses */

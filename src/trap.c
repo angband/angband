@@ -91,31 +91,15 @@ void pick_trap(int y, int x)
 	cave_set_feat(cave, y, x, feat);
 }
 
-
-
-/*
- * Places a random trap at the given location.
- *
- * The location must be a legal, naked, floor grid.
- *
- * Note that all traps start out as "invisible" and "untyped", and then
- * when they are "discovered" (by detecting them or setting them off),
- * the trap is "instantiated" as a visible, "typed", trap.
- */
-void place_trap(int y, int x)
+/* Places a trap. All traps are untyped until discovered. */
+void place_trap(struct cave *c, int y, int x)
 {
-	/* Paranoia */
-	if (!in_bounds(y, x)) return;
-
-	/* Require empty, clean, floor grid */
-	if (!cave_naked_bold(y, x)) return;
+	assert(cave_in_bounds(c, y, x));
+	assert(cave_isempty(c, y, x));
 
 	/* Place an invisible trap */
-	cave_set_feat(cave, y, x, FEAT_INVIS);
+	cave_set_feat(c, y, x, FEAT_INVIS);
 }
-
-
-
 
 /*
  * Handle player hitting a real trap

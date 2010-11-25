@@ -1630,7 +1630,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (!cave_naked_bold(y, x)) break;
 
 			/* Place a trap */
-			place_trap(y, x);
+			place_trap(cave, y, x);
 
 			break;
 		}
@@ -4360,7 +4360,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 				if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
 
 				/* Hack - auto-track */
-				if (m_ptr->ml) health_track(cave->m_idx[y][x]);
+				if (m_ptr->ml) health_track(p_ptr, cave->m_idx[y][x]);
 			}
 		}
 	}

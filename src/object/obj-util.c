@@ -1278,7 +1278,7 @@ static void mention_preserve(const object_type *o_ptr)
  * clear those fields for grids/monsters containing objects,
  * and we clear it once for every such object.
  */
-void wipe_o_list(void)
+void wipe_o_list(struct cave *c)
 {
 	int i;
 
@@ -1328,7 +1328,7 @@ void wipe_o_list(void)
 			int x = o_ptr->ix;
 
 			/* Hack -- see above */
-			cave->o_idx[y][x] = 0;
+			c->o_idx[y][x] = 0;
 		}
 
 		/* Wipe the object */
@@ -1954,7 +1954,7 @@ static s16b floor_get_idx_oldest_squelched(int y, int x)
 /*
  * Let the floor carry an object, deleting old squelched items if necessary
  */
-s16b floor_carry(int y, int x, object_type *j_ptr)
+s16b floor_carry(struct cave *c, int y, int x, object_type *j_ptr)
 {
 	int n = 0;
 
@@ -1964,7 +1964,7 @@ s16b floor_carry(int y, int x, object_type *j_ptr)
 
 
 	/* Scan objects in that grid for combination */
-	for (this_o_idx = cave->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
+	for (this_o_idx = c->o_idx[y][x]; this_o_idx; this_o_idx = next_o_idx)
 	{
 		object_type *o_ptr = &o_list[this_o_idx];
 
@@ -2023,13 +2023,13 @@ s16b floor_carry(int y, int x, object_type *j_ptr)
 		o_ptr->held_m_idx = 0;
 
 		/* Link the object to the pile */
-		o_ptr->next_o_idx = cave->o_idx[y][x];
+		o_ptr->next_o_idx = c->o_idx[y][x];
 
 		/* Link the floor to the object */
-		cave->o_idx[y][x] = o_idx;
+		c->o_idx[y][x] = o_idx;
 
-		cave_note_spot(cave, y, x);
-		cave_light_spot(cave, y, x);
+		cave_note_spot(c, y, x);
+		cave_light_spot(c, y, x);
 	}
 
 	/* Result */
@@ -2227,7 +2227,7 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 
 
 	/* Give it to the floor */
-	if (!floor_carry(by, bx, j_ptr))
+	if (!floor_carry(c, by, bx, j_ptr))
 	{
 		artifact_type *a_ptr = artifact_of(j_ptr);
 
@@ -2273,7 +2273,7 @@ void acquirement(int y1, int x1, int level, int num, bool great)
 		object_wipe(i_ptr);
 
 		/* Make a good (or great) object (if possible) */
-		if (!make_object(i_ptr, level, TRUE, great)) continue;
+		if (!make_object(cave, i_ptr, level, TRUE, great)) continue;
 		i_ptr->origin = ORIGIN_ACQUIRE;
 		i_ptr->origin_depth = p_ptr->depth;
 
@@ -3470,7 +3470,7 @@ int lookup_kind(int tval, int sval)
 	}
 
 	/* Failure */
-	msg_format("No object (%s,%d)", tval_find_name(tval), tval, sval);
+	msg_format("No object: %d:%d (%s)", tval, sval, tval_find_name(tval));
 	return 0;
 }
 

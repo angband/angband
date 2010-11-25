@@ -702,7 +702,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 				monster_race_track(m_ptr->r_idx);
 
 				/* Hack -- health bar for this monster */
-				health_track(cave->m_idx[y][x]);
+				health_track(p_ptr, cave->m_idx[y][x]);
 
 				/* Hack -- handle stuff */
 				handle_stuff();
@@ -1064,7 +1064,7 @@ bool target_set_closest(int mode)
 
 	/* Set up target information */
 	monster_race_track(m_ptr->r_idx);
-	health_track(cave->m_idx[y][x]);
+	health_track(p_ptr, cave->m_idx[y][x]);
 	target_set_monster(m_idx);
 
 	/* Visual cue */
@@ -1282,7 +1282,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 					if ((m_idx > 0) && target_able(m_idx))
 					{
-						health_track(m_idx);
+						health_track(p_ptr, m_idx);
 						target_set_monster(m_idx);
 						done = TRUE;
 					}
@@ -1403,7 +1403,7 @@ bool target_set_interactive(int mode, int x, int y)
 
 					if ((m_idx > 0) && target_able(m_idx))
 					{
-						health_track(m_idx);
+						health_track(p_ptr, m_idx);
 						target_set_monster(m_idx);
 					}
 					else

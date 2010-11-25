@@ -5,6 +5,6 @@
 
 extern void hit_trap(int y, int x);
 extern void pick_trap(int y, int x);
-extern void place_trap(int y, int x);
+extern void place_trap(struct cave *c, int y, int x);
 
 #endif /* !TRAP_H */
