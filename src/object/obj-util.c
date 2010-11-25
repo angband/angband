@@ -1718,6 +1718,9 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 	if (!of_is_equal(o_ptr->flags, j_ptr->flags))
 		return FALSE;
 
+	/* Different states of knowledge */
+	if (o_ptr->ident != j_ptr->ident)
+		return FALSE;
 
 	/* Maximal "stacking" limit */
 	if (total >= MAX_STACK_SIZE) return (0);
