@@ -5,6 +5,8 @@
 
 #include "z-type.h"
 
+struct player;
+
 extern int distance(int y1, int x1, int y2, int x2);
 extern bool los(int y1, int x1, int y2, int x2);
 extern bool no_light(void);
@@ -35,6 +37,9 @@ extern bool is_quest(int level);
 extern bool dtrap_edge(int y, int x);
 
 struct cave {
+	s32b created_at;
+	int depth;
+
 	byte feeling;
 	s16b rating;
 	bool good_item;
@@ -75,7 +80,7 @@ extern bool cave_canputitem(struct cave *c, int y, int x);
 /* Old cave_floor_bold() */
 extern bool cave_isfloor(struct cave *c, int y, int x);
 
-extern void cave_generate(struct cave *c);
+extern void cave_generate(struct cave *c, struct player *p);
 
 extern bool cave_in_bounds(struct cave *c, int y, int x);
 extern bool cave_in_bounds_fully(struct cave *c, int y, int x);

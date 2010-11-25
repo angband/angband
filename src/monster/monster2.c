@@ -1604,25 +1604,16 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	cave_light_spot(cave, y2, x2);
 }
 
-
-/*
- * Place the player in the dungeon XXX XXX
- */
-s16b player_place(int y, int x)
+void player_place(struct cave *c, struct player *p, int y, int x)
 {
-	/* Paranoia XXX XXX */
-	if (cave->m_idx[y][x] != 0) return (0);
-
+	assert(!c->m_idx[y][x]);
 
 	/* Save player location */
-	p_ptr->py = y;
-	p_ptr->px = x;
+	p->py = y;
+	p->px = x;
 
 	/* Mark cave grid */
-	cave->m_idx[y][x] = -1;
-
-	/* Success */
-	return (-1);
+	c->m_idx[y][x] = -1;
 }
 
 

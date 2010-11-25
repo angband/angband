@@ -5,6 +5,7 @@
 
 #include "cave.h"
 #include "monster/types.h"
+#include "player/types.h"
 
 /* monster1.c */
 extern void describe_monster(int r_idx, bool spoilers);
@@ -30,7 +31,7 @@ extern void update_mon(int m_idx, bool full);
 extern void update_monsters(bool full);
 extern s16b monster_carry(int m_idx, object_type *j_ptr);
 extern void monster_swap(int y1, int x1, int y2, int x2);
-extern s16b player_place(int y, int x);
+extern void player_place(struct cave *c, struct player *p, int y, int x);
 extern s16b monster_place(int y, int x, monster_type *n_ptr);
 extern bool place_monster_aux(struct cave *, int y, int x, int r_idx, bool slp, bool grp);
 extern bool place_monster(struct cave *c, int y, int x, int depth, bool slp, bool grp);

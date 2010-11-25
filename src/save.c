@@ -476,9 +476,7 @@ void wr_misc(void)
 
 	/* Write feeling */
 	wr_byte(cave->feeling);
-
-	/* Turn of last "feeling" */
-	wr_s32b(old_turn);
+	wr_s32b(cave->created_at);
 
 	/* Current turn */
 	wr_s32b(turn);

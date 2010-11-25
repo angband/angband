@@ -65,9 +65,6 @@ char summon_kin_type;		/* Hack -- See summon_specific() */
 
 s32b turn;				/* Current game turn */
 
-s32b old_turn;			/* Hack -- Level feeling counter */
-
-
 int use_graphics;		/* The "graphics" mode is enabled */
 bool use_graphics_nice;	        /* The 'nice' "graphics" mode is enabled */
 byte tile_width = 1;            /* Tile width in units of font width */

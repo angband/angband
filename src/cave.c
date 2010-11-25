@@ -3911,6 +3911,8 @@ struct cave *cave_new(void) {
 	c->when = C_ZNEW(DUNGEON_HGT, byte_wid);
 	c->m_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
 	c->o_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
+
+	c->created_at = 1;
 	return c;
 }
 

@@ -1282,8 +1282,7 @@ int rd_misc(void)
 	rd_byte(&tmp8u);
 	cave->feeling = tmp8u;
 
-	/* Turn of last "feeling" */
-	rd_s32b(&old_turn);
+	rd_s32b(&cave->created_at);
 
 	/* Current turn */
 	rd_s32b(&turn);
@@ -2107,11 +2106,7 @@ int rd_dungeon(void)
 
 
 	/* Place player in dungeon */
-	if (!player_place(py, px))
-	{
-		note(format("Cannot place player (%d,%d)!", py, px));
-		return (-1);
-	}
+	player_place(cave, p_ptr, py, px);
 
 	/*** Success ***/
 

@@ -486,7 +486,7 @@ void player_init(struct player *p) {
 	p->inventory = C_ZNEW(ALL_INVEN_TOTAL, struct object);
 
 	/* First turn. */
-	turn = old_turn = 1;
+	turn = 1;
 	p_ptr->total_energy = 0;
 	p_ptr->resting_turn = 0;
 }

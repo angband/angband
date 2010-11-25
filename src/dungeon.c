@@ -1812,7 +1812,7 @@ void play_game(void)
 
 	/* Generate a dungeon level if needed */
 	if (!character_dungeon)
-		cave_generate(cave);
+		cave_generate(cave, p_ptr);
 
 
 	/* Character is now "complete" */
@@ -1938,7 +1938,7 @@ void play_game(void)
 		if (p_ptr->is_dead) break;
 
 		/* Make a new level */
-		cave_generate(cave);
+		cave_generate(cave, p_ptr);
 	}
 
 	/* Disallow big cursor */

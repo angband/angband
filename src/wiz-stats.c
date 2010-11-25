@@ -189,7 +189,7 @@ static void stats_collect_level(void)
 
 	for (i = 0; i < TRIES; i++)
 	{
-		cave_generate(cave);
+		cave_generate(cave, p_ptr);
 
 		/* Get stats on objects */
 		for (y = 1; y < DUNGEON_HGT - 1; y++)
