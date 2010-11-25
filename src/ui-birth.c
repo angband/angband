@@ -429,6 +429,8 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 		{
 			if (current == BIRTH_ROLLER_CHOICE)
 			{
+				cmd_insert(CMD_FINALIZE_OPTIONS);
+
 				if (current_menu->cursor)
 				{
 					/* Do a first roll of the stats */
