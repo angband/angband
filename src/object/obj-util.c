@@ -1432,7 +1432,7 @@ static s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
 	s32b power;
-	int a = 2;
+	int a = 1;
 	int b = 1;
 	static file_mode pricing_mode = MODE_WRITE;
 
