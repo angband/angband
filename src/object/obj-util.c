@@ -1718,13 +1718,18 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr)
 	if (!of_is_equal(o_ptr->flags, j_ptr->flags))
 		return FALSE;
 
-	/* Both are required to have been identified in order to stack. */
-	if (!(o_ptr->ident & o_ptr->ident & IDENT_KNOWN))
+	/* If the item kind isn't known then we can't stack */
+	if (!o_ptr->kind->aware)
 		return FALSE;
+
+	/* Items with a varying pval need to have had the pval identified */
+	if (o_ptr->tval == TV_AMULET || o_ptr->tval == TV_RING) {
+		if (o_ptr->pval && !object_pval_is_visible(o_ptr)) return FALSE;
+		if (j_ptr->pval && !object_pval_is_visible(j_ptr)) return FALSE;
+	}
 
 	/* Maximal "stacking" limit */
 	if (total >= MAX_STACK_SIZE) return (0);
-
 
 	/* They match, so they must be similar */
 	return (TRUE);
