@@ -1794,13 +1794,21 @@ void textui_browse_object_knowledge(const char *name, int row)
 	int *objects;
 	int o_count = 0;
 	int i;
+	object_kind *k_ptr;
 
 	objects = C_ZNEW(z_info->k_max, int);
 
 	for (i = 0; i < z_info->k_max; i++)
 	{
-		if ((k_info[i].everseen || k_info[i].flavor || OPT(cheat_xtra)) &&
-				!of_has(k_info[i].flags, OF_INSTA_ART))
+		k_ptr = &k_info[i];
+		/* It's in the list if we've ever seen it, or it has a flavour,
+		 * and either it's not one of the special artifacts, or if it is,
+		 * we're not aware of it yet. This way the flavour appears in the list
+		 * until it is found.
+		 */
+		if ((k_ptr->everseen || k_ptr->flavor || OPT(cheat_xtra)) &&
+				(!of_has(k_ptr->flags, OF_INSTA_ART) ||
+				 !artifact_is_known(get_artifact_from_kind(k_ptr))))
 		{
 			int c = obj_group_order[k_info[i].tval];
 			if (c >= 0) objects[o_count++] = i;
