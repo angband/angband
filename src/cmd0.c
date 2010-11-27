@@ -134,7 +134,7 @@ static struct generic_command cmd_action[] =
 	{ "Jam a door shut",            'j', CMD_JAM, NULL },
 	{ "Bash a door open",           'B', CMD_BASH, NULL },
 	{ "Fire at nearest target",   'h', CMD_NULL, textui_cmd_fire_at_nearest },
-	{ "Throw an item",            'v', CMD_NULL, textui_cmd_throw }
+	{ "Throw an item",            'v', CMD_THROW, textui_cmd_throw }
 };
 
 /* Item management commands */
@@ -143,7 +143,7 @@ static struct generic_command cmd_item_manage[] =
 	{ "Display equipment listing", 'e', CMD_NULL, do_cmd_equip },
 	{ "Display inventory listing", 'i', CMD_NULL, do_cmd_inven },
 	{ "Pick up objects",           'g', CMD_PICKUP, NULL },
-	{ "Destroy an item",           'k', CMD_NULL, textui_cmd_destroy },
+	{ "Destroy an item",           'k', CMD_DESTROY, textui_cmd_destroy },
 	
 };
 
