@@ -24,6 +24,7 @@
 #include "history.h"
 #include "object/inventory.h"
 #include "object/tvalsval.h"
+#include "object/object.h"
 #include "squelch.h"
 #include "ui-menu.h"
 
@@ -521,7 +522,8 @@ static void wield_all(struct player *p)
 		/* Make sure that there's an available slot */
 		if (is_ammo)
 		{
-			if (i_ptr->k_idx && !object_similar(o_ptr, i_ptr)) continue;
+			if (i_ptr->k_idx && !object_similar(o_ptr, i_ptr,
+				OSTACK_PACK)) continue;
 		}
 		else
 		{

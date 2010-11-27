@@ -23,6 +23,7 @@
 #include "monster/monster.h"
 #include "object/inventory.h"
 #include "object/tvalsval.h"
+#include "object/object.h"
 #include "squelch.h"
 #include "target.h"
 
@@ -119,7 +120,8 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	if (obj_is_ammo(o_ptr))
 	{
 		num = o_ptr->number;
-		combined_ammo = object_similar(o_ptr, &p_ptr->inventory[slot]);
+		combined_ammo = object_similar(o_ptr, &p_ptr->inventory[slot],
+			OSTACK_QUIVER);
 	}
 
 	/* Take a turn */

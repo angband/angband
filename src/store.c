@@ -25,6 +25,7 @@
 #include "init.h"
 #include "object/inventory.h"
 #include "object/tvalsval.h"
+#include "object/object.h"
 #include "spells.h"
 #include "squelch.h"
 #include "target.h"
@@ -728,66 +729,6 @@ static void mass_produce(object_type *o_ptr)
 }
 
 
-
-/*
- * Determine if a store object can "absorb" another object.
- *
- * See "object_similar()" for the same function for the "player".
- *
- * This function can ignore many of the checks done for the player,
- * since stores (but not the home) only get objects under certain
- * restricted circumstances.
- */
-static bool store_object_similar(const object_type *o_ptr, const object_type *j_ptr)
-{
-	/* Hack -- Identical items cannot be stacked */
-	if (o_ptr == j_ptr) return (0);
-
-	/* Different objects cannot be stacked */
-	if (o_ptr->k_idx != j_ptr->k_idx) return (0);
-
-	/* Different pvals cannot be stacked, except for wands, staves, or rods */
-	if ((o_ptr->pval != j_ptr->pval) &&
-	    (o_ptr->tval != TV_WAND) &&
-	    (o_ptr->tval != TV_STAFF) &&
-	    (o_ptr->tval != TV_ROD)) return (0);
-
-	/* Require many identical values */
-	if (o_ptr->to_h != j_ptr->to_h) return (0);
-	if (o_ptr->to_d != j_ptr->to_d) return (0);
-	if (o_ptr->to_a != j_ptr->to_a) return (0);
-
-	/* Require identical "artifact" names */
-	if (o_ptr->name1 != j_ptr->name1) return (0);
-
-	/* Require identical "ego-item" names */
-	if (o_ptr->name2 != j_ptr->name2) return (0);
-
-	/* Hack -- Never stack recharging items */
-	if ((o_ptr->timeout || j_ptr->timeout) && o_ptr->tval != TV_LIGHT)
-		return (0);
-
-	/* Never stack items with different fuel */
-	else if ((o_ptr->timeout != j_ptr->timeout) && o_ptr->tval == TV_LIGHT)
-		return (0);
-
-	/* Require many identical values */
-	if (o_ptr->ac != j_ptr->ac) return (0);
-	if (o_ptr->dd != j_ptr->dd) return (0);
-	if (o_ptr->ds != j_ptr->ds) return (0);
-
-	/* Hack -- Never stack chests */
-	if (o_ptr->tval == TV_CHEST) return (0);
-
-	/* Different flags */
-	if (!of_is_equal(o_ptr->flags, j_ptr->flags))
-		return FALSE;
-
-	/* They match, so they must be similar */
-	return (TRUE);
-}
-
-
 /*
  * Allow a store object to absorb another object
  */
@@ -874,7 +815,8 @@ static bool store_check_num(int st, const object_type *o_ptr)
 			j_ptr = &st_ptr->stock[i];
 
 			/* Can the new object be combined with the old one? */
-			if (object_similar(j_ptr, o_ptr)) return (TRUE);
+			if (object_similar(j_ptr, o_ptr, OSTACK_PACK))
+				return (TRUE);
 		}
 	}
 
@@ -888,7 +830,8 @@ static bool store_check_num(int st, const object_type *o_ptr)
 			j_ptr = &st_ptr->stock[i];
 
 			/* Can the new object be combined with the old one? */
-			if (store_object_similar(j_ptr, o_ptr)) return (TRUE);
+			if (object_similar(j_ptr, o_ptr, OSTACK_STORE))
+				return (TRUE);
 		}
 	}
 
@@ -923,7 +866,7 @@ static int home_carry(object_type *o_ptr)
 		j_ptr = &st_ptr->stock[slot];
 
 		/* The home acts just like the player */
-		if (object_similar(j_ptr, o_ptr))
+		if (object_similar(j_ptr, o_ptr, OSTACK_PACK))
 		{
 			/* Save the new number of items */
 			object_absorb(j_ptr, o_ptr);
@@ -1087,7 +1030,7 @@ static int store_carry(int st, object_type *o_ptr)
 		j_ptr = &st_ptr->stock[slot];
 
 		/* Can the existing items be incremented? */
-		if (store_object_similar(j_ptr, o_ptr))
+		if (object_similar(j_ptr, o_ptr, OSTACK_STORE))
 		{
 			/* Absorb (some of) the object */
 			store_object_absorb(j_ptr, o_ptr);

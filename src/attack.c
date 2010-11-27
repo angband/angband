@@ -1112,7 +1112,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 				/* XXX Eddie This is messed up, better done for firing, */
 				/* should use that method [split last] instead */
 				/* check if inven_optimize removed what o_ptr referenced */
-				if (object_similar(i_ptr, o_ptr))
+				if (object_similar(i_ptr, o_ptr, OSTACK_PACK))
 					object_notice_attack_plusses(o_ptr);
 				object_notice_attack_plusses(i_ptr);
 

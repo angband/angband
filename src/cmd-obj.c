@@ -309,7 +309,8 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 	}
 
 	/* If the slot is in the quiver and objects can be combined */
-	if (obj_is_ammo(equip_o_ptr) && object_similar(equip_o_ptr, o_ptr))
+	if (obj_is_ammo(equip_o_ptr) && object_similar(equip_o_ptr, o_ptr,
+		OSTACK_QUIVER))
 	{
 		wield_item(o_ptr, item, slot);
 		return;
@@ -380,7 +381,8 @@ void textui_obj_wield(object_type *o_ptr, int item)
 			if (!get_item(&slot, q, s, 'w', USE_EQUIP)) return;
 		}
 
-		if (obj_is_ammo(o_ptr) && !object_similar(&p_ptr->inventory[slot], o_ptr))
+		if (obj_is_ammo(o_ptr) && !object_similar(&p_ptr->inventory[slot],
+			o_ptr, OSTACK_QUIVER))
 		{
 			cptr q = "Replace which ammunition? ";
 			cptr s = "Error in obj_wield, please report";

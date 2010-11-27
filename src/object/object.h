@@ -60,6 +60,21 @@ typedef enum
 
 
 /**
+ * Modes for stacking by object_similar()
+ */
+typedef enum
+{
+	OSTACK_NONE    = 0x00, /* No options (this does NOT mean no stacking) */
+	OSTACK_STORE   = 0x01, /* Store stacking */
+	OSTACK_PACK    = 0x02, /* Inventory and home */
+	OSTACK_LIST    = 0x04, /* Object list */
+	OSTACK_MONSTER = 0x08, /* Monster carrying objects */
+	OSTACK_FLOOR   = 0x10, /* Floor stacking */
+	OSTACK_QUIVER  = 0x20  /* Quiver */
+} object_stack_t;
+
+
+/**
  * Pseudo-ID markers.
  */
 typedef enum
@@ -186,7 +201,7 @@ object_type *get_first_object(int y, int x);
 object_type *get_next_object(const object_type *o_ptr);
 bool is_blessed(const object_type *o_ptr);
 s32b object_value(const object_type *o_ptr, int qty, int verbose);
-bool object_similar(const object_type *o_ptr, const object_type *j_ptr);
+bool object_similar(const object_type *o_ptr, const object_type *j_ptr, object_stack_t mode);
 void object_absorb(object_type *o_ptr, const object_type *j_ptr);
 void object_wipe(object_type *o_ptr);
 void object_copy(object_type *o_ptr, const object_type *j_ptr);
