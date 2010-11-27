@@ -46,6 +46,7 @@ typedef enum cmd_code
 	CMD_TAKEOFF,
 	CMD_WIELD,
 	CMD_DROP,
+	CMD_BROWSE_SPELL,
 	CMD_STUDY_SPELL,
 	CMD_STUDY_BOOK,
 	CMD_CAST, /* Casting a spell /or/ praying. */
@@ -152,9 +153,6 @@ typedef struct game_command
 	/* Number of times to attempt to repeat command. */
 	int nrepeats;
 
-	/* Key originally pressed to initiate command, if any */
-	unsigned char key;
-
 	/* Arguments to the command */
 	cmd_arg arg[CMD_MAX_ARGS];
 
@@ -196,7 +194,6 @@ void cmd_set_arg_target(game_command *cmd, int n, int target);
 void cmd_set_arg_point(game_command *cmd, int n, int x, int y);
 void cmd_set_arg_item(game_command *cmd, int n, int item);
 void cmd_set_arg_number(game_command *cmd, int n, int num);
-void cmd_set_key(game_command *cmd, unsigned char key);
 
 /* 
  * Gets the next command from the queue, optionally waiting to allow

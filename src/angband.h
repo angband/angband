@@ -36,6 +36,7 @@
 #include "defines.h"
 #include "option.h"
 #include "types.h"
+#include "game-cmd.h"
 #include "object/constants.h"
 #include "object/types.h"
 #include "object/object.h"

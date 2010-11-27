@@ -348,21 +348,13 @@ void cmd_set_arg_number(game_command *cmd, int n, int num)
 	cmd->arg_present[n] = TRUE;
 }
 
-/* Temporary fix to allow the input key to be set with the command
- * so that item selection can use it at a later date
- */
-void cmd_set_key(game_command *cmd, unsigned char key)
-{
-	cmd->key = key;
-}
-
 /*
  * Inserts a command in the queue to be carried out, with the given
  * number of repeats.
  */
 errr cmd_insert_repeated(cmd_code c, int nrepeats)
 {
-	game_command cmd = { CMD_NULL, 0, 0, {{0}} };
+	game_command cmd = { CMD_NULL, 0, {{0}} };
 
 	if (cmd_idx(c) == -1)
 		return 1;
@@ -413,7 +405,7 @@ void process_command(cmd_context ctx, bool no_request)
 				int item;
 
 				item_tester_hook = is->filter;
-				if (!get_item(&item, is->prompt, is->noop, cmd->key, is->mode))
+				if (!get_item(&item, is->prompt, is->noop, cmd->command, is->mode))
 					return;
 
 				cmd_set_arg_item(cmd, 0, item);

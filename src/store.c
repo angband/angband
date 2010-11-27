@@ -2775,7 +2775,7 @@ static bool store_sell(void)
 	/* Get an item */
 	p_ptr->command_wrk = USE_INVEN;
 
-	if (!get_item(&item, prompt, reject, 'd', get_mode))
+	if (!get_item(&item, prompt, reject, CMD_DROP, get_mode))
 		return FALSE;
 
 	/* Get the item */

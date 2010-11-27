@@ -150,8 +150,8 @@ static struct generic_command cmd_item_manage[] =
 /* Information access commands */
 static struct generic_command cmd_info[] =
 {
-	{ "Browse a book", 'b', CMD_NULL, textui_spell_browse, NULL },
-	{ "Gain new spells", 'G', CMD_NULL, textui_obj_study, player_can_study },
+	{ "Browse a book", 'b', CMD_BROWSE_SPELL, textui_spell_browse, NULL },
+	{ "Gain new spells", 'G', CMD_STUDY_BOOK, textui_obj_study, player_can_study },
 	{ "Cast a spell", 'm', CMD_CAST, textui_obj_cast, player_can_cast },
 	{ "Cast a spell", 'p', CMD_CAST, textui_obj_cast, player_can_cast },
 	{ "Full dungeon map",             'M', CMD_NULL, do_cmd_view_map },
@@ -406,8 +406,21 @@ void cmd_init(void)
 	}
 }
 
+unsigned char cmd_lookup_key(cmd_code cmd)
+{
+	unsigned int i;
+	struct generic_command *command;
 
-
+	for (i = 0; i < N_ELEMENTS(converted_list); i++)
+	{
+		command = converted_list[i].command;
+		if (command && command->cmd == cmd)
+		{
+			return command->key;
+		}
+	}
+	return 0;
+}
 
 
 /*** Input processing ***/
@@ -687,7 +700,7 @@ static bool textui_process_key(unsigned char c)
 			item_tester_hook = act->selector.filter;
 
 			if (!get_item(&item, act->selector.prompt,
-					act->selector.noop, c, act->selector.mode))
+					act->selector.noop, command->cmd, act->selector.mode))
 				return TRUE;
 
 			/* Execute the item command */
@@ -702,7 +715,6 @@ static bool textui_process_key(unsigned char c)
 			else
 			{
 				cmd_insert_repeated(command->cmd, p_ptr->command_arg);
-				cmd_set_key(cmd_get_top(), c);
 			}
 		}
 	}
