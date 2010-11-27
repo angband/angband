@@ -660,7 +660,8 @@ static void recalculate_stats(int *stats, int points_left)
 		if (OPT(adult_maximize))
 		{
 			/* Reset stats */
-			p_ptr->stat_cur[i] = p_ptr->stat_max[i] = p_ptr->stat_birth[i] = stats[i];
+			p_ptr->stat_cur[i] = p_ptr->stat_max[i] =
+				p_ptr->stat_birth[i] = stats[i];
 		}
 
 		/* Fixed stat maxes */
@@ -670,7 +671,8 @@ static void recalculate_stats(int *stats, int points_left)
 			int bonus = rp_ptr->r_adj[i] + cp_ptr->c_adj[i];
 
 			/* Apply the racial/class bonuses */
-			p_ptr->stat_cur[i] = p_ptr->stat_max[i] =
+			p_ptr->stat_cur[i] = p_ptr->stat_max[i] = 
+				p_ptr->stat_birth[i] =
 				modify_stat_value(stats[i], bonus);
 		}
 	}
@@ -1046,9 +1048,6 @@ void player_birth(bool quickstart_allowed)
 		p_ptr->prace = 0;
 		player_generate(p_ptr, NULL, NULL, NULL);
 	}
-
-	reset_stats(stats, points_spent, &points_left);
-	do_birth_reset(quickstart_allowed, &quickstart_prev);
 
 	/* Handle incrementing name suffix */
 	buf = find_roman_suffix_start(op_ptr->full_name);
