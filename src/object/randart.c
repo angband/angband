@@ -2970,13 +2970,15 @@ static void scramble_artifact(int a_idx)
 		a_ptr->alloc_max = 127;
 		if (ap > avg_power)
 		{
-			a_ptr->alloc_prob = (max_power - ap) / 100;
-			a_ptr->alloc_min = MAX(50, (ap * 100 / max_power));
+			a_ptr->alloc_prob = 1;
+			a_ptr->alloc_min = MAX(50, ((ap + 150) * 100 /
+				max_power));
 		}
-		else if (ap > 40)
+		else if (ap > 30)
 		{
-			a_ptr->alloc_prob = MAX(3, (avg_power - ap) / 20);
-			a_ptr->alloc_min = MAX(25, (ap / 4));
+			a_ptr->alloc_prob = MAX(2, (avg_power - ap) / 20);
+			a_ptr->alloc_min = MAX(25, ((ap + 200) * 100 /
+				max_power));
 		}
 		else /* Just the Phial */
 		{
@@ -2988,26 +2990,9 @@ static void scramble_artifact(int a_idx)
 	{
 		LOG_PRINT1("k_ptr->alloc_prob is %d\n", k_ptr->alloc_prob);
 		a_ptr->alloc_max = MIN(127, (ap * 4) / 5);
-		a_ptr->alloc_min = MAX(1, (ap * 100 / max_power));
+		a_ptr->alloc_min = MIN(100, ((ap + 100) * 100 / max_power));
 
-		/* Hugely powerful artifacts or base items have tot prob 1 */
-		if (((ap * ap) > ((avg_power * avg_power) + (2 * var_power))) ||
-			(k_ptr->alloc_prob < 10))
-			a_ptr->alloc_prob = 100 / k_ptr->alloc_prob;
-
-		/* The rest of the good have total prob 1-3 */
-		else if (ap > avg_power)
-			a_ptr->alloc_prob = (max_power - ap) / k_ptr->alloc_prob;
-
-		/* The best of the rest have total prob 4-10 */
-		else if ((ap * ap) > ((avg_power * avg_power) - var_power))
-			a_ptr->alloc_prob = (100 / k_ptr->alloc_prob) *
-				(avg_power - ap + 80) / 10;
-
-		/* The weak ones have prob >10 */
-		else
-			a_ptr->alloc_prob = (100 / k_ptr->alloc_prob) *
-				(avg_power - ap) / 4;
+		/* Leave alloc_prob consistent with base art total rarity */
 	}
 
 	/* sanity check */
