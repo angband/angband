@@ -5,7 +5,7 @@
 const char *option_name(int opt);
 const char *option_desc(int opt);
 
-void option_set(int opt, bool on);
+bool option_set(const char *opt, bool on);
 void option_set_defaults(void);
 
 
@@ -18,7 +18,7 @@ void option_set_defaults(void);
 #define OPT_PAGE_PER				16
 
 /* The option data structures */
-extern const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
+extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 
 
 
@@ -76,6 +76,7 @@ extern const byte option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_animate_flicker         66
 #define OPT_show_piles				67
 #define OPT_center_player			68
+#define OPT_xchars_to_file			70
 #define OPT_auto_more			71
 #define OPT_hp_changes_color		74
 #define OPT_hide_squelchable		75

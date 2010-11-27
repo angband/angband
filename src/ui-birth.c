@@ -15,12 +15,15 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-#include "ui-menu.h"
-#include "ui-birth.h"
-#include "game-event.h"
-#include "game-cmd.h"
+#include "button.h"
 #include "cmds.h"
+#include "files.h"
+#include "game-cmd.h"
+#include "game-event.h"
+#include "ui-birth.h"
+#include "ui-menu.h"
 
 /*
  * Overview
@@ -109,7 +112,7 @@ static enum birth_stage get_quickstart_command(void)
 		
 		if (ke.key == 'N' || ke.key == 'n')
 		{
-			cmd_insert(CMD_BIRTH_RESET, TRUE);
+			cmd_insert(CMD_BIRTH_RESET);
 			next = BIRTH_SEX_CHOICE;
 		}
 		else if (ke.key == KTRL('X'))
@@ -191,18 +194,10 @@ static void birthmenu_display(menu_type *menu, int oid, bool cursor,
 	c_put_str(attr, data->items[oid], row, col);
 }
 
-/* We defer the choice of actual actions until outside of the menu API 
-   in menu_question(), so this can be a reasonably simple function
-   for when a menu "command" is activated. */
-static bool birthmenu_handler(char cmd, void *db, int oid)
-{
-	return TRUE;
-}
-
 /* Our custom menu iterator, only really needed to allow us to override
    the default handling of "commands" in the standard iterators (hence
    only defining the display and handler parts). */
-static const menu_iter birth_iter = { NULL, NULL, birthmenu_display, birthmenu_handler };
+static const menu_iter birth_iter = { NULL, NULL, birthmenu_display, NULL, NULL };
 
 static void race_help(int i, void *db, const region *l)
 {
@@ -257,35 +252,33 @@ static void init_birth_menu(menu_type *menu, int n_choices, int initial_choice, 
 {
 	struct birthmenu_data *menu_data;
 
+	/* Initialise a basic menu */
+	menu_init(menu, MN_SKIN_SCROLL, &birth_iter);
+
 	/* A couple of behavioural flags - we want selections letters in
 	   lower case and a double tap to act as a selection. */
 	menu->selections = lower_case;
 	menu->flags = MN_DBL_TAP;
 
-	/* Set the number of choices in the menu to the same as the game
-	   has told us we've got to offer. */
-	menu->count = n_choices;
+	/* Copy across the game's suggested initial selection, etc. */
+	menu->cursor = initial_choice;
 
 	/* Allocate sufficient space for our own bits of menu information. */
 	menu_data = mem_alloc(sizeof *menu_data);
 
-	/* Copy across the game's suggested initial selection, etc. */
-	menu->cursor = initial_choice;
-	menu_data->allow_random = allow_random;
-
 	/* Allocate space for an array of menu item texts and help texts
 	   (where applicable) */
-	menu_data->items = mem_alloc(menu->count * sizeof *menu_data->items);
+	menu_data->items = mem_alloc(n_choices * sizeof *menu_data->items);
+	menu_data->allow_random = allow_random;
 
-	/* Poke our menu data in to the assigned slot in the menu structure. */
-	menu->menu_data = menu_data;
+	/* Set private data */
+	menu_setpriv(menu, n_choices, menu_data);
 
 	/* Set up the "browse" hook to display help text (where applicable). */
 	menu->browse_hook = aux;
 
-	/* Get ui-menu to initialise whatever it wants to to give us a scrollable
-	   menu. */
-	menu_init(menu, MN_SKIN_SCROLL, &birth_iter, reg);
+	/* Lay out the menu appropriately */
+	menu_layout(menu, reg);
 }
 
 
@@ -316,7 +309,7 @@ static void setup_menus()
 
 	for (i = 0; i < z_info->p_max; i++)
 	{	
-		mdata->items[i] = p_name + p_info[i].name;
+		mdata->items[i] = p_info[i].name;
 	}
 	mdata->hint = "Your 'race' determines various intrinsic factors and bonuses.";
 
@@ -326,7 +319,7 @@ static void setup_menus()
 
 	for (i = 0; i < z_info->c_max; i++)
 	{	
-		mdata->items[i] = c_name + c_info[i].name;
+		mdata->items[i] = c_info[i].name;
 	}
 	mdata->hint = "Your 'class' determines various intrinsic abilities and bonuses";
 		
@@ -409,7 +402,7 @@ static void print_menu_instructions(void)
    by the UI (displaying help text, for instance). */
 static enum birth_stage menu_question(enum birth_stage current, menu_type *current_menu, cmd_code choice_command)
 {
-	struct birthmenu_data *menu_data = current_menu->menu_data;
+	struct birthmenu_data *menu_data = menu_priv(current_menu);
 	ui_event_data cx;
 
 	enum birth_stage next = BIRTH_RESET;
@@ -418,25 +411,26 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 	clear_question();
 	Term_putstr(QUESTION_COL, QUESTION_ROW, -1, TERM_YELLOW, menu_data->hint);
 
-	current_menu->cmd_keys = "?=*\r\n\x18";	 /* ?, ,= *, \n, <ctl-X> */
+	current_menu->cmd_keys = "?=*\x18";	 /* ?, =, *, <ctl-X> */
 
 	while (next == BIRTH_RESET)
 	{
 		/* Display the menu, wait for a selection of some sort to be made. */
-		cx = menu_select(current_menu, EVT_CMD);
+		cx = menu_select(current_menu, EVT_KBRD);
 
 		/* As all the menus are displayed in "hierarchical" style, we allow
 		   use of "back" (left arrow key or equivalent) to step back in 
 		   the proces as well as "escape". */
-		if (cx.type == EVT_BACK || cx.type == EVT_ESCAPE)
+		if (cx.type == EVT_ESCAPE)
 		{
 			next = BIRTH_BACK;
 		}
-		/* '\xff' is a mouse selection, '\r' a keyboard one. */
-		else if (cx.key == '\xff' || cx.key == '\r') 
+		else if (cx.type == EVT_SELECT)
 		{
 			if (current == BIRTH_ROLLER_CHOICE)
 			{
+				cmd_insert(CMD_FINALIZE_OPTIONS);
+
 				if (current_menu->cursor)
 				{
 					/* Do a first roll of the stats */
@@ -454,38 +448,44 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 					 * totals.  This is, it should go without saying, a hack.
 					 */
 					point_based_start();
-					cmd_insert(CMD_RESET_STATS, TRUE);
+					cmd_insert(CMD_RESET_STATS);
+					cmd_set_arg_choice(cmd_get_top(), 0, TRUE);
 					next = current + 1;
 				}
 			}
 			else
 			{
-				cmd_insert(choice_command, current_menu->cursor);
+				cmd_insert(choice_command);
+				cmd_set_arg_choice(cmd_get_top(), 0, current_menu->cursor);
 				next = current + 1;
 			}
 		}
-		/* '*' chooses an option at random from those the game's provided. */
-		else if (cx.key == '*' && menu_data->allow_random) 
+		else if (cx.type == EVT_KBRD)
 		{
-			current_menu->cursor = randint0(current_menu->count);
-			cmd_insert(choice_command, current_menu->cursor);
+			/* '*' chooses an option at random from those the game's provided. */
+			if (cx.key == '*' && menu_data->allow_random) 
+			{
+				current_menu->cursor = randint0(current_menu->count);
+				cmd_insert(choice_command);
+				cmd_set_arg_choice(cmd_get_top(), 0, current_menu->cursor);
 
-			menu_refresh(current_menu);
-			next = current + 1;
-		}
-		else if (cx.key == '=') 
-		{
-			do_cmd_options();
-			next = current;
-		}
-		else if (cx.key == KTRL('X')) 
-		{
-			cmd_insert(CMD_QUIT);
-			next = BIRTH_COMPLETE;
-		}
-		else if (cx.key == '?')
-		{
-			do_cmd_help();
+				menu_refresh(current_menu);
+				next = current + 1;
+			}
+			else if (cx.key == '=') 
+			{
+				do_cmd_options();
+				next = current;
+			}
+			else if (cx.key == KTRL('X')) 
+			{
+				cmd_insert(CMD_QUIT);
+				next = BIRTH_COMPLETE;
+			}
+			else if (cx.key == '?')
+			{
+				do_cmd_help();
+			}
 		}
 	}
 	
@@ -696,7 +696,8 @@ static enum birth_stage point_based_command(void)
 
 	else if (ch == 'r' || ch == 'R') 
 	{
-		cmd_insert(CMD_RESET_STATS, FALSE);
+		cmd_insert(CMD_RESET_STATS);
+		cmd_set_arg_choice(cmd_get_top(), 0, FALSE);
 	}
 	
 	/* Done */
@@ -719,13 +720,15 @@ static enum birth_stage point_based_command(void)
 		/* Decrease stat (if possible) */
 		if (ch == 4)
 		{
-			cmd_insert(CMD_SELL_STAT, stat);
+			cmd_insert(CMD_SELL_STAT);
+			cmd_set_arg_choice(cmd_get_top(), 0, stat);
 		}
 		
 		/* Increase stat (if possible) */
 		if (ch == 6)
 		{
-			cmd_insert(CMD_BUY_STAT, stat);
+			cmd_insert(CMD_BUY_STAT);
+			cmd_set_arg_choice(cmd_get_top(), 0, stat);
 		}
 	}
 
@@ -742,7 +745,8 @@ static enum birth_stage get_name_command(void)
 
 	if (get_name(name, sizeof(name)))
 	{	
-		cmd_insert(CMD_NAME_CHOICE, name);
+		cmd_insert(CMD_NAME_CHOICE);
+		cmd_set_arg_string(cmd_get_top(), 0, name);
 		next = BIRTH_FINAL_CONFIRM;
 	}
 	else
@@ -835,7 +839,8 @@ errr get_birth_command(bool wait)
 	{
 		case BIRTH_RESET:
 		{
-			cmd_insert(CMD_BIRTH_RESET, TRUE);
+			cmd_insert(CMD_BIRTH_RESET);
+
 			roller = BIRTH_RESET;
 			
 			if (quickstart_allowed)

@@ -21,6 +21,7 @@ typedef enum cmd_code
 	CMD_CHOOSE_SEX,
 	CMD_CHOOSE_RACE,
 	CMD_CHOOSE_CLASS,
+	CMD_FINALIZE_OPTIONS,
 	CMD_BUY_STAT,
 	CMD_SELL_STAT,
 	CMD_RESET_STATS,
@@ -122,6 +123,18 @@ typedef union
 /* Maximum number of arguments a command needs to take. */
 #define CMD_MAX_ARGS 2
 
+enum cmd_arg_type
+{
+	arg_NONE = 0,
+	arg_STRING = 0x01,
+	arg_CHOICE = 0x02,
+	arg_NUMBER = 0x04,
+	arg_ITEM = 0x08,
+	arg_DIRECTION = 0x10,
+	arg_TARGET = 0x20,
+	arg_POINT = 0x40
+};
+
 /*
  * The game_command type is used to return details of the command the
  * game should carry out.
@@ -140,9 +153,20 @@ typedef struct game_command
 	int nrepeats; 
 
 	/* Arguments to the command */
-	cmd_arg args[CMD_MAX_ARGS];
+	cmd_arg arg[CMD_MAX_ARGS];
+
+	/* Whether an argument was passed or not */
+	bool arg_present[CMD_MAX_ARGS];
+
+	/* Types of the arguments passed */
+	enum cmd_arg_type arg_type[CMD_MAX_ARGS];
 } game_command;
 
+
+/**
+ * Returns the top command on the queue.
+ */
+game_command *cmd_get_top(void);
 
 /*
  * A function called by the game to get a command from the UI.
@@ -156,14 +180,25 @@ errr cmd_insert_s(game_command *cmd);
  * Convenience functions.
  * Insert a command with params in the queue to be carried out.
  */
-errr cmd_insert(cmd_code c, ...);
-errr cmd_insert_repeated(cmd_code c, int nrepeats,  ...);
+errr cmd_insert_repeated(cmd_code c, int nrepeats);
+errr cmd_insert(cmd_code c);
+
+/**
+ * Set the args of a command.
+ */
+void cmd_set_arg_choice(game_command *cmd, int n, int choice);
+void cmd_set_arg_string(game_command *cmd, int n, const char *str);
+void cmd_set_arg_direction(game_command *cmd, int n, int dir);
+void cmd_set_arg_target(game_command *cmd, int n, int target);
+void cmd_set_arg_point(game_command *cmd, int n, int x, int y);
+void cmd_set_arg_item(game_command *cmd, int n, int item);
+void cmd_set_arg_number(game_command *cmd, int n, int num);
 
 /* 
  * Gets the next command from the queue, optionally waiting to allow
  * the UI time to process user input, etc. if wait is TRUE 
  */
-errr cmd_get(cmd_context c,game_command *cmd, bool wait);
+errr cmd_get(cmd_context c, game_command **cmd, bool wait);
 
 /* Called by the game engine to get the player's next action. */
 void process_command(cmd_context c, bool no_request);

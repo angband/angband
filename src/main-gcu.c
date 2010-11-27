@@ -17,17 +17,19 @@
  */
 #include "angband.h"
 
+#ifdef USE_GCU
+#include "main.h"
+#include "files.h"
+
+/* locale junk */
+#include "locale.h"
+#include "langinfo.h"
+
 /* included for redrawing code, to prevent warnings */
 #include "cmds.h"
 
-#ifdef USE_GCU
-
-#include "main.h"
-
-
 /* Avoid 'struct term' name conflict with <curses.h> (via <term.h>) on AIX */
 #define term System_term
-
 
 /*
  * Include the proper "header" file
@@ -832,6 +834,18 @@ static errr Term_wipe_gcu(int x, int y, int n)
 	return (0);
 }
 
+/*
+ * Since GCU currently only supports Latin-1 extended chracters, we only
+ * install this hook if we're not using UTF-8.
+ * Given a position in the ISO Latin-1 character set, return the correct
+ * character on this system. Currently
+ */
+ static byte Term_xchar_gcu(byte c)
+{
+	return (c);
+}
+
+
 
 /*
  * Place some text on the screen using an attribute
@@ -842,7 +856,7 @@ static errr Term_text_gcu(int x, int y, int n, byte a, cptr s)
 
 #ifdef A_COLOR
 	/* Set the color */
-	if (can_use_color) wattrset(td->win, colortable[a & 255]);
+	if (can_use_color) (void)wattrset(td->win, colortable[a & 255]);
 #endif
 
 	/* Move the cursor */
@@ -919,6 +933,13 @@ static errr term_data_init_gcu(term_data *td, int rows, int cols, int y, int x)
 	t->wipe_hook = Term_wipe_gcu;
 	t->curs_hook = Term_curs_gcu;
 	t->xtra_hook = Term_xtra_gcu;
+
+	/* only if the locale supports Latin-1 will we enable xchar_hook */
+	if (setlocale(LC_CTYPE, "")) {
+		/* the Latin-1 codeset is ISO-8859-1 */
+		if (strcmp(nl_langinfo(CODESET), "ISO-8859-1") == 0)
+			t->xchar_hook = Term_xchar_gcu;
+	}
 
 	/* Save the data */
 	t->data = td;

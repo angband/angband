@@ -15,11 +15,13 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "cave.h"
+#include "history.h"
+#include "monster/monster.h"
 #include "object/tvalsval.h"
-
-
-
+#include "squelch.h"
 
 static ang_file *fff;
 
@@ -28,6 +30,10 @@ static byte	xor_byte;
 static u32b	v_check = 0L;
 static u32b	x_check = 0L;
 
+static byte sf_major;
+static byte sf_minor;
+static byte sf_patch;
+static byte sf_extra;
 
 /*
  * Hack -- Show information on the screen, one line at a time.
@@ -379,23 +385,30 @@ static int rd_item(object_type *o_ptr)
 static int rd_randomizer(void)
 {
 	int i;
+	u32b noop;
 
-	u16b tmp16u;
+	/* current value for the simple RNG */
+	rd_u32b(&Rand_value);
 
+	/* state index */
+	rd_u32b(&state_i);
 
-	/* Tmp */
-	rd_u16b(&tmp16u);
+	/* for safety, make sure state_i < RAND_DEG */
+	state_i = state_i % RAND_DEG;
 
-	/* Place */
-	rd_u16b(&Rand_place);
+	/* RNG variables */
+	rd_u32b(&z0);
+	rd_u32b(&z1);
+	rd_u32b(&z2);
 
-	/* State */
+	/* RNG state */
 	for (i = 0; i < RAND_DEG; i++)
-	{
-		rd_u32b(&Rand_state[i]);
-	}
+		rd_u32b(&STATE[i]);
 
-	/* Accept */
+	/* NULL padding */
+	for (i = 0; i < 59 - RAND_DEG; i++)
+		rd_u32b(&noop);
+
 	Rand_quick = FALSE;
 
 	return 0;
@@ -1272,7 +1285,7 @@ static int rd_inventory(void)
 		if (n >= INVEN_WIELD)
 		{
 			/* Copy object */
-			object_copy(&inventory[n], i_ptr);
+			object_copy(&p_ptr->inventory[n], i_ptr);
 
 			/* Add the weight */
 			p_ptr->total_weight += (i_ptr->number * i_ptr->weight);
@@ -1298,7 +1311,7 @@ static int rd_inventory(void)
 			n = slot++;
 
 			/* Copy object */
-			object_copy(&inventory[n], i_ptr);
+			object_copy(&p_ptr->inventory[n], i_ptr);
 
 			/* Add the weight */
 			p_ptr->total_weight += (i_ptr->number * i_ptr->weight);
@@ -1344,7 +1357,7 @@ static int rd_stores(void)
 			return (-1);
 		}
 		
-		st_ptr->owner = own;
+		st_ptr->owner = store_ownerbyidx(st_ptr, own);
 		
 		/* Read the items */
 		for (j = 0; j < num; j++)

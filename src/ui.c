@@ -19,21 +19,44 @@
 
 /* =================== GEOMETRY ================= */
 
+region region_calculate(region loc)
+{
+	int w, h;
+	Term_get_size(&w, &h);
+
+	if (loc.col < 0)
+		loc.col += w;
+	if (loc.row < 0)
+		loc.row += w;
+	if (loc.width <= 0)
+		loc.width += w - loc.col;
+	if (loc.page_rows <= 0)
+		loc.page_rows += h - loc.row;
+
+	return loc;
+}
+
+void region_erase_bordered(const region *loc)
+{
+	region calc = region_calculate(*loc);
+	int i = 0;
+
+	calc.col = MAX(calc.col - 1, 0);
+	calc.row = MAX(calc.row - 1, 0);
+	calc.width += 2;
+	calc.page_rows += 2;
+
+	for (i = 0; i < calc.page_rows; i++)
+		Term_erase(calc.col, calc.row + i, calc.width);
+}
+
 void region_erase(const region *loc)
 {
+	region calc = region_calculate(*loc);
 	int i = 0;
-	int w = loc->width;
-	int h = loc->page_rows;
 
-	if (loc->width <= 0 || loc->page_rows <= 0)
-	{
-		Term_get_size(&w, &h);
-		if (loc->width <= 0) w -= loc->width;
-		if (loc->page_rows <= 0) h -= loc->page_rows;
-	}
-
-	for (i = 0; i < h; i++)
-		Term_erase(loc->col, loc->row + i, w);
+	for (i = 0; i < calc.page_rows; i++)
+		Term_erase(calc.col, calc.row + i, calc.width);
 }
 
 bool region_inside(const region *loc, const ui_event_data *key)

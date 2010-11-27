@@ -4,6 +4,7 @@
  *
  * Copyright (c) 2003 Takeshi Mogami, Robert Ruehlmann
  * Copyright (c) 2007 Pete Mack
+ * Copyright (c) 2010 Andi Sidwell
  *
  * This work is free software; you can redistribute it and/or modify it
  * under the terms of either:
@@ -17,16 +18,17 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "macro.h"
+#include "prefs.h"
+#include "squelch.h"
 
 
 /*** Pref file saving code ***/
 
-
-
 /*
  * Header and footer marker string for pref file dumps
  */
-static cptr dump_separator = "#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#";
+static const char *dump_separator = "#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#=#";
 
 
 /*
@@ -147,6 +149,7 @@ static void pref_footer(ang_file *fff, const char *mark)
 /*
  * Save autoinscription data to a pref file.
  */
+/* XXX should be renamed dump_* */
 void autoinsc_dump(ang_file *fff)
 {
 	int i;
@@ -159,7 +162,7 @@ void autoinsc_dump(ang_file *fff)
 	{
 		object_kind *k_ptr = &k_info[inscriptions[i].kind_idx];
 
-		file_putf(fff, "# Autoinscription for %s\n", k_name + k_ptr->name);
+		file_putf(fff, "# Autoinscription for %s\n", k_ptr->name);
 		file_putf(fff, "B:%d:%s\n\n", inscriptions[i].kind_idx,
 		        quark_str(inscriptions[i].inscription_idx));
 	}
@@ -300,7 +303,7 @@ void keymap_dump(ang_file *fff)
 	for (i = 0; i < N_ELEMENTS(keymap_act[mode]); i++)
 	{
 		char key[2] = "?";
-		cptr act;
+		const char *act;
 
 		/* Loop up the keymap */
 		act = keymap_act[mode][i];
@@ -348,7 +351,7 @@ void dump_monsters(ang_file *fff)
 		/* Skip non-entries */
 		if (!r_ptr->name) continue;
 
-		file_putf(fff, "# Monster: %s\n", (r_name + r_ptr->name));
+		file_putf(fff, "# Monster: %s\n", r_ptr->name);
 		file_putf(fff, "R:%d:0x%02X:0x%02X\n", i, attr, chr);
 	}
 }
@@ -367,7 +370,7 @@ void dump_objects(ang_file *fff)
 		/* Skip non-entries */
 		if (!k_ptr->name) continue;
 
-		file_putf(fff, "# Object: %s\n", (k_name + k_ptr->name));
+		file_putf(fff, "# Object: %s\n", k_ptr->name);
 		file_putf(fff, "K:%d:0x%02X:0x%02X\n", i, attr, chr);
 	}
 }
@@ -389,7 +392,7 @@ void dump_features(ang_file *fff)
 		/* Skip mimic entries -- except invisible trap */
 		if ((f_ptr->mimic != i) && (i != FEAT_INVIS)) continue;
 
-		file_putf(fff, "# Terrain: %s\n", (f_name + f_ptr->name));
+		file_putf(fff, "# Terrain: %s\n", f_ptr->name);
 		file_putf(fff, "F:%d:0x%02X:0x%02X\n", i, attr, chr);
 	}
 }
@@ -405,7 +408,7 @@ void dump_flavors(ang_file *fff)
 		byte attr = x_ptr->x_attr;
 		byte chr = x_ptr->x_char;
 
-		file_putf(fff, "# Item flavor: %s\n", (flavor_text + x_ptr->text));
+		file_putf(fff, "# Item flavor: %s\n", x_ptr->text);
 		file_putf(fff, "L:%d:0x%02X:0x%02X\n\n", i, attr, chr);
 	}
 }
@@ -422,7 +425,7 @@ void dump_colors(ang_file *fff)
 		int gv = angband_color_table[i][2];
 		int bv = angband_color_table[i][3];
 
-		cptr name = "unknown";
+		const char *name = "unknown";
 
 		/* Skip non-entries */
 		if (!kv && !rv && !gv && !bv) continue;
@@ -477,578 +480,38 @@ bool prefs_save(const char *path, void (*dump)(ang_file *), const char *title)
 
 
 
-/*** Pref file parsing code ***/
+/*** Pref file parser ***/
+
+/* Forward declare */
+static struct parser *init_parse_prefs(void);
 
 
-
-/*
- * Extract the first few "tokens" from a buffer
- *
- * This function uses "colon" and "slash" as the delimeter characters.
- *
- * We never extract more than "num" tokens.  The "last" token may include
- * "delimeter" characters, allowing the buffer to include a "string" token.
- *
- * We save pointers to the tokens in "tokens", and return the number found.
- *
- * Hack -- Attempt to handle the 'c' character formalism
- *
- * Hack -- An empty buffer, or a final delimeter, yields an "empty" token.
- *
- * Hack -- We will always extract at least one token
+/**
+ * Private data for pref file parsing.
  */
-s16b tokenize(char *buf, s16b num, char **tokens)
+struct prefs_data
 {
-	int i = 0;
-
-	char *s = buf;
-
-
-	/* Process */
-	while (i < num - 1)
-	{
-		char *t;
-
-		/* Scan the string */
-		for (t = s; *t; t++)
-		{
-			/* Allow pseudo-escaping */
-			if (*t == '\\') t++;
-
-			/* Found a delimiter */
-			else if (*t == ':') break;
-		}
-
-		/* Nothing left */
-		if (!*t) break;
-
-		/* Nuke and advance */
-		*t++ = '\0';
-
-		/* Save the token */
-		tokens[i++] = s;
-
-		/* Advance */
-		s = t;
-	}
-
-	/* Save the token */
-	tokens[i++] = s;
-
-	/* Number found */
-	return (i);
-}
+	bool bypass;
+	char macro_buffer[1024];
+};
 
 
-
-/*
- * Parse a sub-file of the "extra info" (format shown below)
- *
- * Each "action" line has an "action symbol" in the first column,
- * followed by a colon, followed by some command specific info,
- * usually in the form of "tokens" separated by colons or slashes.
- *
- * Blank lines, lines starting with white space, and lines starting
- * with pound signs ("#") are ignored (as comments).
- *
- * Note the use of "tokenize()" to allow the use of both colons and
- * slashes as delimeters, while still allowing final tokens which
- * may contain any characters including "delimiters".
- *
- * Note the use of "strtol()" to allow all "integers" to be encoded
- * in decimal, hexidecimal, or octal form.
- *
- * Note that "monster zero" is used for the "player" attr/char, "object
- * zero" will be used for the "stack" attr/char, and "feature zero" is
- * used for the "nothing" attr/char.
- *
- * Specify the attr/char values for "monsters" by race index.
- *   R:<num>:<a>/<c>
- *
- * Specify the attr/char values for "objects" by kind index.
- *   K:<num>:<a>/<c>
- *
- * Specify the attr/char values for "features" by feature index.
- *   F:<num>:<a>/<c>
- *
- * Specify the attr/char values for "special" things.
- *   S:<num>:<a>/<c>
- *
- * Specify the attribute values for inventory "objects" by kind tval.
- *   E:<tv>:<a>
- *
- * Define a macro action, given an encoded macro action.
- *   A:<str>
- *
- * Create a macro, given an encoded macro trigger.
- *   P:<str>
- *
- * Create a keymap, given an encoded keymap trigger.
- *   C:<num>:<str>
- *
- * Turn an option off, given its name.
- *   X:<str>
- *
- * Turn an option on, given its name.
- *   Y:<str>
- *
- * Turn a window flag on or off, given a window, flag, and value.
- *   W:<win>:<flag>:<value>
- *
- * Specify visual information, given an index, and some data.
- *   V:<num>:<kv>:<rv>:<gv>:<bv>
- *
- * Specify colors for message-types.
- *   M:<type>:<attr>
- *
- * Specify the attr/char values for "flavors" by flavors index.
- *   L:<num>:<a>/<c>
+/**
+ * Load another file.
  */
-errr process_pref_file_command(char *buf)
+static enum parser_error parse_prefs_load(struct parser *p)
 {
-	long i, n1, n2, sq;
+	struct prefs_data *d = parser_priv(p);
+	const char *file;
 
-	char *zz[16];
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
 
+	file = parser_getstr(p, "file");
+	(void)process_pref_file(file, TRUE);
 
-	/* Skip "empty" lines */
-	if (!buf[0]) return (0);
-
-	/* Skip "blank" lines */
-	if (isspace((unsigned char)buf[0])) return (0);
-
-	/* Skip comments */
-	if (buf[0] == '#') return (0);
-
-
-	/* Paranoia */
-	/* if (strlen(buf) >= 1024) return (1); */
-
-
-	/* Require "?:*" format */
-	if (buf[1] != ':') return (1);
-
-
-	/* Process "R:<num>:<a>/<c>" -- attr/char for monster races */
-	if (buf[0] == 'R')
-	{
-		if (tokenize(buf+2, 3, zz) == 3)
-		{
-			monster_race *r_ptr;
-			i = strtol(zz[0], NULL, 0);
-			n1 = strtol(zz[1], NULL, 0);
-			n2 = strtol(zz[2], NULL, 0);
-			if ((i < 0) || (i >= (long)z_info->r_max)) return (1);
-			r_ptr = &r_info[i];
-			if (n1) r_ptr->x_attr = (byte)n1;
-			if (n2) r_ptr->x_char = (char)n2;
-			return (0);
-		}
-	}
-
-	/* Process "B:<k_idx>:inscription */
-	else if (buf[0] == 'B')
-	{
-		if (2 == tokenize(buf + 2, 2, zz))
-		{
-			add_autoinscription(strtol(zz[0], NULL, 0), zz[1]);
-			return (0);
-		}
-	}
-
-	/* Process "Q:<idx>:<tval>:<sval>:<y|n>"  -- squelch bits   */
-	/* and     "Q:<idx>:<val>"                -- squelch levels */
-	/* and     "Q:<val>"                      -- auto_destroy   */
-	else if (buf[0] == 'Q')
-	{
-		i = tokenize(buf+2, 4, zz);
-		if (i == 2)
-		{
-			n1 = strtol(zz[0], NULL, 0);
-			n2 = strtol(zz[1], NULL, 0);
-			squelch_level[n1] = n2;
-			return(0);
-		}
-		else if (i == 4)
-		{
-			i = strtol(zz[0], NULL, 0);
-			n1 = strtol(zz[1], NULL, 0);
-			n2 = strtol(zz[2], NULL, 0);
-			sq = strtol(zz[3], NULL, 0);
-			if ((k_info[i].tval == n1) && (k_info[i].sval == n2))
-			{
-				k_info[i].squelch = sq;
-				return(0);
-			}
-			else
-			{
-				for (i = 1; i < z_info->k_max; i++)
-				{
-					if ((k_info[i].tval == n1) && (k_info[i].sval == n2))
-					{
-						k_info[i].squelch = sq;
-						return(0);
-					}
-				}
-			}
-		}
-	}
-
-	/* Process "K:<tval>:<sval>:<a>/<c>"  -- attr/char for object kinds */
-	else if (buf[0] == 'K')
-	{
-		if (tokenize(buf+2, 4, zz) == 4)
-		{
-			object_kind *k_ptr;
-
-			int tval, sval;
-			const char *tval_s = zz[0];
-			const char *sval_s = zz[1];
-
-			n1 = strtol(zz[2], NULL, 0);
-			n2 = strtol(zz[3], NULL, 0);
-
-			/* Now convert the tval into its numeric equivalent */
-			if (1 != sscanf(tval_s, "%d", &tval))
-			{
-				tval = tval_find_idx(tval_s);
-				if (tval == -1) return 1;
-			}
-
-			/* Now find the sval */
-			if (1 != sscanf(sval_s, "%d", &sval))
-			{
-				sval = lookup_sval(tval, sval_s);
-				if (sval == -1) return 1;
-			}
-
-			i = lookup_kind(tval, sval);
-
-			if ((i < 0) || (i >= (long)z_info->k_max)) return (1);
-
-			k_ptr = &k_info[i];
-
-			if (n1) k_ptr->x_attr = (byte)n1;
-			if (n2) k_ptr->x_char = (char)n2;
-
-			return (0);
-		}
-	}
-
-
-	/* Process "F:<num>:<a>/<c>" -- attr/char for terrain features */
-	else if (buf[0] == 'F')
-	{
-		if (tokenize(buf+2, 3, zz) == 3)
-		{
-			feature_type *f_ptr;
-			i = strtol(zz[0], NULL, 0);
-			n1 = strtol(zz[1], NULL, 0);
-			n2 = strtol(zz[2], NULL, 0);
-			if ((i < 0) || (i >= (long)z_info->f_max)) return (1);
-			f_ptr = &f_info[i];
-			if (n1) f_ptr->x_attr = (byte)n1;
-			if (n2) f_ptr->x_char = (char)n2;
-			return (0);
-		}
-	}
-
-
-	/* Process "L:<num>:<a>/<c>" -- attr/char for flavors */
-	else if (buf[0] == 'L')
-	{
-		if (tokenize(buf+2, 3, zz) == 3)
-		{
-			flavor_type *flavor_ptr;
-			i = strtol(zz[0], NULL, 0);
-			n1 = strtol(zz[1], NULL, 0);
-			n2 = strtol(zz[2], NULL, 0);
-			if ((i < 0) || (i >= (long)z_info->flavor_max)) return (1);
-			flavor_ptr = &flavor_info[i];
-			if (n1) flavor_ptr->x_attr = (byte)n1;
-			if (n2) flavor_ptr->x_char = (char)n2;
-			return (0);
-		}
-	}
-
-
-	/* Process "S:<num>:<a>/<c>" -- attr/char for special things */
-	else if (buf[0] == 'S')
-	{
-		if (tokenize(buf+2, 3, zz) == 3)
-		{
-			i = strtol(zz[0], NULL, 0);
-			n1 = strtol(zz[1], NULL, 0);
-			n2 = strtol(zz[2], NULL, 0);
-			if ((i < 0) || (i >= (long)N_ELEMENTS(misc_to_attr))) return (1);
-			misc_to_attr[i] = (byte)n1;
-			misc_to_char[i] = (char)n2;
-			return (0);
-		}
-	}
-
-
-	/* Process "E:<tv>:<a>" -- attribute for inventory objects */
-	else if (buf[0] == 'E')
-	{
-		if (tokenize(buf+2, 2, zz) == 2)
-		{
-			i = strtol(zz[0], NULL, 0) % 128;
-			n1 = strtol(zz[1], NULL, 0);
-			if ((i < 0) || (i >= (long)N_ELEMENTS(tval_to_attr))) return (1);
-			if (n1) tval_to_attr[i] = (byte)n1;
-			return (0);
-		}
-	}
-
-
-	/* Process "A:<str>" -- save an "action" for later */
-	else if (buf[0] == 'A')
-	{
-		text_to_ascii(macro_buffer, sizeof(macro_buffer), buf+2);
-		return (0);
-	}
-
-	/* Process "P:<str>" -- create macro */
-	else if (buf[0] == 'P')
-	{
-		char tmp[1024];
-		text_to_ascii(tmp, sizeof(tmp), buf+2);
-		macro_add(tmp, macro_buffer);
-		return (0);
-	}
-
-	/* Process "C:<num>:<str>" -- create keymap */
-	else if (buf[0] == 'C')
-	{
-		long mode;
-		byte j;
-
-		char tmp[1024];
-
-		if (tokenize(buf+2, 2, zz) != 2) return (1);
-
-		mode = strtol(zz[0], NULL, 0);
-		if ((mode < 0) || (mode >= KEYMAP_MODES)) return (1);
-
-		text_to_ascii(tmp, sizeof(tmp), zz[1]);
-		if (!tmp[0] || tmp[1]) return (1);
-		j = (byte)tmp[0];
-
-		string_free(keymap_act[mode][j]);
-
-		keymap_act[mode][j] = string_make(macro_buffer);
-
-		return (0);
-	}
-
-
-	/* Process "V:<num>:<kv>:<rv>:<gv>:<bv>" -- visual info */
-	else if (buf[0] == 'V')
-	{
-		if (tokenize(buf+2, 5, zz) == 5)
-		{
-			i = strtol(zz[0], NULL, 0);
-			if ((i < 0) || (i >= MAX_COLORS)) return (1);
-			angband_color_table[i][0] = (byte)strtol(zz[1], NULL, 0);
-			angband_color_table[i][1] = (byte)strtol(zz[2], NULL, 0);
-			angband_color_table[i][2] = (byte)strtol(zz[3], NULL, 0);
-			angband_color_table[i][3] = (byte)strtol(zz[4], NULL, 0);
-			return (0);
-		}
-	}
-
-	/* set macro trigger names and a template */
-	/* Process "T:<trigger>:<keycode>:<shift-keycode>" */
-	/* Process "T:<template>:<modifier chr>:<modifier name>:..." */
-	else if (buf[0] == 'T')
-	{
-		int tok;
-
-		tok = tokenize(buf + 2, MAX_MACRO_MOD + 2, zz);
-
-		/* Trigger template */
-		if (tok >= 4)
-		{
-			int i;
-			int num;
-
-			/* Free existing macro triggers and trigger template */
-			macro_trigger_free();
-
-			/* Clear template done */
-			if (*zz[0] == '\0') return 0;
-
-			/* Count modifier-characters */
-			num = strlen(zz[1]);
-
-			/* One modifier-character per modifier */
-			if (num + 2 != tok) return 1;
-
-			/* Macro template */
-			macro_template = string_make(zz[0]);
-
-			/* Modifier chars */
-			macro_modifier_chr = string_make(zz[1]);
-
-			/* Modifier names */
-			for (i = 0; i < num; i++)
-			{
-				macro_modifier_name[i] = string_make(zz[2+i]);
-			}
-		}
-
-		/* Macro trigger */
-		else if (tok >= 2)
-		{
-			char *buf;
-			cptr s;
-			char *t;
-
-			if (max_macrotrigger >= MAX_MACRO_TRIGGER)
-			{
-				msg_print("Too many macro triggers!");
-				return 1;
-			}
-
-			/* Buffer for the trigger name */
-			buf = C_ZNEW(strlen(zz[0]) + 1, char);
-
-			/* Simulate strcpy() and skip the '\' escape character */
-			s = zz[0];
-			t = buf;
-
-			while (*s)
-			{
-				if ('\\' == *s) s++;
-				*t++ = *s++;
-			}
-
-			/* Terminate the trigger name */
-			*t = '\0';
-
-			/* Store the trigger name */
-			macro_trigger_name[max_macrotrigger] = string_make(buf);
-
-			/* Free the buffer */
-			FREE(buf);
-
-			/* Normal keycode */
-			macro_trigger_keycode[0][max_macrotrigger] = string_make(zz[1]);
-
-			/* Special shifted keycode */
-			if (tok == 3)
-			{
-				macro_trigger_keycode[1][max_macrotrigger] = string_make(zz[2]);
-			}
-			/* Shifted keycode is the same as the normal keycode */
-			else
-			{
-				macro_trigger_keycode[1][max_macrotrigger] = string_make(zz[1]);
-			}
-
-			/* Count triggers */
-			max_macrotrigger++;
-		}
-
-		return 0;
-	}
-
-	/* Process "X:<str>" -- turn option off */
-	else if (buf[0] == 'X')
-	{
-		/* Check non-adult options */
-		for (i = 0; i < OPT_ADULT; i++)
-		{
-			if (option_name(i) && streq(option_name(i), buf + 2))
-			{
-				option_set(i, FALSE);
-				return (0);
-			}
-		}
-
-		/* Ignore unknown options */
-		return (0);
-	}
-
-	/* Process "Y:<str>" -- turn option on */
-	else if (buf[0] == 'Y')
-	{
-		/* Check non-adult options */
-		for (i = 0; i < OPT_ADULT; i++)
-		{
-			if (option_name(i) && streq(option_name(i), buf + 2))
-			{
-				option_set(i, TRUE);
-				return (0);
-			}
-		}
-
-		/* Ignore unknown options */
-		return (0);
-	}
-
-
-	/* Process "W:<win>:<flag>:<value>" -- window flags */
-	else if (buf[0] == 'W')
-	{
-		long win, flag, value;
-
-		if (tokenize(buf + 2, 3, zz) == 3)
-		{
-			win = strtol(zz[0], NULL, 0);
-			flag = strtol(zz[1], NULL, 0);
-			value = strtol(zz[2], NULL, 0);
-
-			/* Ignore illegal windows */
-			/* Hack -- Ignore the main window */
-			if ((win <= 0) || (win >= ANGBAND_TERM_MAX)) return (1);
-
-			/* Ignore illegal flags */
-			if ((flag < 0) || (flag >= (int)N_ELEMENTS(window_flag_desc))) return (1);
-
-			/* Require a real flag */
-			if (window_flag_desc[flag])
-			{
-				if (value)
-				{
-					/* Turn flag on */
-					op_ptr->window_flag[win] |= (1L << flag);
-				}
-				else
-				{
-					/* Turn flag off */
-					op_ptr->window_flag[win] &= ~(1L << flag);
-				}
-			}
-
-			/* Success */
-			return (0);
-		}
-	}
-
-
-	/* Process "M:<type>:<attr>" -- colors for message-types */
-	else if (buf[0] == 'M')
-	{
-		if (tokenize(buf+2, 2, zz) == 2)
-		{
-			long type = strtol(zz[0], NULL, 0);
-			int color = color_char_to_attr(zz[1][0]);
-
-			/* Ignore illegal color */
-			if (color < 0) return (1);
-
-			/* Store the color */
-			return (message_color_define((u16b)type, (byte)color));
-		}
-	}
-
-
-	/* Failure */
-	return (1);
+	return PARSE_ERROR_NONE;
 }
-
 
 /*
  * Helper function for "process_pref_file()"
@@ -1060,15 +523,12 @@ errr process_pref_file_command(char *buf)
  * Output:
  *   result
  */
-static cptr process_pref_file_expr(char **sp, char *fp)
+static const char *process_pref_file_expr(char **sp, char *fp)
 {
-	cptr v;
+	const char *v;
 
 	char *b;
 	char *s;
-
-	char b1 = '[';
-	char b2 = ']';
 
 	char f = ' ';
 
@@ -1085,12 +545,12 @@ static cptr process_pref_file_expr(char **sp, char *fp)
 	v = "?o?o?";
 
 	/* Analyze */
-	if (*s == b1)
+	if (*s == '[')
 	{
 		const char *p;
 		const char *t;
 
-		/* Skip b1 */
+		/* Skip [ */
 		s++;
 
 		/* First */
@@ -1106,7 +566,7 @@ static cptr process_pref_file_expr(char **sp, char *fp)
 		else if (streq(t, "IOR"))
 		{
 			v = "0";
-			while (*s && (f != b2))
+			while (*s && (f != ']'))
 			{
 				t = process_pref_file_expr(&s, &f);
 				if (*t && !streq(t, "0")) v = "1";
@@ -1117,7 +577,7 @@ static cptr process_pref_file_expr(char **sp, char *fp)
 		else if (streq(t, "AND"))
 		{
 			v = "1";
-			while (*s && (f != b2))
+			while (*s && (f != ']'))
 			{
 				t = process_pref_file_expr(&s, &f);
 				if (*t && streq(t, "0")) v = "0";
@@ -1128,7 +588,7 @@ static cptr process_pref_file_expr(char **sp, char *fp)
 		else if (streq(t, "NOT"))
 		{
 			v = "1";
-			while (*s && (f != b2))
+			while (*s && (f != ']'))
 			{
 				t = process_pref_file_expr(&s, &f);
 				if (*t && !streq(t, "0")) v = "0";
@@ -1139,11 +599,11 @@ static cptr process_pref_file_expr(char **sp, char *fp)
 		else if (streq(t, "EQU"))
 		{
 			v = "1";
-			if (*s && (f != b2))
+			if (*s && (f != ']'))
 			{
 				t = process_pref_file_expr(&s, &f);
 			}
-			while (*s && (f != b2))
+			while (*s && (f != ']'))
 			{
 				p = t;
 				t = process_pref_file_expr(&s, &f);
@@ -1155,11 +615,11 @@ static cptr process_pref_file_expr(char **sp, char *fp)
 		else if (streq(t, "LEQ"))
 		{
 			v = "1";
-			if (*s && (f != b2))
+			if (*s && (f != ']'))
 			{
 				t = process_pref_file_expr(&s, &f);
 			}
-			while (*s && (f != b2))
+			while (*s && (f != ']'))
 			{
 				p = t;
 				t = process_pref_file_expr(&s, &f);
@@ -1171,11 +631,11 @@ static cptr process_pref_file_expr(char **sp, char *fp)
 		else if (streq(t, "GEQ"))
 		{
 			v = "1";
-			if (*s && (f != b2))
+			if (*s && (f != ']'))
 			{
 				t = process_pref_file_expr(&s, &f);
 			}
-			while (*s && (f != b2))
+			while (*s && (f != ']'))
 			{
 				p = t;
 				t = process_pref_file_expr(&s, &f);
@@ -1186,14 +646,14 @@ static cptr process_pref_file_expr(char **sp, char *fp)
 		/* Oops */
 		else
 		{
-			while (*s && (f != b2))
+			while (*s && (f != ']'))
 			{
 				t = process_pref_file_expr(&s, &f);
 			}
 		}
 
 		/* Verify ending */
-		if (f != b2) v = "?x?x?";
+		if (f != ']') v = "?x?x?";
 
 		/* Extract final and Terminate */
 		if ((f = *s) != '\0') *s++ = '\0';
@@ -1211,41 +671,18 @@ static cptr process_pref_file_expr(char **sp, char *fp)
 		/* Variable */
 		if (*b == '$')
 		{
-			/* System */
 			if (streq(b+1, "SYS"))
-			{
 				v = ANGBAND_SYS;
-			}
-
-			/* Graphics */
 			else if (streq(b+1, "GRAF"))
-			{
 				v = ANGBAND_GRAF;
-			}
-
-			/* Race */
 			else if (streq(b+1, "RACE"))
-			{
-				v = p_name + rp_ptr->name;
-			}
-
-			/* Class */
+				v = rp_ptr->name;
 			else if (streq(b+1, "CLASS"))
-			{
-				v = c_name + cp_ptr->name;
-			}
-
-			/* Player */
+				v = cp_ptr->name;
 			else if (streq(b+1, "PLAYER"))
-			{
 				v = op_ptr->base_name;
-			}
-
-			/* Game version */
 			else if (streq(b+1, "VERSION"))
-			{
 				v = VERSION_STRING;
-			}
 		}
 
 		/* Constant */
@@ -1257,153 +694,574 @@ static cptr process_pref_file_expr(char **sp, char *fp)
 
 	/* Save */
 	(*fp) = f;
-
-	/* Save */
 	(*sp) = s;
 
-	/* Result */
-	return (v);
+	return v;
+}
+
+static enum parser_error parse_prefs_expr(struct parser *p)
+{
+	struct prefs_data *d = parser_priv(p);
+
+	const char *v;
+	char *str;
+	char *expr;
+	char f;
+
+	assert(d != NULL);
+
+	/* XXX this can be avoided with a rewrite of process_pref_file_expr */
+	str = expr = string_make(parser_getstr(p, "expr"));
+
+	/* Parse the expr */
+	v = process_pref_file_expr(&expr, &f);
+
+	string_free(str);
+
+	/* Set flag */
+	d->bypass = streq(v, "0");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_prefs_k(struct parser *p)
+{
+	int tvi, svi, idx;
+	object_kind *kind;
+
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	tvi = tval_find_idx(parser_getsym(p, "tval"));
+	if (tvi < 0)
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+
+	svi = lookup_sval(tvi, parser_getsym(p, "sval"));
+	if (svi < 0)
+		return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+	idx = lookup_kind(tvi, svi);
+	if (idx < 0)
+		return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+	kind = &k_info[idx];
+	kind->x_attr = (byte)parser_getint(p, "attr");
+	kind->x_char = (char)parser_getint(p, "char");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_prefs_r(struct parser *p)
+{
+	int idx;
+	monster_race *monster;
+
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	idx = parser_getuint(p, "idx");
+	if (idx >= z_info->r_max)
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+
+	monster = &r_info[idx];
+	monster->x_attr = (byte)parser_getint(p, "attr");
+	monster->x_char = (char)parser_getint(p, "char");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_prefs_f(struct parser *p)
+{
+	int idx;
+	feature_type *feature;
+
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	idx = parser_getuint(p, "idx");
+	if (idx >= z_info->f_max)
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+
+	feature = &f_info[idx];
+	feature->x_attr = (byte)parser_getint(p, "attr");
+	feature->x_char = (char)parser_getint(p, "char");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_prefs_s(struct parser *p)
+{
+	size_t idx;
+
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	idx = parser_getuint(p, "idx");
+	if (idx >= N_ELEMENTS(misc_to_attr))
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+
+	misc_to_attr[idx] = (byte)parser_getint(p, "attr");
+	misc_to_char[idx] = (char)parser_getint(p, "char");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_prefs_l(struct parser *p)
+{
+	int idx;
+	flavor_type *flavor;
+
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	idx = parser_getuint(p, "idx");
+	if (idx >= z_info->flavor_max)
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+
+	flavor = &flavor_info[idx];
+	flavor->x_attr = (byte)parser_getint(p, "attr");
+	flavor->x_char = (char)parser_getint(p, "char");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_prefs_e(struct parser *p)
+{
+	int tvi, a;
+
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	tvi = tval_find_idx(parser_getsym(p, "tval"));
+	if (tvi < 0 || tvi >= (long)N_ELEMENTS(tval_to_attr))
+		return PARSE_ERROR_UNRECOGNISED_TVAL;
+
+	a = parser_getint(p, "attr");
+	if (a) tval_to_attr[tvi] = (byte) a;
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_prefs_q(struct parser *p)
+{
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	if (parser_hasval(p, "sval") && parser_hasval(p, "flag"))
+	{
+		object_kind *kind;
+		int tvi, svi, idx;
+
+		tvi = tval_find_idx(parser_getsym(p, "n"));
+		if (tvi < 0)
+			return PARSE_ERROR_UNRECOGNISED_TVAL;
+	
+		svi = lookup_sval(tvi, parser_getsym(p, "sval"));
+		if (svi < 0)
+			return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+		idx = lookup_kind(tvi, svi);
+		if (idx < 0)
+			return PARSE_ERROR_UNRECOGNISED_SVAL;
+
+		kind = &k_info[idx];
+		kind->squelch = parser_getint(p, "flag");
+	}
+	else
+	{
+		int idx = parser_getint(p, "idx");
+		int level = parser_getint(p, "n");
+
+		squelch_level[idx] = level;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_prefs_b(struct parser *p)
+{
+	int idx;
+
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	idx = parser_getuint(p, "idx");
+	if (idx > z_info->k_max)
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+
+	add_autoinscription(idx, parser_getstr(p, "text"));
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_prefs_a(struct parser *p)
+{
+	const char *act;
+
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	act = parser_getstr(p, "act");
+	text_to_ascii(d->macro_buffer, sizeof(d->macro_buffer), act);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_prefs_p(struct parser *p)
+{
+	char tmp[1024];
+
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	text_to_ascii(tmp, sizeof(tmp), parser_getstr(p, "key"));
+	macro_add(tmp, d->macro_buffer);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_prefs_c(struct parser *p)
+{
+	int mode;
+	byte j;
+	char tmp[1024];
+
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	mode = parser_getint(p, "mode");
+	if (mode < 0 || mode >= KEYMAP_MODES)
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+
+	text_to_ascii(tmp, sizeof(tmp), parser_getstr(p, "key"));
+	if (!tmp[0] || tmp[1])
+		return PARSE_ERROR_FIELD_TOO_LONG;
+
+	j = (byte)tmp[0];
+
+	string_free(keymap_act[mode][j]);
+	keymap_act[mode][j] = string_make(d->macro_buffer);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_prefs_t(struct parser *p)
+{
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	/* set macro trigger names and a template */
+	/* Process "T:<template>:<modifier chr>:<modifier name>:..." */
+	if (parser_hasval(p, "n4"))
+	{
+		const char *template = parser_getsym(p, "n1");
+		const char *chars = parser_getsym(p, "n2");
+		const char *name0 = parser_getsym(p, "n3");
+		const char *namelist = parser_getstr(p, "n4");
+
+		char *modifiers;
+		char *t;
+		const char *names[MAX_MACRO_MOD];
+		int i = 1, j;
+
+		/* Free existing macro triggers and trigger template */
+		macro_trigger_free();
+
+		/* Clear template? */
+		if (template[0] == '\0')
+			return PARSE_ERROR_NONE;
+
+		/* Tokenise last field... */
+		modifiers = string_make(namelist);
+
+		/* first token is name0 */
+		names[0] = name0;
+
+		t = strtok(modifiers, ":");
+		while (t) {
+			names[i++] = t;
+			t = strtok(NULL, ":");
+		}
+
+		/* The number of modifiers must equal the number of names */
+		if (strlen(chars) != (size_t) i)
+		{
+			string_free(modifiers);
+			return (strlen(chars) > (size_t) i) ?
+					PARSE_ERROR_TOO_FEW_ENTRIES : PARSE_ERROR_TOO_MANY_ENTRIES;
+		}
+
+		/* OK, now copy the data across */
+		macro_template = string_make(template);
+		macro_modifier_chr = string_make(chars);
+		for (j = 0; j < i; j++)
+			macro_modifier_name[j] = string_make(names[j]);
+
+		string_free(modifiers);
+	}
+
+	/* Macro trigger */
+	/* Process "T:<trigger>:<keycode>:<shift-keycode>" */
+	else
+	{
+		const char *trigger = parser_getsym(p, "n1");
+		const char *kc = parser_getsym(p, "n2");
+		const char *shift_kc = NULL;
+
+		char *buf;
+		const char *s;
+		char *t;
+
+		if (parser_hasval(p, "n3"))
+			shift_kc = parser_getsym(p, "n3");
+
+		if (max_macrotrigger >= MAX_MACRO_TRIGGER)
+			return PARSE_ERROR_TOO_MANY_ENTRIES;
+
+		/* Buffer for the trigger name */
+		buf = C_ZNEW(strlen(trigger) + 1, char);
+
+		/* Simulate strcpy() and skip the '\' escape character */
+		s = trigger;
+		t = buf;
+
+		while (*s)
+		{
+			if ('\\' == *s) s++;
+			*t++ = *s++;
+		}
+
+		/* Terminate the trigger name */
+		*t = '\0';
+
+		/* Store the trigger name */
+		macro_trigger_name[max_macrotrigger] = string_make(buf);
+
+		/* Free the buffer */
+		FREE(buf);
+
+		/* Normal keycode */
+		macro_trigger_keycode[0][max_macrotrigger] = string_make(kc);
+		if (shift_kc)
+			macro_trigger_keycode[1][max_macrotrigger] = string_make(shift_kc);
+		else
+			macro_trigger_keycode[1][max_macrotrigger] = string_make(kc);
+
+		/* Count triggers */
+		max_macrotrigger++;
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_prefs_m(struct parser *p)
+{
+	int a, type;
+	const char *attr;
+
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	type = parser_getint(p, "type");
+	attr = parser_getsym(p, "attr");
+
+	if (strlen(attr) > 1)
+		a = color_text_to_attr(attr);
+	else
+		a = color_char_to_attr(attr[0]);
+
+	if (a < 0)
+		return PARSE_ERROR_INVALID_COLOR;
+
+	message_color_define((u16b)type, (byte)a);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_prefs_v(struct parser *p)
+{
+	int idx;
+
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	idx = parser_getuint(p, "idx");
+	if (idx > MAX_COLORS)
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+
+	angband_color_table[idx][0] = parser_getint(p, "k");
+	angband_color_table[idx][1] = parser_getint(p, "r");
+	angband_color_table[idx][2] = parser_getint(p, "g");
+	angband_color_table[idx][3] = parser_getint(p, "b");
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_prefs_w(struct parser *p)
+{
+	int window;
+	size_t flag;
+
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	window = parser_getint(p, "window");
+	if (window <= 0 || window >= ANGBAND_TERM_MAX)
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+
+	flag = parser_getuint(p, "flag");
+	if (flag >= N_ELEMENTS(window_flag_desc))
+		return PARSE_ERROR_OUT_OF_BOUNDS;
+
+	if (window_flag_desc[flag])
+	{
+		int value = parser_getuint(p, "value");
+		if (value)
+			op_ptr->window_flag[window] |= (1L << flag);
+		else
+			op_ptr->window_flag[window] &= ~(1L << flag);
+	}
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_prefs_x(struct parser *p)
+{
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	/* XXX check for valid option */
+	option_set(parser_getstr(p, "option"), FALSE);
+
+	return PARSE_ERROR_NONE;
+}
+
+static enum parser_error parse_prefs_y(struct parser *p)
+{
+	struct prefs_data *d = parser_priv(p);
+	assert(d != NULL);
+	if (d->bypass) return PARSE_ERROR_NONE;
+
+	option_set(parser_getstr(p, "option"), TRUE);
+
+	return PARSE_ERROR_NONE;
+}
+
+
+static struct parser *init_parse_prefs(void)
+{
+	struct parser *p = parser_new();
+	parser_setpriv(p, mem_zalloc(sizeof(struct prefs_data)));
+	parser_reg(p, "% str file", parse_prefs_load);
+	parser_reg(p, "? str expr", parse_prefs_expr);
+	parser_reg(p, "K sym tval sym sval int attr int char", parse_prefs_k);
+	parser_reg(p, "R uint idx int attr int char", parse_prefs_r);
+	parser_reg(p, "F uint idx int attr int char", parse_prefs_f);
+	parser_reg(p, "S uint idx int attr int char", parse_prefs_s);
+	parser_reg(p, "L uint idx int attr int char", parse_prefs_l);
+	parser_reg(p, "E sym tval int attr", parse_prefs_e);
+	parser_reg(p, "Q sym idx sym n ?sym sval ?sym flag", parse_prefs_q);
+		/* XXX should be split into two kinds of line */
+	parser_reg(p, "B uint idx str text", parse_prefs_b);
+		/* XXX idx should be {tval,sval} pair! */
+	parser_reg(p, "A str act", parse_prefs_a);
+	parser_reg(p, "P str key", parse_prefs_p);
+	parser_reg(p, "C int mode str key", parse_prefs_c);
+	parser_reg(p, "T sym n1 sym n2 ?sym n3 ?str n4", parse_prefs_t);
+		/* XXX should be two separate codes again */
+	parser_reg(p, "M int type sym attr", parse_prefs_m);
+	parser_reg(p, "V uint idx int k int r int g int b", parse_prefs_v);
+	parser_reg(p, "W int window uint flag uint value", parse_prefs_w);
+	parser_reg(p, "X str option", parse_prefs_x);
+	parser_reg(p, "Y str option", parse_prefs_y);
+
+	return p;
+}
+
+
+errr process_pref_file_command(const char *s)
+{
+	struct parser *p = init_parse_prefs();
+	errr e = parser_parse(p, s);
+	parser_destroy(p);
+	return e;
+}
+
+
+static void print_error(const char *name, struct parser *p) {
+	struct parser_state s;
+	parser_getstate(p, &s);
+	msg_format("Parse error in %s line %d column %d: %s: %s", name,
+	           s.line, s.col, s.msg, parser_error_str[s.error]);
+	message_flush();
 }
 
 
 /*
- * Open the "user pref file" and parse it.
- */
-static errr process_pref_file_aux(cptr name)
-{
-	ang_file *fp;
-
-	char buf[1024];
-	char old[1024];
-
-	int line = -1;
-
-	errr err = 0;
-
-	bool bypass = FALSE;
-
-
-	/* Open the file */
-	fp = file_open(name, MODE_READ, -1);
-	if (!fp) return (-1);
-
-
-	/* Process the file */
-	while (file_getl(fp, buf, sizeof(buf)))
-	{
-		/* Count lines */
-		line++;
-
-
-		/* Skip "empty" lines */
-		if (!buf[0]) continue;
-
-		/* Skip "blank" lines */
-		if (isspace((unsigned char) buf[0])) continue;
-
-		/* Skip comments */
-		if (buf[0] == '#') continue;
-
-
-		/* Save a copy */
-		my_strcpy(old, buf, sizeof(old));
-
-
-		/* Process "?:<expr>" */
-		if ((buf[0] == '?') && (buf[1] == ':'))
-		{
-			char f;
-			cptr v;
-			char *s;
-
-			/* Start */
-			s = buf + 2;
-
-			/* Parse the expr */
-			v = process_pref_file_expr(&s, &f);
-
-			/* Set flag */
-			bypass = (streq(v, "0") ? TRUE : FALSE);
-
-			/* Continue */
-			continue;
-		}
-
-		/* Apply conditionals */
-		if (bypass) continue;
-
-
-		/* Process "%:<file>" */
-		if (buf[0] == '%')
-		{
-			/* Process that file if allowed */
-			(void)process_pref_file(buf + 2);
-
-			/* Continue */
-			continue;
-		}
-
-
-		/* Process the line */
-		err = process_pref_file_command(buf);
-
-		/* Oops */
-		if (err) break;
-	}
-
-
-	/* Error */
-	if (err)
-	{
-		/* Print error message */
-		/* ToDo: Add better error messages */
-		msg_format("Error %d in line %d of file '%s'.", err, line, name);
-		msg_format("Parsing '%s'", old);
-		message_flush();
-	}
-
-	/* Close the file */
-	file_close(fp);
-
-	/* Result */
-	return (err);
-}
-
-
-
-/*
- * Process the "user pref file" with the given name
+ * Process the user pref file with the given name.
+ * "quiet" means "don't complain about not finding the file.
  *
- * See the functions above for a list of legal "commands".
- *
- * We also accept the special "?" and "%" directives, which
- * allow conditional evaluation and filename inclusion.
+ * Returns TRUE if everything worked OK, false otherwise
  */
-errr process_pref_file(cptr name)
+bool process_pref_file(const char *name, bool quiet)
 {
 	char buf[1024];
 
-	errr err = 0;
+	ang_file *f;
+	struct parser *p;
+	errr e = 0;
 
+	int line_no = 0;
 
 	/* Build the filename */
 	path_build(buf, sizeof(buf), ANGBAND_DIR_PREF, name);
-
-	/* Process the pref file */
-	err = process_pref_file_aux(buf);
-
-	/* Stop at parser errors, but not at non-existing file */
-	if (err < 1)
-	{
-		/* Build the filename */
+	if (!file_exists(buf))
 		path_build(buf, sizeof(buf), ANGBAND_DIR_USER, name);
 
-		/* Process the pref file */
-		err = process_pref_file_aux(buf);
+	f = file_open(buf, MODE_READ, -1);
+	if (!f)
+	{
+		if (!quiet)
+			msg_format("Cannot open '%s'.", buf);
+	}
+	else
+	{
+		char line[1024];
+
+		p = init_parse_prefs();
+
+		while (file_getl(f, line, sizeof line))
+		{
+			line_no++;
+
+			e = parser_parse(p, line);
+			if (e != PARSE_ERROR_NONE)
+			{
+				print_error(buf, p);
+				break;
+			}
+		}
+
+		file_close(f);
+		parser_destroy(p);
 	}
 
 	/* Result */
-	return (err);
+	return e == PARSE_ERROR_NONE;
 }
-
-

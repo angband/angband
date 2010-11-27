@@ -15,9 +15,13 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
 #include "cmds.h"
+#include "history.h"
+#include "macro.h"
 #include "object/tvalsval.h"
+#include "target.h"
 
 /* Private function that is shared by verify_panel() and center_panel() */
 void verify_panel_int(bool centered);
@@ -176,18 +180,12 @@ bool modify_panel(term *t, int wy, int wx)
 	int dungeon_hgt = (p_ptr->depth == 0) ? TOWN_HGT : DUNGEON_HGT;
 	int dungeon_wid = (p_ptr->depth == 0) ? TOWN_WID : DUNGEON_WID;
 
-	int screen_hgt = (t == Term) ? (t->hgt - ROW_MAP - 1) : t->hgt;
-	int screen_wid = (t == Term) ? (t->wid - COL_MAP - 1) : t->wid;
-
-	/* Bigtile panels only have half the width */
-	if (use_bigtile) screen_wid = screen_wid / 2;
-
 	/* Verify wy, adjust if needed */
-	if (wy > dungeon_hgt - screen_hgt) wy = dungeon_hgt - screen_hgt;
+	if (wy > dungeon_hgt - SCREEN_HGT) wy = dungeon_hgt - SCREEN_HGT;
 	if (wy < 0) wy = 0;
 
 	/* Verify wx, adjust if needed */
-	if (wx > dungeon_wid - screen_wid) wx = dungeon_wid - screen_wid;
+	if (wx > dungeon_wid - SCREEN_WID) wx = dungeon_wid - SCREEN_WID;
 	if (wx < 0) wx = 0;
 
 	/* React to changes */
@@ -200,6 +198,9 @@ bool modify_panel(term *t, int wy, int wx)
 		/* Redraw map */
 		p_ptr->redraw |= (PR_MAP);
 
+		/* Redraw for big graphics */
+		if ((tile_width > 1) || (tile_height > 1)) redraw_stuff();
+      
 		/* Changed */
 		return (TRUE);
 	}
@@ -237,11 +238,8 @@ bool adjust_panel(int y, int x)
 		wy = t->offset_y;
 		wx = t->offset_x;
 
-		screen_hgt = (j == 0) ? (Term->hgt - ROW_MAP - 1) : t->hgt;
-		screen_wid = (j == 0) ? (Term->wid - COL_MAP - 1) : t->wid;
-
-		/* Bigtile panels only have half the width */
-		if (use_bigtile) screen_wid = screen_wid / 2;
+		screen_hgt = (j == 0) ? SCREEN_HGT : t->hgt;
+		screen_wid = (j == 0) ? SCREEN_WID : t->wid;
 
 		/* Adjust as needed */
 		while (y >= wy + screen_hgt) wy += screen_hgt / 2;
@@ -283,11 +281,8 @@ bool change_panel(int dir)
 		/* No relevant flags */
 		if ((j > 0) && !(op_ptr->window_flag[j] & PW_MAP)) continue;
 
-		screen_hgt = (j == 0) ? (Term->hgt - ROW_MAP - 1) : t->hgt;
-		screen_wid = (j == 0) ? (Term->wid - COL_MAP - 1) : t->wid;
-
-		/* Bigtile panels only have half the width */
-		if (use_bigtile) screen_wid = screen_wid / 2;
+		screen_hgt = (j == 0) ? SCREEN_HGT : t->hgt;
+		screen_wid = (j == 0) ? SCREEN_WID : t->wid;
 
 		/* Shift by half a panel */
 		wy = t->offset_y + ddy[dir] * screen_hgt / 2;
@@ -348,11 +343,8 @@ void verify_panel_int(bool centered)
 		wy = t->offset_y;
 		wx = t->offset_x;
 
-		screen_hgt = (j == 0) ? (Term->hgt - ROW_MAP - 1) : t->hgt;
-		screen_wid = (j == 0) ? (Term->wid - COL_MAP - 1) : t->wid;
-
-		/* Bigtile panels only have half the width */
-		if (use_bigtile) screen_wid = screen_wid / 2;
+		screen_hgt = (j == 0) ? SCREEN_HGT : t->hgt;
+		screen_wid = (j == 0) ? SCREEN_WID : t->wid;
 
 		panel_wid = screen_wid / 2;
 		panel_hgt = screen_hgt / 2;
@@ -535,45 +527,34 @@ bool get_aim_dir(int *dp)
 		/* Get a command (or Cancel) */
 		if (!get_com_ex(p, &ke)) break;
 
-		/* Analyze */
-		switch (ke.key)
+		if (ke.type == EVT_MOUSE)
 		{
-			/* Mouse aiming */
-			case '\xff':
+			if (target_set_interactive(TARGET_KILL, KEY_GRID_X(ke), KEY_GRID_Y(ke)))
+				dir = 5;
+		}
+		else if (ke.type == EVT_KBRD)
+		{
+			if (ke.key == '*')
 			{
-				if (target_set_interactive(TARGET_KILL, KEY_GRID_X(ke), KEY_GRID_Y(ke)))
+				/* Set new target, use target if legal */
+				if (target_set_interactive(TARGET_KILL, -1, -1))
 					dir = 5;
-
-				break;
 			}
-
-			/* Set new target, use target if legal */
-			case '*':
+			else if (ke.key == '\'')
 			{
-				if (target_set_interactive(TARGET_KILL, -1, -1)) dir = 5;
-				break;
+				/* Set to closest target */
+				if (target_set_closest(TARGET_KILL))
+					dir = 5;
 			}
-
-			/* Set to closest target */
-			case '\'':
+			else if (ke.key == 't' || ke.key == '5' ||
+					ke.key == '0' || ke.key == '.')
 			{
-				if (target_set_closest(TARGET_KILL)) dir = 5;
-				break;
+				if (target_okay())
+					dir = 5;
 			}
-
-			/* Use current target, if set and legal */
-			case 't':
-			case '5':
-			case '0':
-			case '.':
+			else
 			{
-				if (target_okay()) dir = 5;
-				break;
-			}
-
-			/* Possible direction */
-			default:
-			{
+				/* Possible direction */
 				int keypresses_handled = 0;
 				
 				while (ke.key != 0)
@@ -585,13 +566,9 @@ bool get_aim_dir(int *dp)
 					this_dir = target_dir(ke.key);
 					
 					if (this_dir)
-					{
 						dir = dir_transitions[dir][this_dir];
-					}
 					else
-					{
 						break;
-					}
 					
 					if (lazymove_delay == 0 || ++keypresses_handled > 1)
 						break;
@@ -674,14 +651,14 @@ bool get_rep_dir(int *dp)
 		ke = inkey_ex();
 		inkey_scan = SCAN_OFF;
 
-		if (ke.key != '\xff' && target_dir(ke.key) == 0)
+		if (ke.type == EVT_KBRD && target_dir(ke.key) == 0)
 		{
 			prt("Direction or <click> (Escape to cancel)? ", 0, 0);
 			ke = inkey_ex();
 		}
 
 		/* Check mouse coordinates */
-		if (ke.key == '\xff')
+		if (ke.type == EVT_MOUSE)
 		{
 			/*if (ke.button) */
 			{
@@ -705,7 +682,7 @@ bool get_rep_dir(int *dp)
 		}
 
 		/* Get other keypresses until a direction is chosen. */
-		else 
+		else
 		{
 			int keypresses_handled = 0;
 

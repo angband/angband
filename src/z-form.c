@@ -15,11 +15,7 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
-#include "z-form.h"
-#include "z-type.h"
-
-#include "z-util.h"
-#include "z-virt.h"
+#include "angband.h"
 
 
 /*
@@ -560,6 +556,9 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 				/* Prevent buffer overflows */
 				(void)my_strcpy(arg2, arg, sizeof(arg2));
 
+				/* Translate it to 8-bit (Latin-1) */
+ 				xstr_trans(arg2, LATIN1);
+
 				/* Format the argument */
 				sprintf(tmp, aux, arg2);
 
@@ -625,11 +624,11 @@ size_t vstrnfmt(char *buf, size_t max, cptr fmt, va_list vp)
 			for (q = 0; tmp[q]; q++)
 			{
 				/* Notice first non-space */
-				if (!isspace((unsigned char)tmp[q]))
+				if (!my_isspace((unsigned char)tmp[q]))
 				{
 					/* Capitalize if possible */
-					if (islower((unsigned char)tmp[q]))
-						tmp[q] = toupper((unsigned char)tmp[q]);
+					if (my_islower((unsigned char)tmp[q]))
+						tmp[q] = my_toupper((unsigned char)tmp[q]);
 
 					/* Done */
 					break;
@@ -697,7 +696,7 @@ char *vformat(cptr fmt, va_list vp)
 	if (!format_buf)
 	{
 		format_len = 1024;
-		format_buf = C_RNEW(format_len, char);
+		format_buf = mem_zalloc(format_len);
 		format_buf[0] = 0;
 	}
 

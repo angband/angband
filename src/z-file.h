@@ -118,6 +118,13 @@ bool file_newer(const char *first, const char *second);
  */
 ang_file *file_open(const char *buf, file_mode mode, file_type ftype);
 
+
+/**
+ * Platform hook for file_open.  Used to set filetypes.
+ */
+void (*file_open_hook)(const char *path, file_type ftype);        
+
+
 /**
  * Attempt to close the file handle `f`.
  *
@@ -162,6 +169,11 @@ bool file_put(ang_file *f, const char *buf);
  * Format (using strnfmt) the given args, and then call file_put().
  */
 bool file_putf(ang_file *f, const char *fmt, ...);
+
+/**
+ * Format and translate a string, then print it out to file.
+ */
+bool x_file_putf(ang_file *f, int encoding, const char *fmt, ...);
 
 
 /** Byte-based IO */

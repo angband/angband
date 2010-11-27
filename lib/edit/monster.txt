@@ -3,8 +3,8 @@
 
 # This file is used to initialize the "monster race" information for Angband.
 
-# Do not modify this file unless you know exactly what you are doing,
-# unless you wish to risk possible system crashes and broken savefiles.
+# Do not modify this file unless you know exactly what you are doing, unless
+# you wish to risk possible system crashes and broken savefiles.
 
 # === Understanding monster.txt ===
 
@@ -18,78 +18,103 @@
 # F: flag | flag | etc
 # D: Description
 
-# 'N' indicates the beginning of an entry. The serial number must
-# increase for each new item. Entry 0 is used for the player.
+# 'N' indicates the beginning of an entry. The serial number must increase for
+# each new item. Entry 0 is used for the player.
 
-# 'G' is for graphics - symbol and color. There are 16 colors, as
-# follows:
+# 'G' is for graphics - symbol and color. There are 28 colors, as follows:
+# d - 0  - Black
+# w - 1  - White
+# s - 2  - Slate
+# o - 3  - Orange
+# r - 4  - Red
+# g - 5  - Green
+# b - 6  - Blue
+# u - 7  - Umber
+# D - 8  - Light Dark
+# W - 9  - Light Slate
+# P - 10 - Light Purple
+# y - 11 - yellow
+# R - 12 - Light Red
+# G - 13 - Light Green
+# B - 14 - Light Blue
+# U - 15 - Light Umber
+# p - 16 - Purple
+# v - 17 - Violet
+# t - 18 - Teal
+# m - 19 - Mud
+# Y - 20 - Light Yellow
+# i - 21 - Magenta-Pink
+# T - 22 - Light Teal
+# V - 23 - Light Violet
+# I - 24 - Light Pink
+# M - 25 - Mustard
+# z - 26 - Blue Slate
+# Z - 27 - Deep Light Blue
 
-# D - Dark Gray    w - White          s - Gray          o - Orange
-# r - Red          g - Green          b - Blue          u - Brown
-# d - Black        W - Light Gray     v - Violet        y - Yellow
-# R - Light Red    G - Light Green    B - Light Blue    U - Light Brown
+# currently unused: d, M, t, T
 
-# (note that "black" is the same color as the screen background, and
-# thus the monster will appear to be an empty black space if its
-# color is "d".)
+# (note that "black" is the same color as the screen background, and thus the
+# monster will appear to be an empty black space if its color is "d".)
 
-# 'I' is for information - speed, health, vision in tens of feet,
-# armor class, and alertness. 110 is normal speed. Alertness ranges
-# from 0 (ever vigilant for intruders) to 255 (prefers to ignore
-# intruders).
+# 'I' is for information--speed, health, vision in tens of feet, armor class,
+# and alertness. 110 is normal speed. Alertness ranges from 0 (ever vigilant
+# for intruders) to 255 (prefers to ignore intruders).
 
-# 'W' is for more information - level, rarity, and experience for
-# killing. The third slot is currently unused.
+# 'W' is for more information--level, rarity, and experience for killing. The
+# third slot is currently unused.
 
-# 'B' is for blows - method of attack, effect of attack, and damage
-# from attack. There may be up to four of these lines; effect and
-# damage are optional.
+# 'B' is for blows--method of attack, effect of attack, and damage from attack.
+# There may be up to four of these lines; effect and damage are optional.
 
-# 'S' is for spells. The first S: line must be S:1_IN_X with X the
-# number of monster turns, on average, before the monster will cast
-# one of its spells. X must not be zero. If X is 1, the monster will
-# never move while the player is in sight, and will thus never attack
-# in melee, as it will cast spells every turn: if the monster is to use
-# a melee attack, then X must be 2 or greater.
+# 'S' is for spells. The first S: line must be S:1_IN_X with X the number of
+# monster turns, on average, before the monster will cast one of its spells.
+# X must not be zero. If X is 1, the monster will never move while the player
+# is in sight, and will thus never attack in melee, as it will cast spells
+# every turn: if the monster is to use a melee attack, then X must be 2 or
+# greater.
 
-# 'F' is for flags. These are fairly self-explanatory. As many F:
-# lines may be used as are needed to specify all the flags and flags
-# are separated by the '|' symbol.
+# 'F' is for flags. These are fairly self-explanatory. As many F: lines may be
+# used as are needed to specify all the flags and flags are separated by the
+# '|' symbol.
 
-# 'D' is for description. As many D: lines may be used as are needed
-# to describe the monster.
+# 'D' is for description. As many D: lines may be used as are needed to
+# describe the monster. Leading whitespace will be removed, and a single space
+# will be added between D: lines.
 
 # === Understanding monster.txt flags ===
 
-# UNIQUE monsters are just "special" monster races, with the requirement
-# that only one monster of that race can exist at a time, and when it is
-# killed, it can never again be generated.
+# UNIQUE monsters are just "special" monster races, with the requirement that
+# only one monster of that race can exist at a time, and when it is killed, it
+# can never again be generated.
 
 # ATTR_CLEAR monsters appear the same color as the floor, terrain feature or
 # object underneath them.
 
-# ATTR_MULTI monsters are "multi-hued" - they change color, every player turn.
+# ATTR_MULTI monsters are multi-hued--they change color, every player turn.
+# Their base color is ignored.
 
-# CHAR_CLEAR monsters are totally invisible: the symbol shown on the screen
-# is the same as the floor (or other terrain feature) below it, or the item
-# that is lying on that floor. These monsters can currently be targetted as
-# normal monsters: perhaps this can be changed so that the player must KNOW
-# the monster is there (by bumping into it, or having the monster wake up
-# and attack the player?)
+# ATTR_FLICKER monsters are also multi-hued--but they only change between a
+# small range of colors related to their defined color.
 
-# CHAR_MULTI monsters are those which look like objects, and use the symbols
-# of objects. They are in plain sight, but the character should not know that
-# a monster is there. At the moment, such monsters can be targetted normally
+# CHAR_CLEAR monsters are totally invisible: the symbol shown on the screen is
+# the same as the floor (or other terrain feature) below it, or the item that
+# is lying on that floor. These monsters can currently be targetted as normal
+# monsters: perhaps this can be changed so that the player must KNOW the
+# monster is there (by bumping into it, or having the monster wake up and
+# attack the player?)
+
+# CHAR_MULTI monsters are those which look like objects, and use the symbols of
+# objects. They are in plain sight, but the character should not know that a
+# monster is there. At the moment, such monsters can be targetted normally 
 # (which means that this flag currently has no effect), but this may change
 # in the future, as with CHAR_CLEAR monsters.
 
-# (Note that currently both CHAR_CLEAR and CHAR_MULTI monsters are treated
-# as normal monsters that are just a little hard to see... if you "l"ook
-# for them, you will find them unless they are invisible and you cannot
-# see invisible, and if you use the * command for targetting mode you
-# can pick them as a target.)
+# (Note that currently both CHAR_CLEAR and CHAR_MULTI monsters are treated as
+# normal monsters that are just hard to see... if you (l)ook for them, you will
+# find them unless they are invisible and you cannot see invisible, and if you
+# use the * command for targetting mode you can pick them as a target.)
 
-# ToDo: Explain the other monster and spell flags.  But maybe in another file.
+# TODO: Explain the other monster and spell flags. But maybe in another file.
 
 
 # Version stamp (required)
@@ -565,7 +590,7 @@ F:IM_ACID
 D:A small humanoid figure.
 
 N:46:Grip, Farmer Maggot's dog
-G:C:v
+G:C:W
 I:120:25:30:30:0
 W:2:1:0:30
 B:BITE:HURT:1d4
@@ -576,7 +601,7 @@ D:A rather vicious dog belonging to Farmer Maggot.  It thinks you are stealing
 D: mushrooms.
 
 N:47:Fang, Farmer Maggot's dog
-G:C:v
+G:C:W
 I:120:25:30:30:0
 W:2:1:0:30
 B:BITE:HURT:1d4
@@ -607,7 +632,7 @@ F:RAND_25 | BASH_DOOR
 D:It is about ten feet long.
 
 N:50:Cave spider
-G:S:D
+G:S:p
 I:120:7:8:16:80
 W:2:1:0:7
 B:BITE:HURT:1d4
@@ -628,8 +653,8 @@ D: fistful of needles.
 
 ### Dungeon level 3 ###
 
-N:52:Smeagol
-G:h:v
+N:52:Sm['e]agol
+G:h:B
 I:130:400:20:12:5
 W:3:2:0:50
 B:TOUCH:EAT_GOLD:1d4
@@ -890,7 +915,7 @@ D:It is about ten feet long.
 ### Dungeon level 5 ###
 
 N:76:Bullroarer the Hobbit
-G:h:v
+G:h:U
 I:120:60:16:8:10
 W:5:3:0:90
 B:HIT:HURT:1d8
@@ -994,7 +1019,7 @@ F:RAND_50
 D:It is a smallish, slimy, icky, nasty creature.
 
 N:85:Disenchanter eye
-G:e:r
+G:e:v
 I:100:32:2:6:10
 W:5:2:0:20
 B:GAZE:UN_BONUS
@@ -1028,7 +1053,7 @@ D:It has a copper head and sharp venomous fangs.
 ### Dungeon level 6 ###
 
 N:88:Purple mushroom patch
-G:,:v
+G:,:P
 I:110:1:2:1:0
 W:6:2:0:15
 B:SPORE:LOSE_CON:1d2
@@ -1296,7 +1321,7 @@ D:Strong and powerful, for a kobold.
 ### Dungeon level 8 ###
 
 N:111:Wormtongue, Agent of Saruman
-G:p:v
+G:p:B
 I:110:250:20:30:20
 W:8:1:0:150
 B:HIT:HURT:1d5
@@ -1315,7 +1340,7 @@ D:He's been spying for Saruman.  He is a snivelling wretch with no morals and
 D: disgusting habits.
 
 N:112:Lagduf, the Snaga
-G:o:v
+G:o:y
 I:110:190:20:32:30
 W:8:2:0:80
 B:HIT:HURT:1d10
@@ -1590,7 +1615,7 @@ F:BASH_DOOR
 D:It is large and has venomous mandibles.
 
 N:133:Brodda, the Easterling
-G:p:v
+G:p:U
 I:110:210:20:25:20
 W:9:2:0:100
 B:HIT:HURT:1d12
@@ -1616,7 +1641,7 @@ D:It is a large snake with a hooded face.
 ### Dungeon level 10 ###
 
 N:135:Giant spider
-G:S:r
+G:S:v
 I:110:55:8:16:80
 W:10:2:0:35
 B:BITE:HURT:1d10
@@ -1645,7 +1670,7 @@ S:BA_POIS
 D:A dark elven figure, dressed all in black, hurling spells at you.
 
 N:137:Orfax, Son of Boldor
-G:y:v
+G:y:B
 I:120:120:18:20:10
 W:10:3:0:80
 B:HIT:HURT:1d9
@@ -1687,8 +1712,8 @@ F:NO_FEAR | NO_CONF | NO_SLEEP
 F:ATTR_CLEAR
 D:Yum!  It looks quite tasty.
 
-N:140:Grishnakh, the Hill Orc
-G:o:v
+N:140:Grishn['a]kh, the Hill Orc
+G:o:y
 I:110:230:20:20:20
 W:10:3:0:160
 B:HIT:HURT:1d12
@@ -1722,7 +1747,7 @@ F:IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
 D:It is a strange hairy growth on the dungeon floor.
 
 N:143:Disenchanter mold
-G:m:r
+G:m:v
 I:110:72:2:20:70
 W:10:1:0:40
 B:SPORE:UN_BONUS:1d6
@@ -1818,7 +1843,7 @@ D:He is eyeing your backpack.
 ### Dungeon level 11 ###
 
 N:151:Baby multi-hued dragon
-G:d:r
+G:d:v
 I:110:114:20:30:70
 W:11:2:0:45
 B:CLAW:HURT:1d4
@@ -1896,7 +1921,7 @@ D:A large and muscled wolf from the northern wastes.  Its breath is cold and icy
 D: and its fur coated in frost.
 
 N:157:Grape jelly
-G:j:r
+G:j:P
 I:110:234:2:1:99
 W:12:3:0:60
 B:TOUCH:EXP_10
@@ -1919,7 +1944,7 @@ D:It is a disgusting mass of dark worms, eating each other, the floor, the air,
 D: you....
 
 N:159:Golfimbul, the Hill Orc Chief
-G:o:v
+G:o:Y
 I:110:240:20:60:20
 W:12:3:0:230
 B:HIT:HURT:1d12
@@ -2098,7 +2123,7 @@ F:BASH_DOOR
 D:It is a vicious insect with a tough carapace.
 
 N:173:Boldor, King of the Yeeks
-G:y:v
+G:y:P
 I:120:180:18:24:10
 W:13:3:0:200
 B:HIT:HURT:1d9
@@ -2139,7 +2164,7 @@ D:It appears to be a pile of sentient mithril coins that doesn't like being
 D: picked up.
 
 N:176:Illusionist
-G:p:R
+G:p:I
 I:120:54:20:10:10
 W:13:2:0:50
 B:HIT:HURT:2d2
@@ -2207,7 +2232,7 @@ F:RAND_25 | RAND_50 | BASH_DOOR
 D:It makes you itch just to look at it.
 
 N:181:Ufthak of Cirith Ungol
-G:o:v
+G:o:g
 I:110:320:20:50:20
 W:14:3:0:250
 B:HIT:HURT:3d4
@@ -2617,7 +2642,7 @@ F:RAND_25 | RAND_50
 D:A giant buzzing wasp, its stinger drips venom.
 
 N:211:Ulfast, Son of Ulfang
-G:p:v
+G:p:U
 I:110:340:20:40:40
 W:16:3:0:200
 B:HIT:HURT:3d5
@@ -2677,8 +2702,8 @@ F:OPEN_DOOR | BASH_DOOR
 F:HURT_LIGHT
 D:He is green skinned and ugly.
 
-N:215:Nar, the Dwarf
-G:h:v
+N:215:N['a]r, the Dwarf
+G:h:y
 I:110:450:25:70:25
 W:17:2:0:250
 B:HIT:HURT:3d5
@@ -2692,10 +2717,10 @@ F:IM_COLD | IM_FIRE | IM_POIS | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 S:1_IN_6
 S:BLIND | CAUSE_2 | CONF | HEAL | MIND_BLAST
-D:The friend and companion of the dwarven king Thror, he went mad with grief
-D: after Thror's death at the hands of Azog the Orc.  With torn beard and ragged
-D: clothes, he seems to have fixed on you as a convenient target to vent his
-D: anger.
+D:The friend and companion of the dwarven king Thr['o]r, he went mad with grief
+D: after Thr['o]r's death at the hands of Azog the Orc.  With torn beard and 
+D:ragged clothes, he seems to have fixed on you as a convenient target to vent 
+D:his anger.
 
 N:216:2-headed hydra
 G:M:u
@@ -2853,7 +2878,7 @@ D:A cunning orc of power, as tall as a man, and stronger.  It fears little.
 ### Dungeon level 19 ###
 
 N:227:Shagrat, the Orc Captain
-G:o:v
+G:o:g
 I:110:400:20:60:20
 W:19:2:0:400
 B:HIT:HURT:3d8
@@ -2868,7 +2893,7 @@ D:He is an orc of power and great cunning, leader of the garrison at Cirith
 D: Ungol.
 
 N:228:Gorbag, the Orc Captain
-G:o:v
+G:o:g
 I:110:400:20:60:20
 W:19:2:0:400
 B:HIT:HURT:3d8
@@ -2969,7 +2994,7 @@ D: pervades the air.
 ### Dungeon level 20 ###
 
 N:235:Bolg, Son of Azog
-G:o:v
+G:o:P
 I:120:500:20:50:20
 W:20:4:0:800
 B:HIT:HURT:3d6
@@ -3162,7 +3187,7 @@ D:It is a twenty foot tall giant wreathed in clouds.
 ### Dungeon level 21 ###
 
 N:248:Lugdush, the Uruk
-G:o:v
+G:o:b
 I:110:640:20:90:20
 W:21:4:0:550
 B:HIT:HURT:3d7
@@ -3177,8 +3202,8 @@ D:A large and powerful orc, captain of one of Saruman's orcish regiments.
 
 ### Dungeon level 22 ###
 
-N:249:Ugluk, the Uruk
-G:o:v
+N:249:Ugl['u]k, the Uruk
+G:o:b
 I:110:720:20:95:20
 W:22:3:0:600
 B:HIT:HURT:3d8
@@ -3352,7 +3377,7 @@ F:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 D:A scarred warrior who moves with confidence.
 
 N:262:Azog, King of the Uruk-Hai
-G:o:v
+G:o:R
 I:120:900:20:80:20
 W:23:5:0:1111
 B:HIT:HURT:5d5
@@ -3362,8 +3387,8 @@ F:UNIQUE | MALE | ORC | EVIL | ESCORT | ESCORTS
 F:DROP_2 | DROP_GOOD | ONLY_ITEM
 F:OPEN_DOOR | BASH_DOOR
 F:IM_POIS
-D:He is also known as the King of Khazad-dum.  His ego is renowned to be bigger
-D: than his head.
+D:He is also known as the King of Khazad-d[^u]m.  His ego is renowned to be 
+D:bigger than his head.
 
 N:263:Master rogue
 G:p:b
@@ -3429,8 +3454,8 @@ S:1_IN_10
 S:DRAIN_MANA | SCARE
 D:It is a ghostly apparition with a humanoid form.
 
-N:268:Ibun, Son of Mim
-G:h:v
+N:268:Ibun, Son of M[^i]m
+G:h:o
 I:110:820:20:80:10
 W:24:2:0:300
 B:HIT:HURT:3d6
@@ -3448,8 +3473,8 @@ S:BO_FIRE
 D:One of the last of the Petty-Dwarves.  Ibun is a tricky sorcerous little
 D: being, full of mischief.
 
-N:269:Khim, Son of Mim
-G:h:v
+N:269:Kh[^i]m, Son of M[^i]m
+G:h:o
 I:110:820:20:80:10
 W:24:2:0:300
 B:HIT:HURT:3d6
@@ -3464,7 +3489,7 @@ F:FORCE_SLEEP
 S:1_IN_8
 S:HEAL | SLOW
 S:BO_FIRE
-D:One of the last of the Petty-Dwarves.  Khim is a tricky sorcerous little
+D:One of the last of the Petty-Dwarves.  Kh[^i]m is a tricky sorcerous little
 D: being, full of mischief.
 
 N:270:4-headed hydra
@@ -3507,7 +3532,7 @@ F:IM_COLD | IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
 D:A blood-sucking bat that flies at your neck hungrily.
 
 N:273:Sangahyando of Umbar
-G:p:v
+G:p:U
 I:110:800:25:80:25
 W:24:2:0:400
 B:HIT:HURT:4d6
@@ -3521,10 +3546,10 @@ F:IM_ELEC | IM_FIRE | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 S:1_IN_4
 S:CONF | SLOW
-D:A Black Numenorean with a blacker heart.
+D:A Black N['u]menorean with a blacker heart.
 
-N:274:Angamaite of Umbar
-G:p:v
+N:274:Angamait["e] of Umbar
+G:p:U
 I:110:800:25:80:25
 W:24:2:0:400
 B:HIT:HURT:4d6
@@ -3538,7 +3563,7 @@ F:IM_ELEC | IM_FIRE | NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 S:1_IN_4
 S:CONF | SLOW
-D:A Black Numenorean who hates the men of the west.
+D:A Black N['u]menorean who hates the men of the west.
 
 N:275:Banshee
 G:G:b
@@ -3557,7 +3582,7 @@ D:It is a ghostly woman's form that wails mournfully.
 ### Dungeon level 25 ###
 
 N:276:Pukelman
-G:g:D
+G:g:m
 I:110:520:12:80:10
 W:25:3:0:600
 B:HIT:HURT:1d12
@@ -3624,7 +3649,7 @@ D:A troll who is so bright he knows how to read.
 ### Dungeon level 25 ###
 
 N:280:Wereworm
-G:w:D
+G:w:p
 I:110:600:15:70:20
 W:25:3:0:300
 B:GAZE:EXP_20
@@ -3670,7 +3695,7 @@ F:RAND_25 | BASH_DOOR | KILL_BODY
 D:It is an ant encased in shaggy grey fur.
 
 N:284:Ulwarth, Son of Ulfang
-G:p:v
+G:p:U
 I:110:850:20:40:40
 W:26:4:0:500
 B:HIT:HURT:4d6
@@ -3753,8 +3778,8 @@ D: fight it.
 
 ### Dungeon level 27 ###
 
-N:290:Mim, Betrayer of Turin
-G:h:v
+N:290:M[^i]m, Betrayer of Turin
+G:h:I
 I:120:1100:20:80:20
 W:27:4:0:1000
 B:HIT:HURT:3d8
@@ -3771,7 +3796,7 @@ S:1_IN_6
 S:HEAL | SCARE
 S:BA_ACID
 S:BO_ACID
-D:The last of his race, Mim is a Petty-Dwarf.  Petty-Dwarves are strange
+D:The last of his race, M[^i]m is a Petty-Dwarf.  Petty-Dwarves are strange
 D: creatures, powerful in sorcery and originating in the East.  They have been
 D: hunted nearly to extinction by the High Elves.
 
@@ -3831,7 +3856,7 @@ D:A blurry canine form which seems to be moving as fast as the eye can follow.
 D: You can feel the earth resonating beneath your feet.
 
 N:295:Nexus hound
-G:Z:v
+G:Z:P
 I:110:138:30:30:0
 W:27:4:0:250
 B:BITE:HURT:2d8
@@ -3917,7 +3942,7 @@ D:The result of evil experiments, this travesty of nature should never be alive.
 D: It has three heads - goat, dragon and gorgon - all attached to a lion's body.
 
 N:300:Colbran
-G:g:y
+G:g:b
 I:120:520:12:80:10
 W:27:2:0:900
 B:HIT:ELEC:3d8
@@ -3985,7 +4010,7 @@ S:BLIND | CAUSE_3 | DARKNESS | SCARE
 D:He is a figure encased in deep black plate armour; he looks at you menacingly.
 
 N:304:Uldor the Accursed
-G:p:v
+G:p:U
 I:110:1000:20:70:40
 W:28:4:0:600
 B:HIT:HURT:4d6
@@ -3998,8 +4023,8 @@ F:OPEN_DOOR | BASH_DOOR | TAKE_ITEM
 S:1_IN_10
 S:S_KIN
 D:An evil and cunning man from the East.  Having once sworn allegiance to the
-D: sons of Feanor, it was Uldor's treachery that turned the tide of the Battle
-D: of Unnumbered Tears in Morgoth's favour.
+D: sons of F["e]anor, it was Uldor's treachery that turned the tide of the 
+D:Battle of Unnumbered Tears in Morgoth's favour.
 
 N:305:Mage
 G:p:r
@@ -4018,7 +4043,7 @@ S:S_MONSTER
 D:A mage of some power - you can tell by the size of his hat.
 
 N:306:Mind flayer
-G:h:r
+G:h:P
 I:110:132:20:60:10
 W:28:1:0:200
 B:GAZE:LOSE_INT:2d6
@@ -4086,7 +4111,7 @@ D:He is a white troll with powerfully clawed hands.
 ### Dungeon level 29 ###
 
 N:310:Purple worm
-G:w:v
+G:w:P
 I:110:293:14:65:30
 W:29:3:0:400
 B:HIT:HURT:1d8
@@ -4391,7 +4416,7 @@ D:It is an ogre wrapped in furs and covered in grotesque body paints.
 ### Dungeon level 32 ###
 
 N:329:Nexus quylthulg
-G:Q:r
+G:Q:P
 I:110:65:10:1:0
 W:32:1:0:300
 F:ANIMAL | EMPTY_MIND | INVISIBLE
@@ -4405,7 +4430,7 @@ D:It is a very unstable, strange pulsing mound of flesh.
 ### Dungeon level 55 ###
 
 N:330:Shelob, Spider of Darkness
-G:S:v
+G:S:D
 I:120:3500:30:120:80
 W:55:3:0:27000
 B:CLAW:POISON:5d6
@@ -4531,7 +4556,7 @@ D:An adept at unarmed combat, the mystic strikes with stunning power.  He can
 D: summon help from nature and is able to focus his power to ease any pain.
 
 N:337:Barrow wight
-G:W:r
+G:W:P
 I:110:83:20:40:10
 W:33:3:0:375
 B:HIT:HURT:1d8
@@ -4560,7 +4585,7 @@ F:IM_COLD | IM_POIS | NO_FEAR | NO_CONF | NO_SLEEP
 D:It is the animated form of a massive two-headed troll.
 
 N:339:Chaos drake
-G:d:r
+G:d:v
 I:110:440:20:70:70
 W:33:3:0:1400
 B:CLAW:HURT:2d4
@@ -4596,7 +4621,7 @@ D:This dragon is clever and cunning.  It laughs at your puny efforts to disturb
 D: it.
 
 N:341:Balance drake
-G:d:r
+G:d:v
 I:110:528:20:70:70
 W:33:3:0:1600
 B:CLAW:HURT:2d4
@@ -4634,7 +4659,7 @@ D: drake's eyes glare with white hatred from the shadows.
 ### Dungeon level 34 ###
 
 N:343:Bert the Stone Troll
-G:T:v
+G:T:s
 I:120:1100:20:70:50
 W:34:7:0:2000
 B:HIT:HURT:6d6
@@ -4650,7 +4675,7 @@ D:Big, brawny, powerful and with a taste for hobbit.  He has friends called Bill
 D: and Tom.
 
 N:344:Bill the Stone Troll
-G:T:v
+G:T:s
 I:120:1100:20:70:50
 W:34:7:0:2000
 B:HIT:HURT:6d6
@@ -4666,7 +4691,7 @@ D:Big, brawny, powerful and with a taste for hobbit.  He has friends called Bert
 D: and Tom.
 
 N:345:Tom the Stone Troll
-G:T:v
+G:T:s
 I:120:1100:20:70:50
 W:34:7:0:2000
 B:HIT:HURT:6d6
@@ -4837,7 +4862,7 @@ S:ARROW_2 | BLINK | TRAPS
 D:Cool and confident, fast and lithe; protect your possessions quickly!
 
 N:355:Ulfang the Black
-G:p:v
+G:p:U
 I:120:1000:20:90:40
 W:34:5:0:1200
 B:HIT:HURT:5d5
@@ -5112,7 +5137,7 @@ S:BO_ACID
 D:It is a towering mass of filth, an eyesore of ooze.
 
 N:371:Smoke elemental
-G:E:R
+G:E:D
 I:120:83:10:80:90
 W:36:3:0:375
 B:ENGULF:HURT:2d6
@@ -5149,7 +5174,7 @@ D: black hue.  Acid drips from its body.
 
 ### Dungeon level 35 ###
 
-N:373:Mumak
+N:373:M[^u]mak
 G:q:s
 I:110:495:20:55:100
 W:35:3:0:2100
@@ -5228,7 +5253,7 @@ D: out to end your life as it glides towards you, seeking to suck the energy
 D: from your soul to feed its power.
 
 N:378:Phantom
-G:G:r
+G:G:P
 I:120:260:30:30:20
 W:36:3:0:400
 B:TOUCH:EXP_80
@@ -5265,7 +5290,7 @@ D: deathly cold.
 ### Dungeon level 32 ###
 
 N:380:Young multi-hued dragon
-G:d:r
+G:d:v
 I:110:281:20:60:70
 W:32:1:0:900
 B:CLAW:HURT:2d6
@@ -5322,7 +5347,7 @@ D: tarnished gold hue, and light is reflected from its form.
 ### Dungeon level 42 ###
 
 N:383:Rogrog the Black Troll
-G:T:v
+G:T:D
 I:120:2000:20:70:50
 W:42:3:0:5000
 B:HIT:HURT:6d7
@@ -5484,7 +5509,7 @@ S:S_UNDEAD
 D:A gaunt figure, clothed in black robes.
 
 N:392:Lorgan, Chief of the Easterlings
-G:p:v
+G:p:P
 I:120:1800:25:100:10
 W:36:2:0:1200
 B:HIT:HURT:6d6
@@ -5504,7 +5529,7 @@ D:A mighty warrior from the east, Lorgan hates everything that he cannot
 D: control.
 
 N:393:Demonologist
-G:p:R
+G:p:i
 I:120:246:20:50:10
 W:36:2:0:700
 B:HIT:HURT:2d6
@@ -5607,7 +5632,7 @@ F:NO_CONF | NO_SLEEP
 D:A lump of rotting black flesh that slurrrrrrrps across the dungeon floor.
 
 N:399:Killer iridescent beetle
-G:K:r
+G:K:v
 I:110:330:16:60:30
 W:37:2:0:850
 B:CLAW:ELEC:1d12
@@ -5620,7 +5645,7 @@ F:ATTR_MULTI
 D:It is a giant beetle, whose carapace shimmers with vibrant energies.
 
 N:400:Nexus vortex
-G:v:v
+G:v:P
 I:120:176:100:40:0
 W:37:1:0:800
 B:ENGULF:HURT:5d5
@@ -5724,7 +5749,7 @@ D:A large dragon, with scales of deepest black.
 ### Dungeon level 38 ###
 
 N:406:Mature multi-hued dragon
-G:d:r
+G:d:v
 I:110:528:20:80:70
 W:38:1:0:1800
 B:CLAW:HURT:2d12
@@ -5762,7 +5787,7 @@ D: its helmet, eyes glow a baleful red and seem to pierce you like lances of
 D: fire.
 
 N:408:Castamir the Usurper
-G:p:v
+G:p:V
 I:120:880:20:90:40
 W:38:5:0:1600
 B:HIT:HURT:5d5
@@ -5776,7 +5801,7 @@ F:FORCE_SLEEP
 S:1_IN_2
 S:HEAL | TRAPS
 S:BO_COLD | BO_ELEC | BO_FIRE | BO_ICEE
-D:A Black Numenorean who usurped the throne of Gondor, he is treacherous and
+D:A Black N['u]menorean who usurped the throne of Gondor, he is treacherous and
 D: evil.
 
 N:409:Time vortex
@@ -5911,7 +5936,7 @@ D: try to resist all desires to obey it.
 ### Dungeon level 43 ###
 
 N:416:Vargo, Tyrant of Fire
-G:E:v
+G:E:R
 I:120:2400:12:50:50
 W:43:3:0:4000
 B:HIT:FIRE:4d6
@@ -6022,7 +6047,7 @@ D: one...
 ### Dungeon level 43 ###
 
 N:422:Waldern, King of Water
-G:E:v
+G:E:V
 I:120:2500:12:80:50
 W:43:3:0:4250
 B:HIT:HURT:5d5
@@ -6043,7 +6068,7 @@ D: after wave drowns your frail body.
 ### Dungeon level 39 ###
 
 N:423:Kavlax the Many-Headed
-G:d:v
+G:d:D
 I:120:1300:20:85:30
 W:39:3:0:3000
 B:BITE:HURT:2d12
@@ -6260,7 +6285,7 @@ S:BR_FIRE
 D:A strange reptilian hybrid with nine smouldering heads.
 
 N:435:Enchantress
-G:p:R
+G:p:i
 I:130:457:20:60:10
 W:40:4:0:2100
 B:HIT:HURT:2d6
@@ -6351,7 +6376,7 @@ D:A vast legendary bird, its iron talons rake the most impenetrable of surfaces
 D: and its screech echoes through the many winding dungeon corridors.
 
 N:440:Uvatha the Horseman
-G:W:v
+G:W:p
 I:120:1800:90:60:10
 W:40:3:0:10000
 B:HIT:HURT:6d6
@@ -6516,7 +6541,7 @@ D: speed and its powers make it a tornado of death and destruction.
 ### Dungeon level 43 ###
 
 N:449:Adunaphel the Quiet
-G:W:v
+G:W:p
 I:120:2100:90:60:10
 W:43:3:0:13000
 B:HIT:HURT:6d6
@@ -6597,7 +6622,7 @@ D:It is a demon of lizard form with cruel-looking jaws.
 ### Dungeon level 45 ###
 
 N:453:Akhorahil the Blind
-G:W:v
+G:W:p
 I:120:2400:90:70:10
 W:45:3:0:15000
 B:HIT:HURT:7d6
@@ -6620,7 +6645,7 @@ D: any ordinary man ever could.
 ### Dungeon level 41 ###
 
 N:454:Gorlim, Betrayer of Barahir
-G:p:v
+G:p:z
 I:120:1600:20:120:40
 W:41:3:0:7000
 B:HIT:HURT:8d6
@@ -6685,7 +6710,7 @@ D:It is demon with arms and pincers, its form a true mockery of life.
 ### Dungeon level 48 ###
 
 N:457:Ren the Unclean
-G:W:v
+G:W:p
 I:120:2700:90:70:10
 W:48:3:0:18000
 B:HIT:HURT:7d7
@@ -6786,7 +6811,7 @@ F:BASH_DOOR
 D:A massive elephantine form with eyes twisted by madness.
 
 N:462:Ancient multi-hued dragon
-G:D:r
+G:D:v
 I:120:1848:25:100:80
 W:43:1:0:13000
 B:CLAW:HURT:4d10
@@ -6828,7 +6853,7 @@ D: in unearthly shadows.
 ### Dungeon level 52 ###
 
 N:464:Ji Indur Dawndeath
-G:W:v
+G:W:p
 I:120:3200:90:70:10
 W:52:3:0:22000
 B:HIT:HURT:8d7
@@ -6870,7 +6895,7 @@ D:She is a demon of female form with many arms, each bearing deadly weapons.
 ### Dungeon level 43 ###
 
 N:466:Quaker, Master of Earth
-G:E:v
+G:E:U
 I:110:2800:10:97:90
 W:43:3:0:4500
 B:HIT:HURT:6d6
@@ -6891,7 +6916,7 @@ D: reduced to rubble as Quaker advances.
 ### Dungeon level 49 ###
 
 N:467:Lesser Balrog
-G:U:r
+G:U:p
 I:120:1760:20:50:80
 W:49:2:0:10000
 B:HIT:FIRE:4d12
@@ -6912,7 +6937,7 @@ D:It is a massive humanoid demon wreathed in flames.
 ### Dungeon level 43 ###
 
 N:468:Ariel, Queen of Air
-G:E:v
+G:E:Z
 I:130:2700:12:50:50
 W:43:3:0:4750
 B:HIT:HURT:4d6
@@ -7019,7 +7044,7 @@ D: intelligence, but it has been instructed to destroy all it meets.
 ### Dungeon level 46 ###
 
 N:473:Scatha the Worm
-G:D:v
+G:D:W
 I:120:2200:30:130:70
 W:46:2:0:17000
 B:CLAW:HURT:4d10
@@ -7041,7 +7066,7 @@ D: air.
 ### Dungeon level 56 ###
 
 N:474:Dwar, Dog Lord of Waw
-G:W:v
+G:W:p
 I:120:4000:90:90:10
 W:56:3:0:25000
 B:HIT:HURT:8d8
@@ -7063,7 +7088,7 @@ D: will.  He howls maniacally as he reaches out to destroy you.
 ### Dungeon level 48 ###
 
 N:475:Smaug the Golden
-G:D:v
+G:D:R
 I:120:2400:30:130:70
 W:48:2:0:23000
 B:CLAW:HURT:4d12
@@ -7078,7 +7103,7 @@ F:FORCE_SLEEP
 S:1_IN_4
 S:CAUSE_3 | CONF
 S:BR_FIRE
-D:Smaug is one of the Uruloki that still survive, a fire-drake of immense
+D:Smaug is one of the Urul['o]ki that still survive, a fire-drake of immense
 D: cunning and intelligence.  His speed through air is matched by few other
 D: dragons and his dragonfire is what legends are made of; he is believed to be
 D: the greatest dragon still surviving into the Third Age.
@@ -7128,7 +7153,7 @@ D: defiance.
 ### Dungeon level 55 ###
 
 N:478:Dracolisk
-G:D:R
+G:D:i
 I:120:3080:25:120:80
 W:55:2:0:14000
 B:BITE:HURT:4d12
@@ -7166,7 +7191,7 @@ D: power from sucking the souls of those that approach it, a nimbus of pure evil
 D: surrounds it.  Luckily for you, it can't move.
 
 N:480:Itangast the Fire Drake
-G:D:v
+G:D:R
 I:120:2200:30:120:70
 W:47:2:0:20000
 B:CLAW:HURT:4d10
@@ -7256,7 +7281,7 @@ D: blisters your skin and melts your flesh!
 ### Dungeon level 61 ###
 
 N:484:Nightwing
-G:W:D
+G:W:v
 I:120:1830:20:120:10
 W:61:3:0:10000
 B:TOUCH:POISON:6d5
@@ -7397,7 +7422,7 @@ D: that defy him.
 ### Dungeon level 51 ###
 
 N:491:Harowen the Black Hand
-G:p:v
+G:p:Z
 I:140:2500:40:90:0
 W:51:3:0:20000
 B:TOUCH:EAT_GOLD:5d5
@@ -7417,7 +7442,7 @@ D: with blinding speed.  Check your pockets!
 ### Dungeon level 64 ###
 
 N:492:Hoarmurath of Dir
-G:W:v
+G:W:p
 I:120:4500:90:100:10
 W:64:3:0:30000
 B:HIT:HURT:9d9
@@ -7462,8 +7487,8 @@ D: disdainful ease.
 
 ### Dungeon level 72 ###
 
-N:494:Khamul, the Black Easterling
-G:W:v
+N:494:Kham[^u]l, the Black Easterling
+G:W:p
 I:120:5000:90:100:10
 W:72:3:0:40000
 B:HIT:HURT:9d10
@@ -7481,7 +7506,7 @@ S:BLIND | CAUSE_3 | CAUSE_4 | HOLD | SCARE | TELE_LEVEL
 S:BA_COLD | BA_FIRE | BA_NETH
 S:BO_MANA
 S:S_HI_UNDEAD
-D:A warrior-king of the East.  Khamul is a powerful opponent, his skill in
+D:A warrior-king of the East.  Kham[^u]l is a powerful opponent, his skill in
 D: combat awesome and his form twisted by evil cunning.
 
 ### Dungeon level 59 ###
@@ -7528,7 +7553,7 @@ D: wrath!
 ### Dungeon level 54 ###
 
 N:497:The Phoenix
-G:B:v
+G:B:r
 I:120:3600:60:130:0
 W:54:3:0:40000
 B:BITE:FIRE:12d6
@@ -7756,7 +7781,7 @@ D: bacteria that make it pulse in a foul and degrading way.
 ### Dungeon level 59 ###
 
 N:508:Fundin Bluecloak
-G:h:v
+G:h:Z
 I:130:5000:25:195:10
 W:59:2:0:20000
 B:HIT:HURT:8d8
@@ -7781,7 +7806,7 @@ D: strength and priestly wisdom are a true match for any adventurer.
 ### Dungeon level 61 ###
 
 N:509:Uriel, Angel of Fire
-G:A:v
+G:A:R
 I:130:5500:40:160:10
 W:61:3:0:25000
 B:HIT:FIRE:4d12
@@ -7806,7 +7831,7 @@ D: of elemental fire.
 ### Dungeon level 62 ###
 
 N:510:Azriel, Angel of Death
-G:A:v
+G:A:D
 I:130:6000:40:170:10
 W:62:3:0:30000
 B:HIT:EXP_80:10d5
@@ -7832,7 +7857,7 @@ D: live.
 ### Dungeon level 85 ###
 
 N:511:Ancalagon the Black
-G:D:v
+G:D:D
 I:130:10000:40:170:70
 W:85:3:0:45000
 B:CLAW:HURT:6d12
@@ -7882,7 +7907,7 @@ D: you menacingly.
 ### Dungeon level 64 ###
 
 N:513:Gabriel, the Messenger
-G:A:v
+G:A:w
 I:130:7500:40:180:10
 W:64:3:0:35000
 B:HIT:UN_BONUS:6d8
@@ -7976,7 +8001,7 @@ D:Master of all things feline, the Cat Lord moves with unsurpassed stealth.
 ### Dungeon level 68 ###
 
 N:517:Jabberwock
-G:H:r
+G:H:v
 I:130:2816:35:125:255
 W:68:3:0:19000
 B:CLAW:HURT:10d10
@@ -8016,7 +8041,7 @@ D: relish for combat.  You suspect all may not be as it seems.
 ### Dungeon level 75 ###
 
 N:519:Great Wyrm of Chaos
-G:D:r
+G:D:v
 I:120:3960:40:170:100
 W:75:2:0:29000
 B:CLAW:HURT:5d12
@@ -8060,7 +8085,7 @@ D: be crushed underfoot.
 ### Dungeon level 79 ###
 
 N:521:Great Wyrm of Balance
-G:D:r
+G:D:P
 I:120:4400:40:170:100
 W:79:2:0:31000
 B:CLAW:HURT:5d12
@@ -8084,7 +8109,7 @@ D: destroy you.
 ### Dungeon level 68 ###
 
 N:522:Tselakus, the Dreadlord
-G:G:v
+G:G:R
 I:130:6500:20:150:10
 W:68:2:0:35000
 B:HIT:HURT:10d10
@@ -8110,7 +8135,7 @@ D: in his path to your soul!
 ### Dungeon level 79 ###
 
 N:523:Great Wyrm of Many Colours
-G:D:r
+G:D:v
 I:120:4400:40:170:100
 W:79:2:0:31000
 B:CLAW:HURT:5d12
@@ -8246,7 +8271,7 @@ D: steeped in forgotten evils, his atrocities numerous and sickening.
 ### Dungeon level 75 ###
 
 N:530:Ungoliant, the Unlight
-G:S:v
+G:S:D
 I:130:13000:40:160:80
 W:75:1:0:35000
 B:CLAW:POISON:8d6
@@ -8353,7 +8378,7 @@ D: help to protect itself.
 ### Dungeon level 80 ###
 
 N:535:The Witch-King of Angmar
-G:W:v
+G:W:p
 I:130:6000:90:120:10
 W:80:3:0:60000
 B:HIT:HURT:10d10
@@ -8378,7 +8403,7 @@ D: never to die by the hand of mortal man.
 ### Dungeon level 82 ###
 
 N:536:Pazuzu, Lord of Air
-G:U:v
+G:U:Z
 I:140:5500:40:125:10
 W:82:2:0:30000
 B:HIT:ELEC:12d12
@@ -8419,7 +8444,7 @@ D:It is a giant dog that glows with heat.  Flames pour from its nostrils.
 ### Dungeon level 84 ###
 
 N:538:Cantoras, the Skeletal Lord
-G:s:v
+G:s:W
 I:140:7500:20:120:80
 W:84:2:0:45000
 B:GAZE:EXP_80:5d5
@@ -8487,7 +8512,7 @@ D: of his body.
 ### Dungeon level 83 ###
 
 N:541:Draugluin, Sire of All Werewolves
-G:C:v
+G:C:m
 I:130:7000:80:90:90
 W:83:2:0:40000
 B:CLAW:HURT:6d8
@@ -8508,7 +8533,7 @@ D: wolf inhabited with a human spirit.  He is chief of all his kind.
 ### Dungeon level 92 ###
 
 N:542:Vecna, the Emperor Lich
-G:L:v
+G:L:p
 I:130:6000:100:100:0
 W:92:3:0:45000
 B:HIT:EXP_80:7d12
@@ -8532,7 +8557,7 @@ D: ancient shadow of death wilts every living thing it passes.
 ### Dungeon level 90 ###
 
 N:543:Huan, Wolfhound of the Valar
-G:C:v
+G:C:W
 I:130:8000:50:160:10
 W:90:1:0:40000
 B:CLAW:COLD:9d12
@@ -8552,7 +8577,7 @@ D: acknowledges no master save himself, as he hunts alone for his nemesis -
 D: Carcharoth, the terrible wolf of Angband.
 
 N:544:Carcharoth, the Jaws of Thirst
-G:C:v
+G:C:p
 I:130:8000:50:160:10
 W:90:1:0:40000
 B:CLAW:FIRE:9d12
@@ -8592,14 +8617,14 @@ S:BLIND | CONF | SCARE
 S:BR_FIRE | BR_PLAS
 S:S_HI_DEMON | S_HI_UNDEAD
 D:Gothmog is the Chief Balrog in Morgoth's personal guard.  He is renowned for
-D: slaying Feanor and Fingon, two of the High Kings of the Noldor Elves, and has
-D: never been defeated in combat.  With his whip of flame and awesome fiery
+D: slaying F["e]anor and Fingon, two of the High Kings of the Noldor Elves, and
+D: has never been defeated in combat.  With his whip of flame and awesome fiery
 D: breath he saved his master from Ungoliant's rage.
 
 ### Dungeon level 99 ###
 
 N:546:Sauron, the Sorcerer
-G:p:v
+G:p:p
 I:130:10500:100:160:0
 W:99:1:0:50000
 B:HIT:UN_BONUS:10d12
@@ -8870,7 +8895,7 @@ D: they seek to alert other evil creatures to your presence.
 ### Dungeon level 48 ###
 
 N:562:Winged Horror
-G:B:D
+G:B:p
 I:120:1013:30:80:5
 W:48:3:0:4000
 B:CLAW:HURT:3d8
@@ -8935,7 +8960,7 @@ D: dangerous enemy.
 ### Dungeon level 28 ###
 
 N:566:Beorn, the Shape-Changer
-G:q:v
+G:q:p
 I:120:1400:25:60:25
 W:28:3:0:1000
 B:CLAW:HURT:2d10
@@ -9099,7 +9124,7 @@ D: demon armies.
 ### Dungeon level 79 ###
 
 N:573:Greater Balrog
-G:U:R
+G:U:P
 I:130:4400:40:140:80
 W:79:3:0:25000
 B:HIT:FIRE:8d12
@@ -9334,7 +9359,7 @@ D:A gigantic ugly humanoid with but one eye and very thick skin.
 ### Dungeon level 69 ###
 
 N:585:Polyphemus, the Blind Cyclops
-G:P:v
+G:P:g
 I:130:5300:40:140:40
 W:69:3:0:29000
 B:HIT:HURT:11d10
@@ -9357,7 +9382,7 @@ D: to hear so well that it nearly makes up for his disability.
 ### Dungeon level 76 ###
 
 N:586:Atlas, the Titan
-G:P:v
+G:P:s
 I:120:6000:30:160:15
 W:76:3:0:37000
 B:HIT:SHATTER:13d13
@@ -9502,7 +9527,7 @@ D: barely see through them.
 
 ### Dungeon level 49 ###
 
-N:594:Eol, the Dark Elf
+N:594:E["o]l, the Dark Elf
 G:h:v
 I:130:2400:20:100:60
 W:49:2:0:25000
@@ -9520,14 +9545,15 @@ S:TELE_TO
 S:BA_ACID | BA_COLD | BA_ELEC | BA_FIRE | BA_NETH
 S:BO_MANA
 S:S_DEMON | S_DRAGON | S_MONSTERS | S_UNDEAD
-D:A lord of the Teleri, Eol is a mighty metalsmith, the only one to ever forge
-D: weapons of meteorite iron.  The mortal enemy of the Eldar, he is currently
-D: fleeing their wrath, following the murder of Princess Aredhel of Gondolin.
+D:A lord of the Teleri, E["o]l is a mighty metalsmith, the only one to ever
+D: forge weapons of meteorite iron.  The mortal enemy of the Eldar, he is
+D: currently fleeing their wrath, following the murder of Princess Aredhel of
+D: Gondolin.
 
 ### Dungeon level 81 ###
 
 N:595:Maeglin, the Traitor of Gondolin
-G:h:v
+G:h:p
 I:130:6000:70:120:20
 W:81:2:0:35000
 B:HIT:HURT:8d8
@@ -9542,7 +9568,7 @@ F:FORCE_SLEEP
 S:1_IN_6
 S:S_ANIMAL | S_HI_DEMON | S_HI_DRAGON | S_HI_UNDEAD | S_MONSTERS | S_UNIQUE
 S:S_WRAITH
-D:The son of Eol the Dark Elf, Maeglin is every bit as evil as his father and
+D:The son of E["o]l the Dark Elf, Maeglin is every bit as evil as his father and
 D: more.  His greed for gold led him to betray the Hidden Kingdom of Gondolin to
 D: Morgoth's forces.  He is a mighty warrior himself, and some of Morgoth's
 D: greatest servants answer to his call.
@@ -9831,8 +9857,8 @@ D: you, wielding a huge club and pushing his own followers rudely aside.
 
 ### Dungeon level 55 ###
 
-N:611:Ar-Pharazon the Golden
-G:p:v
+N:611:Ar-Pharaz[^o]n the Golden
+G:p:y
 I:130:4000:30:45:255
 W:55:1:0:32500
 B:HIT:HURT:8d8
@@ -9847,14 +9873,14 @@ F:FORCE_SLEEP
 S:1_IN_6
 S:HEAL | TELE_AWAY
 S:S_KIN | S_MONSTERS
-D:Last and proudest king of ancient Numenor.  Corrupted by power and avarice, he
-D: fell victim to Sauron's wiles, tried to fight the Valar themselves, and
-D: condemned Numenor to oblivion.
+D:Last and proudest king of ancient N['u]menor.  Corrupted by power and avarice,
+D: he fell victim to Sauron's wiles, tried to fight the Valar themselves, and
+D: condemned N['u]menor to oblivion.
 
 ### Dungeon level 40 ###
 
 N:612:Troll chieftain
-G:T:v
+G:T:P
 I:120:792:30:50:20
 W:40:5:0:3000
 B:HIT:HURT:2d12

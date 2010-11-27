@@ -21,6 +21,9 @@
 #ifdef USE_GTK
 #include "main-gtk.h"
 #include "textui.h"
+#include "files.h"
+#include "macro.h"
+
 /* 
  *Add a bunch of debugger message, to trace where problems are. 
  */
@@ -203,9 +206,9 @@ gboolean on_big_tiles(GtkWidget *widget, GdkEventButton *event, gpointer user_da
 	term_data *td = &data[0];
 	
 	if ((widget != NULL) && (!gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget))))
-		use_bigtile = FALSE;
+		tile_width = 1;
 	else
-		use_bigtile = TRUE;
+		tile_width = 2;
 	
 	load_font_by_name(td, td->font.name);
 	term_data_redraw(td);
@@ -727,16 +730,8 @@ static void load_font_by_name(term_data *td, cptr font_name)
 	if (td->font.size == 0) td->font.size = 12;
 	get_font_size(&td->font);
 	
-	if (use_bigtile)
-	{
-		td->actual.w = td->font.w * 2;
-		td->actual.h = td->font.h;
-	}
-	else
-	{
-		td->actual.w = td->font.w;
-		td->actual.h = td->font.h;
-	}
+	td->actual.w = td->font.w * tile_width;
+	td->actual.h = td->font.h;
 	
 	td->size.w = td->cols * td->font.w;
 	td->size.h = td->rows * td->font.h;
@@ -1092,7 +1087,8 @@ static void save_prefs(void)
 	file_putf(fff, "[General Settings]\n");
 	/* Graphics setting */
 	file_putf(fff,"Tile set=%d\n", arg_graphics);
-	file_putf(fff,"Big Tiles=%d\n", use_bigtile);
+	file_putf(fff,"Tile Width=%d\n", tile_width);
+	file_putf(fff,"Tile Height=%d\n", tile_height);
 
 	/* New section */
 	file_putf(fff, "\n");
@@ -1227,11 +1223,11 @@ static void load_term_prefs()
 				arg_graphics = val;
 				continue;
 			}
-			if (prefix(buf, "Big Tiles="))
+			if (prefix(buf, "Tile Width="))
 			{
 				val = get_value(buf);
-				sscanf(buf, "Big Tiles=%d", &val);
-				use_bigtile = val;
+				sscanf(buf, "Tile Width=%d", &val);
+				tile_width = val;
 				continue;
 			}
 		}
@@ -1937,7 +1933,7 @@ static void show_windows(void)
 			gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(xd->menu),TRUE);
 	}
 	
-	if ((use_bigtile) && (big_tile_item != NULL))
+	if ((tile_width == 2) && (big_tile_item != NULL))
 		gtk_check_menu_item_set_active(GTK_CHECK_MENU_ITEM(big_tile_item), TRUE);
 }
 
@@ -2195,7 +2191,7 @@ static int last_inv_slot(void)
 	/* Find the "final" slot */
 	for (i = 0; i < INVEN_PACK; i++)
 	{
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 
 		/* Skip non-objects */
 		if (!o_ptr->k_idx) continue;
@@ -2215,7 +2211,7 @@ static void inv_slot(char *str, size_t len, int i, bool equip)
 	int name_size = 80;
 	
 	/* Examine the item */
-	o_ptr = &inventory[i];
+	o_ptr = &p_ptr->inventory[i];
 
 	/* Is this item "acceptable"? */
 	if (item_tester_okay(o_ptr) || equip)
@@ -2284,7 +2280,7 @@ static void handle_inv(game_event_type type, game_event_data *data, void *user)
 	for (i = 0; i < z; i++)
 	{
 		/* Examine the item */
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 
 		/* Is this item "acceptable"? */
 		if (item_tester_okay(o_ptr))
@@ -2323,7 +2319,7 @@ static void handle_equip(game_event_type type, game_event_data *data, void *user
 	/* Display the pack */
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
-		object_type *o_ptr = &inventory[i];
+		object_type *o_ptr = &p_ptr->inventory[i];
 	
 		attr = tval_to_attr[o_ptr->tval % N_ELEMENTS(tval_to_attr)];
 
@@ -2418,7 +2414,7 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 
 		/* Get monster race and name */
 		r_ptr = &r_info[i];
-		m_name = r_name + r_ptr->name;
+		m_name = r_ptr->name;
 
 		/* Display uniques in a special colour */
 		if (rf_has(r_ptr->flags, RF_UNIQUE))
@@ -2494,7 +2490,7 @@ static void cr_print_equippy(xtra_win_data *xd, int y)
 	object_type *o_ptr;
 
 	/* No equippy chars if  we're in bigtile mode or creating a char */
-	if ((use_bigtile) || (arg_graphics != 0) || (!character_generated))
+	if ((tile_width == 2) || (arg_graphics != 0) || (!character_generated))
 	{
 		return;
 	}
@@ -2503,7 +2499,7 @@ static void cr_print_equippy(xtra_win_data *xd, int y)
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
 	{
 		/* Object */
-		o_ptr = &inventory[i];
+		o_ptr = &p_ptr->inventory[i];
 
 		a = object_attr(o_ptr);
 		strnfmt(c, sizeof(c), "%c",object_char(o_ptr)); 
@@ -2559,15 +2555,15 @@ static void handle_sidebar(game_event_type type, game_event_data *data, void *us
 		draw_xtra_cr_text(xd, 0, 0, TERM_L_BLUE, str);
 		
 		/* Char Race */
-		strnfmt(str, sizeof(str), "%s", p_name + rp_ptr->name);
+		strnfmt(str, sizeof(str), "%s", rp_ptr->name);
 		draw_xtra_cr_text(xd, 0, 1, TERM_L_BLUE, str);
 		
 		/* Char Title*/
-		strnfmt(str, sizeof(str), "%s", c_text + cp_ptr->title[(p_ptr->lev - 1) / 5], TERM_L_BLUE); 
+		strnfmt(str, sizeof(str), "%s", cp_ptr->title[(p_ptr->lev - 1) / 5], TERM_L_BLUE); 
 		draw_xtra_cr_text(xd, 0, 2, TERM_L_BLUE, str);
 		
 		/* Char Class */
-		strnfmt(str, sizeof(str), "%s", c_name + cp_ptr->name); 
+		strnfmt(str, sizeof(str), "%s", cp_ptr->name); 
 		draw_xtra_cr_text(xd, 0, 3, TERM_L_BLUE, str);
 
 		/* Char Level */

@@ -15,9 +15,9 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
-
-
+#include "history.h"
 
 /*
  * Number of slots available at birth in the player history list.  Defaults to
@@ -336,8 +336,8 @@ static void print_history_header(void)
 	/* Print the header (character name and title) */
 	strnfmt(buf, sizeof(buf), "%s the %s %s",
 	        op_ptr->full_name,
-	        p_name + rp_ptr->name,
-	        c_name + cp_ptr->name);
+	        rp_ptr->name,
+	        cp_ptr->name);
 
 	c_put_str(TERM_WHITE, buf, 0, 0);
 	c_put_str(TERM_WHITE, "============================================================", 1, 0);
@@ -448,6 +448,9 @@ void dump_history(ang_file *file)
 	size_t i;
 	char buf[90];
 
+	/* We use either ascii or system-specific encoding */
+ 	int encoding = OPT(xchars_to_file) ? SYSTEM_SPECIFIC : ASCII;
+
         file_putf(file, "============================================================\n");
         file_putf(file, "                   CHAR.\n");
         file_putf(file, "|   TURN  | DEPTH |LEVEL| EVENT\n");
@@ -467,7 +470,7 @@ void dump_history(ang_file *file)
                 if (history_list[i].type & HISTORY_ARTIFACT_LOST)
                                 my_strcat(buf, " (LOST)", sizeof(buf));
 
-		file_put(file, buf);
+		x_file_putf(file, encoding, "%s%", buf);
 		file_put(file, "\n");
 	}
 

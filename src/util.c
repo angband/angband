@@ -15,8 +15,12 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "button.h"
 #include "game-event.h"
+#include "macro.h"
+#include "cmds.h"
 
 /*
  * Convert a decimal to a single digit hex number
@@ -632,270 +636,6 @@ int roman_to_int(const char *roman)
 	return n;
 }
 
-
-/*
- * The "macro" package
- *
- * Functions are provided to manipulate a collection of macros, each
- * of which has a trigger pattern string and a resulting action string
- * and a small set of flags.
- */
-
-
-
-/*
- * Determine if any macros have ever started with a given character.
- */
-static bool macro__use[256];
-
-
-/*
- * Find the macro (if any) which exactly matches the given pattern
- */
-int macro_find_exact(cptr pat)
-{
-	int i;
-
-	/* Nothing possible */
-	if (!macro__use[(byte)(pat[0])])
-		return -1;
-
-	/* Scan the macros */
-	for (i = 0; i < macro__num; ++i)
-	{
-		if (streq(macro__pat[i], pat))
-			return i;
-	}
-
-	/* No matches */
-	return -1;
-}
-
-
-/*
- * Find the first macro (if any) which contains the given pattern
- */
-static int macro_find_check(cptr pat)
-{
-	int i;
-
-	/* Nothing possible */
-	if (!macro__use[(byte)(pat[0])])
-		return -1;
-
-	/* Scan the macros */
-	for (i = 0; i < macro__num; ++i)
-	{
-		if (prefix(macro__pat[i], pat))
-			return i;
-	}
-
-	/* Nothing */
-	return -1;
-}
-
-
-/*
- * Find the first macro (if any) which contains the given pattern and more
- */
-static int macro_find_maybe(cptr pat)
-{
-	int i;
-
-	/* Nothing possible */
-	if (!macro__use[(byte)(pat[0])])
-		return -1;
-
-	/* Scan the macros */
-	for (i = 0; i < macro__num; ++i)
-	{
-		if (prefix(macro__pat[i], pat) && !streq(macro__pat[i], pat))
-			return i;
-	}
-
-	/* Nothing */
-	return -1;
-}
-
-
-
-/*
- * Find the longest macro (if any) which starts with the given pattern
- */
-static int macro_find_ready(cptr pat)
-{
-	int i, t, n = -1, s = -1;
-
-	/* Nothing possible */
-	if (!macro__use[(byte)(pat[0])])
-		return -1;
-
-	/* Scan the macros */
-	for (i = 0; i < macro__num; ++i)
-	{
-		/* Skip macros which are not contained by the pattern */
-		if (!prefix(pat, macro__pat[i])) continue;
-
-		/* Obtain the length of this macro */
-		t = strlen(macro__pat[i]);
-
-		/* Only track the "longest" pattern */
-		if ((n >= 0) && (s > t)) continue;
-
-		/* Track the entry */
-		n = i;
-		s = t;
-	}
-
-	/* Result */
-	return n;
-}
-
-
-/*
- * Add a macro definition (or redefinition).
- *
- * We should use "act == NULL" to "remove" a macro, but this might make it
- * impossible to save the "removal" of a macro definition.  XXX XXX XXX
- *
- * We should consider refusing to allow macros which contain existing macros,
- * or which are contained in existing macros, because this would simplify the
- * macro analysis code.  XXX XXX XXX
- *
- * We should consider removing the "command macro" crap, and replacing it
- * with some kind of "powerful keymap" ability, but this might make it hard
- * to change the "roguelike" option from inside the game.  XXX XXX XXX
- */
-errr macro_add(cptr pat, cptr act)
-{
-	int n;
-
-	if (!pat || !act) return (-1);
-
-
-	/* Look for any existing macro */
-	n = macro_find_exact(pat);
-
-	/* Replace existing macro */
-	if (n >= 0)
-	{
-		string_free(macro__act[n]);
-	}
-
-	/* Create a new macro */
-	else
-	{
-		/* Get a new index */
-		n = macro__num++;
-		if (macro__num >= MACRO_MAX) quit("Too many macros!");
-
-		/* Save the pattern */
-		macro__pat[n] = string_make(pat);
-	}
-
-	/* Save the action */
-	macro__act[n] = string_make(act);
-
-	/* Efficiency */
-	macro__use[(byte)(pat[0])] = TRUE;
-
-	/* Success */
-	return (0);
-}
-
-
-
-/*
- * Initialize the "macro" package
- */
-errr macro_init(void)
-{
-	/* Macro patterns */
-	macro__pat = C_ZNEW(MACRO_MAX, char *);
-
-	/* Macro actions */
-	macro__act = C_ZNEW(MACRO_MAX, char *);
-
-	/* Success */
-	return (0);
-}
-
-
-/*
- * Free the macro package
- */
-errr macro_free(void)
-{
-	int i;
-	size_t j;
-
-	/* Free the macros */
-	for (i = 0; i < macro__num; ++i)
-	{
-		string_free(macro__pat[i]);
-		string_free(macro__act[i]);
-	}
-
-	FREE(macro__pat);
-	FREE(macro__act);
-
-	/* Free the keymaps */
-	for (i = 0; i < KEYMAP_MODES; ++i)
-	{
-		for (j = 0; j < N_ELEMENTS(keymap_act[i]); ++j)
-		{
-			string_free(keymap_act[i][j]);
-			keymap_act[i][j] = NULL;
-		}
-	}
-
-	/* Success */
-	return (0);
-}
-
-
-/*
- * Free the macro trigger package
- */
-errr macro_trigger_free(void)
-{
-	int i;
-	int num;
-
-	if (macro_template != NULL)
-	{
-		/* Free the template */
-		string_free(macro_template);
-		macro_template = NULL;
-
-		/* Free the trigger names and keycodes */
-		for (i = 0; i < max_macrotrigger; i++)
-		{
-			string_free(macro_trigger_name[i]);
-
-			string_free(macro_trigger_keycode[0][i]);
-			string_free(macro_trigger_keycode[1][i]);
-		}
-
-		/* No more macro triggers */
-		max_macrotrigger = 0;
-
-		/* Count modifier-characters */
-		num = strlen(macro_modifier_chr);
-
-		/* Free modifier names */
-		for (i = 0; i < num; i++)
-			string_free(macro_modifier_name[i]);
-
-		/* Free modifier chars */
-		string_free(macro_modifier_chr);
-	}
-
-	/* Success */
-	return (0);
-}
-
-
 /*
  * Flush all pending input.
  *
@@ -1002,7 +742,7 @@ static ui_event_data inkey_aux(int scan_cutoff)
 
 	
 	/* End "macro action" */
-	if ((ch == 30) || (ch == '\xff'))
+	if (ke.key == 30 || ke.type == EVT_MOUSE)
 	{
 		parse_macro = FALSE;
 		return (ke);
@@ -1016,7 +756,7 @@ static ui_event_data inkey_aux(int scan_cutoff)
 	
 
 	/* Save the first key, advance */
-	buf[p++] = ch;
+	buf[p++] = ke.key;
 	buf[p] = '\0';
 	
 	
@@ -1138,7 +878,7 @@ static ui_event_data inkey_aux(int scan_cutoff)
  * trigger any macros, and cannot be bypassed by the Borg.  It is used
  * in Angband to handle "keymaps".
  */
-static cptr inkey_next = NULL;
+cptr inkey_next = NULL;
 
 
 #ifdef ALLOW_BORG
@@ -1849,6 +1589,12 @@ void screen_load(void)
 
 	/* Decrease "icky" depth */
 	character_icky--;
+
+	/* Mega hack -redraw big graphics - sorry NRM */
+	if ((tile_width > 1) || (tile_height > 1)) 
+	{
+	        do_cmd_redraw();
+	}
 }
 
 
@@ -1923,7 +1669,10 @@ void text_out_to_screen(byte a, cptr str)
 	int wrap;
 
 	cptr s;
+	char buf[1024];
 
+	/* We use either ascii or system-specific encoding */
+	int encoding = (OPT(xchars_to_file)) ? SYSTEM_SPECIFIC : ASCII;
 
 	/* Obtain the size */
 	(void)Term_get_size(&wid, &h);
@@ -1931,6 +1680,12 @@ void text_out_to_screen(byte a, cptr str)
 	/* Obtain the cursor */
 	(void)Term_locate(&x, &y);
 
+	/* Copy to a rewriteable string */
+	my_strcpy(buf, str, 1024);
+	
+	/* Translate it to 7-bit ASCII or system-specific format */
+	xstr_trans(buf, encoding);
+	
 	/* Use special wrapping boundary? */
 	if ((text_out_wrap > 0) && (text_out_wrap < wid))
 		wrap = text_out_wrap;
@@ -1938,7 +1693,7 @@ void text_out_to_screen(byte a, cptr str)
 		wrap = wid;
 
 	/* Process the string */
-	for (s = str; *s; s++)
+	for (s = buf; *s; s++)
 	{
 		char ch;
 
@@ -1952,11 +1707,14 @@ void text_out_to_screen(byte a, cptr str)
 			/* Clear line, move cursor */
 			Term_erase(x, y, 255);
 
+			x += text_out_pad;
+			Term_gotoxy(x, y);
+
 			continue;
 		}
 
 		/* Clean up the char */
-		ch = (isprint((unsigned char)*s) ? *s : ' ');
+		ch = (my_isprint((unsigned char)*s) ? *s : ' ');
 
 		/* Wrap words as needed */
 		if ((x >= wrap - 1) && (ch != ' '))
@@ -1996,6 +1754,9 @@ void text_out_to_screen(byte a, cptr str)
 			/* Clear line, move cursor */
 			Term_erase(x, y, 255);
 
+			x += text_out_pad;
+			Term_gotoxy(x, y);
+
 			/* Wrap the word (if any) */
 			for (i = n; i < wrap - 1; i++)
 			{
@@ -2031,17 +1792,29 @@ void text_out_to_screen(byte a, cptr str)
  */
 void text_out_to_file(byte a, cptr str)
 {
+	cptr s;
+	char buf[1024];
+
 	/* Current position on the line */
 	static int pos = 0;
 
 	/* Wrap width */
 	int wrap = (text_out_wrap ? text_out_wrap : 75);
 
-	/* Current location within "str" */
-	cptr s = str;
+	/* We use either ascii or system-specific encoding */
+ 	int encoding = OPT(xchars_to_file) ? SYSTEM_SPECIFIC : ASCII;
 
 	/* Unused parameter */
 	(void)a;
+
+	/* Copy to a rewriteable string */
+ 	my_strcpy(buf, str, 1024);
+
+ 	/* Translate it to 7-bit ASCII or system-specific format */
+ 	xstr_trans(buf, encoding);
+
+	/* Current location within "buf" */
+ 	s = buf;
 
 	/* Process the string */
 	while (*s)
@@ -2111,7 +1884,7 @@ void text_out_to_file(byte a, cptr str)
 		for (n = 0; n < len; n++)
 		{
 			/* Ensure the character is printable */
-			ch = (isprint((unsigned char) s[n]) ? s[n] : ' ');
+			ch = (my_isprint((unsigned char) s[n]) ? s[n] : ' ');
 
 			/* Write out the character */
 			file_writec(text_out_file, ch);
@@ -2427,7 +2200,7 @@ bool askfor_aux_keypress(char *buf, size_t buflen, size_t *curs, size_t *len, ch
 			bool atnull = (buf[*curs] == 0);
 
 
-			if (!isprint((unsigned char)keypress))
+			if (!my_isprint((unsigned char)keypress))
 			{
 				bell("Illegal edit key!");
 				break;
@@ -2570,7 +2343,7 @@ static bool get_name_keypress(char *buf, size_t buflen, size_t *curs, size_t *le
 	{
 		case '*':
 		{
-			*len = randname_make(RANDNAME_TOLKIEN, 4, 8, buf, buflen);
+			*len = randname_make(RANDNAME_TOLKIEN, 4, 8, buf, buflen, name_sections);
 			buf[0] = toupper((unsigned char) buf[0]);
 			*curs = 0;
 			result = FALSE;
@@ -2646,6 +2419,9 @@ bool get_string(cptr prompt, char *buf, size_t len)
 
 	/* Ask the user for a string */
 	res = askfor_aux(buf, len, NULL);
+
+	/* Translate it to 8-bit (Latin-1) */
+ 	xstr_trans(buf, LATIN1);
 
 	/* Clear prompt */
 	prt("", 0, 0);
@@ -2950,295 +2726,6 @@ void pause_line(int row)
 
 
 /*
- * Hack -- special buffer to hold the action of the current keymap
- */
-static char request_command_buffer[256];
-
-
-
-/*
- * Request a command from the user.
- *
- * Sets p_ptr->command_cmd, p_ptr->command_arg.  
- * May modify p_ptr->command_new.
- *
- * Note that "caret" ("^") is treated specially, and is used to
- * allow manual input of control characters.  This can be used
- * on many machines to request repeated tunneling (Ctrl-H) and
- * on the Macintosh to request "Control-Caret".
- *
- * Note that "backslash" is treated specially, and is used to bypass any
- * keymap entry for the following character.  This is useful for macros.
- *
- * Note that this command is used both in the dungeon and in
- * stores, and must be careful to work in both situations.
- *
- * Note that "p_ptr->command_new" may not work any more.  XXX XXX XXX
- */
-void request_command(void)
-{
-	int i;
-	int mode;
-
-	char tmp[2] = { '\0', '\0' };
-
-	ui_event_data ke = EVENT_EMPTY;
-
-	cptr act;
-
-
-	if (OPT(rogue_like_commands))
-		mode = KEYMAP_MODE_ROGUE;
-	else
-		mode = KEYMAP_MODE_ORIG;
-
-
-	/* Reset command/argument/direction */
-	p_ptr->command_cmd = 0;
-	p_ptr->command_arg = 0;
-
-
-	/* Get command */
-	while (1)
-	{
-		/* Hack -- auto-commands */
-		if (p_ptr->command_new)
-		{
-			/* Flush messages */
-			message_flush();
-
-			/* Use auto-command */
-			ke.key = (char)p_ptr->command_new;
-			ke.type = EVT_KBRD;
-
-			/* Forget it */
-			p_ptr->command_new = 0;
-		}
-
-		/* Get a keypress in "command" mode */
-		else
-		{
-			/* Hack -- no flush needed */
-			msg_flag = FALSE;
-
-			/* Activate "command mode" */
-			inkey_flag = TRUE;
-
-			/* Get a command */
-			ke = inkey_ex();
-		}
-
-		/* Clear top line */
-		prt("", 0, 0);
-
-
-		/* Resize events XXX XXX */
-		if (ke.type == EVT_RESIZE)
-		{
-			p_ptr->command_cmd_ex = ke;
-			p_ptr->command_new = ' ';
-		}
-
-
-		/* Command Count */
-		if (ke.key == '0')
-		{
-			int old_arg = p_ptr->command_arg;
-
-			/* Reset */
-			p_ptr->command_arg = 0;
-
-			/* Begin the input */
-			prt("Count: ", 0, 0);
-
-			/* Get a command count */
-			while (1)
-			{
-				/* Get a new keypress */
-				ke.key = inkey();
-
-				/* Simple editing (delete or backspace) */
-				if ((ke.key == 0x7F) || (ke.key == KTRL('H')))
-				{
-					/* Delete a digit */
-					p_ptr->command_arg = p_ptr->command_arg / 10;
-
-					/* Show current count */
-					prt(format("Count: %d", p_ptr->command_arg), 0, 0);
-				}
-
-				/* Actual numeric data */
-				else if (isdigit((unsigned char)ke.key))
-				{
-					/* Stop count at 9999 */
-					if (p_ptr->command_arg >= 1000)
-					{
-						/* Warn */
-						bell("Invalid repeat count!");
-
-						/* Limit */
-						p_ptr->command_arg = 9999;
-					}
-
-					/* Increase count */
-					else
-					{
-						/* Incorporate that digit */
-						p_ptr->command_arg = p_ptr->command_arg * 10 + D2I(ke.key);
-					}
-
-					/* Show current count */
-					prt(format("Count: %d", p_ptr->command_arg), 0, 0);
-				}
-
-				/* Exit on "unusable" input */
-				else
-				{
-					break;
-				}
-			}
-
-			/* Hack -- Handle "zero" */
-			if (p_ptr->command_arg == 0)
-			{
-				/* Default to 99 */
-				p_ptr->command_arg = 99;
-
-				/* Show current count */
-				prt(format("Count: %d", p_ptr->command_arg), 0, 0);
-			}
-
-			/* Hack -- Handle "old_arg" */
-			if (old_arg != 0)
-			{
-				/* Restore old_arg */
-				p_ptr->command_arg = old_arg;
-
-				/* Show current count */
-				prt(format("Count: %d", p_ptr->command_arg), 0, 0);
-			}
-
-			/* Hack -- white-space means "enter command now" */
-			if ((ke.key == ' ') || (ke.key == '\n') || (ke.key == '\r'))
-			{
-				/* Get a real command */
-				if (!get_com("Command: ", &ke.key))
-				{
-					/* Clear count */
-					p_ptr->command_arg = 0;
-
-					/* Continue */
-					continue;
-				}
-			}
-		}
-
-		/* Special case for the arrow keys */
-		if (isarrow(ke.key))
-		{
-			switch (ke.key)
-			{
-				case ARROW_DOWN:    ke.key = '2'; break;
-				case ARROW_LEFT:    ke.key = '4'; break;
-				case ARROW_RIGHT:   ke.key = '6'; break;
-				case ARROW_UP:      ke.key = '8'; break;
-			}
-		}
-
-		/* Allow "keymaps" to be bypassed */
-		if (ke.key == '\\')
-		{
-			/* Get a real command */
-			(void)get_com("Command: ", &ke.key);
-
-			/* Hack -- bypass keymaps */
-			if (!inkey_next) inkey_next = "";
-		}
-
-
-		/* Allow "control chars" to be entered */
-		if (ke.key == '^')
-		{
-			/* Get a new command and controlify it */
-			if (get_com("Control: ", &ke.key)) ke.key = KTRL(ke.key);
-		}
-
-
-		/* Buttons are always specified in standard keyset */
-		if (ke.type == EVT_BUTTON)
-		{
-			act = tmp;
-			tmp[0] = ke.key;
-		}
-
-		/* Look up applicable keymap */
-		else
-			act = keymap_act[mode][(byte)(ke.key)];
-
-		/* Apply keymap if not inside a keymap already */
-		if (act && !inkey_next)
-		{
-			/* Install the keymap */
-			my_strcpy(request_command_buffer, act,
-			          sizeof(request_command_buffer));
-
-			/* Start using the buffer */
-			inkey_next = request_command_buffer;
-
-			/* Continue */
-			continue;
-		}
-
-
-		/* Paranoia */
-		if (ke.key == '\0') continue;
-
-
-		/* Use command */
-		p_ptr->command_cmd = ke.key;
-		p_ptr->command_cmd_ex = ke;
-
-		/* Done */
-		break;
-	}
-
-
-	/* Hack -- Scan equipment */
-	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
-	{
-		char verify_inscrip[] = "^*";
-		unsigned n;
-
-		object_type *o_ptr = &inventory[i];
-
-		/* Skip non-objects */
-		if (!o_ptr->k_idx) continue;
-
-		/* Set up string to look for, e.g. "^d" */
-		verify_inscrip[1] = p_ptr->command_cmd;
-
-		/* Verify command */
-		n = check_for_inscrip(o_ptr, "^*") + check_for_inscrip(o_ptr, verify_inscrip);
-		while (n--)
-		{
-			if (!get_check("Are you sure? "))
-				p_ptr->command_cmd = '\n';
-		}
-	}
-
-
-	/* Hack -- erase the message line. */
-	prt("", 0, 0);
-
-	/* Hack again -- apply the modified key command */
-	p_ptr->command_cmd_ex.key = p_ptr->command_cmd;
-}
-
-
-
-
-
-/*
  * Check a char for "vowel-hood"
  */
 bool is_a_vowel(int ch)
@@ -3264,6 +2751,7 @@ bool is_a_vowel(int ch)
  *
  * Unlike Sangband, we don't translate these colours here.
  */
+/* XXX: having color_{char,text}_to_attr() separately is moronic. */
 int color_char_to_attr(char c)
 {
 	int a;

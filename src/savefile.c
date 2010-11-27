@@ -453,6 +453,10 @@ bool old_save(void)
  */
 bool old_load(void)
 {
+	byte sf_major = 0;
+	byte sf_minor = 0;
+	byte sf_patch = 0;
+	byte sf_extra = 0;
 	ang_file *fh;
 	byte head[8];
 

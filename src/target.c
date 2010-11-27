@@ -15,9 +15,12 @@
  *    and not for profit purposes provided that this copyright and statement
  *    are included in all such copies.  Other copyrights may also apply.
  */
+
 #include "angband.h"
+#include "cave.h"
 #include "game-cmd.h"
-/*#include "cmds.h"*/
+#include "monster/monster.h"
+#include "squelch.h"
 
 /* 
  * Height of the help screen; any higher than 4 will overlap the health
@@ -234,60 +237,37 @@ void target_set_location(int y, int x)
  * We use "u" and "v" to point to arrays of "x" and "y" positions,
  * and sort the arrays by double-distance to the player.
  */
-static bool ang_sort_comp_distance(const void *u, const void *v, int a, int b)
+static int cmp_distance(const void *a, const void *b)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	const byte *x = u;
-	const byte *y = v;
+	const struct point *pa = a;
+	const struct point *pb = b;
 
 	int da, db, kx, ky;
 
 	/* Absolute distance components */
-	kx = x[a]; kx -= px; kx = ABS(kx);
-	ky = y[a]; ky -= py; ky = ABS(ky);
+	kx = pa->x; kx -= px; kx = ABS(kx);
+	ky = pa->y; ky -= py; ky = ABS(ky);
 
 	/* Approximate Double Distance to the first point */
 	da = ((kx > ky) ? (kx + kx + ky) : (ky + ky + kx));
 
 	/* Absolute distance components */
-	kx = x[b]; kx -= px; kx = ABS(kx);
-	ky = y[b]; ky -= py; ky = ABS(ky);
+	kx = pb->x; kx -= px; kx = ABS(kx);
+	ky = pb->y; ky -= py; ky = ABS(ky);
 
 	/* Approximate Double Distance to the first point */
 	db = ((kx > ky) ? (kx + kx + ky) : (ky + ky + kx));
 
 	/* Compare the distances */
-	return (da <= db);
+	if (da < db)
+		return -1;
+	if (da > db)
+		return 1;
+	return 0;
 }
-
-
-/*
- * Sorting hook -- swap function -- by "distance to player"
- *
- * We use "u" and "v" to point to arrays of "x" and "y" positions,
- * and sort the arrays by distance to the player.
- */
-static void ang_sort_swap_distance(void *u, void *v, int a, int b)
-{
-	byte *x = (byte*)(u);
-	byte *y = (byte*)(v);
-
-	byte temp;
-
-	/* Swap "x" */
-	temp = x[a];
-	x[a] = x[b];
-	x[b] = temp;
-
-	/* Swap "y" */
-	temp = y[a];
-	y[a] = y[b];
-	y[b] = temp;
-}
-
-
 
 /*
  * Hack -- help "select" a location (see below)
@@ -411,18 +391,17 @@ static bool target_set_interactive_accept(int y, int x)
 	return (FALSE);
 }
 
-
 /*
  * Prepare the "temp" array for "target_interactive_set"
  *
  * Return the number of target_able monsters in the set.
  */
+/* XXX: Untangle this. The whole temp_* thing is complete madness. */
 static void target_set_interactive_prepare(int mode)
 {
 	int y, x;
-
-	/* Reset "temp" array */
-	temp_n = 0;
+	struct point *pts = mem_zalloc(sizeof(*pts) * SCREEN_HGT * SCREEN_WID);
+	unsigned int n = 0;
 
 	/* Scan the current panel */
 	for (y = Term->offset_y; y < Term->offset_y + SCREEN_HGT; y++)
@@ -446,18 +425,20 @@ static void target_set_interactive_prepare(int mode)
 			}
 
 			/* Save the location */
-			temp_x[temp_n] = x;
-			temp_y[temp_n] = y;
-			temp_n++;
+			pts[n].x = x;
+			pts[n].y = y;
+			n++;
 		}
 	}
 
-	/* Set the sort hooks */
-	ang_sort_comp = ang_sort_comp_distance;
-	ang_sort_swap = ang_sort_swap_distance;
+	sort(pts, n, sizeof(*pts), cmp_distance);
 
-	/* Sort the positions */
-	ang_sort(temp_x, temp_y, temp_n);
+	/* Reset "temp" array */
+	temp_n = n;
+	while (n--) {
+		temp_x[n] = pts[n].x;
+		temp_y[n] = pts[n].y;
+	}
 }
 
 
@@ -496,8 +477,9 @@ bool adjust_panel_help(int y, int x, bool help)
 		screen_hgt = (j == 0) ? screen_hgt_main : t->hgt;
 		screen_wid = (j == 0) ? (Term->wid - COL_MAP - 1) : t->wid;
 
-		/* Bigtile panels only have half the width */
-		if (use_bigtile) screen_wid = screen_wid / 2;
+		/* Bigtile panels need adjustment */
+		screen_wid = screen_wid / tile_width;
+		screen_hgt = screen_hgt / tile_height;
 
 		/* Adjust as needed */
 		while (y >= wy + screen_hgt) wy += screen_hgt / 2;
@@ -995,7 +977,7 @@ static ui_event_data target_set_interactive_aux(int y, int x, int mode)
 		/* Terrain feature if needed */
 		if (boring || (feat > FEAT_INVIS))
 		{
-			cptr name = f_name + f_info[feat].name;
+			cptr name = f_info[feat].name;
 
 			/* Hack -- handle unknown grids */
 			if (feat == FEAT_NONE) name = "unknown grid";
@@ -1226,6 +1208,20 @@ bool target_set_interactive(int mode, int x, int y)
 			/* Assume no "direction" */
 			d = 0;
 
+
+			/* If we click, move the target location to the click and
+			   switch to "free targetting" mode by unsetting 'flag'.
+			   This means we get some info about wherever we've picked. */
+			if (query.type == EVT_MOUSE)
+			{
+				x = KEY_GRID_X(query);
+				y = KEY_GRID_Y(query);
+				flag = FALSE;
+				break;
+			}
+			else
+			{
+
 			/* Analyze */
 			switch (query.key)
 			{
@@ -1277,16 +1273,6 @@ bool target_set_interactive(int mode, int x, int y)
 					break;
 				}
 
-				/* If we click, move the target location to the click and
-				   switch to "free targetting" mode by unsetting 'flag'.
-				   This means we get some info about wherever we've picked. */
-				case '\xff':
-				{
-					x = KEY_GRID_X(query);
-					y = KEY_GRID_Y(query);
-					flag = FALSE;
-					break;
-				}
 				case 't':
 				case '5':
 				case '0':
@@ -1309,7 +1295,8 @@ bool target_set_interactive(int mode, int x, int y)
 
 				case 'g':
 				{
-					cmd_insert(CMD_PATHFIND, y, x);
+					cmd_insert(CMD_PATHFIND);
+					cmd_set_arg_point(cmd_get_top(), 0, y, x);
 					done = TRUE;
 					break;
 				}
@@ -1338,6 +1325,8 @@ bool target_set_interactive(int mode, int x, int y)
 
 					break;
 				}
+			}
+
 			}
 
 			/* Hack -- move around */
@@ -1400,6 +1389,44 @@ bool target_set_interactive(int mode, int x, int y)
 			/* Assume no direction */
 			d = 0;
 
+			if (query.type == EVT_MOUSE)
+			{
+				/* We only target if we click somewhere where the cursor
+				   is already (i.e. a double-click without a time limit) */
+				if (KEY_GRID_X(query) == x && KEY_GRID_Y(query) == y)
+				{
+					/* Make an attempt to target the monster on the given
+					   square rather than the square itself (it seems this
+					   is the more likely intention of clicking on a 
+					   monster). */
+					int m_idx = cave_m_idx[y][x];
+
+					if ((m_idx > 0) && target_able(m_idx))
+					{
+						health_track(m_idx);
+						target_set_monster(m_idx);
+					}
+					else
+					{
+						/* There is no monster, or it isn't targettable,
+						   so target the location instead. */
+						target_set_location(y, x);
+					}
+
+					done = TRUE;
+				}
+				else
+				{
+					/* Just move the cursor for now - another click will
+					   target. */
+					x = KEY_GRID_X(query);
+					y = KEY_GRID_Y(query);
+				}
+				break;
+			}
+			else
+			{
+
 			/* Analyze the keypress */
 			switch (query.key)
 			{
@@ -1461,41 +1488,6 @@ bool target_set_interactive(int mode, int x, int y)
 					break;
 				}
 
-				case '\xff':
-				{
-					/* We only target if we click somewhere where the cursor
-					   is already (i.e. a double-click without a time limit) */
-					if (KEY_GRID_X(query) == x && KEY_GRID_Y(query) == y)
-					{
-						/* Make an attempt to target the monster on the given
-						   square rather than the square itself (it seems this
-						   is the more likely intention of clicking on a 
-						   monster). */
-						int m_idx = cave_m_idx[y][x];
-
-						if ((m_idx > 0) && target_able(m_idx))
-						{
-							health_track(m_idx);
-							target_set_monster(m_idx);
-						}
-						else
-						{
-							/* There is no monster, or it isn't targettable,
-							   so target the location instead. */
-							target_set_location(y, x);
-						}
-
-						done = TRUE;
-					}
-					else
-					{
-						/* Just move the cursor for now - another click will
-						   target. */
-						x = KEY_GRID_X(query);
-						y = KEY_GRID_Y(query);
-					}
-					break;
-				}
 				case 't':
 				case '5':
 				case '0':
@@ -1508,7 +1500,8 @@ bool target_set_interactive(int mode, int x, int y)
 
 				case 'g':
 				{
-					cmd_insert(CMD_PATHFIND, y, x);
+					cmd_insert(CMD_PATHFIND);
+					cmd_set_arg_point(cmd_get_top(), 0, y, x);
 					done = TRUE;
 					break;
 				}
@@ -1537,6 +1530,8 @@ bool target_set_interactive(int mode, int x, int y)
 
 					break;
 				}
+			}
+
 			}
 
 			/* Handle "direction" */

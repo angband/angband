@@ -1344,14 +1344,14 @@ I:45:31:d4
 W:30:0:2:0
 A:50:5 to 50
 P:0:0d0:0:-3d4:0
-F:DEX
+F:DEX | STEALTH
 
 N:221:the Dog
 G:=:d
-I:45:32:-4
+I:45:32:-1
 W:0:0:2:0
 A:50:5 to 50
-P:0:0d0:0:0:-10
+P:0:0d0:d3:d3:-10
 F:RES_FEAR | STEALTH | EASY_KNOW
 
 ### 222, sval 33

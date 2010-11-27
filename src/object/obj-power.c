@@ -87,8 +87,10 @@
  * We go up to +20 here, but in practice it will never get there
  */
 static s16b speed_power[21] =
-	{0, 10, 21, 33, 46, 60, 75, 91, 108, 126, 145,
-	163, 180, 196, 211, 225, 238, 250, 261, 271, 280};
+/*	{0, 10, 21, 33, 46, 60, 75, 91, 108, 126, 145,
+	163, 180, 196, 211, 225, 238, 250, 261, 271, 280}; */
+	{0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200,
+	220, 240, 260, 280, 300, 320, 340, 360, 380, 400};
 
 /*
  * Boost ratings for combinations of ability bonuses
@@ -710,8 +712,8 @@ s32b object_power(const object_type* o_ptr, int verbose, ang_file *log_file,
 		if (o_ptr->pval > 0)
 		{
 			extra_stat_bonus += (of_has(flags, OF_STR) ? 1 * o_ptr->pval : 0);
-			extra_stat_bonus += (of_has(flags, OF_INT) ? 3 * o_ptr->pval / 4 : 0);
-			extra_stat_bonus += (of_has(flags, OF_WIS) ? 3 * o_ptr->pval / 4 : 0);
+			extra_stat_bonus += (of_has(flags, OF_INT) ? 1 * o_ptr->pval : 0);
+			extra_stat_bonus += (of_has(flags, OF_WIS) ? 1 * o_ptr->pval : 0);
 			extra_stat_bonus += (of_has(flags, OF_DEX) ? 1 * o_ptr->pval : 0);
 			extra_stat_bonus += (of_has(flags, OF_CON) ? 1 * o_ptr->pval : 0);
 			extra_stat_bonus += (of_has(flags, OF_CHR) ? 0 * o_ptr->pval : 0);

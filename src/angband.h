@@ -43,6 +43,7 @@
 #include "player/types.h"
 #include "player/player.h"
 #include "store.h"
+#include "x-char.h"
 
 #include "ui.h"
 #include "z-type.h"
