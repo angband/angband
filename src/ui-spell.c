@@ -287,7 +287,7 @@ void textui_spell_browse(void)
 	item_tester_hook = obj_can_browse;
 	if (!get_item(&item, "Browse which book? ",
 			"You have no books that you can read.",
-			'b', (USE_INVEN | USE_FLOOR | IS_HARMLESS)))
+			CMD_BROWSE_SPELL, (USE_INVEN | USE_FLOOR | IS_HARMLESS)))
 		return;
 
 	/* Track the object kind */
@@ -307,7 +307,7 @@ void textui_obj_study(void)
 	item_tester_hook = obj_can_study;
 	if (!get_item(&item, "Study which book? ",
 			"You have no books that you can read.",
-			'G', (USE_INVEN | USE_FLOOR)))
+			CMD_STUDY_BOOK, (USE_INVEN | USE_FLOOR)))
 		return;
 
 	track_object(item);
@@ -339,7 +339,7 @@ void textui_obj_cast(void)
 	item_tester_hook = obj_can_cast_from;
 	if (!get_item(&item, "Cast from which book? ",
 			"You have no books that you can read.",
-			'm', (USE_INVEN | USE_FLOOR)))
+			CMD_CAST, (USE_INVEN | USE_FLOOR)))
 		return;
 
 	/* Track the object kind */

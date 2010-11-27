@@ -348,7 +348,6 @@ void cmd_set_arg_number(game_command *cmd, int n, int num)
 	cmd->arg_present[n] = TRUE;
 }
 
-
 /*
  * Inserts a command in the queue to be carried out, with the given
  * number of repeats.
@@ -406,7 +405,7 @@ void process_command(cmd_context ctx, bool no_request)
 				int item;
 
 				item_tester_hook = is->filter;
-				if (!get_item(&item, is->prompt, is->noop, 0, is->mode))
+				if (!get_item(&item, is->prompt, is->noop, cmd->command, is->mode))
 					return;
 
 				cmd_set_arg_item(cmd, 0, item);
