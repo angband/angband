@@ -150,7 +150,10 @@ typedef struct game_command
 	cmd_code command;
 
 	/* Number of times to attempt to repeat command. */
-	int nrepeats; 
+	int nrepeats;
+
+	/* Key originally pressed to initiate command, if any */
+	unsigned char key;
 
 	/* Arguments to the command */
 	cmd_arg arg[CMD_MAX_ARGS];
@@ -193,6 +196,7 @@ void cmd_set_arg_target(game_command *cmd, int n, int target);
 void cmd_set_arg_point(game_command *cmd, int n, int x, int y);
 void cmd_set_arg_item(game_command *cmd, int n, int item);
 void cmd_set_arg_number(game_command *cmd, int n, int num);
+void cmd_set_key(game_command *cmd, unsigned char key);
 
 /* 
  * Gets the next command from the queue, optionally waiting to allow

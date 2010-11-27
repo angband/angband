@@ -1006,7 +1006,7 @@ static void do_birth_reset(bool use_quickstart, birther *quickstart_prev)
 void player_birth(bool quickstart_allowed)
 {
 	int i;
-	game_command blank = { CMD_NULL, 0, {{0}} };
+	game_command blank = { CMD_NULL, 0, 0, {{0}} };
 	game_command *cmd = &blank;
 
 	int stats[A_MAX];
