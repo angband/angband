@@ -76,6 +76,7 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_animate_flicker         66
 #define OPT_show_piles				67
 #define OPT_center_player			68
+#define OPT_purple_uniques			69
 #define OPT_xchars_to_file			70
 #define OPT_auto_more			71
 #define OPT_hp_changes_color		74

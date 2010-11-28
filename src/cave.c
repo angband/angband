@@ -744,12 +744,23 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			byte da;
 			char dc;
 			
-			/* Desired attr & char*/
+			/* Desired attr & char */
 			da = r_ptr->x_attr;
 			dc = r_ptr->x_char;
-			
+
+			/* Turn uniques purple if desired (violet, actually) */
+			if (OPT(purple_uniques) && rf_has(r_ptr->flags,
+				RF_UNIQUE)) 
+			{
+				/* Use (light) violet attr */
+				a = TERM_L_VIOLET;
+
+				/* Use char */
+				c = dc;
+			}
+
 			/* Special attr/char codes */
-			if ((da & 0x80) && (dc & 0x80))
+			else if ((da & 0x80) && (dc & 0x80))
 			{
 				/* Use attr */
 				a = da;
@@ -770,8 +781,8 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			}
 			
 			/* Normal monster (not "clear" in any way) */
-			else if (!flags_test(r_ptr->flags, RF_SIZE, RF_ATTR_CLEAR,
-			                           RF_CHAR_CLEAR, FLAG_END))
+			else if (!flags_test(r_ptr->flags, RF_SIZE,
+				RF_ATTR_CLEAR, RF_CHAR_CLEAR, FLAG_END))
 			{
 				/* Use attr */
 				a = da;
@@ -808,7 +819,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 				a = da;
 			}
 
-			/* Store the drawing attr so we can use it other places too */
+			/* Store the drawing attr so we can use it elsewhere */
 			m_ptr->attr = a;
 		}
 	}

@@ -58,7 +58,7 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_view_perma_grids,
 		OPT_view_torch_grids,
 		OPT_animate_flicker,
-		OPT_NONE,
+		OPT_purple_uniques,
 		OPT_NONE,
 		OPT_NONE,
 	},
@@ -203,7 +203,7 @@ static option_entry options[OPT_MAX] =
 { "animate_flicker",     "Animate multi-colored monsters and items",    FALSE }, /* 66 */
 { "show_piles",          "Show stacks using special attr/char",         FALSE }, /* 67 */
 { "center_player",       "Center map continuously",                     FALSE }, /* 68 */
-{ NULL,                  NULL,                                          FALSE }, /* 69 */
+{ "purple_uniques",      "Show unique monsters in a special colour",    FALSE }, /* 69 */
 { "xchars_to_file",      "Allow accents in output files",               FALSE }, /* 70 */
 { "auto_more",           "Automatically clear '-more-' prompts",        FALSE }, /* 71 */
 { NULL,                  NULL,                                          FALSE }, /* 72 */
@@ -327,7 +327,7 @@ static option_entry options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 190 */
 { NULL,                  NULL,                                          FALSE }, /* 191 */
 { "adult_maximize",      "Maximize effect of race/class bonuses",       TRUE },  /* 192 */
-{ "adult_randarts",      "Randomize some of the artifacts (beta)",      FALSE }, /* 193 */
+{ "adult_randarts",      "Randomize the artifacts (except a few)",      FALSE }, /* 193 */
 { NULL,                  NULL,                                          FALSE }, /* 194 */
 { "adult_ironman",       "Restrict the use of stairs/recall",           FALSE }, /* 195 */
 { "adult_no_stores",     "Restrict the use of stores/home",             FALSE }, /* 196 */
