@@ -41,8 +41,6 @@ enum
 	LOC_PRICE = 0,
 	LOC_OWNER,
 	LOC_HEADER,
-	LOC_ITEMS_START,
-	LOC_ITEMS_END,
 	LOC_MORE,
 	LOC_HELP_CLEAR,
 	LOC_HELP_PROMPT,
@@ -1779,29 +1777,30 @@ static void store_display_recalc(menu_type *m)
 	/* Then Y */
 	scr_places_y[LOC_OWNER] = 1;
 	scr_places_y[LOC_HEADER] = 3;
-	scr_places_y[LOC_ITEMS_START] = 4;
 
 	/* If we are displaying help, make the height smaller */
 	if (store_flags & (STORE_SHOW_HELP))
 		hgt -= 3;
 
-	scr_places_y[LOC_ITEMS_END] = hgt - 4;
 	scr_places_y[LOC_MORE] = hgt - 3;
-	scr_places_y[LOC_AU] = hgt - 2;
-
-
-
-	/* If we're displaying the help, then put it with a line of padding */
-	if (!(store_flags & (STORE_SHOW_HELP)))
-	{
-		hgt -= 2;
-	}
-
-	scr_places_y[LOC_HELP_CLEAR] = hgt - 1;
-	scr_places_y[LOC_HELP_PROMPT] = hgt;
+	scr_places_y[LOC_AU] = hgt - 1;
 
 	loc = m->boundary;
-	loc.page_rows = (store_flags & STORE_SHOW_HELP) ? -5 : -1;
+
+	/* If we're displaying the help, then put it with a line of padding */
+	if (store_flags & (STORE_SHOW_HELP))
+	{
+		scr_places_y[LOC_HELP_CLEAR] = hgt - 1;
+		scr_places_y[LOC_HELP_PROMPT] = hgt;
+		loc.page_rows = -5;
+	}
+	else
+	{
+		scr_places_y[LOC_HELP_CLEAR] = hgt - 2;
+		scr_places_y[LOC_HELP_PROMPT] = hgt - 1;
+		loc.page_rows = -2;
+	}
+
 	menu_layout(m, &loc);
 }
 
@@ -2854,24 +2853,11 @@ void store_menu_set_selections(menu_type *menu)
 	}
 }
 
-void store_menu_redraw(menu_type *m)
-{
-	if (m->count > m->active.page_rows)
-		m->prompt = "  -more-";
-	else
-		m->prompt = NULL;
-}
-
 void store_menu_recalc(menu_type *m)
 {
 	store_type *st_ptr = &store[current_store()];
 
 	menu_setpriv(m, st_ptr->stock_num, st_ptr->stock);
-
-	if (m->count > m->active.page_rows)
-		m->prompt = "  -more-";
-	else
-		m->prompt = NULL;
 }
 
 /*
@@ -3040,6 +3026,7 @@ bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
 
 		/* Display the store */
 		store_display_recalc(m);
+		store_menu_recalc(m);
 		store_redraw();
 
 		return processed;
@@ -3048,14 +3035,14 @@ bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
 	return FALSE;
 }
 
-static region store_menu_region = { 1, 4, -1, -1 };
+static region store_menu_region = { 1, 4, -1, -2 };
 static const menu_iter store_menu =
 {
 	NULL,
 	NULL,
 	store_display_entry,
 	store_menu_handle,
-	store_menu_redraw
+	NULL
 };
 
 static const menu_iter store_know_menu =
@@ -3064,7 +3051,7 @@ static const menu_iter store_know_menu =
 	NULL,
 	store_display_entry,
 	NULL,
-	store_menu_redraw
+	NULL
 };
 
 
@@ -3155,9 +3142,9 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 	menu_layout(&menu, &store_menu_region);
 
 	store_menu_set_selections(&menu);
-	store_menu_recalc(&menu);
 	store_flags = STORE_INIT_CHANGE;
 	store_display_recalc(&menu);
+	store_menu_recalc(&menu);
 	store_redraw();
 
 	msg_flag = FALSE;
