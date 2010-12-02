@@ -371,8 +371,7 @@ int main(int argc, char *argv[])
 			{
 				/* Dump usage information */
 				puts("Usage: angband [options] [-- subopts]");
-				puts("  -n             Start a new character");
-				puts("  -L             Load a new-format save file");
+				puts("  -n             Start a new character (WARNING: overwrites default savefile without -u)");
 				puts("  -w             Resurrect dead character (marks savefile)");
 				puts("  -r             Rebalance monsters");
 				puts("  -g             Request graphics mode");
