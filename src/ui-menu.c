@@ -324,11 +324,13 @@ static const menu_skin menu_skin_column =
 
 static bool is_valid_row(menu_type *menu, int cursor)
 {
-	int oid = menu->filter_list ? menu->filter_list[cursor] : cursor;
+	int oid;
 	int count = menu->filter_list ? menu->filter_count : menu->count;
 
 	if (cursor < 0 || cursor >= count)
 		return FALSE;
+
+	oid = menu->filter_list ? menu->filter_list[cursor] : cursor;
 
 	if (menu->row_funcs->valid_row)
 		return menu->row_funcs->valid_row(menu, oid);
@@ -707,7 +709,7 @@ void menu_set_filter(menu_type *menu, const int filter_list[], int n)
 	menu->filter_list = filter_list;
 	menu->filter_count = n;
 
-	menu_set_cursor_first_valid(menu);
+	menu_ensure_cursor_valid(menu);
 }
 
 void menu_release_filter(menu_type *menu)
@@ -715,16 +717,16 @@ void menu_release_filter(menu_type *menu)
 	menu->filter_list = NULL;
 	menu->filter_count = 0;
 
-	menu_set_cursor_first_valid(menu);
+	menu_ensure_cursor_valid(menu);
 
 }
 
-void menu_set_cursor_first_valid(menu_type *m)
+void menu_ensure_cursor_valid(menu_type *m)
 {
 	int row;
 	int count = m->filter_list ? m->filter_count : m->count;
 
-	for (row = 0; row < count; row++)
+	for (row = m->cursor; row < count; row++)
 	{
 		if (is_valid_row(m, row))
 		{
@@ -732,6 +734,10 @@ void menu_set_cursor_first_valid(menu_type *m)
 			return;
 		}
 	}
+
+	/* If we've run off the end, without finding a valid row, put cursor
+	 * on the last row */
+	m->cursor = count - 1;
 }
 
 /* ======================== MENU INITIALIZATION ==================== */
@@ -780,7 +786,7 @@ void menu_setpriv(menu_type *menu, int count, void *data)
 	menu->count = count;
 	menu->menu_data = data;
 
-	menu_set_cursor_first_valid(menu);
+	menu_ensure_cursor_valid(menu);
 }
 
 void *menu_priv(menu_type *menu)
@@ -800,6 +806,7 @@ void menu_init(menu_type *menu, skin_id skin_id, const menu_iter *iter)
 	/* Menu-specific initialisation */
 	menu->row_funcs = iter;
 	menu->skin = skin;
+	menu->cursor = 0;
 }
 
 menu_type *menu_new(skin_id skin_id, const menu_iter *iter)
