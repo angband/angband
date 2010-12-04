@@ -1392,7 +1392,7 @@ static bool init_graphics(void)
 		}
 		else if (arg_graphics == GRAPHICS_NOMAD)
 		{
-			wid = 8;
+			wid = 16;
 			hgt = 16;
 
 			name = "8X16.BMP";
