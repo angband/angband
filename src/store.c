@@ -3149,7 +3149,7 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 
 	msg_flag = FALSE;
 	menu_select(&menu, 0);
-	msg_flag = TRUE;
+	msg_flag = FALSE;
 
 	/* Switch back to the normal game view. */
 	event_signal(EVENT_LEAVE_STORE);
