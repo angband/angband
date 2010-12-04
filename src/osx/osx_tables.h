@@ -57,11 +57,12 @@ enum {
 
 // Graphics menu
 enum {
-	kGrafNone			= 1,
-	kGraf8x8			= 2,
-	kGraf16x16			= 3,
-	kGraf32x32			= 4,
-	kBigTile			= 5
+	kGrafNone = 1,
+	kGraf8x8 = 2,
+	kGraf16x16 = 3,
+	kGraf32x32 = 4,
+	kGraf8x16 = 5,
+	kBigTile = 6
 };
 
 
@@ -81,15 +82,16 @@ static const HIViewID aboutDialogCopyright = { 'DLOG', 4 };
 /* graf_mode variable is index of current mode */
 static const struct {
 	int menuItem;		// Index in Graphics Menu
- 	cptr file;			// Base name of png file (if any)
+ 	  cptr file;			// Base name of png file (if any)
 	cptr name;			// Value of ANGBAND_GRAF variable
 	int size;			// Tile size (in pixels)
 	bool trans;			// Use transparent foreground tiles
 } graphics_modes[] = {
-	{ kGrafNone,	NULL, 		NULL,		0,			false },
-	{ kGraf8x8,		"8x8",		"old",		8,			false },
-	{ kGraf16x16,	"16x16",	"new",		16,			true },
-	{ kGraf32x32,	"32x32",	"david",	32,			true },
+	{ kGrafNone, NULL, NULL, 0, false },
+	{ kGraf8x8, "8x8", "old",	8,	false },
+	{ kGraf16x16, "16x16",	"new",	16,	true },
+	{ kGraf32x32, "32x32",	"david", 32,	true },
+	{ kGraf8x16, "8x16",	"nomad", 16,	true },
 };
 
 
