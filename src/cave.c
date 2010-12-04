@@ -498,6 +498,7 @@ static void special_lighting_floor(byte *a, char *c, enum grid_light_level light
 				if (*a == TERM_WHITE) *a = TERM_YELLOW;
 				break;
 			case GRAPHICS_ADAM_BOLT:
+			case GRAPHICS_NOMAD:
 				*c += 2;
 				break;
 			case GRAPHICS_DAVID_GERVAIS:
@@ -516,6 +517,7 @@ static void special_lighting_floor(byte *a, char *c, enum grid_light_level light
 				if (*a == TERM_WHITE) *a = TERM_L_DARK;
 				break;
 			case GRAPHICS_ADAM_BOLT:
+			case GRAPHICS_NOMAD:
 			case GRAPHICS_DAVID_GERVAIS:
 				*c += 1;
 				break;
@@ -538,6 +540,7 @@ static void special_lighting_floor(byte *a, char *c, enum grid_light_level light
 					else if (*a == TERM_L_GREEN) *a = TERM_GREEN;
 					break;
 				case GRAPHICS_ADAM_BOLT:
+				case GRAPHICS_NOMAD:
 				case GRAPHICS_DAVID_GERVAIS:
 					*c += 1;
 					break;
@@ -574,6 +577,7 @@ static void special_wall_display(byte *a, char *c, bool in_view, int feat)
 				if (*a == TERM_WHITE) *a = TERM_L_DARK;
 				break;
 			case GRAPHICS_ADAM_BOLT:
+			case GRAPHICS_NOMAD:
 			case GRAPHICS_DAVID_GERVAIS:
 				if (feat_supports_lighting(feat)) *c += 1;
 				break;
@@ -591,6 +595,7 @@ static void special_wall_display(byte *a, char *c, bool in_view, int feat)
 				if (*a == TERM_WHITE) *a = TERM_SLATE;
 				break;
 			case GRAPHICS_ADAM_BOLT:
+			case GRAPHICS_NOMAD:
 			case GRAPHICS_DAVID_GERVAIS:
 				if (feat_supports_lighting(feat)) *c += 1;
 				break;
@@ -602,6 +607,7 @@ static void special_wall_display(byte *a, char *c, bool in_view, int feat)
 		switch (use_graphics)
 		{
 			case GRAPHICS_ADAM_BOLT:
+			case GRAPHICS_NOMAD:
 				if (feat_supports_lighting(feat)) *c += 2;
 				break;
 			case GRAPHICS_DAVID_GERVAIS:

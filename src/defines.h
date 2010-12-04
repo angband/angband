@@ -1788,6 +1788,7 @@ enum
 #define GRAPHICS_ADAM_BOLT      2
 #define GRAPHICS_DAVID_GERVAIS  3
 #define GRAPHICS_PSEUDO         4
+#define GRAPHICS_NOMAD          5
 
 
 /* player_type.noscore flags */
