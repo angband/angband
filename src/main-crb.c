@@ -191,6 +191,12 @@ static int graf_mode = 0;
 static int graf_height = 0;
 static int graf_width = 0;
 
+/*
+ * Use antialiasing.  Without image differencing from
+ * OSX  10.4 features, you won't want to use this.
+ */
+static bool antialias = false;
+
 typedef struct GlyphInfo GlyphInfo;
 
 typedef struct term_data term_data;
@@ -2628,11 +2634,9 @@ static void validate_menus(void)
 		EnableMenuItem(MyGetMenuHandle(kFileMenu), kSave);
 	else
 		DisableMenuItem(MyGetMenuHandle(kFileMenu), kSave);
-	
-	for(int i = 0; i < N_ELEMENTS(toggle_defs); i++) {
-		m = MyGetMenuHandle(toggle_defs[i].menuID);
-		CheckMenuItem(m, toggle_defs[i].menuItem, *(toggle_defs[i].var));
-	}
+
+	m = MyGetMenuHandle(kFontMenu);
+	CheckMenuItem(m, kAntialias, antialias);
 }
 
 static OSStatus ValidateMenuCommand(EventHandlerCallRef inCallRef,
@@ -3056,50 +3060,6 @@ static OSStatus ResizeCommand(EventHandlerCallRef inCallRef,
 	return eventNotHandledErr;
 }
 
-static OSStatus GraphicsCommand(EventHandlerCallRef inCallRef,
-							EventRef inEvent, void *inUserData )
-{
-	HICommand command;
-	GetEventParameter(inEvent, kEventParamDirectObject, typeHICommand,
-							NULL, sizeof(HICommand), NULL, &command);
-
-	assert(GetMenuID(command.menu.menuRef) == kGraphicsMenu);
-	assert(command.commandID == 'graf');
-
-	/* Index in graphics_modes[] */
-	UInt32 op;
-	GetMenuItemRefCon(command.menu.menuRef, command.menu.menuItemIndex, &op);
-
-	if (graf_mode != op)
-		graphics_aux(op);
-
-	return noErr;
-}
-
-static OSStatus BigtileCommand(EventHandlerCallRef inCallRef, EventRef inEvent,
-		void *inUserData)
-{
-	HICommand command;
-	GetEventParameter(inEvent, kEventParamDirectObject, typeHICommand,
-							NULL, sizeof(HICommand), NULL, &command);
-
-	assert(command.commandID == 'twid' || command.commandID == 'thgt');
-
-	UInt32 op;
-	GetMenuItemRefCon(command.menu.menuRef, command.menu.menuItemIndex, &op);
-	assert(op != 0);
-
-	if (command.commandID == 'twid') {
-		tile_width = op;
-	} else {
-		tile_height = op;
-	}
-
-	graphics_aux(graf_mode);
-
-	return noErr;
-}
-
 static void graphics_aux(int op)
 {
 	graf_mode = op;
@@ -3140,7 +3100,7 @@ static OSStatus TileSizeCommand(EventHandlerCallRef inCallRef,
 							EventRef inEvent, void *inUserData )
 {
 	term_data *td = Term->data;
-	if (!td) return noErr;
+	assert(td);
 
 	HICommand cmd;
 	GetEventParameter(inEvent, kEventParamDirectObject, typeHICommand,
@@ -3295,48 +3255,115 @@ static OSStatus UpdateCommand(EventHandlerCallRef inCallRef,
 	return noErr;
 }
 
-static OSStatus ToggleCommand(EventHandlerCallRef inCallRef,
-								EventRef inEvent, void *inUserData )
+static void toggle_antialias(HICommand *command, void *data)
+{
+	antialias = !antialias;
+}
+
+static void set_graphics_mode(HICommand *command, void *data)
+{
+	/* Index in graphics_modes[] */
+	UInt32 op;
+	GetMenuItemRefCon(command->menu.menuRef, command->menu.menuItemIndex, &op);
+
+	if (graf_mode != op)
+		graphics_aux(op);
+}
+
+static void set_tile_width(HICommand *command, void *data)
+{
+	UInt32 op;
+	GetMenuItemRefCon(command->menu.menuRef, command->menu.menuItemIndex, &op);
+	assert(op != 0);
+
+	tile_width = op;
+}
+
+static void set_tile_height(HICommand *command, void *data)
+{
+	UInt32 op;
+	GetMenuItemRefCon(command->menu.menuRef, command->menu.menuItemIndex, &op);
+	assert(op != 0);
+
+	tile_height = op;
+}
+
+static void reset_wid_hgt(HICommand *command, void *data)
+{
+	term_data *td = Term->data;
+	assert(td);
+
+	td->tile_wid = td->font_wid;
+	td->tile_hgt = td->font_hgt;
+}
+
+static void seek_graphics_size(term_data *td, int seek_wid, int seek_hgt)
+{
+	td->tile_wid = td->font_wid;
+	td->tile_hgt = td->font_hgt;
+
+	tile_width = MAX(seek_wid / td->font_wid, 1);
+	tile_height = MAX(seek_hgt / td->font_hgt, 1);
+
+	td->tile_wid += (seek_wid - (tile_width * td->font_wid)) / tile_width;
+	td->tile_hgt += (seek_hgt - (tile_height * td->font_hgt)) / tile_height;
+}
+
+static void set_nice_graphics_fit(HICommand *command, void *data)
+{
+	term_data *td = Term->data;
+	assert(td);
+
+	seek_graphics_size(td, graf_width, graf_height);
+}
+
+static void set_nice_graphics_square(HICommand *command, void *data)
+{
+	term_data *td = Term->data;
+	assert(td);
+
+	int max_dimension = MAX(td->font_wid, td->font_hgt);
+	seek_graphics_size(td, max_dimension, max_dimension);
+}
+
+static OSStatus ToggleCommand(EventHandlerCallRef inCallRef, EventRef inEvent,
+		void *inUserData)
 {
 	HICommand command;
-	GetEventParameter( inEvent, kEventParamDirectObject, typeHICommand,
-							NULL, sizeof(command), NULL, &command);
+	GetEventParameter(inEvent, kEventParamDirectObject, typeHICommand,
+			NULL, sizeof(command), NULL, &command);
 
-	MenuItemIndex index = command.menu.menuItemIndex;
-	int menuID = GetMenuID(command.menu.menuRef);
-	for(int i = N_ELEMENTS(toggle_defs);  --i >= 0;)
-	{
-		if(index == toggle_defs[i].menuItem && menuID == toggle_defs[i].menuID)
-		{
-			*toggle_defs[i].var = !(*toggle_defs[i].var);
-			if(toggle_defs[i].refresh == true) {
-				RevalidateGraphics(&data[0], FALSE);
-				/* Force redraw. */
-				Term_key_push(KTRL('R'));
-			}
-			return noErr;
+	for (size_t i = 0; i < N_ELEMENTS(menu_commands); i++) {
+		if (command.commandID != menu_commands[i].id)
+			continue;
+
+		menu_commands[i].handler(&command, menu_commands[i].data);
+
+		if (menu_commands[i].refresh == true) {
+			RevalidateGraphics(&data[0], FALSE);
+			Term_key_push(KTRL('R'));
 		}
+
+		return noErr;
 	}
+
 	return eventNotHandledErr;
 }
 
 
 static void FontChanged(UInt32 fontID, float size)
 {
-	if(size < MIN_FONT) return;
+	if (size < MIN_FONT || fontID == 0)
+		return;
 
 	ATSUStyle fontStyle;
 
-	/* Font size must be 8 or more. */
-	if( 8 > size || fontID == 0)
-		return;
-
-	term_data *td = (term_data*) GetWRefCon(fontInfo.focus);
-	if(!td) return; /* paranoia */
+	term_data *td = (term_data *) GetWRefCon(fontInfo.focus);
+	assert(td);
 
 	/* No change. */
-	if(td->font_id == fontID && td->font_size == size)
-		return ;
+	if (td->font_id == fontID && td->font_size == size)
+		return;
 
 	const ATSUAttributeTag tags[] = {kATSUFontTag, kATSUSizeTag};
 
@@ -3378,6 +3405,7 @@ static OSStatus FontCommand(EventHandlerCallRef inHandlerCallRef, EventRef inEve
 {
 	int class = GetEventClass(inEvent);
 	int type = GetEventKind(inEvent);
+
 	if(class == 'font' && type == kEventFontSelection) {
 		UInt32 fid = 0;
 		Fixed size = 0;
@@ -3413,8 +3441,8 @@ static OSStatus FontCommand(EventHandlerCallRef inHandlerCallRef, EventRef inEve
 	return eventNotHandledErr;
 }
 
-static OSStatus MouseCommand ( EventHandlerCallRef inCallRef,
-	EventRef inEvent, void *inUserData )
+static OSStatus MouseCommand (EventHandlerCallRef inCallRef, EventRef inEvent,
+		void *inUserData)
 {
 	WindowRef w = 0;
 	GetEventParameter(inEvent, kEventParamWindowRef, typeWindowRef, 

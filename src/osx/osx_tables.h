@@ -22,6 +22,8 @@ enum MenuID {
 	kBigtileHeightMenu = 108,
 
 	kWindowMenu     = 109,
+
+	kNiceGraphicsMenu = 110
 };
 
 // File Menu
@@ -114,7 +116,6 @@ HANDLERDEF(FontCommand);
 HANDLERDEF(RestoreCommand);
 HANDLERDEF(ToggleCommand);
 HANDLERDEF(TerminalCommand);
-HANDLERDEF(GraphicsCommand);
 HANDLERDEF(KeyboardCommand);
 HANDLERDEF(MouseCommand);
 HANDLERDEF(ResizeCommand);
@@ -125,7 +126,6 @@ HANDLERDEF(OpenRecentCommand);
 HANDLERDEF(ResumeCommand);
 HANDLERDEF(CommandCommand);
 HANDLERDEF(AngbandGame);
-HANDLERDEF(BigtileCommand);
 
 
 
@@ -160,20 +160,15 @@ const CommandDef event_defs [] =
 	/* Selection of a terminal within the Window menu */
 	{ 'cmds', kEventProcessCommand, TerminalCommand, kWindowMenu, NULL },
 	
-	/* Toggling a menu option - Antialias */
+	/* Activating a menu option */
 	{ 'cmds', kEventProcessCommand, ToggleCommand, kFontMenu, NULL },
+	{ 'cmds', kEventProcessCommand, ToggleCommand, kBigtileWidthMenu, NULL },
+	{ 'cmds', kEventProcessCommand, ToggleCommand, kBigtileHeightMenu, NULL },
+	{ 'cmds', kEventProcessCommand, ToggleCommand, kGraphicsMenu, NULL },
 
 	/* Alter tile width and height */
 	{ 'cmds', kEventProcessCommand, TileSizeCommand, kTileWidMenu, NULL },
 	{ 'cmds', kEventProcessCommand, TileSizeCommand, kTileHgtMenu, NULL },
-
-	/* Alter bigtile settings */
-	{ 'cmds', kEventProcessCommand, BigtileCommand, kBigtileWidthMenu, NULL },
-	{ 'cmds', kEventProcessCommand, BigtileCommand, kBigtileHeightMenu, NULL },
-
-	/* Switch between graphics modes */
-	{ 'cmds', kEventProcessCommand, GraphicsCommand, kGraphicsMenu, NULL },
-
 
 	/* Font panel - selection of a new font */
 	{ 'font', kEventFontSelection, FontCommand, 0, NULL },
@@ -227,19 +222,30 @@ static EventTypeSpec input_event_types[] = {
 	{ 'wind', kEventWindowHandleContentClick },
 };
 
-/*
- * Use antialiasing.  Without image differencing from
- * OSX  10.4 features, you won't want to use this.
- */
-static bool antialias = 0;
+#define CMDHANDLER(x) \
+	static void x(HICommand *command, void *data);
+
+CMDHANDLER(toggle_antialias);
+CMDHANDLER(reset_wid_hgt);
+CMDHANDLER(set_graphics_mode);
+CMDHANDLER(set_tile_width);
+CMDHANDLER(set_tile_height);
+CMDHANDLER(set_nice_graphics_fit);
+CMDHANDLER(set_nice_graphics_square);
 
 static struct {
-	bool *var;				// Value to toggle (*var = !*var)
-	int menuID;				// Menu for this action (MenuRef would be better)
-	int menuItem;			// Index of menu item for this acton
+	int id;				// command id
+	void (*handler)(HICommand *command, void *data);	// handler
+	void *data;				// data
 	bool refresh; 			// Change requires graphics refresh of main window.
-} toggle_defs [] = {
-	{ &antialias,   kFontMenu,     kAntialias,   true }
+} menu_commands[] = {
+	{ 'anti', toggle_def, NULL, true },
+	{ 'rewh', reset_wid_hgt, NULL, true },
+	{ 'graf', set_graphics_mode, NULL, true },
+	{ 'twid', set_tile_width, NULL, true },
+	{ 'thgt', set_tile_height, NULL, true },
+	{ 'ngfi', set_nice_graphics_fit, NULL, true },
+	{ 'ngsq', set_nice_graphics_square, NULL, true },
 };
 
 #endif /* !INCLUDED_OSX_TABLES_H */
