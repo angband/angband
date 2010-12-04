@@ -293,9 +293,9 @@ void menu_refresh(menu_type *menu);
 ui_event_data menu_select(menu_type *menu, int notify);
 
 /**
- * Set the menu cursor to the position of the first valid row.
+ * Set the menu cursor to the next valid row.
  */
-void menu_set_cursor_first_valid(menu_type *m);
+void menu_ensure_cursor_valid(menu_type *m);
 
 
 /* Interal menu stuff that cmd-know needs because it's quite horrible */
