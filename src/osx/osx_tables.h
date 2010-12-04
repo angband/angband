@@ -1,33 +1,27 @@
+#ifndef INCLUDED_OSX_TABLES_H
+#define INCLUDED_OSX_TABLES_H
+
 /*
  * Maximum menu ID.
  * IMPORTANT: see note in main-crb.c if you wish to add menus.
  */
-#ifndef INCLUDED_OSX_TABLES_H
-#define INCLUDED_OSX_TABLES_H
-
 #define MAX_MENU_ID (150)
 
 /* These numbers must agree with the corresponding Menu ID in the nib. */
 enum MenuID {
-	kAngbandMenu	= 100,
-	kFileMenu		= 101,
-	kEditMenu		= 102, 
-	kStyleMenu		= 103,
-	/* deleted */
-	kWindowMenu		= 105,
-	kSpecialMenu	= 106,
+	kAngbandMenu    = 100,
+	kFileMenu       = 101,
+	kOpenRecentMenu = 102,
 
-	kTileWidMenu	= 107,
-	kTileHgtMenu	= 108,
-	
-	kOpenRecentMenu = 109
-};
+	kFontMenu       = 103,
+	kTileWidMenu	= 104,
+	kTileHgtMenu	= 105,
 
-// Edit menu
-enum {
-	kCopy			= 1,	/* C, 'copy' */
-	kSelectAll		= 2,	/* A, 'sall' */
-	kUndo			= 3		/* Z, 'undo' */
+	kGraphicsMenu   = 106,
+	kBigtileWidthMenu = 107,
+	kBigtileHeightMenu = 108,
+
+	kWindowMenu     = 109,
 };
 
 // File Menu
@@ -39,12 +33,7 @@ enum {
 	/* \-p */
 	kSave 			= 6,	/* S, 'save' */
 	kClose			= 7,	/* W, 'clos' */
-	/* \-p 
-	 setup
-	  print 
-	 \-p */ 
 };
-
 
 // Window menu
 enum {
@@ -56,25 +45,21 @@ enum {
 	kBringToFront 		= 13
 };
 
-// Special Menu
-enum {
-	kSound				= 1, /* Toggle sound */ 
-};
-
-
-
-// Styles menu
+// Font menu
 enum {
 	kFonts				= 1,
 	kAntialias			= 2,
-	kGrafNone			= 4,
-	kGraf8x8			= 5,
-	kGraf16x16			= 6,
-	kGraf32x32			= 7,
-	kInterpolate		= 9,
-	kBigTile			= 10,
-	kTileWidth			= 11,
-	kTileHeight			= 12,
+	kTileWidth			= 3,
+	kTileHeight			= 4
+};
+
+// Graphics menu
+enum {
+	kGrafNone			= 1,
+	kGraf8x8			= 2,
+	kGraf16x16			= 3,
+	kGraf32x32			= 4,
+	kBigTile			= 5
 };
 
 
@@ -98,7 +83,7 @@ static const struct {
 	cptr name;			// Value of ANGBAND_GRAF variable
 	int size;			// Tile size (in pixels)
 	bool trans;			// Use transparent foreground tiles
-} graphics_modes [] = {
+} graphics_modes[] = {
 	{ kGrafNone,	NULL, 		NULL,		0,			false },
 	{ kGraf8x8,		"8x8",		"old",		8,			false },
 	{ kGraf16x16,	"16x16",	"new",		16,			true },
@@ -140,7 +125,7 @@ HANDLERDEF(OpenRecentCommand);
 HANDLERDEF(ResumeCommand);
 HANDLERDEF(CommandCommand);
 HANDLERDEF(AngbandGame);
-HANDLERDEF(SoundCommand);
+HANDLERDEF(BigtileCommand);
 
 
 
@@ -156,14 +141,11 @@ const CommandDef event_defs [] =
 	 */
 	{ 'Play', 'Band', AngbandGame, 0, NULL },
 
-
-
 	/* Quit the game */
 	{ 'appl', kEventAppQuit, QuitCommand, 0, NULL },
 	
 	/* Reactivate the game after it's been in the background */
 	{ 'appl', kEventAppActivated, ResumeCommand, 0, NULL },
-
 
 
 	/* "About Angband" command */
@@ -178,20 +160,19 @@ const CommandDef event_defs [] =
 	/* Selection of a terminal within the Window menu */
 	{ 'cmds', kEventProcessCommand, TerminalCommand, kWindowMenu, NULL },
 	
-	/* Toggling a menu option - bigtile, interpolate, antialias */
-	{ 'cmds', kEventProcessCommand, ToggleCommand, kSpecialMenu, NULL },
-	{ 'cmds', kEventProcessCommand, ToggleCommand, kStyleMenu, NULL },
-
-	/* "Use Sound" command */
-	{ 'cmds', kEventProcessCommand, SoundCommand, kSpecialMenu, NULL},
+	/* Toggling a menu option - Antialias */
+	{ 'cmds', kEventProcessCommand, ToggleCommand, kFontMenu, NULL },
 
 	/* Alter tile width and height */
 	{ 'cmds', kEventProcessCommand, TileSizeCommand, kTileWidMenu, NULL },
 	{ 'cmds', kEventProcessCommand, TileSizeCommand, kTileHgtMenu, NULL },
 
-	/* Switch between graphics modes */
-	{ 'cmds', kEventProcessCommand, GraphicsCommand, kStyleMenu, NULL },
+	/* Alter bigtile settings */
+	{ 'cmds', kEventProcessCommand, BigtileCommand, kBigtileWidthMenu, NULL },
+	{ 'cmds', kEventProcessCommand, BigtileCommand, kBigtileHeightMenu, NULL },
 
+	/* Switch between graphics modes */
+	{ 'cmds', kEventProcessCommand, GraphicsCommand, kGraphicsMenu, NULL },
 
 
 	/* Font panel - selection of a new font */
@@ -247,19 +228,10 @@ static EventTypeSpec input_event_types[] = {
 };
 
 /*
- * Interpolate images when rescaling them
- */
-static bool interpolate = 0;
-
-/*
  * Use antialiasing.  Without image differencing from
  * OSX  10.4 features, you won't want to use this.
  */
-
 static bool antialias = 0;
-
-/* Nasty hack - sorry NRM */
-static bool use_bigtile = 0;
 
 static struct {
 	bool *var;				// Value to toggle (*var = !*var)
@@ -267,9 +239,7 @@ static struct {
 	int menuItem;			// Index of menu item for this acton
 	bool refresh; 			// Change requires graphics refresh of main window.
 } toggle_defs [] = {
-	{ &use_bigtile, kStyleMenu,  kBigTile,	true},
-	{ &interpolate, kStyleMenu,  kInterpolate, true},
-	{ &antialias,	kStyleMenu,	kAntialias,	true}
+	{ &antialias,   kFontMenu,     kAntialias,   true }
 };
 
 #endif /* !INCLUDED_OSX_TABLES_H */
