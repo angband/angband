@@ -1739,10 +1739,11 @@ static errr Term_wipe_mac(int x, int y, int n)
 
 	term_data_color(COLOR_BLACK);
 
-	term_data *td = (term_data *) Term->data;
+	term_data *td = Term->data;
+	assert(td);
 
-	CGRect r = { { x * tile_width * td->tile_wid, y * tile_height * td->tile_hgt },
-	             { n * tile_width * td->tile_wid, tile_height * -td->tile_hgt } };
+	CGRect r = { { x * td->tile_wid, y * td->tile_hgt },
+	             { n * td->tile_wid, -td->tile_hgt } };
 	CGContextFillRect(focus.ctx, r);
 
 	/* Success */

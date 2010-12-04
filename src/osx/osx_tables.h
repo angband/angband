@@ -239,7 +239,7 @@ static struct {
 	void *data;				// data
 	bool refresh; 			// Change requires graphics refresh of main window.
 } menu_commands[] = {
-	{ 'anti', toggle_def, NULL, true },
+	{ 'anti', toggle_antialias, NULL, true },
 	{ 'rewh', reset_wid_hgt, NULL, true },
 	{ 'graf', set_graphics_mode, NULL, true },
 	{ 'twid', set_tile_width, NULL, true },
