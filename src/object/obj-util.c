@@ -1595,8 +1595,8 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 {
 	int total = o_ptr->number + j_ptr->number;
 
-	/* Check against stacking limit */
-	if (total >= MAX_STACK_SIZE) return FALSE;
+	/* Check against stacking limit - except in stores which absorb anyway */
+	if (!(mode & OSTACK_STORE) && (total >= MAX_STACK_SIZE)) return FALSE;
 
 	/* Hack -- identical items cannot be stacked */
 	if (o_ptr == j_ptr) return FALSE;
