@@ -23,6 +23,7 @@
 #include "textui.h"
 #include "files.h"
 #include "macro.h"
+#include "init.h"
 
 /* this is used to draw the various terrain characters */
 static unsigned int graphics_table[32] = {
@@ -2787,7 +2788,9 @@ errr init_gtk(int argc, char **argv)
 		/* Save global entry */
 		angband_term[i] = Term;
 	}
-	
+
+	/* Init dirs */
+	create_needed_dirs();	
 	
 	/* Load Preferences */
 	load_prefs();
