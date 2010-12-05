@@ -2803,6 +2803,8 @@ void update_view(void)
 		int fx = m_ptr->fx;
 		int fy = m_ptr->fy;
 		
+		bool in_los = los(p_ptr->py, p_ptr->px, fy, fx);
+
 		/* Skip dead monsters */
 		if (!m_ptr->r_idx) continue;
 
@@ -2817,10 +2819,16 @@ void update_view(void)
 				int sy = fy + i;
 				int sx = fx + j;
 				
-				/* Make sure the square is close enough and is in LOS */
+				/* If the monster isn't visible we can only light open tiles */
+				if (!in_los && !cave_floor_bold(sy, sx))
+					continue;
+
+				/* If the tile is too far away we won't light it */
 				if (distance(p_ptr->py, p_ptr->px, sy, sx) > MAX_SIGHT)
 					continue;
-				else if (!los(p_ptr->py, p_ptr->px, sy, sx))
+				
+				/* If the tile itself isn't in LOS, don't light it */
+				if (!los(p_ptr->py, p_ptr->px, sy, sx))
 					continue;
 				
 				g = GRID(sy, sx);
