@@ -132,7 +132,7 @@
 /*
  * Maximum number of player "sex" types (see "table.c", etc)
  */
-#define MAX_SEXES            2
+#define MAX_SEXES            3
 
 
 /*

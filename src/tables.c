@@ -439,6 +439,11 @@ const player_sex sex_info[MAX_SEXES] =
 	{
 		"Male",
 		"King"
+	},
+
+	{
+		"Neuter",
+		"Regent"
 	}
 };
 
