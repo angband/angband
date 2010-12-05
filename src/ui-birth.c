@@ -226,6 +226,10 @@ static void race_help(int i, void *db, const region *l)
 static void class_help(int i, void *db, const region *l)
 {
 	int j;
+	struct player_class *c = player_id2class(i);
+
+	if (!c)
+		return;
 
 	/* Output to the screen */
 	text_out_hook = text_out_to_screen;
@@ -236,11 +240,11 @@ static void class_help(int i, void *db, const region *l)
 
 	for (j = 0; j < A_MAX; j++) 
 	{  
-		text_out_e("%s%+d\n", stat_names_reduced[j], c_info[i].c_adj[j]); 
+		text_out_e("%s%+d\n", stat_names_reduced[j], c->c_adj[j]);
 	}
 
-	text_out_e("Hit die: %d\n", c_info[i].c_mhp);   
-	text_out_e("Experience: %d%%", c_info[i].c_exp);
+	text_out_e("Hit die: %d\n", c->c_mhp);   
+	text_out_e("Experience: %d%%", c->c_exp);
 	
 	/* Reset text_out() indentation */
 	text_out_indent = 0;
@@ -285,7 +289,8 @@ static void init_birth_menu(menu_type *menu, int n_choices, int initial_choice, 
 
 static void setup_menus()
 {
-	int i;
+	int i, n;
+	struct player_class *c;
 
 	const char *roller_choices[MAX_BIRTH_ROLLERS] = { 
 		"Point-based", 
@@ -313,14 +318,16 @@ static void setup_menus()
 	}
 	mdata->hint = "Your 'race' determines various intrinsic factors and bonuses.";
 
+	n = 0;
+	for (c = classes; c; c = c->next)
+		n++;
 	/* Class menu similar to race. */
-	init_birth_menu(&class_menu, z_info->c_max, p_ptr->pclass, &class_region, TRUE, class_help);
+	init_birth_menu(&class_menu, n, p_ptr->class ? p_ptr->class->cidx : 0,
+	                &class_region, TRUE, class_help);
 	mdata = class_menu.menu_data;
 
-	for (i = 0; i < z_info->c_max; i++)
-	{	
-		mdata->items[i] = c_info[i].name;
-	}
+	for (c = classes; c; c = c->next)
+		mdata->items[i] = c->name;
 	mdata->hint = "Your 'class' determines various intrinsic abilities and bonuses";
 		
 	/* Roller menu straightforward again */

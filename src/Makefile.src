@@ -18,6 +18,7 @@ HEADERS = \
 	externs.h \
 	game-cmd.h \
 	game-event.h \
+	guid.h \
 	$(GTKHEADERS) \
 	h-basic.h \
 	init.h \
@@ -74,6 +75,7 @@ ANGFILES = \
 	game-cmd.o \
 	game-event.o \
 	generate.o \
+	guid.o \
 	history.o \
 	init2.o \
 	load.o \
@@ -96,6 +98,7 @@ ANGFILES = \
 	pathfind.o \
 	prefs.o \
 	player/calcs.o \
+	player/class.o \
 	player/player.o \
 	player/spell.o \
 	player/timed.o \

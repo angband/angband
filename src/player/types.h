@@ -116,7 +116,6 @@ typedef struct player
 
 	byte psex;			/* Sex index */
 	byte prace;			/* Race index */
-	byte pclass;		/* Class index */
 	byte oops;			/* Unused */
 
 	const struct player_sex *sex;

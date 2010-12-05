@@ -3,6 +3,7 @@
 #ifndef PLAYER_PLAYER_H
 #define PLAYER_PLAYER_H
 
+#include "guid.h"
 #include "player/types.h"
 
 /* calcs.c */
@@ -19,6 +20,9 @@ void update_stuff(void);
 void redraw_stuff(void);
 void handle_stuff(void);
 int weight_remaining(void);
+
+/* class.c */
+extern struct player_class *player_id2class(guid id);
 
 /* player.c */
 extern bool player_stat_inc(struct player *p, int stat);

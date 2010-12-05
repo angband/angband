@@ -70,7 +70,7 @@ struct birther
 {
 	byte sex;
 	byte race;
-	byte class;
+	struct player_class *class;
 
 	s16b age;
 	s16b wt;
@@ -96,7 +96,7 @@ static void save_roller_data(birther *player)
 	/* Save the data */
 	player->sex = p_ptr->psex;
 	player->race = p_ptr->prace;
-	player->class = p_ptr->pclass;
+	player->class = p_ptr->class;
 	player->age = p_ptr->age;
 	player->wt = p_ptr->wt_birth;
 	player->ht = p_ptr->ht_birth;
@@ -140,7 +140,7 @@ static void load_roller_data(birther *player, birther *prev_player)
 	/* Load the data */
 	p_ptr->psex = player->sex;
 	p_ptr->prace = player->race;
-	p_ptr->pclass = player->class;
+	p_ptr->class = player->class;
 	p_ptr->age = player->age;
 	p_ptr->wt = p_ptr->wt_birth = player->wt;
 	p_ptr->ht = p_ptr->ht_birth = player->ht;
@@ -947,10 +947,11 @@ static void generate_stats(int stats[A_MAX], int points_spent[A_MAX],
  * and so is called whenever things like race or class are chosen.
  */
 void player_generate(struct player *p, const player_sex *s,
-                     struct player_race *r, player_class *c)
+                     struct player_race *r, struct player_class *c)
 {
 	if (!s) s = &sex_info[p->psex];
-	if (!c) c = &c_info[p->pclass];
+	if (!c)
+		c = p->class;
 	if (!r) r = &p_info[p->prace];
 
 	p->sex = s;
@@ -1043,7 +1044,7 @@ void player_birth(bool quickstart_allowed)
 	else
 	{
 		p_ptr->psex = 0;
-		p_ptr->pclass = 0;
+		p_ptr->class = NULL;
 		p_ptr->prace = 0;
 		player_generate(p_ptr, NULL, NULL, NULL);
 	}
@@ -1097,8 +1098,7 @@ void player_birth(bool quickstart_allowed)
 		}
 		else if (cmd->command == CMD_CHOOSE_CLASS)
 		{
-			p_ptr->pclass = cmd->arg[0].choice;
-			player_generate(p_ptr, NULL, NULL, NULL);
+			player_generate(p_ptr, NULL, NULL, player_id2class(cmd->arg[0].choice));
 
 			reset_stats(stats, points_spent, &points_left);
 			generate_stats(stats, points_spent, &points_left);

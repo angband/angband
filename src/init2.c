@@ -309,8 +309,6 @@ static enum parser_error parse_z(struct parser *p) {
 		z->v_max = value;
 	else if (streq(label, "P"))
 		z->p_max = value;
-	else if (streq(label, "C"))
-		z->c_max = value;
 	else if (streq(label, "H"))
 		z->h_max = value;
 	else if (streq(label, "B"))
@@ -2869,22 +2867,7 @@ static errr run_parse_c(struct parser *p) {
 }
 
 static errr finish_parse_c(struct parser *p) {
-	struct player_class *c, *n;
-
-	c_info = mem_zalloc(sizeof(*c) * z_info->c_max);
-	for (c = parser_priv(p); c; c = c->next) {
-		if (c->cidx >= z_info->c_max)
-			continue;
-		memcpy(&c_info[c->cidx], c, sizeof(*c));
-	}
-
-	c = parser_priv(p);
-	while (c) {
-		n = c->next;
-		mem_free(c);
-		c = n;
-	}
-
+	classes = parser_priv(p);
 	parser_destroy(p);
 	return 0;
 }
@@ -3790,7 +3773,6 @@ void cleanup_angband(void)
 	mem_free(a_info);
 	mem_free(e_info);
 	mem_free(r_info);
-	mem_free(c_info);
 
 	/* Free the format() buffer */
 	vformat_kill();

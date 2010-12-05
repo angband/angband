@@ -279,8 +279,9 @@ static void display_scores_aux(const high_score scores[], int from, int to, int 
 
 			byte attr;
 
-			int pr, pc, clev, mlev, cdun, mdun;
+			int pr, clev, mlev, cdun, mdun;
 			cptr user, gold, when, aged;
+			struct player_class *c;
 
 
 			/* Hack -- indicate death in yellow */
@@ -288,7 +289,7 @@ static void display_scores_aux(const high_score scores[], int from, int to, int 
 
 			/* Extract the race/class */
 			pr = atoi(score->p_r);
-			pc = atoi(score->p_c);
+			c = player_id2class(atoi(score->p_c));
 
 			/* Extract the level info */
 			clev = atoi(score->cur_lev);
@@ -306,7 +307,7 @@ static void display_scores_aux(const high_score scores[], int from, int to, int 
 			strnfmt(out_val, sizeof(out_val),
 			        "%3d.%9s  %s the %s %s, Level %d",
 			        place, score->pts, score->who,
-			        p_info[pr].name, c_info[pc].name,
+			        p_info[pr].name, c ? c->name : "<none>",
 			        clev);
 
 			/* Append a "maximum level" */
@@ -384,7 +385,7 @@ static void build_score(high_score *entry, const char *died_from, time_t *death_
 	strnfmt(entry->uid, sizeof(entry->uid), "%7u", player_uid);
 	strnfmt(entry->sex, sizeof(entry->sex), "%c", (p_ptr->psex ? 'm' : 'f'));
 	strnfmt(entry->p_r, sizeof(entry->p_r), "%2d", p_ptr->prace);
-	strnfmt(entry->p_c, sizeof(entry->p_c), "%2d", p_ptr->pclass);
+	strnfmt(entry->p_c, sizeof(entry->p_c), "%2d", p_ptr->class->cidx);
 
 	/* Save the level and such */
 	strnfmt(entry->cur_lev, sizeof(entry->cur_lev), "%3d", p_ptr->lev);

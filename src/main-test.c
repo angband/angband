@@ -58,6 +58,7 @@ static void c_player_birth(char *rest) {
 	char *race = strtok(NULL, " ");
 	char *class = strtok(NULL, " ");
 	int i;
+	struct player_class *c;
 
 	if (!sex) sex = "Female";
 	if (!race) race = "Human";
@@ -87,14 +88,14 @@ static void c_player_birth(char *rest) {
 		return;
 	}
 
-	for (i = 0; i < z_info->c_max; i++) {
-		if (!strcmp(class, c_info[i].name)) {
-			p_ptr->pclass = i;
+	for (c = classes; c; c = c->next) {
+		if (!strcmp(class, c->name)) {
+			p_ptr->class = c;
 			break;
 		}
 	}
 
-	if (i == z_info->c_max) {
+	if (!c) {
 		printf("player-birth: bad class '%s'\n", class);
 		return;
 	}

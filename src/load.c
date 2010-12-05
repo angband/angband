@@ -1048,9 +1048,8 @@ static u32b randart_version;
 int rd_player(void)
 {
 	int i;
-
 	byte num;
-
+	struct player_class *c;
 
 	rd_string(op_ptr->full_name, sizeof(op_ptr->full_name));
 	rd_string(p_ptr->died_from, 80);
@@ -1069,18 +1068,21 @@ int rd_player(void)
 	p_ptr->race = rp_ptr;
 
 	/* Player class */
-	rd_byte(&p_ptr->pclass);
+	rd_byte(&num);
+
+	for (c = classes; c; c = c->next)
+		if (c->cidx == num)
+			break;
 
 	/* Verify player class */
-	if (p_ptr->pclass >= z_info->c_max)
+	if (!c)
 	{
-		note(format("Invalid player class (%d).", p_ptr->pclass));
+		note(format("Invalid player class (%d).", num));
 		return (-1);
 	}
-	cp_ptr = &c_info[p_ptr->pclass];
-	p_ptr->class = cp_ptr;
-	mp_ptr = &cp_ptr->spells;
-
+	p_ptr->class = c;
+	cp_ptr = c;
+	mp_ptr = &c->spells;
 
 	/* Player gender */
 	rd_byte(&p_ptr->psex);
