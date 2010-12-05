@@ -307,8 +307,6 @@ static enum parser_error parse_z(struct parser *p) {
 		z->r_max = value;
 	else if (streq(label, "V"))
 		z->v_max = value;
-	else if (streq(label, "P"))
-		z->p_max = value;
 	else if (streq(label, "H"))
 		z->h_max = value;
 	else if (streq(label, "B"))
@@ -2635,22 +2633,7 @@ static errr run_parse_p(struct parser *p) {
 }
 
 static errr finish_parse_p(struct parser *p) {
-	struct player_race *r, *n;
-
-	p_info = mem_zalloc(sizeof(*r) * z_info->p_max);
-	for (r = parser_priv(p); r; r = r->next) {
-		if (r->ridx >= z_info->p_max)
-			continue;
-		memcpy(&p_info[r->ridx], r, sizeof(*r));
-	}
-
-	r = parser_priv(p);
-	while (r) {
-		n = r->next;
-		mem_free(r);
-		r = n;
-	}
-
+	races = parser_priv(p);
 	parser_destroy(p);
 	return 0;
 }

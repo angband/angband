@@ -115,7 +115,6 @@ typedef struct player
 	s16b px;			/* Player location */
 
 	byte psex;			/* Sex index */
-	byte prace;			/* Race index */
 	byte oops;			/* Unused */
 
 	const struct player_sex *sex;

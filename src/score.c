@@ -279,17 +279,17 @@ static void display_scores_aux(const high_score scores[], int from, int to, int 
 
 			byte attr;
 
-			int pr, clev, mlev, cdun, mdun;
+			int clev, mlev, cdun, mdun;
 			cptr user, gold, when, aged;
 			struct player_class *c;
+			struct player_race *r;
 
 
 			/* Hack -- indicate death in yellow */
 			attr = (j == highlight) ? TERM_L_GREEN : TERM_WHITE;
 
-			/* Extract the race/class */
-			pr = atoi(score->p_r);
 			c = player_id2class(atoi(score->p_c));
+			r = player_id2race(atoi(score->p_r));
 
 			/* Extract the level info */
 			clev = atoi(score->cur_lev);
@@ -307,7 +307,7 @@ static void display_scores_aux(const high_score scores[], int from, int to, int 
 			strnfmt(out_val, sizeof(out_val),
 			        "%3d.%9s  %s the %s %s, Level %d",
 			        place, score->pts, score->who,
-			        p_info[pr].name, c ? c->name : "<none>",
+			        r ? r->name : "<none>", c ? c->name : "<none>",
 			        clev);
 
 			/* Append a "maximum level" */

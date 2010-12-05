@@ -1049,40 +1049,32 @@ int rd_player(void)
 {
 	int i;
 	byte num;
-	struct player_class *c;
 
 	rd_string(op_ptr->full_name, sizeof(op_ptr->full_name));
 	rd_string(p_ptr->died_from, 80);
 	rd_string(p_ptr->history, 250);
 
 	/* Player race */
-	rd_byte(&p_ptr->prace);
+	rd_byte(&num);
+	p_ptr->race = player_id2race(num);
 
 	/* Verify player race */
-	if (p_ptr->prace >= z_info->p_max)
-	{
+	if (!p_ptr->race) {
 		note(format("Invalid player race (%d).", p_ptr->prace));
-		return (-1);
+		return -1;
 	}
-	rp_ptr = &p_info[p_ptr->prace];
-	p_ptr->race = rp_ptr;
+	rp_ptr = p_ptr->race;
 
 	/* Player class */
 	rd_byte(&num);
+	p_ptr->class = player_id2class(num);
 
-	for (c = classes; c; c = c->next)
-		if (c->cidx == num)
-			break;
-
-	/* Verify player class */
-	if (!c)
-	{
+	if (!p_ptr->class) {
 		note(format("Invalid player class (%d).", num));
-		return (-1);
+		return -1;
 	}
-	p_ptr->class = c;
-	cp_ptr = c;
-	mp_ptr = &c->spells;
+	cp_ptr = p_ptr->class;
+	mp_ptr = &p_ptr->class->spells;
 
 	/* Player gender */
 	rd_byte(&p_ptr->psex);

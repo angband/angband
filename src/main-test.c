@@ -59,6 +59,7 @@ static void c_player_birth(char *rest) {
 	char *class = strtok(NULL, " ");
 	int i;
 	struct player_class *c;
+	struct player_race *r;
 
 	if (!sex) sex = "Female";
 	if (!race) race = "Human";
@@ -76,31 +77,24 @@ static void c_player_birth(char *rest) {
 		return;
 	}
 
-	for (i = 0; i < z_info->p_max; i++) {
-		if (!strcmp(race, p_info[i].name)) {
-			p_ptr->prace = i;
+	for (r = races; r; r = r->next)
+		if (!strcmp(race, r->name))
 			break;
-		}
-	}
-
-	if (i == z_info->p_max) {
+	if (!r) {
 		printf("player-birth: bad race '%s'\n", race);
 		return;
 	}
 
-	for (c = classes; c; c = c->next) {
-		if (!strcmp(class, c->name)) {
-			p_ptr->class = c;
+	for (c = classes; c; c = c->next)
+		if (!strcmp(class, c->name))
 			break;
-		}
-	}
 
 	if (!c) {
 		printf("player-birth: bad class '%s'\n", class);
 		return;
 	}
 
-	player_generate(p_ptr, NULL, NULL, NULL);
+	player_generate(p_ptr, NULL, r, c);
 }
 
 static void c_player_class(char *rest) {

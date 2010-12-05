@@ -580,7 +580,7 @@ flag_cache *slay_cache;
  */
 monster_race *r_info;
 
-player_race *p_info;
+struct player_race *races;
 struct player_class *classes;
 /*
  * The player history arrays

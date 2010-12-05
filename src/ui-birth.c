@@ -202,6 +202,10 @@ static const menu_iter birth_iter = { NULL, NULL, birthmenu_display, NULL, NULL 
 static void race_help(int i, void *db, const region *l)
 {
 	int j;
+	struct player_race *r = player_id2race(i);
+
+	if (!r)
+		return;
 
 	/* Output to the screen */
 	text_out_hook = text_out_to_screen;
@@ -212,12 +216,12 @@ static void race_help(int i, void *db, const region *l)
 
 	for (j = 0; j < A_MAX; j++) 
 	{  
-		text_out_e("%s%+d\n", stat_names_reduced[j], p_info[i].r_adj[j]);
+		text_out_e("%s%+d\n", stat_names_reduced[j], r->r_adj[j]);
 	}
 	
-	text_out_e("Hit die: %d\n", p_info[i].r_mhp);
-	text_out_e("Experience: %d%%\n", p_info[i].r_exp);
-	text_out_e("Infravision: %d ft", p_info[i].infra * 10);
+	text_out_e("Hit die: %d\n", r->r_mhp);
+	text_out_e("Experience: %d%%\n", r->r_exp);
+	text_out_e("Infravision: %d ft", r->infra * 10);
 	
 	/* Reset text_out() indentation */
 	text_out_indent = 0;
@@ -291,6 +295,7 @@ static void setup_menus()
 {
 	int i, n;
 	struct player_class *c;
+	struct player_race *r;
 
 	const char *roller_choices[MAX_BIRTH_ROLLERS] = { 
 		"Point-based", 
@@ -308,14 +313,16 @@ static void setup_menus()
 	}
 	mdata->hint = "Your 'sex' does not have any significant gameplay effects.";
 
+	n = 0;
+	for (r = races; r; r = r->next)
+		n++;
 	/* Race menu more complicated. */
-	init_birth_menu(&race_menu, z_info->p_max, p_ptr->prace, &race_region, TRUE, race_help);
+	init_birth_menu(&race_menu, n, p_ptr->race ? p_ptr->race->ridx : 0,
+	                &race_region, TRUE, race_help);
 	mdata = race_menu.menu_data;
 
-	for (i = 0; i < z_info->p_max; i++)
-	{	
-		mdata->items[i] = p_info[i].name;
-	}
+	for (i = 0, r = races; r; r = r->next, i++)
+		mdata->items[i] = r->name;
 	mdata->hint = "Your 'race' determines various intrinsic factors and bonuses.";
 
 	n = 0;
