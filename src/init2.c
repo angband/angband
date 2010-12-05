@@ -323,10 +323,6 @@ static enum parser_error parse_z(struct parser *p) {
 		z->m_max = value;
 	else if (streq(label, "L"))
 		z->flavor_max = value;
-	else if (streq(label, "N"))
-		z->fake_name_size = value;
-	else if (streq(label, "T"))
-		z->fake_text_size = value;
 	else
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 

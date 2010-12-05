@@ -53,16 +53,3 @@ M:O:1024
 
 # Maximum number of monsters on the level
 M:M:1024
-
-#
-# Array sizes (in bytes) for some initialization stuff
-#
-
-# Size of the "fake" array for reading in names of monsters, objects,
-# artifacts, store-owners, player-races, ...
-M:N:20480
-
-# Size of the "fake" array for reading in the descriptions of monsters,
-# vaults, and the player-histories
-M:T:61440
-
