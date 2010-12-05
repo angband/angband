@@ -2,6 +2,7 @@
 #define INCLUDED_OBJECT_H
 
 #include "angband.h"
+#include "z-textblock.h"
 
 /** Maximum number of scroll titles generated */
 #define MAX_TITLES     50
@@ -150,9 +151,9 @@ extern const slay_t slay_table[];
 size_t num_slays(void);
 void object_info_header(const object_type *o_ptr);
 
-bool object_info(const object_type *o_ptr, oinfo_detail_t mode);
-bool object_info_chardump(const object_type *o_ptr);
-bool object_info_spoil(const object_type *o_ptr);
+textblock *object_info(const object_type *o_ptr, oinfo_detail_t mode);
+textblock *object_info_chardump(const object_type *o_ptr);
+textblock *object_info_spoil(const object_type *o_ptr);
 
 /* obj-make.c */
 void free_obj_alloc(void);

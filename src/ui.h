@@ -40,6 +40,12 @@ region region_calculate(region loc);
 bool region_inside(const region *loc, const ui_event_data *key);
 
 
+/*** Text ***/
+
+#include "z-textblock.h"
+void textui_textblock_show(textblock *tb, region orig_area);
+
+
 /*** Misc ***/
 
 void window_make(int origin_x, int origin_y, int end_x, int end_y);

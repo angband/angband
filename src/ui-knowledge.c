@@ -1156,9 +1156,13 @@ static void desc_art_fake(int a_idx)
 {
 	object_type *o_ptr;
 	object_type object_type_body;
-	bool lost = TRUE, abil = FALSE;
-	int i, j;
 	oinfo_detail_t mode = OINFO_NONE;
+
+	bool lost = TRUE;
+	int i, j;
+
+	textblock *tb;
+	region area = { 0, 3, 0, 0 };
 
 	/* Get local object */
 	o_ptr = &object_type_body;
@@ -1222,20 +1226,15 @@ static void desc_art_fake(int a_idx)
 	/* Hack -- Handle stuff */
 	handle_stuff();
 
-	text_out_hook = text_out_to_screen;
-	screen_save();
-
-	/* Print the artifact information */
-	Term_gotoxy(0, 0);
 	object_info_header(o_ptr);
-	abil = object_info(o_ptr, mode);
+	tb = object_info(o_ptr, mode);
+	textui_textblock_show(tb, area);
+	textblock_free(tb);
+
+#if 0
+	/* XXX This should be in object_info */
 	if (lost) text_out("\nThis artifact has been lost.");
-	if (!abil) text_out("\n\nThis item does not seem to possess any special abilities.");
-
-	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
-	(void)anykey();
-
-	screen_load();
+#endif
 }
 
 static int a_cmp_tval(const void *a, const void *b)
@@ -1375,6 +1374,9 @@ static void desc_ego_fake(int oid)
 	const char *xtra[] = { "sustain", "higher resistance", "ability" };
 	int i;
 
+	textblock *tb;
+	region area = { 0, 3, 0, 0 };
+
 	int e_idx = default_join[oid].oid;
 	ego_item_type *e_ptr = &e_info[e_idx];
 
@@ -1383,9 +1385,6 @@ static void desc_ego_fake(int oid)
 
 	/* Save screen */
 	screen_save();
-
-	/* Set text_out hook */
-	text_out_hook = text_out_to_screen;
 
 	/* Dump the name */
 	c_prt(TERM_L_BLUE, format("%s %s", ego_grp_name(default_group(oid)),
@@ -1406,7 +1405,13 @@ static void desc_ego_fake(int oid)
 	/* List ego flags */
 	dummy.name2 = e_idx;
 	dummy.tval = e_ptr->tval[0];
-	object_info(&dummy, OINFO_FULL | OINFO_DUMMY);
+	tb = object_info(&dummy, OINFO_FULL | OINFO_DUMMY);
+
+	textui_textblock_show(tb, area);
+	textblock_free(tb);
+
+#if 0
+	/* XXX should all be in object_info */
 
 	if (e_ptr->xtra)
 		text_out(format("It provides one random %s.", xtra[e_ptr->xtra - 1]));
@@ -1422,11 +1427,7 @@ static void desc_ego_fake(int oid)
 
 		text_out_c(TERM_RED, format("It is %s.", cursed[i]));
 	}
-
-	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
-	(void)anykey();
-
-	screen_load();
+#endif
 }
 
 /* TODO? Currently ego items will order by e_idx */
@@ -1581,6 +1582,9 @@ static void desc_obj_fake(int k_idx)
 	object_type object_type_body;
 	object_type *o_ptr = &object_type_body;
 
+	textblock *tb;
+	region area = { 0, 3, 0, 0 };
+
 	/* Check for known artifacts, display them as artifacts */
 	if (of_has(k_ptr->flags, OF_INSTA_ART) && artifact_is_known(get_artifact_from_kind(k_ptr)))
 	{
@@ -1607,19 +1611,10 @@ static void desc_obj_fake(int k_idx)
 	/* Hack -- Handle stuff */
 	handle_stuff();
 
-	/* Describe */
-	text_out_hook = text_out_to_screen;
-	screen_save();
-
-	Term_gotoxy(0,0);
 	object_info_header(o_ptr);
-	if (!object_info(o_ptr, OINFO_NONE))
-		text_out("\n\nThis item does not seem to possess any special abilities.");
-
-	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
-	(void)anykey();
-
-	screen_load();
+	tb = object_info(o_ptr, OINFO_NONE);
+	textui_textblock_show(tb, area);
+	textblock_free(tb);
 }
 
 static int o_cmp_tval(const void *a, const void *b)

@@ -16,6 +16,7 @@
  *    are included in all such copies.  Other copyrights may also apply.
  */
 #include "angband.h"
+#include "z-textblock.h"
 
 /* =================== GEOMETRY ================= */
 
@@ -69,6 +70,170 @@ bool region_inside(const region *loc, const ui_event_data *key)
 
 	return TRUE;
 }
+
+
+/*** Text display ***/
+
+static void new_line(size_t **line_starts, size_t **line_lengths,
+		size_t *n_lines, size_t *cur_line,
+		size_t start, size_t len)
+{
+	if (*cur_line == *n_lines) {
+		/* this number is not arbitrary: it's the height of a "standard" term */
+		(*n_lines) += 24;
+
+		*line_starts = mem_realloc(*line_starts,
+				*n_lines * sizeof **line_starts);
+		*line_lengths = mem_realloc(*line_lengths,
+				*n_lines * sizeof **line_lengths);
+	}
+
+	(*line_starts)[*cur_line] = start;
+	(*line_lengths)[*cur_line] = len;
+
+	(*cur_line)++;
+}
+
+static size_t calculate_lines(const char *text,
+		size_t **line_starts, size_t **line_lengths, size_t width)
+{
+	size_t cur_line = 0, n_lines = 0;
+
+	size_t len = strlen(text);
+	size_t text_offset;
+
+	size_t line_start = 0, line_length = 0;
+	size_t word_start = 0, word_length = 0;
+
+	assert(width > 0);
+
+	for (text_offset = 0; text_offset < len; text_offset++) {
+		if (text[text_offset] == '\n') {
+			new_line(line_starts, line_lengths, &n_lines, &cur_line,
+					line_start, line_length);
+
+			line_start = text_offset + 1;
+			line_length = 0;
+		} else if (text[text_offset] == ' ') {
+			line_length++;
+
+			word_start = line_length;
+			word_length = 0;
+		} else {
+			line_length++;
+			word_length++;
+		}
+
+		/* special case: if we have a very long word, just slice it */
+		if (word_length == width) {
+			new_line(line_starts, line_lengths, &n_lines, &cur_line,
+					line_start, line_length);
+
+			line_start += line_length;
+			line_length = 0;
+		}
+
+		/* normal wrapping: wrap text at last word */
+		if (line_length == width) {
+			size_t last_word_offset = word_start;
+			while (text[line_start + last_word_offset] != ' ')
+				last_word_offset--;
+
+			new_line(line_starts, line_lengths, &n_lines, &cur_line,
+					line_start, last_word_offset);
+
+			line_start += word_start;
+			line_length = word_length;
+		}
+	}
+
+	return cur_line;
+}
+
+static void display_area(const char *text, const byte *attrs,
+		size_t *line_starts, size_t *line_lengths,
+		size_t n_lines,
+		region area, size_t line_from)
+{
+	size_t i, j;
+
+	n_lines = MIN(n_lines, (size_t) area.page_rows);
+
+	for (i = 0; i < n_lines; i++) {
+		Term_erase(area.col, area.row + i, area.width);
+		for (j = 0; j < line_lengths[line_from + i]; j++) {
+			Term_putch(area.col + j, area.row + i,
+					attrs[line_starts[line_from + i] + j],
+					text[line_starts[line_from + i] + j]);
+		}
+	}
+}
+
+void textui_textblock_show(textblock *tb, region orig_area)
+{
+	const char *text = textblock_text(tb);
+	const byte *attrs = textblock_attrs(tb);
+
+	/* xxx on resize this should be recalculated */
+	region area = region_calculate(orig_area);
+
+	size_t *line_starts = NULL, *line_lengths = NULL;
+	size_t n_lines;
+
+	/* Calculate what each line has on it */
+	n_lines = calculate_lines(text, &line_starts, &line_lengths, area.width);
+
+	screen_save();
+
+	if (n_lines > (size_t) area.page_rows) {
+		int start_line = 0;
+
+		region pager_area = area;
+		pager_area.page_rows -= 2;
+
+		c_prt(TERM_WHITE, "", area.row + area.page_rows - 2, area.col);
+		c_prt(TERM_L_BLUE, "(Up/down or ESCAPE to exit.)",
+				area.row + area.page_rows - 1, area.col);
+
+		/* Pager mode */
+		while (1) {
+			char ch;
+
+			display_area(text, attrs, line_starts, line_lengths, n_lines,
+					pager_area, start_line);
+
+			ch = inkey();
+			if (ch == ARROW_UP)
+				start_line--;
+			else if (ch == ESCAPE)
+				break;
+			else if (ch == ARROW_DOWN)
+				start_line++;
+			else if (ch == ' ')
+				start_line += pager_area.page_rows;
+
+			if (start_line < 0)
+				start_line = 0;
+			if (start_line + (size_t) pager_area.page_rows > n_lines)
+				start_line = n_lines - pager_area.page_rows;
+		}
+	} else {
+		display_area(text, attrs, line_starts, line_lengths, n_lines, area, 0);
+
+		c_prt(TERM_WHITE, "", area.row + n_lines, area.col);
+		c_prt(TERM_L_BLUE, "(Press any key to continue.)",
+				area.row + n_lines + 1, area.col);
+		inkey();
+	}
+
+	mem_free(line_starts);
+	mem_free(line_lengths);
+
+	screen_load();
+
+	return;
+}
+
 
 
 /*** Miscellaneous things ***/

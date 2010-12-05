@@ -233,19 +233,15 @@ void textui_obj_inscribe(object_type *o_ptr, int item)
 /*** Examination ***/
 void textui_obj_examine(object_type *o_ptr, int item)
 {
+	textblock *tb;
+	region area = { 0, 3, 0, 0 };
+
 	track_object(item);
 
-	text_out_hook = text_out_to_screen;
-	screen_save();
-
 	object_info_header(o_ptr);
-	if (!object_info(o_ptr, OINFO_NONE))
-		text_out("\n\nThis item does not seem to possess any special abilities.");
+	tb = object_info(o_ptr, OINFO_NONE);
 
-	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
-	(void)anykey();
-
-	screen_load();
+	textui_textblock_show(tb, area);
 }
 
 
