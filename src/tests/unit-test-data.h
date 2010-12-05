@@ -149,7 +149,7 @@ static struct player_race test_race = {
 
 	.choice = 0xFF,
 
-	.hist = 0,
+	.history = NULL,
 };
 
 static struct player_class test_class = {

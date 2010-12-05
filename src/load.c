@@ -1052,6 +1052,7 @@ int rd_player(void)
 
 	rd_string(op_ptr->full_name, sizeof(op_ptr->full_name));
 	rd_string(p_ptr->died_from, 80);
+	p_ptr->history = mem_zalloc(250);
 	rd_string(p_ptr->history, 250);
 
 	/* Player race */

@@ -81,7 +81,7 @@ struct birther
 
 	s16b stat[A_MAX];
 
-	char history[250];
+	char *history;
 };
 
 
@@ -105,12 +105,9 @@ static void save_roller_data(birther *player)
 
 	/* Save the stats */
 	for (i = 0; i < A_MAX; i++)
-	{
 		player->stat[i] = p_ptr->stat_birth[i];
-	}
 
-	/* Save the history */
-	my_strcpy(player->history, p_ptr->history, sizeof(player->history));
+	player->history = p_ptr->history;
 }
 
 
@@ -155,8 +152,7 @@ static void load_roller_data(birther *player, birther *prev_player)
 	}
 
 	/* Load the history */
-	my_strcpy(p_ptr->history, player->history, sizeof(p_ptr->history));
-
+	p_ptr->history = player->history;
 
 	/*** Save the current data if the caller is interested in it. ***/
 	if (prev_player) *prev_player = temp;
@@ -333,52 +329,34 @@ static void get_bonuses(void)
 /*
  * Get the racial history, and social class, using the "history charts".
  */
-static void get_history(void)
+char *get_history(struct history_chart *chart, s16b *sc)
 {
-	int i, chart, roll, social_class;
+	int roll, social_class;
+	struct history_entry *entry;
+	char *res = NULL;
 
-
-	/* Clear the previous history strings */
-	p_ptr->history[0] = '\0';
-
-
-	/* Initial social class */
 	social_class = randint1(4);
 
-	/* Starting place */
-	chart = rp_ptr->hist;
-
-
-	/* Process the history */
-	while (chart)
-	{
-		/* Start over */
-		i = 0;
-
-		/* Roll for nobility */
+	while (chart) {
 		roll = randint1(100);
+		for (entry = chart->entries; entry; entry = entry->next)
+			if (roll <= entry->roll)
+				break;
+		assert(entry);
 
-		/* Get the proper entry in the table */
-		while ((chart != h_info[i].chart) || (roll > h_info[i].roll)) i++;
-
-		/* Get the textual history */
-		my_strcat(p_ptr->history, h_info[i].text, sizeof(p_ptr->history));
-
-		/* Add in the social class */
-		social_class += (int)(h_info[i].bonus) - 50;
-
-		/* Enter the next chart */
-		chart = h_info[i].next;
+		res = string_append(res, entry->text);
+		social_class += entry->bonus - 50;
+		chart = entry->succ;
 	}
 
+	if (social_class > 75)
+		social_class = 75;
+	else if (social_class < 1)
+		social_class = 1;
 
-
-	/* Verify social class */
-	if (social_class > 75) social_class = 75;
-	else if (social_class < 1) social_class = 1;
-
-	/* Save the social class */
-	p_ptr->sc = p_ptr->sc_birth = social_class;
+	if (sc)
+		*sc = social_class;
+	return res;
 }
 
 
@@ -983,7 +961,8 @@ void player_generate(struct player *p, const player_sex *s,
 	/* Roll for age/height/weight */
 	get_ahw();
 
-	get_history();
+	p->history = get_history(p->race->history, &p->sc);
+	p->sc_birth = p->sc;
 }
 
 
@@ -1150,7 +1129,8 @@ void player_birth(bool quickstart_allowed)
 
 			/* There's no real need to do this here, but it's tradition. */
 			get_ahw();
-			get_history();
+			p_ptr->history = get_history(p_ptr->race->history, &p_ptr->sc);
+			p_ptr->sc_birth = p_ptr->sc;
 
 			event_signal(EVENT_GOLD);
 			event_signal(EVENT_AC);

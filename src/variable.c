@@ -582,10 +582,6 @@ monster_race *r_info;
 
 struct player_race *races;
 struct player_class *classes;
-/*
- * The player history arrays
- */
-hist_type *h_info;
 
 owner_type *b_info;
 

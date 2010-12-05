@@ -17,26 +17,30 @@ static int teardown(void *state) {
 
 static int test_n0(void *state) {
 	enum parser_error r = parser_parse(state, "N:1:3:5:2");
-	struct history *h;
+	struct history_chart *c;
+	struct history_entry *e;
 
 	eq(r, PARSE_ERROR_NONE);
-	h = parser_priv(state);
-	require(h);
-	eq(h->chart, 1);
-	eq(h->next, 3);
-	eq(h->roll, 5);
-	eq(h->bonus, 2);
+	c = parser_priv(state);
+	require(c);
+	e = c->entries;
+	require(e);
+	eq(c->idx, 1);
+	ptreq(e->next, NULL);
+	ptreq(e->roll, 5);
+	ptreq(e->bonus, 2);
+	eq(e->isucc, 3);
 	ok;
 }
 
 static int test_d0(void *state) {
 	enum parser_error r = parser_parse(state, "D:hello there");
-	struct history *h;
+	struct history_chart *h;
 
 	eq(r, PARSE_ERROR_NONE);
 	h = parser_priv(state);
 	require(h);
-	require(streq(h->text, "hello there"));
+	require(streq(h->entries->text, "hello there"));
 	ok;
 }
 

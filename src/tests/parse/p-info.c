@@ -77,13 +77,13 @@ static int test_x0(void *state) {
 }
 
 static int test_i0(void *state) {
-	enum parser_error r = parser_parse(state, "I:3:10:3");
+	enum parser_error r = parser_parse(state, "I:0:10:3");
 	struct player_race *pr;
 
 	eq(r, PARSE_ERROR_NONE);
 	pr = parser_priv(state);
 	require(pr);
-	eq(pr->hist, 3);
+	eq(pr->history, NULL);
 	eq(pr->b_age, 10);
 	eq(pr->m_age, 3);
 	ok;

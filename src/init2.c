@@ -31,6 +31,8 @@
 #include "prefs.h"
 #include "squelch.h"
 
+static struct history_chart *histories;
+
 /*
  * This file is used to initialize various variables and arrays for the
  * Angband game.  Note the use of "fd_read()" and "fd_write()" to bypass
@@ -129,6 +131,13 @@ static u32b grab_one_effect(const char *what) {
 
 	/* Error */
 	return 0;
+}
+
+static struct history_chart *findchart(struct history_chart *hs, unsigned int idx) {
+	for (; hs; hs = hs->next)
+		if (hs->idx == idx)
+			break;
+	return hs;
 }
 
 /*
@@ -307,8 +316,6 @@ static enum parser_error parse_z(struct parser *p) {
 		z->r_max = value;
 	else if (streq(label, "V"))
 		z->v_max = value;
-	else if (streq(label, "H"))
-		z->h_max = value;
 	else if (streq(label, "S"))
 		z->s_max = value;
 	else if (streq(label, "O"))
@@ -2514,7 +2521,7 @@ static enum parser_error parse_p_i(struct parser *p) {
 	struct player_race *r = parser_priv(p);
 	if (!r)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	r->hist = parser_getint(p, "hist");
+	r->history = findchart(histories, parser_getuint(p, "hist"));
 	r->b_age = parser_getint(p, "b-age");
 	r->m_age = parser_getint(p, "m-age");
 	return PARSE_ERROR_NONE;
@@ -2617,7 +2624,7 @@ struct parser *init_parse_p(void) {
 	parser_reg(p, "S int str int int int wis int dex int con int chr", parse_p_s);
 	parser_reg(p, "R int dis int dev int sav int stl int srh int fos int thm int thb int throw int dig", parse_p_r);
 	parser_reg(p, "X int mhp int exp int infra", parse_p_x);
-	parser_reg(p, "I int hist int b-age int m-age", parse_p_i);
+	parser_reg(p, "I uint hist int b-age int m-age", parse_p_i);
 	parser_reg(p, "H int mbht int mmht int fbht int fmht", parse_p_h);
 	parser_reg(p, "W int mbwt int mmwt int fbwt int fmwt", parse_p_w);
 	parser_reg(p, "F ?str flags", parse_p_f);
@@ -2944,25 +2951,34 @@ struct file_parser v_parser = {
 
 /* Parsing functions for p_hist.txt */
 static enum parser_error parse_h_n(struct parser *p) {
-	struct history *oh = parser_priv(p);
-	struct history *h = mem_zalloc(sizeof *h);
+	struct history_chart *oc = parser_priv(p);
+	struct history_chart *c;
+	struct history_entry *e = mem_zalloc(sizeof *e);
+	unsigned int idx = parser_getuint(p, "chart");
+	
+	if (!(c = findchart(oc, idx))) {
+		c = mem_zalloc(sizeof *c);
+		c->next = oc;
+		c->idx = idx;
+		parser_setpriv(p, c);
+	}
 
-	h->chart = parser_getint(p, "chart");
-	h->next = parser_getint(p, "next");
-	h->roll = parser_getint(p, "roll");
-	h->bonus = parser_getint(p, "bonus");
-	h->nextp = oh;
-	h->hidx = oh ? oh->hidx + 1 : 0;
-	parser_setpriv(p, h);
+	e->isucc = parser_getint(p, "next");
+	e->roll = parser_getint(p, "roll");
+	e->bonus = parser_getint(p, "bonus");
+
+	e->next = c->entries;
+	c->entries = e;
 	return PARSE_ERROR_NONE;
 }
 
 static enum parser_error parse_h_d(struct parser *p) {
-	struct history *h = parser_priv(p);
+	struct history_chart *h = parser_priv(p);
 
 	if (!h)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
-	h->text = string_append(h->text, parser_getstr(p, "text"));
+	assert(h->entries);
+	h->entries->text = string_append(h->entries->text, parser_getstr(p, "text"));
 	return PARSE_ERROR_NONE;
 }
 
@@ -2970,7 +2986,7 @@ struct parser *init_parse_h(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
-	parser_reg(p, "N int chart int next int roll int bonus", parse_h_n);
+	parser_reg(p, "N uint chart int next int roll int bonus", parse_h_n);
 	parser_reg(p, "D str text", parse_h_d);
 	return p;
 }
@@ -2980,26 +2996,37 @@ static errr run_parse_h(struct parser *p) {
 }
 
 static errr finish_parse_h(struct parser *p) {
-	struct history *h, *n;
+	struct history_chart *c;
+	struct history_entry *e, *prev, *next;
+	histories = parser_priv(p);
 
-	h_info = mem_zalloc(sizeof(*h) * z_info->h_max);
-	for (h = parser_priv(p); h; h = h->nextp) {
-		if (h->hidx >= z_info->h_max) {
-			printf("warning: skipping bad history %d\n", h->hidx);
-			continue;
+	/* Go fix up the entry successor pointers. We can't compute them at
+	 * load-time since we may not have seen the successor history yet. Also,
+	 * we need to put the entries in the right order; the parser actually
+	 * stores them backwards, which is not desirable.
+	 */
+	for (c = histories; c; c = c->next) {
+		e = c->entries;
+		prev = NULL;
+		while (e) {
+			next = e->next;
+			e->next = prev;
+			prev = e;
+			e = next;
 		}
-		memcpy(&h_info[h->hidx], h, sizeof(*h));
-	}
-
-	h = parser_priv(p);
-	while (h) {
-		n = h->nextp;
-		mem_free(h);
-		h = n;
+		c->entries = prev;
+		for (e = c->entries; e; e = e->next) {
+			if (!e->isucc)
+				continue;
+			e->succ = findchart(histories, e->isucc);
+			if (!e->succ) {
+				return -1;
+			}
+		}
 	}
 
 	parser_destroy(p);
-	return PARSE_ERROR_NONE;
+	return 0;
 }
 
 struct file_parser h_parser = {

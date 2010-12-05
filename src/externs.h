@@ -123,7 +123,6 @@ extern object_kind *k_info;
 extern artifact_type *a_info;
 extern ego_item_type *e_info;
 extern monster_race *r_info;
-extern hist_type *h_info;
 extern owner_type *b_info;
 extern byte *g_info;
 extern struct player_race *races;
