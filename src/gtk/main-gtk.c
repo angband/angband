@@ -24,6 +24,16 @@
 #include "files.h"
 #include "macro.h"
 
+/* this is used to draw the various terrain characters */
+static unsigned int graphics_table[32] = {
+	000, '*', '#', '?', '?', '?', '?', '.',
+	'+', '?', '?', '+', '+', '+', '+', '+',
+	'~', '-', '-', '-', '_', '+', '+', '+',
+	'+', '|', '?', '?', '?', '?', '?', '.',
+};
+
+iconv_t conv;
+
 /* 
  *Add a bunch of debugger message, to trace where problems are. 
  */
@@ -502,6 +512,52 @@ static errr Term_wipe_gtk(int x, int y, int n)
 	return (0);
 }
 
+static byte Term_xchar_gtk(byte c)
+{
+	/* Can't translate Latin-1 to UTF-8 here since we have to return a byte. */
+	return c;
+}
+
+char *process_control_chars(int n, cptr s)
+{
+	char *s2 = (char *)malloc(sizeof(char) * n);
+	int i;
+	for (i = 0; i < n; i++) {
+		unsigned char c = s[i];
+		if (c < 32) {
+			s2[i] = graphics_table[c];
+		} else if (c == 127) {
+			s2[i] = '#';
+		} else {
+			s2[i] = c;
+		}
+	}
+
+	return s2;
+}
+
+char *latin1_to_utf8(int n, cptr s)
+{
+	size_t inbytes = n;
+	char *s2 = process_control_chars(n, s);
+	char *p2 = s2;
+
+	size_t outbytes = 4 * n;
+	char *s3 = (char *)malloc(sizeof(char) * outbytes);
+	char *p3 = s3;
+
+	size_t result = iconv(conv, &p2, &inbytes, &p3, &outbytes);
+
+	if (result == (size_t)(-1)) {
+		printf("iconv() failed: %d\n", errno);
+		free(s3);
+		return s2;
+	} else {
+		free(s2);
+		return s3;
+	}
+}
+
 /*
  * Draw some textual characters.
  */
@@ -509,11 +565,18 @@ static errr Term_text_gtk(int x, int y, int n, byte a, cptr s)
 {
 	term_data *td = (term_data*)(Term->data);
 	cairo_rectangle_t r;
-	
+
+	char *s2;
+	if (conv == NULL)
+		s2 = process_control_chars(n, s);
+	else
+		s2 = latin1_to_utf8(n, s);
+
 	init_cairo_rect(&r, (td->font.w * x), (td->font.h * y),  (td->font.w * n), td->font.h);
-	draw_text(td->surface, &td->font, &td->actual, x, y, n, a, s);
+	draw_text(td->surface, &td->font, &td->actual, x, y, n, a, s2);
 	invalidate_drawing_area(td->drawing_area, r);
-			
+	
+	free(s2);
 	return (0);
 }
 
@@ -1996,6 +2059,12 @@ static errr term_data_init(term_data *td, int i)
 {
 	term *t = &td->t;
 
+	conv = iconv_open("UTF-8", "ISO-8859-1");
+	if (conv == (iconv_t)(-1)) {
+		printf("iconv_open() failed: %d\n", errno);
+		conv = NULL;
+	}
+
 	td->cols = 80;
 	td->rows = 24;
 
@@ -2020,6 +2089,8 @@ static errr term_data_init(term_data *td, int i)
 	t->wipe_hook = Term_wipe_gtk;
 	t->curs_hook = Term_curs_gtk;
 	t->pict_hook = Term_pict_gtk;
+	if (conv != NULL)
+		t->xchar_hook = Term_xchar_gtk;
 	
 	/* Save the data */
 	t->data = td;
@@ -2159,6 +2230,17 @@ static void glog(cptr fmt, ...)
 		plog(str);
 }
 
+static void reinitialize_text_buffer(xtra_win_data *xd)
+{
+	if (!GTK_IS_TEXT_BUFFER(xd->buf))
+		xd->buf = gtk_text_buffer_new(NULL);
+	else
+		gtk_text_buffer_set_text(xd->buf, "", 0);
+	gtk_text_view_set_buffer(GTK_TEXT_VIEW(xd->text_view), xd->buf);
+	init_color_tags(xd);
+}
+
+
 /*
  * Update our own personal message window.
  */
@@ -2170,18 +2252,8 @@ static void handle_message(game_event_type type, game_event_data *data, void *us
 	int i;
 
 	if (!xd) return;
-	
-	if (!GTK_IS_TEXT_BUFFER(xd->buf))
-	{
-		xd->buf = gtk_text_buffer_new(NULL);
-	}
-	else
-	{
-		gtk_text_buffer_set_text(xd->buf, "", -1);
-	}
-	gtk_text_view_set_buffer(GTK_TEXT_VIEW (xd->text_view), xd->buf);
-	
-	init_color_tags(xd);
+
+	reinitialize_text_buffer(xd);
 	
 	num = messages_num();
 	
@@ -2268,20 +2340,9 @@ static void handle_inv(game_event_type type, game_event_data *data, void *user)
 	register int i, z;
 	byte attr;
 
-
 	if (!xd) return;
-	
-	if (!GTK_IS_TEXT_BUFFER(xd->buf))
-	{
-		xd->buf = gtk_text_buffer_new(NULL);
-	}
-	else
-	{
-		gtk_text_buffer_set_text(xd->buf, "", -1);
-	}
-	gtk_text_view_set_buffer(GTK_TEXT_VIEW(xd->text_view), xd->buf);
-	
-	init_color_tags(xd);
+
+	reinitialize_text_buffer(xd);
 	
 	z = last_inv_slot();
 	
@@ -2309,21 +2370,11 @@ static void handle_equip(game_event_type type, game_event_data *data, void *user
 	
 	register int i;
 	byte attr;
-		char str[80];
+	char str[80];
 	
 	if (!xd) return;
 	
-	if (!GTK_IS_TEXT_BUFFER(xd->buf))
-	{
-		xd->buf = gtk_text_buffer_new(NULL);
-	}
-	else
-	{
-		gtk_text_buffer_set_text(xd->buf, "", -1);
-	}
-	gtk_text_view_set_buffer(GTK_TEXT_VIEW(xd->text_view), xd->buf);
-	
-	init_color_tags(xd);
+	reinitialize_text_buffer(xd);
 	
 	/* Display the pack */
 	for (i = INVEN_WIELD; i < INVEN_TOTAL; i++)
@@ -2361,18 +2412,7 @@ static void handle_mons_list(game_event_type type, game_event_data *data, void *
 
 	if (!xd) return;
 
-	if (!GTK_IS_TEXT_BUFFER(xd->buf))
-	{
-		xd->buf = gtk_text_buffer_new(NULL);
-	}
-	else
-	{
-		gtk_text_buffer_set_text(xd->buf, "", -1);
-	}
-	
-	gtk_text_view_set_buffer(GTK_TEXT_VIEW (xd->text_view), xd->buf);
-	
-	init_color_tags(xd);
+	reinitialize_text_buffer(xd);
 	
 	/* Allocate the array */
 	race_count = C_ZNEW(z_info->r_max, u16b);
