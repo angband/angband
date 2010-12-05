@@ -2829,8 +2829,10 @@ errr init_gtk(int argc, char **argv)
 	/* Let's play */
 	play_game();
 
-	/* Stop now */
-	exit(0);
+	/* Do all the things main() in main.c already does */
+	cleanup_angband();
+	quit(NULL);
+	exit(0); /* just in case */
 
 	/* Success */
 	return (0);
