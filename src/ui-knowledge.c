@@ -1840,7 +1840,7 @@ static void display_feature(int col, int row, bool cursor, int oid )
 	/* Display the name */
 	c_prt(attr, f_ptr->name, row, col);
 
-	if ((tile_width > 1) || (tile_height)) return;
+	if ((tile_width > 1) || (tile_height > 1)) return;
 
 	/* Display symbol */
 	big_pad(68, row, f_ptr->x_attr, f_ptr->x_char);
