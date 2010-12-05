@@ -326,7 +326,7 @@ static void setup_menus()
 	                &class_region, TRUE, class_help);
 	mdata = class_menu.menu_data;
 
-	for (c = classes; c; c = c->next)
+	for (i = 0, c = classes; c; c = c->next, i++)
 		mdata->items[i] = c->name;
 	mdata->hint = "Your 'class' determines various intrinsic abilities and bonuses";
 		
