@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "generate.h"
 #include "object/tvalsval.h"
+#include "object/object.h"
 #include "monster/constants.h"
 #include "monster/monster.h"
 #include "squelch.h"
@@ -793,7 +794,10 @@ static int inven_damage(inven_func typ, int cperc)
 			/* Track if it is damaged instead of destroyed */
 			damage = FALSE;
 
-			/* Analyze the type to see if we just damage it */
+			/** 
+			 * Analyze the type to see if we just damage it
+			 * - we also check for rods to reduce chance
+			 */
 			switch (o_ptr->tval)
 			{
 				/* Weapons */
@@ -804,7 +808,7 @@ static int inven_damage(inven_func typ, int cperc)
 				case TV_DIGGING:
 				{
 					/* Chance to damage it */
-					if (randint0(10000 * 100) < cperc)
+					if (randint0(10000) < cperc)
 					{
 						/* Damage the item */
 						o_ptr->to_h--;
@@ -830,7 +834,7 @@ static int inven_damage(inven_func typ, int cperc)
 				case TV_DRAG_ARMOR:
 				{
 					/* Chance to damage it */
-					if (randint0(10000 * 100) < cperc)
+					if (randint0(10000) < cperc)
 					{
 						/* Damage the item */
 						o_ptr->to_a--;
@@ -865,7 +869,7 @@ static int inven_damage(inven_func typ, int cperc)
 				amt = o_ptr->number;
 			}
 
-			/* Count the casualties */
+			/* ... or count the casualties */
 			else for (amt = j = 0; j < o_ptr->number; ++j)
 			{
 				if (randint0(10000) < chance) amt++;
@@ -889,17 +893,8 @@ static int inven_damage(inven_func typ, int cperc)
 				/* Damage already done? */
 				if (damage) continue;
 
-				/* Hack -- If rods, wands, or staves are destroyed, the total
-				 * maximum timeout or charges of the stack needs to be reduced,
-				 * unless all the items are being destroyed. -LM-
-				 */
-				if (((o_ptr->tval == TV_WAND) ||
-				     (o_ptr->tval == TV_STAFF) ||
-				     (o_ptr->tval == TV_ROD)) &&
-				    (amt < o_ptr->number))
-				{
-					o_ptr->pval -= o_ptr->pval * amt / o_ptr->number;
-				}
+				/* Reduce charges if some devices are destroyed */
+				reduce_charges(o_ptr, amt);
 
 				/* Destroy "amt" items */
 				inven_item_increase(i, -amt);

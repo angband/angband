@@ -1748,13 +1748,9 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 	/* Hack -- Blend "notes" */
 	if (j_ptr->note != 0) o_ptr->note = j_ptr->note;
 
-	/*
-	 * Hack -- if rods are stacking, re-calculate the
-	 * pvals (maximum timeouts) and current timeouts together
-	 */
+	/* Hack -- if rods are stacking, re-calculate the timeouts */
 	if (o_ptr->tval == TV_ROD)
 	{
-		o_ptr->pval = total * j_ptr->pval;
 		o_ptr->timeout += j_ptr->timeout;
 	}
 

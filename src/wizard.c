@@ -22,6 +22,7 @@
 #include "files.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "object/object.h"
 #include "ui-menu.h"
 #include "spells.h"
 #include "target.h"
@@ -870,10 +871,8 @@ static void wiz_quantity_item(object_type *o_ptr, bool carried)
 
 	char tmp_val[3];
 
-
 	/* Never duplicate artifacts */
 	if (artifact_p(o_ptr)) return;
-
 
 	/* Default */
 	strnfmt(tmp_val, sizeof(tmp_val), "%d", o_ptr->number);
@@ -898,11 +897,8 @@ static void wiz_quantity_item(object_type *o_ptr, bool carried)
 			p_ptr->total_weight += (tmp_int * o_ptr->weight);
 		}
 
-		/* Adjust charge for rods */
-		if (o_ptr->tval == TV_ROD)
-		{
-			o_ptr->pval = (o_ptr->pval / o_ptr->number) * tmp_int;
-		}
+		/* Adjust charges/timeouts for devices */
+		reduce_charges(o_ptr, (o_ptr->number - tmp_int));
 
 		/* Accept modifications */
 		o_ptr->number = tmp_int;
