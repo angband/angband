@@ -309,8 +309,6 @@ static enum parser_error parse_z(struct parser *p) {
 		z->v_max = value;
 	else if (streq(label, "H"))
 		z->h_max = value;
-	else if (streq(label, "B"))
-		z->b_max = value;
 	else if (streq(label, "S"))
 		z->s_max = value;
 	else if (streq(label, "O"))

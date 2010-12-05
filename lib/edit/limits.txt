@@ -33,9 +33,6 @@ M:V:71
 # Maximum number of player history lines
 M:H:165
 
-# Maximum number of owners per store
-M:B:4
-
 # Maximum number of spells
 M:S:122
 

@@ -384,7 +384,7 @@ static void build_score(high_score *entry, const char *died_from, time_t *death_
 	/* Save the player info XXX XXX XXX */
 	strnfmt(entry->uid, sizeof(entry->uid), "%7u", player_uid);
 	strnfmt(entry->sex, sizeof(entry->sex), "%c", (p_ptr->psex ? 'm' : 'f'));
-	strnfmt(entry->p_r, sizeof(entry->p_r), "%2d", p_ptr->prace);
+	strnfmt(entry->p_r, sizeof(entry->p_r), "%2d", p_ptr->race->ridx);
 	strnfmt(entry->p_c, sizeof(entry->p_c), "%2d", p_ptr->class->cidx);
 
 	/* Save the level and such */

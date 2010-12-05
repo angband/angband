@@ -1060,7 +1060,7 @@ int rd_player(void)
 
 	/* Verify player race */
 	if (!p_ptr->race) {
-		note(format("Invalid player race (%d).", p_ptr->prace));
+		note(format("Invalid player race (%d).", num));
 		return -1;
 	}
 	rp_ptr = p_ptr->race;
@@ -1819,15 +1819,8 @@ int rd_stores_2(void)
 		rd_byte(&own);
 		rd_byte(&num);
 		
-		/* XXs */
+		/* XXX */
 		strip_bytes(4);
-		
-		/* Paranoia */
-		if (own >= z_info->b_max)
-		{
-			note("Illegal store owner!");
-			return (-1);
-		}
 	
 		/* XXX: refactor into store.c */
 		st_ptr->owner = store_ownerbyidx(st_ptr, own);

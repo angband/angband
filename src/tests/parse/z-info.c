@@ -47,7 +47,6 @@ test_max(e_max, 'E');
 test_max(r_max, 'R');
 test_max(v_max, 'V');
 test_max(h_max, 'H');
-test_max(b_max, 'B');
 test_max(s_max, 'S');
 test_max(o_max, 'O');
 test_max(m_max, 'M');
@@ -62,7 +61,6 @@ static struct test tests[] = {
 	{ "rmax", test_r_max },
 	{ "vmax", test_v_max },
 	{ "hmax", test_h_max },
-	{ "bmax", test_b_max },
 	{ "smax", test_s_max },
 	{ "omax", test_o_max },
 	{ "mmax", test_m_max },
