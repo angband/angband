@@ -56,12 +56,12 @@ void object_kind_name(char *buf, size_t max, int k_idx, bool easy_know)
 	{
 		if (k_ptr->tval == TV_FOOD && k_ptr->sval > SV_FOOD_MIN_SHROOM)
 		{
-			strnfmt(buf, max, "%s Mushroom", flavor_info[k_ptr->flavor].text);
+			strnfmt(buf, max, "%s Mushroom", k_ptr->flavor->text);
 		}
 		else
 		{
 			/* Plain flavour (e.g. Copper) will do. */
-			my_strcpy(buf, flavor_info[k_ptr->flavor].text, max);
+			my_strcpy(buf, k_ptr->flavor->text, max);
 		}
 	}
 
@@ -131,7 +131,7 @@ static const char *obj_desc_get_modstr(const object_type *o_ptr)
 		case TV_POTION:
 		case TV_FOOD:
 		case TV_SCROLL:
-			return flavor_info[k_ptr->flavor].text;
+			return k_ptr->flavor ? k_ptr->flavor->text : "";
 
 		case TV_MAGIC_BOOK:
 		case TV_PRAYER_BOOK:

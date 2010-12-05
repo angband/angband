@@ -54,8 +54,6 @@ test_max(s_max, 'S');
 test_max(o_max, 'O');
 test_max(m_max, 'M');
 
-test_max(flavor_max, 'L');
-
 static const char *suite_name = "parse/z-info";
 static struct test tests[] = {
 	{ "negative", test_negative },
@@ -72,6 +70,5 @@ static struct test tests[] = {
 	{ "smax", test_s_max },
 	{ "omax", test_o_max },
 	{ "mmax", test_m_max },
-	{ "flavormax", test_flavor_max },
 	{ NULL, NULL }
 };

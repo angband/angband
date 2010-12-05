@@ -36,24 +36,17 @@ char scroll_adj[MAX_TITLES][18];
 
 static void flavor_assign_fixed(void)
 {
-	int i, j;
+	int i;
+	struct flavor *f;
 
-	for (i = 0; i < z_info->flavor_max; i++)
-	{
-		flavor_type *flavor_ptr = &flavor_info[i];
+	for (f = flavors; f; f = f->next) {
+		if (f->sval == SV_UNKNOWN)
+			continue;
 
-		/* Skip random flavors */
-		if (flavor_ptr->sval == SV_UNKNOWN) continue;
-
-		for (j = 0; j < z_info->k_max; j++)
-		{
-			/* Skip other objects */
-			if ((k_info[j].tval == flavor_ptr->tval) &&
-			    (k_info[j].sval == flavor_ptr->sval))
-			{
-				/* Store the flavor index */
-				k_info[j].flavor = i;
-			}
+		for (i = 0; i < z_info->k_max; i++) {
+			struct object_kind *k = &k_info[i];
+			if (k->tval == f->tval && k->sval == f->sval)
+				k->flavor = f;
 		}
 	}
 }
@@ -61,63 +54,39 @@ static void flavor_assign_fixed(void)
 
 static void flavor_assign_random(byte tval)
 {
-	int i, j;
+	int i;
 	int flavor_count = 0;
 	int choice;
+	struct flavor *f;
 
 	/* Count the random flavors for the given tval */
-	for (i = 0; i < z_info->flavor_max; i++)
-	{
-		if ((flavor_info[i].tval == tval) &&
-		    (flavor_info[i].sval == SV_UNKNOWN))
-		{
+	for (f = flavors; f; f = f->next)
+		if (f->tval == tval && f->sval == SV_UNKNOWN)
 			flavor_count++;
-		}
-	}
 
-	for (i = 0; i < z_info->k_max; i++)
-	{
-		/* Skip other object types */
-		if (k_info[i].tval != tval) continue;
-
-		/* Skip objects that already are flavored */
-		if (k_info[i].flavor != 0) continue;
+	for (i = 0; i < z_info->k_max; i++) {
+		if (k_info[i].tval != tval || k_info[i].flavor)
+			continue;
 
 		/* HACK - Ordinary food is "boring" */
 		if ((tval == TV_FOOD) && (k_info[i].sval < SV_FOOD_MIN_SHROOM))
 			continue;
 
-		if (!flavor_count) quit_fmt("Not enough flavors for tval %d.", tval);
+		if (!flavor_count)
+			quit_fmt("Not enough flavors for tval %d.", tval);
 
-		/* Select a flavor */
 		choice = randint0(flavor_count);
 	
-		/* Find and store the flavor */
-		for (j = 0; j < z_info->flavor_max; j++)
-		{
-			/* Skip other tvals */
-			if (flavor_info[j].tval != tval) continue;
+		for (f = flavors; f; f = f->next) {
+			if (f->tval != tval || f->sval != SV_UNKNOWN)
+				continue;
 
-			/* Skip assigned svals */
-			if (flavor_info[j].sval != SV_UNKNOWN) continue;
-
-			if (choice == 0)
-			{
-				/* Store the flavor index */
-				k_info[i].flavor = j;
-
-				/* Mark the flavor as used */
-				flavor_info[j].sval = k_info[i].sval;
-
-				/* Hack - set the scroll name if it's a scroll */
+			if (choice == 0) {
+				k_info[i].flavor = f;
+				f->sval = k_info[i].sval;
 				if (tval == TV_SCROLL)
-				{
-					flavor_info[j].text = scroll_adj[k_info[i].sval];
-				}
-
-				/* One less flavor to choose from */
+					f->text = scroll_adj[k_info[i].sval];
 				flavor_count--;
-
 				break;
 			}
 
@@ -249,7 +218,7 @@ extern void init_translate_visuals(void);
 void reset_visuals(bool load_prefs)
 {
 	int i;
-
+	struct flavor *f;
 
 	/* Extract default attr/char code for features */
 	for (i = 0; i < z_info->f_max; i++)
@@ -282,13 +251,10 @@ void reset_visuals(bool load_prefs)
 	}
 
 	/* Extract default attr/char code for flavors */
-	for (i = 0; i < z_info->flavor_max; i++)
+	for (f = flavors; f; f = f->next)
 	{
-		flavor_type *flavor_ptr = &flavor_info[i];
-
-		/* Default attr/char */
-		flavor_ptr->x_attr = flavor_ptr->d_attr;
-		flavor_ptr->x_char = flavor_ptr->d_char;
+		f->x_attr = f->d_attr;
+		f->x_char = f->d_char;
 	}
 
 	/* Extract attr/chars for inventory objects (by tval) */

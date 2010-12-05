@@ -589,10 +589,7 @@ hist_type *h_info;
 
 owner_type *b_info;
 
-/*
- * The object flavor arrays
- */
-flavor_type *flavor_info;
+struct flavor *flavors;
 
 /*
  * The spell arrays

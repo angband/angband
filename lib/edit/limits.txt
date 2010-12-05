@@ -42,9 +42,6 @@ M:H:165
 # Maximum number of owners per store
 M:B:4
 
-# Maximum number of flavors
-M:L:313
-
 # Maximum number of spells
 M:S:122
 

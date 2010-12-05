@@ -65,7 +65,6 @@ typedef struct maxima
 	u16b h_max;       /**< Maximum number of chained player history entries */
 	u16b b_max;       /**< Maximum number of shop owners per store kind */
 	u16b c_max;       /**< Maximum number of player classes */
-	u16b flavor_max;  /**< Maximum number of item flavour kinds */
 	u16b s_max;       /**< Maximum number of magic spells */
 
 	u16b o_max;       /**< Maximum number of objects on a given level */

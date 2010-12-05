@@ -126,7 +126,7 @@ extern player_class *c_info;
 extern hist_type *h_info;
 extern owner_type *b_info;
 extern byte *g_info;
-extern flavor_type *flavor_info;
+extern struct flavor *flavors;
 extern spell_type *s_info;
 extern s16b spell_list[MAX_REALMS][BOOKS_PER_REALM][SPELLS_PER_BOOK];
 extern struct hint *hints;

@@ -1453,8 +1453,8 @@ static void display_object(int col, int row, bool cursor, int oid)
 	/* Find graphics bits -- versions of the object_char and object_attr defines */
 	bool use_flavour = (k_ptr->flavor) && !(aware && k_ptr->tval == TV_SCROLL);
 
-	byte a = use_flavour ? flavor_info[k_ptr->flavor].x_attr : k_ptr->x_attr;
-	byte c = use_flavour ? flavor_info[k_ptr->flavor].x_char : k_ptr->x_char;
+	byte a = use_flavour ? k_ptr->flavor->x_attr : k_ptr->x_attr;
+	byte c = use_flavour ? k_ptr->flavor->x_char : k_ptr->x_char;
 
 	/* Display known artifacts differently */
 	if (of_has(k_ptr->flags, OF_INSTA_ART) && artifact_is_known(get_artifact_from_kind(k_ptr)))
@@ -1570,8 +1570,7 @@ static int o_cmp_tval(const void *a, const void *b)
 			c = k_a->tried - k_b->tried;
 			if (c) return -c;
 
-			return strcmp(flavor_info[k_a->flavor].text,
-			              flavor_info[k_b->flavor].text);
+			return strcmp(k_a->flavor->text, k_b->flavor->text);
 	}
 
 	return k_a->sval - k_b->sval;
@@ -1586,7 +1585,7 @@ static char *o_xchar(int oid)
 	if (!k_ptr->flavor || k_ptr->aware)
 		return &k_ptr->x_char;
 	else
-		return &flavor_info[k_ptr->flavor].x_char;
+		return &k_ptr->flavor->x_char;
 }
 
 static byte *o_xattr(int oid)
@@ -1596,7 +1595,7 @@ static byte *o_xattr(int oid)
 	if (!k_ptr->flavor || k_ptr->aware)
 		return &k_ptr->x_attr;
 	else
-		return &flavor_info[k_ptr->flavor].x_attr;
+		return &k_ptr->flavor->x_attr;
 }
 
 /*

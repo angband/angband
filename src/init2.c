@@ -321,8 +321,6 @@ static enum parser_error parse_z(struct parser *p) {
 		z->o_max = value;
 	else if (streq(label, "M"))
 		z->m_max = value;
-	else if (streq(label, "L"))
-		z->flavor_max = value;
 	else
 		return PARSE_ERROR_UNDEFINED_DIRECTIVE;
 
@@ -3109,23 +3107,7 @@ static errr run_parse_flavor(struct parser *p) {
 }
 
 static errr finish_parse_flavor(struct parser *p) {
-	struct flavor *f, *n;
-
-	flavor_info = mem_zalloc(z_info->flavor_max * sizeof(*f));
-
-	for (f = parser_priv(p); f; f = f->next) {
-		if (f->fidx >= z_info->flavor_max)
-			continue;
-		memcpy(&flavor_info[f->fidx], f, sizeof(*f));
-	}
-
-	f = parser_priv(p);
-	while (f) {
-		n = f->next;
-		mem_free(f);
-		f = n;
-	}
-
+	flavors = parser_priv(p);
 	parser_destroy(p);
 	return 0;
 }

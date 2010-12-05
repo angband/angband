@@ -53,7 +53,7 @@ typedef struct object_kind
 	byte gen_mult_prob;      /**< Probability of generating more than one */
 	random_value stack_size; /**< Number to generate */
 
-	u16b flavor;         /**< Special object flavor (or zero) */
+	struct flavor *flavor;         /**< Special object flavor (or zero) */
 
 
 	/** Game-dependent **/
