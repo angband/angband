@@ -599,6 +599,9 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 
 		/* Mega-Hack -- Black market sucks */
 		if (this_store == STORE_B_MARKET) price = price / 2;
+
+		/* Check for no_selling option */
+		if (OPT(adult_no_selling)) return (0L);
 	}
 
 	/* Shop is selling */
