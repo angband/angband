@@ -3653,14 +3653,14 @@ static int compare_items(const object_type *o1, const object_type *o2)
  */
 void display_object_recall(object_type *o_ptr)
 {
-	clear_from(0);
-	prt("", 0, 0);
+	char header[120];
 
-#if 0
-	/* XXX get object recall subwindow working */
-	object_info_header(o_ptr);
-	object_info(o_ptr, OINFO_NONE);
-#endif
+	textblock *tb = object_info(o_ptr, OINFO_NONE);
+	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+
+	clear_from(0);
+	textui_textblock_place(tb, SCREEN_REGION, header);
+	textblock_free(tb);
 }
 
 
@@ -3681,16 +3681,12 @@ void display_object_idx_recall(s16b item)
  */
 void display_object_kind_recall(s16b k_idx)
 {
-	/* Initialize and prepare a fake object; it will be deallocated when we */
-	/* leave the function. */
-	object_type object;
-	object_type *o_ptr = &object;
-	object_wipe(o_ptr);
-	object_prep(o_ptr, &k_info[k_idx], 0, EXTREMIFY);
-	if (k_info[k_idx].aware) o_ptr->ident |= (IDENT_STORE);
+	object_type object = { 0 };
+	object_prep(&object, &k_info[k_idx], 0, EXTREMIFY);
+	if (k_info[k_idx].aware)
+		object.ident |= IDENT_STORE;
 
-	/* draw it */
-	display_object_recall(o_ptr);
+	display_object_recall(&object);
 }
 
 /*

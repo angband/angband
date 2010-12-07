@@ -93,6 +93,34 @@ static void display_area(const char *text, const byte *attrs,
 	}
 }
 
+void textui_textblock_place(textblock *tb, region orig_area, const char *header)
+{
+	const char *text = textblock_text(tb);
+	const byte *attrs = textblock_attrs(tb);
+
+	/* xxx on resize this should be recalculated */
+	region area = region_calculate(orig_area);
+
+	size_t *line_starts = NULL, *line_lengths = NULL;
+	size_t n_lines;
+
+	n_lines = textblock_calculate_lines(tb,
+			&line_starts, &line_lengths, area.width);
+
+	area.page_rows--;
+
+	if (n_lines > (size_t) area.page_rows)
+		n_lines = area.page_rows;
+
+	c_prt(TERM_L_BLUE, header, area.row, area.col);
+	area.row++;
+
+	display_area(text, attrs, line_starts, line_lengths, n_lines, area, 0);
+
+	mem_free(line_starts);
+	mem_free(line_lengths);
+}
+
 void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 {
 	const char *text = textblock_text(tb);
@@ -109,27 +137,25 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 
 	screen_save();
 
-	/* Print & make room for header */
+	/* make room for the header & footer */
+	area.page_rows -= 3;
+
 	c_prt(TERM_L_BLUE, header, area.row, area.col);
-	area.page_rows--;
 	area.row++;
 
 	if (n_lines > (size_t) area.page_rows) {
 		int start_line = 0;
 
-		region pager_area = area;
-		pager_area.page_rows -= 2;
-
-		c_prt(TERM_WHITE, "", area.row + area.page_rows - 2, area.col);
+		c_prt(TERM_WHITE, "", area.row + area.page_rows, area.col);
 		c_prt(TERM_L_BLUE, "(Up/down or ESCAPE to exit.)",
-				area.row + area.page_rows - 1, area.col);
+				area.row + area.page_rows + 1, area.col);
 
 		/* Pager mode */
 		while (1) {
 			char ch;
 
 			display_area(text, attrs, line_starts, line_lengths, n_lines,
-					pager_area, start_line);
+					area, start_line);
 
 			ch = inkey();
 			if (ch == ARROW_UP)
@@ -139,12 +165,12 @@ void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 			else if (ch == ARROW_DOWN)
 				start_line++;
 			else if (ch == ' ')
-				start_line += pager_area.page_rows;
+				start_line += area.page_rows;
 
 			if (start_line < 0)
 				start_line = 0;
-			if (start_line + (size_t) pager_area.page_rows > n_lines)
-				start_line = n_lines - pager_area.page_rows;
+			if (start_line + (size_t) area.page_rows > n_lines)
+				start_line = n_lines - area.page_rows;
 		}
 	} else {
 		display_area(text, attrs, line_starts, line_lengths, n_lines, area, 0);
