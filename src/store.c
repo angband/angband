@@ -2804,20 +2804,22 @@ static void store_examine(int item)
 	store_type *st_ptr = &store[current_store()];
 	object_type *o_ptr;
 
+	char header[120];
+
 	textblock *tb;
-	region area = { 0, 3, 0, 0 };
+	region area = { 0, 0, 0, 0 };
 
 	if (item < 0) return;
 
 	/* Get the actual object */
 	o_ptr = &st_ptr->stock[item];
 
-	object_info_header(o_ptr);
-
 	/* Show full info in most stores, but normal info in player home */
 	tb = object_info(o_ptr, (current_store() != STORE_HOME) ? OINFO_FULL : OINFO_NONE);
+	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
-	textui_textblock_show(tb, area);
+	textui_textblock_show(tb, area, header);
+	textblock_free(tb);
 
 	/* Hack -- Browse book, then prompt for a command */
 	if (o_ptr->tval == cp_ptr->spell_book)

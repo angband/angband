@@ -93,7 +93,7 @@ static void display_area(const char *text, const byte *attrs,
 	}
 }
 
-void textui_textblock_show(textblock *tb, region orig_area)
+void textui_textblock_show(textblock *tb, region orig_area, const char *header)
 {
 	const char *text = textblock_text(tb);
 	const byte *attrs = textblock_attrs(tb);
@@ -108,6 +108,11 @@ void textui_textblock_show(textblock *tb, region orig_area)
 			&line_starts, &line_lengths, area.width);
 
 	screen_save();
+
+	/* Print & make room for header */
+	c_prt(TERM_L_BLUE, header, area.row, area.col);
+	area.page_rows--;
+	area.row++;
 
 	if (n_lines > (size_t) area.page_rows) {
 		int start_line = 0;
@@ -129,7 +134,7 @@ void textui_textblock_show(textblock *tb, region orig_area)
 			ch = inkey();
 			if (ch == ARROW_UP)
 				start_line--;
-			else if (ch == ESCAPE)
+			else if (ch == ESCAPE || ch == 'q')
 				break;
 			else if (ch == ARROW_DOWN)
 				start_line++;

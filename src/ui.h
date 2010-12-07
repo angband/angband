@@ -43,7 +43,7 @@ bool region_inside(const region *loc, const ui_event_data *key);
 /*** Text ***/
 
 #include "z-textblock.h"
-void textui_textblock_show(textblock *tb, region orig_area);
+void textui_textblock_show(textblock *tb, region orig_area, const char *header);
 
 
 /*** Misc ***/

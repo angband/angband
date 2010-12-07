@@ -1181,8 +1181,10 @@ static void desc_art_fake(int a_idx)
 
 	oinfo_detail_t mode = OINFO_NONE;
 
+	char header[120];
+
 	textblock *tb;
-	region area = { 0, 3, 0, 0 };
+	region area = { 0, 0, 0, 0 };
 
 	o_ptr = find_artifact(a_idx);
 
@@ -1203,9 +1205,10 @@ static void desc_art_fake(int a_idx)
 	/* Hack -- Handle stuff */
 	handle_stuff();
 
-	object_info_header(o_ptr);
 	tb = object_info(o_ptr, mode);
-	textui_textblock_show(tb, area);
+	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+
+	textui_textblock_show(tb, area, format("%^s", header));
 	textblock_free(tb);
 
 #if 0
@@ -1329,18 +1332,15 @@ static void display_ego_item(int col, int row, bool cursor, int oid)
 static void desc_ego_fake(int oid)
 {
 	int e_idx = default_join[oid].oid;
-	ego_item_type *e_ptr = &e_info[e_idx];
+	struct ego_item *ego = &e_info[e_idx];
 
 	textblock *tb;
-	region area = { 0, 2, 0, 0 };
-
-	/* Dump the name */
-	c_prt(TERM_L_BLUE, format("%s %s", ego_grp_name(default_group(oid)),
-			e_ptr->name), 0, 0);
+	region area = { 0, 0, 0, 0 };
 
 	/* List ego flags */
-	tb = object_info_ego(e_ptr);
-	textui_textblock_show(tb, area);
+	tb = object_info_ego(ego);
+
+	textui_textblock_show(tb, area, format("%s %s", ego_grp_name(default_group(oid)), ego->name));
 	textblock_free(tb);
 }
 
@@ -1496,8 +1496,10 @@ static void desc_obj_fake(int k_idx)
 	object_type object_type_body;
 	object_type *o_ptr = &object_type_body;
 
+	char header[120];
+
 	textblock *tb;
-	region area = { 0, 3, 0, 0 };
+	region area = { 0, 0, 0, 0 };
 
 	/* Check for known artifacts, display them as artifacts */
 	if (of_has(k_ptr->flags, OF_INSTA_ART) && artifact_is_known(get_artifact_from_kind(k_ptr)))
@@ -1525,9 +1527,10 @@ static void desc_obj_fake(int k_idx)
 	/* Hack -- Handle stuff */
 	handle_stuff();
 
-	object_info_header(o_ptr);
 	tb = object_info(o_ptr, OINFO_NONE);
-	textui_textblock_show(tb, area);
+	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+
+	textui_textblock_show(tb, area, format("%^s", header));
 	textblock_free(tb);
 }
 

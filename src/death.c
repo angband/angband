@@ -335,14 +335,18 @@ static void death_examine(const char *title, int row)
 
 	while (get_item(&item, q, s, 0, (USE_INVEN | USE_EQUIP | IS_HARMLESS)))
 	{
+		char header[120];
+
 		textblock *tb;
-		region area = { 0, 3, 0, 0 };
+		region area = { 0, 0, 0, 0 };
 
 		object_type *o_ptr = &p_ptr->inventory[item];
-		tb = object_info(o_ptr, OINFO_FULL);
 
-		object_info_header(o_ptr);
-		textui_textblock_show(tb, area);
+		tb = object_info(o_ptr, OINFO_FULL);
+		object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+
+		textui_textblock_show(tb, area, format("%^s", header));
+		textblock_free(tb);
 	}
 }
 

@@ -150,7 +150,6 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, odesc_detail
 /* obj-info.c */
 extern const slay_t slay_table[];
 size_t num_slays(void);
-void object_info_header(const object_type *o_ptr);
 
 textblock *object_info(const object_type *o_ptr, oinfo_detail_t mode);
 textblock *object_info_ego(struct ego_item *ego);

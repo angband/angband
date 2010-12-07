@@ -1120,25 +1120,10 @@ static bool describe_effect(textblock *tb, const object_type *o_ptr, bool full,
 }
 
 
-/*** Different ways to present the data ***/
-
-
-/*
- * Print name, origin, and descriptive text for a given object.
- */
-void object_info_header(const object_type *o_ptr)
+bool describe_origin(textblock *tb, const object_type *o_ptr)
 {
-	char o_name[120];
 	char origin_text[80];
 
-	textblock *tb = textblock_new();
-
-	/* Object name */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
-	textblock_append_c(tb, TERM_L_BLUE, "%^s\n", o_name);
-
-	/* Display the origin */
-	
 	if (o_ptr->origin_depth)
 		strnfmt(origin_text, sizeof(origin_text), "%d feet (level %d)",
 		        o_ptr->origin_depth * 50, o_ptr->origin_depth);
@@ -1149,18 +1134,18 @@ void object_info_header(const object_type *o_ptr)
 	{
 		case ORIGIN_NONE:
 		case ORIGIN_MIXED:
-			break;
+			return FALSE;
 
 		case ORIGIN_BIRTH:
-			textblock_append(tb, "(an inheritance from your family)\n");
+			textblock_append(tb, "An inheritance from your family.\n");
 			break;
 
 		case ORIGIN_STORE:
-			textblock_append(tb, "(from a store)\n");
+			textblock_append(tb, "Bought from a store.\n");
 			break;
 
 		case ORIGIN_FLOOR:
-			textblock_append(tb, "(lying on the floor %s %s)\n",
+			textblock_append(tb, "Found lying on the floor %s %s.\n",
 			         (o_ptr->origin_depth ? "at" : "in"),
 			         origin_text);
  			break;
@@ -1168,52 +1153,46 @@ void object_info_header(const object_type *o_ptr)
 		case ORIGIN_DROP:
 		{
 			const char *name = r_info[o_ptr->origin_xtra].name;
-			bool unique = rf_has(r_info[o_ptr->origin_xtra].flags, RF_UNIQUE) ? TRUE : FALSE;
 
-			textblock_append(tb, "(dropped by ");
+			textblock_append(tb, "Dropped by ");
 
-			if (unique)
+			if (rf_has(r_info[o_ptr->origin_xtra].flags, RF_UNIQUE))
 				textblock_append(tb, "%s", name);
 			else
-				textblock_append(tb, "%s%s", is_a_vowel(name[0]) ? "an " : "a ", name);
+				textblock_append(tb, "%s%s",
+						is_a_vowel(name[0]) ? "an " : "a ", name);
 
-			textblock_append(tb, " %s %s)\n",
-			         (o_ptr->origin_depth ? "at" : "in"),
-			         origin_text);
+			textblock_append(tb, " %s %s.\n",
+					(o_ptr->origin_depth ? "at" : "in"),
+					origin_text);
  			break;
 		}
 
 		case ORIGIN_DROP_UNKNOWN:
-		{
-			textblock_append(tb, "(dropped by an unknown monster %s %s)\n",
-			         (o_ptr->origin_depth ? "at" : "in"),
-			         origin_text);
+			textblock_append(tb, "Dropped by an unknown monster %s %s.\n",
+					(o_ptr->origin_depth ? "at" : "in"),
+					origin_text);
 			break;
-		}
 
 		case ORIGIN_ACQUIRE:
-		{
-			textblock_append(tb, "(conjured forth by magic %s %s)\n",
-			         (o_ptr->origin_depth ? "at" : "in"),
-			         origin_text);
+			textblock_append(tb, "Conjured forth by magic %s %s.\n",
+					(o_ptr->origin_depth ? "at" : "in"),
+					origin_text);
  			break;
-		}
 
 		case ORIGIN_CHEAT:
-			textblock_append(tb, "(created by debug option)\n");
+			textblock_append(tb, "Created by debug option.\n");
  			break;
 
 		case ORIGIN_CHEST:
-		{
-			textblock_append(tb, "(found in a chest from %s)\n",
+			textblock_append(tb, "Found in a chest from %s.\n",
 			         origin_text);
 			break;
-		}
 	}
 
-	textblock_free(tb);
+	textblock_append(tb, "\n");
 
-	return;
+	return TRUE;
 }
 
 static void describe_flavor_text(textblock *tb, const object_type *o_ptr)
@@ -1289,7 +1268,8 @@ static textblock *object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 	else
 		object_flags_known(o_ptr, flags);
 
-	describe_flavor_text(tb, o_ptr);
+	if (subjective) describe_origin(tb, o_ptr);
+	if (!terse) describe_flavor_text(tb, o_ptr);
 
 	if (!full && !known)
 	{

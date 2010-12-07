@@ -233,15 +233,18 @@ void textui_obj_inscribe(object_type *o_ptr, int item)
 /*** Examination ***/
 void textui_obj_examine(object_type *o_ptr, int item)
 {
+	char header[120];
+
 	textblock *tb;
-	region area = { 0, 3, 0, 0 };
+	region area = { 0, 0, 0, 0 };
 
 	track_object(item);
 
-	object_info_header(o_ptr);
 	tb = object_info(o_ptr, OINFO_NONE);
+	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
-	textui_textblock_show(tb, area);
+	textui_textblock_show(tb, area, format("%^s", header));
+	textblock_free(tb);
 }
 
 

@@ -3655,9 +3655,12 @@ void display_object_recall(object_type *o_ptr)
 {
 	clear_from(0);
 	prt("", 0, 0);
+
+#if 0
+	/* XXX get object recall subwindow working */
 	object_info_header(o_ptr);
-	if (!object_info(o_ptr, OINFO_NONE))
-		text_out("This item does not seem to possess any special abilities.");
+	object_info(o_ptr, OINFO_NONE);
+#endif
 }
 
 
