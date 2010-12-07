@@ -509,7 +509,7 @@ static void spoil_artifact(cptr fname)
 			spoiler_underline(buf, '-');
 
 			/* Write out the artifact description to the spoiler file */
-			object_info_spoil(i_ptr);
+			object_info_spoil(fh, i_ptr, 80);
 
 			/*
 			 * Determine the minimum and maximum depths an

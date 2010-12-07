@@ -1308,10 +1308,11 @@ textblock *object_info(const object_type *o_ptr, oinfo_detail_t mode)
 /**
  * Provide information on an item suitable for writing to the character dump - keep it brief.
  */
-textblock *object_info_chardump(const object_type *o_ptr)
+void object_info_chardump(ang_file *f, const object_type *o_ptr, int indent, int wrap)
 {
-	/* XXX should just output to file here */
-	return object_info_out(o_ptr, OINFO_TERSE | OINFO_SUBJ);
+	textblock *tb = object_info_out(o_ptr, OINFO_TERSE | OINFO_SUBJ);
+	textblock_to_file(tb, f, indent, wrap);
+	textblock_free(tb);
 }
 
 
@@ -1321,8 +1322,9 @@ textblock *object_info_chardump(const object_type *o_ptr)
  * Practically, this means that we should not print anything which relies upon
  * the player's current state, since that is not suitable for spoiler material.
  */
-textblock *object_info_spoil(const object_type *o_ptr)
+void object_info_spoil(ang_file *f, const object_type *o_ptr, int wrap)
 {
-	/* XXX should just output to file here */
-	return object_info_out(o_ptr, OINFO_FULL);
+	textblock *tb = object_info_out(o_ptr, OINFO_FULL);
+	textblock_to_file(tb, f, 0, wrap);
+	textblock_free(tb);
 }

@@ -152,8 +152,8 @@ size_t num_slays(void);
 void object_info_header(const object_type *o_ptr);
 
 textblock *object_info(const object_type *o_ptr, oinfo_detail_t mode);
-textblock *object_info_chardump(const object_type *o_ptr);
-textblock *object_info_spoil(const object_type *o_ptr);
+void object_info_spoil(ang_file *f, const object_type *o_ptr, int wrap);
+void object_info_chardump(ang_file *f, const object_type *o_ptr, int indent, int wrap);
 
 /* obj-make.c */
 void free_obj_alloc(void);
