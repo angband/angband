@@ -1121,16 +1121,12 @@ static void do_cmd_knowledge_monsters(const char *name, int row)
 
 static void get_artifact_display_name(char *o_name, size_t namelen, int a_idx)
 {
-	object_type object_type_body;
+	object_type object_type_body = { 0 };
 	object_type *o_ptr = &object_type_body;
 
-	/* Make fake artifact */
-	o_ptr = &object_type_body;
-	object_wipe(o_ptr);
 	make_fake_artifact(o_ptr, a_idx);
-
-	/* Get its name */
-	object_desc(o_name, namelen, o_ptr, ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);
+	object_desc(o_name, namelen, o_ptr,
+			ODESC_PREFIX | ODESC_BASE | ODESC_SPOIL);
 }
 
 /*
@@ -1138,15 +1134,41 @@ static void get_artifact_display_name(char *o_name, size_t namelen, int a_idx)
  */
 static void display_artifact(int col, int row, bool cursor, int oid)
 {
-	char o_name[80];
-
-	/* Choose a color */
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
+	char o_name[80];
 
 	get_artifact_display_name(o_name, sizeof o_name, oid);
 
-	/* Display the name */
 	c_prt(attr, o_name, row, col);
+}
+
+static object_type *find_artifact(int a_idx)
+{
+	int i, j;
+
+	/* Look for the artifact, either in inventory, store or the object list */
+	for (i = 0; i < z_info->o_max; i++)
+	{
+		if (o_list[i].name1 == a_idx)
+			return &o_list[i];
+	}
+
+	for (i = 0; i < INVEN_TOTAL; i++)
+	{
+		if (p_ptr->inventory[i].name1 == a_idx)
+			return &p_ptr->inventory[i];
+	}
+
+	for (j = 1; j < (FEAT_SHOP_TAIL - FEAT_SHOP_HEAD + 1); j++)
+	{
+		for (i = 0; i < store[j].stock_size; i++)
+		{
+			if (store[j].stock[i].name1 == a_idx)
+				return &store[j].stock[i];
+		}
+	}
+
+	return NULL;
 }
 
 /*
@@ -1155,65 +1177,20 @@ static void display_artifact(int col, int row, bool cursor, int oid)
 static void desc_art_fake(int a_idx)
 {
 	object_type *o_ptr;
-	object_type object_type_body;
-	oinfo_detail_t mode = OINFO_NONE;
+	object_type object_type_body = { 0 };
 
-	bool lost = TRUE;
-	int i, j;
+	oinfo_detail_t mode = OINFO_NONE;
 
 	textblock *tb;
 	region area = { 0, 3, 0, 0 };
 
-	/* Get local object */
-	o_ptr = &object_type_body;
-
-	/* Wipe the object */
-	object_wipe(o_ptr);
-
-	/* Look for the artifact, either in inventory, store or the object list */
-	for (i = 0; i < z_info->o_max; i++)
-	{
-		if (o_list[i].name1 == a_idx)
-		{
-			o_ptr = &o_list[i];
-			lost = FALSE;
-			break;
-		}
-	}
-
-	if (lost)
-	{
-		for (i = 0; i < INVEN_TOTAL; i++)
-		{
-			if (p_ptr->inventory[i].name1 == a_idx)
-			{
-				o_ptr = &p_ptr->inventory[i];
-				lost = FALSE;
-				break;
-			}
-		}
-	}
-
-	if (lost)
-	{
-		for (j = 1; j < (FEAT_SHOP_TAIL - FEAT_SHOP_HEAD + 1); j++)
-		{
-			for (i = 0; i < store[j].stock_size; i++)
-			{
-				if (store[j].stock[i].name1 == a_idx)
-				{
-					o_ptr = &store[j].stock[i];
-					lost = FALSE;
-					break;
-				}
-			}
-			if (!lost) break;
-		}
-	}
+	o_ptr = find_artifact(a_idx);
 
 	/* If it's been lost, make a fake artifact for it */
-	if (lost)
+	if (!o_ptr)
 	{
+		o_ptr = &object_type_body;
+
 		make_fake_artifact(o_ptr, a_idx);
 		o_ptr->ident |= IDENT_NAME;
 
@@ -1242,7 +1219,7 @@ static int a_cmp_tval(const void *a, const void *b)
 	const artifact_type *a_a = &a_info[*(const int *)a];
 	const artifact_type *a_b = &a_info[*(const int *)b];
 
-	/*group by */
+	/* group by */
 	int ta = obj_group_order[a_a->tval];
 	int tb = obj_group_order[a_b->tval];
 	int c = ta - tb;
@@ -1260,39 +1237,21 @@ static int art2gid(int oid) { return obj_group_order[a_info[oid].tval]; }
 /* Check if the given artifact idx is something we should "Know" about */
 static bool artifact_is_known(int a_idx)
 {
-	int i;
+	object_type *o_ptr;
 
-	if (p_ptr->wizard) return TRUE;
+	if (!a_info[a_idx].name)
+		return FALSE;
 
-	/* Artifact doesn't exist at all, or not created yet */
-	if (!a_info[a_idx].name || a_info[a_idx].created == FALSE) return FALSE;
+	if (p_ptr->wizard)
+		return TRUE;
+
+	if (!a_info[a_idx].created)
+		return FALSE;
 
 	/* Check all objects to see if it exists but hasn't been IDed */
-	for (i = 0; i < z_info->o_max; i++)
-	{
-		int a = o_list[i].name1;
-
-		/* If we haven't actually sensed the artifact yet */
-		if (a && a == a_idx && !object_is_known_artifact(&o_list[i]))
-		{
-			return FALSE;
-		}
-	}
-
-    /* Check inventory for the same */
-	for (i = 0; i < INVEN_TOTAL; i++)
-	{
-		object_type *o_ptr = &p_ptr->inventory[i];
-
-		/* Ignore non-objects */
-		if (!o_ptr->k_idx) continue;
-
-		if (o_ptr->name1 && o_ptr->name1 == a_idx &&
-		    !object_is_known_artifact(o_ptr))
-		{
-			return FALSE;
-		}
-	}
+	o_ptr = find_artifact(a_idx);
+	if (o_ptr && !object_is_known_artifact(o_ptr))
+		return FALSE;
 
 	return TRUE;
 }
@@ -1369,65 +1328,20 @@ static void display_ego_item(int col, int row, bool cursor, int oid)
  */
 static void desc_ego_fake(int oid)
 {
-	/* Hack: dereference the join */
-	const char *cursed[] = { "permanently cursed", "heavily cursed", "cursed" };
-	const char *xtra[] = { "sustain", "higher resistance", "ability" };
-	int i;
-
-	textblock *tb;
-	region area = { 0, 3, 0, 0 };
-
 	int e_idx = default_join[oid].oid;
 	ego_item_type *e_ptr = &e_info[e_idx];
 
-	object_type dummy;
-	WIPE(&dummy, dummy);
-
-	/* Save screen */
-	screen_save();
+	textblock *tb;
+	region area = { 0, 2, 0, 0 };
 
 	/* Dump the name */
 	c_prt(TERM_L_BLUE, format("%s %s", ego_grp_name(default_group(oid)),
-	                                   e_ptr->name), 0, 0);
-
-	/* Begin recall */
-	Term_gotoxy(0, 1);
-	text_out("\n");
-
-	if (e_ptr->text)
-	{
-		int x, y;
-		text_out("%s", e_ptr->text);
-		Term_locate(&x, &y);
-		Term_gotoxy(0, y+1);
-	}
+			e_ptr->name), 0, 0);
 
 	/* List ego flags */
-	dummy.name2 = e_idx;
-	dummy.tval = e_ptr->tval[0];
-	tb = object_info(&dummy, OINFO_FULL | OINFO_DUMMY);
-
+	tb = object_info_ego(e_ptr);
 	textui_textblock_show(tb, area);
 	textblock_free(tb);
-
-#if 0
-	/* XXX should all be in object_info */
-
-	if (e_ptr->xtra)
-		text_out(format("It provides one random %s.", xtra[e_ptr->xtra - 1]));
-
-	if (flags_test(e_ptr->flags, OF_SIZE, OF_CURSE_MASK, FLAG_END))
-	{
-		if (of_has(e_ptr->flags, OF_PERMA_CURSE))
-			i = 0;
-		else if (of_has(e_ptr->flags, OF_PERMA_CURSE))
-			i = 1;
-		else
-			i = 2;
-
-		text_out_c(TERM_RED, format("It is %s.", cursed[i]));
-	}
-#endif
 }
 
 /* TODO? Currently ego items will order by e_idx */

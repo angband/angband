@@ -56,7 +56,8 @@ typedef enum
 	OINFO_TERSE  = 0x01, /* Keep descriptions brief, e.g. for dumps */
 	OINFO_SUBJ   = 0x02, /* Describe object from the character's POV */
 	OINFO_FULL   = 0x04, /* Treat object as if fully IDd */
-	OINFO_DUMMY  = 0x08  /* Object does not exist (e.g. knowledge menu) */
+	OINFO_DUMMY  = 0x08, /* Object does not exist (e.g. knowledge menu) */
+	OINFO_EGO    = 0x10, /* Describe ego random powers */
 } oinfo_detail_t;
 
 
@@ -152,6 +153,7 @@ size_t num_slays(void);
 void object_info_header(const object_type *o_ptr);
 
 textblock *object_info(const object_type *o_ptr, oinfo_detail_t mode);
+textblock *object_info_ego(struct ego_item *ego);
 void object_info_spoil(ang_file *f, const object_type *o_ptr, int wrap);
 void object_info_chardump(ang_file *f, const object_type *o_ptr, int indent, int wrap);
 
