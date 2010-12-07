@@ -2803,33 +2803,23 @@ static void store_examine(int item)
 {
 	store_type *st_ptr = &store[current_store()];
 	object_type *o_ptr;
-	bool info_known;
+
+	char header[120];
+
+	textblock *tb;
+	region area = { 0, 0, 0, 0 };
 
 	if (item < 0) return;
 
 	/* Get the actual object */
 	o_ptr = &st_ptr->stock[item];
 
-	/* Describe it fully */
-	Term_erase(0, 0, 255);
-	Term_gotoxy(0, 0);
-
-	text_out_hook = text_out_to_screen;
-	screen_save();
-
-	object_info_header(o_ptr);
-
 	/* Show full info in most stores, but normal info in player home */
-	info_known = object_info(o_ptr,
-			(current_store() != STORE_HOME) ? OINFO_FULL : OINFO_NONE);
+	tb = object_info(o_ptr, (current_store() != STORE_HOME) ? OINFO_FULL : OINFO_NONE);
+	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
-	if (!info_known)
-		text_out("\n\nThis item does not seem to possess any special abilities.");
-
-	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
-	(void)anykey();
-
-	screen_load();
+	textui_textblock_show(tb, area, header);
+	textblock_free(tb);
 
 	/* Hack -- Browse book, then prompt for a command */
 	if (o_ptr->tval == cp_ptr->spell_book)

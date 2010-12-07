@@ -335,21 +335,18 @@ static void death_examine(const char *title, int row)
 
 	while (get_item(&item, q, s, 0, (USE_INVEN | USE_EQUIP | IS_HARMLESS)))
 	{
+		char header[120];
+
+		textblock *tb;
+		region area = { 0, 0, 0, 0 };
+
 		object_type *o_ptr = &p_ptr->inventory[item];
 
-		/* Describe */
-		text_out_hook = text_out_to_screen;
-		screen_save();
-		Term_gotoxy(0, 0);
+		tb = object_info(o_ptr, OINFO_FULL);
+		object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
-		object_info_header(o_ptr);
-		if (!object_info(o_ptr, OINFO_FULL))
-			text_out("This item does not possess any special abilities.");
-
-		text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
-		(void)anykey();
-
-		screen_load();
+		textui_textblock_show(tb, area, format("%^s", header));
+		textblock_free(tb);
 	}
 }
 

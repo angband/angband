@@ -972,10 +972,6 @@ errr file_character(const char *path, bool full)
 	fp = file_open(path, MODE_WRITE, FTYPE_TEXT);
 	if (!fp) return (-1);
 
-
-	text_out_hook = text_out_to_file;
-	text_out_file = fp;
-
 	/* Display the requested encoding -- ASCII or system-specific */
  	if (!OPT(xchars_to_file)) Term->xchar_hook = NULL;
 
@@ -1083,10 +1079,6 @@ errr file_character(const char *path, bool full)
 	}
 
 
-	/* Set the indent/wrap */
-	text_out_indent = 5;
-	text_out_wrap = 72;
-
 	/* Dump the equipment */
 	file_putf(fp, "  [Character Equipment]\n\n");
 	for (i = INVEN_WIELD; i < ALL_INVEN_TOTAL; i++)
@@ -1101,7 +1093,7 @@ errr file_character(const char *path, bool full)
 
 		x_file_putf(fp, encoding, "%c) %s\n", index_to_label(i), o_name);
 		if (p_ptr->inventory[i].k_idx)
-			object_info_chardump(&p_ptr->inventory[i]);
+			object_info_chardump(fp, &p_ptr->inventory[i], 5, 72);
 	}
 
 	/* Dump the inventory */
@@ -1114,7 +1106,7 @@ errr file_character(const char *path, bool full)
 					ODESC_PREFIX | ODESC_FULL);
 
 		x_file_putf(fp, encoding, "%c) %s\n", index_to_label(i), o_name);
-		object_info_chardump(&p_ptr->inventory[i]);
+		object_info_chardump(fp, &p_ptr->inventory[i], 5, 72);
 	}
 	file_putf(fp, "\n\n");
 
@@ -1132,14 +1124,12 @@ errr file_character(const char *path, bool full)
 						ODESC_PREFIX | ODESC_FULL);
 			x_file_putf(fp, encoding, "%c) %s\n", I2A(i), o_name);
 
-			object_info_chardump(&st_ptr->stock[i]);
+			object_info_chardump(fp, &st_ptr->stock[i], 5, 72);
 		}
 
 		/* Add an empty line */
 		file_putf(fp, "\n\n");
 	}
-
-	text_out_indent = text_out_wrap = 0;
 
 	/* Dump character history */
 	dump_history(fp);
