@@ -1179,8 +1179,6 @@ static void desc_art_fake(int a_idx)
 	object_type *o_ptr;
 	object_type object_type_body = { 0 };
 
-	oinfo_detail_t mode = OINFO_NONE;
-
 	char header[120];
 
 	textblock *tb;
@@ -1199,13 +1197,15 @@ static void desc_art_fake(int a_idx)
 		/* Check the history entry, to see if it was fully known before it
 		 * was lost */
 		if (history_is_artifact_known(a_idx))
-			mode = OINFO_FULL;
+		{
+			object_notice_everything(o_ptr);
+		}
 	}
 
 	/* Hack -- Handle stuff */
 	handle_stuff();
 
-	tb = object_info(o_ptr, mode);
+	tb = object_info(o_ptr, OINFO_NONE);
 	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	textui_textblock_show(tb, area, format("%^s", header));
