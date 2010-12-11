@@ -479,8 +479,6 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 			if (visual_list) pvs = ", ENTER to accept";
 			else if (o_funcs.xattr) pvs = ", 'v' for visuals";
 
-
-
 			prt(format("<dir>%s%s%s, ESC", pvs, pedit, xtra), hgt - 1, 0);
 		}
 
@@ -495,7 +493,7 @@ static void display_knowledge(const char *title, int *obj_list, int o_count,
 		if (g_funcs.summary && !visual_list)
 		{
 			g_funcs.summary(g_cur, obj_list, g_o_count, g_offset[g_cur],
-			                object_menu.boundary.row + object_menu.boundary.page_rows,
+			                object_menu.active.row + object_menu.active.page_rows,
 			                object_region.col);
 		}
 
