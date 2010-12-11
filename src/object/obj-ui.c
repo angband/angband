@@ -599,6 +599,7 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 	bool use_inven = ((mode & USE_INVEN) ? TRUE : FALSE);
 	bool use_equip = ((mode & USE_EQUIP) ? TRUE : FALSE);
 	bool use_floor = ((mode & USE_FLOOR) ? TRUE : FALSE);
+	bool use_quiver = ((mode & QUIVER_TAGS) ? TRUE : FALSE);
 	bool can_squelch = ((mode & CAN_SQUELCH) ? TRUE : FALSE);
 	bool is_harmless = ((mode & IS_HARMLESS) ? TRUE : FALSE);
 	bool quiver_tags = ((mode & QUIVER_TAGS) ? TRUE : FALSE);
@@ -700,6 +701,10 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 	{
 		/* Hack -- Start on equipment if requested */
 		if ((p_ptr->command_wrk == USE_EQUIP) && use_equip)
+			p_ptr->command_wrk = USE_EQUIP;
+
+		/* If we are using the quiver then start on equipment */
+		else if (use_quiver)
 			p_ptr->command_wrk = USE_EQUIP;
 
 		/* Use inventory if allowed */
