@@ -314,8 +314,6 @@ static enum parser_error parse_z(struct parser *p) {
 		z->e_max = value;
 	else if (streq(label, "R"))
 		z->r_max = value;
-	else if (streq(label, "V"))
-		z->v_max = value;
 	else if (streq(label, "S"))
 		z->s_max = value;
 	else if (streq(label, "O"))
@@ -2922,22 +2920,7 @@ static errr run_parse_v(struct parser *p) {
 }
 
 static errr finish_parse_v(struct parser *p) {
-	struct vault *v, *n;
-
-	v_info = mem_zalloc(sizeof(*v) * z_info->v_max);
-	for (v = parser_priv(p); v; v = v->next) {
-		if (v->vidx >= z_info->v_max)
-			continue;
-		memcpy(&v_info[v->vidx], v, sizeof(*v));
-	}
-
-	v = parser_priv(p);
-	while (v) {
-		n = v->next;
-		mem_free(v);
-		v = n;
-	}
-
+	vaults = parser_priv(p);
 	parser_destroy(p);
 	return 0;
 }

@@ -558,8 +558,6 @@ maxima *z_info;
 /*
  * The vault generation arrays
  */
-vault_type *v_info;
-
 feature_type *f_info;
 
 object_kind *k_info;
@@ -582,6 +580,7 @@ monster_race *r_info;
 
 struct player_race *races;
 struct player_class *classes;
+struct vault *vaults;
 
 owner_type *b_info;
 

@@ -2228,7 +2228,31 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cptr
 	}
 }
 
-
+/* Chooses a vault at random; each vault has equal probability of being chosen.
+ * Inductive proof of correctness:
+ * Base case: n = 1: The only vault is chosen with probability 1/1, so we are
+ * done.
+ * Inductive step:
+ *   Assume that if there are n vaults, each is chosen with probability 1/n. Let
+ *   this set of n vaults be V_1 ... V_n.
+ *   Add a new vault V_{n + 1}.
+ *   At step n + 1, we choose a member of V_n (i.e., leave the selection the
+ *   same) with probability n / n + 1, and choose V_{n + 1} (i.e., choose the
+ *   new vault) with probability 1 / n + 1.
+ *   Let V_i \in { V_1, ..., V_n }. By the inductive hypothesis, V_i is chosen
+ *   with probability 1 / n, and we left the selection the same with probability
+ *   n / n + 1, so the probability that V_i is chosen is now 1 / n + 1.
+ *   Therefore, each vault of V_1 ... V_{n + 1} is chosen with uniform
+ *   probability 1 / n + 1.
+ */
+struct vault *random_vault(void) {
+	struct vault *v, *r;
+	int n;
+	for (v = vaults, n = 1; v; v = v->next, n++)
+		if (one_in_(n))
+			r = v;
+	return r;
+}
 
 /*
  * Type 7 -- simple vaults (see "vault.txt")
@@ -2238,12 +2262,8 @@ static void build_type7(struct cave *c, int y0, int x0)
 	vault_type *v_ptr;
 
 	/* Pick a lesser vault */
-	while (TRUE)
-	{
-		/* Get a random vault record */
-		v_ptr = &v_info[randint0(z_info->v_max)];
-
-		/* Accept the first lesser vault */
+	while (TRUE) {
+		v_ptr = random_vault();
 		if (v_ptr->typ == 6) break;
 	}
 
@@ -2274,12 +2294,8 @@ static void build_type8(struct cave *c, int y0, int x0)
 	vault_type *v_ptr;
 
 	/* Pick a medium vault */
-	while (TRUE)
-	{
-		/* Get a random vault record */
-		v_ptr = &v_info[randint0(z_info->v_max)];
-
-		/* Accept the first mdium vault */
+	while (TRUE) {
+		v_ptr = random_vault();
 		if (v_ptr->typ == 7) break;
 	}
 
@@ -2308,12 +2324,8 @@ static void build_type9(struct cave *c, int y0, int x0)
 	vault_type *v_ptr;
 
 	/* Pick a greater vault */
-	while (TRUE)
-	{
-		/* Get a random vault record */
-		v_ptr = &v_info[randint0(z_info->v_max)];
-
-		/* Accept the first greater vault */
+	while (TRUE) {
+		v_ptr = random_vault();
 		if (v_ptr->typ == 8) break;
 	}
 

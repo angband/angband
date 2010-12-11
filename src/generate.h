@@ -10,4 +10,6 @@ void place_closed_door(int y, int x);
 void place_random_door(int y, int x);
 extern void generate_cave(void);
 
+extern struct vault *random_vault(void);
+
 #endif /* !GENERATE_H */
