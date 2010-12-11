@@ -436,6 +436,7 @@ bool make_fake_artifact(object_type *o_ptr, byte name1)
 		of_on(o_ptr->flags, OF_PERMA_CURSE);
 
 	/* Success */
+	o_ptr->ident |= IDENT_FAKE;
 	return (TRUE);
 }
 

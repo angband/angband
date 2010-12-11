@@ -1142,6 +1142,7 @@ enum
 #define IDENT_NAME	0x0400	/* Know the name of ego or artifact if there is one */
 #define IDENT_FIRED	0x0800  /* Has been used as a missile */
 #define IDENT_NOTART 0x1000  /* Item is known not to be an artifact */
+#define IDENT_FAKE	0x2000  /* Item is a fake, for displaying knowledge */
 /* ... */
 
 
