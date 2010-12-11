@@ -987,7 +987,6 @@ void player_generate(struct player *p, const player_sex *s,
 /* Reset everything back to how it would be on loading the game. */
 static void do_birth_reset(bool use_quickstart, birther *quickstart_prev)
 {
-	player_init(p_ptr);
 
 	/* If there's quickstart data, we use it to set default
 	   character choices. */
@@ -1077,6 +1076,7 @@ void player_birth(bool quickstart_allowed)
 
 		if (cmd->command == CMD_BIRTH_RESET)
 		{
+			player_init(p_ptr);
 			reset_stats(stats, points_spent, &points_left);
 			do_birth_reset(quickstart_allowed, &quickstart_prev);
 			rolled_stats = FALSE;
