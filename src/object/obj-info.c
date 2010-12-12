@@ -1330,7 +1330,7 @@ textblock *object_info(const object_type *o_ptr, oinfo_detail_t mode)
  */
 textblock *object_info_ego(struct ego_item *ego)
 {
-	object_kind *kind;
+	object_kind *kind = NULL;
 	object_type obj = { 0 };
 	int i;
 
