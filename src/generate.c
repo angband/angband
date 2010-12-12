@@ -2246,7 +2246,7 @@ static void build_vault(struct cave *c, int y0, int x0, int ymax, int xmax, cptr
  *   probability 1 / n + 1.
  */
 struct vault *random_vault(void) {
-	struct vault *v, *r;
+	struct vault *v, *r = NULL;
 	int n;
 	for (v = vaults, n = 1; v; v = v->next, n++)
 		if (one_in_(n))
