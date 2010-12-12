@@ -26,7 +26,7 @@
 /**
  * Collect spells from a book into the spells[] array.
  */
-int spell_collect_from_book(const object_type *o_ptr, int spells[PY_MAX_SPELLS])
+int spell_collect_from_book(const object_type *o_ptr, int *spells)
 {
 	int i;
 	int n_spells = 0;

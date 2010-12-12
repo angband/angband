@@ -143,12 +143,13 @@ void flavor_init(void)
 	/* Scrolls (random titles, always white) */
 	for (i = 0; i < MAX_TITLES; i++)
 	{
-		char buf[26] = "\"";
+		char buf[26];
 		char *end = buf + 1;
 		int titlelen = 0;
 		int wordlen;
 		bool okay = TRUE;
 
+		strcpy(buf, "\"");
 		wordlen = randname_make(RANDNAME_SCROLL, 2, 8, end, 24, name_sections);
 		while (titlelen + wordlen < (int)(sizeof(scroll_adj[0]) - 3))
 		{

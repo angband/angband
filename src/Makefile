@@ -29,4 +29,7 @@ tests:
 test-clean:
 	$(MAKE) -C tests clean
 
+splint:
+	splint -f .splintrc ${OBJECTS:.o=.c} main.c main-gcu.c
+
 .PHONY : tests
