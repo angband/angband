@@ -36,10 +36,6 @@
  * This file still needs some clearing up. XXX
  */
 
-
-static void do_cmd_menu(void);
-
-
 /*** Handling bits ***/
 
 /*
@@ -195,8 +191,6 @@ static struct generic_command cmd_hidden[] =
 	{ "Jump into a trap",         '-', CMD_JUMP, NULL },
 	{ "Start running",            '.', CMD_RUN, NULL },
 	{ "Stand still",              ',', CMD_HOLD, NULL },
-	{ "Display menu of actions", '\n', CMD_NULL, do_cmd_menu },
-	{ "Display menu of actions", '\r', CMD_NULL, do_cmd_menu },
 	{ "Center map",              KTRL('L'), CMD_NULL, do_cmd_center_map },
 
 	{ "Toggle wizard mode",  KTRL('W'), CMD_NULL, do_cmd_wizard },
@@ -332,7 +326,7 @@ static menu_iter command_menu_iter =
 /*
  * Display a list of command types, allowing the user to select one.
  */
-static void do_cmd_menu(void)
+static char textui_action_menu_choose(void)
 {
 	region area = { 21, 5, 37, 6 };
 
@@ -352,9 +346,7 @@ static void do_cmd_menu(void)
 
 	screen_load();
 
-	/* If a command was chosen, execute it */
-	if (chosen_command.key)
-		Term_keypress(chosen_command.key);
+	return chosen_command.key;
 }
 
 
@@ -679,9 +671,14 @@ static bool key_confirm_command(unsigned char c)
  */
 static bool textui_process_key(unsigned char c)
 {
-	struct command *cmd = &converted_list[c];
-	struct generic_command *command = cmd->command;
+	struct command *cmd;
+	struct generic_command *command;
 
+	if (c == '\n' || c == '\r')
+		c = textui_action_menu_choose();
+
+	cmd = &converted_list[c];
+	command = cmd->command;
 	if (!command)
 		return FALSE;
 

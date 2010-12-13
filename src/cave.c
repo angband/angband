@@ -498,6 +498,7 @@ static void special_lighting_floor(byte *a, char *c, enum grid_light_level light
 				if (*a == TERM_WHITE) *a = TERM_YELLOW;
 				break;
 			case GRAPHICS_ADAM_BOLT:
+			case GRAPHICS_NOMAD:
 				*c += 2;
 				break;
 			case GRAPHICS_DAVID_GERVAIS:
@@ -516,6 +517,7 @@ static void special_lighting_floor(byte *a, char *c, enum grid_light_level light
 				if (*a == TERM_WHITE) *a = TERM_L_DARK;
 				break;
 			case GRAPHICS_ADAM_BOLT:
+			case GRAPHICS_NOMAD:
 			case GRAPHICS_DAVID_GERVAIS:
 				*c += 1;
 				break;
@@ -538,6 +540,7 @@ static void special_lighting_floor(byte *a, char *c, enum grid_light_level light
 					else if (*a == TERM_L_GREEN) *a = TERM_GREEN;
 					break;
 				case GRAPHICS_ADAM_BOLT:
+				case GRAPHICS_NOMAD:
 				case GRAPHICS_DAVID_GERVAIS:
 					*c += 1;
 					break;
@@ -574,6 +577,7 @@ static void special_wall_display(byte *a, char *c, bool in_view, int feat)
 				if (*a == TERM_WHITE) *a = TERM_L_DARK;
 				break;
 			case GRAPHICS_ADAM_BOLT:
+			case GRAPHICS_NOMAD:
 			case GRAPHICS_DAVID_GERVAIS:
 				if (feat_supports_lighting(feat)) *c += 1;
 				break;
@@ -591,6 +595,7 @@ static void special_wall_display(byte *a, char *c, bool in_view, int feat)
 				if (*a == TERM_WHITE) *a = TERM_SLATE;
 				break;
 			case GRAPHICS_ADAM_BOLT:
+			case GRAPHICS_NOMAD:
 			case GRAPHICS_DAVID_GERVAIS:
 				if (feat_supports_lighting(feat)) *c += 1;
 				break;
@@ -602,6 +607,7 @@ static void special_wall_display(byte *a, char *c, bool in_view, int feat)
 		switch (use_graphics)
 		{
 			case GRAPHICS_ADAM_BOLT:
+			case GRAPHICS_NOMAD:
 				if (feat_supports_lighting(feat)) *c += 2;
 				break;
 			case GRAPHICS_DAVID_GERVAIS:
@@ -744,12 +750,23 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			byte da;
 			char dc;
 			
-			/* Desired attr & char*/
+			/* Desired attr & char */
 			da = r_ptr->x_attr;
 			dc = r_ptr->x_char;
-			
+
+			/* Turn uniques purple if desired (violet, actually) */
+			if (OPT(purple_uniques) && rf_has(r_ptr->flags,
+				RF_UNIQUE)) 
+			{
+				/* Use (light) violet attr */
+				a = TERM_L_VIOLET;
+
+				/* Use char */
+				c = dc;
+			}
+
 			/* Special attr/char codes */
-			if ((da & 0x80) && (dc & 0x80))
+			else if ((da & 0x80) && (dc & 0x80))
 			{
 				/* Use attr */
 				a = da;
@@ -770,8 +787,8 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			}
 			
 			/* Normal monster (not "clear" in any way) */
-			else if (!flags_test(r_ptr->flags, RF_SIZE, RF_ATTR_CLEAR,
-			                           RF_CHAR_CLEAR, FLAG_END))
+			else if (!flags_test(r_ptr->flags, RF_SIZE,
+				RF_ATTR_CLEAR, RF_CHAR_CLEAR, FLAG_END))
 			{
 				/* Use attr */
 				a = da;
@@ -808,7 +825,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 				a = da;
 			}
 
-			/* Store the drawing attr so we can use it other places too */
+			/* Store the drawing attr so we can use it elsewhere */
 			m_ptr->attr = a;
 		}
 	}
@@ -2786,6 +2803,8 @@ void update_view(void)
 		int fx = m_ptr->fx;
 		int fy = m_ptr->fy;
 		
+		bool in_los = los(p_ptr->py, p_ptr->px, fy, fx);
+
 		/* Skip dead monsters */
 		if (!m_ptr->r_idx) continue;
 
@@ -2800,10 +2819,16 @@ void update_view(void)
 				int sy = fy + i;
 				int sx = fx + j;
 				
-				/* Make sure the square is close enough and is in LOS */
+				/* If the monster isn't visible we can only light open tiles */
+				if (!in_los && !cave_floor_bold(sy, sx))
+					continue;
+
+				/* If the tile is too far away we won't light it */
 				if (distance(p_ptr->py, p_ptr->px, sy, sx) > MAX_SIGHT)
 					continue;
-				else if (!los(p_ptr->py, p_ptr->px, sy, sx))
+				
+				/* If the tile itself isn't in LOS, don't light it */
+				if (!los(p_ptr->py, p_ptr->px, sy, sx))
 					continue;
 				
 				g = GRID(sy, sx);

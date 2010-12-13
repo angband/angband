@@ -375,7 +375,7 @@ struct GfxInfo
 
 static SDL_Surface *GfxSurface = NULL;	/* A surface for the graphics */
 
-#define GfxModes 4
+#define GfxModes 5
 static GfxInfo GfxDesc[GfxModes] =
 {
 	/* No gfx (GRAPHICS_NONE) */
@@ -386,6 +386,7 @@ static GfxInfo GfxDesc[GfxModes] =
 	{"16x16", "16x16.png", 16, 16, "new", 0, 65, TRUE},
 	/* XXX (GRAPHICS_DAVID_GERVAIS) */
 	{"32x32", "32x32.png", 32, 32, "david", 0, 0, TRUE},
+	{"8x16", "8x16.png", 16, 16, "nomad", 0, 0, TRUE},
 	
 	/* XXX (GRAPHICS_PSEUDO ???) */
 	/*{NULL, NULL, NULL, -1, -1},	*/						

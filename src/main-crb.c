@@ -6,6 +6,7 @@
  * Copyright (c) 2003,2004,2005 Robert Ruehlmann
  * Copyright (c) 2007,2008 pete mack
  * Copyright (c) 2008 Rowan Beentje
+ * Copyright (c) 2010 Andi Sidwell
  *
  * Some excerpts quoted under fair use from works by Ben Harrison,
  * Keith Randall, Peter Ammon, and Ron Anderson.
@@ -190,6 +191,12 @@ static int graf_mode = 0;
 static int graf_height = 0;
 static int graf_width = 0;
 
+/*
+ * Use antialiasing.  Without image differencing from
+ * OSX  10.4 features, you won't want to use this.
+ */
+static bool antialias = false;
+
 typedef struct GlyphInfo GlyphInfo;
 
 typedef struct term_data term_data;
@@ -358,7 +365,7 @@ static MenuRef MyGetMenuHandle_aux(int menuID, bool first)
 		if(first) m = MyGetMenuHandle_aux(id, false);
 		if(!m) continue;
 		menuRefs[id] = m;
-		for(int i = 0; i < N_ELEMENTS(menuRefs); i++) {
+		for(size_t i = 0; i < N_ELEMENTS(menuRefs); i++) {
 			MenuRef tmp = 0;
 			GetMenuItemHierarchicalMenu (m, i, &tmp);
 			if(tmp) {
@@ -483,7 +490,7 @@ static void activate(WindowRef w)
 	if (w && focus.ctx == 0) {
 		focus.color = COLOR_INVALID;
 
-		term_data *td = (term_data*)GetWRefCon(w);
+		term_data *td = (term_data*) GetWRefCon(w);
 
 		/* Start queueing graphics events. */
 		/* and set up the context */
@@ -649,8 +656,8 @@ static GlyphInfo *get_glyph_info(ATSUFontID fid, float size)
 
 	/* One is always available. */
 	info = glyph_data;
-	for(int c = 0; info->refcount != 0; info++, c++)
-			assert(c <= MAX_TERM_DATA);
+	for (int c = 0; info->refcount != 0; info++, c++)
+		assert(c <= MAX_TERM_DATA);
 
 	info->style = 0;
 	info->layout = 0;
@@ -1010,31 +1017,32 @@ static CGImageRef GetTileImage(int row, int col, bool has_alpha)
 {
 	/* Cache hit. */
 	assert(col < frame.cols && row < frame.rows);
-	if(frame.tile_images[row*frame.cols + col] != 0) {
+	if (frame.tile_images[row*frame.cols + col] != 0) {
 		return frame.tile_images[row*frame.cols+col];
 	}
 
 	term_data *td = &data[0];
 
-	size_t tile_wid = td->tile_wid *(1+use_bigtile);
-	size_t nbytes = (td->tile_hgt * tile_wid) * 4;
+	size_t tile_wid = td->tile_wid * tile_width;
+	size_t tile_hgt = td->tile_hgt * tile_height;
+	size_t nbytes = (tile_hgt * tile_wid) * 4;
 	void *data = calloc(1, nbytes);
 
 	CGContextRef map;
-	map = CGBitmapContextCreate(data, tile_wid, td->tile_hgt,
+	map = CGBitmapContextCreate(data, tile_wid, tile_hgt,
 								8,
-								nbytes/td->tile_hgt,
+								nbytes / tile_hgt,
 								CGColorSpaceCreateDeviceRGB(),
 								kCGImageAlphaPremultipliedLast);
 
-	CGAffineTransform m = {1, 0, 0, -1, 0, td->tile_hgt};
+	CGAffineTransform m = {1, 0, 0, -1, 0, tile_hgt};
 	CGContextConcatCTM(map, m); 
 
 	/* Attempt to avoid interpolation across cell boundaries by clipping. */
 	/* It may be that we need a clip image first. */
 	CGRect src_r = {{ graf_width*col, graf_height*row },
 						{ graf_width, graf_height }};
-	CGRect dst_r = {{ 0, 0 }, { tile_wid, td->tile_hgt }};
+	CGRect dst_r = {{ 0, 0 }, { tile_wid, tile_hgt }};
 	DrawSubimage(map, dst_r, frame.image, src_r);
 
 	CGDataProviderRef prov;
@@ -1069,9 +1077,10 @@ static void DrawTile(int x, int y, byte a, byte c, byte ta, byte tc)
 {
 	term_data *td = (term_data*) Term->data;
 
-	int tile_wid = (1+use_bigtile)*td->tile_wid;
-	CGRect dst_r = {{x*td->tile_wid, y*td->tile_hgt}, {tile_wid, td->tile_hgt}};
-	CGRect src_r = {{0, 0}, {tile_wid, td->tile_hgt}};
+	int tile_wid = td->tile_wid * tile_width;
+	int tile_hgt = td->tile_hgt * tile_height;
+	CGRect dst_r = {{x*td->tile_wid, y*td->tile_hgt}, {tile_wid, tile_hgt}};
+	CGRect src_r = {{0, 0}, {tile_wid, tile_hgt}};
 
 	tc = (tc&0x7f) % frame.cols;
 	ta = (ta&0x7f) % frame.rows;
@@ -1655,28 +1664,37 @@ static errr Term_xtra_mac(int n, int v)
  */
 static errr Term_curs_mac(int x, int y)
 {
-	if(!focus.active) activate(focus.active);
+	term_data *td = Term->data;
 
-	term_data *td = (term_data*)(Term->data);
+	if (!focus.active)
+		activate(focus.active);
 
 	CGContextSaveGState(focus.ctx);
 
 	/* Temporarily set stroke color to yellow */
-	int a = TERM_YELLOW;
+	char c;
+	byte a = TERM_YELLOW;
 	CGContextSetRGBStrokeColor(focus.ctx, focus.color_info[a][0],
 							focus.color_info[a][1], focus.color_info[a][2], 1);
 
 	/* Frame the grid, staying within the boundary. */
 	int tile_wid = td->tile_wid;
-	if(use_bigtile) {
-		byte a;
-		char c;
-		Term_what(x+1,y, &a, &c);
-		if(c == (char) 0xff) tile_wid *= 2;
+	int tile_hgt = td->tile_hgt;
+
+	if (tile_width != 1) {
+		Term_what(x + 1, y, &a, &c);
+		if (c == (char) 0xff)
+			tile_wid *= tile_width;
 	}
 
-	CGRect r = {{x * td->tile_wid + .5, y * td->tile_hgt + .5 },
-							{ tile_wid - 1, td->tile_hgt - 1}};
+	if (tile_height != 1) {
+		Term_what(x, y + 1, &a, &c);
+		if (c == (char) 0xff)
+			tile_hgt *= tile_height;
+	}
+
+	CGRect r = { { x * td->tile_wid + .5, y * td->tile_hgt + .5 },
+	             { tile_wid - 1,          tile_hgt - 1 } };
 
 	CGContextStrokeRectWithWidth(focus.ctx, r, 1.0);
 
@@ -1711,21 +1729,21 @@ static void Term_wipe_mac_aux(int x, int y, int n)
  */
 static errr Term_wipe_mac(int x, int y, int n)
 {
-
 	/*
 	 * Hack - overstrike the leftmost character with
 	 * the background colour. This doesn't interfere with
 	 * the graphics modes, because they set always_pict.
 	 */
-	if(use_overwrite_hack)
+	if (use_overwrite_hack)
 		Term_wipe_mac_aux(x, y, n);
 
 	term_data_color(COLOR_BLACK);
 
-	term_data *td = (term_data*)(Term->data);
-	int tile_wid = (1+use_bigtile)*td->tile_wid;
-	 CGRect r = {{ x*tile_wid, y*td->tile_hgt },
-											{ n*tile_wid, -td->tile_hgt }};
+	term_data *td = Term->data;
+	assert(td);
+
+	CGRect r = { { x * td->tile_wid, y * td->tile_hgt },
+	             { n * td->tile_wid, -td->tile_hgt } };
 	CGContextFillRect(focus.ctx, r);
 
 	/* Success */
@@ -1773,8 +1791,9 @@ static errr Term_pict_mac(int x, int y, int n, const byte *ap, const char *cp,
 		byte ta = *tap++;
 		char tc = *tcp++;
 
-		/* Hack -- a filler for double-width tile */
-		if(use_bigtile && (a == 255)) continue;
+		/* Hack -- a filler for tiles */
+		if (a == 255 && (tile_height != 1 || tile_width != 1))
+			continue;
 
 		/* TODO: background should be overridden with neutral color */
 		/* if unavailable. */
@@ -2023,8 +2042,9 @@ static void cf_save_prefs()
 	save_pref_short("version.extra", VERSION_EXTRA);
 
 	/* Gfx settings */
-	/* double-width tiles */
-	save_pref_short("arg.use_bigtile", use_bigtile);
+	/* tile width/height */
+	save_pref_short("arg.tile_wid", tile_width);
+	save_pref_short("arg.tile_hgt", tile_height);
 
 	/* graphics mode */
 	save_pref_short("graf_mode", graf_mode);
@@ -2150,9 +2170,11 @@ static void cf_load_prefs()
 	/* Gfx settings */
 	short pref_tmp;
 
-	/* double-width tiles */
-	if (load_pref_short("arg.use_bigtile", &pref_tmp))
-		use_bigtile = pref_tmp;
+	if (load_pref_short("arg.tile_wid", &pref_tmp))
+		tile_width = pref_tmp;
+
+	if (load_pref_short("arg.tile_hgt", &pref_tmp))
+		tile_height = pref_tmp;
 
 	/* anti-aliasing */
 	if(load_pref_short("arg.use_antialiasing", &pref_tmp))
@@ -2496,13 +2518,24 @@ static void init_menubar(void)
 
 	DisposeNibReference(nib);
 
-	MenuRef m = MyGetMenuHandle(kStyleMenu);
-	for(int i = 1; i <= CountMenuItems(m); i++) {
+	MenuRef m = MyGetMenuHandle(kGraphicsMenu);
+	for (int i = 1; i <= CountMenuItems(m); i++) {
 		/* Invalid entry */
 		SetMenuItemRefCon(m, i, -1);
 	}
-	for(int i = 0; i < N_ELEMENTS(graphics_modes); i++) {
+	for (size_t i = 0; i < N_ELEMENTS(graphics_modes); i++) {
 		SetMenuItemRefCon(m, graphics_modes[i].menuItem, i);
+	}
+
+	/* Set up bigtile menus */
+	m = MyGetMenuHandle(kBigtileWidthMenu);
+	for (size_t i = 1; i <= CountMenuItems(m); i++) {
+		SetMenuItemRefCon(m, i, i);
+	}
+
+	m = MyGetMenuHandle(kBigtileHeightMenu);
+	for (size_t i = 1; i <= CountMenuItems(m); i++) {
+		SetMenuItemRefCon(m, i, i);
 	}
 
 	for(int j = kTileWidMenu; j <= kTileHgtMenu; j++) {
@@ -2524,11 +2557,11 @@ static void init_menubar(void)
 static void install_handlers(WindowRef w)
 {
 	EventHandlerRef prevRef;
-	for(int i = 0; i < N_ELEMENTS(event_defs) ; i++) {
+	for(size_t i = 0; i < N_ELEMENTS(event_defs) ; i++) {
 		const CommandDef *def = &event_defs[i];
 
 		/* Install window handlers only for kWINDOW events */
-		if((!w) == (def->targetID == kWINDOW))
+		if ((!w) == (def->targetID == kWINDOW))
 			continue;
 
 		EventHandlerUPP evtUPP = NewEventHandlerUPP( def->handler );
@@ -2558,10 +2591,12 @@ static int funcConst(int a, int c) {return c; }
 static void validate_menus(void)
 {
 	WindowRef w = GetFrontWindowOfClass(kDocumentWindowClass, true);
-	term_data *td;
-	if(!w || !initialized) return;
-	td = (term_data*) GetWRefCon(w);
-	if(!td) return;
+	if (!w || !initialized)
+		return;
+
+	term_data *td = (term_data *) GetWRefCon(w);
+	if (!td)
+		return;
 
 	struct {
 		int menu;                /* Radio-style Menu ID to validate */
@@ -2571,51 +2606,38 @@ static void validate_menus(void)
 	} funcs [] = {
 		{ kTileWidMenu, td->tile_wid, td->font_wid, funcGTE },
 		{ kTileHgtMenu, td->tile_hgt, td->font_hgt, funcGTE },
-		{ kStyleMenu, graf_mode, 1, funcConst }
+		{ kGraphicsMenu, graf_mode, 1, funcConst },
+		{ kBigtileWidthMenu, tile_width, 1, funcGTE },
+		{ kBigtileHeightMenu, tile_height, 1, funcGTE },
 	};
 
 	MenuHandle m;
 
-	if(cmd.command != CMD_NULL) {
-		EnableAllMenuItems(MyGetMenuHandle(kSpecialMenu));
-		EnableAllMenuItems(MyGetMenuHandle(kStyleMenu));
+	if (cmd.command != CMD_NULL) {
+		EnableAllMenuItems(MyGetMenuHandle(kGraphicsMenu));
 	}
 
-	for(int i = 0; i < N_ELEMENTS(funcs); i++) {
+	for(size_t i = 0; i < N_ELEMENTS(funcs); i++) {
 		m = MyGetMenuHandle(funcs[i].menu);
 		int n = CountMenuItems(m);
-		for(int j = 1; j <= n; j++) {
+		for (int j = 1; j <= n; j++) {
 			UInt32 value;
 			GetMenuItemRefCon(m, j, &value);
 			CheckMenuItem(m, j, funcs[i].cur == value);
-			if(funcs[i].cmp(value, funcs[i].limit)) {
+			if (funcs[i].cmp(value, funcs[i].limit))
 				EnableMenuItem(m, j);
-			}
 			else
-			{
 				DisableMenuItem(m, j);
-			}
 		}
 	}
 
-	if(cmd.command != CMD_NULL && character_generated)
-	{
+	if (cmd.command != CMD_NULL && character_generated)
 		EnableMenuItem(MyGetMenuHandle(kFileMenu), kSave);
-		EnableMenuItem(MyGetMenuHandle(kSpecialMenu), kSound);
-	}
 	else
-	{
 		DisableMenuItem(MyGetMenuHandle(kFileMenu), kSave);
-		DisableMenuItem(MyGetMenuHandle(kSpecialMenu), kSound);
-	}
-	
-	/* Keep the sound menu up-to-date */
-	CheckMenuItem(MyGetMenuHandle(kSpecialMenu), kSound, OPT(use_sound));
 
-	for(int i = 0; i < N_ELEMENTS(toggle_defs); i++) {
-		m = MyGetMenuHandle(toggle_defs[i].menuID);
-		CheckMenuItem(m, toggle_defs[i].menuItem, *(toggle_defs[i].var));
-	}
+	m = MyGetMenuHandle(kFontMenu);
+	CheckMenuItem(m, kAntialias, antialias);
 }
 
 static OSStatus ValidateMenuCommand(EventHandlerCallRef inCallRef,
@@ -3039,30 +3061,6 @@ static OSStatus ResizeCommand(EventHandlerCallRef inCallRef,
 	return eventNotHandledErr;
 }
 
-static OSStatus GraphicsCommand(EventHandlerCallRef inCallRef,
-							EventRef inEvent, void *inUserData )
-{
-	HICommand command;
-	command.menu.menuRef = 0;
-	GetEventParameter(inEvent, kEventParamDirectObject, typeHICommand,
-							NULL, sizeof(HICommand), NULL, &command);
-
-	/* Check for valid input */
-	/* assert(kStyleMenu == GetMenuID(command.menu.menuRef)); */
-	if (command.commandID != 'graf' ||
-			kStyleMenu != GetMenuID(command.menu.menuRef))
-		return eventNotHandledErr;
-
-	/* Index in graphics_modes[] */
-	UInt32 op;
-	GetMenuItemRefCon(command.menu.menuRef, command.menu.menuItemIndex, &op);
-
-	if(graf_mode != op)
-		graphics_aux(op);
-
-	return noErr;
-}
-
 static void graphics_aux(int op)
 {
 	graf_mode = op;
@@ -3102,23 +3100,26 @@ static void graphics_aux(int op)
 static OSStatus TileSizeCommand(EventHandlerCallRef inCallRef,
 							EventRef inEvent, void *inUserData )
 {
+	term_data *td = Term->data;
+	assert(td);
+
 	HICommand cmd;
 	GetEventParameter(inEvent, kEventParamDirectObject, typeHICommand,
-							NULL, sizeof(cmd), NULL, &cmd);
+			NULL, sizeof(cmd), NULL, &cmd);
 	UInt32 newSize = 0;
 	GetMenuItemRefCon(cmd.menu.menuRef, cmd.menu.menuItemIndex, &newSize);
-	term_data *td = (term_data*) Term->data;
-	if(!td) return noErr;
 
-	if(GetMenuID(cmd.menu.menuRef) == kTileWidMenu) {
-		if(td->font_wid > newSize || newSize == td->tile_wid) return noErr;
-		else td->tile_wid = newSize;
-	}
-	else if(GetMenuID(cmd.menu.menuRef) == kTileHgtMenu) {
-		if(td->font_hgt > newSize || newSize == td->tile_hgt) return noErr;
-		else td->tile_hgt = newSize;
-	}
-	else {
+	if (GetMenuID(cmd.menu.menuRef) == kTileWidMenu) {
+		if (td->font_wid > newSize || newSize == td->tile_wid)
+			return noErr;
+		else
+			td->tile_wid = newSize;
+	} else if (GetMenuID(cmd.menu.menuRef) == kTileHgtMenu) {
+		if (td->font_hgt > newSize || newSize == td->tile_hgt)
+			return noErr;
+		else
+			td->tile_hgt = newSize;
+	} else {
 		return eventNotHandledErr;
 	}
 
@@ -3133,9 +3134,10 @@ static OSStatus RestoreCommand(EventHandlerCallRef inCallRef,
 	WindowRef w = 0;
 	GetEventParameter(inEvent, kEventParamDirectObject, typeWindowRef,
 							NULL, sizeof(w), NULL, &w);
+
 	term_data *td = (term_data*) GetWRefCon(w);
-	
-	if(!td) return eventNotHandledErr;
+	if (!td)
+		return eventNotHandledErr;
 
 	/* Mapped */
 	td->mapped = TRUE;
@@ -3254,63 +3256,115 @@ static OSStatus UpdateCommand(EventHandlerCallRef inCallRef,
 	return noErr;
 }
 
-/* Handle toggling sound via the menu option */
-static OSStatus SoundCommand(EventHandlerCallRef inCallRef,
-							EventRef inEvent, void *inUserData )
+static void toggle_antialias(HICommand *command, void *data)
 {
-	HICommand command;
-	GetEventParameter( inEvent, kEventParamDirectObject, typeHICommand,
-							NULL, sizeof(command), NULL, &command);
-	if (command.menu.menuItemIndex == kSound)
-	{
-		OPT(use_sound) = !OPT(use_sound);
-	}
-	return noErr;
+	antialias = !antialias;
 }
 
+static void set_graphics_mode(HICommand *command, void *data)
+{
+	/* Index in graphics_modes[] */
+	UInt32 op;
+	GetMenuItemRefCon(command->menu.menuRef, command->menu.menuItemIndex, &op);
 
-static OSStatus ToggleCommand(EventHandlerCallRef inCallRef,
-								EventRef inEvent, void *inUserData )
+	if (graf_mode != op)
+		graphics_aux(op);
+}
+
+static void set_tile_width(HICommand *command, void *data)
+{
+	UInt32 op;
+	GetMenuItemRefCon(command->menu.menuRef, command->menu.menuItemIndex, &op);
+	assert(op != 0);
+
+	tile_width = op;
+}
+
+static void set_tile_height(HICommand *command, void *data)
+{
+	UInt32 op;
+	GetMenuItemRefCon(command->menu.menuRef, command->menu.menuItemIndex, &op);
+	assert(op != 0);
+
+	tile_height = op;
+}
+
+static void reset_wid_hgt(HICommand *command, void *data)
+{
+	term_data *td = Term->data;
+	assert(td);
+
+	td->tile_wid = td->font_wid;
+	td->tile_hgt = td->font_hgt;
+}
+
+static void seek_graphics_size(term_data *td, int seek_wid, int seek_hgt)
+{
+	td->tile_wid = td->font_wid;
+	td->tile_hgt = td->font_hgt;
+
+	tile_width = MAX(seek_wid / td->font_wid, 1);
+	tile_height = MAX(seek_hgt / td->font_hgt, 1);
+
+	td->tile_wid += (seek_wid - (tile_width * td->font_wid)) / tile_width;
+	td->tile_hgt += (seek_hgt - (tile_height * td->font_hgt)) / tile_height;
+}
+
+static void set_nice_graphics_fit(HICommand *command, void *data)
+{
+	term_data *td = Term->data;
+	assert(td);
+
+	seek_graphics_size(td, graf_width, graf_height);
+}
+
+static void set_nice_graphics_square(HICommand *command, void *data)
+{
+	term_data *td = Term->data;
+	assert(td);
+
+	int max_dimension = MAX(td->font_wid, td->font_hgt);
+	seek_graphics_size(td, max_dimension, max_dimension);
+}
+
+static OSStatus ToggleCommand(EventHandlerCallRef inCallRef, EventRef inEvent,
+		void *inUserData)
 {
 	HICommand command;
-	GetEventParameter( inEvent, kEventParamDirectObject, typeHICommand,
-							NULL, sizeof(command), NULL, &command);
+	GetEventParameter(inEvent, kEventParamDirectObject, typeHICommand,
+			NULL, sizeof(command), NULL, &command);
 
-	MenuItemIndex index = command.menu.menuItemIndex;
-	int menuID = GetMenuID(command.menu.menuRef);
-	for(int i = N_ELEMENTS(toggle_defs);  --i >= 0;)
-	{
-		if(index == toggle_defs[i].menuItem && menuID == toggle_defs[i].menuID)
-		{
-			*toggle_defs[i].var = !(*toggle_defs[i].var);
-			if(toggle_defs[i].refresh == true) {
-				RevalidateGraphics(&data[0], FALSE);
-				/* Force redraw. */
-				Term_key_push(KTRL('R'));
-			}
-			return noErr;
+	for (size_t i = 0; i < N_ELEMENTS(menu_commands); i++) {
+		if (command.commandID != menu_commands[i].id)
+			continue;
+
+		menu_commands[i].handler(&command, menu_commands[i].data);
+
+		if (menu_commands[i].refresh == true) {
+			RevalidateGraphics(&data[0], FALSE);
+			Term_key_push(KTRL('R'));
 		}
+
+		return noErr;
 	}
+
 	return eventNotHandledErr;
 }
 
 
 static void FontChanged(UInt32 fontID, float size)
 {
-	if(size < MIN_FONT) return;
+	if (size < MIN_FONT || fontID == 0)
+		return;
 
 	ATSUStyle fontStyle;
 
-	/* Font size must be 8 or more. */
-	if( 8 > size || fontID == 0)
-		return;
-
-	term_data *td = (term_data*) GetWRefCon(fontInfo.focus);
-	if(!td) return; /* paranoia */
+	term_data *td = (term_data *) GetWRefCon(fontInfo.focus);
+	assert(td);
 
 	/* No change. */
-	if(td->font_id == fontID && td->font_size == size)
-		return ;
+	if (td->font_id == fontID && td->font_size == size)
+		return;
 
 	const ATSUAttributeTag tags[] = {kATSUFontTag, kATSUSizeTag};
 
@@ -3327,7 +3381,7 @@ static void FontChanged(UInt32 fontID, float size)
 										kATSUQDUnderlineTag,
 										kATSUQDCondensedTag };
 
-	for(int i = 0; i < N_ELEMENTS(badtags); i++)
+	for (size_t i = 0; i < N_ELEMENTS(badtags); i++)
 	{
 		bool ital = false;
 		ByteCount ssize = sizeof(ital);
@@ -3352,6 +3406,7 @@ static OSStatus FontCommand(EventHandlerCallRef inHandlerCallRef, EventRef inEve
 {
 	int class = GetEventClass(inEvent);
 	int type = GetEventKind(inEvent);
+
 	if(class == 'font' && type == kEventFontSelection) {
 		UInt32 fid = 0;
 		Fixed size = 0;
@@ -3380,15 +3435,15 @@ static OSStatus FontCommand(EventHandlerCallRef inHandlerCallRef, EventRef inEve
 		return noErr;
 	}
 	else if(class == 'font' && type == kEventFontPanelClosed) {
-		SetMenuItemTextWithCFString(GetMenuHandle(kStyleMenu), kFonts, CFSTR("Show Fonts"));
+		SetMenuItemTextWithCFString(GetMenuHandle(kFontMenu), kFonts, CFSTR("Show Fonts"));
 		return noErr;
 	}
 
 	return eventNotHandledErr;
 }
 
-static OSStatus MouseCommand ( EventHandlerCallRef inCallRef,
-	EventRef inEvent, void *inUserData )
+static OSStatus MouseCommand (EventHandlerCallRef inCallRef, EventRef inEvent,
+		void *inUserData)
 {
 	WindowRef w = 0;
 	GetEventParameter(inEvent, kEventParamWindowRef, typeWindowRef, 

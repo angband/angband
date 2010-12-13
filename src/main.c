@@ -25,10 +25,7 @@
  * all the others use this file for their "main()" function.
  */
 
-
-#if defined(WIN32_CONSOLE_MODE) \
-    || (!defined(WINDOWS) && !defined(RISCOS)) \
-    || defined(USE_SDL)
+#if defined(WIN32_CONSOLE_MODE) || !defined(WINDOWS) || defined(USE_SDL)
 
 #include "main.h"
 #include "textui.h"
@@ -371,8 +368,7 @@ int main(int argc, char *argv[])
 			{
 				/* Dump usage information */
 				puts("Usage: angband [options] [-- subopts]");
-				puts("  -n             Start a new character");
-				puts("  -L             Load a new-format save file");
+				puts("  -n             Start a new character (WARNING: overwrites default savefile without -u)");
 				puts("  -w             Resurrect dead character (marks savefile)");
 				puts("  -r             Rebalance monsters");
 				puts("  -g             Request graphics mode");
@@ -477,4 +473,4 @@ int main(int argc, char *argv[])
 	return (0);
 }
 
-#endif /* !defined(MACINTOSH) && !defined(WINDOWS) && !defined(RISCOS) */
+#endif

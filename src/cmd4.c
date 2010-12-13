@@ -525,7 +525,7 @@ static const char *feeling_text[] =
 void do_cmd_feeling(void)
 {
 	/* Don't show feelings for cold-hearted characters */
-	if (OPT(birth_feelings)) return;
+	if (OPT(adult_no_feelings)) return;
 
 	/* Verify the feeling */
 	if (feeling >= N_ELEMENTS(feeling_text))

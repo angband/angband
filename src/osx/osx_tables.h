@@ -1,33 +1,29 @@
+#ifndef INCLUDED_OSX_TABLES_H
+#define INCLUDED_OSX_TABLES_H
+
 /*
  * Maximum menu ID.
  * IMPORTANT: see note in main-crb.c if you wish to add menus.
  */
-#ifndef INCLUDED_OSX_TABLES_H
-#define INCLUDED_OSX_TABLES_H
-
 #define MAX_MENU_ID (150)
 
 /* These numbers must agree with the corresponding Menu ID in the nib. */
 enum MenuID {
-	kAngbandMenu	= 100,
-	kFileMenu		= 101,
-	kEditMenu		= 102, 
-	kStyleMenu		= 103,
-	/* deleted */
-	kWindowMenu		= 105,
-	kSpecialMenu	= 106,
+	kAngbandMenu    = 100,
+	kFileMenu       = 101,
+	kOpenRecentMenu = 102,
 
-	kTileWidMenu	= 107,
-	kTileHgtMenu	= 108,
-	
-	kOpenRecentMenu = 109
-};
+	kFontMenu       = 103,
+	kTileWidMenu	= 104,
+	kTileHgtMenu	= 105,
 
-// Edit menu
-enum {
-	kCopy			= 1,	/* C, 'copy' */
-	kSelectAll		= 2,	/* A, 'sall' */
-	kUndo			= 3		/* Z, 'undo' */
+	kGraphicsMenu   = 106,
+	kBigtileWidthMenu = 107,
+	kBigtileHeightMenu = 108,
+
+	kWindowMenu     = 109,
+
+	kNiceGraphicsMenu = 110
 };
 
 // File Menu
@@ -39,12 +35,7 @@ enum {
 	/* \-p */
 	kSave 			= 6,	/* S, 'save' */
 	kClose			= 7,	/* W, 'clos' */
-	/* \-p 
-	 setup
-	  print 
-	 \-p */ 
 };
-
 
 // Window menu
 enum {
@@ -56,25 +47,22 @@ enum {
 	kBringToFront 		= 13
 };
 
-// Special Menu
-enum {
-	kSound				= 1, /* Toggle sound */ 
-};
-
-
-
-// Styles menu
+// Font menu
 enum {
 	kFonts				= 1,
 	kAntialias			= 2,
-	kGrafNone			= 4,
-	kGraf8x8			= 5,
-	kGraf16x16			= 6,
-	kGraf32x32			= 7,
-	kInterpolate		= 9,
-	kBigTile			= 10,
-	kTileWidth			= 11,
-	kTileHeight			= 12,
+	kTileWidth			= 3,
+	kTileHeight			= 4
+};
+
+// Graphics menu
+enum {
+	kGrafNone = 1,
+	kGraf8x8 = 2,
+	kGraf16x16 = 3,
+	kGraf32x32 = 4,
+	kGraf8x16 = 5,
+	kBigTile = 6
 };
 
 
@@ -94,15 +82,16 @@ static const HIViewID aboutDialogCopyright = { 'DLOG', 4 };
 /* graf_mode variable is index of current mode */
 static const struct {
 	int menuItem;		// Index in Graphics Menu
- 	cptr file;			// Base name of png file (if any)
+ 	  cptr file;			// Base name of png file (if any)
 	cptr name;			// Value of ANGBAND_GRAF variable
 	int size;			// Tile size (in pixels)
 	bool trans;			// Use transparent foreground tiles
-} graphics_modes [] = {
-	{ kGrafNone,	NULL, 		NULL,		0,			false },
-	{ kGraf8x8,		"8x8",		"old",		8,			false },
-	{ kGraf16x16,	"16x16",	"new",		16,			true },
-	{ kGraf32x32,	"32x32",	"david",	32,			true },
+} graphics_modes[] = {
+	{ kGrafNone, NULL, NULL, 0, false },
+	{ kGraf8x8, "8x8", "old",	8,	false },
+	{ kGraf16x16, "16x16",	"new",	16,	true },
+	{ kGraf32x32, "32x32",	"david", 32,	true },
+	{ kGraf8x16, "8x16",	"nomad", 16,	true },
 };
 
 
@@ -129,7 +118,6 @@ HANDLERDEF(FontCommand);
 HANDLERDEF(RestoreCommand);
 HANDLERDEF(ToggleCommand);
 HANDLERDEF(TerminalCommand);
-HANDLERDEF(GraphicsCommand);
 HANDLERDEF(KeyboardCommand);
 HANDLERDEF(MouseCommand);
 HANDLERDEF(ResizeCommand);
@@ -140,7 +128,6 @@ HANDLERDEF(OpenRecentCommand);
 HANDLERDEF(ResumeCommand);
 HANDLERDEF(CommandCommand);
 HANDLERDEF(AngbandGame);
-HANDLERDEF(SoundCommand);
 
 
 
@@ -156,14 +143,11 @@ const CommandDef event_defs [] =
 	 */
 	{ 'Play', 'Band', AngbandGame, 0, NULL },
 
-
-
 	/* Quit the game */
 	{ 'appl', kEventAppQuit, QuitCommand, 0, NULL },
 	
 	/* Reactivate the game after it's been in the background */
 	{ 'appl', kEventAppActivated, ResumeCommand, 0, NULL },
-
 
 
 	/* "About Angband" command */
@@ -178,21 +162,15 @@ const CommandDef event_defs [] =
 	/* Selection of a terminal within the Window menu */
 	{ 'cmds', kEventProcessCommand, TerminalCommand, kWindowMenu, NULL },
 	
-	/* Toggling a menu option - bigtile, interpolate, antialias */
-	{ 'cmds', kEventProcessCommand, ToggleCommand, kSpecialMenu, NULL },
-	{ 'cmds', kEventProcessCommand, ToggleCommand, kStyleMenu, NULL },
-
-	/* "Use Sound" command */
-	{ 'cmds', kEventProcessCommand, SoundCommand, kSpecialMenu, NULL},
+	/* Activating a menu option */
+	{ 'cmds', kEventProcessCommand, ToggleCommand, kFontMenu, NULL },
+	{ 'cmds', kEventProcessCommand, ToggleCommand, kBigtileWidthMenu, NULL },
+	{ 'cmds', kEventProcessCommand, ToggleCommand, kBigtileHeightMenu, NULL },
+	{ 'cmds', kEventProcessCommand, ToggleCommand, kGraphicsMenu, NULL },
 
 	/* Alter tile width and height */
 	{ 'cmds', kEventProcessCommand, TileSizeCommand, kTileWidMenu, NULL },
 	{ 'cmds', kEventProcessCommand, TileSizeCommand, kTileHgtMenu, NULL },
-
-	/* Switch between graphics modes */
-	{ 'cmds', kEventProcessCommand, GraphicsCommand, kStyleMenu, NULL },
-
-
 
 	/* Font panel - selection of a new font */
 	{ 'font', kEventFontSelection, FontCommand, 0, NULL },
@@ -246,30 +224,30 @@ static EventTypeSpec input_event_types[] = {
 	{ 'wind', kEventWindowHandleContentClick },
 };
 
-/*
- * Interpolate images when rescaling them
- */
-static bool interpolate = 0;
+#define CMDHANDLER(x) \
+	static void x(HICommand *command, void *data);
 
-/*
- * Use antialiasing.  Without image differencing from
- * OSX  10.4 features, you won't want to use this.
- */
-
-static bool antialias = 0;
-
-/* Nasty hack - sorry NRM */
-static bool use_bigtile = 0;
+CMDHANDLER(toggle_antialias);
+CMDHANDLER(reset_wid_hgt);
+CMDHANDLER(set_graphics_mode);
+CMDHANDLER(set_tile_width);
+CMDHANDLER(set_tile_height);
+CMDHANDLER(set_nice_graphics_fit);
+CMDHANDLER(set_nice_graphics_square);
 
 static struct {
-	bool *var;				// Value to toggle (*var = !*var)
-	int menuID;				// Menu for this action (MenuRef would be better)
-	int menuItem;			// Index of menu item for this acton
+	int id;				// command id
+	void (*handler)(HICommand *command, void *data);	// handler
+	void *data;				// data
 	bool refresh; 			// Change requires graphics refresh of main window.
-} toggle_defs [] = {
-	{ &use_bigtile, kStyleMenu,  kBigTile,	true},
-	{ &interpolate, kStyleMenu,  kInterpolate, true},
-	{ &antialias,	kStyleMenu,	kAntialias,	true}
+} menu_commands[] = {
+	{ 'anti', toggle_antialias, NULL, true },
+	{ 'rewh', reset_wid_hgt, NULL, true },
+	{ 'graf', set_graphics_mode, NULL, true },
+	{ 'twid', set_tile_width, NULL, true },
+	{ 'thgt', set_tile_height, NULL, true },
+	{ 'ngfi', set_nice_graphics_fit, NULL, true },
+	{ 'ngsq', set_nice_graphics_square, NULL, true },
 };
 
 #endif /* !INCLUDED_OSX_TABLES_H */

@@ -58,7 +58,7 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_view_perma_grids,
 		OPT_view_torch_grids,
 		OPT_animate_flicker,
-		OPT_NONE,
+		OPT_purple_uniques,
 		OPT_NONE,
 		OPT_NONE,
 	},
@@ -99,8 +99,8 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_birth_no_stacking,
 		OPT_birth_no_preserve,
 		OPT_birth_no_stairs,
-		OPT_birth_feelings,
-		OPT_NONE
+		OPT_birth_no_feelings,
+		OPT_birth_no_selling,
 	},
 
 	/* Cheat */
@@ -203,7 +203,7 @@ static option_entry options[OPT_MAX] =
 { "animate_flicker",     "Animate multi-colored monsters and items",    FALSE }, /* 66 */
 { "show_piles",          "Show stacks using special attr/char",         FALSE }, /* 67 */
 { "center_player",       "Center map continuously",                     FALSE }, /* 68 */
-{ NULL,                  NULL,                                          FALSE }, /* 69 */
+{ "purple_uniques",      "Show unique monsters in a special colour",    FALSE }, /* 69 */
 { "xchars_to_file",      "Allow accents in output files",               FALSE }, /* 70 */
 { "auto_more",           "Automatically clear '-more-' prompts",        FALSE }, /* 71 */
 { NULL,                  NULL,                                          FALSE }, /* 72 */
@@ -271,8 +271,8 @@ static option_entry options[OPT_MAX] =
 { "birth_no_stacking",   "Don't stack objects on the floor",            FALSE }, /* 134 */
 { "birth_no_preserve",   "Lose artifacts when leaving level",           FALSE }, /* 135 */
 { "birth_no_stairs",     "Don't generate connected stairs",             FALSE }, /* 136 */
-{ "birth_feelings",      "Don't show level feelings",                   FALSE }, /* 137 */
-{ NULL,                  NULL,                                          FALSE }, /* 138 */
+{ "birth_no_feelings",   "Don't show level feelings",                   FALSE }, /* 137 */
+{ "birth_no_selling",    "Items always sell for 0 gold",                FALSE }, /* 138 */
 { NULL,                  NULL,                                          FALSE }, /* 139 */
 { NULL,                  NULL,                                          FALSE }, /* 140 */
 { "birth_ai_sound",      "Monsters chase current location",             TRUE },  /* 141 */
@@ -327,7 +327,7 @@ static option_entry options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 190 */
 { NULL,                  NULL,                                          FALSE }, /* 191 */
 { "adult_maximize",      "Maximize effect of race/class bonuses",       TRUE },  /* 192 */
-{ "adult_randarts",      "Randomize some of the artifacts (beta)",      FALSE }, /* 193 */
+{ "adult_randarts",      "Randomize the artifacts (except a few)",      FALSE }, /* 193 */
 { NULL,                  NULL,                                          FALSE }, /* 194 */
 { "adult_ironman",       "Restrict the use of stairs/recall",           FALSE }, /* 195 */
 { "adult_no_stores",     "Restrict the use of stores/home",             FALSE }, /* 196 */
@@ -335,8 +335,8 @@ static option_entry options[OPT_MAX] =
 { "adult_no_stacking",   "Don't stack objects on the floor",            FALSE }, /* 198 */
 { "adult_no_preserve",   "Lose artifacts when leaving level",           FALSE }, /* 199 */
 { "adult_no_stairs",     "Don't generate connected stairs",             FALSE }, /* 200 */
-{ NULL,                  NULL,                                          FALSE }, /* 201 */
-{ NULL,                  NULL,                                          FALSE }, /* 202 */
+{ "adult_no_feelings",   "Don't show level feelings",                   FALSE }, /* 201 */
+{ "adult_no_selling",    "Items always sell for 0 gold",                FALSE }, /* 202 */
 { NULL,                  NULL,                                          FALSE }, /* 203 */
 { NULL,                  NULL,                                          FALSE }, /* 204 */
 { "adult_ai_sound",      "Adult: Monsters chase current location",      TRUE },  /* 205 */

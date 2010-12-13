@@ -436,6 +436,7 @@ bool make_fake_artifact(object_type *o_ptr, byte name1)
 		of_on(o_ptr->flags, OF_PERMA_CURSE);
 
 	/* Success */
+	o_ptr->ident |= IDENT_FAKE;
 	return (TRUE);
 }
 
@@ -509,7 +510,7 @@ static void spoil_artifact(cptr fname)
 			spoiler_underline(buf, '-');
 
 			/* Write out the artifact description to the spoiler file */
-			object_info_spoil(i_ptr);
+			object_info_spoil(fh, i_ptr, 80);
 
 			/*
 			 * Determine the minimum and maximum depths an

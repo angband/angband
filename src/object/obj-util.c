@@ -1595,8 +1595,8 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 {
 	int total = o_ptr->number + j_ptr->number;
 
-	/* Check against stacking limit */
-	if (total >= MAX_STACK_SIZE) return FALSE;
+	/* Check against stacking limit - except in stores which absorb anyway */
+	if (!(mode & OSTACK_STORE) && (total >= MAX_STACK_SIZE)) return FALSE;
 
 	/* Hack -- identical items cannot be stacked */
 	if (o_ptr == j_ptr) return FALSE;
@@ -1748,13 +1748,9 @@ void object_absorb(object_type *o_ptr, const object_type *j_ptr)
 	/* Hack -- Blend "notes" */
 	if (j_ptr->note != 0) o_ptr->note = j_ptr->note;
 
-	/*
-	 * Hack -- if rods are stacking, re-calculate the
-	 * pvals (maximum timeouts) and current timeouts together
-	 */
+	/* Hack -- if rods are stacking, re-calculate the timeouts */
 	if (o_ptr->tval == TV_ROD)
 	{
-		o_ptr->pval = total * j_ptr->pval;
 		o_ptr->timeout += j_ptr->timeout;
 	}
 
@@ -3657,11 +3653,14 @@ static int compare_items(const object_type *o1, const object_type *o2)
  */
 void display_object_recall(object_type *o_ptr)
 {
+	char header[120];
+
+	textblock *tb = object_info(o_ptr, OINFO_NONE);
+	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+
 	clear_from(0);
-	prt("", 0, 0);
-	object_info_header(o_ptr);
-	if (!object_info(o_ptr, OINFO_NONE))
-		text_out("This item does not seem to possess any special abilities.");
+	textui_textblock_place(tb, SCREEN_REGION, header);
+	textblock_free(tb);
 }
 
 
@@ -3682,16 +3681,12 @@ void display_object_idx_recall(s16b item)
  */
 void display_object_kind_recall(s16b k_idx)
 {
-	/* Initialize and prepare a fake object; it will be deallocated when we */
-	/* leave the function. */
-	object_type object;
-	object_type *o_ptr = &object;
-	object_wipe(o_ptr);
-	object_prep(o_ptr, &k_info[k_idx], 0, EXTREMIFY);
-	if (k_info[k_idx].aware) o_ptr->ident |= (IDENT_STORE);
+	object_type object = { 0 };
+	object_prep(&object, &k_info[k_idx], 0, EXTREMIFY);
+	if (k_info[k_idx].aware)
+		object.ident |= IDENT_STORE;
 
-	/* draw it */
-	display_object_recall(o_ptr);
+	display_object_recall(&object);
 }
 
 /*

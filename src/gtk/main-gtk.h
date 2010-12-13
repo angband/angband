@@ -32,6 +32,8 @@
 #include "game-event.h" 
 #include "option.h"
 
+#include <iconv.h>
+
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 #include <glade/glade.h>

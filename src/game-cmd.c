@@ -502,6 +502,8 @@ void process_command(cmd_context ctx, bool no_request)
 
 					cmd_set_arg_number(cmd, 1, amt);
 				}
+
+				break;
 			}
 			
 			/* 

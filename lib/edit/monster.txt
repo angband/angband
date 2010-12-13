@@ -56,6 +56,11 @@
 # (note that "black" is the same color as the screen background, and thus the
 # monster will appear to be an empty black space if its color is "d".)
 
+# Note to maintainers/devteam: Light Violet (V) is currently used for the
+# "purple uniques" option. The option makes all uniques appear in this colour
+# (instead of only Castamir and Waldern). It is therefore unwise to use it 
+# for non-unique monsters.
+
 # 'I' is for information--speed, health, vision in tens of feet, armor class,
 # and alertness. 110 is normal speed. Alertness ranges from 0 (ever vigilant
 # for intruders) to 255 (prefers to ignore intruders).

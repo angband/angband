@@ -599,7 +599,7 @@ void player_outfit(struct player *p)
 			e_ptr->kind->everseen = TRUE;
 
 			/* Deduct the cost of the item from starting cash */
-			p->au -= object_value(i_ptr, i_ptr->number,	FALSE);
+			p->au -= object_value(i_ptr, i_ptr->number, FALSE);
 		}
 	}
 
@@ -987,7 +987,6 @@ void player_generate(struct player *p, const player_sex *s,
 /* Reset everything back to how it would be on loading the game. */
 static void do_birth_reset(bool use_quickstart, birther *quickstart_prev)
 {
-	player_init(p_ptr);
 
 	/* If there's quickstart data, we use it to set default
 	   character choices. */
@@ -1077,6 +1076,7 @@ void player_birth(bool quickstart_allowed)
 
 		if (cmd->command == CMD_BIRTH_RESET)
 		{
+			player_init(p_ptr);
 			reset_stats(stats, points_spent, &points_left);
 			do_birth_reset(quickstart_allowed, &quickstart_prev);
 			rolled_stats = FALSE;
@@ -1239,8 +1239,8 @@ void player_birth(bool quickstart_allowed)
 	message_add("  ", MSG_GENERIC);
 	message_add(" ", MSG_GENERIC);
 
-	/* Hack -- outfit the player */
-	player_outfit(p_ptr);
+	/* Outfit the player, if they can sell the stuff */
+	if (!OPT(adult_no_selling)) player_outfit(p_ptr);
 
 	/* Initialise the stores */
 	store_reset();

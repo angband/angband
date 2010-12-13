@@ -790,6 +790,7 @@ static void do_cmd_visuals(const char *title, int row)
 		visual_menu->title = title;
 		visual_menu->selections = lower_case;
 		visual_menu->browse_hook = visuals_browse_hook;
+		visual_menu->header = "To edit visuals, use the knowledge menu";
 	}
 
 	menu_layout(visual_menu, &SCREEN_REGION);
@@ -1238,16 +1239,15 @@ static int cmp_squelch(const void *a, const void *b)
 	const squelch_choice *x = (squelch_choice *)a;
 	const squelch_choice *y = (squelch_choice *)b;
 
-	if (x->aware && !y->aware)
-		return TRUE;
 	if (!x->aware && y->aware)
-		return FALSE;
+		return 1;
+	if (x->aware && !y->aware)
+		return -1;
 
 	object_kind_name(bufa, sizeof(bufa), x->k_idx, x->aware);
 	object_kind_name(bufb, sizeof(bufb), y->k_idx, y->aware);
 
-	/* the = is crucial, inf loop in sort if use < rather than <= */
-	return strcmp(bufa, bufb) <= 0;
+	return strcmp(bufa, bufb);
 }
 
 /*

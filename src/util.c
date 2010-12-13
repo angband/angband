@@ -1591,10 +1591,8 @@ void screen_load(void)
 	character_icky--;
 
 	/* Mega hack -redraw big graphics - sorry NRM */
-	if ((tile_width > 1) || (tile_height > 1)) 
-	{
-	        do_cmd_redraw();
-	}
+	if (character_icky == 0 && (tile_width > 1 || tile_height > 1))
+		do_cmd_redraw();
 }
 
 

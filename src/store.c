@@ -41,8 +41,6 @@ enum
 	LOC_PRICE = 0,
 	LOC_OWNER,
 	LOC_HEADER,
-	LOC_ITEMS_START,
-	LOC_ITEMS_END,
 	LOC_MORE,
 	LOC_HELP_CLEAR,
 	LOC_HELP_PROMPT,
@@ -601,6 +599,9 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 
 		/* Mega-Hack -- Black market sucks */
 		if (this_store == STORE_B_MARKET) price = price / 2;
+
+		/* Check for no_selling option */
+		if (OPT(adult_no_selling)) return (0L);
 	}
 
 	/* Shop is selling */
@@ -1779,29 +1780,30 @@ static void store_display_recalc(menu_type *m)
 	/* Then Y */
 	scr_places_y[LOC_OWNER] = 1;
 	scr_places_y[LOC_HEADER] = 3;
-	scr_places_y[LOC_ITEMS_START] = 4;
 
 	/* If we are displaying help, make the height smaller */
 	if (store_flags & (STORE_SHOW_HELP))
 		hgt -= 3;
 
-	scr_places_y[LOC_ITEMS_END] = hgt - 4;
 	scr_places_y[LOC_MORE] = hgt - 3;
-	scr_places_y[LOC_AU] = hgt - 2;
-
-
-
-	/* If we're displaying the help, then put it with a line of padding */
-	if (!(store_flags & (STORE_SHOW_HELP)))
-	{
-		hgt -= 2;
-	}
-
-	scr_places_y[LOC_HELP_CLEAR] = hgt - 1;
-	scr_places_y[LOC_HELP_PROMPT] = hgt;
+	scr_places_y[LOC_AU] = hgt - 1;
 
 	loc = m->boundary;
-	loc.page_rows = (store_flags & STORE_SHOW_HELP) ? -5 : -1;
+
+	/* If we're displaying the help, then put it with a line of padding */
+	if (store_flags & (STORE_SHOW_HELP))
+	{
+		scr_places_y[LOC_HELP_CLEAR] = hgt - 1;
+		scr_places_y[LOC_HELP_PROMPT] = hgt;
+		loc.page_rows = -5;
+	}
+	else
+	{
+		scr_places_y[LOC_HELP_CLEAR] = hgt - 2;
+		scr_places_y[LOC_HELP_PROMPT] = hgt - 1;
+		loc.page_rows = -2;
+	}
+
 	menu_layout(m, &loc);
 }
 
@@ -2801,33 +2803,23 @@ static void store_examine(int item)
 {
 	store_type *st_ptr = &store[current_store()];
 	object_type *o_ptr;
-	bool info_known;
+
+	char header[120];
+
+	textblock *tb;
+	region area = { 0, 0, 0, 0 };
 
 	if (item < 0) return;
 
 	/* Get the actual object */
 	o_ptr = &st_ptr->stock[item];
 
-	/* Describe it fully */
-	Term_erase(0, 0, 255);
-	Term_gotoxy(0, 0);
-
-	text_out_hook = text_out_to_screen;
-	screen_save();
-
-	object_info_header(o_ptr);
-
 	/* Show full info in most stores, but normal info in player home */
-	info_known = object_info(o_ptr,
-			(current_store() != STORE_HOME) ? OINFO_FULL : OINFO_NONE);
+	tb = object_info(o_ptr, (current_store() != STORE_HOME) ? OINFO_FULL : OINFO_NONE);
+	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
-	if (!info_known)
-		text_out("\n\nThis item does not seem to possess any special abilities.");
-
-	text_out_c(TERM_L_BLUE, "\n\n[Press any key to continue]\n");
-	(void)anykey();
-
-	screen_load();
+	textui_textblock_show(tb, area, header);
+	textblock_free(tb);
 
 	/* Hack -- Browse book, then prompt for a command */
 	if (o_ptr->tval == cp_ptr->spell_book)
@@ -2854,24 +2846,11 @@ void store_menu_set_selections(menu_type *menu)
 	}
 }
 
-void store_menu_redraw(menu_type *m)
-{
-	if (m->count > m->active.page_rows)
-		m->prompt = "  -more-";
-	else
-		m->prompt = NULL;
-}
-
 void store_menu_recalc(menu_type *m)
 {
 	store_type *st_ptr = &store[current_store()];
 
 	menu_setpriv(m, st_ptr->stock_num, st_ptr->stock);
-
-	if (m->count > m->active.page_rows)
-		m->prompt = "  -more-";
-	else
-		m->prompt = NULL;
 }
 
 /*
@@ -3040,6 +3019,7 @@ bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
 
 		/* Display the store */
 		store_display_recalc(m);
+		store_menu_recalc(m);
 		store_redraw();
 
 		return processed;
@@ -3048,14 +3028,14 @@ bool store_menu_handle(menu_type *m, const ui_event_data *event, int oid)
 	return FALSE;
 }
 
-static region store_menu_region = { 1, 4, -1, -1 };
+static region store_menu_region = { 1, 4, -1, -2 };
 static const menu_iter store_menu =
 {
 	NULL,
 	NULL,
 	store_display_entry,
 	store_menu_handle,
-	store_menu_redraw
+	NULL
 };
 
 static const menu_iter store_know_menu =
@@ -3064,7 +3044,7 @@ static const menu_iter store_know_menu =
 	NULL,
 	store_display_entry,
 	NULL,
-	store_menu_redraw
+	NULL
 };
 
 
@@ -3155,14 +3135,14 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 	menu_layout(&menu, &store_menu_region);
 
 	store_menu_set_selections(&menu);
-	store_menu_recalc(&menu);
 	store_flags = STORE_INIT_CHANGE;
 	store_display_recalc(&menu);
+	store_menu_recalc(&menu);
 	store_redraw();
 
 	msg_flag = FALSE;
 	menu_select(&menu, 0);
-	msg_flag = TRUE;
+	msg_flag = FALSE;
 
 	/* Switch back to the normal game view. */
 	event_signal(EVENT_LEAVE_STORE);

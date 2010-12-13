@@ -555,6 +555,10 @@ static enum parser_error parse_a_n(struct parser *p) {
 	parser_setpriv(p, a);
 	a->aidx = idx;
 	a->name = string_make(name);
+
+	/* Ignore all elements */
+	flags_set(a->flags, OF_SIZE, OF_IGNORE_MASK, FLAG_END);
+
 	return PARSE_ERROR_NONE;
 }
 

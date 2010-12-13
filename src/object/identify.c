@@ -449,7 +449,7 @@ void object_notice_everything(object_type *o_ptr)
 	object_add_ident_flags(o_ptr, IDENTS_SET_BY_IDENTIFY);
 
 	/* Artifact has now been seen */
-	if (a_ptr)
+	if (a_ptr && !(o_ptr->ident & IDENT_FAKE))
 	{
 		a_ptr->seen = a_ptr->everseen = TRUE;
 		history_add_artifact(o_ptr->name1, TRUE, TRUE);

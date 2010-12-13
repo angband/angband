@@ -237,9 +237,6 @@ C:1:'
 ?:[EQU $SYS win]
 %:pref-win.prf
 
-?:[EQU $SYS acn]
-%:pref-acn.prf
-
 ?:[EQU $SYS sdl]
 %:pref-sdl.prf
 

@@ -17,9 +17,7 @@
  */
 #include "angband.h"
 
-#ifndef RISCOS
-# include <sys/types.h>
-#endif
+#include <sys/types.h>
 
 #ifdef WINDOWS
 # include <windows.h>
@@ -111,18 +109,8 @@ void safe_setuid_grab(void)
  */
 static void path_parse(char *buf, size_t max, cptr file)
 {
-#ifndef RISCOS
-
 	/* Accept the filename */
 	my_strcpy(buf, file, max);
-
-#else /* RISCOS */
-
-	/* Defined in main-ros.c */
-	char *riscosify_name(const char *path);
-	my_strcpy(buf, riscosify_name(path), max);
-
-#endif /* !RISCOS */
 }
 
 
@@ -332,8 +320,6 @@ bool file_exists(const char *fname)
 
 #endif
 
-#ifndef RISCOS
-
 /*
  * Return TRUE if first is newer than second, FALSE otherwise.
  */
@@ -354,8 +340,6 @@ bool file_newer(const char *first, const char *second)
 	return FALSE;
 #endif /* !HAVE_STAT */
 }
-
-#endif /* RISCOS */
 
 
 

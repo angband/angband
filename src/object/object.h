@@ -2,6 +2,7 @@
 #define INCLUDED_OBJECT_H
 
 #include "angband.h"
+#include "z-textblock.h"
 
 /** Maximum number of scroll titles generated */
 #define MAX_TITLES     50
@@ -55,7 +56,8 @@ typedef enum
 	OINFO_TERSE  = 0x01, /* Keep descriptions brief, e.g. for dumps */
 	OINFO_SUBJ   = 0x02, /* Describe object from the character's POV */
 	OINFO_FULL   = 0x04, /* Treat object as if fully IDd */
-	OINFO_DUMMY  = 0x08  /* Object does not exist (e.g. knowledge menu) */
+	OINFO_DUMMY  = 0x08, /* Object does not exist (e.g. knowledge menu) */
+	OINFO_EGO    = 0x10, /* Describe ego random powers */
 } oinfo_detail_t;
 
 
@@ -148,11 +150,11 @@ size_t object_desc(char *buf, size_t max, const object_type *o_ptr, odesc_detail
 /* obj-info.c */
 extern const slay_t slay_table[];
 size_t num_slays(void);
-void object_info_header(const object_type *o_ptr);
 
-bool object_info(const object_type *o_ptr, oinfo_detail_t mode);
-bool object_info_chardump(const object_type *o_ptr);
-bool object_info_spoil(const object_type *o_ptr);
+textblock *object_info(const object_type *o_ptr, oinfo_detail_t mode);
+textblock *object_info_ego(struct ego_item *ego);
+void object_info_spoil(ang_file *f, const object_type *o_ptr, int wrap);
+void object_info_chardump(ang_file *f, const object_type *o_ptr, int indent, int wrap);
 
 /* obj-make.c */
 void free_obj_alloc(void);

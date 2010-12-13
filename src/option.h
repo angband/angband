@@ -76,6 +76,7 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_animate_flicker         66
 #define OPT_show_piles				67
 #define OPT_center_player			68
+#define OPT_purple_uniques			69
 #define OPT_xchars_to_file			70
 #define OPT_auto_more			71
 #define OPT_hp_changes_color		74
@@ -94,9 +95,10 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_birth_no_artifacts      (OPT_BIRTH+5)
 #define OPT_birth_no_stacking       (OPT_BIRTH+6)
 #define OPT_birth_no_preserve       (OPT_BIRTH+7)
-#define OPT_birth_no_stairs			(OPT_BIRTH+8)
-#define OPT_birth_feelings				(OPT_BIRTH+9)
-/* leave four spaces for future */
+#define OPT_birth_no_stairs	    (OPT_BIRTH+8)
+#define OPT_birth_no_feelings	    (OPT_BIRTH+9)
+#define OPT_birth_no_selling 	    (OPT_BIRTH+10)
+/* leave spaces for future */
 #define OPT_birth_ai_sound			(OPT_BIRTH+13)
 #define OPT_birth_ai_smell			(OPT_BIRTH+14)
 #define OPT_birth_ai_packs			(OPT_BIRTH+15)
@@ -119,9 +121,10 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_adult_no_artifacts      (OPT_ADULT+5)
 #define OPT_adult_no_stacking       (OPT_ADULT+6)
 #define OPT_adult_no_preserve       (OPT_ADULT+7)
-#define OPT_adult_no_stairs			(OPT_ADULT+8)
-#define OPT_adult_feelings				(OPT_ADULT+9)
-/* leave four spaces for future */
+#define OPT_adult_no_stairs 	    (OPT_ADULT+8)
+#define OPT_adult_no_feelings	    (OPT_ADULT+9)
+#define OPT_adult_no_selling	    (OPT_ADULT+10)
+/* leave spaces for future */
 #define OPT_adult_ai_sound			(OPT_ADULT+13)
 #define OPT_adult_ai_smell			(OPT_ADULT+14)
 #define OPT_adult_ai_packs			(OPT_ADULT+15)

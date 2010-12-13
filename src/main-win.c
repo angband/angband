@@ -181,6 +181,7 @@
 #define IDM_OPTIONS_GRAPHICS_OLD    401
 #define IDM_OPTIONS_GRAPHICS_ADAM   402
 #define IDM_OPTIONS_GRAPHICS_DAVID  403
+#define IDM_OPTIONS_GRAPHICS_NOMAD  404
 #define IDM_OPTIONS_GRAPHICS_NICE   405
 #define IDM_OPTIONS_TRPTILE         407
 #define IDM_OPTIONS_DBLTILE         408
@@ -835,6 +836,14 @@ static void term_getsize(term_data *td)
                   td->tile_hgt = 16;
                   break;
                 }
+
+              case GRAPHICS_NOMAD:
+                {
+                  /* Reset the tile info */
+                  td->tile_wid = 8;
+                  td->tile_hgt = 16;
+                  break;
+                }
                 
               case GRAPHICS_ORIGINAL:
                 {
@@ -1378,6 +1387,18 @@ static bool init_graphics(void)
 			mask = "mask.bmp";
 
 			ANGBAND_GRAF = "new";
+
+			use_transparency = TRUE;
+		}
+		else if (arg_graphics == GRAPHICS_NOMAD)
+		{
+			wid = 16;
+			hgt = 16;
+
+			name = "8X16.BMP";
+			mask = "mask8x16.bmp";
+
+			ANGBAND_GRAF = "nomad";
 
 			use_transparency = TRUE;
 		}
@@ -2417,6 +2438,7 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 	hbmSrcOld = SelectObject(hdcSrc, infGraph.hBitmap);
 
 	if ((arg_graphics == GRAPHICS_ADAM_BOLT) ||
+		(arg_graphics == GRAPHICS_NOMAD) ||
 	    (arg_graphics == GRAPHICS_DAVID_GERVAIS))
 	{
 		hdcMask = CreateCompatibleDC(hdc);
@@ -2442,6 +2464,7 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 		y1 = row * h1;
 
 		if ((arg_graphics == GRAPHICS_ADAM_BOLT) ||
+			(arg_graphics == GRAPHICS_NOMAD) ||
 		    (arg_graphics == GRAPHICS_DAVID_GERVAIS))
 		{
 			x3 = (tcp[i] & 0x7F) * w1;
@@ -2510,6 +2533,7 @@ static errr Term_pict_win(int x, int y, int n, const byte *ap, const char *cp, c
 	DeleteDC(hdcSrc);
 
 	if ((arg_graphics == GRAPHICS_ADAM_BOLT) ||
+		(arg_graphics == GRAPHICS_NOMAD) ||
 	    (arg_graphics == GRAPHICS_DAVID_GERVAIS))
 	{
 		/* Release */
@@ -3004,6 +3028,8 @@ static void setup_menus(void)
 	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 	EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_ADAM,
 	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
+	EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NOMAD,
+	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
 	EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_DAVID,
 	               MF_BYCOMMAND | MF_DISABLED | MF_GRAYED);
         EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE,
@@ -3033,6 +3059,8 @@ static void setup_menus(void)
 	              (arg_graphics == GRAPHICS_ORIGINAL ? MF_CHECKED : MF_UNCHECKED));
 	CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS_ADAM,
 	              (arg_graphics == GRAPHICS_ADAM_BOLT ? MF_CHECKED : MF_UNCHECKED));
+	CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS_NOMAD,
+	              (arg_graphics == GRAPHICS_NOMAD ? MF_CHECKED : MF_UNCHECKED));
 	CheckMenuItem(hm, IDM_OPTIONS_GRAPHICS_DAVID,
 	              (arg_graphics == GRAPHICS_DAVID_GERVAIS ? MF_CHECKED : MF_UNCHECKED));
 
@@ -3060,6 +3088,7 @@ static void setup_menus(void)
 		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NONE, MF_ENABLED);
 		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_OLD, MF_ENABLED);
 		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_ADAM, MF_ENABLED);
+		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NOMAD, MF_ENABLED);
 		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_DAVID, MF_ENABLED);
 		EnableMenuItem(hm, IDM_OPTIONS_GRAPHICS_NICE, MF_ENABLED);
 		EnableMenuItem(hm, IDM_OPTIONS_TRPTILE, MF_ENABLED);
@@ -3641,6 +3670,30 @@ static void process_menus(WORD wCmd)
 			if (arg_graphics != GRAPHICS_ADAM_BOLT)
 			{
 				arg_graphics = GRAPHICS_ADAM_BOLT;
+
+				/* React to changes */
+				Term_xtra_win_react();
+
+				/* Hack -- Force redraw */
+				Term_key_push(KTRL('R'));
+			}
+
+			break;
+		}
+
+		case IDM_OPTIONS_GRAPHICS_NOMAD:
+		{
+			/* Paranoia */
+			if (!inkey_flag || !initialized)
+			{
+				plog("You may not do that right now.");
+				break;
+			}
+
+			/* Toggle "arg_graphics" */
+			if (arg_graphics != GRAPHICS_NOMAD)
+			{
+				arg_graphics = GRAPHICS_NOMAD;
 
 				/* React to changes */
 				Term_xtra_win_react();

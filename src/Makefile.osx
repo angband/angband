@@ -133,7 +133,7 @@ ICONFILES = osx/Angband.icns osx/Save.icns osx/Edit.icns osx/Data.icns
 PLIST = osx/Angband.xml
 
 GRAPHSRC=../lib/xtra/graf/
-TILES = $(GRAPHSRC)8x8.png $(GRAPHSRC)16x16.png $(GRAPHSRC)32x32.png
+TILES = $(GRAPHSRC)8x8.png $(GRAPHSRC)8x16.png $(GRAPHSRC)16x16.png $(GRAPHSRC)32x32.png
 
 LIBFILES = \
   ../lib/edit/*.txt \
