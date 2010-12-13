@@ -1,7 +1,7 @@
 The Angband FAQ
 
-Posted every other month on rec.games.roguelike.angband and kept 
-up-to-date on the forum [http://angband.oook.cz/forum].
+The best way to get answers to your questions is to post them on the 
+forum [http://angband.oook.cz/forum].
 
 1. Issues and problems
 	a. How do I report a bug?
@@ -10,8 +10,8 @@ up-to-date on the forum [http://angband.oook.cz/forum].
 	d. I want old-school '#'s as wall tiles, not solid blocks!
 	e. I use Vista and my display is messed up.
 	f. I play in the console on Linux, and the colours are screwed up.
-	g. I'm playing in a terminal and the Escape key isn't working as it should
-           - I have to press it twice, or just wait a while.
+	g. I'm playing in a terminal and the Escape key isn't working as it
+           should - I have to press it twice, or just wait a while.
 	h. Is there a way to disable that thing that pops up when you hit the
            enter key?
 
@@ -30,9 +30,9 @@ First of all, go to http://trac.rephial.org/wiki and use one or more of
 the links there to see if your bug has been reported already.
 
 If you can't find it there, you're best off posting on the forum or the 
-newsgroup; if it's been reported (several) already, you will get replies 
-sounding more annoyed as the number of times it's been previously 
-reported goes up, but so life goes.
+newsgroup: if it's been reported already, you will get replies sounding 
+more annoyed as the number of times it's been previously reported goes 
+up, but so life goes.
 
 Bug reports should *always* include your current operating system (e.g. 
 Windows XP), what version the problem appeared in, and the best steps 
@@ -58,7 +58,8 @@ http://angband.oook.cz/forum/showthread.php?t=26
 
 1f. I play in the console on Linux, and the colours are screwed up.
 
-Please see http://angband.oook.cz/forum/showthread.php?t=77
+It's very likely that your console is not set to display 256 colours. [Use
+256-colour invocation from d_m]
 
 1g. I'm playing in a terminal and the Escape key isn't working as it 
 should - I have to press it twice, or just wait a while.
@@ -79,7 +80,7 @@ And then you'll probably want to choose to "Append keymaps to a file" so
 that it persists for next time you load the game.
 
 This just replaces the default action of Enter with a "do nothing but 
-don't tell me about help" action.  If you want to keep the menu 
+don't tell me about help" action. If you want to keep the menu 
 available, say on the 'Tab' key, you can also remap the Tab keypress to 
 the '\n' action.
 
@@ -87,7 +88,8 @@ the '\n' action.
 
 2a. What are the current plans for the game?
 
-Ever-changing and subject to U-turning with public dissent.
+Ever-changing and subject to U-turning with public dissent. See 
+http://trac.rephial.org/roadmap
 
 2b. How do I suggest an idea/feature?
 
@@ -96,29 +98,20 @@ idea, it will generally get some discussion; if they don't, it won't.
 The developers keep an eye on r.g.r.a and the forums, and ideas deemed 
 OK will get filed for future implementation.
 
-Sometimes a suggestion may not be right for the game, thougn. Some 
+Sometimes a suggestion may not be right for the game, though. Some 
 suggestions would change aspects of Angband that are essential to its 
 nature; Angband has a long history, and so has developed a certain 
 character over the years.  Some suggestions might make a good game, 
 perhaps even a better game than Angband, but would make a game that is 
-not Angband.  To some extent, variants exist to address this, but even 
+not Angband. To some extent, variants exist to address this, but even 
 so they tend to adhere to the core Angband principles.
 
 2c. How do I get a copy of the source code?
 
-It depends what you want it for.  If you want to start a new variant, 
-you may want to start with the last stable release of the game (maybe 
-3.0.9, for example).  If you're more interested in hacking on Vanilla 
-Angband, then you really want to get hold of the latest development 
-version.  Luckily, both are easy.
+The latest release's source is linked to from the page http://rephial.org/.
 
-The latest version's source is linked to from the page http://rephial.org/.
-
-To get the SVN trunk, get Subversion [http://subversion.tigris.org/] for 
-your system, and checkout the repository 
-"http://rephial.org/angband/trunk/".  On the commandline, this would be 
-done like so: "svn co http://rephial.org/angband/trunk".  You'd do well 
-to read a Subversion primer, too.
+To get the bleeding-edge development code, clone the git repository at 
+git://github.com/angband/angband.git
 
 2d. How do I compile the game?
 
@@ -127,24 +120,24 @@ Please see http://rephial.org/wiki/Compiling for an up-to-date guide to this.
 2e. How do I contribute to the game?
 
 First, join the mailing list 
-[http://angband.oook.cz/mailman/listinfo/angband-dev].
+[http://angband.oook.cz/mailman/listinfo/angband-dev] and/or drop by
+#angband-dev on freenode IRC.
 
 If you already have a patch you want to be included, please send it to 
-the mailing list in the form of a unified diff against either the SVN 
-trunk (e.g. using svn diff) or the latest public release.  Please be 
+the mailing list in the form of a unified diff against either the git master
+branch (e.g. using git diff) or the latest public release. Please be 
 careful to follow the Angband coding guidelines 
-[http://rephial.org/wiki/CodingGuidelines].  All contributions to 
+[http://trac.rephial.org/wiki/CodingGuidelines]. All contributions to 
 individual files are accepted under the licences used in the file 
-header.  Make sure you're OK with this before sending in patches.
+header. Make sure you're OK with this before sending in patches.
 
 If the patch is a bugfix, then you can reasonably expect it to be 
 integrated into the development tree. If it's more involved, and the 
 feature is not one that the next version is planned to have, the patch 
 may go through several reviews before being incorporated. It may also 
-just be unsuitable for Angband—in which case, please don't take 
+just be unsuitable for Angband - in which case, please don't take 
 rejection badly; you may just be better off writing a variant.
 
 Non-code activites are different. Documentation can be written on the 
 wiki, or if you're a graphics designer (and they're always welcome) then 
 please talk on the mailing list about your work.
-
