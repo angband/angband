@@ -1,23 +1,32 @@
-Angband 3.1.3
+Angband 3.2.0
 =============
 
-We, the Angband development team, are proud to present the latest iteration
-of the game, in the form of Angband 3.1.3.  Like other releases in the 3.1.x
-series, this is a beta, though it should be less buggy than other 3.1.x
-releases have been.  Doubtless there will be another release in a few weeks
-time fixing the bugs found herein, but in the meantime, play.
+We, the Angband development team, are proud to present the latest 
+iteration of the game, in the form of Angband 3.2.0. Although this 
+version is the conclusion of a lot of work in the 3.1.x series, Angband 
+continues to evolve and many further changes are planned (and some are 
+in progress). This version is not entirely bug-free but hopefully 
+contains no showstoppers. Doubtless there will be another release in a 
+few weeks time fixing the bugs found herein, but in the meantime, play.
 
-This release was brought to you by (in no particular order): Eddie 
-Grove, Chris Carr, William Moore, Erik Osheim, Peter Denison, Thomas Dedorson,
-AnonymousHero and Andi Sidwell. Other people may have contributed too; 
-if you're missed off here, please file a bug at http://trac.rephial.org 
-:)
+This release was brought to you by (in alphabetical order of IRC 
+nickname): Aerdan, Antony Sidwell, Erik Osheim, Elly, Aaron Bader, 
+Lebannen, Chris Carr, William Moore, Peter Denison and Andi Sidwell. 
+With special thanks to Eddie Grove for challenging us to do better and 
+helping us get there. Please see the file thanks.txt for a full list of 
+contributors.
 
 Gameplay changes
 ================
  #527 Add monster light
+ #716 Improve rings of Mouse and Dog
+ #731 Add no_selling option with triple gold drops
  #759 Enable multiple barehand blows (to see effects of STR/DEX at birth)
  #951 Increase base AC on armour; differentiate DSMs; allow ego DSMs
+ #987 Melee blows now determined by "energy per blow" instead of "blows per
+round", aka "fractional blows"
+#1008 Resistances reduce inventory damage (also #1183)
+#1072 Remove CLW spell from rogues and magi
 #1132 Brightness property preserved when refueling torches
 #1140 Allow selling unidentified weapons to the temple so long as they are
       known blessed
@@ -30,12 +39,18 @@ r1982 Ranged multipliers add (x3 bow with x3 slay is x6 not x9)
 r1984 Maximum device failure rate lowered to 75%
 r1985 Items in the quiver can now be destroyed by acid/fire
 r1986 DSM activation times reduced to 50
+r2024 Significantly improved balancing of item drops 
+r2030 Remove birth_money option
       Various changes to randarts: off-weapon blows/shots/slays/brands less
-common, speed more common on boots, multiple brands/slays rated higher
+common, speed more common on boots, multiple brands/slays rated higher, speed
+rated consistently
+      Significant changes to vaults and special rooms (pits, nests etc.)
 
 User interface
 ==============
  #256 Allow review of store and home contents via the knowledge menu
+ #865 Add a pager for viewing output longer than one screen
+#1092 Added option to display unique monsters in pale purple
 #1119 Display burden in the inven term window, and show lbs remaining instead
       of percent capacity
 #1140 Money is type squelchable through the squelch menu (= s o)
@@ -44,10 +59,23 @@ r1971 Make summoning traps light blue
 r1981 Coloured messages
 r1999 Make ATTR_MULTI use the full range of colours
 r2003 Add ATTR_FLICKER to make monsters shimmer in real time (optional!)
+r2026 Allow quality squelching of DSM
+      Added support for extended character sets ("xchars")
+      Added support for expanded graphics tiles ("bigtile")
+      Revised monster colours
+      Added warning that -n switch will lose existing character unless -u is
+used in conjunction with it
+      Added Nomad's 8x16 tiles
+      Various improvements and fixes to the GTK port
 
 List of bugs fixed
 ==================
+ #862 Fix inscription parsing in stores
+ #938 Fix non-maximise mode
+ #979 Prevent leakage of information about artifact flavours
 #1058 Fix energy problems on game loading
+#1071 Do not allow unIDd items to stack with identical IDd items in the object
+      list 
 #1075 Make -r option work properly again
 #1106 The psychic warriors bug (mana displayed for warriors)
 #1122 Fix a display bug with the number of dropped items in the home
@@ -59,27 +87,48 @@ List of bugs fixed
       items which are squelched by the option with Yes*
 #1133 Do not mark object flavors {tried} on device activation failure
 #1138 Fix the cost and nutrition on Potions of *Healing*
+#1139 Fix repeating actions from actions menu
 #1140 Allow selling of Potions of Dragon Breath
 #1140 Do not display pvals for known flavors before use/ID
 #1142 Fix 100% CPU problem with x11 mode
 #1143 Fix darkness effect 
 #1144 Fix timed effect increase messages
 #1154 Fix an issue with the message for addtional str/dex to get extra blows
+#1160 Fix memory leak
 #1167 Fix preserve off mode
 #1170 Ensure history captures all clev gains
 #1177 Fix duplication of slay info when inspecting weapons
+#1181 Make General Store only buy known items
+#1184 Fix level feelings
+#1185 Print hit messages when unarmed
+#1189 Show correct slay/brand damage when inspecting melee weapons
+#1190 Fix "bad" quality squelch
+#1195 Allow selling blessed diggers in the Temple
+#1201 Prevent ammo leaking info about launcher brands/slays
+#1209 Add safety check for artifacts with activiation but no message
 r1943 Potions of life should repair CON before hp
 r1972 Fix bug when running with 100% searching
 r1983 Fix divide-by-zero crash on device activation
 r1996 Make remove curse affect items in the quiver
+      Make the -u switch work properly
 
 Coding changes
 ==============
+  #55 Introduction of unit tests
 #1102 Major bitflag rewrite
+#1121 Remove spurious bools from main-sdl.c
 r2005 Allow wizmode tweaking to specify artifact or ego type (name1/name2)
+      Destroy init1.c and salt the earth around its cities
+      Completely rewritten edit file parsers
+      Significant refactoring, removing or consolidating many globals
+      Partial rewrite of input layer and command handling
+      Added new WELL1024 RNG
+      Move to C99 compilation standards
+      More flexible quantity specification in edit files (A+BdCMD)
+      Remove the RISC OS port
 
 Documentation changes
 =====================
 r1973 Remove obsolete references to class restrictions
 r2012 Include power rating in artifact spoiler
-
+      Substantial rewriting and update of in-game help files
