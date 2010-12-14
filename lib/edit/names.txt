@@ -5,6 +5,55 @@
 # Do not modify this file unless you know exactly what you are doing
 # unless you wish to risk possible system crashes and broken savefiles.
 
+# The code *doesn't* pick a name randomly from this list. What it does 
+# is build up a set of probabilities based on the list. For example, if 
+# your list has...
+
+# aaron
+# alice
+# bob
+# fred
+
+# The code will read this and decide that the start letter is:
+
+# A (50% chance)
+# B (25% chance)
+# F (25% chance)
+
+# It will also determine that an 'a' has a 33% chance of being followed 
+# by another 'a' (as in "aaron"), a 33% chance of being followed by an 
+# 'r' (as in "aaron", and a 33% chance of being followed by an "l" (as 
+# in "alice")
+
+# A 'b' has a 50% chance of being followed by an "o" (as in "bob") and a 
+# 50% chance of ending the word (as in "bob").
+
+# A 'c' is always followed by an 'e' (as in "alice").
+
+# And so forth...
+
+# So when it wants to produce a random name, it starts by picking a 
+# random starting letter from its list (based on their chances), and 
+# then keeps adding another random letter based on the chances of the 
+# current last letter until it gets to a word end.
+
+# With just a few words, it's rubbish. With that short list of four 
+# names it would always follow an 'l' with an 'i' and an 'i' with a 'c' 
+# and a 'c' with an 'e', for example. But with lots of words to use as a 
+# basis for its probabilities - particularly since those words will show 
+# various common letter patterns (i.e. syllables), it's remarkably good 
+# at coming up with words that look as though they should be real words 
+# in the language that the list was written in.
+
+# For example, the main list in this file is a list of names of Tolkien 
+# characters. Based on these, the code comes up with random names that 
+# also sound plausibly Tolkien-ish.
+
+# If you put in a big list of English boys' names, it would come up with 
+# random names that sound like they could be English boys' names. If you 
+# put in Latin words, it would come up with words that sound Latin (as 
+# it does when choosing the text for scrolls).
+
 # Format:
 # N: section type (1 for Tolkeinish names, 2 for scroll names)
 # D: data
