@@ -29,12 +29,16 @@ Inventory list (i)
         true of things like potions, scrolls, and food, but you may have
         to set options to allow wands, staves, and other such objects to
         stack.  Each object has a weight, and if you carry more objects
-        than your strength permits, you will begin to slow down.  The amount of weight you can still carry without being overencumbered, or the amount of extra weight you are currently carrying is displayed at the top of the screen.
+        than your strength permits, you will begin to slow down.  The amount 
+        of weight you can still carry without being overencumbered, or the 
+        amount of extra weight you are currently carrying is displayed at 
+        the top of the screen.
  
 Equipment list (e)
         Use this command to display a list of the objects currently being
-        used by your character.  Your character has 12 slots for equipment and 10 slots for ammunition (the quiver),
-        Each equipment slot corresponds to a different location on the body, and each of
+        used by your character.  Your character has 12 slots for equipment 
+        and 10 slots for ammunition (the quiver).  Each equipment slot 
+        corresponds to a different location on the body, and each of
         which may contain only a single object at a time, and each of which
         may only contain objects of the proper "type", and which include
         WIELD (weapon), BOW (missile launcher), LEFT (ring), RIGHT (ring),
@@ -105,8 +109,10 @@ Walk (flip pickup/disarm/open) (-)
         option is inverted.  In other words, if you normally pick up
         anything you encounter (the default), you will not pick things up
         when using this command.  If you normally do not pick things up,
-        you will when using this command.  Similarly if you normally disarm a known trap on movement, you will not disarm, and if you normally open a closed door you will instead walk into it.  This command may take a count,
-        requires a direction, and takes some energy.
+        you will when using this command.  Similarly if you normally disarm 
+        a known trap on movement, you will not disarm, and if you normally 
+        open a closed door you will instead walk into it.  This command may 
+        take a count, requires a direction, and takes some energy.
 
 Run (.) or Run (,)
         This command will move in the given direction, following any bends
@@ -169,12 +175,12 @@ Rest (R)
 Search (s)
         This command can be used to locate hidden traps and secret doors
         in the spaces adjacent to the player.  More than a single turn of
-        searching will be required in most cases, so it is affected by the 'always repeat' option.  You should always
-        search a chest before trying to open it, since they are generally
-        trapped.  This command can take a count, which is useful if you
-        are fairly sure of finding something eventually, since the command
-        stops as soon as anything is found.  This command may take a count,
-        and takes some energy.
+        searching will be required in most cases, so it is affected by the
+        'always repeat' option.  You should always search a chest before 
+        trying to open it, since they are generally trapped.  This command 
+        can take a count, which is useful if you are fairly sure of finding 
+        something eventually, since the command stops as soon as anything 
+        is found.  This command takes some energy.
 
 Toggle search mode (S) or Toggle search mode (#)
         This command will take you into and out of search mode.  When
@@ -206,7 +212,8 @@ Open a door or chest (o)
         command.  If the object is locked, you will attempt to pick the
         lock based on your disarming ability.  If you open a trapped chest
         without disarming the traps first, the trap will be set off.  Some
-        doors will be jammed shut and may have to be forced open.  Opening will automatically attempt to pick any lock doors.  You may
+        doors will be jammed shut and may have to be forced open.  Opening 
+        will automatically attempt to pick any lock doors.  You may
         need several tries to open a door or chest.  This command may take
         a count, is affected by the "always_repeat" option, requires a
         direction, and takes some energy.
@@ -285,9 +292,11 @@ Cast a spell (m)
         large but decreases as you gain levels.  If you don't have enough
         mana to cast a spell, you will be prompted for confirmation.  If
         you decide to go ahead, the chance of failure is greatly increased,
-        and you may wind up paralyzed for several turns.  Since you must read the
-        spell from a book, you cannot be blind or confused while casting,
-        and there must be some light present.  This command takes some energy.
+        and you may wind up paralyzed for several turns.  Since you must read
+        the spell from a book, you cannot be blind or confused while casting,
+        and there must be some light present.  This command takes some energy:
+        the higher your level, the less it takes, but the higher the spell
+        level, the more it takes. 
 
 Pray a prayer (p)
         To pray effectively, you must have previously learned the prayer
@@ -299,7 +308,8 @@ Pray a prayer (p)
         is greatly increased, and you may lose a point of constitution.
         Since you must read the prayer from a book, you cannot be blind
         or confused while praying, and there must be some light present.
-        This command takes some energy.
+        This command takes some energy - as with spells, higher caster
+        level means less energy used, but higher spell level means more. 
 
 --- Object Manipulation Commands ---
 
@@ -413,14 +423,19 @@ Zap a rod (z) or Activate a rod (a)
 --- Throwing and Missile Weapons ---
 
 Fire an item (f) or Fire an item (t)
-        This command will fire a will allow you to fire a missile from either your quiver or your inventory provided it is the appropriate ammunition for the current BOW you have equipped.  You may not fire an item without a BOW equipped.  Fired ammunition has a chance of breaking.  This command takes some energy.
+        This command will fire a will allow you to fire a missile from either
+        your quiver or your inventory provided it is the appropriate 
+        ammunition for the current BOW you have equipped.  You may not fire 
+        an item without a BOW equipped.  Fired ammunition has a chance of 
+        breaking.  This command takes some energy.
 
 Fire default ammo at nearest (h) or (TAB)
         If you have a missile weapon equipped and the appropriate ammunition
         in your quiver, you can use this command to fire at the nearest
         visible enemy. This command will cancel itself if you lack a
         launcher, ammunition or a visible target that is in range. The 
-        first ammunition of the correct type found in the quiver is used.  This command takes some energy.
+        first ammunition of the correct type found in the quiver is used. 
+        This command takes some energy.
 
 Throw an item (v)
         You may throw any object carried by your character.  Depending on
@@ -508,14 +523,17 @@ Look around (l) or Examine things (x)
         monster race, or "q" or escape to stop looking around.  You always
         start out looking at "yourself".
 
-Observe an item (I)
-        This command lets you observe a previously *identified* item.
-        This will tell you things about the special powers of the object,
-        as well as attack information for weapons.  It will also tell you what resistances or abilities you have noticed for the item and if you have not yet completely identified all properties.
+Inspect an item (I)
+        This command lets you inspect an item. This will tell you things 
+        about the special powers of the object, as well as attack information
+        for weapons.  It will also tell you what resistances or abilities 
+        you have noticed for the item and if you have not yet completely 
+        identified all properties.
         
 List visible monsters ([)
         This command lists all monsters that are visible to you, telling you
-        how many there are of each kind.
+        how many there are of each kind. It also tells you whether they are 
+        asleep, and where they are (relative to you). 
 
 List visible items (])
         This command lists all items that are visible to you, telling you
@@ -654,6 +672,10 @@ Game Version (V)
         This command will tell you what version of Angband you are using.
         For more information, see the "version.txt" help file.
 
+Command lists (Enter)
+        This brings up a little window in the middle of the screen, in which
+        you can select what command you would like to use by browsing. 
+        Useful for beginners.
 
 --- Extra Commands ---
 

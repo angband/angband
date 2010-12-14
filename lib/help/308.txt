@@ -8,20 +8,7 @@ importing savefiles to make sure that the AI and scumming options are as you
 want them for the entire game!
 
 
-Since the manual is being updated wholesale for the next release of Angband,
-here's a quick rundown of new features in this version of the game:
 
-New commands
-------------
-
-Display monster list ('[')
-  This command displays a list of currently-visible monsters in a one-column
-  display on the main terminal.  It was suggested it might be useful for blind
-  users.
-
-Command lists ("Enter" key)
-  This brings up a little window in the middle of the screen, in which you can
-  select what command you would like to use by browsing.  Useful for beginners.
 
 
 Gameplay changes
