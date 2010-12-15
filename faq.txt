@@ -56,10 +56,11 @@ intensity with r(ed)g(reen)b(lue).
 Please see http://angband.oook.cz/forum/showthread.php?t=88 and 
 http://angband.oook.cz/forum/showthread.php?t=26
 
-1f. I play in the console on Linux, and the colours are screwed up.
+1f. I play in a terminal on *nix, and the colours are screwed up.
 
 It's very likely that your console is not set to display 256 colours. Try
-"set TERM=xterm-256color" before starting angband.
+setting the TERM environment variable to "xterm-256color" in your shell
+before starting angband (in bash this is "export TERM=xterm-256color").
 
 1g. I'm playing in a terminal and the Escape key isn't working as it 
 should - I have to press it twice, or just wait a while.
