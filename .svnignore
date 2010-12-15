@@ -1,6 +1,0 @@
-*.d
-*.o
-*/.depend
-.depend-done
-src/autoconf.h*
-mk/rules.mk
