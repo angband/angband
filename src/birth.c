@@ -411,7 +411,7 @@ static void get_ahw(void)
 /*
  * Get the player's starting money
  */
-static void get_money(int stat_use[A_MAX])
+static void get_money(void)
 {
 /*	if (OPT(birth_money))
 	{
@@ -1151,9 +1151,6 @@ void player_birth(bool quickstart_allowed)
 			/* Get a new character */
 			get_stats(stats);
 
-			/* Roll for gold */
-			get_money(stats);
-
 			/* Update stats with bonuses, etc. */
 			get_bonuses();
 
@@ -1238,6 +1235,9 @@ void player_birth(bool quickstart_allowed)
 	message_add("====================", MSG_GENERIC);
 	message_add("  ", MSG_GENERIC);
 	message_add(" ", MSG_GENERIC);
+
+	/* Give the player some money */
+	get_money();
 
 	/* Outfit the player, if they can sell the stuff */
 	if (!OPT(adult_no_selling)) player_outfit(p_ptr);
