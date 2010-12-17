@@ -1,19 +1,17 @@
-Welcome to the Angband Online Help System.
-
 Please choose one of the following online help files:
-    (k) README for Angband 3.2     (320.txt)
+    (l) README for Angband 3.2     (320.txt)
 
-    (a) General Information        (general.txt)
-    (b) Creating a Character       (birth.txt)
-    (c) Exploring the Dungeon      (dungeon.txt)
-    (d) Attacking Monsters         (attack.txt)
-    (e) Playing the Game           (playing.txt)
-    (f) Command Descriptions       (command.txt)
-    (g) Option Descriptions        (option.txt)
-    (h) Version Information        (version.txt)
-    (i) Spoiler Menu (if any)      (spoiler.hlp)
-    (j) User Menu (if any)         (user.hlp)
-
+    (a) General information        (general.txt)
+    (b) Creating a character       (birth.txt)
+    (c) Exploring the dungeon      (dungeon.txt)
+    (d) Attacking monsters         (attack.txt)
+    (e) Playing the game           (playing.txt)
+    (f) Command descriptions       (command.txt)
+    (g) Option descriptions        (option.txt)
+    (h) Customising the game       (customize.txt)
+    (i) Historic information       (version.txt)
+    (j) Spoiler menu (if any)      (spoiler.hlp)
+    (k) User menu (if any)         (user.hlp)
 
 Browser/help commands:
   #     go to line         %  go to file         ?  go to last file/main menu
@@ -27,7 +25,8 @@ Browser/help commands:
 ***** [e] playing.txt
 ***** [f] command.txt
 ***** [g] option.txt
-***** [h] version.txt
-***** [i] spoiler.hlp
-***** [j] user.hlp
-***** [k] 320.txt
+***** [h] customize.txt
+***** [i] version.txt
+***** [j] spoiler.hlp
+***** [k] user.hlp
+***** [l] 320.txt
