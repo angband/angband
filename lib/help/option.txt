@@ -1,20 +1,21 @@
 === Option Descriptions ===
 
-Most of the "options" are accessible through the '=' command, which provides
-an interface to the various "sets" of options available to the player.
+Options are accessible through the '=' command, which provides an 
+interface to the various sets of options available to the player.
 
 In the decriptions below, each option is listed as the textual summary
 which is shown on the "options" screen, plus the internal name of the
 option in brackets, followed by a textual description of the option.
 
-Note that the internal name of the option can be used in user pref files
-to force the option to a given setting, see "command.txt" for more info.
+Note that the internal name of the option can be used in user pref files 
+to force the option to a given setting, see "customize.txt" for more 
+info.
 
-Various concepts are mentioned in the descriptions below, including "disturb",
-(cancel any running, resting, or repeated commands, which are in progress),
-"flush" (forget any keypresses waiting in the keypress queue, including any
-macros in progress), "fresh" (dump any pending output to the screen), and
-"sub-windows" (see below).
+Various concepts are mentioned in the descriptions below, including 
+"disturb", (cancel any running, resting, or repeated commands, which are 
+in progress), "flush" (forget any keypresses waiting in the keypress 
+queue, including any macros in progress), "fresh" (dump any pending 
+output to the screen), and "sub-windows" (see below).
 
 
 === Interface options ===
@@ -37,27 +38,38 @@ Use old target by default    [use_old_target]
 ***** <pickup_inven>
 Always pickup items                           [pickup_always]
 Always pickup items matching inventory        [pickup_inven]
-     If pickup_always is on, all items are always picked up, providing it is
-     safe to do so.  If pickup_inven is on, then items matching those in your
-     inventory are always picked up.
+    If pickup_always is on, all items are always picked up, providing it is
+    safe to do so.  If pickup_inven is on, then items matching those in your
+    inventory are always picked up.
 
 ***** <pickup_detail>
 Be verbose when picking things up             [pickup_detail]
-     If this is off, you get a one-line description of the objects or piles on
-     the floor after the other pickup options have acted.  If this option is
-     on, you get a full list for more than one item, including weights.
+    If this is off, you get a one-line description of the objects or piles on
+    the floor after the other pickup options have acted.  If this option is
+    on, you get a full list for more than one item, including weights.
 
-     In either case, you can start picking things up by typing "g".
-     When standing still, you are never charged extra time for picking
-     up objects.  When walking, you always take a second partial turn to
-     pick up objects; each object picked up takes 1/10th of a turn.
+    In either case, you can start picking things up by typing "g".
+    When standing still, you are never charged extra time for picking
+    up objects.  When walking, you always take a second partial turn to
+    pick up objects; each object picked up takes 1/10th of a turn.
+
+***** <hide_squelchable>
+Hide items set as squelchable           [hide_squelchable]
+    Items marked to be squelched will not be shown on the map. They are
+    still actually there, so toggling this option (or unsquelching them)
+    will reveal them.
+
+***** <squelch_worthless>
+Squelch worthless item kinds            [squelch_worthless]
+    Items of no monetary value will be automatically squelched. This 
+    option will ignore the squelch settings for these items.
 
 ***** <easy_alter>
 Open/Disarm doors/traps on movement.    [easy_alter]
-     Moving into a closed door will attempt once to open it, and moving 
-     into a trap will attempt once to disarm it. If the player ever wishes
-     to leave a known teleport trap as a guaranteed escape route, this 
-     option must therefore be off.
+    Moving into a closed door will attempt once to open it, and moving 
+    into a trap will attempt once to disarm it. If the player ever wishes
+    to leave a known teleport trap as a guaranteed escape route, this 
+    option must therefore be off.
 
 ***** <easy_open>
 Open/Disarm/Close without direction    [easy_open]
@@ -65,6 +77,26 @@ Open/Disarm/Close without direction    [easy_open]
     not bother asking for a direction when the player asks to "o"pen 
     something. The same applies for "c"losing doors and "D"isarming traps.
 
+***** <show_lists>
+Always show lists                      [show_lists]
+    If there is more than one possible target for a command, the full list
+    of possible targets will be shown. If this option is off, only the first
+    possible target will be shown and you will have to press * to see the 
+    full list.
+
+***** <mouse_movement>
+Allow mouse clicks to move the player  [mouse_movement]
+    Clicking on the main window will be interpreted as a move command to 
+    that spot.
+
+***** <mouse_buttons> 
+Show mouse status line buttons         [mouse_buttons]
+    Nope, got me there.
+
+***** <xchars_to_file>
+Allow accents in output files          [xchars_to_file]
+    Extended characters (accents, umlauts and so on) will be printed in
+    files created by the game (character dumps, screenshots etc.).
 
 === Display options ===
 
@@ -72,10 +104,6 @@ Open/Disarm/Close without direction    [easy_open]
 Player color indicates low hit points    [hp_changes_color]
     This option makes the player @ turn various shades of colour from white
     to red, depending on percentage of HP remaining.
-
-***** <depth_in_feet>
-Show dungeon level in feet    [depth_in_feet]
-    Display dungeon depths in "feet" instead of "levels".
 
 ***** <highlight_player>
 Highlight the player with the cursor    [highlight_player]
@@ -85,14 +113,15 @@ Highlight the player with the cursor    [highlight_player]
     the cursor often speeds up the game and looks better.
 
 ***** <center_player>
-Center map continuously (very slow)    [center_player]
-     The map always centres on the player with this option on. With it off, it
-     is divided into 25 sections, with coordinates (0,0) to (4,4), and will 
-     show one section at a time.
+Center map continuously                  [center_player]
+    The map always centres on the player with this option on. With it off, it
+    is divided into 25 sections, with coordinates (0,0) to (4,4), and will 
+    show one section at a time - the display will "flip" to the next section
+    when the player nears the edge.
 
 ***** <show_piles>
 Show stacks using special attr/character     [show_piles]
-     Stacks of items on the floor are shown using the "&" symbol.
+    Stacks of items on the floor are shown using the "&" symbol.
 
 ***** <show_flavors>
 Show flavors in object descriptions    [show_flavors]
@@ -171,6 +200,17 @@ Map remembers all torch-lit grids    [view_torch_grids]
     "lit", and are thus drawn in "white", unless the "view_yellow_light"
     option is set, in which case they are drawn in "yellow".
 
+***** <animate_flicker>
+Animate multi-coloured monsters and items   [animate_flicker]
+    Certain powerful monsters and items will shimmer in real time, i.e. 
+    between keypresses. 
+
+***** <purple_uniques>
+Show unique monsters in a special colour     [purple_uniques]
+    All "unique" monsters will be shown in a light purple colour, which 
+    is not used for any "normal" monsters - so you can tell at a glance
+    that they are unique. If you like the idea but don't like the colour, 
+    you can edit it via the "interact with colors" option.
 
 === Disturbance options ===
 
@@ -189,21 +229,15 @@ Disturb whenever viewable monster moves    [disturb_near]
     the existance of "telepathy" for the purpose of determining whether
     a monster is "viewable".  See also the "view_reduce_view" option.
 
-***** <disturb_panel>
-Disturb whenever map panel changes    [disturb_panel]
-    This option causes you to be disturbed by the screen "scrolling",
-    as it does when you get close to the "edge" of the screen.
+***** <disturb_detect>
+Disturb whenever leaving trap detected area    [disturb_detect]
+    This option causes you to be disturbed when you reach the edge of your
+    last invocation of detect traps. 
 
 ***** <disturb_state>
 Disturb whenever player state changes    [disturb_state]
     This option causes you to be disturbed whenever the player state
     changes, including changes in hunger, resistance, confusion, etc.
-
-***** <disturb_minor>
-Disturb whenever boring things happen    [disturb_minor]
-    This option causes you to be disturbed by various bring things,
-    including monsters bashing down doors, inventory feelings, and
-    beginning to run out of fuel.
 
 ***** <quick_messages>
 Activate quick messages    [quick_messages]
@@ -235,6 +269,11 @@ Flush input whenever disturbed    [flush_disturb]
     time, since it will prevent you from continuing your macro while being
     attacked by a monster.
 
+***** <notify recharge>
+Notify on object recharge        [notify_recharge]
+    This causes the game to print a message when any rechargeable object 
+    (i.e. a rod or activatable weapon or armour item) finishes recharging.
+    It is the equivalent of inscribing {!!} on all such items. 
 
 === Birth options ===
 
@@ -257,22 +296,49 @@ Maximize effect of race/class bonuses    [birth_maximize]
      stages of the game.
 
 ***** <birth_randarts>
-Randomize some of the artifacts    [birth_randarts]
+Randomize the artifacts (except a very few)    [birth_randarts]
      A different set of artifacts will be created, in place of the standard 
      ones. This is intended primarily for people who have played enough to
-     know what most of the standard artifacts do and have got bored with
-     them.  Note that savefiles with random artifacts are not guaranteed
-     to be compatible between different Angband versions!
+     know what most of the standard artifacts do and want some variety. The
+     number, findability and power of random artifacts will all match the 
+     standard set - approximately.
 
-***** <birth_autoscum>
-Auto-scum for good levels    [birth_autoscum]
-    This allows you to force the generation of "good" levels in the dungeon.
-    This option may be extremely slow on some machines, especially deep in
-    the dungeon.  The minimum "goodness" of the level is based on the dungeon
-    level, so the deeper you go, the better the level will be.  A lot of
-    people consider this option to be cheating.
+***** <birth_ai_sound>
+Monsters chase current location    [birth_ai_sound]
+     Allow monsters to make paths to the player when they are nearby.  This
+     option is extremely slow, but can produce viciously smart monsters.
 
---- Ironman ---
+***** <birth_ai_smell>
+Monsters chase recent locations    [birth_ai_smell]
+     Allow monsters to take advantage of "old" trails that you may have left
+     in the dungeon.  This has no effect unless "flow_by_sound" is also set.
+
+***** <birth_ai_packs>
+Monsters act smarter in groups    [birth_ai_packs]
+     "Group" monsters will use tactics that groups of monsters might 
+     reasonably employ - such as hiding out of sight around a corner, 
+     trying to draw the character out into the middle of a room so they 
+     can surround him and all attack at once, rather than chasing one
+     by one down a corridor.
+
+***** <birth_ai_learn>
+Monsters learn from their mistakes    [birth_ai_learn]
+     Allow monsters to learn what spell attacks you are resistant to,
+     and to use this information to choose the best attacks.
+
+***** <birth_ai_cheat>
+Monsters exploit players weaknesses    [birth_ai_cheat]
+     Allow monsters to know what spell attacks you are resistant to,
+     and to use this information to choose the best attacks.
+
+***** <birth_ai_smart>
+Monsters behave more intelligently (broken)    [birth_ai_smart]
+     Monsters have a certain amount of intelligence and will use it - 
+     teleporting away when low on hit points, using their more powerful
+     spells in preference to the less powerful spells, etc. Not all 
+     monsters are, of course, intelligent - but those who are are almost
+     unkillable with this option on (especially if they can heal 
+     themselves).
 
 ***** <birth_ironman>
 Restrict the use of stairs/recall    [birth_ironman]
@@ -294,62 +360,38 @@ Restrict the use of stores/home    [birth_no_stores]
 Restrict the creation of artifacts    [birth_no_artifacts]
      No artifacts will be created. Ever. Just *how* masochistic are you?
 
-***** <birth_no_preserve>
-Don't preserve artifacts on leaving level    [birth_no_preserve]
-     Normally artifacts can be generated more than once in the game - so
-     if you leave a level with an unidentified artifact on it you may
-     still find it later.  With this option on, they can only be created
-     once - if you leave a level with an artifact on it's gone for the
-     rest of the game whether you knew it was there or not.
-
 ***** <birth_no_stacking>
 Don't stack objects on the floor   [birth_no_stacking]
      Items dropped on the floor will spread out instead of stacking.
      Normal items will disappear if there is no empty grid within a radius
      of three squares.
 
+***** <birth_no_preserve>
+Lose artifacts when leaving level    [birth_no_preserve]
+     Normally if you leave a level with an unidentified artifact on it 
+     you may still find it later. With this option on, if you leave a level
+     with an artifact on it's gone for the rest of the game whether you 
+     knew it was there or not. Note that this option has no effect on 
+     artifacts which you have already identified (i.e. picked up) - these
+     will always be permanently lost if you leave a level without taking
+     them with you.
+
 ***** <birth_no_stairs>
 Don't generate connected stairs    [birth_no_stairs]
-    Never generate a staircase back to the level you came from, if you used
-    a staircase to get to the level.
+     Never generate a staircase back to the level you came from, if you used
+     a staircase to get to the level.
 
---- Monster Intelligence ---
+***** <birth_no_feelings>
+Don't show level feelings          [birth_no_feelings]
+     The "quality" of a level is never revealed, no matter how long you 
+     spend on the level.
 
-***** <birth_ai_sound>
-Monsters chase current location    [birth_ai_sound]
-    Allow monsters to make paths to the player when they are nearby.  This
-    option is extremely slow, but can produce viciously smart monsters.
-
-***** <birth_ai_smell>
-Monsters chase recent locations    [birth_ai_smell]
-    Allow monsters to take advantage of "old" trails that you may have left
-    in the dungeon.  This has no effect unless "flow_by_sound" is also set.
-
-***** <birth_ai_packs>
-Monsters act smarter in groups    [birth_ai_packs]
-     "Group" monsters will use tactics that groups of monsters might 
-     reasonably employ - such as hiding out of sight around a corner, 
-     trying to draw the character out into the middle of a room so they 
-     can surround him and all attack at once, rather than chasing one
-     by one down a corridor.
-
-***** <birth_ai_learn>
-Monsters learn from their mistakes    [birth_ai_learn]
-    Allow monsters to learn what spell attacks you are resistant to,
-    and to use this information to choose the best attacks.
-
-***** <birth_ai_cheat>
-Monsters exploit players weaknesses    [birth_ai_cheat]
-    Allow monsters to know what spell attacks you are resistant to,
-    and to use this information to choose the best attacks.
-
-***** <birth_ai_smart>
-Monsters behave more intelligently (broken)    [birth_ai_smart]
-     Monsters have a certain amount of intelligence and will use it - 
-     teleporting away when low on hit points, using their more powerful
-     spells in preference to the less powerful spells, etc. Not all 
-     monsters are, of course, intelligent.
-
+***** <birth_no_selling>
+Items always sell for 0 gold       [birth_no_selling]
+     Shopkeepers will never pay you for items you sell, though they will 
+     still identify unknown items for you, and will still sell you their 
+     wares. To balance out income in the game, gold found in the dungeon 
+     will be tripled if this option is on.
 
 === Cheating options ===
 
@@ -393,15 +435,15 @@ Display inven/equip
 Display equip/inven
     Display the player equipment (and sometimes the inventory).
 
-Display player flags
-    Display a special description of the character, including some of the
-    "flags" which pertain to a character, broken down by equipment item.
-
-Display player screen
+Display player (basic)
     Display a brief description of the character, including a breakdown
     of the current player "skills" (including attacks/shots per round).
 
-Display player flags
+Display player (extra)
+    Display a special description of the character, including some of the
+    "flags" which pertain to a character, broken down by equipment item.
+
+Display player (compact)
     Display a brief description of the character, including a breakdown
     of the contributions of each equipment item to various resistances
     and stats.
@@ -415,8 +457,7 @@ Display messages
     Display the most recently generated "messages".
 
 Display overhead view
-    Display an overhead view of the entire dungeon.  This is very slow
-    and does not even look very good.
+    Display an overhead view of the entire dungeon level.
 
 Display monster recall
     Display a description of the most monster which has been most recently
@@ -427,6 +468,15 @@ Display object recall
     this only affects spellbooks and prayerbooks.  This window flag may be
     usefully combined with others, such as "monster recall".
 
+Display monster list
+    Display a list of monsters you know about and their distance from you.
+
+Display status
+    ???
+
+Display item list
+    Display a list of items you know about and their distance from you.
+ 
 Display borg messages
     This window flag is currently used only by the Borg.
 
