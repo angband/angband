@@ -89,7 +89,7 @@ Allow mouse clicks to move the player  [mouse_movement]
     Clicking on the main window will be interpreted as a move command to 
     that spot.
 
-***** <mouse_buttons> 
+***** <mouse_buttons>
 Show mouse status line buttons         [mouse_buttons]
     Nope, got me there.
 
@@ -269,7 +269,7 @@ Flush input whenever disturbed    [flush_disturb]
     time, since it will prevent you from continuing your macro while being
     attacked by a monster.
 
-***** <notify recharge>
+***** <notify_recharge>
 Notify on object recharge        [notify_recharge]
     This causes the game to print a message when any rechargeable object 
     (i.e. a rod or activatable weapon or armour item) finishes recharging.
