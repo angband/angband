@@ -602,6 +602,8 @@ static void run_init(int dir)
 	bool deepleft, deepright;
 	bool shortleft, shortright;
 
+	/* Mark that we're starting a run */
+	p_ptr->running_firststep = TRUE;
 
 	/* Save the direction */
 	p_ptr->run_cur_dir = dir;

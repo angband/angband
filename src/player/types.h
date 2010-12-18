@@ -211,6 +211,7 @@ typedef struct player
 	s16b resting;			/* Resting counter */
 	s16b running;			/* Running counter */
 	bool running_withpathfind;      /* Are we using the pathfinder ? */
+	bool running_firststep;  /* Is this our first step running? */
 
 	s16b run_cur_dir;		/* Direction we are running */
 	s16b run_old_dir;		/* Direction we came from */

@@ -699,18 +699,16 @@ void move_player(int dir)
 		if (old_dtrap != new_dtrap) p_ptr->redraw |= (PR_DTRAP);
 
 		/* Disturb player if the player is about to leave the area */
-		if (OPT(disturb_detect) &&
-				p_ptr->running && old_dtrap && !new_dtrap)
+		if (OPT(disturb_detect) && p_ptr->running && 
+			!p_ptr->running_firststep && old_dtrap && !new_dtrap)
 		{
 			disturb(0, 0);
 			return;
 		}
 
-  		/* Move player */
-  		monster_swap(py, px, y, x);
+		/* Move player */
+		monster_swap(py, px, y, x);
   
-
-
 		/* New location */
 		y = py = p_ptr->py;
 		x = px = p_ptr->px;
@@ -774,4 +772,6 @@ void move_player(int dir)
 			hit_trap(y, x);
 		}
 	}
+
+	p_ptr->running_firststep = FALSE;
 }
