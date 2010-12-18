@@ -1747,7 +1747,8 @@ static void display_feature(int col, int row, bool cursor, int oid )
 	if ((tile_width > 1) || (tile_height > 1)) return;
 
 	/* Display symbol */
-	big_pad(68, row, f_ptr->x_attr, f_ptr->x_char);
+	/* XXX needs retooling for multi-light terrain */
+	big_pad(68, row, f_ptr->x_attr[FEAT_LIGHTING_LIT], f_ptr->x_char[FEAT_LIGHTING_LIT]);
 
 	/* ILLUMINATION AND DARKNESS GO HERE */
 
@@ -1768,8 +1769,9 @@ static int f_cmp_fkind(const void *a, const void *b)
 }
 
 static const char *fkind_name(int gid) { return feature_group_text[gid]; }
-static byte *f_xattr(int oid) { return &f_info[oid].x_attr; }
-static char *f_xchar(int oid) { return &f_info[oid].x_char; }
+/* XXX needs retooling for multi-light terrain */
+static byte *f_xattr(int oid) { return &f_info[oid].x_attr[FEAT_LIGHTING_LIT]; }
+static char *f_xchar(int oid) { return &f_info[oid].x_char[FEAT_LIGHTING_LIT]; }
 static void feat_lore(int oid) { (void)oid; /* noop */ }
 
 /*

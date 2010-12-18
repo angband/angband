@@ -382,8 +382,7 @@ void dump_features(ang_file *fff)
 	for (i = 0; i < z_info->f_max; i++)
 	{
 		feature_type *f_ptr = &f_info[i];
-		byte attr = f_ptr->x_attr;
-		byte chr = f_ptr->x_char;
+		size_t i;
 
 		/* Skip non-entries */
 		if (!f_ptr->name) continue;
@@ -392,7 +391,23 @@ void dump_features(ang_file *fff)
 		if ((f_ptr->mimic != i) && (i != FEAT_INVIS)) continue;
 
 		file_putf(fff, "# Terrain: %s\n", f_ptr->name);
-		file_putf(fff, "F:%d:0x%02X:0x%02X\n", i, attr, chr);
+		for (i = 0; i < FEAT_LIGHTING_MAX; i++)
+		{
+			byte attr = f_ptr->x_attr[i];
+			byte chr = f_ptr->x_char[i];
+
+			const char *light = NULL;
+			if (i == FEAT_LIGHTING_BRIGHT)
+				light = "bright";
+			else if (i == FEAT_LIGHTING_LIT)
+				light = "lit";
+			else if (i == FEAT_LIGHTING_DARK)
+				light = "dark";
+
+			assert(light);
+
+			file_putf(fff, "F:%d:%s:0x%02X:0x%02X\n", i, light, attr, chr);
+		}
 	}
 }
 
@@ -774,6 +789,9 @@ static enum parser_error parse_prefs_f(struct parser *p)
 	int idx;
 	feature_type *feature;
 
+	const char *lighting;
+	int light_idx;
+
 	struct prefs_data *d = parser_priv(p);
 	assert(d != NULL);
 	if (d->bypass) return PARSE_ERROR_NONE;
@@ -782,9 +800,33 @@ static enum parser_error parse_prefs_f(struct parser *p)
 	if (idx >= z_info->f_max)
 		return PARSE_ERROR_OUT_OF_BOUNDS;
 
-	feature = &f_info[idx];
-	feature->x_attr = (byte)parser_getint(p, "attr");
-	feature->x_char = (char)parser_getint(p, "char");
+	lighting = parser_getsym(p, "lighting");
+	if (streq(lighting, "bright"))
+		light_idx = FEAT_LIGHTING_BRIGHT;
+	else if (streq(lighting, "lit"))
+		light_idx = FEAT_LIGHTING_LIT;
+	else if (streq(lighting, "dark"))
+		light_idx = FEAT_LIGHTING_DARK;
+	else if (streq(lighting, "all"))
+		light_idx = FEAT_LIGHTING_MAX;
+	else
+		return PARSE_ERROR_GENERIC; /* xxx fixme */
+
+	if (light_idx < FEAT_LIGHTING_MAX)
+	{
+		feature = &f_info[idx];
+		feature->x_attr[light_idx] = (byte)parser_getint(p, "attr");
+		feature->x_char[light_idx] = (char)parser_getint(p, "char");
+	}
+	else
+	{
+		for (light_idx = 0; light_idx < FEAT_LIGHTING_MAX; light_idx++)
+		{
+			feature = &f_info[idx];
+			feature->x_attr[light_idx] = (byte)parser_getint(p, "attr");
+			feature->x_char[light_idx] = (char)parser_getint(p, "char");
+		}
+	}
 
 	return PARSE_ERROR_NONE;
 }
@@ -1172,7 +1214,7 @@ static struct parser *init_parse_prefs(void)
 	parser_reg(p, "? str expr", parse_prefs_expr);
 	parser_reg(p, "K sym tval sym sval int attr int char", parse_prefs_k);
 	parser_reg(p, "R uint idx int attr int char", parse_prefs_r);
-	parser_reg(p, "F uint idx int attr int char", parse_prefs_f);
+	parser_reg(p, "F uint idx sym lighting int attr int char", parse_prefs_f);
 	parser_reg(p, "S uint idx int attr int char", parse_prefs_s);
 	parser_reg(p, "L uint idx int attr int char", parse_prefs_l);
 	parser_reg(p, "E sym tval int attr", parse_prefs_e);

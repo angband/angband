@@ -631,6 +631,14 @@ enum
 
 /*** Feature Indexes (see "lib/edit/terrain.txt") ***/
 
+enum
+{
+	FEAT_LIGHTING_BRIGHT = 0,
+	FEAT_LIGHTING_LIT,
+	FEAT_LIGHTING_DARK,
+	FEAT_LIGHTING_MAX
+};
+
 /* Nothing */
 #define FEAT_NONE		0x00
 

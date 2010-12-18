@@ -24,11 +24,6 @@
 #include "squelch.h"
 
 /*
- * Support for Adam Bolt's tileset, lighting and transparency effects
- * by Robert Ruehlmann (rr9@thangorodrim.net)
- */
-
-/*
  * Approximate distance between two points.
  *
  * When either the X or Y component dwarfs the other component,
@@ -400,43 +395,6 @@ static u16b hallucinatory_object(void)
 
 
 
-/*
- * The 16x16 tile of the terrain supports lighting
- */
-bool feat_supports_lighting(int feat)
-{
-	/* Pseudo graphics don't support lighting */
-	if (use_graphics == GRAPHICS_PSEUDO) return FALSE;
-
-	if ((use_graphics != GRAPHICS_DAVID_GERVAIS) &&
-	    (feat >= FEAT_TRAP_HEAD) && (feat <= FEAT_TRAP_TAIL))
-	{
-		return TRUE;
-	}
-
-	switch (feat)
-	{
-		case FEAT_FLOOR:
-		case FEAT_INVIS:
-		case FEAT_SECRET:
-		case FEAT_MAGMA:
-		case FEAT_QUARTZ:
-		case FEAT_MAGMA_H:
-		case FEAT_QUARTZ_H:
-		case FEAT_WALL_EXTRA:
-		case FEAT_WALL_INNER:
-		case FEAT_WALL_OUTER:
-		case FEAT_WALL_SOLID:
-		case FEAT_PERM_EXTRA:
-		case FEAT_PERM_INNER:
-		case FEAT_PERM_OUTER:
-		case FEAT_PERM_SOLID:
-			return TRUE;
-		default:
-			return FALSE;
-	}
-}
-
 
 /*
  * Translate text colours.
@@ -470,135 +428,6 @@ byte get_color(byte a, int attr, int n)
 }
 
 
-/*
- * This function modifies the attr/char pair for an empty floor space
- * to reflect the various lighting options available.
- *
- * For text, this means changing the colouring for OPT(view_yellow_light) or
- * OPT(view_bright_light), and for graphics it means modifying the char to
- * use a different tile in the tileset.  These modifications are different
- * for different sets, depending on the tiles available, and their position 
- * in the set.
- */
-static void special_lighting_floor(byte *a, char *c, enum grid_light_level lighting, bool in_view)
-{
-	/* The floor starts off "lit" - i.e. rendered in white or the default 
-	 * tile. */
-
-	if (lighting == LIGHT_TORCH && OPT(view_yellow_light))
-	{
-		/* 
-		 * OPT(view_yellow_light) distinguishes between torchlit and 
-		 * permanently-lit areas 
-		 */
-		switch (use_graphics)
-		{
-			case GRAPHICS_NONE:
-			case GRAPHICS_PSEUDO:
-				/* Use "yellow" */
-				if (*a == TERM_WHITE) *a = TERM_YELLOW;
-				break;
-			case GRAPHICS_ADAM_BOLT:
-			case GRAPHICS_NOMAD:
-				*c += 2;
-				break;
-			case GRAPHICS_DAVID_GERVAIS:
-				*c -= 1;
-						break;
-		}
-	}
-	else if (lighting == LIGHT_DARK)
-	{
-		/* Use a dark tile */
-		switch (use_graphics)
-		{
-			case GRAPHICS_NONE:
-			case GRAPHICS_PSEUDO:
-				/* Use "dark gray" */
-				if (*a == TERM_WHITE) *a = TERM_L_DARK;
-				break;
-			case GRAPHICS_ADAM_BOLT:
-			case GRAPHICS_NOMAD:
-			case GRAPHICS_DAVID_GERVAIS:
-				*c += 1;
-				break;
-		}
-	}
-	else
-	{
-		if (!in_view)
-		{
-			switch (use_graphics)
-			{
-				case GRAPHICS_NONE:
-				case GRAPHICS_PSEUDO:
-					/* Use "gray" */
-					if (*a == TERM_WHITE) *a = TERM_SLATE;
-					else if (*a == TERM_L_GREEN) *a = TERM_GREEN;
-					break;
-				case GRAPHICS_ADAM_BOLT:
-				case GRAPHICS_NOMAD:
-				case GRAPHICS_DAVID_GERVAIS:
-					*c += 1;
-					break;
-			}
-		}
-	}
-}
-
-/*
- * This function modifies the attr/char pair for a wall (or other "interesting"
- * grids to show them as more-or-less lit.  Note that how walls are drawn 
- * isn't directly related to how they are lit - walls are always "lit".
- * The lighting effects we use are as a visual cue to emphasise blindness 
- * and to show field-of-view (OPT(view_bright_light)).
- *
- * For text, we change the attr and for graphics we modify the char to
- * use a different tile in the tileset.  These modifications are different
- * for different sets, depending on the tiles available, and their position 
- * in the set.
- */
-static void special_wall_display(byte *a, char *c, bool in_view, int feat)
-{
-	/* Grids currently in view are left alone, rendered as "white" */
-	if (in_view) return;
-
-	/* When blind, we make walls and other "white" things dark */
-	if (p_ptr->timed[TMD_BLIND])
-	{
-		switch (use_graphics)
-		{
-			case GRAPHICS_NONE:
-			case GRAPHICS_PSEUDO:
-				/* Use "dark gray" */
-				if (*a == TERM_WHITE) *a = TERM_L_DARK;
-				break;
-			case GRAPHICS_ADAM_BOLT:
-			case GRAPHICS_NOMAD:
-			case GRAPHICS_DAVID_GERVAIS:
-				if (feat_supports_lighting(feat)) *c += 1;
-				break;
-		}
-	}
-	else
-	{
-		switch (use_graphics)
-		{
-			case GRAPHICS_NONE:
-			case GRAPHICS_PSEUDO:
-				/* Use "gray" */
-				if (*a == TERM_WHITE) *a = TERM_SLATE;
-				break;
-			case GRAPHICS_ADAM_BOLT:
-			case GRAPHICS_NOMAD:
-			case GRAPHICS_DAVID_GERVAIS:
-				if (feat_supports_lighting(feat)) *c += 1;
-				break;
-		}
-	}
-}
-
-
 /* 
  * Checks if a square is at the (inner) edge of a trap detect area 
  */ 
@@ -614,7 +443,39 @@ bool dtrap_edge(int y, int x)
  	if (in_bounds_fully(y    , x - 1) && (!cave->info2[y    ][x - 1] & CAVE2_DTRAP)) return TRUE; 
 
 	return FALSE; 
-} 
+}
+
+
+/**
+ * Apply text lighting effects
+ */
+static void grid_get_text(grid_data *g, byte *a, char *c)
+{
+	if (g->trapborder)
+	{
+		if (g->in_view)
+			*a = TERM_L_GREEN;
+		else
+			*a = TERM_GREEN;
+	}
+	else if (g->f_idx == FEAT_FLOOR)
+	{
+		if (g->lighting == FEAT_LIGHTING_BRIGHT) {
+			if (*a == TERM_WHITE)
+				*a = TERM_YELLOW;
+		} else if (g->lighting == FEAT_LIGHTING_DARK) {
+			if (*a == TERM_WHITE)
+				*a = TERM_L_DARK;
+		}
+	}
+	else if (g->f_idx > FEAT_INVIS)
+	{
+		if (g->lighting == FEAT_LIGHTING_DARK) {
+			if (*a == TERM_WHITE)
+				*a = TERM_SLATE;
+		}
+	}
+}
 
 
 /*
@@ -654,29 +515,16 @@ bool dtrap_edge(int y, int x)
  */
 void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 {
-	byte a;
-	char c;
-	
 	feature_type *f_ptr = &f_info[g->f_idx];
 
-	/* Normal attr and char */
-	a = f_ptr->x_attr;
-	c = f_ptr->x_char;
+	byte a = f_ptr->x_attr[g->lighting];
+	char c = f_ptr->x_char[g->lighting];
 
 	/* Check for trap detection boundaries */
-	if (g->trapborder && g->f_idx == FEAT_FLOOR &&
-			(use_graphics == GRAPHICS_NONE ||
-				use_graphics == GRAPHICS_PSEUDO))
-		a = TERM_L_GREEN;
+	if (use_graphics == GRAPHICS_NONE ||
+				use_graphics == GRAPHICS_PSEUDO)
+		grid_get_text(g, &a, &c);
 
-	/* Special lighting effects */
-	if (g->f_idx <= FEAT_INVIS)
-		special_lighting_floor(&a, &c, g->lighting, g->in_view);
-
-	/* Special lighting effects (walls only) */
-	if (g->f_idx > FEAT_INVIS)
-		special_wall_display(&a, &c, g->in_view, g->f_idx);
-		
 	/* Save the terrain info for the transparency effects */
 	(*tap) = a;
 	(*tcp) = c;
@@ -933,10 +781,12 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	/* Default "clear" values, others will be set later where appropriate. */
 	g->first_k_idx = 0;
 	g->multiple_objects = FALSE;
-	g->lighting = LIGHT_GLOW;
+	g->lighting = FEAT_LIGHTING_DARK;
 
-	/* Set things we can work out right now */
 	g->f_idx = cave->feat[y][x];
+	if (f_info[g->f_idx].mimic)
+		g->f_idx = f_info[g->f_idx].mimic;
+
 	g->in_view = (info & CAVE_SEEN) ? TRUE : FALSE;
 	g->is_player = (cave->m_idx[y][x] < 0) ? TRUE : FALSE;
 	g->m_idx = (g->is_player) ? 0 : cave->m_idx[y][x];
@@ -946,36 +796,19 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	/* If the grid is memorised or can currently be seen */
 	if ((info & CAVE_MARK) || (info & CAVE_SEEN))
 	{
-		/* Apply "mimic" field */
-		g->f_idx = f_info[g->f_idx].mimic;
-			
-		/* Boring grids (floors, etc) */
-		if (g->f_idx <= FEAT_INVIS)
-		{
-			/* Get the floor feature */
-			g->f_idx = FEAT_FLOOR;
+		if (g->in_view) {
+			g->lighting = FEAT_LIGHTING_LIT;
 
-			/* Handle currently visible grids */
-			if (info & CAVE_SEEN)
-			{
-				/* Only lit by "torch" light */
-				if (info & CAVE_GLOW)
-					g->lighting = LIGHT_GLOW;
-				else
-					g->lighting = LIGHT_TORCH;
-			}
-
-			/* Handle "dark" grids and "blindness" */
-			else if (p_ptr->timed[TMD_BLIND] || !(info & CAVE_GLOW))
-				g->lighting = LIGHT_DARK;
+			if (!(info & CAVE_GLOW) && OPT(view_yellow_light))
+				g->lighting = FEAT_LIGHTING_BRIGHT;
+		} else {
+			g->lighting = FEAT_LIGHTING_DARK;
 		}
 	}
-	/* Unknown */
 	else
 	{
 		g->f_idx = FEAT_NONE;
 	}
-       
 
 
 	/* Objects */
