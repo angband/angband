@@ -793,19 +793,14 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	g->hallucinate = p_ptr->timed[TMD_IMAGE] ? TRUE : FALSE;
 	g->trapborder = (dtrap_edge(y, x)) ? TRUE : FALSE;
 
-	/* If the grid is memorised or can currently be seen */
-	if ((info & CAVE_MARK) || (info & CAVE_SEEN))
+	if (g->in_view)
 	{
-		if (g->in_view) {
-			g->lighting = FEAT_LIGHTING_LIT;
+		g->lighting = FEAT_LIGHTING_LIT;
 
-			if (!(info & CAVE_GLOW) && OPT(view_yellow_light))
-				g->lighting = FEAT_LIGHTING_BRIGHT;
-		} else {
-			g->lighting = FEAT_LIGHTING_DARK;
-		}
+		if (!(info & CAVE_GLOW) && OPT(view_yellow_light))
+			g->lighting = FEAT_LIGHTING_BRIGHT;
 	}
-	else
+	else if (!(info & CAVE_MARK))
 	{
 		g->f_idx = FEAT_NONE;
 	}
