@@ -107,7 +107,9 @@ static bool option_toggle_handle(menu_type *m, const ui_event_data *event,
 			option_set(option_name(oid), FALSE);
 			next = TRUE;
 		} else if (event->key == '?') {
+			screen_save();
 			show_file(format("option.txt#%s", option_name(oid)), NULL, 0, 0);
+			screen_load();
 		} else {
 			return FALSE;
 		}
