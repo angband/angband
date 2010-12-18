@@ -246,13 +246,10 @@ extern void init_translate_visuals(void);
  * flag.  This is useful for switching "graphics" on/off.
  */
 /* XXX this does not belong here */
-void reset_visuals(bool unused)
+void reset_visuals(bool load_prefs)
 {
 	int i;
 
-
-	/* Unused parameter */
-	(void)unused;
 
 	/* Extract default attr/char code for features */
 	for (i = 0; i < z_info->f_max; i++)
@@ -300,6 +297,10 @@ void reset_visuals(bool unused)
 		/* Default to white */
 		tval_to_attr[i] = TERM_WHITE;
 	}
+
+	if (!load_prefs)
+		return;
+
 
 
 	/* Graphic symbols */

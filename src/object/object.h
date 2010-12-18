@@ -180,7 +180,7 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode);
 /* obj-util.c */
 object_kind *objkind_get(int tval, int sval);
 void flavor_init(void);
-void reset_visuals(bool unused);
+void reset_visuals(bool load_prefs);
 void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE]);
 void object_flags_known(const object_type *o_ptr, bitflag flags[OF_SIZE]);
 char index_to_label(int i);
