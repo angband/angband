@@ -394,14 +394,11 @@ static byte spell_color(int type)
  *
  * If the distance is not "one", we (may) return "*".
  */
-static u16b bolt_pict(int y, int x, int ny, int nx, int typ)
+static void bolt_pict(int y, int x, int ny, int nx, int typ, byte *a, char *c)
 {
 	int base;
 
 	byte k;
-
-	byte a;
-	char c;
 
 	if (!(use_graphics && (arg_graphics == GRAPHICS_DAVID_GERVAIS)))
 	{
@@ -430,8 +427,8 @@ static u16b bolt_pict(int y, int x, int ny, int nx, int typ)
 		k = get_color(k, ATTR_MISC, 1);
 
 		/* Obtain attr/char */
-		a = misc_to_attr[base+k];
-		c = misc_to_char[base+k];
+		*a = misc_to_attr[base+k];
+		*c = misc_to_char[base+k];
 	}
 	else
 	{
@@ -459,12 +456,9 @@ static u16b bolt_pict(int y, int x, int ny, int nx, int typ)
 		else k = typ;
 
 		/* Obtain attr/char */
-		a = misc_to_attr[base+k];
-		c = misc_to_char[base+k] + add;
+		*a = misc_to_attr[base+k];
+		*c = misc_to_char[base+k] + add;
 	}
-
-	/* Create pict */
-	return (PICT(a,c));
 }
 
 
@@ -4087,17 +4081,11 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 			/* Only do visuals if the player can "see" the bolt */
 			if (player_has_los_bold(y, x))
 			{
-				u16b p;
-
 				byte a;
 				char c;
 
 				/* Obtain the bolt pict */
-				p = bolt_pict(oy, ox, y, x, typ);
-
-				/* Extract attr/char */
-				a = PICT_A(p);
-				c = PICT_C(p);
+				bolt_pict(oy, ox, y, x, typ, &a, &c);
 
 				/* Visual effects */
 				print_rel(c, a, y, x);
@@ -4117,11 +4105,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 				if (flg & (PROJECT_BEAM))
 				{
 					/* Obtain the explosion pict */
-					p = bolt_pict(y, x, y, x, typ);
-
-					/* Extract attr/char */
-					a = PICT_A(p);
-					c = PICT_C(p);
+					bolt_pict(y, x, y, x, typ, &a, &c);
 
 					/* Visual effects */
 					print_rel(c, a, y, x);
@@ -4207,19 +4191,13 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 				/* Only do visuals if the player can "see" the blast */
 				if (player_has_los_bold(y, x))
 				{
-					u16b p;
-
 					byte a;
 					char c;
 
 					drawn = TRUE;
 
 					/* Obtain the explosion pict */
-					p = bolt_pict(y, x, y, x, typ);
-
-					/* Extract attr/char */
-					a = PICT_A(p);
-					c = PICT_C(p);
+					bolt_pict(y, x, y, x, typ, &a, &c);
 
 					/* Visual effects -- Display */
 					print_rel(c, a, y, x);

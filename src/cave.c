@@ -338,27 +338,20 @@ bool cave_valid_bold(int y, int x)
 /*
  * Hack -- Hallucinatory monster
  */
-static u16b hallucinatory_monster(void)
+static void hallucinatory_monster(byte *a, char *c)
 {
-	monster_race *r_ptr;
-	
-	byte a;
-	char c;
-	
 	while (1)
 	{
 		/* Select a random monster */
-		r_ptr = &r_info[randint0(z_info->r_max)];
+		monster_race *r_ptr = &r_info[randint0(z_info->r_max)];
 		
 		/* Skip non-entries */
 		if (!r_ptr->name) continue;
 		
 		/* Retrieve attr/char */
-		a = r_ptr->x_attr;
-		c = r_ptr->x_char;
-		
-		/* Encode */
-		return (PICT(a,c));
+		*a = r_ptr->x_attr;
+		*c = r_ptr->x_char;
+		return;
 	}
 }
 
@@ -366,30 +359,25 @@ static u16b hallucinatory_monster(void)
 /*
  * Hack -- Hallucinatory object
  */
-static u16b hallucinatory_object(void)
+static void hallucinatory_object(byte *a, char *c)
 {
-	object_kind *k_ptr;
-	
-	byte a;
-	char c;
 	
 	while (1)
 	{
 		/* Select a random object */
-		k_ptr = &k_info[randint0(z_info->k_max - 1) + 1];
-		
+		object_kind *k_ptr = &k_info[randint0(z_info->k_max - 1) + 1];
+
 		/* Skip non-entries */
 		if (!k_ptr->name) continue;
 		
 		/* Retrieve attr/char (HACK - without flavors) */
-		a = k_ptr->x_attr;
-		c = k_ptr->x_char;
+		*a = k_ptr->x_attr;
+		*c = k_ptr->x_char;
 		
 		/* HACK - Skip empty entries */
-		if ((a == 0) || (c == 0)) continue;
-		
-		/* Encode */
-		return (PICT(a,c));
+		if (*a == 0 || *c == 0) continue;
+
+		return;
 	}
 }
 
@@ -536,10 +524,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 		if (g->hallucinate)
 		{
 			/* Just pick a random object to display. */
-			int i = hallucinatory_object();
-			
-			a = PICT_A(i);
-			c = PICT_C(i);
+			hallucinatory_object(&a, &c);
 		}
 		else
 		{
@@ -566,10 +551,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 		if (g->hallucinate)
 		{
 			/* Just pick a random monster to display. */
-			int i = hallucinatory_monster();
-			
-			a = PICT_A(i);
-			c = PICT_C(i);
+			hallucinatory_monster(&a, &c);
 		}
 		else
 		{
