@@ -66,7 +66,7 @@ static void textblock_vappend_c(textblock *tb, byte attr, const char *fmt,
 		size_t remaining = tb->size - tb->strlen;
 		char *fmt_start = tb->text + tb->strlen;
 
-		va_copy(args, vp);
+		VA_COPY(args, vp);
 		len = vstrnfmt(fmt_start, remaining, fmt, args);
 		va_end(args);
 		if (len < remaining - 1)

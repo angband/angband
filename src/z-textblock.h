@@ -2,6 +2,7 @@
 #define INCLUDED_Z_TEXTBLOCK_H
 
 #include "z-file.h"
+#include "defines.h"
 
 /** Opaque text_block type */
 typedef struct textblock textblock;

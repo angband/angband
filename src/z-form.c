@@ -710,7 +710,7 @@ char *vformat(cptr fmt, va_list vp)
 		size_t len;
 
 		/* Build the string */
-		va_copy(args, vp);
+		VA_COPY(args, vp);
 		len = vstrnfmt(format_buf, format_len, fmt, args);
 		va_end(args);
 
