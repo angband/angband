@@ -3606,13 +3606,12 @@ bool init_angband(void)
 	while (1)
 	{
 		game_command *command_req;
+		int failed = cmd_get(CMD_INIT, &command_req, TRUE);
 
-		cmd_get(CMD_INIT, &command_req, TRUE);
-
-		if (command_req->command == CMD_QUIT)
-		{
+		if (failed)
+			continue;
+		else if (command_req->command == CMD_QUIT)
 			quit(NULL);
-		}
 		else if (command_req->command == CMD_NEWGAME)
 		{
 			event_signal(EVENT_LEAVE_INIT);
@@ -3621,8 +3620,6 @@ bool init_angband(void)
 		else if (command_req->command == CMD_LOADFILE)
 		{
 			event_signal(EVENT_LEAVE_INIT);
-			/* In future we might want to pass back or set the savefile
-			   path here. */
 			return FALSE;
 		}
 	}

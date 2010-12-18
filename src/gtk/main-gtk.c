@@ -2103,13 +2103,13 @@ static errr term_data_init(term_data *td, int i)
 	return (0);
 }
 
-static errr get_init_cmd()
+static errr get_init_cmd(bool wait)
 {
 	Term_fresh();
 
 	/* Prompt the user */
 	prt("[Choose 'New' or 'Open' from the 'File' menu]", 23, 17);
-	CheckEvent(FALSE);
+	CheckEvent(wait);
 
 	return 0;
 }
@@ -2702,7 +2702,7 @@ static void handle_statusline(game_event_type type, game_event_data *data, void 
 static errr gtk_get_cmd(cmd_context context, bool wait)
 {
 	if (context == CMD_INIT) 
-		return get_init_cmd();
+		return get_init_cmd(wait);
 	else 
 		return textui_get_cmd(context, wait);
 }
