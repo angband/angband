@@ -361,17 +361,19 @@ void dump_objects(ang_file *fff)
 {
 	int i;
 
-	for (i = 0; i < z_info->k_max; i++)
+	file_putf(fff, "# Objects\n");
+
+	for (i = 1; i < z_info->k_max; i++)
 	{
 		object_kind *k_ptr = &k_info[i];
-		byte attr = k_ptr->x_attr;
-		byte chr = k_ptr->x_char;
+		const char *name = k_ptr->name;
 
-		/* Skip non-entries */
-		if (!k_ptr->name) continue;
+		if (!name) continue;
+		if (name[0] == '&' && name[1] == ' ')
+			name += 2;
 
-		file_putf(fff, "# Object: %s\n", k_ptr->name);
-		file_putf(fff, "K:%d:0x%02X:0x%02X\n", i, attr, chr);
+		file_putf(fff, "K:%s:%s:%d:%d\n", tval_find_name(k_ptr->tval),
+				name, k_ptr->x_attr, k_ptr->x_char);
 	}
 }
 
