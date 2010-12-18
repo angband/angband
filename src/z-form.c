@@ -706,10 +706,13 @@ char *vformat(cptr fmt, va_list vp)
 	/* Keep going until successful */
 	while (1)
 	{
+		va_list	args;
 		size_t len;
 
 		/* Build the string */
-		len = vstrnfmt(format_buf, format_len, fmt, vp);
+		va_copy(args, vp);
+		len = vstrnfmt(format_buf, format_len, fmt, args);
+		va_end(args);
 
 		/* Success */
 		if (len < format_len-1) break;

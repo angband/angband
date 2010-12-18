@@ -60,12 +60,15 @@ static void textblock_vappend_c(textblock *tb, byte attr, const char *fmt,
 {
 	while (1)
 	{
+		va_list args;
 		size_t len;
 
 		size_t remaining = tb->size - tb->strlen;
 		char *fmt_start = tb->text + tb->strlen;
 
-		len = vstrnfmt(fmt_start, remaining, fmt, vp);
+		va_copy(args, vp);
+		len = vstrnfmt(fmt_start, remaining, fmt, args);
+		va_end(args);
 		if (len < remaining - 1)
 		{
 			byte *attr_start = tb->attrs + (tb->strlen * sizeof *tb->attrs);
