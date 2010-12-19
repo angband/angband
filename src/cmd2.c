@@ -175,8 +175,7 @@ static s16b chest_check(int y, int x)
  * Small chests often contain "gold", while Large chests always contain
  * items.  Wooden chests contain 2 items, Iron chests contain 4 items,
  * and Steel chests contain 6 items.  The "value" of the items in a
- * chest is based on the "power" of the chest, which is in turn based
- * on the level on which the chest is generated.
+ * chest is based on the level on which the chest is generated.
  */
 static void chest_death(int y, int x, s16b o_idx)
 {
@@ -206,7 +205,7 @@ static void chest_death(int y, int x, s16b o_idx)
 	opening_chest = TRUE;
 
 	/* Determine the "value" of the items */
-	value = ABS(o_ptr->pval) + 10;
+	value = o_ptr->origin_depth - 10 + 2 * o_ptr->sval;
 
 	/* Drop some objects (non-chests) */
 	for (; number > 0; --number)
