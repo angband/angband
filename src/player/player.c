@@ -47,9 +47,9 @@ bool player_stat_dec(struct player *p, int stat, bool permanent)
 	if (permanent) {
 		if (max > 18+10)
 			max -= 10;
-		else if (cur > 18)
+		else if (max > 18)
 			max = 18;
-		else if (cur > 3)
+		else if (max > 3)
 			max -= 1;
 
 		res = (max != p->stat_max[stat]);

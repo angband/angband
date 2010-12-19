@@ -52,6 +52,15 @@ static int test_stat_dec(void *state) {
 	player_stat_dec(p, A_STR, TRUE);
 	eq(p->stat_cur[A_STR], 13);
 	eq(p->stat_max[A_STR], 14);
+        p->stat_cur[A_STR] = 18+13;
+	p->stat_max[A_STR] = 18+13;
+	player_stat_dec(p, A_STR, FALSE);
+	eq(p->stat_cur[A_STR], 18+03);
+	eq(p->stat_max[A_STR], 18+13);
+	p->stat_max[A_STR] = 18+03;
+	player_stat_dec(p, A_STR, TRUE);
+	eq(p->stat_cur[A_STR], 18);
+	eq(p->stat_max[A_STR], 18);
 	ok;
 }
 
