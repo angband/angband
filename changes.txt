@@ -27,6 +27,7 @@ Gameplay changes
 round", aka "fractional blows"
 #1008 Resistances reduce inventory damage (also #1183)
 #1072 Remove CLW spell from rogues and magi
+#1088 Chests can no longer contain chests
 #1132 Brightness property preserved when refueling torches
 #1140 Allow selling unidentified weapons to the temple so long as they are
       known blessed
@@ -93,6 +94,8 @@ List of bugs fixed
 #1142 Fix 100% CPU problem with x11 mode
 #1143 Fix darkness effect 
 #1144 Fix timed effect increase messages
+#1151 Level of chest items is now determined differently, reducing the chance
+      of producing items below their max depths
 #1154 Fix an issue with the message for addtional str/dex to get extra blows
 #1160 Fix memory leak
 #1167 Fix preserve off mode
@@ -105,7 +108,7 @@ List of bugs fixed
 #1190 Fix "bad" quality squelch
 #1195 Allow selling blessed diggers in the Temple
 #1201 Prevent ammo leaking info about launcher brands/slays
-#1209 Add safety check for artifacts with activiation but no message
+#1209 Add safety check for artifacts with activation but no message
 r1943 Potions of life should repair CON before hp
 r1972 Fix bug when running with 100% searching
 r1983 Fix divide-by-zero crash on device activation
