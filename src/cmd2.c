@@ -221,10 +221,12 @@ static void chest_death(int y, int x, s16b o_idx)
 		if (tiny && (randint0(100) < 75))
 			make_gold(i_ptr, value, SV_GOLD_ANY);
 
-		/* Otherwise drop an item */
+		/* Otherwise drop an item, as long as it isn't a chest */
 		else
 		{
 			if (!make_object(i_ptr, value, FALSE, FALSE))
+				continue;
+			if (i_ptr->tval == TV_CHEST)
 				continue;
 			i_ptr->origin = ORIGIN_CHEST;
 			i_ptr->origin_depth = o_ptr->origin_depth;
