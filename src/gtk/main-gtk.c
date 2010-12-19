@@ -1739,7 +1739,8 @@ static void setup_graphics_menu(GladeXML *xml)
 	char s[12];
 	int i;
 	
-	for (i = 0; i < 4; i++)
+	// FIXME: we should be using a numerical constant here
+	for (i = 0; i < 5; i++)
 	{
 		bool checked = (i == arg_graphics);
 
