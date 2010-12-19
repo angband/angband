@@ -1864,7 +1864,7 @@ static void term_data_link(int i)
 	td->t->bigcurs_hook = Term_curs_mac;
 	td->t->text_hook = Term_text_mac;
 	td->t->pict_hook = Term_pict_mac;
-	td->t->xchar_hook = Term_xchar_mac;
+/*	td->t->xchar_hook = Term_xchar_mac; */
 
 
 	td->t->never_bored = TRUE;
