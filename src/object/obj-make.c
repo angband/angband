@@ -1333,8 +1333,8 @@ void make_gold(object_type *j_ptr, int lev, int coin_type)
 	k_idx = lookup_kind(TV_GOLD, sval);
 	object_prep(j_ptr, &k_info[k_idx], lev, RANDOMISE);
 
-	/* If we're playing with no_selling, triple the value */
-	if (OPT(adult_no_selling)) value = 3 * value;
+	/* If we're playing with no_selling, increase the value */
+	if (OPT(adult_no_selling)) value = 5 * value;
 
 	j_ptr->pval = value;
 }
