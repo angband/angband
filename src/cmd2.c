@@ -206,6 +206,8 @@ static void chest_death(int y, int x, s16b o_idx)
 
 	/* Determine the "value" of the items */
 	value = o_ptr->origin_depth - 10 + 2 * o_ptr->sval;
+	if (value < 1)
+		value = 1;
 
 	/* Drop some objects (non-chests) */
 	for (; number > 0; --number)
