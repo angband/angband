@@ -57,6 +57,7 @@ User interface
       of percent capacity
 #1140 Money is type squelchable through the squelch menu (= s o)
 #1140 Add direction/distance to the visible item list ']'
+#1207 Show melee to-hit chance in monster recall
 r1971 Make summoning traps light blue
 r1981 Coloured messages
 r1999 Make ATTR_MULTI use the full range of colours

@@ -1594,7 +1594,7 @@ static void describe_monster_toughness(int r_idx, const monster_lore *l_ptr)
 	const monster_race *r_ptr = &r_info[r_idx];
 	bitflag f[RF_SIZE];
 
-	int msex = 0;
+	int msex = 0, chance = 0, chance2 = 0;
 
 	/* Get the known monster flags */
 	monster_flags_known(r_ptr, l_ptr, f);
@@ -1609,6 +1609,8 @@ static void describe_monster_toughness(int r_idx, const monster_lore *l_ptr)
 		/* Armor */
 		text_out("%^s has an armor rating of ", wd_he[msex]);
 		text_out_c(TERM_L_BLUE, "%d", r_ptr->ac);
+
+		/* Hitpoints */
 		text_out(", and a");
 
 		if (!rf_has(f, RF_UNIQUE))
@@ -1617,6 +1619,23 @@ static void describe_monster_toughness(int r_idx, const monster_lore *l_ptr)
 		text_out(" life rating of ");
 		text_out_c(TERM_L_BLUE, "%d", r_ptr->avg_hp);
 		text_out(".  ");
+
+		/* Player's chance to hit it - this code is duplicated in
+		   py_attack_real() and test_hit() and must be kept in sync */
+		chance = (p_ptr->state.skills[SKILL_TO_HIT_MELEE] +
+			((p_ptr->state.to_h +
+			p_ptr->inventory[INVEN_WIELD].to_h) * BTH_PLUS_ADJ));
+
+		chance2 = 100 * (chance - (3 * r_ptr->ac / 4)) / chance;
+
+		if (chance2 > 95)
+			chance2 = 95;
+		if (chance2 < 5)
+			chance2 = 5;
+
+		text_out("You have a ");
+		text_out_c(TERM_L_BLUE, "%d", chance2);
+		text_out(" percent chance to hit such a creature in melee (if you can see it).  ");
 	}
 }
 
