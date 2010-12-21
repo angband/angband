@@ -728,7 +728,7 @@ static size_t obj_desc_inscrip(const object_type *o_ptr, char *buf, size_t max, 
 
 	/* Get inscription */
 	if (o_ptr->note)
-		u[n++] = quark_str(o_ptr->note);
+		u[n++] = o_ptr->note;
 
 	/* Use special inscription, if any */
 	if (!object_is_known(o_ptr) && feel)

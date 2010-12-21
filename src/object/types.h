@@ -63,7 +63,7 @@ typedef struct object_kind
 
 	/** Also saved in savefile **/
 
-	u16b note;     /**< Autoinscription quark number */
+	char *note;
 
 	bool aware;    /**< Set if player is aware of the kind's effects */
 	bool tried;    /**< Set if kind has been tried */
@@ -243,7 +243,7 @@ typedef struct object
 	byte origin_depth;  /* What depth the item was found at */
 	u16b origin_xtra;   /* Extra information about origin */
 
-	quark_t note;			/* Inscription index */
+	char *note;
 } object_type;
 
 typedef struct flavor {

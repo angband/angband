@@ -510,7 +510,7 @@ int get_inscribed_ammo_slot(const object_type *o_ptr)
 {
 	char *s;
 	if (!o_ptr->note) return 0;
-	s = strchr(quark_str(o_ptr->note), 'f');
+	s = strchr(o_ptr->note, 'f');
 	if (!s || s[1] < '0' || s[1] > '9') return 0;
 
 	return QUIVER_START + (s[1] - '0');
@@ -3401,19 +3401,18 @@ unsigned check_for_inscrip(const object_type *o_ptr, const char *inscrip)
 	unsigned i = 0;
 	const char *s;
 
-	if (!o_ptr->note) return 0;
+	if (!o_ptr->note)
+		return 0;
 
-	s = quark_str(o_ptr->note);
+	s = o_ptr->note;
 
-	do
-	{
+	do {
 		s = strstr(s, inscrip);
 		if (!s) break;
 
 		i++;
 		s++;
-	}
-	while (s);
+	} while (s);
 
 	return i;
 }

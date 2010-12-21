@@ -118,7 +118,7 @@ static int rd_item_2(object_type *o_ptr)
 	rd_string(buf, sizeof(buf));
 
 	/* Save the inscription */
-	if (buf[0]) o_ptr->note = quark_add(buf);
+	if (buf[0]) o_ptr->note = string_make(buf);
 
 
 	/* Lookup item kind */
@@ -342,7 +342,7 @@ static int rd_item_1(object_type *o_ptr)
 	rd_string(buf, sizeof(buf));
 
 	/* Save the inscription */
-	if (buf[0]) o_ptr->note = quark_add(buf);
+	if (buf[0]) o_ptr->note = string_make(buf);
 
 
 	/* Lookup item kind */

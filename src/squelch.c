@@ -166,24 +166,23 @@ const char *get_autoinscription(s16b kind_idx)
 int apply_autoinscription(object_type *o_ptr)
 {
 	char o_name[80];
-	cptr note = get_autoinscription(o_ptr->k_idx);
-	cptr existing_inscription = quark_str(o_ptr->note);
+	const char *note = get_autoinscription(o_ptr->k_idx);
 
 	/* Don't inscribe unaware objects */
 	if (!note || !object_flavor_is_aware(o_ptr))
 		return 0;
 
 	/* Don't re-inscribe if it's already inscribed */
-	if (existing_inscription)
+	if (o_ptr->note)
 		return 0;
 
 	/* Get an object description */
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	if (note[0] != 0)
-		o_ptr->note = quark_add(note);
+		o_ptr->note = string_make(note);
 	else
-		o_ptr->note = 0;
+		o_ptr->note = NULL;
 
 	msg_format("You autoinscribe %s.", o_name);
 
