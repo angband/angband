@@ -24,7 +24,7 @@ Gameplay changes
  #759 Enable multiple barehand blows (to see effects of STR/DEX at birth)
  #951 Increase base AC on armour; differentiate DSMs; allow ego DSMs
  #987 Melee blows now determined by "energy per blow" instead of "blows per
-round", aka "fractional blows"
+      round", aka "fractional blows"
 #1008 Resistances reduce inventory damage (also #1183)
 #1072 Remove CLW spell from rogues and magi
 #1088 Chests can no longer contain chests
@@ -46,6 +46,7 @@ r2030 Remove birth_money option
 common, speed more common on boots, multiple brands/slays rated higher, speed
 rated consistently
       Significant changes to vaults and special rooms (pits, nests etc.)
+      Caster level and spell level now affect casting speed a little bit
 
 User interface
 ==============
