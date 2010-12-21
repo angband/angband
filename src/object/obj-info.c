@@ -600,7 +600,7 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 	int cnt, dam, total_dam, plus = 0;
 	int xtra_postcrit = 0, xtra_precrit = 0;
 	int crit_mult, crit_div, crit_add;
-	int str_plus, dex_plus, old_blows, new_blows, extra_blows;
+	int str_plus, dex_plus, old_blows = 0, new_blows, extra_blows;
 	int str_done = -1;
 	object_type *j_ptr = &p_ptr->inventory[INVEN_BOW];
 
@@ -706,12 +706,12 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 				 * new str/dex combination, not a repeat
 				 */
 				if (new_blows > old_blows &&
-						(str_plus < str_done ||
-								str_done == -1))
+					(str_plus < str_done ||
+					str_done == -1))
 				{
 					textblock_append(tb, "With an additional %d strength and %d dex you would get %d.%d blows\n",
-							str_plus, dex_plus, (new_blows / 100),
-							(new_blows / 10) % 10);
+						str_plus, dex_plus, (new_blows / 100),
+						(new_blows / 10) % 10);
 					state.stat_ind[A_STR] -= str_plus;
 					state.stat_ind[A_DEX] -= dex_plus;
 					str_done = str_plus;
@@ -772,7 +772,7 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 			textblock_append(tb, "This weapon may benefit from one or more off-weapon brands or slays.\n");
 	}
 
-	textblock_append(tb, "Average damage/hit: ");
+	textblock_append(tb, "Average damage/round: ");
 
 	if (ammo) multiplier = p_ptr->state.ammo_mult;
 
@@ -784,6 +784,11 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 		total_dam = dam * (multiplier + mult[i] - melee_adj_mult) + xtra_precrit;
 		total_dam = (total_dam * crit_mult + crit_add) / crit_div;
 		total_dam += xtra_postcrit;
+		if (weapon) 
+			total_dam = (total_dam * old_blows) / 100;
+		else
+			total_dam *= p_ptr->state.num_fire;
+		
 
 		if (total_dam <= 0)
 			textblock_append_c(tb, TERM_L_RED, "%d", 0);
@@ -803,6 +808,10 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 	total_dam = dam * multiplier + xtra_precrit;
 	total_dam = (total_dam * crit_mult + crit_add) / crit_div;
 	total_dam += xtra_postcrit;
+	if (weapon)
+		total_dam = (total_dam * old_blows) / 100;
+	else
+		total_dam *= p_ptr->state.num_fire;
 
 	if (total_dam <= 0)
 		textblock_append_c(tb, TERM_L_RED, "%d", 0);
