@@ -437,7 +437,7 @@ void wr_squelch(void)
 	for (i = 0; i < inscriptions_count; i++)
 	{
 		wr_s16b(inscriptions[i].kind_idx);
-		wr_string(quark_str(inscriptions[i].inscription_idx));
+		wr_string(inscriptions[i].text);
 	}
 
 	return;

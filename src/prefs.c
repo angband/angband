@@ -164,7 +164,7 @@ void autoinsc_dump(ang_file *fff)
 
 		file_putf(fff, "# Autoinscription for %s\n", k_ptr->name);
 		file_putf(fff, "B:%d:%s\n\n", inscriptions[i].kind_idx,
-		        quark_str(inscriptions[i].inscription_idx));
+		        inscriptions[i].text);
 	}
 
 	file_putf(fff, "\n");

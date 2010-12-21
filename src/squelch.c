@@ -156,10 +156,10 @@ const char *get_autoinscription(s16b kind_idx)
 	for (i = 0; i < inscriptions_count; i++)
 	{
 		if (kind_idx == inscriptions[i].kind_idx)
-			return quark_str(inscriptions[i].inscription_idx);
+			return inscriptions[i].text;
 	}
 
-	return 0;
+	return NULL;
 }
 
 /* Put the autoinscription on an object */
@@ -232,7 +232,7 @@ int add_autoinscription(s16b kind, cptr inscription)
 	}
 
 	inscriptions[index].kind_idx = kind;
-	inscriptions[index].inscription_idx = quark_add(inscription);
+	inscriptions[index].text = string_make(inscription);
 
 	/* Only increment count if inscription added to end of array */
 	if (index == inscriptions_count)

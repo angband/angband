@@ -192,7 +192,7 @@ typedef struct
 struct autoinscription
 {
 	s16b kind_idx;
-	s16b inscription_idx;
+	char *text;
 };
 
 

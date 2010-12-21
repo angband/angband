@@ -1237,7 +1237,7 @@ int rd_squelch(void)
 		rd_s16b(&inscriptions[i].kind_idx);
 		rd_string(tmp, sizeof(tmp));
 		
-		inscriptions[i].inscription_idx = quark_add(tmp);
+		inscriptions[i].text = string_make(tmp);
 	}
 	
 	return 0;
