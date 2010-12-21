@@ -334,7 +334,7 @@ static void setup_menus()
 	mdata = class_menu.menu_data;
 
 	for (i = 0, c = classes; c; c = c->next, i++)
-		mdata->items[i] = c->name;
+		mdata->items[c->cidx] = c->name;
 	mdata->hint = "Your 'class' determines various intrinsic abilities and bonuses";
 		
 	/* Roller menu straightforward again */

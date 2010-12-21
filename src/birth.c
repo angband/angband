@@ -467,6 +467,9 @@ void player_init(struct player *p) {
 	turn = 1;
 	p_ptr->total_energy = 0;
 	p_ptr->resting_turn = 0;
+	/* XXX default race/class */
+	p_ptr->race = races;
+	p_ptr->class = classes;
 }
 
 /**
@@ -1025,8 +1028,9 @@ void player_birth(bool quickstart_allowed)
 	else
 	{
 		p_ptr->psex = 0;
-		p_ptr->class = NULL;
-		p_ptr->race = NULL;
+		/* XXX default race/class */
+		p_ptr->class = classes;
+		p_ptr->race = races;
 		player_generate(p_ptr, NULL, NULL, NULL);
 	}
 
