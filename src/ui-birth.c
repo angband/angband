@@ -322,7 +322,7 @@ static void setup_menus()
 	mdata = race_menu.menu_data;
 
 	for (i = 0, r = races; r; r = r->next, i++)
-		mdata->items[i] = r->name;
+		mdata->items[r->ridx] = r->name;
 	mdata->hint = "Your 'race' determines various intrinsic factors and bonuses.";
 
 	n = 0;
