@@ -55,6 +55,9 @@
 # 'W' is for extra information. Depth defines what "level" the object is,
 # when determining how easy it is to use a wand, staff or rod; rarity
 # is unused; weight is in tenth-pounds and cost is the item's base value.
+# N.B. Even where the cost field is not used to determine price (e.g. for
+# rings and amulets), it is still used to determine whether it is squelched
+# by the squelch_worthless option.
 
 # 'P' is for power information. The items base armor class, its base
 # damage and pluses to-hit, to-dam and to-ac.  The latter three numbers
@@ -1341,7 +1344,7 @@ F:AFRAID | SPEED | EASY_KNOW
 N:220:the Mouse
 G:=:d
 I:45:31:d4
-W:30:0:2:0
+W:30:0:2:100
 A:50:5 to 50
 P:0:0d0:0:-3d4:0
 F:DEX | STEALTH
@@ -1349,7 +1352,7 @@ F:DEX | STEALTH
 N:221:the Dog
 G:=:d
 I:45:32:-1
-W:0:0:2:0
+W:0:0:2:100
 A:50:5 to 50
 P:0:0d0:d3:d3:-10
 F:RES_FEAR | STEALTH | EASY_KNOW
@@ -1541,7 +1544,7 @@ F:SLOW_DIGEST | EASY_KNOW
 N:249:Adornment
 G:":d
 I:40:20:0
-W:10:0:3:20
+W:10:0:3:0
 A:20:10 to 40
 F:EASY_KNOW
 
@@ -1551,7 +1554,7 @@ F:EASY_KNOW
 N:250:Inertia
 G:":d
 I:40:21:-3
-W:15:0:3:0
+W:15:0:3:10
 A:20:15 to 40
 F:FREE_ACT | SPEED | EASY_KNOW
 
