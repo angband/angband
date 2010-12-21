@@ -3266,9 +3266,6 @@ static errr init_other(void)
 	/* Initialize the "macro" package */
 	(void)macro_init();
 
-	/* Initialize the "quark" package */
-	(void)quarks_init();
-
 	/* Initialize squelch things */
 	autoinscribe_init();
 	squelch_init();
@@ -3756,9 +3753,6 @@ void cleanup_angband(void)
 
 	/* Free the messages */
 	messages_free();
-
-	/* Free the "quarks" */
-	quarks_free();
 
 	mem_free(k_info);
 	mem_free(a_info);

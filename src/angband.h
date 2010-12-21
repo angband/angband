@@ -26,7 +26,6 @@
 #include "z-virt.h"
 #include "z-rand.h"
 #include "z-term.h"
-#include "z-quark.h"
 #include "z-msg.h"
 
 /*
