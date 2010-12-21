@@ -170,26 +170,14 @@
 
 
 
-int get_spell_index(const object_type *o_ptr, int index)
+int get_spell_index(const struct object *object, int index)
 {
-	int realm, spell;
-	int sval = o_ptr->sval;
+	struct spell *sp;
 
-	/* Check bounds */
-	if ((index < 0) || (index >= SPELLS_PER_BOOK)) return -1;
-	if ((sval < 0) || (sval >= BOOKS_PER_REALM)) return -1;
-
-	/* Mage or priest spells? */
-	if (cp_ptr->spell_book == TV_MAGIC_BOOK)
-		realm = 0;
-	else
-		realm = 1;
-
-	/* Get the spell */
-	spell = spell_list[realm][sval][index];
-	if (spell == -1) return -1;
-
-	return s_info[spell].spell_index;
+	for (sp = object->kind->spells; sp; sp = sp->next)
+		if (sp->snum == index)
+			return sp->spell_index;
+	return -1;
 }
 
 

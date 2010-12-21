@@ -8,7 +8,7 @@ OBJECTS = $(ANGFILES) $(ZFILES)
 SRCS    = ${OBJECTS:.o=.c} ${MAINFILES:.o=.c}
 SUBDIRS = gtk monster object player
 PROG    = angband
-CFLAGS += -I. -std=c99 -Wdeclaration-after-statement -Wall -Wextra
+CFLAGS += -I. -std=c99 -Wdeclaration-after-statement -Wall -Wextra -O0
 
 angband: angband.o $(MAINFILES)
 	$(CC) -o angband angband.o $(MAINFILES) $(LDFLAGS) $(LDADD)

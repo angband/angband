@@ -69,6 +69,8 @@ typedef struct object_kind
 
 	byte squelch;  /**< Squelch settings */
 	bool everseen; /**< Set if kind has ever been seen (to despoilify squelch menus) */
+
+	struct spell *spells;
 } object_kind;
 
 

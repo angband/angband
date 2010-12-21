@@ -129,7 +129,6 @@ extern struct player_class *classes;
 extern struct flavor *flavors;
 extern struct vault *vaults;
 extern spell_type *s_info;
-extern s16b spell_list[MAX_REALMS][BOOKS_PER_REALM][SPELLS_PER_BOOK];
 extern struct hint *hints;
 
 extern const char *ANGBAND_SYS;

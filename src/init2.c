@@ -30,6 +30,7 @@
 #include "parser.h"
 #include "prefs.h"
 #include "squelch.h"
+#include "types.h"
 
 static struct history_chart *histories;
 
@@ -3145,6 +3146,7 @@ static errr run_parse_s(struct parser *p) {
 
 static errr finish_parse_s(struct parser *p) {
 	struct spell *s, *n;
+	struct object_kind *k;
 
 	s_info = mem_zalloc(z_info->s_max * sizeof(*s_info));
 	for (s = parser_priv(p); s; s = s->next) {
@@ -3156,7 +3158,11 @@ static errr finish_parse_s(struct parser *p) {
 	s = parser_priv(p);
 	while (s) {
 		n = s->next;
-		mem_free(s);
+		k = objkind_get(s->tval, s->sval);
+		if (k) {
+			s->next = k->spells;
+			k->spells = s;
+		}
 		s = n;
 	}
 
@@ -3170,38 +3176,6 @@ static struct file_parser s_parser = {
 	run_parse_s,
 	finish_parse_s
 };
-
-/*
- * Initialize the "spell_list" array
- */
-static void init_books(void)
-{
-	byte realm, sval, snum;
-	u16b spell;
-
-	/* Since not all slots in all books are used, initialize to -1 first */
-	for (realm = 0; realm < MAX_REALMS; realm++)
-	{
-		for (sval = 0; sval < BOOKS_PER_REALM; sval++)
-		{
-			for (snum = 0; snum < SPELLS_PER_BOOK; snum++)
-			{
-				spell_list[realm][sval][snum] = -1;
-			}
-		}
-	}
-
-	/* Place each spell in its own book */
-	for (spell = 0; spell < z_info->s_max; spell++)
-	{
-		/* Get the spell */
-		spell_type *s_ptr = &s_info[spell];
-
-		/* Put it in the book */
-		spell_list[s_ptr->realm][s_ptr->sval][s_ptr->snum] = spell;
-	}
-}
-
 
 /* Initialise hints */
 static enum parser_error parse_hint(struct parser *p) {
@@ -3237,7 +3211,6 @@ static struct file_parser hints_parser = {
 	run_parse_hints,
 	finish_parse_hints,
 };
-
 
 /*** Initialize others ***/
 
@@ -3642,10 +3615,6 @@ bool init_angband(void)
 	/* Initialize hint text */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (hints)");
 	if (run_parser(&hints_parser)) quit("Cannot initialize hints");
-
-	/* Initialize spellbook info */
-	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (spellbooks)");
-	init_books();
 
 	/* Initialise store stocking data */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (store stocks)");

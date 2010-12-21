@@ -597,13 +597,6 @@ spell_type *s_info;
 struct hint *hints;
 
 /*
- * The spell_list is built from s_info to facilitate a quick lookup
- * of the spell when realm, book and position in book are known.
- */
-s16b spell_list[MAX_REALMS][BOOKS_PER_REALM][SPELLS_PER_BOOK];
-
-
-/*
  * Hack -- The special Angband "System Suffix"
  * This variable is used to choose an appropriate "pref-xxx" file
  */
