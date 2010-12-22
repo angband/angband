@@ -181,7 +181,8 @@ bool verify_item(cptr prompt, int item);
 bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode);
 
 /* obj-util.c */
-object_kind *objkind_get(int tval, int sval);
+struct object_kind *objkind_get(int tval, int sval);
+struct object_kind *objkind_byid(int kidx);
 void flavor_init(void);
 void reset_visuals(bool load_prefs);
 void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE]);

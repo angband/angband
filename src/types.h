@@ -42,7 +42,6 @@ typedef int (*button_kill_f)(unsigned char);
 typedef struct alloc_entry alloc_entry;
 typedef struct quest quest;
 typedef struct spell spell_type;
-typedef struct autoinscription autoinscription;
 typedef struct history_info history_info;
 typedef struct color_type color_type;
 
@@ -186,15 +185,6 @@ typedef struct
 	byte tval;
 	const char *name;
 } grouper;
-
-
-/* Information for object auto-inscribe */
-struct autoinscription
-{
-	s16b kind_idx;
-	char *text;
-};
-
 
 struct history_info
 {

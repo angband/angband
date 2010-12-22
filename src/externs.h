@@ -128,6 +128,7 @@ extern struct player_race *races;
 extern struct player_class *classes;
 extern struct flavor *flavors;
 extern struct vault *vaults;
+extern struct object_kind *objkinds;
 extern spell_type *s_info;
 extern struct hint *hints;
 
@@ -162,8 +163,6 @@ extern int text_out_indent;
 extern int text_out_pad;
 extern bool use_transparency;
 extern void (*sound_hook)(int);
-extern autoinscription *inscriptions;
-extern u16b inscriptions_count;
 
 extern flag_cache *slay_cache;
 

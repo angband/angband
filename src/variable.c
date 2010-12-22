@@ -581,6 +581,7 @@ monster_race *r_info;
 struct player_race *races;
 struct player_class *classes;
 struct vault *vaults;
+struct object_kind *objkinds;
 
 owner_type *b_info;
 
@@ -707,14 +708,6 @@ bool use_transparency = FALSE;
  * Sound hook (for playing FX).
  */
 void (*sound_hook)(int sound);
-
-
-/*
- * For autoinscriptions.
- */
-autoinscription *inscriptions = 0;
-u16b inscriptions_count = 0;
-
 
 /* Delay in centiseconds before moving to allow another keypress */
 /* Zero means normal instant movement. */

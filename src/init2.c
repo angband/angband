@@ -547,7 +547,7 @@ static errr run_parse_k(struct parser *p) {
 }
 
 static errr finish_parse_k(struct parser *p) {
-	struct object_kind *k, *n;
+	struct object_kind *k;
 
 	k_info = mem_zalloc(z_info->k_max * sizeof(*k));
 	for (k = parser_priv(p); k; k = k->next) {
@@ -556,13 +556,7 @@ static errr finish_parse_k(struct parser *p) {
 		memcpy(&k_info[k->kidx], k, sizeof(*k));
 	}
 
-	k = parser_priv(p);
-	while (k) {
-		n = k->next;
-		mem_free(k);
-		k = n;
-	}
-
+	objkinds = parser_priv(p);
 	parser_destroy(p);
 	return 0;
 }
@@ -3212,20 +3206,6 @@ static struct file_parser hints_parser = {
 	finish_parse_hints,
 };
 
-/*** Initialize others ***/
-
-static void autoinscribe_init(void)
-{
-	if (inscriptions)
-		FREE(inscriptions);
- 
-	inscriptions = 0;
-	inscriptions_count = 0;
-
-	inscriptions = C_ZNEW(AUTOINSCRIPTIONS_MAX, autoinscription);
-}
-
-
 /*
  * Initialize some other arrays
  */
@@ -3240,7 +3220,6 @@ static errr init_other(void)
 	(void)macro_init();
 
 	/* Initialize squelch things */
-	autoinscribe_init();
 	squelch_init();
 	textui_knowledge_init();
 

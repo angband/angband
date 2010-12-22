@@ -1603,22 +1603,16 @@ static byte *o_xattr(int oid)
  */
 static const char *o_xtra_prompt(int oid)
 {
-	object_kind *k_ptr = &k_info[oid];
-	s16b idx = get_autoinscription_index(oid);
+	object_kind *k = objkind_byid(oid);
 
 	const char *no_insc = ", 's' to toggle squelch, 'r'ecall, '{'";
 	const char *with_insc = ", 's' to toggle squelch, 'r'ecall, '{', '}'";
 
-
 	/* Forget it if we've never seen the thing */
-	if (k_ptr->flavor && !k_ptr->aware)
+	if (k->flavor && !k->aware)
 		return "";
 
-	/* If it's already inscribed */
-	if (idx != -1)
-		return with_insc;
-
-	return no_insc;
+	return k->note ? with_insc : no_insc;
 }
 
 /*
@@ -1626,44 +1620,39 @@ static const char *o_xtra_prompt(int oid)
  */
 static void o_xtra_act(char ch, int oid)
 {
-	object_kind *k_ptr = &k_info[oid];
-	s16b idx = get_autoinscription_index(oid);
+	object_kind *k = objkind_byid(oid);
 
 	/* Toggle squelch */
-	if (squelch_tval(k_ptr->tval) && (ch == 's' || ch == 'S'))
+	if (squelch_tval(k->tval) && (ch == 's' || ch == 'S'))
 	{
-		if (k_ptr->aware)
+		if (k->aware)
 		{
-			if (kind_is_squelched_aware(k_ptr))
-				kind_squelch_clear(k_ptr);
+			if (kind_is_squelched_aware(k))
+				kind_squelch_clear(k);
 			else
-				kind_squelch_when_aware(k_ptr);
+				kind_squelch_when_aware(k);
 		}
 		else
 		{
-			if (kind_is_squelched_unaware(k_ptr))
-				kind_squelch_clear(k_ptr);
+			if (kind_is_squelched_unaware(k))
+				kind_squelch_clear(k);
 			else
-				kind_squelch_when_unaware(k_ptr);
+				kind_squelch_when_unaware(k);
 		}
 
 		return;
 	}
 
 	/* Forget it if we've never seen the thing */
-	if (k_ptr->flavor && !k_ptr->aware)
+	if (k->flavor && !k->aware)
 		return;
 
 	/* Uninscribe */
-	if (ch == '}')
-	{
-		if (idx != -1) remove_autoinscription(oid);
-		return;
-	}
-
-	/* Inscribe */
-	else if (ch == '{')
-	{
+	if (ch == '}') {
+		if (k->note)
+			remove_autoinscription(oid);
+	} else if (ch == '{') {
+		/* Inscribe */
 		char note_text[80] = "";
 
 		/* Avoid the prompt getting in the way */
@@ -1673,14 +1662,14 @@ static void o_xtra_act(char ch, int oid)
 		prt("Inscribe with: ", 0, 0);
 
 		/* Default note */
-		if (idx != -1)
+		if (k->note)
 			strnfmt(note_text, sizeof(note_text), "%s", get_autoinscription(oid));
 
 		/* Get an inscription */
 		if (askfor_aux(note_text, sizeof(note_text), NULL))
 		{
 			/* Remove old inscription if existent */
-			if (idx != -1)
+			if (k->note)
 				remove_autoinscription(oid);
 
 			/* Add the autoinscription */

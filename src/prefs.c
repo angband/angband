@@ -152,19 +152,16 @@ static void pref_footer(ang_file *fff, const char *mark)
 /* XXX should be renamed dump_* */
 void autoinsc_dump(ang_file *fff)
 {
-	int i;
-	if (!inscriptions) return;
+	struct object_kind *k;
 
 	file_putf(fff, "# Autoinscription settings\n");
 	file_putf(fff, "# B:item kind:inscription\n\n");
 
-	for (i = 0; i < inscriptions_count; i++)
-	{
-		object_kind *k_ptr = &k_info[inscriptions[i].kind_idx];
-
-		file_putf(fff, "# Autoinscription for %s\n", k_ptr->name);
-		file_putf(fff, "B:%d:%s\n\n", inscriptions[i].kind_idx,
-		        inscriptions[i].text);
+	for (k = objkinds; k; k = k->next) {
+		if (!k->note)
+			continue;
+		file_putf(fff, "# Autoinscription for %s\n", k->name);
+		file_putf(fff, "B:%d:%s\n\n", k->kidx, k->note);
 	}
 
 	file_putf(fff, "\n");

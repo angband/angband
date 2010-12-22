@@ -1196,6 +1196,7 @@ int rd_squelch(void)
 	size_t i;
 	byte tmp8u = 24;
 	u16b file_e_max;
+	u16b inscriptions;
 	
 	/* Read how many squelch bytes we have */
 	rd_byte(&tmp8u);
@@ -1227,17 +1228,21 @@ int rd_squelch(void)
 	}
 	
 	/* Read the current number of auto-inscriptions */
-	rd_u16b(&inscriptions_count);
+	rd_u16b(&inscriptions);
 	
-	/* Write the autoinscriptions array*/
-	for (i = 0; i < inscriptions_count; i++)
+	/* Read the autoinscriptions array */
+	for (i = 0; i < inscriptions; i++)
 	{
 		char tmp[80];
+		s16b kidx;
+		struct object_kind *k;
 		
-		rd_s16b(&inscriptions[i].kind_idx);
+		rd_s16b(&kidx);
+		k = objkind_byid(kidx);
+		if (!k)
+			quit_fmt("objkind_byid(%d) failed", kidx);
 		rd_string(tmp, sizeof(tmp));
-		
-		inscriptions[i].text = string_make(tmp);
+		k->note = string_make(tmp);
 	}
 	
 	return 0;

@@ -3445,6 +3445,12 @@ struct object_kind *objkind_get(int tval, int sval) {
 	return &k_info[k];
 }
 
+struct object_kind *objkind_byid(int kidx) {
+	if (kidx < 1 || kidx > z_info->k_max)
+		return NULL;
+	return &k_info[kidx];
+}
+
 /**
  * Find the tval and sval of object kind `k_idx`, and return via the pointers
  * `tval` and `sval`.

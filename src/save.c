@@ -412,7 +412,7 @@ void wr_player(void)
 
 void wr_squelch(void)
 {
-	size_t i;
+	size_t i, n;
 
 	/* Write number of squelch bytes */
 	wr_byte(squelch_size);
@@ -430,14 +430,20 @@ void wr_squelch(void)
 		wr_byte(flags);
 	}
 
+	n = 0;
+	for (i = 0; i < z_info->k_max; i++)
+		if (k_info[i].note)
+			n++;
+
 	/* Write the current number of auto-inscriptions */
-	wr_u16b(inscriptions_count);
+	wr_u16b(n);
 
 	/* Write the autoinscriptions array */
-	for (i = 0; i < inscriptions_count; i++)
-	{
-		wr_s16b(inscriptions[i].kind_idx);
-		wr_string(inscriptions[i].text);
+	for (i = 0; i < z_info->k_max; i++) {
+		if (!k_info[i].note)
+			continue;
+		wr_s16b(i);
+		wr_string(k_info[i].note);
 	}
 
 	return;

@@ -130,36 +130,10 @@ void squelch_birth_init(void)
 
 /*** Autoinscription stuff ***/
 
-/*
- * This code needs documenting.
- */
-int get_autoinscription_index(s16b k_idx)
-{
-	int i;
-
-	for (i = 0; i < inscriptions_count; i++)
-	{
-		if (k_idx == inscriptions[i].kind_idx)
-			return i;
-	}
-
-	return -1;
-}
-
-/*
- * DOCUMENT ME!
- */
 const char *get_autoinscription(s16b kind_idx)
 {
-	int i;
-
-	for (i = 0; i < inscriptions_count; i++)
-	{
-		if (kind_idx == inscriptions[i].kind_idx)
-			return inscriptions[i].text;
-	}
-
-	return NULL;
+	struct object_kind *k = objkind_byid(kind_idx);
+	return k ? k->note : NULL;
 }
 
 /* Put the autoinscription on an object */
@@ -192,52 +166,23 @@ int apply_autoinscription(object_type *o_ptr)
 
 int remove_autoinscription(s16b kind)
 {
-	int i = get_autoinscription_index(kind);
-
-	/* It's not here. */
-	if (i == -1) return 0;
-
-	while (i < inscriptions_count - 1)
-	{
-		inscriptions[i] = inscriptions[i+1];
-		i++;
-	}
-
-	inscriptions_count--;
-
+	struct object_kind *k = objkind_byid(kind);
+	if (!k || !k->note)
+		return 0;
+	string_free(k->note);
+	k->note = NULL;
 	return 1;
 }
 
 
 int add_autoinscription(s16b kind, cptr inscription)
 {
-	int index;
-
-	/* Paranoia */
-	if (kind == 0) return 0;
-
-	/* If there's no inscription, remove it */
-	if (!inscription || (inscription[0] == 0))
-		return remove_autoinscription(kind);
-
-	index = get_autoinscription_index(kind);
-
-	if (index == -1)
-		index = inscriptions_count;
-
-	if (index >= AUTOINSCRIPTIONS_MAX)
-	{
-		msg_format("This inscription (%s) cannot be added because the inscription array is full!", inscription);
+	struct object_kind *k = objkind_byid(kind);
+	if (!k)
 		return 0;
-	}
-
-	inscriptions[index].kind_idx = kind;
-	inscriptions[index].text = string_make(inscription);
-
-	/* Only increment count if inscription added to end of array */
-	if (index == inscriptions_count)
-		inscriptions_count++;
-
+	if (!inscription)
+		return remove_autoinscription(kind);
+	k->note = string_make(inscription);
 	return 1;
 }
 
