@@ -1633,8 +1633,10 @@ static void describe_monster_toughness(int r_idx, const monster_lore *l_ptr)
 		if (chance2 < 5)
 			chance2 = 5;
 
-		text_out("You have a ");
-		text_out_c(TERM_L_BLUE, "%d", chance2);
+		text_out("You have a");
+		if ((chance2 == 8) || ((chance2 / 10) == 8))
+			text_out("n");
+		text_out_c(TERM_L_BLUE, " %d", chance2);
 		text_out(" percent chance to hit such a creature in melee (if you can see it).  ");
 	}
 }
