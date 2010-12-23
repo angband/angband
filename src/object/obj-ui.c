@@ -1234,7 +1234,7 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 	prt("", 0, 0);
 
 	/* Warning if needed */
-	if (oops && str) msg_print(str);
+	if (oops && str) msg("%s", str);
 
 	/* Result */
 	return (item);

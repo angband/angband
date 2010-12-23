@@ -37,14 +37,14 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
 	/* Verify stairs */
 	if (cave->feat[p_ptr->py][p_ptr->px] != FEAT_LESS)
 	{
-		msg_print("I see no up staircase here.");
+		msg("%s", "I see no up staircase here.");
 		return;
 	}
 
 	/* Ironman */
 	if (OPT(birth_ironman))
 	{
-		msg_print("Nothing happens!");
+		msg("%s", "Nothing happens!");
 		return;
 	}
 
@@ -52,7 +52,7 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
 	p_ptr->energy_use = 100;
 
 	/* Success */
-	message(MSG_STAIRS_UP, 0, "You enter a maze of up staircases.");
+	msgt(MSG_STAIRS_UP, "You enter a maze of up staircases.");
 
 	/* Create a way back */
 	p_ptr->create_up_stair = FALSE;
@@ -71,7 +71,7 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
 	/* Verify stairs */
 	if (cave->feat[p_ptr->py][p_ptr->px] != FEAT_MORE)
 	{
-		msg_print("I see no down staircase here.");
+		msg("%s", "I see no down staircase here.");
 		return;
 	}
 
@@ -79,7 +79,7 @@ void do_cmd_go_down(cmd_code code, cmd_arg args[])
 	p_ptr->energy_use = 100;
 
 	/* Success */
-	message(MSG_STAIRS_DOWN, 0, "You enter a maze of down staircases.");
+	msgt(MSG_STAIRS_DOWN, "You enter a maze of down staircases.");
 
 	/* Create a way back */
 	p_ptr->create_up_stair = TRUE;
@@ -270,7 +270,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 	/* Lose strength */
 	if (trap & (CHEST_LOSE_STR))
 	{
-		msg_print("A small needle has pricked you!");
+		msg("%s", "A small needle has pricked you!");
 		take_hit(damroll(1, 4), "a poison needle");
 		(void)do_dec_stat(A_STR, FALSE);
 	}
@@ -278,7 +278,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 	/* Lose constitution */
 	if (trap & (CHEST_LOSE_CON))
 	{
-		msg_print("A small needle has pricked you!");
+		msg("%s", "A small needle has pricked you!");
 		take_hit(damroll(1, 4), "a poison needle");
 		(void)do_dec_stat(A_CON, FALSE);
 	}
@@ -286,7 +286,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 	/* Poison */
 	if (trap & (CHEST_POISON))
 	{
-		msg_print("A puff of green gas surrounds you!");
+		msg("%s", "A puff of green gas surrounds you!");
 		if (!(p_ptr->state.resist_pois || p_ptr->timed[TMD_OPP_POIS]))
 			(void)inc_timed(TMD_POISONED, 10 + randint1(20), TRUE);
 		else if (p_ptr->state.resist_pois)
@@ -296,7 +296,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 	/* Paralyze */
 	if (trap & (CHEST_PARALYZE))
 	{
-		msg_print("A puff of yellow gas surrounds you!");
+		msg("%s", "A puff of yellow gas surrounds you!");
 		if (!p_ptr->state.free_act)
 			(void)inc_timed(TMD_PARALYZED, 10 + randint1(20), TRUE);
 		else
@@ -307,7 +307,7 @@ static void chest_trap(int y, int x, s16b o_idx)
 	if (trap & (CHEST_SUMMON))
 	{
 		int num = 2 + randint1(3);
-		msg_print("You are enveloped in a cloud of smoke!");
+		msg("%s", "You are enveloped in a cloud of smoke!");
 		sound(MSG_SUM_MONSTER);
 		for (i = 0; i < num; i++)
 		{
@@ -318,8 +318,8 @@ static void chest_trap(int y, int x, s16b o_idx)
 	/* Explode */
 	if (trap & (CHEST_EXPLODE))
 	{
-		msg_print("There is a sudden explosion!");
-		msg_print("Everything inside the chest is destroyed!");
+		msg("There is a sudden explosion!");
+		msg("Everything inside the chest is destroyed!");
 		o_ptr->pval[DEFAULT_PVAL] = 0;
 		take_hit(damroll(5, 8), "an exploding chest");
 	}
@@ -366,7 +366,7 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		/* Success -- May still have traps */
 		if (randint0(100) < j)
 		{
-			message(MSG_LOCKPICK, 0, "You have picked the lock.");
+			msgt(MSG_LOCKPICK, "You have picked the lock.");
 			gain_exp(1);
 			flag = TRUE;
 		}
@@ -377,7 +377,7 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 			/* We may continue repeating */
 			more = TRUE;
 			flush();
-			message(MSG_LOCKPICK_FAIL, 0, "You failed to pick the lock.");
+			msgt(MSG_LOCKPICK_FAIL, "You failed to pick the lock.");
 		}
 	}
 
@@ -434,25 +434,25 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	/* Must find the trap first. */
 	if (!object_is_known(o_ptr))
 	{
-		msg_print("I don't see any traps.");
+		msg("%s", "I don't see any traps.");
 	}
 
 	/* Already disarmed/unlocked */
 	else if (o_ptr->pval[DEFAULT_PVAL] <= 0)
 	{
-		msg_print("The chest is not trapped.");
+		msg("%s", "The chest is not trapped.");
 	}
 
 	/* No traps to find. */
 	else if (!chest_traps[o_ptr->pval[DEFAULT_PVAL]])
 	{
-		msg_print("The chest is not trapped.");
+		msg("%s", "The chest is not trapped.");
 	}
 
 	/* Success (get a lot of experience) */
 	else if (randint0(100) < j)
 	{
-		message(MSG_DISARM, 0, "You have disarmed the chest.");
+		msgt(MSG_DISARM, "You have disarmed the chest.");
 		gain_exp(o_ptr->pval[DEFAULT_PVAL]);
 		o_ptr->pval[DEFAULT_PVAL] = (0 - o_ptr->pval[DEFAULT_PVAL]);
 	}
@@ -463,13 +463,13 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 		/* We may keep trying */
 		more = TRUE;
 		flush();
-		msg_print("You failed to disarm the chest.");
+		msg("You failed to disarm the chest.");
 	}
 
 	/* Failure -- Set off the trap */
 	else
 	{
-		msg_print("You set off a trap!");
+		msg("%s", "You set off a trap!");
 		chest_trap(y, x, o_idx);
 	}
 
@@ -618,7 +618,7 @@ static bool do_cmd_open_test(int y, int x)
 	if (!(cave->info[y][x] & (CAVE_MARK)))
 	{
 		/* Message */
-		msg_print("You see nothing there.");
+		msg("%s", "You see nothing there.");
 
 		/* Nope */
 		return (FALSE);
@@ -629,7 +629,7 @@ static bool do_cmd_open_test(int y, int x)
 	      (cave->feat[y][x] <= FEAT_DOOR_TAIL)))
 	{
 		/* Message */
-		message(MSG_NOTHING_TO_OPEN, 0, "You see nothing there to open.");
+		msgt(MSG_NOTHING_TO_OPEN, "You see nothing there to open.");
 
 		/* Nope */
 		return (FALSE);
@@ -662,7 +662,7 @@ static bool do_cmd_open_aux(int y, int x)
 	if (cave->feat[y][x] >= FEAT_DOOR_HEAD + 0x08)
 	{
 		/* Stuck */
-		msg_print("The door appears to be stuck.");
+		msg("%s", "The door appears to be stuck.");
 	}
 
 	/* Locked door */
@@ -688,7 +688,7 @@ static bool do_cmd_open_aux(int y, int x)
 		if (randint0(100) < j)
 		{
 			/* Message */
-			message(MSG_LOCKPICK, 0, "You have picked the lock.");
+			msgt(MSG_LOCKPICK, "You have picked the lock.");
 
 			/* Open the door */
 			cave_set_feat(cave, y, x, FEAT_OPEN);
@@ -706,7 +706,7 @@ static bool do_cmd_open_aux(int y, int x)
 			flush();
 
 			/* Message */
-			message(MSG_LOCKPICK_FAIL, 0, "You failed to pick the lock.");
+			msgt(MSG_LOCKPICK_FAIL, "You failed to pick the lock.");
 
 			/* We may keep trying */
 			more = TRUE;
@@ -782,7 +782,7 @@ void do_cmd_open(cmd_code code, cmd_arg args[])
 	if (cave->m_idx[y][x] > 0)
 	{
 		/* Message */
-		msg_print("There is a monster in the way!");
+		msg("%s", "There is a monster in the way!");
 
 		/* Attack */
 		py_attack(y, x);
@@ -816,7 +816,7 @@ static bool do_cmd_close_test(int y, int x)
 	if (!(cave->info[y][x] & (CAVE_MARK)))
 	{
 		/* Message */
-		msg_print("You see nothing there.");
+		msg("%s", "You see nothing there.");
 
 		/* Nope */
 		return (FALSE);
@@ -827,7 +827,7 @@ static bool do_cmd_close_test(int y, int x)
 	    (cave->feat[y][x] != FEAT_BROKEN))
 	{
 		/* Message */
-		msg_print("You see nothing there to close.");
+		msg("%s", "You see nothing there to close.");
 
 		/* Nope */
 		return (FALSE);
@@ -856,7 +856,7 @@ static bool do_cmd_close_aux(int y, int x)
 	if (cave->feat[y][x] == FEAT_BROKEN)
 	{
 		/* Message */
-		msg_print("The door appears to be broken.");
+		msg("%s", "The door appears to be broken.");
 	}
 
 	/* Open door */
@@ -916,7 +916,7 @@ void do_cmd_close(cmd_code code, cmd_arg args[])
 	if (cave->m_idx[y][x] > 0)
 	{
 		/* Message */
-		msg_print("There is a monster in the way!");
+		msg("%s", "There is a monster in the way!");
 
 		/* Attack */
 		py_attack(y, x);
@@ -943,7 +943,7 @@ static bool do_cmd_tunnel_test(int y, int x)
 	if (!(cave->info[y][x] & (CAVE_MARK)))
 	{
 		/* Message */
-		msg_print("You see nothing there.");
+		msg("%s", "You see nothing there.");
 
 		/* Nope */
 		return (FALSE);
@@ -953,7 +953,7 @@ static bool do_cmd_tunnel_test(int y, int x)
 	if (cave_floor_bold(y, x))
 	{
 		/* Message */
-		msg_print("You see nothing there to tunnel.");
+		msg("%s", "You see nothing there to tunnel.");
 
 		/* Nope */
 		return (FALSE);
@@ -1023,7 +1023,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 	/* Titanium */
 	if (cave->feat[y][x] >= FEAT_PERM_EXTRA)
 	{
-		msg_print("This seems to be permanent rock.");
+		msg("%s", "This seems to be permanent rock.");
 	}
 
 	/* Granite */
@@ -1032,14 +1032,14 @@ static bool do_cmd_tunnel_aux(int y, int x)
 		/* Tunnel */
 		if ((p_ptr->state.skills[SKILL_DIGGING] > 40 + randint0(1600)) && twall(y, x))
 		{
-			msg_print("You have finished the tunnel.");
+			msg("%s", "You have finished the tunnel.");
 		}
 
 		/* Keep trying */
 		else
 		{
 			/* We may continue tunelling */
-			msg_print("You tunnel into the granite wall.");
+			msg("%s", "You tunnel into the granite wall.");
 			more = TRUE;
 		}
 	}
@@ -1085,14 +1085,14 @@ static bool do_cmd_tunnel_aux(int y, int x)
 				place_gold(y, x, p_ptr->depth);
 
 				/* Message */
-				msg_print("You have found something!");
+				msg("%s", "You have found something!");
 			}
 
 			/* Found nothing */
 			else
 			{
 				/* Message */
-				msg_print("You have finished the tunnel.");
+				msg("%s", "You have finished the tunnel.");
 			}
 		}
 
@@ -1100,7 +1100,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 		else if (hard)
 		{
 			/* Message, continue digging */
-			msg_print("You tunnel into the quartz vein.");
+			msg("%s", "You tunnel into the quartz vein.");
 			more = TRUE;
 		}
 
@@ -1108,7 +1108,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 		else
 		{
 			/* Message, continue digging */
-			msg_print("You tunnel into the magma vein.");
+			msg("%s", "You tunnel into the magma vein.");
 			more = TRUE;
 		}
 	}
@@ -1120,7 +1120,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 		if ((p_ptr->state.skills[SKILL_DIGGING] > randint0(200)) && twall(y, x))
 		{
 			/* Message */
-			msg_print("You have removed the rubble.");
+			msg("%s", "You have removed the rubble.");
 
 			/* Hack -- place an object */
 			if (randint0(100) < 10)
@@ -1132,7 +1132,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 				if (!squelch_item_ok(&o_list[cave->o_idx[y][x]]) &&
 				    player_can_see_bold(y, x))
 				{
-					msg_print("You have found something!");
+					msg("%s", "You have found something!");
 				}
 			}
 		}
@@ -1140,7 +1140,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 		else
 		{
 			/* Message, keep digging */
-			msg_print("You dig in the rubble.");
+			msg("%s", "You dig in the rubble.");
 			more = TRUE;
 		}
 	}
@@ -1151,14 +1151,14 @@ static bool do_cmd_tunnel_aux(int y, int x)
 		/* Tunnel */
 		if ((p_ptr->state.skills[SKILL_DIGGING] > 30 + randint0(1200)) && twall(y, x))
 		{
-			msg_print("You have finished the tunnel.");
+			msg("%s", "You have finished the tunnel.");
 		}
 
 		/* Keep trying */
 		else
 		{
 			/* We may continue tunelling */
-			msg_print("You tunnel into the granite wall.");
+			msg("%s", "You tunnel into the granite wall.");
 			more = TRUE;
 
 			/* Occasional Search XXX XXX */
@@ -1172,14 +1172,14 @@ static bool do_cmd_tunnel_aux(int y, int x)
 		/* Tunnel */
 		if ((p_ptr->state.skills[SKILL_DIGGING] > 30 + randint0(1200)) && twall(y, x))
 		{
-			msg_print("You have finished the tunnel.");
+			msg("%s", "You have finished the tunnel.");
 		}
 
 		/* Keep trying */
 		else
 		{
 			/* We may continue tunelling */
-			msg_print("You tunnel into the door.");
+			msg("%s", "You tunnel into the door.");
 			more = TRUE;
 		}
 	}
@@ -1231,7 +1231,7 @@ void do_cmd_tunnel(cmd_code code, cmd_arg args[])
 	if (cave->m_idx[y][x] > 0)
 	{
 		/* Message */
-		msg_print("There is a monster in the way!");
+		msg("%s", "There is a monster in the way!");
 
 		/* Attack */
 		py_attack(y, x);
@@ -1257,7 +1257,7 @@ static bool do_cmd_disarm_test(int y, int x)
 	if (!(cave->info[y][x] & (CAVE_MARK)))
 	{
 		/* Message */
-		msg_print("You see nothing there.");
+		msg("%s", "You see nothing there.");
 
 		/* Nope */
 		return (FALSE);
@@ -1268,7 +1268,7 @@ static bool do_cmd_disarm_test(int y, int x)
 	      (cave->feat[y][x] <= FEAT_TRAP_TAIL)))
 	{
 		/* Message */
-		msg_print("You see nothing there to disarm.");
+		msg("%s", "You see nothing there to disarm.");
 
 		/* Nope */
 		return (FALSE);
@@ -1324,7 +1324,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 	if (randint0(100) < j)
 	{
 		/* Message */
-		message_format(MSG_DISARM, 0, "You have disarmed the %s.", name);
+		msgt(MSG_DISARM, "You have disarmed the %s.", name);
 
 		/* Reward */
 		gain_exp(power);
@@ -1342,7 +1342,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 		flush();
 
 		/* Message */
-		msg_format("You failed to disarm the %s.", name);
+		msg("You failed to disarm the %s.", name);
 
 		/* We may keep trying */
 		more = TRUE;
@@ -1352,7 +1352,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 	else
 	{
 		/* Message */
-		msg_format("You set off the %s!", name);
+		msg("You set off the %s!", name);
 
 		/* Hit the trap */
 		hit_trap(y, x);
@@ -1411,7 +1411,7 @@ void do_cmd_disarm(cmd_code code, cmd_arg args[])
 	if (cave->m_idx[y][x] > 0)
 	{
 		/* Message */
-		msg_print("There is a monster in the way!");
+		msg("%s", "There is a monster in the way!");
 
 		/* Attack */
 		py_attack(y, x);
@@ -1445,7 +1445,7 @@ static bool do_cmd_bash_test(int y, int x)
 	if (!(cave->info[y][x] & (CAVE_MARK)))
 	{
 		/* Message */
-		msg_print("You see nothing there.");
+		msg("%s", "You see nothing there.");
 
 		/* Nope */
 		return (FALSE);
@@ -1456,7 +1456,7 @@ static bool do_cmd_bash_test(int y, int x)
 	      (cave->feat[y][x] <= FEAT_DOOR_TAIL)))
 	{
 		/* Message */
-		msg_print("You see nothing there to bash.");
+		msg("%s", "You see nothing there to bash.");
 
 		/* Nope */
 		return (FALSE);
@@ -1486,7 +1486,7 @@ static bool do_cmd_bash_aux(int y, int x)
 
 
 	/* Message */
-	msg_print("You smash into the door!");
+	msg("%s", "You smash into the door!");
 
 	/* Hack -- Bash power based on strength */
 	/* (Ranges from 3 to 20 to 100 to 200) */
@@ -1517,7 +1517,7 @@ static bool do_cmd_bash_aux(int y, int x)
 		}
 
 		/* Message */
-		message(MSG_OPENDOOR, 0, "The door crashes open!");
+		msgt(MSG_OPENDOOR, "The door crashes open!");
 
 		/* Update the visuals */
 		p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -1528,7 +1528,7 @@ static bool do_cmd_bash_aux(int y, int x)
 	         p_ptr->lev)
 	{
 		/* Message */
-		msg_print("The door holds firm.");
+		msg("%s", "The door holds firm.");
 
 		/* Allow repeated bashing */
 		more = TRUE;
@@ -1538,7 +1538,7 @@ static bool do_cmd_bash_aux(int y, int x)
 	else
 	{
 		/* Message */
-		msg_print("You are off-balance.");
+		msg("%s", "You are off-balance.");
 
 		/* Hack -- Lose balance ala paralysis */
 		(void)inc_timed(TMD_PARALYZED, 2 + randint0(2), TRUE);
@@ -1599,7 +1599,7 @@ void do_cmd_bash(cmd_code code, cmd_arg args[])
 	if (cave->m_idx[y][x] > 0)
 	{
 		/* Message */
-		msg_print("There is a monster in the way!");
+		msg("%s", "There is a monster in the way!");
 
 		/* Attack */
 		py_attack(y, x);
@@ -1703,7 +1703,7 @@ void do_cmd_alter_aux(int dir)
 	/* Oops */
 	else
 	{
-		msg_print("You spin around.");
+		msg("%s", "You spin around.");
 	}
 
 	/* Cancel repetition unless we can continue */
@@ -1758,7 +1758,7 @@ static bool do_cmd_spike_test(int y, int x)
 	if (!(cave->info[y][x] & (CAVE_MARK)))
 	{
 		/* Message */
-		msg_print("You see nothing there.");
+		msg("%s", "You see nothing there.");
 
 		/* Nope */
 		return (FALSE);
@@ -1769,7 +1769,7 @@ static bool do_cmd_spike_test(int y, int x)
 	      (cave->feat[y][x] <= FEAT_DOOR_TAIL)))
 	{
 		/* Message */
-		msg_print("You see nothing there to spike.");
+		msg("%s", "You see nothing there to spike.");
 
 		/* Nope */
 		return (FALSE);
@@ -1795,7 +1795,7 @@ void do_cmd_spike(cmd_code code, cmd_arg args[])
 	if (!get_spike(&item))
 	{
 		/* Message */
-		msg_print("You have no spikes!");
+		msg("%s", "You have no spikes!");
 
 		/* Done */
 		return;
@@ -1826,7 +1826,7 @@ void do_cmd_spike(cmd_code code, cmd_arg args[])
 	if (cave->m_idx[y][x] > 0)
 	{
 		/* Message */
-		msg_print("There is a monster in the way!");
+		msg("%s", "There is a monster in the way!");
 
 		/* Attack */
 		py_attack(y, x);
@@ -1839,7 +1839,7 @@ void do_cmd_spike(cmd_code code, cmd_arg args[])
 		if (!do_cmd_spike_test(y, x)) return;
 
 		/* Successful jamming */
-		msg_print("You jam the door with a spike.");
+		msg("%s", "You jam the door with a spike.");
 
 		/* Convert "locked" to "stuck" XXX XXX XXX */
 		if (cave->feat[y][x] < FEAT_DOOR_HEAD + 0x08)
@@ -1880,7 +1880,7 @@ static bool do_cmd_walk_test(int y, int x)
 			monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 			/* Message */
-			message_format(MSG_AFRAID, 0,
+			msgt(MSG_AFRAID,
 				"You are too afraid to attack %s!", m_name);
 
 			/* Nope */
@@ -1899,7 +1899,7 @@ static bool do_cmd_walk_test(int y, int x)
 	{
 		/* Rubble */
 		if (cave->feat[y][x] == FEAT_RUBBLE)
-			message(MSG_HITWALL, 0, "There is a pile of rubble in the way!");
+			msgt(MSG_HITWALL, "There is a pile of rubble in the way!");
 
 		/* Door */
 		else if (cave->feat[y][x] < FEAT_SECRET)
@@ -1907,7 +1907,7 @@ static bool do_cmd_walk_test(int y, int x)
 
 		/* Wall */
 		else
-			message(MSG_HITWALL, 0, "There is a wall in the way!");
+			msgt(MSG_HITWALL, "There is a wall in the way!");
 
 		/* Cancel repeat */
 		disturb(0, 0);
@@ -1979,7 +1979,7 @@ void do_cmd_run(cmd_code code, cmd_arg args[])
 
 	if (p_ptr->timed[TMD_CONFUSED])
 	{
-		msg_print("You are too confused!");
+		msg("%s", "You are too confused!");
 		return;
 	}
 
@@ -2004,7 +2004,7 @@ void do_cmd_pathfind(cmd_code code, cmd_arg args[])
 	/* Hack XXX XXX XXX */
 	if (p_ptr->timed[TMD_CONFUSED])
 	{
-		msg_print("You are too confused!");
+		msg("%s", "You are too confused!");
 		return;
 	}
 

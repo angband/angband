@@ -201,9 +201,9 @@ static void death_file(const char *title, int row)
 
 		/* Check result */
 		if (err)
-			msg_print("Character dump failed!");
+			msg("%s", "Character dump failed!");
 		else
-			msg_print("Character dump successful.");
+			msg("%s", "Character dump successful.");
 
 		/* Flush messages */
 		message_flush();
@@ -409,7 +409,7 @@ void death_screen(void)
 	/* Save dead player */
 	if (!savefile_save(savefile))
 	{
-		msg_print("death save failed!");
+		msg("%s", "death save failed!");
 		message_flush();
 	}
 

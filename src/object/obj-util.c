@@ -1131,7 +1131,7 @@ void compact_objects(int size)
 
 
 	/* Message */
-	msg_print("Compacting objects...");
+	msg("%s", "Compacting objects...");
 
 	/*** Try destroying objects ***/
 
@@ -1231,7 +1231,7 @@ static void mention_preserve(const object_type *o_ptr)
 	/* Describe */
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE | ODESC_SPOIL);
 
-	msg_format("Preserving (%s)", o_name);
+	msg("Preserving (%s)", o_name);
 }
 
 /*
@@ -1358,7 +1358,7 @@ s16b o_pop(void)
 
 
 	/* Warn the player (except during dungeon creation) */
-	if (character_dungeon) msg_print("Too many objects!");
+	if (character_dungeon) msg("%s", "Too many objects!");
 
 	/* Oops */
 	return (0);
@@ -1476,7 +1476,7 @@ static s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
                 	log_file = file_open(buf, pricing_mode, FTYPE_TEXT);
                 	if (!log_file)
                 	{
-                		msg_print("Error - can't open pricing.log for writing.");
+                		msg("%s", "Error - can't open pricing.log for writing.");
                 	        exit(1);
                 	}
 			pricing_mode = MODE_APPEND;
@@ -1502,7 +1502,7 @@ static s32b object_value_real(const object_type *o_ptr, int qty, int verbose,
 		{
 			if (!file_close(log_file))
 			{
-				msg_print("Error - can't close pricing.log file.");
+				msg("%s", "Error - can't close pricing.log file.");
 				exit(1);
 			}
 		}
@@ -2049,7 +2049,7 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 	if (!artifact_p(j_ptr) && (randint0(100) < chance))
 	{
 		/* Message */
-		msg_format("The %s break%s.", o_name, PLURAL(plural));
+		msg("The %s break%s.", o_name, PLURAL(plural));
 
 		/* Failure */
 		return;
@@ -2151,10 +2151,10 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 	if (!flag && !artifact_p(j_ptr))
 	{
 		/* Message */
-		msg_format("The %s disappear%s.", o_name, PLURAL(plural));
+		msg("The %s disappear%s.", o_name, PLURAL(plural));
 
 		/* Debug */
-		if (p_ptr->wizard) msg_print("Breakage (no floor space).");
+		if (p_ptr->wizard) msg("%s", "Breakage (no floor space).");
 
 		/* Failure */
 		return;
@@ -2199,10 +2199,10 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 		artifact_type *a_ptr = artifact_of(j_ptr);
 
 		/* Message */
-		msg_format("The %s disappear%s.", o_name, PLURAL(plural));
+		msg("The %s disappear%s.", o_name, PLURAL(plural));
 
 		/* Debug */
-		if (p_ptr->wizard) msg_print("Breakage (too many objects).");
+		if (p_ptr->wizard) msg("%s", "Breakage (too many objects).");
 
 		if (a_ptr) a_ptr->created = FALSE;
 
@@ -2217,7 +2217,7 @@ void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, boo
 	/* Message when an object falls under the player */
 	if (verbose && (cave->m_idx[by][bx] < 0) && !squelch_item_ok(j_ptr))
 	{
-		msg_print("You feel something roll beneath your feet.");
+		msg("%s", "You feel something roll beneath your feet.");
 	}
 }
 
@@ -2264,8 +2264,8 @@ void inven_item_charges(int item)
 	if (!object_is_known(o_ptr)) return;
 
 	/* Print a message */
-	msg_format("You have %d charge%s remaining.", o_ptr->pval[DEFAULT_PVAL],
-	           (o_ptr->pval[DEFAULT_PVAL] != 1) ? "s" : "");
+	msg("You have %d charge%s remaining.", o_ptr->pval[DEFAULT_PVAL],
+	    (o_ptr->pval[DEFAULT_PVAL] != 1) ? "s" : "");
 }
 
 
@@ -2284,7 +2284,7 @@ void inven_item_describe(int item)
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
 
 		/* Print a message */
-		msg_format("You no longer have the %s (%c).", o_name, index_to_label(item));
+		msg("You no longer have the %s (%c).", o_name, index_to_label(item));
 	}
 	else
 	{
@@ -2292,7 +2292,7 @@ void inven_item_describe(int item)
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 		/* Print a message */
-		msg_format("You have %s (%c).", o_name, index_to_label(item));
+		msg("You have %s (%c).", o_name, index_to_label(item));
 	}
 }
 
@@ -2573,8 +2573,8 @@ void floor_item_charges(int item)
 	if (!object_is_known(o_ptr)) return;
 
 	/* Print a message */
-	msg_format("There are %d charge%s remaining.", o_ptr->pval[DEFAULT_PVAL],
-	           (o_ptr->pval[DEFAULT_PVAL] != 1) ? "s" : "");
+	msg("There are %d charge%s remaining.", o_ptr->pval[DEFAULT_PVAL],
+	    (o_ptr->pval[DEFAULT_PVAL] != 1) ? "s" : "");
 }
 
 
@@ -2592,7 +2592,7 @@ void floor_item_describe(int item)
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	/* Print a message */
-	msg_format("You see %s.", o_name);
+	msg("You see %s.", o_name);
 }
 
 
@@ -2855,7 +2855,7 @@ extern s16b inven_carry(struct player *p, struct object *o)
 		if (player_has(PF_KNOW_MUSHROOM) && j_ptr->tval == TV_FOOD)
 		{
 			do_ident_item(i, j_ptr);
-			msg_print("Mushrooms for breakfast!");
+			msg("%s", "Mushrooms for breakfast!");
 		}
 
 		if (player_has(PF_KNOW_ZAPPER) &&
@@ -2950,7 +2950,7 @@ s16b inven_takeoff(int item, int amt)
 	slot = inven_carry(p_ptr, i_ptr);
 
 	/* Message */
-	message_format(MSG_WIELD, 0, "%s %s (%c).", act, o_name, index_to_label(slot));
+	msgt(MSG_WIELD, "%s %s (%c).", act, o_name, index_to_label(slot));
 
 	p_ptr->notice |= PN_SQUELCH;
 
@@ -3014,7 +3014,7 @@ void inven_drop(int item, int amt)
 	object_desc(o_name, sizeof(o_name), i_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
-	msg_format("You drop %s (%c).", o_name, index_to_label(item));
+	msg("You drop %s (%c).", o_name, index_to_label(item));
 
 	/* Drop it near the player */
 	drop_near(cave, i_ptr, 0, py, px, FALSE);
@@ -3109,7 +3109,7 @@ void combine_pack(void)
 	/* Message */
 	if (flag)
 	{
-		msg_print("You combine some items in your pack.");
+		msg("%s", "You combine some items in your pack.");
 
 		/* Stop "repeat last command" from working. */
 		cmd_disable_repeat();
@@ -3224,7 +3224,7 @@ void reorder_pack(void)
 
 	if (flag) 
 	{
-		msg_print("You reorder some items in your pack.");
+		msg("%s", "You reorder some items in your pack.");
 
 		/* Stop "repeat last command" from working. */
 		cmd_disable_repeat();
@@ -3436,7 +3436,7 @@ int lookup_kind(int tval, int sval)
 	}
 
 	/* Failure */
-	msg_format("No object: %d:%d (%s)", tval, sval, tval_find_name(tval));
+	msg("No object: %d:%d (%s)", tval, sval, tval_find_name(tval));
 	return 0;
 }
 
@@ -3543,7 +3543,7 @@ int lookup_name(int tval, const char *name)
 			return k;
 	}
 
-	msg_format("No object (\"%s\",\"%s\")", tval_find_name(tval), name);
+	msg("No object (\"%s\",\"%s\")", tval_find_name(tval), name);
 	return -1;
 }
 
@@ -4290,13 +4290,13 @@ void pack_overflow(void)
 	disturb(0, 0);
 
 	/* Warning */
-	msg_print("Your pack overflows!");
+	msg("%s", "Your pack overflows!");
 
 	/* Describe */
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
-	msg_format("You drop %s (%c).", o_name, index_to_label(item));
+	msg("You drop %s (%c).", o_name, index_to_label(item));
 
 	/* Drop it (carefully) near the player */
 	drop_near(cave, o_ptr, 0, p_ptr->py, p_ptr->px, FALSE);

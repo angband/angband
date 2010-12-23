@@ -570,7 +570,7 @@ static bool cast_mage_spell(int spell, int dir)
 
 		case SPELL_SPEAR_OF_LIGHT:
 		{
-			msg_print("A line of blue shimmering light appears.");
+			msg("%s", "A line of blue shimmering light appears.");
 			light_line(dir);
 			break;
 		}
@@ -1201,7 +1201,7 @@ static bool cast_priest_spell(int spell, int dir)
 		{
 			if (banish_evil(100))
 			{
-				msg_print("The power of your god banishes evil!");
+				msg("%s", "The power of your god banishes evil!");
 			}
 			break;
 		}
@@ -1283,7 +1283,7 @@ static bool cast_priest_spell(int spell, int dir)
 
 		case PRAYER_ALTER_REALITY:
 		{
-			msg_print("The world changes!");
+			msg("%s", "The world changes!");
 
 			/* Leaving */
 			p_ptr->leaving = TRUE;

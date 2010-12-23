@@ -173,9 +173,9 @@ void do_cmd_change_name(void)
 			if (get_file(fname, buf, sizeof buf))
 			{
 				if (file_character(buf, FALSE) != 0)
-					msg_print("Character dump failed!");
+					msg("%s", "Character dump failed!");
 				else
-					msg_print("Character dump successful.");
+					msg("%s", "Character dump successful.");
 			}
 		}
 
@@ -454,7 +454,7 @@ void do_cmd_note(void)
 	if (!tmp[0] || (tmp[0] == ' ')) return;
 
 	/* Add the note to the message recall */
-	msg_format("Note: %s", tmp);
+	msg("Note: %s", tmp);
 
 	/* Add a history entry */
 	history_add(tmp, HISTORY_USER_INPUT, 0);
@@ -467,7 +467,7 @@ void do_cmd_note(void)
 void do_cmd_version(void)
 {
 	/* Silly message */
-	msg_format("You are playing %s %s.  Type '?' for more info.",
+	msg("You are playing %s %s.  Type '?' for more info.",
 		       VERSION_NAME, VERSION_STRING);
 }
 
@@ -526,12 +526,12 @@ void do_cmd_feeling(void)
 	/* No useful feeling in town */
 	if (!p_ptr->depth)
 	{
-		msg_print("Looks like a typical town.");
+		msg("%s", "Looks like a typical town.");
 		return;
 	}
 
 	/* Display the feeling */
-	msg_print(feeling_text[cave->feeling]);
+	msg("%s", feeling_text[cave->feeling]);
 }
 
 
@@ -628,7 +628,7 @@ void do_cmd_load_screen(void)
 
 
 	/* Message */
-	msg_print("Screen dump loaded.");
+	msg("%s", "Screen dump loaded.");
 	message_flush();
 
 
@@ -714,7 +714,7 @@ static void do_cmd_save_screen_text(void)
 
 
 	/* Message */
-	msg_print("Screen dump saved.");
+	msg("%s", "Screen dump saved.");
 	message_flush();
 
 
@@ -754,7 +754,7 @@ static void do_cmd_save_screen_html(int mode)
 	/* Check for failure */
 	if (!fff)
 	{
-		msg_print("Screen dump failed.");
+		msg("%s", "Screen dump failed.");
 		message_flush();
 		return;
 	}
@@ -776,7 +776,7 @@ static void do_cmd_save_screen_html(int mode)
 	file_delete(file_name);
 	do_cmd_redraw();
 
-	msg_print("HTML screen dump saved.");
+	msg("%s", "HTML screen dump saved.");
 	message_flush();
 }
 
@@ -786,7 +786,7 @@ static void do_cmd_save_screen_html(int mode)
  */
 void do_cmd_save_screen(void)
 {
-	msg_print("Dump type [(t)ext; (h)tml; (f)orum embedded html]:");
+	msg("%s", "Dump type [(t)ext; (h)tml; (f)orum embedded html]:");
 
 	while (TRUE)
 	{

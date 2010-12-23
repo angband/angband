@@ -632,7 +632,7 @@ void object_notice_slay(object_type *o_ptr, int flag)
 			{
 				char o_name[40];
 				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-				msg_format("Your %s %s!", o_name, s_ptr->active_verb);
+				msg("Your %s %s!", o_name, s_ptr->active_verb);
 			}
 		}
 	}
@@ -655,7 +655,7 @@ static void object_notice_defence_plusses(object_type *o_ptr)
 		char o_name[80];
 
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-		message_format(MSG_PSEUDOID, 0,
+		msgt(MSG_PSEUDOID,
 				"You know more about the %s you are wearing.",
 				o_name);
 	}
@@ -681,7 +681,7 @@ void object_notice_attack_plusses(object_type *o_ptr)
 		char o_name[80];
 
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-		message_format(MSG_PSEUDOID, 0,
+		msgt(MSG_PSEUDOID,
 				"You know more about the %s you are using.",
 				o_name);
 	}
@@ -691,7 +691,7 @@ void object_notice_attack_plusses(object_type *o_ptr)
 		char o_name[80];
 
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-		message_format(MSG_PSEUDOID, 0, "Your %s glows.", o_name);
+		msgt(MSG_PSEUDOID, "Your %s glows.", o_name);
 	}
 
 	p_ptr->update |= (PU_BONUS);
@@ -892,46 +892,46 @@ void object_notice_on_wield(object_type *o_ptr)
 		{
 			char o_name[40];
 			object_desc(o_name, sizeof(o_name), o_ptr, ODESC_BASE);
-			msg_format("Your %s %s!", o_name, s_ptr->active_verb);
+			msg("Your %s %s!", o_name, s_ptr->active_verb);
 		}
 	}
 
 	/* XXX Eddie need to add stealth here, also need to assert/double-check everything is covered */
 	if (of_has(f, OF_STR))
-		msg_format("You feel %s!", o_ptr->pval[which_pval(o_ptr,
+		msg("You feel %s!", o_ptr->pval[which_pval(o_ptr,
 			OF_STR)] > 0 ? "stronger" : "weaker");
 	if (of_has(f, OF_INT))
-		msg_format("You feel %s!", o_ptr->pval[which_pval(o_ptr,
+		msg("You feel %s!", o_ptr->pval[which_pval(o_ptr,
 			OF_INT)] > 0 ? "smarter" : "more stupid");
 	if (of_has(f, OF_WIS))
-		msg_format("You feel %s!", o_ptr->pval[which_pval(o_ptr,
+		msg("You feel %s!", o_ptr->pval[which_pval(o_ptr,
 			OF_WIS)] > 0 ? "wiser" : "more naive");
 	if (of_has(f, OF_DEX))
-		msg_format("You feel %s!", o_ptr->pval[which_pval(o_ptr,
+		msg("You feel %s!", o_ptr->pval[which_pval(o_ptr,
 			OF_DEX)] > 0 ? "more dextrous" : "clumsier");
 	if (of_has(f, OF_CON))
-		msg_format("You feel %s!", o_ptr->pval[which_pval(o_ptr,
+		msg("You feel %s!", o_ptr->pval[which_pval(o_ptr,
 			OF_CON)] > 0 ? "healthier" : "sicklier");
 	if (of_has(f, OF_CHR))
-		msg_format("You feel %s!", o_ptr->pval[which_pval(o_ptr,
+		msg("You feel %s!", o_ptr->pval[which_pval(o_ptr,
 			OF_CHR)] > 0 ? "cuter" : "uglier");
 	if (of_has(f, OF_SPEED))
-		msg_format("You feel strangely %s.", o_ptr->pval[which_pval(o_ptr,
+		msg("You feel strangely %s.", o_ptr->pval[which_pval(o_ptr,
 			OF_SPEED)] > 0 ? "quick" : "sluggish");
 	if (of_has(f, OF_BLOWS))
-		msg_format("Your weapon %s in your hands.",
+		msg("Your weapon %s in your hands.",
 			o_ptr->pval[which_pval(o_ptr, OF_BLOWS)] > 0 ?
 				"tingles" : "aches");
 	if (of_has(f, OF_SHOTS))
-		msg_format("Your bow %s in your hands.",
+		msg("Your bow %s in your hands.",
 			o_ptr->pval[which_pval(o_ptr, OF_SHOTS)] > 0 ?
 				"tingles" : "aches");
 	if (of_has(f, OF_INFRA))
-		msg_format("Your eyes tingle.");
+		msg("Your eyes tingle.");
 	if (of_has(f, OF_LIGHT))
-		msg_print("It glows!");
+		msg("%s", "It glows!");
 	if (of_has(f, OF_TELEPATHY))
-		msg_print("Your mind feels strangely sharper!");
+		msg("%s", "Your mind feels strangely sharper!");
 
 	/* WARNING -- masking f by obvious mask -- this should be at the end of this function */
 	flags_mask(f, OF_SIZE, OF_OBVIOUS_MASK, FLAG_END);
@@ -981,7 +981,7 @@ static void object_notice_after_time(void)
 			{
 				/* Message */
 				if (!streq(msgs[flag], ""))
-					msg_format(msgs[flag], o_name);
+					msg(msgs[flag], o_name);
 
 				/* Notice the flag */
 				object_notice_flag(o_ptr, flag);
@@ -1045,7 +1045,7 @@ void wieldeds_notice_flag(int flag)
 
 			/* Message */
 			if (!streq(msgs[flag], ""))
-				msg_format(msgs[flag], o_name);
+				msg(msgs[flag], o_name);
 		}
 		else
 		{
@@ -1283,7 +1283,7 @@ void sense_inventory(void)
 		{
 			object_notice_everything(o_ptr);
 
-			message_format(MSG_PSEUDOID, 0,
+			msgt(MSG_PSEUDOID,
 					"You feel the %s (%c) %s %s average...",
 					o_name, index_to_label(i),((i >=
 					INVEN_WIELD) ? "you are using" : "in your pack"),
@@ -1293,14 +1293,14 @@ void sense_inventory(void)
 		{
 			if (i >= INVEN_WIELD)
 			{
-				message_format(MSG_PSEUDOID, 0, "You feel the %s (%c) you are %s %s %s...",
+				msgt(MSG_PSEUDOID, "You feel the %s (%c) you are %s %s %s...",
 							   o_name, index_to_label(i), describe_use(i),
 							   ((o_ptr->number == 1) ? "is" : "are"),
 				                           text);
 			}
 			else
 			{
-				message_format(MSG_PSEUDOID, 0, "You feel the %s (%c) in your pack %s %s...",
+				msgt(MSG_PSEUDOID, "You feel the %s (%c) in your pack %s %s...",
 							   o_name, index_to_label(i),
 							   ((o_ptr->number == 1) ? "is" : "are"),
 				                           text);

@@ -1319,12 +1319,12 @@ static int message_column = 0;
  * "pending" messages still on the screen, instead of using "msg_flush()".
  * This should only be done when the user is known to have read the message.
  *
- * We must be very careful about using the "msg_print()" functions without
- * explicitly calling the special "msg_print(NULL)" function, since this may
+ * We must be very careful about using the "msg("%s", )" functions without
+ * explicitly calling the special "msg("%s", NULL)" function, since this may
  * result in the loss of information if the screen is cleared, or if anything
  * is displayed on the top line.
  *
- * Hack -- Note that "msg_print(NULL)" will clear the top line even if no
+ * Hack -- Note that "msg("%s", NULL)" will clear the top line even if no
  * messages are pending.
  */
 static void msg_print_aux(u16b type, cptr msg)
@@ -1430,20 +1430,10 @@ static void msg_print_aux(u16b type, cptr msg)
 	event_signal(EVENT_MESSAGE);
 }
 
-
 /*
- * Print a message in the default color (white)
+ * Display a formatted message, using "vstrnfmt()" and "msg("%s", )".
  */
-void msg_print(cptr msg)
-{
-	msg_print_aux(MSG_GENERIC, msg);
-}
-
-
-/*
- * Display a formatted message, using "vstrnfmt()" and "msg_print()".
- */
-void msg_format(cptr fmt, ...)
+void msg(const char *fmt, ...)
 {
 	va_list vp;
 
@@ -1462,48 +1452,16 @@ void msg_format(cptr fmt, ...)
 	msg_print_aux(MSG_GENERIC, buf);
 }
 
-
-/*
- * Display a message and play the associated sound.
- *
- * The "extra" parameter is currently unused.
- */
-void message(u16b message_type, s16b extra, cptr message)
-{
-	/* Unused parameter */
-	(void)extra;
-
-	sound(message_type);
-
-	msg_print_aux(message_type, message);
-}
-
-
-
-/*
- * Display a formatted message and play the associated sound.
- *
- * The "extra" parameter is currently unused.
- */
-void message_format(u16b message_type, s16b extra, cptr fmt, ...)
+void msgt(unsigned int type, const char *fmt, ...)
 {
 	va_list vp;
-
 	char buf[1024];
-
-	/* Begin the Varargs Stuff */
 	va_start(vp, fmt);
-
-	/* Format the args, save the length */
-	(void)vstrnfmt(buf, sizeof(buf), fmt, vp);
-
-	/* End the Varargs Stuff */
+	vstrnfmt(buf, sizeof(buf), fmt, vp);
 	va_end(vp);
-
-	/* Display */
-	message(message_type, extra, buf);
+	sound(type);
+	msg_print_aux(type, buf);
 }
-
 
 /*
  * Print the queued messages.

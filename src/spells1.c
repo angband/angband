@@ -291,11 +291,11 @@ void teleport_player_level(void)
 	{
 		if (OPT(birth_ironman))
 		{
-			msg_print("Nothing happens.");
+			msg("%s", "Nothing happens.");
 			return;
 		}
 
-		message(MSG_TPLEVEL, 0, "You rise up through the ceiling.");
+		msgt(MSG_TPLEVEL, "You rise up through the ceiling.");
 
 		/* New depth */
 		p_ptr->depth--;
@@ -306,7 +306,7 @@ void teleport_player_level(void)
 
 	else if ((!p_ptr->depth) || (OPT(birth_ironman)))
 	{
-		message(MSG_TPLEVEL, 0, "You sink through the floor.");
+		msgt(MSG_TPLEVEL, "You sink through the floor.");
 
 		/* New depth */
 		p_ptr->depth++;
@@ -317,7 +317,7 @@ void teleport_player_level(void)
 
 	else if (randint0(100) < 50)
 	{
-		message(MSG_TPLEVEL, 0, "You rise up through the ceiling.");
+		msgt(MSG_TPLEVEL, "You rise up through the ceiling.");
 
 		/* New depth */
 		p_ptr->depth--;
@@ -328,7 +328,7 @@ void teleport_player_level(void)
 
 	else
 	{
-		message(MSG_TPLEVEL, 0, "You sink through the floor.");
+		msgt(MSG_TPLEVEL, "You sink through the floor.");
 
 		/* New depth */
 		p_ptr->depth++;
@@ -506,7 +506,7 @@ void take_hit(int dam, cptr kb_str)
 	if (p_ptr->chp < 0)
 	{
 		/* Hack -- Note death */
-		message(MSG_DEATH, 0, "You die.");
+		msgt(MSG_DEATH, "You die.");
 		message_flush();
 
 		/* Note cause of death */
@@ -535,7 +535,7 @@ void take_hit(int dam, cptr kb_str)
 		}
 
 		/* Message */
-		message(MSG_HITPOINT_WARN, 0, "*** LOW HITPOINT WARNING! ***");
+		msgt(MSG_HITPOINT_WARN, "*** LOW HITPOINT WARNING! ***");
 		message_flush();
 	}
 }
@@ -882,7 +882,7 @@ static int inven_damage(inven_func typ, int cperc)
 				object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
 
 				/* Message */
-				message_format(MSG_DESTROY, 0, "%sour %s (%c) %s %s!",
+				msgt(MSG_DESTROY, "%sour %s (%c) %s %s!",
 				           ((o_ptr->number > 1) ?
 				            ((amt == o_ptr->number) ? "All of y" :
 				             (amt > 1 ? "Some of y" : "One of y")) : "Y"),
@@ -956,13 +956,13 @@ static int minus_ac(void)
 	/* Object resists */
 	if (of_has(f, OF_IGNORE_ACID))
 	{
-		msg_format("Your %s is unaffected!", o_name);
+		msg("Your %s is unaffected!", o_name);
 
 		return (TRUE);
 	}
 
 	/* Message */
-	msg_format("Your %s is damaged!", o_name);
+	msg("Your %s is damaged!", o_name);
 
 	/* Damage the item */
 	o_ptr->to_a--;
@@ -1231,7 +1231,7 @@ bool apply_disenchant(int mode)
 	if (artifact_p(o_ptr) && (randint0(100) < 60))
 	{
 		/* Message */
-		msg_format("Your %s (%c) resist%s disenchantment!",
+		msg("Your %s (%c) resist%s disenchantment!",
 		           o_name, index_to_label(t),
 		           ((o_ptr->number != 1) ? "" : "s"));
 
@@ -1253,7 +1253,7 @@ bool apply_disenchant(int mode)
 	if ((o_ptr->to_a > 5) && (randint0(100) < 20)) o_ptr->to_a--;
 
 	/* Message */
-	msg_format("Your %s (%c) %s disenchanted!",
+	msg("Your %s (%c) %s disenchanted!",
 	           o_name, index_to_label(t),
 	           ((o_ptr->number != 1) ? "were" : "was"));
 
@@ -1293,7 +1293,7 @@ static void apply_nexus(const monster_type *m_ptr)
 		{
 			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
-				msg_print("You resist the effects!");
+				msg("%s", "You resist the effects!");
 				break;
 			}
 
@@ -1306,11 +1306,11 @@ static void apply_nexus(const monster_type *m_ptr)
 		{
 			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
-				msg_print("You resist the effects!");
+				msg("%s", "You resist the effects!");
 				break;
 			}
 
-			msg_print("Your body starts to scramble...");
+			msg("%s", "Your body starts to scramble...");
 
 			/* Pick a pair of stats */
 			ii = randint0(A_MAX);
@@ -1417,7 +1417,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				/* Check line of sight */
 				if (player_has_los_bold(y, x))
 				{
-					msg_print("There is a bright flash of light!");
+					msg("%s", "There is a bright flash of light!");
 					obvious = TRUE;
 				}
 
@@ -1438,7 +1438,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				/* Check line of sound */
 				if (player_has_los_bold(y, x))
 				{
-					msg_print("Click!");
+					msg("%s", "Click!");
 					obvious = TRUE;
 				}
 			}
@@ -1462,7 +1462,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				if (player_has_los_bold(y, x))
 				{
 					/* Message */
-					msg_print("There is a bright flash of light!");
+					msg("%s", "There is a bright flash of light!");
 					obvious = TRUE;
 
 					/* Visibility change */
@@ -1499,7 +1499,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				/* Message */
 				if (cave->info[y][x] & (CAVE_MARK))
 				{
-					msg_print("The wall turns into mud!");
+					msg("%s", "The wall turns into mud!");
 					obvious = TRUE;
 				}
 
@@ -1516,8 +1516,8 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				/* Message */
 				if (cave->info[y][x] & (CAVE_MARK))
 				{
-					msg_print("The vein turns into mud!");
-					msg_print("You have found something!");
+					msg("%s", "The vein turns into mud!");
+					msg("%s", "You have found something!");
 					obvious = TRUE;
 				}
 
@@ -1537,7 +1537,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				/* Message */
 				if (cave->info[y][x] & (CAVE_MARK))
 				{
-					msg_print("The vein turns into mud!");
+					msg("%s", "The vein turns into mud!");
 					obvious = TRUE;
 				}
 
@@ -1554,7 +1554,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				/* Message */
 				if (cave->info[y][x] & (CAVE_MARK))
 				{
-					msg_print("The rubble turns into mud!");
+					msg("%s", "The rubble turns into mud!");
 					obvious = TRUE;
 				}
 
@@ -1570,7 +1570,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 					/* Found something */
 					if (player_can_see_bold(y, x))
 					{
-						msg_print("There was something buried in the rubble!");
+						msg("%s", "There was something buried in the rubble!");
 						obvious = TRUE;
 					}
 
@@ -1585,7 +1585,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				/* Hack -- special message */
 				if (cave->info[y][x] & (CAVE_MARK))
 				{
-					msg_print("The door turns into mud!");
+					msg("%s", "The door turns into mud!");
 					obvious = TRUE;
 				}
 
@@ -1897,7 +1897,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 						/* Notice */
 						if (o_ptr->marked && !squelch_item_ok(o_ptr))
 						{
-							msg_print("Click!");
+							msg("%s", "Click!");
 							obvious = TRUE;
 						}
 					}
@@ -1924,7 +1924,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 				/* Observe the resist */
 				if (o_ptr->marked && !squelch_item_ok(o_ptr))
 				{
-					msg_format("The %s %s unaffected!",
+					msg("The %s %s unaffected!",
 					           o_name, (plural ? "are" : "is"));
 				}
 			}
@@ -1935,7 +1935,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 				/* Describe if needed */
 				if (o_ptr->marked && note_kill && !squelch_item_ok(o_ptr))
 				{
-					message_format(MSG_DESTROY, 0, "The %s%s", o_name, note_kill);
+					msgt(MSG_DESTROY, "The %s%s", o_name, note_kill);
 				}
 
 				/* Delete the object */
@@ -3156,7 +3156,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			delete_monster_idx(cave->m_idx[y][x]);
 
 			/* Give detailed messages if destroyed */
-			if (note) msg_format("%^s%s", m_name, note);
+			if (note) msg("%^s%s", m_name, note);
 
 			mon_died = TRUE;
 		}
@@ -3165,7 +3165,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		else
 		{
 			/* Give detailed messages if visible or destroyed */
-			if (note && seen) msg_format("%^s%s", m_name, note);
+			if (note && seen) msg("%^s%s", m_name, note);
 
 			/* Hack -- Pain message */
 			else if (dam > 0) message_pain(cave->m_idx[y][x], dam);
@@ -3188,7 +3188,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		else
 		{
 			/* Give detailed messages if visible or destroyed */
-			if (note && seen) msg_format("%^s%s", m_name, note);
+			if (note && seen) msg("%^s%s", m_name, note);
 
 			/* Hack -- Pain message */
 			else if (dam > 0) message_pain(cave->m_idx[y][x], dam);
@@ -3197,8 +3197,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (seen && (fear || m_ptr->monfear))
 			{
 				/* Message */
-				message_format(MSG_FLEE, m_ptr->r_idx,
-				               "%^s flees in terror!", m_name);
+				msgt(MSG_FLEE, "%^s flees in terror!", m_name);
 			}
 		}
 	}
@@ -3237,7 +3236,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 		}
 
 		/* Print the message */
-		if (seen && note) msg_format("%^s%s", m_name, note);
+		if (seen && note) msg("%^s%s", m_name, note);
 	}
 
 
@@ -3340,7 +3339,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Standard damage -- hurts inventory too */
 		case GF_ACID:
 		{
-			if (blind) msg_print("You are hit by acid!");
+			if (blind) msg("%s", "You are hit by acid!");
 			acid_dam(dam, killer);
 			break;
 		}
@@ -3348,7 +3347,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Standard damage -- hurts inventory too */
 		case GF_FIRE:
 		{
-			if (blind) msg_print("You are hit by fire!");
+			if (blind) msg("%s", "You are hit by fire!");
 			fire_dam(dam, killer);
 			break;
 		}
@@ -3356,7 +3355,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Standard damage -- hurts inventory too */
 		case GF_COLD:
 		{
-			if (blind) msg_print("You are hit by cold!");
+			if (blind) msg("%s", "You are hit by cold!");
 			cold_dam(dam, killer);
 			break;
 		}
@@ -3364,7 +3363,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Standard damage -- hurts inventory too */
 		case GF_ELEC:
 		{
-			if (blind) msg_print("You are hit by lightning!");
+			if (blind) msg("%s", "You are hit by lightning!");
 			elec_dam(dam, killer);
 			break;
 		}
@@ -3372,7 +3371,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Standard damage -- also poisons player */
 		case GF_POIS:
 		{
-			if (blind) msg_print("You are hit by poison!");
+			if (blind) msg("%s", "You are hit by poison!");
 			if (p_ptr->state.resist_pois)
 			{
 				dam = RES_POIS_ADJ(dam, NOT_USED);
@@ -3393,7 +3392,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Standard damage */
 		case GF_MISSILE:
 		{
-			if (blind) msg_print("You are hit by something!");
+			if (blind) msg("%s", "You are hit by something!");
 			take_hit(dam, killer);
 			break;
 		}
@@ -3401,7 +3400,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Holy Orb -- Player only takes partial damage */
 		case GF_HOLY_ORB:
 		{
-			if (blind) msg_print("You are hit by something!");
+			if (blind) msg("%s", "You are hit by something!");
 			dam /= 2;
 			take_hit(dam, killer);
 			break;
@@ -3410,7 +3409,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Arrow -- no dodging XXX */
 		case GF_ARROW:
 		{
-			if (blind) msg_print("You are hit by something sharp!");
+			if (blind) msg("%s", "You are hit by something sharp!");
 			take_hit(dam, killer);
 			break;
 		}
@@ -3418,7 +3417,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Plasma -- No resist XXX */
 		case GF_PLASMA:
 		{
-			if (blind) msg_print("You are hit by something!");
+			if (blind) msg("%s", "You are hit by something!");
 			take_hit(dam, killer);
 			if (!p_ptr->state.resist_stun)
 			{
@@ -3435,7 +3434,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Nether -- drain experience */
 		case GF_NETHER:
 		{
-			if (blind) msg_print("You are hit by something strange!");
+			if (blind) msg("%s", "You are hit by something strange!");
 			if (p_ptr->state.resist_nethr)
 			{
 				dam = RES_NETH_ADJ(dam, RANDOMISE);
@@ -3445,7 +3444,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			{
 				if (p_ptr->state.hold_life && (randint0(100) < 75))
 				{
-					msg_print("You keep hold of your life force!");
+					msg("%s", "You keep hold of your life force!");
 					wieldeds_notice_flag(OF_HOLD_LIFE);
 				}
 				else
@@ -3454,13 +3453,13 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 
 					if (p_ptr->state.hold_life)
 					{
-						msg_print("You feel your life slipping away!");
+						msg("%s", "You feel your life slipping away!");
 						lose_exp(d / 10);
 						wieldeds_notice_flag(OF_HOLD_LIFE);
 					}
 					else
 					{
-						msg_print("You feel your life draining away!");
+						msg("%s", "You feel your life draining away!");
 						lose_exp(d);
 					}
 				}
@@ -3472,7 +3471,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Water -- stun/confuse */
 		case GF_WATER:
 		{
-			if (blind) msg_print("You are hit by something!");
+			if (blind) msg("You are hit by something!");
 			if (!p_ptr->state.resist_stun)
 				(void)inc_timed(TMD_STUN, randint1(40), TRUE);
 			else
@@ -3490,7 +3489,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Chaos -- many effects */
 		case GF_CHAOS:
 		{
-			if (blind) msg_print("You are hit by something strange!");
+			if (blind) msg("%s", "You are hit by something strange!");
 			if (p_ptr->state.resist_chaos)
 			{
 				dam = RES_CHAO_ADJ(dam, RANDOMISE);
@@ -3510,7 +3509,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			{
 				if (p_ptr->state.hold_life && (randint0(100) < 75))
 				{
-					msg_print("You keep hold of your life force!");
+					msg("%s", "You keep hold of your life force!");
 					wieldeds_notice_flag(OF_HOLD_LIFE);
 				}
 				else
@@ -3519,13 +3518,13 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 
 					if (p_ptr->state.hold_life)
 					{
-						msg_print("You feel your life slipping away!");
+						msg("%s", "You feel your life slipping away!");
 						lose_exp(d / 10);
 						wieldeds_notice_flag(OF_HOLD_LIFE);
 					}
 					else
 					{
-						msg_print("You feel your life draining away!");
+						msg("%s", "You feel your life draining away!");
 						lose_exp(d);
 					}
 				}
@@ -3542,7 +3541,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Shards -- mostly cutting */
 		case GF_SHARD:
 		{
-			if (blind) msg_print("You are hit by something sharp!");
+			if (blind) msg("%s", "You are hit by something sharp!");
 			if (p_ptr->state.resist_shard)
 			{
 				dam = RES_SHAR_ADJ(dam, RANDOMISE);
@@ -3559,7 +3558,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Sound -- mostly stunning */
 		case GF_SOUND:
 		{
-			if (blind) msg_print("You are hit by something!");
+			if (blind) msg("You are hit by something!");
 			if (p_ptr->state.resist_sound) {
 				dam = RES_SOUN_ADJ(dam, RANDOMISE);
 				wieldeds_notice_flag(OF_RES_SOUND);
@@ -3577,7 +3576,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Disenchantment -- see above */
 		case GF_DISENCHANT:
 		{
-			if (blind) msg_print("You are hit by something strange!");
+			if (blind) msg("%s", "You are hit by something strange!");
 			if (p_ptr->state.resist_disen)
 			{
 				dam = RES_DISE_ADJ(dam, RANDOMISE);
@@ -3594,7 +3593,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Nexus -- see above */
 		case GF_NEXUS:
 		{
-			if (blind) msg_print("You are hit by something strange!");
+			if (blind) msg("%s", "You are hit by something strange!");
 			if (p_ptr->state.resist_nexus)
 			{
 				dam = RES_NEXU_ADJ(dam, RANDOMISE);
@@ -3611,7 +3610,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Force -- mostly stun */
 		case GF_FORCE:
 		{
-			if (blind) msg_print("You are hit by something!");
+			if (blind) msg("You are hit by something!");
 			if (!p_ptr->state.resist_stun)
 				(void)inc_timed(TMD_STUN, randint1(20), TRUE);
 			else
@@ -3624,7 +3623,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Inertia -- slowness */
 		case GF_INERTIA:
 		{
-			if (blind) msg_print("You are hit by something strange!");
+			if (blind) msg("%s", "You are hit by something strange!");
 			(void)inc_timed(TMD_SLOW, randint0(4) + 4, TRUE);
 			take_hit(dam, killer);
 			break;
@@ -3633,7 +3632,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Light -- blinding */
 		case GF_LIGHT:
 		{
-			if (blind) msg_print("You are hit by something!");
+			if (blind) msg("%s", "You are hit by something!");
 			if (p_ptr->state.resist_light)
 			{
 				dam = RES_LIGHT_ADJ(dam, RANDOMISE);
@@ -3654,7 +3653,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Dark -- blinding */
 		case GF_DARK:
 		{
-			if (blind) msg_print("You are hit by something!");
+			if (blind) msg("%s", "You are hit by something!");
 			if (p_ptr->state.resist_dark)
 			{
 				dam = RES_DARK_ADJ(dam, RANDOMISE);
@@ -3676,13 +3675,13 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Time -- bolt fewer effects XXX */
 		case GF_TIME:
 		{
-			if (blind) msg_print("You are hit by something strange!");
+			if (blind) msg("%s", "You are hit by something strange!");
 
 			switch (randint1(10))
 			{
 				case 1: case 2: case 3: case 4: case 5:
 				{
-					msg_print("You feel life has clocked back.");
+					msg("%s", "You feel life has clocked back.");
 					lose_exp(100 + (p_ptr->exp / 100) * MON_DRAIN_LIFE);
 					break;
 				}
@@ -3699,7 +3698,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 						case 6: k = A_CHR; act = "beautiful"; break;
 					}
 
-					msg_format("You're not as %s as you used to be...", act);
+					msg("You're not as %s as you used to be...", act);
 
 					player_stat_dec(p_ptr, k, FALSE);
 					player_stat_dec(p_ptr, k, FALSE);
@@ -3708,7 +3707,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 
 				case 10:
 				{
-					msg_print("You're not as powerful as you used to be...");
+					msg("%s", "You're not as powerful as you used to be...");
 
 					for (k = 0; k < A_MAX; k++)
 					{
@@ -3724,8 +3723,8 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Gravity -- stun plus slowness plus teleport */
 		case GF_GRAVITY:
 		{
-			if (blind) msg_print("You are hit by something strange!");
-			msg_print("Gravity warps around you.");
+			if (blind) msg("%s", "You are hit by something strange!");
+			msg("%s", "Gravity warps around you.");
 
 			/* Higher level players can resist the teleportation better */
 			if (randint1(127) > p_ptr->lev)
@@ -3748,7 +3747,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Pure damage */
 		case GF_MANA:
 		{
-			if (blind) msg_print("You are hit by something!");
+			if (blind) msg("%s", "You are hit by something!");
 			take_hit(dam, killer);
 			break;
 		}
@@ -3756,7 +3755,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Pure damage */
 		case GF_METEOR:
 		{
-			if (blind) msg_print("You are hit by something!");
+			if (blind) msg("%s", "You are hit by something!");
 			take_hit(dam, killer);
 			break;
 		}
@@ -3764,7 +3763,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		/* Ice -- cold plus stun plus cuts */
 		case GF_ICE:
 		{
-			if (blind) msg_print("You are hit by something sharp!");
+			if (blind) msg("%s", "You are hit by something sharp!");
 			cold_dam(dam, killer);
 
 			if (!p_ptr->state.resist_shard)

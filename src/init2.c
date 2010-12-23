@@ -59,7 +59,7 @@ struct file_parser {
 static void print_error(struct file_parser *fp, struct parser *p) {
 	struct parser_state s;
 	parser_getstate(p, &s);
-	msg_format("Parse error in %s line %d column %d: %s: %s", fp->name,
+	msg("Parse error in %s line %d column %d: %s: %s", fp->name,
 	           s.line, s.col, s.msg, parser_error_str[s.error]);
 	message_flush();
 	quit_fmt("Parse error in %s line %d column %d.", fp->name, s.line, s.col);
@@ -128,7 +128,7 @@ static u32b grab_one_effect(const char *what) {
 	}
 
 	/* Oops */
-	msg_format("Unknown effect '%s'.", what);
+	msg("Unknown effect '%s'.", what);
 
 	/* Error */
 	return 0;
@@ -1255,7 +1255,7 @@ static errr eval_e_slays(struct ego_item *items)
 					continue;
 			}
 
-			/* msg_print("Found a new slay combo on an ego item"); */
+			/* msg("%s", "Found a new slay combo on an ego item"); */
 			count++;
 			of_copy(dupcheck[i], cacheme);
 		}
@@ -1273,7 +1273,7 @@ static errr eval_e_slays(struct ego_item *items)
 			of_copy(slay_cache[count].flags, dupcheck[i]);
 			slay_cache[count].value = 0;
 			count++;
-			/*msg_print("Cached a slay combination");*/
+			/*msg("%s", "Cached a slay combination");*/
 		}
 	}
 
@@ -2163,7 +2163,7 @@ errr eval_r_power(struct monster_race *races)
 	r_ptr = &races[547];
 	if (r_ptr->power)
 	{
-	     /*	msg_print("Monster power array already filled - returning."); */
+	     /*	msg("%s", "Monster power array already filled - returning."); */
 		return 0;
 	}
 

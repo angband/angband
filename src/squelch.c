@@ -158,7 +158,7 @@ int apply_autoinscription(object_type *o_ptr)
 	else
 		o_ptr->note = NULL;
 
-	msg_format("You autoinscribe %s.", o_name);
+	msg("You autoinscribe %s.", o_name);
 
 	return 1;
 }
@@ -455,7 +455,6 @@ bool squelch_item_ok(const object_type *o_ptr)
 	else
 		return FALSE;
 }
-
 
 /*
  * Drop all {squelch}able items.

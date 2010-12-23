@@ -1307,7 +1307,7 @@ bool show_file(cptr name, cptr what, int line, int mode)
 	if (!fff)
 	{
 		/* Message */
-		msg_format("Cannot open '%s'.", name);
+		msg("Cannot open '%s'.", name);
 		message_flush();
 
 		/* Oops */
@@ -1833,7 +1833,7 @@ void exit_game_panic(void)
 	/* If nothing important has happened, just quit */
 	if (!character_generated || character_saved) quit("panic");
 
-	/* Mega-Hack -- see "msg_print()" */
+	/* Mega-Hack -- see "msg("%s", )" */
 	msg_flag = FALSE;
 
 	/* Clear the top line */

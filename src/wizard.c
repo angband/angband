@@ -772,7 +772,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 		}
 
 		/* Let us know what we are doing */
-		msg_format("Creating a lot of %s items. Base level = %d.",
+		msg("Creating a lot of %s items. Base level = %d.",
 		           quality, p_ptr->depth);
 		message_flush();
 
@@ -870,7 +870,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 		}
 
 		/* Final dump */
-		msg_format(q, i, matches, better, worse, other);
+		msg(q, i, matches, better, worse, other);
 		message_flush();
 	}
 
@@ -933,7 +933,7 @@ static void wiz_tweak_curse(object_type *o_ptr)
 {
 	if (cursed_p(o_ptr))
 	{
-		msg_print("Resetting existing curses.");
+		msg("%s", "Resetting existing curses.");
 		flags_clear(o_ptr->flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
 	}
 
@@ -1031,7 +1031,7 @@ static void do_cmd_wiz_play(void)
 	if (changed)
 	{
 		/* Message */
-		msg_print("Changes accepted.");
+		msg("%s", "Changes accepted.");
 
 		/* Change */
 		object_copy(o_ptr, i_ptr);
@@ -1049,7 +1049,7 @@ static void do_cmd_wiz_play(void)
 	/* Ignore change */
 	else
 	{
-		msg_print("Changes ignored.");
+		msg("%s", "Changes ignored.");
 	}
 }
 
@@ -1117,7 +1117,7 @@ static void wiz_create_artifact(int a_idx)
 	drop_near(cave, i_ptr, 0, p_ptr->py, p_ptr->px, TRUE);
 
 	/* All done */
-	msg_print("Allocated.");
+	msg("%s", "Allocated.");
 }
 
 
@@ -1200,7 +1200,7 @@ static void do_cmd_wiz_jump(void)
 	if (p_ptr->command_arg > MAX_DEPTH - 1) p_ptr->command_arg = MAX_DEPTH - 1;
 
 	/* Accept request */
-	msg_format("You jump to dungeon level %d.", p_ptr->command_arg);
+	msg("You jump to dungeon level %d.", p_ptr->command_arg);
 
 	/* New depth */
 	p_ptr->depth = p_ptr->command_arg;
@@ -1282,7 +1282,7 @@ static void do_cmd_rerate(void)
 	handle_stuff();
 
 	/* Message */
-	msg_format("Current Life Rating is %d/100.", percent);
+	msg("Current Life Rating is %d/100.", percent);
 }
 
 
@@ -1469,7 +1469,7 @@ static void do_cmd_wiz_query(void)
 	}
 
 	/* Get keypress */
-	msg_print("Press any key.");
+	msg("%s", "Press any key.");
 	message_flush();
 
 	/* Redraw map */
@@ -1512,7 +1512,7 @@ static void wiz_test_kind(int tval)
 		}
 	}
 
-	msg_print("Done.");
+	msg("%s", "Done.");
 }
 
 /*
@@ -1843,7 +1843,7 @@ void do_cmd_debug(void)
 		/* Oops */
 		default:
 		{
-			msg_print("That is not a valid debug command.");
+			msg("%s", "That is not a valid debug command.");
 			break;
 		}
 	}
