@@ -103,19 +103,11 @@ void do_cmd_redraw(void)
 	/* Redraw every window */
 	for (j = 0; j < ANGBAND_TERM_MAX; j++)
 	{
-		/* Dead window */
 		if (!angband_term[j]) continue;
 
-		/* Activate */
 		Term_activate(angband_term[j]);
-
-		/* Redraw */
 		Term_redraw();
-
-		/* Refresh */
 		Term_fresh();
-
-		/* Restore */
 		Term_activate(old);
 	}
 }
