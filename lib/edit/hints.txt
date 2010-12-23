@@ -1,0 +1,99 @@
+# File: hints.txt
+
+# This file is used to initialize the hints for the game.
+
+# Do not modify this file unless you know exactly what you are doing
+# unless you wish to risk possible system crashes and broken savefiles.
+
+# That said, it isn't difficult. Just keep each hint on one line, less than 80
+# characters, and start each line with H:
+
+# Format: 
+# H: Hint text.
+
+H: Cure Critical Wounds potions will cure blindness and confusion; carry lots.
+H: Staves can be used even when confused and blinded.
+H: Potions of Heroism or Berserk Strength will protect you from being scared. 
+H: Monsters that breathe fire, acid, electricity, or cold can deal big damage.
+H: Resistances cut damage to 1/3rd for the basic four elements.
+H: The more hitpoints a monster has, the more damage its breath will do.
+H: You can combine equipment of Resist Fire and a potion of the same name.
+H: You can combine equipment of Resist Cold and a potion of the same name.
+H: You can combine equipment of Resist Poison and a potion of the same name.
+H: If you don't know what a monster can do, use a rod of probing on it.
+H: Never underestimate the value of constitution. Hitpoints keep you alive. 
+H: Wield your ammo to your quiver to have it take fewer inventory slots.
+H: Inscribe items with the '{' command.
+H: Inscribe an item with "!s" to get confirmation before selling it.
+H: Inscribe an item with "!d" to get confirmation before dropping it.
+H: Inscribe an item with "!k" to get confirmation before destroying it.
+H: Inscribe an item with "!v" to get confirmation before throwing it.
+H: Inscribe an item with "!*" to get confirmation before doing anything to it.
+H: You can use the 'I' command to inspect items and get details on them.
+H: Use '=' to check out the options and customize your game.
+H: Be sure to set your hitpoint warning in the options menu ('=').
+H: Flasks of oil make a good throwing weapon early on.
+H: Word of Recall will send you to and from the dungeon.
+H: You can never teleport into a vault, even if you're already standing in it. 
+H: The only way to protect your inventory from damage is through immunities.
+H: +10 speed means you move twice as fast as normal. 
+H: Too much stunning will knock you out! This is to be avoided if possible.
+H: The stores change their stock every so often.
+H: If acid hits your armor, you take less damage from it.
+H: Nexus attacks can swap your stats. Smart, weak warriors don't do well.
+H: Regeneration improves your recovery of both hitpoints and mana.
+H: Never be too afraid to run away.
+H: Never go exploring without an escape option.
+H: Pay attention to how your enemies move - some are erratic, some can blink.
+H: Even among the same type, some enemies will be faster or slower than others.
+H: Monsters' breath weapons grow less dangerous as they lose hitpoints.
+H: A wounded enemy's spells are as strong as a healthy one's.
+H: Don't worry about using up your potions, wands, and staves to stay alive.
+H: If you're in a bad situation, take a breather and "I"npect all your gear.
+H: When a character dies, memories of monsters she has fought are passed on.
+H: Even the most powerful characters can be made useless by blindness.
+H: Even the most powerful characters can be made useless by confusion.
+H: Finding a way to resist blindness and confusion are critical to survival.
+H: Probing an enemy to learn its abilities is always useful.
+H: Buy at least one scroll of phase door before you enter the dungeon.
+H: Buy at least one potion of cure light wounds before you enter the dungeon.
+H: If a potion or scroll is cheaper than a scroll of Identify, buy it to ID it.
+H: Acid can destroy your stuff - watch out for water hounds and water vortices.
+H: Never underestimate monsters you haven't fought before.
+H: Quivers can hold different types of ammo in one inventory slot (max. 99).
+H: If you have more than 99 items in your quiver, it will take up more slots.
+H: Many items are bad, but few are cursed to the point of needing magic.
+H: A bigger weapon isn't always better - check your damage using 'I'nspect
+H: Can't keep track of all the information on the screen? Add extra windows.
+H: You can use subwindows to display messages, monsters, items and more.
+H: If you teleport away a tough monster, beware of teleporting afterwards!
+H: Resistances to higher elements are somewhat random, so be careful.
+H: Hold life will not block all experience drain, just most of it.
+H: Fire damage can destroy scrolls, books, and staves in your inventory. 
+H: Cold damage can destroy potions in your inventory.
+H: Electrical damage can destroy wands, rods and rings in your inventory.
+H: Immunity to an element prevents inventory destruction from that element.
+H: Phase door is a good escape if the terrain is appropriate.
+H: In open rooms Phase Door may well keep you in the line of fire.
+H: In a vault, any form of teleportation will always teleport you outside.
+H: Identical resistances on different pieces of equipment do not stack.
+H: Curing potions and spells reduce or eliminate cuts, stunning and poison.
+H: Nexus attacks can teleport to, teleport away, teleport level, or swap stats.
+H: Time attacks are not mitigated by sustains.
+H: Drain charge attacks remove charges from your items and heal the monster!
+H: You cannot cast spells or fire missiles at monsters in walls, but they can.
+H: To attack a monster in a wall with your weapon, use the 'T'unnel command.
+H: Resist sound will prevent stuns by sound, plasma, gravity, or force attacks.
+H: Acquirement scrolls produce better items if you read them deeper down.
+H: In truly desperate times, use Teleport Level or Destruction to escape.
+H: You always get the first move when entering a level. 
+H: Regeneration makes you hungry more quickly.
+H: If you're in extreme need of food, curing potions might do you good.
+H: Under great weights of loot, you'll be less quick of foot.
+H: You're never invicible. Never forget that.
+H: Always carry around an escape that you can use while blind and confused.
+H: Staying on a level too long can cause awake random monsters to spawn.
+H: Wands and staves sell for a good price even with 0 charges.
+H: Walking around with lots of heavy weapons is not necessarily a good idea.
+H: Carry around extra copies of spellbooks 1-4 in case one gets burned. 
+H: You don't have to cover every resist all the time - carry swap items.
