@@ -883,7 +883,7 @@ W:4:3:0:9
 B:HIT:HURT:1d4
 B:TOUCH:POISON:2d4
 F:COLD_BLOOD | METAL
-F:DROP_1 | ONLY_GOLD
+F:DROP_2 | ONLY_GOLD
 F:BASH_DOOR
 F:IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 D:It appears to be a pile of copper coins.
@@ -1147,7 +1147,7 @@ W:6:3:0:18
 B:HIT:HURT:1d6
 B:TOUCH:POISON:2d6
 F:COLD_BLOOD | METAL
-F:DROP_40 | DROP_1 | ONLY_GOLD
+F:DROP_2 | ONLY_GOLD
 F:BASH_DOOR
 F:IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 D:It appears to be a pile of silver coins.
@@ -1800,7 +1800,7 @@ W:10:3:0:32
 B:HIT:HURT:2d5
 B:TOUCH:POISON:3d5
 F:COLD_BLOOD | METAL
-F:DROP_60 | DROP_1 | ONLY_GOLD
+F:DROP_3 | ONLY_GOLD
 F:BASH_DOOR
 F:IM_ACID | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 D:It appears to be a pile of gold coins, until it starts crawling towards you on
@@ -2162,7 +2162,7 @@ W:13:3:0:45
 B:HIT:HURT:2d5
 B:TOUCH:POISON:3d5
 F:COLD_BLOOD | METAL
-F:DROP_2 | ONLY_GOLD
+F:DROP_4 | ONLY_GOLD
 F:BASH_DOOR
 F:IM_ACID | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 D:It appears to be a pile of sentient mithril coins that doesn't like being
@@ -3825,7 +3825,7 @@ B:TOUCH:POISON:3d5
 B:HIT:HURT:1d12
 B:HIT:HURT:1d12
 F:COLD_BLOOD | METAL
-F:DROP_2 | ONLY_GOLD
+F:DROP_4 | ONLY_GOLD
 F:BASH_DOOR
 F:IM_ACID | IM_ELEC | IM_POIS | NO_CONF | NO_SLEEP
 D:It appears to be a pile of coins made of precious adamant, slithering toward
