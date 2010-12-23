@@ -2862,8 +2862,6 @@ void store_menu_recalc(menu_type *m)
  */
 static bool store_process_command_key(char cmd)
 {
-	bool redraw = FALSE;
-
 	/* Parse the command */
 	switch (cmd)
 	{
@@ -2940,9 +2938,14 @@ static bool store_process_command_key(char cmd)
 			do_cmd_save_screen();
 			break;
 		}
+
+		default:
+		{
+			return FALSE;
+		}
 	}
 
-	return redraw;
+	return TRUE;
 }
 
 
