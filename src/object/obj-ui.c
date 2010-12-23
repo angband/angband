@@ -438,7 +438,7 @@ static bool get_item_allow(int item, unsigned char ch, bool is_harmless)
 	/* Check for a "prevention" inscription */
 	verify_inscrip[1] = ch;
 
-	/* Find both sets of inscriptions, add togther, and prompt that number of times */
+	/* Find both sets of inscriptions, add together, and prompt that number of times */
 	n = check_for_inscrip(o_ptr, verify_inscrip);
 
 	if (!is_harmless)
@@ -465,7 +465,7 @@ static bool get_item_allow(int item, unsigned char ch, bool is_harmless)
  * Also, the tag "@xn" will work as well, where "n" is a tag-char,
  * and "x" is the action that tag will work for.
  */
-static int get_tag(int *cp, char tag, char cmdkey, bool quiver_tags)
+static int get_tag(int *cp, char tag, cmd_code cmd, bool quiver_tags)
 {
 	int i;
 	cptr s;
@@ -510,7 +510,7 @@ static int get_tag(int *cp, char tag, char cmdkey, bool quiver_tags)
 			}
 
 			/* Check the special tags */
-			if ((s[1] == cmdkey) && (s[2] == tag))
+			if ((cmd_lookup(s[1]) == cmd) && (s[2] == tag))
 			{
 				/* Save the actual inventory ID */
 				*cp = i;
@@ -1074,7 +1074,7 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 			case '7': case '8': case '9':
 			{
 				/* Look up the tag */
-				if (!get_tag(&k, which.key, cmdkey, quiver_tags))
+				if (!get_tag(&k, which.key, cmd, quiver_tags))
 				{
 					bell("Illegal object choice (tag)!");
 					break;

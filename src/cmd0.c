@@ -414,6 +414,11 @@ unsigned char cmd_lookup_key(cmd_code cmd)
 	return 0;
 }
 
+cmd_code cmd_lookup(unsigned char key)
+{
+	return converted_list[key].command->cmd;
+}
+
 
 /*** Input processing ***/
 

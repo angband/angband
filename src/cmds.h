@@ -9,12 +9,10 @@
  */
 typedef void (*cmd_handler_fn)(cmd_code code, cmd_arg args[]);
 
-/* cmd.c */
+/* cmd0.c */
 extern void cmd_init(void);
 unsigned char cmd_lookup_key(cmd_code cmd);
-
-/* cmd0.c */
-void do_cmd_quit(cmd_code code, cmd_arg args[]);
+cmd_code cmd_lookup(unsigned char key);
 
 /* cmd-obj.c */
 void do_cmd_uninscribe(cmd_code code, cmd_arg args[]);
