@@ -196,12 +196,12 @@ static option_entry options[OPT_MAX] =
 { "highlight_player",    "Highlight the player with the cursor",        FALSE }, /* 59 */
 { "view_yellow_light",   "Use special colors for torch light",          FALSE }, /* 60 */
 { "view_bright_light",   "Use special colors for field of view",        TRUE },  /* 61 */
-{ "view_granite_light",  "Use special colors for wall grids",           FALSE }, /* 62 */
+{ "view_granite_light",  "Use special colors for wall grids",           TRUE }, /* 62 */
 { "view_special_light",  "Use special colors for floor grids",          TRUE },  /* 63 */
 { "easy_open",           "Open/Disarm/Close without direction",         FALSE }, /* 64 */
 { "easy_alter",          "Open/Disarm doors/traps on movement",         FALSE }, /* 65 */
 { "animate_flicker",     "Animate multi-colored monsters and items",    FALSE }, /* 66 */
-{ "show_piles",          "Show stacks using special attr/char",         FALSE }, /* 67 */
+{ "show_piles",          "Show stacks using special attr/char",         TRUE }, /* 67 */
 { "center_player",       "Center map continuously",                     FALSE }, /* 68 */
 { "purple_uniques",      "Show unique monsters in a special colour",    FALSE }, /* 69 */
 { "xchars_to_file",      "Allow accents in output files",               FALSE }, /* 70 */
@@ -209,7 +209,7 @@ static option_entry options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 72 */
 { NULL,                  NULL,                                          FALSE }, /* 73 */
 { "hp_changes_color",    "Player color indicates low hit points",       FALSE }, /* 74 */
-{ "hide_squelchable",    "Hide items set as squelchable",               FALSE }, /* 75 */
+{ "hide_squelchable",    "Hide items set as squelchable",               TRUE }, /* 75 */
 { "squelch_worthless",   "Squelch worthless item kinds",                FALSE }, /* 76 */
 { "mouse_movement",      "Allow mouse clicks to move the player",       FALSE }, /* 77 */
 { "mouse_buttons",        "Show mouse status line buttons",             FALSE }, /* 78 */
