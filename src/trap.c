@@ -119,10 +119,10 @@ void hit_trap(int y, int x)
 	{
 		case FEAT_TRAP_HEAD + 0x00:
 		{
-			msg("%s", "You fall through a trap door!");
+			msg("You fall through a trap door!");
 			if (p_ptr->state.ffall)
 			{
-				msg("%s", "You float gently down to the next level.");
+				msg("You float gently down to the next level.");
 			}
 			else
 			{
@@ -139,10 +139,10 @@ void hit_trap(int y, int x)
 
 		case FEAT_TRAP_HEAD + 0x01:
 		{
-			msg("%s", "You fall into a pit!");
+			msg("You fall into a pit!");
 			if (p_ptr->state.ffall)
 			{
-				msg("%s", "You float gently to the bottom of the pit.");
+				msg("You float gently to the bottom of the pit.");
 			}
 			else
 			{
@@ -155,12 +155,12 @@ void hit_trap(int y, int x)
 
 		case FEAT_TRAP_HEAD + 0x02:
 		{
-			msg("%s", "You fall into a spiked pit!");
+			msg("You fall into a spiked pit!");
 
 			if (p_ptr->state.ffall)
 			{
-				msg("%s", "You float gently to the floor of the pit.");
-				msg("%s", "You carefully avoid touching the spikes.");
+				msg("You float gently to the floor of the pit.");
+				msg("You carefully avoid touching the spikes.");
 			}
 			else
 			{
@@ -170,7 +170,7 @@ void hit_trap(int y, int x)
 				/* Extra spike damage */
 				if (one_in_(2))
 				{
-					msg("%s", "You are impaled!");
+					msg("You are impaled!");
 
 					dam = dam * 2;
 					(void)inc_timed(TMD_CUT, randint1(dam), TRUE);
@@ -185,12 +185,12 @@ void hit_trap(int y, int x)
 
 		case FEAT_TRAP_HEAD + 0x03:
 		{
-			msg("%s", "You fall into a spiked pit!");
+			msg("You fall into a spiked pit!");
 
 			if (p_ptr->state.ffall)
 			{
-				msg("%s", "You float gently to the floor of the pit.");
-				msg("%s", "You carefully avoid touching the spikes.");
+				msg("You float gently to the floor of the pit.");
+				msg("You carefully avoid touching the spikes.");
 			}
 			else
 			{
@@ -200,14 +200,14 @@ void hit_trap(int y, int x)
 				/* Extra spike damage */
 				if (one_in_(2))
 				{
-					msg("%s", "You are impaled on poisonous spikes!");
+					msg("You are impaled on poisonous spikes!");
 
 					dam = dam * 2;
 					(void)inc_timed(TMD_CUT, randint1(dam), TRUE);
 
 					if (p_ptr->state.resist_pois || p_ptr->timed[TMD_OPP_POIS])
 					{
-						msg("%s", "The poison does not affect you!");
+						msg("The poison does not affect you!");
 					}
 					else
 					{
@@ -229,7 +229,7 @@ void hit_trap(int y, int x)
 		case FEAT_TRAP_HEAD + 0x04:
 		{
 			sound(MSG_SUM_MONSTER);
-			msg("%s", "You are enveloped in a cloud of smoke!");
+			msg("You are enveloped in a cloud of smoke!");
 			cave->info[y][x] &= ~(CAVE_MARK);
 			cave_set_feat(cave, y, x, FEAT_FLOOR);
 			num = 2 + randint1(3);
@@ -242,14 +242,14 @@ void hit_trap(int y, int x)
 
 		case FEAT_TRAP_HEAD + 0x05:
 		{
-			msg("%s", "You hit a teleport trap!");
+			msg("You hit a teleport trap!");
 			teleport_player(100);
 			break;
 		}
 
 		case FEAT_TRAP_HEAD + 0x06:
 		{
-			msg("%s", "You are enveloped in flames!");
+			msg("You are enveloped in flames!");
 			dam = damroll(4, 6);
 			fire_dam(dam, "a fire trap");
 			break;
@@ -257,7 +257,7 @@ void hit_trap(int y, int x)
 
 		case FEAT_TRAP_HEAD + 0x07:
 		{
-			msg("%s", "You are splashed with acid!");
+			msg("You are splashed with acid!");
 			dam = damroll(4, 6);
 			acid_dam(dam, "an acid trap");
 			break;
@@ -267,14 +267,14 @@ void hit_trap(int y, int x)
 		{
 			if (trap_check_hit(125))
 			{
-				msg("%s", "A small dart hits you!");
+				msg("A small dart hits you!");
 				dam = damroll(1, 4);
 				take_hit(dam, name);
 				(void)inc_timed(TMD_SLOW, randint0(20) + 20, TRUE);
 			}
 			else
 			{
-				msg("%s", "A small dart barely misses you.");
+				msg("A small dart barely misses you.");
 			}
 			break;
 		}
@@ -283,14 +283,14 @@ void hit_trap(int y, int x)
 		{
 			if (trap_check_hit(125))
 			{
-				msg("%s", "A small dart hits you!");
+				msg("A small dart hits you!");
 				dam = damroll(1, 4);
 				take_hit(dam, name);
 				(void)do_dec_stat(A_STR, FALSE);
 			}
 			else
 			{
-				msg("%s", "A small dart barely misses you.");
+				msg("A small dart barely misses you.");
 			}
 			break;
 		}
@@ -299,14 +299,14 @@ void hit_trap(int y, int x)
 		{
 			if (trap_check_hit(125))
 			{
-				msg("%s", "A small dart hits you!");
+				msg("A small dart hits you!");
 				dam = damroll(1, 4);
 				take_hit(dam, name);
 				(void)do_dec_stat(A_DEX, FALSE);
 			}
 			else
 			{
-				msg("%s", "A small dart barely misses you.");
+				msg("A small dart barely misses you.");
 			}
 			break;
 		}
@@ -315,21 +315,21 @@ void hit_trap(int y, int x)
 		{
 			if (trap_check_hit(125))
 			{
-				msg("%s", "A small dart hits you!");
+				msg("A small dart hits you!");
 				dam = damroll(1, 4);
 				take_hit(dam, name);
 				(void)do_dec_stat(A_CON, FALSE);
 			}
 			else
 			{
-				msg("%s", "A small dart barely misses you.");
+				msg("A small dart barely misses you.");
 			}
 			break;
 		}
 
 		case FEAT_TRAP_HEAD + 0x0C:
 		{
-			msg("%s", "You are surrounded by a black gas!");
+			msg("You are surrounded by a black gas!");
 			if (!p_ptr->state.resist_blind)
 				(void)inc_timed(TMD_BLIND, randint0(50) + 25, TRUE);
 			wieldeds_notice_flag(OF_RES_BLIND);
@@ -339,7 +339,7 @@ void hit_trap(int y, int x)
 
 		case FEAT_TRAP_HEAD + 0x0D:
 		{
-			msg("%s", "You are surrounded by a gas of scintillating colors!");
+			msg("You are surrounded by a gas of scintillating colors!");
 			if (!p_ptr->state.resist_confu)
 				(void)inc_timed(TMD_CONFUSED, randint0(20) + 10, TRUE);
 			wieldeds_notice_flag(OF_RES_CONFU);
@@ -349,7 +349,7 @@ void hit_trap(int y, int x)
 
 		case FEAT_TRAP_HEAD + 0x0E:
 		{
-			msg("%s", "You are surrounded by a pungent green gas!");
+			msg("You are surrounded by a pungent green gas!");
 			if (!p_ptr->state.resist_pois && !p_ptr->timed[TMD_OPP_POIS])
 				(void)inc_timed(TMD_POISONED, randint0(20) + 10, TRUE);
 			wieldeds_notice_flag(OF_RES_POIS);
@@ -359,7 +359,7 @@ void hit_trap(int y, int x)
 
 		case FEAT_TRAP_HEAD + 0x0F:
 		{
-			msg("%s", "You are surrounded by a strange white mist!");
+			msg("You are surrounded by a strange white mist!");
 			if (!p_ptr->state.free_act)
 				(void)inc_timed(TMD_PARALYZED, randint0(10) + 5, TRUE);
 			wieldeds_notice_flag(OF_FREE_ACT);

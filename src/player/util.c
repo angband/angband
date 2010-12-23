@@ -55,19 +55,19 @@ bool player_can_cast(void)
 {
 	if (!cp_ptr->spell_book)
 	{
-		msg("%s", "You cannot pray or produce magics.");
+		msg("You cannot pray or produce magics.");
 		return FALSE;
 	}
 
 	if (p_ptr->timed[TMD_BLIND] || no_light())
 	{
-		msg("%s", "You cannot see!");
+		msg("You cannot see!");
 		return FALSE;
 	}
 
 	if (p_ptr->timed[TMD_CONFUSED])
 	{
-		msg("%s", "You are too confused!");
+		msg("You are too confused!");
 		return FALSE;
 	}
 
@@ -95,25 +95,25 @@ bool player_can_read(void)
 {
 	if (p_ptr->timed[TMD_BLIND])
 	{
-		msg("%s", "You can't see anything.");
+		msg("You can't see anything.");
 		return FALSE;
 	}
 
 	if (no_light())
 	{
-		msg("%s", "You have no light to read by.");
+		msg("You have no light to read by.");
 		return FALSE;
 	}
 
 	if (p_ptr->timed[TMD_CONFUSED])
 	{
-		msg("%s", "You are too confused to read!");
+		msg("You are too confused to read!");
 		return FALSE;
 	}
 
 	if (p_ptr->timed[TMD_AMNESIA])
 	{
-		msg("%s", "You can't remember how to read!");
+		msg("You can't remember how to read!");
 		return FALSE;
 	}
 
@@ -128,7 +128,7 @@ bool player_can_fire(void)
 	/* Require a usable launcher */
 	if (!o_ptr->tval || !p_ptr->state.ammo_tval)
 	{
-		msg("%s", "You have nothing to fire with.");
+		msg("You have nothing to fire with.");
 		return FALSE;
 	}
 

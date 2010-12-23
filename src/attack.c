@@ -384,7 +384,7 @@ bool py_attack_real(int y, int x)
 		p_ptr->confusing = FALSE;
 
 		/* Message */
-		msg("%s", "Your hands stop glowing.");
+		msg("Your hands stop glowing.");
 
 		/* Update the lore */
 		if (m_ptr->ml)
@@ -506,7 +506,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	/* Require a usable launcher */
 	if (!j_ptr->tval || !p_ptr->state.ammo_tval)
 	{
-		msg("%s", "You have nothing to fire with.");
+		msg("You have nothing to fire with.");
 		return;
 	}
 
@@ -798,7 +798,7 @@ void textui_cmd_fire_at_nearest(void)
 	/* Require a usable launcher */
 	if (!p_ptr->inventory[INVEN_BOW].tval || !p_ptr->state.ammo_tval)
 	{
-		msg("%s", "You have nothing to fire with.");
+		msg("You have nothing to fire with.");
 		return;
 	}
 
@@ -813,7 +813,7 @@ void textui_cmd_fire_at_nearest(void)
 	/* Require usable ammo */
 	if (item < 0)
 	{
-		msg("%s", "You have no ammunition in the quiver to fire");
+		msg("You have no ammunition in the quiver to fire");
 		return;
 	}
 
@@ -824,7 +824,7 @@ void textui_cmd_fire_at_nearest(void)
 	/* Check for confusion */
 	if (p_ptr->timed[TMD_CONFUSED])
 	{
-		msg("%s", "You are confused.");
+		msg("You are confused.");
 		dir = ddd[randint0(8)];
 	}
 
@@ -877,7 +877,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 	/* Make sure the player isn't throwing wielded items */
 	if (item >= INVEN_WIELD && item < QUIVER_START)
 	{
-		msg("%s", "You have cannot throw wielded items.");
+		msg("You have cannot throw wielded items.");
 		return;
 	}
 
@@ -1161,7 +1161,7 @@ void textui_cmd_throw(void)
 
 	if (item >= INVEN_WIELD && item < QUIVER_START)
 	{
-		msg("%s", "You cannot throw wielded items.");
+		msg("You cannot throw wielded items.");
 		return;
 	}
 

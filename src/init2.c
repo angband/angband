@@ -1255,7 +1255,7 @@ static errr eval_e_slays(struct ego_item *items)
 					continue;
 			}
 
-			/* msg("%s", "Found a new slay combo on an ego item"); */
+			/* msg("Found a new slay combo on an ego item"); */
 			count++;
 			of_copy(dupcheck[i], cacheme);
 		}
@@ -1273,7 +1273,7 @@ static errr eval_e_slays(struct ego_item *items)
 			of_copy(slay_cache[count].flags, dupcheck[i]);
 			slay_cache[count].value = 0;
 			count++;
-			/*msg("%s", "Cached a slay combination");*/
+			/*msg("Cached a slay combination");*/
 		}
 	}
 
@@ -2163,7 +2163,7 @@ errr eval_r_power(struct monster_race *races)
 	r_ptr = &races[547];
 	if (r_ptr->power)
 	{
-	     /*	msg("%s", "Monster power array already filled - returning."); */
+	     /*	msg("Monster power array already filled - returning."); */
 		return 0;
 	}
 

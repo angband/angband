@@ -295,7 +295,7 @@ bool spell_cast(int spell, int dir)
 		p_ptr->csp_frac = 0;
 
 		/* Message */
-		msg("%s", "You faint from the effort!");
+		msg("You faint from the effort!");
 
 		/* Hack -- Bypass free action */
 		(void)inc_timed(TMD_PARALYZED, randint1(5 * oops + 1), TRUE);
@@ -306,7 +306,7 @@ bool spell_cast(int spell, int dir)
 			bool perm = (randint0(100) < 25);
 
 			/* Message */
-			msg("%s", "You have damaged your health!");
+			msg("You have damaged your health!");
 
 			/* Reduce constitution */
 			player_stat_dec(p_ptr, A_CON, perm);

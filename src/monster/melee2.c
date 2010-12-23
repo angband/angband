@@ -1128,7 +1128,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (blind) msg("%^s mumbles.", m_name);
 			else msg("%^s gestures fluidly.", m_name);
-			msg("%s", "You are engulfed in a whirlpool.");
+			msg("You are engulfed in a whirlpool.");
 			breath(m_idx, GF_WATER,
 			       BA_WATE_DMG(rlev, RANDOMISE));
 			break;
@@ -1215,7 +1215,7 @@ bool make_attack_spell(int m_idx)
 			disturb(1, 0);
 			if (!seen)
 			{
-				msg("%s", "You feel something focusing on your mind.");
+				msg("You feel something focusing on your mind.");
 			}
 			else
 			{
@@ -1224,11 +1224,11 @@ bool make_attack_spell(int m_idx)
 
 			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
-				msg("%s", "You resist the effects!");
+				msg("You resist the effects!");
 			}
 			else
 			{
-				msg("%s", "Your mind is blasted by psionic energy.");
+				msg("Your mind is blasted by psionic energy.");
 				if (!p_ptr->state.resist_confu)
 					(void)inc_timed(TMD_CONFUSED, randint0(4) + 4, TRUE);
 				else
@@ -1244,17 +1244,17 @@ bool make_attack_spell(int m_idx)
 			if (!direct) break;
 			disturb(1, 0);
 			if (!seen)
-				msg("%s", "You feel something focusing on your mind.");
+				msg("You feel something focusing on your mind.");
 			else
 				msg("%^s looks deep into your eyes.", m_name);
 
 			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
-				msg("%s", "You resist the effects!");
+				msg("You resist the effects!");
 			}
 			else
 			{
-				msg("%s", "Your mind is blasted by psionic energy.");
+				msg("Your mind is blasted by psionic energy.");
 				take_hit(BRAIN_SMASH_DMG(rlev, RANDOMISE), ddesc);
 				if (!p_ptr->state.resist_blind)
 					(void)inc_timed(TMD_BLIND, 8 + randint0(8), TRUE);
@@ -1284,7 +1284,7 @@ bool make_attack_spell(int m_idx)
 			else msg("%^s points at you and curses.", m_name);
 			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
-				msg("%s", "You resist the effects!");
+				msg("You resist the effects!");
 			}
 			else
 			{
@@ -1301,7 +1301,7 @@ bool make_attack_spell(int m_idx)
 			else msg("%^s points at you and curses horribly.", m_name);
 			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
-				msg("%s", "You resist the effects!");
+				msg("You resist the effects!");
 			}
 			else
 			{
@@ -1318,7 +1318,7 @@ bool make_attack_spell(int m_idx)
 			else msg("%^s points at you, incanting terribly!", m_name);
 			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
-				msg("%s", "You resist the effects!");
+				msg("You resist the effects!");
 			}
 			else
 			{
@@ -1335,7 +1335,7 @@ bool make_attack_spell(int m_idx)
 			else msg("%^s points at you, screaming the word DIE!", m_name);
 			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
-				msg("%s", "You resist the effects!");
+				msg("You resist the effects!");
 			}
 			else
 			{
@@ -1464,12 +1464,12 @@ bool make_attack_spell(int m_idx)
 			else msgt(MSG_CAST_FEAR, "%^s casts a fearful illusion.", m_name);
 			if (p_ptr->state.resist_fear)
 			{
-				msg("%s", "You refuse to be frightened.");
+				msg("You refuse to be frightened.");
 				wieldeds_notice_flag(OF_RES_FEAR);
 			}
 			else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
-				msg("%s", "You refuse to be frightened.");
+				msg("You refuse to be frightened.");
 			}
 			else
 			{
@@ -1487,12 +1487,12 @@ bool make_attack_spell(int m_idx)
 			else msg("%^s casts a spell, burning your eyes!", m_name);
 			if (p_ptr->state.resist_blind)
 			{
-				msg("%s", "You are unaffected!");
+				msg("You are unaffected!");
 				wieldeds_notice_flag(OF_RES_BLIND);
 			}
 			else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
-				msg("%s", "You resist the effects!");
+				msg("You resist the effects!");
 			}
 			else
 			{
@@ -1510,12 +1510,12 @@ bool make_attack_spell(int m_idx)
 			else msg("%^s creates a mesmerising illusion.", m_name);
 			if (p_ptr->state.resist_confu)
 			{
-				msg("%s", "You disbelieve the feeble spell.");
+				msg("You disbelieve the feeble spell.");
 				wieldeds_notice_flag(OF_RES_CONFU);
 			}
 			else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
-				msg("%s", "You disbelieve the feeble spell.");
+				msg("You disbelieve the feeble spell.");
 			}
 			else
 			{
@@ -1532,12 +1532,12 @@ bool make_attack_spell(int m_idx)
 			msg("%^s drains power from your muscles!", m_name);
 			if (p_ptr->state.free_act)
 			{
-				msg("%s", "You are unaffected!");
+				msg("You are unaffected!");
 				wieldeds_notice_flag(OF_FREE_ACT);
 			}
 			else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
-				msg("%s", "You resist the effects!");
+				msg("You resist the effects!");
 			}
 			else
 			{
@@ -1555,7 +1555,7 @@ bool make_attack_spell(int m_idx)
 			else msg("%^s stares deep into your eyes!", m_name);
 			if (p_ptr->state.free_act)
 			{
-				msg("%s", "You are unaffected!");
+				msg("You are unaffected!");
 				wieldeds_notice_flag(OF_FREE_ACT);
 			}
 			else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
@@ -1706,12 +1706,12 @@ bool make_attack_spell(int m_idx)
 			else msg("%^s gestures at your feet.", m_name);
 			if (p_ptr->state.resist_nexus)
 			{
-				msg("%s", "You are unaffected!");
+				msg("You are unaffected!");
 				wieldeds_notice_flag(OF_RES_NEXUS);
 			}
 			else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 			{
-				msg("%s", "You resist the effects!");
+				msg("You resist the effects!");
 			}
 			else
 			{
@@ -1748,7 +1748,7 @@ bool make_attack_spell(int m_idx)
 			msg("%^s tries to blank your mind.", m_name);
 
 			if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
-				msg("%s", "You resist the effects!");
+				msg("You resist the effects!");
 			else
 				inc_timed(TMD_AMNESIA, 3, TRUE);
 
@@ -3466,7 +3466,7 @@ static void process_monster(struct cave *c, int m_idx)
 					if (randint0(m_ptr->hp / 10) > k)
 					{
 						/* Message */
-						msg("%s", "You hear a door burst open!");
+						msg("You hear a door burst open!");
 
 						/* Disturb (sometimes) */
 						disturb(0, 0);
@@ -3513,7 +3513,7 @@ static void process_monster(struct cave *c, int m_idx)
 				/* Describe observable breakage */
 				if (cave->info[ny][nx] & (CAVE_MARK))
 				{
-					msg("%s", "The rune of protection is broken!");
+					msg("The rune of protection is broken!");
 				}
 
 				/* Forget the rune */

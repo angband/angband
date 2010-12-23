@@ -189,7 +189,7 @@ void do_cmd_uninscribe(cmd_code code, cmd_arg args[])
 	object_type *o_ptr = object_from_item_idx(args[0].item);
 
 	if (obj_has_inscrip(o_ptr))
-		msg("%s", "Inscription removed.");
+		msg("Inscription removed.");
 
 	o_ptr->note = NULL;
 
@@ -369,14 +369,14 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 
 	if (!item_is_available(item, NULL, USE_INVEN | USE_FLOOR))
 	{
-		msg("%s", "You do not have that item to wield.");
+		msg("You do not have that item to wield.");
 		return;
 	}
 
 	/* Check the slot */
 	if (!slot_can_wield_item(slot, o_ptr))
 	{
-		msg("%s", "You cannot wield that item there.");
+		msg("You cannot wield that item there.");
 		return;
 	}
 
@@ -430,14 +430,14 @@ void do_cmd_drop(cmd_code code, cmd_arg args[])
 
 	if (!item_is_available(item, NULL, USE_INVEN | USE_EQUIP))
 	{
-		msg("%s", "You do not have that item to drop it.");
+		msg("You do not have that item to drop it.");
 		return;
 	}
 
 	/* Hack -- Cannot remove cursed items */
 	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
 	{
-		msg("%s", "Hmmm, it seems to be cursed.");
+		msg("Hmmm, it seems to be cursed.");
 		return;
 	}
 
@@ -510,7 +510,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	{
 		if (!obj_can_zap(o_ptr))
 		{
-			msg("%s", "That rod is still charging.");
+			msg("That rod is still charging.");
 			return;
 		}
 
@@ -522,7 +522,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	{
 		if (!obj_has_charges(o_ptr))
 		{
-			msg("%s", "That wand has no charges.");
+			msg("That wand has no charges.");
 			return;
 		}
 
@@ -534,7 +534,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	{
 		if (!obj_has_charges(o_ptr))
 		{
-			msg("%s", "That staff has no charges.");
+			msg("That staff has no charges.");
 			return;
 		}
 
@@ -568,7 +568,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	{
 		if (!obj_can_activate(o_ptr))
 		{
-			msg("%s", "That item is still charging.");
+			msg("That item is still charging.");
 			return;
 		}
 
@@ -578,13 +578,13 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	}
 	else
 	{
-		msg("%s", "The item cannot be used at the moment");
+		msg("The item cannot be used at the moment");
 	}
 
 	/* Check if item is within player's reach. */
 	if (items_allowed == 0 || !item_is_available(item, NULL, items_allowed))
 	{
-		msg("%s", "You cannot use that item from its current location.");
+		msg("You cannot use that item from its current location.");
 		return;
 	}
 
@@ -896,7 +896,7 @@ void do_cmd_refill(cmd_code code, cmd_arg args[])
 
 	if (!item_is_available(item, NULL, USE_INVEN | USE_FLOOR))
 	{
-		msg("%s", "You do not have that item to refill with it.");
+		msg("You do not have that item to refill with it.");
 		return;
 	}
 
@@ -905,13 +905,13 @@ void do_cmd_refill(cmd_code code, cmd_arg args[])
 
 	if (j_ptr->tval != TV_LIGHT)
 	{
-		msg("%s", "You are not wielding a light.");
+		msg("You are not wielding a light.");
 		return;
 	}
 
 	else if (of_has(f, OF_NO_FUEL))
 	{
-		msg("%s", "Your light cannot be refilled.");
+		msg("Your light cannot be refilled.");
 		return;
 	}
 

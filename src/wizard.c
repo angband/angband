@@ -933,7 +933,7 @@ static void wiz_tweak_curse(object_type *o_ptr)
 {
 	if (cursed_p(o_ptr))
 	{
-		msg("%s", "Resetting existing curses.");
+		msg("Resetting existing curses.");
 		flags_clear(o_ptr->flags, OF_SIZE, OF_CURSE_MASK, FLAG_END);
 	}
 
@@ -1031,7 +1031,7 @@ static void do_cmd_wiz_play(void)
 	if (changed)
 	{
 		/* Message */
-		msg("%s", "Changes accepted.");
+		msg("Changes accepted.");
 
 		/* Change */
 		object_copy(o_ptr, i_ptr);
@@ -1049,7 +1049,7 @@ static void do_cmd_wiz_play(void)
 	/* Ignore change */
 	else
 	{
-		msg("%s", "Changes ignored.");
+		msg("Changes ignored.");
 	}
 }
 
@@ -1117,7 +1117,7 @@ static void wiz_create_artifact(int a_idx)
 	drop_near(cave, i_ptr, 0, p_ptr->py, p_ptr->px, TRUE);
 
 	/* All done */
-	msg("%s", "Allocated.");
+	msg("Allocated.");
 }
 
 
@@ -1469,7 +1469,7 @@ static void do_cmd_wiz_query(void)
 	}
 
 	/* Get keypress */
-	msg("%s", "Press any key.");
+	msg("Press any key.");
 	message_flush();
 
 	/* Redraw map */
@@ -1512,7 +1512,7 @@ static void wiz_test_kind(int tval)
 		}
 	}
 
-	msg("%s", "Done.");
+	msg("Done.");
 }
 
 /*
@@ -1843,7 +1843,7 @@ void do_cmd_debug(void)
 		/* Oops */
 		default:
 		{
-			msg("%s", "That is not a valid debug command.");
+			msg("That is not a valid debug command.");
 			break;
 		}
 	}

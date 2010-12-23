@@ -102,7 +102,7 @@ bool effect_wonder(int dir, int die, int beam)
 	if (die > 100)
 	{
 		/* above 100 the effect is always visible */
-		msg("%s", "You feel a surge of power!");
+		msg("You feel a surge of power!");
 		visible = TRUE;
 	}
 
@@ -166,7 +166,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 	if (effect < 1 || effect > EF_MAX)
 	{
-		msg("%s", "Bad effect passed to do_effect().  Please report this bug.");
+		msg("Bad effect passed to do_effect().  Please report this bug.");
 		return FALSE;
 	}
 
@@ -405,7 +405,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			if (p_ptr->exp < PY_MAX_EXP)
 			{
-				msg("%s", "You feel more experienced.");
+				msg("You feel more experienced.");
 				gain_exp(100000L);
 				*ident = TRUE;
 			}
@@ -416,7 +416,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			if (!p_ptr->state.hold_life && (p_ptr->exp > 0))
 			{
-				msg("%s", "You feel your memories fade.");
+				msg("You feel your memories fade.");
 				lose_exp(p_ptr->exp / 4);
 				*ident = TRUE;
 			}
@@ -437,7 +437,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			{
 				p_ptr->csp = p_ptr->msp;
 				p_ptr->csp_frac = 0;
-				msg("%s", "Your feel your head clear.");
+				msg("Your feel your head clear.");
 				p_ptr->redraw |= (PR_MANA);
 				*ident = TRUE;
 			}
@@ -594,7 +594,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_CURE_NONORLYBIG:
 		{
-			msg("%s", "You feel life flow through your body!");
+			msg("You feel life flow through your body!");
 			restore_level();
 			(void)clear_timed(TMD_POISONED, TRUE);
 			(void)clear_timed(TMD_BLIND, TRUE);
@@ -670,7 +670,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_ENLIGHTENMENT:
 		{
-			msg("%s", "An image of your surroundings forms in your mind...");
+			msg("An image of your surroundings forms in your mind...");
 			wiz_light();
 			*ident = TRUE;
 			return TRUE;
@@ -679,7 +679,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_ENLIGHTENMENT2:
 		{
-			msg("%s", "You begin to feel more enlightened...");
+			msg("You begin to feel more enlightened...");
 			message_flush();
 			wiz_light();
 			(void)do_inc_stat(A_INT);
@@ -845,9 +845,9 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			if (remove_curse())
 			{
 				if (!p_ptr->timed[TMD_BLIND])
-					msg("%s", "The air around your body glows blue for a moment...");
+					msg("The air around your body glows blue for a moment...");
 				else
-					msg("%s", "You feel as if someone is watching over you.");
+					msg("You feel as if someone is watching over you.");
 
 				*ident = TRUE;
 			}
@@ -919,7 +919,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			if (p_ptr->confusing == 0)
 			{
-				msg("%s", "Your hands begin to glow.");
+				msg("Your hands begin to glow.");
 				p_ptr->confusing = TRUE;
 				*ident = TRUE;
 			}
@@ -957,7 +957,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_ANNOY_MON:
 		{
-			msg("%s", "There is a high pitched humming noise.");
+			msg("There is a high pitched humming noise.");
 			aggravate_monsters(0);
 			*ident = TRUE;
 			return TRUE;
@@ -970,7 +970,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 				return TRUE;
 
 			trap_creation();
-			msg("%s", "You hear a low-pitched whistling sound.");
+			msg("You hear a low-pitched whistling sound.");
 			*ident = TRUE;
 			return TRUE;
 		}
@@ -1562,7 +1562,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_LIGHT_LINE:
 		{
-			msg("%s", "A line of shimmering blue light appears.");
+			msg("A line of shimmering blue light appears.");
 			light_line(dir);
 			*ident = TRUE;
 			return TRUE;
@@ -1596,7 +1596,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		{
 			int i;
 			if (!p_ptr->timed[TMD_BLIND])
-				msg("%s", "Light shoots in all directions!");
+				msg("Light shoots in all directions!");
 			for (i = 0; i < 8; i++) light_line(ddd[i]);
 			*ident = TRUE;
 			return TRUE;
@@ -1649,7 +1649,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 				p_ptr->csp = p_ptr->msp;
 				p_ptr->csp_frac = 0;
 				*ident = TRUE;
-				msg("%s", "Your feel your head clear.");
+				msg("Your feel your head clear.");
 				p_ptr->redraw |= (PR_MANA);
 			}
 			return TRUE;
@@ -1685,14 +1685,14 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_DRINK_GOOD:
 		{
-			msg("%s", "You feel less thirsty.");
+			msg("You feel less thirsty.");
 			*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_DRINK_DEATH:
 		{
-			msg("%s", "A feeling of Death flows through your body.");
+			msg("A feeling of Death flows through your body.");
 			take_hit(5000, "a potion of Death");
 			*ident = TRUE;
 			return TRUE;
@@ -1700,7 +1700,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_DRINK_RUIN:
 		{
-			msg("%s", "Your nerves and muscles feel weak and lifeless!");
+			msg("Your nerves and muscles feel weak and lifeless!");
 			take_hit(damroll(10, 10), "a potion of Ruination");
 			player_stat_dec(p_ptr, A_DEX, TRUE);
 			player_stat_dec(p_ptr, A_WIS, TRUE);
@@ -1714,7 +1714,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_DRINK_DETONATE:
 		{
-			msg("%s", "Massive explosions rupture your body!");
+			msg("Massive explosions rupture your body!");
 			take_hit(damroll(50, 20), "a potion of Detonation");
 			(void)inc_timed(TMD_STUN, 75, TRUE);
 			(void)inc_timed(TMD_CUT, 5000, TRUE);
@@ -1724,7 +1724,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_DRINK_SALT:
 		{
-			msg("%s", "The potion makes you vomit!");
+			msg("The potion makes you vomit!");
 			(void)set_food(PY_FOOD_STARVE - 1);
 			(void)clear_timed(TMD_POISONED, TRUE);
 			(void)inc_timed(TMD_PARALYZED, 4, TRUE);
@@ -1734,14 +1734,14 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 
 		case EF_FOOD_GOOD:
 		{
-			msg("%s", "That tastes good.");
+			msg("That tastes good.");
 			*ident = TRUE;
 			return TRUE;
 		}
 
 		case EF_FOOD_WAYBREAD:
 		{
-			msg("%s", "That tastes good.");
+			msg("That tastes good.");
 			(void)clear_timed(TMD_POISONED, TRUE);
 			(void)hp_player(damroll(4, 8));
 			*ident = TRUE;
@@ -1780,7 +1780,7 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 			{
 				p_ptr->csp = p_ptr->msp;
 				p_ptr->csp_frac = 0;
-				msg("%s", "Your feel your head clear.");
+				msg("Your feel your head clear.");
 				p_ptr->redraw |= (PR_MANA);
 				*ident = TRUE;
 			}
@@ -1989,6 +1989,6 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 	}
 
 	/* Not used */
-	msg("%s", "Effect not handled.");
+	msg("Effect not handled.");
 	return FALSE;
 }

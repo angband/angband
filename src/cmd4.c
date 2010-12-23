@@ -173,9 +173,9 @@ void do_cmd_change_name(void)
 			if (get_file(fname, buf, sizeof buf))
 			{
 				if (file_character(buf, FALSE) != 0)
-					msg("%s", "Character dump failed!");
+					msg("Character dump failed!");
 				else
-					msg("%s", "Character dump successful.");
+					msg("Character dump successful.");
 			}
 		}
 
@@ -526,7 +526,7 @@ void do_cmd_feeling(void)
 	/* No useful feeling in town */
 	if (!p_ptr->depth)
 	{
-		msg("%s", "Looks like a typical town.");
+		msg("Looks like a typical town.");
 		return;
 	}
 
@@ -628,7 +628,7 @@ void do_cmd_load_screen(void)
 
 
 	/* Message */
-	msg("%s", "Screen dump loaded.");
+	msg("Screen dump loaded.");
 	message_flush();
 
 
@@ -714,7 +714,7 @@ static void do_cmd_save_screen_text(void)
 
 
 	/* Message */
-	msg("%s", "Screen dump saved.");
+	msg("Screen dump saved.");
 	message_flush();
 
 
@@ -754,7 +754,7 @@ static void do_cmd_save_screen_html(int mode)
 	/* Check for failure */
 	if (!fff)
 	{
-		msg("%s", "Screen dump failed.");
+		msg("Screen dump failed.");
 		message_flush();
 		return;
 	}
@@ -776,7 +776,7 @@ static void do_cmd_save_screen_html(int mode)
 	file_delete(file_name);
 	do_cmd_redraw();
 
-	msg("%s", "HTML screen dump saved.");
+	msg("HTML screen dump saved.");
 	message_flush();
 }
 
@@ -786,7 +786,7 @@ static void do_cmd_save_screen_html(int mode)
  */
 void do_cmd_save_screen(void)
 {
-	msg("%s", "Dump type [(t)ext; (h)tml; (f)orum embedded html]:");
+	msg("Dump type [(t)ext; (h)tml; (f)orum embedded html]:");
 
 	while (TRUE)
 	{

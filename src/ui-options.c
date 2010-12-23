@@ -53,9 +53,9 @@ static void dump_pref_file(void (*dump)(ang_file *), const char *title, int row)
 	
 		prt("", 0, 0);
 		if (prefs_save(buf, dump, title))
-			msg("%s", format("Dumped %s", strstr(title, " ") + 1));
+			msg("Dumped %s", strstr(title, " ") + 1);
 		else
-			msg("%s", "Failed");
+			msg("Failed");
 	}
 
 	screen_load();
@@ -479,7 +479,7 @@ static void macro_query(const char *title, int row)
 	{
 		/* Prompt */
 		prt("", 0, 0);
-		msg("%s", "Found no macro.");
+		msg("Found no macro.");
 	}
 	
 	/* Found one */
@@ -496,7 +496,7 @@ static void macro_query(const char *title, int row)
 	
 		/* Prompt */
 		prt("", 0, 0);
-		msg("%s", "Found a macro.");
+		msg("Found a macro.");
 	}
 }
 
@@ -531,7 +531,7 @@ static void macro_create(const char *title, int row)
 		
 		/* Prompt */
 		prt("", 0, 0);
-		msg("%s", "Added a macro.");
+		msg("Added a macro.");
 	}					
 }
 
@@ -550,7 +550,7 @@ static void macro_remove(const char *title, int row)
 	
 	/* Prompt */
 	prt("", 0, 0);
-	msg("%s", "Removed a macro.");
+	msg("Removed a macro.");
 }
 
 static void keymap_pref_append(const char *title, int row)
@@ -766,7 +766,7 @@ static void visuals_reset(const char *title, int row)
 
 	/* Message */
 	prt("", 0, 0);
-	msg("%s", "Visual attr/char tables reset.");
+	msg("Visual attr/char tables reset.");
 	message_flush();
 }
 

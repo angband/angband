@@ -59,7 +59,7 @@ bool search(bool verbose)
 	{
 		if (verbose)
 		{
-			msg("%s", "You can't make out your surroundings well enough to search.");
+			msg("You can't make out your surroundings well enough to search.");
 
 			/* Cancel repeat */
 			disturb(0, 0);
@@ -85,7 +85,7 @@ bool search(bool verbose)
 					pick_trap(y, x);
 
 					/* Message */
-					msg("%s", "You have found a trap.");
+					msg("You have found a trap.");
 
 					/* Disturb */
 					disturb(0, 0);
@@ -97,7 +97,7 @@ bool search(bool verbose)
 					found = TRUE;
 
 					/* Message */
-					msg("%s", "You have found a secret door.");
+					msg("You have found a secret door.");
 
 					/* Pick a door */
 					place_closed_door(y, x);
@@ -124,7 +124,7 @@ bool search(bool verbose)
 						found = TRUE;
 
 						/* Message */
-						msg("%s", "You have discovered a trap on the chest!");
+						msg("You have discovered a trap on the chest!");
 
 						/* Know the trap */
 						object_notice_everything(o_ptr);
@@ -140,9 +140,9 @@ bool search(bool verbose)
 	if (verbose && !found)
 	{
 		if (chance >= 100)
-			msg("%s", "There are no secrets here.");
+			msg("There are no secrets here.");
 		else
-			msg("%s", "You found nothing.");
+			msg("You found nothing.");
 	}
 
 	return TRUE;
@@ -708,7 +708,7 @@ void move_player(int dir, bool disarm)
 			disturb(0, 0);
 
 			/* Message */
-			msg("%s", "You found a trap!");
+			msg("You found a trap!");
 
 			/* Pick a trap */
 			pick_trap(y, x);

@@ -274,7 +274,7 @@ void textui_book_browse(const object_type *o_ptr)
 		spell_menu_browse(m, noun);
 		spell_menu_destroy(m);
 	} else {
-		msg("%s", "You cannot browse that.");
+		msg("You cannot browse that.");
 	}
 }
 

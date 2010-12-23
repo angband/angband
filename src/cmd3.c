@@ -298,9 +298,9 @@ void textui_obj_examine(object_type *o_ptr, int item)
 void do_cmd_target(void)
 {
 	if (target_set_interactive(TARGET_KILL, -1, -1))
-		msg("%s", "Target Selected.");
+		msg("Target Selected.");
 	else
-		msg("%s", "Target Aborted.");
+		msg("Target Aborted.");
 }
 
 
@@ -318,7 +318,7 @@ void do_cmd_look(void)
 	/* Look around */
 	if (target_set_interactive(TARGET_LOOK, -1, -1))
 	{
-		msg("%s", "Target Selected.");
+		msg("Target Selected.");
 	}
 }
 

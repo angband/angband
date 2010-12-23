@@ -182,7 +182,7 @@ void compact_monsters(int size)
 
 
 	/* Message (only if compacting) */
-	if (size) msg("%s", "Compacting monsters...");
+	if (size) msg("Compacting monsters...");
 
 
 	/* Compact at least 'size' objects */
@@ -344,7 +344,7 @@ s16b mon_pop(void)
 
 
 	/* Warn the player (except during dungeon creation) */
-	if (character_dungeon) msg("%s", "Too many monsters!");
+	if (character_dungeon) msg("Too many monsters!");
 
 	/* Try not to crash */
 	return (0);
@@ -2191,7 +2191,7 @@ bool alloc_monster(struct cave *c, struct loc loc, int dis, bool slp, int depth)
 	{
 		if (OPT(cheat_xtra) || OPT(cheat_hear))
 		{
-			msg("%s", "Warning! Could not allocate a new monster.");
+			msg("Warning! Could not allocate a new monster.");
 		}
 
 		return FALSE;
@@ -2837,7 +2837,7 @@ static void build_quest_stairs(int y, int x)
 	delete_object(y, x);
 
 	/* Explain the staircase */
-	msg("%s", "A magical staircase appears...");
+	msg("A magical staircase appears...");
 
 	/* Create stairs down */
 	cave_set_feat(cave, y, x, FEAT_MORE);
@@ -3051,9 +3051,9 @@ void monster_death(int m_idx)
 		p_ptr->redraw |= (PR_TITLE);
 
 		/* Congratulations */
-		msg("%s", "*** CONGRATULATIONS ***");
-		msg("%s", "You have won the game!");
-		msg("%s", "You may retire (commit suicide) when you are ready.");
+		msg("*** CONGRATULATIONS ***");
+		msg("You have won the game!");
+		msg("You may retire (commit suicide) when you are ready.");
 	}
 }
 

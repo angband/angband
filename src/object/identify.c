@@ -929,9 +929,9 @@ void object_notice_on_wield(object_type *o_ptr)
 	if (of_has(f, OF_INFRA))
 		msg("Your eyes tingle.");
 	if (of_has(f, OF_LIGHT))
-		msg("%s", "It glows!");
+		msg("It glows!");
 	if (of_has(f, OF_TELEPATHY))
-		msg("%s", "Your mind feels strangely sharper!");
+		msg("Your mind feels strangely sharper!");
 
 	/* WARNING -- masking f by obvious mask -- this should be at the end of this function */
 	flags_mask(f, OF_SIZE, OF_OBVIOUS_MASK, FLAG_END);

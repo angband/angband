@@ -43,7 +43,7 @@ void dungeon_change_level(int dlev)
 	   according to how long we've been away */
 	if (!dlev && daycount)
 	{
-		if (OPT(cheat_xtra)) msg("%s", "Updating Shops...");
+		if (OPT(cheat_xtra)) msg("Updating Shops...");
 		while (daycount--)
 		{
 			int n;
@@ -62,7 +62,7 @@ void dungeon_change_level(int dlev)
 			if (one_in_(STORE_SHUFFLE))
 			{
 				/* Message */
-				if (OPT(cheat_xtra)) msg("%s", "Shuffling a Shopkeeper...");
+				if (OPT(cheat_xtra)) msg("Shuffling a Shopkeeper...");
 
 				/* Pick a random shop (except home) */
 				while (1)
@@ -76,7 +76,7 @@ void dungeon_change_level(int dlev)
 			}
 		}
 		daycount = 0;
-		if (OPT(cheat_xtra)) msg("%s", "Done.");
+		if (OPT(cheat_xtra)) msg("Done.");
 	}
 
 	/* Leaving */
@@ -515,11 +515,11 @@ static void process_world(struct cave *c)
 
 			/* Day breaks */
 			if (dawn)
-				msg("%s", "The sun has risen.");
+				msg("The sun has risen.");
 
 			/* Night falls */
 			else
-				msg("%s", "The sun has fallen.");
+				msg("The sun has fallen.");
 
 			/* Illuminate */
 			cave_illuminate(c, dawn);
@@ -618,7 +618,7 @@ static void process_world(struct cave *c)
 		if (!p_ptr->timed[TMD_PARALYZED] && one_in_(10))
 		{
 			/* Message */
-			msg("%s", "You faint from the lack of food.");
+			msg("You faint from the lack of food.");
 			disturb(1, 0);
 
 			/* Hack -- faint (bypass free action) */
@@ -743,14 +743,14 @@ static void process_world(struct cave *c)
 			else if (o_ptr->timeout == 0)
 			{
 				disturb(0, 0);
-				msg("%s", "Your light has gone out!");
+				msg("Your light has gone out!");
 			}
 
 			/* The light is getting dim */
 			else if ((o_ptr->timeout < 100) && (!(o_ptr->timeout % 10)))
 			{
 				disturb(0, 0);
-				msg("%s", "Your light is growing faint.");
+				msg("Your light is growing faint.");
 			}
 		}
 	}
@@ -973,7 +973,7 @@ static void process_player(void)
 			disturb(0, 0);
 
 			/* Hack -- Show a Message */
-			msg("%s", "Cancelled.");
+			msg("Cancelled.");
 		}
 	}
 
@@ -1885,7 +1885,7 @@ void play_game(void)
 				p_ptr->noscore |= NOSCORE_WIZARD;
 
 				/* Message */
-				msg("%s", "You invoke wizard mode and cheat death.");
+				msg("You invoke wizard mode and cheat death.");
 				message_flush();
 
 				/* Cheat death */
@@ -1916,7 +1916,7 @@ void play_game(void)
 				if (p_ptr->word_recall)
 				{
 					/* Message */
-					msg("%s", "A tension leaves the air around you...");
+					msg("A tension leaves the air around you...");
 					message_flush();
 
 					/* Hack -- Prevent recall */
