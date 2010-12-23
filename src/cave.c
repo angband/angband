@@ -1247,20 +1247,9 @@ void print_rel(char c, byte a, int y, int x)
 	/* Verify location */
 	if ((kx < 0) || (kx >= SCREEN_WID)) return;
 
-	/* Location in window */
-	vy = ky + ROW_MAP;
-
-	/* Location in window */
-	vx = kx + COL_MAP;
-
-	if (tile_width > 1)
-	{
-	        vx = tile_width * kx;
-	}
-	if (tile_height > 1)
-	{
-		vy = tile_height * ky;
-	}
+	/* Get right position */
+	vx = COL_MAP + (tile_width * kx);
+	vy = ROW_MAP + (tile_height * ky);
 
 	/* Hack -- Queue it */
 	Term_queue_char(Term, vx, vy, a, c, 0, 0);
