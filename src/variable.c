@@ -41,7 +41,7 @@ const char *copyright =
 bool arg_wizard;			/* Command arg -- Request wizard mode */
 bool arg_rebalance;			/* Command arg -- Rebalance monsters */
 int arg_graphics;			/* Command arg -- Request graphics mode */
-bool arg_graphics_nice;	        /* Command arg -- Request nice graphics mode */
+bool arg_graphics_nice;			/* Command arg -- Request nice graphics mode */
 
 /*
  * Various things
@@ -669,6 +669,10 @@ flavor_type *flavor_info;
  */
 spell_type *s_info;
 
+/*
+ * The hints array
+ */
+struct hint *hints;
 
 /*
  * The spell_list is built from s_info to facilitate a quick lookup

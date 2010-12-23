@@ -249,5 +249,14 @@ struct color_type
 	byte color_translate[MAX_ATTR];       /* Index for various in-game translations */
 };
 
+/*
+ * A hint.
+ */
+struct hint
+{
+        char *hint;
+        struct hint *next;
+};
+
 
 #endif /* !INCLUDED_TYPES_H */

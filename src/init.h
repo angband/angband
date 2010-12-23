@@ -31,6 +31,7 @@ extern struct parser *init_parse_v(void);
 extern struct parser *init_parse_z(void);
 extern struct parser *init_parse_flavor(void);
 extern struct parser *init_parse_names(void);
+extern struct parser *init_parse_hints(void);
 #endif
 
 extern errr parse_file(struct parser *p, const char *filename);

@@ -1818,3 +1818,15 @@ void init_display(void)
 
 	ui_init_birthstate_handlers();
 }
+
+
+/* Return a random hint from the global hints list */
+char* random_hint(void)
+{
+	struct hint *v, *r = NULL;
+	int n;
+	for (v = hints, n = 1; v; v = v->next, n++)
+		if (one_in_(n))
+			r = v;
+	return r->hint;
+}

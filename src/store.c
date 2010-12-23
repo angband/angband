@@ -3131,7 +3131,12 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 
 	/* Say a friendly hello. */
 	if (this_store != STORE_HOME) 
+	{
 		prt_welcome(store_owner(this_store));
+
+		/* Offer a hint */
+		text_out(random_hint());
+	}
 
 	/* Wipe the menu and set it up */
 	menu_init(&menu, MN_SKIN_SCROLL, &store_menu);

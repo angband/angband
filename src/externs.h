@@ -132,6 +132,7 @@ extern byte *g_info;
 extern flavor_type *flavor_info;
 extern spell_type *s_info;
 extern s16b spell_list[MAX_REALMS][BOOKS_PER_REALM][SPELLS_PER_BOOK];
+extern struct hint *hints;
 
 extern const char *ANGBAND_SYS;
 extern const char *ANGBAND_GRAF;
@@ -325,6 +326,7 @@ byte monster_health_attr(void);
 void cnv_stat(int val, char *out_val, size_t out_len);
 void toggle_inven_equip(void);
 void subwindows_set_flags(u32b *new_flags, size_t n_subwindows);
+char* random_hint(void);
 
 /* wiz-spoil.c */
 bool make_fake_artifact(object_type *o_ptr, byte name1);

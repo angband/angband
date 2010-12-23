@@ -3148,6 +3148,44 @@ static void init_books(void)
 	}
 }
 
+
+/* Initialise hints */
+static enum parser_error parse_hint(struct parser *p) {
+	struct hint *h = parser_priv(p);
+	struct hint *new = mem_zalloc(sizeof *new);
+
+	new->hint = string_make(parser_getstr(p, "text"));
+	new->next = h;
+
+	parser_setpriv(p, new);
+	return PARSE_ERROR_NONE;
+}
+
+struct parser *init_parse_hints(void) {
+	struct parser *p = parser_new();
+	parser_reg(p, "H str text", parse_hint);
+	return p;
+}
+
+static errr run_parse_hints(struct parser *p) {
+	return parse_file(p, "hints");
+}
+
+static errr finish_parse_hints(struct parser *p) {
+	struct hint *hints;
+	hints = parser_priv(p);
+	parser_destroy(p);
+	return 0;
+}
+
+static struct file_parser hints_parser = {
+	"hints",
+	init_parse_hints,
+	run_parse_hints,
+	finish_parse_hints,
+};
+
+
 /*** Initialize others ***/
 
 static void autoinscribe_init(void)
@@ -3567,6 +3605,10 @@ bool init_angband(void)
 	/* Initialize spell info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (spells)");
 	if (run_parser(&s_parser)) quit("Cannot initialize spells");
+
+	/* Initialize hint text */
+	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (hints)");
+	if (run_parser(&hints_parser)) quit("Cannot initialize hints");
 
 	/* Initialize spellbook info */
 	event_signal_string(EVENT_INITSTATUS, "Initializing arrays... (spellbooks)");
