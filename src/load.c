@@ -276,7 +276,7 @@ static int rd_item(object_type *o_ptr)
  * 32 + 5 bytes saved, so we'll read an extra 27 bytes at the end which won't
  * be used.
  */
-int rd_randomizer(u32b version)
+int rd_randomizer(void)
 {
 	int i;
 	u32b noop;
@@ -322,7 +322,7 @@ int rd_randomizer(u32b version)
  * The window options are stored in the same way, but note that each
  * window gets 32 options, and their order is fixed by certain defines.
  */
-int rd_options(u32b version)
+int rd_options(void)
 {
 	int i, n;
 
@@ -427,7 +427,7 @@ int rd_options(u32b version)
 /*
  * Read the saved messages
  */
-int rd_messages(u32b version)
+int rd_messages(void)
 {
 	int i;
 	char buf[128];
@@ -456,7 +456,7 @@ int rd_messages(u32b version)
 
 
 
-int rd_monster_memory(u32b version)
+int rd_monster_memory(void)
 {
 	int r_idx;
 	u16b tmp16u;
@@ -529,7 +529,7 @@ int rd_monster_memory(u32b version)
 }
 
 
-int rd_object_memory(u32b version)
+int rd_object_memory(void)
 {
 	int i;
 	u16b tmp16u;
@@ -564,7 +564,7 @@ int rd_object_memory(u32b version)
 }
 
 
-int rd_quests(u32b version)
+int rd_quests(void)
 {
 	int i;
 	u16b tmp16u;
@@ -595,7 +595,7 @@ int rd_quests(u32b version)
 }
 
 
-int rd_artifacts(u32b version)
+int rd_artifacts(void)
 {
 	int i;
 	u16b tmp16u;
@@ -624,58 +624,6 @@ int rd_artifacts(u32b version)
 		rd_byte(&tmp8u);
 	}
 
-	/* For old versions, we need to go through objects and update */
-	if (version == 1)
-	{
-		size_t i;
-		object_type *o_ptr = NULL;
-
-		bool *anywhere;
-		anywhere = C_ZNEW(z_info->a_max, bool);
-
-		/* All inventory/home artifacts need to be marked as seen */
-		for (i = 0; i < ALL_INVEN_TOTAL; i++)
-		{
-			o_ptr = &o_list[i];
-			if (object_is_known_artifact(o_ptr))
-				artifact_of(o_ptr)->seen = TRUE;
-			anywhere[o_ptr->name1] = TRUE;
-		}
-
-		for (i = 0; i < (size_t)o_max; i++)
-		{
-			o_ptr = &o_list[i];
-			if (object_is_known_artifact(o_ptr))
-				artifact_of(o_ptr)->seen = TRUE;
-			anywhere[o_ptr->name1] = TRUE;
-		}
-
-		for (i = 0; i < MAX_STORES; i++)
-		{
-			int j = 0;
-			for (j = 0; j < store[i].stock_num; j++)
-			{
-				o_ptr = &store[i].stock[j];
-				if (object_is_known_artifact(o_ptr))
-					artifact_of(o_ptr)->seen = TRUE;
-				anywhere[o_ptr->name1] = TRUE;
-			}
-		}
-
-		/* Now update the seen flags correctly */
-		for (i = 0; i < z_info->a_max; i++)
-		{
-			artifact_type *a_ptr = &a_info[i];
-
-			/* If it isn't present anywhere, but has been created,
-			 * then it has been lost, and thus seen */
-			if (a_ptr->created && !anywhere[i])
-				a_ptr->seen = TRUE;
-		}
-
-		FREE(anywhere);
-	}
-	
 	return 0;
 }
 
@@ -686,7 +634,7 @@ static u32b randart_version;
 /*
  * Read the "extra" information
  */
-int rd_player(u32b version)
+int rd_player(void)
 {
 	int i;
 
@@ -747,7 +695,7 @@ int rd_player(u32b version)
 
 	rd_s16b(&p_ptr->ht_birth);
 	rd_s16b(&p_ptr->wt_birth);
-	if (version >= 2) rd_s16b(&p_ptr->sc_birth);
+	rd_s16b(&p_ptr->sc_birth);
 	rd_s32b(&p_ptr->au_birth);
 
 	strip_bytes(4);
@@ -787,7 +735,7 @@ int rd_player(u32b version)
 	/* More info */
 	strip_bytes(8);
 	rd_s16b(&p_ptr->sc);
-	if (version < 2) p_ptr->sc_birth = p_ptr->sc;
+	p_ptr->sc_birth = p_ptr->sc;
 	strip_bytes(2);
 
 	/* Read the flags */
@@ -837,7 +785,7 @@ int rd_player(u32b version)
 /*
  * Read squelch and autoinscription submenu for all known objects
  */
-int rd_squelch(u32b version)
+int rd_squelch(void)
 {
 	size_t i;
 	byte tmp8u = 24;
@@ -890,7 +838,7 @@ int rd_squelch(u32b version)
 }
 
 
-int rd_misc(u32b version)
+int rd_misc(void)
 {
 	byte tmp8u;
 	
@@ -932,7 +880,7 @@ int rd_misc(u32b version)
 	return 0;
 }
 
-int rd_player_hp(u32b version)
+int rd_player_hp(void)
 {
 	int i;
 	u16b tmp16u;
@@ -955,7 +903,7 @@ int rd_player_hp(u32b version)
 }
 
 
-int rd_player_spells(u32b version)
+int rd_player_spells(void)
 {
 	int i;
 	u16b tmp16u;
@@ -986,7 +934,7 @@ int rd_player_spells(u32b version)
 /*
  * Read the random artifacts
  */
-int rd_randarts(u32b version)
+int rd_randarts(void)
 {
 	size_t i, j;
 	byte tmp8u;
@@ -1139,7 +1087,7 @@ int rd_randarts(u32b version)
  *
  * Note that the inventory is "re-sorted" later by "dungeon()".
  */
-int rd_inventory(u32b version)
+int rd_inventory(void)
 {
 	int slot = 0;
 
@@ -1223,7 +1171,7 @@ int rd_inventory(u32b version)
 }
 
 
-int rd_stores(u32b version)
+int rd_stores(void)
 {
 	int i;
 	u16b tmp16u;
@@ -1315,7 +1263,7 @@ int rd_stores(u32b version)
  * After loading the monsters, the objects being held by monsters are
  * linked directly into those monsters.
  */
-int rd_dungeon(u32b version)
+int rd_dungeon(void)
 {
 	int i, y, x;
 
@@ -1476,7 +1424,7 @@ int rd_dungeon(u32b version)
 	return 0;
 }
 
-int rd_objects(u32b version)
+int rd_objects(void)
 {
 	int i;
 	u16b limit;
@@ -1554,7 +1502,7 @@ int rd_objects(u32b version)
 }
 
 
-int rd_monsters(u32b version)
+int rd_monsters(void)
 {
 	int i;
 	u16b limit;
@@ -1638,7 +1586,7 @@ int rd_monsters(u32b version)
 }
 
 
-int rd_ghost(u32b version)
+int rd_ghost(void)
 {
 	char buf[64];
 
@@ -1658,7 +1606,7 @@ int rd_ghost(u32b version)
 }
 
 
-int rd_history(u32b version)
+int rd_history(void)
 {
 	u32b tmp32u;
 	size_t i;

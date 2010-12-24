@@ -74,7 +74,7 @@ static const struct {
 /** Savefile loading functions */
 static const struct {
 	char name[16];
-	int (*load)(u32b version);
+	int (*load)(void);
 	u32b version;
 } loaders[] = {
 	{ "rng", rd_randomizer, 1 },
