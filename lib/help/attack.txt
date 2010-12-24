@@ -6,12 +6,13 @@ as aiming a wand).  Creatures attack in the same way.  If they move into you,
 they attack you.  Some creatures can also cast spells from a distance, and
 others can use various breath weapons (such as fire) on you from a distance.
 
-Creatures in walls can not be attacked by wands or other magic attacks
-normally stopped by walls, nor can they be shot at with bows and arrows.
-Tunnelling into the wall (using the "tunnel" or "alter" command) will allow 
-you to attack any creature in the wall. This applies to creatures which 
-"pass through" walls: if they "bore through" walls, the wall is no longer
-there, and the creature can be targetted normally.
+Creatures in walls can not be attacked by wands or other magic attacks 
+normally stopped by walls, nor can they be shot at with bows and arrows. 
+Tunnelling into the wall (using the "tunnel" or "alter" command) will 
+allow you to attack any creature in the wall with your main weapon.  
+This applies to creatures which "pass through" walls: if they "bore 
+through" walls, the wall is no longer there, and the creature can be 
+targetted normally.
 
 If you are wielding a weapon, the damage for the weapon is used when you hit
 a creature.  Otherwise you get a single punch which does minimal damage.
@@ -38,7 +39,7 @@ receive a damage reduction.  This is not true for monsters, whose AC only
 affects the character's difficulty to hit them.
 
 If you wish to see how much damage your weapon will do, you can "I"nspect it.
-You will find the number of blows and how much damage you would do per blow,
+You will find the number of blows and how much damage you would do per round,
 including information on whether your weapon damages other types of
 monsters differently. 
 
@@ -75,12 +76,12 @@ existing save file of the dead character for this to happen: using the
 
 === Your Weapon ===
 
-Carrying a weapon in your backpack does you no good.  You must wield a weapon 
-before it can be used in a fight.  A secondary weapon can be kept by keeping
-it in the backpack, and switching it with the primary weapon when needed. This 
-is most often used when switching between a melee weapon and a digging tool, 
-or when carrying two weapons, each of which provides a rare power that the 
-character needs at two separate times.
+Carrying a weapon in your backpack does you no good.  You must wield a 
+weapon before it can be used in a fight.  A secondary weapon can be kept 
+by keeping it in the backpack, and switching it with the primary weapon 
+when needed. This is most often used when switching between a melee 
+weapon and a digging tool, or when carrying two weapons, each of which 
+provides a rare power that the character needs at two separate times.
 
 Weapons have two main magical characteristics, their enchanted ability 
 to hit and their enchanted ability to do damage, expressed as `(+#,+#)'.  
@@ -91,19 +92,22 @@ weapons cannot be unwielded until the curse is lifted. Identifying a
 weapon will inform you of the magical bonuses and penalties and whether 
 or not it is cursed.
 
-Angband assumes that your youth in the rough environment near the dungeons
-has taught you the relative merits of different weapons, and displays as
-part of their description the damage dice which define their capabilities.
-Any damage enchantment is added to the dice roll for that weapon.  The dice
-used for a given weapon is displayed as "XdY".  The number "X" indicates
-how many dice to roll, and number "Y" indicates how many sides they have. A
-"2d6" weapon will thus give damage from 2 to 12, plus any damage bonus. The
-weight of a weapon is also a consideration.  Heavy weapons may hit harder,
-but they are also harder to use.  Depending on your strength, dexterity,
-character class, and weapon weight, you may get several attacks per round: 
-high dexterity and strength and low weapon weight are the main factors.
-Warriors may get up to a maximum of 6 attacks per round: mages and priests 
-are limited to only 4: other classes may get up to 5.
+Angband assumes that your youth in the rough environment near the 
+dungeons has taught you the relative merits of different weapons, and 
+displays as part of their description the damage dice which define their 
+capabilities. Any damage enchantment is added to the dice roll for that 
+weapon.  The dice used for a given weapon is displayed as "XdY".  The 
+number "X" indicates how many dice to roll, and number "Y" indicates how 
+many sides they have. A "2d6" weapon will thus give damage from 2 to 12, 
+plus any damage bonus. The weight of a weapon is also a consideration.  
+Heavy weapons may hit harder, but they are also harder to use.  
+Depending on your strength, dexterity, character class, and weapon 
+weight, you may get attack more quickly: high dexterity and strength and 
+low weapon weight are the main factors. Warriors may get up to a maximum 
+of 6 attacks per round: mages and priests are limited to only 4: other 
+classes may get up to 5. Your attacks per round with a weapon are 
+displayed as a decimal, e.g. 2.3 or 3.4 etc. The fractions take the form 
+of unused energy which is carried over to your next turn.
 
 Missile weapons, such as bows, have their characteristics added to those 
 of the missile used, if the proper weapon/missile combination is used, 
@@ -136,7 +140,7 @@ Some of the more common ego weapons are described at the end of this file.
 
 Your armor class (or AC) is a number that describes the amount and the
 quality of armor being worn. Armor class will generally run from about 0 to
-150, though exceptionally good armor can improve even on the latter figure.
+200, though exceptionally good armor can improve even on the latter figure.
  
 The larger your armor class, the more protective it is.  A negative armor
 class would actually help get you hit.  Armor protects you in three manners.
@@ -230,17 +234,17 @@ resistance: in both cases, either the resistance is present or it is
 not.  But one permanent resistance and one temporary resistance are both 
 effective simultaneously.
 
-Elemental attacks also have a chance to damage wielded equipment or destroy
-items in the character's inventory.  Fire attacks destroy scrolls, staves, 
-magic books and arrows.  Acid attacks destroy scrolls, staves, arrows, bolts 
-and can damage armor.  Electricity attacks can destroy wands, rods, rings and
-amulets.  Cold attacks can destroy potions.  Items in your inventory get a
-saving throw, and they are unharmed if they pass it.  Having resistance to 
-the element will make an item less likely to be destroyed.  Items on the
-floor that get caught in an elemental ball or breath are automatically
-destroyed without a saving throw.  Weapons, armor and chests can also be
-destroyed if they are lying on the floor, but cannot be harmed if they are
-in your pack.
+Elemental attacks also have a chance to damage wielded equipment or 
+destroy items in the character's inventory.  Fire attacks destroy 
+scrolls, staves, magic books and arrows.  Acid attacks destroy scrolls, 
+staves, arrows, bolts and can damage armor.  Electricity attacks can 
+destroy wands, rods, rings and amulets.  Cold attacks can destroy 
+potions.  Items in your inventory get a saving throw, and they are 
+unharmed if they pass it.  Having resistance to the element will make an 
+item less likely to be destroyed.  Items on the floor that get caught in 
+an elemental ball or breath are automatically destroyed without a saving 
+throw.  Weapons, armor and chests can also be destroyed if they are 
+lying on the floor, but cannot be harmed if they are in your pack.
 
 The character may also gain immunity to fire, cold, lightning and acid if 
 he is fortunate to find any of the few artifacts that provide these 
@@ -286,13 +290,13 @@ and stun, and do considerable damage from high-level monsters), ice bolts
 latter usually known as Mana Storms.) Magic missiles are included in the 
 "mana" category, whether cast by the monster or the player.
 
-Some attacks may stun or cut the player.  These can either be spells or breath
-attacks (sound, water balls) or from melee.  A stunned character receives a
-penalty to hit and is much more likely to fail a spell or activation.  If a
-character gets very stunned, they may be knocked out and at the mercy of the
-enemies.  A cut character will slowly lose life until healed either by potions,
-spells or natural regeneration.  Both stunning and cut status are displayed at
-the bottom of the screen.
+Some attacks may stun or cut the player.  These can either be spells or 
+breath attacks (sound, water balls) or from melee.  A stunned character 
+receives a penalty to hit and is much more likely to fail a spell or 
+activation.  If a character gets very stunned, they may be knocked out 
+and at the mercy of the enemies.  A cut character will slowly lose life 
+until healed either by potions, spells or natural regeneration.  Both 
+stunning and cut status are displayed at the bottom of the screen.
 
 There are resistances available to chaos, disenchantment, confusion, nexus, 
 sound, shards, light and darkness: all of these will reduce the damage and 
@@ -396,7 +400,7 @@ Weapon of Extra Attacks.
      attacks during each round.
 
 Elemental Branded Weapons
-     Each of the four elemental attacks has a corresponding weapon which 
+     Each of the five elemental attacks has a corresponding weapon which 
      will do treble its base damage to creatures not resistant to that 
      element. (It should be noted that the magical damage bonus is not
      affected by this: a weapon of Flame (2d6) (+5,+6) does 6d6+6 damage 
@@ -656,7 +660,7 @@ only the most common.
 Apart from these there are some very rare and well-made armours in the
 dungeon with not necessarily any special abilities. These include Shields of
 Deflection, Adamantite Plate Mail, Mithril Plate Mail, Mithril Chain Mail,
-and Shadow Cloaks.  The first four cannot be damaged by acid because of the
+and Elven Cloaks.  The first four cannot be damaged by acid because of the
 quality metals they contain.
 
 There are rumors of unique "artifact" items in the dungeon - weapons and 
