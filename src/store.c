@@ -3129,15 +3129,6 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 
 	/*** Inventory display ***/
 
-	/* Say a friendly hello. */
-	if (this_store != STORE_HOME) 
-	{
-		prt_welcome(store_owner(this_store));
-
-		/* Offer a hint */
-		msg_print(random_hint());
-	}
-
 	/* Wipe the menu and set it up */
 	menu_init(&menu, MN_SKIN_SCROLL, &store_menu);
 	menu_layout(&menu, &store_menu_region);
@@ -3147,6 +3138,15 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 	store_display_recalc(&menu);
 	store_menu_recalc(&menu);
 	store_redraw();
+
+	/* Say a friendly hello. */
+	if (this_store != STORE_HOME) 
+	{
+		prt_welcome(store_owner(this_store));
+
+		/* Offer a hint */
+		msg_print(random_hint());
+	}
 
 	msg_flag = FALSE;
 	menu_select(&menu, 0);
