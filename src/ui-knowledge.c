@@ -214,14 +214,14 @@ static int feat_order(int feat)
 
 
 /* Emit a 'graphical' symbol and a padding character if appropriate */
-extern void big_pad(int col, int row, byte a, byte c)
+extern int big_pad(int col, int row, byte a, byte c)
 {
 	Term_putch(col, row, a, c);
 
 	if ((tile_width > 1) || (tile_height > 1))
-	{
 	        Term_big_putch(col, row, a, c);
-	}
+
+	return tile_width;
 }
 
 /* Return the actual width of a symbol */
@@ -1732,26 +1732,21 @@ void textui_browse_object_knowledge(const char *name, int row)
  */
 static void display_feature(int col, int row, bool cursor, int oid )
 {
-	/* Get the feature index */
-	int f_idx = oid;
-
-	/* Access the feature */
-	feature_type *f_ptr = &f_info[f_idx];
-
-	/* Choose a color */
+	feature_type *f_ptr = &f_info[oid];
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
 
-	/* Display the name */
 	c_prt(attr, f_ptr->name, row, col);
 
-	if ((tile_width > 1) || (tile_height > 1)) return;
-
-	/* Display symbol */
-	/* XXX needs retooling for multi-light terrain */
-	big_pad(68, row, f_ptr->x_attr[FEAT_LIGHTING_LIT], f_ptr->x_char[FEAT_LIGHTING_LIT]);
-
-	/* ILLUMINATION AND DARKNESS GO HERE */
-
+	if (tile_height == 1) {
+		/* Display symbols */
+		col = 66;
+		col += big_pad(col, row, f_ptr->x_attr[FEAT_LIGHTING_DARK],
+				f_ptr->x_char[FEAT_LIGHTING_DARK]);
+		col += big_pad(col, row, f_ptr->x_attr[FEAT_LIGHTING_LIT],
+				f_ptr->x_char[FEAT_LIGHTING_LIT]);
+		col += big_pad(col, row, f_ptr->x_attr[FEAT_LIGHTING_BRIGHT],
+				f_ptr->x_char[FEAT_LIGHTING_BRIGHT]);
+	}
 }
 
 
