@@ -59,7 +59,7 @@ static int check_devices(object_type *o_ptr)
 	}
 
 	/* Notice empty staffs */
-	if (what && o_ptr->pval <= 0)
+	if (what && o_ptr->pval[DEFAULT_PVAL] <= 0)
 	{
 		if (OPT(flush_failure)) flush();
 		msg_format("The %s has no charges left.", what);
@@ -563,7 +563,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 
 	/* Food feeds the player */
 	if (o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION)
-		(void)set_food(p_ptr->food + o_ptr->pval);
+		(void)set_food(p_ptr->food + o_ptr->pval[DEFAULT_PVAL]);
 
 	/* Use the turn */
 	p_ptr->energy_use = 100;
@@ -599,7 +599,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	if (used && use == USE_CHARGE)
 	{
 		/* Use a single charge */
-		o_ptr->pval--;
+		o_ptr->pval[DEFAULT_PVAL]--;
 
 		/* Describe charges */
 		if (item >= 0)

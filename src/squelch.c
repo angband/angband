@@ -295,13 +295,13 @@ byte squelch_level_of(const object_type *o_ptr)
 
 	object_flags_known(o_ptr, f);
 
-	if ((object_pval_is_visible(o_ptr)) && (o_ptr->pval < 0))
+	if ((object_pval_is_visible(o_ptr)) && (o_ptr->pval[DEFAULT_PVAL] < 0))
 		return SQUELCH_BAD;
 
 	/* Deal with jewelry specially. */
 	if (object_is_jewelry(o_ptr))
 	{
-		if ((object_pval_is_visible(o_ptr)) && (o_ptr->pval > 0))
+		if ((object_pval_is_visible(o_ptr)) && (o_ptr->pval[DEFAULT_PVAL] > 0))
 			return SQUELCH_AVERAGE;
 		if ((o_ptr->to_h > 0) || (o_ptr->to_d > 0) || (o_ptr->to_a > 0))
 			return SQUELCH_AVERAGE;
@@ -439,7 +439,7 @@ bool squelch_item_ok(const object_type *o_ptr)
 		return FALSE;
 
 	/* Auto-squelch dead chests */
-	if (o_ptr->tval == TV_CHEST && o_ptr->pval == 0)
+	if (o_ptr->tval == TV_CHEST && o_ptr->pval[DEFAULT_PVAL] == 0)
 		return TRUE;
 
 	/* check option for worthless kinds */

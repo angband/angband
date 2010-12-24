@@ -520,12 +520,12 @@ bool make_attack_normal(int m_idx)
 						    (o_ptr->tval == TV_WAND))
 						{
 							/* Charged? */
-							if (o_ptr->pval)
+							if (o_ptr->pval[DEFAULT_PVAL])
 							{
-								drained = o_ptr->pval;
+								drained = o_ptr->pval[DEFAULT_PVAL];
 
 								/* Uncharge */
-								o_ptr->pval = 0;
+								o_ptr->pval[DEFAULT_PVAL] = 0;
 							}
 						}
 
@@ -614,7 +614,7 @@ bool make_attack_normal(int m_idx)
 
 							/* Amount of gold to put in this object */
 							amt = gold > MAX_PVAL ? MAX_PVAL : gold;
-							o.pval = amt;
+							o.pval[DEFAULT_PVAL] = amt;
 							gold -= amt;
 
 							/* Give the gold to the monster */

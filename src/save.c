@@ -41,7 +41,7 @@ static void wr_item(const object_type *o_ptr)
 
 	wr_byte(o_ptr->tval);
 	wr_byte(o_ptr->sval);
-	wr_s16b(o_ptr->pval);
+	wr_s16b(o_ptr->pval[DEFAULT_PVAL]);
 
 	wr_byte(0);
 
@@ -550,7 +550,7 @@ void wr_randarts(void)
 
 		wr_byte(a_ptr->tval);
 		wr_byte(a_ptr->sval);
-		wr_s16b(a_ptr->pval);
+		wr_s16b(a_ptr->pval[DEFAULT_PVAL]);
 
 		wr_s16b(a_ptr->to_h);
 		wr_s16b(a_ptr->to_d);

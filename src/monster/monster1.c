@@ -144,7 +144,7 @@ void get_attack_colors(int melee_colors[RBE_MAX], int spell_colors[RSF_MAX])
 		known = object_is_known(o_ptr);
 
 		/* Drain charges - requires a charged item */
-		if (i < INVEN_PACK && (!known || o_ptr->pval > 0) &&
+		if (i < INVEN_PACK && (!known || o_ptr->pval[DEFAULT_PVAL] > 0) &&
 				(o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND))
 			melee_colors[RBE_UN_POWER] = TERM_L_RED;
 

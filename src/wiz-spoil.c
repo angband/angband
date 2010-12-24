@@ -149,7 +149,7 @@ static void kind_info(char *buf, size_t buf_len,
 	k_ptr = &k_info[i_ptr->k_idx];
 
 	/* Cancel bonuses */
-	i_ptr->pval = 0;
+	i_ptr->pval[DEFAULT_PVAL] = 0;
 	i_ptr->to_a = 0;
 	i_ptr->to_h = 0;
 	i_ptr->to_d = 0;
@@ -416,7 +416,7 @@ bool make_fake_artifact(object_type *o_ptr, byte name1)
 	o_ptr->name1 = name1;
 
 	/* Extract the fields */
-	o_ptr->pval = a_ptr->pval;
+	o_ptr->pval[DEFAULT_PVAL] = a_ptr->pval[DEFAULT_PVAL];
 	o_ptr->ac = a_ptr->ac;
 	o_ptr->dd = a_ptr->dd;
 	o_ptr->ds = a_ptr->ds;

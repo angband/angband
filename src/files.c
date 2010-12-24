@@ -438,23 +438,23 @@ static void display_player_sust_info(void)
 				c = '*';
 
 				/* Good */
-				if (o_ptr->pval > 0)
+				if (o_ptr->pval[DEFAULT_PVAL] > 0)
 				{
 					/* Good */
 					a = TERM_L_GREEN;
 
 					/* Label boost */
-					if (o_ptr->pval < 10) c = I2D(o_ptr->pval);
+					if (o_ptr->pval[DEFAULT_PVAL] < 10) c = I2D(o_ptr->pval[DEFAULT_PVAL]);
 				}
 
 				/* Bad */
-				if (o_ptr->pval < 0)
+				if (o_ptr->pval[DEFAULT_PVAL] < 0)
 				{
 					/* Bad */
 					a = TERM_RED;
 
 					/* Label boost */
-					if (o_ptr->pval > -10) c = I2D(-(o_ptr->pval));
+					if (o_ptr->pval[DEFAULT_PVAL] > -10) c = I2D(-(o_ptr->pval[DEFAULT_PVAL]));
 				}
 			}
 

@@ -389,7 +389,7 @@ static enum parser_error parse_k_g(struct parser *p) {
 
 static enum parser_error parse_k_i(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
-	int tval;
+	int tval, i;
 
 	assert(k);
 
@@ -399,7 +399,12 @@ static enum parser_error parse_k_i(struct parser *p) {
 
 	k->tval = tval;
 	k->sval = parser_getint(p, "sval");
-	k->pval = parser_getrand(p, "pval");
+
+	for (i = 0; i < MAX_PVALS; i++)
+	{
+		k->pval[i] = parser_getrand(p, "pval");
+	}
+
 	return PARSE_ERROR_NONE;
 }
 
@@ -564,7 +569,7 @@ static enum parser_error parse_a_n(struct parser *p) {
 
 static enum parser_error parse_a_i(struct parser *p) {
 	struct artifact *a = parser_priv(p);
-	int tval, sval;
+	int tval, sval, i;
 
 	assert(a);
 
@@ -578,7 +583,11 @@ static enum parser_error parse_a_i(struct parser *p) {
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 	a->sval = sval;
 
-	a->pval = parser_getint(p, "pval");
+	for (i = 0; i < MAX_PVALS; i++)
+	{
+		a->pval[i] = parser_getint(p, "pval");
+	}
+
 	return PARSE_ERROR_NONE;
 }
 
@@ -1053,8 +1062,8 @@ static enum parser_error parse_e_c(struct parser *p) {
 	struct random th = parser_getrand(p, "th");
 	struct random td = parser_getrand(p, "td");
 	struct random ta = parser_getrand(p, "ta");
-	struct random pval = parser_getrand(p, "pval");
 	struct ego_item *e = parser_priv(p);
+	int i;
 
 	if (!e)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
@@ -1062,7 +1071,11 @@ static enum parser_error parse_e_c(struct parser *p) {
 	e->to_h = th;
 	e->to_d = td;
 	e->to_a = ta;
-	e->pval = pval;
+
+	for (i = 0; i < MAX_PVALS ; i++)
+	{
+		e->pval[i] = parser_getrand(p, "pval");
+	}
 
 	return PARSE_ERROR_NONE;
 }
@@ -1071,7 +1084,7 @@ static enum parser_error parse_e_m(struct parser *p) {
 	int th = parser_getint(p, "th");
 	int td = parser_getint(p, "td");
 	int ta = parser_getint(p, "ta");
-	int pval = parser_getint(p, "pval");
+	int i;
 	struct ego_item *e = parser_priv(p);
 
 	if (!e)
@@ -1080,7 +1093,12 @@ static enum parser_error parse_e_m(struct parser *p) {
 	e->min_to_h = th;
 	e->min_to_d = td;
 	e->min_to_a = ta;
-	e->min_pval = pval;
+
+	for (i = 0; i < MAX_PVALS ; i++)
+	{
+		e->min_pval[i] = parser_getint(p, "pval");
+	}
+
 	return PARSE_ERROR_NONE;
 }
 

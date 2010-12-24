@@ -333,7 +333,7 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 	           o_ptr->k_idx, o_ptr->tval, o_ptr->sval, o_ptr->weight, o_ptr->timeout), 5, j);
 
 	prt(format("number = %-3d  pval = %-5d  name1 = %-4d  name2 = %-4d  cost = %ld",
-	           o_ptr->number, o_ptr->pval, o_ptr->name1, o_ptr->name2, (long)object_value(o_ptr, 1, FALSE)), 6, j);
+	           o_ptr->number, o_ptr->pval[DEFAULT_PVAL], o_ptr->name1, o_ptr->name2, (long)object_value(o_ptr, 1, FALSE)), 6, j);
 
 	prt("+------------FLAGS0------------+", 8, j);
 	prt("AFFECT..........SLAY.......BRAND", 9, j);
@@ -592,7 +592,7 @@ static void wiz_tweak_item(object_type *o_ptr)
 	wiz_display_item(o_ptr, TRUE);\
 } while (0)
 
-	WIZ_TWEAK(pval);
+	WIZ_TWEAK(pval[DEFAULT_PVAL]);
 	WIZ_TWEAK(to_a);
 	WIZ_TWEAK(to_h);
 	WIZ_TWEAK(to_d);
@@ -818,7 +818,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 			if ((o_ptr->sval) != (i_ptr->sval)) continue;
 
 			/* Check for match */
-			if ((i_ptr->pval == o_ptr->pval) &&
+			if ((i_ptr->pval[DEFAULT_PVAL] == o_ptr->pval[DEFAULT_PVAL]) &&
 			    (i_ptr->to_a == o_ptr->to_a) &&
 			    (i_ptr->to_h == o_ptr->to_h) &&
 			    (i_ptr->to_d == o_ptr->to_d))
@@ -827,7 +827,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 			}
 
 			/* Check for better */
-			else if ((i_ptr->pval >= o_ptr->pval) &&
+			else if ((i_ptr->pval[DEFAULT_PVAL] >= o_ptr->pval[DEFAULT_PVAL]) &&
 			         (i_ptr->to_a >= o_ptr->to_a) &&
 			         (i_ptr->to_h >= o_ptr->to_h) &&
 			         (i_ptr->to_d >= o_ptr->to_d))
@@ -836,7 +836,7 @@ static void wiz_statistics(object_type *o_ptr, int level)
 			}
 
 			/* Check for worse */
-			else if ((i_ptr->pval <= o_ptr->pval) &&
+			else if ((i_ptr->pval[DEFAULT_PVAL] <= o_ptr->pval[DEFAULT_PVAL]) &&
 			         (i_ptr->to_a <= o_ptr->to_a) &&
 			         (i_ptr->to_h <= o_ptr->to_h) &&
 			         (i_ptr->to_d <= o_ptr->to_d))
@@ -1069,7 +1069,7 @@ static void wiz_create_artifact(int a_idx)
 	i_ptr->name1 = a_idx;
 
 	/* Extract the fields */
-	i_ptr->pval = a_ptr->pval;
+	i_ptr->pval[DEFAULT_PVAL] = a_ptr->pval[DEFAULT_PVAL];
 	i_ptr->ac = a_ptr->ac;
 	i_ptr->dd = a_ptr->dd;
 	i_ptr->ds = a_ptr->ds;

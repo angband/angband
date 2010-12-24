@@ -373,7 +373,7 @@ void textui_cmd_destroy(void)
 void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 {
 	/* Refuel */
-	j_ptr->timeout += o_ptr->timeout ? o_ptr->timeout : o_ptr->pval;
+	j_ptr->timeout += o_ptr->timeout ? o_ptr->timeout : o_ptr->pval[DEFAULT_PVAL];
 
 	/* Message */
 	msg_print("You fuel your lamp.");

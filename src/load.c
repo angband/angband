@@ -75,7 +75,7 @@ static int rd_item(object_type *o_ptr)
 	/* Type/Subtype */
 	rd_byte(&o_ptr->tval);
 	rd_byte(&o_ptr->sval);
-	rd_s16b(&o_ptr->pval);
+	rd_s16b(&o_ptr->pval[DEFAULT_PVAL]);
 
 	/* Pseudo-ID bit */
 	rd_byte(&tmp8u);
@@ -229,7 +229,7 @@ static int rd_item(object_type *o_ptr)
 		a_ptr = &a_info[o_ptr->name1];
 
 		/* Get the new artifact "pval" */
-		o_ptr->pval = a_ptr->pval;
+		o_ptr->pval[DEFAULT_PVAL] = a_ptr->pval[DEFAULT_PVAL];
 
 		/* Get the new artifact fields */
 		o_ptr->ac = a_ptr->ac;
@@ -259,7 +259,7 @@ static int rd_item(object_type *o_ptr)
 		if (flags_test(e_ptr->flags, OF_SIZE, OF_PVAL_MASK, FLAG_END))
 		{
 			/* Force a meaningful pval */
-			if (!o_ptr->pval) o_ptr->pval = 1;
+			if (!o_ptr->pval[DEFAULT_PVAL]) o_ptr->pval[DEFAULT_PVAL] = 1;
 		}
 	}
 
@@ -1053,7 +1053,7 @@ int rd_randarts(u32b version)
 
 				rd_byte(&a_ptr->tval);
 				rd_byte(&a_ptr->sval);
-				rd_s16b(&a_ptr->pval);
+				rd_s16b(&a_ptr->pval[DEFAULT_PVAL]);
 
 				rd_s16b(&a_ptr->to_h);
 				rd_s16b(&a_ptr->to_d);
@@ -1097,7 +1097,7 @@ int rd_randarts(u32b version)
 			{
 				rd_byte(&tmp8u); /* a_ptr->tval */
 				rd_byte(&tmp8u); /* a_ptr->sval */
-				rd_s16b(&tmp16s); /* a_ptr->pval */
+				rd_s16b(&tmp16s); /* a_ptr->pval[DEFAULT_PVAL] */
 
 				rd_s16b(&tmp16s); /* a_ptr->to_h */
 				rd_s16b(&tmp16s); /* a_ptr->to_d */

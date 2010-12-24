@@ -1886,10 +1886,10 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 				if (o_ptr->tval == TV_CHEST)
 				{
 					/* Disarm/Unlock traps */
-					if (o_ptr->pval > 0)
+					if (o_ptr->pval[DEFAULT_PVAL] > 0)
 					{
 						/* Disarm or Unlock */
-						o_ptr->pval = (0 - o_ptr->pval);
+						o_ptr->pval[DEFAULT_PVAL] = (0 - o_ptr->pval[DEFAULT_PVAL]);
 
 						/* Identify */
 						object_notice_everything(o_ptr);

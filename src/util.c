@@ -1357,8 +1357,6 @@ static void msg_print_aux(u16b type, cptr msg)
 	char buf[1024];
 	byte color;
 	int w, h;
-	int limit;
-
 
 	/* Obtain the size */
 	(void)Term_get_size(&w, &h);

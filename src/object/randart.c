@@ -487,7 +487,7 @@ static s16b choose_item(int a_idx)
 	k_ptr = &k_info[k_idx];
 	a_ptr->tval = k_ptr->tval;
 	a_ptr->sval = k_ptr->sval;
-	a_ptr->pval = randcalc(k_ptr->pval, 0, MINIMISE);
+	a_ptr->pval[DEFAULT_PVAL] = randcalc(k_ptr->pval[DEFAULT_PVAL], 0, MINIMISE);
 	a_ptr->to_h = randcalc(k_ptr->to_h, 0, MINIMISE);
 	a_ptr->to_d = randcalc(k_ptr->to_d, 0, MINIMISE);
 	a_ptr->to_a = randcalc(k_ptr->to_a, 0, MINIMISE);
@@ -555,34 +555,34 @@ static void do_pval(artifact_type *a_ptr)
 	if (of_has(a_ptr->flags, OF_MIGHT)) factor++;
 	if (of_has(a_ptr->flags, OF_SHOTS)) factor++;
 
-	if (a_ptr->pval == 0)
+	if (a_ptr->pval[DEFAULT_PVAL] == 0)
 	{
 		/* Blows, might, shots handled separately */
 		if (factor > 1)
 		{
-			a_ptr->pval = (s16b)randint1(2);
+			a_ptr->pval[DEFAULT_PVAL] = (s16b)randint1(2);
 			/* Give it a shot at +3 */
-			if (INHIBIT_STRONG) a_ptr->pval = 3;
+			if (INHIBIT_STRONG) a_ptr->pval[DEFAULT_PVAL] = 3;
 		}
-		else a_ptr->pval = (s16b)randint1(4);
-		LOG_PRINT1("Assigned initial pval, value is: %d\n", a_ptr->pval);
+		else a_ptr->pval[DEFAULT_PVAL] = (s16b)randint1(4);
+		LOG_PRINT1("Assigned initial pval, value is: %d\n", a_ptr->pval[DEFAULT_PVAL]);
 	}
-	else if (a_ptr->pval < 0)
+	else if (a_ptr->pval[DEFAULT_PVAL] < 0)
 	{
 		if (one_in_(2))
 		{
-			a_ptr->pval--;
-			LOG_PRINT1("Decreasing pval by 1, new value is: %d\n", a_ptr->pval);
+			a_ptr->pval[DEFAULT_PVAL]--;
+			LOG_PRINT1("Decreasing pval by 1, new value is: %d\n", a_ptr->pval[DEFAULT_PVAL]);
 		}
 	}
-	else if (one_in_(a_ptr->pval * factor))
+	else if (one_in_(a_ptr->pval[DEFAULT_PVAL] * factor))
 	{
 		/*
 		 * CR: made this a bit rarer and diminishing with higher pval -
 		 * also rarer if item has blows/might/shots already
 		 */
-		a_ptr->pval++;
-		LOG_PRINT1("Increasing pval by 1, new value is: %d\n", a_ptr->pval);
+		a_ptr->pval[DEFAULT_PVAL]++;
+		LOG_PRINT1("Increasing pval by 1, new value is: %d\n", a_ptr->pval[DEFAULT_PVAL]);
 	}
 }
 
@@ -595,7 +595,7 @@ static void remove_contradictory(artifact_type *a_ptr)
 	if (of_has(a_ptr->flags, OF_IM_FIRE)) of_off(a_ptr->flags, OF_RES_FIRE);
 	if (of_has(a_ptr->flags, OF_IM_COLD)) of_off(a_ptr->flags, OF_RES_COLD);
 
-	if (a_ptr->pval < 0)
+	if (a_ptr->pval[DEFAULT_PVAL] < 0)
 	{
 		if (of_has(a_ptr->flags, OF_STR)) of_off(a_ptr->flags, OF_SUST_STR);
 		if (of_has(a_ptr->flags, OF_INT)) of_off(a_ptr->flags, OF_SUST_INT);
@@ -733,7 +733,7 @@ static void parse_frequencies(void)
 			if(of_has(a_ptr->flags, OF_SHOTS))
 			{
 				/* Do we have 3 or more extra shots? (Unlikely) */
-				if(a_ptr->pval > 2)
+				if(a_ptr->pval[DEFAULT_PVAL] > 2)
 				{
 					LOG_PRINT("Adding 1 for supercharged shots (3 or more!)\n");
 
@@ -748,7 +748,7 @@ static void parse_frequencies(void)
 			if(of_has(a_ptr->flags, OF_MIGHT))
 			{
 				/* Do we have 3 or more extra might? (Unlikely) */
-				if(a_ptr->pval > 2)
+				if(a_ptr->pval[DEFAULT_PVAL] > 2)
 				{
 					LOG_PRINT("Adding 1 for supercharged might (3 or more!)\n");
 
@@ -965,7 +965,7 @@ static void parse_frequencies(void)
 			if (of_has(a_ptr->flags, OF_BLOWS))
 			{
 				/* Do we have 3 or more extra blows? (Unlikely) */
-				if(a_ptr->pval > 2)
+				if(a_ptr->pval[DEFAULT_PVAL] > 2)
 				{
 					LOG_PRINT("Adding 1 for supercharged blows (3 or more!)\n");
 					(artprobs[ART_IDX_MELEE_BLOWS_SUPER])++;
@@ -1298,7 +1298,7 @@ static void parse_frequencies(void)
 			 * small bonuses around +3 or so without unbalancing things.
 			 */
 
-			if (a_ptr->pval > 7)
+			if (a_ptr->pval[DEFAULT_PVAL] > 7)
 			{
 				/* Supercharge case */
 				LOG_PRINT("Adding 1 for supercharged speed bonus!\n");
@@ -1812,7 +1812,7 @@ static void add_pval_flag(artifact_type *a_ptr, int flag)
 {
 	of_on(a_ptr->flags, flag);
 	do_pval(a_ptr);
-	LOG_PRINT2("Adding ability: %s (now %+d)\n", flag_names[flag], a_ptr->pval);
+	LOG_PRINT2("Adding ability: %s (now %+d)\n", flag_names[flag], a_ptr->pval[DEFAULT_PVAL]);
 }
 
 /*
@@ -1826,7 +1826,7 @@ static bool add_fixed_pval_flag(artifact_type *a_ptr, int flag)
 
 	of_on(a_ptr->flags, flag);
 	do_pval(a_ptr);
-	LOG_PRINT2("Adding ability: %s (now %+d)\n", flag_names[flag], a_ptr->pval);
+	LOG_PRINT2("Adding ability: %s (now %+d)\n", flag_names[flag], a_ptr->pval[DEFAULT_PVAL]);
 
 	return TRUE;
 }
@@ -1839,17 +1839,17 @@ static bool add_first_pval_flag(artifact_type *a_ptr, int flag)
 {
 	of_on(a_ptr->flags, flag);
 
-	if (a_ptr->pval == 0)
+	if (a_ptr->pval[DEFAULT_PVAL] == 0)
 	{
-		a_ptr->pval = (s16b)randint1(4);
+		a_ptr->pval[DEFAULT_PVAL] = (s16b)randint1(4);
 		LOG_PRINT2("Adding ability: %s (first time) (now %+d)\n",
-		           flag_names[flag], a_ptr->pval);
+		           flag_names[flag], a_ptr->pval[DEFAULT_PVAL]);
 
 		return TRUE;
 	}
 
 	do_pval(a_ptr);
-	LOG_PRINT2("Adding ability: %s (now %+d)\n", flag_names[flag], a_ptr->pval);
+	LOG_PRINT2("Adding ability: %s (now %+d)\n", flag_names[flag], a_ptr->pval[DEFAULT_PVAL]);
 
 	return FALSE;
 }
@@ -2621,7 +2621,7 @@ static void try_supercharge(artifact_type *a_ptr, s32b target_power)
 		else if (randint0(z_info->a_max) < artprobs[ART_IDX_MELEE_BLOWS_SUPER])
 		{
 			of_on(a_ptr->flags, OF_BLOWS);
-			a_ptr->pval = 3;
+			a_ptr->pval[DEFAULT_PVAL] = 3;
 			LOG_PRINT("Supercharging melee blows! (+3 blows)\n");
 		}
 	}
@@ -2632,13 +2632,13 @@ static void try_supercharge(artifact_type *a_ptr, s32b target_power)
 		if (randint0(z_info->a_max) < artprobs[ART_IDX_BOW_SHOTS_SUPER])
 		{
 			of_on(a_ptr->flags, OF_SHOTS);
-			a_ptr->pval = 3;
+			a_ptr->pval[DEFAULT_PVAL] = 3;
 			LOG_PRINT("Supercharging shots for bow!  (3 extra shots)\n");
 		}
 		else if (randint0(z_info->a_max) < artprobs[ART_IDX_BOW_MIGHT_SUPER])
 		{
 			of_on(a_ptr->flags, OF_MIGHT);
-			a_ptr->pval = 3;
+			a_ptr->pval[DEFAULT_PVAL] = 3;
 			LOG_PRINT("Supercharging might for bow!  (3 extra might)\n");
 		}
 	}
@@ -2649,10 +2649,10 @@ static void try_supercharge(artifact_type *a_ptr, s32b target_power)
 		artprobs[ART_IDX_BOOT_SPEED]))
 	{
 		of_on(a_ptr->flags, OF_SPEED);
-		a_ptr->pval = 5 + randint0(6);
-		if (INHIBIT_WEAK) a_ptr->pval += randint1(3);
-		if (INHIBIT_STRONG) a_ptr->pval += 1 + randint1(6);
-		LOG_PRINT1("Supercharging speed for this item!  (New speed bonus is %d)\n", a_ptr->pval);
+		a_ptr->pval[DEFAULT_PVAL] = 5 + randint0(6);
+		if (INHIBIT_WEAK) a_ptr->pval[DEFAULT_PVAL] += randint1(3);
+		if (INHIBIT_STRONG) a_ptr->pval[DEFAULT_PVAL] += 1 + randint1(6);
+		LOG_PRINT1("Supercharging speed for this item!  (New speed bonus is %d)\n", a_ptr->pval[DEFAULT_PVAL]);
 	}
 
 	/* Big AC bonus */
@@ -2699,8 +2699,8 @@ static void do_curse(artifact_type *a_ptr)
 	if (one_in_(7))
 		of_on(a_ptr->flags, OF_TELEPORT);
 
-	if ((a_ptr->pval > 0) && one_in_(2))
-		a_ptr->pval = -a_ptr->pval;
+	if ((a_ptr->pval[DEFAULT_PVAL] > 0) && one_in_(2))
+		a_ptr->pval[DEFAULT_PVAL] = -a_ptr->pval[DEFAULT_PVAL];
 	if ((a_ptr->to_a > 0) && one_in_(2))
 		a_ptr->to_a = -a_ptr->to_a;
 	if ((a_ptr->to_h > 0) && one_in_(2))
@@ -2839,7 +2839,7 @@ static void scramble_artifact(int a_idx)
 		k_ptr = &k_info[k_idx];
 
 		/* Clear the following fields; leave the rest alone */
-		a_ptr->pval = 0;
+		a_ptr->pval[DEFAULT_PVAL] = 0;
 		a_ptr->to_h = a_ptr->to_d = a_ptr->to_a = 0;
 		of_wipe(a_ptr->flags);
 
@@ -3010,7 +3010,7 @@ static void scramble_artifact(int a_idx)
 	 * Add OF_HIDE_TYPE to all artifacts with nonzero pval because we're
 	 * too lazy to find out which ones need it and which ones don't.
 	 */
-	if (a_ptr->pval)
+	if (a_ptr->pval[DEFAULT_PVAL])
 		of_on(a_ptr->flags, OF_HIDE_TYPE);
 
 	/* Success */

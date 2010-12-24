@@ -268,7 +268,7 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 	bool full = mode & OINFO_FULL;
 	bool dummy = mode & OINFO_DUMMY;
 
-	if (!o_ptr->pval && !dummy)
+	if (!o_ptr->pval[DEFAULT_PVAL] && !dummy)
 		return FALSE;
 
 	count = info_collect(tb, pval_flags, N_ELEMENTS(pval_flags), flags, descs);
@@ -276,8 +276,8 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 	if (count)
 	{
 		if ((object_pval_is_visible(o_ptr) || full) && !dummy)
-			textblock_append_c(tb, (o_ptr->pval > 0) ? TERM_L_GREEN : TERM_RED,
-					"%+i ", o_ptr->pval);
+			textblock_append_c(tb, (o_ptr->pval[DEFAULT_PVAL] > 0) ? TERM_L_GREEN : TERM_RED,
+					"%+i ", o_ptr->pval[DEFAULT_PVAL]);
 		else
 			textblock_append(tb, "Affects your ");
 
@@ -288,8 +288,8 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 	{
 		if ((object_pval_is_visible(o_ptr) || full) && !dummy)
 		{
-			textblock_append_c(tb, (o_ptr->pval > 0) ? TERM_L_GREEN : TERM_RED,
-				"%+i%% ", o_ptr->pval * 5);
+			textblock_append_c(tb, (o_ptr->pval[DEFAULT_PVAL] > 0) ? TERM_L_GREEN : TERM_RED,
+				"%+i%% ", o_ptr->pval[DEFAULT_PVAL] * 5);
 			textblock_append(tb, "to searching.\n");
 		}
 		else if (count)
@@ -687,11 +687,11 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 			object_flags_known(&p_ptr->inventory[i], tmp_f);
 
 			if (of_has(tmp_f, OF_BLOWS))
-				extra_blows += p_ptr->inventory[i].pval;
+				extra_blows += p_ptr->inventory[i].pval[DEFAULT_PVAL];
 		}
 
 		/* Then we add blows from the weapon being examined */
-		if (of_has(f, OF_BLOWS)) extra_blows += o_ptr->pval;
+		if (of_has(f, OF_BLOWS)) extra_blows += o_ptr->pval[DEFAULT_PVAL];
 
 		/* Then we check for extra "real" blows */
 		for (dex_plus = 0; dex_plus < dex_plus_bound; dex_plus++)
@@ -932,7 +932,7 @@ static bool describe_food(textblock *tb, const object_type *o_ptr,
 {
 	/* Describe boring bits */
 	if ((o_ptr->tval == TV_FOOD || o_ptr->tval == TV_POTION) &&
-		o_ptr->pval)
+		o_ptr->pval[DEFAULT_PVAL])
 	{
 		/* Sometimes adjust for player speed */
 		int multiplier = extract_energy[p_ptr->state.speed];
@@ -940,7 +940,7 @@ static bool describe_food(textblock *tb, const object_type *o_ptr,
 
 		if (object_is_known(o_ptr) || full) {
 			textblock_append(tb, "Nourishes for around ");
-			textblock_append_c(tb, TERM_L_GREEN, "%d", (o_ptr->pval / 2) *
+			textblock_append_c(tb, TERM_L_GREEN, "%d", (o_ptr->pval[DEFAULT_PVAL] / 2) *
 				multiplier / 10);
 			textblock_append(tb, " turns.\n");
 		} else {

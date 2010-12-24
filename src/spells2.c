@@ -1531,7 +1531,7 @@ bool recharge(int num)
 	lev = k_info[o_ptr->k_idx].level;
 
 	/* Recharge power */
-	i = (num + 100 - lev - (10 * (o_ptr->pval / o_ptr->number))) / 15;
+	i = (num + 100 - lev - (10 * (o_ptr->pval[DEFAULT_PVAL] / o_ptr->number))) / 15;
 
 	/* Back-fire */
 	if ((i <= 1) || one_in_(i))
@@ -1565,7 +1565,7 @@ bool recharge(int num)
 		t = (num / (lev + 2)) + 1;
 
 		/* Recharge based on the power */
-		if (t > 0) o_ptr->pval += 2 + randint1(t);
+		if (t > 0) o_ptr->pval[DEFAULT_PVAL] += 2 + randint1(t);
 
 		/* We no longer think the item is empty */
 		o_ptr->ident &= ~(IDENT_EMPTY);
@@ -3339,7 +3339,7 @@ void do_ident_item(int item, object_type *o_ptr)
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	/* Determine the message type. */
-	if (o_ptr->pval < 0)
+	if (o_ptr->pval[DEFAULT_PVAL] < 0)
 	{
 		/* This is a bad item. */
 		msg_type = MSG_IDENT_BAD;

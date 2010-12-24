@@ -165,7 +165,7 @@ bool object_pval_is_visible(const object_type *o_ptr)
 	{
 		const object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
-		if (!randcalc_varies(k_ptr->pval))
+		if (!randcalc_varies(k_ptr->pval[DEFAULT_PVAL]))
 			return TRUE;
 	}
 
@@ -862,21 +862,21 @@ void object_notice_on_wield(object_type *o_ptr)
 
 	/* XXX Eddie need to add stealth here, also need to assert/double-check everything is covered */
 	if (of_has(f, OF_STR))
-		msg_format("You feel %s!", o_ptr->pval > 0 ? "stronger" : "weaker");
+		msg_format("You feel %s!", o_ptr->pval[DEFAULT_PVAL] > 0 ? "stronger" : "weaker");
 	if (of_has(f, OF_INT))
-		msg_format("You feel %s!", o_ptr->pval > 0 ? "smarter" : "more stupid");
+		msg_format("You feel %s!", o_ptr->pval[DEFAULT_PVAL] > 0 ? "smarter" : "more stupid");
 	if (of_has(f, OF_WIS))
-		msg_format("You feel %s!", o_ptr->pval > 0 ? "wiser" : "more naive");
+		msg_format("You feel %s!", o_ptr->pval[DEFAULT_PVAL] > 0 ? "wiser" : "more naive");
 	if (of_has(f, OF_DEX))
-		msg_format("You feel %s!", o_ptr->pval > 0 ? "more dextrous" : "clumsier");
+		msg_format("You feel %s!", o_ptr->pval[DEFAULT_PVAL] > 0 ? "more dextrous" : "clumsier");
 	if (of_has(f, OF_CON))
-		msg_format("You feel %s!", o_ptr->pval > 0 ? "healthier" : "sicklier");
+		msg_format("You feel %s!", o_ptr->pval[DEFAULT_PVAL] > 0 ? "healthier" : "sicklier");
 	if (of_has(f, OF_CHR))
-		msg_format("You feel %s!", o_ptr->pval > 0 ? "cuter" : "uglier");
+		msg_format("You feel %s!", o_ptr->pval[DEFAULT_PVAL] > 0 ? "cuter" : "uglier");
 	if (of_has(f, OF_SPEED))
-		msg_format("You feel strangely %s.", o_ptr->pval > 0 ? "quick" : "sluggish");
+		msg_format("You feel strangely %s.", o_ptr->pval[DEFAULT_PVAL] > 0 ? "quick" : "sluggish");
 	if (flags_test(f, OF_SIZE, OF_BLOWS, OF_SHOTS, FLAG_END))
-		msg_format("Your hands %s", o_ptr->pval > 0 ? "tingle!" : "ache.");
+		msg_format("Your hands %s", o_ptr->pval[DEFAULT_PVAL] > 0 ? "tingle!" : "ache.");
 	if (of_has(f, OF_INFRA))
 		msg_format("Your eyes tingle.");
 	if (of_has(f, OF_LIGHT))

@@ -113,10 +113,10 @@ bool search(bool verbose)
 					if (o_ptr->tval != TV_CHEST) continue;
 
 					/* Skip disarmed chests */
-					if (o_ptr->pval <= 0) continue;
+					if (o_ptr->pval[DEFAULT_PVAL] <= 0) continue;
 
 					/* Skip non-trapped chests */
-					if (!chest_traps[o_ptr->pval]) continue;
+					if (!chest_traps[o_ptr->pval[DEFAULT_PVAL]]) continue;
 
 					/* Identify once */
 					if (!object_is_known(o_ptr))
@@ -194,7 +194,7 @@ static void py_pickup_gold(void)
 			verbal = TRUE;
 
 		/* Increment total value */
-		total_gold += (s32b)o_ptr->pval;
+		total_gold += (s32b)o_ptr->pval[DEFAULT_PVAL];
 
 		/* Delete the gold */
 		delete_object_idx(this_o_idx);

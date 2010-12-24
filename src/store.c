@@ -755,7 +755,7 @@ static void store_object_absorb(object_type *o_ptr, object_type *j_ptr)
 	/* Hack -- if wands/staves are stacking, combine the charges */
 	if ((o_ptr->tval == TV_WAND) || (o_ptr->tval == TV_STAFF))
 	{
-		o_ptr->pval += j_ptr->pval;
+		o_ptr->pval[DEFAULT_PVAL] += j_ptr->pval[DEFAULT_PVAL];
 	}
 
 	if ((o_ptr->origin != j_ptr->origin) ||
@@ -1024,8 +1024,8 @@ static int store_carry(int st, object_type *o_ptr)
 					charges += randcalc(k_ptr->charge, 0, RANDOMISE);
 
 				/* Use recharged value only if greater */
-				if (charges > o_ptr->pval)
-					o_ptr->pval = charges;
+				if (charges > o_ptr->pval[DEFAULT_PVAL])
+					o_ptr->pval[DEFAULT_PVAL] = charges;
 			}
 
 			break;
@@ -1208,7 +1208,7 @@ static void store_delete_index(int st, int what)
 				/* Hack -- decrement the total charges of staves and wands. */
 				if (o_ptr->tval == TV_STAFF || o_ptr->tval == TV_WAND)
 				{
-					o_ptr->pval -= num * o_ptr->pval / o_ptr->number;
+					o_ptr->pval[DEFAULT_PVAL] -= num * o_ptr->pval[DEFAULT_PVAL] / o_ptr->number;
 				}
 			}
 		}
@@ -2136,7 +2136,7 @@ static int find_inven(const object_type *o_ptr)
 				if (o_ptr->to_a != j_ptr->to_a) continue;
 
 				/* Require identical "pval" code */
-				if (o_ptr->pval != j_ptr->pval) continue;
+				if (o_ptr->pval[DEFAULT_PVAL] != j_ptr->pval[DEFAULT_PVAL]) continue;
 
 				/* Require identical "artifact" names */
 				if (o_ptr->name1 != j_ptr->name1) continue;
@@ -2265,7 +2265,7 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 	/* Hack - Reduce the number of charges in the original stack */
 	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF)
 	{
-		o_ptr->pval -= i_ptr->pval;
+		o_ptr->pval[DEFAULT_PVAL] -= i_ptr->pval[DEFAULT_PVAL];
 	}
 
 	/* Handle stuff */

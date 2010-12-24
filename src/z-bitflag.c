@@ -606,7 +606,7 @@ bool flags_mask(bitflag *flags, const size_t size, ...)
  * identified by 'pval'. The bitfield size is supplied in `size`.  
  * TRUE is returned when changes were made, FALSE otherwise.
  */
-bool flag_set_pval(bitflag *flags, const size_t size, int flag, int pval)
+bool flag_set_pval(bitflag **flags, const size_t size, int flag, int pval)
 {
 	const size_t flag_offset = FLAG_OFFSET(flag);
 	const int flag_binary = FLAG_BINARY(flag);
@@ -629,7 +629,7 @@ bool flag_set_pval(bitflag *flags, const size_t size, int flag, int pval)
  * TRUE is returned when `flag` is on in `flags` for pval 'pval', and 
  * FALSE otherwise. The flagset size is supplied in `size`.
  */
-bool flag_test_pval(bitflag *flags, const size_t size, int flag, int pval)
+bool flag_test_pval(bitflag **flags, const size_t size, int flag, int pval)
 {
 	const size_t flag_offset = FLAG_OFFSET(flag);
 	const int flag_binary = FLAG_BINARY(flag);
@@ -651,7 +651,7 @@ bool flag_test_pval(bitflag *flags, const size_t size, int flag, int pval)
  * identified by 'pval'. The bitfield size is supplied in `size`.  
  * TRUE is returned when changes were made, FALSE otherwise.
  */ 
-bool flag_unset_pval(bitflag *flags, const size_t size, int flag, int pval)
+bool flag_unset_pval(bitflag **flags, const size_t size, int flag, int pval)
 {
 	const size_t flag_offset = FLAG_OFFSET(flag);
 	const int flag_binary = FLAG_BINARY(flag);
@@ -674,7 +674,7 @@ bool flag_unset_pval(bitflag *flags, const size_t size, int flag, int pval)
  * Returns the integer of the pval for which 'flag' is on in 'flags'.
  * Returns -1 if none. The flagset size is supplied in 'size'.
  */
-int flag_test_all_pvals(bitflag *flags, const size_t size, int flag)
+int flag_test_all_pvals(bitflag **flags, const size_t size, int flag)
 {
 	const size_t flag_offset = FLAG_OFFSET(flag);
 	const int flag_binary = FLAG_BINARY(flag);
