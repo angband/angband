@@ -188,11 +188,6 @@ static void term_nuke_test(term *t) {
 	if (verbose) printf("term-end\n");
 }
 
-static errr term_user_test(int n) {
-	if (verbose) printf("term-user %d\n", n);
-	return 0;
-}
-
 static errr term_xtra_clear(int v) {
 	if (verbose) printf("term-xtra-clear %d\n", v);
 	return 0;
@@ -289,7 +284,6 @@ static void term_data_link(int i) {
 	t->init_hook = term_init_test;
 	t->nuke_hook = term_nuke_test;
 
-	t->user_hook = term_user_test;
 	t->xtra_hook = term_xtra_test;
 	t->curs_hook = term_curs_test;
 	t->wipe_hook = term_wipe_test;

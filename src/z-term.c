@@ -185,17 +185,12 @@
  *
  *   Term->init_hook = Init the term
  *   Term->nuke_hook = Nuke the term
- *   Term->user_hook = Perform user actions
  *   Term->xtra_hook = Perform extra actions
  *   Term->curs_hook = Draw (or Move) the cursor
  *   Term->bigcurs_hook = Draw (or Move) the big cursor (bigtile mode)
  *   Term->wipe_hook = Draw some blank spaces
  *   Term->text_hook = Draw some text in the window
  *   Term->pict_hook = Draw some attr/chars in the window
- *
- * The "Term->user_hook" hook provides a simple hook to an implementation
- * defined function, with application defined semantics.  It is available
- * to the program via the "Term_user()" function.
  *
  * The "Term->xtra_hook" hook provides a variety of different functions,
  * based on the first parameter (which should be taken from the various
@@ -259,12 +254,6 @@
  * by always taking every attr code mod 16.  Many of the "main-xxx.c"
  * files use "white space" ("attr 1" / "char 32") to "erase" or "clear"
  * any window, for efficiency.
- *
- * The game "Angband" uses the "Term_user" hook to allow any of the
- * "main-xxx.c" files to interact with the user, by calling this hook
- * whenever the user presses the "!" key when the game is waiting for
- * a new command.  This could be used, for example, to provide "unix
- * shell commands" to the Unix versions of the game.
  *
  * See "main-xxx.c" for a simple skeleton file which can be used to
  * create a "visual system" for a new platform when porting Angband.
@@ -396,18 +385,6 @@ static errr term_win_copy(term_win *s, term_win *f, int w, int h)
 
 /*** External hooks ***/
 
-
-/*
- * Execute the "Term->user_hook" hook, if available (see above).
- */
-errr Term_user(int n)
-{
-	/* Verify the hook */
-	if (!Term->user_hook) return (-1);
-
-	/* Call the hook */
-	return ((*Term->user_hook)(n));
-}
 
 /*
  * Execute the "Term->xtra_hook" hook, if available (see above).

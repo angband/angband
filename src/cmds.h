@@ -91,7 +91,6 @@ void do_cmd_wizard(void);
 void do_cmd_try_debug(void);
 void do_cmd_try_borg(void);
 void do_cmd_quit(cmd_code code, cmd_arg args[]);
-void do_cmd_port(void);
 void do_cmd_xxx_options(void);
 void do_cmd_monlist(void);
 void do_cmd_itemlist(void);
