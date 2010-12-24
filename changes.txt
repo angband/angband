@@ -70,6 +70,7 @@ r2026 Allow quality squelching of DSM
 used in conjunction with it
       Added Nomad's 8x16 tiles
       Various improvements and fixes to the GTK port
+      Occasional hints on entering stores during early character levels
 
 List of bugs fixed
 ==================
