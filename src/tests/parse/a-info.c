@@ -62,7 +62,7 @@ static int test_i0(void *state) {
 	require(a);
 	eq(a->tval, TV_LIGHT);
 	eq(a->sval, 6);
-	eq(a->pval, 3);
+	eq(a->pval[0], 3);
 	ok;
 }
 

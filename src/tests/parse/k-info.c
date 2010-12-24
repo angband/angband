@@ -61,8 +61,8 @@ static int test_i0(void *state) {
 	require(k);
 	eq(k->tval, 4);
 	eq(k->sval, 2);
-	eq(k->pval.dice, 3);
-	eq(k->pval.sides, 6);
+	eq(k->pval[0].dice, 3);
+	eq(k->pval[0].sides, 6);
 	ok;
 }
 

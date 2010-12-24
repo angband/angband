@@ -99,8 +99,8 @@ static int test_c0(void *state) {
 	eq(e->to_d.sides, 4);
 	eq(e->to_a.dice, 5);
 	eq(e->to_a.sides, 6);
-	eq(e->pval.dice, 7);
-	eq(e->pval.sides, 8);
+	eq(e->pval[0].dice, 7);
+	eq(e->pval[0].sides, 8);
 	ok;
 }
 
@@ -114,7 +114,7 @@ static int test_m0(void *state) {
 	eq(e->min_to_h, 10);
 	eq(e->min_to_d, 13);
 	eq(e->min_to_a, 4);
-	eq(e->min_pval, 7);
+	eq(e->min_pval[0], 7);
 	ok;
 }
 
