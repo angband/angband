@@ -3172,7 +3172,6 @@ static errr run_parse_hints(struct parser *p) {
 }
 
 static errr finish_parse_hints(struct parser *p) {
-	struct hint *hints;
 	hints = parser_priv(p);
 	parser_destroy(p);
 	return 0;

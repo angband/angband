@@ -3135,7 +3135,7 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 		prt_welcome(store_owner(this_store));
 
 		/* Offer a hint */
-		text_out(random_hint());
+		msg_print(random_hint());
 	}
 
 	/* Wipe the menu and set it up */
