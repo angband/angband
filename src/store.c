@@ -123,9 +123,10 @@ static const char *comment_welcome[] =
 
 static const char *comment_hint[] =
 {
-	"%s tells you soberly: \"%s\".",
+/*	"%s tells you soberly: \"%s\".",
 	"(%s) There's a saying round here, \"%s\".",
-	"%s offers to tell you a secret next time you're about."
+	"%s offers to tell you a secret next time you're about."*/
+	"\"%s\""
 };
 
 /*
@@ -318,9 +319,8 @@ static void prt_welcome(const owner_type *ot_ptr)
 
 	int j;
 
-	if (!one_in_(4))
+	if (one_in_(2))
 		return;
-
 
 	/* Extract the first name of the store owner (stop before the first space) */
 	for (j = 0; owner_name[j] && owner_name[j] != ' '; j++)
@@ -331,7 +331,8 @@ static void prt_welcome(const owner_type *ot_ptr)
 
 	if (one_in_(3)) {
 		size_t i = randint0(N_ELEMENTS(comment_hint));
-		msg_format(comment_hint[i], short_name, random_hint());
+		/*msg_format(comment_hint[i], short_name, random_hint());*/
+		msg_format(comment_hint[i], random_hint());
 	} else if (p_ptr->lev > 5) {
 		const char *player_name;
 
