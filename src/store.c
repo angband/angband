@@ -121,6 +121,13 @@ static const char *comment_welcome[] =
 	"%s: \"I and my family are entirely at your service, glorious %s.\""
 };
 
+static const char *comment_hint[] =
+{
+	"%s tells you soberly: \"%s\".",
+	"(%s) There's a saying round here, \"%s\".",
+	"%s offers to tell you a secret next time you're about."
+};
+
 /*
  * Messages for reacting to purchase prices.
  */
@@ -307,30 +314,30 @@ testonly struct parser *store_owner_parser_new(struct store *stores) {
 static void prt_welcome(const owner_type *ot_ptr)
 {
 	char short_name[20];
-	const char *player_name;
 	const char *owner_name = ot_ptr->name;
 
-	/* We go from level 1 - 50  */
-	size_t i = ((unsigned)p_ptr->lev - 1) / 5;
+	int j;
 
-	/* Sanity check in case we increase the max level carelessly */
-	i = MIN(i, N_ELEMENTS(comment_welcome) - 1);
+	if (!one_in_(4))
+		return;
 
-	/* Only show the message one in four times to stop it being irritating. */
-	if (!one_in_(4)) return;
 
-	/* Welcome the character */
-	if (i)
-	{
-		int j;
+	/* Extract the first name of the store owner (stop before the first space) */
+	for (j = 0; owner_name[j] && owner_name[j] != ' '; j++)
+		short_name[j] = owner_name[j];
 
-		/* Extract the first name of the store owner (stop before the first space) */
-		for (j = 0; owner_name[j] && owner_name[j] != ' '; j++)
-			short_name[j] = owner_name[j];
+	/* Truncate the name */
+	short_name[j] = '\0';
 
-		/* Truncate the name */
-		short_name[j] = '\0';
+	if (one_in_(3)) {
+		size_t i = randint0(N_ELEMENTS(comment_hint));
+		msg_format(comment_hint[i], short_name, random_hint());
+	} else if (p_ptr->lev > 5) {
+		const char *player_name;
 
+		/* We go from level 1 - 50  */
+		size_t i = ((unsigned)p_ptr->lev - 1) / 5;
+		i = MIN(i, N_ELEMENTS(comment_welcome) - 1);
 
 		/* Get a title for the character */
 		if ((i % 2) && randint0(2)) player_name = cp_ptr->title[(p_ptr->lev - 1) / 5];
@@ -3141,12 +3148,7 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 
 	/* Say a friendly hello. */
 	if (this_store != STORE_HOME) 
-	{
 		prt_welcome(store_owner(this_store));
-
-		/* Offer a hint */
-		msg_print(random_hint());
-	}
 
 	msg_flag = FALSE;
 	menu_select(&menu, 0);
