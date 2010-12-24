@@ -19,6 +19,25 @@
 #include "angband.h"
 #include "savefile.h"
 
+/**
+ * The savefile code.
+ *
+ * If you want to make a savefile compat-breaking change, then there are
+ * a few things you should do:
+ * - increment the version in 'savers' below
+ * - add a loading function that accepts the new version (in addition to
+ *   the previous loading function) to 'loaders'
+ *
+ * ... and watch the magic happen!
+ *
+ *
+ * TODO:
+ * - savefile_load/save() should take a filename
+ * - wr_ and rd_ should be passed a buffer to work with, rather than using
+ *   the rd_ and wr_ functions with a universal buffer
+ * - 
+ */
+
 
 /** Magic bits at beginning of savefile */
 static const byte savefile_magic[4] = { 83, 97, 118, 101 };
@@ -99,7 +118,7 @@ static u32b buffer_check;
 /*
  * Hack -- Show information on the screen, one line at a time.
  *
- * Avoid the top two lines, to avoid interference with "printf()".
+ * Avoid the top two lines, to avoid interference with "note()".
  */
 void note(cptr msg)
 {
@@ -387,7 +406,7 @@ static bool try_load(ang_file *f)
 			break;
 
 		if (size != SAVEFILE_HEAD_SIZE || savefile_head[15] != 0) {
-			printf("Savefile is corrupted -- block header mangled.");
+			note("Savefile is corrupted -- block header mangled.");
 			return FALSE;
 		}
 
@@ -416,7 +435,7 @@ static bool try_load(ang_file *f)
 
 		if (!loader) {
 			/* No loader found */
-			printf("Savefile too old.  Try importing it into an older Angband first.");
+			note("Savefile too old.  Try importing it into an older Angband first.");
 			return FALSE;
 		}
 
@@ -427,14 +446,14 @@ static bool try_load(ang_file *f)
 
 		buffer_size = file_read(f, (char *) buffer, block_size);
 		if (buffer_size != block_size) {
-			printf("Savefile is corrupted -- not enough bytes.");
+			note("Savefile is corrupted -- not enough bytes.");
 			mem_free(buffer);
 			return FALSE;
 		}
 
 		/* Try loading */
 		if (loader(block_version) != 0) {
-			printf("Savefile is corrupted.");
+			note("Savefile is corrupted.");
 			mem_free(buffer);
 			return FALSE;
 		}
@@ -453,13 +472,8 @@ static bool try_load(ang_file *f)
 }
 
 
-
-
-
 /**
  * Load a savefile.
- *
- * XXX This should be passed the savefile filename to load.
  */
 bool savefile_load(void)
 {
@@ -473,17 +487,17 @@ bool savefile_load(void)
 				memcmp(&head[4], SAVEFILE_NAME, 4) == 0) {
 			if (!try_load(f)) {
 				ok = FALSE;
-				printf("Failed loading savefile.");
+				note("Failed loading savefile.");
 			}
 		} else {
 			ok = FALSE;
-			printf("Savefile is corrupted -- incorrect file header.");
+			note("Savefile is corrupted -- incorrect file header.");
 		}
 
 		file_close(f);
 	} else {
 		ok = FALSE;
-		printf("Couldn't open savefile.");
+		note("Couldn't open savefile.");
 	}
 
 	return ok;
