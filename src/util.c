@@ -1357,6 +1357,7 @@ static void msg_print_aux(u16b type, cptr msg)
 	char buf[1024];
 	byte color;
 	int w, h;
+	int limit;
 
 
 	/* Obtain the size */
@@ -1406,21 +1407,18 @@ static void msg_print_aux(u16b type, cptr msg)
 	color = message_type_color(type);
 
 	/* Split message */
-	while (n > (w - 8))
+	while (n > w - 1)
 	{
 		char oops;
 
 		int check, split;
 
 		/* Default split */
-		split = (w - 8);
+		split = w - 8;
 
-		/* Find the "best" split point */
-		for (check = (w / 2); check < (w - 8); check++)
-		{
-			/* Found a valid split point */
+		/* Find the rightmost split point */
+		for (check = (w / 2); check < w - 8; check++)
 			if (t[check] == ' ') split = check;
-		}
 
 		/* Save the split character */
 		oops = t[split];

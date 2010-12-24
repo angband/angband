@@ -124,17 +124,6 @@ void do_cmd_quit(cmd_code code, cmd_arg args[])
 
 
 /*
- * Port-specific options
- *
- * Should be moved to the options screen. XXX
- */
-void do_cmd_port(void)
-{
-	(void)Term_user(0);
-}
-
-
-/*
  * Display the options and redraw afterward.
  */
 void do_cmd_xxx_options(void)

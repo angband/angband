@@ -207,30 +207,6 @@ static void Term_nuke_nds(term *t)
 }
 
 
-
-/*
- * Do a "user action" on the current "term"
- *
- * This function allows the visual module to do implementation defined
- * things when the user activates the "system defined command" command.
- *
- * This function is normally not used.
- *
- * In general, this function should return zero if the action is successfully
- * handled, and non-zero if the action is unknown or incorrectly handled.
- */
-static errr Term_user_nds(int n)
-{
-	term_data *td = (term_data*)(Term->data);
-
-	/* XXX XXX XXX */
-
-	/* Unknown */
-	return (1);
-}
-
-
-
 /*
  * Find the square a particular pixel is part of.
  */
@@ -1241,7 +1217,6 @@ static void term_data_link(int i)
   t->nuke_hook = Term_nuke_nds;
   
   /* Prepare the template hooks */
-  t->user_hook = Term_user_nds;
   t->xtra_hook = Term_xtra_nds;
   t->curs_hook = Term_curs_nds;
   t->wipe_hook = Term_wipe_nds;

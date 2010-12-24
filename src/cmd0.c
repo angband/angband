@@ -167,7 +167,6 @@ static struct generic_command cmd_info[] =
 static struct generic_command cmd_util[] =
 {
 	{ "Interact with options",        '=', CMD_NULL, do_cmd_xxx_options },
-	{ "Port-specific preferences",    '!', CMD_NULL, do_cmd_port },
 
 	{ "Save and don't quit",  KTRL('S'), CMD_SAVE, NULL },
 	{ "Save and quit",        KTRL('X'), CMD_QUIT, NULL },
