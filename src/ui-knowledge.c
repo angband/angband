@@ -942,17 +942,16 @@ static void display_monster(int col, int row, bool cursor, int oid)
 	/* Display the name */
 	c_prt(attr, r_ptr->name, row, col);
 
-	if ((tile_width > 1) || (tile_height > 1))
-		return;
+	if (tile_height == 1) {
+		/* Display symbol */
+		big_pad(66, row, a, c);
 
-	/* Display symbol */
-	big_pad(66, row, a, c);
-
-	/* Display kills */
-	if (rf_has(r_ptr->flags, RF_UNIQUE))
-		put_str(format("%s", (r_ptr->max_num == 0)?  " dead" : "alive"), row, 70);
-	else
-		put_str(format("%5d", l_ptr->pkills), row, 70);
+		/* Display kills */
+		if (rf_has(r_ptr->flags, RF_UNIQUE))
+			put_str(format("%s", (r_ptr->max_num == 0)?  " dead" : "alive"), row, 70);
+		else
+			put_str(format("%5d", l_ptr->pkills), row, 70);
+	}
 }
 
 
@@ -1483,12 +1482,9 @@ static void display_object(int col, int row, bool cursor, int oid)
 	if (aware && inscrip)
 		c_put_str(TERM_YELLOW, inscrip, row, 55);
 
-	/* Hack - don't use if double tile */
-	if ((tile_width > 1) || (tile_height > 1))
-		return;
-
-	/* Display symbol */
-	big_pad(76, row, a, c);
+	if (tile_height == 1) {
+		big_pad(76, row, a, c);
+	}
 }
 
 /*
