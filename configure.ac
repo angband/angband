@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([Angband], [3.1.2], [bugs@rephial.org], [angband])
+AC_INIT([Angband], [3.2.0], [bugs@rephial.org], [angband])
 AC_PREREQ([2.59])
 
 AC_CONFIG_HEADER(src/autoconf.h)
