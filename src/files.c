@@ -1735,16 +1735,10 @@ void save_game(void)
 	signals_ignore_tstp();
 
 	/* Save the player */
-	if (old_save())
-	{
+	if (savefile_save())
 		prt("Saving game... done.", 0, 0);
-	}
-
-	/* Save failed (oops) */
 	else
-	{
 		prt("Saving game... failed!", 0, 0);
-	}
 
 	/* Allow suspend again */
 	signals_handle_tstp();
@@ -1854,7 +1848,8 @@ void exit_game_panic(void)
 	my_strcpy(p_ptr->died_from, "(panic save)", sizeof(p_ptr->died_from));
 
 	/* Panic save, or get worried */
-	if (!old_save()) quit("panic save failed!");
+	if (!savefile_save())
+		quit("panic save failed!");
 
 
 	/* Successful panic save */

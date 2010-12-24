@@ -406,7 +406,7 @@ void death_screen(void)
 	}
 
 	/* Save dead player */
-	if (!old_save())
+	if (!savefile_save())
 	{
 		msg_print("death save failed!");
 		message_flush();
