@@ -21,7 +21,7 @@ typedef struct object_kind
 
 	byte tval;         /**< General object type (see TV_ macros) */
 	byte sval;         /**< Object sub-type (see SV_ macros) */
-	random_value pval; /**< Power for any flags which need it */
+	random_value pval[MAX_PVALS]; /**< Power for any flags which need it */
 
 	random_value to_h; /**< Bonus to hit */
 	random_value to_d; /**< Bonus to damage */
@@ -34,7 +34,8 @@ typedef struct object_kind
 
 	s32b cost;         /**< Object base cost */
 
-	bitflag flags[OF_SIZE];		/**< Flags */
+	bitflag flags[OF_SIZE];			/**< Flags */
+	bitflag pval_flags[OF_SIZE][MAX_PVALS];	/**< pval flags */
 
 	byte d_attr;       /**< Default object attribute */
 	char d_char;       /**< Default object character */
@@ -91,7 +92,7 @@ typedef struct artifact
 
 	byte tval;    /**< General artifact type (see TV_ macros) */
 	byte sval;    /**< Artifact sub-type (see SV_ macros) */
-	s16b pval;    /**< Power for any flags which need it */
+	s16b pval[MAX_PVALS];    /**< Power for any flags which need it */
 
 	s16b to_h;    /**< Bonus to hit */
 	s16b to_d;    /**< Bonus to damage */
@@ -106,6 +107,7 @@ typedef struct artifact
 	s32b cost;    /**< Artifact (pseudo-)worth */
 
 	bitflag flags[OF_SIZE];		/**< Flags */
+	bitflag pval_flags[OF_SIZE][MAX_PVALS];	/**< pval flags */
 
 	byte level;   /** Difficulty level for activation */
 	byte rarity;  /** Unused */
@@ -114,8 +116,8 @@ typedef struct artifact
 	byte alloc_max;  /** Maximum depth (will NEVER appear deeper) */
 
 	bool created;	/**< Whether this artifact has been created */
-	bool seen;	/**< Whether this artifact has been seen as an artifact */
-	bool everseen;	/**< Whether this artifact has ever been seen (this game or previous) */
+	bool seen;	/**< Whether this artifact has been seen this game */
+	bool everseen;	/**< Whether this artifact has ever been seen  */
 
 	u16b effect;     /**< Artifact activation (see effects.c) */
 	char *effect_msg;
@@ -140,28 +142,29 @@ typedef struct ego_item
 	s32b cost;			/* Ego-item "cost" */
 
 	bitflag flags[OF_SIZE];		/**< Flags */
+	bitflag pval_flags[OF_SIZE][MAX_PVALS];	/**< pval flags */
 
 	byte level;			/* Minimum level */
-	byte rarity;		/* Object rarity */
-	byte rating;		/* Level rating boost */
+	byte rarity;			/* Object rarity */
+	byte rating;			/* Level rating boost */
 
-	byte tval[EGO_TVALS_MAX]; /* Legal tval */
+	byte tval[EGO_TVALS_MAX]; 	/* Legal tval */
 	byte min_sval[EGO_TVALS_MAX];	/* Minimum legal sval */
 	byte max_sval[EGO_TVALS_MAX];	/* Maximum legal sval */
 
-	random_value to_h;     /* Extra to-hit bonus */
-	random_value to_d; /* Extra to-dam bonus */
-	random_value to_a; /* Extra to-ac bonus */
-	random_value pval; /* Extra pval bonus */
+	random_value to_h;     		/* Extra to-hit bonus */
+	random_value to_d; 		/* Extra to-dam bonus */
+	random_value to_a; 		/* Extra to-ac bonus */
+	random_value pval[MAX_PVALS]; 	/* Extra pval bonus */
 
-	byte min_to_h;		/* Minimum to-hit value */
-	byte min_to_d;		/* Minimum to-dam value */
-	byte min_to_a;		/* Minimum to-ac value */
-	byte min_pval;		/* Minimum pval */
+	byte min_to_h;			/* Minimum to-hit value */
+	byte min_to_d;			/* Minimum to-dam value */
+	byte min_to_a;			/* Minimum to-ac value */
+	byte min_pval[MAX_PVALS];	/* Minimum pval */
 
 	byte xtra;			/* Extra sustain/resist/power */
 
-	bool everseen;		/* Do not spoil squelch menus */
+	bool everseen;			/* Do not spoil squelch menus */
 } ego_item_type;
 
 
@@ -204,15 +207,16 @@ typedef struct object
 	byte tval;			/* Item type (from kind) */
 	byte sval;			/* Item sub-type (from kind) */
 
-	s16b pval;			/* Item extra-parameter */
+	s16b pval[MAX_PVALS];		/* Item extra-parameter */
 
-	s16b weight;		/* Item weight */
+	s16b weight;			/* Item weight */
 
 	byte name1;			/* Artifact type, if any */
 	byte name2;			/* Ego-Item type, if any */
 
 	bitflag flags[OF_SIZE];		/**< Flags */
 	bitflag known_flags[OF_SIZE];	/**< Player-known flags */
+	bitflag pval_flags[OF_SIZE][MAX_PVALS];	/**< pval flags */
 	u16b ident;			/* Special flags */
 
 	s16b ac;			/* Normal AC */

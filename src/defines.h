@@ -1217,6 +1217,10 @@ enum
 #define of_comp_union(f1, f2)  flag_comp_union(f1, f2, OF_SIZE)
 #define of_inter(f1, f2)       flag_inter(f1, f2, OF_SIZE)
 #define of_diff(f1, f2)        flag_diff(f1, f2, OF_SIZE)
+#define of_pval_on(f, flag, pval)   flag_set_pval(f, OF_SIZE, flag, pval)
+#define of_pval_off(f, flag, pval)  flag_unset_pval(f, OF_SIZE, flag, pval)
+#define of_has_pval(f, flag, pval)  flag_test_pval(f, OF_SIZE, flag, pval)
+#define of_which_pval(f, flag)      flag_test_all_pvals(f, OF_SIZE, flag)
 
 
 /* Flag set for "pval-dependant" flags. */
@@ -1816,3 +1820,14 @@ enum
 #else
 #define VA_COPY(DST, SRC) va_copy(DST, SRC)
 #endif
+
+/**
+ * Maximum number of pvals on objects
+ * - the max is one higher than this: don't forget pval[0] 
+ *
+ * Note: all pvals other than DEFAULT_PVAL are assumed to be associated with
+ * flags, and any non-flag uses of pval (e.g. chest quality) are assumed to
+ * use DEFAULT_PVAL.
+ */
+#define MAX_PVALS 2
+#define DEFAULT_PVAL 0
