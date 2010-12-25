@@ -45,23 +45,11 @@ static int rd_item(object_type *o_ptr)
 
 	byte ver = 1;
 
-	static bool lose_ok = FALSE;
+	rd_u16b(&tmp16u);
+	rd_byte(&ver);
+	assert(tmp16u == 0xffff);
 
-	/* Kind */
 	rd_s16b(&o_ptr->k_idx);
-
-	/* horrible hack */
-	if (o_ptr->k_idx == (s16b) 0xffff)
-	{
-		rd_byte(&ver);
-		rd_s16b(&o_ptr->k_idx);
-	}
-
-	if (lose_ok == FALSE && ver < 5)
-	{
-		lose_ok = get_check("Loading this savefile will lose all object knowledge data.  Is that OK? ");
-		if (lose_ok == FALSE) return -1;
-	}
 
 	/* Paranoia */
 	if ((o_ptr->k_idx < 0) || (o_ptr->k_idx >= z_info->k_max))
@@ -97,10 +85,7 @@ static int rd_item(object_type *o_ptr)
 	rd_byte(&old_dd);
 	rd_byte(&old_ds);
 
-	if (ver > 4)
-		rd_u16b(&o_ptr->ident);
-	else
-		rd_u16b(&tmp16u);
+	rd_u16b(&o_ptr->ident);
 
 	rd_byte(&o_ptr->marked);
 
@@ -115,17 +100,11 @@ static int rd_item(object_type *o_ptr)
 	
 
 	memset(&o_ptr->known_flags, 0, sizeof(o_ptr->known_flags));
-	if (ver > 4)
-	{
-		/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
-		for (i = 0; i < 12 && i < OF_SIZE; i++)
-			rd_byte(&o_ptr->known_flags[i]);
-		if (i < 12) strip_bytes(12 - i);
-	}
-	else if (ver > 2)
-	{
-		strip_bytes(3 * 4);
-	}
+
+	/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
+	for (i = 0; i < 12 && i < OF_SIZE; i++)
+		rd_byte(&o_ptr->known_flags[i]);
+	if (i < 12) strip_bytes(12 - i);
 
 
 	/* Monster holding object */
