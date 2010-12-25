@@ -222,7 +222,7 @@ void init_file_paths(const char *configpath, const char *libpath, const char *da
 #else /* !PRIVATE_USER_PATH */
 
 	/* Build pathnames */
-    ANGBAND_DIR_USER = string_make(format("%suser", datapath));
+	ANGBAND_DIR_USER = string_make(format("%suser", datapath));
 	ANGBAND_DIR_APEX = string_make(format("%sapex", datapath));
 	ANGBAND_DIR_SAVE = string_make(format("%ssave", datapath));
 
