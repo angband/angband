@@ -49,7 +49,6 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_pickup_inven			6
 
 #define OPT_show_labels				10
-#define OPT_show_lists              11
 
 #define OPT_ring_bell				14
 #define OPT_show_flavors			15
@@ -66,7 +65,6 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_flush_failure			52
 #define OPT_flush_disturb			53
 
-#define OPT_highlight_player			59
 #define OPT_view_yellow_light		60
 #define OPT_view_bright_light		61
 #define OPT_view_granite_light		62
@@ -80,8 +78,6 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_xchars_to_file			70
 #define OPT_auto_more			71
 #define OPT_hp_changes_color		74
-#define OPT_hide_squelchable		75
-#define OPT_squelch_worthless		76
 #define OPT_mouse_movement		77
 #define OPT_mouse_buttons		78
 #define OPT_notify_recharge			79

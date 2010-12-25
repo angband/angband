@@ -513,9 +513,6 @@ byte py_pickup(int pickup)
 				/* Display prompt */
 				prt(format("You %s: ", p), 0, 0);
 
-				/* Move cursor back to character, if needed */
-				if (OPT(highlight_player)) move_cursor_relative(p_ptr->py, p_ptr->px);
-
 				/* Wait for it.  Use key as next command. */
 				e = inkey_ex();
 				Term_event_push(&e);

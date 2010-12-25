@@ -442,15 +442,6 @@ bool squelch_item_ok(const object_type *o_ptr)
 	if (o_ptr->tval == TV_CHEST && o_ptr->pval == 0)
 		return TRUE;
 
-	/* check option for worthless kinds */
-	if (OPT(squelch_worthless) && o_ptr->tval != TV_GOLD)
-	{
-		if (object_flavor_is_aware(o_ptr) && k_ptr->cost == 0)
-			return TRUE;
-		if (object_is_known_cursed(o_ptr))
-			return TRUE;
-	}
-
 	/* Do squelching by kind */
 	if (object_flavor_is_aware(o_ptr) ?
 		 kind_is_squelched_aware(k_ptr) :
@@ -479,7 +470,7 @@ bool squelch_item_ok(const object_type *o_ptr)
  */
 bool squelch_hide_item(object_type *o_ptr)
 {
-	return (OPT(hide_squelchable) ? squelch_item_ok(o_ptr) : FALSE);
+	return squelch_item_ok(o_ptr);
 }
 
 

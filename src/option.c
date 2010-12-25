@@ -31,14 +31,14 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_pickup_always,
 		OPT_pickup_inven,
 		OPT_pickup_detail,
-		OPT_hide_squelchable,
-		OPT_squelch_worthless,
 		OPT_easy_alter,
 		OPT_easy_open,
-		OPT_show_lists,
 		OPT_mouse_movement,
 		OPT_mouse_buttons,
 		OPT_xchars_to_file,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 	},
@@ -46,7 +46,6 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 	/* Display */
 	{
 		OPT_hp_changes_color,
-		OPT_highlight_player,
 		OPT_center_player,
 		OPT_show_piles,
 		OPT_show_flavors,
@@ -59,6 +58,7 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_view_torch_grids,
 		OPT_animate_flicker,
 		OPT_purple_uniques,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 	},
@@ -193,7 +193,7 @@ static const struct option options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 56 */
 { NULL,                  NULL,                                          FALSE }, /* 57 */
 { NULL,                  NULL,                                          FALSE }, /* 58 */
-{ "highlight_player",    "Highlight the player with the cursor",        FALSE }, /* 59 */
+{ NULL,                  NULL,                                          FALSE }, /* 59 */
 { "view_yellow_light",   "Use special colors for torch light",          FALSE }, /* 60 */
 { "view_bright_light",   "Use special colors for field of view",        TRUE },  /* 61 */
 { "view_granite_light",  "Use special colors for wall grids",           TRUE }, /* 62 */
@@ -209,8 +209,8 @@ static const struct option options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 72 */
 { NULL,                  NULL,                                          FALSE }, /* 73 */
 { "hp_changes_color",    "Player color indicates low hit points",       FALSE }, /* 74 */
-{ "hide_squelchable",    "Hide items set as squelchable",               TRUE }, /* 75 */
-{ "squelch_worthless",   "Squelch worthless item kinds",                FALSE }, /* 76 */
+{ NULL,                  NULL,                                          FALSE }, /* 75 */
+{ NULL,                  NULL,                                          FALSE }, /* 76 */
 { "mouse_movement",      "Allow mouse clicks to move the player",       FALSE }, /* 77 */
 { "mouse_buttons",        "Show mouse status line buttons",             FALSE }, /* 78 */
 { "notify_recharge",     "Notify on object recharge",                   FALSE }, /* 79 */

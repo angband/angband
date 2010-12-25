@@ -2143,7 +2143,7 @@ void notice_stuff(void)
 	if (p_ptr->notice & PN_SQUELCH)
 	{
 		p_ptr->notice &= ~(PN_SQUELCH);
-		if (OPT(hide_squelchable)) squelch_drop();
+		squelch_drop();
 	}
 
 	/* Combine the pack */

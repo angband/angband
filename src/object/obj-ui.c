@@ -618,7 +618,7 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 	int floor_list[MAX_FLOOR_STACK];
 	int floor_num;
 
-	bool show_list = OPT(show_lists) ? TRUE : FALSE;
+	bool show_list = TRUE;
 
 
 	/* Object list display modes */
@@ -929,36 +929,6 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 			case ESCAPE:
 			{
 				done = TRUE;
-				break;
-			}
-
-			case '*':
-			case '?':
-			case ' ':
-			{
-				if (!OPT(show_lists))
-				{
-					/* Hide the list */
-					if (show_list)
-					{
-						/* Flip flag */
-						show_list = FALSE;
-
-						/* Load screen */
-						screen_load();
-					}
-
-					/* Show the list */
-					else
-					{
-						/* Save screen */
-						screen_save();
-
-						/* Flip flag */
-						show_list = TRUE;
-					}
-				}
-
 				break;
 			}
 

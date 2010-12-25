@@ -1022,7 +1022,7 @@ ui_event_data inkey_ex(void)
 	(void)Term_get_cursor(&cursor_state);
 
 	/* Show the cursor if waiting, except sometimes in "command" mode */
-	if (!inkey_scan && (!inkey_flag || OPT(highlight_player) || character_icky))
+	if (!inkey_scan && (!inkey_flag || character_icky))
 	{
 		/* Show the cursor */
 		(void)Term_set_cursor(TRUE);
