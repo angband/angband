@@ -85,13 +85,10 @@ I:2:prayer book:[Chants and Blessings]
 I:1:prayer book:[Exorcism and Dispelling]
 
 # Alchemist
-S:5:32
+S:5:29
 I:4:scroll:Word of Recall
 I:4:scroll:Identify
 I:3:scroll:Phase Door
-I:1:scroll:Enchant Weapon To-Hit
-I:1:scroll:Enchant Weapon To-Dam
-I:1:scroll:Enchant Armour
 I:1:scroll:Light
 I:1:scroll:Monster Confusion
 I:1:scroll:Magic Mapping
