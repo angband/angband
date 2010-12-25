@@ -23,6 +23,7 @@
 #include "history.h"
 #include "object/tvalsval.h"
 #include "option.h"
+#include "savefile.h"
 #include "ui-menu.h"
 
 #define MAX_PANEL 12
@@ -1735,7 +1736,7 @@ void save_game(void)
 	signals_ignore_tstp();
 
 	/* Save the player */
-	if (savefile_save())
+	if (savefile_save(savefile))
 		prt("Saving game... done.", 0, 0);
 	else
 		prt("Saving game... failed!", 0, 0);
@@ -1848,7 +1849,7 @@ void exit_game_panic(void)
 	my_strcpy(p_ptr->died_from, "(panic save)", sizeof(p_ptr->died_from));
 
 	/* Panic save, or get worried */
-	if (!savefile_save())
+	if (!savefile_save(savefile))
 		quit("panic save failed!");
 
 

@@ -3,13 +3,24 @@
 
 #define ITEM_VERSION	5
 
-/* load-old.c */
-int rd_savefile_old(void);
+/*** Savefile API ***/
 
+/**
+ * Load the savefile given.  Returns TRUE on succcess, FALSE otherwise.
+ */
+bool savefile_load(const char *path);
+
+/**
+ * Save to the given location.  Returns TRUE on success, FALSE otherwise.
+ */
+bool savefile_save(const char *path);
+
+
+
+/*** Ignore these ***/
 
 /* Utility */
 void note(cptr msg);
-bool older_than(int x, int y, int z);
 
 /* Writing bits */
 void wr_byte(byte v);

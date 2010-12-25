@@ -203,10 +203,6 @@ extern void play_game(void);
 extern int value_check_aux1(const object_type *o_ptr);
 extern void idle_update(void);
 
-/* savefile.c */
-extern bool savefile_load(void);
-extern bool savefile_save(void);
-
 /* melee1.c */
 bool check_hit(int power, int level);
 bool make_attack_normal(int m_idx);

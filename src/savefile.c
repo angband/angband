@@ -32,7 +32,6 @@
  *
  *
  * TODO:
- * - savefile_load/save() should take a filename
  * - wr_ and rd_ should be passed a buffer to work with, rather than using
  *   the rd_ and wr_ functions with a universal buffer
  * - 
@@ -321,7 +320,7 @@ static bool try_save(ang_file *file)
 /*
  * Attempt to save the player in a savefile
  */
-bool savefile_save(void)
+bool savefile_save(const char *path)
 {
 	ang_file *file;
 
@@ -329,8 +328,8 @@ bool savefile_save(void)
 	char old_savefile[1024];
 
 	/* New savefile */
-	strnfmt(new_savefile, sizeof(new_savefile), "%s.new", savefile);
-	strnfmt(old_savefile, sizeof(old_savefile), "%s.old", savefile);
+	strnfmt(new_savefile, sizeof(new_savefile), "%s.new", path);
+	strnfmt(old_savefile, sizeof(old_savefile), "%s.old", path);
 
 	/* Make sure that the savefile doesn't already exist */
 	safe_setuid_grab();
@@ -398,7 +397,7 @@ static bool try_load(ang_file *f)
 	while (TRUE)
 	{
 		size_t i;
-		bool (*loader)(u32b version) = NULL;
+		int (*loader)(void) = NULL;
 
 		/* Load in the next header */
 		size_t size = file_read(f, (char *)savefile_head, SAVEFILE_HEAD_SIZE);
@@ -452,7 +451,7 @@ static bool try_load(ang_file *f)
 		}
 
 		/* Try loading */
-		if (loader(block_version) != 0) {
+		if (loader() != 0) {
 			note("Savefile is corrupted.");
 			mem_free(buffer);
 			return FALSE;
@@ -475,12 +474,12 @@ static bool try_load(ang_file *f)
 /**
  * Load a savefile.
  */
-bool savefile_load(void)
+bool savefile_load(const char *path)
 {
 	byte head[8];
 	bool ok = TRUE;
 
-	ang_file *f = file_open(savefile, MODE_READ, -1);
+	ang_file *f = file_open(path, MODE_READ, -1);
 	if (f) {
 		if (file_read(f, (char *) &head, 8) == 8 &&
 				memcmp(&head[0], savefile_magic, 4) == 0 &&
