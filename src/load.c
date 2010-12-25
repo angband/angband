@@ -364,18 +364,110 @@ int rd_options_2(void)
 }
 
 
+static const struct {
+	int num;
+	const char *text;
+} num_to_text[] = {
+	{ 0, "rogue_like_commands" },
+	{ 1, "quick_messages" },
+	{ 2, "use_sound" },
+	{ 3, "pickup_detail" },
+	{ 4, "use_old_target" },
+	{ 5, "pickup_always" },
+	{ 6, "pickup_inven" },
+	{ 10, "show_labels" },
+	{ 11, "show_lists" },
+	{ 14, "ring_bell" },
+	{ 15, "show_flavors" },
+	{ 20, "disturb_move" },
+	{ 21, "disturb_near" },
+	{ 22, "disturb_detect" },
+	{ 23, "disturb_state" },
+	{ 38, "view_perma_grids" },
+	{ 39, "view_torch_grids" },
+	{ 52, "flush_failure" },
+	{ 53, "flush_disturb" },
+	{ 59, "highlight_player" },
+	{ 60, "view_yellow_light" },
+	{ 61, "view_bright_light" },
+	{ 62, "view_granite_light" },
+	{ 63, "view_special_light" },
+	{ 64, "easy_open" },
+	{ 65, "easy_alter" },
+	{ 66, "animate_flicker" },
+	{ 67, "show_piles" },
+	{ 68, "center_player" },
+	{ 69, "purple_uniques" },
+	{ 70, "xchars_to_file" },
+	{ 71, "auto_more" },
+	{ 74, "hp_changes_color" },
+	{ 75, "hide_squelchable" },
+	{ 76, "squelch_worthless" },
+	{ 77, "mouse_movement" },
+	{ 78, "mouse_buttons" },
+	{ 79, "notify_recharge" },
+	{ 128, "birth_maximize" },
+	{ 129, "birth_randarts" },
+	{ 131, "birth_ironman" },
+	{ 132, "birth_no_stores" },
+	{ 133, "birth_no_artifacts" },
+	{ 134, "birth_no_stacking" },
+	{ 135, "birth_no_preserve" },
+	{ 136, "birth_no_stairs" },
+	{ 137, "birth_no_feelings" },
+	{ 138, "birth_no_selling" },
+	{ 141, "birth_ai_sound" },
+	{ 142, "birth_ai_smell" },
+	{ 143, "birth_ai_packs" },
+	{ 144, "birth_ai_learn" },
+	{ 145, "birth_ai_cheat" },
+	{ 146, "birth_ai_smart" },
+	{ 160, "cheat_peek" },
+	{ 161, "cheat_hear" },
+	{ 162, "cheat_room" },
+	{ 163, "cheat_xtra" },
+	{ 164, "cheat_know" },
+	{ 165, "cheat_live" },
+	{ 192, "adult_maximize" },
+	{ 193, "adult_randarts" },
+	{ 195, "adult_ironman" },
+	{ 196, "adult_no_stores" },
+	{ 197, "adult_no_artifacts" },
+	{ 198, "adult_no_stacking" },
+	{ 199, "adult_no_preserve" },
+	{ 200, "adult_no_stairs" },
+	{ 201, "adult_no_feelings" },
+	{ 202, "adult_no_selling" },
+	{ 205, "adult_ai_sound" },
+	{ 206, "adult_ai_smell" },
+	{ 207, "adult_ai_packs" },
+	{ 208, "adult_ai_learn" },
+	{ 209, "adult_ai_cheat" },
+	{ 210, "adult_ai_smart" },
+	{ 224, "score_peek" },
+	{ 225, "score_hear" },
+	{ 226, "score_room" },
+	{ 227, "score_xtra" },
+	{ 228, "score_know" },
+	{ 229, "score_live" },
+};
+
+static const char *lookup_option(int opt)
+{
+	size_t i;
+	for (i = 0; i < N_ELEMENTS(num_to_text); i++) {
+		if (num_to_text[i].num == opt)
+			return num_to_text[i].text;
+	}
+
+	return NULL;
+}
+
 
 /*
  * Read options
  *
- * Note that the normal options are stored as a set of 256 bit flags,
- * plus a set of 256 bit masks to indicate which bit flags were defined
- * at the time the savefile was created.  This will allow new options
- * to be added, and old options to be removed, at any time, without
- * hurting old savefiles.
- *
- * The window options are stored in the same way, but note that each
- * window gets 32 options, and their order is fixed by certain defines.
+ * XXX Remove this for the next release after 3.2.
  */
 int rd_options_1(void)
 {
@@ -422,7 +514,8 @@ int rd_options_1(void)
 	for (n = 0; n < 8; n++) rd_u32b(&mask[n]);
 
 	/* Analyze the options */
-	for (i = 0; i < OPT_MAX; i++)
+	/* 256 is the old OPT_MAX */
+	for (i = 0; i < 256; i++)
 	{
 		int os = i / 32;
 		int ob = i % 32;
@@ -430,13 +523,9 @@ int rd_options_1(void)
 		/* Process saved entries */
 		if (mask[os] & (1L << ob))
 		{
-			/* Set flag */
-			if (flag[os] & (1L << ob))
-				op_ptr->opt[i] = TRUE;
-
-			/* Clear flag */
-			else
-				op_ptr->opt[i] = FALSE;
+			const char *name = lookup_option(i);
+			if (name)
+				option_set(name, flag[os] & (1L << ob) ? TRUE : FALSE);
 		}
 	}
 
@@ -444,15 +533,11 @@ int rd_options_1(void)
 
 	/* Read the window flags */
 	for (n = 0; n < ANGBAND_TERM_MAX; n++)
-	{
 		rd_u32b(&window_flag[n]);
-	}
 
 	/* Read the window masks */
 	for (n = 0; n < ANGBAND_TERM_MAX; n++)
-	{
 		rd_u32b(&window_mask[n]);
-	}
 
 	/* Analyze the options */
 	for (n = 0; n < ANGBAND_TERM_MAX; n++)
