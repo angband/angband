@@ -590,7 +590,6 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 	bool use_equip = ((mode & USE_EQUIP) ? TRUE : FALSE);
 	bool use_floor = ((mode & USE_FLOOR) ? TRUE : FALSE);
 	bool use_quiver = ((mode & QUIVER_TAGS) ? TRUE : FALSE);
-	bool can_squelch = ((mode & CAN_SQUELCH) ? TRUE : FALSE);
 	bool is_harmless = ((mode & IS_HARMLESS) ? TRUE : FALSE);
 	bool quiver_tags = ((mode & QUIVER_TAGS) ? TRUE : FALSE);
 
@@ -799,13 +798,6 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 				my_strcat(out_val, " - for floor,", sizeof(out_val));
 				button_add("[-]", '-');
 			}
-
-			/* Indicate that squelched items can be selected */
-			if (can_squelch)
-			{
-				my_strcat(out_val, " ! for squelched,", sizeof(out_val));
-				button_add("[!]", '!');
-			}
 		}
 
 		/* Viewing equipment */
@@ -888,13 +880,6 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 			{
 				my_strcat(out_val, " / for Equip,", sizeof(out_val));
 				button_add("[/]", '/');
-			}
-
-			/* Indicate that squelched items can be selected */
-			if (can_squelch)
-			{
-				my_strcat(out_val, " ! for squelched,", sizeof(out_val));
-				button_add("[!]", '!');
 			}
 		}
 
@@ -1130,20 +1115,6 @@ bool get_item(int *cp, cptr pmt, cptr str, cmd_code cmd, int mode)
 				item = TRUE;
 				done = TRUE;
 				break;
-			}
-
-			case '!':
-			{
-				/* Try squelched items */
-				if (can_squelch)
-				{
-					(*cp) = ALL_SQUELCHED;
-					item = TRUE;
-					done = TRUE;
-					break;
-				}
-
-				/* Just fall through */
 			}
 
 			default:

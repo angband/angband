@@ -240,13 +240,6 @@ void do_cmd_destroy(cmd_code code, cmd_arg args[])
 	item = args[0].item;
 	amt = args[1].number;
 
-	/* Destroying squelched items is easy. */
-	if (item == ALL_SQUELCHED)
-	{
-		squelch_items();
-		return;
-	}
-
 	if (!item_is_available(item, NULL, USE_INVEN | USE_EQUIP | USE_FLOOR))
 	{
 		msg_print("You do not have that item to destroy it.");
@@ -325,16 +318,8 @@ void textui_cmd_destroy(void)
 	/* Get an item */
 	q = "Destroy which item? ";
 	s = "You have nothing to destroy.";
-	if (!get_item(&item, q, s, CMD_DESTROY, (USE_INVEN | USE_EQUIP | USE_FLOOR | CAN_SQUELCH))) return;
+	if (!get_item(&item, q, s, CMD_DESTROY, (USE_INVEN | USE_EQUIP | USE_FLOOR))) return;
 
-	/* Deal with squelched items */
-	if (item == ALL_SQUELCHED)
-	{
-		cmd_insert(CMD_DESTROY);
-		cmd_set_arg_item(cmd_get_top(), 0, item);
-		return;
-	}
-	
 	o_ptr = object_from_item_idx(item);
 
 	/* Ask if player would prefer squelching instead of destruction */

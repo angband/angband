@@ -396,11 +396,6 @@ typedef enum
 
 #define ALL_INVEN_TOTAL 47
 
-/*
- * Special return code corresponding to squelched items.
- */
-#define ALL_SQUELCHED	101
-
 
 /*
  * A "stack" of items is limited to less than 100 items (hard-coded).
