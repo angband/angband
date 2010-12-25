@@ -299,18 +299,6 @@ void identify_pack(void)
 
 
 /*
- * Used by the "enchant" function (chance of failure)
- */
-static const int enchant_table[16] =
-{
-	0, 10,  20, 40, 80,
-	160, 280, 400, 550, 700,
-	800, 900, 950, 970, 990,
-	1000
-};
-
-
-/*
  * Hack -- Removes curse from an object.
  */
 static void uncurse_object(object_type *o_ptr)
@@ -1256,6 +1244,17 @@ static bool item_tester_unknown(const object_type *o_ptr)
 	return object_is_known(o_ptr) ? FALSE : TRUE;
 }
 
+/*
+ * Used by the "enchant" function (chance of failure)
+ */
+static const int enchant_table[16] =
+{
+	0, 10,  20, 40, 80,
+	160, 280, 400, 550, 700,
+	800, 900, 950, 970, 990,
+	1000
+};
+
 /**
  * Tries to increase an items bonus score, if possible.
  *
@@ -1442,6 +1441,52 @@ bool enchant_spell(int num_hit, int num_dam, int num_ac)
 	return (TRUE);
 }
 
+static bool item_tester_restore(const struct object *o)
+{
+	if (o->to_d < 0 || o->to_h < 0 || o->to_a < 0)
+		return TRUE;
+
+	if (o->name1) {
+		struct artifact *a = &a_info[o->name1];
+		if (o->to_d < a->to_d || o->to_h < a->to_h || o->to_a < a->to_a)
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+/**
+ * Restore an item to its original state, or something close.
+ */
+bool restore_item(void)
+{
+	int item;
+	object_type *o;
+
+	item_tester_hook = item_tester_restore;
+	if (!get_item(&item, "Restore which item?",
+			"You have nothing to restore.", 0,
+			USE_EQUIP | USE_INVEN | USE_FLOOR))
+		return FALSE;
+
+	o = object_from_item_idx(item);
+
+	/*** Restore the item (ish) ***/
+
+	/* Artifacts get replenished */
+	if (o->name1) {
+		struct artifact *a = &a_info[o->name1];
+		o->to_d = a->to_d;
+		o->to_h = a->to_h;
+		o->to_a = a->to_a;
+	} else {
+		o->to_d = MAX(o->to_d, 0);
+		o->to_h = MAX(o->to_h, 0);
+		o->to_a = MAX(o->to_a, 0);
+	}
+
+	return TRUE;
+}
 
 /*
  * Identify an object in the inventory (or on the floor)

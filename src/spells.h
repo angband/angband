@@ -28,6 +28,7 @@ extern bool do_inc_stat(int stat);
 extern void identify_pack(void);
 extern bool remove_curse(void);
 extern bool remove_all_curse(void);
+extern bool restore_item(void);
 extern bool restore_level(void);
 extern bool lose_all_info(void);
 extern void set_recall(void);

@@ -800,37 +800,37 @@ bool effect_do(effect_type effect, bool *ident, bool aware, int dir, int beam,
 		case EF_ENCHANT_TOHIT:
 		{
 			*ident = TRUE;
-			if (!enchant_spell(1, 0, 0)) return FALSE;
-			return TRUE;
+			return enchant_spell(1, 0, 0);
 		}
 
 		case EF_ENCHANT_TODAM:
 		{
 			*ident = TRUE;
-			if (!enchant_spell(0, 1, 0)) return FALSE;
-			return TRUE;
+			return enchant_spell(0, 1, 0);
 		}
 
 		case EF_ENCHANT_WEAPON:
 		{
 			*ident = TRUE;
-			if (!enchant_spell(randint1(3), randint1(3), 0))
-				return FALSE;
-			return TRUE;
+			return enchant_spell(randint1(3), randint1(3), 0);
 		}
 
 		case EF_ENCHANT_ARMOR:
 		{
 			*ident = TRUE;
-			if (!enchant_spell(0, 0, 1)) return FALSE;
-			return TRUE;
+			return enchant_spell(0, 0, 1);
 		}
 
 		case EF_ENCHANT_ARMOR2:
 		{
 			*ident = TRUE;
-			if (!enchant_spell(0, 0, randint1(3) + 2)) return FALSE;
-			return TRUE;
+			return enchant_spell(0, 0, randint1(3) + 2);
+		}
+
+		case EF_RESTORE_ITEM:
+		{
+			*ident = TRUE;
+			return restore_item();
 		}
 
 		case EF_IDENTIFY:

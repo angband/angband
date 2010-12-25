@@ -103,6 +103,7 @@ EFFECT(ENCHANT_TODAM,  FALSE, 20,	"attempts to magically enhance a weapon's to-d
 EFFECT(ENCHANT_WEAPON, FALSE, 22,	"attempts to magically enhance a weapon both to-hit and to-dam")
 EFFECT(ENCHANT_ARMOR,  FALSE, 12,	"attempts to magically enhance a piece of armour")
 EFFECT(ENCHANT_ARMOR2, FALSE, 15,	"attempts to magically enhance a piece of armour with high chance of success")
+EFFECT(RESTORE_ITEM,   FALSE, 10,	"restores an item after disenchantment or damage")
 EFFECT(IDENTIFY,       FALSE,  9,	"reveals to you the extent of an item's magical powers")
 EFFECT(REMOVE_CURSE,   FALSE,  8,	"removes all ordinary curses from all equipped items")
 EFFECT(REMOVE_CURSE2,  FALSE, 20,	"removes all curses from all equipped items")
