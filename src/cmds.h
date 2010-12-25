@@ -18,17 +18,15 @@ cmd_code cmd_lookup(unsigned char key);
 void do_cmd_uninscribe(cmd_code code, cmd_arg args[]);
 void do_cmd_inscribe(cmd_code code, cmd_arg args[]);
 void do_cmd_takeoff(cmd_code code, cmd_arg args[]);
+void wield_item(object_type *o_ptr, int item, int slot);
 void do_cmd_wield(cmd_code code, cmd_arg args[]);
 void do_cmd_drop(cmd_code code, cmd_arg args[]);
+void do_cmd_destroy(cmd_code code, cmd_arg args[]);
 void do_cmd_use(cmd_code code, cmd_arg args[]);
 void do_cmd_refill(cmd_code code, cmd_arg args[]);
 void do_cmd_study_spell(cmd_code code, cmd_arg args[]);
 void do_cmd_cast(cmd_code code, cmd_arg args[]);
 void do_cmd_study_book(cmd_code code, cmd_arg args[]);
-
-void textui_obj_inscribe(object_type *o_ptr, int item);
-void textui_obj_examine(object_type *o_ptr, int item);
-void textui_obj_wield(object_type *o_ptr, int item);
 
 /* cmd2.c */
 void do_cmd_go_up(cmd_code code, cmd_arg args[]);
@@ -59,16 +57,15 @@ void textui_cmd_suicide(void);
 /* cmd3.c */
 void do_cmd_inven(void);
 void do_cmd_equip(void);
-void wield_item(object_type *o_ptr, int item, int slot);
-void wield_combine_ammo(object_type *o_ptr, int item, int slot);
-void do_cmd_destroy(cmd_code code, cmd_arg args[]);
 void textui_cmd_destroy(void);
-void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item);
-void refuel_torch(object_type *j_ptr, object_type *o_ptr, int item);
+void textui_obj_wield(object_type *o_ptr, int item);
+void textui_obj_inscribe(object_type *o_ptr, int item);
+void textui_obj_examine(object_type *o_ptr, int item);
 void do_cmd_target(void);
 void do_cmd_target_closest(void);
 void do_cmd_look(void);
 void do_cmd_locate(void);
+int cmp_monsters(const void *a, const void *b);
 void do_cmd_query_symbol(void);
 void do_cmd_center_map(void);
 
