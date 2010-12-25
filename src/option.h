@@ -48,8 +48,6 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_pickup_always			5
 #define OPT_pickup_inven			6
 
-#define OPT_show_labels				10
-
 #define OPT_ring_bell				14
 #define OPT_show_flavors			15
 
@@ -72,7 +70,6 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_easy_open 				64
 #define OPT_easy_alter 				65
 #define OPT_animate_flicker         66
-#define OPT_show_piles				67
 #define OPT_center_player			68
 #define OPT_purple_uniques			69
 #define OPT_xchars_to_file			70

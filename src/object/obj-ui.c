@@ -316,18 +316,8 @@ void show_equip(olist_detail_t mode)
 		else continue;
 
 		/* Show full slot labels */
-		if (OPT(show_labels))
-		{
-			strnfmt(tmp_val, sizeof(tmp_val), "%-14s: ", mention_use(i));
-			my_strcat(labels[num_obj], tmp_val, sizeof(labels[num_obj]));
-		}
-
-		/* Otherwise only show short quiver labels */
-		else if (i >= QUIVER_START)
-		{
-			strnfmt(tmp_val, sizeof(tmp_val), "[f%d]: ", i - QUIVER_START);
-			my_strcat(labels[num_obj], tmp_val, sizeof(labels[num_obj]));
-		}
+		strnfmt(tmp_val, sizeof(tmp_val), "%-14s: ", mention_use(i));
+		my_strcat(labels[num_obj], tmp_val, sizeof(labels[num_obj]));
 
 		/* Save the object */
 		objects[num_obj] = o_ptr;

@@ -47,9 +47,7 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 	{
 		OPT_hp_changes_color,
 		OPT_center_player,
-		OPT_show_piles,
 		OPT_show_flavors,
-		OPT_show_labels,
 		OPT_view_yellow_light,
 		OPT_view_bright_light,
 		OPT_view_granite_light,
@@ -58,6 +56,8 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_view_torch_grids,
 		OPT_animate_flicker,
 		OPT_purple_uniques,
+		OPT_NONE,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
@@ -144,8 +144,8 @@ static const struct option options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 7 */
 { NULL,                  NULL,                                          FALSE }, /* 8 */
 { NULL,                  NULL,                                          FALSE }, /* 9 */
-{ "show_labels",         "Show labels in equipment listings",           TRUE },  /* 10 */
-{ "show_lists",          "Always show lists",                           TRUE },  /* 11 */
+{ NULL,                  NULL,                                          FALSE }, /* 10 */
+{ NULL,                  NULL,                                          FALSE }, /* 11 */
 { NULL,                  NULL,                                          FALSE }, /* 12 */
 { NULL,                  NULL,                                          FALSE }, /* 13 */
 { "ring_bell",           "Audible bell (on errors, etc)",               TRUE },  /* 14 */
@@ -201,7 +201,7 @@ static const struct option options[OPT_MAX] =
 { "easy_open",           "Open/Disarm/Close without direction",         TRUE }, /* 64 */
 { "easy_alter",          "Open/Disarm doors/traps on movement",         TRUE  }, /* 65 */
 { "animate_flicker",     "Animate multi-colored monsters and items",    FALSE }, /* 66 */
-{ "show_piles",          "Show stacks using special attr/char",         TRUE }, /* 67 */
+{ NULL,                  NULL,                                          FALSE }, /* 67 */
 { "center_player",       "Center map continuously",                     FALSE }, /* 68 */
 { "purple_uniques",      "Show unique monsters in a special colour",    FALSE }, /* 69 */
 { "xchars_to_file",      "Allow accents in output files",               FALSE }, /* 70 */
