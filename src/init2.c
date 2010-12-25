@@ -114,6 +114,16 @@ static errr grab_flag(bitflag *flags, const size_t size, const char **flag_table
 	return 0;
 }
 
+static errr grab_pval_flag(bitflag **flags, const size_t size, const char **flag_table, const char *flag_name, int pval) {
+	int flag = lookup_flag(flag_table, flag_name);
+
+	if (flag == FLAG_END) return PARSE_ERROR_INVALID_FLAG;
+
+	flag_set_pval(flags, size, flag, pval);
+
+	return 0;
+}
+
 static u32b grab_one_effect(const char *what) {
 	size_t i;
 
@@ -258,6 +268,7 @@ void create_needed_dirs(void)
 	if (!dir_create(dirpath)) quit_fmt("Cannot create '%s'", dirpath);
 }
 
+/* The basic file parsing function */
 errr parse_file(struct parser *p, const char *filename) {
 	char path[1024];
 	char buf[1024];
@@ -281,6 +292,7 @@ static enum parser_error ignored(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+/* Parsing functions for limits.txt */
 static enum parser_error parse_z(struct parser *p) {
 	maxima *z;
 	const char *label;
@@ -358,6 +370,7 @@ static struct file_parser z_parser = {
 	finish_parse_z
 };
 
+/* Parsing functions for object.txt */
 static enum parser_error parse_k_n(struct parser *p) {
 	int idx = parser_getint(p, "index");
 	const char *name = parser_getstr(p, "name");
@@ -389,7 +402,7 @@ static enum parser_error parse_k_g(struct parser *p) {
 
 static enum parser_error parse_k_i(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
-	int tval, i;
+	int tval;
 
 	assert(k);
 
@@ -399,11 +412,6 @@ static enum parser_error parse_k_i(struct parser *p) {
 
 	k->tval = tval;
 	k->sval = parser_getint(p, "sval");
-
-	for (i = 0; i < MAX_PVALS; i++)
-	{
-		k->pval[i] = parser_getrand(p, "pval");
-	}
 
 	return PARSE_ERROR_NONE;
 }
@@ -478,7 +486,6 @@ static enum parser_error parse_k_f(struct parser *p) {
 	}
 	mem_free(s);
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
-
 }
 
 static enum parser_error parse_k_e(struct parser *p) {
@@ -500,6 +507,27 @@ static enum parser_error parse_k_d(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_k_l(struct parser *p) {
+	struct object_kind *k = parser_priv(p);
+	char *s = string_make(parser_getstr(p, "flags"));
+	char *t;
+	assert(k);
+
+	k->pval[k->num_pvals] = parser_getrand(p, "pval");
+
+	t = strtok(s, " |");
+	while (t) {
+		if (grab_pval_flag(k->pval_flags, OF_SIZE, k_info_flags, t, k->num_pvals)
+			&& grab_flag(k->flags, OF_SIZE, k_info_flags, t))
+			break;
+		t = strtok(NULL, " |");
+	}
+
+	k->num_pvals++;
+	mem_free(s);
+	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
 struct parser *init_parse_k(void) {
 	struct parser *p = parser_new();
 	parser_setpriv(p, NULL);
@@ -514,6 +542,7 @@ struct parser *init_parse_k(void) {
 	parser_reg(p, "M int prob rand stack", parse_k_m);
 	parser_reg(p, "F str flags", parse_k_f);
 	parser_reg(p, "E sym name ?rand time", parse_k_e);
+	parser_reg(p, "L rand pval ?str flags", parse_k_l);
 	parser_reg(p, "D str text", parse_k_d);
 	return p;
 }
@@ -550,6 +579,7 @@ struct file_parser k_parser = {
 	finish_parse_k
 };
 
+/* Parsing functions for artifact.txt */
 static enum parser_error parse_a_n(struct parser *p) {
 	int idx = parser_getint(p, "index");
 	const char *name = parser_getstr(p, "name");
@@ -569,7 +599,7 @@ static enum parser_error parse_a_n(struct parser *p) {
 
 static enum parser_error parse_a_i(struct parser *p) {
 	struct artifact *a = parser_priv(p);
-	int tval, sval, i;
+	int tval, sval;
 
 	assert(a);
 
@@ -582,11 +612,6 @@ static enum parser_error parse_a_i(struct parser *p) {
 	if (sval < 0)
 		return PARSE_ERROR_UNRECOGNISED_SVAL;
 	a->sval = sval;
-
-	for (i = 0; i < MAX_PVALS; i++)
-	{
-		a->pval[i] = parser_getint(p, "pval");
-	}
 
 	return PARSE_ERROR_NONE;
 }
@@ -673,6 +698,32 @@ static enum parser_error parse_a_m(struct parser *p) {
 	return PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_a_l(struct parser *p) {
+	struct artifact *a = parser_priv(p);
+	char *s; 
+	char *t;
+	assert(a);
+
+	a->pval[a->num_pvals] = parser_getint(p, "pval");
+
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+
+	s = string_make(parser_getstr(p, "flags"));
+	t = strtok(s, " |");
+
+	while (t) {
+		if (grab_pval_flag(a->pval_flags, OF_SIZE, k_info_flags, t, a->num_pvals)
+			&& grab_flag(a->flags, OF_SIZE, k_info_flags, t))
+			break;
+		t = strtok(NULL, " |");
+	}
+
+	a->num_pvals++;
+	mem_free(s);
+	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_a_d(struct parser *p) {
 	struct artifact *a = parser_priv(p);
 	assert(a);
@@ -693,6 +744,7 @@ struct parser *init_parse_a(void) {
 	parser_reg(p, "F ?str flags", parse_a_f);
 	parser_reg(p, "E sym name rand time", parse_a_e);
 	parser_reg(p, "M str text", parse_a_m);
+	parser_reg(p, "L int pval str flags", parse_a_l);
 	parser_reg(p, "D str text", parse_a_d);
 	return p;
 }
@@ -729,6 +781,7 @@ struct file_parser a_parser = {
 	finish_parse_a
 };
 
+/* Parsing functions for names.txt (random name fragments) */
 struct name {
 	struct name *next;
 	char *str;
@@ -805,6 +858,7 @@ struct file_parser names_parser = {
 	finish_parse_names
 };
 
+/* Parsing functions for terrain.txt */
 static enum parser_error parse_f_n(struct parser *p) {
 	int idx = parser_getuint(p, "index");
 	const char *name = parser_getstr(p, "name");
@@ -988,6 +1042,7 @@ struct file_parser f_parser = {
 	finish_parse_f
 };
 
+/* Parsing functions for ego-item.txt */
 static enum parser_error parse_e_n(struct parser *p) {
 	int idx = parser_getint(p, "index");
 	const char *name = parser_getstr(p, "name");
@@ -1063,7 +1118,6 @@ static enum parser_error parse_e_c(struct parser *p) {
 	struct random td = parser_getrand(p, "td");
 	struct random ta = parser_getrand(p, "ta");
 	struct ego_item *e = parser_priv(p);
-	int i;
 
 	if (!e)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
@@ -1071,11 +1125,6 @@ static enum parser_error parse_e_c(struct parser *p) {
 	e->to_h = th;
 	e->to_d = td;
 	e->to_a = ta;
-
-	for (i = 0; i < MAX_PVALS ; i++)
-	{
-		e->pval[i] = parser_getrand(p, "pval");
-	}
 
 	return PARSE_ERROR_NONE;
 }
@@ -1122,6 +1171,34 @@ static enum parser_error parse_e_f(struct parser *p) {
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
 
+static enum parser_error parse_e_l(struct parser *p) {
+	struct ego_item *e = parser_priv(p);
+	char *s; 
+	char *t;
+
+	if (!e)
+		return PARSE_ERROR_MISSING_RECORD_HEADER;
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+
+	e->pval[e->num_pvals] = parser_getrand(p, "pval");
+	e->min_pval[e->num_pvals] = parser_getint(p, "min");
+
+	s = string_make(parser_getstr(p, "flags"));
+	t = strtok(s, " |");
+
+	while (t) {
+		if (grab_pval_flag(e->pval_flags, OF_SIZE, k_info_flags, t, e->num_pvals)
+			&& grab_flag(e->flags, OF_SIZE, k_info_flags, t))
+			break;
+		t = strtok(NULL, " |");
+	}
+
+	e->num_pvals++;
+	mem_free(s);
+	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
+}
+
 static enum parser_error parse_e_d(struct parser *p) {
 	struct ego_item *e = parser_priv(p);
 
@@ -1142,6 +1219,7 @@ struct parser *init_parse_e(void) {
 	parser_reg(p, "C rand th rand td rand ta rand pval", parse_e_c);
 	parser_reg(p, "M int th int td int ta int pval", parse_e_m);
 	parser_reg(p, "F ?str flags", parse_e_f);
+	parser_reg(p, "L rand pval int min str flags", parse_e_l);
 	parser_reg(p, "D str text", parse_e_d);
 	return p;
 }
@@ -1150,6 +1228,7 @@ static errr run_parse_e(struct parser *p) {
 	return parse_file(p, "ego_item");
 }
 
+/* Create the slay cache for slay combinations on ego items */
 static errr eval_e_slays(struct ego_item *items)
 {
 	int i;
@@ -1245,6 +1324,7 @@ struct file_parser e_parser = {
 	finish_parse_e
 };
 
+/* Parsing functions for monster.txt */
 static enum parser_error parse_r_n(struct parser *p) {
 	struct monster_race *h = parser_priv(p);
 	struct monster_race *r = mem_alloc(sizeof *r);
@@ -1462,6 +1542,7 @@ static errr run_parse_r(struct parser *p) {
 	return parse_file(p, "monster");
 }
 
+/* Functions for monster power evaluation */
 static long eval_blow_effect(int effect, int atk_dam, int rlev)
 {
 	switch (effect)
@@ -2392,6 +2473,7 @@ struct file_parser r_parser = {
 	finish_parse_r
 };
 
+/* Parsing functions for prace.txt */
 static enum parser_error parse_p_n(struct parser *p) {
 	struct player_race *h = parser_priv(p);
 	struct player_race *r = mem_zalloc(sizeof *r);
@@ -2591,6 +2673,7 @@ struct file_parser p_parser = {
 	finish_parse_p
 };
 
+/* Parsing functions for pclass.txt */
 static enum parser_error parse_c_n(struct parser *p) {
 	struct player_class *h = parser_priv(p);
 	struct player_class *c = mem_zalloc(sizeof *c);
@@ -2822,6 +2905,7 @@ struct file_parser c_parser = {
 	finish_parse_c
 };
 
+/* Parsing functions for vault.txt */
 static enum parser_error parse_v_n(struct parser *p) {
 	struct vault *h = parser_priv(p);
 	struct vault *v = mem_zalloc(sizeof *v);
@@ -2903,6 +2987,7 @@ struct file_parser v_parser = {
 	finish_parse_v
 };
 
+/* Parsing functions for p_hist.txt */
 static enum parser_error parse_h_n(struct parser *p) {
 	struct history *oh = parser_priv(p);
 	struct history *h = mem_zalloc(sizeof *h);
@@ -2969,6 +3054,7 @@ struct file_parser h_parser = {
 	finish_parse_h
 };
 
+/* Parsing functions for flavor.txt */
 static enum parser_error parse_flavor_n(struct parser *p) {
 	struct flavor *h = parser_priv(p);
 	struct flavor *f = mem_zalloc(sizeof *f);
@@ -3058,6 +3144,7 @@ struct file_parser flavor_parser = {
 	finish_parse_flavor
 };
 
+/* Parsing functions for spell.txt */
 static enum parser_error parse_s_n(struct parser *p) {
 	struct spell *s = mem_zalloc(sizeof *s);
 	s->next = parser_priv(p);

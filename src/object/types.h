@@ -22,6 +22,7 @@ typedef struct object_kind
 	byte tval;         /**< General object type (see TV_ macros) */
 	byte sval;         /**< Object sub-type (see SV_ macros) */
 	random_value pval[MAX_PVALS]; /**< Power for any flags which need it */
+	byte num_pvals;	   /**< Number of pvals in use on this item */
 
 	random_value to_h; /**< Bonus to hit */
 	random_value to_d; /**< Bonus to damage */
@@ -93,6 +94,7 @@ typedef struct artifact
 	byte tval;    /**< General artifact type (see TV_ macros) */
 	byte sval;    /**< Artifact sub-type (see SV_ macros) */
 	s16b pval[MAX_PVALS];    /**< Power for any flags which need it */
+	byte num_pvals;/**< Number of pvals in use on this item */
 
 	s16b to_h;    /**< Bonus to hit */
 	s16b to_d;    /**< Bonus to damage */
@@ -156,6 +158,7 @@ typedef struct ego_item
 	random_value to_d; 		/* Extra to-dam bonus */
 	random_value to_a; 		/* Extra to-ac bonus */
 	random_value pval[MAX_PVALS]; 	/* Extra pval bonus */
+	byte num_pvals;			/* Number of pvals used */
 
 	byte min_to_h;			/* Minimum to-hit value */
 	byte min_to_d;			/* Minimum to-dam value */
