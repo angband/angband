@@ -114,16 +114,6 @@ static errr grab_flag(bitflag *flags, const size_t size, const char **flag_table
 	return 0;
 }
 
-static errr grab_pval_flag(bitflag **flags, const size_t size, const char **flag_table, const char *flag_name, int pval) {
-	int flag = lookup_flag(flag_table, flag_name);
-
-	if (flag == FLAG_END) return PARSE_ERROR_INVALID_FLAG;
-
-	flag_set_pval(flags, size, flag, pval);
-
-	return 0;
-}
-
 static u32b grab_one_effect(const char *what) {
 	size_t i;
 
@@ -517,7 +507,7 @@ static enum parser_error parse_k_l(struct parser *p) {
 
 	t = strtok(s, " |");
 	while (t) {
-		if (grab_pval_flag(k->pval_flags, OF_SIZE, k_info_flags, t, k->num_pvals)
+		if (grab_flag(k->pval_flags[k->num_pvals], OF_SIZE, k_info_flags, t)
 			&& grab_flag(k->flags, OF_SIZE, k_info_flags, t))
 			break;
 		t = strtok(NULL, " |");
@@ -534,7 +524,7 @@ struct parser *init_parse_k(void) {
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N int index str name", parse_k_n);
 	parser_reg(p, "G sym char sym color", parse_k_g);
-	parser_reg(p, "I sym tval int sval rand pval", parse_k_i);
+	parser_reg(p, "I sym tval int sval", parse_k_i);
 	parser_reg(p, "W int level int extra int weight int cost", parse_k_w);
 	parser_reg(p, "A int common str minmax", parse_k_a);
 	parser_reg(p, "P int ac rand hd rand to-h rand to-d rand to-a", parse_k_p);
@@ -713,7 +703,7 @@ static enum parser_error parse_a_l(struct parser *p) {
 	t = strtok(s, " |");
 
 	while (t) {
-		if (grab_pval_flag(a->pval_flags, OF_SIZE, k_info_flags, t, a->num_pvals)
+		if (grab_flag(a->pval_flags[a->num_pvals], OF_SIZE, k_info_flags, t)
 			&& grab_flag(a->flags, OF_SIZE, k_info_flags, t))
 			break;
 		t = strtok(NULL, " |");
@@ -737,7 +727,7 @@ struct parser *init_parse_a(void) {
 	parser_setpriv(p, NULL);
 	parser_reg(p, "V sym version", ignored);
 	parser_reg(p, "N int index str name", parse_a_n);
-	parser_reg(p, "I sym tval sym sval int pval", parse_a_i);
+	parser_reg(p, "I sym tval sym sval", parse_a_i);
 	parser_reg(p, "W int level int rarity int weight int cost", parse_a_w);
 	parser_reg(p, "A int common str minmax", parse_a_a);
 	parser_reg(p, "P int ac rand hd int to-h int to-d int to-a", parse_a_p);
@@ -1133,7 +1123,6 @@ static enum parser_error parse_e_m(struct parser *p) {
 	int th = parser_getint(p, "th");
 	int td = parser_getint(p, "td");
 	int ta = parser_getint(p, "ta");
-	int i;
 	struct ego_item *e = parser_priv(p);
 
 	if (!e)
@@ -1183,7 +1172,7 @@ static enum parser_error parse_e_l(struct parser *p) {
 	t = strtok(s, " |");
 
 	while (t) {
-		if (grab_pval_flag(e->pval_flags, OF_SIZE, k_info_flags, t, e->num_pvals)
+		if (grab_flag(e->pval_flags[e->num_pvals], OF_SIZE, k_info_flags, t)
 			&& grab_flag(e->flags, OF_SIZE, k_info_flags, t))
 			break;
 		t = strtok(NULL, " |");
@@ -1211,8 +1200,8 @@ struct parser *init_parse_e(void) {
 	parser_reg(p, "W int level int rarity int pad int cost", parse_e_w);
 	parser_reg(p, "X int rating int xtra", parse_e_x);
 	parser_reg(p, "T sym tval int min-sval int max-sval", parse_e_t);
-	parser_reg(p, "C rand th rand td rand ta rand pval", parse_e_c);
-	parser_reg(p, "M int th int td int ta int pval", parse_e_m);
+	parser_reg(p, "C rand th rand td rand ta", parse_e_c);
+	parser_reg(p, "M int th int td int ta", parse_e_m);
 	parser_reg(p, "F ?str flags", parse_e_f);
 	parser_reg(p, "L rand pval int min str flags", parse_e_l);
 	parser_reg(p, "D str text", parse_e_d);

@@ -36,7 +36,7 @@ typedef struct object_kind
 	s32b cost;         /**< Object base cost */
 
 	bitflag flags[OF_SIZE];			/**< Flags */
-	bitflag pval_flags[OF_SIZE][MAX_PVALS];	/**< pval flags */
+	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
 	byte d_attr;       /**< Default object attribute */
 	char d_char;       /**< Default object character */
@@ -109,7 +109,7 @@ typedef struct artifact
 	s32b cost;    /**< Artifact (pseudo-)worth */
 
 	bitflag flags[OF_SIZE];		/**< Flags */
-	bitflag pval_flags[OF_SIZE][MAX_PVALS];	/**< pval flags */
+	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
 	byte level;   /** Difficulty level for activation */
 	byte rarity;  /** Unused */
@@ -144,7 +144,7 @@ typedef struct ego_item
 	s32b cost;			/* Ego-item "cost" */
 
 	bitflag flags[OF_SIZE];		/**< Flags */
-	bitflag pval_flags[OF_SIZE][MAX_PVALS];	/**< pval flags */
+	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 
 	byte level;			/* Minimum level */
 	byte rarity;			/* Object rarity */
@@ -211,6 +211,7 @@ typedef struct object
 	byte sval;			/* Item sub-type (from kind) */
 
 	s16b pval[MAX_PVALS];		/* Item extra-parameter */
+	byte num_pvals;			/* Number of pvals in use */
 
 	s16b weight;			/* Item weight */
 
@@ -219,7 +220,7 @@ typedef struct object
 
 	bitflag flags[OF_SIZE];		/**< Flags */
 	bitflag known_flags[OF_SIZE];	/**< Player-known flags */
-	bitflag pval_flags[OF_SIZE][MAX_PVALS];	/**< pval flags */
+	bitflag pval_flags[MAX_PVALS][OF_SIZE];	/**< pval flags */
 	u16b ident;			/* Special flags */
 
 	s16b ac;			/* Normal AC */
