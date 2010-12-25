@@ -1143,11 +1143,6 @@ static enum parser_error parse_e_m(struct parser *p) {
 	e->min_to_d = td;
 	e->min_to_a = ta;
 
-	for (i = 0; i < MAX_PVALS ; i++)
-	{
-		e->min_pval[i] = parser_getint(p, "pval");
-	}
-
 	return PARSE_ERROR_NONE;
 }
 
