@@ -1118,6 +1118,6 @@ void run_step(int dir)
 	p_ptr->energy_use = 100;
 
 	/* Move the player */
-	move_player(p_ptr->run_cur_dir);
+	move_player(p_ptr->run_cur_dir, TRUE);
 }
 

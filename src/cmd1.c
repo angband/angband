@@ -604,28 +604,20 @@ byte py_pickup(int pickup)
  * Note that this routine handles monsters in the destination grid,
  * and also handles attempting to move into walls/doors/rubble/etc.
  */
-void move_player(int dir)
+void move_player(int dir, bool disarm)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	int y, x;
-
-
-	bool old_dtrap, new_dtrap;
-
-
-	/* Find the result of moving */
-	y = py + ddy[dir];
-	x = px + ddx[dir];
-
+	int y = py + ddy[dir];
+	int x = px + ddx[dir];
 
 	/* Attack monsters */
 	if (cave_m_idx[y][x] > 0)
 		py_attack(y, x);
 
 	/* Optionally alter known traps/doors on movement */
-	else if (OPT(easy_alter) && (cave_info[y][x] & CAVE_MARK) &&
+	else if (disarm && (cave_info[y][x] & CAVE_MARK) &&
 			(cave_feat[y][x] >= FEAT_TRAP_HEAD) &&
 			(cave_feat[y][x] <= FEAT_DOOR_TAIL))
 	{
@@ -685,15 +677,13 @@ void move_player(int dir)
 	/* Normal movement */
 	else
 	{
-		/* Sound XXX XXX XXX */
-		/* sound(MSG_WALK); */
-
 		/* See if trap detection status will change */
-		old_dtrap = ((cave_info2[py][px] & (CAVE2_DTRAP)) != 0);
-		new_dtrap = ((cave_info2[y][x] & (CAVE2_DTRAP)) != 0);
+		bool old_dtrap = ((cave_info2[py][px] & (CAVE2_DTRAP)) != 0);
+		bool new_dtrap = ((cave_info2[y][x] & (CAVE2_DTRAP)) != 0);
 
 		/* Note the change in the detect status */
-		if (old_dtrap != new_dtrap) p_ptr->redraw |= (PR_DTRAP);
+		if (old_dtrap != new_dtrap)
+			p_ptr->redraw |= (PR_DTRAP);
 
 		/* Disturb player if the player is about to leave the area */
 		if (OPT(disturb_detect) &&
@@ -712,20 +702,11 @@ void move_player(int dir)
 		y = py = p_ptr->py;
 		x = px = p_ptr->px;
 
-
-		/* Spontaneous Searching */
-		if ((p_ptr->state.skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
-		    one_in_(50 - p_ptr->state.skills[SKILL_SEARCH_FREQUENCY]))
-		{
+		/* Searching */
+		if (p_ptr->searching ||
+				(p_ptr->state.skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
+				one_in_(50 - p_ptr->state.skills[SKILL_SEARCH_FREQUENCY]))
 			search(FALSE);
-		}
-
-		/* Continuous Searching */
-		if (p_ptr->searching)
-		{
-			search(FALSE);
-		}
-
 
 		/* Handle "store doors" */
 		if ((cave_feat[p_ptr->py][p_ptr->px] >= FEAT_SHOP_HEAD) &&

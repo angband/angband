@@ -31,11 +31,11 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_pickup_always,
 		OPT_pickup_inven,
 		OPT_pickup_detail,
-		OPT_easy_alter,
 		OPT_easy_open,
 		OPT_mouse_movement,
 		OPT_mouse_buttons,
 		OPT_xchars_to_file,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
@@ -199,7 +199,7 @@ static const struct option options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 62 */
 { NULL,                  NULL,                                          FALSE }, /* 63 */
 { "easy_open",           "Open/Disarm/Close without direction",         TRUE }, /* 64 */
-{ "easy_alter",          "Open/Disarm doors/traps on movement",         TRUE  }, /* 65 */
+{ NULL,                  NULL,                                          FALSE }, /* 65 */
 { "animate_flicker",     "Animate multi-colored monsters and items",    FALSE }, /* 66 */
 { NULL,                  NULL,                                          FALSE }, /* 67 */
 { "center_player",       "Center map continuously",                     FALSE }, /* 68 */

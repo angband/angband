@@ -130,7 +130,8 @@ static struct generic_command cmd_action[] =
 	{ "Jam a door shut",            'j', CMD_JAM, NULL },
 	{ "Bash a door open",           'B', CMD_BASH, NULL },
 	{ "Fire at nearest target",   'h', CMD_NULL, textui_cmd_fire_at_nearest },
-	{ "Throw an item",            'v', CMD_THROW, textui_cmd_throw }
+	{ "Throw an item",            'v', CMD_THROW, textui_cmd_throw },
+	{ "Walk into a trap",         'W', CMD_JUMP, NULL },
 };
 
 /* Item management commands */
@@ -187,7 +188,6 @@ static struct generic_command cmd_hidden[] =
 	{ "Toggle windows",     KTRL('E'), CMD_NULL, toggle_inven_equip }, /* XXX */
 	{ "Alter a grid",             '+', CMD_ALTER, NULL },
 	{ "Walk",                     ';', CMD_WALK, NULL },
-	{ "Jump into a trap",         '-', CMD_JUMP, NULL },
 	{ "Start running",            '.', CMD_RUN, NULL },
 	{ "Stand still",              ',', CMD_HOLD, NULL },
 	{ "Center map",              KTRL('L'), CMD_NULL, do_cmd_center_map },

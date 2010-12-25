@@ -183,7 +183,7 @@ extern void player_birth(bool quickstart_allowed);
 /* cmd1.c */
 extern bool search(bool verbose);
 extern byte py_pickup(int pickup);
-extern void move_player(int dir);
+extern void move_player(int dir, bool disarm);
 
 /* cmd2.c */
 /* XXX should probably be moved to cave.c? */
