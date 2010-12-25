@@ -135,261 +135,95 @@ struct option
 static const struct option options[OPT_MAX] =
 {
 { "rogue_like_commands", "Rogue-like commands",                         FALSE }, /* 0 */
-{ NULL,                  NULL,                                          FALSE }, /* 1 */
-{ "use_sound",           "Use sound",                                   FALSE }, /* 2 */
-{ "pickup_detail",       "Be verbose when picking things up",           TRUE },  /* 3 */
-{ "use_old_target",      "Use old target by default",                   FALSE }, /* 4 */
-{ "pickup_always",       "Always pickup items",                         FALSE }, /* 5 */
-{ "pickup_inven",        "Always pickup items matching inventory",      TRUE },  /* 6 */
-{ NULL,                  NULL,                                          FALSE }, /* 7 */
-{ NULL,                  NULL,                                          FALSE }, /* 8 */
-{ NULL,                  NULL,                                          FALSE }, /* 9 */
-{ NULL,                  NULL,                                          FALSE }, /* 10 */
-{ NULL,                  NULL,                                          FALSE }, /* 11 */
-{ NULL,                  NULL,                                          FALSE }, /* 12 */
-{ NULL,                  NULL,                                          FALSE }, /* 13 */
-{ NULL,                  NULL,                                          FALSE }, /* 14 */
-{ "show_flavors",        "Show flavors in object descriptions",         FALSE },  /* 15 */
-{ NULL,                  NULL,                                          FALSE }, /* 16 */
-{ NULL,                  NULL,                                          FALSE }, /* 17 */
-{ NULL,                  NULL,                                          FALSE }, /* 18 */
-{ NULL,                  NULL,                                          FALSE }, /* 19 */
-{ "disturb_move",        "Disturb whenever any monster moves",          FALSE }, /* 20 */
-{ "disturb_near",        "Disturb whenever viewable monster moves",     TRUE },  /* 21 */
-{ "disturb_detect",      "Disturb whenever leaving trap detected area", TRUE },  /* 22 */
-{ "disturb_state",       "Disturb whenever player state changes",       TRUE },  /* 23 */
+{ "use_sound",           "Use sound",                                   FALSE }, /* 1 */
+{ "pickup_detail",       "Be verbose when picking things up",           TRUE },  /* 2 */
+{ "use_old_target",      "Use old target by default",                   FALSE }, /* 3 */
+{ "pickup_always",       "Always pickup items",                         FALSE }, /* 4 */
+{ "pickup_inven",        "Always pickup items matching inventory",      TRUE },  /* 5 */
+{ "show_flavors",        "Show flavors in object descriptions",         FALSE },  /* 6 */
+{ "disturb_move",        "Disturb whenever any monster moves",          FALSE }, /* 7 */
+{ "disturb_near",        "Disturb whenever viewable monster moves",     TRUE },  /* 8 */
+{ "disturb_detect",      "Disturb whenever leaving trap detected area", TRUE },  /* 9 */
+{ "disturb_state",       "Disturb whenever player state changes",       TRUE },  /* 10 */
+{ "flush_failure",       "Flush input on various failures",             TRUE },  /* 11 */
+{ "flush_disturb",       "Flush input whenever disturbed",              FALSE }, /* 12 */
+{ "view_yellow_light",   "Use special colors for torch light",          FALSE }, /* 13 */
+{ "easy_open",           "Open/Disarm/Close without direction",         TRUE }, /* 14 */
+{ "animate_flicker",     "Animate multi-colored monsters and items",    FALSE }, /* 15 */
+{ "center_player",       "Center map continuously",                     FALSE }, /* 16 */
+{ "purple_uniques",      "Show unique monsters in a special colour",    FALSE }, /* 17 */
+{ "xchars_to_file",      "Allow accents in output files",               FALSE }, /* 18 */
+{ "auto_more",           "Automatically clear '-more-' prompts",        FALSE }, /* 19 */
+{ "hp_changes_color",    "Player color indicates low hit points",       FALSE }, /* 20 */
+{ "mouse_movement",      "Allow mouse clicks to move the player",       FALSE }, /* 21 */
+{ "mouse_buttons",        "Show mouse status line buttons",             FALSE }, /* 22 */
+{ "notify_recharge",     "Notify on object recharge",                   FALSE }, /* 23 */
 { NULL,                  NULL,                                          FALSE }, /* 24 */
 { NULL,                  NULL,                                          FALSE }, /* 25 */
 { NULL,                  NULL,                                          FALSE }, /* 26 */
 { NULL,                  NULL,                                          FALSE }, /* 27 */
 { NULL,                  NULL,                                          FALSE }, /* 28 */
 { NULL,                  NULL,                                          FALSE }, /* 29 */
-{ NULL,                  NULL,                                          FALSE }, /* 30 */
-{ NULL,                  NULL,                                          FALSE }, /* 31 */
-{ NULL,                  NULL,                                          FALSE }, /* 32 */
-{ NULL,                  NULL,                                          FALSE }, /* 33 */
-{ NULL,                  NULL,                                          FALSE }, /* 34 */
-{ NULL,                  NULL,                                          FALSE }, /* 35 */
+{ "cheat_peek",          "Cheat: Peek into object creation",            FALSE }, /* 30 */
+{ "cheat_hear",          "Cheat: Peek into monster creation",           FALSE }, /* 31 */
+{ "cheat_room",          "Cheat: Peek into dungeon creation",           FALSE }, /* 32 */
+{ "cheat_xtra",          "Cheat: Peek into something else",             FALSE }, /* 33 */
+{ "cheat_know",          "Cheat: Know complete monster info",           FALSE }, /* 34 */
+{ "cheat_live",          "Cheat: Allow player to avoid death",          FALSE }, /* 35 */
 { NULL,                  NULL,                                          FALSE }, /* 36 */
 { NULL,                  NULL,                                          FALSE }, /* 37 */
 { NULL,                  NULL,                                          FALSE }, /* 38 */
 { NULL,                  NULL,                                          FALSE }, /* 39 */
-{ NULL,                  NULL,                                          TRUE }, /* 40 */
-{ NULL,                  NULL,                                          TRUE }, /* 41 */
-{ NULL,                  NULL,                                          FALSE }, /* 42 */
-{ NULL,                  NULL,                                          FALSE }, /* 43 */
-{ NULL,                  NULL,                                          FALSE }, /* 44 */
-{ NULL,                  NULL,                                          FALSE }, /* 45 */
+{ "score_peek",          "Score: Peek into object creation",            FALSE }, /* 40 */
+{ "score_hear",          "Score: Peek into monster creation",           FALSE }, /* 41 */
+{ "score_room",          "Score: Peek into dungeon creation",           FALSE }, /* 42 */
+{ "score_xtra",          "Score: Peek into something else",             FALSE }, /* 43 */
+{ "score_know",          "Score: Know complete monster info",           FALSE }, /* 44 */
+{ "score_live",          "Score: Allow player to avoid death",          FALSE }, /* 45 */
 { NULL,                  NULL,                                          FALSE }, /* 46 */
 { NULL,                  NULL,                                          FALSE }, /* 47 */
 { NULL,                  NULL,                                          FALSE }, /* 48 */
 { NULL,                  NULL,                                          FALSE }, /* 49 */
-{ NULL,                  NULL,                                          FALSE }, /* 50 */
-{ NULL,                  NULL,                                          FALSE }, /* 51 */
-{ "flush_failure",       "Flush input on various failures",             TRUE },  /* 52 */
-{ "flush_disturb",       "Flush input whenever disturbed",              FALSE }, /* 53 */
-{ NULL,                  NULL,                                          FALSE }, /* 54 */
-{ NULL,                  NULL,                                          FALSE }, /* 55 */
-{ NULL,                  NULL,                                          FALSE }, /* 56 */
-{ NULL,                  NULL,                                          FALSE }, /* 57 */
-{ NULL,                  NULL,                                          FALSE }, /* 58 */
-{ NULL,                  NULL,                                          FALSE }, /* 59 */
-{ "view_yellow_light",   "Use special colors for torch light",          FALSE }, /* 60 */
-{ NULL,                  NULL,                                          FALSE }, /* 61 */
-{ NULL,                  NULL,                                          FALSE }, /* 62 */
-{ NULL,                  NULL,                                          FALSE }, /* 63 */
-{ "easy_open",           "Open/Disarm/Close without direction",         TRUE }, /* 64 */
-{ NULL,                  NULL,                                          FALSE }, /* 65 */
-{ "animate_flicker",     "Animate multi-colored monsters and items",    FALSE }, /* 66 */
+{ "birth_maximize",      "Maximise effect of race/class bonuses",       TRUE },  /* 50 */
+{ "birth_randarts",      "Randomise the artifacts (except a very few)", FALSE }, /* 51 */
+{ "birth_ironman",       "Restrict the use of stairs/recall",           FALSE }, /* 52 */
+{ "birth_no_stores",     "Restrict the use of stores/home",             FALSE }, /* 53 */
+{ "birth_no_artifacts",  "Restrict creation of artifacts",              FALSE }, /* 54 */
+{ "birth_no_stacking",   "Don't stack objects on the floor",            FALSE }, /* 55 */
+{ "birth_no_preserve",   "Lose artifacts when leaving level",           FALSE }, /* 56 */
+{ "birth_no_stairs",     "Don't generate connected stairs",             FALSE }, /* 57 */
+{ "birth_no_feelings",   "Don't show level feelings",                   FALSE }, /* 58 */
+{ "birth_no_selling",    "Items always sell for 0 gold",                FALSE }, /* 59 */
+{ "birth_ai_sound",      "Monsters chase current location",             TRUE },  /* 60 */
+{ "birth_ai_smell",      "Monsters chase recent locations",             TRUE },  /* 61 */
+{ "birth_ai_packs",      "Monsters act smarter in groups",              TRUE },  /* 62 */
+{ "birth_ai_learn",      "Monsters learn from their mistakes",          FALSE }, /* 63 */
+{ "birth_ai_cheat",      "Monsters exploit player's weaknesses",        FALSE }, /* 64 */
+{ "birth_ai_smart",      "Monsters behave more intelligently (broken)", FALSE }, /* 65 */
+{ NULL,                  NULL,                                          FALSE }, /* 66 */
 { NULL,                  NULL,                                          FALSE }, /* 67 */
-{ "center_player",       "Center map continuously",                     FALSE }, /* 68 */
-{ "purple_uniques",      "Show unique monsters in a special colour",    FALSE }, /* 69 */
-{ "xchars_to_file",      "Allow accents in output files",               FALSE }, /* 70 */
-{ "auto_more",           "Automatically clear '-more-' prompts",        FALSE }, /* 71 */
-{ NULL,                  NULL,                                          FALSE }, /* 72 */
-{ NULL,                  NULL,                                          FALSE }, /* 73 */
-{ "hp_changes_color",    "Player color indicates low hit points",       FALSE }, /* 74 */
-{ NULL,                  NULL,                                          FALSE }, /* 75 */
-{ NULL,                  NULL,                                          FALSE }, /* 76 */
-{ "mouse_movement",      "Allow mouse clicks to move the player",       FALSE }, /* 77 */
-{ "mouse_buttons",        "Show mouse status line buttons",             FALSE }, /* 78 */
-{ "notify_recharge",     "Notify on object recharge",                   FALSE }, /* 79 */
-{ NULL,                  NULL,                                          FALSE }, /* 80 */
-{ NULL,                  NULL,                                          FALSE }, /* 81 */
-{ NULL,                  NULL,                                          FALSE }, /* 82 */
-{ NULL,                  NULL,                                          FALSE }, /* 83 */
-{ NULL,                  NULL,                                          FALSE }, /* 84 */
-{ NULL,                  NULL,                                          FALSE }, /* 85 */
+{ NULL,                  NULL,                                          FALSE }, /* 68 */
+{ NULL,                  NULL,                                          FALSE }, /* 69 */
+{ "adult_maximize",      "Maximize effect of race/class bonuses",       TRUE },  /* 70 */
+{ "adult_randarts",      "Randomize the artifacts (except a few)",      FALSE }, /* 71 */
+{ "adult_ironman",       "Restrict the use of stairs/recall",           FALSE }, /* 72 */
+{ "adult_no_stores",     "Restrict the use of stores/home",             FALSE }, /* 73 */
+{ "adult_no_artifacts",  "Restrict creation of artifacts",              FALSE }, /* 74 */
+{ "adult_no_stacking",   "Don't stack objects on the floor",            FALSE }, /* 75 */
+{ "adult_no_preserve",   "Lose artifacts when leaving level",           FALSE }, /* 76 */
+{ "adult_no_stairs",     "Don't generate connected stairs",             FALSE }, /* 77 */
+{ "adult_no_feelings",   "Don't show level feelings",                   FALSE }, /* 78 */
+{ "adult_no_selling",    "Items always sell for 0 gold",                FALSE }, /* 79 */
+{ "adult_ai_sound",      "Adult: Monsters chase current location",      TRUE },  /* 70 */
+{ "adult_ai_smell",      "Adult: Monsters chase recent locations",      TRUE },  /* 81 */
+{ "adult_ai_packs",      "Adult: Monsters act smarter in groups",       TRUE },  /* 82 */
+{ "adult_ai_learn",      "Adult: Monsters learn from their mistakes",   FALSE }, /* 83 */
+{ "adult_ai_cheat",      "Adult: Monsters exploit players weaknesses",  FALSE }, /* 84 */
+{ "adult_ai_smart",      "Adult: Monsters behave more intelligently (broken)",  FALSE }, /* 85 */
 { NULL,                  NULL,                                          FALSE }, /* 86 */
 { NULL,                  NULL,                                          FALSE }, /* 87 */
 { NULL,                  NULL,                                          FALSE }, /* 88 */
 { NULL,                  NULL,                                          FALSE }, /* 89 */
-{ NULL,                  NULL,                                          FALSE }, /* 90 */
-{ NULL,                  NULL,                                          FALSE }, /* 91 */
-{ NULL,                  NULL,                                          FALSE }, /* 92 */
-{ NULL,                  NULL,                                          FALSE }, /* 93 */
-{ NULL,                  NULL,                                          FALSE }, /* 94 */
-{ NULL,                  NULL,                                          FALSE }, /* 95 */
-{ NULL,                  NULL,                                          FALSE }, /* 96 */
-{ NULL,                  NULL,                                          FALSE }, /* 97 */
-{ NULL,                  NULL,                                          FALSE }, /* 98 */
-{ NULL,                  NULL,                                          FALSE }, /* 99 */
-{ NULL,                  NULL,                                          FALSE }, /* 100 */
-{ NULL,                  NULL,                                          FALSE }, /* 101 */
-{ NULL,                  NULL,                                          FALSE }, /* 102 */
-{ NULL,                  NULL,                                          FALSE }, /* 103 */
-{ NULL,                  NULL,                                          FALSE }, /* 104 */
-{ NULL,                  NULL,                                          FALSE }, /* 105 */
-{ NULL,                  NULL,                                          FALSE }, /* 106 */
-{ NULL,                  NULL,                                          FALSE }, /* 107 */
-{ NULL,                  NULL,                                          FALSE }, /* 108 */
-{ NULL,                  NULL,                                          FALSE }, /* 109 */
-{ NULL,                  NULL,                                          FALSE }, /* 110 */
-{ NULL,                  NULL,                                          FALSE }, /* 111 */
-{ NULL,                  NULL,                                          FALSE }, /* 112 */
-{ NULL,                  NULL,                                          FALSE }, /* 113 */
-{ NULL,                  NULL,                                          FALSE }, /* 114 */
-{ NULL,                  NULL,                                          FALSE }, /* 115 */
-{ NULL,                  NULL,                                          FALSE }, /* 116 */
-{ NULL,                  NULL,                                          FALSE }, /* 117 */
-{ NULL,                  NULL,                                          FALSE }, /* 118 */
-{ NULL,                  NULL,                                          FALSE }, /* 119 */
-{ NULL,                  NULL,                                          FALSE }, /* 120 */
-{ NULL,                  NULL,                                          FALSE }, /* 121 */
-{ NULL,                  NULL,                                          FALSE }, /* 122 */
-{ NULL,                  NULL,                                          FALSE }, /* 123 */
-{ NULL,                  NULL,                                          FALSE }, /* 124 */
-{ NULL,                  NULL,                                          FALSE }, /* 125 */
-{ NULL,                  NULL,                                          FALSE }, /* 126 */
-{ NULL,                  NULL,                                          FALSE }, /* 127 */
-{ "birth_maximize",      "Maximise effect of race/class bonuses",       TRUE },  /* 128 */
-{ "birth_randarts",      "Randomise the artifacts (except a very few)", FALSE }, /* 129 */
-{ NULL,                  NULL,                                          FALSE }, /* 130 */
-{ "birth_ironman",       "Restrict the use of stairs/recall",           FALSE }, /* 131 */
-{ "birth_no_stores",     "Restrict the use of stores/home",             FALSE }, /* 132 */
-{ "birth_no_artifacts",  "Restrict creation of artifacts",              FALSE }, /* 133 */
-{ "birth_no_stacking",   "Don't stack objects on the floor",            FALSE }, /* 134 */
-{ "birth_no_preserve",   "Lose artifacts when leaving level",           FALSE }, /* 135 */
-{ "birth_no_stairs",     "Don't generate connected stairs",             FALSE }, /* 136 */
-{ "birth_no_feelings",   "Don't show level feelings",                   FALSE }, /* 137 */
-{ "birth_no_selling",    "Items always sell for 0 gold",                FALSE }, /* 138 */
-{ NULL,                  NULL,                                          FALSE }, /* 139 */
-{ NULL,                  NULL,                                          FALSE }, /* 140 */
-{ "birth_ai_sound",      "Monsters chase current location",             TRUE },  /* 141 */
-{ "birth_ai_smell",      "Monsters chase recent locations",             TRUE },  /* 142 */
-{ "birth_ai_packs",      "Monsters act smarter in groups",              TRUE },  /* 143 */
-{ "birth_ai_learn",      "Monsters learn from their mistakes",          FALSE }, /* 144 */
-{ "birth_ai_cheat",      "Monsters exploit player's weaknesses",        FALSE }, /* 145 */
-{ "birth_ai_smart",      "Monsters behave more intelligently (broken)", FALSE }, /* 146 */
-{ NULL,                  NULL,                                          FALSE }, /* 147 */
-{ NULL,                  NULL,                                          FALSE }, /* 148 */
-{ NULL,                  NULL,                                          FALSE }, /* 149 */
-{ NULL,                  NULL,                                          FALSE }, /* 150 */
-{ NULL,                  NULL,                                          FALSE }, /* 151 */
-{ NULL,                  NULL,                                          FALSE }, /* 152 */
-{ NULL,                  NULL,                                          FALSE }, /* 153 */
-{ NULL,                  NULL,                                          FALSE }, /* 154 */
-{ NULL,                  NULL,                                          FALSE }, /* 155 */
-{ NULL,                  NULL,                                          FALSE }, /* 156 */
-{ NULL,                  NULL,                                          FALSE }, /* 157 */
-{ NULL,                  NULL,                                          FALSE }, /* 158 */
-{ NULL,                  NULL,                                          FALSE }, /* 159 */
-{ "cheat_peek",          "Cheat: Peek into object creation",            FALSE }, /* 160 */
-{ "cheat_hear",          "Cheat: Peek into monster creation",           FALSE }, /* 161 */
-{ "cheat_room",          "Cheat: Peek into dungeon creation",           FALSE }, /* 162 */
-{ "cheat_xtra",          "Cheat: Peek into something else",             FALSE }, /* 163 */
-{ "cheat_know",          "Cheat: Know complete monster info",           FALSE }, /* 164 */
-{ "cheat_live",          "Cheat: Allow player to avoid death",          FALSE }, /* 165 */
-{ NULL,                  NULL,                                          FALSE }, /* 166 */
-{ NULL,                  NULL,                                          FALSE }, /* 167 */
-{ NULL,                  NULL,                                          FALSE }, /* 168 */
-{ NULL,                  NULL,                                          FALSE }, /* 169 */
-{ NULL,                  NULL,                                          FALSE }, /* 170 */
-{ NULL,                  NULL,                                          FALSE }, /* 171 */
-{ NULL,                  NULL,                                          FALSE }, /* 172 */
-{ NULL,                  NULL,                                          FALSE }, /* 173 */
-{ NULL,                  NULL,                                          FALSE }, /* 174 */
-{ NULL,                  NULL,                                          FALSE }, /* 175 */
-{ NULL,                  NULL,                                          FALSE }, /* 176 */
-{ NULL,                  NULL,                                          FALSE }, /* 177 */
-{ NULL,                  NULL,                                          FALSE }, /* 178 */
-{ NULL,                  NULL,                                          FALSE }, /* 179 */
-{ NULL,                  NULL,                                          FALSE }, /* 180 */
-{ NULL,                  NULL,                                          FALSE }, /* 181 */
-{ NULL,                  NULL,                                          FALSE }, /* 182 */
-{ NULL,                  NULL,                                          FALSE }, /* 183 */
-{ NULL,                  NULL,                                          FALSE }, /* 184 */
-{ NULL,                  NULL,                                          FALSE }, /* 185 */
-{ NULL,                  NULL,                                          FALSE }, /* 186 */
-{ NULL,                  NULL,                                          FALSE }, /* 187 */
-{ NULL,                  NULL,                                          FALSE }, /* 188 */
-{ NULL,                  NULL,                                          FALSE }, /* 189 */
-{ NULL,                  NULL,                                          FALSE }, /* 190 */
-{ NULL,                  NULL,                                          FALSE }, /* 191 */
-{ "adult_maximize",      "Maximize effect of race/class bonuses",       TRUE },  /* 192 */
-{ "adult_randarts",      "Randomize the artifacts (except a few)",      FALSE }, /* 193 */
-{ NULL,                  NULL,                                          FALSE }, /* 194 */
-{ "adult_ironman",       "Restrict the use of stairs/recall",           FALSE }, /* 195 */
-{ "adult_no_stores",     "Restrict the use of stores/home",             FALSE }, /* 196 */
-{ "adult_no_artifacts",  "Restrict creation of artifacts",              FALSE }, /* 197 */
-{ "adult_no_stacking",   "Don't stack objects on the floor",            FALSE }, /* 198 */
-{ "adult_no_preserve",   "Lose artifacts when leaving level",           FALSE }, /* 199 */
-{ "adult_no_stairs",     "Don't generate connected stairs",             FALSE }, /* 200 */
-{ "adult_no_feelings",   "Don't show level feelings",                   FALSE }, /* 201 */
-{ "adult_no_selling",    "Items always sell for 0 gold",                FALSE }, /* 202 */
-{ NULL,                  NULL,                                          FALSE }, /* 203 */
-{ NULL,                  NULL,                                          FALSE }, /* 204 */
-{ "adult_ai_sound",      "Adult: Monsters chase current location",      TRUE },  /* 205 */
-{ "adult_ai_smell",      "Adult: Monsters chase recent locations",      TRUE },  /* 206 */
-{ "adult_ai_packs",      "Adult: Monsters act smarter in groups",       TRUE },  /* 207 */
-{ "adult_ai_learn",      "Adult: Monsters learn from their mistakes",   FALSE }, /* 208 */
-{ "adult_ai_cheat",      "Adult: Monsters exploit players weaknesses",  FALSE }, /* 209 */
-{ "adult_ai_smart",      "Adult: Monsters behave more intelligently (broken)",  FALSE }, /* 210 */
-{ NULL,                  NULL,                                          FALSE }, /* 211 */
-{ NULL,                  NULL,                                          FALSE }, /* 212 */
-{ NULL,                  NULL,                                          FALSE }, /* 213 */
-{ NULL,                  NULL,                                          FALSE }, /* 214 */
-{ NULL,                  NULL,                                          FALSE }, /* 215 */
-{ NULL,                  NULL,                                          FALSE }, /* 216 */
-{ NULL,                  NULL,                                          FALSE }, /* 217 */
-{ NULL,                  NULL,                                          FALSE }, /* 218 */
-{ NULL,                  NULL,                                          FALSE }, /* 219 */
-{ NULL,                  NULL,                                          FALSE }, /* 220 */
-{ NULL,                  NULL,                                          FALSE }, /* 221 */
-{ NULL,                  NULL,                                          FALSE }, /* 222 */
-{ NULL,                  NULL,                                          FALSE }, /* 223 */
-{ "score_peek",          "Score: Peek into object creation",            FALSE }, /* 224 */
-{ "score_hear",          "Score: Peek into monster creation",           FALSE }, /* 225 */
-{ "score_room",          "Score: Peek into dungeon creation",           FALSE }, /* 226 */
-{ "score_xtra",          "Score: Peek into something else",             FALSE }, /* 227 */
-{ "score_know",          "Score: Know complete monster info",           FALSE }, /* 228 */
-{ "score_live",          "Score: Allow player to avoid death",          FALSE }, /* 229 */
-{ NULL,                  NULL,                                          FALSE }, /* 230 */
-{ NULL,                  NULL,                                          FALSE }, /* 231 */
-{ NULL,                  NULL,                                          FALSE }, /* 232 */
-{ NULL,                  NULL,                                          FALSE }, /* 233 */
-{ NULL,                  NULL,                                          FALSE }, /* 234 */
-{ NULL,                  NULL,                                          FALSE }, /* 235 */
-{ NULL,                  NULL,                                          FALSE }, /* 236 */
-{ NULL,                  NULL,                                          FALSE }, /* 237 */
-{ NULL,                  NULL,                                          FALSE }, /* 238 */
-{ NULL,                  NULL,                                          FALSE }, /* 239 */
-{ NULL,                  NULL,                                          FALSE }, /* 240 */
-{ NULL,                  NULL,                                          FALSE }, /* 241 */
-{ NULL,                  NULL,                                          FALSE }, /* 242 */
-{ NULL,                  NULL,                                          FALSE }, /* 243 */
-{ NULL,                  NULL,                                          FALSE }, /* 244 */
-{ NULL,                  NULL,                                          FALSE }, /* 245 */
-{ NULL,                  NULL,                                          FALSE }, /* 246 */
-{ NULL,                  NULL,                                          FALSE }, /* 247 */
-{ NULL,                  NULL,                                          FALSE }, /* 248 */
-{ NULL,                  NULL,                                          FALSE }, /* 249 */
-{ NULL,                  NULL,                                          FALSE }, /* 250 */
-{ NULL,                  NULL,                                          FALSE }, /* 251 */
-{ NULL,                  NULL,                                          FALSE }, /* 252 */
-{ NULL,                  NULL,                                          FALSE }, /* 253 */
-{ NULL,                  NULL,                                          FALSE }, /* 254 */
-{ NULL,                  NULL,                                          FALSE }, /* 255 */
 };
 
 
@@ -406,18 +240,26 @@ const char *option_desc(int opt)
 	return options[opt].description;
 }
 
+bool option_is_birth(int opt) { return opt >= OPT_BIRTH && opt < (OPT_BIRTH + N_OPTS_BIRTH); }
+bool option_is_adult(int opt) { return opt >= OPT_ADULT && opt < (OPT_ADULT + N_OPTS_BIRTH); }
+bool option_is_cheat(int opt) { return opt >= OPT_CHEAT && opt < (OPT_CHEAT + N_OPTS_CHEAT); }
+bool option_is_score(int opt) { return opt >= OPT_SCORE && opt < (OPT_SCORE + N_OPTS_CHEAT); }
+
 /* Setup functions */
 bool option_set(const char *name, bool on)
 {
 	size_t opt;
-	for (opt = 0; opt < OPT_ADULT; opt++)
+	for (opt = 0; opt < OPT_MAX; opt++)
 	{
 		if (!options[opt].name || !streq(options[opt].name, name))
 			continue;
 
 		op_ptr->opt[opt] = on;
-		if (on && opt > OPT_CHEAT && opt < OPT_ADULT)
-			op_ptr->opt[opt + (OPT_SCORE - OPT_CHEAT)] = TRUE;
+		if (on && option_is_cheat(opt)) {
+			op_ptr->opt[opt + (OPT_CHEAT - OPT_SCORE)] = TRUE;
+		} else if (on && option_is_birth(opt)) {
+			op_ptr->opt[opt + (OPT_ADULT - OPT_BIRTH)] = TRUE;
+		}
 
 		return TRUE;
 	}

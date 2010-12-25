@@ -1139,7 +1139,7 @@ errr file_character(const char *path, bool full)
 	file_putf(fp, "  [Options]\n\n");
 
 	/* Dump options */
-	for (i = OPT_ADULT; i < OPT_MAX; i++)
+	for (i = OPT_ADULT; i < OPT_ADULT + N_OPTS_BIRTH; i++)
 	{
 		if (option_name(i))
 		{

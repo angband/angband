@@ -1107,14 +1107,14 @@ void player_birth(bool quickstart_allowed)
 		else if (cmd->command == CMD_FINALIZE_OPTIONS)
 		{
 			/* Set adult options from birth options */
-			for (i = OPT_BIRTH; i < OPT_CHEAT; i++)
+			for (i = OPT_BIRTH; i < OPT_BIRTH + N_OPTS_BIRTH; i++)
 			{
 				op_ptr->opt[OPT_ADULT + (i - OPT_BIRTH)] =
 					op_ptr->opt[i];
 			}
 
 			/* Reset score options from cheat options */
-			for (i = OPT_CHEAT; i < OPT_ADULT; i++)
+			for (i = OPT_CHEAT; i < OPT_CHEAT + N_OPTS_CHEAT; i++)
 			{
 				op_ptr->opt[OPT_SCORE + (i - OPT_CHEAT)] =
 					op_ptr->opt[i];
