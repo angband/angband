@@ -302,4 +302,13 @@ void menu_ensure_cursor_valid(menu_type *m);
 bool menu_handle_mouse(menu_type *menu, const ui_event_data *in, ui_event_data *out);
 bool menu_handle_keypress(menu_type *menu, const ui_event_data *in, ui_event_data *out);
 
+
+/*** Dynamic menu handling ***/
+
+menu_type *menu_dynamic_new(void);
+void menu_dynamic_add(menu_type *m, const char *text, int value);
+size_t menu_dynamic_longest_entry(menu_type *m);
+int menu_dynamic_select(menu_type *m);
+void menu_dynamic_free(menu_type *m);
+
 #endif /* INCLUDED_UI_MENU_H */

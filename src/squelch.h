@@ -1,8 +1,14 @@
-/* squelch.h - squelch interface */
-
 #ifndef SQUELCH_H
 #define SQUELCH_H
 
+/*
+ * Used for mapping the values below to names.
+ */
+typedef struct
+{
+	int enum_val;
+	const char *name;
+} quality_name_struct;
 
 /*
  * List of kinds of item, for pseudo-id squelch.
@@ -55,6 +61,10 @@ enum
 #define SQUELCH_IF_AWARE	0x01
 #define SQUELCH_IF_UNAWARE	0x02
 
+
+
+extern quality_name_struct quality_values[SQUELCH_MAX];
+extern quality_name_struct quality_choices[TYPE_MAX];
 
 
 /* squelch.c */

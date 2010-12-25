@@ -61,6 +61,42 @@ static quality_squelch_struct quality_mapping[] =
 
 
 
+quality_name_struct quality_choices[TYPE_MAX] =
+{
+	{ TYPE_WEAPON_POINTY,	"Pointy Melee Weapons" },
+	{ TYPE_WEAPON_BLUNT,	"Blunt Melee Weapons" },
+	{ TYPE_SHOOTER,		"Missile weapons" },
+	{ TYPE_MISSILE_SLING,	"Shots and Pebbles" },
+	{ TYPE_MISSILE_BOW,	"Arrows" },
+	{ TYPE_MISSILE_XBOW,	"Bolts" },
+	{ TYPE_ARMOR_ROBE,	"Robes" },
+	{ TYPE_ARMOR_BODY,	"Body Armor" },
+	{ TYPE_ARMOR_CLOAK,	"Cloaks" },
+	{ TYPE_ARMOR_ELVEN_CLOAK,	"Elven Cloaks" },
+	{ TYPE_ARMOR_SHIELD,	"Shields" },
+	{ TYPE_ARMOR_HEAD,	"Headgear" },
+	{ TYPE_ARMOR_HANDS,	"Handgear" },
+	{ TYPE_ARMOR_FEET,	"Footgear" },
+	{ TYPE_DIGGER,		"Diggers" },
+	{ TYPE_RING,		"Rings" },
+	{ TYPE_AMULET,		"Amulets" },
+	{ TYPE_LIGHT, 		"Lights" },
+};
+
+/*
+ * The names for the various kinds of quality
+ */
+quality_name_struct quality_values[SQUELCH_MAX] =
+{
+	{ SQUELCH_NONE,		"no squelch" },
+	{ SQUELCH_BAD,		"bad" },
+	{ SQUELCH_AVERAGE,	"average" },
+	{ SQUELCH_GOOD,		"good" },
+	{ SQUELCH_EXCELLENT_NO_HI,	"excellent with no high resists" },
+	{ SQUELCH_EXCELLENT_NO_SPL,	"excellent but not splendid" },
+	{ SQUELCH_ALL,		"everything except artifacts" },
+};
+
 byte squelch_level[TYPE_MAX];
 const size_t squelch_size = TYPE_MAX;
 
