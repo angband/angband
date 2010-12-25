@@ -69,12 +69,12 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_disturb_near,
 		OPT_disturb_detect,
 		OPT_disturb_state,
-		OPT_quick_messages,
 		OPT_auto_more,
-		OPT_ring_bell,
 		OPT_flush_failure,
 		OPT_flush_disturb,
 		OPT_notify_recharge,
+		OPT_NONE,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
@@ -135,7 +135,7 @@ struct option
 static const struct option options[OPT_MAX] =
 {
 { "rogue_like_commands", "Rogue-like commands",                         FALSE }, /* 0 */
-{ "quick_messages",      "Activate quick messages",                     TRUE },  /* 1 */
+{ NULL,                  NULL,                                          FALSE }, /* 1 */
 { "use_sound",           "Use sound",                                   FALSE }, /* 2 */
 { "pickup_detail",       "Be verbose when picking things up",           TRUE },  /* 3 */
 { "use_old_target",      "Use old target by default",                   FALSE }, /* 4 */
@@ -148,7 +148,7 @@ static const struct option options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 11 */
 { NULL,                  NULL,                                          FALSE }, /* 12 */
 { NULL,                  NULL,                                          FALSE }, /* 13 */
-{ "ring_bell",           "Audible bell (on errors, etc)",               TRUE },  /* 14 */
+{ NULL,                  NULL,                                          FALSE }, /* 14 */
 { "show_flavors",        "Show flavors in object descriptions",         FALSE },  /* 15 */
 { NULL,                  NULL,                                          FALSE }, /* 16 */
 { NULL,                  NULL,                                          FALSE }, /* 17 */

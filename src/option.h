@@ -41,14 +41,12 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
  * Option indexes (hard-coded by savefiles)
  */
 #define OPT_rogue_like_commands		0
-#define OPT_quick_messages			1
 #define OPT_use_sound               2
 #define OPT_pickup_detail			3
 #define OPT_use_old_target			4
 #define OPT_pickup_always			5
 #define OPT_pickup_inven			6
 
-#define OPT_ring_bell				14
 #define OPT_show_flavors			15
 
 #define OPT_disturb_move			20

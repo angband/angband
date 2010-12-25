@@ -1271,9 +1271,6 @@ void bell(cptr reason)
 		redraw_stuff();
 	}
 
-	/* Make a bell noise (if allowed) */
-	if (OPT(ring_bell)) Term_xtra(TERM_XTRA_NOISE, 0);
-
 	/* Flush the input (later!) */
 	flush();
 }
@@ -1304,18 +1301,7 @@ static void msg_flush(int x)
 	Term_putstr(x, 0, -1, a, "-more-");
 
 	if (!OPT(auto_more))
-	{
-		/* Get an acceptable keypress */
-		while (1)
-		{
-			char ch;
-			ch = inkey();
-			if (OPT(quick_messages)) break;
-			if ((ch == ESCAPE) || (ch == ' ')) break;
-			if ((ch == '\n') || (ch == '\r')) break;
-			bell("Illegal response to a 'more' prompt!");
-		}
-	}
+		anykey();
 
 	/* Clear the line */
 	Term_erase(0, 0, 255);
@@ -1357,7 +1343,6 @@ static void msg_print_aux(u16b type, cptr msg)
 	char buf[1024];
 	byte color;
 	int w, h;
-	int limit;
 
 
 	/* Obtain the size */
@@ -2520,16 +2505,7 @@ bool get_check(cptr prompt)
   
 	/* Prompt for it */
 	prt(buf, 0, 0);
-
-	/* Get an acceptable answer */
-	while (TRUE)
-	{
-		ke = inkey_ex();
-		if (OPT(quick_messages)) break;
-		if (ke.key == ESCAPE) break;
-		if (strchr("YyNn", ke.key)) break;
-		bell("Illegal response to a 'yes/no' question!");
-	}
+	ke = inkey_ex();
 
 	/* Kill the buttons */
 	button_kill('y');
@@ -2586,23 +2562,14 @@ char get_char(cptr prompt, const char *options, size_t len, char fallback)
 	prt(buf, 0, 0);
 
 	/* Get an acceptable answer */
-	while (TRUE)
-	{
-		key = inkey_ex().key;
+	key = inkey_ex().key;
 
-		/* Lowercase answer if necessary */
-		if (key >= 'A' && key <= 'Z') key += 32;
+	/* Lowercase answer if necessary */
+	if (key >= 'A' && key <= 'Z') key += 32;
 
-		/* See if key is in our options string */
-		if (strchr(options, key)) break;
-
-		/* If we want to escape, return the fallback */
-		if (key == ESCAPE || OPT(quick_messages)) 
-		{
-			key = fallback;
-			break;
-		}
-		bell("Illegal response!");
+	/* See if key is in our options string */
+	if (!strchr(options, key)) {
+		key = fallback;
 	}
 
 	/* Kill the buttons */
