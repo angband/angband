@@ -150,6 +150,14 @@ static void option_toggle_menu(const char *name, int page)
 	m->selections = "abcdefghijklmopqrsuvwxz";
 	m->flags = MN_DBL_TAP;
 
+	/* We add 10 onto the page amount to indicate we're at birth */
+	if (page == OPT_PAGE_BIRTH) {
+		m->prompt = "You can only modify these options at character birth.";
+		m->flags |= MN_NO_ACTION;
+	} else if (page == OPT_PAGE_BIRTH + 10) {
+		page -= 10;
+	}
+
 	/* for this particular menu */
 	m->title = name;
 
@@ -173,6 +181,14 @@ static void option_toggle_menu(const char *name, int page)
 	screen_load();
 
 	mem_free(m);
+}
+
+/**
+ * Edit birth options.
+ */
+void do_cmd_options_birth(void)
+{
+	option_toggle_menu("Birth options", OPT_PAGE_BIRTH + 10);
 }
 
 

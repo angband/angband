@@ -204,26 +204,6 @@ static const struct option options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 67 */
 { NULL,                  NULL,                                          FALSE }, /* 68 */
 { NULL,                  NULL,                                          FALSE }, /* 69 */
-{ "adult_maximize",      "Maximize effect of race/class bonuses",       TRUE },  /* 70 */
-{ "adult_randarts",      "Randomize the artifacts (except a few)",      FALSE }, /* 71 */
-{ "adult_ironman",       "Restrict the use of stairs/recall",           FALSE }, /* 72 */
-{ "adult_no_stores",     "Restrict the use of stores/home",             FALSE }, /* 73 */
-{ "adult_no_artifacts",  "Restrict creation of artifacts",              FALSE }, /* 74 */
-{ "adult_no_stacking",   "Don't stack objects on the floor",            FALSE }, /* 75 */
-{ "adult_no_preserve",   "Lose artifacts when leaving level",           FALSE }, /* 76 */
-{ "adult_no_stairs",     "Don't generate connected stairs",             FALSE }, /* 77 */
-{ "adult_no_feelings",   "Don't show level feelings",                   FALSE }, /* 78 */
-{ "adult_no_selling",    "Items always sell for 0 gold",                FALSE }, /* 79 */
-{ "adult_ai_sound",      "Adult: Monsters chase current location",      TRUE },  /* 70 */
-{ "adult_ai_smell",      "Adult: Monsters chase recent locations",      TRUE },  /* 81 */
-{ "adult_ai_packs",      "Adult: Monsters act smarter in groups",       TRUE },  /* 82 */
-{ "adult_ai_learn",      "Adult: Monsters learn from their mistakes",   FALSE }, /* 83 */
-{ "adult_ai_cheat",      "Adult: Monsters exploit players weaknesses",  FALSE }, /* 84 */
-{ "adult_ai_smart",      "Adult: Monsters behave more intelligently (broken)",  FALSE }, /* 85 */
-{ NULL,                  NULL,                                          FALSE }, /* 86 */
-{ NULL,                  NULL,                                          FALSE }, /* 87 */
-{ NULL,                  NULL,                                          FALSE }, /* 88 */
-{ NULL,                  NULL,                                          FALSE }, /* 89 */
 };
 
 
@@ -241,7 +221,6 @@ const char *option_desc(int opt)
 }
 
 bool option_is_birth(int opt) { return opt >= OPT_BIRTH && opt < (OPT_BIRTH + N_OPTS_BIRTH); }
-bool option_is_adult(int opt) { return opt >= OPT_ADULT && opt < (OPT_ADULT + N_OPTS_BIRTH); }
 bool option_is_cheat(int opt) { return opt >= OPT_CHEAT && opt < (OPT_CHEAT + N_OPTS_CHEAT); }
 bool option_is_score(int opt) { return opt >= OPT_SCORE && opt < (OPT_SCORE + N_OPTS_CHEAT); }
 
@@ -257,8 +236,6 @@ bool option_set(const char *name, bool on)
 		op_ptr->opt[opt] = on;
 		if (on && option_is_cheat(opt)) {
 			op_ptr->opt[opt + (OPT_CHEAT - OPT_SCORE)] = TRUE;
-		} else if (on && option_is_birth(opt)) {
-			op_ptr->opt[opt + (OPT_ADULT - OPT_BIRTH)] = TRUE;
 		}
 
 		return TRUE;

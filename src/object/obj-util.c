@@ -1234,7 +1234,7 @@ void wipe_o_list(void)
 		/* Preserve artifacts or mark them as lost in the history */
 		if (a_ptr) {
 			/* Preserve if dungeon creation failed, or preserve mode, and only artifacts not seen */
-			if ((!character_dungeon || !OPT(adult_no_preserve)) && !object_was_sensed(o_ptr))
+			if ((!character_dungeon || !OPT(birth_no_preserve)) && !object_was_sensed(o_ptr))
 			{
 				a_ptr->created = FALSE;
 
@@ -1920,7 +1920,7 @@ s16b floor_carry(int y, int x, object_type *j_ptr)
 	}
 
 	/* Option -- disallow stacking */
-	if (OPT(adult_no_stacking) && n) return (0);
+	if (OPT(birth_no_stacking) && n) return (0);
 
 	/* The stack is already too large */
 	if (n >= MAX_FLOOR_STACK)
@@ -2086,7 +2086,7 @@ void drop_near(object_type *j_ptr, int chance, int y, int x, bool verbose)
 			if (!comb) k++;
 
 			/* Option -- disallow stacking */
-			if (OPT(adult_no_stacking) && (k > 1)) continue;
+			if (OPT(birth_no_stacking) && (k > 1)) continue;
 			
 			/* Paranoia? */
 			if ((k + n) > MAX_FLOOR_STACK &&

@@ -42,7 +42,7 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
 	}
 
 	/* Ironman */
-	if (OPT(adult_ironman))
+	if (OPT(birth_ironman))
 	{
 		msg_print("Nothing happens!");
 		return;

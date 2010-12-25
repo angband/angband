@@ -152,7 +152,10 @@ enum
 	MN_CASELESS_TAGS = 0x08,
 
 	/* double tap (or keypress) for selection; single tap is cursor movement */
-	MN_DBL_TAP = 0x10
+	MN_DBL_TAP = 0x10,
+
+	/* no select events to be triggered */
+	MN_NO_ACTION = 0x20
 } menu_type_flags;
 
 

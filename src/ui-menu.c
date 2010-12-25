@@ -446,17 +446,16 @@ void menu_refresh(menu_type *menu)
 		Term_putstr(menu->boundary.col, menu->boundary.row,
 				loc->width, TERM_WHITE, menu->title);
 
+	if (menu->header)
+		Term_putstr(loc->col, loc->row - 1, loc->width,
+				TERM_WHITE, menu->header);
+
 	if (menu->prompt)
-		Term_putstr(loc->col, loc->row + loc->page_rows - 1,
+		Term_putstr(menu->boundary.col, loc->row + loc->page_rows,
 				loc->width, TERM_WHITE, menu->prompt);
 
 	if (menu->browse_hook && oid >= 0)
 		menu->browse_hook(oid, menu->menu_data, loc);
-
-
-	if (menu->header)
-		Term_putstr(loc->col, loc->row - 1, loc->width,
-				TERM_WHITE, menu->header);
 
 	menu->skin->display_list(menu, menu->cursor, &menu->top, loc);
 }
@@ -619,6 +618,7 @@ bool menu_handle_keypress(menu_type *menu, const ui_event_data *in,
 ui_event_data menu_select(menu_type *menu, int notify)
 {
 	ui_event_data in = EVENT_EMPTY;
+	bool no_act = (menu->flags & MN_NO_ACTION) ? TRUE : FALSE;
 
 	assert(menu->active.width != 0 && menu->active.page_rows != 0);
 
@@ -634,19 +634,16 @@ ui_event_data menu_select(menu_type *menu, int notify)
 		in = inkey_ex();
 
 		/* Handle mouse & keyboard commands */
-		if (in.type == EVT_MOUSE)
+		if (in.type == EVT_MOUSE) {
 			ignore = menu_handle_mouse(menu, &in, &out);
-		else if (in.type == EVT_KBRD)
-		{
-			if (menu->cmd_keys &&
+		} else if (in.type == EVT_KBRD) {
+			if (!no_act && menu->cmd_keys &&
 					strchr(menu->cmd_keys, in.key) &&
 					menu_handle_action(menu, &in))
 				continue;
 
 			ignore = menu_handle_keypress(menu, &in, &out);
-		}
-		else if (in.type == EVT_RESIZE)
-		{
+		} else if (in.type == EVT_RESIZE) {
 			menu_calc_size(menu);
 			if (menu->row_funcs->resize)
 				menu->row_funcs->resize(menu);
@@ -655,7 +652,7 @@ ui_event_data menu_select(menu_type *menu, int notify)
 		/* XXX should redraw menu here if cursor has moved */
 
 		/* If we've selected an item, then send that event out */
-		if (out.type == EVT_SELECT && menu_handle_action(menu, &out))
+		if (out.type == EVT_SELECT && !no_act && menu_handle_action(menu, &out))
 			continue;
 
 		/* Notify about the outgoing type */
@@ -762,10 +759,9 @@ static bool menu_calc_size(menu_type *menu)
 
 	if (menu->prompt)
 	{
-		if (menu->active.page_rows > 1)
+		if (menu->active.page_rows > 1) {
 			menu->active.page_rows--;
-		else
-		{
+		} else {
 			int offset = strlen(menu->prompt) + 2;
 			menu->active.col += offset;
 			menu->active.width -= offset;
@@ -932,3 +928,4 @@ void menu_dynamic_free(menu_type *m)
 	}
 	mem_free(m);
 }
+

@@ -511,7 +511,7 @@ void wr_randarts(void)
 {
 	size_t i, j;
 
-	if (!OPT(adult_randarts))
+	if (!OPT(birth_randarts))
 		return;
 
 	wr_u16b(z_info->a_max);

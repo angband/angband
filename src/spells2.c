@@ -410,7 +410,7 @@ bool restore_level(void)
 void set_recall(void)
 {
 	/* Ironman */
-	if (OPT(adult_ironman) && !p_ptr->total_winner)
+	if (OPT(birth_ironman) && !p_ptr->total_winner)
 	{
 		msg_print("Nothing happens.");
 		return;

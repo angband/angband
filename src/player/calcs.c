@@ -1567,7 +1567,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		add = state->stat_add[i];
 
 		/* Maximize mode */
-		if (OPT(adult_maximize))
+		if (OPT(birth_maximize))
 		{
 			/* Modify the stats for race/class */
 			add += (rp_ptr->r_adj[i] + cp_ptr->c_adj[i]);

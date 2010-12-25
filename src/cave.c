@@ -3120,7 +3120,7 @@ void update_flow(void)
 
 
 	/* Hack -- disabled */
-	if (!OPT(adult_ai_sound)) return;
+	if (!OPT(birth_ai_sound)) return;
 
 
 	/*** Cycle the flow ***/

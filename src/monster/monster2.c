@@ -2664,7 +2664,7 @@ void update_smart_learn(int m_idx, int what)
 		wieldeds_notice_flag(attack_table[what].flag);
 
 	/* Not allowed to learn */
-	if (!OPT(adult_ai_learn)) return;
+	if (!OPT(birth_ai_learn)) return;
 
 	/* Too stupid to learn anything */
 	if (rf_has(r_ptr->flags, RF_STUPID)) return;
