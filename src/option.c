@@ -49,13 +49,13 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_center_player,
 		OPT_show_flavors,
 		OPT_view_yellow_light,
-		OPT_view_bright_light,
-		OPT_view_granite_light,
-		OPT_view_special_light,
-		OPT_view_perma_grids,
-		OPT_view_torch_grids,
 		OPT_animate_flicker,
 		OPT_purple_uniques,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
@@ -172,8 +172,8 @@ static const struct option options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 35 */
 { NULL,                  NULL,                                          FALSE }, /* 36 */
 { NULL,                  NULL,                                          FALSE }, /* 37 */
-{ "view_perma_grids",    "Map remembers all perma-lit grids",           TRUE },  /* 38 */
-{ "view_torch_grids",    "Map remembers all torch-lit grids",           TRUE },  /* 39 */
+{ NULL,                  NULL,                                          FALSE }, /* 38 */
+{ NULL,                  NULL,                                          FALSE }, /* 39 */
 { NULL,                  NULL,                                          TRUE }, /* 40 */
 { NULL,                  NULL,                                          TRUE }, /* 41 */
 { NULL,                  NULL,                                          FALSE }, /* 42 */
@@ -195,9 +195,9 @@ static const struct option options[OPT_MAX] =
 { NULL,                  NULL,                                          FALSE }, /* 58 */
 { NULL,                  NULL,                                          FALSE }, /* 59 */
 { "view_yellow_light",   "Use special colors for torch light",          FALSE }, /* 60 */
-{ "view_bright_light",   "Use special colors for field of view",        TRUE },  /* 61 */
-{ "view_granite_light",  "Use special colors for wall grids",           TRUE }, /* 62 */
-{ "view_special_light",  "Use special colors for floor grids",          TRUE },  /* 63 */
+{ NULL,                  NULL,                                          FALSE }, /* 61 */
+{ NULL,                  NULL,                                          FALSE }, /* 62 */
+{ NULL,                  NULL,                                          FALSE }, /* 63 */
 { "easy_open",           "Open/Disarm/Close without direction",         TRUE }, /* 64 */
 { "easy_alter",          "Open/Disarm doors/traps on movement",         TRUE  }, /* 65 */
 { "animate_flicker",     "Animate multi-colored monsters and items",    FALSE }, /* 66 */

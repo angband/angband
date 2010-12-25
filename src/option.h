@@ -57,16 +57,10 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_disturb_state			23
 #define OPT_disturb_minor			24
 
-#define OPT_view_perma_grids		38
-#define OPT_view_torch_grids		39
-
 #define OPT_flush_failure			52
 #define OPT_flush_disturb			53
 
 #define OPT_view_yellow_light		60
-#define OPT_view_bright_light		61
-#define OPT_view_granite_light		62
-#define OPT_view_special_light		63
 #define OPT_easy_open 				64
 #define OPT_easy_alter 				65
 #define OPT_animate_flicker         66
