@@ -76,9 +76,4 @@ bool flags_set      (bitflag *flags, const size_t size, ...);
 void flags_init     (bitflag *flags, const size_t size, ...);
 bool flags_mask     (bitflag *flags, const size_t size, ...);
 
-bool flag_set_pval  (bitflag **flags, const size_t size, int flag, int pval);
-bool flag_unset_pval(bitflag **flags, const size_t size, int flag, int pval);
-bool flag_test_pval (bitflag **flags, const size_t size, int flag, int pval);
-int  flag_test_all_pvals(bitflag **flags, const size_t size, int flag);
-
 #endif
