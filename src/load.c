@@ -288,6 +288,82 @@ int rd_randomizer(void)
 }
 
 
+/*
+ * Read options, version 2.
+ */
+int rd_options_2(void)
+{
+	int i, n;
+
+	byte b;
+
+	u16b tmp16u;
+
+	u32b window_flag[ANGBAND_TERM_MAX];
+	u32b window_mask[ANGBAND_TERM_MAX];
+
+
+	/*** Special info */
+
+	/* Read "delay_factor" */
+	rd_byte(&b);
+	op_ptr->delay_factor = b;
+
+	/* Read "hitpoint_warn" */
+	rd_byte(&b);
+	op_ptr->hitpoint_warn = b;
+
+	/* Read lazy movement delay */
+	rd_u16b(&tmp16u);
+	lazymove_delay = (tmp16u < 1000) ? tmp16u : 0;
+
+
+	/*** Normal Options ***/
+
+	while (1) {
+		byte value;
+		char name[20];
+		rd_string(name, sizeof name);
+
+		if (!name[0])
+			break;
+
+		rd_byte(&value);
+		option_set(name, !!value);
+	}
+
+	/*** Window Options ***/
+
+	for (n = 0; n < ANGBAND_TERM_MAX; n++)
+		rd_u32b(&window_flag[n]);
+	for (n = 0; n < ANGBAND_TERM_MAX; n++)
+		rd_u32b(&window_mask[n]);
+
+	/* Analyze the options */
+	for (n = 0; n < ANGBAND_TERM_MAX; n++)
+	{
+		/* Analyze the options */
+		for (i = 0; i < 32; i++)
+		{
+			/* Process valid flags */
+			if (window_flag_desc[i])
+			{
+				/* Blank invalid flags */
+				if (!(window_mask[n] & (1L << i)))
+				{
+					window_flag[n] &= ~(1L << i);
+				}
+			}
+		}
+	}
+
+	/* Set up the subwindows */
+	subwindows_set_flags(window_flag, ANGBAND_TERM_MAX);
+
+	return 0;
+}
+
+
 
 /*
  * Read options
@@ -301,7 +377,7 @@ int rd_randomizer(void)
  * The window options are stored in the same way, but note that each
  * window gets 32 options, and their order is fixed by certain defines.
  */
-int rd_options(void)
+int rd_options_1(void)
 {
 	int i, n;
 
@@ -311,6 +387,7 @@ int rd_options(void)
 
 	u32b flag[8];
 	u32b mask[8];
+
 	u32b window_flag[ANGBAND_TERM_MAX];
 	u32b window_mask[ANGBAND_TERM_MAX];
 

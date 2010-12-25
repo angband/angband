@@ -125,14 +125,14 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 };
 
 
-typedef struct
+struct option
 {
 	const char *name;
 	const char *description;
 	bool normal;
-} option_entry;
+};
 
-static option_entry options[OPT_MAX] =
+static const struct option options[OPT_MAX] =
 {
 { "rogue_like_commands", "Rogue-like commands",                         FALSE }, /* 0 */
 { "quick_messages",      "Activate quick messages",                     TRUE },  /* 1 */

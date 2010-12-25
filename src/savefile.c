@@ -50,7 +50,7 @@ static const struct {
 	u32b version;	
 } savers[] = {
 	{ "rng", wr_randomizer, 1 },
-	{ "options", wr_options, 1 },
+	{ "options", wr_options, 2 },
 	{ "messages", wr_messages, 1 },
 	{ "monster memory", wr_monster_memory, 1 },
 	{ "object memory", wr_object_memory, 1 },
@@ -78,7 +78,8 @@ static const struct {
 	u32b version;
 } loaders[] = {
 	{ "rng", rd_randomizer, 1 },
-	{ "options", rd_options, 1 },
+	{ "options", rd_options_1, 1 },
+	{ "options", rd_options_2, 2 },
 	{ "messages", rd_messages, 1 },
 	{ "monster memory", rd_monster_memory, 1 },
 	{ "object memory", rd_object_memory, 1 },
@@ -398,7 +399,7 @@ static bool try_load(ang_file *f)
 	while (TRUE)
 	{
 		size_t i;
-		bool (*loader)(u32b version) = NULL;
+		int (*loader)(void) = NULL;
 
 		/* Load in the next header */
 		size_t size = file_read(f, (char *)savefile_head, SAVEFILE_HEAD_SIZE);
@@ -452,7 +453,7 @@ static bool try_load(ang_file *f)
 		}
 
 		/* Try loading */
-		if (loader(block_version) != 0) {
+		if (loader() != 0) {
 			note("Savefile is corrupted.");
 			mem_free(buffer);
 			return FALSE;
