@@ -499,13 +499,18 @@ static enum parser_error parse_k_d(struct parser *p) {
 
 static enum parser_error parse_k_l(struct parser *p) {
 	struct object_kind *k = parser_priv(p);
-	char *s = string_make(parser_getstr(p, "flags"));
+	char *s;
 	char *t;
 	assert(k);
 
 	k->pval[k->num_pvals] = parser_getrand(p, "pval");
 
+	if (!parser_hasval(p, "flags"))
+		return PARSE_ERROR_NONE;
+
+	s = string_make(parser_getstr(p, "flags"));
 	t = strtok(s, " |");
+
 	while (t) {
 		if (grab_flag(k->pval_flags[k->num_pvals], OF_SIZE, k_info_flags, t)
 			&& grab_flag(k->flags, OF_SIZE, k_info_flags, t))
