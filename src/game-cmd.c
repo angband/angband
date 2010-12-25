@@ -93,7 +93,7 @@ static struct
 	{ CMD_REFILL, { arg_ITEM }, do_cmd_refill, FALSE, 0 },
 	{ CMD_FIRE, { arg_ITEM, arg_TARGET }, do_cmd_fire, FALSE, 0 },
 	{ CMD_THROW, { arg_ITEM, arg_TARGET }, do_cmd_throw, FALSE, 0 },
-	{ CMD_DESTROY, { arg_ITEM, arg_NUMBER }, do_cmd_destroy, FALSE, 0 },
+	{ CMD_DESTROY, { arg_ITEM }, do_cmd_destroy, FALSE, 0 },
 	{ CMD_ENTER_STORE, { arg_NONE }, do_cmd_store, FALSE, 0 },
 	{ CMD_INSCRIBE, { arg_ITEM, arg_STRING }, do_cmd_inscribe, FALSE, 0 },
 	{ CMD_STUDY_SPELL, { arg_CHOICE }, do_cmd_study_spell, FALSE, 0 },

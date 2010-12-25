@@ -23,9 +23,6 @@
 #include "squelch.h"
 
 
-
-
-
 typedef struct
 {
 	squelch_type_t squelch_type;
@@ -437,6 +434,10 @@ bool squelch_item_ok(const object_type *o_ptr)
 	/* Don't squelch stuff inscribed not to be destroyed (!k) */
 	if (check_for_inscrip(o_ptr, "!k") || check_for_inscrip(o_ptr, "!*"))
 		return FALSE;
+
+	/* Do squelch individual objects that marked ignore */
+	if (o_ptr->ignore)
+		return TRUE;
 
 	/* Auto-squelch dead chests */
 	if (o_ptr->tval == TV_CHEST && o_ptr->pval == 0)

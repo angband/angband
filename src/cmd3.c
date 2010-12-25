@@ -229,129 +229,57 @@ void wield_item(object_type *o_ptr, int item, int slot)
  */
 void do_cmd_destroy(cmd_code code, cmd_arg args[])
 {
-	int item, amt;
-
 	object_type *o_ptr;
-
-	object_type destroyed_obj;
-
-	char o_name[120];
-
-	item = args[0].item;
-	amt = args[1].number;
+	int item = args[0].item;
 
 	if (!item_is_available(item, NULL, USE_INVEN | USE_EQUIP | USE_FLOOR))
 	{
-		msg_print("You do not have that item to destroy it.");
+		msg_print("You do not have that item to ignore it.");
 		return;
 	}
 
 	o_ptr = object_from_item_idx(item);
 
-	/* Can't destroy cursed items we're wielding. */
-	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
-	{
-		msg_print("You cannot destroy the cursed item.");
-		return;
-	}	
+	if ((item >= INVEN_WIELD) && cursed_p(o_ptr)) {
+		msg_print("You cannot ignore cursed items.");
+	} else {	
+		char o_name[80];
 
-	/* Describe the destroyed object by taking a copy with the right "amt" */
-	object_copy_amt(&destroyed_obj, o_ptr, amt);
-	object_desc(o_name, sizeof(o_name), &destroyed_obj,
-				ODESC_PREFIX | ODESC_FULL);
+		object_desc(o_name, sizeof o_name, o_ptr, ODESC_PREFIX | ODESC_FULL);
+		message_format(MSG_DESTROY, 0, "Ignoring %s.", o_name);
 
-	/* Artifacts cannot be destroyed */
-	if (artifact_p(o_ptr))
-	{
-		/* Message */
-		msg_format("You cannot destroy %s.", o_name);
-		object_notice_indestructible(o_ptr);
-
-		/* Combine the pack */
-		p_ptr->notice |= (PN_COMBINE);
-
-		/* Redraw stuff */
-		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
-
-		/* Done */
-		return;
-	}
-
-	/* Message */
-	message_format(MSG_DESTROY, 0, "You destroy %s.", o_name);
-
-	/* Reduce the charges of rods/wands/staves */
-	reduce_charges(o_ptr, amt);
-
-	/* Eliminate the item (from the pack) */
-	if (item >= 0)
-	{
-		inven_item_increase(item, -amt);
-		inven_item_describe(item);
-		inven_item_optimize(item);
-	}
-
-	/* Eliminate the item (from the floor) */
-	else
-	{
-		floor_item_increase(0 - item, -amt);
-		floor_item_describe(0 - item);
-		floor_item_optimize(0 - item);
+		o_ptr->ignore = TRUE;
+		p_ptr->notice |= PN_SQUELCH;
 	}
 }
 
-
 void textui_cmd_destroy(void)
 {
-	int item, amt;
-
+	int item;
 	object_type *o_ptr;
-
-	object_type obj_to_destroy;
 
 	char result;
 	char o_name[120];
 	char out_val[160];
 
-	cptr q, s;
-
 	/* Get an item */
-	q = "Destroy which item? ";
-	s = "You have nothing to destroy.";
-	if (!get_item(&item, q, s, CMD_DESTROY, (USE_INVEN | USE_EQUIP | USE_FLOOR))) return;
+	const char *q = "Ignore which item? ";
+	const char *s = "You have nothing to ignore.";
+	if (!get_item(&item, q, s, CMD_DESTROY, USE_INVEN | USE_EQUIP | USE_FLOOR))
+		return;
 
 	o_ptr = object_from_item_idx(item);
 
-	/* Ask if player would prefer squelching instead of destruction */
-
-	/* Get a quantity */
-	amt = get_quantity(NULL, o_ptr->number);
-	if (amt <= 0) return;
-
 	/* Describe the destroyed object by taking a copy with the right "amt" */
-	object_copy_amt(&obj_to_destroy, o_ptr, amt);
-	object_desc(o_name, sizeof(o_name), &obj_to_destroy,
-				ODESC_PREFIX | ODESC_FULL);
+	object_desc(o_name, sizeof o_name, o_ptr, ODESC_PREFIX | ODESC_FULL);
+	strnfmt(out_val, sizeof out_val, "Really ignore %s? ", o_name);
 
-	/* Verify destruction */
-	strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", o_name);
-	
 	result = get_char(out_val, "yns", 3, 'n');
-
-	if (result == 'y')
-	{
+	if (result == 'y') {
 		cmd_insert(CMD_DESTROY);
 		cmd_set_arg_item(cmd_get_top(), 0, item);
-		cmd_set_arg_number(cmd_get_top(), 1, amt);
-	}
-	else if (result == 's' && squelch_interactive(o_ptr))
-	{
-		p_ptr->notice |= PN_SQUELCH;
-
-		/* If the item is not equipped, we can rely on it being dropped and */
-		/* ignored, otherwise we should continue on to check if we should */
-		/* still destroy it. */
-		if (item < INVEN_WIELD) return;
+	} else if (result == 's') {
+		squelch_interactive(o_ptr);
 	}
 }
 
