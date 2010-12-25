@@ -1460,6 +1460,8 @@ static bool item_tester_restore(const struct object *o)
  */
 bool restore_item(void)
 {
+	char o_name[80];
+
 	int item;
 	object_type *o;
 
@@ -1484,6 +1486,11 @@ bool restore_item(void)
 		o->to_h = MAX(o->to_h, 0);
 		o->to_a = MAX(o->to_a, 0);
 	}
+
+	object_desc(o_name, sizeof(o_name), o, ODESC_BASE);
+	msg_format("%s %s is mended.",
+	           ((item >= 0) ? "Your" : "The"), o_name,
+	           ((o->number > 1) ? "" : "s"));
 
 	return TRUE;
 }
