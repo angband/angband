@@ -381,6 +381,67 @@ void object_flags_known(const object_type *o_ptr, bitflag flags[OF_SIZE])
 		of_union(flags, e_info[o_ptr->name2].flags);
 }
 
+/*
+ * Obtain the "pval_flags" for an item
+ */
+void object_pval_flags(const object_type *o_ptr, bitflag flags[MAX_PVALS][OF_SIZE])
+{
+	int i;
+	object_kind *k_ptr;
+
+	k_ptr = o_ptr->kind;
+
+	if (!o_ptr->kind)
+		return;
+
+	for (i = 0; i < MAX_PVALS; i++) {
+		of_wipe(flags[i]);
+
+		/* Obtain kind flags */
+		of_union(flags[i], k_ptr->pval_flags[i]);
+
+		/* Obtain artifact flags */
+		if (o_ptr->name1)
+		{
+			artifact_type *a_ptr = &a_info[o_ptr->name1];
+
+			of_union(flags[i], a_ptr->pval_flags[i]);
+		}
+
+		/* Obtain ego flags */
+		if (o_ptr->name2)
+		{
+			ego_item_type *e_ptr = &e_info[o_ptr->name2];
+
+			of_union(flags[i], e_ptr->pval_flags[i]);
+		}
+
+		/* Obtain the object's flags */
+		of_union(flags[i], o_ptr->pval_flags[i]);
+	}
+}
+
+
+/*
+ * Obtain the "pval_flags" for an item which are known to the player
+ */
+void object_pval_flags_known(const object_type *o_ptr, bitflag flags[MAX_PVALS][OF_SIZE])
+{
+	int i;
+
+	object_pval_flags(o_ptr, flags);
+
+	for (i = 0; i < MAX_PVALS; i++) {
+		of_inter(flags[i], o_ptr->known_flags);
+
+		if (object_flavor_is_aware(o_ptr))
+			of_union(flags[i], k_info[o_ptr->k_idx].pval_flags[i]);
+
+		if (o_ptr->name2 && easy_know(o_ptr))
+			of_union(flags[i], e_info[o_ptr->name2].pval_flags[i]);
+	}
+}
+
 
 /*
  * Convert an inventory index into a one character label.

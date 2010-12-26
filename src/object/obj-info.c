@@ -261,35 +261,40 @@ static bool describe_curses(textblock *tb, const object_type *o_ptr,
  * Describe stat modifications.
  */
 static bool describe_stats(textblock *tb, const object_type *o_ptr,
-		const bitflag flags[OF_SIZE], oinfo_detail_t mode)
+		bitflag flags[MAX_PVALS][OF_SIZE], oinfo_detail_t mode)
 {
 	cptr descs[N_ELEMENTS(pval_flags)];
-	size_t count;
+	size_t count, i;
 	bool full = mode & OINFO_FULL;
 	bool dummy = mode & OINFO_DUMMY;
+	bool search = FALSE;
 
-	if (!o_ptr->pval[DEFAULT_PVAL] && !dummy)
+	if (!o_ptr->num_pvals && !dummy)
 		return FALSE;
 
-	count = info_collect(tb, pval_flags, N_ELEMENTS(pval_flags), flags, descs);
+	for (i = 0; i < o_ptr->num_pvals; i++) {
+		count = info_collect(tb, pval_flags, N_ELEMENTS(pval_flags), flags[i], descs);
 
-	if (count)
-	{
-		if ((object_pval_is_visible(o_ptr) || full) && !dummy)
-			textblock_append_c(tb, (o_ptr->pval[DEFAULT_PVAL] > 0) ? TERM_L_GREEN : TERM_RED,
-					"%+i ", o_ptr->pval[DEFAULT_PVAL]);
-		else
-			textblock_append(tb, "Affects your ");
+		if (count)
+		{
+			if ((object_pval_is_visible(o_ptr) || full) && !dummy)
+				textblock_append_c(tb, (o_ptr->pval[i] > 0) ? TERM_L_GREEN : TERM_RED,
+					"%+i ", o_ptr->pval[i]);
+			else
+				textblock_append(tb, "Affects your ");
 
-		info_out_list(tb, descs, count);
+			info_out_list(tb, descs, count);
+		}
+		if (of_has(flags[i], OF_SEARCH))
+			search = TRUE;
 	}
 
-	if (of_has(flags, OF_SEARCH))
+	if (search)
 	{
 		if ((object_pval_is_visible(o_ptr) || full) && !dummy)
 		{
-			textblock_append_c(tb, (o_ptr->pval[DEFAULT_PVAL] > 0) ? TERM_L_GREEN : TERM_RED,
-				"%+i%% ", o_ptr->pval[DEFAULT_PVAL] * 5);
+			textblock_append_c(tb, (o_ptr->pval[which_pval(o_ptr, OF_SEARCH)] > 0) ? TERM_L_GREEN : TERM_RED,
+				"%+i%% ", o_ptr->pval[which_pval(o_ptr, OF_SEARCH)] * 5);
 			textblock_append(tb, "to searching.\n");
 		}
 		else if (count)
@@ -1261,6 +1266,7 @@ bool describe_ego(textblock *tb, const object_type *o_ptr)
 static textblock *object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 {
 	bitflag flags[OF_SIZE];
+	bitflag pval_flags[MAX_PVALS][OF_SIZE];
 	bool something = FALSE;
 	bool known = object_is_known(o_ptr);
 
@@ -1272,10 +1278,13 @@ static textblock *object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 	textblock *tb = textblock_new();
 
 	/* Grab the object flags */
-	if (full)
+	if (full) {
 		object_flags(o_ptr, flags);
-	else
+		object_pval_flags(o_ptr, pval_flags);
+	} else {
 		object_flags_known(o_ptr, flags);
+		object_pval_flags_known(o_ptr, pval_flags);
+	}
 
 	if (subjective) describe_origin(tb, o_ptr);
 	if (!terse) describe_flavor_text(tb, o_ptr);
@@ -1287,7 +1296,7 @@ static textblock *object_info_out(const object_type *o_ptr, oinfo_detail_t mode)
 	}
 
 	if (describe_curses(tb, o_ptr, flags)) something = TRUE;
-	if (describe_stats(tb, o_ptr, flags, mode)) something = TRUE;
+	if (describe_stats(tb, o_ptr, pval_flags, mode)) something = TRUE;
 	if (describe_slays(tb, flags, o_ptr->tval)) something = TRUE;
 	if (describe_immune(tb, flags)) something = TRUE;
 	if (describe_ignores(tb, flags)) something = TRUE;

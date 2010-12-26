@@ -184,6 +184,8 @@ void flavor_init(void);
 void reset_visuals(bool load_prefs);
 void object_flags(const object_type *o_ptr, bitflag flags[OF_SIZE]);
 void object_flags_known(const object_type *o_ptr, bitflag flags[OF_SIZE]);
+void object_pval_flags(const object_type *o_ptr, bitflag flags[MAX_PVALS][OF_SIZE]);
+void object_pval_flags_known(const object_type *o_ptr, bitflag flags[MAX_PVALS][OF_SIZE]);
 char index_to_label(int i);
 s16b label_to_inven(int c);
 s16b label_to_equip(int c);
