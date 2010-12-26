@@ -522,6 +522,9 @@ static enum parser_error parse_k_l(struct parser *p) {
 	}
 
 	k->num_pvals++;
+	if (k->num_pvals > MAX_PVALS)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+
 	mem_free(s);
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
@@ -719,6 +722,9 @@ static enum parser_error parse_a_l(struct parser *p) {
 	}
 
 	a->num_pvals++;
+	if (a->num_pvals > MAX_PVALS)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+
 	mem_free(s);
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }
@@ -1189,6 +1195,9 @@ static enum parser_error parse_e_l(struct parser *p) {
 	}
 
 	e->num_pvals++;
+	if (e->num_pvals > MAX_PVALS)
+		return PARSE_ERROR_TOO_MANY_ENTRIES;
+
 	mem_free(s);
 	return t ? PARSE_ERROR_INVALID_FLAG : PARSE_ERROR_NONE;
 }

@@ -167,5 +167,6 @@ static struct test tests[] = {
 	{ "m0", test_m0 },
 	{ "f0", test_f0 },
 	{ "d0", test_d0 },
+	{ "l0", test_l0 },
 	{ NULL, NULL }
 };
