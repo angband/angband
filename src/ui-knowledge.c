@@ -880,16 +880,20 @@ static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
 					*cur_char_ptr = c;
 
 					/* Move the frame */
-					if ((ddx[d] < 0) && *char_left_ptr > MAX(0, (int)c - frame_left))
+					if (ddx[d] < 0 &&
+							*char_left_ptr > MAX(0, (int)c - frame_left))
 						(*char_left_ptr)--;
-					if ((ddx[d] > 0) && *char_left_ptr + eff_width <=
-														MIN(255, (int)c + frame_right))
+					if ((ddx[d] > 0) &&
+							*char_left_ptr + (width / tile_width) <=
+									MIN(255, (int)c + frame_right))
 					(*char_left_ptr)++;
 
-					if ((ddy[d] < 0) && *attr_top_ptr > MAX(0, (int)a - frame_top))
+					if (ddy[d] < 0 &&
+							*attr_top_ptr > MAX(0, (int)a - frame_top))
 						(*attr_top_ptr)--;
-					if ((ddy[d] > 0) && *attr_top_ptr + eff_height <=
-													MIN(255, (int)a + frame_bottom))
+					if (ddy[d] > 0 &&
+							*attr_top_ptr + (height / tile_height) <=
+									MIN(255, (int)a + frame_bottom))
 						(*attr_top_ptr)++;
 
 					/* We need to always eat the input even if it is clipped,
