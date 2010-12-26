@@ -370,7 +370,6 @@ static const struct {
 } num_to_text[] = {
 	{ 0, "rogue_like_commands" },
 	{ 2, "use_sound" },
-	{ 3, "pickup_detail" },
 	{ 4, "use_old_target" },
 	{ 5, "pickup_always" },
 	{ 6, "pickup_inven" },

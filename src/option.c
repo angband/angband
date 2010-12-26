@@ -30,11 +30,11 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_use_old_target,
 		OPT_pickup_always,
 		OPT_pickup_inven,
-		OPT_pickup_detail,
 		OPT_easy_open,
 		OPT_mouse_movement,
 		OPT_mouse_buttons,
 		OPT_xchars_to_file,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
@@ -136,7 +136,7 @@ static const struct option options[OPT_MAX] =
 {
 { "rogue_like_commands", "Rogue-like commands",                         FALSE }, /* 0 */
 { "use_sound",           "Use sound",                                   FALSE }, /* 1 */
-{ "pickup_detail",       "Be verbose when picking things up",           TRUE },  /* 2 */
+{ NULL,                  NULL,                                          FALSE }, /* 2 */
 { "use_old_target",      "Use old target by default",                   FALSE }, /* 3 */
 { "pickup_always",       "Always pickup items",                         FALSE }, /* 4 */
 { "pickup_inven",        "Always pickup items matching inventory",      TRUE },  /* 5 */
@@ -156,7 +156,7 @@ static const struct option options[OPT_MAX] =
 { "auto_more",           "Automatically clear '-more-' prompts",        FALSE }, /* 19 */
 { "hp_changes_color",    "Player color indicates low hit points",       FALSE }, /* 20 */
 { "mouse_movement",      "Allow mouse clicks to move the player",       FALSE }, /* 21 */
-{ "mouse_buttons",        "Show mouse status line buttons",             FALSE }, /* 22 */
+{ "mouse_buttons",       "Show mouse status line buttons",             FALSE }, /* 22 */
 { "notify_recharge",     "Notify on object recharge",                   FALSE }, /* 23 */
 { NULL,                  NULL,                                          FALSE }, /* 24 */
 { NULL,                  NULL,                                          FALSE }, /* 25 */

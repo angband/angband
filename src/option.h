@@ -46,7 +46,6 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
  */
 #define OPT_rogue_like_commands		0
 #define OPT_use_sound               1
-#define OPT_pickup_detail			2
 #define OPT_use_old_target			3
 #define OPT_pickup_always			4
 #define OPT_pickup_inven			5

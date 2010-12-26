@@ -359,9 +359,7 @@ static void py_pickup_aux(int o_idx, bool msg)
  * auto-pickup option is on, Otherwise, store objects on
  * floor in an array, and tally both how many there are and can be picked up.
  *
- * If not picking up anything, indicate objects on the floor.  Show more
- * details if the "OPT(pickup_detail)" option is set.  Do the same thing if we
- * don't have room for anything.
+ * If not picking up anything, indicate objects on the floor.
  *
  * [This paragraph is not true, intentional?]
  * If we are picking up objects automatically, and have room for at least
@@ -493,44 +491,24 @@ byte py_pickup(int pickup)
 		}
 		else
 		{
-			/* Optionally, display more information about floor items */
-			if (OPT(pickup_detail))
-			{
-				ui_event_data e;
+			ui_event_data e;
 
-				if (!can_pickup)	p = "have no room for the following objects";
-				else if (blind)     p = "feel something on the floor";
+			if (!can_pickup)	p = "have no room for the following objects";
+			else if (blind)     p = "feel something on the floor";
 
-				/* Scan all marked objects in the grid */
-				floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x03);
+			/* Scan all marked objects in the grid */
+			floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x03);
 
-				/* Save screen */
-				screen_save();
+			screen_save();
+			prt(format("You %s: ", p), 0, 0);
+			show_floor(floor_list, floor_num, (OLIST_WEIGHT));
 
-				/* Display objects on the floor */
-				show_floor(floor_list, floor_num, (OLIST_WEIGHT));
+			/* Wait for it.  Use key as next command. */
+			e = inkey_ex();
+			Term_event_push(&e);
 
-				/* Display prompt */
-				prt(format("You %s: ", p), 0, 0);
-
-				/* Wait for it.  Use key as next command. */
-				e = inkey_ex();
-				Term_event_push(&e);
-
-				/* Restore screen */
-				screen_load();
-			}
-
-			/* Show less detail */
-			else
-			{
-				message_flush();
-
-				if (!can_pickup)
-					msg_print("You have no room for any of the items on the floor.");
-				else
-					msg_format("You %s a pile of %d items.", (blind ? "feel" : "see"), floor_num);
-			}
+			/* Restore screen */
+			screen_load();
 		}
 
 		/* Done */
