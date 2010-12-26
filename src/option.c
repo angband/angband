@@ -25,41 +25,21 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 {
 	/* Interface */
 	{
-		OPT_use_sound,
 		OPT_rogue_like_commands,
 		OPT_use_old_target,
 		OPT_pickup_always,
 		OPT_pickup_inven,
 		OPT_easy_open,
-		OPT_mouse_movement,
-		OPT_mouse_buttons,
-		OPT_xchars_to_file,
-		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE,
-	},
-
-	/* Display */
-	{
-		OPT_hp_changes_color,
 		OPT_center_player,
-		OPT_show_flavors,
 		OPT_view_yellow_light,
+		OPT_hp_changes_color,
 		OPT_animate_flicker,
 		OPT_purple_uniques,
-		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE,
-		OPT_NONE,
+		OPT_show_flavors,
+		OPT_mouse_movement,
+		OPT_mouse_buttons,
+		OPT_use_sound,
+		OPT_xchars_to_file,
 		OPT_NONE,
 	},
 
@@ -134,7 +114,7 @@ struct option
 
 static const struct option options[OPT_MAX] =
 {
-{ "rogue_like_commands", "Rogue-like commands",                         FALSE }, /* 0 */
+{ "rogue_like_commands", "Use the roguelike command keyset",            FALSE }, /* 0 */
 { "use_sound",           "Use sound",                                   FALSE }, /* 1 */
 { NULL,                  NULL,                                          FALSE }, /* 2 */
 { "use_old_target",      "Use old target by default",                   FALSE }, /* 3 */
@@ -147,16 +127,16 @@ static const struct option options[OPT_MAX] =
 { "disturb_state",       "Disturb whenever player state changes",       TRUE },  /* 10 */
 { NULL,                  NULL,                                          FALSE }, /* 11 */
 { NULL,                  NULL,                                          FALSE }, /* 12 */
-{ "view_yellow_light",   "Use special colors for torch light",          FALSE }, /* 13 */
-{ "easy_open",           "Open/Disarm/Close without direction",         TRUE }, /* 14 */
-{ "animate_flicker",     "Animate multi-colored monsters and items",    FALSE }, /* 15 */
+{ "view_yellow_light",   "Color: Illuminate torchlight in yellow",      FALSE }, /* 13 */
+{ "easy_open",           "Open/disarm/close without direction",         TRUE }, /* 14 */
+{ "animate_flicker",     "Color: Shimmer multi-colored things",         FALSE }, /* 15 */
 { "center_player",       "Center map continuously",                     FALSE }, /* 16 */
-{ "purple_uniques",      "Show unique monsters in a special colour",    FALSE }, /* 17 */
+{ "purple_uniques",      "Color: Show unique monsters in purple",       FALSE }, /* 17 */
 { "xchars_to_file",      "Allow accents in output files",               FALSE }, /* 18 */
 { "auto_more",           "Automatically clear '-more-' prompts",        FALSE }, /* 19 */
-{ "hp_changes_color",    "Player color indicates low hit points",       FALSE }, /* 20 */
+{ "hp_changes_color",    "Color: Player color indicates % hit points",  FALSE }, /* 20 */
 { "mouse_movement",      "Allow mouse clicks to move the player",       FALSE }, /* 21 */
-{ "mouse_buttons",       "Show mouse status line buttons",             FALSE }, /* 22 */
+{ "mouse_buttons",       "Show mouse status line buttons",              FALSE }, /* 22 */
 { "notify_recharge",     "Notify on object recharge",                   FALSE }, /* 23 */
 { NULL,                  NULL,                                          FALSE }, /* 24 */
 { NULL,                  NULL,                                          FALSE }, /* 25 */
