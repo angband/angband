@@ -20,17 +20,22 @@
 #include "squelch.h"
 #include "tvalsval.h"
 
-/* Work out which pval governs a particular flag */
+/* Work out which pval governs a particular flag.
+ * We assume that we are only called if this pval and flag exist and are
+ * known */
 int which_pval(const object_type *o_ptr, const int flag)
 {
 	int i;
+	bitflag f[MAX_PVALS][OF_SIZE];
 
-	for (i = 0; i < o_ptr->num_pvals; i++) {
-		if (of_has(o_ptr->pval_flags[i], flag))
+	object_pval_flags(o_ptr, f);
+
+	for (i = 0; i < MAX_PVALS; i++) {
+		if (of_has(f[i], flag))
 			return i;
 	}
 
-	return -1;
+	assert(0);
 }
 
 /*

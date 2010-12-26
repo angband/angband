@@ -281,10 +281,12 @@ static int make_ego_item(object_type *o_ptr, int level, bool force_uncursed)
 static void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 {
 	int i;
+
 	/* Extract the other fields */
 	for (i = 0; i < a_ptr->num_pvals; i++)
 		if (a_ptr->pval[i])
 			o_ptr->pval[i] = a_ptr->pval[i];
+	o_ptr->num_pvals = a_ptr->num_pvals;
 	o_ptr->ac = a_ptr->ac;
 	o_ptr->dd = a_ptr->dd;
 	o_ptr->ds = a_ptr->ds;
@@ -906,6 +908,7 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev, aspect rand
 	/* Default "pvals" */
 	for (i = 0; i < k->num_pvals; i++)
 		o_ptr->pval[i] = randcalc(k->pval[i], lev, rand_aspect);
+	o_ptr->num_pvals = k->num_pvals;
 
 	/* Default weight */
 	o_ptr->weight = k->weight;
@@ -1139,8 +1142,10 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 			o_ptr->to_a += randcalc(e_ptr->to_a, lev, RANDOMISE);
 
 			/* Apply ego pvals */
-			for (i = 0; i < e_ptr->num_pvals; i++)
+			for (i = 0; i < e_ptr->num_pvals; i++) {
+				if (!o_ptr->pval[i]) o_ptr->num_pvals++;
 				o_ptr->pval[i] += randcalc(e_ptr->pval[i], lev, RANDOMISE);
+			}
 
 			/* Apply minimums */
 			if (o_ptr->to_h < e_ptr->min_to_h) o_ptr->to_h = e_ptr->min_to_h;

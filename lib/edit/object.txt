@@ -1026,6 +1026,7 @@ W:60:0:5:2000
 A:20:40 to 100
 P:6:0d0:0:0:0
 L:2:STEALTH
+L:1:SPEED
 D:A mantle made of curious silken material by the Galadrim that wondrously 
 D:takes on the hues and shapes of its surroundings.
 

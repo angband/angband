@@ -593,6 +593,8 @@ static void wiz_tweak_item(object_type *o_ptr)
 } while (0)
 	for (i = 0; i < MAX_PVALS; i++) {
 		WIZ_TWEAK(pval[i]);
+		if (o_ptr->pval[i])
+			o_ptr->num_pvals = (i + 1);
 	}
 	WIZ_TWEAK(to_a);
 	WIZ_TWEAK(to_h);
