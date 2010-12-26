@@ -23,6 +23,7 @@
 #include "game-event.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
+#include "object/object.h"
 #include "spells.h"
 #include "squelch.h"
 
@@ -1057,7 +1058,7 @@ static void calc_mana(void)
 		/* Normal gloves hurt mage-type spells */
 		if (o_ptr->k_idx &&
 		    !of_has(f, OF_FREE_ACT) &&
-		    !(of_has(f, OF_DEX) && (o_ptr->pval[DEFAULT_PVAL] > 0)) &&
+		    !(of_has(f, OF_DEX) && (o_ptr->pval[which_pval(o_ptr, OF_DEX)] > 0)) &&
 		    !(o_ptr->sval == SV_SET_OF_ALCHEMISTS_GLOVES))
 		{
 			/* Encumbered */
@@ -1378,7 +1379,6 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	bitflag f[OF_SIZE];
 	bitflag collect_f[OF_SIZE];
 
-
 	/*** Reset ***/
 
 	memset(state, 0, sizeof *state);
@@ -1423,39 +1423,54 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		of_union(collect_f, f);
 
 		/* Affect stats */
-		if (of_has(f, OF_STR)) state->stat_add[A_STR] += o_ptr->pval[DEFAULT_PVAL];
-		if (of_has(f, OF_INT)) state->stat_add[A_INT] += o_ptr->pval[DEFAULT_PVAL];
-		if (of_has(f, OF_WIS)) state->stat_add[A_WIS] += o_ptr->pval[DEFAULT_PVAL];
-		if (of_has(f, OF_DEX)) state->stat_add[A_DEX] += o_ptr->pval[DEFAULT_PVAL];
-		if (of_has(f, OF_CON)) state->stat_add[A_CON] += o_ptr->pval[DEFAULT_PVAL];
-		if (of_has(f, OF_CHR)) state->stat_add[A_CHR] += o_ptr->pval[DEFAULT_PVAL];
+		if (of_has(f, OF_STR)) state->stat_add[A_STR] +=
+			o_ptr->pval[which_pval(o_ptr, OF_STR)];
+		if (of_has(f, OF_INT)) state->stat_add[A_INT] +=
+			o_ptr->pval[which_pval(o_ptr, OF_INT)];
+		if (of_has(f, OF_WIS)) state->stat_add[A_WIS] +=
+			o_ptr->pval[which_pval(o_ptr, OF_WIS)];
+		if (of_has(f, OF_DEX)) state->stat_add[A_DEX] +=
+			o_ptr->pval[which_pval(o_ptr, OF_DEX)];
+		if (of_has(f, OF_CON)) state->stat_add[A_CON] +=
+			o_ptr->pval[which_pval(o_ptr, OF_CON)];
+		if (of_has(f, OF_CHR)) state->stat_add[A_CHR] +=
+			o_ptr->pval[which_pval(o_ptr, OF_CHR)];
 
 		/* Affect stealth */
-		if (of_has(f, OF_STEALTH)) state->skills[SKILL_STEALTH] += o_ptr->pval[DEFAULT_PVAL];
+		if (of_has(f, OF_STEALTH)) state->skills[SKILL_STEALTH] +=
+			o_ptr->pval[which_pval(o_ptr, OF_STEALTH)];
 
 		/* Affect searching ability (factor of five) */
-		if (of_has(f, OF_SEARCH)) state->skills[SKILL_SEARCH] += (o_ptr->pval[DEFAULT_PVAL] * 5);
+		if (of_has(f, OF_SEARCH)) state->skills[SKILL_SEARCH] +=
+			(o_ptr->pval[which_pval(o_ptr, OF_SEARCH)] * 5);
 
 		/* Affect searching frequency (factor of five) */
-		if (of_has(f, OF_SEARCH)) state->skills[SKILL_SEARCH_FREQUENCY] += (o_ptr->pval[DEFAULT_PVAL] * 5);
+		if (of_has(f, OF_SEARCH)) state->skills[SKILL_SEARCH_FREQUENCY]
+			+= (o_ptr->pval[which_pval(o_ptr, OF_SEARCH)] * 5);
 
 		/* Affect infravision */
-		if (of_has(f, OF_INFRA)) state->see_infra += o_ptr->pval[DEFAULT_PVAL];
+		if (of_has(f, OF_INFRA)) state->see_infra +=
+			o_ptr->pval[which_pval(o_ptr, OF_INFRA)];
 
 		/* Affect digging (factor of 20) */
-		if (of_has(f, OF_TUNNEL)) state->skills[SKILL_DIGGING] += (o_ptr->pval[DEFAULT_PVAL] * 20);
+		if (of_has(f, OF_TUNNEL)) state->skills[SKILL_DIGGING] +=
+			(o_ptr->pval[which_pval(o_ptr, OF_TUNNEL)] * 20);
 
 		/* Affect speed */
-		if (of_has(f, OF_SPEED)) state->speed += o_ptr->pval[DEFAULT_PVAL];
+		if (of_has(f, OF_SPEED)) state->speed +=
+			o_ptr->pval[which_pval(o_ptr, OF_SPEED)];
 
 		/* Affect blows */
-		if (of_has(f, OF_BLOWS)) extra_blows += o_ptr->pval[DEFAULT_PVAL];
+		if (of_has(f, OF_BLOWS)) extra_blows +=
+			o_ptr->pval[which_pval(o_ptr, OF_BLOWS)];
 
 		/* Affect shots */
-		if (of_has(f, OF_SHOTS)) extra_shots += o_ptr->pval[DEFAULT_PVAL];
+		if (of_has(f, OF_SHOTS)) extra_shots +=
+			o_ptr->pval[which_pval(o_ptr, OF_SHOTS)];
 
 		/* Affect Might */
-		if (of_has(f, OF_MIGHT)) extra_might += o_ptr->pval[DEFAULT_PVAL];
+		if (of_has(f, OF_MIGHT)) extra_might +=
+			o_ptr->pval[which_pval(o_ptr, OF_MIGHT)];
 
 		/* Modify the base armor class */
 		state->ac += o_ptr->ac;

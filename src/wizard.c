@@ -22,7 +22,6 @@
 #include "files.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
-#include "object/object.h"
 #include "ui-menu.h"
 #include "spells.h"
 #include "target.h"

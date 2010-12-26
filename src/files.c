@@ -22,6 +22,7 @@
 #include "game-cmd.h"
 #include "history.h"
 #include "object/tvalsval.h"
+#include "object/object.h"
 #include "option.h"
 #include "ui-menu.h"
 
@@ -380,7 +381,7 @@ void display_player_stat_info(void)
  */
 static void display_player_sust_info(void)
 {
-	int i, row, col, stat;
+	int i, j, row, col, stat;
 
 	object_type *o_ptr;
 	bitflag f[OF_SIZE];
@@ -437,24 +438,29 @@ static void display_player_sust_info(void)
 				/* Default */
 				c = '*';
 
+				/* Work out which pval we're talking about */
+				j = which_pval(o_ptr, stat_flags[stat]);
+
 				/* Good */
-				if (o_ptr->pval[DEFAULT_PVAL] > 0)
+				if (o_ptr->pval[j] > 0)
 				{
 					/* Good */
 					a = TERM_L_GREEN;
 
 					/* Label boost */
-					if (o_ptr->pval[DEFAULT_PVAL] < 10) c = I2D(o_ptr->pval[DEFAULT_PVAL]);
+					if (o_ptr->pval[j] < 10)
+						c = I2D(o_ptr->pval[j]);
 				}
 
 				/* Bad */
-				if (o_ptr->pval[DEFAULT_PVAL] < 0)
+				if (o_ptr->pval[j] < 0)
 				{
 					/* Bad */
 					a = TERM_RED;
 
 					/* Label boost */
-					if (o_ptr->pval[DEFAULT_PVAL] > -10) c = I2D(-(o_ptr->pval[DEFAULT_PVAL]));
+					if (o_ptr->pval[j] > -10)
+						c = I2D(-(o_ptr->pval[j]));
 				}
 			}
 
