@@ -390,10 +390,11 @@ void process_command(cmd_context ctx, bool no_request)
 	{
 		int oldrepeats = cmd->nrepeats;
 		int idx = cmd_idx(cmd->command);
+		size_t i;
 
 		if (idx == -1) return;
 
-		for (size_t i = 0; i < N_ELEMENTS(item_selector); i++)
+		for (i = 0; i < N_ELEMENTS(item_selector); i++)
 		{
 			struct item_selector *is = &item_selector[i];
 
