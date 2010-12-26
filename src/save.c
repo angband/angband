@@ -28,7 +28,7 @@
  */
 static void wr_item(const object_type *o_ptr)
 {
-	size_t i;
+	size_t i, j;
 
 	wr_u16b(0xffff);
 	wr_byte(ITEM_VERSION);
@@ -41,7 +41,11 @@ static void wr_item(const object_type *o_ptr)
 
 	wr_byte(o_ptr->tval);
 	wr_byte(o_ptr->sval);
-	wr_s16b(o_ptr->pval[DEFAULT_PVAL]);
+
+        for (i = 0; i < MAX_PVALS; i++) {
+		wr_s16b(o_ptr->pval[i]);
+        }
+        wr_byte(o_ptr->num_pvals);
 
 	wr_byte(0);
 
@@ -78,6 +82,12 @@ static void wr_item(const object_type *o_ptr)
 	for (i = 0; i < 12 && i < OF_SIZE; i++)
 		wr_byte(o_ptr->known_flags[i]);
 	if (i < 12) pad_bytes(12 - i);
+
+	for (j = 0; j < MAX_PVALS; j++) {
+		for (i = 0; i < 12 && i < OF_SIZE; i++)
+			wr_byte(o_ptr->pval_flags[j][i]);
+		if (i < 12) pad_bytes(12 - i);
+	}
 
 	/* Held by monster index */
 	wr_s16b(o_ptr->held_m_idx);
@@ -537,7 +547,7 @@ void wr_player_spells(void)
  */
 void wr_randarts(void)
 {
-	size_t i, j;
+	size_t i, j, k;
 
 	if (!OPT(adult_randarts))
 		return;
@@ -550,7 +560,9 @@ void wr_randarts(void)
 
 		wr_byte(a_ptr->tval);
 		wr_byte(a_ptr->sval);
-		wr_s16b(a_ptr->pval[DEFAULT_PVAL]);
+		for (j = 0; j < MAX_PVALS; j++)
+			wr_s16b(a_ptr->pval[j]);
+		wr_byte(a_ptr->num_pvals);
 
 		wr_s16b(a_ptr->to_h);
 		wr_s16b(a_ptr->to_d);
@@ -568,6 +580,12 @@ void wr_randarts(void)
 		for (j = 0; j < 12 && j < OF_SIZE; j++)
 			wr_byte(a_ptr->flags[j]);
 		if (j < 12) pad_bytes(OF_SIZE - j);
+
+		for (k = 0; k < MAX_PVALS; k++) {
+			for (j = 0; j < 12 && j < OF_SIZE; j++)
+				wr_byte(a_ptr->pval_flags[k][j]);
+			if (j < 12) pad_bytes(OF_SIZE - j);
+		}
 
 		wr_byte(a_ptr->level);
 		wr_byte(a_ptr->rarity);

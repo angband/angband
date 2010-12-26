@@ -37,7 +37,7 @@ static int rd_item(object_type *o_ptr)
 	byte tmp8u;
 	u16b tmp16u;
 
-	size_t i;
+	size_t i, j;
 
 	object_kind *k_ptr;
 
@@ -75,7 +75,10 @@ static int rd_item(object_type *o_ptr)
 	/* Type/Subtype */
 	rd_byte(&o_ptr->tval);
 	rd_byte(&o_ptr->sval);
-	rd_s16b(&o_ptr->pval[DEFAULT_PVAL]);
+	for (i = 0; i < MAX_PVALS; i++) {
+		rd_s16b(&o_ptr->pval[i]);
+	}
+	rd_byte(&o_ptr->num_pvals);
 
 	/* Pseudo-ID bit */
 	rd_byte(&tmp8u);
@@ -127,6 +130,11 @@ static int rd_item(object_type *o_ptr)
 		strip_bytes(3 * 4);
 	}
 
+	for (j = 0; j < MAX_PVALS; j++) {
+		for (i = 0; i < 12 && i < OF_SIZE; i++)
+			rd_byte(&o_ptr->pval_flags[j][i]);
+		if (i < 12) strip_bytes(12 - i);
+	}
 
 	/* Monster holding object */
 	rd_s16b(&o_ptr->held_m_idx);
@@ -228,8 +236,10 @@ static int rd_item(object_type *o_ptr)
 		/* Obtain the artifact info */
 		a_ptr = &a_info[o_ptr->name1];
 
-		/* Get the new artifact "pval" */
-		o_ptr->pval[DEFAULT_PVAL] = a_ptr->pval[DEFAULT_PVAL];
+		/* Get the new artifact "pvals" */
+		for (i = 0; i < MAX_PVALS; i++)
+			o_ptr->pval[i] = a_ptr->pval[i];
+		o_ptr->num_pvals = a_ptr->num_pvals;
 
 		/* Get the new artifact fields */
 		o_ptr->ac = a_ptr->ac;
@@ -256,10 +266,13 @@ static int rd_item(object_type *o_ptr)
 		}
 
 		/* Hack -- enforce legal pval */
-		if (flags_test(e_ptr->flags, OF_SIZE, OF_PVAL_MASK, FLAG_END))
-		{
-			/* Force a meaningful pval */
-			if (!o_ptr->pval[DEFAULT_PVAL]) o_ptr->pval[DEFAULT_PVAL] = 1;
+		for (i = 0; i < MAX_PVALS; i++) {
+			if (flags_test(e_ptr->pval_flags[i], OF_SIZE,
+				OF_PVAL_MASK, FLAG_END))
+
+				/* Force a meaningful pval */
+				if (!o_ptr->pval[i])
+					o_ptr->pval[i] = e_ptr->min_pval[i];
 		}
 	}
 
@@ -988,7 +1001,7 @@ int rd_player_spells(u32b version)
  */
 int rd_randarts(u32b version)
 {
-	size_t i, j;
+	size_t i, j, k;
 	byte tmp8u;
 	s16b tmp16s;
 	u16b tmp16u;
@@ -1053,7 +1066,9 @@ int rd_randarts(u32b version)
 
 				rd_byte(&a_ptr->tval);
 				rd_byte(&a_ptr->sval);
-				rd_s16b(&a_ptr->pval[DEFAULT_PVAL]);
+				for (j = 0; j < MAX_PVALS; j++)
+					rd_s16b(&a_ptr->pval[j]);
+				rd_byte(&a_ptr->num_pvals);
 
 				rd_s16b(&a_ptr->to_h);
 				rd_s16b(&a_ptr->to_d);
@@ -1064,13 +1079,18 @@ int rd_randarts(u32b version)
 				rd_byte(&a_ptr->ds);
 
 				rd_s16b(&a_ptr->weight);
-
 				rd_s32b(&a_ptr->cost);
 
 				/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
 				for (j = 0; j < 12 && j < OF_SIZE; j++)
 					rd_byte(&a_ptr->flags[j]);
 				if (j < 12) strip_bytes(OF_SIZE - j);
+
+				for (k = 0; k < MAX_PVALS; k++) {
+					for (j = 0; j < 12 && j < OF_SIZE; j++)
+						rd_byte(&a_ptr->pval_flags[k][j]);
+					if (j < 12) strip_bytes(OF_SIZE - j);
+				}
 
 				rd_byte(&a_ptr->level);
 				rd_byte(&a_ptr->rarity);
@@ -1097,7 +1117,8 @@ int rd_randarts(u32b version)
 			{
 				rd_byte(&tmp8u); /* a_ptr->tval */
 				rd_byte(&tmp8u); /* a_ptr->sval */
-				rd_s16b(&tmp16s); /* a_ptr->pval[DEFAULT_PVAL] */
+				for (j = 0; j < MAX_PVALS; j++)
+					rd_s16b(&tmp16s); /* a_ptr->pval */
 
 				rd_s16b(&tmp16s); /* a_ptr->to_h */
 				rd_s16b(&tmp16s); /* a_ptr->to_d */
@@ -1114,6 +1135,8 @@ int rd_randarts(u32b version)
 				rd_u32b(&tmp32u); /* a_ptr->flags1 */
 				rd_u32b(&tmp32u); /* a_ptr->flags2 */
 				rd_u32b(&tmp32u); /* a_ptr->flags3 */
+				for (j = 0; j < MAX_PVALS; j++)
+					rd_u32b(&tmp32u); /* pval_flags */
 
 				rd_byte(&tmp8u); /* a_ptr->level */
 				rd_byte(&tmp8u); /* a_ptr->rarity */
