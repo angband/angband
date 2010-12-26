@@ -22,13 +22,42 @@
 /**
  * The savefile code.
  *
- * If you want to make a savefile compat-breaking change, then there are
+ * Savefiles since ~3.1 have used a block-based system.  Each savefile
+ * consists of an 8-byte header, the first four bytes of which mark this
+ * as a savefile, the second four bytes provide a variant ID.
+ *
+ * After that, each block has the format:
+ * - 16-byte string giving the type of block
+ * - 4-byte block version
+ * - 4-byte block size
+ * - 4-byte block checksum
+ * ... data ...
+ * padding so that block is a multiple of 4 bytes
+ *
+ * The savefile deosn't contain the version number of that game that saved it;
+ * versioning is left at the individual block level.  The current code
+ * keeps a list of savefile blocks to save in savers[] below, along with
+ * their current versions.
+ *
+ * For each block type and version, there is a loading function to load that
+ * type/version combination.  For example, there may be a loader for v1
+ * and v2 of the RNG block; these must be different functions.  It has been
+ * done this way since it allows easier maintenance; after each release, you
+ * need simply remove old loaders and you will not have to disentangle
+ * lots of code with "if (version > 3)" and its like everywhere.
+ *
+ * Savefile loading and saving is done by keeping the current block in
+ * memory, which is accessed using the wr_* and rd_* functions.  This is
+ * then written out, whole, to disk, with the appropriate header.
+ *
+ *
+ * So, if you want to make a savefile compat-breaking change, then there are
  * a few things you should do:
+ *
  * - increment the version in 'savers' below
  * - add a loading function that accepts the new version (in addition to
  *   the previous loading function) to 'loaders'
- *
- * ... and watch the magic happen!
+ * - and watch the magic happen.
  *
  *
  * TODO:
