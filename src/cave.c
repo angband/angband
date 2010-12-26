@@ -3884,8 +3884,8 @@ void disturb(int stop_search, int unused_flag)
 		p_ptr->redraw |= (PR_STATE);
 	}
 
-	/* Flush the input if requested */
-	if (OPT(flush_disturb)) flush();
+	/* Flush input */
+	flush();
 }
 
 
