@@ -815,7 +815,7 @@ void object_notice_on_firing(object_type *o_ptr)
  */
 void object_notice_on_wield(object_type *o_ptr)
 {
-	bitflag f[OF_SIZE], obvious_mask[OF_SIZE], pval_f[MAX_PVALS][OF_SIZE];
+	bitflag f[OF_SIZE], obvious_mask[OF_SIZE];
 	bool obvious = FALSE;
 	const slay_t *s_ptr;
 

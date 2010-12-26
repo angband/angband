@@ -332,6 +332,7 @@ static void wiz_display_item(const object_type *o_ptr, bool all)
 	prt(format("kind = %-5d  tval = %-5d  sval = %-5d  wgt = %-3d     timeout = %-d",
 	           o_ptr->k_idx, o_ptr->tval, o_ptr->sval, o_ptr->weight, o_ptr->timeout), 5, j);
 
+	/* CC: multiple pvals not shown, pending #1290 */
 	prt(format("number = %-3d  pval = %-5d  name1 = %-4d  name2 = %-4d  cost = %ld",
 	           o_ptr->number, o_ptr->pval[DEFAULT_PVAL], o_ptr->name1, o_ptr->name2, (long)object_value(o_ptr, 1, FALSE)), 6, j);
 
@@ -712,11 +713,12 @@ static void wiz_reroll_item(object_type *o_ptr)
 static void wiz_statistics(object_type *o_ptr, int level)
 {
 	long i, matches, better, worse, other;
+	int j;
 
 	char ch;
 	cptr quality;
 
-	bool good, great;
+	bool good, great, ismatch, isbetter, isworse;
 
 	object_type *i_ptr;
 	object_type object_type_body;
@@ -818,27 +820,41 @@ static void wiz_statistics(object_type *o_ptr, int level)
 			if ((o_ptr->tval) != (i_ptr->tval)) continue;
 			if ((o_ptr->sval) != (i_ptr->sval)) continue;
 
+			/* Check pvals */
+			ismatch = TRUE;
+			for (j = 0; j < MAX_PVALS; j++)
+				if (i_ptr->pval[j] != o_ptr->pval[j])
+					ismatch = FALSE;
+
+			isbetter = TRUE;
+			for (j = 0; j < MAX_PVALS; j++)
+				if (i_ptr->pval[j] < o_ptr->pval[j])
+					isbetter = FALSE;
+
+			isworse = TRUE;
+			for (j = 0; j < MAX_PVALS; j++)
+				if (i_ptr->pval[j] > o_ptr->pval[j])
+					isworse = FALSE;
+
 			/* Check for match */
-			if ((i_ptr->pval[DEFAULT_PVAL] == o_ptr->pval[DEFAULT_PVAL]) &&
-			    (i_ptr->to_a == o_ptr->to_a) &&
-			    (i_ptr->to_h == o_ptr->to_h) &&
-			    (i_ptr->to_d == o_ptr->to_d))
+			if (ismatch && (i_ptr->to_a == o_ptr->to_a) &&
+				(i_ptr->to_h == o_ptr->to_h) &&
+				(i_ptr->to_d == o_ptr->to_d) &&
+				(i_ptr->num_pvals == o_ptr->num_pvals))
 			{
 				matches++;
 			}
 
 			/* Check for better */
-			else if ((i_ptr->pval[DEFAULT_PVAL] >= o_ptr->pval[DEFAULT_PVAL]) &&
-			         (i_ptr->to_a >= o_ptr->to_a) &&
+			else if (isbetter && (i_ptr->to_a >= o_ptr->to_a) &&
 			         (i_ptr->to_h >= o_ptr->to_h) &&
 			         (i_ptr->to_d >= o_ptr->to_d))
 			{
-				better++;
+					better++;
 			}
 
 			/* Check for worse */
-			else if ((i_ptr->pval[DEFAULT_PVAL] <= o_ptr->pval[DEFAULT_PVAL]) &&
-			         (i_ptr->to_a <= o_ptr->to_a) &&
+			else if (isworse && (i_ptr->to_a <= o_ptr->to_a) &&
 			         (i_ptr->to_h <= o_ptr->to_h) &&
 			         (i_ptr->to_d <= o_ptr->to_d))
 			{

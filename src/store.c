@@ -2044,7 +2044,7 @@ static bool store_get_check(const char *prompt)
  */
 static int find_inven(const object_type *o_ptr)
 {
-	int j;
+	int i, j;
 	int num = 0;
 
 	/* Similar slot? */
@@ -2135,8 +2135,13 @@ static int find_inven(const object_type *o_ptr)
 				if (o_ptr->to_d != j_ptr->to_d) continue;
 				if (o_ptr->to_a != j_ptr->to_a) continue;
 
-				/* Require identical "pval" code */
-				if (o_ptr->pval[DEFAULT_PVAL] != j_ptr->pval[DEFAULT_PVAL]) continue;
+				/* Require identical "pval" codes */
+				for (i = 0; i < MAX_PVALS; i++)
+					if (o_ptr->pval[i] != j_ptr->pval[i])
+						continue;
+
+				if (o_ptr->num_pvals != j_ptr->num_pvals)
+					continue;
 
 				/* Require identical "artifact" names */
 				if (o_ptr->name1 != j_ptr->name1) continue;

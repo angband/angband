@@ -3315,6 +3315,8 @@ void do_ident_item(int item, object_type *o_ptr)
 	char o_name[80];
 
 	u32b msg_type = 0;
+	int i;
+	bool bad = TRUE;
 
 	/* Identify it */
 	object_flavor_aware(o_ptr);
@@ -3339,7 +3341,13 @@ void do_ident_item(int item, object_type *o_ptr)
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	/* Determine the message type. */
-	if (o_ptr->pval[DEFAULT_PVAL] < 0)
+	/* CC: we need to think more carefully about how we define "bad" with
+	 * multiple pvals - currently using "all nonzero pvals < 0" */
+	for (i = 0; i < o_ptr->num_pvals; i++)
+		if (o_ptr->pval[i] > 0)
+			bad = FALSE;
+
+	if (bad)
 	{
 		/* This is a bad item. */
 		msg_type = MSG_IDENT_BAD;

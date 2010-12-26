@@ -292,17 +292,30 @@ byte squelch_level_of(const object_type *o_ptr)
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	byte value;
 	bitflag f[OF_SIZE];
+	int i;
 
 	object_flags_known(o_ptr, f);
 
-	if ((object_pval_is_visible(o_ptr)) && (o_ptr->pval[DEFAULT_PVAL] < 0))
-		return SQUELCH_BAD;
+	/* CC: we need to redefine "bad" with multiple pvals
+	 * At the moment we use "all pvals known and negative" */
+	for (i = 0; i < o_ptr->num_pvals; i++) {
+		if (!object_this_pval_is_visible(o_ptr, i) ||
+			(o_ptr->pval[i] > 0))
+			break;
+
+		if (i == o_ptr->num_pvals)
+			return SQUELCH_BAD;
+	}
 
 	/* Deal with jewelry specially. */
 	if (object_is_jewelry(o_ptr))
 	{
-		if ((object_pval_is_visible(o_ptr)) && (o_ptr->pval[DEFAULT_PVAL] > 0))
-			return SQUELCH_AVERAGE;
+		/* CC: average jewelry has at least one known positive pval */
+		for (i = 0; i < o_ptr->num_pvals; i++)
+			if ((object_pval_is_visible(o_ptr)) &&
+				(o_ptr->pval[i] > 0))
+				return SQUELCH_AVERAGE;
+
 		if ((o_ptr->to_h > 0) || (o_ptr->to_d > 0) || (o_ptr->to_a > 0))
 			return SQUELCH_AVERAGE;
 		if ((object_attack_plusses_are_visible(o_ptr) && ((o_ptr->to_h < 0) || (o_ptr->to_d < 0))) ||

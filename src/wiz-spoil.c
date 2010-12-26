@@ -137,7 +137,7 @@ static void kind_info(char *buf, size_t buf_len,
 
 	object_type *i_ptr;
 	object_type object_type_body;
-
+	int i;
 
 	/* Get local object */
 	i_ptr = &object_type_body;
@@ -149,7 +149,8 @@ static void kind_info(char *buf, size_t buf_len,
 	k_ptr = &k_info[i_ptr->k_idx];
 
 	/* Cancel bonuses */
-	i_ptr->pval[DEFAULT_PVAL] = 0;
+	for (i = 0; i < MAX_PVALS; i++)
+		i_ptr->pval[i] = 0;
 	i_ptr->to_a = 0;
 	i_ptr->to_h = 0;
 	i_ptr->to_d = 0;
@@ -163,8 +164,6 @@ static void kind_info(char *buf, size_t buf_len,
 
 	/* Value */
 	(*val) = object_value(i_ptr, 1, FALSE);
-
-
 
 	/* Description (too brief) */
 	if (buf)
@@ -395,7 +394,7 @@ static const grouper group_artifact[] =
  */
 bool make_fake_artifact(object_type *o_ptr, byte name1)
 {
-	int i;
+	int i, j;
 
 	artifact_type *a_ptr = &a_info[name1];
 
@@ -416,7 +415,8 @@ bool make_fake_artifact(object_type *o_ptr, byte name1)
 	o_ptr->name1 = name1;
 
 	/* Extract the fields */
-	o_ptr->pval[DEFAULT_PVAL] = a_ptr->pval[DEFAULT_PVAL];
+	for (j = 0; j < a_ptr->num_pvals; j++)
+		o_ptr->pval[j] = a_ptr->pval[j];
 	o_ptr->ac = a_ptr->ac;
 	o_ptr->dd = a_ptr->dd;
 	o_ptr->ds = a_ptr->ds;
