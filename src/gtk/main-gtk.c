@@ -332,10 +332,20 @@ gboolean configure_event_handler(GtkWidget *widget, GdkEventConfigure *event, gp
 		
 		if (td->initialized)
 		{
-			if (event->x != 0) td->location.x = event->x;
-			if (event->y != 0) td->location.y = event->y;
-			if (event->width != 0)  td->size.w = event->width;
-			if (event->height != 0) td->size.h = event->height;
+			int x = 0, y = 0, w = 0, h = 0;
+			GdkRectangle r;
+			
+			gdk_window_get_frame_extents(td->win->window, &r);
+			x = r.x;
+			y = r.y;
+			
+			gtk_window_get_size(GTK_WINDOW(td->win), &w, &h);
+			
+			td->location.x = x;
+			td->location.y = y;
+			
+			if (w != 0) td->size.w = w;
+			if (h != 0)  td->size.h = h;
 		}
 	}
 	return(FALSE);
@@ -362,8 +372,8 @@ gboolean xtra_configure_event_handler(GtkWidget *widget, GdkEventConfigure *even
 			
 			gtk_window_get_size(GTK_WINDOW(xd->win), &w, &h);
 		
-			if (x != 0)  xd->location.x = x;
-			if (y != 0)  xd->location.y = y;
+			xd->location.x = x;
+			xd->location.y = y;
 			if (w != 0) xd->size.w = w;
 			if (h != 0)  xd->size.h = h;
 		
@@ -1367,7 +1377,6 @@ static void load_prefs()
 		td->rows = check_env_i("ANGBAND_X11_ROWS_%d", i, td->rows);
 		td->initialized = FALSE;
 		
-		if ((td->location.x <= 0) && (td->location.y <= 0)) td->location.x = td->location.y = 100;
 		if ((td->font.name == NULL) || (strlen(td->font.name)<2)) 
 			my_strcpy(td->font.name, "Monospace 12", sizeof(td->font.name));
 		
