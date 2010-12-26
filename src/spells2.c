@@ -757,7 +757,7 @@ bool detect_treasure(bool aware)
 		light_spot(y, x);
 
 		/* Detect */
-		if (!squelch_hide_item(o_ptr))
+		if (!squelch_item_ok(o_ptr))
 			objects = TRUE;
 	}
 
@@ -893,7 +893,7 @@ bool detect_objects_magic(bool aware)
 			light_spot(y, x);
 
 			/* Detect */
-			if (!squelch_hide_item(o_ptr))
+			if (!squelch_item_ok(o_ptr))
 				detect = TRUE;
 		}
 	}

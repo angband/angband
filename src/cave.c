@@ -982,7 +982,7 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
 	{
 		/* Memorized objects */
-		if (o_ptr->marked && !squelch_hide_item(o_ptr))
+		if (o_ptr->marked && !squelch_item_ok(o_ptr))
 		{
 			/* First item found */
 			if (g->first_k_idx == 0)

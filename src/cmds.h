@@ -58,6 +58,7 @@ void textui_cmd_suicide(void);
 void do_cmd_inven(void);
 void do_cmd_equip(void);
 void textui_cmd_destroy(void);
+void textui_cmd_toggle_ignore(void);
 void textui_obj_wield(object_type *o_ptr, int item);
 void textui_obj_inscribe(object_type *o_ptr, int item);
 void textui_obj_examine(object_type *o_ptr, int item);

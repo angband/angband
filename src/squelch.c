@@ -454,7 +454,6 @@ void kind_squelch_when_unaware(object_kind *k_ptr)
 }
 
 
-
 /*
  * Determines if an object is eligible for squelching.
  */
@@ -463,12 +462,12 @@ bool squelch_item_ok(const object_type *o_ptr)
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	byte type;
 
-	/* Don't squelch artifacts unless marked to be squelched */
-	if (artifact_p(o_ptr))
+	if (p_ptr->unignoring)
 		return FALSE;
 
-	/* Don't squelch stuff inscribed not to be destroyed (!k) */
-	if (check_for_inscrip(o_ptr, "!k") || check_for_inscrip(o_ptr, "!*"))
+	/* Don't squelch artifacts unless marked to be squelched */
+	if (artifact_p(o_ptr) ||
+			check_for_inscrip(o_ptr, "!k") || check_for_inscrip(o_ptr, "!*"))
 		return FALSE;
 
 	/* Do squelch individual objects that marked ignore */
@@ -498,16 +497,6 @@ bool squelch_item_ok(const object_type *o_ptr)
 		return TRUE;
 	else
 		return FALSE;
-}
-
-
-/*
- * Returns TRUE if an item should be hidden due to the player's
- * current settings.
- */
-bool squelch_hide_item(object_type *o_ptr)
-{
-	return squelch_item_ok(o_ptr);
 }
 
 

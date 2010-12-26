@@ -105,7 +105,9 @@ void do_cmd_equip(void)
 enum
 {
 	IGNORE_THIS_ITEM,
+	UNIGNORE_THIS_ITEM,
 	IGNORE_THIS_FLAVOR,
+	UNIGNORE_THIS_FLAVOR,
 	IGNORE_THIS_QUALITY
 };
 
@@ -132,17 +134,28 @@ void textui_cmd_destroy(void)
 	m->selections = lower_case;
 
 	/* Basic ignore option */
-	menu_dynamic_add(m, "This item only", IGNORE_THIS_ITEM);
+	if (!o_ptr->ignore) {
+		menu_dynamic_add(m, "This item only", IGNORE_THIS_ITEM);
+	} else {
+		menu_dynamic_add(m, "Unignore this item", UNIGNORE_THIS_ITEM);
+	}
 
 	/* Flavour-aware squelch */
 	if (squelch_tval(o_ptr->tval) &&
 			(!artifact_p(o_ptr) || !object_flavor_is_aware(o_ptr))) {
+		bool squelched = kind_is_squelched_aware(o_ptr->kind) ||
+				kind_is_squelched_unaware(o_ptr->kind);
+
 		char sval_name[50];
 		object_desc(sval_name, sizeof sval_name, o_ptr,
 				ODESC_BASE | ODESC_PLURAL);
-		strnfmt(out_val, sizeof out_val, "All %s", sval_name);
-
-		menu_dynamic_add(m, out_val, IGNORE_THIS_FLAVOR);
+		if (!squelched) {
+			strnfmt(out_val, sizeof out_val, "All %s", sval_name);
+			menu_dynamic_add(m, out_val, IGNORE_THIS_FLAVOR);
+		} else {
+			strnfmt(out_val, sizeof out_val, "Unignore all %s", sval_name);
+			menu_dynamic_add(m, out_val, UNIGNORE_THIS_FLAVOR);
+		}
 	}
 
 	/* Quality squelching */
@@ -170,17 +183,23 @@ void textui_cmd_destroy(void)
 	r.page_rows = m->count;
 
 	screen_save();
-	prt("(Enter to select, ESC) Ignore:", 0, 0);
 	menu_layout(m, &r);
 	region_erase_bordered(&r);
+
+	prt("(Enter to select, ESC) Ignore:", 0, 0);
 	selected = menu_dynamic_select(m);
+
 	screen_load();
 
 	if (selected == IGNORE_THIS_ITEM) {
 		cmd_insert(CMD_DESTROY);
 		cmd_set_arg_item(cmd_get_top(), 0, item);
+	} else if (selected == UNIGNORE_THIS_ITEM) {
+		o_ptr->ignore = FALSE;
 	} else if (selected == IGNORE_THIS_FLAVOR) {
 		object_squelch_flavor_of(o_ptr);
+	} else if (selected == UNIGNORE_THIS_FLAVOR) {
+		kind_squelch_clear(o_ptr->kind);
 	} else if (selected == IGNORE_THIS_QUALITY) {
 		byte value = squelch_level_of(o_ptr);
 		int type = squelch_type_of(o_ptr);
@@ -191,6 +210,13 @@ void textui_cmd_destroy(void)
 	p_ptr->notice |= PN_SQUELCH;
 
 	menu_dynamic_free(m);
+}
+
+void textui_cmd_toggle_ignore(void)
+{
+	p_ptr->unignoring = !p_ptr->unignoring;
+	p_ptr->notice |= PN_SQUELCH;
+	do_cmd_redraw();
 }
 
 void textui_obj_wield(object_type *o_ptr, int item)

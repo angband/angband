@@ -140,8 +140,7 @@ static struct generic_command cmd_item_manage[] =
 	{ "Display equipment listing", 'e', CMD_NULL, do_cmd_equip },
 	{ "Display inventory listing", 'i', CMD_NULL, do_cmd_inven },
 	{ "Pick up objects",           'g', CMD_PICKUP, NULL },
-	{ "Destroy an item",           'k', CMD_DESTROY, textui_cmd_destroy },
-	
+	{ "Destroy an item",           'k', CMD_DESTROY, textui_cmd_destroy },	
 };
 
 /* Information access commands */
@@ -152,6 +151,7 @@ static struct generic_command cmd_info[] =
 	{ "Cast a spell", 'm', CMD_CAST, textui_obj_cast, player_can_cast },
 	{ "Cast a spell", 'p', CMD_CAST, textui_obj_cast, player_can_cast },
 	{ "Full dungeon map",             'M', CMD_NULL, do_cmd_view_map },
+	{ "Toggle ignoring of items",     'K', CMD_NULL, textui_cmd_toggle_ignore },
 	{ "Display visible item list",    ']', CMD_NULL, do_cmd_itemlist },
 	{ "Display visible monster list", '[', CMD_NULL, do_cmd_monlist },
 	{ "Locate player on map",         'L', CMD_NULL, do_cmd_locate },

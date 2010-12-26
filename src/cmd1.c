@@ -421,7 +421,7 @@ byte py_pickup(int pickup)
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Ignore all hidden objects and non-objects */
-		if (squelch_hide_item(o_ptr) || !o_ptr->k_idx) continue;
+		if (squelch_item_ok(o_ptr) || !o_ptr->k_idx) continue;
 
 		/* XXX Hack -- Enforce limit */
 		if (floor_num >= N_ELEMENTS(floor_list)) break;

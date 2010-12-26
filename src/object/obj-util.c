@@ -766,7 +766,7 @@ int scan_floor(int *items, int max_size, int y, int x, int mode)
 		if ((mode & 0x01) && !item_tester_okay(o_ptr)) continue;
 
 		/* Marked */
-		if ((mode & 0x02) && (!o_ptr->marked || squelch_hide_item(o_ptr)))
+		if ((mode & 0x02) && (!o_ptr->marked || squelch_item_ok(o_ptr)))
 			continue;
 
 		/* Accept this item */
@@ -1876,7 +1876,7 @@ static s16b floor_get_idx_oldest_squelched(int y, int x)
 	{
 		o_ptr = &o_list[this_o_idx];
 
-		if (squelch_hide_item(o_ptr))
+		if (squelch_item_ok(o_ptr))
 			squelch_idx = this_o_idx;
 	}
 
@@ -2076,7 +2076,7 @@ void drop_near(object_type *j_ptr, int chance, int y, int x, bool verbose)
 					comb = TRUE;
 
 				/* Count objects */
-				if (!squelch_hide_item(o_ptr))
+				if (!squelch_item_ok(o_ptr))
 					k++;
 				else
 					n++;
@@ -3744,7 +3744,7 @@ void display_itemlist(void)
 				unsigned j;
 
 				/* Skip gold/squelched */
-				if (o_ptr->tval == TV_GOLD || squelch_hide_item(o_ptr))
+				if (o_ptr->tval == TV_GOLD || squelch_item_ok(o_ptr))
 					continue;
 
 				/* See if we've already seen a similar item; if so, just add */
@@ -3827,7 +3827,7 @@ void display_itemlist(void)
 		object_type *o_ptr = types[i];
 
 		/* We shouldn't list coins or squelched items */
-		if (o_ptr->tval == TV_GOLD || squelch_hide_item(o_ptr))
+		if (o_ptr->tval == TV_GOLD || squelch_item_ok(o_ptr))
 			continue;
 
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);

@@ -3724,7 +3724,7 @@ static void process_monster(int m_idx)
 						if (rf_has(r_ptr->flags, RF_TAKE_ITEM))
 						{
 							/* Describe observable situations */
-							if (m_ptr->ml && player_has_los_bold(ny, nx) && !squelch_hide_item(o_ptr))
+							if (m_ptr->ml && player_has_los_bold(ny, nx) && !squelch_item_ok(o_ptr))
 							{
 								/* Dump a message */
 								msg_format("%^s tries to pick up %s, but fails.",
@@ -3740,7 +3740,7 @@ static void process_monster(int m_idx)
 						object_type object_type_body;
 
 						/* Describe observable situations */
-						if (player_has_los_bold(ny, nx) && !squelch_hide_item(o_ptr))
+						if (player_has_los_bold(ny, nx) && !squelch_item_ok(o_ptr))
 						{
 							/* Dump a message */
 							msg_format("%^s picks up %s.", m_name, o_name);
@@ -3763,7 +3763,7 @@ static void process_monster(int m_idx)
 					else
 					{
 						/* Describe observable situations */
-						if (player_has_los_bold(ny, nx) && !squelch_hide_item(o_ptr))
+						if (player_has_los_bold(ny, nx) && !squelch_item_ok(o_ptr))
 						{
 							/* Dump a message */
 							message_format(MSG_DESTROY, 0, "%^s crushes %s.", m_name, o_name);
