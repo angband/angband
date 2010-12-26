@@ -505,16 +505,19 @@ static enum parser_error parse_k_l(struct parser *p) {
 
 	k->pval[k->num_pvals] = parser_getrand(p, "pval");
 
-	if (!parser_hasval(p, "flags"))
+	if (!parser_hasval(p, "flags")) {
+		k->num_pvals++;
 		return PARSE_ERROR_NONE;
+	}
 
 	s = string_make(parser_getstr(p, "flags"));
 	t = strtok(s, " |");
 
 	while (t) {
-		if (grab_flag(k->pval_flags[k->num_pvals], OF_SIZE, k_info_flags, t)
-			&& grab_flag(k->flags, OF_SIZE, k_info_flags, t))
+		if (grab_flag(k->flags, OF_SIZE, k_info_flags, t)) {
+			grab_flag(k->pval_flags[k->num_pvals], OF_SIZE, k_info_flags, t);
 			break;
+		}
 		t = strtok(NULL, " |");
 	}
 
@@ -702,15 +705,16 @@ static enum parser_error parse_a_l(struct parser *p) {
 	a->pval[a->num_pvals] = parser_getint(p, "pval");
 
 	if (!parser_hasval(p, "flags"))
-		return PARSE_ERROR_NONE;
+		return PARSE_ERROR_MISSING_FIELD;
 
 	s = string_make(parser_getstr(p, "flags"));
 	t = strtok(s, " |");
 
 	while (t) {
-		if (grab_flag(a->pval_flags[a->num_pvals], OF_SIZE, k_info_flags, t)
-			&& grab_flag(a->flags, OF_SIZE, k_info_flags, t))
+		if (grab_flag(a->flags, OF_SIZE, k_info_flags, t)) {
+			grab_flag(a->pval_flags[a->num_pvals], OF_SIZE, k_info_flags, t);
 			break;
+		}
 		t = strtok(NULL, " |");
 	}
 
@@ -1168,7 +1172,7 @@ static enum parser_error parse_e_l(struct parser *p) {
 	if (!e)
 		return PARSE_ERROR_MISSING_RECORD_HEADER;
 	if (!parser_hasval(p, "flags"))
-		return PARSE_ERROR_NONE;
+		return PARSE_ERROR_MISSING_FIELD;
 
 	e->pval[e->num_pvals] = parser_getrand(p, "pval");
 	e->min_pval[e->num_pvals] = parser_getint(p, "min");
@@ -1177,9 +1181,10 @@ static enum parser_error parse_e_l(struct parser *p) {
 	t = strtok(s, " |");
 
 	while (t) {
-		if (grab_flag(e->pval_flags[e->num_pvals], OF_SIZE, k_info_flags, t)
-			&& grab_flag(e->flags, OF_SIZE, k_info_flags, t))
+		if (grab_flag(e->flags, OF_SIZE, k_info_flags, t)) {
+			grab_flag(e->pval_flags[e->num_pvals], OF_SIZE, k_info_flags, t);
 			break;
+		}
 		t = strtok(NULL, " |");
 	}
 
