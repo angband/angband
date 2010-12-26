@@ -20,6 +20,19 @@
 #include "squelch.h"
 #include "tvalsval.h"
 
+/* Work out which pval governs a particular flag */
+int which_pval(const object_type *o_ptr, const int flag)
+{
+	int i;
+
+	for (i = 0; i < o_ptr->num_pvals; i++) {
+		if (of_has(o_ptr->pval_flags[i], flag))
+			return i;
+	}
+
+	return -1;
+}
+
 /*
  * Puts a very stripped-down version of an object's name into buf.
  * If easy_know is TRUE, then the IDed names are used, otherwise
@@ -563,7 +576,7 @@ static size_t obj_desc_combat(const object_type *o_ptr, char *buf, size_t max,
 			/* Display shooting power as part of the multiplier */
 			if (of_has(flags, OF_MIGHT) &&
 			    (spoil || object_flag_is_known(o_ptr, OF_MIGHT)))
-				strnfcat(buf, max, &end, " (x%d)", (o_ptr->sval % 10) + o_ptr->pval[DEFAULT_PVAL]);
+				strnfcat(buf, max, &end, " (x%d)", (o_ptr->sval % 10) + o_ptr->pval[which_pval(o_ptr, OF_MIGHT)]);
 			else
 				strnfcat(buf, max, &end, " (x%d)", o_ptr->sval % 10);
 			break;
@@ -622,14 +635,18 @@ static size_t obj_desc_light(const object_type *o_ptr, char *buf, size_t max, si
 static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max, size_t end)
 {
 	bitflag f[OF_SIZE];
+	int i;
 
 	object_flags(o_ptr, f);
 
 	if (!flags_test(f, OF_SIZE, OF_PVAL_MASK, FLAG_END)) return end;
 
-	strnfcat(buf, max, &end, " (%+d", o_ptr->pval[DEFAULT_PVAL]);
+	strnfcat(buf, max, &end, " (%+d", o_ptr->pval[0]);
+	for (i = 1; i < o_ptr->num_pvals; i++) {
+		strnfcat(buf, max, &end, ", %+d", o_ptr->pval[i]);
+	}
 
-	if (!of_has(f, OF_HIDE_TYPE))
+	if ((o_ptr->num_pvals == 1) && !of_has(f, OF_HIDE_TYPE))
 	{
 		if (of_has(f, OF_STEALTH))
 			strnfcat(buf, max, &end, " stealth");
@@ -640,7 +657,7 @@ static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max, siz
 		else if (of_has(f, OF_SPEED))
 			strnfcat(buf, max, &end, " speed");
 		else if (of_has(f, OF_BLOWS))
-			strnfcat(buf, max, &end, " attack%s", PLURAL(o_ptr->pval[DEFAULT_PVAL]));
+			strnfcat(buf, max, &end, " attack%s", PLURAL(o_ptr->pval[which_pval(o_ptr, OF_BLOWS)]));
 	}
 
 	strnfcat(buf, max, &end, ")");
