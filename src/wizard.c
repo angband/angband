@@ -579,7 +579,7 @@ static void wiz_tweak_item(object_type *o_ptr)
 {
 	cptr p;
 	char tmp_val[80];
-
+	int i;
 
 	/* Hack -- leave artifacts alone */
 	if (artifact_p(o_ptr)) return;
@@ -591,8 +591,9 @@ static void wiz_tweak_item(object_type *o_ptr)
 	o_ptr->attribute = atoi(tmp_val);\
 	wiz_display_item(o_ptr, TRUE);\
 } while (0)
-
-	WIZ_TWEAK(pval[DEFAULT_PVAL]);
+	for (i = 0; i < MAX_PVALS; i++) {
+		WIZ_TWEAK(pval[i]);
+	}
 	WIZ_TWEAK(to_a);
 	WIZ_TWEAK(to_h);
 	WIZ_TWEAK(to_d);
@@ -1043,7 +1044,7 @@ static void wiz_create_artifact(int a_idx)
 {
 	object_type *i_ptr;
 	object_type object_type_body;
-	int k_idx;
+	int k_idx, i;
 
 	artifact_type *a_ptr = &a_info[a_idx];
 
@@ -1069,7 +1070,10 @@ static void wiz_create_artifact(int a_idx)
 	i_ptr->name1 = a_idx;
 
 	/* Extract the fields */
-	i_ptr->pval[DEFAULT_PVAL] = a_ptr->pval[DEFAULT_PVAL];
+	for (i = 0; i < a_ptr->num_pvals; i++) {
+		i_ptr->pval[i] = a_ptr->pval[i];
+		i_ptr->num_pvals++;
+	}
 	i_ptr->ac = a_ptr->ac;
 	i_ptr->dd = a_ptr->dd;
 	i_ptr->ds = a_ptr->ds;

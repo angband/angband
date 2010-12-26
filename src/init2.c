@@ -514,10 +514,10 @@ static enum parser_error parse_k_l(struct parser *p) {
 	t = strtok(s, " |");
 
 	while (t) {
-		if (grab_flag(k->flags, OF_SIZE, k_info_flags, t)) {
-			grab_flag(k->pval_flags[k->num_pvals], OF_SIZE, k_info_flags, t);
+		if (grab_flag(k->flags, OF_SIZE, k_info_flags, t) ||
+			grab_flag(k->pval_flags[k->num_pvals], OF_SIZE, k_info_flags, t))
 			break;
-		}
+
 		t = strtok(NULL, " |");
 	}
 
@@ -711,10 +711,10 @@ static enum parser_error parse_a_l(struct parser *p) {
 	t = strtok(s, " |");
 
 	while (t) {
-		if (grab_flag(a->flags, OF_SIZE, k_info_flags, t)) {
-			grab_flag(a->pval_flags[a->num_pvals], OF_SIZE, k_info_flags, t);
+		if (grab_flag(a->flags, OF_SIZE, k_info_flags, t) ||
+			grab_flag(a->pval_flags[a->num_pvals], OF_SIZE, k_info_flags, t))
 			break;
-		}
+
 		t = strtok(NULL, " |");
 	}
 
@@ -1181,10 +1181,10 @@ static enum parser_error parse_e_l(struct parser *p) {
 	t = strtok(s, " |");
 
 	while (t) {
-		if (grab_flag(e->flags, OF_SIZE, k_info_flags, t)) {
-			grab_flag(e->pval_flags[e->num_pvals], OF_SIZE, k_info_flags, t);
+		if (grab_flag(e->flags, OF_SIZE, k_info_flags, t) ||
+			grab_flag(e->pval_flags[e->num_pvals], OF_SIZE, k_info_flags, t))
 			break;
-		}
+
 		t = strtok(NULL, " |");
 	}
 

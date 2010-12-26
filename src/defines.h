@@ -1818,11 +1818,10 @@ enum
 
 /**
  * Maximum number of pvals on objects
- * - the max is one higher than this: don't forget pval[0] 
  *
  * Note: all pvals other than DEFAULT_PVAL are assumed to be associated with
- * flags, and any non-flag uses of pval (e.g. chest quality) are assumed to
- * use DEFAULT_PVAL.
+ * flags, and any non-flag uses of pval (e.g. chest quality, gold quantity)
+ * are assumed to use DEFAULT_PVAL.
  */
-#define MAX_PVALS 2
+#define MAX_PVALS 3
 #define DEFAULT_PVAL 0
