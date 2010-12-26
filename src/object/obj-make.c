@@ -280,8 +280,11 @@ static int make_ego_item(object_type *o_ptr, int level, bool force_uncursed)
  */
 static void copy_artifact_data(object_type *o_ptr, const artifact_type *a_ptr)
 {
+	int i;
 	/* Extract the other fields */
-	o_ptr->pval[DEFAULT_PVAL] = a_ptr->pval[DEFAULT_PVAL];
+	for (i = 0; i < a_ptr->num_pvals; i++)
+		if (a_ptr->pval[i])
+			o_ptr->pval[i] = a_ptr->pval[i];
 	o_ptr->ac = a_ptr->ac;
 	o_ptr->dd = a_ptr->dd;
 	o_ptr->ds = a_ptr->ds;
@@ -527,14 +530,16 @@ static void a_m_aux_1(object_type *o_ptr, int level, int power)
 			if (power < -1)
 			{
 				/* Hack -- Horrible digging bonus */
-				o_ptr->pval[DEFAULT_PVAL] = 0 - (5 + randint1(5));
+				o_ptr->pval[which_pval(o_ptr, OF_TUNNEL)]
+					= 0 - (5 + randint1(5));
 			}
 
 			/* Bad */
 			else if (power < 0)
 			{
 				/* Hack -- Reverse digging bonus */
-				o_ptr->pval[DEFAULT_PVAL] = -o_ptr->pval[DEFAULT_PVAL];
+				o_ptr->pval[which_pval(o_ptr, OF_TUNNEL)]
+					= -o_ptr->pval[which_pval(o_ptr, OF_TUNNEL)];
 			}
 
 			break;
@@ -652,6 +657,8 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 				case SV_RING_PROTECTION:
 				case SV_RING_SLAYING:
 				{
+					/* CC: multiple pvals deliberately not 
+					 * affected pending new curses */
 					o_ptr->pval[DEFAULT_PVAL] = -o_ptr->pval[DEFAULT_PVAL];
 					o_ptr->to_h = -o_ptr->to_h;
 					o_ptr->to_d = -o_ptr->to_d;
@@ -673,6 +680,8 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 				case SV_AMULET_INFRAVISION:
 				case SV_AMULET_SEARCHING:
 				{
+					/* CC: multiple pvals deliberately not 
+					 * affected pending new curses */
 					o_ptr->pval[DEFAULT_PVAL] = -o_ptr->pval[DEFAULT_PVAL];
 					o_ptr->to_h = -o_ptr->to_h;
 					o_ptr->to_d = -o_ptr->to_d;
@@ -698,7 +707,7 @@ static void a_m_aux_3(object_type *o_ptr, int level, int power)
 				case SV_RING_SPEED:
 				{
 					/* Super-charge the ring */
-					while (randint0(100) < 50) o_ptr->pval[DEFAULT_PVAL]++;
+					while (randint0(100) < 50) o_ptr->pval[which_pval(o_ptr, OF_SPEED)]++;
 
 					if (power >= 0)
 					{
@@ -879,6 +888,8 @@ static int get_new_attr(bitflag flags[OF_SIZE], const int attrs[], size_t size)
  */
 void object_prep(object_type *o_ptr, struct object_kind *k, int lev, aspect rand_aspect)
 {
+	int i;
+
 	/* Clear the record */
 	(void)WIPE(o_ptr, object_type);
 
@@ -892,8 +903,9 @@ void object_prep(object_type *o_ptr, struct object_kind *k, int lev, aspect rand
 	/* Default number */
 	o_ptr->number = 1;
 
-	/* Default "pval" */
-	o_ptr->pval[DEFAULT_PVAL] = randcalc(k->pval[DEFAULT_PVAL], lev, rand_aspect);
+	/* Default "pvals" */
+	for (i = 0; i < k->num_pvals; i++)
+		o_ptr->pval[i] = randcalc(k->pval[i], lev, rand_aspect);
 
 	/* Default weight */
 	o_ptr->weight = k->weight;
@@ -1101,7 +1113,7 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 			o_ptr->to_d -= randcalc(e_ptr->to_d, lev, RANDOMISE);
 			o_ptr->to_a -= randcalc(e_ptr->to_a, lev, RANDOMISE);
 
-			/* Apply ego pval */
+			/* CC: multiple pvals left untouched pending new curses */
 			o_ptr->pval[DEFAULT_PVAL] -= randcalc(e_ptr->pval[DEFAULT_PVAL], lev, RANDOMISE);
 
 			/* Apply minima */
@@ -1112,11 +1124,10 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 			if (o_ptr->to_a > -1 * e_ptr->min_to_a)
 				o_ptr->to_a = -1 * e_ptr->min_to_a;
 
-			for (i = 0; i < MAX_PVALS; i++)
-			{
-				if (o_ptr->pval[i] > -1 * e_ptr->min_pval[i])
-					 o_ptr->pval[i] = -1 * e_ptr->min_pval[i];
-			}
+			if (o_ptr->pval[DEFAULT_PVAL]
+				> -1 * e_ptr->min_pval[DEFAULT_PVAL])
+				o_ptr->pval[DEFAULT_PVAL]
+					= -1 * e_ptr->min_pval[DEFAULT_PVAL];
 		}
 
 		/* Hack -- apply extra bonuses if needed */
@@ -1127,15 +1138,16 @@ void apply_magic(object_type *o_ptr, int lev, bool allow_artifacts, bool good, b
 			o_ptr->to_d += randcalc(e_ptr->to_d, lev, RANDOMISE);
 			o_ptr->to_a += randcalc(e_ptr->to_a, lev, RANDOMISE);
 
-			/* Apply ego pval */
-			o_ptr->pval[DEFAULT_PVAL] += randcalc(e_ptr->pval[DEFAULT_PVAL], lev, RANDOMISE);
+			/* Apply ego pvals */
+			for (i = 0; i < e_ptr->num_pvals; i++)
+				o_ptr->pval[i] += randcalc(e_ptr->pval[i], lev, RANDOMISE);
 
 			/* Apply minimums */
 			if (o_ptr->to_h < e_ptr->min_to_h) o_ptr->to_h = e_ptr->min_to_h;
 			if (o_ptr->to_d < e_ptr->min_to_d) o_ptr->to_d = e_ptr->min_to_d;
 			if (o_ptr->to_a < e_ptr->min_to_a) o_ptr->to_a = e_ptr->min_to_a;
 
-			for (i = 0; i < MAX_PVALS; i++)
+			for (i = 0; i < e_ptr->num_pvals; i++)
 			{
 				if (o_ptr->pval[i] < e_ptr->min_pval[i])
 					o_ptr->pval[i] = e_ptr->min_pval[i];
@@ -1350,4 +1362,3 @@ void make_gold(object_type *j_ptr, int lev, int coin_type)
 
 	j_ptr->pval[DEFAULT_PVAL] = value;
 }
-

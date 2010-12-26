@@ -151,30 +151,63 @@ bool object_effect_is_known(const object_type *o_ptr)
 }
 
 /**
- * \returns whether the object's pval is known to the player
+ * \returns whether a specific pval is known to the player
  */
-bool object_pval_is_visible(const object_type *o_ptr)
+bool object_this_pval_is_visible(const object_type *o_ptr, int pval)
 {
-	bitflag f[OF_SIZE];
+	bitflag f[MAX_PVALS][OF_SIZE];
 
 	if (o_ptr->ident & IDENT_STORE)
 		return TRUE;
 
-	/* Aware jewelry with non-variable pvals */
+	/* Aware jewelry with non-variable pval */
 	if (object_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr))
 	{
 		const object_kind *k_ptr = &k_info[o_ptr->k_idx];
 
-		if (!randcalc_varies(k_ptr->pval[DEFAULT_PVAL]))
+		if (!randcalc_varies(k_ptr->pval[pval]))
 			return TRUE;
 	}
 
 	if (object_was_worn(o_ptr))
 	{
-		object_flags_known(o_ptr, f);
+		object_pval_flags_known(o_ptr, f);
 
-		if (flags_test(f, OF_SIZE, OF_PVAL_MASK, FLAG_END))
+		if (flags_test(f[pval], OF_SIZE, OF_PVAL_MASK, FLAG_END))
 			return TRUE;
+	}
+
+	return FALSE;
+}
+
+/**
+ * \returns whether any of an object's pvals are known to the player
+ */
+bool object_pval_is_visible(const object_type *o_ptr)
+{
+	bitflag f[MAX_PVALS][OF_SIZE];
+	int i;
+
+	if (o_ptr->ident & IDENT_STORE)
+		return TRUE;
+
+	/* Aware jewelry with any non-variable pvals */
+	if (object_is_jewelry(o_ptr) && object_flavor_is_aware(o_ptr))
+	{
+		const object_kind *k_ptr = &k_info[o_ptr->k_idx];
+
+		for (i = 0; i < k_ptr->num_pvals; i++)
+			if (!randcalc_varies(k_ptr->pval[i]))
+				return TRUE;
+	}
+
+	if (object_was_worn(o_ptr))
+	{
+		object_pval_flags_known(o_ptr, f);
+
+		for (i = 0; i < o_ptr->num_pvals; i++)
+			if (flags_test(f[i], OF_SIZE, OF_PVAL_MASK, FLAG_END))
+				return TRUE;
 	}
 
 	return FALSE;
@@ -773,15 +806,16 @@ void object_notice_on_firing(object_type *o_ptr)
 
 
 /*
- * Determine whether a weapon or missile weapon is obviously {excellent} when worn.
- */
-/* XXX Eddie should messages be adhoc all over the place?  perhaps the main
+ * Determine whether a weapon or missile weapon is obviously {excellent} when
+ * worn.
+ *
+ * XXX Eddie should messages be adhoc all over the place?  perhaps the main
  * loop should check for change in inventory/wieldeds and all messages be
  * printed from one place
  */
 void object_notice_on_wield(object_type *o_ptr)
 {
-	bitflag f[OF_SIZE], obvious_mask[OF_SIZE];
+	bitflag f[OF_SIZE], obvious_mask[OF_SIZE], pval_f[MAX_PVALS][OF_SIZE];
 	bool obvious = FALSE;
 	const slay_t *s_ptr;
 
@@ -798,6 +832,8 @@ void object_notice_on_wield(object_type *o_ptr)
 	if (object_add_ident_flags(o_ptr, IDENT_WORN))
 		object_check_for_ident(o_ptr);
 
+	/* CC: may wish to be more subtle about this once we have ego types
+	 * with multiple pvals */
 	if (obj_is_light(o_ptr) && ego_item_p(o_ptr))
 		object_notice_ego(o_ptr);
 
@@ -862,21 +898,34 @@ void object_notice_on_wield(object_type *o_ptr)
 
 	/* XXX Eddie need to add stealth here, also need to assert/double-check everything is covered */
 	if (of_has(f, OF_STR))
-		msg_format("You feel %s!", o_ptr->pval[DEFAULT_PVAL] > 0 ? "stronger" : "weaker");
+		msg_format("You feel %s!", o_ptr->pval[which_pval(o_ptr,
+			OF_STR)] > 0 ? "stronger" : "weaker");
 	if (of_has(f, OF_INT))
-		msg_format("You feel %s!", o_ptr->pval[DEFAULT_PVAL] > 0 ? "smarter" : "more stupid");
+		msg_format("You feel %s!", o_ptr->pval[which_pval(o_ptr,
+			OF_INT)] > 0 ? "smarter" : "more stupid");
 	if (of_has(f, OF_WIS))
-		msg_format("You feel %s!", o_ptr->pval[DEFAULT_PVAL] > 0 ? "wiser" : "more naive");
+		msg_format("You feel %s!", o_ptr->pval[which_pval(o_ptr,
+			OF_WIS)] > 0 ? "wiser" : "more naive");
 	if (of_has(f, OF_DEX))
-		msg_format("You feel %s!", o_ptr->pval[DEFAULT_PVAL] > 0 ? "more dextrous" : "clumsier");
+		msg_format("You feel %s!", o_ptr->pval[which_pval(o_ptr,
+			OF_DEX)] > 0 ? "more dextrous" : "clumsier");
 	if (of_has(f, OF_CON))
-		msg_format("You feel %s!", o_ptr->pval[DEFAULT_PVAL] > 0 ? "healthier" : "sicklier");
+		msg_format("You feel %s!", o_ptr->pval[which_pval(o_ptr,
+			OF_CON)] > 0 ? "healthier" : "sicklier");
 	if (of_has(f, OF_CHR))
-		msg_format("You feel %s!", o_ptr->pval[DEFAULT_PVAL] > 0 ? "cuter" : "uglier");
+		msg_format("You feel %s!", o_ptr->pval[which_pval(o_ptr,
+			OF_CHR)] > 0 ? "cuter" : "uglier");
 	if (of_has(f, OF_SPEED))
-		msg_format("You feel strangely %s.", o_ptr->pval[DEFAULT_PVAL] > 0 ? "quick" : "sluggish");
-	if (flags_test(f, OF_SIZE, OF_BLOWS, OF_SHOTS, FLAG_END))
-		msg_format("Your hands %s", o_ptr->pval[DEFAULT_PVAL] > 0 ? "tingle!" : "ache.");
+		msg_format("You feel strangely %s.", o_ptr->pval[which_pval(o_ptr,
+			OF_SPEED)] > 0 ? "quick" : "sluggish");
+	if (of_has(f, OF_BLOWS))
+		msg_format("Your weapon %s in your hands.",
+			o_ptr->pval[which_pval(o_ptr, OF_BLOWS)] > 0 ?
+				"tingles" : "aches");
+	if (of_has(f, OF_SHOTS))
+		msg_format("Your bow %s in your hands.",
+			o_ptr->pval[which_pval(o_ptr, OF_SHOTS)] > 0 ?
+				"tingles" : "aches");
 	if (of_has(f, OF_INFRA))
 		msg_format("Your eyes tingle.");
 	if (of_has(f, OF_LIGHT))

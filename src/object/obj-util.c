@@ -1657,6 +1657,7 @@ s32b object_value(const object_type *o_ptr, int qty, int verbose)
 bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 	object_stack_t mode)
 {
+	int i;
 	int total = o_ptr->number + j_ptr->number;
 
 	/* Check against stacking limit - except in stores which absorb anyway */
@@ -1740,8 +1741,10 @@ bool object_similar(const object_type *o_ptr, const object_type *j_ptr,
 			if (o_ptr->to_d != j_ptr->to_d) return FALSE;
 			if (o_ptr->to_a != j_ptr->to_a) return FALSE;
 
-			/* Require identical pval */
-			if (o_ptr->pval[DEFAULT_PVAL] != j_ptr->pval[DEFAULT_PVAL]) return (FALSE);
+			/* Require all identical pvals */
+			for (i = 0; i < MAX_PVALS; i++)
+				if (o_ptr->pval[i] != j_ptr->pval[i])
+					return (FALSE);
 
 			/* Require identical ego-item types */
 			if (o_ptr->name2 != j_ptr->name2) return (FALSE);
@@ -3327,7 +3330,8 @@ void distribute_charges(object_type *o_ptr, object_type *q_ptr, int amt)
 	{
 		q_ptr->pval[DEFAULT_PVAL] = o_ptr->pval[DEFAULT_PVAL] * amt / o_ptr->number;
 
-		if (amt < o_ptr->number) o_ptr->pval[DEFAULT_PVAL] -= q_ptr->pval[DEFAULT_PVAL];
+		if (amt < o_ptr->number)
+			o_ptr->pval[DEFAULT_PVAL] -= q_ptr->pval[DEFAULT_PVAL];
 	}
 
 	/*

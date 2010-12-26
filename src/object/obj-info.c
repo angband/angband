@@ -277,7 +277,7 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 
 		if (count)
 		{
-			if ((object_pval_is_visible(o_ptr) || full) && !dummy)
+			if ((object_this_pval_is_visible(o_ptr, i) || full) && !dummy)
 				textblock_append_c(tb, (o_ptr->pval[i] > 0) ? TERM_L_GREEN : TERM_RED,
 					"%+i ", o_ptr->pval[i]);
 			else
@@ -291,7 +291,7 @@ static bool describe_stats(textblock *tb, const object_type *o_ptr,
 
 	if (search)
 	{
-		if ((object_pval_is_visible(o_ptr) || full) && !dummy)
+		if ((object_this_pval_is_visible(o_ptr, which_pval(o_ptr, OF_SEARCH)) || full) && !dummy)
 		{
 			textblock_append_c(tb, (o_ptr->pval[which_pval(o_ptr, OF_SEARCH)] > 0) ? TERM_L_GREEN : TERM_RED,
 				"%+i%% ", o_ptr->pval[which_pval(o_ptr, OF_SEARCH)] * 5);
@@ -632,10 +632,11 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 		return TRUE;
 	}
 
-	if (full)
+	if (full) {
 		object_flags(o_ptr, f);
-	else
+	} else {
 		object_flags_known(o_ptr, f);
+	}
 
 	textblock_append_c(tb, TERM_L_WHITE, "Combat info:\n");
 
@@ -692,11 +693,12 @@ static bool describe_combat(textblock *tb, const object_type *o_ptr,
 			object_flags_known(&p_ptr->inventory[i], tmp_f);
 
 			if (of_has(tmp_f, OF_BLOWS))
-				extra_blows += p_ptr->inventory[i].pval[DEFAULT_PVAL];
+				extra_blows += p_ptr->inventory[i].pval[which_pval(&p_ptr->inventory[i], OF_BLOWS)];
 		}
 
 		/* Then we add blows from the weapon being examined */
-		if (of_has(f, OF_BLOWS)) extra_blows += o_ptr->pval[DEFAULT_PVAL];
+		if (of_has(f, OF_BLOWS))
+			extra_blows += o_ptr->pval[which_pval(o_ptr, OF_BLOWS)];
 
 		/* Then we check for extra "real" blows */
 		for (dex_plus = 0; dex_plus < dex_plus_bound; dex_plus++)

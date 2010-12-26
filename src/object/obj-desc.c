@@ -641,9 +641,13 @@ static size_t obj_desc_pval(const object_type *o_ptr, char *buf, size_t max, siz
 
 	if (!flags_test(f, OF_SIZE, OF_PVAL_MASK, FLAG_END)) return end;
 
-	strnfcat(buf, max, &end, " (%+d", o_ptr->pval[0]);
-	for (i = 1; i < o_ptr->num_pvals; i++) {
-		strnfcat(buf, max, &end, ", %+d", o_ptr->pval[i]);
+	strnfcat(buf, max, &end, " (");
+	for (i = 0; i < o_ptr->num_pvals; i++) {
+		if (object_this_pval_is_visible(o_ptr, i)) {
+			if (i > 0)
+				strnfcat(buf, max, &end, ", ");
+			strnfcat(buf, max, &end, "%+d", o_ptr->pval[i]);
+		}
 	}
 
 	if ((o_ptr->num_pvals == 1) && !of_has(f, OF_HIDE_TYPE))
