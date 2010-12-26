@@ -53,7 +53,7 @@ static int test_g1(void *state) {
 }
 
 static int test_i0(void *state) {
-	errr r = parser_parse(state, "I:4:2:3d6");
+	errr r = parser_parse(state, "I:4:2");
 	struct object_kind *k;
 
 	eq(r, 0);
@@ -61,13 +61,11 @@ static int test_i0(void *state) {
 	require(k);
 	eq(k->tval, 4);
 	eq(k->sval, 2);
-	eq(k->pval[0].dice, 3);
-	eq(k->pval[0].sides, 6);
 	ok;
 }
 
 static int test_i1(void *state) {
-	errr r = parser_parse(state, "I:food:2:0");
+	errr r = parser_parse(state, "I:food:2");
 	struct object_kind *k;
 
 	eq(r, 0);
@@ -156,6 +154,21 @@ static int test_f0(void *state) {
 	k = parser_priv(state);
 	require(k);
 	require(k->flags);
+	ok;
+}
+
+static int test_l0(void *state) {
+	errr r = parser_parse(state, "L:1+2d3M4:STR | INT");
+	struct object_kind *k;
+
+	eq(r, 0);
+	k = parser_priv(state);
+	require(k);
+	eq(k->pval[0].base, 1);
+	eq(k->pval[0].dice, 2);
+	eq(k->pval[0].sides, 3);
+	eq(k->pval[0].m_bonus, 4);
+	require(k->pval_flags[0]);
 	ok;
 }
 

@@ -87,7 +87,7 @@ static int test_t1(void *state) {
 }
 
 static int test_c0(void *state) {
-	enum parser_error r = parser_parse(state, "C:1d2:3d4:5d6:7d8:1d2");
+	enum parser_error r = parser_parse(state, "C:1d2:3d4:5d6");
 	struct ego_item *e;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -99,15 +99,27 @@ static int test_c0(void *state) {
 	eq(e->to_d.sides, 4);
 	eq(e->to_a.dice, 5);
 	eq(e->to_a.sides, 6);
-	eq(e->pval[0].dice, 7);
-	eq(e->pval[0].sides, 8);
-	eq(e->pval[1].dice, 1);
-	eq(e->pval[1].sides, 2);
+	ok;
+}
+
+static int test_l0(void *state) {
+	enum parser_error r = parser_parse(state, "L:1+2d3M4:5:STR | INT");
+	struct ego_item *e;
+
+	eq(r, PARSE_ERROR_NONE);
+	e = parser_priv(state);
+	require(e);
+	eq(e->pval[0].base, 1);
+	eq(e->pval[0].dice, 2);
+	eq(e->pval[0].sides, 3);
+	eq(e->pval[0].m_bonus, 4);
+	eq(e->min_pval[0], 5);
+	require(e->pval_flags[0]);
 	ok;
 }
 
 static int test_m0(void *state) {
-	enum parser_error r = parser_parse(state, "M:10:13:4:7:4:3");
+	enum parser_error r = parser_parse(state, "M:10:13:4");
 	struct ego_item *e;
 
 	eq(r, PARSE_ERROR_NONE);
@@ -116,9 +128,6 @@ static int test_m0(void *state) {
 	eq(e->min_to_h, 10);
 	eq(e->min_to_d, 13);
 	eq(e->min_to_a, 4);
-	eq(e->min_pval[0], 7);
-	eq(e->min_pval[1], 4);
-	eq(e->min_pval[2], 3);
 	ok;
 }
 
