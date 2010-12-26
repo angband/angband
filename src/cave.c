@@ -735,8 +735,7 @@ void grid_data_as_text(grid_data *g, byte *ap, char *cp, byte *tap, char *tcp)
 			dc = r_ptr->x_char;
 
 			/* Turn uniques purple if desired (violet, actually) */
-			if (OPT(purple_uniques) && rf_has(r_ptr->flags,
-				RF_UNIQUE)) 
+			if (OPT(purple_uniques) && rf_has(r_ptr->flags, RF_UNIQUE))
 			{
 				/* Use (light) violet attr */
 				a = TERM_L_VIOLET;

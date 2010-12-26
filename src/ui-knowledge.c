@@ -935,6 +935,10 @@ static void display_monster(int col, int row, bool cursor, int oid)
 	byte a = r_ptr->x_attr;
 	byte c = r_ptr->x_char;
 
+	/* If uniques are purple, make it so */
+	if (OPT(purple_uniques) && rf_has(r_ptr->flags, RF_UNIQUE))
+		a = TERM_L_VIOLET;
+
 	/* Display the name */
 	c_prt(attr, r_ptr->name, row, col);
 
