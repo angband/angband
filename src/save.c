@@ -133,55 +133,27 @@ void wr_options(void)
 {
 	int i, k;
 
-	u32b flag[8];
-	u32b mask[8];
 	u32b window_flag[ANGBAND_TERM_MAX];
 	u32b window_mask[ANGBAND_TERM_MAX];
 
 
-	/* XXX */
-	for (i = 0; i < 4; i++) wr_u32b(0L);
-
-
-	/*** Special Options ***/
-
+	/* Special Options */
 	wr_byte(op_ptr->delay_factor);
 	wr_byte(op_ptr->hitpoint_warn);
 	wr_u16b(lazymove_delay);
 
+	/* Normal options */
+	for (i = 0; i < OPT_MAX; i++) {
+		const char *name = option_name(i);
+		if (!name)
+			continue;
 
-	/*** Normal options ***/
+		wr_string(name);
+		wr_byte(op_ptr->opt[i]);
+   }
 
-	/* Reset */
-	for (i = 0; i < 8; i++)
-	{
-		flag[i] = 0L;
-		mask[i] = 0L;
-	}
-
-	/* Analyze the options */
-	for (i = 0; i < OPT_MAX; i++)
-	{
-		int os = i / 32;
-		int ob = i % 32;
-
-		/* Process real entries */
-		if (!option_name(i)) continue;
-
-		/* Set flag */
-		if (op_ptr->opt[i])
-			flag[os] |= (1L << ob);
-
-		/* Set mask */
-		mask[os] |= (1L << ob);
-	}
-
-	/* Dump the flags */
-	for (i = 0; i < 8; i++) wr_u32b(flag[i]);
-
-	/* Dump the masks */
-	for (i = 0; i < 8; i++) wr_u32b(mask[i]);
-
+	/* Sentinel */
+	wr_byte(0);
 
 	/*** Window options ***/
 
@@ -539,7 +511,7 @@ void wr_randarts(void)
 {
 	size_t i, j;
 
-	if (!OPT(adult_randarts))
+	if (!OPT(birth_randarts))
 		return;
 
 	wr_u16b(z_info->a_max);

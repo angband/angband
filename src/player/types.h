@@ -163,6 +163,7 @@ typedef struct player
 
 	byte confusing;		/* Glowing hands */
 	byte searching;		/* Currently searching */
+	byte unignoring;	/* Unignoring */
 
 	byte spell_flags[PY_MAX_SPELLS]; /* Spell flags */
 

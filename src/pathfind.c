@@ -750,7 +750,7 @@ static bool run_test(void)
 		for (o_ptr = get_first_object(row, col); o_ptr; o_ptr = get_next_object(o_ptr))
 		{
 			/* Visible object */
-			if (o_ptr->marked && !squelch_hide_item(o_ptr)) return (TRUE);
+			if (o_ptr->marked && !squelch_item_ok(o_ptr)) return (TRUE);
 		}
 
 
@@ -1120,6 +1120,6 @@ void run_step(int dir)
 	p_ptr->energy_use = 100;
 
 	/* Move the player */
-	move_player(p_ptr->run_cur_dir);
+	move_player(p_ptr->run_cur_dir, TRUE);
 }
 

@@ -410,7 +410,7 @@ bool restore_level(void)
 void set_recall(void)
 {
 	/* Ironman */
-	if (OPT(adult_ironman) && !p_ptr->total_winner)
+	if (OPT(birth_ironman) && !p_ptr->total_winner)
 	{
 		msg_print("Nothing happens.");
 		return;
@@ -757,7 +757,7 @@ bool detect_treasure(bool aware)
 		light_spot(y, x);
 
 		/* Detect */
-		if (!squelch_hide_item(o_ptr))
+		if (!squelch_item_ok(o_ptr))
 			objects = TRUE;
 	}
 
@@ -893,7 +893,7 @@ bool detect_objects_magic(bool aware)
 			light_spot(y, x);
 
 			/* Detect */
-			if (!squelch_hide_item(o_ptr))
+			if (!squelch_item_ok(o_ptr))
 				detect = TRUE;
 		}
 	}

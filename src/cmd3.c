@@ -25,6 +25,7 @@
 #include "object/tvalsval.h"
 #include "object/object.h"
 #include "squelch.h"
+#include "ui-menu.h"
 #include "target.h"
 
 /*
@@ -101,425 +102,194 @@ void do_cmd_equip(void)
 	screen_load();
 }
 
-
-/*
- * Wield or wear a single item from the pack or floor
- */
-void wield_item(object_type *o_ptr, int item, int slot)
+enum
 {
-	object_type object_type_body;
-	object_type *i_ptr = &object_type_body;
-
-	cptr fmt;
-	char o_name[80];
-
-	bool combined_ammo = FALSE;
-	int num = 1;
-
-	/* If we are stacking ammo in the quiver */
-	if (obj_is_ammo(o_ptr))
-	{
-		num = o_ptr->number;
-		combined_ammo = object_similar(o_ptr, &p_ptr->inventory[slot],
-			OSTACK_QUIVER);
-	}
-
-	/* Take a turn */
-	p_ptr->energy_use = 100;
-
-	/* Obtain local object */
-	object_copy(i_ptr, o_ptr);
-
-	/* Modify quantity */
-	i_ptr->number = num;
-
-	/* Decrease the item (from the pack) */
-	if (item >= 0)
-	{
-		inven_item_increase(item, -num);
-		inven_item_optimize(item);
-	}
-
-	/* Decrease the item (from the floor) */
-	else
-	{
-		floor_item_increase(0 - item, -num);
-		floor_item_optimize(0 - item);
-	}
-
-	/* Get the wield slot */
-	o_ptr = &p_ptr->inventory[slot];
-
-	if (combined_ammo)
-	{
-		/* Add the new ammo to the already-quiver-ed ammo */
-		object_absorb(o_ptr, i_ptr);
-	}
-	else 
-	{
-		/* Take off existing item */
-		if (o_ptr->k_idx)
-			(void)inven_takeoff(slot, 255);
-
-		/* If we are wielding ammo we may need to "open" the slot by shifting
-		 * later ammo up the quiver; this is because we already called the
-		 * inven_item_optimize() function. */
-		if (slot >= QUIVER_START)
-			open_quiver_slot(slot);
-	
-		/* Wear the new stuff */
-		object_copy(o_ptr, i_ptr);
-
-		/* Increment the equip counter by hand */
-		p_ptr->equip_cnt++;
-	}
-
-	/* Increase the weight */
-	p_ptr->total_weight += i_ptr->weight * num;
-
-	/* Do any ID-on-wield */
-	object_notice_on_wield(o_ptr);
-
-	/* Where is the item now */
-	if (slot == INVEN_WIELD)
-		fmt = "You are wielding %s (%c).";
-	else if (slot == INVEN_BOW)
-		fmt = "You are shooting with %s (%c).";
-	else if (slot == INVEN_LIGHT)
-		fmt = "Your light source is %s (%c).";
-	else if (combined_ammo)
-		fmt = "You combine %s in your quiver (%c).";
-	else if (slot >= QUIVER_START && slot < QUIVER_END)
-		fmt = "You add %s to your quiver (%c).";
-	else
-		fmt = "You are wearing %s (%c).";
-
-	/* Describe the result */
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
-
-	/* Message */
-	message_format(MSG_WIELD, 0, fmt, o_name, index_to_label(slot));
-
-	/* Cursed! */
-	if (cursed_p(o_ptr))
-	{
-		/* Warn the player */
-		message_format(MSG_CURSED, 0, "Oops! It feels deathly cold!");
-
-		/* Sense the object */
-		object_notice_curses(o_ptr);
-	}
-
-	/* Save quiver size */
-	save_quiver_size(p_ptr);
-
-	/* See if we have to overflow the pack */
-	pack_overflow();
-
-	/* Recalculate bonuses, torch, mana */
-	p_ptr->notice |= PN_SORT_QUIVER;
-	p_ptr->update |= (PU_BONUS | PU_TORCH | PU_MANA);
-	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
-}
-
-
-
-/*
- * Destroy an item
- */
-void do_cmd_destroy(cmd_code code, cmd_arg args[])
-{
-	int item, amt;
-
-	object_type *o_ptr;
-
-	object_type destroyed_obj;
-
-	char o_name[120];
-
-	item = args[0].item;
-	amt = args[1].number;
-
-	/* Destroying squelched items is easy. */
-	if (item == ALL_SQUELCHED)
-	{
-		squelch_items();
-		return;
-	}
-
-	if (!item_is_available(item, NULL, USE_INVEN | USE_EQUIP | USE_FLOOR))
-	{
-		msg_print("You do not have that item to destroy it.");
-		return;
-	}
-
-	o_ptr = object_from_item_idx(item);
-
-	/* Can't destroy cursed items we're wielding. */
-	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
-	{
-		msg_print("You cannot destroy the cursed item.");
-		return;
-	}	
-
-	/* Describe the destroyed object by taking a copy with the right "amt" */
-	object_copy_amt(&destroyed_obj, o_ptr, amt);
-	object_desc(o_name, sizeof(o_name), &destroyed_obj,
-				ODESC_PREFIX | ODESC_FULL);
-
-	/* Artifacts cannot be destroyed */
-	if (artifact_p(o_ptr))
-	{
-		/* Message */
-		msg_format("You cannot destroy %s.", o_name);
-		object_notice_indestructible(o_ptr);
-
-		/* Combine the pack */
-		p_ptr->notice |= (PN_COMBINE);
-
-		/* Redraw stuff */
-		p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
-
-		/* Done */
-		return;
-	}
-
-	/* Message */
-	message_format(MSG_DESTROY, 0, "You destroy %s.", o_name);
-
-	/* Reduce the charges of rods/wands/staves */
-	reduce_charges(o_ptr, amt);
-
-	/* Eliminate the item (from the pack) */
-	if (item >= 0)
-	{
-		inven_item_increase(item, -amt);
-		inven_item_describe(item);
-		inven_item_optimize(item);
-	}
-
-	/* Eliminate the item (from the floor) */
-	else
-	{
-		floor_item_increase(0 - item, -amt);
-		floor_item_describe(0 - item);
-		floor_item_optimize(0 - item);
-	}
-}
-
+	IGNORE_THIS_ITEM,
+	UNIGNORE_THIS_ITEM,
+	IGNORE_THIS_FLAVOR,
+	UNIGNORE_THIS_FLAVOR,
+	IGNORE_THIS_QUALITY
+};
 
 void textui_cmd_destroy(void)
 {
-	int item, amt;
-
+	int item;
 	object_type *o_ptr;
 
-	object_type obj_to_destroy;
-
-	char result;
-	char o_name[120];
 	char out_val[160];
 
-	cptr q, s;
+	menu_type *m;
+	region r;
+	int selected;
 
 	/* Get an item */
-	q = "Destroy which item? ";
-	s = "You have nothing to destroy.";
-	if (!get_item(&item, q, s, CMD_DESTROY, (USE_INVEN | USE_EQUIP | USE_FLOOR | CAN_SQUELCH))) return;
-
-	/* Deal with squelched items */
-	if (item == ALL_SQUELCHED)
-	{
-		cmd_insert(CMD_DESTROY);
-		cmd_set_arg_item(cmd_get_top(), 0, item);
+	const char *q = "Ignore which item? ";
+	const char *s = "You have nothing to ignore.";
+	if (!get_item(&item, q, s, CMD_DESTROY, USE_INVEN | USE_EQUIP | USE_FLOOR))
 		return;
-	}
-	
+
 	o_ptr = object_from_item_idx(item);
 
-	/* Ask if player would prefer squelching instead of destruction */
+	m = menu_dynamic_new();
+	m->selections = lower_case;
 
-	/* Get a quantity */
-	amt = get_quantity(NULL, o_ptr->number);
-	if (amt <= 0) return;
+	/* Basic ignore option */
+	if (!o_ptr->ignore) {
+		menu_dynamic_add(m, "This item only", IGNORE_THIS_ITEM);
+	} else {
+		menu_dynamic_add(m, "Unignore this item", UNIGNORE_THIS_ITEM);
+	}
 
-	/* Describe the destroyed object by taking a copy with the right "amt" */
-	object_copy_amt(&obj_to_destroy, o_ptr, amt);
-	object_desc(o_name, sizeof(o_name), &obj_to_destroy,
-				ODESC_PREFIX | ODESC_FULL);
+	/* Flavour-aware squelch */
+	if (squelch_tval(o_ptr->tval) &&
+			(!artifact_p(o_ptr) || !object_flavor_is_aware(o_ptr))) {
+		bool squelched = kind_is_squelched_aware(o_ptr->kind) ||
+				kind_is_squelched_unaware(o_ptr->kind);
 
-	/* Verify destruction */
-	strnfmt(out_val, sizeof(out_val), "Really destroy %s? ", o_name);
-	
-	result = get_char(out_val, "yns", 3, 'n');
+		char sval_name[50];
+		object_desc(sval_name, sizeof sval_name, o_ptr,
+				ODESC_BASE | ODESC_PLURAL);
+		if (!squelched) {
+			strnfmt(out_val, sizeof out_val, "All %s", sval_name);
+			menu_dynamic_add(m, out_val, IGNORE_THIS_FLAVOR);
+		} else {
+			strnfmt(out_val, sizeof out_val, "Unignore all %s", sval_name);
+			menu_dynamic_add(m, out_val, UNIGNORE_THIS_FLAVOR);
+		}
+	}
 
-	if (result == 'y')
-	{
+	/* Quality squelching */
+	if (object_was_sensed(o_ptr) || object_was_worn(o_ptr) ||
+			object_is_known_not_artifact(o_ptr)) {
+		byte value = squelch_level_of(o_ptr);
+		int type = squelch_type_of(o_ptr);
+
+		if (object_is_jewelry(o_ptr) &&
+					squelch_level_of(o_ptr) != SQUELCH_BAD)
+			value = SQUELCH_MAX;
+
+		if (value != SQUELCH_MAX && type != TYPE_MAX) {
+			strnfmt(out_val, sizeof out_val, "All %s %s",
+					quality_values[value].name, quality_choices[type].name);
+
+			menu_dynamic_add(m, out_val, IGNORE_THIS_QUALITY);
+		}
+	}
+
+	/* work out display region */
+	r.width = menu_dynamic_longest_entry(m) + 3 + 2; /* +3 for tag, 2 for pad */
+	r.col = 80 - r.width;
+	r.row = 1;
+	r.page_rows = m->count;
+
+	screen_save();
+	menu_layout(m, &r);
+	region_erase_bordered(&r);
+
+	prt("(Enter to select, ESC) Ignore:", 0, 0);
+	selected = menu_dynamic_select(m);
+
+	screen_load();
+
+	if (selected == IGNORE_THIS_ITEM) {
 		cmd_insert(CMD_DESTROY);
 		cmd_set_arg_item(cmd_get_top(), 0, item);
-		cmd_set_arg_number(cmd_get_top(), 1, amt);
-	}
-	else if (result == 's' && squelch_interactive(o_ptr))
-	{
-		p_ptr->notice |= PN_SQUELCH;
+	} else if (selected == UNIGNORE_THIS_ITEM) {
+		o_ptr->ignore = FALSE;
+	} else if (selected == IGNORE_THIS_FLAVOR) {
+		object_squelch_flavor_of(o_ptr);
+	} else if (selected == UNIGNORE_THIS_FLAVOR) {
+		kind_squelch_clear(o_ptr->kind);
+	} else if (selected == IGNORE_THIS_QUALITY) {
+		byte value = squelch_level_of(o_ptr);
+		int type = squelch_type_of(o_ptr);
 
-		/* If the item is not equipped, we can rely on it being dropped and */
-		/* ignored, otherwise we should continue on to check if we should */
-		/* still destroy it. */
-		if (item < INVEN_WIELD) return;
+		squelch_level[type] = value;
 	}
+
+	p_ptr->notice |= PN_SQUELCH;
+
+	menu_dynamic_free(m);
 }
 
-void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
+void textui_cmd_toggle_ignore(void)
 {
-	/* Refuel */
-	j_ptr->timeout += o_ptr->timeout ? o_ptr->timeout : o_ptr->pval;
-
-	/* Message */
-	msg_print("You fuel your lamp.");
-
-	/* Comment */
-	if (j_ptr->timeout >= FUEL_LAMP)
-	{
-		j_ptr->timeout = FUEL_LAMP;
-		msg_print("Your lamp is full.");
-	}
-
-	/* Refilled from a lantern */
-	if (o_ptr->sval == SV_LIGHT_LANTERN)
-	{
-		/* Unstack if necessary */
-		if (o_ptr->number > 1)
-		{
-			object_type *i_ptr;
-			object_type object_type_body;
-
-			/* Get local object */
-			i_ptr = &object_type_body;
-
-			/* Obtain a local object */
-			object_copy(i_ptr, o_ptr);
-
-			/* Modify quantity */
-			i_ptr->number = 1;
-
-			/* Remove fuel */
-			i_ptr->timeout = 0;
-
-			/* Unstack the used item */
-			o_ptr->number--;
-			p_ptr->total_weight -= i_ptr->weight;
-
-			/* Carry or drop */
-			if (item >= 0)
-				item = inven_carry(p_ptr, i_ptr);
-			else
-				drop_near(i_ptr, 0, p_ptr->py, p_ptr->px, FALSE);
-		}
-
-		/* Empty a single lantern */
-		else
-		{
-			/* No more fuel */
-			o_ptr->timeout = 0;
-		}
-
-		/* Combine / Reorder the pack (later) */
-		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
-
-		/* Redraw stuff */
-		p_ptr->redraw |= (PR_INVEN);
-	}
-
-	/* Refilled from a flask */
-	else
-	{
-		/* Decrease the item (from the pack) */
-		if (item >= 0)
-		{
-			inven_item_increase(item, -1);
-			inven_item_describe(item);
-			inven_item_optimize(item);
-		}
-
-		/* Decrease the item (from the floor) */
-		else
-		{
-			floor_item_increase(0 - item, -1);
-			floor_item_describe(0 - item);
-			floor_item_optimize(0 - item);
-		}
-	}
-
-	/* Recalculate torch */
-	p_ptr->update |= (PU_TORCH);
-
-	/* Redraw stuff */
-	p_ptr->redraw |= (PR_EQUIP);
+	p_ptr->unignoring = !p_ptr->unignoring;
+	p_ptr->notice |= PN_SQUELCH;
+	do_cmd_redraw();
 }
 
-
-void refuel_torch(object_type *j_ptr, object_type *o_ptr, int item)
+void textui_obj_wield(object_type *o_ptr, int item)
 {
-	bitflag f[OF_SIZE];
-	bitflag g[OF_SIZE];
+	int slot = wield_slot(o_ptr);
 
-	/* Refuel */
-	j_ptr->timeout += o_ptr->timeout + 5;
-
-	/* Message */
-	msg_print("You combine the torches.");
-
-	/* Transfer the LIGHT flag if refuelling from a torch with it to one
-	   without it */
-	object_flags(o_ptr, f);
-	object_flags(j_ptr, g);
-	if (of_has(f, OF_LIGHT) && !of_has(g, OF_LIGHT))
+	/* Usually if the slot is taken we'll just replace the item in the slot,
+	 * but in some cases we need to ask the user which slot they actually
+	 * want to replace */
+	if (p_ptr->inventory[slot].k_idx)
 	{
-		of_on(j_ptr->flags, OF_LIGHT);
-		if (!j_ptr->name2) j_ptr->name2 = EGO_BRIGHTNESS;
-		msg_print("Your torch shines further!");
+		if (o_ptr->tval == TV_RING)
+		{
+			cptr q = "Replace which ring? ";
+			cptr s = "Error in obj_wield, please report";
+			item_tester_hook = obj_is_ring;
+			if (!get_item(&slot, q, s, CMD_WIELD, USE_EQUIP)) return;
+		}
+
+		if (obj_is_ammo(o_ptr) && !object_similar(&p_ptr->inventory[slot],
+			o_ptr, OSTACK_QUIVER))
+		{
+			cptr q = "Replace which ammunition? ";
+			cptr s = "Error in obj_wield, please report";
+			item_tester_hook = obj_is_ammo;
+			if (!get_item(&slot, q, s, CMD_WIELD, USE_EQUIP)) return;
+		}
 	}
 
-	/* Over-fuel message */
-	if (j_ptr->timeout >= FUEL_TORCH)
-	{
-		j_ptr->timeout = FUEL_TORCH;
-		msg_print("Your torch is fully fueled.");
-	}
-
-	/* Refuel message */
-	else
-	{
-		msg_print("Your torch glows more brightly.");
-	}
-
-	/* Decrease the item (from the pack) */
-	if (item >= 0)
-	{
-		inven_item_increase(item, -1);
-		inven_item_describe(item);
-		inven_item_optimize(item);
-	}
-
-	/* Decrease the item (from the floor) */
-	else
-	{
-		floor_item_increase(0 - item, -1);
-		floor_item_describe(0 - item);
-		floor_item_optimize(0 - item);
-	}
-
-	/* Recalculate torch */
-	p_ptr->update |= (PU_TORCH);
-
-	/* Redraw stuff */
-	p_ptr->redraw |= (PR_EQUIP);
+	cmd_insert(CMD_WIELD);
+	cmd_set_arg_item(cmd_get_top(), 0, item);
+	cmd_set_arg_number(cmd_get_top(), 1, slot);
 }
 
+/* Inscribe an object */
+void textui_obj_inscribe(object_type *o_ptr, int item)
+{
+	char o_name[80];
+	char tmp[80] = "";
 
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+	msg_format("Inscribing %s.", o_name);
+	message_flush();
 
+	/* Use old inscription */
+	if (o_ptr->note)
+		strnfmt(tmp, sizeof(tmp), "%s", quark_str(o_ptr->note));
 
+	/* Get a new inscription (possibly empty) */
+	if (get_string("Inscription: ", tmp, sizeof(tmp)))
+	{
+		cmd_insert(CMD_INSCRIBE);
+		cmd_set_arg_item(cmd_get_top(), 0, item);
+		cmd_set_arg_string(cmd_get_top(), 1, tmp);
+	}
+}
+
+/* Examine an object */
+void textui_obj_examine(object_type *o_ptr, int item)
+{
+	char header[120];
+
+	textblock *tb;
+	region area = { 0, 0, 0, 0 };
+
+	track_object(item);
+
+	tb = object_info(o_ptr, OINFO_NONE);
+	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
+
+	textui_textblock_show(tb, area, format("%^s", header));
+	textblock_free(tb);
+}
 
 
 /*

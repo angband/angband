@@ -1207,7 +1207,7 @@ bool describe_origin(textblock *tb, const object_type *o_ptr)
 static void describe_flavor_text(textblock *tb, const object_type *o_ptr)
 {
 	/* Display the known artifact description */
-	if (!OPT(adult_randarts) && o_ptr->name1 &&
+	if (!OPT(birth_randarts) && o_ptr->name1 &&
 			object_is_known(o_ptr) && a_info[o_ptr->name1].text)
 	{
 		textblock_append(tb, "%s\n\n", a_info[o_ptr->name1].text);

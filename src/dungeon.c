@@ -1750,7 +1750,7 @@ void play_game(void)
 		player_birth(p_ptr->ht_birth ? TRUE : FALSE);
 
 		/* Randomize the artifacts */
-		if (OPT(adult_randarts))
+		if (OPT(birth_randarts))
 			do_randart(seed_randart, TRUE);
 	}
 

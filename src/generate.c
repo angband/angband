@@ -347,7 +347,7 @@ static void new_player_spot(void)
 		/* Refuse to start on anti-teleport grids */
 		if (cave_info[y][x] & (CAVE_ICKY)) continue;
 
-		if (!OPT(adult_no_stairs))
+		if (!OPT(birth_no_stairs))
 		{
 			if (p_ptr->create_down_stair)
 			{
@@ -3592,7 +3592,7 @@ static int calculate_feeling(int rating, int depth)
 	else feeling = 10;
 
 	/* Hack -- Have a special feeling sometimes */
-	if (good_item_flag && OPT(adult_no_preserve)) feeling = 1;
+	if (good_item_flag && OPT(birth_no_preserve)) feeling = 1;
 
 	return feeling;
 }

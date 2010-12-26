@@ -288,20 +288,166 @@ int rd_randomizer(void)
 }
 
 
+/*
+ * Read options, version 2.
+ */
+int rd_options_2(void)
+{
+	int i, n;
+
+	byte b;
+
+	u16b tmp16u;
+
+	u32b window_flag[ANGBAND_TERM_MAX];
+	u32b window_mask[ANGBAND_TERM_MAX];
+
+
+	/*** Special info */
+
+	/* Read "delay_factor" */
+	rd_byte(&b);
+	op_ptr->delay_factor = b;
+
+	/* Read "hitpoint_warn" */
+	rd_byte(&b);
+	op_ptr->hitpoint_warn = b;
+
+	/* Read lazy movement delay */
+	rd_u16b(&tmp16u);
+	lazymove_delay = (tmp16u < 1000) ? tmp16u : 0;
+
+
+	/*** Normal Options ***/
+
+	while (1) {
+		byte value;
+		char name[20];
+		rd_string(name, sizeof name);
+
+		if (!name[0])
+			break;
+
+		rd_byte(&value);
+		option_set(name, !!value);
+	}
+
+	/*** Window Options ***/
+
+	for (n = 0; n < ANGBAND_TERM_MAX; n++)
+		rd_u32b(&window_flag[n]);
+	for (n = 0; n < ANGBAND_TERM_MAX; n++)
+		rd_u32b(&window_mask[n]);
+
+	/* Analyze the options */
+	for (n = 0; n < ANGBAND_TERM_MAX; n++)
+	{
+		/* Analyze the options */
+		for (i = 0; i < 32; i++)
+		{
+			/* Process valid flags */
+			if (window_flag_desc[i])
+			{
+				/* Blank invalid flags */
+				if (!(window_mask[n] & (1L << i)))
+				{
+					window_flag[n] &= ~(1L << i);
+				}
+			}
+		}
+	}
+
+	/* Set up the subwindows */
+	subwindows_set_flags(window_flag, ANGBAND_TERM_MAX);
+
+	return 0;
+}
+
+
+static const struct {
+	int num;
+	const char *text;
+} num_to_text[] = {
+	{ 0, "rogue_like_commands" },
+	{ 1, "quick_messages" },
+	{ 2, "use_sound" },
+	{ 3, "pickup_detail" },
+	{ 4, "use_old_target" },
+	{ 5, "pickup_always" },
+	{ 6, "pickup_inven" },
+	{ 14, "ring_bell" },
+	{ 15, "show_flavors" },
+	{ 20, "disturb_move" },
+	{ 21, "disturb_near" },
+	{ 22, "disturb_detect" },
+	{ 23, "disturb_state" },
+	{ 38, "view_perma_grids" },
+	{ 39, "view_torch_grids" },
+	{ 52, "flush_failure" },
+	{ 53, "flush_disturb" },
+	{ 60, "view_yellow_light" },
+	{ 61, "view_bright_light" },
+	{ 62, "view_granite_light" },
+	{ 63, "view_special_light" },
+	{ 64, "easy_open" },
+	{ 65, "easy_alter" },
+	{ 66, "animate_flicker" },
+	{ 68, "center_player" },
+	{ 69, "purple_uniques" },
+	{ 70, "xchars_to_file" },
+	{ 71, "auto_more" },
+	{ 74, "hp_changes_color" },
+	{ 77, "mouse_movement" },
+	{ 78, "mouse_buttons" },
+	{ 79, "notify_recharge" },
+	{ 160, "cheat_peek" },
+	{ 161, "cheat_hear" },
+	{ 162, "cheat_room" },
+	{ 163, "cheat_xtra" },
+	{ 164, "cheat_know" },
+	{ 165, "cheat_live" },
+	{ 192, "birth_maximize" },
+	{ 193, "birth_randarts" },
+	{ 195, "birth_ironman" },
+	{ 196, "birth_no_stores" },
+	{ 197, "birth_no_artifacts" },
+	{ 198, "birth_no_stacking" },
+	{ 199, "birth_no_preserve" },
+	{ 200, "birth_no_stairs" },
+	{ 201, "birth_no_feelings" },
+	{ 202, "birth_no_selling" },
+	{ 205, "birth_ai_sound" },
+	{ 206, "birth_ai_smell" },
+	{ 207, "birth_ai_packs" },
+	{ 208, "birth_ai_learn" },
+	{ 209, "birth_ai_cheat" },
+	{ 210, "birth_ai_smart" },
+	{ 224, "score_peek" },
+	{ 225, "score_hear" },
+	{ 226, "score_room" },
+	{ 227, "score_xtra" },
+	{ 228, "score_know" },
+	{ 229, "score_live" },
+};
+
+static const char *lookup_option(int opt)
+{
+	size_t i;
+	for (i = 0; i < N_ELEMENTS(num_to_text); i++) {
+		if (num_to_text[i].num == opt)
+			return num_to_text[i].text;
+	}
+
+	return NULL;
+}
+
 
 /*
  * Read options
  *
- * Note that the normal options are stored as a set of 256 bit flags,
- * plus a set of 256 bit masks to indicate which bit flags were defined
- * at the time the savefile was created.  This will allow new options
- * to be added, and old options to be removed, at any time, without
- * hurting old savefiles.
- *
- * The window options are stored in the same way, but note that each
- * window gets 32 options, and their order is fixed by certain defines.
+ * XXX Remove this for the next release after 3.2.
  */
-int rd_options(void)
+int rd_options_1(void)
 {
 	int i, n;
 
@@ -311,6 +457,7 @@ int rd_options(void)
 
 	u32b flag[8];
 	u32b mask[8];
+
 	u32b window_flag[ANGBAND_TERM_MAX];
 	u32b window_mask[ANGBAND_TERM_MAX];
 
@@ -345,7 +492,8 @@ int rd_options(void)
 	for (n = 0; n < 8; n++) rd_u32b(&mask[n]);
 
 	/* Analyze the options */
-	for (i = 0; i < OPT_MAX; i++)
+	/* 256 is the old OPT_MAX */
+	for (i = 0; i < 256; i++)
 	{
 		int os = i / 32;
 		int ob = i % 32;
@@ -353,13 +501,9 @@ int rd_options(void)
 		/* Process saved entries */
 		if (mask[os] & (1L << ob))
 		{
-			/* Set flag */
-			if (flag[os] & (1L << ob))
-				op_ptr->opt[i] = TRUE;
-
-			/* Clear flag */
-			else
-				op_ptr->opt[i] = FALSE;
+			const char *name = lookup_option(i);
+			if (name)
+				option_set(name, flag[os] & (1L << ob) ? TRUE : FALSE);
 		}
 	}
 
@@ -367,15 +511,11 @@ int rd_options(void)
 
 	/* Read the window flags */
 	for (n = 0; n < ANGBAND_TERM_MAX; n++)
-	{
 		rd_u32b(&window_flag[n]);
-	}
 
 	/* Read the window masks */
 	for (n = 0; n < ANGBAND_TERM_MAX; n++)
-	{
 		rd_u32b(&window_mask[n]);
-	}
 
 	/* Analyze the options */
 	for (n = 0; n < ANGBAND_TERM_MAX; n++)
@@ -923,7 +1063,7 @@ int rd_randarts(void)
 	s32b tmp32s;
 	u32b tmp32u;
 
-	if (!OPT(adult_randarts))
+	if (!OPT(birth_randarts))
 		return 0;
 
 	if (FALSE)
