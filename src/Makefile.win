@@ -47,7 +47,7 @@ endif
 
 CC = $(CROSS)gcc
 WRES = $(CROSS)windres
-WARNINGS = -Wall -Wextra -Wno-unused-parameter
+WARNINGS = -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers
 CFLAGS += $(WARNINGS) -std=c99 -Wdeclaration-after-statement -O2 -I.
 LIBS += -s
 
