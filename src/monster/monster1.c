@@ -1361,7 +1361,7 @@ static void describe_monster_abilities(int r_idx, const monster_lore *l_ptr)
 
 	/* Describe special things */
 	if (rf_has(f, RF_MULTIPLY))
-		text_out("%^s breeds explosively.  ", wd_he[msex]);
+		text_out_c(TERM_ORANGE, "%^s breeds explosively.  ", wd_he[msex]);
 	if (rf_has(f, RF_REGENERATE))
 		text_out("%^s regenerates quickly.  ", wd_he[msex]);
 	if (rf_has(f, RF_HAS_LITE))
@@ -1788,8 +1788,10 @@ static void describe_monster_movement(int r_idx, const monster_lore *l_ptr)
 	}
 
 	/* The code above includes "attack speed" */
-	if (rf_has(f, RF_NEVER_MOVE))
-		text_out(", but does not deign to chase intruders");
+	if (rf_has(f, RF_NEVER_MOVE)) {
+		text_out(", but ");
+		text_out_c(TERM_L_GREEN, "does not deign to chase intruders");
+	}
 
 	/* End this sentence */
 	text_out(".  ");
