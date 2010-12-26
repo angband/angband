@@ -70,9 +70,9 @@ const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER] =
 		OPT_disturb_detect,
 		OPT_disturb_state,
 		OPT_auto_more,
-		OPT_flush_failure,
 		OPT_flush_disturb,
 		OPT_notify_recharge,
+		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
 		OPT_NONE,
@@ -145,7 +145,7 @@ static const struct option options[OPT_MAX] =
 { "disturb_near",        "Disturb whenever viewable monster moves",     TRUE },  /* 8 */
 { "disturb_detect",      "Disturb whenever leaving trap detected area", TRUE },  /* 9 */
 { "disturb_state",       "Disturb whenever player state changes",       TRUE },  /* 10 */
-{ "flush_failure",       "Flush input on various failures",             TRUE },  /* 11 */
+{ NULL,                  NULL,                                          FALSE }, /* 11 */
 { "flush_disturb",       "Flush input whenever disturbed",              FALSE }, /* 12 */
 { "view_yellow_light",   "Use special colors for torch light",          FALSE }, /* 13 */
 { "easy_open",           "Open/Disarm/Close without direction",         TRUE }, /* 14 */

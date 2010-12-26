@@ -651,15 +651,6 @@ void flush(void)
 
 
 /*
- * Flush all pending input if the OPT(flush_failure) option is set.
- */
-void flush_fail(void)
-{
-	if (OPT(flush_failure)) flush();
-}
-
-
-/*
  * Local variable -- we are inside a "macro action"
  *
  * Do not match any macros until "ascii 30" is found.

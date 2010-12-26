@@ -55,7 +55,6 @@ extern const int option_page[OPT_PAGE_MAX][OPT_PAGE_PER];
 #define OPT_disturb_near			8
 #define OPT_disturb_detect			9
 #define OPT_disturb_state			10
-#define OPT_flush_failure			11
 #define OPT_flush_disturb			12
 #define OPT_view_yellow_light		13
 #define OPT_easy_open 				14

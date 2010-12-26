@@ -376,7 +376,7 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		{
 			/* We may continue repeating */
 			more = TRUE;
-			if (OPT(flush_failure)) flush();
+			flush();
 			message(MSG_LOCKPICK_FAIL, 0, "You failed to pick the lock.");
 		}
 	}
@@ -462,7 +462,7 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	{
 		/* We may keep trying */
 		more = TRUE;
-		if (OPT(flush_failure)) flush();
+		flush();
 		msg_print("You failed to disarm the chest.");
 	}
 
@@ -703,8 +703,7 @@ static bool do_cmd_open_aux(int y, int x)
 		/* Failure */
 		else
 		{
-			/* Failure */
-			if (OPT(flush_failure)) flush();
+			flush();
 
 			/* Message */
 			message(MSG_LOCKPICK_FAIL, 0, "You failed to pick the lock.");
@@ -1340,8 +1339,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 	/* Failure -- Keep trying */
 	else if ((i > 5) && (randint1(i) > 5))
 	{
-		/* Failure */
-		if (OPT(flush_failure)) flush();
+		flush();
 
 		/* Message */
 		msg_format("You failed to disarm the %s.", name);
