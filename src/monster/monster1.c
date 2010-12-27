@@ -624,12 +624,12 @@ static void describe_monster_spells(int r_idx, const monster_lore *l_ptr, const 
 		vc[vn] = colors[RSF_BR_DARK];
 		vd[vn++] = MIN(known_hp / BR_DARK_DIVISOR, BR_DARK_MAX);
 	}
-	if (rsf_has(l_ptr->spell_flags, RSF_BR_CONF))
+/*	if (rsf_has(l_ptr->spell_flags, RSF_BR_CONF))
 	{
 		vp[vn] = "confusion";
 		vc[vn] = colors[RSF_BR_CONF];
 		vd[vn++] = MIN(known_hp / BR_CONF_DIVISOR, BR_CONF_MAX);
-	}
+	} */
 	if (rsf_has(l_ptr->spell_flags, RSF_BR_SOUN))
 	{
 		vp[vn] = "sound";

@@ -3421,14 +3421,14 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		{
 			if (blind) msg_print("You are hit by something!");
 			take_hit(dam, killer);
-			if (!p_ptr->state.resist_sound)
+			if (!p_ptr->state.resist_stun)
 			{
 				int k = (randint1((dam > 40) ? 35 : (dam * 3 / 4 + 5)));
 				(void)inc_timed(TMD_STUN, k, TRUE);
 			}
 			else
 			{
-				wieldeds_notice_flag(OF_RES_SOUND);
+				wieldeds_notice_flag(OF_RES_STUN);
 			}
 			break;
 		}
@@ -3576,7 +3576,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			break;
 		}
 
-		/* Pure confusion - no longer used post-3.2 */
+/* Pure confusion - no longer used to deal damage post-3.2
 		case GF_CONFUSION:
 		{
 			if (blind) msg_print("You are hit by something!");
@@ -3592,7 +3592,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			take_hit(dam, killer);
 			break;
 		}
-
+*/
 		/* Disenchantment -- see above */
 		case GF_DISENCHANT:
 		{
@@ -3631,10 +3631,10 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_FORCE:
 		{
 			if (blind) msg_print("You are hit by something!");
-			if (!p_ptr->state.resist_sound)
+			if (!p_ptr->state.resist_stun)
 				(void)inc_timed(TMD_STUN, randint1(20), TRUE);
 			else
-				wieldeds_notice_flag(OF_RES_SOUND);
+				wieldeds_notice_flag(OF_RES_STUN);
 
 			take_hit(dam, killer);
 			break;
@@ -3751,14 +3751,14 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 				teleport_player(5);
 
 			(void)inc_timed(TMD_SLOW, randint0(4) + 4, TRUE);
-			if (!p_ptr->state.resist_sound)
+			if (!p_ptr->state.resist_stun)
 			{
 				int k = (randint1((dam > 90) ? 35 : (dam / 3 + 5)));
 				(void)inc_timed(TMD_STUN, k, TRUE);
 			}
 			else
 			{
-				wieldeds_notice_flag(OF_RES_SOUND);
+				wieldeds_notice_flag(OF_RES_STUN);
 			}
 			take_hit(dam, killer);
 			break;
@@ -3791,10 +3791,10 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			else
 				wieldeds_notice_flag(OF_RES_SHARD);
 
-			if (!p_ptr->state.resist_sound)
+			if (!p_ptr->state.resist_stun)
 				(void)inc_timed(TMD_STUN, randint1(15), TRUE);
 			else
-				wieldeds_notice_flag(OF_RES_SOUND);
+				wieldeds_notice_flag(OF_RES_STUN);
 
 			break;
 		}

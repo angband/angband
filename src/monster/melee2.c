@@ -928,7 +928,7 @@ bool make_attack_spell(int m_idx)
 			update_smart_learn(m_idx, DRS_RES_DARK);
 			break;
 		}
-
+/* Confusion breath no longer used post-3.2
 		case RSF_BR_CONF:
 		{
 			disturb(1, 0);
@@ -939,7 +939,7 @@ bool make_attack_spell(int m_idx)
 			update_smart_learn(m_idx, DRS_RES_CONFU);
 			break;
 		}
-
+*/
 		case RSF_BR_SOUN:
 		{
 			disturb(1, 0);

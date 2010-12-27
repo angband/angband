@@ -76,11 +76,12 @@ typedef struct
 	bool resist_nethr;	/* Resist nether */
 	bool resist_chaos;	/* Resist chaos */
 	bool resist_disen;	/* Resist disenchant */
+	bool resist_stun;	/* Resist stunning */
 
 	bool slow_digest;	/* Slower digestion */
-	bool impair_hp;   /* Slow HP regeneration */
-	bool impair_mana; /* Slow mana regeneration */
-	bool ffall;			/* Feather falling */
+	bool impair_hp;   	/* Slow HP regeneration */
+	bool impair_mana; 	/* Slow mana regeneration */
+	bool ffall;		/* Feather falling */
 	bool regenerate;	/* Regeneration */
 	bool telepathy;		/* Telepathy */
 	bool see_inv;		/* See invisible */
