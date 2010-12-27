@@ -184,9 +184,9 @@ static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 	{ "Disen",	OF_RES_DISEN,   FLAG_END,   FLAG_END },
 	{ "S.Dig",	OF_SLOW_DIGEST, FLAG_END,   FLAG_END },
 	{ "Feath",	OF_FEATHER,     FLAG_END,   FLAG_END },
-	{ "rFear",	OF_RES_FEAR,    FLAG_END,   FLAG_END },
-	{ "rBlnd",	OF_RES_BLIND,   FLAG_END,   FLAG_END },
-	{ "rConf",	OF_RES_CONFU,   FLAG_END,   FLAG_END },
+	{ "pFear",	OF_RES_FEAR,    FLAG_END,   FLAG_END },
+	{ "pBlnd",	OF_RES_BLIND,   FLAG_END,   FLAG_END },
+	{ "pConf",	OF_RES_CONFU,   FLAG_END,   FLAG_END },
 
 	{ "Light",	OF_LIGHT,       FLAG_END,   FLAG_END },
 	{ "Regen",	OF_REGEN,       FLAG_END,   FLAG_END },
