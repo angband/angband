@@ -3729,8 +3729,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 
 					for (k = 0; k < A_MAX; k++)
 					{
-						p_ptr->stat_cur[k] = (p_ptr->stat_cur[k] * 3) / 4;
-						if (p_ptr->stat_cur[k] < 3) p_ptr->stat_cur[k] = 3;
+						player_stat_dec(p_ptr, k, FALSE);
 					}
 					p_ptr->update |= (PU_BONUS);
 					break;
