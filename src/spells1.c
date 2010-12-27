@@ -3717,9 +3717,8 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 
 					msg_format("You're not as %s as you used to be...", act);
 
-					p_ptr->stat_cur[k] = (p_ptr->stat_cur[k] * 3) / 4;
-					if (p_ptr->stat_cur[k] < 3) p_ptr->stat_cur[k] = 3;
-					p_ptr->update |= (PU_BONUS);
+					player_stat_dec(p_ptr, k, FALSE);
+					player_stat_dec(p_ptr, k, FALSE);
 					break;
 				}
 
@@ -3731,7 +3730,6 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 					{
 						player_stat_dec(p_ptr, k, FALSE);
 					}
-					p_ptr->update |= (PU_BONUS);
 					break;
 				}
 			}
