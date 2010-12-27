@@ -173,20 +173,20 @@ static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 	{ "rFire",	OF_RES_FIRE,    OF_IM_FIRE, OF_VULN_FIRE },
 	{ "rCold",	OF_RES_COLD,    OF_IM_COLD, OF_VULN_COLD },
 	{ "rPois",	OF_RES_POIS,    FLAG_END,   FLAG_END },
-	{ "rFear",	OF_RES_FEAR,    FLAG_END,   FLAG_END },
 	{ "rLite",	OF_RES_LIGHT,   FLAG_END,   FLAG_END },
 	{ "rDark",	OF_RES_DARK,    FLAG_END,   FLAG_END },
-	{ "rBlnd",	OF_RES_BLIND,   FLAG_END,   FLAG_END },
-
-	{ "rConf",	OF_RES_CONFU,   FLAG_END,   FLAG_END },
 	{ "Sound",	OF_RES_SOUND,   FLAG_END,   FLAG_END },
 	{ "Shard",	OF_RES_SHARD,   FLAG_END,   FLAG_END },
+
 	{ "Nexus",	OF_RES_NEXUS,   FLAG_END,   FLAG_END },
 	{ "Nethr",	OF_RES_NETHR,   FLAG_END,   FLAG_END },
 	{ "Chaos",	OF_RES_CHAOS,   FLAG_END,   FLAG_END },
 	{ "Disen",	OF_RES_DISEN,   FLAG_END,   FLAG_END },
 	{ "S.Dig",	OF_SLOW_DIGEST, FLAG_END,   FLAG_END },
 	{ "Feath",	OF_FEATHER,     FLAG_END,   FLAG_END },
+	{ "rFear",	OF_RES_FEAR,    FLAG_END,   FLAG_END },
+	{ "rBlnd",	OF_RES_BLIND,   FLAG_END,   FLAG_END },
+	{ "rConf",	OF_RES_CONFU,   FLAG_END,   FLAG_END },
 
 	{ "Light",	OF_LIGHT,       FLAG_END,   FLAG_END },
 	{ "Regen",	OF_REGEN,       FLAG_END,   FLAG_END },
@@ -194,19 +194,19 @@ static const struct player_flag_record player_flag_table[RES_ROWS*4] =
 	{ "Invis",	OF_SEE_INVIS,   FLAG_END,   FLAG_END },
 	{ "FrAct",	OF_FREE_ACT,    FLAG_END,   FLAG_END },
 	{ "HLife",	OF_HOLD_LIFE,   FLAG_END,   FLAG_END },
-	{ "ImpHP",	OF_IMPAIR_HP,   FLAG_END,   FLAG_END },
-	{ "ImpSP",	OF_IMPAIR_MANA, FLAG_END,   FLAG_END },
-	{ " Fear",	OF_AFRAID,      FLAG_END,   FLAG_END },
-
-	{ "Aggrv",	OF_AGGRAVATE,   FLAG_END,   FLAG_END },
 	{ "Stea.",	OF_STEALTH,     FLAG_END,   FLAG_END },
 	{ "Sear.",	OF_SEARCH,      FLAG_END,   FLAG_END },
 	{ "Infra",	OF_INFRA,       FLAG_END,   FLAG_END },
+
 	{ "Tunn.",	OF_TUNNEL,      FLAG_END,   FLAG_END },
 	{ "Speed",	OF_SPEED,       FLAG_END,   FLAG_END },
 	{ "Blows",	OF_BLOWS,       FLAG_END,   FLAG_END },
 	{ "Shots",	OF_SHOTS,       FLAG_END,   FLAG_END },
 	{ "Might",	OF_MIGHT,       FLAG_END,   FLAG_END },
+	{ "ImpHP",	OF_IMPAIR_HP,   FLAG_END,   FLAG_END },
+	{ "ImpSP",	OF_IMPAIR_MANA, FLAG_END,   FLAG_END },
+	{ " Fear",	OF_AFRAID,      FLAG_END,   FLAG_END },
+	{ "Aggrv",	OF_AGGRAVATE,   FLAG_END,   FLAG_END },
 };
 
 #define RES_COLS (5 + 2 + INVEN_TOTAL - INVEN_WIELD)

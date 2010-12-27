@@ -806,11 +806,8 @@ void set_ego_xtra_sustain(bitflag flags[OF_SIZE])
 static const int ego_resists[] =
 {
 	OF_RES_POIS,
-	OF_RES_FEAR,
 	OF_RES_LIGHT,
 	OF_RES_DARK,
-	OF_RES_BLIND,
-	OF_RES_CONFU,
 	OF_RES_SOUND,
 	OF_RES_SHARD,
 	OF_RES_NEXUS,
@@ -837,6 +834,9 @@ static const int ego_powers[] =
 	OF_SEE_INVIS,
 	OF_FREE_ACT,
 	OF_HOLD_LIFE,
+	OF_RES_BLIND,
+	OF_RES_CONFU,
+	OF_RES_FEAR,
 };
 
 void set_ego_xtra_power(bitflag flags[OF_SIZE])

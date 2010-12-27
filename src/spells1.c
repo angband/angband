@@ -3474,10 +3474,10 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_WATER:
 		{
 			if (blind) msg_print("You are hit by something!");
-			if (!p_ptr->state.resist_sound)
+			if (!p_ptr->state.resist_stun)
 				(void)inc_timed(TMD_STUN, randint1(40), TRUE);
 			else
-				wieldeds_notice_flag(OF_RES_SOUND);
+				wieldeds_notice_flag(OF_RES_STUN);
 
 			if (!p_ptr->state.resist_confu)
 				(void)inc_timed(TMD_CONFUSED, randint1(5) + 5, TRUE);
@@ -3562,21 +3562,21 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_SOUND:
 		{
 			if (blind) msg_print("You are hit by something!");
-			if (p_ptr->state.resist_sound)
-			{
+			if (p_ptr->state.resist_sound) {
 				dam = RES_SOUN_ADJ(dam, RANDOMISE);
 				wieldeds_notice_flag(OF_RES_SOUND);
-			}
-			else
-			{
+			} else if (!p_ptr->state.resist_stun) {
 				int k = (randint1((dam > 90) ? 35 : (dam / 3 + 5)));
 				(void)inc_timed(TMD_STUN, k, TRUE);
+			} else {
+				wieldeds_notice_flag(OF_RES_STUN);
 			}
+
 			take_hit(dam, killer);
 			break;
 		}
 
-		/* Pure confusion */
+		/* Pure confusion - no longer used post-3.2 */
 		case GF_CONFUSION:
 		{
 			if (blind) msg_print("You are hit by something!");
