@@ -2341,7 +2341,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			break;
 		}
 
-		/* Confusion */
+/* Confusion - no longer used for breaths post-3.2 
 		case GF_CONFUSION:
 		{
 			if (seen) obvious = TRUE;
@@ -2350,7 +2350,6 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			do_conf = (10 + randint1(15) + r) / (r + 1);
 			if (rsf_has(r_ptr->spell_flags, RSF_BR_CONF))
 			{
-				/* Learn about breathers through resistance */
 				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_CONF);
 
 				note = " resists.";
@@ -2363,7 +2362,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			}
 			break;
 		}
-
+*/
 		/* Disenchantment */
 		case GF_DISENCHANT:
 		{

@@ -241,7 +241,7 @@ EFFECT(DRAGON_BLUE,    TRUE,   18,	"allows you to breathe lightning for 100 dama
 EFFECT(DRAGON_GREEN,   TRUE,   19,	"allows you to breathe poison gas for 150 damage")
 EFFECT(DRAGON_RED,     TRUE,   20,	"allows you to breathe fire for 200 damage")
 EFFECT(DRAGON_MULTIHUED, TRUE, 20,	"allows you to breathe the elements for 250 damage")
-EFFECT(DRAGON_BRONZE,  TRUE,   19,	"allows you to breathe confusion for 120 damage")
+EFFECT(DRAGON_BRONZE,  TRUE,   INHIBIT_POWER,	"allows you to breathe confusion for 120 damage")
 EFFECT(DRAGON_GOLD,    TRUE,   19,	"allows you to breathe sound for 130 damage")
 EFFECT(DRAGON_CHAOS,   TRUE,   23,	"allows you to breathe chaos or disenchantment for 220 damage")
 EFFECT(DRAGON_LAW,     TRUE,   23,	"allows you to breathe sound/shards for 230 damage")
