@@ -3432,7 +3432,7 @@ D:It is looking for prey.
 N:266:Giant bronze dragon fly
 G:F:U
 I:120:14:12:20:50
-W:23:2:0:80
+W:23:0:0:80
 F:ANIMAL | WEIRD_MIND
 F:NEVER_BLOW | RAND_25 | RAND_50 | BASH_DOOR
 F:NO_CONF | NO_SLEEP
@@ -4241,7 +4241,7 @@ D: green in hue.  Foul gas seeps through its scales.
 N:317:Young bronze dragon
 G:d:U
 I:110:237:20:50:70
-W:29:1:0:500
+W:29:0:0:500
 B:CLAW:HURT:2d4
 B:CLAW:HURT:2d4
 B:BITE:HURT:2d6
@@ -5407,7 +5407,7 @@ D:A large dragon, scales tinted deep green.
 N:386:Mature bronze dragon
 G:d:U
 I:110:352:20:70:70
-W:34:1:0:1200
+W:34:0:0:1200
 B:CLAW:HURT:2d8
 B:CLAW:HURT:2d8
 B:BITE:HURT:4d8
@@ -5861,7 +5861,7 @@ D:A huge draconic form.  Lightning crackles along its length.
 N:412:Ancient bronze dragon
 G:D:U
 I:120:633:20:90:80
-W:40:1:0:2000
+W:40:0:0:2000
 B:CLAW:HURT:4d8
 B:CLAW:HURT:4d8
 B:BITE:HURT:7d8
@@ -6087,7 +6087,7 @@ F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | RES_NEXUS | NO_CONF
 F:NO_SLEEP
 F:FORCE_SLEEP
 S:1_IN_4
-S:BR_ACID | BR_COLD | BR_CONF | BR_ELEC | BR_FIRE | BR_GRAV
+S:BR_ACID | BR_COLD | BR_CHAO | BR_ELEC | BR_FIRE | BR_GRAV
 S:BR_NEXU | BR_SHAR | BR_SOUN
 D:A large dragon with a selection of heads, all shouting and arguing as they
 D: look for prey, but each with its own deadly breath weapon.
@@ -6850,7 +6850,7 @@ F:NO_CONF | NO_SLEEP
 F:FORCE_SLEEP
 S:1_IN_5
 S:BLIND | CONF
-S:BR_CONF | BR_DARK | BR_LIGHT
+S:BR_DARK | BR_LIGHT
 D:A huge dragon emanating from the ethereal plane, this terrible dragon is a
 D: master of light and dark.  Its form disappears from sight as it cloaks itself
 D: in unearthly shadows.
@@ -7692,7 +7692,7 @@ F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | RES_NEXUS
 F:RES_PLAS | NO_FEAR | NO_CONF | NO_SLEEP
 F:ATTR_MULTI | FORCE_SLEEP
 S:1_IN_6
-S:BR_ACID | BR_CHAO | BR_COLD | BR_CONF | BR_DARK | BR_ELEC
+S:BR_ACID | BR_CHAO | BR_COLD | BR_DARK | BR_ELEC
 S:BR_FIRE | BR_GRAV | BR_INER | BR_LIGHT | BR_NETH | BR_NEXU
 S:BR_PLAS | BR_POIS | BR_SHAR | BR_SOUN | BR_TIME | BR_WALL
 D:An awesome vortex of pure magic, power radiates from its frame.
@@ -8315,7 +8315,7 @@ F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | RES_DISE
 F:RES_NEXUS | RES_PLAS | NO_CONF | NO_SLEEP
 F:ATTR_MULTI | FORCE_SLEEP
 S:1_IN_5
-S:BR_ACID | BR_CHAO | BR_COLD | BR_CONF | BR_DARK | BR_DISE
+S:BR_ACID | BR_CHAO | BR_COLD | BR_DARK | BR_DISE
 S:BR_ELEC | BR_FIRE | BR_GRAV | BR_INER | BR_LIGHT | BR_NETH
 S:BR_NEXU | BR_PLAS | BR_POIS | BR_SHAR | BR_SOUN | BR_TIME
 S:BR_WALL
@@ -9156,7 +9156,7 @@ D: servants.  With its flaming whip and sword it seeks to destroy you.
 N:574:Baby bronze dragon
 G:d:U
 I:110:88:20:30:70
-W:9:2:0:35
+W:9:0:0:35
 B:CLAW:HURT:1d3
 B:CLAW:HURT:1d3
 B:BITE:HURT:1d5
@@ -9211,7 +9211,7 @@ D: fight it, it sees no reason to do likewise.
 N:577:Great Wyrm of Perplexity
 G:D:U
 I:120:3080:30:150:80
-W:63:2:0:20000
+W:63:0:0:20000
 B:CLAW:HURT:4d12
 B:CLAW:HURT:4d12
 B:BITE:CONFUSE:6d14
