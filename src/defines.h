@@ -206,10 +206,10 @@
  * Misc constants
  */
 #define TOWN_DAWN		10000	/* Number of turns from dawn to dawn XXX */
-#define BREAK_GLYPH		550		/* Rune of protection resistance */
-#define BTH_PLUS_ADJ    3       /* Adjust BTH per plus-to-hit */
-#define MON_MULT_ADJ	8		/* High value slows multiplication */
-#define MON_DRAIN_LIFE	2		/* Percent of player exp drained per hit */
+#define BREAK_GLYPH		550	/* Rune of protection resistance */
+#define BTH_PLUS_ADJ    	3 	/* Adjust BTH per plus-to-hit */
+#define MON_MULT_ADJ		8 	/* High value slows multiplication */
+#define MON_DRAIN_LIFE		2	/* Percent of player exp drained per hit */
 
 /*
  * The different types of name randname.c can generate
@@ -304,21 +304,21 @@ typedef enum
  * Player "food" crucial values
  */
 #define PY_FOOD_UPPER   20000   /* Upper limit on food counter */
-#define PY_FOOD_MAX		15000	/* Food value (Bloated) */
+#define PY_FOOD_MAX	15000	/* Food value (Bloated) */
 #define PY_FOOD_FULL	10000	/* Food value (Normal) */
 #define PY_FOOD_ALERT	2000	/* Food value (Hungry) */
 #define PY_FOOD_WEAK	1000	/* Food value (Weak) */
-#define PY_FOOD_FAINT	500		/* Food value (Fainting) */
-#define PY_FOOD_STARVE	100		/* Food value (Starving) */
+#define PY_FOOD_FAINT	500	/* Food value (Fainting) */
+#define PY_FOOD_STARVE	100	/* Food value (Starving) */
 
 /*
  * Player regeneration constants
  */
-#define PY_REGEN_NORMAL		197		/* Regen factor*2^16 when full */
-#define PY_REGEN_WEAK		98		/* Regen factor*2^16 when weak */
-#define PY_REGEN_FAINT		33		/* Regen factor*2^16 when fainting */
-#define PY_REGEN_HPBASE		1442		/* Min amount hp regen*2^16 */
-#define PY_REGEN_MNBASE		524		/* Min amount mana regen*2^16 */
+#define PY_REGEN_NORMAL		197	/* Regen factor*2^16 when full */
+#define PY_REGEN_WEAK		98	/* Regen factor*2^16 when weak */
+#define PY_REGEN_FAINT		33	/* Regen factor*2^16 when fainting */
+#define PY_REGEN_HPBASE		1442	/* Min amount hp regen*2^16 */
+#define PY_REGEN_MNBASE		524	/* Min amount mana regen*2^16 */
 
 
 /*
@@ -368,7 +368,7 @@ typedef enum
 /*
  * Indexes used for various "equipment" slots (hard-coded by savefiles, etc).
  */
-#define INVEN_WIELD		24
+#define INVEN_WIELD	24
 #define INVEN_BOW       25
 #define INVEN_LEFT      26
 #define INVEN_RIGHT     27
@@ -384,15 +384,15 @@ typedef enum
 /*
  * Total number of inventory slots (hard-coded).
  */
-#define INVEN_TOTAL		36
+#define INVEN_TOTAL	36
 
 
 /*
  *Quiver
  */
-#define QUIVER_START 37
-#define QUIVER_SIZE  10
-#define QUIVER_END   47
+#define QUIVER_START 	37
+#define QUIVER_SIZE  	10
+#define QUIVER_END   	47
 
 #define ALL_INVEN_TOTAL 47
 
@@ -442,10 +442,10 @@ enum
 {
 	SKILL_DISARM,			/* Skill: Disarming */
 	SKILL_DEVICE,			/* Skill: Magic Devices */
-	SKILL_SAVE,				/* Skill: Saving throw */
+	SKILL_SAVE,			/* Skill: Saving throw */
 	SKILL_STEALTH,			/* Skill: Stealth factor */
 	SKILL_SEARCH,			/* Skill: Searching ability */
-	SKILL_SEARCH_FREQUENCY,	/* Skill: Searching frequency */
+	SKILL_SEARCH_FREQUENCY,		/* Skill: Searching frequency */
 	SKILL_TO_HIT_MELEE,		/* Skill: To hit (normal) */
 	SKILL_TO_HIT_BOW,		/* Skill: To hit (shooting) */
 	SKILL_TO_HIT_THROW,		/* Skill: To hit (throwing) */
@@ -570,20 +570,20 @@ enum
 #define GF_XXX6			40
 #define GF_AWAY_UNDEAD	41
 #define GF_AWAY_EVIL	42
-#define GF_AWAY_ALL		43
+#define GF_AWAY_ALL	43
 #define GF_TURN_UNDEAD	44
 #define GF_TURN_EVIL	45
-#define GF_TURN_ALL		46
+#define GF_TURN_ALL	46
 #define GF_DISP_UNDEAD	47
 #define GF_DISP_EVIL	48
-#define GF_DISP_ALL		49
+#define GF_DISP_ALL	49
 #define GF_XXX7			50
 #define GF_OLD_CLONE	51
-#define GF_OLD_POLY		52
-#define GF_OLD_HEAL		53
+#define GF_OLD_POLY	52
+#define GF_OLD_HEAL	53
 #define GF_OLD_SPEED	54
-#define GF_OLD_SLOW		55
-#define GF_OLD_CONF		56
+#define GF_OLD_SLOW	55
+#define GF_OLD_CONF	56
 #define GF_OLD_SLEEP	57
 #define GF_OLD_DRAIN	58
 #define GF_XXX8			59
@@ -594,8 +594,8 @@ enum
  *
  * Most of these come from the "SM_xxx" flags
  */
-#define DRS_FREE		14
-#define DRS_MANA		15
+#define DRS_FREE	14
+#define DRS_MANA	15
 #define DRS_RES_ACID	16
 #define DRS_RES_ELEC	17
 #define DRS_RES_FIRE	18
@@ -642,16 +642,16 @@ enum
 #define FEAT_MORE		0x07
 
 /* Shops */
-#define FEAT_SHOP_HEAD	0x08
-#define FEAT_SHOP_TAIL	0x0F
+#define FEAT_SHOP_HEAD		0x08
+#define FEAT_SHOP_TAIL		0x0F
 
 /* Traps */
-#define FEAT_TRAP_HEAD	0x10
-#define FEAT_TRAP_TAIL	0x1F
+#define FEAT_TRAP_HEAD		0x10
+#define FEAT_TRAP_TAIL		0x1F
 
 /* Doors */
-#define FEAT_DOOR_HEAD	0x20
-#define FEAT_DOOR_TAIL	0x2F
+#define FEAT_DOOR_HEAD		0x20
+#define FEAT_DOOR_TAIL		0x2F
 
 /* Extra */
 #define FEAT_SECRET		0x30
@@ -660,20 +660,20 @@ enum
 /* Seams */
 #define FEAT_MAGMA		0x32
 #define FEAT_QUARTZ		0x33
-#define FEAT_MAGMA_H	0x34
-#define FEAT_QUARTZ_H	0x35
-#define FEAT_MAGMA_K	0x36
-#define FEAT_QUARTZ_K	0x37
+#define FEAT_MAGMA_H		0x34
+#define FEAT_QUARTZ_H		0x35
+#define FEAT_MAGMA_K		0x36
+#define FEAT_QUARTZ_K		0x37
 
 /* Walls */
-#define FEAT_WALL_EXTRA	0x38
-#define FEAT_WALL_INNER	0x39
-#define FEAT_WALL_OUTER	0x3A
-#define FEAT_WALL_SOLID	0x3B
-#define FEAT_PERM_EXTRA	0x3C
-#define FEAT_PERM_INNER	0x3D
-#define FEAT_PERM_OUTER	0x3E
-#define FEAT_PERM_SOLID	0x3F
+#define FEAT_WALL_EXTRA		0x38
+#define FEAT_WALL_INNER		0x39
+#define FEAT_WALL_OUTER		0x3A
+#define FEAT_WALL_SOLID		0x3B
+#define FEAT_PERM_EXTRA		0x3C
+#define FEAT_PERM_INNER		0x3D
+#define FEAT_PERM_OUTER		0x3E
+#define FEAT_PERM_SOLID		0x3F
 
 
 
@@ -710,165 +710,6 @@ enum
 #define ART_MIN_NORMAL		16
 
 
-
-/*** Ego-Item indexes (see "lib/edit/ego_item.txt") ***/
-
-
-/* Nothing */
-/* xxx */
-/* xxx */
-/* xxx */
-
-/* Body Armor */
-#define EGO_RESIST_ACID		4
-#define EGO_RESIST_ELEC		5
-#define EGO_RESIST_FIRE		6
-#define EGO_RESIST_COLD		7
-#define EGO_RESISTANCE		8
-#define EGO_ELVENKIND		9
-#define EGO_ARMR_VULN		10
-#define EGO_PERMANENCE		11
-#define EGO_ARMR_DWARVEN	12
-/* xxx */
-/* xxx */
-/* xxx */
-
-/* Shields */
-#define EGO_ENDURE_ACID		16
-#define EGO_ENDURE_ELEC		17
-#define EGO_ENDURE_FIRE		18
-#define EGO_ENDURE_COLD		19
-#define EGO_ENDURANCE		20
-#define EGO_SHIELD_ELVENKIND	21
-#define EGO_SHIELD_PRESERVATION	22
-#define EGO_SHIELD_VULN		23
-
-/* Crowns and Helms */
-#define EGO_INTELLIGENCE	24
-#define EGO_WISDOM			25
-#define EGO_BEAUTY			26
-#define EGO_MAGI			27
-#define EGO_MIGHT			28
-#define EGO_LORDLINESS		29
-#define EGO_SEEING			30
-#define EGO_INFRAVISION		31
-#define EGO_LIGHT			32
-#define EGO_TELEPATHY		33
-#define EGO_REGENERATION	34
-#define EGO_TELEPORTATION	35
-#define EGO_STUPIDITY		36
-#define EGO_NAIVETY			37
-#define EGO_UGLINESS		38
-#define EGO_SICKLINESS		39
-
-/* Cloaks */
-#define EGO_PROTECTION		40
-#define EGO_STEALTH			41
-#define EGO_AMAN			42
-#define EGO_CLOAK_MAGI		43
-#define EGO_ENVELOPING		44
-#define EGO_VULNERABILITY	45
-#define EGO_IRRITATION		46
-/* xxx */
-
-/* Gloves */
-#define EGO_FREE_ACTION		48
-#define EGO_SLAYING			49
-#define EGO_AGILITY			50
-#define EGO_POWER			51
-#define EGO_GLOVES_THIEVERY	52
-#define EGO_GAUNTLETS_COMBAT	53
-#define EGO_WEAKNESS		54
-#define EGO_CLUMSINESS		55
-
-/* Boots */
-#define EGO_SLOW_DESCENT	56
-#define EGO_QUIET			57
-#define EGO_MOTION			58
-#define EGO_SPEED			59
-#define EGO_STABILITY		60
-#define EGO_NOISE			61
-#define EGO_SLOWNESS		62
-#define EGO_ANNOYANCE		63
-
-/* Weapons */
-#define EGO_HA				64
-#define EGO_DF				65
-#define EGO_BLESS_BLADE		66
-#define EGO_GONDOLIN		67
-#define EGO_WEST			68
-#define EGO_ATTACKS			69
-#define EGO_FURY			70
-/* xxx */
-#define EGO_BRAND_ACID		72
-#define EGO_BRAND_ELEC		73
-#define EGO_BRAND_FIRE		74
-#define EGO_BRAND_COLD		75
-#define EGO_BRAND_POIS		76
-/* xxx */
-/* xxx */
-/* xxx */
-#define EGO_SLAY_ANIMAL		80
-#define EGO_SLAY_EVIL		81
-#define EGO_SLAY_UNDEAD		82
-#define EGO_SLAY_DEMON		83
-#define EGO_SLAY_ORC		84
-#define EGO_SLAY_TROLL		85
-#define EGO_SLAY_GIANT		86
-#define EGO_SLAY_DRAGON		87
-#define EGO_KILL_ANIMAL		88
-#define EGO_KILL_EVIL		89
-#define EGO_KILL_UNDEAD		90
-#define EGO_KILL_DEMON		83
-#define EGO_KILL_ORC		84
-#define EGO_KILL_TROLL		85
-#define EGO_KILL_GIANT		86
-#define EGO_KILL_DRAGON		95
-
-/* Lights */
-/* xxx */
-#define EGO_BRIGHTNESS		97
-#define EGO_EVERBURNING		98
-/* xxx */
-
-/* More weapons */
-#define EGO_DIGGING			100
-#define EGO_DIGGER_EARTHQUAKE		101
-#define EGO_MORGUL			102
-/* xxx */
-
-/* Bows */
-#define EGO_ACCURACY		104
-#define EGO_VELOCITY		105
-#define EGO_BOW_LORIEN		106
-#define EGO_CROSSBOW_HARAD	107
-#define EGO_EXTRA_MIGHT		108
-#define EGO_EXTRA_SHOTS		109
-#define EGO_SLING_BUCKLAND	110
-#define EGO_NAZGUL			111
-
-/* Ammo */
-#define EGO_HURT_ANIMAL		112
-#define EGO_HURT_EVIL		113
-#define EGO_HURT_UNDEAD		114
-#define EGO_HURT_DEMON		115
-#define EGO_HURT_ORC		116
-#define EGO_HURT_TROLL		117
-#define EGO_HURT_GIANT		118
-#define EGO_HURT_DRAGON		119
-#define EGO_AMMO_HOLY		120
-#define EGO_AMMO_VENOM		121
-#define EGO_FLAME			122
-#define EGO_FROST			123
-#define EGO_WOUNDING		124
-#define EGO_BACKBITING		125
-#define EGO_SHATTERED		126
-#define EGO_BLASTED			127
-
-
-
-
-
 /*** Monster AI stuff ***/
 
 /*
@@ -877,10 +718,7 @@ enum
 #define MONSTER_FLOW_DEPTH 32
 
 
-
 /*** Monster blow constants ***/
-
-
 #define MONSTER_BLOW_MAX 4
 
 /*
@@ -983,7 +821,7 @@ enum
 #define IS_HARMLESS   0x10	/* Ignore generic warning inscriptions */
 #define SHOW_PRICES   0x20	/* Show item prices in item lists */
 #define SHOW_FAIL     0x40 	/* Show device failure in item lists */
-#define QUIVER_TAGS   0x80  /* 0-9 are quiver slots when selecting */
+#define QUIVER_TAGS   0x80	/* 0-9 are quiver slots when selecting */
 
 
 /*** Player flags ***/
@@ -1011,11 +849,11 @@ enum
 #define PU_MANA			0x00000020L	/* Calculate csp and msp */
 #define PU_SPELLS		0x00000040L	/* Calculate spells */
 /* xxx (many) */
-#define PU_FORGET_VIEW	0x00010000L	/* Forget field of view */
-#define PU_UPDATE_VIEW	0x00020000L	/* Update field of view */
+#define PU_FORGET_VIEW		0x00010000L	/* Forget field of view */
+#define PU_UPDATE_VIEW		0x00020000L	/* Update field of view */
 /* xxx (many) */
-#define PU_FORGET_FLOW	0x00100000L	/* Forget flow data */
-#define PU_UPDATE_FLOW	0x00200000L	/* Update flow data */
+#define PU_FORGET_FLOW		0x00100000L	/* Forget flow data */
+#define PU_UPDATE_FLOW		0x00200000L	/* Update flow data */
 /* xxx (many) */
 #define PU_MONSTERS		0x10000000L	/* Update monsters */
 #define PU_DISTANCE		0x20000000L	/* Update distances */
@@ -1041,18 +879,18 @@ enum
 #define PR_STUDY		0x00002000L	/* Display Extra (Study) */
 #define PR_DEPTH		0x00004000L	/* Display Depth */
 #define PR_STATUS		0x00008000L
-#define PR_DTRAP		0x00010000L /* Trap detection indicator */
+#define PR_DTRAP		0x00010000L 	/* Trap detection indicator */
 #define PR_STATE		0x00020000L	/* Display Extra (State) */
 #define PR_MAP			0x00040000L	/* Redraw whole map */
 
-#define PR_INVEN		0x00080000L /* Display inven/equip */
-#define PR_EQUIP		0x00100000L /* Display equip/inven */
-#define PR_MESSAGE		0x00200000L /* Display messages */
-#define PR_MONSTER		0x00400000L /* Display monster recall */
-#define PR_OBJECT		0x00800000L /* Display object recall */
-#define PR_MONLIST		0x01000000L /* Display monster list */
+#define PR_INVEN		0x00080000L 	/* Display inven/equip */
+#define PR_EQUIP		0x00100000L 	/* Display equip/inven */
+#define PR_MESSAGE		0x00200000L 	/* Display messages */
+#define PR_MONSTER		0x00400000L 	/* Display monster recall */
+#define PR_OBJECT		0x00800000L 	/* Display object recall */
+#define PR_MONLIST		0x01000000L 	/* Display monster list */
 #define PR_BUTTONS              0x02000000L     /* Display mouse buttons */
-#define PR_ITEMLIST             0x04000000L /* Display item list */
+#define PR_ITEMLIST             0x04000000L 	/* Display item list */
 
 /* Display Basic Info */
 #define PR_BASIC \
@@ -1133,10 +971,10 @@ enum
 #define IDENT_DEFENCE	0x0040	/* Know AC/etc bonuses */
 #define IDENT_EFFECT	0x0080	/* Know item activation/effect */
 /* xxx */
-#define IDENT_INDESTRUCT	0x0200	/* Tried to destroy it and failed */
+#define IDENT_INDESTRUCT 0x0200	/* Tried to destroy it and failed */
 #define IDENT_NAME	0x0400	/* Know the name of ego or artifact if there is one */
 #define IDENT_FIRED	0x0800  /* Has been used as a missile */
-#define IDENT_NOTART 0x1000  /* Item is known not to be an artifact */
+#define IDENT_NOTART	0x1000  /* Item is known not to be an artifact */
 #define IDENT_FAKE	0x2000  /* Item is a fake, for displaying knowledge */
 /* ... */
 
@@ -1171,14 +1009,14 @@ enum
 #define SM_RES_FEAR		0x00200000
 #define SM_RES_LIGHT		0x00400000
 #define SM_RES_DARK		0x00800000
-#define SM_RES_BLIND	0x01000000
-#define SM_RES_CONFU	0x02000000
-#define SM_RES_SOUND	0x04000000
-#define SM_RES_SHARD	0x08000000
-#define SM_RES_NEXUS	0x10000000
-#define SM_RES_NETHR	0x20000000
-#define SM_RES_CHAOS	0x40000000
-#define SM_RES_DISEN	0x80000000
+#define SM_RES_BLIND		0x01000000
+#define SM_RES_CONFU		0x02000000
+#define SM_RES_SOUND		0x04000000
+#define SM_RES_SHARD		0x08000000
+#define SM_RES_NEXUS		0x10000000
+#define SM_RES_NETHR		0x20000000
+#define SM_RES_CHAOS		0x40000000
+#define SM_RES_DISEN		0x80000000
 
 
 /*

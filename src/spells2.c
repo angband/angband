@@ -3078,8 +3078,12 @@ bool curse_weapon(void)
  *
  * Turns the (non-magical) object into an ego-item of 'brand_type'.
  */
-void brand_object(object_type *o_ptr, byte brand_type)
+void brand_object(object_type *o_ptr, int brand_type)
 {
+	int i, j;
+	ego_item_type *e_ptr;
+	bool ok = FALSE;
+
 	/* you can never modify artifacts / ego-items */
 	/* you can never modify cursed / worthless items */
 	if (o_ptr->k_idx && !cursed_p(o_ptr) && k_info[o_ptr->k_idx].cost &&
@@ -3092,16 +3096,13 @@ void brand_object(object_type *o_ptr, byte brand_type)
 
 		switch (brand_type)
 		{
-			case EGO_BRAND_FIRE:
-			case EGO_FLAME:
+			case OF_BRAND_FIRE:
 				act = "fiery";
 				break;
-			case EGO_BRAND_COLD:
-			case EGO_FROST:
+			case OF_BRAND_COLD:
 				act = "frosty";
 				break;
-			case EGO_BRAND_POIS:
-			case EGO_AMMO_VENOM:
+			case OF_BRAND_POIS:
 				act = "sickly";
 				break;
 		}
@@ -3109,8 +3110,23 @@ void brand_object(object_type *o_ptr, byte brand_type)
 		/* Describe */
 		msg_format("A %s aura surrounds the %s.", act, o_name);
 
-		/* Brand the object */
-		o_ptr->name2 = brand_type;
+		/* Get the right ego type for the object - the first one
+		 * with the correct flag for this type of object - we assume
+		 * that anyone adding new ego types adds them after the
+		 * existing ones */
+		for (i = 0; i < z_info->e_max; i++) {
+			e_ptr = &e_info[i];
+			if (of_has(e_ptr->flags, brand_type)) {
+				for (j = 0; j < EGO_TVALS_MAX; j++)
+					if ((o_ptr->tval == e_ptr->tval[j]) &&
+						(o_ptr->sval >= e_ptr->min_sval[j]) &&
+						(o_ptr->sval <= e_ptr->max_sval[j]))
+						ok = TRUE;
+			}
+			if (ok) break;
+		}
+				
+		o_ptr->name2 = i;
 		object_notice_ego(o_ptr);
 
 		/* Combine / Reorder the pack (later) */
@@ -3136,15 +3152,15 @@ void brand_object(object_type *o_ptr, byte brand_type)
 void brand_weapon(void)
 {
 	object_type *o_ptr;
-	byte brand_type;
+	int brand_type;
 
 	o_ptr = &p_ptr->inventory[INVEN_WIELD];
 
 	/* Select a brand */
 	if (randint0(100) < 25)
-		brand_type = EGO_BRAND_FIRE;
+		brand_type = OF_BRAND_FIRE;
 	else
-		brand_type = EGO_BRAND_COLD;
+		brand_type = OF_BRAND_COLD;
 
 	/* Brand the weapon */
 	brand_object(o_ptr, brand_type);
@@ -3179,7 +3195,7 @@ bool brand_ammo(void)
 	object_type *o_ptr;
 	cptr q, s;
 	int r;
-	byte brand_type;
+	int brand_type;
 
 	/* Only accept ammo */
 	item_tester_hook = item_tester_hook_ammo;
@@ -3195,11 +3211,11 @@ bool brand_ammo(void)
 
 	/* Select the brand */
 	if (r < 33)
-		brand_type = EGO_FLAME;
+		brand_type = OF_BRAND_FIRE;
 	else if (r < 67)
-		brand_type = EGO_FROST;
+		brand_type = OF_BRAND_COLD;
 	else
-		brand_type = EGO_AMMO_VENOM;
+		brand_type = OF_BRAND_POIS;
 
 	/* Brand the ammo */
 	brand_object(o_ptr, brand_type);
@@ -3230,7 +3246,7 @@ bool brand_bolts(void)
 	o_ptr = object_from_item_idx(item);
 
 	/* Brand the bolts */
-	brand_object(o_ptr, EGO_FLAME);
+	brand_object(o_ptr, OF_BRAND_FIRE);
 
 	/* Done */
 	return (TRUE);
