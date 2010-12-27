@@ -12,4 +12,7 @@ for x in */*; do
 	RAN=$(expr $RAN + 1)
 done
 
+FAIL=$(expr $RAN - $OK)
+
 echo "Total: $OK/$RAN"
+exit $FAIL
