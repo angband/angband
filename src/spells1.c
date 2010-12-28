@@ -3506,7 +3506,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			else
 				wieldeds_notice_flag(OF_RES_CHAOS);
 
-			if (!p_ptr->state.resist_nethr && !p_ptr->state.resist_chaos)
+			if (!p_ptr->state.resist_chaos)
 			{
 				if (p_ptr->state.hold_life && (randint0(100) < 75))
 				{
@@ -3532,7 +3532,6 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			}
 			else
 			{
-				wieldeds_notice_flag(OF_RES_NETHR);
 				wieldeds_notice_flag(OF_RES_CHAOS);
 			}
 
@@ -3575,23 +3574,6 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			break;
 		}
 
-/* Pure confusion - no longer used to deal damage post-3.2
-		case GF_CONFUSION:
-		{
-			if (blind) msg_print("You are hit by something!");
-			if (p_ptr->state.resist_confu)
-			{
-				dam = RES_CONF_ADJ(dam, RANDOMISE);
-				wieldeds_notice_flag(OF_RES_CONFU);
-			}
-			else
-			{
-				(void)inc_timed(TMD_CONFUSED, randint1(20) + 10, TRUE);
-			}
-			take_hit(dam, killer);
-			break;
-		}
-*/
 		/* Disenchantment -- see above */
 		case GF_DISENCHANT:
 		{
@@ -3676,13 +3658,16 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (p_ptr->state.resist_dark)
 			{
 				dam = RES_DARK_ADJ(dam, RANDOMISE);
+				wieldeds_notice_flag(OF_RES_DARK);
 			}
 			else if (!blind && !p_ptr->state.resist_blind)
 			{
 				(void)inc_timed(TMD_BLIND, randint1(5) + 2, TRUE);
 			}
-			wieldeds_notice_flag(OF_RES_DARK);
-			wieldeds_notice_flag(OF_RES_BLIND);
+			else if (p_ptr->state.resist_blind)
+			{
+				wieldeds_notice_flag(OF_RES_BLIND);
+			}
 
 			take_hit(dam, killer);
 			break;
