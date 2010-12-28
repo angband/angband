@@ -929,17 +929,6 @@ bool make_attack_spell(int m_idx)
 			break;
 		}
 
-		case RSF_BR_CONF:
-		{
-			disturb(1, 0);
-			if (blind) message_format(MSG_BR_ELEMENTS, 0, "%^s breathes.", m_name);
-			else message_format(MSG_BR_CONF, 0, "%^s breathes confusion.", m_name);
-			breath(m_idx, GF_CONFUSION,
-			       ((m_ptr->hp / BR_CONF_DIVISOR) > BR_CONF_MAX ? BR_CONF_MAX : (m_ptr->hp / BR_CONF_DIVISOR)));
-			update_smart_learn(m_idx, DRS_RES_CONFU);
-			break;
-		}
-
 		case RSF_BR_SOUN:
 		{
 			disturb(1, 0);

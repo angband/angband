@@ -372,7 +372,7 @@ W:95:12:250:400000
 A:8:95 to 127
 P:60:2d4:-4:0:25
 F:RES_CHAOS | RES_DISEN | RES_SHARD | RES_SOUND | 
-F:RES_CONFU | RES_NEXUS | 
+F:RES_NEXUS | 
 F:FREE_ACT | SLOW_DIGEST | REGEN | 
 E:STAR_BALL:50
 M:Your {kind} {is} surrounded by lightning!
@@ -390,7 +390,7 @@ P:90:2d4:-4:0:20
 F:CON | 
 F:HOLD_LIFE | SUST_CON | 
 F:RES_ACID | RES_COLD | RES_DARK | RES_NETHR | RES_NEXUS | 
-F:RES_CHAOS | RES_CONFU | RES_FEAR | 
+F:RES_CHAOS | RES_FEAR | 
 E:HEAL2:444
 M:{name} glows a bright white...
 D:A suit of imperishable adamant, with unconquerable strength to endure evil 
@@ -685,7 +685,7 @@ A:2:40 to 127
 P:0:1d1:0:0:15
 F:STR | WIS | CON | SPEED | HIDE_TYPE | 
 F:RES_COLD | RES_FIRE | RES_LIGHT | RES_BLIND | 
-F:RES_CONFU | RES_SOUND | RES_CHAOS | 
+F:RES_CONFU | RES_SOUND |
 F:LIGHT | SEE_INVIS | REGEN
 E:HEAL1:250
 M:You feel a warm tingling inside...
@@ -930,7 +930,7 @@ A:4:10 to 100
 P:2:1d1:0:0:15
 F:DEX | SPEED | HIDE_TYPE | 
 F:FREE_ACT | 
-F:RES_NETHR | RES_CHAOS | RES_CONFU | SUST_CON
+F:RES_NETHR | RES_CONFU | SUST_CON
 E:REM_FEAR_POIS:5
 M:Your {kind} glow{s} deep blue...
 D:A pair of high-laced shoes, strong against the powers of corruption and 
@@ -1444,7 +1444,7 @@ A:1:30 to 127
 P:0:4d4:10:20:15
 F:STR | CON | TUNNEL | HIDE_TYPE | BRAND_ACID | BRAND_FIRE | 
 F:KILL_DRAGON | SLAY_DEMON | SLAY_TROLL | SLAY_ORC | FREE_ACT | 
-F:RES_CONFU | RES_FEAR | 
+F:RES_FEAR | 
 F:RES_ACID | RES_FIRE | RES_LIGHT | RES_DARK | RES_CHAOS | SHOW_MODS
 D:The twin massive axe heads of this ancient demon's dread gleam with 
 D:mithril inlay, which tell sagas of endurance, invoking the powers of 

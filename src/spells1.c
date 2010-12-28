@@ -2341,7 +2341,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			break;
 		}
 
-		/* Confusion */
+/* Confusion - no longer used for breaths post-3.2 
 		case GF_CONFUSION:
 		{
 			if (seen) obvious = TRUE;
@@ -2350,7 +2350,6 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			do_conf = (10 + randint1(15) + r) / (r + 1);
 			if (rsf_has(r_ptr->spell_flags, RSF_BR_CONF))
 			{
-				/* Learn about breathers through resistance */
 				if (seen) rsf_on(l_ptr->spell_flags, RSF_BR_CONF);
 
 				note = " resists.";
@@ -2363,7 +2362,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 			}
 			break;
 		}
-
+*/
 		/* Disenchantment */
 		case GF_DISENCHANT:
 		{
@@ -3421,14 +3420,14 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		{
 			if (blind) msg_print("You are hit by something!");
 			take_hit(dam, killer);
-			if (!p_ptr->state.resist_sound)
+			if (!p_ptr->state.resist_stun)
 			{
 				int k = (randint1((dam > 40) ? 35 : (dam * 3 / 4 + 5)));
 				(void)inc_timed(TMD_STUN, k, TRUE);
 			}
 			else
 			{
-				wieldeds_notice_flag(OF_RES_SOUND);
+				wieldeds_notice_flag(OF_RES_STUN);
 			}
 			break;
 		}
@@ -3474,10 +3473,10 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_WATER:
 		{
 			if (blind) msg_print("You are hit by something!");
-			if (!p_ptr->state.resist_sound)
+			if (!p_ptr->state.resist_stun)
 				(void)inc_timed(TMD_STUN, randint1(40), TRUE);
 			else
-				wieldeds_notice_flag(OF_RES_SOUND);
+				wieldeds_notice_flag(OF_RES_STUN);
 
 			if (!p_ptr->state.resist_confu)
 				(void)inc_timed(TMD_CONFUSED, randint1(5) + 5, TRUE);
@@ -3507,7 +3506,7 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			else
 				wieldeds_notice_flag(OF_RES_CHAOS);
 
-			if (!p_ptr->state.resist_nethr && !p_ptr->state.resist_chaos)
+			if (!p_ptr->state.resist_chaos)
 			{
 				if (p_ptr->state.hold_life && (randint0(100) < 75))
 				{
@@ -3533,7 +3532,6 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			}
 			else
 			{
-				wieldeds_notice_flag(OF_RES_NETHR);
 				wieldeds_notice_flag(OF_RES_CHAOS);
 			}
 
@@ -3562,33 +3560,16 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_SOUND:
 		{
 			if (blind) msg_print("You are hit by something!");
-			if (p_ptr->state.resist_sound)
-			{
+			if (p_ptr->state.resist_sound) {
 				dam = RES_SOUN_ADJ(dam, RANDOMISE);
 				wieldeds_notice_flag(OF_RES_SOUND);
-			}
-			else
-			{
+			} else if (!p_ptr->state.resist_stun) {
 				int k = (randint1((dam > 90) ? 35 : (dam / 3 + 5)));
 				(void)inc_timed(TMD_STUN, k, TRUE);
+			} else {
+				wieldeds_notice_flag(OF_RES_STUN);
 			}
-			take_hit(dam, killer);
-			break;
-		}
 
-		/* Pure confusion */
-		case GF_CONFUSION:
-		{
-			if (blind) msg_print("You are hit by something!");
-			if (p_ptr->state.resist_confu)
-			{
-				dam = RES_CONF_ADJ(dam, RANDOMISE);
-				wieldeds_notice_flag(OF_RES_CONFU);
-			}
-			else
-			{
-				(void)inc_timed(TMD_CONFUSED, randint1(20) + 10, TRUE);
-			}
 			take_hit(dam, killer);
 			break;
 		}
@@ -3631,10 +3612,10 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 		case GF_FORCE:
 		{
 			if (blind) msg_print("You are hit by something!");
-			if (!p_ptr->state.resist_sound)
+			if (!p_ptr->state.resist_stun)
 				(void)inc_timed(TMD_STUN, randint1(20), TRUE);
 			else
-				wieldeds_notice_flag(OF_RES_SOUND);
+				wieldeds_notice_flag(OF_RES_STUN);
 
 			take_hit(dam, killer);
 			break;
@@ -3677,13 +3658,16 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (p_ptr->state.resist_dark)
 			{
 				dam = RES_DARK_ADJ(dam, RANDOMISE);
+				wieldeds_notice_flag(OF_RES_DARK);
 			}
 			else if (!blind && !p_ptr->state.resist_blind)
 			{
 				(void)inc_timed(TMD_BLIND, randint1(5) + 2, TRUE);
 			}
-			wieldeds_notice_flag(OF_RES_DARK);
-			wieldeds_notice_flag(OF_RES_BLIND);
+			else if (p_ptr->state.resist_blind)
+			{
+				wieldeds_notice_flag(OF_RES_BLIND);
+			}
 
 			take_hit(dam, killer);
 			break;
@@ -3748,14 +3732,14 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 				teleport_player(5);
 
 			(void)inc_timed(TMD_SLOW, randint0(4) + 4, TRUE);
-			if (!p_ptr->state.resist_sound)
+			if (!p_ptr->state.resist_stun)
 			{
 				int k = (randint1((dam > 90) ? 35 : (dam / 3 + 5)));
 				(void)inc_timed(TMD_STUN, k, TRUE);
 			}
 			else
 			{
-				wieldeds_notice_flag(OF_RES_SOUND);
+				wieldeds_notice_flag(OF_RES_STUN);
 			}
 			take_hit(dam, killer);
 			break;
@@ -3788,10 +3772,10 @@ static bool project_p(int who, int r, int y, int x, int dam, int typ, bool obvio
 			else
 				wieldeds_notice_flag(OF_RES_SHARD);
 
-			if (!p_ptr->state.resist_sound)
+			if (!p_ptr->state.resist_stun)
 				(void)inc_timed(TMD_STUN, randint1(15), TRUE);
 			else
-				wieldeds_notice_flag(OF_RES_SOUND);
+				wieldeds_notice_flag(OF_RES_STUN);
 
 			break;
 		}
