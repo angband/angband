@@ -123,6 +123,9 @@ static void print_all_objects(void)
 		{
 			const object_type *o_ptr = get_first_object(y, x);
 			u16b o_origin_xtra;
+			u32b o_power = 0;
+			char o_flags[OF_SIZE];
+			int j;
 
 			if (o_ptr) do
 			{
@@ -141,8 +144,18 @@ static void print_all_objects(void)
 				{
 					o_origin_xtra = o_ptr->origin_xtra;
 				}
+
+				o_flags[OF_SIZE] = 0;
+				for (j = 0; j < OF_SIZE; j++)
+				{
+					o_flags[j] = hexsym[o_ptr->flags[j] % 16];
+				}
+
+				o_power = object_power(o_ptr, 0, NULL, 1);
+
+
 				file_putf(obj_fp, 
-					"%d|%d|%d|%d|%d|%d|%d|%s\n",
+					"%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%d|%s|%d|%s\n",
 					o_ptr->tval,
 					o_ptr->sval,
 					o_ptr->pval[DEFAULT_PVAL],
@@ -150,6 +163,15 @@ static void print_all_objects(void)
 					o_ptr->origin,
 					o_ptr->origin_depth,
 					o_origin_xtra,
+					o_ptr->to_h,
+					o_ptr->to_d,
+					o_ptr->to_a,
+					o_ptr->ac,
+					o_ptr->dd,
+					o_ptr->ds,
+					o_ptr->weight,
+					o_flags,
+					o_power,
 					o_name);
 			}
 			while ((o_ptr = get_next_object(o_ptr)));
@@ -170,9 +192,9 @@ static void open_output_files(void)
 	rinfo_fp = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 
 	/* Print headers */
-	file_putf(obj_fp, "tval|sval|pval|name1|name2|number|origin|origin_depth|origin_xtra|name\n");
+	file_putf(obj_fp, "tval|sval|pval|name1|name2|number|origin|origin_depth|origin_xtra|to_h|to_d|to_a|ac|dd|ds|weight|flags|power|name\n");
 	file_putf(mon_fp, "level|r_idx|name\n");
-	file_putf(ainfo_fp, "aidx|tval|sval|pval|to_h|to_d|to_a|ac|dd|ds|weight|cost|flags|level|alloc_prob|alloc_min|alloc_max|effect|name\n");
+	file_putf(ainfo_fp, "aidx|tval|sval|pval|to_h|to_d|to_a|ac|dd|ds|weight|flags|level|alloc_prob|alloc_min|alloc_max|effect|name\n");
 	file_putf(rinfo_fp, "ridx|level|rarity|d_char|name\n");
 }
 
