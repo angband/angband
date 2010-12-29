@@ -143,7 +143,6 @@ E:PROTEVIL:225+d225
 M:The {kind} let{s} out a shrill wail...
 L:3:CON
 L:1:STR
-L:-1:INT
 D:A fiery circle of bronze, with mighty spells to ward off and banish evil.
 
 
@@ -159,7 +158,8 @@ F:RES_ACID | RES_COLD | RES_ELEC | RES_CONFU |
 F:INSTA_ART
 E:DISPEL_EVIL:50+d50
 M:The {kind} flood{s} the area with goodness...
-L:3:INT | WIS | CHR | INFRA
+L:3:INT | WIS
+L:4:CHR | INFRA
 D:The ancient heirloom of Ingw["e], high lord of the Vanyar, against whom 
 D:nothing of evil could stand.
 
@@ -173,7 +173,8 @@ A:2:50 to 127
 F:HIDE_TYPE | 
 F:SEE_INVIS | FREE_ACT | REGEN | LIGHT | RES_FEAR | 
 F:INSTA_ART
-L:4:STR | CON | INFRA 
+L:3:STR | CON
+L:5:INFRA 
 D:The Nauglamir; a carencet of gold set with a multitude of shining gems of 
 D:Valinor, accenting a radiant Silmaril.  The sturdy spirits of Dwarvish 
 D:craftsmen who labored long in mountain smithies lie within it still, and 
@@ -194,7 +195,8 @@ F:RES_CHAOS | RES_BLIND | AGGRAVATE | DRAIN_EXP |
 F:INSTA_ART | HIDE_TYPE
 E:CLAIRVOYANCE:50+d50
 M:The {kind} glow{s} a deep green...
-L:2:INT | WIS | SEARCH | INFRA
+L:2:INT | WIS
+L:3:SEARCH | INFRA
 D:A great globe with a heart of fire, providing the wearer with sight 
 D:of far places - at a cost, for those espied upon are aware of it.
 
@@ -242,7 +244,8 @@ F:IM_FIRE | RES_FIRE | RES_FEAR
 F:INSTA_ART
 E:PROTEVIL:200+4d50
 M:{name} glows deep red...
-L:1:STR | INT | WIS | DEX | CON | CHR | SPEED
+L:1:STR | INT | WIS | DEX | CON | CHR
+L:2:SPEED
 D:The Ring of Fire, set with a ruby that glows like flame.  Narya is one 
 D:of the three Rings of Power created by the Elves and hidden by them from 
 D:Sauron.
@@ -263,7 +266,8 @@ F:IM_COLD | RES_COLD | RES_BLIND | TELEPATHY |
 F:INSTA_ART
 E:RESTORE_LIFE:200+2d50
 M:{name} glows bright white...
-L:2:STR | INT | WIS | DEX | CON | CHR | SPEED
+L:2:STR | INT | WIS | DEX | CON | CHR
+L:3:SPEED
 D:The Ring of Adamant, with a pure white stone as centerpiece.  Nenya is one 
 D:of the three Rings of Power created by the Elves and hidden by them from 
 D:Sauron.
@@ -284,7 +288,8 @@ F:IM_ELEC | RES_ELEC | RES_POIS | RES_DARK |
 F:INSTA_ART
 E:HEAL2:200+2d50
 M:{name} glows deep blue...
-L:3:STR | INT | WIS | DEX | CON | CHR | SPEED
+L:3:STR | INT | WIS | DEX | CON | CHR
+L:4:SPEED
 D:The Ring of Sapphire, with clear blue gems that shine like stars, 
 D:glittering untouchable despite all that Morgoth ever wrought.  Vilya is 
 D:one of the three Rings of Power created by the Elves and hidden by them 
