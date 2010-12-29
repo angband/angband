@@ -95,10 +95,10 @@ clean:
 
 main-crb.o : main-crb.c
 	@printf "%10s %-20s (objective-c)\n" CC $<
-	@CC $(CFLAGS) $(OBJ_CFLAGS) -c -o $@ $<
+	@$(CC) $(CFLAGS) $(OBJ_CFLAGS) -c -o $@ $<
 %.o : %.c
 	@printf "%10s %-20s\n" CC $<
-	@CC $(JUST_C) $(CFLAGS) -c -o $@ $<
+	@$(CC) $(JUST_C) $(CFLAGS) -c -o $@ $<
 
 
 main-crb.o: osx/osx_tables.h
