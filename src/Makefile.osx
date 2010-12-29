@@ -193,7 +193,7 @@ PACKAGE_NAME = $(NAME)-$(VERSION)
 dist: install
 	@rm -rf disttemp*
 	mkdir -p disttemp/Docs
-	cp ../readme.txt ../changes.txt disttemp/Docs
+	cp ../changes.txt ../copying.txt ../faq.txt ../readme.txt disttemp/Docs
 	cp -R -p "$(APPBNDL)" disttemp
 	SetFile -a B disttemp/$(APPNAME)
 
