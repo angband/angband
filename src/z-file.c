@@ -472,48 +472,6 @@ bool file_writec(ang_file *f, byte b)
 /*
  * Read 'n' bytes from file 'f' into array 'buf'.
  */
-
-#ifdef HAVE_READ
-
-#ifndef SET_UID
-# define READ_BUF_SIZE 16384
-#endif
-
-int file_read(ang_file *f, char *buf, size_t n)
-{
-	int fd = fileno(f->fh);
-	int ret;
-	int n_read = 0;
-
-#ifndef SET_UID
-
-	while (n >= READ_BUF_SIZE)
-	{
-		ret = read(fd, buf, READ_BUF_SIZE);
-		n_read += ret;
-
-		if (ret == -1)
-			return -1;
-		else if (ret != READ_BUF_SIZE)
-			return n_read;
-
-		buf += READ_BUF_SIZE;
-		n -= READ_BUF_SIZE;
-	}
-
-#endif /* !SET_UID */
-
-	ret = read(fd, buf, n);
-	n_read += ret;
-
-	if (ret == -1)
-		return -1;
-	else
-		return n_read;
-}
-
-#else
-
 int file_read(ang_file *f, char *buf, size_t n)
 {
 	size_t read = fread(buf, 1, n, f->fh);
@@ -524,50 +482,13 @@ int file_read(ang_file *f, char *buf, size_t n)
 		return read;
 }
 
-#endif
-
-
 /*
  * Append 'n' bytes of array 'buf' to file 'f'.
  */
-
-#ifdef HAVE_WRITE
-
-#ifndef SET_UID
-# define WRITE_BUF_SIZE 16384
-#endif
-
 bool file_write(ang_file *f, const char *buf, size_t n)
 {
-	int fd = fileno(f->fh);
-
-#ifndef SET_UID
-
-	while (n >= WRITE_BUF_SIZE)
-	{
-		if (write(fd, buf, WRITE_BUF_SIZE) != WRITE_BUF_SIZE)
-			return FALSE;
-
-		buf += WRITE_BUF_SIZE;
-		n -= WRITE_BUF_SIZE;
-	}
-
-#endif /* !SET_UID */
-
-	if (write(fd, buf, n) != (int)n)
-		return FALSE;
-
-	return TRUE;
+	return fwrite(buf, 1, n, f->fh) == n;
 }
-
-#else
-
-bool file_write(ang_file *f, const char *buf, size_t n)
-{
-	return (fwrite(buf, 1, n, f->fh) == n);
-}
-
-#endif 
 
 /** Line-based IO **/
 

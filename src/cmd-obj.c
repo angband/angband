@@ -23,6 +23,7 @@
 #include "effects.h"
 #include "game-cmd.h"
 #include "object/object.h"
+#include "object/inventory.h"
 #include "object/tvalsval.h"
 #include "spells.h"
 #include "target.h"
@@ -53,7 +54,7 @@ static int check_devices(object_type *o_ptr)
 	/* Roll for usage */
 	if (randint1(1000) < fail)
 	{
-		if (OPT(flush_failure)) flush();
+		flush();
 		msg_format("You failed to %s properly.", msg);
 		return FALSE;
 	}
@@ -61,7 +62,7 @@ static int check_devices(object_type *o_ptr)
 	/* Notice empty staffs */
 	if (what && o_ptr->pval[DEFAULT_PVAL] <= 0)
 	{
-		if (OPT(flush_failure)) flush();
+		flush();
 		msg_format("The %s has no charges left.", what);
 		o_ptr->ident |= (IDENT_EMPTY);
 		return FALSE;
@@ -207,47 +208,6 @@ void do_cmd_inscribe(cmd_code code, cmd_arg args[])
 	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
 }
 
-void textui_obj_inscribe(object_type *o_ptr, int item)
-{
-	char o_name[80];
-	char tmp[80] = "";
-
-	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
-	msg_format("Inscribing %s.", o_name);
-	message_flush();
-
-	/* Use old inscription */
-	if (o_ptr->note)
-		strnfmt(tmp, sizeof(tmp), "%s", quark_str(o_ptr->note));
-
-	/* Get a new inscription (possibly empty) */
-	if (get_string("Inscription: ", tmp, sizeof(tmp)))
-	{
-		cmd_insert(CMD_INSCRIBE);
-		cmd_set_arg_item(cmd_get_top(), 0, item);
-		cmd_set_arg_string(cmd_get_top(), 1, tmp);
-	}
-}
-
-
-/*** Examination ***/
-void textui_obj_examine(object_type *o_ptr, int item)
-{
-	char header[120];
-
-	textblock *tb;
-	region area = { 0, 0, 0, 0 };
-
-	track_object(item);
-
-	tb = object_info(o_ptr, OINFO_NONE);
-	object_desc(header, sizeof(header), o_ptr, ODESC_PREFIX | ODESC_FULL);
-
-	textui_textblock_show(tb, area, format("%^s", header));
-	textblock_free(tb);
-}
-
-
 
 /*** Taking off/putting on ***/
 
@@ -272,6 +232,128 @@ void do_cmd_takeoff(cmd_code code, cmd_arg args[])
 	pack_overflow();
 	p_ptr->energy_use = 50;
 }
+
+
+/*
+ * Wield or wear a single item from the pack or floor
+ */
+void wield_item(object_type *o_ptr, int item, int slot)
+{
+	object_type object_type_body;
+	object_type *i_ptr = &object_type_body;
+
+	cptr fmt;
+	char o_name[80];
+
+	bool combined_ammo = FALSE;
+	int num = 1;
+
+	/* If we are stacking ammo in the quiver */
+	if (obj_is_ammo(o_ptr))
+	{
+		num = o_ptr->number;
+		combined_ammo = object_similar(o_ptr, &p_ptr->inventory[slot],
+			OSTACK_QUIVER);
+	}
+
+	/* Take a turn */
+	p_ptr->energy_use = 100;
+
+	/* Obtain local object */
+	object_copy(i_ptr, o_ptr);
+
+	/* Modify quantity */
+	i_ptr->number = num;
+
+	/* Decrease the item (from the pack) */
+	if (item >= 0)
+	{
+		inven_item_increase(item, -num);
+		inven_item_optimize(item);
+	}
+
+	/* Decrease the item (from the floor) */
+	else
+	{
+		floor_item_increase(0 - item, -num);
+		floor_item_optimize(0 - item);
+	}
+
+	/* Get the wield slot */
+	o_ptr = &p_ptr->inventory[slot];
+
+	if (combined_ammo)
+	{
+		/* Add the new ammo to the already-quiver-ed ammo */
+		object_absorb(o_ptr, i_ptr);
+	}
+	else 
+	{
+		/* Take off existing item */
+		if (o_ptr->k_idx)
+			(void)inven_takeoff(slot, 255);
+
+		/* If we are wielding ammo we may need to "open" the slot by shifting
+		 * later ammo up the quiver; this is because we already called the
+		 * inven_item_optimize() function. */
+		if (slot >= QUIVER_START)
+			open_quiver_slot(slot);
+	
+		/* Wear the new stuff */
+		object_copy(o_ptr, i_ptr);
+
+		/* Increment the equip counter by hand */
+		p_ptr->equip_cnt++;
+	}
+
+	/* Increase the weight */
+	p_ptr->total_weight += i_ptr->weight * num;
+
+	/* Do any ID-on-wield */
+	object_notice_on_wield(o_ptr);
+
+	/* Where is the item now */
+	if (slot == INVEN_WIELD)
+		fmt = "You are wielding %s (%c).";
+	else if (slot == INVEN_BOW)
+		fmt = "You are shooting with %s (%c).";
+	else if (slot == INVEN_LIGHT)
+		fmt = "Your light source is %s (%c).";
+	else if (combined_ammo)
+		fmt = "You combine %s in your quiver (%c).";
+	else if (slot >= QUIVER_START && slot < QUIVER_END)
+		fmt = "You add %s to your quiver (%c).";
+	else
+		fmt = "You are wearing %s (%c).";
+
+	/* Describe the result */
+	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
+
+	/* Message */
+	message_format(MSG_WIELD, 0, fmt, o_name, index_to_label(slot));
+
+	/* Cursed! */
+	if (cursed_p(o_ptr))
+	{
+		/* Warn the player */
+		message_format(MSG_CURSED, 0, "Oops! It feels deathly cold!");
+
+		/* Sense the object */
+		object_notice_curses(o_ptr);
+	}
+
+	/* Save quiver size */
+	save_quiver_size(p_ptr);
+
+	/* See if we have to overflow the pack */
+	pack_overflow();
+
+	/* Recalculate bonuses, torch, mana */
+	p_ptr->notice |= PN_SORT_QUIVER;
+	p_ptr->update |= (PU_BONUS | PU_TORCH | PU_MANA);
+	p_ptr->redraw |= (PR_INVEN | PR_EQUIP);
+}
+
 
 /* Wield or wear an item */
 void do_cmd_wield(cmd_code code, cmd_arg args[])
@@ -363,36 +445,31 @@ void do_cmd_drop(cmd_code code, cmd_arg args[])
 	p_ptr->energy_use = 50;
 }
 
-void textui_obj_wield(object_type *o_ptr, int item)
+/* Destroy an item */
+void do_cmd_destroy(cmd_code code, cmd_arg args[])
 {
-	int slot = wield_slot(o_ptr);
+	object_type *o_ptr;
+	int item = args[0].item;
 
-	/* Usually if the slot is taken we'll just replace the item in the slot,
-	 * but in some cases we need to ask the user which slot they actually
-	 * want to replace */
-	if (p_ptr->inventory[slot].k_idx)
+	if (!item_is_available(item, NULL, USE_INVEN | USE_EQUIP | USE_FLOOR))
 	{
-		if (o_ptr->tval == TV_RING)
-		{
-			cptr q = "Replace which ring? ";
-			cptr s = "Error in obj_wield, please report";
-			item_tester_hook = obj_is_ring;
-			if (!get_item(&slot, q, s, CMD_WIELD, USE_EQUIP)) return;
-		}
-
-		if (obj_is_ammo(o_ptr) && !object_similar(&p_ptr->inventory[slot],
-			o_ptr, OSTACK_QUIVER))
-		{
-			cptr q = "Replace which ammunition? ";
-			cptr s = "Error in obj_wield, please report";
-			item_tester_hook = obj_is_ammo;
-			if (!get_item(&slot, q, s, CMD_WIELD, USE_EQUIP)) return;
-		}
+		msg_print("You do not have that item to ignore it.");
+		return;
 	}
 
-	cmd_insert(CMD_WIELD);
-	cmd_set_arg_item(cmd_get_top(), 0, item);
-	cmd_set_arg_number(cmd_get_top(), 1, slot);
+	o_ptr = object_from_item_idx(item);
+
+	if ((item >= INVEN_WIELD) && cursed_p(o_ptr)) {
+		msg_print("You cannot ignore cursed items.");
+	} else {	
+		char o_name[80];
+
+		object_desc(o_name, sizeof o_name, o_ptr, ODESC_PREFIX | ODESC_FULL);
+		message_format(MSG_DESTROY, 0, "Ignoring %s.", o_name);
+
+		o_ptr->ignore = TRUE;
+		p_ptr->notice |= PN_SQUELCH;
+	}
 }
 
 
@@ -659,6 +736,156 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 
 
 /*** Refuelling ***/
+
+static void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
+{
+	/* Refuel */
+	j_ptr->timeout += o_ptr->timeout ? o_ptr->timeout : o_ptr->pval[DEFAULT_PVAL];
+
+	/* Message */
+	msg_print("You fuel your lamp.");
+
+	/* Comment */
+	if (j_ptr->timeout >= FUEL_LAMP)
+	{
+		j_ptr->timeout = FUEL_LAMP;
+		msg_print("Your lamp is full.");
+	}
+
+	/* Refilled from a lantern */
+	if (o_ptr->sval == SV_LIGHT_LANTERN)
+	{
+		/* Unstack if necessary */
+		if (o_ptr->number > 1)
+		{
+			object_type *i_ptr;
+			object_type object_type_body;
+
+			/* Get local object */
+			i_ptr = &object_type_body;
+
+			/* Obtain a local object */
+			object_copy(i_ptr, o_ptr);
+
+			/* Modify quantity */
+			i_ptr->number = 1;
+
+			/* Remove fuel */
+			i_ptr->timeout = 0;
+
+			/* Unstack the used item */
+			o_ptr->number--;
+			p_ptr->total_weight -= i_ptr->weight;
+
+			/* Carry or drop */
+			if (item >= 0)
+				item = inven_carry(p_ptr, i_ptr);
+			else
+				drop_near(i_ptr, 0, p_ptr->py, p_ptr->px, FALSE);
+		}
+
+		/* Empty a single lantern */
+		else
+		{
+			/* No more fuel */
+			o_ptr->timeout = 0;
+		}
+
+		/* Combine / Reorder the pack (later) */
+		p_ptr->notice |= (PN_COMBINE | PN_REORDER);
+
+		/* Redraw stuff */
+		p_ptr->redraw |= (PR_INVEN);
+	}
+
+	/* Refilled from a flask */
+	else
+	{
+		/* Decrease the item (from the pack) */
+		if (item >= 0)
+		{
+			inven_item_increase(item, -1);
+			inven_item_describe(item);
+			inven_item_optimize(item);
+		}
+
+		/* Decrease the item (from the floor) */
+		else
+		{
+			floor_item_increase(0 - item, -1);
+			floor_item_describe(0 - item);
+			floor_item_optimize(0 - item);
+		}
+	}
+
+	/* Recalculate torch */
+	p_ptr->update |= (PU_TORCH);
+
+	/* Redraw stuff */
+	p_ptr->redraw |= (PR_EQUIP);
+}
+
+
+static void refuel_torch(object_type *j_ptr, object_type *o_ptr, int item)
+{
+	bitflag f[OF_SIZE];
+	bitflag g[OF_SIZE];
+
+	/* Refuel */
+	j_ptr->timeout += o_ptr->timeout + 5;
+
+	/* Message */
+	msg_print("You combine the torches.");
+
+	/* Transfer the LIGHT flag if refuelling from a torch with it to one
+	   without it */
+	object_flags(o_ptr, f);
+	object_flags(j_ptr, g);
+	if (of_has(f, OF_LIGHT) && !of_has(g, OF_LIGHT))
+	{
+		of_on(j_ptr->flags, OF_LIGHT);
+		if (!j_ptr->name2 && o_ptr->name2)
+			j_ptr->name2 = o_ptr->name2;
+		msg_print("Your torch shines further!");
+	}
+
+	/* Over-fuel message */
+	if (j_ptr->timeout >= FUEL_TORCH)
+	{
+		j_ptr->timeout = FUEL_TORCH;
+		msg_print("Your torch is fully fueled.");
+	}
+
+	/* Refuel message */
+	else
+	{
+		msg_print("Your torch glows more brightly.");
+	}
+
+	/* Decrease the item (from the pack) */
+	if (item >= 0)
+	{
+		inven_item_increase(item, -1);
+		inven_item_describe(item);
+		inven_item_optimize(item);
+	}
+
+	/* Decrease the item (from the floor) */
+	else
+	{
+		floor_item_increase(0 - item, -1);
+		floor_item_describe(0 - item);
+		floor_item_optimize(0 - item);
+	}
+
+	/* Recalculate torch */
+	p_ptr->update |= (PU_TORCH);
+
+	/* Redraw stuff */
+	p_ptr->redraw |= (PR_EQUIP);
+}
+
+
 void do_cmd_refill(cmd_code code, cmd_arg args[])
 {
 	object_type *j_ptr = &p_ptr->inventory[INVEN_LIGHT];

@@ -76,11 +76,12 @@ typedef struct
 	bool resist_nethr;	/* Resist nether */
 	bool resist_chaos;	/* Resist chaos */
 	bool resist_disen;	/* Resist disenchant */
+	bool resist_stun;	/* Resist stunning */
 
 	bool slow_digest;	/* Slower digestion */
-	bool impair_hp;   /* Slow HP regeneration */
-	bool impair_mana; /* Slow mana regeneration */
-	bool ffall;			/* Feather falling */
+	bool impair_hp;   	/* Slow HP regeneration */
+	bool impair_mana; 	/* Slow mana regeneration */
+	bool ffall;		/* Feather falling */
 	bool regenerate;	/* Regeneration */
 	bool telepathy;		/* Telepathy */
 	bool see_inv;		/* See invisible */
@@ -163,6 +164,7 @@ typedef struct player
 
 	byte confusing;		/* Glowing hands */
 	byte searching;		/* Currently searching */
+	byte unignoring;	/* Unignoring */
 
 	byte spell_flags[PY_MAX_SPELLS]; /* Spell flags */
 
@@ -211,6 +213,7 @@ typedef struct player
 	s16b resting;			/* Resting counter */
 	s16b running;			/* Running counter */
 	bool running_withpathfind;      /* Are we using the pathfinder ? */
+	bool running_firststep;  /* Is this our first step running? */
 
 	s16b run_cur_dir;		/* Direction we are running */
 	s16b run_old_dir;		/* Direction we came from */

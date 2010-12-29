@@ -474,7 +474,7 @@ static enum birth_stage menu_question(enum birth_stage current, menu_type *curre
 			}
 			else if (cx.key == '=') 
 			{
-				do_cmd_options();
+				do_cmd_options_birth();
 				next = current;
 			}
 			else if (cx.key == KTRL('X')) 

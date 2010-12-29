@@ -20,6 +20,7 @@
 #include "cmds.h"
 #include "files.h"
 #include "history.h"
+#include "savefile.h"
 #include "ui-menu.h"
 #include "wizard.h"
 
@@ -406,7 +407,7 @@ void death_screen(void)
 	}
 
 	/* Save dead player */
-	if (!old_save())
+	if (!savefile_save(savefile))
 	{
 		msg_print("death save failed!");
 		message_flush();

@@ -1,8 +1,14 @@
-/* squelch.h - squelch interface */
-
 #ifndef SQUELCH_H
 #define SQUELCH_H
 
+/*
+ * Used for mapping the values below to names.
+ */
+typedef struct
+{
+	int enum_val;
+	const char *name;
+} quality_name_struct;
 
 /*
  * List of kinds of item, for pseudo-id squelch.
@@ -57,6 +63,10 @@ enum
 
 
 
+extern quality_name_struct quality_values[SQUELCH_MAX];
+extern quality_name_struct quality_choices[TYPE_MAX];
+
+
 /* squelch.c */
 void squelch_init(void);
 void squelch_birth_init(void);
@@ -75,7 +85,6 @@ void kind_squelch_when_aware(object_kind *k_ptr);
 void kind_squelch_when_unaware(object_kind *k_ptr);
 bool squelch_item_ok(const object_type *o_ptr);
 bool squelch_hide_item(object_type *o_ptr);
-void squelch_items(void);
 void squelch_drop(void);
 void do_cmd_options_item(const char *title, int row);
 bool squelch_interactive(const object_type *o_ptr);

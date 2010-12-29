@@ -27,6 +27,7 @@
 #include "monster/monster.h"
 #include "object/tvalsval.h"
 #include "prefs.h"
+#include "savefile.h"
 #include "spells.h"
 #include "target.h"
 
@@ -1674,24 +1675,19 @@ void play_game(void)
 
 	p_ptr->is_dead = TRUE;
 
-	if (savefile[0] && file_exists(savefile))
-	{
-		bool ok = old_load();
-		if (!ok) quit("broken savefile");
+	if (savefile[0] && file_exists(savefile)) {
+		if (!savefile_load(savefile))
+			quit("broken savefile");
 
-		if (p_ptr->is_dead && arg_wizard)
-		{
-			p_ptr->is_dead = FALSE;
-			p_ptr->noscore |= NOSCORE_WIZARD;
+		if (p_ptr->is_dead) {
+			if (arg_wizard) {
+				p_ptr->is_dead = FALSE;
+				p_ptr->noscore |= NOSCORE_WIZARD;
+			} else {
+				existing_dead_save = TRUE;
+			}
 		}
-
-		else if (p_ptr->is_dead)
-		{
-			existing_dead_save = TRUE;
-		}
-	}
-	else
-	{
+	} else {
 		existing_dead_save = TRUE;
 	}
 
@@ -1754,7 +1750,7 @@ void play_game(void)
 		player_birth(p_ptr->ht_birth ? TRUE : FALSE);
 
 		/* Randomize the artifacts */
-		if (OPT(adult_randarts))
+		if (OPT(birth_randarts))
 			do_randart(seed_randart, TRUE);
 	}
 

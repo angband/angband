@@ -880,16 +880,20 @@ static bool visual_mode_command(ui_event_data ke, bool *visual_list_ptr,
 					*cur_char_ptr = c;
 
 					/* Move the frame */
-					if ((ddx[d] < 0) && *char_left_ptr > MAX(0, (int)c - frame_left))
+					if (ddx[d] < 0 &&
+							*char_left_ptr > MAX(0, (int)c - frame_left))
 						(*char_left_ptr)--;
-					if ((ddx[d] > 0) && *char_left_ptr + eff_width <=
-														MIN(255, (int)c + frame_right))
+					if ((ddx[d] > 0) &&
+							*char_left_ptr + (width / tile_width) <=
+									MIN(255, (int)c + frame_right))
 					(*char_left_ptr)++;
 
-					if ((ddy[d] < 0) && *attr_top_ptr > MAX(0, (int)a - frame_top))
+					if (ddy[d] < 0 &&
+							*attr_top_ptr > MAX(0, (int)a - frame_top))
 						(*attr_top_ptr)--;
-					if ((ddy[d] > 0) && *attr_top_ptr + eff_height <=
-													MIN(255, (int)a + frame_bottom))
+					if (ddy[d] > 0 &&
+							*attr_top_ptr + (height / tile_height) <=
+									MIN(255, (int)a + frame_bottom))
 						(*attr_top_ptr)++;
 
 					/* We need to always eat the input even if it is clipped,
@@ -930,6 +934,10 @@ static void display_monster(int col, int row, bool cursor, int oid)
 	byte attr = curs_attrs[CURS_KNOWN][(int)cursor];
 	byte a = r_ptr->x_attr;
 	byte c = r_ptr->x_char;
+
+	/* If uniques are purple, make it so */
+	if (OPT(purple_uniques) && rf_has(r_ptr->flags, RF_UNIQUE))
+		a = TERM_L_VIOLET;
 
 	/* Display the name */
 	c_prt(attr, r_ptr->name, row, col);
@@ -1469,8 +1477,6 @@ static void display_object(int col, int row, bool cursor, int oid)
 	if ((aware && kind_is_squelched_aware(k_ptr)) ||
 		(!aware && kind_is_squelched_unaware(k_ptr)))
 		c_put_str(attr, "Yes", row, 46);
-	else if (aware && OPT(squelch_worthless) && !k_ptr->cost)
-		c_put_str(attr, "Yes*", row, 46);
 
 
 	/* Show autoinscription if around */

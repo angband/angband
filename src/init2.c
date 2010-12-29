@@ -1726,12 +1726,6 @@ static long eval_max_dam(monster_race *r_ptr)
 			(hp / BR_DARK_DIVISOR)), MINIMISE));
 		if (spell_dam < breath_dam) spell_dam = breath_dam + 10;
 	}
-	if (rsf_has(r_ptr->spell_flags, RSF_BR_CONF))
-	{
-		breath_dam = (RES_CONF_ADJ(MIN(BR_CONF_MAX,
-			(hp / BR_CONF_DIVISOR)), MINIMISE));
-		if (spell_dam < breath_dam) spell_dam = breath_dam + 20;
-	}
 	if (rsf_has(r_ptr->spell_flags, RSF_BR_SOUN))
 	{
 		breath_dam = (RES_SOUN_ADJ(MIN(BR_SOUN_MAX,

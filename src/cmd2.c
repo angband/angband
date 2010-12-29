@@ -42,7 +42,7 @@ void do_cmd_go_up(cmd_code code, cmd_arg args[])
 	}
 
 	/* Ironman */
-	if (OPT(adult_ironman))
+	if (OPT(birth_ironman))
 	{
 		msg_print("Nothing happens!");
 		return;
@@ -376,7 +376,7 @@ static bool do_cmd_open_chest(int y, int x, s16b o_idx)
 		{
 			/* We may continue repeating */
 			more = TRUE;
-			if (OPT(flush_failure)) flush();
+			flush();
 			message(MSG_LOCKPICK_FAIL, 0, "You failed to pick the lock.");
 		}
 	}
@@ -462,7 +462,7 @@ static bool do_cmd_disarm_chest(int y, int x, s16b o_idx)
 	{
 		/* We may keep trying */
 		more = TRUE;
-		if (OPT(flush_failure)) flush();
+		flush();
 		msg_print("You failed to disarm the chest.");
 	}
 
@@ -703,8 +703,7 @@ static bool do_cmd_open_aux(int y, int x)
 		/* Failure */
 		else
 		{
-			/* Failure */
-			if (OPT(flush_failure)) flush();
+			flush();
 
 			/* Message */
 			message(MSG_LOCKPICK_FAIL, 0, "You failed to pick the lock.");
@@ -1130,7 +1129,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 				place_object(y, x, p_ptr->depth, FALSE, FALSE);
 
 				/* Observe the new object */
-				if (!squelch_hide_item(&o_list[cave_o_idx[y][x]]) &&
+				if (!squelch_item_ok(&o_list[cave_o_idx[y][x]]) &&
 				    player_can_see_bold(y, x))
 				{
 					msg_print("You have found something!");
@@ -1340,8 +1339,7 @@ static bool do_cmd_disarm_aux(int y, int x)
 	/* Failure -- Keep trying */
 	else if ((i > 5) && (randint1(i) > 5))
 	{
-		/* Failure */
-		if (OPT(flush_failure)) flush();
+		flush();
 
 		/* Message */
 		msg_format("You failed to disarm the %s.", name);
@@ -1892,35 +1890,24 @@ static bool do_cmd_walk_test(int y, int x)
 		return (TRUE);
 	}
 
-	/* Hack -- walking obtains knowledge XXX XXX */
-	if (!(cave_info[y][x] & (CAVE_MARK))) return (TRUE);
+	/* If we don't know the grid, allow attempts to walk into it */
+	if (!(cave_info[y][x] & CAVE_MARK))
+		return TRUE;
 
 	/* Require open space */
 	if (!cave_floor_bold(y, x))
 	{
 		/* Rubble */
 		if (cave_feat[y][x] == FEAT_RUBBLE)
-		{
-			/* Message */
 			message(MSG_HITWALL, 0, "There is a pile of rubble in the way!");
-		}
 
 		/* Door */
 		else if (cave_feat[y][x] < FEAT_SECRET)
-		{
-			/* Hack -- Handle "OPT(easy_alter)" */
-			if (OPT(easy_alter)) return (TRUE);
-
-			/* Message */
-			message(MSG_HITWALL, 0, "There is a door in the way!");
-		}
+			return TRUE;
 
 		/* Wall */
 		else
-		{
-			/* Message */
 			message(MSG_HITWALL, 0, "There is a wall in the way!");
-		}
 
 		/* Cancel repeat */
 		disturb(0, 0);
@@ -1939,57 +1926,44 @@ static bool do_cmd_walk_test(int y, int x)
  */
 void do_cmd_walk(cmd_code code, cmd_arg args[])
 {
-	int y, x, dir;
+	int x, y;
+	int dir = args[0].direction;
 
-	dir = args[0].direction;
+	/* Apply confusion if necessary */
+	confuse_dir(&dir);
 
-	/* Get location */
+	/* Verify walkability */
 	y = p_ptr->py + ddy[dir];
 	x = p_ptr->px + ddx[dir];
+	if (!do_cmd_walk_test(y, x))
+		return;
 
-
-	/* Verify legality */
-	if (!do_cmd_walk_test(y, x)) return;
-
-
-	/* Take a turn */
 	p_ptr->energy_use = 100;
 
-	/* Confuse direction */
-	if (confuse_dir(&dir))
-	{
-		/* Get location */
-		y = p_ptr->py + ddy[dir];
-		x = p_ptr->px + ddx[dir];
-	}
-
-
-	/* Verify legality */
-	if (!do_cmd_walk_test(y, x)) return;
-
-
-	/* Move the player */
-	move_player(dir);
+	move_player(dir, TRUE);
 }
 
 
 /*
- * Jump into a trap, turn off pickup (does not work).
- *
- * What a horrible concept.
+ * Walk into a trap.
  */
 void do_cmd_jump(cmd_code code, cmd_arg args[])
 {
-	bool old_easy_alter;
+	int x, y;
+	int dir = args[0].direction;
 
-	/* OPT(easy_alter) can be turned off (don't disarm traps) */
-	old_easy_alter = OPT(easy_alter);
-	OPT(easy_alter) = FALSE;
+	/* Apply confusion if necessary */
+	confuse_dir(&dir);
 
-	do_cmd_walk(code, args);
+	/* Verify walkability */
+	y = p_ptr->py + ddy[dir];
+	x = p_ptr->px + ddx[dir];
+	if (!do_cmd_walk_test(y, x))
+		return;
 
-	/* Restore OPT(easy_alter) */
-	OPT(easy_alter) = old_easy_alter;
+	p_ptr->energy_use = 100;
+
+	move_player(dir, FALSE);
 }
 
 
@@ -2000,11 +1974,9 @@ void do_cmd_jump(cmd_code code, cmd_arg args[])
  */
 void do_cmd_run(cmd_code code, cmd_arg args[])
 {
-	int y, x, dir;
+	int x, y;
+	int dir = args[0].direction;
 
-	dir = args[0].direction;
-
-	/* Hack XXX XXX XXX */
 	if (p_ptr->timed[TMD_CONFUSED])
 	{
 		msg_print("You are too confused!");
@@ -2014,11 +1986,8 @@ void do_cmd_run(cmd_code code, cmd_arg args[])
 	/* Get location */
 	y = p_ptr->py + ddy[dir];
 	x = p_ptr->px + ddx[dir];
-
-
-	/* Verify legality */
-	if (!do_cmd_walk_test(y, x)) return;
-
+	if (!do_cmd_walk_test(y, x))
+		return;
 
 	/* Start run */
 	run_step(dir);

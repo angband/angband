@@ -19,44 +19,113 @@
 #include "angband.h"
 #include "savefile.h"
 
+/**
+ * The savefile code.
+ *
+ * Savefiles since ~3.1 have used a block-based system.  Each savefile
+ * consists of an 8-byte header, the first four bytes of which mark this
+ * as a savefile, the second four bytes provide a variant ID.
+ *
+ * After that, each block has the format:
+ * - 16-byte string giving the type of block
+ * - 4-byte block version
+ * - 4-byte block size
+ * - 4-byte block checksum
+ * ... data ...
+ * padding so that block is a multiple of 4 bytes
+ *
+ * The savefile deosn't contain the version number of that game that saved it;
+ * versioning is left at the individual block level.  The current code
+ * keeps a list of savefile blocks to save in savers[] below, along with
+ * their current versions.
+ *
+ * For each block type and version, there is a loading function to load that
+ * type/version combination.  For example, there may be a loader for v1
+ * and v2 of the RNG block; these must be different functions.  It has been
+ * done this way since it allows easier maintenance; after each release, you
+ * need simply remove old loaders and you will not have to disentangle
+ * lots of code with "if (version > 3)" and its like everywhere.
+ *
+ * Savefile loading and saving is done by keeping the current block in
+ * memory, which is accessed using the wr_* and rd_* functions.  This is
+ * then written out, whole, to disk, with the appropriate header.
+ *
+ *
+ * So, if you want to make a savefile compat-breaking change, then there are
+ * a few things you should do:
+ *
+ * - increment the version in 'savers' below
+ * - add a loading function that accepts the new version (in addition to
+ *   the previous loading function) to 'loaders'
+ * - and watch the magic happen.
+ *
+ *
+ * TODO:
+ * - wr_ and rd_ should be passed a buffer to work with, rather than using
+ *   the rd_ and wr_ functions with a universal buffer
+ * - 
+ */
+
 
 /** Magic bits at beginning of savefile */
 static const byte savefile_magic[4] = { 83, 97, 118, 101 };
 static const byte savefile_name[4] = SAVEFILE_NAME;
 
-
-/**
- * Big list of all savefile block types.
- */
-static const struct
-{
+/** Savefile saving functions */
+static const struct {
 	char name[16];
-	int (*loader)(u32b version);
-	void (*saver)(void);
-	u32b cur_ver;
-	u32b oldest_ver;
-} savefile_blocks[] =
-{
-	{ "rng", rd_randomizer, wr_randomizer, 1, 1 },
-	{ "options", rd_options, wr_options, 1, 1 },
-	{ "messages", rd_messages, wr_messages, 1, 1 },
-	{ "monster memory", rd_monster_memory, wr_monster_memory, 1, 1 },
-	{ "object memory", rd_object_memory, wr_object_memory, 1, 1 },
-	{ "quests", rd_quests, wr_quests, 1, 1 },
-	{ "artifacts", rd_artifacts, wr_artifacts, 2, 1 },
-	{ "player", rd_player, wr_player, 2, 1 },
-	{ "squelch", rd_squelch, wr_squelch, 1, 1 },
-	{ "misc", rd_misc, wr_misc, 1, 1 },
-	{ "player hp", rd_player_hp, wr_player_hp, 1, 1 },
-	{ "player spells", rd_player_spells, wr_player_spells, 1, 1 },
-	{ "randarts", rd_randarts, wr_randarts, 1, 1 },
-	{ "inventory", rd_inventory, wr_inventory, 1, 1 },
-	{ "stores", rd_stores, wr_stores, 1, 1 },
-	{ "dungeon", rd_dungeon, wr_dungeon, 1, 1 },
-	{ "objects", rd_objects, wr_objects, 1, 1 },
-	{ "monsters", rd_monsters, wr_monsters, 1, 1 },
-	{ "ghost", rd_ghost, wr_ghost, 1, 1 },
-	{ "history", rd_history, wr_history, 1, 1 },
+	void (*save)(void);
+	u32b version;	
+} savers[] = {
+	{ "rng", wr_randomizer, 1 },
+	{ "options", wr_options, 2 },
+	{ "messages", wr_messages, 1 },
+	{ "monster memory", wr_monster_memory, 1 },
+	{ "object memory", wr_object_memory, 1 },
+	{ "quests", wr_quests, 1 },
+	{ "artifacts", wr_artifacts, 2 },
+	{ "player", wr_player, 2 },
+	{ "squelch", wr_squelch, 1 },
+	{ "misc", wr_misc, 1 },
+	{ "player hp", wr_player_hp, 1 },
+	{ "player spells", wr_player_spells, 1 },
+	{ "randarts", wr_randarts, 1 },
+	{ "inventory", wr_inventory, 1 },
+	{ "stores", wr_stores, 1 },
+	{ "dungeon", wr_dungeon, 1 },
+	{ "objects", wr_objects, 1 },
+	{ "monsters", wr_monsters, 1 },
+	{ "ghost", wr_ghost, 1 },
+	{ "history", wr_history, 1 },
+};
+
+/** Savefile loading functions */
+static const struct {
+	char name[16];
+	int (*load)(void);
+	u32b version;
+} loaders[] = {
+	{ "rng", rd_randomizer, 1 },
+	{ "options", rd_options_1, 1 },
+	{ "options", rd_options_2, 2 },
+	{ "messages", rd_messages, 1 },
+	{ "monster memory", rd_monster_memory, 1 },
+	{ "object memory", rd_object_memory, 1 },
+	{ "quests", rd_quests, 1 },
+	{ "artifacts", rd_artifacts, 2 },
+	{ "player", rd_player, 2 },
+	{ "squelch", rd_squelch, 1 },
+	{ "misc", rd_misc, 1 },
+	{ "player hp", rd_player_hp, 1 },
+	{ "player spells", rd_player_spells, 1 },
+	{ "randarts", rd_randarts, 1 },
+	{ "inventory", rd_inventory, 1 },
+	{ "stores", rd_stores, 1 },
+	{ "dungeon", rd_dungeon, 1 },
+	{ "objects", rd_objects, 1 },
+	{ "monsters", rd_monsters, 1 },
+	{ "ghost", rd_ghost, 1 },
+	{ "history", rd_history, 1 },
 };
 
 
@@ -78,7 +147,7 @@ static u32b buffer_check;
 /*
  * Hack -- Show information on the screen, one line at a time.
  *
- * Avoid the top two lines, to avoid interference with "msg_print()".
+ * Avoid the top two lines, to avoid interference with "note()".
  */
 void note(cptr msg)
 {
@@ -227,10 +296,7 @@ void pad_bytes(int n)
 }
 
 
-
-
-/*** ****/
-
+/*** Savefile saving functions ***/
 
 static bool try_save(ang_file *file)
 {
@@ -241,42 +307,33 @@ static bool try_save(ang_file *file)
 	buffer = mem_alloc(BUFFER_INITIAL_SIZE);
 	buffer_size = BUFFER_INITIAL_SIZE;
 
-	for (i = 0; i < N_ELEMENTS(savefile_blocks); i++)
+	for (i = 0; i < N_ELEMENTS(savers); i++)
 	{
 		buffer_pos = 0;
 		buffer_check = 0;
 
-		savefile_blocks[i].saver();
+		savers[i].save();
 
 		/* 16-byte block name */
 		pos = my_strcpy((char *)savefile_head,
-				savefile_blocks[i].name,
+				savers[i].name,
 				sizeof savefile_head);
 		while (pos < 16)
 			savefile_head[pos++] = 0;
 
-		/* 4-byte block version */
-		savefile_head[pos++] = (savefile_blocks[i].cur_ver & 0xFF);
-		savefile_head[pos++] = ((savefile_blocks[i].cur_ver >> 8) & 0xFF);
-		savefile_head[pos++] = ((savefile_blocks[i].cur_ver >> 16) & 0xFF);
-		savefile_head[pos++] = ((savefile_blocks[i].cur_ver >> 24) & 0xFF);
+#define SAVE_U32B(v)	\
+		savefile_head[pos++] = (v & 0xFF); \
+		savefile_head[pos++] = ((v >> 8) & 0xFF); \
+		savefile_head[pos++] = ((v >> 16) & 0xFF); \
+		savefile_head[pos++] = ((v >> 24) & 0xFF);
 
-		/* 4-byte block size */
-		savefile_head[pos++] = (buffer_pos & 0xFF);
-		savefile_head[pos++] = ((buffer_pos >> 8) & 0xFF);
-		savefile_head[pos++] = ((buffer_pos >> 16) & 0xFF);
-		savefile_head[pos++] = ((buffer_pos >> 24) & 0xFF);
-
-		/* 4-byte block checksum */
-		savefile_head[pos++] = (buffer_check & 0xFF);
-		savefile_head[pos++] = ((buffer_check >> 8) & 0xFF);
-		savefile_head[pos++] = ((buffer_check >> 16) & 0xFF);
-		savefile_head[pos++] = ((buffer_check >> 24) & 0xFF);
+		SAVE_U32B(savers[i].version);
+		SAVE_U32B(buffer_pos);
+		SAVE_U32B(buffer_check);
 
 		assert(pos == SAVEFILE_HEAD_SIZE);
 
 		file_write(file, (char *)savefile_head, SAVEFILE_HEAD_SIZE);
-
 		file_write(file, (char *)buffer, buffer_pos);
 
 		/* pad to 4 byte multiples */
@@ -290,88 +347,10 @@ static bool try_save(ang_file *file)
 }
 
 
-static bool try_load(ang_file *file)
-{
-	byte savefile_head[SAVEFILE_HEAD_SIZE];
-	u32b block_version, block_size, block_checksum;
-
-	while (TRUE)
-	{
-		size_t i;
-		size_t size;
-
-		/* Load in the next header */
-		size = file_read(file,
-				(char *)savefile_head, SAVEFILE_HEAD_SIZE);
-
-		/* If nothing was read, that's the end of the file */
-		if (size == 0) break;
-
-		assert(size == SAVEFILE_HEAD_SIZE);
-
-		/* 16-byte block name, null-terminated */
-		assert(savefile_head[15] == '\0');
-
-		/* Determine the block ID */
-		for (i = 0; i < N_ELEMENTS(savefile_blocks); i++)
-		{
-			if (strncmp((char *) savefile_head,
-					savefile_blocks[i].name,
-					sizeof savefile_blocks[i].name) == 0)
-				break;
-		}
-		assert(i < N_ELEMENTS(savefile_blocks));
-
-
-		/* 4-byte block version */
-		block_version = ((u32b) savefile_head[16]) |
-				((u32b) savefile_head[17] << 8) |
-				((u32b) savefile_head[18] << 16) |
-				((u32b) savefile_head[19] << 24);
-
-		/* 4-byte block size */
-		block_size = ((u32b) savefile_head[20]) |
-				((u32b) savefile_head[21] << 8) |
-				((u32b) savefile_head[22] << 16) |
-				((u32b) savefile_head[23] << 24);
-
-		/* 4-byte block checksum */
-		block_checksum = ((u32b) savefile_head[24]) |
-				((u32b) savefile_head[25] << 8) |
-				((u32b) savefile_head[26] << 16) |
-				((u32b) savefile_head[27] << 24);
-
-		/* pad to 4 bytes */
-		if (block_size % 4)
-			block_size += 4 - (block_size % 4);
-
-		/* Read stuff in */
-		buffer = mem_alloc(block_size);
-		buffer_size = block_size;
-		buffer_pos = 0;
-		buffer_check = 0;
-
-		size = file_read(file, (char *) buffer, block_size);
-		assert(size == block_size);
-
-		/* Try loading */
-		if (savefile_blocks[i].loader(block_version))
-			return -1;
-
-/*		assert(buffer_check == block_checksum); */
-		mem_free(buffer);
-	}
-
-	return 0;
-}
-
-
-
-
 /*
  * Attempt to save the player in a savefile
  */
-bool old_save(void)
+bool savefile_save(const char *path)
 {
 	ang_file *file;
 
@@ -379,8 +358,8 @@ bool old_save(void)
 	char old_savefile[1024];
 
 	/* New savefile */
-	strnfmt(new_savefile, sizeof(new_savefile), "%s.new", savefile);
-	strnfmt(old_savefile, sizeof(old_savefile), "%s.old", savefile);
+	strnfmt(new_savefile, sizeof(new_savefile), "%s.new", path);
+	strnfmt(old_savefile, sizeof(old_savefile), "%s.old", path);
 
 	/* Make sure that the savefile doesn't already exist */
 	safe_setuid_grab();
@@ -437,124 +416,118 @@ bool old_save(void)
 
 
 
-/*
- * Attempt to Load a "savefile"
- *
- * On multi-user systems, you may only "read" a savefile if you will be
- * allowed to "write" it later, this prevents painful situations in which
- * the player loads a savefile belonging to someone else, and then is not
- * allowed to save his game when he quits.
- *
- * We return "TRUE" if the savefile was usable, and we set the
- * flag "character_loaded" if a real, living, character was loaded.
- *
- * Note that we always try to load the "current" savefile, even if
- * there is no such file, so we must check for "empty" savefile names.
- */
-bool old_load(void)
+/*** Savefiel loading functions ***/
+
+static bool try_load(ang_file *f)
 {
-	byte sf_major = 0;
-	byte sf_minor = 0;
-	byte sf_patch = 0;
-	byte sf_extra = 0;
-	ang_file *fh;
+	byte savefile_head[SAVEFILE_HEAD_SIZE];
+	u32b block_version, block_size, block_checksum;
+	char *block_name;
+
+	while (TRUE)
+	{
+		size_t i;
+		int (*loader)(void) = NULL;
+
+		/* Load in the next header */
+		size_t size = file_read(f, (char *)savefile_head, SAVEFILE_HEAD_SIZE);
+		if (!size)
+			break;
+
+		if (size != SAVEFILE_HEAD_SIZE || savefile_head[15] != 0) {
+			note("Savefile is corrupted -- block header mangled.");
+			return FALSE;
+		}
+
+#define RECONSTRUCT_U32B(from) \
+		((u32b) savefile_head[from]) | \
+		((u32b) savefile_head[from+1] << 8) | \
+		((u32b) savefile_head[from+2] << 16) | \
+		((u32b) savefile_head[from+3] << 24);
+
+		block_name = (char *) savefile_head;
+		block_version = RECONSTRUCT_U32B(16);
+		block_size = RECONSTRUCT_U32B(20);
+		block_checksum = RECONSTRUCT_U32B(24);
+
+		/* pad to 4 bytes */
+		if (block_size % 4)
+			block_size += 4 - (block_size % 4);
+
+		/* Find the right loader */
+		for (i = 0; i < N_ELEMENTS(loaders); i++) {
+			if (streq(block_name, loaders[i].name) &&
+					block_version == loaders[i].version) {
+				loader = loaders[i].load;
+			}
+		}
+
+		if (!loader) {
+			/* No loader found */
+			note("Savefile too old.  Try importing it into an older Angband first.");
+			return FALSE;
+		}
+
+		/* Allocate space for the buffer */
+		buffer = mem_alloc(block_size);
+		buffer_pos = 0;
+		buffer_check = 0;
+
+		buffer_size = file_read(f, (char *) buffer, block_size);
+		if (buffer_size != block_size) {
+			note("Savefile is corrupted -- not enough bytes.");
+			mem_free(buffer);
+			return FALSE;
+		}
+
+		/* Try loading */
+		if (loader() != 0) {
+			note("Savefile is corrupted.");
+			mem_free(buffer);
+			return FALSE;
+		}
+
+		mem_free(buffer);
+	}
+
+	/* Still alive */
+	if (p_ptr->chp >= 0)
+	{
+		/* Reset cause of death */
+		my_strcpy(p_ptr->died_from, "(alive and well)", sizeof(p_ptr->died_from));
+	}
+
+	return TRUE;
+}
+
+
+/**
+ * Load a savefile.
+ */
+bool savefile_load(const char *path)
+{
 	byte head[8];
+	bool ok = TRUE;
 
-	cptr what = "generic";
-	errr err = 0;
-
-	/* Clear screen */
-	Term_clear();
-
-
-	fh = file_open(savefile, MODE_READ, -1);
-	if (!fh)
-	{
-		err = -1;
-		what = "Cannot open savefile";
-	}
-
-	/* Process file */
-	if (!err)
-	{
-
-		/* Read version / ID marker */
-		if (file_read(fh, (char *) &head, 8) != 8)
-		{
-			file_close(fh);
-
-			what = "Cannot read savefile";
-			err = -1;
-		}
-
-		sf_major = head[0];
-		sf_minor = head[1];
-		sf_patch = head[2];
-		sf_extra = head[3];
-	}
-
-	/* Process file */
-	if (!err)
-	{
-		if (sf_major == savefile_magic[0] && sf_minor == savefile_magic[1] &&
-				sf_patch == savefile_magic[2] && sf_extra == savefile_magic[3])
-		{
-			if (strncmp((char *) &head[4], SAVEFILE_NAME, 4) != 0)
-			{
-				err = -1;
-				what = "Savefile from different variant";
+	ang_file *f = file_open(path, MODE_READ, -1);
+	if (f) {
+		if (file_read(f, (char *) &head, 8) == 8 &&
+				memcmp(&head[0], savefile_magic, 4) == 0 &&
+				memcmp(&head[4], SAVEFILE_NAME, 4) == 0) {
+			if (!try_load(f)) {
+				ok = FALSE;
+				note("Failed loading savefile.");
 			}
-			else
-			{
-				err = try_load(fh);
-				file_close(fh);
-				if (!err) what = "cannot read savefile";
-			}
+		} else {
+			ok = FALSE;
+			note("Savefile is corrupted -- incorrect file header.");
 		}
-		else if (sf_major == 3 && sf_minor == 0 &&
-				sf_patch == 14 && sf_extra == 0)
-		{
-			file_close(fh);
-			err = rd_savefile_old();
-			if (err) what = "Cannot parse savefile";
-		}
-		else
-		{
-			what = "Unreadable savefile (too old?)";
-			err = -1;
-		}
+
+		file_close(f);
+	} else {
+		ok = FALSE;
+		note("Couldn't open savefile.");
 	}
 
-	/* Paranoia */
-	if (!err)
-	{
-		/* Invalid turn */
-		if (!turn) err = -1;
-
-		/* Message (below) */
-		if (err) what = "Broken savefile";
-	}
-
-
-	/* Okay */
-	if (!err)
-	{
-		/* Still alive */
-		if (p_ptr->chp >= 0)
-		{
-			/* Reset cause of death */
-			my_strcpy(p_ptr->died_from, "(alive and well)", sizeof(p_ptr->died_from));
-		}
-
-		/* Success */
-		return (TRUE);
-	}
-
-	/* Message */
-	msg_format("Error (%s) reading %d.%d.%d savefile.",
-	           what, sf_major, sf_minor, sf_patch);
-	message_flush();
-
-	/* Oops */
-	return (FALSE);
+	return ok;
 }

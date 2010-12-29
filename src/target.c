@@ -350,7 +350,7 @@ static bool target_set_interactive_accept(int y, int x)
 	for (o_ptr = get_first_object(y, x); o_ptr; o_ptr = get_next_object(o_ptr))
 	{
 		/* Memorized object */
-		if (o_ptr->marked && !squelch_hide_item(o_ptr)) return (TRUE);
+		if (o_ptr->marked && !squelch_item_ok(o_ptr)) return (TRUE);
 	}
 
 	/* Interesting memorized features */

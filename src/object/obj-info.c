@@ -117,17 +117,22 @@ static const flag_type resist_flags[] =
 	{ OF_RES_FIRE,  "fire" },
 	{ OF_RES_COLD,  "cold" },
 	{ OF_RES_POIS,  "poison" },
-	{ OF_RES_FEAR,  "fear" },
 	{ OF_RES_LIGHT, "light" },
 	{ OF_RES_DARK,  "dark" },
-	{ OF_RES_BLIND, "blindness" },
-	{ OF_RES_CONFU, "confusion" },
 	{ OF_RES_SOUND, "sound" },
 	{ OF_RES_SHARD, "shards" },
 	{ OF_RES_NEXUS, "nexus"  },
 	{ OF_RES_NETHR, "nether" },
 	{ OF_RES_CHAOS, "chaos" },
 	{ OF_RES_DISEN, "disenchantment" },
+};
+
+static const flag_type protect_flags[] =
+{
+	{ OF_RES_FEAR,  "fear" },
+	{ OF_RES_BLIND, "blindness" },
+	{ OF_RES_CONFU, "confusion" },
+	{ OF_RES_STUN,  "stunning" },
 };
 
 static const flag_type ignore_flags[] =
@@ -314,6 +319,7 @@ static bool describe_immune(textblock *tb, const bitflag flags[OF_SIZE])
 {
 	const char *i_descs[N_ELEMENTS(immunity_flags)];
 	const char *r_descs[N_ELEMENTS(resist_flags)];
+	const char *p_descs[N_ELEMENTS(protect_flags)];
 	const char *v_descs[N_ELEMENTS(vuln_flags)];
 	size_t count;
 
@@ -336,6 +342,16 @@ static bool describe_immune(textblock *tb, const bitflag flags[OF_SIZE])
 	{
 		textblock_append(tb, "Provides resistance to ");
 		info_out_list(tb, r_descs, count);
+		prev = TRUE;
+	}
+
+	/* Protections */
+	count = info_collect(tb, protect_flags, N_ELEMENTS(protect_flags),
+			flags, p_descs);
+	if (count)
+	{
+		textblock_append(tb, "Provides protection from ");
+		info_out_list(tb, p_descs, count);
 		prev = TRUE;
 	}
 
@@ -1214,7 +1230,7 @@ bool describe_origin(textblock *tb, const object_type *o_ptr)
 static void describe_flavor_text(textblock *tb, const object_type *o_ptr)
 {
 	/* Display the known artifact description */
-	if (!OPT(adult_randarts) && o_ptr->name1 &&
+	if (!OPT(birth_randarts) && o_ptr->name1 &&
 			object_is_known(o_ptr) && a_info[o_ptr->name1].text)
 	{
 		textblock_append(tb, "%s\n\n", a_info[o_ptr->name1].text);

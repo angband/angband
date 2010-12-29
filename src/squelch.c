@@ -23,9 +23,6 @@
 #include "squelch.h"
 
 
-
-
-
 typedef struct
 {
 	squelch_type_t squelch_type;
@@ -63,6 +60,42 @@ static quality_squelch_struct quality_mapping[] =
 };
 
 
+
+quality_name_struct quality_choices[TYPE_MAX] =
+{
+	{ TYPE_WEAPON_POINTY,	"Pointy Melee Weapons" },
+	{ TYPE_WEAPON_BLUNT,	"Blunt Melee Weapons" },
+	{ TYPE_SHOOTER,		"Missile weapons" },
+	{ TYPE_MISSILE_SLING,	"Shots and Pebbles" },
+	{ TYPE_MISSILE_BOW,	"Arrows" },
+	{ TYPE_MISSILE_XBOW,	"Bolts" },
+	{ TYPE_ARMOR_ROBE,	"Robes" },
+	{ TYPE_ARMOR_BODY,	"Body Armor" },
+	{ TYPE_ARMOR_CLOAK,	"Cloaks" },
+	{ TYPE_ARMOR_ELVEN_CLOAK,	"Elven Cloaks" },
+	{ TYPE_ARMOR_SHIELD,	"Shields" },
+	{ TYPE_ARMOR_HEAD,	"Headgear" },
+	{ TYPE_ARMOR_HANDS,	"Handgear" },
+	{ TYPE_ARMOR_FEET,	"Footgear" },
+	{ TYPE_DIGGER,		"Diggers" },
+	{ TYPE_RING,		"Rings" },
+	{ TYPE_AMULET,		"Amulets" },
+	{ TYPE_LIGHT, 		"Lights" },
+};
+
+/*
+ * The names for the various kinds of quality
+ */
+quality_name_struct quality_values[SQUELCH_MAX] =
+{
+	{ SQUELCH_NONE,		"no squelch" },
+	{ SQUELCH_BAD,		"bad" },
+	{ SQUELCH_AVERAGE,	"average" },
+	{ SQUELCH_GOOD,		"good" },
+	{ SQUELCH_EXCELLENT_NO_HI,	"excellent with no high resists" },
+	{ SQUELCH_EXCELLENT_NO_SPL,	"excellent but not splendid" },
+	{ SQUELCH_ALL,		"everything except artifacts" },
+};
 
 byte squelch_level[TYPE_MAX];
 const size_t squelch_size = TYPE_MAX;
@@ -434,7 +467,6 @@ void kind_squelch_when_unaware(object_kind *k_ptr)
 }
 
 
-
 /*
  * Determines if an object is eligible for squelching.
  */
@@ -443,26 +475,21 @@ bool squelch_item_ok(const object_type *o_ptr)
 	object_kind *k_ptr = &k_info[o_ptr->k_idx];
 	byte type;
 
-	/* Don't squelch artifacts unless marked to be squelched */
-	if (artifact_p(o_ptr))
+	if (p_ptr->unignoring)
 		return FALSE;
 
-	/* Don't squelch stuff inscribed not to be destroyed (!k) */
-	if (check_for_inscrip(o_ptr, "!k") || check_for_inscrip(o_ptr, "!*"))
+	/* Don't squelch artifacts unless marked to be squelched */
+	if (artifact_p(o_ptr) ||
+			check_for_inscrip(o_ptr, "!k") || check_for_inscrip(o_ptr, "!*"))
 		return FALSE;
+
+	/* Do squelch individual objects that marked ignore */
+	if (o_ptr->ignore)
+		return TRUE;
 
 	/* Auto-squelch dead chests */
 	if (o_ptr->tval == TV_CHEST && o_ptr->pval[DEFAULT_PVAL] == 0)
 		return TRUE;
-
-	/* check option for worthless kinds */
-	if (OPT(squelch_worthless) && o_ptr->tval != TV_GOLD)
-	{
-		if (object_flavor_is_aware(o_ptr) && k_ptr->cost == 0)
-			return TRUE;
-		if (object_is_known_cursed(o_ptr))
-			return TRUE;
-	}
 
 	/* Do squelching by kind */
 	if (object_flavor_is_aware(o_ptr) ?
@@ -483,84 +510,6 @@ bool squelch_item_ok(const object_type *o_ptr)
 		return TRUE;
 	else
 		return FALSE;
-}
-
-
-/*
- * Returns TRUE if an item should be hidden due to the player's
- * current settings.
- */
-bool squelch_hide_item(object_type *o_ptr)
-{
-	return (OPT(hide_squelchable) ? squelch_item_ok(o_ptr) : FALSE);
-}
-
-
-/*
- * Destroy all {squelch}able items.
- *
- * Imported, with thanks, from Ey... much cleaner than the original.
- */
-void squelch_items(void)
-{
-	int floor_list[MAX_FLOOR_STACK];
-	int floor_num, n;
-	int count = 0;
-
-	object_type *o_ptr;
-
-	/* Set the hook and scan the floor */
-	item_tester_hook = squelch_item_ok;
-	floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), p_ptr->py, p_ptr->px, 0x01);
-
-	if (floor_num)
-	{
-		for (n = 0; n < floor_num; n++)
-		{
-			o_ptr = &o_list[floor_list[n]];
-
-			/* Avoid artifacts */
-			if (artifact_p(o_ptr)) continue;
-
-			if (item_tester_okay(o_ptr))
-			{
-				/* Destroy item */
-				floor_item_increase(floor_list[n], -o_ptr->number);
-				floor_item_optimize(floor_list[n]);
-				count++;
-			}
-		}
-	}
-
-	/* Scan through the slots backwards */
-	for (n = INVEN_PACK - 1; n >= 0; n--)
-	{
-		o_ptr = &p_ptr->inventory[n];
-
-		/* Skip non-objects and artifacts */
-		if (!o_ptr->k_idx) continue;
-		if (artifact_p(o_ptr)) continue;
-
-		if (item_tester_okay(o_ptr))
-		{
-			/* Destroy item */
-			inven_item_increase(n, -o_ptr->number);
-			inven_item_optimize(n);
-			count++;
-		}
-	}
-
-	item_tester_hook = NULL;
-
-	/* Mention casualties */
-	if (count > 0)
-	{
-		message_format(MSG_DESTROY, 0, "%d item%s squelched.",
-		               count, ((count > 1) ? "s" : ""));
-
-		/* Combine/reorder the pack */
-		p_ptr->notice |= (PN_COMBINE | PN_REORDER | PN_SORT_QUIVER);
-	}
 }
 
 

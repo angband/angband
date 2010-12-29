@@ -339,7 +339,7 @@ static bool make_artifact_special(object_type *o_ptr, int level)
 
 
 	/* No artifacts, do nothing */
-	if (OPT(adult_no_artifacts)) return (FALSE);
+	if (OPT(birth_no_artifacts)) return (FALSE);
 
 	/* No artifacts in the town */
 	if (!p_ptr->depth) return (FALSE);
@@ -421,7 +421,7 @@ static bool make_artifact(object_type *o_ptr)
 
 
 	/* No artifacts, do nothing */
-	if (OPT(adult_no_artifacts) &&
+	if (OPT(birth_no_artifacts) &&
 	    o_ptr->name1 != ART_GROND &&
 	    o_ptr->name1 != ART_MORGOTH)
 		return (FALSE);
@@ -817,11 +817,8 @@ void set_ego_xtra_sustain(bitflag flags[OF_SIZE])
 static const int ego_resists[] =
 {
 	OF_RES_POIS,
-	OF_RES_FEAR,
 	OF_RES_LIGHT,
 	OF_RES_DARK,
-	OF_RES_BLIND,
-	OF_RES_CONFU,
 	OF_RES_SOUND,
 	OF_RES_SHARD,
 	OF_RES_NEXUS,
@@ -848,6 +845,9 @@ static const int ego_powers[] =
 	OF_SEE_INVIS,
 	OF_FREE_ACT,
 	OF_HOLD_LIFE,
+	OF_RES_BLIND,
+	OF_RES_CONFU,
+	OF_RES_FEAR,
 };
 
 void set_ego_xtra_power(bitflag flags[OF_SIZE])
@@ -1363,7 +1363,7 @@ void make_gold(object_type *j_ptr, int lev, int coin_type)
 	object_prep(j_ptr, &k_info[k_idx], lev, RANDOMISE);
 
 	/* If we're playing with no_selling, increase the value */
-	if (OPT(adult_no_selling)) value = 5 * value;
+	if (OPT(birth_no_selling)) value = 5 * value;
 
 	j_ptr->pval[DEFAULT_PVAL] = value;
 }

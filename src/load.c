@@ -45,23 +45,11 @@ static int rd_item(object_type *o_ptr)
 
 	byte ver = 1;
 
-	static bool lose_ok = FALSE;
+	rd_u16b(&tmp16u);
+	rd_byte(&ver);
+	assert(tmp16u == 0xffff);
 
-	/* Kind */
 	rd_s16b(&o_ptr->k_idx);
-
-	/* horrible hack */
-	if (o_ptr->k_idx == (s16b) 0xffff)
-	{
-		rd_byte(&ver);
-		rd_s16b(&o_ptr->k_idx);
-	}
-
-	if (lose_ok == FALSE && ver < 5)
-	{
-		lose_ok = get_check("Loading this savefile will lose all object knowledge data.  Is that OK? ");
-		if (lose_ok == FALSE) return -1;
-	}
 
 	/* Paranoia */
 	if ((o_ptr->k_idx < 0) || (o_ptr->k_idx >= z_info->k_max))
@@ -100,10 +88,7 @@ static int rd_item(object_type *o_ptr)
 	rd_byte(&old_dd);
 	rd_byte(&old_ds);
 
-	if (ver > 4)
-		rd_u16b(&o_ptr->ident);
-	else
-		rd_u16b(&tmp16u);
+	rd_u16b(&o_ptr->ident);
 
 	rd_byte(&o_ptr->marked);
 
@@ -118,17 +103,11 @@ static int rd_item(object_type *o_ptr)
 	
 
 	memset(&o_ptr->known_flags, 0, sizeof(o_ptr->known_flags));
-	if (ver > 4)
-	{
-		/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
-		for (i = 0; i < 12 && i < OF_SIZE; i++)
-			rd_byte(&o_ptr->known_flags[i]);
-		if (i < 12) strip_bytes(12 - i);
-	}
-	else if (ver > 2)
-	{
-		strip_bytes(3 * 4);
-	}
+
+	/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
+	for (i = 0; i < 12 && i < OF_SIZE; i++)
+		rd_byte(&o_ptr->known_flags[i]);
+	if (i < 12) strip_bytes(12 - i);
 
 	for (j = 0; j < MAX_PVALS; j++) {
 		for (i = 0; i < 12 && i < OF_SIZE; i++)
@@ -289,7 +268,7 @@ static int rd_item(object_type *o_ptr)
  * 32 + 5 bytes saved, so we'll read an extra 27 bytes at the end which won't
  * be used.
  */
-int rd_randomizer(u32b version)
+int rd_randomizer(void)
 {
 	int i;
 	u32b noop;
@@ -322,20 +301,155 @@ int rd_randomizer(u32b version)
 }
 
 
+/*
+ * Read options, version 2.
+ */
+int rd_options_2(void)
+{
+	int i, n;
+
+	byte b;
+
+	u16b tmp16u;
+
+	u32b window_flag[ANGBAND_TERM_MAX];
+	u32b window_mask[ANGBAND_TERM_MAX];
+
+
+	/*** Special info */
+
+	/* Read "delay_factor" */
+	rd_byte(&b);
+	op_ptr->delay_factor = b;
+
+	/* Read "hitpoint_warn" */
+	rd_byte(&b);
+	op_ptr->hitpoint_warn = b;
+
+	/* Read lazy movement delay */
+	rd_u16b(&tmp16u);
+	lazymove_delay = (tmp16u < 1000) ? tmp16u : 0;
+
+
+	/*** Normal Options ***/
+
+	while (1) {
+		byte value;
+		char name[20];
+		rd_string(name, sizeof name);
+
+		if (!name[0])
+			break;
+
+		rd_byte(&value);
+		option_set(name, !!value);
+	}
+
+	/*** Window Options ***/
+
+	for (n = 0; n < ANGBAND_TERM_MAX; n++)
+		rd_u32b(&window_flag[n]);
+	for (n = 0; n < ANGBAND_TERM_MAX; n++)
+		rd_u32b(&window_mask[n]);
+
+	/* Analyze the options */
+	for (n = 0; n < ANGBAND_TERM_MAX; n++)
+	{
+		/* Analyze the options */
+		for (i = 0; i < 32; i++)
+		{
+			/* Process valid flags */
+			if (window_flag_desc[i])
+			{
+				/* Blank invalid flags */
+				if (!(window_mask[n] & (1L << i)))
+				{
+					window_flag[n] &= ~(1L << i);
+				}
+			}
+		}
+	}
+
+	/* Set up the subwindows */
+	subwindows_set_flags(window_flag, ANGBAND_TERM_MAX);
+
+	return 0;
+}
+
+
+static const struct {
+	int num;
+	const char *text;
+} num_to_text[] = {
+	{ 0, "rogue_like_commands" },
+	{ 2, "use_sound" },
+	{ 4, "use_old_target" },
+	{ 5, "pickup_always" },
+	{ 6, "pickup_inven" },
+	{ 15, "show_flavors" },
+	{ 20, "disturb_move" },
+	{ 21, "disturb_near" },
+	{ 22, "disturb_detect" },
+	{ 23, "disturb_state" },
+	{ 60, "view_yellow_light" },
+	{ 64, "easy_open" },
+	{ 66, "animate_flicker" },
+	{ 68, "center_player" },
+	{ 69, "purple_uniques" },
+	{ 70, "xchars_to_file" },
+	{ 71, "auto_more" },
+	{ 74, "hp_changes_color" },
+	{ 77, "mouse_movement" },
+	{ 78, "mouse_buttons" },
+	{ 79, "notify_recharge" },
+	{ 160, "cheat_peek" },
+	{ 161, "cheat_hear" },
+	{ 162, "cheat_room" },
+	{ 163, "cheat_xtra" },
+	{ 164, "cheat_know" },
+	{ 165, "cheat_live" },
+	{ 192, "birth_maximize" },
+	{ 193, "birth_randarts" },
+	{ 195, "birth_ironman" },
+	{ 196, "birth_no_stores" },
+	{ 197, "birth_no_artifacts" },
+	{ 198, "birth_no_stacking" },
+	{ 199, "birth_no_preserve" },
+	{ 200, "birth_no_stairs" },
+	{ 201, "birth_no_feelings" },
+	{ 202, "birth_no_selling" },
+	{ 205, "birth_ai_sound" },
+	{ 206, "birth_ai_smell" },
+	{ 207, "birth_ai_packs" },
+	{ 208, "birth_ai_learn" },
+	{ 209, "birth_ai_cheat" },
+	{ 210, "birth_ai_smart" },
+	{ 224, "score_peek" },
+	{ 225, "score_hear" },
+	{ 226, "score_room" },
+	{ 227, "score_xtra" },
+	{ 228, "score_know" },
+	{ 229, "score_live" },
+};
+
+static const char *lookup_option(int opt)
+{
+	size_t i;
+	for (i = 0; i < N_ELEMENTS(num_to_text); i++) {
+		if (num_to_text[i].num == opt)
+			return num_to_text[i].text;
+	}
+
+	return NULL;
+}
+
 
 /*
  * Read options
  *
- * Note that the normal options are stored as a set of 256 bit flags,
- * plus a set of 256 bit masks to indicate which bit flags were defined
- * at the time the savefile was created.  This will allow new options
- * to be added, and old options to be removed, at any time, without
- * hurting old savefiles.
- *
- * The window options are stored in the same way, but note that each
- * window gets 32 options, and their order is fixed by certain defines.
+ * XXX Remove this for the next release after 3.2.
  */
-int rd_options(u32b version)
+int rd_options_1(void)
 {
 	int i, n;
 
@@ -345,6 +459,7 @@ int rd_options(u32b version)
 
 	u32b flag[8];
 	u32b mask[8];
+
 	u32b window_flag[ANGBAND_TERM_MAX];
 	u32b window_mask[ANGBAND_TERM_MAX];
 
@@ -379,7 +494,8 @@ int rd_options(u32b version)
 	for (n = 0; n < 8; n++) rd_u32b(&mask[n]);
 
 	/* Analyze the options */
-	for (i = 0; i < OPT_MAX; i++)
+	/* 256 is the old OPT_MAX */
+	for (i = 0; i < 256; i++)
 	{
 		int os = i / 32;
 		int ob = i % 32;
@@ -387,13 +503,9 @@ int rd_options(u32b version)
 		/* Process saved entries */
 		if (mask[os] & (1L << ob))
 		{
-			/* Set flag */
-			if (flag[os] & (1L << ob))
-				op_ptr->opt[i] = TRUE;
-
-			/* Clear flag */
-			else
-				op_ptr->opt[i] = FALSE;
+			const char *name = lookup_option(i);
+			if (name)
+				option_set(name, flag[os] & (1L << ob) ? TRUE : FALSE);
 		}
 	}
 
@@ -401,15 +513,11 @@ int rd_options(u32b version)
 
 	/* Read the window flags */
 	for (n = 0; n < ANGBAND_TERM_MAX; n++)
-	{
 		rd_u32b(&window_flag[n]);
-	}
 
 	/* Read the window masks */
 	for (n = 0; n < ANGBAND_TERM_MAX; n++)
-	{
 		rd_u32b(&window_mask[n]);
-	}
 
 	/* Analyze the options */
 	for (n = 0; n < ANGBAND_TERM_MAX; n++)
@@ -440,7 +548,7 @@ int rd_options(u32b version)
 /*
  * Read the saved messages
  */
-int rd_messages(u32b version)
+int rd_messages(void)
 {
 	int i;
 	char buf[128];
@@ -469,7 +577,7 @@ int rd_messages(u32b version)
 
 
 
-int rd_monster_memory(u32b version)
+int rd_monster_memory(void)
 {
 	int r_idx;
 	u16b tmp16u;
@@ -542,7 +650,7 @@ int rd_monster_memory(u32b version)
 }
 
 
-int rd_object_memory(u32b version)
+int rd_object_memory(void)
 {
 	int i;
 	u16b tmp16u;
@@ -577,7 +685,7 @@ int rd_object_memory(u32b version)
 }
 
 
-int rd_quests(u32b version)
+int rd_quests(void)
 {
 	int i;
 	u16b tmp16u;
@@ -608,7 +716,7 @@ int rd_quests(u32b version)
 }
 
 
-int rd_artifacts(u32b version)
+int rd_artifacts(void)
 {
 	int i;
 	u16b tmp16u;
@@ -637,58 +745,6 @@ int rd_artifacts(u32b version)
 		rd_byte(&tmp8u);
 	}
 
-	/* For old versions, we need to go through objects and update */
-	if (version == 1)
-	{
-		size_t i;
-		object_type *o_ptr = NULL;
-
-		bool *anywhere;
-		anywhere = C_ZNEW(z_info->a_max, bool);
-
-		/* All inventory/home artifacts need to be marked as seen */
-		for (i = 0; i < ALL_INVEN_TOTAL; i++)
-		{
-			o_ptr = &o_list[i];
-			if (object_is_known_artifact(o_ptr))
-				artifact_of(o_ptr)->seen = TRUE;
-			anywhere[o_ptr->name1] = TRUE;
-		}
-
-		for (i = 0; i < (size_t)o_max; i++)
-		{
-			o_ptr = &o_list[i];
-			if (object_is_known_artifact(o_ptr))
-				artifact_of(o_ptr)->seen = TRUE;
-			anywhere[o_ptr->name1] = TRUE;
-		}
-
-		for (i = 0; i < MAX_STORES; i++)
-		{
-			int j = 0;
-			for (j = 0; j < store[i].stock_num; j++)
-			{
-				o_ptr = &store[i].stock[j];
-				if (object_is_known_artifact(o_ptr))
-					artifact_of(o_ptr)->seen = TRUE;
-				anywhere[o_ptr->name1] = TRUE;
-			}
-		}
-
-		/* Now update the seen flags correctly */
-		for (i = 0; i < z_info->a_max; i++)
-		{
-			artifact_type *a_ptr = &a_info[i];
-
-			/* If it isn't present anywhere, but has been created,
-			 * then it has been lost, and thus seen */
-			if (a_ptr->created && !anywhere[i])
-				a_ptr->seen = TRUE;
-		}
-
-		FREE(anywhere);
-	}
-	
 	return 0;
 }
 
@@ -699,7 +755,7 @@ static u32b randart_version;
 /*
  * Read the "extra" information
  */
-int rd_player(u32b version)
+int rd_player(void)
 {
 	int i;
 
@@ -760,7 +816,7 @@ int rd_player(u32b version)
 
 	rd_s16b(&p_ptr->ht_birth);
 	rd_s16b(&p_ptr->wt_birth);
-	if (version >= 2) rd_s16b(&p_ptr->sc_birth);
+	rd_s16b(&p_ptr->sc_birth);
 	rd_s32b(&p_ptr->au_birth);
 
 	strip_bytes(4);
@@ -800,7 +856,7 @@ int rd_player(u32b version)
 	/* More info */
 	strip_bytes(8);
 	rd_s16b(&p_ptr->sc);
-	if (version < 2) p_ptr->sc_birth = p_ptr->sc;
+	p_ptr->sc_birth = p_ptr->sc;
 	strip_bytes(2);
 
 	/* Read the flags */
@@ -850,7 +906,7 @@ int rd_player(u32b version)
 /*
  * Read squelch and autoinscription submenu for all known objects
  */
-int rd_squelch(u32b version)
+int rd_squelch(void)
 {
 	size_t i;
 	byte tmp8u = 24;
@@ -903,7 +959,7 @@ int rd_squelch(u32b version)
 }
 
 
-int rd_misc(u32b version)
+int rd_misc(void)
 {
 	byte tmp8u;
 	
@@ -945,7 +1001,7 @@ int rd_misc(u32b version)
 	return 0;
 }
 
-int rd_player_hp(u32b version)
+int rd_player_hp(void)
 {
 	int i;
 	u16b tmp16u;
@@ -968,7 +1024,7 @@ int rd_player_hp(u32b version)
 }
 
 
-int rd_player_spells(u32b version)
+int rd_player_spells(void)
 {
 	int i;
 	u16b tmp16u;
@@ -999,7 +1055,7 @@ int rd_player_spells(u32b version)
 /*
  * Read the random artifacts
  */
-int rd_randarts(u32b version)
+int rd_randarts(void)
 {
 	size_t i, j, k;
 	byte tmp8u;
@@ -1009,7 +1065,7 @@ int rd_randarts(u32b version)
 	s32b tmp32s;
 	u32b tmp32u;
 
-	if (!OPT(adult_randarts))
+	if (!OPT(birth_randarts))
 		return 0;
 
 	if (FALSE)
@@ -1162,7 +1218,7 @@ int rd_randarts(u32b version)
  *
  * Note that the inventory is "re-sorted" later by "dungeon()".
  */
-int rd_inventory(u32b version)
+int rd_inventory(void)
 {
 	int slot = 0;
 
@@ -1246,7 +1302,7 @@ int rd_inventory(u32b version)
 }
 
 
-int rd_stores(u32b version)
+int rd_stores(void)
 {
 	int i;
 	u16b tmp16u;
@@ -1338,7 +1394,7 @@ int rd_stores(u32b version)
  * After loading the monsters, the objects being held by monsters are
  * linked directly into those monsters.
  */
-int rd_dungeon(u32b version)
+int rd_dungeon(void)
 {
 	int i, y, x;
 
@@ -1499,7 +1555,7 @@ int rd_dungeon(u32b version)
 	return 0;
 }
 
-int rd_objects(u32b version)
+int rd_objects(void)
 {
 	int i;
 	u16b limit;
@@ -1577,7 +1633,7 @@ int rd_objects(u32b version)
 }
 
 
-int rd_monsters(u32b version)
+int rd_monsters(void)
 {
 	int i;
 	u16b limit;
@@ -1661,7 +1717,7 @@ int rd_monsters(u32b version)
 }
 
 
-int rd_ghost(u32b version)
+int rd_ghost(void)
 {
 	char buf[64];
 
@@ -1681,7 +1737,7 @@ int rd_ghost(u32b version)
 }
 
 
-int rd_history(u32b version)
+int rd_history(void)
 {
 	u32b tmp32u;
 	size_t i;

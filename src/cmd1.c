@@ -359,9 +359,7 @@ static void py_pickup_aux(int o_idx, bool msg)
  * auto-pickup option is on, Otherwise, store objects on
  * floor in an array, and tally both how many there are and can be picked up.
  *
- * If not picking up anything, indicate objects on the floor.  Show more
- * details if the "OPT(pickup_detail)" option is set.  Do the same thing if we
- * don't have room for anything.
+ * If not picking up anything, indicate objects on the floor.
  *
  * [This paragraph is not true, intentional?]
  * If we are picking up objects automatically, and have room for at least
@@ -421,7 +419,7 @@ byte py_pickup(int pickup)
 		next_o_idx = o_ptr->next_o_idx;
 
 		/* Ignore all hidden objects and non-objects */
-		if (squelch_hide_item(o_ptr) || !o_ptr->k_idx) continue;
+		if (squelch_item_ok(o_ptr) || !o_ptr->k_idx) continue;
 
 		/* XXX Hack -- Enforce limit */
 		if (floor_num >= N_ELEMENTS(floor_list)) break;
@@ -493,47 +491,24 @@ byte py_pickup(int pickup)
 		}
 		else
 		{
-			/* Optionally, display more information about floor items */
-			if (OPT(pickup_detail))
-			{
-				ui_event_data e;
+			ui_event_data e;
 
-				if (!can_pickup)	p = "have no room for the following objects";
-				else if (blind)     p = "feel something on the floor";
+			if (!can_pickup)	p = "have no room for the following objects";
+			else if (blind)     p = "feel something on the floor";
 
-				/* Scan all marked objects in the grid */
-				floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x03);
+			/* Scan all marked objects in the grid */
+			floor_num = scan_floor(floor_list, N_ELEMENTS(floor_list), py, px, 0x03);
 
-				/* Save screen */
-				screen_save();
+			screen_save();
+			prt(format("You %s: ", p), 0, 0);
+			show_floor(floor_list, floor_num, (OLIST_WEIGHT));
 
-				/* Display objects on the floor */
-				show_floor(floor_list, floor_num, (OLIST_WEIGHT));
+			/* Wait for it.  Use key as next command. */
+			e = inkey_ex();
+			Term_event_push(&e);
 
-				/* Display prompt */
-				prt(format("You %s: ", p), 0, 0);
-
-				/* Move cursor back to character, if needed */
-				if (OPT(highlight_player)) move_cursor_relative(p_ptr->py, p_ptr->px);
-
-				/* Wait for it.  Use key as next command. */
-				e = inkey_ex();
-				Term_event_push(&e);
-
-				/* Restore screen */
-				screen_load();
-			}
-
-			/* Show less detail */
-			else
-			{
-				message_flush();
-
-				if (!can_pickup)
-					msg_print("You have no room for any of the items on the floor.");
-				else
-					msg_format("You %s a pile of %d items.", (blind ? "feel" : "see"), floor_num);
-			}
+			/* Restore screen */
+			screen_load();
 		}
 
 		/* Done */
@@ -607,28 +582,20 @@ byte py_pickup(int pickup)
  * Note that this routine handles monsters in the destination grid,
  * and also handles attempting to move into walls/doors/rubble/etc.
  */
-void move_player(int dir)
+void move_player(int dir, bool disarm)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	int y, x;
-
-
-	bool old_dtrap, new_dtrap;
-
-
-	/* Find the result of moving */
-	y = py + ddy[dir];
-	x = px + ddx[dir];
-
+	int y = py + ddy[dir];
+	int x = px + ddx[dir];
 
 	/* Attack monsters */
 	if (cave_m_idx[y][x] > 0)
 		py_attack(y, x);
 
 	/* Optionally alter known traps/doors on movement */
-	else if (OPT(easy_alter) && (cave_info[y][x] & CAVE_MARK) &&
+	else if (disarm && (cave_info[y][x] & CAVE_MARK) &&
 			(cave_feat[y][x] >= FEAT_TRAP_HEAD) &&
 			(cave_feat[y][x] <= FEAT_DOOR_TAIL))
 	{
@@ -688,47 +655,34 @@ void move_player(int dir)
 	/* Normal movement */
 	else
 	{
-		/* Sound XXX XXX XXX */
-		/* sound(MSG_WALK); */
-
 		/* See if trap detection status will change */
-		old_dtrap = ((cave_info2[py][px] & (CAVE2_DTRAP)) != 0);
-		new_dtrap = ((cave_info2[y][x] & (CAVE2_DTRAP)) != 0);
+		bool old_dtrap = ((cave_info2[py][px] & (CAVE2_DTRAP)) != 0);
+		bool new_dtrap = ((cave_info2[y][x] & (CAVE2_DTRAP)) != 0);
 
 		/* Note the change in the detect status */
-		if (old_dtrap != new_dtrap) p_ptr->redraw |= (PR_DTRAP);
+		if (old_dtrap != new_dtrap)
+			p_ptr->redraw |= (PR_DTRAP);
 
 		/* Disturb player if the player is about to leave the area */
-		if (OPT(disturb_detect) &&
-				p_ptr->running && old_dtrap && !new_dtrap)
+		if (OPT(disturb_detect) && p_ptr->running && 
+			!p_ptr->running_firststep && old_dtrap && !new_dtrap)
 		{
 			disturb(0, 0);
 			return;
 		}
 
-  		/* Move player */
-  		monster_swap(py, px, y, x);
+		/* Move player */
+		monster_swap(py, px, y, x);
   
-
-
 		/* New location */
 		y = py = p_ptr->py;
 		x = px = p_ptr->px;
 
-
-		/* Spontaneous Searching */
-		if ((p_ptr->state.skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
-		    one_in_(50 - p_ptr->state.skills[SKILL_SEARCH_FREQUENCY]))
-		{
+		/* Searching */
+		if (p_ptr->searching ||
+				(p_ptr->state.skills[SKILL_SEARCH_FREQUENCY] >= 50) ||
+				one_in_(50 - p_ptr->state.skills[SKILL_SEARCH_FREQUENCY]))
 			search(FALSE);
-		}
-
-		/* Continuous Searching */
-		if (p_ptr->searching)
-		{
-			search(FALSE);
-		}
-
 
 		/* Handle "store doors" */
 		if ((cave_feat[p_ptr->py][p_ptr->px] >= FEAT_SHOP_HEAD) &&
@@ -774,4 +728,6 @@ void move_player(int dir)
 			hit_trap(y, x);
 		}
 	}
+
+	p_ptr->running_firststep = FALSE;
 }

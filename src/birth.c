@@ -173,7 +173,7 @@ static void load_roller_data(birther *player, birther *prev_player)
 static int adjust_stat(int value, int amount)
 {
 	/* Negative amounts or maximize mode */
-	if ((amount < 0) || OPT(adult_maximize))
+	if ((amount < 0) || OPT(birth_maximize))
 	{
 		return (modify_stat_value(value, amount));
 	}
@@ -256,7 +256,7 @@ static void get_stats(int stat_use[A_MAX])
 		bonus = rp_ptr->r_adj[i] + cp_ptr->c_adj[i];
 
 		/* Variable stat maxes */
-		if (OPT(adult_maximize))
+		if (OPT(birth_maximize))
 		{
 			/* Start fully healed */
 			p_ptr->stat_cur[i] = p_ptr->stat_max[i];
@@ -657,7 +657,7 @@ static void recalculate_stats(int *stats, int points_left)
 	for (i = 0; i < A_MAX; i++)
 	{
 		/* Variable stat maxes */
-		if (OPT(adult_maximize))
+		if (OPT(birth_maximize))
 		{
 			/* Reset stats */
 			p_ptr->stat_cur[i] = p_ptr->stat_max[i] =
@@ -1106,15 +1106,8 @@ void player_birth(bool quickstart_allowed)
 		}
 		else if (cmd->command == CMD_FINALIZE_OPTIONS)
 		{
-			/* Set adult options from birth options */
-			for (i = OPT_BIRTH; i < OPT_CHEAT; i++)
-			{
-				op_ptr->opt[OPT_ADULT + (i - OPT_BIRTH)] =
-					op_ptr->opt[i];
-			}
-
 			/* Reset score options from cheat options */
-			for (i = OPT_CHEAT; i < OPT_ADULT; i++)
+			for (i = OPT_CHEAT; i < OPT_CHEAT + N_OPTS_CHEAT; i++)
 			{
 				op_ptr->opt[OPT_SCORE + (i - OPT_CHEAT)] =
 					op_ptr->opt[i];
@@ -1240,7 +1233,7 @@ void player_birth(bool quickstart_allowed)
 	get_money();
 
 	/* Outfit the player, if they can sell the stuff */
-	if (!OPT(adult_no_selling)) player_outfit(p_ptr);
+	if (!OPT(birth_no_selling)) player_outfit(p_ptr);
 
 	/* Initialise the stores */
 	store_reset();

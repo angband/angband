@@ -1549,17 +1549,20 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 	if (of_has(collect_f, OF_RES_FIRE)) state->resist_fire = TRUE;
 	if (of_has(collect_f, OF_RES_COLD)) state->resist_cold = TRUE;
 	if (of_has(collect_f, OF_RES_POIS)) state->resist_pois = TRUE;
-	if (of_has(collect_f, OF_RES_FEAR)) state->resist_fear = TRUE;
 	if (of_has(collect_f, OF_RES_LIGHT)) state->resist_light = TRUE;
 	if (of_has(collect_f, OF_RES_DARK)) state->resist_dark = TRUE;
-	if (of_has(collect_f, OF_RES_BLIND)) state->resist_blind = TRUE;
-	if (of_has(collect_f, OF_RES_CONFU)) state->resist_confu = TRUE;
 	if (of_has(collect_f, OF_RES_SOUND)) state->resist_sound = TRUE;
 	if (of_has(collect_f, OF_RES_SHARD)) state->resist_shard = TRUE;
 	if (of_has(collect_f, OF_RES_NEXUS)) state->resist_nexus = TRUE;
 	if (of_has(collect_f, OF_RES_NETHR)) state->resist_nethr = TRUE;
 	if (of_has(collect_f, OF_RES_CHAOS)) state->resist_chaos = TRUE;
 	if (of_has(collect_f, OF_RES_DISEN)) state->resist_disen = TRUE;
+
+	/* Protection flags */
+	if (of_has(collect_f, OF_RES_FEAR)) state->resist_fear = TRUE;
+	if (of_has(collect_f, OF_RES_BLIND)) state->resist_blind = TRUE;
+	if (of_has(collect_f, OF_RES_CONFU)) state->resist_confu = TRUE;
+	if (of_has(collect_f, OF_RES_STUN)) state->resist_stun = TRUE;
 
 	/* Sustain flags */
 	if (of_has(collect_f, OF_SUST_STR)) state->sustain_str = TRUE;
@@ -1582,7 +1585,7 @@ void calc_bonuses(object_type inventory[], player_state *state, bool id_only)
 		add = state->stat_add[i];
 
 		/* Maximize mode */
-		if (OPT(adult_maximize))
+		if (OPT(birth_maximize))
 		{
 			/* Modify the stats for race/class */
 			add += (rp_ptr->r_adj[i] + cp_ptr->c_adj[i]);
@@ -2158,7 +2161,7 @@ void notice_stuff(void)
 	if (p_ptr->notice & PN_SQUELCH)
 	{
 		p_ptr->notice &= ~(PN_SQUELCH);
-		if (OPT(hide_squelchable)) squelch_drop();
+		squelch_drop();
 	}
 
 	/* Combine the pack */

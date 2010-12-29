@@ -609,7 +609,7 @@ s32b price_item(const object_type *o_ptr, bool store_buying, int qty)
 		if (this_store == STORE_B_MARKET) price = price / 2;
 
 		/* Check for no_selling option */
-		if (OPT(adult_no_selling)) return (0L);
+		if (OPT(birth_no_selling)) return (0L);
 	}
 
 	/* Shop is selling */
@@ -3134,7 +3134,7 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 	}
 
 	/* Check if we can enter the store */
-	if (OPT(adult_no_stores))
+	if (OPT(birth_no_stores))
 	{
 		msg_print("The doors are locked.");
 		return;

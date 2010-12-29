@@ -72,6 +72,11 @@
  */
 
 #include "angband.h"
+#include "cmds.h"
+#include "cave.h"
+#include "init.h"
+#include "files.h"
+
 #define uint unsigned int
 
 #if (defined(WINDOWS) && !defined(USE_SDL))

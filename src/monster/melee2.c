@@ -108,7 +108,7 @@ static void remove_bad_spells(int m_idx, bitflag f[RSF_SIZE])
 
 
 	/* Update acquired knowledge */
-	if (OPT(adult_ai_learn))
+	if (OPT(birth_ai_learn))
 	{
 		/* Hack -- Occasionally forget player status */
 		if (m_ptr->smart && one_in_(100))
@@ -120,7 +120,7 @@ static void remove_bad_spells(int m_idx, bitflag f[RSF_SIZE])
 
 
 	/* Cheat if requested */
-	if (OPT(adult_ai_cheat))
+	if (OPT(birth_ai_cheat))
 	{
 		/* Know weirdness */
 		if (p_ptr->state.free_act) smart |= (SM_IMM_FREE);
@@ -467,7 +467,7 @@ static int choose_attack_spell(int m_idx, bitflag f[RSF_SIZE])
 
 
 	/* Smart monsters restrict their spell choices. */
-	if (OPT(adult_ai_smart) && !rf_has(r_ptr->flags, RF_STUPID))
+	if (OPT(birth_ai_smart) && !rf_has(r_ptr->flags, RF_STUPID))
 	{
 		/* What have we got? */
 		has_escape = flags_test(f, RSF_SIZE, RSF_ESCAPE_MASK, FLAG_END);
@@ -754,7 +754,7 @@ bool make_attack_spell(int m_idx)
 	failrate = 25 - (rlev + 3) / 4;
 
 	/* Hack -- Stupid monsters will never fail (for jellies and such) */
-	if (!OPT(adult_ai_smart) || rf_has(r_ptr->flags, RF_STUPID)) failrate = 0;
+	if (!OPT(birth_ai_smart) || rf_has(r_ptr->flags, RF_STUPID)) failrate = 0;
 
 	/* Check for spell failure (innate attacks never fail) */
 	if ((thrown_spell >= MIN_NONINNATE_SPELL) && (randint0(100) < failrate))
@@ -926,17 +926,6 @@ bool make_attack_spell(int m_idx)
 			breath(m_idx, GF_DARK,
 			       ((m_ptr->hp / BR_DARK_DIVISOR) > BR_DARK_MAX ? BR_DARK_MAX : (m_ptr->hp / BR_DARK_DIVISOR)));
 			update_smart_learn(m_idx, DRS_RES_DARK);
-			break;
-		}
-
-		case RSF_BR_CONF:
-		{
-			disturb(1, 0);
-			if (blind) message_format(MSG_BR_ELEMENTS, 0, "%^s breathes.", m_name);
-			else message_format(MSG_BR_CONF, 0, "%^s breathes confusion.", m_name);
-			breath(m_idx, GF_CONFUSION,
-			       ((m_ptr->hp / BR_CONF_DIVISOR) > BR_CONF_MAX ? BR_CONF_MAX : (m_ptr->hp / BR_CONF_DIVISOR)));
-			update_smart_learn(m_idx, DRS_RES_CONFU);
 			break;
 		}
 
@@ -2182,7 +2171,7 @@ static bool get_moves_aux(int m_idx, int *yp, int *xp)
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	/* Monster flowing disabled */
-	if (!OPT(adult_ai_sound)) return (FALSE);
+	if (!OPT(birth_ai_sound)) return (FALSE);
 
 	/* Monster can go through rocks */
 	if (flags_test(r_ptr->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL, FLAG_END)) return (FALSE);
@@ -2198,7 +2187,7 @@ static bool get_moves_aux(int m_idx, int *yp, int *xp)
 		if (cave_when[y1][x1] == 0) return (FALSE);
 
 		/* The monster is not allowed to track the player */
-		if (!OPT(adult_ai_smell)) return (FALSE);
+		if (!OPT(birth_ai_smell)) return (FALSE);
 	}
 
 	/* Monster is too far away to notice the player */
@@ -2257,7 +2246,7 @@ static bool get_fear_moves_aux(int m_idx, int *yp, int *xp)
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 	/* Monster flowing disabled */
-	if (!OPT(adult_ai_sound)) return (FALSE);
+	if (!OPT(birth_ai_sound)) return (FALSE);
 
 	/* Player location */
 	py = p_ptr->py;
@@ -2517,7 +2506,7 @@ static bool find_safety(int m_idx, int *yp, int *xp)
 			if (!cave_floor_bold(y, x)) continue;
 
 			/* Check for "availability" (if monsters can flow) */
-			if (OPT(adult_ai_sound))
+			if (OPT(birth_ai_sound))
 			{
 				/* Ignore grids very far from the player */
 				if (cave_when[y][x] < cave_when[py][px]) continue;
@@ -2664,7 +2653,7 @@ static bool get_moves(int m_idx, int mm[5])
 	bool done = FALSE;
 
 	/* Flow towards the player */
-	if (OPT(adult_ai_sound))
+	if (OPT(birth_ai_sound))
 	{
 		/* Flow towards the player */
 		(void)get_moves_aux(m_idx, &y2, &x2);
@@ -2677,7 +2666,7 @@ static bool get_moves(int m_idx, int mm[5])
 
 
 	/* Normal animal packs try to get the player out of corridors. */
-	if (OPT(adult_ai_packs) &&
+	if (OPT(birth_ai_packs) &&
 	    rf_has(r_ptr->flags, RF_FRIENDS) && rf_has(r_ptr->flags, RF_ANIMAL) &&
 	    !flags_test(r_ptr->flags, RF_SIZE, RF_PASS_WALL, RF_KILL_WALL, FLAG_END))
 	{
@@ -2709,7 +2698,7 @@ static bool get_moves(int m_idx, int mm[5])
 	if (!done && mon_will_run(m_idx))
 	{
 		/* Try to find safe place */
-		if (!(OPT(adult_ai_smart) && find_safety(m_idx, &y, &x)))
+		if (!(OPT(birth_ai_smart) && find_safety(m_idx, &y, &x)))
 		{
 			/* This is not a very "smart" method XXX XXX */
 			y = (-y);
@@ -2719,7 +2708,7 @@ static bool get_moves(int m_idx, int mm[5])
 		else
 		{
 			/* Attempt to avoid the player */
-			if (OPT(adult_ai_sound))
+			if (OPT(birth_ai_sound))
 			{
 				/* Adjust movement */
 				get_fear_moves_aux(m_idx, &y, &x);
@@ -2731,7 +2720,7 @@ static bool get_moves(int m_idx, int mm[5])
 
 
 	/* Monster groups try to surround the player */
-	if (!done && OPT(adult_ai_packs) && rf_has(r_ptr->flags, RF_FRIENDS))
+	if (!done && OPT(birth_ai_packs) && rf_has(r_ptr->flags, RF_FRIENDS))
 	{
 		int i;
 
@@ -3724,7 +3713,7 @@ static void process_monster(int m_idx)
 						if (rf_has(r_ptr->flags, RF_TAKE_ITEM))
 						{
 							/* Describe observable situations */
-							if (m_ptr->ml && player_has_los_bold(ny, nx) && !squelch_hide_item(o_ptr))
+							if (m_ptr->ml && player_has_los_bold(ny, nx) && !squelch_item_ok(o_ptr))
 							{
 								/* Dump a message */
 								msg_format("%^s tries to pick up %s, but fails.",
@@ -3740,7 +3729,7 @@ static void process_monster(int m_idx)
 						object_type object_type_body;
 
 						/* Describe observable situations */
-						if (player_has_los_bold(ny, nx) && !squelch_hide_item(o_ptr))
+						if (player_has_los_bold(ny, nx) && !squelch_item_ok(o_ptr))
 						{
 							/* Dump a message */
 							msg_format("%^s picks up %s.", m_name, o_name);
@@ -3763,7 +3752,7 @@ static void process_monster(int m_idx)
 					else
 					{
 						/* Describe observable situations */
-						if (player_has_los_bold(ny, nx) && !squelch_hide_item(o_ptr))
+						if (player_has_los_bold(ny, nx) && !squelch_item_ok(o_ptr))
 						{
 							/* Dump a message */
 							message_format(MSG_DESTROY, 0, "%^s crushes %s.", m_name, o_name);
@@ -3782,7 +3771,7 @@ static void process_monster(int m_idx)
 
 
 	/* If we haven't done anything, try casting a spell again */
-	if (OPT(adult_ai_smart) && !do_turn && !do_move)
+	if (OPT(birth_ai_smart) && !do_turn && !do_move)
 	{
 		/* Cast spell */
 		if (make_attack_spell(m_idx)) return;
@@ -3827,7 +3816,7 @@ static void process_monster(int m_idx)
 static bool monster_can_flow(int m_idx)
 {
 	/* Hack -- Monsters can "smell" the player from far away */
-	if (OPT(adult_ai_sound))
+	if (OPT(birth_ai_sound))
 	{
 		monster_type *m_ptr = &mon_list[m_idx];
 		monster_race *r_ptr = &r_info[m_ptr->r_idx];

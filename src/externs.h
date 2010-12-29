@@ -183,7 +183,7 @@ extern void player_birth(bool quickstart_allowed);
 /* cmd1.c */
 extern bool search(bool verbose);
 extern byte py_pickup(int pickup);
-extern void move_player(int dir);
+extern void move_player(int dir, bool disarm);
 
 /* cmd2.c */
 /* XXX should probably be moved to cave.c? */
@@ -202,11 +202,6 @@ extern void dungeon_change_level(int dlev);
 extern void play_game(void);
 extern int value_check_aux1(const object_type *o_ptr);
 extern void idle_update(void);
-
-/* files.c */
-
-/* load.c */
-extern bool old_load(void);
 
 /* melee1.c */
 bool check_hit(int power, int level);
@@ -240,9 +235,6 @@ extern void predict_score(void);
 extern void signals_ignore_tstp(void);
 extern void signals_handle_tstp(void);
 extern void signals_init(void);
-
-/* save.c */
-extern bool old_save(void);
 
 /* store.c */
 void do_cmd_store_knowledge(void);

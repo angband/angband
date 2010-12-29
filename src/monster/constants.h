@@ -79,24 +79,24 @@
 #define BR_POIS_MAX				800
 #define BR_POIS_DIVISOR				3
 #define RES_POIS_ADJ(dam, dam_aspect)		(((dam) + 2) / 3)
-/* #define DBLRES_POIS_ADJ(dam, dam_aspect)     (((dam) + 8) / 9) */
+#define DBLRES_POIS_ADJ(dam, dam_aspect)	(((dam) + 8) / 9)
 
 #define BR_NETH_MAX				550
 #define BR_NETH_DIVISOR				6
 #define RES_NETH_ADJ(dam, dam_aspect)		(((dam) * 6) / (damcalc(1, 6, dam_aspect) + 6))
 
 #define BR_LIGHT_MAX				400
-#define BR_LIGHT_DIVISOR				6
-#define RES_LIGHT_ADJ(dam, dam_aspect)           (((dam) * 4) / (damcalc(1, 6, dam_aspect) + 6))
+#define BR_LIGHT_DIVISOR			6
+#define RES_LIGHT_ADJ(dam, dam_aspect)		(((dam) * 4) / (damcalc(1, 6, dam_aspect) + 6))
 
 #define BR_DARK_MAX				400
 #define BR_DARK_DIVISOR				6
 #define RES_DARK_ADJ(dam, dam_aspect)           (((dam) * 4) / (damcalc(1, 6, dam_aspect) + 6))
-
+/* Confusion no longer used as an element, post-3.2 
 #define BR_CONF_MAX				400
 #define BR_CONF_DIVISOR				6
 #define RES_CONF_ADJ(dam, dam_aspect)           (((dam) * 5) / (damcalc(1, 6, dam_aspect) + 6))
-
+ */
 #define BR_SOUN_MAX				500
 #define BR_SOUN_DIVISOR				6
 #define RES_SOUN_ADJ(dam, dam_aspect)           (((dam) * 5) / (damcalc(1, 6, dam_aspect) + 6))
@@ -162,7 +162,7 @@
 #define CAUSE2_DMG(level, dam_aspect)	(damcalc(8, 8, (dam_aspect)))
 #define CAUSE3_DMG(level, dam_aspect)	(damcalc(10, 15, (dam_aspect)))
 #define CAUSE4_DMG(level, dam_aspect)	(damcalc(15, 15, (dam_aspect)))
-#define CAUSE4_CUT	damroll(10, 10)
+#define CAUSE4_CUT			damroll(10, 10)
 
 #define BO_ACID_DMG(level, dam_aspect)	(damcalc(7, 8, (dam_aspect)) + ((level) / 3))
 #define BO_ELEC_DMG(level, dam_aspect)	(damcalc(4, 8, (dam_aspect)) + ((level) / 3))
