@@ -72,21 +72,18 @@ static void wr_item(const object_type *o_ptr)
 	wr_byte(o_ptr->origin_depth);
 	wr_u16b(o_ptr->origin_xtra);
 
-
-	/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
-	for (i = 0; i < 12 && i < OF_SIZE; i++)
+	for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
 		wr_byte(o_ptr->flags[i]);
-	if (i < 12) pad_bytes(12 - i);
+	if (i < OF_BYTES) pad_bytes(OF_BYTES - i);
 
-	/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
-	for (i = 0; i < 12 && i < OF_SIZE; i++)
+	for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
 		wr_byte(o_ptr->known_flags[i]);
-	if (i < 12) pad_bytes(12 - i);
+	if (i < OF_BYTES) pad_bytes(OF_BYTES - i);
 
 	for (j = 0; j < MAX_PVALS; j++) {
-		for (i = 0; i < 12 && i < OF_SIZE; i++)
+		for (i = 0; i < OF_BYTES && i < OF_SIZE; i++)
 			wr_byte(o_ptr->pval_flags[j][i]);
-		if (i < 12) pad_bytes(12 - i);
+		if (i < OF_BYTES) pad_bytes(OF_BYTES - i);
 	}
 
 	/* Held by monster index */
@@ -247,16 +244,13 @@ void wr_monster_memory(void)
 			wr_byte(l_ptr->blows[i]);
 
 		/* Memorize flags */
-
-		/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
-		for (i = 0; i < 12 && i < RF_SIZE; i++)
+		for (i = 0; i < RF_BYTES && i < RF_SIZE; i++)
 			wr_byte(l_ptr->flags[i]);
-		if (i < 12) pad_bytes(12 - i);
+		if (i < RF_BYTES) pad_bytes(RF_BYTES - i);
 
-		/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
-		for (i = 0; i < 12 && i < RSF_SIZE; i++)
+		for (i = 0; i < RF_BYTES && i < RSF_SIZE; i++)
 			wr_byte(l_ptr->spell_flags[i]);
-		if (i < 12) pad_bytes(12 - i);
+		if (i < RF_BYTES) pad_bytes(RF_BYTES - i);
 
 		/* Monster limit per level */
 		wr_byte(r_ptr->max_num);
@@ -548,15 +542,14 @@ void wr_randarts(void)
 
 		wr_s32b(a_ptr->cost);
 
-		/* Hack - XXX - MarbleDice - Maximum saveable flags = 96 */
-		for (j = 0; j < 12 && j < OF_SIZE; j++)
+		for (j = 0; j < OF_BYTES && j < OF_SIZE; j++)
 			wr_byte(a_ptr->flags[j]);
-		if (j < 12) pad_bytes(OF_SIZE - j);
+		if (j < OF_BYTES) pad_bytes(OF_BYTES - j);
 
 		for (k = 0; k < MAX_PVALS; k++) {
-			for (j = 0; j < 12 && j < OF_SIZE; j++)
+			for (j = 0; j < OF_BYTES && j < OF_SIZE; j++)
 				wr_byte(a_ptr->pval_flags[k][j]);
-			if (j < 12) pad_bytes(OF_SIZE - j);
+			if (j < OF_BYTES) pad_bytes(OF_BYTES - j);
 		}
 
 		wr_byte(a_ptr->level);

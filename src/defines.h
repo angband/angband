@@ -1032,6 +1032,7 @@ enum
 };
 
 #define OF_SIZE                FLAG_SIZE(OF_MAX)
+#define OF_BYTES	       32  /* savefile bytes, i.e. 256 flags */
 
 #define of_has(f, flag)        flag_has_dbg(f, OF_SIZE, flag, #f, #flag)
 #define of_next(f, flag)       flag_next(f, OF_SIZE, flag)
@@ -1198,6 +1199,7 @@ enum
 };
 
 #define RF_SIZE                FLAG_SIZE(RF_MAX)
+#define RF_BYTES	       32 /* savefile bytes, i.e. 256 flags */
 
 #define rf_has(f, flag)        flag_has_dbg(f, RF_SIZE, flag, #f, #flag)
 #define rf_next(f, flag)       flag_next(f, RF_SIZE, flag)
