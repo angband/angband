@@ -7190,7 +7190,7 @@ F:EVIL
 F:NEVER_MOVE
 F:IM_ACID | IM_COLD | IM_ELEC | IM_FIRE | IM_POIS | NO_FEAR
 F:NO_CONF | NO_SLEEP
-F:FORCE_SLEEP
+F:FORCE_SLEEP | ATTR_FLICKER
 D:It is the epitome of all that is evil, in a mold.  Its lifeless form draws
 D: power from sucking the souls of those that approach it, a nimbus of pure evil
 D: surrounds it.  Luckily for you, it can't move.
