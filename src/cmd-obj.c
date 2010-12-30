@@ -781,7 +781,7 @@ static void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 			if (item >= 0)
 				item = inven_carry(p_ptr, i_ptr);
 			else
-				drop_near(i_ptr, 0, p_ptr->py, p_ptr->px, FALSE);
+				drop_near(cave, i_ptr, 0, p_ptr->py, p_ptr->px, FALSE);
 		}
 
 		/* Empty a single lantern */
