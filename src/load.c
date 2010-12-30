@@ -358,7 +358,11 @@ static int rd_item_1(object_type *o_ptr)
 		return 0;
 	}
 
-
+	/* Copy flags into pval_flags to ensure pvals function */
+	if (o_ptr->pval) {
+		of_copy(o_ptr->pval_flags[DEFAULT_PVAL], o_ptr->flags);
+		o_ptr->num_pvals = 1;
+	}
 
 	/* Repair non "wearable" items */
 	if (!wearable_p(o_ptr))
