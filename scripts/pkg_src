@@ -4,7 +4,7 @@ if [ $# -ne 1 ] && [ $# -ne 2 ]; then
 	echo "Simple packaging file for the source."
 	echo ""
 	echo "Use in the root directory of the game, like so:"
-	echo "   scripts/pkg_src <name of of release, e.g. angband-4.0.1> [<output filename>]"
+	echo "   scripts/pkg_src <name of release, e.g. angband-4.0.1> [<output filename>]"
 	echo ""
 
 	exit 1
@@ -17,10 +17,24 @@ else
 	OUT=$2
 fi
 
-svn export . $DIR &&
-	cd $DIR &&
-	rm -rf debian &&
-	./autogen.sh &&
-	rm -rf autogen.sh autom4te.cache &&
-	cd .. &&
-	tar czvf $OUT $DIR
+# Error checking
+if [ -f $DIR ]; then
+	echo "$DIR is a file. Please rename or delete it before running"
+        echo "the script again."
+	exit 1
+fi
+
+if [ -d $DIR ]; then
+	echo "$DIR is an existing directory. Please rename or delete it"
+        echo "before running the script again."
+	exit 1
+fi
+
+git checkout-index --prefix=$DIR/ -a
+cd $DIR
+rm -rf debian
+./autogen.sh
+rm -rf autogen.sh autom4te.cache
+cd ..
+tar --exclude .gitignore -czvf $OUT $DIR
+rm -rf $DIR
