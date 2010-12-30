@@ -480,7 +480,7 @@ static void decrease_timeouts(void)
 /*
  * Handle certain things once every 10 game turns
  */
-static void process_world(void)
+static void process_world(struct cave *c)
 {
 	int i;
 
@@ -522,7 +522,7 @@ static void process_world(void)
 				msg_print("The sun has fallen.");
 
 			/* Illuminate */
-			town_illuminate(dawn);
+			cave_illuminate(c, dawn);
 		}
 	}
 
@@ -543,7 +543,7 @@ static void process_world(void)
 	if (one_in_(MAX_M_ALLOC_CHANCE))
 	{
 		/* Make a new monster */
-		(void)alloc_monster(MAX_SIGHT + 5, FALSE, p_ptr->depth);
+		(void)alloc_monster(cave, MAX_SIGHT + 5, FALSE, p_ptr->depth);
 	}
 
 	/* Hack -- Check for creature regeneration */
@@ -1139,7 +1139,7 @@ static void process_player(void)
 					shimmer_monsters = TRUE;
 
 					/* Redraw regardless */
-					light_spot(m_ptr->fy, m_ptr->fx);
+					cave_light_spot(cave, m_ptr->fy, m_ptr->fx);
 				}
 			}
 
@@ -1331,7 +1331,7 @@ void idle_update(void)
  * This function will not exit until the level is completed,
  * the user dies, or the game is terminated.
  */
-static void dungeon(void)
+static void dungeon(struct cave *c)
 {
 	monster_type *m_ptr;
 	int i;
@@ -1506,7 +1506,7 @@ static void dungeon(void)
     		do_animation(); 
 
 			/* process monster with even more energy first */
-			process_monsters((byte)(p_ptr->energy + 1));
+			process_monsters(c, (byte)(p_ptr->energy + 1));
 
 			/* if still alive */
 			if (!p_ptr->leaving)
@@ -1537,7 +1537,7 @@ static void dungeon(void)
 
 
 		/* Process all of the monsters */
-		process_monsters(100);
+		process_monsters(c, 100);
 
 		/* Notice stuff */
 		if (p_ptr->notice) notice_stuff();
@@ -1556,7 +1556,7 @@ static void dungeon(void)
 
 
 		/* Process the world */
-		process_world();
+		process_world(c);
 
 		/* Notice stuff */
 		if (p_ptr->notice) notice_stuff();
@@ -1811,7 +1811,8 @@ void play_game(void)
 
 
 	/* Generate a dungeon level if needed */
-	if (!character_dungeon) generate_cave();
+	if (!character_dungeon)
+		cave_generate(cave);
 
 
 	/* Character is now "complete" */
@@ -1838,8 +1839,7 @@ void play_game(void)
 		play_ambient_sound();
 
 		/* Process the level */
-		dungeon();
-
+		dungeon(cave);
 
 		/* Notice stuff */
 		if (p_ptr->notice) notice_stuff();
@@ -1938,7 +1938,7 @@ void play_game(void)
 		if (p_ptr->is_dead) break;
 
 		/* Make a new level */
-		generate_cave();
+		cave_generate(cave);
 	}
 
 	/* Disallow big cursor */

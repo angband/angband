@@ -988,8 +988,7 @@ void delete_object_idx(int o_idx)
 		y = j_ptr->iy;
 		x = j_ptr->ix;
 
-		/* Visual update */
-		light_spot(y, x);
+		cave_light_spot(cave, y, x);
 	}
 
 	/* Wipe the object */
@@ -1034,7 +1033,7 @@ void delete_object(int y, int x)
 	cave_o_idx[y][x] = 0;
 
 	/* Visual update */
-	light_spot(y, x);
+	cave_light_spot(cave, y, x);
 }
 
 
@@ -2029,11 +2028,8 @@ s16b floor_carry(int y, int x, object_type *j_ptr)
 		/* Link the floor to the object */
 		cave_o_idx[y][x] = o_idx;
 
-		/* Notice */
-		note_spot(y, x);
-
-		/* Redraw */
-		light_spot(y, x);
+		cave_note_spot(cave, y, x);
+		cave_light_spot(cave, y, x);
 	}
 
 	/* Result */
@@ -2057,7 +2053,7 @@ s16b floor_carry(int y, int x, object_type *j_ptr)
  * the object can combine, stack, or be placed.  Artifacts will try very
  * hard to be placed, including "teleporting" to a useful grid if needed.
  */
-void drop_near(object_type *j_ptr, int chance, int y, int x, bool verbose)
+void drop_near(struct cave *c, object_type *j_ptr, int chance, int y, int x, bool verbose)
 {
 	int i, k, n, d, s;
 
@@ -2211,8 +2207,8 @@ void drop_near(object_type *j_ptr, int chance, int y, int x, bool verbose)
 		/* Random locations */
 		else
 		{
-			ty = randint0(level_hgt);
-			tx = randint0(level_wid);
+			ty = randint0(c->height);
+			tx = randint0(c->width);
 		}
 
 		/* Require floor space */
@@ -2282,7 +2278,7 @@ void acquirement(int y1, int x1, int level, int num, bool great)
 		i_ptr->origin_depth = p_ptr->depth;
 
 		/* Drop the object */
-		drop_near(i_ptr, 0, y1, x1, TRUE);
+		drop_near(cave, i_ptr, 0, y1, x1, TRUE);
 	}
 }
 
@@ -3054,7 +3050,7 @@ void inven_drop(int item, int amt)
 	msg_format("You drop %s (%c).", o_name, index_to_label(item));
 
 	/* Drop it near the player */
-	drop_near(i_ptr, 0, py, px, FALSE);
+	drop_near(cave, i_ptr, 0, py, px, FALSE);
 
 	/* Modify, Describe, Optimize */
 	inven_item_increase(item, -amt);
@@ -4331,7 +4327,7 @@ void pack_overflow(void)
 	msg_format("You drop %s (%c).", o_name, index_to_label(item));
 
 	/* Drop it (carefully) near the player */
-	drop_near(o_ptr, 0, p_ptr->py, p_ptr->px, FALSE);
+	drop_near(cave, o_ptr, 0, p_ptr->py, p_ptr->px, FALSE);
 
 	/* Modify, Describe, Optimize */
 	inven_item_increase(item, -255);

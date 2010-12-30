@@ -97,20 +97,6 @@ s16b o_cnt = 0;			/* Number of live objects */
 s16b mon_max = 1;	/* Number of allocated monsters */
 s16b mon_cnt = 0;	/* Number of live monsters */
 
-
-
-/*
- * Dungeon variables
- */
-
-byte feeling;			/* Most recent feeling */
-s16b rating;			/* Level's current rating */
-
-bool good_item_flag;	/* True if "Artifact" on this level */
-
-bool closing_flag;		/* Dungeon is closing */
-
-
 /*
  * Buffer to hold the current savefile name
  */
@@ -484,18 +470,6 @@ s16b (*cave_o_idx)[DUNGEON_WID];
  * if any, monster or player is in any given grid.
  */
 s16b (*cave_m_idx)[DUNGEON_WID];
-
-
-/*
- * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid flow "cost" values
- */
-byte (*cave_cost)[DUNGEON_WID];
-
-/*
- * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid flow "when" stamps
- */
-byte (*cave_when)[DUNGEON_WID];
-
 
 /*
  * Array[z_info->o_max] of dungeon objects

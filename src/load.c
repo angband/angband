@@ -1280,7 +1280,7 @@ int rd_misc(void)
 
 	/* Read "feeling" */
 	rd_byte(&tmp8u);
-	feeling = tmp8u;
+	cave->feeling = tmp8u;
 
 	/* Turn of last "feeling" */
 	rd_s32b(&old_turn);
@@ -2085,7 +2085,7 @@ int rd_dungeon(void)
 		for (i = count; i > 0; i--)
 		{
 			/* Extract "feat" */
-			cave_set_feat(y, x, tmp8u);
+			cave_set_feat(cave, y, x, tmp8u);
 
 			/* Advance/Wrap */
 			if (++x >= DUNGEON_WID)

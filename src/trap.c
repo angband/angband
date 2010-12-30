@@ -88,7 +88,7 @@ void pick_trap(int y, int x)
 	}
 
 	/* Activate the trap */
-	cave_set_feat(y, x, feat);
+	cave_set_feat(cave, y, x, feat);
 }
 
 
@@ -111,7 +111,7 @@ void place_trap(int y, int x)
 	if (!cave_naked_bold(y, x)) return;
 
 	/* Place an invisible trap */
-	cave_set_feat(y, x, FEAT_INVIS);
+	cave_set_feat(cave, y, x, FEAT_INVIS);
 }
 
 
@@ -247,7 +247,7 @@ void hit_trap(int y, int x)
 			sound(MSG_SUM_MONSTER);
 			msg_print("You are enveloped in a cloud of smoke!");
 			cave_info[y][x] &= ~(CAVE_MARK);
-			cave_set_feat(y, x, FEAT_FLOOR);
+			cave_set_feat(cave, y, x, FEAT_FLOOR);
 			num = 2 + randint1(3);
 			for (i = 0; i < num; i++)
 			{

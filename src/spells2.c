@@ -113,7 +113,7 @@ void warding_glyph(void)
 	}
 
 	/* Create a glyph */
-	cave_set_feat(py, px, FEAT_GLYPH);
+	cave_set_feat(cave, py, px, FEAT_GLYPH);
 }
 
 
@@ -496,7 +496,7 @@ void map_area(void)
 				{
 					/* Memorize the object */
 					cave_info[y][x] |= (CAVE_MARK);
-					light_spot(y, x);
+					cave_light_spot(cave, y, x);
 				}
 
 				/* Memorize known walls */
@@ -510,7 +510,7 @@ void map_area(void)
 					{
 						/* Memorize the walls */
 						cave_info[yy][xx] |= (CAVE_MARK);
-						light_spot(yy, xx);
+						cave_light_spot(cave, yy, xx);
 					}
 				}
 			}
@@ -580,7 +580,7 @@ bool detect_traps(bool aware)
 			if (!in_bounds_fully(y, x)) continue;
 
 			/* Redraw */
-			light_spot(y, x);
+			cave_light_spot(cave, y, x);
 		}
 	}
 
@@ -644,7 +644,7 @@ bool detect_doorstairs(bool aware)
 				cave_info[y][x] |= (CAVE_MARK);
 
 				/* Redraw */
-				light_spot(y, x);
+				cave_light_spot(cave, y, x);
 
 				/* Obvious */
 				doors = TRUE;
@@ -658,7 +658,7 @@ bool detect_doorstairs(bool aware)
 				cave_info[y][x] |= (CAVE_MARK);
 
 				/* Redraw */
-				light_spot(y, x);
+				cave_light_spot(cave, y, x);
 
 				/* Obvious */
 				stairs = TRUE;
@@ -724,7 +724,7 @@ bool detect_treasure(bool aware)
 				cave_info[y][x] |= (CAVE_MARK);
 
 				/* Redraw */
-				light_spot(y, x);
+				cave_light_spot(cave, y, x);
 
 				/* Detect */
 				gold_buried = TRUE;
@@ -754,7 +754,7 @@ bool detect_treasure(bool aware)
 		o_ptr->marked = TRUE;
 
 		/* Redraw */
-		light_spot(y, x);
+		cave_light_spot(cave, y, x);
 
 		/* Detect */
 		if (!squelch_item_ok(o_ptr))
@@ -818,7 +818,7 @@ bool detect_close_buried_treasure(void)
 				cave_info[y][x] |= (CAVE_MARK);
 
 				/* Redraw */
-				light_spot(y, x);
+				cave_light_spot(cave, y, x);
 
 				/* Detect */
 				gold_buried = TRUE;
@@ -890,7 +890,7 @@ bool detect_objects_magic(bool aware)
 			o_ptr->marked = TRUE;
 
 			/* Redraw */
-			light_spot(y, x);
+			cave_light_spot(cave, y, x);
 
 			/* Detect */
 			if (!squelch_item_ok(o_ptr))
@@ -1161,19 +1161,19 @@ void stair_creation(void)
 	/* Create a staircase */
 	if (!p_ptr->depth)
 	{
-		cave_set_feat(py, px, FEAT_MORE);
+		cave_set_feat(cave, py, px, FEAT_MORE);
 	}
 	else if (is_quest(p_ptr->depth) || (p_ptr->depth >= MAX_DEPTH-1))
 	{
-		cave_set_feat(py, px, FEAT_LESS);
+		cave_set_feat(cave, py, px, FEAT_LESS);
 	}
 	else if (randint0(100) < 50)
 	{
-		cave_set_feat(py, px, FEAT_MORE);
+		cave_set_feat(cave, py, px, FEAT_MORE);
 	}
 	else
 	{
-		cave_set_feat(py, px, FEAT_LESS);
+		cave_set_feat(cave, py, px, FEAT_LESS);
 	}
 }
 
@@ -1952,7 +1952,7 @@ void destroy_area(int y1, int x1, int r, bool full)
 			/* Lose light and knowledge */
 			cave_info[y][x] &= ~(CAVE_GLOW | CAVE_MARK);
 			
-			light_spot(y, x);
+			cave_light_spot(cave, y, x);
 
 			/* Hack -- Notice player affect */
 			if (cave_m_idx[y][x] < 0)
@@ -2003,7 +2003,7 @@ void destroy_area(int y1, int x1, int r, bool full)
 				}
 
 				/* Change the feature */
-				cave_set_feat(y, x, feat);
+				cave_set_feat(cave, y, x, feat);
 			}
 		}
 	}
@@ -2327,7 +2327,7 @@ void earthquake(int cy, int cx, int r)
 			/* Note unaffected grids for light changes, etc. */
 			if (!map[16+yy-cy][16+xx-cx])
 			{
-				light_spot(yy, xx);
+				cave_light_spot(cave, yy, xx);
 			}
 
 			/* Destroy location (if valid) */
@@ -2365,7 +2365,7 @@ void earthquake(int cy, int cx, int r)
 				}
 
 				/* Change the feature */
-				cave_set_feat(yy, xx, feat);
+				cave_set_feat(cave, yy, xx, feat);
 			}
 		}
 	}
@@ -2431,7 +2431,7 @@ static void cave_temp_room_light(void)
 		int x = temp_x[i];
 
 		/* Redraw the grid */
-		light_spot(y, x);
+		cave_light_spot(cave, y, x);
 
 		/* Process affected monsters */
 		if (cave_m_idx[y][x] > 0)
@@ -2520,7 +2520,7 @@ static void cave_temp_room_unlight(void)
 		int x = temp_x[i];
 
 		/* Redraw the grid */
-		light_spot(y, x);
+		cave_light_spot(cave, y, x);
 	}
 
 	/* None left */

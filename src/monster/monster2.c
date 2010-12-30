@@ -20,6 +20,7 @@
 #include "cave.h"
 #include "generate.h"
 #include "history.h"
+#include "monster/monster.h"
 #include "object/tvalsval.h"
 #include "object/object.h"
 #include "target.h"
@@ -89,7 +90,7 @@ void delete_monster_idx(int i)
 	mon_cnt--;
 
 	/* Visual update */
-	light_spot(y, x);
+	cave_light_spot(cave, y, x);
 }
 
 
@@ -1319,7 +1320,7 @@ void update_mon(int m_idx, bool full)
 			m_ptr->ml = TRUE;
 
 			/* Draw the monster */
-			light_spot(fy, fx);
+			cave_light_spot(cave, fy, fx);
 
 			/* Update health bar as needed */
 			if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
@@ -1345,7 +1346,7 @@ void update_mon(int m_idx, bool full)
 			m_ptr->ml = FALSE;
 
 			/* Erase the monster */
-			light_spot(fy, fx);
+			cave_light_spot(cave, fy, fx);
 
 			/* Update health bar as needed */
 			if (p_ptr->health_who == m_idx) p_ptr->redraw |= (PR_HEALTH);
@@ -1599,8 +1600,8 @@ void monster_swap(int y1, int x1, int y2, int x2)
 
 
 	/* Redraw */
-	light_spot(y1, x1);
-	light_spot(y2, x2);
+	cave_light_spot(cave, y1, x1);
+	cave_light_spot(cave, y2, x2);
 }
 
 
@@ -1761,7 +1762,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 			if (OPT(cheat_hear)) msg_format("Deep Unique (%s).", name);
 
 			/* Boost rating by twice delta-depth */
-			rating += (r_ptr->level - p_ptr->depth) * 2;
+			cave->rating += (r_ptr->level - p_ptr->depth) * 2;
 		}
 
 		/* Normal monsters */
@@ -1771,7 +1772,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 			if (OPT(cheat_hear)) msg_format("Deep Monster (%s).", name);
 
 			/* Boost rating by delta-depth */
-			rating += (r_ptr->level - p_ptr->depth);
+			cave->rating += (r_ptr->level - p_ptr->depth);
 		}
 	}
 
@@ -1865,7 +1866,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 /*
  * Attempt to place a "group" of monsters around the given location
  */
-static bool place_monster_group(int y, int x, int r_idx, bool slp)
+static bool place_monster_group(struct cave *c, int y, int x, int r_idx, bool slp)
 {
 	monster_race *r_ptr = &r_info[r_idx];
 
@@ -1909,7 +1910,7 @@ static bool place_monster_group(int y, int x, int r_idx, bool slp)
 
 
 	/* Save the rating */
-	old = rating;
+	old = c->rating;
 
 	/* Start on the monster */
 	hack_n = 1;
@@ -1944,7 +1945,7 @@ static bool place_monster_group(int y, int x, int r_idx, bool slp)
 	}
 
 	/* Hack -- restore the rating */
-	rating = old;
+	c->rating = old;
 
 
 	/* Success */
@@ -2001,12 +2002,13 @@ static bool place_monster_okay(int r_idx)
  * Note the use of the new "monster allocation table" code to restrict
  * the "get_mon_num()" function to "legal" escort types.
  */
-bool place_monster_aux(int y, int x, int r_idx, bool slp, bool grp)
+bool place_monster_aux(struct cave *c, int y, int x, int r_idx, bool slp, bool grp)
 {
 	int i;
 
 	monster_race *r_ptr = &r_info[r_idx];
 
+	assert(c);
 
 	/* Place one monster, or fail */
 	if (!place_monster_one(y, x, r_idx, slp)) return (FALSE);
@@ -2020,7 +2022,7 @@ bool place_monster_aux(int y, int x, int r_idx, bool slp, bool grp)
 	if (rf_has(r_ptr->flags, RF_FRIENDS))
 	{
 		/* Attempt to place a group */
-		(void)place_monster_group(y, x, r_idx, slp);
+		(void)place_monster_group(c, y, x, r_idx, slp);
 	}
 
 
@@ -2072,7 +2074,7 @@ bool place_monster_aux(int y, int x, int r_idx, bool slp, bool grp)
 			    rf_has(r_ptr->flags, RF_ESCORTS))
 			{
 				/* Place a group of monsters */
-				(void)place_monster_group(ny, nx, z, slp);
+				(void)place_monster_group(c, ny, nx, z, slp);
 			}
 		}
 	}
@@ -2088,9 +2090,11 @@ bool place_monster_aux(int y, int x, int r_idx, bool slp, bool grp)
  *
  * Attempt to find a monster appropriate to the given depth
  */
-bool place_monster(int y, int x, int depth, bool slp, bool grp)
+bool place_monster(struct cave *c, int y, int x, int depth, bool slp, bool grp)
 {
 	int r_idx;
+
+	assert(c);
 
 	/* Pick a monster */
 	r_idx = get_mon_num(depth);
@@ -2099,7 +2103,7 @@ bool place_monster(int y, int x, int depth, bool slp, bool grp)
 	if (!r_idx) return (FALSE);
 
 	/* Attempt to place the monster */
-	if (place_monster_aux(y, x, r_idx, slp, grp)) return (TRUE);
+	if (place_monster_aux(c, y, x, r_idx, slp, grp)) return (TRUE);
 
 	/* Oops */
 	return (FALSE);
@@ -2173,7 +2177,7 @@ bool place_monster(int y, int x, int depth, bool slp, bool grp)
  *
  * Use "depth" for the monster level
  */
-bool alloc_monster(int dis, bool slp, int depth)
+bool alloc_monster(struct cave *c, int dis, bool slp, int depth)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -2181,12 +2185,14 @@ bool alloc_monster(int dis, bool slp, int depth)
 	int y = 0, x = 0;
 	int	attempts_left = 10000;
 
+	assert(c);
+
 	/* Find a legal, distant, unoccupied, space */
 	while (--attempts_left)
 	{
 		/* Pick a location */
-		y = randint0(level_hgt);
-		x = randint0(level_wid);
+		y = randint0(c->height);
+		x = randint0(c->width);
 
 		/* Require "naked" floor grid */
 		if (!cave_naked_bold(y, x)) continue;
@@ -2206,7 +2212,7 @@ bool alloc_monster(int dis, bool slp, int depth)
 	}
 
 	/* Attempt to place the monster, allow groups */
-	if (place_monster(y, x, depth, slp, TRUE)) return (TRUE);
+	if (place_monster(c, y, x, depth, slp, TRUE)) return (TRUE);
 
 	/* Nope */
 	return (FALSE);
@@ -2438,7 +2444,7 @@ bool summon_specific(int y1, int x1, int lev, int type, int delay)
 	if (!r_idx) return (FALSE);
 
 	/* Attempt to place the monster (awake, allow groups) */
-	if (!place_monster_aux(y, x, r_idx, FALSE, TRUE)) return (FALSE);
+	if (!place_monster_aux(cave, y, x, r_idx, FALSE, TRUE)) return (FALSE);
 
 	/* If delay, try to let the player act before the summoned monsters. */
 	/* NOTE: should really be -100, but energy is currently 0-255. */
@@ -2478,7 +2484,7 @@ bool multiply_monster(int m_idx)
 		if (!cave_empty_bold(y, x)) continue;
 
 		/* Create a new monster (awake, no groups) */
-		result = place_monster_aux(y, x, m_ptr->r_idx, FALSE, FALSE);
+		result = place_monster_aux(cave, y, x, m_ptr->r_idx, FALSE, FALSE);
 
 		/* Done */
 		break;
@@ -2848,7 +2854,7 @@ static void build_quest_stairs(int y, int x)
 	msg_print("A magical staircase appears...");
 
 	/* Create stairs down */
-	cave_set_feat(y, x, FEAT_MORE);
+	cave_set_feat(cave, y, x, FEAT_MORE);
 
 	/* Update the visuals */
 	p_ptr->update |= (PU_UPDATE_VIEW | PU_MONSTERS);
@@ -2932,7 +2938,7 @@ void monster_death(int m_idx)
 		delete_object_idx(this_o_idx);
 
 		/* Drop it */
-		drop_near(i_ptr, 0, y, x, TRUE);
+		drop_near(cave, i_ptr, 0, y, x, TRUE);
 	}
 
 	/* Forget objects */
@@ -2955,7 +2961,7 @@ void monster_death(int m_idx)
 		i_ptr->origin_xtra = m_ptr->r_idx;
 
 		/* Drop it in the dungeon */
-		drop_near(i_ptr, 0, y, x, TRUE);
+		drop_near(cave, i_ptr, 0, y, x, TRUE);
 
 
 		/* Get local object */
@@ -2971,7 +2977,7 @@ void monster_death(int m_idx)
 		i_ptr->origin_xtra = m_ptr->r_idx;
 
 		/* Drop it in the dungeon */
-		drop_near(i_ptr, 0, y, x, TRUE);
+		drop_near(cave, i_ptr, 0, y, x, TRUE);
 	}
 
 
@@ -3020,7 +3026,7 @@ void monster_death(int m_idx)
 		i_ptr->origin_xtra = m_ptr->r_idx;
 
 		/* Drop it in the dungeon */
-		drop_near(i_ptr, 0, y, x, TRUE);
+		drop_near(cave, i_ptr, 0, y, x, TRUE);
 	}
 
 	/* Take note of any dropped treasure */

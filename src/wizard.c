@@ -64,10 +64,10 @@ static void do_cmd_wiz_hack_ben(void)
 				if (!in_bounds_fully(y, x)) continue;
 
 				/* Display proper cost */
-				if (cave_cost[y][x] != i) continue;
+				if (cave->cost[y][x] != i) continue;
 
 				/* Reliability in yellow */
-				if (cave_when[y][x] == cave_when[py][px])
+				if (cave->when[y][x] == cave->when[py][px])
 				{
 					a = TERM_YELLOW;
 				}
@@ -426,7 +426,7 @@ bool wiz_create_item_subaction(menu_type *m, const ui_event_data *e, int oid)
 		make_gold(i_ptr, p_ptr->depth, kind->sval);
 
 	/* Drop the object from heaven */
-	drop_near(i_ptr, 0, p_ptr->py, p_ptr->px, TRUE);
+	drop_near(cave, i_ptr, 0, p_ptr->py, p_ptr->px, TRUE);
 
 	return FALSE;
 }
@@ -1053,7 +1053,6 @@ static void do_cmd_wiz_play(void)
 	}
 }
 
-
 /*
  * Create the artifact with the specified number
  */
@@ -1115,7 +1114,7 @@ static void wiz_create_artifact(int a_idx)
 	i_ptr->origin = ORIGIN_CHEAT;
 
 	/* Drop the artifact from heaven */
-	drop_near(i_ptr, 0, p_ptr->py, p_ptr->px, TRUE);
+	drop_near(cave, i_ptr, 0, p_ptr->py, p_ptr->px, TRUE);
 
 	/* All done */
 	msg_print("Allocated.");
@@ -1332,7 +1331,7 @@ static void do_cmd_wiz_named(int r_idx, bool slp)
 		if (!cave_empty_bold(y, x)) continue;
 
 		/* Place it (allow groups) */
-		if (place_monster_aux(y, x, r_idx, slp, TRUE)) break;
+		if (place_monster_aux(cave, y, x, r_idx, slp, TRUE)) break;
 	}
 }
 
@@ -1509,7 +1508,7 @@ static void wiz_test_kind(int tval)
 				make_gold(i_ptr, p_ptr->depth, sval);
 
 			/* Drop the object from heaven */
-			drop_near(i_ptr, 0, py, px, TRUE);
+			drop_near(cave, i_ptr, 0, py, px, TRUE);
 		}
 	}
 
@@ -1779,7 +1778,7 @@ void do_cmd_debug(void)
 		/* Create a trap */
 		case 'T':
 		{
-			cave_set_feat(p_ptr->py, p_ptr->px, FEAT_INVIS);
+			cave_set_feat(cave, p_ptr->py, p_ptr->px, FEAT_INVIS);
 			break;
 		}
 

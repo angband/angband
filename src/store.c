@@ -1544,14 +1544,21 @@ void store_maint(int which)
 {
 	int j;
 	int stock;
-
-	int old_rating = rating;
-
+	struct cave c;
+	struct cave *oldcave;
 	store_type *st_ptr;
 
+	/* Some of the functions we call gratuitously adjust the rating, and
+	 * we'd like that not to happen for the town. Create a temporary cave
+	 * for them. */
+	oldcave = cave;
+	cave = &c;
 
 	/* Ignore home */
-	if (which == STORE_HOME) return;
+	if (which == STORE_HOME) {
+		cave = oldcave;
+		return;
+	}
 
 	/* General Store gets special treatment */
 	if (which == STORE_GENERAL)
@@ -1562,6 +1569,7 @@ void store_maint(int which)
 		/* Acquire staple items */
 		store_create_staples();
 
+		cave = oldcave;
 		return;
 	}
 
@@ -1615,10 +1623,7 @@ void store_maint(int which)
 	/* For the rest, we just choose items randomlyish */
 	while (st_ptr->stock_num < stock) store_create_random(which);
 
-
-
-	/* Hack -- Restore the rating */
-	rating = old_rating;
+	cave = oldcave;
 }
 
 struct owner *store_ownerbyidx(struct store *s, unsigned int idx) {

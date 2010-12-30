@@ -615,7 +615,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 			if (p_ptr->redraw) redraw_stuff();
 
 			Term_xtra(TERM_XTRA_DELAY, msec);
-			light_spot(y, x);
+			cave_light_spot(cave, y, x);
 
 			Term_fresh();
 			if (p_ptr->redraw) redraw_stuff();
@@ -797,7 +797,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	j = (hit_body ? breakage_chance(i_ptr) : 0);
 
 	/* Drop (or break) near that location */
-	drop_near(i_ptr, j, y, x, TRUE);
+	drop_near(cave, i_ptr, j, y, x, TRUE);
 }
 
 void textui_cmd_fire_at_nearest(void)
@@ -1005,7 +1005,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 			if (p_ptr->redraw) redraw_stuff();
 
 			Term_xtra(TERM_XTRA_DELAY, msec);
-			light_spot(y, x);
+			cave_light_spot(cave, y, x);
 
 			Term_fresh();
 			if (p_ptr->redraw) redraw_stuff();
@@ -1157,7 +1157,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 	j = (hit_body ? breakage_chance(i_ptr) : 0);
 
 	/* Drop (or break) near that location */
-	drop_near(i_ptr, j, y, x, TRUE);
+	drop_near(cave, i_ptr, j, y, x, TRUE);
 }
 
 void textui_cmd_throw(void)

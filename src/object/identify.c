@@ -404,7 +404,7 @@ void object_flavor_aware(object_type *o_ptr)
 		/* So update display for all floor objects of this kind */
 		if (!floor_o_ptr->held_m_idx &&
 				floor_o_ptr->k_idx == o_ptr->k_idx)
-			light_spot(floor_o_ptr->iy, floor_o_ptr->ix);
+			cave_light_spot(cave, floor_o_ptr->iy, floor_o_ptr->ix);
 	}
 }
 

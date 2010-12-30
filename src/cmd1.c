@@ -620,7 +620,7 @@ void move_player(int dir, bool disarm)
 			{
 				message(MSG_HITWALL, 0, "You feel a pile of rubble blocking your way.");
 				cave_info[y][x] |= (CAVE_MARK);
-				light_spot(y, x);
+				cave_light_spot(cave, y, x);
 			}
 
 			/* Closed door */
@@ -628,7 +628,7 @@ void move_player(int dir, bool disarm)
 			{
 				message(MSG_HITWALL, 0, "You feel a door blocking your way.");
 				cave_info[y][x] |= (CAVE_MARK);
-				light_spot(y, x);
+				cave_light_spot(cave, y, x);
 			}
 
 			/* Wall (or secret door) */
@@ -636,7 +636,7 @@ void move_player(int dir, bool disarm)
 			{
 				message(MSG_HITWALL, 0, "You feel a wall blocking your way.");
 				cave_info[y][x] |= (CAVE_MARK);
-				light_spot(y, x);
+				cave_light_spot(cave, y, x);
 			}
 		}
 

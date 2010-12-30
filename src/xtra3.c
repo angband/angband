@@ -635,7 +635,7 @@ static void hp_colour_change(game_event_type type, game_event_data *data, void *
 	 */
 	if ((OPT(hp_changes_color)) && (arg_graphics == GRAPHICS_NONE))
 	{
-		light_spot(p_ptr->py, p_ptr->px);
+		cave_light_spot(cave, p_ptr->py, p_ptr->px);
 	}
 }
 

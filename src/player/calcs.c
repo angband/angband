@@ -2250,13 +2250,13 @@ void update_stuff(void)
 	if (p_ptr->update & (PU_FORGET_FLOW))
 	{
 		p_ptr->update &= ~(PU_FORGET_FLOW);
-		forget_flow();
+		cave_forget_flow(cave);
 	}
 
 	if (p_ptr->update & (PU_UPDATE_FLOW))
 	{
 		p_ptr->update &= ~(PU_UPDATE_FLOW);
-		update_flow();
+		cave_update_flow(cave);
 	}
 
 

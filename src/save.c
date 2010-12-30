@@ -17,6 +17,7 @@
  */
 
 #include "angband.h"
+#include "cave.h"
 #include "history.h"
 #include "monster/monster.h"
 #include "option.h"
@@ -474,7 +475,7 @@ void wr_misc(void)
 	wr_byte(p_ptr->is_dead);
 
 	/* Write feeling */
-	wr_byte(feeling);
+	wr_byte(cave->feeling);
 
 	/* Turn of last "feeling" */
 	wr_s32b(old_turn);

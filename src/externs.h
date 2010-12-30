@@ -72,10 +72,6 @@ extern s16b o_max;
 extern s16b o_cnt;
 extern s16b mon_max;
 extern s16b mon_cnt;
-extern byte feeling;
-extern s16b rating;
-extern bool good_item_flag;
-extern bool closing_flag;
 extern char savefile[1024];
 extern term *angband_term[ANGBAND_TERM_MAX];
 extern char angband_term_name[ANGBAND_TERM_MAX][16];
@@ -93,8 +89,6 @@ extern byte (*cave_info2)[256];
 extern byte (*cave_feat)[DUNGEON_WID];
 extern s16b (*cave_o_idx)[DUNGEON_WID];
 extern s16b (*cave_m_idx)[DUNGEON_WID];
-extern byte (*cave_cost)[DUNGEON_WID];
-extern byte (*cave_when)[DUNGEON_WID];
 extern maxima *z_info;
 extern object_type *o_list;
 extern monster_type *mon_list;
@@ -209,7 +203,6 @@ bool make_attack_normal(int m_idx);
 
 /* melee2.c */
 extern bool make_attack_spell(int m_idx);
-extern void process_monsters(byte minimum_energy);
 
 /* pathfind.c */
 extern bool findpath(int y, int x);

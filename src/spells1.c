@@ -1425,7 +1425,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				cave_info[y][x] &= ~(CAVE_MARK);
 
 				/* Destroy the trap */
-				cave_set_feat(y, x, FEAT_FLOOR);
+				cave_set_feat(cave, y, x, FEAT_FLOOR);
 			}
 
 			/* Locked doors are unlocked */
@@ -1433,7 +1433,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 			          (cave_feat[y][x] <= FEAT_DOOR_HEAD + 0x07))
 			{
 				/* Unlock the door */
-				cave_set_feat(y, x, FEAT_DOOR_HEAD + 0x00);
+				cave_set_feat(cave, y, x, FEAT_DOOR_HEAD + 0x00);
 
 				/* Check line of sound */
 				if (player_has_los_bold(y, x))
@@ -1478,7 +1478,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				cave_info[y][x] &= ~(CAVE_MARK);
 
 				/* Destroy the feature */
-				cave_set_feat(y, x, FEAT_FLOOR);
+				cave_set_feat(cave, y, x, FEAT_FLOOR);
 			}
 
 			break;
@@ -1507,7 +1507,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				cave_info[y][x] &= ~(CAVE_MARK);
 
 				/* Destroy the wall */
-				cave_set_feat(y, x, FEAT_FLOOR);
+				cave_set_feat(cave, y, x, FEAT_FLOOR);
 			}
 
 			/* Quartz / Magma with treasure */
@@ -1525,7 +1525,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				cave_info[y][x] &= ~(CAVE_MARK);
 
 				/* Destroy the wall */
-				cave_set_feat(y, x, FEAT_FLOOR);
+				cave_set_feat(cave, y, x, FEAT_FLOOR);
 
 				/* Place some gold */
 				place_gold(y, x, p_ptr->depth);
@@ -1545,7 +1545,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				cave_info[y][x] &= ~(CAVE_MARK);
 
 				/* Destroy the wall */
-				cave_set_feat(y, x, FEAT_FLOOR);
+				cave_set_feat(cave, y, x, FEAT_FLOOR);
 			}
 
 			/* Rubble */
@@ -1562,7 +1562,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				cave_info[y][x] &= ~(CAVE_MARK);
 
 				/* Destroy the rubble */
-				cave_set_feat(y, x, FEAT_FLOOR);
+				cave_set_feat(cave, y, x, FEAT_FLOOR);
 
 				/* Hack -- place an object */
 				if (randint0(100) < 10)
@@ -1593,7 +1593,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 				cave_info[y][x] &= ~(CAVE_MARK);
 
 				/* Destroy the feature */
-				cave_set_feat(y, x, FEAT_FLOOR);
+				cave_set_feat(cave, y, x, FEAT_FLOOR);
 			}
 
 			/* Update the visuals */
@@ -1612,7 +1612,7 @@ static bool project_f(int who, int r, int y, int x, int dam, int typ, bool obvio
 			if (!cave_naked_bold(y, x)) break;
 
 			/* Create closed door */
-			cave_set_feat(y, x, FEAT_DOOR_HEAD + 0x00);
+			cave_set_feat(cave, y, x, FEAT_DOOR_HEAD + 0x00);
 
 			/* Observe */
 			if (cave_info[y][x] & (CAVE_MARK)) obvious = TRUE;
@@ -1942,7 +1942,7 @@ static bool project_o(int who, int r, int y, int x, int dam, int typ, bool obvio
 				delete_object_idx(this_o_idx);
 
 				/* Redraw */
-				light_spot(y, x);
+				cave_light_spot(cave, y, x);
 			}
 		}
 	}
@@ -2977,7 +2977,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 					delete_monster_idx(cave_m_idx[y][x]);
 
 					/* Create a new monster (no groups) */
-					(void)place_monster_aux(y, x, tmp, FALSE, FALSE);
+					(void)place_monster_aux(cave, y, x, tmp, FALSE, FALSE);
 
 					/* Hack -- Assume success XXX XXX XXX */
 
@@ -3247,7 +3247,7 @@ static bool project_m(int who, int r, int y, int x, int dam, int typ, bool obvio
 	update_mon(cave_m_idx[y][x], FALSE);
 
 	/* Redraw the monster grid */
-	light_spot(y, x);
+	cave_light_spot(cave, y, x);
 
 
 	/* Update monster recall window */
@@ -4108,7 +4108,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 
 				Term_xtra(TERM_XTRA_DELAY, msec);
 
-				light_spot(y, x);
+				cave_light_spot(cave, y, x);
 
 				Term_fresh();
 				if (p_ptr->redraw) redraw_stuff();
@@ -4255,7 +4255,7 @@ bool project(int who, int rad, int y, int x, int dam, int typ, int flg)
 				/* Hack -- Erase if needed */
 				if (player_has_los_bold(y, x))
 				{
-					light_spot(y, x);
+					cave_light_spot(cave, y, x);
 				}
 			}
 

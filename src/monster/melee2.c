@@ -2157,7 +2157,7 @@ static int mon_will_run(int m_idx)
  * being close enough to chase directly.  I have no idea what will
  * happen if you combine "smell" with low "aaf" values.
  */
-static bool get_moves_aux(int m_idx, int *yp, int *xp)
+static bool get_moves_aux(struct cave *c, int m_idx, int *yp, int *xp)
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -2181,18 +2181,18 @@ static bool get_moves_aux(int m_idx, int *yp, int *xp)
 	x1 = m_ptr->fx;
 
 	/* The player is not currently near the monster grid */
-	if (cave_when[y1][x1] < cave_when[py][px])
+	if (c->when[y1][x1] < c->when[py][px])
 	{
 		/* The player has never been near the monster grid */
-		if (cave_when[y1][x1] == 0) return (FALSE);
+		if (c->when[y1][x1] == 0) return (FALSE);
 
 		/* The monster is not allowed to track the player */
 		if (!OPT(birth_ai_smell)) return (FALSE);
 	}
 
 	/* Monster is too far away to notice the player */
-	if (cave_cost[y1][x1] > MONSTER_FLOW_DEPTH) return (FALSE);
-	if (cave_cost[y1][x1] > r_ptr->aaf) return (FALSE);
+	if (c->cost[y1][x1] > MONSTER_FLOW_DEPTH) return (FALSE);
+	if (c->cost[y1][x1] > r_ptr->aaf) return (FALSE);
 
 	/* Hack -- Player can see us, run towards him */
 	if (player_has_los_bold(y1, x1)) return (FALSE);
@@ -2205,17 +2205,17 @@ static bool get_moves_aux(int m_idx, int *yp, int *xp)
 		x = x1 + ddx_ddd[i];
 
 		/* Ignore illegal locations */
-		if (cave_when[y][x] == 0) continue;
+		if (c->when[y][x] == 0) continue;
 
 		/* Ignore ancient locations */
-		if (cave_when[y][x] < when) continue;
+		if (c->when[y][x] < when) continue;
 
 		/* Ignore distant locations */
-		if (cave_cost[y][x] > cost) continue;
+		if (c->cost[y][x] > cost) continue;
 
 		/* Save the cost and time */
-		when = cave_when[y][x];
-		cost = cave_cost[y][x];
+		when = c->when[y][x];
+		cost = c->cost[y][x];
 
 		/* Hack -- Save the "twiddled" location */
 		(*yp) = py + 16 * ddy_ddd[i];
@@ -2236,7 +2236,7 @@ static bool get_moves_aux(int m_idx, int *yp, int *xp)
  * but instead of heading directly for it, the monster should "swerve"
  * around the player so that he has a smaller chance of getting hit.
  */
-static bool get_fear_moves_aux(int m_idx, int *yp, int *xp)
+static bool get_fear_moves_aux(struct cave *c, int m_idx, int *yp, int *xp)
 {
 	int y, x, y1, x1, fy, fx, py, px, gy = 0, gx = 0;
 	int when = 0, score = -1;
@@ -2261,15 +2261,15 @@ static bool get_fear_moves_aux(int m_idx, int *yp, int *xp)
 	x1 = fx - (*xp);
 
 	/* The player is not currently near the monster grid */
-	if (cave_when[fy][fx] < cave_when[py][px])
+	if (c->when[fy][fx] < c->when[py][px])
 	{
 		/* No reason to attempt flowing */
 		return (FALSE);
 	}
 
 	/* Monster is too far away to use flow information */
-	if (cave_cost[fy][fx] > MONSTER_FLOW_DEPTH) return (FALSE);
-	if (cave_cost[fy][fx] > r_ptr->aaf) return (FALSE);
+	if (c->cost[fy][fx] > MONSTER_FLOW_DEPTH) return (FALSE);
+	if (c->cost[fy][fx] > r_ptr->aaf) return (FALSE);
 
 	/* Check nearby grids, diagonals first */
 	for (i = 7; i >= 0; i--)
@@ -2281,16 +2281,16 @@ static bool get_fear_moves_aux(int m_idx, int *yp, int *xp)
 		x = fx + ddx_ddd[i];
 
 		/* Ignore illegal locations */
-		if (cave_when[y][x] == 0) continue;
+		if (c->when[y][x] == 0) continue;
 
 		/* Ignore ancient locations */
-		if (cave_when[y][x] < when) continue;
+		if (c->when[y][x] < when) continue;
 
 		/* Calculate distance of this grid from our destination */
 		dis = distance(y, x, y1, x1);
 
 		/* Score this grid */
-		s = 5000 / (dis + 3) - 500 / (cave_cost[y][x] + 1);
+		s = 5000 / (dis + 3) - 500 / (c->cost[y][x] + 1);
 
 		/* No negative scores */
 		if (s < 0) s = 0;
@@ -2299,7 +2299,7 @@ static bool get_fear_moves_aux(int m_idx, int *yp, int *xp)
 		if (s < score) continue;
 
 		/* Save the score and time */
-		when = cave_when[y][x];
+		when = c->when[y][x];
 		score = s;
 
 		/* Save the location */
@@ -2468,7 +2468,7 @@ static const int *dist_offsets_x[10] =
  *
  * Return TRUE if a safe location is available.
  */
-static bool find_safety(int m_idx, int *yp, int *xp)
+static bool find_safety(struct cave *c, int m_idx, int *yp, int *xp)
 {
 	monster_type *m_ptr = &mon_list[m_idx];
 
@@ -2509,10 +2509,10 @@ static bool find_safety(int m_idx, int *yp, int *xp)
 			if (OPT(birth_ai_sound))
 			{
 				/* Ignore grids very far from the player */
-				if (cave_when[y][x] < cave_when[py][px]) continue;
+				if (c->when[y][x] < c->when[py][px]) continue;
 
 				/* Ignore too-distant grids */
-				if (cave_cost[y][x] > cave_cost[fy][fx] + 2 * d) continue;
+				if (c->cost[y][x] > c->cost[fy][fx] + 2 * d) continue;
 			}
 
 			/* Check for absence of shot (more or less) */
@@ -2635,7 +2635,7 @@ static bool find_hiding(int m_idx, int *yp, int *xp)
  *
  * We store the directions in a special "mm" array
  */
-static bool get_moves(int m_idx, int mm[5])
+static bool get_moves(struct cave *c, int m_idx, int mm[5])
 {
 	int py = p_ptr->py;
 	int px = p_ptr->px;
@@ -2656,7 +2656,7 @@ static bool get_moves(int m_idx, int mm[5])
 	if (OPT(birth_ai_sound))
 	{
 		/* Flow towards the player */
-		(void)get_moves_aux(m_idx, &y2, &x2);
+		get_moves_aux(c, m_idx, &y2, &x2);
 	}
 
 	/* Extract the "pseudo-direction" */
@@ -2698,7 +2698,7 @@ static bool get_moves(int m_idx, int mm[5])
 	if (!done && mon_will_run(m_idx))
 	{
 		/* Try to find safe place */
-		if (!(OPT(birth_ai_smart) && find_safety(m_idx, &y, &x)))
+		if (!(OPT(birth_ai_smart) && find_safety(c, m_idx, &y, &x)))
 		{
 			/* This is not a very "smart" method XXX XXX */
 			y = (-y);
@@ -2711,7 +2711,7 @@ static bool get_moves(int m_idx, int mm[5])
 			if (OPT(birth_ai_sound))
 			{
 				/* Adjust movement */
-				get_fear_moves_aux(m_idx, &y, &x);
+				get_fear_moves_aux(c, m_idx, &y, &x);
 			}
 		}
 
@@ -2996,7 +2996,7 @@ static int compare_monsters(const monster_type *m_ptr, const monster_type *n_ptr
  * Technically, need to check for monster in the way combined
  * with that monster being in a wall (or door?) XXX
  */
-static void process_monster(int m_idx)
+static void process_monster(struct cave *c, int m_idx)
 {
 	monster_type *m_ptr = &mon_list[m_idx];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
@@ -3330,7 +3330,7 @@ static void process_monster(int m_idx)
 	if (!stagger)
 	{
 		/* Logical moves, may do nothing */
-		if (!get_moves(m_idx, mm)) return;
+		if (!get_moves(cave, m_idx, mm)) return;
 	}
 
 
@@ -3397,7 +3397,7 @@ static void process_monster(int m_idx)
 				cave_info[ny][nx] &= ~(CAVE_MARK);
 
 				/* Notice */
-				cave_set_feat(ny, nx, FEAT_FLOOR);
+				cave_set_feat(c, ny, nx, FEAT_FLOOR);
 
 				/* Note changes to viewable region */
 				if (player_has_los_bold(ny, nx)) do_view = TRUE;
@@ -3446,7 +3446,7 @@ static void process_monster(int m_idx)
 						if (randint0(m_ptr->hp / 10) > k)
 						{
 							/* Unlock the door */
-							cave_set_feat(ny, nx, FEAT_DOOR_HEAD + 0x00);
+							cave_set_feat(c, ny, nx, FEAT_DOOR_HEAD + 0x00);
 
 							/* Do not bash the door */
 							may_bash = FALSE;
@@ -3486,13 +3486,13 @@ static void process_monster(int m_idx)
 				/* Break down the door */
 				if (did_bash_door && (randint0(100) < 50))
 				{
-					cave_set_feat(ny, nx, FEAT_BROKEN);
+					cave_set_feat(c, ny, nx, FEAT_BROKEN);
 				}
 
 				/* Open the door */
 				else
 				{
-					cave_set_feat(ny, nx, FEAT_OPEN);
+					cave_set_feat(c, ny, nx, FEAT_OPEN);
 				}
 
 				/* Handle viewable doors */
@@ -3517,10 +3517,10 @@ static void process_monster(int m_idx)
 				}
 
 				/* Forget the rune */
-				cave_info[ny][nx] &= ~(CAVE_MARK);
+				cave_info[ny][nx] &= ~CAVE_MARK;
 
 				/* Break the rune */
-				cave_set_feat(ny, nx, FEAT_FLOOR);
+				cave_set_feat(c, ny, nx, FEAT_FLOOR);
 
 				/* Allow movement */
 				do_move = TRUE;
@@ -3813,32 +3813,29 @@ static void process_monster(int m_idx)
 }
 
 
-static bool monster_can_flow(int m_idx)
+static bool monster_can_flow(struct cave *c, int m_idx)
 {
+	monster_type *m_ptr;
+	monster_race *r_ptr;
+	int fy, fx;
 	/* Hack -- Monsters can "smell" the player from far away */
-	if (OPT(birth_ai_sound))
-	{
-		monster_type *m_ptr = &mon_list[m_idx];
-		monster_race *r_ptr = &r_info[m_ptr->r_idx];
+	if (!OPT(birth_ai_sound))
+		return FALSE;
 
-		/* Monster location */
-		int fy = m_ptr->fy;
-		int fx = m_ptr->fx;
+	assert(c);
 
-		/* Check the flow (normal aaf is about 20) */
-		if ((cave_when[fy][fx] == cave_when[p_ptr->py][p_ptr->px]) &&
-		    (cave_cost[fy][fx] < MONSTER_FLOW_DEPTH) &&
-		    (cave_cost[fy][fx] < r_ptr->aaf))
-		{
-			return TRUE;
-		}
-	}
+	m_ptr = &mon_list[m_idx];
+	r_ptr = &r_info[m_ptr->r_idx];
+	fy = m_ptr->fy;
+	fx = m_ptr->fx;
 
+	/* Check the flow (normal aaf is about 20) */
+	if ((c->when[fy][fx] == c->when[p_ptr->py][p_ptr->px]) &&
+	    (c->cost[fy][fx] < MONSTER_FLOW_DEPTH) &&
+	    (c->cost[fy][fx] < r_ptr->aaf))
+		return TRUE;
 	return FALSE;
 }
-
-
-
 
 /*
  * Process all the "live" monsters, once per game turn.
@@ -3864,7 +3861,7 @@ static bool monster_can_flow(int m_idx)
  * using any of their spell attacks until the player gets a turn.  This flag
  * is optimized via the "repair_mflag_nice" flag.
  */
-void process_monsters(byte minimum_energy)
+void process_monsters(struct cave *c, byte minimum_energy)
 {
 	int i;
 
@@ -3909,10 +3906,10 @@ void process_monsters(byte minimum_energy)
 		if ((m_ptr->cdis <= r_ptr->aaf) ||
 		    (m_ptr->hp < m_ptr->maxhp) ||
 		    player_has_los_bold(m_ptr->fy, m_ptr->fx) ||
-		    monster_can_flow(i))
+		    monster_can_flow(c, i))
 		{
 			/* Process the monster */
-			process_monster(i);
+			process_monster(c, i);
 		}
 	}
 }
