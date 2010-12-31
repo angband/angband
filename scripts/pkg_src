@@ -31,6 +31,7 @@ EOF
 fi
 
 git checkout-index --prefix=$TAG/ -a &&
+	git describe > $TAG/version &&
 	cd $TAG &&
 	./autogen.sh &&
 	rm -rf autogen.sh autom4te.cache &&
