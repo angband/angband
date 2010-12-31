@@ -1487,7 +1487,7 @@ bool restore_item(void)
 	}
 
 	object_desc(o_name, sizeof(o_name), o, ODESC_BASE);
-	msg_format("%s %s is mended.",
+	msg("%s %s is mended.",
 	           ((item >= 0) ? "Your" : "The"), o_name,
 	           ((o->number > 1) ? "" : "s"));
 
