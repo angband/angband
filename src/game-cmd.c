@@ -354,7 +354,7 @@ void cmd_set_arg_number(game_command *cmd, int n, int num)
  */
 errr cmd_insert_repeated(cmd_code c, int nrepeats)
 {
-	game_command cmd = { CMD_NULL, 0, { { 0 } }, 0, 0 };
+	game_command cmd = { 0 };
 
 	if (cmd_idx(c) == -1)
 		return 1;
