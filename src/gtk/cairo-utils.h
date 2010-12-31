@@ -26,7 +26,7 @@
 #include <gtk/gtk.h>
 
 typedef struct font_info font_info;
-typedef struct point point;
+typedef struct loc point;
 typedef struct measurements measurements;
 struct font_info
 {
