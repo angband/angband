@@ -83,7 +83,6 @@ H:Time attacks are not mitigated by sustains.
 H:Drain charge attacks remove charges from your items and heal the monster!
 H:You cannot cast spells or fire missiles at monsters in walls, but they can.
 H:To attack a monster in a wall with your weapon, use the 'T'unnel command.
-H:Resist sound will prevent stuns by sound, plasma, gravity, or force attacks.
 H:Acquirement scrolls produce better items if you read them deeper down.
 H:In truly desperate times, use Teleport Level or Destruction to escape.
 H:You always get the first move when entering a level. 
