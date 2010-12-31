@@ -1887,13 +1887,6 @@ int rd_stores_1(void)
 		/* XXs */
 		strip_bytes(4);
 		
-		/* Paranoia */
-		if (own >= z_info->b_max)
-		{
-			note("Illegal store owner!");
-			return (-1);
-		}
-	
 		/* XXX: refactor into store.c */
 		st_ptr->owner = store_ownerbyidx(st_ptr, own);
 		
