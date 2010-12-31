@@ -632,7 +632,7 @@ bool detect_doorstairs(bool aware)
 
 			/* Detect secret doors */
 			if (cave->feat[y][x] == FEAT_SECRET)
-				place_closed_door(y, x);
+				place_closed_door(cave, y, x);
 
 			/* Detect doors */
 			if (((cave->feat[y][x] >= FEAT_DOOR_HEAD) &&

@@ -100,7 +100,7 @@ bool search(bool verbose)
 					msg("You have found a secret door.");
 
 					/* Pick a door */
-					place_closed_door(y, x);
+					place_closed_door(cave, y, x);
 
 					/* Disturb */
 					disturb(0, 0);

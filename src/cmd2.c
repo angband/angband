@@ -1082,7 +1082,7 @@ static bool do_cmd_tunnel_aux(int y, int x)
 			if (gold)
 			{
 				/* Place some gold */
-				place_gold(y, x, p_ptr->depth);
+				place_gold(cave, y, x, p_ptr->depth);
 
 				/* Message */
 				msg("You have found something!");

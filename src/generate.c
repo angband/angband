@@ -19,6 +19,7 @@
 #include "angband.h"
 #include "cave.h"
 #include "files.h"
+#include "generate.h"
 #include "monster/monster.h"
 #include "object/tvalsval.h"
 #include "trap.h"
