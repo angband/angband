@@ -30,11 +30,10 @@ EOF
 	exit 1
 fi
 
-git checkout-index --prefix=$TAG/ -a
-cd $TAG
-rm -rf debian
-./autogen.sh
-rm -rf autogen.sh autom4te.cache
-cd ..
-tar --exclude .gitignore -czvf $OUT $TAG
-rm -rf $TAG
+git checkout-index --prefix=$TAG/ -a &&
+	cd $TAG &&
+	./autogen.sh &&
+	rm -rf autogen.sh autom4te.cache &&
+	cd .. &&
+	tar --exclude .gitignore -czvf $OUT $TAG &&
+	rm -rf $TAG
