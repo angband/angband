@@ -3234,7 +3234,7 @@ static void init_morewindows(void)
 	AboutSelect = sdl_ButtonBankNew(&StatusBar.buttons);
 	button = sdl_ButtonBankGet(&StatusBar.buttons, AboutSelect);
 	
-	my_strcpy(buf, format("%s v%s", VERSION_NAME, VERSION_STRING), sizeof(buf));
+	my_strcpy(buf, format("%s %s", VERSION_NAME, VERSION_STRING), sizeof(buf));
 	
 	/* Initialize the 'about' button */
 	sdl_ButtonSize(button, StatusBar.font.width * strlen(buf) + 5, StatusHeight - 2);
