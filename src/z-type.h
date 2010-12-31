@@ -45,11 +45,11 @@ struct data_panel
 	type_union value[MAX_FMT];	/* (short) arugment list */
 };
 
-struct point {
+struct loc {
 	int x;
 	int y;
 };
 
-struct point point(int x, int y);
+struct loc loc(int x, int y);
 
 #endif /* !INCLUDED_ZTYPE_H */

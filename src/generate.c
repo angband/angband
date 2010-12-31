@@ -215,19 +215,19 @@ struct room_data
 struct dun_data {
 	/* Array of centers of rooms */
 	int cent_n;
-	struct point cent[CENT_MAX];
+	struct loc cent[CENT_MAX];
 
 	/* Array of possible door locations */
 	int door_n;
-	struct point door[DOOR_MAX];
+	struct loc door[DOOR_MAX];
 
 	/* Array of wall piercing locations */
 	int wall_n;
-	struct point wall[WALL_MAX];
+	struct loc wall[WALL_MAX];
 
 	/* Array of tunnel grids */
 	int tunn_n;
-	struct point tunn[TUNN_MAX];
+	struct loc tunn[TUNN_MAX];
 
 	/* Number of blocks along each axis */
 	int row_rooms;
@@ -3010,7 +3010,7 @@ static void cave_gen(struct cave *c, struct player *p)
 	/* Put some monsters in the dungeon */
 	for (i = i + k; i > 0; i--)
 	{
-		alloc_monster(c, point(p->px, p->py), 0, TRUE, c->depth);
+		alloc_monster(c, loc(p->px, p->py), 0, TRUE, c->depth);
 	}
 
 	/* Ensure quest monsters */
@@ -3290,7 +3290,7 @@ static void town_gen(struct cave *c, struct player *p)
 
 	/* Make some residents */
 	for (i = 0; i < residents; i++)
-		alloc_monster(c, point(p->px, p->py), 3, TRUE, c->depth);
+		alloc_monster(c, loc(p->px, p->py), 3, TRUE, c->depth);
 }
 
 /*

@@ -242,8 +242,8 @@ static int cmp_distance(const void *a, const void *b)
 	int py = p_ptr->py;
 	int px = p_ptr->px;
 
-	const struct point *pa = a;
-	const struct point *pb = b;
+	const struct loc *pa = a;
+	const struct loc *pb = b;
 
 	int da, db, kx, ky;
 
@@ -400,7 +400,7 @@ static bool target_set_interactive_accept(int y, int x)
 static void target_set_interactive_prepare(int mode)
 {
 	int y, x;
-	struct point *pts = mem_zalloc(sizeof(*pts) * SCREEN_HGT * SCREEN_WID);
+	struct loc *pts = mem_zalloc(sizeof(*pts) * SCREEN_HGT * SCREEN_WID);
 	unsigned int n = 0;
 
 	/* Scan the current panel */

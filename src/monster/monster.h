@@ -35,7 +35,7 @@ extern void player_place(struct cave *c, struct player *p, int y, int x);
 extern s16b monster_place(int y, int x, monster_type *n_ptr);
 extern bool place_monster_aux(struct cave *, int y, int x, int r_idx, bool slp, bool grp);
 extern bool place_monster(struct cave *c, int y, int x, int depth, bool slp, bool grp);
-extern bool alloc_monster(struct cave *c, struct point pt, int dis, bool slp, int depth);
+extern bool alloc_monster(struct cave *c, struct loc loc, int dis, bool slp, int depth);
 extern bool summon_specific(int y1, int x1, int lev, int type, int delay);
 extern bool multiply_monster(int m_idx);
 extern void message_pain(int m_idx, int dam);

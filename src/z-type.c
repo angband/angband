@@ -17,8 +17,8 @@ TYPE_FUN(c2u, T_CHAR, char, c)
 TYPE_FUN(f2u, T_FLOAT, float, f)
 TYPE_FUN(s2u, T_STRING, const char *, s)
 
-struct point point(int x, int y) {
-	struct point p;
+struct loc loc(int x, int y) {
+	struct loc p;
 	p.x = x;
 	p.y = y;
 	return p;

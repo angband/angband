@@ -2163,10 +2163,10 @@ bool place_monster(struct cave *c, int y, int x, int depth, bool slp, bool grp)
  *
  * Use "depth" for the monster level
  */
-bool alloc_monster(struct cave *c, struct point pt, int dis, bool slp, int depth)
+bool alloc_monster(struct cave *c, struct loc loc, int dis, bool slp, int depth)
 {
-	int py = pt.y;
-	int px = pt.x;
+	int py = loc.y;
+	int px = loc.x;
 
 	int y = 0, x = 0;
 	int	attempts_left = 10000;
