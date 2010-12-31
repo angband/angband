@@ -1282,8 +1282,7 @@ int rd_misc(void)
 	rd_byte(&tmp8u);
 	cave->feeling = tmp8u;
 
-	/* Turn of last "feeling" */
-	rd_s32b(&old_turn);
+	rd_s32b(&cave->created_at);
 
 	/* Current turn */
 	rd_s32b(&turn);
@@ -2032,7 +2031,7 @@ int rd_dungeon(void)
 		for (i = count; i > 0; i--)
 		{
 			/* Extract "info" */
-			cave_info[y][x] = tmp8u;
+			cave->info[y][x] = tmp8u;
 
 			/* Advance/Wrap */
 			if (++x >= DUNGEON_WID)
@@ -2057,7 +2056,7 @@ int rd_dungeon(void)
 		for (i = count; i > 0; i--)
 		{
 			/* Extract "info" */
-			cave_info2[y][x] = tmp8u;
+			cave->info2[y][x] = tmp8u;
 
 			/* Advance/Wrap */
 			if (++x >= DUNGEON_WID)
@@ -2107,11 +2106,7 @@ int rd_dungeon(void)
 
 
 	/* Place player in dungeon */
-	if (!player_place(py, px))
-	{
-		note(format("Cannot place player (%d,%d)!", py, px));
-		return (-1);
-	}
+	player_place(cave, p_ptr, py, px);
 
 	/*** Success ***/
 
@@ -2195,10 +2190,10 @@ int rd_objects_2(void)
 			/* ToDo: Verify coordinates */
 
 			/* Link the object to the pile */
-			o_ptr->next_o_idx = cave_o_idx[y][x];
+			o_ptr->next_o_idx = cave->o_idx[y][x];
 
 			/* Link the floor to the object */
-			cave_o_idx[y][x] = o_idx;
+			cave->o_idx[y][x] = o_idx;
 		}
 	}
 
@@ -2273,10 +2268,10 @@ int rd_objects_1(void)
 			/* ToDo: Verify coordinates */
 
 			/* Link the object to the pile */
-			o_ptr->next_o_idx = cave_o_idx[y][x];
+			o_ptr->next_o_idx = cave->o_idx[y][x];
 
 			/* Link the floor to the object */
-			cave_o_idx[y][x] = o_idx;
+			cave->o_idx[y][x] = o_idx;
 		}
 	}
 

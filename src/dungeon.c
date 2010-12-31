@@ -543,7 +543,7 @@ static void process_world(struct cave *c)
 	if (one_in_(MAX_M_ALLOC_CHANCE))
 	{
 		/* Make a new monster */
-		(void)alloc_monster(cave, MAX_SIGHT + 5, FALSE, p_ptr->depth);
+		(void)alloc_monster(cave, loc(p_ptr->px, p_ptr->py), MAX_SIGHT + 5, FALSE, p_ptr->depth);
 	}
 
 	/* Hack -- Check for creature regeneration */
@@ -1355,7 +1355,7 @@ static void dungeon(struct cave *c)
 	target_set_monster(0);
 
 	/* Cancel the health bar */
-	health_track(0);
+	health_track(p_ptr, 0);
 
 
 	/* Reset shimmer flags */
@@ -1812,7 +1812,7 @@ void play_game(void)
 
 	/* Generate a dungeon level if needed */
 	if (!character_dungeon)
-		cave_generate(cave);
+		cave_generate(cave, p_ptr);
 
 
 	/* Character is now "complete" */
@@ -1855,7 +1855,7 @@ void play_game(void)
 		target_set_monster(0);
 
 		/* Cancel the health bar */
-		health_track(0);
+		health_track(p_ptr, 0);
 
 
 		/* Forget the view */
@@ -1938,7 +1938,7 @@ void play_game(void)
 		if (p_ptr->is_dead) break;
 
 		/* Make a new level */
-		cave_generate(cave);
+		cave_generate(cave, p_ptr);
 	}
 
 	/* Disallow big cursor */

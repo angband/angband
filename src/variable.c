@@ -65,9 +65,6 @@ char summon_kin_type;		/* Hack -- See summon_specific() */
 
 s32b turn;				/* Current game turn */
 
-s32b old_turn;			/* Hack -- Level feeling counter */
-
-
 int use_graphics;		/* The "graphics" mode is enabled */
 bool use_graphics_nice;	        /* The 'nice' "graphics" mode is enabled */
 byte tile_width = 1;            /* Tile width in units of font width */
@@ -429,47 +426,6 @@ int temp_n = 0;
 u16b *temp_g;
 byte *temp_y;
 byte *temp_x;
-
-
-/*
- * Array[DUNGEON_HGT][256] of cave grid info flags (padded)
- *
- * These arrays are padded to a width of 256 to allow fast access to elements
- * in the array via "grid" values (see the GRID() macros).
- */
-byte (*cave_info)[256];
-byte (*cave_info2)[256];
-
-/*
- * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid feature codes
- */
-byte (*cave_feat)[DUNGEON_WID];
-
-
-/*
- * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid object indexes
- *
- * Note that this array yields the index of the top object in the stack of
- * objects in a given grid, using the "next_o_idx" field in that object to
- * indicate the next object in the stack, and so on, using zero to indicate
- * "nothing".  This array replicates the information contained in the object
- * list, for efficiency, providing extremely fast determination of whether
- * any object is in a grid, and relatively fast determination of which objects
- * are in a grid.
- */
-s16b (*cave_o_idx)[DUNGEON_WID];
-
-/*
- * Array[DUNGEON_HGT][DUNGEON_WID] of cave grid monster indexes
- *
- * Note that this array yields the index of the monster or player in a grid,
- * where negative numbers are used to represent the player, positive numbers
- * are used to represent a monster, and zero is used to indicate "nobody".
- * This array replicates the information contained in the monster list and
- * the player structure, but provides extremely fast determination of which,
- * if any, monster or player is in any given grid.
- */
-s16b (*cave_m_idx)[DUNGEON_WID];
 
 /*
  * Array[z_info->o_max] of dungeon objects

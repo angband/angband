@@ -1,8 +1,17 @@
 #ifndef INCLUDED_EXTERNS_H
 #define INCLUDED_EXTERNS_H
 
-/*
- * Automatically generated "variable" declarations
+#include "monster/types.h"
+#include "object/types.h"
+#include "player/types.h"
+#include "store.h"
+#include "z-file.h"
+#include "z-msg.h"
+
+/* This file was automatically generated. It is now obsolete (it was never a
+ * good idea to begin with; you should include only what you use instead of
+ * including everything everywhere) and is being slowly destroyed. Do not add
+ * new entries to this file.
  */
 
 /* pathfind.c */
@@ -53,7 +62,6 @@ extern u32b seed_town;
 extern s16b num_repro;
 extern char summon_kin_type;
 extern s32b turn;
-extern s32b old_turn;
 extern int use_graphics;
 extern bool use_graphics_nice;
 extern s16b signal_count;
@@ -84,11 +92,6 @@ extern int temp_n;
 extern u16b *temp_g;
 extern byte *temp_y;
 extern byte *temp_x;
-extern byte (*cave_info)[256];
-extern byte (*cave_info2)[256];
-extern byte (*cave_feat)[DUNGEON_WID];
-extern s16b (*cave_o_idx)[DUNGEON_WID];
-extern s16b (*cave_m_idx)[DUNGEON_WID];
 extern maxima *z_info;
 extern object_type *o_list;
 extern monster_type *mon_list;

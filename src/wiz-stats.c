@@ -189,7 +189,7 @@ static void stats_collect_level(void)
 
 	for (i = 0; i < TRIES; i++)
 	{
-		cave_generate(cave);
+		cave_generate(cave, p_ptr);
 
 		/* Get stats on objects */
 		for (y = 1; y < DUNGEON_HGT - 1; y++)
@@ -212,8 +212,8 @@ static void stats_collect_level(void)
 		{
 			for (x = 1; x < DUNGEON_WID - 1; x++)
 			{
-				if (cave_m_idx[y][x])
-					stats_monster(&mon_list[cave_m_idx[y][x]]);
+				if (cave->m_idx[y][x])
+					stats_monster(&mon_list[cave->m_idx[y][x]]);
 			}
 		}
 	}
@@ -264,7 +264,7 @@ static void print_dun(void)
 	{
 		for (x = 1; x < DUNGEON_WID - 1; x++)
 		{
-			char feat = 'A' + cave_feat[y][x];
+			char feat = 'A' + cave->feat[y][x];
 			printf("%c", feat);
 		}
 		printf("\n");

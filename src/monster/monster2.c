@@ -57,11 +57,11 @@ void delete_monster_idx(int i)
 	if (target_get_monster() == i) target_set_monster(0);
 
 	/* Hack -- remove tracked monster */
-	if (p_ptr->health_who == i) health_track(0);
+	if (p_ptr->health_who == i) health_track(p_ptr, 0);
 
 
 	/* Monster is gone */
-	cave_m_idx[y][x] = 0;
+	cave->m_idx[y][x] = 0;
 
 
 	/* Delete objects */
@@ -103,7 +103,7 @@ void delete_monster(int y, int x)
 	if (!in_bounds(y, x)) return;
 
 	/* Delete the monster (if any) */
-	if (cave_m_idx[y][x] > 0) delete_monster_idx(cave_m_idx[y][x]);
+	if (cave->m_idx[y][x] > 0) delete_monster_idx(cave->m_idx[y][x]);
 }
 
 
@@ -131,7 +131,7 @@ static void compact_monsters_aux(int i1, int i2)
 	x = m_ptr->fx;
 
 	/* Update the cave */
-	cave_m_idx[y][x] = i2;
+	cave->m_idx[y][x] = i2;
 
 	/* Repair objects being carried by monster */
 	for (this_o_idx = m_ptr->hold_o_idx; this_o_idx; this_o_idx = next_o_idx)
@@ -255,7 +255,7 @@ void compact_monsters(int size)
  * This is an efficient method of simulating multiple calls to the
  * "delete_monster()" function, with no visual effects.
  */
-void wipe_mon_list(void)
+void wipe_mon_list(struct cave *c, struct player *p)
 {
 	int i;
 
@@ -275,7 +275,7 @@ void wipe_mon_list(void)
 		r_ptr->cur_num--;
 
 		/* Monster is gone */
-		cave_m_idx[m_ptr->fy][m_ptr->fx] = 0;
+		c->m_idx[m_ptr->fy][m_ptr->fx] = 0;
 
 		/* Wipe the Monster */
 		(void)WIPE(m_ptr, monster_type);
@@ -294,9 +294,8 @@ void wipe_mon_list(void)
 	target_set_monster(0);
 
 	/* Hack -- no more tracking */
-	health_track(0);
+	health_track(p, 0);
 }
-
 
 /*
  * Get and return the index of a "free" monster.
@@ -1503,13 +1502,13 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	monster_race *r_ptr;
 
 	/* Monsters */
-	m1 = cave_m_idx[y1][x1];
-	m2 = cave_m_idx[y2][x2];
+	m1 = cave->m_idx[y1][x1];
+	m2 = cave->m_idx[y2][x2];
 
 
 	/* Update grids */
-	cave_m_idx[y1][x1] = m2;
-	cave_m_idx[y2][x2] = m1;
+	cave->m_idx[y1][x1] = m2;
+	cave->m_idx[y2][x2] = m1;
 
 
 	/* Monster 1 */
@@ -1604,25 +1603,16 @@ void monster_swap(int y1, int x1, int y2, int x2)
 	cave_light_spot(cave, y2, x2);
 }
 
-
-/*
- * Place the player in the dungeon XXX XXX
- */
-s16b player_place(int y, int x)
+void player_place(struct cave *c, struct player *p, int y, int x)
 {
-	/* Paranoia XXX XXX */
-	if (cave_m_idx[y][x] != 0) return (0);
-
+	assert(!c->m_idx[y][x]);
 
 	/* Save player location */
-	p_ptr->py = y;
-	p_ptr->px = x;
+	p->py = y;
+	p->px = x;
 
 	/* Mark cave grid */
-	cave_m_idx[y][x] = -1;
-
-	/* Success */
-	return (-1);
+	c->m_idx[y][x] = -1;
 }
 
 
@@ -1638,7 +1628,7 @@ s16b monster_place(int y, int x, monster_type *n_ptr)
 
 
 	/* Paranoia XXX XXX */
-	if (cave_m_idx[y][x] != 0) return (0);
+	if (cave->m_idx[y][x] != 0) return (0);
 
 
 	/* Get a new record */
@@ -1648,7 +1638,7 @@ s16b monster_place(int y, int x, monster_type *n_ptr)
 	if (m_idx)
 	{
 		/* Make a new monster */
-		cave_m_idx[y][x] = m_idx;
+		cave->m_idx[y][x] = m_idx;
 
 		/* Get the new monster */
 		m_ptr = &mon_list[m_idx];
@@ -1720,7 +1710,7 @@ static bool place_monster_one(int y, int x, int r_idx, bool slp)
 	if (!cave_empty_bold(y, x)) return (FALSE);
 
 	/* Hack -- no creation on glyph of warding */
-	if (cave_feat[y][x] == FEAT_GLYPH) return (FALSE);
+	if (cave->feat[y][x] == FEAT_GLYPH) return (FALSE);
 
 
 	/* Paranoia */
@@ -2164,10 +2154,6 @@ bool place_monster(struct cave *c, int y, int x, int depth, bool slp, bool grp)
  * XXX XXX XXX
  */
 
-
-
-
-
 /*
  * Attempt to allocate a random monster in the dungeon.
  *
@@ -2177,10 +2163,10 @@ bool place_monster(struct cave *c, int y, int x, int depth, bool slp, bool grp)
  *
  * Use "depth" for the monster level
  */
-bool alloc_monster(struct cave *c, int dis, bool slp, int depth)
+bool alloc_monster(struct cave *c, struct loc loc, int dis, bool slp, int depth)
 {
-	int py = p_ptr->py;
-	int px = p_ptr->px;
+	int py = loc.y;
+	int px = loc.x;
 
 	int y = 0, x = 0;
 	int	attempts_left = 10000;
@@ -2195,7 +2181,7 @@ bool alloc_monster(struct cave *c, int dis, bool slp, int depth)
 		x = randint0(c->width);
 
 		/* Require "naked" floor grid */
-		if (!cave_naked_bold(y, x)) continue;
+		if (!cave_isempty(c, y, x)) continue;
 
 		/* Accept far away grids */
 		if (distance(y, x, py, px) > dis) break;
@@ -2408,7 +2394,7 @@ bool summon_specific(int y1, int x1, int lev, int type, int delay)
 		if (!cave_empty_bold(y, x)) continue;
 
 		/* Hack -- no summon on glyph of warding */
-		if (cave_feat[y][x] == FEAT_GLYPH) continue;
+		if (cave->feat[y][x] == FEAT_GLYPH) continue;
 
 		/* Okay */
 		break;
@@ -2449,7 +2435,7 @@ bool summon_specific(int y1, int x1, int lev, int type, int delay)
 	/* If delay, try to let the player act before the summoned monsters. */
 	/* NOTE: should really be -100, but energy is currently 0-255. */
 	if (delay)
-		mon_list[cave_m_idx[y][x]].energy = 0;
+		mon_list[cave->m_idx[y][x]].energy = 0;
 
 	/* Success */
 	return (TRUE);
@@ -3016,7 +3002,7 @@ void monster_death(int m_idx)
 		else
 		{
 			/* Make an object */
-			if (!make_object(i_ptr, level, good, great)) continue;
+			if (!make_object(cave, i_ptr, level, good, great)) continue;
 			dump_item++;
 		}
 

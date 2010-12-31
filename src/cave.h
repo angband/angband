@@ -3,7 +3,11 @@
 #ifndef CAVE_H
 #define CAVE_H
 
+#include "defines.h"
+#include "types.h"
 #include "z-type.h"
+
+struct player;
 
 extern int distance(int y1, int x1, int y2, int x2);
 extern bool los(int y1, int x1, int y2, int x2);
@@ -26,7 +30,7 @@ extern void wiz_dark(void);
 extern int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg);
 extern bool projectable(int y1, int x1, int y2, int x2, int flg);
 extern void scatter(int *yp, int *xp, int y, int x, int d, int m);
-extern void health_track(int m_idx);
+extern void health_track(struct player *p, int m_idx);
 extern void monster_race_track(int r_idx);
 extern void track_object(int item);
 extern void track_object_kind(int k_idx);
@@ -35,6 +39,9 @@ extern bool is_quest(int level);
 extern bool dtrap_edge(int y, int x);
 
 struct cave {
+	s32b created_at;
+	int depth;
+
 	byte feeling;
 	s16b rating;
 	bool good_item;
@@ -75,7 +82,7 @@ extern bool cave_canputitem(struct cave *c, int y, int x);
 /* Old cave_floor_bold() */
 extern bool cave_isfloor(struct cave *c, int y, int x);
 
-extern void cave_generate(struct cave *c);
+extern void cave_generate(struct cave *c, struct player *p);
 
 extern bool cave_in_bounds(struct cave *c, int y, int x);
 extern bool cave_in_bounds_fully(struct cave *c, int y, int x);

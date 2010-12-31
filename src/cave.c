@@ -605,13 +605,13 @@ static void special_wall_display(byte *a, char *c, bool in_view, int feat)
 bool dtrap_edge(int y, int x) 
 { 
 	/* Check if the square is a dtrap in the first place */ 
- 	if (!cave_info2[y][x] & CAVE2_DTRAP) return FALSE; 
+ 	if (!cave->info2[y][x] & CAVE2_DTRAP) return FALSE; 
 
  	/* Check for non-dtrap adjacent grids */ 
- 	if (in_bounds_fully(y + 1, x    ) && (!cave_info2[y + 1][x    ] & CAVE2_DTRAP)) return TRUE; 
- 	if (in_bounds_fully(y    , x + 1) && (!cave_info2[y    ][x + 1] & CAVE2_DTRAP)) return TRUE; 
- 	if (in_bounds_fully(y - 1, x    ) && (!cave_info2[y - 1][x    ] & CAVE2_DTRAP)) return TRUE; 
- 	if (in_bounds_fully(y    , x - 1) && (!cave_info2[y    ][x - 1] & CAVE2_DTRAP)) return TRUE; 
+ 	if (in_bounds_fully(y + 1, x    ) && (!cave->info2[y + 1][x    ] & CAVE2_DTRAP)) return TRUE; 
+ 	if (in_bounds_fully(y    , x + 1) && (!cave->info2[y    ][x + 1] & CAVE2_DTRAP)) return TRUE; 
+ 	if (in_bounds_fully(y - 1, x    ) && (!cave->info2[y - 1][x    ] & CAVE2_DTRAP)) return TRUE; 
+ 	if (in_bounds_fully(y    , x - 1) && (!cave->info2[y    ][x - 1] & CAVE2_DTRAP)) return TRUE; 
 
 	return FALSE; 
 } 
@@ -927,8 +927,8 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	assert(x < DUNGEON_WID);
 	assert(y < DUNGEON_HGT);
 
-	info = cave_info[y][x];
-	info2 = cave_info2[y][x];
+	info = cave->info[y][x];
+	info2 = cave->info2[y][x];
 	
 	/* Default "clear" values, others will be set later where appropriate. */
 	g->first_k_idx = 0;
@@ -936,10 +936,10 @@ void map_info(unsigned y, unsigned x, grid_data *g)
 	g->lighting = LIGHT_GLOW;
 
 	/* Set things we can work out right now */
-	g->f_idx = cave_feat[y][x];
+	g->f_idx = cave->feat[y][x];
 	g->in_view = (info & CAVE_SEEN) ? TRUE : FALSE;
-	g->is_player = (cave_m_idx[y][x] < 0) ? TRUE : FALSE;
-	g->m_idx = (g->is_player) ? 0 : cave_m_idx[y][x];
+	g->is_player = (cave->m_idx[y][x] < 0) ? TRUE : FALSE;
+	g->m_idx = (g->is_player) ? 0 : cave->m_idx[y][x];
 	g->hallucinate = p_ptr->timed[TMD_IMAGE] ? TRUE : FALSE;
 	g->trapborder = (dtrap_edge(y, x)) ? TRUE : FALSE;
 
@@ -1772,7 +1772,7 @@ void do_cmd_view_map(void)
  * use of shifting instead of multiplication.
  *
  * Several pieces of information about each cave grid are stored in the
- * "cave_info" array, which is a special two dimensional array of bytes,
+ * "cave->info" array, which is a special two dimensional array of bytes,
  * one for each cave grid, each containing eight separate "flags" which
  * describe some property of the cave grid.  These flags can be checked and
  * modified extremely quickly, especially when special idioms are used to
@@ -2531,7 +2531,8 @@ void forget_view(void)
 	int fast_view_n = view_n;
 	u16b *fast_view_g = view_g;
 
-	byte *fast_cave_info = &cave_info[0][0];
+	/* XXX: this is moronic. It's not 'fast'. */
+	byte *fast_cave_info = &cave->info[0][0];
 
 
 	/* None to forget */
@@ -2553,7 +2554,7 @@ void forget_view(void)
 		fast_cave_info[g] &= ~(CAVE_VIEW | CAVE_SEEN);
 
 		/* Clear "CAVE_LIGHT" flag */
-		/* fast_cave_info[g] &= ~(CAVE_LIGHT); */
+		/* fast_cave->info[g] &= ~(CAVE_LIGHT); */
 
 		/* Redraw */
 		cave_light_spot(cave, y, x);
@@ -2672,7 +2673,8 @@ void update_view(void)
 	int fast_temp_n = 0;
 	u16b *fast_temp_g = temp_g;
 
-	byte *fast_cave_info = &cave_info[0][0];
+	/* XXX: also moronic. Optimizers exist. */
+	byte *fast_cave_info = &cave->info[0][0];
 
 	byte info;
 
@@ -2885,7 +2887,7 @@ void update_view(void)
 							int xx = (x < px) ? (x + 1) : (x > px) ? (x - 1) : x;
 
 							/* Check for "simple" illumination */
-							if (cave_info[yy][xx] & (CAVE_GLOW))
+							if (cave->info[yy][xx] & (CAVE_GLOW))
 							{
 								/* Mark as seen */
 								info |= (CAVE_SEEN);
@@ -3240,7 +3242,7 @@ void wiz_light(void)
 		for (x = 1; x < DUNGEON_WID-1; x++)
 		{
 			/* Process all non-walls */
-			if (cave_feat[y][x] < FEAT_SECRET)
+			if (cave->feat[y][x] < FEAT_SECRET)
 			{
 				/* Scan all neighbors */
 				for (i = 0; i < 9; i++)
@@ -3249,11 +3251,11 @@ void wiz_light(void)
 					int xx = x + ddx_ddd[i];
 
 					/* Perma-light the grid */
-					cave_info[yy][xx] |= (CAVE_GLOW);
+					cave->info[yy][xx] |= (CAVE_GLOW);
 
 					/* Memorize normal features */
-					if (cave_feat[yy][xx] > FEAT_INVIS)
-						cave_info[yy][xx] |= (CAVE_MARK);
+					if (cave->feat[yy][xx] > FEAT_INVIS)
+						cave->info[yy][xx] |= (CAVE_MARK);
 				}
 			}
 		}
@@ -3281,8 +3283,8 @@ void wiz_dark(void)
 		for (x = 0; x < DUNGEON_WID; x++)
 		{
 			/* Process the grid */
-			cave_info[y][x] &= ~(CAVE_MARK);
-			cave_info2[y][x] &= ~(CAVE2_DTRAP);
+			cave->info[y][x] &= ~(CAVE_MARK);
+			cave->info2[y][x] &= ~(CAVE2_DTRAP);
 		}
 	}
 
@@ -3552,7 +3554,7 @@ int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg)
 			/* Sometimes stop at non-initial monsters/players */
 			if (flg & (PROJECT_STOP))
 			{
-				if ((n > 0) && (cave_m_idx[y][x] != 0)) break;
+				if ((n > 0) && (cave->m_idx[y][x] != 0)) break;
 			}
 
 			/* Slant */
@@ -3614,7 +3616,7 @@ int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg)
 			/* Sometimes stop at non-initial monsters/players */
 			if (flg & (PROJECT_STOP))
 			{
-				if ((n > 0) && (cave_m_idx[y][x] != 0)) break;
+				if ((n > 0) && (cave->m_idx[y][x] != 0)) break;
 			}
 
 			/* Slant */
@@ -3670,7 +3672,7 @@ int project_path(u16b *gp, int range, int y1, int x1, int y2, int x2, int flg)
 			/* Sometimes stop at non-initial monsters/players */
 			if (flg & (PROJECT_STOP))
 			{
-				if ((n > 0) && (cave_m_idx[y][x] != 0)) break;
+				if ((n > 0) && (cave->m_idx[y][x] != 0)) break;
 			}
 
 			/* Advance (Y) */
@@ -3767,24 +3769,11 @@ void scatter(int *yp, int *xp, int y, int x, int d, int m)
 	(*xp) = nx;
 }
 
-
-
-
-
-
-/*
- * Track a new monster
- */
-void health_track(int m_idx)
+void health_track(struct player *p, int m_idx)
 {
-	/* Track a new guy */
-	p_ptr->health_who = m_idx;
-
-	/* Redraw (later) */
-	p_ptr->redraw |= (PR_HEALTH);
+	p->health_who = m_idx;
+	p->redraw |= PR_HEALTH;
 }
-
-
 
 /*
  * Hack -- track the given monster race
@@ -3874,41 +3863,33 @@ void disturb(int stop_search, int unused_flag)
 	flush();
 }
 
-
-
-
-/*
- * Hack -- Check if a level is a "quest" level
- */
 bool is_quest(int level)
 {
 	int i;
 
 	/* Town is never a quest */
-	if (!level) return (FALSE);
+	if (!level || !q_list) return FALSE;
 
-	/* Check quests */
 	for (i = 0; i < MAX_Q_IDX; i++)
-	{
-		/* Check for quest */
-		if (q_list[i].level == level) return (TRUE);
-	}
+		if (q_list[i].level == level)
+			return TRUE;
 
-	/* Nope */
-	return (FALSE);
+	return FALSE;
 }
 
 struct cave *cave = NULL;
 
 struct cave *cave_new(void) {
 	struct cave *c = mem_zalloc(sizeof *c);
-	c->info = cave_info;
-	c->info2 = cave_info2;
-	c->feat = cave_feat;
+	c->info = C_ZNEW(DUNGEON_HGT, byte_256);
+	c->info2 = C_ZNEW(DUNGEON_HGT, byte_256);
+	c->feat = C_ZNEW(DUNGEON_HGT, byte_wid);
 	c->cost = C_ZNEW(DUNGEON_HGT, byte_wid);
 	c->when = C_ZNEW(DUNGEON_HGT, byte_wid);
-	c->m_idx = cave_m_idx;
-	c->o_idx = cave_o_idx;
+	c->m_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
+	c->o_idx = C_ZNEW(DUNGEON_HGT, s16b_wid);
+
+	c->created_at = 1;
 	return c;
 }
 

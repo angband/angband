@@ -257,7 +257,7 @@ bool py_attack_real(int y, int x)
 {
 	int bonus, chance;
 
-	monster_type *m_ptr = &mon_list[cave_m_idx[y][x]];
+	monster_type *m_ptr = &mon_list[cave->m_idx[y][x]];
 	monster_race *r_ptr = &r_info[m_ptr->r_idx];
 	monster_lore *l_ptr = &l_list[m_ptr->r_idx];
 
@@ -285,7 +285,7 @@ bool py_attack_real(int y, int x)
 	if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
 
 	/* Track a new monster */
-	if (m_ptr->ml) health_track(cave_m_idx[y][x]);
+	if (m_ptr->ml) health_track(p_ptr, cave->m_idx[y][x]);
 
 	/* Handle player fear (only for invisible monsters) */
 	if (p_ptr->state.afraid)
@@ -412,7 +412,7 @@ bool py_attack_real(int y, int x)
 	}
 
 	/* Damage, check for fear and death */
-	dead = mon_take_hit(cave_m_idx[y][x], dmg, &fear, NULL);
+	dead = mon_take_hit(cave->m_idx[y][x], dmg, &fear, NULL);
 
 	/* Hack -- delay fear messages */
 	if (fear && m_ptr->ml)
@@ -629,9 +629,9 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 		}
 
 		/* Handle monster */
-		if (cave_m_idx[y][x] > 0)
+		if (cave->m_idx[y][x] > 0)
 		{
-			monster_type *m_ptr = &mon_list[cave_m_idx[y][x]];
+			monster_type *m_ptr = &mon_list[cave->m_idx[y][x]];
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 			int chance2 = chance - distance(p_ptr->py, p_ptr->px, y, x);
@@ -724,7 +724,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 					if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
 
 					/* Hack -- Track this monster */
-					if (m_ptr->ml) health_track(cave_m_idx[y][x]);
+					if (m_ptr->ml) health_track(p_ptr, cave->m_idx[y][x]);
 
 				}
 
@@ -736,7 +736,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 				}
 
 				/* Hit the monster, check for death */
-				if (mon_take_hit(cave_m_idx[y][x], tdam, &fear, note_dies))
+				if (mon_take_hit(cave->m_idx[y][x], tdam, &fear, note_dies))
 				{
 					/* Dead monster */
 				}
@@ -745,7 +745,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 				else
 				{
 					/* Message */
-					message_pain(cave_m_idx[y][x], tdam);
+					message_pain(cave->m_idx[y][x], tdam);
 
 					/* Take note */
 					if (fear && m_ptr->ml)
@@ -1019,9 +1019,9 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 		}
 
 		/* Handle monster */
-		if (cave_m_idx[y][x] > 0)
+		if (cave->m_idx[y][x] > 0)
 		{
-			monster_type *m_ptr = &mon_list[cave_m_idx[y][x]];
+			monster_type *m_ptr = &mon_list[cave->m_idx[y][x]];
 			monster_race *r_ptr = &r_info[m_ptr->r_idx];
 
 			int chance2 = chance - distance(p_ptr->py, p_ptr->px, y, x);
@@ -1105,7 +1105,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 					if (m_ptr->ml) monster_race_track(m_ptr->r_idx);
 
 					/* Hack -- Track this monster */
-					if (m_ptr->ml) health_track(cave_m_idx[y][x]);
+					if (m_ptr->ml) health_track(p_ptr, cave->m_idx[y][x]);
 				}
 
 				/* Learn the bonuses */
@@ -1122,7 +1122,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 							   tdam, m_ptr->hp);
 
 				/* Hit the monster, check for death */
-				if (mon_take_hit(cave_m_idx[y][x], tdam, &fear, note_dies))
+				if (mon_take_hit(cave->m_idx[y][x], tdam, &fear, note_dies))
 				{
 					/* Dead monster */
 				}
@@ -1131,7 +1131,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 				else
 				{
 					/* Message */
-					message_pain(cave_m_idx[y][x], tdam);
+					message_pain(cave->m_idx[y][x], tdam);
 
 					/* Take note */
 					if (fear && m_ptr->ml)

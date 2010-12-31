@@ -1512,7 +1512,7 @@ enum
 /*
  * Determines if a map location is currently "on screen"
  * Note that "panel_contains(Y,X)" always implies "in_bounds(Y,X)".
- * Pre-storing this into a cave_info flag would be nice.  XXX XXX
+ * Pre-storing this into a cave->info flag would be nice.  XXX XXX
  */
 #define panel_contains(Y,X) \
 	(((unsigned)((Y) - Term->offset_y) < (unsigned)(SCREEN_HGT)) && \
@@ -1528,7 +1528,7 @@ enum
  * Note the use of the new "CAVE_WALL" flag.
  */
 #define cave_floor_bold(Y,X) \
-	(!(cave_info[Y][X] & (CAVE_WALL)))
+	(!(cave->info[Y][X] & (CAVE_WALL)))
 
 /*
  * Determine if a "legal" grid is a "clean" floor grid
@@ -1537,8 +1537,8 @@ enum
  * Line 2 -- forbid normal objects
  */
 #define cave_clean_bold(Y,X) \
-	((cave_feat[Y][X] == FEAT_FLOOR) && \
-	 (cave_o_idx[Y][X] == 0))
+	((cave->feat[Y][X] == FEAT_FLOOR) && \
+	 (cave->o_idx[Y][X] == 0))
 
 /*
  * Determine if a "legal" grid is an "empty" floor grid
@@ -1548,7 +1548,7 @@ enum
  */
 #define cave_empty_bold(Y,X) \
 	(cave_floor_bold(Y,X) && \
-	 (cave_m_idx[Y][X] == 0))
+	 (cave->m_idx[Y][X] == 0))
 
 /*
  * Determine if a "legal" grid is an "naked" floor grid
@@ -1558,9 +1558,9 @@ enum
  * Line 3 -- forbid player/monsters
  */
 #define cave_naked_bold(Y,X) \
-	((cave_feat[Y][X] == FEAT_FLOOR) && \
-	 (cave_o_idx[Y][X] == 0) && \
-	 (cave_m_idx[Y][X] == 0))
+	((cave->feat[Y][X] == FEAT_FLOOR) && \
+	 (cave->o_idx[Y][X] == 0) && \
+	 (cave->m_idx[Y][X] == 0))
 
 
 /*
@@ -1571,11 +1571,11 @@ enum
  * Line 4-5 -- shop doors
  */
 #define cave_perma_bold(Y,X) \
-	((cave_feat[Y][X] >= FEAT_PERM_EXTRA) || \
-	 ((cave_feat[Y][X] == FEAT_LESS) || \
-	  (cave_feat[Y][X] == FEAT_MORE)) || \
-	 ((cave_feat[Y][X] >= FEAT_SHOP_HEAD) && \
-	  (cave_feat[Y][X] <= FEAT_SHOP_TAIL)))
+	((cave->feat[Y][X] >= FEAT_PERM_EXTRA) || \
+	 ((cave->feat[Y][X] == FEAT_LESS) || \
+	  (cave->feat[Y][X] == FEAT_MORE)) || \
+	 ((cave->feat[Y][X] >= FEAT_SHOP_HEAD) && \
+	  (cave->feat[Y][X] <= FEAT_SHOP_TAIL)))
 
 
 /*
@@ -1584,7 +1584,7 @@ enum
  * Note the use of comparison to zero to force a "boolean" result
  */
 #define player_has_los_bold(Y,X) \
-	((cave_info[Y][X] & (CAVE_VIEW)) != 0)
+	((cave->info[Y][X] & (CAVE_VIEW)) != 0)
 
 
 /*
@@ -1593,7 +1593,7 @@ enum
  * Note the use of comparison to zero to force a "boolean" result
  */
 #define player_can_see_bold(Y,X) \
-	((cave_info[Y][X] & (CAVE_SEEN)) != 0)
+	((cave->info[Y][X] & (CAVE_SEEN)) != 0)
 
 
 /*

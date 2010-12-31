@@ -77,7 +77,7 @@ bool search(bool verbose)
 			if (randint0(100) < chance)
 			{
 				/* Invisible trap */
-				if (cave_feat[y][x] == FEAT_INVIS)
+				if (cave->feat[y][x] == FEAT_INVIS)
 				{
 					found = TRUE;
 
@@ -92,7 +92,7 @@ bool search(bool verbose)
 				}
 
 				/* Secret door */
-				if (cave_feat[y][x] == FEAT_SECRET)
+				if (cave->feat[y][x] == FEAT_SECRET)
 				{
 					found = TRUE;
 
@@ -174,7 +174,7 @@ static void py_pickup_gold(void)
 
 
 	/* Pick up all the ordinary gold objects */
-	for (this_o_idx = cave_o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
+	for (this_o_idx = cave->o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
 	{
 		/* Get the object */
 		o_ptr = &o_list[this_o_idx];
@@ -404,7 +404,7 @@ byte py_pickup(int pickup)
 
 
 	/* Nothing to pick up -- return */
-	if (!cave_o_idx[py][px]) return (0);
+	if (!cave->o_idx[py][px]) return (0);
 
 
 	/* Always pickup gold, effortlessly */
@@ -412,7 +412,7 @@ byte py_pickup(int pickup)
 
 
 	/* Scan the remaining objects */
-	for (this_o_idx = cave_o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
+	for (this_o_idx = cave->o_idx[py][px]; this_o_idx; this_o_idx = next_o_idx)
 	{
 		/* Get the object and the next object */
 		o_ptr = &o_list[this_o_idx];
@@ -591,13 +591,13 @@ void move_player(int dir, bool disarm)
 	int x = px + ddx[dir];
 
 	/* Attack monsters */
-	if (cave_m_idx[y][x] > 0)
+	if (cave->m_idx[y][x] > 0)
 		py_attack(y, x);
 
 	/* Optionally alter known traps/doors on movement */
-	else if (disarm && (cave_info[y][x] & CAVE_MARK) &&
-			(cave_feat[y][x] >= FEAT_TRAP_HEAD) &&
-			(cave_feat[y][x] <= FEAT_DOOR_TAIL))
+	else if (disarm && (cave->info[y][x] & CAVE_MARK) &&
+			(cave->feat[y][x] >= FEAT_TRAP_HEAD) &&
+			(cave->feat[y][x] <= FEAT_DOOR_TAIL))
 	{
 		/* Auto-repeat if not already repeating */
 		if (cmd_get_nrepeats() == 0)
@@ -613,21 +613,21 @@ void move_player(int dir, bool disarm)
 		disturb(0, 0);
 
 		/* Notice unknown obstacles */
-		if (!(cave_info[y][x] & CAVE_MARK))
+		if (!(cave->info[y][x] & CAVE_MARK))
 		{
 			/* Rubble */
-			if (cave_feat[y][x] == FEAT_RUBBLE)
+			if (cave->feat[y][x] == FEAT_RUBBLE)
 			{
 				message(MSG_HITWALL, 0, "You feel a pile of rubble blocking your way.");
-				cave_info[y][x] |= (CAVE_MARK);
+				cave->info[y][x] |= (CAVE_MARK);
 				cave_light_spot(cave, y, x);
 			}
 
 			/* Closed door */
-			else if (cave_feat[y][x] < FEAT_SECRET)
+			else if (cave->feat[y][x] < FEAT_SECRET)
 			{
 				message(MSG_HITWALL, 0, "You feel a door blocking your way.");
-				cave_info[y][x] |= (CAVE_MARK);
+				cave->info[y][x] |= (CAVE_MARK);
 				cave_light_spot(cave, y, x);
 			}
 
@@ -635,7 +635,7 @@ void move_player(int dir, bool disarm)
 			else
 			{
 				message(MSG_HITWALL, 0, "You feel a wall blocking your way.");
-				cave_info[y][x] |= (CAVE_MARK);
+				cave->info[y][x] |= (CAVE_MARK);
 				cave_light_spot(cave, y, x);
 			}
 		}
@@ -643,9 +643,9 @@ void move_player(int dir, bool disarm)
 		/* Mention known obstacles */
 		else
 		{
-			if (cave_feat[y][x] == FEAT_RUBBLE)
+			if (cave->feat[y][x] == FEAT_RUBBLE)
 				message(MSG_HITWALL, 0, "There is a pile of rubble blocking your way.");
-			else if (cave_feat[y][x] < FEAT_SECRET)
+			else if (cave->feat[y][x] < FEAT_SECRET)
 				message(MSG_HITWALL, 0, "There is a door blocking your way.");
 			else
 				message(MSG_HITWALL, 0, "There is a wall blocking your way.");
@@ -656,8 +656,8 @@ void move_player(int dir, bool disarm)
 	else
 	{
 		/* See if trap detection status will change */
-		bool old_dtrap = ((cave_info2[py][px] & (CAVE2_DTRAP)) != 0);
-		bool new_dtrap = ((cave_info2[y][x] & (CAVE2_DTRAP)) != 0);
+		bool old_dtrap = ((cave->info2[py][px] & (CAVE2_DTRAP)) != 0);
+		bool new_dtrap = ((cave->info2[y][x] & (CAVE2_DTRAP)) != 0);
 
 		/* Note the change in the detect status */
 		if (old_dtrap != new_dtrap)
@@ -685,8 +685,8 @@ void move_player(int dir, bool disarm)
 			search(FALSE);
 
 		/* Handle "store doors" */
-		if ((cave_feat[p_ptr->py][p_ptr->px] >= FEAT_SHOP_HEAD) &&
-			(cave_feat[p_ptr->py][p_ptr->px] <= FEAT_SHOP_TAIL))
+		if ((cave->feat[p_ptr->py][p_ptr->px] >= FEAT_SHOP_HEAD) &&
+			(cave->feat[p_ptr->py][p_ptr->px] <= FEAT_SHOP_TAIL))
 		{
 			/* Disturb */
 			disturb(0, 0);
@@ -702,7 +702,7 @@ void move_player(int dir, bool disarm)
 
 
 		/* Discover invisible traps */
-		if (cave_feat[y][x] == FEAT_INVIS)
+		if (cave->feat[y][x] == FEAT_INVIS)
 		{
 			/* Disturb */
 			disturb(0, 0);
@@ -718,8 +718,8 @@ void move_player(int dir, bool disarm)
 		}
 
 		/* Set off an visible trap */
-		else if ((cave_feat[y][x] >= FEAT_TRAP_HEAD) &&
-		         (cave_feat[y][x] <= FEAT_TRAP_TAIL))
+		else if ((cave->feat[y][x] >= FEAT_TRAP_HEAD) &&
+		         (cave->feat[y][x] <= FEAT_TRAP_TAIL))
 		{
 			/* Disturb */
 			disturb(0, 0);
