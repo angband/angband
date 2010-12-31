@@ -1744,7 +1744,13 @@ A:20:50 to 100
 F:EASY_KNOW
 E:REMOVE_CURSE2
 
-# 277
+N:277:Restore Item
+G:?:w
+I:70:18:0
+W:1:0:5:100
+A:40:1 to 100
+F:EASY_KNOW
+E:RESTORE_ITEM
 
 ### Summoning ###
 
