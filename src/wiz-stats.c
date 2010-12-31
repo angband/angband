@@ -276,7 +276,7 @@ static void print_dun(void)
 
 void stats_collect(void)
 {
-	msg_print("Statistics generation not turned on in this build.");
+	msg("Statistics generation not turned on in this build.");
 }
 
 #endif /* WITH_STATS */

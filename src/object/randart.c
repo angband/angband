@@ -2826,7 +2826,7 @@ static void scramble_artifact(int a_idx)
 
 		if (count >= MAX_TRIES)
 		{
-			msg_print("Warning! Couldn't get appropriate power level on base item.");
+			msg("Warning! Couldn't get appropriate power level on base item.");
 			LOG_PRINT("Warning! Couldn't get appropriate power level on base item.\n");
 		}
 	}
@@ -2951,7 +2951,7 @@ static void scramble_artifact(int a_idx)
 			 * We couldn't generate an artifact within the number of permitted
 			 * iterations.  Show a warning message.
 			 */
-			msg_format("Warning!  Couldn't get appropriate power level on artifact.");
+			msg("Warning!  Couldn't get appropriate power level on artifact.");
 			LOG_PRINT("Warning!  Couldn't get appropriate power level on artifact.\n");
 			message_flush();
 		}
@@ -3090,7 +3090,7 @@ static bool artifacts_acceptable(void)
 				gloves > 0 ? " gloves" : "",
 				boots > 0 ? " boots" : "");
 
-			msg_format("Restarting generation process: not enough%s", types);
+			msg("Restarting generation process: not enough%s", types);
 			LOG_PRINT1("Restarting generation process: not enough%s", types);
 		}
 		return FALSE;
@@ -3173,7 +3173,7 @@ errr do_randart(u32b randart_seed, bool full)
 			log_file = file_open(buf, MODE_WRITE, FTYPE_TEXT);
 			if (!log_file)
 			{
-				msg_print("Error - can't open randart.log for writing.");
+				msg("Error - can't open randart.log for writing.");
 				exit(1);
 			}
 		}
@@ -3201,7 +3201,7 @@ errr do_randart(u32b randart_seed, bool full)
 		{
 			if (!file_close(log_file))
 			{
-				msg_print("Error - can't close randart.log file.");
+				msg("Error - can't close randart.log file.");
 				exit(1);
 			}
 		}

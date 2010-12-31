@@ -290,9 +290,7 @@ bool py_attack_real(int y, int x)
 	/* Handle player fear (only for invisible monsters) */
 	if (p_ptr->state.afraid)
 	{
-		message_format(MSG_AFRAID, 0,
-				"You are too afraid to attack %s!",
-				m_name);
+		msgt(MSG_AFRAID, "You are too afraid to attack %s!", m_name);
 		return (FALSE);
 	}
 
@@ -312,7 +310,7 @@ bool py_attack_real(int y, int x)
 	/* If a miss, skip this hit */
 	if (!success)
 	{
-		message_format(MSG_MISS, m_ptr->r_idx, "You miss %s.", m_name);
+		msgt(MSG_MISS, "You miss %s.", m_name);
 		return (FALSE);
 	}
 
@@ -361,30 +359,23 @@ bool py_attack_real(int y, int x)
 
 	/* Tell the player what happened */
 	if (dmg <= 0)
-		message_format(MSG_MISS, m_ptr->r_idx,
-					   "You fail to harm %s.", m_name);
+		msgt(MSG_MISS, "You fail to harm %s.", m_name);
 	else if (msg_type == MSG_HIT)
-		message_format(MSG_HIT, m_ptr->r_idx, "You %s %s.",
-					   hit_verb, m_name);
+		msgt(MSG_HIT, "You %s %s.", hit_verb, m_name);
 	else if (msg_type == MSG_HIT_GOOD)
-		message_format(MSG_HIT_GOOD, m_ptr->r_idx, "You %s %s. %s",
-					   hit_verb, m_name, "It was a good hit!");
+		msgt(MSG_HIT_GOOD, "You %s %s. %s", hit_verb, m_name, "It was a good hit!");
 	else if (msg_type == MSG_HIT_GREAT)
-		message_format(MSG_HIT_GREAT, m_ptr->r_idx, "You %s %s. %s",
-					   hit_verb, m_name, "It was a great hit!");
+		msgt(MSG_HIT_GREAT, "You %s %s. %s", hit_verb, m_name, "It was a great hit!");
 	else if (msg_type == MSG_HIT_SUPERB)
-		message_format(MSG_HIT_SUPERB, m_ptr->r_idx, "You %s %s. %s",
-					   hit_verb, m_name, "It was a superb hit!");
+		msgt(MSG_HIT_SUPERB, "You %s %s. %s", hit_verb, m_name, "It was a superb hit!");
 	else if (msg_type == MSG_HIT_HI_GREAT)
-		message_format(MSG_HIT_HI_GREAT, m_ptr->r_idx, "You %s %s. %s",
-					   hit_verb, m_name, "It was a *GREAT* hit!");
+		msgt(MSG_HIT_HI_GREAT, "You %s %s. %s", hit_verb, m_name, "It was a *GREAT* hit!");
 	else if (msg_type == MSG_HIT_HI_SUPERB)
-		message_format(MSG_HIT_HI_SUPERB, m_ptr->r_idx, "You %s %s. %s",
-					   hit_verb, m_name, "It was a *SUPERB* hit!");
+		msgt(MSG_HIT_HI_SUPERB, "You %s %s. %s", hit_verb, m_name, "It was a *SUPERB* hit!");
 
 	/* Complex message */
 	if (p_ptr->wizard)
-		msg_format("You do %d (out of %d) damage.", dmg, m_ptr->hp);
+		msg("You do %d (out of %d) damage.", dmg, m_ptr->hp);
 
 	/* Confusion attack */
 	if (p_ptr->confusing)
@@ -393,7 +384,7 @@ bool py_attack_real(int y, int x)
 		p_ptr->confusing = FALSE;
 
 		/* Message */
-		msg_print("Your hands stop glowing.");
+		msg("Your hands stop glowing.");
 
 		/* Update the lore */
 		if (m_ptr->ml)
@@ -401,12 +392,12 @@ bool py_attack_real(int y, int x)
 
 		/* Confuse the monster */
 		if (rf_has(r_ptr->flags, RF_NO_CONF))
-			msg_format("%^s is unaffected.", m_name);
+			msg("%^s is unaffected.", m_name);
 		else if (randint0(100) < r_ptr->level)
-			msg_format("%^s is unaffected.", m_name);
+			msg("%^s is unaffected.", m_name);
 		else
 		{
-			msg_format("%^s appears confused.", m_name);
+			msg("%^s appears confused.", m_name);
 			m_ptr->confused += 10 + randint0(p_ptr->lev) / 5;
 		}
 	}
@@ -416,7 +407,7 @@ bool py_attack_real(int y, int x)
 
 	/* Hack -- delay fear messages */
 	if (fear && m_ptr->ml)
-		message_format(MSG_FLEE, m_ptr->r_idx, "%^s flees in terror!",
+		msgt(MSG_FLEE, "%^s flees in terror!",
 		m_name);
 
 	/* Mega-Hack -- apply earthquake brand */
@@ -515,7 +506,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	/* Require a usable launcher */
 	if (!j_ptr->tval || !p_ptr->state.ammo_tval)
 	{
-		msg_print("You have nothing to fire with.");
+		msg("You have nothing to fire with.");
 		return;
 	}
 
@@ -526,7 +517,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	/* Check the item being fired is usable by the player. */
 	if (!item_is_available(item, NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR)))
 	{
-		msg_format("That item is not within your reach.");
+		msg("That item is not within your reach.");
 		return;
 	}
 
@@ -536,7 +527,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 	/* Check the ammo can be used with the launcher */
 	if (o_ptr->tval != p_ptr->state.ammo_tval)
 	{
-		msg_format("That ammo cannot be fired by your current weapon.");
+		msg("That ammo cannot be fired by your current weapon.");
 		return;
 	}
 
@@ -688,7 +679,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 				if (!visible)
 				{
 					/* Invisible monster */
-					message_format(MSG_SHOOT_HIT, 0, "The %s finds a mark.", o_name);
+					msgt(MSG_SHOOT_HIT, "The %s finds a mark.", o_name);
 				}
 
 				/* Handle visible monster */
@@ -701,22 +692,22 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 
 					/* Tell the player what happened */
 					if (msg_type == MSG_SHOOT_HIT)
-						message_format(MSG_SHOOT_HIT, 0, "The %s %s %s.", o_name, hit_verb, m_name);
+						msgt(MSG_SHOOT_HIT, "The %s %s %s.", o_name, hit_verb, m_name);
 					else
 					{
 						if (msg_type == MSG_HIT_GOOD)
 						{
-							message_format(MSG_HIT_GOOD, 0, "The %s %s %s. %s", o_name, hit_verb, m_name,
+							msgt(MSG_HIT_GOOD, "The %s %s %s. %s", o_name, hit_verb, m_name,
 										   "It was a good hit!");
 						}
 						else if (msg_type == MSG_HIT_GREAT)
 						{
-							message_format(MSG_HIT_GREAT, 0, "The %s %s %s. %s", o_name, hit_verb, m_name,
+							msgt(MSG_HIT_GREAT, "The %s %s %s. %s", o_name, hit_verb, m_name,
 										   "It was a great hit!");
 						}
 						else if (msg_type == MSG_HIT_SUPERB)
 						{
-							message_format(MSG_HIT_SUPERB, 0, "The %s %s %s. %s", o_name, hit_verb, m_name,
+							msgt(MSG_HIT_SUPERB, "The %s %s %s. %s", o_name, hit_verb, m_name,
 										   "It was a superb hit!");
 						}
 					}
@@ -731,7 +722,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 				/* Complex message */
 				if (p_ptr->wizard)
 				{
-					msg_format("You do %d (out of %d) damage.",
+					msg("You do %d (out of %d) damage.",
 					           tdam, m_ptr->hp);
 				}
 
@@ -756,8 +747,7 @@ void do_cmd_fire(cmd_code code, cmd_arg args[])
 						monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 						/* Message */
-						message_format(MSG_FLEE, m_ptr->r_idx,
-						               "%^s flees in terror!", m_name);
+						msgt(MSG_FLEE, "%^s flees in terror!", m_name);
 					}
 				}
 			}
@@ -808,7 +798,7 @@ void textui_cmd_fire_at_nearest(void)
 	/* Require a usable launcher */
 	if (!p_ptr->inventory[INVEN_BOW].tval || !p_ptr->state.ammo_tval)
 	{
-		msg_print("You have nothing to fire with.");
+		msg("You have nothing to fire with.");
 		return;
 	}
 
@@ -823,7 +813,7 @@ void textui_cmd_fire_at_nearest(void)
 	/* Require usable ammo */
 	if (item < 0)
 	{
-		msg_print("You have no ammunition in the quiver to fire");
+		msg("You have no ammunition in the quiver to fire");
 		return;
 	}
 
@@ -834,7 +824,7 @@ void textui_cmd_fire_at_nearest(void)
 	/* Check for confusion */
 	if (p_ptr->timed[TMD_CONFUSED])
 	{
-		msg_print("You are confused.");
+		msg("You are confused.");
 		dir = ddd[randint0(8)];
 	}
 
@@ -887,14 +877,14 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 	/* Make sure the player isn't throwing wielded items */
 	if (item >= INVEN_WIELD && item < QUIVER_START)
 	{
-		msg_print("You have cannot throw wielded items.");
+		msg("You have cannot throw wielded items.");
 		return;
 	}
 
 	/* Check the item being thrown is usable by the player. */
 	if (!item_is_available(item, NULL, (USE_EQUIP | USE_INVEN | USE_FLOOR)))
 	{
-		msg_format("That item is not within your reach.");
+		msg("That item is not within your reach.");
 		return;
 	}
 
@@ -1069,7 +1059,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 				if (!visible)
 				{
 					/* Invisible monster */
-					msg_format("The %s finds a mark.", o_name);
+					msg("The %s finds a mark.", o_name);
 				}
 
 				/* Handle visible monster */
@@ -1082,22 +1072,22 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 
 					/* Tell the player what happened */
 					if (msg_type == MSG_SHOOT_HIT)
-						message_format(MSG_SHOOT_HIT, 0, "The %s %s %s.", o_name, hit_verb, m_name);
+						msgt(MSG_SHOOT_HIT, "The %s %s %s.", o_name, hit_verb, m_name);
 					else
 					{
 						if (msg_type == MSG_HIT_GOOD)
 						{
-							message_format(MSG_HIT_GOOD, 0, "The %s %s %s. %s", o_name, hit_verb, m_name,
+							msgt(MSG_HIT_GOOD, "The %s %s %s. %s", o_name, hit_verb, m_name,
 										   "It was a good hit!");
 						}
 						else if (msg_type == MSG_HIT_GREAT)
 						{
-							message_format(MSG_HIT_GREAT, 0, "The %s %s %s. %s", o_name, hit_verb, m_name,
+							msgt(MSG_HIT_GREAT, "The %s %s %s. %s", o_name, hit_verb, m_name,
 										   "It was a great hit!");
 						}
 						else if (msg_type == MSG_HIT_SUPERB)
 						{
-							message_format(MSG_HIT_SUPERB, 0, "The %s %s %s. %s", o_name, hit_verb, m_name,
+							msgt(MSG_HIT_SUPERB, "The %s %s %s. %s", o_name, hit_verb, m_name,
 										   "It was a superb hit!");
 						}
 					}
@@ -1118,7 +1108,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 
 				/* Complex message */
 				if (p_ptr->wizard)
-					msg_format("You do %d (out of %d) damage.",
+					msg("You do %d (out of %d) damage.",
 							   tdam, m_ptr->hp);
 
 				/* Hit the monster, check for death */
@@ -1142,8 +1132,7 @@ void do_cmd_throw(cmd_code code, cmd_arg args[])
 						monster_desc(m_name, sizeof(m_name), m_ptr, 0);
 
 						/* Message */
-						message_format(MSG_FLEE, m_ptr->r_idx,
-						               "%^s flees in terror!", m_name);
+						msgt(MSG_FLEE, "%^s flees in terror!", m_name);
 					}
 				}
 			}
@@ -1172,7 +1161,7 @@ void textui_cmd_throw(void)
 
 	if (item >= INVEN_WIELD && item < QUIVER_START)
 	{
-		msg_print("You cannot throw wielded items.");
+		msg("You cannot throw wielded items.");
 		return;
 	}
 

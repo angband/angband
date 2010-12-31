@@ -69,7 +69,7 @@ static void remove_old_dump(const char *cur_fname, const char *mark)
 	new_file = file_open(new_fname, MODE_WRITE, FTYPE_TEXT);
 	if (!new_file)
 	{
-		msg_format("Failed to create file %s", new_fname);
+		msg("Failed to create file %s", new_fname);
 		return;
 	}
 
@@ -1207,7 +1207,7 @@ errr process_pref_file_command(const char *s)
 static void print_error(const char *name, struct parser *p) {
 	struct parser_state s;
 	parser_getstate(p, &s);
-	msg_format("Parse error in %s line %d column %d: %s: %s", name,
+	msg("Parse error in %s line %d column %d: %s: %s", name,
 	           s.line, s.col, s.msg, parser_error_str[s.error]);
 	message_flush();
 }
@@ -1238,7 +1238,7 @@ bool process_pref_file(const char *name, bool quiet)
 	if (!f)
 	{
 		if (!quiet)
-			msg_format("Cannot open '%s'.", buf);
+			msg("Cannot open '%s'.", buf);
 	}
 	else
 	{

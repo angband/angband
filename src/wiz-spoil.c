@@ -253,7 +253,7 @@ static void spoil_obj_desc(cptr fname)
 	/* Oops */
 	if (!fh)
 	{
-		msg_print("Cannot create spoiler file.");
+		msg("Cannot create spoiler file.");
 		return;
 	}
 
@@ -342,12 +342,12 @@ static void spoil_obj_desc(cptr fname)
 	/* Check for errors */
 	if (!file_close(fh))
 	{
-		msg_print("Cannot close spoiler file.");
+		msg("Cannot close spoiler file.");
 		return;
 	}
 
 	/* Message */
-	msg_print("Successfully created a spoiler file.");
+	msg("Successfully created a spoiler file.");
 }
 
 
@@ -461,7 +461,7 @@ static void spoil_artifact(cptr fname)
 	/* Oops */
 	if (!fh)
 	{
-		msg_print("Cannot create spoiler file.");
+		msg("Cannot create spoiler file.");
 		return;
 	}
 
@@ -531,12 +531,12 @@ static void spoil_artifact(cptr fname)
 	/* Check for errors */
 	if (!file_close(fh))
 	{
-		msg_print("Cannot close spoiler file.");
+		msg("Cannot close spoiler file.");
 		return;
 	}
 
 	/* Message */
-	msg_print("Successfully created a spoiler file.");
+	msg("Successfully created a spoiler file.");
 }
 
 
@@ -572,7 +572,7 @@ static void spoil_mon_desc(cptr fname)
 	/* Oops */
 	if (!fh)
 	{
-		msg_print("Cannot create spoiler file.");
+		msg("Cannot create spoiler file.");
 		return;
 	}
 
@@ -664,12 +664,12 @@ static void spoil_mon_desc(cptr fname)
 	/* Check for errors */
 	if (!file_close(fh))
 	{
-		msg_print("Cannot close spoiler file.");
+		msg("Cannot close spoiler file.");
 		return;
 	}
 
 	/* Worked */
-	msg_print("Successfully created a spoiler file.");
+	msg("Successfully created a spoiler file.");
 }
 
 
@@ -698,7 +698,7 @@ static void spoil_mon_info(cptr fname)
 	/* Oops */
 	if (!fh)
 	{
-		msg_print("Cannot create spoiler file.");
+		msg("Cannot create spoiler file.");
 		return;
 	}
 
@@ -801,11 +801,11 @@ static void spoil_mon_info(cptr fname)
 	/* Check for errors */
 	if (!file_close(fh))
 	{
-		msg_print("Cannot close spoiler file.");
+		msg("Cannot close spoiler file.");
 		return;
 	}
 
-	msg_print("Successfully created a spoiler file.");
+	msg("Successfully created a spoiler file.");
 }
 
 

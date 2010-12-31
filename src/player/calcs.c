@@ -887,7 +887,7 @@ static void calc_spells(void)
 			p_ptr->spell_flags[j] &= ~PY_SPELL_LEARNED;
 
 			/* Message */
-			msg_format("You have forgotten the %s of %s.", p,
+			msg("You have forgotten the %s of %s.", p,
 			           get_spell_name(cp_ptr->spell_book, j));
 
 			/* One more can be learned */
@@ -917,7 +917,7 @@ static void calc_spells(void)
 			p_ptr->spell_flags[j] &= ~PY_SPELL_LEARNED;
 
 			/* Message */
-			msg_format("You have forgotten the %s of %s.", p,
+			msg("You have forgotten the %s of %s.", p,
 			           get_spell_name(cp_ptr->spell_book, j));
 
 			/* One more can be learned */
@@ -953,7 +953,7 @@ static void calc_spells(void)
 			p_ptr->spell_flags[j] |= PY_SPELL_LEARNED;
 
 			/* Message */
-			msg_format("You have remembered the %s of %s.",
+			msg("You have remembered the %s of %s.",
 			           p, get_spell_name(cp_ptr->spell_book, j));
 
 			/* One less can be learned */
@@ -993,7 +993,7 @@ static void calc_spells(void)
 		if (p_ptr->new_spells)
 		{
 			/* Message */
-			msg_format("You can learn %d more %s%s.",
+			msg("You can learn %d more %s%s.",
 			           p_ptr->new_spells, p,
 			           (p_ptr->new_spells != 1) ? "s" : "");
 		}
@@ -1123,11 +1123,11 @@ static void calc_mana(void)
 		/* Message */
 		if (p_ptr->cumber_glove)
 		{
-			msg_print("Your covered hands feel unsuitable for spellcasting.");
+			msg("Your covered hands feel unsuitable for spellcasting.");
 		}
 		else
 		{
-			msg_print("Your hands feel more suitable for spellcasting.");
+			msg("Your hands feel more suitable for spellcasting.");
 		}
 	}
 
@@ -1137,11 +1137,11 @@ static void calc_mana(void)
 		/* Message */
 		if (p_ptr->cumber_armor)
 		{
-			msg_print("The weight of your armor encumbers your movement.");
+			msg("The weight of your armor encumbers your movement.");
 		}
 		else
 		{
-			msg_print("You feel able to move more freely.");
+			msg("You feel able to move more freely.");
 		}
 	}
 }
@@ -2086,15 +2086,15 @@ static void update_bonuses(void)
 		/* Message */
 		if (state->heavy_shoot)
 		{
-			msg_print("You have trouble wielding such a heavy bow.");
+			msg("You have trouble wielding such a heavy bow.");
 		}
 		else if (p_ptr->inventory[INVEN_BOW].k_idx)
 		{
-			msg_print("You have no trouble wielding your bow.");
+			msg("You have no trouble wielding your bow.");
 		}
 		else
 		{
-			msg_print("You feel relieved to put down your heavy bow.");
+			msg("You feel relieved to put down your heavy bow.");
 		}
 	}
 
@@ -2104,15 +2104,15 @@ static void update_bonuses(void)
 		/* Message */
 		if (state->heavy_wield)
 		{
-			msg_print("You have trouble wielding such a heavy weapon.");
+			msg("You have trouble wielding such a heavy weapon.");
 		}
 		else if (p_ptr->inventory[INVEN_WIELD].k_idx)
 		{
-			msg_print("You have no trouble wielding your weapon.");
+			msg("You have no trouble wielding your weapon.");
 		}
 		else
 		{
-			msg_print("You feel relieved to put down your heavy weapon.");	
+			msg("You feel relieved to put down your heavy weapon.");	
 		}
 	}
 
@@ -2122,15 +2122,15 @@ static void update_bonuses(void)
 		/* Message */
 		if (state->icky_wield)
 		{
-			msg_print("You do not feel comfortable with your weapon.");
+			msg("You do not feel comfortable with your weapon.");
 		}
 		else if (p_ptr->inventory[INVEN_WIELD].k_idx)
 		{
-			msg_print("You feel comfortable with your weapon.");
+			msg("You feel comfortable with your weapon.");
 		}
 		else
 		{
-			msg_print("You feel more comfortable after removing your weapon.");
+			msg("You feel more comfortable after removing your weapon.");
 		}
 	}
 }

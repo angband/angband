@@ -91,8 +91,7 @@ void check_experience(void)
 		history_add(buf, HISTORY_GAIN_LEVEL, 0);
 
 		/* Message */
-		message_format(MSG_LEVEL, p_ptr->lev, "Welcome to level %d.",
-			p_ptr->lev);
+		msgt(MSG_LEVEL, "Welcome to level %d.",	p_ptr->lev);
 
 		/* Add to social class */
 		p_ptr->sc += randint1(2);
@@ -602,7 +601,7 @@ bool get_aim_dir(int *dp)
 	if ((*dp) != dir)
 	{
 		/* Warn the user */
-		msg_print("You are confused.");
+		msg("You are confused.");
 	}
 
 	/* Save direction */
@@ -766,7 +765,7 @@ bool confuse_dir(int *dp)
 	if ((*dp) != dir)
 	{
 		/* Warn the user */
-		msg_print("You are confused.");
+		msg("You are confused.");
 
 		/* Save direction */
 		(*dp) = dir;

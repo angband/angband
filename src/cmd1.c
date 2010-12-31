@@ -59,7 +59,7 @@ bool search(bool verbose)
 	{
 		if (verbose)
 		{
-			msg_print("You can't make out your surroundings well enough to search.");
+			msg("You can't make out your surroundings well enough to search.");
 
 			/* Cancel repeat */
 			disturb(0, 0);
@@ -85,7 +85,7 @@ bool search(bool verbose)
 					pick_trap(y, x);
 
 					/* Message */
-					msg_print("You have found a trap.");
+					msg("You have found a trap.");
 
 					/* Disturb */
 					disturb(0, 0);
@@ -97,7 +97,7 @@ bool search(bool verbose)
 					found = TRUE;
 
 					/* Message */
-					msg_print("You have found a secret door.");
+					msg("You have found a secret door.");
 
 					/* Pick a door */
 					place_closed_door(y, x);
@@ -124,7 +124,7 @@ bool search(bool verbose)
 						found = TRUE;
 
 						/* Message */
-						msg_print("You have discovered a trap on the chest!");
+						msg("You have discovered a trap on the chest!");
 
 						/* Know the trap */
 						object_notice_everything(o_ptr);
@@ -140,9 +140,9 @@ bool search(bool verbose)
 	if (verbose && !found)
 	{
 		if (chance >= 100)
-			msg_print("There are no secrets here.");
+			msg("There are no secrets here.");
 		else
-			msg_print("You found nothing.");
+			msg("You found nothing.");
 	}
 
 	return TRUE;
@@ -255,7 +255,7 @@ static void py_pickup_gold(void)
 
 		/* Display the message */
 		if (verbal)
-			message(sound_msg, 0, buf);
+			msgt(sound_msg, "%s", buf);
 
 		/* Add gold to purse */
 		p_ptr->au += total_gold;
@@ -286,7 +286,7 @@ static bool auto_pickup_okay(const object_type *o_ptr)
 /*
  * Carry an object and delete it.
  */
-static void py_pickup_aux(int o_idx, bool msg)
+static void py_pickup_aux(int o_idx, bool domsg)
 {
 	int slot, quiver_slot = 0;
 
@@ -328,13 +328,13 @@ static void py_pickup_aux(int o_idx, bool msg)
 		history_add_artifact(o_ptr->name1, object_is_known(o_ptr), TRUE);
 
 	/* Optionally, display a message */
-	if (msg && !quiver_slot)
+	if (domsg && !quiver_slot)
 	{
 		/* Describe the object */
 		object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 		/* Message */
-		msg_format("You have %s (%c).", o_name, index_to_label(slot));
+		msg("You have %s (%c).", o_name, index_to_label(slot));
 	}
 
 
@@ -400,7 +400,7 @@ byte py_pickup(int pickup)
 	bool call_function_again = FALSE;
 
 	bool blind = ((p_ptr->timed[TMD_BLIND]) || (no_light()));
-	bool msg = TRUE;
+	bool domsg = TRUE;
 
 
 	/* Nothing to pick up -- return */
@@ -487,7 +487,7 @@ byte py_pickup(int pickup)
 
 			/* Message */
 			message_flush();
-			msg_format("You %s %s.", p, o_name);
+			msg("You %s %s.", p, o_name);
 		}
 		else
 		{
@@ -549,14 +549,14 @@ byte py_pickup(int pickup)
 		call_function_again = TRUE;
 
 		/* With a list, we do not need explicit pickup messages */
-		msg = FALSE;
+		domsg = FALSE;
 	}
 
 	/* Pick up object, if legal */
 	if (this_o_idx)
 	{
 		/* Pick up the object */
-		py_pickup_aux(this_o_idx, msg);
+		py_pickup_aux(this_o_idx, domsg);
 
 		/* Indicate an object picked up. */
 		objs_picked_up = 1;
@@ -618,7 +618,7 @@ void move_player(int dir, bool disarm)
 			/* Rubble */
 			if (cave->feat[y][x] == FEAT_RUBBLE)
 			{
-				message(MSG_HITWALL, 0, "You feel a pile of rubble blocking your way.");
+				msgt(MSG_HITWALL, "You feel a pile of rubble blocking your way.");
 				cave->info[y][x] |= (CAVE_MARK);
 				cave_light_spot(cave, y, x);
 			}
@@ -626,7 +626,7 @@ void move_player(int dir, bool disarm)
 			/* Closed door */
 			else if (cave->feat[y][x] < FEAT_SECRET)
 			{
-				message(MSG_HITWALL, 0, "You feel a door blocking your way.");
+				msgt(MSG_HITWALL, "You feel a door blocking your way.");
 				cave->info[y][x] |= (CAVE_MARK);
 				cave_light_spot(cave, y, x);
 			}
@@ -634,7 +634,7 @@ void move_player(int dir, bool disarm)
 			/* Wall (or secret door) */
 			else
 			{
-				message(MSG_HITWALL, 0, "You feel a wall blocking your way.");
+				msgt(MSG_HITWALL, "You feel a wall blocking your way.");
 				cave->info[y][x] |= (CAVE_MARK);
 				cave_light_spot(cave, y, x);
 			}
@@ -644,11 +644,11 @@ void move_player(int dir, bool disarm)
 		else
 		{
 			if (cave->feat[y][x] == FEAT_RUBBLE)
-				message(MSG_HITWALL, 0, "There is a pile of rubble blocking your way.");
+				msgt(MSG_HITWALL, "There is a pile of rubble blocking your way.");
 			else if (cave->feat[y][x] < FEAT_SECRET)
-				message(MSG_HITWALL, 0, "There is a door blocking your way.");
+				msgt(MSG_HITWALL, "There is a door blocking your way.");
 			else
-				message(MSG_HITWALL, 0, "There is a wall blocking your way.");
+				msgt(MSG_HITWALL, "There is a wall blocking your way.");
 		}
 	}
 
@@ -708,7 +708,7 @@ void move_player(int dir, bool disarm)
 			disturb(0, 0);
 
 			/* Message */
-			msg_print("You found a trap!");
+			msg("You found a trap!");
 
 			/* Pick a trap */
 			pick_trap(y, x);

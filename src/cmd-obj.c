@@ -36,16 +36,16 @@
 static int check_devices(object_type *o_ptr)
 {
 	int fail;
-	const char *msg;
+	const char *action;
 	const char *what = NULL;
 
 	/* Get the right string */
 	switch (o_ptr->tval)
 	{
-		case TV_ROD:   msg = "zap the rod";   break;
-		case TV_WAND:  msg = "use the wand";  what = "wand";  break;
-		case TV_STAFF: msg = "use the staff"; what = "staff"; break;
-		default:       msg = "activate it";  break;
+		case TV_ROD:   action = "zap the rod";   break;
+		case TV_WAND:  action = "use the wand";  what = "wand";  break;
+		case TV_STAFF: action = "use the staff"; what = "staff"; break;
+		default:       action = "activate it";  break;
 	}
 
 	/* Figure out how hard the item is to use */
@@ -55,7 +55,7 @@ static int check_devices(object_type *o_ptr)
 	if (randint1(1000) < fail)
 	{
 		flush();
-		msg_format("You failed to %s properly.", msg);
+		msg("You failed to %s properly.", msg);
 		return FALSE;
 	}
 
@@ -63,7 +63,7 @@ static int check_devices(object_type *o_ptr)
 	if (what && o_ptr->pval[DEFAULT_PVAL] <= 0)
 	{
 		flush();
-		msg_format("The %s has no charges left.", what);
+		msg("The %s has no charges left.", what);
 		o_ptr->ident |= (IDENT_EMPTY);
 		return FALSE;
 	}
@@ -176,7 +176,7 @@ static void activation_message(object_type *o_ptr, const char *message)
 	}
 	strnfcat(buf, 1024, &end, in_cursor);
 
-	msg_print(buf);
+	msg("%s", buf);
 }
 
 
@@ -189,7 +189,7 @@ void do_cmd_uninscribe(cmd_code code, cmd_arg args[])
 	object_type *o_ptr = object_from_item_idx(args[0].item);
 
 	if (obj_has_inscrip(o_ptr))
-		msg_print("Inscription removed.");
+		msg("Inscription removed.");
 
 	o_ptr->note = NULL;
 
@@ -218,13 +218,13 @@ void do_cmd_takeoff(cmd_code code, cmd_arg args[])
 
 	if (!item_is_available(item, NULL, USE_EQUIP))
 	{
-		msg_print("You are not wielding that item.");
+		msg("You are not wielding that item.");
 		return;
 	}
 
 	if (!obj_can_takeoff(object_from_item_idx(item)))
 	{
-		msg_print("You cannot take off that item.");
+		msg("You cannot take off that item.");
 		return;
 	}
 
@@ -330,13 +330,13 @@ void wield_item(object_type *o_ptr, int item, int slot)
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
-	message_format(MSG_WIELD, 0, fmt, o_name, index_to_label(slot));
+	msgt(MSG_WIELD, fmt, o_name, index_to_label(slot));
 
 	/* Cursed! */
 	if (cursed_p(o_ptr))
 	{
 		/* Warn the player */
-		message_format(MSG_CURSED, 0, "Oops! It feels deathly cold!");
+		msgt(MSG_CURSED, "Oops! It feels deathly cold!");
 
 		/* Sense the object */
 		object_notice_curses(o_ptr);
@@ -369,14 +369,14 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 
 	if (!item_is_available(item, NULL, USE_INVEN | USE_FLOOR))
 	{
-		msg_print("You do not have that item to wield.");
+		msg("You do not have that item to wield.");
 		return;
 	}
 
 	/* Check the slot */
 	if (!slot_can_wield_item(slot, o_ptr))
 	{
-		msg_print("You cannot wield that item there.");
+		msg("You cannot wield that item there.");
 		return;
 	}
 
@@ -401,7 +401,7 @@ void do_cmd_wield(cmd_code code, cmd_arg args[])
 	if (cursed_p(equip_o_ptr))
 	{
 		object_desc(o_name, sizeof(o_name), equip_o_ptr, ODESC_BASE);
-		msg_format("The %s you are %s appears to be cursed.", o_name,
+		msg("The %s you are %s appears to be cursed.", o_name,
 				   describe_use(slot));
 		return;
 	}
@@ -430,14 +430,14 @@ void do_cmd_drop(cmd_code code, cmd_arg args[])
 
 	if (!item_is_available(item, NULL, USE_INVEN | USE_EQUIP))
 	{
-		msg_print("You do not have that item to drop it.");
+		msg("You do not have that item to drop it.");
 		return;
 	}
 
 	/* Hack -- Cannot remove cursed items */
 	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
 	{
-		msg_print("Hmmm, it seems to be cursed.");
+		msg("Hmmm, it seems to be cursed.");
 		return;
 	}
 
@@ -453,19 +453,19 @@ void do_cmd_destroy(cmd_code code, cmd_arg args[])
 
 	if (!item_is_available(item, NULL, USE_INVEN | USE_EQUIP | USE_FLOOR))
 	{
-		msg_print("You do not have that item to ignore it.");
+		msg("You do not have that item to ignore it.");
 		return;
 	}
 
 	o_ptr = object_from_item_idx(item);
 
 	if ((item >= INVEN_WIELD) && cursed_p(o_ptr)) {
-		msg_print("You cannot ignore cursed items.");
+		msg("You cannot ignore cursed items.");
 	} else {	
 		char o_name[80];
 
 		object_desc(o_name, sizeof o_name, o_ptr, ODESC_PREFIX | ODESC_FULL);
-		message_format(MSG_DESTROY, 0, "Ignoring %s.", o_name);
+		msgt(MSG_DESTROY, "Ignoring %s.", o_name);
 
 		o_ptr->ignore = TRUE;
 		p_ptr->notice |= PN_SQUELCH;
@@ -510,7 +510,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	{
 		if (!obj_can_zap(o_ptr))
 		{
-			msg_print("That rod is still charging.");
+			msg("That rod is still charging.");
 			return;
 		}
 
@@ -522,7 +522,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	{
 		if (!obj_has_charges(o_ptr))
 		{
-			msg_print("That wand has no charges.");
+			msg("That wand has no charges.");
 			return;
 		}
 
@@ -534,7 +534,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	{
 		if (!obj_has_charges(o_ptr))
 		{
-			msg_print("That staff has no charges.");
+			msg("That staff has no charges.");
 			return;
 		}
 
@@ -568,7 +568,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	{
 		if (!obj_can_activate(o_ptr))
 		{
-			msg_print("That item is still charging.");
+			msg("That item is still charging.");
 			return;
 		}
 
@@ -578,13 +578,13 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 	}
 	else
 	{
-		msg_print("The item cannot be used at the moment");
+		msg("The item cannot be used at the moment");
 	}
 
 	/* Check if item is within player's reach. */
 	if (items_allowed == 0 || !item_is_available(item, NULL, items_allowed))
 	{
-		msg_print("You cannot use that item from its current location.");
+		msg("You cannot use that item from its current location.");
 		return;
 	}
 
@@ -605,7 +605,7 @@ void do_cmd_use(cmd_code code, cmd_arg args[])
 		/* Special message for artifacts */
 		if (artifact_p(o_ptr))
 		{
-			message(snd, 0, "You activate it.");
+			msgt(snd, "You activate it.");
 			if (a_info[o_ptr->name1].effect_msg)
 				activation_message(o_ptr, a_info[o_ptr->name1].effect_msg);
 			level = a_info[o_ptr->name1].level;
@@ -743,13 +743,13 @@ static void refill_lamp(object_type *j_ptr, object_type *o_ptr, int item)
 	j_ptr->timeout += o_ptr->timeout ? o_ptr->timeout : o_ptr->pval[DEFAULT_PVAL];
 
 	/* Message */
-	msg_print("You fuel your lamp.");
+	msg("You fuel your lamp.");
 
 	/* Comment */
 	if (j_ptr->timeout >= FUEL_LAMP)
 	{
 		j_ptr->timeout = FUEL_LAMP;
-		msg_print("Your lamp is full.");
+		msg("Your lamp is full.");
 	}
 
 	/* Refilled from a lantern */
@@ -835,7 +835,7 @@ static void refuel_torch(object_type *j_ptr, object_type *o_ptr, int item)
 	j_ptr->timeout += o_ptr->timeout + 5;
 
 	/* Message */
-	msg_print("You combine the torches.");
+	msg("You combine the torches.");
 
 	/* Transfer the LIGHT flag if refuelling from a torch with it to one
 	   without it */
@@ -846,20 +846,20 @@ static void refuel_torch(object_type *j_ptr, object_type *o_ptr, int item)
 		of_on(j_ptr->flags, OF_LIGHT);
 		if (!j_ptr->name2 && o_ptr->name2)
 			j_ptr->name2 = o_ptr->name2;
-		msg_print("Your torch shines further!");
+		msg("Your torch shines further!");
 	}
 
 	/* Over-fuel message */
 	if (j_ptr->timeout >= FUEL_TORCH)
 	{
 		j_ptr->timeout = FUEL_TORCH;
-		msg_print("Your torch is fully fueled.");
+		msg("Your torch is fully fueled.");
 	}
 
 	/* Refuel message */
 	else
 	{
-		msg_print("Your torch glows more brightly.");
+		msg("Your torch glows more brightly.");
 	}
 
 	/* Decrease the item (from the pack) */
@@ -896,7 +896,7 @@ void do_cmd_refill(cmd_code code, cmd_arg args[])
 
 	if (!item_is_available(item, NULL, USE_INVEN | USE_FLOOR))
 	{
-		msg_print("You do not have that item to refill with it.");
+		msg("You do not have that item to refill with it.");
 		return;
 	}
 
@@ -905,13 +905,13 @@ void do_cmd_refill(cmd_code code, cmd_arg args[])
 
 	if (j_ptr->tval != TV_LIGHT)
 	{
-		msg_print("You are not wielding a light.");
+		msg("You are not wielding a light.");
 		return;
 	}
 
 	else if (of_has(f, OF_NO_FUEL))
 	{
-		msg_print("Your light cannot be refilled.");
+		msg("Your light cannot be refilled.");
 		return;
 	}
 
@@ -961,7 +961,7 @@ void do_cmd_study_spell(cmd_code code, cmd_arg args[])
 			else
 			{
 				/* Spell is present, but player incapable. */
-				msg_format("You cannot learn that spell.");
+				msg("You cannot learn that spell.");
 			}
 
 			return;
@@ -1004,7 +1004,7 @@ void do_cmd_cast(cmd_code code, cmd_arg args[])
 				if (s_ptr->smana > p_ptr->csp)
 				{
 					/* Warning */
-					msg_format("You do not have enough mana to %s this %s.", verb, noun);
+					msg("You do not have enough mana to %s this %s.", verb, noun);
 					
 					/* Flush input */
 					flush();
@@ -1020,7 +1020,7 @@ void do_cmd_cast(cmd_code code, cmd_arg args[])
 			else
 			{
 				/* Spell is present, but player incapable. */
-				msg_format("You cannot %s that %s.", verb, noun);
+				msg("You cannot %s that %s.", verb, noun);
 			}
 
 			return;
@@ -1048,7 +1048,7 @@ void do_cmd_study_book(cmd_code code, cmd_arg args[])
 	/* Check that the player has access to the nominated spell book. */
 	if (!item_is_available(book, obj_can_browse, (USE_INVEN | USE_FLOOR)))
 	{
-		msg_format("That item is not within your reach.");
+		msg("That item is not within your reach.");
 		return;
 	}
 
@@ -1070,7 +1070,7 @@ void do_cmd_study_book(cmd_code code, cmd_arg args[])
 
 	if (spell < 0)
 	{
-		msg_format("You cannot learn any %ss in that book.", p);
+		msg("You cannot learn any %ss in that book.", p);
 	}
 	else
 	{

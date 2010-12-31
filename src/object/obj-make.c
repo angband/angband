@@ -163,11 +163,11 @@ static void object_mention(const object_type *o_ptr)
 
 	/* Provide a silly message */
 	if (artifact_p(o_ptr))
-		msg_format("Artifact (%s)", o_name);
+		msg("Artifact (%s)", o_name);
 	else if (ego_item_p(o_ptr))
-		msg_format("Ego-item (%s)", o_name);
+		msg("Ego-item (%s)", o_name);
 	else
-		msg_format("Object (%s)", o_name);
+		msg("Object (%s)", o_name);
 }
 
 

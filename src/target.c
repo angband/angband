@@ -1039,7 +1039,7 @@ bool target_set_closest(int mode)
 	/* If nothing was prepared, then return */
 	if (temp_n < 1)
 	{
-		msg_print("No Available Target.");
+		msg("No Available Target.");
 		return FALSE;
 	}
 
@@ -1051,7 +1051,7 @@ bool target_set_closest(int mode)
 	/* Target the monster, if possible */
 	if ((m_idx <= 0) || !target_able(m_idx))
 	{
-		msg_print("No Available Target.");
+		msg("No Available Target.");
 		return FALSE;
 	}
 
@@ -1059,7 +1059,7 @@ bool target_set_closest(int mode)
 	m_ptr = &mon_list[m_idx];
 	monster_desc(m_name, sizeof(m_name), m_ptr, 0x00);
 	if (!(mode & TARGET_QUIET))
-		msg_format("%^s is targeted.", m_name);
+		msg("%^s is targeted.", m_name);
 	Term_fresh();
 
 	/* Set up target information */

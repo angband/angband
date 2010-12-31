@@ -1702,7 +1702,7 @@ static void build_type5(struct cave *c, int y0, int x0)
 	if (OPT(cheat_room))
 	{
 		/* Room type */
-		msg_format("Monster nest (%s)", name);
+		msg("Monster nest (%s)", name);
 	}
 
 
@@ -2016,7 +2016,7 @@ static void build_type6(struct cave *c, int y0, int x0)
 	if (OPT(cheat_room))
 	{
 		/* Room type */
-		msg_format("Monster pit (%s)", name);
+		msg("Monster pit (%s)", name);
 	}
 
 
@@ -2268,7 +2268,7 @@ static void build_type7(struct cave *c, int y0, int x0)
 	}
 
 	/* Message */
-	if (OPT(cheat_room)) msg_format("Lesser vault (%s)", v_ptr->name);
+	if (OPT(cheat_room)) msg("Lesser vault (%s)", v_ptr->name);
 
 	/* Boost the rating */
 	c->rating += v_ptr->rat;
@@ -2300,7 +2300,7 @@ static void build_type8(struct cave *c, int y0, int x0)
 	}
 
 	/* Message */
-	if (OPT(cheat_room)) msg_format("Medium vault (%s)", v_ptr->name);
+	if (OPT(cheat_room)) msg("Medium vault (%s)", v_ptr->name);
 
 	/* Boost the rating */
 	c->rating += v_ptr->rat;
@@ -2330,7 +2330,7 @@ static void build_type9(struct cave *c, int y0, int x0)
 	}
 
 	/* Message */
-	if (OPT(cheat_room)) msg_format("Greater vault (%s)", v_ptr->name);
+	if (OPT(cheat_room)) msg("Greater vault (%s)", v_ptr->name);
 
 	/* Boost the rating */
 	c->rating += v_ptr->rat;
@@ -3436,12 +3436,12 @@ void cave_generate(struct cave *c, struct player *p)
 
 
 		if (OPT(cheat_room) && error)
-			msg_format("Generation restarted: %s.", error);
+			msg("Generation restarted: %s.", error);
 
 		counter++;
 		if (counter > 100)
 		{
-			msg_format("cave_gen() failed 100 times!");
+			msg("cave_gen() failed 100 times!");
 			exit_game_panic();
 		}
 	}

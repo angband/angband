@@ -258,7 +258,7 @@ void textui_obj_inscribe(object_type *o_ptr, int item)
 	char tmp[80] = "";
 
 	object_desc(o_name, sizeof(o_name), o_ptr, ODESC_PREFIX | ODESC_FULL);
-	msg_format("Inscribing %s.", o_name);
+	msg("Inscribing %s.", o_name);
 	message_flush();
 
 	/* Use old inscription */
@@ -298,9 +298,9 @@ void textui_obj_examine(object_type *o_ptr, int item)
 void do_cmd_target(void)
 {
 	if (target_set_interactive(TARGET_KILL, -1, -1))
-		msg_print("Target Selected.");
+		msg("Target Selected.");
 	else
-		msg_print("Target Aborted.");
+		msg("Target Aborted.");
 }
 
 
@@ -318,7 +318,7 @@ void do_cmd_look(void)
 	/* Look around */
 	if (target_set_interactive(TARGET_LOOK, -1, -1))
 	{
-		msg_print("Target Selected.");
+		msg("Target Selected.");
 	}
 }
 

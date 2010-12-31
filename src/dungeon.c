@@ -43,7 +43,7 @@ void dungeon_change_level(int dlev)
 	   according to how long we've been away */
 	if (!dlev && daycount)
 	{
-		if (OPT(cheat_xtra)) msg_print("Updating Shops...");
+		if (OPT(cheat_xtra)) msg("Updating Shops...");
 		while (daycount--)
 		{
 			int n;
@@ -62,7 +62,7 @@ void dungeon_change_level(int dlev)
 			if (one_in_(STORE_SHUFFLE))
 			{
 				/* Message */
-				if (OPT(cheat_xtra)) msg_print("Shuffling a Shopkeeper...");
+				if (OPT(cheat_xtra)) msg("Shuffling a Shopkeeper...");
 
 				/* Pick a random shop (except home) */
 				while (1)
@@ -76,7 +76,7 @@ void dungeon_change_level(int dlev)
 			}
 		}
 		daycount = 0;
-		if (OPT(cheat_xtra)) msg_print("Done.");
+		if (OPT(cheat_xtra)) msg("Done.");
 	}
 
 	/* Leaving */
@@ -276,18 +276,18 @@ static void recharged_notice(const object_type *o_ptr, bool all)
 	/* Notify the player */
 	if (o_ptr->number > 1)
 	{
-		if (all) msg_format("Your %s have recharged.", o_name);
-		else msg_format("One of your %s has recharged.", o_name);
+		if (all) msg("Your %s have recharged.", o_name);
+		else msg("One of your %s has recharged.", o_name);
 	}
 
 	/* Artifacts */
 	else if (o_ptr->name1)
 	{
-		msg_format("The %s has recharged.", o_name);
+		msg("The %s has recharged.", o_name);
 	}
 
 	/* Single, non-artifact items */
-	else msg_format("Your %s has recharged.", o_name);
+	else msg("Your %s has recharged.", o_name);
 }
 
 
@@ -515,11 +515,11 @@ static void process_world(struct cave *c)
 
 			/* Day breaks */
 			if (dawn)
-				msg_print("The sun has risen.");
+				msg("The sun has risen.");
 
 			/* Night falls */
 			else
-				msg_print("The sun has fallen.");
+				msg("The sun has fallen.");
 
 			/* Illuminate */
 			cave_illuminate(c, dawn);
@@ -618,7 +618,7 @@ static void process_world(struct cave *c)
 		if (!p_ptr->timed[TMD_PARALYZED] && one_in_(10))
 		{
 			/* Message */
-			msg_print("You faint from the lack of food.");
+			msg("You faint from the lack of food.");
 			disturb(1, 0);
 
 			/* Hack -- faint (bypass free action) */
@@ -743,14 +743,14 @@ static void process_world(struct cave *c)
 			else if (o_ptr->timeout == 0)
 			{
 				disturb(0, 0);
-				msg_print("Your light has gone out!");
+				msg("Your light has gone out!");
 			}
 
 			/* The light is getting dim */
 			else if ((o_ptr->timeout < 100) && (!(o_ptr->timeout % 10)))
 			{
 				disturb(0, 0);
-				msg_print("Your light is growing faint.");
+				msg("Your light is growing faint.");
 			}
 		}
 	}
@@ -806,12 +806,12 @@ static void process_world(struct cave *c)
 			/* Determine the level */
 			if (p_ptr->depth)
 			{
-				message_format(MSG_TPLEVEL, 0, "You feel yourself yanked upwards!");
+				msgt(MSG_TPLEVEL, "You feel yourself yanked upwards!");
 				dungeon_change_level(0);
 			}
 			else
 			{
-				message_format(MSG_TPLEVEL, 0, "You feel yourself yanked downwards!");
+				msgt(MSG_TPLEVEL, "You feel yourself yanked downwards!");
 
 				/* New depth - back to max depth or 1, whichever is deeper */
 				dungeon_change_level(p_ptr->max_depth < 1 ? 1: p_ptr->max_depth);
@@ -973,7 +973,7 @@ static void process_player(void)
 			disturb(0, 0);
 
 			/* Hack -- Show a Message */
-			msg_print("Cancelled.");
+			msg("Cancelled.");
 		}
 	}
 
@@ -1885,7 +1885,7 @@ void play_game(void)
 				p_ptr->noscore |= NOSCORE_WIZARD;
 
 				/* Message */
-				msg_print("You invoke wizard mode and cheat death.");
+				msg("You invoke wizard mode and cheat death.");
 				message_flush();
 
 				/* Cheat death */
@@ -1916,7 +1916,7 @@ void play_game(void)
 				if (p_ptr->word_recall)
 				{
 					/* Message */
-					msg_print("A tension leaves the air around you...");
+					msg("A tension leaves the air around you...");
 					message_flush();
 
 					/* Hack -- Prevent recall */

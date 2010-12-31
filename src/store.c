@@ -331,8 +331,7 @@ static void prt_welcome(const owner_type *ot_ptr)
 
 	if (one_in_(3)) {
 		size_t i = randint0(N_ELEMENTS(comment_hint));
-		/*msg_format(comment_hint[i], short_name, random_hint());*/
-		msg_format(comment_hint[i], random_hint());
+		msg(comment_hint[i], random_hint());
 	} else if (p_ptr->lev > 5) {
 		const char *player_name;
 
@@ -361,19 +360,19 @@ static void purchase_analyze(s32b price, s32b value, s32b guess)
 {
 	/* Item was worthless, but we bought it */
 	if ((value <= 0) && (price > value))
-		message(MSG_STORE1, 0, ONE_OF(comment_worthless));
+		msgt(MSG_STORE1, "%s", ONE_OF(comment_worthless));
 
 	/* Item was cheaper than we thought, and we paid more than necessary */
 	else if ((value < guess) && (price > value))
-		message(MSG_STORE2, 0, ONE_OF(comment_bad));
+		msgt(MSG_STORE2, "%s", ONE_OF(comment_bad));
 
 	/* Item was a good bargain, and we got away with it */
 	else if ((value > guess) && (value < (4 * guess)) && (price < value))
-		message(MSG_STORE3, 0, ONE_OF(comment_good));
+		msgt(MSG_STORE3, "%s", ONE_OF(comment_good));
 
 	/* Item was a great bargain, and we got away with it */
 	else if ((value > guess) && (price < value))
-		message(MSG_STORE4, 0, ONE_OF(comment_great));
+		msgt(MSG_STORE4, "%s", ONE_OF(comment_great));
 }
 
 
@@ -1374,7 +1373,7 @@ static bool store_create_random(int st)
 		/* Get tval/sval; if not found, item isn't real, so try again */
 		if (!lookup_reverse(k_idx, &tval, &sval))
 		{
-			msg_print("Invalid object index in store_create_random()!");
+			msg("Invalid object index in store_create_random()!");
 			continue;
 		}
 
@@ -1474,7 +1473,7 @@ static int store_create_item(int st, int tval, int sval)
 	/* Validation - do something more substantial here? XXX */
 	if (!k_idx)
 	{
-		msg_print("No object in store_create_item().");
+		msg("No object in store_create_item().");
 		return -1;
 	}
 
@@ -2211,7 +2210,7 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 
 	if (this_store == STORE_NONE)
 	{
-		msg_print("You cannot purchase items when not in a store.");
+		msg("You cannot purchase items when not in a store.");
 		return;
 	}
 
@@ -2226,7 +2225,7 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 	/* Ensure we have room */
 	if (!inven_carry_okay(i_ptr))
 	{
-		msg_print("You cannot carry that many items.");
+		msg("You cannot carry that many items.");
 		return;
 	}
 
@@ -2238,7 +2237,7 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 
 	if (price > p_ptr->au)
 	{
-		msg_print("You cannot afford that purchase.");
+		msg("You cannot afford that purchase.");
 		return;
 	}
 
@@ -2258,8 +2257,8 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 	i_ptr->ident &= ~(IDENT_STORE);
 
 	/* Message */
-	if (one_in_(3)) message(MSG_STORE5, 0, ONE_OF(comment_accept));
-	msg_format("You bought %s for %ld gold.", o_name, (long)price);
+	if (one_in_(3)) msgt(MSG_STORE5, "%s", ONE_OF(comment_accept));
+	msg("You bought %s for %ld gold.", o_name, (long)price);
 
 	/* Erase the inscription */
 	i_ptr->note = 0;
@@ -2270,7 +2269,7 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 	/* Message */
 	object_desc(o_name, sizeof(o_name), &p_ptr->inventory[item_new],
 				ODESC_PREFIX | ODESC_FULL);
-	msg_format("You have %s (%c).", o_name, index_to_label(item_new));
+	msg("You have %s (%c).", o_name, index_to_label(item_new));
 
 	/* Hack - Reduce the number of charges in the original stack */
 	if (o_ptr->tval == TV_WAND || o_ptr->tval == TV_STAFF)
@@ -2294,7 +2293,7 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 		if (one_in_(STORE_SHUFFLE))
 		{
 			/* Message */
-			msg_print("The shopkeeper retires.");
+			msg("The shopkeeper retires.");
 
 			/* Shuffle the store */
 			store_shuffle(this_store);
@@ -2305,7 +2304,7 @@ void do_cmd_buy(cmd_code code, cmd_arg args[])
 		else
 		{
 			/* Message */
-			msg_print("The shopkeeper brings out some new stock.");
+			msg("The shopkeeper brings out some new stock.");
 		}
 
 		/* New inventory */
@@ -2337,7 +2336,7 @@ void do_cmd_retrieve(cmd_code code, cmd_arg args[])
 
 	if (current_store() != STORE_HOME)
 	{
-		msg_print("You are not currently at home.");
+		msg("You are not currently at home.");
 		return;
 	}
 
@@ -2352,7 +2351,7 @@ void do_cmd_retrieve(cmd_code code, cmd_arg args[])
 	/* Ensure we have room */
 	if (!inven_carry_okay(&picked_item))
 	{
-		msg_print("You cannot carry that many items.");
+		msg("You cannot carry that many items.");
 		return;
 	}
 
@@ -2367,7 +2366,7 @@ void do_cmd_retrieve(cmd_code code, cmd_arg args[])
 				ODESC_PREFIX | ODESC_FULL);
 	
 	/* Message */
-	msg_format("You have %s (%c).", o_name, index_to_label(item_new));
+	msg("You have %s (%c).", o_name, index_to_label(item_new));
 	
 	/* Handle stuff */
 	handle_stuff();
@@ -2402,7 +2401,7 @@ static bool store_purchase(int item)
 
 	if (this_store == STORE_NONE)
 	{
-		msg_print("You cannot purchase items when not in a store.");
+		msg("You cannot purchase items when not in a store.");
 		return FALSE;
 	}
 
@@ -2429,7 +2428,7 @@ static bool store_purchase(int item)
 		if ((u32b)p_ptr->au < (u32b)price)
 		{
 			/* Tell the user */
-			msg_print("You do not have enough gold for this item.");
+			msg("You do not have enough gold for this item.");
 
 			/* Abort now */
 			return FALSE;
@@ -2467,7 +2466,7 @@ static bool store_purchase(int item)
 	/* Ensure we have room */
 	if (!inven_carry_okay(i_ptr))
 	{
-		msg_print("You cannot carry that many items.");
+		msg("You cannot carry that many items.");
 		return FALSE;
 	}
 
@@ -2543,21 +2542,21 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 	/* Cannot remove cursed objects */
 	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
 	{
-		msg_print("Hmmm, it seems to be cursed.");
+		msg("Hmmm, it seems to be cursed.");
 		return;
 	}
 
 	/* Check we are somewhere we can sell the items. */
 	if (current_store() == STORE_NONE)
 	{
-		msg_print("You cannot sell items when not in a store.");
+		msg("You cannot sell items when not in a store.");
 		return;
 	}
 
 	/* Check the store wants the items being sold */
 	if (!store_will_buy(current_store(), o_ptr))
 	{
-		msg_print("I do not wish to purchase this item.");
+		msg("I do not wish to purchase this item.");
 		return;
 	}
 
@@ -2567,7 +2566,7 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 	/* Check if the store has space for the items */
 	if (!store_check_num(current_store(), &sold_item))
 	{
-		msg_print("I have not the room in my store to keep it.");
+		msg("I have not the room in my store to keep it.");
 		return;
 	}
 
@@ -2591,7 +2590,7 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 
 	/* Get the "apparent" value */
 	dummy = object_value(&sold_item, amt, FALSE);
-/*	msg_format("Dummy is %d", dummy); */
+/*	msg("Dummy is %d", dummy); */
 
 	/* Identify original object */
 	object_notice_everything(o_ptr);
@@ -2610,13 +2609,13 @@ void do_cmd_sell(cmd_code code, cmd_arg args[])
 
 	/* Get the "actual" value */
 	value = object_value(&sold_item, amt, FALSE);
-/*	msg_format("Value is %d", value); */
+/*	msg("Value is %d", value); */
 
 	/* Get the description all over again */
 	object_desc(o_name, sizeof(o_name), &sold_item, ODESC_PREFIX | ODESC_FULL);
 
 	/* Describe the result (in message buffer) */
-	msg_format("You sold %s (%c) for %ld gold.",
+	msg("You sold %s (%c) for %ld gold.",
 		o_name, index_to_label(item), (long)price);
 
 	/* Analyze the prices (and comment verbally) */
@@ -2653,14 +2652,14 @@ void do_cmd_stash(cmd_code code, cmd_arg args[])
 	/* Check we are somewhere we can stash items. */
 	if (current_store() != STORE_HOME)
 	{
-		msg_print("You are not in your home.");
+		msg("You are not in your home.");
 		return;
 	}
 
 	/* Cannot remove cursed objects */
 	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
 	{
-		msg_print("Hmmm, it seems to be cursed.");
+		msg("Hmmm, it seems to be cursed.");
 		return;
 	}	
 
@@ -2669,7 +2668,7 @@ void do_cmd_stash(cmd_code code, cmd_arg args[])
 
 	if (!store_check_num(STORE_HOME, &dropped_item))
 	{
-		msg_print("Your home is full.");
+		msg("Your home is full.");
 		return;
 	}
 
@@ -2680,7 +2679,7 @@ void do_cmd_stash(cmd_code code, cmd_arg args[])
 	object_desc(o_name, sizeof(o_name), &dropped_item, ODESC_PREFIX | ODESC_FULL);
 
 	/* Message */
-	msg_format("You drop %s (%c).", o_name, index_to_label(item));
+	msg("You drop %s (%c).", o_name, index_to_label(item));
 	
 	/* Take it from the players inventory */
 	inven_item_increase(item, -amt);
@@ -2719,7 +2718,7 @@ static bool store_sell(void)
 
 	if (this_store == STORE_NONE)
 	{
-		msg_print("You cannot sell items when not in a store.");
+		msg("You cannot sell items when not in a store.");
 		return FALSE;
 	}
 
@@ -2748,7 +2747,7 @@ static bool store_sell(void)
 	if ((item >= INVEN_WIELD) && cursed_p(o_ptr))
 	{
 		/* Oops */
-		msg_print("Hmmm, it seems to be cursed.");
+		msg("Hmmm, it seems to be cursed.");
 
 		/* Nope */
 		return FALSE;
@@ -2766,10 +2765,10 @@ static bool store_sell(void)
 	if (!store_check_num(this_store, i_ptr))
 	{
 		if (this_store == STORE_HOME)
-			msg_print("Your home is full.");
+			msg("Your home is full.");
 
 		else
-			msg_print("I have not the room in my store to keep it.");
+			msg("I have not the room in my store to keep it.");
 
 		return FALSE;
 	}
@@ -3134,14 +3133,14 @@ void do_cmd_store(cmd_code code, cmd_arg args[])
 	/* Verify that there is a store */
 	if (this_store == STORE_NONE)
 	{
-		msg_print("You see no store here.");
+		msg("You see no store here.");
 		return;
 	}
 
 	/* Check if we can enter the store */
 	if (OPT(birth_no_stores))
 	{
-		msg_print("The doors are locked.");
+		msg("The doors are locked.");
 		return;
 	}
 

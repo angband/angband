@@ -259,7 +259,7 @@ bool make_attack_normal(int m_idx)
 				    randint0(100) + p_ptr->lev > 50)
 				{
 					/* Message */
-					msg_format("%^s is repelled.", m_name);
+					msg("%^s is repelled.", m_name);
 
 					/* Hack -- Next attack */
 					continue;
@@ -418,7 +418,8 @@ bool make_attack_normal(int m_idx)
 			}
 
 			/* Message */
-			if (act) message_format(sound_msg, 0, "%^s %s", m_name, act);
+			if (act)
+				msgt(sound_msg, "%^s %s", m_name, act);
 
 
 			/* Hack -- assume all attacks are obvious */
@@ -533,7 +534,7 @@ bool make_attack_normal(int m_idx)
 						{
 							int heal = rlev * drained;
 
-							msg_print("Energy drains from your pack!");
+							msg("Energy drains from your pack!");
 
 							obvious = TRUE;
 
@@ -575,7 +576,7 @@ bool make_attack_normal(int m_idx)
 					                      p_ptr->lev)))
 					{
 						/* Saving throw message */
-						msg_print("You quickly protect your money pouch!");
+						msg("You quickly protect your money pouch!");
 
 						/* Occasional blink anyway */
 						if (randint0(3)) blinked = TRUE;
@@ -591,16 +592,16 @@ bool make_attack_normal(int m_idx)
 						p_ptr->au -= gold;
 						if (gold <= 0)
 						{
-							msg_print("Nothing was stolen.");
+							msg("Nothing was stolen.");
 							break;
 						}
 
 						/* Let the player know they were robbed */
-						msg_print("Your purse feels lighter.");
+						msg("Your purse feels lighter.");
 						if (p_ptr->au)
-							msg_format("%ld coins were stolen!", (long)gold);
+							msg("%ld coins were stolen!", (long)gold);
 						else
-							msg_print("All of your coins were stolen!");
+							msg("All of your coins were stolen!");
 
 						/* While we have gold, put it in objects */
 						while (gold > 0)
@@ -642,7 +643,7 @@ bool make_attack_normal(int m_idx)
 					                      p_ptr->lev)))
 					{
 						/* Saving throw message */
-						msg_print("You grab hold of your backpack!");
+						msg("You grab hold of your backpack!");
 
 						/* Occasional "blink" anyway */
 						blinked = TRUE;
@@ -676,7 +677,7 @@ bool make_attack_normal(int m_idx)
 						object_desc(o_name, sizeof(o_name), o_ptr, ODESC_FULL);
 
 						/* Message */
-						msg_format("%sour %s (%c) was stolen!",
+						msg("%sour %s (%c) was stolen!",
 						           ((o_ptr->number > 1) ? "One of y" : "Y"),
 						           o_name, index_to_label(i));
 
@@ -740,7 +741,7 @@ bool make_attack_normal(int m_idx)
 									ODESC_PREFIX | ODESC_BASE);
 
 						/* Message */
-						msg_format("%sour %s (%c) was eaten!",
+						msg("%sour %s (%c) was eaten!",
 						           ((o_ptr->number > 1) ? "One of y" : "Y"),
 						           o_name, index_to_label(i));
 
@@ -779,7 +780,7 @@ bool make_attack_normal(int m_idx)
 						/* Notice */
 						if (!p_ptr->timed[TMD_BLIND])
 						{
-							msg_print("Your light dims.");
+							msg("Your light dims.");
 							obvious = TRUE;
 						}
 
@@ -796,7 +797,7 @@ bool make_attack_normal(int m_idx)
 					obvious = TRUE;
 
 					/* Message */
-					msg_print("You are covered in acid!");
+					msg("You are covered in acid!");
 
 					/* Special damage */
 					acid_dam(damage, ddesc);
@@ -813,7 +814,7 @@ bool make_attack_normal(int m_idx)
 					obvious = TRUE;
 
 					/* Message */
-					msg_print("You are struck by electricity!");
+					msg("You are struck by electricity!");
 
 					/* Take damage (special) */
 					elec_dam(damage, ddesc);
@@ -830,7 +831,7 @@ bool make_attack_normal(int m_idx)
 					obvious = TRUE;
 
 					/* Message */
-					msg_print("You are enveloped in flames!");
+					msg("You are enveloped in flames!");
 
 					/* Take damage (special) */
 					fire_dam(damage, ddesc);
@@ -847,7 +848,7 @@ bool make_attack_normal(int m_idx)
 					obvious = TRUE;
 
 					/* Message */
-					msg_print("You are covered with frost!");
+					msg("You are covered with frost!");
 
 					/* Take damage (special) */
 					cold_dam(damage, ddesc);
@@ -906,12 +907,12 @@ bool make_attack_normal(int m_idx)
 					/* Increase "afraid" */
 					if (p_ptr->state.resist_fear)
 					{
-						msg_print("You stand your ground!");
+						msg("You stand your ground!");
 						obvious = TRUE;
 					}
 					else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 					{
-						msg_print("You stand your ground!");
+						msg("You stand your ground!");
 						obvious = TRUE;
 					}
 					else
@@ -937,12 +938,12 @@ bool make_attack_normal(int m_idx)
 					/* Increase "paralyzed" */
 					if (p_ptr->state.free_act)
 					{
-						msg_print("You are unaffected!");
+						msg("You are unaffected!");
 						obvious = TRUE;
 					}
 					else if (randint0(100) < p_ptr->state.skills[SKILL_SAVE])
 					{
-						msg_print("You resist the effects!");
+						msg("You resist the effects!");
 						obvious = TRUE;
 					}
 					else
@@ -1079,19 +1080,19 @@ bool make_attack_normal(int m_idx)
 
 					if (p_ptr->state.hold_life && (randint0(100) < 95))
 					{
-						msg_print("You keep hold of your life force!");
+						msg("You keep hold of your life force!");
 					}
 					else
 					{
 						s32b d = damroll(10, 6) + (p_ptr->exp/100) * MON_DRAIN_LIFE;
 						if (p_ptr->state.hold_life)
 						{
-							msg_print("You feel your life slipping away!");
+							msg("You feel your life slipping away!");
 							lose_exp(d/10);
 						}
 						else
 						{
-							msg_print("You feel your life draining away!");
+							msg("You feel your life draining away!");
 							lose_exp(d);
 						}
 					}
@@ -1110,7 +1111,7 @@ bool make_attack_normal(int m_idx)
 
 					if (p_ptr->state.hold_life && (randint0(100) < 90))
 					{
-						msg_print("You keep hold of your life force!");
+						msg("You keep hold of your life force!");
 					}
 					else
 					{
@@ -1118,12 +1119,12 @@ bool make_attack_normal(int m_idx)
 
 						if (p_ptr->state.hold_life)
 						{
-							msg_print("You feel your life slipping away!");
+							msg("You feel your life slipping away!");
 							lose_exp(d / 10);
 						}
 						else
 						{
-							msg_print("You feel your life draining away!");
+							msg("You feel your life draining away!");
 							lose_exp(d);
 						}
 					}
@@ -1142,7 +1143,7 @@ bool make_attack_normal(int m_idx)
 
 					if (p_ptr->state.hold_life && (randint0(100) < 75))
 					{
-						msg_print("You keep hold of your life force!");
+						msg("You keep hold of your life force!");
 					}
 					else
 					{
@@ -1150,12 +1151,12 @@ bool make_attack_normal(int m_idx)
 
 						if (p_ptr->state.hold_life)
 						{
-							msg_print("You feel your life slipping away!");
+							msg("You feel your life slipping away!");
 							lose_exp(d / 10);
 						}
 						else
 						{
-							msg_print("You feel your life draining away!");
+							msg("You feel your life draining away!");
 							lose_exp(d);
 						}
 					}
@@ -1174,7 +1175,7 @@ bool make_attack_normal(int m_idx)
 
 					if (p_ptr->state.hold_life && (randint0(100) < 50))
 					{
-						msg_print("You keep hold of your life force!");
+						msg("You keep hold of your life force!");
 					}
 					else
 					{
@@ -1182,12 +1183,12 @@ bool make_attack_normal(int m_idx)
 
 						if (p_ptr->state.hold_life)
 						{
-							msg_print("You feel your life slipping away!");
+							msg("You feel your life slipping away!");
 							lose_exp(d / 10);
 						}
 						else
 						{
-							msg_print("You feel your life draining away!");
+							msg("You feel your life draining away!");
 							lose_exp(d);
 						}
 					}
@@ -1307,7 +1308,7 @@ bool make_attack_normal(int m_idx)
 					disturb(1, 0);
 
 					/* Message */
-					msg_format("%^s misses you.", m_name);
+					msg("%^s misses you.", m_name);
 				}
 
 				break;
@@ -1337,7 +1338,7 @@ bool make_attack_normal(int m_idx)
 	/* Blink away */
 	if (blinked)
 	{
-		msg_print("There is a puff of smoke!");
+		msg("There is a puff of smoke!");
 		teleport_away(m_idx, MAX_SIGHT * 2 + 5);
 	}
 
